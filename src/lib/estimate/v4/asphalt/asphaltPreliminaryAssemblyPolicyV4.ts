@@ -80,6 +80,11 @@ function profileFor(rawText: string, values: ReadonlyMap<string, unknown>): Asph
   const preparedBase = /готов[а-яё]*\s+основан|подготовлен[а-яё]*\s+основан/iu.test(text);
   const fullConstruction = constructionMode === "new_construction" || /строительств|построи|нов(?:ая|ое|ый|ого|ую)\s+(?:парков|дорог|площад)|нов(?:ое|ого)\s+основан/iu.test(text);
   const pavementOnly = /(?:полное\s+строительств[а-яё]*\s+)?дорожн[а-яё]*\s+одежд|без\s+(?:внешн[а-яё]*\s+)?инфраструктур/iu.test(text);
+  const explicitSurfacingLayer = (
+    hasValue(values.get("asphalt_layer_count"))
+      || hasValue(values.get("asphalt_layers"))
+      || /(?:асфальтобетонн|асфальтов)[а-яё]*\s+покрыт[а-яё]*[^.!?]{0,80}\bсло[йяеё]/iu.test(text)
+  ) && !fullConstruction && !pavementOnly;
   if (patchRepair) return "local_patch_repair";
   if (milling) return "rehabilitation_with_milling";
   if (overlay) return "overlay_on_existing_pavement";
@@ -88,6 +93,11 @@ function profileFor(rawText: string, values: ReadonlyMap<string, unknown>): Asph
   if (fullConstruction && !preparedBase) return pavementOnly ? "new_full_road_pavement" : "new_full_road_infrastructure";
   if (constructionMode === "repair" || /ремонт|восстановлен|реконструкц/iu.test(text)) return "overlay_on_existing_pavement";
   if (preparedBase) return "surfacing_on_prepared_base";
+  // An explicitly described asphalt layer is a bounded surfacing operation,
+  // not permission to invent earthworks, a road base or external road
+  // infrastructure. The prepared-base boundary is retained as a visible,
+  // editable preliminary assumption by the selected profile.
+  if (explicitSurfacingLayer) return "surfacing_on_prepared_base";
   if (pavementOnly) return "new_full_road_pavement";
   // The public asphalt catalog entry represents the accepted complete road
   // baseline. A narrower surfacing-only or pavement-only scope must be stated

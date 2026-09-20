@@ -28,7 +28,7 @@
       }
     ]
   },
-  "technology_source_pack_version": "2026.09-doka-frami-xlife-foundation-primary-review-r1",
+  "technology_source_pack_version": "2026.09-doka-formwork-primary-review-r2",
   "technology_sources": [
     {
       "source_id": "src_manufacturer_doka_frami_xlife_foundation_999810202_2023_11",
@@ -52,6 +52,30 @@
         "no_universal_bill_of_materials_or_turnover_factor_is_published",
         "no_project_labor_productivity_consumable_quantity_rental_duration_transport_quantity_or_price_is_published",
         "an_approved_project_layout_and_project_or_supplier_schedule_are_required_for_every_commercial_quantity"
+      ]
+    },
+    {
+      "source_id": "src_manufacturer_doka_dokaflex_999776002_2024_08",
+      "title": "Doka Dokaflex, User Information 999776002",
+      "url": "https://direct.doka.com/_ext/downloads/downloadcenter/999776002_2024_08_online.pdf",
+      "supporting_url": "https://direct.doka.com/uk/system-groups/doka-floor-systems/timber-beam-floor-formwork/dokaflex/Dokaflex_1-2-4",
+      "document_version": "999776002-2024-08",
+      "exact_locator": "System description and structural design, printed pages 8-15; assembly, stripping and reshoring, printed pages 16-28 and 55-57; slab edges and article list, printed pages 29-41 and 60-63",
+      "review_status": "reviewed",
+      "reviewed_at": "2026-09-18",
+      "license_status": "manufacturer_public",
+      "verified_facts": [
+        "dokaflex_is_a_handset_floor_slab_formwork_system_for_enclosed_spaces_with_separately_braced_exposed_edges",
+        "dokaflex_uses_formwork_sheets_primary_and_secondary_h20_beams_eurex_floor_props_heads_and_tripods",
+        "component_spacing_and_quantities_depend_on_slab_thickness_layout_sheeting_and_floor_slab_load",
+        "exposed_edges_require_stability_bracing_slab_stop_ends_and_fall_protection_selected_for_the_project",
+        "stripping_time_and_reshoring_depend_on_concrete_strength_and_the_project_load_sequence",
+        "the_article_list_identifies_lowering_head_h20_as_586174000_supporting_head_h20_df_as_586179000_and_floor_end_shutter_clamp_as_586239000"
+      ],
+      "limitations": [
+        "no_single_universal_bill_of_materials_is_published_for_all_slab_geometries_thicknesses_and_loads",
+        "no_project_labor_productivity_consumable_quantity_rental_duration_transport_quantity_or_price_is_published",
+        "an_approved_project_layout_structural_check_edge_protection_plan_and_project_or_supplier_schedule_are_required_for_every_commercial_quantity"
       ]
     }
   ],

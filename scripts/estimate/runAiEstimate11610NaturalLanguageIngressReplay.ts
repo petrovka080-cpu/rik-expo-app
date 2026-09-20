@@ -36,6 +36,14 @@ export const AI_ESTIMATE_11610_NATURAL_LANGUAGE_SCENARIOS = [
   "incomplete_conflicting",
 ] as const;
 const SCENARIOS = AI_ESTIMATE_11610_NATURAL_LANGUAGE_SCENARIOS;
+const ELEVATED_ACCESS_POLICY_ID = "professional-elevated-work-access-policy:v1";
+const ELEVATED_ACCESS_POLICY_ROW_CODES = new Set([
+  "elevated_access_equipment",
+  "elevated_access_assembly_reposition_dismantle",
+  "elevated_access_delivery_return",
+  "elevated_access_fall_protection_set",
+  "drywall_ceiling_board_lift",
+]);
 
 export type NaturalLanguageScenario = typeof SCENARIOS[number];
 
@@ -232,17 +240,36 @@ function runOne(
     const scaleChangedBoq = testCase.scenario === "scaled" && baselineQuantityHash != null
       ? rowQuantityHash !== baselineQuantityHash
       : null;
-    const usesPassportBackedIngress = rows.every((row) =>
+    const supplementalRows = rows.filter((row) =>
+      row.sourceParameters?.supplementalCompositionOwner === ELEVATED_ACCESS_POLICY_ID
+    );
+    const passportRows = rows.filter((row) =>
+      row.sourceParameters?.supplementalCompositionOwner !== ELEVATED_ACCESS_POLICY_ID
+    );
+    const supplementalRowCodes = supplementalRows.map((row) =>
+      String(row.sourceParameters?.rowCode ?? row.rowId)
+    );
+    const usesPassportBackedIngress = passportRows.every((row) =>
       row.sourceParameters?.passportBackedNaturalLanguageIngress === true
     );
+    const usesExactSupplementalComposition = supplementalRows.every((row) =>
+      row.templateId === ELEVATED_ACCESS_POLICY_ID &&
+      ELEVATED_ACCESS_POLICY_ROW_CODES.has(String(row.sourceParameters?.rowCode ?? row.rowId)) &&
+      Boolean(row.normId?.trim()) &&
+      Boolean(row.normSourceId?.trim()) &&
+      Boolean(row.formulaId?.trim()) &&
+      Boolean(row.quantityFormula?.trim()) &&
+      Boolean(row.calculationTrace?.trim())
+    ) && new Set(supplementalRowCodes).size === supplementalRowCodes.length;
     const failureCodes = [
       revision.selectedTemplateId === testCase.template_id ? "" : `template_mismatch:${revision.selectedTemplateId}:${testCase.template_id}`,
       revision.matchedFamily === testCase.family_id ? "" : `family_mismatch:${revision.matchedFamily}:${testCase.family_id}`,
       revision.status !== "failed" ? "" : "revision_failed",
-      rows.length === passport.boqRecipe.rowCount ? "" : `row_count_mismatch:${rows.length}:${passport.boqRecipe.rowCount}`,
+      passportRows.length === passport.boqRecipe.rowCount ? "" : `passport_row_count_mismatch:${passportRows.length}:${passport.boqRecipe.rowCount}`,
       rows.length > 0 ? "" : "rows_empty",
       Object.keys(revision.params).length > 0 ? "" : "params_not_extracted",
       usesPassportBackedIngress ? "" : "not_passport_backed_natural_language_ingress",
+      usesExactSupplementalComposition ? "" : "invalid_supplemental_composition",
       /dynamic|fallback|open_world/i.test(revision.selectedTemplateId) ? `generic_fallback:${revision.selectedTemplateId}` : "",
       scaleChangedBoq === false ? "scaled_prompt_did_not_change_boq_quantities" : "",
     ].filter(Boolean);

@@ -12,10 +12,12 @@ jest.mock("./supabaseClient", () => ({
 }));
 
 import {
+  isLocalDeveloperConsumerReviewEnabled,
   isLocalDeveloperReviewEnabled,
   LOCAL_DEVELOPER_REVIEW_ROLES,
   restoreLocalDeveloperOwnerSession,
   switchLocalDeveloperPrincipal,
+  switchLocalDeveloperConsumerPrincipal,
 } from "./localDeveloperReview";
 
 describe("localDeveloperReview", () => {
@@ -65,6 +67,32 @@ describe("localDeveloperReview", () => {
     expect(isLocalDeveloperReviewEnabled({ ...valid, clientEnvironment: "production" })).toBe(false);
   });
 
+  it("allows only the consumer login on a local-developer native runtime", async () => {
+    const native = {
+      publicFlag: "1",
+      platform: "android",
+      clientEnvironment: "local_developer",
+    };
+    expect(isLocalDeveloperReviewEnabled(native)).toBe(false);
+    expect(isLocalDeveloperConsumerReviewEnabled(native)).toBe(true);
+    expect(isLocalDeveloperConsumerReviewEnabled({ ...native, publicFlag: "0" })).toBe(false);
+    expect(isLocalDeveloperConsumerReviewEnabled({ ...native, clientEnvironment: "production" })).toBe(false);
+
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        role: "consumer",
+        access_token: "native-consumer-access-token",
+        refresh_token: "native-consumer-refresh-token",
+      }),
+    });
+    await expect(switchLocalDeveloperConsumerPrincipal(native)).resolves.toBeUndefined();
+    expect((global.fetch as jest.Mock).mock.calls[0][1].headers).toEqual({
+      "Content-Type": "application/json",
+      Origin: "http://localhost:8081",
+    });
+  });
+
   it("switches through one provider session without shipping role credentials", async () => {
     await expect(
       switchLocalDeveloperPrincipal("director", {
@@ -87,6 +115,10 @@ describe("localDeveloperReview", () => {
       expect.objectContaining({
         method: "POST",
         credentials: "omit",
+        headers: {
+          "Content-Type": "application/json",
+          Origin: "http://localhost:8081",
+        },
         body: JSON.stringify({ role: "director" }),
       }),
     );

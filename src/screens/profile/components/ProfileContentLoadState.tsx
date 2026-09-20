@@ -2,8 +2,6 @@ import React from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { ProfileOtaDiagnosticsCard } from "@/src/features/profile/ProfileOtaDiagnosticsCard";
-import { VerifiedIdentitySummary } from "@/src/components/auth/ProtectedIdentityBoundary";
-import type { ProtectedIdentity } from "../../../lib/auth/protectedIdentity";
 import { profileStyles } from "../profile.styles";
 
 const styles = profileStyles;
@@ -12,14 +10,12 @@ type ProfileLoadErrorStateProps = {
   errorMessage: string | null;
   onRetry: () => void;
   onSignOut: () => void;
-  verifiedIdentity: ProtectedIdentity;
 };
 
 export function ProfileLoadErrorState({
   errorMessage,
   onRetry,
   onSignOut,
-  verifiedIdentity,
 }: ProfileLoadErrorStateProps) {
   const hasDiagnostic = Boolean(errorMessage?.trim());
   return (
@@ -36,10 +32,6 @@ export function ProfileLoadErrorState({
               ? "Учётная запись подтверждена, но дополнительные данные профиля сейчас недоступны."
               : "Не удалось загрузить дополнительные данные профиля. Попробуйте ещё раз."}
           </Text>
-        </View>
-
-        <View style={styles.section}>
-          <VerifiedIdentitySummary identity={verifiedIdentity} />
         </View>
 
         <View style={styles.section}>

@@ -9,188 +9,156 @@ function sourceFile(relativePath: string): string {
   return readFileSync(path.join(process.cwd(), relativePath), "utf8");
 }
 
-describe("professional WBS depth is applicability-driven, not row-count padding", () => {
-  it("does not keep row-count target padding mechanics in the generator or source audit", () => {
+function rowsOf(estimate: ReturnType<typeof calculateGlobalConstructionEstimateSync>) {
+  return estimate.sections.flatMap((section) => section.rows);
+}
+
+function expectNoManufacturedRows(rows: ReturnType<typeof rowsOf>): void {
+  expect(rows.some((row) => row.code.startsWith("professional_wbs_"))).toBe(false);
+  expect(rows.some((row) => /assurance|material_extra|labor_extra|padding/i.test(row.code))).toBe(false);
+  expect(rows.some((row) => /работы по указанному домену|позиции|статус цены/iu.test(row.name))).toBe(false);
+}
+
+describe("professional BOQ composition is applicability-driven, not row-count padding", () => {
+  it("does not keep numeric padding mechanics in any general BOQ generator", () => {
     const calculator = sourceFile("src/lib/ai/globalEstimate/globalEstimateCalculator.ts");
+    const dynamicCompiler = sourceFile("src/lib/ai/professionalBoq/compileDynamicProfessionalBoq.ts");
+    const seedData = sourceFile("src/lib/ai/globalEstimate/globalEstimateSeedData.ts");
     const passportAudit = sourceFile("scripts/estimate/audit11610ComplexityAdaptiveDeepBoqDepth.ts");
     const passportBuilder = sourceFile("src/lib/estimate/buildProfessionalWorkPassport.ts");
 
-    expect(calculator).not.toMatch(/professionalWbsTargetRows/);
-    expect(calculator).not.toMatch(/\btargetRows\b/);
-    expect(calculator).not.toMatch(/input\.existingRows/);
-    expect(calculator).not.toMatch(/input\.targetRows/);
-    expect(calculator).not.toMatch(/while\s*\([^)]*rows\.length\s*<[^)]*(minimum|target)/i);
-    expect(calculator).not.toMatch(/rows\.slice\(0,\s*Math\.max\(0,\s*input\.targetRows/);
-    expect(calculator).toMatch(/professionalWbsSpecsForScope\(input\)/);
-    expect(calculator).toMatch(/specs\.forEach/);
+    expect(calculator).not.toMatch(/professionalWbsTargetRows|professionalWbsSpecsForScope|buildProfessionalWbsSupplementRows/);
+    expect(dynamicCompiler).not.toMatch(/\bpadRows\b|assurance_\$\{|while\s*\([^)]*rows\.length\s*</i);
+    expect(seedData).not.toMatch(/while\s*\(padded(?:Material|Labor)Rows\.length\s*</i);
     expect(passportAudit).not.toMatch(/volume:\s*passport\.boqRecipe\.rowCount/);
     expect(passportBuilder).not.toMatch(/while\s*\([^)]*supplemented\.length\s*<\s*minimumRows/i);
-    expect(passportBuilder).not.toMatch(/supplemented\.length\s*<\s*minimumRows/);
   });
 
-  it("requires applicability and formula trace on every generated professional WBS row", () => {
+  it("keeps the strip-foundation lifecycle explicit and source-governed", () => {
     const estimate = stripFoundationEstimate();
+    const rows = rowsOf(estimate);
     const depth = validateEstimateBoqDepth(estimate);
-    const professionalRows = estimate.sections
-      .flatMap((section) => section.rows)
-      .filter((row) => row.code.startsWith("professional_wbs_"));
+    const requiredCodes = [
+      "strip_foundation_geodesy_benchmark",
+      "strip_foundation_excavation",
+      "strip_foundation_longitudinal_rebar",
+      "strip_foundation_concrete_m300",
+      "strip_foundation_concrete_pour",
+      "strip_foundation_waterproofing_install",
+      "strip_foundation_concrete_pump",
+      "strip_foundation_concrete_delivery",
+      "strip_foundation_as_built_photo_register",
+      "strip_foundation_as_built_scheme",
+    ];
 
-    expect(professionalRows.length).toBeGreaterThan(0);
-    expect(depth.professionalWbsRowsWithoutApplicability).toEqual([]);
-    expect(depth.professionalWbsRowsWithoutSourceApplicability).toEqual([]);
-    for (const row of professionalRows) {
-      expect(row.applicabilityRule).toBeTruthy();
-      expect(row.applicabilityReason).toBeTruthy();
-      expect(row.scopeDriver).toBeTruthy();
-      expect(row.semanticSignature).toBeTruthy();
-      expect(row.quantityFormula).toBeTruthy();
-      expect(row.calculationTrace).toBeTruthy();
-      expect(row.sourceEvidence.length).toBeGreaterThan(0);
-      expect(row.normSourceId).toBeTruthy();
-      expect(row.normSourceTitle).toBeTruthy();
-      expect(row.normVersion).toBeTruthy();
-      expect(row.normReviewStatus).toBe("preliminary_scope_applicability_required");
-      expect(row.sourceParameters).toMatchObject({
-        normSourceProvenance: "configured_reference_rate_not_normative_pack",
-        sourceApplicabilityStatus: "preliminary_reference_requires_project_scope_review_or_rfq",
-      });
-    }
+    expect(requiredCodes.every((code) => rows.some((row) => row.code === code))).toBe(true);
+    expectNoManufacturedRows(rows);
+    expect(depth).toMatchObject({
+      passed: true,
+      minimumRows: 0,
+      genericRows: [],
+      artificialPaddingRows: [],
+      rowsWithoutFormulaOrTrace: [],
+      rowsWithoutSourceLink: [],
+    });
   });
 
-  it("keeps metal structure WBS units on structural mass semantics", () => {
+  it("uses a real technological composition for elevated steel structures", () => {
     const estimate = calculateGlobalConstructionEstimateSync({
-      text: "снятие металлического каркаса в стандартной зоне 100 м2, город Бишкек.",
+      text: "смета на монтаж металлоконструкций 100 м2 в Бишкеке",
       language: "ru",
       countryCode: "KG",
       city: "Bishkek",
     });
-    const unitSemantics = validateConstructionUnitSemantics(estimate);
-    const professionalRows = estimate.sections
-      .flatMap((section) => section.rows)
-      .filter((row) => row.code.startsWith("professional_wbs_dynamic_metal_structures_estimate_"));
+    const rows = rowsOf(estimate);
+    const byCode = new Map(rows.map((row) => [row.code, row]));
 
     expect(estimate.work.workKey).toBe("dynamic_metal_structures_estimate");
-    expect(unitSemantics.failures).toEqual([]);
-    expect(professionalRows.length).toBeGreaterThan(0);
-    expect(professionalRows.filter((row) => row.code.endsWith("_materials")).every((row) => row.unit === "kg")).toBe(true);
-    expect(professionalRows.filter((row) => row.code.endsWith("_execution")).every((row) => row.unit === "kg")).toBe(true);
-    expect(professionalRows.filter((row) => row.code.endsWith("_planning")).every((row) => row.unit === "set")).toBe(true);
-    expect(professionalRows.filter((row) => row.code.endsWith("_quality")).every((row) => row.unit === "set")).toBe(true);
-    expect(professionalRows.filter((row) => row.code.endsWith("_equipment")).every((row) => row.unit === "set")).toBe(true);
-    expect(professionalRows.filter((row) => row.code.endsWith("_delivery")).every((row) => row.unit === "trip")).toBe(true);
-    expect(
-      professionalRows
-        .filter((row) => row.code.endsWith("_materials") || row.code.endsWith("_execution"))
-        .every((row) => row.calculationTrace?.includes("structural_steel_kg_per_m2=35")),
-    ).toBe(true);
+    expect(validateConstructionUnitSemantics(estimate).failures).toEqual([]);
+    expect(byCode.get("structural_steel")).toMatchObject({ unit: "kg", quantity: 3500 });
+    expect(byCode.get("structural_bolts_anchors")).toMatchObject({ unit: "pcs", quantity: 400 });
+    expect(byCode.get("steel_mobile_crane")).toMatchObject({ unit: "shift" });
+    expect(byCode.get("steel_aerial_platform")).toMatchObject({ unit: "shift" });
+    expect(byCode.get("steel_weld_inspection_tools")).toMatchObject({ unit: "set" });
+    expect(byCode.get("steel_long_load_delivery")).toMatchObject({ unit: "trip" });
+    expectNoManufacturedRows(rows);
   });
 
-  it("keeps concrete pedestal WBS units on formula volume semantics", () => {
+  it("keeps concrete pedestal resources on their physical units", () => {
     const estimate = calculateGlobalConstructionEstimateSync({
       text: "смета на заливку бетонных тумб 12 шт",
       language: "ru",
       countryCode: "KG",
       city: "Bishkek",
     });
-    const unitSemantics = validateConstructionUnitSemantics(estimate);
-    const professionalRows = estimate.sections
-      .flatMap((section) => section.rows)
-      .filter((row) => row.code.startsWith("professional_wbs_concrete_pedestal_pour_"));
+    const rows = rowsOf(estimate);
+    const byCode = new Map(rows.map((row) => [row.code, row]));
 
     expect(estimate.work.workKey).toBe("concrete_pedestal_pour");
-    expect(unitSemantics.failures).toEqual([]);
-    expect(professionalRows.length).toBeGreaterThan(0);
-    expect(professionalRows.filter((row) => row.code.endsWith("_materials")).every((row) => row.unit === "m3")).toBe(true);
-    expect(professionalRows.filter((row) => row.code.endsWith("_execution")).every((row) => row.unit === "m3")).toBe(true);
-    expect(professionalRows.filter((row) => row.code.endsWith("_planning")).every((row) => row.unit === "set")).toBe(true);
-    expect(professionalRows.filter((row) => row.code.endsWith("_quality")).every((row) => row.unit === "set")).toBe(true);
-    expect(professionalRows.filter((row) => row.code.endsWith("_equipment")).every((row) => row.unit === "set")).toBe(true);
-    expect(professionalRows.filter((row) => row.code.endsWith("_delivery")).every((row) => row.unit === "trip")).toBe(true);
-    expect(
-      professionalRows
-        .filter((row) => row.code.endsWith("_materials") || row.code.endsWith("_execution"))
-        .every((row) => row.calculationTrace?.includes("concreteWithWasteM3")),
-    ).toBe(true);
+    expect(validateConstructionUnitSemantics(estimate).failures).toEqual([]);
+    expect(byCode.get("concrete")?.unit).toBe("m3");
+    expect(byCode.get("rebar")?.unit).toBe("kg");
+    expect(byCode.get("formwork_install")?.unit).toBe("sq_m");
+    expect(byCode.get("required_plan_equipment_3")?.name).toContain("виброплита");
+    expect(byCode.get("materials_delivery")?.unit).toBe("trip");
+    expectNoManufacturedRows(rows);
   });
 
-  it("limits crane shift semantics to the applicable lifting equipment phase", () => {
+  it("keeps crane and height equipment attached to the actual steel erection scope", () => {
     const estimate = calculateGlobalConstructionEstimateSync({
-      text:
-        "смета на монтаж металлоконструкций 2 шт в Бишкеке industrial crane, " +
-        "зона работ основная зона, условие новое строительство",
+      text: "смета на монтаж металлоконструкций 2 шт в Бишкеке industrial crane, зона работ основная зона, условие новое строительство",
       language: "ru",
       countryCode: "KG",
       city: "Bishkek",
     });
-    const unitSemantics = validateConstructionUnitSemantics(estimate);
-    const professionalRows = estimate.sections
-      .flatMap((section) => section.rows)
-      .filter((row) => row.code.startsWith("professional_wbs_crane_service_"));
-    const liftingEquipmentRow = professionalRows.find((row) => row.code.endsWith("_lifting_1_equipment"));
-    const nonLiftingRows = professionalRows.filter((row) => !row.code.endsWith("_lifting_1_equipment"));
+    const rows = rowsOf(estimate);
+    const byCode = new Map(rows.map((row) => [row.code, row]));
 
     expect(estimate.work.workKey).toBe("crane_service");
-    expect(unitSemantics.failures).toEqual([]);
-    expect(liftingEquipmentRow?.unit).toBe("shift");
-    expect(liftingEquipmentRow?.quantityFormula).toBe("ceil(base_quantity_lifting_shifts)");
-    expect(nonLiftingRows.length).toBeGreaterThan(0);
-    expect(nonLiftingRows.every((row) => row.unit !== "shift")).toBe(true);
+    expect(validateConstructionUnitSemantics(estimate).failures).toEqual([]);
+    expect(byCode.get("crane_service_install")).toMatchObject({ unit: "set" });
+    expect(byCode.get("steel_mobile_crane")).toMatchObject({ unit: "shift" });
+    expect(byCode.get("steel_aerial_platform")).toMatchObject({ unit: "shift" });
+    expect(byCode.get("steel_crane_unloading")).toMatchObject({ unit: "shift" });
+    expect(rows.filter((row) => row.unit === "shift").every((row) =>
+      /кран|свароч|подъёмник|разгруз/iu.test(row.name)
+    )).toBe(true);
+    expectNoManufacturedRows(rows);
   });
 
-  it("derives mini-CHP depth from applicable plant systems with complete row governance", () => {
+  it("models mini-CHP by real plant systems, installation, testing and handover", () => {
     const estimate = calculateGlobalConstructionEstimateSync({
-      text: "Estimate mini_chp_preparation 1 set",
-      language: "en",
+      explicitWorkKey: "mini_chp_preparation",
+      volume: 1,
+      unit: "set",
+      language: "ru",
       countryCode: "KG",
       city: "Bishkek",
     });
-    const expectedPhases = [
-      "fuel_supply_interface",
-      "gas_pressure_reduction",
-      "fuel_gas_detection",
-      "engine_generator_package",
-      "heat_recovery_system",
-      "cooling_circuit",
-      "lubrication_system",
-      "exhaust_stack",
-      "combustion_air",
-      "acoustic_attenuation",
-      "water_treatment",
-      "thermal_buffer",
-      "circulation_pumps",
-      "heat_exchangers",
-      "district_heating_interface",
-      "auxiliary_power",
-      "black_start_system",
-      "generator_synchronization",
-      "emissions_monitoring",
-      "heat_balance_testing",
+    const rows = rowsOf(estimate);
+    const codes = new Set(rows.map((row) => row.code));
+    const requiredCodes = [
+      "mini_chp_engine_generator",
+      "mini_chp_gas_train",
+      "mini_chp_heat_recovery",
+      "mini_chp_generator_switchgear",
+      "mini_chp_sync_protection",
+      "mini_chp_gas_fire_detection",
+      "mini_chp_generator_rigging",
+      "mini_chp_hydraulic_test",
+      "mini_chp_grid_synchronization",
+      "mini_chp_performance_test",
+      "mini_chp_emissions_test",
+      "mini_chp_handover",
+      "mini_chp_mobile_crane",
+      "mini_chp_electrical_lab",
+      "mini_chp_heavy_delivery",
     ];
-    const rows = estimate.sections.flatMap((section) => section.rows);
 
     expect(estimate.work.workKey).toBe("mini_chp_preparation");
+    expect(requiredCodes.every((code) => codes.has(code))).toBe(true);
     expect(validateEstimateBoqDepth(estimate).passed).toBe(true);
-    for (const phase of expectedPhases) {
-      const phaseRows = rows.filter((row) => row.code.startsWith(`professional_wbs_mini_chp_preparation_${phase}_1_`));
-      expect(phaseRows).toHaveLength(5);
-      expect(phaseRows.map((row) => row.code.split("_").at(-1)).sort()).toEqual([
-        "delivery",
-        "equipment",
-        "execution",
-        "materials",
-        "planning",
-      ]);
-      for (const row of phaseRows) {
-        expect(row.scopeDriver).toBe(`mini_chp:${phase}`);
-        expect(row.sourceParameters?.scopeDriver).toBe(`mini_chp:${phase}`);
-        expect(row.applicabilityRule).toContain("work scope matches mini_chp");
-        expect(row.applicabilityReason).toContain(`WBS phase ${phase}`);
-        expect(row.semanticSignature).toContain(`mini_chp_preparation|${phase}|`);
-        expect(row.quantityFormula).toBeTruthy();
-        expect(row.calculationTrace).toBeTruthy();
-        expect(row.sourceId).toBeTruthy();
-        expect(typeof row.includedInProcurement).toBe("boolean");
-      }
-    }
+    expect(rows.every((row) => row.quantityFormula && row.calculationTrace && row.sourceEvidence.length > 0)).toBe(true);
+    expectNoManufacturedRows(rows);
   });
 });

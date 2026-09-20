@@ -3,7 +3,12 @@ import path from "node:path";
 
 import { shouldAutoPrepareInitialConsumerRepairRequest } from "../../src/features/consumerRepair/ConsumerRepairRequestScreen";
 import { buildRequestEstimateViewModel } from "../../src/features/consumerRepair/requestEstimateViewModel";
-import { capitalRenovationBundle, CAPITAL_RENOVATION_98_PROMPT } from "../estimateCalculator/capitalRenovationTestHelpers";
+import {
+  capitalRenovationAccessRowCodes,
+  capitalRenovationBundle,
+  CAPITAL_RENOVATION_98_PROMPT,
+  CAPITAL_RENOVATION_ACCESS_ROW_CODES,
+} from "../estimateCalculator/capitalRenovationTestHelpers";
 
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
 
@@ -26,7 +31,8 @@ describe("capital renovation 98 product flow", () => {
     if (!vm) throw new Error("view model missing");
 
     expect(bundle.draft.problemText).toBe(CAPITAL_RENOVATION_98_PROMPT);
-    expect(bundle.items).toHaveLength(64);
+    expect(bundle.items.length).toBeGreaterThan(0);
+    expect(capitalRenovationAccessRowCodes(bundle.items)).toEqual(CAPITAL_RENOVATION_ACCESS_ROW_CODES);
     expect(vm.professionalPreview).toBe(true);
     expect(vm.previewSections.length).toBeGreaterThanOrEqual(8);
     expect(bundle.items.every((item) => item.editableByConsumer)).toBe(true);

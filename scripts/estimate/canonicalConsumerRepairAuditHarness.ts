@@ -12,7 +12,9 @@ import {
   type ConsumerRepairDraftBundle,
   ConsumerRepairValidationError,
 } from "../../src/lib/consumerRequests";
+import { isConsumerEstimatePayableItem } from "../../src/lib/consumerRequests/consumerEstimateReadiness";
 import {
+  applyConsumerRepairEstimateRevisionUnitPriceBatchEdit,
   ensureConsumerRepairBundleEstimateRevisionState,
   freezeConsumerRepairEstimateRevision,
 } from "../../src/lib/consumerRequests/consumerRequestEditableEstimateSnapshot";
@@ -967,7 +969,10 @@ export function createCanonicalConsumerRepairAuditDraft(
 ): ConsumerRepairDraftBundle {
   if (!input.aiDraft) throw new Error("CANONICAL_AUDIT_AI_DRAFT_REQUIRED");
   const binding = bindCanonicalBackendAuditRevision(input.aiDraft, namespace);
-  const candidateRevision = !input.aiDraft.structuredEstimatePayload
+  const candidateRevision = (
+    !input.aiDraft.structuredEstimatePayload ||
+    input.aiDraft.selectedWork?.selectedWorkKey === "drywall_ceiling_preparation"
+  )
     ? resolveInitialAuditRevision({
         aiDraft: input.aiDraft,
         problemText: input.problemText,
@@ -1088,9 +1093,25 @@ export function approveCanonicalConsumerRepairAuditDraft(input: {
   userId?: string;
   generatedAt?: string;
 }): ConsumerRepairDraftBundle {
-  const projectedBundle = hasCurrentCanonicalProjection(input.bundle)
+  let projectedBundle = hasCurrentCanonicalProjection(input.bundle)
     ? input.bundle
     : reprojectCanonicalConsumerRepairAuditDraft(input.bundle);
+  // This helper is audit-only: model an explicit estimator-entered fixture
+  // price so approval/PDF/procurement tests exercise the production readiness
+  // gate instead of bypassing it or inventing prices in product code.
+  const missingPayablePrices = projectedBundle.items
+    .filter((item) =>
+      isConsumerEstimatePayableItem(item) && (item.unitPrice == null || item.totalPrice == null)
+    )
+    .map((item) => ({ row_key: item.id, unit_price: 100 }));
+  if (missingPayablePrices.length > 0) {
+    projectedBundle = saveConsumerRepairBundle(applyConsumerRepairEstimateRevisionUnitPriceBatchEdit({
+      bundle: projectedBundle,
+      edits: missingPayablePrices,
+      actor_id: projectedBundle.draft.consumerUserId,
+      created_at: input.generatedAt,
+    }));
+  }
   const userId = input.userId ?? projectedBundle.draft.consumerUserId;
   const firstItem = projectedBundle.items[0];
   const revisionId = String(firstItem?.sourceParameters?.canonicalBackendRevisionId ?? "").trim();

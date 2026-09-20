@@ -117,7 +117,7 @@ async function safeDelete(uri: string) {
   }
 }
 
-export function buildPdfInstantCacheKey(doc: Pick<DocumentDescriptor, "documentType" | "originModule" | "entityId" | "fileName" | "createdAt" | "uri" | "fileSource">) {
+export function buildPdfInstantCacheKey(doc: Pick<DocumentDescriptor, "documentType" | "originModule" | "entityId" | "fileName" | "title" | "uri" | "fileSource" | "contentIdentity">) {
   const source = doc.fileSource ?? createPdfSource(doc.uri);
   const sourceFingerprint =
     source.kind === "remote-url"
@@ -129,6 +129,8 @@ export function buildPdfInstantCacheKey(doc: Pick<DocumentDescriptor, "documentT
     originModule: doc.originModule as PdfOriginModule,
     entityId: trimText(doc.entityId) || null,
     fileName: normalizePdfFileName(doc.fileName, "document"),
+    title: trimText(doc.title) || null,
+    contentIdentity: doc.contentIdentity ?? null,
     sourceKind: source.kind,
     sourceFingerprint,
   }));

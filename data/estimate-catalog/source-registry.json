@@ -3,16 +3,54 @@
   "generated_at": "2026-09-13T05:17:01.612Z",
   "final_status": "STOP_AI_ESTIMATE_CATALOG_SOURCE_REGISTRY_FAILED",
   "registry_source_count": 0,
-  "physical_norm_pack_source_count": 55,
+  "physical_norm_pack_source_count": 59,
   "row_source_count": 375,
   "p0_source_count": 201,
   "sources": [
+    {
+      "source_id": "KNAUF_ROTBAND_PASTA_PROFI_IL_2025_02",
+      "source_title": "Информационный лист КНАУФ-Ротбанд Паста Профи",
+      "source_type": "manufacturer_technical_cards",
+      "source_url_or_document_ref": "https://www.knauf.ru/upload/iblock/ab4/nh124j9e1rc8oe5tn6d1z1yey4pwcgpb/36_IL_KNAUF_Rotband_Pasta_Profi_25_03_2025_v01_Preview.pdf",
+      "source_date_or_version": "02/2025",
+      "provenance": "manufacturer_technical_cards",
+      "license_status": "manufacturer_public",
+      "quality_status": "reviewed",
+      "review_status": "reviewed",
+      "is_source_backed_professional_norm_pack": true,
+      "is_generated_family_default": false,
+      "is_historical_price_only": false,
+      "evidence_kind": "physical_norm_pack_review",
+      "sample_norm_ids": [],
+      "sample_template_ids": [
+        "drywall_ceiling_interior_drywall_ceiling_prepare_large_area"
+      ],
+      "p0_case_ids": []
+    },
     {
       "source_id": "src_manufacturer_doka_frami_xlife_foundation_999810202_2023_11",
       "source_title": "Doka Foundation formwork Frami Xlife, User Information 999810202",
       "source_type": "manufacturer_technical_cards",
       "source_url_or_document_ref": "https://direct.doka.com/_ext/downloads/downloadcenter/999810202_2023_11_online.pdf",
       "source_date_or_version": "2026.09-doka-frami-xlife-foundation-primary-review-r1",
+      "provenance": "manufacturer_technical_cards",
+      "license_status": "manufacturer_public",
+      "quality_status": "reviewed",
+      "review_status": "reviewed",
+      "is_source_backed_professional_norm_pack": true,
+      "is_generated_family_default": false,
+      "is_historical_price_only": false,
+      "evidence_kind": "physical_norm_pack_review",
+      "sample_norm_ids": [],
+      "sample_template_ids": [],
+      "p0_case_ids": []
+    },
+    {
+      "source_id": "src_manufacturer_doka_dokaflex_999776002_2024_08",
+      "source_title": "Doka Dokaflex, User Information 999776002",
+      "source_type": "manufacturer_technical_cards",
+      "source_url_or_document_ref": "https://direct.doka.com/_ext/downloads/downloadcenter/999776002_2024_08_online.pdf",
+      "source_date_or_version": "2026.09-doka-formwork-primary-review-r2",
       "provenance": "manufacturer_technical_cards",
       "license_status": "manufacturer_public",
       "quality_status": "reviewed",
@@ -14186,6 +14224,166 @@
       "evidence_kind": "physical_norm_pack_review",
       "sample_norm_ids": [
         "cleaning_tennant_t350_600mm_conventional_practical_hour_m2_v1"
+      ],
+      "sample_template_ids": [],
+      "p0_case_ids": []
+    },
+    {
+      "source_id": "src_professional_norm_pack_concrete_aci_309_project_consolidation_schedule_v1",
+      "source_title": "ACI PRC-309-05: Guide for Consolidation of Concrete",
+      "source_type": "open_method_statements",
+      "source_url_or_document_ref": "https://www.concrete.org/Portals/0/Files/PDF/Previews/30905_2pager.pdf",
+      "source_date_or_version": "2026.09-aci-309-consolidation-applicability-primary-review-r1",
+      "provenance": "open_method_statements",
+      "license_status": "public",
+      "quality_status": "reviewed",
+      "review_status": "reviewed",
+      "is_source_backed_professional_norm_pack": true,
+      "is_generated_family_default": false,
+      "is_historical_price_only": false,
+      "evidence_kind": "physical_norm_pack_review",
+      "sample_norm_ids": [
+        "concrete_aci_309_project_consolidation_schedule_v1"
+      ],
+      "sample_template_ids": [],
+      "p0_case_ids": []
+    },
+    {
+      "source_id": "src_professional_norm_pack_concrete_aci_spec_308_1_23_project_curing_schedule_v1",
+      "source_title": "ACI SPEC-308.1-23: External Curing of Cast-in-Place Concrete—Specification",
+      "source_type": "open_method_statements",
+      "source_url_or_document_ref": "https://www.concrete.org/Portals/0/Files/PDF/Previews/308.1-23_preview.pdf",
+      "source_date_or_version": "2026.09-aci-308-external-curing-applicability-primary-review-r1",
+      "provenance": "open_method_statements",
+      "license_status": "public",
+      "quality_status": "reviewed",
+      "review_status": "reviewed",
+      "is_source_backed_professional_norm_pack": true,
+      "is_generated_family_default": false,
+      "is_historical_price_only": false,
+      "evidence_kind": "physical_norm_pack_review",
+      "sample_norm_ids": [
+        "concrete_aci_spec_308_1_23_project_curing_schedule_v1"
+      ],
+      "sample_template_ids": [],
+      "p0_case_ids": []
+    },
+    {
+      "source_id": "src_professional_norm_pack_concrete_aci_302_1_15_project_leveling_schedule_v1",
+      "source_title": "ACI PRC-302.1-15: Guide to Concrete Floor and Slab Construction",
+      "source_type": "open_method_statements",
+      "source_url_or_document_ref": "https://www.concrete.org/Portals/0/Files/PDF/Previews/302_1R-15_PREVIEW.pdf",
+      "source_date_or_version": "2026.09-aci-302-slab-leveling-applicability-primary-review-r1",
+      "provenance": "open_method_statements",
+      "license_status": "public",
+      "quality_status": "reviewed",
+      "review_status": "reviewed",
+      "is_source_backed_professional_norm_pack": true,
+      "is_generated_family_default": false,
+      "is_historical_price_only": false,
+      "evidence_kind": "physical_norm_pack_review",
+      "sample_norm_ids": [
+        "concrete_aci_302_1_15_project_leveling_schedule_v1"
+      ],
+      "sample_template_ids": [],
+      "p0_case_ids": []
+    },
+    {
+      "source_id": "src_professional_norm_pack_concrete_aci_302_1_15_project_joint_schedule_v1",
+      "source_title": "ACI 302.1R-15: Guide to Concrete Floor and Slab Construction — Chapter 5",
+      "source_type": "open_method_statements",
+      "source_url_or_document_ref": "https://www.concrete.org/Portals/0/Files/PDF/302.1R-15_Chapter5.pdf",
+      "source_date_or_version": "2026.09-aci-302-concrete-joint-applicability-primary-review-r1",
+      "provenance": "open_method_statements",
+      "license_status": "public",
+      "quality_status": "reviewed",
+      "review_status": "reviewed",
+      "is_source_backed_professional_norm_pack": true,
+      "is_generated_family_default": false,
+      "is_historical_price_only": false,
+      "evidence_kind": "physical_norm_pack_review",
+      "sample_norm_ids": [
+        "concrete_aci_302_1_15_project_joint_schedule_v1"
+      ],
+      "sample_template_ids": [],
+      "p0_case_ids": []
+    },
+    {
+      "source_id": "src_professional_norm_pack_concrete_aci_562_25_project_repair_schedule_v1",
+      "source_title": "ACI CODE-562-25: Assessment, Repair, and Rehabilitation of Existing Concrete Structures",
+      "source_type": "open_method_statements",
+      "source_url_or_document_ref": "https://www.concrete.org/Portals/0/Files/PDF/Previews/562-25_preview.pdf",
+      "source_date_or_version": "2026.09-aci-562-25-concrete-repair-primary-review-r1",
+      "provenance": "open_method_statements",
+      "license_status": "public",
+      "quality_status": "reviewed",
+      "review_status": "reviewed",
+      "is_source_backed_professional_norm_pack": true,
+      "is_generated_family_default": false,
+      "is_historical_price_only": false,
+      "evidence_kind": "physical_norm_pack_review",
+      "sample_norm_ids": [
+        "concrete_aci_562_25_546_23_project_repair_schedule_v1"
+      ],
+      "sample_template_ids": [],
+      "p0_case_ids": []
+    },
+    {
+      "source_id": "src_professional_norm_pack_concrete_aci_prc_546_23_repair_method_selection_v1",
+      "source_title": "ACI PRC-546-23: Concrete Repair—Guide",
+      "source_type": "open_method_statements",
+      "source_url_or_document_ref": "https://www.concrete.org/Portals/0/Files/PDF/Previews/546-23_preview.pdf",
+      "source_date_or_version": "2026.09-aci-546-23-concrete-repair-method-review-r1",
+      "provenance": "open_method_statements",
+      "license_status": "public",
+      "quality_status": "reviewed",
+      "review_status": "reviewed",
+      "is_source_backed_professional_norm_pack": true,
+      "is_generated_family_default": false,
+      "is_historical_price_only": false,
+      "evidence_kind": "physical_norm_pack_review",
+      "sample_norm_ids": [
+        "concrete_aci_562_25_546_23_project_repair_schedule_v1"
+      ],
+      "sample_template_ids": [],
+      "p0_case_ids": []
+    },
+    {
+      "source_id": "src_professional_norm_pack_concrete_aci_spec_301_20_project_embedment_schedule_v1",
+      "source_title": "ACI SPEC-301-20: Specifications for Concrete Construction",
+      "source_type": "open_method_statements",
+      "source_url_or_document_ref": "https://www.concrete.org/Portals/0/Files/PDF/Previews/301-20_preview.pdf",
+      "source_date_or_version": "2026.09-aci-301-20-embedded-items-primary-review-r1",
+      "provenance": "open_method_statements",
+      "license_status": "public",
+      "quality_status": "reviewed",
+      "review_status": "reviewed",
+      "is_source_backed_professional_norm_pack": true,
+      "is_generated_family_default": false,
+      "is_historical_price_only": false,
+      "evidence_kind": "physical_norm_pack_review",
+      "sample_norm_ids": [
+        "concrete_aci_spec_301_20_117_10_project_embedment_schedule_v1"
+      ],
+      "sample_template_ids": [],
+      "p0_case_ids": []
+    },
+    {
+      "source_id": "src_professional_norm_pack_concrete_aci_117_10_embedded_item_tolerances_v1",
+      "source_title": "ACI 117-10: Specification for Tolerances for Concrete Construction and Materials and Commentary",
+      "source_type": "open_method_statements",
+      "source_url_or_document_ref": "https://www.concrete.org/portals/0/files/pdf/previews/117-10web.pdf",
+      "source_date_or_version": "2026.09-aci-117-10-embedded-item-tolerances-review-r1",
+      "provenance": "open_method_statements",
+      "license_status": "public",
+      "quality_status": "reviewed",
+      "review_status": "reviewed",
+      "is_source_backed_professional_norm_pack": true,
+      "is_generated_family_default": false,
+      "is_historical_price_only": false,
+      "evidence_kind": "physical_norm_pack_review",
+      "sample_norm_ids": [
+        "concrete_aci_spec_301_20_117_10_project_embedment_schedule_v1"
       ],
       "sample_template_ids": [],
       "p0_case_ids": []

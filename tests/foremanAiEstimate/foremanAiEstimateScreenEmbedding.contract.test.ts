@@ -35,8 +35,9 @@ describe("foreman AI estimate screen embedding", () => {
     expect(composer).toContain('testID="foreman-ai-estimate-open-draft"');
     expect(composer).toContain('testID="foreman-ai-estimate-work-suggestions"');
     expect(composer).toContain('testID="foreman-ai-estimate-catalog-hint"');
-    expect(composer).toContain("searchGlobalWorkSmartSuggestions");
-    expect(composer).toContain("explicitWorkKey");
+    expect(composer).toContain("searchCanonicalEstimateCatalog");
+    expect(composer).toContain("canonicalWorkSearchQueryFromPrompt");
+    expect(composer).toContain("compileCanonicalEstimateAndLoad");
     expect(composer).toContain("transparent={false}");
     expect(composer).toContain("data={mapping?.rows ?? []}");
     expect(composer).toContain("renderItem={({ item }) => renderEstimateRow(item)}");
@@ -46,8 +47,10 @@ describe("foreman AI estimate screen embedding", () => {
 
   it("keeps consumer repair request flow separate from foreman AI estimate composer", () => {
     const consumerRepairSource = readTree("src/features/consumerRepair");
-    expect(consumerRepairSource).not.toContain("foremanAiEstimate");
+    expect(consumerRepairSource).toContain('../../lib/foremanAiEstimate');
     expect(consumerRepairSource).not.toContain("ProfessionalEstimateComposer");
+    expect(consumerRepairSource).not.toContain("foremanDraft.store");
+    expect(consumerRepairSource).not.toContain("saveForemanAiEstimateDraft");
   });
 
   it("keeps director request sheet free from internal foreman AI JSON notes", () => {

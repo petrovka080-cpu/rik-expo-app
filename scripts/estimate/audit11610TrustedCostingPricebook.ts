@@ -26,6 +26,14 @@ import {
   REAL_NAMED_BOQ_RUNTIME_CASES,
   type RealNamedBoqRuntimeCase,
 } from "./realNamedBoqCriticalCases";
+import {
+  createPumpStationCanonicalBackendAuditRevision,
+  isPumpStationCanonicalBackendPassport,
+} from "./pumpStationCanonicalBackendAuditAdapter";
+import {
+  createStripFoundationCanonicalBackendAuditRevision,
+  isStripFoundationCanonicalBackendPassport,
+} from "./stripFoundationCanonicalBackendAuditAdapter";
 
 export const GREEN_AI_ESTIMATE_TRUSTED_COSTING_PRICEBOOK_11610_SOURCE_READY =
   "GREEN_AI_ESTIMATE_TRUSTED_COSTING_PRICEBOOK_11610_SOURCE_READY" as const;
@@ -317,6 +325,33 @@ function samplePrompt(templateName: string): string {
   return `Preliminary professional cost breakdown for ${templateName}`;
 }
 
+function calculateCostForPassportWithCompleteInputs(
+  passport: ProfessionalWorkPassport,
+): ProfessionalCostingResult {
+  const createdAt = "2026-07-07T00:00:00.000Z";
+  const revision = isStripFoundationCanonicalBackendPassport(passport)
+    ? createStripFoundationCanonicalBackendAuditRevision({
+      passport,
+      estimateDraftId: `trusted-costing-${passport.templateId}`,
+      rawInput: samplePrompt(passport.localizedNameRu),
+      createdAt,
+    })
+    : isPumpStationCanonicalBackendPassport(passport)
+      ? createPumpStationCanonicalBackendAuditRevision({
+        passport,
+        estimateDraftId: `trusted-costing-${passport.templateId}`,
+        rawInput: samplePrompt(passport.localizedNameRu),
+        createdAt,
+      })
+      : null;
+  if (!revision) return calculateProfessionalCostForPassport(passport);
+  return calculateProfessionalCostForDraftRows({
+    templateId: revision.selectedTemplateId,
+    family: revision.matchedFamily,
+    rows: revision.boq.rows.filter((row) => row.rowType !== "document" && row.rowType !== "other"),
+  });
+}
+
 function priorityFamilyKeyForRuntimeCase(testCase: RealNamedBoqRuntimeCase): TrustedCostingPriorityFamilyKey | null {
   return (Object.entries(PRIORITY_FAMILY_RULES) as Array<[TrustedCostingPriorityFamilyKey, typeof PRIORITY_FAMILY_RULES[TrustedCostingPriorityFamilyKey]]>)
     .find(([, rule]) =>
@@ -409,7 +444,7 @@ function writeSamples(outDir: string, rows: readonly TrustedCostingTemplateAudit
   for (const row of rows.slice(0, SAMPLE_OUTPUTS_REQUIRED)) {
     const passport = buildProfessionalWorkPassport(row.template_id);
     if (!passport) continue;
-    const result = calculateProfessionalCostForPassport(passport);
+    const result = calculateCostForPassportWithCompleteInputs(passport);
     const pdfText = renderProfessionalCostSection({ summary: result.summary, lines: result.lines });
     const buyer = createBuyerHandoffCostPackage({
       templateId: passport.templateId,
@@ -461,7 +496,7 @@ export function audit11610TrustedCostingPricebook(input: {
   for (const [index, templateId] of listProfessionalWorkPassportTemplateIds().entries()) {
     const passport = buildProfessionalWorkPassport(templateId);
     if (!passport) continue;
-    const result = calculateProfessionalCostForPassport(passport);
+    const result = calculateCostForPassportWithCompleteInputs(passport);
     const coverage = resolveCatalogProfessionalCoverageV4(catalogIdForPassport(passport));
     validations.push(auditRow({
       coverage,

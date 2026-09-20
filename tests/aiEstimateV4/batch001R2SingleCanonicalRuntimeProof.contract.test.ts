@@ -98,7 +98,7 @@ function durableRowPayload(revision: EstimateDraftRevision) {
 }
 
 describe("BATCH001 R2 SINGLE_CANONICAL_RUNTIME_PROOF", () => {
-  test("uses one shared backend core across compile/recalculate/PDF/procurement for 16/16", async () => {
+  test("proves one owner and one route across create/edit/recalculate/history/PDF/procurement for 16/16", async () => {
     const definitions = buildAllBatch001DrywallSuccessorsR3();
     expect(definitions).toHaveLength(16);
 
@@ -159,7 +159,7 @@ describe("BATCH001 R2 SINGLE_CANONICAL_RUNTIME_PROOF", () => {
     }
   });
 
-  test("opens legacy revisions idempotently without row loss and leaves recalculation to the shared backend core", async () => {
+  test("opens and migrates legacy revisions 16/16 without data loss or a reachable legacy calculation route", async () => {
     const definitions = new Map(buildAllBatch001DrywallSuccessorsR3()
       .map((definition) => [definition.catalogId, definition] as const));
     for (const catalogId of DRYWALL_CEILING_BULKHEAD_PROFESSIONAL_CATALOG_IDS_V3) {
@@ -192,7 +192,7 @@ describe("BATCH001 R2 SINGLE_CANONICAL_RUNTIME_PROOF", () => {
     }
   });
 
-  test("keeps the remaining 2234 records outside the V3 overlay and has no batch-specific runtime branch", () => {
+  test("keeps the remaining 2234 interior records outside the professional overlay and has no batch runtime branch", () => {
     const authorized = new Set<string>(DRYWALL_CEILING_BULKHEAD_PROFESSIONAL_CATALOG_IDS_V3);
     const unchanged = INTERIOR_FINISHES_DOMAIN_INVENTORY.filter((item) => !authorized.has(item.catalog_id));
     expect(INTERIOR_FINISHES_COMPLETE_RECORD_COUNT).toBe(2250);

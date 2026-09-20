@@ -70,7 +70,10 @@ const SELECTION_FIELDS = Object.freeze({
   },
   crane_supply_mode: {
     label: "способ обеспечения крана",
-    values: { "отдельная аренда": "RENTAL_SEPARATE" },
+    values: {
+      "отдельная аренда": "RENTAL_SEPARATE",
+      "ручное перемещение без отдельной аренды крана": "NOT_APPLICABLE_MANUAL_HANDLING",
+    },
   },
   transport_supply_mode: {
     label: "способ учёта доставки и возврата",

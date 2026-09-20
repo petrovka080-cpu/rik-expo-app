@@ -26,6 +26,11 @@ import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairReq
 import type { ConsumerRepairRequestScreenState } from "./requestEstimateScreenActions";
 import { consumerRepairExactAsphaltApprovalErrors } from "../../lib/consumerRequests/consumerRequestValidationService";
 import { consumerRepairCanonicalBackendBinding } from "./consumerRepairBackendOwnership";
+import {
+  consumerRepairCanonicalEstimateBlocksApproval,
+  consumerRepairCanonicalUnpricedPayableRowCount,
+  consumerRepairCanonicalUnresolvedRowCount,
+} from "./consumerRepairCanonicalEstimateReadiness";
 
 type ConsumerRepairRequestRenderModel = ReturnType<typeof buildConsumerRepairRequestRenderModel>;
 
@@ -180,9 +185,27 @@ export function ConsumerRepairRequestScreenView({
   const canonicalRevisionMissing = Boolean(
     renderModel.bundle && !consumerRepairCanonicalBackendBinding(renderModel.bundle),
   );
+  const canonicalParameterReadinessMissing = Boolean(
+    consumerRepairCanonicalBackendBinding(renderModel.bundle) &&
+    !renderModel.bundle?.canonicalParameterSession,
+  );
+  const approvalBlockedByParameters = Boolean(
+    consumerRepairCanonicalEstimateBlocksApproval(
+      renderModel.bundle?.canonicalParameterSession,
+    ) || canonicalParameterReadinessMissing
+  );
+  const approvalUnresolvedRowCount = consumerRepairCanonicalUnresolvedRowCount(
+    renderModel.bundle,
+  );
+  const approvalMissingPriceCount = consumerRepairCanonicalUnpricedPayableRowCount(
+    renderModel.bundle,
+  );
   const approvalBlockedByEstimate = Boolean(
-    renderModel.bundle?.canonicalParameterSession?.status ===
-      "BLOCKING_REQUIRED" ||
+    approvalBlockedByParameters ||
+    approvalUnresolvedRowCount > 0 ||
+    approvalMissingPriceCount > 0 ||
+    state.approvalCommitBusy ||
+    state.canonicalEstimateMutationBusy ||
     currentDraftRevision?.status === "blocking_required" ||
     legacyEstimateRequiresRebuild ||
     canonicalRevisionMissing ||
@@ -283,8 +306,16 @@ export function ConsumerRepairRequestScreenView({
           hasBundle={Boolean(renderModel.bundle)}
           hasPendingPrompt={state.problemText.trim().length > 0}
           estimateRequiresRebuild={legacyEstimateRequiresRebuild || canonicalRevisionMissing}
+          parameterCollectionRequired={Boolean(
+            renderModel.bundle?.canonicalParameterSession?.status === "BLOCKING_REQUIRED"
+            && !consumerRepairCanonicalBackendBinding(renderModel.bundle)
+          )}
           hasSnapshot={consumerRepairBundleHasPdfEligibleSnapshot(renderModel.bundle)}
           approvalBlockedByEstimate={approvalBlockedByEstimate}
+          approvalBlockedByParameters={approvalBlockedByParameters}
+          approvalUnresolvedRowCount={approvalUnresolvedRowCount}
+          approvalMissingPriceCount={approvalMissingPriceCount}
+          approvalCommitBusy={state.approvalCommitBusy || state.canonicalEstimateMutationBusy}
           needsFreshApproval={consumerRepairNeedsFreshApproval(renderModel.bundle)}
           onOpenPdf={() => onOpenPdf()}
           onMakePdf={onMakePdf}

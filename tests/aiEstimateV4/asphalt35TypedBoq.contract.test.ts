@@ -53,6 +53,28 @@ describe("Asphalt 35/35 work-specific formula graph and typed BOQ", () => {
     }
   });
 
+  test("does not charge compact-only scope stages again on top of labor and rollers", () => {
+    const item = RoadworksWaveAInventory.find((candidate) =>
+      candidate.workId.endsWith("_asphalt_compact_large_area")
+    );
+    expect(item).toBeDefined();
+    const rows = compileRoadworksWaveAWork(item!.workId, {
+      ...DEFAULT_ROADWORKS_WAVE_A_INPUTS,
+      area_m2: 120,
+    }).rows;
+    expect(rows).toHaveLength(11);
+    expect(rows.filter((row) => row.payable).map((row) => row.category).sort()).toEqual([
+      "equipment",
+      "equipment",
+      "equipment",
+      "labor",
+    ]);
+    expect(rows.filter((row) => row.costTreatment === "INCLUDED_IN_RESOURCE_ROWS"))
+      .toHaveLength(3);
+    expect(rows.find((row) => row.rowId.endsWith(":large_area_mechanized_execution")))
+      .toEqual(expect.objectContaining({ payable: false, costTreatment: "INFORMATIONAL_SCOPE" }));
+  });
+
   test("requires an explicit dated price for every payable row and produces full reference totals", () => {
     let priced = 0;
     for (const item of RoadworksWaveAInventory) {

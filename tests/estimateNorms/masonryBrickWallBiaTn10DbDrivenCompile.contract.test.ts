@@ -38,6 +38,38 @@ describe("DB-driven BIA TN 10 conditional quantity policy", () => {
     ]));
   });
 
+  it("keeps an unresolved applicability branch visible for preliminary refinement", async () => {
+    const {
+      wall_connectors_applicable: _applicability,
+      wall_connector_quantity_piece: _quantity,
+      ...minimum
+    } = MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT;
+    const result = await compileDbDriven({ ...minimum });
+
+    expect(result.preliminaryNeeds).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        missing_parameter_ids: expect.arrayContaining([
+          "wall_connectors_applicable",
+          "wall_connector_quantity_piece",
+        ]),
+      }),
+    ]));
+  });
+
+  it("defers gross-geometry consistency until the project breakdown is supplied", async () => {
+    const {
+      gross_wall_area_and_opening_deductions: _breakdown,
+      ...minimum
+    } = MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT;
+    const result = await compileDbDriven({ ...minimum });
+
+    expect(result.preliminaryNeeds).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        missing_parameter_ids: expect.arrayContaining(["gross_wall_area_and_opening_deductions"]),
+      }),
+    ]));
+  });
+
   it.each([
     [
       "an applicable connector row with zero quantity",

@@ -57,7 +57,8 @@ export type CanonicalEstimateManualProvenance = {
 
 export type CanonicalEstimateRowOverride = {
   titleRu?: string;
-  quantity?: string | number;
+  /** Null is an explicit return of a manual custom row to its unresolved quantity state. */
+  quantity?: string | number | null;
   unitPrice?: string | number | null;
   includedInEstimate?: boolean;
   includedInProcurement?: boolean;
@@ -70,7 +71,8 @@ export type CanonicalEstimateCustomRow = {
   category: string;
   titleRu: string;
   unitId: string;
-  quantity: string | number;
+  /** Null means the user selected the row but has not supplied an honest quantity yet. */
+  quantity?: string | number | null;
   unitPrice?: string | number | null;
   includedInEstimate: boolean;
   includedInProcurement: boolean;
@@ -216,6 +218,8 @@ export type CanonicalEstimateRevisionView = {
     customRows: CanonicalEstimateCustomRow[];
     releaseMigration: CanonicalEstimateRecalculateRequest["releaseMigration"] | null;
   };
+  /** Definition-owned needs that are visible in a preliminary BOQ but are not payable rows. */
+  preliminaryNeeds?: CanonicalEstimatePreliminaryNeedView[];
   totals: Record<string, unknown>;
   rowCount: number;
   checksumSha256: string;
@@ -231,6 +235,66 @@ export type CanonicalEstimateRevisionView = {
   createdAt: string;
 };
 
+export type CanonicalEstimatePreliminaryNeedView = {
+  rowId: string;
+  ordinal: number;
+  section: string;
+  category: string;
+  titleRu: string;
+  unitId: string;
+  quantity: string | null;
+  unitPrice: string | null;
+  needState: "QUANTITY_REQUIRED" | "CONDITION_REQUIRED";
+  missingParameterIds: string[];
+  selected: boolean;
+  procurementEligible: boolean;
+  formulaId: string;
+  calculationTrace: Record<string, unknown>;
+  normativeTrace: unknown[];
+  needSha256: string;
+};
+
+export function canonicalEstimatePreliminaryNeedsFromAmendmentContract(
+  amendmentContract: unknown,
+): CanonicalEstimatePreliminaryNeedView[] {
+  if (!amendmentContract || typeof amendmentContract !== "object" || Array.isArray(amendmentContract)) return [];
+  const parameterSources = (amendmentContract as Record<string, unknown>).parameterSources;
+  if (!parameterSources || typeof parameterSources !== "object" || Array.isArray(parameterSources)) return [];
+  const rawNeeds = (parameterSources as Record<string, unknown>).preliminaryNeeds;
+  if (!Array.isArray(rawNeeds)) return [];
+  return rawNeeds.flatMap((raw): CanonicalEstimatePreliminaryNeedView[] => {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return [];
+    const need = raw as Record<string, unknown>;
+    const state = String(need.need_state ?? "");
+    const rowId = String(need.row_id ?? "").trim();
+    const needSha256 = String(need.need_sha256 ?? "").trim();
+    if (!rowId || !/^[0-9a-f]{64}$/u.test(needSha256)
+      || (state !== "QUANTITY_REQUIRED" && state !== "CONDITION_REQUIRED")) return [];
+    return [{
+      rowId,
+      ordinal: Number(need.ordinal),
+      section: String(need.section ?? ""),
+      category: String(need.category ?? ""),
+      titleRu: String(need.title_ru ?? ""),
+      unitId: String(need.unit_id ?? ""),
+      quantity: need.quantity == null ? null : String(need.quantity),
+      unitPrice: need.unit_price == null ? null : String(need.unit_price),
+      needState: state,
+      missingParameterIds: Array.isArray(need.missing_parameter_ids)
+        ? need.missing_parameter_ids.filter((value): value is string => typeof value === "string" && value.length > 0)
+        : [],
+      selected: need.selected !== false,
+      procurementEligible: need.procurement_eligible === true,
+      formulaId: String(need.formula_id ?? ""),
+      calculationTrace: need.calculation_trace && typeof need.calculation_trace === "object" && !Array.isArray(need.calculation_trace)
+        ? need.calculation_trace as Record<string, unknown>
+        : {},
+      normativeTrace: Array.isArray(need.normative_trace) ? need.normative_trace : [],
+      needSha256,
+    }];
+  });
+}
+
 export type CanonicalEstimateParameterValueSourceRole =
   | "USER_MEASURED"
   | "PROJECT_DOCUMENTATION"
@@ -239,6 +303,7 @@ export type CanonicalEstimateParameterValueSourceRole =
   | "MANDATORY_NORM_VALUE"
   | "NORM_REQUIRED_BUT_PROJECT_SELECTED"
   | "MANUFACTURER_CONFIRMED"
+  | "SELECTED_EQUIPMENT_PASSPORT"
   | "BACKEND_DERIVED"
   | "PRICE_INPUT";
 
@@ -533,13 +598,15 @@ export type CanonicalEstimateCatalogItem = {
     unitId: string | null;
     titleRu: string;
     required: boolean;
+    /** Allows an immutable draft revision while required user/site inputs remain visibly incomplete. */
+    preliminaryCompilationAllowed?: boolean;
     defaultValue: unknown;
     constraints: Record<string, unknown>;
     semanticParameterKey?: string;
     visibilityRole?: CanonicalEstimateParameterVisibilityRole;
     descriptionRu?: string;
-    requiredWhen?: string;
-    visibleWhen?: string;
+    requiredWhen?: string | Record<string, unknown>;
+    visibleWhen?: string | Record<string, unknown>;
     allowedRangeOrOptions?: unknown;
     defaultPolicy?: string;
     valueSourceRole?: CanonicalEstimateParameterValueSourceRole;
@@ -733,7 +800,7 @@ function validateRowAmendments(request: Partial<CanonicalEstimateRecalculateRequ
         || typeof row.category !== "string" || !row.category.trim() || row.category.trim().length > 240
         || typeof row.titleRu !== "string" || !row.titleRu.trim() || row.titleRu.trim().length > 2_000
         || typeof row.unitId !== "string" || !row.unitId.trim() || row.unitId.trim().length > 120
-        || !isNonNegativeNumber(row.quantity)
+        || (row.quantity != null && !isNonNegativeNumber(row.quantity))
         || (row.unitPrice != null && !isNonNegativeNumber(row.unitPrice))
         || typeof row.includedInEstimate !== "boolean"
         || typeof row.includedInProcurement !== "boolean"

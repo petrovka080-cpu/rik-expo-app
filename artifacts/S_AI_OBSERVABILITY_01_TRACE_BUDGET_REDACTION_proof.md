@@ -12,7 +12,7 @@ unsafe_budget_actions: 0
 provider_redaction_findings: 4
 artifact_scrub_findings: 0
 source_safety_findings: 0
-artifacts_scanned: 16
+artifacts_scanned: 13
 no_secrets: true
 no_raw_rows: true
 no_raw_prompts: true

@@ -7,7 +7,11 @@ import { Client } from "pg";
 import {
   FORMWORK_FRAMI_XLIFE_EXACT_INPUT,
   FORMWORK_FRAMI_XLIFE_SENSITIVITY_INPUT,
+  formworkFramiXlifeAnchorGroupAcceptanceInputR1,
+  formworkFramiXlifeBeltAcceptanceInputR1,
+  formworkFramiXlifeColumnBaseAcceptanceInputR1,
   formworkFramiXlifeGeneralFoundationAcceptanceInputR1,
+  formworkFramiXlifePedestalAcceptanceInputR1,
   formworkFramiXlifeSlabFoundationAcceptanceInputR1,
   formworkFramiXlifeStripFoundationAcceptanceInputR1,
   type FormworkFramiXlifeInputValue,
@@ -15,6 +19,39 @@ import {
 import {
   MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT,
 } from "../../src/lib/estimate/v4/masonryBrickWallBiaTn10R1";
+import {
+  stripFoundationConcretePlacementAcceptanceInputR1,
+} from "../../src/lib/estimate/v4/stripFoundationConcretePlacementR1";
+import {
+  anchorGroupConcretePlacementAcceptanceInputR1,
+} from "../../src/lib/estimate/v4/anchorGroupConcretePlacementR1";
+import {
+  columnBaseConcretePlacementAcceptanceInputR1,
+} from "../../src/lib/estimate/v4/columnBaseConcretePlacementR1";
+import {
+  beltConcretePlacementAcceptanceInputR1,
+} from "../../src/lib/estimate/v4/beltConcretePlacementR1";
+import {
+  concreteSlabConcretePlacementAcceptanceInputR1,
+} from "../../src/lib/estimate/v4/concreteSlabConcretePlacementR1";
+import {
+  pileCapConcretePlacementAcceptanceInputR1,
+} from "../../src/lib/estimate/v4/pileCapConcretePlacementR1";
+import {
+  pedestalConcretePlacementAcceptanceInputR1,
+} from "../../src/lib/estimate/v4/pedestalConcretePlacementR1";
+import {
+  slabFoundationConcretePlacementAcceptanceInputR1,
+} from "../../src/lib/estimate/v4/slabFoundationConcretePlacementR1";
+import {
+  stairsConcretePlacementAcceptanceInputR1,
+} from "../../src/lib/estimate/v4/stairsConcretePlacementR1";
+import {
+  reinforcementFrameConcretePlacementAcceptanceInputR1,
+} from "../../src/lib/estimate/v4/reinforcementFrameConcretePlacementR1";
+import {
+  concretePlacementPromptDetailsR1,
+} from "../../src/lib/estimate/ownedDomain/concretePlacementProductionBindingR1";
 
 type Json = Record<string, any>;
 
@@ -24,6 +61,7 @@ const argValue = (name: string): string | null => {
 };
 
 const PROFILE_ID = argValue("--profile") ?? "formwork-rics-nrm2";
+const RESUME_REVISION_ID = argValue("--resume-revision-id");
 const IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE =
   PROFILE_ID === "formwork-frami-xlife-pile-cap-wet-zone";
 const IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD =
@@ -32,14 +70,38 @@ const IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD =
   PROFILE_ID === "formwork-frami-xlife-slab-foundation-standard";
 const IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD =
   PROFILE_ID === "formwork-frami-xlife-general-foundation-standard";
+const IS_FRAMI_XLIFE_ANCHOR_GROUP_STANDARD =
+  PROFILE_ID === "formwork-frami-xlife-anchor-group-standard";
+const IS_FRAMI_XLIFE_BELT_STANDARD =
+  PROFILE_ID === "formwork-frami-xlife-belt-standard";
+const IS_FRAMI_XLIFE_COLUMN_BASE_STANDARD =
+  PROFILE_ID === "formwork-frami-xlife-column-base-standard";
+const IS_FRAMI_XLIFE_PEDESTAL_STANDARD =
+  PROFILE_ID === "formwork-frami-xlife-pedestal-standard";
 const IS_FRAMI_XLIFE_FULL = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
   || IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
   || IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
-  || IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD;
+  || IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
+  || IS_FRAMI_XLIFE_ANCHOR_GROUP_STANDARD
+  || IS_FRAMI_XLIFE_BELT_STANDARD
+  || IS_FRAMI_XLIFE_COLUMN_BASE_STANDARD
+  || IS_FRAMI_XLIFE_PEDESTAL_STANDARD;
 const FRAMI_STRIP_STANDARD_INPUT = formworkFramiXlifeStripFoundationAcceptanceInputR1("standard");
 const FRAMI_SLAB_STANDARD_INPUT = formworkFramiXlifeSlabFoundationAcceptanceInputR1("standard");
 const FRAMI_GENERAL_STANDARD_INPUT = formworkFramiXlifeGeneralFoundationAcceptanceInputR1("standard");
-const FRAMI_BASE_INPUT = IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
+const FRAMI_ANCHOR_GROUP_STANDARD_INPUT = formworkFramiXlifeAnchorGroupAcceptanceInputR1("standard");
+const FRAMI_BELT_STANDARD_INPUT = formworkFramiXlifeBeltAcceptanceInputR1("standard");
+const FRAMI_COLUMN_BASE_STANDARD_INPUT = formworkFramiXlifeColumnBaseAcceptanceInputR1("standard");
+const FRAMI_PEDESTAL_STANDARD_INPUT = formworkFramiXlifePedestalAcceptanceInputR1("standard");
+const FRAMI_BASE_INPUT = IS_FRAMI_XLIFE_PEDESTAL_STANDARD
+  ? FRAMI_PEDESTAL_STANDARD_INPUT
+  : IS_FRAMI_XLIFE_COLUMN_BASE_STANDARD
+  ? FRAMI_COLUMN_BASE_STANDARD_INPUT
+  : IS_FRAMI_XLIFE_BELT_STANDARD
+  ? FRAMI_BELT_STANDARD_INPUT
+  : IS_FRAMI_XLIFE_ANCHOR_GROUP_STANDARD
+  ? FRAMI_ANCHOR_GROUP_STANDARD_INPUT
+  : IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
   ? FRAMI_GENERAL_STANDARD_INPUT
   : IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
   ? FRAMI_SLAB_STANDARD_INPUT
@@ -104,13 +166,74 @@ const FRAMI_GENERAL_SENSITIVITY_INPUT: Readonly<Record<string, FormworkFramiXlif
   form_release_agent_specification:
     "Разделительный состав по ведомости ACCEPTANCE-FW-LAYOUT-GEN-STANDARD-001-REV-B",
 });
+const FRAMI_ANCHOR_GROUP_SENSITIVITY_INPUT: Readonly<Record<string, FormworkFramiXlifeInputValue>> =
+  Object.freeze({
+    ...FRAMI_ANCHOR_GROUP_STANDARD_INPUT,
+    ...Object.fromEntries(Object.entries(FRAMI_GENERAL_SENSITIVITY_INPUT)
+      .filter(([, value]) => typeof value === "number")),
+  });
+const FRAMI_BELT_SENSITIVITY_INPUT: Readonly<Record<string, FormworkFramiXlifeInputValue>> =
+  Object.freeze({
+    ...FRAMI_BELT_STANDARD_INPUT,
+    ...Object.fromEntries(Object.entries(FRAMI_GENERAL_SENSITIVITY_INPUT)
+      .filter(([, value]) => typeof value === "number")),
+  });
+const FRAMI_COLUMN_BASE_SENSITIVITY_INPUT: Readonly<Record<string, FormworkFramiXlifeInputValue>> =
+  Object.freeze({
+    ...FRAMI_COLUMN_BASE_STANDARD_INPUT,
+    ...Object.fromEntries(Object.entries(FRAMI_GENERAL_SENSITIVITY_INPUT)
+      .filter(([, value]) => typeof value === "number")),
+  });
+const FRAMI_PEDESTAL_SENSITIVITY_INPUT: Readonly<Record<string, FormworkFramiXlifeInputValue>> =
+  Object.freeze({
+    ...FRAMI_PEDESTAL_STANDARD_INPUT,
+    ...Object.fromEntries(Object.entries(FRAMI_GENERAL_SENSITIVITY_INPUT)
+      .filter(([, value]) => typeof value === "number")),
+  });
 const FRAMI_SENSITIVITY_INPUT: Readonly<Record<string, FormworkFramiXlifeInputValue>> =
-  IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
+  IS_FRAMI_XLIFE_PEDESTAL_STANDARD
+  ? FRAMI_PEDESTAL_SENSITIVITY_INPUT
+  : IS_FRAMI_XLIFE_COLUMN_BASE_STANDARD
+  ? FRAMI_COLUMN_BASE_SENSITIVITY_INPUT
+  : IS_FRAMI_XLIFE_BELT_STANDARD
+  ? FRAMI_BELT_SENSITIVITY_INPUT
+  : IS_FRAMI_XLIFE_ANCHOR_GROUP_STANDARD
+  ? FRAMI_ANCHOR_GROUP_SENSITIVITY_INPUT
+  : IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
   ? FRAMI_GENERAL_SENSITIVITY_INPUT
   : IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
   ? FRAMI_SLAB_SENSITIVITY_INPUT
   : FORMWORK_FRAMI_XLIFE_SENSITIVITY_INPUT;
 const IS_NRMCA_STRIP_FOUNDATION = PROFILE_ID === "strip-foundation-nrmca-cip31";
+const IS_ANCHOR_GROUP_CONCRETE_PLACEMENT_STANDARD =
+  PROFILE_ID === "anchor-group-concrete-placement-standard";
+const IS_COLUMN_BASE_CONCRETE_PLACEMENT_STANDARD =
+  PROFILE_ID === "column-base-concrete-placement-standard";
+const IS_BELT_CONCRETE_PLACEMENT_STANDARD =
+  PROFILE_ID === "belt-concrete-placement-standard";
+const IS_CONCRETE_SLAB_CONCRETE_PLACEMENT_STANDARD =
+  PROFILE_ID === "concrete-slab-concrete-placement-standard";
+const IS_PILE_CAP_CONCRETE_PLACEMENT_STANDARD =
+  PROFILE_ID === "pile-cap-concrete-placement-standard";
+const IS_PEDESTAL_CONCRETE_PLACEMENT_STANDARD =
+  PROFILE_ID === "pedestal-concrete-placement-standard";
+const IS_SLAB_FOUNDATION_CONCRETE_PLACEMENT_STANDARD =
+  PROFILE_ID === "slab-foundation-concrete-placement-standard";
+const IS_STAIRS_CONCRETE_PLACEMENT_STANDARD =
+  PROFILE_ID === "stairs-concrete-placement-standard";
+const IS_REINFORCEMENT_FRAME_CONCRETE_PLACEMENT_STANDARD =
+  PROFILE_ID === "reinforcement-frame-concrete-placement-standard";
+const IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD =
+  PROFILE_ID === "strip-foundation-concrete-placement-standard"
+  || IS_ANCHOR_GROUP_CONCRETE_PLACEMENT_STANDARD
+  || IS_COLUMN_BASE_CONCRETE_PLACEMENT_STANDARD
+  || IS_BELT_CONCRETE_PLACEMENT_STANDARD
+  || IS_CONCRETE_SLAB_CONCRETE_PLACEMENT_STANDARD
+  || IS_PILE_CAP_CONCRETE_PLACEMENT_STANDARD
+  || IS_PEDESTAL_CONCRETE_PLACEMENT_STANDARD
+  || IS_SLAB_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+  || IS_STAIRS_CONCRETE_PLACEMENT_STANDARD
+  || IS_REINFORCEMENT_FRAME_CONCRETE_PLACEMENT_STANDARD;
 const IS_BIA_TN10_MASONRY = PROFILE_ID === "bia-tn10-masonry";
 const IS_RICS_NRM2_WET_ZONE = PROFILE_ID === "formwork-rics-nrm2-wet-zone";
 const IS_RICS_NRM2_STRIP_FOUNDATION_WET_ZONE =
@@ -133,6 +256,24 @@ const RELEASE_ID = argValue("--release-id") ?? (IS_FRAMI_XLIFE_GENERAL_FOUNDATIO
   : IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE ? "50739ecf-b47f-5294-96d8-503c00d92200"
   : IS_BIA_TN10_MASONRY
   ? "8909e3eb-e893-5592-b47e-2781396fb90d"
+  : IS_REINFORCEMENT_FRAME_CONCRETE_PLACEMENT_STANDARD
+    ? "05fd8444-dd4e-5f22-8c80-a83c92758466"
+  : IS_STAIRS_CONCRETE_PLACEMENT_STANDARD
+    ? "b50793f5-d20c-58d7-8ad0-8bd191876c20"
+  : IS_SLAB_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? "03078c79-d77b-5e49-9008-5f4e8cbdb8a4"
+  : IS_PEDESTAL_CONCRETE_PLACEMENT_STANDARD
+    ? "714d113e-7146-5bf8-bd82-37a8505ddffd"
+  : IS_PILE_CAP_CONCRETE_PLACEMENT_STANDARD
+    ? "1c30bb0c-62b7-503c-9b56-f27117470da3"
+  : IS_CONCRETE_SLAB_CONCRETE_PLACEMENT_STANDARD
+    ? "2d2f1f06-fb1a-5fe9-84a6-f2cb805a4df4"
+  : IS_BELT_CONCRETE_PLACEMENT_STANDARD
+    ? "99f44305-0d13-50a9-a145-008f82b0293f"
+  : IS_COLUMN_BASE_CONCRETE_PLACEMENT_STANDARD
+    ? "7289c7d3-2577-5e52-a2f5-be3af06dec5d"
+  : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? "ffce7418-e0b2-54df-94b9-45ec442eb651"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "dda56d3e-39dc-543c-a3ee-4395a4c018b9"
     : IS_RICS_NRM2_WET_ZONE
@@ -152,6 +293,24 @@ const SEARCH_RELEASE_ID = argValue("--search-release-id") ?? (IS_FRAMI_XLIFE_GEN
   : IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE ? "bab13b8a-90f4-5236-bf90-03a631793994"
   : IS_BIA_TN10_MASONRY
   ? "a525282e-2495-5a27-b327-81a38a7d59b3"
+  : IS_REINFORCEMENT_FRAME_CONCRETE_PLACEMENT_STANDARD
+    ? "37d17699-fd8d-50a4-a555-e1df9857de14"
+  : IS_STAIRS_CONCRETE_PLACEMENT_STANDARD
+    ? "b646530a-4732-56e3-b929-f225d2dc36f1"
+  : IS_SLAB_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? "d366a77b-e26a-5bfe-81d8-b10b17af9567"
+  : IS_PEDESTAL_CONCRETE_PLACEMENT_STANDARD
+    ? "75903929-84a5-5bac-92f6-dfea65f3b8f1"
+  : IS_PILE_CAP_CONCRETE_PLACEMENT_STANDARD
+    ? "d930b4c0-8a36-5236-89ee-15edba0a266a"
+  : IS_CONCRETE_SLAB_CONCRETE_PLACEMENT_STANDARD
+    ? "093c5536-92cf-53cb-bd19-fecefd205db6"
+  : IS_BELT_CONCRETE_PLACEMENT_STANDARD
+    ? "4a6e59aa-cc9b-5987-9d57-90a259c90cb6"
+  : IS_COLUMN_BASE_CONCRETE_PLACEMENT_STANDARD
+    ? "cc38bb7a-aa48-5fa6-8f63-a8df4327d15f"
+  : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? "84ccfb2b-1c44-550f-9393-409c5a8d3ed1"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "15bf6a55-fb0b-5c7b-b522-dc1e6fd6896e"
     : IS_RICS_NRM2_WET_ZONE
@@ -171,6 +330,24 @@ const DEFINITION_ID = argValue("--definition-id") ?? (IS_FRAMI_XLIFE_GENERAL_FOU
   : IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE ? "f9f9c447-502c-5a15-84b5-4a4d40351ae2"
   : IS_BIA_TN10_MASONRY
   ? "7237aa95-be0f-5b6d-a638-5f06b9381749"
+  : IS_REINFORCEMENT_FRAME_CONCRETE_PLACEMENT_STANDARD
+    ? "04c7a270-3465-5541-9275-c80a322fbdb5"
+  : IS_STAIRS_CONCRETE_PLACEMENT_STANDARD
+    ? "bbdaae6b-ccee-5860-9a01-fa1b53f13b3b"
+  : IS_SLAB_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? "3687cca0-c322-5e91-ba16-a98bdf1729cd"
+  : IS_PEDESTAL_CONCRETE_PLACEMENT_STANDARD
+    ? "54c845e9-3978-543a-bfd7-9d3583d83eed"
+  : IS_PILE_CAP_CONCRETE_PLACEMENT_STANDARD
+    ? "56efe197-b086-5111-aff6-f8545d597be9"
+  : IS_CONCRETE_SLAB_CONCRETE_PLACEMENT_STANDARD
+    ? "36ac7c88-5b83-5d38-b629-0948f0fbe393"
+  : IS_BELT_CONCRETE_PLACEMENT_STANDARD
+    ? "a5c0d5f3-e330-5337-a20e-633c97eec6b1"
+  : IS_COLUMN_BASE_CONCRETE_PLACEMENT_STANDARD
+    ? "32141b6b-710b-59b7-bd67-74ccb2adc2e7"
+  : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? "ce31e029-235c-508c-8d6a-294222273c75"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "3afbb931-6432-5801-935a-1ba3d0290030"
     : IS_RICS_NRM2_WET_ZONE
@@ -192,6 +369,24 @@ const CATALOG_ID = argValue("--catalog-id") ?? (IS_FRAMI_XLIFE_GENERAL_FOUNDATIO
     ? "canonical-work:base:concrete_foundation_interior_pile_cap_form_wet_zone"
   : IS_BIA_TN10_MASONRY
   ? "canonical-work:base:masonry_interior_brick_wall_lay_standard"
+  : IS_REINFORCEMENT_FRAME_CONCRETE_PLACEMENT_STANDARD
+    ? "canonical-work:base:concrete_foundation_interior_reinforcement_frame_pour_standard"
+  : IS_STAIRS_CONCRETE_PLACEMENT_STANDARD
+    ? "canonical-work:base:concrete_foundation_interior_stairs_concrete_pour_standard"
+  : IS_SLAB_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard"
+  : IS_PEDESTAL_CONCRETE_PLACEMENT_STANDARD
+    ? "canonical-work:base:concrete_foundation_interior_pedestal_pour_standard"
+  : IS_PILE_CAP_CONCRETE_PLACEMENT_STANDARD
+    ? "canonical-work:base:concrete_foundation_interior_pile_cap_pour_standard"
+  : IS_CONCRETE_SLAB_CONCRETE_PLACEMENT_STANDARD
+    ? "canonical-work:base:concrete_foundation_interior_concrete_slab_pour_standard"
+  : IS_BELT_CONCRETE_PLACEMENT_STANDARD
+    ? "canonical-work:base:concrete_foundation_interior_belt_pour_standard"
+  : IS_COLUMN_BASE_CONCRETE_PLACEMENT_STANDARD
+    ? "canonical-work:base:concrete_foundation_interior_column_base_pour_standard"
+  : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_standard"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "canonical-work:expanded:strip_foundation"
     : IS_RICS_NRM2_WET_ZONE
@@ -207,6 +402,8 @@ const ROW_ID = IS_FRAMI_XLIFE_FULL
   ? "equipment:formwork:frami-xlife-panels-rental"
   : IS_BIA_TN10_MASONRY
   ? "material:bia-tn10:fired-clay-brick"
+  : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? "material:concrete:ready-mix"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "main_concrete"
     : "formwork:rics-nrm2:measured-contact-area:work";
@@ -214,6 +411,8 @@ const SOURCE_ID = IS_FRAMI_XLIFE_FULL
   ? "src_manufacturer_doka_frami_xlife_foundation_999810202_2023_11"
   : IS_BIA_TN10_MASONRY
   ? "src_professional_norm_pack_masonry_bia_tn10_selected_brick_mortar_table_routing_v1"
+  : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? "src_professional_norm_pack_concrete_nrmca_cip31_selected_contingency_m3_m3_v1"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "src_professional_norm_pack_concrete_nrmca_cip31_selected_contingency_m3_m3_v1"
     : "src_professional_norm_pack_formwork_rics_nrm2_measured_contact_area_same_unit_routing_v1";
@@ -221,6 +420,8 @@ const NORM_ID = IS_FRAMI_XLIFE_FULL
   ? null
   : IS_BIA_TN10_MASONRY
   ? "masonry_bia_tn10_selected_brick_mortar_table_routing_v1"
+  : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? "concrete_nrmca_cip31_selected_contingency_m3_m3_v1"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "concrete_nrmca_cip31_selected_contingency_m3_m3_v1"
     : "formwork_rics_nrm2_measured_contact_area_same_unit_routing_v1";
@@ -239,6 +440,8 @@ const EXPECTED_TITLE = IS_FRAMI_XLIFE_FULL
   ? "Щиты рамной опалубки Doka Frami Xlife"
   : IS_BIA_TN10_MASONRY
   ? "Обожжённый глиняный кирпич"
+  : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? "Товарный бетон"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "Бетонная смесь"
     : "Измерение площади контакта опалубки по RICS NRM 2 (не полный состав работ)";
@@ -246,12 +449,20 @@ const EXPECTED_VISIBLE_TITLE = IS_FRAMI_XLIFE_FULL
   ? EXPECTED_TITLE
   : IS_BIA_TN10_MASONRY
   ? "Обожжённый глиняный кирпич"
+  : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? "Товарный бетон B25"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "Бетонная смесь B25"
     : EXPECTED_TITLE;
 const CREDENTIALS = resolve(".release-runtime/r551/runtime/local-developer/credentials.json");
 const OUTPUT_ROOT = argValue("--output-root") ? resolve(argValue("--output-root")!) : resolve(".release-runtime/r4a13-6/exact-physical-norm-successors",
-  IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
+  IS_FRAMI_XLIFE_PEDESTAL_STANDARD
+    ? "pedestal-formwork-family-web"
+    : IS_FRAMI_XLIFE_COLUMN_BASE_STANDARD
+    ? "column-base-formwork-family-web"
+    : IS_FRAMI_XLIFE_BELT_STANDARD
+    ? "belt-formwork-family-web"
+  : IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
     ? "web-formwork-frami-xlife-general-foundation-standard-full"
     : IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
     ? "web-formwork-frami-xlife-slab-foundation-standard-full"
@@ -261,6 +472,24 @@ const OUTPUT_ROOT = argValue("--output-root") ? resolve(argValue("--output-root"
       ? "web-formwork-frami-xlife-pile-cap-wet-zone-full"
     : IS_BIA_TN10_MASONRY
     ? "web-bia-tn10-masonry-full-family"
+    : IS_REINFORCEMENT_FRAME_CONCRETE_PLACEMENT_STANDARD
+      ? "web-reinforcement-frame-concrete-placement-standard"
+    : IS_STAIRS_CONCRETE_PLACEMENT_STANDARD
+      ? "web-stairs-concrete-placement-standard"
+    : IS_SLAB_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+      ? "web-slab-foundation-concrete-placement-standard"
+    : IS_PEDESTAL_CONCRETE_PLACEMENT_STANDARD
+      ? "web-pedestal-concrete-placement-standard"
+    : IS_PILE_CAP_CONCRETE_PLACEMENT_STANDARD
+      ? "web-pile-cap-concrete-placement-standard"
+    : IS_CONCRETE_SLAB_CONCRETE_PLACEMENT_STANDARD
+      ? "web-concrete-slab-concrete-placement-standard"
+    : IS_BELT_CONCRETE_PLACEMENT_STANDARD
+      ? "web-belt-concrete-placement-standard"
+    : IS_COLUMN_BASE_CONCRETE_PLACEMENT_STANDARD
+      ? "web-column-base-concrete-placement-standard"
+    : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+      ? "web-strip-foundation-concrete-placement-standard"
     : IS_NRMCA_STRIP_FOUNDATION
       ? "web-strip-foundation-nrmca-cip31"
       : IS_RICS_NRM2_WET_ZONE
@@ -273,7 +502,13 @@ const OUTPUT_ROOT = argValue("--output-root") ? resolve(argValue("--output-root"
               ? "web-formwork-rics-nrm2-pile-cap-wet-zone-measurement-only-v3"
             : "web-formwork-rics-nrm2-measurement-only-v3");
 const OUTPUT = resolve(OUTPUT_ROOT, "acceptance.json");
-const SEARCH_QUERY = argValue("--search-query") ?? (IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
+const SEARCH_QUERY = argValue("--search-query") ?? (IS_FRAMI_XLIFE_PEDESTAL_STANDARD
+  ? "Съёмная щитовая опалубка монолитного железобетонного пьедестала Doka Frami Xlife в стандартной зоне"
+  : IS_FRAMI_XLIFE_COLUMN_BASE_STANDARD
+  ? "Съёмная опалубка столбчатого железобетонного основания Doka Frami Xlife в стандартной зоне"
+  : IS_FRAMI_XLIFE_BELT_STANDARD
+  ? "Съёмная опалубка монолитного пояса Doka Frami Xlife в стандартной зоне"
+  : IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
   ? "полный комплект опалубки фундаментных стен стандартная зона Doka Frami Xlife"
   : IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
   ? "полный комплект опалубки периметральных рёбер плитного фундамента стандартная зона Doka Frami Xlife"
@@ -291,9 +526,34 @@ const SEARCH_QUERY = argValue("--search-query") ?? (IS_FRAMI_XLIFE_GENERAL_FOUND
     ? "устройство опалубки во влажной зоне"
   : IS_BIA_TN10_MASONRY
   ? "Кладка стены из обожжённого глиняного кирпича"
+  : IS_REINFORCEMENT_FRAME_CONCRETE_PLACEMENT_STANDARD
+    ? "Бетонирование армокаркаса в стандартной зоне"
+  : IS_STAIRS_CONCRETE_PLACEMENT_STANDARD
+    ? "Бетонирование бетонной лестницы в стандартной зоне"
+  : IS_SLAB_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? "Бетонирование плитного фундамента в стандартной зоне"
+  : IS_PEDESTAL_CONCRETE_PLACEMENT_STANDARD
+    ? "Бетонирование бетонного пьедестала в стандартной зоне"
+  : IS_PILE_CAP_CONCRETE_PLACEMENT_STANDARD
+    ? "Бетонирование ростверка в стандартной зоне"
+  : IS_CONCRETE_SLAB_CONCRETE_PLACEMENT_STANDARD
+    ? "Бетонирование бетонной плиты в стандартной зоне"
+  : IS_BELT_CONCRETE_PLACEMENT_STANDARD
+    ? "Бетонирование монолитного пояса в стандартной зоне"
+  : IS_COLUMN_BASE_CONCRETE_PLACEMENT_STANDARD
+    ? "Бетонирование столбчатого основания в стандартной зоне"
+  : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? "Бетонирование ленточного фундамента в стандартной зоне"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "Устройство монолитного железобетонного ленточного фундамента"
-    : "Монтаж и демонтаж опалубки по измеренной площади контакта");
+     : "Монтаж и демонтаж опалубки по измеренной площади контакта");
+const EXACT_FORMWORK_FAMILY_GROUP_NAME_RU = IS_FRAMI_XLIFE_PEDESTAL_STANDARD
+  ? "съёмная щитовая опалубка монолитного железобетонного пьедестала"
+  : IS_FRAMI_XLIFE_COLUMN_BASE_STANDARD
+  ? "съёмная опалубка столбчатого железобетонного основания"
+  : IS_FRAMI_XLIFE_BELT_STANDARD
+  ? "съёмная опалубка монолитного железобетонного пояса"
+  : null;
 const FORMWORK_DETAILS = [
   "RICS NRM 2.",
   "Измеренная площадь контакта: 100 м2;",
@@ -414,6 +674,34 @@ const FRAMI_XLIFE_PILE_CAP_DETAILS = formworkFramiXlifeDetails(FORMWORK_FRAMI_XL
 const FRAMI_XLIFE_STRIP_FOUNDATION_DETAILS = formworkFramiXlifeDetails(FRAMI_STRIP_STANDARD_INPUT);
 const FRAMI_XLIFE_SLAB_FOUNDATION_DETAILS = formworkFramiXlifeDetails(FRAMI_SLAB_STANDARD_INPUT);
 const FRAMI_XLIFE_GENERAL_FOUNDATION_DETAILS = formworkFramiXlifeDetails(FRAMI_GENERAL_STANDARD_INPUT);
+const FRAMI_XLIFE_ANCHOR_GROUP_DETAILS = formworkFramiXlifeDetails(FRAMI_ANCHOR_GROUP_STANDARD_INPUT);
+const FRAMI_XLIFE_BELT_DETAILS = formworkFramiXlifeDetails(FRAMI_BELT_STANDARD_INPUT);
+const FRAMI_XLIFE_COLUMN_BASE_DETAILS = formworkFramiXlifeDetails(FRAMI_COLUMN_BASE_STANDARD_INPUT);
+const FRAMI_XLIFE_PEDESTAL_DETAILS = formworkFramiXlifeDetails(FRAMI_PEDESTAL_STANDARD_INPUT);
+const STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD_FIXTURE =
+  IS_REINFORCEMENT_FRAME_CONCRETE_PLACEMENT_STANDARD
+    ? reinforcementFrameConcretePlacementAcceptanceInputR1("standard")
+  : IS_STAIRS_CONCRETE_PLACEMENT_STANDARD
+    ? stairsConcretePlacementAcceptanceInputR1("standard")
+  : IS_SLAB_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? slabFoundationConcretePlacementAcceptanceInputR1("standard")
+  : IS_PEDESTAL_CONCRETE_PLACEMENT_STANDARD
+    ? pedestalConcretePlacementAcceptanceInputR1("standard")
+  : IS_PILE_CAP_CONCRETE_PLACEMENT_STANDARD
+    ? pileCapConcretePlacementAcceptanceInputR1("standard")
+  : IS_CONCRETE_SLAB_CONCRETE_PLACEMENT_STANDARD
+    ? concreteSlabConcretePlacementAcceptanceInputR1("standard")
+    : IS_BELT_CONCRETE_PLACEMENT_STANDARD
+    ? beltConcretePlacementAcceptanceInputR1("standard")
+    : IS_COLUMN_BASE_CONCRETE_PLACEMENT_STANDARD
+    ? columnBaseConcretePlacementAcceptanceInputR1("standard")
+    : IS_ANCHOR_GROUP_CONCRETE_PLACEMENT_STANDARD
+    ? anchorGroupConcretePlacementAcceptanceInputR1("standard")
+    : stripFoundationConcretePlacementAcceptanceInputR1("standard");
+const STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD_DETAILS =
+  concretePlacementPromptDetailsR1(
+    STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD_FIXTURE,
+  );
 const NRMCA_STRIP_FOUNDATION_DETAILS = [
   "по NRMCA CIP 31;",
   "длина самой ленты 40 м; ширина самой ленты 0,5 м; высота бетонной ленты 1,5 м;",
@@ -482,7 +770,15 @@ const BIA_TN10_MASONRY_DETAILS = [
   "equipment schedule reference: BIA-WALL-EQ-001-REV-A; logistics plan reference: BIA-WALL-LOG-001-REV-A;",
   "quality plan reference: BIA-WALL-QA-001-REV-C",
 ];
-const SELECTED_DETAILS = IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
+const SELECTED_DETAILS = IS_FRAMI_XLIFE_PEDESTAL_STANDARD
+  ? FRAMI_XLIFE_PEDESTAL_DETAILS
+  : IS_FRAMI_XLIFE_COLUMN_BASE_STANDARD
+  ? FRAMI_XLIFE_COLUMN_BASE_DETAILS
+  : IS_FRAMI_XLIFE_BELT_STANDARD
+  ? FRAMI_XLIFE_BELT_DETAILS
+  : IS_FRAMI_XLIFE_ANCHOR_GROUP_STANDARD
+  ? FRAMI_XLIFE_ANCHOR_GROUP_DETAILS
+  : IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
   ? FRAMI_XLIFE_GENERAL_FOUNDATION_DETAILS
   : IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
   ? FRAMI_XLIFE_SLAB_FOUNDATION_DETAILS
@@ -492,6 +788,8 @@ const SELECTED_DETAILS = IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
     ? FRAMI_XLIFE_PILE_CAP_DETAILS
   : IS_BIA_TN10_MASONRY
   ? BIA_TN10_MASONRY_DETAILS
+  : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD_DETAILS
   : IS_NRMCA_STRIP_FOUNDATION
     ? NRMCA_STRIP_FOUNDATION_DETAILS
     : IS_RICS_NRM2_STRIP_FOUNDATION_WET_ZONE
@@ -501,7 +799,8 @@ const SELECTED_DETAILS = IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
         : IS_RICS_NRM2_PILE_CAP_WET_ZONE
           ? PILE_CAP_FORMWORK_DETAILS
         : FORMWORK_DETAILS;
-const SELECTED_DETAILS_SEPARATOR = IS_FRAMI_XLIFE_FULL ? "\n" : " ";
+const SELECTED_DETAILS_SEPARATOR = IS_FRAMI_XLIFE_FULL
+  || IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD ? "\n" : " ";
 const PROMPT = [SEARCH_QUERY, ...SELECTED_DETAILS].join(SELECTED_DETAILS_SEPARATOR);
 
 const FORMWORK_FIXTURE: Readonly<Json> = Object.freeze({
@@ -637,6 +936,8 @@ const FIXTURE = IS_FRAMI_XLIFE_FULL
   ? FRAMI_BASE_INPUT
   : IS_BIA_TN10_MASONRY
   ? BIA_TN10_MASONRY_FIXTURE
+  : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD_FIXTURE
   : IS_NRMCA_STRIP_FOUNDATION
     ? NRMCA_STRIP_FOUNDATION_FIXTURE
     : IS_RICS_NRM2_STRIP_FOUNDATION_WET_ZONE
@@ -648,35 +949,78 @@ const FIXTURE = IS_FRAMI_XLIFE_FULL
         : FORMWORK_FIXTURE;
 const PRIMARY_MEASURE_PARAMETER_ID = IS_BIA_TN10_MASONRY
   ? "measured_net_brick_wall_area_m2"
+  : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? "plan_dimension_concrete_volume_m3"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "total_axis_length_m"
     : "measured_formwork_contact_area_m2";
 const ORIGINAL_PRIMARY_VALUE = IS_FRAMI_XLIFE_FULL
   ? Number(FRAMI_BASE_INPUT.measured_formwork_contact_area_m2)
+  : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? Number(FIXTURE.plan_dimension_concrete_volume_m3)
   : IS_BIA_TN10_MASONRY ? 90 : IS_NRMCA_STRIP_FOUNDATION ? 40 : 100;
 const SENSITIVITY_PRIMARY_VALUE = IS_FRAMI_XLIFE_FULL
   ? Number(FRAMI_SENSITIVITY_INPUT.measured_formwork_contact_area_m2)
+  : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? (IS_ANCHOR_GROUP_CONCRETE_PLACEMENT_STANDARD
+        || IS_COLUMN_BASE_CONCRETE_PLACEMENT_STANDARD ? 10
+        : IS_BELT_CONCRETE_PLACEMENT_STANDARD ? 9
+        : IS_CONCRETE_SLAB_CONCRETE_PLACEMENT_STANDARD ? 18
+        : IS_PILE_CAP_CONCRETE_PLACEMENT_STANDARD ? 20
+        : IS_PEDESTAL_CONCRETE_PLACEMENT_STANDARD ? 12
+        : IS_SLAB_FOUNDATION_CONCRETE_PLACEMENT_STANDARD ? 40
+        : IS_REINFORCEMENT_FRAME_CONCRETE_PLACEMENT_STANDARD ? 18
+        : IS_STAIRS_CONCRETE_PLACEMENT_STANDARD ? 15 : 40)
   : IS_BIA_TN10_MASONRY ? 100 : IS_NRMCA_STRIP_FOUNDATION ? 80 : 120;
 const ORIGINAL_TARGET_QUANTITY = IS_FRAMI_XLIFE_FULL
   ? Number(FRAMI_BASE_INPUT.frami_xlife_panel_count) * Number(FRAMI_BASE_INPUT.rental_duration_days)
+  : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? ORIGINAL_PRIMARY_VALUE * (1 + Number(FIXTURE.selected_contingency_percent) / 100)
   : IS_BIA_TN10_MASONRY ? 5_670 : IS_NRMCA_STRIP_FOUNDATION ? 32.4 : 100;
 const SENSITIVITY_TARGET_QUANTITY = IS_FRAMI_XLIFE_FULL
   ? Number(FRAMI_SENSITIVITY_INPUT.frami_xlife_panel_count)
     * Number(FRAMI_SENSITIVITY_INPUT.rental_duration_days)
+  : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? SENSITIVITY_PRIMARY_VALUE * (1 + Number(FIXTURE.selected_contingency_percent) / 100)
   : IS_BIA_TN10_MASONRY ? 6_300 : IS_NRMCA_STRIP_FOUNDATION ? 64.8 : 120;
 const TARGET_UNIT_ID = IS_FRAMI_XLIFE_FULL
   ? "piece_day"
+  : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD ? "m3"
   : IS_BIA_TN10_MASONRY ? "piece" : IS_NRMCA_STRIP_FOUNDATION ? "m3" : "m2";
 const SEARCH_VISIBLE_NEEDLE = IS_FRAMI_XLIFE_FULL
   ? "frami xlife"
+  : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? (IS_REINFORCEMENT_FRAME_CONCRETE_PLACEMENT_STANDARD
+        ? "бетонирование армокаркаса"
+        : IS_STAIRS_CONCRETE_PLACEMENT_STANDARD
+        ? "бетонирование бетонной лестницы"
+        : IS_SLAB_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+        ? "бетонирование плитного фундамента"
+        : IS_PEDESTAL_CONCRETE_PLACEMENT_STANDARD
+        ? "бетонирование бетонного пьедестала"
+        : IS_PILE_CAP_CONCRETE_PLACEMENT_STANDARD
+        ? "бетонирование ростверка"
+        : IS_CONCRETE_SLAB_CONCRETE_PLACEMENT_STANDARD
+        ? "бетонирование бетонной плиты"
+        : IS_BELT_CONCRETE_PLACEMENT_STANDARD
+        ? "бетонирование монолитного пояса"
+        : IS_COLUMN_BASE_CONCRETE_PLACEMENT_STANDARD
+        ? "бетонирование столбчатого основания"
+        : IS_ANCHOR_GROUP_CONCRETE_PLACEMENT_STANDARD
+          ? "бетонирование основания анкерной"
+          : "бетонирование ленточного")
   : IS_BIA_TN10_MASONRY ? "кирпич" : IS_NRMCA_STRIP_FOUNDATION ? "ленточн" : "опалубк";
 const SCENARIO_LABEL = IS_FRAMI_XLIFE_FULL
   ? `${ORIGINAL_PRIMARY_VALUE}m2-to-${SENSITIVITY_PRIMARY_VALUE}m2`
+  : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? `${ORIGINAL_PRIMARY_VALUE}m3-to-${SENSITIVITY_PRIMARY_VALUE}m3`
   : IS_BIA_TN10_MASONRY ? "90m2-to-100m2" : IS_NRMCA_STRIP_FOUNDATION ? "40m-to-80m" : "100m2-to-120m2";
 const FRAMI_SENSITIVITY_PATCH: Readonly<Json> = Object.freeze(Object.fromEntries(
   Object.entries(FRAMI_SENSITIVITY_INPUT).filter(([parameterId, value]) => (
     FRAMI_BASE_INPUT[parameterId] !== value
       && (IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD || IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
+        || IS_FRAMI_XLIFE_ANCHOR_GROUP_STANDARD || IS_FRAMI_XLIFE_BELT_STANDARD
+        || IS_FRAMI_XLIFE_COLUMN_BASE_STANDARD || IS_FRAMI_XLIFE_PEDESTAL_STANDARD
         || (typeof value === "number"
           && (!IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
             || parameterId !== "foundation_wall_thickness_cm")))
@@ -800,35 +1144,50 @@ async function allRows(authorization: string, revisionId: string): Promise<Json[
   return rows;
 }
 
-async function enterConsumer(page: Page): Promise<void> {
+async function enterConsumer(page: Page, returnTo?: string): Promise<void> {
   const deadline = Date.now() + 45_000;
+  let ownerRedirectRecoveryCount = 0;
   while (Date.now() < deadline) {
+    if (returnTo && ownerRedirectRecoveryCount < 3
+      && new URL(page.url()).pathname !== new URL(returnTo).pathname) {
+      ownerRedirectRecoveryCount += 1;
+      await page.waitForTimeout(500);
+      await page.goto(returnTo, { waitUntil: "commit", timeout: 180_000 });
+      await page.getByTestId("local-developer-review-banner").waitFor({ timeout: 180_000 });
+      continue;
+    }
     const consumerInput = page.getByTestId("consumer-repair-problem-input");
     if (await consumerInput.isVisible().catch(() => false)
       && await consumerInput.isEditable().catch(() => false)) return;
-    const ownerLogin = page.getByTestId("local-developer-director-login");
-    if (await ownerLogin.isVisible().catch(() => false)
-      && await ownerLogin.isEnabled().catch(() => false)) {
-      await ownerLogin.click({ timeout: 2_000 }).catch(() => undefined);
-    } else {
-      const login = page.getByTestId("auth.login.local-consumer")
-        .or(page.getByTestId("protected-identity-local-consumer-login")).first();
-      if (await login.isVisible().catch(() => false) && await login.isEnabled().catch(() => false)) {
-        await login.click({ timeout: 2_000 }).catch(() => undefined);
-      }
+    const login = page.getByTestId("auth.login.local-consumer")
+      .or(page.getByTestId("protected-identity-local-consumer-login")).first();
+    if (await login.isVisible().catch(() => false) && await login.isEnabled().catch(() => false)) {
+      await login.click({ timeout: 2_000 }).catch(() => undefined);
     }
     await page.waitForTimeout(250);
   }
+  const diagnosticPath = resolve(OUTPUT_ROOT, "consumer-route-not-ready.json");
+  atomicJson(diagnosticPath, {
+    capturedAt: new Date().toISOString(),
+    url: page.url(),
+    ownerRedirectRecoveryCount,
+    bodyText: (await page.locator("body").innerText().catch(() => "")).slice(0, 30_000),
+  });
+  await page.screenshot({
+    path: resolve(OUTPUT_ROOT, "consumer-route-not-ready.png"),
+    fullPage: true,
+  }).catch(() => undefined);
   throw new Error("EXACT_FORMWORK_WEB:CONSUMER_ROUTE_NOT_READY");
 }
 
 async function openRevision(page: Page, revisionId: string): Promise<void> {
-  await page.goto(`${ORIGIN}/request?canonicalRevisionId=${encodeURIComponent(revisionId)}`, {
+  const revisionUrl = `${ORIGIN}/request?canonicalRevisionId=${encodeURIComponent(revisionId)}`;
+  await page.goto(revisionUrl, {
     waitUntil: "commit",
     timeout: 180_000,
   });
   await page.getByTestId("local-developer-review-banner").waitFor({ timeout: 180_000 });
-  await enterConsumer(page);
+  await enterConsumer(page, revisionUrl);
   await page.getByTestId("request-estimate-items-total-count").waitFor({ state: "visible", timeout: 90_000 });
 }
 
@@ -882,15 +1241,19 @@ function assertExactRevision(revision: Json, rows: Json[], expectedQuantity: num
   invariant(rows.length === Number(revision.rowCount)
     && (IS_FRAMI_XLIFE_FULL
       ? rows.length === 24
+      : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+        ? rows.length === 9
       : IS_BIA_TN10_MASONRY ? rows.length === 18 : IS_NRMCA_STRIP_FOUNDATION ? rows.length > 1 : rows.length === 1),
   "REVISION_ROW_DENOMINATOR_RED");
   const row = rows.find((candidate) => candidate.rowId === ROW_ID);
   invariant(row != null, "TARGET_ROW_MISSING");
   invariant(row.rowId === ROW_ID && String(row.titleRu).includes(EXPECTED_TITLE), "ROW_IDENTITY_RED");
-  invariant(Number(row.quantity) === expectedQuantity && row.unitId === TARGET_UNIT_ID,
+  invariant(Math.abs(Number(row.quantity) - expectedQuantity) < 1e-9
+    && row.unitId === TARGET_UNIT_ID,
     "ROW_QUANTITY_OR_UNIT_RED");
   invariant(row.unitPrice == null && row.amount == null, "UNKNOWN_PRICE_WAS_ZEROED");
-  invariant(IS_FRAMI_XLIFE_FULL || IS_NRMCA_STRIP_FOUNDATION || IS_BIA_TN10_MASONRY
+  invariant(IS_FRAMI_XLIFE_FULL || IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    || IS_NRMCA_STRIP_FOUNDATION || IS_BIA_TN10_MASONRY
     ? row.procurementEligible === true && row.includedInProcurement === true
     : row.procurementEligible === false && row.includedInProcurement === false,
   "TARGET_ROW_PROCUREMENT_TRUTH_RED");
@@ -935,6 +1298,37 @@ function assertExactRevision(revision: Json, rows: Json[], expectedQuantity: num
     const binding = resourceGraph?.professionalPhysicalNormBindingV1;
     invariant(binding?.product_profile_id === FIXTURE.product_profile_id,
       "PHYSICAL_BINDING_MISSING");
+  }
+  if (IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD) {
+    const deliveryQuantity = expectedQuantity * Number(FIXTURE.concrete_delivery_distance_km);
+    const exactQuantities = {
+      "material:concrete:curing-membrane": Number(FIXTURE.curing_membrane_area_m2),
+      "work:concrete:place-and-compact": Number(FIXTURE.placement_worker_h),
+      "work:concrete:finish-surface": Number(FIXTURE.finishing_worker_h),
+      "work:concrete:cure": Number(FIXTURE.curing_worker_h),
+      "equipment:concrete:pump": Number(FIXTURE.pump_machine_h),
+      "equipment:concrete:deep-vibrator": Number(FIXTURE.deep_vibrator_machine_h),
+      "service:concrete:acceptance-control": Number(FIXTURE.quality_control_document_count),
+      "delivery:concrete:ready-mix": deliveryQuantity,
+    } as const;
+    for (const [rowId, quantity] of Object.entries(exactQuantities)) {
+      const exact = rows.find((candidate) => candidate.rowId === rowId);
+      invariant(exact != null && Math.abs(Number(exact.quantity) - quantity) < 1e-9
+        && exact.includedInEstimate === true,
+      `STRIP_CONCRETE_FULL_SCOPE_QUANTITY_RED:${rowId}`);
+    }
+    invariant(rows.filter((candidate) => candidate.category === "material").length === 2
+      && rows.filter((candidate) => candidate.category === "construction_work").length === 3
+      && rows.filter((candidate) => candidate.category === "equipment").length === 2
+      && rows.filter((candidate) => candidate.category === "service").length === 1
+      && rows.filter((candidate) => candidate.category === "delivery").length === 1
+      && rows.filter((candidate) => candidate.includedInProcurement).length === 6
+      && !rows.some((candidate) => candidate.rowId === "equipment:concrete:crane-bucket")
+      && !rows.some((candidate) => candidate.rowId === "material:concrete:winter-heating-cable")
+      && !rows.some((candidate) => candidate.rowId === "work:concrete:winter-heating")
+      && !rows.some((candidate) => candidate.rowId === "equipment:concrete:heating-transformer")
+      && rows.every((candidate) => candidate.unitPrice == null && candidate.amount == null),
+    "STRIP_CONCRETE_FULL_APPLICABLE_COMPOSITION_RED");
   }
   if (IS_BIA_TN10_MASONRY) {
     const wallAreaM2 = expectedQuantity === ORIGINAL_TARGET_QUANTITY
@@ -1009,6 +1403,11 @@ function assertExactRevision(revision: Json, rows: Json[], expectedQuantity: num
       && Number(revision.totals?.excludedRowCount) === 7
       && Number(revision.totals?.unpricedRowCount) === 17,
     "FRAMI_TOTALS_DENOMINATOR_RED");
+  } else if (IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD) {
+    invariant(Number(revision.totals?.includedRowCount) === 9
+      && Number(revision.totals?.excludedRowCount) === 0
+      && Number(revision.totals?.unpricedRowCount) === 9,
+    "STRIP_CONCRETE_TOTALS_DENOMINATOR_RED");
   }
   return row;
 }
@@ -1138,10 +1537,17 @@ async function openColdRevision(context: BrowserContext, revision: Json, screens
     await page.locator('[data-testid^="consumer-repair-item-title-"]')
       .filter({ hasText: EXPECTED_VISIBLE_TITLE }).waitFor({ state: "visible", timeout: 90_000 });
     await assertPreliminaryScopeVisible(page);
+    const expectedQuantityText = String(Number(ACCEPTED_TARGET_QUANTITY.toFixed(9)));
+    const expectedQuantityTextComma = expectedQuantityText.replace(".", ",");
+    await page.waitForFunction(
+      ({ dot, comma }) => document.body?.innerText.includes(dot)
+        || document.body?.innerText.includes(comma),
+      { dot: expectedQuantityText, comma: expectedQuantityTextComma },
+      { timeout: 60_000 },
+    );
     const body = await page.locator("body").innerText();
-    const expectedQuantityText = String(ACCEPTED_TARGET_QUANTITY);
     invariant(body.includes(expectedQuantityText)
-      || body.includes(expectedQuantityText.replace(".", ",")), "COLD_REOPEN_QUANTITY_RED");
+      || body.includes(expectedQuantityTextComma), "COLD_REOPEN_QUANTITY_RED");
     if (IS_BIA_TN10_MASONRY) {
       const mortarQuantityText = String(SENSITIVITY_PRIMARY_VALUE === 100 ? 2.2 : 1.98);
       invariant(body.includes(mortarQuantityText) || body.includes(mortarQuantityText.replace(".", ",")),
@@ -1172,6 +1578,20 @@ async function openColdRevision(context: BrowserContext, revision: Json, screens
         && expandedBody.includes("Доставка комплекта опалубки на объект")
         && expandedBody.includes("Возврат арендного комплекта опалубки поставщику"),
       "COLD_REOPEN_COMPLETE_FRAMI_ESTIMATE_RED");
+    } else if (IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD) {
+      const positionsPanel = page.getByTestId("request-estimate-positions-panel");
+      const positionsToggle = page.getByTestId("request-estimate-positions-toggle");
+      if (!await positionsPanel.isVisible().catch(() => false)
+        && (await positionsToggle.innerText().catch(() => "")).includes("Показать позиции")) {
+        await positionsToggle.click();
+      }
+      await positionsPanel.waitFor({ state: "visible", timeout: 60_000 });
+      const expandedBody = await page.locator("body").innerText();
+      invariant(expandedBody.includes("Укладка и уплотнение бетонной смеси")
+        && expandedBody.includes("Глубинный вибратор для уплотнения бетонной смеси")
+        && expandedBody.includes("Приёмочный контроль бетонной смеси")
+        && expandedBody.includes("Доставка товарного бетона автобетоносмесителями"),
+      "COLD_REOPEN_COMPLETE_STRIP_CONCRETE_ESTIMATE_RED");
     } else if (!IS_NRMCA_STRIP_FOUNDATION) {
       invariant(!body.includes("2.4"), "COLD_REOPEN_OLD_FACTOR_RED");
     }
@@ -1183,6 +1603,7 @@ async function openColdRevision(context: BrowserContext, revision: Json, screens
       expectedQuantity: ACCEPTED_TARGET_QUANTITY,
       expectedQuantityVisible: true,
       oldFactorVisible: IS_FRAMI_XLIFE_FULL
+        || IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
         || IS_NRMCA_STRIP_FOUNDATION || IS_BIA_TN10_MASONRY ? null : false,
       preliminaryScopeGapVisible: IS_RICS_NRM2_FORMWORK ? true : null,
       screenshot,
@@ -1239,33 +1660,196 @@ async function main(): Promise<void> {
   let searchEvidence: Json;
   let compileIngress: Json;
   try {
-    await page.goto(`${ORIGIN}/request?exactNormProfile=${encodeURIComponent(PROFILE_ID)}&run=${Date.now()}`,
+    if (RESUME_REVISION_ID) {
+      sensitivityRevision = await api(apiAuthorization, `revisions/${RESUME_REVISION_ID}`);
+      invariant(sensitivityRevision.catalogId === CATALOG_ID
+        && sensitivityRevision.parentRevisionId,
+      "RESUME_REVISION_IDENTITY_RED");
+      preparedRevision = await api(
+        apiAuthorization,
+        `revisions/${sensitivityRevision.parentRevisionId}`,
+      );
+      initialRevision = preparedRevision;
+      const preparedRows = await allRows(apiAuthorization, preparedRevision.revisionId);
+      const sensitivityRows = await allRows(apiAuthorization, sensitivityRevision.revisionId);
+      originalRow = assertExactRevision(preparedRevision, preparedRows, ORIGINAL_TARGET_QUANTITY);
+      originalReinforcementRow = assertExactReinforcement(preparedRows);
+      sensitivityRow = assertExactRevision(
+        sensitivityRevision,
+        sensitivityRows,
+        SENSITIVITY_TARGET_QUANTITY,
+      );
+      sensitivityReinforcementRow = assertExactReinforcement(sensitivityRows);
+      const history = await api(
+        apiAuthorization,
+        `revisions?catalogId=${encodeURIComponent(CATALOG_ID)}&limit=100`,
+      );
+      const historyRows = Array.isArray(history.revisions) ? history.revisions as Json[] : [];
+      invariant(historyRows.some((entry) => entry.revisionId === preparedRevision.revisionId)
+        && historyRows.some((entry) => entry.revisionId === sensitivityRevision.revisionId),
+      "RESUME_HISTORY_LINEAGE_MISSING");
+      await openRevision(page, sensitivityRevision.revisionId);
+      await page.locator('[data-testid^="consumer-repair-item-title-"]')
+        .filter({ hasText: EXPECTED_VISIBLE_TITLE }).waitFor({ state: "visible", timeout: 90_000 });
+      const sensitivityScreenshot = resolve(
+        OUTPUT_ROOT,
+        `02_sensitivity_${SENSITIVITY_PRIMARY_VALUE}.png`,
+      );
+      await page.screenshot({ path: sensitivityScreenshot, fullPage: true });
+      compileIngress = {
+        kind: "WEB_RESUME_EXISTING_REVISIONS_NO_COMPILE_OR_RECALCULATE",
+        route: "/request",
+        resumedRevisionId: sensitivityRevision.revisionId,
+        parentRevisionId: preparedRevision.revisionId,
+      };
+      searchEvidence = {
+        resumeOnly: true,
+        before: null,
+        after: historyRows.length,
+        delta: 0,
+        initialWasPrepared: true,
+        originalScreenshot: null,
+        sensitivityScreenshot,
+        durationScreenshot: null,
+        compileIngress,
+      };
+      progress("SENSITIVITY_RESUMED_GREEN", {
+        revisionId: sensitivityRevision.revisionId,
+        primaryValue: SENSITIVITY_PRIMARY_VALUE,
+        targetQuantity: SENSITIVITY_TARGET_QUANTITY,
+      });
+    } else {
+    const matchesTargetSearch = (response: Response): boolean => {
+      const responseUrl = new URL(response.url());
+      return responseUrl.origin === BACKEND
+        && responseUrl.pathname.endsWith("/search/catalog")
+        && responseUrl.searchParams.get("query") === SEARCH_QUERY
+        && response.status() === 200;
+    };
+    const directHistoryBefore = IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+      ? await api(apiAuthorization, `revisions?catalogId=${encodeURIComponent(CATALOG_ID)}&limit=100`)
+      : null;
+    const directCompilePromise = IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+      ? page.waitForResponse((response) => response.url().endsWith("/jobs/compile")
+        && response.request().method() === "POST", { timeout: 120_000 })
+        .then((response) => ({ response, error: null as unknown }))
+        .catch((error: unknown) => ({ response: null, error }))
+      : null;
+    const requestUrl = IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+      ? `${ORIGIN}/request?catalogWorkId=${encodeURIComponent(CATALOG_ID)}`
+        + `&prompt=${encodeURIComponent(PROMPT)}&autoPrepare=1`
+        + `&context=${encodeURIComponent(`acceptance:${PROFILE_ID}:${Date.now()}`)}`
+      : `${ORIGIN}/request?exactNormProfile=${encodeURIComponent(PROFILE_ID)}&run=${Date.now()}`;
+    await page.goto(requestUrl,
       { waitUntil: "commit", timeout: 180_000 });
     await page.getByTestId("local-developer-review-banner").waitFor({ timeout: 180_000 });
-    await enterConsumer(page);
+    await enterConsumer(page, requestUrl);
     progress("CONSUMER_READY");
     const input = page.getByTestId("consumer-repair-problem-input");
     invariant(await input.isEditable().catch(() => false), "CONSUMER_SEARCH_INPUT_NOT_EDITABLE");
-    await input.fill("");
-    const searchPromise = page.waitForResponse((response) => {
-      const responseUrl = new URL(response.url());
-      return responseUrl.origin === BACKEND
-        && responseUrl.pathname === "/search/catalog"
-        && responseUrl.searchParams.get("query") === SEARCH_QUERY
-        && response.status() === 200;
-    }, { timeout: 120_000 });
-    const [searchResponse] = await Promise.all([searchPromise, input.fill(SEARCH_QUERY)]);
-    const search = await json(searchResponse);
+    progress("SEARCH_INPUT_READY", {
+      previousValue: await input.inputValue(),
+      query: SEARCH_QUERY,
+    });
+    let search: Json;
+    let items: Json[];
+    let selectedIndex: number;
+    let selectedWorkText: string;
+    let beforeRows: Json[];
+    let prepareState: Json;
+    let compileResponse: Response;
+    if (IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD) {
+      invariant((await input.inputValue()).replace(/\s+/gu, " ").trim()
+        === PROMPT.replace(/\s+/gu, " ").trim(), "DIRECT_LAUNCH_PROMPT_RED");
+      search = await api(apiAuthorization, `search/catalog?query=${encodeURIComponent(SEARCH_QUERY)}`);
+      invariant(search.searchIndexReleaseId === SEARCH_RELEASE_ID, "SEARCH_RELEASE_DRIFT");
+      items = Array.isArray(search.items) ? search.items as Json[] : [];
+      selectedIndex = items.findIndex((item) => item.catalogId === CATALOG_ID);
+      invariant(selectedIndex >= 0, "EXACT_WORK_NOT_FOUND_BY_PROFESSIONAL_NAME");
+      selectedWorkText = String(items[selectedIndex]?.canonicalNameRu ?? "").trim();
+      invariant(selectedWorkText.toLocaleLowerCase("ru-RU").includes(SEARCH_VISIBLE_NEEDLE),
+        "SEARCH_VISIBLE_TITLE_RED");
+      beforeRows = Array.isArray(directHistoryBefore?.revisions)
+        ? directHistoryBefore.revisions as Json[]
+        : [];
+      const prepareButton = page.getByTestId("consumer-repair-prepare-draft");
+      prepareState = {
+        visible: await prepareButton.isVisible().catch(() => false),
+        enabled: await prepareButton.isEnabled().catch(() => false),
+        label: "AUTO_PREPARE_ROUTE",
+      };
+      invariant(directCompilePromise, "DIRECT_COMPILE_WAITER_MISSING");
+      const directCompileResult = await directCompilePromise;
+      invariant(directCompileResult.response,
+        `DIRECT_COMPILE_NOT_OBSERVED:${directCompileResult.error instanceof Error
+          ? directCompileResult.error.message
+          : String(directCompileResult.error)}`);
+      compileResponse = directCompileResult.response;
+      compileIngress = {
+        kind: "WEB_EXACT_CATALOG_AUTO_PREPARE",
+        route: "/request",
+        catalogWorkId: CATALOG_ID,
+        prepareState,
+      };
+      progress("WORK_SELECTED", { selectedWorkText, selectedIndex, itemCount: items.length });
+    } else {
+      const searchPromise = page.waitForResponse(matchesTargetSearch, {
+        timeout: IS_FRAMI_XLIFE_PEDESTAL_STANDARD ? 15_000 : 120_000,
+      });
+      await input.fill("");
+      if (IS_FRAMI_XLIFE_PEDESTAL_STANDARD) {
+        // RN Web can update the DOM value for a programmatic fill without
+        // delivering onChangeText after repeated long-lived Metro sessions.
+        // Real key events keep the user-visible search and its debounce path
+        // authoritative for this acceptance profile.
+        await input.pressSequentially(SEARCH_QUERY, { delay: 2 });
+      } else {
+        await input.fill(SEARCH_QUERY);
+      }
+      progress("SEARCH_INPUT_FILLED", { value: await input.inputValue() });
+      const searchResponse = await searchPromise.catch(async (error: unknown) => {
+        atomicJson(resolve(OUTPUT_ROOT, "search-input-diagnostic.json"), {
+          capturedAt: new Date().toISOString(),
+          inputValue: await input.inputValue().catch(() => null),
+          inputHtml: await input.evaluate((node) => node.outerHTML).catch(() => null),
+          bodyText: (await page.locator("body").innerText().catch(() => "")).slice(0, 30_000),
+          suggestionCount: await page.locator('[data-testid^="consumer-repair-work-suggestion-"]').count(),
+          backendRequests,
+          consoleErrors,
+          pageErrors,
+          requestFailures,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        throw error;
+      });
+      search = await json(searchResponse);
     invariant(search.searchIndexReleaseId === SEARCH_RELEASE_ID, "SEARCH_RELEASE_DRIFT");
-    const items = Array.isArray(search.items) ? search.items as Json[] : [];
-    const selectedIndex = items.findIndex((item) => item.catalogId === CATALOG_ID);
+      items = Array.isArray(search.items) ? search.items as Json[] : [];
+      selectedIndex = items.findIndex((item) => item.catalogId === CATALOG_ID);
     invariant(selectedIndex >= 0, "EXACT_WORK_NOT_FOUND_BY_PROFESSIONAL_NAME");
+    if (EXACT_FORMWORK_FAMILY_GROUP_NAME_RU != null) {
+      const selectedItem = items[selectedIndex];
+      const exactFamilyScopeNeedle = EXACT_FORMWORK_FAMILY_GROUP_NAME_RU
+        .replace(/^съёмная(?: щитовая)? опалубка\s+/u, "");
+      invariant(selectedItem?.groupNameRu === EXACT_FORMWORK_FAMILY_GROUP_NAME_RU
+        && exactFamilyScopeNeedle.length > 0
+        && String(selectedItem?.shortScopeRu ?? "").includes(exactFamilyScopeNeedle)
+        && Array.isArray(selectedItem?.keyDistinguishingParameters)
+        && selectedItem.keyDistinguishingParameters.length === 4
+        && !JSON.stringify(selectedItem).includes('"parameterId":"q"'),
+      "FORMWORK_FAMILY_SEARCH_SEMANTIC_METADATA_RED");
+    }
     progress("SEARCH_READY", { selectedIndex, itemCount: items.length });
     const suggestion = page.getByTestId(`consumer-repair-work-suggestion-${selectedIndex + 1}`);
     await suggestion.waitFor({ state: "visible", timeout: 120_000 });
-    const selectedWorkText = (await suggestion.innerText()).trim();
+      selectedWorkText = (await suggestion.innerText()).trim();
     invariant(selectedWorkText.toLocaleLowerCase("ru-RU").includes(SEARCH_VISIBLE_NEEDLE),
       "SEARCH_VISIBLE_TITLE_RED");
+    if (EXACT_FORMWORK_FAMILY_GROUP_NAME_RU != null) {
+      invariant(selectedWorkText.includes(EXACT_FORMWORK_FAMILY_GROUP_NAME_RU)
+        && !selectedWorkText.includes("для высокой нагрузки"),
+      "FORMWORK_FAMILY_VISIBLE_GROUP_NAME_RED");
+    }
     if (IS_RICS_NRM2_FORMWORK) {
       invariant(selectedWorkText.includes("(не полный состав работ)")
         && !selectedWorkText.includes("Монтаж и демонтаж опалубки"),
@@ -1279,9 +1863,9 @@ async function main(): Promise<void> {
     progress("WORK_SELECTED", { selectedWorkText });
     invariant(authorization.startsWith("Bearer "), "BROWSER_AUTHORIZATION_MISSING");
     const historyBefore = await api(authorization, `revisions?catalogId=${encodeURIComponent(CATALOG_ID)}&limit=100`);
-    const beforeRows = Array.isArray(historyBefore.revisions) ? historyBefore.revisions as Json[] : [];
+      beforeRows = Array.isArray(historyBefore.revisions) ? historyBefore.revisions as Json[] : [];
     const prepareButton = page.getByTestId("consumer-repair-prepare-draft");
-    const prepareState = {
+      prepareState = {
       visible: await prepareButton.isVisible().catch(() => false),
       enabled: await prepareButton.isEnabled().catch(() => false),
       label: await prepareButton.innerText().catch(() => ""),
@@ -1290,7 +1874,6 @@ async function main(): Promise<void> {
     const compilePromise = page.waitForResponse((response) => response.url().endsWith("/jobs/compile")
       && response.request().method() === "POST", { timeout: 30_000 });
     await prepareButton.click();
-    let compileResponse: Response;
     try {
       compileResponse = await compilePromise;
     } catch (error) {
@@ -1317,13 +1900,14 @@ async function main(): Promise<void> {
       await page.screenshot({ path: resolve(OUTPUT_ROOT, "prepare-button-diagnostic.png"), fullPage: true });
       throw new Error(`EXACT_FORMWORK_WEB:WEB_PREPARE_NO_COMPILE_POST:${diagnosticPath}`);
     }
-    const compileBody = await json(compileResponse);
-    invariant(compileResponse.status() === 202,
-      `WEB_COMPILE_HTTP_${compileResponse.status()}:${String(compileBody.error?.code ?? "")}`);
     compileIngress = {
       kind: "WEB_PREPARE_BUTTON",
       prepareState,
     };
+    }
+    const compileBody = await json(compileResponse);
+    invariant(compileResponse.status() === 202,
+      `WEB_COMPILE_HTTP_${compileResponse.status()}:${String(compileBody.error?.code ?? "")}`);
     progress("COMPILE_ACCEPTED");
     initialRevision = await waitForSuccessfulRevision(authorization, compileBody);
     preparedRevision = await ensurePreparedRevision(authorization, initialRevision);
@@ -1398,6 +1982,16 @@ async function main(): Promise<void> {
         && sensitivityRevision.parameters?.gross_wall_area_and_opening_deductions
           === "GROSS_M2=110,OPENINGS_M2=10,NET_M2=100",
       "MASONRY_SENSITIVITY_PARAMETER_DRIFT");
+    } else if (IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD) {
+      const mismatches = Object.entries(FIXTURE)
+        .filter(([parameterId, value]) => parameterId === PRIMARY_MEASURE_PARAMETER_ID
+          ? Number(sensitivityRevision.parameters?.[parameterId]) !== SENSITIVITY_PRIMARY_VALUE
+          : typeof value === "number"
+            ? Number(sensitivityRevision.parameters?.[parameterId]) !== value
+            : sensitivityRevision.parameters?.[parameterId] !== value)
+        .map(([parameterId]) => parameterId);
+      invariant(mismatches.length === 0,
+        `STRIP_CONCRETE_SENSITIVITY_PARAMETER_DRIFT:${mismatches.join(",")}`);
     }
     const sensitivityRows = await allRows(authorization, sensitivityRevision.revisionId);
     sensitivityRow = assertExactRevision(sensitivityRevision, sensitivityRows, SENSITIVITY_TARGET_QUANTITY);
@@ -1474,6 +2068,7 @@ async function main(): Promise<void> {
       delta: afterRows.length - beforeRows.length,
       initialWasPrepared: initialRevision.revisionId === preparedRevision.revisionId,
       originalScreenshot, sensitivityScreenshot, durationScreenshot, compileIngress };
+    }
   } finally {
     await closePageBounded(page);
   }
@@ -1482,7 +2077,9 @@ async function main(): Promise<void> {
   const acceptedRevision = durationRevision ?? sensitivityRevision!;
   const negativeScenarios: { scenarioId: string; parameters: Json; expectedErrorCode: string | null }[] =
     IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD || IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
-      || IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
+      || IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD || IS_FRAMI_XLIFE_ANCHOR_GROUP_STANDARD
+      || IS_FRAMI_XLIFE_BELT_STANDARD || IS_FRAMI_XLIFE_COLUMN_BASE_STANDARD
+      || IS_FRAMI_XLIFE_PEDESTAL_STANDARD
       ? [
         { scenarioId: "crane-not-applicable-with-hours",
           expectedErrorCode: "FORMWORK_CRANE_SCOPE_NOT_APPLICABLE_QUANTITY_CONFLICT:crane_hours",
@@ -1521,6 +2118,16 @@ async function main(): Promise<void> {
         { scenarioId: "dpc-not-applicable-conflict",
           expectedErrorCode: "MASONRY_FULL_SCOPE_NOT_APPLICABLE_QUANTITY_CONFLICT:dpc_area_m2",
           parameters: { ...acceptedRevision.parameters, dpc_applicable: false, dpc_area_m2: 1 } },
+      ]
+      : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+      ? [
+        { scenarioId: "cip31-reserve-below-range", expectedErrorCode: "PARAMETER_VALIDATION_FAILED",
+          parameters: { ...acceptedRevision.parameters, selected_contingency_percent: 2 } },
+        { scenarioId: "missing-volume-source", expectedErrorCode: "PARAMETER_VALIDATION_FAILED",
+          parameters: { ...acceptedRevision.parameters, plan_volume_calculation_reference: null } },
+        { scenarioId: "wrong-product-profile", expectedErrorCode: "PARAMETER_VALIDATION_FAILED",
+          parameters: { ...acceptedRevision.parameters,
+            product_profile_id: "method-profile:generic-ready-mix" } },
       ]
       : IS_NRMCA_STRIP_FOUNDATION
         ? [
@@ -1570,6 +2177,9 @@ async function main(): Promise<void> {
   const expectedProcurementTruth = IS_FRAMI_XLIFE_FULL
     ? Number(procurement.metadata?.selectedProcurementRowCount) === 14
       && Number(procurement.metadata?.projectedRowCount) === 14
+    : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+    ? Number(procurement.metadata?.selectedProcurementRowCount) === 6
+      && Number(procurement.metadata?.projectedRowCount) === 6
     : IS_NRMCA_STRIP_FOUNDATION || IS_BIA_TN10_MASONRY
     ? Number(procurement.metadata?.selectedProcurementRowCount) > 0
       && Number(procurement.metadata?.projectedRowCount)
@@ -1596,6 +2206,28 @@ async function main(): Promise<void> {
       && !procurementRows.some((candidate) => candidate.category === "construction_work")
       && !procurementRows.some((candidate) => String(candidate.rowId).includes("not-applicable")),
     "FRAMI_PROCUREMENT_COMPOSITION_RED");
+  } else if (IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD) {
+    const procurementRows = Array.isArray(procurement.projection?.rows)
+      ? procurement.projection.rows as Json[]
+      : [];
+    invariant(procurement.projection?.revisionId === acceptedRevision.revisionId
+      && procurement.projection?.releaseId === RELEASE_ID
+      && Number(procurement.projection?.selectedRowCount) === 6
+      && procurementRows.length === 6,
+    "STRIP_CONCRETE_PROCUREMENT_PROJECTION_IDENTITY_RED");
+    invariant(procurementRows.filter((candidate) => candidate.category === "material").length === 2
+      && procurementRows.filter((candidate) => candidate.category === "equipment").length === 2
+      && procurementRows.filter((candidate) => candidate.category === "service").length === 1
+      && procurementRows.filter((candidate) => candidate.category === "delivery").length === 1
+      && !procurementRows.some((candidate) => candidate.category === "construction_work")
+      && Math.abs(Number(procurementRows.find((candidate) =>
+        candidate.rowId === "material:concrete:ready-mix")?.quantity)
+          - SENSITIVITY_TARGET_QUANTITY) < 1e-9
+      && Math.abs(Number(procurementRows.find((candidate) =>
+        candidate.rowId === "delivery:concrete:ready-mix")?.quantity)
+          - SENSITIVITY_TARGET_QUANTITY * Number(FIXTURE.concrete_delivery_distance_km)) < 1e-9
+      && procurementRows.every((candidate) => candidate.unitPrice == null && candidate.amount == null),
+    "STRIP_CONCRETE_PROCUREMENT_COMPOSITION_OR_ZERO_PRICE_RED");
   } else if (IS_BIA_TN10_MASONRY) {
     const procurementRows = Array.isArray(procurement.projection?.rows)
       ? procurement.projection.rows as Json[]
@@ -1648,7 +2280,33 @@ async function main(): Promise<void> {
   invariant(unexpectedFailures.length === 0, `REQUEST_FAILURES:${unexpectedFailures.join("|")}`);
 
   const body = {
-    schemaVersion: IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
+    schemaVersion: IS_FRAMI_XLIFE_PEDESTAL_STANDARD
+      ? "rik-expo-app.r4-a13-6.formwork-frami-xlife-pedestal-standard-full.web-acceptance.v1"
+      : IS_FRAMI_XLIFE_COLUMN_BASE_STANDARD
+      ? "rik-expo-app.r4-a13-6.formwork-frami-xlife-column-base-standard-full.web-acceptance.v1"
+      : IS_FRAMI_XLIFE_BELT_STANDARD
+      ? "rik-expo-app.r4-a13-6.formwork-frami-xlife-belt-standard-full.web-acceptance.v1"
+      : IS_FRAMI_XLIFE_ANCHOR_GROUP_STANDARD
+      ? "rik-expo-app.r4-a13-6.formwork-frami-xlife-anchor-group-standard-full.web-acceptance.v1"
+      : IS_REINFORCEMENT_FRAME_CONCRETE_PLACEMENT_STANDARD
+      ? "rik-expo-app.r4-a13-6.reinforcement-frame-concrete-placement-standard.web-acceptance.v1"
+      : IS_STAIRS_CONCRETE_PLACEMENT_STANDARD
+      ? "rik-expo-app.r4-a13-6.stairs-concrete-placement-standard.web-acceptance.v1"
+      : IS_SLAB_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+      ? "rik-expo-app.r4-a13-6.slab-foundation-concrete-placement-standard.web-acceptance.v1"
+      : IS_PEDESTAL_CONCRETE_PLACEMENT_STANDARD
+      ? "rik-expo-app.r4-a13-6.pedestal-concrete-placement-standard.web-acceptance.v1"
+      : IS_PILE_CAP_CONCRETE_PLACEMENT_STANDARD
+      ? "rik-expo-app.r4-a13-6.pile-cap-concrete-placement-standard.web-acceptance.v1"
+      : IS_CONCRETE_SLAB_CONCRETE_PLACEMENT_STANDARD
+      ? "rik-expo-app.r4-a13-6.concrete-slab-concrete-placement-standard.web-acceptance.v1"
+      : IS_BELT_CONCRETE_PLACEMENT_STANDARD
+      ? "rik-expo-app.r4-a13-6.belt-concrete-placement-standard.web-acceptance.v1"
+      : IS_COLUMN_BASE_CONCRETE_PLACEMENT_STANDARD
+      ? "rik-expo-app.r4-a13-6.column-base-concrete-placement-standard.web-acceptance.v1"
+      : IS_ANCHOR_GROUP_CONCRETE_PLACEMENT_STANDARD
+      ? "rik-expo-app.r4-a13-6.anchor-group-concrete-placement-standard.web-acceptance.v1"
+      : IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
       ? "rik-expo-app.r4-a13-6.formwork-frami-xlife-general-foundation-standard-full.web-acceptance.v1"
       : IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
       ? "rik-expo-app.r4-a13-6.formwork-frami-xlife-slab-foundation-standard-full.web-acceptance.v1"
@@ -1658,6 +2316,8 @@ async function main(): Promise<void> {
         ? "rik-expo-app.r4-a13-6.formwork-frami-xlife-pile-cap-full.web-acceptance.v1"
       : IS_BIA_TN10_MASONRY
       ? "rik-expo-app.r4-a13-6.bia-tn10-masonry-full-applicable-estimate.web-acceptance.v2"
+      : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+        ? "rik-expo-app.r4-a13-6.strip-foundation-concrete-placement-standard.web-acceptance.v1"
       : IS_NRMCA_STRIP_FOUNDATION
         ? "rik-expo-app.r4-a13-6.strip-foundation-nrmca-cip31-rebar-schedule.web-acceptance.v2"
         : IS_RICS_NRM2_WET_ZONE
@@ -1670,7 +2330,33 @@ async function main(): Promise<void> {
                 ? "rik-expo-app.r4-a13-6.formwork-rics-nrm2-pile-cap-wet-zone.web-acceptance.v2"
               : "rik-expo-app.r4-a13-6.formwork-rics-nrm2.web-acceptance.v2",
     capturedAt: new Date().toISOString(),
-    status: IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
+    status: IS_FRAMI_XLIFE_PEDESTAL_STANDARD
+      ? "GREEN_EXACT_FORMWORK_FRAMI_XLIFE_PEDESTAL_STANDARD_FULL_WEB_BACKEND_PDF_PROCUREMENT_HISTORY_COLD"
+      : IS_FRAMI_XLIFE_COLUMN_BASE_STANDARD
+      ? "GREEN_EXACT_FORMWORK_FRAMI_XLIFE_COLUMN_BASE_STANDARD_FULL_WEB_BACKEND_PDF_PROCUREMENT_HISTORY_COLD"
+      : IS_FRAMI_XLIFE_BELT_STANDARD
+      ? "GREEN_EXACT_FORMWORK_FRAMI_XLIFE_BELT_STANDARD_FULL_WEB_BACKEND_PDF_PROCUREMENT_HISTORY_COLD"
+      : IS_FRAMI_XLIFE_ANCHOR_GROUP_STANDARD
+      ? "GREEN_EXACT_FORMWORK_FRAMI_XLIFE_ANCHOR_GROUP_STANDARD_FULL_WEB_BACKEND_PDF_PROCUREMENT_HISTORY_COLD"
+      : IS_REINFORCEMENT_FRAME_CONCRETE_PLACEMENT_STANDARD
+      ? "GREEN_EXACT_REINFORCEMENT_FRAME_CONCRETE_PLACEMENT_STANDARD_WEB_BACKEND_PDF_PROCUREMENT_HISTORY_COLD"
+      : IS_STAIRS_CONCRETE_PLACEMENT_STANDARD
+      ? "GREEN_EXACT_STAIRS_CONCRETE_PLACEMENT_STANDARD_WEB_BACKEND_PDF_PROCUREMENT_HISTORY_COLD"
+      : IS_SLAB_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+      ? "GREEN_EXACT_SLAB_FOUNDATION_CONCRETE_PLACEMENT_STANDARD_WEB_BACKEND_PDF_PROCUREMENT_HISTORY_COLD"
+      : IS_PEDESTAL_CONCRETE_PLACEMENT_STANDARD
+      ? "GREEN_EXACT_PEDESTAL_CONCRETE_PLACEMENT_STANDARD_WEB_BACKEND_PDF_PROCUREMENT_HISTORY_COLD"
+      : IS_PILE_CAP_CONCRETE_PLACEMENT_STANDARD
+      ? "GREEN_EXACT_PILE_CAP_CONCRETE_PLACEMENT_STANDARD_WEB_BACKEND_PDF_PROCUREMENT_HISTORY_COLD"
+      : IS_CONCRETE_SLAB_CONCRETE_PLACEMENT_STANDARD
+      ? "GREEN_EXACT_CONCRETE_SLAB_CONCRETE_PLACEMENT_STANDARD_WEB_BACKEND_PDF_PROCUREMENT_HISTORY_COLD"
+      : IS_BELT_CONCRETE_PLACEMENT_STANDARD
+      ? "GREEN_EXACT_BELT_CONCRETE_PLACEMENT_STANDARD_WEB_BACKEND_PDF_PROCUREMENT_HISTORY_COLD"
+      : IS_COLUMN_BASE_CONCRETE_PLACEMENT_STANDARD
+      ? "GREEN_EXACT_COLUMN_BASE_CONCRETE_PLACEMENT_STANDARD_WEB_BACKEND_PDF_PROCUREMENT_HISTORY_COLD"
+      : IS_ANCHOR_GROUP_CONCRETE_PLACEMENT_STANDARD
+      ? "GREEN_EXACT_ANCHOR_GROUP_CONCRETE_PLACEMENT_STANDARD_WEB_BACKEND_PDF_PROCUREMENT_HISTORY_COLD"
+      : IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
       ? "GREEN_EXACT_FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD_FULL_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
       : IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
       ? "GREEN_EXACT_FORMWORK_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD_FULL_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
@@ -1680,6 +2366,8 @@ async function main(): Promise<void> {
         ? "GREEN_EXACT_FORMWORK_FRAMI_XLIFE_PILE_CAP_FULL_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
       : IS_BIA_TN10_MASONRY
       ? "GREEN_EXACT_BIA_TN10_MASONRY_FULL_APPLICABLE_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
+      : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+        ? "GREEN_EXACT_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
       : IS_NRMCA_STRIP_FOUNDATION
         ? "GREEN_EXACT_STRIP_FOUNDATION_NRMCA_CIP31_REBAR_SCHEDULE_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
         : IS_RICS_NRM2_WET_ZONE
@@ -1712,7 +2400,15 @@ async function main(): Promise<void> {
         procurementRowCount: 14,
         preliminaryScopeNeedCount: 0,
         areaDerivedKitQuantities: false,
-        familyContext: IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
+        familyContext: IS_FRAMI_XLIFE_PEDESTAL_STANDARD
+          ? "pedestal_standard"
+          : IS_FRAMI_XLIFE_COLUMN_BASE_STANDARD
+          ? "column_base_standard"
+          : IS_FRAMI_XLIFE_BELT_STANDARD
+          ? "belt_standard"
+          : IS_FRAMI_XLIFE_ANCHOR_GROUP_STANDARD
+          ? "anchor_group_standard"
+          : IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
           ? "general_foundation_standard"
           : IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
           ? "slab_foundation_standard"
@@ -1732,6 +2428,38 @@ async function main(): Promise<void> {
           procurementRowCount: 10,
           conditionalRowsExcludedCount: 5,
           preliminaryScopeNeedCount: 0,
+        }
+      : IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+        ? {
+          estimateLevel: "FULL_APPLICABLE_ESTIMATE",
+          scopeMode: "EXPLICIT_PROJECT_CONCRETE_PLACEMENT_SCHEDULE",
+          fullWorkScopeComplete: true,
+          parameterCount: 32,
+          formulaCount: 13,
+          resourceDefinitionCount: 13,
+          includedEstimateRowCount: 9,
+          procurementRowCount: 6,
+          conditionalRowsExcludedCount: 4,
+          preliminaryScopeNeedCount: 0,
+          familyContext: IS_REINFORCEMENT_FRAME_CONCRETE_PLACEMENT_STANDARD
+            ? "reinforcement_frame_standard"
+            : IS_STAIRS_CONCRETE_PLACEMENT_STANDARD
+            ? "stairs_standard"
+            : IS_SLAB_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
+            ? "slab_foundation_standard"
+            : IS_PEDESTAL_CONCRETE_PLACEMENT_STANDARD
+            ? "pedestal_standard"
+            : IS_PILE_CAP_CONCRETE_PLACEMENT_STANDARD
+            ? "pile_cap_standard"
+            : IS_CONCRETE_SLAB_CONCRETE_PLACEMENT_STANDARD
+            ? "concrete_slab_standard"
+            : IS_BELT_CONCRETE_PLACEMENT_STANDARD
+            ? "belt_standard"
+            : IS_COLUMN_BASE_CONCRETE_PLACEMENT_STANDARD
+            ? "column_base_standard"
+            : IS_ANCHOR_GROUP_CONCRETE_PLACEMENT_STANDARD
+              ? "anchor_group_standard"
+              : "strip_foundation_standard",
         }
       : IS_RICS_NRM2_FORMWORK ? {
         estimateLevel: "PRELIMINARY_QUANTITY_BOQ",
@@ -1774,6 +2502,7 @@ async function main(): Promise<void> {
         byteSize: procurement.byteSize, sha256: procurement.sha256,
         selectedProcurementRowCount: procurement.metadata?.selectedProcurementRowCount,
         projection: IS_FRAMI_XLIFE_FULL || IS_BIA_TN10_MASONRY
+          || IS_STRIP_FOUNDATION_CONCRETE_PLACEMENT_STANDARD
           ? procurement.projection
           : undefined,
         downloadParity: true },

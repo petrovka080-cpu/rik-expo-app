@@ -75,6 +75,7 @@ type StartedMetro = {
   stdoutPath: string;
   stderrPath: string;
   process: ChildProcess | null;
+  configurationValidated: boolean;
 };
 
 const APP_PACKAGE = "com.azisbek_dzhantaev.rikexpoapp";
@@ -233,6 +234,44 @@ export async function isMetroReachable(port: number): Promise<boolean> {
   }
 }
 
+function assertReusableMetroConfiguration(port: number): void {
+  if (process.platform !== "win32") {
+    throw new Error("ANDROID_ROUTE_BOOTSTRAP_METRO_REUSE_CONFIG_UNSUPPORTED_PLATFORM");
+  }
+  const script = [
+    `$connection = Get-NetTCPConnection -LocalPort ${port} -State Listen -ErrorAction Stop | Select-Object -First 1`,
+    "if (-not $connection) { exit 3 }",
+    "$owner = Get-CimInstance Win32_Process -Filter \"ProcessId = $($connection.OwningProcess)\" -ErrorAction Stop",
+    "$owner | Select-Object ProcessId,CommandLine | ConvertTo-Json -Compress",
+  ].join("; ");
+  let owner: { ProcessId?: number; CommandLine?: string };
+  try {
+    owner = JSON.parse(execFileSync(
+      "powershell",
+      ["-NoProfile", "-Command", script],
+      { cwd: process.cwd(), encoding: "utf8", timeout: 10_000 },
+    ));
+  } catch (error) {
+    throw new Error(
+      `ANDROID_ROUTE_BOOTSTRAP_METRO_REUSE_OWNER_UNRESOLVED:${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+  const command = String(owner.CommandLine ?? "").replace(/\\/gu, "/");
+  const normalizedRoot = process.cwd().replace(/\\/gu, "/");
+  const exactConfiguration = command.includes(normalizedRoot)
+    && command.includes("node_modules/expo/bin/cli")
+    && /(?:^|\s)start(?:\s|$)/u.test(command)
+    && /(?:^|\s)--dev-client(?:\s|$)/u.test(command)
+    && /(?:^|\s)--host\s+localhost(?:\s|$)/u.test(command)
+    && new RegExp(`(?:^|\\s)--port\\s+${port}(?:\\s|$)`, "u").test(command)
+    && /(?:^|\s)--max-workers\s+1(?:\s|$)/u.test(command);
+  if (!exactConfiguration) {
+    throw new Error(
+      `ANDROID_ROUTE_BOOTSTRAP_METRO_REUSE_CONFIG_RED:pid=${owner.ProcessId ?? "unknown"}`,
+    );
+  }
+}
+
 async function warmAndroidMetroBundle(port: number): Promise<void> {
   if (!METRO_BUNDLE_WARM_ENABLED) return;
 
@@ -265,8 +304,16 @@ export async function ensureMetro(port: number): Promise<StartedMetro> {
   const stdoutPath = path.join(ANDROID_ROUTE_BOOTSTRAP_DIR, "metro.stdout.log");
   const stderrPath = path.join(ANDROID_ROUTE_BOOTSTRAP_DIR, "metro.stderr.log");
   if (await isMetroReachable(port)) {
+    assertReusableMetroConfiguration(port);
     await warmAndroidMetroBundle(port);
-    return { started: false, port, stdoutPath, stderrPath, process: null };
+    return {
+      started: false,
+      port,
+      stdoutPath,
+      stderrPath,
+      process: null,
+      configurationValidated: true,
+    };
   }
 
   fs.writeFileSync(stdoutPath, "", "utf8");
@@ -282,6 +329,8 @@ export async function ensureMetro(port: number): Promise<StartedMetro> {
       "--port",
       String(port),
       "--clear",
+      "--max-workers",
+      "1",
     ],
     {
       cwd: process.cwd(),
@@ -297,11 +346,25 @@ export async function ensureMetro(port: number): Promise<StartedMetro> {
   while (Date.now() - startedAt < METRO_START_TIMEOUT_MS) {
     if (await isMetroReachable(port)) {
       await warmAndroidMetroBundle(port);
-      return { started: true, port, stdoutPath, stderrPath, process: child };
+      return {
+        started: true,
+        port,
+        stdoutPath,
+        stderrPath,
+        process: child,
+        configurationValidated: true,
+      };
     }
     await sleep(1000);
   }
-  return { started: true, port, stdoutPath, stderrPath, process: child };
+  return {
+    started: true,
+    port,
+    stdoutPath,
+    stderrPath,
+    process: child,
+    configurationValidated: true,
+  };
 }
 
 export function stopMetro(metro: StartedMetro): void {
@@ -313,11 +376,17 @@ export function stopMetro(metro: StartedMetro): void {
   });
 }
 
-export function setupAndroidRuntime(port: number, appPackage = APP_PACKAGE, options: { clearAppState?: boolean } = {}): void {
-  try {
-    runAdb(["reverse", `tcp:${port}`, `tcp:${port}`], 8000);
-  } catch {
-    // The proof will fail at route/root evidence if reverse setup mattered.
+export function setupAndroidRuntime(
+  port: number,
+  appPackage = APP_PACKAGE,
+  options: { clearAppState?: boolean; reversePorts?: readonly number[] } = {},
+): void {
+  for (const reversePort of new Set([port, ...(options.reversePorts ?? [])])) {
+    try {
+      runAdb(["reverse", `tcp:${reversePort}`, `tcp:${reversePort}`], 8000);
+    } catch {
+      // The proof will fail at route/root evidence if reverse setup mattered.
+    }
   }
   try {
     runAdb(["shell", "input", "keyevent", "KEYCODE_WAKEUP"], 5000);

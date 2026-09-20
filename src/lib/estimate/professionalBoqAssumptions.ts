@@ -7,6 +7,8 @@ import {
 import { buildProfessionalAssumptionEngineResult } from "./professionalAssumptionEngine";
 import { buildProfessionalBoqRiskPolicy } from "./professionalBoqRiskPolicy";
 import { safeJsonParseValue } from "../format";
+import { applyElevatedWorkAccessPolicy } from "./elevatedWorkAccessPolicy";
+import { applyDrywallCeilingPreparationPolicy } from "./drywallCeilingPreparationPolicy";
 
 const RAW_PUBLIC_TEXT_RE =
   /\b(?:PRICE_MISSING|source_parameters|template_id|template_version|formula_id|raw_ai_json|round_to|normFactor|baseQuantity|region\s+[A-Z]{2}|price date|confidence\s+\d|PARTIAL_PRICE_MISSING)\b/i;
@@ -69,25 +71,29 @@ export function applyProfessionalBoqRuntimeContract(
   input: { prompt: string },
 ): ConsumerRepairAiDraft {
   if (draft.items.length === 0) return draft;
+  const accessScopedDraft = applyConstructionScopeCompletenessPolicies(draft, input);
   const riskPolicy = buildProfessionalBoqRiskPolicy({
     prompt: input.prompt,
-    repairType: draft.repairType,
-    selectedWorkKey: draft.selectedWork?.selectedWorkKey,
+    repairType: accessScopedDraft.repairType,
+    selectedWorkKey: accessScopedDraft.selectedWork?.selectedWorkKey,
   });
   const assumptions = buildProfessionalBoqAssumptions({
     prompt: input.prompt,
-    rowCount: draft.items.length,
-    hasAnySourceBackedPrice: draft.items.some(hasSourceBackedPrice),
+    rowCount: accessScopedDraft.items.length,
+    hasAnySourceBackedPrice: accessScopedDraft.items.some(hasSourceBackedPrice),
     riskPolicy,
     // Exact V4 domain compilers already carry every quantity-affecting input in
     // the immutable parameter snapshot. Prompt heuristics must not add a second
     // layer of silent domain defaults after compilation.
-    allowPromptDefaults: !draft.items.every((item) =>
+    allowPromptDefaults: !accessScopedDraft.items.every((item) =>
       item.sourceParameters?.roadworksWaveA === true ||
       item.sourceParameters?.asphaltRelatedV4 === true
     ),
   });
-  const summary = sanitizeProfessionalBoqPublicSummary(draft.summaryRu, publicSummaryFallback(draft));
+  const summary = sanitizeProfessionalBoqPublicSummary(
+    accessScopedDraft.summaryRu,
+    publicSummaryFallback(accessScopedDraft),
+  );
   const publicSummaryParts = appendUniquePublicSummaryParts([
     summary,
     riskPolicy.summaryNoteRu,
@@ -96,12 +102,12 @@ export function applyProfessionalBoqRuntimeContract(
   ]).filter((line) => !REFUSAL_PUBLIC_TEXT_RE.test(line) || line.includes("предварительный BOQ"));
 
   return {
-    ...draft,
+    ...accessScopedDraft,
     summaryRu: publicSummaryParts.join(" "),
     dangerousDiyBlocked: false,
-    safetyMessageRu: riskPolicy.requiresSpecialist ? riskPolicy.summaryNoteRu : draft.safetyMessageRu,
-    missingData: unique([...draft.missingData, ...assumptions.missingInputsRu]),
-    items: draft.items.map((item, index) => ({
+    safetyMessageRu: riskPolicy.requiresSpecialist ? riskPolicy.summaryNoteRu : accessScopedDraft.safetyMessageRu,
+    missingData: unique([...accessScopedDraft.missingData, ...assumptions.missingInputsRu]),
+    items: accessScopedDraft.items.map((item, index) => ({
       ...item,
       sourceParameters: {
         ...(item.sourceParameters ?? {}),
@@ -122,6 +128,23 @@ export function applyProfessionalBoqRuntimeContract(
       },
     })),
   };
+}
+
+/**
+ * Cross-cutting physical-scope policies must also run for legacy and catalog
+ * drafts that predate the professional BOQ provenance contract.  Keeping this
+ * projection separate prevents those drafts from silently losing required
+ * access equipment while still avoiding fabricated professional provenance.
+ */
+export function applyConstructionScopeCompletenessPolicies(
+  draft: ConsumerRepairAiDraft,
+  input: { prompt: string },
+): ConsumerRepairAiDraft {
+  if (draft.items.length === 0) return draft;
+  return applyElevatedWorkAccessPolicy(
+    applyDrywallCeilingPreparationPolicy(draft),
+    input,
+  );
 }
 
 export function professionalBoqRiskRowsFromSourceParameters(

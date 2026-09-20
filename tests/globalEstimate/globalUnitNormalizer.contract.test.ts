@@ -1,4 +1,4 @@
-import { normalizeGlobalUnit } from "../../src/lib/ai/globalEstimate";
+import { displayUnitFor, normalizeGlobalUnit } from "../../src/lib/ai/globalEstimate";
 
 describe("global unit normalizer", () => {
   it("normalizes common metric, imperial, and localized unit aliases", () => {
@@ -6,5 +6,7 @@ describe("global unit normalizer", () => {
     expect(normalizeGlobalUnit("Quadratmeter")).toBe("sq_m");
     expect(normalizeGlobalUnit("sq ft")).toBe("sq_ft");
     expect(normalizeGlobalUnit("пог. м")).toBe("linear_m");
+    expect(normalizeGlobalUnit("рейсов")).toBe("trip");
+    expect(displayUnitFor("trip", "metric")).toBe("рейс");
   });
 });

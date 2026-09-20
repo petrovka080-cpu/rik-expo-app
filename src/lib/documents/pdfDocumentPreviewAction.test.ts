@@ -79,10 +79,16 @@ describe("pdfDocumentPreviewAction", () => {
     mockCheckPdfMobilePreviewEligibility.mockReset();
     mockRecordPdfPreviewOversizeBlocked.mockReset();
     mockRecordPdfActionBoundaryEvent.mockReset();
-    mockCreatePdfDocumentViewerHref.mockImplementation((sessionId: string, openToken?: string) => ({
+    mockCreatePdfDocumentViewerHref.mockImplementation((
+      sessionId: string,
+      openToken?: string,
+      returnTo?: string,
+    ) => ({
       safeSessionId: sessionId,
       safeOpenToken: String(openToken ?? ""),
-      href: `/pdf-viewer?sessionId=${sessionId}&openToken=${String(openToken ?? "")}`,
+      href: `/pdf-viewer?sessionId=${sessionId}&openToken=${String(openToken ?? "")}${
+        returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ""
+      }`,
     }));
     mockCheckPdfMobilePreviewEligibility.mockReturnValue({
       eligible: true,
@@ -132,6 +138,44 @@ describe("pdfDocumentPreviewAction", () => {
     expect(mockCreateDocumentPreviewSession).not.toHaveBeenCalled();
     expect(mockPushPdfDocumentViewerRouteSafely).toHaveBeenCalled();
     expect(mockOpenPdfPreview).not.toHaveBeenCalled();
+  });
+
+  it("binds the exact internal return route to the Android viewer entry", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      value: "android",
+    });
+    mockCreateInstantDocumentPreviewSession.mockResolvedValueOnce({
+      session: { sessionId: "session-return-1" },
+      asset: {
+        assetId: "asset-return-1",
+        uri: "file:///cache/payment.pdf",
+        sourceKind: "local-file",
+        fileName: baseDocument.fileName,
+        documentType: baseDocument.documentType,
+        originModule: baseDocument.originModule,
+        entityId: baseDocument.entityId,
+      },
+      materializationMode: "cache_hit",
+    });
+
+    await executePreviewPdfDocument(
+      baseDocument,
+      {
+        router: { push: jest.fn() },
+        returnTo: "/request?canonicalRevisionId=07918480-b10a-4de8-9525-7366d3c9202f",
+      },
+      { persistCriticalPdfBreadcrumb: jest.fn() },
+    );
+
+    expect(mockCreatePdfDocumentViewerHref).toHaveBeenCalledWith(
+      "session-return-1",
+      undefined,
+      "/request?canonicalRevisionId=07918480-b10a-4de8-9525-7366d3c9202f",
+    );
+    expect(String(mockPushPdfDocumentViewerRouteSafely.mock.calls[0]?.[1])).toContain(
+      "returnTo=%2Frequest%3FcanonicalRevisionId%3D07918480-b10a-4de8-9525-7366d3c9202f",
+    );
   });
 
   it("uses the stored preview session path when the viewer route is available but in-memory remote is not", async () => {

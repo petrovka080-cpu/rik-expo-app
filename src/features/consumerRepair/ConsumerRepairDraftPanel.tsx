@@ -6,11 +6,13 @@ import type {
   ConsumerRepairDraftRevisionParamBatchPatch,
 } from "../../lib/consumerRequests";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
+import { asphaltScopeSelectionQuestionForIntentV5 } from "../../lib/estimate/v4/asphalt";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
 import { getConsumerRepairCalculationStateForReadOnlyDisplay } from "../../lib/consumerRequests/consumerRequestExactRoadworksCalculationStateMigration";
 import {
   ConsumerRepairDraftQuickActions,
   ConsumerRepairProgressiveEstimatePanel,
+  ParameterDisclosurePanel,
 } from "./ConsumerRepairProgressiveEstimatePanel";
 import { buildConsumerRepairEditableHistorySummary } from "./consumerRepairEditableHistorySummary";
 import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
@@ -20,6 +22,7 @@ import {
   consumerRepairRevisionUsesGenericFallback,
   primaryConsumerRepairCanonicalBackendBinding,
 } from "./consumerRepairBackendOwnership";
+import { consumerRepairRowCode } from "./consumerRepairRowMetadata";
 
 type Props = {
   bundle: ConsumerRepairDraftBundle | null;
@@ -53,6 +56,20 @@ type Props = {
   onSelectRoadScope?: (scopePresetId: string) => void;
   roadScopeSelectionBusy?: boolean;
 };
+
+export function buildConsumerRepairOfferedScopeOptions(
+  originalUserText: string,
+  offeredScopeIds: Iterable<string>,
+): { scopePresetId: string; labelRu: string }[] {
+  const labelsByScopeId = new Map<string, string>(
+    asphaltScopeSelectionQuestionForIntentV5(originalUserText).options
+      .map((option) => [option.scopeId, option.label] as const),
+  );
+  return [...offeredScopeIds].map((scopePresetId) => ({
+    scopePresetId,
+    labelRu: labelsByScopeId.get(scopePresetId) ?? "Открыть вариант для редактирования",
+  }));
+}
 
 export function ConsumerRepairDraftPanel({
   bundle,
@@ -92,10 +109,12 @@ export function ConsumerRepairDraftPanel({
     bundle?.pendingRoadScopeSelection?.offeredScopes ??
     [],
   );
-  const offeredScopeOptions = [...offeredScopeIds].map((scopePresetId) => ({
-    scopePresetId,
-    labelRu: "Открыть вариант для редактирования",
-  }));
+  const offeredScopeOptions = buildConsumerRepairOfferedScopeOptions(
+    estimateDraftSession?.scopeRequirement?.originalUserText ??
+      bundle?.pendingRoadScopeSelection?.originalUserText ??
+      "",
+    offeredScopeIds,
+  );
   const selectedScopeOption = estimateDraftSession?.scopePresetId
     ? { scopePresetId: estimateDraftSession.scopePresetId, labelRu: "Вариант сохранён" }
     : null;
@@ -118,7 +137,7 @@ export function ConsumerRepairDraftPanel({
   const currentRevision = revisionState?.revisions.find((revision) => revision.revisionId === revisionState.currentRevisionId) ?? null;
   const latestDiff = revisionState?.diffs[revisionState.diffs.length - 1] ?? null;
   const rowPhotoThumbnails = Object.fromEntries((bundle?.items ?? []).flatMap((item) => {
-    const rowId = String(item.sourceParameters?.rowCode ?? "").trim();
+    const rowId = consumerRepairRowCode(item);
     if (!rowId) return [];
     const attachment = [...(bundle?.estimateAttachments ?? [])].reverse().find((candidate) =>
       !candidate.deleted
@@ -135,10 +154,13 @@ export function ConsumerRepairDraftPanel({
     currentRevision?.boq.rows.some((row) => row.includedInProcurement),
   );
   const editableHistorySummary = buildConsumerRepairEditableHistorySummary(
-    bundle?.estimateRevisionState,
+    revisionState,
   );
   const canonical = bundle ? primaryConsumerRepairCanonicalBackendBinding(bundle) : null;
-  const pendingCanonicalRevision = Boolean(bundle && !canonical);
+  const parameterCollection = !canonical && bundle?.canonicalParameterSession?.status === "BLOCKING_REQUIRED"
+    ? bundle.canonicalParameterSession
+    : null;
+  const pendingCanonicalRevision = Boolean(bundle && !canonical && !parameterCollection);
   return (
     <View style={styles.card} testID="consumer-repair-draft">
       <View style={styles.header}>
@@ -224,6 +246,30 @@ export function ConsumerRepairDraftPanel({
                 : "Контекст расчёта изменился или компиляция завершилась ошибкой. Создайте расчёт из текущих подтверждённых данных."}
           </Text>
         </View>
+      ) : parameterCollection ? (
+        <View style={styles.scopeSelection} testID="consumer-estimate-parameter-collection">
+          <Text style={styles.scopeSelectionTitle}>Нужно заполнить исходные данные</Text>
+          <Text style={styles.status}>
+            Распознанные значения сохранены. Заполните только показанные данные, влияющие на расчёт. Исходный запрос переписывать не нужно.
+          </Text>
+          <ParameterDisclosurePanel
+            viewModel={null}
+            revision={null}
+            canonicalParameterSession={parameterCollection}
+            latestDiff={null}
+            paramEditorEnabled={Boolean(onApplyParamBatch)}
+            editingParam={editingParam}
+            onOpenParamEditor={onOpenParamEditor}
+            onSaveParamEdit={onSaveParamEdit}
+            onCancelParamEdit={onCancelParamEdit}
+            onApplyParamBatch={onApplyParamBatch}
+          />
+          <ConsumerRepairDraftQuickActions
+            onAddManual={onAddManual}
+            onAddPhotoMaterialRecognition={onAddPhotoMaterialRecognition}
+            onAddCustom={onAddCustom}
+          />
+        </View>
       ) : pendingCanonicalRevision ? (
         <View style={styles.scopeSelection} testID="consumer-estimate-initial-revision-recovery">
           <Text style={styles.scopeSelectionTitle}>Расчёт сметы не завершён</Text>
@@ -264,6 +310,10 @@ export function ConsumerRepairDraftPanel({
           currentRevision={currentRevision}
           latestDiff={latestDiff}
           canonicalParameterSession={bundle.canonicalParameterSession}
+          canonicalParameterReadinessPending={Boolean(
+            primaryConsumerRepairCanonicalBackendBinding(bundle) &&
+            !bundle.canonicalParameterSession
+          )}
           showPdfAction={showPdfAction}
           onMakePdf={onMakePdf}
           onOpenProcurement={onOpenProcurement}
@@ -291,7 +341,6 @@ export function ConsumerRepairDraftPanel({
           onApplyParamPatch={onApplyParamPatch}
           onApplyParamBatch={onApplyParamBatch}
         />
-
         </>
       ) : (
         <>

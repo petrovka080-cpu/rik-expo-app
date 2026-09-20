@@ -18,7 +18,7 @@ describe("S-REFERENCE-LISTS-PAGE-CEILING-1 contract", () => {
     expect(calcFields).toContain(".order(\"basis_key\",");
     expect(calcFields).not.toContain("while (true)");
 
-    const foremanDicts = read("src/screens/foreman/foreman.dicts.repo.ts");
+    const foremanDicts = read("src/screens/foreman/foreman.dicts.transport.ts");
     expect(foremanDicts).toContain("const FOREMAN_DICT_LIST_PAGE_DEFAULTS = {");
     expect(foremanDicts).toContain("maxRows: 5000");
     expect(foremanDicts).toContain("loadPagedRowsWithCeiling<T>");

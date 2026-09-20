@@ -1,7 +1,4 @@
-import { supabase } from "../../lib/supabaseClient";
-import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
-import type { ForemanRefObjectTypeRow } from "../../types/contracts/foreman";
 import type { AppOption, RefOption } from "./foreman.types";
 import {
   getForemanLevelOptions,
@@ -9,24 +6,18 @@ import {
   getForemanSystemOptions,
   getForemanZoneOptions,
 } from "./foreman.options";
-
-type DictRow = { code: string; name?: string | null; name_ru?: string | null };
-type AppRow = { app_code: string; name_human?: string | null };
-type ItemAppRow = { app_code: string | null };
-type DictTable =
-  | "ref_object_types"
-  | "ref_levels"
-  | "ref_systems"
-  | "ref_zones";
-type PagedSelectResult<T> = {
-  data: T[] | null;
-  error: { message?: string | null } | null;
-};
-type PagedSelectQuery<T> = {
-  range(from: number, to: number): Promise<PagedSelectResult<T>>;
-} & PagedQuery<T>;
+import {
+  selectForemanAppRows,
+  selectForemanDictRows,
+  selectForemanItemAppRows,
+  selectForemanProfileName,
+  type ForemanAppRow as AppRow,
+  type ForemanDictRow as DictRow,
+  type ForemanDictTable as DictTable,
+  type ForemanItemAppRow as ItemAppRow,
+} from "./foreman.dicts.transport";
 type DictSelectResult = {
-  data: ForemanRefObjectTypeRow[] | null;
+  data: DictRow[] | null;
   error: { message?: string | null } | null;
 };
 
@@ -55,12 +46,6 @@ type UserNameCacheEntry = {
 const FOREMAN_DICTS_TTL_MS = 5 * 60 * 1000;
 const FOREMAN_APPS_TTL_MS = 5 * 60 * 1000;
 const FOREMAN_PROFILE_NAME_TTL_MS = 5 * 60 * 1000;
-const FOREMAN_DICT_LIST_PAGE_DEFAULTS = {
-  pageSize: 100,
-  maxPageSize: 100,
-  maxRows: 5000,
-};
-
 const getForemanDictErrorClass = (error: unknown) =>
   error instanceof Error && error.name ? error.name : "unknown_error";
 
@@ -157,80 +142,14 @@ const toItemAppRow = (value: unknown): ItemAppRow | null => {
   return { app_code: appCode };
 };
 
-const loadPagedForemanRows = async <T>(
-  queryFactory: () => PagedSelectQuery<T>,
-): Promise<PagedSelectResult<T>> => {
-  const result = await loadPagedRowsWithCeiling<T>(
-    queryFactory,
-    FOREMAN_DICT_LIST_PAGE_DEFAULTS,
-  );
-  if (result.error) {
-    return {
-      data: null,
-      error: {
-        message: String(
-          (result.error as { message?: unknown })?.message ?? result.error,
-        ),
-      },
-    };
-  }
-  return { data: result.data ?? [], error: null };
-};
-
 const fetchWithFallback = async (
   table: DictTable,
   select: string,
   orderColumn: string,
   fallbackSelect: string,
 ) => {
-  const run = async (cols: string): Promise<DictSelectResult> => {
-    switch (table) {
-      case "ref_object_types":
-        return await loadPagedForemanRows<ForemanRefObjectTypeRow>(
-          () =>
-            supabase
-              .from("ref_object_types")
-              .select(cols)
-              .order(orderColumn, { ascending: true })
-              .order("code", {
-                ascending: true,
-              }) as unknown as PagedSelectQuery<ForemanRefObjectTypeRow>,
-        );
-      case "ref_levels":
-        return await loadPagedForemanRows<ForemanRefObjectTypeRow>(
-          () =>
-            supabase
-              .from("ref_levels")
-              .select(cols)
-              .order(orderColumn, { ascending: true })
-              .order("code", {
-                ascending: true,
-              }) as unknown as PagedSelectQuery<ForemanRefObjectTypeRow>,
-        );
-      case "ref_systems":
-        return await loadPagedForemanRows<ForemanRefObjectTypeRow>(
-          () =>
-            supabase
-              .from("ref_systems")
-              .select(cols)
-              .order(orderColumn, { ascending: true })
-              .order("code", {
-                ascending: true,
-              }) as unknown as PagedSelectQuery<ForemanRefObjectTypeRow>,
-        );
-      case "ref_zones":
-        return await loadPagedForemanRows<ForemanRefObjectTypeRow>(
-          () =>
-            supabase
-              .from("ref_zones")
-              .select(cols)
-              .order(orderColumn, { ascending: true })
-              .order("code", {
-                ascending: true,
-              }) as unknown as PagedSelectQuery<ForemanRefObjectTypeRow>,
-        );
-    }
-  };
+  const run = async (cols: string): Promise<DictSelectResult> =>
+    await selectForemanDictRows(table, cols, orderColumn);
 
   let result = await run(select);
   if (result.error) {
@@ -316,15 +235,7 @@ const loadForemanDictsSnapshot = async (): Promise<DictsSnapshot> => {
 };
 
 const loadForemanAppOptions = async (): Promise<AppOption[]> => {
-  const apps = await loadPagedForemanRows<AppRow>(
-    () =>
-      supabase
-        .from("rik_apps")
-        .select("app_code, name_human")
-        .order("app_code", {
-          ascending: true,
-        }) as unknown as PagedSelectQuery<AppRow>,
-  );
+  const apps = await selectForemanAppRows();
 
   if (!apps.error && Array.isArray(apps.data) && apps.data.length) {
     return apps.data
@@ -340,16 +251,7 @@ const loadForemanAppOptions = async (): Promise<AppOption[]> => {
     recordForemanDictFallback("rik_apps", apps.error);
   }
 
-  const fallback = await loadPagedForemanRows<ItemAppRow>(
-    () =>
-      supabase
-        .from("rik_item_apps")
-        .select("app_code")
-        .not("app_code", "is", null)
-        .order("app_code", {
-          ascending: true,
-        }) as unknown as PagedSelectQuery<ItemAppRow>,
-  );
+  const fallback = await selectForemanItemAppRows();
 
   if (!fallback.error && Array.isArray(fallback.data)) {
     const uniq = Array.from(
@@ -403,15 +305,8 @@ export const readForemanProfileName = async (
     promise: null,
   };
   nextEntry.promise = (async () => {
-    const { data, error } = await supabase
-      .from("user_profiles")
-      .select("full_name")
-      .eq("user_id", normalized)
-      .maybeSingle();
-    if (error) throw error;
-    const value = String(
-      (data as { full_name?: unknown } | null)?.full_name ?? "",
-    ).trim();
+    const data = await selectForemanProfileName(normalized);
+    const value = String(data?.full_name ?? "").trim();
     nextEntry.value = value;
     nextEntry.expiresAt = now() + FOREMAN_PROFILE_NAME_TTL_MS;
     return value;

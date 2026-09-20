@@ -52,6 +52,93 @@ function completeRevision() {
 }
 
 describe("Asphalt V4 runtime vertical slice", () => {
+  test.each([
+    [undefined, "free-text"],
+    ["asphalt_concrete_pavement", "selected canonical work"],
+  ])("keeps ambiguous asphalt scope fail-closed for %s (%s)", (selectedWorkKey, _label) => {
+    const rawInput = "Дороги, транспорт и площадки: устройство асфальтобетонного покрытия — 15 000 м";
+    const result = buildEstimateFromInlineWorkPrompt({
+      rawInput,
+      currency: "KGS",
+      selectedWorkKey,
+    });
+
+    expect(result).toMatchObject({
+      draft: null,
+      canBuildPreliminaryEstimate: false,
+      blockingReason: "road_scope_selection_required",
+      roadScopeResolution: {
+        resolverStatus: "NEEDS_SCOPE_SELECTION",
+        originalText: rawInput,
+        selectedScopeId: null,
+      },
+    });
+    expect(result.parseResult.extractedParams.length_m).toEqual(expect.objectContaining({
+      value: 15000,
+      canonicalUnit: "m",
+    }));
+  });
+
+  test("does not replace missing width with reference area after scope selection", () => {
+    const rawInput = "Дороги, транспорт и площадки: устройство асфальтобетонного покрытия — 15 000 м";
+    const result = buildEstimateFromInlineWorkPrompt({
+      rawInput,
+      selectedWorkKey: "asphalt_concrete_pavement",
+      paramOverrides: {
+        selectedRoadScope: { value: "ROAD_SURFACING_ONLY", source: "user_input" },
+      },
+    });
+
+    expect(result).toMatchObject({
+      draft: null,
+      canBuildPreliminaryEstimate: false,
+      blockingReason: "ROAD_GEOMETRY_REQUIRED",
+      roadScopeResolution: {
+        resolverStatus: "RESOLVED",
+        selectedScopeId: "ROAD_SURFACING_ONLY",
+      },
+    });
+    expect(result.v4ClarificationExperience?.understood).toEqual(expect.arrayContaining([
+      expect.objectContaining({ label_ru: "Длина участка", value_ru: "15 000 м" }),
+    ]));
+    expect(result.v4ClarificationExperience?.critical_required.map((item) => item.parameter_id))
+      .toEqual(expect.arrayContaining([
+        "asphalt_concrete_pavement:parameter:geometry_method:v4",
+        "asphalt_concrete_pavement:parameter:width_m:v4",
+      ]));
+  });
+
+  test("requires an explicit main measure when area conflicts with length and width", () => {
+    const result = buildEstimateFromInlineWorkPrompt({
+      rawInput: "Уложить асфальт по готовому основанию: площадь 1000 м², длина 100 м, ширина 8 м",
+      selectedWorkKey: "asphalt_concrete_pavement",
+    });
+
+    expect(result).toMatchObject({
+      draft: null,
+      canBuildPreliminaryEstimate: false,
+      blockingReason: "ROAD_GEOMETRY_CONFLICT",
+    });
+  });
+
+  test.each([
+    ["asphalt_concrete_pavement", "Устройство цементобетонного дорожного покрытия длина 100 м ширина 6 м"],
+    ["cement_concrete_pavement", "Устройство асфальтобетонного покрытия длина 100 м ширина 6 м"],
+  ])("blocks a catalog/text surface conflict for %s", (selectedWorkKey, rawInput) => {
+    const result = buildEstimateFromInlineWorkPrompt({ rawInput, selectedWorkKey });
+
+    expect(result).toMatchObject({
+      draft: null,
+      canBuildPreliminaryEstimate: false,
+      blockingReason: "ROAD_SURFACE_TECHNOLOGY_CONFLICT",
+      roadSurfaceTechnologyResolution: {
+        status: "CONFLICT",
+        conflictId: "ROAD_SURFACE_TECHNOLOGY_CONFLICT",
+        messageRu: expect.stringContaining("противоречит"),
+      },
+    });
+  });
+
   test("enters through natural language without an explicit template id", () => {
     const result = buildEstimateFromInlineWorkPrompt({
       rawInput: ASPHALT_PHASE1_CONTROL_TEXT,

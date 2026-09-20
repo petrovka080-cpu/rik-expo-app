@@ -38,20 +38,22 @@ jest.mock("./integrity.guards", () => ({
 describe("proposals silent catch discipline", () => {
   let consoleErrorSpy: jest.SpyInstance;
 
-  const mockSupabase = mockedSupabase as unknown as {
-    rpc: jest.Mock;
+  const requireJestMock = (value: unknown): jest.Mock => {
+    if (!jest.isMockFunction(value)) throw new Error("Expected a Jest mock function");
+    return value as jest.Mock;
   };
-  const mockClient = client as unknown as {
-    rpc: jest.Mock;
-    from: jest.Mock;
+  const mockSupabase = { rpc: requireJestMock(mockedSupabase.rpc) };
+  const mockClient = {
+    rpc: requireJestMock(client.rpc),
+    from: requireJestMock(client.from),
   };
-  const mockClassifyRpcCompatError = classifyRpcCompatError as unknown as jest.Mock;
+  const mockClassifyRpcCompatError = requireJestMock(classifyRpcCompatError);
   const mockEnsureProposalRequestItemsIntegrity =
-    ensureProposalRequestItemsIntegrity as unknown as jest.Mock;
+    requireJestMock(ensureProposalRequestItemsIntegrity);
   const mockEnsureActiveProposalRequestItemsIntegrity =
-    ensureActiveProposalRequestItemsIntegrity as unknown as jest.Mock;
+    requireJestMock(ensureActiveProposalRequestItemsIntegrity);
   const mockClassifyProposalItemsByRequestItemIntegrity =
-    classifyProposalItemsByRequestItemIntegrity as unknown as jest.Mock;
+    requireJestMock(classifyProposalItemsByRequestItemIntegrity);
 
   beforeEach(() => {
     const runtime = globalThis as typeof globalThis & { __DEV__?: boolean };

@@ -59,7 +59,11 @@ import {
   type EstimateDraftSessionParameterValue,
   type EstimateDraftScopeRequirement,
 } from "../estimate/draftSession/estimateDraftSession";
-import type { AsphaltScopeSelectionIdV5 } from "../estimate/v4/asphalt/roadScopeTruthV4";
+import {
+  ASPHALT_REFERENCE_V1_PROFILE,
+  extractAsphaltUserFactsV4,
+  type AsphaltScopeSelectionIdV5,
+} from "../estimate/v4/asphalt";
 import type { CatalogItemForEstimate } from "../catalog/catalogItemTypes";
 import type {
   ApprovedEstimateHistoryRecord,
@@ -83,6 +87,7 @@ import type { UserParamPatchOperation } from "../estimate/validateUserParamPatch
 import type {
   CanonicalParameter,
   CanonicalParameterDefinition,
+  CanonicalParameterSession,
 } from "../estimate/canonicalParameters";
 import { getBoundEstimateRevisionCalculationState } from "../ai/estimateRevisions";
 import { ensureExactRoadworksCalculationStateBinding } from "./consumerRequestExactRoadworksCalculationStateMigration";
@@ -99,10 +104,6 @@ const ASPHALT_WORK_ID_V4 = "asphalt_concrete_pavement" as const;
 const ASPHALT_PROFESSIONAL_NAME_RU_V4 = "Устройство асфальтобетонного дорожного покрытия" as const;
 const ELECTRICAL_CANONICAL_WORK_KEY = "electrical_area_installation" as const;
 
-type ElectricalCanonicalParameterKey = string;
-type ElectricalCanonicalParameterValue = string | number | boolean;
-
-function canonicalBackendRequired(operation: string): never {
 export function bindConsumerRepairCanonicalArtifactReady(input: {
   requestDraftId: string;
   artifact: ConsumerRepairCanonicalArtifactReadyBinding;
@@ -114,6 +115,10 @@ export function bindConsumerRepairCanonicalArtifactReady(input: {
   }));
 }
 
+type ElectricalCanonicalParameterKey = string;
+type ElectricalCanonicalParameterValue = string | number | boolean;
+
+function canonicalBackendRequired(operation: string): never {
   throw new ConsumerRepairValidationError([{
     code: "CANONICAL_ESTIMATE_BACKEND_REQUIRED",
     messageRu:
@@ -223,7 +228,16 @@ function roadworksWaveARegistration(workId: string | null | undefined): any {
 }
 
 function isRoadScopeIdV4(value: string): value is AsphaltScopeSelectionIdV5 {
-  return ["FULL_ROAD_INFRASTRUCTURE", "PAVEMENT_ONLY", "REPAIR_PATCH"].includes(value);
+  return [
+    "ROAD_SURFACING_ONLY",
+    "FULL_PAVEMENT_STRUCTURE",
+    "FULL_ROAD_INFRASTRUCTURE",
+    "ROAD_REPAIR_REHABILITATION",
+    "NEW_PARKING_FULL_CONSTRUCTION",
+    "PAVEMENT_ON_CONFIRMED_PREPARED_BASE",
+    "OVERLAY_EXISTING_PAVEMENT",
+    "LOCAL_REPAIR_OR_MILLING",
+  ].includes(value);
 }
 
 const canonicalElectricalOverridesFromBundle = (..._args: unknown[]): any =>
@@ -610,6 +624,59 @@ export function createConsumerRepairRequestDraft(input: {
   return saveConsumerRepairBundle(bundle);
 }
 
+/**
+ * Persists the shared canonical parameter form before the first BOQ revision
+ * exists. This is request input state, not a client-side estimate.
+ */
+export function saveConsumerRepairCanonicalParameterCollection(input: {
+  requestDraftId: string;
+  consumerUserId: string;
+  problemText: string;
+  session: CanonicalParameterSession;
+}): ConsumerRepairDraftBundle {
+  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  if (bundle.draft.consumerUserId !== input.consumerUserId) {
+    throw new ConsumerRepairValidationError([{
+      code: "OWNER_MISMATCH",
+      messageRu: "Изменить исходные данные сметы может только владелец заявки.",
+      field: "consumerUserId",
+    }]);
+  }
+  if (bundle.items.length > 0 || bundle.estimateDraftRevisionState != null) {
+    throw new Error("CANONICAL_PARAMETER_COLLECTION_REQUIRES_EMPTY_DRAFT");
+  }
+  if (input.session.draftId !== bundle.draft.id) {
+    throw new Error("CANONICAL_PARAMETER_COLLECTION_DRAFT_MISMATCH");
+  }
+  const next = withEvent({
+    ...bundle,
+    draft: updateDraftRecord(bundle.draft, {
+      problemText: input.problemText,
+      missingData: input.session.blockingMissingParameterIds.map((parameterId) =>
+        `Требуется параметр: ${parameterId}`),
+    }),
+    canonicalParameterSession: input.session,
+    structuredEstimatePayload: null,
+    editableEstimateSnapshot: null,
+    estimateRevisionState: undefined,
+    estimateDraftRevisionState: null,
+  }, createConsumerRepairEvent({
+    requestDraftId: bundle.draft.id,
+    eventType: "canonical_parameter_collection_saved",
+    actorType: "consumer",
+    actorUserId: input.consumerUserId,
+    payload: {
+      catalogId: input.session.workPassportId,
+      sessionId: input.session.sessionId,
+      providedParameterIds: input.session.parameters
+        .filter((parameter) => parameter.value != null)
+        .map((parameter) => parameter.parameterId),
+      blockingMissingParameterIds: [...input.session.blockingMissingParameterIds],
+    },
+  }));
+  return saveConsumerRepairBundle(next);
+}
+
 export function upsertConsumerRepairCanonicalBackendDraft(input: {
   requestDraftId?: string | null;
   consumerUserId: string;
@@ -671,6 +738,21 @@ export function upsertConsumerRepairCanonicalBackendDraft(input: {
     : null;
   const nextBinding = canonicalBackendBindingForItems(items);
   if (!nextBinding) return canonicalBackendRequired("canonical_backend_revision_identity");
+  const existingDraftSession = existing.estimateDraftSession;
+  const selectedWorkIdentities = new Set([
+    selectedWork?.selectedCatalogWorkId,
+    selectedWork?.selectedWorkKey,
+  ].filter((value): value is string => typeof value === "string" && value.length > 0));
+  const retainedDraftSession = existingDraftSession?.workIntent
+    && (selectedWorkIdentities.has(existingDraftSession.workIntent.catalogWorkId)
+      || selectedWorkIdentities.has(existingDraftSession.workIntent.canonicalWorkKey))
+    ? {
+      ...existingDraftSession,
+      activeRevisionId: nextBinding.revisionId,
+      status: "REVIEW" as const,
+      rejectionReason: null,
+    }
+    : null;
   const now = new Date().toISOString();
   const next = withEvent({
     ...existing,
@@ -696,7 +778,9 @@ export function upsertConsumerRepairCanonicalBackendDraft(input: {
     estimateRevisionState: undefined,
     editableEstimateSnapshot: undefined,
     estimateDraftRevisionState: null,
-    estimateDraftSession: null,
+    // Request identity, original text-derived measurements and the selected
+    // road scope remain durable alongside every immutable backend revision.
+    estimateDraftSession: retainedDraftSession,
     canonicalParameterSession: null,
     structuredEstimatePayload: input.aiDraft.structuredEstimatePayload ?? null,
     electricalCircuitSchedule: input.aiDraft.electricalCircuitSchedule ?? null,
@@ -724,6 +808,163 @@ export function upsertConsumerRepairCanonicalBackendDraft(input: {
     nextBundle: next,
     payload: input.aiDraft.structuredEstimatePayload,
   }));
+}
+
+function roadScopeDraftSessionParameters(
+  originalUserText: string,
+  confirmedAt: string,
+): Record<string, EstimateDraftSessionParameterValue> {
+  const extraction = extractAsphaltUserFactsV4(originalUserText);
+  return Object.fromEntries(extraction.facts.flatMap((userFact) => {
+    const parameterKey = userFact.fact_id.match(/^asphalt:raw-input:(.+):v4$/u)?.[1] ?? "";
+    if (!parameterKey || Array.isArray(userFact.value)
+      || !["string", "number", "boolean"].includes(typeof userFact.value)) return [];
+    return [[parameterKey, {
+      value: userFact.value as string | number | boolean,
+      ...(userFact.unit_id ? { unit: userFact.unit_id } : {}),
+      origin: "USER_ENTERED" as const,
+      confirmedAt,
+      sourceText: originalUserText,
+    }]];
+  }));
+}
+
+/**
+ * Persists the unresolved road decision as request state only. No estimate rows
+ * are compiled here; the eventual calculation remains owned by the canonical
+ * backend after an explicit scope choice.
+ */
+export function beginConsumerRepairCanonicalRoadScopeSelection(input: {
+  requestDraftId: string;
+  userId: string;
+  originalUserText: string;
+  requestedCatalogWorkId: string;
+  offeredScopes: AsphaltScopeSelectionIdV5[];
+  resolverEvidence: string[];
+  resolverVersion: string;
+  createdAt?: string;
+}): ConsumerRepairDraftBundle {
+  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  if (bundle.draft.consumerUserId !== input.userId) {
+    throw new Error("CONSUMER_REPAIR_OWNER_MISMATCH");
+  }
+  const offeredScopes = [...new Set(input.offeredScopes)];
+  if (offeredScopes.length === 0 || offeredScopes.some((scope) => !isRoadScopeIdV4(scope))) {
+    throw new Error("ROAD_SCOPE_OPTIONS_INVALID");
+  }
+  const originalUserText = input.originalUserText.trim();
+  const requestedCatalogWorkId = input.requestedCatalogWorkId.trim();
+  if (!originalUserText || !requestedCatalogWorkId) {
+    throw new Error("ROAD_SCOPE_PENDING_IDENTITY_REQUIRED");
+  }
+  const createdAt = input.createdAt ?? new Date().toISOString();
+  const requirement: EstimateDraftScopeRequirement = {
+    originalUserText,
+    requestedCatalogWorkId,
+    offeredScopePresetIds: offeredScopes,
+    resolverEvidence: [...input.resolverEvidence],
+    resolverVersion: input.resolverVersion,
+    createdAt,
+  };
+  const session = selectEstimateDraftWork(
+    createEstimateDraftSession({ draftId: bundle.draft.id }),
+    {
+      catalogWorkId: requestedCatalogWorkId,
+      canonicalWorkKey: ASPHALT_WORK_ID_V4,
+      source: "EXPLICIT_SELECTION",
+      scopeRequired: true,
+      scopeRequirement: requirement,
+      parameters: roadScopeDraftSessionParameters(originalUserText, createdAt),
+    },
+  );
+  const next = withEvent({
+    ...bundle,
+    draft: updateDraftRecord(bundle.draft, {
+      problemText: originalUserText,
+      missingData: ["Выберите применимый состав дорожных работ."],
+    }),
+    items: [],
+    estimateDraftRevisionState: null,
+    estimateRevisionState: undefined,
+    editableEstimateSnapshot: null,
+    estimateDraftSession: session,
+    canonicalParameterSession: null,
+    pendingRoadScopeSelection: {
+      pendingIntentId: `draft-session:${bundle.draft.id}:${session.selectionEpoch}`,
+      requestId: bundle.draft.id,
+      originalUserText,
+      requestedCatalogWorkId,
+      offeredScopes,
+      resolverEvidence: [...input.resolverEvidence],
+      resolverVersion: input.resolverVersion,
+      createdAt,
+    },
+  }, createConsumerRepairEvent({
+    requestDraftId: bundle.draft.id,
+    eventType: "road_scope_selection_required",
+    actorType: "system",
+    actorUserId: input.userId,
+    payload: {
+      requestedCatalogWorkId,
+      offeredScopes,
+      resolverEvidence: input.resolverEvidence,
+      selectionEpoch: session.selectionEpoch,
+    },
+  }));
+  return saveConsumerRepairBundle(next);
+}
+
+/** Saves the explicit choice before the asynchronous backend compile starts. */
+export function bindConsumerRepairCanonicalRoadScopeChoice(input: {
+  requestDraftId: string;
+  userId: string;
+  selectedScope: string;
+  createdAt?: string;
+}): ConsumerRepairDraftBundle {
+  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  if (bundle.draft.consumerUserId !== input.userId) {
+    throw new Error("CONSUMER_REPAIR_OWNER_MISMATCH");
+  }
+  if (!isRoadScopeIdV4(input.selectedScope)) throw new Error("ROAD_SCOPE_ID_INVALID");
+  const session = bundle.estimateDraftSession;
+  if (!session || session.status !== "SCOPE_REQUIRED" || !session.scopeRequirement) {
+    throw new Error("ROAD_SCOPE_PENDING_INTENT_MISSING");
+  }
+  const scope = ASPHALT_REFERENCE_V1_PROFILE.scopePresets.find(
+    (candidate) => candidate.scopePresetId === input.selectedScope,
+  );
+  if (!scope) throw new Error("ESTIMATE_SCOPE_PROFILE_NOT_REGISTERED");
+  const selected = selectScope(session, {
+    scopePresetId: scope.scopePresetId,
+    calculationStrategyId: scope.calculationStrategyId,
+    parameterSchemaVersion: scope.parameterSchemaVersion,
+    engineVersion: scope.engineVersion,
+    requiredParameterAlternatives: scope.requiredParameterAlternatives.map((alternative) => ({
+      alternativeId: alternative.alternativeId,
+      parameterKeys: [...alternative.parameterKeys],
+    })),
+  });
+  const next = withEvent({
+    ...bundle,
+    estimateDraftSession: selected,
+    pendingRoadScopeSelection: null,
+    draft: updateDraftRecord(bundle.draft, {
+      missingData: selected.status === "READY_TO_COMPILE"
+        ? []
+        : ["Укажите площадь либо подтверждённые длину и ширину."],
+    }),
+  }, createConsumerRepairEvent({
+    requestDraftId: bundle.draft.id,
+    eventType: "road_scope_selected_for_canonical_backend",
+    actorType: "consumer",
+    actorUserId: input.userId,
+    payload: {
+      selectedScope: input.selectedScope,
+      selectionEpoch: selected.selectionEpoch,
+      nextStatus: selected.status,
+    },
+  }));
+  return saveConsumerRepairBundle(next);
 }
 
 export function selectConsumerRepairRoadScopeV4(input: {

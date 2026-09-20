@@ -21,6 +21,8 @@ import { buildEstimatePilotModeViewState } from "../estimates/runtime/estimatePi
 import { professionalBoqRiskRowsFromSourceParameters } from "../../lib/estimate/professionalBoqAssumptions";
 import { resolvedEstimateIdentityChecksum } from "../../lib/estimate/resolvedEstimateIdentityChecksum";
 import { CANONICAL_BACKEND_REVISION_PROJECTION_VERSION } from "../../lib/consumerRequests/consumerCanonicalBackendRevisionProjection";
+import { isConsumerEstimatePayableItem } from "../../lib/consumerRequests/consumerEstimateReadiness";
+import { consumerRepairCanonicalEstimateBlocksApproval } from "./consumerRepairCanonicalEstimateReadiness";
 
 export type RequestEstimateManualCatalogItem = {
   id: string;
@@ -86,6 +88,13 @@ export type RequestEstimateAssumptionRow = {
   value: string;
 };
 
+export type RequestEstimateSourceGate = {
+  parameterId: string;
+  title: string;
+  sourceRequirement: string;
+  affectedPositionCount: number;
+};
+
 export type RequestEstimateViewModel = {
   title: string;
   summary: string;
@@ -110,6 +119,10 @@ export type RequestEstimateViewModel = {
   calculationPreviewLines: string[];
   normSourcePreviewLines: string[];
   rawItemCount: number;
+  calculatedItemCount?: number;
+  preliminaryNeedCount?: number;
+  sourceGates?: RequestEstimateSourceGate[];
+  procurementApplicabilityLabel?: string | null;
   manualCatalogItems: RequestEstimateManualCatalogItem[];
   snapshotHash?: string | null;
   revisionVersionLabel?: string | null;
@@ -252,6 +265,7 @@ function publicRequestEstimateTitle(value: string | null | undefined): string {
   const cleaned = normalized
     .replace(/^\s*\u041f\u0440\u043e\u0444\u0435\u0441\u0441\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u0430\u044f\s+\u043f\u0440\u0435\u0434\u0432\u0430\u0440\u0438\u0442\u0435\u043b\u044c\u043d\u0430\u044f\s+\u0441\u043c\u0435\u0442\u0430\s*:?\s*/iu, "")
     .replace(/^\s*\u041f\u0440\u043e\u0444\u0435\u0441\u0441\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u0430\u044f\s+\u0441\u043c\u0435\u0442\u0430\s*(?:\u043d\u0430|:)?\s*/iu, "")
+    .replace(/\b(?:piece|pieces|pcs|pc)\b/giu, "шт.")
     .trim();
   return cleaned || normalized || "\u0421\u043c\u0435\u0442\u0430";
 }
@@ -376,6 +390,7 @@ const CANONICAL_OWNERSHIP = new Set([
   "OWNED_EXCLUDED",
   "MANUAL_SERVER_OWNED",
   "MIGRATED_UNOWNED_EXCLUDED_FROM_TOTAL",
+  "PRELIMINARY_NEED",
 ]);
 
 function admissionVerifiedCanonicalTitleItems(
@@ -397,7 +412,9 @@ function admissionVerifiedCanonicalTitleItems(
     || !CANONICAL_ID_RE.test(revisionId)
     || !CANONICAL_ID_RE.test(releaseId)
     || !catalogId
-    || current.boq.rows.length !== bundle.items.length
+    || current.boq.rows.length !== bundle.items.filter(
+      (item) => item.sourceParameters?.canonicalPreliminaryNeed !== true,
+    ).length
   ) return rejected;
 
   const rowsById = new Map(current.boq.rows.map((row) => [row.rowId, row]));
@@ -409,6 +426,23 @@ function admissionVerifiedCanonicalTitleItems(
     const rowSha256 = String(source.rowSha256 ?? "").trim();
     const ownership = String(source.canonicalBackendOwnershipStatus ?? "").trim();
     const projection = rowsById.get(rowId);
+    if (source.canonicalPreliminaryNeed === true) {
+      const needs = bundle.structuredEstimatePayload?.canonicalBackend?.preliminaryNeeds ?? [];
+      const need = needs.find((candidate) => candidate.rowId === rowId);
+      if (
+        String(source.canonicalBackendRevisionId ?? "").trim() !== revisionId
+        || String(source.canonicalBackendReleaseId ?? "").trim() !== releaseId
+        || String(source.canonicalBackendCatalogId ?? "").trim() !== catalogId
+        || ownership !== "PRELIMINARY_NEED"
+        || !need
+        || need.needSha256 !== rowSha256
+        || need.titleRu !== item.titleRu
+        || (need.quantity == null ? item.quantity != null : Number(need.quantity) !== item.quantity)
+        || need.unitId !== String(item.unit ?? "")
+      ) return rejected;
+      accepted.add(item);
+      continue;
+    }
     if (
       String(source.canonicalBackendRevisionId ?? "").trim() !== revisionId
       || String(source.canonicalBackendReleaseId ?? "").trim() !== releaseId
@@ -465,6 +499,7 @@ function isGenericHelperItem(item: ConsumerRepairRequestItem): boolean {
 
 function formatQuantityForItems(items: ConsumerRepairRequestItem[]): string {
   if (items.length === 0) return "\u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c";
+  if (items.some((item) => item.quantity == null)) return "Количество нужно уточнить";
   const unitLabel = displayUnitLabelForItem(items[0]);
   const sameUnit = items.every((item) => displayUnitLabelForItem(item) === unitLabel);
   if (!sameUnit) return `${items.length} \u043f\u043e\u0437.`;
@@ -708,6 +743,9 @@ function buildPreviewRow(section: RequestEstimateSectionViewModel, items: Consum
 }
 
 function previewCalculationLabel(item: ConsumerRepairRequestItem): string | null {
+  if (item.sourceParameters?.canonicalPreliminaryNeed === true) {
+    return "Позиция предусмотрена технологией; количество и условия нужно уточнить";
+  }
   if (item.quantityFormula || item.calculationTrace || item.normId || item.templateId) {
     return "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0440\u0430\u0441\u0441\u0447\u0438\u0442\u0430\u043d\u043e \u043f\u043e \u043d\u043e\u0440\u043c\u0435";
   }
@@ -729,22 +767,71 @@ function normSourceLabel(item: ConsumerRepairRequestItem): string | null {
 }
 
 function bundlePriceStatusLabel(bundle: ConsumerRepairDraftBundle): string {
-  if (
-    bundle.canonicalParameterSession?.status === "BLOCKING_REQUIRED"
-  ) {
-    return "Цены требуют исходных данных и проверки";
-  }
-  const missing = bundle.items.filter((item) => item.unitPrice == null || item.totalPrice == null).length;
-  const manual = bundle.items.filter((item) =>
+  const calculatedItems = bundle.items.filter((item) => item.sourceParameters?.canonicalPreliminaryNeed !== true);
+  const costedItems = calculatedItems.filter((item) => item.sourceParameters?.includedInEstimate !== false);
+  const preliminaryNeedCount = bundle.items.length - calculatedItems.length;
+  const missing = costedItems.filter((item) => item.unitPrice == null || item.totalPrice == null).length;
+  const manual = costedItems.filter((item) =>
     item.priceStatus === "USER_PRICE_OVERRIDE" || item.priceStatus === "USER_ENTERED_PRICE"
   ).length;
-  const priced = bundle.items.length - missing;
+  const priced = costedItems.length - missing;
   const parts = [
-    `${priced}/${bundle.items.length} ${"\u0441\u0442\u0440\u043e\u043a \u0441 \u0446\u0435\u043d\u043e\u0439"}`,
+    `${priced}/${costedItems.length} стоимостных строк имеют цену`,
     manual > 0 ? `${manual} ${"\u0432\u0440\u0443\u0447\u043d\u0443\u044e"}` : null,
     missing > 0 ? `${missing} ${"\u043d\u0443\u0436\u043d\u043e \u0437\u0430\u043f\u043e\u043b\u043d\u0438\u0442\u044c"}` : null,
+    preliminaryNeedCount > 0 ? `${preliminaryNeedCount} без количества` : null,
   ].filter(Boolean);
   return parts.join(" · ");
+}
+
+function publicSourceGateTitle(parameterId: string, fallback: string): string {
+  if (parameterId === "acceptance_lot_m2") return "Размер партии для контроля качества";
+  if (parameterId === "labor_productivity_m2_per_man_hour") return "Норма трудозатрат бригады";
+  if (parameterId.includes("breakdown_roller_productivity")) return "Производительность катка предварительного уплотнения";
+  if (parameterId.includes("finish_roller_productivity")) return "Производительность катка финишного уплотнения";
+  if (parameterId.includes("roller_productivity")) return "Производительность катка основного уплотнения";
+  return fallback;
+}
+
+function publicSourceGateRequirement(
+  parameterId: string,
+  valueSourceRole: string,
+): string {
+  if (parameterId === "acceptance_lot_m2") {
+    return "Нужны проект контроля качества или применимая подтверждённая норма. Заказчик это число не угадывает.";
+  }
+  if (valueSourceRole === "MANUFACTURER_CONFIRMED" || valueSourceRole === "SELECTED_EQUIPMENT_PASSPORT") {
+    return "Нужны паспорт выбранной техники или подтверждённая спецификация изделия. Заказчик эти характеристики не угадывает.";
+  }
+  return "Нужны утверждённая технологическая карта, ППР или паспорт выбранной техники. Заказчик это число не угадывает.";
+}
+
+export function buildRequestEstimateSourceGates(
+  items: readonly ConsumerRepairRequestItem[],
+): RequestEstimateSourceGate[] {
+  const gates = new Map<string, RequestEstimateSourceGate>();
+  for (const item of items) {
+    const rawRequirements = item.sourceParameters?.missingParameterRequirements;
+    if (!Array.isArray(rawRequirements)) continue;
+    for (const raw of rawRequirements) {
+      if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
+      const requirement = raw as Record<string, unknown>;
+      if (requirement.sourceConfirmationRequired !== true) continue;
+      const parameterId = String(requirement.parameterId ?? "").trim();
+      if (!parameterId) continue;
+      const previous = gates.get(parameterId);
+      gates.set(parameterId, {
+        parameterId,
+        title: publicSourceGateTitle(parameterId, String(requirement.titleRu ?? parameterId)),
+        sourceRequirement: publicSourceGateRequirement(
+          parameterId,
+          String(requirement.valueSourceRole ?? ""),
+        ),
+        affectedPositionCount: (previous?.affectedPositionCount ?? 0) + 1,
+      });
+    }
+  }
+  return [...gates.values()];
 }
 
 function sentenceCaseRu(value: string): string {
@@ -843,7 +930,7 @@ function visibleLineForItem(item: ConsumerRepairRequestItem): RequestEstimateVis
   const parts = [
       item.titleRu,
       selectedProduct,
-      `${item.quantity ?? 0} ${unitLabel}`,
+      item.quantity == null ? "количество нужно уточнить" : `${item.quantity} ${unitLabel}`,
       priceText,
       totalText,
     ].filter((part): part is string => Boolean(part && part.trim()));
@@ -963,22 +1050,45 @@ function revisionViewLabels(bundle: ConsumerRepairDraftBundle): Pick<
 
 export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle | null): RequestEstimateViewModel | null {
   if (!bundle) return null;
-  const canonicalTitleItems = admissionVerifiedCanonicalTitleItems(bundle);
+  // Keep excluded canonical rows in the durable bundle so they can be restored,
+  // but do not render them as active estimate positions. The backend row flag is
+  // the authoritative projection contract for delete/restore revisions.
+  const visibleEstimateItems = bundle.items.filter((item) =>
+    item.sourceParameters?.includedInEstimate !== false
+    || item.sourceParameters?.canonicalPreliminaryNeed === true
+  );
+  const viewBundle = visibleEstimateItems.length === bundle.items.length
+    ? bundle
+    : { ...bundle, items: visibleEstimateItems };
+  const canonicalTitleItems = admissionVerifiedCanonicalTitleItems(viewBundle);
   const durableSummary = bundle.durableHistorySummary ?? null;
-  const rawItemCount = bundle.items.length || durableSummary?.rowCount || 0;
-  const priced = bundle.items.filter((item) => item.totalPrice != null);
-  const missingPrices = bundle.items.filter((item) => item.unitPrice == null || item.totalPrice == null).length;
+  const rawItemCount = viewBundle.items.length || durableSummary?.rowCount || 0;
+  const preliminaryNeedCount = viewBundle.items.filter(
+    (item) => item.sourceParameters?.canonicalPreliminaryNeed === true,
+  ).length;
+  const calculatedItemCount = Math.max(0, rawItemCount - preliminaryNeedCount);
+  const sourceGates = buildRequestEstimateSourceGates(viewBundle.items);
+  const hasProcurementItems = viewBundle.items.some((item) =>
+    item.sourceParameters?.includedInProcurement
+      ?? (item.itemType !== "work" && item.itemType !== "document")
+  );
+  const payableItems = viewBundle.items.filter((item) =>
+    item.sourceParameters?.canonicalPreliminaryNeed !== true
+    && isConsumerEstimatePayableItem(item)
+  );
+  const priced = payableItems.filter((item) => item.totalPrice != null);
+  const missingPrices = payableItems.filter((item) => item.unitPrice == null || item.totalPrice == null).length;
   const total = priced.reduce((sum, item) => sum + (item.totalPrice ?? 0), 0);
   const summaryTotal = durableSummary?.totalPrice ?? null;
   const currency = priced[0]?.currency ?? durableSummary?.currency ?? "KGS";
-  const hasCapitalRenovationCalculator = bundle.items.some((item) => capitalRenovationGroupId(item));
-  const hasExpandedComplexCalculator = bundle.items.some((item) => item.sourceParameters?.expandedComplexCalculator === true);
-  const hasAsphaltV4 = bundle.items.some((item) => item.sourceParameters?.asphaltV4 === true);
-  const hasAsphaltProfessionalSections = bundle.items.some((item) =>
+  const hasCapitalRenovationCalculator = viewBundle.items.some((item) => capitalRenovationGroupId(item));
+  const hasExpandedComplexCalculator = viewBundle.items.some((item) => item.sourceParameters?.expandedComplexCalculator === true);
+  const hasAsphaltV4 = viewBundle.items.some((item) => item.sourceParameters?.asphaltV4 === true);
+  const hasAsphaltProfessionalSections = viewBundle.items.some((item) =>
     typeof item.sourceParameters?.asphaltV4ProfessionalCategory === "string"
   );
-  const hasSmartEstimateV2 = bundle.items.some((item) => item.sourceParameters?.smartEstimateProjectionV2 != null);
-  const smartStageIds = [...new Set(bundle.items.map(itemSection).filter((id) => id.startsWith("professional_")))];
+  const hasSmartEstimateV2 = viewBundle.items.some((item) => item.sourceParameters?.smartEstimateProjectionV2 != null);
+  const smartStageIds = [...new Set(viewBundle.items.map(itemSection).filter((id) => id.startsWith("professional_")))];
   const sectionIds: RequestEstimateSectionViewModel["id"][] = hasSmartEstimateV2
     ? smartStageIds
     : hasCapitalRenovationCalculator
@@ -988,14 +1098,14 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     .map((id) => ({
       id,
       title: sectionTitle(id),
-      items: bundle.items
+      items: viewBundle.items
         .filter((item) => itemSection(item) === id)
         .sort((a, b) => itemSortRank(a) - itemSortRank(b))
         .map((item) => ({ ...item, titleRu: publicItemTitle(item, canonicalTitleItems.has(item)) })),
     }))
     .filter((section) => section.items.length > 0);
-  const sourceLabels = uniqueSourceLabels(bundle);
-  const professionalPreview = Boolean(bundle.structuredEstimatePayload) || hasExpandedComplexCalculator || hasAsphaltProfessionalSections || bundle.items.length > 20;
+  const sourceLabels = uniqueSourceLabels(viewBundle);
+  const professionalPreview = Boolean(bundle.structuredEstimatePayload) || hasExpandedComplexCalculator || hasAsphaltProfessionalSections || viewBundle.items.length > 20;
   const productionTrust = buildConsumerRepairProductionTrust({
     estimateId: bundle.draft.id,
     revisionId: bundle.estimateRevisionState?.current_revision_id ?? bundle.editableEstimateSnapshot?.snapshotId ?? "draft",
@@ -1011,14 +1121,15 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
             ? "RUB"
             : "KGS",
     pricebookVersion: null,
-    items: bundle.items,
+    items: viewBundle.items,
   });
   const pilotMode = buildEstimatePilotModeViewState({
     trustLevel: productionTrust.trust_level,
     fullTotalStatus: productionTrust.full_total_status,
   });
-  const canonicalBlocking =
-    bundle.canonicalParameterSession?.status === "BLOCKING_REQUIRED";
+  const canonicalBlocking = consumerRepairCanonicalEstimateBlocksApproval(
+    bundle.canonicalParameterSession,
+  );
   const currentCanonicalRevision = bundle.estimateDraftRevisionState?.revisions.find(
     (revision) => revision.revisionId === bundle.estimateDraftRevisionState?.currentRevisionId,
   );
@@ -1033,7 +1144,9 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
         || bundle.draft.title
         || "",
     ),
-    summary: cleanSummary(bundle),
+    summary: preliminaryNeedCount > 0
+      ? "Расчёт неполный: часть позиций ждёт подтверждённых исходных данных и не входит в стоимость."
+      : cleanSummary(viewBundle),
     totalLabel: canonicalBlocking
       ? "Итого: не рассчитано"
       : missingPrices > 0
@@ -1043,15 +1156,19 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
         : summaryTotal != null && summaryTotal > 0
           ? formatEstimateMoney(summaryTotal, currency)
           : "\u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c",
-    priceStatusLabel: bundlePriceStatusLabel(bundle),
-    sourceConfidenceLabel: sourceConfidenceLabelForBundle(bundle),
+    priceStatusLabel: bundlePriceStatusLabel(viewBundle),
+    sourceConfidenceLabel: sourceConfidenceLabelForBundle(viewBundle),
     sourceLabels,
     taxLabel: bundle.structuredEstimatePayload?.tax.taxLabel ?? "\u041d\u0430\u043b\u043e\u0433: \u0442\u0440\u0435\u0431\u0443\u0435\u0442 \u0443\u0442\u043e\u0447\u043d\u0435\u043d\u0438\u044f",
     taxWarning: bundle.structuredEstimatePayload?.tax.warning,
-    trustLevelLabel: canonicalBlocking
+    trustLevelLabel: preliminaryNeedCount > 0
+      ? "Готовность: не все количества рассчитаны"
+      : canonicalBlocking
       ? "Доверие: исходные данные не заполнены"
       : `\u0414\u043e\u0432\u0435\u0440\u0438\u0435: ${trustLevelPublicLabel(productionTrust.trust_level)}`,
-    commercialEstimateLevelLabel: `\u0423\u0440\u043e\u0432\u0435\u043d\u044c \u0441\u043c\u0435\u0442\u044b: ${estimateLevelPublicLabel(productionTrust.estimate_level)}`,
+    commercialEstimateLevelLabel: preliminaryNeedCount > 0
+      ? "Статус: черновик расчёта"
+      : `\u0423\u0440\u043e\u0432\u0435\u043d\u044c \u0441\u043c\u0435\u0442\u044b: ${estimateLevelPublicLabel(productionTrust.estimate_level)}`,
     sourceQualityLabel: `\u041a\u0430\u0447\u0435\u0441\u0442\u0432\u043e \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a\u0430: ${sourceQualityPublicLabel(productionTrust.source_quality)}`,
     expertReviewStatusLabel: `\u042d\u043a\u0441\u043f\u0435\u0440\u0442\u043d\u0430\u044f \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430: ${expertReviewPublicLabel(productionTrust.expert_review_status)}`,
     fullTotalStatusLabel: fullTotalPublicLabel(productionTrust.full_total_status, missingPrices),
@@ -1059,20 +1176,26 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     pilotDisclosureLabel: pilotMode.disclosureRu,
     visibleLines: sections.flatMap((section) => section.items).map(visibleLineForItem),
     assumptionRows: [
-      ...buildProfessionalBoqRiskAssumptionRows(bundle),
+      ...buildProfessionalBoqRiskAssumptionRows(viewBundle),
       ...(hasAsphaltV4
-        ? buildAsphaltV4AssumptionRows(bundle)
+        ? buildAsphaltV4AssumptionRows(viewBundle)
         : hasExpandedComplexCalculator
-        ? buildExpandedComplexAssumptionRows(bundle)
-        : buildCapitalRenovationAssumptionRows(bundle)),
+        ? buildExpandedComplexAssumptionRows(viewBundle)
+        : buildCapitalRenovationAssumptionRows(viewBundle)),
     ],
     sections,
     professionalPreview,
     previewSections: buildPreviewSections(sections),
-    calculationPreviewLines: buildCalculationPreviewLines(bundle),
-    normSourcePreviewLines: buildNormSourcePreviewLines(bundle, sourceLabels),
+    calculationPreviewLines: buildCalculationPreviewLines(viewBundle),
+    normSourcePreviewLines: buildNormSourcePreviewLines(viewBundle, sourceLabels),
     rawItemCount,
-    manualCatalogItems: bundle.items
+    calculatedItemCount,
+    preliminaryNeedCount,
+    sourceGates,
+    procurementApplicabilityLabel: hasProcurementItems
+      ? null
+      : "Материалы и закупка: для выбранной операции не предусмотрены.",
+    manualCatalogItems: viewBundle.items
       .filter((item) => item.source === "catalog_item" && item.catalogItemId)
       .map((item) => ({
         id: item.id,

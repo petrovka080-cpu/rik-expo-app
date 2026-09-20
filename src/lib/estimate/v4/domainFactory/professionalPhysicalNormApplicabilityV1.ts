@@ -3313,7 +3313,7 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   work_group: "concrete",
   binding_route: "CANONICAL_V4_APPLICABILITY" as const,
   binding_owner: "resolveProfessionalPhysicalNormParameterValuesV1",
-  technology_class: "REINFORCED_CONCRETE_STRIP_FOUNDATION",
+  technology_class: "READY_MIX_CONCRETE_ORDER",
   operation_class: "ORDER_READY_MIX",
   scope_mode: "FULL_APPLICABLE_SCOPE" as const,
   product_profile_id: NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID,
@@ -8813,7 +8813,8 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
   }
   if (productProfileId === NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID) {
     if (
-      input.technology_class === "REINFORCED_CONCRETE_STRIP_FOUNDATION" &&
+      ["READY_MIX_CONCRETE_ORDER", "REINFORCED_CONCRETE_STRIP_FOUNDATION"]
+        .includes(input.technology_class) &&
       input.operation_class === "ORDER_READY_MIX" &&
       input.material_system === "READY_MIX_CONCRETE" &&
       input.scope_mode === "FULL_APPLICABLE_SCOPE"

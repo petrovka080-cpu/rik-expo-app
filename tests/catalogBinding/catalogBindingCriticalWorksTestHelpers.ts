@@ -4,7 +4,7 @@ export const CRITICAL_WORK_PROMPTS: Record<string, string> = {
   strip_foundation: "смета на ленточный фундамент длин 48 метров ширина 0,4 м, и высота 1.7 м",
   brick_masonry: "дай смету на кладку кирпича 74 кв метров",
   gable_roof_installation: "дай смету на устройство двускатной крыши основание 100 кв метров",
-  asphalt_concrete_pavement: "дай смету на прокладку асфальта на 1000 кв метров",
+  asphalt_paving: "дай смету на прокладку асфальта на 1000 кв метров",
   ceramic_tile_floor_laying: "смета на укладку кафельной плитки на пол 174 кв м",
   drywall_wall_cladding: "установка гкл на стены 352 кв м",
 };

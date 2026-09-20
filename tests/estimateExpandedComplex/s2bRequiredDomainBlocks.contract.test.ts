@@ -4,7 +4,7 @@ import { S2B_INFRASTRUCTURE_FAMILY_MANIFEST } from "../../src/lib/ai/expandedCom
 import { S2B_WAVE2_CONTROL_CASES } from "../../src/lib/ai/expandedComplexWorks/s2b/types";
 
 describe("S2B required domain blocks", () => {
-  it("accounts for every required block with exact row evidence or an explicit design-input gate", () => {
+  it("includes required domain tokens for every control case manifest entry", () => {
     let rowEvidenceCount = 0;
     let missingDesignInputCount = 0;
 

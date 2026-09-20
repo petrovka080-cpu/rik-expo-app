@@ -22,13 +22,16 @@ jest.mock("./integrity.guards", () => ({
   ensureProposalItemIdsBelongToProposal: jest.fn(),
 }));
 
-const mockClient = client as unknown as {
-  rpc: jest.Mock;
+const requireJestMock = (value: unknown): jest.Mock => {
+  if (!jest.isMockFunction(value)) throw new Error("Expected a Jest mock function");
+  return value as jest.Mock;
 };
 
-const mockEnsureProposalExists = ensureProposalExists as unknown as jest.Mock;
+const mockClient = { rpc: requireJestMock(client.rpc) };
+
+const mockEnsureProposalExists = requireJestMock(ensureProposalExists);
 const mockEnsureProposalItemIdsBelongToProposal =
-  ensureProposalItemIdsBelongToProposal as unknown as jest.Mock;
+  requireJestMock(ensureProposalItemIdsBelongToProposal);
 
 describe("accountant financial rpc boundary", () => {
   beforeEach(() => {

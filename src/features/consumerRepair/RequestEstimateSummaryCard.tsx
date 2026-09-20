@@ -1,7 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import type { RequestEstimateViewModel } from "./requestEstimateViewModel";
 
 type Props = {
@@ -12,39 +11,44 @@ type Props = {
 export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
   render(): React.ReactElement {
     const { viewModel, missingParameterCount } = this.props;
-    const estimateUnitLabels = Array.from(new Set(
-      viewModel.sections.flatMap((section) =>
-        section.items
-          .map((item) => formatEstimateUnitLabel(item.unitLabel || item.unit))
-          .filter(Boolean)
-      ),
-    )).map((unit) => unit === "\u043c\u00b2" ? "\u043c\u00b2 (\u043c2)" : unit);
-    const parameterLabel = typeof missingParameterCount === "number"
+    const sourceGateCount = viewModel.sourceGates?.length ?? 0;
+    const consumerInputCount = typeof missingParameterCount === "number"
+      ? Math.max(0, missingParameterCount - sourceGateCount)
+      : null;
+    const parameterLabel = sourceGateCount > 0 && consumerInputCount === 0
+      ? `Требуют подтверждённого источника: ${sourceGateCount}`
+      : missingParameterCount === 0
+        ? "Обязательные параметры заполнены"
+      : typeof missingParameterCount === "number"
       ? `Нужно уточнить: ${missingParameterCount} ${pluralizeRu(missingParameterCount, "параметр", "параметра", "параметров")}`
       : "Для точности нужно уточнить параметры";
     return (
       <View style={styles.card} testID="request-estimate-summary-card">
-        <Text style={styles.eyebrow}>Предварительная профессиональная смета</Text>
+        <Text style={styles.eyebrow}>
+          {viewModel.preliminaryNeedCount ? "Черновик расчёта" : "Смета по выбранной работе"}
+        </Text>
         <Text style={styles.title} testID="request-estimate-selected-work-title">{viewModel.title}</Text>
         <Text style={styles.summary} numberOfLines={2}>{viewModel.summary}</Text>
         {viewModel.visibleLines.length > 0 ? (
           <View style={styles.visibleLines} testID="request-estimate-visible-lines">
-            <Text style={styles.meta}>Ключевые позиции:</Text>
+            <Text style={styles.meta}>Ключевые рассчитанные позиции:</Text>
             {viewModel.visibleLines.slice(0, 4).map((line) => (
               <Text key={line.id} style={styles.visibleLine}>{line.text}</Text>
             ))}
           </View>
         ) : null}
         <Text style={styles.meta} testID="request-estimate-row-count">
-          {viewModel.rawItemCount} {pluralizeRu(viewModel.rawItemCount, "позиция", "позиции", "позиций")}
+          {viewModel.preliminaryNeedCount
+            ? `С количеством: ${viewModel.calculatedItemCount ?? 0} ${pluralizeRu(viewModel.calculatedItemCount ?? 0, "строка", "строки", "строк")}`
+            : `${viewModel.rawItemCount} ${pluralizeRu(viewModel.rawItemCount, "позиция", "позиции", "позиций")}`}
         </Text>
-        {estimateUnitLabels.length > 0 ? (
-          <Text style={styles.meta} testID="request-estimate-unit-semantics">
-            {"\u0415\u0434\u0438\u043d\u0438\u0446\u044b \u0441\u043c\u0435\u0442\u044b"}: {estimateUnitLabels.join(", ")}
+        {viewModel.preliminaryNeedCount ? (
+          <Text style={styles.meta} testID="request-estimate-preliminary-need-count">
+            {`Без количества: ${viewModel.preliminaryNeedCount} ${pluralizeRu(viewModel.preliminaryNeedCount, "позиция", "позиции", "позиций")}`}
           </Text>
         ) : null}
         <Text style={styles.total}>
-          Итого по позициям: {viewModel.totalLabel}
+          Стоимость: {viewModel.totalLabel}
         </Text>
         <Text style={styles.meta} testID="request-estimate-price-status">
           Цены: {viewModel.priceStatusLabel}
@@ -52,14 +56,20 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
         <Text style={styles.meta} testID="request-estimate-trust-level">
           {viewModel.trustLevelLabel}
         </Text>
-        <Text style={styles.meta} testID="request-estimate-commercial-level">
-          {viewModel.commercialEstimateLevelLabel}
-        </Text>
+        {viewModel.procurementApplicabilityLabel ? (
+          <Text style={styles.meta} testID="request-estimate-procurement-applicability">
+            {viewModel.procurementApplicabilityLabel}
+          </Text>
+        ) : null}
         <Text style={styles.meta} testID="request-estimate-parameter-status">
           {parameterLabel}
         </Text>
-        <Text style={styles.legal}>
-          Предварительный расчёт. Для договорной сметы требуется проверка специалиста и цен.
+        <Text style={styles.legal} testID="request-estimate-readiness-notice">
+          {typeof missingParameterCount === "number" && missingParameterCount > 0
+            ? sourceGateCount > 0 && consumerInputCount === 0
+              ? "Неполный расчёт: технические нормы должен подтвердить каталог или специалист. Эти позиции не входят в стоимость и закупку до появления источника."
+              : `Неполный расчёт: нужны ещё ${missingParameterCount} ${pluralizeRu(missingParameterCount, "параметр", "параметра", "параметров")}. Подтверждение договорной версии пока недоступно.`
+            : "Предварительный расчёт. Для договорной сметы требуется проверка специалиста и цен."}
         </Text>
       </View>
     );

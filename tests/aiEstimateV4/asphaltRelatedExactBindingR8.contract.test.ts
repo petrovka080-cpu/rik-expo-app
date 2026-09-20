@@ -20,6 +20,7 @@ import { ASPHALT_RELATED_PROFESSIONAL_PASSPORTS_V4 } from "../../src/lib/estimat
 import { resolveAsphaltRelatedExactRoutingV4 } from "../../src/lib/estimate/v4/asphalt/asphaltRelatedExactRoutingV4";
 import { ASPHALT_RELATED_EXTRA_PROFILES_V4 } from "../../src/lib/estimate/v4/asphalt/asphaltRelatedSemanticRegistryV4";
 import { professionalEstimatePassportId } from "../../src/lib/estimate/v4/professionalEstimatePassportV4";
+import { DEFAULT_ROADWORKS_WAVE_A_INPUTS } from "../../src/lib/estimate/v4/roadworks";
 import { buildProjectExecutionDraftFromRevision } from "../../src/lib/projectExecution/buildProjectExecutionDraftFromRevision";
 
 const CREATED_AT = "2026-08-10T10:00:00.000Z";
@@ -41,6 +42,8 @@ function installStorage(): () => void {
 function params(values: Record<string, string | number | boolean>): Record<string, EstimateDraftRevisionParam> {
   return Object.fromEntries(Object.entries(values).map(([key, value]) => [key, {
     value,
+    // The exhaustive historical matrix submits its fixture explicitly. A
+    // production request without these overrides remains unresolved in R6.
     source: "user_input" as const,
     sourceText: `R8:${key}`,
     lastChangedAt: CREATED_AT,
@@ -48,8 +51,13 @@ function params(values: Record<string, string | number | boolean>): Record<strin
 }
 
 const COMPLETE_PARAMETERS = params({
+  // Historical R63 coverage is an explicit validation fixture. R6 no longer
+  // authorizes these values as hidden runtime defaults for customer objects.
   ...ASPHALT_R63_COMPLETE_INPUTS,
   ...ASPHALT_R63_FULL_INPUTS,
+  // Keep the complete Wave A fixture last: the broader R63 maps deliberately
+  // contain undefined values for parameters that do not apply to every owner.
+  ...DEFAULT_ROADWORKS_WAVE_A_INPUTS,
   estimate_scope_mode: "MINIMAL_EXPLICIT_SCOPE",
   project_scope: "SURFACING_ONLY",
   area_m2: 120,

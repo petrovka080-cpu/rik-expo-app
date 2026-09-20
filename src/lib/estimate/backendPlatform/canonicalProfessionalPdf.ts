@@ -10,7 +10,7 @@ import {
 } from "./canonicalEstimateArtifactContract";
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a6" as const;
+  "canonical-professional-pdf.r4-a10" as const;
 
 export const CANONICAL_PROFESSIONAL_PDF_CATEGORY_ORDER = [
   "material",
@@ -37,6 +37,8 @@ export type CanonicalProfessionalPdfProjection = {
   currencyCode: string;
   categoryTotals: Record<CanonicalProfessionalPdfCategory, number>;
   definitionVersionId: string | null;
+  preliminaryNeedCount: number;
+  nonPayableRowCount: number;
 };
 
 const CATEGORY_TITLES: Record<CanonicalProfessionalPdfCategory, string> = {
@@ -69,10 +71,15 @@ export function canonicalProfessionalPdfCategory(
   row: Record<string, unknown>,
 ): CanonicalProfessionalPdfCategory {
   const identity = categoryIdentity(row);
+  const resourceGraph = objectValue(objectValue(row.calculation_trace).resourceGraph);
+  if (
+    resourceGraph.costTreatment === "CONTROL_OR_DOCUMENT"
+    || resourceGraph.costTreatment === "INFORMATIONAL_SCOPE"
+  ) return "service";
   if (/delivery|transport|logistic|достав|логист/u.test(identity)) return "transport";
   if (/equipment|machine|machinery|mechanism|механ|техник|оборуд/u.test(identity)) return "equipment";
   if (/material|product|waste|материал|издел/u.test(identity)) return "material";
-  if (/service|test|quality|control|document|услуг|испыт|контрол|пнр/u.test(identity)) return "service";
+  if (/service|test|quality|control|document|услуг|испыт|контрол|документ|пнр/u.test(identity)) return "service";
   return "work";
 }
 
@@ -148,11 +155,27 @@ function assertSingleCurrency(
 
 function renderClientRow(row: CanonicalArtifactRow): string {
   const category = canonicalProfessionalPdfCategory(row);
-  const specification = specificationRu(row);
-  const unitPrice = row.unit_price == null
+  const includedInEstimate = row.included_in_estimate === true;
+  const resourceGraph = objectValue(objectValue(row.calculation_trace).resourceGraph);
+  const costTreatment = nullableText(resourceGraph.costTreatment);
+  const dispositionRu = includedInEstimate
+    ? null
+    : costTreatment === "INCLUDED_IN_RESOURCE_ROWS"
+      ? "Отдельно не оплачивается: стоимость учитывается в труде и механизмах."
+      : costTreatment === "CONTROL_OR_DOCUMENT"
+        ? "Контрольная или исполнительная позиция; отдельно не суммируется."
+        : costTreatment === "INFORMATIONAL_SCOPE"
+          ? "Условие выполнения работ; отдельно не суммируется."
+          : "Позиция исключена из итога сохранённой версии.";
+  const specification = [specificationRu(row), dispositionRu].filter(Boolean).join(" ") || null;
+  const unitPrice = !includedInEstimate
+    ? "Не применяется"
+    : row.unit_price == null
     ? "Требуется цена"
     : canonicalArtifactMoney(row.unit_price, row.currency_code);
-  const amount = row.amount == null
+  const amount = !includedInEstimate
+    ? "Не суммируется"
+    : row.amount == null
     ? "—"
     : canonicalArtifactMoney(row.amount, row.currency_code);
   return `<tr>
@@ -176,6 +199,22 @@ function renderTechnicalRow(row: CanonicalArtifactRow): string {
   </tr>`;
 }
 
+function renderPreliminaryNeedRow(row: CanonicalArtifactRow): string {
+  const trace = objectValue(row.calculation_trace);
+  const missing = Array.isArray(trace.missingParameterIds)
+    ? trace.missingParameterIds.map(String).join(", ")
+    : "исходные данные объекта";
+  return `<tr class="preliminary-need">
+    <td class="number">${Number(row.ordinal) + 1}</td>
+    <td class="name"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row))}</strong><span>Предварительная потребность из определения; требуется уточнение.</span></td>
+    <td>${escapeCanonicalArtifactHtml(CATEGORY_TITLES[canonicalProfessionalPdfCategory(row)])}</td>
+    <td class="unit">${escapeCanonicalArtifactHtml(canonicalArtifactUnit(row))}</td>
+    <td class="numeric">Количество нужно уточнить</td>
+    <td class="money">—</td>
+    <td class="money">—</td>
+  </tr><tr class="preliminary-need-detail"><td></td><td colspan="6">Недостающие параметры: ${escapeCanonicalArtifactHtml(missing)}. В сумму и закупку позиция не включена.</td></tr>`;
+}
+
 function renderParameters(parameters: Record<string, unknown>): string {
   const entries = Object.entries(parameters).sort(([left], [right]) => left.localeCompare(right));
   if (entries.length === 0) return "<p>Параметры не сохранены.</p>";
@@ -192,25 +231,49 @@ function shortIdentity(value: unknown): string {
 export function buildCanonicalProfessionalPdfProjection(input: {
   revision: CanonicalArtifactRevision;
   rows: CanonicalArtifactRow[];
+  preliminaryNeeds?: CanonicalArtifactRow[];
   workTitleRu: string;
   definitionVersionId?: string | null;
+  expectedProjectedRowCount?: number;
 }): CanonicalProfessionalPdfProjection {
   const { revision, rows } = input;
+  const preliminaryNeeds = input.preliminaryNeeds ?? [];
   const revisionTotals = objectValue(revision.totals);
-  const expectedEstimateRowCount = Number(
-    revisionTotals.includedRowCount ?? revision.row_count,
+  const expectedProjectedRowCount = Number(
+    input.expectedProjectedRowCount
+      ?? revisionTotals.includedRowCount
+      ?? revision.row_count,
   );
-  if (rows.length !== expectedEstimateRowCount) {
+  if (rows.length !== expectedProjectedRowCount) {
     throw Object.assign(new Error("professional PDF row count differs from immutable revision"), {
       code: "ARTIFACT_ROW_PARITY_FAILED",
     });
   }
+  const compositionRows = [...rows, ...preliminaryNeeds].sort(
+    (left, right) => Number(left.ordinal) - Number(right.ordinal),
+  );
+  const compositionRowIds = compositionRows.map((row) => String(row.row_id));
+  const compositionOrdinals = compositionRows.map((row) => Number(row.ordinal));
+  if (
+    new Set(compositionRowIds).size !== compositionRowIds.length
+    || new Set(compositionOrdinals).size !== compositionOrdinals.length
+  ) {
+    throw Object.assign(new Error("professional PDF composition contains duplicate rows"), {
+      code: "ARTIFACT_ROW_PARITY_FAILED",
+    });
+  }
+  const preliminaryRowIds = new Set(preliminaryNeeds.map((row) => String(row.row_id)));
   const currencyCode = assertSingleCurrency(revision, rows);
-  const pricedRows = rows.filter((row) => row.unit_price != null && row.amount != null);
-  const missingPriceRowCount = rows.length - pricedRows.length;
-  const grandTotalStatus: CanonicalProfessionalPdfGrandTotalStatus = missingPriceRowCount === 0
+  const payableRows = rows.filter((row) => row.included_in_estimate === true);
+  const nonPayableRowCount = rows.length - payableRows.length;
+  const pricedRows = payableRows.filter((row) => row.unit_price != null && row.amount != null);
+  const missingPriceRowCount = payableRows.length - pricedRows.length;
+  const grandTotalStatus: CanonicalProfessionalPdfGrandTotalStatus = missingPriceRowCount === 0 && preliminaryNeeds.length === 0
     ? "COMPLETE"
     : "PARTIAL_NEEDS_PRICE";
+  const documentStatusRu = grandTotalStatus === "COMPLETE"
+    ? "Полная"
+    : "Предварительная";
   const categoryTotals = Object.fromEntries(
     CANONICAL_PROFESSIONAL_PDF_CATEGORY_ORDER.map((category) => [
       category,
@@ -234,10 +297,14 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     <tr><th>${CATEGORY_TITLES[category]}</th><td>${canonicalArtifactMoney(categoryTotals[category], currencyCode)}</td></tr>`).join("");
   const grandTotal = grandTotalStatus === "COMPLETE"
     ? `<strong>${canonicalArtifactMoney(pricedSubtotal, currencyCode)}</strong>`
-    : "<strong>требуется уточнение цен</strong>";
+    : preliminaryNeeds.length > 0
+      ? "<strong>полный итог не рассчитан</strong>"
+      : "<strong>требуется уточнение цен</strong>";
   const priceNotice = grandTotalStatus === "COMPLETE"
     ? "Все строки имеют подтверждённую цену."
-    : `<strong>Оценено частично.</strong> Строк без подтверждённой цены: ${missingPriceRowCount}. Полный итог: требуется уточнение цен.`;
+    : `<strong>Оценено частично.</strong> Строк без подтверждённой цены: ${missingPriceRowCount}. ${preliminaryNeeds.length > 0
+      ? `Потребностей с неуточнённым количеством или условием: ${preliminaryNeeds.length}. Полный итог не рассчитан.`
+      : "Полный итог: требуется уточнение цен."}`;
   const documentNumber = Number.isFinite(revisionNumber) ? String(revisionNumber) : shortIdentity(revision.id);
   const technicalIdentity = [
     ["Revision", revision.id],
@@ -252,30 +319,32 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}.summary div{background:#eef7f2;border-radius:4px;padding:7px}.notice{margin:8px 0 12px;padding:8px;border:1px solid #d5dde6;border-radius:4px;color:#39485b;break-inside:avoid}
     table{width:100%;border-collapse:collapse;table-layout:fixed}thead{display:table-header-group}tfoot{display:table-footer-group}tr{break-inside:avoid;page-break-inside:avoid}td,th{border:1px solid #cbd4df;padding:4px;vertical-align:top;overflow-wrap:anywhere;word-break:normal;hyphens:none}th{background:#e7edf4;text-align:left}.client th:nth-child(1){width:4%}.client th:nth-child(2){width:35%}.client th:nth-child(3){width:12%}.client th:nth-child(4){width:8%}.client th:nth-child(5){width:11%}.client th:nth-child(6),.client th:nth-child(7){width:15%}.name span{display:block;color:#526174;font-size:8px;margin-top:2px}.number,.unit{text-align:center}.numeric,.money{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
     .totals{width:62%;margin:12px 0 0 auto}.totals th{width:55%}.totals td{text-align:right;font-variant-numeric:tabular-nums}.grand th,.grand td{background:#e5f2ea}.technical-appendix{break-before:page;page-break-before:always}.technical{font-size:7px}.technical th:nth-child(1){width:4%}.technical th:nth-child(2){width:22%}.technical th:nth-child(3){width:30%}.technical th:nth-child(4){width:27%}.technical th:nth-child(5){width:17%}.checksum{word-break:break-all}.parameters{font-size:8px}.identity{border:1px solid #d5dde6;background:#f7f9fb;padding:7px;margin:7px 0;word-break:break-all}
-    .signatures{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px;break-inside:avoid}.signature{border:1px solid #cbd4df;padding:7px;min-height:84px}.signature strong{display:block;margin-bottom:7px}.signature div{border-bottom:1px solid #758195;margin-top:13px;color:#526174}.organization{margin-top:12px;border-bottom:1px solid #758195;padding-bottom:3px;break-inside:avoid}
+    .preliminary-need td{background:#fff7ed}.preliminary-need-detail td{color:#7c4a03;font-size:8px}.signatures{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px;break-inside:avoid}.signature{border:1px solid #cbd4df;padding:7px;min-height:84px}.signature strong{display:block;margin-bottom:7px}.signature div{border-bottom:1px solid #758195;margin-top:13px;color:#526174}.organization{margin-top:12px;border-bottom:1px solid #758195;padding-bottom:3px;break-inside:avoid}
   </style></head><body>
     <header><h1>Профессиональная смета</h1><div class="subtitle">${escapeCanonicalArtifactHtml(input.workTitleRu || "Строительно-монтажные работы")}</div>
-      <div class="meta-grid"><div><strong>Номер:</strong> ${escapeCanonicalArtifactHtml(documentNumber)}</div><div><strong>Статус:</strong> Предварительная</div><div><strong>Сформировано:</strong> ${escapeCanonicalArtifactHtml(generatedDate)}</div><div><strong>Валюта:</strong> ${escapeCanonicalArtifactHtml(currencyLabel)}</div><div><strong>Объект:</strong> ${escapeCanonicalArtifactHtml(input.workTitleRu)}</div><div><strong>Первичная мера:</strong> ${escapeCanonicalArtifactHtml(`${primaryValue} ${primaryUnit}`)}</div><div><strong>Версия:</strong> ${escapeCanonicalArtifactHtml(String(Number.isFinite(revisionNumber) ? revisionNumber : 1))}</div></div>
+      <div class="meta-grid"><div><strong>Номер:</strong> ${escapeCanonicalArtifactHtml(documentNumber)}</div><div><strong>Статус:</strong> ${documentStatusRu}</div><div><strong>Сформировано:</strong> ${escapeCanonicalArtifactHtml(generatedDate)}</div><div><strong>Валюта:</strong> ${escapeCanonicalArtifactHtml(currencyLabel)}</div><div><strong>Объект:</strong> ${escapeCanonicalArtifactHtml(input.workTitleRu)}</div><div><strong>Первичная мера:</strong> ${escapeCanonicalArtifactHtml(`${primaryValue} ${primaryUnit}`)}</div><div><strong>Версия:</strong> ${escapeCanonicalArtifactHtml(String(Number.isFinite(revisionNumber) ? revisionNumber : 1))}</div></div>
     </header>
-    <div class="summary"><div><strong>Позиций</strong><br>${rows.length}</div><div><strong>С подтверждённой ценой</strong><br>${pricedRows.length} из ${rows.length}</div><div><strong>Оценено</strong><br>${canonicalArtifactMoney(pricedSubtotal, currencyCode)}</div></div>
+    <div class="summary"><div><strong>Позиций состава</strong><br>${compositionRows.length}</div><div><strong>Количество известно</strong><br>${rows.length}; ждут источник ${preliminaryNeeds.length}</div><div><strong>Оценено</strong><br>${canonicalArtifactMoney(pricedSubtotal, currencyCode)}</div></div>
     <div class="notice">${priceNotice}</div>
-    <table class="client"><thead><tr><th>№</th><th>Наименование и спецификация</th><th>Категория</th><th>Ед.</th><th>Количество</th><th>Цена за единицу</th><th>Сумма</th></tr></thead><tbody>${rows.map(renderClientRow).join("")}</tbody></table>
+    <table class="client"><thead><tr><th>№</th><th>Наименование и спецификация</th><th>Категория</th><th>Ед.</th><th>Количество</th><th>Цена за единицу</th><th>Сумма</th></tr></thead><tbody>${compositionRows.map((row) => preliminaryRowIds.has(String(row.row_id)) ? renderPreliminaryNeedRow(row) : renderClientRow(row)).join("")}</tbody></table>
     <table class="totals"><tbody>${totalRows}<tr><th>Неполные цены</th><td>${missingPriceRowCount}</td></tr><tr class="grand"><th>Итого</th><td>${grandTotal}</td></tr></tbody></table>
     <div class="notice"><strong>Основание.</strong> Документ отображает строки, параметры, объёмы и цены сохранённой immutable revision. PDF не пересчитывает количества и не подменяет отсутствующую цену нулём.</div>
     <div class="organization">Организация: __________________________________________</div>
     <div class="signatures"><div class="signature"><strong>Составил</strong><div>ФИО / должность</div><div>Дата / подпись</div></div><div class="signature"><strong>Проверил</strong><div>ФИО / должность</div><div>Дата / подпись</div></div><div class="signature"><strong>Утвердил</strong><div>ФИО / должность</div><div>Дата / подпись</div></div></div>
-    <section class="technical-appendix"><h1>Техническое приложение</h1><p>Приложение является второй проекцией той же immutable revision; quantities и prices не пересчитываются.</p><div class="identity">${technicalIdentity}</div><h2>Параметры</h2>${renderParameters(objectValue(revision.input_parameters))}<h2>Формулы, источники и audit identity строк</h2><table class="technical"><thead><tr><th>№</th><th>Позиция</th><th>Формула и применимость</th><th>Норма / источник</th><th>Checksum строки</th></tr></thead><tbody>${rows.map(renderTechnicalRow).join("")}</tbody></table></section>
+    <section class="technical-appendix"><h1>Техническое приложение</h1><p>Приложение является второй проекцией той же immutable revision; quantities и prices не пересчитываются.</p><div class="identity">${technicalIdentity}</div><h2>Параметры</h2>${renderParameters(objectValue(revision.input_parameters))}<h2>Формулы, источники и audit identity строк</h2><table class="technical"><thead><tr><th>№</th><th>Позиция</th><th>Формула и применимость</th><th>Норма / источник</th><th>Checksum строки</th></tr></thead><tbody>${compositionRows.map(renderTechnicalRow).join("")}</tbody></table></section>
   </body></html>`;
 
   return {
     html,
     footerTemplate: `<div style="width:100%;font-size:8px;color:#667487;text-align:center;font-family:Arial,sans-serif">Страница <span class="pageNumber"></span> из <span class="totalPages"></span> · revision ${escapeCanonicalArtifactHtml(shortIdentity(revision.id))} · checksum ${escapeCanonicalArtifactHtml(shortIdentity(revision.checksum_sha256))}</div>`,
-    rowCount: rows.length,
+    rowCount: compositionRows.length,
     pricedRowCount: pricedRows.length,
     missingPriceRowCount,
     grandTotalStatus,
     currencyCode,
     categoryTotals,
     definitionVersionId: input.definitionVersionId ?? null,
+    preliminaryNeedCount: preliminaryNeeds.length,
+    nonPayableRowCount,
   };
 }

@@ -199,7 +199,10 @@ async function runLiveProof(): Promise<void> {
   try {
     await client.connect();
     await client.query("select 1 as ok");
-    await client.query("set statement_timeout = '10000ms'");
+    // Exact fixture-denominator scans are evidence preparation, not latency
+    // samples. Give them a separate bounded window so a million-row audit
+    // table cannot abort the proof before the real per-route budgets run.
+    await client.query("set statement_timeout = '60000ms'");
     const consumerUserId = await firstValue(client, "select consumer_user_id from public.consumer_repair_request_drafts order by created_at desc limit 1");
     const requestDraftId = await firstValue(client, "select id from public.consumer_repair_request_drafts order by created_at desc limit 1");
     const aiOrgId = await firstValue(client, "select organization_id from public.ai_action_ledger order by created_at desc limit 1");
@@ -268,6 +271,7 @@ async function runLiveProof(): Promise<void> {
       marketplace_listings: await countRows(client, "market_listings"),
       events: await countRows(client, "ai_action_ledger") + await countRows(client, "ai_action_ledger_audit"),
     };
+    await client.query("set statement_timeout = '10000ms'");
     const clientSelect1P95Ms = await measureClientSelect1P95(client);
     const rows = [];
     let fullTableScanFound = false;

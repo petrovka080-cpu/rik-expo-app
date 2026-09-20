@@ -82,6 +82,20 @@ export type RoadGeometryResolutionV4 = {
   evidence: string[];
 };
 
+export type RoadSurfaceTechnologyV4 = "ASPHALT_CONCRETE" | "CEMENT_CONCRETE";
+
+export const ROAD_SURFACE_TECHNOLOGY_CONFLICT_ID_V4 =
+  "ROAD_SURFACE_TECHNOLOGY_CONFLICT" as const;
+
+export type RoadSurfaceTechnologyResolutionV4 = {
+  status: "RESOLVED" | "UNSPECIFIED" | "CONFLICT";
+  textTechnology: RoadSurfaceTechnologyV4 | null;
+  catalogTechnology: RoadSurfaceTechnologyV4 | null;
+  conflictId: typeof ROAD_SURFACE_TECHNOLOGY_CONFLICT_ID_V4 | null;
+  messageRu: string | null;
+  evidence: string[];
+};
+
 const ROAD = /(?:асфальт|дорог|дорожн[а-яё]*\s+(?:покрыт|одежд)|щеб[её]н|тротуар|парковк|жол|жолду|фрезер|\broad\b|\bpavement\b|\bparking\b)/iu;
 const PREPARED_BASE =
   /(?:готов[а-яё]*\s+(?:щеб[её]ночн[а-яё]*\s+)?основан|подготовлен[а-яё]*\s+основан|по\s+готовому|даяр\s+(?:шагыл\s+)?негиз)/iu;
@@ -102,6 +116,75 @@ const PARKING = /(?:парковк|автостоян|\bparking\b)/iu;
 const NEW_PARKING = /(?:построи[а-яё]*|строительств[а-яё]*|нов[а-яё]*)[^.]{0,50}(?:парковк|автостоян)|(?:парковк|автостоян)[^.]{0,50}(?:с\s+нуля|нов[а-яё]*\s+строительств)/iu;
 const PARKING_OVERLAY = /(?:обнов|усилен|нов[а-яё]*\s+сло[а-яё]*\s+по\s+существ|поверх\s+существ|overlay)/iu;
 const PARKING_LOCAL_REPAIR = /(?:локальн[а-яё]*\s+ремонт|ямоч|ремонт[а-яё]*\s+карт|фрезер|milling|patch)/iu;
+const ASPHALT_SURFACE_TECHNOLOGY =
+  /(?:асфальтобетонн[\p{L}-]*|асфальт(?:ир|ирован|ировани|ированн|ов|н|(?=\s|[,.;:]|$))|asphalt(?:\s+concrete)?)/iu;
+const CEMENT_CONCRETE_SURFACE_TECHNOLOGY =
+  /(?:цементобетонн[\p{L}-]*(?:\s+дорожн[\p{L}-]*)?\s+(?:покрыт|дорог)|бетонн[\p{L}-]*\s+(?:дорог|дорожн[\p{L}-]*\s+покрыт)|cement\s+concrete\s+(?:road|pavement)|concrete\s+road)/iu;
+
+function catalogRoadSurfaceTechnologyV4(value: string): RoadSurfaceTechnologyV4 | null {
+  const normalized = value.normalize("NFKC").toLocaleLowerCase("ru-RU").trim();
+  if (/(?:cement[_:-]?concrete[_:-]?(?:pavement|road)|concrete[_:-]?road|цементобетон)/iu.test(normalized)) {
+    return "CEMENT_CONCRETE";
+  }
+  if (/(?:asphalt[_:-]?concrete[_:-]?(?:pavement|road)|asphalt[_:-]?(?:pavement|road)|асфальт)/iu.test(normalized)) {
+    return "ASPHALT_CONCRETE";
+  }
+  return null;
+}
+
+export function resolveRoadSurfaceTechnologyV4(input: {
+  originalText: string;
+  requestedCatalogWorkId?: string | null;
+}): RoadSurfaceTechnologyResolutionV4 {
+  const originalText = input.originalText.normalize("NFKC").replace(/\u00a0/g, " ").trim();
+  const asphaltInText = ASPHALT_SURFACE_TECHNOLOGY.test(originalText);
+  const cementConcreteInText = CEMENT_CONCRETE_SURFACE_TECHNOLOGY.test(originalText);
+  const catalogTechnology = catalogRoadSurfaceTechnologyV4(input.requestedCatalogWorkId ?? "");
+  const textTechnology = asphaltInText === cementConcreteInText
+    ? null
+    : asphaltInText
+      ? "ASPHALT_CONCRETE" as const
+      : "CEMENT_CONCRETE" as const;
+  const textIsInternallyConflicting = asphaltInText && cementConcreteInText;
+  const catalogContradictsText = Boolean(
+    textTechnology && catalogTechnology && textTechnology !== catalogTechnology,
+  );
+  if (textIsInternallyConflicting || catalogContradictsText) {
+    return {
+      status: "CONFLICT",
+      textTechnology,
+      catalogTechnology,
+      conflictId: ROAD_SURFACE_TECHNOLOGY_CONFLICT_ID_V4,
+      messageRu: textIsInternallyConflicting
+        ? "В запросе одновременно указаны асфальтобетонное и цементобетонное дорожные покрытия. Уточните технологию покрытия."
+        : "Выбранная технология дорожного покрытия противоречит тексту запроса. Подтвердите асфальтобетонное или цементобетонное покрытие.",
+      evidence: textIsInternallyConflicting
+        ? ["asphalt_surface_explicit", "cement_concrete_surface_explicit"]
+        : [`text_technology:${textTechnology}`, `catalog_technology:${catalogTechnology}`],
+    };
+  }
+  if (!textTechnology && !catalogTechnology) {
+    return {
+      status: "UNSPECIFIED",
+      textTechnology: null,
+      catalogTechnology: null,
+      conflictId: null,
+      messageRu: null,
+      evidence: [],
+    };
+  }
+  return {
+    status: "RESOLVED",
+    textTechnology,
+    catalogTechnology,
+    conflictId: null,
+    messageRu: null,
+    evidence: [
+      ...(textTechnology ? [`text_technology:${textTechnology}`] : []),
+      ...(catalogTechnology ? [`catalog_technology:${catalogTechnology}`] : []),
+    ],
+  };
+}
 
 function metricNumber(value: string): number {
   return Number(value.replace(/\s+/g, "").replace(",", "."));
@@ -113,12 +196,19 @@ function lengthInMeters(value: string, unit: string): number {
 
 export function parseRoadGeometryV4(rawText: string): RoadGeometryResolutionV4 {
   const text = rawText.normalize("NFKC").replace(/\u00a0/g, " ");
-  const pair = text.match(/(-?\d+(?:[,.]\d+)?)\s*(км|km|м|m)\s*(?:×|x|х|на)\s*(-?\d+(?:[,.]\d+)?)\s*(км|km|м|m)/iu);
-  const labelledLength = text.match(/(?:длин[а-яё]*|протяж[а-яё]*|length)\s*[:=]?\s*(-?\d+(?:[,.]\d+)?)\s*(км|km|м|m)/iu);
-  const labelledWidth = text.match(/(?:ширин[а-яё]*|width)\s*[:=]?\s*(-?\d+(?:[,.]\d+)?)\s*(км|km|м|m)/iu);
+  const pair = text.match(/(-?\d[\d\s]*(?:[,.]\d+)?)\s*(км|km|м|m)\s*(?:×|x|х|на)\s*(-?\d[\d\s]*(?:[,.]\d+)?)\s*(км|km|м|m)/iu);
+  const labelledLength = text.match(/(?:длин[а-яё]*|протяж[а-яё]*|length)\s*[:=]?\s*(-?\d[\d\s]*(?:[,.]\d+)?)\s*(км|km|м|m)/iu);
+  const labelledWidth = text.match(/(?:ширин[а-яё]*|width)\s*[:=]?\s*(-?\d[\d\s]*(?:[,.]\d+)?)\s*(км|km|м|m)/iu);
+  const trailingLength = text.match(/(?:—|–|-)\s*(-?\d[\d\s]*(?:[,.]\d+)?)\s*(км|km|м|m)\s*[.!?]?$/iu);
   const areaMatch = text.match(/(?:площад[а-яё]*\s*[:=]?\s*)?(-?\d[\d\s]*(?:[,.]\d+)?)\s*(?:м²|м2|m2|sqm)/iu);
   const thickness = text.match(/(?:толщин[а-яё]*\s*[:=]?\s*)(-?\d+(?:[,.]\d+)?)\s*(мм|mm|см|cm|м|m)/iu);
-  const lengthM = pair ? lengthInMeters(pair[1], pair[2]) : labelledLength ? lengthInMeters(labelledLength[1], labelledLength[2]) : null;
+  const lengthM = pair
+    ? lengthInMeters(pair[1], pair[2])
+    : labelledLength
+      ? lengthInMeters(labelledLength[1], labelledLength[2])
+      : trailingLength
+        ? lengthInMeters(trailingLength[1], trailingLength[2])
+        : null;
   const widthM = pair ? lengthInMeters(pair[3], pair[4]) : labelledWidth ? lengthInMeters(labelledWidth[1], labelledWidth[2]) : null;
   const directArea = areaMatch ? metricNumber(areaMatch[1]) : null;
   const calculatedArea = lengthM != null && widthM != null ? lengthM * widthM : null;

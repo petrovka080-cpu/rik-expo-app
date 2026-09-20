@@ -57,6 +57,10 @@ describe("history click expands read-only snapshot only", () => {
       renderer.root.findByProps({ testID: "consumer-repair-history-button" }).props.onPress();
     });
 
+    expect(renderer.root.findByProps({
+      testID: `consumer-repair-history-revision-${canonical?.revisionId}`,
+    }).props.accessibilityLabel).toContain(String(canonical?.revisionId));
+
     act(() => {
       renderer.root.findByProps({ testID: "consumer-repair-history-main" }).props.onPress();
     });

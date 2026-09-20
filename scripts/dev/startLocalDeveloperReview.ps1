@@ -181,10 +181,41 @@ $env:LOCAL_DEVELOPER_SEARCH_RELEASE_ID = [string]$CanonicalReleaseManifest.searc
 $env:LOCAL_DEVELOPER_SOURCE_TREE_HASH = [string]$Identity.sourceTreeHash
 $env:LOCAL_DEVELOPER_PRODUCT_SOURCE_HASH = [string]$Identity.productSourceHash
 $env:LOCAL_DEVELOPER_JS_BUNDLE_FINGERPRINT = [string]$Identity.jsBundleFingerprint
-$RuntimeEvidenceRoot = Join-Path $Root ".release-runtime\r568\runtime\local-developer-current"
+$RuntimeEvidenceRoot = if (-not [string]::IsNullOrWhiteSpace($env:LOCAL_DEVELOPER_EVIDENCE_ROOT)) {
+  [System.IO.Path]::GetFullPath((Join-Path $Root $env:LOCAL_DEVELOPER_EVIDENCE_ROOT))
+}
+else {
+  Join-Path $Root ".release-runtime\r568\runtime\local-developer-current"
+}
 $env:LOCAL_DEVELOPER_EVIDENCE_ROOT = $RuntimeEvidenceRoot
 
 $Port = 8081
+
+function Test-ConsumerRouteReady {
+  param(
+    [Parameter(Mandatory = $true)]
+    [int]$TimeoutSec,
+    [switch]$WarmBundle
+  )
+  try {
+    $RouteHealth = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:$Port/request" -TimeoutSec 10
+    if ($RouteHealth.StatusCode -ne 200) { return $false }
+    $BundleMatch = [regex]::Match(
+      [string]$RouteHealth.Content,
+      '<script[^>]+src="([^"]*index\.bundle[^"]*)"'
+    )
+    if (-not $BundleMatch.Success) { return $false }
+    if (-not $WarmBundle) { return $true }
+    $BundlePath = [System.Net.WebUtility]::HtmlDecode($BundleMatch.Groups[1].Value)
+    $BundleUri = [Uri]::new([Uri]"http://127.0.0.1:$Port/request", $BundlePath).AbsoluteUri
+    $BundleHealth = Invoke-WebRequest -UseBasicParsing -Uri $BundleUri -TimeoutSec $TimeoutSec
+    return $BundleHealth.StatusCode -eq 200 -and [string]$BundleHealth.Content.Length -gt 1000
+  }
+  catch {
+    return $false
+  }
+}
+
 $ExistingListeners = @(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue)
 $ExistingPids = @($ExistingListeners | Select-Object -ExpandProperty OwningProcess -Unique)
 $ExistingMetroPid = 0
@@ -201,7 +232,7 @@ foreach ($ExistingPid in $ExistingPids) {
     $NormalizedCommand.Contains($NormalizedRoot) -and
     $NormalizedCommand -match "expo[/\\]bin[/\\]cli" -and
     $NormalizedCommand -match "\bstart\b" -and
-    $NormalizedCommand -match "--web"
+    $NormalizedCommand -match "--(web|dev-client)"
   if (-not $OwnedMetro) {
     Fail-Preflight "PORT_8081_FOREIGN_OWNER_PID_$ExistingPid" "освободите порт 8081 вручную после проверки владельца"
   }
@@ -398,6 +429,9 @@ if (-not $BrokerReady) {
 Write-Host "auth_broker_pid=$($Broker.Id)"
 
 if ($ReuseMetro) {
+  if (-not (Test-ConsumerRouteReady -TimeoutSec 30)) {
+    Fail-Preflight "LOCAL_DEVELOPER_ROUTE_WARMUP_RED" "Metro is running, but /request and the web bundle are not ready"
+  }
   Write-Host "runtime_action=reuse_exact_healthy_runtime"
   Write-Host "backend_pid=$($BackendManagerResult.backend_pid)"
   Write-Host "metro_pid=$ExistingMetroPid"
@@ -411,10 +445,14 @@ $MetroStderr = Join-Path $MetroRuntime "metro.stderr.log"
 $Metro = Start-Process -FilePath $Node -ArgumentList @(
   $ExpoCli,
   "start",
-  "--web",
+  "--dev-client",
+  "--host",
+  "localhost",
   "--port",
   "$Port",
-  "--clear"
+  "--clear",
+  "--max-workers",
+  "1"
 ) -WorkingDirectory $Root -WindowStyle Hidden -RedirectStandardOutput $MetroStdout -RedirectStandardError $MetroStderr -PassThru
 
 $MetroReady = $false
@@ -442,6 +480,11 @@ if (-not $MetroReady) {
   if (-not $Metro.HasExited) { Stop-Process -Id $Metro.Id -ErrorAction SilentlyContinue }
   if ($Broker -and -not $Broker.HasExited) { Stop-Process -Id $Broker.Id -ErrorAction SilentlyContinue }
   Fail-Preflight "LOCAL_DEVELOPER_METRO_START_RED" "проверьте metro stderr в runtime evidence"
+}
+if (-not (Test-ConsumerRouteReady -TimeoutSec 180 -WarmBundle)) {
+  if (-not $Metro.HasExited) { Stop-Process -Id $Metro.Id -ErrorAction SilentlyContinue }
+  if ($Broker -and -not $Broker.HasExited) { Stop-Process -Id $Broker.Id -ErrorAction SilentlyContinue }
+  Fail-Preflight "LOCAL_DEVELOPER_ROUTE_WARMUP_RED" "check /request, index.bundle and metro stderr"
 }
 
 @{

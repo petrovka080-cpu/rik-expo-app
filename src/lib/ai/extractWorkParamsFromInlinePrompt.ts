@@ -16,9 +16,10 @@ export type InlineWorkPromptExtractedParam = {
 
 export type InlineWorkPromptExtractedParams = Record<string, InlineWorkPromptExtractedParam>;
 
-const DECIMAL = "(\\d+(?:[,.]\\d+)?)";
+const LOCALIZED_DECIMAL = "\\d+(?:[\\s\u00a0]\\d{3})*(?:[,.]\\d+)?";
+const DECIMAL = `(${LOCALIZED_DECIMAL})`;
 const LINEAR_UNIT = "(км|km|мм|mm|см|cm|м|m|метр|метра|метров|meter|meters)";
-const POSITIVE_DECIMAL = "(?<![\\d-])(\\d+(?:[,.]\\d+)?)";
+const POSITIVE_DECIMAL = `(?<![\\d-])(${LOCALIZED_DECIMAL})`;
 const OPTIONAL_LINEAR_UNIT = "(км|km|мм|mm|см|cm|м|m|метр|метра|метров|meter|meters)?";
 const LENGTH_LABEL = "(?:длин(?:а|ой|у|ы)?|протяженн(?:ость|остью)|length)";
 const WIDTH_LABEL = "(?:ширин(?:а|ой|у|ы)?|width)";
@@ -39,7 +40,7 @@ export function normalizeInlineWorkPromptText(value: string | null | undefined):
 function parseNumber(value: string | undefined): number | null {
   const raw = String(value ?? "").trim();
   if (!raw) return null;
-  const parsed = Number(raw.replace(",", "."));
+  const parsed = Number(raw.replace(/\s+/g, "").replace(",", "."));
   return Number.isFinite(parsed) ? parsed : null;
 }
 

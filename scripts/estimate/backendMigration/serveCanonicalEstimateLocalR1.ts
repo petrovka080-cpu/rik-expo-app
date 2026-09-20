@@ -31,15 +31,21 @@ import {
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
 import { canonicalEstimateStableJson } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism";
 import {
-  CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION,
+  canonicalApprovedBaselineParameterIsRuntimeEligible,
+  canonicalApprovedBaselineRuntimeDefaultValue,
+  canonicalApprovedBaselineRuntimeParameters,
+} from "../../../src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline";
+import {
   CANONICAL_ESTIMATE_REVISION_COMMIT_FUNCTION,
   buildCanonicalRevisionCommitPayload,
   buildCanonicalRevisionIdentity,
   canonicalDefinitionTitleRu,
+  isCanonicalEstimateRevisionContractVersion,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter";
 import {
   buildCanonicalArtifactMetadata,
   buildCanonicalProcurementProjection,
+  canonicalArtifactPreliminaryNeeds,
   canonicalProfessionalArtifactMetadataIdentityMatches,
   selectCanonicalArtifactRows,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract";
@@ -61,6 +67,12 @@ import {
 } from "../../../src/lib/estimate/backendPlatform/estimateAdmissionR3";
 import { canonicalEstimateCandidateAdmissionIdempotencyKey } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCommandIdentity";
 import { normalizePublicBoqNameRu } from "../../../src/lib/estimate/publicBoqNaming";
+import { canonicalEstimatePreliminaryNeedsFromAmendmentContract } from "../../../src/lib/estimate/backendPlatform/contracts";
+import {
+  normalizeCanonicalCatalogSearchQuery as normalizeSearchQuery,
+  parseCanonicalCatalogSearchIntent as parseSearchIntent,
+  relaxedCanonicalCatalogSearchTokens,
+} from "../../../src/lib/estimate/backendPlatform/catalogSearchIntent";
 import {
   isGenericPublicBoqResourceName,
   isPublicBoqNameStructurallyValid,
@@ -1755,7 +1767,8 @@ async function compileClaimedJob(
       `
     select effective.id,effective.cumulative_manifest,effective.approved_template_baseline_id,
       resolved.definition_version,resolved.passport,identity.title_ru,identity.domain,
-      coalesce(baseline.input_values,'{}'::jsonb) baseline_input_values
+      coalesce(baseline.input_values,'{}'::jsonb) baseline_input_values,
+      coalesce(baseline.input_classification,'{}'::jsonb) baseline_input_classification
     from public.estimate_definition_release release
     cross join lateral (
       select inherited.id,true cumulative_manifest,manifest.approved_template_baseline_id,0 priority
@@ -1801,8 +1814,11 @@ async function compileClaimedJob(
     )
   ).rows;
   const payload = (job.input_payload ?? {}) as JsonRecord;
-  const baselineParameters = (definition.baseline_input_values ??
-    {}) as JsonRecord;
+  const baselineRecord = {
+    input_values: definition.baseline_input_values,
+    input_classification: definition.baseline_input_classification,
+  };
+  const baselineParameters = canonicalApprovedBaselineRuntimeParameters(baselineRecord) as JsonRecord;
   const submittedParameters = (payload.parameters ?? {}) as JsonRecord;
   let confirmedParameters: JsonRecord = { ...baselineParameters };
   let inheritedUserParameters: JsonRecord = {};
@@ -1892,7 +1908,8 @@ async function compileClaimedJob(
     compilerVersion: COMPILER_VERSION,
     catalogId: String(job.catalog_id),
     primaryMeasureParameterId: String(
-      (parentRevision?.revision_contract_version === CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION
+      (parentRevision != null
+        && isCanonicalEstimateRevisionContractVersion(parentRevision.revision_contract_version)
         ? parentRevision.primary_measure_parameter_id
         : (payload.requestIdentity as JsonRecord | undefined)?.primaryMeasureParameterId) ?? "",
     ).trim() || null,
@@ -1933,6 +1950,7 @@ async function compileClaimedJob(
     parameters,
     effectiveUserParameters,
     baselineAssumptions,
+    preliminaryNeeds: compiled.preliminaryNeeds,
     parent: parentRevision,
     searchReleaseId: TARGET_SEARCH_RELEASE_ID || null,
     compilerVersion: COMPILER_VERSION,
@@ -1957,6 +1975,7 @@ async function compileClaimedJob(
     parentRevisionId:
       job.parent_revision_id == null ? null : String(job.parent_revision_id),
     identityContract,
+    preliminaryNeeds: compiled.preliminaryNeeds,
   });
   await client.query(
     `select public.${CANONICAL_ESTIMATE_REVISION_COMMIT_FUNCTION}($1,$2,$3::jsonb,$4::jsonb)`,
@@ -2656,8 +2675,11 @@ async function buildArtifactClaimedJob(
     });
   const selection = selectCanonicalArtifactRows(allRows);
   const estimateRows = selection.estimateRows;
-  const rows =
-    job.operation === "procurement" ? selection.procurementRows : estimateRows;
+  const rows = job.operation === "procurement"
+    ? selection.procurementRows
+    : job.operation === "professional_pdf"
+      ? selection.professionalPdfRows
+      : estimateRows;
   let bytes: Buffer;
   let contentType: string;
   let extension: string;
@@ -2665,6 +2687,7 @@ async function buildArtifactClaimedJob(
   let pageCount: number | null = null;
   let definitionVersionId: string | null = null;
   let grandTotalStatus: "COMPLETE" | "PARTIAL_NEEDS_PRICE" | null = null;
+  let artifactProjectedRowCount = rows.length;
   if (job.operation === "procurement") {
     bytes = Buffer.from(
       canonicalEstimateStableJson(
@@ -2696,9 +2719,11 @@ async function buildArtifactClaimedJob(
     const projection = buildCanonicalProfessionalPdfProjection({
       revision,
       rows,
+      preliminaryNeeds: canonicalArtifactPreliminaryNeeds(revision),
+      expectedProjectedRowCount: selection.professionalPdfRows.length,
       workTitleRu: String(
-        revision.canonical_work_title_ru
-          ?? revision.display_title_ru
+        revision.display_title_ru
+          ?? revision.canonical_work_title_ru
           ?? identity?.title_ru
           ?? "Строительно-монтажные работы",
       ),
@@ -2730,6 +2755,7 @@ async function buildArtifactClaimedJob(
     }
     pageCount = countPdfPages(bytes);
     grandTotalStatus = projection.grandTotalStatus;
+    artifactProjectedRowCount = projection.rowCount;
     contentType = "application/pdf";
     extension = "pdf";
     renderer = CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION;
@@ -2777,7 +2803,7 @@ async function buildArtifactClaimedJob(
           renderer,
           revision,
           sourceRowCount: selection.sourceRows.length,
-          projectedRowCount: rows.length,
+          projectedRowCount: artifactProjectedRowCount,
           selectedProcurementRowCount: selection.procurementRows.length,
           definitionVersionId,
           pageCount,
@@ -2830,14 +2856,6 @@ function searchCursor(raw: string | null): LocalSearchCursor | null {
       httpStatus: 400,
     });
   }
-}
-
-function normalizeSearchQuery(value: string): string {
-  return value
-    .toLocaleLowerCase("ru")
-    .replace(/ё/gu, "е")
-    .replace(/[^\p{L}\p{N}]+/gu, " ")
-    .trim();
 }
 
 type LocalCanonicalResourceSearchRow = {
@@ -2942,65 +2960,6 @@ function localCanonicalResourceIndex(): Promise<LocalCanonicalResourceSearchRow[
   return localCanonicalResourceIndexPromise;
 }
 
-type LocalSearchMode = "ANY" | "ALL" | "PHRASE";
-
-function parseSearchIntent(
-  rawQuery: string,
-  requestedMode: string | null,
-  requestedTokens: string[],
-) {
-  const quantityPattern =
-    /(?:^|\s)(\d{1,3}(?:[\s\u00a0]\d{3})+|\d+)(?:[,.](\d+))?\s*(кв\.?\s*м(?:етр(?:ов|а)?)?|квадратн(?:ых|ого|ые)?\s+метр(?:ов|а)?|м[²2]|шт(?:ук|ука|уки)?|штук(?:а|и)?|метр(?:ов|а|ы)?|тонн?(?:а|ы)?|кг|м|т)(?=\s|$)/iu;
-  const quantityMatch = quantityPattern.exec(rawQuery.normalize("NFC"));
-  const quantity = quantityMatch
-    ? Number(
-        `${quantityMatch[1]!.replace(/[\s\u00a0]/gu, "")}.${quantityMatch[2] ?? "0"}`,
-      )
-    : null;
-  const rawUnit = String(quantityMatch?.[3] ?? "").toLocaleLowerCase("ru");
-  const unit = !quantityMatch
-    ? null
-    : /^(?:кв|квадрат|м[²2])/u.test(rawUnit)
-      ? "м²"
-      : /^(?:шт|штук)/u.test(rawUnit)
-        ? "шт"
-        : /^(?:тон|т$)/u.test(rawUnit)
-          ? "т"
-          : rawUnit === "кг"
-            ? "кг"
-            : "м";
-  const searchText = normalizeSearchQuery(
-    quantityMatch
-      ? `${rawQuery.slice(0, quantityMatch.index)} ${rawQuery.slice(quantityMatch.index + quantityMatch[0].length)}`
-      : rawQuery,
-  );
-  const explicitMode = String(requestedMode ?? "")
-    .trim()
-    .toUpperCase();
-  const inferredMode: LocalSearchMode = /\s+или\s+/iu.test(searchText)
-    ? "ANY"
-    : "PHRASE";
-  const mode: LocalSearchMode = ["ANY", "ALL", "PHRASE"].includes(explicitMode)
-    ? (explicitMode as LocalSearchMode)
-    : inferredMode;
-  const tokenSource =
-    requestedTokens.length > 0
-      ? requestedTokens
-      : mode === "ANY"
-        ? searchText.split(/\s+или\s+|\s*[,;|]\s*/iu)
-        : mode === "ALL"
-          ? searchText.split(/\s+и\s+|\s*[,;|]\s*/iu)
-          : [searchText];
-  const tokens = [
-    ...new Set(
-      tokenSource
-        .map(normalizeSearchQuery)
-        .filter((token) => (token.match(/[\p{L}\p{N}]/gu) ?? []).length >= 2),
-    ),
-  ];
-  return { rawQuery, searchText, quantity, unit, mode, tokens };
-}
-
 async function localSearchRelease(
   client: PoolClient,
 ): Promise<Record<string, any>> {
@@ -3057,11 +3016,13 @@ with tokens as materialized(
   from source_hits hit cross join token_state state
   where (upper($3)='ANY' and hit.matched_count>0)
     or (upper($3)='ALL' and state.token_count>0 and hit.matched_count=state.token_count)
+    or (upper($3)='RELAXED' and state.token_count>0
+      and hit.matched_count>=greatest(2,ceil(state.token_count*0.3)::int))
     or (upper($3)='PHRASE' and state.token_count=1 and hit.matched_count=1)
 ), filtered as materialized(
   select hit.*,target.catalog_origin,target.group_id,target.domain_id,target.system_id,target.work_family_id,
     row_number() over(partition by hit.resolved_catalog_id order by hit.tier,
-      hit.source_catalog_id=hit.resolved_catalog_id desc,hit.source_catalog_id) resolved_ordinal
+      hit.matched_count desc,hit.source_catalog_id=hit.resolved_catalog_id desc,hit.source_catalog_id) resolved_ordinal
   from accepted hit
   join public.estimate_search_document target
     on target.search_release_id=$1 and target.catalog_id=hit.resolved_catalog_id
@@ -3070,7 +3031,8 @@ with tokens as materialized(
     and (coalesce($6,'')='' or target.operation_kind=$6)
 ), deduplicated as materialized(
   select filtered.*,
-    concat_ws(E'\\u001f',lpad(filtered.tier::text,2,'0'),filtered.domain_id,
+    concat_ws(E'\\u001f',lpad(filtered.tier::text,2,'0'),
+      lpad((9999-filtered.matched_count)::text,4,'0'),filtered.domain_id,
       filtered.system_id,filtered.work_family_id,filtered.resolved_catalog_id) stable_order_key
   from filtered where resolved_ordinal=1
 ), summary as materialized(
@@ -3331,6 +3293,7 @@ function localRevisionView(revision: Record<string, any>) {
     formulaGraphVersion: revision.formula_graph_version ?? null,
     revisionContractVersion: revision.revision_contract_version ?? null,
     amendmentContract: revision.amendment_contract,
+    preliminaryNeeds: canonicalEstimatePreliminaryNeedsFromAmendmentContract(revision.amendment_contract),
     totals: revision.totals,
     rowCount: revision.row_count,
     checksumSha256: revision.checksum_sha256,
@@ -3355,12 +3318,7 @@ function localParameterSessionSchema(
         ? parameter.truth_metadata
         : {};
     const parameterId = String(parameter.parameter_id);
-    const acceptedAsInput =
-      baseline != null &&
-      Object.prototype.hasOwnProperty.call(
-        baseline.input_values ?? {},
-        parameterId,
-      );
+    const acceptedAsInput = canonicalApprovedBaselineParameterIsRuntimeEligible(baseline, parameterId);
     const acceptedGuide = String(
       baseline?.guide_provenance_ru?.[parameterId] ?? "",
     ).trim();
@@ -3417,9 +3375,11 @@ function localParameterSessionSchema(
       unitId: parameter.unit_id,
       titleRu: parameter.title_ru,
       required: parameter.required,
+      preliminaryCompilationAllowed:
+        truth.preliminary_compilation_allowed === true,
       defaultValue:
         parameter.default_value ??
-        (acceptedAsInput ? baseline?.input_values?.[parameterId] : null),
+        canonicalApprovedBaselineRuntimeDefaultValue(baseline, parameterId),
       constraints: parameter.constraints_json,
       semanticParameterKey:
         truth.semantic_parameter_key ?? (baseline ? parameterId : undefined),
@@ -4096,6 +4056,24 @@ async function route(
       ).rows;
       let resultLevel: "LITERAL" | "FUZZY" = "LITERAL";
       if (rows.length === 0 && intent.mode === "PHRASE" && scope === "WORKS") {
+        const relaxedTokens = relaxedCanonicalCatalogSearchTokens(intent.searchText);
+        if (relaxedTokens.length >= 2) {
+          rows = (
+            await client.query(LOCAL_LITERAL_SEARCH_R58, [
+              release.id,
+              relaxedTokens,
+              "RELAXED",
+              filters.domain_id ?? "",
+              filters.group_id ?? "",
+              filters.operation_kind ?? "",
+              cursor?.orderKey ?? null,
+              scope,
+              limit,
+            ])
+          ).rows;
+        }
+      }
+      if (rows.length === 0 && intent.mode === "PHRASE" && scope === "WORKS") {
         const candidates = (
           await client.query(
             `select document.catalog_id,document.definition_version_id,
@@ -4193,6 +4171,7 @@ async function route(
       searchTokens: intent.tokens,
       parsedQuantity: intent.quantity,
       parsedUnit: intent.unit,
+      parsedDimensions: intent.dimensions,
       filters,
       scope,
       resultLevel: result.resultLevel,
@@ -4712,6 +4691,7 @@ async function route(
         currencyCode: revision.currency_code,
         parameters: revision.input_parameters,
         amendmentContract: revision.amendment_contract,
+        preliminaryNeeds: canonicalEstimatePreliminaryNeedsFromAmendmentContract(revision.amendment_contract),
         totals: revision.totals,
         sourceRequestText: revision.source_request_text ?? null,
         sourceRequestHash: revision.source_request_hash ?? null,
@@ -4806,6 +4786,7 @@ async function route(
       formulaGraphVersion: revision.formula_graph_version ?? null,
       revisionContractVersion: revision.revision_contract_version ?? null,
       amendmentContract: revision.amendment_contract,
+      preliminaryNeeds: canonicalEstimatePreliminaryNeedsFromAmendmentContract(revision.amendment_contract),
       totals: revision.totals,
       rowCount: revision.row_count,
       checksumSha256: revision.checksum_sha256,
@@ -5250,12 +5231,7 @@ async function route(
               ? parameter.truth_metadata
               : {};
           const parameterId = String(parameter.parameter_id);
-          const acceptedAsInput =
-            baseline != null &&
-            Object.prototype.hasOwnProperty.call(
-              baseline.input_values ?? {},
-              parameterId,
-            );
+          const acceptedAsInput = canonicalApprovedBaselineParameterIsRuntimeEligible(baseline, parameterId);
           const acceptedGuide = String(
             baseline?.guide_provenance_ru?.[parameterId] ?? "",
           ).trim();
@@ -5331,13 +5307,14 @@ async function route(
             unitId: parameter.unit_id,
             titleRu: parameter.title_ru,
             required: parameter.required,
-            // The worker already merges this exact immutable approved baseline
-            // before validation. Expose the same persisted value to the client
-            // for readiness validation; it remains backend-owned and is not
-            // resubmitted as a user parameter.
+            preliminaryCompilationAllowed:
+              truth.preliminary_compilation_allowed === true,
+            // Only baseline entries explicitly eligible for runtime use are
+            // exposed as defaults. Validation fixtures stay evidence, not
+            // project/site inputs for a new estimate.
             defaultValue:
               parameter.default_value ??
-              (acceptedAsInput ? baseline?.input_values?.[parameterId] : null),
+              canonicalApprovedBaselineRuntimeDefaultValue(baseline, parameterId),
             constraints: parameter.constraints_json,
             semanticParameterKey:
               truth.semantic_parameter_key ??

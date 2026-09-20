@@ -19,17 +19,17 @@ import {
 
 type Json = Record<string, any>;
 
-const MASTER_PATH = resolve("C:/Users/User/Downloads/MASTER_TZ_R4_A10_FULL_TECHNOLOGICAL_ESTIMATES_CONFIRM_PRODUCTION_RU.md");
-const MASTER_SHA256 = "9262479c9c9fb3107c4541046c367db7934c875ea8354cc472a7529788635d1b";
+const MASTER_PATH = resolve("C:/Users/User/Downloads/MASTER_TZ_R4_A13_4_ONE_PLATFORM_CORE_EXISTING_NORMS_GLOBAL_ESTIMATES_RU.md");
+const MASTER_SHA256 = "0ff759893b3660c64e094de5763b443e35fa9ec8cb861132a7bed455d763e3ac";
 const CURRENT_RELEASE_PATH = resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json");
-const PARENT_RELEASE_ID = "d12a3ad5-10e1-5381-af18-7f2a56f899f7";
-const PARENT_SEARCH_RELEASE_ID = "5ff23280-4915-58a0-b9df-1214b45c6490";
-const CONTRACT = "rik-expo-app.r4-a10.asphalt-surface-drainage-successor.v1";
+const PARENT_RELEASE_ID = "cb7b9fe6-f41a-5849-9630-d817fa834f64";
+const PARENT_SEARCH_RELEASE_ID = "abe65d73-34a2-5815-8143-484b22418faa";
+const CONTRACT = "rik-expo-app.r4-a13-4.asphalt-surface-drainage-norm-successor.v1";
 const EXPECTED_BRANCH = "codex/r4-a5-clean-08b18902";
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const APPLY = process.argv.includes("--apply");
-const OUTPUT_ROOT = resolve(".release-runtime/r568/rc09-r4-production-closeout/r4-a10-asphalt-drainage");
+const OUTPUT_ROOT = resolve(".release-runtime/r4a13-4/platform-core-global/drainage-successor");
 const SOURCE_PATHS = [
   "scripts/estimate/drainageBackendR4/asphaltSurfaceDrainageR1.ts",
   "scripts/estimate/r4a10/prepareR4A10AsphaltDrainageSuccessor.ts",
@@ -234,13 +234,13 @@ async function main(): Promise<void> {
   const searchReleaseId = uuid(`${CONTRACT}:${fingerprint}:search`);
   const definitionId = uuid(`${CONTRACT}:${fingerprint}:definition:${ASPHALT_SURFACE_DRAINAGE_CATALOG_ID}`);
   const baselineId = uuid(`${CONTRACT}:${fingerprint}:baseline:${ASPHALT_SURFACE_DRAINAGE_CATALOG_ID}`);
-  const releaseKey = `r568-r4-a10-asphalt-drainage-${fingerprint.slice(0, 16)}`;
+  const releaseKey = `r4-a13-4-asphalt-drainage-${fingerprint.slice(0, 16)}`;
   const current = JSON.parse(readFileSync(CURRENT_RELEASE_PATH, "utf8")) as Json;
   const currentIsParent = current.definitionReleaseId === PARENT_RELEASE_ID
     && current.searchReleaseId === PARENT_SEARCH_RELEASE_ID;
   const currentIsExactSuccessor = current.definitionReleaseId === releaseId
     && current.searchReleaseId === searchReleaseId;
-  const currentIsPriorDrainageSuccessor = current.owner === "R4_A10_ASPHALT_SURFACE_DRAINAGE_TECHNOLOGICAL_OWNER"
+  const currentIsPriorDrainageSuccessor = current.owner === "R4_A13_4_ASPHALT_SURFACE_DRAINAGE_NORM_OWNER"
     && current.definitionReleaseStatus === "prepared"
     && current.searchReleaseStatus === "draft"
     && current.productionAccessed === false
@@ -260,6 +260,18 @@ async function main(): Promise<void> {
   const { passport: contentPassport, formulaConsumers, resourceConsumers, decision } =
     buildAsphaltSurfaceDrainageContentPassportR3(ASPHALT_SURFACE_DRAINAGE_CATALOG_ID);
   invariant(decision.allowed, `STOP_R4_A10_DRAINAGE_CONTENT_PASSPORT_RED:${decision.errors.join("|")}`);
+  const systemTypeParameter = ASPHALT_SURFACE_DRAINAGE_INPUTS.find((parameter) => parameter.parameterId === "system_type");
+  invariant(systemTypeParameter != null && (resourceConsumers.system_type?.length ?? 0) > 0,
+    "STOP_R4_A10_DRAINAGE_VALIDATION_FIXTURE_CONSUMERS_MISSING");
+  const validationFixture = {
+    inputValues: { system_type: "linear_tray" },
+    inputClassification: { system_type: "FIXTURE_ONLY" },
+    uomByParameter: { system_type: null },
+    formulaConsumerIds: { system_type: formulaConsumers.system_type ?? [] },
+    resourceConsumerRowIds: { system_type: resourceConsumers.system_type },
+    normativeSourceIds: { system_type: [CONTRACT] },
+    guideProvenanceRu: { system_type: systemTypeParameter.guideRu },
+  };
   const safeBaselineInputs = Object.fromEntries(ASPHALT_SURFACE_DRAINAGE_INPUTS.flatMap((parameter) =>
     parameter.visibilityRole === "INTERNAL_ONLY" && parameter.defaultValue != null
       ? [[parameter.parameterId, parameter.defaultValue]]
@@ -290,9 +302,12 @@ async function main(): Promise<void> {
       beddingM3: 10.8,
       backfillM3: 32.4,
       trayConcreteM3: 14.4,
-      trayModules: 180,
-      trayFasteners: 360,
-      sealantKg: 21.6,
+      trayModules: 174,
+      trayGratings: 360,
+      trayJoints: 179,
+      trayFasteners: 720,
+      traySiltTraps: 6,
+      sealantKg: 21.48,
       soilDisposalTKm: 388.8,
     },
   });
@@ -304,7 +319,7 @@ async function main(): Promise<void> {
     resources: ASPHALT_SURFACE_DRAINAGE_ROWS,
   });
 
-  const client = new Client({ connectionString: DATABASE_URL, application_name: "r4-a10-asphalt-drainage-successor" });
+  const client = new Client({ connectionString: DATABASE_URL, application_name: "r4-a13-4-asphalt-drainage-successor" });
   await client.connect();
   let receipt: Json;
   try {
@@ -342,7 +357,7 @@ async function main(): Promise<void> {
       invariant(predecessor?.status === "prepared" && Number(predecessor.definition_count) === 10_331,
         "STOP_R4_A10_DRAINAGE_PREDECESSOR_RELEASE_DRIFT");
       const expectedPredecessorTarget = predecessorReleaseId === PARENT_RELEASE_ID
-        ? { parameters: 1, formulas: 59, resources: 59 }
+        ? { parameters: 61, formulas: 34, resources: 61 }
         : {
           parameters: ASPHALT_SURFACE_DRAINAGE_INPUTS.length,
           formulas: ASPHALT_SURFACE_DRAINAGE_FORMULAS.length,
@@ -353,6 +368,26 @@ async function main(): Promise<void> {
         && Number(target.formulas) === expectedPredecessorTarget.formulas
         && Number(target.resources) === expectedPredecessorTarget.resources,
         "STOP_R4_A10_DRAINAGE_PREDECESSOR_TARGET_DRIFT");
+      const lineage = (await client.query(`with recursive chain as (
+          select baseline.id,baseline.definition_version_id,0 depth
+          from public.estimate_approved_template_baseline baseline where baseline.id=$1
+          union all
+          select successor.id,successor.definition_version_id,chain.depth+1
+          from chain join public.estimate_approved_template_baseline successor
+            on successor.supersedes_baseline_id=chain.id
+        ) select chain.id::text baseline_id,chain.definition_version_id::text definition_version_id,chain.depth,
+          (select count(*)::int from public.estimate_parameter_definition parameter
+            where parameter.definition_version_id=chain.definition_version_id) parameters,
+          (select count(*)::int from public.estimate_formula_graph formula
+            where formula.definition_version_id=chain.definition_version_id) formulas,
+          (select count(*)::int from public.estimate_resource_spec resource
+            where resource.definition_version_id=chain.definition_version_id) resources
+        from chain order by chain.depth desc limit 1`, [target.approved_template_baseline_id])).rows[0] as Json;
+      invariant(lineage
+        && Number(lineage.parameters) === ASPHALT_SURFACE_DRAINAGE_INPUTS.length
+        && Number(lineage.formulas) === ASPHALT_SURFACE_DRAINAGE_FORMULAS.length
+        && Number(lineage.resources) === ASPHALT_SURFACE_DRAINAGE_ROWS.length,
+      "STOP_R4_A10_DRAINAGE_LINEAGE_LEAF_DRIFT");
       const nextDefinitionVersion = Number((await client.query(
         "select coalesce(max(definition_version),0)::int+1 value from public.estimate_definition_version where catalog_id=$1",
         [ASPHALT_SURFACE_DRAINAGE_CATALOG_ID],
@@ -369,7 +404,11 @@ async function main(): Promise<void> {
           idempotent: false,
           predecessor: { releaseId: predecessorReleaseId, searchReleaseId: predecessorSearchReleaseId, definitionId: target.definition_version_id },
           successor: { releaseId, searchReleaseId, definitionId, baselineId, releaseKey, nextCounts },
-          redReproduction: { parameters: 1, formulas: 59, resources: 59, primaryUom: "m2", hiddenQuantityDefault: 100 },
+          predecessorGeometry: {
+            parameters: Number(target.parameters),
+            formulas: Number(target.formulas),
+            resources: Number(target.resources),
+          },
           technologicalCore: {
             parameters: ASPHALT_SURFACE_DRAINAGE_INPUTS.length,
             formulas: ASPHALT_SURFACE_DRAINAGE_FORMULAS.length,
@@ -438,7 +477,8 @@ async function main(): Promise<void> {
             definitionSha256,
             JSON.stringify({
               contract: CONTRACT,
-              predecessorDefinitionId: target.definition_version_id,
+              predecessorDefinitionId: lineage.definition_version_id,
+              cumulativeParentDefinitionId: target.definition_version_id,
               parameterSchemaSha256,
               acceptanceEvidenceSha256,
               noHiddenDrainageGeometryDefaults: true,
@@ -475,6 +515,7 @@ async function main(): Promise<void> {
                 verified_at: "2026-09-06",
               },
               required_when: parameter.requiredWhen ?? null,
+              preliminary_compilation_allowed: parameter.visibilityRole === "USER_INPUT",
               formula_consumers: formulaConsumers[parameter.parameterId] ?? [],
               resource_branch_consumers: resourceConsumers[parameter.parameterId] ?? [],
               contract: CONTRACT,
@@ -557,19 +598,26 @@ async function main(): Promise<void> {
               input_values,input_classification,uom_by_parameter,formula_consumer_ids,resource_consumer_row_ids,
               normative_source_ids,guide_provenance_ru,proposal_source_refs,validation_scenario_refs,
               acceptance_evidence_sha256,accepted_release_id,accepted_at,supersedes_baseline_id,contract_version)
-            values($1,$2,$3,$4,$5,$6,'{}'::jsonb,'{}'::jsonb,'{}'::jsonb,'{}'::jsonb,'{}'::jsonb,'{}'::jsonb,
-              '{}'::jsonb,$7::jsonb,$8::jsonb,$9,$10,clock_timestamp(),$11,'APPROVED_TEMPLATE_BASELINE_R54_V1')`, [
+            values($1,$2,$3,$4,$5,$6,$7::jsonb,$8::jsonb,$9::jsonb,$10::jsonb,$11::jsonb,$12::jsonb,
+              $13::jsonb,$14::jsonb,$15::jsonb,$16,$17,clock_timestamp(),$18,'APPROVED_TEMPLATE_BASELINE_R54_V1')`, [
             baselineId,
             `${CONTRACT}:${fingerprint.slice(0, 16)}:${ASPHALT_SURFACE_DRAINAGE_CATALOG_ID}`,
             ASPHALT_SURFACE_DRAINAGE_CATALOG_ID,
             definitionId,
-            target.definition_version_id,
+            lineage.definition_version_id,
             parameterSchemaSha256,
+            JSON.stringify(validationFixture.inputValues),
+            JSON.stringify(validationFixture.inputClassification),
+            JSON.stringify(validationFixture.uomByParameter),
+            JSON.stringify(validationFixture.formulaConsumerIds),
+            JSON.stringify(validationFixture.resourceConsumerRowIds),
+            JSON.stringify(validationFixture.normativeSourceIds),
+            JSON.stringify(validationFixture.guideProvenanceRu),
             JSON.stringify([{ contract: CONTRACT, masterSha256: MASTER_SHA256, sourceHashes }]),
             JSON.stringify([{ scenario: "ASPHALT_SURFACE_DRAINAGE_LINEAR_GOLD", acceptanceEvidenceSha256 }]),
             acceptanceEvidenceSha256,
             releaseId,
-            target.approved_template_baseline_id,
+            lineage.baseline_id,
           ]);
           await client.query(`update public.estimate_parameter_definition set approved_template_baseline_id=$2
             where definition_version_id=$1 and approved_template_baseline_id is null`, [definitionId, baselineId]);
@@ -648,12 +696,20 @@ async function main(): Promise<void> {
           receipt = {
             status: "GREEN_R4_A10_DRAINAGE_SUCCESSOR_PREPARED_NOT_ACTIVE",
             idempotent: false,
-            predecessor: { releaseId: predecessorReleaseId, searchReleaseId: predecessorSearchReleaseId, definitionId: target.definition_version_id },
+            predecessor: {
+              releaseId: predecessorReleaseId,
+              searchReleaseId: predecessorSearchReleaseId,
+              definitionId: target.definition_version_id,
+              lineageDefinitionId: lineage.definition_version_id,
+              lineageBaselineId: lineage.baseline_id,
+            },
             successor: { releaseId, searchReleaseId, definitionId, baselineId, releaseKey, nextCounts },
             audit: {
               ...manifest,
               search,
               safeBaselineInputs: [],
+              runtimeEligibleBaselineInputs: [],
+              validationFixtureClassification: validationFixture.inputClassification,
               minimumRequiredInputs,
               technologicalCore: {
                 parameters: ASPHALT_SURFACE_DRAINAGE_INPUTS.length,
@@ -701,7 +757,11 @@ async function main(): Promise<void> {
       identities: 11_610,
       visibleCanonicalDefinitions: 10_322,
       aliasesRedirects: 1_288,
-      owner: "R4_A10_ASPHALT_SURFACE_DRAINAGE_TECHNOLOGICAL_OWNER",
+      currentRuntimeDefinitions: 10_331,
+      runtimeAdditionalAdmissions: 9,
+      currentInventoryRowsIncludingAliases: 11_619,
+      denominatorNote: "11610 is the immutable historical source-identity reconciliation (10322 canonical owners plus 1288 redirects); the current cumulative runtime also preserves 9 separately identified inherited admissions.",
+      owner: "R4_A13_4_ASPHALT_SURFACE_DRAINAGE_NORM_OWNER",
       productionAccessed: false,
       fakeGreenClaimed: false,
     });

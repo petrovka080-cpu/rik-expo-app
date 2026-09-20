@@ -8,6 +8,7 @@ import {
   buildStructuredEstimateRequestDraft,
 } from "../estimateStructuredPipeline";
 import type { ConsumerRepairAiDraft, ConsumerRepairDraftBundle, ConsumerRepairSelectedWork } from "./consumerRequestTypes";
+import { isElevatedWorkAccessSupplement } from "../estimate/elevatedWorkAccessPolicy";
 
 type ConsumerRepairAiDraftItem = ConsumerRepairAiDraft["items"][number];
 
@@ -134,6 +135,127 @@ export function buildConsumerRepairAiDraftFromGlobalEstimate(
     selectedWork: selectedWorkForDraft,
     summaryRu: exactSummary,
     structuredEstimatePayload: payload,
+  };
+}
+
+function sectionTypeForSupplement(
+  item: ConsumerRepairAiDraftItem,
+): GlobalEstimateResult["sections"][number]["type"] {
+  if (item.itemType === "material") return "materials";
+  if (item.itemType === "work") return "labor";
+  if (item.category === "logistics") return "delivery";
+  return "equipment";
+}
+
+/**
+ * Cross-cutting safety policies run after the canonical estimate has been
+ * projected into an editable request draft. Re-project their governed rows
+ * through the same structured-payload builder so UI, PDF and history never
+ * observe a shorter pre-policy row set.
+ */
+export function synchronizeConsumerRepairStructuredPayload(
+  draft: ConsumerRepairAiDraft,
+): ConsumerRepairAiDraft {
+  const payload = draft.structuredEstimatePayload;
+  if (!payload || payload.canonicalBackend) return draft;
+  const existingCodes = new Set(payload.sourceEstimate.sections.flatMap((section) =>
+    section.rows.map((row) => row.code)));
+  const supplements = draft.items.filter((item) =>
+    isElevatedWorkAccessSupplement(item) &&
+    !existingCodes.has(rowCodeFor(item)));
+  if (supplements.length === 0) return draft;
+
+  const sections = payload.sourceEstimate.sections.map((section) => ({
+    ...section,
+    rows: [...section.rows],
+  }));
+  for (const item of supplements) {
+    const sectionType = sectionTypeForSupplement(item);
+    let section = sections.find((candidate) => candidate.type === sectionType);
+    if (!section) {
+      const sectionNumber = sectionType === "materials" ? "1" : sectionType === "labor" ? "2" : sectionType === "equipment" ? "3" : "4";
+      section = {
+        sectionNumber,
+        title: sectionType === "materials" ? "Материалы" : sectionType === "labor" ? "Работы" : sectionType === "equipment" ? "Оборудование" : "Доставка",
+        type: sectionType,
+        rows: [],
+      };
+      sections.push(section);
+    }
+    const rowCode = rowCodeFor(item);
+    const quantity = item.quantity ?? 0;
+    const sourceId = item.normSourceId ?? item.sourceId ?? "src_professional_elevated_work_access_scope_v1";
+    const sourceLabel = item.normSourceTitle ?? item.sourceLabel ?? "Профессиональная карта комплектации рабочего места на высоте";
+    section.rows.push({
+      rowNumber: `${section.sectionNumber}.${section.rows.length + 1}`,
+      code: rowCode,
+      rateKey: item.rateKey ?? undefined,
+      materialKey: item.materialKey ?? undefined,
+      name: item.titleRu,
+      quantity,
+      unit: item.unit,
+      displayQuantity: `${roundQuantity(quantity)} ${item.unitLabel}`,
+      unitPrice: 0,
+      displayUnitPrice: "Цена не выбрана",
+      total: 0,
+      displayTotal: "Цена не выбрана",
+      currency: item.currency ?? payload.sourceEstimate.totals.currency,
+      priceStatus: "unavailable",
+      sourceId,
+      sourceEvidence: [{
+        sourceId,
+        sourceType: "configured_reference",
+        label: sourceLabel,
+        checkedAt: "2026-09-07T00:00:00+06:00",
+        freshness: "fresh",
+        confidence: item.confidence ?? "medium",
+      }],
+      formulaId: item.formulaId,
+      quantityFormula: item.quantityFormula,
+      calculationTrace: item.calculationTrace,
+      sourceParameters: item.sourceParameters,
+      templateId: item.templateId,
+      templateVersion: item.templateVersion,
+      normId: item.normId,
+      normFamilyId: item.normFamilyId,
+      normSourceId: item.normSourceId,
+      normSourceTitle: item.normSourceTitle,
+      normVersion: item.normVersion,
+      normReviewStatus: item.normReviewStatus,
+      confidence: item.confidence ?? "medium",
+      includedInEstimate: true,
+      includedInProcurement: item.sourceParameters?.includedInProcurement !== false,
+      optional: false,
+      editable: true,
+      deletedByUser: false,
+    });
+  }
+  const sourceEstimate: GlobalEstimateResult = {
+    ...payload.sourceEstimate,
+    sections,
+    sources: [
+      ...payload.sourceEstimate.sources,
+      ...supplements
+        .map((item) => ({
+          id: item.normSourceId ?? item.sourceId ?? "src_professional_elevated_work_access_scope_v1",
+          type: "configured_reference" as const,
+          label: item.normSourceTitle ?? item.sourceLabel ?? "Профессиональная карта комплектации рабочего места на высоте",
+          checkedAt: "2026-09-07T00:00:00+06:00",
+        }))
+        .filter((source, index, all) => all.findIndex((candidate) => candidate.id === source.id) === index)
+        .filter((source) => !payload.sourceEstimate.sources.some((existing) => existing.id === source.id)),
+    ],
+  };
+  const presentation = buildEstimatePresentationViewModel(sourceEstimate);
+  const synchronizedPayload = buildStructuredEstimatePayload(sourceEstimate, {
+    source: payload.source,
+    presentation,
+    selectedWork: payload.selectedWork,
+  });
+  return {
+    ...draft,
+    estimatePresentation: synchronizedPayload.presentation,
+    structuredEstimatePayload: synchronizedPayload,
   };
 }
 

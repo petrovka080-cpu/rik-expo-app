@@ -2,8 +2,9 @@ import React from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
-import { searchMaterialCatalogItemsForPicker } from "../../lib/catalog/catalog.facade";
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
+import { searchCanonicalEstimateResources } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
+import type { CanonicalEstimateResourceSearchItem } from "../../lib/estimate/backendPlatform/contracts";
 import { registerTimeout, type TimerRegistryHandle } from "../../lib/lifecycle/timerRegistry";
 import { ConsumerRepairItemRow } from "./ConsumerRepairItemRow";
 import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
@@ -11,6 +12,10 @@ import type {
   RequestEstimateSectionViewModel,
   RequestEstimateViewModel,
 } from "./requestEstimateViewModel";
+import {
+  consumerRepairRowCategorySignals,
+  consumerRepairRowIsCanonicalPreliminaryNeed,
+} from "./consumerRepairRowMetadata";
 
 export type RequestEstimateCategoryFilterId =
   | "all"
@@ -32,8 +37,20 @@ export const REQUEST_ESTIMATE_CATEGORY_FILTERS: ReadonlyArray<{
   { id: "delivery", label: "Доставка" },
 ];
 
+function positionCountLabel(count: number): string {
+  const mod100 = count % 100;
+  const mod10 = count % 10;
+  if (mod100 >= 11 && mod100 <= 14) return "позиций";
+  if (mod10 === 1) return "позиция";
+  if (mod10 >= 2 && mod10 <= 4) return "позиции";
+  return "позиций";
+}
+
 type Props = {
   viewModel: RequestEstimateViewModel;
+  incompleteParameterCount?: number | null;
+  incompleteResolutionLabel?: string;
+  onResolveIncomplete?: () => void;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
@@ -65,6 +82,28 @@ type ExistingEstimateSearchMatch = {
   categoryFilterId: Exclude<RequestEstimateCategoryFilterId, "all">;
 };
 
+export function mapCanonicalResourceToCatalogPickerItem(
+  resource: CanonicalEstimateResourceSearchItem,
+): CatalogItemPickerItem {
+  return {
+    catalogItemId: resource.resourceId,
+    rikCode: resource.rowId,
+    name: resource.titleRu,
+    category: resource.rowType,
+    unit: resource.unitId,
+    unitLabel: formatEstimateUnitLabel(resource.unitId),
+    kind: resource.rowType,
+    procurementEligible: resource.procurementEligible,
+    sourceId: "canonical_estimate_resource_index",
+    sourceLabel: "Расчётный каталог",
+    unitPrice: null,
+    checkedAt: new Date(0).toISOString(),
+    confidence: "high",
+    availabilityStatus: "unknown",
+    stockStatus: "unknown",
+  };
+}
+
 type EstimateMaterialSearchAddControlProps = {
   query: string;
   existingMatches: ExistingEstimateSearchMatch[];
@@ -95,11 +134,11 @@ export function EstimateMaterialSearchAddControl({
     <View style={styles.materialSearchWrap} testID="estimate-material-search-add-control">
       <View style={styles.searchAddControl}>
         <TextInput
-          accessibilityLabel="Найти в смете или добавить материал"
+          accessibilityLabel="Найти в смете или добавить позицию"
           importantForAutofill="no"
           onChangeText={onChangeQuery}
           onSubmitEditing={onSubmit}
-          placeholder="Найти в смете или добавить материал…"
+          placeholder="Найти в смете или добавить позицию…"
           placeholderTextColor="#64748B"
           returnKeyType="search"
           style={styles.searchInput}
@@ -108,7 +147,7 @@ export function EstimateMaterialSearchAddControl({
         />
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Добавить материал из каталога"
+          accessibilityLabel="Добавить позицию из каталога"
           onPress={onSubmit}
           style={styles.addCatalogButton}
           testID="request-estimate-add-from-catalog"
@@ -145,7 +184,7 @@ export function EstimateMaterialSearchAddControl({
               </Pressable>
             ) : null}
             {!catalogLoading && !catalogError && lastCatalogQuery && catalogRows.length === 0 ? (
-              <Text style={styles.searchResultEmpty}>Подходящих материалов в каталоге не найдено.</Text>
+              <Text style={styles.searchResultEmpty}>Подходящих позиций в каталоге не найдено.</Text>
             ) : null}
             {catalogRows.map((item) => (
               <Pressable
@@ -176,40 +215,21 @@ function estimateIdentity(viewModel: RequestEstimateViewModel): string {
 
 type CategoryFilterItem = RequestEstimateSectionViewModel["items"][number];
 
-function categorySignals(item: CategoryFilterItem): string[] {
-  const source = item.sourceParameters ?? {};
-  const smartProjection = source.smartEstimateProjectionV2;
-  const smartCategory = smartProjection && typeof smartProjection === "object"
-    ? (smartProjection as { category?: unknown }).category
-    : null;
-  return [
-    source.rowKind,
-    source.row_kind,
-    source.section,
-    source.sectionType,
-    source.asphaltV4ProfessionalCategory,
-    smartCategory,
-    item.category,
-  ]
-    .map((value) => String(value ?? "").trim().toLocaleLowerCase("ru-RU"))
-    .filter(Boolean);
-}
-
 export function requestEstimateCategoryFilterForItem(
   item: CategoryFilterItem,
   sectionId: string,
 ): Exclude<RequestEstimateCategoryFilterId, "all"> {
-  const signals = categorySignals(item);
+  const signals = consumerRepairRowCategorySignals(item);
   const hasIn = (candidates: string[], ...values: string[]) => candidates.some((signal) =>
-    values.some((value) => signal === value || signal.includes(`_${value}`) || signal.includes(`${value}_`)));
+    values.some((value) => signal === value || signal.includes(value)));
 
-  if (hasIn(signals, "delivery", "logistics", "transport", "freight", "haul")) return "delivery";
-  if (hasIn(signals, "machinery", "machine", "mechanism", "equipment", "tool")) return "machinery";
-  if (hasIn(signals, "service", "services", "testing", "test", "documentation", "commissioning", "overhead", "supervision")) {
+  if (hasIn(signals, "delivery", "logistics", "transport", "freight", "haul", "достав", "логист", "перевоз", "транспорт")) return "delivery";
+  if (hasIn(signals, "machinery", "machine", "mechanism", "equipment", "tool", "механизм", "оборудован", "машин")) return "machinery";
+  if (hasIn(signals, "service", "services", "testing", "test", "documentation", "commissioning", "overhead", "supervision", "control", "услуг", "испытан", "контрол", "документ", "сопутств")) {
     return "services";
   }
-  if (hasIn(signals, "labor", "work", "works", "temporary_work") || item.itemType === "work") return "labor";
-  if (hasIn(signals, "material", "materials", "product", "waste") || item.itemType === "material") return "materials";
+  if (hasIn(signals, "labor", "work", "works", "temporary_work", "работ", "труд", "монтаж") || item.itemType === "work") return "labor";
+  if (hasIn(signals, "material", "materials", "product", "waste", "материал", "сырь", "издел", "отход") || item.itemType === "material") return "materials";
 
   const sectionSignals = [sectionId.trim().toLocaleLowerCase("ru-RU")];
   if (hasIn(sectionSignals, "delivery", "logistics", "transport")) return "delivery";
@@ -291,7 +311,12 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
     if (query.length < 2) return;
     this.setState({ catalogLoading: true, catalogError: null, lastCatalogQuery: query });
     try {
-      const catalogRows = await searchMaterialCatalogItemsForPicker(query, 12);
+      const result = await searchCanonicalEstimateResources({
+        query,
+        kind: "all",
+        pageSize: 12,
+      });
+      const catalogRows = result.items.map(mapCanonicalResourceToCatalogPickerItem);
       if (sequence !== this.searchSequence) return;
       this.setState({ catalogRows, catalogLoading: false });
     } catch {
@@ -299,7 +324,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
       this.setState({
         catalogRows: [],
         catalogLoading: false,
-        catalogError: "Поиск материалов временно недоступен.",
+        catalogError: "Поиск позиций временно недоступен.",
       });
     }
   };
@@ -370,6 +395,9 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
   render(): React.ReactElement {
     const {
       viewModel,
+      incompleteParameterCount = 0,
+      incompleteResolutionLabel = "Открыть обязательные данные",
+      onResolveIncomplete,
       onDecrease,
       onIncrease,
       onQuantityChange,
@@ -381,6 +409,11 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
       onOpenPhoto,
       showPhotoButtons,
     } = this.props;
+    const hasPreliminaryNeeds = viewModel.sections.some((section) =>
+      section.items.some(consumerRepairRowIsCanonicalPreliminaryNeed));
+    const compositionIncomplete = incompleteParameterCount == null
+      || incompleteParameterCount > 0
+      || hasPreliminaryNeeds;
     const normalizedQuery = this.state.searchQuery.trim().toLocaleLowerCase("ru-RU");
     const filteredSections = viewModel.sections.map((section) => {
       return {
@@ -420,11 +453,32 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
     return (
       <View style={styles.wrap} testID="request-estimate-items-editor-content">
         <View style={styles.headingRow}>
-          <Text style={styles.heading}>{"\u041f\u043e\u043b\u043d\u0430\u044f \u0441\u043c\u0435\u0442\u0430"}</Text>
+          <Text style={styles.heading} testID="request-estimate-composition-heading">
+            {compositionIncomplete ? "Предварительный состав" : "Полная смета"}
+          </Text>
           <Text style={styles.rowCount} testID="request-estimate-items-total-count">
-            {`${viewModel.rawItemCount} ${"\u043f\u043e\u0437\u0438\u0446\u0438\u0439"}`}
+            {viewModel.preliminaryNeedCount
+              ? `${viewModel.calculatedItemCount ?? 0} рассчитано · ${viewModel.preliminaryNeedCount} уточнить`
+              : `${viewModel.rawItemCount} ${positionCountLabel(viewModel.rawItemCount)}`}
           </Text>
         </View>
+        {compositionIncomplete ? (
+          <View style={styles.incompleteNotice} testID="request-estimate-incomplete-composition-notice">
+            <Text style={styles.incompleteNoticeText}>
+              Смета ещё не готова: рассчитаны {viewModel.calculatedItemCount ?? 0} строк, у {viewModel.preliminaryNeedCount ?? 0} применимых позиций нет обоснованного количества. Они не входят в сумму и закупку.
+            </Text>
+            {onResolveIncomplete ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={onResolveIncomplete}
+                style={styles.incompleteAction}
+                testID="request-estimate-resolve-incomplete"
+              >
+                <Text style={styles.incompleteActionText}>{incompleteResolutionLabel}</Text>
+              </Pressable>
+            ) : null}
+          </View>
+        ) : null}
         <EstimateMaterialSearchAddControl
           query={this.state.searchQuery}
           existingMatches={existingMatches}
@@ -514,6 +568,33 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     gap: 10,
+  },
+  incompleteNotice: {
+    gap: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#FCD34D",
+    backgroundColor: "#FFFBEB",
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  incompleteNoticeText: {
+    color: "#92400E",
+    fontSize: 12,
+    fontWeight: "700",
+    lineHeight: 18,
+  },
+  incompleteAction: {
+    alignSelf: "flex-start",
+    borderRadius: 8,
+    backgroundColor: "#0F766E",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  incompleteActionText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "900",
   },
   rowCount: {
     color: "#475569",

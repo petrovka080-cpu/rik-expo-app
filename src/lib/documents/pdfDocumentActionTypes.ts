@@ -31,6 +31,8 @@ export type PdfDocumentActionStage = "prepare" | "viewer_entry" | "visibility";
 
 export type PreviewPdfDocumentOpts = {
   router?: PdfViewerRouterLike;
+  /** Internal route restored when the viewer replaced its caller on Android. */
+  returnTo?: string | null;
   openFlow?: PdfOpenFlowContext & {
     openToken?: string;
   };

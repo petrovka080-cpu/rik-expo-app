@@ -3,10 +3,10 @@
   "scanner_sha256": "2987fb0a47ec43510256f4d4d6831458472e64cc1df56ecf7d47f62efb812ade",
   "generated_at_excluded_from_content_hash": true,
   "summary": {
-    "runtime_instances": 62,
-    "flat_list_instances": 8,
+    "runtime_instances": 64,
+    "flat_list_instances": 10,
     "flash_list_instances": 54,
-    "tuned_instances": 34,
+    "tuned_instances": 36,
     "allowlisted_instances": 28,
     "violations": 0
   },
@@ -115,6 +115,26 @@
       "file": "src/features/market/MarketHomeScreen.tsx",
       "ordinal": 1,
       "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/features/requests/components/ProfessionalBoqFullDetailDrawer.tsx",
+      "ordinal": 1,
+      "kind": "FlatList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/features/requests/components/WorkTemplateSuggestions.tsx",
+      "ordinal": 1,
+      "kind": "FlatList",
       "status": "tuned",
       "has_initial_num_to_render": true,
       "has_max_to_render_per_batch": true,

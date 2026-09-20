@@ -16,8 +16,23 @@ import {
 } from "./domainFactory";
 import type { ProfessionalParameterValueV4 } from "./professionalProjectAssemblyV4";
 
-type InputValue = string | number | boolean;
+export type ConcretePlacementInputValueR1 = string | number | boolean;
+type InputValue = ConcretePlacementInputValueR1;
 type Json = Record<string, unknown>;
+
+export const CONCRETE_PLACEMENT_READY_MIX_TECHNOLOGY_CLASS_R1 =
+  "READY_MIX_CONCRETE_ORDER" as const;
+
+export type ConcretePlacementFamilyDescriptorR1 = Readonly<{
+  ownerKey: string;
+  contract: string;
+  guideVersion: string;
+  projectApplicabilityRu: string;
+  sourceIdPrefix: string;
+  compilerVersion: string;
+  errorPrefix: string;
+  catalogIds: readonly string[];
+}>;
 
 export const STRIP_FOUNDATION_CONCRETE_PLACEMENT_TARGETS = Object.freeze([
   { contextKey: "standard", catalogId: "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_standard", titleRu: "Бетонирование ленточного фундамента в стандартной зоне", contextRu: "стандартная зона" },
@@ -65,13 +80,32 @@ const PARAMETER_SPECS = Object.freeze([
   ["quality_control_document_count", "Комплект приёмочного контроля и журнала бетонирования", "decimal", "document", null],
   ["delivery_pricing_mode", "Учёт доставки бетонной смеси", "enum", null, ["SEPARATE", "INCLUDED_IN_SUPPLY"]],
   ["concrete_delivery_distance_km", "Расстояние доставки бетонной смеси", "decimal", "km", null],
+  ["construction_joint_mode", "Рабочий шов бетонирования", "enum", null, ["NONE", "WATERSTOP"]],
+  ["construction_joint_waterstop_specification", "Гидрошпонка рабочего шва по проекту", "text", null, null],
+  ["construction_joint_waterstop_length_m", "Длина гидрошпонки рабочего шва", "decimal", "m", null],
+  ["construction_joint_installation_worker_h", "Трудозатраты на монтаж гидрошпонки рабочего шва", "decimal", "man_hour", null],
 ] as const);
 
 const TEXT_PARAMETER_IDS = new Set(PARAMETER_SPECS
   .filter(([, , valueType]) => valueType === "text")
   .map(([parameterId]) => parameterId));
+const CONSTRUCTION_JOINT_DETAIL_PARAMETER_IDS = new Set([
+  "construction_joint_waterstop_specification",
+  "construction_joint_waterstop_length_m",
+  "construction_joint_installation_worker_h",
+]);
+const CONSTRUCTION_JOINT_REQUIRED_WHEN = Object.freeze({
+  kind: "equals",
+  parameterId: "construction_joint_mode",
+  value: "WATERSTOP",
+});
+const CONSTRUCTION_JOINT_FORBIDDEN_WHEN = Object.freeze({
+  kind: "equals",
+  parameterId: "construction_joint_mode",
+  value: "NONE",
+});
 
-export const STRIP_FOUNDATION_CONCRETE_PLACEMENT_NORMATIVE_PARAMETER_IDS = Object.freeze([
+export const CONCRETE_PLACEMENT_NORMATIVE_PARAMETER_IDS_R1 = Object.freeze([
   "plan_dimension_concrete_volume_m3",
   "plan_volume_calculation_reference",
   "mix_design_or_project_specification_reference",
@@ -85,42 +119,56 @@ export const STRIP_FOUNDATION_CONCRETE_PLACEMENT_NORMATIVE_PARAMETER_IDS = Objec
   "estimator_approval_reference",
 ] as const);
 
+export const STRIP_FOUNDATION_CONCRETE_PLACEMENT_NORMATIVE_PARAMETER_IDS =
+  CONCRETE_PLACEMENT_NORMATIVE_PARAMETER_IDS_R1;
+
 const NORMATIVE_PARAMETER_IDS = new Set<string>(
-  STRIP_FOUNDATION_CONCRETE_PLACEMENT_NORMATIVE_PARAMETER_IDS,
+  CONCRETE_PLACEMENT_NORMATIVE_PARAMETER_IDS_R1,
 );
 const PROJECT_SCHEDULE_GUIDE_SHA256 =
   "e2f9581f930330995b67a4fe08cf264756fd3b5b606085062229fd12baf9e437";
 const NRMCA_CIP31_GUIDE_SHA256 =
   "096bab3bb56d15d109fe9b00c8ec7bea9e09a0451ea198fb73738f0c72a23f14";
 
-export type StripFoundationConcretePlacementParameter = CanonicalEstimateParameterDefinition & {
+export type ConcretePlacementParameterR1 = CanonicalEstimateParameterDefinition & {
   ordinal: number;
   unit_id: string | null;
   title_ru: string;
   truth_metadata: Json;
 };
 
-export const STRIP_FOUNDATION_CONCRETE_PLACEMENT_PARAMETERS:
-readonly StripFoundationConcretePlacementParameter[] = Object.freeze(PARAMETER_SPECS.map(
+export type StripFoundationConcretePlacementParameter = ConcretePlacementParameterR1;
+
+export function createConcretePlacementParametersR1(
+  descriptor: Pick<ConcretePlacementFamilyDescriptorR1,
+  "ownerKey" | "contract" | "guideVersion" | "projectApplicabilityRu">,
+): readonly ConcretePlacementParameterR1[] {
+  return Object.freeze(PARAMETER_SPECS.map(
   ([parameterId, titleRu, valueType, unitId, enumValues], ordinal) => ({
     parameter_id: parameterId,
     ordinal,
     value_type: valueType,
     unit_id: unitId,
     title_ru: titleRu,
-    required: true,
+    required: !CONSTRUCTION_JOINT_DETAIL_PARAMETER_IDS.has(parameterId),
     default_value: null,
-    constraints_json: enumValues
+    constraints_json: {
+      ...(enumValues
       ? { values: enumValues }
       : valueType === "decimal"
         ? { min: parameterId === "selected_contingency_percent" ? 4 : 0,
           ...(parameterId === "selected_contingency_percent" ? { max: 10 } : {}) }
         : valueType === "text"
           ? { minLength: 1, maxLength: 1_000 }
-          : {},
+          : {}),
+      ...(CONSTRUCTION_JOINT_DETAIL_PARAMETER_IDS.has(parameterId) ? {
+        requiredWhen: CONSTRUCTION_JOINT_REQUIRED_WHEN,
+        forbiddenWhen: CONSTRUCTION_JOINT_FORBIDDEN_WHEN,
+      } : {}),
+    },
     truth_metadata: {
-      contract: "rik-expo-app.strip-foundation-concrete-placement-r1",
-      semantic_parameter_key: `strip-foundation-concrete-placement:${parameterId}`,
+      contract: descriptor.contract,
+      semantic_parameter_key: `${descriptor.ownerKey}:${parameterId}`,
       visibility_role: "USER_INPUT",
       value_source_role: "PROJECT_SPECIFIC_INPUT",
       input_origin_class: NORMATIVE_PARAMETER_IDS.has(parameterId)
@@ -131,6 +179,9 @@ readonly StripFoundationConcretePlacementParameter[] = Object.freeze(PARAMETER_S
           : "APPROVED_PROJECT_SCHEDULE_OR_SUPPLIER_QUOTE",
       preliminary_compilation_allowed: false,
       source_confirmation_required: true,
+      ...(CONSTRUCTION_JOINT_DETAIL_PARAMETER_IDS.has(parameterId)
+        ? { required_when: CONSTRUCTION_JOINT_REQUIRED_WHEN }
+        : {}),
       guide: {
         guide_kind: NORMATIVE_PARAMETER_IDS.has(parameterId)
           || parameterId === "product_profile_id"
@@ -149,7 +200,7 @@ readonly StripFoundationConcretePlacementParameter[] = Object.freeze(PARAMETER_S
           || parameterId === "product_profile_id"
           ? NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.exact_locator
           : null,
-        guide_version: "strip-foundation-concrete-placement-r1",
+        guide_version: descriptor.guideVersion,
         source_snapshot_hash: NORMATIVE_PARAMETER_IDS.has(parameterId)
           || parameterId === "product_profile_id"
           ? NRMCA_CIP31_GUIDE_SHA256
@@ -157,7 +208,7 @@ readonly StripFoundationConcretePlacementParameter[] = Object.freeze(PARAMETER_S
         applicability: NORMATIVE_PARAMETER_IDS.has(parameterId)
           || parameterId === "product_profile_id"
           ? "Только заказ товарного бетона по NRMCA CIP 31 при подтверждённом проектном объёме и явно выбранном резерве 4–10%."
-          : "Значение относится к конкретной захватке ленточного фундамента и не выводится из универсальной нормы.",
+          : descriptor.projectApplicabilityRu,
         verified_at: "2026-09-16T00:00:00+06:00",
         guide_validation_policy: "REJECT_MISSING_PROJECT_SCHEDULE_OR_OUTSIDE_NRMCA_CIP31_APPLICABILITY",
       },
@@ -165,7 +216,23 @@ readonly StripFoundationConcretePlacementParameter[] = Object.freeze(PARAMETER_S
       synthetic: false,
     },
   }),
-));
+  ));
+}
+
+const STRIP_FOUNDATION_CONCRETE_PLACEMENT_DESCRIPTOR = Object.freeze({
+  ownerKey: "strip-foundation-concrete-placement",
+  contract: "rik-expo-app.strip-foundation-concrete-placement-r1",
+  guideVersion: "strip-foundation-concrete-placement-r1",
+  projectApplicabilityRu:
+    "Значение относится к конкретной захватке ленточного фундамента и не выводится из универсальной нормы.",
+  sourceIdPrefix: "strip-foundation-concrete-placement",
+  compilerVersion: "canonical-estimate-compiler.strip-foundation-concrete-placement-r1",
+  errorPrefix: "STRIP_FOUNDATION_CONCRETE",
+  catalogIds: STRIP_FOUNDATION_CONCRETE_PLACEMENT_TARGETS.map((target) => target.catalogId),
+} satisfies ConcretePlacementFamilyDescriptorR1);
+
+export const STRIP_FOUNDATION_CONCRETE_PLACEMENT_PARAMETERS =
+  createConcretePlacementParametersR1(STRIP_FOUNDATION_CONCRETE_PLACEMENT_DESCRIPTOR);
 
 function formula(formulaId: string, outputUnitId: string, expression: string) {
   const compiled = compileFormulaGraph(expression);
@@ -199,6 +266,8 @@ readonly StripFoundationConcretePlacementFormula[] = Object.freeze([
   formula("heating_transformer_time_v1", "machine_hour", "heating_transformer_machine_h"),
   formula("quality_control_documents_v1", "document", "quality_control_document_count"),
   formula("concrete_delivery_v1", "m3_km", "plan_dimension_concrete_volume_m3 * (1 + selected_contingency_percent / 100) * concrete_delivery_distance_km"),
+  formula("construction_joint_waterstop_quantity_v1", "m", "construction_joint_waterstop_length_m"),
+  formula("construction_joint_waterstop_labor_v1", "man_hour", "construction_joint_installation_worker_h"),
 ]);
 
 const literalTrue = Object.freeze({ kind: "literal", value: true });
@@ -206,15 +275,17 @@ const equals = (parameterId: string, value: InputValue) => ({ kind: "equals", pa
 const greaterThan = (parameterId: string, value: number) => ({ kind: "greater_than", parameterId, value });
 const and = (...operands: Json[]) => ({ kind: "and", operands });
 
-const NRMCA_BINDING = Object.freeze({
-  technology_class: "REINFORCED_CONCRETE_STRIP_FOUNDATION",
+function nrmcaBinding() {
+  return Object.freeze({
+  technology_class: CONCRETE_PLACEMENT_READY_MIX_TECHNOLOGY_CLASS_R1,
   operation_class: "ORDER_READY_MIX",
   material_system: "READY_MIX_CONCRETE",
   scope_mode: "FULL_APPLICABLE_SCOPE",
   product_profile_id: NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID,
   source_id: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
   activation: { parameter_id: "product_profile_id", equals: NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID },
-});
+  });
+}
 
 function resource(input: {
   rowId: string;
@@ -229,7 +300,7 @@ function resource(input: {
   titleParameterIds?: string[];
   professionalPhysicalNorm?: boolean;
   sourceRole?: string;
-}): CanonicalEstimateResourceDefinition {
+}, descriptor: Pick<ConcretePlacementFamilyDescriptorR1, "ownerKey">): CanonicalEstimateResourceDefinition {
   const normativeTrace = input.professionalPhysicalNorm
     ? [{
       sourceId: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
@@ -249,14 +320,14 @@ function resource(input: {
   const resourceGraph = {
     formulaId: input.formulaId,
     normalizedUom: input.unitId,
-    semanticOwnerId: `strip-foundation-concrete-placement:${input.rowId}`,
+    semanticOwnerId: `${descriptor.ownerKey}:${input.rowId}`,
     costOwner: "resource",
     ...(input.titleParameterIds ? {
       titleSpecificationParameterIds: input.titleParameterIds,
       titleSpecificationMode: "APPEND",
       titleSpecificationSeparator: " ",
     } : {}),
-    ...(input.professionalPhysicalNorm ? { professionalPhysicalNormBindingV1: NRMCA_BINDING } : {}),
+    ...(input.professionalPhysicalNorm ? { professionalPhysicalNormBindingV1: nrmcaBinding() } : {}),
   };
   const sourceMetadata = {
     truth_contract_version: "R3",
@@ -291,22 +362,30 @@ function resource(input: {
   };
 }
 
-export const STRIP_FOUNDATION_CONCRETE_PLACEMENT_RESOURCES:
-readonly CanonicalEstimateResourceDefinition[] = Object.freeze([
-  resource({ rowId: "material:concrete:ready-mix", ordinal: 0, section: "Материалы", category: "material", titleRu: "Товарный бетон", unitId: "m3", formulaId: "concrete_order_quantity_v1", procurementEligible: true, professionalPhysicalNorm: true, titleParameterIds: ["concrete_class", "watertightness", "frost_resistance", "mobility"] }),
-  resource({ rowId: "material:concrete:curing-membrane", ordinal: 1, section: "Материалы", category: "material", titleRu: "Плёнка для ухода за свежеуложенным бетоном", unitId: "m2", formulaId: "curing_membrane_quantity_v1", inclusionAst: equals("curing_method", "membrane"), procurementEligible: true, titleParameterIds: ["curing_membrane_specification"] }),
-  resource({ rowId: "material:concrete:winter-heating-cable", ordinal: 2, section: "Материалы", category: "material", titleRu: "Прогревочный кабель для зимнего бетонирования", unitId: "m", formulaId: "winter_heating_cable_v1", inclusionAst: equals("winter_mode", true), procurementEligible: true }),
-  resource({ rowId: "work:concrete:place-and-compact", ordinal: 3, section: "Работы", category: "construction_work", titleRu: "Укладка и уплотнение бетонной смеси", unitId: "man_hour", formulaId: "placement_labor_v1", procurementEligible: false }),
-  resource({ rowId: "work:concrete:finish-surface", ordinal: 4, section: "Работы", category: "construction_work", titleRu: "Отделка верхней поверхности бетона", unitId: "man_hour", formulaId: "finishing_labor_v1", procurementEligible: false }),
-  resource({ rowId: "work:concrete:cure", ordinal: 5, section: "Работы", category: "construction_work", titleRu: "Уход за бетоном выбранным способом", unitId: "man_hour", formulaId: "curing_labor_v1", procurementEligible: false }),
-  resource({ rowId: "work:concrete:winter-heating", ordinal: 6, section: "Работы", category: "construction_work", titleRu: "Монтаж и контроль системы электропрогрева бетона", unitId: "man_hour", formulaId: "winter_heating_labor_v1", inclusionAst: equals("winter_mode", true), procurementEligible: false }),
-  resource({ rowId: "equipment:concrete:pump", ordinal: 7, section: "Оборудование", category: "equipment", titleRu: "Автобетононасос по производственной ведомости", unitId: "machine_hour", formulaId: "pump_machine_time_v1", inclusionAst: equals("placement_method", "pump"), procurementEligible: true }),
-  resource({ rowId: "equipment:concrete:crane-bucket", ordinal: 8, section: "Оборудование", category: "equipment", titleRu: "Автомобильный кран с бадьёй по производственной ведомости", unitId: "machine_hour", formulaId: "crane_bucket_machine_time_v1", inclusionAst: equals("placement_method", "crane_bucket"), procurementEligible: true }),
-  resource({ rowId: "equipment:concrete:deep-vibrator", ordinal: 9, section: "Оборудование", category: "equipment", titleRu: "Глубинный вибратор для уплотнения бетонной смеси", unitId: "machine_hour", formulaId: "deep_vibrator_machine_time_v1", procurementEligible: true }),
-  resource({ rowId: "equipment:concrete:heating-transformer", ordinal: 10, section: "Оборудование", category: "equipment", titleRu: "Трансформатор для электропрогрева бетона", unitId: "machine_hour", formulaId: "heating_transformer_time_v1", inclusionAst: equals("winter_mode", true), procurementEligible: true }),
-  resource({ rowId: "service:concrete:acceptance-control", ordinal: 11, section: "Услуги", category: "service", titleRu: "Приёмочный контроль бетонной смеси и ведение журнала бетонирования", unitId: "document", formulaId: "quality_control_documents_v1", procurementEligible: true, sourceRole: "PROJECT_QUALITY_PLAN" }),
-  resource({ rowId: "delivery:concrete:ready-mix", ordinal: 12, section: "Доставка", category: "delivery", titleRu: "Доставка товарного бетона автобетоносмесителями", unitId: "m3_km", formulaId: "concrete_delivery_v1", inclusionAst: and(equals("delivery_pricing_mode", "SEPARATE"), greaterThan("concrete_delivery_distance_km", 0)), procurementEligible: true, sourceRole: "SUPPLIER_ROUTE_AND_DELIVERY_SCHEDULE" }),
-]);
+export function createConcretePlacementResourcesR1(
+  descriptor: Pick<ConcretePlacementFamilyDescriptorR1, "ownerKey">,
+): readonly CanonicalEstimateResourceDefinition[] {
+  return Object.freeze([
+    resource({ rowId: "material:concrete:ready-mix", ordinal: 0, section: "Материалы", category: "material", titleRu: "Товарный бетон", unitId: "m3", formulaId: "concrete_order_quantity_v1", procurementEligible: true, professionalPhysicalNorm: true, titleParameterIds: ["concrete_class", "watertightness", "frost_resistance", "mobility"] }, descriptor),
+    resource({ rowId: "material:concrete:curing-membrane", ordinal: 1, section: "Материалы", category: "material", titleRu: "Плёнка для ухода за свежеуложенным бетоном", unitId: "m2", formulaId: "curing_membrane_quantity_v1", inclusionAst: equals("curing_method", "membrane"), procurementEligible: true, titleParameterIds: ["curing_membrane_specification"] }, descriptor),
+    resource({ rowId: "material:concrete:winter-heating-cable", ordinal: 2, section: "Материалы", category: "material", titleRu: "Прогревочный кабель для зимнего бетонирования", unitId: "m", formulaId: "winter_heating_cable_v1", inclusionAst: equals("winter_mode", true), procurementEligible: true }, descriptor),
+    resource({ rowId: "work:concrete:place-and-compact", ordinal: 3, section: "Работы", category: "construction_work", titleRu: "Укладка и уплотнение бетонной смеси", unitId: "man_hour", formulaId: "placement_labor_v1", procurementEligible: false }, descriptor),
+    resource({ rowId: "work:concrete:finish-surface", ordinal: 4, section: "Работы", category: "construction_work", titleRu: "Отделка верхней поверхности бетона", unitId: "man_hour", formulaId: "finishing_labor_v1", procurementEligible: false }, descriptor),
+    resource({ rowId: "work:concrete:cure", ordinal: 5, section: "Работы", category: "construction_work", titleRu: "Уход за бетоном выбранным способом", unitId: "man_hour", formulaId: "curing_labor_v1", procurementEligible: false }, descriptor),
+    resource({ rowId: "work:concrete:winter-heating", ordinal: 6, section: "Работы", category: "construction_work", titleRu: "Монтаж и контроль системы электропрогрева бетона", unitId: "man_hour", formulaId: "winter_heating_labor_v1", inclusionAst: equals("winter_mode", true), procurementEligible: false }, descriptor),
+    resource({ rowId: "equipment:concrete:pump", ordinal: 7, section: "Оборудование", category: "equipment", titleRu: "Автобетононасос по производственной ведомости", unitId: "machine_hour", formulaId: "pump_machine_time_v1", inclusionAst: equals("placement_method", "pump"), procurementEligible: true }, descriptor),
+    resource({ rowId: "equipment:concrete:crane-bucket", ordinal: 8, section: "Оборудование", category: "equipment", titleRu: "Автомобильный кран с бадьёй по производственной ведомости", unitId: "machine_hour", formulaId: "crane_bucket_machine_time_v1", inclusionAst: equals("placement_method", "crane_bucket"), procurementEligible: true }, descriptor),
+    resource({ rowId: "equipment:concrete:deep-vibrator", ordinal: 9, section: "Оборудование", category: "equipment", titleRu: "Глубинный вибратор для уплотнения бетонной смеси", unitId: "machine_hour", formulaId: "deep_vibrator_machine_time_v1", procurementEligible: true }, descriptor),
+    resource({ rowId: "equipment:concrete:heating-transformer", ordinal: 10, section: "Оборудование", category: "equipment", titleRu: "Трансформатор для электропрогрева бетона", unitId: "machine_hour", formulaId: "heating_transformer_time_v1", inclusionAst: equals("winter_mode", true), procurementEligible: true }, descriptor),
+    resource({ rowId: "service:concrete:acceptance-control", ordinal: 11, section: "Услуги", category: "service", titleRu: "Приёмочный контроль бетонной смеси и ведение журнала бетонирования", unitId: "document", formulaId: "quality_control_documents_v1", procurementEligible: true, sourceRole: "PROJECT_QUALITY_PLAN" }, descriptor),
+    resource({ rowId: "material:concrete:construction-joint-waterstop", ordinal: 12, section: "Материалы", category: "material", titleRu: "Гидрошпонка рабочего шва бетонирования", unitId: "m", formulaId: "construction_joint_waterstop_quantity_v1", inclusionAst: equals("construction_joint_mode", "WATERSTOP"), procurementEligible: true, titleParameterIds: ["construction_joint_waterstop_specification"], sourceRole: "PROJECT_CONSTRUCTION_JOINT_SCHEDULE" }, descriptor),
+    resource({ rowId: "work:concrete:construction-joint-waterstop-install", ordinal: 13, section: "Работы", category: "construction_work", titleRu: "Монтаж гидрошпонки рабочего шва бетонирования", unitId: "man_hour", formulaId: "construction_joint_waterstop_labor_v1", inclusionAst: equals("construction_joint_mode", "WATERSTOP"), procurementEligible: false, sourceRole: "PROJECT_CONSTRUCTION_JOINT_SCHEDULE" }, descriptor),
+    resource({ rowId: "delivery:concrete:ready-mix", ordinal: 14, section: "Доставка", category: "delivery", titleRu: "Доставка товарного бетона автобетоносмесителями", unitId: "m3_km", formulaId: "concrete_delivery_v1", inclusionAst: and(equals("delivery_pricing_mode", "SEPARATE"), greaterThan("concrete_delivery_distance_km", 0)), procurementEligible: true, sourceRole: "SUPPLIER_ROUTE_AND_DELIVERY_SCHEDULE" }, descriptor),
+  ]);
+}
+
+export const STRIP_FOUNDATION_CONCRETE_PLACEMENT_RESOURCES =
+  createConcretePlacementResourcesR1(STRIP_FOUNDATION_CONCRETE_PLACEMENT_DESCRIPTOR);
 
 const BASE_INPUT: Readonly<Record<string, InputValue>> = Object.freeze({
   product_profile_id: NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID,
@@ -325,6 +404,7 @@ const BASE_INPUT: Readonly<Record<string, InputValue>> = Object.freeze({
   crane_bucket_machine_h: 0,
   quality_control_document_count: 1,
   delivery_pricing_mode: "SEPARATE",
+  construction_joint_mode: "NONE",
 });
 
 const PROJECT_SCHEDULES: Readonly<Record<StripFoundationConcretePlacementContextKey, Readonly<Record<string, InputValue>>>> = Object.freeze({
@@ -359,16 +439,20 @@ export function stripFoundationConcretePlacementAcceptanceInputR1(
   });
 }
 
-function explicitParameters(values: Readonly<Record<string, InputValue>>) {
+function explicitParameters(
+  values: Readonly<Record<string, InputValue>>,
+  parameters: readonly ConcretePlacementParameterR1[],
+  sourceIdPrefix: string,
+) {
   return Object.fromEntries(Object.entries(values).map(([parameterId, value]) => [
     parameterId,
     {
       value,
-      unit_id: STRIP_FOUNDATION_CONCRETE_PLACEMENT_PARAMETERS.find(
+      unit_id: parameters.find(
         (parameter) => parameter.parameter_id === parameterId,
       )?.unit_id ?? null,
       source_type: "USER_EXPLICIT",
-      source_id: `strip-foundation-concrete-placement:${parameterId}`,
+      source_id: `${sourceIdPrefix}:${parameterId}`,
       captured_at: "2026-09-16T00:00:00.000Z",
       confidence: "high",
       applicability: "Approved project concrete placement schedule.",
@@ -376,35 +460,46 @@ function explicitParameters(values: Readonly<Record<string, InputValue>>) {
   ]));
 }
 
-export async function compileStripFoundationConcretePlacementR1(
+export async function compileConcretePlacementFamilyR1(
   submittedParameters: Record<string, unknown>,
-  options: Readonly<{ catalogId?: string }> = {},
+  input: Readonly<{
+    descriptor: ConcretePlacementFamilyDescriptorR1;
+    catalogId: string;
+    parameters: readonly ConcretePlacementParameterR1[];
+    resources: readonly CanonicalEstimateResourceDefinition[];
+  }>,
 ): Promise<CanonicalEstimateCompileCoreResult> {
-  const catalogId = options.catalogId ?? STRIP_FOUNDATION_CONCRETE_PLACEMENT_TARGETS[0].catalogId;
-  if (!STRIP_FOUNDATION_CONCRETE_PLACEMENT_TARGETS.some((target) => target.catalogId === catalogId)) {
-    throw new Error(`STRIP_FOUNDATION_CONCRETE_PLACEMENT_CATALOG_UNSUPPORTED:${catalogId}`);
+  if (!input.descriptor.catalogIds.includes(input.catalogId)) {
+    throw new Error(`${input.descriptor.errorPrefix}_PLACEMENT_CATALOG_UNSUPPORTED:${input.catalogId}`);
   }
   const values = submittedParameters as Readonly<Record<string, InputValue>>;
   const resolution = resolveProfessionalPhysicalNormParameterValuesV1({
-    technology_class: "REINFORCED_CONCRETE_STRIP_FOUNDATION",
+    technology_class: CONCRETE_PLACEMENT_READY_MIX_TECHNOLOGY_CLASS_R1,
     operation_class: "ORDER_READY_MIX",
     material_system: "READY_MIX_CONCRETE",
     scope_mode: "FULL_APPLICABLE_SCOPE",
-    parameter_values: explicitParameters(values),
+    parameter_values: explicitParameters(
+      values,
+      input.parameters,
+      input.descriptor.sourceIdPrefix,
+    ),
   });
-  if (resolution.status !== "APPLIED") {
+  const canDeferIncompleteApplicability = resolution.status === "NOT_REQUESTED"
+    || (resolution.status === "BLOCKED_REQUIRED_INPUTS"
+      && resolution.blockers.every((blocker) => blocker.startsWith("PROJECT_VALUE_REQUIRED_EXPLICIT:")));
+  if (resolution.status !== "APPLIED" && !canDeferIncompleteApplicability) {
     throw Object.assign(new Error(
-      `STRIP_FOUNDATION_CONCRETE_NRMCA_${resolution.status}:${resolution.blockers.join("|")}`,
+      `${input.descriptor.errorPrefix}_NRMCA_${resolution.status}:${resolution.blockers.join("|")}`,
     ), { code: "PARAMETER_VALIDATION_FAILED" });
   }
   return compileCanonicalEstimateCore({
     operation: "compile",
-    compilerVersion: "canonical-estimate-compiler.strip-foundation-concrete-placement-r1",
-    catalogId,
+    compilerVersion: input.descriptor.compilerVersion,
+    catalogId: input.catalogId,
     primaryMeasureParameterId: "plan_dimension_concrete_volume_m3",
-    parameterDefinitions: [...STRIP_FOUNDATION_CONCRETE_PLACEMENT_PARAMETERS],
+    parameterDefinitions: [...input.parameters],
     formulaDefinitions: [...STRIP_FOUNDATION_CONCRETE_PLACEMENT_FORMULAS],
-    resourceDefinitions: [...STRIP_FOUNDATION_CONCRETE_PLACEMENT_RESOURCES],
+    resourceDefinitions: [...input.resources],
     submittedParameters,
     confirmedParameters: {},
     currencyCode: "KGS",
@@ -414,7 +509,20 @@ export async function compileStripFoundationConcretePlacementR1(
   });
 }
 
-export const STRIP_FOUNDATION_CONCRETE_PLACEMENT_SOURCE_METADATA = Object.freeze({
+export async function compileStripFoundationConcretePlacementR1(
+  submittedParameters: Record<string, unknown>,
+  options: Readonly<{ catalogId?: string }> = {},
+): Promise<CanonicalEstimateCompileCoreResult> {
+  const catalogId = options.catalogId ?? STRIP_FOUNDATION_CONCRETE_PLACEMENT_TARGETS[0].catalogId;
+  return compileConcretePlacementFamilyR1(submittedParameters, {
+    descriptor: STRIP_FOUNDATION_CONCRETE_PLACEMENT_DESCRIPTOR,
+    catalogId,
+    parameters: STRIP_FOUNDATION_CONCRETE_PLACEMENT_PARAMETERS,
+    resources: STRIP_FOUNDATION_CONCRETE_PLACEMENT_RESOURCES,
+  });
+}
+
+export const CONCRETE_PLACEMENT_SOURCE_METADATA_R1 = Object.freeze({
   sourceId: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
   normId: NRMCA_CIP31_SELECTED_CONTINGENCY_NORM_ID,
   productProfileId: NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID,
@@ -425,3 +533,6 @@ export const STRIP_FOUNDATION_CONCRETE_PLACEMENT_SOURCE_METADATA = Object.freeze
   automaticEquipmentProductivityRejected: true,
   automaticLaborProductivityRejected: true,
 });
+
+export const STRIP_FOUNDATION_CONCRETE_PLACEMENT_SOURCE_METADATA =
+  CONCRETE_PLACEMENT_SOURCE_METADATA_R1;

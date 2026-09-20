@@ -10,6 +10,7 @@ import type {
 } from "../consumerRequests";
 import type { StructuredEstimatePayload } from "./structuredEstimateTypes";
 import { professionalEstimateRowVisibleName } from "./professionalEstimateRowDisplay";
+import { normalizeCanonicalEstimateRowCategory } from "../estimate/backendPlatform/canonicalEstimateRowCategory";
 
 const DANGEROUS_CATEGORIES = new Set(["electrical", "roofing", "demolition", "foundation", "concrete"]);
 
@@ -144,6 +145,12 @@ export function buildStructuredEstimateRequestDraft(
 ): ConsumerRepairAiDraft {
   const dangerous = isDangerousEstimate(payload);
   const bindingByRowId = new Map((catalogBinding?.rows ?? []).map((row) => [row.rowId, row]));
+  const parameterRequirementById = new Map(
+    (payload.canonicalBackend?.parameterRequirements ?? []).map((requirement) => [
+      requirement.parameterId,
+      requirement,
+    ] as const),
+  );
   return {
     titleRu: payload.workTitle,
     summaryRu: formatRequestEstimateSummary(payload.sourceEstimate),
@@ -156,7 +163,8 @@ export function buildStructuredEstimateRequestDraft(
       ? "\u0420\u0430\u0431\u043e\u0442\u0430 \u043f\u043e\u0432\u044b\u0448\u0435\u043d\u043d\u043e\u0439 \u043e\u043f\u0430\u0441\u043d\u043e\u0441\u0442\u0438: DIY-\u0438\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u0438 \u043d\u0435 \u0432\u044b\u0434\u0430\u044e\u0442\u0441\u044f. \u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0439\u0442\u0435 \u0441\u043c\u0435\u0442\u0443 \u043a\u0430\u043a \u043e\u0441\u043d\u043e\u0432\u0443 \u0437\u0430\u044f\u0432\u043a\u0438 \u0434\u043b\u044f \u043f\u0440\u043e\u0444\u0438\u043b\u044c\u043d\u043e\u0433\u043e \u0441\u043f\u0435\u0446\u0438\u0430\u043b\u0438\u0441\u0442\u0430."
       : undefined,
     missingData: payload.presentation.clarifyingQuestions,
-    items: payload.rows.map((row) => {
+    items: [
+      ...payload.rows.map((row) => {
       const binding = bindingByRowId.get(row.rowId) ?? bindingByRowId.get(row.code || row.rowNumber);
       const pricePolicy = editablePricePolicyForRow(row);
       return {
@@ -197,7 +205,72 @@ export function buildStructuredEstimateRequestDraft(
         priceTrace: row.priceTrace ?? null,
         priceCandidates: row.priceCandidates ?? [],
         costConfidence: row.costConfidence,
-      };
-    }),
+        };
+      }),
+      ...(payload.canonicalBackend?.preliminaryNeeds ?? []).map((need) => {
+        const normalizedCategory = normalizeCanonicalEstimateRowCategory(need.section, need.category);
+        const itemType: ConsumerRepairItemType = normalizedCategory === "material"
+          ? "material"
+          : normalizedCategory === "work"
+            ? "work"
+            : "service";
+        return {
+          itemType,
+          titleRu: need.titleRu,
+          quantity: need.quantity == null ? null : Number(need.quantity),
+          unit: need.unitId,
+          unitLabel: formatEstimateUnitLabel(need.unitId),
+          unitPrice: need.unitPrice == null ? null : Number(need.unitPrice),
+          currency: payload.canonicalBackend ? payload.totals.currency : "KGS",
+          source: "reference_price_book" as const,
+          category: normalizedCategory,
+          sourceId: "canonical-definition-preliminary-need",
+          sourceLabel: "Предварительная потребность из утверждённого определения",
+          formulaId: need.formulaId,
+          quantityFormula: null,
+          calculationTrace: JSON.stringify(need.calculationTrace),
+          sourceParameters: {
+            rowCode: need.rowId,
+            rowSha256: need.needSha256,
+            normativeTrace: need.normativeTrace,
+            normativeRowTraceV3: need.normativeTrace,
+            canonicalBackendRevisionId: payload.canonicalBackend?.revisionId,
+            canonicalBackendReleaseId: payload.canonicalBackend?.releaseId,
+            canonicalBackendCatalogId: payload.canonicalBackend?.catalogId,
+            canonicalBackendOwnershipStatus: "PRELIMINARY_NEED",
+            canonicalPreliminaryNeed: true,
+            canonicalPreliminaryNeedState: need.needState,
+            missingParameterIds: need.missingParameterIds,
+            missingParameterRequirements: need.missingParameterIds.flatMap((parameterId) => {
+              const requirement = parameterRequirementById.get(parameterId);
+              return requirement ? [requirement] : [];
+            }),
+            includedInEstimate: need.selected,
+            includedInProcurement: false,
+            payable: false,
+            smartEstimateProjectionV2: {
+              progressiveDisclosure: true,
+              stage: need.section,
+              category: normalizedCategory,
+              sourceCategory: need.category,
+              initiallyCollapsed: false,
+              rowReachable: false,
+              preliminaryNeed: true,
+              parameterDependencies: need.missingParameterIds,
+            },
+          },
+          priceStatus: "PRICE_MISSING" as const,
+          priceSource: "missing" as const,
+          priceSourceId: null,
+          priceSourceLabel: "Цена применяется после уточнения количества и условий",
+          confidence: "medium" as const,
+          addedBy: "ai" as const,
+          catalogBindingStatus: itemType === "material" ? "no_catalog_match" as const : "not_material_row" as const,
+          catalogCandidates: [],
+          selectedCatalogItemId: null,
+          costConfidence: "missing" as const,
+        };
+      }),
+    ],
   };
 }

@@ -3,6 +3,28 @@ import { StyleSheet, Text, View } from "react-native";
 
 import type { EstimateDraftRevisionState } from "../../../lib/estimate/estimateDraftRevisionContract";
 
+type Revision = EstimateDraftRevisionState["revisions"][number];
+
+export function estimateRevisionArtifactsStatusRu(revision: Revision): string {
+  const artifacts = revision.artifacts;
+  const procurementApplicable = revision.boq.rows.some((row) => row.includedInProcurement);
+  const hasPdf = Boolean(artifacts.pdfArtifactId);
+  const hasProcurement = Boolean(artifacts.procurementArtifactId);
+  const pdfCurrent = hasPdf && artifacts.pdfValidForRevisionId === revision.revisionId;
+  const procurementCurrent = hasProcurement
+    && artifacts.procurementValidForRevisionId === revision.revisionId;
+  if (!procurementApplicable) {
+    if (!hasPdf) return "PDF ещё не создан; закупка для этой операции не требуется";
+    if (pdfCurrent) return "PDF актуален; закупка для этой операции не требуется";
+    return "PDF относится к предыдущей версии — его нужно пересоздать; закупка не требуется";
+  }
+  if (!hasPdf && !hasProcurement) return "PDF и пакет закупки ещё не созданы";
+  if (pdfCurrent && procurementCurrent) return "PDF и пакет закупки актуальны";
+  if (pdfCurrent && !hasProcurement) return "PDF готов; пакет закупки ещё не создан";
+  if (procurementCurrent && !hasPdf) return "Пакет закупки готов; PDF ещё не создан";
+  return "Есть файлы от предыдущей версии — их нужно пересоздать";
+}
+
 export function EstimateRevisionTimeline({
   state,
 }: {
@@ -18,6 +40,7 @@ export function EstimateRevisionTimeline({
   const selectedCatalogId = current.resolvedIdentity?.requestedCatalogWorkId
     ?? current.selectedTemplateId;
   const selectedWorkKey = current.professionalWorkId?.trim() ?? "";
+  const applicableRowCount = current.applicableBoqRowsCount ?? current.boq.rows.length;
   const compiledRevisionMarkerTestId = [
     "estimate-compiled-revision-v1",
     `catalog-${selectedCatalogId}`,
@@ -25,30 +48,23 @@ export function EstimateRevisionTimeline({
     `owner-${selectedWorkKey}`,
     `revision-${current.revisionId}`,
     `ordinal-${currentNumber}`,
-    `rows-${current.boq.rows.length}`,
+    `rows-${applicableRowCount}`,
     `status-${current.status}`,
   ].join("--");
-  const artifactStatus = current.artifacts.artifactsValidForRevisionId === current.revisionId
-    ? "PDF и пакет закупки актуальны"
-    : "PDF и пакет закупки нужно пересоздать";
+  const artifactStatus = estimateRevisionArtifactsStatusRu(current);
+  const timelineAccessibilityLabel = [
+    "estimate-revision-timeline",
+    `${state.revisions.length}-revisions`,
+    `${state.diffs.length}-diffs`,
+  ].join("--");
   return (
-    <View style={styles.panel} testID="estimate-revision-timeline">
+    <View
+      accessibilityLabel={timelineAccessibilityLabel}
+      style={styles.panel}
+      testID="estimate-revision-timeline"
+    >
       <Text style={styles.title} testID={compiledRevisionMarkerTestId}>Версия {currentNumber}</Text>
-      <Text style={styles.meta} testID="estimate-current-revision-id">Текущая версия: {currentNumber}</Text>
       <Text style={styles.meta} testID="estimate-current-revision-artifacts">{artifactStatus}</Text>
-      <View style={styles.row}>
-        {state.revisions.map((revision, index) => (
-          <View
-            key={revision.revisionId}
-            style={[styles.dot, revision.revisionId === state.currentRevisionId ? styles.activeDot : null]}
-            testID={`estimate-revision-timeline-r${index + 1}`}
-          >
-            <Text style={[styles.dotText, revision.revisionId === state.currentRevisionId ? styles.activeDotText : null]}>
-              R{index + 1}
-            </Text>
-          </View>
-        ))}
-      </View>
     </View>
   );
 }
@@ -67,33 +83,5 @@ const styles = StyleSheet.create({
     fontSize: 11,
     lineHeight: 15,
     fontWeight: "800",
-  },
-  row: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
-  },
-  dot: {
-    minWidth: 36,
-    minHeight: 28,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 8,
-    backgroundColor: "#FFFFFF",
-  },
-  activeDot: {
-    borderColor: "#0F766E",
-    backgroundColor: "#CCFBF1",
-  },
-  dotText: {
-    color: "#475569",
-    fontSize: 11,
-    fontWeight: "900",
-  },
-  activeDotText: {
-    color: "#0F766E",
   },
 });

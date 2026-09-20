@@ -2433,7 +2433,8 @@ describe("real professional norm packs audit", () => {
       review_status: "reviewed",
       review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
     });
-    expect(reviewedConcretePack.norm_items).toMatchObject([{
+    expect(reviewedConcretePack.norm_items.find((item: { norm_id: string }) =>
+      item.norm_id === "concrete_nrmca_cip31_selected_contingency_m3_m3_v1")).toMatchObject({
       norm_id: "concrete_nrmca_cip31_selected_contingency_m3_m3_v1",
       parameters: expect.arrayContaining([
         "plan_dimension_concrete_volume_m3",
@@ -2454,7 +2455,7 @@ describe("real professional norm packs audit", () => {
         simple_lower_bound_rate_multiplication_forbidden: true,
         automatic_production_binding_for_generic_concrete_forbidden: true,
       }),
-    }]);
+    });
     expect(reviewedConcretePack.norm_items.some((item: { norm_id: string }) =>
       item.norm_id === "concrete_ready_mix_m3_m3_placed_v1")).toBe(false);
     expect(reviewedFormworkPack).toMatchObject({
@@ -2743,7 +2744,7 @@ describe("real professional norm packs audit", () => {
     })).toEqual([]);
   });
 
-  it("separates unregistered physical norms by dimensional and applicability blockers", () => {
+  it("separates executable physical factors from project-schedule source guidance", () => {
     type PhysicalPack = {
       work_group: string;
       norm_items: Array<{
@@ -2760,7 +2761,7 @@ describe("real professional norm packs audit", () => {
       .flatMap((name) => {
         const pack = JSON.parse(fs.readFileSync(path.join(root, name), "utf8")) as PhysicalPack;
         return pack.norm_items.map((item) => {
-          const basisParameter = basisById[item.norm_id];
+          const basisParameter = basisById[item.norm_id] ?? "";
           return {
             norm_id: item.norm_id,
             work_group: pack.work_group,
@@ -2775,9 +2776,21 @@ describe("real professional norm packs audit", () => {
     const unregistered = inventory.filter((item) => !item.registered);
     const withCandidates = unregistered.filter((item) => item.dimensional_candidate_rows_count > 0);
 
-    expect(inventory).toHaveLength(54);
+    expect(inventory).toHaveLength(60);
     expect(inventory.filter((item) => item.registered)).toHaveLength(54);
-    expect(unregistered).toHaveLength(0);
+    expect(unregistered.map((item) => item.norm_id)).toEqual([
+      "concrete_aci_302_1_15_project_joint_schedule_v1",
+      "concrete_aci_302_1_15_project_leveling_schedule_v1",
+      "concrete_aci_309_project_consolidation_schedule_v1",
+      "concrete_aci_562_25_546_23_project_repair_schedule_v1",
+      "concrete_aci_spec_301_20_117_10_project_embedment_schedule_v1",
+      "concrete_aci_spec_308_1_23_project_curing_schedule_v1",
+    ]);
+    expect(unregistered.every((item) =>
+      item.work_basis_unit == null
+      && item.output_unit === "project_schedule"
+      && item.disposition === "NO_DIMENSIONALLY_COMPATIBLE_ROW"
+    )).toBe(true);
     expect(inventory.filter((item) => item.binding_route === "CANONICAL_V4_APPLICABILITY")
       .map((item) => item.norm_id)).toEqual([
       "air_conditioning_daikin_3mxs_k_additional_refrigerant_kg_m_v1",
@@ -2847,7 +2860,7 @@ describe("real professional norm packs audit", () => {
       item.disposition === "DIMENSIONAL_CANDIDATE_REVIEW_REQUIRED" &&
       item.unresolved_applicability_keys.length > 0
     )).toBe(true);
-    expect(unregistered.filter((item) => item.dimensional_candidate_rows_count === 0)).toHaveLength(0);
+    expect(unregistered.filter((item) => item.dimensional_candidate_rows_count === 0)).toHaveLength(6);
   });
 
   it("keeps project inputs and calculation lineage separate from normative-source admission", () => {

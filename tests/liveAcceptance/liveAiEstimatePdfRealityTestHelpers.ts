@@ -34,7 +34,7 @@ export const LIVE_ESTIMATE_CASES: LiveEstimateCase[] = [
     route: "/chat",
     prompt: "смету на установку ГКЛ на 352 кв м",
     expectedWorkKey: "drywall_partition",
-    expectedTokens: ["листы гкл", "направляющий профиль", "стоечный профиль", "креп", "лента для швов", "шпакл", "монтаж каркаса", "обшивка гкл"],
+    expectedTokens: ["листы гкл", "направляющий профиль", "стоечный профиль", "креп", "лента для швов", "шпакл", "монтаж каркаса", "обшивка листами гкл"],
   },
   {
     id: "gable_roof_100sqm",
@@ -48,7 +48,7 @@ export const LIVE_ESTIMATE_CASES: LiveEstimateCase[] = [
     route: "/chat",
     prompt: "дай смету на кладку кирпича 74 кв метров",
     expectedWorkKey: "brick_masonry",
-    expectedTokens: ["кирпич", "раствор", "кладочная смесь", "кладочная сетка", "кладка", "расшив", "доставка"],
+    expectedTokens: ["кирпич", "раствор", "цементно-песчаный раствор", "кладочная сетка", "кладка", "расшив", "доставка"],
   },
 ];
 

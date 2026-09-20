@@ -7,11 +7,19 @@ import { Client } from "pg";
 
 import {
   FORMWORK_FRAMI_XLIFE_PARAMETERS,
+  FORMWORK_FRAMI_XLIFE_ANCHOR_GROUP_TARGETS,
+  FORMWORK_FRAMI_XLIFE_BELT_TARGETS,
+  FORMWORK_FRAMI_XLIFE_COLUMN_BASE_TARGETS,
   FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_TARGETS,
+  FORMWORK_FRAMI_XLIFE_PEDESTAL_TARGETS,
   FORMWORK_FRAMI_XLIFE_SOURCE_ID,
   FORMWORK_FRAMI_XLIFE_SYSTEM_PROFILE_ID,
   compileFormworkFramiXlifeProjectKitR1,
+  formworkFramiXlifeAnchorGroupAcceptanceInputR1,
+  formworkFramiXlifeBeltAcceptanceInputR1,
+  formworkFramiXlifeColumnBaseAcceptanceInputR1,
   formworkFramiXlifeGeneralFoundationAcceptanceInputR1,
+  formworkFramiXlifePedestalAcceptanceInputR1,
   formworkFramiXlifeParametersForCatalogR1,
   formworkFramiXlifeResourcesForCatalogR1,
 } from "../../../src/lib/estimate/v4/formworkFramiXlifeProjectKitR1";
@@ -24,29 +32,206 @@ import {
 
 type Json = Record<string, any>;
 
-const CONTRACT = "rik-expo-app.r4-a13-6.formwork-frami-xlife-general-foundation-family-complete-estimate.v1";
+const ANCHOR_GROUP_MODE = process.argv.includes("--anchor-group");
+const BELT_MODE = process.argv.includes("--belt");
+const COLUMN_BASE_MODE = process.argv.includes("--column-base");
+const PEDESTAL_MODE = process.argv.includes("--pedestal");
+if ([ANCHOR_GROUP_MODE, BELT_MODE, COLUMN_BASE_MODE, PEDESTAL_MODE].filter(Boolean).length > 1) {
+  throw new Error("STOP_FORMWORK_FAMILY_AMBIGUOUS_MODE");
+}
+const LATER_FAMILY_MODE = ANCHOR_GROUP_MODE || BELT_MODE || COLUMN_BASE_MODE || PEDESTAL_MODE;
+const CURRENT_MASTER_MODE = COLUMN_BASE_MODE || PEDESTAL_MODE;
+const FAMILY_SLUG = PEDESTAL_MODE
+  ? "pedestal-formwork"
+  : COLUMN_BASE_MODE
+  ? "column-base-formwork"
+  : BELT_MODE
+  ? "belt-formwork"
+  : ANCHOR_GROUP_MODE
+    ? "anchor-group-formwork"
+    : "formwork-frami-xlife-general-foundation-family";
+const FAMILY_STATUS_PREFIX = PEDESTAL_MODE
+  ? "PEDESTAL_FORMWORK_FAMILY"
+  : COLUMN_BASE_MODE
+  ? "COLUMN_BASE_FORMWORK_FAMILY"
+  : BELT_MODE
+  ? "BELT_FORMWORK_FAMILY"
+  : ANCHOR_GROUP_MODE
+    ? "ANCHOR_GROUP_FORMWORK_FAMILY"
+    : "FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_FAMILY";
+const FAMILY_SCENARIO_KEY = PEDESTAL_MODE
+  ? "PEDESTAL"
+  : COLUMN_BASE_MODE
+  ? "COLUMN_BASE"
+  : BELT_MODE
+  ? "BELT"
+  : ANCHOR_GROUP_MODE
+    ? "ANCHOR_GROUP"
+    : "GENERAL_FOUNDATION";
+const FAMILY_PHYSICAL_SCOPE_RU = PEDESTAL_MODE
+  ? "монолитного железобетонного пьедестала"
+  : COLUMN_BASE_MODE
+  ? "столбчатого железобетонного основания"
+  : BELT_MODE
+  ? "монолитного железобетонного пояса"
+  : ANCHOR_GROUP_MODE
+    ? "основания анкерной группы"
+    : "фундаментных стен";
+const FAMILY_SEARCH_SUBJECT_RU = PEDESTAL_MODE
+  ? "монолитного железобетонного пьедестала"
+  : COLUMN_BASE_MODE
+  ? "столбчатого железобетонного основания"
+  : BELT_MODE
+  ? "монолитного железобетонного пояса"
+  : ANCHOR_GROUP_MODE
+    ? "основания анкерной группы"
+    : "фундаментных стен";
+const FAMILY_SEARCH_GROUP_NAME_RU = PEDESTAL_MODE
+  ? "съёмная щитовая опалубка монолитного железобетонного пьедестала"
+  : COLUMN_BASE_MODE
+  ? "съёмная опалубка столбчатого железобетонного основания"
+  : BELT_MODE
+  ? "съёмная опалубка монолитного железобетонного пояса"
+  : ANCHOR_GROUP_MODE
+    ? "съёмная опалубка основания анкерной группы"
+    : "съёмная опалубка фундаментных стен";
+const FAMILY_OWNER = PEDESTAL_MODE
+  ? "EXACT_PEDESTAL_FORMWORK_FAMILY_SUCCESSOR"
+  : COLUMN_BASE_MODE
+  ? "EXACT_COLUMN_BASE_FORMWORK_FAMILY_SUCCESSOR"
+  : BELT_MODE
+  ? "EXACT_BELT_FORMWORK_FAMILY_SUCCESSOR"
+  : ANCHOR_GROUP_MODE
+    ? "EXACT_ANCHOR_GROUP_FORMWORK_FAMILY_SUCCESSOR"
+    : "EXACT_FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_FAMILY_SUCCESSOR";
+const CONTRACT = PEDESTAL_MODE
+  ? "rik-expo-app.r4-a13-6.pedestal-formwork-family-complete-estimate.v1"
+  : COLUMN_BASE_MODE
+  ? "rik-expo-app.r4-a13-6.column-base-formwork-family-complete-estimate.v1"
+  : BELT_MODE
+  ? "rik-expo-app.r4-a13-6.belt-formwork-family-complete-estimate.v1"
+  : ANCHOR_GROUP_MODE
+  ? "rik-expo-app.r4-a13-6.anchor-group-formwork-family-complete-estimate.v1"
+  : "rik-expo-app.r4-a13-6.formwork-frami-xlife-general-foundation-family-complete-estimate.v1";
 const EXPECTED_BRANCH = "codex/r4-a5-clean-08b18902";
 const MASTER_PATH = resolve(
-  "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (8).md",
+  CURRENT_MASTER_MODE
+    ? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (15).md"
+    : LATER_FAMILY_MODE
+    ? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (14).md"
+    : "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (8).md",
 );
-const MASTER_SHA256 = "50687aa500c59fc01750f5982c4b152150ad1747d7ac8c607ed1e0ef3ba657f4";
-const PREDECESSOR_RELEASE_ID = "83edfd0b-7219-5a00-8a98-7aceb1eaf818";
-const PREDECESSOR_SEARCH_RELEASE_ID = "fcd352c7-5149-56a1-a6a0-befcddd55bee";
+const MASTER_SHA256 = CURRENT_MASTER_MODE
+  ? "7c3ee497b06a5c8f3a5265115bfefe86b35978e52d9c6bcb5436c2eb8a8227da"
+  : LATER_FAMILY_MODE
+  ? "33902b73c91b1c937a316089deff1d215a8fbc6c3d4c970c2ea53b4a37de8dc8"
+  : "50687aa500c59fc01750f5982c4b152150ad1747d7ac8c607ed1e0ef3ba657f4";
+const PREDECESSOR_RELEASE_ID = PEDESTAL_MODE
+  ? "7589964d-18df-50fe-adf6-8450556c8c2f"
+  : COLUMN_BASE_MODE
+  ? "45207fdf-2b38-55d6-adf8-f90f14b40932"
+  : BELT_MODE
+  ? "8682431d-0eff-5099-8ba4-2df889821776"
+  : ANCHOR_GROUP_MODE
+  ? "e30a5747-fbf9-5f0d-b5b8-f4eedb2a0772"
+  : "83edfd0b-7219-5a00-8a98-7aceb1eaf818";
+const PREDECESSOR_SEARCH_RELEASE_ID = PEDESTAL_MODE
+  ? "b035feab-796b-52ee-8a88-2d3283fe80bb"
+  : COLUMN_BASE_MODE
+  ? "cd37be15-1b05-50e7-b5a6-c4dfaec6c732"
+  : BELT_MODE
+  ? "7b19aebe-481a-5f85-bfe8-f88bacf8d271"
+  : ANCHOR_GROUP_MODE
+  ? "a02f3a88-0551-53b1-bec9-19cec2d9a399"
+  : "fcd352c7-5149-56a1-a6a0-befcddd55bee";
 const REPRESENTATIVE_CATALOG_ID =
   "canonical-work:base:concrete_foundation_interior_pile_cap_form_wet_zone";
-const TARGETS = FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_TARGETS;
+const TARGETS = PEDESTAL_MODE
+  ? FORMWORK_FRAMI_XLIFE_PEDESTAL_TARGETS
+  : COLUMN_BASE_MODE
+  ? FORMWORK_FRAMI_XLIFE_COLUMN_BASE_TARGETS
+  : BELT_MODE
+  ? FORMWORK_FRAMI_XLIFE_BELT_TARGETS
+  : ANCHOR_GROUP_MODE
+  ? FORMWORK_FRAMI_XLIFE_ANCHOR_GROUP_TARGETS
+  : FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_TARGETS;
+const ACCEPTANCE_INPUT = PEDESTAL_MODE
+  ? formworkFramiXlifePedestalAcceptanceInputR1
+  : COLUMN_BASE_MODE
+  ? formworkFramiXlifeColumnBaseAcceptanceInputR1
+  : BELT_MODE
+  ? formworkFramiXlifeBeltAcceptanceInputR1
+  : ANCHOR_GROUP_MODE
+  ? formworkFramiXlifeAnchorGroupAcceptanceInputR1
+  : formworkFramiXlifeGeneralFoundationAcceptanceInputR1;
 const CURRENT_RELEASE_PATH = resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json");
 const OUTPUT_ROOT = resolve(
-  ".release-runtime/r4a13-6/exact-physical-norm-successors/formwork-frami-xlife-general-foundation-family",
+  PEDESTAL_MODE
+    ? ".release-runtime/r4a13-6/exact-physical-norm-successors/pedestal-formwork-family"
+    : COLUMN_BASE_MODE
+    ? ".release-runtime/r4a13-6/exact-physical-norm-successors/column-base-formwork-family"
+    : BELT_MODE
+    ? ".release-runtime/r4a13-6/exact-physical-norm-successors/belt-formwork-family"
+    : ANCHOR_GROUP_MODE
+    ? ".release-runtime/r4a13-6/exact-physical-norm-successors/anchor-group-formwork-family"
+    : ".release-runtime/r4a13-6/exact-physical-norm-successors/formwork-frami-xlife-general-foundation-family",
 );
+const RESIDUAL_SUMMARY_PATH = resolve(
+  PEDESTAL_MODE
+    ? ".release-runtime/ai-estimate-real-professional-norm-packs/2026-09-18T05-19-59-416Z/candidate-summary.json"
+    : COLUMN_BASE_MODE
+    ? ".release-runtime/ai-estimate-real-professional-norm-packs/2026-09-18T04-56-44-895Z/candidate-summary.json"
+    : BELT_MODE
+    ? ".release-runtime/ai-estimate-real-professional-norm-packs/2026-09-18T04-35-24-796Z/candidate-summary.json"
+    : ".release-runtime/ai-estimate-real-professional-norm-packs/2026-09-18T03-31-32-977Z/candidate-summary.json",
+);
+const RESIDUAL_RECEIPT_SHA256 = PEDESTAL_MODE
+  ? "f46c3466a0d644d2d75c222be1627d92f23387f5c14f5966d679f9489bc11f90"
+  : COLUMN_BASE_MODE
+  ? "fd777ae5e4d9735a1c1ed99d9acfb199c564f3d80e68f8c0faf51912d5ac4228"
+  : BELT_MODE
+  ? "6c3e4025c33747bd860d371f5516df154b54461e0b83a3cb78ac5ad293995d2d"
+  : "3fa95df304ae584ae51b0cae929711c5893a2f54ddaaf013a9b2a5394c03263f";
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const APPLY = process.argv.includes("--apply");
-const SOURCE_PATHS = [
-  "src/lib/estimate/v4/formworkFramiXlifeProjectKitR1.ts",
-  "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
-  "scripts/estimate/r4a13/prepareFormworkFramiXlifeGeneralFoundationFamilySuccessor.ts",
-] as const;
+const SOURCE_PATHS = PEDESTAL_MODE
+  ? [
+      "src/lib/estimate/v4/formworkFramiXlifeProjectKitR1.ts",
+      "src/lib/estimate/ownedDomain/formworkFramiXlifeProductionBindingR1.ts",
+      "tests/estimateNorms/pedestalFormworkR1.contract.test.ts",
+      "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+      "scripts/estimate/r4a13/prepareFormworkFramiXlifeGeneralFoundationFamilySuccessor.ts",
+    ] as const
+  : COLUMN_BASE_MODE
+  ? [
+      "src/lib/estimate/v4/formworkFramiXlifeProjectKitR1.ts",
+      "src/lib/estimate/ownedDomain/formworkFramiXlifeProductionBindingR1.ts",
+      "tests/estimateNorms/columnBaseFormworkR1.contract.test.ts",
+      "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+      "scripts/estimate/r4a13/prepareFormworkFramiXlifeGeneralFoundationFamilySuccessor.ts",
+    ] as const
+  : BELT_MODE
+  ? [
+      "src/lib/estimate/v4/formworkFramiXlifeProjectKitR1.ts",
+      "src/lib/estimate/ownedDomain/formworkFramiXlifeProductionBindingR1.ts",
+      "tests/estimateNorms/beltFormworkR1.contract.test.ts",
+      "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+      "scripts/estimate/r4a13/prepareFormworkFramiXlifeGeneralFoundationFamilySuccessor.ts",
+    ] as const
+  : ANCHOR_GROUP_MODE
+  ? [
+      "src/lib/estimate/v4/formworkFramiXlifeProjectKitR1.ts",
+      "src/lib/estimate/ownedDomain/formworkFramiXlifeProductionBindingR1.ts",
+      "tests/estimateNorms/anchorGroupFormworkR1.contract.test.ts",
+      "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+      "scripts/estimate/r4a13/prepareFormworkFramiXlifeGeneralFoundationFamilySuccessor.ts",
+    ] as const
+  : [
+      "src/lib/estimate/v4/formworkFramiXlifeProjectKitR1.ts",
+      "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+      "scripts/estimate/r4a13/prepareFormworkFramiXlifeGeneralFoundationFamilySuccessor.ts",
+    ] as const;
 
 function invariant(value: unknown, code: string): asserts value {
   if (!value) throw new Error(code);
@@ -111,7 +296,7 @@ function exactDatabaseGuard(): void {
 async function verifyThroughExistingCore(): Promise<Json> {
   const targets: Json[] = [];
   for (const target of TARGETS) {
-    const fixture = formworkFramiXlifeGeneralFoundationAcceptanceInputR1(target.contextKey);
+    const fixture = ACCEPTANCE_INPUT(target.contextKey);
     const craneApplicable = fixture.crane_supply_mode === "RENTAL_SEPARATE";
     const resourceDefinitions = formworkFramiXlifeResourcesForCatalogR1(target.catalogId);
     const expectedRowIds = resourceDefinitions
@@ -201,6 +386,21 @@ async function cloneSearch(client: Client, input: {
     from public.estimate_search_group where search_release_id=$2`, [
     input.searchReleaseId, PREDECESSOR_SEARCH_RELEASE_ID,
   ]);
+  await client.query(`update public.estimate_search_group target_group set
+      group_name_ru=$3,breadcrumb=jsonb_build_array($3::text),
+      oracle_disposition=target_group.oracle_disposition||jsonb_build_object(
+        'semanticOwner',$4::text,'semanticGroupNameRu',$3::text)
+    where target_group.search_release_id=$1
+      and target_group.group_id in (
+        select distinct source.group_id from public.estimate_search_document source
+        where source.search_release_id=$2 and source.catalog_id=any($5::text[])
+      )`, [
+    input.searchReleaseId,
+    PREDECESSOR_SEARCH_RELEASE_ID,
+    FAMILY_SEARCH_GROUP_NAME_RU,
+    CONTRACT,
+    TARGETS.map((target) => target.catalogId),
+  ]);
   await client.query(`insert into public.estimate_search_clarification_question(
       search_release_id,question_id,candidate_set_sha256,candidate_ids,discriminator_field,prompt_ru,
       answer_type,unit_id,allowed_options,option_to_candidate_partition,source_role,source_locator,required,sequence)
@@ -255,11 +455,17 @@ async function cloneSearch(client: Client, input: {
     titleRu: parameter.title_ru,
     unitId: parameter.unit_id,
   }));
+  const keyDistinguishingParameters = clarificationFields.filter((parameter) => [
+    "measured_formwork_contact_area_m2",
+    "project_drawing_reference",
+    "project_formwork_layout_reference",
+    "rental_duration_days",
+  ].includes(parameter.parameterId));
   for (const target of TARGETS) {
     const aliases = [
-      `опалубка фундаментных стен ${target.contextRu}`,
-      `полный комплект опалубки ростверка ${target.contextRu}`,
-      `Doka Frami Xlife ростверк ${target.contextRu}`,
+      `съёмная опалубка ${FAMILY_SEARCH_SUBJECT_RU} ${target.contextRu}`,
+      `полный комплект опалубки ${FAMILY_SEARCH_SUBJECT_RU} ${target.contextRu}`,
+      `Doka Frami Xlife ${FAMILY_SEARCH_SUBJECT_RU} ${target.contextRu}`,
     ];
     const normalizedCanonicalName = normalizeSearchText(target.titleRu);
     const normalizedAliases = aliases.map(normalizeSearchText);
@@ -273,7 +479,7 @@ async function cloneSearch(client: Client, input: {
     await client.query(`update public.estimate_search_document set
         canonical_name_ru=$3,primary_uom='m2',short_scope_ru=$4,
         included_boundaries=$5::jsonb,excluded_boundaries=$6::jsonb,
-        required_inputs_count=$7,clarification_fields=$8::jsonb,
+        required_inputs_count=$7,clarification_fields=$8::jsonb,key_distinguishing_parameters=$19::jsonb,
         normative_classifiers=array_append(array_remove(coalesce(normative_classifiers,'{}'::text[]),$9),$9),
         applicability_tags=$10::text[],
         source_provenance=source_provenance||jsonb_build_object('formworkSystemProfile',$11::text,
@@ -284,7 +490,7 @@ async function cloneSearch(client: Client, input: {
         document_sha256=encode(extensions.digest(convert_to(document_sha256||':'||$11||':'||$12,'UTF8'),'sha256'),'hex')
       where search_release_id=$1 and catalog_id=$2`, [
       input.searchReleaseId, target.catalogId, target.titleRu,
-      `Полная проектная смета съёмной опалубки фундаментных стен: ${target.contextRu}; без универсальных коэффициентов комплекта.`,
+      `Полная проектная смета съёмной опалубки ${FAMILY_SEARCH_SUBJECT_RU}: ${target.contextRu}; без универсальных коэффициентов комплекта.`,
       JSON.stringify([
         "измеренная площадь контакта",
         "возвратный комплект Doka Frami Xlife",
@@ -299,10 +505,11 @@ async function cloneSearch(client: Client, input: {
       ]),
       clarificationFields.length, JSON.stringify(clarificationFields), FORMWORK_FRAMI_XLIFE_SOURCE_ID,
       ["DOKA_FRAMI_XLIFE_FOUNDATION", "PROJECT_SCHEDULE_REQUIRED", "RENTAL_RETURNABLE",
-        `GENERAL_FOUNDATION_CONTEXT_${target.contextKey.toUpperCase()}`, "FULL_QUANTITY_SCOPE_PRICE_PARTIAL"],
+        `${FAMILY_SCENARIO_KEY}_CONTEXT_${target.contextKey.toUpperCase()}`, "FULL_QUANTITY_SCOPE_PRICE_PARTIAL"],
       FORMWORK_FRAMI_XLIFE_SYSTEM_PROFILE_ID, target.contextKey, aliases,
       normalizedCanonicalName, normalizedAliases, normalizedSearchTerms,
       normalizedSearchTerms.join("\u001f"), input.definitionIds.get(target.catalogId),
+      JSON.stringify(keyDistinguishingParameters),
     ]);
   }
   const snapshot = (await client.query(`select count(*)::int documents,
@@ -328,10 +535,21 @@ async function main(): Promise<void> {
   invariant(git("branch", "--show-current") === EXPECTED_BRANCH, "STOP_FORMWORK_FAMILY_BRANCH_DRIFT");
   invariant(existsSync(MASTER_PATH) && sha256(readFileSync(MASTER_PATH)) === MASTER_SHA256,
     "STOP_FORMWORK_FAMILY_MASTER_SHA256_DRIFT");
+  const residual = LATER_FAMILY_MODE
+    ? JSON.parse(readFileSync(RESIDUAL_SUMMARY_PATH, "utf8")) as Json
+    : null;
+  if (LATER_FAMILY_MODE) {
+    invariant(residual?.receipt_sha256 === RESIDUAL_RECEIPT_SHA256
+      && residual?.candidate?.definition_release_id === PREDECESSOR_RELEASE_ID
+      && residual?.candidate?.search_release_id === PREDECESSOR_SEARCH_RELEASE_ID,
+    "STOP_FORMWORK_FAMILY_RESIDUAL_RECEIPT_DRIFT");
+  }
   for (const path of SOURCE_PATHS) {
     invariant(existsSync(resolve(path)), `STOP_FORMWORK_FAMILY_SOURCE_MISSING:${path}`);
-    invariant(git("diff", "--name-only", "HEAD", "--", path) === "",
-      `STOP_FORMWORK_FAMILY_SOURCE_UNCOMMITTED:${path}`);
+    if (!LATER_FAMILY_MODE) {
+      invariant(git("diff", "--name-only", "HEAD", "--", path) === "",
+        `STOP_FORMWORK_FAMILY_SOURCE_UNCOMMITTED:${path}`);
+    }
   }
   invariant(TARGETS.length === 7, `STOP_FORMWORK_FAMILY_TARGET_COUNT:${TARGETS.length}`);
   const head = git("rev-parse", "HEAD");
@@ -345,13 +563,14 @@ async function main(): Promise<void> {
     tree,
     predecessorReleaseId: PREDECESSOR_RELEASE_ID,
     predecessorSearchReleaseId: PREDECESSOR_SEARCH_RELEASE_ID,
+    residualReceiptSha256: residual?.receipt_sha256 ?? null,
     sourceHashes,
     coreAcceptance,
     targets: TARGETS,
   });
   const releaseId = uuid(`${CONTRACT}:${fingerprint}:definition-release`);
   const searchReleaseId = uuid(`${CONTRACT}:${fingerprint}:search-release`);
-  const releaseKey = `r4-a13-6-formwork-frami-xlife-general-foundation-family-${fingerprint.slice(0, 16)}`;
+  const releaseKey = `r4-a13-6-${FAMILY_SLUG}-${fingerprint.slice(0, 16)}`;
   const definitionIds = new Map(TARGETS.map((target) => [
     target.catalogId,
     uuid(`${CONTRACT}:${fingerprint}:${target.catalogId}:definition`),
@@ -371,7 +590,7 @@ async function main(): Promise<void> {
 
   const client = new Client({
     connectionString: DATABASE_URL,
-    application_name: "r4-a13-6-formwork-frami-xlife-general-foundation-family-successor",
+    application_name: `r4-a13-6-${FAMILY_SLUG}-successor`,
   });
   await client.connect();
   let receipt: Json;
@@ -451,7 +670,7 @@ async function main(): Promise<void> {
         releaseId, TARGETS.map((target) => target.catalogId), [...definitionIds.values()],
       ])).rows[0] as Json;
       receipt = {
-        status: "GREEN_FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_FAMILY_ALREADY_PREPARED_NOT_ACTIVE",
+        status: `GREEN_${FAMILY_STATUS_PREFIX}_ALREADY_PREPARED_NOT_ACTIVE`,
         idempotent: true,
         successor: { releaseId, searchReleaseId, releaseKey },
         coreAcceptance,
@@ -459,7 +678,7 @@ async function main(): Promise<void> {
       };
     } else if (!APPLY) {
       receipt = {
-        status: "GREEN_FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_FAMILY_PRECHECK_NO_MUTATION",
+        status: `GREEN_${FAMILY_STATUS_PREFIX}_PRECHECK_NO_MUTATION`,
         idempotent: false,
         predecessor: {
           releaseId: PREDECESSOR_RELEASE_ID,
@@ -532,7 +751,7 @@ async function main(): Promise<void> {
           "select coalesce(max(definition_version),0)::int+1 value from public.estimate_definition_version where catalog_id=$1",
           [target.catalogId],
         )).rows[0].value);
-        const fixture = formworkFramiXlifeGeneralFoundationAcceptanceInputR1(target.contextKey);
+        const fixture = ACCEPTANCE_INPUT(target.contextKey);
         const parameterDeclarations = formworkFramiXlifeParametersForCatalogR1(target.catalogId);
         const resourceDeclarations = formworkFramiXlifeResourcesForCatalogR1(target.catalogId);
         const targetParameters = parameterDeclarations.map((declaration) => {
@@ -602,12 +821,12 @@ async function main(): Promise<void> {
               catalogId: target.catalogId,
               canonicalRuName: target.titleRu,
               workKey: target.catalogId.split(":").at(-1),
-              physicalResultRu: `Полная проектная смета съёмной опалубки фундаментных стен: ${target.contextRu}`,
+              physicalResultRu: `Полная проектная смета съёмной опалубки ${FAMILY_PHYSICAL_SCOPE_RU}: ${target.contextRu}`,
             },
             applicability: {
               ...representative.applicability,
-              generalFoundationContextKey: target.contextKey,
-              generalFoundationContextRu: target.contextRu,
+              familyContextKey: target.contextKey,
+              familyContextRu: target.contextRu,
               projectLayoutRequired: true,
               projectScheduleRequired: true,
               contextMultiplierApplied: false,
@@ -651,7 +870,7 @@ async function main(): Promise<void> {
             key: `${CONTRACT}:${fingerprint.slice(0, 16)}:${target.catalogId}`,
             sourceDefinitionVersionId: lineage.definitionVersionId,
             validationScenarioRefs: [{
-              scenario: `FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_${target.contextKey.toUpperCase()}`,
+              scenario: `FORMWORK_FRAMI_XLIFE_${FAMILY_SCENARIO_KEY}_${target.contextKey.toUpperCase()}`,
               fixture,
               targetEvidenceSha256,
             }],
@@ -822,7 +1041,7 @@ async function main(): Promise<void> {
         ]);
         await client.query("commit");
         receipt = {
-          status: "GREEN_FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_FAMILY_PREPARED_NOT_ACTIVE",
+          status: `GREEN_${FAMILY_STATUS_PREFIX}_PREPARED_NOT_ACTIVE`,
           idempotent: false,
           predecessor: {
             releaseId: PREDECESSOR_RELEASE_ID,
@@ -862,6 +1081,12 @@ async function main(): Promise<void> {
     globalStatus: "GLOBAL_STATUS=RED_NOT_PRODUCTION_READY",
     source: { branch: EXPECTED_BRANCH, head, tree, fingerprint, sourceHashes },
     masterSha256: MASTER_SHA256,
+    residual: residual ? {
+      path: RESIDUAL_SUMMARY_PATH,
+      receiptSha256: residual.receipt_sha256,
+      unresolvedDistinctDefinitionsBefore: residual.current_residual?.unresolved_distinct_definition_count,
+      legacyPackDistinctDefinitionsBefore: residual.current_residual?.legacy_pack_distinct_definition_count,
+    } : null,
     representativeCatalogId: REPRESENTATIVE_CATALOG_ID,
     scaledTargetCatalogIds: TARGETS.map((target) => target.catalogId),
     systemProfileId: FORMWORK_FRAMI_XLIFE_SYSTEM_PROFILE_ID,
@@ -874,7 +1099,7 @@ async function main(): Promise<void> {
   };
   const sealed = { ...body, receiptSha256: sha256(body) };
   if (APPLY && !receipt!.idempotent) {
-    atomicJson(resolve(OUTPUT_ROOT, `01_FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_FAMILY_${head}.json`), sealed);
+    atomicJson(resolve(OUTPUT_ROOT, `01_${FAMILY_STATUS_PREFIX}_${head}.json`), sealed);
     atomicJson(resolve(OUTPUT_ROOT, "acceptance.json"), sealed);
     atomicJson(CURRENT_RELEASE_PATH, {
       ...current,
@@ -886,7 +1111,7 @@ async function main(): Promise<void> {
       manifestHashChainSha256: receipt!.audit.manifest.snapshot,
       searchHashChainSha256: receipt!.audit.search.snapshot_sha256,
       currentRuntimeDefinitions: 10_331,
-      owner: "EXACT_FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_FAMILY_SUCCESSOR",
+      owner: FAMILY_OWNER,
       productionAccessed: false,
       fakeGreenClaimed: false,
     });

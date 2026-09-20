@@ -358,8 +358,36 @@ function operationBlueprints(parsed: ParsedId, measure: MeasureProfile): Resourc
     rows.push({ ...input, sectionRu: "Материалы", category: "material", procurementEligible: true });
   };
   if (parsed.operation === "PREPARE") {
-    material({ key: "compatible_primer", titleRu: "Совместимая грунтовка подготовленного основания", expression: `${primary} * primer_consumption_kg_per_measure`, inputs: [primary, "primer_consumption_kg_per_measure"], unitId: "kg", resourceClass: "compatible substrate primer" });
-    material({ key: "substrate_patch_compound", titleRu: "Ремонтный состав для подтверждённых дефектов основания", expression: `${primary} * substrate_patch_fraction * patch_compound_kg_per_measure`, inputs: [primary, "substrate_patch_fraction", "patch_compound_kg_per_measure"], unitId: "kg", resourceClass: "measured substrate patch compound" });
+    const isDrywallCeiling = parsed.family === "drywall_ceiling";
+    material({
+      key: "compatible_primer",
+      titleRu: isDrywallCeiling
+        ? "Грунтовка для существующего потолка из ГКЛ — марку и расход уточнить по паспорту продукта"
+        : "Грунтовка для существующей гипсокартонной поверхности — марку уточнить",
+      expression: `${primary} * primer_consumption_kg_per_measure`,
+      inputs: [primary, "primer_consumption_kg_per_measure"],
+      unitId: "kg",
+      resourceClass: "compatible substrate primer",
+    });
+    material({
+      key: "substrate_patch_compound",
+      titleRu: "Шпаклёвочная смесь для локального ремонта ГКЛ, швов и мест крепления",
+      expression: `${primary} * substrate_patch_fraction * patch_compound_kg_per_measure`,
+      inputs: [primary, "substrate_patch_fraction", "patch_compound_kg_per_measure"],
+      unitId: "kg",
+      resourceClass: "measured substrate patch compound",
+    });
+    if (isDrywallCeiling) {
+      material({ key: "joint_repair_tape", titleRu: "Армирующая бумажная лента для ремонтируемых швов ГКЛ", expression: `${primary} * substrate_patch_fraction * joint_repair_tape_m_per_repair_m2`, inputs: [primary, "substrate_patch_fraction", "joint_repair_tape_m_per_repair_m2"], unitId: "m", resourceClass: "measured drywall joint repair tape" });
+      material({ key: "work_zone_protection", titleRu: "Защитное укрытие пола и оборудования технического помещения", expression: primary, inputs: [primary], unitId: measure.unitId, resourceClass: "measured work-zone protective covering" });
+      rows.push(
+        { key: "condition_survey", sectionRu: "Работы", category: "labor", titleRu: "Осмотр потолка из ГКЛ и разметка дефектов, швов и мест крепления", expression: primary, inputs: [primary], unitId: measure.unitId, procurementEligible: false, resourceClass: "drywall ceiling condition survey" },
+        { key: "surface_dust_removal", sectionRu: "Работы", category: "labor", titleRu: "Очистка и обеспыливание поверхности потолка из ГКЛ", expression: primary, inputs: [primary], unitId: measure.unitId, procurementEligible: false, resourceClass: "drywall ceiling cleaning and dust removal" },
+        { key: "local_joint_repair", sectionRu: "Работы", category: "labor", titleRu: "Локальная заделка дефектов, швов и головок крепежа ГКЛ", expression: `${primary} * substrate_patch_fraction`, inputs: [primary, "substrate_patch_fraction"], unitId: measure.unitId, procurementEligible: false, resourceClass: "measured drywall local repair labor" },
+        { key: "primer_application", sectionRu: "Работы", category: "labor", titleRu: "Нанесение грунтовки на подготовленный потолок из ГКЛ", expression: primary, inputs: [primary], unitId: measure.unitId, procurementEligible: false, resourceClass: "measured drywall ceiling primer application" },
+        { key: "dust_extraction_equipment", sectionRu: "Механизмы", category: "equipment", titleRu: "Промышленный пылесос для обеспыливания и шлифования ГКЛ", expression: "preparation_equipment_shift_count", inputs: ["preparation_equipment_shift_count"], unitId: "shift", procurementEligible: true, resourceClass: "drywall preparation dust extraction equipment" },
+      );
+    }
   } else if (parsed.operation === "FRAME") {
     material({ key: "system_frame", titleRu: family.frameMaterialRu, expression: `${primary} * framing_profile_m_per_measure`, inputs: [primary, "framing_profile_m_per_measure"], unitId: "m", resourceClass: `${parsed.family} frame system` });
     material({ key: "frame_fasteners", titleRu: "Системный крепёж каркаса по типу основания", expression: `${primary} * framing_fastener_item_per_measure`, inputs: [primary, "framing_fastener_item_per_measure"], unitId: "item", resourceClass: `${parsed.family} frame fasteners` });
@@ -414,12 +442,21 @@ function variantBlueprints(parsed: ParsedId, measure: MeasureProfile): ResourceB
   return [{ key: "wet_zone_material", sectionRu: "Материалы варианта", category: "material", titleRu: wetUnit === "m2" ? "Совместимый влагозащитный слой влажной зоны" : "Совместимый герметизирующий состав влажной зоны", expression: `${primary} * ${wetRate}`, inputs: [primary, wetRate], unitId: wetUnit, procurementEligible: true, resourceClass: "wet-zone compatible protection" }];
 }
 
-function logisticsBlueprints(): ResourceBlueprint[] {
-  return [
+function logisticsBlueprints(parsed: ParsedId): ResourceBlueprint[] {
+  const accessTitle = ["drywall_ceiling", "bulkhead"].includes(parsed.family)
+    ? "Передвижная вышка-тура или подмости с ограждением для потолочных работ"
+    : "Вышка-тура, подмости, леса или подъёмник — выбор по рабочей высоте и ППР";
+  const rows: ResourceBlueprint[] = [
     { key: "incoming_delivery", sectionRu: "Логистика", category: "transport", titleRu: "Единая входящая доставка материалов по подтверждённой массе и маршруту", expression: "(delivery_mass_kg / 1000) * delivery_distance_km", inputs: ["delivery_mass_kg", "delivery_distance_km"], unitId: "t_km", procurementEligible: true, resourceClass: "consolidated incoming material transport", inclusionCondition: "work_included=true AND delivery_required=true" },
     { key: "waste_haul", sectionRu: "Отходы", category: "transport", titleRu: "Единый вывоз подтверждённой массы строительных отходов", expression: "(waste_mass_kg / 1000) * waste_haul_distance_km", inputs: ["waste_mass_kg", "waste_haul_distance_km"], unitId: "t_km", procurementEligible: true, resourceClass: "consolidated construction waste transport", inclusionCondition: "work_included=true AND waste_haul_required=true" },
-    { key: "access_equipment", sectionRu: "Оборудование доступа", category: "equipment", titleRu: "Оборудование доступа к рабочей зоне по проектному ППР", expression: "access_equipment_shift_count", inputs: ["access_equipment_shift_count"], unitId: "shift", procurementEligible: false, resourceClass: "conditional access equipment measured by shift", inclusionCondition: "work_included=true AND access_equipment_required=true" },
+    { key: "access_equipment", sectionRu: "Оборудование доступа", category: "equipment", titleRu: accessTitle, expression: "access_equipment_shift_count", inputs: ["access_equipment_shift_count"], unitId: "shift", procurementEligible: true, resourceClass: "conditional access equipment measured by shift", inclusionCondition: "work_included=true AND access_equipment_required=true" },
+    { key: "access_temporary_works", sectionRu: "Временные работы", category: "labor", titleRu: "Монтаж, ежесменная проверка, перестановка и демонтаж средств доступа", expression: "access_equipment_shift_count", inputs: ["access_equipment_shift_count"], unitId: "shift", procurementEligible: false, resourceClass: "conditional access temporary works", inclusionCondition: "work_included=true AND access_equipment_required=true" },
+    { key: "access_delivery_return", sectionRu: "Логистика средств доступа", category: "transport", titleRu: "Доставка и возврат вышки-туры, подмостей, лесов или подъёмника", expression: "access_delivery_trip_count", inputs: ["access_delivery_trip_count"], unitId: "trip", procurementEligible: true, resourceClass: "conditional access equipment delivery and return", inclusionCondition: "work_included=true AND access_equipment_required=true" },
   ];
+  if (parsed.family === "drywall_ceiling" && ["CLAD", "INSTALL"].includes(parsed.operation)) {
+    rows.push({ key: "drywall_board_lift", sectionRu: "Монтажное оборудование", category: "equipment", titleRu: "Подъёмник листов ГКЛ для монтажа потолка", expression: "access_equipment_shift_count", inputs: ["access_equipment_shift_count"], unitId: "shift", procurementEligible: true, resourceClass: "drywall ceiling board lift", inclusionCondition: "work_included=true AND access_equipment_required=true" });
+  }
+  return rows;
 }
 
 const PARAMETER_METADATA: Readonly<Record<string, { labelRu: string; unitId: string | null; minimum: number; maximum?: number }>> = {
@@ -455,12 +492,15 @@ const PARAMETER_METADATA: Readonly<Record<string, { labelRu: string; unitId: str
   waste_mass_kg: { labelRu: "Подтверждённая масса вывозимых отходов", unitId: "kg", minimum: 0 },
   waste_haul_distance_km: { labelRu: "Подтверждённое плечо вывоза отходов", unitId: "km", minimum: 0 },
   access_equipment_shift_count: { labelRu: "Подтверждённое число смен оборудования доступа", unitId: "shift", minimum: 0 },
+  access_delivery_trip_count: { labelRu: "Количество рейсов доставки и возврата средств доступа", unitId: "trip", minimum: 0 },
+  joint_repair_tape_m_per_repair_m2: { labelRu: "Длина армирующей ленты на м² локального ремонта ГКЛ", unitId: "m_per_m2", minimum: 0 },
+  preparation_equipment_shift_count: { labelRu: "Число смен пылеудаления и малой механизации", unitId: "shift", minimum: 0 },
 };
 
 function conditionFor(parameterId: string): ProfessionalParameterConditionV1 {
   if (["delivery_mass_kg", "delivery_distance_km"].includes(parameterId)) return { kind: "EQUALS", parameter_id: "delivery_required", value: true };
   if (["waste_mass_kg", "waste_haul_distance_km"].includes(parameterId)) return { kind: "EQUALS", parameter_id: "waste_haul_required", value: true };
-  if (parameterId === "access_equipment_shift_count") return { kind: "EQUALS", parameter_id: "access_equipment_required", value: true };
+  if (["access_equipment_shift_count", "access_delivery_trip_count"].includes(parameterId)) return { kind: "EQUALS", parameter_id: "access_equipment_required", value: true };
   return { kind: "ALWAYS" };
 }
 
@@ -549,7 +589,7 @@ function buildDefinitionWithoutHash(catalogId: string): Omit<Batch004R56Canonica
   if (!inventory) throw new Error(`BATCH004_R56_INVENTORY_MISSING:${catalogId}`);
   const parsed = parseCatalogId(catalogId);
   const measure = measureProfile(parsed);
-  const blueprints = [...operationBlueprints(parsed, measure), ...variantBlueprints(parsed, measure), ...logisticsBlueprints()];
+  const blueprints = [...operationBlueprints(parsed, measure), ...variantBlueprints(parsed, measure), ...logisticsBlueprints(parsed)];
   if (new Set(blueprints.map((entry) => entry.key)).size !== blueprints.length) throw new Error(`BATCH004_R56_ROW_DUPLICATE:${catalogId}`);
   const formulas: Batch004R56FormulaDefinition[] = blueprints.map((entry) => ({
     formulaId: `${catalogId}:successor-r56:formula:${entry.key}`,
@@ -595,6 +635,7 @@ function buildDefinitionWithoutHash(catalogId: string): Omit<Batch004R56Canonica
     ["delivery_required", parameter({ parameterId: "delivery_required", labelRu: "Доставка оплачивается отдельно", inputType: "boolean" })],
     ["waste_haul_required", parameter({ parameterId: "waste_haul_required", labelRu: "Вывоз отходов входит в scope", inputType: "boolean" })],
     ["access_equipment_required", parameter({ parameterId: "access_equipment_required", labelRu: "Требуется оборудование доступа по ППР", inputType: "boolean" })],
+    ["working_height_m", parameter({ parameterId: "working_height_m", labelRu: "Рабочая высота", unitId: "m", minimum: 0, maximum: 300 })],
   ]);
   if (parsed.operation === "REPAIR") {
     candidates.set("normative_rate_code", parameter({

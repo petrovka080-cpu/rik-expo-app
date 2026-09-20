@@ -8,7 +8,7 @@ function rowQuantity(prompt: string, code: string): number {
   expect(row.formulaId).toBeTruthy();
   expect(row.quantityFormula).toBeTruthy();
   expect(row.priceStatus).toBe("PRICE_MISSING");
-  return row.quantity;
+  return row.quantity!;
 }
 
 describe("professional prompt parameter extraction", () => {

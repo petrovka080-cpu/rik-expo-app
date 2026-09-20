@@ -67,9 +67,15 @@ export class RequestEstimateIntentLifecycle {
   private readonly listeners = new Set<() => void>();
   private latestAuthoritativeLaunchId: string | null = null;
   private pendingDraftId: string | null = null;
+  private revision = 0;
 
   private emitChange(): void {
+    this.revision += 1;
     for (const listener of this.listeners) listener();
+  }
+
+  getSnapshot(): number {
+    return this.revision;
   }
 
   subscribe(listener: () => void): () => void {
@@ -172,6 +178,56 @@ export class RequestEstimateIntentLifecycle {
 
   getPending(): PendingRequestEstimateIntent | null {
     return this.pending;
+  }
+
+  resolvePendingRouteLaunch(input: {
+    launchId: string | null | undefined;
+    fingerprint: string | null | undefined;
+  }): {
+    launchId: string | null;
+    matchedBy:
+      | "launch_id"
+      | "missing_identity_fingerprint"
+      | "generated_fingerprint_alias"
+      | null;
+  } {
+    const routeLaunchId = String(input.launchId ?? "").trim();
+    const fingerprint = String(input.fingerprint ?? "").trim();
+    const pendingPayload = this.pending?.target.payload;
+    if (!pendingPayload) {
+      return { launchId: routeLaunchId || null, matchedBy: null };
+    }
+    if (routeLaunchId === pendingPayload.launchId) {
+      return { launchId: pendingPayload.launchId, matchedBy: "launch_id" };
+    }
+    if (
+      !fingerprint ||
+      fingerprint !== pendingPayload.fingerprint
+    ) {
+      return { launchId: routeLaunchId || null, matchedBy: null };
+    }
+    if (!routeLaunchId) {
+      return {
+        launchId: pendingPayload.launchId,
+        matchedBy: "missing_identity_fingerprint",
+      };
+    }
+    if (
+      isGeneratedRequestEstimateLaunchIdV1({
+        launchId: routeLaunchId,
+        fingerprint,
+      }) &&
+      isGeneratedRequestEstimateLaunchIdV1({
+        launchId: pendingPayload.launchId,
+        fingerprint,
+      })
+    ) {
+      return {
+        launchId: pendingPayload.launchId,
+        matchedBy: "generated_fingerprint_alias",
+      };
+    }
+    return { launchId: routeLaunchId, matchedBy: null };
   }
 
   markStage(

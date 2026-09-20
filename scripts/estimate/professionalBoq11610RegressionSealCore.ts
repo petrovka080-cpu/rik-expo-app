@@ -313,23 +313,41 @@ function createCatalogAuditRevision(input: {
 }): EstimateDraftRevision {
   const registered = resolveRegisteredProfessionalEstimateSelectionV1(input.row.templateId);
   if (registered) {
-    const requiresProjectRate = registered.canonical_parameter_schema.definitions.some(
-      (definition) => definition.parameterId === "normative_rate_code",
+    const declaredParameterIds = new Set(
+      registered.canonical_parameter_schema.definitions.map((definition) => definition.parameterId),
     );
+    const paramOverrides: EstimateDraftRevision["params"] = {};
+    if (declaredParameterIds.has("normative_rate_code")) {
+      paramOverrides.normative_rate_code = {
+        value: "PROJECT-VERIFIED-EXACT-RATE-CODE",
+        source: "user_input",
+        sourceText: "catalog-regression-audit:project-confirmed-normative-rate",
+        lastChangedAt: input.createdAt,
+      };
+    }
+    if (declaredParameterIds.has("access_equipment_shift_count")) {
+      paramOverrides.access_equipment_shift_count = {
+        value: 3,
+        source: "user_input",
+        sourceText: "catalog-regression-audit:project-confirmed-access-schedule",
+        lastChangedAt: input.createdAt,
+      };
+    }
+    if (declaredParameterIds.has("access_delivery_trip_count")) {
+      paramOverrides.access_delivery_trip_count = {
+        value: 2,
+        source: "user_input",
+        sourceText: "catalog-regression-audit:project-confirmed-access-schedule",
+        lastChangedAt: input.createdAt,
+      };
+    }
     return createRegisteredProfessionalDomainAuditRevision({
       templateId: input.row.templateId,
       estimateDraftId: input.estimateDraftId,
       rawInput: input.rawInput,
       createdAt: input.createdAt,
       artifacts: input.artifacts,
-      paramOverrides: requiresProjectRate ? {
-        normative_rate_code: {
-          value: "PROJECT-VERIFIED-EXACT-RATE-CODE",
-          source: "user_input",
-          sourceText: "catalog-regression-audit:project-confirmed-normative-rate",
-          lastChangedAt: input.createdAt,
-        },
-      } : undefined,
+      paramOverrides: Object.keys(paramOverrides).length > 0 ? paramOverrides : undefined,
     });
   }
   if (isStripFoundationCanonicalBackendPassport(input.row.passport)) {

@@ -4,6 +4,7 @@ import { AI_RUNTIME_KERNEL_VERSION } from "../../src/lib/aiPlatform/kernel/AiRun
 import { runAiEvalCases, AI_EVAL_PROMPT_VERSION } from "../../src/lib/aiPlatform/eval/AiEvalRunner";
 import { summarizeAiEvalResults } from "../../src/lib/aiPlatform/eval/AiEvalResult";
 import { validateAiEvalCostLatency } from "../../src/lib/aiPlatform/eval/validateAiEvalCostLatency";
+import type { AiEstimatePlugin } from "../../src/lib/aiPlatform/plugins/estimate/AiEstimatePluginContract";
 import {
   AI_ESTIMATE_GOLDEN_CASES_FIXTURE,
   AI_PLATFORM_EVALOPS_ROOT,
@@ -40,6 +41,21 @@ const requiredFamilies = [
   "glazing",
 ] as const;
 
+const goldenEvalEstimatePlugin: AiEstimatePlugin = {
+  pluginId: "ai_estimate",
+  async run({ runInput }) {
+    return {
+      flowId: runInput.flowId,
+      status: "needs_more_input",
+      userVisibleAnswerRu: "Нужно уточнить исходные данные для профессиональной сметы.",
+      draft: {
+        backendCanonical: true,
+        evaluationProbe: "versioned_construction_quality_corpus",
+      },
+    };
+  },
+};
+
 export async function runAiEstimateGoldenEval(input: { writeSummary?: boolean } = {}) {
   const git = currentGitState();
   const fixture = loadAiEvalFixture(AI_ESTIMATE_GOLDEN_CASES_FIXTURE);
@@ -51,6 +67,11 @@ export async function runAiEstimateGoldenEval(input: { writeSummary?: boolean } 
     promptVersion: AI_EVAL_PROMPT_VERSION,
     providerKey: "golden_eval_provider",
     modelKey: "golden-eval-model",
+    // This corpus evaluates deterministic classification, parameter extraction,
+    // grounding and policy semantics. Live canonical auth/catalog availability
+    // is covered by the backend and runtime suites and must not turn the local
+    // 700-case corpus into an environment-health probe.
+    estimatePlugin: goldenEvalEstimatePlugin,
   });
   const runSummary = summarizeAiEvalResults({
     evalRunId,
@@ -91,6 +112,7 @@ export async function runAiEstimateGoldenEval(input: { writeSummary?: boolean } 
     ...git,
     generated_at: new Date().toISOString(),
     ai_estimate_golden_eval_corpus_created: true,
+    estimate_probe_kind: "injected_versioned_corpus_boundary",
     ...counts,
     critical_work_families_covered: familiesCovered,
     eval_run_id: evalRunId,

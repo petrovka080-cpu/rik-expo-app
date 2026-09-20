@@ -21,7 +21,11 @@ export function AppScreenScroll({
   contentContainerStyle,
   keyboardShouldPersistTaps = "handled",
   automaticallyAdjustKeyboardInsets = true,
-  keyboardDismissMode = Platform.OS === "ios" ? "interactive" : "on-drag",
+  keyboardDismissMode = Platform.OS === "web"
+    ? "none"
+    : Platform.OS === "ios"
+      ? "interactive"
+      : "on-drag",
   ...props
 }: AppScreenScrollProps) {
   return (

@@ -219,11 +219,207 @@ export const FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_TARGETS = Object.freeze([
 export type FormworkFramiXlifeGeneralFoundationContextKey =
   (typeof FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_TARGETS)[number]["contextKey"];
 
+export const FORMWORK_FRAMI_XLIFE_ANCHOR_GROUP_TARGETS = Object.freeze([
+  {
+    contextKey: "standard",
+    catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_form_standard",
+    titleRu: "Съёмная опалубка основания анкерной группы Doka Frami Xlife в стандартной зоне",
+    contextRu: "стандартная зона",
+  },
+  {
+    contextKey: "high_load",
+    catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_form_high_load",
+    titleRu: "Съёмная опалубка основания анкерной группы Doka Frami Xlife для зоны высокой нагрузки",
+    contextRu: "зона высокой нагрузки",
+  },
+  {
+    contextKey: "large_area",
+    catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_form_large_area",
+    titleRu: "Съёмная опалубка оснований анкерных групп Doka Frami Xlife на большом участке",
+    contextRu: "большой участок",
+  },
+  {
+    contextKey: "repair",
+    catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_form_repair",
+    titleRu: "Съёмная опалубка основания анкерной группы Doka Frami Xlife на участке ремонта",
+    contextRu: "участок ремонта",
+  },
+  {
+    contextKey: "small_area",
+    catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_form_small_area",
+    titleRu: "Съёмная опалубка основания анкерной группы Doka Frami Xlife на малом участке",
+    contextRu: "малый участок",
+  },
+  {
+    contextKey: "technical_room",
+    catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_form_technical_room",
+    titleRu: "Съёмная опалубка основания анкерной группы Doka Frami Xlife в технической зоне",
+    contextRu: "техническая зона",
+  },
+  {
+    contextKey: "wet_zone",
+    catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_form_wet_zone",
+    titleRu: "Съёмная опалубка основания анкерной группы Doka Frami Xlife во влажной зоне",
+    contextRu: "влажная зона",
+  },
+] as const);
+
+export type FormworkFramiXlifeAnchorGroupContextKey =
+  (typeof FORMWORK_FRAMI_XLIFE_ANCHOR_GROUP_TARGETS)[number]["contextKey"];
+
+export const FORMWORK_FRAMI_XLIFE_BELT_TARGETS = Object.freeze([
+  {
+    contextKey: "standard",
+    catalogId: "canonical-work:base:concrete_foundation_interior_belt_form_standard",
+    titleRu: "Съёмная опалубка монолитного пояса Doka Frami Xlife в стандартной зоне",
+    contextRu: "стандартная зона",
+  },
+  {
+    contextKey: "high_load",
+    catalogId: "canonical-work:base:concrete_foundation_interior_belt_form_high_load",
+    titleRu: "Съёмная опалубка монолитного пояса Doka Frami Xlife для зоны высокой нагрузки",
+    contextRu: "зона высокой нагрузки",
+  },
+  {
+    contextKey: "large_area",
+    catalogId: "canonical-work:base:concrete_foundation_interior_belt_form_large_area",
+    titleRu: "Съёмная опалубка монолитного пояса Doka Frami Xlife на большой площади",
+    contextRu: "большая площадь",
+  },
+  {
+    contextKey: "repair",
+    catalogId: "canonical-work:base:concrete_foundation_interior_belt_form_repair",
+    titleRu: "Съёмная опалубка монолитного пояса Doka Frami Xlife при локальном ремонте",
+    contextRu: "локальный ремонт",
+  },
+  {
+    contextKey: "small_area",
+    catalogId: "canonical-work:base:concrete_foundation_interior_belt_form_small_area",
+    titleRu: "Съёмная опалубка монолитного пояса Doka Frami Xlife на малой площади",
+    contextRu: "малая площадь",
+  },
+  {
+    contextKey: "technical_room",
+    catalogId: "canonical-work:base:concrete_foundation_interior_belt_form_technical_room",
+    titleRu: "Съёмная опалубка монолитного пояса Doka Frami Xlife в техническом помещении",
+    contextRu: "техническое помещение",
+  },
+  {
+    contextKey: "wet_zone",
+    catalogId: "canonical-work:base:concrete_foundation_interior_belt_form_wet_zone",
+    titleRu: "Съёмная опалубка монолитного пояса Doka Frami Xlife во влажной зоне",
+    contextRu: "влажная зона",
+  },
+] as const);
+
+export type FormworkFramiXlifeBeltContextKey =
+  (typeof FORMWORK_FRAMI_XLIFE_BELT_TARGETS)[number]["contextKey"];
+
+export const FORMWORK_FRAMI_XLIFE_COLUMN_BASE_TARGETS = Object.freeze([
+  {
+    contextKey: "standard",
+    catalogId: "canonical-work:base:concrete_foundation_interior_column_base_form_standard",
+    titleRu: "Съёмная опалубка столбчатого железобетонного основания Doka Frami Xlife в стандартной зоне",
+    contextRu: "стандартная зона",
+  },
+  {
+    contextKey: "high_load",
+    catalogId: "canonical-work:base:concrete_foundation_interior_column_base_form_high_load",
+    titleRu: "Съёмная опалубка столбчатого железобетонного основания Doka Frami Xlife для зоны высокой нагрузки",
+    contextRu: "зона высокой нагрузки",
+  },
+  {
+    contextKey: "large_area",
+    catalogId: "canonical-work:base:concrete_foundation_interior_column_base_form_large_area",
+    titleRu: "Съёмная опалубка столбчатых железобетонных оснований Doka Frami Xlife на большой площади",
+    contextRu: "большая площадь",
+  },
+  {
+    contextKey: "repair",
+    catalogId: "canonical-work:base:concrete_foundation_interior_column_base_form_repair",
+    titleRu: "Съёмная опалубка столбчатого железобетонного основания Doka Frami Xlife при локальном ремонте",
+    contextRu: "локальный ремонт",
+  },
+  {
+    contextKey: "small_area",
+    catalogId: "canonical-work:base:concrete_foundation_interior_column_base_form_small_area",
+    titleRu: "Съёмная опалубка столбчатого железобетонного основания Doka Frami Xlife на малой площади",
+    contextRu: "малая площадь",
+  },
+  {
+    contextKey: "technical_room",
+    catalogId: "canonical-work:base:concrete_foundation_interior_column_base_form_technical_room",
+    titleRu: "Съёмная опалубка столбчатого железобетонного основания Doka Frami Xlife в техническом помещении",
+    contextRu: "техническое помещение",
+  },
+  {
+    contextKey: "wet_zone",
+    catalogId: "canonical-work:base:concrete_foundation_interior_column_base_form_wet_zone",
+    titleRu: "Съёмная опалубка столбчатого железобетонного основания Doka Frami Xlife во влажной зоне",
+    contextRu: "влажная зона",
+  },
+] as const);
+
+export type FormworkFramiXlifeColumnBaseContextKey =
+  (typeof FORMWORK_FRAMI_XLIFE_COLUMN_BASE_TARGETS)[number]["contextKey"];
+
+export const FORMWORK_FRAMI_XLIFE_PEDESTAL_TARGETS = Object.freeze([
+  {
+    contextKey: "standard",
+    catalogId: "canonical-work:base:concrete_foundation_interior_pedestal_form_standard",
+    titleRu: "Съёмная щитовая опалубка монолитного железобетонного пьедестала Doka Frami Xlife в стандартной зоне",
+    contextRu: "стандартная зона",
+  },
+  {
+    contextKey: "high_load",
+    catalogId: "canonical-work:base:concrete_foundation_interior_pedestal_form_high_load",
+    titleRu: "Съёмная щитовая опалубка монолитного железобетонного пьедестала Doka Frami Xlife для зоны высокой нагрузки",
+    contextRu: "зона высокой нагрузки",
+  },
+  {
+    contextKey: "large_area",
+    catalogId: "canonical-work:base:concrete_foundation_interior_pedestal_form_large_area",
+    titleRu: "Съёмная щитовая опалубка монолитных железобетонных пьедесталов Doka Frami Xlife на большой площади",
+    contextRu: "большая площадь",
+  },
+  {
+    contextKey: "repair",
+    catalogId: "canonical-work:base:concrete_foundation_interior_pedestal_form_repair",
+    titleRu: "Съёмная щитовая опалубка монолитного железобетонного пьедестала Doka Frami Xlife при локальном ремонте",
+    contextRu: "локальный ремонт",
+  },
+  {
+    contextKey: "small_area",
+    catalogId: "canonical-work:base:concrete_foundation_interior_pedestal_form_small_area",
+    titleRu: "Съёмная щитовая опалубка монолитного железобетонного пьедестала Doka Frami Xlife на малой площади",
+    contextRu: "малая площадь",
+  },
+  {
+    contextKey: "technical_room",
+    catalogId: "canonical-work:base:concrete_foundation_interior_pedestal_form_technical_room",
+    titleRu: "Съёмная щитовая опалубка монолитного железобетонного пьедестала Doka Frami Xlife в техническом помещении",
+    contextRu: "техническое помещение",
+  },
+  {
+    contextKey: "wet_zone",
+    catalogId: "canonical-work:base:concrete_foundation_interior_pedestal_form_wet_zone",
+    titleRu: "Съёмная щитовая опалубка монолитного железобетонного пьедестала Doka Frami Xlife во влажной зоне",
+    contextRu: "влажная зона",
+  },
+] as const);
+
+export type FormworkFramiXlifePedestalContextKey =
+  (typeof FORMWORK_FRAMI_XLIFE_PEDESTAL_TARGETS)[number]["contextKey"];
+
 export const FORMWORK_FRAMI_XLIFE_FOUNDATION_TARGETS = Object.freeze([
   ...FORMWORK_FRAMI_XLIFE_PILE_CAP_TARGETS,
   ...FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS,
   ...FORMWORK_FRAMI_XLIFE_SLAB_FOUNDATION_TARGETS,
   ...FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_TARGETS,
+  ...FORMWORK_FRAMI_XLIFE_ANCHOR_GROUP_TARGETS,
+  ...FORMWORK_FRAMI_XLIFE_BELT_TARGETS,
+  ...FORMWORK_FRAMI_XLIFE_COLUMN_BASE_TARGETS,
+  ...FORMWORK_FRAMI_XLIFE_PEDESTAL_TARGETS,
 ] as const);
 
 type TechnologySource = {
@@ -1086,6 +1282,10 @@ function usesConditionalFoundationCraneR1(catalogId: string): boolean {
     ...FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS,
     ...FORMWORK_FRAMI_XLIFE_SLAB_FOUNDATION_TARGETS,
     ...FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_TARGETS,
+    ...FORMWORK_FRAMI_XLIFE_ANCHOR_GROUP_TARGETS,
+    ...FORMWORK_FRAMI_XLIFE_BELT_TARGETS,
+    ...FORMWORK_FRAMI_XLIFE_COLUMN_BASE_TARGETS,
+    ...FORMWORK_FRAMI_XLIFE_PEDESTAL_TARGETS,
   ].some((target) => target.catalogId === catalogId);
 }
 
@@ -2049,6 +2249,122 @@ export function formworkFramiXlifeGeneralFoundationAcceptanceInputR1(
       `Лента герметизации по ведомости ACCEPTANCE-FW-LAYOUT-GEN-${referenceKey}-001-REV-A`,
     form_release_agent_specification:
       `Разделительный состав по ведомости ACCEPTANCE-FW-LAYOUT-GEN-${referenceKey}-001-REV-A`,
+  });
+}
+
+export function formworkFramiXlifeAnchorGroupAcceptanceInputR1(
+  contextKey: FormworkFramiXlifeAnchorGroupContextKey,
+): Readonly<Record<string, FormworkFramiXlifeInputValue>> {
+  const target = FORMWORK_FRAMI_XLIFE_ANCHOR_GROUP_TARGETS.find(
+    (candidate) => candidate.contextKey === contextKey,
+  );
+  if (!target) throw new Error(`FORMWORK_ANCHOR_GROUP_CONTEXT_UNSUPPORTED:${contextKey}`);
+  const referenceKey = contextKey.toUpperCase();
+  const base = formworkFramiXlifeGeneralFoundationAcceptanceInputR1(contextKey);
+  const drawing = `ACCEPTANCE-FW-AG-${referenceKey}-001-REV-A`;
+  const layout = `ACCEPTANCE-FW-LAYOUT-AG-${referenceKey}-001-REV-A`;
+  return Object.freeze({
+    ...base,
+    project_drawing_reference: drawing,
+    element_type: `Монолитное основание анкерной группы; ${target.contextRu}; приёмочный тестовый проект`,
+    element_dimensions_and_face_count:
+      `Грани основания анкерной группы; измеренная площадь контакта ${base.measured_formwork_contact_area_m2} м²; давление смеси, стяжки и анкеры проверены чертежом ${drawing}`,
+    project_measurement_rule_reference: `RICS_NRM2_WS11_CONFIRMED:${drawing}`,
+    estimator_approval_reference: `ACCEPTANCE-EST-FW-AG-${referenceKey}-001-REV-A`,
+    project_formwork_layout_reference: layout,
+    system_engineer_approval_reference: `ACCEPTANCE-FW-ENG-AG-${referenceKey}-001-REV-A`,
+    panel_specification: `Щит Doka Frami Xlife 0,90×1,50 м по ведомости ${layout}`,
+    corner_element_specification: `Наружный угловой элемент Doka Frami Xlife по ведомости ${layout}`,
+    panel_connector_specification: `Зажим соединительный Doka Frami по ведомости ${layout}`,
+    joint_sealing_tape_specification: `Лента герметизации по ведомости ${layout}`,
+    form_release_agent_specification: `Разделительный состав по ведомости ${layout}`,
+  });
+}
+
+export function formworkFramiXlifeBeltAcceptanceInputR1(
+  contextKey: FormworkFramiXlifeBeltContextKey,
+): Readonly<Record<string, FormworkFramiXlifeInputValue>> {
+  const target = FORMWORK_FRAMI_XLIFE_BELT_TARGETS.find(
+    (candidate) => candidate.contextKey === contextKey,
+  );
+  if (!target) throw new Error(`FORMWORK_BELT_CONTEXT_UNSUPPORTED:${contextKey}`);
+  const referenceKey = contextKey.toUpperCase();
+  const base = formworkFramiXlifeGeneralFoundationAcceptanceInputR1(contextKey);
+  const drawing = `ACCEPTANCE-FW-BELT-${referenceKey}-001-REV-A`;
+  const layout = `ACCEPTANCE-FW-LAYOUT-BELT-${referenceKey}-001-REV-A`;
+  return Object.freeze({
+    ...base,
+    project_drawing_reference: drawing,
+    element_type: `Монолитный железобетонный пояс; ${target.contextRu}; приёмочный тестовый проект`,
+    element_dimensions_and_face_count:
+      `Грани монолитного пояса; измеренная площадь контакта ${base.measured_formwork_contact_area_m2} м²; давление смеси, стяжки и анкеры проверены чертежом ${drawing}`,
+    project_measurement_rule_reference: `RICS_NRM2_WS11_CONFIRMED:${drawing}`,
+    estimator_approval_reference: `ACCEPTANCE-EST-FW-BELT-${referenceKey}-001-REV-A`,
+    project_formwork_layout_reference: layout,
+    system_engineer_approval_reference: `ACCEPTANCE-FW-ENG-BELT-${referenceKey}-001-REV-A`,
+    panel_specification: `Щит Doka Frami Xlife 0,90×1,50 м по ведомости ${layout}`,
+    corner_element_specification: `Наружный угловой элемент Doka Frami Xlife по ведомости ${layout}`,
+    panel_connector_specification: `Зажим соединительный Doka Frami по ведомости ${layout}`,
+    joint_sealing_tape_specification: `Лента герметизации по ведомости ${layout}`,
+    form_release_agent_specification: `Разделительный состав по ведомости ${layout}`,
+  });
+}
+
+export function formworkFramiXlifeColumnBaseAcceptanceInputR1(
+  contextKey: FormworkFramiXlifeColumnBaseContextKey,
+): Readonly<Record<string, FormworkFramiXlifeInputValue>> {
+  const target = FORMWORK_FRAMI_XLIFE_COLUMN_BASE_TARGETS.find(
+    (candidate) => candidate.contextKey === contextKey,
+  );
+  if (!target) throw new Error(`FORMWORK_COLUMN_BASE_CONTEXT_UNSUPPORTED:${contextKey}`);
+  const referenceKey = contextKey.toUpperCase();
+  const base = formworkFramiXlifeGeneralFoundationAcceptanceInputR1(contextKey);
+  const drawing = `ACCEPTANCE-FW-COLUMN-BASE-${referenceKey}-001-REV-A`;
+  const layout = `ACCEPTANCE-FW-LAYOUT-COLUMN-BASE-${referenceKey}-001-REV-A`;
+  return Object.freeze({
+    ...base,
+    project_drawing_reference: drawing,
+    element_type: `Столбчатое железобетонное основание; ${target.contextRu}; приёмочный тестовый проект`,
+    element_dimensions_and_face_count:
+      `Грани столбчатого железобетонного основания; измеренная площадь контакта ${base.measured_formwork_contact_area_m2} м²; давление смеси, стяжки и анкеры проверены чертежом ${drawing}`,
+    project_measurement_rule_reference: `RICS_NRM2_WS11_CONFIRMED:${drawing}`,
+    estimator_approval_reference: `ACCEPTANCE-EST-FW-COLUMN-BASE-${referenceKey}-001-REV-A`,
+    project_formwork_layout_reference: layout,
+    system_engineer_approval_reference: `ACCEPTANCE-FW-ENG-COLUMN-BASE-${referenceKey}-001-REV-A`,
+    panel_specification: `Щит Doka Frami Xlife 0,90×1,50 м по ведомости ${layout}`,
+    corner_element_specification: `Наружный угловой элемент Doka Frami Xlife по ведомости ${layout}`,
+    panel_connector_specification: `Зажим соединительный Doka Frami по ведомости ${layout}`,
+    joint_sealing_tape_specification: `Лента герметизации по ведомости ${layout}`,
+    form_release_agent_specification: `Разделительный состав по ведомости ${layout}`,
+  });
+}
+
+export function formworkFramiXlifePedestalAcceptanceInputR1(
+  contextKey: FormworkFramiXlifePedestalContextKey,
+): Readonly<Record<string, FormworkFramiXlifeInputValue>> {
+  const target = FORMWORK_FRAMI_XLIFE_PEDESTAL_TARGETS.find(
+    (candidate) => candidate.contextKey === contextKey,
+  );
+  if (!target) throw new Error(`FORMWORK_PEDESTAL_CONTEXT_UNSUPPORTED:${contextKey}`);
+  const referenceKey = contextKey.toUpperCase();
+  const base = formworkFramiXlifeGeneralFoundationAcceptanceInputR1(contextKey);
+  const drawing = `ACCEPTANCE-FW-PEDESTAL-${referenceKey}-001-REV-A`;
+  const layout = `ACCEPTANCE-FW-LAYOUT-PEDESTAL-${referenceKey}-001-REV-A`;
+  return Object.freeze({
+    ...base,
+    project_drawing_reference: drawing,
+    element_type: `Монолитный железобетонный пьедестал; ${target.contextRu}; приёмочный тестовый проект`,
+    element_dimensions_and_face_count:
+      `Четыре вертикальные грани монолитного железобетонного пьедестала; измеренная площадь контакта ${base.measured_formwork_contact_area_m2} м²; давление смеси, стяжки и замыкание щитов проверены чертежом ${drawing}`,
+    project_measurement_rule_reference: `RICS_NRM2_WS11_CONFIRMED:${drawing}`,
+    estimator_approval_reference: `ACCEPTANCE-EST-FW-PEDESTAL-${referenceKey}-001-REV-A`,
+    project_formwork_layout_reference: layout,
+    system_engineer_approval_reference: `ACCEPTANCE-FW-ENG-PEDESTAL-${referenceKey}-001-REV-A`,
+    panel_specification: `Щит Doka Frami Xlife 0,90×1,50 м по ведомости ${layout}`,
+    corner_element_specification: `Наружный угловой элемент Doka Frami Xlife по ведомости ${layout}`,
+    panel_connector_specification: `Зажим соединительный Doka Frami по ведомости ${layout}`,
+    joint_sealing_tape_specification: `Лента герметизации по ведомости ${layout}`,
+    form_release_agent_specification: `Разделительный состав по ведомости ${layout}`,
   });
 }
 

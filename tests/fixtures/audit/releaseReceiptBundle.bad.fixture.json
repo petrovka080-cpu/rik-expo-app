@@ -1,0 +1,14 @@
+{
+  "schema": "release-receipt-bundle/v1",
+  "bundle_id": "fixture-bad-bundle",
+  "evidence_class": "fixture",
+  "release_id": "fixture-release",
+  "subject_sha": "1111111111111111111111111111111111111111",
+  "workspace_fingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+  "artifact_scope": "evidence",
+  "receipts": [
+    { "receipt_id": "fixture-lint", "kind": "lint", "release_id": "fixture-release", "subject_sha": "1111111111111111111111111111111111111111", "workspace_fingerprint": "2222222222222222222222222222222222222222222222222222222222222222", "artifact_scope": "evidence", "artifact_path": "evidence/lint.json", "expected_sha256": "3333333333333333333333333333333333333333333333333333333333333333", "observed_sha256": "4444444444444444444444444444444444444444444444444444444444444444", "exit_code": 1, "passed": false },
+    { "receipt_id": "fixture-native-a", "kind": "native", "release_id": "fixture-release", "subject_sha": "1111111111111111111111111111111111111111", "workspace_fingerprint": "2222222222222222222222222222222222222222222222222222222222222222", "artifact_scope": "evidence", "artifact_path": "evidence/native-a.json", "expected_sha256": "3333333333333333333333333333333333333333333333333333333333333333", "observed_sha256": "3333333333333333333333333333333333333333333333333333333333333333", "exit_code": 0, "passed": true },
+    { "receipt_id": "fixture-native-b", "kind": "native", "release_id": "fixture-release", "subject_sha": "1111111111111111111111111111111111111111", "workspace_fingerprint": "2222222222222222222222222222222222222222222222222222222222222222", "artifact_scope": "evidence", "artifact_path": "evidence/native-b.json", "expected_sha256": "3333333333333333333333333333333333333333333333333333333333333333", "observed_sha256": "3333333333333333333333333333333333333333333333333333333333333333", "exit_code": 0, "passed": true }
+  ]
+}

@@ -93,9 +93,11 @@ const crushedStoneBedding = eq("bedding_material", "crushed_stone");
 const importedBackfill = eq("backfill_import_required", true);
 const importedBackfillSand = and(importedBackfill, eq("backfill_material_type", "sand"));
 const importedBackfillCrushed = and(importedBackfill, eq("backfill_material_type", "crushed_stone"));
+const measuredBackfill = gt("backfill_cross_section_m2", 0);
 const disposal = eq("soil_disposal_included", true);
 const separateDelivery = eq("delivery_separately_priced", true);
 const localAsphaltRestoration = eq("surface_restoration_scope", "local_asphalt_strip");
+const outsideLocalAsphaltRestoration: InclusionGraphAst = { kind: "not", operand: localAsphaltRestoration };
 
 const KRER_27: AsphaltSurfaceDrainageNormSource = Object.freeze({
   sourceKey: "kg_krer_27_roadworks_2015",
@@ -157,7 +159,7 @@ export const ASPHALT_SURFACE_DRAINAGE_INPUTS: readonly AsphaltSurfaceDrainageInp
   input("bedding_thickness_m", "Толщина подготовки", "m", "Уплотнённая толщина подготовки по проектному сечению.", { minimum: 0.01, maximum: 2 }),
   input("bedding_density_t_m3", "Плотность материала подготовки", "t/m3", "Плотность принятого материала для расчёта грузопотока поставки.", { minimum: 0.1, maximum: 5 }),
   input("bedding_delivery_distance_km", "Расстояние доставки материала подготовки", "km", "Подтверждённый маршрут от поставщика до объекта.", { minimum: 0, maximum: 10_000 }),
-  input("backfill_cross_section_m2", "Площадь сечения обратной засыпки", "m2", "Площадь обратной засыпки по проектному сечению после вычета системы и подготовки.", { minimum: 0.001, maximum: 100 }),
+  input("backfill_cross_section_m2", "Площадь сечения обратной засыпки", "m2", "Площадь обратной засыпки по проектному сечению после вычета системы и подготовки; укажите 0, если всё оставшееся сечение занято конструктивными слоями.", { minimum: 0, maximum: 100 }),
   input("backfill_import_required", "Требуется привозной материал обратной засыпки", null, "Подтвердите баланс грунта: повторное использование или отдельная поставка материала.", { valueType: "boolean" }),
   input("backfill_material_type", "Материал привозной обратной засыпки", null, "Выберите только фактически предусмотренный песок или щебень.", { valueType: "enum", choices: ["sand", "crushed_stone"], requiredWhen: importedBackfill }),
   input("backfill_density_t_m3", "Плотность привозного материала засыпки", "t/m3", "Плотность нужна для измеримого грузопотока поставки.", { minimum: 0.1, maximum: 5, requiredWhen: importedBackfill }),
@@ -176,6 +178,7 @@ export const ASPHALT_SURFACE_DRAINAGE_INPUTS: readonly AsphaltSurfaceDrainageInp
   input("compactor_model", "Модель траншейного уплотнителя", null, "Укажите выбранную уплотняющую машину.", { valueType: "text", sourceRole: "SELECTED_EQUIPMENT_PASSPORT" }),
   input("compactor_productivity_m3_h", "Производительность траншейного уплотнителя", "m3_per_hour", "Паспортная производительность для принятого материала и толщины слоя.", { minimum: 0.001, maximum: 100_000, sourceRole: "SELECTED_EQUIPMENT_PASSPORT" }),
   input("surface_restoration_scope", "Восстановление асфальта", null, "Выберите отсутствие восстановления либо только измеримую полосу вскрытия; вся дорожная инфраструктура не добавляется.", { valueType: "enum", choices: ["none", "local_asphalt_strip"] }),
+  input("existing_asphalt_thickness_mm", "Толщина снимаемого существующего асфальта", "mm", "Фактическая толщина снимаемого покрытия в границах траншеи; этот объём исключается из земляной выемки ниже покрытия.", { minimum: 1, maximum: 1_000, requiredWhen: localAsphaltRestoration }),
   input("asphalt_restoration_area_m2", "Площадь локального восстановления асфальта", "m2", "Площадь только вскрытой полосы по ведомости восстановления.", { minimum: 0.001, maximum: 10_000_000, requiredWhen: localAsphaltRestoration }),
   input("asphalt_restoration_thickness_mm", "Толщина восстанавливаемого слоя асфальта", "mm", "Проектная суммарная толщина восстанавливаемого асфальтобетона.", { minimum: 1, maximum: 1_000, requiredWhen: localAsphaltRestoration }),
   input("asphalt_density_t_m3", "Плотность асфальтобетонной смеси", "t/m3", "Плотность выбранной смеси по паспорту состава.", { minimum: 0.1, maximum: 5, requiredWhen: localAsphaltRestoration, sourceRole: "MANUFACTURER_CONFIRMED" }),
@@ -188,10 +191,12 @@ export const ASPHALT_SURFACE_DRAINAGE_INPUTS: readonly AsphaltSurfaceDrainageInp
   input("tray_nominal_size", "Номинальное сечение лотка", null, "Типоразмер выбранного лотка, например DN200, по гидравлической схеме.", { valueType: "text", requiredWhen: linearTray, sourceRole: "MANUFACTURER_CONFIRMED" }),
   input("tray_load_class", "Класс нагрузки лотка", null, "Класс нагрузки решётки и корпуса по зоне установки.", { valueType: "enum", choices: ["A15", "B125", "C250", "D400", "E600", "F900"], requiredWhen: linearTray, sourceRole: "MANUFACTURER_CONFIRMED" }),
   input("tray_module_length_m", "Длина модуля лотка", "m", "Монтажная длина одного элемента выбранной системы.", { minimum: 0.1, maximum: 10, requiredWhen: linearTray, sourceRole: "MANUFACTURER_CONFIRMED" }),
+  input("tray_grating_length_m", "Длина одной водоприёмной решётки", "m", "Монтажная длина одной совместимой решётки выбранной системы.", { minimum: 0.1, maximum: 10, requiredWhen: linearTray, sourceRole: "MANUFACTURER_CONFIRMED" }),
   input("tray_base_concrete_cross_section_m2", "Площадь сечения бетонного основания и обоймы лотка", "m2", "Суммарная площадь бетона по принятому монтажному узлу.", { minimum: 0.001, maximum: 10, requiredWhen: linearTray }),
   input("tray_joint_sealant_kg_per_joint", "Расход герметика на стык лотка", "kg/pcs", "Расход совместимого герметика по паспорту системы.", { minimum: 0.001, maximum: 100, requiredWhen: linearTray, sourceRole: "MANUFACTURER_CONFIRMED" }),
-  input("tray_fasteners_per_module", "Крепёж решётки на модуль лотка", "pcs", "Комплектное количество фиксаторов решётки на один модуль.", { valueType: "integer", minimum: 1, maximum: 100, requiredWhen: linearTray, sourceRole: "MANUFACTURER_CONFIRMED" }),
-  input("tray_silt_trap_count", "Количество пескоуловителей лотковой системы", "pcs", "Количество по плану трассы и узлам подключения.", { valueType: "integer", minimum: 1, maximum: 100_000, requiredWhen: linearTray }),
+  input("tray_fasteners_per_grating", "Крепёж на одну водоприёмную решётку", "pcs", "Количество отдельных фиксаторов одной решётки; укажите 0, если крепления входят в комплект изделия и отдельно не закупаются.", { valueType: "integer", minimum: 0, maximum: 100, requiredWhen: linearTray, sourceRole: "MANUFACTURER_CONFIRMED" }),
+  input("tray_silt_trap_count", "Количество пескоуловителей лотковой системы", "pcs", "Количество по плану трассы и узлам подключения; 0 означает, что специальных элементов внутри длины трассы нет.", { valueType: "integer", minimum: 0, maximum: 100_000, requiredWhen: linearTray }),
+  input("tray_silt_trap_length_m_item", "Монтажная длина одного пескоуловителя", "m", "Занимаемая одним пескоуловителем длина линии; укажите 0 при отсутствии пескоуловителей.", { minimum: 0, maximum: 10, requiredWhen: linearTray, sourceRole: "MANUFACTURER_CONFIRMED" }),
   input("concrete_delivery_distance_km", "Расстояние доставки бетона лотков", "km", "Маршрут от поставщика бетонной смеси до объекта.", { minimum: 0, maximum: 10_000, requiredWhen: linearTray }),
 
   input("drain_pipe_nominal_size", "Номинальный диаметр дренажной трубы", null, "Диаметр выбранной перфорированной трубы по расчётной схеме.", { valueType: "text", requiredWhen: subsurfaceDrain, sourceRole: "MANUFACTURER_CONFIRMED" }),
@@ -221,6 +226,8 @@ function formula(formulaId: string, outputUnitId: string, source: string): Formu
 export const ASPHALT_SURFACE_DRAINAGE_FORMULAS: readonly Formula[] = Object.freeze([
   formula("route_length", "m", "route_length_m"),
   formula("excavation_volume", "m3", "route_length_m * trench_width_m * trench_depth_m"),
+  formula("asphalt_removal_volume", "m3", "route_length_m * trench_width_m * existing_asphalt_thickness_mm / 1000"),
+  formula("sub_asphalt_excavation_volume", "m3", "max(route_length_m * trench_width_m * trench_depth_m - route_length_m * trench_width_m * existing_asphalt_thickness_mm / 1000, 0)"),
   formula("bedding_volume", "m3", "route_length_m * trench_width_m * bedding_thickness_m"),
   formula("backfill_volume", "m3", "route_length_m * backfill_cross_section_m2"),
   formula("outlet_connections", "pcs", "outlet_connection_count"),
@@ -232,9 +239,11 @@ export const ASPHALT_SURFACE_DRAINAGE_FORMULAS: readonly Formula[] = Object.free
   formula("backfill_delivery", "t_km", "route_length_m * backfill_cross_section_m2 * backfill_density_t_m3 * backfill_delivery_distance_km"),
   formula("soil_disposal_volume", "m3", "soil_disposal_volume_m3"),
   formula("soil_disposal", "t_km", "soil_disposal_volume_m3 * soil_density_t_m3 * soil_disposal_distance_km"),
-  formula("tray_module_count", "pcs", "ceil(route_length_m / tray_module_length_m)"),
-  formula("tray_fastener_count", "pcs", "ceil(route_length_m / tray_module_length_m) * tray_fasteners_per_module"),
-  formula("tray_sealant_mass", "kg", "ceil(route_length_m / tray_module_length_m) * tray_joint_sealant_kg_per_joint"),
+  formula("tray_module_count", "pcs", "ceil(max(route_length_m - tray_silt_trap_count * tray_silt_trap_length_m_item, 0) / tray_module_length_m)"),
+  formula("tray_grating_count", "pcs", "ceil(route_length_m / tray_grating_length_m)"),
+  formula("tray_joint_count", "pcs", "max(ceil(max(route_length_m - tray_silt_trap_count * tray_silt_trap_length_m_item, 0) / tray_module_length_m) + tray_silt_trap_count - 1, 0)"),
+  formula("tray_fastener_count", "pcs", "ceil(route_length_m / tray_grating_length_m) * tray_fasteners_per_grating"),
+  formula("tray_sealant_mass", "kg", "max(ceil(max(route_length_m - tray_silt_trap_count * tray_silt_trap_length_m_item, 0) / tray_module_length_m) + tray_silt_trap_count - 1, 0) * tray_joint_sealant_kg_per_joint"),
   formula("tray_concrete_volume", "m3", "route_length_m * tray_base_concrete_cross_section_m2"),
   formula("tray_silt_traps", "pcs", "tray_silt_trap_count"),
   formula("tray_concrete_delivery", "m3_km", "route_length_m * tray_base_concrete_cross_section_m2 * concrete_delivery_distance_km"),
@@ -293,16 +302,16 @@ const commonTrace = ["system_type", "design_slope_percent", "outfall_status"] as
 export const ASPHALT_SURFACE_DRAINAGE_ROWS: readonly AsphaltSurfaceDrainageRow[] = Object.freeze([
   row("bedding_sand", "material", "Песок для уплотнённой подготовки системы водоотвода", "m3", "bedding_volume", sandBedding, PROJECT_SOURCE),
   row("bedding_crushed_stone", "material", "Щебень проектной фракции для подготовки системы водоотвода", "m3", "bedding_volume", crushedStoneBedding, PROJECT_SOURCE),
-  row("imported_backfill_sand", "material", "Песок для привозной обратной засыпки траншеи", "m3", "backfill_volume", importedBackfillSand, PROJECT_SOURCE),
-  row("imported_backfill_crushed_stone", "material", "Щебень проектной фракции для привозной обратной засыпки", "m3", "backfill_volume", importedBackfillCrushed, PROJECT_SOURCE),
+  row("imported_backfill_sand", "material", "Песок для привозной обратной засыпки траншеи", "m3", "backfill_volume", and(importedBackfillSand, measuredBackfill), PROJECT_SOURCE),
+  row("imported_backfill_crushed_stone", "material", "Щебень проектной фракции для привозной обратной засыпки", "m3", "backfill_volume", and(importedBackfillCrushed, measuredBackfill), PROJECT_SOURCE),
 
-  row("tray_body", "material", "Водоотводный лоток", "m", "route_length", linearTray, MANUFACTURER_SOURCE, { titleSpecificationParameterIds: ["tray_nominal_size", "tray_load_class"], titleSpecificationMode: "APPEND", titleSpecificationSeparator: " — " }),
-  row("tray_grating", "material", "Решётка водоотводного лотка", "m", "route_length", linearTray, MANUFACTURER_SOURCE, { titleSpecificationParameterIds: ["tray_load_class"], titleSpecificationMode: "APPEND" }),
-  row("tray_connection_kits", "material", "Комплекты соединения модулей водоотводного лотка", "pcs", "tray_module_count", linearTray, MANUFACTURER_SOURCE),
-  row("tray_grating_fasteners", "material", "Фиксаторы решёток водоотводного лотка", "pcs", "tray_fastener_count", linearTray, MANUFACTURER_SOURCE),
+  row("tray_body", "material", "Лоток водоотводный бетонный", "pcs", "tray_module_count", linearTray, MANUFACTURER_SOURCE, { titleSpecificationParameterIds: ["tray_nominal_size", "tray_load_class"], titleSpecificationMode: "APPEND", titleSpecificationSeparator: " — " }),
+  row("tray_grating", "material", "Решётка водоприёмная чугунная", "pcs", "tray_grating_count", linearTray, MANUFACTURER_SOURCE, { titleSpecificationParameterIds: ["tray_load_class"], titleSpecificationMode: "APPEND" }),
+  row("tray_connection_kits", "material", "Комплекты герметичного соединения соседних элементов водоотводной линии", "pcs", "tray_joint_count", linearTray, MANUFACTURER_SOURCE),
+  row("tray_grating_fasteners", "material", "Отдельно поставляемые фиксаторы водоприёмных решёток", "pcs", "tray_fastener_count", and(linearTray, gt("tray_fasteners_per_grating", 0)), MANUFACTURER_SOURCE),
   row("tray_joint_sealant", "material", "Герметик стыков водоотводных лотков", "kg", "tray_sealant_mass", linearTray, MANUFACTURER_SOURCE),
   row("tray_base_concrete", "material", "Бетонная смесь основания и обоймы водоотводных лотков", "m3", "tray_concrete_volume", linearTray, PROJECT_SOURCE),
-  row("tray_silt_traps", "material", "Пескоуловители линейного водоотвода", "pcs", "tray_silt_traps", linearTray, MANUFACTURER_SOURCE),
+  row("tray_silt_traps", "material", "Пескоуловители линейного водоотвода", "pcs", "tray_silt_traps", and(linearTray, gt("tray_silt_trap_count", 0)), MANUFACTURER_SOURCE),
   row("tray_outlet_adapters", "material", "Адаптеры подключения лотков к выпуску", "pcs", "outlet_connections", linearTray, MANUFACTURER_SOURCE),
 
   row("drain_perforated_pipe", "material", "Перфорированная дренажная труба", "m", "route_length", subsurfaceDrain, MANUFACTURER_SOURCE, { titleSpecificationParameterIds: ["drain_pipe_nominal_size", "drain_pipe_stiffness_class"], titleSpecificationMode: "APPEND" }),
@@ -323,15 +332,17 @@ export const ASPHALT_SURFACE_DRAINAGE_ROWS: readonly AsphaltSurfaceDrainageRow[]
   row("asphalt_emulsion", "material", "Битумная эмульсия для подгрунтовки локальной полосы", "kg", "asphalt_emulsion_mass", localAsphaltRestoration, PROJECT_SOURCE),
 
   row("route_setting_out", "construction_work", "Разбивка трассы системы водоотвода", "m", "route_length", trueAst, PROJECT_SOURCE, { traceParameterIds: commonTrace }),
-  row("trench_excavation", "construction_work", "Разработка траншеи системы водоотвода", "m3", "excavation_volume", trueAst, KRER_27, { traceParameterIds: ["trench_width_m", "trench_depth_m"] }),
+  row("trench_excavation", "construction_work", "Разработка траншеи системы водоотвода вне существующего асфальтового покрытия", "m3", "excavation_volume", outsideLocalAsphaltRestoration, KRER_27, { traceParameterIds: ["trench_width_m", "trench_depth_m"] }),
+  row("asphalt_strip_removal", "construction_work", "Демонтаж существующего асфальтобетона в границах вскрываемой полосы", "m3", "asphalt_removal_volume", localAsphaltRestoration, KRER_27, { traceParameterIds: ["trench_width_m", "existing_asphalt_thickness_mm"] }),
+  row("trench_excavation_below_asphalt", "construction_work", "Разработка выемки ниже снятого асфальтобетонного покрытия", "m3", "sub_asphalt_excavation_volume", localAsphaltRestoration, KRER_27, { traceParameterIds: ["trench_width_m", "trench_depth_m", "existing_asphalt_thickness_mm"] }),
   row("bedding_installation", "construction_work", "Устройство и уплотнение подготовки системы водоотвода", "m3", "bedding_volume", trueAst, KRER_27, { traceParameterIds: ["bedding_material", "bedding_thickness_m"] }),
-  row("trench_backfill", "construction_work", "Обратная засыпка траншеи с послойным уплотнением", "m3", "backfill_volume", trueAst, KRER_27, { traceParameterIds: ["backfill_import_required", "backfill_material_type"] }),
+  row("trench_backfill", "construction_work", "Обратная засыпка траншеи с послойным уплотнением", "m3", "backfill_volume", measuredBackfill, KRER_27, { traceParameterIds: ["backfill_import_required", "backfill_material_type"] }),
 
   row("tray_base_installation", "construction_work", "Устройство бетонного основания и обоймы водоотводных лотков", "m3", "tray_concrete_volume", linearTray, KRER_27),
   row("tray_installation", "construction_work", "Монтаж водоотводных лотков по проектному уклону", "m", "route_length", linearTray, KRER_27, { traceParameterIds: commonTrace }),
-  row("tray_joint_sealing", "construction_work", "Герметизация соединений водоотводных лотков", "pcs", "tray_module_count", linearTray, KRER_27),
-  row("tray_grating_installation", "construction_work", "Монтаж и фиксация решёток водоотводных лотков", "m", "route_length", linearTray, KRER_27),
-  row("tray_silt_trap_installation", "construction_work", "Монтаж пескоуловителей линейного водоотвода", "pcs", "tray_silt_traps", linearTray, KRER_27),
+  row("tray_joint_sealing", "construction_work", "Герметизация соединений водоотводной линии", "pcs", "tray_joint_count", linearTray, KRER_27),
+  row("tray_grating_installation", "construction_work", "Монтаж и фиксация водоприёмных решёток", "pcs", "tray_grating_count", linearTray, KRER_27),
+  row("tray_silt_trap_installation", "construction_work", "Монтаж пескоуловителей линейного водоотвода", "pcs", "tray_silt_traps", and(linearTray, gt("tray_silt_trap_count", 0)), KRER_27),
   row("tray_outlet_connection", "construction_work", "Подключение линейного водоотвода к подтверждённому выпуску", "pcs", "outlet_connections", linearTray, PROJECT_SOURCE, { traceParameterIds: ["outfall_status"] }),
   row("tray_flushing", "construction_work", "Промывка линейного водоотвода перед вводом", "m", "route_length", linearTray, PROJECT_SOURCE),
 
@@ -353,7 +364,7 @@ export const ASPHALT_SURFACE_DRAINAGE_ROWS: readonly AsphaltSurfaceDrainageRow[]
   row("asphalt_strip_restoration", "construction_work", "Восстановление асфальтобетона в границах вскрытой полосы", "m2", "asphalt_restoration_area", localAsphaltRestoration, KRER_27),
 
   row("trench_excavator", "machine_equipment", "Экскаватор для разработки траншеи", "machine_hour", "excavator_hours", trueAst, EQUIPMENT_SOURCE, { titleSpecificationParameterIds: ["excavator_model"], titleSpecificationMode: "APPEND" }),
-  row("trench_compactor", "machine_equipment", "Траншейный уплотнитель", "machine_hour", "compactor_hours", trueAst, EQUIPMENT_SOURCE, { titleSpecificationParameterIds: ["compactor_model"], titleSpecificationMode: "APPEND" }),
+  row("trench_compactor", "machine_equipment", "Траншейный уплотнитель", "machine_hour", "compactor_hours", measuredBackfill, EQUIPMENT_SOURCE, { titleSpecificationParameterIds: ["compactor_model"], titleSpecificationMode: "APPEND" }),
   row("asphalt_roller", "machine_equipment", "Каток локального восстановления асфальта", "machine_hour", "asphalt_roller_hours", localAsphaltRestoration, EQUIPMENT_SOURCE, { titleSpecificationParameterIds: ["asphalt_roller_model"], titleSpecificationMode: "APPEND" }),
 
   row("system_delivery", "delivery", "Доставка комплектных элементов системы водоотвода", "t_km", "system_delivery", and(separateDelivery, gt("system_delivery_distance_km", 0)), PROJECT_SOURCE, { cargo: { cargoRu: "комплектные элементы системы водоотвода", vehicleRu: "бортовой автомобиль", physicalQuantityFormulaId: "system_transport_mass", physicalQuantityUom: "t", distanceParameterId: "system_delivery_distance_km" } }),
@@ -596,9 +607,11 @@ export const ASPHALT_SURFACE_DRAINAGE_LINEAR_GOLD_INPUT: Readonly<Record<string,
   tray_nominal_size: "DN200",
   tray_load_class: "D400",
   tray_module_length_m: 1,
+  tray_grating_length_m: 0.5,
   tray_base_concrete_cross_section_m2: 0.08,
   tray_joint_sealant_kg_per_joint: 0.12,
-  tray_fasteners_per_module: 2,
+  tray_fasteners_per_grating: 2,
   tray_silt_trap_count: 6,
+  tray_silt_trap_length_m_item: 1,
   concrete_delivery_distance_km: 18,
 });

@@ -7,6 +7,8 @@ describe("PDF no screen-local calculation", () => {
 
     expect(aiScreen).not.toMatch(/unitPrice\s*\*|quantity\s*\*|grandTotal\s*=|materialsTotal\s*=/);
     expect(requestScreen).not.toMatch(/unitPrice\s*\*|quantity\s*\*|grandTotal\s*=|materialsTotal\s*=/);
-    expect(aiScreen).toContain("generateAiEstimatePdf");
+    expect(aiScreen).toContain("buildCanonicalEstimateArtifact");
+    expect(aiScreen).toContain("artifact.revisionId !== message.canonicalEstimateRevisionId");
+    expect(aiScreen).toContain("artifact.releaseId !== message.canonicalEstimateReleaseId");
   });
 });

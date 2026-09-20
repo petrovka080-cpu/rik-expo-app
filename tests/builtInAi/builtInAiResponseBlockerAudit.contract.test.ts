@@ -17,8 +17,12 @@ describe("built-in AI response blocker audit", () => {
 
     expect(requestAdapter).toContain("answerBuiltInAi");
     expect(aiScreen).toContain("createBuiltInAiAssistantMessage");
-    expect(answerPipeline).toContain("answerBuiltInAi");
-    expect(client).toContain("answerBuiltInAi");
+    expect(answerPipeline).toContain("createAiEstimatePlugin");
+    expect(answerPipeline).toContain("answerAlwaysOnExternalKnowledgeQuestion");
+    expect(answerPipeline).not.toContain("answerBuiltInAi");
+    expect(client).toContain("createAiEstimatePlugin");
+    expect(client).toContain("answerAlwaysOnExternalKnowledgeQuestion");
+    expect(client).not.toContain("answerBuiltInAi");
     expect(auditRunner).toContain("request_generic_draft_blocker_found");
     expect(auditRunner).toContain("wrong_work_type_mapping_found");
     expect(auditRunner).toContain("implementation_started_before_audit: false");

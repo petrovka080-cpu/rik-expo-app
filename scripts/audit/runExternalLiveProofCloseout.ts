@@ -11,11 +11,47 @@ import {
   type ExternalLiveProofStepPlan,
   type ExternalLiveProofStepResult,
 } from "./externalLiveProofCloseout.shared";
+import {
+  PRIMARY_RELEASE_RECEIPT_KINDS,
+  readReleaseReceiptBundle,
+  validateReleaseReceiptBundle,
+} from "./releaseReceiptBundle";
+import { buildFullJestEvidenceContext } from "../release/fullJestEvidence";
 
 const args = new Set(process.argv.slice(2));
 const strict = args.has("--strict");
 const afterGates = args.has("--after-gates");
 const DEFAULT_STEP_TIMEOUT_MS = 180_000;
+let primaryReceiptBundleValidated = false;
+
+function argValue(name: string): string | null {
+  const prefix = `--${name}=`;
+  const inline = process.argv.slice(2).find((arg) => arg.startsWith(prefix));
+  if (inline) return inline.slice(prefix.length).trim() || null;
+  const index = process.argv.indexOf(`--${name}`);
+  return index >= 0 ? process.argv[index + 1]?.trim() || null : null;
+}
+
+function validatePrimaryReceiptPrerequisites(): void {
+  if (!afterGates) return;
+  const bundlePath = argValue("bundle") ?? process.env.RELEASE_RECEIPT_BUNDLE_PATH ?? null;
+  const releaseId = argValue("release-id") ?? process.env.RELEASE_CANDIDATE_ID ?? null;
+  if (!bundlePath || !releaseId) {
+    throw new Error("AFTER_GATES_PRIMARY_RECEIPT_BUNDLE_REQUIRED");
+  }
+  const current = buildFullJestEvidenceContext();
+  const validation = validateReleaseReceiptBundle(readReleaseReceiptBundle(bundlePath), {
+    rootDir: process.cwd(),
+    expectedReleaseId: releaseId,
+    expectedSubjectSha: current.headSha,
+    expectedWorkspaceFingerprint: current.workspaceFingerprint,
+    requiredKinds: PRIMARY_RELEASE_RECEIPT_KINDS,
+  });
+  if (!validation.actual_environment_passed) {
+    throw new Error(`AFTER_GATES_PRIMARY_RECEIPT_BUNDLE_INVALID:${validation.errors.join(",")}`);
+  }
+  primaryReceiptBundleValidated = true;
+}
 
 function parseStepTimeoutMs(): number {
   const raw = process.env.EXTERNAL_LIVE_PROOF_STEP_TIMEOUT_MS;
@@ -74,7 +110,7 @@ function cleanupProcessTree(pid: number | undefined): Pick<
 function runStep(plan: ExternalLiveProofStepPlan, timeoutMs: number): Promise<ExternalLiveProofStepResult> {
   const env = {
     ...process.env,
-    ...(afterGates
+    ...(primaryReceiptBundleValidated
       ? {
           RLS_DYNAMIC_FULL_JEST_PASSED: "1",
           RLS_DYNAMIC_RELEASE_VERIFY_PASSED: "1",
@@ -156,6 +192,7 @@ function runStep(plan: ExternalLiveProofStepPlan, timeoutMs: number): Promise<Ex
 loadAuditEnvFiles();
 
 async function main() {
+  validatePrimaryReceiptPrerequisites();
   const stepTimeoutMs = parseStepTimeoutMs();
   const plan = buildExternalLiveProofCloseoutPlan();
   const stepResults: ExternalLiveProofStepResult[] = [];
@@ -174,6 +211,7 @@ async function main() {
     ...plan,
     strict,
     after_gates: afterGates,
+    primary_receipt_bundle_validated: primaryReceiptBundleValidated,
     steps: stepResults,
     final_matrix: finalMatrix,
     final_status: timedOut ? "BLOCKED_EXTERNAL_LIVE_PROOF_TIMEOUT" : finalStatus,
@@ -194,7 +232,7 @@ async function main() {
   };
 
   writeExternalLiveProofCloseoutArtifacts(result);
-  console.log(JSON.stringify({
+  console.info(JSON.stringify({
     final_status: result.final_status,
     green_ready: result.green_ready,
     can_run_all_live_proofs: result.can_run_all_live_proofs,

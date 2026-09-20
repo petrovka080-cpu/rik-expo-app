@@ -30,16 +30,21 @@ jest.mock("./buyer.attachments.mutation", () => ({
   uploadInvoiceAttachmentMutation: jest.fn(),
 }));
 
+const requireJestMock = (value: unknown): jest.Mock => {
+  if (!jest.isMockFunction(value)) throw new Error("Expected a Jest mock function");
+  return value as jest.Mock;
+};
+
 const mockedClearRequestItemsDirectorRejectState =
-  clearRequestItemsDirectorRejectState as unknown as jest.Mock;
+  requireJestMock(clearRequestItemsDirectorRejectState);
 const mockedSendProposalToAccountingMin =
-  sendProposalToAccountingMin as unknown as jest.Mock;
+  requireJestMock(sendProposalToAccountingMin);
 const mockedSetRequestItemsDirectorStatus =
-  setRequestItemsDirectorStatus as unknown as jest.Mock;
+  requireJestMock(setRequestItemsDirectorStatus);
 const mockedEnsureProposalHtmlAttachmentMutation =
-  ensureProposalHtmlAttachmentMutation as unknown as jest.Mock;
+  requireJestMock(ensureProposalHtmlAttachmentMutation);
 const mockedUploadInvoiceAttachmentMutation =
-  uploadInvoiceAttachmentMutation as unknown as jest.Mock;
+  requireJestMock(uploadInvoiceAttachmentMutation);
 
 const serverAccountingRow = {
   payment_status: "К оплате",

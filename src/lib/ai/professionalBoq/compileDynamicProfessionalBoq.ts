@@ -2,13 +2,11 @@ import type {
   DynamicBoqValidation,
   DynamicProfessionalBoq,
   DynamicProfessionalBoqRow,
-  EstimatorKernelComplexity,
   EstimatorReasoningPlan,
 } from "../estimatorKernel/estimatorKernelTypes";
 import { expandInfrastructureBoqRows } from "../constructionPrimitives/expandInfrastructureBoqRows";
 import { validateInfrastructureBoqDepth } from "../constructionPrimitives/validateInfrastructureBoqDepth";
 import {
-  buildVisibleBoqRowName,
   toVisibleEstimateLabel,
   visibleEstimateLabelViolations,
   visibleObjectLabelForKey,
@@ -31,13 +29,6 @@ const forbiddenStandalone = new Set([
   "строительные работы",
   "бетонные работы",
 ]);
-
-function minimumRows(complexity: EstimatorKernelComplexity): number {
-  if (complexity === "infrastructure") return 45;
-  if (complexity === "complex") return 30;
-  if (complexity === "medium") return 18;
-  return 12;
-}
 
 function normalizeDynamicRowName(name: string): string {
   if (name.toLocaleLowerCase("ru-RU") === "листы гкл") return "Листы ГКЛ";
@@ -97,39 +88,17 @@ const USER_VISIBLE_OBJECT_LABELS_RU: Record<string, string> = {
   greenhouse_climate_control_system: "\u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u043a\u0430 \u043c\u0438\u043a\u0440\u043e\u043a\u043b\u0438\u043c\u0430\u0442\u0430 \u0442\u0435\u043f\u043b\u0438\u0446",
   water_well: "\u0441\u043a\u0432\u0430\u0436\u0438\u043d\u0430",
   smoke_extraction_system: "\u0441\u0438\u0441\u0442\u0435\u043c\u0430 \u0434\u044b\u043c\u043e\u0443\u0434\u0430\u043b\u0435\u043d\u0438\u044f",
+  steel_structure: "металлоконструкции",
   waterproofing_surface: "\u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446\u0438\u044f",
 };
 
 function userVisibleObjectLabel(plan: EstimatorReasoningPlan): string {
+  if (plan.workKey === "drywall_ceiling_preparation") return "подготовка потолка из ГКЛ";
   const openWorldLabelPrefix = "open_world_label:";
   if (plan.semanticFrame.materialSystem?.startsWith(openWorldLabelPrefix)) {
     return plan.semanticFrame.materialSystem.slice(openWorldLabelPrefix.length);
   }
   return USER_VISIBLE_OBJECT_LABELS_RU[plan.semanticFrame.object] ?? visibleObjectLabelForKey(plan.semanticFrame.object);
-}
-
-function visibleGenericRowContext(plan: EstimatorReasoningPlan): {
-  objectKey?: string;
-  domainKey: string;
-  operationKey: string;
-} {
-  return {
-    objectKey: plan.semanticFrame.object === "metal_canopy" ? undefined : plan.semanticFrame.object,
-    domainKey: plan.semanticFrame.domain,
-    operationKey: plan.semanticFrame.operation,
-  };
-}
-
-function visibleGenericObjectLabel(plan: EstimatorReasoningPlan): string {
-  const context = visibleGenericRowContext(plan);
-  return visibleObjectLabelForKey(context.objectKey ?? context.domainKey);
-}
-
-function visibleFastenersRowName(plan: EstimatorReasoningPlan): string {
-  return toVisibleEstimateLabel({
-    label: `\u041a\u0440\u0435\u043f\u0451\u0436 \u0438 \u043c\u043e\u043d\u0442\u0430\u0436\u043d\u044b\u0435 \u0440\u0430\u0441\u0445\u043e\u0434\u043d\u0438\u043a\u0438: ${visibleGenericObjectLabel(plan)}`,
-    sectionType: "materials",
-  });
 }
 
 function buildFallbackObjectSpecificRows(plan: EstimatorReasoningPlan, quantity: number): DynamicProfessionalBoqRow[] {
@@ -457,7 +426,8 @@ function buildCanopyRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRo
     row("materials", "gutter", "водосток", "linear_m", Math.round(Math.sqrt(area) * 2 * 100) / 100, 650, "gutter"),
     row("materials", "welding_materials", "\u0441\u0432\u0430\u0440\u043e\u0447\u043d\u044b\u0435 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b", "set", 1, Math.round(steelKg * 18), "welding"),
     row("materials", "primer", "антикоррозионная грунтовка", "kg", Math.round(steelKg * 0.08 * 100) / 100, 240, "anticorrosion_primer"),
-    row("labor", "frame_install", "монтаж металлокаркаса", "kg", steelKg, 85),
+    row("labor", "frame_install", "сборка и выверка металлокаркаса", "kg", steelKg, 45),
+    row("labor", "welding_frame_connections", "сварка соединений металлокаркаса навеса", "kg", steelKg, 40),
     row("labor", "columns_install", "\u043c\u043e\u043d\u0442\u0430\u0436 \u0441\u0442\u043e\u0435\u043a", "pcs", columns, 1800),
     row("labor", "trusses_install", "\u043c\u043e\u043d\u0442\u0430\u0436 \u0444\u0435\u0440\u043c / \u0431\u0430\u043b\u043e\u043a", "kg", Math.round(steelKg * 0.38 * 100) / 100, 42),
     row("labor", "purlins_install", "\u043c\u043e\u043d\u0442\u0430\u0436 \u043f\u0440\u043e\u0433\u043e\u043d\u043e\u0432", "linear_m", Math.round(Math.sqrt(area) * 7 * 100) / 100, 180),
@@ -1440,6 +1410,310 @@ function buildFenceSystemRows(plan: EstimatorReasoningPlan): DynamicProfessional
   ];
 }
 
+function buildSteelStructureRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
+  const areaM2 = Math.max(1, plan.quantities.areaM2 ?? plan.quantities.lengthM ?? 1);
+  const steelKg = round2(areaM2 * 35);
+  const connectionBolts = Math.max(4, Math.ceil(areaM2 * 4));
+  const weldingConsumablesKg = Math.max(1, round2(steelKg * 0.015));
+  const primerKg = Math.max(1, round2(steelKg * 0.012));
+  const craneShifts = Math.max(1, Math.ceil(steelKg / 3500));
+  const weldingShifts = Math.max(1, Math.ceil(steelKg / 1000));
+  const accessShifts = Math.max(1, Math.ceil(areaM2 / 100));
+  const deliveryTrips = Math.max(1, Math.ceil(steelKg / 10000));
+
+  return [
+    row("materials", "structural_steel", "Стальной прокат по КМ/КМД: балки, колонны, связи и фасонные пластины", "kg", steelKg, 145, "structural_steel"),
+    row("materials", "structural_bolts_anchors", "Высокопрочные болты с гайками и шайбами, анкеры по узлам КМД", "pcs", connectionBolts, 190, "structural_bolts_anchors"),
+    row("materials", "welding_consumables", "Сварочные материалы: проволока или электроды и защитный газ по утверждённой технологии сварки", "kg", weldingConsumablesKg, 310, "structural_welding_consumables"),
+    row("materials", "anticorrosion_primer", "Антикоррозионный грунт для мест сварки, реза и повреждений заводского покрытия", "kg", primerKg, 420, "structural_anticorrosion_primer"),
+    row("labor", "steel_control_survey", "Контрольный обмер, проверка осей, отметок и опорных поверхностей по КМ/КМД", "set", 1, 8500),
+    row("labor", "steel_incoming_inspection", "Входной контроль монтажных марок, сертификатов и геометрии металлоконструкций", "kg", steelKg, 8),
+    row("labor", "steel_preassembly", "Предварительная сборка монтажных элементов металлоконструкций", "kg", steelKg, 42),
+    row("labor", "steel_welding", "Сборка и сварка металлоконструкций по монтажным маркам и технологии сварки", "kg", steelKg, 78),
+    row("labor", "steel_bolted_connections", "Сборка болтовых соединений с контролируемой затяжкой", "pcs", connectionBolts, 85),
+    row("labor", "steel_erection", "Подъём, монтаж и временное закрепление металлоконструкций", "kg", steelKg, 95),
+    row("labor", "steel_alignment", "Выверка положения и окончательное закрепление металлоконструкций", "kg", steelKg, 36),
+    row("labor", "steel_weld_inspection", "Визуально-измерительный контроль монтажных сварных соединений", "set", 1, 12500),
+    row("labor", "steel_coating_repair", "Окраска металла: очистка и восстановление антикоррозионного покрытия монтажных соединений", "kg", steelKg, 24),
+    row("equipment", "steel_mobile_crane", "Автокран требуемой грузоподъёмности и вылета стрелы для монтажа металлоконструкций", "shift", craneShifts, 28000),
+    row("equipment", "steel_welding_station", "Сварочный аппарат, кабели и газовое оборудование для монтажной сварки", "shift", weldingShifts, 6800),
+    row("equipment", "steel_aerial_platform", "Коленчатый подъёмник с ограждённой рабочей платформой для соединений на высоте", "shift", accessShifts, 22000),
+    row("equipment", "steel_torque_tool", "Калиброванный динамометрический инструмент для затяжки болтов", "set", 1, 4800),
+    row("equipment", "steel_weld_inspection_tools", "Комплект приборов визуально-измерительного контроля сварных соединений", "set", 1, 5200),
+    row("delivery", "steel_long_load_delivery", "Доставка монтажных марок металлоконструкций длинномерным транспортом", "trip", deliveryTrips, 12500),
+    row("delivery", "steel_crane_unloading", "Разгрузка и раскладка монтажных элементов автокраном", "shift", craneShifts, 18000),
+    row("delivery", "steel_packaging_waste_removal", "Вывоз транспортной упаковки и обрезков металла после монтажа", "trip", 1, 5200),
+  ];
+}
+
+type TechnologySupplementSpec = {
+  sectionType: DynamicProfessionalBoqRow["sectionType"];
+  code: string;
+  name: string;
+  unit: string;
+  quantity: "basis" | "fixed" | "shift" | "trip";
+  factor?: number;
+  unitPrice: number;
+  materialKey?: string;
+};
+
+const technology = (
+  sectionType: TechnologySupplementSpec["sectionType"],
+  code: string,
+  name: string,
+  unit: string,
+  quantity: TechnologySupplementSpec["quantity"],
+  unitPrice: number,
+  materialKey?: string,
+  factor?: number,
+): TechnologySupplementSpec => ({ sectionType, code, name, unit, quantity, unitPrice, materialKey, factor });
+
+const DOMAIN_TECHNOLOGY_SUPPLEMENTS: Readonly<Record<string, readonly TechnologySupplementSpec[]>> = {
+  acoustic_panel_installation: [
+    technology("materials", "acoustic_substrate_anchors", "Анкеры и крепёж подсистемы акустических панелей по материалу основания", "pcs", "basis", 48, "acoustic_substrate_anchors", 2.5),
+    technology("materials", "acoustic_absorbent_backing", "Звукопоглощающий минераловатный слой за акустическими панелями", "sq_m", "basis", 780, "acoustic_absorbent_backing", 1.05),
+    technology("materials", "acoustic_perimeter_profile", "Периметральный профиль и доборные элементы системы акустических панелей", "linear_m", "basis", 310, "acoustic_perimeter_profile", 0.42),
+    technology("materials", "acoustic_joint_sealant", "Акустический герметик для примыканий и проходок облицовки", "pcs", "basis", 420, "acoustic_joint_sealant", 0.025),
+    technology("materials", "acoustic_finish_repair_kit", "Комплект восстановления лицевого покрытия кромок после подрезки панелей", "set", "fixed", 2400, "acoustic_finish_repair_kit"),
+    technology("labor", "acoustic_substrate_acceptance", "Проверка ровности, прочности и несущей способности основания под подсистему", "sq_m", "basis", 68),
+    technology("labor", "acoustic_dust_controlled_drilling", "Сверление отверстий под анкеры с локальным пылеудалением", "pcs", "basis", 92, undefined, 2.5),
+    technology("labor", "acoustic_panel_cutouts", "Раскрой акустических панелей и обработка отверстий вокруг инженерных проходок", "sq_m", "basis", 145),
+    technology("labor", "acoustic_vibration_decoupling", "Установка виброразвязывающих прокладок и отделение подсистемы от примыканий", "sq_m", "basis", 85),
+    technology("labor", "acoustic_finish_acceptance", "Контроль шага, плоскости, раскрытия стыков и качества лицевой поверхности панелей", "sq_m", "basis", 64),
+  ],
+  fire_alarm_installation: [
+    technology("materials", "fire_alarm_junction_boxes", "Огнестойкие распределительные коробки с клеммами для шлейфов АПС", "pcs", "basis", 390, "fire_alarm_junction_boxes", 0.025),
+    technology("materials", "fire_alarm_line_isolators", "Изоляторы короткого замыкания адресных линий пожарной сигнализации", "pcs", "basis", 1450, "fire_alarm_line_isolators", 0.0125),
+    technology("materials", "fire_alarm_penetration_firestop", "Сертифицированная огнезаделка проходок кабелей пожарной сигнализации", "set", "basis", 1850, "fire_alarm_penetration_firestop", 0.01),
+    technology("materials", "fire_alarm_durable_marking", "Долговечные бирки и маркировочные элементы кабелей, шлейфов и устройств АПС", "set", "basis", 45, "fire_alarm_durable_marking", 0.08),
+    technology("materials", "fire_alarm_backup_batteries", "Аккумуляторные батареи резервного питания прибора пожарной сигнализации", "pcs", "fixed", 3200, "fire_alarm_backup_batteries", 2),
+    technology("labor", "fire_alarm_loop_survey", "Обследование трасс и исполнительная привязка топологии шлейфов АПС", "sq_m", "basis", 32),
+    technology("labor", "fire_alarm_panel_termination", "Установка прибора АПС, блоков питания и оконцевание кабельных линий", "set", "fixed", 9800),
+    technology("labor", "fire_alarm_line_measurements", "Измерение сопротивления изоляции и целостности огнестойких кабельных линий", "set", "fixed", 6500),
+    technology("labor", "fire_alarm_scenario_programming", "Программирование зон, адресов и алгоритмов управления пожарной автоматикой", "set", "fixed", 12500),
+    technology("labor", "fire_alarm_integrated_test", "Документированное комплексное испытание извещателей, оповещения и управляющих сигналов", "set", "fixed", 14800),
+  ],
+  cold_room_installation: [
+    technology("materials", "cold_room_wall_panels", "Сэндвич-панели стен холодильной камеры с замковым соединением", "sq_m", "basis", 2850, "cold_room_wall_panels", 2.2),
+    technology("materials", "cold_room_ceiling_panels", "Сэндвич-панели потолка холодильной камеры с подвесной системой", "sq_m", "basis", 3100, "cold_room_ceiling_panels", 1.05),
+    technology("materials", "cold_room_floor_insulation", "Теплоизоляционные плиты пола холодильной камеры расчётной толщины", "sq_m", "basis", 1650, "cold_room_floor_insulation", 1.05),
+    technology("materials", "cold_room_vapor_barrier", "Пароизоляционная мембрана пола и примыканий холодильной камеры", "sq_m", "basis", 280, "cold_room_vapor_barrier", 1.15),
+    technology("materials", "cold_room_sanitary_profiles", "Санитарные угловые и плинтусные профили с фасонными элементами", "linear_m", "basis", 420, "cold_room_sanitary_profiles", 0.65),
+    technology("materials", "cold_room_panel_sealant", "Низкотемпературный герметик замков и примыканий сэндвич-панелей", "pcs", "basis", 460, "cold_room_panel_sealant", 0.12),
+    technology("materials", "cold_room_suspension_fasteners", "Подвесы, резьбовые тяги и анкеры потолочных панелей по проектной схеме", "pcs", "basis", 980, "cold_room_suspension_fasteners", 0.05),
+    technology("materials", "cold_room_insulated_door", "Холодильная дверь с рамой, обогревом контура и фурнитурой", "set", "fixed", 118000, "cold_room_insulated_door"),
+    technology("materials", "cold_room_evaporator", "Воздухоохладитель холодильной камеры с поддоном и системой оттайки", "set", "fixed", 185000, "cold_room_evaporator"),
+    technology("materials", "cold_room_condensing_unit", "Компрессорно-конденсаторный агрегат расчётной холодопроизводительности", "set", "fixed", 265000, "cold_room_condensing_unit"),
+    technology("materials", "cold_room_copper_refrigerant_pipe", "Медные холодильные трубопроводы жидкостной и газовой линий", "linear_m", "basis", 1850, "cold_room_copper_refrigerant_pipe", 0.8),
+    technology("materials", "cold_room_pipe_insulation", "Каучуковая теплоизоляция холодильных трубопроводов с паронепроницаемыми швами", "linear_m", "basis", 760, "cold_room_pipe_insulation", 0.8),
+    technology("materials", "cold_room_condensate_drain", "Трубопровод отвода конденсата с сифоном, уклоном и теплоизоляцией", "linear_m", "basis", 520, "cold_room_condensate_drain", 0.35),
+    technology("labor", "cold_room_base_acceptance", "Проверка геометрии, ровности и несущей способности основания холодильной камеры", "sq_m", "basis", 95),
+    technology("labor", "cold_room_floor_envelope", "Монтаж пароизоляции, теплоизоляции и герметичного контура пола", "sq_m", "basis", 520),
+    technology("labor", "cold_room_panel_assembly", "Сборка стеновых и потолочных сэндвич-панелей с герметизацией замков", "sq_m", "basis", 760, undefined, 3.25),
+    technology("labor", "cold_room_door_install", "Монтаж и регулировка холодильной двери, рамы и обогрева контура", "set", "fixed", 28500),
+    technology("labor", "cold_room_refrigeration_pipework", "Монтаж, пайка под азотом и теплоизоляция холодильных трубопроводов", "linear_m", "basis", 1250, undefined, 0.8),
+    technology("labor", "cold_room_pressure_vacuum_test", "Опрессовка азотом, проверка герметичности и вакуумирование холодильного контура", "set", "fixed", 26000),
+    technology("labor", "cold_room_refrigerant_charge", "Заправка хладагентом по массе и настройка рабочих параметров установки", "set", "fixed", 18500),
+    technology("labor", "cold_room_temperature_mapping", "Пусконаладка и документированная проверка температурного режима камеры", "set", "fixed", 32000),
+    technology("equipment", "cold_room_service_station", "Вакуумный насос, азотная станция, манометрический коллектор и весы хладагента", "shift", "shift", 12500),
+    technology("equipment", "cold_room_panel_lift", "Подъёмник сэндвич-панелей для безопасного монтажа потолочного покрытия камеры", "shift", "shift", 9800),
+  ],
+  dock_leveler_installation: [
+    technology("materials", "dock_leveler_anchor_set", "Анкеры крепления рамы доклевеллера к закладным приямка", "pcs", "fixed", 18500, "dock_leveler_anchor_set", 12),
+    technology("materials", "dock_leveler_nonshrink_grout", "Безусадочный подливочный состав под опорные зоны рамы доклевеллера", "kg", "fixed", 135, "dock_leveler_nonshrink_grout", 80),
+    technology("materials", "dock_leveler_edge_angle", "Стальной обрамляющий уголок приямка с приварными соединителями", "linear_m", "fixed", 1450, "dock_leveler_edge_angle", 12),
+    technology("materials", "dock_leveler_bumpers", "Резиновые отбойники дока с крепёжными пластинами", "pcs", "fixed", 14500, "dock_leveler_bumpers", 2),
+    technology("materials", "dock_leveler_hydraulic_oil", "Гидравлическое масло по паспорту станции доклевеллера", "l", "fixed", 680, "dock_leveler_hydraulic_oil", 20),
+    technology("materials", "dock_leveler_safety_marking", "Сигнальная разметка и предупреждающие знаки рабочей зоны доклевеллера", "set", "fixed", 4200, "dock_leveler_safety_marking"),
+    technology("labor", "dock_leveler_delivery_inspection", "Входной контроль комплектности и отсутствия транспортных повреждений доклевеллера", "set", "fixed", 4500),
+    technology("labor", "dock_leveler_frame_setting", "Установка несущей рамы в приямок, выверка отметок и временное закрепление", "set", "fixed", 22500),
+    technology("labor", "dock_leveler_frame_welding", "Сварка рамы доклевеллера с закладными и восстановление покрытия швов", "set", "fixed", 18500),
+    technology("labor", "dock_leveler_hydraulic_connection", "Монтаж гидроцилиндров, рукавов и подключение гидравлической станции", "set", "fixed", 16800),
+    technology("labor", "dock_leveler_control_connection", "Монтаж шкафа управления, датчиков безопасности и электрических подключений", "set", "fixed", 19500),
+    technology("labor", "dock_leveler_load_test", "Циклическое испытание доклевеллера и проверка под расчётной нагрузкой", "set", "fixed", 24000),
+  ],
+  smoke_extraction_system: [
+    technology("materials", "smoke_duct_flange_seal", "Противопожарный герметик и уплотнение фланцев воздуховодов дымоудаления", "set", "basis", 950, "smoke_duct_flange_seal", 0.025),
+    technology("materials", "smoke_duct_supports", "Подвесы, траверсы и анкеры воздуховодов дымоудаления по проектной системе", "pcs", "basis", 780, "smoke_duct_supports", 0.05),
+    technology("materials", "smoke_flexible_connector", "Огнестойкие гибкие вставки вентиляторов дымоудаления", "pcs", "fixed", 12500, "smoke_flexible_connector", 2),
+    technology("materials", "smoke_duct_fire_protection", "Проектная огнезащитная облицовка воздуховодов дымоудаления", "sq_m", "basis", 2350, "smoke_duct_fire_protection"),
+    technology("labor", "smoke_duct_tightness_test", "Проверка плотности и герметичности сети воздуховодов дымоудаления", "set", "fixed", 18500),
+    technology("labor", "smoke_airflow_balancing", "Измерение и балансировка расходов воздуха в расчётных режимах дымоудаления", "set", "fixed", 28000),
+    technology("labor", "smoke_fire_scenario_test", "Комплексное испытание сценариев пуска вентиляторов, клапанов и подпора воздуха", "set", "fixed", 36000),
+    technology("labor", "smoke_as_built_documentation", "Исполнительные схемы, акты скрытых работ и протоколы испытаний дымоудаления", "set", "fixed", 22000),
+  ],
+  bms_automation_installation: [
+    technology("materials", "bms_io_modules", "Модули дискретных и аналоговых входов-выходов BMS по ведомости точек", "pcs", "basis", 5600, "bms_io_modules", 0.025),
+    technology("materials", "bms_power_supplies", "Блоки питания и резервирования контроллеров и полевых устройств BMS", "pcs", "basis", 3800, "bms_power_supplies", 0.0125),
+    technology("materials", "bms_protocol_gateways", "Шлюзы BACnet/Modbus для подключения инженерного оборудования к BMS", "pcs", "fixed", 32000, "bms_protocol_gateways", 2),
+    technology("materials", "bms_terminal_relays", "Промежуточные реле, клеммы, предохранители и маркировка шкафов автоматики", "set", "basis", 1850, "bms_terminal_relays", 0.025),
+    technology("labor", "bms_io_point_test", "Поадресная проверка сигналов каждого входа-выхода и направления действия исполнительных механизмов", "set", "basis", 780, undefined, 0.1),
+    technology("labor", "bms_network_configuration", "Настройка адресации, сетевых параметров и обмена BACnet/Modbus", "set", "fixed", 18500),
+    technology("labor", "bms_graphics_trends", "Настройка диспетчерских экранов, трендов, аварий и прав доступа BMS", "set", "fixed", 32000),
+    technology("labor", "bms_functional_performance_test", "Функциональное испытание алгоритмов BMS совместно с подключёнными инженерными системами", "set", "fixed", 38000),
+  ],
+  industrial_equipment_installation: [
+    technology("materials", "industrial_shim_packs", "Калиброванные подкладки и регулировочные пакеты под опорные плиты оборудования", "set", "fixed", 12500, "industrial_shim_packs"),
+    technology("materials", "industrial_nonshrink_grout", "Безусадочная подливочная смесь под опорные плиты промышленного оборудования", "kg", "basis", 145, "industrial_nonshrink_grout", 20),
+    technology("materials", "industrial_chemical_anchors", "Химические анкеры и шпильки для дополнительного крепления оборудования", "pcs", "basis", 780, "industrial_chemical_anchors", 4),
+    technology("materials", "industrial_flexible_couplings", "Гибкие вставки и компенсаторы технологических подключений оборудования", "set", "fixed", 18500, "industrial_flexible_couplings"),
+    technology("materials", "industrial_grounding_set", "Комплект защитного заземления корпуса промышленного оборудования", "set", "fixed", 12800, "industrial_grounding_set"),
+    technology("materials", "industrial_guarding", "Защитные ограждения вращающихся и движущихся частей оборудования", "set", "fixed", 42000, "industrial_guarding"),
+    technology("materials", "industrial_lubricants", "Пусковые масла и смазочные материалы по паспорту изготовителя", "set", "fixed", 16500, "industrial_lubricants"),
+    technology("materials", "industrial_alignment_markers", "Контрольные реперы, марки и пластины для выверки оборудования", "set", "fixed", 6800, "industrial_alignment_markers"),
+    technology("materials", "industrial_fastener_locking", "Стопорящие элементы и состав фиксации резьбовых соединений", "set", "fixed", 5400, "industrial_fastener_locking"),
+    technology("materials", "industrial_connection_seals", "Прокладки и уплотнения технологических присоединений оборудования", "set", "fixed", 9800, "industrial_connection_seals"),
+    technology("labor", "industrial_receiving_inspection", "Входной контроль комплектности, консервации и транспортных повреждений оборудования", "set", "fixed", 12500),
+    technology("labor", "industrial_rigging_plan", "Разработка и целевой инструктаж по плану строповки и перемещения оборудования", "set", "fixed", 18500),
+    technology("labor", "industrial_unpacking_preservation", "Распаковка, расконсервация и сортировка монтажных комплектов оборудования", "set", "fixed", 14500),
+    technology("labor", "industrial_foundation_acceptance", "Приёмка фундамента: оси, отметки, размеры, прочность и положение анкеров", "set", "fixed", 16500),
+    technology("labor", "industrial_setting_on_foundation", "Установка оборудования на фундамент с временной фиксацией", "t", "basis", 18500),
+    technology("labor", "industrial_precision_alignment", "Точная выверка оборудования по осям, уровню и взаимному положению агрегатов", "set", "fixed", 28000),
+    technology("labor", "industrial_grouting", "Подливка опорных плит безусадочным составом и выдерживание до набора прочности", "set", "fixed", 22000),
+    technology("labor", "industrial_anchor_torque", "Контролируемая затяжка анкерных и фланцевых соединений с протоколом", "set", "fixed", 16800),
+    technology("labor", "industrial_utility_hookup", "Подключение предусмотренных силовых и технологических коммуникаций в границах оборудования", "set", "fixed", 32000),
+    technology("labor", "industrial_dry_and_load_test", "Холостой пуск, проверка защит и испытание оборудования под рабочей нагрузкой", "set", "fixed", 45000),
+    technology("equipment", "industrial_mobile_crane", "Автокран расчётной грузоподъёмности и вылета для разгрузки и установки оборудования", "shift", "shift", 32000),
+    technology("equipment", "industrial_rigging_tools", "Такелажные домкраты, роликовые платформы, стропы и траверсы подтверждённой грузоподъёмности", "shift", "shift", 14500),
+    technology("equipment", "industrial_precision_tools", "Лазерный центровщик, нивелир и индикаторы для точной выверки агрегатов", "shift", "shift", 18500),
+    technology("equipment", "industrial_torque_tools", "Калиброванный гидравлический или динамометрический инструмент для затяжки соединений", "shift", "shift", 16500),
+    technology("delivery", "industrial_oversize_delivery", "Доставка промышленного оборудования транспортом требуемой грузоподъёмности с креплением груза", "trip", "trip", 48000),
+    technology("delivery", "industrial_packaging_removal", "Погрузка и вывоз транспортной упаковки и материалов расконсервации", "trip", "fixed", 8500),
+  ],
+};
+
+const INHERENTLY_ELEVATED_TECHNOLOGY_WORKS = new Set([
+  "acoustic_panel_installation",
+  "fire_alarm_installation",
+  "cold_room_installation",
+  "smoke_extraction_system",
+  "bms_automation_installation",
+]);
+
+function elevatedTechnologyRows(plan: EstimatorReasoningPlan, basis: number): DynamicProfessionalBoqRow[] {
+  if (!INHERENTLY_ELEVATED_TECHNOLOGY_WORKS.has(plan.workKey)) return [];
+  const shifts = Math.max(1, Math.ceil(basis / 25));
+  const prefix = plan.workKey;
+  return [
+    row("equipment", `${prefix}_mobile_access_tower`, "Передвижная алюминиевая вышка-тура с настилом, ограждением и опорами-стабилизаторами", "shift", shifts, 4800),
+    row("labor", `${prefix}_access_tower_operations`, "Сборка, предсменный осмотр, перестановка и разборка передвижной вышки-туры", "shift", shifts, 3200),
+    row("delivery", `${prefix}_access_tower_delivery_return`, "Доставка на объект и возврат передвижной алюминиевой вышки-туры", "trip", 1, 4200),
+    row("equipment", `${prefix}_fall_protection`, "Комплект защиты от падения: страховочная привязь, строп с амортизатором, анкерная линия и каска", "set", 1, 6500),
+  ];
+}
+
+function buildDomainTechnologySupplementRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
+  const specs = DOMAIN_TECHNOLOGY_SUPPLEMENTS[plan.workKey] ?? [];
+  const basis = Math.max(
+    1,
+    plan.quantities.areaM2 ??
+      plan.quantities.lengthM ??
+      plan.quantities.massTon ??
+      plan.quantities.count ??
+      plan.quantities.powerKw ??
+      1,
+  );
+  const supplement = specs.map((spec) => {
+    const factor = spec.factor ?? 1;
+    const quantity = spec.quantity === "basis"
+      ? Math.max(0.01, round2(basis * factor))
+      : spec.quantity === "shift"
+        ? Math.max(1, Math.ceil(basis / 100) * factor)
+        : spec.quantity === "trip"
+          ? Math.max(1, Math.ceil(basis / 250) * factor)
+          : Math.max(1, factor);
+    return row(
+      spec.sectionType,
+      spec.code,
+      spec.name,
+      spec.unit,
+      quantity,
+      spec.unitPrice,
+      spec.sectionType === "materials" ? spec.materialKey ?? `${plan.workKey}_${spec.code}` : undefined,
+    );
+  });
+  return [...supplement, ...elevatedTechnologyRows(plan, basis)];
+}
+
+function buildDrywallCeilingPreparationRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
+  const areaM2 = Math.max(1, plan.quantities.areaM2 ?? 1);
+  const blocked = (
+    sectionType: DynamicProfessionalBoqRow["sectionType"],
+    code: string,
+    name: string,
+    unit: string,
+    blockerIds: string[],
+    materialKey?: string,
+  ): DynamicProfessionalBoqRow => ({
+    ...row(sectionType, code, name, unit, 0, 0, materialKey),
+    sourcePolicy: "manual_review",
+    includedInEstimate: false,
+    includedInProcurement: false,
+    optional: true,
+    editable: true,
+    parameterBlockerIds: blockerIds,
+  });
+
+  const rows = [
+    blocked("materials", "drywall_prepare_protection_cover", "Укрывная полиэтиленовая плёнка и защитный картон для подтверждённой площади оборудования и пола", "sq_m", ["protected_area_m2"], "drywall_work_area_protection"),
+    blocked("materials", "drywall_prepare_masking_tape", "Малярная лента для герметизации укрытий и защиты примыканий", "linear_m", ["protection_perimeter_m"], "drywall_masking_tape"),
+    blocked("materials", "drywall_prepare_waste_bags", "Прочные мешки для подтверждённого объёма пыли и отходов локального ремонта ГКЛ", "pcs", ["waste_bag_count"], "drywall_repair_waste_bags"),
+    blocked("materials", "drywall_prepare_primer", "Выбранная грунтовка, совместимая с картонной поверхностью ГКЛ", "kg", ["primer_product_reference", "primer_kg_per_m2", "primer_layer_count"], "drywall_compatible_primer"),
+    blocked("materials", "drywall_prepare_joint_compound", "Шпаклёвочная смесь для ремонта швов и локальных дефектов ГКЛ", "kg", ["repair_area_share_percent", "repair_compound_kg_per_repair_m2"], "drywall_joint_repair_compound"),
+    blocked("materials", "drywall_prepare_joint_tape", "Бумажная армирующая лента для ремонтируемых швов ГКЛ", "linear_m", ["repair_joint_length_m"], "drywall_paper_joint_tape"),
+    blocked("materials", "drywall_prepare_abrasive", "Абразивная сетка зернистостью P120–P180 для шлифования отремонтированных участков ГКЛ", "pcs", ["repair_area_share_percent", "abrasive_productivity_m2_per_item"], "drywall_abrasive_mesh"),
+    row("labor", "drywall_prepare_condition_survey", "Осмотр потолка из ГКЛ, простукивание и разметка трещин, отслоений и повреждённых швов", "sq_m", areaM2, 85),
+    blocked("labor", "drywall_prepare_room_protection", "Укрытие оборудования, пола, кабельных трасс и инженерных установок помещения", "sq_m", ["protected_area_m2"]),
+    row("labor", "drywall_prepare_surface_cleaning", "Очистка потолка из ГКЛ от пыли, слабых участков и загрязнений", "sq_m", areaM2, 120),
+    blocked("labor", "drywall_prepare_defect_opening", "Расшивка трещин и удаление непрочных участков шпаклёвки в местах локального ремонта", "linear_m", ["repair_joint_length_m"]),
+    blocked("labor", "drywall_prepare_joint_repair", "Локальный ремонт повреждений и швов ГКЛ шпаклёвочной смесью с бумажной лентой", "linear_m", ["repair_joint_length_m", "repair_area_share_percent"]),
+    blocked("labor", "drywall_prepare_sanding", "Шлифование и повторное обеспыливание отремонтированных участков потолка из ГКЛ", "sq_m", ["repair_area_share_percent"]),
+    blocked("labor", "drywall_prepare_primer_application", "Нанесение выбранной грунтовки на очищенную поверхность потолка из ГКЛ", "sq_m", ["primer_product_reference", "primer_layer_count"]),
+    row("labor", "drywall_prepare_readiness_control", "Контроль сухости, прочности и готовности потолка из ГКЛ к следующей отделочной операции", "sq_m", areaM2, 45),
+    blocked("labor", "drywall_prepare_access_operations", "Подготовка, проверка, перестановка и завершение работы с подтверждённым средством доступа", "shift", ["elevated_work_requirement_state", "access_system_type", "access_equipment_shift_count"]),
+    blocked("equipment", "drywall_prepare_dust_extractor", "Промышленный строительный пылесос класса пыли M с насадкой для потолка", "shift", ["dust_extractor_shift_count"]),
+    blocked("equipment", "drywall_prepare_access_equipment", "Подтверждённое средство доступа к рабочей зоне", "shift", ["elevated_work_requirement_state", "working_height_m", "access_environment", "access_system_type", "access_platform_height_m", "access_horizontal_reach_m", "access_route_clear_width_m", "access_base_load_capacity_kg_m2", "access_platform_load_kg", "access_restrictions", "access_supply_mode", "access_equipment_shift_count"]),
+    blocked("equipment", "drywall_prepare_fall_protection", "Подтверждённая система защиты от падения для принятой технологии работ", "set", ["fall_protection_requirement_state", "fall_protection_system_reference", "fall_protection_set_count", "height_worker_count"]),
+    blocked("equipment", "drywall_prepare_work_light", "Переносное рабочее освещение для контроля поверхности потолка", "shift", ["work_lighting_shift_count"]),
+    blocked("delivery", "drywall_prepare_material_delivery", "Доставка выбранных материалов на объект", "trip", ["material_delivery_trip_count"]),
+    blocked("delivery", "drywall_prepare_access_delivery", "Доставка подтверждённого средства доступа на объект", "trip", ["access_transport_pricing_mode", "access_delivery_trip_count"]),
+    blocked("delivery", "drywall_prepare_access_return", "Возврат подтверждённого средства доступа поставщику", "trip", ["access_transport_pricing_mode", "access_return_trip_count"]),
+    blocked("delivery", "drywall_prepare_waste_removal", "Вынос и вывоз подтверждённого объёма упаковки, пыли и отходов", "trip", ["waste_removal_trip_count"]),
+  ];
+  const formulas: Record<string, string> = {
+    drywall_prepare_protection_cover: "protected_area_m2",
+    drywall_prepare_masking_tape: "protection_perimeter_m",
+    drywall_prepare_waste_bags: "waste_bag_count",
+    drywall_prepare_primer: "area_m2 * primer_kg_per_m2 * primer_layer_count",
+    drywall_prepare_joint_compound: "area_m2 * repair_area_share_percent / 100 * repair_compound_kg_per_repair_m2",
+    drywall_prepare_joint_tape: "repair_joint_length_m",
+    drywall_prepare_abrasive: "ceil(area_m2 * repair_area_share_percent / 100 / abrasive_productivity_m2_per_item)",
+    drywall_prepare_condition_survey: "area_m2",
+    drywall_prepare_room_protection: "protected_area_m2",
+    drywall_prepare_surface_cleaning: "area_m2",
+    drywall_prepare_defect_opening: "repair_joint_length_m",
+    drywall_prepare_joint_repair: "repair_joint_length_m",
+    drywall_prepare_sanding: "area_m2 * repair_area_share_percent / 100",
+    drywall_prepare_primer_application: "area_m2 * primer_layer_count",
+    drywall_prepare_readiness_control: "area_m2",
+    drywall_prepare_access_operations: "access_equipment_shift_count",
+    drywall_prepare_dust_extractor: "dust_extractor_shift_count",
+    drywall_prepare_access_equipment: "access_equipment_shift_count",
+    drywall_prepare_fall_protection: "fall_protection_set_count",
+    drywall_prepare_work_light: "work_lighting_shift_count",
+    drywall_prepare_material_delivery: "material_delivery_trip_count",
+    drywall_prepare_access_delivery: "access_delivery_trip_count",
+    drywall_prepare_access_return: "access_return_trip_count",
+    drywall_prepare_waste_removal: "waste_removal_trip_count",
+  };
+  return rows.map((item) => ({
+    ...item,
+    formulaId: `drywall_ceiling_preparation_${item.code}_v1`,
+    quantityFormula: formulas[item.code],
+    calculationTrace: `${formulas[item.code]} = ${item.quantity} ${item.unit}`,
+  }));
+}
+
 function buildFallbackRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
   const quantity = plan.quantities.areaM2 ?? plan.quantities.lengthM ?? plan.quantities.count ?? plan.quantities.powerKw ?? plan.quantities.massTon ?? 1;
   const object = userVisibleObjectLabel(plan);
@@ -1459,7 +1733,7 @@ function buildFallbackRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoq
     if (/бордюр|водосток|прогон|плинтус|труб|кабел|трасс|перил|рельс|забор|огражден|лотк|канал|дренаж/.test(normalized)) return "linear_m";
     if (/двер|окн|стеклопакет|датчик|камера|радиатор|спринклер|панел|насос|котел|бойлер|ступен|розет|светильник|точк|колодц|клапан/.test(normalized)) return "pcs";
     if (sectionType === "equipment") return "set";
-    if (sectionType === "delivery") return "trip";
+    if (sectionType === "delivery") return fallbackUnit;
     return fallbackUnit;
   };
   const materialRows = plan.boqPlan.requiredMaterials.map((name, index) =>
@@ -1490,37 +1764,14 @@ function buildFallbackRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoq
     row("delivery", `logistics_${index + 1}`, name, unitFor(name, "delivery", index === 0 ? "trip" : "set"), 1, 4200 + index * 900),
   );
   const objectSpecificRows = buildFallbackObjectSpecificRows(plan, quantity);
-  const genericRowContext = visibleGenericRowContext(plan);
   return [
     row("labor", "survey", `обследование и обмер: ${object}`, "set", 1, 3500),
     row("labor", "layout", `разметка и технологическая привязка: ${object}`, "set", 1, 4500),
     ...materialRows,
     ...objectSpecificRows,
-    row(
-      "materials",
-      "profile_fasteners",
-      visibleFastenersRowName(plan),
-      "set",
-      1,
-      Math.round(quantity * 55),
-      `${plan.semanticFrame.object}_fasteners`,
-    ),
     ...laborRows,
     ...equipmentRows,
     ...logisticsRows,
-    row(
-      "materials",
-      "reserve",
-      buildVisibleBoqRowName({
-        sectionType: "materials",
-        ...genericRowContext,
-        index: 2,
-      }),
-      "set",
-      1,
-      Math.round(quantity * 80),
-      `${plan.semanticFrame.object}_reserve`,
-    ),
   ];
 }
 
@@ -1533,10 +1784,27 @@ function normalizedRequiredRowToken(value: string): string {
     .trim();
 }
 
-function requiredRowWords(value: string): string[] {
-  return normalizedRequiredRowToken(value)
+function requiredRowWordsFromNormalized(value: string): string[] {
+  return value
     .split(/[^\p{L}\p{N}]+/gu)
     .filter((word) => word.length >= 3);
+}
+
+type PreparedRequiredRowText = {
+  normalized: string;
+  words: string[];
+};
+
+function prepareRequiredRowText(value: string): PreparedRequiredRowText {
+  const normalized = normalizedRequiredRowToken(value);
+  return { normalized, words: requiredRowWordsFromNormalized(normalized) };
+}
+
+function prepareRequiredRowAlternatives(value: string): PreparedRequiredRowText[] {
+  return value
+    .split("/")
+    .map(prepareRequiredRowText)
+    .filter(({ normalized }) => normalized.length > 0);
 }
 
 function requiredWordMatchesVisibleWord(requiredWord: string, visibleWord: string): boolean {
@@ -1552,18 +1820,14 @@ function requiredWordMatchesVisibleWord(requiredWord: string, visibleWord: strin
     requiredWord.slice(0, sharedPrefixLength) === visibleWord.slice(0, sharedPrefixLength);
 }
 
-function requiredRowNameIsVisible(requiredName: string, visibleName: string): boolean {
-  const normalizedVisibleName = normalizedRequiredRowToken(visibleName);
-  const visibleWords = requiredRowWords(visibleName);
-  return requiredName
-    .split("/")
-    .map(normalizedRequiredRowToken)
-    .filter(Boolean)
-    .some((alternative) => {
-      if (normalizedVisibleName.includes(alternative)) return true;
-      const requiredWords = requiredRowWords(alternative);
-      return requiredWords.length > 0 && requiredWords.every((requiredWord) =>
-        visibleWords.some((visibleWord) => requiredWordMatchesVisibleWord(requiredWord, visibleWord))
+function preparedRequiredRowNameIsVisible(
+  requiredAlternatives: readonly PreparedRequiredRowText[],
+  visible: PreparedRequiredRowText,
+): boolean {
+  return requiredAlternatives.some((alternative) => {
+      if (visible.normalized.includes(alternative.normalized)) return true;
+      return alternative.words.length > 0 && alternative.words.every((requiredWord) =>
+        visible.words.some((visibleWord) => requiredWordMatchesVisibleWord(requiredWord, visibleWord))
       );
     });
 }
@@ -1587,11 +1851,13 @@ function ensureRequiredPlanRows(
   ];
 
   for (const requirement of requirements) {
+    const visibleRows = result
+      .filter((item) => item.sectionType === requirement.sectionType)
+      .map((item) => prepareRequiredRowText(item.name));
     for (const [requiredIndex, requiredName] of requirement.names.entries()) {
-      const alreadyVisible = result.some((item) =>
-        item.sectionType === requirement.sectionType &&
-        requiredRowNameIsVisible(requiredName, item.name),
-      );
+      const requiredAlternatives = prepareRequiredRowAlternatives(requiredName);
+      const alreadyVisible = visibleRows.some((visible) =>
+        preparedRequiredRowNameIsVisible(requiredAlternatives, visible));
       if (alreadyVisible) continue;
       const fallback = fallbackRows.find((item) =>
         item.sectionType === requirement.sectionType &&
@@ -1605,50 +1871,24 @@ function ensureRequiredPlanRows(
         suffix += 1;
       }
       existingCodes.add(code);
-      result.push({
+      const addedRow: DynamicProfessionalBoqRow = {
         ...fallback,
         code,
         name: requiredName.replace(/\bwarning\b/gi, "требуется уточнение"),
         rateKey: `dynamic_universal_${code}`,
-      });
+      };
+      result.push(addedRow);
+      visibleRows.push(prepareRequiredRowText(addedRow.name));
     }
-  }
-  return result;
-}
-
-function padRows(plan: EstimatorReasoningPlan, rows: DynamicProfessionalBoqRow[]): DynamicProfessionalBoqRow[] {
-  if (plan.workKey === "electrical_area_installation") {
-    return rows;
-  }
-  const result = [...rows];
-  const genericRowContext = visibleGenericRowContext(plan);
-  let index = 0;
-  while (result.length < minimumRows(plan.boqPlan.complexity)) {
-    const sectionType = index % 4 === 0 ? "labor" : index % 4 === 1 ? "materials" : index % 4 === 2 ? "equipment" : "delivery";
-    result.push(row(
-      sectionType,
-      `assurance_${index + 1}`,
-      buildVisibleBoqRowName({
-        sectionType,
-        ...genericRowContext,
-        index,
-      }),
-      "set",
-      1,
-      1200 + index * 120,
-      sectionType === "materials" ? `${plan.semanticFrame.object}_assurance` : undefined,
-    ));
-    index += 1;
   }
   return result;
 }
 
 export function validateDynamicProfessionalBoq(boq: DynamicProfessionalBoq): DynamicBoqValidation {
   const failures: string[] = [];
-  const minimum = boq.plan.workKey === "electrical_area_installation"
-    ? 1
-    : minimumRows(boq.plan.boqPlan.complexity);
-  if (boq.rows.length < minimum) failures.push(`row_depth:${boq.rows.length}/${minimum}`);
+  // R5.8: composition is admitted by the declared domain requirements below,
+  // never by manufacturing rows until a generic numeric quota is reached.
+  const minimum = 0;
   const requiredRows: {
     sectionType: DynamicProfessionalBoqRow["sectionType"];
     names: string[];
@@ -1659,13 +1899,15 @@ export function validateDynamicProfessionalBoq(boq: DynamicProfessionalBoq): Dyn
         { sectionType: "labor", names: boq.plan.boqPlan.requiredLabor },
         { sectionType: "equipment", names: boq.plan.boqPlan.requiredEquipmentOrWarnings },
         { sectionType: "delivery", names: boq.plan.boqPlan.requiredLogisticsOrWarnings },
-      ];
+  ];
   for (const requirement of requiredRows) {
+    const visibleRows = boq.rows
+      .filter((item) => item.sectionType === requirement.sectionType)
+      .map((item) => prepareRequiredRowText(item.name));
     requirement.names.forEach((requiredName, index) => {
-      const found = boq.rows.some((item) =>
-        item.sectionType === requirement.sectionType &&
-        requiredRowNameIsVisible(requiredName, item.name),
-      );
+      const requiredAlternatives = prepareRequiredRowAlternatives(requiredName);
+      const found = visibleRows.some((visible) =>
+        preparedRequiredRowNameIsVisible(requiredAlternatives, visible));
       if (!found) {
         failures.push(`required_plan_row_missing:${requirement.sectionType}:${index + 1}`);
       }
@@ -1701,6 +1943,8 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
                     object === "paving_stone" ? buildPavingStoneRows(plan) :
                       object === "roof_system" ? buildGableRoofRows(plan) :
                         object === "floor_covering" ? buildFloorCoveringRows(plan) :
+                          plan.workKey === "drywall_ceiling_preparation" ? buildDrywallCeilingPreparationRows(plan) :
+                          object === "steel_structure" ? buildSteelStructureRows(plan) :
                           object === "waterproofing_surface" && plan.semanticFrame.materialSystem === "roof_waterproofing_system" ? buildRoofWaterproofingRows(plan) :
                             object === "hydropower_turbine" ? buildHydropowerRows(plan) :
                               object === "industrial_floor" ? buildIndustrialFloorRows(plan) :
@@ -1711,13 +1955,16 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
   const expandedRows = plan.workKey === "electrical_area_installation"
     ? normBoundRows
     : expandInfrastructureBoqRows(plan, normBoundRows);
+  const technologyRows = buildDomainTechnologySupplementRows(plan)
+    .filter((candidate) => !expandedRows.some((existing) => existing.code === candidate.code));
+  const technologyCompleteRows = [...expandedRows, ...technologyRows];
   const rows = plan.workKey === "electrical_area_installation"
-    ? expandedRows
-    : ensureRequiredPlanRows(plan, expandedRows);
+    ? technologyCompleteRows
+    : ensureRequiredPlanRows(plan, technologyCompleteRows);
   const boq: DynamicProfessionalBoq = {
     compilerId: "DynamicProfessionalBoqCompiler",
     plan,
-    rows: padRows(plan, rows),
+    rows,
     assumptions: [
       "Смета предварительная и собрана из строительных примитивов, а не exact prompt шаблона.",
       "Цены являются ориентировочными configured reference до подтверждения catalog/source по региону.",

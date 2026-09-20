@@ -51,7 +51,8 @@ describe("R3.3 public plain-Russian and footer geometry", () => {
     const suggestions = source("src/features/requests/components/WorkTemplateSuggestions.tsx");
     const summaryCard = source("src/features/consumerRepair/RequestEstimateSummaryCard.tsx");
 
-    expect(suggestions).toContain("key={suggestion.workKey}");
+    expect(suggestions).toContain("keyExtractor={legacyWorkSuggestionKey}");
+    expect(suggestions).toMatch(/function legacyWorkSuggestionKey[\s\S]*return suggestion\.workKey;/u);
     expect(suggestions).toContain("onSelectLegacyWorkSuggestion?.(suggestion)");
     expect(suggestions).not.toContain("{suggestion.workKey}</Text>");
     expect(suggestions).not.toContain("work-suggestion-catalog-");

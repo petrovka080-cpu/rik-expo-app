@@ -93,12 +93,26 @@ describe("Asphalt V4 Phase 1 scenario matrix", () => {
       raw_text: "Устройство асфальтобетонного покрытия площадью 500 м², один слой 50 мм",
     });
     const partialRowIds = partial.compiled_rows.map((row) => row.definition.row_id);
+    expect(partial.preliminary_assembly_policy.profile_id).toBe("surfacing_on_prepared_base");
     expect(partialRowIds).toContain("asphalt_layer_1_paving");
     expect(partialRowIds).toContain("asphalt_layer_1_material");
     expect(partialRowIds).not.toContain("asphalt_layer_2_material");
+    expect(partialRowIds).not.toEqual(expect.arrayContaining([
+      "topsoil_stripping",
+      "subgrade_excavation",
+      "sand_material",
+      "crushed_layer_1_material",
+    ]));
     expect(partial.compiled_rows.every((row) => row.quantity > 0)).toBe(true);
     expect(partial.price_coverage.total_amount).toBeNull();
     expect(partial.passport.assumptions_ru.length).toBeGreaterThan(0);
+
+    const fullRoad = compileAsphaltProfessionalEstimateV4({
+      raw_text: "Полное строительство автомобильной дороги площадью 500 м²",
+    });
+    expect(fullRoad.preliminary_assembly_policy.profile_id).toBe("new_full_road_infrastructure");
+    expect(fullRoad.compiled_rows.map((row) => row.definition.row_id))
+      .toEqual(expect.arrayContaining(["topsoil_stripping", "subgrade_excavation", "sand_material"]));
   });
 
   test("converts millimetres, centimetres and metres through one unit registry", () => {

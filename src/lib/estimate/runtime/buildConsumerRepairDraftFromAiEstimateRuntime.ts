@@ -21,6 +21,7 @@ import {
   buildAsphaltRelatedExactProductionDraftV4,
   isExactAsphaltRelatedConsumerDraftV4 as isExactAsphaltRelatedProductionDraftV4,
 } from "../v4/asphalt/asphaltRelatedProductionBindingV4";
+import { buildProfessionalTemplateDraftFromPrompt } from "../buildProfessionalBoqDraft";
 
 const CAPITAL_RENOVATION_WORK_KEY = "apartment_capital_renovation";
 const CAPITAL_RENOVATION_TEMPLATE_ID = "capital_renovation_professional_calculator_v1";
@@ -329,15 +330,33 @@ export function buildConsumerRepairDraftFromAiEstimateRuntime(
       currency: input.currency,
       countryCode: input.countryCode,
       paramOverrides: input.paramOverrides,
-    });
+  });
   if (exactAsphaltRelated && exactAsphaltRelated.readiness !== "CALCULATION_READY") {
     return {
       ...exactAsphaltRelated.draft,
       canonicalBackendRequired: true,
     };
   }
-  return projectConsumerRepairRuntimeRevision(
+  const projected = projectConsumerRepairRuntimeRevision(
     createConsumerRepairRuntimeRevision(input, exactAsphaltRelated?.draft),
+    input,
+  );
+  if (projected) return projected;
+
+  // The request adapter uses this same source-backed exact template compiler.
+  // Bind its result to an immutable runtime revision when the generic
+  // classifier has no rows instead of invoking another broad work resolver.
+  const exactProfessionalTemplate = buildProfessionalTemplateDraftFromPrompt({
+    prompt: input.rawInput,
+    currency: input.currency,
+  });
+  const selectedWorkKey = exactProfessionalTemplate?.selectedWork?.selectedWorkKey?.trim();
+  if (
+    !exactProfessionalTemplate ||
+    (input.selectedWorkKey?.trim() && input.selectedWorkKey.trim() !== selectedWorkKey)
+  ) return null;
+  return projectConsumerRepairRuntimeRevision(
+    createConsumerRepairRuntimeRevision(input, exactProfessionalTemplate),
     input,
   );
 }

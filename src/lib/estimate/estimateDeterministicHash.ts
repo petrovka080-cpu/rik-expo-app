@@ -111,20 +111,16 @@ export function estimateDeterministicHash(value: unknown): string {
   const textLength = canonicalEstimateJsonLength(value);
   let h1 = 0xdeadbeef ^ textLength;
   let h2 = 0x41c6ce57 ^ textLength;
-  let buffered = "";
-  const flush = () => {
-    for (let index = 0; index < buffered.length; index += 1) {
-      const code = buffered.charCodeAt(index);
+  forEachCanonicalEstimateJsonChunk(value, (chunk) => {
+    // Hashing is byte-order-equivalent to the former 64 KiB buffer. Feeding
+    // each already-bounded canonical chunk directly avoids repeatedly
+    // concatenating short strings into a large temporary rope.
+    for (let index = 0; index < chunk.length; index += 1) {
+      const code = chunk.charCodeAt(index);
       h1 = Math.imul(h1 ^ code, 2654435761);
       h2 = Math.imul(h2 ^ code, 1597334677);
     }
-    buffered = "";
-  };
-  forEachCanonicalEstimateJsonChunk(value, (chunk) => {
-    buffered += chunk;
-    if (buffered.length >= 64 * 1024) flush();
   });
-  if (buffered.length > 0) flush();
   h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
   h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
   const high = (h2 >>> 0).toString(16).padStart(8, "0");

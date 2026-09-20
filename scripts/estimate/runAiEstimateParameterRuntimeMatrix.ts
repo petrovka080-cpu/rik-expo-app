@@ -50,6 +50,14 @@ type RuntimeCaseResult = {
   domain_resolution_readiness?: DomainResolutionReadiness | null;
   parameter_edit_applicable?: boolean;
   reason?: string;
+  revision_status?: EstimateDraftRevision["status"];
+  revision_failure_reason?: string | null;
+  edited_param_key?: string;
+  unreported_changed_rows?: Array<{
+    row_id: string;
+    before_quantity: number | null;
+    after_quantity: number | null;
+  }>;
 };
 
 function domainResolutionReadiness(
@@ -65,13 +73,33 @@ function isHonestNonCalculationReadyRevision(
   revision: EstimateDraftRevision,
   readiness: DomainResolutionReadiness | null,
 ): boolean {
-  if (!readiness || readiness === "CALCULATION_READY") return false;
-  return revision.boq.rows.length > 0 && revision.boq.rows.every((row) =>
+  if (!readiness) {
+    return revision.status === "failed" &&
+      revision.boq.rows.length === 0 &&
+      revision.missingInputs.some((input) => input.blocksPreliminaryEstimate);
+  }
+  if (readiness === "CALCULATION_READY") return false;
+  const readinessOwnedRows = revision.boq.rows.filter((row) =>
+    row.sourceParameters?.domainResolutionReadiness === readiness
+  );
+  const supplementalRows = revision.boq.rows.filter((row) =>
+    row.sourceParameters?.domainResolutionReadiness !== readiness
+  );
+  return readinessOwnedRows.length > 0 && readinessOwnedRows.every((row) =>
     row.includedInProcurement === false &&
-    row.sourceParameters?.domainResolutionReadiness === readiness &&
     Array.isArray(row.sourceParameters?.applicabilityBlockers) &&
     row.sourceParameters.applicabilityBlockers.length > 0
+  ) && supplementalRows.every((row) =>
+    typeof row.sourceParameters?.supplementalCompositionOwner === "string"
   );
+}
+
+function isHonestInputBlockerError(error: unknown): error is Error {
+  if (!(error instanceof Error)) return false;
+  if (error.message === "road_scope_selection_required") return true;
+  const [reason, ...missingParts] = error.message.split(":");
+  if (reason !== "NEEDS_REQUIRED_INPUTS") return false;
+  return missingParts.join(":").split("|").some((item) => item.trim().length > 0);
 }
 
 function gitOutput(args: string[]): string {
@@ -255,13 +283,44 @@ function runCase(bucket: MatrixBucket, templateId: string, index: number): Runti
       reason: "passport_missing",
     };
   }
-  const revision = createEstimateDraftRevision({
-    estimateDraftId: `runtime-${bucket}-${index}`,
-    rawInput: `${passport.localizedNameRu} 100 м2 длина 20 м ширина 5 м высота 3 м`,
-    selectedTemplateId: templateId,
-    selectedTemplateName: passport.localizedNameRu,
-    createdAt: "2026-07-09T00:00:00.000Z",
-  });
+  const registeredBackendOnly = Boolean(resolveRegisteredProfessionalEstimateSelectionV1(templateId));
+  let revision: EstimateDraftRevision;
+  try {
+    revision = createEstimateDraftRevision({
+      estimateDraftId: `runtime-${bucket}-${index}`,
+      rawInput: `${passport.localizedNameRu} 100 м2 длина 20 м ширина 5 м высота 3 м`,
+      selectedTemplateId: templateId,
+      selectedTemplateName: passport.localizedNameRu,
+      createdAt: "2026-07-09T00:00:00.000Z",
+    });
+  } catch (error) {
+    if (!isHonestInputBlockerError(error)) throw error;
+    return {
+      bucket,
+      template_id: templateId,
+      prompt_parsed: true,
+      parameter_cards_rendered: false,
+      all_visible_labels_russian: true,
+      editable_parameters_exist_where_needed: false,
+      parameter_edit_changes_snapshot_hash: false,
+      affected_rows_change_after_parameter_edit: false,
+      unaffected_rows_remain_stable: true,
+      new_revision_created_after_parameter_edit: false,
+      pdf_marked_stale: false,
+      buyer_package_marked_stale: false,
+      regenerated_pdf_uses_updated_parameters: false,
+      regenerated_buyer_package_uses_updated_parameters: false,
+      passed: true,
+      registered_backend_only: registeredBackendOnly,
+      domain_resolution_readiness: "NEEDS_REQUIRED_INPUTS",
+      parameter_edit_applicable: false,
+      revision_status: "failed",
+      revision_failure_reason: error.message,
+      reason: registeredBackendOnly
+        ? "registered_backend_only_honestly_blocked"
+        : "non_calculation_ready_case_honestly_blocked",
+    };
+  }
   const revisionWithArtifacts = {
     ...revision,
     artifacts: {
@@ -272,7 +331,6 @@ function runCase(bucket: MatrixBucket, templateId: string, index: number): Runti
     },
   };
   const cards = buildAiEstimateParameterCards({ revision: revisionWithArtifacts, includeMissing: true });
-  const registeredBackendOnly = Boolean(resolveRegisteredProfessionalEstimateSelectionV1(templateId));
   if (registeredBackendOnly) {
     const honestlyBlocked = revisionWithArtifacts.status === "failed" && revisionWithArtifacts.boq.rows.length === 0;
     return {
@@ -374,11 +432,17 @@ function runCase(bucket: MatrixBucket, templateId: string, index: number): Runti
     rows: result.revision.boq.rows,
   });
   const changedRowIds = new Set(result.diff.changedRows.map((row) => row.rowId));
-  const unchangedRowsStable = revisionWithArtifacts.boq.rows.every((beforeRow) => {
-    if (changedRowIds.has(beforeRow.rowId)) return true;
+  const unreportedChangedRows = revisionWithArtifacts.boq.rows.flatMap((beforeRow) => {
+    if (changedRowIds.has(beforeRow.rowId)) return [];
     const afterRow = result.revision.boq.rows.find((row) => row.rowId === beforeRow.rowId);
-    return !afterRow || Math.abs((afterRow.quantity ?? 0) - (beforeRow.quantity ?? 0)) < 0.0001;
+    if (!afterRow || Math.abs((afterRow.quantity ?? 0) - (beforeRow.quantity ?? 0)) < 0.0001) return [];
+    return [{
+      row_id: beforeRow.rowId,
+      before_quantity: beforeRow.quantity,
+      after_quantity: afterRow.quantity,
+    }];
   });
+  const unchangedRowsStable = unreportedChangedRows.length === 0;
   const regeneratedPdfHash = estimateDeterministicHash({
     artifact: "pdf",
     revisionId: result.revision.revisionId,
@@ -434,6 +498,15 @@ function runCase(bucket: MatrixBucket, templateId: string, index: number): Runti
     regenerated_buyer_package_uses_updated_parameters: buyerRegenerated,
     domain_resolution_readiness: readiness,
     parameter_edit_applicable: true,
+    revision_status: revisionWithArtifacts.status,
+    revision_failure_reason: revisionWithArtifacts.status === "failed"
+      ? revisionWithArtifacts.missingInputs
+        .filter((input) => input.blocksPreliminaryEstimate)
+        .map((input) => input.key)
+        .join(",") || "revision_failed"
+      : null,
+    edited_param_key: paramKey,
+    unreported_changed_rows: unreportedChangedRows,
     passed,
     registered_backend_only: false,
     reason: passed ? undefined : "runtime_case_failed",
@@ -500,6 +573,12 @@ export function runAiEstimateParameterRuntimeMatrix(input: { writeSummary?: bool
     foreman_parameter_cases_passed: countBucket(results, "foreman"),
     foreman_client_compatible_cases_passed: countBucketWhere(results, "foreman", (result) => !result.registered_backend_only),
     foreman_registered_backend_only_honestly_blocked_cases_passed: countBucketWhere(results, "foreman", (result) => result.registered_backend_only),
+    client_non_calculation_ready_honestly_blocked_cases: results.filter((result) =>
+      !result.registered_backend_only && result.reason === "non_calculation_ready_case_honestly_blocked"
+    ).length,
+    client_non_calculation_ready_honestly_blocked_template_ids: results.filter((result) =>
+      !result.registered_backend_only && result.reason === "non_calculation_ready_case_honestly_blocked"
+    ).map((result) => result.template_id),
     parameter_edit_executed_cases: parameterEditResults.length,
     parameter_edit_changes_snapshot_hash: parameterEditResults.every((result) => result.parameter_edit_changes_snapshot_hash),
     affected_rows_change_after_parameter_edit: parameterEditResults.every((result) => result.affected_rows_change_after_parameter_edit),

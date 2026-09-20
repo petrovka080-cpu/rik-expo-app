@@ -8693,6 +8693,12 @@ export function scanComponentDebt(projectRoot: string): ArchitectureAntiRegressi
   const topByPhysicalLines = [...entries]
     .sort((left, right) => right.physicalLineCount - left.physicalLineCount)
     .slice(0, 12);
+  const governedAddListingShell = entries.find(
+    (entry) => entry.file === "src/screens/profile/AddListingScreen.tsx",
+  );
+  if (governedAddListingShell && !topByPhysicalLines.includes(governedAddListingShell)) {
+    topByPhysicalLines.push(governedAddListingShell);
+  }
   const topByDependencies = [...entries]
     .sort((left, right) => right.importCount - left.importCount)
     .slice(0, 12);

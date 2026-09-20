@@ -13,6 +13,8 @@ import {
 import {
   compileFormulaGraph,
   evaluateFormulaGraph,
+  formulaAstInputParameterIds,
+  type FormulaAst,
 } from "../../src/lib/estimate/backendPlatform/formulaGraph";
 
 const CASES = [
@@ -113,5 +115,52 @@ describe("R4-A6 expanded formula dependency owners", () => {
       .toEqual([60, 300]);
     expect([evaluate("crane_shifts", 10), evaluate("crane_shifts", 110)])
       .toEqual([1, 6]);
+  });
+
+  it("preserves every gabion conditional dependency through source binding and serialized AST reload", () => {
+    const passport = passportFor("gabion_wall");
+    const parameters = [...passport.parameterSchema.required, ...passport.parameterSchema.optional];
+    expect(parameters).toEqual(expect.arrayContaining([
+      expect.objectContaining({ key: "is_gabion", inputKind: "boolean" }),
+      expect.objectContaining({ key: "length_m" }),
+    ]));
+    const parameterIds = new Set(parameters.map((parameter) => parameter.key));
+    const derivedFormulas = new Map<string, string>();
+    for (const step of passport.formulas.formulaSteps) {
+      const assignment = /^\s*([A-Za-z_][A-Za-z0-9_.]*)\s*=\s*(.+?)\s*$/u.exec(step);
+      if (assignment) derivedFormulas.set(assignment[1]!, assignment[2]!);
+    }
+    for (const row of passport.boqRecipe.allRows) derivedFormulas.set(row.rowId, row.quantityFormula);
+
+    const conditionalRows = passport.boqRecipe.allRows.filter((row) => row.quantityFormula.includes("?"));
+    expect(conditionalRows.map((row) => row.rowId).sort()).toEqual([
+      "gabion_backfill_compaction_m3",
+      "gabion_base_preparation_m2",
+      "gabion_drainage_pipe_lm",
+      "gabion_tie_wire_spacers_set",
+    ]);
+    for (const row of conditionalRows) {
+      const expression = bindCanonicalFormulaSource({
+        source: row.quantityFormula,
+        parameterIds,
+        derivedFormulas,
+        resolving: new Set([row.rowId]),
+      });
+      const compiled = compileFormulaGraph(expression);
+      const reloadedAst = JSON.parse(JSON.stringify(compiled.ast)) as FormulaAst;
+      expect(formulaAstInputParameterIds(reloadedAst)).toEqual(compiled.inputParameterIds);
+      expect(compiled.inputParameterIds).toContain("is_gabion");
+    }
+
+    const drainage = compileFormulaGraph(bindCanonicalFormulaSource({
+      source: conditionalRows.find((row) => row.rowId === "gabion_drainage_pipe_lm")!.quantityFormula,
+      parameterIds,
+      derivedFormulas,
+    }));
+    expect(drainage.inputParameterIds).toEqual(["is_gabion", "length_m"]);
+    expect(evaluateFormulaGraph(drainage, { is_gabion: true, length_m: 150 })).toBe("150");
+    expect(evaluateFormulaGraph(drainage, { is_gabion: true, length_m: 100 })).toBe("100");
+    expect(evaluateFormulaGraph(drainage, { is_gabion: false, length_m: 150 })).toBe("0");
+    expect(() => evaluateFormulaGraph(drainage, { length_m: 150 })).toThrow("missing parameter is_gabion");
   });
 });

@@ -32,17 +32,21 @@ describe("professional estimate editor actions", () => {
     expect(progressivePanel).toContain('import { EstimateRevisionDiff }');
     expect(progressivePanel).toContain('<EstimateRevisionDiff diff={latestDiff} />');
     expect(editor).toContain('testID="estimate-material-search-add-control"');
-    expect(editor).toContain('placeholder="Найти в смете или добавить материал…"');
+    expect(editor).toContain('placeholder="Найти в смете или добавить позицию…"');
     expect(editor).toContain('<Text style={styles.addCatalogButtonText}>+</Text>');
     expect(editor).toContain('В этой смете');
     expect(editor).toContain('Добавить из каталога');
-    expect(editor).toContain('searchMaterialCatalogItemsForPicker(query, 12)');
+    expect(editor).toContain('searchCanonicalEstimateResources({');
+    expect(editor).toContain('kind: "all"');
     expect(editor).toContain('onSelectCatalogItem(item)');
     expect(editor).toContain('request-estimate-item-anchor-');
     expect(editor).not.toContain('{"Найти и добавить"}');
     expect(editor).not.toContain('request-estimate-items-load-more');
     expect(editor).not.toContain('section.items.slice(0');
     expect(progressivePanel).toContain('showMaterialControl={false}');
+    const screen = read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
+    expect(screen).toContain("canonicalRowMutationInFlight");
+    expect(screen).toContain("Дождитесь сохранения предыдущего изменения строки");
   });
 
   it("uses broad examples in the input placeholder instead of only apartment capital renovation", () => {

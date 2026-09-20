@@ -350,6 +350,10 @@ const WEAK_GENERIC_EXACT = new Set([
   "\u0443\u0441\u043b\u0443\u0433\u0438",
   "\u043f\u043e\u0437\u0438\u0446\u0438\u044f 1",
   "\u043f\u043e\u0437\u0438\u0446\u0438\u044f 2",
+  "\u043f\u043e\u0437\u0438\u0446\u0438\u0438",
+  "\u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e",
+  "\u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a",
+  "\u0441\u0442\u0430\u0442\u0443\u0441 \u0446\u0435\u043d\u044b",
   "\u0434\u043e\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0435 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b",
   "\u0434\u043e\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b",
 ]);
@@ -371,6 +375,10 @@ const FORBIDDEN_VISIBLE_PATTERNS: readonly { code: string; pattern: RegExp }[] =
   {
     code: "PROFILE_FASTENERS_ROW",
     pattern: /\u043a\u0440\u0435\u043f[\u0435\u0451]\u0436\s+\u0438\s+\u043f\u0440\u043e\u0444\u0438\u043b\u044c\u043d\u044b\u0435\s+\u0440\u0430\u0441\u0445\u043e\u0434\u043d\u0438\u043a\u0438/i,
+  },
+  {
+    code: "UNRESOLVED_DOMAIN_VISIBLE_LABEL",
+    pattern: /\u0440\u0430\u0431\u043e\u0442\u044b\s+\u043f\u043e\s+\u0443\u043a\u0430\u0437\u0430\u043d\u043d\u043e\u043c\u0443\s+\u0434\u043e\u043c\u0435\u043d\u0443/i,
   },
   { code: "PROFESSIONAL_ASSURANCE_KEY", pattern: /\bprofessional\s+assurance\b/i },
 ];
@@ -446,6 +454,10 @@ function stripVisibleDebugWords(
 ): string {
   return normalize(
     stripTypedInternalKeyPrefix(normalizeRuText(label), [materialKey, internalKey])
+      // A control/project value may be stored as a typed reference while a
+      // concrete product is still being selected. Keep the useful canonical
+      // row title visible, but never leak the internal parameter key into it.
+      .replace(/\s*[\u2014\u2013-]\s*PROJECT:[A-Za-z][A-Za-z0-9_.:-]*\s*$/giu, "")
       .replace(/\bwarning\b/gi, "\u0442\u0440\u0435\u0431\u0443\u0435\u0442\u0441\u044f \u0443\u0442\u043e\u0447\u043d\u0435\u043d\u0438\u0435")
       .replace(/\bprofessional\s+assurance\b/gi, "\u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u043a\u0430\u0447\u0435\u0441\u0442\u0432\u0430")
   );
@@ -545,7 +557,19 @@ export function buildVisibleBoqRowName(input: {
   const template = templates[(input.index ?? 0) % templates.length];
   const operation = visibleOperationLabelForKey(input.operationKey);
   const rowName = template.replace("{object}", object).replace("{operation}", operation);
-  return toVisibleEstimateLabel({ label: rowName, sectionType: input.sectionType, objectKey: input.objectKey, domainKey: input.domainKey });
+  const normalizedRowName = stripVisibleDebugWords(rowName, input.materialKey);
+  if (visibleEstimateLabelViolations(normalizedRowName).length === 0) return normalizedRowName;
+
+  // This is the terminal fallback. Calling toVisibleEstimateLabel again here
+  // caused unbounded recursion whenever both the source label and generated
+  // object label were rejected by the public-label policy.
+  const terminalFallbacks: Record<Exclude<VisibleEstimateSectionType, "tax">, string> = {
+    materials: "\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b \u043f\u043e \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0451\u043d\u043d\u043e\u0439 \u0441\u043f\u0435\u0446\u0438\u0444\u0438\u043a\u0430\u0446\u0438\u0438",
+    labor: "\u0420\u0430\u0431\u043e\u0442\u044b \u043f\u043e \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0451\u043d\u043d\u043e\u0439 \u0442\u0435\u0445\u043d\u043e\u043b\u043e\u0433\u0438\u0438",
+    equipment: "\u041e\u0431\u043e\u0440\u0443\u0434\u043e\u0432\u0430\u043d\u0438\u0435 \u043f\u043e \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0451\u043d\u043d\u044b\u043c \u0443\u0441\u043b\u043e\u0432\u0438\u044f\u043c \u0440\u0430\u0431\u043e\u0442",
+    delivery: "\u041f\u0435\u0440\u0435\u0432\u043e\u0437\u043a\u0430 \u043f\u043e \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0451\u043d\u043d\u043e\u043c\u0443 \u043c\u0430\u0440\u0448\u0440\u0443\u0442\u0443",
+  };
+  return terminalFallbacks[input.sectionType];
 }
 
 export function assertVisibleEstimateLabel(value: string, context = "visible_estimate_label"): void {

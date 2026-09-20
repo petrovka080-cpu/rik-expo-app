@@ -1,5 +1,8 @@
 import { professionalEstimatePassportId } from "../professionalEstimatePassportV4";
-import { ASPHALT_RESOURCE_LEVEL_CORE_PARAMETER_KEYS_V4 } from "./compileAsphaltRelatedThroughCoreV4";
+import {
+  ASPHALT_BRIDGE_RESOURCE_LEVEL_PARAMETER_KEYS_V4,
+  ASPHALT_RESOURCE_LEVEL_CORE_PARAMETER_KEYS_V4,
+} from "./compileAsphaltRelatedThroughCoreV4";
 import { ASPHALT_REMOVAL_RESOURCE_PARAMETER_KEYS_V4 } from "./asphaltRemovalResourceAssembliesV4";
 import type {
   AsphaltRelatedApplicationContextV4,
@@ -241,16 +244,18 @@ export const ASPHALT_RELATED_EXTRA_PROFILES_V4: readonly AsphaltRelatedProfileV4
     parameterSchemaId: "bridge_asphalt:parameter-schema:v1",
     requiredParameters: [
       "area_m2", "bridge_deck_system_confirmed", "waterproofing_type", "waterproofing_condition",
-      "protective_layer_thickness_mm", "wearing_layer_thickness_mm", "wearing_mix_type",
+      "binder_layer_thickness_mm", "binder_mix_type",
+      "wearing_layer_thickness_mm", "wearing_mix_type",
       "asphalt_density_t_m3", "traffic_class",
     ],
     optionalParameters: [
-      "binder_layer_thickness_mm",
-      "binder_mix_type",
       "waterproofing_repair_area_m2",
       "waterproofing_primer_rate_l_m2",
+      "protective_layer_thickness_mm",
       "expansion_joint_length_m",
-      ...INSTALLATION_OPTIONAL_PARAMETERS,
+      "length_m",
+      "width_m",
+      ...ASPHALT_BRIDGE_RESOURCE_LEVEL_PARAMETER_KEYS_V4,
     ],
   }),
   profile({

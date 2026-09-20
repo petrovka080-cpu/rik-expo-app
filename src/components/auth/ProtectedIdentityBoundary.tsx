@@ -12,6 +12,7 @@ import {
 import { loadProtectedIdentity } from "../../lib/auth/protectedIdentity.transport";
 import { signOutSafely } from "../../lib/supabaseClient";
 import {
+  isLocalDeveloperConsumerReviewEnabled,
   isLocalDeveloperReviewEnabled,
   switchLocalDeveloperConsumerPrincipal,
   switchLocalDeveloperPrincipal,
@@ -23,35 +24,6 @@ type ProtectedIdentityBoundaryProps = {
   surface: "profile" | "request";
   targetOrganizationId?: string | null;
 };
-
-type IdentitySummaryProps = {
-  identity: ProtectedIdentity;
-  compact?: boolean;
-};
-
-export function VerifiedIdentitySummary({ identity, compact = false }: IdentitySummaryProps) {
-  return (
-    <View style={[styles.identityCard, compact && styles.identityCardCompact]} testID="verified-identity-summary">
-      <Text style={styles.identityTitle}>Подтверждённая учётная запись</Text>
-      <View style={styles.identityRow}>
-        <Text style={styles.identityLabel}>Электронная почта</Text>
-        <Text style={styles.identityValue}>{identity.email ?? "Не указана"}</Text>
-      </View>
-      <View style={styles.identityRow}>
-        <Text style={styles.identityLabel}>Организация</Text>
-        <Text style={styles.identityValue}>{identity.organizationId}</Text>
-      </View>
-      <View style={styles.identityRow}>
-        <Text style={styles.identityLabel}>Членство</Text>
-        <Text style={styles.identityValue}>Подтверждено</Text>
-      </View>
-      <View style={[styles.identityRow, styles.identityRowLast]}>
-        <Text style={styles.identityLabel}>Роль</Text>
-        <Text style={styles.identityValue}>{identity.role}</Text>
-      </View>
-    </View>
-  );
-}
 
 export function ProtectedIdentityBoundary({
   children,
@@ -121,7 +93,9 @@ export function ProtectedIdentityBoundary({
 
   const copy = protectedIdentityMessageRu(resolution.status);
   const needsLogin = resolution.status === "no_session";
-  const canEnterLocalPrincipal = isLocalDeveloperReviewEnabled();
+  const canEnterLocalPrincipal = surface === "request"
+    ? isLocalDeveloperConsumerReviewEnabled()
+    : isLocalDeveloperReviewEnabled();
   return (
     <ScrollView
       style={styles.screen}
@@ -186,11 +160,4 @@ const styles = StyleSheet.create({
   secondary: { alignItems: "center", borderRadius: 10, borderWidth: 1, borderColor: "#94A3B8", paddingVertical: 12 },
   secondaryText: { color: "#334155", fontSize: 14, fontWeight: "700" },
   loginError: { color: "#991B1B", fontSize: 13, lineHeight: 19, textAlign: "center" },
-  identityCard: { width: "100%", borderRadius: 16, borderWidth: 1, borderColor: "#BBF7D0", backgroundColor: "#F0FDF4", padding: 14 },
-  identityCardCompact: { marginBottom: 16 },
-  identityTitle: { color: "#166534", fontSize: 15, fontWeight: "800", marginBottom: 8 },
-  identityRow: { flexDirection: "row", justifyContent: "space-between", gap: 12, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: "#DCFCE7" },
-  identityRowLast: { borderBottomWidth: 0 },
-  identityLabel: { flex: 1, color: "#475569", fontSize: 12 },
-  identityValue: { flex: 2, color: "#0F172A", fontSize: 12, fontWeight: "700", textAlign: "right" },
 });

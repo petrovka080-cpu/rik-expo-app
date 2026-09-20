@@ -16,7 +16,13 @@ import type { AsphaltAssemblyProfileIdV4 } from "./asphaltPreliminaryAssemblyPol
 import type { AsphaltRelatedProfileV4 } from "./asphaltRelatedSemanticContractV4";
 import { getAsphaltRelatedBaselineAssumptionV4 } from "./asphaltRelatedBaselineAssumptionsV4";
 
-export const ASPHALT_RESOURCE_LEVEL_CORE_PARAMETER_KEYS_V4 = Object.freeze([
+/**
+ * Parameters consumed by the common asphalt surfacing assembly.  Keep this
+ * list separate from road-base and site-feature assemblies: exact bridge and
+ * indoor profiles reuse the surfacing owner, but must not inherit the road
+ * questionnaire merely because all assemblies are compiled by one core.
+ */
+export const ASPHALT_SURFACING_RESOURCE_LEVEL_PARAMETER_KEYS_V4 = Object.freeze([
   "project_scope",
   "estimate_scope_mode",
   "asphalt_waste_percent",
@@ -45,6 +51,19 @@ export const ASPHALT_RESOURCE_LEVEL_CORE_PARAMETER_KEYS_V4 = Object.freeze([
   "laboratory_protocol_count",
   "executive_survey_service_count",
   "execution_documentation_count",
+] as const);
+
+export const ASPHALT_BRIDGE_RESOURCE_LEVEL_PARAMETER_KEYS_V4 = Object.freeze([
+  ...ASPHALT_SURFACING_RESOURCE_LEVEL_PARAMETER_KEYS_V4,
+  "waterproofing_material_kg_m2",
+  "protective_layer_density_t_m3",
+  "expansion_joint_sealant_kg_m",
+  "bridge_waterproofing_productivity_m2_per_man_hour",
+  "bridge_waterproofing_machine_productivity_m2_per_machine_hour",
+] as const);
+
+export const ASPHALT_RESOURCE_LEVEL_CORE_PARAMETER_KEYS_V4 = Object.freeze([
+  ...ASPHALT_SURFACING_RESOURCE_LEVEL_PARAMETER_KEYS_V4,
   "sand_layer_required",
   "sand_thickness_mm",
   "sand_compaction_factor",
@@ -94,11 +113,9 @@ export const ASPHALT_RESOURCE_LEVEL_CORE_PARAMETER_KEYS_V4 = Object.freeze([
   "lighting_crane_machine_hours",
   "lighting_test_count",
   "bridge_deck_package_required",
-  "waterproofing_material_kg_m2",
-  "protective_layer_density_t_m3",
-  "expansion_joint_sealant_kg_m",
-  "bridge_waterproofing_productivity_m2_per_man_hour",
-  "bridge_waterproofing_machine_productivity_m2_per_machine_hour",
+  ...ASPHALT_BRIDGE_RESOURCE_LEVEL_PARAMETER_KEYS_V4.slice(
+    ASPHALT_SURFACING_RESOURCE_LEVEL_PARAMETER_KEYS_V4.length,
+  ),
 ] as const);
 
 export const ASPHALT_MINIMAL_RESOURCE_REQUIRED_KEYS_V4 = Object.freeze([

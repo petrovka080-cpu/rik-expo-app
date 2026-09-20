@@ -1,24 +1,30 @@
 import { resolveGreenClaimArtifactConsistency } from "../../scripts/audit/greenClaimArtifactReconciliation.shared";
-import { isIosTestFlightInternalQaScopedRun } from "../mobileRelease/iosTestFlightInternalQaScopeTestHelper";
+import {
+  fixtureReleaseReceiptContext,
+  readGoodReleaseReceiptFixture,
+} from "../audit/releaseReceiptBundleTestSupport";
 
 describe("no green claim without replay evidence", () => {
   it("requires replay runtime, full Jest, release verify, and fake-green=false for reconciliation green", () => {
     const report = resolveGreenClaimArtifactConsistency(process.cwd());
 
-    if (isIosTestFlightInternalQaScopedRun()) {
-      expect(report.matrix.final_status).toBe("BLOCKED_GREEN_CLAIM_ARTIFACT_RECONCILIATION");
-      expect(report.matrix.current_replay_full_jest_passed).toBe(false);
-      expect(report.matrix.current_replay_release_verify_passed).toBe(false);
-      expect(report.matrix.artifact_reconciliation_proof_passed).toBe(false);
-      expect(report.matrix.fake_green_claimed).toBe(false);
-      return;
-    }
+    expect(report.matrix.final_status).toBe("BLOCKED_GREEN_CLAIM_ARTIFACT_RECONCILIATION");
+    expect(report.matrix.current_replay_full_jest_passed).toBe(false);
+    expect(report.matrix.current_replay_release_verify_passed).toBe(false);
+    expect(report.matrix.artifact_reconciliation_proof_passed).toBe(false);
+    expect(report.matrix.fake_green_claimed).toBe(false);
+  });
 
-    expect(report.matrix.final_status).toBe("GREEN_GREEN_CLAIM_ARTIFACT_RECONCILIATION_READY");
-    expect(report.matrix.current_replay_runtime_passed).toBe(true);
-    expect(report.matrix.current_replay_full_jest_passed).toBe(true);
-    expect(report.matrix.current_replay_release_verify_passed).toBe(true);
-    expect(report.matrix.artifact_reconciliation_proof_passed).toBe(true);
+  it("does not treat a valid fixture bundle as actual environment evidence", () => {
+    const report = resolveGreenClaimArtifactConsistency(process.cwd(), {
+      receiptBundle: readGoodReleaseReceiptFixture(),
+      validationContext: fixtureReleaseReceiptContext(),
+    });
+
+    expect(report.receiptValidation.contract_valid).toBe(true);
+    expect(report.receiptValidation.actual_environment_passed).toBe(false);
+    expect(report.matrix.current_replay_runtime_passed).toBe(false);
+    expect(report.matrix.final_status).toBe("BLOCKED_GREEN_CLAIM_ARTIFACT_RECONCILIATION");
     expect(report.matrix.fake_green_claimed).toBe(false);
   });
 });

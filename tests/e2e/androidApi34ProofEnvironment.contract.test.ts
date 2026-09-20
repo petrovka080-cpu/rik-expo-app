@@ -38,6 +38,9 @@ describe("Android API34 proof environment", () => {
     expect(harness).toContain("uiautomator");
     expect(harness).toContain("8000");
     expect(harness).toContain("isBlankOrSystemSurface");
+    expect(harness).toContain("assertReusableMetroConfiguration(port)");
+    expect(harness).toContain("ANDROID_ROUTE_BOOTSTRAP_METRO_REUSE_CONFIG_RED");
+    expect(harness).toContain("--max-workers\\s+1");
   });
 
   it("requires the exact local canonical backend tuple and reverses its port", () => {
@@ -293,7 +296,9 @@ describe("Android API34 proof environment", () => {
     );
     expect(journey).toContain('nodeById(snapshot, "mobile-photo-capture-flow")');
     expect(journey).toContain("photoActionOpened");
-    expect(journey).toContain("APP_CONTENT_BOTTOM = 1828");
+    expect(journey).not.toContain("APP_CONTENT_BOTTOM = 1828");
+    expect(journey).toContain("const bottom = box.bottom");
+    expect(journey).toContain("Math.min(box.bottom, 2320)");
     expect(journey).toContain("cameraPermissionDialogDismissed");
     expect(journey).toContain("tapNodeIncludingBottomSheet");
     expect(journey).toContain("dismissReactNativeWarningOverlay");

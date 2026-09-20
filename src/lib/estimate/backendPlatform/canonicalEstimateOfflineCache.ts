@@ -6,6 +6,7 @@ import type {
   CanonicalEstimateRevisionRowView,
   CanonicalEstimateRevisionView,
 } from "./contracts";
+import { safeJsonParseValue } from "../../format";
 
 const CACHE_KEY = "@estimate-platform/canonical-cache/v2";
 const OUTBOX_KEY = "@estimate-platform/canonical-outbox/v2";
@@ -60,12 +61,10 @@ function requiredIdentity(value: string, field: string): string {
 
 function parseEnvelope<T extends { version: number }>(raw: string | null, fallback: T): T {
   if (!raw) return fallback;
-  try {
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object" && parsed.version === fallback.version ? parsed as T : fallback;
-  } catch {
-    return fallback;
-  }
+  const parsed = safeJsonParseValue<unknown>(raw, null);
+  return parsed && typeof parsed === "object" && "version" in parsed && parsed.version === fallback.version
+    ? parsed as T
+    : fallback;
 }
 
 function encodedBytes(value: unknown): number {

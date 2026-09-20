@@ -1,6 +1,9 @@
 import {
   __resetConsumerRepairRequestStoreForTests,
+  beginConsumerRepairCanonicalRoadScopeSelection,
+  bindConsumerRepairCanonicalRoadScopeChoice,
   createConsumerRepairRequestDraft,
+  upsertConsumerRepairCanonicalBackendDraft,
 } from "../../src/lib/consumerRequests";
 import {
   decodeConsumerRepairBundleFromDurableStorage,
@@ -164,5 +167,123 @@ describe("estimate draft session durable persistence", () => {
       originalUserText: "асфальт 2000 x 32",
       offeredScopes: ["ROAD_SURFACING_ONLY", "FULL_ROAD_INFRASTRUCTURE"],
     });
+  });
+
+  test("R6 keeps 15 km through pending, durable reload data and the saved canonical scope choice", () => {
+    const userId = "r6-road-scope-user";
+    const originalUserText = "Построить автомобильную дорогу — 15 000 м";
+    const initial = createConsumerRepairRequestDraft({
+      consumerUserId: userId,
+      problemText: originalUserText,
+      selectedWork: {
+        selectedCatalogWorkId: "canonical-work:expanded:asphalt_concrete_pavement",
+        selectedWorkKey: "canonical-work:expanded:asphalt_concrete_pavement",
+        selectedWorkTitleRu: "Устройство асфальтобетонного дорожного покрытия",
+        selectedWorkCategoryKey: "roadworks",
+        selectedWorkCategoryTitleRu: "Дорожные работы",
+        selectedWorkRawInput: originalUserText,
+        selectedWorkSource: "user_selected",
+        selectedWorkResolverReGuessed: false,
+      },
+    });
+    const pending = beginConsumerRepairCanonicalRoadScopeSelection({
+      requestDraftId: initial.draft.id,
+      userId,
+      originalUserText,
+      requestedCatalogWorkId: "canonical-work:expanded:asphalt_concrete_pavement",
+      offeredScopes: [
+        "ROAD_SURFACING_ONLY",
+        "FULL_PAVEMENT_STRUCTURE",
+        "FULL_ROAD_INFRASTRUCTURE",
+        "ROAD_REPAIR_REHABILITATION",
+      ],
+      resolverEvidence: ["road_intent_present", "scope_not_explicit"],
+      resolverVersion: "road-scope-resolver-v4.1.0",
+      createdAt: "2026-09-10T06:00:00.000Z",
+    });
+    const reloaded = decodeConsumerRepairBundleFromDurableStorage(
+      encodeConsumerRepairBundleForDurableStorage(pending),
+    );
+
+    expect(reloaded?.draft.id).toBe(initial.draft.id);
+    expect(reloaded?.draft.problemText).toBe(originalUserText);
+    expect(reloaded?.estimateDraftSession).toMatchObject({
+      status: "SCOPE_REQUIRED",
+      workIntent: {
+        catalogWorkId: "canonical-work:expanded:asphalt_concrete_pavement",
+      },
+      parameters: {
+        length_m: { value: 15_000, unit: "m", origin: "USER_ENTERED" },
+      },
+    });
+    expect(reloaded?.estimateDraftSession?.parameters).not.toHaveProperty("width_m");
+    expect(reloaded?.estimateDraftSession?.parameters).not.toHaveProperty("area_m2");
+
+    const selected = bindConsumerRepairCanonicalRoadScopeChoice({
+      requestDraftId: initial.draft.id,
+      userId,
+      selectedScope: "FULL_PAVEMENT_STRUCTURE",
+      createdAt: "2026-09-10T06:01:00.000Z",
+    });
+    expect(selected.draft.id).toBe(initial.draft.id);
+    expect(selected.estimateDraftSession).toMatchObject({
+      status: "PARAMETERS_REQUIRED",
+      scopePresetId: "FULL_PAVEMENT_STRUCTURE",
+      parameters: {
+        length_m: { value: 15_000, origin: "USER_ENTERED" },
+      },
+    });
+    expect(selected.pendingRoadScopeSelection).toBeNull();
+    expect(selected.draft.missingData).toEqual([
+      "Укажите площадь либо подтверждённые длину и ширину.",
+    ]);
+
+    const canonicalRevisionId = "11111111-1111-4111-8111-111111111116";
+    const canonicalReleaseId = "22222222-2222-4222-8222-222222222226";
+    const compiled = upsertConsumerRepairCanonicalBackendDraft({
+      requestDraftId: initial.draft.id,
+      consumerUserId: userId,
+      problemText: originalUserText,
+      aiDraft: {
+        titleRu: "Устройство асфальтобетонного дорожного покрытия",
+        summaryRu: "Серверная ревизия",
+        repairType: "asphalt_concrete_pavement",
+        missingData: [],
+        dangerousDiyBlocked: false,
+        selectedWork: {
+          selectedCatalogWorkId: "canonical-work:expanded:asphalt_concrete_pavement",
+          selectedWorkKey: "canonical-work:expanded:asphalt_concrete_pavement",
+          selectedWorkTitleRu: "Устройство асфальтобетонного дорожного покрытия",
+          selectedWorkCategoryKey: "roadworks",
+          selectedWorkCategoryTitleRu: "Дорожные работы",
+          selectedWorkRawInput: originalUserText,
+          selectedWorkSource: "user_selected",
+          selectedWorkResolverReGuessed: false,
+        },
+        items: [{
+          itemType: "material",
+          titleRu: "Щебень",
+          quantity: 1,
+          unit: "t",
+          source: "ai_suggested",
+          sourceParameters: {
+            canonicalBackendRevisionId: canonicalRevisionId,
+            canonicalBackendReleaseId: canonicalReleaseId,
+          },
+        }],
+      },
+    });
+    const compiledReloaded = decodeConsumerRepairBundleFromDurableStorage(
+      encodeConsumerRepairBundleForDurableStorage(compiled),
+    );
+    expect(compiledReloaded?.estimateDraftSession).toMatchObject({
+      status: "REVIEW",
+      scopePresetId: "FULL_PAVEMENT_STRUCTURE",
+      activeRevisionId: canonicalRevisionId,
+      parameters: {
+        length_m: { value: 15_000, unit: "m", origin: "USER_ENTERED" },
+      },
+    });
+    expect(compiledReloaded?.draft.problemText).toBe(originalUserText);
   });
 });

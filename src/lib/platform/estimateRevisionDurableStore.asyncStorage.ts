@@ -23,6 +23,13 @@ export type AsyncKeyValueStorage = {
   getItem(key: string): Promise<string | null>;
   setItem(key: string, value: string): Promise<void>;
   removeItem(key: string): Promise<void>;
+  multiGet?(
+    keys: readonly string[],
+  ): Promise<readonly (readonly [string, string | null])[]>;
+  multiSet?(
+    entries: readonly (readonly [string, string])[],
+  ): Promise<void>;
+  multiRemove?(keys: readonly string[]): Promise<void>;
 };
 
 const STORAGE_PREFIX = "rik.estimate_revision_durable.v1:";
@@ -259,11 +266,17 @@ implements EstimateRevisionDurableStore {
     }
     const manifest = parseChunkManifest(record, key, version);
     if (!manifest) return null;
+    const chunkKeys = Array.from({ length: manifest.chunkCount }, (_, index) =>
+      chunkStorageKey(revisionKey, manifest.serializedChecksum, index)
+    );
+    const batchedChunks = this.storage.multiGet
+      ? new Map(await this.storage.multiGet(chunkKeys))
+      : null;
     const chunks: string[] = [];
-    for (let index = 0; index < manifest.chunkCount; index += 1) {
-      const chunk = await this.storage.getItem(
-        chunkStorageKey(revisionKey, manifest.serializedChecksum, index),
-      );
+    for (const chunkKey of chunkKeys) {
+      const chunk = batchedChunks
+        ? batchedChunks.get(chunkKey) ?? null
+        : await this.storage.getItem(chunkKey);
       if (
         chunk === null ||
         chunk.length < 1 ||
@@ -318,11 +331,16 @@ implements EstimateRevisionDurableStore {
       chunks.push(serializedEnvelope.slice(offset, end));
       offset = end;
     }
-    for (let index = 0; index < chunks.length; index += 1) {
-      await this.storage.setItem(
-        chunkStorageKey(revisionKey, serializedChecksum, index),
-        chunks[index],
-      );
+    const chunkEntries = chunks.map((chunk, index) => [
+      chunkStorageKey(revisionKey, serializedChecksum, index),
+      chunk,
+    ] as const);
+    if (this.storage.multiSet) {
+      await this.storage.multiSet(chunkEntries);
+    } else {
+      for (const [chunkKey, chunk] of chunkEntries) {
+        await this.storage.setItem(chunkKey, chunk);
+      }
     }
     // The compact manifest is the revision commit point. A process death while
     // staging chunks leaves them unreachable and cannot expose a partial row.
@@ -344,21 +362,27 @@ implements EstimateRevisionDurableStore {
     version: string,
   ): Promise<void> {
     const revisionKey = storageKey(durableRevisionRecordKey(key, version));
+    let chunkKeys: string[] = [];
     try {
       const record = parseRecord<unknown>(await this.storage.getItem(revisionKey));
       const manifest = parseChunkManifest(record, key, version);
       if (manifest) {
-        for (let index = 0; index < manifest.chunkCount; index += 1) {
-          await this.storage.removeItem(
-            chunkStorageKey(revisionKey, manifest.serializedChecksum, index),
-          );
-        }
+        chunkKeys = Array.from({ length: manifest.chunkCount }, (_, index) =>
+          chunkStorageKey(revisionKey, manifest.serializedChecksum, index)
+        );
       }
     } catch {
       // A legacy oversized value may itself exceed Android's CursorWindow.
       // Removing its known base key is still safe and makes it unreachable.
     }
-    await this.storage.removeItem(revisionKey);
+    const keysToRemove = [...chunkKeys, revisionKey];
+    if (this.storage.multiRemove) {
+      await this.storage.multiRemove(keysToRemove);
+    } else {
+      for (const storageRecordKey of keysToRemove) {
+        await this.storage.removeItem(storageRecordKey);
+      }
+    }
   }
 
   async readBundle(key: string): Promise<RevisionBundle | null> {

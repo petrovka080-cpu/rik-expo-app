@@ -8,6 +8,8 @@ import { ConsumerRepairItemRow } from "../../src/features/consumerRepair/Consume
 import {
   REQUEST_ESTIMATE_CATEGORY_FILTERS,
   RequestEstimateItemsEditor,
+  mapCanonicalResourceToCatalogPickerItem,
+  requestEstimateCategoryFilterForItem,
 } from "../../src/features/consumerRepair/RequestEstimateItemsEditor";
 import type { RequestEstimateViewModel } from "../../src/features/consumerRepair/requestEstimateViewModel";
 import type { ConsumerRepairRequestItem } from "../../src/lib/consumerRequests";
@@ -61,6 +63,7 @@ function viewModel45(): RequestEstimateViewModel {
     calculationPreviewLines: [],
     normSourcePreviewLines: [],
     rawItemCount: 45,
+    sourceGates: [],
     manualCatalogItems: [],
   };
 }
@@ -93,6 +96,45 @@ function visibleRowCount(renderer: ReactTestRenderer): number {
 }
 
 describe("durable request estimate category filters", () => {
+  it.each([
+    ["Механизмы", "Механизмы и оборудование", "machinery"],
+    ["Испытания и контроль качества", "Контроль", "services"],
+    ["Работы и труд", "Труд", "labor"],
+  ] as const)("maps Russian category %s / %s to %s", (stage, category, expected) => {
+    const row = item(1, "service");
+    row.category = category;
+    row.sourceParameters = {
+      smartEstimateProjectionV2: { stage, category },
+      canonicalPreliminaryNeed: true,
+    };
+    expect(requestEstimateCategoryFilterForItem(row, "professional_test")).toBe(expected);
+  });
+
+  it("maps the canonical resource identity, type, unit and procurement contract into the picker", () => {
+    expect(mapCanonicalResourceToCatalogPickerItem({
+      resourceId: "resource-equipment-1",
+      definitionVersionId: "definition-1",
+      definitionReleaseId: "release-1",
+      sourceCatalogId: "catalog-1",
+      rowId: "equipment:lift",
+      titleRu: "Подъёмник строительный",
+      rowType: "equipment",
+      unitId: "machine_shift",
+      semanticOwnerId: "equipment:lift",
+      procurementEligible: false,
+      matchType: "EXACT",
+    })).toMatchObject({
+      catalogItemId: "resource-equipment-1",
+      rikCode: "equipment:lift",
+      name: "Подъёмник строительный",
+      category: "equipment",
+      kind: "equipment",
+      unit: "machine_shift",
+      procurementEligible: false,
+      sourceId: "canonical_estimate_resource_index",
+    });
+  });
+
   it("keeps category controls and final estimate actions stacked from top to bottom", () => {
     const editorSource = readFileSync(
       path.resolve(__dirname, "../../src/features/consumerRepair/RequestEstimateItemsEditor.tsx"),

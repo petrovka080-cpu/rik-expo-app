@@ -42,7 +42,7 @@ describe("S-PAG-6 remaining safe list pagination contract", () => {
     expect(catalogTransport).toContain("referenceProbeLimit");
     expect(catalogTransport).toContain("CATALOG_TRANSPORT_BFF_REFERENCE_PAGE_DEFAULTS.maxRows + 1");
 
-    const foremanDicts = read("src/screens/foreman/foreman.dicts.repo.ts");
+    const foremanDicts = read("src/screens/foreman/foreman.dicts.transport.ts");
     expect(foremanDicts.match(/loadPagedForemanRows</g)).toHaveLength(6);
 
     const directorRepository = read(

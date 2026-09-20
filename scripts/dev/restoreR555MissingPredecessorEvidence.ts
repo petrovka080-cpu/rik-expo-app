@@ -18,6 +18,14 @@ const RECEIPT_PATH = path.resolve(
   ".release-runtime/r555/evidence/30_R555_MISSING_PREDECESSOR_EVIDENCE_RESTORE.json",
 );
 
+// These files describe a replay of the repository being certified.  Copying
+// them from a predecessor checkout would turn a successful run on an older SHA
+// into evidence for the current SHA.  They must always be regenerated locally.
+const CURRENT_SHA_EVIDENCE_PATHS = new Set([
+  "artifacts/S_CURRENT_GREEN_CLAIMS_REPLAY_AUDIT_matrix.json",
+  "artifacts/S_CURRENT_GREEN_CLAIMS_REPLAY_AUDIT_ledger.json",
+]);
+
 function sha256(filePath: string): string {
   return createHash("sha256").update(readFileSync(filePath)).digest("hex");
 }
@@ -43,6 +51,7 @@ if (sourceRoot === destinationRoot) {
 const copied: Array<{ path: string; sha256: string; bytes: number }> = [];
 const alreadyPresent: string[] = [];
 const missingAtSource: string[] = [];
+const skippedCurrentShaEvidence: string[] = [];
 
 for (const relativePath of CURRENT_CORE_REMEDIATION_EVIDENCE_PATHS) {
   const normalized = relativePath.replace(/\\/g, "/");
@@ -53,6 +62,11 @@ for (const relativePath of CURRENT_CORE_REMEDIATION_EVIDENCE_PATHS) {
     path.isAbsolute(normalized)
   ) {
     throw new Error(`R555_PREDECESSOR_EVIDENCE_PATH_FORBIDDEN:${relativePath}`);
+  }
+
+  if (CURRENT_SHA_EVIDENCE_PATHS.has(relativePath)) {
+    skippedCurrentShaEvidence.push(relativePath);
+    continue;
   }
 
   const sourcePath = path.join(sourceRoot, relativePath);
@@ -95,17 +109,20 @@ const receipt = {
     overwrite_existing: false,
     predecessor_only: true,
     current_r555_green_credit: false,
+    current_sha_replay_evidence_copied: false,
   },
   counts: {
     allowlisted: CURRENT_CORE_REMEDIATION_EVIDENCE_PATHS.length,
     copied: copied.length,
     already_present: alreadyPresent.length,
     missing_at_source: missingAtSource.length,
+    skipped_current_sha_evidence: skippedCurrentShaEvidence.length,
     overwritten: 0,
   },
   copied,
   already_present: alreadyPresent,
   missing_at_source: missingAtSource,
+  skipped_current_sha_evidence: skippedCurrentShaEvidence,
 };
 
 mkdirSync(path.dirname(RECEIPT_PATH), { recursive: true });

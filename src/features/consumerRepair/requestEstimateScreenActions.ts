@@ -85,6 +85,8 @@ export type ConsumerRepairRequestScreenState = {
   contactPhone: string;
   roadScopeSelectionBusy?: boolean;
   pdfOpenBusy?: boolean;
+  approvalCommitBusy?: boolean;
+  canonicalEstimateMutationBusy?: boolean;
   bundle: ConsumerRepairDraftBundle | null;
   history: ConsumerRepairDraftBundle[];
   approvedHistoryPage: ConsumerRepairApprovedHistoryPage;
@@ -186,8 +188,9 @@ export function buildConsumerRepairApprovedHistoryPageFromLoadedHistory(
 }
 
 export function parseEditableEstimateNumberInput(value: string): number | null {
-  const normalized = value.replace(",", ".").replace(/[^\d.]/g, "").trim();
+  const normalized = value.trim().replace(",", ".");
   if (!normalized) return null;
+  if (!/^\+?(?:\d+(?:\.\d*)?|\.\d+)$/u.test(normalized)) return null;
   const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : null;
 }
@@ -448,6 +451,13 @@ export function selectedWorkFromBundle(bundle: ConsumerRepairDraftBundle | null)
   };
 }
 
+export function shouldShowConsumerRepairWorkSelection(input: {
+  bundle: ConsumerRepairDraftBundle | null;
+  selectedWork: GlobalSelectedWorkBinding | null;
+}): boolean {
+  return !input.bundle || !(input.selectedWork ?? selectedWorkFromBundle(input.bundle));
+}
+
 export function refreshSelectedWorkBinding(
   selectedWork: GlobalSelectedWorkBinding | null,
   rawInput: string,
@@ -514,6 +524,14 @@ export function composeSelectedWorkProblemText(
   return composeSelectedWorkActiveInputText(suggestion);
 }
 
+export function composeResolvedWorkProblemText(
+  suggestion: GlobalWorkSmartSearchSuggestion,
+  originalRawInput: string,
+  resolvedBinding: GlobalSelectedWorkBinding | null,
+): string {
+  return resolvedBinding ? originalRawInput.trim() : composeSelectedWorkProblemText(suggestion, originalRawInput);
+}
+
 export function preserveSelectedWorkResolverInput(
   originalRawInput: string,
   composedSelectedWorkText: string,
@@ -526,7 +544,7 @@ export function buildMultiDomainReferenceSelectedWorkBinding(
 ): GlobalSelectedWorkBinding | null {
   const normalized = normalizeEditableWorkText(rawInput);
   const asphaltDrainageIntent =
-    /^(?:(?:нужн\p{L}*|смет\p{L}*)\s+)?(?:с\s+)?(?:(?:устройств|монтаж|прокладк)\p{L}*\s+)?(?:(?:систем\p{L}*|линейн\p{L}*)\s+)?(?:водоотвод\p{L}*|дренаж\p{L}*|ливнев\p{L}*)/iu.test(normalized)
+    /^(?:(?:нужн\p{L}*|смет\p{L}*)\s+)?(?:с\s+)?(?:(?:устройств|монтаж|прокладк)\p{L}*\s+)?(?:систем\p{L}*\s+водоотвод\p{L}*|линейн\p{L}*\s+(?:поверхностн\p{L}*\s+)?(?:водоотвод\p{L}*|(?:водоотводн\p{L}*\s+)?лот\p{L}*)|подземн\p{L}*\s+дренаж\p{L}*|(?:ливнев\p{L}*|дождев\p{L}*)\s+(?:канализац\p{L}*|сет\p{L}*|водоотвод\p{L}*)|водоотвод\p{L}*|дренаж\p{L}*|ливнев\p{L}*)/iu.test(normalized)
     && /асфальт\p{L}*(?:\s+покрыт\p{L}*|\s+площад\p{L}*|\s+территор\p{L}*)?/iu.test(normalized);
   if (asphaltDrainageIntent) {
     return {
@@ -542,8 +560,9 @@ export function buildMultiDomainReferenceSelectedWorkBinding(
   const stripFoundationIntent =
     /(?:устройств|возвед|бетонирован|заливк|монтаж)[^.;]{0,80}ленточн\p{L}*\s+фундамент\p{L}*/iu.test(normalized) ||
     /ленточн\p{L}*\s+фундамент\p{L}*[^.;]{0,80}(?:устройств|возвед|бетонирован|заливк|монтаж)/iu.test(normalized);
-  const explicitStripFoundationFormworkIntent = /\u043e\u043f\u0430\u043b\u0443\u0431\u043a\p{L}*/iu.test(normalized);
-  if (stripFoundationIntent && !explicitStripFoundationFormworkIntent) {
+  const explicitAtomicStripFoundationIntent =
+    /(?:опалубк|бетонирован|заливк|укладк\p{L}*\s+бетон|армирован|арматур|анкер)\p{L}*/iu.test(normalized);
+  if (stripFoundationIntent && !explicitAtomicStripFoundationIntent) {
     return {
       selectedWorkKey: "canonical-work:expanded:strip_foundation",
       selectedTitleRu: "Устройство монолитного железобетонного ленточного фундамента",
@@ -555,6 +574,11 @@ export function buildMultiDomainReferenceSelectedWorkBinding(
     };
   }
   return null;
+}
+
+export function consumerRepairCanonicalWorkSearchQuery(rawInput: string): string {
+  return buildMultiDomainReferenceSelectedWorkBinding(rawInput)?.selectedTitleRu
+    ?? canonicalWorkSearchQueryFromPrompt(rawInput);
 }
 
 const CANONICAL_BASELINE_MISSING_LABEL_RU: Readonly<Record<string, string>> = {

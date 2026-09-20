@@ -34,14 +34,15 @@ function matchMetricLength(text: string, pattern: RegExp): number | null {
 }
 
 const METRIC_UNIT_PATTERN = String.raw`(км|km|километр(?:а|ов)?|м|m|метр(?:а|ов)?)`;
+const LOCALIZED_NUMBER_PATTERN = String.raw`(\d[\d\s]*(?:[,.]\d+)?)`;
 
 function metricByLabel(text: string, labelPattern: string): number | null {
   const prefix = new RegExp(
-    String.raw`(?:${labelPattern})\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*${METRIC_UNIT_PATTERN}`,
+    String.raw`(?:${labelPattern})\s*[:=]?\s*${LOCALIZED_NUMBER_PATTERN}\s*${METRIC_UNIT_PATTERN}`,
     "iu",
   );
   const suffix = new RegExp(
-    String.raw`(\d+(?:[,.]\d+)?)\s*${METRIC_UNIT_PATTERN}\s*(?:${labelPattern})`,
+    String.raw`${LOCALIZED_NUMBER_PATTERN}\s*${METRIC_UNIT_PATTERN}\s*(?:${labelPattern})`,
     "iu",
   );
   return matchMetricLength(text, prefix) ?? matchMetricLength(text, suffix);
@@ -113,7 +114,11 @@ export function extractAsphaltUserFactsV4(rawText: string): AsphaltFactExtractio
   const width = metricByLabel(text, String.raw`ширин(?:а|ой|у)|средн(?:яя|ей)\s+ширин(?:а|ой|у)|width`);
   const roadLength = matchMetricLength(
     text,
-    /(\d+(?:[,.]\d+)?)\s*(км|km|километр(?:а|ов)?|м|m|метр(?:а|ов)?)\s+(?:автомобильн[а-яё]*\s+)?дорог[а-яё]*/iu,
+    /(\d[\d\s]*(?:[,.]\d+)?)\s*(км|km|километр(?:а|ов)?|м|m|метр(?:а|ов)?)\s+(?:автомобильн[а-яё]*\s+)?дорог[а-яё]*/iu,
+  );
+  const trailingRoadLength = matchMetricLength(
+    text,
+    /(?:—|–|-)\s*(\d[\d\s]*(?:[,.]\d+)?)\s*(км|km|километр(?:а|ов)?|м|m|метр(?:а|ов)?)\s*[.!?]?$/iu,
   );
   const dimensionPair = text.match(
     /(\d+(?:[,.]\d+)?)\s*(км|km|километр(?:а|ов)?|м|m|метр(?:а|ов)?)?\s*(?:[xх×]|на)\s*(\d+(?:[,.]\d+)?)\s*(км|km|километр(?:а|ов)?|м|m|метр(?:а|ов)?)/iu,
@@ -124,7 +129,7 @@ export function extractAsphaltUserFactsV4(rawText: string): AsphaltFactExtractio
   const pairWidth = dimensionPair?.[3]
     ? (numberValue(dimensionPair[3]) ?? 0) * metricScale(dimensionPair[4])
     : null;
-  const resolvedLength = length ?? roadLength ?? pairLength;
+  const resolvedLength = length ?? roadLength ?? trailingRoadLength ?? pairLength;
   const resolvedWidth = width ?? pairWidth;
   const projectReferenced = /(?:по\s+проекту|проект(?:ная|ный|ом)?\s+(?:pdf|загружен|приложен|ведомост|спецификац)|загруз(?:ил|ила|ить)\s+проект)/iu.test(text);
   if (area != null) {
@@ -132,11 +137,11 @@ export function extractAsphaltUserFactsV4(rawText: string): AsphaltFactExtractio
     addFact(facts, "area_m2", area, "m2");
   } else if (resolvedLength != null && resolvedWidth != null) {
     addFact(facts, "geometry_method", "length_width");
-    addFact(facts, "length_m", resolvedLength, "m");
-    addFact(facts, "width_m", resolvedWidth, "m");
   } else if (projectReferenced) {
     addFact(facts, "geometry_method", "project_document");
   }
+  addFact(facts, "length_m", resolvedLength, "m");
+  addFact(facts, "width_m", resolvedWidth, "m");
 
   if (/(?:ремонт|реконструкц|восстановлен)/iu.test(text)) addFact(facts, "construction_mode", "repair");
   else if (/(?:нов(?:ое|ого)\s+строительств|нов(?:ая|ый|ое)\s+(?:парков|дорог|двор|площад|тротуар)|нов(?:ым|ое)\s+основан)/iu.test(text)) addFact(facts, "construction_mode", "new_construction");

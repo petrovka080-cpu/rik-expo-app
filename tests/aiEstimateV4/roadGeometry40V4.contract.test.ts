@@ -38,4 +38,14 @@ describe("Road geometry V4 40-case contract", () => {
       status: "INCOMPLETE", lengthM: null, widthM: null, areaM2: null,
     });
   });
+  test("preserves an unlabeled trailing road length while awaiting width", () => {
+    expect(parseRoadGeometryV4(
+      "Дороги, транспорт и площадки: устройство асфальтобетонного покрытия — 15 000 м",
+    )).toMatchObject({
+      status: "INCOMPLETE",
+      lengthM: 15000,
+      widthM: null,
+      areaM2: null,
+    });
+  });
 });

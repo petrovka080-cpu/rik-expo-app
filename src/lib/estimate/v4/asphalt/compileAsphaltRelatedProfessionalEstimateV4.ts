@@ -22,6 +22,7 @@ import {
 } from "./compileAsphaltRelatedThroughCoreV4";
 import type { ProfessionalEstimateScopeModeV4 } from "../professionalProjectAssemblyV4";
 import { getAsphaltRelatedBaselineAssumptionV4 } from "./asphaltRelatedBaselineAssumptionsV4";
+import { extractAsphaltUserFactsV4 } from "./extractAsphaltUserFactsV4";
 
 export type AsphaltRelatedParameterTierV4 = "P0" | "P1" | "P2";
 
@@ -37,6 +38,10 @@ export type AsphaltRelatedParameterMetadataV4 = {
   defaultSourceId?: string;
   defaultSourceVersion?: string;
   defaultReasonRu?: string;
+  referenceExampleValue?: string | number | boolean;
+  referenceExampleSourceId?: string;
+  referenceExampleSourceVersion?: string;
+  referenceExampleReasonRu?: string;
 };
 
 export const ASPHALT_RELATED_PARAMETER_METADATA_V4: Readonly<Record<string, AsphaltRelatedParameterMetadataV4>> = Object.freeze({
@@ -323,9 +328,20 @@ function numberFromRawInput(text: string, patterns: readonly RegExp[]): number |
 
 function rawDimensions(text: string): { length: number; width: number } | undefined {
   const dimensions = text.match(/(\d+(?:[.,]\d+)?)\s*(?:м)?\s*[xх×*]\s*(\d+(?:[.,]\d+)?)\s*м/iu);
-  if (!dimensions?.[1] || !dimensions[2]) return undefined;
-  const length = Number(dimensions[1].replace(",", "."));
-  const width = Number(dimensions[2].replace(",", "."));
+  const extracted = extractAsphaltUserFactsV4(text).facts;
+  const extractedValue = (parameterKey: "length_m" | "width_m"): number | undefined => {
+    const fact = extracted.find((candidate) =>
+      candidate.parameter_id?.endsWith(`:parameter:${parameterKey}:v4`)
+    );
+    return typeof fact?.value === "number" ? fact.value : undefined;
+  };
+  const length = dimensions?.[1]
+    ? Number(dimensions[1].replace(",", "."))
+    : extractedValue("length_m");
+  const width = dimensions?.[2]
+    ? Number(dimensions[2].replace(",", "."))
+    : extractedValue("width_m");
+  if (typeof length !== "number" || typeof width !== "number") return undefined;
   return Number.isFinite(length) && Number.isFinite(width) && length > 0 && width > 0
     ? { length, width }
     : undefined;
@@ -421,33 +437,9 @@ function extractParameters(
   const parameterKeys = asphaltRelatedParameterKeysForProfileV4(profile);
   const values = Object.fromEntries(parameterKeys.map((key) => [key, parameterValue(input, key)]));
   const assumptionKeys: string[] = [];
-  const removalProfile = [
-    "FULL_DEPTH_DEMOLITION", "PARTIAL_DEPTH_MILLING", "PARTIAL_DEPTH_REMOVAL", "COLD_MILLING",
-    "LOCAL_BREAKUP", "MECHANICAL_BREAKOUT", "REMOVE_AND_HAUL",
-  ].includes(profile.operationClass);
-  const baselineKeys = [
-    ...profile.requiredParameters,
-    "estimate_scope_mode",
-    ...(profile.canonicalWorkKey === "asphalt_demolition" ? ["work_scope"] : []),
-    ...(!removalProfile ? ASPHALT_MINIMAL_RESOURCE_REQUIRED_KEYS_V4 : [
-      "removal_control_interval_m2_per_test",
-      "removal_documentation_count",
-      "removal_labor_productivity_m2_per_man_hour",
-      profile.canonicalWorkKey === "asphalt_milling"
-        ? "milling_productivity_m3_per_machine_hour"
-        : "breakout_productivity_m3_per_machine_hour",
-    ]),
-    ...(!removalProfile && ["PARKING", "YARD_OR_SITE"].includes(profile.applicationContext)
-      ? ["project_scope"]
-      : []),
-  ].filter((key, index, all) => parameterKeys.includes(key) && all.indexOf(key) === index);
-  for (const key of baselineKeys) {
-    if (validParameter(key, values[key])) continue;
-    const baseline = getAsphaltRelatedBaselineAssumptionV4(profile, key);
-    if (!baseline) continue;
-    values[key] = baseline.value;
-    assumptionKeys.push(key);
-  }
+  // R6: historical examples are references, not effective inputs. Values
+  // admitted by parameterValue are explicit user/project values; an ordinary
+  // open or recalculate therefore keeps every absent parameter unresolved.
   for (const key of [
     "asphalt_reference_design_id", "asphalt_reference_design_sha256",
     "asphalt_reference_design_manifest", "asphalt_reference_design_fingerprint",
@@ -1431,10 +1423,10 @@ function metadataFor(profile: AsphaltRelatedProfileV4): Record<string, AsphaltRe
         const baseline = getAsphaltRelatedBaselineAssumptionV4(profile, key);
         return [key, baseline ? {
           ...metadata,
-          defaultValue: baseline.value,
-          defaultSourceId: baseline.sourceId,
-          defaultSourceVersion: baseline.sourceVersion,
-          defaultReasonRu: baseline.reasonRu,
+          referenceExampleValue: baseline.value,
+          referenceExampleSourceId: baseline.sourceId,
+          referenceExampleSourceVersion: baseline.sourceVersion,
+          referenceExampleReasonRu: baseline.reasonRu,
         } : metadata];
       }),
   );

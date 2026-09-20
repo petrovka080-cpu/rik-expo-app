@@ -246,18 +246,29 @@ async function commitTransactionalConsumerRepairBundleWrite(
 async function drainTransactionalConsumerRepairBundleWrites(
   key: string,
 ): Promise<DurableWriteResult> {
+  const maximumCoalescedWritesPerDrain = 1_024;
   let result: DurableWriteResult = {
     status: "UNCHANGED",
     version: "",
     previousVersion: null,
     checksum: "",
   };
-  while (true) {
+  for (let writeIndex = 0; writeIndex < maximumCoalescedWritesPerDrain; writeIndex += 1) {
     const pending = pendingWrites.get(key);
     if (!pending) return result;
     pendingWrites.delete(key);
     result = await commitTransactionalConsumerRepairBundleWrite(pending);
   }
+  pendingWrites.delete(key);
+  return {
+    status: "FAILED",
+    version: null,
+    error: {
+      code: "TRANSACTION_QUEUE_SATURATED",
+      message: "Превышен безопасный предел последовательных записей черновика.",
+      currentVersion: result.status === "FAILED" ? result.error.currentVersion : result.version,
+    },
+  };
 }
 
 export function queueTransactionalConsumerRepairBundleWrite(

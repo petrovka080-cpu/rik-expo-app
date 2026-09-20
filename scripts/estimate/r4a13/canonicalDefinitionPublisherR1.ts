@@ -88,6 +88,10 @@ function stable(value: unknown): unknown {
   return value;
 }
 
+function compareUtf8C(left: unknown, right: unknown): number {
+  return Buffer.compare(Buffer.from(String(left), "utf8"), Buffer.from(String(right), "utf8"));
+}
+
 function sha256(value: unknown): string {
   return createHash("sha256")
     .update(typeof value === "string" || Buffer.isBuffer(value)
@@ -164,7 +168,7 @@ export function createCanonicalDefinitionClonePlan(input: CanonicalDefinitionClo
       approved_template_baseline_id: input.baseline.id,
     })),
     formulas: [...input.representative.formulas]
-      .sort((left, right) => String(left.formula_id).localeCompare(String(right.formula_id)))
+      .sort((left, right) => compareUtf8C(left.formula_id, right.formula_id))
       .map((formula) => ({
       definition_version_id: input.definition.id,
       formula_id: formula.formula_id,
@@ -357,6 +361,30 @@ export async function resolveCanonicalApprovedBaselineLeaf(
   };
 }
 
+export async function preflightCanonicalParameterTruthMetadata(
+  client: Client,
+  parameters: readonly CanonicalPublisherJson[],
+  prefix: string,
+) {
+  const parameterValidation = (await client.query(`select parameter_id,
+      public.estimate_parameter_truth_metadata_valid_r3(value_type,truth_metadata) valid
+    from jsonb_to_recordset($1::jsonb)
+      as row(parameter_id text,value_type text,truth_metadata jsonb)
+    order by parameter_id`, [jsonb(parameters.map((parameter) => ({
+    parameter_id: parameter.parameter_id,
+    value_type: parameter.value_type,
+    truth_metadata: parameter.truth_metadata,
+  })), `${prefix}:PARAMETER_VALIDATION`, "array")])).rows as CanonicalPublisherJson[];
+  const invalidParameters = parameterValidation.filter((row) => row.valid !== true)
+    .map((row) => String(row.parameter_id));
+  invariant(invalidParameters.length === 0,
+    `${prefix}:PARAMETER_TRUTH_METADATA_INVALID:${invalidParameters.join(",")}`);
+  return {
+    status: "GREEN_CANONICAL_PARAMETER_TRUTH_METADATA_PREFLIGHT",
+    parameterCount: parameters.length,
+  };
+}
+
 export async function preflightCanonicalDefinitionPublishPlans(
   client: Client,
   plans: readonly CanonicalDefinitionPublishPlan[],
@@ -412,19 +440,7 @@ export async function preflightCanonicalDefinitionPublishPlans(
       invariant(parameter.truth_metadata.semantic_parameter_key === `${plan.definition.catalog_id}:${parameter.parameter_id}`,
         `${prefix}:PARAMETER_SEMANTIC_KEY:${parameter.parameter_id}`);
     }
-    const parameterValidation = (await client.query(`select parameter_id,
-        public.estimate_parameter_truth_metadata_valid_r3(value_type,truth_metadata) valid
-      from jsonb_to_recordset($1::jsonb)
-        as row(parameter_id text,value_type text,truth_metadata jsonb)
-      order by parameter_id`, [jsonb(plan.parameters.map((parameter) => ({
-        parameter_id: parameter.parameter_id,
-        value_type: parameter.value_type,
-        truth_metadata: parameter.truth_metadata,
-      })), `${prefix}:PARAMETER_VALIDATION`, "array")])).rows as CanonicalPublisherJson[];
-    const invalidParameters = parameterValidation.filter((row) => row.valid !== true)
-      .map((row) => String(row.parameter_id));
-    invariant(invalidParameters.length === 0,
-      `${prefix}:PARAMETER_TRUTH_METADATA_INVALID:${invalidParameters.join(",")}`);
+    await preflightCanonicalParameterTruthMetadata(client, plan.parameters, prefix);
 
     const formulaIds = new Set(plan.formulas.map((row) => String(row.formula_id)));
     const resourceIds = new Set<string>();
@@ -689,7 +705,8 @@ export async function auditPersistedCanonicalDefinition(
     .rows as CanonicalPublisherJson[];
   const formulas = (await client.query(`select definition_version_id,formula_id,output_unit_id,expression_source,
       ast,input_parameter_ids,ast_sha256 from public.estimate_formula_graph
-    where definition_version_id=$1 order by formula_id`, [plan.definition.id])).rows as CanonicalPublisherJson[];
+    where definition_version_id=$1 order by formula_id collate "C"`, [plan.definition.id]))
+    .rows as CanonicalPublisherJson[];
   const resources = (await client.query(`select id,definition_version_id,row_id,ordinal,section,category,title_ru,
       row_type,unit_id,formula_id,inclusion_ast,resource_graph,semantic_owner,cost_owner_id,
       procurement_eligible,source_metadata,row_sha256 from public.estimate_resource_spec

@@ -12,19 +12,27 @@ import type {
   CanonicalEstimateRevisionRowView,
   CanonicalEstimateRevisionView,
 } from "./contracts";
-import { CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION } from "./canonicalEstimateRevisionWriter";
+import {
+  CANONICAL_ESTIMATE_PRELIMINARY_REVISION_CONTRACT_VERSION,
+  isCanonicalEstimateRevisionContractVersion,
+} from "./canonicalEstimateRevisionWriter";
+import { normalizeCanonicalEstimateRowCategory } from "./canonicalEstimateRowCategory";
+import {
+  isCanonicalEstimateParameterRequiredForValues,
+  isCanonicalEstimateSourceManagedParameter,
+} from "./canonicalEstimateParameterSemantics";
 import { projectCanonicalEstimatePhysicalNormApplicabilityV1 } from "./canonicalEstimatePhysicalNormProjection";
 
 function sectionType(section: string, category: string): GlobalEstimateSectionType {
-  const value = `${section} ${category}`.toLocaleLowerCase("ru-RU");
-  if (value.includes("материал") || value.includes("material") || value.includes("отход") || value.includes("waste")) return "materials";
-  if (value.includes("оборудован") || value.includes("equipment") || value.includes("machinery")) return "equipment";
-  if (value.includes("достав") || value.includes("логист") || value.includes("delivery") || value.includes("transport")) return "delivery";
+  const normalized = normalizeCanonicalEstimateRowCategory(section, category);
+  if (normalized === "material") return "materials";
+  if (normalized === "equipment") return "equipment";
+  if (normalized === "delivery") return "delivery";
   return "labor";
 }
 
 function finiteNumber(value: string | null): number | null {
-  if (value == null) return null;
+  if (value == null || !value.trim()) return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
 }
@@ -61,7 +69,7 @@ function canonicalProjectMeasure(
   revision: CanonicalEstimateRevisionView,
   rows: readonly CanonicalEstimateRevisionRowView[],
 ): { quantity: number; unit: string } {
-  if (revision.revisionContractVersion !== CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION) {
+  if (!isCanonicalEstimateRevisionContractVersion(revision.revisionContractVersion)) {
     return {
       quantity: finiteNumber(rows[0]?.quantity) ?? 0,
       unit: rows[0]?.unitId ?? "item",
@@ -72,6 +80,17 @@ function canonicalProjectMeasure(
   const rawValue = String(revision.primaryMeasureValue ?? "").trim();
   const quantity = finiteNumber(rawValue);
   const resolvedParameter = parameterId ? revision.parameters[parameterId] : null;
+  if (
+    revision.revisionContractVersion === CANONICAL_ESTIMATE_PRELIMINARY_REVISION_CONTRACT_VERSION
+    && parameterId
+    && quantity == null
+    && (revision.preliminaryNeeds ?? []).some((need) => need.missingParameterIds.includes(parameterId))
+  ) {
+    return {
+      quantity: 0,
+      unit: String(revision.primaryMeasureUnitId ?? "").trim() || "item",
+    };
+  }
   if (!parameterId || quantity == null
     || finiteNumber(resolvedParameter == null ? null : String(resolvedParameter)) !== quantity) {
     throw Object.assign(new Error("canonical revision primary measure identity is invalid"), {
@@ -100,6 +119,7 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
   const currency = input.revision.currencyCode;
   const projectMeasure = canonicalProjectMeasure(input.revision, input.rows);
   const rows: StructuredEstimateRow[] = input.rows.map((row, index) => {
+    const normalizedCategory = normalizeCanonicalEstimateRowCategory(row.section, row.category);
     const type = sectionType(row.section, row.category);
     const quantity = finiteNumber(row.quantity) ?? 0;
     const unitPrice = finiteNumber(row.unitPrice);
@@ -108,6 +128,8 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
     const parameterDependencies = Array.isArray(row.calculationTrace?.inputParameterIds)
       ? row.calculationTrace.inputParameterIds.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
       : [];
+    const resourceGraph = record(row.calculationTrace?.resourceGraph);
+    const costTreatment = String(resourceGraph?.costTreatment ?? "").trim() || null;
     const physicalNormApplicability = projectCanonicalEstimatePhysicalNormApplicabilityV1({
       revision: input.revision,
       row,
@@ -148,7 +170,8 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
         smartEstimateProjectionV2: {
           progressiveDisclosure: true,
           stage: row.section,
-          category: row.category,
+          category: normalizedCategory,
+          sourceCategory: row.category,
           initiallyCollapsed: false,
           rowReachable: true,
           formulaExplanation: row.calculationTrace,
@@ -161,6 +184,10 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
         canonicalBackendReleaseId: input.revision.releaseId,
         canonicalBackendCatalogId: input.revision.catalogId,
         canonicalBackendOwnershipStatus: row.ownershipStatus,
+        canonicalCostTreatment: costTreatment,
+        payable: costTreatment == null
+          ? row.includedInEstimate
+          : !["INCLUDED_IN_RESOURCE_ROWS", "INFORMATIONAL_SCOPE", "CONTROL_OR_DOCUMENT"].includes(costTreatment),
         includedInEstimate: row.includedInEstimate,
         includedInProcurement: row.includedInProcurement,
         ...(physicalNormApplicability == null ? {} : {
@@ -295,6 +322,18 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
       formulaGraphVersion: input.revision.formulaGraphVersion,
       parameterSchemaHash: input.revision.parameterSchemaHash,
       parameters: input.revision.parameters,
+      parameterRequirements: input.catalog.parameterSchema.map((parameter) => ({
+        parameterId: parameter.parameterId,
+        titleRu: parameter.titleRu,
+        unitId: parameter.unitId,
+        visibilityRole: parameter.visibilityRole,
+        valueSourceRole: parameter.valueSourceRole,
+        sourceConfirmationRequired:
+          isCanonicalEstimateSourceManagedParameter(parameter)
+          && isCanonicalEstimateParameterRequiredForValues(parameter, input.revision.parameters),
+        guideShortRu: parameter.guide?.guideShortRu?.trim() || null,
+      })),
+      preliminaryNeeds: input.revision.preliminaryNeeds ?? [],
     },
     visiblePolicy: { noInternalKeysVisible: true, noGenericRowsVisible: true, controlRowsAreNotPaidItems: true, uiPdfSameRows: true },
     fakeGreenClaimed: false,

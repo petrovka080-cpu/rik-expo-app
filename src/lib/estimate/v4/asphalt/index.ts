@@ -19,3 +19,4 @@ export * from "./asphaltAssociatedWorkAssembliesV4";
 export * from "./asphaltRemovalResourceAssembliesV4";
 export * from "./auditAsphaltProfessionalEstimateV4";
 export * from "./auditFullRoadInfrastructurePhase1DV4";
+export * from "./asphaltRelatedAdmissionR6";

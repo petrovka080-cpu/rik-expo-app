@@ -60,8 +60,14 @@ function runShard(project) {
 }
 
 const startedAt = Date.now();
-const results = await Promise.all(shards.map(runShard));
-for (const result of results) {
+const results = [];
+// A single full compiler already approaches the host's measured free-memory
+// window. Run complete coverage shards sequentially so the product, scripts
+// and both test partitions are all checked without four TypeScript heaps
+// competing and turning a type error into an OOM.
+for (const project of shards) {
+  const result = await runShard(project);
+  results.push(result);
   const output = `${result.stdout}${result.stderr}`.trim();
   if (output) process.stderr.write(`${output}\n`);
   process.stdout.write(

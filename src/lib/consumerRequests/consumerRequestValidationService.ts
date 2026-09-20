@@ -5,6 +5,10 @@ import type {
   ConsumerRequestValidationResult,
   ConsumerRepairDraftBundle,
 } from "./consumerRequestTypes";
+import {
+  consumerEstimateUnpricedPayableItems,
+  consumerEstimateUnresolvedQuantityItems,
+} from "./consumerEstimateReadiness";
 
 function hasUsefulDescription(bundle: ConsumerRepairDraftBundle): boolean {
   return (bundle.draft.problemText ?? "").trim().length >= 20;
@@ -162,6 +166,24 @@ export function validateConsumerRepairRequestForApprove(
   }
 
   errors.push(...consumerRepairExactAsphaltApprovalErrors(bundle));
+
+  const unresolvedQuantityItems = consumerEstimateUnresolvedQuantityItems(bundle);
+  if (unresolvedQuantityItems.length > 0) {
+    errors.push({
+      code: "ESTIMATE_QUANTITY_REQUIRED",
+      messageRu: `Смету нельзя подтвердить: у ${unresolvedQuantityItems.length} применимых позиций нет обоснованного количества. Данные объекта вводит заказчик, нормы должен предоставить расчётный каталог.`,
+      field: "items.quantity",
+    });
+  }
+
+  const unpricedPayableItems = consumerEstimateUnpricedPayableItems(bundle);
+  if (unpricedPayableItems.length > 0) {
+    errors.push({
+      code: "ESTIMATE_PRICES_REQUIRED",
+      messageRu: `Смету нельзя подтвердить: у ${unpricedPayableItems.length} оплачиваемых позиций нет цены. Укажите цену вручную или выберите актуальный источник цены.`,
+      field: "items.unitPrice",
+    });
+  }
 
   if (bundle.items.length < 1) {
     errors.push({

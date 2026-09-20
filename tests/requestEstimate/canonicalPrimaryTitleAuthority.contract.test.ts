@@ -22,4 +22,21 @@ describe("canonical primary title authority", () => {
     expect(viewModel?.title).toBe("Кровельные работы — 200 м²");
     expect(viewModel?.summary).toContain("Кровельные работы — 200 м²");
   });
+
+  it("localizes a legacy raw piece code in a persisted canonical title", () => {
+    const source = foundationDraftWithManualCatalogItem();
+    if (!source.structuredEstimatePayload) throw new Error("structured estimate fixture is missing");
+    const bundle = {
+      ...source,
+      structuredEstimatePayload: {
+        ...source.structuredEstimatePayload,
+        workTitle: "Монтаж закладных — 28 piece",
+      },
+    };
+
+    const viewModel = buildRequestEstimateViewModel(bundle);
+
+    expect(viewModel?.title).toBe("Монтаж закладных — 28 шт.");
+    expect(viewModel?.summary).not.toMatch(/\bpiece\b/u);
+  });
 });

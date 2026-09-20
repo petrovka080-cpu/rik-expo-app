@@ -2,6 +2,7 @@ import { router as rootRouter, type Href } from "expo-router";
 import { InteractionManager, Platform } from "react-native";
 import { registerTimeout } from "../lifecycle/timerRegistry";
 import { logger } from "../logger";
+import { normalizePostAuthReturnTo } from "../authRouting";
 import { redactSensitiveText } from "../security/redaction";
 
 export type PdfViewerRouterLike = {
@@ -23,16 +24,25 @@ function toSafeRouteParam(value: unknown) {
   return String(value ?? "").trim();
 }
 
-export function createPdfDocumentViewerHref(sessionId: unknown, openToken: unknown) {
+export function createPdfDocumentViewerHref(
+  sessionId: unknown,
+  openToken: unknown,
+  returnTo?: unknown,
+) {
   const safeSessionId = toSafeRouteParam(sessionId);
   const safeOpenToken = toSafeRouteParam(openToken);
+  const safeReturnTo = normalizePostAuthReturnTo(toSafeRouteParam(returnTo));
   if (!safeSessionId) {
     throw new Error("PDF viewer navigation requires a non-empty sessionId");
   }
+  const returnToQuery = safeReturnTo
+    ? `&returnTo=${encodeURIComponent(safeReturnTo)}`
+    : "";
   return {
     safeSessionId,
     safeOpenToken,
-    href: `/pdf-viewer?sessionId=${encodeURIComponent(safeSessionId)}&openToken=${encodeURIComponent(safeOpenToken)}` as Href,
+    safeReturnTo,
+    href: `/pdf-viewer?sessionId=${encodeURIComponent(safeSessionId)}&openToken=${encodeURIComponent(safeOpenToken)}${returnToQuery}` as Href,
   };
 }
 

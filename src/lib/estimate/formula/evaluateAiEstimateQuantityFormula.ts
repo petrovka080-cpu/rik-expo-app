@@ -33,12 +33,30 @@ const SAFE_FUNCTIONS: Record<string, (...args: number[]) => number> = {
 };
 
 const SAFE_FUNCTION_NAMES = new Set(Object.keys(SAFE_FUNCTIONS));
+const FORMULA_RUNTIME_CACHE_LIMIT = 2048;
+type TokenisedFormula = {
+  tokens: readonly Token[];
+  unsupportedTokens: readonly string[];
+};
+const tokenCache = new Map<string, TokenisedFormula>();
+const identifierCache = new Map<string, readonly string[]>();
+
+function setBoundedCacheValue<T>(cache: Map<string, T>, key: string, value: T): T {
+  cache.delete(key);
+  cache.set(key, value);
+  while (cache.size > FORMULA_RUNTIME_CACHE_LIMIT) {
+    const oldest = cache.keys().next().value;
+    if (oldest == null) break;
+    cache.delete(oldest);
+  }
+  return value;
+}
 
 function uniqueSorted(values: readonly string[]): string[] {
   return [...new Set(values)].sort();
 }
 
-function tokeniseFormula(expression: string): { tokens: Token[]; unsupportedTokens: string[] } {
+function tokeniseFormula(expression: string): TokenisedFormula {
   const tokens: Token[] = [];
   const unsupportedTokens: string[] = [];
   let index = 0;
@@ -79,7 +97,20 @@ function tokeniseFormula(expression: string): { tokens: Token[]; unsupportedToke
     unsupportedTokens.push(char);
     index += 1;
   }
-  return { tokens, unsupportedTokens };
+  return {
+    tokens: Object.freeze(tokens),
+    unsupportedTokens: Object.freeze(unsupportedTokens),
+  };
+}
+
+function cachedFormulaTokens(expression: string): TokenisedFormula {
+  const cached = tokenCache.get(expression);
+  if (cached) {
+    tokenCache.delete(expression);
+    tokenCache.set(expression, cached);
+    return cached;
+  }
+  return setBoundedCacheValue(tokenCache, expression, tokeniseFormula(expression));
 }
 
 function numericEnvValue(value: AiEstimateFormulaEnvironmentValue): number {
@@ -241,10 +272,46 @@ class FormulaParser {
   }
 }
 
-export function extractAiEstimateFormulaIdentifiers(formula: string | null | undefined): string[] {
+export function extractAiEstimateFormulaIdentifiers(
+  formula: string | null | undefined,
+): string[] {
   const expression = String(formula ?? "");
-  const identifiers: string[] = expression.match(/\b[a-z][a-z0-9_]*\b/gi) ?? [];
-  return uniqueSorted(identifiers.filter((token) => !SAFE_FUNCTION_NAMES.has(token.toLowerCase())));
+  const cached = identifierCache.get(expression);
+  if (cached) {
+    identifierCache.delete(expression);
+    identifierCache.set(expression, cached);
+    return [...cached];
+  }
+  const { tokens } = cachedFormulaTokens(expression);
+  const identifiers = tokens.flatMap((token, index) => {
+    if (token.kind !== "identifier") return [];
+    const next = tokens[index + 1];
+    const isFunctionCall = next?.kind === "paren" && next.value === "(";
+    return isFunctionCall ? [] : [token.value];
+  });
+  const cachedIdentifiers = setBoundedCacheValue(
+    identifierCache,
+    expression,
+    Object.freeze(uniqueSorted(identifiers)),
+  );
+  return [...cachedIdentifiers];
+}
+
+export function clearAiEstimateFormulaRuntimeCaches(): void {
+  tokenCache.clear();
+  identifierCache.clear();
+}
+
+export function getAiEstimateFormulaRuntimeCacheStats(): {
+  token_cache_size: number;
+  identifier_cache_size: number;
+  limit_per_cache: number;
+} {
+  return {
+    token_cache_size: tokenCache.size,
+    identifier_cache_size: identifierCache.size,
+    limit_per_cache: FORMULA_RUNTIME_CACHE_LIMIT,
+  };
 }
 
 export function evaluateAiEstimateQuantityFormula(input: {
@@ -262,7 +329,7 @@ export function evaluateAiEstimateQuantityFormula(input: {
       error: "empty_formula",
     };
   }
-  const { tokens, unsupportedTokens } = tokeniseFormula(formula);
+  const { tokens, unsupportedTokens } = cachedFormulaTokens(formula);
   if (unsupportedTokens.length > 0) {
     return {
       ok: false,

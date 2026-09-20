@@ -165,6 +165,7 @@ export function ProfileContent({ verifiedIdentity }: ProfileContentProps) {
           accessSourceSnapshot?.ownedCompanyId ?? company?.id ?? null,
         companyMemberships: accessSourceSnapshot?.companyMemberships ?? [],
         listingsCount: accessSourceSnapshot?.listingsCount ?? 0,
+        developerOverride: accessSourceSnapshot?.developerOverride ?? null,
         requestedActiveContext,
       }),
     [
@@ -367,7 +368,6 @@ export function ProfileContent({ verifiedIdentity }: ProfileContentProps) {
         errorMessage={profileLoadError}
         onRetry={retryProfileLoad}
         onSignOut={() => void performSignOut()}
-        verifiedIdentity={verifiedIdentity}
       />
     );
   }
@@ -397,7 +397,6 @@ export function ProfileContent({ verifiedIdentity }: ProfileContentProps) {
         onSelectActiveContext={handleSelectActiveContext}
         onOpenActiveContext={openActiveContext}
         onSignOut={handleSignOut}
-        verifiedIdentity={verifiedIdentity}
         canEditProfile={verifiedIdentity.source === "verified_company_membership"}
       />
 

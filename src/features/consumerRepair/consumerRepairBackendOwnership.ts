@@ -5,6 +5,10 @@ export type ConsumerRepairCanonicalBackendBinding = {
   releaseId: string;
 };
 
+export type ConsumerRepairCanonicalMutationSource = ConsumerRepairCanonicalBackendBinding & {
+  draftId: string;
+};
+
 function bindingFromItem(
   item: ConsumerRepairDraftBundle["items"][number] | undefined,
 ): ConsumerRepairCanonicalBackendBinding | null {
@@ -35,6 +39,20 @@ export function consumerRepairCanonicalBackendBinding(
     if (binding) return binding;
   }
   return bindingFromHistory(bundle);
+}
+
+export function consumerRepairCanonicalMutationSourceMatchesBundle(
+  source: ConsumerRepairCanonicalMutationSource,
+  bundle: ConsumerRepairDraftBundle | null,
+): boolean {
+  const current = consumerRepairCanonicalBackendBinding(bundle);
+  return Boolean(
+    bundle
+    && current
+    && bundle.draft.id === source.draftId
+    && current.revisionId === source.revisionId
+    && current.releaseId === source.releaseId,
+  );
 }
 
 export function consumerRepairRevisionUsesGenericFallback(

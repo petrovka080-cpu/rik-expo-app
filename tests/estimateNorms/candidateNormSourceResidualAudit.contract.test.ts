@@ -2,11 +2,27 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import {
+  classifyLegacyClaimCatalogPromise,
   LEGACY_PACK_SOURCE_IDS,
   VERIFIED_SOURCE_IDS,
 } from "../../scripts/estimate/candidateNormSourceResidualAudit";
 
 describe("current candidate normative source residual audit", () => {
+  it("does not treat a generated _form_ key as proof of a standalone formwork work", () => {
+    expect(classifyLegacyClaimCatalogPromise({
+      sourceId: "src_professional_norm_pack_formwork_contact_area_m2_m3_concrete_element_v1",
+      catalogId: "canonical-work:base:concrete_foundation_interior_concrete_slab_form_standard",
+      canonicalNameRu: "устройство бетонной плиты в стандартной зоне",
+      primaryUom: "м³",
+    })).toBe("FULL_WORK_COMPONENT_APPLICABILITY_REVIEW_REQUIRED");
+    expect(classifyLegacyClaimCatalogPromise({
+      sourceId: "src_professional_norm_pack_formwork_contact_area_m2_m3_concrete_element_v1",
+      catalogId: "canonical-work:base:explicit_formwork",
+      canonicalNameRu: "съёмная опалубка стены",
+      primaryUom: "м²",
+    })).toBe("STANDALONE_FORMWORK_PROMISE");
+  });
+
   it("keeps the exact 8+4 denominator explicit and disjoint", () => {
     expect(LEGACY_PACK_SOURCE_IDS).toHaveLength(8);
     expect(VERIFIED_SOURCE_IDS).toHaveLength(4);

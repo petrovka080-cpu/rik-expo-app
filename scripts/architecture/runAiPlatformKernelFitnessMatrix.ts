@@ -1,6 +1,7 @@
 import path from "node:path";
 
 import { createAiRuntimeKernel } from "../../src/lib/aiPlatform/kernel/createAiRuntimeKernel";
+import type { AiEstimatePlugin } from "../../src/lib/aiPlatform/plugins/estimate/AiEstimatePluginContract";
 import { AI_PLATFORM_KERNEL_ROOT, currentGitState, timestampForPath, writeJson } from "./aiPlatformKernelAuditUtils";
 
 export const GREEN_AI_PLATFORM_KERNEL_FITNESS_MATRIX = "GREEN_AI_PLATFORM_KERNEL_FITNESS_MATRIX" as const;
@@ -19,9 +20,23 @@ const groups = [
   { key: "redaction", surface: "chat", count: 20, mode: "safe_read", redaction: true },
 ] as const;
 
+const fitnessEstimatePlugin: AiEstimatePlugin = {
+  pluginId: "ai_estimate",
+  async run({ runInput }) {
+    return {
+      flowId: runInput.flowId,
+      status: "completed",
+      userVisibleAnswerRu: "Kernel передал расчёт в подключаемый модуль сметы.",
+      draft: { backendCanonical: true, kernelFitnessProbe: true },
+    };
+  },
+};
+
 export async function runAiPlatformKernelFitnessMatrix(input: { writeSummary?: boolean } = {}) {
   const git = currentGitState();
-  const kernel = createAiRuntimeKernel();
+  // This matrix verifies kernel routing/policy/ledger mechanics. Canonical
+  // catalog and compilation correctness are covered by their own backend suite.
+  const kernel = createAiRuntimeKernel({ estimatePlugin: fitnessEstimatePlugin });
   const groupResults: Record<string, { passed: number; total: number }> = {};
   for (const group of groups) {
     let passed = 0;
@@ -56,6 +71,7 @@ export async function runAiPlatformKernelFitnessMatrix(input: { writeSummary?: b
     final_status: allPassed ? GREEN_AI_PLATFORM_KERNEL_FITNESS_MATRIX : STOP_AI_PLATFORM_KERNEL_FITNESS_MATRIX_FAILED,
     ...git,
     ai_platform_fitness_matrix_created: true,
+    estimate_probe_kind: "injected_kernel_boundary_probe",
     estimate_cases_passed: ratio("estimate"),
     chat_cases_passed: ratio("chat"),
     director_cases_passed: ratio("director"),

@@ -129,6 +129,17 @@ export function runAiEstimateCoreBenchmark(options: {
   const iterations = Math.max(options.iterations ?? 5, 1);
   const sourceSha = options.sourceSha ?? currentSourceSha();
   const cases = buildPerformanceCriticalCases(casesLimit);
+  const warmupCase = cases[0];
+  if (warmupCase) {
+    // The operation SLOs describe the resident estimator used after the app has
+    // loaded its immutable catalog. Keep module/catalog hydration out of the
+    // first prompt measurement; cold-start is measured by the dedicated
+    // Web/native lifecycle gates instead of being misattributed to one match.
+    buildEstimateFromInlineWorkPrompt({
+      rawInput: warmupCase.prompt,
+      selectedTemplateId: warmupCase.selected_template_id,
+    });
+  }
   const historyManifest = buildApprovedHistoryPerformanceManifest(50000);
   const historyPayloads = new Map(historyManifest.map((record) => [record.approvedEstimateId, {
     rowCount: 6,
@@ -334,6 +345,8 @@ export function runAiEstimateCoreBenchmark(options: {
     benchmark_cases_total: cases.length,
     benchmark_iterations: iterations,
     benchmark_operations_total: results.length,
+    benchmark_warmup_operations: warmupCase ? 1 : 0,
+    measurement_profile: "resident_catalog_after_explicit_warmup",
     benchmark_operations_passed: results.length - failedResults.length,
     slow_operations_count: validation.slow_operations_count,
     memory_budget_violations_count: validation.memory_budget_violations_count,

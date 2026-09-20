@@ -38,6 +38,9 @@ export type CompiledRevisionExpectedIdentity = {
   canonicalOwner: string;
   previousRevisionId: string | null;
   baselineRevisionOrdinal: number;
+  /** Null only for the first observed revision when the backend catalog owns
+   * a global durable ordinal. Its exact successor is still checked as N+1. */
+  expectedRevisionOrdinal?: number | null;
   baselineBuildCount: number;
   expectedBuildDelta: 0 | 1;
   expectedRowCount: number | null;
@@ -208,12 +211,15 @@ export function assessCompiledRevisionTransition(input: {
 
   if (!marker) return { status: "pending", evidence: null, failureToken: null };
 
-  const expectedOrdinal = expected.baselineRevisionOrdinal + 1;
+  const expectedOrdinal = expected.expectedRevisionOrdinal === null
+    ? null
+    : expected.expectedRevisionOrdinal ?? expected.baselineRevisionOrdinal + 1;
   if (
     marker.selectedCatalogId !== expected.selectedCatalogId
     || marker.selectedWorkKey !== expected.selectedWorkKey
     || marker.canonicalOwner !== expected.canonicalOwner
-    || marker.revisionOrdinal !== expectedOrdinal
+    || marker.revisionOrdinal <= 0
+    || (expectedOrdinal != null && marker.revisionOrdinal !== expectedOrdinal)
     || marker.rowCount <= 0
     || (expected.expectedRowCount != null && marker.rowCount !== expected.expectedRowCount)
     || marker.calculationStatus !== expected.expectedCalculationStatus
@@ -278,7 +284,11 @@ export async function findCompiledRevisionMarkerAcrossViewport(
   options: CompiledRevisionViewportSearchOptions,
 ): Promise<CompiledRevisionViewportSearchResult> {
   const maxSwipes = Math.min(12, Math.max(0, options.maxSwipes ?? 12));
-  const maxPendingMarkerPolls = Math.min(4, Math.max(0, options.maxPendingMarkerPolls ?? 4));
+  // A runtime build can finish before the transactional durable projection is
+  // committed back into the React Native tree. Keep the exact old marker in
+  // place and poll it for a bounded window long enough to cover that commit;
+  // identity, ordinal, row-count and status checks below remain fail-closed.
+  const maxPendingMarkerPolls = Math.min(12, Math.max(0, options.maxPendingMarkerPolls ?? 12));
   let snapshot = await options.readViewport();
   if (snapshot.ok === false) {
     return {
@@ -295,6 +305,31 @@ export async function findCompiledRevisionMarkerAcrossViewport(
   let noProgressCount = 0;
   let pendingMarkerPolls = 0;
   await options.onViewport?.("before", 0, snapshot);
+
+  // A previous case can leave the shared request ScrollView inside an open,
+  // long parameter panel. Scanning only farther down from that displaced
+  // viewport can never reach the revision marker beside the summary. Recover
+  // the known summary anchor once before the bounded forward scan; the exact
+  // identity assessment below remains unchanged and fail-closed.
+  if (compiledRevisionMarkerIds(snapshot.nodes).length === 0 && options.recoverKnownAnchor) {
+    const recovered = await options.recoverKnownAnchor(snapshot);
+    if (recovered) {
+      if (recovered.ok === false) {
+        return {
+          status: "ui_dump_unavailable",
+          snapshot: recovered,
+          evidence: null,
+          failureToken: STOP_R9_HARNESS_UI_DUMP_UNAVAILABLE,
+          swipes: 0,
+          viewportFingerprints,
+        };
+      }
+      snapshot = recovered;
+      fingerprint = options.fingerprint(snapshot);
+      viewportFingerprints.push(fingerprint);
+      await options.onViewport?.("anchor_recovery", 0, snapshot);
+    }
+  }
 
   for (let step = 0; step <= maxSwipes; step += 1) {
     let assessment = assessCompiledRevisionTransition({

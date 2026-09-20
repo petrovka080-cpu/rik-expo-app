@@ -1,6 +1,10 @@
 import { resolvedEstimateIdentityChecksum } from "../../../resolvedEstimateIdentityChecksum";
 import type { EstimateDraftRevision, EstimateResolvedIdentity } from "../../../estimateDraftRevisionContract";
 import {
+  ELEVATED_WORK_ACCESS_POLICY_ID,
+  isElevatedWorkAccessSupplement,
+} from "../../../elevatedWorkAccessPolicy";
+import {
   DRYWALL_ARCHITECTURAL_ELEMENT_PROFESSIONAL_CATALOG_IDS_V4,
   drywallArchitecturalElementCalculationStrategyIdV4,
   drywallArchitecturalElementProfessionalOwnerIdV4,
@@ -22,6 +26,68 @@ const ARCHITECTURAL_AUTHORIZED = new Set(DRYWALL_ARCHITECTURAL_ELEMENT_PROFESSIO
 const FLAT_CEILING_AUTHORIZED = new Set(DRYWALL_FLAT_CEILING_PROFESSIONAL_CATALOG_IDS_V6);
 const DOMAIN_COMPLETION_AUTHORIZED = new Set(DRYWALL_DOMAIN_COMPLETION_CATALOG_IDS_V7);
 const AUTHORIZED = new Set([...ARCHITECTURAL_AUTHORIZED, ...FLAT_CEILING_AUTHORIZED, ...DOMAIN_COMPLETION_AUTHORIZED]);
+
+function assertRevisionIdentityIntegrity(
+  revision: EstimateDraftRevision,
+  input: {
+    catalogId: string;
+    workKey: string;
+    owner: string;
+    strategy: string;
+    formulaGraphVersion: string;
+  },
+): void {
+  const prior = revision.resolvedIdentity;
+  if (prior) {
+    const { checksum, ...identityWithoutChecksum } = prior;
+    if (checksum !== resolvedEstimateIdentityChecksum(identityWithoutChecksum)) {
+      throw new Error("INTERIOR_REVISION_IDENTITY_CORRUPT:checksum_mismatch");
+    }
+  }
+
+  const selectedIsCanonical = revision.selectedTemplateId === input.owner;
+  const traceIsCanonical = revision.trace.selectedTemplateId === input.owner;
+  const identityIsCanonical = Boolean(
+    prior &&
+    prior.passportId === input.owner &&
+    prior.semanticOwner === input.owner &&
+    prior.calculationStrategyId === input.strategy &&
+    prior.formulaGraphVersion === input.formulaGraphVersion &&
+    prior.legacyFallbackUsed !== true,
+  );
+  const rowsAreCanonical = revision.boq.rows.every((row) =>
+    isCanonicalInteriorRow(row, input) || isIdentityBoundAccessSupplement(row, input),
+  );
+  const canonicalSignals = [
+    selectedIsCanonical,
+    traceIsCanonical,
+    identityIsCanonical,
+    ...(revision.boq.rows.length > 0 ? [rowsAreCanonical] : []),
+  ];
+  if (canonicalSignals.some(Boolean) && !canonicalSignals.every(Boolean)) {
+    throw new Error("INTERIOR_REVISION_IDENTITY_CORRUPT:mixed_legacy_and_canonical_identity");
+  }
+}
+
+function isCanonicalInteriorRow(
+  row: EstimateDraftRevision["boq"]["rows"][number],
+  input: { owner: string; strategy: string },
+): boolean {
+  return row.templateId === input.owner &&
+    row.sourceParameters?.workSemanticOwner === input.owner &&
+    row.sourceParameters?.professionalEstimatePassportId === input.owner &&
+    row.sourceParameters?.calculationStrategyId === input.strategy;
+}
+
+function isIdentityBoundAccessSupplement(
+  row: EstimateDraftRevision["boq"]["rows"][number],
+  input: { catalogId: string; workKey: string },
+): boolean {
+  if (!isElevatedWorkAccessSupplement(row) || row.templateId !== ELEVATED_WORK_ACCESS_POLICY_ID) return false;
+  const selectedCatalogWorkId = row.sourceParameters?.selectedCatalogWorkId;
+  const selectedWorkKey = row.sourceParameters?.selectedWorkKey;
+  return selectedCatalogWorkId === input.catalogId || selectedWorkKey === input.workKey;
+}
 
 function catalogIdFromRevision(revision: EstimateDraftRevision): string | null {
   const direct = revision.resolvedIdentity?.requestedCatalogWorkId;
@@ -65,16 +131,21 @@ export function migrateDrywallArchitecturalElementRevisionV4(revision: EstimateD
   const flatCeiling = FLAT_CEILING_AUTHORIZED.has(catalogId);
   const semanticVersion = domainCompletion ? "7.0.0" : flatCeiling ? "6.0.0" : "4.0.0";
   const formulaGraphVersion = domainCompletion ? "FormulaGraphV7" : flatCeiling ? "FormulaGraphV6" : "FormulaGraphV4";
+  const identityContext = {
+    catalogId,
+    workKey: inventory.work_key,
+    owner,
+    strategy,
+    formulaGraphVersion,
+  };
+  assertRevisionIdentityIntegrity(revision, identityContext);
   const canonicalSchemaId = `canonical:${schema.schema_id}:${catalogId}`;
   const prior = revision.resolvedIdentity;
   const alreadyCanonical = prior?.requestedCatalogWorkId === catalogId && prior.passportId === owner &&
     prior.semanticOwner === owner && prior.calculationStrategyId === strategy && prior.formulaGraphVersion === formulaGraphVersion &&
     prior.legacyFallbackUsed !== true &&
-    revision.boq.rows.length > 0 && revision.boq.rows.every((row) =>
-      row.sourceParameters?.professionalDomainFactoryV1 === true && row.sourceParameters?.catalogId === catalogId &&
-      row.sourceParameters?.workSemanticOwner === owner &&
-      row.sourceParameters?.professionalEstimatePassportId === owner &&
-      row.sourceParameters?.calculationStrategyId === strategy);
+    revision.boq.rows.every((row) =>
+      isCanonicalInteriorRow(row, identityContext) || isIdentityBoundAccessSupplement(row, identityContext));
   if (alreadyCanonical) return revision;
   const identityWithoutChecksum: Omit<EstimateResolvedIdentity, "checksum"> = {
     requestedCatalogWorkId: catalogId,
@@ -116,21 +187,23 @@ export function migrateDrywallArchitecturalElementRevisionV4(revision: EstimateD
     resolvedIdentity,
     boq: {
       sections: revision.boq.sections.map((section) => ({ ...section, rowIds: [...section.rowIds] })),
-      rows: revision.boq.rows.map((row) => ({
-        ...row,
-        templateId: owner,
-        sourceParameters: {
-          ...(row.sourceParameters ?? {}), professionalDomainFactoryV1: true, registeredProfessionalDomainV4: true,
-          legacyRevisionMigratedV4: true, revisionMigrationVersion: DRYWALL_ARCHITECTURAL_ELEMENT_REVISION_MIGRATION_VERSION_V4,
-          ...(flatCeiling ? { drywallFlatCeilingRevisionMigratedV6: true, formulaGraphVersion: "FormulaGraphV6", resourceGraphVersion: "ResourceGraphV6" } : {}),
-          ...(domainCompletion ? { drywallDomainCompletionRevisionMigratedV7: true, formulaGraphVersion: "FormulaGraphV7", resourceGraphVersion: "ResourceGraphV7" } : {}),
-          domainId: INTERIOR_FINISHES_COMPLETE_DOMAIN_ID, domainVersion: interiorFinishesDomainFactory.package.manifest.domain_version,
-          catalogId, workKey: inventory.work_key, canonicalTechnologyId: inventory.canonical_technology_id,
-          parameterSchemaId: canonicalSchemaId, parameterSchemaVersion: schema.schema_version,
-          parameterKeys: schema.parameters.map((parameter) => parameter.parameter_id),
-          workSemanticOwner: owner, professionalEstimatePassportId: owner, calculationStrategyId: strategy,
-        },
-      })),
+      rows: revision.boq.rows.map((row) => isIdentityBoundAccessSupplement(row, identityContext)
+        ? { ...row, sourceParameters: { ...(row.sourceParameters ?? {}) } }
+        : ({
+          ...row,
+          templateId: owner,
+          sourceParameters: {
+            ...(row.sourceParameters ?? {}), professionalDomainFactoryV1: true, registeredProfessionalDomainV4: true,
+            legacyRevisionMigratedV4: true, revisionMigrationVersion: DRYWALL_ARCHITECTURAL_ELEMENT_REVISION_MIGRATION_VERSION_V4,
+            ...(flatCeiling ? { drywallFlatCeilingRevisionMigratedV6: true, formulaGraphVersion: "FormulaGraphV6", resourceGraphVersion: "ResourceGraphV6" } : {}),
+            ...(domainCompletion ? { drywallDomainCompletionRevisionMigratedV7: true, formulaGraphVersion: "FormulaGraphV7", resourceGraphVersion: "ResourceGraphV7" } : {}),
+            domainId: INTERIOR_FINISHES_COMPLETE_DOMAIN_ID, domainVersion: interiorFinishesDomainFactory.package.manifest.domain_version,
+            catalogId, workKey: inventory.work_key, canonicalTechnologyId: inventory.canonical_technology_id,
+            parameterSchemaId: canonicalSchemaId, parameterSchemaVersion: schema.schema_version,
+            parameterKeys: schema.parameters.map((parameter) => parameter.parameter_id),
+            workSemanticOwner: owner, professionalEstimatePassportId: owner, calculationStrategyId: strategy,
+          },
+        })),
     },
     trace: {
       ...revision.trace,

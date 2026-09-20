@@ -2,6 +2,23 @@ import type { GlobalWorkCategory } from "../globalEstimate";
 import { normalizeDimensionText } from "../constructionFormulas";
 import type { EstimatorKernelComplexity } from "./estimatorKernelTypes";
 
+const HANDOVER_PREPARATION_RE =
+  /(?:подготов\p{L}*\s+(?:объект\p{L}*|помещен\p{L}*|работ\p{L}*)?\s*к\s+(?:сдач\p{L}*|передач\p{L}*|при[её]м\p{L}*)|prepar\p{L}*\s+(?:the\s+)?(?:site|room|work)?\s*(?:for\s+)?handover)/giu;
+
+const DRYWALL_CEILING_PREPARATION_RE =
+  /(?:подготов\p{L}*.{0,80}(?:потол\p{L}*.{0,80}(?:гипсокартон\p{L}*|гкл)|(?:гипсокартон\p{L}*|гкл).{0,80}потол\p{L}*)|(?:потол\p{L}*.{0,80}(?:гипсокартон\p{L}*|гкл)|(?:гипсокартон\p{L}*|гкл).{0,80}потол\p{L}*).{0,80}подготов\p{L}*|prepar\p{L}*.{0,80}(?:drywall|gypsum).{0,80}ceiling|(?:drywall|gypsum).{0,80}ceiling.{0,80}prepar\p{L}*)/iu;
+
+/** Matches preparation of an existing drywall ceiling as one local intent. */
+export function isDrywallCeilingPreparationIntent(prompt: string): boolean {
+  const normalized = prompt
+    .normalize("NFKC")
+    .toLocaleLowerCase("ru-RU")
+    .replace(HANDOVER_PREPARATION_RE, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return DRYWALL_CEILING_PREPARATION_RE.test(normalized);
+}
+
 export type EstimatorDomainLexiconEntry = {
   domain: string;
   terms: readonly string[];
@@ -108,6 +125,16 @@ export const ESTIMATOR_DOMAIN_LEXICON: readonly EstimatorDomainLexiconEntry[] = 
   e({ domain: "cranes_regulated", terms: ["кран", "кран-балк", "тельфер", "грузоподъем"], casePhrases: ["монтаж промышленного крана", "установка кран-балки", "монтаж тельфера", "грузоподъемное оборудование", "рельсовый путь крана"], category: "metalworks", object: "industrial_crane", operation: "installation", method: "regulated_crane_install", materialSystem: "industrial_crane_system", complexity: "infrastructure", requiredMaterials: ["крановое оборудование", "рельсовый путь", "анкера", "электропитание крана"], requiredLabor: ["обследование пролетов", "монтаж рельсов", "монтаж крана", "испытания грузоподъемности"], requiredEquipmentOrWarnings: ["кран для монтажа", "лицензированный подрядчик"], requiredLogisticsOrWarnings: ["доставка оборудования", "такелажный план"], exclusions: sharedExclusions, clarifyingQuestions: sharedQuestions, unitRules: ["crane_set", "rail_linear_m"], regulatedSafetyRequired: true }),
 ];
 
+// The lexicon is immutable. Normalizing every term for every estimate made the
+// cost of resolving a work grow with both the request count and the complete
+// domain catalog. Keep the exact same matching data, but compile it once when
+// the platform kernel module is loaded.
+const NORMALIZED_ESTIMATOR_DOMAIN_TERMS = ESTIMATOR_DOMAIN_LEXICON.flatMap((item) =>
+  [...item.terms, ...item.casePhrases]
+    .map((term) => ({ item, term: normalizeDimensionText(term) }))
+    .filter(({ term }) => term.length > 0),
+);
+
 export type EstimatorResolvedDomainSignature = {
   workKey: string;
   titleRu: string;
@@ -133,12 +160,8 @@ function workKeyForEstimatorDomain(entry: EstimatorDomainLexiconEntry): string {
 
 export function resolveEstimatorDomainSignature(text: string): EstimatorResolvedDomainSignature | null {
   const normalized = normalizeDimensionText(text);
-  const matches = ESTIMATOR_DOMAIN_LEXICON
-    .flatMap((item) =>
-      [...item.terms, ...item.casePhrases]
-        .map((term) => ({ item, term: normalizeDimensionText(term) }))
-        .filter(({ term }) => term.length > 0 && normalized.includes(term)),
-    );
+  const matches = NORMALIZED_ESTIMATOR_DOMAIN_TERMS
+    .filter(({ term }) => normalized.includes(term));
   const demolitionDominant = /^(?:смета\s+на\s+)?(?:демонтаж|снос|разборк)/.test(normalized);
   const primaryWorkMatches = demolitionDominant ? matches : matches.filter(({ item }) => item.domain !== "demolition");
   const match = (primaryWorkMatches.length > 0 ? primaryWorkMatches : matches)

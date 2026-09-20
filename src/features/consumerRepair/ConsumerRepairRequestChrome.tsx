@@ -21,7 +21,10 @@ import {
 } from "./ConsumerRepairMediaButtons";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
 import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
-import type { ConsumerRepairParamEditState } from "./requestEstimateScreenActions";
+import {
+  shouldShowConsumerRepairWorkSelection,
+  type ConsumerRepairParamEditState,
+} from "./requestEstimateScreenActions";
 import {
   sanitizeRequestEstimatePublicText,
   type RequestEstimateViewModel,
@@ -72,7 +75,12 @@ type StickyActionsProps = {
   hasSnapshot: boolean;
   hasPendingPrompt?: boolean;
   estimateRequiresRebuild?: boolean;
+  parameterCollectionRequired?: boolean;
   approvalBlockedByEstimate?: boolean;
+  approvalBlockedByParameters?: boolean;
+  approvalUnresolvedRowCount?: number;
+  approvalMissingPriceCount?: number;
+  approvalCommitBusy?: boolean;
   needsFreshApproval?: boolean;
   onOpenPdf: () => void;
   onMakePdf: () => void;
@@ -89,7 +97,12 @@ export function ConsumerRepairRequestStickyActions({
   hasSnapshot,
   hasPendingPrompt = false,
   estimateRequiresRebuild = false,
+  parameterCollectionRequired = false,
   approvalBlockedByEstimate = false,
+  approvalBlockedByParameters = false,
+  approvalUnresolvedRowCount = 0,
+  approvalMissingPriceCount = 0,
+  approvalCommitBusy = false,
   needsFreshApproval = false,
   onOpenPdf,
   onMakePdf,
@@ -101,8 +114,17 @@ export function ConsumerRepairRequestStickyActions({
   const [deleteConfirmationVisible, setDeleteConfirmationVisible] = React.useState(false);
   const finalized = (sent || approved) && !needsFreshApproval;
   const shouldPrepareEstimate =
-    hasPendingPrompt || (!finalized && estimateRequiresRebuild);
+    !parameterCollectionRequired && (hasPendingPrompt || (!finalized && estimateRequiresRebuild));
   const canDeleteDraft = hasBundle && !approved && !sent;
+  const approvalBlockedLabel = approvalCommitBusy
+    ? "Подтверждаем смету…"
+    : approvalUnresolvedRowCount > 0
+      ? `Нельзя подтвердить: без количества ${approvalUnresolvedRowCount}`
+      : approvalMissingPriceCount > 0
+        ? `Нельзя подтвердить: без цены ${approvalMissingPriceCount}`
+      : approvalBlockedByParameters
+        ? "Заполните параметры сметы"
+        : "Сначала рассчитайте смету";
   React.useEffect(() => {
     if (!canDeleteDraft) setDeleteConfirmationVisible(false);
   }, [canDeleteDraft]);
@@ -151,7 +173,7 @@ export function ConsumerRepairRequestStickyActions({
         </Pressable>
       ) : hasBundle ? (
         <Pressable
-          accessibilityLabel={approvalBlockedByEstimate ? "Сначала рассчитайте смету" : "Подтвердить смету"}
+          accessibilityLabel={approvalBlockedByEstimate ? approvalBlockedLabel : "Подтвердить смету"}
           accessibilityRole="button"
           accessibilityState={{ disabled: approvalBlockedByEstimate }}
           disabled={approvalBlockedByEstimate}
@@ -165,7 +187,7 @@ export function ConsumerRepairRequestStickyActions({
         >
           <Ionicons name="checkmark" size={20} color="#FFFFFF" />
           <Text style={styles.bottomActionPrimaryText}>
-            {approvalBlockedByEstimate ? "Сначала рассчитайте смету" : "Подтвердить смету"}
+            {approvalBlockedByEstimate ? approvalBlockedLabel : "Подтвердить смету"}
           </Text>
         </Pressable>
       ) : (
@@ -401,6 +423,10 @@ export function ConsumerRepairRequestContent({
   roadScopeSelectionBusy,
 }: ContentProps) {
   const publicProblemText = sanitizeRequestEstimatePublicText(bundle?.draft.problemText?.trim());
+  const showWorkSelection = shouldShowConsumerRepairWorkSelection({
+    bundle,
+    selectedWork,
+  });
   const hasSelectedApprovedHistory = Boolean(
     selectedHistoryId && approvedHistoryPage.items.some((item) => item.draft.id === selectedHistoryId),
   );
@@ -467,7 +493,7 @@ export function ConsumerRepairRequestContent({
       ) : null}
       {prioritizeDraftDecision ? statusNode : null}
       {prioritizeDraftDecision ? draftPanel : null}
-      {!bundle ? (
+      {showWorkSelection ? (
         <ConsumerRepairRequestFormCard
           problemText={problemText}
           city={city}
@@ -496,7 +522,7 @@ export function ConsumerRepairRequestContent({
           onPrepareDraft={onPrepareDraft}
         />
       ) : null}
-      {bundle ? (
+      {bundle && !showWorkSelection ? (
         <ConsumerRepairDeliveryFieldsCard
           city={city}
           addressText={addressText}

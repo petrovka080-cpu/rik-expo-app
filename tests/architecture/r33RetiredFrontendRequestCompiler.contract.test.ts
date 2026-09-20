@@ -58,6 +58,17 @@ describe("R3.3 retired frontend request compiler", () => {
     expect(service).not.toContain("requestEstimateLegacyTestActions");
   });
 
+  it("persists the R6 road scope before resuming through the canonical backend", () => {
+    const screen = read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
+    const container = read("src/features/consumerRepair/ConsumerRepairRequestScreenContainer.tsx");
+    expect(screen).toContain("beginConsumerRepairCanonicalRoadScopeSelection");
+    expect(screen).toContain("bindConsumerRepairCanonicalRoadScopeChoice");
+    expect(screen).toContain("selectedRoadScope = savedScope");
+    expect(screen).toContain("onPrepareCanonicalEstimate(");
+    expect(screen).not.toContain("selectConsumerRepairRoadScopeV4");
+    expect(container).toContain("selectedRoadScope,");
+  });
+
   it("retains executable successors for compile, revision, UI, PDF, procurement and domain coverage", () => {
     expect(canonicalSuccessorContracts.filter((file) => !exists(file))).toEqual([]);
   });

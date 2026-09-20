@@ -9,7 +9,7 @@ import { createRealMaterialQuantityPreview } from "../../src/lib/ai/professional
 import { compileAsphaltProfessionalEstimateV4 } from "../../src/lib/estimate/v4/asphalt/compileAsphaltProfessionalEstimateV4";
 import { expectProfessionalBoqEstimate } from "../estimateIntent/anyEstimateTestHelpers";
 
-const ASPHALT_BASELINE_RUNTIME_SHA256 = "efb53c0bb013164fea3584edd0228532ede2d9771c73a3fac0ebdd1ab1295916";
+const ASPHALT_BASELINE_RUNTIME_SHA256 = "ac505814782f169878a1cefad1b61c68c52df11e0a38ef373bd00328116c2e98";
 
 describe("BATCH005 R3 non-Electrical behavior immutability", () => {
   test("keeps the BATCH004 Asphalt runtime output byte-equivalent", () => {

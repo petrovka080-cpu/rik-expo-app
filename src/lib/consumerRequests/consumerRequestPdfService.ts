@@ -253,7 +253,9 @@ function sourceLabelForItem(item: PdfPayloadItem): string {
   if (item.priceStatus === "USER_PRICE_OVERRIDE") return "\u0446\u0435\u043d\u0430 \u0432\u0440\u0443\u0447\u043d\u0443\u044e";
   if (item.priceStatus === "USER_ENTERED_PRICE") return "\u0446\u0435\u043d\u0430 \u0432\u0432\u0435\u0434\u0435\u043d\u0430 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0435\u043c";
   if (pdfCapitalGroupId(item)) return "Источник цены не выбран";
-  if (item.priceStatus === "PRICE_MISSING") return "\u0446\u0435\u043d\u0430 \u043d\u0443\u0436\u043d\u0430";
+  if (item.priceStatus === "PRICE_MISSING") {
+    return publicPdfText(item.priceSourceLabel) || "\u0446\u0435\u043d\u0430 \u043d\u0443\u0436\u043d\u0430";
+  }
   const priceSource = publicPdfText(item.priceSourceLabel);
   if (priceSource) return priceSource;
   const explicit = publicPdfText(item.sourceLabel);
@@ -298,14 +300,10 @@ function normSourcePartsForItem(item: PdfPayloadItem): string[] {
 }
 
 function calculationSourceLabelForItem(item: PdfPayloadItem): string {
-  const isCapitalRenovationRow = Boolean(pdfCapitalGroupId(item));
   const normParts = normSourcePartsForItem(item);
-  const traceText = normParts.length > 0 ? normParts.join("; ") : "calculation trace available";
   const parts = [
     sourceLabelForItem(item),
     item.quantityFormula || item.calculationTrace || item.normId || item.templateId ? "количество рассчитано по норме" : null,
-    !isCapitalRenovationRow && item.quantityFormula ? "quantity formula: certified norm calculation" : null,
-    !isCapitalRenovationRow && item.calculationTrace ? `quantity trace: ${traceText}` : null,
     ...normParts,
     item.normSourceTitle ? `норма: ${publicPdfText(item.normSourceTitle)}` : null,
     item.normVersion ? `версия норм: ${publicPdfText(item.normVersion)}` : null,
@@ -402,8 +400,12 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
   const missingPriceRows = items.filter((item) => item.unitPrice == null || item.totalPrice == null).length;
   const supplement = input.supplement;
   const repairType = readable(input.draft.repairType);
-  const visibleWorkTitle = publicPdfText(input.draft.selectedWorkTitleRu)
-    || publicPdfText(input.draft.title)
+  // `draft.title` is the durable, user-visible document identity used by the
+  // approved-history projection (it can include the primary measure). Keep the
+  // PDF on that same identity instead of falling back to the shorter catalog
+  // work name when both values are present.
+  const visibleWorkTitle = publicPdfText(input.draft.title)
+    || publicPdfText(input.draft.selectedWorkTitleRu)
     || (repairType && !looksLikeInternalKey(repairType) ? publicPdfText(repairType) : "")
     || "\u0417\u0430\u044f\u0432\u043a\u0430 \u043d\u0430 \u0440\u0435\u043c\u043e\u043d\u0442";
   const traceWorkKey = "request-estimate";

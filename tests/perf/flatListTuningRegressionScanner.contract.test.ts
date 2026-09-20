@@ -40,8 +40,8 @@ describe("S_NIGHT_FLATLIST_22_TUNING_REGRESSION_SCANNER", () => {
     const result = scanFlatListTuningRegression(process.cwd());
 
     expect(result.errors).toEqual([]);
-    expect(result.summary.runtimeInstances).toBe(62);
-    expect(result.summary.flatListInstances).toBe(8);
+    expect(result.summary.runtimeInstances).toBe(64);
+    expect(result.summary.flatListInstances).toBe(10);
     expect(result.summary.flashListInstances).toBe(54);
     expect(result.summary.violations).toBe(0);
     expect(result.summary.allowlistEntries).toBeGreaterThan(0);

@@ -104,12 +104,15 @@ export function buildWorkEstimatePromptFieldViewModel(input: {
   draft?: ConsumerRepairAiDraft | null;
 }): WorkEstimatePromptFieldViewModel {
   const matched = input.state.parseResult.matchedTemplate;
+  const selectedWorkVisible = Boolean(
+    input.state.selectedTemplateId && input.state.selectedTemplateName,
+  );
   const paramsVisible = Object.keys(input.state.parseResult.extractedParams).length > 0;
   const candidateVisible = input.state.parseResult.candidateTemplates.length > 0;
   return {
     stateStatus: input.state.status,
-    matchedWorkVisible: Boolean(matched),
-    matchedWorkLabel: matched?.templateName ?? null,
+    matchedWorkVisible: Boolean(matched) || selectedWorkVisible,
+    matchedWorkLabel: matched?.templateName ?? input.state.selectedTemplateName ?? null,
     confidenceLabel: matched ? `${Math.round(matched.confidence * 100)}%` : null,
     extractedParamChipsVisible: paramsVisible,
     assumptionsVisible: input.state.parseResult.assumptions.length > 0,
@@ -120,6 +123,7 @@ export function buildWorkEstimatePromptFieldViewModel(input: {
     draftPreviewVisible: Boolean(input.draft && input.draft.items.length > 0),
     recognizedPromptNeverLeavesSilentEmptyDraft: Boolean(
       matched ||
+      selectedWorkVisible ||
       candidateVisible ||
       !input.state.rawInput.trim(),
     ),

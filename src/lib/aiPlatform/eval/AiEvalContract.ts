@@ -1,4 +1,5 @@
 import type { AiPlatformRole, AiPlatformSurface } from "../kernel/AiRuntimeKernelContract";
+import type { AiEstimatePlugin } from "../plugins/estimate/AiEstimatePluginContract";
 
 export type AiEvalSurface = Exclude<AiPlatformSurface, "office">;
 
@@ -120,4 +121,5 @@ export type AiEvalRunnerOptions = {
   promptVersion: string;
   providerKey?: string;
   modelKey?: string;
+  estimatePlugin?: AiEstimatePlugin;
 };

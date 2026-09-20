@@ -42,7 +42,7 @@
     "credentials_exposed": false
   },
   "artifact_scrub_summary": {
-    "scanned_artifacts": 16,
+    "scanned_artifacts": 13,
     "findings": []
   },
   "trace_envelope_matrix": [
@@ -5012,7 +5012,7 @@
     "providerRedactionFindings": 4,
     "artifactScrubFindings": [],
     "sourceSafetyFindings": [],
-    "artifactsScanned": 16,
+    "artifactsScanned": 13,
     "noSecrets": true,
     "noRawRows": true,
     "noRawPrompts": true,

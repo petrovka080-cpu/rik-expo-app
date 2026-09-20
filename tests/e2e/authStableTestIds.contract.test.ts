@@ -23,7 +23,8 @@ describe("auth stable e2e test IDs", () => {
 
   it("keeps the existing auth behavior and does not add an e2e bypass", () => {
     expect(loginSource).toContain("signInSafe({");
-    expect(loginSource).toContain("router.replace(POST_AUTH_ENTRY_ROUTE)");
+    expect(loginSource).toContain("resolvePostAuthReturnTo(routeParams.returnTo)");
+    expect(loginSource).toContain("router.replace(postAuthTarget as Href)");
     expect(loginSource).not.toContain("auth.admin");
     expect(loginSource).not.toContain("listUsers");
     expect(loginSource).not.toContain("service_role");

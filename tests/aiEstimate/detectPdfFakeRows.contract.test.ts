@@ -48,6 +48,6 @@ describe("continuous AI estimate PDF detector", () => {
 
     expect(labels.some((label) => label.includes("количество рассчитано по норме"))).toBe(true);
     expect(labels.some((label) => label.includes("версия норм: 2026.07.03"))).toBe(true);
-    expect(labels.join("\n")).not.toMatch(/PRICE_MISSING|formula:|trace:|raw_ai_json|```|\{".*":/);
+    expect(labels.join("\n")).not.toMatch(/PRICE_MISSING|quantity formula|quantity trace|formula:|trace:|raw_ai_json|```|\{".*":/);
   });
 });

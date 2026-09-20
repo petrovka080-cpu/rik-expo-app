@@ -42,7 +42,8 @@ function calculationRowType(row: EditableEstimateRow): ProfessionalBoqRow["rowTy
   return row.rowType;
 }
 
-function calculationRow(row: EditableEstimateRow): ProfessionalBoqRow {
+function calculationRow(row: EditableEstimateRow): ProfessionalBoqRow | null {
+  if (typeof row.quantity !== "number" || !Number.isFinite(row.quantity)) return null;
   const source = row.sourceParameters ?? {};
   return {
     rowId: typeof source.rowCode === "string" && source.rowCode.trim()
@@ -50,7 +51,7 @@ function calculationRow(row: EditableEstimateRow): ProfessionalBoqRow {
       : row.rowId,
     rowType: calculationRowType(row),
     titleRu: row.titleRu,
-    quantity: row.quantity ?? 0,
+    quantity: row.quantity,
     unit: row.unit ?? "unit",
     unitLabel: row.unitLabel ?? null,
     unitPrice: row.unitPrice ?? null,
@@ -127,26 +128,33 @@ export function migrateExactRoadworksCalculationStateFromCanonicalSnapshot(
   if (!selectedTemplateId) return null;
 
   const assumptionKeys = new Set(strings(source.assumptionKeys));
+  const normativeSourceGapKeys = new Set(strings(source.normativeSourceGapKeys));
   const createdAt = canonicalRevision.created_at;
   const params: Record<string, EstimateDraftRevisionParam> = {};
   for (const [key, value] of Object.entries(parameterSnapshot)) {
     if (typeof value !== "string" && typeof value !== "number" && typeof value !== "boolean") continue;
     const metadata = record(parameterMetadata[key]);
     if (!metadata) continue;
+    const sourceFixed = metadata.valueAdmissionState === "CONFIRMED_SOURCE_FIXED";
     params[key] = {
       value,
       ...(typeof metadata.unit === "string" && metadata.unit.trim()
         ? { canonicalUnit: metadata.unit.trim() }
         : {}),
-      source: assumptionKeys.has(key) ? "default_assumption" : "user_input",
+      source: assumptionKeys.has(key) ? "default_assumption" : sourceFixed ? "derived" : "user_input",
       sourceText: assumptionKeys.has(key)
         ? `${String(metadata.defaultSourceId ?? "roadworks-wave-a-versioned-defaults")}:${String(metadata.defaultSourceVersion ?? migrationVersion)}`
+        : sourceFixed && typeof metadata.valueSourceId === "string"
+          ? metadata.valueSourceId
         : EXACT_ROADWORKS_CALCULATION_STATE_MIGRATION_VERSION,
       lastChangedAt: createdAt,
     };
   }
 
-  const rows = canonicalRevision.editable_estimate_snapshot.rows.map(calculationRow);
+  const rows = canonicalRevision.editable_estimate_snapshot.rows.flatMap((row) => {
+    const migrated = calculationRow(row);
+    return migrated ? [migrated] : [];
+  });
   const revisionId = `calculation_migration:${canonicalRevision.revision_id}`;
   const assumptions = [...assumptionKeys].map((key) => ({
     key,
@@ -155,12 +163,14 @@ export function migrateExactRoadworksCalculationStateFromCanonicalSnapshot(
     replacedByUserInput: false,
     visibleToUser: true as const,
   }));
-  const missingInputs = [...assumptionKeys].flatMap((key) => {
+  const missingInputs = [...new Set([...assumptionKeys, ...normativeSourceGapKeys])].flatMap((key) => {
     const metadata = record(parameterMetadata[key]);
     return metadata?.tier === "P0"
       ? [{
           key,
-          label: typeof metadata.labelRu === "string" ? metadata.labelRu : key,
+          label: normativeSourceGapKeys.has(key)
+            ? `Требуется подтверждённый технический источник: ${typeof metadata.labelRu === "string" ? metadata.labelRu : key}`
+            : typeof metadata.labelRu === "string" ? metadata.labelRu : key,
           blocksPreliminaryEstimate: true,
           requiredFor: "contract_ready" as const,
         }]

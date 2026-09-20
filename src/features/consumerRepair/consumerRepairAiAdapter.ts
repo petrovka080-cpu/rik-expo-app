@@ -1,4 +1,7 @@
-import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
+import {
+  buildConsumerRepairAiDraftFromGlobalEstimate,
+  synchronizeConsumerRepairStructuredPayload,
+} from "../../lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
 import type {
   ConsumerRepairAiDraft,
   ConsumerRepairSelectedWork,
@@ -24,6 +27,7 @@ import { evaluateEstimateRuntimePolicy } from "../estimates/runtime/estimateRunt
 import { recordEstimateTelemetryEvent } from "../estimates/telemetry/estimateTelemetryRecorder";
 import { resolveDirectConsumerRepairOpenWorldOwner } from "../../lib/estimate/ownedDomain/directConsumerRepairOpenWorldRouting";
 import {
+  applyConstructionScopeCompletenessPolicies,
   applyProfessionalBoqRuntimeContract,
   buildDynamicProfessionalBoqDraftFromPrompt,
   buildProfessionalTemplateDraftFromPrompt,
@@ -433,7 +437,8 @@ function draftHasPricedStructuredEstimate(draft: ConsumerRepairAiDraft): boolean
 function shouldKeepSpecificProfessionalBoqDraft(draft: ConsumerRepairAiDraft | null): boolean {
   const selectedWorkKey = draft?.selectedWork?.selectedWorkKey;
   return selectedWorkKey === "diamond_core_drilling_concrete" ||
-    selectedWorkKey === "dynamic_fencing_estimate";
+    selectedWorkKey === "dynamic_fencing_estimate" ||
+    selectedWorkKey === "drywall_ceiling_preparation";
 }
 
 function resolveRequestLocalContext(
@@ -486,9 +491,11 @@ export function buildConsumerRepairAiDraft(
   const finalizeDraft = (draft: ConsumerRepairAiDraft): ConsumerRepairAiDraft => {
     const contractDraft = draftHasProfessionalBoqSourceTrace(draft)
       ? applyProfessionalBoqRuntimeContract(draft, { prompt: text })
-      : draft;
+      : applyConstructionScopeCompletenessPolicies(draft, { prompt: text });
     const policyDraft = runtimePolicy.force_quantity_only_mode ? forceQuantityOnlyDraft(contractDraft) : contractDraft;
-    const localizedDraft = applyLocalContextWarnings(policyDraft, localContext);
+    const localizedDraft = synchronizeConsumerRepairStructuredPayload(
+      applyLocalContextWarnings(policyDraft, localContext),
+    );
     recordEstimateTelemetryEvent({
       event_name: "estimate_generated",
       route: "/request",
@@ -749,7 +756,7 @@ export function buildDirectConsumerRepairOpenWorldAiDraft(
     recordDirectOpenWorldBuildTiming("ELECTRICAL_CANONICAL_DRAFT_READY", buildStartedAt);
     const contractDraft = draftHasProfessionalBoqSourceTrace(compiled)
       ? applyProfessionalBoqRuntimeContract(compiled, { prompt: text })
-      : compiled;
+      : applyConstructionScopeCompletenessPolicies(compiled, { prompt: text });
     const policyDraft = runtimePolicy.force_quantity_only_mode
       ? forceQuantityOnlyDraft(contractDraft)
       : contractDraft;
@@ -828,7 +835,7 @@ export function buildDirectConsumerRepairOpenWorldAiDraft(
 
   const contractDraft = draftHasProfessionalBoqSourceTrace(compiled)
     ? applyProfessionalBoqRuntimeContract(compiled, { prompt: text })
-    : compiled;
+    : applyConstructionScopeCompletenessPolicies(compiled, { prompt: text });
   recordDirectOpenWorldBuildTiming("RUNTIME_CONTRACT_READY", buildStartedAt);
   const policyDraft = runtimePolicy.force_quantity_only_mode
     ? forceQuantityOnlyDraft(contractDraft)

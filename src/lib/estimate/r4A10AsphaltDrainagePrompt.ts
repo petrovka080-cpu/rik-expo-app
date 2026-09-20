@@ -31,11 +31,11 @@ export function parseR4A10AsphaltDrainagePrompt(
   const values: Record<string, CanonicalEstimateParameterInputValue> = {};
   const normalized = prompt.normalize("NFKC").replace(/\u00a0/gu, " ");
 
-  if (/(?:тип\s+системы|система)\s*[:—-]?\s*линейн\p{L}*\s+(?:водоотвод\p{L}*\s+)?лот/iu.test(normalized)) {
+  if (/(?:линейн\p{L}*\s+(?:поверхностн\p{L}*\s+)?водоотвод\p{L}*|линейн\p{L}*\s+(?:водоотводн\p{L}*\s+)?лот\p{L}*)/iu.test(normalized)) {
     values.system_type = "linear_tray";
-  } else if (/(?:тип\s+системы|система)\s*[:—-]?\s*подземн\p{L}*\s+дренаж/iu.test(normalized)) {
+  } else if (/подземн\p{L}*\s+дренаж\p{L}*/iu.test(normalized)) {
     values.system_type = "subsurface_drain";
-  } else if (/(?:тип\s+системы|система)\s*[:—-]?\s*(?:закрыт\p{L}*\s+)?(?:дождев\p{L}*\s+(?:канализац|сет)|ливнев\p{L}*\s+(?:канализац|сет))/iu.test(normalized)) {
+  } else if (/(?:закрыт\p{L}*\s+)?(?:дождев\p{L}*\s+(?:канализац\p{L}*|сет\p{L}*)|ливнев\p{L}*\s+(?:канализац\p{L}*|сет\p{L}*))/iu.test(normalized)) {
     values.system_type = "storm_sewer";
   }
 
@@ -58,6 +58,7 @@ export function parseR4A10AsphaltDrainagePrompt(
     system_delivery_distance_km: /расстоян\p{L}*\s+доставк\p{L}*\s+(?:элемент\p{L}*\s+)?систем\p{L}*\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*км/iu,
     excavator_productivity_m3_h: /производительност\p{L}*\s+экскаватор\p{L}*\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*м[³3]\s*\/\s*ч/iu,
     compactor_productivity_m3_h: /производительност\p{L}*\s+(?:траншейн\p{L}*\s+)?уплотнител\p{L}*\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*м[³3]\s*\/\s*ч/iu,
+    existing_asphalt_thickness_mm: /толщин\p{L}*\s+(?:снимаем\p{L}*\s+)?(?:существующ\p{L}*\s+)?асфальт\p{L}*\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*мм/iu,
     asphalt_restoration_area_m2: /площад\p{L}*\s+(?:локальн\p{L}*\s+)?восстановлени\p{L}*\s+асфальт\p{L}*\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*м[²2]/iu,
     asphalt_restoration_thickness_mm: /толщин\p{L}*\s+(?:восстанавливаем\p{L}*\s+)?(?:сло\p{L}*\s+)?асфальт\p{L}*\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*мм/iu,
     asphalt_density_t_m3: /плотност\p{L}*\s+асфальтобетон\p{L}*\s+(?:смес\p{L}*)?\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*т\s*\/\s*м[³3]/iu,
@@ -66,10 +67,12 @@ export function parseR4A10AsphaltDrainagePrompt(
     asphalt_delivery_distance_km: /расстоян\p{L}*\s+доставк\p{L}*\s+асфальтобетон\p{L}*\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*км/iu,
     asphalt_roller_productivity_m2_h: /производительност\p{L}*\s+(?:катк\p{L}*|виброплит\p{L}*)\s+(?:локальн\p{L}*\s+)?восстановлени\p{L}*\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*м[²2]\s*\/\s*ч/iu,
     tray_module_length_m: /длин\p{L}*\s+модул\p{L}*\s+лотк\p{L}*\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*м(?![\p{L}\p{N}])/iu,
+    tray_grating_length_m: /длин\p{L}*\s+(?:одн\p{L}*\s+)?(?:водопри[её]мн\p{L}*\s+)?реш[её]тк\p{L}*\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*м(?![\p{L}\p{N}])/iu,
     tray_base_concrete_cross_section_m2: /(?:площад\p{L}*\s+)?сечени\p{L}*\s+бетонн\p{L}*\s+(?:основани\p{L}*\s+и\s+обойм\p{L}*|обойм\p{L}*)\s+лотк\p{L}*\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*м[²2]/iu,
     tray_joint_sealant_kg_per_joint: /расход\p{L}*\s+герметик\p{L}*\s+(?:на\s+)?стык\p{L}*\s+(?:лотк\p{L}*)?\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*кг\s*\/\s*(?:стык|шт)/iu,
-    tray_fasteners_per_module: /креп[её]ж\p{L}*\s+реш[её]тк\p{L}*\s+на\s+модул\p{L}*\s*[:=]?\s*(\d+)\s*шт/iu,
+    tray_fasteners_per_grating: /креп[её]ж\p{L}*\s+(?:на\s+)?(?:одн\p{L}*\s+)?реш[её]тк\p{L}*(?:\s+на\s+модул\p{L}*)?\s*[:=]?\s*(\d+)\s*шт/iu,
     tray_silt_trap_count: /(?:количеств\p{L}*\s+)?пескоуловител\p{L}*\s*[:=]?\s*(\d+)\s*шт/iu,
+    tray_silt_trap_length_m_item: /(?:монтажн\p{L}*\s+)?длин\p{L}*\s+(?:одн\p{L}*\s+)?пескоуловител\p{L}*\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*м(?![\p{L}\p{N}])/iu,
     concrete_delivery_distance_km: /расстоян\p{L}*\s+доставк\p{L}*\s+бетон\p{L}*\s+(?:лотк\p{L}*)?\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*км/iu,
     drain_pipe_module_length_m: /поставочн\p{L}*\s+длин\p{L}*\s+дренажн\p{L}*\s+труб\p{L}*\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*м/iu,
     filter_aggregate_cross_section_m2: /(?:площад\p{L}*\s+)?сечени\p{L}*\s+фильтрующ\p{L}*\s+щебн\p{L}*\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*м[²2]/iu,

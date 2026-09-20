@@ -1,5 +1,10 @@
 import { approveCanonicalConsumerRepairAuditDraft } from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
-import { capitalRenovationBundle, CAPITAL_RENOVATION_98_PROMPT } from "../estimateCalculator/capitalRenovationTestHelpers";
+import {
+  capitalRenovationAccessRowCodes,
+  capitalRenovationBundle,
+  CAPITAL_RENOVATION_98_PROMPT,
+  CAPITAL_RENOVATION_ACCESS_ROW_CODES,
+} from "../estimateCalculator/capitalRenovationTestHelpers";
 
 describe("capital renovation 98 confirm snapshot", () => {
   it("freezes a revision snapshot with prompt lineage, parameters, rows, formulas and price state", () => {
@@ -22,7 +27,8 @@ describe("capital renovation 98 confirm snapshot", () => {
     expect(revision.status).toBe("APPROVED");
     expect(revision.snapshot_id).toContain(approved.draft.id);
     expect(revision.editable_estimate_snapshot.snapshotId).toContain(approved.draft.id);
-    expect(rows).toHaveLength(64);
+    expect(rows).toHaveLength(approved.items.length);
+    expect(capitalRenovationAccessRowCodes(approved.items)).toEqual(CAPITAL_RENOVATION_ACCESS_ROW_CODES);
     expect(rows.some((row) => row.rowType === "material")).toBe(true);
     expect(rows.some((row) => row.rowType === "work")).toBe(true);
     expect(first.sourceParameters).toMatchObject({

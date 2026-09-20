@@ -75,6 +75,39 @@ describe("RequestEstimateIntentLifecycle", () => {
     );
   });
 
+  it("maps the generated native route alias to the pending canonical launch", () => {
+    const lifecycle = new RequestEstimateIntentLifecycle();
+    const pending = resolveRequestEstimateLaunchTargetV1(
+      "rik:///request?prompt=asphalt%20road",
+      { issuedAt: "2026-08-08T10:08:38.975Z" },
+    );
+    const routeAlias = resolveRequestEstimateLaunchTargetV1(
+      "rik:///request?prompt=asphalt%20road",
+      { issuedAt: "2026-08-08T10:08:39.125Z" },
+    );
+    if (!pending?.payload.fingerprint || !routeAlias) {
+      throw new Error("generated targets required");
+    }
+    expect(routeAlias.payload.launchId).not.toBe(pending.payload.launchId);
+
+    lifecycle.receive(pending, "native_view_intent");
+
+    expect(lifecycle.resolvePendingRouteLaunch({
+      launchId: routeAlias.payload.launchId,
+      fingerprint: routeAlias.payload.fingerprint,
+    })).toEqual({
+      launchId: pending.payload.launchId,
+      matchedBy: "generated_fingerprint_alias",
+    });
+    expect(lifecycle.resolvePendingRouteLaunch({
+      launchId: "user-explicit-launch-0002",
+      fingerprint: pending.payload.fingerprint,
+    })).toEqual({
+      launchId: "user-explicit-launch-0002",
+      matchedBy: null,
+    });
+  });
+
   it("reconciles one generated native redirect alias to the acknowledged exact draft", () => {
     const lifecycle = new RequestEstimateIntentLifecycle();
     const first = resolveRequestEstimateLaunchTargetV1(

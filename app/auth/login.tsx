@@ -26,7 +26,7 @@ import { recordPlatformObservability } from "../../src/lib/observability/platfor
 import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
 import { createCancellableDelay } from "../../src/lib/async/mapWithConcurrencyLimit";
 import {
-  isLocalDeveloperReviewEnabled,
+  isLocalDeveloperConsumerReviewEnabled,
   switchLocalDeveloperConsumerPrincipal,
 } from "../../src/lib/localDeveloperReview";
 
@@ -63,7 +63,7 @@ function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [localConsumerLoading, setLocalConsumerLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const localDeveloperReviewEnabled = isLocalDeveloperReviewEnabled();
+  const localDeveloperReviewEnabled = isLocalDeveloperConsumerReviewEnabled();
 
   const waitForReadableSession = async (): Promise<ReadableSessionResult> => {
     const startedAt = Date.now();

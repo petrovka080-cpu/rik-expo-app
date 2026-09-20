@@ -153,12 +153,14 @@ export function buildPromptForEstimateDraftRevisionRecalc(
   const passport = exactRoadworks || usesRegisteredProfessionalDomain(revision)
     ? null
     : buildProfessionalWorkPassport(revision.selectedTemplateId);
-  const templateLabel = (
-    exactRoadworks?.professionalNameRu ||
-    passport?.localizedNameRu ||
-    revision.matchedFamily ||
-    revision.selectedTemplateId
-  ).replace(/_/g, " ");
+  const templateLabel = revision.matchedFamily === "drywall_ceiling_preparation"
+    ? "подготовка существующего потолка из гипсокартона"
+    : (
+      exactRoadworks?.professionalNameRu ||
+      passport?.localizedNameRu ||
+      revision.matchedFamily ||
+      revision.selectedTemplateId
+    ).replace(/_/g, " ");
   const hasSpecificAreaParam = Object.keys(params).some((key) => key !== "area_m2" && /_area_m2$/.test(key));
   const paramText = Object.entries(params)
     .filter(([key]) => key !== "estimate_level" && key !== "prices")
@@ -204,7 +206,7 @@ export function recalculateEstimateDraftRevision(
       },
     }
     : patched.params;
-  const revision = createEstimateDraftRevision({
+  const revision = migrateInteriorFinishesProfessionalRevisionV4(createEstimateDraftRevision({
     estimateDraftId: previous.estimateDraftId,
     previousRevisionId: previous.revisionId,
     rawInput,
@@ -229,7 +231,7 @@ export function recalculateEstimateDraftRevision(
       buyerHandoffId: null,
       artifactsValidForRevisionId: null,
     },
-  });
+  }));
   return {
     revision: {
       ...revision,
@@ -313,7 +315,7 @@ export function recalculateEstimateDraftRevisionBatch(
       },
     }
     : patched.params;
-  const revision = createEstimateDraftRevision({
+  const revision = migrateInteriorFinishesProfessionalRevisionV4(createEstimateDraftRevision({
     estimateDraftId: previous.estimateDraftId,
     previousRevisionId: previous.revisionId,
     rawInput,
@@ -338,7 +340,7 @@ export function recalculateEstimateDraftRevisionBatch(
       buyerHandoffId: null,
       artifactsValidForRevisionId: null,
     },
-  });
+  }));
   const nextRevision = {
     ...revision,
     missingInputs: patched.missingInputs.length > 0 ? patched.missingInputs : revision.missingInputs,

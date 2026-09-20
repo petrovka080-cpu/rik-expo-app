@@ -1,18 +1,20 @@
 import { buildAiEstimatePdfActions } from "../ai/estimatePdf/estimatePdfGuard";
-import { buildAiEstimatePdfSourceFromGlobalEstimate } from "../ai/estimatePdf/estimatePdfSourceResolver";
+import { buildAiEstimatePdfSourceFromGlobalEstimate } from "../ai/estimatePdf/estimatePdfGlobalResultAdapter";
 import type { StructuredEstimatePayload } from "./structuredEstimateTypes";
+import { buildEstimatePresentationViewModel } from "./buildEstimatePresentationViewModel";
 
 export function buildStructuredEstimateForemanBinding(payload: StructuredEstimatePayload, userId?: string) {
+  const presentation = buildEstimatePresentationViewModel(payload);
   const source = buildAiEstimatePdfSourceFromGlobalEstimate(payload.sourceEstimate, {
     userId,
     sourceType: "global_estimate_result",
   });
   return {
     payload,
-    presentation: payload.presentation,
+    presentation,
     estimatePdfSource: source,
     actions: buildAiEstimatePdfActions(source),
-    rows: payload.presentation.rows,
+    rows: presentation.rows,
     fakeGreenClaimed: false as const,
   };
 }

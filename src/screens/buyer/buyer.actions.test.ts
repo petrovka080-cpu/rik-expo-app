@@ -19,14 +19,19 @@ jest.mock("./buyer.repo", () => ({
   repoUpdateProposalItems: jest.fn(),
 }));
 
+const requireJestMock = (value: unknown): jest.Mock => {
+  if (!jest.isMockFunction(value)) throw new Error("Expected a Jest mock function");
+  return value as jest.Mock;
+};
+
 const mockRepoGetProposalItemsForView =
-  repoGetProposalItemsForView as unknown as jest.Mock;
+  requireJestMock(repoGetProposalItemsForView);
 const mockRepoGetProposalRequestItemIntegrity =
-  repoGetProposalRequestItemIntegrity as unknown as jest.Mock;
+  requireJestMock(repoGetProposalRequestItemIntegrity);
 const mockRepoGetRequestItemsByIds =
-  repoGetRequestItemsByIds as unknown as jest.Mock;
+  requireJestMock(repoGetRequestItemsByIds);
 const mockRepoSetProposalBuyerFio =
-  repoSetProposalBuyerFio as unknown as jest.Mock;
+  requireJestMock(repoSetProposalBuyerFio);
 
 describe("buyer proposal recovery view", () => {
   beforeEach(() => {

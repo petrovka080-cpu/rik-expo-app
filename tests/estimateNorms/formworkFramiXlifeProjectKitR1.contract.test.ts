@@ -398,7 +398,6 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
 
   test.each([
     ["wrong system", { formwork_system_profile_id: "standard-profile:generic-formwork" }, "PARAMETER_VALIDATION_FAILED"],
-    ["missing layout", { project_formwork_layout_reference: undefined }, "PARAMETER_VALIDATION_FAILED"],
     ["wall too thick for flat tie", { foundation_wall_thickness_cm: 81 }, "PARAMETER_VALIDATION_FAILED"],
     ["wrong measurement class", { single_or_double_sided_scope: "UNDECLARED" }, "PHYSICAL_NORM_APPLICABILITY_FAILED"],
   ])("rejects %s", async (_name, patch, code) => {
@@ -406,6 +405,32 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
       ...FORMWORK_FRAMI_XLIFE_EXACT_INPUT,
       ...patch,
     })).rejects.toMatchObject({ code });
+  });
+
+  test("does not block the preliminary composition on a missing document-only layout reference", async () => {
+    const result = await compileFormworkFramiXlifeProjectKitR1({
+      ...FORMWORK_FRAMI_XLIFE_EXACT_INPUT,
+      project_formwork_layout_reference: undefined,
+    });
+
+    expect(result.revisionProjection.rows.length).toBeGreaterThan(0);
+    expect(result.revisionProjection.preliminaryNeeds).toHaveLength(0);
+  });
+
+  test("keeps an unresolved crane branch visible for preliminary refinement", async () => {
+    const standard = formworkFramiXlifeGeneralFoundationAcceptanceInputR1("standard");
+    const result = await compileFormworkFramiXlifeProjectKitR1({
+      ...standard,
+      crane_supply_mode: undefined,
+      crane_hours: undefined,
+    }, { catalogId: FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_TARGETS[0].catalogId });
+
+    expect(result.preliminaryNeeds).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        row_id: "equipment:formwork:crane-handling",
+        missing_parameter_ids: expect.arrayContaining(["crane_supply_mode", "crane_hours"]),
+      }),
+    ]));
   });
 
   test("contains no hidden area rate, package multiplier or turnover factor", () => {

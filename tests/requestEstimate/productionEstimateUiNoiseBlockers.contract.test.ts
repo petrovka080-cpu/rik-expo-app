@@ -15,6 +15,9 @@ describe("production estimate UI noise blockers", () => {
     const row = source("src/features/consumerRepair/ConsumerRepairItemRow.tsx");
     const chrome = source("src/features/consumerRepair/ConsumerRepairRequestChrome.tsx");
     const requestRoute = source("app/(tabs)/request/index.tsx");
+    const profileMain = source("src/screens/profile/components/ProfileMainSections.tsx");
+    const profileLoadState = source("src/screens/profile/components/ProfileContentLoadState.tsx");
+    const identityBoundary = source("src/components/auth/ProtectedIdentityBoundary.tsx");
     const visibleSources = [prompt, summary, panel, row, chrome].join("\n");
 
     expect(prompt).not.toContain("<ProfessionalEstimateDraftPreview");
@@ -30,6 +33,10 @@ describe("production estimate UI noise blockers", () => {
     expect(chrome).not.toContain('testID="estimate-pilot-badge"');
     expect(requestRoute).not.toContain("VerifiedIdentitySummary");
     expect(requestRoute).not.toContain("verified-identity-summary");
+    expect(profileMain).not.toContain("VerifiedIdentitySummary");
+    expect(profileLoadState).not.toContain("VerifiedIdentitySummary");
+    expect(identityBoundary).not.toContain("verified-identity-summary");
+    expect(identityBoundary).not.toContain("Подтверждённая учётная запись");
 
     expect(visibleSources).not.toMatch(
       /\b(?:PRICE_MISSING|formula_id|template_version|source_parameters|snapshot_hash|rowCode)\b/u,

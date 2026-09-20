@@ -1,5 +1,6 @@
 module.exports = {
   preset: "jest-expo",
+  sandboxInjectedGlobals: ["Math"],
   setupFiles: ["<rootDir>/jest.setup.js"],
   collectCoverageFrom: [
     "<rootDir>/src/**/*.{ts,tsx}",

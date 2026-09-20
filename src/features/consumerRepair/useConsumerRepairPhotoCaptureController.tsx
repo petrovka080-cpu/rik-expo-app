@@ -14,6 +14,11 @@ import type { CapturedPhotoAsset } from "../../lib/mobilePhotoCapture/mobilePhot
 import type { MobilePhotoStorageIdentity } from "../../lib/mobilePhotoCapture/mobilePhotoLocalRepository";
 import { commitCanonicalEstimateRowPhoto } from "../../lib/estimate/backendPlatform/canonicalEstimatePhotoAttachmentService";
 import type { CanonicalEstimatePhotoAttachmentView } from "../../lib/estimate/backendPlatform/contracts";
+import {
+  consumerRepairRowCanonicalCatalogId,
+  consumerRepairRowCanonicalRevisionId,
+  consumerRepairRowCode,
+} from "./consumerRepairRowMetadata";
 
 export type OpenConsumerRepairPhotoForMaterialRecognitionInput = {
   userId: string;
@@ -106,16 +111,12 @@ export function useConsumerRepairPhotoCaptureController({
       const exactLineId = lineId?.trim() || targetItemId;
       if (purpose === "line_attachment") {
         const item = bundle.items.find((candidate) => candidate.id === targetItemId);
-        const itemLineId = typeof item?.sourceParameters?.rowCode === "string"
-          ? item.sourceParameters.rowCode.trim()
-          : "";
+        const itemLineId = consumerRepairRowCode(item);
         if (!item || (itemLineId && itemLineId !== exactLineId)) throw new Error("PHOTO_TARGET_ROW_NOT_FOUND");
-        const itemRevisionId = String(
-          item.sourceParameters?.canonicalBackendRevisionId ?? "",
-        ).trim();
-        const catalogId = String(
-          item.sourceParameters?.canonicalBackendCatalogId ?? bundle.draft.selectedCatalogWorkId ?? "",
-        ).trim();
+        const itemRevisionId = consumerRepairRowCanonicalRevisionId(item);
+        const catalogId = consumerRepairRowCanonicalCatalogId(item)
+          || bundle.draft.selectedCatalogWorkId?.trim()
+          || "";
         if (
           !revisionId?.trim() ||
           (itemRevisionId && itemRevisionId !== revisionId) ||

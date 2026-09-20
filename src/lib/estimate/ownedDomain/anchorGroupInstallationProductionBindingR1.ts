@@ -34,13 +34,20 @@ function parseBoolean(value: string): boolean | null {
 export function anchorGroupInstallationPromptDetailsR1(
   values: Readonly<Record<string, Primitive>>,
 ): string[] {
-  return ANCHOR_GROUP_INSTALLATION_PARAMETERS.map((parameter) => {
+  const details: string[] = [];
+  for (const parameter of ANCHOR_GROUP_INSTALLATION_PARAMETERS) {
     const value = values[parameter.parameter_id];
-    if (value == null) throw new Error(
-      `ANCHOR_GROUP_INSTALLATION_PROMPT_VALUE_MISSING:${parameter.parameter_id}`,
+    if (value == null) {
+      if (parameter.required) throw new Error(
+        `ANCHOR_GROUP_INSTALLATION_PROMPT_VALUE_MISSING:${parameter.parameter_id}`,
+      );
+      continue;
+    }
+    details.push(
+      `${parameter.title_ru}: ${typeof value === "boolean" ? (value ? "да" : "нет") : String(value)}`,
     );
-    return `${parameter.title_ru}: ${typeof value === "boolean" ? (value ? "да" : "нет") : String(value)}`;
-  });
+  }
+  return details;
 }
 
 export function extractAnchorGroupInstallationCanonicalParametersR1(input: {

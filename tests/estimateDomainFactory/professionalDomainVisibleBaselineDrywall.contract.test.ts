@@ -35,6 +35,14 @@ describe("registered professional visible baseline — drywall", () => {
           value: "PROJECT-VERIFIED-EXACT-KRERR-RATE-CODE",
           source: "user_input",
         },
+        access_equipment_shift_count: {
+          value: 3,
+          source: "user_input",
+        },
+        access_delivery_trip_count: {
+          value: 2,
+          source: "user_input",
+        },
       },
     });
     expect(confirmed.production?.compile_result.status).toBe("COMPILED");

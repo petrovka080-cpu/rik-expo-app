@@ -81,7 +81,10 @@ describe("raw input fact binding for utility solar", () => {
     expect(pdf.pdf.body).toMatch(/Мощность электростанции: 100 МВт|РњРѕС‰РЅРѕСЃС‚СЊ СЌР»РµРєС‚СЂРѕСЃС‚Р°РЅС†РёРё: 100 РњР’С‚/);
     expect(pdf.pdf.body).toMatch(/Стоимость не рассчитана|РЎС‚РѕРёРјРѕСЃС‚СЊ РЅРµ СЂР°СЃСЃС‡РёС‚Р°РЅР°/);
     expect(pdf.pdf.body).not.toMatch(/предварительная профессиональная ведомость|РїСЂРµРґРІР°СЂРёС‚РµР»СЊРЅР°СЏ РїСЂРѕС„РµСЃСЃРёРѕРЅР°Р»СЊРЅР°СЏ РІРµРґРѕРјРѕСЃС‚СЊ/i);
-    expect(pdf.pdf.body).not.toMatch(/revision=.*solar_power_plant|snapshot=.*solar_power_plant|solar_power_plant|draft_solar_power_plant|PRELIMINARY_REQUIRES_INPUT|Материалы\s*[—-]\s*0\s*сом|РњР°С‚РµСЂРёР°Р»С‹\s*[—-]\s*0\s*СЃРѕРј|materials=0\.00|preliminary_total=0\.00/i);
+    expect(pdf.pdf.body).toContain(`revision_id=${revision.revisionId}`);
+    expect(pdf.pdf.body).toContain("work_key=solar_power_plant");
+    expect(pdf.pdf.body).toContain("pdf_revision_binding_enforced=true");
+    expect(pdf.pdf.body).not.toMatch(/PRELIMINARY_REQUIRES_INPUT|Материалы\s*[—-]\s*0\s*сом|РњР°С‚РµСЂРёР°Р»С‹\s*[—-]\s*0\s*СЃРѕРј|materials=0\.00|preliminary_total=0\.00/i);
 
     const mwQuantityLines = materialQuantityLinesFromRows({
       rows: revision.boq.rows,

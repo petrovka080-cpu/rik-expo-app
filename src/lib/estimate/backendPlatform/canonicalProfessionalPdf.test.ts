@@ -4,6 +4,7 @@ import {
   CANONICAL_PROFESSIONAL_PDF_CATEGORY_ORDER,
   CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION,
 } from "./canonicalProfessionalPdf";
+import type { CanonicalArtifactRow } from "./canonicalEstimateArtifactContract";
 
 function revision(rowCount: number) {
   return {
@@ -24,7 +25,10 @@ function revision(rowCount: number) {
 
 const categories = ["material", "labor", "equipment", "service", "transport"];
 
-function rows(count: number, options: { missingAt?: number; longTitleAt?: number } = {}) {
+function rows(
+  count: number,
+  options: { missingAt?: number; longTitleAt?: number } = {},
+): CanonicalArtifactRow[] {
   return Array.from({ length: count }, (_, index) => {
     const category = categories[index % categories.length];
     const missing = index === options.missingAt;
@@ -63,7 +67,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a6");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a10");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,
@@ -81,6 +85,7 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(projection.html).toContain("Услуги");
     expect(projection.html).toContain("Доставка");
     expect(projection.html).toContain("Требуется цена");
+    expect(projection.html).toContain("<strong>Статус:</strong> Предварительная");
     expect(projection.html).toContain("Оценено частично");
     expect(projection.html).toContain("Полный итог: требуется уточнение цен");
     expect(projection.html).toContain("Техническое приложение");
@@ -105,6 +110,7 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(projection.rowCount).toBe(rowCount);
     expect(projection.missingPriceRowCount).toBe(0);
     expect(projection.grandTotalStatus).toBe("COMPLETE");
+    expect(projection.html).toContain("<strong>Статус:</strong> Полная");
     expect(projection.html).toContain(String(sourceRows[sourceRows.length - 1]?.title_ru));
     expect(projection.html).toContain("break-inside:avoid");
     expect(projection.html).toContain("display:table-header-group");
@@ -139,6 +145,82 @@ describe("R4-A6 canonical professional PDF", () => {
     })).toThrow("multiple currencies");
   });
 
+  it("prints unresolved server-owned needs without inventing quantities or totals", () => {
+    const projection = buildCanonicalProfessionalPdfProjection({
+      revision: revision(1),
+      rows: rows(1),
+      preliminaryNeeds: [{
+        row_id: "primer",
+        ordinal: 1,
+        section: "materials",
+        category: "material",
+        title_ru: "Совместимая грунтовка",
+        unit_id: "kg",
+        quantity: null,
+        unit_price: null,
+        included_in_estimate: false,
+        included_in_procurement: false,
+        procurement_eligible: false,
+        ownership_status: "PRELIMINARY_NEED",
+        row_sha256: "9".repeat(64),
+        missing_parameter_ids: ["primer_consumption_kg_m2"],
+      }],
+      workTitleRu: "Подготовка потолка из ГКЛ",
+    });
+
+    expect(projection.preliminaryNeedCount).toBe(1);
+    expect(projection.grandTotalStatus).toBe("PARTIAL_NEEDS_PRICE");
+    expect(projection.html).toContain("Совместимая грунтовка");
+    expect(projection.html).toContain("Количество нужно уточнить");
+    expect(projection.html).toContain("В сумму и закупку позиция не включена");
+    expect(projection.html).not.toContain(">0 kg<");
+  });
+
+  it("keeps non-payable canonical composition beside unresolved needs", () => {
+    const compositionRows = rows(2);
+    compositionRows[0]!.included_in_estimate = false;
+    compositionRows[0]!.included_in_procurement = false;
+    compositionRows[0]!.unit_price = null;
+    compositionRows[0]!.amount = null;
+    compositionRows[0]!.ownership_status = "OWNED_EXCLUDED";
+    compositionRows[0]!.calculation_trace = {
+      resourceGraph: { costTreatment: "INCLUDED_IN_RESOURCE_ROWS" },
+    };
+    const projection = buildCanonicalProfessionalPdfProjection({
+      revision: {
+        ...revision(2),
+        totals: { amount: "200", includedRowCount: 1 },
+      },
+      rows: compositionRows,
+      expectedProjectedRowCount: 2,
+      preliminaryNeeds: [{
+        ...rows(1)[0]!,
+        row_id: "need-3",
+        ordinal: 2,
+        quantity: null,
+        unit_price: null,
+        amount: null,
+        included_in_estimate: false,
+        included_in_procurement: false,
+        ownership_status: "PRELIMINARY_NEED",
+      }],
+      workTitleRu: "Уплотнение покрытия",
+    });
+
+    expect(projection).toMatchObject({
+      rowCount: 3,
+      pricedRowCount: 1,
+      missingPriceRowCount: 0,
+      nonPayableRowCount: 1,
+      preliminaryNeedCount: 1,
+    });
+    expect(projection.html).toContain("Отдельно не оплачивается");
+    expect(projection.html).toContain("Не применяется");
+    expect(projection.html).toContain("Не суммируется");
+    expect(projection.html.indexOf("Профессиональная позиция 1"))
+      .toBeLessThan(projection.html.indexOf("Профессиональная позиция 2"));
+  });
+
   it("fails closed when projected rows differ from revision truth", () => {
     expect(() => buildCanonicalProfessionalPdfProjection({
       revision: revision(2), rows: rows(1), workTitleRu: "Несовпадение",
@@ -170,6 +252,11 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(canonicalProfessionalPdfCategory({ category: "labor" })).toBe("work");
     expect(canonicalProfessionalPdfCategory({ category: "equipment" })).toBe("equipment");
     expect(canonicalProfessionalPdfCategory({ category: "quality_control" })).toBe("service");
+    expect(canonicalProfessionalPdfCategory({ category: "Исполнительная документация" })).toBe("service");
+    expect(canonicalProfessionalPdfCategory({
+      category: "labor",
+      calculation_trace: { resourceGraph: { costTreatment: "INFORMATIONAL_SCOPE" } },
+    })).toBe("service");
     expect(canonicalProfessionalPdfCategory({ category: "delivery" })).toBe("transport");
   });
 });

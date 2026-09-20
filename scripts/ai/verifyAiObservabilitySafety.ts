@@ -91,6 +91,10 @@ const artifactPrefix = path.join(artifactRoot, AI_OBSERVABILITY_SAFETY_WAVE);
 const inventoryPath = `${artifactPrefix}_inventory.json`;
 const matrixPath = `${artifactPrefix}_matrix.json`;
 const proofPath = `${artifactPrefix}_proof.md`;
+const legacyArtifactPrefix = path.join(artifactRoot, "S_AI_OBS_01_TRACE_AUDIT_OBSERVABILITY");
+const legacyInventoryPath = `${legacyArtifactPrefix}_inventory.json`;
+const legacyMatrixPath = `${legacyArtifactPrefix}_matrix.json`;
+const legacyProofPath = `${legacyArtifactPrefix}_proof.md`;
 
 const observabilitySourceFiles = [
   "src/features/ai/observability/aiTraceEnvelope.ts",
@@ -437,6 +441,32 @@ export function writeAiObservabilitySafetyArtifacts(): AiObservabilitySafetyMatr
   writeJson(matrixPath, matrix);
   fs.mkdirSync(path.dirname(proofPath), { recursive: true });
   fs.writeFileSync(proofPath, proof, "utf8");
+
+  // The first observability closeout name remains part of the release-evidence
+  // contract. Emit a current compatibility projection from the same verified
+  // source instead of retaining a stale or hand-maintained second truth.
+  writeJson(legacyInventoryPath, {
+    ...inventory,
+    wave: "S_AI_OBS_01_TRACE_AUDIT_OBSERVABILITY",
+    superseded_by: "artifacts/S_AI_OBSERVABILITY_01_TRACE_BUDGET_REDACTION_inventory.json",
+  });
+  writeJson(legacyMatrixPath, {
+    ...matrix,
+    wave: "S_AI_OBS_01_TRACE_AUDIT_OBSERVABILITY",
+    superseded_by: "artifacts/S_AI_OBSERVABILITY_01_TRACE_BUDGET_REDACTION_matrix.json",
+  });
+  fs.writeFileSync(
+    legacyProofPath,
+    [
+      "# S_AI_OBS_01_TRACE_AUDIT_OBSERVABILITY",
+      "",
+      "Generated from the current canonical observability verifier.",
+      "Superseded by artifacts/S_AI_OBSERVABILITY_01_TRACE_BUDGET_REDACTION_matrix.json.",
+      "",
+      proof,
+    ].join("\n"),
+    "utf8",
+  );
 
   return matrix;
 }

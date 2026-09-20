@@ -32,6 +32,8 @@ describe("estimateDeterministicHash", () => {
       Number.NaN,
       Number.POSITIVE_INFINITY,
       "escaped:\"\\\nкириллица",
+      "кириллица:\ud83d\ude80:\ud800:\udc00",
+      { "ключ": "значение", emoji: "\ud83e\uddf1", escaped: "\b\f\r\t" },
       { z: undefined, b: [1, undefined, { x: "y" }], a: false },
       sparse,
     ];

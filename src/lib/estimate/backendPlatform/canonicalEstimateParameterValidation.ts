@@ -21,7 +21,8 @@ export type CanonicalParameterValidationIssue = {
     | "MUTUALLY_EXCLUSIVE"
     | "REQUIRES"
     | "REQUIRED_WHEN"
-    | "FORBIDDEN_WHEN";
+    | "FORBIDDEN_WHEN"
+    | "GEOMETRY_CONFLICT";
   parameterId: string;
   relatedParameterId?: string;
 };
@@ -190,6 +191,25 @@ export function validateCanonicalEstimateParameterInputs(input: {
     if (requiredWhen?.matches && !isPresent(value)) issues.push({ code: "REQUIRED_WHEN", parameterId: definition.parameterId, relatedParameterId: requiredWhen.parameterId });
     const forbiddenWhen = conditionMatches(definition.constraints.forbiddenWhen, parameters);
     if (forbiddenWhen?.matches && isPresent(value)) issues.push({ code: "FORBIDDEN_WHEN", parameterId: definition.parameterId, relatedParameterId: forbiddenWhen.parameterId });
+  }
+
+  const schemaIds = new Set(input.schema.map((definition) => definition.parameterId));
+  if (schemaIds.has("area_m2") && schemaIds.has("length_m") && schemaIds.has("width_m")) {
+    const area = Number(parameters.area_m2);
+    const length = Number(parameters.length_m);
+    const width = Number(parameters.width_m);
+    if (Number.isFinite(area) && Number.isFinite(length) && Number.isFinite(width)
+      && area > 0 && length > 0 && width > 0) {
+      const derivedArea = length * width;
+      const tolerance = Math.max(0.01, derivedArea * 0.001);
+      if (Math.abs(area - derivedArea) > tolerance) {
+        issues.push({
+          code: "GEOMETRY_CONFLICT",
+          parameterId: "area_m2",
+          relatedParameterId: "length_m,width_m",
+        });
+      }
+    }
   }
 
   const unique = new Map(issues.map((issue) => [`${issue.code}:${issue.parameterId}:${issue.relatedParameterId ?? ""}`, issue]));

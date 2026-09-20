@@ -7,9 +7,53 @@ import {
 } from "../../src/lib/consumerRequests";
 import { createCanonicalConsumerRepairAuditDraft } from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import type { ContinuousEstimateDetectorRow } from "../../src/lib/ai/estimateContinuousDetection";
+import {
+  ELEVATED_WORK_ACCESS_POLICY_ID,
+  ELEVATED_WORK_ACCESS_SUPPLEMENT_ROW_CODES,
+  isElevatedWorkAccessSupplement,
+} from "../../src/lib/estimate/elevatedWorkAccessPolicy";
 
 export const CAPITAL_RENOVATION_54_PROMPT = "Капитальный ремонт квартиры 54 кв метра";
 export const CAPITAL_RENOVATION_98_PROMPT = "капитальный ремонт квартиры 98 м² потолок 3 м 2 санузла";
+export const CAPITAL_RENOVATION_ACCESS_ROW_CODES = ELEVATED_WORK_ACCESS_SUPPLEMENT_ROW_CODES.filter(
+  (rowCode) => rowCode !== "drywall_ceiling_board_lift",
+);
+export const CAPITAL_RENOVATION_CORE_ROW_COUNT = 64;
+export const CAPITAL_RENOVATION_ACCESS_OWNER = ELEVATED_WORK_ACCESS_POLICY_ID;
+
+type CapitalRenovationCompositionCarrier = {
+  sourceParameters?: Readonly<Record<string, unknown>> | null;
+};
+
+export function isCapitalRenovationCoreRow(item: CapitalRenovationCompositionCarrier): boolean {
+  return item.sourceParameters?.capitalRenovationCalculator === true;
+}
+
+export function isCapitalRenovationAccessSupplementRow(item: CapitalRenovationCompositionCarrier): boolean {
+  return isElevatedWorkAccessSupplement(item) &&
+    (CAPITAL_RENOVATION_ACCESS_ROW_CODES as readonly string[]).includes(String(item.sourceParameters?.rowCode ?? ""));
+}
+
+export function capitalRenovationComposition<T extends CapitalRenovationCompositionCarrier>(items: readonly T[]) {
+  const coreRows = items.filter(isCapitalRenovationCoreRow);
+  const accessSupplementRows = items.filter(isCapitalRenovationAccessSupplementRow);
+  const known = new Set([...coreRows, ...accessSupplementRows]);
+  return {
+    coreRows,
+    accessSupplementRows,
+    unknownRows: items.filter((item) => !known.has(item)),
+  };
+}
+
+export function capitalRenovationAccessRowCodes(
+  items: readonly Pick<ConsumerRepairRequestItem, "sourceParameters">[],
+): string[] {
+  const expected = new Set<string>(CAPITAL_RENOVATION_ACCESS_ROW_CODES);
+  return items
+    .map((item) => String(item.sourceParameters?.rowCode ?? ""))
+    .filter((rowCode) => expected.has(rowCode))
+    .sort();
+}
 
 export function capitalRenovationDraft(prompt = CAPITAL_RENOVATION_54_PROMPT): ConsumerRepairAiDraft {
   return buildConsumerRepairAiDraft(prompt, { currency: "KGS", city: "Bishkek" });

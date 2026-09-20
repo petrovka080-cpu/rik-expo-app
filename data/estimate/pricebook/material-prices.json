@@ -35852,6 +35852,40 @@
       "validFrom": "2026-07-07",
       "trustLevel": "preliminary_only",
       "notes": "Generated from explicit norm-family/type/unit coverage metadata; preliminary total only, contract total forbidden."
+    },
+    {
+      "priceId": "pb_material_kg_99151cf2",
+      "nomenclatureId": "norm_family:expanded_complex:earth_dam|material|kg",
+      "itemType": "material",
+      "name": "Проволока, спирали и крепёж габионов",
+      "unit": "kg",
+      "unitPrice": 105.45,
+      "currency": "KGS",
+      "region": "KG",
+      "sourceId": "kg_preliminary_material_market_assumption_2026_07",
+      "sourceType": "market_assumption",
+      "sourceLabel": "material preliminary market assumption for norm_family:expanded_complex:earth_dam",
+      "retrievedAt": "2026-07-07T00:00:00+06:00",
+      "validFrom": "2026-07-07",
+      "trustLevel": "preliminary_only",
+      "notes": "Generated from explicit norm-family/type/unit coverage metadata; preliminary total only, contract total forbidden."
+    },
+    {
+      "priceId": "pb_material_kg_ada4365",
+      "nomenclatureId": "norm_family:expanded_complex:gabion_protection|material|kg",
+      "itemType": "material",
+      "name": "Проволока, спирали и крепёж габионов",
+      "unit": "kg",
+      "unitPrice": 121.6,
+      "currency": "KGS",
+      "region": "KG",
+      "sourceId": "kg_preliminary_material_market_assumption_2026_07",
+      "sourceType": "market_assumption",
+      "sourceLabel": "material preliminary market assumption for norm_family:expanded_complex:gabion_protection",
+      "retrievedAt": "2026-07-07T00:00:00+06:00",
+      "validFrom": "2026-07-07",
+      "trustLevel": "preliminary_only",
+      "notes": "Generated from explicit norm-family/type/unit coverage metadata; preliminary total only, contract total forbidden."
     }
   ]
 }

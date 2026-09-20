@@ -75,6 +75,30 @@ describe("strip foundation concrete placement canonical family", () => {
     expect(direct.rows.some((row) => row.row_id === "equipment:concrete:crane-bucket")).toBe(false);
   });
 
+  it("adds a project-confirmed construction-joint waterstop without importing the whole foundation", async () => {
+    const target = STRIP_FOUNDATION_CONCRETE_PLACEMENT_TARGETS[0];
+    const input = stripFoundationConcretePlacementAcceptanceInputR1(target.contextKey);
+    const compiled = await compileStripFoundationConcretePlacementR1({
+      ...input,
+      construction_joint_mode: "WATERSTOP",
+      construction_joint_waterstop_specification: "Гидрошпонка ПВХ по узлу КЖ-17",
+      construction_joint_waterstop_length_m: 18,
+      construction_joint_installation_worker_h: 12,
+    }, { catalogId: target.catalogId });
+    expect(compiled.rows).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        row_id: "material:concrete:construction-joint-waterstop",
+        quantity: "18",
+      }),
+      expect.objectContaining({
+        row_id: "work:concrete:construction-joint-waterstop-install",
+        quantity: "12",
+      }),
+    ]));
+    const serialized = JSON.stringify(compiled);
+    expect(serialized).not.toMatch(/excavation|reinforcing[_ -]steel|formwork|foundation[_ -]waterproofing/iu);
+  });
+
   it("contains no legacy generic concrete, reinforcement or formwork source", () => {
     const serialized = JSON.stringify({
       resources: STRIP_FOUNDATION_CONCRETE_PLACEMENT_RESOURCES,
@@ -83,6 +107,6 @@ describe("strip foundation concrete placement canonical family", () => {
     expect(serialized).not.toContain("src_professional_norm_pack_concrete_ready_mix_m3_m3_placed_v1");
     expect(serialized).not.toContain("src_professional_norm_pack_reinforcement_rebar_kg_m3_concrete_element_v1");
     expect(serialized).not.toContain("src_professional_norm_pack_formwork_contact_area_m2_m3_concrete_element_v1");
-    expect(STRIP_FOUNDATION_CONCRETE_PLACEMENT_RESOURCES).toHaveLength(13);
+    expect(STRIP_FOUNDATION_CONCRETE_PLACEMENT_RESOURCES).toHaveLength(15);
   });
 });

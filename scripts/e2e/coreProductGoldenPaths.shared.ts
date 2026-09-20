@@ -160,7 +160,6 @@ function buildMarketplaceAdd(): JsonRecord {
 
 function buildB2CRequest(): JsonRecord {
   const screen = read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
-  const actions = read("src/features/consumerRepair/requestEstimateScreenActions.ts");
   const validation = read("src/lib/consumerRequests/consumerRequestValidationService.ts");
   const service = read("src/lib/consumerRequests/consumerRequestService.ts");
   const marketplace = read("src/lib/consumerRequests/consumerRequestMarketplaceService.ts");
@@ -181,11 +180,15 @@ function buildB2CRequest(): JsonRecord {
 
   return {
     existing_web_pdf_proof_status: b2cProof?.proof_status ?? null,
-    approve_creates_pdf: service.includes("generateConsumerRepairRequestPdf"),
+    approve_creates_pdf:
+      screen.includes("buildCanonicalEstimateArtifact") &&
+      service.includes("canonicalArtifact") &&
+      service.includes("consumer_approved_canonical_backend_pdf"),
     pdf_opens:
-      screen.includes('pathname: "/pdf-viewer"') &&
-      screen.includes("buildConsumerRepairRequestPdfViewerNavigation(") &&
-      actions.includes("getConsumerRepairRequestPdf(") &&
+      screen.includes("assertCanonicalEstimateArtifactIdentity") &&
+      screen.includes("artifact.signedUrl") &&
+      screen.includes("createPdfDocumentDescriptor") &&
+      screen.includes("previewPdfDocument") &&
       pdf.includes("application/pdf"),
     pdf_history_visible: screen.includes("history") || screen.includes("pdfs"),
     marketplace_send_validation_passed: includesAll(validation, validationCodes),
@@ -195,9 +198,9 @@ function buildB2CRequest(): JsonRecord {
     passed:
       includesAll(validation, validationCodes) &&
       marketplace.includes("ConsumerRepairValidationError") &&
-      screen.includes('pathname: "/pdf-viewer"') &&
-      screen.includes("buildConsumerRepairRequestPdfViewerNavigation(") &&
-      actions.includes("getConsumerRepairRequestPdf(") &&
+      screen.includes("buildCanonicalEstimateArtifact") &&
+      screen.includes("assertCanonicalEstimateArtifactIdentity") &&
+      screen.includes("previewPdfDocument") &&
       !screen.includes("/office") &&
       !/supabase|\.from\s*\(|\.(insert|update|delete)\s*\(/i.test(screen),
   };
@@ -458,9 +461,9 @@ export function buildCoreProductBackendBoundaryReport(): JsonRecord {
     b2c_send_to_marketplace: read("src/lib/consumerRequests/consumerRequestMarketplaceService.ts").includes(
       "validateConsumerRepairRequestForMarketplace",
     ),
-    b2c_approve_pdf: read("src/lib/consumerRequests/consumerRequestService.ts").includes(
-      "generateConsumerRepairRequestPdf",
-    ),
+    b2c_approve_pdf:
+      read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx").includes("buildCanonicalEstimateArtifact") &&
+      read("src/lib/consumerRequests/consumerRequestService.ts").includes("consumer_approved_canonical_backend_pdf"),
     director_approve: read("src/screens/director/director.approve.boundary.ts").includes(
       "callDirectorApprovePipelineRpc",
     ),

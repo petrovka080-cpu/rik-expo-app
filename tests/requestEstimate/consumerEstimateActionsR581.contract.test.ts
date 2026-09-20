@@ -12,6 +12,8 @@ import {
 } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
 import {
   buildConsumerCanonicalParameterSession,
+  canonicalCatalogCustomRowClassification,
+  consumerCanonicalPrecompileParameterOverrides,
   isConsumerMeaningfulCanonicalParameter,
   normalizedCanonicalNumericValidation,
 } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
@@ -19,7 +21,14 @@ import { canonicalConsumerParameterPlaceholder } from "../../src/features/consum
 import {
   buildMultiDomainReferenceSelectedWorkBinding,
   canonicalBaselineContractMissingStatusMessage,
+  composeResolvedWorkProblemText,
+  consumerRepairCanonicalWorkSearchQuery,
+  parseEditableEstimateNumberInput,
 } from "../../src/features/consumerRepair/requestEstimateScreenActions";
+import {
+  consumerRepairCanonicalEstimateBlocksApproval,
+  consumerRepairCanonicalMissingParameterCount,
+} from "../../src/features/consumerRepair/consumerRepairCanonicalEstimateReadiness";
 import type { ConsumerRepairDraftBundle } from "../../src/lib/consumerRequests";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 
@@ -69,6 +78,167 @@ function canonicalBundle(): ConsumerRepairDraftBundle {
 }
 
 describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
+  it.each([
+    [{ kind: "material" }, { section: "Материалы", category: "material", includedInProcurement: true }],
+    [{ kind: "work" }, { section: "Работы", category: "construction_work", includedInProcurement: false }],
+    [{ kind: "equipment" }, { section: "Механизмы", category: "machine_equipment", includedInProcurement: true }],
+    [{ category: "testing_service" }, { section: "Услуги", category: "service", includedInProcurement: false }],
+    [{ kind: "transport" }, { section: "Доставка", category: "delivery", includedInProcurement: true }],
+    [{ kind: "waste" }, { section: "Отходы", category: "waste", includedInProcurement: false }],
+    [{ kind: "equipment", procurementEligible: false }, { section: "Механизмы", category: "machine_equipment", includedInProcurement: false }],
+  ] as const)("keeps catalog additions in their real estimate category", (item, expected) => {
+    expect(canonicalCatalogCustomRowClassification(item)).toEqual(expected);
+  });
+
+  it("distinguishes cleared, valid and invalid quantity input without coercion", () => {
+    expect(parseEditableEstimateNumberInput("")).toBeNull();
+    expect(parseEditableEstimateNumberInput("  ")).toBeNull();
+    expect(parseEditableEstimateNumberInput("1")).toBe(1);
+    expect(parseEditableEstimateNumberInput("0,125")).toBe(0.125);
+    for (const invalid of ["-1", "Infinity", "NaN", "1kg", "1..2"]) {
+      expect(parseEditableEstimateNumberInput(invalid)).toBeNull();
+    }
+  });
+
+  it("keeps an unresolved manual catalog quantity visible and approval-blocking", () => {
+    const session = buildConsumerCanonicalParameterSession({
+      catalog: {
+        catalogId: "catalog-with-manual-need",
+        workKey: "work-with-manual-need",
+        definitionVersion: 1,
+        parameterSchema: [],
+      } as never,
+      revision: {
+        revisionId: "revision-with-manual-need",
+        checksumSha256: "manual-need-checksum",
+        parameterSchemaHash: "manual-need-schema",
+        compilerVersion: "manual-need-compiler",
+        createdAt: "2026-09-08T00:00:00.000Z",
+        parameters: {},
+        preliminaryNeeds: [{
+          rowId: "manual:catalog-primer",
+          quantity: null,
+          selected: true,
+          needState: "QUANTITY_REQUIRED",
+          missingParameterIds: [],
+        }],
+      } as never,
+      draftId: "draft-with-manual-need",
+    });
+
+    expect(session.blockingMissingParameterIds).toEqual(["manual:catalog-primer:quantity"]);
+    expect(consumerRepairCanonicalMissingParameterCount(session)).toBe(1);
+    expect(consumerRepairCanonicalEstimateBlocksApproval(session)).toBe(true);
+  });
+
+  it("projects only the selected conditional technology branch into the parameter session", () => {
+    const conditional = (parameterId: string, value: string) => ({
+      kind: "equals",
+      parameterId,
+      value,
+    });
+    const parameter = (
+      parameterId: string,
+      ordinal: number,
+      required: boolean,
+      requiredWhen?: Record<string, unknown>,
+    ) => ({
+      parameterId,
+      ordinal,
+      valueType: "text",
+      unitId: null,
+      titleRu: parameterId === "system_type"
+        ? "Тип системы водоотвода"
+        : parameterId === "tray_nominal_size"
+          ? "Номинальное сечение лотка"
+          : "Номинальный диаметр дренажной трубы",
+      required,
+      defaultValue: null,
+      constraints: requiredWhen ? { requiredWhen } : {},
+      requiredWhen,
+      visibilityRole: "USER_INPUT",
+      valueSourceRole: "PROJECT_DOCUMENTATION",
+      formulaConsumers: [`formula:${parameterId}`],
+      resourceBranchConsumers: [`row:${parameterId}`],
+    });
+    const canonicalParameters = {
+      system_type: "linear_tray",
+      drain_pipe_nominal_size: "DN160",
+    };
+    const session = buildConsumerCanonicalParameterSession({
+      catalog: {
+        catalogId: "drainage-conditional-schema",
+        workKey: "drainage-conditional-schema",
+        definitionVersion: 1,
+        parameterSchema: [
+          parameter("system_type", 0, true),
+          parameter("tray_nominal_size", 1, false, conditional("system_type", "linear_tray")),
+          parameter("drain_pipe_nominal_size", 2, false, conditional("system_type", "subsurface_drain")),
+        ],
+      } as never,
+      revision: {
+        revisionId: "revision-linear-drainage",
+        checksumSha256: "linear-drainage-checksum",
+        parameterSchemaHash: "linear-drainage-schema",
+        compilerVersion: "linear-drainage-compiler",
+        createdAt: "2026-09-08T00:00:00.000Z",
+        parameters: canonicalParameters,
+        userInputSnapshot: canonicalParameters,
+        preliminaryNeeds: [],
+      } as never,
+      draftId: "draft-linear-drainage",
+    });
+
+    expect(session.parameters.map((candidate) => candidate.parameterId)).toEqual([
+      "system_type",
+      "tray_nominal_size",
+    ]);
+    expect(session.parameters.find((candidate) => candidate.parameterId === "system_type")?.source)
+      .toBe("USER_EXPLICIT");
+    expect(session.contractMissingParameterIds).toEqual(["tray_nominal_size"]);
+    expect(session.parameters.find((candidate) => candidate.parameterId === "tray_nominal_size")?.requiredLevel)
+      .toBe("CONDITIONAL");
+    expect(session.status).toBe("PRELIMINARY_WITH_ASSUMPTIONS");
+
+    // The UI/calculation projection is branch-specific, but the canonical revision keeps
+    // the inactive value so a reversible technology switch does not destroy user input.
+    expect(canonicalParameters).toEqual({
+      system_type: "linear_tray",
+      drain_pipe_nominal_size: "DN160",
+    });
+    const restoredPipeSession = buildConsumerCanonicalParameterSession({
+      catalog: {
+        catalogId: "drainage-conditional-schema",
+        workKey: "drainage-conditional-schema",
+        definitionVersion: 1,
+        parameterSchema: [
+          parameter("system_type", 0, true),
+          parameter("tray_nominal_size", 1, false, conditional("system_type", "linear_tray")),
+          parameter("drain_pipe_nominal_size", 2, false, conditional("system_type", "subsurface_drain")),
+        ],
+      } as never,
+      revision: {
+        revisionId: "revision-subsurface-drainage",
+        checksumSha256: "subsurface-drainage-checksum",
+        parameterSchemaHash: "linear-drainage-schema",
+        compilerVersion: "linear-drainage-compiler",
+        createdAt: "2026-09-08T00:01:00.000Z",
+        parameters: { ...canonicalParameters, system_type: "subsurface_drain" },
+        userInputSnapshot: canonicalParameters,
+        preliminaryNeeds: [],
+      } as never,
+      draftId: "draft-linear-drainage",
+    });
+
+    expect(restoredPipeSession.parameters.map((candidate) => candidate.parameterId)).toEqual([
+      "system_type",
+      "drain_pipe_nominal_size",
+    ]);
+    expect(restoredPipeSession.parameters.find((candidate) => candidate.parameterId === "drain_pipe_nominal_size")?.value)
+      .toBe("DN160");
+    expect(restoredPipeSession.contractMissingParameterIds).toEqual([]);
+  });
+
   it("recognizes ordinary strip-foundation construction text without requiring an exact catalog title", () => {
     expect(buildMultiDomainReferenceSelectedWorkBinding(
       "устройство ленточного фундамента 100 метров длина и 20 метров ширина",
@@ -94,6 +264,22 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     )?.selectedWorkKey).toBe(
       "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_large_area",
     );
+    expect(buildMultiDomainReferenceSelectedWorkBinding(
+      "линейный поверхностный водоотвод в существующем асфальте 25 м",
+    )?.selectedWorkKey).toBe(
+      "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_large_area",
+    );
+    expect(consumerRepairCanonicalWorkSearchQuery(
+      "линейный поверхностный водоотвод в существующем асфальте 25 м",
+    )).toBe("Устройство системы водоотвода асфальтированного покрытия");
+    const resolvedDrainage = buildMultiDomainReferenceSelectedWorkBinding(
+      "линейный поверхностный водоотвод в существующем асфальте 25 м",
+    );
+    expect(composeResolvedWorkProblemText(
+      { titleRu: "Устройство системы водоотвода асфальтированного покрытия" } as never,
+      "линейный поверхностный водоотвод в существующем асфальте 25 м",
+      resolvedDrainage,
+    )).toBe("линейный поверхностный водоотвод в существующем асфальте 25 м");
     expect(buildMultiDomainReferenceSelectedWorkBinding(
       "полное строительство дороги с водоотводом, освещением, знаками и разметкой",
     )).toBeNull();
@@ -121,6 +307,15 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     expect(parseR4A10StripFoundationPrompt(
       "устройство ленточного фундамента 100 метров длина и 20 метров ширина",
     )).toEqual({});
+  });
+
+  it("uses a single trailing length explicitly scoped to the strip foundation", () => {
+    expect(parseR4A10StripFoundationPrompt(
+      "Устройство монолитного железобетонного ленточного фундамента 150 метров",
+    )).toEqual({ total_axis_length_m: "150" });
+    expect(parseR4A10StripFoundationPrompt(
+      "Устройство ленточного фундамента 150 м.",
+    )).toEqual({ total_axis_length_m: "150" });
   });
 
   it("extracts only explicitly named strip-foundation parameters for canonical backend handoff", () => {
@@ -358,6 +553,60 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     expect(normalizedCanonicalNumericValidation({ minimum: 40, maximum: 60, integer: false })).toEqual({ min: 40, max: 60 });
   });
 
+  it("keeps recognized calculation values but drops document-only precision profiles before preliminary compile", () => {
+    const parameter = (input: Record<string, unknown>) => ({
+      parameterId: "parameter",
+      value: null,
+      source: "MISSING",
+      valueType: "string",
+      requiredLevel: "CONTRACT_REQUIRED",
+      allowedValues: [],
+      affectsFormula: [],
+      affectsRows: [],
+      ...input,
+    });
+    const overrides = consumerCanonicalPrecompileParameterOverrides({
+      session: {
+        parameters: [
+          parameter({
+            parameterId: "total_axis_length_m",
+            value: 150,
+            source: "TEXT_EXTRACTED",
+            valueType: "number",
+            affectsFormula: ["concrete_volume"],
+          }),
+          parameter({
+            parameterId: "strip_width_m",
+            value: 0.7,
+            source: "USER_EXPLICIT",
+            valueType: "number",
+            affectsFormula: ["concrete_volume"],
+          }),
+          parameter({
+            parameterId: "product_profile_id",
+            value: "advanced_document_profile",
+            source: "USER_EXPLICIT",
+            requiredLevel: "OPTIONAL",
+            allowedValues: [{ value: "advanced_document_profile", label: "Расширенная проверка" }],
+            affectsRows: ["main_concrete"],
+          }),
+          parameter({
+            parameterId: "estimator_approval_reference",
+            value: "EST-1",
+            source: "USER_EXPLICIT",
+            affectsRows: ["main_concrete"],
+          }),
+        ],
+      } as never,
+      patches: [],
+    });
+
+    expect(overrides).toEqual({
+      total_axis_length_m: 150,
+      strip_width_m: 0.7,
+    });
+  });
+
   it("presents scope choices as product language instead of backend enums", () => {
     const scopeSchema = {
       parameterId: "estimate_scope_mode",
@@ -413,6 +662,39 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     });
     expect(placeholder).toBe("Предварительно принято: 50 мм · норма: 40–60");
     expect(placeholder).not.toMatch(/e-\d|2\.220446|Нормативный диапазон: числовое значение/u);
+  });
+
+  it("explains what to enter and where to get it instead of saying only 'По проекту'", () => {
+    const numeric = canonicalConsumerParameterPlaceholder({
+      parameter: {
+        parameterId: "strip_width_m",
+        valueType: "number",
+        unit: "m",
+        source: "MISSING",
+        validation: {},
+        normativeSource: null,
+      } as never,
+      baselineDisplay: "",
+      guideShortRu: "По проекту",
+      unitLabel: "м",
+    });
+    expect(numeric).toContain("Введите подтверждённое число, м");
+    expect(numeric).toContain("обмер, чертёж или ведомость объёмов");
+    expect(numeric).not.toBe("По проекту");
+
+    const document = canonicalConsumerParameterPlaceholder({
+      parameter: {
+        parameterId: "structural_drawing_and_revision_reference",
+        valueType: "string",
+        source: "MISSING",
+        validation: {},
+        normativeSource: null,
+      } as never,
+      baselineDisplay: "",
+      guideShortRu: "По проекту",
+    });
+    expect(document).toContain("номер или название документа");
+    expect(document).toContain("не должно блокировать предварительный расчёт");
   });
 
   it("keeps approval on the compatible archival contract and removes technical routing from line actions", () => {

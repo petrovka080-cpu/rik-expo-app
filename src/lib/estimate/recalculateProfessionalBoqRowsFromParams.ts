@@ -4,6 +4,7 @@ import type {
 } from "./estimateDraftRevisionContract";
 import {
   evaluateAiEstimateQuantityFormula,
+  extractAiEstimateFormulaIdentifiers,
   type AiEstimateFormulaEnvironment,
   type AiEstimateFormulaEnvironmentValue,
 } from "./formula/evaluateAiEstimateQuantityFormula";
@@ -63,18 +64,36 @@ function seedEnvironment(
 function rowFormulaEnvironment(
   baseEnvironment: AiEstimateFormulaEnvironment,
   row: ProfessionalBoqRow,
-  params: Record<string, EstimateDraftRevisionParam>,
+  parameterEnvironment: AiEstimateFormulaEnvironment,
   naturalLanguageBaseQuantity: number | null,
 ): AiEstimateFormulaEnvironment {
-  const env: AiEstimateFormulaEnvironment = { ...baseEnvironment };
+  const env: AiEstimateFormulaEnvironment = {};
   const formulaContext = row.sourceParameters?.formulaContext;
-  if (formulaContext && typeof formulaContext === "object" && !Array.isArray(formulaContext)) {
-    for (const [key, value] of Object.entries(formulaContext)) putEnvironmentValue(env, key, value);
+  const context = formulaContext && typeof formulaContext === "object" && !Array.isArray(formulaContext)
+    ? formulaContext as Record<string, unknown>
+    : null;
+  // The evaluator can only observe identifiers referenced by this formula.
+  // Project those keys with the same precedence as the former full object
+  // copies: base < row context < natural-language q < canonical parameters.
+  for (const key of extractAiEstimateFormulaIdentifiers(row.quantityFormula)) {
+    if (Object.prototype.hasOwnProperty.call(baseEnvironment, key)) env[key] = baseEnvironment[key];
+    if (context && Object.prototype.hasOwnProperty.call(context, key)) {
+      putEnvironmentValue(env, key, context[key]);
+    }
+    if (naturalLanguageBaseQuantity != null && (key === "q" || key === "baseQuantity")) {
+      env[key] = naturalLanguageBaseQuantity;
+    }
+    if (Object.prototype.hasOwnProperty.call(parameterEnvironment, key)) {
+      env[key] = parameterEnvironment[key];
+    }
   }
-  if (naturalLanguageBaseQuantity != null) {
-    env.q = naturalLanguageBaseQuantity;
-    env.baseQuantity = naturalLanguageBaseQuantity;
-  }
+  return env;
+}
+
+function parameterFormulaEnvironment(
+  params: Record<string, EstimateDraftRevisionParam>,
+): AiEstimateFormulaEnvironment {
+  const env: AiEstimateFormulaEnvironment = {};
   for (const [key, param] of Object.entries(params)) putEnvironmentValue(env, key, param.value);
   return env;
 }
@@ -110,6 +129,91 @@ function stringSourceValue(source: Record<string, unknown>, key: string): string
   return typeof value === "string" && value.trim() ? value.trim() : null;
 }
 
+const ACCESS_SYSTEM_TITLES_RU: Readonly<Record<string, string>> = Object.freeze({
+  MOBILE_TOWER: "Передвижная вышка-тура подтверждённой конфигурации",
+  FRAME_SCAFFOLD: "Инвентарные рамные леса подтверждённой конфигурации",
+  SCISSOR_LIFT: "Самоходный ножничный подъёмник подтверждённой модели",
+  ARTICULATED_BOOM_LIFT: "Коленчатый подъёмник подтверждённой модели",
+  OWNED_COMPATIBLE_EQUIPMENT: "Собственное совместимое средство доступа пользователя",
+});
+
+function selectedAccessSystemTitle(
+  params: Record<string, EstimateDraftRevisionParam>,
+): string | null {
+  const value = params.access_system_type?.value;
+  if (typeof value !== "string" || !value.trim()) return null;
+  return ACCESS_SYSTEM_TITLES_RU[value.trim()] ?? value.trim();
+}
+
+function projectConfirmedAccessChoice(
+  row: ProfessionalBoqRow,
+  params: Record<string, EstimateDraftRevisionParam>,
+): ProfessionalBoqRow {
+  const selectedTitle = selectedAccessSystemTitle(params);
+  if (!selectedTitle) return row;
+  const isAccessEquipment = row.rowId === "drywall_prepare_access_equipment";
+  const isAccessOperations = row.rowId === "drywall_prepare_access_operations";
+  const isAccessDelivery = row.rowId === "drywall_prepare_access_delivery";
+  const isAccessReturn = row.rowId === "drywall_prepare_access_return";
+  if (!isAccessEquipment && !isAccessOperations && !isAccessDelivery && !isAccessReturn) return row;
+  const titleRu = isAccessEquipment
+    ? selectedTitle
+    : isAccessOperations
+      ? `Подготовка, проверка, перестановка и завершение работы: ${selectedTitle}`
+      : isAccessDelivery
+        ? `Доставка на объект: ${selectedTitle}`
+        : `Возврат поставщику: ${selectedTitle}`;
+  return {
+    ...row,
+    titleRu,
+    sourceParameters: {
+      ...(row.sourceParameters ?? {}),
+      selectedAccessSystemType: params.access_system_type?.value,
+      selectedAccessSupplyMode: params.access_supply_mode?.value,
+      elevatedWorkRequirementState: params.elevated_work_requirement_state?.value,
+    },
+  };
+}
+
+function resolvedConditionalRow(
+  row: ProfessionalBoqRow,
+  params: Record<string, EstimateDraftRevisionParam>,
+  quantity: number,
+): ProfessionalBoqRow {
+  const blockerIds = Array.isArray(row.sourceParameters?.parameterBlockerIds)
+    ? row.sourceParameters.parameterBlockerIds.filter(
+      (value): value is string => typeof value === "string" && value.trim().length > 0,
+    )
+    : [];
+  if (blockerIds.length === 0) return quantity === row.quantity ? row : { ...row, quantity };
+  const blockersResolved = blockerIds.every((key) => params[key] != null);
+  const requirementParam = stringSourceValue(row.sourceParameters ?? {}, "conditionalRequirementParam");
+  const requirementValue = stringSourceValue(row.sourceParameters ?? {}, "conditionalRequirementValue");
+  const requirementSatisfied = !requirementParam || !requirementValue ||
+    params[requirementParam]?.value === requirementValue;
+  const includedInEstimate = blockersResolved && requirementSatisfied && quantity > 0;
+  const conditionalProcurementEligible = row.sourceParameters?.conditionalProcurementEligible === true ||
+    row.rowType === "material";
+  const includedInProcurement = includedInEstimate && conditionalProcurementEligible;
+  const currentIncludedInEstimate = row.sourceParameters?.includedInEstimate !== false;
+  if (
+    quantity === row.quantity &&
+    includedInEstimate === currentIncludedInEstimate &&
+    includedInProcurement === row.includedInProcurement
+  ) return row;
+  return projectConfirmedAccessChoice({
+    ...row,
+    quantity,
+    includedInProcurement,
+    sourceParameters: {
+      ...(row.sourceParameters ?? {}),
+      includedInEstimate,
+      includedInProcurement,
+      conditionalInputsResolved: blockersResolved,
+    },
+  }, params);
+}
+
 function legacyS2BScaledQuantity(input: {
   row: ProfessionalBoqRow;
   params: Record<string, EstimateDraftRevisionParam>;
@@ -139,6 +243,10 @@ export function recalculateProfessionalBoqRowsFromParams(input: {
   changedParamKey?: string | null;
 }): ProfessionalBoqRow[] {
   const env = seedEnvironment(input.rows, input.params);
+  // Formula context can shadow the base environment, while canonical user
+  // parameters must win. Compile those parameter values once per revision
+  // instead of parsing and validating every value again for every BOQ row.
+  const parameterEnvironment = parameterFormulaEnvironment(input.params);
   const changedParamValue = input.changedParamKey ? numericValue(input.params[input.changedParamKey]?.value) : null;
   const naturalLanguageQuantity = naturalLanguageBaseQuantity(input);
 
@@ -149,7 +257,7 @@ export function recalculateProfessionalBoqRowsFromParams(input: {
     } else {
       const recalculated = evaluateAiEstimateQuantityFormula({
         formula: row.quantityFormula,
-        env: rowFormulaEnvironment(env, row, input.params, naturalLanguageQuantity),
+        env: rowFormulaEnvironment(env, row, parameterEnvironment, naturalLanguageQuantity),
       });
       if (recalculated.ok && recalculated.value != null && recalculated.value >= 0) quantity = recalculated.value;
       else {
@@ -158,6 +266,6 @@ export function recalculateProfessionalBoqRowsFromParams(input: {
       }
     }
     setRowQuantityInEnvironment(env, row.rowId, quantity);
-    return quantity === row.quantity ? row : { ...row, quantity };
+    return resolvedConditionalRow(row, input.params, quantity);
   });
 }

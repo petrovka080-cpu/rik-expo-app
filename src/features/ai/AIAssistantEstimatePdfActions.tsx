@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { Linking, Pressable, Text, View } from "react-native";
 
 import type { AiEstimatePdfSource } from "../../lib/ai/estimatePdf/estimatePdfTypes";
@@ -17,6 +17,8 @@ import type { AssistantMessage } from "./assistant.types";
 import { createAssistantScreenMessage as createMessage } from "./AIAssistantScreen.helpers";
 import { aiAssistantScreenStyles as styles } from "./AIAssistantScreen.styles";
 import { buildCanonicalEstimateArtifact } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
+import { createPdfDocumentDescriptor } from "../../lib/documents/pdfDocument";
+import { previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 
 type Props = {
   message: AssistantMessage;
@@ -94,19 +96,45 @@ export function AIAssistantEstimatePdfActions({
   onAppendMessage,
   onFallback,
 }: Props) {
+  const activeEstimatePdfCreations = useRef(new Set<"pdf" | "procurement">());
+  const [activeCanonicalArtifactKind, setActiveCanonicalArtifactKind] = useState<"pdf" | "procurement" | null>(null);
   const makeCanonicalArtifact = useCallback(async (kind: "pdf" | "procurement") => {
     if (!message.canonicalEstimateRevisionId || !message.canonicalEstimateReleaseId) return;
+    if (activeEstimatePdfCreations.current.has(kind)) return;
+    activeEstimatePdfCreations.current.add(kind);
+    setActiveCanonicalArtifactKind(kind);
     try {
       const artifact = await buildCanonicalEstimateArtifact({
         revisionId: message.canonicalEstimateRevisionId,
         kind,
         idempotencyKey: `ai-${kind}-${message.canonicalEstimateRevisionId}`,
       });
-      if (artifact.releaseId !== message.canonicalEstimateReleaseId) throw new Error("CANONICAL_ARTIFACT_RELEASE_MISMATCH");
+      if (
+        artifact.status !== "ready" ||
+        artifact.kind !== kind ||
+        artifact.revisionId !== message.canonicalEstimateRevisionId ||
+        artifact.releaseId !== message.canonicalEstimateReleaseId
+      ) throw new Error("CANONICAL_ARTIFACT_IDENTITY_MISMATCH");
       onAppendMessage(createMessage("assistant", kind === "pdf" ? "PDF сметы готов." : "Пакет закупки готов."));
-      if (artifact.signedUrl) await Linking.openURL(artifact.signedUrl);
+      if (artifact.signedUrl) {
+        if (kind === "pdf") {
+          await previewPdfDocument(createPdfDocumentDescriptor({
+            uri: artifact.signedUrl,
+            title: message.estimatePdfSource?.estimate.workTitle ?? "Смета",
+            documentType: "request",
+            source: "generated",
+            originModule: "reports",
+            entityId: message.canonicalEstimateRevisionId,
+          }));
+        } else {
+          await Linking.openURL(artifact.signedUrl);
+        }
+      }
     } catch (error) {
       onFallback(`canonical_${kind}_failed`, error, { revisionId: message.canonicalEstimateRevisionId });
+    } finally {
+      activeEstimatePdfCreations.current.delete(kind);
+      setActiveCanonicalArtifactKind((current) => current === kind ? null : current);
     }
   }, [message.canonicalEstimateReleaseId, message.canonicalEstimateRevisionId, onAppendMessage, onFallback]);
   const canonicalFooterProofText = message.estimatePdfSource
@@ -126,8 +154,8 @@ export function AIAssistantEstimatePdfActions({
         </Text>
       ) : null}
       <View style={styles.estimateActionRow}>
-        <Pressable onPress={() => void makeCanonicalArtifact("pdf")} style={styles.estimateActionButton} testID="ai-estimate-make-pdf"><Text style={styles.estimateActionText}>PDF</Text></Pressable>
-        <Pressable onPress={() => void makeCanonicalArtifact("procurement")} style={styles.estimateActionButton} testID="ai-estimate-open-procurement"><Text style={styles.estimateActionText}>Закупка</Text></Pressable>
+        <Pressable disabled={activeCanonicalArtifactKind !== null} onPress={() => void makeCanonicalArtifact("pdf")} style={styles.estimateActionButton} testID="ai-estimate-make-pdf"><Text style={styles.estimateActionText}>PDF</Text></Pressable>
+        <Pressable disabled={activeCanonicalArtifactKind !== null} onPress={() => void makeCanonicalArtifact("procurement")} style={styles.estimateActionButton} testID="ai-estimate-open-procurement"><Text style={styles.estimateActionText}>Закупка</Text></Pressable>
       </View>
     </View>
   );

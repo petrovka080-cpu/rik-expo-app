@@ -171,10 +171,13 @@ function parameterType(
   return "decimal";
 }
 
-function numericInputs(parameters: Json[]): Record<string, number> {
+function numericInputs(parameters: Json[]): Record<string, number | boolean> {
   return Object.fromEntries(parameters
-    .filter((parameter) => ["decimal", "integer"].includes(String(parameter.value_type)))
-    .map((parameter) => [String(parameter.parameter_id), Number(parameter.default_value)]));
+    .filter((parameter) => ["decimal", "integer", "boolean"].includes(String(parameter.value_type)))
+    .map((parameter) => [
+      String(parameter.parameter_id),
+      parameter.value_type === "boolean" ? Boolean(parameter.default_value) : Number(parameter.default_value),
+    ]));
 }
 
 function variedValue(value: number, valueType: string, direction: "lower" | "upper"): number {

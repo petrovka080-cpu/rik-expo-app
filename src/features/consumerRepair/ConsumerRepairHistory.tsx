@@ -50,6 +50,13 @@ export function ConsumerRepairHistory({
   onLoadMoreHistory,
 }: Props): React.ReactElement {
   const [visible, setVisible] = React.useState(false);
+  const openPdfFromModal = React.useCallback((requestDraftId: string) => {
+    // Android navigation can lose the PDF viewer route while a native Modal is
+    // still mounted above the router. Dismiss the owning history sheet first;
+    // PDF preparation can then continue through the shared history handler.
+    setVisible(false);
+    onOpenPdf(requestDraftId);
+  }, [onOpenPdf]);
   const approvedIds = new Set(
     approvedHistoryPage.records.map((record) => record.approvedEstimateId),
   );
@@ -157,14 +164,14 @@ export function ConsumerRepairHistory({
                     <ConsumerRepairPdfRow
                       bundle={item.bundle}
                       selected={selectedHistoryId === item.bundle.draft.id}
-                      onOpenPdf={onOpenPdf}
+                      onOpenPdf={openPdfFromModal}
                       onOpenDraft={onOpenDraft}
                       onToggleHistorySnapshot={onToggleHistorySnapshot}
                     />
                     {selectedHistoryId === item.bundle.draft.id ? (
                       <ApprovedHistorySnapshot
                         bundle={item.bundle}
-                        onOpenPdf={onOpenPdf}
+                        onOpenPdf={openPdfFromModal}
                         onEditHistoryDraft={onEditHistoryDraft}
                         onSendHistoryToMarket={onSendHistoryToMarket}
                       />
@@ -174,7 +181,7 @@ export function ConsumerRepairHistory({
                   <BackendRecoveryHistoryCard
                     record={item.record}
                     expanded={selectedHistoryId === item.record.approvedEstimateId}
-                    onOpenPdf={onOpenPdf}
+                    onOpenPdf={openPdfFromModal}
                     onEditHistoryDraft={onEditHistoryDraft}
                     onToggleHistorySnapshot={onToggleHistorySnapshot}
                   />

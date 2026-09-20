@@ -249,6 +249,7 @@ function expandedParameters(family: ExpandedComplexWorkFamilyDefinition): WorkPa
     required: input.requiredFor.includes("PRELIMINARY_BOQ") || input.key === "source_prompt",
     source: input.key === "source_prompt" ? "source_prompt" : "user_measurement",
     missingBlocksDetailedEstimate: input.missingBlocksDetailed,
+    inputKind: input.inputKind,
   }));
 }
 

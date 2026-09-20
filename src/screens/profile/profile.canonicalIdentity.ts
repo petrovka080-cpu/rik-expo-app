@@ -1,6 +1,7 @@
 import type { ProtectedIdentity } from "../../lib/auth/protectedIdentity";
 import type { ProfileScreenLoadResult } from "./profile.types";
 import { loadProfileScreenData } from "./profile.services";
+import { loadDeveloperOverrideContext } from "../../lib/developerOverride";
 
 export function buildProviderVerifiedProfileScreenData(
   identity: ProtectedIdentity,
@@ -44,7 +45,17 @@ export function buildProviderVerifiedProfileScreenData(
 export async function loadProfileScreenDataForIdentity(
   identity: ProtectedIdentity,
 ): Promise<ProfileScreenLoadResult> {
-  return identity.source === "provider_verified_claims"
-    ? buildProviderVerifiedProfileScreenData(identity)
-    : loadProfileScreenData();
+  const [result, developerOverride] = await Promise.all([
+    identity.source === "provider_verified_claims"
+      ? Promise.resolve(buildProviderVerifiedProfileScreenData(identity))
+      : loadProfileScreenData(),
+    loadDeveloperOverrideContext(),
+  ]);
+  return {
+    ...result,
+    accessSourceSnapshot: {
+      ...result.accessSourceSnapshot,
+      developerOverride,
+    },
+  };
 }

@@ -8,7 +8,7 @@ function readProjectFile(relativePath: string) {
 }
 
 describe("entry/bootstrap contract", () => {
-  it("routes default post-auth entry through the access hub and validates explicit return targets", () => {
+  it("routes every post-auth entry through the profile access hub", () => {
     const rootLayout = readProjectFile("app/_layout.tsx");
     // AUTH-LIFECYCLE: POST_AUTH_ENTRY_ROUTE moved from _layout.tsx to useAuthGuard.ts
     const authGuard = readProjectFile("src/lib/auth/useAuthGuard.ts");

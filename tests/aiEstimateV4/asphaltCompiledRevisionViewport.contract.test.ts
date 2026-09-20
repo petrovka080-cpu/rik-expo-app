@@ -82,6 +82,24 @@ async function search(viewports: CompiledRevisionViewportSnapshot[]) {
 }
 
 describe("R9 compiled revision viewport recovery", () => {
+  it("accepts the first observed positive catalog-global ordinal and keeps its successor exact", () => {
+    const first = assessCompiledRevisionTransition({
+      nodes: markerNodes({ ordinal: 6 }),
+      expected: { ...expected, expectedRevisionOrdinal: null },
+      currentBuildCount: 5,
+    });
+    expect(first).toMatchObject({
+      status: "ready",
+      evidence: { revision_ordinal: 6 },
+    });
+
+    expect(assessCompiledRevisionTransition({
+      nodes: markerNodes({ ordinal: 8 }),
+      expected: { ...expected, baselineRevisionOrdinal: 6 },
+      currentBuildCount: 5,
+    }).status).toBe("identity_mismatch");
+  });
+
   it("classifies exact scope-disclosure IDs through the governed Asphalt schema", () => {
     expect(classifyGovernedMissingParameterKeys([
       node("request-estimate-missing-param-geometry_method"),
@@ -143,6 +161,36 @@ describe("R9 compiled revision viewport recovery", () => {
     expect(result.status).toBe("found");
     expect(result.swipes).toBe(1);
     expect(scrolls).toEqual(["up"]);
+  });
+
+  it("recovers the summary anchor before scanning when a prior case left the viewport inside a panel", async () => {
+    const displaced = snapshot("panel", [node("request-estimate-parameter-panel")]);
+    const recovered = snapshot("summary", markerNodes());
+    const recoverKnownAnchor = jest.fn(async () => recovered);
+    const scrollKnownContainerUp = jest.fn(async () => true);
+    const boundaries: string[] = [];
+
+    const result = await findCompiledRevisionMarkerAcrossViewport({
+      expected,
+      currentBuildCount: 5,
+      readViewport: async () => displaced,
+      scrollKnownContainerUp,
+      readSettledViewport: async () => recovered,
+      recoverKnownAnchor,
+      fingerprint: (value) => value.xml,
+      onViewport: (boundary) => {
+        boundaries.push(boundary);
+      },
+    });
+
+    expect(result).toMatchObject({
+      status: "found",
+      swipes: 0,
+      evidence: { current_revision_id: "revision-r1-exact" },
+    });
+    expect(recoverKnownAnchor).toHaveBeenCalledWith(displaced);
+    expect(scrollKnownContainerUp).not.toHaveBeenCalled();
+    expect(boundaries).toEqual(["before", "anchor_recovery", "final"]);
   });
 
   it("finds an exact marker one viewport past the historical eight-swipe boundary", async () => {
@@ -416,6 +464,48 @@ describe("R9 compiled revision viewport recovery", () => {
       failureToken: STOP_R9_PRODUCT_COMPILED_REVISION_IDENTITY_MISMATCH,
       swipes: 0,
     });
+    expect(scrollKnownContainerUp).not.toHaveBeenCalled();
+  });
+
+  it("waits through a slow transactional projection before accepting its exact successor", async () => {
+    const editExpected: CompiledRevisionExpectedIdentity = {
+      ...expected,
+      previousRevisionId: "revision-r1-exact",
+      baselineRevisionOrdinal: 1,
+      expectedBuildDelta: 0,
+    };
+    const previous = snapshot("previous", markerNodes({
+      revisionId: "revision-r1-exact",
+      ordinal: 1,
+    }));
+    const successor = snapshot("successor", markerNodes({
+      revisionId: "revision-r2-exact",
+      ordinal: 2,
+    }));
+    let settledReads = 0;
+    const scrollKnownContainerUp = jest.fn(async () => true);
+    const result = await findCompiledRevisionMarkerAcrossViewport({
+      expected: editExpected,
+      currentBuildCount: 4,
+      readViewport: async () => previous,
+      scrollKnownContainerUp,
+      readSettledViewport: async () => {
+        settledReads += 1;
+        return settledReads < 6 ? previous : successor;
+      },
+      fingerprint: (value) => value.xml,
+      maxPendingMarkerPolls: 8,
+    });
+
+    expect(result).toMatchObject({
+      status: "found",
+      swipes: 0,
+      evidence: {
+        current_revision_id: "revision-r2-exact",
+        revision_ordinal: 2,
+      },
+    });
+    expect(settledReads).toBe(6);
     expect(scrollKnownContainerUp).not.toHaveBeenCalled();
   });
 

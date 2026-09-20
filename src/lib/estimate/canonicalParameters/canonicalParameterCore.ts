@@ -44,6 +44,13 @@ export type CanonicalParameterVisibilityCondition =
         parameterId: string;
         value: CanonicalParameterValue;
       }[];
+    }
+  | {
+      kind: "ALL_OF";
+      conditions: readonly {
+        parameterId: string;
+        value: CanonicalParameterValue;
+      }[];
     };
 
 export type CanonicalParameterValidation = {
@@ -146,6 +153,8 @@ export type CanonicalParameterSession = {
   calculationVersion: string;
   status: CanonicalParameterSessionStatus;
   parameters: readonly CanonicalParameter[];
+  /** Retained branch values that are hidden from the active editor projection. */
+  inactiveConditionalParameters?: readonly CanonicalParameter[];
   blockingMissingParameterIds: readonly string[];
   contractMissingParameterIds: readonly string[];
   assumptionParameterIds: readonly string[];
@@ -164,9 +173,11 @@ function isVisible(
     return values.get(definition.visibilityCondition.parameterId) ===
       definition.visibilityCondition.value;
   }
-  return definition.visibilityCondition.conditions.some(
-    (condition) => values.get(condition.parameterId) === condition.value,
-  );
+  const matches = (condition: { parameterId: string; value: CanonicalParameterValue }) =>
+    values.get(condition.parameterId) === condition.value;
+  return definition.visibilityCondition.kind === "ALL_OF"
+    ? definition.visibilityCondition.conditions.every(matches)
+    : definition.visibilityCondition.conditions.some(matches);
 }
 
 function validateValue(

@@ -81,11 +81,18 @@ describe("open-world unit semantics golden lock", () => {
     const estimate = answer.toolResult.estimate;
 
     expect(estimate).toBeDefined();
-    const professionalRows = allEstimateRows(estimate!).filter((row) =>
-      row.code.startsWith("professional_wbs_concrete_delivery_"),
-    );
-    expect(professionalRows.length).toBeGreaterThan(0);
-    expect(professionalRows.some((row) => row.unit === "m3")).toBe(true);
+    expect(estimate!.work.workKey).toBe("concrete_delivery");
+    const rows = allEstimateRows(estimate!);
+    const concreteRows = rows.filter((row) => /бетон|бетононасос|заливк/i.test(row.name));
+    const tripRows = rows.filter((row) => row.unit === "trip");
+
+    expect(rows).toHaveLength(14);
+    expect(concreteRows).toHaveLength(3);
+    expect(concreteRows.every((row) => row.unit === "m3")).toBe(true);
+    expect(tripRows).toHaveLength(1);
+    expect(tripRows.every((row) => /доставк|логист/i.test(row.name))).toBe(true);
+    expect(rows.some((row) => row.unit === "m3")).toBe(true);
+    expect(rows.every((row) => row.unit === "trip")).toBe(false);
     expect(validateConstructionUnitSemantics(estimate!).failures).toEqual([]);
   });
 

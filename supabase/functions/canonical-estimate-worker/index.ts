@@ -11,6 +11,7 @@ import {
   compileCanonicalEstimateCore,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts";
 import { canonicalEstimateStableJson } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism.ts";
+import { canonicalApprovedBaselineRuntimeParameters } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline.ts";
 import {
   CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION,
   CANONICAL_ESTIMATE_REVISION_COMMIT_FUNCTION,
@@ -20,6 +21,7 @@ import {
 import {
   buildCanonicalArtifactMetadata,
   buildCanonicalProcurementProjection,
+  canonicalArtifactPreliminaryNeeds,
   escapeCanonicalArtifactHtml as escapeHtml,
   selectCanonicalArtifactRows,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts";
@@ -235,11 +237,11 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
   if (approvedTemplateBaselineId) {
     const { data: baseline, error: baselineError } = await admin
       .from("estimate_approved_template_baseline")
-      .select("input_values")
+      .select("input_values,input_classification")
       .eq("id", approvedTemplateBaselineId)
       .single();
     if (baselineError) throw Object.assign(new Error("definition baseline load failed"), { code: "DEFINITION_LOAD_FAILED" });
-    baselineParameters = baseline.input_values ?? {};
+    baselineParameters = canonicalApprovedBaselineRuntimeParameters(baseline);
   }
   const definition = {
     ...definitionVersion,
@@ -359,6 +361,7 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
     effectiveUserParameters,
     parentRevisionId: job.parent_revision_id,
     identityContract,
+    preliminaryNeeds: compiled.preliminaryNeeds,
   });
   const { data: revisionId, error: commitError } = await admin.rpc(CANONICAL_ESTIMATE_REVISION_COMMIT_FUNCTION, {
     p_job_id: job.id,
@@ -569,7 +572,9 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
     throw Object.assign(new Error("artifact source revision load failed"), { code: "ARTIFACT_SOURCE_INVALID" });
   }
   const selection = selectCanonicalArtifactRows(rowData ?? []);
-  const rows = selection.estimateRows;
+  const rows = job.operation === "professional_pdf"
+    ? selection.professionalPdfRows
+    : selection.estimateRows;
   const selectedProcurementRows = selection.procurementRows;
   let bytes: Uint8Array;
   let contentType: string;
@@ -578,6 +583,7 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
   let pageCount: number | null = null;
   let definitionVersionId: string | null = null;
   let grandTotalStatus: "COMPLETE" | "PARTIAL_NEEDS_PRICE" | null = null;
+  let artifactProjectedRowCount = rows.length;
   if (job.operation === "procurement") {
     const projection = buildCanonicalProcurementProjection({
       revision,
@@ -600,7 +606,9 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
     const projection = buildCanonicalProfessionalPdfProjection({
       revision,
       rows,
-      workTitleRu: String(revision.canonical_work_title_ru ?? revision.display_title_ru ?? identity?.title_ru ?? "Строительно-монтажные работы"),
+      preliminaryNeeds: canonicalArtifactPreliminaryNeeds(revision),
+      expectedProjectedRowCount: selection.professionalPdfRows.length,
+      workTitleRu: String(revision.display_title_ru ?? revision.canonical_work_title_ru ?? identity?.title_ru ?? "Строительно-монтажные работы"),
       definitionVersionId,
     });
     const rendered = await renderPdfBytes(projection.html, {
@@ -609,6 +617,7 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
     bytes = rendered.pdfBytes;
     pageCount = rendered.pageCount;
     grandTotalStatus = projection.grandTotalStatus;
+    artifactProjectedRowCount = projection.rowCount;
     contentType = "application/pdf";
     extension = "pdf";
     renderer = CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION;
@@ -661,7 +670,9 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
         renderer,
         revision,
         sourceRowCount: selection.sourceRows.length,
-        projectedRowCount: job.operation === "procurement" ? selectedProcurementRows.length : rows.length,
+        projectedRowCount: job.operation === "procurement"
+          ? selectedProcurementRows.length
+          : artifactProjectedRowCount,
         selectedProcurementRowCount: selectedProcurementRows.length,
         definitionVersionId,
         pageCount,

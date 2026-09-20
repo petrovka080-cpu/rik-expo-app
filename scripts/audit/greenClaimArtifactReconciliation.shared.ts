@@ -1,6 +1,15 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import {
+  REQUIRED_RELEASE_RECEIPT_KINDS,
+  readReleaseReceiptBundle,
+  validateReleaseReceiptBundle,
+  type ReleaseReceiptBundleValidation,
+  type ReleaseReceiptKind,
+  type ReleaseReceiptValidationContext,
+} from "./releaseReceiptBundle";
+
 export const GREEN_CLAIM_ARTIFACT_RECONCILIATION_WAVE =
   "S_GREEN_CLAIM_ARTIFACT_RECONCILIATION_AND_DATA_OPS_UI_TRUTH_CLOSEOUT_POINT_OF_NO_RETURN";
 export const GREEN_CLAIM_ARTIFACT_RECONCILIATION_PREFIX =
@@ -76,10 +85,6 @@ function writeText(rootDir: string, relativePath: string, value: string) {
   fs.writeFileSync(fullPath, value.endsWith("\n") ? value : `${value}\n`, "utf8");
 }
 
-function bool(value: unknown): boolean {
-  return value === true;
-}
-
 function fileExists(rootDir: string, relativePath: string): boolean {
   return fs.existsSync(path.join(rootDir, relativePath));
 }
@@ -89,49 +94,75 @@ function readText(rootDir: string, relativePath: string): string {
   return fs.existsSync(fullPath) ? fs.readFileSync(fullPath, "utf8") : "";
 }
 
-export function buildReplayVerifiedMatrices(replayMatrix: JsonRecord | null) {
+function receiptPassed(
+  validation: ReleaseReceiptBundleValidation,
+  kind: ReleaseReceiptKind,
+): boolean {
+  return validation.actual_environment_passed && validation.verified_receipt_kinds.includes(kind);
+}
+
+export function buildReplayVerifiedMatrices(validation: ReleaseReceiptBundleValidation) {
+  const actualEvidencePassed = validation.actual_environment_passed;
   const common = {
-    source: CURRENT_REPLAY_AUDIT_PREFIX,
-    replay_verified: true,
-    supersedes_historical_matrix: true,
+    source: "current-release-receipt-bundle",
+    receipt_bundle_id: validation.bundle?.bundle_id ?? null,
+    receipt_evidence_class: validation.evidence_class,
+    receipt_contract_valid: validation.contract_valid,
+    actual_environment_passed: actualEvidencePassed,
+    receipt_validation_errors: validation.errors,
+    replay_verified: actualEvidencePassed,
+    supersedes_historical_matrix: actualEvidencePassed,
     historical_matrix_was_inconsistent: true,
-    typecheck_passed: bool(replayMatrix?.current_typecheck_passed),
-    lint_passed: bool(replayMatrix?.current_lint_passed),
-    git_diff_check_passed: bool(replayMatrix?.current_git_diff_check_passed),
-    full_jest_passed: bool(replayMatrix?.current_full_jest_passed),
-    release_verify_passed: bool(replayMatrix?.current_release_verify_passed),
+    typecheck_passed: receiptPassed(validation, "typecheck"),
+    lint_passed: receiptPassed(validation, "lint"),
+    git_diff_check_passed: receiptPassed(validation, "git_diff"),
+    full_jest_passed: receiptPassed(validation, "full_jest"),
+    release_verify_passed: receiptPassed(validation, "release_verify_primary"),
     fake_green_claimed: false,
   };
+
+  const rlsPassed = actualEvidencePassed &&
+    receiptPassed(validation, "rls") && receiptPassed(validation, "storage");
+  const screensPassed = actualEvidencePassed &&
+    receiptPassed(validation, "web") && receiptPassed(validation, "native") &&
+    receiptPassed(validation, "pdf") && receiptPassed(validation, "bottom_navigation");
 
   return {
     rls: {
       wave: "S_RLS_DYNAMIC_CROSS_TENANT_REPLAY_VERIFIED",
-      final_status: "GREEN_RLS_DYNAMIC_CROSS_TENANT_REPLAY_VERIFIED_READY",
+      final_status: rlsPassed
+        ? "GREEN_RLS_DYNAMIC_CROSS_TENANT_REPLAY_VERIFIED_READY"
+        : "BLOCKED_RLS_DYNAMIC_CROSS_TENANT_REPLAY_VERIFIED",
       ...common,
-      rls_live_proof_passed: bool(replayMatrix?.current_rls_live_passed),
-      storage_policy_audit_passed: bool(replayMatrix?.current_storage_policy_audit_passed),
+      rls_live_proof_passed: receiptPassed(validation, "rls"),
+      storage_policy_audit_passed: receiptPassed(validation, "storage"),
     },
     allScreens: {
       wave: "S_ALL_SCREENS_REPLAY_VERIFIED",
-      final_status: "GREEN_ALL_SCREENS_REPLAY_VERIFIED_READY",
+      final_status: screensPassed
+        ? "GREEN_ALL_SCREENS_REPLAY_VERIFIED_READY"
+        : "BLOCKED_ALL_SCREENS_REPLAY_VERIFIED",
       ...common,
-      web_runtime_proof_passed: bool(replayMatrix?.current_web_runtime_passed),
-      android_emulator_proof_passed: bool(replayMatrix?.current_android_runtime_passed),
-      pdf_open_runtime_proof_passed: bool(replayMatrix?.current_pdf_open_runtime_passed),
+      web_runtime_proof_passed: receiptPassed(validation, "web"),
+      android_emulator_proof_passed: receiptPassed(validation, "native"),
+      pdf_open_runtime_proof_passed: receiptPassed(validation, "pdf"),
+      bottom_navigation_runtime_proof_passed: receiptPassed(validation, "bottom_navigation"),
       bottom_nav_order: BOTTOM_NAV_ORDER,
       marketplace_plus_preserved: true,
-      ai_estimate_to_pdf_ready: bool((replayMatrix?.specific_invariants as JsonRecord | undefined)?.ai_estimate_has_make_pdf),
+      ai_estimate_to_pdf_ready: receiptPassed(validation, "pdf"),
     },
     releaseCandidate: {
       wave: "S_ENTERPRISE_RELEASE_CANDIDATE_REPLAY_VERIFIED",
-      final_status: "GREEN_ENTERPRISE_RELEASE_CANDIDATE_REPLAY_VERIFIED_READY",
+      final_status: actualEvidencePassed
+        ? "GREEN_ENTERPRISE_RELEASE_CANDIDATE_REPLAY_VERIFIED_READY"
+        : "BLOCKED_ENTERPRISE_RELEASE_CANDIDATE_REPLAY_VERIFIED",
       ...common,
-      feature_flags_ready: true,
-      canary_plan_ready: true,
-      rollback_plan_ready: true,
-      observability_ready: true,
+      feature_flags_ready: actualEvidencePassed,
+      canary_plan_ready: actualEvidencePassed,
+      rollback_plan_ready: actualEvidencePassed,
+      observability_ready: actualEvidencePassed,
       production_rollout_enabled: false,
-      internal_canary_ready: true,
+      internal_canary_ready: actualEvidencePassed,
     },
   };
 }
@@ -182,11 +213,48 @@ export function buildDataOpsTruth(rootDir: string) {
   };
 }
 
-export function resolveGreenClaimArtifactConsistency(rootDir: string) {
-  const replayMatrix = readJson(rootDir, `artifacts/${CURRENT_REPLAY_AUDIT_PREFIX}_matrix.json`);
-  const replayLedger = readJson(rootDir, `artifacts/${CURRENT_REPLAY_AUDIT_PREFIX}_ledger.json`);
+export type GreenClaimArtifactConsistencyOptions = {
+  receiptBundle?: unknown;
+  receiptBundlePath?: string;
+  validationContext?: Omit<ReleaseReceiptValidationContext, "rootDir">;
+  requiredReceiptKinds?: readonly ReleaseReceiptKind[];
+};
+
+export function resolveGreenClaimArtifactConsistency(
+  rootDir: string,
+  options: GreenClaimArtifactConsistencyOptions = {},
+) {
+  const historicalReplayMatrix = readJson(rootDir, `artifacts/${CURRENT_REPLAY_AUDIT_PREFIX}_matrix.json`);
+  const historicalReplayLedger = readJson(rootDir, `artifacts/${CURRENT_REPLAY_AUDIT_PREFIX}_ledger.json`);
+  const resolvedBundlePath = options.receiptBundlePath
+    ? (path.isAbsolute(options.receiptBundlePath)
+        ? options.receiptBundlePath
+        : path.join(rootDir, options.receiptBundlePath))
+    : null;
+  const receiptBundle = options.receiptBundle !== undefined
+    ? options.receiptBundle
+    : resolvedBundlePath
+      ? readReleaseReceiptBundle(resolvedBundlePath)
+      : null;
+  const validationContext: ReleaseReceiptValidationContext = {
+    rootDir,
+    expectedReleaseId:
+      options.validationContext?.expectedReleaseId ??
+      process.env.RELEASE_CANDIDATE_ID ??
+      "UNSPECIFIED_RELEASE_CANDIDATE",
+    expectedSubjectSha:
+      options.validationContext?.expectedSubjectSha ??
+      process.env.RELEASE_SUBJECT_SHA ??
+      "0000000000000000000000000000000000000000",
+    expectedWorkspaceFingerprint:
+      options.validationContext?.expectedWorkspaceFingerprint ??
+      process.env.RELEASE_WORKSPACE_FINGERPRINT ??
+      "0000000000000000000000000000000000000000000000000000000000000000",
+    requiredKinds: options.requiredReceiptKinds ?? REQUIRED_RELEASE_RECEIPT_KINDS,
+  };
+  const receiptValidation = validateReleaseReceiptBundle(receiptBundle, validationContext);
   const supersessionMap = buildSupersessionMap();
-  const replayMatrices = buildReplayVerifiedMatrices(replayMatrix);
+  const replayMatrices = buildReplayVerifiedMatrices(receiptValidation);
   const bySupersedingPath = new Map<string, JsonRecord>([
     [REQUIRED_SUPERSESSIONS[0].supersededBy, replayMatrices.rls],
     [REQUIRED_SUPERSESSIONS[1].supersededBy, replayMatrices.allScreens],
@@ -221,14 +289,13 @@ export function resolveGreenClaimArtifactConsistency(rootDir: string) {
 
   const allSuperseded = oldMatrices.every((entry) => entry.supersession_ready);
   const dataOpsTruth = buildDataOpsTruth(rootDir);
-  const currentReplayPassed =
-    bool(replayMatrix?.all_mandatory_replay_commands_passed) &&
-    bool(replayMatrix?.current_full_jest_passed) &&
-    bool(replayMatrix?.current_release_verify_passed);
+  const currentReplayPassed = receiptValidation.actual_environment_passed;
 
   const releaseGuardTrace = {
     release_guard_uses_replay_ledger: true,
-    replay_ledger_path: `artifacts/${CURRENT_REPLAY_AUDIT_PREFIX}_ledger.json`,
+    release_guard_uses_current_receipt_bundle: true,
+    replay_ledger_path: resolvedBundlePath ?? null,
+    historical_replay_ledger_path: `artifacts/${CURRENT_REPLAY_AUDIT_PREFIX}_ledger.json`,
     supersession_map_path: `artifacts/${GREEN_CLAIM_ARTIFACT_RECONCILIATION_PREFIX}_supersession_map.json`,
     stale_historical_matrix_policy: "old matrix false + no supersession = BLOCKED; old matrix false + replay-verified supersession = OK",
     unsuperseded_inconsistencies: oldMatrices
@@ -239,30 +306,42 @@ export function resolveGreenClaimArtifactConsistency(rootDir: string) {
   };
 
   const inventory = {
-    current_replay_audit_found: replayMatrix !== null && replayLedger !== null,
-    current_replay_status: replayMatrix?.final_status ?? null,
-    runtime_replay_passed: bool(replayMatrix?.all_mandatory_replay_commands_passed),
+    current_replay_audit_found: receiptBundle !== null,
+    current_replay_status: currentReplayPassed
+      ? "GREEN_CURRENT_RELEASE_RECEIPT_BUNDLE_VERIFIED"
+      : "BLOCKED_CURRENT_RELEASE_RECEIPT_BUNDLE",
+    runtime_replay_passed: currentReplayPassed,
+    receipt_bundle_contract_valid: receiptValidation.contract_valid,
+    receipt_bundle_actual_environment_passed: receiptValidation.actual_environment_passed,
+    receipt_bundle_validation_errors: receiptValidation.errors,
+    historical_replay_audit_found: historicalReplayMatrix !== null && historicalReplayLedger !== null,
     inconsistent_old_matrices_found: true,
     old_matrices_count: REQUIRED_SUPERSESSIONS.length,
     data_ops_ui_truth_needs_split: true,
   };
 
   const replayEvidence = {
-    source_matrix: `artifacts/${CURRENT_REPLAY_AUDIT_PREFIX}_matrix.json`,
-    source_ledger: `artifacts/${CURRENT_REPLAY_AUDIT_PREFIX}_ledger.json`,
-    current_replay_runtime_passed: bool(replayMatrix?.all_mandatory_replay_commands_passed),
-    current_replay_release_verify_passed: bool(replayMatrix?.current_release_verify_passed),
-    current_replay_full_jest_passed: bool(replayMatrix?.current_full_jest_passed),
-    current_web_runtime_passed: bool(replayMatrix?.current_web_runtime_passed),
-    current_android_runtime_passed: bool(replayMatrix?.current_android_runtime_passed),
-    current_pdf_open_runtime_passed: bool(replayMatrix?.current_pdf_open_runtime_passed),
-    current_bottom_nav_runtime_passed: bool(replayMatrix?.current_bottom_nav_runtime_passed),
-    current_rls_live_passed: bool(replayMatrix?.current_rls_live_passed),
-    current_storage_policy_audit_passed: bool(replayMatrix?.current_storage_policy_audit_passed),
-    current_50k_live_explain_p95_passed: bool(replayMatrix?.current_50k_live_explain_p95_passed),
-    current_final_50k_92_reaudit_passed: bool(replayMatrix?.current_final_50k_92_reaudit_passed),
+    source_receipt_bundle: resolvedBundlePath,
+    historical_source_matrix: `artifacts/${CURRENT_REPLAY_AUDIT_PREFIX}_matrix.json`,
+    historical_source_ledger: `artifacts/${CURRENT_REPLAY_AUDIT_PREFIX}_ledger.json`,
+    receipt_bundle_id: receiptValidation.bundle?.bundle_id ?? null,
+    receipt_evidence_class: receiptValidation.evidence_class,
+    receipt_contract_valid: receiptValidation.contract_valid,
+    actual_environment_passed: receiptValidation.actual_environment_passed,
+    receipt_validation_errors: receiptValidation.errors,
+    current_replay_runtime_passed: currentReplayPassed,
+    current_replay_release_verify_passed: receiptPassed(receiptValidation, "release_verify_primary"),
+    current_replay_full_jest_passed: receiptPassed(receiptValidation, "full_jest"),
+    current_web_runtime_passed: receiptPassed(receiptValidation, "web"),
+    current_android_runtime_passed: receiptPassed(receiptValidation, "native"),
+    current_pdf_open_runtime_passed: receiptPassed(receiptValidation, "pdf"),
+    current_bottom_nav_runtime_passed: receiptPassed(receiptValidation, "bottom_navigation"),
+    current_rls_live_passed: receiptPassed(receiptValidation, "rls"),
+    current_storage_policy_audit_passed: receiptPassed(receiptValidation, "storage"),
+    current_performance_passed: receiptPassed(receiptValidation, "performance"),
+    current_scale_passed: receiptPassed(receiptValidation, "scale"),
     production_rollout_enabled: false,
-    internal_canary_ready: true,
+    internal_canary_ready: currentReplayPassed,
   };
 
   const matrix = {
@@ -271,33 +350,37 @@ export function resolveGreenClaimArtifactConsistency(rootDir: string) {
       currentReplayPassed && allSuperseded && dataOpsTruth.operator_grade_admin_ui_status === "NOT_GREEN"
         ? GREEN_CLAIM_ARTIFACT_RECONCILIATION_GREEN_STATUS
         : "BLOCKED_GREEN_CLAIM_ARTIFACT_RECONCILIATION",
-    current_replay_runtime_passed: bool(replayMatrix?.all_mandatory_replay_commands_passed),
-    current_replay_release_verify_passed: bool(replayMatrix?.current_release_verify_passed),
-    current_replay_full_jest_passed: bool(replayMatrix?.current_full_jest_passed),
+    current_replay_runtime_passed: currentReplayPassed,
+    current_replay_release_verify_passed: receiptPassed(receiptValidation, "release_verify_primary"),
+    current_replay_full_jest_passed: receiptPassed(receiptValidation, "full_jest"),
+    receipt_bundle_contract_valid: receiptValidation.contract_valid,
+    receipt_bundle_actual_environment_passed: receiptValidation.actual_environment_passed,
+    receipt_bundle_validation_errors: receiptValidation.errors,
     historical_inconsistent_matrices_found: true,
     historical_inconsistent_matrices_count: REQUIRED_SUPERSESSIONS.length,
     historical_matrices_deleted: false,
     historical_matrices_silently_mutated: false,
     supersession_map_ready: true,
     all_inconsistent_matrices_superseded: allSuperseded,
-    replay_verified_matrices_created: true,
-    rls_replay_verified_matrix_ready: true,
-    all_screens_replay_verified_matrix_ready: true,
-    release_candidate_replay_verified_matrix_ready: true,
+    replay_verified_matrices_created: currentReplayPassed,
+    rls_replay_verified_matrix_ready: String(replayMatrices.rls.final_status).startsWith("GREEN_"),
+    all_screens_replay_verified_matrix_ready: String(replayMatrices.allScreens.final_status).startsWith("GREEN_"),
+    release_candidate_replay_verified_matrix_ready: String(replayMatrices.releaseCandidate.final_status).startsWith("GREEN_"),
     release_guard_uses_replay_ledger: true,
+    release_guard_uses_current_receipt_bundle: true,
     release_guard_blocks_unsuperseded_inconsistency: true,
     data_ops_governance_core_green: true,
     data_ops_operator_grade_ui_green_claimed: false,
     data_ops_operator_grade_ui_followup_required: true,
     production_rollout_enabled: false,
-    internal_canary_ready: true,
-    typecheck_passed: bool(replayMatrix?.current_typecheck_passed),
-    lint_passed: bool(replayMatrix?.current_lint_passed),
-    git_diff_check_passed: bool(replayMatrix?.current_git_diff_check_passed),
-    targeted_tests_passed: true,
+    internal_canary_ready: currentReplayPassed,
+    typecheck_passed: receiptPassed(receiptValidation, "typecheck"),
+    lint_passed: receiptPassed(receiptValidation, "lint"),
+    git_diff_check_passed: receiptPassed(receiptValidation, "git_diff"),
+    targeted_tests_passed: currentReplayPassed,
     artifact_reconciliation_proof_passed: currentReplayPassed && allSuperseded,
-    full_jest_passed: bool(replayMatrix?.current_full_jest_passed),
-    release_verify_passed: bool(replayMatrix?.current_release_verify_passed),
+    full_jest_passed: receiptPassed(receiptValidation, "full_jest"),
+    release_verify_passed: receiptPassed(receiptValidation, "release_verify_primary"),
     fake_green_claimed: false,
   };
 
@@ -309,7 +392,7 @@ export function resolveGreenClaimArtifactConsistency(rootDir: string) {
     "## Resolved",
     "- Historical matrix inconsistencies are preserved as audit history.",
     "- Superseding replay-verified matrices are the current source of truth.",
-    "- Release guard policy uses the current replay ledger plus supersession map.",
+    "- Release guard policy uses a run-scoped receipt bundle plus supersession map.",
     "- Data Ops governance/core is green; operator-grade UI is explicitly not green.",
     "",
     "## Evidence",
@@ -331,6 +414,7 @@ export function resolveGreenClaimArtifactConsistency(rootDir: string) {
       old_matrices: oldMatrices,
     },
     replayEvidence,
+    receiptValidation,
     supersessionMap,
     dataOpsTruth,
     releaseGuardTrace,
@@ -340,8 +424,11 @@ export function resolveGreenClaimArtifactConsistency(rootDir: string) {
   };
 }
 
-export function writeGreenClaimArtifactReconciliationArtifacts(rootDir = process.cwd()) {
-  const report = resolveGreenClaimArtifactConsistency(rootDir);
+export function writeGreenClaimArtifactReconciliationArtifacts(
+  rootDir = process.cwd(),
+  options: GreenClaimArtifactConsistencyOptions = {},
+) {
+  const report = resolveGreenClaimArtifactConsistency(rootDir, options);
   writeJson(rootDir, `artifacts/${GREEN_CLAIM_ARTIFACT_RECONCILIATION_PREFIX}_inventory.json`, report.inventory);
   writeJson(rootDir, `artifacts/${GREEN_CLAIM_ARTIFACT_RECONCILIATION_PREFIX}_old_matrices.json`, report.oldMatrices);
   writeJson(rootDir, `artifacts/${GREEN_CLAIM_ARTIFACT_RECONCILIATION_PREFIX}_replay_evidence.json`, report.replayEvidence);

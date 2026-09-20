@@ -1,6 +1,6 @@
 import React from "react";
-import { Platform, useWindowDimensions } from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
+import { BackHandler, Platform, useWindowDimensions } from "react-native";
+import { router, useFocusEffect, useLocalSearchParams, type Href } from "expo-router";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -95,6 +95,7 @@ import {
 import { openPdfPreview } from "../src/lib/pdfRunner";
 import { recordCatchDiscipline } from "../src/lib/observability/catchDiscipline";
 import { safeBack } from "../src/lib/navigation/safeBack";
+import { normalizePostAuthReturnTo } from "../src/lib/authRouting";
 import { redactSensitiveRecord, redactSensitiveText } from "../src/lib/security/redaction";
 import { withScreenErrorBoundary } from "../src/shared/ui/ScreenErrorBoundary";
 
@@ -150,6 +151,7 @@ function PdfViewerScreen() {
     originModule?: string;
     source?: string;
     entityId?: string;
+    returnTo?: string | string[];
   }>();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -165,6 +167,10 @@ function PdfViewerScreen() {
   const routeOriginModule = params.originModule;
   const routeSource = params.source;
   const routeEntityId = params.entityId;
+  const returnTo = React.useMemo(
+    () => normalizePostAuthReturnTo(params.returnTo),
+    [params.returnTo],
+  );
 
   const route = React.useMemo(
     () =>
@@ -1353,11 +1359,29 @@ function PdfViewerScreen() {
   }, [clearWebRenderUri, commitEmptyState, retryViewerOrchestrator, syncSnapshot]);
 
   const onBack = React.useCallback(() => {
+    if (returnTo) {
+      router.replace(returnTo as Href);
+      return;
+    }
     safeBack(
       router as typeof router & { canGoBack?: () => boolean },
       FALLBACK_ROUTE,
     );
-  }, []);
+  }, [returnTo]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (Platform.OS !== "android") return undefined;
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        () => {
+          onBack();
+          return true;
+        },
+      );
+      return () => subscription.remove();
+    }, [onBack]),
+  );
 
   const source = React.useMemo(
     () =>

@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import {
   InclusionGraphEvaluationError,
   evaluateInclusionGraph,
+  resolveInclusionGraph,
 } from "../../src/lib/estimate/backendPlatform/inclusionGraph";
 
 describe("canonical backend InclusionGraph", () => {
@@ -29,8 +30,15 @@ describe("canonical backend InclusionGraph", () => {
     }, parameters)).toBe(true);
   });
 
+  it("preserves undecided as a third state while the boolean compatibility wrapper stays false", () => {
+    expect(resolveInclusionGraph({ kind: "greater_than", parameterId: "missing", value: 0 }, parameters)).toEqual({
+      value: null,
+      missingParameterIds: ["missing"],
+    });
+    expect(evaluateInclusionGraph({ kind: "greater_than", parameterId: "missing", value: 0 }, parameters)).toBe(false);
+  });
+
   it.each([
-    [{ kind: "greater_than", parameterId: "missing", value: 0 }],
     [{ kind: "and", conditions: [] }],
     [{ kind: "unknown", parameterId: "quantity", value: 0 }],
     [{ kind: "equals", parameterId: "missing_value" }],
@@ -44,8 +52,8 @@ describe("canonical backend InclusionGraph", () => {
     const source = readFileSync("scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts", "utf8");
     const compiler = readFileSync("src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts", "utf8");
     expect(source).toContain("compileCanonicalEstimateCore");
-    expect(compiler).toContain('import { evaluateInclusionGraph } from "./inclusionGraph"');
-    expect(compiler).toContain("evaluateInclusionGraph(resource.inclusion_ast, parameters)");
+    expect(compiler).toContain('import { resolveInclusionGraph } from "./inclusionGraph"');
+    expect(compiler).toContain("resolveInclusionGraph(resource.inclusion_ast, parameters)");
     expect(source).not.toContain("function evaluateCondition(");
   });
 });

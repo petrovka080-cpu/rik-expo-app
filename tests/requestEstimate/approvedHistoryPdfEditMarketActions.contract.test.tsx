@@ -53,13 +53,16 @@ describe("approved history PDF/edit/market actions", () => {
     });
     act(() => {
       renderer.root.findByProps({ testID: "consumer-repair-history-open-pdf-expanded" }).props.onPress();
-      renderer.root.findByProps({ testID: "consumer-repair-history-edit-revision" }).props.onPress();
-      renderer.root.findByProps({ testID: "consumer-repair-history-send-market" }).props.onPress();
     });
 
-    expect(renderer.root.findAllByProps({ testID: "consumer-repair-history-readonly-snapshot" }).length).toBeGreaterThan(0);
-    expect(renderer.root.findAllByProps({ testID: "consumer-repair-history-pdf" }).length).toBeGreaterThan(0);
+    expect(renderer.root.findAllByProps({ testID: "consumer-repair-history-modal" })).toHaveLength(0);
     expect(onOpenPdf).toHaveBeenCalledWith(approved.draft.id);
+
+    act(() => {
+      renderer.root.findByProps({ testID: "consumer-repair-history-edit-revision-inline" }).props.onPress();
+      renderer.root.findByProps({ testID: "consumer-repair-history-send-market-inline" }).props.onPress();
+    });
+
     expect(onEditHistoryDraft).toHaveBeenCalledWith(approved.draft.id);
     expect(onSendHistoryToMarket).toHaveBeenCalledWith(approved.draft.id);
     expect(onOpenDraft).not.toHaveBeenCalled();

@@ -1,6 +1,7 @@
 import {
   buildCanonicalArtifactMetadata,
   buildCanonicalProcurementProjection,
+  canonicalArtifactPreliminaryNeeds,
   canonicalArtifactQuantity,
   canonicalProfessionalArtifactMetadataIdentityMatches,
   selectCanonicalArtifactRows,
@@ -26,6 +27,7 @@ describe("canonical estimate artifact contract", () => {
   it("selects immutable revision rows once for PDF and procurement", () => {
     const selection = selectCanonicalArtifactRows(rows);
     expect(selection.estimateRows.map((row) => row.row_id)).toEqual(["material", "labor"]);
+    expect(selection.professionalPdfRows.map((row) => row.row_id)).toEqual(["material", "labor"]);
     expect(selection.procurementRows.map((row) => row.row_id)).toEqual(["material"]);
     expect(canonicalArtifactQuantity(selection.procurementRows[0]?.quantity)).toBe("12,5");
   });
@@ -44,6 +46,43 @@ describe("canonical estimate artifact contract", () => {
       projectedRowCount: selection.procurementRows.length,
       selectedProcurementRowCount: selection.procurementRows.length,
     })).toMatchObject({ sourceRowCount: 3, projectedRowCount: 1, selectedProcurementRowCount: 1 });
+  });
+
+  it("keeps preliminary needs visible but outside totals and procurement", () => {
+    const preliminaryNeeds = canonicalArtifactPreliminaryNeeds({
+      ...revision,
+      amendment_contract: {
+        parameterSources: {
+          preliminaryNeeds: [{
+            row_id: "primer",
+            ordinal: 7,
+            section: "materials",
+            category: "material",
+            title_ru: "Совместимая грунтовка",
+            unit_id: "kg",
+            quantity: null,
+            unit_price: null,
+            need_state: "QUANTITY_REQUIRED",
+            missing_parameter_ids: ["primer_consumption_kg_m2"],
+            selected: true,
+            procurement_eligible: true,
+            need_sha256: "f".repeat(64),
+          }],
+        },
+      },
+    });
+
+    expect(preliminaryNeeds).toHaveLength(1);
+    expect(preliminaryNeeds[0]).toMatchObject({
+      row_id: "primer",
+      quantity: null,
+      included_in_estimate: false,
+      included_in_procurement: false,
+      procurement_eligible: false,
+      ownership_status: "PRELIMINARY_NEED",
+    });
+    expect(selectCanonicalArtifactRows([...rows, ...preliminaryNeeds]).procurementRows)
+      .toHaveLength(1);
   });
 
   it("records the complete production identity for the professional PDF artifact", () => {

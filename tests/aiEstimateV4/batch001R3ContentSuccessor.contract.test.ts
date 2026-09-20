@@ -98,6 +98,7 @@ describe("BATCH-001 R3 technological content successors", () => {
       const beforeValues = fixtureValues(definition.catalogId);
       const afterValues = {
         ...beforeValues,
+        area_m2: Number(beforeValues.area_m2) + 25,
         horizontal_face_area_m2: Number(beforeValues.horizontal_face_area_m2) + 25,
       };
       const before = compileBatch001DrywallSuccessorR3(definition, beforeValues);

@@ -92,6 +92,34 @@ function approvedDefinition(bindingPatch: Record<string, unknown> = {}): Canonic
 }
 
 describe("canonical backend parameter precedence", () => {
+  it("rejects a numeric project quantity that no longer matches its approved schedule scope", () => {
+    const definitions: CanonicalParameterDefinitionRecord[] = [
+      {
+        parameter_id: "measured_area_m2",
+        value_type: "decimal",
+        required: true,
+        default_value: null,
+        constraints_json: { min: 0.000001, equalToParameter: "schedule_area_m2" },
+      },
+      {
+        parameter_id: "schedule_area_m2",
+        value_type: "decimal",
+        required: true,
+        default_value: null,
+        constraints_json: { min: 0.000001 },
+      },
+    ];
+
+    expect(validateCanonicalEstimateParameters(definitions, {
+      measured_area_m2: 120,
+      schedule_area_m2: 120,
+    })).toEqual({ measured_area_m2: 120, schedule_area_m2: 120 });
+    expect(() => validateCanonicalEstimateParameters(definitions, {
+      measured_area_m2: 150,
+      schedule_area_m2: 120,
+    })).toThrow("cross-field rule measured_area_m2.equalToParameter=schedule_area_m2 failed");
+  });
+
   it("evaluates both persisted InclusionGraph and legacy equals conditional shapes", () => {
     const definitions: CanonicalParameterDefinitionRecord[] = [
       {
@@ -123,10 +151,10 @@ describe("canonical backend parameter precedence", () => {
 
     expect(validateCanonicalEstimateParameters(definitions, { system_type: "subsurface_drain" }))
       .toEqual({ system_type: "subsurface_drain" });
-    expect(() => validateCanonicalEstimateParameters(definitions, { system_type: "linear_tray" }))
-      .toThrow("missing parameter tray_size");
-    expect(() => validateCanonicalEstimateParameters(definitions, { system_type: "storm_sewer" }))
-      .toThrow("missing parameter inspection_required");
+    expect(validateCanonicalEstimateParameters(definitions, { system_type: "linear_tray" }))
+      .toEqual({ system_type: "linear_tray" });
+    expect(validateCanonicalEstimateParameters(definitions, { system_type: "storm_sewer" }))
+      .toEqual({ system_type: "storm_sewer" });
   });
 
   it("uses the accepted per-work baseline when no refinement exists", () => {
@@ -184,5 +212,101 @@ describe("canonical backend parameter precedence", () => {
     ], {}, {
       baselineContext: { catalogId },
     })).toThrow("invalid approved template baseline binding");
+  });
+
+  it("allows a versioned preliminary draft without manufacturing a required site value", () => {
+    const definition = {
+      parameter_id: "working_height_m",
+      value_type: "decimal",
+      required: true,
+      default_value: null,
+      constraints_json: { min: 0.000001 },
+      truth_metadata: { preliminary_compilation_allowed: true },
+    };
+    expect(validateCanonicalEstimateParameters([definition], {})).toEqual({});
+    expect(validateCanonicalEstimateParameters([definition], { working_height_m: "4.2" }))
+      .toEqual({ working_height_m: "4.2" });
+  });
+
+  it("does not block a preliminary estimate on unused contract documents", () => {
+    const document = {
+      parameter_id: "estimator_approval_reference",
+      value_type: "text",
+      required: true,
+      default_value: null,
+      constraints_json: {},
+      truth_metadata: {
+        visibility_role: "USER_INPUT",
+        value_source_role: "PROJECT_SPECIFIC_INPUT",
+        formula_consumers: [],
+        resource_branch_consumers: [],
+      },
+    };
+    const quantity = {
+      parameter_id: "width_m",
+      value_type: "decimal",
+      required: true,
+      default_value: null,
+      constraints_json: { min: 0.000001 },
+      truth_metadata: {
+        visibility_role: "USER_INPUT",
+        formula_consumers: ["volume"],
+        resource_branch_consumers: ["main_concrete"],
+      },
+    };
+
+    expect(validateCanonicalEstimateParameters([document], {})).toEqual({});
+    expect(validateCanonicalEstimateParameters([quantity], {})).toEqual({});
+  });
+
+  it("does not confuse a document attached to a BOQ row with a quantity or branch input", () => {
+    const documentReference = {
+      parameter_id: "structural_drawing_reference",
+      value_type: "text",
+      required: true,
+      default_value: null,
+      constraints_json: {},
+      truth_metadata: {
+        visibility_role: "USER_INPUT",
+        value_source_role: "PROJECT_SPECIFIC_INPUT",
+        formula_consumers: [],
+        resource_branch_consumers: ["reinforcement"],
+      },
+    };
+    const branchChoice = {
+      parameter_id: "reinforcement_fabrication",
+      value_type: "enum",
+      required: true,
+      default_value: null,
+      constraints_json: { values: ["ready_cages", "site_fabricated"] },
+      truth_metadata: {
+        visibility_role: "USER_INPUT",
+        value_source_role: "PROJECT_SPECIFIC_INPUT",
+        formula_consumers: [],
+        resource_branch_consumers: ["reinforcement", "cutting_machine"],
+      },
+    };
+
+    expect(validateCanonicalEstimateParameters([documentReference], {})).toEqual({});
+    expect(validateCanonicalEstimateParameters([branchChoice], {})).toEqual({});
+  });
+
+  it("keeps a legacy refusal flag as exact-stage provenance without blocking the first estimate", () => {
+    const mandatoryRepairMethod = {
+      parameter_id: "approved_repair_method_designation",
+      value_type: "text",
+      required: true,
+      default_value: null,
+      constraints_json: {},
+      truth_metadata: {
+        visibility_role: "USER_INPUT",
+        value_source_role: "PROJECT_SPECIFIC_INPUT",
+        formula_consumers: [],
+        resource_branch_consumers: [],
+        preliminary_compilation_allowed: false,
+      },
+    };
+
+    expect(validateCanonicalEstimateParameters([mandatoryRepairMethod], {})).toEqual({});
   });
 });

@@ -4,9 +4,15 @@ import TestRenderer, { act } from "react-test-renderer";
 import { buildEstimateFromInlineWorkPrompt } from "../../src/lib/estimate/buildEstimateFromInlineWorkPrompt";
 import {
   __resetConsumerRepairRequestStoreForTests,
-  createConsumerRepairRequestDraft,
 } from "../../src/lib/consumerRequests";
+import {
+  createCanonicalConsumerRepairAuditDraft as createConsumerRepairRequestDraft,
+} from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import { ConsumerRepairDraftPanel } from "../../src/features/consumerRepair/ConsumerRepairDraftPanel";
+import {
+  InlineParamEditor,
+  shouldKeepConsumerRepairDirtyMissingParameterInPlace,
+} from "../../src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel";
 import type { ConsumerRepairParamEditState } from "../../src/features/consumerRepair/requestEstimateScreenActions";
 import type { UserParamPatchOperation } from "../../src/lib/estimate/validateUserParamPatch";
 import { CAPITAL_RENOVATION_98_PROMPT } from "../estimateCalculator/capitalRenovationTestHelpers";
@@ -105,6 +111,104 @@ function renderPanel(rawInput = "вентфасад под ключ 1500 кв м
 }
 
 describe("editable param chips UI", () => {
+  it("keeps the native input host mounted when an existing value first becomes dirty", () => {
+    let renderer!: TestRenderer.ReactTestRenderer;
+    const renderEditor = (value: string, dirty: boolean) => (
+      <InlineParamEditor
+        paramKey="thickness_mm"
+        label="Толщина слоя"
+        inputKind="number"
+        value={value}
+        unitLabel="мм"
+        dirty={dirty}
+        guideShortRu="По обмеру"
+        onChange={jest.fn()}
+      />
+    );
+    act(() => {
+      renderer = TestRenderer.create(renderEditor("50", false));
+    });
+    const inputBefore = renderer.root.findByProps({ testID: "editable-param-popover-input" });
+
+    act(() => renderer.update(renderEditor("5", true)));
+
+    expect(renderer.root.findByProps({ testID: "editable-param-popover-input" })).toBe(inputBefore);
+  });
+
+  it("keeps a formerly missing field mounted while its multi-character value is being typed", () => {
+    expect(shouldKeepConsumerRepairDirtyMissingParameterInPlace({
+      baselineMissing: true,
+      currentMissing: false,
+      dirty: true,
+    })).toBe(true);
+    expect(shouldKeepConsumerRepairDirtyMissingParameterInPlace({
+      baselineMissing: false,
+      currentMissing: false,
+      dirty: true,
+    })).toBe(false);
+    expect(shouldKeepConsumerRepairDirtyMissingParameterInPlace({
+      baselineMissing: false,
+      currentMissing: true,
+      dirty: true,
+    })).toBe(false);
+  });
+
+  it("keeps parameter focus, selection and raw text through normal typing, clear, cursor insertion and paste", () => {
+    const { renderer, onApplyParamBatch } = renderPanel();
+    act(() => {
+      const openButton = renderer.root
+        .findAllByProps({ testID: "request-estimate-parameters-toggle" })
+        .find((node: TestRenderer.ReactTestInstance) => typeof node.props.onPress === "function");
+      if (!openButton) throw new Error("parameters_toggle_missing");
+      openButton.props.onPress();
+    });
+
+    const editor = renderer.root.findAll((node: TestRenderer.ReactTestInstance) =>
+      typeof node.props.testID === "string" && node.props.testID.startsWith("editable-param-inline-editor-"),
+    ).find((node) => node.findAllByProps({ testID: "editable-param-popover-input" })
+      .some((input) => input.props.keyboardType === "decimal-pad"));
+    if (!editor) throw new Error("numeric_parameter_editor_missing");
+    const paramKey = String(editor.props.testID).replace("editable-param-inline-editor-", "");
+    const getInput = () => renderer.root
+      .findByProps({ testID: `editable-param-inline-editor-${paramKey}` })
+      .findByProps({ testID: "editable-param-popover-input" });
+    const inputHost = getInput();
+
+    act(() => {
+      inputHost.props.onFocus();
+      inputHost.props.onSelectionChange({ nativeEvent: { selection: { start: 0, end: 2 } } });
+    });
+    for (const value of ["1", "15", "150"]) {
+      act(() => getInput().props.onChangeText(value));
+    }
+    expect(getInput()).toBe(inputHost);
+    expect(getInput().props.value).toBe("150");
+    expect(getInput().props.selection).toEqual({ start: 0, end: 2 });
+
+    act(() => {
+      getInput().props.onSelectionChange({ nativeEvent: { selection: { start: 1, end: 1 } } });
+    });
+    for (const value of ["1550", "15,50", "", "5", "55"]) {
+      act(() => getInput().props.onChangeText(value));
+    }
+    expect(getInput()).toBe(inputHost);
+    expect(getInput().props.value).toBe("55");
+    expect(getInput().props.selection).toEqual({ start: 1, end: 1 });
+    expect(onApplyParamBatch).not.toHaveBeenCalled();
+
+    act(() => {
+      const applyButton = renderer.root
+        .findAllByProps({ testID: "editable-param-batch-apply" })
+        .find((node: TestRenderer.ReactTestInstance) => typeof node.props.onPress === "function");
+      if (!applyButton) throw new Error("batch_apply_missing");
+      applyButton.props.onPress();
+    });
+    expect(onApplyParamBatch).toHaveBeenCalledTimes(1);
+    expect(onApplyParamBatch).toHaveBeenCalledWith([
+      expect.objectContaining({ paramKey, rawValue: "55" }),
+    ]);
+  });
+
   it("opens one parameter UI and applies local edits through the batch callback", () => {
     const { renderer, onApplyParamPatch, onApplyParamBatch } = renderPanel();
     const hostTree = renderer.toJSON();
@@ -112,7 +216,7 @@ describe("editable param chips UI", () => {
     expect(countJsonTestId(hostTree, "request-estimate-parameter-panel")).toBe(0);
     expect(countJsonTestId(hostTree, "editable-param-chip-facade_area_m2")).toBe(0);
     expect(countJsonTestId(hostTree, "estimate-revision-timeline")).toBe(1);
-    expect(countJsonTestId(hostTree, "estimate-current-revision-id")).toBe(1);
+    expect(countJsonTestId(hostTree, "estimate-current-revision-id")).toBe(0);
     expect(visibleText(hostTree)).not.toMatch(/PRICE_MISSING|prices:|estimate_level:|Price source not selected|buyer handoff/);
 
     act(() => {

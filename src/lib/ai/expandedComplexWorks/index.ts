@@ -81,6 +81,7 @@ export type ExpandedComplexParameterSchemaField = {
   key: string;
   labelRu: string;
   unit?: ExpandedComplexUnit;
+  inputKind?: "number" | "text" | "boolean" | "select";
   requiredFor: ExpandedComplexEstimateLevel[];
   defaultValue?: number | string | boolean;
   missingBlocksDetailed: boolean;
@@ -909,6 +910,14 @@ function schemaFor(
   if (calculatorId === "retainingWallCalculator") {
     return [
       ...common,
+      {
+        key: "is_gabion",
+        labelRu: "Габионная конструкция",
+        inputKind: "boolean",
+        defaultValue: familyId === "gabion_wall",
+        requiredFor: [],
+        missingBlocksDetailed: false,
+      },
       length,
       { key: "height_m", labelRu: "Высота стены", unit: "m", requiredFor: preliminaryAndDetailed, missingBlocksDetailed: true },
       { key: "thickness_m", labelRu: "Толщина стены", unit: "m", requiredFor: preliminaryAndDetailed, missingBlocksDetailed: true },
@@ -1092,8 +1101,8 @@ const MATCHERS: readonly { familyId: string; pattern: RegExp }[] = [
   { familyId: "stormwater_drainage", pattern: /(ливнев(?:ая|ую)?\s+сет|дождеприемник|дождеприёмник)/i },
   { familyId: "village_sewer_network", pattern: /(?!.*(?:ливнев|дождеприем|дождеприём|stormwater|rainwater))(наружн(?:ая|ую)\s+канализац|канализац(?:ия|ию)(?:\s+(?:dn|d|ф|ø|Ø)?\s*\d|\s+[\d\s]+|$)|канализац(?:ия|ию)\s+села|sewer)/i },
   { familyId: "wastewater_treatment_plant", pattern: /(очистн(?:ые|ых)\s+сооруж|очистка\s+сток|wastewater)/i },
-  { familyId: "pumping_station", pattern: /(насосн(?:ая|ую)\s+станц|pumping station)/i },
-  { familyId: "cement_concrete_pavement", pattern: /(бетонн(?:ая|ую)\s+дорог|цементобетонн(?:ое|ая)\s+покрыти|concrete road)/i },
+  { familyId: "pumping_station", pattern: /(насосн(?:ая|ую|ой)\s+станц|pumping station)/i },
+  { familyId: "cement_concrete_pavement", pattern: /(бетонн(?:ая|ую)\s+дорог|цементобетонн[\p{L}-]*\s+(?:дорожн[\p{L}-]*\s+)?покрыти|concrete road|cement concrete pavement)/iu },
   { familyId: "road_lighting", pattern: /(дорожн(?:ое|ого)\s+освещен|освещен.*дорог|road lighting)/i },
   { familyId: "sidewalks", pattern: /(тротуар|пешеходн(?:ая|ую)\s+дорожк|sidewalk)/i },
   { familyId: "airport_runway", pattern: /(аэропортов(?:ая|ую)\s+рулежн|взлетн(?:ая|ую)\s+полос|airport)/i },
@@ -1634,7 +1643,7 @@ function roadRows(family: ExpandedComplexWorkFamilyDefinition, text: string, con
 export function roadConstructionCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
   const family = familyForCalculator(input, "road_construction");
   const text = normalizePrompt(input.prompt);
-  const concreteRoad = /бетонн|concrete/.test(text);
+  const concreteRoad = /(?:цементобетонн[\p{L}-]*\s+(?:дорожн[\p{L}-]*\s+)?(?:покрыт|дорог)|бетонн[\p{L}-]*\s+(?:дорог|дорожн[\p{L}-]*\s+покрыт)|cement\s+concrete\s+(?:road|pavement)|concrete\s+road)/u.test(text);
   const calculated = roadRows(family, text, concreteRoad);
   return output({ family, sourcePrompt: input.prompt, parameters: calculated.parameters, rows: calculated.rows, assumptions: ["Типовая предварительная конструкция дорожной одежды; детальная толщина слоёв уточняется проектом."], formulaSteps: calculated.steps, missingInputs: [...commonMissingInputs(family), "Категория дороги", "Геология и проект дорожной одежды", "Применимость и схема укладки геотекстиля"] });
 }
@@ -1978,10 +1987,10 @@ export function retainingWallCalculator(input: CalcInput): ExpandedComplexCalcul
   const rows = [
     row({ family, code: "gabion_baskets_m3", titleRu: "\u0413\u0430\u0431\u0438\u043e\u043d\u043d\u044b\u0435 \u043a\u043e\u0440\u0437\u0438\u043d\u044b \u0438 \u0441\u0435\u0442\u0447\u0430\u0442\u044b\u0435 \u0431\u043b\u043e\u043a\u0438", lineType: "material", group: "materials", quantity: isGabion ? wallVolumeM3 : 0, unit: "m3", formula: isGabion ? "length_m * height_m * thickness_m" : "0", materialKey: "gabion_baskets" }),
     row({ family, code: "gabion_stone_fill_m3", titleRu: "\u041a\u0430\u043c\u0435\u043d\u043d\u0430\u044f \u0437\u0430\u0441\u044b\u043f\u043a\u0430 \u0433\u0430\u0431\u0438\u043e\u043d\u043e\u0432 \u0441 \u0437\u0430\u043f\u0430\u0441\u043e\u043c", lineType: "material", group: "materials", quantity: isGabion ? wallVolumeM3 * 1.05 : 0, unit: "m3", formula: isGabion ? "length_m * height_m * thickness_m * 1.05" : "0", materialKey: "gabion_stone_fill" }),
-    row({ family, code: "gabion_tie_wire_spacers_set", titleRu: "\u0412\u044f\u0437\u0430\u043b\u044c\u043d\u0430\u044f \u043f\u0440\u043e\u0432\u043e\u043b\u043e\u043a\u0430, \u0434\u0438\u0430\u0444\u0440\u0430\u0433\u043c\u044b \u0438 \u0441\u0442\u044f\u0436\u043a\u0438 \u0433\u0430\u0431\u0438\u043e\u043d\u043e\u0432", lineType: "material", group: "components", quantity: isGabion ? Math.ceil(wallVolumeM3 / 25) : 0, unit: "set", formula: "is_gabion ? ceil(gabion_volume_m3 / 25) : 0", materialKey: "gabion_tie_wire_spacers" }),
-    row({ family, code: "gabion_base_preparation_m2", titleRu: "\u041f\u043b\u0430\u043d\u0438\u0440\u043e\u0432\u043a\u0430 \u0438 \u043f\u043e\u0434\u0433\u043e\u0442\u043e\u0432\u043a\u0430 \u043e\u0441\u043d\u043e\u0432\u0430\u043d\u0438\u044f \u043f\u043e\u0434 \u0433\u0430\u0431\u0438\u043e\u043d\u044b", lineType: "work", group: "preparation", quantity: isGabion ? lengthM * (thicknessM + 0.4) : 0, unit: "m2", formula: "is_gabion ? length_m * (thickness_m + 0.4) : 0" }),
-    row({ family, code: "gabion_drainage_pipe_lm", titleRu: "\u0414\u0440\u0435\u043d\u0430\u0436\u043d\u0430\u044f \u0442\u0440\u0443\u0431\u0430 \u0437\u0430 \u0433\u0430\u0431\u0438\u043e\u043d\u043d\u043e\u0439 \u0441\u0442\u0435\u043d\u043e\u0439", lineType: "material", group: "materials", quantity: isGabion ? lengthM : 0, unit: "m", formula: "is_gabion ? length_m : 0", materialKey: "drainage_pipe" }),
-    row({ family, code: "gabion_backfill_compaction_m3", titleRu: "\u041e\u0431\u0440\u0430\u0442\u043d\u0430\u044f \u0437\u0430\u0441\u044b\u043f\u043a\u0430 \u0438 \u0443\u043f\u043b\u043e\u0442\u043d\u0435\u043d\u0438\u0435 \u0437\u0430 \u0433\u0430\u0431\u0438\u043e\u043d\u043d\u043e\u0439 \u0441\u0442\u0435\u043d\u043e\u0439", lineType: "work", group: "earthworks", quantity: isGabion ? wallVolumeM3 * 0.25 : 0, unit: "m3", formula: "is_gabion ? gabion_volume_m3 * 0.25 : 0" }),
+    row({ family, code: "gabion_tie_wire_spacers_set", titleRu: "\u0412\u044f\u0437\u0430\u043b\u044c\u043d\u0430\u044f \u043f\u0440\u043e\u0432\u043e\u043b\u043e\u043a\u0430, \u0434\u0438\u0430\u0444\u0440\u0430\u0433\u043c\u044b \u0438 \u0441\u0442\u044f\u0436\u043a\u0438 \u0433\u0430\u0431\u0438\u043e\u043d\u043e\u0432", lineType: "material", group: "components", quantity: isGabion ? Math.ceil(wallVolumeM3 / 25) : 0, unit: "set", formula: "is_gabion ? ceil(gabion_volume_m3 / 25) : 0", sourceParameters: { is_gabion: isGabion }, materialKey: "gabion_tie_wire_spacers" }),
+    row({ family, code: "gabion_base_preparation_m2", titleRu: "\u041f\u043b\u0430\u043d\u0438\u0440\u043e\u0432\u043a\u0430 \u0438 \u043f\u043e\u0434\u0433\u043e\u0442\u043e\u0432\u043a\u0430 \u043e\u0441\u043d\u043e\u0432\u0430\u043d\u0438\u044f \u043f\u043e\u0434 \u0433\u0430\u0431\u0438\u043e\u043d\u044b", lineType: "work", group: "preparation", quantity: isGabion ? lengthM * (thicknessM + 0.4) : 0, unit: "m2", formula: "is_gabion ? length_m * (thickness_m + 0.4) : 0", sourceParameters: { is_gabion: isGabion } }),
+    row({ family, code: "gabion_drainage_pipe_lm", titleRu: "\u0414\u0440\u0435\u043d\u0430\u0436\u043d\u0430\u044f \u0442\u0440\u0443\u0431\u0430 \u0437\u0430 \u0433\u0430\u0431\u0438\u043e\u043d\u043d\u043e\u0439 \u0441\u0442\u0435\u043d\u043e\u0439", lineType: "material", group: "materials", quantity: isGabion ? lengthM : 0, unit: "m", formula: "is_gabion ? length_m : 0", sourceParameters: { is_gabion: isGabion }, materialKey: "drainage_pipe" }),
+    row({ family, code: "gabion_backfill_compaction_m3", titleRu: "\u041e\u0431\u0440\u0430\u0442\u043d\u0430\u044f \u0437\u0430\u0441\u044b\u043f\u043a\u0430 \u0438 \u0443\u043f\u043b\u043e\u0442\u043d\u0435\u043d\u0438\u0435 \u0437\u0430 \u0433\u0430\u0431\u0438\u043e\u043d\u043d\u043e\u0439 \u0441\u0442\u0435\u043d\u043e\u0439", lineType: "work", group: "earthworks", quantity: isGabion ? wallVolumeM3 * 0.25 : 0, unit: "m3", formula: "is_gabion ? gabion_volume_m3 * 0.25 : 0", sourceParameters: { is_gabion: isGabion } }),
     row({ family, code: "wall_concrete_m3", titleRu: "Бетон подпорной стены", lineType: "material", group: "materials", quantity: wallConcreteM3, unit: "m3", formula: isGabion ? "0" : "length_m * height_m * thickness_m", materialKey: "ready_mix_concrete" }),
     row({ family, code: "rebar_t", titleRu: "Арматура подпорной стены", lineType: "material", group: "materials", quantity: wallConcreteM3 * 0.12, unit: "t", formula: "wall_concrete_m3 * 0.12", materialKey: "rebar" }),
     row({ family, code: "drainage_prism_m3", titleRu: "Дренажная призма", lineType: "material", group: "materials", quantity: wallFaceAreaM2 * 0.35, unit: "m3", formula: "wall_face_area_m2 * 0.35", materialKey: "crushed_stone" }),
@@ -2242,7 +2251,7 @@ export function thermalPowerPlantCalculator(input: CalcInput): ExpandedComplexCa
     row({ family, code: "steel_structure_t", titleRu: "Металлоконструкции турбинного / котельного отделения", lineType: "equipment", group: "structure", quantity: capacityMw * 3.2, unit: "t", formula: "capacity_mw * 3.2", materialKey: "steel_structure" }),
     row({ family, code: "equipment_foundations_m3", titleRu: "Фундаменты основного оборудования", lineType: "material", group: "materials", quantity: capacityMw * 4.5, unit: "m3", formula: "capacity_mw * 4.5", materialKey: "ready_mix_concrete" }),
     row({ family, code: "pipe_racks_t", titleRu: "Трубные и кабельные эстакады", lineType: "equipment", group: "structure", quantity: capacityMw * 0.8, unit: "t", formula: "capacity_mw * 0.8", materialKey: "pipe_rack_steel" }),
-    row({ family, code: "process_piping_lm_or_t", titleRu: "Технологические трубопроводы", lineType: "material", group: "materials", quantity: capacityMw * 18, unit: "m", formula: "capacity_mw * 18 preliminary", materialKey: "process_pipe" }),
+    row({ family, code: "process_piping_lm_or_t", titleRu: "Технологические трубопроводы", lineType: "material", group: "materials", quantity: capacityMw * 18, unit: "m", formula: "capacity_mw * 18", materialKey: "process_pipe" }),
     row({ family, code: "cable_trays_lm", titleRu: "Кабельные лотки", lineType: "material", group: "materials", quantity: capacityMw * 25, unit: "m", formula: "capacity_mw * 25", materialKey: "cable_trays" }),
     row({ family, code: "cable_m", titleRu: "Кабельные линии", lineType: "material", group: "materials", quantity: capacityMw * 120, unit: "m", formula: "capacity_mw * 120", materialKey: "power_cable" }),
     row({ family, code: "insulation_m2", titleRu: "Изоляция трубопроводов", lineType: "material", group: "materials", quantity: capacityMw * 35, unit: "m2", formula: "capacity_mw * 35", materialKey: "pipe_insulation" }),

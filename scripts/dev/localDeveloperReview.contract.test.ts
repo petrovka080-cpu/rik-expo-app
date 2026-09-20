@@ -30,6 +30,11 @@ describe("R5.5.1 local developer review tooling", () => {
     expect(launcher).toContain("$BrokerHealth.owner_available -eq $true");
     expect(launcher).toContain("LOCAL_DEVELOPER_METRO_START_RED");
     expect(launcher).toContain("packager-status:running");
+    expect(launcher).toContain("Test-ConsumerRouteReady");
+    expect(launcher).toContain('"http://127.0.0.1:$Port/request"');
+    expect(launcher).toContain("index\\.bundle");
+    expect(launcher).toContain("LOCAL_DEVELOPER_ROUTE_WARMUP_RED");
+    expect(launcher).toContain("Test-ConsumerRouteReady -TimeoutSec 180 -WarmBundle");
     expect(launcher).toContain("[System.Text.Encoding]::UTF8.GetString($MetroHealth.Content)");
     expect(launcher).toContain("$MetroHealthContent -match");
     expect(launcher).toContain("runtime_action=started_exact_healthy_runtime");
@@ -47,7 +52,8 @@ describe("R5.5.1 local developer review tooling", () => {
     expect(backendManager).toContain("LOCAL_DEVELOPER_EVIDENCE_ROOT");
     expect(backendManager).toContain('resolve(EVIDENCE_ROOT, "backend.json")');
     expect(backendManager).toContain("request_audit_path");
-    expect(backendManager).toContain("9262479c9c9fb3107c4541046c367db7934c875ea8354cc472a7529788635d1b");
+    expect(backendManager).toContain("0ff759893b3660c64e094de5763b443e35fa9ec8cb861132a7bed455d763e3ac");
+    expect(backendManager).not.toContain("9262479c9c9fb3107c4541046c367db7934c875ea8354cc472a7529788635d1b");
     expect(launcher).toContain("LOCAL_DEVELOPER_EVIDENCE_ROOT");
     expect(androidJourney).toContain("R4_A6_ANDROID_BACKEND_AUDIT_PATH");
   });

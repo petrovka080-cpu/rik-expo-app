@@ -6,9 +6,93 @@
   "license_status": "public",
   "review_evidence": {
     "reviewer": "codex-agent-independent-primary-source-review",
-    "reviewed_at": "2026-09-12",
+    "reviewed_at": "2026-09-18",
     "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
     "items": [
+      {
+        "norm_id": "concrete_aci_309_project_consolidation_schedule_v1",
+        "source_url": "https://www.concrete.org/Portals/0/Files/PDF/Previews/30905_2pager.pdf",
+        "supporting_source_urls": [
+          "https://www.concrete.org/store/productdetail.aspx?ItemID=30905&Language=English&Units=US_AND_METRIC",
+          "https://www.concrete.org/frequentlyaskedquestions.aspx?faqid=783"
+        ],
+        "source_snapshot_sha256": "20b986aa1c5905745dc5fceec4ab42921e56dec48952c2bfc8b38161dbb555de",
+        "verified_facts": [
+          "aci_309_defines_consolidation_as_removal_of_entrapped_air_from_freshly_placed_concrete",
+          "choice_of_method_depends_on_mixture_workability_placing_conditions_and_required_air_removal",
+          "vibration_is_a_common_consolidation_method",
+          "the_guide_covers_internal_vibrators_procedure_slabs_and_quality_control",
+          "the_public_source_does_not_supply_one_universal_labor_or_equipment_productivity",
+          "labor_equipment_control_and_mobilization_quantities_must_come_from_approved_project_documents"
+        ]
+      },
+      {
+        "norm_id": "concrete_aci_spec_308_1_23_project_curing_schedule_v1",
+        "source_url": "https://www.concrete.org/Portals/0/Files/PDF/Previews/308.1-23_preview.pdf",
+        "supporting_source_urls": [
+          "https://www.concrete.org/store/productdetail.aspx?ItemID=308123&Language=English&Units=US_Units",
+          "https://www.concrete.org/store/productdetail?ItemID=30826&Language=English&Units=US_AND_METRIC"
+        ],
+        "source_snapshot_sha256": "6d113ae1664bf9b908d82f3fa1232594bb3275e9e20d12eff9c51e3e9532e98d",
+        "verified_facts": [
+          "aci_spec_308_1_23_addresses_external_curing_after_placement_of_cast_in_place_concrete",
+          "the_specification_covers_multiple_external_curing_methods_that_are_not_equal_in_effectiveness_cost_or_schedule_impact",
+          "the_project_specification_must_customize_the_selected_method_and_requirements",
+          "the_specification_covers_materials_initial_and_final_curing_termination_quality_assurance_and_quality_control",
+          "aci_prc_308_26_is_the_current_guide_and_covers_materials_processes_monitoring_structures_and_slabs_on_ground",
+          "the_public_sources_do_not_supply_one_universal_material_consumption_or_labor_equipment_productivity",
+          "method_specific_material_labor_equipment_control_and_mobilization_quantities_must_come_from_approved_project_documents"
+        ]
+      },
+      {
+        "norm_id": "concrete_aci_302_1_15_project_leveling_schedule_v1",
+        "source_url": "https://www.concrete.org/Portals/0/Files/PDF/Previews/302_1R-15_PREVIEW.pdf",
+        "supporting_source_urls": [
+          "https://www.concrete.org/store/productdetail.aspx?ItemID=3021U15&Language=English&Units=US_AND_METRIC"
+        ],
+        "source_snapshot_sha256": "53d9619bef8e81b161f35b67ec29fa573fa2f2ca898491f101df26106b9bff13",
+        "verified_facts": [
+          "aci_302_1r_15_addresses_construction_of_concrete_floors_and_slabs",
+          "the_guide_covers_screed_guides_tools_spreading_consolidating_finishing_flatness_levelness_and_quality_control",
+          "each_project_is_unique_and_contract_documents_define_project_specific_requirements",
+          "the_public_source_does_not_select_one_leveling_method_or_supply_universal_labor_equipment_or_guide_consumption_rates",
+          "the_approved_leveling_method_surface_requirements_and_direct_labor_guide_equipment_control_and_mobilization_quantities_must_come_from_project_documents"
+        ]
+      },
+      {
+        "norm_id": "concrete_aci_302_1_15_project_joint_schedule_v1",
+        "source_url": "https://www.concrete.org/Portals/0/Files/PDF/302.1R-15_Chapter5.pdf",
+        "supporting_source_urls": [
+          "https://www.concrete.org/store/productdetail.aspx?ItemID=3021U15&Language=English&Units=US_AND_METRIC"
+        ],
+        "source_snapshot_sha256": "a34ec5688dbe335198862af6763436aa097c84c767eb3d147f4dd92514b89c27",
+        "verified_facts": [
+          "aci_302_1r_15_chapter_5_distinguishes_isolation_construction_and_contraction_joints",
+          "joint_layout_spacing_thickness_reinforcement_and_details_are_the_designers_responsibility",
+          "joint_filling_sealing_edge_protection_and_load_transfer_depend_on_service_and_traffic_conditions",
+          "reinforcement_must_not_cross_a_movement_joint_without_an_explicitly_designed_system",
+          "the_public_source_does_not_select_one_joint_product_or_supply_universal_consumption_or_productivity",
+          "material_labor_equipment_quality_logistics_and_waste_quantities_must_come_from_approved_project_documents_or_quotes"
+        ]
+      },
+      {
+        "norm_id": "concrete_aci_562_25_546_23_project_repair_schedule_v1",
+        "source_url": "https://www.concrete.org/Portals/0/Files/PDF/Previews/562-25_preview.pdf",
+        "supporting_source_urls": [
+          "https://www.concrete.org/store/productdetail.aspx?itemid=56225",
+          "https://www.concrete.org/Portals/0/Files/PDF/Previews/546-23_preview.pdf",
+          "https://www.concrete.org/store/productdetail?ItemID=54623&Language=English&Units=US_AND_METRIC"
+        ],
+        "source_snapshot_sha256": "e2660cb138f3c8b5799d9b54d73439d71c1de697110ab094bf1564732542c4fa",
+        "supporting_source_snapshot_sha256": "bdbe313456af4f6725aa31da7777925a7736c421cd000773b9bacc8f215c7e50",
+        "verified_facts": [
+          "aci_code_562_25_addresses_assessment_repair_design_construction_documents_and_quality_assurance_for_existing_structural_concrete",
+          "aci_prc_546_23_addresses_selection_and_application_of_materials_and_methods_for_concrete_repair_protection_and_strengthening",
+          "the_repair_scope_method_materials_temporary_works_testing_and_quality_plan_are_project_specific",
+          "the_public_sources_do_not_supply_one_universal_material_consumption_labor_equipment_logistics_or_price",
+          "all_repair_material_labor_equipment_testing_delivery_and_waste_quantities_must_come_from_approved_project_documents_or_quotes"
+        ]
+      },
       {
         "norm_id": "concrete_nrmca_cip31_selected_contingency_m3_m3_v1",
         "source_url": "https://www.nrmca.org/wp-content/uploads/2021/01/31pr.pdf",
@@ -29,6 +113,399 @@
     ]
   },
   "norm_items": [
+    {
+      "norm_id": "concrete_aci_309_project_consolidation_schedule_v1",
+      "name_ru": "Виброуплотнение бетонной смеси: применимость ACI 309 и прямые проектные количества",
+      "parameters": [
+        "consolidated_concrete_volume_m3",
+        "concrete_mix_reference",
+        "placement_location",
+        "approved_consolidation_method",
+        "method_statement_reference",
+        "equipment_schedule_reference",
+        "vibration_worker_h",
+        "internal_vibrator_machine_h",
+        "quality_plan_reference",
+        "quality_control_document_count",
+        "equipment_mobilization_pricing_mode",
+        "equipment_mobilization_trip_count",
+        "mobilization_scope_reference"
+      ],
+      "unit": "project_schedule",
+      "rate": {
+        "value": 1,
+        "unit": "identity only: each accepted project-schedule quantity passes through in its own declared unit; not a productivity factor"
+      },
+      "applicability": {
+        "document": "ACI PRC-309-05 - Guide for Consolidation of Concrete",
+        "operation": "consolidation of freshly placed concrete by internal vibration",
+        "project_specific_method_required": true,
+        "project_specific_labor_hours_required": true,
+        "project_specific_equipment_hours_required": true,
+        "project_specific_quality_records_required": true,
+        "project_specific_mobilization_scope_required": true,
+        "universal_labor_productivity_forbidden": true,
+        "universal_equipment_productivity_forbidden": true,
+        "automatic_material_allowance_forbidden": true,
+        "concrete_supply_formwork_reinforcement_finishing_and_curing_excluded": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "mode": "no_rounding_or_conversion_outside_each_confirmed_project_schedule_unit"
+      },
+      "source": {
+        "title": "ACI PRC-309-05: Guide for Consolidation of Concrete",
+        "url": "https://www.concrete.org/Portals/0/Files/PDF/Previews/30905_2pager.pdf",
+        "page": "Public preview pp. 1-2: abstract and contents; Chapters 4, 5 and 7 cover vibration, internal vibrators and procedure",
+        "provenance": "open_method_statements",
+        "snapshot_sha256": "20b986aa1c5905745dc5fceec4ab42921e56dec48952c2bfc8b38161dbb555de"
+      }
+    },
+    {
+      "norm_id": "concrete_aci_spec_308_1_23_project_curing_schedule_v1",
+      "name_ru": "Уход за бетонной плитой: применимость ACI 308 и прямые проектные количества выбранного способа",
+      "parameters": [
+        "cured_concrete_volume_m3",
+        "exposed_curing_surface_area_m2",
+        "concrete_mix_reference",
+        "curing_location",
+        "approved_external_curing_method",
+        "curing_method_statement_reference",
+        "curing_duration_day",
+        "curing_worker_h",
+        "curing_water_m3",
+        "curing_water_source_reference",
+        "wet_covering_material_designation",
+        "wet_covering_area_m2",
+        "impervious_sheet_designation",
+        "impervious_sheet_area_m2",
+        "curing_compound_product_designation",
+        "curing_compound_quantity_l",
+        "application_equipment_required",
+        "application_equipment_designation",
+        "application_equipment_machine_h",
+        "quality_plan_reference",
+        "quality_control_document_count",
+        "equipment_mobilization_pricing_mode",
+        "equipment_mobilization_trip_count",
+        "mobilization_scope_reference"
+      ],
+      "unit": "project_schedule",
+      "rate": {
+        "value": 1,
+        "unit": "identity only: each accepted method-specific project quantity passes through in its own declared unit; not a consumption or productivity factor"
+      },
+      "applicability": {
+        "document": "ACI SPEC-308.1-23 - External Curing of Cast-in-Place Concrete—Specification",
+        "operation": "external curing after placement of cast-in-place concrete",
+        "approved_project_method_required": true,
+        "supported_external_methods": [
+          "WATER_CURING",
+          "WET_COVERING",
+          "IMPERVIOUS_SHEET",
+          "MEMBRANE_CURING_COMPOUND"
+        ],
+        "method_specific_material_quantities_required": true,
+        "project_specific_labor_hours_required": true,
+        "project_specific_equipment_hours_required_when_applicable": true,
+        "project_specific_quality_records_required": true,
+        "project_specific_mobilization_scope_required_when_separate": true,
+        "universal_material_consumption_forbidden": true,
+        "universal_labor_productivity_forbidden": true,
+        "universal_equipment_productivity_forbidden": true,
+        "automatic_duration_multiplier_forbidden": true,
+        "concrete_supply_placement_vibration_finishing_formwork_and_reinforcement_excluded": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "mode": "no_rounding_or_conversion_outside_each_confirmed_project_schedule_unit"
+      },
+      "source": {
+        "title": "ACI SPEC-308.1-23: External Curing of Cast-in-Place Concrete—Specification",
+        "url": "https://www.concrete.org/Portals/0/Files/PDF/Previews/308.1-23_preview.pdf",
+        "page": "Public preview pp. 1-4: Scope, Products and Execution; project requirements select and customize the curing method",
+        "provenance": "open_method_statements",
+        "snapshot_sha256": "6d113ae1664bf9b908d82f3fa1232594bb3275e9e20d12eff9c51e3e9532e98d"
+      }
+    },
+    {
+      "norm_id": "concrete_aci_302_1_15_project_leveling_schedule_v1",
+      "name_ru": "Выравнивание бетонной плиты: применимость ACI 302 и прямые проектные количества выбранного способа",
+      "parameters": [
+        "leveled_concrete_volume_m3",
+        "leveling_surface_area_m2",
+        "concrete_mix_reference",
+        "leveling_location",
+        "target_elevation_and_slope_reference",
+        "flatness_levelness_requirement_reference",
+        "approved_leveling_method_designation",
+        "leveling_method_statement_reference",
+        "leveling_worker_h",
+        "screed_guides_required",
+        "screed_guide_designation",
+        "screed_guide_length_m",
+        "separate_leveling_equipment_required",
+        "leveling_equipment_designation",
+        "leveling_equipment_machine_h",
+        "quality_plan_reference",
+        "surface_measurement_report_count",
+        "equipment_mobilization_pricing_mode",
+        "equipment_mobilization_trip_count",
+        "mobilization_scope_reference"
+      ],
+      "unit": "project_schedule",
+      "rate": {
+        "value": 1,
+        "unit": "identity only: each accepted project-schedule quantity passes through in its declared unit; not a consumption or productivity factor"
+      },
+      "applicability": {
+        "document": "ACI PRC-302.1-15 - Guide to Concrete Floor and Slab Construction",
+        "operation": "level and strike off freshly placed cast-in-place concrete slab",
+        "approved_project_method_required": true,
+        "project_specific_elevation_slope_flatness_and_levelness_requirements_required": true,
+        "project_specific_guide_takeoff_required_when_applicable": true,
+        "project_specific_labor_hours_required": true,
+        "project_specific_equipment_hours_required_when_applicable": true,
+        "project_specific_surface_measurement_records_required": true,
+        "project_specific_mobilization_scope_required_when_separate": true,
+        "universal_guide_consumption_forbidden": true,
+        "universal_labor_productivity_forbidden": true,
+        "universal_equipment_productivity_forbidden": true,
+        "concrete_supply_placement_vibration_final_finishing_curing_formwork_and_reinforcement_excluded": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "mode": "no_rounding_or_conversion_outside_each_confirmed_project_schedule_unit"
+      },
+      "source": {
+        "title": "ACI PRC-302.1-15: Guide to Concrete Floor and Slab Construction",
+        "url": "https://www.concrete.org/Portals/0/Files/PDF/Previews/302_1R-15_PREVIEW.pdf",
+        "page": "Public preview pp. 2-5 and contents: purpose, project-specific requirements, screed guides, placing/finishing operations, flatness/levelness and quality control",
+        "provenance": "open_method_statements",
+        "snapshot_sha256": "53d9619bef8e81b161f35b67ec29fa573fa2f2ca898491f101df26106b9bff13"
+      }
+    },
+    {
+      "norm_id": "concrete_aci_302_1_15_project_joint_schedule_v1",
+      "name_ru": "Устройство деформационного шва: применимость ACI 302 и прямые проектные количества выбранного узла",
+      "parameters": [
+        "joint_length_m",
+        "joint_width_mm",
+        "joint_depth_mm",
+        "joint_type",
+        "joint_installation_worker_h",
+        "premolded_filler_required",
+        "premolded_filler_length_m",
+        "backer_rod_required",
+        "backer_rod_length_m",
+        "joint_sealant_required",
+        "joint_sealant_quantity_l",
+        "waterstop_required",
+        "waterstop_length_m",
+        "edge_protection_profile_required",
+        "edge_protection_profile_length_m",
+        "load_transfer_device_required",
+        "load_transfer_device_quantity_piece",
+        "edge_reinforcement_required",
+        "edge_reinforcement_mass_kg",
+        "saw_cutting_required",
+        "saw_cutting_machine_h",
+        "surface_preparation_equipment_required",
+        "surface_preparation_machine_h",
+        "joint_quality_control_required",
+        "joint_quality_report_count",
+        "separate_material_delivery_required",
+        "material_delivery_trip_count",
+        "waste_disposal_required",
+        "joint_waste_mass_kg",
+        "waste_transport_trip_count"
+      ],
+      "unit": "project_schedule",
+      "rate": {
+        "value": 1,
+        "unit": "identity only: each accepted project-schedule quantity passes through in its declared unit; not a consumption or productivity factor"
+      },
+      "applicability": {
+        "document": "ACI 302.1R-15 - Guide to Concrete Floor and Slab Construction, Chapter 5",
+        "operation": "install a project-specified isolation, construction, contraction, expansion or movement joint",
+        "approved_project_joint_type_geometry_and_detail_required": true,
+        "project_specific_material_branches_required": true,
+        "project_specific_direct_labor_and_equipment_hours_required": true,
+        "project_specific_quality_logistics_and_waste_quantities_required_when_applicable": true,
+        "universal_joint_product_selection_forbidden": true,
+        "universal_material_consumption_forbidden": true,
+        "universal_labor_productivity_forbidden": true,
+        "universal_equipment_productivity_forbidden": true,
+        "vertical_wall_formwork_system_forbidden": true,
+        "ready_mix_supply_and_unrelated_concrete_operations_excluded": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "mode": "no_rounding_or_conversion_outside_each_confirmed_project_schedule_unit"
+      },
+      "source": {
+        "title": "ACI 302.1R-15: Guide to Concrete Floor and Slab Construction — Chapter 5",
+        "url": "https://www.concrete.org/Portals/0/Files/PDF/302.1R-15_Chapter5.pdf",
+        "page": "Chapter 5 §§5.2.9-5.2.12: joint types, designer responsibility, filling/sealing, edge protection, load transfer and reinforcement restrictions",
+        "provenance": "open_method_statements",
+        "snapshot_sha256": "a34ec5688dbe335198862af6763436aa097c84c767eb3d147f4dd92514b89c27"
+      }
+    },
+    {
+      "norm_id": "concrete_aci_562_25_546_23_project_repair_schedule_v1",
+      "name_ru": "Ремонт бетонной плиты: оценка, утверждённый метод и прямые проектные количества по ACI 562 и ACI 546",
+      "parameters": [
+        "repair_scope_volume_m3",
+        "repair_surface_area_m2",
+        "condition_assessment_reference",
+        "approved_repair_design_reference",
+        "approved_repair_method_designation",
+        "repair_method_statement_reference",
+        "repair_material_designation",
+        "repair_material_quantity_kg",
+        "damaged_concrete_removal_volume_m3",
+        "bonding_agent_required",
+        "bonding_agent_designation",
+        "bonding_agent_quantity_kg",
+        "reinforcement_treatment_required",
+        "reinforcement_treatment_designation",
+        "reinforcement_treatment_quantity_kg",
+        "curing_material_required",
+        "curing_material_designation",
+        "curing_material_quantity_kg",
+        "damaged_concrete_removal_worker_h",
+        "substrate_preparation_worker_h",
+        "repair_material_placement_worker_h",
+        "repair_curing_worker_h",
+        "removal_equipment_required",
+        "removal_equipment_designation",
+        "removal_equipment_machine_h",
+        "mixing_equipment_required",
+        "mixing_equipment_designation",
+        "mixing_equipment_machine_h",
+        "dust_control_equipment_required",
+        "dust_control_equipment_designation",
+        "dust_control_equipment_machine_h",
+        "quality_plan_reference",
+        "inspection_report_count",
+        "material_testing_required",
+        "material_test_report_count",
+        "material_delivery_trip_count",
+        "waste_disposal_required",
+        "waste_disposal_volume_m3",
+        "waste_transport_trip_count",
+        "waste_route_reference"
+      ],
+      "unit": "project_schedule",
+      "rate": {
+        "value": 1,
+        "unit": "identity only: each approved project-schedule quantity passes through in its declared unit; not a consumption or productivity factor"
+      },
+      "applicability": {
+        "documents": [
+          "ACI CODE-562-25 - Assessment, Repair, and Rehabilitation of Existing Concrete Structures",
+          "ACI PRC-546-23 - Concrete Repair—Guide"
+        ],
+        "operation": "repair of an existing concrete slab under an approved assessment and repair design",
+        "condition_assessment_required": true,
+        "approved_repair_design_and_method_required": true,
+        "project_specific_material_takeoff_required": true,
+        "project_specific_labor_and_equipment_schedule_required": true,
+        "project_specific_testing_quality_delivery_and_waste_scope_required": true,
+        "universal_material_consumption_forbidden": true,
+        "universal_labor_productivity_forbidden": true,
+        "universal_equipment_productivity_forbidden": true,
+        "automatic_reinforcement_treatment_testing_or_waste_flow_forbidden": true,
+        "new_concrete_slab_construction_formwork_and_full_reinforcement_excluded": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "mode": "no_rounding_or_conversion_outside_each_confirmed_project_schedule_unit"
+      },
+      "source": {
+        "title": "ACI CODE-562-25 and ACI PRC-546-23",
+        "url": "https://www.concrete.org/Portals/0/Files/PDF/Previews/562-25_preview.pdf",
+        "page": "ACI 562 Chapters 6, 9 and 12-13; ACI 546 public description of repair material and method selection",
+        "provenance": "open_method_statements",
+        "snapshot_sha256": "e2660cb138f3c8b5799d9b54d73439d71c1de697110ab094bf1564732542c4fa",
+        "supporting_snapshot_sha256": "bdbe313456af4f6725aa31da7777925a7736c421cd000773b9bacc8f215c7e50"
+      }
+    },
+    {
+      "norm_id": "concrete_aci_spec_301_20_117_10_project_embedment_schedule_v1",
+      "name_ru": "Монтаж закладных изделий бетонной плиты: утверждённые чертежи, проектные допуски и прямые количества по ACI 301 и ACI 117",
+      "parameters": [
+        "embedded_item_count_piece",
+        "embedded_item_total_mass_kg",
+        "approved_embedment_design_reference",
+        "embedded_item_schedule_reference",
+        "approved_placement_drawing_reference",
+        "slab_location",
+        "tolerance_specification_reference",
+        "installation_method_statement_reference",
+        "embedded_item_designation",
+        "layout_worker_h",
+        "positioning_worker_h",
+        "fixing_worker_h",
+        "field_welding_required",
+        "approved_welding_procedure_reference",
+        "welding_worker_h",
+        "welding_consumable_designation",
+        "welding_consumable_quantity_kg",
+        "temporary_support_required",
+        "temporary_support_designation",
+        "temporary_support_quantity_kg",
+        "lifting_equipment_required",
+        "lifting_equipment_designation",
+        "lifting_equipment_machine_h",
+        "survey_control_required",
+        "survey_report_count",
+        "inspection_record_count",
+        "coating_touchup_required",
+        "coating_touchup_designation",
+        "coating_touchup_quantity_kg",
+        "coating_touchup_worker_h",
+        "embedded_items_delivery_trip_count",
+        "equipment_mobilization_pricing_mode",
+        "equipment_mobilization_trip_count",
+        "mobilization_scope_reference"
+      ],
+      "unit": "project_schedule",
+      "rate": {
+        "value": 1,
+        "unit": "identity only: each approved project-schedule quantity passes through in its declared unit; not a consumption or productivity factor"
+      },
+      "applicability": {
+        "documents": [
+          "ACI SPEC-301-20 - Specifications for Concrete Construction",
+          "ACI 117-10 - Specification for Tolerances for Concrete Construction and Materials"
+        ],
+        "operation": "placement and fixing of project-specified embedded items before concreting",
+        "approved_embedment_design_schedule_and_placement_drawing_required": true,
+        "project_specific_position_and_elevation_tolerances_required": true,
+        "project_specific_material_takeoff_required": true,
+        "project_specific_labor_and_equipment_schedule_required": true,
+        "project_specific_welding_support_survey_and_coating_scope_required_when_applicable": true,
+        "project_specific_inspection_and_delivery_scope_required": true,
+        "universal_material_consumption_forbidden": true,
+        "universal_labor_productivity_forbidden": true,
+        "universal_equipment_productivity_forbidden": true,
+        "automatic_welding_support_lifting_survey_or_coating_scope_forbidden": true,
+        "post_installed_anchors_design_fabrication_concrete_reinforcement_and_formwork_excluded": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "mode": "no_rounding_or_conversion_outside_each_confirmed_project_schedule_unit"
+      },
+      "source": {
+        "title": "ACI SPEC-301-20 and ACI 117-10",
+        "url": "https://www.concrete.org/Portals/0/Files/PDF/Previews/301-20_preview.pdf",
+        "page": "ACI 301 public description and preview pp. 2-3; ACI 117 public preview p. 3, Sections 2.3 and 7.5",
+        "provenance": "open_method_statements",
+        "snapshot_sha256": "7c9dea210cb04812c74b37650dfb2e9199ceacf7c679ef831908955fdad6729a",
+        "supporting_snapshot_sha256": "ae014a5dd26dfaf3a5d550e7b57aa8e7d8a97f02a698a0619ed331ec72f83cd9"
+      }
+    },
     {
       "norm_id": "concrete_nrmca_cip31_selected_contingency_m3_m3_v1",
       "name_ru": "Товарный бетон: проектный объём и выбранный резерв по NRMCA CIP 31",

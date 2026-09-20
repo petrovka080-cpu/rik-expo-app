@@ -17,11 +17,12 @@ import type { ProfessionalWorkPassport } from "../../src/lib/estimate/workPasspo
 import { buildConsumerRepairDraftFromAiEstimateRuntime } from "../../src/lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime";
 import {
   __resetConsumerRepairRequestStoreForTests,
-  createConsumerRepairRequestDraft,
-  generateConsumerRepairRequestPdfForDraft,
   getConsumerRepairPdfStorageObject,
 } from "../../src/lib/consumerRequests";
-import { getCurrentEstimateRevision } from "../../src/lib/ai/estimateRevisions";
+import {
+  approveCanonicalConsumerRepairAuditDraft,
+  createCanonicalConsumerRepairResolvedRowsAuditDraft,
+} from "../estimate/canonicalConsumerRepairAuditHarness";
 import { buildConsumerRepairStructuredEstimatePdfViewModel } from "../../src/lib/consumerRequests/consumerRequestPdfService";
 import { extractEstimatePdfText, estimatePdfInputToBytes, validateEstimatePdf } from "../../src/lib/estimatePdf";
 import { validateNoPdfMojibake } from "../../src/lib/estimatePdf/validateNoPdfMojibake";
@@ -127,8 +128,12 @@ function gitOutput(args: string[], fallback = ""): string {
   }
 }
 
-function currentEstimateRevision(bundle: ReturnType<typeof createConsumerRepairRequestDraft>) {
-  return bundle.estimateRevisionState ? getCurrentEstimateRevision(bundle.estimateRevisionState) : null;
+function canonicalBackendRevisionId(bundle: ReturnType<typeof createCanonicalConsumerRepairResolvedRowsAuditDraft>): string | null {
+  const ids = new Set(bundle.items.map((item) =>
+    String(item.sourceParameters?.canonicalBackendRevisionId ?? "").trim(),
+  ));
+  ids.delete("");
+  return ids.size === 1 ? [...ids][0] : null;
 }
 
 function badInternalTokenCount(text: string): number {
@@ -269,7 +274,7 @@ function runPdfVisualCase(passport: ProfessionalWorkPassport): PdfVisualLedgerRo
       createdAt: "2026-07-15T00:00:00.000Z",
     });
     if (!aiDraft) throw new Error("AI_DRAFT_NOT_CREATED");
-    const draft = createConsumerRepairRequestDraft({
+    const draft = createCanonicalConsumerRepairResolvedRowsAuditDraft({
       consumerUserId: "ai-estimate-11610-pdf-visual-proof",
       problemText: prompt,
       repairType: aiDraft.repairType,
@@ -280,8 +285,8 @@ function runPdfVisualCase(passport: ProfessionalWorkPassport): PdfVisualLedgerRo
       selectedWork: aiDraft.selectedWork,
       aiDraft,
     });
-    const generated = generateConsumerRepairRequestPdfForDraft({
-      requestDraftId: draft.draft.id,
+    const generated = approveCanonicalConsumerRepairAuditDraft({
+      bundle: draft,
       userId: draft.draft.consumerUserId,
       generatedAt: "2026-07-15T00:00:01.000Z",
     });
@@ -308,7 +313,18 @@ function runPdfVisualCase(passport: ProfessionalWorkPassport): PdfVisualLedgerRo
     });
     const text = validation.text || extractEstimatePdfText(storage.body);
     const mojibake = validateNoPdfMojibake(text);
-    const estimateRevision = currentEstimateRevision(generated);
+    const canonicalRevisionId = canonicalBackendRevisionId(generated);
+    const pdfRevisionBound = Boolean(
+      canonicalRevisionId &&
+      pdf.revisionId === canonicalRevisionId &&
+      pdf.snapshotId === `canonical_backend_snapshot:${canonicalRevisionId}`,
+    );
+    const pdfRowsHashBound = Boolean(
+      pdfRevisionBound &&
+      pdf.revisionRowsHash &&
+      pdf.revisionTotalsHash &&
+      pdf.revisionFullSnapshotHash,
+    );
     const pdfRowCount = pdfViewModel.sections.reduce((sum, section) => sum + section.rows.length, 0);
     const internalTokenCount = badInternalTokenCount(text);
     const visual = visualEvidence({
@@ -331,8 +347,8 @@ function runPdfVisualCase(passport: ProfessionalWorkPassport): PdfVisualLedgerRo
       validation.details.cyrillicReadable ? "" : "pdf_cyrillic_not_readable",
       validation.details.mojibakeFound || !mojibake.passed ? `pdf_mojibake:${[...validation.failures, ...mojibake.failures].join("|")}` : "",
       internalTokenCount === 0 ? "" : `pdf_internal_tokens_visible:${internalTokenCount}`,
-      pdf.revisionId && estimateRevision?.revision_id === pdf.revisionId ? "" : "pdf_revision_not_bound_to_current_revision",
-      pdf.revisionRowsHash && estimateRevision?.rows_hash === pdf.revisionRowsHash ? "" : "pdf_rows_hash_not_bound",
+      pdfRevisionBound ? "" : "pdf_revision_not_bound_to_current_revision",
+      pdfRowsHashBound ? "" : "pdf_rows_hash_not_bound",
       visual.pdfBytesLength > 1000 ? "" : `pdf_too_small:${visual.pdfBytesLength}`,
       visual.pageCount > 0 ? "" : "pdf_pages_missing",
       visual.textOperatorCount > 20 ? "" : `pdf_text_operator_count_low:${visual.textOperatorCount}`,
@@ -374,8 +390,8 @@ function runPdfVisualCase(passport: ProfessionalWorkPassport): PdfVisualLedgerRo
       pdf_cyrillic_readable: validation.details.cyrillicReadable,
       pdf_mojibake_found: validation.details.mojibakeFound || !mojibake.passed,
       pdf_bad_internal_token_count: internalTokenCount,
-      pdf_revision_bound: Boolean(pdf.revisionId && estimateRevision?.revision_id === pdf.revisionId),
-      pdf_rows_hash_bound: Boolean(pdf.revisionRowsHash && estimateRevision?.rows_hash === pdf.revisionRowsHash),
+      pdf_revision_bound: pdfRevisionBound,
+      pdf_rows_hash_bound: pdfRowsHashBound,
       duration_ms: Math.round((performance.now() - started) * 100) / 100,
       heap_used_mb: heapUsedMb(),
       failure_codes: failureCodes,

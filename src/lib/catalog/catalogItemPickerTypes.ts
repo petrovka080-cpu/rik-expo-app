@@ -6,6 +6,8 @@ export type CatalogItemPickerItem = Partial<CatalogItemForEstimate> & {
   name: string;
   unit: string;
   kind?: string | null;
+  /** Server-owned eligibility of the selected resource for the procurement artifact. */
+  procurementEligible?: boolean;
   sourceId: string;
   sourceLabel: string;
 };

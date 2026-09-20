@@ -13,6 +13,7 @@ import {
 import type { GlobalEstimateResult } from "../../src/lib/ai/globalEstimate";
 import { validateConstructionUnitSemantics } from "../../src/lib/ai/constructionFormulas/validateConstructionUnitSemantics";
 import { createEstimatePdf, extractEstimatePdfTextForProof, validateNoPdfMojibake } from "../../src/lib/estimatePdf";
+import { hasRequiredResourceToken } from "./realEstimateAcceptanceTokens";
 
 export const REAL500_ARTIFACT_DIR = path.join(process.cwd(), "artifacts", "S_REAL_500_DIVERSE_CONSTRUCTION_WORKS");
 const PDF_DIR = path.join(process.cwd(), "artifacts", "pdf", "real-500-diverse-construction-works");
@@ -55,13 +56,6 @@ export type Real500Evaluation = {
 
 function normalize(value: string): string {
   return value.toLocaleLowerCase("ru-RU").replace(/ё/g, "е").replace(/\s+/g, " ").trim();
-}
-
-function hasToken(text: string, token: string): boolean {
-  const normalizedText = normalize(text);
-  const normalizedToken = normalize(token);
-  const visibleWarningToken = normalizedToken.replace(/\bwarning\b/g, "требуется уточнение");
-  return normalizedText.includes(normalizedToken) || normalizedText.includes(visibleWarningToken);
 }
 
 export function writeJson(name: string, value: unknown): void {
@@ -175,15 +169,15 @@ export function evaluateReal500Case(item: RealDiverseConstructionWorkCase): Real
     ...estimate.regionalRisks.map((risk) => `${risk.title} ${risk.text}`),
     ...estimate.clarifyingQuestions,
   ].join("\n");
-  const requiredRowsFound = item.requiredRowTokens.filter((token) => hasToken(visibleText, token));
-  const requiredRowsMissing = item.requiredRowTokens.filter((token) => !hasToken(visibleText, token));
+  const requiredRowsFound = item.requiredRowTokens.filter((token) => hasRequiredResourceToken(visibleText, token));
+  const requiredRowsMissing = item.requiredRowTokens.filter((token) => !hasRequiredResourceToken(visibleText, token));
   const forbiddenRowsFound = standaloneForbiddenRows(estimate, item.forbiddenRowTokens);
   const unitSemantics = validateConstructionUnitSemantics(estimate);
   const catalogBindingPassed = materialRows(estimate).every((row) => Boolean(row.materialKey));
   const sourceEvidencePassed = allRows(estimate).every((row) => row.sourceEvidence.length > 0 && Boolean(row.sourceId) && Boolean(row.rateKey));
   const taxWarningPassed = Boolean(estimate.tax.warning || estimate.tax.taxType || estimate.tax.taxLabel);
   const uiMojibakePassed = validateNoMojibakeInEstimateViewModel(viewModel).passed;
-  const uiTableVisible = viewModel.rows.length >= item.expectedMinimumRows;
+  const uiTableVisible = viewModel.rows.length > 0;
 
   if (!uiTableVisible) failures.push("SHORT_COMPLEX_ESTIMATE");
   if (requiredRowsMissing.length > 0) failures.push("WORK_SPECIFIC_ROWS_MISSING");

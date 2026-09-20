@@ -34,6 +34,12 @@ export type DocumentDescriptor = {
   originModule: PdfOriginModule;
   createdAt?: string;
   entityId?: string;
+  contentIdentity?: {
+    revisionId?: string;
+    rendererVersion?: string;
+    displayTitle?: string;
+    documentStatus?: string;
+  };
 };
 
 export type PdfViewerRouteParams = {
@@ -50,6 +56,7 @@ type CreatePdfDocumentDescriptorArgs = {
   originModule: PdfOriginModule;
   createdAt?: string;
   entityId?: string | number | null;
+  contentIdentity?: DocumentDescriptor["contentIdentity"];
 };
 
 const DOC_LABELS: Record<PdfDocumentType, string> = {
@@ -127,5 +134,6 @@ export function createPdfDocumentDescriptor(
     originModule: args.originModule,
     createdAt,
     entityId: args.entityId == null ? undefined : String(args.entityId),
+    contentIdentity: args.contentIdentity,
   };
 }

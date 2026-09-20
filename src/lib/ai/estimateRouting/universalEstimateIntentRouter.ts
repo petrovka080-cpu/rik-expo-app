@@ -39,7 +39,16 @@ export function fallbackWorkKeyForEstimateRoute(route: EstimateIntentRoute): str
 export function routeUniversalEstimateIntent(text: string): EstimateIntentRoute {
   const route = classifyEstimateIntent(text);
   assertEstimateIntentBeatsRoleContext(route);
-  return route;
+  if (!route.shouldCallEstimateTool) return route;
+  const resolved = resolveGlobalWorkType({ text, language: route.language });
+  return resolved.workKey === "other_construction_work"
+    ? route
+    : {
+      ...route,
+      resolvedWorkKey: resolved.workKey,
+      resolvedCategory: resolved.category,
+      confidence: resolved.confidence === "high" ? "high" : route.confidence,
+    };
 }
 
 export function buildGlobalEstimateInputFromRoute(route: EstimateIntentRoute, input: Partial<GlobalEstimateInput> = {}): GlobalEstimateInput {

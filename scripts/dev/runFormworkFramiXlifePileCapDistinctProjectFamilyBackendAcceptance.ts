@@ -8,41 +8,143 @@ import { Client } from "pg";
 
 import {
   compileFormworkFramiXlifeProjectKitR1,
+  FORMWORK_FRAMI_XLIFE_ANCHOR_GROUP_TARGETS,
+  FORMWORK_FRAMI_XLIFE_BELT_TARGETS,
+  FORMWORK_FRAMI_XLIFE_COLUMN_BASE_TARGETS,
+  FORMWORK_FRAMI_XLIFE_PEDESTAL_TARGETS,
   FORMWORK_FRAMI_XLIFE_PILE_CAP_PROJECT_SCHEDULES,
   FORMWORK_FRAMI_XLIFE_PILE_CAP_TARGETS,
   FORMWORK_FRAMI_XLIFE_SOURCE_ID,
   FORMWORK_FRAMI_XLIFE_SYSTEM_PROFILE_ID,
+  formworkFramiXlifeAnchorGroupAcceptanceInputR1,
+  formworkFramiXlifeBeltAcceptanceInputR1,
+  formworkFramiXlifeColumnBaseAcceptanceInputR1,
+  formworkFramiXlifePedestalAcceptanceInputR1,
   formworkFramiXlifePileCapAcceptanceInputR1,
 } from "../../src/lib/estimate/v4/formworkFramiXlifeProjectKitR1";
 
 type Json = Record<string, any>;
 
-const CONTRACT = "rik-expo-app.r4-a13-6.formwork-frami-xlife-pile-cap-distinct-project-family.backend-acceptance.v1";
+const IS_ANCHOR_GROUP = process.argv.includes("--anchor-group");
+const IS_BELT = process.argv.includes("--belt");
+const IS_COLUMN_BASE = process.argv.includes("--column-base");
+const IS_PEDESTAL = process.argv.includes("--pedestal");
+if ([IS_ANCHOR_GROUP, IS_BELT, IS_COLUMN_BASE, IS_PEDESTAL].filter(Boolean).length > 1) {
+  throw new Error("STOP_FRAMI_FAMILY_AMBIGUOUS_MODE");
+}
+const IS_LATER_FORMWORK_FAMILY = IS_ANCHOR_GROUP || IS_BELT || IS_COLUMN_BASE || IS_PEDESTAL;
+const CURRENT_MASTER_MODE = IS_COLUMN_BASE || IS_PEDESTAL;
+const CONTRACT = IS_PEDESTAL
+  ? "rik-expo-app.r4-a13-6.pedestal-formwork-family.backend-acceptance.v1"
+  : IS_COLUMN_BASE
+  ? "rik-expo-app.r4-a13-6.column-base-formwork-family.backend-acceptance.v1"
+  : IS_BELT
+  ? "rik-expo-app.r4-a13-6.belt-formwork-family.backend-acceptance.v1"
+  : IS_ANCHOR_GROUP
+  ? "rik-expo-app.r4-a13-6.anchor-group-formwork-family.backend-acceptance.v1"
+  : "rik-expo-app.r4-a13-6.formwork-frami-xlife-pile-cap-distinct-project-family.backend-acceptance.v1";
 const GLOBAL_STATUS = "GLOBAL_STATUS=RED_NOT_PRODUCTION_READY";
 const BACKEND = "http://127.0.0.1:8765";
 const PROVIDER = "http://127.0.0.1:54321";
 const DATABASE_URL = "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const CREDENTIALS = resolve(".release-runtime/r551/runtime/local-developer/credentials.json");
-const MASTER = resolve("C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (9).md");
+const MASTER = resolve(CURRENT_MASTER_MODE
+  ? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (15).md"
+  : IS_LATER_FORMWORK_FAMILY
+  ? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (14).md"
+  : "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (9).md");
 const OUTPUT = resolve(
-  ".release-runtime/r4a13-6/exact-physical-norm-successors/formwork-frami-xlife-pile-cap-distinct-project-e4-api/acceptance.json",
+  IS_PEDESTAL
+    ? ".release-runtime/r4a13-6/exact-physical-norm-successors/pedestal-formwork-family-api/acceptance.json"
+    : IS_COLUMN_BASE
+    ? ".release-runtime/r4a13-6/exact-physical-norm-successors/column-base-formwork-family-api/acceptance.json"
+    : IS_BELT
+    ? ".release-runtime/r4a13-6/exact-physical-norm-successors/belt-formwork-family-api/acceptance.json"
+    : IS_ANCHOR_GROUP
+    ? ".release-runtime/r4a13-6/exact-physical-norm-successors/anchor-group-formwork-family-api/acceptance.json"
+    : ".release-runtime/r4a13-6/exact-physical-norm-successors/formwork-frami-xlife-pile-cap-distinct-project-e4-api/acceptance.json",
 );
-const RELEASE_ID = "592dce0c-a06d-5424-81ed-e7e2d587be3f";
-const SEARCH_RELEASE_ID = "aaa7f4aa-c5b3-5f5c-a11f-dcfe5f8e7261";
+const RELEASE_ID = IS_PEDESTAL
+  ? "e681be2c-a28f-5c72-b6ce-aeb166b96633"
+  : IS_COLUMN_BASE
+  ? "7589964d-18df-50fe-adf6-8450556c8c2f"
+  : IS_BELT
+  ? "45207fdf-2b38-55d6-adf8-f90f14b40932"
+  : IS_ANCHOR_GROUP
+  ? "877aa567-1d80-52e4-9d1b-7c5d2e4c5d78"
+  : "592dce0c-a06d-5424-81ed-e7e2d587be3f";
+const SEARCH_RELEASE_ID = IS_PEDESTAL
+  ? "d20b84f4-a4d2-59fc-947a-57895d1f2e1d"
+  : IS_COLUMN_BASE
+  ? "b035feab-796b-52ee-8a88-2d3283fe80bb"
+  : IS_BELT
+  ? "cd37be15-1b05-50e7-b5a6-c4dfaec6c732"
+  : IS_ANCHOR_GROUP
+  ? "b084e3ec-bd78-5583-823f-a1be122702b0"
+  : "aaa7f4aa-c5b3-5f5c-a11f-dcfe5f8e7261";
 const ORGANIZATION_ID = "55555555-5555-4555-8555-555555555551";
 const MEASURED_AREA_ROW_ID = "information:formwork:measured-contact-area";
-const TARGETS = FORMWORK_FRAMI_XLIFE_PILE_CAP_TARGETS.filter(
-  (target) => target.contextKey !== "wet_zone",
-);
+const TARGETS = IS_PEDESTAL
+  ? FORMWORK_FRAMI_XLIFE_PEDESTAL_TARGETS
+  : IS_COLUMN_BASE
+  ? FORMWORK_FRAMI_XLIFE_COLUMN_BASE_TARGETS
+  : IS_BELT
+  ? FORMWORK_FRAMI_XLIFE_BELT_TARGETS
+  : IS_ANCHOR_GROUP
+  ? FORMWORK_FRAMI_XLIFE_ANCHOR_GROUP_TARGETS
+  : FORMWORK_FRAMI_XLIFE_PILE_CAP_TARGETS.filter((target) => target.contextKey !== "wet_zone");
 
 const EXPECTED_DEFINITION_IDS: Readonly<Record<string, string>> = Object.freeze({
-  standard: "d62108ca-4805-5a93-809d-da7435c88486",
-  high_load: "49de0f29-e838-5e36-832a-ac5b2672d910",
-  large_area: "ae2b1d48-06d6-557d-bc43-01058b3007f6",
-  repair: "57a30599-a7ab-59cc-b5e0-e30b6a651571",
-  small_area: "9d5acb19-9a7f-5146-abf8-45bf45280374",
-  technical_room: "345af815-b40b-5a13-9467-c79bcdf6f874",
+  ...(IS_PEDESTAL ? {
+    standard: "42c11834-2dea-51de-887b-a0484f152c78",
+    high_load: "4a6de87a-9550-562a-99e5-fef126adb321",
+    large_area: "fdba6416-765c-5cd2-8a12-a3b45882b568",
+    repair: "6249e2d4-8aea-5238-8d30-b52a183231f1",
+    small_area: "2d479a55-60c4-5a12-881f-5fe6188f2904",
+    technical_room: "12713acb-f5d1-57de-aeff-51185ca6de5c",
+    wet_zone: "a0b43e51-ac07-5848-9cd5-eba7cd28201b",
+  } : IS_COLUMN_BASE ? {
+    standard: "7d9c70d8-158e-590b-97fc-accb96ece2e8",
+    high_load: "0e92a540-49d5-563f-bee3-3979affd722c",
+    large_area: "f5467481-1da4-57bf-8818-0c20779b7b41",
+    repair: "38530d12-2a72-5c70-8f1b-02e028edfd45",
+    small_area: "a217dc4e-ed55-5071-abce-9058064ed435",
+    technical_room: "eb2a385e-84b7-58a6-a8a6-4fbb59a8160c",
+    wet_zone: "1471fecd-01c0-5d25-b8e4-bfcd334c3695",
+  } : IS_BELT ? {
+    standard: "54b160bd-e7d2-5038-90d7-e4ec46e79aec",
+    high_load: "4763b354-e449-57c6-ac8a-6637f1da7c9f",
+    large_area: "87d7c5e8-7866-50cd-962f-445ce5cd3430",
+    repair: "41ae4f64-58aa-5c3f-b6b3-2ae94b69b365",
+    small_area: "625a7269-ab14-5488-9242-dd249e12e9e5",
+    technical_room: "eb972826-0038-54e1-a67f-ecca920662a9",
+    wet_zone: "e116bdca-8f53-53d3-9068-dc09e9e8ce7d",
+  } : IS_ANCHOR_GROUP ? {
+    standard: "5caa676b-5439-5607-a27d-044e1b41b738",
+    high_load: "ae0a7d66-f329-5112-8601-e5dd8736ed54",
+    large_area: "a2a01c18-0c92-58ab-8a4e-3cb60e2041dd",
+    repair: "404098aa-ae65-5be4-941b-d61038e1d263",
+    small_area: "46aabba9-cee7-5794-8e37-c19a609e9e9f",
+    technical_room: "c2050a0f-25e8-5662-9fbf-faf2c41c3f4c",
+    wet_zone: "0515a491-a91a-5479-a71f-7c33286d0a90",
+  } : {
+    standard: "d62108ca-4805-5a93-809d-da7435c88486",
+    high_load: "49de0f29-e838-5e36-832a-ac5b2672d910",
+    large_area: "ae2b1d48-06d6-557d-bc43-01058b3007f6",
+    repair: "57a30599-a7ab-59cc-b5e0-e30b6a651571",
+    small_area: "9d5acb19-9a7f-5146-abf8-45bf45280374",
+    technical_room: "345af815-b40b-5a13-9467-c79bcdf6f874",
+  }),
 });
+const PROGRESS_SCOPE = IS_PEDESTAL
+  ? "PEDESTAL_FORMWORK_FAMILY"
+  : IS_COLUMN_BASE
+  ? "COLUMN_BASE_FORMWORK_FAMILY"
+  : IS_BELT
+  ? "BELT_FORMWORK_FAMILY"
+  : IS_ANCHOR_GROUP
+  ? "ANCHOR_GROUP_FORMWORK_FAMILY"
+  : "FRAMI_PILE_CAP_DISTINCT_E4";
 
 function invariant(value: unknown, code: string): asserts value {
   if (!value) throw new Error(code);
@@ -69,7 +171,7 @@ function closeTo(actual: unknown, expected: unknown, code: string): void {
 }
 
 function progress(stage: string, details: Json = {}): void {
-  process.stdout.write(`${JSON.stringify({ progress: "FRAMI_PILE_CAP_DISTINCT_E4", stage, ...details })}\n`);
+  process.stdout.write(`${JSON.stringify({ progress: PROGRESS_SCOPE, stage, ...details })}\n`);
 }
 
 function resourceSnapshot(): Json {
@@ -171,7 +273,7 @@ async function successfulJobRevision(
 
 async function expectedRows(catalogId: string, parameters: Json): Promise<Json[]> {
   const compiled = await compileFormworkFramiXlifeProjectKitR1(parameters as any, { catalogId });
-  invariant(compiled.preliminaryNeeds.length === 0 && compiled.rows.length === 24,
+  invariant(compiled.preliminaryNeeds.length === 0 && [23, 24].includes(compiled.rows.length),
     `FRAMI_PILE_CAP_E4_LOCAL_CORE_RED:${catalogId}`);
   return compiled.rows as unknown as Json[];
 }
@@ -212,7 +314,7 @@ async function assertRows(
   `FRAMI_PILE_CAP_E4_REVISION_IDENTITY:${contextKey}`);
   invariant(Array.isArray(revision.preliminaryNeeds) && revision.preliminaryNeeds.length === 0,
     `FRAMI_PILE_CAP_E4_UNEXPECTED_PRELIMINARY:${contextKey}`);
-  invariant(rows.length === 24 && rows.length === expected.length && rows.length === Number(revision.rowCount),
+  invariant(rows.length === expected.length && rows.length === Number(revision.rowCount),
     `FRAMI_PILE_CAP_E4_ROW_DENOMINATOR:${contextKey}:${rows.length}:${expected.length}`);
   invariant(new Set(rows.map((row) => row.rowId)).size === rows.length,
     `FRAMI_PILE_CAP_E4_DUPLICATE_ROW:${contextKey}`);
@@ -252,10 +354,13 @@ async function assertRows(
 
   const includedRows = rows.filter((row) => row.includedInEstimate === true);
   const procurementRows = rows.filter((row) => row.includedInProcurement === true);
-  invariant(includedRows.length === 17 && procurementRows.length === 14
-    && Number(revision.totals?.includedRowCount) === 17
+  const craneApplicable = parameters.crane_supply_mode === "RENTAL_SEPARATE";
+  const expectedIncluded = craneApplicable ? 17 : 16;
+  const expectedProcurement = craneApplicable ? 14 : 13;
+  invariant(includedRows.length === expectedIncluded && procurementRows.length === expectedProcurement
+    && Number(revision.totals?.includedRowCount) === expectedIncluded
     && Number(revision.totals?.pricedRowCount) === 0
-    && Number(revision.totals?.unpricedRowCount) === 17
+    && Number(revision.totals?.unpricedRowCount) === expectedIncluded
     && Number(revision.totals?.amount) === 0,
   `FRAMI_PILE_CAP_E4_TOTALS:${contextKey}`);
   return {
@@ -296,7 +401,7 @@ async function databaseProof(
     from public.estimate_revision where id=any($1::uuid[]) order by catalog_id,revision_number`, [revisionIds])).rows as Json[];
   const failedJobs = (await client.query(`select id::text,status,error_code,result_revision_id::text
     from public.estimate_compile_job where id=any($1::uuid[]) order by created_at`, [failedJobIds])).rows as Json[];
-  invariant(definitions.length === 6
+  invariant(definitions.length === TARGETS.length
     && definitions.every((row) => Object.values(EXPECTED_DEFINITION_IDS).includes(row.definition_version_id)),
   "FRAMI_PILE_CAP_E4_DATABASE_DEFINITION_DENOMINATOR");
   invariant(revisions.length === revisionIds.length && revisions.every((row) => row.release_id === RELEASE_ID),
@@ -315,7 +420,15 @@ async function main(): Promise<void> {
   const authorization = await loginConsumer();
   const client = new Client({
     connectionString: DATABASE_URL,
-    application_name: "frami-pile-cap-distinct-e4-backend-acceptance",
+    application_name: IS_PEDESTAL
+      ? "pedestal-formwork-family-backend-acceptance"
+      : IS_COLUMN_BASE
+      ? "column-base-formwork-family-backend-acceptance"
+      : IS_BELT
+      ? "belt-formwork-family-backend-acceptance"
+      : IS_ANCHOR_GROUP
+      ? "anchor-group-formwork-family-backend-acceptance"
+      : "frami-pile-cap-distinct-e4-backend-acceptance",
   });
   await client.connect();
   try {
@@ -334,7 +447,15 @@ async function main(): Promise<void> {
     const failedJobIds: string[] = [];
     for (const target of TARGETS) {
       const contextKey = target.contextKey;
-      const fixture = { ...formworkFramiXlifePileCapAcceptanceInputR1(contextKey) } as Json;
+      const fixture = { ...(IS_PEDESTAL
+        ? formworkFramiXlifePedestalAcceptanceInputR1(contextKey)
+        : IS_COLUMN_BASE
+        ? formworkFramiXlifeColumnBaseAcceptanceInputR1(contextKey)
+        : IS_BELT
+        ? formworkFramiXlifeBeltAcceptanceInputR1(contextKey)
+        : IS_ANCHOR_GROUP
+        ? formworkFramiXlifeAnchorGroupAcceptanceInputR1(contextKey)
+        : formworkFramiXlifePileCapAcceptanceInputR1(contextKey)) } as Json;
       const expectedDefinitionId = EXPECTED_DEFINITION_IDS[contextKey];
       invariant(expectedDefinitionId, `FRAMI_PILE_CAP_E4_DEFINITION_MISSING:${contextKey}`);
 
@@ -359,8 +480,10 @@ async function main(): Promise<void> {
       const item = catalog.item as Json;
       invariant(item.catalogId === target.catalogId
         && item.releaseId === RELEASE_ID
-        && item.definitionVersion === 8
-        && item.applicability?.pileCapContextKey === contextKey
+        && item.definitionVersion === (IS_PEDESTAL ? 4 : IS_COLUMN_BASE ? 4 : IS_BELT ? 6 : IS_ANCHOR_GROUP ? 4 : 8)
+        && (IS_LATER_FORMWORK_FAMILY
+          ? item.applicability?.familyContextKey === contextKey
+          : item.applicability?.pileCapContextKey === contextKey)
         && item.applicability?.projectLayoutRequired === true
         && item.applicability?.projectScheduleRequired === true
         && item.applicability?.contextMultiplierApplied === false
@@ -475,7 +598,9 @@ async function main(): Promise<void> {
         catalogId: target.catalogId,
         titleRu: target.titleRu,
         definitionVersionId: expectedDefinitionId,
-        projectSchedule: FORMWORK_FRAMI_XLIFE_PILE_CAP_PROJECT_SCHEDULES[contextKey],
+        projectSchedule: IS_LATER_FORMWORK_FAMILY
+          ? fixture
+          : FORMWORK_FRAMI_XLIFE_PILE_CAP_PROJECT_SCHEDULES[contextKey],
         search: {
           exactMatchCount: exactSearchItems.length,
           matchTier: searchItem.matchTier,
@@ -486,7 +611,9 @@ async function main(): Promise<void> {
         },
         catalog: {
           parameterCount: item.parameterSchema.length,
-          pileCapContextKey: item.applicability.pileCapContextKey,
+          familyContextKey: IS_LATER_FORMWORK_FAMILY
+            ? item.applicability.familyContextKey
+            : item.applicability.pileCapContextKey,
           projectScheduleRequired: item.applicability.projectScheduleRequired,
           contextMultiplierApplied: item.applicability.contextMultiplierApplied,
           priceState: item.professionalMetadata.priceState,
@@ -528,10 +655,10 @@ async function main(): Promise<void> {
       });
     }
 
-    invariant(targetResults.length === 6
-      && new Set(targetResults.map((target) => target.catalogId)).size === 6
-      && new Set(targetResults.map((target) => target.definitionVersionId)).size === 6
-      && new Set(targetResults.map((target) => JSON.stringify(target.projectSchedule))).size === 6,
+    invariant(targetResults.length === TARGETS.length
+      && new Set(targetResults.map((target) => target.catalogId)).size === TARGETS.length
+      && new Set(targetResults.map((target) => target.definitionVersionId)).size === TARGETS.length
+      && new Set(targetResults.map((target) => JSON.stringify(target.projectSchedule))).size === TARGETS.length,
     "FRAMI_PILE_CAP_E4_TARGET_DENOMINATOR");
     const database = await databaseProof(client, revisionIds, failedJobIds);
     const manifestAfter = await api(authorization, "runtime-manifest");
@@ -548,7 +675,15 @@ async function main(): Promise<void> {
     const evidence = {
       schemaVersion: `${CONTRACT}.receipt.v1`,
       capturedAt: new Date().toISOString(),
-      status: "GREEN_FORMWORK_FRAMI_XLIFE_PILE_CAP_6_OF_6_DISTINCT_PROJECT_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE",
+      status: IS_PEDESTAL
+        ? "GREEN_PEDESTAL_FORMWORK_7_OF_7_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE"
+        : IS_COLUMN_BASE
+        ? "GREEN_COLUMN_BASE_FORMWORK_7_OF_7_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE"
+        : IS_BELT
+        ? "GREEN_BELT_FORMWORK_7_OF_7_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE"
+        : IS_ANCHOR_GROUP
+        ? "GREEN_ANCHOR_GROUP_FORMWORK_7_OF_7_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE"
+        : "GREEN_FORMWORK_FRAMI_XLIFE_PILE_CAP_6_OF_6_DISTINCT_PROJECT_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE",
       globalStatus: GLOBAL_STATUS,
       runId,
       master: { path: MASTER, sha256: sha256(masterBytes) },
@@ -572,15 +707,15 @@ async function main(): Promise<void> {
         database: "127.0.0.1:55432/rik_r4_runtime_b5_v2",
       },
       denominator: {
-        originalTargetCount: 6,
+        originalTargetCount: TARGETS.length,
         acceptedTargetCount: targetResults.length,
         blockedTargetCount: 0,
-        compileRevisionCount: 6,
-        editRevisionCount: 6,
-        failClosedNegativeCount: 6,
-        exactRowCountPerTarget: 24,
-        includedRowCountPerTarget: 17,
-        procurementRowCountPerTarget: 14,
+        compileRevisionCount: TARGETS.length,
+        editRevisionCount: TARGETS.length,
+        failClosedNegativeCount: TARGETS.length,
+        exactRowCountRange: IS_LATER_FORMWORK_FAMILY ? [23, 24] : [24, 24],
+        includedRowCountRange: IS_LATER_FORMWORK_FAMILY ? [16, 17] : [17, 17],
+        procurementRowCountRange: IS_LATER_FORMWORK_FAMILY ? [13, 14] : [14, 14],
       },
       targetResults,
       database: {

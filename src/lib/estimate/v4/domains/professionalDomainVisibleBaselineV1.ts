@@ -234,7 +234,13 @@ function baselineValue(
   scopeCapability: string,
 ): string | number | boolean {
   if (parameter.input_type === "number") return baselineNumber(parameter);
-  if (parameter.input_type === "boolean") return parameter.parameter_id === "work_included";
+  if (parameter.input_type === "boolean") {
+    if (parameter.parameter_id === "work_included") return true;
+    if (parameter.parameter_id === "access_equipment_required") {
+      return /(?:drywall_ceiling|bulkhead|ceiling|roof|roofing|facade)/iu.test(catalogId);
+    }
+    return false;
+  }
   if (parameter.input_type === "choice") return baselineChoice(parameter, scopeCapability);
   if (parameter.parameter_id === "project_type") return "Предварительный частный проект";
   if (parameter.parameter_id === "exact_krerm_rate_code") {

@@ -1,5 +1,12 @@
 export const CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION =
   "ONE_CANONICAL_ESTIMATE_R6_REVISION_IDENTITY_V1" as const;
+export const CANONICAL_ESTIMATE_PRELIMINARY_REVISION_CONTRACT_VERSION =
+  "ONE_CANONICAL_ESTIMATE_R6_REVISION_IDENTITY_V2" as const;
+
+export function isCanonicalEstimateRevisionContractVersion(value: unknown): boolean {
+  return value === CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION
+    || value === CANONICAL_ESTIMATE_PRELIMINARY_REVISION_CONTRACT_VERSION;
+}
 
 export type CanonicalRevisionIdentityDefinition = {
   id: string;
@@ -47,6 +54,7 @@ export type CanonicalRevisionIdentityInput = {
   parameters: Record<string, unknown>;
   effectiveUserParameters: Record<string, unknown>;
   baselineAssumptions: Record<string, unknown>;
+  preliminaryNeeds?: Record<string, unknown>[];
   parent: CanonicalRevisionIdentityParent;
   searchReleaseId: string | null;
   compilerVersion: string;
@@ -57,7 +65,7 @@ function publicUnitRu(unitId: unknown): string {
   const unit = String(unitId ?? "").trim();
   const units: Record<string, string> = {
     m2: "м²", m3: "м³", m: "м", mm: "мм", cm: "см", km: "км",
-    pcs: "шт.", item: "шт.", kg: "кг", t: "т", l: "л",
+    pcs: "шт.", piece: "шт.", pieces: "шт.", item: "шт.", kg: "кг", t: "т", l: "л",
     man_hour: "чел.-ч", machine_hour: "маш.-ч", person_shift: "чел.-смена",
     service: "усл.", test: "исп.", document: "док.", trip: "рейс", t_km: "т·км",
     m3_m3: "м³/м³", m3_m: "м³/м", percent: "%",
@@ -78,8 +86,8 @@ function writerError(message: string, code: string): Error {
 export async function buildCanonicalRevisionIdentity(
   input: CanonicalRevisionIdentityInput,
 ): Promise<Record<string, unknown>> {
-  const parentHasCanonicalIdentity = input.parent?.revision_contract_version
-    === CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION;
+  const parentContractVersion = String(input.parent?.revision_contract_version ?? "");
+  const parentHasCanonicalIdentity = isCanonicalEstimateRevisionContractVersion(parentContractVersion);
   const sourceRequestText = parentHasCanonicalIdentity
     ? String(input.parent?.source_request_text ?? "").trim()
     : String(input.requestIdentity.sourceRequestText ?? "").trim();
@@ -93,7 +101,14 @@ export async function buildCanonicalRevisionIdentity(
     (parameter) => parameter.parameter_id === primaryMeasureParameterId,
   );
   const primaryMeasureValue = input.parameters[primaryMeasureParameterId];
-  if (!primary || primaryMeasureValue == null || !String(primaryMeasureValue).trim()) {
+  if (!primary) {
+    throw writerError("primary measure is unavailable", "PRIMARY_MEASURE_REQUIRED");
+  }
+  const primaryMeasureResolved = primaryMeasureValue != null && Boolean(String(primaryMeasureValue).trim());
+  const preliminaryOwnsMissingPrimary = (input.preliminaryNeeds ?? []).some((need) =>
+    Array.isArray(need.missing_parameter_ids)
+      && need.missing_parameter_ids.map(String).includes(primaryMeasureParameterId));
+  if (!primaryMeasureResolved && !preliminaryOwnsMissingPrimary) {
     throw writerError("primary measure is unavailable", "PRIMARY_MEASURE_REQUIRED");
   }
   const canonicalWorkTitleRu = canonicalDefinitionTitleRu(input.definition);
@@ -101,24 +116,32 @@ export async function buildCanonicalRevisionIdentity(
     throw writerError("canonical work title is unavailable", "DEFINITION_INTEGRITY_FAILED");
   }
   const primaryMeasureUnitId = String(primary.unit_id ?? "").trim();
-  const displayTitleRu = `${canonicalWorkTitleRu} — ${publicMeasureValue(primaryMeasureValue)}`
-    + `${primaryMeasureUnitId ? ` ${publicUnitRu(primaryMeasureUnitId)}` : ""}`;
+  const displayTitleRu = primaryMeasureResolved
+    ? `${canonicalWorkTitleRu} — ${publicMeasureValue(primaryMeasureValue)}`
+      + `${primaryMeasureUnitId ? ` ${publicUnitRu(primaryMeasureUnitId)}` : ""}`
+    : `${canonicalWorkTitleRu} — объём нужно уточнить`;
+  const contractVersion = parentHasCanonicalIdentity
+    ? parentContractVersion
+    : primaryMeasureResolved
+      ? CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION
+      : CANONICAL_ESTIMATE_PRELIMINARY_REVISION_CONTRACT_VERSION;
   return {
-    contractVersion: CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION,
+    contractVersion,
     sourceRequestText,
     sourceRequestHash: await input.hashText(sourceRequestText),
     canonicalWorkTitleRu,
     displayTitleRu,
     primaryMeasureParameterId,
-    primaryMeasureValue: String(primaryMeasureValue),
+    primaryMeasureValue: primaryMeasureResolved ? String(primaryMeasureValue) : null,
     primaryMeasureUnitId: primaryMeasureUnitId || null,
     normalizedIntent: {
       catalogId: input.catalogId,
       groupId: input.definition.domain,
       primaryMeasure: {
         parameterId: primaryMeasureParameterId,
-        value: String(primaryMeasureValue),
+        value: primaryMeasureResolved ? String(primaryMeasureValue) : null,
         unitId: primaryMeasureUnitId || null,
+        unresolved: !primaryMeasureResolved,
       },
       parameters: input.parameters,
     },
@@ -148,6 +171,7 @@ export function buildCanonicalRevisionCommitPayload(input: {
   effectiveUserParameters: Record<string, unknown>;
   parentRevisionId: string | null;
   identityContract: Record<string, unknown>;
+  preliminaryNeeds?: Record<string, unknown>[];
 }): Record<string, unknown> {
   return {
     rowCount: input.rowCount,
@@ -163,6 +187,7 @@ export function buildCanonicalRevisionCommitPayload(input: {
       userParameters: input.effectiveUserParameters,
       parentRevisionId: input.parentRevisionId,
       identityContract: input.identityContract,
+      preliminaryNeeds: input.preliminaryNeeds ?? [],
     },
   };
 }

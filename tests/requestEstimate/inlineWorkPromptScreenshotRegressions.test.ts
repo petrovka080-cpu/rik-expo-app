@@ -11,7 +11,7 @@ describe("inline work prompt screenshot regression model", () => {
       missingInputs: parsed.missingInputs,
     });
 
-    expect(parsed.matchedTemplate?.templateName).toContain("габион стена");
+    expect(parsed.matchedTemplate?.templateName).toMatch(/габион(?:ная|ной)? стен/u);
     expect(chips).toEqual(expect.arrayContaining([
       "height_m = 30 m",
       "length_m = 150 m",

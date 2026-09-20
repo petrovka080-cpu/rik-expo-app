@@ -73,6 +73,7 @@ const RUN_SEPARATE_PRICE_MUTATION = IS_BATCH002 || IS_R56_SUCCESSOR || IS_BATCH0
 const BATCH_TOKEN = IS_BATCH005 ? "batch005-r4" : IS_BATCH004 ? "batch004-r56" : IS_BATCH003 ? "batch003-r56" : IS_BATCH002 ? "batch002-r55" : IS_BATCH001_R56 ? "batch001-r56" : "batch001-r3";
 const EXPECTED_DEFINITIONS = IS_BATCH005 ? 605 : IS_BATCH004 ? 393 : IS_BATCH003 ? 36 : IS_BATCH002 ? 55 : 16;
 const EXPECTED_PARITY_DEFINITIONS = IS_BATCH005 ? 497 : EXPECTED_DEFINITIONS;
+const CANDIDATE_SOURCE_ONLY = process.env.ESTIMATE_BACKEND_PARITY_CANDIDATE_SOURCE_ONLY === "true";
 const DATABASE_URL = process.env.BATCH005_R4_DATABASE_URL
   ?? process.env.BATCH004_R56_DATABASE_URL
   ?? process.env.BATCH003_R56_DATABASE_URL
@@ -334,19 +335,23 @@ function adaptR56Definition(
     && parameter.parameterId !== "price_basis_date",
   );
   const operationQuantityParameterId = r56PrimaryMeasureParameterId(definition);
-  const userInputParameterIds = new Set([
-    operationQuantityParameterId,
-    "delivery_required",
-    "delivery_mass_kg",
-    "delivery_distance_km",
-    "waste_haul_required",
-    "waste_mass_kg",
-    "waste_haul_distance_km",
-    "access_equipment_required",
-    "access_equipment_shift_count",
-    "project_type",
-    "product_profile_id",
-  ]);
+  const userInputParameterIds = definition.batchId === "BATCH-003"
+    ? new Set(backendBaselineParameters
+        .map((parameter) => parameter.parameterId)
+        .filter((parameterId) => parameterId !== "work_included" && parameterId !== "estimate_scope_mode"))
+    : new Set([
+        operationQuantityParameterId,
+        "delivery_required",
+        "delivery_mass_kg",
+        "delivery_distance_km",
+        "waste_haul_required",
+        "waste_mass_kg",
+        "waste_haul_distance_km",
+        "access_equipment_required",
+        "access_equipment_shift_count",
+        "project_type",
+        "product_profile_id",
+      ]);
   const parameters = backendBaselineParameters.map((parameter) => ({
     parameterId: parameter.parameterId,
     titleRu: parameter.labelRu,
@@ -393,6 +398,7 @@ function adaptR56Definition(
         : resource.category === "labor" ? "construction_work"
           : resource.category === "equipment" ? "machine_equipment" : "delivery",
       titleRu: resource.titleRu,
+      sectionRu: resource.sectionRu,
       formulaId: resource.formulaId,
       unitId: resource.outputUnitId,
       semanticOwnerId: resource.semanticOwnerId,
@@ -412,6 +418,11 @@ function adaptR56Definition(
         sourceKey: source?.source_id ?? "PROJECT_DRYWALL_SYSTEM_PASSPORT_R56",
         locator: source?.exact_locator ?? `Формула ${resource.formulaId}`,
       },
+      ...((resource as unknown as Json).titleSpecificationParameterIds ? {
+        titleSpecificationParameterIds: (resource as unknown as Json).titleSpecificationParameterIds,
+        titleSpecificationMode: (resource as unknown as Json).titleSpecificationMode,
+        titleSpecificationSeparator: (resource as unknown as Json).titleSpecificationSeparator,
+      } : {}),
     };
   });
   const contentDecision = { status: "GREEN", allowed: true, errors: [] };
@@ -672,7 +683,14 @@ function titleSpecificationParameterId(
   definition: DrywallDefinition,
   resource: DrywallResource,
 ): string | null {
-  if (!IS_BATCH002 || IS_BATCH003) return null;
+  if (IS_BATCH003) {
+    if (definitionOperation(definition) !== "PREPARE") return null;
+    if (resource.resourceIdentity.endsWith(":primer")) return "primer_product_reference";
+    if (resource.resourceIdentity.endsWith(":access_equipment")) return "access_system_type";
+    if (resource.resourceIdentity.endsWith(":fall_protection")) return "fall_protection_system_reference";
+    return null;
+  }
+  if (!IS_BATCH002) return null;
   const operation = definitionOperation(definition);
   if (operation === "FINISH_JOINT") {
     if (resource.group === "material") return "joint_system_type";
@@ -700,6 +718,8 @@ function rowType(resource: DrywallResource): "material" | "labor" | "equipment" 
 }
 
 function sectionRu(resource: DrywallResource): string {
+  const explicit = String((resource as unknown as Json).sectionRu ?? "").trim();
+  if (explicit) return explicit;
   if (resource.group === "material") return "Материалы";
   if (resource.group === "construction_work") return "Строительные работы";
   if (resource.group === "machine_equipment") return "Машины и оборудование";
@@ -715,7 +735,7 @@ function inclusionAst(
     const source = (resource as Batch005R4BackendResource).sourceInclusionCondition;
     const clauses = source.split(/\s+AND\s+/u).map((clause) => clause.trim());
     const operands = clauses.flatMap((clause): Json[] => {
-      const match = clause.match(/^([a-z0-9_]+)=(true|false|[A-Z_]+)$/u);
+      const match = clause.match(/^([a-z0-9_]+)=(true|false|[A-Z0-9_]+)$/u);
       if (!match) return [];
       const [, parameterId, rawExpected] = match;
       const expected: boolean | string = rawExpected === "true" ? true : rawExpected === "false" ? false : rawExpected;
@@ -732,43 +752,23 @@ function inclusionAst(
     const successor = (definition as R56BackendAdapter).r56Definition;
     const source = successor.resources.find((candidate) => candidate.rowId === resource.rowId);
     invariant(source, `${BATCH_ID}_SUCCESSOR_RESOURCE_MISSING:${resource.rowId}`);
-    if (source.inclusionCondition === "work_included=true AND access_equipment_required=true") {
-      return {
-        kind: "and",
-        operands: [
-          { kind: "parameter", id: "work_included" },
-          { kind: "equals", parameterId: "access_equipment_required", value: true },
-        ],
-      };
+    const clauses = source.inclusionCondition.split(/\s+AND\s+/u).map((clause) => clause.trim());
+    const operands = clauses.map((clause): Json => {
+      const match = clause.match(/^([a-z0-9_]+)=(true|false|[A-Z0-9_]+)$/u);
+      invariant(match, `${BATCH_ID}_SUCCESSOR_INCLUSION_UNSUPPORTED:${source.rowId}:${clause}`);
+      const [, rawParameterId, rawExpected] = match;
+      const parameterId = rawParameterId === "scope_mode" ? "estimate_scope_mode" : rawParameterId;
+      const expected: boolean | string = rawExpected === "true" ? true : rawExpected === "false" ? false : rawExpected;
+      return expected === true
+        ? { kind: "parameter", id: parameterId }
+        : { kind: "equals", parameterId, value: expected };
+    });
+    const formula = successor.formulas.find((candidate) => candidate.formulaId === source.formulaId);
+    invariant(formula, `${BATCH_ID}_SUCCESSOR_FORMULA_MISSING:${source.formulaId}`);
+    for (const parameterId of formula.inputParameterIds) {
+      operands.push({ kind: "present", parameterId });
     }
-    if (source.inclusionCondition === "work_included=true AND delivery_required=true") {
-      return {
-        kind: "and",
-        operands: [
-          { kind: "parameter", id: "work_included" },
-          { kind: "equals", parameterId: "delivery_required", value: true },
-        ],
-      };
-    }
-    if (source.inclusionCondition === "work_included=true AND waste_haul_required=true") {
-      return {
-        kind: "and",
-        operands: [
-          { kind: "parameter", id: "work_included" },
-          { kind: "equals", parameterId: "waste_haul_required", value: true },
-        ],
-      };
-    }
-    if (source.inclusionCondition === "work_included=true AND scope_mode=FULL_APPLICABLE_SCOPE") {
-      return {
-        kind: "and",
-        operands: [
-          { kind: "parameter", id: "work_included" },
-          { kind: "equals", parameterId: "estimate_scope_mode", value: "FULL_APPLICABLE_SCOPE" },
-        ],
-      };
-    }
-    return { kind: "parameter", id: "work_included" };
+    return operands.length === 1 ? operands[0] : { kind: "and", operands };
   }
   if (resource.applicability.kind === "DELIVERY_NOT_INCLUDED_BY_SUPPLIER") {
     return { kind: "not", operand: { kind: "parameter", id: resource.applicability.parameterId } };
@@ -815,7 +815,11 @@ async function insertCandidateModel(client: Client): Promise<{
   const candidateFamily = IS_BATCH005 ? "electrical" : "drywall";
   const candidateReleaseKey = IS_BATCH005
     ? process.env.BATCH005_R4_CANDIDATE_RELEASE_KEY ?? `${BATCH_TOKEN}-${candidateFamily}-candidate`
-    : `${BATCH_TOKEN}-${candidateFamily}-candidate`;
+    : IS_BATCH003
+      ? process.env.BATCH003_R56_CANDIDATE_RELEASE_KEY ?? `${BATCH_TOKEN}-${candidateFamily}-candidate`
+      : IS_BATCH001_R56
+        ? process.env.BATCH001_R56_CANDIDATE_RELEASE_KEY ?? `${BATCH_TOKEN}-${candidateFamily}-candidate`
+      : `${BATCH_TOKEN}-${candidateFamily}-candidate`;
   invariant(/^[a-z0-9][a-z0-9-]{2,119}$/u.test(candidateReleaseKey),
     `${BATCH_ID}_CANDIDATE_RELEASE_KEY_INVALID`);
 
@@ -823,7 +827,10 @@ async function insertCandidateModel(client: Client): Promise<{
     source_manifest_sha256,definition_count,status from public.estimate_definition_release
     where release_key=$1`, [candidateReleaseKey])).rows[0] as Json | undefined;
   if (existingRelease) {
-    invariant(IS_BATCH005 && process.env.BATCH005_R4_RESUME === "true",
+    invariant(
+      (IS_BATCH005 && process.env.BATCH005_R4_RESUME === "true")
+      || (IS_BATCH003 && process.env.BATCH003_R56_RESUME === "true")
+      || (IS_BATCH001_R56 && process.env.BATCH001_R56_RESUME === "true"),
       `${BATCH_ID}_CANDIDATE_RELEASE_ALREADY_EXISTS`);
     invariant(existingRelease.status === "prepared"
       && existingRelease.source_manifest_sha256 === payloadHash
@@ -977,7 +984,8 @@ async function insertCandidateModel(client: Client): Promise<{
       );
       await client.query(`insert into public.estimate_work_identity(
         catalog_id,namespace,domain,source_identity,work_key,title_ru,denominator_eligible
-      ) values($1,$2,$3,$4,$5,$6,$7)`, [
+      ) values($1,$2,$3,$4,$5,$6,$7)
+      on conflict (catalog_id) do nothing`, [
         definition.catalogId,
         definitionIsContent(definition) ? "global" : "external_reference",
         definitionDomain(definition),
@@ -988,7 +996,10 @@ async function insertCandidateModel(client: Client): Promise<{
       ]);
       await client.query(`insert into public.estimate_definition_version(
         id,release_id,catalog_id,definition_version,passport,applicability,definition_sha256,source_metadata
-      ) values($1,$2,$3,1,$4::jsonb,$5::jsonb,$6,$7::jsonb)`, [
+      ) values($1,$2,$3,
+        (select coalesce(max(peer.definition_version),0)+1
+          from public.estimate_definition_version peer where peer.catalog_id=$3),
+        $4::jsonb,$5::jsonb,$6,$7::jsonb)`, [
         definitionId,
         releaseId,
         definition.catalogId,
@@ -1008,19 +1019,50 @@ async function insertCandidateModel(client: Client): Promise<{
       for (let ordinal = 0; ordinal < definition.passport.parameters.length; ordinal += 1) {
         const parameter = definition.passport.parameters[ordinal];
         const value = baseline[parameter.parameterId];
+        const sourceParameter = IS_R56_SUCCESSOR
+          ? (definition as R56BackendAdapter).r56Definition.parameters.find(
+              (candidate) => candidate.parameterId === parameter.parameterId,
+            )
+          : null;
         invariant(value != null, `${BATCH_ID}_BASELINE_VALUE_MISSING:${definition.catalogId}:${parameter.parameterId}`);
         invariant(parameter.resourceConsumerIds.length > 0,
           `${BATCH_ID}_RESOURCE_CONSUMER_MISSING:${definition.catalogId}:${parameter.parameterId}`);
         const visibilityRole = parameter.visibilityRole === "USER_INPUT" ? "USER_INPUT" : "INTERNAL_ONLY";
+        const batch001SourceRole = IS_BATCH001_R56
+          ? String((parameter as unknown as Json).sourceRole ?? "")
+          : "";
         const parameterContract = userParameterContractById.get(parameter.parameterId);
-        const valueType = parameterContract?.inputType === "NUMBER"
+        const valueType = sourceParameter?.inputType === "number"
+          ? "decimal"
+          : sourceParameter?.inputType === "boolean"
+            ? "boolean"
+            : sourceParameter?.inputType === "choice"
+              ? "enum"
+              : sourceParameter?.inputType === "text"
+                ? "text"
+        : parameterContract?.inputType === "NUMBER"
           ? "decimal"
           : parameterContract?.inputType === "BOOLEAN"
             ? "boolean"
             : parameterContract?.inputType === "TEXT"
               ? "text"
               : parameterType(value);
-        const constraints = parameterContract?.range.kind === "NUMERIC"
+        const constraints = sourceParameter
+          ? {
+              ...(sourceParameter.minimum == null ? {} : { min: sourceParameter.minimum }),
+              ...(sourceParameter.maximum == null ? {} : { max: sourceParameter.maximum }),
+              ...(sourceParameter.choices.length === 0 ? {} : { values: [...sourceParameter.choices] }),
+              ...(sourceParameter.inputType === "text" ? { maxLength: 1_000 } : {}),
+              ...(sourceParameter.requiredWhen.kind === "EQUALS"
+                ? {
+                    requiredWhen: {
+                      parameterId: sourceParameter.requiredWhen.parameter_id,
+                      equals: sourceParameter.requiredWhen.value,
+                    },
+                  }
+                : {}),
+            }
+        : parameterContract?.range.kind === "NUMERIC"
           ? { min: parameterContract.range.minimum, max: parameterContract.range.maximum }
           : parameterContract?.range.kind === "TEXT"
             ? { maxLength: parameterContract.range.maximumLength }
@@ -1033,6 +1075,27 @@ async function insertCandidateModel(client: Client): Promise<{
           allowed_range_or_options: parameterContract?.range ?? null,
           default_source: parameterContract?.defaultSource ?? "INTERNAL_ACCEPTED_TEMPLATE_BASELINE",
           engineering_source_ids: parameterContract?.engineeringSourceIds ?? [],
+          value_source_role: visibilityRole === "USER_INPUT"
+            ? IS_R56_SUCCESSOR
+              && parameter.parameterId === r56PrimaryMeasureParameterId((definition as R56BackendAdapter).r56Definition)
+              ? "USER_MEASURED"
+              : IS_BATCH001_R56 && parameter.parameterId === "area_m2"
+                ? "USER_MEASURED"
+              : "PROJECT_DOCUMENTATION"
+            : batch001SourceRole === "MATERIAL_PASSPORT_VALUE"
+              ? "MATERIAL_PASSPORT_VALUE"
+              : batch001SourceRole === "NORM_RATE"
+                ? "MANDATORY_NORM_VALUE"
+                : ["PROJECT_QUANTITY", "LOGISTICS_VALUE", "CONTROL_PLAN_VALUE", "DEPENDENCY_REFERENCE"]
+                    .includes(batch001SourceRole)
+                  ? "PROJECT_DOCUMENTATION"
+                  : "BACKEND_DERIVED",
+          ...(visibilityRole === "INTERNAL_ONLY" && batch001SourceRole === "MATERIAL_PASSPORT_VALUE"
+            ? { source_confirmation_required: true }
+            : {}),
+          ...((IS_BATCH003 || IS_BATCH001_R56) && visibilityRole === "USER_INPUT"
+            ? { preliminary_compilation_allowed: true }
+            : {}),
         };
         if (visibilityRole === "USER_INPUT") {
           truthMetadata.guide = {
@@ -1048,13 +1111,17 @@ async function insertCandidateModel(client: Client): Promise<{
         await client.query(`insert into public.estimate_parameter_definition(
           definition_version_id,parameter_id,ordinal,value_type,unit_id,title_ru,required,
           default_value,constraints_json,truth_metadata
-        ) values($1,$2,$3,$4,$5,$6,true,null,$7::jsonb,$8::jsonb)`, [
+        ) values($1,$2,$3,$4,$5,$6,$7,null,$8::jsonb,$9::jsonb)`, [
           definitionId,
           parameter.parameterId,
           ordinal,
           valueType,
           parameterUnit(parameter.parameterId, value),
           parameter.titleRu,
+          sourceParameter == null
+            ? true
+            : ("required" in sourceParameter ? sourceParameter.required : true)
+              && sourceParameter.requiredWhen.kind === "ALWAYS",
           JSON.stringify(constraints),
           JSON.stringify(truthMetadata),
         ]);
@@ -1091,6 +1158,11 @@ async function insertCandidateModel(client: Client): Promise<{
           costingMode: resource.costingMode,
           delivery: resource.delivery ?? null,
           titleSpecificationParameterId: titleSpecificationParameterId(definition, resource),
+          ...((resource as unknown as Json).titleSpecificationParameterIds ? {
+            titleSpecificationParameterIds: (resource as unknown as Json).titleSpecificationParameterIds,
+            titleSpecificationMode: (resource as unknown as Json).titleSpecificationMode,
+            titleSpecificationSeparator: (resource as unknown as Json).titleSpecificationSeparator,
+          } : {}),
         };
         const sourceMetadata = {
           truth_contract_version: truthContractVersion(),
@@ -1185,7 +1257,16 @@ async function insertCandidateModel(client: Client): Promise<{
         ]);
       }
 
-      const classification = Object.fromEntries(definition.passport.parameters.map((parameter) => [parameter.parameterId, "ASSUMPTION"]));
+      const classification = Object.fromEntries(definition.passport.parameters.map((parameter) => [
+        parameter.parameterId,
+        IS_BATCH003
+          ? parameter.parameterId === "work_included" || parameter.parameterId === "estimate_scope_mode"
+            ? "RUNTIME_STRUCTURAL_DEFAULT"
+            : "FIXTURE_ONLY"
+          : IS_BATCH001_R56
+            ? "FIXTURE_ONLY"
+          : "ASSUMPTION",
+      ]));
       const uom = Object.fromEntries(definition.passport.parameters.map((parameter) => [
         parameter.parameterId,
         parameterUnit(parameter.parameterId, baseline[parameter.parameterId]),
@@ -1211,7 +1292,7 @@ async function insertCandidateModel(client: Client): Promise<{
       ) values($1,$2,$3,$4,$4,$5,$6::jsonb,$7::jsonb,$8::jsonb,$9::jsonb,$10::jsonb,$11::jsonb,
         $12::jsonb,$13::jsonb,$14::jsonb,$15,$16,$17,'APPROVED_TEMPLATE_BASELINE_R54_V1')`, [
         baselineId,
-        `${BATCH_TOKEN}:${definition.catalogId}:gold`,
+        `${candidateReleaseKey}:${definition.catalogId}:gold`,
         definition.catalogId,
         definitionId,
         schemaHash,
@@ -1522,7 +1603,7 @@ async function runAdmissionNegative(
     method: "POST",
     headers: { authorization: "Bearer local-dev-runtime-token", "content-type": "application/json" },
     body: JSON.stringify({
-      idempotencyKey: `${BATCH_TOKEN}-negative-content-gate:${negativeCatalogId}`,
+      idempotencyKey: `${BATCH_TOKEN}-${candidate.releaseId}-negative-content-gate:${negativeCatalogId}`,
       catalogId: negativeCatalogId,
       currencyCode: "KGS",
       parameters,
@@ -1572,7 +1653,7 @@ async function runBatch005ExternalReferenceNegative(
     method: "POST",
     headers: { authorization: "Bearer local-dev-runtime-token", "content-type": "application/json" },
     body: JSON.stringify({
-      idempotencyKey: `${BATCH_TOKEN}-external-reference-negative:${definition.catalogId}`,
+      idempotencyKey: `${BATCH_TOKEN}-${candidate.releaseId}-external-reference-negative:${definition.catalogId}`,
       catalogId: definition.catalogId,
       currencyCode: "KGS",
       parameters,
@@ -1646,7 +1727,7 @@ async function runParity(
     const compiled = await api("/jobs/compile", {
       method: "POST",
       body: JSON.stringify({
-        idempotencyKey: `${BATCH_TOKEN}-parent:${definition.catalogId}`,
+        idempotencyKey: `${BATCH_TOKEN}-${candidate.releaseId}-parent:${definition.catalogId}`,
         catalogId: definition.catalogId,
         currencyCode: "KGS",
         parameters: userParameters,
@@ -1675,7 +1756,7 @@ async function runParity(
     const recalculated = await api("/jobs/recalculate", {
       method: "POST",
       body: JSON.stringify({
-        idempotencyKey: `${BATCH_TOKEN}-formula-child:${definition.catalogId}`,
+        idempotencyKey: `${BATCH_TOKEN}-${candidate.releaseId}-formula-child:${definition.catalogId}`,
         catalogId: definition.catalogId,
         currencyCode: "KGS",
         parentRevisionId,
@@ -1704,7 +1785,7 @@ async function runParity(
       const priceOnly = await api("/jobs/recalculate", {
         method: "POST",
         body: JSON.stringify({
-          idempotencyKey: `${BATCH_TOKEN}-price-child:${definition.catalogId}`,
+          idempotencyKey: `${BATCH_TOKEN}-${candidate.releaseId}-price-child:${definition.catalogId}`,
           catalogId: definition.catalogId,
           currencyCode: "KGS",
           parentRevisionId: childRevisionId,
@@ -1771,8 +1852,8 @@ async function runParity(
       && Number(dbRevision.row_count) === dbRows.length,
     `BATCH001_DB_REVISION_BINDING:${definition.catalogId}`);
 
-    const pdf = await artifact(finalRevisionId, "pdf", `${BATCH_TOKEN}-pdf:${definition.catalogId}`);
-    const procurement = await artifact(finalRevisionId, "procurement", `${BATCH_TOKEN}-procurement:${definition.catalogId}`);
+    const pdf = await artifact(finalRevisionId, "pdf", `${BATCH_TOKEN}-${candidate.releaseId}-pdf:${definition.catalogId}`);
+    const procurement = await artifact(finalRevisionId, "procurement", `${BATCH_TOKEN}-${candidate.releaseId}-procurement:${definition.catalogId}`);
     invariant(Number(pdf.metadata.metadata.sourceRowCount) === dbRows.length
       && pdf.metadata.metadata.sourceRevisionChecksumSha256 === dbRevision.checksum_sha256
       && pdf.metadata.metadata.sourceReleaseId === candidate.releaseId,
@@ -1833,6 +1914,51 @@ async function main(): Promise<void> {
     let server: Awaited<ReturnType<typeof startServer>> | null = null;
     try {
       const candidate = await insertCandidateModel(client);
+      if (CANDIDATE_SOURCE_ONLY) {
+        invariant(IS_BATCH003 || IS_BATCH001_R56,
+          "CANDIDATE_SOURCE_ONLY_IS_RESTRICTED_TO_VERSIONED_SHARED_CORE_BATCHES");
+        const counts = (await client.query(`select
+          (select count(*) from public.estimate_definition_version where release_id=$1)::integer definitions,
+          (select count(*) from public.estimate_parameter_definition parameter
+            join public.estimate_definition_version definition on definition.id=parameter.definition_version_id
+            where definition.release_id=$1)::integer parameters,
+          (select count(*) from public.estimate_formula_graph formula
+            join public.estimate_definition_version definition on definition.id=formula.definition_version_id
+            where definition.release_id=$1)::integer formulas,
+          (select count(*) from public.estimate_resource_spec resource
+            join public.estimate_definition_version definition on definition.id=resource.definition_version_id
+            where definition.release_id=$1)::integer resources,
+          (select count(*) from public.estimate_approved_template_baseline baseline
+            where baseline.accepted_release_id=$1)::integer baselines`, [candidate.releaseId])).rows[0];
+        invariant(Number(counts.definitions) === EXPECTED_DEFINITIONS, `${BATCH_ID}_CANDIDATE_SOURCE_DEFINITION_COUNT_RED`);
+        invariant(Number(counts.baselines) === EXPECTED_DEFINITIONS, `${BATCH_ID}_CANDIDATE_SOURCE_BASELINE_COUNT_RED`);
+        const evidence = {
+          contract: `rik-expo-app-r4.${BATCH_TOKEN}-candidate-source.v1`,
+          generatedUtc: new Date().toISOString(),
+          status: `GREEN_R4_${BATCH_ID.replace("-", "")}_CANDIDATE_SOURCE_PREPARED_NOT_ACTIVE`,
+          executionContractVersion: EXECUTION_CONTRACT_VERSION,
+          masterSha256: MASTER_SHA256,
+          sourceStateId: source.source_state_id,
+          sourceIdentity: source,
+          definitionSetSha256: candidate.definitionSetSha256,
+          releaseStatus: "prepared",
+          releaseActivated: false,
+          releaseId: candidate.releaseId,
+          searchReleaseStatus: "draft",
+          searchReleaseId: candidate.searchReleaseId,
+          sourceHead: candidate.sourceHead,
+          sourceTree: candidate.sourceTree,
+          counts,
+          parityExecuted: false,
+          productionRequests: 0,
+          noDeployOrOtaOrMerge: true,
+        };
+        const sourceAfter = sourceIdentity();
+        invariant(sourceAfter.source_state_id === source.source_state_id, `${BATCH_ID}_SOURCE_STATE_CHANGED_DURING_CANDIDATE_PREPARE`);
+        atomicJson(OUTPUT, { ...evidence, payloadSha256: sha256(evidence) });
+        process.stdout.write(`${JSON.stringify({ status: evidence.status, counts, releaseId: candidate.releaseId, searchReleaseId: candidate.searchReleaseId, evidence: OUTPUT })}\n`);
+        return;
+      }
       server = await startServer({
       ESTIMATE_MIGRATION_DATABASE_URL: DATABASE_URL,
       CANONICAL_ESTIMATE_SEARCH_DATABASE_URL: DATABASE_URL,
@@ -1857,6 +1983,7 @@ async function main(): Promise<void> {
       R45_RUNTIME_SPEC_SHA256: MASTER_SHA256,
       CANONICAL_ESTIMATE_LOCAL_PORT: String(PORT),
       CANONICAL_ESTIMATE_REQUEST_AUDIT_LOG: resolve(OUTPUT_DIR, `${BATCH_TOKEN}_backend_http_audit.jsonl`),
+      CANONICAL_ESTIMATE_LOCAL_AUTH_MODE: "DETERMINISTIC_FIXTURE",
     });
       const admissionNegative = await runAdmissionNegative(client, candidate);
       const externalReferenceNegative = await runBatch005ExternalReferenceNegative(client, candidate);

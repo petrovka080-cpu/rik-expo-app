@@ -26,6 +26,7 @@ import {
   appendConsumerRepairDurableSaveDiagnosticEvent,
   isConsumerRepairApprovedHistoryStatus,
 } from "./consumerRepairDurableSavePolicy";
+import { safeJsonParseValue } from "../format";
 
 const CONSUMER_REPAIR_DURABLE_COMPACT_ITEMS_SCHEMA = "consumer_repair_bundle_compact_items_v1" as const;
 const CONSUMER_REPAIR_DURABLE_EDITABLE_ROWS_SCHEMA =
@@ -299,6 +300,8 @@ export function compactConsumerRepairSourceParameters(
     "procurementOwner",
     "formulaGraphId",
     "canonicalPayloadFingerprintSeed",
+    "calculationInputsComplete",
+    "contractSourcesComplete",
     "wbsCode",
     "estimateDraftRevisionId",
     "estimateDraftPreviousRevisionId",
@@ -353,7 +356,14 @@ export function compactConsumerRepairSourceParameters(
     }));
     if (Object.keys(metadata).length > 0) compact.roadworksWaveAParameterMetadata = metadata;
   }
-  for (const key of ["assumptionKeys", "affectedBy"]) {
+  for (const key of [
+    "assumptionKeys",
+    "unresolvedParameterKeys",
+    "normativeSourceGapKeys",
+    "preliminaryInputKeys",
+    "sourceFixedParameterKeys",
+    "affectedBy",
+  ]) {
     const value = sourceParameters[key];
     if (Array.isArray(value) && value.every((item) => typeof item === "string")) {
       compact[key] = value.slice(0, 64);
@@ -926,7 +936,10 @@ function decodeEstimateRevisionStateFromDurableStorage(value: unknown): Estimate
   if (state.schema === CONSUMER_REPAIR_DURABLE_COMPRESSED_REVISION_STATE_SCHEMA) {
     if (state.codec !== "zlib+base64" || typeof state.payload !== "string") return null;
     try {
-      const decoded = JSON.parse(strFromU8(unzlibSync(durableBase64ToBytes(state.payload))));
+      const decoded = safeJsonParseValue<unknown>(
+        strFromU8(unzlibSync(durableBase64ToBytes(state.payload))),
+        null,
+      );
       return decodeEstimateRevisionStateFromDurableStorage(decoded);
     } catch {
       return null;

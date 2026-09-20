@@ -11,21 +11,24 @@ describe("office developer override UI boundary", () => {
     const shell = read("src/screens/office/OfficeShellContent.tsx");
     const sections = read("src/screens/office/officeHub.sections.tsx");
     const devOverride = read("src/lib/developerOverride.ts");
+    const devOverrideConstants = read("src/lib/developerOverride.constants.ts");
     const policy = read("src/lib/officeRuntime/officeRuntimePolicy.ts");
     const authGuard = read("src/lib/auth/useAuthGuard.ts");
     const authLifecycle = read("src/lib/auth/useAuthLifecycle.ts");
     const liveRunner = read("scripts/e2e/runOfficeMarketLiveWebE2E.ts");
 
-    expect(devOverride).toContain("local_dev_full_access");
+    expect(devOverrideConstants).toContain('"rik.office.localDeveloperFullAccess"');
+    expect(devOverride).toContain("LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY");
     expect(policy).toContain("OFFICE_DEVELOPER_FULL_ACCESS_MANIFEST");
     expect(policy).toContain('mode: "developer_control_full_access"');
-    expect(devOverride).toContain('authorizationSource: "local_ui_only"');
+    expect(devOverride).toContain('normalizeRole(row.authorizationSource) === "local_ui_only"');
+    expect(devOverride).toContain('? "local_ui_only"');
     expect(devOverride).toContain("isServerAuthorizedPlatformDeveloper");
     expect(authGuard).not.toContain("isLocalDeveloperFullAccessAllowed");
     expect(authGuard).not.toContain("localDeveloperFullAccessAllowed");
     expect(authLifecycle).not.toContain("auth_local_developer_full_access");
     expect(model).toContain("isServerAuthorizedPlatformDeveloper");
-    expect(model).toContain('authorizationSource === "local_ui_only"');
+    expect(model).not.toContain('"local_ui_only"');
     expect(shell).toContain("model.showDeveloperOverride");
     expect(sections).toContain("OfficeDeveloperOverrideSection");
     expect(sections).toContain('testID="developer-override-panel"');

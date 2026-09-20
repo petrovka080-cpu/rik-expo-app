@@ -6,7 +6,7 @@ import {
 import { batch001ParamOverrides } from "./batch001R2TestSupport";
 
 describe("BATCH001 R2 Web runtime matrix", () => {
-  test("the Web runtime preserves exact identities and delegates all 16 compiles to the canonical backend", () => {
+  test("the platform-neutral production runtime compiles exact identities and editable BOQs for 16/16", () => {
     const matrix = BATCH001_DRYWALL_BULKHEAD_CATALOG_IDS_V3.map((catalogId) => {
       const inventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find((item) => item.catalog_id === catalogId)!;
       const result = buildEstimateFromInlineWorkPrompt({

@@ -26,4 +26,14 @@ describe("canonical FormulaGraph", () => {
     expect(evaluateFormulaGraph(compileFormulaGraph("floor(10 / 3) + sqrt(16)"), {})).toBe("7");
     expect(evaluateFormulaGraph(compileFormulaGraph("pow(8, 2 / 3)"), {})).toBe("4");
   });
+
+  it("retains conditional dependencies and never treats an unknown condition as false", () => {
+    const formula = compileFormulaGraph("is_gabion ? length_m : 0");
+    expect(formula.inputParameterIds).toEqual(["is_gabion", "length_m"]);
+    expect(formula.ast).toMatchObject({ kind: "conditional" });
+    expect(evaluateFormulaGraph(formula, { is_gabion: true, length_m: 150 })).toBe("150");
+    expect(evaluateFormulaGraph(formula, { is_gabion: true, length_m: 100 })).toBe("100");
+    expect(evaluateFormulaGraph(formula, { is_gabion: false, length_m: 150 })).toBe("0");
+    expect(() => evaluateFormulaGraph(formula, { length_m: 150 })).toThrow("missing parameter is_gabion");
+  });
 });

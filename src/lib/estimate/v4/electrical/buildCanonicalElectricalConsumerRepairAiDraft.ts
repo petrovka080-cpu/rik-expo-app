@@ -137,12 +137,12 @@ export function buildCanonicalElectricalConsumerRepairAiDraft(input: {
     undefined,
     boundWork,
   );
-  assertElectricalBoqIntegrityV1(draft.items.map((item) => ({
+  assertElectricalBoqIntegrityV1(draft.items.filter((item) => item.quantity != null).map((item) => ({
     rowCode: String(item.sourceParameters?.rowCode ?? ""),
     semanticOwner: String(item.sourceParameters?.semanticOwner ?? ""),
     titleRu: item.titleRu,
     resourceType: item.itemType,
-    quantity: item.quantity,
+    quantity: item.quantity!,
     unit: item.unit,
   })));
   recordCanonicalElectricalBuildTiming("REQUEST_DRAFT_READY", buildStartedAt);

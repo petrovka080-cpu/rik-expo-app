@@ -17,8 +17,11 @@ import {
 const PACKAGE_NAME = "com.azisbek_dzhantaev.rikexpoapp";
 const MAIN_ACTIVITY = `${PACKAGE_NAME}/.MainActivity`;
 const ANDROID_DEV_PORT = 8100;
-const APP_CONTENT_TOP = 284;
-const APP_CONTENT_BOTTOM = 1828;
+// UIAutomator only exposes nodes from the current native viewport. Keep the
+// status-bar guard, but do not clamp taps to the old 1,920 px emulator height:
+// API 34 Pixel devices use a 2,400 px viewport and ordinary actions can sit
+// below y=1,828 (for example the shared parameter batch action).
+const APP_CONTENT_TOP = 140;
 const PROMPT =
   "Кровля, мансарды и кровельные окна: обрешётка и контробрешётка 200 кв метров";
 const CATALOG_ID = "canonical-work:expanded:battens_counterbattens";
@@ -56,7 +59,7 @@ const PHOTO_PNG_BASE64 =
 
 type Json = Record<string, any>;
 
-type UiNode = {
+export type UiNode = {
   text: string;
   contentDesc: string;
   resourceId: string;
@@ -67,7 +70,7 @@ type UiNode = {
   bounds: string;
 };
 
-type UiSnapshot = {
+export type UiSnapshot = {
   ok: boolean;
   xml: string;
   nodes: UiNode[];
@@ -274,7 +277,7 @@ function parseNodes(xml: string): UiNode[] {
   );
 }
 
-function dumpUi(adbPath: string, deviceId: string): UiSnapshot {
+export function dumpUi(adbPath: string, deviceId: string): UiSnapshot {
   const devicePath = `/sdcard/r4-a6-ui-${process.pid}.xml`;
   const dumped = runText(
     adbPath,
@@ -283,13 +286,13 @@ function dumpUi(adbPath: string, deviceId: string): UiSnapshot {
       deviceId,
       "shell",
       "timeout",
-      "12",
+      "25",
       "uiautomator",
       "dump",
       "--compressed",
       devicePath,
     ],
-    16_000,
+    32_000,
   );
   if (!dumped.ok) {
     return { ok: false, xml: "", nodes: [], text: "", error: dumped.output };
@@ -321,7 +324,7 @@ function dumpUi(adbPath: string, deviceId: string): UiSnapshot {
   };
 }
 
-function nodeHasId(node: UiNode, id: string): boolean {
+export function nodeHasId(node: UiNode, id: string): boolean {
   return (
     node.resourceId === id ||
     node.resourceId.endsWith(`:id/${id}`) ||
@@ -330,11 +333,11 @@ function nodeHasId(node: UiNode, id: string): boolean {
   );
 }
 
-function nodeById(snapshot: UiSnapshot, id: string): UiNode | null {
+export function nodeById(snapshot: UiSnapshot, id: string): UiNode | null {
   return snapshot.nodes.find((node) => nodeHasId(node, id)) ?? null;
 }
 
-function bounds(node: UiNode): { left: number; top: number; right: number; bottom: number } | null {
+export function bounds(node: UiNode): { left: number; top: number; right: number; bottom: number } | null {
   const match = node.bounds.match(/\[(\d+),(\d+)\]\[(\d+),(\d+)\]/u);
   if (!match) return null;
   const [, left, top, right, bottom] = match.map(Number);
@@ -346,7 +349,7 @@ function visiblePoint(node: UiNode): { x: number; y: number } | null {
   const box = bounds(node);
   if (!box) return null;
   const top = Math.max(box.top, APP_CONTENT_TOP);
-  const bottom = Math.min(box.bottom, APP_CONTENT_BOTTOM);
+  const bottom = box.bottom;
   if (bottom <= top) return null;
   return {
     x: Math.round((box.left + box.right) / 2),
@@ -358,12 +361,11 @@ function fullyVisible(node: UiNode): boolean {
   const box = bounds(node);
   return Boolean(
     box &&
-      box.top >= APP_CONTENT_TOP &&
-      box.bottom <= APP_CONTENT_BOTTOM,
+      box.top >= APP_CONTENT_TOP,
   );
 }
 
-function tapNode(adbPath: string, deviceId: string, node: UiNode): boolean {
+export function tapNode(adbPath: string, deviceId: string, node: UiNode): boolean {
   const point = visiblePoint(node);
   return Boolean(
     point &&
@@ -474,9 +476,13 @@ function swipe(
   adbPath: string,
   deviceId: string,
   direction: "up" | "down",
+  granularity: "coarse" | "fine" = "coarse",
 ): void {
-  const points =
-    direction === "up"
+  const points = granularity === "fine"
+    ? direction === "up"
+      ? ["540", "1450", "540", "900", "220"]
+      : ["540", "900", "540", "1450", "220"]
+    : direction === "up"
       ? ["540", "1700", "540", "500", "330"]
       : ["540", "500", "540", "1700", "330"];
   runText(
@@ -486,7 +492,7 @@ function swipe(
   );
 }
 
-async function waitForSnapshot(
+export async function waitForSnapshot(
   adbPath: string,
   deviceId: string,
   predicate: (snapshot: UiSnapshot) => boolean,
@@ -501,11 +507,12 @@ async function waitForSnapshot(
   return latest;
 }
 
-async function seekNode(
+export async function seekNode(
   adbPath: string,
   deviceId: string,
   predicate: (node: UiNode) => boolean,
   maxSwipes = 55,
+  granularity: "coarse" | "fine" = "coarse",
 ): Promise<{ snapshot: UiSnapshot; node: UiNode | null }> {
   for (const direction of ["down", "up"] as const) {
     let previous = "";
@@ -527,7 +534,7 @@ async function seekNode(
         stagnantSnapshots = 0;
       }
       previous = fingerprint;
-      swipe(adbPath, deviceId, direction);
+      swipe(adbPath, deviceId, direction, granularity);
       await wait(450);
     }
   }
@@ -535,7 +542,7 @@ async function seekNode(
   return { snapshot, node: snapshot.nodes.find(predicate) ?? null };
 }
 
-async function scrollToStart(
+export async function scrollToStart(
   adbPath: string,
   deviceId: string,
   swipeCount = 72,
@@ -663,7 +670,7 @@ async function openFirstFormulaRowPhotoFlow(
   return false;
 }
 
-async function tapById(
+export async function tapById(
   adbPath: string,
   deviceId: string,
   id: string,
@@ -872,7 +879,7 @@ function installedApkSha256(
   return sum.ok ? sum.output.match(/\b[0-9a-f]{64}\b/iu)?.[0]?.toLowerCase() ?? null : null;
 }
 
-function capture(
+export function capture(
   adbPath: string,
   deviceId: string,
   artifactDir: string,
@@ -1100,7 +1107,7 @@ async function bootstrapFreshDevClient(
   return false;
 }
 
-async function replaceField(
+export async function replaceField(
   adbPath: string,
   deviceId: string,
   id: string,

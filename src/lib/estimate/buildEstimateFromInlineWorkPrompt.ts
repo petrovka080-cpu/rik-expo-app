@@ -7,6 +7,8 @@ import { formatEstimateUnitLabel } from "../ai/globalEstimate/formatEstimateUnit
 import type { ExpandedComplexBoqRow } from "../ai/expandedComplexWorks";
 import type { ProductionCompiledExpandedRow } from "../ai/estimateTemplate10000/productionExpandedWorkCatalog10000";
 import { parseInlineWorkEstimatePrompt, type InlineWorkPromptParseResult } from "../ai/parseInlineWorkEstimatePrompt";
+import { extractWorkParamsFromInlinePrompt } from "../ai/extractWorkParamsFromInlinePrompt";
+import { extractRawInputFactsFromPrompt } from "./rawInputFactExtraction";
 import {
   calculateCapitalRenovationGeometry,
   defaultCapitalRenovationInput,
@@ -26,6 +28,7 @@ import {
   applyProfessionalBoqRuntimeContract,
   buildDynamicProfessionalBoqDraftFromPrompt,
   buildProfessionalTemplateDraftFromPrompt,
+  isDrywallCeilingPreparationPrompt,
   shouldUseProfessionalBoqOpenWorldFallback,
 } from "./buildProfessionalBoqDraft";
 import {
@@ -38,11 +41,14 @@ import {
 import { professionalEstimatePassportId } from "./v4/professionalEstimatePassportV4";
 import type { AsphaltCompiledBoqLineV4 } from "./v4/asphalt/compileAsphaltProfessionalEstimateV4";
 import type { AsphaltClarificationExperienceV4 } from "./v4/asphalt/asphaltClarificationExperienceV4";
+import { composeAsphaltClarificationExperienceV4 } from "./v4/asphalt/asphaltClarificationExperienceV4";
 import {
   ROAD_SCOPE_RESOLVER_VERSION_V4,
   resolveRoadEstimateScopeV4,
+  resolveRoadSurfaceTechnologyV4,
   roadScopeIdForProfileV4,
   type RoadScopeResolutionV4,
+  type RoadSurfaceTechnologyResolutionV4,
 } from "./v4/asphalt/roadScopeTruthV4";
 import {
   isExactMultiDomainReferencePromptV4,
@@ -128,6 +134,7 @@ export type InlineWorkPromptEstimateBuildResult = {
   buyerHandoffMappingValid: boolean;
   v4ClarificationExperience?: AsphaltClarificationExperienceV4 | null;
   roadScopeResolution?: RoadScopeResolutionV4 | null;
+  roadSurfaceTechnologyResolution?: RoadSurfaceTechnologyResolutionV4 | null;
 };
 
 function itemTypeForExpandedRow(row: ExpandedComplexBoqRow): ConsumerRepairItemType {
@@ -258,6 +265,45 @@ function asphaltV4RuntimeParameterUnit(key: string): string | null {
   if (/_distance_km$/.test(key)) return "km";
   if (/_count$/.test(key)) return "pcs";
   return null;
+}
+
+function positiveInlineNumber(value: unknown): number | null {
+  const unwrapped = value && typeof value === "object" && !Array.isArray(value) && "value" in value
+    ? (value as { value?: unknown }).value
+    : value;
+  const parsed = typeof unwrapped === "number"
+    ? unwrapped
+    : typeof unwrapped === "string"
+      ? Number(unwrapped.replace(/\s+/g, "").replace(",", "."))
+      : NaN;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function asphaltGeometryBlockingReason(
+  input: BuildEstimateFromInlineWorkPromptInput,
+  parseResult: InlineWorkPromptParseResult,
+): "ROAD_GEOMETRY_REQUIRED" | "ROAD_GEOMETRY_CONFLICT" | null {
+  const numberFor = (key: "area_m2" | "length_m" | "width_m") =>
+    positiveInlineNumber(input.paramOverrides?.[key]) ??
+    positiveInlineNumber(parseResult.extractedParams[key]?.value);
+  const area = numberFor("area_m2");
+  const length = numberFor("length_m");
+  const width = numberFor("width_m");
+  const rawGeometryMethod = input.paramOverrides?.geometry_method;
+  const geometryMethodValue = rawGeometryMethod && typeof rawGeometryMethod === "object" && "value" in rawGeometryMethod
+    ? rawGeometryMethod.value
+    : rawGeometryMethod ?? parseResult.extractedParams.geometry_method?.value;
+  const geometryMethod = typeof geometryMethodValue === "string" ? geometryMethodValue.trim() : null;
+  if (geometryMethod === "direct_area") return area != null ? null : "ROAD_GEOMETRY_REQUIRED";
+  if (geometryMethod === "length_width") {
+    return length != null && width != null ? null : "ROAD_GEOMETRY_REQUIRED";
+  }
+  if (area != null && length != null && width != null) {
+    const calculatedArea = length * width;
+    const deviation = Math.abs(area - calculatedArea) / Math.max(area, calculatedArea);
+    if (deviation > 0.01) return "ROAD_GEOMETRY_CONFLICT";
+  }
+  return area != null || (length != null && width != null) ? null : "ROAD_GEOMETRY_REQUIRED";
 }
 
 function buildAsphaltV4Draft(input: {
@@ -1046,7 +1092,49 @@ function buildPassportBackedDraft(input: {
 function shouldPreferSpecificProfessionalFallback(draft: ConsumerRepairAiDraft | null): boolean {
   const selectedWorkKey = draft?.selectedWork?.selectedWorkKey;
   return selectedWorkKey === "diamond_core_drilling_concrete" ||
-    selectedWorkKey === "dynamic_fencing_estimate";
+    selectedWorkKey === "dynamic_fencing_estimate" ||
+    selectedWorkKey === "drywall_ceiling_preparation";
+}
+
+function buildSpecificOpenWorldParseResult(
+  rawInput: string,
+  draft: ConsumerRepairAiDraft,
+): InlineWorkPromptParseResult {
+  const selectedWorkKey = draft.selectedWork?.selectedWorkKey?.trim() ?? draft.repairType;
+  const templateId = draft.items.find((item) => item.templateId?.trim())?.templateId?.trim() ?? selectedWorkKey;
+  const templateName = draft.selectedWork?.selectedWorkTitleRu?.trim() ?? draft.titleRu;
+  const rawInputFactExtraction = extractRawInputFactsFromPrompt({
+    rawInput,
+    matchedFamily: selectedWorkKey,
+    matchedTemplateId: templateId,
+  });
+  return {
+    rawInput,
+    matchedTemplate: {
+      templateId,
+      templateName,
+      family: selectedWorkKey,
+      confidence: 1,
+      matchSource: "auto_matched",
+      matchedTextSpan: [0, rawInput.length],
+    },
+    candidateTemplates: [{
+      templateId,
+      templateName,
+      family: selectedWorkKey,
+      workKey: selectedWorkKey,
+      confidence: 1,
+      reason: "specific_open_world_professional_boq_owner",
+    }],
+    paramText: rawInput.trim(),
+    extractedParams: extractWorkParamsFromInlinePrompt(rawInput),
+    rawInputFacts: rawInputFactExtraction.facts,
+    rawInputFactExtraction,
+    assumptions: [],
+    missingInputs: [],
+    canBuildPreliminaryEstimate: true,
+    mustAskUserToSelectTemplate: false,
+  };
 }
 
 function buildExactRoadworksWaveAParseResult(input: {
@@ -1232,9 +1320,52 @@ function buildExactRegisteredProfessionalDomainParseResult(input: {
 export function buildEstimateFromInlineWorkPrompt(
   input: BuildEstimateFromInlineWorkPromptInput,
 ): InlineWorkPromptEstimateBuildResult {
+  const currency = input.currency ?? "KGS";
+  const selectedDrywallPreparation = [input.selectedWorkKey, input.selectedTemplateId]
+    .map((value) => value?.trim() ?? "")
+    .some((value) => value === "drywall_ceiling_preparation" ||
+      value === "drywall_ceiling_preparation_dynamic_professional_boq_runtime_v1");
+  if (
+    ((!input.selectedTemplateId && !input.selectedWorkKey) || selectedDrywallPreparation) &&
+    isDrywallCeilingPreparationPrompt(input.rawInput)
+  ) {
+    const exactPreparationDraft = buildDynamicProfessionalBoqDraftFromPrompt({
+      prompt: input.rawInput,
+      currency,
+    });
+    if (exactPreparationDraft?.selectedWork?.selectedWorkKey === "drywall_ceiling_preparation") {
+      return {
+        parseResult: buildSpecificOpenWorldParseResult(input.rawInput, exactPreparationDraft),
+        draft: exactPreparationDraft,
+        canBuildPreliminaryEstimate: exactPreparationDraft.items.length > 0,
+        blockingReason: exactPreparationDraft.items.length > 0 ? undefined : "draft_empty",
+        pdfMappingValid: exactPreparationDraft.items.length > 0,
+        buyerHandoffMappingValid: exactPreparationDraft.items.some((item) => item.itemType !== "work"),
+        v4ClarificationExperience: null,
+        roadScopeResolution: null,
+      };
+    }
+  }
   const explicitExactId = input.selectedWorkKey?.trim() || input.selectedTemplateId?.trim() || "";
   const exactRouting = loadAsphaltRelatedExactRoutingV4()
     .resolveAsphaltRelatedExactRoutingV4(explicitExactId);
+  const roadSurfaceTechnologyResolution = resolveRoadSurfaceTechnologyV4({
+    originalText: input.rawInput,
+    requestedCatalogWorkId: explicitExactId,
+  });
+  if (roadSurfaceTechnologyResolution.status === "CONFLICT") {
+    return {
+      parseResult: parseInlineWorkEstimatePrompt(input),
+      draft: null,
+      canBuildPreliminaryEstimate: false,
+      blockingReason: roadSurfaceTechnologyResolution.conflictId ?? undefined,
+      pdfMappingValid: false,
+      buyerHandoffMappingValid: false,
+      v4ClarificationExperience: null,
+      roadScopeResolution: null,
+      roadSurfaceTechnologyResolution,
+    };
+  }
   if (exactRouting.status === "UNSUPPORTED_EXACT_WORK_KEY") {
     return {
       parseResult: buildUnsupportedExactWorkParseResult(input.rawInput, exactRouting.requestedId),
@@ -1282,13 +1413,12 @@ export function buildEstimateFromInlineWorkPrompt(
   // sends only selectedRoadScope. New resource-level requests explicitly send
   // estimate_scope_mode and enter the registered domain adapter, which delegates
   // the pavement body to the same core compiler and composes typed children.
-  const legacySelectedCanonicalAsphaltScope = Boolean(
+  const useEstablishedCanonicalAsphaltScopeFlow = Boolean(
     exactRouting.status === "BOUND_EXTRA" &&
     exactRouting.canonicalWorkKey === ASPHALT_WORK_ID_V4 &&
-    input.paramOverrides?.selectedRoadScope &&
     !input.paramOverrides?.estimate_scope_mode,
   );
-  const exactAsphaltRelated = legacySelectedCanonicalAsphaltScope
+  const exactAsphaltRelated = useEstablishedCanonicalAsphaltScopeFlow
     ? null
     : loadAsphaltRelatedExactProductionDraftBuilder().buildAsphaltRelatedExactProductionDraftV4(input);
   if (exactAsphaltRelated) {
@@ -1334,6 +1464,10 @@ export function buildEstimateFromInlineWorkPrompt(
       roadworksWaveA.draft,
       { prompt: input.rawInput },
     );
+    const readiness = contractedDraft.items.find((item) =>
+      item.sourceParameters?.roadworksWaveA === true
+    )?.sourceParameters?.domainResolutionReadiness;
+    const calculationReady = readiness === "CALCULATION_READY" && contractedDraft.items.length > 0;
     const roadScopeResolution = resolveRoadEstimateScopeV4({
       originalText: input.rawInput,
       requestedCatalogWorkId: roadworksWaveA.registration.workId,
@@ -1345,16 +1479,17 @@ export function buildEstimateFromInlineWorkPrompt(
     return {
       parseResult,
       draft: contractedDraft,
-      canBuildPreliminaryEstimate: contractedDraft.items.length > 0,
-      blockingReason: contractedDraft.items.length > 0 ? undefined : "draft_empty",
-      pdfMappingValid: contractedDraft.items.length > 0,
-      buyerHandoffMappingValid: contractedDraft.items.some((item) => item.itemType !== "work"),
+      canBuildPreliminaryEstimate: calculationReady,
+      blockingReason: calculationReady
+        ? undefined
+        : typeof readiness === "string" ? readiness : "draft_empty",
+      pdfMappingValid: calculationReady,
+      buyerHandoffMappingValid: calculationReady && contractedDraft.items.some((item) => item.itemType !== "work"),
       v4ClarificationExperience: null,
       roadScopeResolution,
     };
   }
   const parseResult = parseInlineWorkEstimatePrompt(input);
-  const currency = input.currency ?? "KGS";
   const multiDomainRoute = routeMultiDomainReferencePromptV4(input.rawInput);
   const exactMultiDomainReferencePrompt =
     isExactMultiDomainReferencePromptV4(input.rawInput);
@@ -1383,7 +1518,7 @@ export function buildEstimateFromInlineWorkPrompt(
       )
       : null;
   const exactSelectedProfessionalWorkId =
-    explicitlySelectedProfessionalPassport
+    explicitlySelectedProfessionalPassport && !useEstablishedCanonicalAsphaltScopeFlow
       ? explicitlySelectedCatalogWorkId
       : null;
   const promptMatchedProfessionalWorkId =
@@ -1411,7 +1546,7 @@ export function buildEstimateFromInlineWorkPrompt(
         selectedScopeId: "ROAD_SURFACING_ONLY",
       })
       : textRoadScopeResolution;
-  if (roadScopeResolution.resolverStatus === "NEEDS_SCOPE_SELECTION" && !roadworksWaveA) {
+  if (roadScopeResolution.resolverStatus === "NEEDS_SCOPE_SELECTION") {
     return {
       parseResult,
       draft: null,
@@ -1423,18 +1558,46 @@ export function buildEstimateFromInlineWorkPrompt(
       roadScopeResolution,
     };
   }
+  const geometryBlockingReason = roadScopeResolution.resolverStatus === "RESOLVED" &&
+    (
+      roadSurfaceTechnologyResolution.textTechnology === "ASPHALT_CONCRETE" ||
+      roadSurfaceTechnologyResolution.catalogTechnology === "ASPHALT_CONCRETE"
+    )
+    ? asphaltGeometryBlockingReason(input, parseResult)
+    : null;
+  if (geometryBlockingReason) {
+    return {
+      parseResult,
+      draft: null,
+      canBuildPreliminaryEstimate: false,
+      blockingReason: geometryBlockingReason,
+      pdfMappingValid: false,
+      buyerHandoffMappingValid: false,
+      v4ClarificationExperience: composeAsphaltClarificationExperienceV4({
+        raw_text: input.rawInput,
+      }),
+      roadScopeResolution,
+      roadSurfaceTechnologyResolution,
+    };
+  }
   if (roadworksWaveA && (explicitRoadworksWaveASelection || preferSpecificRoadworksWaveA)) {
     const contractedDraft = applyProfessionalBoqRuntimeContract(
       roadworksWaveA.draft,
       { prompt: input.rawInput },
     );
+    const readiness = contractedDraft.items.find((item) =>
+      item.sourceParameters?.roadworksWaveA === true
+    )?.sourceParameters?.domainResolutionReadiness;
+    const calculationReady = readiness === "CALCULATION_READY" && contractedDraft.items.length > 0;
     return {
       parseResult,
       draft: contractedDraft,
-      canBuildPreliminaryEstimate: contractedDraft.items.length > 0,
-      blockingReason: contractedDraft.items.length > 0 ? undefined : "draft_empty",
-      pdfMappingValid: contractedDraft.items.length > 0,
-      buyerHandoffMappingValid: contractedDraft.items.some((item) => item.itemType !== "work"),
+      canBuildPreliminaryEstimate: calculationReady,
+      blockingReason: calculationReady
+        ? undefined
+        : typeof readiness === "string" ? readiness : "draft_empty",
+      pdfMappingValid: calculationReady,
+      buyerHandoffMappingValid: calculationReady && contractedDraft.items.some((item) => item.itemType !== "work"),
       v4ClarificationExperience: null,
       roadScopeResolution,
     };
@@ -1466,6 +1629,29 @@ export function buildEstimateFromInlineWorkPrompt(
       buyerHandoffMappingValid: contractedDraft.items.some(
         (item) => item.itemType !== "work",
       ),
+      v4ClarificationExperience: null,
+      roadScopeResolution,
+    };
+  }
+  const exactSpecificOpenWorldDraft = Boolean(
+    fallbackDraft &&
+    shouldPreferSpecificProfessionalFallback(fallbackDraft) &&
+    !input.selectedTemplateId &&
+    !input.selectedWorkKey &&
+    roadScopeResolution.resolverStatus === "NOT_ROAD",
+  );
+  if (exactSpecificOpenWorldDraft && fallbackDraft) {
+    const contractedDraft = applyProfessionalBoqRuntimeContract(
+      fallbackDraft,
+      { prompt: input.rawInput },
+    );
+    return {
+      parseResult,
+      draft: contractedDraft,
+      canBuildPreliminaryEstimate: contractedDraft.items.length > 0,
+      blockingReason: contractedDraft.items.length > 0 ? undefined : "draft_empty",
+      pdfMappingValid: contractedDraft.items.length > 0,
+      buyerHandoffMappingValid: contractedDraft.items.some((item) => item.itemType !== "work"),
       v4ClarificationExperience: null,
       roadScopeResolution,
     };
@@ -1578,7 +1764,7 @@ export function buildEstimateFromInlineWorkPrompt(
     explicitLegacyTemplateDraft ??
     explicitlySelectedPassportDraft ??
     (preferRichAsphaltV4 ? asphaltV4?.draft : null) ??
-    (shouldPreferSpecificProfessionalFallback(fallbackDraft) && !passportBackedDraft
+    (shouldPreferSpecificProfessionalFallback(fallbackDraft)
       ? fallbackDraft
       : capitalRenovationDraft ??
       (preferExpandedCalculatorDraft ? expandedCalculatorDraft : null) ??

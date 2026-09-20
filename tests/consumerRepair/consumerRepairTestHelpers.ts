@@ -4,7 +4,9 @@ import {
   createConsumerRepairRequestDraft,
   generateConsumerRepairRequestPdfForDraft,
   type ConsumerRepairDraftBundle,
+  updateConsumerRepairRequestItemUnitPrice,
 } from "../../src/lib/consumerRequests";
+import { isConsumerEstimatePayableItem } from "../../src/lib/consumerRequests/consumerEstimateReadiness";
 import { buildCanonicalConsumerRepairRevisionFixture } from "./canonicalConsumerRepairRevisionFixture";
 
 export const CONSUMER_REPAIR_TEST_USER_ID = "consumer-1";
@@ -86,6 +88,18 @@ export function createApprovedConsumerRepairRequest(input: {
   }
 
   if (input.withPdf !== false) {
+    // Approval is intentionally strict in production. This shared approved
+    // fixture represents explicit estimator-entered prices instead of relying
+    // on the old implicit zero-price approval path.
+    for (const item of bundle.items) {
+      if (isConsumerEstimatePayableItem(item) && item.unitPrice == null) {
+        bundle = updateConsumerRepairRequestItemUnitPrice({
+          requestDraftId: bundle.draft.id,
+          itemId: item.id,
+          unitPrice: 100,
+        });
+      }
+    }
     // This common fixture also covers the explicitly legacy-only PDF migration
     // reader. Generate that persisted snapshot before canonical approval, then
     // bind the approval event to the same immutable artifact identity.

@@ -95,10 +95,11 @@ describe("complete canonical fired-clay brick wall estimate through BIA TN 10", 
       const variant = buildCanonicalBaselinePlan({ catalog: { ...catalog, catalogId }, prompt });
       expect(Object.keys(variant.parameters)).toHaveLength(60);
     }
-    expect(() => buildCanonicalBaselinePlan({
+    const distinctHighLoad = buildCanonicalBaselinePlan({
       catalog: { ...catalog, catalogId: "canonical-work:base:masonry_interior_brick_wall_lay_high_load" },
       prompt,
-    })).toThrow("CANONICAL_BASELINE_CONTRACT_MISSING");
+    });
+    expect(distinctHighLoad.parameters).toEqual({});
   });
 
   test("keeps need, project waste and supplier purchase quantities separate with unknown prices", async () => {

@@ -27,6 +27,34 @@ function primaryMeasure(definition: Batch003R56CanonicalSuccessorDefinition): st
   return "area_m2";
 }
 
+function conditionMatches(
+  condition: string,
+  values: Readonly<Record<string, string | number | boolean>>,
+): boolean {
+  return condition.split(/\s+AND\s+/u).every((clause) => {
+    const [parameterId, expected] = clause.trim().split("=");
+    return parameterId != null && expected != null && String(values[parameterId]) === expected;
+  });
+}
+
+function expectExactApplicabilityPartition(
+  definition: Batch003R56CanonicalSuccessorDefinition,
+  values: Readonly<Record<string, string | number | boolean>>,
+  result: Awaited<ReturnType<typeof compileBatch003R56ThroughSharedCore>>,
+): void {
+  const rowIds = result.rows.map((row) => row.row_id);
+  const needIds = result.preliminaryNeeds.map((need) => need.row_id);
+  expect(new Set(rowIds).size).toBe(rowIds.length);
+  expect(new Set(needIds).size).toBe(needIds.length);
+  expect(rowIds.filter((rowId) => needIds.includes(rowId))).toEqual([]);
+  expect(result.preliminaryNeeds.every((need) => need.missing_parameter_ids.length > 0)).toBe(true);
+
+  for (const resource of definition.resources) {
+    const occurrences = Number(rowIds.includes(resource.rowId)) + Number(needIds.includes(resource.rowId));
+    expect(occurrences).toBe(conditionMatches(resource.inclusionCondition, values) ? 1 : 0);
+  }
+}
+
 describe("technology-domain wave R2 durable/history/PDF/procurement", () => {
   test.each(GROUPS)("round-trips every exact revision in %s", async (root) => {
     const catalogIds = DRYWALL_FLAT_CEILING_PROFESSIONAL_CATALOG_IDS_V6
@@ -38,7 +66,7 @@ describe("technology-domain wave R2 durable/history/PDF/procurement", () => {
       const values = batch003R56FixtureValues(definition);
       const initial = await compileBatch003R56ThroughSharedCore({ definition, values });
       expect(initial.revisionProjection.catalogId).toBe(catalogId);
-      expect(initial.rows).toHaveLength(definition.resources.length);
+      expectExactApplicabilityPartition(definition, values, initial);
 
       const revision: CanonicalDurableRevision = {
         revisionId: `technology-wave-r2:${catalogId}:1`,
@@ -58,6 +86,7 @@ describe("technology-domain wave R2 durable/history/PDF/procurement", () => {
         values: editedValues,
         operation: "recalculate",
       });
+      expectExactApplicabilityPartition(definition, editedValues, recalculated);
       const edited: CanonicalDurableRevision = {
         revisionId: `technology-wave-r2:${catalogId}:2`,
         parentRevisionId: revision.revisionId,

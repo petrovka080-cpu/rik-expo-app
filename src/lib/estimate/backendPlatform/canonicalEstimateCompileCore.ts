@@ -379,6 +379,7 @@ function validateConditionalPositiveQuantityPolicy(
     throw compilerError(`conditional quantity policy binding invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
   }
   const applicable = parameters[applicabilityParameterId];
+  if (applicable == null || applicable === "") return;
   if (typeof applicable !== "boolean") {
     throw compilerError(
       `conditional applicability is required ${resource.row_id}:${applicabilityParameterId}`,
@@ -386,7 +387,9 @@ function validateConditionalPositiveQuantityPolicy(
     );
   }
   for (const quantityParameterId of quantityParameterIds) {
-    const quantity = Number(parameters[quantityParameterId]);
+    const rawQuantity = parameters[quantityParameterId];
+    if (rawQuantity == null || rawQuantity === "") continue;
+    const quantity = Number(rawQuantity);
     if (!Number.isFinite(quantity) || quantity < 0) {
       throw compilerError(
         `conditional quantity is invalid ${resource.row_id}:${quantityParameterId}`,
@@ -466,6 +469,7 @@ function validateConditionalEnumPositiveQuantityPolicy(
     throw compilerError(`conditional enum quantity policy binding invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
   }
   const selector = parameters[selectorParameterId];
+  if (selector == null || selector === "") return;
   if (typeof selector !== "string" || !selectorValues.includes(selector)) {
     throw compilerError(
       `conditional enum selector is required ${resource.row_id}:${selectorParameterId}`,
@@ -474,7 +478,9 @@ function validateConditionalEnumPositiveQuantityPolicy(
   }
   const applicable = applicableValues.includes(selector);
   for (const quantityParameterId of quantityParameterIds) {
-    const quantity = Number(parameters[quantityParameterId]);
+    const rawQuantity = parameters[quantityParameterId];
+    if (rawQuantity == null || rawQuantity === "") continue;
+    const quantity = Number(rawQuantity);
     if (!Number.isFinite(quantity) || quantity < 0) {
       throw compilerError(
         `conditional enum quantity is invalid ${resource.row_id}:${quantityParameterId}`,
@@ -539,12 +545,18 @@ function validateFormulaLabeledValueConsistencyPolicy(
     throw compilerError(`formula labeled-value policy binding invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
   }
   const text = parameters[textParameterId];
+  if (text == null || text === "") return;
   if (typeof text !== "string") {
     throw compilerError(
       `labeled value is required ${resource.row_id}:${textParameterId}`,
       `${errorCodeNamespace}_${errorCodeSubject}_REQUIRED`,
     );
   }
+  const waitsForFormulaInputs = formula.input_parameter_ids.some((parameterId) => {
+    const value = parameters[parameterId];
+    return value == null || value === "";
+  });
+  if (waitsForFormulaInputs) return;
   const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
   const match = new RegExp(`(?:^|[;,\\s])${escapedLabel}\\s*=\\s*([+-]?\\d+(?:[.,]\\d+)?)`, "iu").exec(text);
   if (!match) {
@@ -707,9 +719,31 @@ export async function compileCanonicalEstimateCore(
     const inclusionResolvedByManualQuantity = manualQuantity != null && inclusionOnlyWaitsForFormulaInputs;
     if (inclusion.value === false) continue;
 
+    const physicalBinding = resource.resource_graph?.professionalPhysicalNormBindingV1;
+    const physicalBindingRecord = physicalBinding != null
+      && typeof physicalBinding === "object"
+      && !Array.isArray(physicalBinding)
+      ? physicalBinding as JsonRecord
+      : null;
+    const physicalBindingActive = physicalBindingRecord != null
+      && isCanonicalEstimatePhysicalNormBindingActiveV1({
+        parameters,
+        resourceGraph: resource.resource_graph,
+      });
+    const rawPhysicalApplicabilityParameterIds = physicalBindingRecord?.applicability_parameter_ids
+      ?? physicalBindingRecord?.consumed_parameter_ids;
+    const physicalApplicabilityParameterIds = Array.isArray(rawPhysicalApplicabilityParameterIds)
+      ? rawPhysicalApplicabilityParameterIds.map(String).filter(Boolean)
+      : [];
+    const missingPhysicalNormParameterIds = physicalBindingActive
+      ? physicalApplicabilityParameterIds.filter((parameterId) => {
+        const value = parameters[parameterId];
+        return value == null || value === "";
+      })
+      : [];
+
     let appliedPhysicalNorm: ReturnType<typeof resolveCanonicalEstimatePhysicalNormApplicabilityV1> = null;
-    if (resource.resource_graph?.professionalPhysicalNormBindingV1 != null
-      && isCanonicalEstimatePhysicalNormBindingActiveV1({ parameters, resourceGraph: resource.resource_graph })) {
+    if (physicalBindingActive && missingPhysicalNormParameterIds.length === 0) {
       const physicalNorm = resolveCanonicalEstimatePhysicalNormApplicabilityV1({
         parameters,
         capturedAt: "canonical-estimate-compile-core",
@@ -732,23 +766,33 @@ export async function compileCanonicalEstimateCore(
     }
 
     const titleSpecification = canonicalTitleSpecification(resource, definitionParameterIds);
+    const titleSpecificationValues = titleSpecification.parameterIds.map((parameterId) => parameters[parameterId]);
+    if (titleSpecificationValues.some((value) => value != null && typeof value !== "string")) {
+      throw compilerError(`title specification parameter invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
+    }
     const missingTitleSpecificationParameterIds = titleSpecification.parameterIds.filter((parameterId) => {
       const value = parameters[parameterId];
       return value == null || (typeof value === "string" && value.trim() === "");
     });
+    const normalizedTitleSpecificationValues = titleSpecificationValues.flatMap((value) => {
+      if (typeof value !== "string") return [];
+      const normalized = value.trim();
+      return normalized ? [normalized] : [];
+    });
 
     if ((inclusion.value == null && !inclusionResolvedByManualQuantity)
       || (missingFormulaParameterIds.length > 0 && manualQuantity == null)
-      || missingTitleSpecificationParameterIds.length > 0) {
+      || missingPhysicalNormParameterIds.length > 0) {
       const needState = inclusion.value == null && !inclusionOnlyWaitsForFormulaInputs
         ? "CONDITION_REQUIRED" as const
-        : missingFormulaParameterIds.length > 0 && manualQuantity == null
+        : (missingFormulaParameterIds.length > 0 && manualQuantity == null)
+          || missingPhysicalNormParameterIds.length > 0
           ? "QUANTITY_REQUIRED" as const
           : "CONDITION_REQUIRED" as const;
       const missingParameterIds = [...new Set([
         ...(needState === "CONDITION_REQUIRED" ? inclusion.missingParameterIds : []),
         ...(manualQuantity == null ? missingFormulaParameterIds : []),
-        ...missingTitleSpecificationParameterIds,
+        ...missingPhysicalNormParameterIds,
       ])].sort();
       const selected = override?.includedInEstimate !== false;
       const unitPrice = override != null && Object.prototype.hasOwnProperty.call(override, "unitPrice")
@@ -805,7 +849,6 @@ export async function compileCanonicalEstimateCore(
     const quantity = override?.quantity == null
       ? calculatedQuantity
       : nonNegativeNumericText(override.quantity, `${resource.row_id}.quantity`)!;
-    const physicalBinding = resource.resource_graph?.professionalPhysicalNormBindingV1;
     let physicalNormQuantityParity: JsonRecord | null = null;
     if (physicalBinding != null && typeof physicalBinding === "object" && !Array.isArray(physicalBinding)) {
       const rawOutputParameterId = (physicalBinding as JsonRecord).quantity_output_parameter_id;
@@ -872,18 +915,23 @@ export async function compileCanonicalEstimateCore(
       formulaAstSha256: formula.ast_sha256,
       inputParameterIds: formula.input_parameter_ids,
       resourceGraph: resourceGraphForRevision(resource.resource_graph, parameters, resource.row_id),
+      ...(titleSpecification.parameterIds.length === 0 ? {} : {
+        titleSpecification: {
+          mode: titleSpecification.mode,
+          parameterIds: titleSpecification.parameterIds,
+          resolvedParameterIds: titleSpecification.parameterIds.filter(
+            (parameterId) => !missingTitleSpecificationParameterIds.includes(parameterId),
+          ),
+          missingParameterIds: missingTitleSpecificationParameterIds,
+        },
+      }),
       ...(physicalNormQuantityParity == null ? {} : { physicalNormQuantityParity }),
       ...(provenance == null ? {} : { manualAmendment: provenance }),
     };
     const normativeTrace = Array.isArray(resource.source_metadata?.normativeTrace)
       ? resource.source_metadata.normativeTrace
       : [];
-    const titleSpecificationValues = titleSpecification.parameterIds.map((parameterId) => parameters[parameterId]);
-    if (titleSpecificationValues.some((value) => typeof value !== "string")) {
-      throw compilerError(`title specification parameter invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
-    }
-    const normalizedTitleSpecificationValues = titleSpecificationValues.map((value) => String(value).trim());
-    const joinedTitleSpecification = normalizedTitleSpecificationValues.filter(Boolean).join(", ");
+    const joinedTitleSpecification = normalizedTitleSpecificationValues.join(", ");
     const boundedTitleSpecification = joinedTitleSpecification
       ? boundedText(joinedTitleSpecification, `${resource.row_id}.titleSpecification`, 500)
       : null;

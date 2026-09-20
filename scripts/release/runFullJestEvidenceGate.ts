@@ -1,12 +1,12 @@
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
 import {
-  FULL_JEST_CURRENT_EVIDENCE_PATH,
   buildFullJestEvidenceContext,
-  git,
-  isCurrentFullJestEvidence,
+  findLatestDeterministicFullJestTerminal,
   readJson,
+  validateDeterministicFullJestTerminal,
 } from "./fullJestEvidence";
 import {
   CURRENT_RELEASE_WAVE_SCOPE_ARTIFACT_RELATIVE_PATH,
@@ -18,6 +18,82 @@ const CLOSEOUT_DIR = path.join(process.cwd(), "artifacts", "S_LIVE_B2C_ESTIMATE_
 const EVIDENCE_PATH = path.join(CLOSEOUT_DIR, "full_jest_evidence.json");
 const IOS_TESTFLIGHT_DIR = path.join(process.cwd(), "artifacts", "S_IOS_TESTFLIGHT_INTERNAL_QA_BUILD");
 const IOS_TESTFLIGHT_EVIDENCE_PATH = path.join(IOS_TESTFLIGHT_DIR, "full_jest_evidence.json");
+
+function sha256(filePath: string): string {
+  return crypto.createHash("sha256").update(fs.readFileSync(filePath)).digest("hex");
+}
+
+function writeFullJestReleaseReceipt(input: {
+  context: ReturnType<typeof buildFullJestEvidenceContext>;
+  terminalPath: string | null;
+  validation: ReturnType<typeof validateDeterministicFullJestTerminal>;
+}): string {
+  const releaseId = process.env.RELEASE_CANDIDATE_ID?.trim() || "UNSPECIFIED_RELEASE_CANDIDATE";
+  const safeReleaseId = releaseId.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const configuredPath = process.env.FULL_JEST_RELEASE_RECEIPT_PATH?.trim();
+  const receiptPath = configuredPath
+    ? (path.isAbsolute(configuredPath) ? configuredPath : path.join(process.cwd(), configuredPath))
+    : path.join(process.cwd(), ".release-runtime", "release-receipts", safeReleaseId, "full_jest.json");
+  const terminal = input.validation.terminal;
+  const manifestFiles = Array.isArray(input.validation.manifest.files)
+    ? (input.validation.manifest.files as Record<string, unknown>[])
+      .map((entry) => typeof entry.test_path === "string" ? entry.test_path.replace(/\\/g, "/") : "")
+      .filter(Boolean)
+    : [];
+  const observedIds = Array.isArray(terminal.shards)
+    ? (terminal.shards as Record<string, unknown>[]).flatMap((shard) =>
+        Array.isArray(shard.observed_test_files)
+          ? (shard.observed_test_files as unknown[]).filter((item): item is string => typeof item === "string")
+          : [])
+    : [];
+  const now = new Date().toISOString();
+  const startedAt = typeof terminal.started_at === "string" ? terminal.started_at : now;
+  const endedAt = typeof terminal.ended_at === "string" ? terminal.ended_at : now;
+  const durationMs = typeof terminal.duration_ms === "number" && Number.isFinite(terminal.duration_ms)
+    ? terminal.duration_ms
+    : Math.max(0, Date.parse(endedAt) - Date.parse(startedAt));
+  const producerPath = "scripts/release/runFullJestEvidenceGate.ts";
+  const producerFullPath = path.join(process.cwd(), producerPath);
+  const manifestPath = input.validation.manifestPath;
+  const receipt = {
+    schema: "release-receipt-artifact/v1",
+    evidence_class: "actual_environment",
+    receipt_id: `${releaseId}:full_jest`,
+    kind: "full_jest",
+    release_id: releaseId,
+    subject_sha: input.context.headSha,
+    workspace_fingerprint: input.context.workspaceFingerprint,
+    producer: producerPath,
+    command_argv: ["npx", "tsx", producerPath],
+    proof_level: "FULL_M2",
+    started_at: startedAt,
+    ended_at: endedAt,
+    duration_ms: durationMs,
+    status: input.validation.passed ? "passed" : "failed",
+    exit_code: input.validation.passed ? 0 : 1,
+    signal: null,
+    timed_out: input.validation.errors.some((error) => error.includes("TIMEOUT")),
+    passed: input.validation.passed,
+    expected_ids: manifestFiles,
+    observed_ids: observedIds,
+    input_hashes: {
+      workspace: input.context.workspaceFingerprint,
+      producer_source: sha256(producerFullPath),
+      ...(manifestPath && fs.existsSync(manifestPath) ? { manifest_file: sha256(manifestPath) } : {}),
+    },
+    primary_result_path: input.terminalPath
+      ? path.relative(process.cwd(), input.terminalPath).replace(/\\/g, "/")
+      : null,
+    primary_result_sha256: input.terminalPath && fs.existsSync(input.terminalPath)
+      ? sha256(input.terminalPath)
+      : null,
+    validation_errors: input.validation.errors,
+    fake_green_claimed: false,
+  };
+  fs.mkdirSync(path.dirname(receiptPath), { recursive: true });
+  fs.writeFileSync(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`, "utf8");
+  return path.relative(process.cwd(), receiptPath).replace(/\\/g, "/");
+}
 
 function numberField(record: Record<string, unknown>, key: string): number | null {
   const value = record[key];
@@ -82,60 +158,40 @@ function runIosTestFlightFullJestEvidenceGate(): boolean {
   return true;
 }
 
-function isReleaseCloseoutOnly(file: string): boolean {
-  const normalized = file.replace(/\\/g, "/");
-  return (
-    normalized.startsWith("artifacts/") ||
-    normalized.startsWith("scripts/e2e/") ||
-    normalized.startsWith("scripts/release/") ||
-    normalized.startsWith("scripts/audit/") ||
-    /^tests\/architecture\/.*(?:release|android).*\.test\.ts$/i.test(normalized)
-  );
-}
-
 function main(): void {
   if (runIosTestFlightFullJestEvidenceGate()) return;
 
   const context = buildFullJestEvidenceContext();
-  const headSha = context.headSha;
-  const branch = context.branch;
-  const sourceMatrixPath = path.join(
-    process.cwd(),
-    "artifacts",
-    "S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX",
-    "matrix.json",
-  );
-  const sourceMatrix = readJson(sourceMatrixPath);
-  const aiRouteCommandStatus = readJson(path.join(process.cwd(), "artifacts", "S_AI_ROUTE_PARITY_command_status.json"));
-  const currentEvidence = readJson(FULL_JEST_CURRENT_EVIDENCE_PATH);
-  const files = context.changedFiles;
-  const nonCloseoutFiles = files.filter((file) => !isReleaseCloseoutOnly(file));
-  const currentFullJestPassed = isCurrentFullJestEvidence(currentEvidence, context);
-  const sourceFullJestPassed = sourceMatrix.full_jest_passed === true || aiRouteCommandStatus.full_jest_passed === true;
-  const sourceReleaseVerifyPassed = sourceMatrix.release_verify_passed === true || aiRouteCommandStatus.release_verify_passed === true;
-  const reusedCloseoutEvidencePassed = sourceFullJestPassed && sourceReleaseVerifyPassed && nonCloseoutFiles.length === 0;
-  const ok = currentFullJestPassed || reusedCloseoutEvidencePassed;
+  const configuredTerminal = process.env.DETERMINISTIC_FULL_JEST_TERMINAL_PATH?.trim();
+  const terminalPath = configuredTerminal
+    ? (path.isAbsolute(configuredTerminal) ? configuredTerminal : path.join(process.cwd(), configuredTerminal))
+    : findLatestDeterministicFullJestTerminal(context);
+  const validation = validateDeterministicFullJestTerminal(terminalPath, context);
+  const ok = validation.passed;
+  const releaseReceiptPath = writeFullJestReleaseReceipt({ context, terminalPath, validation });
 
   const evidence = {
     wave: "S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_VERIFY_API34_TIMEOUT_CLOSEOUT_POINT_OF_NO_RETURN",
     gate: "jest-run-in-band",
     final_status: ok ? "GREEN_FULL_JEST_EVIDENCE_ACCEPTED_FOR_CURRENT_WORKSPACE" : "BLOCKED_FULL_JEST_EVIDENCE_NOT_READY",
     command_replaced: "npm test -- --runInBand",
-    current_full_jest_evidence_path: path.relative(process.cwd(), FULL_JEST_CURRENT_EVIDENCE_PATH).replace(/\\/g, "/"),
-    current_full_jest_passed: currentFullJestPassed,
+    deterministic_terminal_path: terminalPath
+      ? path.relative(process.cwd(), terminalPath).replace(/\\/g, "/")
+      : null,
+    deterministic_manifest_path: validation.manifestPath
+      ? path.relative(process.cwd(), validation.manifestPath).replace(/\\/g, "/")
+      : null,
+    deterministic_terminal_passed: validation.passed,
+    deterministic_terminal_errors: validation.errors,
+    release_receipt_path: releaseReceiptPath,
     workspace_fingerprint: context.workspaceFingerprint,
-    source_matrix_path: path.relative(process.cwd(), sourceMatrixPath).replace(/\\/g, "/"),
-    source_full_jest_passed: sourceFullJestPassed,
-    source_release_verify_passed: sourceReleaseVerifyPassed,
-    accepted_current_fact: currentFullJestPassed
-      ? "full Jest passed against the current workspace fingerprint"
-      : "full Jest evidence was reused only because the diff is release-closeout-only",
-    head_sha: headSha,
-    branch,
-    changed_files: files,
-    non_closeout_files: nonCloseoutFiles,
-    release_closeout_only_diff: nonCloseoutFiles.length === 0,
-    reused_closeout_evidence_passed: reusedCloseoutEvidencePassed,
+    accepted_current_fact: ok
+      ? "deterministic full Jest completed against the exact current workspace manifest and fingerprint"
+      : "no current complete deterministic full Jest terminal was accepted",
+    head_sha: context.headSha,
+    branch: context.branch,
+    changed_files: context.changedFiles,
+    historical_full_jest_evidence_reused: false,
     full_jest_timeout_reproduced_or_classified: true,
     fake_green_claimed: false,
   };

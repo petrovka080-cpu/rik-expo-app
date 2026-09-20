@@ -1,8 +1,17 @@
 import { createHash, randomBytes } from "node:crypto";
 import { execFileSync, spawn } from "node:child_process";
-import { closeSync, mkdirSync, openSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import {
+  closeSync,
+  existsSync,
+  mkdirSync,
+  openSync,
+  readFileSync,
+  renameSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { connect } from "node:net";
-import { dirname, resolve } from "node:path";
+import { dirname, relative, resolve } from "node:path";
 
 import { Client } from "pg";
 
@@ -16,7 +25,7 @@ const PURPOSE = "estimate_candidate_admission_r3";
 const ENVIRONMENT = "local-developer-r568";
 const MINIMUM_TTL_SECONDS = 6 * 60 * 60;
 const CAPABILITY_TTL_HOURS = 24;
-const MASTER_SHA256 = "9262479c9c9fb3107c4541046c367db7934c875ea8354cc472a7529788635d1b";
+const MASTER_SHA256 = "f02577c56d436913fd347a480a9ec45b25d25f25cc2b31eae2d0c2ae29c79fde";
 const CREDENTIALS = resolve(".release-runtime/r551/runtime/local-developer/credentials.json");
 const EVIDENCE_ROOT = resolve(
   String(process.env.LOCAL_DEVELOPER_EVIDENCE_ROOT ?? "").trim() ||
@@ -42,8 +51,45 @@ function atomicJson(path: string, value: unknown): void {
   renameSync(temporary, path);
 }
 
-function sha256File(path: string): string {
-  return createHash("sha256").update(readFileSync(path)).digest("hex");
+function resolveLocalImport(importer: string, specifier: string): string | null {
+  const base = resolve(dirname(importer), specifier);
+  const candidates = [
+    base,
+    `${base}.ts`,
+    `${base}.tsx`,
+    `${base}.js`,
+    `${base}.mjs`,
+    resolve(base, "index.ts"),
+    resolve(base, "index.tsx"),
+  ];
+  return candidates.find((candidate) => (
+    existsSync(candidate) && statSync(candidate).isFile()
+  )) ?? null;
+}
+
+function backendRuntimeClosureSha256(entryPath: string): string {
+  const visited = new Set<string>();
+  const visit = (path: string): void => {
+    const absolute = resolve(path);
+    if (visited.has(absolute)) return;
+    visited.add(absolute);
+    const source = readFileSync(absolute, "utf8");
+    const importPattern = /(?:from\s+|import\s*)["'](\.{1,2}\/[^"']+)["']/gu;
+    const imports = [...source.matchAll(importPattern)]
+      .map((match) => resolveLocalImport(absolute, String(match[1] ?? "")))
+      .filter((value): value is string => Boolean(value))
+      .sort();
+    for (const imported of imports) visit(imported);
+  };
+  visit(entryPath);
+  const hash = createHash("sha256");
+  for (const path of [...visited].sort()) {
+    hash.update(relative(process.cwd(), path).replace(/\\/gu, "/"));
+    hash.update("\0");
+    hash.update(readFileSync(path));
+    hash.update("\0");
+  }
+  return hash.digest("hex");
 }
 
 function portOwner(): { pid: number; name: string; commandLine: string } | null {
@@ -301,7 +347,7 @@ async function main(): Promise<void> {
     frontendSourceTreeHash: sourceTree,
     frontendProductSourceHash,
     frontendJsBundleFingerprint,
-    backendRuntimeSourceSha256: sha256File(BACKEND_SOURCE),
+    backendRuntimeSourceSha256: backendRuntimeClosureSha256(BACKEND_SOURCE),
     capabilityId: String(capability!.id ?? ""),
   };
   const ownerBefore = portOwner();

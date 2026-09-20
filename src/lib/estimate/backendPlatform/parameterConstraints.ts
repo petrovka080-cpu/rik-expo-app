@@ -58,6 +58,17 @@ function isRecord(value: unknown): value is JsonRecord {
   return value != null && typeof value === "object" && !Array.isArray(value);
 }
 
+function definitionAllowsPreliminaryCompilation(
+  _definition: CanonicalParameterDefinitionRecord,
+): boolean {
+  // Missing values are an explicit preliminary state for every catalogue
+  // definition. The compiler converts affected rows to preliminary needs;
+  // provided-but-invalid values and contradictory conditions are still errors.
+  // A legacy `preliminary_compilation_allowed: false` remains provenance for
+  // exact acceptance and must not block creation of the first estimate.
+  return true;
+}
+
 function acceptedBaselineDefault(
   definition: CanonicalParameterDefinitionRecord,
   parameterId: string,
@@ -186,7 +197,10 @@ export function validateCanonicalEstimateParameters(
     const forbiddenByCondition = conditionMatches(constraints.forbiddenWhen, values);
     const value = values[id];
     if (value == null) {
-      if (definition.required === true || requiredByCondition) return fail(`missing parameter ${id}`);
+      const preliminaryCompilationAllowed = definitionAllowsPreliminaryCompilation(definition);
+      if ((definition.required === true || requiredByCondition) && !preliminaryCompilationAllowed) {
+        return fail(`missing parameter ${id}`);
+      }
       continue;
     }
     if (forbiddenByCondition) return fail(`parameter ${id} is forbidden by cross-field rule`);
@@ -208,6 +222,7 @@ export function validateCanonicalEstimateParameters(
       if (constraints.min != null && numeric < Number(constraints.min)) return fail(`parameter below minimum ${id}`);
       if (constraints.max != null && numeric > Number(constraints.max)) return fail(`parameter above maximum ${id}`);
       for (const [rule, compare] of [
+        ["equalToParameter", (left: number, right: number) => left === right],
         ["greaterThanOrEqualParameter", (left: number, right: number) => left >= right],
         ["greaterThanParameter", (left: number, right: number) => left > right],
         ["lessThanOrEqualParameter", (left: number, right: number) => left <= right],

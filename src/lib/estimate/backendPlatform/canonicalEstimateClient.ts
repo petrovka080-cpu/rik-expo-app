@@ -427,7 +427,8 @@ export async function waitForCanonicalEstimateJob(input: {
   const startedAt = Date.now();
   const timeoutMs = input.timeoutMs ?? 60_000;
   const pollIntervalMs = Math.max(250, input.pollIntervalMs ?? 750);
-  while (true) {
+  const maxPollingAttempts = Math.max(1, Math.ceil(timeoutMs / pollIntervalMs) + 1);
+  for (let attempt = 0; attempt < maxPollingAttempts; attempt += 1) {
     if (input.signal?.aborted) throw input.signal.reason ?? new Error("estimate job wait aborted");
     const job = await getCanonicalEstimateJob(input.jobId, input.signal);
     input.onProgress?.(job);
@@ -459,6 +460,11 @@ export async function waitForCanonicalEstimateJob(input: {
       input.signal?.addEventListener("abort", abort, { once: true });
     });
   }
+  throw new CanonicalEstimateApiError("Р Р°СЃС‡С‘С‚ РїСЂРѕРґРѕР»Р¶Р°РµС‚СЃСЏ РЅР° СЃРµСЂРІРµСЂРµ. Р•РіРѕ РјРѕР¶РЅРѕ РѕС‚РєСЂС‹С‚СЊ РёР· РёСЃС‚РѕСЂРёРё.", {
+    code: "JOB_WAIT_TIMEOUT",
+    httpStatus: 202,
+    retryable: true,
+  });
 }
 
 export function migrateCanonicalEstimateLegacyRevision(

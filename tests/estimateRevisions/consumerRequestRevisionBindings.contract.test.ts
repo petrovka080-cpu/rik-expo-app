@@ -1,4 +1,8 @@
-import { attachConsumerRepairMedia, approveConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, listConsumerRepairRequestHistory, sendConsumerRepairRequestToMarketplace, updateConsumerRepairRequestItemQuantity, updateConsumerRepairRequestItemUnitPrice } from "../../src/lib/consumerRequests";
+import { attachConsumerRepairMedia, generateConsumerRepairRequestPdfForDraft, listApprovedEstimateHistoryRecords, updateConsumerRepairRequestItemQuantity, updateConsumerRepairRequestItemUnitPrice } from "../../src/lib/consumerRequests";
+import {
+  approveCanonicalConsumerRepairAuditDraft,
+  sendCanonicalConsumerRepairAuditDraft,
+} from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import { restoreConsumerRepairEstimateRevision } from "../../src/lib/consumerRequests/consumerRequestEditableEstimateSnapshot";
 import { getCurrentEstimateRevision } from "../../src/lib/ai/estimateRevisions";
 import { foundationDraftWithManualCatalogItem, MANUAL_CATALOG_ITEM } from "../requestEstimate/requestEstimateBoqCatalogTestHelpers";
@@ -36,32 +40,42 @@ describe("consumer request estimate revision integration", () => {
       userId: bundle.draft.consumerUserId,
       generatedAt: "2026-06-15T01:00:00.000Z",
     });
-    bundle = approveConsumerRepairRequestDraft({
-      requestDraftId: bundle.draft.id,
+    bundle = approveCanonicalConsumerRepairAuditDraft({
+      bundle,
       userId: bundle.draft.consumerUserId,
       generatedAt: "2026-06-15T01:30:00.000Z",
     });
-    bundle = sendConsumerRepairRequestToMarketplace({
-      requestDraftId: bundle.draft.id,
+    bundle = sendCanonicalConsumerRepairAuditDraft({
+      bundle,
       userId: bundle.draft.consumerUserId,
       idempotencyKey: `test:${bundle.draft.id}`,
     });
-    const current = getCurrentEstimateRevision(bundle.estimateRevisionState!);
+    const currentRevisionId = bundle.estimateDraftRevisionState?.currentRevisionId ??
+      String(bundle.items[0]?.sourceParameters?.canonicalBackendRevisionId ?? "");
+    const currentReleaseId = String(
+      bundle.items[0]?.sourceParameters?.canonicalBackendReleaseId ?? "",
+    );
 
-    expect(bundle.estimateRevisionState?.request_bindings[0]).toMatchObject({
-      request_payload_id: bundle.marketplaceLink.marketplaceDemandId,
-      request_revision_id: current.revision_id,
-      request_rows_hash: current.rows_hash,
-      request_recalculated_separately: false,
-    });
+    expect(currentRevisionId).toBeTruthy();
+    expect(bundle.events).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        eventType: "sent_to_marketplace",
+        payload: expect.objectContaining({
+          marketplaceDemandId: bundle.marketplaceLink.marketplaceDemandId,
+          canonicalRevisionId: currentRevisionId,
+          canonicalReleaseId: currentReleaseId,
+          procurementArtifactKind: "procurement",
+        }),
+      }),
+    ]));
 
-    const historyRow = listConsumerRepairRequestHistory(bundle.draft.consumerUserId)[0];
+    const historyRow = listApprovedEstimateHistoryRecords(bundle.draft.consumerUserId)[0];
 
-    expect(historyRow.estimateRevisionState?.history_bindings[0]).toMatchObject({
-      history_entry_id: `consumer_repair_history:${bundle.draft.id}`,
-      history_revision_id: current.revision_id,
-      history_rows_hash: current.rows_hash,
-      history_recalculated_separately: false,
+    expect(historyRow).toMatchObject({
+      approvedEstimateId: bundle.draft.id,
+      sourceRevisionId: currentRevisionId,
+      sourceReleaseId: currentReleaseId,
+      buyerHandoffId: bundle.marketplaceLink.marketplaceDemandId,
     });
   });
 

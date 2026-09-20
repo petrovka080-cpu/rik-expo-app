@@ -14,12 +14,12 @@ describe("electrical BOQ duplicate and double-count protection", () => {
     const draft = buildCanonicalElectricalConsumerRepairAiDraft({
       text: FULL_PROMPT,
     });
-    const rows: ElectricalBoqIntegrityRow[] = draft.items.map((item) => ({
+    const rows: ElectricalBoqIntegrityRow[] = draft.items.filter((item) => item.quantity != null).map((item) => ({
       rowCode: String(item.sourceParameters?.rowCode ?? ""),
       semanticOwner: String(item.sourceParameters?.semanticOwner ?? ""),
       titleRu: item.titleRu,
       resourceType: item.itemType,
-      quantity: item.quantity,
+      quantity: item.quantity!,
       unit: item.unit,
     }));
 

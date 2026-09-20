@@ -87,6 +87,16 @@ export type StructuredEstimateSection = {
   rows: StructuredEstimateRow[];
 };
 
+export type StructuredEstimateParameterRequirement = {
+  parameterId: string;
+  titleRu: string;
+  unitId: string | null;
+  visibilityRole?: import("../estimate/backendPlatform/contracts").CanonicalEstimateParameterVisibilityRole;
+  valueSourceRole?: import("../estimate/backendPlatform/contracts").CanonicalEstimateParameterValueSourceRole;
+  sourceConfirmationRequired: boolean;
+  guideShortRu: string | null;
+};
+
 export type StructuredEstimatePayload = {
   version: StructuredEstimatePayloadVersion;
   id: string;
@@ -164,6 +174,8 @@ export type StructuredEstimatePayload = {
     formulaGraphVersion?: string | null;
     parameterSchemaHash?: string | null;
     parameters: Record<string, unknown>;
+    parameterRequirements?: StructuredEstimateParameterRequirement[];
+    preliminaryNeeds?: import("../estimate/backendPlatform/contracts").CanonicalEstimatePreliminaryNeedView[];
   };
   visiblePolicy: StructuredEstimateVisiblePolicy;
   fakeGreenClaimed: false;

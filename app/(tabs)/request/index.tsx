@@ -1,4 +1,5 @@
 import { useLocalSearchParams } from "expo-router";
+import { useSyncExternalStore } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { ConsumerRepairRequestScreen } from "../../../src/features/consumerRepair/ConsumerRepairRequestScreenContainer";
@@ -12,6 +13,7 @@ import {
   requestEstimateLaunchFingerprintForRouteParametersV1,
 } from "../../../src/lib/navigation/requestEstimateLaunchPayload";
 import { canonicalEstimateRevisionIdFromRoute } from "../../../src/lib/navigation/canonicalEstimateRevisionDeepLink";
+import { requestEstimateIntentLifecycle } from "../../../src/lib/navigation/requestEstimateLaunchLifecycle";
 import { ROUTE_PROOF_MARKERS, RouteReadyMarker } from "../../../src/lib/testing/routeReadyMarkers";
 import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBoundary";
 
@@ -63,7 +65,7 @@ function RequestRoute() {
     getParam(launchParameters.description).trim();
   const draftId = getParam(params.draftId).trim();
   const catalogWorkId = getParam(launchParameters.catalogWorkId).trim();
-  const launchId =
+  const routeLaunchId =
     launchPayload?.launchId ??
     (getParam(params.launchId).trim() || undefined);
   const autoPrepare = getParam(launchParameters.autoPrepare).trim() === "1";
@@ -80,6 +82,15 @@ function RequestRoute() {
         parameters: fallbackFingerprintParameters,
       })
     : undefined);
+  useSyncExternalStore(
+    (onStoreChange) => requestEstimateIntentLifecycle.subscribe(onStoreChange),
+    () => requestEstimateIntentLifecycle.getSnapshot(),
+    () => requestEstimateIntentLifecycle.getSnapshot(),
+  );
+  const launchId = requestEstimateIntentLifecycle.resolvePendingRouteLaunch({
+    launchId: routeLaunchId,
+    fingerprint: launchFingerprint,
+  }).launchId ?? undefined;
 
   if (launchError) {
     return (

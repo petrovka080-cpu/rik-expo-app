@@ -21,14 +21,21 @@ import {
   applyProfessionalBoqRuntimeContract,
   sanitizeProfessionalBoqPublicSummary,
 } from "./professionalBoqAssumptions";
+import { isDrywallCeilingPreparationIntent } from "../ai/estimatorKernel/constructionDomainLexicon";
 
 export {
+  applyConstructionScopeCompletenessPolicies,
   applyProfessionalBoqRuntimeContract,
   sanitizeProfessionalBoqPublicSummary,
 } from "./professionalBoqAssumptions";
 
 const DIAMOND_DRILLING_RE =
   /(?:алмазн|бурени|сверлен|diamond\s+drill|core\s+drill).*(?:бетон|железобетон|concrete)|(?:бетон|железобетон|concrete).*(?:алмазн|бурени|сверлен|diamond\s+drill|core\s+drill)/i;
+export function isDrywallCeilingPreparationPrompt(prompt: string): boolean {
+  return isDrywallCeilingPreparationIntent(prompt);
+}
+
+export { isDrywallCeilingPreparationIntent } from "../ai/estimatorKernel/constructionDomainLexicon";
 
 function unique(items: string[]): string[] {
   return [...new Set(items.map((item) => item.trim()).filter(Boolean))];
@@ -74,9 +81,9 @@ function professionalCurrencyForRegion(region: ProfessionalRegion): Professional
 }
 
 function parseProfessionalQuantity(prompt: string): { quantity: number; unit: ProfessionalEstimateCaseUnit } {
-  const match = prompt.match(/(\d+(?:[,.]\d+)?)\s*(m2|m3|linear_m|lm|meter|metre|m\b|piece|pcs|set|kg|ton|t\b)/i);
+  const match = prompt.match(/(\d+(?:[,.]\d+)?)\s*(m2|m3|linear[_\s-]*m|lm|meter|metre|m\b|piece|pcs|set|kg|ton|t\b)/i);
   const quantity = match?.[1] ? Number(match[1].replace(",", ".")) : 1;
-  const rawUnit = (match?.[2] ?? "m2").toLowerCase();
+  const rawUnit = (match?.[2] ?? "m2").toLowerCase().replace(/[\s-]+/g, "_");
   const unit: ProfessionalEstimateCaseUnit =
     rawUnit === "m3" ? "m3" :
     rawUnit === "linear_m" || rawUnit === "lm" || rawUnit === "meter" || rawUnit === "metre" || rawUnit === "m" ? "linear_m" :
@@ -522,7 +529,8 @@ const PROFESSIONAL_BOQ_OPEN_WORLD_FALLBACK_PATTERNS = [
 ] as const;
 
 export function shouldUseProfessionalBoqOpenWorldFallback(prompt: string): boolean {
-  return PROFESSIONAL_BOQ_OPEN_WORLD_FALLBACK_PATTERNS.some((pattern) => pattern.test(prompt));
+  return isDrywallCeilingPreparationIntent(prompt) ||
+    PROFESSIONAL_BOQ_OPEN_WORLD_FALLBACK_PATTERNS.some((pattern) => pattern.test(prompt));
 }
 
 export function buildDynamicProfessionalBoqDraftFromPrompt(input: {
@@ -567,9 +575,9 @@ export function buildDynamicProfessionalBoqDraftFromPrompt(input: {
       sourceId: PROFESSIONAL_BOQ_RUNTIME_SOURCE_ID,
       sourceLabel: "Источник цены не выбран",
       category: row.sectionType === "delivery" ? "logistics" : row.sectionType,
-      formulaId: `${plan.workKey}_${row.code}_quantity_v1`,
-      quantityFormula: "primary quantity from prompt and professional BOQ rule",
-      calculationTrace: `${row.code}: quantity=${row.quantity}; unit=${row.unit}; section=${row.sectionType}; sourcePolicy=${row.sourcePolicy}`,
+      formulaId: row.formulaId ?? `${plan.workKey}_${row.code}_quantity_v1`,
+      quantityFormula: row.quantityFormula ?? "primary quantity from prompt and professional BOQ rule",
+      calculationTrace: row.calculationTrace ?? `${row.code}: quantity=${row.quantity}; unit=${row.unit}; section=${row.sectionType}; sourcePolicy=${row.sourcePolicy}`,
       sourceParameters: {
         rowCode: row.code,
         dynamicProfessionalBoq: true,
@@ -580,6 +588,19 @@ export function buildDynamicProfessionalBoqDraftFromPrompt(input: {
         includedInProcurement:
           row.includedInProcurement ??
           (row.includedInEstimate !== false && row.sectionType !== "labor"),
+        conditionalProcurementEligible: row.sectionType !== "labor",
+        ...(row.code.startsWith("drywall_prepare_access_")
+          ? {
+            conditionalRequirementParam: "elevated_work_requirement_state",
+            conditionalRequirementValue: "REQUIRED",
+          }
+          : {}),
+        ...(row.code === "drywall_prepare_fall_protection"
+          ? {
+            conditionalRequirementParam: "fall_protection_requirement_state",
+            conditionalRequirementValue: "REQUIRED",
+          }
+          : {}),
         parameterBlockerIds: row.parameterBlockerIds ?? [],
       },
       templateId: `${plan.workKey}_dynamic_professional_boq_runtime_v1`,

@@ -931,6 +931,10 @@ const isApprovedLiveRequestEmbeddedAiProfessionalBoqPdfCatalogPatch = (file: str
     normalized.startsWith("tests/professionalBoq/") ||
     normalized.startsWith("tests/pdf/") ||
     normalized.startsWith("tests/estimatePresentation/") ||
+    normalized === "tests/architecture/pdfArchAuditNoScreenLocalPdfLayout.contract.test.ts" ||
+    normalized === "tests/architecture/pdfTabularRegressionNoScreenLocalRows.contract.test.ts" ||
+    normalized === "tests/architecture/requestStateDoesNotReplacePdfRenderer.contract.test.ts" ||
+    normalized === "tests/officeEstimate/professionalBoqPdfBuyerHandoff.test.ts" ||
     normalized.startsWith("tests/architecture/liveBoqPdfCatalog") ||
     normalized === "tests/e2e/liveRequestEmbeddedAiProfessionalBoqPdfCatalog.web.spec.ts" ||
     normalized === "tests/api/hotspotListPaginationBatch7.contract.test.ts" ||
@@ -940,6 +944,20 @@ const isApprovedLiveRequestEmbeddedAiProfessionalBoqPdfCatalogPatch = (file: str
     normalized.startsWith("artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/") ||
     normalized.startsWith("artifacts/pdf/live-request-embedded-ai-professional-boq-pdf-catalog/")
   );
+};
+
+const isApprovedR4A134CanonicalPdfAndRevisionClassificationPatch = (file: string) => {
+  const normalized = normalizePath(file);
+  return [
+    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts",
+    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts",
+    "tests/aiEstimate/detectPdfFakeRows.contract.test.ts",
+    "tests/officeEstimate/directorPdfPriceSources.contract.test.ts",
+    "supabase/migrations/20260908043000_r4a13_approved_baseline_runtime_classification.sql",
+    "supabase/migrations/20260908050000_r4a13_runtime_eligible_baseline_revision_writer.sql",
+    "supabase/migrations/20260908101500_r4a13_preliminary_only_revision_writer.sql",
+    "supabase/migrations/20260908104500_r4a13_preliminary_primary_measure_revision_identity.sql",
+  ].includes(normalized);
 };
 
 const isApprovedRatebookCatalogSourceGovernancePatch = (file: string) => {
@@ -1163,6 +1181,7 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
         !isApprovedBuiltInAi50000Phase1Patch(file) &&
         !isApprovedRequestAiEstimateBoqCatalogPatch(file) &&
         !isApprovedLiveRequestEmbeddedAiProfessionalBoqPdfCatalogPatch(file) &&
+        !isApprovedR4A134CanonicalPdfAndRevisionClassificationPatch(file) &&
         !isApprovedRatebookCatalogSourceGovernancePatch(file) &&
         !isApprovedAiEstimateEnterpriseLoadPerformanceCostGuardPatch(file) &&
         !isApprovedReal10000DiverseConstructionWorksAcceptancePatch(file) &&

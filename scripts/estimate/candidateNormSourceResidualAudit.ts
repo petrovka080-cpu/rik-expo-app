@@ -61,6 +61,26 @@ export const VERIFIED_SOURCE_IDS = Object.freeze([
   "verified_ratebook:traffic_signs",
 ] as const);
 
+export type LegacyClaimCatalogPromiseDisposition =
+  | "STANDALONE_FORMWORK_PROMISE"
+  | "FULL_WORK_COMPONENT_APPLICABILITY_REVIEW_REQUIRED"
+  | "OTHER_LEGACY_SOURCE";
+
+export function classifyLegacyClaimCatalogPromise(input: {
+  sourceId: string;
+  catalogId: string;
+  canonicalNameRu: string;
+  primaryUom: string;
+}): LegacyClaimCatalogPromiseDisposition {
+  if (input.sourceId !== "src_professional_norm_pack_formwork_contact_area_m2_m3_concrete_element_v1") {
+    return "OTHER_LEGACY_SOURCE";
+  }
+  const promise = `${input.canonicalNameRu} ${input.primaryUom}`.toLocaleLowerCase("ru-RU");
+  return /опалуб/iu.test(promise) && /(?:^|\s)(?:м²|m2)(?:\s|$)/iu.test(promise)
+    ? "STANDALONE_FORMWORK_PROMISE"
+    : "FULL_WORK_COMPONENT_APPLICABILITY_REVIEW_REQUIRED";
+}
+
 const RELATED_REVIEWED_SOURCE_BY_LEGACY_ID: Readonly<Record<string, string>> = Object.freeze({
   src_professional_norm_pack_concrete_ready_mix_m3_m3_placed_v1:
     "src_professional_norm_pack_concrete_nrmca_cip31_selected_contingency_m3_m3_v1",
@@ -239,6 +259,36 @@ async function loadNormalizedSources(client: Client, releaseId: string): Promise
     order by source.source_key`, [releaseId])).rows as Json[];
 }
 
+async function loadLegacyClaimCatalogPromises(
+  client: Client,
+  releaseId: string,
+  searchReleaseId: string,
+): Promise<Json[]> {
+  return (await client.query(`select distinct
+      trace->>'normSourceId' source_id,
+      manifest.catalog_id,
+      coalesce(search.canonical_name_ru,definition.passport->>'titleRu',passport.physical_result_ru,'') canonical_name_ru,
+      coalesce(search.primary_uom,'') primary_uom,
+      coalesce(definition.passport->>'familyId','') family_id,
+      coalesce(definition.passport->'workDescription'->>'workType','') work_type
+    from public.estimate_cumulative_manifest_entry manifest
+    join public.estimate_definition_version definition on definition.id=manifest.definition_version_id
+    left join public.estimate_content_passport_r3 passport on passport.definition_version_id=definition.id
+    left join public.estimate_search_document search
+      on search.search_release_id=$2 and search.catalog_id=manifest.catalog_id
+    join public.estimate_resource_spec resource on resource.definition_version_id=manifest.definition_version_id
+    cross join lateral jsonb_array_elements(case
+      when jsonb_typeof(resource.source_metadata->'normativeTrace')='array'
+        then resource.source_metadata->'normativeTrace'
+      else '[]'::jsonb end) trace
+    where manifest.release_id=$1 and trace->>'normSourceId'=any($3::text[])
+    order by trace->>'normSourceId',manifest.catalog_id`, [
+    releaseId,
+    searchReleaseId,
+    [...LEGACY_PACK_SOURCE_IDS],
+  ])).rows as Json[];
+}
+
 function mergeSourceRows(traceRows: Json[], normalizedRows: Json[], acceptedIds: Set<string>): CandidateSourceRow[] {
   const byId = new Map<string, CandidateSourceRow>();
   const ensure = (sourceId: string): CandidateSourceRow => {
@@ -390,6 +440,7 @@ export async function runCandidateNormSourceResidualAudit(): Promise<void> {
 
     const traceRows = await loadTraceSources(client, releaseId);
     const normalizedRows = await loadNormalizedSources(client, releaseId);
+    const legacyClaimPromises = await loadLegacyClaimCatalogPromises(client, releaseId, searchReleaseId);
     const sources = mergeSourceRows(traceRows, normalizedRows, acceptedIds);
     const unresolved = sources.filter((source) => source.disposition === "UNRESOLVED_NORMATIVE_SOURCE");
     const unresolvedSourceIds = unresolved.map((source) => source.source_id);
@@ -446,6 +497,22 @@ export async function runCandidateNormSourceResidualAudit(): Promise<void> {
           current_normalized_binding_rows: current?.normalized_binding_rows ?? 0,
         };
       });
+    const legacyClaimPromiseAudit = legacyClaimPromises.map((row) => {
+      const disposition = classifyLegacyClaimCatalogPromise({
+        sourceId: String(row.source_id),
+        catalogId: String(row.catalog_id),
+        canonicalNameRu: String(row.canonical_name_ru),
+        primaryUom: String(row.primary_uom),
+      });
+      return {
+        ...row,
+        catalog_key_form_token_not_evidence:
+          String(row.catalog_id).includes("_form_") && !/опалуб/iu.test(String(row.canonical_name_ru)),
+        disposition,
+      };
+    });
+    const componentApplicabilityReview = legacyClaimPromiseAudit.filter((row) =>
+      row.disposition === "FULL_WORK_COMPONENT_APPLICABILITY_REVIEW_REQUIRED");
     const capturedAt = new Date().toISOString();
     const directory = resolve(RUNTIME_ROOT, capturedAt.replace(/[:.]/gu, "-"));
     const ledgerPath = resolve(directory, "candidate-source-claim-formula-definition-ledger.jsonl");
@@ -518,6 +585,14 @@ export async function runCandidateNormSourceResidualAudit(): Promise<void> {
       },
       exact_8_plus_4_disposition: exactDisposition,
       related_reviewed_source_reachability: relatedReviewedReachability,
+      legacy_claim_catalog_promise_audit: {
+        row_count: legacyClaimPromiseAudit.length,
+        component_applicability_review_required_count: componentApplicabilityReview.length,
+        catalog_key_form_token_not_evidence_count: legacyClaimPromiseAudit.filter(
+          (row) => row.catalog_key_form_token_not_evidence,
+        ).length,
+        rows: legacyClaimPromiseAudit,
+      },
       next_family_candidates: unresolved
         .filter((source) => !source.source_id.startsWith("src_professional_norm_pack_catalog_"))
         .map((source) => ({
@@ -553,6 +628,13 @@ export async function runCandidateNormSourceResidualAudit(): Promise<void> {
         definitions: row.current_trace_definition_count,
         normalized_bindings: row.current_normalized_binding_rows,
       })),
+      legacy_claim_catalog_promise_audit: {
+        row_count: legacyClaimPromiseAudit.length,
+        component_applicability_review_required_count: componentApplicabilityReview.length,
+        catalog_key_form_token_not_evidence_count: legacyClaimPromiseAudit.filter(
+          (row) => row.catalog_key_form_token_not_evidence,
+        ).length,
+      },
     }, null, 2)}\n`);
   } finally {
     await client.end();

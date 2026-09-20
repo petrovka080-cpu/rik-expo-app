@@ -1,7 +1,7 @@
 import { expectRoleQaRoutesToCanonicalBackendEstimate } from "./anyEstimateTestHelpers";
 
 describe("no generic draft for resolved estimate", () => {
-  it("does not synthesize a generic local draft before backend catalog selection", () => {
+  it("uses global estimate rows and totals for resolved work", () => {
     const answer = expectRoleQaRoutesToCanonicalBackendEstimate("плитка в ванной 40 м2", "consumer");
 
     expect(answer.globalEstimateResult).toBeUndefined();

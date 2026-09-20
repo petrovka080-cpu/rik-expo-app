@@ -165,6 +165,7 @@ export type EstimateDraftRevisionEstimateLevel =
   | "PRELIMINARY_QUANTITY_BOQ"
   | "SOURCE_BACKED_PROFESSIONAL_BOQ"
   | "EXPERT_VALIDATED_BOQ";
+
 export type EstimateDraftRevisionNormSourceAdmission = {
   evaluatedActiveCalculatedRows: number;
   admittedRows: number;
@@ -177,7 +178,6 @@ export type EstimateDraftRevisionNormSourceAdmission = {
     reason: string;
   }>;
 };
-
 
 export type EstimateDraftRevisionArtifacts = {
   snapshotId: string | null;
@@ -263,6 +263,12 @@ export type EstimateDraftRevision = {
     sections: ProfessionalBoqSection[];
     rows: ProfessionalBoqRow[];
   };
+  /**
+   * All definition-applicable rows for this immutable backend revision.
+   * This can be greater than `boq.rows.length` while unresolved preliminary
+   * needs remain non-payable and therefore stay outside the calculated BOQ.
+   */
+  applicableBoqRowsCount?: number;
   trace: ParamToCalculationTrace;
   status: EstimateDraftRevisionStatus;
   artifacts: EstimateDraftRevisionArtifacts;

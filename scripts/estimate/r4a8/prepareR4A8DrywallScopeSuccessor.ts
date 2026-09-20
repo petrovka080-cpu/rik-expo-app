@@ -10,24 +10,34 @@ import {
   type Batch003R56CanonicalSuccessorDefinition,
 } from "../r5/batch003R56SharedCoreProjection";
 import { batch003R56FixtureValues } from "../r5/batch003R56Fixtures";
+import { buildBatch001DrywallSuccessorR3 } from "../../../src/lib/estimate/v4/domains/interiorFinishesComplete/drywallCeilingBulkheadSuccessorR3";
 
 type Json = Record<string, any>;
 
-const MASTER_PATH = resolve(
-  "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A8_DEVELOPER_ACCESS_ESTIMATE_RECOVERY_CANONICAL_MONOLITH_RU.md",
-);
-const MASTER_SHA256 = "cbb384cf6cfa609b2a7973ddfc29c4935fc730d4b63f4480ad1510feb6942ac1";
+const MASTER_PATH = resolve(process.env.R4A13_MASTER_PATH
+  ?? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_4_ONE_PLATFORM_CORE_EXISTING_NORMS_GLOBAL_ESTIMATES_RU.md");
+const MASTER_SHA256 = process.env.R4A13_MASTER_SHA256
+  ?? "0ff759893b3660c64e094de5763b443e35fa9ec8cb861132a7bed455d763e3ac";
+const ADDENDUM_SHA256 = process.env.R4A13_ADDENDUM_SHA256 ?? "";
 const CURRENT_RELEASE_PATH = resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json");
-const EXPECTED_PARENT_RELEASE_ID = "652ea9ea-2675-51bb-a8a1-2ae9ea348f95";
-const EXPECTED_PARENT_SEARCH_RELEASE_ID = "5b78ab57-834d-56d9-b4f2-7eab3cbf7f32";
-const BATCH003_SOURCE_RELEASE_ID = "e28e21b5-7296-4230-8974-1b0e11703f3d";
-const CONTRACT = "rik-expo-app.r568.r4-a8-drywall-operation-scope-successor.v1";
-const EXPECTED_BRANCH = "codex/r4-a5-clean-08b18902";
+const EXPECTED_PARENT_RELEASE_ID = process.env.R4A13_PARENT_RELEASE_ID
+  ?? "09334d6c-f14b-5eb7-a1e5-018959107591";
+const EXPECTED_PARENT_SEARCH_RELEASE_ID = process.env.R4A13_PARENT_SEARCH_RELEASE_ID
+  ?? "6567fdb4-1634-5dd0-a426-d444f749e0ea";
+const BATCH003_SOURCE_RELEASE_ID = process.env.R4A13_BATCH003_SOURCE_RELEASE_ID
+  ?? "f03a106c-1d41-46d0-a6a6-f2cc11b28d43";
+const BATCH001_SOURCE_RELEASE_ID = process.env.R4A13_BATCH001_SOURCE_RELEASE_ID
+  ?? "4f354c06-746c-4ad8-9fe6-3e3d1983f7a2";
+const CONTRACT = process.env.R4A13_SUCCESSOR_CONTRACT
+  ?? "rik-expo-app.r568.r4-a13-4-existing-norm-successor.v1";
+const EXPECTED_BRANCH = process.env.R4A13_EXPECTED_BRANCH ?? "codex/r4-a5-clean-08b18902";
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const APPLY = process.argv.includes("--apply");
+const ALLOW_DIRTY_SOURCE = process.env.R4A13_ALLOW_DIRTY_SOURCE === "true";
 const OUTPUT_ROOT = resolve(
-  ".release-runtime/r568/rc09-r4-production-closeout/r4-a8-developer-estimate-recovery-1",
+  process.env.R4A13_OUTPUT_ROOT
+    ?? ".release-runtime/r4a13-4/platform-core-global/existing-norm-successor",
 );
 const MANAGED_SOURCE_PATHS = [
   "data/estimate-benchmarks/r568-local-developer-canonical-release.json",
@@ -37,10 +47,15 @@ const MANAGED_SOURCE_PATHS = [
   "scripts/estimate/r5/batch003R56SharedCoreProjection.ts",
   "src/lib/estimate/v4/domains/interiorFinishesComplete/drywallArchitecturalElementsProfessionalV4.ts",
   "src/lib/estimate/v4/domains/interiorFinishesComplete/drywallFlatCeilingExpectedScopeV6.ts",
+  "src/lib/estimate/v4/domains/interiorFinishesComplete/drywallCeilingBulkheadSuccessorR3.ts",
 ] as const;
 
 const W3_SOURCE_ID = "drywall_ceiling_interior_drywall_ceiling_align_large_area";
 const W4_SOURCE_ID = "drywall_ceiling_interior_drywall_ceiling_frame_standard";
+const W12_SOURCE_ID = "drywall_ceiling_interior_drywall_ceiling_prepare_large_area";
+const BULKHEAD_FRAME_SOURCE_ID = "drywall_ceiling_interior_bulkhead_frame_standard";
+const ASPHALT_DRAIN_CATALOG_ID = "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_large_area";
+const BULKHEAD_FRAME_SOURCE_DEFINITION_SHA256 = "be7d901f1a2b3efdd50766187df63d7f229de6b59c2f664b6a2d02717ee106b1";
 const OMITTED_PRICE_INPUT = /^(?:unit_price_|price_basis_(?:date|reference)$)/u;
 
 function invariant(value: unknown, code: string): asserts value {
@@ -91,7 +106,9 @@ function exactDatabaseGuard(): void {
 }
 
 function targetCatalogId(sourceCatalogId: string): string {
-  return `canonical-work:base:${sourceCatalogId}`;
+  return sourceCatalogId.startsWith("canonical-work:")
+    ? sourceCatalogId
+    : `canonical-work:base:${sourceCatalogId}`;
 }
 
 function expectedPublishedParameterIds(definition: Batch003R56CanonicalSuccessorDefinition): string[] {
@@ -179,8 +196,12 @@ async function verifyBatch003Source(client: Client, definitions: readonly Batch0
   }
   const w3 = definitions.find((definition) => definition.catalogId === W3_SOURCE_ID);
   const w4 = definitions.find((definition) => definition.catalogId === W4_SOURCE_ID);
-  invariant(w3?.resources.length === 9 && w4?.resources.length === 20,
+  const w12 = definitions.find((definition) => definition.catalogId === W12_SOURCE_ID);
+  invariant(w3?.resources.length === 11 && w4?.resources.length === 31,
     `STOP_R4_A8_DRYWALL_W3_W4_SCOPE_COUNTS:${w3?.resources.length}/${w4?.resources.length}`);
+  invariant(w12?.resources.length === 29
+    && w12.resources.every((resource) => !/:operation_work|:incoming_delivery|:waste_haul|:access_delivery_return$/u.test(resource.rowId)),
+  `STOP_R4_A13_DRYWALL_W12_SCOPE:${w12?.resources.length}`);
   const forbiddenW4 = /(?:cladding_boards|insulation_mat|joint_(?:compound|reinforcement_tape|finish)|sheet|board_waste)/iu;
   invariant(w4.resources.every((resource) => !forbiddenW4.test(`${resource.rowId} ${resource.titleRu}`)),
     "STOP_R4_A8_DRYWALL_W4_NEIGHBOR_SCOPE_PRESENT");
@@ -191,7 +212,95 @@ async function verifyBatch003Source(client: Client, definitions: readonly Batch0
     resourceCount,
     w3Rows: w3.resources.length,
     w4Rows: w4.resources.length,
+    w12Rows: w12.resources.length,
     sourceReleaseId: BATCH003_SOURCE_RELEASE_ID,
+  };
+}
+
+async function verifyBulkheadFrameSource(client: Client): Promise<Json> {
+  const definition = buildBatch001DrywallSuccessorR3(BULKHEAD_FRAME_SOURCE_ID);
+  invariant(definition.contentDecision.allowed && definition.domainDecision.allowed,
+    "STOP_R4_A13_BULKHEAD_SOURCE_CODE_NOT_ADMITTED");
+  invariant(definition.resources.length === 16,
+    `STOP_R4_A13_BULKHEAD_SOURCE_CODE_ROWS:${definition.resources.length}/16`);
+  const forbidden = /(?:лист.*гипс|изоляц|шпаклев|лент.*шв|обшив|заделк.*шв|шлифов|налогов)/iu;
+  invariant(definition.resources.every((resource) => !forbidden.test(`${resource.rowId} ${resource.titleRu}`)),
+    "STOP_R4_A13_BULKHEAD_SOURCE_CODE_NEIGHBOR_SCOPE_PRESENT");
+
+  const source = (await client.query(`select definition.id::text,definition.definition_sha256,
+      definition.content_status,definition.content_gate_status,baseline.id::text baseline_id,
+      baseline.input_values,baseline.input_classification,
+      (select count(*)::int from public.estimate_parameter_definition parameter
+        where parameter.definition_version_id=definition.id) parameter_count,
+      (select count(*)::int from public.estimate_formula_graph formula
+        where formula.definition_version_id=definition.id) formula_count,
+      (select count(*)::int from public.estimate_resource_spec resource
+        where resource.definition_version_id=definition.id) resource_count,
+      (select count(*)::int from public.estimate_resource_spec resource
+        where resource.definition_version_id=definition.id
+          and lower(resource.title_ru)~'(лист.*гипс|изоляц|шпаклев|лент.*шв|обшив|заделк.*шв|шлифов|налогов)') forbidden_rows
+    from public.estimate_definition_version definition
+    join public.estimate_approved_template_baseline baseline on baseline.definition_version_id=definition.id
+    where definition.release_id=$1 and definition.catalog_id=$2`, [
+    BATCH001_SOURCE_RELEASE_ID,
+    BULKHEAD_FRAME_SOURCE_ID,
+  ])).rows[0] as Json | undefined;
+  invariant(source && source.content_status === "CANDIDATE_READY" && source.content_gate_status === "GREEN",
+    "STOP_R4_A13_BULKHEAD_SOURCE_DB_NOT_GREEN");
+  invariant(source.definition_sha256 === BULKHEAD_FRAME_SOURCE_DEFINITION_SHA256,
+    "STOP_R4_A13_BULKHEAD_SOURCE_SHA_DRIFT");
+  invariant(Number(source.parameter_count) === 40 && Number(source.formula_count) === 17
+    && Number(source.resource_count) === 16 && Number(source.forbidden_rows) === 0,
+  `STOP_R4_A13_BULKHEAD_SOURCE_DB_COUNTS:${source.parameter_count}/${source.formula_count}/${source.resource_count}/${source.forbidden_rows}`);
+  return {
+    sourceReleaseId: BATCH001_SOURCE_RELEASE_ID,
+    sourceDefinitionId: source.id,
+    sourceDefinitionSha256: source.definition_sha256,
+    sourceBaselineId: source.baseline_id,
+    parameterCount: Number(source.parameter_count),
+    formulaCount: Number(source.formula_count),
+    resourceCount: Number(source.resource_count),
+    targetCatalogId: targetCatalogId(BULKHEAD_FRAME_SOURCE_ID),
+  };
+}
+
+async function verifyAsphaltDrainSource(client: Client): Promise<Json> {
+  const source = (await client.query(`select definition.id::text,definition.definition_sha256,
+      definition.content_status,definition.content_gate_status,baseline.id::text baseline_id,
+      baseline.input_values,baseline.input_classification,
+      (select count(*)::int from public.estimate_parameter_definition parameter
+        where parameter.definition_version_id=definition.id) parameter_count,
+      (select count(*)::int from public.estimate_parameter_definition parameter
+        where parameter.definition_version_id=definition.id
+          and parameter.truth_metadata->>'visibility_role'='USER_INPUT') user_input_count,
+      (select count(*)::int from public.estimate_formula_graph formula
+        where formula.definition_version_id=definition.id) formula_count,
+      (select count(*)::int from public.estimate_resource_spec resource
+        where resource.definition_version_id=definition.id) resource_count
+    from public.estimate_cumulative_manifest_entry manifest
+    join public.estimate_definition_version definition on definition.id=manifest.definition_version_id
+    join public.estimate_approved_template_baseline baseline on baseline.definition_version_id=definition.id
+    where manifest.release_id=$1 and manifest.catalog_id=$2`, [
+    EXPECTED_PARENT_RELEASE_ID,
+    ASPHALT_DRAIN_CATALOG_ID,
+  ])).rows[0] as Json | undefined;
+  invariant(source && source.content_status === "CANDIDATE_READY" && source.content_gate_status === "GREEN",
+    "STOP_R4_A13_DRAIN_SOURCE_DB_NOT_GREEN");
+  invariant(Number(source.parameter_count) === 61 && Number(source.user_input_count) === 61
+    && Number(source.formula_count) === 34 && Number(source.resource_count) === 61,
+  `STOP_R4_A13_DRAIN_SOURCE_DB_COUNTS:${source.parameter_count}/${source.user_input_count}/${source.formula_count}/${source.resource_count}`);
+  invariant(Object.keys(source.input_values ?? {}).every((parameterId) =>
+    source.input_classification?.[parameterId] === "FIXTURE_ONLY"),
+  "STOP_R4_A13_DRAIN_SOURCE_RUNTIME_BASELINE_PRESENT");
+  return {
+    sourceReleaseId: EXPECTED_PARENT_RELEASE_ID,
+    sourceDefinitionId: source.id,
+    sourceDefinitionSha256: source.definition_sha256,
+    sourceBaselineId: source.baseline_id,
+    parameterCount: Number(source.parameter_count),
+    formulaCount: Number(source.formula_count),
+    resourceCount: Number(source.resource_count),
+    targetCatalogId: ASPHALT_DRAIN_CATALOG_ID,
   };
 }
 
@@ -313,6 +422,39 @@ async function cloneSearch(client: Client, input: {
     input.releaseId,
     CONTRACT,
   ]);
+  const bulkheadPromptAlias = "устройство каркаса потолочного короба из гипсокартона";
+  await client.query(`update public.estimate_search_document set
+      aliases=case when $3=any(aliases) then aliases else aliases||array[$3]::text[] end,
+      normalized_aliases=case when $3=any(normalized_aliases) then normalized_aliases
+        else normalized_aliases||array[$3]::text[] end,
+      normalized_search_terms=case when $3=any(normalized_search_terms) then normalized_search_terms
+        else normalized_search_terms||array[$3]::text[] end,
+      normalized_search_blob=trim(normalized_search_blob||' '||$3),
+      source_provenance=source_provenance||jsonb_build_object('r4A13OwnerPromptAlias',$3::text),
+      document_sha256=encode(extensions.digest(convert_to(document_sha256||':'||$3,
+        'UTF8'),'sha256'),'hex')
+    where search_release_id=$1 and catalog_id=$2`, [
+    input.searchReleaseId,
+    targetCatalogId(BULKHEAD_FRAME_SOURCE_ID),
+    bulkheadPromptAlias,
+  ]);
+  const asphaltDrainPromptAlias = "устройство системы водоотвода асфальтированного покрытия";
+  await client.query(`update public.estimate_search_document set
+      aliases=case when $3=any(aliases) then aliases else aliases||array[$3]::text[] end,
+      normalized_aliases=case when $3=any(normalized_aliases) then normalized_aliases
+        else normalized_aliases||array[$3]::text[] end,
+      normalized_search_terms=case when $3=any(normalized_search_terms) then normalized_search_terms
+        else normalized_search_terms||array[$3]::text[] end,
+      normalized_search_blob=case when position($3 in normalized_search_blob)>0 then normalized_search_blob
+        else trim(normalized_search_blob||' '||$3) end,
+      source_provenance=source_provenance||jsonb_build_object('r4A13DrainPromptAlias',$3::text),
+      document_sha256=encode(extensions.digest(convert_to(document_sha256||':'||$3,
+        'UTF8'),'sha256'),'hex')
+    where search_release_id=$1 and catalog_id=$2`, [
+    input.searchReleaseId,
+    ASPHALT_DRAIN_CATALOG_ID,
+    asphaltDrainPromptAlias,
+  ]);
   const snapshot = (await client.query(`select count(*)::int documents,
       count(*) filter(where selectable and adjudication_class='EFFECTIVE_WORK')::int visible,
       encode(extensions.digest(convert_to(string_agg(document_sha256,'' order by catalog_id),
@@ -328,6 +470,19 @@ async function cloneSearch(client: Client, input: {
 }
 
 async function audit(client: Client, releaseId: string, searchReleaseId: string): Promise<Json> {
+  const expectedDefinitions = buildAllBatch003R56CanonicalSuccessorDefinitions();
+  const affectedDefinitions = expectedDefinitions.filter((definition) =>
+    definition.operation === "PREPARE" || definition.operation === "FRAME");
+  const expectedParameters = 40 + affectedDefinitions.reduce((sum, definition) =>
+    sum + expectedPublishedParameterIds(definition).length, 0);
+  const expectedFormulas = 17 + affectedDefinitions.reduce((sum, definition) => sum + definition.formulas.length, 0);
+  const expectedResources = 16 + affectedDefinitions.reduce((sum, definition) => sum + definition.resources.length, 0);
+  const expectedUserInputs = 11 + affectedDefinitions.reduce((sum, definition) =>
+    sum + expectedPublishedParameterIds(definition)
+      .filter((parameterId) => parameterId !== "work_included" && parameterId !== "estimate_scope_mode").length, 0);
+  const expectedBackendInputs = expectedParameters - expectedUserInputs;
+  const expectedW3Resources = expectedDefinitions.find((definition) => definition.catalogId === W3_SOURCE_ID)?.resources.length ?? 0;
+  const expectedW4Resources = expectedDefinitions.find((definition) => definition.catalogId === W4_SOURCE_ID)?.resources.length ?? 0;
   const release = (await client.query("select * from public.estimate_definition_release where id=$1", [releaseId])).rows[0] as Json;
   const counts = (await client.query(`select count(*)::int definitions,
       count(approved_template_baseline_id)::int baselines,
@@ -341,6 +496,14 @@ async function audit(client: Client, releaseId: string, searchReleaseId: string)
       count(distinct baseline.id)::int baselines,
       count(distinct passport.definition_version_id)::int passports,
       count(distinct parameter.definition_version_id||':'||parameter.parameter_id)::int parameters,
+      count(distinct parameter.definition_version_id||':'||parameter.parameter_id)
+        filter(where parameter.truth_metadata->>'preliminary_compilation_allowed'='true')::int preliminary_parameters,
+      count(distinct parameter.definition_version_id||':'||parameter.parameter_id)
+        filter(where parameter.truth_metadata->>'visibility_role'='USER_INPUT'
+          and parameter.truth_metadata->>'value_source_role'='USER_INPUT')::int user_owned_inputs,
+      count(distinct parameter.definition_version_id||':'||parameter.parameter_id)
+        filter(where parameter.truth_metadata->>'visibility_role'='INTERNAL_ONLY'
+          and parameter.truth_metadata->>'value_source_role'='BACKEND_DERIVED')::int backend_owned_inputs,
       count(distinct formula.definition_version_id||':'||formula.formula_id)::int formulas,
       count(distinct resource.definition_version_id||':'||resource.row_id)::int resources,
       count(distinct resource.semantic_owner)::int semantic_owners,
@@ -353,11 +516,17 @@ async function audit(client: Client, releaseId: string, searchReleaseId: string)
     join public.estimate_resource_spec resource on resource.definition_version_id=manifest.definition_version_id
     where manifest.release_id=$1 and manifest.source_batch=$2`, [releaseId, CONTRACT])).rows[0] as Json;
   const live = (await client.query(`select manifest.catalog_id,count(resource.*)::int resources,
-      count(*) filter(where lower(resource.title_ru)~'(лист.*гипс|изоляц|шпаклев|лент.*шв|обшив|заделк.*шв|шлифов)')::int forbidden_neighbor_rows
+      count(*) filter(where lower(resource.title_ru)~'(лист.*гипс|изоляц|шпаклев|лент.*шв|обшив|заделк.*шв|шлифов|налогов)')::int forbidden_neighbor_rows
     from public.estimate_cumulative_manifest_entry manifest
     join public.estimate_resource_spec resource on resource.definition_version_id=manifest.definition_version_id
     where manifest.release_id=$1 and manifest.catalog_id=any($2::text[])
-    group by manifest.catalog_id order by manifest.catalog_id`, [releaseId, [targetCatalogId(W3_SOURCE_ID), targetCatalogId(W4_SOURCE_ID)]])).rows as Json[];
+    group by manifest.catalog_id order by manifest.catalog_id`, [releaseId, [
+      targetCatalogId(W3_SOURCE_ID),
+      targetCatalogId(W4_SOURCE_ID),
+      targetCatalogId(W12_SOURCE_ID),
+      targetCatalogId(BULKHEAD_FRAME_SOURCE_ID),
+      ASPHALT_DRAIN_CATALOG_ID,
+    ]])).rows as Json[];
   const search = (await client.query(`select count(*)::int documents,
       count(*) filter(where selectable and adjudication_class='EFFECTIVE_WORK')::int visible,
       count(*) filter(where definition_release_id<>$2)::int release_binding_drift,
@@ -367,17 +536,29 @@ async function audit(client: Client, releaseId: string, searchReleaseId: string)
   invariant(release.status === "prepared" && Number(release.definition_count) === 10_331,
     `STOP_R4_A8_DRYWALL_RELEASE_AUDIT:${stableJson(release)}`);
   invariant(Number(counts.definitions) === 10_331 && Number(counts.baselines) === 10_331
-    && Number(counts.ready) === 10_331 && Number(counts.drywall_scope_definitions) === 36,
+    && Number(counts.ready) === 10_331 && Number(counts.drywall_scope_definitions) === 11,
   `STOP_R4_A8_DRYWALL_MANIFEST_AUDIT:${stableJson(counts)}`);
-  invariant(Number(target.definitions) === 36 && Number(target.baselines) === 36 && Number(target.passports) === 36
-    && Number(target.parameters) === 750 && Number(target.formulas) === 498 && Number(target.resources) === 498
-    && Number(target.semantic_owners) === 498 && Number(target.cost_owners) === 498,
+  invariant(Number(target.definitions) === 11
+    && Number(target.baselines) === 11
+    && Number(target.passports) === 11
+    && Number(target.parameters) === expectedParameters
+    && Number(target.preliminary_parameters) === expectedParameters
+    && Number(target.user_owned_inputs) === expectedUserInputs
+    && Number(target.backend_owned_inputs) === expectedBackendInputs
+    && Number(target.formulas) === expectedFormulas
+    && Number(target.resources) === expectedResources
+    && Number(target.semantic_owners) === expectedResources
+    && Number(target.cost_owners) === expectedResources,
   `STOP_R4_A8_DRYWALL_TARGET_AUDIT:${stableJson(target)}`);
   const byCatalog = new Map(live.map((row) => [String(row.catalog_id), row]));
-  invariant(Number(byCatalog.get(targetCatalogId(W3_SOURCE_ID))?.resources) === 9
-    && Number(byCatalog.get(targetCatalogId(W4_SOURCE_ID))?.resources) === 20
-    && Number(byCatalog.get(targetCatalogId(W4_SOURCE_ID))?.forbidden_neighbor_rows) === 0,
-  `STOP_R4_A8_DRYWALL_W3_W4_AUDIT:${stableJson(live)}`);
+  invariant(Number(byCatalog.get(targetCatalogId(W3_SOURCE_ID))?.resources) === expectedW3Resources
+    && Number(byCatalog.get(targetCatalogId(W4_SOURCE_ID))?.resources) === expectedW4Resources
+    && Number(byCatalog.get(targetCatalogId(W4_SOURCE_ID))?.forbidden_neighbor_rows) === 0
+    && Number(byCatalog.get(targetCatalogId(W12_SOURCE_ID))?.resources) === 29
+    && Number(byCatalog.get(targetCatalogId(BULKHEAD_FRAME_SOURCE_ID))?.resources) === 16
+    && Number(byCatalog.get(targetCatalogId(BULKHEAD_FRAME_SOURCE_ID))?.forbidden_neighbor_rows) === 0
+    && Number(byCatalog.get(ASPHALT_DRAIN_CATALOG_ID)?.resources) === 61,
+  `STOP_R4_A13_DRYWALL_W3_W4_BULKHEAD_AUDIT:${stableJson(live)}`);
   invariant(Number(search.documents) === 10_322 && Number(search.visible) === 10_322
     && Number(search.release_binding_drift) === 0,
   `STOP_R4_A8_DRYWALL_SEARCH_AUDIT:${stableJson(search)}`);
@@ -397,15 +578,22 @@ async function main(): Promise<void> {
   const tree = git("rev-parse", "HEAD^{tree}");
   invariant(branch === EXPECTED_BRANCH, `STOP_R4_A8_DRYWALL_BRANCH:${branch}`);
   const dirty = git("status", "--porcelain=v1", "--untracked-files=all", "--", ...MANAGED_SOURCE_PATHS);
-  invariant(!dirty, `STOP_R4_A8_DRYWALL_MANAGED_SOURCE_DRIFT:${dirty}`);
+  invariant(!dirty || ALLOW_DIRTY_SOURCE, `STOP_R4_A8_DRYWALL_MANAGED_SOURCE_DRIFT:${dirty}`);
   const definitions = buildAllBatch003R56CanonicalSuccessorDefinitions();
   invariant(definitions.length === 36, `STOP_R4_A8_DRYWALL_DEFINITION_DENOMINATOR:${definitions.length}/36`);
+  const bulkheadDefinition = buildBatch001DrywallSuccessorR3(BULKHEAD_FRAME_SOURCE_ID);
   const fingerprint = sha256({
     contract: CONTRACT,
     masterSha256: MASTER_SHA256,
+    addendumSha256: ADDENDUM_SHA256 || null,
     head,
     tree,
+    dirtySourceSha256: dirty ? sha256(dirty) : null,
     definitionHashes: definitions.map((definition) => definition.definitionSha256),
+    bulkheadFrameSourceDefinitionSha256: BULKHEAD_FRAME_SOURCE_DEFINITION_SHA256,
+    bulkheadFrameResourceIdentities: bulkheadDefinition.resources.map((resource) => resource.rowId),
+    asphaltDrainCatalogId: ASPHALT_DRAIN_CATALOG_ID,
+    predecessorReleaseId: EXPECTED_PARENT_RELEASE_ID,
     sources: MANAGED_SOURCE_PATHS.map((path) => ({ path, sha256: sha256(readFileSync(resolve(path))) })),
   });
   const releaseId = uuid(`${CONTRACT}:${fingerprint}:release`);
@@ -422,9 +610,15 @@ async function main(): Promise<void> {
     invariant(predecessorSearch?.status === "draft" && Number(predecessorSearch.global_count) === 10_322,
       "STOP_R4_A8_DRYWALL_PREDECESSOR_SEARCH");
     const sourceWitness = await verifyBatch003Source(client, definitions);
-    const sourceRows = (await client.query(`select source.id::text source_definition_id,
+    const bulkheadSourceWitness = await verifyBulkheadFrameSource(client);
+    const asphaltDrainSourceWitness = await verifyAsphaltDrainSource(client);
+    const bulkheadSourceRows = (await client.query(`select source.id::text source_definition_id,
         source.catalog_id source_catalog_id,source.definition_sha256 source_definition_sha256,
         baseline.id::text source_baseline_id,
+        (select manifest.approved_template_baseline_id::text
+          from public.estimate_cumulative_manifest_entry manifest
+          where manifest.release_id=$3
+            and manifest.catalog_id='canonical-work:base:'||source.catalog_id) predecessor_baseline_id,
         (select count(*)::int from public.estimate_parameter_definition parameter
           where parameter.definition_version_id=source.id) source_parameters,
         (select count(*)::int from public.estimate_formula_graph formula
@@ -435,8 +629,40 @@ async function main(): Promise<void> {
           where peer.catalog_id='canonical-work:base:'||source.catalog_id) next_definition_version
       from public.estimate_definition_version source
       join public.estimate_approved_template_baseline baseline on baseline.definition_version_id=source.id
-      where source.release_id=$1 order by source.catalog_id`, [BATCH003_SOURCE_RELEASE_ID])).rows as Json[];
-    invariant(sourceRows.length === 36, `STOP_R4_A8_DRYWALL_SOURCE_ROWS:${sourceRows.length}/36`);
+       where source.release_id=$1 and source.catalog_id=$2
+       order by source.catalog_id`, [
+      BATCH001_SOURCE_RELEASE_ID,
+      BULKHEAD_FRAME_SOURCE_ID,
+      EXPECTED_PARENT_RELEASE_ID,
+    ])).rows as Json[];
+    const batch003TargetSourceIds = definitions
+      .filter((definition) => definition.operation === "PREPARE" || definition.operation === "FRAME")
+      .map((definition) => definition.catalogId);
+    const batch003SourceRows = (await client.query(`select source.id::text source_definition_id,
+        source.catalog_id source_catalog_id,source.definition_sha256 source_definition_sha256,
+        baseline.id::text source_baseline_id,
+        (select manifest.approved_template_baseline_id::text
+          from public.estimate_cumulative_manifest_entry manifest
+          where manifest.release_id=$3
+            and manifest.catalog_id='canonical-work:base:'||source.catalog_id) predecessor_baseline_id,
+        (select count(*)::int from public.estimate_parameter_definition parameter
+          where parameter.definition_version_id=source.id) source_parameters,
+        (select count(*)::int from public.estimate_formula_graph formula
+          where formula.definition_version_id=source.id) source_formulas,
+        (select count(*)::int from public.estimate_resource_spec resource
+          where resource.definition_version_id=source.id) source_resources,
+        (select coalesce(max(peer.definition_version),0)::int+1 from public.estimate_definition_version peer
+          where peer.catalog_id='canonical-work:base:'||source.catalog_id) next_definition_version
+      from public.estimate_definition_version source
+      join public.estimate_approved_template_baseline baseline on baseline.definition_version_id=source.id
+      where source.release_id=$1 and source.catalog_id=any($2::text[])
+      order by source.catalog_id`, [
+      BATCH003_SOURCE_RELEASE_ID,
+      batch003TargetSourceIds,
+      EXPECTED_PARENT_RELEASE_ID,
+    ])).rows as Json[];
+    const sourceRows = [...bulkheadSourceRows, ...batch003SourceRows];
+    invariant(sourceRows.length === 11, `STOP_R4_A13_EXISTING_NORM_SOURCE_ROWS:${sourceRows.length}/11`);
     const mappings = sourceRows.map((source) => {
       const targetCatalog = targetCatalogId(String(source.source_catalog_id));
       const definitionId = uuid(`${CONTRACT}:${fingerprint}:definition:${targetCatalog}`);
@@ -451,6 +677,7 @@ async function main(): Promise<void> {
         sourceDefinitionId: source.source_definition_id,
         sourceCatalogId: source.source_catalog_id,
         sourceBaselineId: source.source_baseline_id,
+        predecessorBaselineId: source.predecessor_baseline_id,
         targetCatalogId: targetCatalog,
         definitionId,
         baselineId,
@@ -482,13 +709,21 @@ async function main(): Promise<void> {
       EXPECTED_PARENT_RELEASE_ID,
       targetCatalogIds,
     ])).rows[0] as Json;
-    invariant(Number(predecessorTarget.definitions) === 36,
-      `STOP_R4_A8_DRYWALL_PREDECESSOR_TARGETS:${predecessorTarget.definitions}/36`);
+    invariant(Number(predecessorTarget.definitions) === 11,
+      `STOP_R4_A13_EXISTING_NORM_PREDECESSOR_TARGETS:${predecessorTarget.definitions}/11`);
+    const sourceTotals = sourceRows.reduce((sum, source) => ({
+      parameters: sum.parameters + Number(source.source_parameters),
+      formulas: sum.formulas + Number(source.source_formulas),
+      resources: sum.resources + Number(source.source_resources),
+    }), { parameters: 0, formulas: 0, resources: 0 });
     const nextCounts = {
       definitions: Number(predecessor.definition_count),
-      parameters: Number(predecessor.parameter_count) - Number(predecessorTarget.parameters) + sourceWitness.parameterCount,
-      formulas: Number(predecessor.formula_count) - Number(predecessorTarget.formulas) + sourceWitness.formulaCount,
-      resources: Number(predecessor.resource_row_count) - Number(predecessorTarget.resources) + sourceWitness.resourceCount,
+      parameters: Number(predecessor.parameter_count) - Number(predecessorTarget.parameters)
+        + sourceTotals.parameters,
+      formulas: Number(predecessor.formula_count) - Number(predecessorTarget.formulas)
+        + sourceTotals.formulas,
+      resources: Number(predecessor.resource_row_count) - Number(predecessorTarget.resources)
+        + sourceTotals.resources,
     };
     const existing = (await client.query("select id::text,status from public.estimate_definition_release where id=$1", [releaseId])).rows[0] as Json | undefined;
     if (existing) {
@@ -500,6 +735,8 @@ async function main(): Promise<void> {
         predecessor: { releaseId: EXPECTED_PARENT_RELEASE_ID, searchReleaseId: EXPECTED_PARENT_SEARCH_RELEASE_ID },
         successor: { releaseId, searchReleaseId, releaseKey },
         sourceWitness,
+        bulkheadSourceWitness,
+        asphaltDrainSourceWitness,
         audit: await audit(client, releaseId, searchReleaseId),
       };
     } else if (!APPLY) {
@@ -510,6 +747,8 @@ async function main(): Promise<void> {
         predecessor: { releaseId: EXPECTED_PARENT_RELEASE_ID, searchReleaseId: EXPECTED_PARENT_SEARCH_RELEASE_ID, targetCounts: predecessorTarget },
         successor: { releaseId, searchReleaseId, releaseKey, nextCounts },
         sourceWitness,
+        bulkheadSourceWitness,
+        asphaltDrainSourceWitness,
       };
     } else {
       await client.query("begin");
@@ -519,15 +758,18 @@ async function main(): Promise<void> {
       try {
         await client.query(`create temporary table r4a8_drywall_map(
           source_definition_id uuid primary key,source_catalog_id text not null unique,source_baseline_id uuid not null,
+          predecessor_baseline_id uuid not null,
           target_catalog_id text not null unique,definition_id uuid not null unique,baseline_id uuid not null unique,
           next_definition_version int not null,definition_sha256 text not null,
           baseline_acceptance_sha256 text not null,entry_sha256 text not null) on commit drop`);
         await client.query(`insert into r4a8_drywall_map select
           x."sourceDefinitionId"::uuid,x."sourceCatalogId",x."sourceBaselineId"::uuid,
+          x."predecessorBaselineId"::uuid,
           x."targetCatalogId",x."definitionId"::uuid,x."baselineId"::uuid,
           x."nextDefinitionVersion",x."definitionSha256",x."baselineAcceptanceSha256",x."entrySha256"
           from jsonb_to_recordset($1::jsonb) as x(
             "sourceDefinitionId" text,"sourceCatalogId" text,"sourceBaselineId" text,
+            "predecessorBaselineId" text,
             "targetCatalogId" text,"definitionId" text,"baselineId" text,
             "nextDefinitionVersion" int,"definitionSha256" text,
             "baselineAcceptanceSha256" text,"entrySha256" text)`, [JSON.stringify(mappings)]);
@@ -548,11 +790,15 @@ async function main(): Promise<void> {
           JSON.stringify({
             contract: CONTRACT,
             masterSha256: MASTER_SHA256,
+            addendumSha256: ADDENDUM_SHA256 || null,
+            dirtySourceSha256: dirty ? sha256(dirty) : null,
             lifecycle: "DRAFT_FORWARD_ONLY",
             parentReleaseId: EXPECTED_PARENT_RELEASE_ID,
             sourceBatch003ReleaseId: BATCH003_SOURCE_RELEASE_ID,
             sourceFingerprint: fingerprint,
-            replacedDefinitionCount: 36,
+            replacedDefinitionCount: 11,
+            bulkheadFrameSourceReleaseId: BATCH001_SOURCE_RELEASE_ID,
+            asphaltDrainSourceReleaseId: EXPECTED_PARENT_RELEASE_ID,
             activationAllowed: false,
             productionEligible: false,
           }),
@@ -593,23 +839,51 @@ async function main(): Promise<void> {
             accepted_release_id,accepted_at,supersedes_baseline_id,contract_version)
           select map.baseline_id,$2||':'||substr($3,1,16)||':'||map.target_catalog_id,
             map.target_catalog_id,map.definition_id,map.definition_id,source.parameter_schema_sha256,
-            source.input_values,source.input_classification,source.uom_by_parameter,
-            source.formula_consumer_ids,source.resource_consumer_row_ids,source.normative_source_ids,
-            source.guide_provenance_ru,
+            case when map.source_catalog_id=$5 then jsonb_build_object('system_type','linear_tray')
+              else source.input_values end,
+            case when map.source_catalog_id=$5 then jsonb_build_object('system_type','FIXTURE_ONLY')
+              when map.source_catalog_id=$4 then coalesce((
+              select jsonb_object_agg(parameter_id,to_jsonb('FIXTURE_ONLY'::text))
+              from jsonb_object_keys(source.input_values) parameter_id
+            ),'{}'::jsonb) else source.input_classification end,
+            case when map.source_catalog_id=$5 then jsonb_build_object('system_type',null) else source.uom_by_parameter end,
+            case when map.source_catalog_id=$5 then jsonb_build_object('system_type',coalesce((
+              select parameter.truth_metadata->'formula_consumers'
+              from public.estimate_parameter_definition parameter
+              where parameter.definition_version_id=map.source_definition_id and parameter.parameter_id='system_type'
+            ),'[]'::jsonb)) else source.formula_consumer_ids end,
+            case when map.source_catalog_id=$5 then jsonb_build_object('system_type',coalesce((
+              select parameter.truth_metadata->'resource_branch_consumers'
+              from public.estimate_parameter_definition parameter
+              where parameter.definition_version_id=map.source_definition_id and parameter.parameter_id='system_type'
+            ),'[]'::jsonb)) else source.resource_consumer_row_ids end,
+            case when map.source_catalog_id=$5 then jsonb_build_object('system_type',jsonb_build_array('r4-a10-asphalt-drainage-successor'))
+              else source.normative_source_ids end,
+            case when map.source_catalog_id=$5 then jsonb_build_object('system_type',coalesce((
+              select parameter.truth_metadata->'guide'->>'guide_short_ru'
+              from public.estimate_parameter_definition parameter
+              where parameter.definition_version_id=map.source_definition_id and parameter.parameter_id='system_type'
+            ),'Тип системы водоотвода')) else source.guide_provenance_ru end,
             source.proposal_source_refs||jsonb_build_array(jsonb_build_object('contract',$2::text,
               'sourceBaselineId',source.id::text,'sourceCatalogId',source.catalog_id,
               'sourceFingerprint',$3::text)),
             source.validation_scenario_refs||jsonb_build_array(jsonb_build_object('contract',$2::text,
-              'scenario','R4_A8_W3_W4_OPERATION_SCOPE')),
-            map.baseline_acceptance_sha256,$1,clock_timestamp(),source.id,source.contract_version
+              'scenario','R4_A13_W3_W4_BULKHEAD_FRAME_ONLY_SCOPE')),
+            map.baseline_acceptance_sha256,$1,clock_timestamp(),map.predecessor_baseline_id,source.contract_version
           from r4a8_drywall_map map join public.estimate_approved_template_baseline source
-            on source.id=map.source_baseline_id`, [releaseId, CONTRACT, fingerprint]);
+            on source.id=map.source_baseline_id`, [releaseId, CONTRACT, fingerprint, BULKHEAD_FRAME_SOURCE_ID, ASPHALT_DRAIN_CATALOG_ID]);
         await client.query(`insert into public.estimate_parameter_definition(
             definition_version_id,parameter_id,ordinal,value_type,unit_id,title_ru,required,
             default_value,constraints_json,truth_metadata,approved_template_baseline_id)
           select map.definition_id,source.parameter_id,source.ordinal,source.value_type,source.unit_id,
             source.title_ru,source.required,source.default_value,source.constraints_json,
-            source.truth_metadata||jsonb_build_object('r4A8OperationScopeContract',$1::text),map.baseline_id
+            source.truth_metadata||jsonb_build_object(
+              'r4A8OperationScopeContract',$1::text,
+              'preliminary_compilation_allowed',true,
+              'value_source_role',case
+                when source.truth_metadata->>'visibility_role'='USER_INPUT' then 'USER_INPUT'
+                else 'BACKEND_DERIVED'
+              end),map.baseline_id
           from r4a8_drywall_map map join public.estimate_parameter_definition source
             on source.definition_version_id=map.source_definition_id`, [CONTRACT]);
         await client.query(`insert into public.estimate_formula_graph(
@@ -644,7 +918,11 @@ async function main(): Promise<void> {
             procurement_eligible,source_metadata,row_sha256)
           select resource_map.target_resource_id,resource_map.definition_id,source.row_id,source.ordinal,
             source.section,source.category,source.title_ru,source.row_type,source.unit_id,source.formula_id,
-            source.inclusion_ast,source.resource_graph,source.semantic_owner,source.cost_owner_id,
+            source.inclusion_ast,
+            case when jsonb_typeof(source.resource_graph->'titleSpecificationParameterIds')='array'
+              then source.resource_graph-'titleSpecificationParameterId'
+              else source.resource_graph end,
+            source.semantic_owner,source.cost_owner_id,
             source.procurement_eligible,
             source.source_metadata||jsonb_build_object('r4A8OperationScopeContract',$1::text,
               'sourceResourceId',source.id::text,'sourceFingerprint',$2::text),
@@ -702,20 +980,24 @@ async function main(): Promise<void> {
             lifecycle: "PREPARED_NOT_ACTIVE",
             searchReleaseId,
             searchSnapshotSha256: search.snapshot_sha256,
-            operationScopeDefinitions: "36/36",
-            w3Rows: 9,
-            w4Rows: 20,
+            operationScopeDefinitions: "11/11",
+            w3Rows: 11,
+            w4Rows: 31,
+            w12Rows: 29,
+            bulkheadFrameRows: 16,
           }),
         ]);
         const result = await audit(client, releaseId, searchReleaseId);
         await client.query("commit");
         receipt = {
-          status: "GREEN_R4_A8_DRYWALL_SCOPE_SUCCESSOR_PREPARED_NOT_ACTIVE",
+          status: "GREEN_R4_A13_4_EXISTING_NORM_SUCCESSOR_PREPARED_NOT_ACTIVE",
           idempotent: false,
           source: { branch, head, tree, fingerprint, managedPaths: MANAGED_SOURCE_PATHS },
           predecessor: { releaseId: EXPECTED_PARENT_RELEASE_ID, searchReleaseId: EXPECTED_PARENT_SEARCH_RELEASE_ID, targetCounts: predecessorTarget },
           successor: { releaseId, searchReleaseId, releaseKey, nextCounts },
           sourceWitness,
+          bulkheadSourceWitness,
+          asphaltDrainSourceWitness,
           audit: result,
         };
       } catch (error) {
@@ -728,7 +1010,7 @@ async function main(): Promise<void> {
   }
   invariant(receipt, "STOP_R4_A8_DRYWALL_RECEIPT_MISSING");
   const body = {
-    schemaVersion: "r568-r4-a8-drywall-operation-scope-successor-receipt.v1",
+    schemaVersion: "r568-r4-a13-4-existing-norm-successor-receipt.v1",
     capturedAt: new Date().toISOString(),
     globalStatus: "GLOBAL_STATUS=RED_NOT_PRODUCTION_READY",
     ...receipt,
@@ -738,8 +1020,11 @@ async function main(): Promise<void> {
     activationPerformed: false,
   };
   const sealed = { ...body, receiptSha256: sha256(body) };
-  if (APPLY && !receipt.idempotent) {
-    const output = resolve(OUTPUT_ROOT, `14_W3_W4_DRYWALL_SCOPE_SUCCESSOR_${head}.json`);
+  if (APPLY) {
+    const output = resolve(
+      OUTPUT_ROOT,
+      `04_EXISTING_NORM_SUCCESSOR_${receipt.successor.releaseId}_${head}.json`,
+    );
     invariant(!existsSync(output), "STOP_R4_A8_DRYWALL_EVIDENCE_EXISTS");
     atomicJson(output, sealed);
     process.stdout.write(`${JSON.stringify({ output, ...sealed }, null, 2)}\n`);

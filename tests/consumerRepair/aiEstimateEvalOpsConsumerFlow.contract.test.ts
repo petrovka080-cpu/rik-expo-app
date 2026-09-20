@@ -20,6 +20,17 @@ describe("AI EvalOps consumer estimate flow", () => {
       sourceSha: "consumer-flow-source",
       runtimeVersion: AI_RUNTIME_KERNEL_VERSION,
       promptVersion: AI_EVAL_PROMPT_VERSION,
+      estimatePlugin: {
+        pluginId: "ai_estimate",
+        async run({ runInput }) {
+          return {
+            flowId: runInput.flowId,
+            status: "completed",
+            userVisibleAnswerRu: "Нужно уточнить исходные данные для профессиональной сметы.",
+            draft: { backendCanonical: true },
+          };
+        },
+      },
     });
 
     expect(result.status).toBe("passed");

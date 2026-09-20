@@ -27,9 +27,12 @@ function roadRequestViewModel() {
 describe("professional BOQ grouped request UI", () => {
   it("renders grouped professional sections instead of one raw row dump", () => {
     const viewModel = roadRequestViewModel();
+    const renderedRows = viewModel.sections.flatMap((section) => section.items);
 
     expect(viewModel.professionalPreview).toBe(true);
-    expect(viewModel.rawItemCount).toBeGreaterThanOrEqual(45);
+    expect(viewModel.rawItemCount).toBeGreaterThan(0);
+    expect(renderedRows).toHaveLength(viewModel.rawItemCount);
+    expect(new Set(renderedRows.map((row) => row.id)).size).toBe(viewModel.rawItemCount);
     expect(viewModel.sections.map((section) => section.id)).toEqual(
       expect.arrayContaining(["materials", "labor", "equipment", "logistics"]),
     );

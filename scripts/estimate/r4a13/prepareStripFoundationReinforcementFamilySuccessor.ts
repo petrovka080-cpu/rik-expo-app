@@ -21,6 +21,86 @@ import {
   stripFoundationReinforcementAcceptanceInputR1,
 } from "../../../src/lib/estimate/v4/stripFoundationReinforcementR1";
 import {
+  SLAB_FOUNDATION_REINFORCEMENT_PARAMETERS,
+  SLAB_FOUNDATION_REINFORCEMENT_RESOURCES,
+  SLAB_FOUNDATION_REINFORCEMENT_TARGETS,
+  compileSlabFoundationReinforcementR1,
+  slabFoundationReinforcementAcceptanceInputR1,
+} from "../../../src/lib/estimate/v4/slabFoundationReinforcementR1";
+import {
+  CONCRETE_SLAB_REINFORCEMENT_PARAMETERS,
+  CONCRETE_SLAB_REINFORCEMENT_RESOURCES,
+  CONCRETE_SLAB_REINFORCEMENT_TARGETS,
+  compileConcreteSlabReinforcementR1,
+  concreteSlabReinforcementAcceptanceInputR1,
+} from "../../../src/lib/estimate/v4/concreteSlabReinforcementR1";
+import {
+  PILE_CAP_REINFORCEMENT_PARAMETERS,
+  PILE_CAP_REINFORCEMENT_RESOURCES,
+  PILE_CAP_REINFORCEMENT_TARGETS,
+  compilePileCapReinforcementR1,
+  pileCapReinforcementAcceptanceInputR1,
+} from "../../../src/lib/estimate/v4/pileCapReinforcementR1";
+import {
+  PEDESTAL_REINFORCEMENT_PARAMETERS,
+  PEDESTAL_REINFORCEMENT_RESOURCES,
+  PEDESTAL_REINFORCEMENT_TARGETS,
+  compilePedestalReinforcementR1,
+  pedestalReinforcementAcceptanceInputR1,
+} from "../../../src/lib/estimate/v4/pedestalReinforcementR1";
+import {
+  STAIRS_REINFORCEMENT_PARAMETERS,
+  STAIRS_REINFORCEMENT_RESOURCES,
+  STAIRS_REINFORCEMENT_TARGETS,
+  compileStairsReinforcementR1,
+  stairsReinforcementAcceptanceInputR1,
+} from "../../../src/lib/estimate/v4/stairsReinforcementR1";
+import {
+  REINFORCEMENT_FRAME_ASSEMBLY_TARGETS,
+  REINFORCEMENT_FRAME_REINFORCEMENT_PARAMETERS,
+  REINFORCEMENT_FRAME_REINFORCEMENT_RESOURCES,
+  REINFORCEMENT_FRAME_REINFORCEMENT_TARGETS,
+  compileReinforcementFrameAssemblyR1,
+  compileReinforcementFrameReinforcementR1,
+  reinforcementFrameAssemblyAcceptanceInputR1,
+  reinforcementFrameReinforcementAcceptanceInputR1,
+} from "../../../src/lib/estimate/v4/reinforcementFrameReinforcementR1";
+import {
+  COLUMN_BASE_REINFORCEMENT_PARAMETERS,
+  COLUMN_BASE_REINFORCEMENT_RESOURCES,
+  COLUMN_BASE_REINFORCEMENT_TARGETS,
+  columnBaseReinforcementAcceptanceInputR1,
+  compileColumnBaseReinforcementR1,
+} from "../../../src/lib/estimate/v4/columnBaseReinforcementR1";
+import {
+  ANCHOR_GROUP_REINFORCEMENT_PARAMETERS,
+  ANCHOR_GROUP_REINFORCEMENT_RESOURCES,
+  ANCHOR_GROUP_REINFORCEMENT_TARGETS,
+  anchorGroupReinforcementAcceptanceInputR1,
+  compileAnchorGroupReinforcementR1,
+} from "../../../src/lib/estimate/v4/anchorGroupReinforcementR1";
+import {
+  BELT_REINFORCEMENT_PARAMETERS,
+  BELT_REINFORCEMENT_RESOURCES,
+  BELT_REINFORCEMENT_TARGETS,
+  beltReinforcementAcceptanceInputR1,
+  compileBeltReinforcementR1,
+} from "../../../src/lib/estimate/v4/beltReinforcementR1";
+import {
+  JOINT_REINFORCEMENT_PARAMETERS,
+  JOINT_REINFORCEMENT_RESOURCES,
+  JOINT_REINFORCEMENT_TARGETS,
+  compileJointReinforcementR1,
+  jointReinforcementAcceptanceInputR1,
+} from "../../../src/lib/estimate/v4/jointReinforcementR1";
+import {
+  FORMWORK_REINFORCEMENT_PARAMETERS,
+  FORMWORK_REINFORCEMENT_RESOURCES,
+  FORMWORK_REINFORCEMENT_TARGETS,
+  compileFormworkReinforcementR1,
+  formworkReinforcementAcceptanceInputR1,
+} from "../../../src/lib/estimate/v4/formworkReinforcementR1";
+import {
   createCanonicalDefinitionClonePlan,
   preflightCanonicalDefinitionPublishPlans,
   publishCanonicalDefinitionDraft,
@@ -29,37 +109,463 @@ import {
 
 type Json = Record<string, any>;
 
-const CONTRACT = "rik-expo-app.r4-a13-6.strip-foundation-reinforcement-family.v1";
+const SLAB_FOUNDATION_MODE = process.argv.includes("--slab-foundation");
+const CONCRETE_SLAB_MODE = process.argv.includes("--concrete-slab");
+const PILE_CAP_MODE = process.argv.includes("--pile-cap");
+const PEDESTAL_MODE = process.argv.includes("--pedestal");
+const STAIRS_MODE = process.argv.includes("--stairs");
+const REINFORCEMENT_FRAME_MODE = process.argv.includes("--reinforcement-frame");
+const REINFORCEMENT_FRAME_ASSEMBLY_MODE = process.argv.includes("--reinforcement-frame-assembly");
+const COLUMN_BASE_MODE = process.argv.includes("--column-base");
+const ANCHOR_GROUP_REINFORCEMENT_MODE = process.argv.includes("--anchor-group-reinforcement");
+const BELT_REINFORCEMENT_MODE = process.argv.includes("--belt-reinforcement");
+const JOINT_REINFORCEMENT_MODE = process.argv.includes("--joint-reinforcement");
+const FORMWORK_REINFORCEMENT_MODE = process.argv.includes("--formwork-reinforcement");
+const CONTRACT = FORMWORK_REINFORCEMENT_MODE
+  ? "rik-expo-app.r4-a13-6.formwork-reinforcement-family.v1"
+  : JOINT_REINFORCEMENT_MODE
+  ? "rik-expo-app.r4-a13-6.joint-reinforcement-family.v1"
+  : BELT_REINFORCEMENT_MODE
+  ? "rik-expo-app.r4-a13-6.belt-reinforcement-family.v1"
+  : ANCHOR_GROUP_REINFORCEMENT_MODE
+  ? "rik-expo-app.r4-a13-6.anchor-group-reinforcement-family.v1"
+  : COLUMN_BASE_MODE
+  ? "rik-expo-app.r4-a13-6.column-base-reinforcement-family.v1"
+  : REINFORCEMENT_FRAME_ASSEMBLY_MODE
+  ? "rik-expo-app.r4-a13-6.reinforcement-frame-assembly-family.v1"
+  : REINFORCEMENT_FRAME_MODE
+  ? "rik-expo-app.r4-a13-6.reinforcement-frame-reinforcement-family.v1"
+  : STAIRS_MODE
+  ? "rik-expo-app.r4-a13-6.stairs-reinforcement-family.v1"
+  : PEDESTAL_MODE
+  ? "rik-expo-app.r4-a13-6.pedestal-reinforcement-family.v1"
+  : PILE_CAP_MODE
+  ? "rik-expo-app.r4-a13-6.pile-cap-reinforcement-family.v1"
+  : CONCRETE_SLAB_MODE
+  ? "rik-expo-app.r4-a13-6.concrete-slab-reinforcement-family.v1"
+  : SLAB_FOUNDATION_MODE
+  ? "rik-expo-app.r4-a13-6.slab-foundation-reinforcement-family.v1"
+  : "rik-expo-app.r4-a13-6.strip-foundation-reinforcement-family.v1";
 const EXPECTED_BRANCH = "codex/r4-a5-clean-08b18902";
 const MASTER_PATH = resolve(
-  "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (9).md",
+  REINFORCEMENT_FRAME_ASSEMBLY_MODE
+    ? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (16).md"
+    : "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (14).md",
 );
-const MASTER_SHA256 = "433781e0d4d587d6538fa750e3f0fa5f48be4c76b08de43d7bd8c07541540b24";
-const PARENT_RELEASE_ID = "592dce0c-a06d-5424-81ed-e7e2d587be3f";
-const PARENT_SEARCH_RELEASE_ID = "aaa7f4aa-c5b3-5f5c-a11f-dcfe5f8e7261";
+const MASTER_SHA256 = REINFORCEMENT_FRAME_ASSEMBLY_MODE
+  ? "9bc2a957ce80d9b0086fa98523b692325d100367761e4d9cbac786d4ebd1e4ea"
+  : "33902b73c91b1c937a316089deff1d215a8fbc6c3d4c970c2ea53b4a37de8dc8";
+const PARENT_RELEASE_ID = FORMWORK_REINFORCEMENT_MODE
+  ? "80fc4afc-6531-583b-966b-7828d4e10ae5"
+  : JOINT_REINFORCEMENT_MODE
+  ? "8fa98f07-3831-57d6-b37a-9cbc7442fff6"
+  : BELT_REINFORCEMENT_MODE
+  ? "ec015415-7504-5cc1-853a-cfd38cf09e2f"
+  : ANCHOR_GROUP_REINFORCEMENT_MODE
+  ? "2768e0a1-ab48-5c34-8b4c-f6c19e3c28e5"
+  : COLUMN_BASE_MODE
+  ? "e1dcd42e-0187-5a04-8bac-16a0d3e2468c"
+  : REINFORCEMENT_FRAME_ASSEMBLY_MODE
+  ? "e681be2c-a28f-5c72-b6ce-aeb166b96633"
+  : REINFORCEMENT_FRAME_MODE
+  ? "e2755c0e-af34-5c91-a370-474cc1beba87"
+  : STAIRS_MODE
+  ? "880ca23a-39c0-5bd4-a75d-d0edbd5bf128"
+  : PEDESTAL_MODE
+  ? "4f52b35a-0f1c-5541-b2d9-a651b2dd3a57"
+  : PILE_CAP_MODE
+  ? "52f6eb87-1960-5c20-b2a1-3d92180bd009"
+  : CONCRETE_SLAB_MODE
+  ? "b5fdbd4a-a863-5823-83a6-3432108fd743"
+  : "05fd8444-dd4e-5f22-8c80-a83c92758466";
+const PARENT_SEARCH_RELEASE_ID = FORMWORK_REINFORCEMENT_MODE
+  ? "1fc20d92-2bf1-5c0f-bd30-ca99d1c76fe5"
+  : JOINT_REINFORCEMENT_MODE
+  ? "7e5d3320-eb80-5a67-abcf-c6369bcb0b89"
+  : BELT_REINFORCEMENT_MODE
+  ? "a1c7e025-3b03-5862-9f94-59123d82abc9"
+  : ANCHOR_GROUP_REINFORCEMENT_MODE
+  ? "67bfd575-8f7c-57ef-9e1f-336c5014659f"
+  : COLUMN_BASE_MODE
+  ? "b8dff955-a85f-54b9-ae75-4fd9e89e5034"
+  : REINFORCEMENT_FRAME_ASSEMBLY_MODE
+  ? "d20b84f4-a4d2-59fc-947a-57895d1f2e1d"
+  : REINFORCEMENT_FRAME_MODE
+  ? "1d2bf788-a50f-597e-8e00-4bfadc04de00"
+  : STAIRS_MODE
+  ? "b9f48d80-2593-5bd9-ad40-c652e0ed7e4f"
+  : PEDESTAL_MODE
+  ? "890c0b03-40cf-592f-b777-01da66a02e50"
+  : PILE_CAP_MODE
+  ? "81a70e74-e1bb-5043-88db-5b93910f5b16"
+  : CONCRETE_SLAB_MODE
+  ? "f86a4f0a-0ca5-58c8-bf87-dab4a9c5607c"
+  : "37d17699-fd8d-50a4-a555-e1df9857de14";
 const CURRENT_RELEASE_PATH = resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json");
 const OUTPUT_ROOT = resolve(
-  ".release-runtime/r4a13-6/exact-physical-norm-successors/strip-foundation-reinforcement-family",
+  FORMWORK_REINFORCEMENT_MODE
+    ? ".release-runtime/r4a13-6/exact-physical-norm-successors/formwork-reinforcement-family"
+    : JOINT_REINFORCEMENT_MODE
+    ? ".release-runtime/r4a13-6/exact-physical-norm-successors/joint-reinforcement-family"
+    : BELT_REINFORCEMENT_MODE
+    ? ".release-runtime/r4a13-6/exact-physical-norm-successors/belt-reinforcement-family"
+    : ANCHOR_GROUP_REINFORCEMENT_MODE
+    ? ".release-runtime/r4a13-6/exact-physical-norm-successors/anchor-group-reinforcement-family"
+    : COLUMN_BASE_MODE
+    ? ".release-runtime/r4a13-6/exact-physical-norm-successors/column-base-reinforcement-family"
+    : REINFORCEMENT_FRAME_ASSEMBLY_MODE
+    ? ".release-runtime/r4a13-6/exact-physical-norm-successors/reinforcement-frame-assembly-family"
+    : REINFORCEMENT_FRAME_MODE
+    ? ".release-runtime/r4a13-6/exact-physical-norm-successors/reinforcement-frame-reinforcement-family"
+    : STAIRS_MODE
+    ? ".release-runtime/r4a13-6/exact-physical-norm-successors/stairs-reinforcement-family"
+    : PEDESTAL_MODE
+    ? ".release-runtime/r4a13-6/exact-physical-norm-successors/pedestal-reinforcement-family"
+    : PILE_CAP_MODE
+    ? ".release-runtime/r4a13-6/exact-physical-norm-successors/pile-cap-reinforcement-family"
+    : CONCRETE_SLAB_MODE
+    ? ".release-runtime/r4a13-6/exact-physical-norm-successors/concrete-slab-reinforcement-family"
+    : SLAB_FOUNDATION_MODE
+    ? ".release-runtime/r4a13-6/exact-physical-norm-successors/slab-foundation-reinforcement-family"
+    : ".release-runtime/r4a13-6/exact-physical-norm-successors/strip-foundation-reinforcement-family",
 );
 const RESIDUAL_SUMMARY_PATH = resolve(
-  ".release-runtime/ai-estimate-real-professional-norm-packs/2026-09-16T17-24-06-609Z/candidate-summary.json",
+  FORMWORK_REINFORCEMENT_MODE
+    ? ".release-runtime/ai-estimate-real-professional-norm-packs/2026-09-18T03-01-55-254Z/candidate-summary.json"
+    : JOINT_REINFORCEMENT_MODE
+    ? ".release-runtime/ai-estimate-real-professional-norm-packs/2026-09-18T02-18-09-793Z/candidate-summary.json"
+    : BELT_REINFORCEMENT_MODE
+    ? ".release-runtime/ai-estimate-real-professional-norm-packs/2026-09-17T18-04-43-747Z/candidate-summary.json"
+    : ANCHOR_GROUP_REINFORCEMENT_MODE
+    ? ".release-runtime/ai-estimate-real-professional-norm-packs/2026-09-17T17-43-43-927Z/candidate-summary.json"
+    : COLUMN_BASE_MODE
+    ? ".release-runtime/ai-estimate-real-professional-norm-packs/2026-09-17T17-24-34-021Z/candidate-summary.json"
+    : REINFORCEMENT_FRAME_ASSEMBLY_MODE
+    ? ".release-runtime/ai-estimate-real-professional-norm-packs/2026-09-18T06-51-55-677Z/candidate-summary.json"
+    : REINFORCEMENT_FRAME_MODE
+    ? ".release-runtime/ai-estimate-real-professional-norm-packs/2026-09-17T16-59-12-372Z/candidate-summary.json"
+    : STAIRS_MODE
+    ? ".release-runtime/ai-estimate-real-professional-norm-packs/2026-09-17T16-35-02-953Z/candidate-summary.json"
+    : PEDESTAL_MODE
+    ? ".release-runtime/ai-estimate-real-professional-norm-packs/2026-09-17T16-14-14-989Z/candidate-summary.json"
+    : PILE_CAP_MODE
+    ? ".release-runtime/ai-estimate-real-professional-norm-packs/2026-09-17T15-54-55-678Z/candidate-summary.json"
+    : CONCRETE_SLAB_MODE
+    ? ".release-runtime/ai-estimate-real-professional-norm-packs/2026-09-17T15-23-36-906Z/candidate-summary.json"
+    : ".release-runtime/ai-estimate-real-professional-norm-packs/2026-09-17T14-44-22-897Z/candidate-summary.json",
 );
-const RESIDUAL_RECEIPT_SHA256 = "fe15f759dd33061ca4bc19689d55bba671d8f3a3498ccc2645e8b8e7d785926b";
+const RESIDUAL_RECEIPT_SHA256 = FORMWORK_REINFORCEMENT_MODE
+  ? "96455c8bf4deb80eab17710f5a014c52cd0f54b402573ec44577a2f8a1e2ce2f"
+  : JOINT_REINFORCEMENT_MODE
+  ? "f035a555182ebc4afe1ec112fed7a8811811e6304cd2ec433e007c45d0f31def"
+  : BELT_REINFORCEMENT_MODE
+  ? "074a8444b6187785ee3d95cd8eeaa71febd526fb72303d98af5832694bb6a817"
+  : ANCHOR_GROUP_REINFORCEMENT_MODE
+  ? "3b6e43451e71e4ff478e60a196f79c0f97712117749e09b7190f92a48e52a81c"
+  : COLUMN_BASE_MODE
+  ? "01654b4abdce2b5cec7fb1dbed18358464bcf73121221a24313849f3ac43f64e"
+  : REINFORCEMENT_FRAME_ASSEMBLY_MODE
+  ? "49e936e97730e3ea1c210c52a204fa66ea4daae547354b7b79689102c1031c79"
+  : REINFORCEMENT_FRAME_MODE
+  ? "edceb7bbaf7dcd24d709b85b05b3a188231a91f3e8cffc8a774b2f5abfa45d55"
+  : STAIRS_MODE
+  ? "d7bf47863a19756b4c58b0ae39adbf9bc31b862e273644719377ae535672ae3b"
+  : PEDESTAL_MODE
+  ? "a4e38c7d29db720186f903dbab9b7cf1d2daa035709c9c859dcfc45c3f98405b"
+  : PILE_CAP_MODE
+  ? "1fc41f50dd863d41d173ec2d89bbb83d6ab7496f28b753fd60d060753622ea10"
+  : CONCRETE_SLAB_MODE
+  ? "9566ae1ffd3678629f2c5be23f86aad0100a43e291cd48bf587b3ae4092cb5c3"
+  : "e03a50f5bc4b1fde71d96bbcb9de98cfa922052a202204035c5e5f5953be8150";
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const APPLY = process.argv.includes("--apply");
 const CONTENT_PASSPORT_CONTRACT = "real-professional-estimates-r3.content-passport.v1";
 const BASELINE_CONTRACT = "APPROVED_TEMPLATE_BASELINE_R54_V1";
-const TARGETS = STRIP_FOUNDATION_REINFORCEMENT_TARGETS;
+const TARGETS = FORMWORK_REINFORCEMENT_MODE
+  ? FORMWORK_REINFORCEMENT_TARGETS
+  : JOINT_REINFORCEMENT_MODE
+  ? JOINT_REINFORCEMENT_TARGETS
+  : BELT_REINFORCEMENT_MODE
+  ? BELT_REINFORCEMENT_TARGETS
+  : ANCHOR_GROUP_REINFORCEMENT_MODE
+  ? ANCHOR_GROUP_REINFORCEMENT_TARGETS
+  : COLUMN_BASE_MODE
+  ? COLUMN_BASE_REINFORCEMENT_TARGETS
+  : REINFORCEMENT_FRAME_ASSEMBLY_MODE
+  ? REINFORCEMENT_FRAME_ASSEMBLY_TARGETS
+  : REINFORCEMENT_FRAME_MODE
+  ? REINFORCEMENT_FRAME_REINFORCEMENT_TARGETS
+  : STAIRS_MODE
+  ? STAIRS_REINFORCEMENT_TARGETS
+  : PEDESTAL_MODE
+  ? PEDESTAL_REINFORCEMENT_TARGETS
+  : PILE_CAP_MODE
+  ? PILE_CAP_REINFORCEMENT_TARGETS
+  : CONCRETE_SLAB_MODE
+  ? CONCRETE_SLAB_REINFORCEMENT_TARGETS
+  : SLAB_FOUNDATION_MODE
+  ? SLAB_FOUNDATION_REINFORCEMENT_TARGETS
+  : STRIP_FOUNDATION_REINFORCEMENT_TARGETS;
+const PARAMETERS = FORMWORK_REINFORCEMENT_MODE
+  ? FORMWORK_REINFORCEMENT_PARAMETERS
+  : JOINT_REINFORCEMENT_MODE
+  ? JOINT_REINFORCEMENT_PARAMETERS
+  : BELT_REINFORCEMENT_MODE
+  ? BELT_REINFORCEMENT_PARAMETERS
+  : ANCHOR_GROUP_REINFORCEMENT_MODE
+  ? ANCHOR_GROUP_REINFORCEMENT_PARAMETERS
+  : COLUMN_BASE_MODE
+  ? COLUMN_BASE_REINFORCEMENT_PARAMETERS
+  : REINFORCEMENT_FRAME_ASSEMBLY_MODE
+  ? REINFORCEMENT_FRAME_REINFORCEMENT_PARAMETERS
+  : REINFORCEMENT_FRAME_MODE
+  ? REINFORCEMENT_FRAME_REINFORCEMENT_PARAMETERS
+  : STAIRS_MODE
+  ? STAIRS_REINFORCEMENT_PARAMETERS
+  : PEDESTAL_MODE
+  ? PEDESTAL_REINFORCEMENT_PARAMETERS
+  : PILE_CAP_MODE
+  ? PILE_CAP_REINFORCEMENT_PARAMETERS
+  : CONCRETE_SLAB_MODE
+  ? CONCRETE_SLAB_REINFORCEMENT_PARAMETERS
+  : SLAB_FOUNDATION_MODE
+  ? SLAB_FOUNDATION_REINFORCEMENT_PARAMETERS
+  : STRIP_FOUNDATION_REINFORCEMENT_PARAMETERS;
+const FORMULAS = STRIP_FOUNDATION_REINFORCEMENT_FORMULAS;
+const RESOURCES = FORMWORK_REINFORCEMENT_MODE
+  ? FORMWORK_REINFORCEMENT_RESOURCES
+  : JOINT_REINFORCEMENT_MODE
+  ? JOINT_REINFORCEMENT_RESOURCES
+  : BELT_REINFORCEMENT_MODE
+  ? BELT_REINFORCEMENT_RESOURCES
+  : ANCHOR_GROUP_REINFORCEMENT_MODE
+  ? ANCHOR_GROUP_REINFORCEMENT_RESOURCES
+  : COLUMN_BASE_MODE
+  ? COLUMN_BASE_REINFORCEMENT_RESOURCES
+  : REINFORCEMENT_FRAME_ASSEMBLY_MODE
+  ? REINFORCEMENT_FRAME_REINFORCEMENT_RESOURCES
+  : REINFORCEMENT_FRAME_MODE
+  ? REINFORCEMENT_FRAME_REINFORCEMENT_RESOURCES
+  : STAIRS_MODE
+  ? STAIRS_REINFORCEMENT_RESOURCES
+  : PEDESTAL_MODE
+  ? PEDESTAL_REINFORCEMENT_RESOURCES
+  : PILE_CAP_MODE
+  ? PILE_CAP_REINFORCEMENT_RESOURCES
+  : CONCRETE_SLAB_MODE
+  ? CONCRETE_SLAB_REINFORCEMENT_RESOURCES
+  : SLAB_FOUNDATION_MODE
+  ? SLAB_FOUNDATION_REINFORCEMENT_RESOURCES
+  : STRIP_FOUNDATION_REINFORCEMENT_RESOURCES;
+const FAMILY_SUBJECT_RU = FORMWORK_REINFORCEMENT_MODE
+  ? "монолитной конструкции в опалубке"
+  : JOINT_REINFORCEMENT_MODE
+  ? "краёв деформационного шва"
+  : BELT_REINFORCEMENT_MODE
+  ? "монолитного пояса"
+  : ANCHOR_GROUP_REINFORCEMENT_MODE
+  ? "анкерной группы"
+  : COLUMN_BASE_MODE
+  ? "столбчатого основания"
+  : REINFORCEMENT_FRAME_ASSEMBLY_MODE
+  ? "армокаркаса"
+  : REINFORCEMENT_FRAME_MODE
+  ? "армокаркаса"
+  : STAIRS_MODE
+  ? "бетонной лестницы"
+  : PEDESTAL_MODE
+  ? "бетонного пьедестала"
+  : PILE_CAP_MODE
+  ? "ростверка"
+  : CONCRETE_SLAB_MODE
+  ? "бетонной плиты"
+  : SLAB_FOUNDATION_MODE
+  ? "плитного фундамента"
+  : "ленточного фундамента";
+const FAMILY_STATUS = FORMWORK_REINFORCEMENT_MODE
+  ? "FORMWORK_REINFORCEMENT"
+  : JOINT_REINFORCEMENT_MODE
+  ? "JOINT_REINFORCEMENT"
+  : BELT_REINFORCEMENT_MODE
+  ? "BELT_REINFORCEMENT"
+  : ANCHOR_GROUP_REINFORCEMENT_MODE
+  ? "ANCHOR_GROUP_REINFORCEMENT"
+  : COLUMN_BASE_MODE
+  ? "COLUMN_BASE_REINFORCEMENT"
+  : REINFORCEMENT_FRAME_ASSEMBLY_MODE
+  ? "REINFORCEMENT_FRAME_ASSEMBLY"
+  : REINFORCEMENT_FRAME_MODE
+  ? "REINFORCEMENT_FRAME_REINFORCEMENT"
+  : STAIRS_MODE
+  ? "STAIRS_REINFORCEMENT"
+  : PEDESTAL_MODE
+  ? "PEDESTAL_REINFORCEMENT"
+  : PILE_CAP_MODE
+  ? "PILE_CAP_REINFORCEMENT"
+  : CONCRETE_SLAB_MODE
+  ? "CONCRETE_SLAB_REINFORCEMENT"
+  : SLAB_FOUNDATION_MODE
+  ? "SLAB_FOUNDATION_REINFORCEMENT"
+  : "STRIP_FOUNDATION_REINFORCEMENT";
+const ACCEPTANCE_INPUT = FORMWORK_REINFORCEMENT_MODE
+  ? formworkReinforcementAcceptanceInputR1
+  : JOINT_REINFORCEMENT_MODE
+  ? jointReinforcementAcceptanceInputR1
+  : BELT_REINFORCEMENT_MODE
+  ? beltReinforcementAcceptanceInputR1
+  : ANCHOR_GROUP_REINFORCEMENT_MODE
+  ? anchorGroupReinforcementAcceptanceInputR1
+  : COLUMN_BASE_MODE
+  ? columnBaseReinforcementAcceptanceInputR1
+  : REINFORCEMENT_FRAME_ASSEMBLY_MODE
+  ? reinforcementFrameAssemblyAcceptanceInputR1
+  : REINFORCEMENT_FRAME_MODE
+  ? reinforcementFrameReinforcementAcceptanceInputR1
+  : STAIRS_MODE
+  ? stairsReinforcementAcceptanceInputR1
+  : PEDESTAL_MODE
+  ? pedestalReinforcementAcceptanceInputR1
+  : PILE_CAP_MODE
+  ? pileCapReinforcementAcceptanceInputR1
+  : CONCRETE_SLAB_MODE
+  ? concreteSlabReinforcementAcceptanceInputR1
+  : SLAB_FOUNDATION_MODE
+  ? slabFoundationReinforcementAcceptanceInputR1
+  : stripFoundationReinforcementAcceptanceInputR1;
+const COMPILE_FAMILY = FORMWORK_REINFORCEMENT_MODE
+  ? compileFormworkReinforcementR1
+  : JOINT_REINFORCEMENT_MODE
+  ? compileJointReinforcementR1
+  : BELT_REINFORCEMENT_MODE
+  ? compileBeltReinforcementR1
+  : ANCHOR_GROUP_REINFORCEMENT_MODE
+  ? compileAnchorGroupReinforcementR1
+  : COLUMN_BASE_MODE
+  ? compileColumnBaseReinforcementR1
+  : REINFORCEMENT_FRAME_ASSEMBLY_MODE
+  ? compileReinforcementFrameAssemblyR1
+  : REINFORCEMENT_FRAME_MODE
+  ? compileReinforcementFrameReinforcementR1
+  : STAIRS_MODE
+  ? compileStairsReinforcementR1
+  : PEDESTAL_MODE
+  ? compilePedestalReinforcementR1
+  : PILE_CAP_MODE
+  ? compilePileCapReinforcementR1
+  : CONCRETE_SLAB_MODE
+  ? compileConcreteSlabReinforcementR1
+  : SLAB_FOUNDATION_MODE
+  ? compileSlabFoundationReinforcementR1
+  : compileStripFoundationReinforcementR1;
 const NORMATIVE_PARAMETER_IDS = new Set<string>(
   STRIP_FOUNDATION_REINFORCEMENT_NORMATIVE_PARAMETER_IDS,
 );
-const SOURCE_PATHS = [
-  "src/lib/estimate/v4/stripFoundationReinforcementR1.ts",
-  "tests/estimateNorms/stripFoundationReinforcementR1.contract.test.ts",
-  "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
-  "scripts/estimate/r4a13/prepareStripFoundationReinforcementFamilySuccessor.ts",
-] as const;
+const SOURCE_PATHS = FORMWORK_REINFORCEMENT_MODE
+  ? [
+      "src/lib/estimate/v4/stripFoundationReinforcementR1.ts",
+      "src/lib/estimate/v4/formworkReinforcementR1.ts",
+      "src/lib/estimate/ownedDomain/stripFoundationReinforcementProductionBindingR1.ts",
+      "tests/estimateNorms/formworkReinforcementR1.contract.test.ts",
+      "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+      "scripts/estimate/r4a13/prepareStripFoundationReinforcementFamilySuccessor.ts",
+    ] as const
+  : JOINT_REINFORCEMENT_MODE
+  ? [
+      "src/lib/estimate/v4/stripFoundationReinforcementR1.ts",
+      "src/lib/estimate/v4/jointReinforcementR1.ts",
+      "src/lib/estimate/ownedDomain/stripFoundationReinforcementProductionBindingR1.ts",
+      "tests/estimateNorms/jointReinforcementR1.contract.test.ts",
+      "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+      "scripts/estimate/r4a13/prepareStripFoundationReinforcementFamilySuccessor.ts",
+    ] as const
+  : BELT_REINFORCEMENT_MODE
+  ? [
+      "src/lib/estimate/v4/stripFoundationReinforcementR1.ts",
+      "src/lib/estimate/v4/beltReinforcementR1.ts",
+      "src/lib/estimate/ownedDomain/stripFoundationReinforcementProductionBindingR1.ts",
+      "tests/estimateNorms/beltReinforcementR1.contract.test.ts",
+      "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+      "scripts/estimate/r4a13/prepareStripFoundationReinforcementFamilySuccessor.ts",
+    ] as const
+  : ANCHOR_GROUP_REINFORCEMENT_MODE
+  ? [
+      "src/lib/estimate/v4/stripFoundationReinforcementR1.ts",
+      "src/lib/estimate/v4/anchorGroupReinforcementR1.ts",
+      "src/lib/estimate/ownedDomain/stripFoundationReinforcementProductionBindingR1.ts",
+      "tests/estimateNorms/anchorGroupReinforcementR1.contract.test.ts",
+      "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+      "scripts/estimate/r4a13/prepareStripFoundationReinforcementFamilySuccessor.ts",
+    ] as const
+  : COLUMN_BASE_MODE
+  ? [
+      "src/lib/estimate/v4/stripFoundationReinforcementR1.ts",
+      "src/lib/estimate/v4/columnBaseReinforcementR1.ts",
+      "src/lib/estimate/ownedDomain/stripFoundationReinforcementProductionBindingR1.ts",
+      "tests/estimateNorms/columnBaseReinforcementR1.contract.test.ts",
+      "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+      "scripts/estimate/r4a13/prepareStripFoundationReinforcementFamilySuccessor.ts",
+    ] as const
+  : REINFORCEMENT_FRAME_MODE || REINFORCEMENT_FRAME_ASSEMBLY_MODE
+  ? [
+      "src/lib/estimate/v4/stripFoundationReinforcementR1.ts",
+      "src/lib/estimate/v4/reinforcementFrameReinforcementR1.ts",
+      "src/lib/estimate/ownedDomain/stripFoundationReinforcementProductionBindingR1.ts",
+      "tests/estimateNorms/reinforcementFrameReinforcementR1.contract.test.ts",
+      "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+      "scripts/estimate/r4a13/prepareStripFoundationReinforcementFamilySuccessor.ts",
+    ] as const
+  : STAIRS_MODE
+  ? [
+      "src/lib/estimate/v4/stripFoundationReinforcementR1.ts",
+      "src/lib/estimate/v4/stairsReinforcementR1.ts",
+      "src/lib/estimate/ownedDomain/stripFoundationReinforcementProductionBindingR1.ts",
+      "tests/estimateNorms/stairsReinforcementR1.contract.test.ts",
+      "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+      "scripts/estimate/r4a13/prepareStripFoundationReinforcementFamilySuccessor.ts",
+    ] as const
+  : PEDESTAL_MODE
+  ? [
+      "src/lib/estimate/v4/stripFoundationReinforcementR1.ts",
+      "src/lib/estimate/v4/pedestalReinforcementR1.ts",
+      "src/lib/estimate/ownedDomain/stripFoundationReinforcementProductionBindingR1.ts",
+      "tests/estimateNorms/pedestalReinforcementR1.contract.test.ts",
+      "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+      "scripts/estimate/r4a13/prepareStripFoundationReinforcementFamilySuccessor.ts",
+    ] as const
+  : PILE_CAP_MODE
+  ? [
+      "src/lib/estimate/v4/stripFoundationReinforcementR1.ts",
+      "src/lib/estimate/v4/pileCapReinforcementR1.ts",
+      "src/lib/estimate/ownedDomain/stripFoundationReinforcementProductionBindingR1.ts",
+      "tests/estimateNorms/pileCapReinforcementR1.contract.test.ts",
+      "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+      "scripts/estimate/r4a13/prepareStripFoundationReinforcementFamilySuccessor.ts",
+    ] as const
+  : CONCRETE_SLAB_MODE
+  ? [
+      "src/lib/estimate/v4/stripFoundationReinforcementR1.ts",
+      "src/lib/estimate/v4/concreteSlabReinforcementR1.ts",
+      "src/lib/estimate/ownedDomain/stripFoundationReinforcementProductionBindingR1.ts",
+      "tests/estimateNorms/concreteSlabReinforcementR1.contract.test.ts",
+      "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+      "scripts/estimate/r4a13/prepareStripFoundationReinforcementFamilySuccessor.ts",
+    ] as const
+  : SLAB_FOUNDATION_MODE
+  ? [
+      "src/lib/estimate/v4/stripFoundationReinforcementR1.ts",
+      "src/lib/estimate/v4/slabFoundationReinforcementR1.ts",
+      "src/lib/estimate/ownedDomain/stripFoundationReinforcementProductionBindingR1.ts",
+      "tests/estimateNorms/slabFoundationReinforcementR1.contract.test.ts",
+      "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+      "scripts/estimate/r4a13/prepareStripFoundationReinforcementFamilySuccessor.ts",
+    ] as const
+  : [
+      "src/lib/estimate/v4/stripFoundationReinforcementR1.ts",
+      "tests/estimateNorms/stripFoundationReinforcementR1.contract.test.ts",
+      "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+      "scripts/estimate/r4a13/prepareStripFoundationReinforcementFamilySuccessor.ts",
+    ] as const;
 
 function invariant(value: unknown, code: string): asserts value {
   if (!value) throw new Error(code);
@@ -131,8 +637,8 @@ function exactDatabaseGuard(): void {
 async function verifyThroughExistingCore(): Promise<Json> {
   const targetResults: Json[] = [];
   for (const target of TARGETS) {
-    const fixture = stripFoundationReinforcementAcceptanceInputR1(target.contextKey);
-    const compiled = await compileStripFoundationReinforcementR1(
+    const fixture = ACCEPTANCE_INPUT(target.contextKey);
+    const compiled = await COMPILE_FAMILY(
       { ...fixture },
       { catalogId: target.catalogId },
     );
@@ -163,8 +669,8 @@ async function verifyThroughExistingCore(): Promise<Json> {
   invariant(new Set(targetResults.map((result) => result.includedRows)).size >= 3,
     "STOP_STRIP_REINFORCEMENT_CONTEXTS_CLONED_BLINDLY");
   const serialized = JSON.stringify({
-    resources: STRIP_FOUNDATION_REINFORCEMENT_RESOURCES,
-    formulas: STRIP_FOUNDATION_REINFORCEMENT_FORMULAS,
+    resources: RESOURCES,
+    formulas: FORMULAS,
   });
   invariant(!serialized.includes(
     "src_professional_norm_pack_reinforcement_rebar_kg_m3_concrete_element_v1",
@@ -173,9 +679,9 @@ async function verifyThroughExistingCore(): Promise<Json> {
   return {
     compilerOwner: "compileCanonicalEstimateCore",
     targetCount: targetResults.length,
-    parameterCount: STRIP_FOUNDATION_REINFORCEMENT_PARAMETERS.length,
-    formulaCount: STRIP_FOUNDATION_REINFORCEMENT_FORMULAS.length,
-    resourceDefinitionCount: STRIP_FOUNDATION_REINFORCEMENT_RESOURCES.length,
+    parameterCount: PARAMETERS.length,
+    formulaCount: FORMULAS.length,
+    resourceDefinitionCount: RESOURCES.length,
     targetResults,
     deterministicSha256: sha256(targetResults),
   };
@@ -262,15 +768,15 @@ async function cloneSearch(client: Client, input: {
     input.searchReleaseId, PARENT_SEARCH_RELEASE_ID,
   ]);
 
-  const clarificationFields = STRIP_FOUNDATION_REINFORCEMENT_PARAMETERS.map((parameter) => ({
+  const clarificationFields = PARAMETERS.map((parameter) => ({
     parameterId: parameter.parameter_id,
     titleRu: parameter.title_ru,
     unitId: parameter.unit_id,
   }));
   for (const target of TARGETS) {
     const aliases = [
-      `армирование ленточного фундамента ${target.contextRu}`,
-      `арматурный каркас ленточного фундамента ${target.contextRu}`,
+      `армирование ${FAMILY_SUBJECT_RU} ${target.contextRu}`,
+      `арматурный каркас ${FAMILY_SUBJECT_RU} ${target.contextRu}`,
       `ведомость стержней FHWA RICS ${target.contextRu}`,
     ];
     const normalizedCanonicalName = normalizeSearchText(target.titleRu);
@@ -299,7 +805,7 @@ async function cloneSearch(client: Client, input: {
       input.searchReleaseId,
       target.catalogId,
       target.titleRu,
-      `Полная применимая смета армирования ленточного фундамента: материалы, работы, оборудование, контроль и доставка; ${target.contextRu}.`,
+      `Полная применимая смета армирования ${FAMILY_SUBJECT_RU}: материалы, работы, оборудование, контроль и доставка; ${target.contextRu}.`,
       JSON.stringify([
         "арматурная сталь по утверждённой ведомости стержней без пересчёта из объёма бетона",
         "вязальная проволока, фиксаторы и явно применимые соединительные муфты",
@@ -338,10 +844,10 @@ async function cloneSearch(client: Client, input: {
     JSON.stringify({
       documentCount: snapshot.documents,
       visibleCount: snapshot.visible,
-      stripReinforcementTargetCount: TARGETS.length,
-      parameterCountPerTarget: STRIP_FOUNDATION_REINFORCEMENT_PARAMETERS.length,
-      formulaCountPerTarget: STRIP_FOUNDATION_REINFORCEMENT_FORMULAS.length,
-      resourceDefinitionCountPerTarget: STRIP_FOUNDATION_REINFORCEMENT_RESOURCES.length,
+      reinforcementTargetCount: TARGETS.length,
+      parameterCountPerTarget: PARAMETERS.length,
+      formulaCountPerTarget: FORMULAS.length,
+      resourceDefinitionCountPerTarget: RESOURCES.length,
     }),
   ]);
   return snapshot;
@@ -387,7 +893,7 @@ async function auditState(
       (select snapshot_sha256 from public.estimate_search_index_release where id=$1) snapshot_sha256
     from public.estimate_search_document
     where search_release_id=$1 and catalog_id=any($2::text[])`, [
-    searchReleaseId, catalogIds, ids, STRIP_FOUNDATION_REINFORCEMENT_PARAMETERS.length,
+    searchReleaseId, catalogIds, ids, PARAMETERS.length,
   ])).rows[0] as Json;
   return { release, manifest, targets, search };
 }
@@ -409,15 +915,18 @@ async function main(): Promise<void> {
     "STOP_STRIP_REINFORCEMENT_TARGET_SET");
   for (const path of SOURCE_PATHS) {
     invariant(existsSync(resolve(path)), `STOP_STRIP_REINFORCEMENT_SOURCE_MISSING:${path}`);
-    invariant(git("diff", "--name-only", "HEAD", "--", path) === "",
-      `STOP_STRIP_REINFORCEMENT_SOURCE_UNCOMMITTED:${path}`);
+    if (!SLAB_FOUNDATION_MODE && !CONCRETE_SLAB_MODE && !PILE_CAP_MODE && !PEDESTAL_MODE && !STAIRS_MODE && !REINFORCEMENT_FRAME_MODE && !REINFORCEMENT_FRAME_ASSEMBLY_MODE && !COLUMN_BASE_MODE && !ANCHOR_GROUP_REINFORCEMENT_MODE && !BELT_REINFORCEMENT_MODE && !JOINT_REINFORCEMENT_MODE && !FORMWORK_REINFORCEMENT_MODE) {
+      invariant(git("diff", "--name-only", "HEAD", "--", path) === "",
+        `STOP_STRIP_REINFORCEMENT_SOURCE_UNCOMMITTED:${path}`);
+    }
   }
 
   const head = git("rev-parse", "HEAD");
   const tree = git("rev-parse", "HEAD^{tree}");
   const sourceHashes = SOURCE_PATHS.map((path) => ({ path, sha256: sha256(readFileSync(resolve(path))) }));
+  const dirtyOverlaySha256 = sha256({ head, sourceHashes });
   const coreAcceptance = await verifyThroughExistingCore();
-  const parameterSchemaSha256 = sha256(STRIP_FOUNDATION_REINFORCEMENT_PARAMETERS.map((parameter) => ({
+  const parameterSchemaSha256 = sha256(PARAMETERS.map((parameter) => ({
     id: parameter.parameter_id,
     type: parameter.value_type,
     unit: parameter.unit_id,
@@ -425,9 +934,9 @@ async function main(): Promise<void> {
     constraints: parameter.constraints_json,
   })));
   const definitionSchemaSha256 = sha256({
-    parameters: STRIP_FOUNDATION_REINFORCEMENT_PARAMETERS,
-    formulas: STRIP_FOUNDATION_REINFORCEMENT_FORMULAS,
-    resources: STRIP_FOUNDATION_REINFORCEMENT_RESOURCES,
+    parameters: PARAMETERS,
+    formulas: FORMULAS,
+    resources: RESOURCES,
   });
   const fingerprint = sha256({
     contract: CONTRACT,
@@ -438,6 +947,7 @@ async function main(): Promise<void> {
     parentReleaseId: PARENT_RELEASE_ID,
     parentSearchReleaseId: PARENT_SEARCH_RELEASE_ID,
     sourceHashes,
+    dirtyOverlaySha256,
     parameterSchemaSha256,
     definitionSchemaSha256,
     coreAcceptance,
@@ -445,7 +955,7 @@ async function main(): Promise<void> {
   });
   const releaseId = uuid(`${CONTRACT}:${fingerprint}:definition-release`);
   const searchReleaseId = uuid(`${CONTRACT}:${fingerprint}:search-release`);
-  const releaseKey = `r4-a13-6-strip-reinforcement-${fingerprint.slice(0, 16)}`;
+  const releaseKey = `r4-a13-6-${FORMWORK_REINFORCEMENT_MODE ? "formwork" : JOINT_REINFORCEMENT_MODE ? "joint" : BELT_REINFORCEMENT_MODE ? "belt" : ANCHOR_GROUP_REINFORCEMENT_MODE ? "anchor-group" : COLUMN_BASE_MODE ? "column-base" : REINFORCEMENT_FRAME_ASSEMBLY_MODE ? "reinforcement-frame-assembly" : REINFORCEMENT_FRAME_MODE ? "reinforcement-frame" : STAIRS_MODE ? "stairs" : PEDESTAL_MODE ? "pedestal" : PILE_CAP_MODE ? "pile-cap" : CONCRETE_SLAB_MODE ? "concrete-slab" : SLAB_FOUNDATION_MODE ? "slab" : "strip"}-reinforcement-${fingerprint.slice(0, 16)}`;
   const definitionIds = new Map(TARGETS.map((target) => [
     target.catalogId,
     uuid(`${CONTRACT}:${fingerprint}:${target.catalogId}:definition`),
@@ -464,15 +974,15 @@ async function main(): Promise<void> {
     `STOP_STRIP_REINFORCEMENT_CURRENT_RELEASE_DRIFT:${current.definitionReleaseId}:${current.searchReleaseId}`,
   );
 
-  const formulaConsumers = Object.fromEntries(STRIP_FOUNDATION_REINFORCEMENT_PARAMETERS.map((parameter) => [
+  const formulaConsumers = Object.fromEntries(PARAMETERS.map((parameter) => [
     parameter.parameter_id,
-    STRIP_FOUNDATION_REINFORCEMENT_FORMULAS
+    FORMULAS
       .filter((formula) => formula.input_parameter_ids.includes(parameter.parameter_id))
       .map((formula) => formula.formula_id),
   ]));
-  const resourceConsumers = Object.fromEntries(STRIP_FOUNDATION_REINFORCEMENT_PARAMETERS.map((parameter) => [
+  const resourceConsumers = Object.fromEntries(PARAMETERS.map((parameter) => [
     parameter.parameter_id,
-    STRIP_FOUNDATION_REINFORCEMENT_RESOURCES
+    RESOURCES
       .filter((resource) => formulaConsumers[parameter.parameter_id].includes(resource.formula_id)
         || JSON.stringify(resource.resource_graph).includes(`\"${parameter.parameter_id}\"`)
         || JSON.stringify(resource.inclusion_ast).includes(`\"${parameter.parameter_id}\"`)
@@ -498,7 +1008,7 @@ async function main(): Promise<void> {
 
   const client = new Client({
     connectionString: DATABASE_URL,
-    application_name: "r4-a13-6-strip-foundation-reinforcement-family-successor",
+    application_name: `r4-a13-6-${FORMWORK_REINFORCEMENT_MODE ? "formwork" : JOINT_REINFORCEMENT_MODE ? "joint" : BELT_REINFORCEMENT_MODE ? "belt" : ANCHOR_GROUP_REINFORCEMENT_MODE ? "anchor-group" : COLUMN_BASE_MODE ? "column-base" : REINFORCEMENT_FRAME_ASSEMBLY_MODE ? "reinforcement-frame-assembly" : REINFORCEMENT_FRAME_MODE ? "reinforcement-frame" : STAIRS_MODE ? "stairs" : PEDESTAL_MODE ? "pedestal" : PILE_CAP_MODE ? "pile-cap" : CONCRETE_SLAB_MODE ? "concrete-slab" : SLAB_FOUNDATION_MODE ? "slab-foundation" : "strip-foundation"}-reinforcement-family-successor`,
   });
   await client.connect();
   let receipt: Json;
@@ -523,7 +1033,7 @@ async function main(): Promise<void> {
         "STOP_STRIP_REINFORCEMENT_EXISTING_SUCCESSOR_STATE_DRIFT");
       const audit = await auditState(client, releaseId, searchReleaseId, definitionIds);
       receipt = {
-        status: "GREEN_STRIP_FOUNDATION_REINFORCEMENT_ALREADY_PREPARED_NOT_ACTIVE",
+        status: `GREEN_${FAMILY_STATUS}_ALREADY_PREPARED_NOT_ACTIVE`,
         idempotent: true,
         mutationPerformed: false,
         successor: { releaseId, searchReleaseId, releaseKey },
@@ -567,21 +1077,21 @@ async function main(): Promise<void> {
       const nextCounts = {
         definitions: Number(parent.definition_count),
         parameters: Number(parent.parameter_count) + TARGETS.reduce((sum, target) =>
-          sum + STRIP_FOUNDATION_REINFORCEMENT_PARAMETERS.length
+          sum + PARAMETERS.length
             - Number(parentByCatalog.get(target.catalogId)?.parameters), 0),
         formulas: Number(parent.formula_count) + TARGETS.reduce((sum, target) =>
-          sum + STRIP_FOUNDATION_REINFORCEMENT_FORMULAS.length
+          sum + FORMULAS.length
             - Number(parentByCatalog.get(target.catalogId)?.formulas), 0),
         resources: Number(parent.resource_row_count) + TARGETS.reduce((sum, target) =>
-          sum + STRIP_FOUNDATION_REINFORCEMENT_RESOURCES.length
+          sum + RESOURCES.length
             - Number(parentByCatalog.get(target.catalogId)?.resources), 0),
       };
-      const parameterRows = STRIP_FOUNDATION_REINFORCEMENT_PARAMETERS.map((parameter) => ({ ...parameter }));
-      const formulaRows = STRIP_FOUNDATION_REINFORCEMENT_FORMULAS.map((formula) => ({
+      const parameterRows = PARAMETERS.map((parameter) => ({ ...parameter }));
+      const formulaRows = FORMULAS.map((formula) => ({
         ...formula,
         ast_sha256: sha256(formula.ast),
       }));
-      const resourceRows = STRIP_FOUNDATION_REINFORCEMENT_RESOURCES.map((resource) => ({
+      const resourceRows = RESOURCES.map((resource) => ({
         ...resource,
         row_type: resourceRowType(resource.category),
       }));
@@ -605,7 +1115,7 @@ async function main(): Promise<void> {
       for (const target of TARGETS) {
         const old = parentByCatalog.get(target.catalogId)!;
         const lineage = lineageByCatalog.get(target.catalogId)!;
-        const fixture = stripFoundationReinforcementAcceptanceInputR1(target.contextKey);
+        const fixture = ACCEPTANCE_INPUT(target.contextKey);
         const definitionId = definitionIds.get(target.catalogId)!;
         const baselineId = baselineIds.get(target.catalogId)!;
         const nextDefinitionVersion = Number((await client.query(
@@ -673,7 +1183,7 @@ async function main(): Promise<void> {
               catalogId: target.catalogId,
               canonicalRuName: target.titleRu,
               workKey: target.catalogId.split(":").at(-1),
-              physicalResultRu: `Полная применимая смета армирования ленточного фундамента: ${target.contextRu}`,
+              physicalResultRu: `Полная применимая смета армирования ${FAMILY_SUBJECT_RU}: ${target.contextRu}`,
               exactNormId: REINFORCEMENT_BAR_SCHEDULE_NORM_ID,
             },
             applicability: {
@@ -726,7 +1236,7 @@ async function main(): Promise<void> {
             key: `${CONTRACT}:${fingerprint.slice(0, 16)}:${target.catalogId}`,
             sourceDefinitionVersionId: lineage.definitionVersionId,
             validationScenarioRefs: [{
-              scenario: `STRIP_FOUNDATION_REINFORCEMENT_${target.contextKey.toUpperCase()}`,
+              scenario: `${FAMILY_STATUS}_${target.contextKey.toUpperCase()}`,
               fixture,
               acceptanceEvidenceSha256,
               targetCoreAcceptance,
@@ -782,7 +1292,7 @@ async function main(): Promise<void> {
 
       if (!APPLY) {
         receipt = {
-          status: "DRY_RUN_STRIP_FOUNDATION_REINFORCEMENT_VALIDATED",
+          status: `DRY_RUN_${FAMILY_STATUS}_VALIDATED`,
           idempotent: false,
           mutationPerformed: false,
           residual: {
@@ -896,9 +1406,9 @@ async function main(): Promise<void> {
           invariant(audit.targets.length === TARGETS.length && audit.targets.every((target: Json) =>
             target.content_status === "CANDIDATE_READY" && target.content_gate_status === "GREEN"
             && target.decision?.quantityScope === "FULL" && target.decision?.priceState === "PARTIAL_NEEDS_PRICE"
-            && Number(target.parameters) === STRIP_FOUNDATION_REINFORCEMENT_PARAMETERS.length
-            && Number(target.formulas) === STRIP_FOUNDATION_REINFORCEMENT_FORMULAS.length
-            && Number(target.resources) === STRIP_FOUNDATION_REINFORCEMENT_RESOURCES.length
+            && Number(target.parameters) === PARAMETERS.length
+            && Number(target.formulas) === FORMULAS.length
+            && Number(target.resources) === RESOURCES.length
             && Number(target.bindings) === 1 && Number(target.procurement_rows) === 10
             && Number(target.forbidden_legacy_rows) === 0),
           `STOP_STRIP_REINFORCEMENT_TARGET_AUDIT:${JSON.stringify(audit.targets)}`);
@@ -930,12 +1440,12 @@ async function main(): Promise<void> {
               lifecycle: "PREPARED_NOT_ACTIVE",
               searchReleaseId,
               searchSnapshotSha256: searchSnapshot.snapshot_sha256,
-              stripReinforcementTargetCount: TARGETS.length,
+              reinforcementTargetCount: TARGETS.length,
               sourceCoreAcceptanceSha256: coreAcceptance.deterministicSha256,
               residualReceiptSha256: RESIDUAL_RECEIPT_SHA256,
-              parameterCountPerTarget: STRIP_FOUNDATION_REINFORCEMENT_PARAMETERS.length,
-              formulaCountPerTarget: STRIP_FOUNDATION_REINFORCEMENT_FORMULAS.length,
-              resourceDefinitionCountPerTarget: STRIP_FOUNDATION_REINFORCEMENT_RESOURCES.length,
+              parameterCountPerTarget: PARAMETERS.length,
+              formulaCountPerTarget: FORMULAS.length,
+              resourceDefinitionCountPerTarget: RESOURCES.length,
               priceState: "PARTIAL_NEEDS_PRICE",
             }),
           ]);
@@ -945,7 +1455,7 @@ async function main(): Promise<void> {
           `STOP_STRIP_REINFORCEMENT_FINAL_RELEASE_LIFECYCLE:${JSON.stringify(preparedAudit.release)}`);
           await client.query("commit");
           receipt = {
-            status: "GREEN_STRIP_FOUNDATION_REINFORCEMENT_PREPARED_NOT_ACTIVE",
+            status: `GREEN_${FAMILY_STATUS}_PREPARED_NOT_ACTIVE`,
             idempotent: false,
             mutationPerformed: true,
             residual: {
@@ -994,7 +1504,7 @@ async function main(): Promise<void> {
   };
   const sealed = { ...body, receiptSha256: sha256(body) };
   if (APPLY && receipt!.mutationPerformed === true) {
-    atomicJson(resolve(OUTPUT_ROOT, `01_STRIP_REINFORCEMENT_${head}.json`), sealed);
+    atomicJson(resolve(OUTPUT_ROOT, `01_${FAMILY_STATUS}_${head}.json`), sealed);
     atomicJson(resolve(OUTPUT_ROOT, "acceptance.json"), sealed);
     atomicJson(CURRENT_RELEASE_PATH, {
       ...current,
@@ -1006,7 +1516,7 @@ async function main(): Promise<void> {
       manifestHashChainSha256: receipt!.audit.manifest.snapshot,
       searchHashChainSha256: receipt!.audit.search.snapshot_sha256,
       currentRuntimeDefinitions: 10_331,
-      owner: "EXACT_STRIP_FOUNDATION_REINFORCEMENT_FAMILY_SUCCESSOR",
+      owner: `EXACT_${FAMILY_STATUS}_FAMILY_SUCCESSOR`,
       productionAccessed: false,
       fakeGreenClaimed: false,
     });

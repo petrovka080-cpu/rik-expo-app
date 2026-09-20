@@ -43,6 +43,59 @@ describe("canonicalEstimateRevisionWriter", () => {
     expect(identity.sourceRequestHash).toMatch(/^[0-9a-f]{64}$/u);
   });
 
+  it("renders a piece primary measure with a human Russian unit", async () => {
+    const identity = await buildCanonicalRevisionIdentity({
+      catalogId: "embedded-items",
+      parentRevisionId: null,
+      requestIdentity: {
+        sourceRequestText: "Монтаж 28 закладных",
+        primaryMeasureParameterId: "embedded_item_count_piece",
+      },
+      definition: { id: "definition-embedded", title_ru: "Монтаж закладных", domain: "CONCRETE" },
+      parameterDefinitions: [{ parameter_id: "embedded_item_count_piece", unit_id: "piece" }],
+      parameters: { embedded_item_count_piece: 28 },
+      effectiveUserParameters: { embedded_item_count_piece: 28 },
+      baselineAssumptions: {},
+      parent: null,
+      searchReleaseId: "search-embedded",
+      compilerVersion: "compiler.r1",
+      hashText,
+    });
+
+    expect(identity.displayTitleRu).toBe("Монтаж закладных — 28 шт.");
+  });
+
+  it("keeps a missing primary measure explicit for a preliminary revision", async () => {
+    const identity = await buildCanonicalRevisionIdentity({
+      catalogId: "drainage",
+      parentRevisionId: null,
+      requestIdentity: {
+        sourceRequestText: "Устройство системы водоотвода асфальтированного покрытия",
+        primaryMeasureParameterId: "route_length_m",
+      },
+      definition: { id: "definition-drainage", title_ru: "Устройство системы водоотвода", domain: "roads" },
+      parameterDefinitions: [{ parameter_id: "route_length_m", unit_id: "m" }],
+      parameters: {},
+      effectiveUserParameters: {},
+      baselineAssumptions: {},
+      preliminaryNeeds: [{ missing_parameter_ids: ["route_length_m"] }],
+      parent: null,
+      searchReleaseId: "search-release-drainage",
+      compilerVersion: "compiler.r1",
+      hashText,
+    });
+
+    expect(identity).toMatchObject({
+      contractVersion: "ONE_CANONICAL_ESTIMATE_R6_REVISION_IDENTITY_V2",
+      displayTitleRu: "Устройство системы водоотвода — объём нужно уточнить",
+      primaryMeasureParameterId: "route_length_m",
+      primaryMeasureValue: null,
+      normalizedIntent: {
+        primaryMeasure: { parameterId: "route_length_m", value: null, unitId: "m", unresolved: true },
+      },
+    });
+  });
+
   it("uses the immutable definition passport title instead of a legacy generic work identity", async () => {
     const identity = await buildCanonicalRevisionIdentity({
       catalogId: "canonical-work:expanded:strip_foundation",
@@ -101,6 +154,7 @@ describe("canonicalEstimateRevisionWriter", () => {
         userParameters: { area_m2: 12 },
         parentRevisionId: null,
         identityContract: { contractVersion: "identity.r1" },
+        preliminaryNeeds: [],
       },
     });
   });

@@ -12,6 +12,7 @@ import type {
   CanonicalParameter,
   CanonicalParameterSession,
 } from "../estimate/canonicalParameters/canonicalParameterCore";
+import { canonicalParameterAffectsEstimateCalculation } from "../estimate/canonicalParameters/canonicalParameterCalculationRelevance";
 import { getAsphaltParameterV4 } from "../estimate/v4/asphalt/asphaltWorkSpecificParameterSchemaV4";
 import type { WorkSpecificParameterV4 } from "../estimate/v4/professionalEstimateV4Contract";
 
@@ -98,7 +99,10 @@ export function buildRevisionParameterCards(
     const unitRu = aiEstimateRuUnitForParameter(key, parameter?.canonicalUnit ?? null);
     const source = revisionCardSource(parameter?.source ?? null);
     const requiredFor = missing?.requiredFor ?? "better_accuracy";
-    const editable = source !== "formula_derived";
+    // A persisted calculated value is the baseline, not a locked field. An
+    // explicit user edit is submitted to the canonical owner as an override;
+    // dependent values and BOQ rows are still recalculated by that owner.
+    const editable = true;
     return [{
       key,
       labelRu,
@@ -266,11 +270,27 @@ export function buildCanonicalParameterCards(input: {
     if (condition.kind === "PARAMETER_EQUALS") {
       return sessionValues.get(condition.parameterId) === condition.value;
     }
-    return condition.conditions.some((candidate) =>
-      sessionValues.get(candidate.parameterId) === candidate.value);
+    const matches = (candidate: { parameterId: string; value: string | number | boolean }) =>
+      sessionValues.get(candidate.parameterId) === candidate.value;
+    return condition.kind === "ALL_OF"
+      ? condition.conditions.every(matches)
+      : condition.conditions.some(matches);
   };
+  const tracedCalculationParameterIds = new Set(
+    (input.revision?.trace.params ?? [])
+      .filter((parameter) => parameter.affectsRowIds.length > 0)
+      .map((parameter) => parameter.key),
+  );
+  // The first calculation screen is global, not work-specific: it exposes
+  // only values that a formula or a BOQ/resource branch actually consumes.
+  // Documentary references with no calculation consumer remain durable on
+  // old revisions but do not clutter or block this form.
   const visibleParameters = input.session.parameters.filter((parameter) =>
-    getAsphaltParameterV4(parameter.parameterId)?.internal_only !== true
+    parameter.parameterId !== "scope_profile"
+    && (
+      canonicalParameterAffectsEstimateCalculation(parameter)
+      || tracedCalculationParameterIds.has(parameter.parameterId)
+    )
     && conditionMatches(parameter));
   const derivedCountKeys = new Set(visibleParameters
     .map((parameter) => COMPOSITE_DERIVED_COUNT[parameter.parameterId])
@@ -297,8 +317,10 @@ export function buildCanonicalParameterCards(input: {
         : parameter.valueType === "boolean"
           ? "boolean"
           : parameter.allowedValues.length > 0 ? "select" : "text",
-      editable: true,
-      clickAction: "open_parameter_editor",
+      editable: parameter.source !== "NORMATIVE_DERIVED" && parameter.source !== "CALCULATED",
+      clickAction: parameter.source !== "NORMATIVE_DERIVED" && parameter.source !== "CALCULATED"
+        ? "open_parameter_editor"
+        : "read_only",
       noStepperControls: true,
       missing: parameter.value == null && parameter.state !== "NOT_APPLICABLE",
       requiredFor: requiredFor(parameter),

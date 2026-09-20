@@ -11,8 +11,6 @@ import { Ionicons } from "@expo/vector-icons";
 
 import type { AppAccessModel, AppContext } from "../../../lib/appAccessModel";
 import { ProfileOtaDiagnosticsCard } from "@/src/features/profile/ProfileOtaDiagnosticsCard";
-import { VerifiedIdentitySummary } from "@/src/components/auth/ProtectedIdentityBoundary";
-import type { ProtectedIdentity } from "../../../lib/auth/protectedIdentity";
 import { PROFILE_UI as UI } from "../profile.helpers";
 import { profileStyles } from "../profile.styles";
 import type { Company, UserProfile } from "../profile.types";
@@ -88,7 +86,6 @@ type ProfileMainSectionsProps = {
   onSelectActiveContext: (context: AppContext) => void;
   onOpenActiveContext: () => void;
   onSignOut: () => void;
-  verifiedIdentity: ProtectedIdentity;
   canEditProfile: boolean;
 };
 
@@ -117,7 +114,6 @@ export function ProfileMainSections({
   onSelectActiveContext,
   onOpenActiveContext,
   onSignOut,
-  verifiedIdentity,
   canEditProfile,
 }: ProfileMainSectionsProps) {
   const profileHeaderAvatarToneStyle = useMemo<ViewStyle>(
@@ -194,8 +190,6 @@ export function ProfileMainSections({
         </View>
         <Text style={styles.profileHeaderSubtitle}>{accountSubtitle}</Text>
       </View>
-
-      <VerifiedIdentitySummary identity={verifiedIdentity} compact />
 
       <View style={styles.profileTitleRow}>
         <View style={styles.profileTitleMeta}>

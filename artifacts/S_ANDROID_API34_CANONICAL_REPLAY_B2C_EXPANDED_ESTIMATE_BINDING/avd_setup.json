@@ -3,7 +3,6 @@
   "system_image": "system-images;android-34;google_apis;x86_64",
   "device_profile": "pixel_7",
   "available_avds": [
-    "Medium_Phone_API_36.1",
     "Pixel_7_API_34"
   ],
   "sdkmanager_install_result": null,

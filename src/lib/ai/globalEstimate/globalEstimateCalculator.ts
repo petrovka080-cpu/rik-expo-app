@@ -19,7 +19,11 @@ import { calculateGlobalTax } from "./globalTaxEngine";
 import { resolveGlobalTaxRule } from "./globalTaxRuleService";
 import { convertGlobalUnit, normalizeGlobalUnitForLocale } from "./globalUnitConversionEngine";
 import { displayUnitFor, normalizeGlobalUnit } from "./globalUnitNormalizer";
-import { getGlobalWorkTypeDefinition, resolveGlobalWorkType } from "./globalWorkTypeResolver";
+import {
+  getGlobalWorkTypeDefinition,
+  resolveExactGlobalWorkAlias,
+  resolveGlobalWorkType,
+} from "./globalWorkTypeResolver";
 import { buildConstructionWorkPlan } from "../constructionInterpreter/buildConstructionWorkPlan";
 import type { ConstructionWorkPlan } from "../constructionInterpreter/constructionSemanticTypes";
 import { parseUniversalConstructionQuantities } from "../constructionFormulas";
@@ -35,7 +39,10 @@ import {
   buildStripFoundationQuantityContext,
   parseStripFoundationDimensions,
 } from "./stripFoundationDimensions";
-import { toVisibleEstimateLabel } from "../../estimatePresentation/visibleEstimateLabelPolicy";
+import {
+  toVisibleEstimateLabel,
+  visibleEstimateLabelViolations,
+} from "../../estimatePresentation/visibleEstimateLabelPolicy";
 import { getProfessionalWorkPassport } from "../../estimate/professionalWorkPassportRegistry";
 import type { ProfessionalBoqRecipeRow, ProfessionalWorkPassport } from "../../estimate/workPassportContract";
 
@@ -66,7 +73,7 @@ function parseVolume(text?: string): { volume: number; unit: string } | null {
 }
 
 function defaultVolumeForUnit(unit: GlobalUnitInput["normalizedUnit"], locale: GlobalLocaleContext): { volume: number; unit: string } {
-  if (unit === "pcs" || unit === "set") return { volume: 1, unit };
+  if (unit === "pcs" || unit === "set" || unit === "trip") return { volume: 1, unit };
   if (unit === "linear_m" || unit === "linear_ft") return { volume: locale.unitSystem === "imperial" ? 30 : 10, unit: locale.unitSystem === "imperial" ? "linear_ft" : "linear_m" };
   if (unit === "m3" || unit === "cu_ft") return { volume: locale.unitSystem === "imperial" ? 35 : 1, unit: locale.unitSystem === "imperial" ? "cu_ft" : "m3" };
   if (unit === "kg" || unit === "lbs") return { volume: locale.unitSystem === "imperial" ? 100 : 50, unit: locale.unitSystem === "imperial" ? "lbs" : "kg" };
@@ -788,7 +795,10 @@ function canonicalTemplateRowsForEstimatorKernel(params: {
       const name = localizedText(templateRow.names, params.locale);
       const materialKey = materialKeyForEstimateRow(section.type, templateRow.rateKey);
       const normalizedName = name.toLocaleLowerCase("ru-RU");
+      if (/^(?:позици[яи]|количество|источник|статус цены)$/iu.test(normalizedName.trim())) return null;
+      if (visibleEstimateLabelViolations(name).length > 0) return null;
       if (/_extra_|_equipment$|_delivery$|_access_warning$/.test(templateRow.code)) return null;
+      if (/(?:_main_material|_auxiliary|_preparation_materials|_waste_allowance|_prep|_cleanup)$/.test(templateRow.code)) return null;
       if (/_quality_control$/.test(templateRow.code)) return null;
       if (/доставка|вывоз|логист/.test(normalizedName) || /delivery|logistics|removal/.test(templateRow.code)) return null;
       if (/^(материал|работы|монтаж|крепёж|прочее|дополнительные материалы|дополнительные работы|строительные работы|бетонные работы)$/i.test(normalizedName)) return null;
@@ -1126,6 +1136,7 @@ const SEMANTIC_CANONICAL_DYNAMIC_WORK_KEYS = new Set([
 ]);
 
 const DYNAMIC_ESTIMATOR_FIRST_WORK_KEYS = new Set([
+  "drywall_ceiling_preparation",
   "passenger_elevator_installation",
   "concrete_pedestal_pour",
   "drainage_channel_installation",
@@ -1396,6 +1407,7 @@ function calculateGlobalConstructionEstimateUnprojected(input: GlobalEstimateInp
     input.explicitWorkKey != null &&
     input.explicitWorkKey !== "other_construction_work" &&
     promptResolvedWork?.workKey === input.explicitWorkKey;
+  const exactGovernedAliasWorkKey = resolveExactGlobalWorkAlias(input.text)?.workKey ?? null;
   const blockProfessionalExpandedForGovernedFormula =
     preferGovernedTemplate &&
     (
@@ -1450,6 +1462,7 @@ function calculateGlobalConstructionEstimateUnprojected(input: GlobalEstimateInp
   const dynamicEstimatorRespectsSelectedWork =
     (
       !explicitWorkKeyIsUserSelected &&
+      exactGovernedAliasWorkKey == null &&
       (
         !routeWorkKeyHasPromptEvidence ||
         (estimatorPlan != null && DYNAMIC_ESTIMATOR_FIRST_WORK_KEYS.has(estimatorPlan.workKey)) ||
@@ -1646,7 +1659,7 @@ function calculateGlobalConstructionEstimateUnprojected(input: GlobalEstimateInp
           normReviewStatus: "preliminary_configured_quantity_rule",
           confidence: rowConfidence,
           includedInEstimate: true,
-          includedInProcurement: section.type === "materials",
+              includedInProcurement: section.type !== "labor",
           optional: !templateRow.required,
           editable: true,
           deletedByUser: false,

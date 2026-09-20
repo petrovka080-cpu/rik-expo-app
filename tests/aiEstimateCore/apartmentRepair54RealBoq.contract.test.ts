@@ -6,6 +6,9 @@ import { approveCanonicalConsumerRepairAuditDraft } from "../../scripts/estimate
 import { buildConsumerRepairStructuredEstimatePdfViewModel } from "../../src/lib/consumerRequests/consumerRequestPdfService";
 import {
   capitalRenovationBundle,
+  capitalRenovationComposition,
+  CAPITAL_RENOVATION_ACCESS_ROW_CODES,
+  CAPITAL_RENOVATION_CORE_ROW_COUNT,
   includedInProcurement,
   rowCode,
 } from "../estimateCalculator/capitalRenovationTestHelpers";
@@ -14,12 +17,16 @@ describe("apartment repair 54 real BOQ", () => {
   it("returns professional capital renovation items with row-specific quantities and no generic dump rows", () => {
     const bundle = capitalRenovationBundle();
     const rows = bundle.items;
+    const composition = capitalRenovationComposition(rows);
 
     expect(bundle.structuredEstimatePayload).toBeFalsy();
     expect(bundle.draft.repairType).toBe("apartment_capital_renovation");
     expect(rows.length).toBeGreaterThanOrEqual(60);
     expect(rows.every((row) => row.formulaId && row.quantityFormula && row.calculationTrace && row.templateId && row.templateVersion)).toBe(true);
-    expect(rows.every((row) => row.sourceParameters?.area_m2 === 54)).toBe(true);
+    expect(composition.coreRows).toHaveLength(CAPITAL_RENOVATION_CORE_ROW_COUNT);
+    expect(composition.accessSupplementRows).toHaveLength(CAPITAL_RENOVATION_ACCESS_ROW_CODES.length);
+    expect(composition.unknownRows).toEqual([]);
+    expect(composition.coreRows.every((row) => row.sourceParameters?.area_m2 === 54)).toBe(true);
 
     const rowsWithInputAreaQuantity = rows.filter((row) => row.quantity === 54);
     expect(rowsWithInputAreaQuantity.length / rows.length).toBeLessThan(0.1);

@@ -369,7 +369,7 @@ export type ConsumerRepairAiDraft = {
   items: {
     itemType: ConsumerRepairItemType;
     titleRu: string;
-    quantity: number;
+    quantity: number | null;
     unit: string;
     unitPrice?: number | null;
     currency?: string;
@@ -430,7 +430,9 @@ export type ConsumerRequestValidationErrorCode =
   | "ESTIMATE_LATEST_REVISION_REQUIRED"
   | "ESTIMATE_SELECTED_WORK_MISMATCH"
   | "ESTIMATE_PROFESSIONAL_COMPLETENESS_REQUIRED"
+  | "ESTIMATE_QUANTITY_REQUIRED"
   | "ESTIMATE_QUANTITY_INVALID"
+  | "ESTIMATE_PRICES_REQUIRED"
   | "ESTIMATE_EXACT_PROFESSIONAL_OWNER_REQUIRED"
   | "ESTIMATE_CURRENT_ITEMS_PARITY_REQUIRED"
   | "ESTIMATE_CANONICAL_SESSION_STALE"

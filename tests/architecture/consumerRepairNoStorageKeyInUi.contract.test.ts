@@ -9,7 +9,9 @@ describe("consumer repair no storage key in UI architecture", () => {
       .join("\n");
 
     expect(feature).not.toMatch(/storageKey|storage_key/);
-    expect(feature).toContain("pdf.signedUrl");
+    expect(feature).toContain("artifact.signedUrl");
+    expect(feature).toContain("createPdfDocumentDescriptor");
+    expect(feature).toContain("previewPdfDocument");
     expect(feature).toContain("Открыть PDF");
   });
 });

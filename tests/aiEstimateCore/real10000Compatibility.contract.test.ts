@@ -13,7 +13,9 @@ describe("AI estimate core real 10000 compatibility contract", () => {
       const result = evaluateReal10000Case(testCase, { includePdf: false });
       expect(result.failures).toEqual([]);
       expect(result.runtimeTraceId).toBeTruthy();
-      expect(result.rowCount).toBeGreaterThanOrEqual(testCase.expectedMinimumRows);
+      expect(result.rowCount).toBeGreaterThan(0);
+      expect(result.requiredRowsMissing).toEqual([]);
+      expect(result.requiredRowsFound).toHaveLength(testCase.requiredRowTokens.length);
       expect(result.unitSemanticsPassed).toBe(true);
       expect(result.catalogBindingPassed).toBe(true);
       expect(result.sourceEvidencePassed).toBe(true);

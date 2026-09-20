@@ -15,6 +15,11 @@ import {
   createCanonicalConsumerRepairAuditDraft as createConsumerRepairRequestDraft,
 } from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import { matchWorkTemplateFromPrompt } from "../../src/lib/ai/matchWorkTemplateFromPrompt";
+import {
+  CAPITAL_RENOVATION_ACCESS_ROW_CODES,
+  CAPITAL_RENOVATION_CORE_ROW_COUNT,
+  capitalRenovationComposition,
+} from "../estimateCalculator/capitalRenovationTestHelpers";
 
 const PROMPT = "Капитальный ремонт квартиры 101 кв метр";
 
@@ -70,8 +75,16 @@ describe("capital renovation batch parameter apply", () => {
     const bundle = createCapitalRenovationBundle();
     const beforeState = bundle.estimateDraftRevisionState;
     const beforeRevision = beforeState?.revisions.find((revision) => revision.revisionId === beforeState.currentRevisionId);
-    expect(bundle.items).toHaveLength(64);
-    expect(beforeRevision?.boq.rows).toHaveLength(64);
+    expect(capitalRenovationComposition(bundle.items)).toMatchObject({
+      coreRows: { length: CAPITAL_RENOVATION_CORE_ROW_COUNT },
+      accessSupplementRows: { length: CAPITAL_RENOVATION_ACCESS_ROW_CODES.length },
+      unknownRows: [],
+    });
+    expect(capitalRenovationComposition(beforeRevision?.boq.rows ?? [])).toMatchObject({
+      coreRows: { length: CAPITAL_RENOVATION_CORE_ROW_COUNT },
+      accessSupplementRows: { length: CAPITAL_RENOVATION_ACCESS_ROW_CODES.length },
+      unknownRows: [],
+    });
 
     const updated = applyConsumerRepairDraftRevisionParamBatchPatch({
       requestDraftId: bundle.draft.id,
@@ -88,8 +101,11 @@ describe("capital renovation batch parameter apply", () => {
     expect(afterState?.revisions).toHaveLength((beforeState?.revisions.length ?? 0) + 1);
     expect(afterState?.diffs).toHaveLength((beforeState?.diffs.length ?? 0) + 1);
     expect(afterRevision?.source).toBe("param_batch");
-    expect(afterRevision?.boq.rows).toHaveLength(64);
-    expect(updated.items).toHaveLength(64);
+    expect(afterRevision?.boq.rows.length).toBeGreaterThanOrEqual(64);
+    expect(updated.items).toHaveLength(afterRevision?.boq.rows.length ?? 0);
+    expect(capitalRenovationComposition(afterRevision?.boq.rows ?? []).accessSupplementRows
+      .map((row) => String(row.sourceParameters?.rowCode ?? "")).sort())
+      .toEqual([...CAPITAL_RENOVATION_ACCESS_ROW_CODES].sort());
     expect(afterRevision?.params.area_m2.value).toBe(120);
     expect(afterRevision?.params.ceiling_height_m.value).toBe(3);
     expect(afterRevision?.params.bathrooms_count.value).toBe(2);
@@ -101,8 +117,8 @@ describe("capital renovation batch parameter apply", () => {
     expect(updated.events.at(-1)?.eventType).toBe("estimate_params_batch_recalculated");
     expect(updated.events.at(-1)?.payload).toEqual(expect.objectContaining({
       patchCount: 3,
-      rowsBefore: 64,
-      rowsAfter: 64,
+      rowsBefore: beforeRevision?.boq.rows.length,
+      rowsAfter: afterRevision?.boq.rows.length,
       previousRevisionId: beforeRevision?.revisionId,
       revisionId: afterRevision?.revisionId,
     }));
@@ -124,7 +140,11 @@ describe("capital renovation batch parameter apply", () => {
     ).toThrow();
 
     const stored = getConsumerRepairRequest(bundle.draft.id);
-    expect(stored.items).toHaveLength(64);
+    expect(capitalRenovationComposition(stored.items)).toMatchObject({
+      coreRows: { length: CAPITAL_RENOVATION_CORE_ROW_COUNT },
+      accessSupplementRows: { length: CAPITAL_RENOVATION_ACCESS_ROW_CODES.length },
+      unknownRows: [],
+    });
     expect(stored.estimateDraftRevisionState?.currentRevisionId).toBe(beforeState?.currentRevisionId);
     expect(stored.estimateDraftRevisionState?.revisions).toHaveLength(beforeState?.revisions.length ?? 0);
   });
@@ -151,8 +171,12 @@ describe("capital renovation batch parameter apply", () => {
 
     expect(afterState?.revisions).toHaveLength((beforeState?.revisions.length ?? 0) + 1);
     expect(afterRevision?.source).toBe("param_edit");
-    expect(afterRevision?.boq.rows).toHaveLength(64);
-    expect(updated.items).toHaveLength(64);
+    expect(capitalRenovationComposition(afterRevision?.boq.rows ?? [])).toMatchObject({
+      coreRows: { length: CAPITAL_RENOVATION_CORE_ROW_COUNT },
+      accessSupplementRows: { length: CAPITAL_RENOVATION_ACCESS_ROW_CODES.length },
+      unknownRows: [],
+    });
+    expect(updated.items).toHaveLength(CAPITAL_RENOVATION_CORE_ROW_COUNT + CAPITAL_RENOVATION_ACCESS_ROW_CODES.length);
     expect(afterRevision?.params.electrical_points).toEqual(expect.objectContaining({
       value: 99,
       source: "edited_by_user",
@@ -209,7 +233,11 @@ describe("capital renovation batch parameter apply", () => {
         revision.revisionId === reloaded.estimateDraftRevisionState?.currentRevisionId
       );
       expect(reloaded.estimateDraftRevisionState?.currentRevisionId).toBe(newRevisionId);
-      expect(reloaded.items).toHaveLength(64);
+      expect(capitalRenovationComposition(reloaded.items)).toMatchObject({
+        coreRows: { length: CAPITAL_RENOVATION_CORE_ROW_COUNT },
+        accessSupplementRows: { length: CAPITAL_RENOVATION_ACCESS_ROW_CODES.length },
+        unknownRows: [],
+      });
       expect(reloadedRevision?.params.paint_total_area_m2.value).toBe(410);
       expect(reloadedRevision?.boq.rows.find((row) => row.rowId === "capreno_paint_work_two_coats")?.quantity).toBe(410);
 
@@ -238,9 +266,10 @@ describe("capital renovation batch parameter apply", () => {
       bathroomsCount: 1,
     });
     const expectedRows = buildCapitalRenovationRows(expectedGeometry);
+    const composition = capitalRenovationComposition(revision?.boq.rows ?? []);
 
-    expect(revision?.boq.rows).toHaveLength(expectedRows.length);
-    expect(revision?.boq.rows.map((row) => ({
+    expect(composition.coreRows).toHaveLength(expectedRows.length);
+    expect(composition.coreRows.map((row) => ({
       code: row.sourceParameters?.rowCode,
       quantity: row.quantity,
       unit: row.unit,
@@ -251,6 +280,9 @@ describe("capital renovation batch parameter apply", () => {
       unit: row.unit,
       formula: row.formula,
     })));
+    expect(composition.accessSupplementRows.map((row) => String(row.sourceParameters?.rowCode ?? "")).sort())
+      .toEqual([...CAPITAL_RENOVATION_ACCESS_ROW_CODES].sort());
+    expect(composition.unknownRows).toEqual([]);
   });
 
   it("reuses the existing capital renovation calculator instead of duplicating formulas in the runtime adapter", () => {

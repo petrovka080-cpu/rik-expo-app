@@ -196,7 +196,11 @@ async function executeDirectRemoteViewerSessionPath(args: {
     safeSessionId,
     safeOpenToken,
     href: viewerHref,
-  } = createPdfDocumentViewerHref(session.sessionId, opts?.openFlow?.openToken);
+  } = createPdfDocumentViewerHref(
+    session.sessionId,
+    opts?.openFlow?.openToken,
+    opts?.returnTo,
+  );
   recordPdfOpenStage({
     context: opts?.openFlow,
     stage: "viewer_route_payload_ready",
@@ -508,7 +512,11 @@ async function executeStoredPreviewSessionPath(args: {
       safeSessionId,
       safeOpenToken,
       href: viewerHref,
-    } = createPdfDocumentViewerHref(session.sessionId, opts.openFlow?.openToken);
+    } = createPdfDocumentViewerHref(
+      session.sessionId,
+      opts.openFlow?.openToken,
+      opts.returnTo,
+    );
     const navDocumentType = asset?.documentType ?? doc.documentType;
     const navOriginModule = asset?.originModule ?? doc.originModule;
     const navSourceKind = asset?.sourceKind ?? doc.fileSource.kind;

@@ -5,7 +5,12 @@ import { buildConsumerCanonicalParameterSession } from "../../src/features/consu
 import { requestEstimatePublicItemTitle } from "../../src/features/consumerRepair/requestEstimateViewModel";
 import type { ConsumerRepairRequestItem } from "../../src/lib/consumerRequests/consumerRequestTypes";
 import { assertCanonicalEstimateArtifactIdentity } from "../../src/lib/estimate/backendPlatform/canonicalEstimateClient";
-import { isCanonicalEstimateUserEditableParameter } from "../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics";
+import {
+  isCanonicalEstimateConsumerSuppliedParameter,
+  isCanonicalEstimateParameterRequiredForValues,
+  isCanonicalEstimateUserEditableParameter,
+} from "../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics";
+import { buildCanonicalParameterCards } from "../../src/lib/estimatePresentation/buildCanonicalParameterCards";
 import {
   ESTIMATE_PLATFORM_API_VERSION,
   type CanonicalEstimateArtifactView,
@@ -27,6 +32,7 @@ function revision(input: {
   parentRevisionId?: string | null;
   parameters: Record<string, unknown>;
   rowCount?: number;
+  preliminaryNeeds?: CanonicalEstimateRevisionView["preliminaryNeeds"];
 }): CanonicalEstimateRevisionView {
   return {
     apiVersion: ESTIMATE_PLATFORM_API_VERSION,
@@ -39,6 +45,7 @@ function revision(input: {
     currencyCode: "KGS",
     parameters: input.parameters,
     amendmentContract: { rowOverrides: {}, customRows: [], releaseMigration: null },
+    preliminaryNeeds: input.preliminaryNeeds,
     totals: { amount: null },
     rowCount: input.rowCount ?? 11,
     checksumSha256: CHECKSUM,
@@ -102,6 +109,189 @@ describe("P0 canonical parameter editor and professional PDF", () => {
         unitId: "machine_hour/item",
       })).toBe(false);
     }
+  });
+
+  it("admits explicitly user-owned waste and productivity source parameters", () => {
+    const visibleArea = asphaltCatalog.parameterSchema[0];
+
+    expect(isCanonicalEstimateUserEditableParameter({
+      ...visibleArea,
+      parameterId: "waste_factor",
+      titleRu: "Коэффициент технологических потерь",
+      unitId: "ratio",
+      formulaConsumers: ["formula:mix_t"],
+    })).toBe(true);
+    expect(isCanonicalEstimateUserEditableParameter({
+      ...visibleArea,
+      parameterId: "labor_productivity_m2_per_man_hour",
+      titleRu: "Нормативная производительность труда рабочих",
+      unitId: "m2_man_hour",
+      formulaConsumers: ["formula:crew_labor"],
+    })).toBe(true);
+    expect(isCanonicalEstimateUserEditableParameter({
+      ...visibleArea,
+      parameterId: "truck_turnaround_machine_hours",
+      titleRu: "Время погрузки, ожидания и разгрузки одного рейса",
+      unitId: "machine_hour",
+      formulaConsumers: ["formula:mix_truck_hours"],
+    })).toBe(true);
+    expect(isCanonicalEstimateUserEditableParameter({
+      ...visibleArea,
+      parameterId: "quantity_factor",
+      titleRu: "Расчётный коэффициент количества",
+      unitId: "ratio",
+      formulaConsumers: ["formula:quantity"],
+    })).toBe(false);
+    for (const [parameterId, unitId, titleRu] of [
+      ["incoming_control_interval_m2_per_test", "m2/test", "Площадь на одно испытание входного контроля"],
+      ["execution_documentation_count", "document", "Число комплектов исполнительной документации"],
+      ["lighting_test_count", "test", "Число испытаний наружного освещения"],
+    ] as const) {
+      expect(isCanonicalEstimateUserEditableParameter({
+        ...visibleArea,
+        parameterId,
+        titleRu,
+        unitId,
+        formulaConsumers: [`formula:${parameterId}`],
+      })).toBe(true);
+    }
+  });
+
+  it("does not ask a consumer to invent a source-confirmed productivity norm", () => {
+    const visibleArea = asphaltCatalog.parameterSchema[0];
+    expect(isCanonicalEstimateConsumerSuppliedParameter({
+      ...visibleArea,
+      parameterId: "machine_roller_productivity_m2_per_machine_hour",
+      titleRu: "Производительность катка по технологической карте",
+      valueSourceRole: "NORM_REQUIRED_BUT_PROJECT_SELECTED",
+      formulaConsumers: ["formula:roller_hours"],
+    })).toBe(false);
+    expect(isCanonicalEstimateConsumerSuppliedParameter({
+      ...visibleArea,
+      parameterId: "excavator_productivity_m3_h",
+      titleRu: "Производительность экскаватора",
+      valueSourceRole: "SELECTED_EQUIPMENT_PASSPORT",
+      formulaConsumers: ["formula:excavator_hours"],
+    })).toBe(false);
+    expect(isCanonicalEstimateConsumerSuppliedParameter({
+      ...visibleArea,
+      parameterId: "area_m2",
+      titleRu: "Площадь работ",
+      valueSourceRole: "USER_MEASURED",
+      formulaConsumers: ["formula:area"],
+    })).toBe(true);
+  });
+
+  it("activates source-managed requirements only for the selected technology branch", () => {
+    const visibleArea = asphaltCatalog.parameterSchema[0];
+    const trayPassport = {
+      ...visibleArea,
+      parameterId: "tray_module_length_m",
+      titleRu: "Длина модуля лотка",
+      required: false,
+      requiredWhen: { kind: "equals", parameterId: "system_type", value: "linear_tray" },
+      valueSourceRole: "MANUFACTURER_CONFIRMED" as const,
+      formulaConsumers: ["formula:tray_count"],
+    };
+    expect(isCanonicalEstimateParameterRequiredForValues(trayPassport, {})).toBe(false);
+    expect(isCanonicalEstimateParameterRequiredForValues(trayPassport, { system_type: "storm_sewer" })).toBe(false);
+    expect(isCanonicalEstimateParameterRequiredForValues(trayPassport, { system_type: "linear_tray" })).toBe(true);
+  });
+
+  it("promotes active backend needs without exposing unrelated optional inputs", () => {
+    const optional = (parameterId: string, ordinal: number, titleRu: string) => ({
+      ...asphaltCatalog.parameterSchema[0],
+      parameterId,
+      ordinal,
+      titleRu,
+      required: false,
+      defaultValue: null,
+      formulaConsumers: [`formula:${parameterId}`],
+    });
+    const catalog: CanonicalEstimateCatalogItem = {
+      ...asphaltCatalog,
+      parameterSchema: [
+        optional("incoming_control_interval_m2_per_test", 20, "Площадь на одно испытание входного контроля"),
+        optional("unrelated_optional_input", 21, "Дополнительное проектное значение"),
+      ],
+    };
+    const current = revision({
+      revisionId: ASPHALT_REVISION_ID,
+      catalogId: ASPHALT_CATALOG_ID,
+      parameters: {},
+      preliminaryNeeds: [{
+        rowId: "incoming-control-row",
+        ordinal: 0,
+        section: "Услуги",
+        category: "quality_control",
+        titleRu: "Входной контроль",
+        unitId: "test",
+        quantity: null,
+        unitPrice: null,
+        needState: "QUANTITY_REQUIRED",
+        missingParameterIds: ["incoming_control_interval_m2_per_test"],
+        selected: true,
+        procurementEligible: false,
+        formulaId: "formula:incoming_control",
+        calculationTrace: {},
+        normativeTrace: [],
+        needSha256: "b".repeat(64),
+      }],
+    });
+
+    const session = buildConsumerCanonicalParameterSession({ catalog, revision: current, draftId: "active-needs" });
+    expect(session.parameters.map((parameter) => parameter.parameterId))
+      .toEqual(["incoming_control_interval_m2_per_test", "unrelated_optional_input"]);
+    expect(session.parameters[0]).toMatchObject({
+      requiredLevel: "BLOCKING_REQUIRED",
+      state: "BLOCKING_REQUIRED",
+      valid: false,
+      validationIssues: ["VALUE_REQUIRED"],
+    });
+    expect(session.parameters[1]).toMatchObject({ state: "NOT_APPLICABLE", valid: true });
+    expect(session.blockingMissingParameterIds).toEqual(["incoming_control_interval_m2_per_test"]);
+    expect(session.contractMissingParameterIds).toEqual([]);
+    expect(session.status).toBe("BLOCKING_REQUIRED");
+  });
+
+  it("does not let the legacy asphalt passport hide active canonical transport inputs", () => {
+    const visibleArea = asphaltCatalog.parameterSchema[0];
+    const catalog: CanonicalEstimateCatalogItem = {
+      ...asphaltCatalog,
+      parameterSchema: [
+        ...asphaltCatalog.parameterSchema,
+        {
+          ...visibleArea,
+          parameterId: "truck_average_speed_km_per_machine_hour",
+          ordinal: 20,
+          titleRu: "Средняя скорость транспорта по транспортной схеме",
+          unitId: "km_machine_hour",
+          defaultValue: null,
+          formulaConsumers: ["formula:mix_truck_hours"],
+        },
+        {
+          ...visibleArea,
+          parameterId: "truck_turnaround_machine_hours",
+          ordinal: 21,
+          titleRu: "Время погрузки, ожидания и разгрузки одного рейса",
+          unitId: "machine_hour",
+          defaultValue: null,
+          formulaConsumers: ["formula:mix_truck_hours"],
+        },
+      ],
+    };
+    const root = revision({
+      revisionId: ASPHALT_REVISION_ID,
+      catalogId: ASPHALT_CATALOG_ID,
+      parameters: Object.fromEntries(asphaltCatalog.parameterSchema.map((schema) => [schema.parameterId, schema.defaultValue])),
+    });
+    const session = buildConsumerCanonicalParameterSession({ catalog, revision: root, draftId: "transport-inputs" });
+    const cardKeys = buildCanonicalParameterCards({ session, revision: null }).map((card) => card.key);
+
+    expect(cardKeys).toEqual(expect.arrayContaining([
+      "truck_average_speed_km_per_machine_hour",
+      "truck_turnaround_machine_hours",
+    ]));
   });
 
   it("preserves the complete public position name and technical designation around a colon", () => {
@@ -221,7 +411,10 @@ describe("P0 canonical parameter editor and professional PDF", () => {
       draftId: "consumer-draft-conditional-scope",
     });
 
-    expect(session.parameters.find((parameter) => parameter.parameterId === "drainage_length_m")?.visibilityCondition)
+    expect(session.parameters.find((parameter) => parameter.parameterId === "drainage_length_m")).toBeUndefined();
+    const retainedDrainageLength = session.inactiveConditionalParameters
+      ?.find((parameter) => parameter.parameterId === "drainage_length_m");
+    expect(retainedDrainageLength?.visibilityCondition)
       .toEqual({
         kind: "ANY_OF",
         conditions: [
@@ -229,6 +422,9 @@ describe("P0 canonical parameter editor and professional PDF", () => {
           { parameterId: "estimate_scope_mode", value: "FULL_APPLICABLE_SCOPE" },
         ],
       });
+    expect(retainedDrainageLength?.value).toBe(80);
+    expect(session.blockingMissingParameterIds).not.toContain("drainage_length_m");
+    expect(session.contractMissingParameterIds).not.toContain("drainage_length_m");
   });
 
   it("treats the pipeline artifact as a separate work and fails closed for any selected-revision mismatch", () => {

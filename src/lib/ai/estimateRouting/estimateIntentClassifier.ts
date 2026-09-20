@@ -110,6 +110,10 @@ function categoryKeywords(category: GlobalWorkCategory): string[] {
 export function resolveEstimateCategory(text: string): GlobalWorkCategory {
   let best: { category: GlobalWorkCategory; specificity: number } | null = null;
   for (const category of ESTIMATE_INTENT_CATEGORIES) {
+    // "other" contains generic words such as "ремонт" and is a fallback,
+    // not a competing domain. Otherwise a longer generic token can erase a
+    // real signal such as "входная группа" -> facade.
+    if (category === "other") continue;
     const specificity = categoryKeywords(category)
       .filter((keyword) => text.includes(keyword))
       .reduce((maximum, keyword) => Math.max(maximum, keyword.length), 0);

@@ -7,6 +7,7 @@ import {
   ESTIMATE_PLATFORM_API_VERSION,
   assertCreateRequest,
   assertUuid,
+  canonicalEstimatePreliminaryNeedsFromAmendmentContract,
 } from "../../../src/lib/estimate/backendPlatform/contracts.ts";
 import {
   evaluateEstimateAdmission,
@@ -1004,6 +1005,7 @@ async function readRevision(requester: ReturnType<typeof createClient>, revision
     status: data.status,
     parameters: data.input_parameters,
     amendmentContract: data.amendment_contract,
+    preliminaryNeeds: canonicalEstimatePreliminaryNeedsFromAmendmentContract(data.amendment_contract),
     currencyCode: data.currency_code,
     totals: data.totals,
     rowCount: data.row_count,
@@ -1031,6 +1033,7 @@ function revisionView(data: Record<string, unknown>) {
     status: data.status,
     parameters: data.input_parameters,
     amendmentContract: data.amendment_contract,
+    preliminaryNeeds: canonicalEstimatePreliminaryNeedsFromAmendmentContract(data.amendment_contract),
     currencyCode: data.currency_code,
     totals: data.totals,
     rowCount: data.row_count,
@@ -1575,6 +1578,7 @@ async function readCatalogItem(requester: ReturnType<typeof createClient>, rawCa
           unitId: parameter.unit_id,
           titleRu: parameter.title_ru,
           required: parameter.required,
+          preliminaryCompilationAllowed: truth.preliminary_compilation_allowed === true,
           defaultValue: parameter.default_value,
           constraints: parameter.constraints_json,
           semanticParameterKey: truth.semantic_parameter_key,

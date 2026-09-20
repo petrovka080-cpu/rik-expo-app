@@ -52,6 +52,16 @@ function isAllowedBuyerRow(row: EditableEstimateRow): row is EditableEstimateRow
   return isAllowedBuyerRowType(row.rowType);
 }
 
+function consumerHandoffItemType(
+  rowType: string,
+): ConsumerRepairProcurementHandoffItem["itemType"] | null {
+  if (rowType === "material") return "material";
+  if (rowType === "service" || rowType === "equipment" || rowType === "transport") return "service";
+  if (rowType === "document") return "document";
+  if (rowType === "other") return "other";
+  return null;
+}
+
 export function buildConsumerRepairProcurementHandoffFromSnapshot(
   bundle: ConsumerRepairDraftBundle,
 ): ConsumerRepairProcurementHandoff {
@@ -76,16 +86,17 @@ export function buildConsumerRepairProcurementHandoffFromSnapshot(
     const sourcePrompt = bundle.draft.problemText ?? calculationRevision.rawInput;
     const items = calculationRevision.boq.rows
       .filter((row) => row.includedInProcurement)
-      .filter((row) => ["material", "service", "document", "other"].includes(row.rowType))
-      .map((row): ConsumerRepairProcurementHandoffItem => {
+      .flatMap((row): ConsumerRepairProcurementHandoffItem[] => {
+        const itemType = consumerHandoffItemType(row.rowType);
+        if (!itemType) return [];
         const requestItem = requestItemByRowId.get(row.rowId);
-        return {
+        return [{
           sourceEstimateRowId: row.rowId,
           requestItemId: requestItem?.id ?? null,
           titleRu: row.titleRu,
           quantity: row.quantity,
           unit: row.unit,
-          itemType: row.rowType as ConsumerRepairProcurementHandoffItem["itemType"],
+          itemType,
           materialKey: row.materialKey ?? null,
           priceStatus: row.priceStatus ?? "PRICE_MISSING",
           sourcePrompt,
@@ -95,7 +106,7 @@ export function buildConsumerRepairProcurementHandoffFromSnapshot(
           normId: row.normId ?? null,
           normSourceId: row.normSourceId ?? null,
           normVersion: row.normVersion ?? null,
-        };
+        }];
       });
     return {
       sourceRequestDraftId: bundle.draft.id,

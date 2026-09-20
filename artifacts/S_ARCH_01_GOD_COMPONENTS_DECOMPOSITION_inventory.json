@@ -1,19 +1,9 @@
 {
   "wave": "S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_CLOSEOUT",
-  "generatedAt": "2026-07-29T03:58:46.762Z",
+  "generatedAt": "2026-09-07T16:24:08.927Z",
   "component_line_threshold": 500,
   "hook_pressure_threshold": 25,
   "top_by_lines": [
-    {
-      "file": "src/features/ai/AIAssistantScreen.tsx",
-      "physicalLineCount": 704,
-      "meaningfulModuleLineCount": 678,
-      "maxCallableMeaningfulLineCount": 498,
-      "lineCount": 498,
-      "hookCount": 18,
-      "importCount": 29,
-      "responsibilityOwnerCount": 6
-    },
     {
       "file": "src/screens/director/DirectorReportsModal.tsx",
       "physicalLineCount": 487,
@@ -23,6 +13,16 @@
       "hookCount": 20,
       "importCount": 14,
       "responsibilityOwnerCount": 2
+    },
+    {
+      "file": "src/features/ai/AIAssistantScreen.tsx",
+      "physicalLineCount": 523,
+      "meaningfulModuleLineCount": 508,
+      "maxCallableMeaningfulLineCount": 445,
+      "lineCount": 445,
+      "hookCount": 15,
+      "importCount": 26,
+      "responsibilityOwnerCount": 1
     },
     {
       "file": "src/screens/profile/components/ListingModal.tsx",
@@ -76,23 +76,13 @@
     },
     {
       "file": "src/features/ai/AIAssistantReadyProductPanels.tsx",
-      "physicalLineCount": 499,
-      "meaningfulModuleLineCount": 481,
+      "physicalLineCount": 606,
+      "meaningfulModuleLineCount": 585,
       "maxCallableMeaningfulLineCount": 402,
       "lineCount": 402,
       "hookCount": 0,
-      "importCount": 17,
-      "responsibilityOwnerCount": 4
-    },
-    {
-      "file": "src/components/estimate/ProfessionalEstimateComposer.tsx",
-      "physicalLineCount": 464,
-      "meaningfulModuleLineCount": 437,
-      "maxCallableMeaningfulLineCount": 397,
-      "lineCount": 397,
-      "hookCount": 10,
-      "importCount": 5,
-      "responsibilityOwnerCount": 1
+      "importCount": 22,
+      "responsibilityOwnerCount": 6
     },
     {
       "file": "src/screens/accountant/components/ActivePaymentForm.tsx",
@@ -105,6 +95,16 @@
       "responsibilityOwnerCount": 1
     },
     {
+      "file": "src/screens/profile/components/ProfileMainSections.tsx",
+      "physicalLineCount": 504,
+      "meaningfulModuleLineCount": 476,
+      "maxCallableMeaningfulLineCount": 385,
+      "lineCount": 385,
+      "hookCount": 0,
+      "importCount": 11,
+      "responsibilityOwnerCount": 2
+    },
+    {
       "file": "src/screens/office/useOfficeHubScreenController.tsx",
       "physicalLineCount": 475,
       "meaningfulModuleLineCount": 438,
@@ -115,36 +115,46 @@
       "responsibilityOwnerCount": 1
     },
     {
-      "file": "src/screens/profile/components/ProfileMainSections.tsx",
-      "physicalLineCount": 489,
-      "meaningfulModuleLineCount": 462,
-      "maxCallableMeaningfulLineCount": 375,
-      "lineCount": 375,
-      "hookCount": 0,
-      "importCount": 9,
-      "responsibilityOwnerCount": 2
+      "file": "src/screens/director/DirectorProposalSheet.tsx",
+      "physicalLineCount": 437,
+      "meaningfulModuleLineCount": 414,
+      "maxCallableMeaningfulLineCount": 367,
+      "lineCount": 367,
+      "hookCount": 7,
+      "importCount": 14,
+      "responsibilityOwnerCount": 1
     }
   ],
   "top_by_physical_lines": [
     {
-      "file": "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.tsx",
-      "physicalLineCount": 1334,
-      "meaningfulModuleLineCount": 1282,
+      "file": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
+      "physicalLineCount": 2538,
+      "meaningfulModuleLineCount": 2514,
       "maxCallableMeaningfulLineCount": 162,
       "lineCount": 162,
       "hookCount": 0,
-      "importCount": 17,
-      "responsibilityOwnerCount": 23
+      "importCount": 31,
+      "responsibilityOwnerCount": 38
     },
     {
-      "file": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
-      "physicalLineCount": 1139,
-      "meaningfulModuleLineCount": 1123,
-      "maxCallableMeaningfulLineCount": 162,
-      "lineCount": 162,
+      "file": "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.tsx",
+      "physicalLineCount": 1868,
+      "meaningfulModuleLineCount": 1796,
+      "maxCallableMeaningfulLineCount": 203,
+      "lineCount": 203,
       "hookCount": 0,
-      "importCount": 20,
-      "responsibilityOwnerCount": 29
+      "importCount": 21,
+      "responsibilityOwnerCount": 31
+    },
+    {
+      "file": "src/components/estimate/ProfessionalEstimateComposer.tsx",
+      "physicalLineCount": 1284,
+      "meaningfulModuleLineCount": 1234,
+      "maxCallableMeaningfulLineCount": 360,
+      "lineCount": 360,
+      "hookCount": 23,
+      "importCount": 17,
+      "responsibilityOwnerCount": 15
     },
     {
       "file": "src/features/market/ProductDetailsContent.tsx",
@@ -167,6 +177,16 @@
       "responsibilityOwnerCount": 3
     },
     {
+      "file": "src/features/consumerRepair/ConsumerRepairItemRow.tsx",
+      "physicalLineCount": 742,
+      "meaningfulModuleLineCount": 730,
+      "maxCallableMeaningfulLineCount": 342,
+      "lineCount": 342,
+      "hookCount": 21,
+      "importCount": 9,
+      "responsibilityOwnerCount": 7
+    },
+    {
       "file": "src/features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel.tsx",
       "physicalLineCount": 737,
       "meaningfulModuleLineCount": 696,
@@ -187,13 +207,33 @@
       "responsibilityOwnerCount": 2
     },
     {
-      "file": "src/features/ai/AIAssistantScreen.tsx",
-      "physicalLineCount": 704,
-      "meaningfulModuleLineCount": 678,
-      "maxCallableMeaningfulLineCount": 498,
-      "lineCount": 498,
-      "hookCount": 18,
-      "importCount": 29,
+      "file": "src/features/consumerRepair/ConsumerRepairHistory.tsx",
+      "physicalLineCount": 705,
+      "meaningfulModuleLineCount": 691,
+      "maxCallableMeaningfulLineCount": 177,
+      "lineCount": 177,
+      "hookCount": 1,
+      "importCount": 9,
+      "responsibilityOwnerCount": 6
+    },
+    {
+      "file": "src/features/consumerRepair/RequestEstimateItemsEditor.tsx",
+      "physicalLineCount": 658,
+      "meaningfulModuleLineCount": 630,
+      "maxCallableMeaningfulLineCount": 130,
+      "lineCount": 130,
+      "hookCount": 0,
+      "importCount": 10,
+      "responsibilityOwnerCount": 7
+    },
+    {
+      "file": "src/features/ai/AIAssistantReadyProductPanels.tsx",
+      "physicalLineCount": 606,
+      "meaningfulModuleLineCount": 585,
+      "maxCallableMeaningfulLineCount": 402,
+      "lineCount": 402,
+      "hookCount": 0,
+      "importCount": 22,
       "responsibilityOwnerCount": 6
     },
     {
@@ -205,36 +245,6 @@
       "hookCount": 0,
       "importCount": 11,
       "responsibilityOwnerCount": 2
-    },
-    {
-      "file": "src/features/consumerRepair/ConsumerRepairHistory.tsx",
-      "physicalLineCount": 575,
-      "meaningfulModuleLineCount": 563,
-      "maxCallableMeaningfulLineCount": 134,
-      "lineCount": 134,
-      "hookCount": 1,
-      "importCount": 7,
-      "responsibilityOwnerCount": 5
-    },
-    {
-      "file": "src/features/ai/AIAssistantReadyProductPanels.tsx",
-      "physicalLineCount": 499,
-      "meaningfulModuleLineCount": 481,
-      "maxCallableMeaningfulLineCount": 402,
-      "lineCount": 402,
-      "hookCount": 0,
-      "importCount": 17,
-      "responsibilityOwnerCount": 4
-    },
-    {
-      "file": "src/features/consumerRepair/ConsumerRepairItemRow.tsx",
-      "physicalLineCount": 494,
-      "meaningfulModuleLineCount": 482,
-      "maxCallableMeaningfulLineCount": 184,
-      "lineCount": 184,
-      "hookCount": 9,
-      "importCount": 8,
-      "responsibilityOwnerCount": 7
     },
     {
       "file": "src/screens/profile/AddListingScreen.tsx",
@@ -249,14 +259,44 @@
   ],
   "top_by_dependencies": [
     {
+      "file": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
+      "physicalLineCount": 2538,
+      "meaningfulModuleLineCount": 2514,
+      "maxCallableMeaningfulLineCount": 162,
+      "lineCount": 162,
+      "hookCount": 0,
+      "importCount": 31,
+      "responsibilityOwnerCount": 38
+    },
+    {
       "file": "src/features/ai/AIAssistantScreen.tsx",
-      "physicalLineCount": 704,
-      "meaningfulModuleLineCount": 678,
-      "maxCallableMeaningfulLineCount": 498,
-      "lineCount": 498,
-      "hookCount": 18,
-      "importCount": 29,
+      "physicalLineCount": 523,
+      "meaningfulModuleLineCount": 508,
+      "maxCallableMeaningfulLineCount": 445,
+      "lineCount": 445,
+      "hookCount": 15,
+      "importCount": 26,
+      "responsibilityOwnerCount": 1
+    },
+    {
+      "file": "src/features/ai/AIAssistantReadyProductPanels.tsx",
+      "physicalLineCount": 606,
+      "meaningfulModuleLineCount": 585,
+      "maxCallableMeaningfulLineCount": 402,
+      "lineCount": 402,
+      "hookCount": 0,
+      "importCount": 22,
       "responsibilityOwnerCount": 6
+    },
+    {
+      "file": "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.tsx",
+      "physicalLineCount": 1868,
+      "meaningfulModuleLineCount": 1796,
+      "maxCallableMeaningfulLineCount": 203,
+      "lineCount": 203,
+      "hookCount": 0,
+      "importCount": 21,
+      "responsibilityOwnerCount": 31
     },
     {
       "file": "src/screens/director/DirectorScreen.tsx",
@@ -267,16 +307,6 @@
       "hookCount": 9,
       "importCount": 21,
       "responsibilityOwnerCount": 1
-    },
-    {
-      "file": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
-      "physicalLineCount": 1139,
-      "meaningfulModuleLineCount": 1123,
-      "maxCallableMeaningfulLineCount": 162,
-      "lineCount": 162,
-      "hookCount": 0,
-      "importCount": 20,
-      "responsibilityOwnerCount": 29
     },
     {
       "file": "src/screens/buyer/components/BuyerScreenSheets.tsx",
@@ -297,6 +327,16 @@
       "hookCount": 24,
       "importCount": 20,
       "responsibilityOwnerCount": 1
+    },
+    {
+      "file": "src/features/consumerRepair/ConsumerRepairRequestScreenView.tsx",
+      "physicalLineCount": 301,
+      "meaningfulModuleLineCount": 294,
+      "maxCallableMeaningfulLineCount": 181,
+      "lineCount": 181,
+      "hookCount": 0,
+      "importCount": 19,
+      "responsibilityOwnerCount": 3
     },
     {
       "file": "src/screens/accountant/components/AccountantScreenView.tsx",
@@ -329,16 +369,6 @@
       "responsibilityOwnerCount": 3
     },
     {
-      "file": "src/features/consumerRepair/ConsumerRepairRequestChrome.tsx",
-      "physicalLineCount": 377,
-      "meaningfulModuleLineCount": 365,
-      "maxCallableMeaningfulLineCount": 160,
-      "lineCount": 160,
-      "hookCount": 0,
-      "importCount": 18,
-      "responsibilityOwnerCount": 7
-    },
-    {
       "file": "src/screens/accountant/useAccountantScreenComposition.tsx",
       "physicalLineCount": 287,
       "meaningfulModuleLineCount": 277,
@@ -347,26 +377,6 @@
       "hookCount": 15,
       "importCount": 18,
       "responsibilityOwnerCount": 1
-    },
-    {
-      "file": "src/features/ai/AIAssistantReadyProductPanels.tsx",
-      "physicalLineCount": 499,
-      "meaningfulModuleLineCount": 481,
-      "maxCallableMeaningfulLineCount": 402,
-      "lineCount": 402,
-      "hookCount": 0,
-      "importCount": 17,
-      "responsibilityOwnerCount": 4
-    },
-    {
-      "file": "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.tsx",
-      "physicalLineCount": 1334,
-      "meaningfulModuleLineCount": 1282,
-      "maxCallableMeaningfulLineCount": 162,
-      "lineCount": 162,
-      "hookCount": 0,
-      "importCount": 17,
-      "responsibilityOwnerCount": 23
     }
   ],
   "top_by_hooks": [
@@ -381,14 +391,34 @@
       "responsibilityOwnerCount": 1
     },
     {
-      "file": "src/screens/profile/ProfileContent.tsx",
-      "physicalLineCount": 420,
-      "meaningfulModuleLineCount": 382,
-      "maxCallableMeaningfulLineCount": 324,
-      "lineCount": 324,
+      "file": "src/components/estimate/ProfessionalEstimateComposer.tsx",
+      "physicalLineCount": 1284,
+      "meaningfulModuleLineCount": 1234,
+      "maxCallableMeaningfulLineCount": 360,
+      "lineCount": 360,
       "hookCount": 23,
-      "importCount": 14,
-      "responsibilityOwnerCount": 4
+      "importCount": 17,
+      "responsibilityOwnerCount": 15
+    },
+    {
+      "file": "src/screens/profile/ProfileContent.tsx",
+      "physicalLineCount": 426,
+      "meaningfulModuleLineCount": 389,
+      "maxCallableMeaningfulLineCount": 333,
+      "lineCount": 333,
+      "hookCount": 23,
+      "importCount": 16,
+      "responsibilityOwnerCount": 3
+    },
+    {
+      "file": "src/features/consumerRepair/ConsumerRepairItemRow.tsx",
+      "physicalLineCount": 742,
+      "meaningfulModuleLineCount": 730,
+      "maxCallableMeaningfulLineCount": 342,
+      "lineCount": 342,
+      "hookCount": 21,
+      "importCount": 9,
+      "responsibilityOwnerCount": 7
     },
     {
       "file": "src/screens/director/DirectorSubcontractTab.tsx",
@@ -422,13 +452,13 @@
     },
     {
       "file": "src/features/ai/AIAssistantScreen.tsx",
-      "physicalLineCount": 704,
-      "meaningfulModuleLineCount": 678,
-      "maxCallableMeaningfulLineCount": 498,
-      "lineCount": 498,
-      "hookCount": 18,
-      "importCount": 29,
-      "responsibilityOwnerCount": 6
+      "physicalLineCount": 523,
+      "meaningfulModuleLineCount": 508,
+      "maxCallableMeaningfulLineCount": 445,
+      "lineCount": 445,
+      "hookCount": 15,
+      "importCount": 26,
+      "responsibilityOwnerCount": 1
     },
     {
       "file": "src/screens/accountant/useAccountantScreenComposition.tsx",
@@ -469,26 +499,6 @@
       "hookCount": 13,
       "importCount": 4,
       "responsibilityOwnerCount": 3
-    },
-    {
-      "file": "src/screens/accountant/AccountantSubcontractTab.tsx",
-      "physicalLineCount": 239,
-      "meaningfulModuleLineCount": 222,
-      "maxCallableMeaningfulLineCount": 130,
-      "lineCount": 130,
-      "hookCount": 13,
-      "importCount": 5,
-      "responsibilityOwnerCount": 3
-    },
-    {
-      "file": "src/screens/profile/AddListingScreen.tsx",
-      "physicalLineCount": 489,
-      "meaningfulModuleLineCount": 450,
-      "maxCallableMeaningfulLineCount": 409,
-      "lineCount": 409,
-      "hookCount": 12,
-      "importCount": 16,
-      "responsibilityOwnerCount": 1
     }
   ],
   "findings": [],

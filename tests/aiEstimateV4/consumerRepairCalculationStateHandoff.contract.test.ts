@@ -165,7 +165,7 @@ describe("ConsumerRepairCalculationStateHandoffContract", () => {
     );
   });
 
-  test("vector C: keeps a historical snapshot read-only and blocks mutation without backend projection", () => {
+  test("vector C: migrates a historical prepared exact snapshot without parser or generic compiler reconstruction", () => {
     const created = createRuntimeBundle("historical-calculation-handoff-owner");
     if (!created.bundle.estimateRevisionState) throw new Error("TEST_CANONICAL_STATE_MISSING");
     const historicalPrepared = commitPreparedConsumerRepairRequestBundle({

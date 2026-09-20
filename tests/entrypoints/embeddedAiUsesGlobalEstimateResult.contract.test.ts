@@ -15,6 +15,9 @@ describe("AI estimate canonical backend binding", () => {
     expect(types).toContain("canonicalEstimateRevisionId");
     expect(types).toContain("canonicalEstimateReleaseId");
     expect(actions).toContain("buildCanonicalEstimateArtifact");
-    expect(actions).toContain("CANONICAL_ARTIFACT_RELEASE_MISMATCH");
+    expect(actions).toContain('artifact.status !== "ready"');
+    expect(actions).toContain("artifact.revisionId !== message.canonicalEstimateRevisionId");
+    expect(actions).toContain("artifact.releaseId !== message.canonicalEstimateReleaseId");
+    expect(actions).toContain("CANONICAL_ARTIFACT_IDENTITY_MISMATCH");
   });
 });

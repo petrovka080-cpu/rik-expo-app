@@ -112,6 +112,75 @@ describe("canonical backend revision projection", () => {
     expect(canonicalBackendRevisionProjectionForSave(child)?.currentRevisionId).toBe(CHILD_ID);
   });
 
+  test("reports preliminary needs without promoting them to payable BOQ rows", () => {
+    const source = bundle(PARENT_ID, 120);
+    const withNeed = {
+      ...source,
+      items: [...source.items, {
+        ...source.items[0]!,
+        id: "preliminary-roller",
+        titleRu: "Roller machine hours",
+        quantity: null,
+        sourceParameters: {
+          ...source.items[0]!.sourceParameters,
+          rowCode: "preliminary-roller",
+          canonicalPreliminaryNeed: true,
+        },
+      }, {
+        ...source.items[0]!,
+        id: "conditional-haul-not-applicable",
+        titleRu: "Haul outside selected scope",
+        sourceParameters: {
+          ...source.items[0]!.sourceParameters,
+          rowCode: "conditional-haul-not-applicable",
+          includedInEstimate: false,
+        },
+      }],
+    } as ConsumerRepairDraftBundle;
+    const sourcePayload = payload(PARENT_ID, null, 120);
+    sourcePayload.canonicalBackend!.preliminaryNeeds = [{
+      rowId: "preliminary-roller",
+      ordinal: 2,
+      section: "equipment",
+      category: "equipment",
+      titleRu: "Roller machine hours",
+      unitId: "machine_hour",
+      quantity: null,
+      unitPrice: null,
+      needState: "QUANTITY_REQUIRED",
+      missingParameterIds: ["machine_roller_productivity_m2_per_machine_hour"],
+      selected: true,
+      procurementEligible: false,
+      formulaId: "roller-hours",
+      calculationTrace: {},
+      normativeTrace: [],
+      needSha256: "d".repeat(64),
+    }];
+
+    const projected = appendCanonicalBackendRevisionProjection({
+      previousBundle: null,
+      nextBundle: withNeed,
+      payload: sourcePayload,
+    });
+    const current = projected.estimateDraftRevisionState?.revisions[0];
+
+    expect(current).toMatchObject({
+      status: "needs_more_params_but_preliminary_available",
+      estimateLevel: "PRELIMINARY_QUANTITY_BOQ",
+      applicableBoqRowsCount: 2,
+    });
+    expect(current?.boq.rows).toHaveLength(2);
+    expect(current?.boq.rows).toContainEqual(expect.objectContaining({
+      rowId: "conditional-haul-not-applicable",
+    }));
+    expect(current?.missingInputs).toEqual([expect.objectContaining({
+      key: "machine_roller_productivity_m2_per_machine_hour",
+      blocksPreliminaryEstimate: false,
+      requiredFor: "contract_ready",
+    })]);
+    expect(canonicalBackendRevisionProjectionForSave(projected)?.currentRevisionId).toBe(PARENT_ID);
+  });
+
   test("fails closed when item identity differs from the projected current revision", () => {
     const projected = appendCanonicalBackendRevisionProjection({
       previousBundle: null,

@@ -30,7 +30,7 @@ describe("BATCH-004 R5.6 canonical drywall-domain successor", () => {
   test("removes every forbidden V7 row and keeps one consolidated logistics/access boundary", () => {
     for (const definition of buildAllBatch004R56CanonicalSuccessorDefinitions()) {
       expect(definition.resources.length).toBeGreaterThanOrEqual(5);
-      expect(definition.resources.length).toBeLessThanOrEqual(10);
+      expect(new Set(definition.resources.map((row) => row.rowId)).size).toBe(definition.resources.length);
       expect(definition.resources.filter((row) => row.rowId.endsWith(":operation_work"))).toHaveLength(1);
       expect(definition.resources.filter((row) => row.rowId.endsWith(":incoming_delivery"))).toHaveLength(1);
       expect(definition.resources.filter((row) => row.rowId.endsWith(":waste_haul"))).toHaveLength(1);
@@ -88,8 +88,11 @@ describe("BATCH-004 R5.6 canonical drywall-domain successor", () => {
         definition,
         values: { ...values, delivery_required: false, waste_haul_required: false, access_equipment_required: false },
       });
-      expect(noOptionalLogistics.rows).toHaveLength(compiled.rows.length - 3);
-      expect(noOptionalLogistics.rows.some((row) => /:(?:incoming_delivery|waste_haul|access_equipment)$/u.test(row.row_id))).toBe(false);
+      const disabledConditionalRows = definition.resources.filter((row) =>
+        /(?:delivery_required|waste_haul_required|access_equipment_required)=true/u.test(row.inclusionCondition)
+      );
+      expect(noOptionalLogistics.rows).toHaveLength(compiled.rows.length - disabledConditionalRows.length);
+      expect(noOptionalLogistics.rows.some((row) => /:(?:incoming_delivery|waste_haul|access_equipment|access_temporary_works|access_delivery_return|drywall_board_lift)$/u.test(row.row_id))).toBe(false);
     }
   });
 
@@ -148,8 +151,11 @@ describe("BATCH-004 R5.6 canonical drywall-domain successor", () => {
         },
         child_assemblies: parts.child_assemblies,
       });
-      expect(withoutOptional.compiled_rows).toHaveLength(compiled.compiled_rows.length - 3);
-      expect(withoutOptional.compiled_rows.some((row) => /:(?:incoming_delivery|waste_haul|access_equipment)$/u.test(row.row_id))).toBe(false);
+      const disabledConditionalRows = definition.resources.filter((row) =>
+        /(?:delivery_required|waste_haul_required|access_equipment_required)=true/u.test(row.inclusionCondition)
+      );
+      expect(withoutOptional.compiled_rows).toHaveLength(compiled.compiled_rows.length - disabledConditionalRows.length);
+      expect(withoutOptional.compiled_rows.some((row) => /:(?:incoming_delivery|waste_haul|access_equipment|access_temporary_works|access_delivery_return|drywall_board_lift)$/u.test(row.row_id))).toBe(false);
     }
   });
 

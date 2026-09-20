@@ -10,8 +10,6 @@ import {
   ANCHOR_GROUP_PROJECT_SCHEDULE_PRODUCT_PROFILE_ID,
   ANCHOR_GROUP_PROJECT_SCHEDULE_SOURCE_ID,
   ANCHOR_GROUP_PROJECT_SCHEDULE_SOURCE_METADATA,
-} from "../../../src/lib/estimate/v4/anchorGroupInstallationR1";
-import {
   ANCHOR_GROUP_INSTALLATION_FORMULAS,
   ANCHOR_GROUP_INSTALLATION_NORMATIVE_PARAMETER_IDS,
   ANCHOR_GROUP_INSTALLATION_PARAMETERS,
@@ -29,25 +27,27 @@ import {
 
 type Json = Record<string, any>;
 
-const CONTRACT = "rik-expo-app.r4-a13-6.anchor-group-installation-family.v2";
+const CONTRACT = "rik-expo-app.r4-a13-6.master-anchor-group-successor.v2";
 const EXPECTED_BRANCH = "codex/r4-a5-clean-08b18902";
-const MASTER_PATH = resolve(
-  "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (10).md",
-);
-const MASTER_SHA256 = "d4b0af610619d877cc65d26534ce391d2c37e7d196a5feb03c20d4f81e298f01";
-const PARENT_RELEASE_ID = "11b33e36-e42b-54e1-b177-91be7d2018cd";
-const PARENT_SEARCH_RELEASE_ID = "99fd54a5-30c1-544a-84b4-883fa6b854de";
+const MASTER_PATH = resolve(process.env.R4A13_MASTER_PATH
+  ?? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (23).md");
+const MASTER_SHA256 = process.env.R4A13_MASTER_SHA256
+  ?? "f02577c56d436913fd347a480a9ec45b25d25f25cc2b31eae2d0c2ae29c79fde";
+const PARENT_RELEASE_ID = process.env.R4A13_PARENT_DEFINITION_RELEASE_ID
+  ?? "5f023d1f-633b-59f2-89b3-9cc11a64a0c1";
+const PARENT_SEARCH_RELEASE_ID = process.env.R4A13_PARENT_SEARCH_RELEASE_ID
+  ?? "d6e867ec-d0e7-50f6-a14e-0d84b4a20d83";
 const CURRENT_RELEASE_PATH = resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json");
-const OUTPUT_ROOT = resolve(
-  ".release-runtime/r4a13-6/exact-physical-norm-successors/anchor-group-installation-family-source-role-r2",
-);
-const RESIDUAL_SUMMARY_PATH = resolve(
-  ".release-runtime/ai-estimate-real-professional-norm-packs/2026-09-17T05-52-01-470Z/candidate-summary.json",
-);
-const RESIDUAL_RECEIPT_SHA256 = "b8581dafc1cf6f99e9b0ad8a064570c687dc2e39b223b8053bcef0499d1538d2";
+const OUTPUT_ROOT = resolve(process.env.R4A13_OUTPUT_ROOT
+  ?? ".release-runtime/r4a13-6/s19-first-estimate/master-anchor-group-successor-v2");
+const RESIDUAL_SUMMARY_PATH = resolve(process.env.R4A13_PARENT_AUDIT_PATH
+  ?? ".release-runtime/r4a13-6/s19-first-estimate/catalog-minimum-input-audit-v24/catalog-first-estimate-audit.json");
+const RESIDUAL_RECEIPT_SHA256 = process.env.R4A13_PARENT_AUDIT_RECEIPT_SHA256
+  ?? "5b13bf0d583519b1c8e47547af196bd6d4607832b633d06b6060ab41ace6c2d3";
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const APPLY = process.argv.includes("--apply");
+const ALLOW_HASHED_DIRTY_SOURCE = process.env.R4A13_ALLOW_HASHED_DIRTY_SOURCE === "true";
 const CONTENT_PASSPORT_CONTRACT = "real-professional-estimates-r3.content-passport.v1";
 const BASELINE_CONTRACT = "APPROVED_TEMPLATE_BASELINE_R54_V1";
 const TARGETS = ANCHOR_GROUP_INSTALLATION_TARGETS;
@@ -56,7 +56,9 @@ const NORMATIVE_PARAMETER_IDS = new Set<string>(
 );
 const SOURCE_PATHS = [
   "src/lib/estimate/v4/anchorGroupInstallationR1.ts",
+  "src/lib/estimate/ownedDomain/anchorGroupInstallationProductionBindingR1.ts",
   "tests/estimateNorms/anchorGroupInstallationR1.contract.test.ts",
+  "tests/estimateNorms/anchorGroupInstallationProductionBindingR1.contract.test.ts",
   "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
   "scripts/estimate/r4a13/prepareAnchorGroupInstallationFamilySuccessor.ts",
 ] as const;
@@ -129,8 +131,48 @@ function exactDatabaseGuard(): void {
 }
 
 async function verifyThroughExistingCore(): Promise<Json> {
+  const masterShortInput = {
+    anchor_group_count: 10,
+    bolts_per_group: 4,
+    anchor_bolt_designation: "M24 class 8.8",
+  };
+  const masterShort = await compileAnchorGroupInstallationR1(masterShortInput);
+  const masterShortRows = new Map(masterShort.rows.map((row) => [row.row_id, row]));
+  invariant(Number(masterShortRows.get("work:anchor-group:install-align-groups")?.quantity) === 10
+    && Number(masterShortRows.get("material:anchor-group:anchor-bolts")?.quantity) === 40,
+  "STOP_ANCHOR_GROUP_INSTALLATION_MASTER_SHORT_GEOMETRY");
+  for (const rowId of [
+    "material:anchor-group:nuts",
+    "material:anchor-group:washers",
+    "material:anchor-group:installation-template",
+    "material:anchor-group:fixing-accessories",
+    "material:anchor-group:thread-protection-caps",
+    "equipment:anchor-group:survey",
+    "service:anchor-group:documents",
+    "material:anchor-group:temporary-braces",
+    "material:anchor-group:non-shrink-base-grout",
+  ]) {
+    invariant(masterShort.preliminaryNeeds.some((need) => need.row_id === rowId),
+      `STOP_ANCHOR_GROUP_INSTALLATION_MASTER_SHORT_NEED:${rowId}`);
+  }
+  invariant(!/ready.mix|reinforcing.steel|sand|crushed.stone|waterproof|formwork/iu
+    .test(JSON.stringify([...masterShort.rows, ...masterShort.preliminaryNeeds])),
+  "STOP_ANCHOR_GROUP_INSTALLATION_MASTER_SHORT_FORBIDDEN_SCOPE");
   const targetResults: Json[] = [];
   for (const target of TARGETS) {
+    const minimum = await compileAnchorGroupInstallationR1(
+      {},
+      { catalogId: target.catalogId },
+    );
+    invariant(minimum.rows.length === 0,
+      `STOP_ANCHOR_GROUP_INSTALLATION_MINIMUM_CALCULATED_ROWS:${target.contextKey}`);
+    invariant(minimum.preliminaryNeeds.length === ANCHOR_GROUP_INSTALLATION_RESOURCES.length,
+      `STOP_ANCHOR_GROUP_INSTALLATION_MINIMUM_COMPOSITION:${target.contextKey}`);
+    invariant(minimum.preliminaryNeeds.every((need) => need.quantity == null),
+      `STOP_ANCHOR_GROUP_INSTALLATION_MINIMUM_UNKNOWN_QUANTITY:${target.contextKey}`);
+    invariant(new Set(minimum.preliminaryNeeds.map((need) => need.row_id)).size
+      === ANCHOR_GROUP_INSTALLATION_RESOURCES.length,
+    `STOP_ANCHOR_GROUP_INSTALLATION_MINIMUM_DUPLICATE_ROWS:${target.contextKey}`);
     const fixture = anchorGroupInstallationAcceptanceInputR1(target.contextKey);
     const compiled = await compileAnchorGroupInstallationR1(
       { ...fixture },
@@ -158,6 +200,9 @@ async function verifyThroughExistingCore(): Promise<Json> {
       catalogId: target.catalogId,
       includedRows: compiled.rows.length,
       procurementRows: compiled.rows.filter((row) => row.included_in_procurement).length,
+      minimumCalculatedRows: minimum.rows.length,
+      minimumPreliminaryNeeds: minimum.preliminaryNeeds.length,
+      minimumNeedsSha256: sha256(minimum.preliminaryNeeds),
       anchorBoltQuantityPiece: anchors?.quantity,
       inputSha256: sha256(fixture),
       compiledSha256: sha256(compiled),
@@ -179,6 +224,10 @@ async function verifyThroughExistingCore(): Promise<Json> {
   ]) invariant(!serialized.includes(forbidden), `STOP_ANCHOR_GROUP_INSTALLATION_LEGACY:${forbidden}`);
   return {
     compilerOwner: "compileCanonicalEstimateCore",
+    masterShortInput,
+    masterShortCalculatedRows: masterShort.rows.length,
+    masterShortPreliminaryNeeds: masterShort.preliminaryNeeds.length,
+    masterShortSha256: sha256(masterShort),
     targetCount: targetResults.length,
     parameterCount: ANCHOR_GROUP_INSTALLATION_PARAMETERS.length,
     formulaCount: ANCHOR_GROUP_INSTALLATION_FORMULAS.length,
@@ -297,7 +346,8 @@ async function cloneSearch(client: Client, input: {
         applicability_tags=array_append(array_remove(coalesce(applicability_tags,'{}'::text[]),
           'FULL_QUANTITY_SCOPE_PRICE_PARTIAL'),'FULL_APPLICABLE_SCOPE_PRICE_PARTIAL'),
         source_provenance=source_provenance||jsonb_build_object('productProfileId',$10::text,
-          'contextKey',$11::text,'fullApplicableScope',true,'projectScheduleRequired',true),
+          'contextKey',$11::text,'fullApplicableScope',true,'projectScheduleRequired',true,
+          'firstEstimateThenRefine',true,'minimumRequiredInputs',0,'unknownIsNotNotRequired',true),
         aliases=$12::text[],normalized_canonical_name=$13,normalized_aliases=$14::text[],
         normalized_search_terms=$15::text[],normalized_search_blob=$16,
         definition_version_id=$17::uuid,
@@ -319,7 +369,7 @@ async function cloneSearch(client: Client, input: {
         "автоматические нормы производительности труда и оборудования",
         "скрытое расстояние доставки и неподтверждённые цены",
       ]),
-      clarificationFields.length,
+      0,
       JSON.stringify(clarificationFields),
       ANCHOR_GROUP_PROJECT_SCHEDULE_NORM_ID,
       ANCHOR_GROUP_PROJECT_SCHEDULE_PRODUCT_PROFILE_ID,
@@ -382,6 +432,10 @@ async function auditState(
       (select count(*)::int from public.estimate_formula_graph f where f.definition_version_id=definition.id) formulas,
       (select count(*)::int from public.estimate_resource_spec r where r.definition_version_id=definition.id) resources,
       (select count(*)::int from public.estimate_work_normative_binding b where b.definition_version_id=definition.id) bindings,
+      (select count(*)::int from public.estimate_parameter_definition p
+        where p.definition_version_id=definition.id
+          and coalesce((p.truth_metadata->>'preliminary_compilation_allowed')::boolean,false)=false)
+        blocked_preliminary_parameters,
       (select count(*)::int from public.estimate_resource_spec r
         where r.definition_version_id=definition.id and r.procurement_eligible) procurement_rows,
       (select count(*)::int from public.estimate_resource_spec r
@@ -399,7 +453,7 @@ async function auditState(
       (select snapshot_sha256 from public.estimate_search_index_release where id=$1) snapshot_sha256
     from public.estimate_search_document
     where search_release_id=$1 and catalog_id=any($2::text[])`, [
-    searchReleaseId, catalogIds, ids, ANCHOR_GROUP_INSTALLATION_PARAMETERS.length,
+    searchReleaseId, catalogIds, ids, 0,
   ])).rows[0] as Json;
   return { release, manifest, targets, search };
 }
@@ -410,24 +464,31 @@ async function main(): Promise<void> {
     "STOP_ANCHOR_GROUP_INSTALLATION_BRANCH_DRIFT");
   invariant(existsSync(MASTER_PATH) && sha256(readFileSync(MASTER_PATH)) === MASTER_SHA256,
     "STOP_ANCHOR_GROUP_INSTALLATION_MASTER_SHA256_DRIFT");
+  const dirtySourcePaths = SOURCE_PATHS.filter((path) =>
+    git("status", "--short", "--", path) !== "");
+  invariant(dirtySourcePaths.length === 0 || ALLOW_HASHED_DIRTY_SOURCE,
+    `STOP_ANCHOR_GROUP_INSTALLATION_DIRTY_SOURCE_REQUIRES_EXPLICIT_OPT_IN:${dirtySourcePaths.join(",")}`);
   invariant(existsSync(RESIDUAL_SUMMARY_PATH), "STOP_ANCHOR_GROUP_INSTALLATION_RESIDUAL_MISSING");
   const residual = JSON.parse(readFileSync(RESIDUAL_SUMMARY_PATH, "utf8")) as Json;
-  invariant(residual.receipt_sha256 === RESIDUAL_RECEIPT_SHA256
-    && residual.candidate?.definition_release_id === PARENT_RELEASE_ID
-    && residual.candidate?.search_release_id === PARENT_SEARCH_RELEASE_ID
-    && residual.current_residual?.legacy_pack_source_id_count === 8,
+  invariant(residual.receiptSha256 === RESIDUAL_RECEIPT_SHA256
+    && residual.candidate?.definitionReleaseId === PARENT_RELEASE_ID
+    && Number(residual.denominator) === 10_331
+    && Number(residual.counts?.minimumCompiled) === 10_331
+    && Number(residual.counts?.minimumFailed) === 0,
   "STOP_ANCHOR_GROUP_INSTALLATION_RESIDUAL_DRIFT");
   invariant(TARGETS.length === 6 && new Set(TARGETS.map((target) => target.catalogId)).size === 6,
     "STOP_ANCHOR_GROUP_INSTALLATION_TARGET_SET");
   for (const path of SOURCE_PATHS) {
     invariant(existsSync(resolve(path)), `STOP_ANCHOR_GROUP_INSTALLATION_SOURCE_MISSING:${path}`);
-    invariant(git("diff", "--name-only", "HEAD", "--", path) === "",
-      `STOP_ANCHOR_GROUP_INSTALLATION_SOURCE_UNCOMMITTED:${path}`);
   }
 
   const head = git("rev-parse", "HEAD");
   const tree = git("rev-parse", "HEAD^{tree}");
-  const sourceHashes = SOURCE_PATHS.map((path) => ({ path, sha256: sha256(readFileSync(resolve(path))) }));
+  const sourceHashes = SOURCE_PATHS.map((path) => ({
+    path,
+    sha256: sha256(readFileSync(resolve(path))),
+    trackedState: git("status", "--short", "--", path) || "CLEAN_AT_HEAD",
+  }));
   const coreAcceptance = await verifyThroughExistingCore();
   const parameterSchemaSha256 = sha256(ANCHOR_GROUP_INSTALLATION_PARAMETERS.map((parameter) => ({
     id: parameter.parameter_id,
@@ -457,7 +518,7 @@ async function main(): Promise<void> {
   });
   const releaseId = uuid(`${CONTRACT}:${fingerprint}:definition-release`);
   const searchReleaseId = uuid(`${CONTRACT}:${fingerprint}:search-release`);
-  const releaseKey = `r4-a13-6-anchor-group-installation-${fingerprint.slice(0, 16)}`;
+  const releaseKey = `r4-a13-6-s19-anchor-group-minimum-input-${fingerprint.slice(0, 16)}`;
   const definitionIds = new Map(TARGETS.map((target) => [
     target.catalogId,
     uuid(`${CONTRACT}:${fingerprint}:${target.catalogId}:definition`),
@@ -535,7 +596,7 @@ async function main(): Promise<void> {
         "STOP_ANCHOR_GROUP_INSTALLATION_EXISTING_SUCCESSOR_STATE_DRIFT");
       const audit = await auditState(client, releaseId, searchReleaseId, definitionIds);
       receipt = {
-        status: "GREEN_ANCHOR_GROUP_INSTALLATION_ALREADY_PREPARED_NOT_ACTIVE",
+        status: "GREEN_S19_ANCHOR_GROUP_MINIMUM_INPUT_ALREADY_PREPARED_NOT_ACTIVE",
         idempotent: true,
         mutationPerformed: false,
         successor: { releaseId, searchReleaseId, releaseKey },
@@ -746,8 +807,9 @@ async function main(): Promise<void> {
               productProfileId: ANCHOR_GROUP_PROJECT_SCHEDULE_PRODUCT_PROFILE_ID,
               contextKey: target.contextKey,
               contextRu: target.contextRu,
-              projectScheduleRequired: true,
-              conditionalScopeFailClosed: true,
+              projectScheduleRequiredForExactQuantity: true,
+              preliminaryCompositionAllowed: true,
+              unknownIsNotNotRequired: true,
             },
             definitionSha256: targetDefinitionSha256,
             sourceMetadata: {
@@ -761,6 +823,9 @@ async function main(): Promise<void> {
               normativeSourceIds: [ANCHOR_GROUP_PROJECT_SCHEDULE_SOURCE_ID],
               synthetic: false,
               fullApplicableScope: true,
+              firstEstimateThenRefine: true,
+              minimumRequiredInputs: 0,
+              unknownIsNotNotRequired: true,
               priceState: "PARTIAL_NEEDS_PRICE",
             },
           },
@@ -776,6 +841,8 @@ async function main(): Promise<void> {
             ...parameter.truth_metadata,
             contract: CONTRACT,
             semantic_parameter_key: `${target.catalogId}:${parameter.parameter_id}`,
+            first_estimate_then_refine: true,
+            preliminary_compilation_allowed: true,
             formula_consumers: formulaConsumers[parameter.parameter_id],
             resource_branch_consumers: resourceConsumers[parameter.parameter_id],
           }),
@@ -845,14 +912,14 @@ async function main(): Promise<void> {
 
       if (!APPLY) {
         receipt = {
-          status: "DRY_RUN_ANCHOR_GROUP_INSTALLATION_VALIDATED",
+          status: "DRY_RUN_S19_ANCHOR_GROUP_MINIMUM_INPUT_VALIDATED",
           idempotent: false,
           mutationPerformed: false,
           residual: {
             path: RESIDUAL_SUMMARY_PATH,
             receiptSha256: RESIDUAL_RECEIPT_SHA256,
-            unresolvedSourceIdsBefore: residual.current_residual.unresolved_normative_source_id_count,
-            legacyPackSourceIdsBefore: residual.current_residual.legacy_pack_source_id_count,
+            minimumCompiledBefore: residual.counts.minimumCompiled,
+            minimumFailedBefore: residual.counts.minimumFailed,
           },
           predecessor: {
             releaseId: PARENT_RELEASE_ID,
@@ -897,6 +964,9 @@ async function main(): Promise<void> {
               activationAllowed: false,
               productionEligible: false,
               fullApplicableScope: true,
+              firstEstimateThenRefine: true,
+              minimumRequiredInputs: 0,
+              unknownIsNotNotRequired: true,
               priceState: "PARTIAL_NEEDS_PRICE",
             }),
             PARENT_RELEASE_ID,
@@ -964,7 +1034,10 @@ async function main(): Promise<void> {
             && Number(target.parameters) === ANCHOR_GROUP_INSTALLATION_PARAMETERS.length
             && Number(target.formulas) === ANCHOR_GROUP_INSTALLATION_FORMULAS.length
             && Number(target.resources) === ANCHOR_GROUP_INSTALLATION_RESOURCES.length
-            && Number(target.bindings) === 1 && Number(target.procurement_rows) === 16
+            && Number(target.bindings) === 1
+            && Number(target.procurement_rows) === ANCHOR_GROUP_INSTALLATION_RESOURCES
+              .filter((resource) => resource.procurement_eligible).length
+            && Number(target.blocked_preliminary_parameters) === 0
             && Number(target.forbidden_legacy_rows) === 0),
           `STOP_ANCHOR_GROUP_INSTALLATION_TARGET_AUDIT:${JSON.stringify(audit.targets)}`);
           invariant(Number(audit.search.targets) === TARGETS.length
@@ -1001,6 +1074,9 @@ async function main(): Promise<void> {
               parameterCountPerTarget: ANCHOR_GROUP_INSTALLATION_PARAMETERS.length,
               formulaCountPerTarget: ANCHOR_GROUP_INSTALLATION_FORMULAS.length,
               resourceDefinitionCountPerTarget: ANCHOR_GROUP_INSTALLATION_RESOURCES.length,
+              firstEstimateThenRefine: true,
+              minimumRequiredInputs: 0,
+              unknownIsNotNotRequired: true,
               priceState: "PARTIAL_NEEDS_PRICE",
             }),
           ]);
@@ -1010,14 +1086,14 @@ async function main(): Promise<void> {
           `STOP_ANCHOR_GROUP_INSTALLATION_FINAL_RELEASE_LIFECYCLE:${JSON.stringify(preparedAudit.release)}`);
           await client.query("commit");
           receipt = {
-            status: "GREEN_ANCHOR_GROUP_INSTALLATION_PREPARED_NOT_ACTIVE",
+            status: "GREEN_S19_ANCHOR_GROUP_MINIMUM_INPUT_PREPARED_NOT_ACTIVE",
             idempotent: false,
             mutationPerformed: true,
             residual: {
               path: RESIDUAL_SUMMARY_PATH,
               receiptSha256: RESIDUAL_RECEIPT_SHA256,
-              unresolvedSourceIdsBefore: residual.current_residual.unresolved_normative_source_id_count,
-              legacyPackSourceIdsBefore: residual.current_residual.legacy_pack_source_id_count,
+              minimumCompiledBefore: residual.counts.minimumCompiled,
+              minimumFailedBefore: residual.counts.minimumFailed,
             },
             predecessor: { releaseId: PARENT_RELEASE_ID, searchReleaseId: PARENT_SEARCH_RELEASE_ID },
             successor: {
@@ -1045,8 +1121,15 @@ async function main(): Promise<void> {
     schemaVersion: `${CONTRACT}.receipt.v1`,
     capturedAt: new Date().toISOString(),
     globalStatus: "GLOBAL_STATUS=RED_NOT_PRODUCTION_READY",
-    source: { branch: EXPECTED_BRANCH, head, tree, fingerprint, sourceHashes },
-    masterSha256: MASTER_SHA256,
+    source: {
+      branch: EXPECTED_BRANCH,
+      head,
+      tree,
+      fingerprint,
+      sourceHashes,
+      hashedDirtySourceAccepted: dirtySourcePaths.length > 0 && ALLOW_HASHED_DIRTY_SOURCE,
+    },
+    master: { path: MASTER_PATH, sha256: MASTER_SHA256 },
     targetCatalogIds: TARGETS.map((target) => target.catalogId),
     canonicalCompilerOwner: "compileCanonicalEstimateCore",
     canonicalPublisherOwner: "canonicalDefinitionPublisherR1",
@@ -1071,7 +1154,7 @@ async function main(): Promise<void> {
       manifestHashChainSha256: receipt!.audit.manifest.snapshot,
       searchHashChainSha256: receipt!.audit.search.snapshot_sha256,
       currentRuntimeDefinitions: 10_331,
-      owner: "EXACT_ANCHOR_GROUP_INSTALLATION_FAMILY_SUCCESSOR",
+      owner: "S19_ANCHOR_GROUP_MINIMUM_INPUT_SUCCESSOR",
       productionAccessed: false,
       fakeGreenClaimed: false,
     });

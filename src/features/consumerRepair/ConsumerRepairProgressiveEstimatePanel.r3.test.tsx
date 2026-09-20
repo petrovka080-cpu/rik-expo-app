@@ -201,6 +201,10 @@ describe("InlineParamEditor R3 parameter guide", () => {
     expect(onRefineCanonicalParameters).toHaveBeenCalledTimes(1);
     expect(renderer.root.findByProps({ testID: "request-estimate-parameter-panel" })).toBeTruthy();
     expect(renderer.root.findByProps({ testID: "editable-param-popover-input" }).props.value).toBe("987");
+    expect(renderer.root.findByProps({ testID: "editable-param-chip-area_m2" })
+      .findAllByType("Text" as never)
+      .map((node) => String(node.props.children ?? ""))
+      .join(" ")).toContain("№ 1.");
 
     act(() => renderer.root.findByProps({ testID: "request-estimate-parameters-toggle" }).props.onPress());
     expect(renderer.root.findAllByProps({ testID: "request-estimate-parameter-panel" })).toHaveLength(0);
@@ -240,10 +244,12 @@ describe("InlineParamEditor R3 parameter guide", () => {
     const input = renderer.root.findByProps({ testID: "editable-param-popover-input" });
     expect(input.props.placeholder).toBe("Норма: 1,5–2,0 л/м²");
     expect(input.props.placeholderTextColor).toBe("#64748B");
-    expect(renderer.root.findAllByProps({ testID: "editable-param-guide-primer_consumption" })).toHaveLength(0);
+    expect(renderer.root.findByProps({ testID: "editable-param-guide-primer_consumption" }).props.children)
+      .toBe("Норма: 1,5–2,0 л/м²");
 
     act(() => input.props.onFocus());
-    expect(renderer.root.findByProps({ testID: "editable-param-popover-input" }).props.placeholder).toBeUndefined();
+    expect(renderer.root.findByProps({ testID: "editable-param-popover-input" }).props.placeholder)
+      .toBe("Норма: 1,5–2,0 л/м²");
     expect(renderer.root.findByProps({ testID: "editable-param-guide-primer_consumption" }).props.children)
       .toBe("Норма: 1,5–2,0 л/м²");
 

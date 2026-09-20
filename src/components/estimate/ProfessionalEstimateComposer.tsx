@@ -80,6 +80,8 @@ import { currentUserId } from "../../lib/supabaseClient";
 import { validateCanonicalEstimateParameterInputs } from "../../lib/estimate/backendPlatform/canonicalEstimateParameterValidation";
 import { canonicalWorkSearchQueryFromPrompt } from "../../lib/estimate/backendPlatform/canonicalEstimateSearchInput";
 import {
+  canonicalEstimateBlockingParameterIssues,
+  canonicalEstimateParameterAllowsPreliminaryCompilation,
   canonicalEstimateParameterChoiceLabelRu,
   isCanonicalEstimateUserEditableParameter,
 } from "../../lib/estimate/backendPlatform/canonicalEstimateParameterSemantics";
@@ -165,6 +167,7 @@ function sourceRoleRu(value: CanonicalEstimateCatalogItem["parameterSchema"][num
     MANDATORY_NORM_VALUE: "Нормативное значение",
     NORM_REQUIRED_BUT_PROJECT_SELECTED: "Норма требует проектного выбора",
     MANUFACTURER_CONFIRMED: "Подтверждено изготовителем",
+    SELECTED_EQUIPMENT_PASSPORT: "Паспорт выбранной техники",
     BACKEND_DERIVED: "Расчёт backend",
     PRICE_INPUT: "Источник цены",
   };
@@ -186,14 +189,25 @@ function compositeItems(value: CanonicalEstimateParameterInputValue | undefined)
 function parameterProgress(
   catalog: CanonicalEstimateCatalogItem,
   inputs: Record<string, CanonicalEstimateParameterInputValue>,
-): { filled: number; required: number; remaining: number } {
+): { filled: number; required: number; remaining: number; refinable: number } {
   const requiredParameters = catalog.parameterSchema.filter((parameter) =>
-    parameter.required && isCanonicalEstimateUserEditableParameter(parameter));
+    parameter.required
+    && !canonicalEstimateParameterAllowsPreliminaryCompilation(parameter)
+    && isCanonicalEstimateUserEditableParameter(parameter));
   const filled = requiredParameters.filter((parameter) => {
     const value = inputs[parameter.parameterId];
     return Array.isArray(value) ? value.length > 0 : String(value ?? "").trim() !== "";
   }).length;
-  return { filled, required: requiredParameters.length, remaining: requiredParameters.length - filled };
+  const refinable = catalog.parameterSchema.filter((parameter) =>
+    canonicalEstimateParameterAllowsPreliminaryCompilation(parameter)
+    && isCanonicalEstimateUserEditableParameter(parameter)
+    && !parameterValuePresent(inputs[parameter.parameterId])).length;
+  return {
+    filled,
+    required: requiredParameters.length,
+    remaining: requiredParameters.length - filled,
+    refinable,
+  };
 }
 
 function normalizeRevisionParameters(parameters: Record<string, unknown>): Record<string, CanonicalEstimateParameterInputValue> {
@@ -202,17 +216,12 @@ function normalizeRevisionParameters(parameters: Record<string, unknown>): Recor
     || (Array.isArray(entry[1]) && entry[1].every((item) => Boolean(item) && typeof item === "object" && !Array.isArray(item)))));
 }
 
-export default function ProfessionalEstimateComposer({
+function useProfessionalEstimateSelection({
   visible,
-  mode,
   context,
-  onClose,
-  onOpenDraft,
-  onDraftCreated,
-  rikQuickSearch,
   initialText,
   initialRevisionId,
-}: ProfessionalEstimateComposerProps) {
+}: Pick<ProfessionalEstimateComposerProps, "visible" | "context" | "initialText" | "initialRevisionId">) {
   const [text, setText] = useState(initialText ?? "");
   const [mapping, setMapping] = useState<ForemanAiEstimateDraftMapping | null>(null);
   const [bundle, setBundle] = useState<RevisionBundle | null>(null);
@@ -283,7 +292,9 @@ export default function ProfessionalEstimateComposer({
     const timeout = setTimeout(() => {
       const unresolved = selectedCatalog.parameterSchema
         .filter((parameter) => parameter.required && parameter.visibilityRole !== "INTERNAL_ONLY"
-          && parameter.visibilityRole !== "USER_DERIVED_READONLY" && !parameterValuePresent(parameterInputs[parameter.parameterId]))
+          && parameter.visibilityRole !== "USER_DERIVED_READONLY"
+          && !canonicalEstimateParameterAllowsPreliminaryCompilation(parameter)
+          && !parameterValuePresent(parameterInputs[parameter.parameterId]))
         .map((parameter) => parameter.parameterId);
       void applyCanonicalEstimateDraftEvent({
         draftId: backendDraft.draftId,
@@ -546,6 +557,46 @@ export default function ProfessionalEstimateComposer({
     }
   };
 
+  return {
+    text, setText, mapping, setMapping, bundle, setBundle, error, setError,
+    loading, setLoading, saving, setSaving, jobProgress, setJobProgress,
+    activeAbort, setActiveAbort, catalogLoading, setCatalogLoading,
+    catalogSuggestions, setCatalogSuggestions, catalogSearchPage, setCatalogSearchPage,
+    selectedSearchIdentity, setSelectedSearchIdentity, backendDraft, setBackendDraft,
+    searchGroupPage, setSearchGroupPage, typedRelations, setTypedRelations,
+    selectedCatalog, setSelectedCatalog, parameterInputs, setParameterInputs,
+    focusedParameterId, setFocusedParameterId, rowInputs, setRowInputs,
+    rowOverrides, setRowOverrides, customRows, setCustomRows,
+    pendingMigration, setPendingMigration, history, setHistory,
+    historyLoading, setHistoryLoading, showAllParameters, setShowAllParameters,
+    showParameterPanel, setShowParameterPanel,
+    expandedParameterTruth, setExpandedParameterTruth,
+    catalogQuery, setCatalogQuery, catalogRows, setCatalogRows,
+    artifactMessage, setArtifactMessage, artifactLinks, setArtifactLinks,
+    contextText, installRevision, loadHistory, handleTextChange,
+    handleLoadMoreWorkSuggestions, handleLoadMoreSearchGroup, handleSelectWorkSuggestion,
+  };
+}
+
+function useProfessionalEstimateActions({
+  state,
+  onDraftCreated,
+  onClose,
+  rikQuickSearch,
+}: {
+  state: ReturnType<typeof useProfessionalEstimateSelection>;
+  onDraftCreated: ProfessionalEstimateComposerProps["onDraftCreated"];
+  onClose: ProfessionalEstimateComposerProps["onClose"];
+  rikQuickSearch: ProfessionalEstimateComposerProps["rikQuickSearch"];
+}) {
+  const {
+    text, mapping, bundle, setBundle, setError, loading, setLoading, saving, setSaving,
+    jobProgress, setJobProgress, activeAbort, setActiveAbort, catalogLoading, setCatalogLoading,
+    selectedCatalog, parameterInputs, rowInputs, setRowInputs, rowOverrides, customRows,
+    setPendingMigration, catalogQuery, catalogRows, setCatalogRows,
+    artifactLinks, setArtifactLinks, setArtifactMessage, installRevision, loadHistory,
+  } = state;
+
   const readParameters = (): Record<string, CanonicalEstimateParameterInputValue> => {
     if (!selectedCatalog) throw new Error(TEXT.selectCanonicalWork);
     const incompleteTruth = selectedCatalog.parameterSchema
@@ -564,14 +615,18 @@ export default function ProfessionalEstimateComposer({
       schema: selectedCatalog.parameterSchema,
       rawInputs: parameterInputs,
     });
-    if (!validation.ok) {
+    const blockingIssues = canonicalEstimateBlockingParameterIssues(
+      selectedCatalog.parameterSchema,
+      validation.issues,
+    );
+    if (blockingIssues.length > 0) {
       const titleById = new Map(selectedCatalog.parameterSchema.map((parameter) => [parameter.parameterId, parameter.titleRu]));
-      const labels = validation.issues.slice(0, 5).map((issue) => {
+      const labels = blockingIssues.slice(0, 5).map((issue) => {
         const label = titleById.get(issue.parameterId) ?? issue.parameterId;
         const related = issue.relatedParameterId ? ` / ${titleById.get(issue.relatedParameterId) ?? issue.relatedParameterId}` : "";
         return `${label}${related} [${issue.code}]`;
       });
-      throw new Error(`${TEXT.invalidParameter}: ${labels.join(", ")}${validation.issues.length > 5 ? ` (+${validation.issues.length - 5})` : ""}`);
+      throw new Error(`${TEXT.invalidParameter}: ${labels.join(", ")}${blockingIssues.length > 5 ? ` (+${blockingIssues.length - 5})` : ""}`);
     }
     return validation.parameters;
   };
@@ -893,6 +948,37 @@ export default function ProfessionalEstimateComposer({
     }
   };
 
+  return {
+    handleGenerate, handleOpenHistoryRevision, commitRow, handleCatalogSearch,
+    handleAddCatalogRow, handleArtifact, handleOpenArtifact, handleCancelJob,
+    handleAddToDraft, runRecalculate,
+  };
+}
+
+export default function ProfessionalEstimateComposer(props: ProfessionalEstimateComposerProps) {
+  const {
+    visible, mode, context, onClose, onOpenDraft, onDraftCreated,
+    rikQuickSearch, initialText, initialRevisionId,
+  } = props;
+  const state = useProfessionalEstimateSelection({ visible, context, initialText, initialRevisionId });
+  const actions = useProfessionalEstimateActions({ state, onDraftCreated, onClose, rikQuickSearch });
+  const {
+    text, mapping, bundle, error, loading, saving, jobProgress, activeAbort,
+    catalogLoading, catalogSuggestions, catalogSearchPage, selectedSearchIdentity,
+    backendDraft, searchGroupPage, typedRelations, selectedCatalog, parameterInputs,
+    setParameterInputs, focusedParameterId, setFocusedParameterId, rowInputs,
+    setRowInputs, pendingMigration, history, historyLoading, showAllParameters,
+    setShowAllParameters, showParameterPanel, setShowParameterPanel,
+    expandedParameterTruth, setExpandedParameterTruth, catalogQuery, setCatalogQuery,
+    catalogRows, artifactMessage, artifactLinks, contextText, handleTextChange,
+    handleLoadMoreWorkSuggestions, handleLoadMoreSearchGroup, handleSelectWorkSuggestion,
+  } = state;
+  const {
+    handleGenerate, handleOpenHistoryRevision, commitRow, handleCatalogSearch,
+    handleAddCatalogRow, handleArtifact, handleOpenArtifact, handleCancelJob,
+    handleAddToDraft, runRecalculate,
+  } = actions;
+
   const renderEstimateRow = (row: ForemanDraftEstimateRow) => {
     const input = rowInputs[row.rowId] ?? { visibleName: row.visibleName, quantity: String(row.quantity), unitPrice: row.unitPrice == null ? "" : String(row.unitPrice) };
     const editable = row.structuredRow.editable !== false;
@@ -973,7 +1059,10 @@ export default function ProfessionalEstimateComposer({
     ? validateCanonicalEstimateParameterInputs({ schema: selectedCatalog.parameterSchema, rawInputs: parameterInputs })
     : null;
   const parameterIssues = new Map<string, string[]>();
-  for (const issue of currentParameterValidation?.issues ?? []) {
+  const currentBlockingParameterIssues = selectedCatalog && currentParameterValidation
+    ? canonicalEstimateBlockingParameterIssues(selectedCatalog.parameterSchema, currentParameterValidation.issues)
+    : [];
+  for (const issue of currentBlockingParameterIssues) {
     parameterIssues.set(issue.parameterId, [...(parameterIssues.get(issue.parameterId) ?? []), issue.code]);
   }
   const selectedParameterProgress = selectedCatalog
@@ -1052,7 +1141,7 @@ export default function ProfessionalEstimateComposer({
               {selectedCatalog ? <View style={styles.catalogPanel} testID="canonical-estimate-parameter-form">
                 <Text style={styles.panelTitle}>{TEXT.parametersTitle}</Text>
                 <Text style={styles.catalogHint}>{selectedCatalog.titleRu}</Text>
-                <Text style={styles.catalogHint} testID="canonical-estimate-required-parameter-progress">Заполнено {selectedParameterProgress?.filled ?? 0} из {selectedParameterProgress?.required ?? 0}. Обязательно осталось {selectedParameterProgress?.remaining ?? 0}. Конфликтов 0.</Text>
+                <Text style={styles.catalogHint} testID="canonical-estimate-required-parameter-progress">Для первой сметы обязательно осталось {selectedParameterProgress?.remaining ?? 0}. Можно уточнить после результата: {selectedParameterProgress?.refinable ?? 0}. Конфликтов 0.</Text>
                 <Pressable testID="canonical-estimate-refine-parameters" onPress={() => setShowParameterPanel((current) => !current)} style={styles.smallPrimaryButton}><Text style={styles.smallPrimaryButtonText}>{showParameterPanel ? "Скрыть параметры" : "Уточнить параметры"}</Text></Pressable>
                 {showParameterPanel ? visibleParameters.slice(0, showAllParameters ? undefined : 8).map((parameter) => {
                   const values = parameterValues(parameter);
@@ -1144,7 +1233,11 @@ export default function ProfessionalEstimateComposer({
                     >
                       <Text style={styles.parameterTruthLine}>Почему нужен параметр: {parameter.descriptionRu || "значение влияет на состав и объём работ"}</Text>
                       <Text style={styles.parameterTruthLine}>Источник значения: {sourceRoleRu(parameter.valueSourceRole)}</Text>
-                      <Text style={styles.parameterTruthLine}>Когда обязателен: {parameter.requiredWhen || (parameter.required ? "всегда для применимой работы" : "по применимости")}</Text>
+                      <Text style={styles.parameterTruthLine}>Когда обязателен: {parameter.requiredWhen
+                        ? (typeof parameter.requiredWhen === "string"
+                          ? parameter.requiredWhen
+                          : JSON.stringify(parameter.requiredWhen))
+                        : (parameter.required ? "всегда для применимой работы" : "по применимости")}</Text>
                       <Text style={styles.parameterTruthLine}>Путеводитель: {guideText}</Text>
                       <Text style={styles.parameterTruthLine}>Документ: {parameter.guide?.sourceDocument ?? "не указан"}</Text>
                       <Text style={styles.parameterTruthLine}>Точный пункт/таблица/формула: {parameter.guide?.sourceLocator ?? "не указан"}</Text>
@@ -1167,8 +1260,8 @@ export default function ProfessionalEstimateComposer({
               </View> : null}
             </View>
             {bundle && rikQuickSearch ? <View style={styles.catalogPanel} testID="canonical-estimate-manual-catalog">
-              <Text style={styles.panelTitle}>{TEXT.catalogTitle}</Text><Text style={styles.catalogHint}>{TEXT.catalogHint}</Text>
-              <View style={styles.catalogSearchRow}><TextInput value={catalogQuery} onChangeText={setCatalogQuery} placeholder={TEXT.catalogPlaceholder} style={styles.catalogInput} /><Pressable onPress={handleCatalogSearch} style={styles.smallPrimaryButton}><Text style={styles.smallPrimaryButtonText}>Найти</Text></Pressable></View>
+                  <Text style={styles.panelTitle}>{TEXT.catalogTitle}</Text><Text testID="foreman-ai-estimate-catalog-hint" style={styles.catalogHint}>{TEXT.catalogHint}</Text>
+              <View style={styles.catalogSearchRow}><TextInput testID="foreman-ai-estimate-catalog-search" value={catalogQuery} onChangeText={setCatalogQuery} placeholder={TEXT.catalogPlaceholder} style={styles.catalogInput} /><Pressable onPress={handleCatalogSearch} style={styles.smallPrimaryButton}><Text style={styles.smallPrimaryButtonText}>Найти</Text></Pressable></View>
               <View style={styles.catalogRows}>{catalogRows.map((item) => <View key={item.rik_code} style={styles.catalogRow}><View style={styles.catalogRowText}><Text style={styles.catalogName}>{displayNameOfCatalogItem(item)}</Text><Text style={styles.catalogMeta}>{item.rik_code} · {item.uom_code ?? "unit"}</Text></View><Pressable onPress={() => handleAddCatalogRow(item)} style={styles.smallPrimaryButton}><Text style={styles.smallPrimaryButtonText}>{TEXT.add}</Text></Pressable></View>)}</View>
             </View> : null}
           </>}

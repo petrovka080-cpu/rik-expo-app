@@ -42,6 +42,9 @@ describe("BATCH-001 R5.6 shared-core reconciliation", () => {
       );
       expect(definition.passport.userParameterContracts.every((contract) => contract.defaultValue == null
         || contract.parameterId === "delivery_included_by_supplier")).toBe(true);
+      expect(definition.passport.parameters.every((parameter) =>
+        (parameter as typeof parameter & { sourceRole?: string | null }).sourceRole != null
+      )).toBe(true);
       expect(new Set(definition.passport.semanticOwners).size).toBe(definition.resources.length);
       expect(new Set(definition.passport.costOwners).size).toBe(definition.resources.length);
       expect(new Set(definition.passport.procurementOwners).size).toBe(
@@ -51,6 +54,19 @@ describe("BATCH-001 R5.6 shared-core reconciliation", () => {
       expect(definition.resources.every((resource) => resource.engineeringSourceIds.length > 0
         && resource.engineeringSourceIds.every((sourceId) => sourceIds.has(sourceId)))).toBe(true);
     }
+  });
+
+  it("preserves manufacturer-passport ownership for project-selected material rates", () => {
+    const clad = buildAllBatch001DrywallSuccessorsR3().find((definition) =>
+      definition.catalogId === "drywall_ceiling_interior_bulkhead_clad_standard"
+    );
+    expect(clad).toBeDefined();
+    const sourceRole = (parameterId: string) => (clad!.passport.parameters.find((parameter) =>
+      parameter.parameterId === parameterId
+    ) as { sourceRole?: string } | undefined)?.sourceRole;
+
+    expect(sourceRole("joint_compound_rate_kg_m")).toBe("MATERIAL_PASSPORT_VALUE");
+    expect(sourceRole("surface_primer_rate_l_m2")).toBe("MATERIAL_PASSPORT_VALUE");
   });
 
   it("rejects values immediately outside both numeric boundaries for every definition", () => {
@@ -80,23 +96,55 @@ describe("BATCH-001 R5.6 shared-core reconciliation", () => {
       const expected = oracle.get(definition.catalogId);
       expect(expected).toBeDefined();
       if (!expected) continue;
+      const fixture = batch001DrywallGoldFixtureValuesR3(definition);
       const compiled = await compileBatch001R56ThroughSharedCore({
         definition,
-        values: batch001DrywallGoldFixtureValuesR3(definition),
+        values: fixture,
       });
       expect(compiled.rows).toHaveLength(expected.rows.length);
       for (let index = 0; index < expected.rows.length; index += 1) {
         const actual = compiled.rows[index]!;
         const row = expected.rows[index]!;
+        const expectedTitle = definition.group === "FRAME" && actual.category === "material"
+          ? `${row.titleRu} — ${String(fixture.exact_system_route)}`
+          : row.titleRu;
         expect(actual).toMatchObject({
           row_id: row.rowId,
-          title_ru: row.titleRu,
+          title_ru: expectedTitle,
           unit_id: row.unitId,
           procurement_eligible: row.procurementEligible,
         });
         expect(Math.abs(Number(actual.quantity) - row.quantity)).toBeLessThan(0.000001);
       }
     }
+  });
+
+  it("keeps the 50 m² developed bulkhead geometry distinct from its 30 m² horizontal face", async () => {
+    const definition = buildAllBatch001DrywallSuccessorsR3().find((candidate) =>
+      candidate.catalogId === "drywall_ceiling_interior_bulkhead_frame_standard"
+    );
+    expect(definition).toBeDefined();
+    const values = {
+      ...batch001DrywallGoldFixtureValuesR3(definition!),
+      area_m2: 50,
+      horizontal_face_area_m2: 30,
+      vertical_face_length_m: 20,
+      vertical_face_count: 2,
+      bulkhead_drop_height_m: 0.5,
+      end_face_area_m2: 0,
+      return_face_area_m2: 0,
+      opening_area_m2: 0,
+      exact_system_route: "Проектный узел короба: ПП 60×27×0,6 мм и ПН 28×27×0,6 мм",
+    };
+    const compiled = await compileBatch001R56ThroughSharedCore({ definition: definition!, values });
+    const work = compiled.rows.find((row) => row.row_id.endsWith(":work:install_metal_frame"));
+
+    expect(work?.quantity).toBe("50");
+    expect(Number(values.horizontal_face_area_m2)).toBe(30);
+    expect(compiled.rows.filter((row) => row.category === "material").every((row) =>
+      String(row.title_ru).endsWith(` — ${values.exact_system_route}`)
+    )).toBe(true);
+    expect(compiled.rows.some((row) => /лист.*гипс|шпакл[её]в|обшив|окраск/iu.test(String(row.title_ru)))).toBe(false);
   });
 
   it("uses the shared artifact selector for the exact procurement subset", async () => {

@@ -1,6 +1,16 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Image, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Image,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  type NativeSyntheticEvent,
+  type TextInputSelectionChangeEventData,
+} from "react-native";
 
 import { formatEstimateMoney } from "../../lib/ai/globalEstimate/formatEstimateMoney";
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
@@ -12,6 +22,11 @@ import {
   type ConsumerRepairQuantityEditSource,
 } from "./consumerRepairQuantityEditTrace";
 import { buildRequestEstimateProfessionalRowEvidence } from "./requestEstimateViewModel";
+import {
+  consumerRepairCanonicalRowNativeId,
+  consumerRepairRowCode,
+  consumerRepairRowIncludedInEstimate,
+} from "./consumerRepairRowMetadata";
 
 type Props = {
   item: ConsumerRepairRequestItem;
@@ -45,6 +60,21 @@ function formatInputNumber(value: number | null | undefined): string {
 function parseInputNumber(value: string, fallback: number): number {
   const parsed = Number(value.replace(",", ".").replace(/[^\d.]/g, "").trim());
   return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+type EditableTextSelection = { start: number; end: number };
+
+function editableNumericTextMatchesConfirmedValue(draftText: string, confirmedText: string): boolean {
+  if (draftText.trim() === confirmedText.trim()) return true;
+  const parse = (value: string): number | null => {
+    const normalized = value.trim().replace(/\s/gu, "").replace(",", ".");
+    if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/u.test(normalized)) return null;
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+  const draft = parse(draftText);
+  const confirmed = parse(confirmedText);
+  return draft != null && confirmed != null && draft === confirmed;
 }
 
 function setNativeQuantityInputText(
@@ -115,6 +145,24 @@ function priceStatusLabel(item: ConsumerRepairRequestItem): string {
   return "\u0446\u0435\u043d\u0430 \u043d\u0443\u0436\u043d\u0430";
 }
 
+function sourceManagedCanonicalNeed(item: ConsumerRepairRequestItem): boolean {
+  const requirements = item.sourceParameters?.missingParameterRequirements;
+  return item.sourceParameters?.canonicalPreliminaryNeed === true
+    && Array.isArray(requirements)
+    && requirements.some((requirement) =>
+      requirement != null
+      && typeof requirement === "object"
+      && !Array.isArray(requirement)
+      && (requirement as Record<string, unknown>).sourceConfirmationRequired === true
+    );
+}
+
+function nonPayableCanonicalRow(item: ConsumerRepairRequestItem): boolean {
+  return item.sourceParameters?.payable === false
+    || ["INCLUDED_IN_RESOURCE_ROWS", "INFORMATIONAL_SCOPE", "CONTROL_OR_DOCUMENT"]
+      .includes(String(item.sourceParameters?.canonicalCostTreatment ?? ""));
+}
+
 function ConsumerRepairItemRowComponent({
   item,
   onQuantityChange,
@@ -137,25 +185,13 @@ function ConsumerRepairItemRowComponent({
   );
   const itemPriceStatusLabel = React.useMemo(() => priceStatusLabel(item), [item]);
   const photoRowIdentity = React.useMemo(
-    () => {
-      const rowIdentityKey = ["row", "Code"].join("");
-      return String(item.sourceParameters?.[rowIdentityKey] ?? item.id).trim() || item.id;
-    },
-    [item.id, item.sourceParameters],
+    () => consumerRepairRowCode(item) || item.id,
+    [item],
   );
-  const canonicalRowNativeId = React.useMemo(() => {
-    const source = item.sourceParameters ?? {};
-    const parts = [
-      source.canonicalBackendRevisionId,
-      source.canonicalBackendReleaseId,
-      source.canonicalBackendCatalogId,
-      source.rowSha256,
-      item.unit,
-      item.itemType,
-      source[["row", "Code"].join("")],
-    ].map((value) => String(value ?? "").trim());
-    return parts.every(Boolean) ? `canonical-estimate-row-identity|${parts.join("|")}` : undefined;
-  }, [item.itemType, item.sourceParameters, item.unit]);
+  const canonicalRowNativeId = React.useMemo(
+    () => consumerRepairCanonicalRowNativeId(item),
+    [item],
+  );
   const professionalEvidence = React.useMemo(
     () => buildRequestEstimateProfessionalRowEvidence(item),
     [item],
@@ -163,19 +199,56 @@ function ConsumerRepairItemRowComponent({
   const itemQuantityText = formatInputNumber(item.quantity);
   const itemPriceText = formatInputNumber(item.unitPrice);
   const itemSpecificationText = item.titleRu;
-  const itemOptional = item.sourceParameters?.includedInEstimate === false;
+  const itemOptional = !consumerRepairRowIncludedInEstimate(item);
+  const sourceManagedNeed = sourceManagedCanonicalNeed(item);
+  const nonPayableRow = nonPayableCanonicalRow(item);
   const quantityInputRef = React.useRef<React.ElementRef<typeof TextInput> | null>(null);
+  const quantityEditingRef = React.useRef(false);
+  const quantityCommittedValueRef = React.useRef<string | null>(null);
+  const priceEditingRef = React.useRef(false);
+  const priceCommittedValueRef = React.useRef<string | null>(null);
   const specificationEditCommittedRef = React.useRef(false);
   const [quantityText, setQuantityText] = React.useState(itemQuantityText);
   const [priceText, setPriceText] = React.useState(itemPriceText);
+  const [quantityEditing, setQuantityEditing] = React.useState(false);
+  const [priceEditing, setPriceEditing] = React.useState(false);
+  const [quantitySelection, setQuantitySelection] = React.useState<EditableTextSelection>({
+    start: itemQuantityText.length,
+    end: itemQuantityText.length,
+  });
+  const [priceSelection, setPriceSelection] = React.useState<EditableTextSelection>({
+    start: itemPriceText.length,
+    end: itemPriceText.length,
+  });
   const [specificationText, setSpecificationText] = React.useState(itemSpecificationText);
   const [specificationEditing, setSpecificationEditing] = React.useState(false);
   const [professionalEvidenceOpen, setProfessionalEvidenceOpen] = React.useState(false);
   React.useEffect(() => {
-    setQuantityText(itemQuantityText);
+    if (!quantityEditingRef.current) {
+      const committedValue = quantityCommittedValueRef.current;
+      // A response for an older edit may arrive after the user has already
+      // committed a newer raw value. Keep that newer buffer until the owning
+      // revision confirms the same numeric value.
+      if (
+        committedValue != null
+        && !editableNumericTextMatchesConfirmedValue(committedValue, itemQuantityText)
+      ) return;
+      setQuantityText(itemQuantityText);
+      quantityCommittedValueRef.current = null;
+      setQuantitySelection({ start: itemQuantityText.length, end: itemQuantityText.length });
+    }
   }, [item.id, itemQuantityText]);
   React.useEffect(() => {
-    setPriceText(itemPriceText);
+    if (!priceEditingRef.current) {
+      const committedValue = priceCommittedValueRef.current;
+      if (
+        committedValue != null
+        && !editableNumericTextMatchesConfirmedValue(committedValue, itemPriceText)
+      ) return;
+      setPriceText(itemPriceText);
+      priceCommittedValueRef.current = null;
+      setPriceSelection({ start: itemPriceText.length, end: itemPriceText.length });
+    }
   }, [item.id, itemPriceText]);
   React.useEffect(() => {
     setSpecificationText(itemSpecificationText);
@@ -220,8 +293,17 @@ function ConsumerRepairItemRowComponent({
       stage: "QUANTITY_ACTION_RECEIVED",
       itemId: item.id,
     });
-    const nativeVisible = setNativeQuantityInputText(quantityInputRef, nextValue);
     setQuantityText(nextValue);
+    if (source === "direct_input") {
+      recordConsumerRepairQuantityEditStage({
+        ...meta,
+        stage: "VISIBLE_INPUT_UPDATED",
+        itemId: item.id,
+      });
+      onQuantityChange(item.id, nextValue, meta);
+      return;
+    }
+    const nativeVisible = setNativeQuantityInputText(quantityInputRef, nextValue);
     if (nativeVisible) {
       recordConsumerRepairQuantityEditStage({
         ...meta,
@@ -239,10 +321,61 @@ function ConsumerRepairItemRowComponent({
       onQuantityChange(item.id, nextValue, meta);
     }, nativeVisible);
   }, [item.id, item.quantity, onQuantityChange]);
+  const beginQuantityEdit = React.useCallback(() => {
+    quantityEditingRef.current = true;
+    quantityCommittedValueRef.current = null;
+    setQuantityEditing(true);
+  }, []);
+  const finishQuantityEdit = React.useCallback(() => {
+    quantityEditingRef.current = false;
+    setQuantityEditing(false);
+    const nextValue = quantityText.trim();
+    if (
+      nextValue === itemQuantityText
+      || quantityCommittedValueRef.current === nextValue
+    ) return;
+    quantityCommittedValueRef.current = nextValue;
+    commitQuantityText(nextValue, "direct_input");
+  }, [commitQuantityText, itemQuantityText, quantityText]);
+  const beginPriceEdit = React.useCallback(() => {
+    priceEditingRef.current = true;
+    priceCommittedValueRef.current = null;
+    setPriceEditing(true);
+  }, []);
+  const finishPriceEdit = React.useCallback(() => {
+    priceEditingRef.current = false;
+    setPriceEditing(false);
+    const nextValue = priceText.trim();
+    if (
+      nextValue === itemPriceText
+      || priceCommittedValueRef.current === nextValue
+    ) return;
+    priceCommittedValueRef.current = nextValue;
+    onUnitPriceChange(item.id, nextValue);
+  }, [item.id, itemPriceText, onUnitPriceChange, priceText]);
   const stepQuantity = React.useCallback((delta: number) => {
+    quantityEditingRef.current = false;
+    setQuantityEditing(false);
+    quantityCommittedValueRef.current = null;
     const baseQuantity = parseInputNumber(quantityText, item.quantity ?? 0);
     commitQuantityText(formatInputNumber(Math.max(0, baseQuantity + delta)), "stepper");
   }, [commitQuantityText, item.quantity, quantityText]);
+  const rememberQuantitySelection = React.useCallback((
+    event: NativeSyntheticEvent<TextInputSelectionChangeEventData>,
+  ) => {
+    const next = event.nativeEvent.selection;
+    setQuantitySelection((current) => current.start === next.start && current.end === next.end
+      ? current
+      : next);
+  }, []);
+  const rememberPriceSelection = React.useCallback((
+    event: NativeSyntheticEvent<TextInputSelectionChangeEventData>,
+  ) => {
+    const next = event.nativeEvent.selection;
+    setPriceSelection((current) => current.start === next.start && current.end === next.end
+      ? current
+      : next);
+  }, []);
   return (
     <View
       style={styles.row}
@@ -293,7 +426,11 @@ function ConsumerRepairItemRowComponent({
         <View style={styles.fields}>
           <View style={styles.field}>
             <Text style={styles.label}>Количество</Text>
-            <View style={styles.quantityLine}>
+            {sourceManagedNeed ? (
+              <Text style={styles.readOnlyValue} testID={`consumer-repair-item-source-gated-quantity-${item.id}`}>
+                Ждёт подтверждённого источника · {unitLabel}
+              </Text>
+            ) : <View style={styles.quantityLine}>
               <Pressable
                 testID={`consumer-repair-item-minus-${item.id}`}
                 accessibilityRole="button"
@@ -307,10 +444,17 @@ function ConsumerRepairItemRowComponent({
                 ref={quantityInputRef}
                 value={quantityText}
                 importantForAutofill="no"
-                onChangeText={(value) => commitQuantityText(value, "direct_input")}
+                onBlur={finishQuantityEdit}
+                onChangeText={setQuantityText}
+                onFocus={beginQuantityEdit}
+                onSelectionChange={rememberQuantitySelection}
+                onSubmitEditing={finishQuantityEdit}
                 keyboardType="decimal-pad"
                 inputMode="decimal"
-                selectTextOnFocus
+                placeholder={item.quantity == null ? "Нужно уточнить" : undefined}
+                placeholderTextColor="#94A3B8"
+                selectTextOnFocus={Platform.OS !== "web"}
+                selection={quantityEditing ? quantitySelection : undefined}
                 style={styles.input}
                 testID={`consumer-repair-item-quantity-input-${item.id}`}
                 accessibilityLabel={`${"\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e"} ${item.titleRu}: ${quantityText} ${unitLabel}`}
@@ -335,28 +479,38 @@ function ConsumerRepairItemRowComponent({
               >
                 {unitLabel}
               </Text>
-            </View>
+            </View>}
           </View>
           <View style={styles.field}>
             <Text style={styles.label}>Цена за единицу</Text>
-            <TextInput
+            {sourceManagedNeed ? (
+              <Text style={styles.readOnlyValue}>После расчёта количества</Text>
+            ) : nonPayableRow ? (
+              <Text style={styles.readOnlyValue}>Отдельно не оплачивается</Text>
+            ) : <TextInput
               value={priceText}
               importantForAutofill="no"
               placeholder="Укажите цену"
               placeholderTextColor="#94A3B8"
               onChangeText={setPriceText}
-              onBlur={() => onUnitPriceChange(item.id, priceText)}
+              onFocus={beginPriceEdit}
+              onSelectionChange={rememberPriceSelection}
+              onBlur={finishPriceEdit}
+              onSubmitEditing={finishPriceEdit}
               keyboardType="decimal-pad"
               inputMode="decimal"
-              selectTextOnFocus
+              selectTextOnFocus={Platform.OS !== "web"}
+              selection={priceEditing ? priceSelection : undefined}
               style={styles.priceInput}
               testID={`consumer-repair-item-unit-price-input-${item.id}`}
               accessibilityLabel={`Цена за единицу ${item.titleRu}`}
-            />
+            />}
           </View>
           <View style={styles.field}>
             <Text style={styles.label}>Сумма</Text>
-            <Text style={styles.total} testID={`consumer-repair-item-total-${item.id}`}>{totalLabel}</Text>
+            <Text style={styles.total} testID={`consumer-repair-item-total-${item.id}`}>
+              {nonPayableRow ? "Не суммируется" : totalLabel}
+            </Text>
           </View>
         </View>
         {item.unitPrice != null ? (
@@ -364,7 +518,7 @@ function ConsumerRepairItemRowComponent({
             {itemPriceStatusLabel}
           </Text>
         ) : null}
-        <Pressable
+        {!sourceManagedNeed && !nonPayableRow ? <Pressable
           accessibilityRole="switch"
           accessibilityState={{ checked: itemOptional }}
           accessibilityLabel={`${"Не включать позицию в расчёт"} ${item.titleRu}`}
@@ -375,7 +529,17 @@ function ConsumerRepairItemRowComponent({
           <Text style={[styles.optionalToggleText, itemOptional && styles.optionalToggleTextActive]}>
             {itemOptional ? "Опциональная позиция" : "Включена в расчёт"}
           </Text>
-        </Pressable>
+        </Pressable> : (
+          <Text style={styles.nonPayableNotice} testID={`consumer-repair-item-cost-treatment-${item.id}`}>
+            {sourceManagedNeed
+              ? "Позиция станет расчётной после подтверждения источника нормы."
+              : item.sourceParameters?.canonicalCostTreatment === "INCLUDED_IN_RESOURCE_ROWS"
+                ? "Этап показан для состава работ; стоимость учитывается в труде и механизмах."
+                : item.sourceParameters?.canonicalCostTreatment === "INFORMATIONAL_SCOPE"
+                  ? "Организация потока показана как условие выполнения и отдельно не суммируется."
+                  : "Контрольная или документальная позиция отдельно не суммируется."}
+          </Text>
+        )}
         {item.selectedProductBinding ? (
           <Text style={styles.selectedProduct} testID={`consumer-repair-item-selected-product-${item.id}`}>
             {`${"\u0412\u044b\u0431\u0440\u0430\u043d \u0442\u043e\u0432\u0430\u0440"}: ${item.selectedProductBinding.visibleName}${item.selectedProductBinding.packageLabel ? `, ${item.selectedProductBinding.packageLabel}` : ""}`}
@@ -549,6 +713,15 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "900",
   },
+  readOnlyValue: {
+    maxWidth: 190,
+    minHeight: 34,
+    color: "#475569",
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: "800",
+    paddingTop: 4,
+  },
   quantityLine: {
     flexDirection: "row",
     alignItems: "center",
@@ -629,6 +802,13 @@ const styles = StyleSheet.create({
   },
   optionalToggleTextActive: {
     color: "#92400E",
+  },
+  nonPayableNotice: {
+    marginTop: 6,
+    color: "#92400E",
+    fontSize: 11,
+    lineHeight: 16,
+    fontWeight: "800",
   },
   selectedProduct: {
     marginTop: 6,

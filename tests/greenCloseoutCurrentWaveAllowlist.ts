@@ -1,4 +1,5 @@
 import { execFileSync } from "child_process";
+import { createHash } from "crypto";
 import { readFileSync } from "fs";
 import { join } from "path";
 
@@ -81,6 +82,7 @@ const CURRENT_PLATFORM_INTEGRATION_GREEN_PATCH_FILES = new Set<string>([
   "maestro/flows/foundation/relaunch-stability.yaml",
   "maestro/flows/infra-launch.yaml",
   "scripts/audit/runEstimateStructuredPipelineUiPdfBindingCloseout.ts",
+  "scripts/verification/affectedJestProgressReporter.cjs",
   "src/components/estimate/ProfessionalEstimateComposer.support.test.ts",
   "src/components/estimate/ProfessionalEstimateComposer.support.ts",
   "src/components/estimate/ProfessionalEstimateComposer.tsx",
@@ -198,13 +200,54 @@ const CURRENT_PLATFORM_INTEGRATION_GREEN_PATCH_FILES = new Set<string>([
   "tests/requestEstimate/requestEstimatePayloadParity.contract.test.ts",
   "tests/requestEstimate/requestEstimateUnitLabelsRu.contract.test.ts",
   "tests/requestEstimate/photoMaterialRecognitionEntry.contract.test.ts",
+  "src/features/procurement/consumerRepairProcurementHandoff.ts",
+  "src/features/requests/components/WorkEstimatePromptField.tsx",
+  "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts",
+  "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts",
+  "scripts/scale/verifyRealtimeManagerEnforcement.ts",
+  "supabase/migrations/20260908043000_r4a13_approved_baseline_runtime_classification.sql",
+  "supabase/migrations/20260908050000_r4a13_runtime_eligible_baseline_revision_writer.sql",
+  "supabase/migrations/20260908101500_r4a13_preliminary_only_revision_writer.sql",
+  "supabase/migrations/20260908104500_r4a13_preliminary_primary_measure_revision_identity.sql",
+  "tests/architecture/entrypointFixDoesNotReplacePdfRenderer.contract.test.ts",
+  "tests/architecture/pdfArchAuditNoScreenLocalPdfLayout.contract.test.ts",
+  "tests/architecture/pdfTabularRegressionNoScreenLocalRows.contract.test.ts",
+  "tests/architecture/requestEstimateDoesNotBreakLegacyPdf.contract.test.ts",
+  "tests/architecture/requestStateDoesNotReplacePdfRenderer.contract.test.ts",
+  "tests/estimateRuntime/offlineStorageDoesNotBlockEstimate.test.ts",
+  "tests/officeEstimate/productionGradePdfBuyerHandoff.test.ts",
+  "tests/officeEstimate/professionalBoqPdfBuyerHandoff.test.ts",
 ]);
+
+const PROTECTED_LIVE_REQUEST_ANDROID_EVIDENCE_SHA256: Readonly<Record<string, string>> = {
+  "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_api34_results.json":
+    "8006f742ebc7dfea9cbc336bf516de8fc069e70136ba27306338bdf14b70a142",
+  "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_screenshots.json":
+    "48a91ac6cf5e5423e7ba6a38a2514dda8675375c5242771a90d60cb637f2fa17",
+  "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_ui_dumps.json":
+    "016a469053bfb07d4b6eb9e0dc3c5367a9f85064f328729d0e2749862e4b3a50",
+};
+
+export function isByteIdenticalProtectedLiveRequestAndroidEvidence(file: string): boolean {
+  const normalized = normalizePath(file);
+  const expected = PROTECTED_LIVE_REQUEST_ANDROID_EVIDENCE_SHA256[normalized];
+  if (!expected) return false;
+  try {
+    const actual = createHash("sha256")
+      .update(readFileSync(join(process.cwd(), normalized)))
+      .digest("hex");
+    return actual === expected;
+  } catch {
+    return false;
+  }
+}
 
 export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean => {
   const normalized = normalizePath(file);
 
   return (
     CURRENT_PLATFORM_INTEGRATION_GREEN_PATCH_FILES.has(normalized) ||
+    isByteIdenticalProtectedLiveRequestAndroidEvidence(normalized) ||
     normalized.startsWith("artifacts/S_GREEN_CLOSEOUT_") ||
     normalized.startsWith("artifacts/S_B2C_REQUEST_MARKETPLACE_VALIDATION_PDF_BACKEND_50K_") ||
     normalized.startsWith("artifacts/S_CORE_PRODUCT_GOLDEN_PATHS_") ||

@@ -922,10 +922,14 @@ type KnownWorkTemplateLaborRow = {
   unitImperial?: GlobalUnitInput["normalizedUnit"];
 };
 
+type KnownWorkTemplateSupportRow = KnownWorkTemplateLaborRow;
+
 function knownWorkTemplate(input: {
   workKey: string;
   materialRows: KnownWorkTemplateMaterialRow[];
   laborRows: KnownWorkTemplateLaborRow[];
+  equipmentRows?: KnownWorkTemplateSupportRow[];
+  deliveryRows?: KnownWorkTemplateSupportRow[];
   assumptionsRu: string[];
   questionsRu: string[];
 }): GlobalEstimateTemplate {
@@ -959,30 +963,42 @@ function knownWorkTemplate(input: {
     unitImperial: item.unitImperial ?? "sq_ft",
     rateKey: `${input.workKey}_labor`,
   }));
-  const deliveryRows = [
-    row({
-      sectionType: "delivery",
-      sectionNumber: "3",
-      rowNumber: "3.1",
-      code: `${input.workKey}_delivery_access_warning`,
-      names: { ru: "Доставка / подъем / доступ: требуется уточнение", en: "Delivery, lifting and access: to be confirmed" },
-      quantityFormula: "1",
-      unitMetric: "set",
-      unitImperial: "set",
-      rateKey: `${input.workKey}_delivery`,
-    }),
-    row({
+  const equipmentRows = (input.equipmentRows ?? [{
+    code: `${input.workKey}_equipment_mobilization_warning`,
+    nameRu: "Техника и монтажный инвентарь — состав уточнить по условиям объекта",
+    nameEn: "Plant and installation equipment — confirm for site conditions",
+    formula: "1",
+    unitMetric: "set",
+    unitImperial: "set",
+  }]).map((item, index) => row({
       sectionType: "equipment",
       sectionNumber: "3",
-      rowNumber: "3.2",
-      code: `${input.workKey}_equipment_mobilization_warning`,
-      names: { ru: "Техника / инвентарь: требуется уточнение", en: "Equipment and tools: to be confirmed" },
-      quantityFormula: "1",
-      unitMetric: "set",
-      unitImperial: "set",
+      rowNumber: `3.${index + 1}`,
+      code: item.code,
+      names: { ru: item.nameRu, en: item.nameEn },
+      quantityFormula: item.formula ?? "1",
+      unitMetric: item.unitMetric ?? "set",
+      unitImperial: item.unitImperial ?? "set",
       rateKey: `${input.workKey}_equipment`,
-    }),
-  ];
+    }));
+  const deliveryRows = (input.deliveryRows ?? [{
+    code: `${input.workKey}_delivery_access_warning`,
+    nameRu: "Доставка, разгрузка и подъём материалов — маршрут и доступ уточнить",
+    nameEn: "Material delivery, unloading and lifting — confirm route and access",
+    formula: "1",
+    unitMetric: "set",
+    unitImperial: "set",
+  }]).map((item, index) => row({
+      sectionType: "delivery",
+      sectionNumber: "4",
+      rowNumber: `4.${index + 1}`,
+      code: item.code,
+      names: { ru: item.nameRu, en: item.nameEn },
+      quantityFormula: item.formula ?? "1",
+      unitMetric: item.unitMetric ?? "set",
+      unitImperial: item.unitImperial ?? "set",
+      rateKey: `${input.workKey}_delivery`,
+    }));
   return {
     workKey: input.workKey,
     inputMeasure: "area",
@@ -1002,9 +1018,15 @@ function knownWorkTemplate(input: {
         rows: laborRows,
       },
       {
-        type: "delivery",
+        type: "equipment",
         sectionNumber: "3",
-        title: { ru: "Оборудование / доставка", en: "Equipment / delivery" },
+        title: { ru: "Оборудование и механизмы", en: "Plant and equipment" },
+        rows: equipmentRows,
+      },
+      {
+        type: "delivery",
+        sectionNumber: "4",
+        title: { ru: "Доставка и перемещение", en: "Delivery and handling" },
         rows: deliveryRows,
       },
     ],
@@ -1204,24 +1226,100 @@ export const GABLE_ROOF_TEMPLATE: GlobalEstimateTemplate = knownWorkTemplate({
 export const BRICK_MASONRY_TEMPLATE: GlobalEstimateTemplate = knownWorkTemplate({
   workKey: "brick_masonry",
   materialRows: [
-    { code: "brick_masonry_brick", nameRu: "Кирпич", nameEn: "Brick" },
-    { code: "brick_masonry_mortar", nameRu: "Раствор / кладочная смесь", nameEn: "Mortar or masonry mix", rateKind: "auxiliary" },
-    { code: "brick_masonry_mesh", nameRu: "Кладочная сетка / армирование", nameEn: "Masonry mesh or reinforcement", rateKind: "auxiliary" },
+    { code: "brick_masonry_brick", nameRu: "Кирпич керамический одинарный 1 НФ для кладки толщиной 120 мм", nameEn: "1 NF ceramic brick for 120 mm masonry", formula: "area * 55", unitMetric: "pcs", unitImperial: "pcs" },
+    { code: "brick_masonry_mortar", nameRu: "Кладочный цементно-песчаный раствор М75", nameEn: "M75 cement-sand masonry mortar", formula: "area * 0.025", rateKind: "auxiliary", unitMetric: "m3", unitImperial: "cu_ft" },
+    { code: "brick_masonry_mesh", nameRu: "Кладочная сетка Вр-1, ячейка 50×50 мм, для армированных рядов", nameEn: "50×50 mm masonry reinforcement mesh", formula: "area * 0.2", rateKind: "auxiliary" },
+    { code: "brick_masonry_dpc", nameRu: "Рулонная битумно-полимерная отсечная гидроизоляция шириной 250 мм под первым рядом", nameEn: "250 mm bitumen-polymer damp-proof course below first row", formula: "area * 0.09", rateKind: "auxiliary" },
+    { code: "brick_masonry_flexible_ties", nameRu: "Оцинкованные анкеры-связи кладки со смежными конструкциями", nameEn: "Galvanized masonry anchors and wall ties", formula: "area * 5", rateKind: "auxiliary", unitMetric: "pcs", unitImperial: "pcs" },
   ],
   laborRows: [
     { code: "brick_masonry_laying", nameRu: "Кладка кирпича", nameEn: "Brick laying" },
     { code: "brick_masonry_jointing", nameRu: "Расшивка / перевязка швов", nameEn: "Jointing and bond work" },
-    { code: "brick_masonry_access_scaffold", nameRu: "Подмости для кирпичной кладки", nameEn: "Access scaffold for brick masonry" },
+    { code: "brick_masonry_access_scaffold", nameRu: "Сборка, проверка, перестановка и разборка передвижной вышки-туры для кладки верхних рядов", nameEn: "Mobile access-tower assembly, inspection, repositioning and dismantling", formula: "ceil(area / 25)", unitMetric: "shift", unitImperial: "shift" },
+    { code: "brick_masonry_layout", nameRu: "Разметка осей, проёмов и отметок рядов кладки", nameEn: "Masonry axes, openings and course-level setting out" },
+    { code: "brick_masonry_first_course", nameRu: "Выверка и кладка первого ряда кирпича", nameEn: "First brick course alignment and laying" },
+    { code: "brick_masonry_reinforcement", nameRu: "Укладка кладочной сетки и установка связей", nameEn: "Masonry mesh and wall-tie installation" },
+    { code: "brick_masonry_geometry_control", nameRu: "Контроль вертикальности, плоскости, перевязки и толщины швов", nameEn: "Masonry plumb, plane, bond and joint-thickness control" },
+  ],
+  equipmentRows: [
+    { code: "brick_masonry_mobile_scaffold", nameRu: "Передвижная алюминиевая вышка-тура с настилом, ограждением и опорами-стабилизаторами", nameEn: "Aluminium mobile access tower with deck, guardrails and stabilizers", formula: "ceil(area / 25)", unitMetric: "shift", unitImperial: "shift" },
+    { code: "brick_masonry_mortar_mixer", nameRu: "Растворосмеситель для приготовления кладочного раствора", nameEn: "Mortar mixer", formula: "ceil(area / 50)", unitMetric: "shift", unitImperial: "shift" },
+    { code: "brick_masonry_cutting_tool", nameRu: "Камнерезный станок или дисковая пила для доборных элементов", nameEn: "Masonry saw for cut units", formula: "ceil(area / 50)", unitMetric: "shift", unitImperial: "shift" },
+  ],
+  deliveryRows: [
+    { code: "brick_masonry_material_delivery", nameRu: "Доставка кирпича, сухих смесей и армирующих элементов", nameEn: "Brick, dry-mix and reinforcement delivery", formula: "ceil(area / 120)", unitMetric: "trip", unitImperial: "trip" },
+    { code: "brick_masonry_unloading", nameRu: "Разгрузка и размещение поддонов кирпича в допустимых зонах складирования", nameEn: "Brick pallet unloading and placement in approved storage zones", formula: "ceil(area / 120)", unitMetric: "trip", unitImperial: "trip" },
+    { code: "brick_masonry_vertical_lifting", nameRu: "Вертикальная подача кирпича и раствора к рабочему ярусу", nameEn: "Vertical lifting of bricks and mortar to the working level", formula: "ceil(area / 50)", unitMetric: "shift", unitImperial: "shift" },
+    { code: "brick_masonry_scaffold_delivery_return", nameRu: "Доставка на объект и возврат передвижной алюминиевой вышки-туры", nameEn: "Mobile access-tower delivery and return", formula: "1", unitMetric: "trip", unitImperial: "trip" },
   ],
   assumptionsRu: [
-    "Расчёт выполнен для кирпичной кладки по площади.",
-    "Толщина стены, тип кирпича, армирование, леса, доставка и подъём уточняются перед договором.",
+    "Предварительный расход принят для керамического кирпича 1 НФ и кладки толщиной 120 мм; другой формат или толщина пересчитываются после подтверждения.",
+    "Проёмы и перемычки не включаются без подтверждённых размеров и проектной спецификации.",
     "Цены берутся из backend pricebook с источниками.",
   ],
   questionsRu: [
     "Какая толщина стены и тип кирпича?",
-    "Нужны ли леса, доставка и подъём материала?",
+    "Какова рабочая высота и подходит ли передвижная вышка-тура по условиям площадки?",
+    "Есть ли проёмы: укажите ширину, количество и спецификацию перемычек.",
     "Нужно ли армирование кладки и расшивка лицевых швов?",
+  ],
+});
+
+export const MINI_CHP_PREPARATION_TEMPLATE: GlobalEstimateTemplate = knownWorkTemplate({
+  workKey: "mini_chp_preparation",
+  materialRows: [
+    { code: "mini_chp_engine_generator", nameRu: "Газопоршневая генераторная установка комплектной поставки", nameEn: "Packaged gas-engine generator set", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_gas_train", nameRu: "Газорегуляторный узел с запорной и предохранительной арматурой", nameEn: "Gas pressure regulation train with isolation and safety valves", formula: "area", unitMetric: "set", unitImperial: "set", rateKind: "auxiliary" },
+    { code: "mini_chp_heat_recovery", nameRu: "Теплообменники утилизации тепла двигателя и выхлопных газов", nameEn: "Engine-jacket and exhaust-gas heat recovery exchangers", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_cooling_pumps", nameRu: "Циркуляционные насосы контура охлаждения и утилизации тепла", nameEn: "Cooling and heat-recovery circulation pumps", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_thermal_buffer", nameRu: "Буферная ёмкость теплового контура с теплоизоляцией", nameEn: "Insulated thermal buffer vessel", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_exhaust_stack", nameRu: "Газоход и дымовая труба с компенсаторами, опорами и теплоизоляцией", nameEn: "Exhaust duct and stack with expansion joints, supports and insulation", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_combustion_air", nameRu: "Воздуховоды притока воздуха на горение и вентиляции машинного зала", nameEn: "Combustion-air and engine-room ventilation ducts", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_lubrication", nameRu: "Масляный контур, расходная ёмкость и трубопроводы обслуживания двигателя", nameEn: "Engine lubrication circuit, service tank and pipework", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_generator_switchgear", nameRu: "Генераторное распределительное устройство и силовые кабели", nameEn: "Generator switchgear and power cables", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_sync_protection", nameRu: "Панель синхронизации, релейной защиты и коммерческого учёта", nameEn: "Synchronizing, protection and revenue-metering panel", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_scada", nameRu: "Шкаф автоматики, датчики и интерфейс диспетчеризации мини-ТЭЦ", nameEn: "Mini-CHP controls, instrumentation and SCADA interface", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_gas_fire_detection", nameRu: "Система контроля загазованности, пожарной сигнализации и аварийного останова", nameEn: "Gas detection, fire alarm and emergency shutdown system", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_water_treatment", nameRu: "Узел подпитки и водоподготовки замкнутого теплового контура", nameEn: "Closed-loop make-up and water-treatment package", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_pipework", nameRu: "Трубопроводы, арматура, опоры и теплоизоляция тепловых контуров", nameEn: "Heat-circuit pipework, valves, supports and insulation", formula: "area", unitMetric: "set", unitImperial: "set", rateKind: "auxiliary" },
+  ],
+  laborRows: [
+    { code: "mini_chp_site_survey", nameRu: "Обследование площадки, нагрузок и точек подключения мини-ТЭЦ", nameEn: "Mini-CHP site, load and connection-point survey", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_foundation_check", nameRu: "Проверка фундаментов, анкеров и монтажных отметок оборудования", nameEn: "Equipment foundation, anchor and level verification", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_generator_rigging", nameRu: "Такелаж, установка и выверка газопоршневой установки", nameEn: "Gas-engine generator rigging, placement and alignment", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_gas_connection", nameRu: "Монтаж и испытание газорегуляторного узла лицензированным подрядчиком", nameEn: "Licensed gas-train installation and testing", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_hydraulic_install", nameRu: "Монтаж трубопроводов, насосов и теплообменников утилизации тепла", nameEn: "Heat-recovery pipework, pump and exchanger installation", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_exhaust_install", nameRu: "Монтаж газохода, дымовой трубы и компенсаторов", nameEn: "Exhaust duct, stack and expansion-joint installation", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_ventilation_install", nameRu: "Монтаж вентиляции машинного зала и подачи воздуха на горение", nameEn: "Engine-room ventilation and combustion-air installation", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_electrical_install", nameRu: "Монтаж силовых кабелей, заземления и генераторного распределительного устройства", nameEn: "Power cable, earthing and generator switchgear installation", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_controls_install", nameRu: "Монтаж датчиков, автоматики, защит и интерфейсов диспетчеризации", nameEn: "Instrumentation, controls, protection and SCADA interface installation", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_hydraulic_test", nameRu: "Промывка и гидравлическое испытание тепловых контуров", nameEn: "Heat-circuit flushing and hydrostatic testing", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_engine_commissioning", nameRu: "Пусконаладка двигателя, генератора и вспомогательных систем", nameEn: "Engine, generator and auxiliary-system commissioning", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_grid_synchronization", nameRu: "Проверка релейной защиты и синхронизация генератора с сетью", nameEn: "Protection testing and generator grid synchronization", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_performance_test", nameRu: "Испытание электрической мощности, теплового баланса и общего КПД", nameEn: "Electrical output, heat-balance and total-efficiency test", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_emissions_test", nameRu: "Инструментальный контроль выбросов и настройка режима горения", nameEn: "Emissions measurement and combustion tuning", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_handover", nameRu: "Исполнительные схемы, паспорта, обучение оператора и передача регламента обслуживания", nameEn: "As-built records, manuals, operator training and maintenance handover", formula: "area", unitMetric: "set", unitImperial: "set" },
+  ],
+  equipmentRows: [
+    { code: "mini_chp_mobile_crane", nameRu: "Автокран и комплект такелажа для разгрузки и установки генераторного агрегата", nameEn: "Mobile crane and rigging set for generator unloading and placement", formula: "area", unitMetric: "shift", unitImperial: "shift" },
+    { code: "mini_chp_pipe_tools", nameRu: "Сварочное и трубомонтажное оборудование для тепловых контуров", nameEn: "Welding and pipe-installation equipment", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_electrical_lab", nameRu: "Электротехническая лаборатория для проверки кабелей, защит и заземления", nameEn: "Electrical test laboratory for cables, protection and earthing", formula: "area", unitMetric: "set", unitImperial: "set" },
+    { code: "mini_chp_gas_analyzer", nameRu: "Газоанализатор и приборы контроля выбросов", nameEn: "Gas analyser and emissions test instruments", formula: "area", unitMetric: "set", unitImperial: "set" },
+  ],
+  deliveryRows: [
+    { code: "mini_chp_heavy_delivery", nameRu: "Низкорамная доставка газопоршневой установки до монтажной площадки", nameEn: "Low-loader delivery of gas-engine generator to installation area", formula: "area", unitMetric: "trip", unitImperial: "trip" },
+    { code: "mini_chp_auxiliary_delivery", nameRu: "Доставка теплообменников, насосов, щитов, труб и воздуховодов", nameEn: "Heat exchanger, pump, panel, pipe and duct delivery", formula: "area", unitMetric: "trip", unitImperial: "trip" },
+    { code: "mini_chp_waste_removal", nameRu: "Вывоз упаковки, монтажных отходов и отработанных промывочных материалов", nameEn: "Packaging, installation waste and flushing-material removal", formula: "area", unitMetric: "trip", unitImperial: "trip" },
+  ],
+  assumptionsRu: [
+    "Состав относится к комплектной газопоршневой мини-ТЭЦ; мощность и число агрегатов необходимо подтвердить проектом.",
+    "Газ, электросетевое присоединение, выбросы и пожарная безопасность требуют профильного проекта, допусков и согласований.",
+    "Цены являются предварительными до выбора изготовителя, оборудования и локальных подрядчиков.",
+  ],
+  questionsRu: [
+    "Каковы электрическая и тепловая мощность, число агрегатов и режим работы мини-ТЭЦ?",
+    "Подтверждены ли давление газа, точка подключения к сети и схема выдачи тепла?",
+    "Есть ли проект фундаментов, машинного зала, дымовой трубы, вентиляции и пожарной автоматики?",
   ],
 });
 
@@ -1375,22 +1473,10 @@ const WEAK_GENERIC_BOQ_HINTS = new Set([
   "construction work",
   "\u043c\u043e\u043d\u0442\u0430\u0436",
   "\u0443\u0441\u0442\u0430\u043d\u043e\u0432\u043a\u0430",
+  "\u043a\u0440\u0435\u043f\u0435\u0436",
+  "\u043a\u0440\u0435\u043f\u0451\u0436",
   "\u0441\u0442\u0440\u043e\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b",
 ]);
-
-const EXTRA_MATERIAL_PHASES = [
-  { ru: "\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b \u043f\u043e\u0434\u0433\u043e\u0442\u043e\u0432\u043a\u0438", en: "Preparation materials" },
-  { ru: "\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b \u0443\u0437\u043b\u043e\u0432 \u0438 \u043f\u0440\u0438\u043c\u044b\u043a\u0430\u043d\u0438\u0439", en: "Interface and junction materials" },
-  { ru: "\u0420\u0430\u0441\u0445\u043e\u0434\u043d\u044b\u0435 \u0438\u0437\u0434\u0435\u043b\u0438\u044f \u0434\u043b\u044f \u0444\u0438\u043a\u0441\u0430\u0446\u0438\u0438", en: "Fixing consumables" },
-  { ru: "\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b \u0444\u0438\u043d\u0438\u0448\u043d\u043e\u0439 \u0434\u043e\u0432\u043e\u0434\u043a\u0438", en: "Finishing materials" },
-];
-
-const EXTRA_LABOR_PHASES = [
-  { ru: "\u041f\u043e\u0434\u0433\u043e\u0442\u043e\u0432\u043a\u0430 \u0444\u0440\u043e\u043d\u0442\u0430 \u0440\u0430\u0431\u043e\u0442", en: "Workface preparation" },
-  { ru: "\u041f\u0440\u0438\u0432\u044f\u0437\u043a\u0430 \u043a \u043e\u0441\u043d\u043e\u0432\u0430\u043d\u0438\u044e \u0438 \u0441\u043c\u0435\u0436\u043d\u044b\u043c \u0443\u0437\u043b\u0430\u043c", en: "Base and interface coordination" },
-  { ru: "\u041e\u043f\u0435\u0440\u0430\u0446\u0438\u043e\u043d\u043d\u0430\u044f \u0441\u0431\u043e\u0440\u043a\u0430 \u0438 \u043a\u0440\u0435\u043f\u043b\u0435\u043d\u0438\u0435", en: "Assembly and fixing operations" },
-  { ru: "\u0424\u0438\u043d\u0438\u0448\u043d\u0430\u044f \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u0438 \u0441\u0434\u0430\u0447\u0430", en: "Final check and handover" },
-];
 
 function contextualBoqHint(hint: string, workName: string): string {
   const normalized = hint.trim().toLocaleLowerCase("ru-RU");
@@ -1401,19 +1487,10 @@ function contextualBoqHint(hint: string, workName: string): string {
   return `${hint}: ${workName}`;
 }
 
-function extraPhaseName(
-  phases: typeof EXTRA_MATERIAL_PHASES,
-  index: number,
-  workRu: string,
-  workEn: string,
-): { ru: string; en: string } {
-  const phase = phases[index % phases.length];
-  const cycle = Math.floor(index / phases.length) + 1;
-  const suffix = cycle > 1 ? ` ${cycle}` : "";
-  return {
-    ru: `${phase.ru}${suffix}: ${workRu}`,
-    en: `${phase.en}${suffix}: ${workEn}`,
-  };
+function isTechnologySpecificBoqHint(hint: string): boolean {
+  const normalized = hint.trim().toLocaleLowerCase("ru-RU");
+  if (!normalized) return false;
+  return !/^(?:позици[яи]|количество|источник|статус цены|наименование|цена|сумма|material|materials|work|works|source|price status)$/iu.test(normalized);
 }
 
 function genericTemplate(definition: GlobalWorkTypeDefinition): GlobalEstimateTemplate {
@@ -1429,7 +1506,11 @@ function genericTemplate(definition: GlobalWorkTypeDefinition): GlobalEstimateTe
   const laborRate = `${definition.workKey}_labor`;
   const workRu = localizedWorkName(definition, "ru");
   const workEn = localizedWorkName(definition, "en");
-  const baseBoqHints = GLOBAL_150_WORK_TYPE_BOQ_HINTS[definition.workKey] ?? BUILT_IN_AI_1000_BOQ_HINTS[definition.workKey] ?? [];
+  const baseBoqHints = (
+    GLOBAL_150_WORK_TYPE_BOQ_HINTS[definition.workKey] ??
+    BUILT_IN_AI_1000_BOQ_HINTS[definition.workKey] ??
+    []
+  ).filter(isTechnologySpecificBoqHint);
   const boqHints = definition.workKey === "ventilation_installation"
     ? [
         "Воздуховоды оцинкованные",
@@ -1471,62 +1552,6 @@ function genericTemplate(definition: GlobalWorkTypeDefinition): GlobalEstimateTe
     unitImperial,
     rateKey: laborRate,
   }));
-  const paddedMaterialRows = [...materialRows];
-  while (paddedMaterialRows.length < 4) {
-    const index = paddedMaterialRows.length;
-    paddedMaterialRows.push(row({
-      sectionType: "materials",
-      sectionNumber: "1",
-      rowNumber: `1.${index + 1}`,
-      code: `${definition.workKey}_material_extra_${index + 1}`,
-      names: extraPhaseName(EXTRA_MATERIAL_PHASES, index, workRu, workEn),
-      quantityFormula: "area * 0.10",
-      unitMetric,
-      unitImperial,
-      rateKey: auxiliaryRate,
-    }));
-  }
-  const paddedLaborRows = [...laborRows];
-  while (paddedLaborRows.length < 4) {
-    const index = paddedLaborRows.length;
-    paddedLaborRows.push(row({
-      sectionType: "labor",
-      sectionNumber: "2",
-      rowNumber: `2.${index + 1}`,
-      code: `${definition.workKey}_labor_extra_${index + 1}`,
-      names: extraPhaseName(EXTRA_LABOR_PHASES, index, workRu, workEn),
-      quantityFormula: "area",
-      unitMetric,
-      unitImperial,
-      rateKey: laborRate,
-    }));
-  }
-  if (definition.category === "foundation") {
-    const materialIndex = paddedMaterialRows.length;
-    paddedMaterialRows.push(row({
-      sectionType: "materials",
-      sectionNumber: "1",
-      rowNumber: `1.${materialIndex + 1}`,
-      code: `${definition.workKey}_foundation_detail_materials`,
-      names: { ru: `Р”РµС‚Р°Р»Рё РїРѕРґРіРѕС‚РѕРІРєРё С„СѓРЅРґР°РјРµРЅС‚Р°: ${workRu}`, en: `Foundation preparation details: ${workEn}` },
-      quantityFormula: "area * 0.12",
-      unitMetric,
-      unitImperial,
-      rateKey: auxiliaryRate,
-    }));
-    const laborIndex = paddedLaborRows.length;
-    paddedLaborRows.push(row({
-      sectionType: "labor",
-      sectionNumber: "2",
-      rowNumber: `2.${laborIndex + 1}`,
-      code: `${definition.workKey}_foundation_detail_labor`,
-      names: { ru: `Р”РµС‚Р°Р»РёР·Р°С†РёСЏ Рё РєРѕРЅС‚СЂРѕР»СЊ С„СѓРЅРґР°РјРµРЅС‚Р°: ${workRu}`, en: `Foundation detailing and control: ${workEn}` },
-      quantityFormula: "area",
-      unitMetric,
-      unitImperial,
-      rateKey: laborRate,
-    }));
-  }
   const genericEquipmentRows = [
     row({
       sectionType: "equipment",
@@ -1563,13 +1588,13 @@ function genericTemplate(definition: GlobalWorkTypeDefinition): GlobalEstimateTe
           type: "materials",
           sectionNumber: "1",
           title: { ru: "Материалы и комплектующие", en: "Materials and supplies" },
-          rows: paddedMaterialRows,
+          rows: materialRows,
         },
         {
           type: "labor",
           sectionNumber: "2",
           title: { ru: "Работы / монтаж / техника", en: "Labor / installation / equipment" },
-          rows: paddedLaborRows,
+          rows: laborRows,
         },
         {
           type: "equipment",
@@ -2164,6 +2189,7 @@ export const GLOBAL_ESTIMATE_TEMPLATES: readonly GlobalEstimateTemplate[] = GLOB
                         definition.workKey === "micro_hydro_preparation" ? MICRO_HYDRO_TURBINE_TEMPLATE :
                           definition.workKey === "gable_roof_installation" ? GABLE_ROOF_TEMPLATE :
                             definition.workKey === "brick_masonry" ? BRICK_MASONRY_TEMPLATE :
+                              definition.workKey === "mini_chp_preparation" ? MINI_CHP_PREPARATION_TEMPLATE :
                               definition.workKey === "roof_waterproofing" ? ROOF_WATERPROOFING_TEMPLATE :
                                 definition.workKey === "roof_membrane_waterproofing" ? ROOF_MEMBRANE_WATERPROOFING_TEMPLATE :
                                   definition.workKey === "bathroom_waterproofing" ? BATHROOM_WATERPROOFING_TEMPLATE :

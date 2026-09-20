@@ -46,27 +46,28 @@ describe("S-PAG-5A contractor foreman buyer pagination contract", () => {
 
   it("paginates foreman dictionary and app option list reads without silently capping completeness", () => {
     const foremanDicts = read("src/screens/foreman/foreman.dicts.repo.ts");
+    const foremanDictTransport = read("src/screens/foreman/foreman.dicts.transport.ts");
 
-    expect(foremanDicts).toContain("const FOREMAN_DICT_LIST_PAGE_DEFAULTS = {");
-    expect(foremanDicts).toContain("maxRows: 5000");
-    expect(foremanDicts).toContain("loadPagedRowsWithCeiling<T>");
-    expect(foremanDicts).toContain("FOREMAN_DICT_LIST_PAGE_DEFAULTS");
-    expect(foremanDicts).not.toContain("while (true)");
-    expect(foremanDicts).not.toContain(".limit(100)");
+    expect(foremanDictTransport).toContain("const FOREMAN_DICT_LIST_PAGE_DEFAULTS = {");
+    expect(foremanDictTransport).toContain("maxRows: 5000");
+    expect(foremanDictTransport).toContain("loadPagedRowsWithCeiling<T>");
+    expect(foremanDictTransport).toContain("FOREMAN_DICT_LIST_PAGE_DEFAULTS");
+    expect(foremanDictTransport).not.toContain("while (true)");
+    expect(foremanDictTransport).not.toContain(".limit(100)");
 
-    expect(foremanDicts).toContain('.from("ref_object_types")');
-    expect(foremanDicts).toContain('.from("ref_levels")');
-    expect(foremanDicts).toContain('.from("ref_systems")');
-    expect(foremanDicts).toContain('.from("ref_zones")');
-    expect(foremanDicts).toContain('.from("rik_apps")');
-    expect(foremanDicts).toContain('.from("rik_item_apps")');
+    expect(foremanDictTransport).toContain('.from("ref_object_types")');
+    expect(foremanDictTransport).toContain('.from("ref_levels")');
+    expect(foremanDictTransport).toContain('.from("ref_systems")');
+    expect(foremanDictTransport).toContain('.from("ref_zones")');
+    expect(foremanDictTransport).toContain('.from("rik_apps")');
+    expect(foremanDictTransport).toContain('.from("rik_item_apps")');
 
-    expect(foremanDicts.match(/loadPagedForemanRows</g)).toHaveLength(6);
+    expect(foremanDictTransport.match(/loadPagedForemanRows</g)).toHaveLength(6);
     expect(
-      foremanDicts.match(/\.order\(orderColumn, \{ ascending: true \}\)/g),
+      foremanDictTransport.match(/\.order\(orderColumn, \{ ascending: true \}\)/g),
     ).toHaveLength(4);
-    expect(foremanDicts.match(/\.order\("code",/g)).toHaveLength(4);
-    expect(foremanDicts.match(/\.order\("app_code",/g)).toHaveLength(2);
+    expect(foremanDictTransport.match(/\.order\("code",/g)).toHaveLength(4);
+    expect(foremanDictTransport.match(/\.order\("app_code",/g)).toHaveLength(2);
     expect(foremanDicts).toContain(
       'if (msg.includes("name_ru")) result = await run(fallbackSelect)',
     );

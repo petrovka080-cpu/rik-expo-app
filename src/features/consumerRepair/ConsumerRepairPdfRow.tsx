@@ -53,6 +53,15 @@ export function ConsumerRepairPdfRow({
       >
         <Text style={styles.title} numberOfLines={1}>{bundle.draft.title || "Смета"}</Text>
         <Text style={styles.meta}>Статус: {status} · {formatDate(bundle.draft.approvedAt ?? bundle.draft.createdAt)}</Text>
+        {canonical ? (
+          <Text
+            accessibilityLabel={`Точная версия сметы ${canonical.revisionId}`}
+            style={styles.revisionIdentity}
+            testID={`consumer-repair-history-revision-${canonical.revisionId}`}
+          >
+            Версия {canonical.revisionId.slice(0, 8)}
+          </Text>
+        ) : null}
       </Pressable>
       {canonical ? (
         <View accessible={false} style={styles.canonicalIdentityMarker} testID="consumer-repair-history-release-id" />
@@ -120,6 +129,12 @@ const styles = StyleSheet.create({
     marginTop: 2,
     color: "#64748B",
     fontSize: 12,
+    fontWeight: "700",
+  },
+  revisionIdentity: {
+    marginTop: 2,
+    color: "#64748B",
+    fontSize: 10,
     fontWeight: "700",
   },
   button: {

@@ -6,6 +6,7 @@ import type {
   ProfessionalBoqRow,
 } from "../estimate/estimateDraftRevisionContract";
 import { resolvedEstimateIdentityChecksum } from "../estimate/resolvedEstimateIdentityChecksum";
+import { aiEstimateRuLabelForParameter } from "../estimate/aiEstimateRuParameterDictionary";
 import type { StructuredEstimatePayload } from "../estimateStructuredPipeline/structuredEstimateTypes";
 import type {
   ConsumerRepairDraftBundle,
@@ -16,7 +17,6 @@ import { consumerEstimateNormSourceAdmissionReport } from "./consumerEstimateNor
 export const CANONICAL_BACKEND_REVISION_PROJECTION_VERSION =
   "canonical-estimate-backend-projection.v1" as const;
 
-function backendParameterValue(value: unknown): string | number | boolean | null {
 export type ConsumerRepairCanonicalArtifactReadyBinding = {
   artifactId: string;
   kind: "pdf" | "procurement";
@@ -24,6 +24,7 @@ export type ConsumerRepairCanonicalArtifactReadyBinding = {
   releaseId: string;
 };
 
+function backendParameterValue(value: unknown): string | number | boolean | null {
   return typeof value === "string" || typeof value === "number" || typeof value === "boolean"
     ? value
     : null;
@@ -32,9 +33,14 @@ export type ConsumerRepairCanonicalArtifactReadyBinding = {
 function rowType(item: ConsumerRepairRequestItem): ProfessionalBoqRow["rowType"] {
   if (item.itemType === "work") return "work";
   if (item.itemType === "material") return "material";
-  if (item.itemType === "service") return "service";
   if (item.itemType === "document") return "document";
   const category = item.category?.trim().toLocaleLowerCase("en-US");
+  if (item.itemType === "service") {
+    if (category === "equipment") return "equipment";
+    if (category === "transport" || category === "logistics" || category === "delivery") return "transport";
+    if (category === "labor") return "labor";
+    return "service";
+  }
   if (category === "equipment" || category === "transport" || category === "labor") return category;
   return "other";
 }
@@ -121,8 +127,15 @@ export function appendCanonicalBackendRevisionProjection(input: {
   ) ?? previousState?.revisions.find(
     (revision) => revision.revisionId === previousState.currentRevisionId,
   ) ?? null;
-  const rows = input.nextBundle.items.map(projectedRow);
+  const calculatedItems = input.nextBundle.items.filter(
+    (item) => item.sourceParameters?.canonicalPreliminaryNeed !== true,
+  );
   const normSourceAdmission = consumerEstimateNormSourceAdmissionReport(input.nextBundle);
+  const preliminaryNeeds = metadata.preliminaryNeeds ?? [];
+  const missingParameterKeys = Array.from(new Set(
+    preliminaryNeeds.flatMap((need) => need.missingParameterIds),
+  ));
+  const rows = calculatedItems.map(projectedRow);
   const params = parameterProjection(payload, previousRevision);
   const sectionsByCategory = new Map<string, string[]>();
   for (const row of rows) {
@@ -193,7 +206,7 @@ export function appendCanonicalBackendRevisionProjection(input: {
         reason,
       })),
     },
-    estimateLevel: normSourceAdmission.status === "SOURCE_GAPS"
+    estimateLevel: preliminaryNeeds.length > 0 || normSourceAdmission.status === "SOURCE_GAPS"
       ? "PRELIMINARY_QUANTITY_BOQ"
       : "SOURCE_BACKED_PROFESSIONAL_BOQ",
     rawInputFacts: [],
@@ -204,7 +217,12 @@ export function appendCanonicalBackendRevisionProjection(input: {
     },
     params,
     assumptions: [],
-    missingInputs: [],
+    missingInputs: missingParameterKeys.map((key) => ({
+      key,
+      label: aiEstimateRuLabelForParameter(key),
+      blocksPreliminaryEstimate: false,
+      requiredFor: "contract_ready" as const,
+    })),
     professionalClarification: null,
     boq: {
       sections: [...sectionsByCategory].map(([category, rowIds]) => ({
@@ -214,6 +232,12 @@ export function appendCanonicalBackendRevisionProjection(input: {
       })),
       rows,
     },
+    // Keep conditionally excluded rows in the durable bundle so a later
+    // parameter change can restore them, but do not advertise them as active
+    // BOQ rows in the shared revision marker/UI contract.
+    applicableBoqRowsCount: input.nextBundle.items.filter(
+      (item) => item.sourceParameters?.includedInEstimate !== false,
+    ).length,
     trace: {
       traceId: `canonical_backend_trace:${metadata.revisionId}`,
       revisionId: metadata.revisionId,
@@ -235,7 +259,9 @@ export function appendCanonicalBackendRevisionProjection(input: {
       })),
       staleTraceAccepted: false,
     },
-    status: "draft_ready",
+    status: preliminaryNeeds.length > 0
+      ? "needs_more_params_but_preliminary_available"
+      : "draft_ready",
     artifacts: {
       snapshotId: null,
       pdfArtifactId: null,
@@ -270,7 +296,12 @@ export function canonicalBackendRevisionProjectionForSave(
     || state.revisions.some((revision) =>
       revision.resolvedIdentity?.compilerVersion !== CANONICAL_BACKEND_REVISION_PROJECTION_VERSION
     )
-    || current.boq.rows.length !== bundle.items.length
+    || current.boq.rows.length !== bundle.items.filter(
+      (item) => item.sourceParameters?.canonicalPreliminaryNeed !== true,
+    ).length
+    || (current.applicableBoqRowsCount ?? bundle.items.length) !== bundle.items.filter(
+      (item) => item.sourceParameters?.includedInEstimate !== false,
+    ).length
   ) return null;
   return state;
 }

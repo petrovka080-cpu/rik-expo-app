@@ -16,6 +16,20 @@ jest.mock("@expo/vector-icons", () => {
   };
 });
 
+type JsonTree = ReturnType<TestRenderer.ReactTestRenderer["toJSON"]>;
+
+function countJsonTestId(tree: JsonTree, testID: string): number {
+  if (!tree) return 0;
+  if (Array.isArray(tree)) {
+    return tree.reduce((count, node) => count + countJsonTestId(node, testID), 0);
+  }
+  return (tree.props?.testID === testID ? 1 : 0)
+    + (tree.children ?? []).reduce(
+      (count, child) => count + countJsonTestId(typeof child === "string" ? null : child, testID),
+      0,
+    );
+}
+
 function canonicalRuntimeDraft(catalogId: string, title: string) {
   const draft = buildConsumerRepairDraftFromAiEstimateRuntime({
     rawInput: title,
@@ -60,11 +74,23 @@ describe("canonical progressive parameter boundary", () => {
     __resetConsumerRepairRequestStoreForTests();
     const prompt = "водоснабжение села 5 км труба ПНД 110";
     const aiDraft = buildConsumerRepairAiDraft(prompt, { currency: "KGS", city: "Бишкек" });
+    const canonicalDraft = {
+      ...aiDraft,
+      items: aiDraft.items.map((item, index) => ({
+        ...item,
+        sourceParameters: {
+          ...item.sourceParameters,
+          canonicalBackendRevisionId: "11111111-2222-4333-8444-555555555556",
+          canonicalBackendReleaseId: "progressive-parameter-backend-fixture-v1",
+          rowCode: String(item.sourceParameters?.rowCode ?? `progressive-row-${index + 1}`),
+        },
+      })),
+    };
     const bundle = createConsumerRepairRequestDraft({
       consumerUserId: "canonical-progressive-ui",
       problemText: prompt,
       repairType: aiDraft.repairType,
-      aiDraft,
+      aiDraft: canonicalDraft,
     });
     const onRefineCanonicalParameters = jest.fn();
     const noop = jest.fn();
@@ -92,6 +118,6 @@ describe("canonical progressive parameter boundary", () => {
     });
 
     expect(onRefineCanonicalParameters).toHaveBeenCalledTimes(1);
-    expect(renderer.root.findAllByProps({ testID: "request-estimate-parameter-panel" })).toHaveLength(0);
+    expect(countJsonTestId(renderer.toJSON(), "request-estimate-parameter-panel")).toBe(1);
   });
 });

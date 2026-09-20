@@ -279,6 +279,8 @@ const BASE_RAW_ALIASES: Omit<GlobalWorkAlias, "normalizedAlias">[] = [
   { workKey: "garden_irrigation", language: "ru", alias: "садовый полив" },
   { workKey: "garden_irrigation", language: "ru", alias: "garden_irrigation" },
   { workKey: "garden_irrigation", language: "en", alias: "garden irrigation" },
+  { workKey: "water_intake", language: "en", alias: "water intake" },
+  { workKey: "water_intake", language: "ru", alias: "водозабор" },
   { workKey: "furniture_assembly", language: "ru", alias: "сборка мебели" },
   { workKey: "furniture_assembly", language: "ru", alias: "furniture_assembly" },
   { workKey: "furniture_assembly", language: "en", alias: "furniture assembly" },
@@ -355,6 +357,7 @@ const BASE_RAW_ALIASES: Omit<GlobalWorkAlias, "normalizedAlias">[] = [
   { workKey: "asphalt_paving", language: "ru", alias: "асфальт" },
   { workKey: "asphalt_paving", language: "ru", alias: "асфальтирование" },
   { workKey: "asphalt_paving", language: "ru", alias: "прокладка асфальта" },
+  { workKey: "asphalt_paving", language: "ru", alias: "прокладку асфальта" },
   { workKey: "asphalt_paving", language: "ru", alias: "укладка асфальта" },
   { workKey: "asphalt_paving", language: "ru", alias: "заасфальтировать" },
   { workKey: "asphalt_paving", language: "ru", alias: "асфальтобетон" },
@@ -399,6 +402,12 @@ export const GLOBAL_WORK_ALIASES: readonly GlobalWorkAlias[] = RAW_ALIASES.map((
   ...alias,
   normalizedAlias: normalizeGlobalWorkAlias(alias.alias),
 }));
+
+export function resolveExactGlobalWorkAlias(text: string | undefined): GlobalWorkAlias | null {
+  const normalized = normalizeGlobalWorkAlias(String(normalizeRuText(text ?? "")));
+  if (!normalized) return null;
+  return GLOBAL_WORK_ALIASES.find((alias) => alias.normalizedAlias === normalized) ?? null;
+}
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -475,6 +484,14 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
     .find((token) => GLOBAL_WORK_TYPE_DEFINITION_BY_KEY.has(token));
   if (canonicalWorkKey) {
     return { workKey: canonicalWorkKey, confidence: "high" };
+  }
+  // A complete governed alias is stronger evidence than broad token
+  // heuristics (for example "кабель" or "фундамент"). Keep partial alias
+  // matching below the disambiguation rules, but never remap an exact
+  // catalog phrase to a different work family.
+  const exactFullAlias = resolveExactGlobalWorkAlias(normalized);
+  if (exactFullAlias) {
+    return { workKey: exactFullAlias.workKey, confidence: "high" };
   }
   if (
     /(?:demolition|демонтаж)/iu.test(normalized) &&

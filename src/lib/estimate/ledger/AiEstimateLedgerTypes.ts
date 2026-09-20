@@ -80,6 +80,7 @@ export type AiEstimateLedgerRecord = {
   deletedAt: string | null;
   currentRevisionId: string;
   sourceDraftId: string;
+  sourceReleaseId: string | null;
   sourceSnapshotId: string;
   rowCount: number;
   materialRowsCount: number;
@@ -109,6 +110,7 @@ export type AiEstimateLedgerHistoryRecord = {
   approvedEstimateId: string;
   sourceDraftId: string;
   sourceRevisionId: string;
+  sourceReleaseId: string | null;
   sourceSnapshotId: string;
   createdAt: string;
   updatedAt: string;
@@ -139,6 +141,7 @@ export type AiEstimateLedgerUpsertDraftInput = {
   status?: AiEstimateLedgerStatus;
   sourceDraftId?: string;
   currentRevisionId?: string;
+  sourceReleaseId?: string | null;
   sourceSnapshotId?: string;
   rowCount: number;
   materialRowsCount: number;

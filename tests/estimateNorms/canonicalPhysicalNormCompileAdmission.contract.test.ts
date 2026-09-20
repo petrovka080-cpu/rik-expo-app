@@ -59,6 +59,9 @@ function input(parameters: Record<string, unknown>) {
           material_system: "FORMWORK_CONTACT_AREA",
           scope_mode: "FULL_APPLICABLE_SCOPE",
           product_profile_id: RICS_NRM2_FORMWORK_PRODUCT_PROFILE_ID,
+          applicability_parameter_ids: Object.keys(PARAMETERS).filter(
+            (parameterId) => parameterId !== "product_profile_id",
+          ),
         },
       },
       procurement_eligible: false,
@@ -98,5 +101,19 @@ describe("canonical compiler physical norm admission", () => {
       ...PARAMETERS,
       project_measurement_rule_reference: "UNCONFIRMED",
     }))).rejects.toMatchObject({ code: "PHYSICAL_NORM_APPLICABILITY_FAILED" });
+  });
+
+  test("keeps an incomplete physical norm row visible until its project basis is supplied", async () => {
+    const { project_drawing_reference: _missing, ...minimum } = PARAMETERS;
+    const result = await compileCanonicalEstimateCore(input({ ...minimum }));
+    expect(result.rows).toEqual([]);
+    expect(result.preliminaryNeeds).toEqual([
+      expect.objectContaining({
+        row_id: "formwork:rics-nrm2:measured-contact-area:work",
+        quantity: "100",
+        need_state: "QUANTITY_REQUIRED",
+        missing_parameter_ids: ["project_drawing_reference"],
+      }),
+    ]);
   });
 });

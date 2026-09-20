@@ -23,10 +23,10 @@ describe("auth lifecycle transport boundary", () => {
     expect(lifecycleSource).not.toContain("import { getSessionSafe, supabase }");
 
     expect(transportSource).toContain(
-      'import { isSupabaseEnvValid, supabase } from "../supabaseClient";',
+      'import { supabaseClientAvailability } from "../supabaseClient";',
     );
-    expect(transportSource).toContain("return isSupabaseEnvValid;");
-    expect(transportSource).toContain("supabase.auth.onAuthStateChange(callback)");
+    expect(transportSource).toContain('supabaseClientAvailability.status === "ready"');
+    expect(transportSource).toContain("supabaseClientAvailability.client.auth.onAuthStateChange(callback)");
   });
 
   it("keeps lifecycle behavior, observability, and cleanup in the service hook", () => {

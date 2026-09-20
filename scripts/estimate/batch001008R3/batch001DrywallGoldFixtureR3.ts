@@ -4,6 +4,7 @@ export const BATCH001_DRYWALL_GOLD_FIXTURE_R3_CONTRACT =
   "real-professional-estimates-r3.batch001-drywall-gold-fixture.v1" as const;
 
 const EXACT_NUMERIC_VALUES: Readonly<Record<string, number>> = {
+  area_m2: 79,
   horizontal_face_area_m2: 60,
   vertical_face_length_m: 30,
   vertical_face_count: 1,

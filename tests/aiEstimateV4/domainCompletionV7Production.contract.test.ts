@@ -50,7 +50,7 @@ describe("BATCH-004 drywall full-domain completion V7 production", () => {
     expect(passports.every((passport) => passport.candidateCoveragePercent === 100 && passport.hiddenAggregateRows === 0)).toBe(true);
   });
 
-  test("compiles all 393 identities through the work-owned R5.6 projection", () => {
+  test("compiles all 393 identities in the single interior_finishes runtime", () => {
     const results = compileAllDomainCompletionWorks();
     const definitions = new Map(buildAllBatch004R56CanonicalSuccessorDefinitions()
       .map((definition) => [definition.catalogId, definition] as const));

@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import type { EstimateDraftRevisionDiff } from "../../../lib/estimate/estimateDraftRevisionContract";
+import { formatEstimateUnitLabel } from "../../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import {
   aiEstimateRuLabelForParameter,
   aiEstimateRuUnitForParameter,
@@ -9,34 +10,43 @@ import {
 
 export function EstimateRevisionDiff({
   diff,
+  parameters,
 }: {
   diff: EstimateDraftRevisionDiff | null;
+  parameters?: readonly {
+    parameterId: string;
+    label: string;
+    unit: string | null;
+  }[];
 }): React.ReactElement | null {
   if (!diff) return null;
+  const parameterPresentation = new Map(
+    (parameters ?? []).map((parameter) => [parameter.parameterId, parameter] as const),
+  );
   return (
     <View style={styles.panel} testID="estimate-revision-diff">
       <Text style={styles.title}>Изменения после пересчета</Text>
       <Text style={styles.meta}>Изменились строки: {diff.changedRowsCount}</Text>
-      {diff.changedParams.slice(0, 6).map((param) => (
-        <Text key={param.key} style={styles.line} testID={`estimate-revision-diff-param-${param.key}`}>
-          {aiEstimateRuLabelForParameter(param.key)}: {String(param.before ?? "нет")} {"->"} {String(param.after ?? "нет")} {aiEstimateRuUnitForParameter(param.key)}
-        </Text>
-      ))}
+      {diff.changedParams.slice(0, 6).map((param) => {
+        const presentation = parameterPresentation.get(param.key);
+        return (
+          <Text key={param.key} style={styles.line} testID={`estimate-revision-diff-param-${param.key}`}>
+            {aiEstimateRuLabelForParameter(param.key, presentation?.label)}: {String(param.before ?? "нет")} {"->"} {String(param.after ?? "нет")} {aiEstimateRuUnitForParameter(param.key, presentation?.unit)}
+          </Text>
+        );
+      })}
       {diff.changedRows.slice(0, 6).map((row) => (
         <Text key={row.rowId} style={styles.line} testID={`estimate-revision-diff-row-${row.rowId}`}>
-          {row.titleRu}: {row.beforeQuantity ?? "нет"} {"->"} {row.afterQuantity ?? "нет"} {row.unit}
+          {row.titleRu}: {row.beforeQuantity ?? "нет"} {"->"} {row.afterQuantity ?? "нет"} {formatEstimateUnitLabel(row.unit)}
         </Text>
       ))}
       {diff.changedRows.filter((row) =>
         row.beforeUnitPrice !== undefined || row.afterUnitPrice !== undefined
       ).slice(0, 6).map((row) => (
         <Text key={`${row.rowId}:price`} style={styles.line} testID={`estimate-revision-diff-price-${row.rowId}`}>
-          Цена: {row.beforeUnitPrice ?? "нет"} {"->"} {row.afterUnitPrice ?? "нет"} {row.currency ?? ""}
+          Цена — {row.titleRu}: {row.beforeUnitPrice ?? "нет"} {"->"} {row.afterUnitPrice ?? "нет"} {row.currency ?? ""}
         </Text>
       ))}
-      <Text style={styles.meta} testID="estimate-revision-artifact-status">
-        PDF и пакет закупки нужно пересоздать для текущей ревизии
-      </Text>
     </View>
   );
 }

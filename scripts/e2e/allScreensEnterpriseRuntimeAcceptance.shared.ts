@@ -337,9 +337,10 @@ function buildScreenReadiness() {
     auth_screen_ready: exists("maestro/flows/auth/login-success.yaml") && exists("maestro/flows/auth/invalid-login.yaml"),
     office_screen_ready: exists("app/(tabs)/office/index.tsx"),
     consumer_smeta_screen_ready: includesAll(consumer, [
-      "Смета",
-      "Сделать PDF",
-      "buildConsumerRepairRequestPdfViewerNavigation",
+      "consumer-estimate-make-pdf",
+      "buildCanonicalEstimateArtifact",
+      "assertCanonicalEstimateArtifactIdentity",
+      "previewPdfDocument",
     ]),
     marketplace_screen_ready: market.includes("MarketHomeScreen") && !/storage_key|media_asset_id/i.test(market),
     marketplace_add_screen_ready: includesAll(add, [
@@ -354,15 +355,24 @@ function buildScreenReadiness() {
     chat_screen_ready:
       ai.includes("AIAssistantMessageList") &&
       aiReadyPanels.includes("AIAssistantEstimatePdfActions") &&
-      aiActions.includes("make_estimate_pdf"),
+      aiActions.includes("ai-estimate-make-pdf"),
     profile_screen_ready: profile.includes("profile") || profile.includes("Profile"),
     pdf_viewer_ready: pdfViewer.includes("pdf-viewer") || pdfViewer.includes("PdfViewer"),
     ai_estimate_to_pdf_ready:
       (ai + aiReadyPanels + aiAnswerPipeline).includes("estimatePdfSource") &&
-      aiActions.includes("generateAiEstimatePdf"),
+      includesAll(aiActions, [
+        "buildCanonicalEstimateArtifact",
+        "canonicalEstimateRevisionId",
+        "canonicalEstimateReleaseId",
+        "previewPdfDocument",
+      ]),
     consumer_estimate_to_pdf_ready:
-      consumer.includes("buildConsumerRepairRequestPdfViewerNavigation") &&
-      consumer.includes('pathname: "/pdf-viewer"'),
+      includesAll(consumer, [
+        "buildCanonicalEstimateArtifact",
+        "assertCanonicalEstimateArtifactIdentity",
+        "createPdfDocumentDescriptor",
+        "previewPdfDocument",
+      ]),
     pdf_history_ready: consumer.includes("ConsumerRepairHistory") || consumer.includes("history"),
   };
 }
@@ -381,9 +391,9 @@ function buildRoleRuntimeReadiness() {
 export function buildAllScreensBackendBoundaryAudit() {
   const globalEstimate = read("supabase/functions/calculate-global-estimate/index.ts") +
     read("src/lib/ai/globalEstimate/globalEstimateCalculator.ts");
-  const aiEstimatePdf = read("src/lib/ai/estimatePdf/estimatePdfActionService.ts") +
-    read("src/lib/ai/estimatePdf/estimatePdfModelMapper.ts");
-  const pdfService = read("src/lib/consumerRequests/consumerRequestPdfService.ts");
+  const canonicalEstimateClient = read("src/lib/estimate/backendPlatform/canonicalEstimateClient.ts");
+  const pdfDocumentActions = read("src/lib/documents/pdfDocumentActions.ts");
+  const consumerScreen = read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
   const marketplaceService = read("src/lib/consumerRequests/consumerRequestMarketplaceService.ts");
   const consumerService = read("src/lib/consumerRequests/consumerRequestService.ts");
   const addScreen = read("src/screens/profile/AddListingScreen.tsx");
@@ -393,16 +403,17 @@ export function buildAllScreensBackendBoundaryAudit() {
     wave: ALL_SCREENS_ENTERPRISE_WAVE,
     estimate_backend_owned: globalEstimate.includes("GlobalEstimateResult") || globalEstimate.includes("calculateGlobalConstructionEstimate"),
     frontend_price_tax_calculation_found: /taxRate\s*=\s*|priceDefault\s*=|НДС\s*20%|sales tax/i.test(read("src/features/ai/AIAssistantScreen.tsx")),
-    pdf_existing_pipeline_used: aiEstimatePdf.includes("generateConsumerRepairRequestPdf") &&
-      pdfService.includes("generateConsumerRepairRequestPdf") &&
-      exists("src/lib/pdf/pdf.runner.ts"),
+    pdf_existing_pipeline_used: canonicalEstimateClient.includes("buildCanonicalEstimateArtifact") &&
+      pdfDocumentActions.includes("previewPdfDocument") &&
+      consumerScreen.includes("assertCanonicalEstimateArtifactIdentity"),
     second_pdf_framework_found: false,
     marketplace_backend_validated: marketplaceService.includes("validateConsumerRepairRequestForMarketplace") &&
       validation.includes("CONTACT_REQUIRED") &&
       validation.includes("PDF_FILE_MISSING"),
     marketplace_publish_direct_ui_found: /status\s*[:=]\s*["']published["']/.test(addScreen),
     consumer_service_owned: consumerService.includes("approveConsumerRepairRequestDraft") &&
-      consumerService.includes("generateConsumerRepairRequestPdfForDraft"),
+      consumerService.includes("canonicalArtifact") &&
+      consumerService.includes("consumer_approved_canonical_backend_pdf"),
     consumer_office_table_usage_found: /office|warehouse|finance/i.test(read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx")),
     role_backend_boundaries_present:
       exists("src/screens/director/director.approve.boundary.ts") &&
@@ -427,22 +438,33 @@ export function buildAllScreensBackendBoundaryAudit() {
 }
 
 function buildPdfOpenTrace() {
-  const aiPdf = read("src/lib/ai/estimatePdf/estimatePdfActionService.ts");
+  const aiPdf = read("src/features/ai/AIAssistantEstimatePdfActions.tsx");
   const consumerScreen = read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
-  const consumerActions = read("src/features/consumerRepair/requestEstimateScreenActions.ts");
   const viewer = read("app/pdf-viewer.tsx");
   return {
     wave: ALL_SCREENS_ENTERPRISE_WAVE,
-    ai_estimate_pdf_openable: aiPdf.includes('route: "/pdf-viewer"') && aiPdf.includes("openAction"),
-    consumer_pdf_opens_existing_viewer: consumerScreen.includes('pathname: "/pdf-viewer"') &&
-      consumerScreen.includes("buildConsumerRepairRequestPdfViewerNavigation(") &&
-      consumerActions.includes("getConsumerRepairRequestPdf("),
+    ai_estimate_pdf_openable: includesAll(aiPdf, [
+      "buildCanonicalEstimateArtifact",
+      "artifact.signedUrl",
+      "createPdfDocumentDescriptor",
+      "previewPdfDocument",
+    ]),
+    consumer_pdf_opens_existing_viewer: includesAll(consumerScreen, [
+      "buildCanonicalEstimateArtifact",
+      "assertCanonicalEstimateArtifactIdentity",
+      "artifact.signedUrl",
+      "createPdfDocumentDescriptor",
+      "previewPdfDocument",
+    ]),
     viewer_route_exists: exists("app/pdf-viewer.tsx"),
     viewer_loading_or_error_boundary_present: /loading|error|ошиб/i.test(viewer),
     raw_signed_url_visible_to_user: /storage_key|service_role|SUPABASE_SERVICE_ROLE_KEY/.test(viewer),
-    repeated_tap_deduped: /activeEstimatePdfCreations|creatingPdf/.test(
-      read("src/features/ai/AIAssistantEstimatePdfActions.tsx"),
-    ),
+    repeated_tap_deduped: includesAll(aiPdf, [
+      "activeEstimatePdfCreations.current.has(kind)",
+      "activeEstimatePdfCreations.current.add(kind)",
+      "activeEstimatePdfCreations.current.delete(kind)",
+      "disabled={activeCanonicalArtifactKind !== null}",
+    ]),
   };
 }
 

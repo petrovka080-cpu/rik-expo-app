@@ -897,7 +897,9 @@ export function saveConsumerRepairBundle(bundle: ConsumerRepairDraftBundle): Con
         editableEstimateSnapshot: undefined,
         estimateRevisionState: undefined,
         estimateDraftRevisionState: canonicalBackendCalculationState,
-        estimateDraftSession: null,
+        // Canonical ownership replaces calculation rows, not the request
+        // session that carries explicit measurements and scope provenance.
+        estimateDraftSession: bundle.estimateDraftSession ?? null,
         canonicalParameterSession: null,
         pendingRoadScopeSelection: null,
       }

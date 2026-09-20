@@ -59,16 +59,6 @@ const baseAccessModel: AppAccessModel = {
   activeOfficeRole: "director",
 };
 
-const verifiedIdentity = {
-  userId: "user-1",
-  email: "aybek@example.com",
-  organizationId: "company-1",
-  membershipId: "membership-1",
-  role: "director",
-  profileEnsured: true as const,
-  source: "provider_verified_claims" as const,
-};
-
 const baseMainProps = () => ({
   profileAvatarUrl: null,
   avatarLetter: "А",
@@ -93,7 +83,6 @@ const baseMainProps = () => ({
   onSelectActiveContext: jest.fn(),
   onOpenActiveContext: jest.fn(),
   onSignOut: jest.fn(),
-  verifiedIdentity,
   canEditProfile: true,
 });
 
@@ -159,6 +148,9 @@ describe("Profile composition boundaries", () => {
     expect(
       renderer!.root.findByProps({ testID: "profile-ota-diagnostics-card" }),
     ).toBeTruthy();
+    expect(
+      renderer!.root.findAllByProps({ testID: "verified-identity-summary" }),
+    ).toHaveLength(0);
     expect(
       renderer!.root.findAll(
         (node) =>

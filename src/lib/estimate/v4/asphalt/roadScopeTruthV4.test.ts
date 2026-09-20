@@ -1,6 +1,7 @@
 import {
   ROAD_SCOPE_SELECTION_QUESTION_RU,
   resolveRoadScopeV4,
+  resolveRoadSurfaceTechnologyV4,
   semanticKindForAsphaltProfileV4,
   validateCompositeRoadProjectV4,
 } from "./roadScopeTruthV4";
@@ -45,6 +46,31 @@ describe("road scope truth V4", () => {
       resolverStatus: "NEEDS_SCOPE_SELECTION",
       selectedScopeId: null,
       evidence: ["road_intent_present", "scope_not_explicit"],
+    });
+  });
+
+  test.each([
+    ["Устройство асфальтобетонного покрытия", "ASPHALT_CONCRETE"],
+    ["Устройство цементобетонного дорожного покрытия", "CEMENT_CONCRETE"],
+    ["Асфальт по существующему бетонному основанию", "ASPHALT_CONCRETE"],
+  ])("resolves the surface technology without confusing asphalt concrete and its base: %s", (originalText, expected) => {
+    expect(resolveRoadSurfaceTechnologyV4({ originalText })).toMatchObject({
+      status: "RESOLVED",
+      textTechnology: expected,
+      conflictId: null,
+    });
+  });
+
+  test("returns an explicit conflict instead of repainting a selected surface technology", () => {
+    expect(resolveRoadSurfaceTechnologyV4({
+      originalText: "Устройство цементобетонного дорожного покрытия",
+      requestedCatalogWorkId: "asphalt_concrete_pavement",
+    })).toMatchObject({
+      status: "CONFLICT",
+      textTechnology: "CEMENT_CONCRETE",
+      catalogTechnology: "ASPHALT_CONCRETE",
+      conflictId: "ROAD_SURFACE_TECHNOLOGY_CONFLICT",
+      messageRu: expect.stringContaining("противоречит"),
     });
   });
 

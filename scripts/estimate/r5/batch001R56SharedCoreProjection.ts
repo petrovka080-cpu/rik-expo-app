@@ -102,6 +102,11 @@ export async function compileBatch001R56ThroughSharedCore(input: {
       variant: input.definition.variant,
       resourceIdentity: resource.resourceIdentity,
       procurementOwnerId: resource.procurementOwnerId,
+      ...(resource.titleSpecificationParameterIds ? {
+        titleSpecificationParameterIds: resource.titleSpecificationParameterIds,
+        titleSpecificationMode: resource.titleSpecificationMode,
+        titleSpecificationSeparator: resource.titleSpecificationSeparator,
+      } : {}),
     };
     const sourceMetadata = {
       normativeTrace: [{

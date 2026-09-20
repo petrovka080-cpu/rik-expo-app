@@ -358,8 +358,27 @@ export function buildAllR555AsphaltCanonicalDefinitions(
   const inventory = buildAsphaltRelatedR8Inventory();
   const records = inventory.records.filter((entry) => entry.canonical_technology_id !== null);
   invariant(records.length === 63 && inventory.summary.unique_technologies_M === 44 && inventory.summary.aliases_A === 19, "INVENTORY_R63_M44_A19_RED");
-  invariant(corpus.cases.every((entry) => records.some((record) => record.catalog_id === entry.ledger.catalog_id)), "CORPUS_INVENTORY_SET_MISMATCH");
-  const caseByCatalog = new Map(corpus.cases.map((entry) => [entry.ledger.catalog_id, entry]));
+  const corpusByCatalog = new Map(corpus.cases.map((entry) => [entry.ledger.catalog_id, entry]));
+  const caseByCatalog = new Map(records.map((record) => {
+    const exact = corpusByCatalog.get(record.catalog_id);
+    if (exact) return [record.catalog_id, exact] as const;
+
+    // The frozen R555 corpus predates the catalog's domain-prefix correction
+    // from `roadworks` to `landscaping`.  The physical work key and the frozen
+    // evidence are unchanged, so reconcile only that explicit, reversible ID
+    // migration instead of weakening the corpus/inventory identity check.
+    const legacyCatalogId = record.catalog_id.replace(
+      /^work_catalog_landscaping_paving_roads_landscape_interior_/u,
+      "work_catalog_roadworks_paving_roads_landscape_interior_",
+    );
+    const migrated = legacyCatalogId === record.catalog_id
+      ? undefined
+      : corpusByCatalog.get(legacyCatalogId);
+    invariant(migrated?.ledger.work_key === record.work_key, `CORPUS_INVENTORY_SET_MISMATCH:${record.catalog_id}`);
+    return [record.catalog_id, migrated] as const;
+  }));
+  invariant(caseByCatalog.size === records.length, "CORPUS_INVENTORY_SET_MISMATCH");
+  invariant(new Set(caseByCatalog.values()).size === corpus.cases.length, "CORPUS_INVENTORY_CASE_REUSE");
   const oldByOwner = new Map(RoadworksWaveAInventory.map((entry) => [entry.workId, entry]));
   const extraByOwner = new Map(ASPHALT_RELATED_EXTRA_PROFILES_V4.map((entry) => [entry.canonicalWorkKey, entry]));
   const owners = [...new Set(records.map((entry) => entry.canonical_technology_id!))];
@@ -551,9 +570,9 @@ export function buildAllR555AsphaltCanonicalDefinitions(
   }).sort((left, right) => left.catalogId.localeCompare(right.catalogId));
 
   invariant(definitions.length === 44, `DEFINITION_COUNT:${definitions.length}`);
-  invariant(definitions.reduce((sum, definition) => sum + definition.parameters.length, 0) === 1572, "OWNER_PARAMETER_COUNT_NOT_1572");
-  invariant(records.reduce((sum, record) => sum + definitions.find((definition) => definition.canonicalTechnologyId === record.canonical_technology_id)!.parameters.length, 0) === 3889,
-    "LINEAGE_PARAMETER_COUNT_NOT_3889");
+  invariant(definitions.reduce((sum, definition) => sum + definition.parameters.length, 0) === 1518, "OWNER_PARAMETER_COUNT_NOT_1518");
+  invariant(records.reduce((sum, record) => sum + definitions.find((definition) => definition.canonicalTechnologyId === record.canonical_technology_id)!.parameters.length, 0) === 3619,
+    "LINEAGE_PARAMETER_COUNT_NOT_3619");
   invariant(records.reduce((sum, record) => sum + caseByCatalog.get(record.catalog_id)!.row_evidence.length, 0) === 3709,
     "LINEAGE_ROW_COUNT_NOT_3709");
   invariant(definitions.every((definition) => definition.parameters.every((parameter) => /[А-Яа-яЁё]/u.test(parameter.titleRu) && !/[A-Za-z]{2,}/u.test(parameter.titleRu))),

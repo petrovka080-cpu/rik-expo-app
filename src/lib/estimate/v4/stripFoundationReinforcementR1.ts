@@ -33,6 +33,20 @@ export const STRIP_FOUNDATION_REINFORCEMENT_TARGETS = Object.freeze([
 export type StripFoundationReinforcementContextKey =
   (typeof STRIP_FOUNDATION_REINFORCEMENT_TARGETS)[number]["contextKey"];
 
+export type ReinforcementFamilyDescriptorR1 = Readonly<{
+  ownerKey: string;
+  compilerVersion: string;
+  errorPrefix: string;
+  catalogIds: readonly string[];
+}>;
+
+export const STRIP_FOUNDATION_REINFORCEMENT_DESCRIPTOR = Object.freeze({
+  ownerKey: "strip-foundation-reinforcement",
+  compilerVersion: "canonical-estimate-compiler.strip-foundation-reinforcement-r1",
+  errorPrefix: "STRIP_FOUNDATION_REINFORCEMENT",
+  catalogIds: STRIP_FOUNDATION_REINFORCEMENT_TARGETS.map((target) => target.catalogId),
+} satisfies ReinforcementFamilyDescriptorR1);
+
 const PARAMETER_SPECS = Object.freeze([
   ["product_profile_id", "Правило определения массы арматуры", "enum", null, [REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID]],
   ["approved_reinforcement_schedule_weight_kg", "Масса по утверждённой ведомости стержней", "decimal", "kg", null],
@@ -308,6 +322,52 @@ readonly CanonicalEstimateResourceDefinition[] = Object.freeze([
   resource({ rowId: "delivery:reinforcement:steel", ordinal: 15, section: "Доставка", category: "delivery", titleRu: "Доставка арматурной стали или готовых каркасов", unitId: "t_km", formulaId: "reinforcement_delivery_v1", inclusionAst: and(equals("delivery_pricing_mode", "SEPARATE"), greaterThan("reinforcement_delivery_distance_km", 0)), procurementEligible: true, sourceRole: "SUPPLIER_ROUTE_AND_DELIVERY_SCHEDULE" }),
 ]);
 
+export function deriveReinforcementFamilyParametersR1(input: Readonly<{
+  ownerKey: string;
+  contract: string;
+  guideVersion: string;
+}>): readonly StripFoundationReinforcementParameter[] {
+  return Object.freeze(STRIP_FOUNDATION_REINFORCEMENT_PARAMETERS.map((parameter) => {
+    const truth = parameter.truth_metadata;
+    const guide = (truth.guide ?? {}) as Json;
+    return Object.freeze({
+      ...parameter,
+      truth_metadata: {
+        ...truth,
+        contract: input.contract,
+        semantic_parameter_key: `${input.ownerKey}:${parameter.parameter_id}`,
+        guide: { ...guide, guide_version: input.guideVersion },
+      },
+    });
+  }));
+}
+
+export function deriveReinforcementFamilyResourcesR1(input: Readonly<{
+  ownerKey: string;
+  contract: string;
+}>): readonly CanonicalEstimateResourceDefinition[] {
+  return Object.freeze(STRIP_FOUNDATION_REINFORCEMENT_RESOURCES.map((resourceDefinition) => {
+    const resourceGraph = {
+      ...resourceDefinition.resource_graph,
+      semanticOwnerId: `${input.ownerKey}:${resourceDefinition.row_id}`,
+    };
+    const sourceMetadata = {
+      ...(resourceDefinition.source_metadata ?? {}),
+      family_contract: input.contract,
+    };
+    return Object.freeze({
+      ...resourceDefinition,
+      resource_graph: resourceGraph,
+      source_metadata: sourceMetadata,
+      row_sha256: estimateDeterministicHash({
+        sourceRowSha256: resourceDefinition.row_sha256,
+        resourceGraph,
+        sourceMetadata,
+      }),
+    });
+  }));
+}
+
 const BASE_INPUT: Readonly<Record<string, InputValue>> = Object.freeze({
   product_profile_id: REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID,
   bar_standard_and_grade: "ASTM A615 Grade 60",
@@ -369,16 +429,20 @@ export function stripFoundationReinforcementAcceptanceInputR1(
   });
 }
 
-function explicitParameters(values: Readonly<Record<string, InputValue>>) {
+function explicitParameters(
+  values: Readonly<Record<string, InputValue>>,
+  descriptor: ReinforcementFamilyDescriptorR1,
+  parameters: readonly StripFoundationReinforcementParameter[],
+) {
   return Object.fromEntries(Object.entries(values).map(([parameterId, value]) => [
     parameterId,
     {
       value,
-      unit_id: STRIP_FOUNDATION_REINFORCEMENT_PARAMETERS.find(
+      unit_id: parameters.find(
         (parameter) => parameter.parameter_id === parameterId,
       )?.unit_id ?? null,
       source_type: "USER_EXPLICIT",
-      source_id: `strip-foundation-reinforcement:${parameterId}`,
+      source_id: `${descriptor.ownerKey}:${parameterId}`,
       captured_at: "2026-09-16T00:00:00.000Z",
       confidence: "high",
       applicability: "Approved project reinforcement schedule and execution plan.",
@@ -386,13 +450,18 @@ function explicitParameters(values: Readonly<Record<string, InputValue>>) {
   ]));
 }
 
-export async function compileStripFoundationReinforcementR1(
+export async function compileReinforcementFamilyR1(
   submittedParameters: Record<string, unknown>,
-  options: Readonly<{ catalogId?: string }> = {},
+  options: Readonly<{
+    descriptor: ReinforcementFamilyDescriptorR1;
+    catalogId: string;
+    parameters: readonly StripFoundationReinforcementParameter[];
+    resources: readonly CanonicalEstimateResourceDefinition[];
+  }>,
 ): Promise<CanonicalEstimateCompileCoreResult> {
-  const catalogId = options.catalogId ?? STRIP_FOUNDATION_REINFORCEMENT_TARGETS[0].catalogId;
-  if (!STRIP_FOUNDATION_REINFORCEMENT_TARGETS.some((target) => target.catalogId === catalogId)) {
-    throw new Error(`STRIP_FOUNDATION_REINFORCEMENT_CATALOG_UNSUPPORTED:${catalogId}`);
+  const { descriptor, catalogId, parameters, resources } = options;
+  if (!descriptor.catalogIds.includes(catalogId)) {
+    throw new Error(`${descriptor.errorPrefix}_CATALOG_UNSUPPORTED:${catalogId}`);
   }
   const values = submittedParameters as Readonly<Record<string, InputValue>>;
   const resolution = resolveProfessionalPhysicalNormParameterValuesV1({
@@ -400,27 +469,39 @@ export async function compileStripFoundationReinforcementR1(
     operation_class: "MEASURE",
     material_system: "APPROVED_REINFORCEMENT_BAR_SCHEDULE",
     scope_mode: "FULL_APPLICABLE_SCOPE",
-    parameter_values: explicitParameters(values),
+    parameter_values: explicitParameters(values, descriptor, parameters),
   });
   if (resolution.status !== "APPLIED") {
     throw Object.assign(new Error(
-      `STRIP_FOUNDATION_REINFORCEMENT_${resolution.status}:${resolution.blockers.join("|")}`,
+      `${descriptor.errorPrefix}_${resolution.status}:${resolution.blockers.join("|")}`,
     ), { code: "PARAMETER_VALIDATION_FAILED" });
   }
   return compileCanonicalEstimateCore({
     operation: "compile",
-    compilerVersion: "canonical-estimate-compiler.strip-foundation-reinforcement-r1",
+    compilerVersion: descriptor.compilerVersion,
     catalogId,
     primaryMeasureParameterId: "approved_reinforcement_schedule_weight_kg",
-    parameterDefinitions: [...STRIP_FOUNDATION_REINFORCEMENT_PARAMETERS],
+    parameterDefinitions: [...parameters],
     formulaDefinitions: [...STRIP_FOUNDATION_REINFORCEMENT_FORMULAS],
-    resourceDefinitions: [...STRIP_FOUNDATION_REINFORCEMENT_RESOURCES],
+    resourceDefinitions: [...resources],
     submittedParameters,
     confirmedParameters: {},
     currencyCode: "KGS",
     priceItems: [],
     maximumResourceRows: 24,
     hashJson: async (value) => JSON.stringify(value),
+  });
+}
+
+export async function compileStripFoundationReinforcementR1(
+  submittedParameters: Record<string, unknown>,
+  options: Readonly<{ catalogId?: string }> = {},
+): Promise<CanonicalEstimateCompileCoreResult> {
+  return compileReinforcementFamilyR1(submittedParameters, {
+    descriptor: STRIP_FOUNDATION_REINFORCEMENT_DESCRIPTOR,
+    catalogId: options.catalogId ?? STRIP_FOUNDATION_REINFORCEMENT_TARGETS[0].catalogId,
+    parameters: STRIP_FOUNDATION_REINFORCEMENT_PARAMETERS,
+    resources: STRIP_FOUNDATION_REINFORCEMENT_RESOURCES,
   });
 }
 

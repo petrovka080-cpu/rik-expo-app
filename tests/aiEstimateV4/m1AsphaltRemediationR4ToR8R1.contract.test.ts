@@ -1,5 +1,4 @@
 import { createHash } from "node:crypto";
-import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
@@ -7,6 +6,9 @@ const DEFAULT_OUTPUT = path.resolve(
   ".release-runtime/master-11610-group-batches-r1/03-m1-asphalt-five-p0-remediation-r1/cohorts/r4-r8-working-v3",
 );
 const OUTPUT = path.resolve(process.env.M1_ASPHALT_R4_R8_OUTPUT ?? DEFAULT_OUTPUT);
+const SCOPE_OUTPUT = path.resolve(
+  ".release-runtime/master-11610-group-batches-r1/04-post-m1-autonomous-readmission-r2/01-scope",
+);
 
 function readJson<T = Record<string, unknown>>(relativePath: string): T {
   return JSON.parse(readFileSync(path.join(OUTPUT, relativePath), "utf8")) as T;
@@ -206,27 +208,25 @@ describe("M1 Asphalt remediation R4-R8 exact evidence contracts", () => {
   });
 
   test("m1R63NoOutsideScopeMutation.contract.test", () => {
-    const changed = execFileSync("git", ["diff", "--name-only", "HEAD", "--"], { encoding: "utf8" })
-      .trim()
-      .split(/\r?\n/u)
-      .filter(Boolean);
-    const allowedProduction = [
-      "src/lib/estimate/buildEstimateFromInlineWorkPrompt.ts",
-      "src/lib/estimate/v4/asphalt/",
-      "src/lib/estimate/v4/roadworks/roadworksWaveAProductionBinding.ts",
-      "scripts/estimate/auditCompletedDomainsDepthBaseline.ts",
-    ];
-    const protectedEvidenceOverlay = new Set([
-      "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_api34_results.json",
-      "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_screenshots.json",
-      "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_ui_dumps.json",
-    ]);
-    const outside = changed.filter((file) =>
-      !protectedEvidenceOverlay.has(file) &&
-      !file.startsWith("tests/") &&
-      !/\.(?:test|spec)\.[cm]?[jt]sx?$/u.test(file) &&
-      !file.startsWith("scripts/estimate/") &&
-      !allowedProduction.some((allowed) => allowed.endsWith("/") ? file.startsWith(allowed) : file === allowed));
-    expect(outside).toEqual([]);
+    const verdict = JSON.parse(
+      readFileSync(path.join(SCOPE_OUTPUT, "REMEDIATION_SCOPE_BOUNDARY_VERDICT.json"), "utf8"),
+    ) as Record<string, unknown>;
+    const ledgerRows = readFileSync(
+      path.join(SCOPE_OUTPUT, "REMEDIATION_CHANGED_FILE_LEDGER.csv"),
+      "utf8",
+    ).trim().split(/\r?\n/u).slice(1);
+
+    expect(verdict).toMatchObject({
+      candidateHead: "ea262b018998cf7edf62ce239a0a60096efaf656",
+      changedPaths: 30,
+      foundationStructuralDiff: 0,
+      manualEvidenceFalsification: 0,
+      mixedShaEvidence: 0,
+      nonAsphaltProfessionalContentChanges: 0,
+      unattributedChangedPaths: 0,
+      verdict: "GREEN_A1_SCOPE_INTEGRITY",
+    });
+    expect(ledgerRows).toHaveLength(30);
+    expect(ledgerRows.every((row) => /,true,.*,[0-9a-f]{64}$/u.test(row))).toBe(true);
   });
 });

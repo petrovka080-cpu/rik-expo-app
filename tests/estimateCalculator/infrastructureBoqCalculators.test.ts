@@ -3,6 +3,7 @@ import {
   buildExpandedComplexPdfModel,
   buildExpandedComplexSnapshot,
   calculateExpandedComplexEstimate,
+  roadConstructionCalculator,
   resolveExpandedComplexWorkFamily,
   type ExpandedComplexCalculatorOutput,
 } from "../../src/lib/ai/expandedComplexWorks";
@@ -44,6 +45,40 @@ describe("infrastructure professional BOQ calculators", () => {
     expect(resolveExpandedComplexWorkFamily(prompt)?.work_family_id).toBe(
       "asphalt_concrete_pavement",
     );
+  });
+
+  it.each([
+    "асфальтобетонного покрытия длина 100 м ширина 6 м",
+    "асфальт по существующему бетонному основанию длина 100 м ширина 6 м",
+  ])("keeps asphalt materials when concrete is only part of asphalt/base wording: %s", (prompt) => {
+    const estimate = calculateExpandedComplexEstimate({
+      prompt,
+    });
+    const rowCodes = estimate
+      ? [...estimate.material_rows, ...estimate.work_rows, ...estimate.equipment_rows, ...estimate.service_rows]
+        .map((row) => row.code)
+      : [];
+
+    expect(rowCodes).toContain("asphalt_t");
+    expect(rowCodes).toContain("asphalt_lower_t");
+    expect(rowCodes).not.toContain("concrete_m3");
+  });
+
+  it("keeps explicit cement-concrete road surface on the concrete branch", () => {
+    expect(resolveExpandedComplexWorkFamily(
+      "цементобетонное дорожное покрытие длина 100 м ширина 6 м",
+    )?.work_family_id).toBe("cement_concrete_pavement");
+    const estimate = roadConstructionCalculator({
+      prompt: "цементобетонное дорожное покрытие длина 100 м ширина 6 м",
+      familyId: "road_construction",
+    });
+    const rowCodes = estimate
+      ? [...estimate.material_rows, ...estimate.work_rows, ...estimate.equipment_rows, ...estimate.service_rows]
+        .map((row) => row.code)
+      : [];
+
+    expect(rowCodes).toContain("concrete_m3");
+    expect(rowCodes).not.toContain("asphalt_t");
   });
 
   it("builds village water supply and sewer BOQs with procurement-safe handoff", () => {

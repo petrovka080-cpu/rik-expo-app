@@ -56,8 +56,8 @@ describe("AI estimate 11610 deep BOQ runtime replay", () => {
     const rows = estimate.sections.flatMap((section) => section.rows);
 
     expect(validateEstimateBoqDepth(estimate).passed).toBe(true);
-    expect(rows.find((row) => row.code === "temporary_stabilization_geotextile_m2")?.name).toContain("Temporary geotextile");
-    expect(rows.find((row) => row.code === "dust_suppression_water_l")?.name).toContain("Dust suppression water");
+    expect(rows.find((row) => row.code === "temporary_stabilization_geotextile_m2")?.name).toBe("Временный геотекстиль для технологических дорог и откосов");
+    expect(rows.find((row) => row.code === "dust_suppression_water_l")?.name).toBe("Техническая вода для пылеподавления");
     expect(rows.find((row) => row.code === "dust_suppression_water_l")?.unit).toBe("l");
   });
 });

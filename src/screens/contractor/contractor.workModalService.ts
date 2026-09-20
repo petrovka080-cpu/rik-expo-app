@@ -8,7 +8,12 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { IssuedItemRow, LinkedReqCard } from "./types";
 import type { Database } from "../../lib/database.types";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
-import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
+import {
+  createGuardedPagedQuery,
+  loadPagedRowsWithCeiling,
+  type PagedQuery,
+  type PagedQueryProvider,
+} from "../../lib/api/_core";
 import {
   createContractorWorkModalRequestDisplayQuery,
   fetchContractorWorkModalRequestNoProbe,
@@ -170,6 +175,14 @@ const asArray = <T>(value: T[] | null | undefined): T[] => (Array.isArray(value)
 
 const asRecord = (value: unknown): Record<string, unknown> | null =>
   value && typeof value === "object" ? (value as Record<string, unknown>) : null;
+
+const isWorkModalPagedRow = <TRow extends object>(value: unknown): value is TRow =>
+  asRecord(value) !== null;
+
+const createWorkModalPagedQuery = <TRow extends object>(
+  query: PagedQueryProvider,
+  context: string,
+): PagedQuery<TRow> => createGuardedPagedQuery<TRow>(query, isWorkModalPagedRow, context);
 
 const normalizeRequestHeaderRow = (row: unknown): RequestHeaderRow => {
   const record = asRecord(row);
@@ -473,13 +486,15 @@ export async function loadIssuedTodayData(
   }
 
   const issueHeadsQ = await loadPagedRowsWithCeiling<WarehouseIssueHeadRow>(
-    () =>
+    () => createWorkModalPagedQuery<WarehouseIssueHeadRow>(
       supabaseClient
         .from("warehouse_issues")
         .select("id, request_id, base_no")
         .in("request_id", requestIds)
         .order("request_id", { ascending: true })
-        .order("id", { ascending: true }) as unknown as PagedQuery<WarehouseIssueHeadRow>,
+        .order("id", { ascending: true }),
+      "contractor.workModalService.warehouse_issues",
+    ),
     WORK_MODAL_REFERENCE_PAGE_DEFAULTS,
   );
   const issueNosByReq = new Map<string, string[]>();
@@ -496,12 +511,14 @@ export async function loadIssuedTodayData(
   }
 
   const headsQ = await loadPagedRowsWithCeiling<IssueReqHeadUiRow>(
-    () =>
+    () => createWorkModalPagedQuery<IssueReqHeadUiRow>(
       supabaseClient
         .from("v_wh_issue_req_heads_ui")
         .select("request_id, submitted_at, issue_status, qty_issued_sum")
         .in("request_id", requestIds)
-        .order("request_id", { ascending: true }) as unknown as PagedQuery<IssueReqHeadUiRow>,
+        .order("request_id", { ascending: true }),
+      "contractor.workModalService.v_wh_issue_req_heads_ui",
+    ),
     WORK_MODAL_REFERENCE_PAGE_DEFAULTS,
   );
   const issueStatusByReq = new Map<string, string>();
@@ -554,13 +571,15 @@ export async function loadIssuedTodayData(
   }
 
   const itemsQ = await loadPagedRowsWithCeiling<IssueReqItemUiRow>(
-    () =>
+    () => createWorkModalPagedQuery<IssueReqItemUiRow>(
       supabaseClient
         .from("v_wh_issue_req_items_ui")
         .select(ISSUE_REQ_ITEM_UI_SELECT)
         .in("request_id", scopeIds)
         .order("request_id", { ascending: true })
-        .order("request_item_id", { ascending: true }) as unknown as PagedQuery<IssueReqItemUiRow>,
+        .order("request_item_id", { ascending: true }),
+      "contractor.workModalService.v_wh_issue_req_items_ui",
+    ),
     WORK_MODAL_REFERENCE_PAGE_DEFAULTS,
   );
   if (itemsQ.error || !Array.isArray(itemsQ.data)) {
@@ -641,12 +660,14 @@ export async function loadInitialWorkMaterialsForModal(
   if (!lastLogQ.error && lastLogQ.data?.id) {
     const logId = String(lastLogQ.data.id);
     const matsQ = await loadPagedRowsWithCeiling<WorkProgressLogMaterialRow>(
-      () =>
+      () => createWorkModalPagedQuery<WorkProgressLogMaterialRow>(
         supabaseClient
           .from("work_progress_log_materials")
           .select("mat_code, uom_mat, qty_fact")
           .eq("log_id", logId)
-          .order("mat_code", { ascending: true }) as unknown as PagedQuery<WorkProgressLogMaterialRow>,
+          .order("mat_code", { ascending: true }),
+        "contractor.workModalService.work_progress_log_materials",
+      ),
       WORK_MODAL_REFERENCE_PAGE_DEFAULTS,
     );
 
@@ -661,12 +682,14 @@ export async function loadInitialWorkMaterialsForModal(
 
       if (codes.length) {
         const ci = await loadPagedRowsWithCeiling<CatalogItemRow>(
-          () =>
+          () => createWorkModalPagedQuery<CatalogItemRow>(
             supabaseClient
               .from("catalog_items")
               .select("rik_code, name_human_ru, name_human, uom_code")
               .in("rik_code", codes)
-              .order("rik_code", { ascending: true }) as unknown as PagedQuery<CatalogItemRow>,
+              .order("rik_code", { ascending: true }),
+            "contractor.workModalService.catalog_items.restored_materials",
+          ),
           WORK_MODAL_REFERENCE_PAGE_DEFAULTS,
         );
         if (!ci.error && Array.isArray(ci.data)) {
@@ -725,12 +748,14 @@ export async function loadInitialWorkMaterialsForModal(
   let namesMap: Record<string, CatalogMeta> = {};
   if (codes.length) {
     const ci = await loadPagedRowsWithCeiling<CatalogItemRow>(
-      () =>
+      () => createWorkModalPagedQuery<CatalogItemRow>(
         supabaseClient
           .from("catalog_items")
           .select("rik_code, name_human_ru, name_human, uom_code")
           .in("rik_code", codes)
-          .order("rik_code", { ascending: true }) as unknown as PagedQuery<CatalogItemRow>,
+          .order("rik_code", { ascending: true }),
+        "contractor.workModalService.catalog_items.default_materials",
+      ),
       WORK_MODAL_REFERENCE_PAGE_DEFAULTS,
     );
     if (!ci.error && Array.isArray(ci.data)) {
@@ -758,13 +783,15 @@ export async function loadWorkStageOptions(params: {
 }): Promise<{ code: string; name: string }[]> {
   const { supabaseClient } = params;
   const { data, error } = await loadPagedRowsWithCeiling<WorkStageRow>(
-    () =>
+    () => createWorkModalPagedQuery<WorkStageRow>(
       supabaseClient
         .from("work_stages")
         .select("code, name")
         .eq("is_active", true)
         .order("sort_order", { ascending: true })
-        .order("code", { ascending: true }) as unknown as PagedQuery<WorkStageRow>,
+        .order("code", { ascending: true }),
+      "contractor.workModalService.work_stages",
+    ),
     WORK_MODAL_REFERENCE_PAGE_DEFAULTS,
   );
   if (error || !Array.isArray(data)) return [];

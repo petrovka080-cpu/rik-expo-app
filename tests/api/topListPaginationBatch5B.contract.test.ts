@@ -25,7 +25,7 @@ describe("S-PAG-5B director warehouse job queue pagination contract", () => {
       buyerCounterparty.match(/\.range\(page\.from, page\.to\)/g),
     ).toHaveLength(5);
 
-    const foremanDicts = read("src/screens/foreman/foreman.dicts.repo.ts");
+    const foremanDicts = read("src/screens/foreman/foreman.dicts.transport.ts");
     expect(foremanDicts).toContain("const FOREMAN_DICT_LIST_PAGE_DEFAULTS = {");
     expect(foremanDicts).toContain("maxRows: 5000");
     expect(foremanDicts.match(/loadPagedForemanRows</g)).toHaveLength(6);

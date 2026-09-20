@@ -13,7 +13,7 @@ describe("catalog source registry artifact", () => {
     const registry = readJson<CatalogSourceRegistry>("data/estimate-catalog/source-registry.json");
 
     expect(registry.final_status).toBe(STOP_AI_ESTIMATE_CATALOG_SOURCE_REGISTRY_FAILED);
-    expect(registry.physical_norm_pack_source_count).toBe(55);
+    expect(registry.physical_norm_pack_source_count).toBe(59);
     expect(registry.row_source_count).toBeGreaterThan(0);
     expect(registry.p0_source_count).toBeGreaterThan(0);
     expect(registry.p0_source_coverage).toHaveLength(14);
@@ -28,9 +28,15 @@ describe("catalog source registry artifact", () => {
     const physicalSources = registry.sources.filter((item) =>
       item.evidence_kind === "physical_norm_pack_review" || item.evidence_kind === "registry_norm_pack"
     );
-    expect(physicalSources.filter((item) => item.evidence_kind === "physical_norm_pack_review")).toHaveLength(55);
+    expect(physicalSources.filter((item) => item.evidence_kind === "physical_norm_pack_review")).toHaveLength(61);
     expect(physicalSources.map((item) => item.source_id)).toEqual(expect.arrayContaining([
       "src_manufacturer_doka_frami_xlife_foundation_999810202_2023_11",
+      "src_manufacturer_doka_dokaflex_999776002_2024_08",
+      "src_professional_norm_pack_concrete_aci_309_project_consolidation_schedule_v1",
+      "src_professional_norm_pack_concrete_aci_spec_308_1_23_project_curing_schedule_v1",
+      "src_professional_norm_pack_concrete_aci_302_1_15_project_leveling_schedule_v1",
+      "src_professional_norm_pack_concrete_aci_562_25_project_repair_schedule_v1",
+      "src_professional_norm_pack_concrete_aci_prc_546_23_repair_method_selection_v1",
       "src_professional_norm_pack_concrete_nrmca_cip31_selected_contingency_m3_m3_v1",
       "src_professional_norm_pack_formwork_rics_nrm2_measured_contact_area_same_unit_routing_v1",
       "src_professional_norm_pack_reinforcement_project_bar_schedule_weight_same_unit_routing_v1",

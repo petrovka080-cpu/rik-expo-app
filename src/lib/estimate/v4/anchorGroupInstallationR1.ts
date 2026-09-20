@@ -43,11 +43,15 @@ export type AnchorGroupInstallationContextKey =
 
 const PARAMETER_SPECS = Object.freeze([
   ["product_profile_id", "Правило комплектации анкерной группы", "enum", null, [ANCHOR_GROUP_PROJECT_SCHEDULE_PRODUCT_PROFILE_ID]],
+  ["anchor_group_count", "Количество анкерных групп", "integer", "piece", null],
+  ["bolts_per_group", "Количество анкерных болтов в одной группе", "integer", "piece", null],
   ["approved_anchor_group_schedule_reference", "Утверждённая спецификация анкерной группы", "text", null, null],
   ["structural_drawing_revision_reference", "Рабочий чертёж и ревизия узла", "text", null, null],
   ["method_statement_reference", "Утверждённый ППР на установку", "text", null, null],
   ["anchor_bolt_designation", "Марка анкерных болтов", "text", null, null],
   ["anchor_bolt_quantity_piece", "Количество анкерных болтов", "decimal", "piece", null],
+  ["thread_protection_cap_designation", "Тип защитных колпачков резьбы", "text", null, null],
+  ["thread_protection_cap_quantity_piece", "Количество защитных колпачков резьбы", "decimal", "piece", null],
   ["nut_designation", "Марка гаек", "text", null, null],
   ["nut_quantity_piece", "Количество гаек", "decimal", "piece", null],
   ["washer_designation", "Марка шайб", "text", null, null],
@@ -81,7 +85,46 @@ const PARAMETER_SPECS = Object.freeze([
   ["torque_control_applicable", "Контроль затяжки предусмотрен проектом", "boolean", null, null],
   ["torque_tool_machine_h", "Работа тарированного динамометрического инструмента", "decimal", "machine_hour", null],
   ["torque_control_service_h", "Контроль затяжки соединений", "decimal", "service_hour", null],
+  ["temporary_brace_mode", "Временные раскосы анкерной группы по ППР", "enum", null, ["NOT_REQUIRED", "REQUIRED"]],
+  ["temporary_brace_designation", "Тип временного раскоса анкерной группы", "text", null, null],
+  ["temporary_brace_quantity_piece", "Количество временных раскосов анкерной группы", "decimal", "piece", null],
+  ["temporary_brace_worker_h", "Трудозатраты на установку и снятие временных раскосов", "decimal", "man_hour", null],
+  ["base_grout_mode", "Безусадочная подливка под опорной деталью по проекту", "enum", null, ["NOT_REQUIRED", "REQUIRED"]],
+  ["base_grout_designation", "Марка безусадочной подливочной смеси", "text", null, null],
+  ["base_grout_quantity_kg", "Количество безусадочной подливочной смеси", "decimal", "kg", null],
+  ["base_grout_worker_h", "Трудозатраты на устройство безусадочной подливки", "decimal", "man_hour", null],
 ] as const);
+
+const TEMPORARY_BRACE_DETAIL_PARAMETER_IDS = new Set([
+  "temporary_brace_designation",
+  "temporary_brace_quantity_piece",
+  "temporary_brace_worker_h",
+]);
+const BASE_GROUT_DETAIL_PARAMETER_IDS = new Set([
+  "base_grout_designation",
+  "base_grout_quantity_kg",
+  "base_grout_worker_h",
+]);
+const CONDITIONAL_DETAIL_PARAMETER_IDS = new Set([
+  ...TEMPORARY_BRACE_DETAIL_PARAMETER_IDS,
+  ...BASE_GROUT_DETAIL_PARAMETER_IDS,
+]);
+
+function conditionalParameterConstraints(parameterId: string): Json {
+  if (TEMPORARY_BRACE_DETAIL_PARAMETER_IDS.has(parameterId)) {
+    return {
+      requiredWhen: { kind: "equals", parameterId: "temporary_brace_mode", value: "REQUIRED" },
+      forbiddenWhen: { kind: "equals", parameterId: "temporary_brace_mode", value: "NOT_REQUIRED" },
+    };
+  }
+  if (BASE_GROUT_DETAIL_PARAMETER_IDS.has(parameterId)) {
+    return {
+      requiredWhen: { kind: "equals", parameterId: "base_grout_mode", value: "REQUIRED" },
+      forbiddenWhen: { kind: "equals", parameterId: "base_grout_mode", value: "NOT_REQUIRED" },
+    };
+  }
+  return {};
+}
 
 export type AnchorGroupInstallationParameter = CanonicalEstimateParameterDefinition & {
   ordinal: number;
@@ -98,22 +141,28 @@ readonly AnchorGroupInstallationParameter[] = Object.freeze(PARAMETER_SPECS.map(
     value_type: valueType,
     unit_id: unitId,
     title_ru: titleRu,
-    required: true,
+    required: !CONDITIONAL_DETAIL_PARAMETER_IDS.has(parameterId),
     default_value: null,
-    constraints_json: enumValues
-      ? { values: enumValues }
-      : valueType === "decimal"
-        ? { min: parameterId.endsWith("quantity_piece") || parameterId === "anchor_bolt_quantity_piece" ? 0.000_001 : 0 }
-        : valueType === "text"
-          ? { minLength: 1, maxLength: 1_000 }
-          : {},
+    constraints_json: {
+      ...(enumValues
+        ? { values: enumValues }
+        : valueType === "decimal" || valueType === "integer"
+          ? { min: parameterId.endsWith("quantity_piece")
+            || parameterId === "anchor_bolt_quantity_piece"
+            || parameterId === "anchor_group_count"
+            || parameterId === "bolts_per_group" ? 0.000_001 : 0 }
+          : valueType === "text"
+            ? { minLength: 1, maxLength: 1_000 }
+            : {}),
+      ...conditionalParameterConstraints(parameterId),
+    },
     truth_metadata: {
       contract: "rik-expo-app.anchor-group-installation-r1",
       semantic_parameter_key: `anchor-group-installation:${parameterId}`,
       visibility_role: "USER_INPUT",
       value_source_role: "PROJECT_SPECIFIC_INPUT",
       input_origin_class: "APPROVED_PROJECT_SCHEDULE_DRAWING_OR_METHOD_STATEMENT",
-      preliminary_compilation_allowed: false,
+      preliminary_compilation_allowed: true,
       source_confirmation_required: true,
       guide: {
         guide_kind: "PROJECT_DEFINED",
@@ -159,7 +208,9 @@ export type AnchorGroupInstallationFormula = CanonicalEstimateFormulaDefinition 
 
 export const ANCHOR_GROUP_INSTALLATION_FORMULAS:
 readonly AnchorGroupInstallationFormula[] = Object.freeze([
-  formula("anchor_bolt_quantity_v1", "piece", "anchor_bolt_quantity_piece"),
+  formula("anchor_group_count_v1", "piece", "anchor_group_count"),
+  formula("anchor_bolt_quantity_v1", "piece", "anchor_group_count * bolts_per_group"),
+  formula("thread_protection_cap_quantity_v1", "piece", "thread_protection_cap_quantity_piece"),
   formula("nut_quantity_v1", "piece", "nut_quantity_piece"),
   formula("washer_quantity_v1", "piece", "washer_quantity_piece"),
   formula("installation_template_quantity_v1", "piece", "installation_template_quantity_piece"),
@@ -180,6 +231,10 @@ readonly AnchorGroupInstallationFormula[] = Object.freeze([
   formula("torque_tool_time_v1", "machine_hour", "torque_tool_machine_h"),
   formula("torque_control_service_v1", "service_hour", "torque_control_service_h"),
   formula("anchor_group_delivery_v1", "t_km", "delivered_anchor_group_mass_kg / 1000 * delivery_distance_km"),
+  formula("temporary_brace_quantity_v1", "piece", "temporary_brace_quantity_piece"),
+  formula("temporary_brace_labor_v1", "man_hour", "temporary_brace_worker_h"),
+  formula("base_grout_quantity_v1", "kg", "base_grout_quantity_kg"),
+  formula("base_grout_labor_v1", "man_hour", "base_grout_worker_h"),
 ]);
 
 const literalTrue = Object.freeze({ kind: "literal", value: true });
@@ -198,6 +253,8 @@ function resource(input: {
   inclusionAst?: Json;
   procurementEligible: boolean;
   titleParameterIds?: string[];
+  derivedInputParameterIds?: string[];
+  validationInputParameterIds?: string[];
   sourceRole?: string;
 }): CanonicalEstimateResourceDefinition {
   const normativeTrace = [{
@@ -220,6 +277,12 @@ function resource(input: {
       titleSpecificationParameterIds: input.titleParameterIds,
       titleSpecificationMode: "APPEND",
       titleSpecificationSeparator: " ",
+    } : {}),
+    ...(input.derivedInputParameterIds ? {
+      derivedInputParameterIds: input.derivedInputParameterIds,
+    } : {}),
+    ...(input.validationInputParameterIds ? {
+      validationInputParameterIds: input.validationInputParameterIds,
     } : {}),
   };
   const sourceMetadata = {
@@ -266,7 +329,7 @@ const delivery = and(
 
 export const ANCHOR_GROUP_INSTALLATION_RESOURCES:
 readonly CanonicalEstimateResourceDefinition[] = Object.freeze([
-  resource({ rowId: "material:anchor-group:anchor-bolts", ordinal: 0, section: "Материалы", category: "material", titleRu: "Анкерные болты по утверждённой спецификации", unitId: "piece", formulaId: "anchor_bolt_quantity_v1", procurementEligible: true, titleParameterIds: ["anchor_bolt_designation"] }),
+  resource({ rowId: "material:anchor-group:anchor-bolts", ordinal: 0, section: "Материалы", category: "material", titleRu: "Анкерные болты по утверждённой спецификации", unitId: "piece", formulaId: "anchor_bolt_quantity_v1", procurementEligible: true, titleParameterIds: ["anchor_bolt_designation"], derivedInputParameterIds: ["anchor_group_count", "bolts_per_group"], validationInputParameterIds: ["anchor_bolt_quantity_piece"] }),
   resource({ rowId: "material:anchor-group:nuts", ordinal: 1, section: "Материалы", category: "material", titleRu: "Гайки анкерной группы", unitId: "piece", formulaId: "nut_quantity_v1", procurementEligible: true, titleParameterIds: ["nut_designation"] }),
   resource({ rowId: "material:anchor-group:washers", ordinal: 2, section: "Материалы", category: "material", titleRu: "Шайбы анкерной группы", unitId: "piece", formulaId: "washer_quantity_v1", procurementEligible: true, titleParameterIds: ["washer_designation"] }),
   resource({ rowId: "material:anchor-group:installation-template", ordinal: 3, section: "Материалы", category: "material", titleRu: "Установочный шаблон анкерной группы", unitId: "piece", formulaId: "installation_template_quantity_v1", procurementEligible: true, titleParameterIds: ["installation_template_designation"] }),
@@ -287,10 +350,17 @@ readonly CanonicalEstimateResourceDefinition[] = Object.freeze([
   resource({ rowId: "service:anchor-group:documents", ordinal: 18, section: "Услуги и контроль", category: "service", titleRu: "Комплект исполнительной документации", unitId: "document", formulaId: "documentation_package_v1", procurementEligible: true, sourceRole: "PROJECT_QUALITY_PLAN" }),
   resource({ rowId: "service:anchor-group:torque-control", ordinal: 19, section: "Услуги и контроль", category: "service", titleRu: "Контроль затяжки соединений по проекту", unitId: "service_hour", formulaId: "torque_control_service_v1", inclusionAst: torque, procurementEligible: true, sourceRole: "PROJECT_QUALITY_PLAN" }),
   resource({ rowId: "delivery:anchor-group:supply", ordinal: 20, section: "Доставка", category: "delivery", titleRu: "Доставка комплекта анкерной группы", unitId: "t_km", formulaId: "anchor_group_delivery_v1", inclusionAst: delivery, procurementEligible: true, sourceRole: "SUPPLIER_ROUTE_AND_PACKING_LIST" }),
+  resource({ rowId: "work:anchor-group:install-align-groups", ordinal: 21, section: "Работы", category: "construction_work", titleRu: "Установка и выверка анкерной группы по шаблону", unitId: "piece", formulaId: "anchor_group_count_v1", procurementEligible: false, sourceRole: "PROJECT_ANCHOR_GROUP_SCHEDULE" }),
+  resource({ rowId: "material:anchor-group:thread-protection-caps", ordinal: 22, section: "Материалы", category: "material", titleRu: "Защитные колпачки резьбы анкерных болтов", unitId: "piece", formulaId: "thread_protection_cap_quantity_v1", procurementEligible: true, titleParameterIds: ["thread_protection_cap_designation"], sourceRole: "PROJECT_ANCHOR_GROUP_SCHEDULE" }),
+  resource({ rowId: "material:anchor-group:temporary-braces", ordinal: 23, section: "Условные материалы", category: "material", titleRu: "Временные раскосы для фиксации анкерной группы", unitId: "piece", formulaId: "temporary_brace_quantity_v1", inclusionAst: equals("temporary_brace_mode", "REQUIRED"), procurementEligible: true, titleParameterIds: ["temporary_brace_designation"], sourceRole: "PROJECT_METHOD_STATEMENT" }),
+  resource({ rowId: "work:anchor-group:temporary-braces", ordinal: 24, section: "Условные работы", category: "construction_work", titleRu: "Установка и снятие временных раскосов анкерной группы", unitId: "man_hour", formulaId: "temporary_brace_labor_v1", inclusionAst: equals("temporary_brace_mode", "REQUIRED"), procurementEligible: false, sourceRole: "PROJECT_METHOD_STATEMENT" }),
+  resource({ rowId: "material:anchor-group:non-shrink-base-grout", ordinal: 25, section: "Условные материалы", category: "material", titleRu: "Безусадочная подливочная смесь под опорной деталью", unitId: "kg", formulaId: "base_grout_quantity_v1", inclusionAst: equals("base_grout_mode", "REQUIRED"), procurementEligible: true, titleParameterIds: ["base_grout_designation"], sourceRole: "PROJECT_STRUCTURAL_DETAIL" }),
+  resource({ rowId: "work:anchor-group:non-shrink-base-grout", ordinal: 26, section: "Условные работы", category: "construction_work", titleRu: "Устройство безусадочной подливки под опорной деталью", unitId: "man_hour", formulaId: "base_grout_labor_v1", inclusionAst: equals("base_grout_mode", "REQUIRED"), procurementEligible: false, sourceRole: "PROJECT_STRUCTURAL_DETAIL" }),
 ]);
 
 const BASE_INPUT: Readonly<Record<string, InputValue>> = Object.freeze({
   product_profile_id: ANCHOR_GROUP_PROJECT_SCHEDULE_PRODUCT_PROFILE_ID,
+  thread_protection_cap_designation: "Защитный колпачок резьбы по спецификации анкерной группы",
   nut_designation: "AG-NUT-PROJECT",
   washer_designation: "AG-WASHER-PROJECT",
   installation_template_designation: "AG-TEMPLATE-PROJECT",
@@ -308,6 +378,8 @@ const BASE_INPUT: Readonly<Record<string, InputValue>> = Object.freeze({
   torque_control_applicable: false,
   torque_tool_machine_h: 0,
   torque_control_service_h: 0,
+  temporary_brace_mode: "NOT_REQUIRED",
+  base_grout_mode: "NOT_REQUIRED",
 });
 
 const PROJECT_SCHEDULES: Readonly<Record<
@@ -322,6 +394,18 @@ Readonly<Record<string, InputValue>>
   wet_zone: { anchor_bolt_designation: "AG-M30-WZ", anchor_bolt_quantity_piece: 24, nut_quantity_piece: 48, washer_quantity_piece: 48, installation_template_quantity_piece: 2, fixing_accessory_quantity_set: 2, protective_system_designation: "AG-WZ-PROTECTION-PROJECT", protective_material_quantity_kg: 7.5, survey_setout_worker_h: 6, template_assembly_worker_h: 12, anchor_installation_alignment_worker_h: 24, fixing_worker_h: 11, protective_application_worker_h: 10, lifting_equipment_applicable: true, lifting_equipment_designation: "Кран-манипулятор по ППР AG-WZ", lifting_machine_h: 6, survey_equipment_h: 5, geometry_control_service_h: 5, acceptance_inspection_service_h: 4, documentation_package_count: 2, delivered_anchor_group_mass_kg: 1_150, delivery_distance_km: 26, torque_control_applicable: true, torque_tool_machine_h: 3, torque_control_service_h: 3 },
 });
 
+const GROUP_GEOMETRY: Readonly<Record<
+AnchorGroupInstallationContextKey,
+Readonly<{ anchor_group_count: number; bolts_per_group: number }>
+>> = Object.freeze({
+  standard: { anchor_group_count: 4, bolts_per_group: 4 },
+  high_load: { anchor_group_count: 8, bolts_per_group: 6 },
+  large_area: { anchor_group_count: 16, bolts_per_group: 6 },
+  small_area: { anchor_group_count: 2, bolts_per_group: 4 },
+  technical_room: { anchor_group_count: 5, bolts_per_group: 4 },
+  wet_zone: { anchor_group_count: 6, bolts_per_group: 4 },
+});
+
 export function anchorGroupInstallationAcceptanceInputR1(
   contextKey: AnchorGroupInstallationContextKey,
 ): Readonly<Record<string, InputValue>> {
@@ -330,9 +414,13 @@ export function anchorGroupInstallationAcceptanceInputR1(
   );
   if (!target) throw new Error(`ANCHOR_GROUP_INSTALLATION_CONTEXT_UNSUPPORTED:${contextKey}`);
   const reference = contextKey.toUpperCase().replace(/_/gu, "-");
+  const geometry = GROUP_GEOMETRY[contextKey];
   return Object.freeze({
     ...BASE_INPUT,
     ...PROJECT_SCHEDULES[contextKey],
+    ...geometry,
+    thread_protection_cap_quantity_piece:
+      geometry.anchor_group_count * geometry.bolts_per_group,
     approved_anchor_group_schedule_reference: `AGS-${reference}-REV-A`,
     structural_drawing_revision_reference: `STR-AG-${reference}-REV-A`,
     method_statement_reference: `MS-AG-${reference}-REV-A`,
@@ -347,15 +435,30 @@ export async function compileAnchorGroupInstallationR1(
   if (!ANCHOR_GROUP_INSTALLATION_TARGETS.some((target) => target.catalogId === catalogId)) {
     throw new Error(`ANCHOR_GROUP_INSTALLATION_CATALOG_UNSUPPORTED:${catalogId}`);
   }
+  const normalizedParameters = { ...submittedParameters };
+  const groupCount = Number(normalizedParameters.anchor_group_count);
+  const boltsPerGroup = Number(normalizedParameters.bolts_per_group);
+  if (Number.isFinite(groupCount) && Number.isFinite(boltsPerGroup)) {
+    const derivedBoltQuantity = groupCount * boltsPerGroup;
+    const suppliedBoltQuantity = normalizedParameters.anchor_bolt_quantity_piece;
+    if (suppliedBoltQuantity == null) {
+      normalizedParameters.anchor_bolt_quantity_piece = derivedBoltQuantity;
+    } else if (Number.isFinite(Number(suppliedBoltQuantity))
+      && Math.abs(Number(suppliedBoltQuantity) - derivedBoltQuantity) > 1e-9) {
+      throw Object.assign(new Error(
+        "ANCHOR_GROUP_INSTALLATION_BOLT_QUANTITY_MISMATCH",
+      ), { code: "PARAMETER_VALIDATION_FAILED" });
+    }
+  }
   return compileCanonicalEstimateCore({
     operation: "compile",
     compilerVersion: "canonical-estimate-compiler.anchor-group-installation-r1",
     catalogId,
-    primaryMeasureParameterId: "anchor_bolt_quantity_piece",
+    primaryMeasureParameterId: "anchor_group_count",
     parameterDefinitions: [...ANCHOR_GROUP_INSTALLATION_PARAMETERS],
     formulaDefinitions: [...ANCHOR_GROUP_INSTALLATION_FORMULAS],
     resourceDefinitions: [...ANCHOR_GROUP_INSTALLATION_RESOURCES],
-    submittedParameters,
+    submittedParameters: normalizedParameters,
     confirmedParameters: {},
     currencyCode: "KGS",
     priceItems: [],

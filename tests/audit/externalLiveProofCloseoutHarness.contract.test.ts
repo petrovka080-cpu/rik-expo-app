@@ -82,6 +82,9 @@ describe("external live proof closeout harness", () => {
     expect(cliSource).toContain("EXTERNAL_LIVE_PROOF_STEP_TIMEOUT_MS");
     expect(cliSource).toContain("BLOCKED_EXTERNAL_LIVE_PROOF_TIMEOUT");
     expect(cliSource).toContain("taskkill");
+    expect(cliSource).toContain("AFTER_GATES_PRIMARY_RECEIPT_BUNDLE_REQUIRED");
+    expect(cliSource).toContain("validateReleaseReceiptBundle");
+    expect(cliSource).toContain("primaryReceiptBundleValidated");
     expect(cliSource).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
   });
 });

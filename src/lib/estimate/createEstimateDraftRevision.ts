@@ -11,6 +11,7 @@ import type {
   ProfessionalBoqRow,
   ProfessionalBoqSection,
 } from "./estimateDraftRevisionContract";
+import { R4_A6_PUMP_STATION_PARAMETERS } from "./r4A6PumpStationProfessional";
 import type { ConsumerRepairAiDraft } from "../consumerRequests/consumerRequestTypes";
 import type { InlineWorkPromptExtractedParam } from "../ai/extractWorkParamsFromInlinePrompt";
 import type { InlineWorkPromptParseResult } from "../ai/inlineWorkPromptContract";
@@ -37,6 +38,7 @@ import { isExactAsphaltRelatedConsumerDraftV4 } from "./v4/asphalt/asphaltRelate
 import { MULTI_DOMAIN_REFERENCE_PASSPORTS_V4 } from "./v4/multiDomainReferencePassportsV4";
 import { estimateDeterministicHash } from "./estimateDeterministicHash";
 import { resolvedEstimateIdentityChecksum } from "./resolvedEstimateIdentityChecksum";
+import { isElevatedWorkAccessSupplement } from "./elevatedWorkAccessPolicy";
 
 export { resolvedEstimateIdentityChecksum } from "./resolvedEstimateIdentityChecksum";
 
@@ -148,10 +150,11 @@ function rowIdFromDraftItem(item: ConsumerRepairAiDraft["items"][number], index:
 }
 
 export function buildProfessionalBoqRowsFromConsumerDraft(draft: ConsumerRepairAiDraft | null): ProfessionalBoqRow[] {
-  return (draft?.items ?? []).map((item, index) => {
+  return (draft?.items ?? []).flatMap((item, index): ProfessionalBoqRow[] => {
+    if (item.quantity == null) return [];
     const rowType = rowTypeFromDraftItem(item);
     const normalizedAsphaltRow = item.sourceParameters?.asphaltV4 === true;
-    return {
+    return [{
       rowId: rowIdFromDraftItem(item, index),
       rowType,
       titleRu: item.titleRu,
@@ -199,7 +202,7 @@ export function buildProfessionalBoqRowsFromConsumerDraft(draft: ConsumerRepairA
       payable: typeof item.sourceParameters?.asphaltV4Payable === "boolean"
         ? item.sourceParameters.asphaltV4Payable
         : null,
-    };
+    }];
   });
 }
 
@@ -345,11 +348,15 @@ function mergeCalculatorInputParams(
     }
     if (existing && existing.source !== "default_assumption" && existing.source !== "derived") continue;
     const unit = roadworksWaveAMetadata[key]?.unit;
+    const admissionState = roadworksWaveAMetadata[key]?.valueAdmissionState;
+    const sourceFixed = admissionState === "CONFIRMED_SOURCE_FIXED";
     merged[key] = {
       value,
       canonicalUnit: typeof unit === "string" ? unit : aiEstimateCanonicalUnitForParameter(key),
-      source: "user_input",
-      sourceText: "roadworks_wave_a_explicit_input",
+      source: sourceFixed ? "derived" : "user_input",
+      sourceText: sourceFixed && typeof roadworksWaveAMetadata[key]?.valueSourceId === "string"
+        ? roadworksWaveAMetadata[key].valueSourceId as string
+        : "roadworks_wave_a_explicit_input",
       lastChangedAt: now,
     };
   }
@@ -630,6 +637,81 @@ function missingInputsFromParse(
   }));
 }
 
+const DYNAMIC_ROW_PARAMETER_LABELS_RU: Readonly<Record<string, string>> = Object.freeze({
+  repair_area_share_percent: "Доля площади потолка с локальными повреждениями, %",
+  repair_compound_kg_per_repair_m2: "Расход выбранной шпаклёвочной смеси на 1 м² локального ремонта, кг/м²",
+  repair_joint_length_m: "Общая длина повреждённых швов и трещин потолка из ГКЛ, м",
+  abrasive_productivity_m2_per_item: "Площадь обработки одной абразивной сеткой выбранной марки, м²/шт.",
+});
+
+function missingInputsFromConditionalRows(
+  rows: readonly ProfessionalBoqRow[],
+  params: Record<string, EstimateDraftRevisionParam>,
+): EstimateDraftRevision["missingInputs"] {
+  const keys = new Set<string>();
+  for (const row of rows) {
+    const blockerIds = row.sourceParameters?.parameterBlockerIds;
+    if (!Array.isArray(blockerIds)) continue;
+    for (const value of blockerIds) {
+      if (typeof value === "string" && value.trim() && params[value.trim()] == null) keys.add(value.trim());
+    }
+  }
+  return [...keys].map((key) => ({
+    key,
+    label: DYNAMIC_ROW_PARAMETER_LABELS_RU[key] ?? key.replace(/_/g, " "),
+    blocksPreliminaryEstimate: false,
+    requiredFor: "better_accuracy" as const,
+  }));
+}
+
+function missingInputsForExactScope(
+  matchedFamily: string,
+  params: Record<string, EstimateDraftRevisionParam>,
+): EstimateDraftRevision["missingInputs"] {
+  if (matchedFamily !== "drywall_ceiling_preparation") return [];
+  const definitions: EstimateDraftRevision["missingInputs"] = [
+    {
+      key: "working_height_m",
+      label: "Рабочая высота потолка и допустимый способ установки вышки-туры",
+      blocksPreliminaryEstimate: false,
+      requiredFor: "safety_review",
+    },
+    {
+      key: "height_worker_count",
+      label: "Численность бригады, одновременно работающей на высоте",
+      blocksPreliminaryEstimate: false,
+      requiredFor: "safety_review",
+    },
+    {
+      key: "primer_product_reference",
+      label: "Марка совместимой с ГКЛ грунтовки или ссылка на её паспорт",
+      blocksPreliminaryEstimate: false,
+      requiredFor: "contract_ready",
+    },
+    {
+      key: "primer_kg_per_m2",
+      label: "Паспортный расход выбранной грунтовки на один слой, кг/м²",
+      blocksPreliminaryEstimate: false,
+      requiredFor: "better_accuracy",
+    },
+    {
+      key: "primer_layer_count",
+      label: "Число слоёв грунтовки по состоянию основания и паспорту материала",
+      blocksPreliminaryEstimate: false,
+      requiredFor: "better_accuracy",
+    },
+  ];
+  return definitions.filter((entry) => params[entry.key] == null);
+}
+
+function uniqueMissingInputs(
+  inputs: readonly EstimateDraftRevision["missingInputs"][number][],
+): EstimateDraftRevision["missingInputs"] {
+  const byKey = new Map<string, EstimateDraftRevision["missingInputs"][number]>();
+  for (const input of inputs) if (!byKey.has(input.key)) byKey.set(input.key, input);
+  return [...byKey.values()];
+}
+
 function missingInputsFromMultiDomainReference(
   draft: ConsumerRepairAiDraft | null,
 ): EstimateDraftRevision["missingInputs"] {
@@ -736,6 +818,7 @@ function roadworksWaveARevisionContext(rows: readonly ProfessionalBoqRow[]): {
   parameterKeys: string[];
   assumptionKeys: string[];
   unresolvedParameterKeys: string[];
+  normativeSourceGapKeys: string[];
   metadata: Record<string, Record<string, unknown>>;
 } | null {
   const source = rows.find((row) => row.sourceParameters?.roadworksWaveA === true)?.sourceParameters;
@@ -750,15 +833,18 @@ function roadworksWaveARevisionContext(rows: readonly ProfessionalBoqRow[]): {
     !Array.isArray(source.roadworksWaveAParameterMetadata)
     ? source.roadworksWaveAParameterMetadata as Record<string, Record<string, unknown>>
     : {};
-  const parameterKeys = Object.keys(metadata).filter((key) => key in snapshot);
+  const parameterKeys = Object.keys(metadata);
   const assumptionKeys = Array.isArray(source.assumptionKeys)
     ? source.assumptionKeys.filter((key): key is string => typeof key === "string" && parameterKeys.includes(key))
     : [];
   const unresolvedParameterKeys = Array.isArray(source.unresolvedParameterKeys)
     ? source.unresolvedParameterKeys.filter((key): key is string => typeof key === "string" && parameterKeys.includes(key))
     : [];
+  const normativeSourceGapKeys = Array.isArray(source.normativeSourceGapKeys)
+    ? source.normativeSourceGapKeys.filter((key): key is string => typeof key === "string" && parameterKeys.includes(key))
+    : [];
   return workKey && parameterSchemaId && parameterKeys.length > 0
-    ? { workKey, parameterSchemaId, parameterKeys, assumptionKeys, unresolvedParameterKeys, metadata }
+    ? { workKey, parameterSchemaId, parameterKeys, assumptionKeys, unresolvedParameterKeys, normativeSourceGapKeys, metadata }
     : null;
 }
 
@@ -848,13 +934,17 @@ function missingInputsFromAsphaltRelated(
 function missingInputsFromRoadworksWaveA(
   context: NonNullable<ReturnType<typeof roadworksWaveARevisionContext>>,
 ): EstimateDraftRevision["missingInputs"] {
-  return context.unresolvedParameterKeys.map((key) => ({
+  const sourceGaps = new Set(context.normativeSourceGapKeys);
+  return [...new Set([...context.unresolvedParameterKeys, ...context.normativeSourceGapKeys])].map((key) => ({
     key,
     label: typeof context.metadata[key]?.labelRu === "string"
       ? context.metadata[key].labelRu as string
       : key,
     blocksPreliminaryEstimate: true,
     requiredFor: "contract_ready" as const,
+    ...(sourceGaps.has(key)
+      ? { label: `Требуется подтверждённый технический источник: ${typeof context.metadata[key]?.labelRu === "string" ? context.metadata[key].labelRu as string : key}` }
+      : {}),
   }));
 }
 
@@ -863,6 +953,20 @@ function limitMissingInputsByRawInputPolicy(input: {
   rawInputFacts: InlineWorkPromptEstimateBuildResult["parseResult"]["rawInputFacts"];
   missingInputs: EstimateDraftRevision["missingInputs"];
 }): EstimateDraftRevision["missingInputs"] {
+  if (input.matchedFamily === "booster_pumping_station") {
+    const preliminaryBlockingKeys = new Set(
+      R4_A6_PUMP_STATION_PARAMETERS
+        .filter((parameter) => parameter.tier === "P0")
+        .map((parameter) => parameter.parameterId),
+    );
+    return input.missingInputs.map((entry) => preliminaryBlockingKeys.has(entry.key)
+      ? {
+          ...entry,
+          blocksPreliminaryEstimate: true,
+          requiredFor: "contract_ready" as const,
+        }
+      : entry);
+  }
   const scaleClass = rawInputFactStringValue(input.rawInputFacts, "scale_class");
   if (input.matchedFamily !== "solar_power_plant" || scaleClass !== "utility_scale") {
     return input.missingInputs;
@@ -901,9 +1005,43 @@ function limitMissingInputsByRawInputPolicy(input: {
   ];
 }
 
+function isFormulaIdentifierCharacter(value: string | undefined): boolean {
+  if (value == null) return false;
+  const code = value.charCodeAt(0);
+  return code === 95 ||
+    (code >= 48 && code <= 57) ||
+    (code >= 65 && code <= 90) ||
+    (code >= 97 && code <= 122);
+}
+
 function formulaReferencesKey(text: string, key: string): boolean {
-  const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return new RegExp(`(^|[^a-zA-Z0-9_])${escaped}($|[^a-zA-Z0-9_])`).test(text);
+  if (!key) return false;
+  let offset = 0;
+  for (;;) {
+    const index = text.indexOf(key, offset);
+    if (index < 0) return false;
+    const before = index > 0 ? text[index - 1] : undefined;
+    const afterIndex = index + key.length;
+    const after = afterIndex < text.length ? text[afterIndex] : undefined;
+    if (!isFormulaIdentifierCharacter(before) && !isFormulaIdentifierCharacter(after)) return true;
+    offset = index + Math.max(1, key.length);
+  }
+}
+
+const SIMPLE_FORMULA_IDENTIFIER_RE = /^[a-zA-Z0-9_]+$/;
+
+function formulaReferenceIdentifiers(text: string): ReadonlySet<string> {
+  return new Set(text.match(/[a-zA-Z0-9_]+/g) ?? []);
+}
+
+function formulaReferencesIdentifier(
+  text: string,
+  identifiers: ReadonlySet<string>,
+  key: string,
+): boolean {
+  return SIMPLE_FORMULA_IDENTIFIER_RE.test(key)
+    ? identifiers.has(key)
+    : formulaReferencesKey(text, key);
 }
 
 const PASSPORT_PRIMARY_QUANTITY_KEYS = ["area_m2", "length_m", "volume_m3", "count"] as const;
@@ -928,11 +1066,12 @@ function sourceParamKeys(row: ProfessionalBoqRow, params: Record<string, Estimat
     : [];
   if (declaredAffectedBy.length > 0) return declaredAffectedBy;
   const trace = `${row.quantityFormula ?? ""};${row.calculationTrace ?? ""}`;
-  const formulaKeys = keys.filter((key) => formulaReferencesKey(trace, key));
+  const identifiers = formulaReferenceIdentifiers(trace);
+  const formulaKeys = keys.filter((key) => formulaReferencesIdentifier(trace, identifiers, key));
   if (formulaKeys.length > 0) return formulaKeys;
   if (
     sourceParameters.passportBackedNaturalLanguageIngress === true &&
-    (formulaReferencesKey(trace, "q") || formulaReferencesKey(trace, "baseQuantity"))
+    (identifiers.has("q") || identifiers.has("baseQuantity"))
   ) {
     const primaryKey = passportPrimaryQuantityParamKey(params);
     return primaryKey ? [primaryKey] : [];
@@ -951,6 +1090,33 @@ function buildTrace(input: {
   rows: ProfessionalBoqRow[];
 }): ParamToCalculationTrace {
   const rowParamKeys = new Map(input.rows.map((row) => [row.rowId, sourceParamKeys(row, input.params)]));
+  const rowDependencies = new Map(input.rows.map((row) => {
+    const trace = `${row.quantityFormula ?? ""};${row.calculationTrace ?? ""}`;
+    const identifiers = formulaReferenceIdentifiers(trace);
+    return [
+      row.rowId,
+      input.rows
+        .filter((candidate) => candidate.rowId !== row.rowId &&
+          formulaReferencesIdentifier(trace, identifiers, candidate.rowId))
+        .map((candidate) => candidate.rowId),
+    ] as const;
+  }));
+  for (let pass = 0; pass < input.rows.length; pass += 1) {
+    let changed = false;
+    for (const row of input.rows) {
+      const keys = new Set(rowParamKeys.get(row.rowId) ?? []);
+      for (const dependencyRowId of rowDependencies.get(row.rowId) ?? []) {
+        for (const key of rowParamKeys.get(dependencyRowId) ?? []) keys.add(key);
+      }
+      const previous = rowParamKeys.get(row.rowId) ?? [];
+      const next = [...keys];
+      if (next.length !== previous.length || next.some((key, index) => key !== previous[index])) {
+        rowParamKeys.set(row.rowId, next);
+        changed = true;
+      }
+    }
+    if (!changed) break;
+  }
   const normalizedAsphaltTrace = input.selectedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID;
   return {
     traceId: `param_trace:${input.revisionId}`,
@@ -1067,7 +1233,10 @@ function sourceBindingVersions(
 }
 
 function usesCanonicalCapitalRenovationCalculator(rows: readonly ProfessionalBoqRow[]): boolean {
-  return rows.length > 0 && rows.every((row) => row.sourceParameters?.capitalRenovationCalculator === true);
+  const isCapitalRow = (row: ProfessionalBoqRow) =>
+    row.sourceParameters?.capitalRenovationCalculator === true;
+  return rows.some(isCapitalRow) && rows.every((row) =>
+    isCapitalRow(row) || isElevatedWorkAccessSupplement(row));
 }
 
 function usesCanonicalMultiDomainReferenceV4(rows: readonly ProfessionalBoqRow[]): boolean {
@@ -1100,6 +1269,37 @@ function usesProfessionalDomainFactoryConsumerDraft(
     typeof item.sourceParameters?.workKey === "string"));
 }
 
+function usesExactProfessionalTemplateConsumerDraft(
+  draft: ConsumerRepairAiDraft | null,
+): boolean {
+  const selectedWorkKey = draft?.selectedWork?.selectedWorkKey?.trim();
+  const items = draft?.items ?? [];
+  const isPrimaryTemplateRow = (item: ConsumerRepairAiDraft["items"][number]) =>
+    item.sourceParameters?.professionalBoqRuntimeContract === "professional_boq_runtime_contract_v1" &&
+    item.sourceParameters?.selectedWorkKey === selectedWorkKey &&
+    item.templateId?.endsWith("_professional_estimate_template_v1") &&
+    item.normId?.trim() &&
+    item.normSourceId?.trim() &&
+    item.formulaId?.trim() &&
+    item.quantityFormula?.trim() &&
+    item.calculationTrace?.trim();
+  const isIdentityBoundSupplement = (item: ConsumerRepairAiDraft["items"][number]) =>
+    item.sourceParameters?.supplementalCompositionOwner === "professional-elevated-work-access-policy:v1" &&
+    item.sourceParameters?.selectedWorkKey === selectedWorkKey &&
+    item.templateId === "professional-elevated-work-access-policy:v1" &&
+    item.normId?.trim() &&
+    item.normSourceId?.trim() &&
+    item.formulaId?.trim() &&
+    item.quantityFormula?.trim() &&
+    item.calculationTrace?.trim();
+  return Boolean(
+    selectedWorkKey &&
+    items.length &&
+    items.some(isPrimaryTemplateRow) &&
+    items.every((item) => isPrimaryTemplateRow(item) || isIdentityBoundSupplement(item)),
+  );
+}
+
 function buildPrebuiltExactDraftResult(input: {
   rawInput: string;
   selectedTemplateId?: string | null;
@@ -1110,7 +1310,8 @@ function buildPrebuiltExactDraftResult(input: {
   const exactRoadworksWaveA = usesExactRoadworksWaveAConsumerDraft(input.draft);
   const exactAsphaltRelated = usesExactAsphaltRelatedConsumerDraft(input.draft);
   const exactProfessionalDomain = usesProfessionalDomainFactoryConsumerDraft(input.draft);
-  if (!exactRoadworksWaveA && !exactAsphaltRelated && !exactProfessionalDomain) {
+  const exactProfessionalTemplate = usesExactProfessionalTemplateConsumerDraft(input.draft);
+  if (!exactRoadworksWaveA && !exactAsphaltRelated && !exactProfessionalDomain && !exactProfessionalTemplate) {
     throw new Error("PREBUILT_EXACT_DRAFT_INVALID");
   }
   const selectedWorkKey = input.draft.selectedWork?.selectedWorkKey?.trim();
@@ -1147,7 +1348,9 @@ function buildPrebuiltExactDraftResult(input: {
         ? "prebuilt_exact_asphalt_related_binding"
         : exactProfessionalDomain
           ? "prebuilt_exact_professional_domain_binding"
-          : "prebuilt_exact_roadworks_wave_a_binding",
+          : exactProfessionalTemplate
+            ? "prebuilt_exact_professional_template_binding"
+            : "prebuilt_exact_roadworks_wave_a_binding",
     }],
     paramText: input.rawInput.trim(),
     extractedParams: {},
@@ -1201,6 +1404,16 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     });
   if (result.blockingReason === "road_scope_selection_required") {
     throw new Error("road_scope_selection_required");
+  }
+  if (result.blockingReason === "ROAD_SURFACE_TECHNOLOGY_CONFLICT") {
+    const message = result.roadSurfaceTechnologyResolution?.messageRu;
+    throw new Error(message ? `ROAD_SURFACE_TECHNOLOGY_CONFLICT:${message}` : "ROAD_SURFACE_TECHNOLOGY_CONFLICT");
+  }
+  if (result.blockingReason === "ROAD_GEOMETRY_REQUIRED") {
+    throw new Error("ROAD_GEOMETRY_REQUIRED:Укажите площадь либо длину и ширину участка");
+  }
+  if (result.blockingReason === "ROAD_GEOMETRY_CONFLICT") {
+    throw new Error("ROAD_GEOMETRY_CONFLICT:Площадь не совпадает с произведением длины и ширины; выберите главный измеритель");
   }
   if (
     !result.canBuildPreliminaryEstimate &&
@@ -1320,7 +1533,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     family: matchedFamily,
   });
   const trace = buildTrace({ revisionId, selectedTemplateId, params, rows });
-  const missingInputs = exactRoadworksWaveADraft
+  const baseMissingInputs = exactRoadworksWaveADraft
     ? missingInputsFromRoadworksWaveA(roadworksWaveAContext)
     : exactAsphaltRelatedDraft
       ? missingInputsFromAsphaltRelated(asphaltRelatedContext)
@@ -1345,6 +1558,34 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
       ).filter((item, index, values) => values.findIndex((candidate) => candidate.key === item.key) === index),
     }),
     });
+  const elevatedAccessNeedsHeight = rows.some((row) =>
+    row.sourceParameters?.elevatedWorkAccessPolicy === "professional-elevated-work-access-policy:v1" &&
+    row.sourceParameters?.accessSelectionStatus === "WORKING_HEIGHT_CONFIRMATION_REQUIRED"
+  );
+  const hasConfirmedWorkingHeight = typeof params.working_height_m?.value === "number" &&
+    params.working_height_m.value > 0;
+  const hasExplicitArea = typeof params.area_m2?.value === "number" && params.area_m2.value > 0;
+  const rawBaseMissingInputs = hasExplicitArea
+    ? baseMissingInputs.filter((entry) => entry.key !== "q")
+    : baseMissingInputs;
+  const normalizedBaseMissingInputs = uniqueMissingInputs([
+    ...rawBaseMissingInputs,
+    ...missingInputsFromConditionalRows(rows, params),
+    ...missingInputsForExactScope(matchedFamily, params),
+  ]);
+  const missingInputs: EstimateDraftRevision["missingInputs"] = elevatedAccessNeedsHeight &&
+    !hasConfirmedWorkingHeight &&
+    !normalizedBaseMissingInputs.some((entry) => entry.key === "working_height_m")
+    ? [
+      ...normalizedBaseMissingInputs,
+      {
+        key: "working_height_m",
+        label: "Рабочая высота и безопасный способ доступа",
+        blocksPreliminaryEstimate: false,
+        requiredFor: "safety_review",
+      },
+    ]
+    : normalizedBaseMissingInputs;
   const exactSelectionConfirmed = Boolean(input.selectedTemplateId?.trim() || input.selectedWorkKey?.trim());
   const estimateLevel = resolveEstimateLevel({
     result,

@@ -56,6 +56,7 @@ export type ExternalLiveProofStepResult = ExternalLiveProofStepPlan & {
 export type ExternalLiveProofCloseoutResult = Omit<ExternalLiveProofCloseoutPlan, "steps"> & {
   strict: boolean;
   after_gates: boolean;
+  primary_receipt_bundle_validated: boolean;
   steps: ExternalLiveProofStepResult[];
   final_matrix: Record<string, unknown>;
   final_status: string;

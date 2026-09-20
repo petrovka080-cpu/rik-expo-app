@@ -139,6 +139,9 @@ export function syncConsumerRepairBundleToAiEstimateLedger(bundle: ConsumerRepai
   const existing = consumerRepairEstimateLedgerStore.getRecord(estimateId);
   const rowMetrics = rowMetricsForBundle(bundle);
   const canonicalPdfArtifact = canonicalPdfArtifactForBundle(bundle);
+  const sourceReleaseId = canonicalBackendBindingForBundle(bundle)?.releaseId
+    ?? bundle.durableHistorySummary?.sourceReleaseId
+    ?? null;
   const durablePdfArtifactId = canonicalPdfArtifact?.artifactId
     ?? latestGeneratedPdfForCurrentRevision(bundle)?.id
     ?? bundle.durableHistorySummary?.pdfArtifactId
@@ -181,6 +184,7 @@ export function syncConsumerRepairBundleToAiEstimateLedger(bundle: ConsumerRepai
     status: statusToLedgerStatus(bundle.draft.status),
     sourceDraftId: sourceDraftIdForBundle(bundle),
     currentRevisionId,
+    sourceReleaseId,
     sourceSnapshotId: currentSnapshotId,
     rowCount: rowMetrics.rowCount,
     materialRowsCount: rowMetrics.materialRowsCount,
@@ -255,6 +259,7 @@ export function listConsumerRepairApprovedHistoryRecordsFromLedger(
       approvedEstimateId: record.approvedEstimateId,
       sourceDraftId: record.sourceDraftId,
       sourceRevisionId: record.sourceRevisionId,
+      sourceReleaseId: record.sourceReleaseId,
       sourceSnapshotId: record.sourceSnapshotId,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,

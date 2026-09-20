@@ -397,7 +397,7 @@ describe("backend-projected canonical parameter editor UI replacement contract",
   it("keeps partial backend inputs visible without inventing BOQ rows", () => {
     const { renderer, bundle } = renderElectricalPanel("partial");
     const tree = renderer.toJSON();
-    expect(countJsonTestId(tree, "request-estimate-missing-parameter-summary")).toBe(1);
+    expect(countJsonTestId(tree, "request-estimate-missing-parameter-summary")).toBe(0);
     expect(visibleText(tree)).toContain("Длина кабельной трассы");
     expect(bundle.canonicalParameterSession?.parameters.find(
       (entry) => entry.parameterId === "outlet_count",

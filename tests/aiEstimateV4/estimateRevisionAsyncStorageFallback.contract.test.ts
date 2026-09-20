@@ -54,8 +54,33 @@ class CursorWindowBoundedAsyncStorageDouble extends AsyncStorageDouble {
   }
 }
 
+class BatchedCursorWindowAsyncStorageDouble extends CursorWindowBoundedAsyncStorageDouble {
+  multiGetCalls = 0;
+  multiSetCalls = 0;
+  multiRemoveCalls = 0;
+
+  async multiGet(
+    keys: readonly string[],
+  ): Promise<readonly (readonly [string, string | null])[]> {
+    this.multiGetCalls += 1;
+    return keys.map((key) => [key, this.values.get(key) ?? null] as const);
+  }
+
+  async multiSet(
+    entries: readonly (readonly [string, string])[],
+  ): Promise<void> {
+    this.multiSetCalls += 1;
+    for (const [key, value] of entries) await this.setItem(key, value);
+  }
+
+  async multiRemove(keys: readonly string[]): Promise<void> {
+    this.multiRemoveCalls += 1;
+    for (const key of keys) this.values.delete(key);
+  }
+}
+
 function bundle(
-  version: "r1" | "r2",
+  version: "r1" | "r2" | "r3",
   id = "async-storage-estimate",
 ): RevisionBundle {
   return {
@@ -70,7 +95,9 @@ function bundle(
       createdAt: "2026-07-28T00:00:00.000Z",
       updatedAt: version === "r1"
         ? "2026-07-28T00:00:00.000Z"
-        : "2026-07-28T00:01:00.000Z",
+        : version === "r2"
+          ? "2026-07-28T00:01:00.000Z"
+          : "2026-07-28T00:02:00.000Z",
     },
     items: [{
       id: "row-1",
@@ -138,7 +165,7 @@ function bundle(
 }
 
 function largeBundle(
-  version: "r1" | "r2",
+  version: "r1" | "r2" | "r3",
   id = "async-storage-large-estimate",
 ): RevisionBundle {
   const source = bundle(version, id);
@@ -352,6 +379,41 @@ describe("native AsyncStorage durable fallback", () => {
       (await restarted.readBundle("async-storage-large-estimate"))?.items[0]
         ?.titleRu.endsWith("🙂"),
     ).toBe(true);
+  });
+
+  test("batches native chunk reads, writes and orphan removal when AsyncStorage exposes bulk operations", async () => {
+    const storage = new BatchedCursorWindowAsyncStorageDouble(
+      ASYNC_STORAGE_DURABLE_CHUNK_MAX_CHARS,
+    );
+    const store = new AsyncStorageEstimateRevisionDurableStore(storage);
+    const first = await store.writeBundleAtomically(
+      "async-storage-large-estimate",
+      null,
+      largeBundle("r1"),
+    );
+    if (first.status === "FAILED") throw new Error(first.error.message);
+
+    expect(storage.multiSetCalls).toBe(1);
+    await expect(store.readBundle("async-storage-large-estimate"))
+      .resolves.toMatchObject({
+        estimateDraftRevisionState: { currentRevisionId: "r1" },
+      });
+    expect(storage.multiGetCalls).toBeGreaterThan(0);
+
+    const second = await store.writeBundleAtomically(
+      "async-storage-large-estimate",
+      first.version,
+      largeBundle("r2"),
+    );
+    if (second.status === "FAILED") throw new Error(second.error.message);
+    const third = await store.writeBundleAtomically(
+      "async-storage-large-estimate",
+      second.version,
+      largeBundle("r3"),
+    );
+    expect(third).toMatchObject({ status: "WRITTEN" });
+    expect(storage.multiSetCalls).toBe(3);
+    expect(storage.multiRemoveCalls).toBeGreaterThan(0);
   });
 
   test("fails closed on a missing chunk and recovers the previous complete revision", async () => {

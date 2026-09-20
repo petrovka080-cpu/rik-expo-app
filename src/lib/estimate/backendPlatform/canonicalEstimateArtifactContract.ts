@@ -44,14 +44,48 @@ export function selectCanonicalArtifactRows(sourceRows: CanonicalArtifactRow[]) 
     row.included_in_estimate === true
       && row.ownership_status !== MIGRATED_EXCLUDED_OWNERSHIP
   ));
+  // A professional document is also a composition/provenance projection. Keep
+  // legitimate non-payable and manually excluded canonical rows visible while
+  // continuing to quarantine rows that were never matched to a canonical owner.
+  const professionalPdfRows = sourceRows.filter((row) => (
+    row.ownership_status !== MIGRATED_EXCLUDED_OWNERSHIP
+  ));
   const procurementRows = estimateRows.filter((row) => (
     row.procurement_eligible === true && row.included_in_procurement === true
   ));
   return {
     sourceRows,
     estimateRows,
+    professionalPdfRows,
     procurementRows,
   };
+}
+
+export function canonicalArtifactPreliminaryNeeds(
+  revision: CanonicalArtifactRevision,
+): CanonicalArtifactRow[] {
+  const amendment = objectValue(revision.amendment_contract);
+  const parameterSources = objectValue(amendment.parameterSources);
+  const needs = Array.isArray(parameterSources.preliminaryNeeds)
+    ? parameterSources.preliminaryNeeds
+    : [];
+  return needs.flatMap((value): CanonicalArtifactRow[] => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return [];
+    const need = value as Record<string, unknown>;
+    if (!String(need.row_id ?? "").trim() || !String(need.need_sha256 ?? "").trim()) return [];
+    return [{
+      ...need,
+      row_id: need.row_id,
+      ordinal: need.ordinal,
+      included_in_estimate: false,
+      included_in_procurement: false,
+      procurement_eligible: false,
+      ownership_status: "PRELIMINARY_NEED",
+      row_sha256: need.need_sha256,
+      amount: null,
+      currency_code: null,
+    }];
+  });
 }
 
 function projectProcurementRow(row: CanonicalArtifactRow) {
@@ -132,6 +166,7 @@ export function buildCanonicalProcurementProjection(input: {
       unitId: nullableText(revision.primary_measure_unit_id),
     },
     selectedRowCount: rows.length,
+    preliminaryNeedsExcludedCount: canonicalArtifactPreliminaryNeeds(revision).length,
     groups: [...groups.values()],
     rows,
   };

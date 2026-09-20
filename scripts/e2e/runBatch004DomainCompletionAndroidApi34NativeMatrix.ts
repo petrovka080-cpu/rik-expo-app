@@ -18,8 +18,8 @@ const outputPath = path.resolve(String(argv.output || "C:/dev/rik-batch004-platf
 const metroLogPath = path.resolve(String(argv["metro-log"] || "C:/dev/rik-batch004-platform-temp/metro-8202.stdout.log"));
 const packageName = "com.azisbek_dzhantaev.rikexpoapp";
 const activity = `${packageName}.MainActivity`;
-const adb = (...args: string[]): string => execFileSync("adb", ["-s", deviceId, ...args], { encoding: "utf8", windowsHide: true }).trim();
-const devices = execFileSync("adb", ["devices", "-l"], { encoding: "utf8", windowsHide: true });
+const adb = (...args: string[]): string => execFileSync("adb", ["-s", deviceId, ...args], { encoding: "utf8", windowsHide: true, timeout: 30_000 }).trim();
+const devices = execFileSync("adb", ["devices", "-l"], { encoding: "utf8", windowsHide: true, timeout: 10_000 });
 if (!devices.includes(deviceId) || !devices.includes("device")) throw new Error("BATCH004_ANDROID_DEVICE_NOT_READY");
 const androidApi = Number(adb("shell", "getprop", "ro.build.version.sdk"));
 if (androidApi !== 34) throw new Error(`BATCH004_ANDROID_API_NOT_34:${androidApi}`);

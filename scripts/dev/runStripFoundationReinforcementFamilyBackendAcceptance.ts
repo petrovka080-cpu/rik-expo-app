@@ -18,29 +18,184 @@ import {
   type StripFoundationReinforcementContextKey,
 } from "../../src/lib/estimate/v4/stripFoundationReinforcementR1";
 import {
+  SLAB_FOUNDATION_REINFORCEMENT_TARGETS,
+  compileSlabFoundationReinforcementR1,
+  slabFoundationReinforcementAcceptanceInputR1,
+  type SlabFoundationReinforcementContextKey,
+} from "../../src/lib/estimate/v4/slabFoundationReinforcementR1";
+import {
+  CONCRETE_SLAB_REINFORCEMENT_TARGETS,
+  compileConcreteSlabReinforcementR1,
+  concreteSlabReinforcementAcceptanceInputR1,
+  type ConcreteSlabReinforcementContextKey,
+} from "../../src/lib/estimate/v4/concreteSlabReinforcementR1";
+import {
+  PILE_CAP_REINFORCEMENT_TARGETS,
+  compilePileCapReinforcementR1,
+  pileCapReinforcementAcceptanceInputR1,
+  type PileCapReinforcementContextKey,
+} from "../../src/lib/estimate/v4/pileCapReinforcementR1";
+import {
+  PEDESTAL_REINFORCEMENT_TARGETS,
+  compilePedestalReinforcementR1,
+  pedestalReinforcementAcceptanceInputR1,
+  type PedestalReinforcementContextKey,
+} from "../../src/lib/estimate/v4/pedestalReinforcementR1";
+import {
+  STAIRS_REINFORCEMENT_TARGETS,
+  compileStairsReinforcementR1,
+  stairsReinforcementAcceptanceInputR1,
+  type StairsReinforcementContextKey,
+} from "../../src/lib/estimate/v4/stairsReinforcementR1";
+import {
+  REINFORCEMENT_FRAME_ASSEMBLY_TARGETS,
+  REINFORCEMENT_FRAME_REINFORCEMENT_TARGETS,
+  compileReinforcementFrameAssemblyR1,
+  compileReinforcementFrameReinforcementR1,
+  reinforcementFrameAssemblyAcceptanceInputR1,
+  reinforcementFrameReinforcementAcceptanceInputR1,
+  type ReinforcementFrameAssemblyContextKey,
+  type ReinforcementFrameReinforcementContextKey,
+} from "../../src/lib/estimate/v4/reinforcementFrameReinforcementR1";
+import {
+  COLUMN_BASE_REINFORCEMENT_TARGETS,
+  columnBaseReinforcementAcceptanceInputR1,
+  compileColumnBaseReinforcementR1,
+  type ColumnBaseReinforcementContextKey,
+} from "../../src/lib/estimate/v4/columnBaseReinforcementR1";
+import {
+  ANCHOR_GROUP_REINFORCEMENT_TARGETS,
+  anchorGroupReinforcementAcceptanceInputR1,
+  compileAnchorGroupReinforcementR1,
+  type AnchorGroupReinforcementContextKey,
+} from "../../src/lib/estimate/v4/anchorGroupReinforcementR1";
+import {
+  BELT_REINFORCEMENT_TARGETS,
+  beltReinforcementAcceptanceInputR1,
+  compileBeltReinforcementR1,
+  type BeltReinforcementContextKey,
+} from "../../src/lib/estimate/v4/beltReinforcementR1";
+import {
+  JOINT_REINFORCEMENT_TARGETS,
+  compileJointReinforcementR1,
+  jointReinforcementAcceptanceInputR1,
+  type JointReinforcementContextKey,
+} from "../../src/lib/estimate/v4/jointReinforcementR1";
+import {
+  FORMWORK_REINFORCEMENT_TARGETS,
+  compileFormworkReinforcementR1,
+  formworkReinforcementAcceptanceInputR1,
+  type FormworkReinforcementContextKey,
+} from "../../src/lib/estimate/v4/formworkReinforcementR1";
+import {
   ANCHOR_GROUP_INSTALLATION_TARGETS,
   ANCHOR_GROUP_PROJECT_SCHEDULE_NORM_ID,
   ANCHOR_GROUP_PROJECT_SCHEDULE_SOURCE_ID,
   ANCHOR_GROUP_PROJECT_SCHEDULE_SOURCE_METADATA,
   anchorGroupInstallationAcceptanceInputR1,
   compileAnchorGroupInstallationR1,
+  type AnchorGroupInstallationContextKey,
 } from "../../src/lib/estimate/v4/anchorGroupInstallationR1";
 
 type Json = Record<string, any>;
 
 const IS_ANCHOR = process.env.R4A13_ACCEPTANCE_FAMILY === "anchor-group";
+const IS_SLAB_FOUNDATION = process.env.R4A13_ACCEPTANCE_FAMILY === "slab-foundation-reinforcement";
+const IS_CONCRETE_SLAB = process.env.R4A13_ACCEPTANCE_FAMILY === "concrete-slab-reinforcement";
+const IS_PILE_CAP = process.env.R4A13_ACCEPTANCE_FAMILY === "pile-cap-reinforcement";
+const IS_PEDESTAL = process.env.R4A13_ACCEPTANCE_FAMILY === "pedestal-reinforcement";
+const IS_STAIRS = process.env.R4A13_ACCEPTANCE_FAMILY === "stairs-reinforcement";
+const IS_REINFORCEMENT_FRAME = process.env.R4A13_ACCEPTANCE_FAMILY === "reinforcement-frame-reinforcement";
+const IS_REINFORCEMENT_FRAME_ASSEMBLY = process.env.R4A13_ACCEPTANCE_FAMILY === "reinforcement-frame-assembly";
+const IS_COLUMN_BASE = process.env.R4A13_ACCEPTANCE_FAMILY === "column-base-reinforcement";
+const IS_ANCHOR_GROUP_REINFORCEMENT = process.env.R4A13_ACCEPTANCE_FAMILY === "anchor-group-reinforcement";
+const IS_BELT_REINFORCEMENT = process.env.R4A13_ACCEPTANCE_FAMILY === "belt-reinforcement";
+const IS_JOINT_REINFORCEMENT = process.env.R4A13_ACCEPTANCE_FAMILY === "joint-reinforcement";
+const IS_FORMWORK_REINFORCEMENT = process.env.R4A13_ACCEPTANCE_FAMILY === "formwork-reinforcement";
 const CONTRACT = IS_ANCHOR
   ? "rik-expo-app.r4-a13-6.anchor-group-installation.backend-acceptance.v1"
-  : "rik-expo-app.r4-a13-6.strip-foundation-reinforcement-family.backend-acceptance.v1";
+  : IS_FORMWORK_REINFORCEMENT
+    ? "rik-expo-app.r4-a13-6.formwork-reinforcement-family.backend-acceptance.v1"
+  : IS_JOINT_REINFORCEMENT
+    ? "rik-expo-app.r4-a13-6.joint-reinforcement-family.backend-acceptance.v1"
+  : IS_BELT_REINFORCEMENT
+    ? "rik-expo-app.r4-a13-6.belt-reinforcement-family.backend-acceptance.v1"
+  : IS_ANCHOR_GROUP_REINFORCEMENT
+    ? "rik-expo-app.r4-a13-6.anchor-group-reinforcement-family.backend-acceptance.v1"
+  : IS_COLUMN_BASE
+    ? "rik-expo-app.r4-a13-6.column-base-reinforcement-family.backend-acceptance.v1"
+  : IS_REINFORCEMENT_FRAME_ASSEMBLY
+    ? "rik-expo-app.r4-a13-6.reinforcement-frame-assembly-family.backend-acceptance.v1"
+  : IS_REINFORCEMENT_FRAME
+    ? "rik-expo-app.r4-a13-6.reinforcement-frame-reinforcement-family.backend-acceptance.v1"
+  : IS_STAIRS
+    ? "rik-expo-app.r4-a13-6.stairs-reinforcement-family.backend-acceptance.v1"
+  : IS_PEDESTAL
+    ? "rik-expo-app.r4-a13-6.pedestal-reinforcement-family.backend-acceptance.v1"
+  : IS_PILE_CAP
+    ? "rik-expo-app.r4-a13-6.pile-cap-reinforcement-family.backend-acceptance.v1"
+  : IS_CONCRETE_SLAB
+    ? "rik-expo-app.r4-a13-6.concrete-slab-reinforcement-family.backend-acceptance.v1"
+  : IS_SLAB_FOUNDATION
+    ? "rik-expo-app.r4-a13-6.slab-foundation-reinforcement-family.backend-acceptance.v1"
+    : "rik-expo-app.r4-a13-6.strip-foundation-reinforcement-family.backend-acceptance.v1";
 const BACKEND = "http://127.0.0.1:8765";
 const PROVIDER = "http://127.0.0.1:54321";
 const DATABASE_URL = "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const RELEASE_ID = IS_ANCHOR
   ? "80c3ba4b-3d04-5947-b17d-5fb05bcf2bae"
-  : "831a5ba4-af0f-561c-8766-09a960cf2c74";
+  : IS_FORMWORK_REINFORCEMENT
+    ? "e30a5747-fbf9-5f0d-b5b8-f4eedb2a0772"
+  : IS_JOINT_REINFORCEMENT
+    ? "80fc4afc-6531-583b-966b-7828d4e10ae5"
+  : IS_BELT_REINFORCEMENT
+    ? "8fa98f07-3831-57d6-b37a-9cbc7442fff6"
+  : IS_ANCHOR_GROUP_REINFORCEMENT
+    ? "ec015415-7504-5cc1-853a-cfd38cf09e2f"
+  : IS_COLUMN_BASE
+    ? "2768e0a1-ab48-5c34-8b4c-f6c19e3c28e5"
+  : IS_REINFORCEMENT_FRAME_ASSEMBLY
+    ? "d6c8a091-3a3e-5757-89eb-390886e9b33a"
+  : IS_REINFORCEMENT_FRAME
+    ? "e1dcd42e-0187-5a04-8bac-16a0d3e2468c"
+  : IS_STAIRS
+    ? "e2755c0e-af34-5c91-a370-474cc1beba87"
+  : IS_PEDESTAL
+    ? "880ca23a-39c0-5bd4-a75d-d0edbd5bf128"
+  : IS_PILE_CAP
+    ? "4f52b35a-0f1c-5541-b2d9-a651b2dd3a57"
+  : IS_CONCRETE_SLAB
+    ? "52f6eb87-1960-5c20-b2a1-3d92180bd009"
+  : IS_SLAB_FOUNDATION
+    ? "b5fdbd4a-a863-5823-83a6-3432108fd743"
+    : "831a5ba4-af0f-561c-8766-09a960cf2c74";
 const SEARCH_RELEASE_ID = IS_ANCHOR
   ? "132eb3c0-0a52-5257-8420-cf2f8de425b9"
-  : "2a89ec21-c69a-50f2-9c84-9810a9c276e1";
+  : IS_FORMWORK_REINFORCEMENT
+    ? "a02f3a88-0551-53b1-bec9-19cec2d9a399"
+  : IS_JOINT_REINFORCEMENT
+    ? "1fc20d92-2bf1-5c0f-bd30-ca99d1c76fe5"
+  : IS_BELT_REINFORCEMENT
+    ? "7e5d3320-eb80-5a67-abcf-c6369bcb0b89"
+  : IS_ANCHOR_GROUP_REINFORCEMENT
+    ? "a1c7e025-3b03-5862-9f94-59123d82abc9"
+  : IS_COLUMN_BASE
+    ? "67bfd575-8f7c-57ef-9e1f-336c5014659f"
+  : IS_REINFORCEMENT_FRAME_ASSEMBLY
+    ? "77159a8c-8f13-5bfa-a31b-9e39a322013d"
+  : IS_REINFORCEMENT_FRAME
+    ? "b8dff955-a85f-54b9-ae75-4fd9e89e5034"
+  : IS_STAIRS
+    ? "1d2bf788-a50f-597e-8e00-4bfadc04de00"
+  : IS_PEDESTAL
+    ? "b9f48d80-2593-5bd9-ad40-c652e0ed7e4f"
+  : IS_PILE_CAP
+    ? "890c0b03-40cf-592f-b777-01da66a02e50"
+  : IS_CONCRETE_SLAB
+    ? "81a70e74-e1bb-5043-88db-5b93910f5b16"
+  : IS_SLAB_FOUNDATION
+    ? "f86a4f0a-0ca5-58c8-bf87-dab4a9c5607c"
+    : "2a89ec21-c69a-50f2-9c84-9810a9c276e1";
 const ORGANIZATION_ID = "55555555-5555-4555-8555-555555555551";
 const PRIMARY_PARAMETER_ID = IS_ANCHOR
   ? "anchor_bolt_quantity_piece"
@@ -53,7 +208,31 @@ const DELIVERY_ROW_ID = IS_ANCHOR
   : "delivery:reinforcement:steel";
 const TARGETS = IS_ANCHOR
   ? ANCHOR_GROUP_INSTALLATION_TARGETS
-  : STRIP_FOUNDATION_REINFORCEMENT_TARGETS;
+  : IS_FORMWORK_REINFORCEMENT
+    ? FORMWORK_REINFORCEMENT_TARGETS
+  : IS_JOINT_REINFORCEMENT
+    ? JOINT_REINFORCEMENT_TARGETS
+  : IS_BELT_REINFORCEMENT
+    ? BELT_REINFORCEMENT_TARGETS
+  : IS_ANCHOR_GROUP_REINFORCEMENT
+    ? ANCHOR_GROUP_REINFORCEMENT_TARGETS
+  : IS_COLUMN_BASE
+    ? COLUMN_BASE_REINFORCEMENT_TARGETS
+  : IS_REINFORCEMENT_FRAME_ASSEMBLY
+    ? REINFORCEMENT_FRAME_ASSEMBLY_TARGETS
+  : IS_REINFORCEMENT_FRAME
+    ? REINFORCEMENT_FRAME_REINFORCEMENT_TARGETS
+  : IS_STAIRS
+    ? STAIRS_REINFORCEMENT_TARGETS
+  : IS_PEDESTAL
+    ? PEDESTAL_REINFORCEMENT_TARGETS
+  : IS_PILE_CAP
+    ? PILE_CAP_REINFORCEMENT_TARGETS
+  : IS_CONCRETE_SLAB
+    ? CONCRETE_SLAB_REINFORCEMENT_TARGETS
+  : IS_SLAB_FOUNDATION
+    ? SLAB_FOUNDATION_REINFORCEMENT_TARGETS
+    : STRIP_FOUNDATION_REINFORCEMENT_TARGETS;
 const SOURCE_ID = IS_ANCHOR
   ? ANCHOR_GROUP_PROJECT_SCHEDULE_SOURCE_ID
   : REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID;
@@ -67,21 +246,121 @@ const CREDENTIALS = resolve(".release-runtime/r551/runtime/local-developer/crede
 const FAMILY_RECEIPT = resolve(
   IS_ANCHOR
     ? ".release-runtime/r4a13-6/exact-physical-norm-successors/anchor-group-installation-family-source-role-r2/acceptance.json"
-    : ".release-runtime/r4a13-6/exact-physical-norm-successors/strip-foundation-reinforcement-family/acceptance.json",
+    : IS_FORMWORK_REINFORCEMENT
+      ? ".release-runtime/r4a13-6/exact-physical-norm-successors/formwork-reinforcement-family/acceptance.json"
+    : IS_JOINT_REINFORCEMENT
+      ? ".release-runtime/r4a13-6/exact-physical-norm-successors/joint-reinforcement-family/acceptance.json"
+    : IS_BELT_REINFORCEMENT
+      ? ".release-runtime/r4a13-6/exact-physical-norm-successors/belt-reinforcement-family/acceptance.json"
+    : IS_ANCHOR_GROUP_REINFORCEMENT
+      ? ".release-runtime/r4a13-6/exact-physical-norm-successors/anchor-group-reinforcement-family/acceptance.json"
+    : IS_COLUMN_BASE
+      ? ".release-runtime/r4a13-6/exact-physical-norm-successors/column-base-reinforcement-family/acceptance.json"
+    : IS_REINFORCEMENT_FRAME_ASSEMBLY
+      ? ".release-runtime/r4a13-6/exact-physical-norm-successors/reinforcement-frame-assembly-family/acceptance.json"
+    : IS_REINFORCEMENT_FRAME
+      ? ".release-runtime/r4a13-6/exact-physical-norm-successors/reinforcement-frame-reinforcement-family/acceptance.json"
+    : IS_STAIRS
+      ? ".release-runtime/r4a13-6/exact-physical-norm-successors/stairs-reinforcement-family/acceptance.json"
+    : IS_PEDESTAL
+      ? ".release-runtime/r4a13-6/exact-physical-norm-successors/pedestal-reinforcement-family/acceptance.json"
+    : IS_PILE_CAP
+      ? ".release-runtime/r4a13-6/exact-physical-norm-successors/pile-cap-reinforcement-family/acceptance.json"
+    : IS_CONCRETE_SLAB
+      ? ".release-runtime/r4a13-6/exact-physical-norm-successors/concrete-slab-reinforcement-family/acceptance.json"
+    : IS_SLAB_FOUNDATION
+      ? ".release-runtime/r4a13-6/exact-physical-norm-successors/slab-foundation-reinforcement-family/acceptance.json"
+      : ".release-runtime/r4a13-6/exact-physical-norm-successors/strip-foundation-reinforcement-family/acceptance.json",
 );
 const MASTER = resolve(
   IS_ANCHOR
     ? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (10).md"
-    : "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (9).md",
+    : IS_FORMWORK_REINFORCEMENT
+      ? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (14).md"
+    : IS_JOINT_REINFORCEMENT
+      ? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (14).md"
+    : IS_BELT_REINFORCEMENT
+      ? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (13).md"
+    : IS_ANCHOR_GROUP_REINFORCEMENT
+      ? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (13).md"
+    : IS_COLUMN_BASE
+      ? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (13).md"
+    : IS_REINFORCEMENT_FRAME_ASSEMBLY
+      ? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (16).md"
+    : IS_REINFORCEMENT_FRAME
+      ? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (13).md"
+    : IS_STAIRS
+      ? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (13).md"
+    : IS_PEDESTAL
+      ? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (13).md"
+    : IS_PILE_CAP
+      ? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (13).md"
+    : IS_CONCRETE_SLAB
+      ? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (13).md"
+    : IS_SLAB_FOUNDATION
+      ? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (13).md"
+      : "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (9).md",
 );
 const OUTPUT = resolve(
   IS_ANCHOR
     ? ".release-runtime/r4a13-6/exact-physical-norm-successors/anchor-group-installation-family-api/acceptance.json"
-    : ".release-runtime/r4a13-6/exact-physical-norm-successors/strip-foundation-reinforcement-family-e5-api/acceptance.json",
+    : IS_FORMWORK_REINFORCEMENT
+      ? ".release-runtime/r4a13-6/exact-physical-norm-successors/formwork-reinforcement-family-api/acceptance.json"
+    : IS_JOINT_REINFORCEMENT
+      ? ".release-runtime/r4a13-6/exact-physical-norm-successors/joint-reinforcement-family-api/acceptance.json"
+    : IS_BELT_REINFORCEMENT
+      ? ".release-runtime/r4a13-6/exact-physical-norm-successors/belt-reinforcement-family-api/acceptance.json"
+    : IS_ANCHOR_GROUP_REINFORCEMENT
+      ? ".release-runtime/r4a13-6/exact-physical-norm-successors/anchor-group-reinforcement-family-api/acceptance.json"
+    : IS_COLUMN_BASE
+      ? ".release-runtime/r4a13-6/exact-physical-norm-successors/column-base-reinforcement-family-api/acceptance.json"
+    : IS_REINFORCEMENT_FRAME_ASSEMBLY
+      ? ".release-runtime/r4a13-6/exact-physical-norm-successors/reinforcement-frame-assembly-family-api/acceptance.json"
+    : IS_REINFORCEMENT_FRAME
+      ? ".release-runtime/r4a13-6/exact-physical-norm-successors/reinforcement-frame-reinforcement-family-api/acceptance.json"
+    : IS_STAIRS
+      ? ".release-runtime/r4a13-6/exact-physical-norm-successors/stairs-reinforcement-family-api/acceptance.json"
+    : IS_PEDESTAL
+      ? ".release-runtime/r4a13-6/exact-physical-norm-successors/pedestal-reinforcement-family-api/acceptance.json"
+    : IS_PILE_CAP
+      ? ".release-runtime/r4a13-6/exact-physical-norm-successors/pile-cap-reinforcement-family-api/acceptance.json"
+    : IS_CONCRETE_SLAB
+      ? ".release-runtime/r4a13-6/exact-physical-norm-successors/concrete-slab-reinforcement-family-api/acceptance.json"
+    : IS_SLAB_FOUNDATION
+      ? ".release-runtime/r4a13-6/exact-physical-norm-successors/slab-foundation-reinforcement-family-api/acceptance.json"
+      : ".release-runtime/r4a13-6/exact-physical-norm-successors/strip-foundation-reinforcement-family-e5-api/acceptance.json",
 );
 
+const API_PROGRESS = IS_ANCHOR
+  ? "ANCHOR_GROUP_API"
+  : IS_FORMWORK_REINFORCEMENT
+    ? "FORMWORK_REINFORCEMENT_API"
+  : IS_JOINT_REINFORCEMENT
+    ? "JOINT_REINFORCEMENT_API"
+  : IS_BELT_REINFORCEMENT
+    ? "BELT_REINFORCEMENT_API"
+  : IS_ANCHOR_GROUP_REINFORCEMENT
+    ? "ANCHOR_GROUP_REINFORCEMENT_API"
+  : IS_COLUMN_BASE
+    ? "COLUMN_BASE_REINFORCEMENT_API"
+  : IS_REINFORCEMENT_FRAME_ASSEMBLY
+    ? "REINFORCEMENT_FRAME_ASSEMBLY_API"
+  : IS_REINFORCEMENT_FRAME
+    ? "REINFORCEMENT_FRAME_REINFORCEMENT_API"
+  : IS_STAIRS
+    ? "STAIRS_REINFORCEMENT_API"
+  : IS_PEDESTAL
+    ? "PEDESTAL_REINFORCEMENT_API"
+  : IS_PILE_CAP
+    ? "PILE_CAP_REINFORCEMENT_API"
+  : IS_CONCRETE_SLAB
+    ? "CONCRETE_SLAB_REINFORCEMENT_API"
+  : IS_SLAB_FOUNDATION
+    ? "SLAB_FOUNDATION_REINFORCEMENT_API"
+    : "STRIP_REINFORCEMENT_E5_API";
+
 function invariant(value: unknown, code: string): asserts value {
-  if (!value) throw new Error(`${IS_ANCHOR ? "ANCHOR_GROUP_API" : "STRIP_REINFORCEMENT_API"}:${code}`);
+  if (!value) throw new Error(`${API_PROGRESS}:${code}`);
 }
 
 function sha256(value: string | Buffer): string {
@@ -97,7 +376,7 @@ function atomicJson(path: string, value: unknown): void {
 
 function progress(stage: string, details: Json = {}): void {
   process.stdout.write(`${JSON.stringify({
-    progress: IS_ANCHOR ? "ANCHOR_GROUP_API" : "STRIP_REINFORCEMENT_E5_API",
+    progress: API_PROGRESS,
     stage,
     ...details,
   })}\n`);
@@ -207,7 +486,31 @@ async function expectedRows(
 ): Promise<{ rows: Json[]; procurementRows: number }> {
   const compiled = IS_ANCHOR
     ? await compileAnchorGroupInstallationR1(parameters, { catalogId })
-    : await compileStripFoundationReinforcementR1(parameters, { catalogId });
+    : IS_FORMWORK_REINFORCEMENT
+      ? await compileFormworkReinforcementR1(parameters, { catalogId })
+    : IS_JOINT_REINFORCEMENT
+      ? await compileJointReinforcementR1(parameters, { catalogId })
+    : IS_BELT_REINFORCEMENT
+      ? await compileBeltReinforcementR1(parameters, { catalogId })
+    : IS_ANCHOR_GROUP_REINFORCEMENT
+      ? await compileAnchorGroupReinforcementR1(parameters, { catalogId })
+    : IS_COLUMN_BASE
+      ? await compileColumnBaseReinforcementR1(parameters, { catalogId })
+    : IS_REINFORCEMENT_FRAME_ASSEMBLY
+      ? await compileReinforcementFrameAssemblyR1(parameters, { catalogId })
+    : IS_REINFORCEMENT_FRAME
+      ? await compileReinforcementFrameReinforcementR1(parameters, { catalogId })
+    : IS_STAIRS
+      ? await compileStairsReinforcementR1(parameters, { catalogId })
+    : IS_PEDESTAL
+      ? await compilePedestalReinforcementR1(parameters, { catalogId })
+    : IS_PILE_CAP
+      ? await compilePileCapReinforcementR1(parameters, { catalogId })
+    : IS_CONCRETE_SLAB
+      ? await compileConcreteSlabReinforcementR1(parameters, { catalogId })
+    : IS_SLAB_FOUNDATION
+      ? await compileSlabFoundationReinforcementR1(parameters, { catalogId })
+      : await compileStripFoundationReinforcementR1(parameters, { catalogId });
   invariant(compiled.preliminaryNeeds.length === 0, `LOCAL_CORE_PRELIMINARY:${catalogId}`);
   return {
     rows: compiled.rows as unknown as Json[],
@@ -330,7 +633,31 @@ async function main(): Promise<void> {
   const sourceReceipt = JSON.parse(readFileSync(FAMILY_RECEIPT, "utf8")) as Json;
   invariant(sourceReceipt.status === (IS_ANCHOR
     ? "GREEN_ANCHOR_GROUP_INSTALLATION_PREPARED_NOT_ACTIVE"
-    : "GREEN_STRIP_FOUNDATION_REINFORCEMENT_PREPARED_NOT_ACTIVE")
+    : IS_FORMWORK_REINFORCEMENT
+      ? "GREEN_FORMWORK_REINFORCEMENT_PREPARED_NOT_ACTIVE"
+    : IS_JOINT_REINFORCEMENT
+      ? "GREEN_JOINT_REINFORCEMENT_PREPARED_NOT_ACTIVE"
+    : IS_BELT_REINFORCEMENT
+      ? "GREEN_BELT_REINFORCEMENT_PREPARED_NOT_ACTIVE"
+    : IS_ANCHOR_GROUP_REINFORCEMENT
+      ? "GREEN_ANCHOR_GROUP_REINFORCEMENT_PREPARED_NOT_ACTIVE"
+    : IS_COLUMN_BASE
+      ? "GREEN_COLUMN_BASE_REINFORCEMENT_PREPARED_NOT_ACTIVE"
+    : IS_REINFORCEMENT_FRAME_ASSEMBLY
+      ? "GREEN_REINFORCEMENT_FRAME_ASSEMBLY_PREPARED_NOT_ACTIVE"
+    : IS_REINFORCEMENT_FRAME
+      ? "GREEN_REINFORCEMENT_FRAME_REINFORCEMENT_PREPARED_NOT_ACTIVE"
+    : IS_STAIRS
+      ? "GREEN_STAIRS_REINFORCEMENT_PREPARED_NOT_ACTIVE"
+    : IS_PEDESTAL
+      ? "GREEN_PEDESTAL_REINFORCEMENT_PREPARED_NOT_ACTIVE"
+    : IS_PILE_CAP
+      ? "GREEN_PILE_CAP_REINFORCEMENT_PREPARED_NOT_ACTIVE"
+    : IS_CONCRETE_SLAB
+      ? "GREEN_CONCRETE_SLAB_REINFORCEMENT_PREPARED_NOT_ACTIVE"
+    : IS_SLAB_FOUNDATION
+      ? "GREEN_SLAB_FOUNDATION_REINFORCEMENT_PREPARED_NOT_ACTIVE"
+      : "GREEN_STRIP_FOUNDATION_REINFORCEMENT_PREPARED_NOT_ACTIVE")
     && sourceReceipt.successor?.releaseId === RELEASE_ID
     && sourceReceipt.successor?.searchReleaseId === SEARCH_RELEASE_ID,
   "FAMILY_RECEIPT_RED");
@@ -345,7 +672,31 @@ async function main(): Promise<void> {
     connectionString: DATABASE_URL,
     application_name: IS_ANCHOR
       ? "anchor-group-installation-backend-acceptance"
-      : "strip-reinforcement-family-e5-backend-acceptance",
+      : IS_FORMWORK_REINFORCEMENT
+        ? "formwork-reinforcement-backend-acceptance"
+      : IS_JOINT_REINFORCEMENT
+        ? "joint-reinforcement-backend-acceptance"
+      : IS_BELT_REINFORCEMENT
+        ? "belt-reinforcement-backend-acceptance"
+      : IS_ANCHOR_GROUP_REINFORCEMENT
+        ? "anchor-group-reinforcement-backend-acceptance"
+      : IS_COLUMN_BASE
+        ? "column-base-reinforcement-backend-acceptance"
+      : IS_REINFORCEMENT_FRAME_ASSEMBLY
+        ? "reinforcement-frame-assembly-backend-acceptance"
+      : IS_REINFORCEMENT_FRAME
+        ? "reinforcement-frame-reinforcement-backend-acceptance"
+      : IS_STAIRS
+        ? "stairs-reinforcement-backend-acceptance"
+      : IS_PEDESTAL
+        ? "pedestal-reinforcement-backend-acceptance"
+      : IS_PILE_CAP
+        ? "pile-cap-reinforcement-backend-acceptance"
+      : IS_CONCRETE_SLAB
+        ? "concrete-slab-reinforcement-backend-acceptance"
+      : IS_SLAB_FOUNDATION
+        ? "slab-foundation-reinforcement-backend-acceptance"
+        : "strip-reinforcement-family-e5-backend-acceptance",
   });
   await client.connect();
   try {
@@ -364,10 +715,60 @@ async function main(): Promise<void> {
     const definitionIds: string[] = [];
     for (const target of TARGETS) {
       const fixture = (IS_ANCHOR
-        ? { ...anchorGroupInstallationAcceptanceInputR1(target.contextKey) }
-        : { ...stripFoundationReinforcementAcceptanceInputR1(
-          target.contextKey as StripFoundationReinforcementContextKey,
-        ) }) as Json;
+        ? { ...anchorGroupInstallationAcceptanceInputR1(
+          target.contextKey as AnchorGroupInstallationContextKey,
+        ) }
+        : IS_FORMWORK_REINFORCEMENT
+          ? { ...formworkReinforcementAcceptanceInputR1(
+            target.contextKey as FormworkReinforcementContextKey,
+          ) }
+        : IS_JOINT_REINFORCEMENT
+          ? { ...jointReinforcementAcceptanceInputR1(
+            target.contextKey as JointReinforcementContextKey,
+          ) }
+        : IS_BELT_REINFORCEMENT
+          ? { ...beltReinforcementAcceptanceInputR1(
+            target.contextKey as BeltReinforcementContextKey,
+          ) }
+        : IS_ANCHOR_GROUP_REINFORCEMENT
+          ? { ...anchorGroupReinforcementAcceptanceInputR1(
+            target.contextKey as AnchorGroupReinforcementContextKey,
+          ) }
+        : IS_COLUMN_BASE
+          ? { ...columnBaseReinforcementAcceptanceInputR1(
+            target.contextKey as ColumnBaseReinforcementContextKey,
+          ) }
+        : IS_REINFORCEMENT_FRAME_ASSEMBLY
+          ? { ...reinforcementFrameAssemblyAcceptanceInputR1(
+            target.contextKey as ReinforcementFrameAssemblyContextKey,
+          ) }
+        : IS_REINFORCEMENT_FRAME
+          ? { ...reinforcementFrameReinforcementAcceptanceInputR1(
+            target.contextKey as ReinforcementFrameReinforcementContextKey,
+          ) }
+        : IS_STAIRS
+          ? { ...stairsReinforcementAcceptanceInputR1(
+            target.contextKey as StairsReinforcementContextKey,
+          ) }
+        : IS_PEDESTAL
+          ? { ...pedestalReinforcementAcceptanceInputR1(
+            target.contextKey as PedestalReinforcementContextKey,
+          ) }
+        : IS_PILE_CAP
+          ? { ...pileCapReinforcementAcceptanceInputR1(
+            target.contextKey as PileCapReinforcementContextKey,
+          ) }
+        : IS_CONCRETE_SLAB
+          ? { ...concreteSlabReinforcementAcceptanceInputR1(
+            target.contextKey as ConcreteSlabReinforcementContextKey,
+          ) }
+        : IS_SLAB_FOUNDATION
+          ? { ...slabFoundationReinforcementAcceptanceInputR1(
+            target.contextKey as SlabFoundationReinforcementContextKey,
+          ) }
+          : { ...stripFoundationReinforcementAcceptanceInputR1(
+            target.contextKey as StripFoundationReinforcementContextKey,
+          ) }) as Json;
       const sourceTarget = targetReceiptByContext.get(target.contextKey);
       const definitionVersionId = String(sourceTarget?.definitionId ?? "");
       invariant(/^[0-9a-f-]{36}$/iu.test(definitionVersionId),
@@ -567,7 +968,31 @@ async function main(): Promise<void> {
       capturedAt: new Date().toISOString(),
       status: IS_ANCHOR
         ? "GREEN_ANCHOR_GROUP_INSTALLATION_6_OF_6_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE"
-        : "GREEN_STRIP_FOUNDATION_REINFORCEMENT_7_OF_7_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE",
+        : IS_FORMWORK_REINFORCEMENT
+          ? "GREEN_FORMWORK_REINFORCEMENT_7_OF_7_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE"
+        : IS_JOINT_REINFORCEMENT
+          ? "GREEN_JOINT_REINFORCEMENT_7_OF_7_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE"
+        : IS_BELT_REINFORCEMENT
+          ? "GREEN_BELT_REINFORCEMENT_7_OF_7_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE"
+        : IS_ANCHOR_GROUP_REINFORCEMENT
+          ? "GREEN_ANCHOR_GROUP_REINFORCEMENT_7_OF_7_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE"
+        : IS_COLUMN_BASE
+          ? "GREEN_COLUMN_BASE_REINFORCEMENT_7_OF_7_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE"
+        : IS_REINFORCEMENT_FRAME_ASSEMBLY
+          ? "GREEN_REINFORCEMENT_FRAME_ASSEMBLY_7_OF_7_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE"
+        : IS_REINFORCEMENT_FRAME
+          ? "GREEN_REINFORCEMENT_FRAME_REINFORCEMENT_7_OF_7_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE"
+        : IS_STAIRS
+          ? "GREEN_STAIRS_REINFORCEMENT_7_OF_7_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE"
+        : IS_PEDESTAL
+          ? "GREEN_PEDESTAL_REINFORCEMENT_7_OF_7_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE"
+        : IS_PILE_CAP
+          ? "GREEN_PILE_CAP_REINFORCEMENT_7_OF_7_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE"
+        : IS_CONCRETE_SLAB
+          ? "GREEN_CONCRETE_SLAB_REINFORCEMENT_7_OF_7_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE"
+        : IS_SLAB_FOUNDATION
+          ? "GREEN_SLAB_FOUNDATION_REINFORCEMENT_7_OF_7_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE"
+          : "GREEN_STRIP_FOUNDATION_REINFORCEMENT_7_OF_7_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE",
       globalStatus: "GLOBAL_STATUS=RED_NOT_PRODUCTION_READY",
       runId,
       master: { path: MASTER, sha256: sha256(readFileSync(MASTER)) },
@@ -576,7 +1001,31 @@ async function main(): Promise<void> {
         head: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
         productSha256: sha256(readFileSync(resolve(IS_ANCHOR
           ? "src/lib/estimate/v4/anchorGroupInstallationR1.ts"
-          : "src/lib/estimate/v4/stripFoundationReinforcementR1.ts"))),
+          : IS_FORMWORK_REINFORCEMENT
+            ? "src/lib/estimate/v4/formworkReinforcementR1.ts"
+          : IS_JOINT_REINFORCEMENT
+            ? "src/lib/estimate/v4/jointReinforcementR1.ts"
+          : IS_BELT_REINFORCEMENT
+            ? "src/lib/estimate/v4/beltReinforcementR1.ts"
+          : IS_ANCHOR_GROUP_REINFORCEMENT
+            ? "src/lib/estimate/v4/anchorGroupReinforcementR1.ts"
+          : IS_COLUMN_BASE
+            ? "src/lib/estimate/v4/columnBaseReinforcementR1.ts"
+          : IS_REINFORCEMENT_FRAME_ASSEMBLY
+            ? "src/lib/estimate/v4/reinforcementFrameReinforcementR1.ts"
+          : IS_REINFORCEMENT_FRAME
+            ? "src/lib/estimate/v4/reinforcementFrameReinforcementR1.ts"
+          : IS_STAIRS
+            ? "src/lib/estimate/v4/stairsReinforcementR1.ts"
+          : IS_PEDESTAL
+            ? "src/lib/estimate/v4/pedestalReinforcementR1.ts"
+          : IS_PILE_CAP
+            ? "src/lib/estimate/v4/pileCapReinforcementR1.ts"
+          : IS_CONCRETE_SLAB
+            ? "src/lib/estimate/v4/concreteSlabReinforcementR1.ts"
+          : IS_SLAB_FOUNDATION
+            ? "src/lib/estimate/v4/slabFoundationReinforcementR1.ts"
+            : "src/lib/estimate/v4/stripFoundationReinforcementR1.ts"))),
         bindingSha256: sha256(readFileSync(resolve(
           IS_ANCHOR
             ? "src/lib/estimate/ownedDomain/anchorGroupInstallationProductionBindingR1.ts"

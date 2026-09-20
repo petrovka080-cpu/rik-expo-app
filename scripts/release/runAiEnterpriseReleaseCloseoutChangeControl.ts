@@ -1758,7 +1758,7 @@ function isCurrentPlatformIntegrationGreenPath(file: string): boolean {
   return CURRENT_PLATFORM_INTEGRATION_GREEN_PATCH_FILES.has(file);
 }
 
-function classifyFile(file: string): CloseoutOwnershipEntry {
+export function classifyAiEnterpriseReleaseCloseoutFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
   if (isCurrentPlatformIntegrationGreenPath(normalized)) {
     return {
@@ -2848,9 +2848,19 @@ export function buildAiEnterpriseReleaseCloseoutReport(params: {
   const rootDir = params.rootDir ?? process.cwd();
   const dirtyFiles = collectDirtyFiles(rootDir);
   const ownershipByFile = new Map<string, CloseoutOwnershipEntry>();
-  for (const dirtyFile of dirtyFiles) ownershipByFile.set(dirtyFile.file, classifyFile(dirtyFile.file));
+  for (const dirtyFile of dirtyFiles) {
+    ownershipByFile.set(
+      dirtyFile.file,
+      classifyAiEnterpriseReleaseCloseoutFile(dirtyFile.file),
+    );
+  }
   for (const wave of REQUIRED_WAVES) {
-    if (fileExists(rootDir, wave.matrixPath)) ownershipByFile.set(wave.matrixPath, classifyFile(wave.matrixPath));
+    if (fileExists(rootDir, wave.matrixPath)) {
+      ownershipByFile.set(
+        wave.matrixPath,
+        classifyAiEnterpriseReleaseCloseoutFile(wave.matrixPath),
+      );
+    }
   }
   const closeoutArtifacts = [
     "inventory",
@@ -2896,13 +2906,28 @@ export function buildAiEnterpriseReleaseCloseoutReport(params: {
     "artifacts/S_CONTRACTOR_EXPANDED_WORK_MEDIA_matrix.json",
   ];
   for (const artifact of closeoutArtifacts) {
-    if (fileExists(rootDir, artifact)) ownershipByFile.set(artifact, classifyFile(artifact));
+    if (fileExists(rootDir, artifact)) {
+      ownershipByFile.set(
+        artifact,
+        classifyAiEnterpriseReleaseCloseoutFile(artifact),
+      );
+    }
   }
   for (const artifact of greenCloseoutArtifacts) {
-    if (fileExists(rootDir, artifact)) ownershipByFile.set(artifact, classifyFile(artifact));
+    if (fileExists(rootDir, artifact)) {
+      ownershipByFile.set(
+        artifact,
+        classifyAiEnterpriseReleaseCloseoutFile(artifact),
+      );
+    }
   }
   for (const artifact of uiCloseoutArtifacts) {
-    if (fileExists(rootDir, artifact)) ownershipByFile.set(artifact, classifyFile(artifact));
+    if (fileExists(rootDir, artifact)) {
+      ownershipByFile.set(
+        artifact,
+        classifyAiEnterpriseReleaseCloseoutFile(artifact),
+      );
+    }
   }
 
   const ownership = [...ownershipByFile.values()].sort((a, b) => a.file.localeCompare(b.file));

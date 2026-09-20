@@ -184,8 +184,17 @@ describe("RoadworksWaveAProductionBindingContract", () => {
         const snapshot = result.draft?.items[0]?.sourceParameters?.parameterSnapshot as
           | Record<string, unknown>
           | undefined;
-        expect(Object.keys(snapshot ?? {})).toEqual(item.parameterSchema);
+        expect(Object.keys(snapshot ?? {}).every((key) => item.parameterSchema.includes(key as RoadworksWaveAParameterKey))).toBe(true);
         expect(Object.values(snapshot ?? {}).every((value) => value != null)).toBe(true);
+        expect(snapshot?.area_m2).toBeGreaterThan(0);
+        expect(result.canBuildPreliminaryEstimate).toBe(false);
+        expect(result.draft?.items[0]?.sourceParameters?.domainResolutionReadiness).not.toBe("CALCULATION_READY");
+        expect(result.draft?.items.some((row) => row.sourceParameters?.rowCode === `${item.workId}:applicability_blocker`)).toBe(false);
+        expect(result.draft?.items.some((row) => /:mix$|:tack_coat$/u.test(String(row.sourceParameters?.rowCode)))).toBe(false);
+        expect(result.draft?.items.every((row) => {
+          const affectedBy = row.sourceParameters?.affectedBy;
+          return !Array.isArray(affectedBy) || affectedBy.every((key) => key in (snapshot ?? {}));
+        })).toBe(true);
         resolved += 1;
       }
     }
@@ -306,7 +315,7 @@ describe("RoadworksWaveAProductionBindingContract", () => {
     expect(parameterEdits).toBe(35);
   });
 
-  test("builds every exact request from visible versioned baseline assumptions", () => {
+  test("keeps fixture examples non-executable and preserves only lawful source-fixed values", () => {
     for (const item of RoadworksWaveAProductionRegistry) {
       const result = buildEstimateFromInlineWorkPrompt({
         rawInput: item.professionalNameRu,
@@ -314,23 +323,44 @@ describe("RoadworksWaveAProductionBindingContract", () => {
         selectedTemplateId: item.templateId,
       });
       expect(result.draft?.selectedWork?.selectedWorkKey).toBe(item.workId);
-      expect(result.draft?.items.length).toBeGreaterThan(1);
-      expect(result.draft?.items[0]?.sourceParameters?.executableAsphaltProfile).toBe(true);
-      expect(result.draft?.items[0]?.sourceParameters?.domainResolutionReadiness).toBe("CALCULATION_READY");
-      expect(result.draft?.items[0]?.sourceParameters?.assumptionKeys).toEqual(item.parameterSchema);
-      expect(result.draft?.items[0]?.sourceParameters?.unresolvedParameterKeys).toEqual([]);
-      expect(result.draft?.items[0]?.sourceParameters?.applicabilityBlockers).not.toEqual(
-        expect.arrayContaining(p0ParameterKeys(item.workId).map((key) => `required_input_missing:${key}`)),
+      expect(result.canBuildPreliminaryEstimate).toBe(false);
+      expect(result.blockingReason).toBe("NEEDS_REQUIRED_INPUTS");
+      expect(result.draft?.items.length).toBeGreaterThan(0);
+      expect(result.draft?.items[0]?.sourceParameters?.executableAsphaltProfile).toBe(false);
+      expect(result.draft?.items[0]?.sourceParameters?.domainResolutionReadiness).toBe("NEEDS_REQUIRED_INPUTS");
+      const metadata = result.draft?.items[0]?.sourceParameters?.roadworksWaveAParameterMetadata as
+        | Record<string, Record<string, unknown>>
+        | undefined;
+      const snapshot = result.draft?.items[0]?.sourceParameters?.parameterSnapshot as
+        | Record<string, unknown>
+        | undefined;
+      const sourceFixedKeys = item.parameterDefinitions
+        .filter((definition) => definition.sourceFixedBinding)
+        .map((definition) => definition.key);
+      expect(Object.keys(snapshot ?? {})).toEqual(sourceFixedKeys);
+      expect(result.draft?.items[0]?.sourceParameters?.unresolvedParameterKeys).toEqual(
+        item.parameterSchema.filter((key) => !sourceFixedKeys.includes(key)),
       );
-      expect(Object.values(
-        result.draft?.items[0]?.sourceParameters?.roadworksWaveAParameterMetadata ?? {},
-      ).every((raw) => (
-        raw as Record<string, unknown>
-      ).defaultSourceType === "VISIBLE_BASELINE_ASSUMPTION")).toBe(true);
+      expect(result.draft?.items[0]?.sourceParameters?.applicabilityBlockers).toEqual(expect.arrayContaining(
+        item.parameterSchema
+          .filter((key) => !sourceFixedKeys.includes(key))
+          .map((key) => expect.stringMatching(`(?:required_input|normative_source)_missing:${key}`)),
+      ));
+      expect(Object.values(metadata ?? {}).every((raw) =>
+        raw.defaultValue === null && raw.defaultSourceId === null &&
+        raw.defaultSourceType === "NON_EXECUTABLE_REFERENCE_EXAMPLE"
+      )).toBe(true);
+      for (const key of sourceFixedKeys) {
+        expect(metadata?.[key]).toMatchObject({
+          valueAdmissionState: "CONFIRMED_SOURCE_FIXED",
+          calculationAllowed: true,
+          contractSourceConfirmed: true,
+        });
+      }
     }
   });
 
-  test("shows all baseline assumptions and preserves exact P0 replacement semantics", () => {
+  test("keeps unresolved values editable and recalculates after explicit preliminary inputs", () => {
     let composed = 0;
     for (const [index, item] of RoadworksWaveAProductionRegistry.entries()) {
       const runtime = createAiEstimateRuntime();
@@ -347,26 +377,32 @@ describe("RoadworksWaveAProductionBindingContract", () => {
       expect(initial.revision.workSpecificParameterSchemaId).toBe(item.parameterSchemaId);
       expect(initial.revision.workSpecificParameterSignature).toEqual(item.parameterSchema);
       const p0Keys = p0ParameterKeys(item.workId);
-      const assumedDefaultKeys = item.parameterDefinitions.map((definition) => definition.key);
-      expect(initial.revision.missingInputs).toEqual([]);
-      expect(missingCards).toEqual([]);
-      expect(initial.revision.boq.rows.length).toBeGreaterThan(1);
-      for (const key of assumedDefaultKeys) {
-        expect(initial.revision.params[key]).toMatchObject({
-          value: DEFAULT_ROADWORKS_WAVE_A_INPUTS[key],
-          source: "default_assumption",
-        });
+      const sourceFixedKeys = item.parameterDefinitions
+        .filter((definition) => definition.sourceFixedBinding)
+        .map((definition) => definition.key);
+      const unresolvedKeys = p0Keys.filter((key) => !sourceFixedKeys.includes(key));
+      expect(initial.revision.missingInputs.map((entry) => entry.key)).toEqual(unresolvedKeys);
+      expect(missingCards.map((card) => card.key).sort()).toEqual(unresolvedKeys.slice().sort());
+      expect(initial.revision.boq.rows.length).toBeGreaterThan(0);
+      for (const key of unresolvedKeys) {
+        expect(initial.revision.params[key]).toBeUndefined();
         expect(initial.revision.assumptions.find((assumption) => assumption.key === key)).toMatchObject({
-          value: DEFAULT_ROADWORKS_WAVE_A_INPUTS[key],
+          value: null,
           visibleToUser: true,
           replacedByUserInput: false,
+        });
+      }
+      for (const key of sourceFixedKeys) {
+        expect(initial.revision.params[key]).toMatchObject({
+          value: DEFAULT_ROADWORKS_WAVE_A_INPUTS[key],
+          source: "derived",
         });
       }
 
       const completed = runtime.applyParameterBatchOverride({
         revision: initial.revision,
-        patches: p0Keys.map((paramKey) => ({
-          operation: "replace_assumption" as const,
+        patches: unresolvedKeys.map((paramKey) => ({
+          operation: "add_param" as const,
           paramKey,
           rawValue: String(DEFAULT_ROADWORKS_WAVE_A_INPUTS[paramKey]),
         })),
@@ -375,13 +411,11 @@ describe("RoadworksWaveAProductionBindingContract", () => {
       });
       expect(completed.revision.previousRevisionId).toBe(initial.revision.revisionId);
       expect(completed.revision.professionalWorkId).toBe(item.workId);
-      expect(completed.revision.missingInputs).toEqual([]);
+      expect(completed.revision.missingInputs.map((entry) => entry.key)).toEqual([]);
       expect(runtime.buildParameterPassport({ revision: completed.revision }).cards.filter((card) => card.missing)).toEqual([]);
       expect(completed.revision.boq.rows.length).toBeGreaterThan(1);
-      for (const key of assumedDefaultKeys.filter((key) => !p0Keys.includes(key))) {
-        expect(completed.revision.params[key]?.source).toBe("default_assumption");
-      }
-      for (const key of p0Keys) expect(completed.revision.params[key]?.source).toBe("user_input");
+      for (const key of sourceFixedKeys) expect(completed.revision.params[key]?.source).toBe("derived");
+      for (const key of unresolvedKeys) expect(completed.revision.params[key]?.source).toBe("user_input");
       expect(completed.revision.boq.rows.every((row) =>
         row.sourceParameters?.selectedWorkId === item.workId &&
         row.sourceParameters?.executableAsphaltProfile === true &&
@@ -394,5 +428,59 @@ describe("RoadworksWaveAProductionBindingContract", () => {
       composed += 1;
     }
     expect(composed).toBe(35);
+  });
+
+  test("does not infer 61.8 t or 150 l for 500 m2, but preserves the arithmetic for explicit preliminary inputs", () => {
+    const item = RoadworksWaveAProductionRegistry.find((candidate) =>
+      candidate.technologyFamily === "asphalt_surface_repair" && candidate.scopeProfile === "standard"
+    );
+    if (!item) throw new Error("ROADWORKS_REPAIR_STANDARD_FIXTURE_MISSING");
+    const rawInput = "ремонт асфальтового покрытия в стандартной зоне 500 кв метров";
+    const unresolved = buildEstimateFromInlineWorkPrompt({
+      rawInput,
+      selectedWorkKey: item.workId,
+      selectedTemplateId: item.templateId,
+    });
+    const unresolvedRowIds = unresolved.draft?.items.map((row) => String(row.sourceParameters?.rowCode)) ?? [];
+    expect(unresolved.canBuildPreliminaryEstimate).toBe(false);
+    expect(unresolved.blockingReason).toBe("NEEDS_REQUIRED_INPUTS");
+    expect(unresolvedRowIds).not.toEqual(expect.arrayContaining([
+      `${item.workId}:mix`,
+      `${item.workId}:tack_coat`,
+      `${item.workId}:removed_asphalt_stream`,
+    ]));
+    expect(unresolved.draft?.items.some((row) => row.quantity === 61.8 || row.quantity === 150)).toBe(false);
+
+    const explicit = buildEstimateFromInlineWorkPrompt({
+      rawInput,
+      selectedWorkKey: item.workId,
+      selectedTemplateId: item.templateId,
+      paramOverrides: {
+        ...explicitOverrides(item.workId),
+        area_m2: {
+          value: 500,
+          source: "user_input",
+        },
+      },
+    });
+    const byRowId = new Map(explicit.draft?.items.map((row) => [String(row.sourceParameters?.rowCode), row]));
+    expect(byRowId.get(`${item.workId}:mix`)?.quantity).toBe(61.8);
+    expect(byRowId.get(`${item.workId}:tack_coat`)?.quantity).toBe(150);
+    expect(byRowId.get(`${item.workId}:removed_asphalt_stream`)?.quantity).toBe(60);
+    expect(explicit.draft?.items.filter((row) => /асфальтобетонная смесь/iu.test(row.titleRu))).toHaveLength(1);
+    expect(explicit.draft?.items.some((row) => /(?:песок|щебень|битум(?!ная эмульсия))/iu.test(row.titleRu))).toBe(false);
+    expect(byRowId.get(`${item.workId}:mix`)?.sourceParameters).toMatchObject({
+      executableAsphaltProfile: true,
+      domainResolutionReadiness: "CALCULATION_READY",
+    });
+    const bindingSource = explicit.draft?.items.find((row) =>
+      row.sourceParameters?.roadworksWaveAParameterMetadata
+    )?.sourceParameters;
+    expect(bindingSource).toMatchObject({
+      contractSourcesComplete: true,
+      calculationInputsComplete: true,
+    });
+    expect(byRowId.get(`${item.workId}:mix`)?.sourceParameters?.includedInProcurement).toBe(true);
+    expect(byRowId.get(`${item.workId}:removed_asphalt_stream`)?.sourceParameters?.includedInProcurement).toBe(false);
   });
 });

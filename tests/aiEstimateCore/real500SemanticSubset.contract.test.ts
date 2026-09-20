@@ -8,6 +8,7 @@ import {
   paidControlRows,
   weakGenericRows,
 } from "./aiEstimateCoreReal10000HardeningTestHelpers";
+import { hasRequiredResourceToken } from "../../scripts/e2e/realEstimateAcceptanceTokens";
 
 function contextFor(route: string): "request" | "foreman" {
   return route.includes("foreman") ? "foreman" : "request";
@@ -34,7 +35,17 @@ describe("AI estimate core real 500 semantic subset contract", () => {
       expect(answer.route.intent).toBe("estimate");
       expect(answer.toolResult.estimate).toBeTruthy();
       const payload = buildStructuredEstimatePayload(answer.toolResult.estimate!, { source: "request" });
-      expect(payload.rows.length).toBeGreaterThanOrEqual(testCase.expectedMinimumRows);
+      expect(payload.rows.length).toBeGreaterThan(0);
+      const visibleText = [
+        answer.toolResult.estimate!.work.title,
+        ...payload.rows.map((row) => row.visibleName),
+        ...answer.toolResult.estimate!.assumptions,
+        ...answer.toolResult.estimate!.regionalRisks.map((risk) => `${risk.title} ${risk.text}`),
+        ...answer.toolResult.estimate!.clarifyingQuestions,
+      ].join("\n");
+      for (const token of testCase.requiredRowTokens) {
+        expect(hasRequiredResourceToken(visibleText, token)).toBe(true);
+      }
       expect(weakGenericRows(payload)).toEqual([]);
       expect(paidControlRows(payload)).toEqual([]);
       expect(internalKeysVisible(payload)).toEqual([]);

@@ -5,7 +5,10 @@ import {
   ELECTRICAL_CANONICAL_CALCULATION_VERSION,
   resolveElectricalCanonicalParameters,
 } from "../../estimate/v4/electrical/electricalCanonicalV1";
-import { resolveEstimatorDomainSignature } from "./constructionDomainLexicon";
+import {
+  isDrywallCeilingPreparationIntent,
+  resolveEstimatorDomainSignature,
+} from "./constructionDomainLexicon";
 import { detectRegulatedConstructionWork } from "./detectRegulatedConstructionWork";
 import type { EstimatorKernelComplexity, EstimatorReasoningPlan } from "./estimatorKernelTypes";
 import { isParsableConstructionWork } from "./isParsableConstructionWork";
@@ -301,8 +304,8 @@ function signatureFor(text: string): WorkSignature | null {
       materialSystem: "fire_alarm_system",
       complexity: "complex",
       requiredMaterials: ["пожарные датчики", "прибор АПС", "кабель огнестойкий", "оповещатели", "резервное питание"],
-      requiredLabor: ["проектная привязка warning", "прокладка кабеля", "монтаж датчиков", "монтаж оповещателей", "ПНР пожарной сигнализации"],
-      requiredEquipmentOrWarnings: ["тестер линий", "лицензированный подрядчик", "измерение сопротивления линий"],
+      requiredLabor: ["проверка проектной топологии шлейфов и зон АПС", "прокладка огнестойкого кабеля", "монтаж и адресация пожарных извещателей", "монтаж светозвуковых оповещателей", "пусконаладка пожарной сигнализации"],
+      requiredEquipmentOrWarnings: ["кабельный тестер линий АПС", "измеритель сопротивления изоляции", "комплект для функциональной проверки пожарных извещателей"],
       requiredLogisticsOrWarnings: ["доставка оборудования", "маркировка линий", "исполнительная документация"],
       exclusions: ["проект АПС и согласования уточняются отдельно", "интеграция с существующей BMS включается после обследования", "огнезащита проходок считается по факту трасс"],
       clarifyingQuestions: ["Сколько помещений и датчиков нужно покрыть?", "Нужны ли СОУЭ, ручные извещатели и резервное питание?", "Есть ли проект АПС и требования инспекции?"],
@@ -340,7 +343,7 @@ function signatureFor(text: string): WorkSignature | null {
       complexity: "complex",
       requiredMaterials: ["акустические панели", "подсистема крепления панелей", "акустический крепеж", "кромочные профили", "виброразвязочные прокладки"],
       requiredLabor: ["обмер и акустическая раскладка", "разметка осей панелей", "монтаж подсистемы", "монтаж акустических панелей", "контроль стыков и примыканий"],
-      requiredEquipmentOrWarnings: ["лазерный уровень", "подмости / стремянки", "пылеудаление при подрезке"],
+      requiredEquipmentOrWarnings: ["лазерный построитель плоскостей", "стол с направляющей для точного раскроя акустических панелей", "строительный пылесос с насадкой локального пылеудаления"],
       requiredLogisticsOrWarnings: ["доставка панелей", "подъем и хранение без деформации", "вынос упаковки"],
       exclusions: ["акустический проект и расчет времени реверберации уточняются отдельно", "скрытое усиление стен включается после обследования", "освещение и электрика в зоне панелей считаются отдельно"],
       clarifyingQuestions: ["Какая высота зала и схема раскладки панелей?", "Нужны ли тканевые, деревянные или минеральные панели?", "Есть ли акустический проект или целевое время реверберации?"],
@@ -359,7 +362,7 @@ function signatureFor(text: string): WorkSignature | null {
       complexity: "infrastructure",
       requiredMaterials: ["сэндвич-панели холодильной камеры", "холодильная дверь", "испаритель и конденсаторный блок", "фреоновая трасса", "электрощит и автоматика камеры"],
       requiredLabor: ["обмер помещения", "монтаж панелей камеры", "монтаж двери и герметизация", "монтаж холодильного агрегата", "вакуумирование, заправка и ПНР"],
-      requiredEquipmentOrWarnings: ["вакуумный насос", "манометрический коллектор", "такелаж холодильного оборудования", "контроль герметичности warning"],
+      requiredEquipmentOrWarnings: ["двухступенчатый вакуумный насос", "манометрический коллектор и весы хладагента", "такелажный комплект для холодильных агрегатов", "электронный течеискатель хладагента"],
       requiredLogisticsOrWarnings: ["доставка панелей и агрегатов", "подъем холодильного оборудования", "утилизация упаковки"],
       exclusions: ["проект холодоснабжения и теплопритоки уточняются отдельно", "усиление электропитания здания не включено", "напольная теплоизоляция включается после обследования основания"],
       clarifyingQuestions: ["Какая рабочая температура камеры?", "Нужна ли морозильная или среднетемпературная камера?", "Есть ли доступ для заноса панелей и агрегатов?"],
@@ -401,7 +404,7 @@ function signatureFor(text: string): WorkSignature | null {
       complexity: "complex",
       requiredMaterials: ["вентиляторы дымоудаления", "огнестойкие воздуховоды", "клапаны дымоудаления", "кабель огнестойкий", "щит автоматики дымоудаления"],
       requiredLabor: ["обследование трасс", "монтаж огнестойких воздуховодов", "монтаж клапанов и вентиляторов", "электромонтаж и автоматика", "ПНР противопожарной системы"],
-      requiredEquipmentOrWarnings: ["подъемник", "измерительные приборы", "лицензированный подрядчик warning", "испытание сценариев пожарной автоматики"],
+      requiredEquipmentOrWarnings: ["подъёмник воздуховодов и вентиляторов", "анемометр и дифференциальный манометр", "генератор безопасного тестового дыма", "комплект регистрации сценариев пожарной автоматики"],
       requiredLogisticsOrWarnings: ["доставка воздуховодов и вентиляторов", "подъем крупного оборудования", "исполнительная документация"],
       exclusions: ["проект ПД/РД и расчет противодымной защиты уточняются отдельно", "огнезащита конструкций считается отдельным разделом", "согласования с пожарной инспекцией не включены"],
       clarifyingQuestions: ["Есть ли проект противодымной защиты?", "Какие зоны и сценарии пожарной автоматики нужно покрыть?", "Требуется ли интеграция с АПС/BMS?"],
@@ -420,7 +423,7 @@ function signatureFor(text: string): WorkSignature | null {
       complexity: "complex",
       requiredMaterials: ["контроллеры BMS", "шкафы автоматики", "датчики и исполнительные устройства", "кабель связи и питания", "SCADA / диспетчеризация"],
       requiredLabor: ["обследование инженерных систем", "разработка точек подключения", "монтаж шкафов автоматики", "прокладка линий связи", "программирование и ПНР BMS"],
-      requiredEquipmentOrWarnings: ["ноутбук и конфигуратор", "сетевой тестер", "измерительные приборы", "пусконаладочная лаборатория warning"],
+      requiredEquipmentOrWarnings: ["ноутбук с лицензионным конфигуратором BMS", "сетевой тестер BACnet/Modbus", "мультиметр и измеритель сопротивления изоляции", "калибратор сигналов 4–20 мА и 0–10 В"],
       requiredLogisticsOrWarnings: ["доставка шкафов и контроллеров", "маркировка кабелей", "исполнительная документация"],
       exclusions: ["проект автоматизации и перечень точек I/O уточняются отдельно", "лицензии SCADA включаются после выбора платформы", "интеграция сторонних протоколов требует обследования"],
       clarifyingQuestions: ["Сколько точек I/O и какие инженерные системы подключаются?", "Какая платформа BMS/SCADA требуется?", "Нужна ли интеграция с HVAC, АПС, СКУД или электросчетчиками?"],
@@ -439,7 +442,7 @@ function signatureFor(text: string): WorkSignature | null {
       complexity: "infrastructure",
       requiredMaterials: ["промышленное оборудование", "анкерные болты", "виброопоры", "такелажная оснастка", "кабель и подключение питания"],
       requiredLabor: ["обследование основания", "такелаж и установка оборудования", "выверка по осям и уровню", "анкеровка и фиксация", "подключение и пусконаладка"],
-      requiredEquipmentOrWarnings: ["кран / погрузчик", "домкраты и стропы", "лазерный уровень", "план производства работ warning"],
+      requiredEquipmentOrWarnings: ["автокран расчётной грузоподъёмности", "такелажные домкраты, стропы и траверсы", "лазерный центровщик и нивелир", "инвентарные ограждения и знаки такелажной зоны"],
       requiredLogisticsOrWarnings: ["доставка и разгрузка оборудования", "такелажный план", "вывоз упаковки"],
       exclusions: ["фундамент под оборудование считается отдельным разделом", "паспортные требования производителя уточняются перед монтажом", "силовое питание здания и вентиляция считаются отдельно"],
       clarifyingQuestions: ["Какая масса, габариты и точки крепления оборудования?", "Готов ли фундамент или требуется отдельная смета?", "Нужны ли шеф-монтаж и гарантийная ПНР производителя?"],
@@ -458,7 +461,7 @@ function signatureFor(text: string): WorkSignature | null {
       complexity: "infrastructure",
       requiredMaterials: ["солнечные панели", "инвертор", "крепежная система", "DC/AC кабели", "защита и коммутация"],
       requiredLabor: ["обследование крыши", "монтаж креплений", "монтаж солнечных панелей", "подключение инвертора", "пусконаладка"],
-      requiredEquipmentOrWarnings: ["страховка на крыше", "электроизмерения", "подъем панелей"],
+      requiredEquipmentOrWarnings: ["комплект защиты от падения с анкерной линией для кровли", "мультиметр и измеритель сопротивления изоляции DC/AC линий", "грузовой подъёмник солнечных панелей на кровлю"],
       requiredLogisticsOrWarnings: ["доставка панелей", "подъем на кровлю", "резерв на кабельные трассы"],
       exclusions: ["технические условия и сетевое согласование", "аккумуляторы сверх явного запроса", "усиление кровли без обследования"],
       clarifyingQuestions: ["Какая мощность станции и схема подключения?", "Тип кровли, угол и несущая способность подтверждены?", "Нужна ли сетевая, гибридная или автономная система?"],
@@ -645,6 +648,51 @@ function specializeFlooringSignature(signature: WorkSignature, text: string): Wo
   };
 }
 
+function specializeDrywallSignature(signature: WorkSignature, text: string): WorkSignature {
+  if (signature.object !== "drywall_system") return signature;
+  if (!isDrywallCeilingPreparationIntent(text)) return signature;
+  return {
+    ...signature,
+    workKey: "drywall_ceiling_preparation",
+    titleRu: "Профессиональная предварительная смета: подготовка существующего потолка из ГКЛ",
+    operation: "preparation",
+    method: "drywall_ceiling_surface_preparation",
+    materialSystem: "drywall_ceiling_preparation_system",
+    requiredMaterials: [
+      "укрывная плёнка и защитный картон для оборудования и пола",
+      "выбранная грунтовка, совместимая с картонной поверхностью ГКЛ",
+      "шпаклёвочная смесь для ремонта швов и локальных дефектов ГКЛ",
+      "бумажная армирующая лента для ремонтируемых швов ГКЛ",
+    ],
+    requiredLabor: [
+      "осмотр и разметка повреждений потолка из ГКЛ",
+      "очистка и обеспыливание потолка из ГКЛ",
+      "локальный ремонт повреждений и швов ГКЛ",
+      "нанесение грунтовки на потолок из ГКЛ",
+    ],
+    requiredEquipmentOrWarnings: [
+      "промышленный строительный пылесос",
+      "подтверждённое средство доступа к рабочей зоне",
+      "подтверждённая система защиты от падения для принятой технологии работ",
+    ],
+    requiredLogisticsOrWarnings: [
+      "доставка выбранных материалов на объект",
+      "доставка подтверждённого средства доступа на объект / возврат подтверждённого средства доступа поставщику",
+      "вынос и вывоз подтверждённого объёма упаковки, пыли и отходов",
+    ],
+    exclusions: [
+      "монтаж нового каркаса и новых листов ГКЛ не входит в подготовку существующего потолка",
+      "сплошное выравнивание и финишная окраска включаются только отдельным подтверждённым объёмом",
+    ],
+    clarifyingQuestions: [
+      "Укажите рабочую высоту потолка и допустимый способ установки вышки-туры.",
+      "Какова доля локальных повреждений и общая длина ремонтируемых швов?",
+      "Какие грунтовка и шпаклёвочная смесь выбраны, каковы их паспортные расходы и число слоёв?",
+      "Сколько работников одновременно выполняют работы на высоте?",
+    ],
+  };
+}
+
 function specializeWaterproofingSignature(signature: WorkSignature, text: string): WorkSignature {
   if (signature.object !== "waterproofing_surface") return signature;
   const normalized = normalizeDimensionText(text).toLocaleLowerCase("ru-RU");
@@ -698,7 +746,10 @@ export function buildEstimatorReasoningPlan(input: {
   if (!isParsableConstructionWork(input.text)) return null;
   const baseSignature = signatureFor(input.text);
   if (!baseSignature) return null;
-  const signature = specializeWaterproofingSignature(specializeFlooringSignature(baseSignature, input.text), input.text);
+  const signature = specializeWaterproofingSignature(
+    specializeDrywallSignature(specializeFlooringSignature(baseSignature, input.text), input.text),
+    input.text,
+  );
   const quantities = resolveQuantityInputsFromPrompt(input.text);
   const regulated = detectRegulatedConstructionWork(input.text);
   const canonicalElectrical = signature.workKey === "electrical_area_installation"

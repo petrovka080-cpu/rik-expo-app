@@ -55,6 +55,7 @@ describe("R5.5 estimate row photo finalize identity", () => {
     expect(localBackend).toContain("x-idempotency-key,x-upsert");
     expect(localBackend).toContain("backendRuntimeSourceSha256: CANONICAL_ESTIMATE_RUNTIME_SOURCE_SHA256");
     expect(backendManager).toContain("tuple.backendRuntimeSourceSha256 === desired.backendRuntimeSourceSha256");
-    expect(backendManager).toContain("backendRuntimeSourceSha256: sha256File(BACKEND_SOURCE)");
+    expect(backendManager).toContain("backendRuntimeSourceSha256: backendRuntimeClosureSha256(BACKEND_SOURCE)");
+    expect(backendManager).toContain("function backendRuntimeClosureSha256");
   });
 });

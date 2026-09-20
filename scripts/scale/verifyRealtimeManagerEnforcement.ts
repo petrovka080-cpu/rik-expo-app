@@ -176,6 +176,25 @@ function classifyRealtimeFile(repoRoot: string, file: string): RealtimeManagerIn
     broadExceptionUsed,
   };
 
+  if (file === "src/lib/supabaseClient.ts") {
+    const safe =
+      source.includes("createClient") &&
+      source.includes("removeChannel: async") &&
+      source.includes("removeAllChannels: async") &&
+      !directSupabaseChannel &&
+      !channelSubscribe;
+    return {
+      ...base,
+      status: safe && !rawPayloadPrinted && !secretsPrinted && !broadExceptionUsed ? "safe" : "finding",
+      owner: "supabase_root_client_initializer",
+      classification: "root_client_initializer",
+      cleanupPresent: safe,
+      stableOwnerPresent: safe,
+      unmanagedSubscribe: false,
+      reason: "root Supabase client initializer exposes bounded no-op realtime cleanup in unavailable mode and does not create or subscribe to channels",
+    };
+  }
+
   if (file === "src/lib/realtime/realtimeSubscriptionManager.ts") {
     const safe =
       source.includes("subscribers: Map") &&

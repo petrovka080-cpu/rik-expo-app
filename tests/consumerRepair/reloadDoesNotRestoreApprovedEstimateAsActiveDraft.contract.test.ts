@@ -7,6 +7,7 @@ import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/co
 import {
   buildEstimateDraftSessionTransitionStatusMessage,
   buildInitialConsumerRepairRequestState,
+  shouldShowConsumerRepairWorkSelection,
 } from "../../src/features/consumerRepair/requestEstimateScreenActions";
 import { buildConsumerRepairRequestRenderModel } from "../../src/features/consumerRepair/ConsumerRepairRequestScreenRenderModel";
 import {
@@ -22,6 +23,30 @@ import {
 } from "../../src/features/consumerRepair/ConsumerRepairRequestScreen";
 
 describe("reload does not restore approved estimate as active draft", () => {
+  it("keeps work search visible after a prompt-only draft is saved", () => {
+    const bundle = createConsumerRepairRequestDraft({
+      consumerUserId: CONSUMER_REPAIR_TEST_USER_ID,
+      problemText: "Построить асфальтовую дорогу длиной 15 000 м",
+    });
+
+    expect(shouldShowConsumerRepairWorkSelection({
+      bundle,
+      selectedWork: null,
+    })).toBe(true);
+    expect(shouldShowConsumerRepairWorkSelection({
+      bundle,
+      selectedWork: {
+        selectedWorkKey: "canonical-work:road",
+        selectedTitleRu: "Строительство асфальтовой дороги",
+        selectedCategoryKey: "other",
+        selectedCategoryTitleRu: "Дорожные работы",
+        rawInput: bundle.draft.problemText ?? "",
+        source: "user_selected",
+        resolverReGuessed: false,
+      },
+    })).toBe(false);
+  });
+
   it("does not let a composer acknowledgement satisfy an automation launch without a bound draft", () => {
     expect(shouldReuseAcknowledgedRequestEstimateLaunch({
       acknowledged: true,

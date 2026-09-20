@@ -24,4 +24,25 @@ describe("canonical estimate parameter validation", () => {
     const result = validateCanonicalEstimateParameterInputs({ schema, rawInputs: { area: "1", variant: "b", left: "yes" } });
     expect(result.issues).toContainEqual({ code: "TYPE", parameterId: "left" });
   });
+
+  it("rejects contradictory area and rectangular dimensions", () => {
+    const geometrySchema: CanonicalEstimateCatalogItem["parameterSchema"] = [
+      { parameterId: "area_m2", ordinal: 0, valueType: "decimal", unitId: "m2", titleRu: "Площадь", required: true, defaultValue: null, constraints: { min: 1 } },
+      { parameterId: "length_m", ordinal: 1, valueType: "decimal", unitId: "m", titleRu: "Длина", required: true, defaultValue: null, constraints: { min: 1 } },
+      { parameterId: "width_m", ordinal: 2, valueType: "decimal", unitId: "m", titleRu: "Ширина", required: true, defaultValue: null, constraints: { min: 1 } },
+    ];
+
+    expect(validateCanonicalEstimateParameterInputs({
+      schema: geometrySchema,
+      rawInputs: { area_m2: 640, length_m: 200, width_m: 32 },
+    }).issues).toContainEqual({
+      code: "GEOMETRY_CONFLICT",
+      parameterId: "area_m2",
+      relatedParameterId: "length_m,width_m",
+    });
+    expect(validateCanonicalEstimateParameterInputs({
+      schema: geometrySchema,
+      rawInputs: { area_m2: 6400, length_m: 200, width_m: 32 },
+    }).ok).toBe(true);
+  });
 });

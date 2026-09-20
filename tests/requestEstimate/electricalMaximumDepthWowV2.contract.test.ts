@@ -120,8 +120,13 @@ describe("BATCH005 maximum-depth user WOW V2", () => {
     );
 
     expect(editor).toContain('testID="request-estimate-items-search"');
-    expect(editor).toContain("request-estimate-stage-toggle-");
-    expect(editor).toContain("expandedSections.map");
+    expect(editor).toContain('testID="request-estimate-category-filters"');
+    expect(editor).toContain("REQUEST_ESTIMATE_CATEGORY_FILTERS.map");
+    for (const categoryId of ["all", "materials", "labor", "machinery", "services", "delivery"]) {
+      expect(editor).toContain(`{ id: "${categoryId}"`);
+    }
+    expect(editor).toContain("collapsedCategoryIds");
+    expect(editor).toContain("visibleItems.map");
     expect(editor).not.toContain('testID="request-estimate-items-load-more"');
     expect(row).toContain("consumer-repair-item-professional-proof-");
     expect(row).toContain("professionalEvidence.formulaLabel");

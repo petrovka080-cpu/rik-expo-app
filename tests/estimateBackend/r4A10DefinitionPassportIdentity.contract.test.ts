@@ -16,8 +16,8 @@ describe("R4-A10 definition-passport public identity contract", () => {
     const local = read("scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts");
     const worker = read("supabase/functions/canonical-estimate-worker/index.ts");
     expect(local).toContain("resolved.definition_version,resolved.passport,identity.title_ru");
-    expect(local).toContain("revision.canonical_work_title_ru");
+    expect(local).toContain("revision.display_title_ru\n          ?? revision.canonical_work_title_ru");
     expect(worker).toContain('select("id,definition_version,catalog_id,passport")');
-    expect(worker).toContain("revision.canonical_work_title_ru ?? revision.display_title_ru");
+    expect(worker).toContain("revision.display_title_ru ?? revision.canonical_work_title_ru");
   });
 });

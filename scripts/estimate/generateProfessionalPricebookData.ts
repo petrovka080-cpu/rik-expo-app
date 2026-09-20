@@ -1,6 +1,12 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
+import existingEquipmentRatesJson from "../../data/estimate/pricebook/equipment-rates.json";
+import existingLaborRatesJson from "../../data/estimate/pricebook/labor-rates.json";
+import existingMaterialPricesJson from "../../data/estimate/pricebook/material-prices.json";
+import existingServiceRatesJson from "../../data/estimate/pricebook/service-rates.json";
+import existingTransportRatesJson from "../../data/estimate/pricebook/transport-rates.json";
+
 import { normalizeCanonicalProfessionalBoqUnit } from "../../src/lib/estimate/canonicalUnits";
 import {
   buildProfessionalWorkPassport,
@@ -29,6 +35,93 @@ type PricebookCoverageRow = {
   sourceUnit?: string | null;
   unit?: string | null;
 };
+
+const ELEVATED_ACCESS_PRICEBOOK_COVERAGE_ROWS: readonly PricebookCoverageRow[] = [
+  {
+    rowType: "equipment",
+    titleRu: "Передвижная алюминиевая вышка-тура с настилом, ограждением и опорами-стабилизаторами",
+    normFamilyId: "norm-family:elevated-access:mobile-aluminium-tower",
+    unit: "shift",
+  },
+  {
+    rowType: "work",
+    titleRu: "Сборка, предсменный осмотр, перестановка и разборка передвижной вышки-туры",
+    normFamilyId: "norm-family:elevated-access:mobile-aluminium-tower",
+    unit: "shift",
+  },
+  {
+    rowType: "transport",
+    titleRu: "Доставка на объект и возврат передвижной алюминиевой вышки-туры",
+    normFamilyId: "norm-family:elevated-access:mobile-aluminium-tower",
+    unit: "trip",
+  },
+  {
+    rowType: "equipment",
+    titleRu: "Инвентарные рамные фасадные леса с настилами, ограждением и лестничными секциями",
+    normFamilyId: "norm-family:elevated-access:facade-frame-scaffold",
+    unit: "shift",
+  },
+  {
+    rowType: "work",
+    titleRu: "Монтаж, анкеровка, приёмка, перестановка и демонтаж инвентарных фасадных лесов",
+    normFamilyId: "norm-family:elevated-access:facade-frame-scaffold",
+    unit: "shift",
+  },
+  {
+    rowType: "transport",
+    titleRu: "Доставка на объект и возврат комплекта инвентарных фасадных лесов",
+    normFamilyId: "norm-family:elevated-access:facade-frame-scaffold",
+    unit: "trip",
+  },
+  {
+    rowType: "equipment",
+    titleRu: "Самоходный ножничный подъёмник с ограждённой рабочей платформой",
+    normFamilyId: "norm-family:elevated-access:self-propelled-scissor-lift",
+    unit: "shift",
+  },
+  {
+    rowType: "work",
+    titleRu: "Подготовка площадки, предсменный осмотр и перестановка ножничного подъёмника",
+    normFamilyId: "norm-family:elevated-access:self-propelled-scissor-lift",
+    unit: "shift",
+  },
+  {
+    rowType: "transport",
+    titleRu: "Доставка на объект и возврат самоходного ножничного подъёмника",
+    normFamilyId: "norm-family:elevated-access:self-propelled-scissor-lift",
+    unit: "trip",
+  },
+  {
+    rowType: "equipment",
+    titleRu: "Коленчатая автовышка с ограждённой рабочей платформой",
+    normFamilyId: "norm-family:elevated-access:articulated-aerial-platform",
+    unit: "shift",
+  },
+  {
+    rowType: "work",
+    titleRu: "Подготовка и ограждение площадки, предсменный осмотр и перестановка коленчатой автовышки",
+    normFamilyId: "norm-family:elevated-access:articulated-aerial-platform",
+    unit: "shift",
+  },
+  {
+    rowType: "transport",
+    titleRu: "Подача коленчатой автовышки на объект и её возврат после работ",
+    normFamilyId: "norm-family:elevated-access:articulated-aerial-platform",
+    unit: "trip",
+  },
+  {
+    rowType: "equipment",
+    titleRu: "Комплект защиты от падения для рабочего места на высоте",
+    normFamilyId: "norm-family:elevated-access:fall-protection",
+    unit: "set",
+  },
+  {
+    rowType: "equipment",
+    titleRu: "Подъёмник листов ГКЛ для монтажа потолка",
+    normFamilyId: "norm-family:elevated-access:drywall-board-lift",
+    unit: "shift",
+  },
+];
 
 function costRowType(row: PricebookCoverageRow): ProfessionalCostRowType {
   const text = `${row.titleRu} ${row.normFamilyId}`.toLowerCase();
@@ -199,12 +292,27 @@ function sortRecords(records: ProfessionalPriceRecord[]): ProfessionalPriceRecor
   return [...records].sort((left, right) => left.nomenclatureId.localeCompare(right.nomenclatureId));
 }
 
+function existingPricebookRecords(): ProfessionalPriceRecord[] {
+  return [
+    existingMaterialPricesJson,
+    existingLaborRatesJson,
+    existingEquipmentRatesJson,
+    existingServiceRatesJson,
+    existingTransportRatesJson,
+  ].flatMap((file) => (file as { records: ProfessionalPriceRecord[] }).records ?? []);
+}
+
 export function generateProfessionalPricebookData(): {
   recordsByType: Record<ProfessionalPriceItemType, ProfessionalPriceRecord[]>;
   sources: ProfessionalPriceSourceRecord[];
   recordsTotal: number;
 } {
-  const byNomenclature = new Map<string, ProfessionalPriceRecord>();
+  // Price records are versioned commercial evidence. A template leaving the
+  // current active catalog must not silently delete its historical binding on
+  // the next coverage regeneration.
+  const byNomenclature = new Map(
+    existingPricebookRecords().map((record) => [record.nomenclatureId, record]),
+  );
   const ids = listProfessionalWorkPassportTemplateIds();
   for (const [index, templateId] of ids.entries()) {
     const passport = buildProfessionalWorkPassport(templateId);
@@ -227,6 +335,9 @@ export function generateProfessionalPricebookData(): {
       if (row.rowType === "document" || row.rowType === "other") continue;
       addCoverageRow(byNomenclature, row);
     }
+  }
+  for (const row of ELEVATED_ACCESS_PRICEBOOK_COVERAGE_ROWS) {
+    addCoverageRow(byNomenclature, row);
   }
   const recordsByType: Record<ProfessionalPriceItemType, ProfessionalPriceRecord[]> = {
     material: [],

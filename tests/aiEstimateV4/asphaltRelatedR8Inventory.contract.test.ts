@@ -1,6 +1,6 @@
 import { buildAsphaltRelatedR8Inventory } from "../../scripts/estimate/buildAsphaltRelatedR8Inventory";
 
-describe("Asphalt-related global domain R8/R9 deterministic inventory", () => {
+describe("Asphalt-related global domain R8 deterministic inventory", () => {
   test("seals N/R/M/A/E with exact typed identities and no ownership gaps", () => {
     const inventory = buildAsphaltRelatedR8Inventory();
     expect(inventory.selection_method).toBe("EXACT_TYPED_IDENTIFIERS_NO_REGEX");

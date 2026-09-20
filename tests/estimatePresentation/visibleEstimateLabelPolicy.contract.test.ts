@@ -80,4 +80,25 @@ describe("visible estimate label policy", () => {
       sectionType: "materials",
     })).not.toBe("\u0437\u0430\u0449\u0438\u0442\u043d\u0430\u044f \u043f\u043b\u0435\u043d\u043a\u0430");
   });
+
+  it("keeps the canonical title but removes an unresolved project parameter reference", () => {
+    const label = toVisibleEstimateLabel({
+      label: "\u0412\u044b\u0431\u0440\u0430\u043d\u043d\u0430\u044f \u0433\u0440\u0443\u043d\u0442\u043e\u0432\u043a\u0430 \u2014 PROJECT:primer_product_reference",
+      sectionType: "materials",
+    });
+
+    expect(label).toBe("\u0412\u044b\u0431\u0440\u0430\u043d\u043d\u0430\u044f \u0433\u0440\u0443\u043d\u0442\u043e\u0432\u043a\u0430");
+    expect(visibleEstimateLabelViolations(label)).toEqual([]);
+  });
+
+  it("uses a finite public fallback when both the source and generated object label are invalid", () => {
+    const label = toVisibleEstimateLabel({
+      label: "internal_equipment_key",
+      sectionType: "equipment",
+      objectKey: "missing_domain_key",
+    });
+
+    expect(label).toBe("\u041e\u0431\u043e\u0440\u0443\u0434\u043e\u0432\u0430\u043d\u0438\u0435 \u043f\u043e \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0451\u043d\u043d\u044b\u043c \u0443\u0441\u043b\u043e\u0432\u0438\u044f\u043c \u0440\u0430\u0431\u043e\u0442");
+    expect(visibleEstimateLabelViolations(label)).toEqual([]);
+  });
 });

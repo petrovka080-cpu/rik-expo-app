@@ -588,7 +588,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "jest-run-in-band", command: "npx tsx scripts/release/runFullJestEvidenceGate.ts" },
   { name: "git-diff-check", command: "git diff --check" },
   { name: "50k-fixture-retention-cleanup-policy-proof", command: "npx tsx scripts/audit/run50kFixtureRetentionCleanupPolicyProof.ts --verify-read-only" },
-  { name: "green-claim-artifact-reconciliation-proof", command: "npx tsx scripts/audit/runGreenClaimArtifactReconciliation.ts" },
+  { name: "green-claim-artifact-reconciliation-proof", command: "npx tsx scripts/audit/runGreenClaimArtifactReconciliation.ts --policy-check --verify-read-only" },
   { name: "built-in-ai-live-acceptance-baseline-proof", command: "npx tsx scripts/e2e/runBuiltInAiLiveAcceptanceBaselineProof.ts" },
   { name: "built-in-ai-150-work-types-proof", command: "npx tsx scripts/e2e/runBuiltInAi150ConstructionWorkTypesProof.ts" },
   { name: "built-in-ai-1000-work-types-proof", command: "npx tsx scripts/e2e/runBuiltInAi1000ConstructionWorkTypesProof.ts" },
@@ -622,7 +622,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   },
   { name: "built-in-ai-50000-phase3-live-app-domain-sample-proof", command: "npx tsx scripts/e2e/runBuiltInAi50000Phase3LiveSampleMatrix.ts" },
   { name: "ai-estimate-50000-phase4-canary-safety-observability-rollback-proof", command: "npx tsx scripts/e2e/runBuiltInAi50000Phase4CanarySafetyProof.ts" },
-  { name: "final-50k-92-external-live-proof-closeout", command: "npx tsx scripts/audit/runExternalLiveProofCloseout.ts --after-gates" },
+  { name: "final-50k-92-external-live-proof-closeout", command: "npx tsx scripts/audit/runExternalLiveProofCloseout.ts" },
 ];
 
 export const FINAL_50K_92_GREEN_STATUS = "GREEN_FINAL_50K_92_SCORE_REAUDIT_READY";

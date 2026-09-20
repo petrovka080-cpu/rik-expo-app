@@ -25,6 +25,7 @@ import {
   buildRoadworksWaveAProfessionalPassportV4,
   resolveRoadAsphaltProfileV3,
 } from "./roadworksWaveASemanticTruth";
+import { roadworksWaveAParameterRequiresSourceConfirmationR6 } from "./roadworksWaveAAdmissionR6";
 import {
   resolveDomainResolutionReadiness,
   type DomainResolutionReadiness,
@@ -166,13 +167,18 @@ export function getRoadworksWaveAProductionRegistration(
 
 export function getRoadworksWaveAResolutionReadiness(
   registration: RoadworksWaveAProductionRegistration | null,
-  input: { scopeResolved?: boolean; requiredInputsPresent?: boolean } = {},
+  input: {
+    scopeResolved?: boolean;
+    requiredInputsPresent?: boolean;
+    normativeSourcesPresent?: boolean;
+  } = {},
 ): DomainResolutionReadiness {
   if (!registration) {
     return resolveDomainResolutionReadiness({ resolutionExists: false });
   }
   const profile = resolveRoadAsphaltProfileV3(registration.workId);
-  const normativeApplicabilityResolved = Boolean(profile.classificationVerdictId);
+  const normativeApplicabilityResolved = Boolean(profile.classificationVerdictId) &&
+    (input.normativeSourcesPresent ?? true);
   const applicationAllowed = profile.domainDecision !== "DOMAIN_REVIEW_REQUIRED" && profile.blockers.length === 0;
   return resolveDomainResolutionReadiness({
     resolutionExists: true,
@@ -282,6 +288,21 @@ function numberFromText(text: string, patterns: readonly RegExp[]): number | nul
   return null;
 }
 
+export type RoadworksWaveAValueAdmissionState =
+  | "EXPLICIT_OBJECT_OR_PROJECT_INPUT"
+  | "EXPLICIT_PRELIMINARY_SOURCE_VALUE"
+  | "CONFIRMED_SOURCE_FIXED"
+  | "UNCONFIRMED";
+
+type RoadworksWaveAValueAdmission = {
+  state: RoadworksWaveAValueAdmissionState;
+  sourceRole: RoadworksWaveAProductionRegistration["parameterDefinitions"][number]["sourceRole"];
+  sourceId: string | null;
+  sourceVersion: string | null;
+  calculationAllowed: boolean;
+  contractSourceConfirmed: boolean;
+};
+
 export function extractRoadworksWaveAProductionInputs(
   input: BuildEstimateFromInlineWorkPromptInput,
   workId?: string,
@@ -289,11 +310,18 @@ export function extractRoadworksWaveAProductionInputs(
   values: RoadworksWaveAInputs;
   assumptions: readonly RoadworksWaveAParameterKey[];
   blockingAssumptions: readonly RoadworksWaveAParameterKey[];
+  confirmedKeys: readonly RoadworksWaveAParameterKey[];
+  calculationInputGaps: readonly RoadworksWaveAParameterKey[];
+  requiredInputGaps: readonly RoadworksWaveAParameterKey[];
+  normativeSourceGaps: readonly RoadworksWaveAParameterKey[];
+  preliminaryInputKeys: readonly RoadworksWaveAParameterKey[];
+  sourceFixedKeys: readonly RoadworksWaveAParameterKey[];
+  admissionByKey: Readonly<Record<RoadworksWaveAParameterKey, RoadworksWaveAValueAdmission>>;
 } {
   const text = input.rawInput;
   const extracted: Partial<Record<RoadworksWaveANumericInputKey, number>> = {
     area_m2: numberFromText(text, [
-      /(\d[\d\s]*(?:[.,]\d+)?)\s*(?:м(?:2|²)|кв(?:адратн[\p{L}]*)?\s*м)/iu,
+      /(\d[\d\s]*(?:[.,]\d+)?)\s*(?:м(?:2|²)|кв(?:адратн[\p{L}]*)?\s*м|квадрат(?:ов|а)?)/iu,
       /площад[\p{L}]*\s*(?:—|:|=)?\s*(\d[\d\s]*(?:[.,]\d+)?)/iu,
     ]) ?? undefined,
     thickness_mm: numberFromText(text, [
@@ -307,19 +335,77 @@ export function extractRoadworksWaveAProductionInputs(
       /(?:доставк[\p{L}]*|завод[\p{L}]*)\s*(?:—|:|=|до)?\s*(\d+(?:[.,]\d+)?)\s*км/iu,
     ]) ?? undefined,
   };
+  // DEFAULT_ROADWORKS_WAVE_A_INPUTS remains a deterministic compiler fixture.
+  // A value enters the runtime snapshot only through one of the admissions
+  // below; copying the fixture here must never make it effective by itself.
   const values = { ...DEFAULT_ROADWORKS_WAVE_A_INPUTS } as RoadworksWaveAInputs & Record<string, unknown>;
   const assumptions: RoadworksWaveAParameterKey[] = [];
   const applicableParameterKeys = workId
     ? [...getRoadworksWaveAParameterKeys(workId)]
     : Object.keys(values) as RoadworksWaveAParameterKey[];
   const applicableKeys = new Set<RoadworksWaveAParameterKey>(applicableParameterKeys);
+  const definitionsByKey = new Map(
+    getRoadworksWaveAParameterDefinitions(workId ?? "").map((definition) => [definition.key, definition]),
+  );
+  const admissionByKey = {} as Record<RoadworksWaveAParameterKey, RoadworksWaveAValueAdmission>;
+  const preliminaryInputKeys: RoadworksWaveAParameterKey[] = [];
+  const sourceFixedKeys: RoadworksWaveAParameterKey[] = [];
+  const registerExplicitAdmission = (key: RoadworksWaveAParameterKey): void => {
+    const definition = definitionsByKey.get(key);
+    if (!definition) return;
+    const requiresNormativeSource = roadworksWaveAParameterRequiresSourceConfirmationR6(definition);
+    admissionByKey[key] = {
+      state: requiresNormativeSource
+        ? "EXPLICIT_PRELIMINARY_SOURCE_VALUE"
+        : "EXPLICIT_OBJECT_OR_PROJECT_INPUT",
+      sourceRole: definition.sourceRole,
+      sourceId: null,
+      sourceVersion: null,
+      calculationAllowed: true,
+      contractSourceConfirmed: !requiresNormativeSource,
+    };
+    if (requiresNormativeSource) preliminaryInputKeys.push(key);
+  };
+  const registerSourceFixedAdmission = (key: RoadworksWaveAParameterKey): boolean => {
+    const definition = definitionsByKey.get(key);
+    const binding = definition?.sourceFixedBinding;
+    if (!definition || !binding) return false;
+    Object.assign(values, { [key]: binding.value });
+    admissionByKey[key] = {
+      state: "CONFIRMED_SOURCE_FIXED",
+      sourceRole: definition.sourceRole,
+      sourceId: binding.sourceId,
+      sourceVersion: binding.sourceVersion,
+      calculationAllowed: true,
+      contractSourceConfirmed: true,
+    };
+    sourceFixedKeys.push(key);
+    return true;
+  };
+  const registerUnconfirmed = (key: RoadworksWaveAParameterKey): void => {
+    const definition = definitionsByKey.get(key);
+    if (!definition) return;
+    admissionByKey[key] = {
+      state: "UNCONFIRMED",
+      sourceRole: definition.sourceRole,
+      sourceId: null,
+      sourceVersion: null,
+      calculationAllowed: false,
+      contractSourceConfirmed: false,
+    };
+    assumptions.push(key);
+  };
   const numericKeys = applicableParameterKeys.filter((key): key is RoadworksWaveANumericInputKey | RoadworksWaveAMachineProductivityKey =>
     roadworksWaveAParameterPresentation(key).inputKind === "number"
   );
   for (const key of numericKeys) {
     const explicit = positiveOverride(input, key) ?? (key in extracted ? extracted[key as RoadworksWaveANumericInputKey] : undefined) ?? null;
-    if (explicit != null) values[key] = explicit;
-    else if (applicableKeys.has(key)) assumptions.push(key);
+    if (explicit != null) {
+      values[key] = explicit;
+      registerExplicitAdmission(key);
+    } else if (!registerSourceFixedAdmission(key) && applicableKeys.has(key)) {
+      registerUnconfirmed(key);
+    }
   }
   const registration = getRoadworksWaveAProductionRegistration(workId);
   const applicabilityKeys = registration
@@ -340,8 +426,11 @@ export function extractRoadworksWaveAProductionInputs(
       : override?.value;
     if (allowedValues[key].includes(explicit)) {
       Object.assign(values, { [key]: explicit });
+      registerExplicitAdmission(key);
+    } else if (!registerSourceFixedAdmission(key)) {
+      registerUnconfirmed(key);
     } else {
-      assumptions.push(key);
+      // The source-fixed branch above already registered the value.
     }
   }
   const tierByKey = new Map(
@@ -352,15 +441,27 @@ export function extractRoadworksWaveAProductionInputs(
     ...applicableParameterKeys.filter((key) => assumptionSet.has(key)),
     ...assumptions.filter((key) => !applicableKeys.has(key)),
   ];
+  const normativeSourceGaps = applicableParameterKeys.filter((key) => {
+    const definition = definitionsByKey.get(key);
+    return definition != null && roadworksWaveAParameterRequiresSourceConfirmationR6(definition) &&
+      admissionByKey[key]?.calculationAllowed !== true;
+  });
+  const normativeGapSet = new Set(normativeSourceGaps);
+  const calculationInputGaps = orderedAssumptions;
+  const requiredInputGaps = calculationInputGaps.filter((key) => !normativeGapSet.has(key));
   return {
     values: values as RoadworksWaveAInputs,
     assumptions: orderedAssumptions,
-    // Every applicable key has an explicit, versioned domain default in
-    // DEFAULT_ROADWORKS_WAVE_A_INPUTS. Missing user input therefore remains a
-    // visible assumption, but it cannot suppress the baseline estimate.
-    blockingAssumptions: orderedAssumptions.filter((key) =>
-      tierByKey.get(key) === "P0" && DEFAULT_ROADWORKS_WAVE_A_INPUTS[key] == null
-    ),
+    // Reference examples remain useful for deterministic fixtures, but are not
+    // runtime norms and cannot authorize quantities for a user's object.
+    blockingAssumptions: orderedAssumptions.filter((key) => tierByKey.get(key) === "P0"),
+    confirmedKeys: applicableParameterKeys.filter((key) => admissionByKey[key]?.calculationAllowed === true),
+    calculationInputGaps,
+    requiredInputGaps,
+    normativeSourceGaps,
+    preliminaryInputKeys,
+    sourceFixedKeys,
+    admissionByKey,
   };
 }
 
@@ -417,58 +518,54 @@ export function buildRoadworksWaveAProductionDraft(
   recordRoadworksWaveABuildTiming("WORK_RESOLVED", buildStartedAt);
   const parameters = extractRoadworksWaveAProductionInputs(input, registration.workId);
   const exactParameterSnapshot = Object.fromEntries(
-    registration.parameterSchema.map((key) => [key, parameters.values[key]]),
+    parameters.confirmedKeys.map((key) => [key, parameters.values[key]]),
   );
   recordRoadworksWaveABuildTiming("PARAMETERS_READY", buildStartedAt);
   const resolvedProfile = resolveRoadAsphaltProfileV3(registration.workId);
   const applicabilityBlockers = [
     ...resolvedProfile.blockers,
-    ...parameters.blockingAssumptions.map((key) => `required_input_missing:${key}`),
+    ...parameters.requiredInputGaps.map((key) => `required_input_missing:${key}`),
+    ...parameters.normativeSourceGaps.map((key) => `normative_source_missing:${key}`),
   ];
   recordRoadworksWaveABuildTiming("PROFILE_READY", buildStartedAt);
   const domainResolutionReadiness = getRoadworksWaveAResolutionReadiness(registration, {
-    requiredInputsPresent: parameters.blockingAssumptions.length === 0,
+    requiredInputsPresent: parameters.requiredInputGaps.length === 0,
+    // Object/design gaps are presented first. Once those are filled, absent
+    // material passports and technical rates become a source gap.
+    normativeSourcesPresent: parameters.requiredInputGaps.length > 0 || parameters.normativeSourceGaps.length === 0,
   });
-  const executable = domainResolutionReadiness === "CALCULATION_READY";
+  const executable = parameters.calculationInputGaps.length === 0 &&
+    resolvedProfile.domainDecision !== "DOMAIN_REVIEW_REQUIRED" &&
+    resolvedProfile.blockers.length === 0;
   recordRoadworksWaveABuildTiming("READINESS_READY", buildStartedAt);
   const professionalPassport = registration.professionalPassport;
   recordRoadworksWaveABuildTiming("PASSPORT_READY", buildStartedAt);
-  const conditionalRow: RoadworksWaveARow = {
-    rowId: `${registration.workId}:applicability_blocker`,
-    category: "document",
-    rowType: "document",
-    semanticOwner: professionalPassport.passportId,
-    workKey: registration.workId,
-    passportId: professionalPassport.passportId,
-    nameRu: "Требуется подтверждение области применения и состава работ",
-    unit: "pcs",
-    uom: "pcs",
-    quantity: 1,
-    formulaId: "conditional_no_certified_quantity",
-    affectedBy: [],
-    sourceParameterKeys: [],
-    sourceIds: ["catalog_applicability_review"],
-    normativeSourceId: "catalog_applicability_review",
-    normativeRateIds: [],
-    roundingRule: "EXACT_ONE",
-    wasteRule: "NOT_APPLICABLE",
-    priceSourceId: null,
-    priceDate: null,
-    revisionId: "REFERENCE_UNSAVED",
-    procurementEligibility: "EXCLUDED_CONTROL_DOCUMENT",
-    payable: false,
-    procurementOwner: "customer",
-  };
+  const candidateCompilation = compileRoadworksWaveAWork(
+    registration.workId,
+    parameters.values,
+    { scopeProfile: registration.scopeProfile },
+  );
+  const admittedKeys = new Set<string>(parameters.confirmedKeys);
   const compilation = executable
-    ? compileRoadworksWaveAWork(registration.workId, parameters.values, { scopeProfile: registration.scopeProfile })
-    : { workId: registration.workId, rows: [conditionalRow] };
+    ? candidateCompilation
+    : {
+      workId: candidateCompilation.workId,
+      // The compiler fixture supplies structural values so that the complete
+      // graph can be validated. Only rows whose declared dependencies are all
+      // admitted may leave this boundary; hidden fixture values never do.
+      rows: candidateCompilation.rows.filter((row) =>
+        row.sourceParameterKeys.every((key) => admittedKeys.has(key))
+      ),
+    };
   recordRoadworksWaveABuildTiming("COMPILATION_READY", buildStartedAt);
   const currency = input.currency ?? "KGS";
   const draft: ConsumerRepairAiDraft = {
     titleRu: `Предварительная профессиональная смета: ${registration.professionalNameRu}`,
-    summaryRu: executable
+    summaryRu: executable && domainResolutionReadiness === "CALCULATION_READY"
       ? `Рассчитано ${compilation.rows.length} позиций. Цены не заполнены; требуется проверка дорожным инженером и сметчиком.`
-      : "Асфальтовая смета не рассчитана: сначала подтвердите дорожную область применения и состав работ.",
+      : executable
+        ? `Рассчитана предварительная ведомость из ${compilation.rows.length} позиций по явно заданным значениям; для договорной готовности не подтверждены технические источники.`
+        : `Сохранены ${compilation.rows.length} независимо рассчитываемых позиций; остальные количества появятся после уточнения входов и источников.`,
     repairType: registration.workId,
     selectedWork: {
       selectedWorkKey: registration.workId,
@@ -482,7 +579,16 @@ export function buildRoadworksWaveAProductionDraft(
     dangerousDiyBlocked: false,
     missingData: executable
       ? []
-      : parameters.blockingAssumptions.map((key) => `Уточнить обязательный параметр: ${key}`),
+      : [
+        ...parameters.requiredInputGaps.map((key) =>
+          `Требуется объектный или проектный параметр: ${roadworksWaveAParameterPresentation(key).labelRu}`
+        ),
+        ...parameters.normativeSourceGaps.map((key) =>
+          parameters.preliminaryInputKeys.includes(key)
+            ? `Значение принято только для предварительного расчёта; не подтверждён технический источник: ${roadworksWaveAParameterPresentation(key).labelRu}`
+            : `Не найден применимый технический источник: ${roadworksWaveAParameterPresentation(key).labelRu}`
+        ),
+      ],
     items: compilation.rows.map((row, rowIndex) => {
       const normativeBinding = resolveAsphaltM1NormativeBindingV1({
         rowId: row.rowId,
@@ -534,6 +640,16 @@ export function buildRoadworksWaveAProductionDraft(
         parameterSnapshot: rowIndex === 0 ? exactParameterSnapshot : undefined,
         assumptionKeys: rowIndex === 0 ? parameters.assumptions : undefined,
         unresolvedParameterKeys: rowIndex === 0 ? parameters.blockingAssumptions : undefined,
+        normativeSourceGapKeys: rowIndex === 0 ? parameters.normativeSourceGaps : undefined,
+        preliminaryInputKeys: rowIndex === 0 ? parameters.preliminaryInputKeys : undefined,
+        sourceFixedParameterKeys: rowIndex === 0 ? parameters.sourceFixedKeys : undefined,
+        parameterAdmissionStates: rowIndex === 0
+          ? Object.fromEntries(
+            registration.parameterSchema.map((key) => [key, parameters.admissionByKey[key]]),
+          )
+          : undefined,
+        calculationInputsComplete: rowIndex === 0 ? parameters.calculationInputGaps.length === 0 : undefined,
+        contractSourcesComplete: rowIndex === 0 ? parameters.normativeSourceGaps.length === 0 : undefined,
         baselineAssumptionVersion: rowIndex === 0
           ? ROADWORKS_WAVE_A_BASELINE_ASSUMPTION_VERSION
           : undefined,
@@ -541,15 +657,25 @@ export function buildRoadworksWaveAProductionDraft(
           ? Object.fromEntries(
             registration.parameterDefinitions.map((definition) => {
               const presentation = roadworksWaveAParameterPresentation(definition.key);
+              const admission = parameters.admissionByKey[definition.key];
               return [definition.key, {
                 ...presentation,
                 tier: definition.tier,
+                sourceRole: definition.sourceRole,
+                valueAdmissionState: admission?.state ?? "UNCONFIRMED",
+                valueSourceId: admission?.sourceId ?? null,
+                valueSourceVersion: admission?.sourceVersion ?? null,
+                calculationAllowed: admission?.calculationAllowed ?? false,
+                contractSourceConfirmed: admission?.contractSourceConfirmed ?? false,
                 requiredFor: definition.tier === "P0" ? "contract_ready" : "better_accuracy",
-                defaultValue: DEFAULT_ROADWORKS_WAVE_A_INPUTS[definition.key],
-                defaultSourceId: "roadworks-wave-a-versioned-defaults",
+                defaultValue: null,
+                referenceExampleValue: DEFAULT_ROADWORKS_WAVE_A_INPUTS[definition.key],
+                defaultSourceId: null,
                 defaultSourceVersion: ROADWORKS_WAVE_A_BASELINE_ASSUMPTION_VERSION,
-                defaultSourceType: "VISIBLE_BASELINE_ASSUMPTION",
-                defaultReasonRu: `Видимое базовое допущение Roadworks Wave A для параметра «${presentation.labelRu}»; проверьте перед договором.`,
+                defaultSourceType: "NON_EXECUTABLE_REFERENCE_EXAMPLE",
+                sourceFixedBinding: definition.sourceFixedBinding,
+                defaultReasonRu: definition.sourceFixedBinding?.reasonRu ??
+                  `Пример для тестовых fixtures не является нормой объекта: «${presentation.labelRu}» требует указанного владельца источника.`,
               }];
             }),
           )
@@ -569,6 +695,7 @@ export function buildRoadworksWaveAProductionDraft(
         wasteRule: row.wasteRule,
         procurementEligibility: row.procurementEligibility,
         payable: row.payable,
+        costTreatment: row.costTreatment,
         formulaGraphId: registration.formulaGraphId,
         executableAsphaltProfile: executable,
         certificationClass: resolvedProfile.certificationClass,

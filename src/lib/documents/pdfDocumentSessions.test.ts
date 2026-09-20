@@ -35,6 +35,7 @@ import {
   materializePdfAsset,
 } from "./pdfDocumentSessions";
 import { clearPdfInstantCacheStateForTests } from "../pdf/pdfInstantCache";
+import { buildPdfInstantCacheKey } from "../pdf/pdfInstantCache";
 
 describe("pdfDocumentSessions materialization", () => {
   beforeEach(() => {
@@ -52,6 +53,37 @@ describe("pdfDocumentSessions materialization", () => {
     mockDownloadAsync.mockImplementation(async (_uri: string, target: string) => ({
       uri: target,
     }));
+  });
+
+  it("changes the instant-cache identity with revision, renderer, title, or status", () => {
+    const base = {
+      uri: "https://example.test/artifacts/current.pdf?token=one",
+      fileSource: {
+        kind: "remote-url" as const,
+        uri: "https://example.test/artifacts/current.pdf?token=one",
+      },
+      fileName: "estimate.pdf",
+      title: "Смета — 6 400 м²",
+      documentType: "request" as const,
+      originModule: "reports" as const,
+      entityId: "request-1",
+      contentIdentity: {
+        revisionId: "revision-149",
+        rendererVersion: "canonical-professional-pdf.r4-a10",
+        displayTitle: "Смета — 6 400 м²",
+        documentStatus: "COMPLETE",
+      },
+    };
+    const original = buildPdfInstantCacheKey(base);
+
+    for (const changed of [
+      { ...base, title: "Другой заголовок" },
+      { ...base, contentIdentity: { ...base.contentIdentity, revisionId: "revision-150" } },
+      { ...base, contentIdentity: { ...base.contentIdentity, rendererVersion: "canonical-professional-pdf.r4-a11" } },
+      { ...base, contentIdentity: { ...base.contentIdentity, documentStatus: "PARTIAL_NEEDS_PRICE" } },
+    ]) {
+      expect(buildPdfInstantCacheKey(changed)).not.toBe(original);
+    }
   });
 
   it("keeps materialization breadcrumbs off the awaited file critical path", async () => {

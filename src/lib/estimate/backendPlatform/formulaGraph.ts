@@ -6,6 +6,7 @@ export type FormulaAst =
   | { kind: "parameter"; id: string }
   | { kind: "unary"; operator: "+" | "-"; operand: FormulaAst }
   | { kind: "binary"; operator: "+" | "-" | "*" | "/"; left: FormulaAst; right: FormulaAst }
+  | { kind: "conditional"; condition: FormulaAst; whenTrue: FormulaAst; whenFalse: FormulaAst }
   | {
     kind: "call";
     function: "ceil" | "floor" | "max" | "min" | "pow" | "round_to" | "sqrt" | "unit_convert";
@@ -24,7 +25,7 @@ type Token =
   | { type: "number"; value: string; offset: number }
   | { type: "identifier"; value: string; offset: number }
   | { type: "operator"; value: "+" | "-" | "*" | "/"; offset: number }
-  | { type: "left" | "right" | "comma" | "eof"; offset: number };
+  | { type: "left" | "right" | "comma" | "question" | "colon" | "eof"; offset: number };
 
 const SCALE_FACTOR = 1_000_000_000n;
 // Bounds cover the accepted professional transport/waste expressions while
@@ -97,6 +98,11 @@ function tokenize(source: string): Token[] {
       offset += 1;
       continue;
     }
+    if (char === "?" || char === ":") {
+      tokens.push({ type: char === "?" ? "question" : "colon", offset });
+      offset += 1;
+      continue;
+    }
     throw new FormulaGraphError("INVALID_FORMULA", `unsupported character at offset ${offset}`, offset);
   }
   tokens.push({ type: "eof", offset: source.length });
@@ -110,12 +116,22 @@ class Parser {
   constructor(private readonly tokens: Token[]) {}
 
   parse(): { ast: FormulaAst; nodes: number } {
-    const ast = this.parseExpression(0);
+    const ast = this.parseConditional(0);
     const trailing = this.peek();
     if (trailing.type !== "eof") {
       throw new FormulaGraphError("INVALID_FORMULA", `unexpected token at offset ${trailing.offset}`, trailing.offset);
     }
     return { ast, nodes: this.nodes };
+  }
+
+  private parseConditional(depth: number): FormulaAst {
+    const condition = this.parseExpression(depth + 1);
+    if (this.peek().type !== "question") return condition;
+    this.consume();
+    const whenTrue = this.parseConditional(depth + 1);
+    this.expect("colon");
+    const whenFalse = this.parseConditional(depth + 1);
+    return this.node({ kind: "conditional", condition, whenTrue, whenFalse }, depth);
   }
 
   private node<T extends FormulaAst>(value: T, depth: number): T {
@@ -156,7 +172,7 @@ class Parser {
     const token = this.consume();
     if (token.type === "number") return this.node({ kind: "literal", value: normalizeDecimal(token.value) }, depth);
     if (token.type === "left") {
-      const expression = this.parseExpression(depth + 1);
+      const expression = this.parseConditional(depth + 1);
       this.expect("right");
       return expression;
     }
@@ -169,11 +185,11 @@ class Parser {
       }
       const args: FormulaAst[] = [];
       if (this.peek().type !== "right") {
-        do {
-          args.push(this.parseExpression(depth + 1));
-          if (this.peek().type !== "comma") break;
+        args.push(this.parseConditional(depth + 1));
+        while (this.peek().type === "comma") {
           this.consume();
-        } while (true);
+          args.push(this.parseConditional(depth + 1));
+        }
       }
       this.expect("right");
       const unaryFunction = name === "ceil" || name === "floor" || name === "sqrt";
@@ -228,9 +244,19 @@ function collectParameters(ast: FormulaAst, target: Set<string>): void {
   else if (ast.kind === "binary") {
     collectParameters(ast.left, target);
     collectParameters(ast.right, target);
+  } else if (ast.kind === "conditional") {
+    collectParameters(ast.condition, target);
+    collectParameters(ast.whenTrue, target);
+    collectParameters(ast.whenFalse, target);
   } else if (ast.kind === "call") {
     ast.arguments.forEach((argument) => collectParameters(argument, target));
   }
+}
+
+export function formulaAstInputParameterIds(ast: FormulaAst): string[] {
+  const parameters = new Set<string>();
+  collectParameters(ast, parameters);
+  return [...parameters].sort();
 }
 
 export function compileFormulaGraph(rawSource: string): CompiledFormulaGraph {
@@ -240,13 +266,11 @@ export function compileFormulaGraph(rawSource: string): CompiledFormulaGraph {
     throw new FormulaGraphError("INVALID_FORMULA", "formula length is outside the accepted range");
   }
   const parsed = new Parser(tokenize(source)).parse();
-  const parameters = new Set<string>();
-  collectParameters(parsed.ast, parameters);
   return {
     version: FORMULA_GRAPH_VERSION,
     source,
     ast: parsed.ast,
-    inputParameterIds: [...parameters].sort(),
+    inputParameterIds: formulaAstInputParameterIds(parsed.ast),
     nodeCount: parsed.nodes,
   };
 }
@@ -332,11 +356,28 @@ class FixedDecimal {
   }
 }
 
-function evaluateNode(ast: FormulaAst, parameters: Record<string, string | number | bigint>): FixedDecimal {
+export type FormulaParameterValue = string | number | bigint | boolean;
+
+function evaluateCondition(ast: FormulaAst, parameters: Record<string, FormulaParameterValue>): boolean {
+  if (ast.kind !== "parameter") {
+    throw new FormulaGraphError("INVALID_FORMULA", "conditional predicate must be a boolean parameter");
+  }
+  const value = parameters[ast.id];
+  if (value == null) throw new FormulaGraphError("MISSING_PARAMETER", `missing parameter ${ast.id}`);
+  if (typeof value !== "boolean") {
+    throw new FormulaGraphError("INVALID_FORMULA", `conditional parameter ${ast.id} must be boolean`);
+  }
+  return value;
+}
+
+function evaluateNode(ast: FormulaAst, parameters: Record<string, FormulaParameterValue>): FixedDecimal {
   if (ast.kind === "literal") return FixedDecimal.parse(ast.value);
   if (ast.kind === "parameter") {
     const value = parameters[ast.id];
     if (value == null) throw new FormulaGraphError("MISSING_PARAMETER", `missing parameter ${ast.id}`);
+    if (typeof value === "boolean") {
+      throw new FormulaGraphError("INVALID_FORMULA", `numeric parameter ${ast.id} cannot be boolean`);
+    }
     return FixedDecimal.parse(value);
   }
   if (ast.kind === "unary") {
@@ -350,6 +391,9 @@ function evaluateNode(ast: FormulaAst, parameters: Record<string, string | numbe
     if (ast.operator === "-") return left.subtract(right);
     if (ast.operator === "*") return left.multiply(right);
     return left.divide(right);
+  }
+  if (ast.kind === "conditional") {
+    return evaluateNode(evaluateCondition(ast.condition, parameters) ? ast.whenTrue : ast.whenFalse, parameters);
   }
   const values = ast.arguments.map((argument) => evaluateNode(argument, parameters));
   if (ast.function === "ceil") return values[0].ceil();
@@ -378,7 +422,7 @@ function evaluateNode(ast: FormulaAst, parameters: Record<string, string | numbe
 
 export function evaluateFormulaGraph(
   formula: FormulaAst | CompiledFormulaGraph,
-  parameters: Record<string, string | number | bigint>,
+  parameters: Record<string, FormulaParameterValue>,
 ): string {
   const ast = "ast" in formula ? formula.ast : formula;
   return evaluateNode(ast, parameters).toString();

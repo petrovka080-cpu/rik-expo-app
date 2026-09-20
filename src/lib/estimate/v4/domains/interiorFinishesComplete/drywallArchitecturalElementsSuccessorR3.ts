@@ -1359,6 +1359,12 @@ function evaluateFormulaDimensionR4(ast: FormulaAst): FormulaDimensionR4 {
     }
     return combineDimension(left, right, ast.operator === "*" ? 1 : -1);
   }
+  if (ast.kind === "conditional") {
+    const whenTrue = evaluateFormulaDimensionR4(ast.whenTrue);
+    const whenFalse = evaluateFormulaDimensionR4(ast.whenFalse);
+    if (!sameDimension(whenTrue, whenFalse)) throw new Error("CONDITIONAL_UNIT_MISMATCH");
+    return whenTrue;
+  }
   const dimensions = ast.arguments.map(evaluateFormulaDimensionR4);
   if (ast.function === "ceil") return dimensions[0];
   if (dimensions.some((item) => !sameDimension(item, dimensions[0]))) throw new Error(`FUNCTION_UNIT_MISMATCH:${ast.function}`);

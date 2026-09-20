@@ -14,6 +14,15 @@ describe("production grade Web/Android contract corpus", () => {
     expect(cases).toHaveLength(100);
     expect(new Set(cases.map((testCase) => testCase.case_id)).size).toBe(100);
     expect(productionGradeCorpusFingerprint(cases)).toContain(cases[0].case_id);
-    expect(cases.every((testCase) => testCase.pdf_required && testCase.buyer_handoff_required)).toBe(true);
+    const estimateReady = cases.filter((testCase) => testCase.expected_outcome !== "needs_input");
+    const needsInput = cases.filter((testCase) => testCase.expected_outcome === "needs_input");
+    expect(estimateReady).toHaveLength(99);
+    expect(estimateReady.every((testCase) => testCase.pdf_required && testCase.buyer_handoff_required)).toBe(true);
+    expect(needsInput).toHaveLength(1);
+    expect(needsInput[0]).toMatchObject({
+      case_id: "pg-w2c-w2c-water-004",
+      pdf_required: false,
+      buyer_handoff_required: false,
+    });
   });
 });

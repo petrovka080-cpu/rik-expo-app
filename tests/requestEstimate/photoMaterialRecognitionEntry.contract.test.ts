@@ -11,6 +11,10 @@ describe("request estimate photo material recognition entry", () => {
     const progressivePanel = read("src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.tsx");
     const estimateUi = `${draftPanel}\n${progressivePanel}`;
     const captureController = read("src/features/consumerRepair/useConsumerRepairPhotoCaptureController.tsx");
+    const recognitionBranch = captureController.slice(
+      captureController.indexOf("const bundleWithRevision"),
+      captureController.indexOf("} catch", captureController.indexOf("const bundleWithRevision")),
+    );
     const container = read("src/features/consumerRepair/ConsumerRepairRequestScreenContainer.tsx");
     const screen = read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
     const recognitionService = read("src/lib/ai/photoMaterialDraftRecognition.ts");
@@ -30,7 +34,8 @@ describe("request estimate photo material recognition entry", () => {
     expect(captureController).toContain("targetItemId");
     expect(captureController).toContain("queueUploadOnUse={false}");
     expect(captureController).not.toContain("photo_material_search");
-    expect(captureController).not.toContain("Date.now()");
+    expect(recognitionBranch).toContain("scanId: scanSession.scanId");
+    expect(recognitionBranch).not.toContain("Date.now()");
     expect(captureController).not.toContain("onPhotoCaptured");
 
     expect(container).toContain("openMaterialCatalogFromCapturedPhoto");

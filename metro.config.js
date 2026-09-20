@@ -1,7 +1,7 @@
 function localDeveloperMetroConfig() {
   if (process.env.LOCAL_DEVELOPER_REVIEW === "1") {
     const { getDefaultConfig } = require("expo/metro-config");
-    const { existsSync } = require("node:fs");
+    const { existsSync, statSync } = require("node:fs");
     const { delimiter, join } = require("node:path");
     const config = getDefaultConfig(__dirname);
     const fallbackModulePaths = String(process.env.NODE_PATH || "")
@@ -29,8 +29,9 @@ function localDeveloperMetroConfig() {
         if (moduleName.startsWith("@babel/runtime/")) {
           const relativeModulePath = moduleName.slice("@babel/runtime/".length);
           const exactPath = join(babelRuntimeRoot, relativeModulePath);
-          const filePath = existsSync(exactPath) ? exactPath : `${exactPath}.js`;
-          if (existsSync(filePath)) return { filePath, type: "sourceFile" };
+          const filePath = [exactPath, `${exactPath}.js`, join(exactPath, "index.js")]
+            .find((candidate) => existsSync(candidate) && statSync(candidate).isFile());
+          if (filePath) return { filePath, type: "sourceFile" };
         }
         return inheritedResolveRequest
           ? inheritedResolveRequest(context, moduleName, platform)

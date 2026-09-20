@@ -223,10 +223,13 @@ export function classifyAiEstimateNormativeWorkFamilyFromText(text: string): AiE
 export function classifyAiEstimateNormativeWorkFamily(
   passport: Pick<ProfessionalWorkPassport, "templateId" | "workKey" | "familyId" | "category" | "localizedNameRu" | "aliases">,
 ): AiEstimateNormativeWorkFamily {
-  return classifyAiEstimateNormativeWorkFamilyFromText([
+  const canonicalIdentityFamily = classifyAiEstimateNormativeWorkFamilyFromText([
     passport.templateId,
     passport.workKey,
     passport.familyId,
+  ].join(" "));
+  if (canonicalIdentityFamily !== "other") return canonicalIdentityFamily;
+  return classifyAiEstimateNormativeWorkFamilyFromText([
     passport.category,
     passport.localizedNameRu,
     ...passport.aliases,

@@ -1,4 +1,5 @@
 import { estimateDeterministicHash } from "../../estimateDeterministicHash";
+import { safeJsonParseValue } from "../../../format";
 
 export const ASPHALT_M1_NORMATIVE_BINDING_VERSION_V1 = "master-11610:m1:asphalt-normative-binding:v1" as const;
 
@@ -282,15 +283,10 @@ export function resolveAsphaltM1NormativeBindingV1(input: {
 }): AsphaltM1NormativeBindingV1 {
   const referenceDesignId = safeToken(input.referenceDesignId ?? "");
   const referenceDesignSha256 = safeToken(input.referenceDesignSha256 ?? "");
-  let parsedManifest: Record<string, unknown> | null = null;
-  try {
-    const candidate = JSON.parse(input.referenceDesignManifest ?? "null") as unknown;
-    parsedManifest = candidate && typeof candidate === "object" && !Array.isArray(candidate)
-      ? candidate as Record<string, unknown>
-      : null;
-  } catch {
-    parsedManifest = null;
-  }
+  const candidate = safeJsonParseValue<unknown>(input.referenceDesignManifest, null);
+  const parsedManifest = candidate && typeof candidate === "object" && !Array.isArray(candidate)
+    ? candidate as Record<string, unknown>
+    : null;
   const hasReferenceDesign = Boolean(
     referenceDesignId &&
     /^[a-f0-9]{64}$/u.test(referenceDesignSha256) &&

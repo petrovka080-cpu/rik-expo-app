@@ -8,7 +8,7 @@ describe("global estimate BOQ depth validator", () => {
 
     expect(depth).toMatchObject({
       passed: true,
-      minimumRows: 46,
+      minimumRows: 0,
       hasMaterials: true,
       hasLabor: true,
       hasEquipmentOrDeliveryOrWarning: true,
@@ -21,7 +21,7 @@ describe("global estimate BOQ depth validator", () => {
     });
   });
 
-  it("blocks a complex work when depth is truncated below policy", () => {
+  it("blocks a truncated complex work by missing technological groups, not by a numeric quota", () => {
     const estimate = stripFoundationEstimate();
     const invalid = {
       ...estimate,
@@ -36,16 +36,25 @@ describe("global estimate BOQ depth validator", () => {
     const depth = validateEstimateBoqDepth(invalid);
 
     expect(depth.passed).toBe(false);
-    expect(depth.blockers).toContain("BOQ_MEANINGFUL_DEPTH_TOO_SHORT:4<46");
+    expect(depth.actualRows).toBe(4);
+    expect(depth.blockers.some((blocker) => blocker.includes("DEPTH_TOO_SHORT"))).toBe(false);
     expect(depth.blockers).toContain("BOQ_LABOR_GROUP_MISSING");
     expect(depth.blockers).toContain("BOQ_EQUIPMENT_DELIVERY_OR_WARNING_MISSING");
+    expect(depth.blockers).toContain("BOQ_CLARIFYING_QUESTIONS_MISSING");
   });
 
-  it("keeps generated generic complex templates above the configured minimum", () => {
+  it("keeps generated complex scopes semantically complete without manufactured padding", () => {
     for (const workKey of ["concrete_slab", "pipe_replacement", "electrical_basic", "mini_chp_preparation"]) {
       const estimate = estimateForWorkKey(workKey, workKey === "pipe_replacement" ? 40 : 100, workKey === "pipe_replacement" ? "linear_m" : "sq_m");
       const depth = validateEstimateBoqDepth(estimate);
-      expect({ workKey, depth }).toMatchObject({ depth: { passed: true } });
+      expect({ workKey, depth }).toMatchObject({
+        depth: {
+          passed: true,
+          minimumRows: 0,
+          genericRows: [],
+          artificialPaddingRows: [],
+        },
+      });
     }
   });
 });

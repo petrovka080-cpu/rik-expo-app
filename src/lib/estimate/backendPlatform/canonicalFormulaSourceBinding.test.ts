@@ -22,6 +22,13 @@ describe("canonical formula source binding", () => {
     })).toBe("(area_m2 * 1.25 + roof_windows_count * 6)");
   });
 
+  it("retains both branches and the condition of a conditional quantity", () => {
+    expect(bindCanonicalFormulaSource({
+      source: "is_gabion ? length_m : 0",
+      parameterIds: new Set(["is_gabion", "length_m"]),
+    })).toBe("is_gabion ? length_m : 0");
+  });
+
   it("accepts a quantity explicitly stated by a descriptive fixed row", () => {
     expect(bindCanonicalFormulaSource({
       source: "1 HSE set per work package",

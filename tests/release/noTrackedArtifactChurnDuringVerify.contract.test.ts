@@ -42,7 +42,8 @@ describe("no tracked artifact churn during verify", () => {
     expect(androidVerifier).toContain("GREEN_ANDROID_API34_PIPELINE_READY");
     expect(androidVerifier).toContain("candidate.candidateHash !== fingerprints.candidateHash");
     expect(androidVerifier).toContain("android_uses_metro: false");
-    expect(androidVerifier).toContain("business_route_opened: false");
+    expect(androidVerifier).toContain('smoke.business_route_opened !== true');
+    expect(androidVerifier).toContain("business_route_opened: smoke.business_route_opened === true");
     expect(canonicalApi34Evidence).toContain('process.env.RELEASE_GUARD_IN_PROGRESS === "1"');
     expect(canonicalApi34Evidence).toMatch(/function shouldWriteCanonicalApi34Evidence[\s\S]*RELEASE_GUARD_IN_PROGRESS[\s\S]*return false/);
     expect(canonicalApi34Evidence).toMatch(/export function requireCanonicalApi34EvidenceForGate[\s\S]*RELEASE_GUARD_IN_PROGRESS[\s\S]*return result/);

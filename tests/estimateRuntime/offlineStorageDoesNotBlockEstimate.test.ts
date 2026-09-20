@@ -40,7 +40,19 @@ describe("offline storage does not block estimate", () => {
       currency: "KGS",
     });
 
-    expect(estimate.draft?.items.length).toBeGreaterThan(30);
+    expect(estimate.canBuildPreliminaryEstimate).toBe(true);
+    expect(estimate.draft?.selectedWork).toMatchObject({
+      selectedWorkKey: "ventilated_facade",
+      selectedWorkResolverReGuessed: false,
+    });
+    const rowTitles = estimate.draft?.items.map((item) => item.titleRu) ?? [];
+    expect(rowTitles).toEqual(expect.arrayContaining([
+      "Кронштейны вентилируемого фасада",
+      "Минераловатный утеплитель вентфасада",
+      "Облицовочные панели вентфасада",
+      "Монтаж кронштейнов и профилей вентфасада",
+      "Доставка подсистемы, утеплителя и облицовки вентфасада",
+    ]));
     expect(warnSpy).toHaveBeenCalledTimes(1);
     expect(getPlatformObservabilityEvents().filter((event) => event.event === "write_failed")).toHaveLength(2);
   });

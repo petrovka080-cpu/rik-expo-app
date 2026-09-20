@@ -1,0 +1,126 @@
+import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
+import {
+  beltCuringPromptDetailsR1,
+  extractConcretePlacementCanonicalParametersR1,
+} from "../../src/lib/estimate/ownedDomain/concretePlacementProductionBindingR1";
+import {
+  BELT_CURING_FORMULAS,
+  BELT_CURING_PARAMETERS,
+  BELT_CURING_RESOURCES,
+  BELT_CURING_SOURCE_ID,
+  BELT_CURING_TARGETS,
+  beltCuringAcceptanceInputR1,
+  compileBeltCuringR1,
+} from "../../src/lib/estimate/v4/beltCuringR1";
+import { CONCRETE_SLAB_CURING_FORMULAS } from "../../src/lib/estimate/v4/concreteSlabCuringR1";
+
+function catalog(target: (typeof BELT_CURING_TARGETS)[number]):
+CanonicalEstimateCatalogItem {
+  return {
+    catalogId: target.catalogId,
+    releaseId: "prepared-belt-curing-test",
+    namespace: "global",
+    domain: "concrete",
+    workKey: target.catalogId,
+    titleRu: target.titleRu,
+    definitionVersion: 4,
+    applicability: {},
+    professionalMetadata: {},
+    parameterSchema: BELT_CURING_PARAMETERS.map((parameter) => ({
+      parameterId: parameter.parameter_id,
+      ordinal: parameter.ordinal,
+      valueType: parameter.value_type as CanonicalEstimateCatalogItem["parameterSchema"][number]["valueType"],
+      unitId: parameter.unit_id,
+      titleRu: parameter.title_ru,
+      required: parameter.required,
+      defaultValue: parameter.default_value,
+      constraints: parameter.constraints_json ?? {},
+      visibilityRole: "USER_INPUT",
+    })),
+  };
+}
+
+describe("monolithic-belt concrete curing canonical family", () => {
+  it("compiles all six exact curing identities through the shared core", async () => {
+    for (const target of BELT_CURING_TARGETS) {
+      const input = beltCuringAcceptanceInputR1(target.contextKey);
+      const compiled = await compileBeltCuringR1(
+        { ...input },
+        { catalogId: target.catalogId },
+      );
+      expect(compiled.preliminaryNeeds).toEqual([]);
+      expect(compiled.totals.includedRowCount).toBeGreaterThanOrEqual(3);
+      expect(compiled.totals.includedRowCount).toBeLessThanOrEqual(6);
+      expect(compiled.totals.unpricedRowCount).toBe(compiled.totals.includedRowCount);
+      expect(compiled.rows.some((row) => row.row_id === "material:concrete:ready-mix"))
+        .toBe(false);
+      expect(compiled.rows.some((row) => row.row_id.includes("formwork"))).toBe(false);
+      expect(compiled.rows.some((row) => row.row_id.includes("reinforcement"))).toBe(false);
+      expect(compiled.rows.some((row) => row.row_id === "work:concrete:belt-curing"))
+        .toBe(true);
+    }
+  });
+
+  it("reuses the accepted ACI curing graph instead of adding a calculator", () => {
+    expect(BELT_CURING_FORMULAS).toBe(CONCRETE_SLAB_CURING_FORMULAS);
+    expect(BELT_CURING_PARAMETERS).toHaveLength(24);
+    expect(BELT_CURING_FORMULAS).toHaveLength(9);
+    expect(BELT_CURING_RESOURCES).toHaveLength(8);
+    expect(JSON.stringify({
+      parameters: BELT_CURING_PARAMETERS,
+      resources: BELT_CURING_RESOURCES,
+    })).toContain(BELT_CURING_SOURCE_ID);
+  });
+
+  it("allows unclear documentary references to remain blank", async () => {
+    const target = BELT_CURING_TARGETS[0];
+    const input = { ...beltCuringAcceptanceInputR1(target.contextKey) };
+    for (const parameterId of [
+      "concrete_mix_reference",
+      "curing_location",
+      "curing_method_statement_reference",
+      "curing_water_source_reference",
+      "wet_covering_material_designation",
+      "application_equipment_designation",
+      "quality_plan_reference",
+      "mobilization_scope_reference",
+    ]) delete input[parameterId];
+    const compiled = await compileBeltCuringR1(input, { catalogId: target.catalogId });
+    expect(compiled.preliminaryNeeds).toEqual([]);
+    expect(compiled.rows.some((row) => row.row_id === "work:concrete:belt-curing"))
+      .toBe(true);
+  });
+
+  it("returns an editable calculation need for a missing selected-method quantity", async () => {
+    const target = BELT_CURING_TARGETS[0];
+    const input = { ...beltCuringAcceptanceInputR1(target.contextKey) };
+    delete input.wet_covering_area_m2;
+    const compiled = await compileBeltCuringR1(input, { catalogId: target.catalogId });
+    expect(compiled.preliminaryNeeds).toEqual(expect.arrayContaining([
+      expect.objectContaining({ missing_parameter_ids: ["wet_covering_area_m2"] }),
+    ]));
+    expect(compiled.rows.some((row) => row.row_id === "material:concrete:wet-curing-covering"))
+      .toBe(false);
+  });
+
+  it("round-trips values through the ordinary consumer parameter screen", () => {
+    const target = BELT_CURING_TARGETS[3];
+    const input = beltCuringAcceptanceInputR1(target.contextKey);
+    const prompt = [target.titleRu, ...beltCuringPromptDetailsR1(input)].join("\n");
+    expect(extractConcretePlacementCanonicalParametersR1({
+      catalogId: target.catalogId,
+      text: prompt,
+    })).toEqual(input);
+    const plan = buildCanonicalBaselinePlan({ catalog: catalog(target), prompt });
+    expect(plan.primaryMeasureParameterId).toBe("cured_concrete_volume_m3");
+    expect(plan.parameters).toEqual(input);
+  });
+
+  it("does not claim neighboring installation or concrete-placement identities", async () => {
+    const input = beltCuringAcceptanceInputR1("standard");
+    await expect(compileBeltCuringR1(input, {
+      catalogId: "canonical-work:base:concrete_foundation_interior_belt_anchor_standard",
+    })).rejects.toThrow("BELT_CURING_CATALOG_UNSUPPORTED");
+  });
+});

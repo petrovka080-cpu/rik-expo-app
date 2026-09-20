@@ -78,7 +78,8 @@ describe("R5.8 cumulative canonical backend contract", () => {
     expect(gateway).toContain("baseline?.guide_provenance_ru?.[parameterId]");
     expect(gateway).toContain("baseline?.formula_consumer_ids?.[parameterId]");
     expect(gateway).toContain("baseline?.resource_consumer_row_ids?.[parameterId]");
-    expect(gateway).toMatch(/Object\.prototype\.hasOwnProperty\.call\(\s*baseline\.input_values \?\? \{\},\s*parameterId,?\s*\)/u);
+    expect(gateway).toContain("canonicalApprovedBaselineParameterIsRuntimeEligible");
+    expect(gateway).toContain("canonicalApprovedBaselineRuntimeDefaultValue(baseline, parameterId)");
     expect(gateway).toMatch(/acceptedAsInput\s*\?\s*"USER_INPUT"\s*:\s*"INTERNAL_ONLY"/u);
     expect(gateway).toContain("approvedTemplateBaselineId: baseline.id");
     expect(gateway).toContain("work_specific_applicability");

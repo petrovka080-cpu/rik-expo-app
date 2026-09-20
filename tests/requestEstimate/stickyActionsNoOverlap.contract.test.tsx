@@ -12,11 +12,17 @@ describe("request sticky actions no overlap", () => {
     const sticky = read("src/features/consumerRepair/ConsumerRepairRequestChrome.tsx");
     const appScreen = read("src/components/layout/AppScreen.tsx");
 
-    expect(view).toContain("<AppScreen hasStickyAction");
+    expect(view).toContain("<AppScreen style={styles.screen}>");
     expect(appScreen).toContain('position: "relative"');
-    expect(view).toContain("<AppScreenScroll contentStyle={styles.content}");
-    expect(styles).toContain("paddingBottom: APP_LAYOUT.scrollBottomPaddingPx + APP_LAYOUT.stickyActionHeightPx");
-    expect(sticky).toContain('placement="above_bottom_nav"');
-    expect(sticky).toContain("safeAreaAware");
+    expect(view).toContain("<AppScreenScroll");
+    expect(view).toContain("contentStyle={styles.content}");
+    expect(view.indexOf("<ConsumerRepairRequestContent"))
+      .toBeLessThan(view.indexOf("<ConsumerRepairRequestStickyActions"));
+    expect(view.indexOf("<ConsumerRepairRequestStickyActions"))
+      .toBeLessThan(view.indexOf("</AppScreenScroll>"));
+    expect(view.match(/<ConsumerRepairRequestStickyActions/g)).toHaveLength(1);
+    expect(styles).toMatch(/bottomActions:\s*\{[^}]*marginTop:\s*2/su);
+    expect(styles).not.toMatch(/bottomActions:\s*\{[^}]*position:\s*"absolute"/su);
+    expect(sticky).not.toContain('placement="above_bottom_nav"');
   });
 });

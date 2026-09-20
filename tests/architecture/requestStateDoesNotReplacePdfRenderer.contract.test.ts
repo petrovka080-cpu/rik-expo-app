@@ -10,6 +10,8 @@ describe("request state does not replace PDF renderer", () => {
     ].map((file) => fs.readFileSync(file, "utf8")).join("\n");
 
     expect(source).not.toMatch(/new\s+PDFDocument|renderRequestEstimatePdf|replaceLegacyPdf/i);
-    expect(source).toContain("ensureConsumerRepairRequestPdfAvailable");
+    expect(source).toContain("buildCanonicalEstimateArtifact");
+    expect(source).toContain("assertCanonicalEstimateArtifactIdentity");
+    expect(source).toContain("previewPdfDocument");
   });
 });

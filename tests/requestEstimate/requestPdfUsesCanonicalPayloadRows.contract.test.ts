@@ -25,6 +25,23 @@ function readable(value: string | null | undefined): string {
 }
 
 describe("request PDF uses canonical payload rows", () => {
+  it("uses the same durable title as approved history", () => {
+    const bundle = foundationDraftWithManualCatalogItem();
+    const historyTitle = "Мосты, тоннели и инженерные сооружения: устройство асфальтобетонного покрытия моста — 6 400 м²";
+    const viewModel = buildConsumerRepairStructuredEstimatePdfViewModel({
+      draft: {
+        ...bundle.draft,
+        title: historyTitle,
+        selectedWorkTitleRu: "Асфальтобетонное покрытие мостового сооружения",
+      },
+      items: bundle.items,
+      media: bundle.media,
+      generatedAt: "2026-09-12T00:00:00.000Z",
+    });
+
+    expect(viewModel?.workTitle).toBe(historyTitle);
+  });
+
   it("renders current request rows instead of recalculating estimate from prompt", () => {
     let bundle = foundationDraftWithManualCatalogItem();
     const removed = bundle.items.find((item) => item.source === "reference_price_book" && !item.catalogItemId);

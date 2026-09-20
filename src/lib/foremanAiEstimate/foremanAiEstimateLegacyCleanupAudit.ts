@@ -70,6 +70,9 @@ export function buildForemanAiEstimateLegacyCleanupAudit(root = process.cwd()) {
     .filter((file) => file.path.includes("src/screens/foreman"))
     .map((file) => file.text)
     .join("\n");
+  const consumerUsesSharedEstimateAdapter = consumerRepairSource.includes("../../lib/foremanAiEstimate");
+  const consumerWritesForemanDraft = /foremanDraft\.store|saveForemanAiEstimateDraft|writeForemanAiEstimateDraft/u
+    .test(consumerRepairSource);
 
   const oldPickerImportedByForeman = materialGuardFiles.some((file) =>
     /WorkTypePicker|CalcModal/.test(file.text),
@@ -89,11 +92,11 @@ export function buildForemanAiEstimateLegacyCleanupAudit(root = process.cwd()) {
     foreman_route_detached: !oldPickerImportedByForeman,
     material_legacy_matches: materialLegacyMatches,
     global_legacy_match_count: legacyMatches.length,
-    b2c_request_still_separate: !consumerRepairSource.includes("foremanAiEstimate") &&
+    b2c_request_still_separate: !consumerWritesForemanDraft &&
       !consumerRepairSource.includes("ProfessionalEstimateComposer"),
-    b2c_writes_foreman_draft: consumerRepairSource.includes("foremanDraft"),
+    b2c_writes_foreman_draft: consumerWritesForemanDraft,
     foreman_writes_b2c_history: /consumerRepair|consumer_repair|consumer.*history|repair.*history/i.test(foremanRuntimeSource),
-    consumer_uses_foreman_adapter: consumerRepairSource.includes("foremanAiEstimate"),
+    consumer_uses_foreman_adapter: consumerUsesSharedEstimateAdapter,
     fake_green_claimed: false as const,
   };
 }

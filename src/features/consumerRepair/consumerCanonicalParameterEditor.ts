@@ -8,7 +8,10 @@ import {
 } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
 import { canonicalEstimateRecalculateIdempotencyKey } from "../../lib/estimate/backendPlatform/canonicalEstimateCommandIdentity";
 import { adaptCanonicalRevisionToStructuredEstimate } from "../../lib/estimate/backendPlatform/canonicalEstimateForemanAdapter";
-import { validateCanonicalEstimateParameterInputs } from "../../lib/estimate/backendPlatform/canonicalEstimateParameterValidation";
+import {
+  validateCanonicalEstimateParameterInputs,
+  type CanonicalParameterValidationIssue,
+} from "../../lib/estimate/backendPlatform/canonicalEstimateParameterValidation";
 import {
   CanonicalEstimateApiError,
   type CanonicalEstimateCatalogItem,
@@ -23,6 +26,7 @@ import {
   type CanonicalParameterSession,
   type CanonicalParameterValue,
 } from "../../lib/estimate/canonicalParameters/canonicalParameterCore";
+import { canonicalParameterAffectsEstimateCalculation } from "../../lib/estimate/canonicalParameters/canonicalParameterCalculationRelevance";
 import { estimateDeterministicHash } from "../../lib/estimate/estimateDeterministicHash";
 import {
   aiEstimateRuLabelForParameter,
@@ -34,11 +38,34 @@ import {
 } from "../../lib/foremanAiEstimate";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
 import {
+  canonicalEstimateBlockingParameterIssues,
   canonicalEstimateParameterChoiceLabelRu,
+  isCanonicalEstimateConsumerSuppliedParameter,
+  isCanonicalEstimateSourceManagedParameter,
   isCanonicalEstimateUserEditableParameter,
 } from "../../lib/estimate/backendPlatform/canonicalEstimateParameterSemantics";
 
 type EditableSchema = CanonicalEstimateCatalogItem["parameterSchema"][number];
+
+function blockingCanonicalParameterIssues(
+  catalog: CanonicalEstimateCatalogItem,
+  issues: ReturnType<typeof validateCanonicalEstimateParameterInputs>["issues"],
+) {
+  return canonicalEstimateBlockingParameterIssues(catalog.parameterSchema, issues);
+}
+
+export function parameterIssuesBlockingConsumerCanonicalRecalculation(input: {
+  issues: CanonicalParameterValidationIssue[];
+  parameterPatchCount: number;
+  rowOverrideCount: number;
+}): CanonicalParameterValidationIssue[] {
+  // A row-only amendment must remain possible for an immutable historical
+  // revision whose parameters no longer satisfy a newer client-side validator.
+  // The inherited issue still blocks parameter edits and final readiness; it
+  // must not turn exclude/restore/price edits into silent no-ops.
+  if (input.parameterPatchCount === 0 && input.rowOverrideCount > 0) return [];
+  return input.issues;
+}
 
 function requestIdentityForRecalculation(input: {
   revision: CanonicalEstimateRevisionView;
@@ -63,8 +90,56 @@ function requestIdentityForRecalculation(input: {
   return { sourceRequestText, primaryMeasureParameterId };
 }
 
+export function canonicalCatalogCustomRowClassification(
+  item: Pick<CatalogItemPickerItem, "kind" | "category" | "procurementEligible">,
+): { section: string; category: string; includedInProcurement: boolean } {
+  const tokens = new Set(`${String(item.kind ?? "")} ${String(item.category ?? "")}`
+    .trim()
+    .toLocaleLowerCase("en-US")
+    .split(/[^a-zа-яё]+/u)
+    .filter(Boolean));
+  const hasAny = (...candidates: string[]) => candidates.some((candidate) => tokens.has(candidate));
+  const procurement = (fallback: boolean) => item.procurementEligible ?? fallback;
+  if (hasAny("delivery", "logistics", "transport", "freight", "haul", "доставка", "логистика", "транспорт")) {
+    return { section: "Доставка", category: "delivery", includedInProcurement: procurement(true) };
+  }
+  if (hasAny("machinery", "machine", "mechanism", "equipment", "tool", "механизм", "механизмы", "оборудование", "инструмент")) {
+    return { section: "Механизмы", category: "machine_equipment", includedInProcurement: procurement(true) };
+  }
+  if (hasAny("labor", "work", "works", "temporary", "работа", "работы", "труд")) {
+    return { section: "Работы", category: "construction_work", includedInProcurement: procurement(false) };
+  }
+  if (hasAny("service", "services", "testing", "documentation", "commissioning", "supervision", "услуга", "услуги", "испытание")) {
+    return { section: "Услуги", category: "service", includedInProcurement: procurement(false) };
+  }
+  if (hasAny("waste", "отход", "отходы")) {
+    return { section: "Отходы", category: "waste", includedInProcurement: procurement(false) };
+  }
+  return { section: "Материалы", category: "material", includedInProcurement: procurement(true) };
+}
+
 export function isConsumerMeaningfulCanonicalParameter(schema: EditableSchema): boolean {
-  return isCanonicalEstimateUserEditableParameter(schema);
+  return isCanonicalEstimateConsumerSuppliedParameter(schema);
+}
+
+export function consumerCanonicalPrecompileParameterOverrides(input: {
+  session: CanonicalParameterSession;
+  patches: readonly ConsumerRepairDraftRevisionParamBatchPatch[];
+}): Record<string, CanonicalEstimateParameterInputValue> {
+  const overrides: Record<string, CanonicalEstimateParameterInputValue> = Object.fromEntries(
+    input.session.parameters.flatMap((parameter) =>
+      parameter.value == null
+      || !["USER_EXPLICIT", "TEXT_EXTRACTED"].includes(parameter.source)
+      || !canonicalParameterAffectsEstimateCalculation(parameter)
+        ? []
+        : [[parameter.parameterId, parameter.value]],
+    ),
+  );
+  for (const patch of input.patches) {
+    if (patch.operation === "remove_param") delete overrides[patch.paramKey];
+    else overrides[patch.paramKey] = patch.rawValue;
+  }
+  return overrides;
 }
 
 export function normalizedCanonicalNumericValidation(input: {
@@ -113,25 +188,78 @@ function parameterSource(input: {
   schema: EditableSchema;
   value: CanonicalParameterValue | null;
   parentValue: unknown;
+  rootUserInputPresent: boolean;
+  rootUserInputValue: unknown;
 }): CanonicalParameter["source"] {
   if (input.value == null) return "MISSING";
   if (input.schema.visibilityRole === "USER_DERIVED_READONLY") return "CALCULATED";
   if (input.parentValue !== undefined) {
     return String(input.parentValue) === String(input.value) ? "PROJECT_SPECIFIC" : "USER_EXPLICIT";
   }
+  if (input.rootUserInputPresent
+    && String(input.rootUserInputValue) === String(input.value)) return "USER_EXPLICIT";
   // A root revision can contain a value accepted by the definition baseline or
   // extracted during initial compilation. Neither is a confirmation click in
   // this editor, so it must never be presented as user-confirmed provenance.
   return "ASSUMED";
 }
 
+function scalarConditionValue(value: unknown): CanonicalParameterValue | null {
+  if (typeof value === "boolean" || typeof value === "number") return value;
+  if (typeof value !== "string") return null;
+  const normalized = value.trim();
+  if (!normalized) return null;
+  if (normalized === "true") return true;
+  if (normalized === "false") return false;
+  return normalized;
+}
+
+function objectVisibilityCondition(raw: unknown): CanonicalParameter["visibilityCondition"] | null {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const condition = raw as Record<string, unknown>;
+  if (condition.kind === "equals") {
+    const parameterId = typeof condition.parameterId === "string" ? condition.parameterId.trim() : "";
+    const value = scalarConditionValue(condition.value);
+    return parameterId && value != null ? { kind: "PARAMETER_EQUALS", parameterId, value } : null;
+  }
+  if (typeof condition.parameterId === "string" && Object.prototype.hasOwnProperty.call(condition, "equals")) {
+    const parameterId = condition.parameterId.trim();
+    const value = scalarConditionValue(condition.equals);
+    return parameterId && value != null ? { kind: "PARAMETER_EQUALS", parameterId, value } : null;
+  }
+  if ((condition.kind === "and" || condition.kind === "or") && Array.isArray(condition.operands)) {
+    const targetKind = condition.kind === "and" ? "ALL_OF" as const : "ANY_OF" as const;
+    const children = condition.operands.map(objectVisibilityCondition);
+    if (children.some((candidate) => candidate == null)) return null;
+    const flattened = children.flatMap((candidate) => {
+      if (!candidate) return [];
+      if (candidate.kind === "PARAMETER_EQUALS") {
+        return [{ parameterId: candidate.parameterId, value: candidate.value }];
+      }
+      return candidate.kind === targetKind ? candidate.conditions : [];
+    });
+    const flattenable = children.every((candidate) =>
+      candidate?.kind === "PARAMETER_EQUALS" || candidate?.kind === targetKind
+    );
+    if (!flattenable || flattened.length === 0) return null;
+    return {
+      kind: targetKind,
+      conditions: flattened,
+    };
+  }
+  return null;
+}
+
 function parameterVisibilityCondition(schema: EditableSchema): CanonicalParameter["visibilityCondition"] {
-  const expression = schema.visibleWhen?.trim();
+  const raw = schema.visibleWhen ?? schema.requiredWhen ?? schema.constraints.requiredWhen;
+  const structured = objectVisibilityCondition(raw);
+  if (structured) return structured;
+  const expression = typeof raw === "string" ? raw.trim() : "";
   if (!expression) return { kind: "ALWAYS" };
-  const conditions = expression.split(/\s+OR\s+/iu).reduce<Array<{
+  const conditions = expression.split(/\s+OR\s+/iu).reduce<{
     parameterId: string;
     value: CanonicalParameterValue;
-  }>>((accepted, clause) => {
+  }[]>((accepted, clause) => {
     const match = /^([A-Za-z][A-Za-z0-9_.:-]*)\s*==\s*(.+)$/.exec(clause.trim());
     if (!match) return accepted;
     const rawValue = match[2].trim();
@@ -154,18 +282,26 @@ function parameterVisibilityCondition(schema: EditableSchema): CanonicalParamete
 
 function buildParameter(input: {
   schema: EditableSchema;
-  revision: CanonicalEstimateRevisionView;
-  parent: CanonicalEstimateRevisionView | null;
+  parameters: Record<string, unknown>;
+  parentParameters?: Record<string, unknown> | null;
+  userInputSnapshot?: Record<string, unknown> | null;
+  sourceOverride?: CanonicalParameter["source"];
 }): CanonicalParameter {
   const labelRu = aiEstimateRuLabelForParameter(
     input.schema.parameterId,
     input.schema.titleRu,
   );
-  const value = scalarValue(input.schema, input.revision.parameters[input.schema.parameterId]);
-  const source = parameterSource({
+  const value = scalarValue(input.schema, input.parameters[input.schema.parameterId]);
+  const source = input.sourceOverride ?? parameterSource({
     schema: input.schema,
     value,
-    parentValue: input.parent?.parameters[input.schema.parameterId],
+    parentValue: input.parentParameters?.[input.schema.parameterId],
+    rootUserInputPresent: input.parentParameters == null
+      && Object.prototype.hasOwnProperty.call(
+        input.userInputSnapshot ?? {},
+        input.schema.parameterId,
+      ),
+    rootUserInputValue: input.userInputSnapshot?.[input.schema.parameterId],
   });
   const choices = allowedValues(input.schema);
   const numericValidation = normalizedCanonicalNumericValidation({
@@ -175,7 +311,12 @@ function buildParameter(input: {
   });
   const normative = input.schema.normativeLinks?.[0];
   const guide = input.schema.guide;
-  const requiredLevel = input.schema.required ? "CONTRACT_REQUIRED" as const : "OPTIONAL" as const;
+  const conditional = input.schema.requiredWhen != null || input.schema.constraints.requiredWhen != null;
+  const requiredLevel = input.schema.required
+    ? "CONTRACT_REQUIRED" as const
+    : conditional
+      ? "CONDITIONAL" as const
+      : "OPTIONAL" as const;
   return {
     parameterId: input.schema.parameterId,
     label: labelRu,
@@ -201,7 +342,7 @@ function buildParameter(input: {
       };
     }),
     source,
-    state: value == null ? (input.schema.required ? "BLOCKING_REQUIRED" : "NOT_APPLICABLE") : source === "CALCULATED" ? "DERIVED" : source === "ASSUMED" ? "ASSUMED" : "PROVIDED",
+    state: value == null ? (requiredLevel === "OPTIONAL" ? "NOT_APPLICABLE" : "BLOCKING_REQUIRED") : source === "CALCULATED" ? "DERIVED" : source === "ASSUMED" ? "ASSUMED" : "PROVIDED",
     confidence: value == null ? 0 : source === "ASSUMED" ? 0.7 : 1,
     assumption: source === "ASSUMED" ? "Предварительно принято из утверждённого baseline этой работы." : null,
     affectsRows: input.schema.resourceBranchConsumers ?? [],
@@ -217,33 +358,93 @@ function buildParameter(input: {
     } : null,
     displayOrder: input.schema.ordinal,
     sourceText: source === "USER_EXPLICIT"
-      ? "Подтверждено пользователем в предыдущей версии."
-      : guide?.guideShortRu || null,
-    valid: value != null || !input.schema.required,
-    validationIssues: value == null && input.schema.required ? ["VALUE_REQUIRED"] : [],
+      ? "Подтверждено пользователем."
+      : source === "TEXT_EXTRACTED"
+        ? "Распознано из описания работ."
+        : guide?.guideShortRu || null,
+    valid: value != null || requiredLevel === "OPTIONAL",
+    validationIssues: value == null && requiredLevel !== "OPTIONAL" ? ["VALUE_REQUIRED"] : [],
   };
 }
 
-export function buildConsumerCanonicalParameterSession(input: {
+function buildConsumerCanonicalParameterSessionFromValues(input: {
   catalog: CanonicalEstimateCatalogItem;
-  revision: CanonicalEstimateRevisionView;
-  parent?: CanonicalEstimateRevisionView | null;
   draftId: string;
+  revisionId: string;
+  parameters: Record<string, unknown>;
+  parentParameters?: Record<string, unknown> | null;
+  userInputSnapshot?: Record<string, unknown> | null;
+  activeNeedParameterIds: ReadonlySet<string>;
+  additionalBlockingIds?: readonly string[];
+  sourceByParameterId?: ReadonlyMap<string, CanonicalParameter["source"]>;
+  schemaId: string;
+  schemaVersion: string;
+  calculationVersion: string;
+  checksum: string;
+  createdAt: string;
 }): CanonicalParameterSession {
-  const parameters = input.catalog.parameterSchema
-    .filter(isConsumerMeaningfulCanonicalParameter)
-    .map((schema) => buildParameter({ schema, revision: input.revision, parent: input.parent ?? null }));
-  const blockingMissingParameterIds = parameters
+  const allParameters = input.catalog.parameterSchema
+    .filter((schema) => isConsumerMeaningfulCanonicalParameter(schema)
+      || (input.activeNeedParameterIds.has(schema.parameterId)
+        && (isCanonicalEstimateUserEditableParameter(schema)
+          || isCanonicalEstimateSourceManagedParameter(schema))))
+    .map((schema) => buildParameter({
+      schema,
+      parameters: input.parameters,
+      parentParameters: input.parentParameters,
+      userInputSnapshot: input.userInputSnapshot,
+      sourceOverride: isCanonicalEstimateSourceManagedParameter(schema)
+        ? "NORMATIVE_DERIVED"
+        : input.parameters[schema.parameterId] == null
+          ? undefined
+          : input.sourceByParameterId?.get(schema.parameterId),
+    }));
+  const values = new Map(allParameters
+    .filter((parameter) => parameter.value != null)
+    .map((parameter) => [parameter.parameterId, parameter.value!] as const));
+  const rawVisibleParameters = allParameters.filter((parameter) => {
+    const condition = parameter.visibilityCondition;
+    if (condition.kind === "ALWAYS") return true;
+    const matches = (candidate: { parameterId: string; value: CanonicalParameterValue }) =>
+      values.get(candidate.parameterId) === candidate.value;
+    if (condition.kind === "PARAMETER_EQUALS") return matches(condition);
+    return condition.kind === "ALL_OF"
+      ? condition.conditions.every(matches)
+      : condition.conditions.some(matches);
+  });
+  const visibleParameters = rawVisibleParameters.map((parameter): CanonicalParameter =>
+    parameter.value == null && input.activeNeedParameterIds.has(parameter.parameterId)
+      ? {
+        ...parameter,
+        requiredLevel: "BLOCKING_REQUIRED",
+        state: "BLOCKING_REQUIRED",
+        valid: false,
+        validationIssues: parameter.validationIssues.includes("VALUE_REQUIRED")
+          ? parameter.validationIssues
+          : [...parameter.validationIssues, "VALUE_REQUIRED"],
+      }
+      : parameter
+  );
+  const visibleParameterIds = new Set(visibleParameters.map((parameter) => parameter.parameterId));
+  const inactiveConditionalParameters = allParameters.filter((parameter) =>
+    !visibleParameterIds.has(parameter.parameterId)
+  );
+  const blockingMissingParameterIds = [...new Set([
+    ...visibleParameters
     .filter((parameter) => parameter.requiredLevel === "BLOCKING_REQUIRED" && parameter.value == null)
+    .map((parameter) => parameter.parameterId),
+    ...(input.additionalBlockingIds ?? []),
+  ])];
+  const contractMissingParameterIds = visibleParameters
+    .filter((parameter) => (
+      parameter.requiredLevel === "CONTRACT_REQUIRED" || parameter.requiredLevel === "CONDITIONAL"
+    ) && parameter.value == null)
     .map((parameter) => parameter.parameterId);
-  const contractMissingParameterIds = parameters
-    .filter((parameter) => parameter.requiredLevel === "CONTRACT_REQUIRED" && parameter.value == null)
-    .map((parameter) => parameter.parameterId);
-  const assumptionParameterIds = parameters
+  const assumptionParameterIds = visibleParameters
     .filter((parameter) => parameter.source === "ASSUMED")
     .map((parameter) => parameter.parameterId);
-  const invalidParameterIds = parameters
-    .filter((parameter) => !parameter.valid)
+  const invalidParameterIds = visibleParameters
+    .filter((parameter) => parameter.value != null && !parameter.valid)
     .map((parameter) => parameter.parameterId);
   const status = invalidParameterIds.length > 0
     ? "INVALID" as const
@@ -253,30 +454,129 @@ export function buildConsumerCanonicalParameterSession(input: {
         ? "PRELIMINARY_WITH_ASSUMPTIONS" as const
         : "COMPLETE" as const;
   const fingerprint = estimateDeterministicHash({
-    revisionId: input.revision.revisionId,
-    checksum: input.revision.checksumSha256,
-    parameters: parameters.map((parameter) => ({ id: parameter.parameterId, value: parameter.value, source: parameter.source })),
+    revisionId: input.revisionId,
+    checksum: input.checksum,
+    parameters: allParameters.map((parameter) => ({
+      id: parameter.parameterId,
+      value: parameter.value,
+      source: parameter.source,
+    })),
   });
   return {
     coreSchemaVersion: CANONICAL_PARAMETER_CORE_SCHEMA_VERSION,
-    sessionId: `backend-session:${input.revision.revisionId}`,
+    sessionId: `backend-session:${input.revisionId}`,
     draftId: input.draftId,
-    revisionId: input.revision.revisionId,
-    schemaId: input.revision.parameterSchemaHash || `backend-schema:${input.catalog.catalogId}`,
-    schemaVersion: `definition:${input.catalog.definitionVersion}`,
+    revisionId: input.revisionId,
+    schemaId: input.schemaId,
+    schemaVersion: input.schemaVersion,
     workPassportId: input.catalog.catalogId,
     canonicalWorkKey: input.catalog.workKey,
-    calculationVersion: input.revision.compilerVersion,
+    calculationVersion: input.calculationVersion,
     status,
-    parameters,
+    parameters: visibleParameters,
+    inactiveConditionalParameters,
     blockingMissingParameterIds,
     contractMissingParameterIds,
     assumptionParameterIds,
     invalidParameterIds,
     fingerprint,
-    createdAt: input.revision.createdAt,
-    updatedAt: input.revision.createdAt,
+    createdAt: input.createdAt,
+    updatedAt: input.createdAt,
   };
+}
+
+export function buildConsumerCanonicalParameterSession(input: {
+  catalog: CanonicalEstimateCatalogItem;
+  revision: CanonicalEstimateRevisionView;
+  parent?: CanonicalEstimateRevisionView | null;
+  draftId: string;
+}): CanonicalParameterSession {
+  const activeNeedParameterIds = new Set((input.revision.preliminaryNeeds ?? [])
+    .filter((need) => need.selected)
+    .flatMap((need) => need.missingParameterIds));
+  // The compiled revision is the authoritative description of which source
+  // inputs still prevent selected resource rows from receiving quantities.
+  // Some cumulative definitions intentionally keep engineering/norm inputs
+  // optional at schema level so a partial BOQ can be saved. Once a selected
+  // row names such an input in preliminaryNeeds, presenting it as
+  // NOT_APPLICABLE would create a false "0 parameters" state while backend
+  // rows remain unresolved. Promote only those active, visible needs to a
+  // contract clarification; inactive conditional branches remain hidden.
+  // A manually added catalog row has no definition parameter that can carry its quantity.
+  // Keep that input visible and approval-blocking until the user edits the row itself.
+  const unresolvedManualQuantityIds = (input.revision.preliminaryNeeds ?? [])
+    .filter((need) => need.selected && need.quantity == null
+      && need.needState === "QUANTITY_REQUIRED" && need.missingParameterIds.length === 0)
+    .map((need) => `${need.rowId}:quantity`);
+  return buildConsumerCanonicalParameterSessionFromValues({
+    catalog: input.catalog,
+    draftId: input.draftId,
+    revisionId: input.revision.revisionId,
+    parameters: input.revision.parameters,
+    parentParameters: input.parent?.parameters ?? null,
+    userInputSnapshot: input.revision.userInputSnapshot,
+    activeNeedParameterIds: new Set([
+      ...activeNeedParameterIds,
+    ]),
+    additionalBlockingIds: unresolvedManualQuantityIds,
+    schemaId: input.revision.parameterSchemaHash || `backend-schema:${input.catalog.catalogId}`,
+    schemaVersion: `definition:${input.catalog.definitionVersion}`,
+    calculationVersion: input.revision.compilerVersion,
+    checksum: input.revision.checksumSha256,
+    createdAt: input.revision.createdAt,
+  });
+}
+
+export function buildConsumerCanonicalPrecompileParameterSession(input: {
+  catalog: CanonicalEstimateCatalogItem;
+  draftId: string;
+  parameters: Record<string, CanonicalEstimateParameterInputValue>;
+  missingParameterIds: readonly string[];
+  userExplicitParameterIds?: readonly string[];
+  textExtractedParameterIds?: readonly string[];
+  createdAt?: string;
+}): CanonicalParameterSession {
+  const createdAt = input.createdAt ?? new Date().toISOString();
+  const sessionIdentity = estimateDeterministicHash({
+    draftId: input.draftId,
+    releaseId: input.catalog.releaseId,
+    catalogId: input.catalog.catalogId,
+    parameters: input.parameters,
+    missingParameterIds: input.missingParameterIds,
+  });
+  const explicitIds = new Set(input.userExplicitParameterIds ?? []);
+  const textExtractedIds = new Set(
+    input.textExtractedParameterIds ?? Object.keys(input.parameters),
+  );
+  const sourceByParameterId = new Map<string, CanonicalParameter["source"]>(
+    Object.keys(input.parameters).map((parameterId) => [
+      parameterId,
+      explicitIds.has(parameterId)
+        ? "USER_EXPLICIT"
+        : textExtractedIds.has(parameterId)
+          ? "TEXT_EXTRACTED"
+          : "ASSUMED",
+    ]),
+  );
+  const userInputSnapshot = Object.fromEntries(
+    Object.entries(input.parameters).filter(([parameterId]) =>
+      explicitIds.has(parameterId) || textExtractedIds.has(parameterId)
+    ),
+  );
+  return buildConsumerCanonicalParameterSessionFromValues({
+    catalog: input.catalog,
+    draftId: input.draftId,
+    revisionId: `precompile:${sessionIdentity}`,
+    parameters: input.parameters,
+    userInputSnapshot,
+    activeNeedParameterIds: new Set(input.missingParameterIds),
+    sourceByParameterId,
+    schemaId: `backend-schema:${input.catalog.catalogId}`,
+    schemaVersion: `definition:${input.catalog.definitionVersion}`,
+    calculationVersion: `precompile:${input.catalog.definitionVersion}`,
+    checksum: sessionIdentity,
+    createdAt,
+  });
 }
 
 export async function loadConsumerCanonicalParameterSession(input: {
@@ -360,9 +660,17 @@ export async function recalculateConsumerCanonicalEstimate(input: {
   const rawInputs: Record<string, unknown> = { ...revision.parameters };
   for (const patch of input.patches) rawInputs[patch.paramKey] = patch.rawValue;
   const validation = validateCanonicalEstimateParameterInputs({ schema: catalog.parameterSchema, rawInputs });
-  if (!validation.ok) {
+  const blockingIssues = parameterIssuesBlockingConsumerCanonicalRecalculation({
+    issues: blockingCanonicalParameterIssues(catalog, validation.issues),
+    parameterPatchCount: input.patches.length,
+    rowOverrideCount: Object.keys(input.rowOverrides ?? {}).length,
+  });
+  if (blockingIssues.length > 0) {
+    const geometryConflict = blockingIssues.some((issue) => issue.code === "GEOMETRY_CONFLICT");
     throw new CanonicalEstimateApiError(
-      `Параметры не сохранены: ${validation.issues.map((issue) => `${issue.parameterId}:${issue.code}`).join(", ")}.`,
+      geometryConflict
+        ? "Параметры не сохранены: площадь не совпадает с длиной × шириной. Исправьте площадь либо размеры объекта."
+        : `Параметры не сохранены: ${blockingIssues.map((issue) => `${issue.parameterId}:${issue.code}`).join(", ")}.`,
       { code: "INVALID_PARAMETER_INPUT", httpStatus: 400 },
     );
   }
@@ -490,7 +798,7 @@ export async function recalculateConsumerCanonicalCatalogSelection(input: {
     schema: catalog.parameterSchema,
     rawInputs: revision.parameters,
   });
-  if (!parameterValidation.ok) {
+  if (blockingCanonicalParameterIssues(catalog, parameterValidation.issues).length > 0) {
     throw new CanonicalEstimateApiError("Товар не выбран: параметры родительской версии не прошли проверку.", {
       code: "PARENT_PARAMETER_CONTRACT_INVALID",
       httpStatus: 409,
@@ -590,15 +898,13 @@ export async function recalculateConsumerCanonicalCatalogAddition(input: {
     schema: catalog.parameterSchema,
     rawInputs: revision.parameters,
   });
-  if (!parameterValidation.ok) {
+  if (blockingCanonicalParameterIssues(catalog, parameterValidation.issues).length > 0) {
     throw new CanonicalEstimateApiError(
       "\u041f\u043e\u0437\u0438\u0446\u0438\u044f \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0430: \u043f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b \u0440\u043e\u0434\u0438\u0442\u0435\u043b\u044c\u0441\u043a\u043e\u0439 \u0432\u0435\u0440\u0441\u0438\u0438 \u043d\u0435 \u043f\u0440\u043e\u0448\u043b\u0438 \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0443.",
       { code: "PARENT_PARAMETER_CONTRACT_INVALID", httpStatus: 409 },
     );
   }
-  const kind = String(input.catalogItem.kind ?? input.catalogItem.category ?? "material")
-    .trim()
-    .toLocaleLowerCase("en-US");
+  const classification = canonicalCatalogCustomRowClassification(input.catalogItem);
   const clientRowId = `catalog-${estimateDeterministicHash({
     parentRevisionId: revision.revisionId,
     catalogItemId: input.catalogItem.catalogItemId,
@@ -607,18 +913,14 @@ export async function recalculateConsumerCanonicalCatalogAddition(input: {
   }).slice(0, 40)}`;
   const customRow: CanonicalEstimateCustomRow = {
     clientRowId,
-    section: kind === "work"
-      ? "\u0420\u0430\u0431\u043e\u0442\u044b"
-      : kind === "service"
-        ? "\u0423\u0441\u043b\u0443\u0433\u0438 / \u043b\u043e\u0433\u0438\u0441\u0442\u0438\u043a\u0430"
-        : "\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b",
-    category: kind || "material",
+    section: classification.section,
+    category: classification.category,
     titleRu,
     unitId,
-    quantity: 1,
+    quantity: null,
     unitPrice,
     includedInEstimate: true,
-    includedInProcurement: kind !== "work" && kind !== "service",
+    includedInProcurement: classification.includedInProcurement,
     provenance: {
       kind: "manual",
       reason: `catalog_add:${input.catalogItem.catalogItemId}:${input.catalogItem.sourceId}`.slice(0, 500),
@@ -640,9 +942,13 @@ export async function recalculateConsumerCanonicalCatalogAddition(input: {
     },
   });
   const rowId = `manual:${clientRowId}`;
+  const preliminaryRow = result.revision.preliminaryNeeds?.find((need) =>
+    need.rowId === rowId && need.titleRu === titleRu
+  );
   if (
     result.revision.parentRevisionId !== revision.revisionId
-    || !result.rows.some((row) => row.rowId === rowId && row.titleRu === titleRu)
+    || !preliminaryRow
+    || preliminaryRow.quantity != null
     || result.rows.length !== result.revision.rowCount
   ) {
     throw new CanonicalEstimateApiError(

@@ -91,6 +91,7 @@ const CLAD_MATERIAL_KEYS = new Set([
 ]);
 
 const GEOMETRY_USER_PARAMETERS = [
+  "area_m2",
   "horizontal_face_area_m2",
   "vertical_face_length_m",
   "vertical_face_count",
@@ -101,6 +102,7 @@ const GEOMETRY_USER_PARAMETERS = [
 ] as const;
 
 const PARAMETER_GUIDES_RU: Readonly<Record<string, string>> = {
+  area_m2: "Укажите общую измеренную или развёрнутую площадь операции по потолочному коробу, м²; детализацию отдельных граней можно уточнить позже.",
   horizontal_face_area_m2: "Укажите суммарную площадь горизонтальных граней по чертежу или обмеру, м².",
   vertical_face_length_m: "Укажите суммарную длину вертикальных граней потолочного короба, м.",
   vertical_face_count: "Укажите число вертикальных граней одинаковой высоты опуска.",
@@ -168,6 +170,9 @@ export type Batch001DrywallSuccessorResourceR3 = EstimateContentResourceR3 & {
   sourcePredecessorRowIds: readonly string[];
   procurementOwnerId: string | null;
   engineeringSourceIds: readonly string[];
+  titleSpecificationParameterIds?: readonly string[];
+  titleSpecificationMode?: "APPEND";
+  titleSpecificationSeparator?: " — ";
 };
 
 export type Batch001UserParameterContractR56 = {
@@ -382,6 +387,13 @@ function resourceFromSource(
   const key = rowKey(row);
   const rowId = `${catalogId}:successor-r3:material:${key}`;
   const source = normativeSource(row);
+  const selectedSystemTitle = groupAndVariant(catalogId)?.group === "FRAME"
+    ? {
+      titleSpecificationParameterIds: ["exact_system_route"] as const,
+      titleSpecificationMode: "APPEND" as const,
+      titleSpecificationSeparator: " — " as const,
+    }
+    : {};
   return {
     rowId,
     group: "material",
@@ -403,6 +415,7 @@ function resourceFromSource(
       reasonRu: "Материал выводится только при положительном физическом количестве по формуле выбранной системы.",
     },
     sourcePredecessorRowIds: [row.row_id],
+    ...selectedSystemTitle,
   };
 }
 
@@ -949,7 +962,15 @@ function buildDefinition(catalogId: string): Batch001DrywallSuccessorDefinitionR
 
   const groupPrefix = parts.contract.group.toLowerCase();
   const geometryRow = requiredRow(`${groupPrefix}_geometry_output`);
-  const geometryFormula = clonedFormula(catalogId, "work-area", geometryRow.formula);
+  const geometryFormula = syntheticFormula({
+    catalogId,
+    key: "measured-work-area",
+    outputUnitId: "m2",
+    expressionSource: "area_m2",
+    inputParameterIds: ["area_m2"],
+    calculate: (values) => values.area_m2,
+    sourcePredecessorFormulaId: geometryRow.formula.formula_id,
+  });
   runtimeFormulas.push(geometryFormula);
   if (parts.contract.group === "FRAME") {
     const internalRows = predecessorRows.filter((row) => row.category === "labor" && !rowKey(row).startsWith("frame_"));
@@ -1114,6 +1135,16 @@ function buildDefinition(catalogId: string): Batch001DrywallSuccessorDefinitionR
   const extraParameterIds = [...groupExtraParameterIds, ...variantUserParameterIds(parts.contract.group, parts.contract.variant)];
   const parameterIds = new Set([...formulaConsumers.keys(), ...extraParameterIds]);
   const schemaById = new Map(parts.schema.parameters.map((parameter) => [parameter.parameter_id, parameter]));
+  const sourceRoleByParameterId = new Map<string, string>();
+  for (const child of parts.child_assemblies) {
+    for (const parameter of child.parameters) {
+      const existing = sourceRoleByParameterId.get(parameter.parameter_id);
+      if (existing && existing !== parameter.role) {
+        throw new Error(`BATCH001_R3_PARAMETER_ROLE_CONFLICT:${catalogId}:${parameter.parameter_id}`);
+      }
+      sourceRoleByParameterId.set(parameter.parameter_id, parameter.role);
+    }
+  }
   const resourceConsumers = new Map<string, string[]>();
   for (const resource of resources) {
     const formula = runtimeFormulas.find((candidate) => candidate.formulaId === resource.formulaId);
@@ -1154,6 +1185,10 @@ function buildDefinition(catalogId: string): Batch001DrywallSuccessorDefinitionR
         guideRu: PARAMETER_GUIDES_RU[parameterId]
           ?? "Внутреннее значение берётся из утверждённого проекта, нормы или паспорта выбранной системы.",
         visibilityRole: userIds.has(parameterId) ? "USER_INPUT" as const : "INTERNAL_ONLY" as const,
+        sourceRole: sourceRoleByParameterId.get(parameterId)
+          ?? (["area_m2", "delivery_included_by_supplier"].includes(parameterId)
+            ? "PROJECT_QUANTITY"
+            : null),
         formulaConsumerIds: [...new Set(formulaConsumers.get(parameterId) ?? [])].sort(),
         resourceConsumerIds: [...new Set(resourceConsumers.get(parameterId) ?? [])].sort(),
       };

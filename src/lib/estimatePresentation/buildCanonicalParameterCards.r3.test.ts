@@ -29,7 +29,7 @@ function parameter(
     confidence: 0,
     assumption: null,
     affectsRows: [],
-    affectsFormula: [],
+    affectsFormula: [`formula:${parameterId}`],
     normativeSource: null,
     displayOrder: 1,
     sourceText: null,
@@ -155,5 +155,48 @@ describe("buildCanonicalParameterCards R3 truth presenter", () => {
     expect(withSource?.guideShortRu).toContain("20–40");
     expect(withSource?.guideDetailsRu?.join(" ")).toContain("Точный документ");
     expect(withSource?.guideDetailsRu?.join(" ")).toContain("п. 4.2");
+  });
+
+  it("не показывает документальное поле без потребителя расчёта", () => {
+    const cards = buildCanonicalParameterCards({
+      session: session([
+        parameter("structural_drawing_reference", {
+          valueType: "string",
+          affectsFormula: [],
+          affectsRows: [],
+        }),
+        parameter("strip_width_m", {
+          unit: "m",
+          affectsFormula: ["formula:concrete_volume"],
+        }),
+      ]),
+      revision: null,
+    });
+
+    expect(cards.map((card) => card.key)).toEqual(["strip_width_m"]);
+  });
+
+  it("не возвращает сохранённый необязательный документальный профиль на первый экран", () => {
+    const cards = buildCanonicalParameterCards({
+      session: session([
+        parameter("product_profile_id", {
+          valueType: "string",
+          requiredLevel: "OPTIONAL",
+          value: "advanced_document_profile",
+          source: "USER_EXPLICIT",
+          state: "PROVIDED",
+          allowedValues: [{ value: "advanced_document_profile", label: "Расширенная проверка" }],
+          affectsFormula: [],
+          affectsRows: ["main_concrete"],
+        }),
+        parameter("strip_width_m", {
+          unit: "m",
+          affectsFormula: ["formula:concrete_volume"],
+        }),
+      ]),
+      revision: null,
+    });
+
+    expect(cards.map((card) => card.key)).toEqual(["strip_width_m"]);
   });
 });

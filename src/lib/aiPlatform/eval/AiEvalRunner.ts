@@ -64,7 +64,10 @@ export async function runAiEvalCase(testCase: AiEvalCase, options: AiEvalRunnerO
 
   const providerKey = options.providerKey ?? "eval_in_memory_provider";
   const modelKey = options.modelKey ?? "eval-contract-model";
-  const kernel = createAiRuntimeKernel({ provider: new InMemoryAiModelProvider(providerKey) });
+  const kernel = createAiRuntimeKernel({
+    provider: new InMemoryAiModelProvider(providerKey),
+    estimatePlugin: options.estimatePlugin,
+  });
   const started = Date.now();
   const result = await kernel.run({
     flowId: `${options.evalRunId}:${testCase.caseId}`,

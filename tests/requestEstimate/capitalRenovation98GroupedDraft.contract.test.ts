@@ -1,9 +1,15 @@
 import { buildRequestEstimateViewModel } from "../../src/features/consumerRepair/requestEstimateViewModel";
-import { capitalRenovationBundle, CAPITAL_RENOVATION_98_PROMPT } from "../estimateCalculator/capitalRenovationTestHelpers";
+import {
+  capitalRenovationAccessRowCodes,
+  capitalRenovationBundle,
+  CAPITAL_RENOVATION_98_PROMPT,
+  CAPITAL_RENOVATION_ACCESS_ROW_CODES,
+} from "../estimateCalculator/capitalRenovationTestHelpers";
 
 describe("capital renovation 98 grouped draft", () => {
   it("shows professional groups and suppresses raw technical dumps in the main draft model", () => {
-    const vm = buildRequestEstimateViewModel(capitalRenovationBundle(CAPITAL_RENOVATION_98_PROMPT));
+    const bundle = capitalRenovationBundle(CAPITAL_RENOVATION_98_PROMPT);
+    const vm = buildRequestEstimateViewModel(bundle);
     if (!vm) throw new Error("view model missing");
 
     const mainText = [
@@ -17,7 +23,8 @@ describe("capital renovation 98 grouped draft", () => {
       ]),
     ].join("\n");
 
-    expect(vm.rawItemCount).toBe(64);
+    expect(vm.rawItemCount).toBe(bundle.items.length);
+    expect(capitalRenovationAccessRowCodes(bundle.items)).toEqual(CAPITAL_RENOVATION_ACCESS_ROW_CODES);
     expect(vm.sections.map((section) => section.title)).toEqual(expect.arrayContaining([
       "\u0414\u0435\u043c\u043e\u043d\u0442\u0430\u0436 \u0438 \u043f\u043e\u0434\u0433\u043e\u0442\u043e\u0432\u043a\u0430",
       "\u0427\u0435\u0440\u043d\u043e\u0432\u044b\u0435 \u043f\u043e\u043b\u044b",

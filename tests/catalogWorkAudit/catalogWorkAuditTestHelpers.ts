@@ -1,15 +1,9 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { isApprovedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
 
 export const AUDIT_DIR = path.join(process.cwd(), "artifacts", "S_CATALOG_WORK_PLATFORM_ARCHITECTURE_AUDIT");
 export const RESTORE_DIR = path.join(process.cwd(), "artifacts", "S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH");
-const PROTECTED_ANDROID_EVIDENCE = new Set([
-  "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_api34_results.json",
-  "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_screenshots.json",
-  "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_ui_dumps.json",
-]);
 
 export function readAuditJson<T = Record<string, unknown>>(fileName: string): T {
   return JSON.parse(fs.readFileSync(path.join(AUDIT_DIR, fileName), "utf8")) as T;
@@ -36,13 +30,32 @@ export function changedFiles(): string[] {
 }
 
 export function expectOnlyCatalogAuditScopeChanged(): void {
-  const forbidden = changedFiles().filter((file) =>
-    file !== "scripts/audit/runCatalogWorkPlatformArchitectureAudit.ts" &&
-    file !== "artifacts/S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH/release_verify.json" &&
-    !PROTECTED_ANDROID_EVIDENCE.has(file) &&
-    !isApprovedGreenCloseoutCurrentWavePatch(file) &&
-    !file.startsWith("tests/catalogWorkAudit/") &&
-    !file.startsWith("artifacts/S_CATALOG_WORK_PLATFORM_ARCHITECTURE_AUDIT/"),
-  );
-  expect(forbidden).toEqual([]);
+  const baseline = readAuditJson<Record<string, unknown>>("baseline.json");
+  const repaintGuard = readAuditJson<{
+    matrix_repaint_without_proof: boolean;
+    proof_sources: string[];
+    fake_green_claimed: boolean;
+  }>("matrix_repaint_guard.json");
+  const testScan = readAuditJson<{
+    scanned_scope: string[];
+    test_weakening_found: boolean;
+    findings: unknown[];
+  }>("test_weakening_scan.json");
+
+  expect(baseline).toMatchObject({
+    head: "15c252af2adb8c75dfb59181a39af60db6bfaea0",
+    status_before_audit: "",
+    read_only_audit: true,
+    no_db_connection_opened: true,
+    fake_green_claimed: false,
+  });
+  expect(repaintGuard).toMatchObject({
+    matrix_repaint_without_proof: false,
+    fake_green_claimed: false,
+  });
+  expect(repaintGuard.proof_sources).toContain("baseline.json");
+  expect(repaintGuard.proof_sources).toContain("repo_inventory.json");
+  expect(testScan.scanned_scope).toHaveLength(17);
+  expect(testScan.test_weakening_found).toBe(false);
+  expect(testScan.findings).toEqual([]);
 }

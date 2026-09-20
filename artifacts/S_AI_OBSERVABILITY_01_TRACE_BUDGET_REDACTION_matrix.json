@@ -12,7 +12,7 @@
   "provider_redaction_findings": 4,
   "artifact_scrub_findings": [],
   "source_safety_findings": [],
-  "artifacts_scanned": 16,
+  "artifacts_scanned": 13,
   "no_secrets": true,
   "no_raw_rows": true,
   "no_raw_prompts": true,

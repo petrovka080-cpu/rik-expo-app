@@ -165,6 +165,7 @@ export type RoadworksWaveARow = {
   revisionId: "REFERENCE_UNSAVED";
   procurementEligibility: "ELIGIBLE" | "CONTRACTOR_SCOPE" | "EXCLUDED_CONTROL_DOCUMENT";
   payable: boolean;
+  costTreatment: "OWN_COST" | "INCLUDED_IN_RESOURCE_ROWS" | "INFORMATIONAL_SCOPE" | "CONTROL_OR_DOCUMENT";
   procurementOwner: "buyer" | "contractor" | "laboratory" | "customer";
 };
 
@@ -249,10 +250,10 @@ export const ROADWORKS_WAVE_A_SCOPE_APPLICABILITY_PARAMETER_KEYS: Readonly<
 });
 
 const PREFIX = "paving_roads_landscape_interior_asphalt_";
-const OPERATIONS: readonly RoadworksWaveAOperation[] = [
+export const ROADWORKS_WAVE_A_OPERATIONS: readonly RoadworksWaveAOperation[] = [
   "install", "lay", "compact", "repair", "prepare", "level", "drain", "finish",
 ];
-const SCOPES: readonly RoadworksWaveAScope[] = [
+export const ROADWORKS_WAVE_A_SCOPES: readonly RoadworksWaveAScope[] = [
   "standard", "small_area", "large_area", "wet_zone", "technical_room",
 ];
 
@@ -343,10 +344,10 @@ export const ROADWORKS_WAVE_A_KRER_27_RATE_IDS_BY_OPERATION: Readonly<
 function parseIdentity(item: CatalogItem): { operation: RoadworksWaveAOperation; scope: RoadworksWaveAScope } | null {
   if (item.work_family_id !== "landscaping" || !item.work_key.startsWith(PREFIX)) return null;
   const tail = item.work_key.slice(PREFIX.length);
-  const operation = OPERATIONS.find((candidate) => tail.startsWith(`${candidate}_`));
+  const operation = ROADWORKS_WAVE_A_OPERATIONS.find((candidate) => tail.startsWith(`${candidate}_`));
   if (!operation) return null;
   const scope = tail.slice(operation.length + 1) as RoadworksWaveAScope;
-  if (!SCOPES.includes(scope)) return null;
+  if (!ROADWORKS_WAVE_A_SCOPES.includes(scope)) return null;
   return { operation, scope };
 }
 
@@ -426,8 +427,49 @@ export type RoadworksWaveAParameterDefinition = {
   key: RoadworksWaveAParameterKey;
   tier: "P0" | "P1" | "P2";
   unit: "m2" | "mm" | "t_m3" | "ratio" | "km" | "m2_h" | "m2_man_hour" | "m2_machine_hour" | "km_machine_hour" | "machine_hour" | "document" | "l_m2" | "t" | "enum" | "boolean";
-  sourceRole: "USER_PROJECT_INPUT";
+  sourceRole:
+    | "USER_PROJECT_INPUT"
+    | "PROJECT_DESIGN_INPUT"
+    | "MATERIAL_PASSPORT_INPUT"
+    | "TECHNICAL_SOURCE_INPUT"
+    | "LOGISTICS_INPUT"
+    | "EXECUTION_PLAN_INPUT"
+    | "DERIVED_OPERATION_VALUE";
+  sourceFixedBinding: {
+    value: string | number | boolean;
+    sourceId: string;
+    sourceVersion: string;
+    sourceType: "DERIVED_FROM_SELECTED_OPERATION";
+    reasonRu: string;
+  } | null;
 };
+
+const ROADWORKS_WAVE_A_OPERATION_FIXED_VALUES: Readonly<Partial<Record<
+  RoadworksWaveAParameterKey,
+  NonNullable<RoadworksWaveAParameterDefinition["sourceFixedBinding"]>
+>>> = Object.freeze({
+  work_journal_count: Object.freeze({
+    value: 1,
+    sourceId: "roadworks-wave-a-selected-operation-document-set:v1",
+    sourceVersion: "1",
+    sourceType: "DERIVED_FROM_SELECTED_OPERATION",
+    reasonRu: "Одна строка журнала относится к одной выбранной дорожной операции; это производная состава, а не скрытая объектная норма.",
+  }),
+  execution_documentation_count: Object.freeze({
+    value: 1,
+    sourceId: "roadworks-wave-a-selected-operation-document-set:v1",
+    sourceVersion: "1",
+    sourceType: "DERIVED_FROM_SELECTED_OPERATION",
+    reasonRu: "Один комплект исполнительной документации относится к одной выбранной дорожной операции; это производная состава.",
+  }),
+  material_passport_register_count: Object.freeze({
+    value: 1,
+    sourceId: "roadworks-wave-a-selected-operation-document-set:v1",
+    sourceVersion: "1",
+    sourceType: "DERIVED_FROM_SELECTED_OPERATION",
+    reasonRu: "Один реестр паспортов объединяет материалы одной выбранной операции; число выводится из состава операции.",
+  }),
+});
 
 const PARAMETER_UNITS: Partial<Record<RoadworksWaveAParameterKey, RoadworksWaveAParameterDefinition["unit"]>> = {
   area_m2: "m2",
@@ -508,12 +550,28 @@ export function getRoadworksWaveAParameterDefinitions(workId: string): readonly 
   return getRoadworksWaveAParameterKeys(workId).map((key) => {
     const tier = "P0" as const;
     const presentation = roadworksWaveAParameterPresentation(key);
+    const sourceRole: RoadworksWaveAParameterDefinition["sourceRole"] = key === "area_m2" ||
+      key === "exterior_surface_kind" || key === "drainage_outfall_confirmed" || key === "base_dry_and_accepted" ||
+      key === "floor_mechanical_impact_class" || key === "floor_liquid_exposure_class" || key === "approved_floor_mix_type"
+      ? "USER_PROJECT_INPUT"
+      : key === "thickness_mm"
+        ? "PROJECT_DESIGN_INPUT"
+        : key === "density_t_m3"
+          ? "MATERIAL_PASSPORT_INPUT"
+          : key === "haul_distance_km" || key === "truck_average_speed_km_per_machine_hour" ||
+              key === "truck_turnaround_machine_hours" || key === "truck_capacity_t" || key === "waste_truck_capacity_t"
+            ? "LOGISTICS_INPUT"
+            : key === "work_journal_count" || key === "execution_documentation_count" || key === "material_passport_register_count"
+              ? "DERIVED_OPERATION_VALUE"
+              : "TECHNICAL_SOURCE_INPUT";
+    const sourceFixedBinding = ROADWORKS_WAVE_A_OPERATION_FIXED_VALUES[key] ?? null;
     return Object.freeze({
       parameterId: `${workId}:parameter:${key}:v4`,
       key,
       tier,
       unit: PARAMETER_UNITS[key] ?? presentation.unit,
-      sourceRole: "USER_PROJECT_INPUT" as const,
+      sourceRole,
+      sourceFixedBinding,
     });
   });
 }
@@ -579,6 +637,9 @@ export function compileRoadworksWaveAWork(
       ? ["11-01-019-01", "11-01-019-02"]
       : ["11-01-019-03", "11-01-019-04"]
     : ROADWORKS_WAVE_A_KRER_27_RATE_IDS_BY_OPERATION[operation];
+  const documentationNormativeRateIds = scopeProfile === "technical_room"
+    ? ["11-01-019-01", "11-01-019-02", "11-01-019-03", "11-01-019-04"]
+    : normativeRateIds;
   const passportId = `professional-estimate-passport:v4:${workId}`;
   const rowType = (category: RoadworksWaveARow["category"]): RoadworksWaveARow["rowType"] =>
     category === "test" ? "control" : category === "waste_stream" ? "waste" : category;
@@ -587,9 +648,15 @@ export function compileRoadworksWaveAWork(
     unit: RoadworksWaveARow["unit"], quantity: number, formulaId: string,
     affectedBy: readonly RoadworksWaveAParameterKey[], owner: RoadworksWaveARow["procurementOwner"],
   ): RoadworksWaveARow => {
+    // The selected technical-room mix changes the applicable KRER rates for
+    // calculation rows. Documentation remains independently admissible and
+    // carries the complete table locator rather than a selected calculation
+    // rate, so an input-blocked draft can still retain its exact schema.
     const sourceParameterKeys = [...new Set<RoadworksWaveAParameterKey>([
       ...affectedBy,
-      ...(scopeProfile === "technical_room" ? ["approved_floor_mix_type" as const] : []),
+      ...(scopeProfile === "technical_room" && category !== "document"
+        ? ["approved_floor_mix_type" as const]
+        : []),
     ])];
     return ({
     rowId: prefix + id,
@@ -607,7 +674,7 @@ export function compileRoadworksWaveAWork(
     sourceParameterKeys,
     sourceIds,
     normativeSourceId,
-    normativeRateIds,
+    normativeRateIds: category === "document" ? documentationNormativeRateIds : normativeRateIds,
     roundingRule: formulaId === "one_documentation_set"
       ? "EXACT_ONE"
       : formulaId.startsWith("ceil(")
@@ -623,13 +690,14 @@ export function compileRoadworksWaveAWork(
         ? "ELIGIBLE"
         : "CONTRACTOR_SCOPE",
     payable: category !== "test" && category !== "document",
+    costTreatment: category === "test" || category === "document" ? "CONTROL_OR_DOCUMENT" : "OWN_COST",
     procurementOwner: owner,
     });
   };
   const acceptanceTitle = ({
     install: "Приёмочный контроль толщины, плотности, ровности и отметок покрытия",
     lay: "Операционный контроль температуры, толщины и ровности уложенной смеси",
-    compact: "Контроль схемы проходов, плотности и качества уплотнения слоя",
+    compact: "Проверка плотности и качества уплотнения",
     repair: "Приёмочный контроль границ, глубины, плотности и ровности ремонтных карт",
     prepare: "Приёмка очищенной и подготовленной поверхности перед следующей операцией",
     level: "Контроль толщины, профиля и ровности выравнивающего слоя",
@@ -664,7 +732,7 @@ export function compileRoadworksWaveAWork(
   const laborTitle = ({
     install: "Труд дорожных рабочих и операторов звена устройства асфальтобетонного покрытия",
     lay: "Труд дорожных рабочих и операторов укладочного звена",
-    compact: "Труд машинистов катков и дорожных рабочих при уплотнении слоя",
+    compact: "Машинисты катков и дорожные рабочие",
     repair: "Труд дорожных рабочих и операторов звена ремонта покрытия",
     prepare: "Труд дорожных рабочих и операторов при подготовке поверхности",
     level: "Труд дорожных рабочих и операторов при устройстве выравнивающего слоя",
@@ -672,20 +740,20 @@ export function compileRoadworksWaveAWork(
     finish: "Труд дорожных рабочих при обработке стыков и финишной сдаче покрытия",
   } satisfies Record<RoadworksWaveAOperation, string>)[operation];
   const labor = row("crew_labor", "labor", laborTitle, "man_hour", laborHours, "area_m2/labor_productivity_m2_per_man_hour", ["area_m2", "labor_productivity_m2_per_man_hour"], "contractor");
-  const workJournal = row("work_and_quality_journal", "document", "Журнал производства работ и операционного контроля", "pcs", input.work_journal_count, "work_journal_count", ["work_journal_count"], "contractor");
-  const documentation = row("execution_documentation", "document", "Исполнительная схема, акты и комплект сдачи выбранной операции", "pcs", input.execution_documentation_count, "execution_documentation_count", ["execution_documentation_count"], "contractor");
+  const workJournal = row("work_and_quality_journal", "document", "Журнал работ и контроля качества", "pcs", input.work_journal_count, "work_journal_count", ["work_journal_count"], "contractor");
+  const documentation = row("execution_documentation", "document", "Исполнительная документация по выбранной операции", "pcs", input.execution_documentation_count, "execution_documentation_count", ["execution_documentation_count"], "contractor");
   const materialDocuments = row("material_passports", "document", "Паспорта, сертификаты и реестр поставок материалов", "pcs", input.material_passport_register_count, "material_passport_register_count", ["material_passport_register_count"], "contractor");
   const baseAcceptance = work("base_acceptance", "Приёмка и локальная подготовка основания перед устройством покрытия");
   const mixReceiving = mixWork("mix_receiving", "Приёмка, разгрузка и непрерывная подача смеси в технологический поток");
-  const breakdownCompaction = work("breakdown_compaction", "Предварительное уплотнение уложенной асфальтобетонной смеси");
-  const intermediateCompaction = work("intermediate_compaction", "Основное уплотнение слоя по утверждённой схеме проходов");
-  const finishCompaction = work("finish_compaction", "Окончательное уплотнение и устранение следов проходов катков");
-  const breakdownRoller = machine("breakdown_roller", "Каток предварительного уплотнения");
+  const breakdownCompaction = work("breakdown_compaction", "Предварительное уплотнение асфальта");
+  const intermediateCompaction = work("intermediate_compaction", "Основное уплотнение асфальта");
+  const finishCompaction = work("finish_compaction", "Финишное уплотнение асфальта");
+  const breakdownRoller = machine("breakdown_roller", "Каток для предварительного уплотнения");
   // Keep the historical `:roller` row identity for durable revision/PDF
   // compatibility; its professional meaning is now the main-compaction
   // machine, while the preliminary and finish rollers have distinct rows.
-  const intermediateRoller = machine("roller", "Каток основного уплотнения");
-  const finishRoller = machine("finish_roller", "Каток окончательного уплотнения");
+  const intermediateRoller = machine("roller", "Каток для основного уплотнения");
+  const finishRoller = machine("finish_roller", "Каток для финишного уплотнения");
 
   const byOperation: Record<RoadworksWaveAOperation, RoadworksWaveARow[]> = {
     install: [
@@ -777,7 +845,7 @@ export function compileRoadworksWaveAWork(
   const scopeRows: RoadworksWaveARow[] = scopeProfile === "small_area"
     ? [row("restricted_area_execution", "service", "Организация работ на малой площади", "m2", area, "area_m2", ["area_m2"], "contractor")]
     : scopeProfile === "large_area"
-      ? [row("large_area_mechanized_execution", "service", "Организация механизированного потока на большой площади", "m2", area, "area_m2", ["area_m2"], "contractor")]
+      ? [row("large_area_mechanized_execution", "service", "Организация работы катков на большой площадке", "m2", area, "area_m2", ["area_m2"], "contractor")]
       : scopeProfile === "wet_zone"
         ? [
           row("wet_zone_execution", "service", `Организация работ на наружной поверхности ${input.exterior_surface_kind} после подтверждения сухости основания и водоотвода`, "m2", area, "area_m2", ["area_m2", "exterior_surface_kind", "drainage_outfall_confirmed", "base_dry_and_accepted"], "contractor"),
@@ -789,16 +857,35 @@ export function compileRoadworksWaveAWork(
             row("industrial_floor_acceptance", "test", "Контроль толщины, ровности и проектной категории воздействий на пол", "pcs", Math.max(1, Math.ceil(area / input.acceptance_lot_m2)), "ceil(area_m2/acceptance_lot_m2)", ["area_m2", "acceptance_lot_m2", "floor_mechanical_impact_class", "floor_liquid_exposure_class", "approved_floor_mix_type"], "laboratory"),
           ]
           : [];
+  const compiledRows = [
+    ...byOperation[operation],
+    ...(operation === "finish" ? [materialDocuments] : []),
+    labor,
+    workJournal,
+    documentation,
+    ...scopeRows,
+  ].map((compiledRow): RoadworksWaveARow => {
+    if (operation !== "compact") return compiledRow;
+    if (["breakdown_compaction", "intermediate_compaction", "finish_compaction"]
+      .some((suffix) => compiledRow.rowId.endsWith(`:${suffix}`))) {
+      return {
+        ...compiledRow,
+        payable: false,
+        costTreatment: "INCLUDED_IN_RESOURCE_ROWS",
+      };
+    }
+    if (compiledRow.rowId.endsWith(":large_area_mechanized_execution")) {
+      return {
+        ...compiledRow,
+        payable: false,
+        costTreatment: "INFORMATIONAL_SCOPE",
+      };
+    }
+    return compiledRow;
+  });
   return {
     workId,
-    rows: [
-      ...byOperation[operation],
-      ...(operation === "finish" ? [materialDocuments] : []),
-      labor,
-      workJournal,
-      documentation,
-      ...scopeRows,
-    ],
+    rows: compiledRows,
   };
 }
 

@@ -14,6 +14,159 @@ import {
 import { CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION } from "./canonicalEstimateRevisionWriter";
 
 describe("canonical estimate consumer professional proof", () => {
+  it("carries source-confirmed parameter requirements into preliminary rows", () => {
+    const catalog: CanonicalEstimateCatalogItem = {
+      catalogId: "source-managed-need-catalog",
+      releaseId: "22222222-2222-4222-8222-222222222222",
+      namespace: "global",
+      workKey: "source-managed-work",
+      titleRu: "Уплотнение асфальта",
+      domain: "roadworks",
+      definitionVersion: 1,
+      applicability: {},
+      professionalMetadata: {},
+      parameterSchema: [{
+        parameterId: "machine_roller_productivity_m2_per_machine_hour",
+        ordinal: 1,
+        valueType: "decimal",
+        unitId: "m2_machine_hour",
+        titleRu: "Производительность катка",
+        required: true,
+        preliminaryCompilationAllowed: true,
+        defaultValue: null,
+        constraints: { min: 0.001 },
+        visibilityRole: "INTERNAL_ONLY",
+        valueSourceRole: "NORM_REQUIRED_BUT_PROJECT_SELECTED",
+        formulaConsumers: ["roller-hours"],
+      }],
+    };
+    const revision: CanonicalEstimateRevisionView = {
+      apiVersion: ESTIMATE_PLATFORM_API_VERSION,
+      revisionId: "11111111-1111-4111-8111-111111111111",
+      parentRevisionId: null,
+      releaseId: catalog.releaseId,
+      catalogId: catalog.catalogId,
+      revisionNumber: 1,
+      status: "ready",
+      sourceRequestText: "Уплотнить асфальт 120 м2",
+      displayTitleRu: catalog.titleRu,
+      primaryMeasureParameterId: "area_m2",
+      primaryMeasureValue: "120",
+      primaryMeasureUnitId: "m2",
+      currencyCode: "KGS",
+      amendmentContract: { rowOverrides: {}, customRows: [], releaseMigration: null },
+      preliminaryNeeds: [{
+        rowId: "roller",
+        ordinal: 0,
+        section: "Механизмы",
+        category: "Механизмы",
+        titleRu: "Каток",
+        unitId: "machine_hour",
+        quantity: null,
+        unitPrice: null,
+        needState: "QUANTITY_REQUIRED",
+        missingParameterIds: ["machine_roller_productivity_m2_per_machine_hour"],
+        selected: true,
+        procurementEligible: false,
+        formulaId: "roller-hours",
+        calculationTrace: {},
+        normativeTrace: [],
+        needSha256: "d".repeat(64),
+      }],
+      totals: { amount: "0" },
+      rowCount: 0,
+      checksumSha256: "a".repeat(64),
+      compilerVersion: "canonical-estimate-compile-core-r1",
+      parameters: { area_m2: 120 },
+      createdAt: "2026-09-11T00:00:00.000Z",
+    };
+
+    const draft = buildStructuredEstimateRequestDraft(
+      adaptCanonicalRevisionToStructuredEstimate({ catalog, revision, rows: [] }),
+    );
+
+    expect(draft.items[0]?.sourceParameters?.missingParameterRequirements).toEqual([expect.objectContaining({
+      parameterId: "machine_roller_productivity_m2_per_machine_hour",
+      sourceConfirmationRequired: true,
+      visibilityRole: "INTERNAL_ONLY",
+    })]);
+  });
+
+  it("projects an unresolved manual catalog row into the editable draft but not payable PDF rows", () => {
+    const catalog: CanonicalEstimateCatalogItem = {
+      catalogId: "manual-need-catalog",
+      releaseId: "22222222-2222-4222-8222-222222222222",
+      namespace: "global",
+      workKey: "manual-need-work",
+      titleRu: "Контрольная работа",
+      domain: "interior_finishes",
+      definitionVersion: 1,
+      applicability: {},
+      professionalMetadata: {},
+      parameterSchema: [],
+    };
+    const revision: CanonicalEstimateRevisionView = {
+      apiVersion: ESTIMATE_PLATFORM_API_VERSION,
+      revisionId: "11111111-1111-4111-8111-111111111111",
+      parentRevisionId: null,
+      releaseId: catalog.releaseId,
+      catalogId: catalog.catalogId,
+      revisionNumber: 1,
+      status: "ready",
+      sourceRequestText: "Контрольная работа",
+      displayTitleRu: catalog.titleRu,
+      primaryMeasureParameterId: "area_m2",
+      primaryMeasureValue: "1",
+      primaryMeasureUnitId: "m2",
+      currencyCode: "KGS",
+      amendmentContract: { rowOverrides: {}, customRows: [], releaseMigration: null },
+      preliminaryNeeds: [{
+        rowId: "manual:catalog-rental",
+        ordinal: 0,
+        section: "Механизмы",
+        category: "Механизмы",
+        titleRu: "Аренда шлифмашины",
+        unitId: "shift",
+        quantity: null,
+        unitPrice: "900",
+        needState: "QUANTITY_REQUIRED",
+        missingParameterIds: [],
+        selected: true,
+        procurementEligible: true,
+        formulaId: "manual_custom_quantity",
+        calculationTrace: { manualAmendment: { kind: "manual" } },
+        normativeTrace: [],
+        needSha256: "d".repeat(64),
+      }],
+      totals: { amount: "0" },
+      rowCount: 0,
+      checksumSha256: "a".repeat(64),
+      compilerVersion: "canonical-estimate-compile-core-r1",
+      parameters: { area_m2: 1 },
+      createdAt: "2026-09-08T00:00:00.000Z",
+    };
+
+    const payload = adaptCanonicalRevisionToStructuredEstimate({ catalog, revision, rows: [] });
+    const draft = buildStructuredEstimateRequestDraft(payload);
+
+    expect(payload.rows).toHaveLength(0);
+    expect(payload.pdf.rows).toHaveLength(0);
+    expect(draft.items).toHaveLength(1);
+    expect(draft.items[0]).toMatchObject({
+      itemType: "service",
+      titleRu: "Аренда шлифмашины",
+      quantity: null,
+      unitPrice: 900,
+      sourceParameters: {
+        rowCode: "manual:catalog-rental",
+        canonicalBackendOwnershipStatus: "PRELIMINARY_NEED",
+        canonicalPreliminaryNeed: true,
+        includedInProcurement: false,
+        payable: false,
+      },
+    });
+  });
+
   it("projects backend formula dependencies and exact normative locator into the consumer row", () => {
     const catalog: CanonicalEstimateCatalogItem = {
       catalogId: "drywall-test",

@@ -2,20 +2,16 @@
   "android_api34_tested": true,
   "screenshots": [
     {
-      "caseId": "android_request_electrical_cable_outlets_switches",
-      "path": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_api34/screenshots/android_request_electrical_cable_outlets_switches.png"
+      "caseId": "estimateScreenshot",
+      "path": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_api34/r4_a6_accepted/accepted-estimate-categories.png"
     },
     {
-      "caseId": "android_request_roof_waterproofing",
-      "path": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_api34/screenshots/android_request_roof_waterproofing.png"
+      "caseId": "historyScreenshot",
+      "path": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_api34/r4_a6_accepted/accepted-history-readonly.png"
     },
     {
-      "caseId": "android_foreman_paving_stone",
-      "path": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_api34/screenshots/android_foreman_paving_stone.png"
-    },
-    {
-      "caseId": "android_foreman_house_electrical",
-      "path": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_api34/screenshots/android_foreman_house_electrical.png"
+      "caseId": "coldScreenshot",
+      "path": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_api34/r4_a6_accepted/accepted-cold-revision.png"
     }
   ],
   "fake_green_claimed": false

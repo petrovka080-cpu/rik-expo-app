@@ -3,15 +3,23 @@ import path from "node:path";
 
 describe("bottom safe-area actions", () => {
   it("keeps restored request actions in the safe-area-aware sticky bar", () => {
-    const source = fs.readFileSync(
+    const chrome = fs.readFileSync(
       path.resolve(process.cwd(), "src", "features", "consumerRepair", "ConsumerRepairRequestChrome.tsx"),
       "utf8",
     );
-    expect(source).toContain("AppStickyActionBar");
-    expect(source).toContain("safeAreaAware");
-    expect(source).toContain('placement="above_bottom_nav"');
-    expect(source).toContain("consumer-estimate-make-pdf");
-    expect(source).toContain("consumer-repair-approve");
-    expect(source).toContain("consumer-repair-delete-draft");
+    const view = fs.readFileSync(
+      path.resolve(process.cwd(), "src", "features", "consumerRepair", "ConsumerRepairRequestScreenView.tsx"),
+      "utf8",
+    );
+    const scroll = fs.readFileSync(
+      path.resolve(process.cwd(), "src", "components", "layout", "AppScreenScroll.tsx"),
+      "utf8",
+    );
+    expect(chrome).not.toContain("AppStickyActionBar");
+    expect(chrome).toContain("consumer-estimate-make-pdf");
+    expect(chrome).toContain("consumer-repair-approve");
+    expect(chrome).toContain("consumer-repair-delete-draft");
+    expect(view.indexOf("<ConsumerRepairRequestStickyActions")).toBeLessThan(view.indexOf("</AppScreenScroll>"));
+    expect(scroll).toContain("paddingBottom: APP_LAYOUT.scrollBottomPaddingPx");
   });
 });

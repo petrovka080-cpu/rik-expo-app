@@ -1,0 +1,113 @@
+import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
+import {
+  extractConcretePlacementCanonicalParametersR1,
+  pileCapLevelingPromptDetailsR1,
+} from "../../src/lib/estimate/ownedDomain/concretePlacementProductionBindingR1";
+import { PEDESTAL_LEVELING_FORMULAS } from "../../src/lib/estimate/v4/pedestalLevelingR1";
+import {
+  PILE_CAP_LEVELING_FORMULAS,
+  PILE_CAP_LEVELING_PARAMETERS,
+  PILE_CAP_LEVELING_RESOURCES,
+  PILE_CAP_LEVELING_SOURCE_ID,
+  PILE_CAP_LEVELING_TARGETS,
+  compilePileCapLevelingR1,
+  pileCapLevelingAcceptanceInputR1,
+} from "../../src/lib/estimate/v4/pileCapLevelingR1";
+
+function catalog(target: (typeof PILE_CAP_LEVELING_TARGETS)[number]): CanonicalEstimateCatalogItem {
+  return {
+    catalogId: target.catalogId,
+    releaseId: "prepared-pile-cap-leveling-test",
+    namespace: "global",
+    domain: "concrete",
+    workKey: target.catalogId,
+    titleRu: target.titleRu,
+    definitionVersion: 4,
+    applicability: {},
+    professionalMetadata: {},
+    parameterSchema: PILE_CAP_LEVELING_PARAMETERS.map((parameter) => ({
+      parameterId: parameter.parameter_id,
+      ordinal: parameter.ordinal,
+      valueType: parameter.value_type as CanonicalEstimateCatalogItem["parameterSchema"][number]["valueType"],
+      unitId: parameter.unit_id,
+      titleRu: parameter.title_ru,
+      required: parameter.required,
+      defaultValue: parameter.default_value,
+      constraints: parameter.constraints_json ?? {},
+      visibilityRole: "USER_INPUT",
+    })),
+  };
+}
+
+describe("pile-cap concrete leveling canonical family", () => {
+  it("compiles all seven exact identities through the shared core", async () => {
+    for (const target of PILE_CAP_LEVELING_TARGETS) {
+      const compiled = await compilePileCapLevelingR1(
+        { ...pileCapLevelingAcceptanceInputR1(target.contextKey) },
+        { catalogId: target.catalogId },
+      );
+      expect(compiled.preliminaryNeeds).toEqual([]);
+      expect(compiled.totals.includedRowCount).toBeGreaterThanOrEqual(2);
+      expect(compiled.totals.includedRowCount).toBeLessThanOrEqual(5);
+      expect(compiled.totals.unpricedRowCount).toBe(compiled.totals.includedRowCount);
+      expect(compiled.rows.some((row) => row.row_id === "material:concrete:ready-mix")).toBe(false);
+      expect(compiled.rows.some((row) => row.row_id.includes("formwork"))).toBe(false);
+      expect(compiled.rows.some((row) => row.row_id.includes("reinforcement"))).toBe(false);
+      expect(compiled.rows.some((row) => row.row_id === "work:concrete:pile-cap-leveling")).toBe(true);
+    }
+  });
+
+  it("reuses the accepted ACI 302 leveling graph", () => {
+    expect(PILE_CAP_LEVELING_FORMULAS).toBe(PEDESTAL_LEVELING_FORMULAS);
+    expect(PILE_CAP_LEVELING_PARAMETERS).toHaveLength(20);
+    expect(PILE_CAP_LEVELING_FORMULAS).toHaveLength(6);
+    expect(PILE_CAP_LEVELING_RESOURCES).toHaveLength(5);
+    expect(JSON.stringify({ parameters: PILE_CAP_LEVELING_PARAMETERS, resources: PILE_CAP_LEVELING_RESOURCES }))
+      .toContain(PILE_CAP_LEVELING_SOURCE_ID);
+  });
+
+  it("allows documentary references to remain blank", async () => {
+    const target = PILE_CAP_LEVELING_TARGETS[1];
+    const input = { ...pileCapLevelingAcceptanceInputR1(target.contextKey) };
+    for (const parameterId of [
+      "concrete_mix_reference", "target_elevation_and_slope_reference",
+      "flatness_levelness_requirement_reference", "leveling_method_statement_reference",
+      "quality_plan_reference",
+    ]) delete input[parameterId];
+    expect((await compilePileCapLevelingR1(input, { catalogId: target.catalogId })).preliminaryNeeds)
+      .toEqual([]);
+  });
+
+  it("keeps method, selected equipment and direct quantities editable", async () => {
+    const target = PILE_CAP_LEVELING_TARGETS[1];
+    const input = { ...pileCapLevelingAcceptanceInputR1(target.contextKey) };
+    delete input.approved_leveling_method_designation;
+    delete input.leveling_equipment_designation;
+    delete input.leveling_equipment_machine_h;
+    const needs = (await compilePileCapLevelingR1(input, { catalogId: target.catalogId }))
+      .preliminaryNeeds.flatMap((need) => need.missing_parameter_ids);
+    expect(needs).toEqual(expect.arrayContaining([
+      "approved_leveling_method_designation",
+      "leveling_equipment_designation",
+      "leveling_equipment_machine_h",
+    ]));
+  });
+
+  it("round-trips values through the ordinary consumer parameter screen", () => {
+    const target = PILE_CAP_LEVELING_TARGETS[4];
+    const input = pileCapLevelingAcceptanceInputR1(target.contextKey);
+    const prompt = [target.titleRu, ...pileCapLevelingPromptDetailsR1(input)].join("\n");
+    expect(extractConcretePlacementCanonicalParametersR1({ catalogId: target.catalogId, text: prompt }))
+      .toEqual(input);
+    const plan = buildCanonicalBaselinePlan({ catalog: catalog(target), prompt });
+    expect(plan.primaryMeasureParameterId).toBe("leveled_concrete_volume_m3");
+    expect(plan.parameters).toEqual(input);
+  });
+
+  it("does not claim neighboring repair or curing identities", async () => {
+    await expect(compilePileCapLevelingR1(pileCapLevelingAcceptanceInputR1("standard"), {
+      catalogId: "canonical-work:base:concrete_foundation_interior_pile_cap_repair_standard",
+    })).rejects.toThrow("PILE_CAP_LEVELING_CATALOG_UNSUPPORTED");
+  });
+});

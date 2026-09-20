@@ -10,7 +10,7 @@ describe("embedded AI work-specific rows", () => {
     expectRowsContain(presentationForEstimate(estimateForEmbeddedAi(EMBEDDED_AI_PROMPTS.windows)), ["оконный блок", "подоконник", "герметизация"]);
     expectRowsContain(presentationForEstimate(estimateForEmbeddedAi(EMBEDDED_AI_PROMPTS.brick)), ["кирпич", "раствор", "кладка"]);
     expectRowsContain(presentationForEstimate(estimateForEmbeddedAi(EMBEDDED_AI_PROMPTS.gableRoof)), ["стропила", "мауэрлат", "кровельное покрытие"]);
-    expectRowsContain(presentationForEstimate(estimateForEmbeddedAi(EMBEDDED_AI_PROMPTS.gkl)), ["листы ГКЛ", "направляющий профиль", "обшивка ГКЛ"]);
+    expectRowsContain(presentationForEstimate(estimateForEmbeddedAi(EMBEDDED_AI_PROMPTS.gkl)), ["листы ГКЛ", "направляющий профиль", "обшивка листами ГКЛ"]);
     expectRowsContain(presentationForEstimate(estimateForEmbeddedAi(EMBEDDED_AI_PROMPTS.asphalt)), ["песчаное основание", "щебеночное основание", "асфальтобетон"]);
   });
 });
