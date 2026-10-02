@@ -2096,7 +2096,7 @@ async function compileClaimedJob(
   confirmedParameters = { ...profileInputResolution.confirmedParameters };
   const formulas = (
     await client.query(
-      "select formula_id,ast,input_parameter_ids,ast_sha256 from public.estimate_formula_graph where definition_version_id=$1",
+      "select formula_id,output_unit_id,expression_source,ast,input_parameter_ids,ast_sha256 from public.estimate_formula_graph where definition_version_id=$1",
       [definition.id],
     )
   ).rows;

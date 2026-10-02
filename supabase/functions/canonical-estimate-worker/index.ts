@@ -260,7 +260,7 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
 
   const [parameterResult, formulaResult, resourceResult] = await Promise.all([
     admin.from("estimate_parameter_definition").select("parameter_id,value_type,required,default_value,constraints_json,truth_metadata,unit_id,approved_template_baseline_id").eq("definition_version_id", definition.id).order("ordinal"),
-    admin.from("estimate_formula_graph").select("formula_id,ast,input_parameter_ids,ast_sha256").eq("definition_version_id", definition.id),
+    admin.from("estimate_formula_graph").select("formula_id,output_unit_id,expression_source,ast,input_parameter_ids,ast_sha256").eq("definition_version_id", definition.id),
     admin.from("estimate_resource_spec").select("id,row_id,ordinal,section,category,title_ru,unit_id,formula_id,inclusion_ast,resource_graph,procurement_eligible,cost_owner_id,source_metadata,row_sha256").eq("definition_version_id", definition.id).order("ordinal").limit(MAX_RESOURCE_ROWS + 1),
   ]);
   if (parameterResult.error || formulaResult.error || resourceResult.error) {

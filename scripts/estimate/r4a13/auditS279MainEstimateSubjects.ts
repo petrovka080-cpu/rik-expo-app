@@ -134,7 +134,7 @@ async function compilePersisted(input: {
 
   const parameters = (await input.client.query(`select * from public.estimate_parameter_definition
     where definition_version_id=$1::uuid order by ordinal`, [definition.id])).rows as ParameterRow[];
-  const formulas = (await input.client.query(`select formula_id,ast,input_parameter_ids,ast_sha256
+  const formulas = (await input.client.query(`select formula_id,output_unit_id,expression_source,ast,input_parameter_ids,ast_sha256
     from public.estimate_formula_graph where definition_version_id=$1::uuid order by formula_id`,
   [definition.id])).rows as FormulaRow[];
   const resourceRows = (await input.client.query(`select resource.*,

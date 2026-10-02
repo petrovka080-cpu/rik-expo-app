@@ -697,7 +697,7 @@ async function executeShard(input: {
       [definitionIds],
     );
   const formulaRows = await input.client.query(
-      `select definition_version_id::text,formula_id,ast,input_parameter_ids,ast_sha256
+      `select definition_version_id::text,formula_id,output_unit_id,expression_source,ast,input_parameter_ids,ast_sha256
       from public.estimate_formula_graph where definition_version_id=any($1::uuid[])
       order by definition_version_id,formula_id`,
       [definitionIds],
