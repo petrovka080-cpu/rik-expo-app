@@ -117,7 +117,7 @@ async function main(): Promise<void> {
         .exec(PROMPT)?.[1],
       vch_nominal_diameter_mm: /номинальн\p{L}*\s+диаметр\p{L}*\s+(\d+(?:[,.]\d+)?)\s*мм/iu
         .exec(PROMPT)?.[1]?.replace(",", "."),
-      vch_pipeline_spool_designation: /внутренн\p{L}*\s+трубн\p{L}*\s+вставк\p{L}*\s+([A-Z0-9][A-Z0-9._/-]*)/iu
+      vch_pipeline_spool_designation: /внутренн\p{L}*\s+трубн\p{L}*\s+вставк\p{L}*\s+([A-Z0-9](?:[A-Z0-9._/-]*[A-Z0-9])?)/iu
         .exec(PROMPT)?.[1],
     };
     invariant(Object.values(ordinary).every(Boolean)
