@@ -46,19 +46,31 @@ async function main(): Promise<void> {
     invariant(target.runtime_publication_state === "CANDIDATE"
       && target.content_status === "CANDIDATE_READY" && target.content_gate_status === "GREEN",
     "STOP_S27_26_BOOSTER_PUMPING_STATION_READBACK_GATE");
-    const [pr, fr, rr, br, sr, lr] = await Promise.all([
-      client.query("select * from public.estimate_parameter_definition where definition_version_id=$1 order by ordinal", [target.definition_version_id]),
-      client.query("select formula_id,output_unit_id,expression_source,ast,input_parameter_ids,ast_sha256 from public.estimate_formula_graph where definition_version_id=$1 order by formula_id", [target.definition_version_id]),
-      client.query("select * from public.estimate_resource_spec where definition_version_id=$1 order by ordinal", [target.definition_version_id]),
-      client.query("select input_values,input_classification,normative_source_ids from public.estimate_approved_template_baseline where id=$1", [target.approved_template_baseline_id]),
-      client.query(`select d.definition_version_id::text,d.selectable,d.excluded_boundaries,r.status
-        from public.estimate_search_document d join public.estimate_search_index_release r
-        on r.id=d.search_release_id where d.search_release_id=$1 and d.catalog_id=$2`,
-      [current.searchReleaseId, CATALOG_ID]),
-      client.query(`select l.locator_key,l.excerpt_sha256 from public.estimate_work_normative_binding b
-        join public.estimate_normative_locator l on l.id=b.locator_id where b.definition_version_id=$1`,
-      [target.definition_version_id]),
-    ]);
+    const pr = await client.query(
+      "select * from public.estimate_parameter_definition where definition_version_id=$1 order by ordinal",
+      [target.definition_version_id],
+    );
+    const fr = await client.query(
+      "select formula_id,output_unit_id,expression_source,ast,input_parameter_ids,ast_sha256 from public.estimate_formula_graph where definition_version_id=$1 order by formula_id",
+      [target.definition_version_id],
+    );
+    const rr = await client.query(
+      "select * from public.estimate_resource_spec where definition_version_id=$1 order by ordinal",
+      [target.definition_version_id],
+    );
+    const br = await client.query(
+      "select input_values,input_classification,normative_source_ids from public.estimate_approved_template_baseline where id=$1",
+      [target.approved_template_baseline_id],
+    );
+    const sr = await client.query(`select d.definition_version_id::text,d.selectable,
+      d.excluded_boundaries,r.status from public.estimate_search_document d
+      join public.estimate_search_index_release r on r.id=d.search_release_id
+      where d.search_release_id=$1 and d.catalog_id=$2`,
+    [current.searchReleaseId, CATALOG_ID]);
+    const lr = await client.query(`select l.locator_key,l.excerpt_sha256
+      from public.estimate_work_normative_binding b join public.estimate_normative_locator l
+      on l.id=b.locator_id where b.definition_version_id=$1`,
+    [target.definition_version_id]);
     const parameters = pr.rows as (CanonicalEstimateParameterDefinition & Json)[];
     const formulas = fr.rows as CanonicalEstimateFormulaDefinition[];
     const resources = rr.rows as CanonicalEstimateResourceDefinition[];
