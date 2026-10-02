@@ -5,7 +5,7 @@
   "scope": "One continuous steel casing crossing with explicitly selected installation method. Casing supply and site joints, support rings and elements, contact tape, compatible end-seal kits, applicable civil work, crew labor, mechanisms and logistics are separate quantity/cost owners. This source pack is not itself a published owner or accepted estimate.",
   "engineeringAcceptanceClaimed": false,
   "universalRatesClaimed": false,
-  "implementationStatus": "QUANTITY_GEOMETRY_SUPPLY_COMPONENTS_NOT_PUBLISHED_NOT_FULL_OWNER",
+  "implementationStatus": "QUANTITY_SPACER_SUPPLY_CIVIL_GEOMETRY_COMPONENTS_NOT_PUBLISHED_NOT_FULL_OWNER",
   "quantityComponent": {
     "module": "src/lib/estimate/v4/roadCrossingSleevesQuantityModelR1.ts",
     "verification": "tests/estimateNorms/roadCrossingSleevesQuantityModelR1.contract.test.ts",
@@ -13,6 +13,8 @@
     "spacerGeometryVerification": "tests/estimateNorms/roadCrossingSleevesSpacerGeometryR1.contract.test.ts",
     "procurementModule": "src/lib/estimate/v4/roadCrossingSleevesProcurementR1.ts",
     "procurementVerification": "tests/estimateNorms/roadCrossingSleevesProcurementR1.contract.test.ts",
+    "civilGeometryModule": "src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1.ts",
+    "civilGeometryVerification": "tests/estimateNorms/roadCrossingSleevesCivilGeometryR1.contract.test.ts",
     "evaluator": "Existing canonical FormulaGraph only",
     "inputPolicy": "The component takes explicitly supplied scalar inputs and does not create a runtime form or baseline. The full owner must classify source-backed replaceable assumptions separately from genuine project facts, and prefer certified pipe mass when available.",
     "completedQuantityBoundaries": [
@@ -26,11 +28,15 @@
       "selected spacer elements and end-seal kits: actual installed/lost/reserved/stock counts, new pack order and free remainder; packaging never changes installation count",
       "one full-width tape course: actual width validated against ring width; missing product facts use the canonical resource input gate even with a manual quantity",
       "compatible tape supplied per newly ordered element pack recalculates from that order and reduces the additional roll purchase; old stock elements do not imply included tape",
-      "only the three new supply orders own material cost/procurement; balance outputs, supplied tape and kit fasteners have no duplicate cost; compatible prices remain honest NULL when unavailable"
+      "only the three new supply orders own material cost/procurement; balance outputs, supplied tape and kit fasteners have no duplicate cost; compatible prices remain honest NULL when unavailable",
+      "explicit method-specific rectangular geometry: open trench/bedding/outside casing fill space OR thrust/reception pits and actual-diameter bore, never both methods' excavation",
+      "pit dimensions remain actual project facts as crossing length changes; unsupported shapes/methods and impossible geometry are not silently substituted or clamped",
+      "civil geometry controls are informational only, not invented paid construction operations or a soil reuse/haul classification"
     ],
     "requiredBeforeFullOwnerPublication": [
       "actual load-rated product selection and approved layout; tested geometric compatibility alone is not structural acceptance",
-      "explicit installation method with its civil work, reaction arrangement and groundwater measures",
+      "integration of actual method-specific civil work, support/reaction arrangement, groundwater measures and net pit return fill after retained structures",
+      "actual slopes/end ramps/nonrectangular shafts or other methods outside the implemented rectangular component; never approximate these by the accepted simple geometry without confirmation",
       "materials, WPS-dependent joint consumables, crew work, machine time and logistics",
       "integration of the tested element/tape/seal supply component with exact project product selection and approved geometry; the full owner must include authoritative spacer geometry rows",
       "approved multi-course tape scope when a single full-width course is not selected; no automatic narrow-tape consumption assumption",
@@ -77,7 +83,10 @@
     "selected load-rated spacer element, approved ring pitch and actual element height; assembled diameter is calculated, not another independent question",
     "planned physical casing section length; not supplier bundle size",
     "method-specific excavation dimensions, support and reaction arrangements",
-    "actual groundwater and optional annular-fill requirements"
+    "actual groundwater and optional annular-fill requirements",
+    "external excavation dimensions for the selected rectangular method; usable pit dimensions are not substituted for excavation dimensions",
+    "actual selected jacking excavation diameter; it is not inferred from casing OD",
+    "actual approved full-width bedding thickness for the open rectangular branch; no hidden bedding or pit size"
   ],
   "dimensionPolicy": {
     "geometry": "metres, square metres and cubic metres; explicit conversions for mm, kg and tonnes",
@@ -85,7 +94,9 @@
     "raciAssembledDiameter": "carrier OD + 2 * selected RACI element height; do not ask for a second independent assembled diameter",
     "raciDiametralDifferences": "assembled diameter - maximum joint envelope > 15 mm AND casing ID - assembled diameter > 15 mm; strict manufacturer-specific diametral limits, not radial clearances or structural approval",
     "geometricSteelMass": "pi/4*(OD^2-ID^2)*length*density",
-    "invalidGeometry": "Reject nonpositive wall or insufficient assembled clearance; never conceal it by max(0, geometry)"
+    "invalidGeometry": "Reject nonpositive wall or insufficient assembled clearance; never conceal it by max(0, geometry)",
+    "civilGeometry": "Rectangular excavation length*width*depth; mm2 bore/casing area converted at the final volume. Open-cut outside fill space excludes bedding and full exterior casing displacement, not merely steel wall mass",
+    "civilBoundary": "Geometric nonnegative differences prove only dimensional feasibility, not engineering cover, shoring safety, reaction capacity, groundwater adequacy or material suitability"
   },
   "procurementPolicy": {
     "physicalSections": "ceil(crossing length/planned section length)",
