@@ -93,7 +93,7 @@ async function main(): Promise<void> {
       "STOP_S27_26_FILTRATION_STATION_READBACK_JOIN");
     invariant(validateMasterFormulaGraphConsistency(formulas).length === 0,
       "STOP_S27_26_FILTRATION_STATION_READBACK_FORMULA_GRAPH_DRIFT");
-    invariant(locator.locator_key === "filtration-station-geometric-automatic-s27-26-v1",
+    invariant(locator.locator_key === "filtration-station-geometric-automatic-s27-26-v2",
       "STOP_S27_26_FILTRATION_STATION_READBACK_LOCATOR");
     invariant(formulas.every((formula) =>
       !/waterTreatmentPlantCalculator|golden_rate|normFactor/iu
