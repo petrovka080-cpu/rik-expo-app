@@ -1,13 +1,13 @@
 {
   "schemaVersion": "r568-local-developer-canonical-release.v1",
   "status": "ACTIVE_LOCAL_DEVELOPER_CANONICAL_RELEASE",
-  "definitionReleaseId": "ca92547c-3927-50d6-89e2-98a5c5f63126",
-  "searchReleaseId": "833ed8ce-d6c7-52ee-998e-e2cddf3a3b25",
+  "definitionReleaseId": "0fa843d1-c720-530c-8bee-9d0c2a3a0bf4",
+  "searchReleaseId": "ef4fd021-43b5-5327-b4ca-b8e65b371c0a",
   "definitionReleaseStatus": "prepared",
   "searchReleaseStatus": "draft",
-  "definitionSnapshotSha256": "e7e6ad032c2d0e5e540bc1ea7eaa8a37d7912ca7a8ed69fd82b13224b28f2378",
-  "manifestHashChainSha256": "e7e6ad032c2d0e5e540bc1ea7eaa8a37d7912ca7a8ed69fd82b13224b28f2378",
-  "searchHashChainSha256": "5a352ad619b1e8ae82aea8f62a6283fe2632a771f2058249f765920d39aeece4",
+  "definitionSnapshotSha256": "79381909e079ea3c2300d817b6cb001fe087942623cd4a1a365cf451380dd618",
+  "manifestHashChainSha256": "79381909e079ea3c2300d817b6cb001fe087942623cd4a1a365cf451380dd618",
+  "searchHashChainSha256": "d3f237131ddda518d08deb91a8660881933973a06b57f836637dd6f3d644e461",
   "identities": 11610,
   "visibleCanonicalDefinitions": 10322,
   "aliasesRedirects": 1288,
@@ -15,7 +15,7 @@
   "runtimeAdditionalAdmissions": 9,
   "currentInventoryRowsIncludingAliases": 11619,
   "denominatorNote": "11610 is the immutable historical source-identity reconciliation (10322 canonical owners plus 1288 redirects); the current cumulative runtime also preserves 9 separately identified inherited admissions.",
-  "owner": "S27_26_BOOSTER_PUMPING_STATION_AUTOMATIC_SUCCESSOR",
+  "owner": "S27_26_VALVES_CHAMBERS_AUTOMATIC_SUCCESSOR",
   "productionAccessed": false,
   "fakeGreenClaimed": false
 }
