@@ -5,12 +5,14 @@
   "scope": "One continuous steel casing crossing with explicitly selected installation method. Casing supply and site joints, support rings and elements, contact tape, compatible end-seal kits, applicable civil work, crew labor, mechanisms and logistics are separate quantity/cost owners. This source pack is not itself a published owner or accepted estimate.",
   "engineeringAcceptanceClaimed": false,
   "universalRatesClaimed": false,
-  "implementationStatus": "QUANTITY_COMPONENT_ONLY_NOT_PUBLISHED_NOT_FULL_OWNER",
+  "implementationStatus": "QUANTITY_GEOMETRY_SUPPLY_COMPONENTS_NOT_PUBLISHED_NOT_FULL_OWNER",
   "quantityComponent": {
     "module": "src/lib/estimate/v4/roadCrossingSleevesQuantityModelR1.ts",
     "verification": "tests/estimateNorms/roadCrossingSleevesQuantityModelR1.contract.test.ts",
     "spacerGeometryModule": "src/lib/estimate/v4/roadCrossingSleevesSpacerGeometryR1.ts",
     "spacerGeometryVerification": "tests/estimateNorms/roadCrossingSleevesSpacerGeometryR1.contract.test.ts",
+    "procurementModule": "src/lib/estimate/v4/roadCrossingSleevesProcurementR1.ts",
+    "procurementVerification": "tests/estimateNorms/roadCrossingSleevesProcurementR1.contract.test.ts",
     "evaluator": "Existing canonical FormulaGraph only",
     "inputPolicy": "The component takes explicitly supplied scalar inputs and does not create a runtime form or baseline. The full owner must classify source-backed replaceable assumptions separately from genuine project facts, and prefer certified pipe mass when available.",
     "completedQuantityBoundaries": [
@@ -20,13 +22,19 @@
       "geometric transport mass with final mm2 conversion to avoid premature fixed-decimal area rounding",
       "RACI-specific ring and selected-element counts and contact tape length",
       "assembled RACI diameter derived from carrier OD and selected element height; maximum joint envelope is an actual project fact",
-      "RACI-specific joint and insertion diametral differences strictly greater than 15 mm, checked on authoritative formula outputs before manual row quantity overrides"
+      "RACI-specific joint and insertion diametral differences strictly greater than 15 mm, checked on authoritative formula outputs before manual row quantity overrides",
+      "selected spacer elements and end-seal kits: actual installed/lost/reserved/stock counts, new pack order and free remainder; packaging never changes installation count",
+      "one full-width tape course: actual width validated against ring width; missing product facts use the canonical resource input gate even with a manual quantity",
+      "compatible tape supplied per newly ordered element pack recalculates from that order and reduces the additional roll purchase; old stock elements do not imply included tape",
+      "only the three new supply orders own material cost/procurement; balance outputs, supplied tape and kit fasteners have no duplicate cost; compatible prices remain honest NULL when unavailable"
     ],
     "requiredBeforeFullOwnerPublication": [
       "actual load-rated product selection and approved layout; tested geometric compatibility alone is not structural acceptance",
       "explicit installation method with its civil work, reaction arrangement and groundwater measures",
       "materials, WPS-dependent joint consumables, crew work, machine time and logistics",
-      "element/tape/seal procurement packaging, supplied-kit ownership and compatible actual prices or honest NULL",
+      "integration of the tested element/tape/seal supply component with exact project product selection and approved geometry; the full owner must include authoritative spacer geometry rows",
+      "approved multi-course tape scope when a single full-width course is not selected; no automatic narrow-tape consumption assumption",
+      "actual compatible selected-product prices or honest NULL; no test prices or designations admitted to a prepared owner",
       "complete owner integration, rollback-only dry-run, one prepared apply and independent readback"
     ]
   },
@@ -40,7 +48,7 @@
     {
       "url": "https://www.racispacers.com/specifications/",
       "role": "RACI installation and tape dependencies",
-      "basis": "Approved spacing depends on filled-pipe load and is at most 3 m for this system. Tape covers each ring's pipe circumference with width at least the selected ring width. Installation follows the quotation/order layout.",
+      "basis": "Approved spacing depends on filled-pipe load and is at most 3 m for this system. A single tape course covers each ring's pipe circumference with width at least the selected ring width; an additional adjacent course is allowed by the manufacturer when required, but is outside the implemented single-course component. Installation follows the quotation/order layout.",
       "restriction": "Provided tape must not be purchased twice. Tape width and the selected ring geometry require product confirmation; preliminary quantities do not establish structural adequacy."
     },
     {
@@ -85,7 +93,10 @@
     "stock": "Only whole confirmed compatible casing sections; unidentified offcuts do not count as available installation stock",
     "supplierBundles": "A bundle contains an integer number of compatible physical sections. Round new section demand by bundle count without changing installed sections or joints",
     "balance": "Installed quantity, cutting/process loss, retained reserve, compatible stock, rounded new order and free remainder are distinct visible outputs",
-    "endSealFasteners": "Included kit straps are not independently payable or procurement-eligible"
+    "endSealFasteners": "Included kit straps are not independently payable or procurement-eligible",
+    "selectedProductSupplies": "Explicit installed count + actual technological loss + retained reserve minus compatible stock; new order rounded to actual pack/roll size, remaining after installation and loss separated from free surplus",
+    "providedTape": "Confirmed compatible metres per newly ordered element pack multiplied by the actual new element pack count; deduct from extra tape order, not a second priced purchase",
+    "tapeScope": "One full-width circumferential course only; actual tape width >= selected ring width. Unknown width remains a local resource need, and a manual quantity cannot remove the product-input gate"
   },
   "profilePolicy": {
     "classification": "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE",

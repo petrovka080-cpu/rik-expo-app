@@ -5,7 +5,7 @@ import type {
 import {
   resolveProfessionalPhysicalNormParameterValuesV1,
   type ProfessionalPhysicalNormApplicabilityResolutionV1,
-} from "../v4/domainFactory";
+} from "../v4/domainFactory/professionalPhysicalNormApplicabilityV1";
 import type { ProfessionalParameterValueV4 } from "../v4/professionalProjectAssemblyV4";
 import {
   compileFormulaGraph,

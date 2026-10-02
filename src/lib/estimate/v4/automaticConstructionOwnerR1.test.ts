@@ -13,6 +13,15 @@ const left: AutomaticParameterSpec = { id: "left", title: "Left", kind: "ordinar
 const right: AutomaticParameterSpec = { id: "right", title: "Right", kind: "ordinary", valueType: "integer", unitId: "mm" };
 
 describe("automatic owner uses existing numeric peer contract", () => {
+  it("copies non-arithmetic resource facts into the existing gate without changing owners that do not declare them", () => {
+    const ids = ["right"];
+    const owner = buildAutomaticConstructionOwnerR1({ ...config, ordinary: [left, right], rows: [{ ...config.rows[0]!, inputParameterIds: ids }] });
+    ids.push("left");
+    expect(owner.resources[0]?.resource_graph.inputParameterIds).toEqual(["right"]);
+    const unchanged = buildAutomaticConstructionOwnerR1({ ...config, ordinary: [left] });
+    expect(unchanged.resources[0]?.resource_graph).not.toHaveProperty("inputParameterIds");
+    expect(() => buildAutomaticConstructionOwnerR1({ ...config, ordinary: [left], rows: [{ ...config.rows[0]!, inputParameterIds: ["missing"] }] })).toThrow("AUTOMATIC_RESOURCE_INPUT_PARAMETER_INVALID:test:row");
+  });
   it("projects validated formula-output limits through the shared compiler contract", () => {
     const policy = { schemaVersion: "canonical_formula_output_bounds_v1" as const, unitId: "mm", exclusiveMinimum: 15, reasonRu: "Test-only same-unit bound" };
     const owner = buildAutomaticConstructionOwnerR1({ ...config, ordinary: [left], rows: [{ ...config.rows[0]!, formulaOutputBounds: policy }] });

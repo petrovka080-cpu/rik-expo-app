@@ -40,6 +40,9 @@ export type AutomaticRowSpec = Readonly<{
   costTreatment?: "OWN_COST" | "INFORMATIONAL_SCOPE" | "INCLUDED_IN_RESOURCE_ROWS";
   inclusion?: Readonly<{ kind: "equals"; parameterId: string; value: string }>;
   titleParameterIds?: readonly string[];
+  /** Required product/method facts consumed by this resource even when they
+   * are not arithmetic operands. Uses the canonical compiler's existing gate. */
+  inputParameterIds?: readonly string[];
   formulaOutputBounds?: CanonicalFormulaOutputBoundsV1;
 }>;
 
@@ -177,6 +180,9 @@ export function buildAutomaticConstructionOwnerR1(
   });
 
   const resources = config.rows.map((row, ordinal) => {
+    if (row.inputParameterIds?.some((id) => !specsById.has(id))) {
+      throw new Error(`AUTOMATIC_RESOURCE_INPUT_PARAMETER_INVALID:${row.rowId}`);
+    }
     const formulaOutputBounds = parseCanonicalFormulaOutputBoundsV1(row.formulaOutputBounds, row.unitId, row.unitId, row.rowId);
     const resourceGraph = {
       formulaId: row.formulaId,
@@ -185,6 +191,7 @@ export function buildAutomaticConstructionOwnerR1(
       costOwner: "resource",
       scopeContextParameterIds: [...ordinaryIds],
       costTreatment: row.costTreatment ?? "OWN_COST",
+      ...(row.inputParameterIds ? { inputParameterIds: [...row.inputParameterIds] } : {}),
       ...(formulaOutputBounds == null ? {} : { formulaOutputBoundsV1: formulaOutputBounds }),
       ...(row.titleParameterIds ? {
         titleSpecificationParameterIds: [...row.titleParameterIds],
