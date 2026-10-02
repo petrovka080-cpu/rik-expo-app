@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "rik-expo-app.s27-26.reservoir-clean-water-rc-geometric-automatic-source-pack.v1",
+  "catalogId": "canonical-work:expanded:reservoir_clean_water",
+  "scope": "Preliminary complete construction of buried cast-in-place reinforced-concrete clean-water reservoirs from primary internal geometry: earthworks, concrete structure, reinforcement, formwork, waterproofing, potable coating, embedded reservoir appurtenances, consumables, labor, mechanisms, logistics, quality records and procurement balances.",
+  "ordinaryFacts": [
+    "reservoirCount",
+    "reservoirDesignation",
+    "internalLengthM",
+    "internalWidthM",
+    "operatingWaterDepthM",
+    "cellCountPerReservoir",
+    "structuralSystem"
+  ],
+  "calculatedScope": [
+    "useful storage capacity and excavation geometry from internal dimensions and the visible structural profile",
+    "blinding, base slab, external walls, dividing walls, roof slab, columns and total structural concrete",
+    "reinforcement, formwork, external waterproofing, potable-water coating and waterstop joint length",
+    "concrete, reinforcement and waterstop stock, waste, supplier-lot order, remainder and surplus balances",
+    "hatches, ladders, vents, penetrations, reservoir piping kits, sealing and commissioning consumables",
+    "excavation, backfill, excess-soil removal, labor, mechanisms, deliveries, testing and completion records"
+  ],
+  "conditionalProjectFacts": [
+    "excavation shoring system when shoring is required",
+    "dewatering pump, duration and discharge when groundwater control is required"
+  ],
+  "excludedScope": [
+    "external distribution pipelines, pumping or treatment stations and separate valve chambers",
+    "road restoration, rock excavation, piling and permanent groundwater-lowering systems",
+    "simultaneous selection with the legacy approved-BOQ water_reservoir owner for the same physical reservoir",
+    "prices or manufacturer performance not supplied by a confirmed source"
+  ],
+  "baselineScenario": {
+    "reservoirCount": 2,
+    "reservoirDesignation": "RC-CWR-2X1000",
+    "internalLengthM": 20,
+    "internalWidthM": 10,
+    "operatingWaterDepthM": 5,
+    "cellCountPerReservoir": 2,
+    "structuralSystem": "BURIED_CAST_IN_PLACE_RC"
+  },
+  "truthBoundary": "This visible preliminary engineering profile is not an approved structural design, geotechnical report, method statement or universal norm. Primary geometry drives all arithmetic automatically; structural thicknesses, reinforcement intensities, productivity, loss, supplier-lot and conditional values remain visible, editable and require project confirmation. The approved-BOQ water_reservoir profile is an alternative owner, never an additive duplicate."
+}

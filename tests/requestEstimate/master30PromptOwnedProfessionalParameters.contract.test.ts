@@ -21,6 +21,10 @@ import {
   PRESSURE_PIPELINE_CATALOG_ID,
   PRESSURE_PIPELINE_SHORT_INPUT,
 } from "../../src/lib/estimate/v4/pressurePipelineR1";
+import {
+  RESERVOIR_CLEAN_WATER_CATALOG_ID,
+  RESERVOIR_CLEAN_WATER_SHORT_INPUT,
+} from "../../src/lib/estimate/v4/reservoirCleanWaterR1";
 
 function schema(parameterIds: readonly string[]): CanonicalEstimateCatalogItem["parameterSchema"] {
   return parameterIds.map((parameterId, ordinal) => ({
@@ -1372,6 +1376,75 @@ describe("MASTER-30 shared prompt-owned professional parameter ingress", () => {
       parameters: Object.fromEntries(Object.entries(PRESSURE_PIPELINE_SHORT_INPUT)
         .map(([key, value]) => [key, String(value)])),
       primaryMeasureParameterId: "ppl_route_length_m",
+    });
+  });
+
+  test("routes reservoir primary geometry and never asks for calculated construction quantities", () => {
+    const ordinaryIds = Object.keys(RESERVOIR_CLEAN_WATER_SHORT_INPUT);
+    const numericIds = new Set([
+      "rcw_reservoir_count", "rcw_internal_length_m", "rcw_internal_width_m",
+      "rcw_operating_water_depth_m", "rcw_cell_count_per_reservoir",
+    ]);
+    const parameterSchema = [
+      ...schema(ordinaryIds).map((parameter, ordinal) => ({
+        ...parameter,
+        ordinal,
+        required: true,
+        preliminaryCompilationAllowed: false,
+        valueType: parameter.parameterId === "rcw_structural_system"
+          ? "enum" as const
+          : numericIds.has(parameter.parameterId) ? "decimal" as const : "text" as const,
+        constraints: parameter.parameterId === "rcw_structural_system"
+          ? { values: ["BURIED_CAST_IN_PLACE_RC"] } : {},
+        valueSourceRole: "USER_INPUT" as const,
+        guide: {
+          guideKind: "MEASUREMENT_RULE" as const,
+          guideShortRu: parameter.parameterId,
+          guideValidationPolicy: "MANDATORY_BLOCK" as const,
+          sourceRole: "USER_SUPPLIED_PRIMARY_FACT",
+        },
+        formulaConsumers: ["rcw_scope_consumer_v1"],
+      })),
+      {
+        ...schema(["rcw_external_wall_thickness_m"])[0],
+        ordinal: ordinaryIds.length,
+        required: true,
+        valueType: "decimal" as const,
+        unitId: "m",
+        preliminaryCompilationAllowed: true,
+        valueSourceRole: "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE" as const,
+        formulaConsumers: ["rcw_external_length_v1"],
+      },
+    ] as unknown as CanonicalEstimateCatalogItem["parameterSchema"];
+    const catalog = {
+      catalogId: RESERVOIR_CLEAN_WATER_CATALOG_ID,
+      workKey: "reservoir_clean_water",
+      parameterSchema,
+    } as unknown as CanonicalEstimateCatalogItem;
+
+    let errorMessage = "";
+    try {
+      buildCanonicalBaselinePlan({
+        catalog,
+        prompt: "Два резервуара RC-CWR-2X1000, рабочая глубина воды 5 м",
+      });
+    } catch (error) {
+      errorMessage = error instanceof Error ? error.message : String(error);
+    }
+    expect(errorMessage).toContain("CANONICAL_BASELINE_CONTRACT_MISSING");
+    expect(errorMessage).not.toContain("rcw_reservoir_designation");
+    expect(errorMessage).not.toContain("rcw_operating_water_depth_m");
+    expect(errorMessage).not.toContain("rcw_external_wall_thickness_m");
+    expect(errorMessage).toContain("rcw_reservoir_count");
+    expect(errorMessage).toContain("rcw_internal_length_m");
+
+    expect(buildCanonicalBaselinePlan({
+      catalog,
+      prompt: "Строительство 2 подземных монолитных ЖБ резервуаров RC-CWR-2X1000, внутренние размеры каждого 20x10 м, рабочая глубина воды 5 м, по 2 переключаемые секции.",
+    })).toMatchObject({
+      parameters: Object.fromEntries(Object.entries(RESERVOIR_CLEAN_WATER_SHORT_INPUT)
+        .map(([key, value]) => [key, String(value)])),
+      primaryMeasureParameterId: "rcw_reservoir_count",
     });
   });
 });
