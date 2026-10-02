@@ -4,6 +4,7 @@ import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
 
 import {
   buildConsumerRepairProgressiveParameterCards,
+  canonicalConsumerEditableFieldValue,
   canonicalConsumerParameterInlineGuide,
   canonicalConsumerParameterPlaceholder,
   ConsumerRepairDraftQuickActions,
@@ -18,6 +19,32 @@ jest.mock("@expo/vector-icons", () => ({
 }));
 
 describe("InlineParamEditor R3 parameter guide", () => {
+  it("keeps an unconfirmed profile value out of the input so the grey reference remains visible", () => {
+    expect(canonicalConsumerEditableFieldValue({
+      cardValue: 0.12,
+      revisionValue: 0.12,
+      parameter: {
+        source: "ASSUMED",
+        referenceValue: 0.12,
+      } as never,
+    })).toBe("");
+    expect(canonicalConsumerParameterPlaceholder({
+      parameter: {
+        source: "ASSUMED",
+        referenceValue: 0.12,
+      } as never,
+      baselineDisplay: "0,12 чел.-ч/м³",
+    })).toBe("Предварительно принято: 0,12 чел.-ч/м³");
+    expect(canonicalConsumerEditableFieldValue({
+      cardValue: 0.15,
+      revisionValue: 0.15,
+      parameter: {
+        source: "USER_EXPLICIT",
+        referenceValue: 0.12,
+      } as never,
+    })).toBe("0.15");
+  });
+
   it("distinguishes a preliminary value, an equipment passport value and an object measurement", () => {
     expect(canonicalConsumerParameterInlineGuide({
       parameter: { source: "ASSUMED", normativeSource: { sourceId: "qa-plan" } } as never,

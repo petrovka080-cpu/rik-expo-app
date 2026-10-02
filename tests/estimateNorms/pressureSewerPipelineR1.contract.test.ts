@@ -7,99 +7,140 @@ import {
   PRESSURE_SEWER_PIPELINE_RUNTIME_INPUT,
   PRESSURE_SEWER_PIPELINE_SHORT_INPUT,
   compilePressureSewerPipelineR1,
+  parsePressureSewerPipelineOrdinaryPromptR1,
 } from "../../src/lib/estimate/v4/pressureSewerPipelineR1";
 
-describe("S27.24 pressure-sewer pipeline owner", () => {
-  test("replaces generic sewer length coefficients with project quantities", () => {
+function quantity(
+  rows: readonly { row_id: string; quantity: string }[],
+  rowId: string,
+): number {
+  const value = rows.find((row) => row.row_id === rowId)?.quantity;
+  if (value == null) throw new Error(`TEST_ROW_MISSING:${rowId}`);
+  return Number(value);
+}
+
+describe("S27.27 automatic pressure-sewer pipeline owner", () => {
+  test("keeps only eight real project facts outside the visible preliminary profile", () => {
     expect(PRESSURE_SEWER_PIPELINE_CATALOG_ID)
       .toBe("canonical-work:expanded:pressure_sewer_pipeline");
-    expect(PRESSURE_SEWER_PIPELINE_PARAMETERS).toHaveLength(56);
-    expect(PRESSURE_SEWER_PIPELINE_FORMULAS).toHaveLength(37);
-    expect(PRESSURE_SEWER_PIPELINE_RESOURCES).toHaveLength(37);
-    expect(PRESSURE_SEWER_PIPELINE_RUNTIME_INPUT).toEqual({
-      psp_pipe_retained_spare_m: 0,
-      psp_pipe_supplier_segment_length_m: 1,
-    });
-    expect(JSON.stringify(PRESSURE_SEWER_PIPELINE_FORMULAS)).not.toMatch(
-      /length_m\s*\*\s*(?:1\.107|0\.005|0\.70|1\.02)|length_m\s*\/\s*(?:50|200)|0\.75\s*\*\s*(?:0\.22|1\.8)|golden_rate|normFactor/iu,
+    expect(Object.keys(PRESSURE_SEWER_PIPELINE_SHORT_INPUT)).toHaveLength(8);
+    expect(Object.keys(PRESSURE_SEWER_PIPELINE_RUNTIME_INPUT)).toHaveLength(46);
+    expect(PRESSURE_SEWER_PIPELINE_PARAMETERS).toHaveLength(61);
+    expect(PRESSURE_SEWER_PIPELINE_FORMULAS).toHaveLength(47);
+    expect(PRESSURE_SEWER_PIPELINE_RESOURCES).toHaveLength(47);
+
+    const ordinary = PRESSURE_SEWER_PIPELINE_PARAMETERS.filter((parameter) =>
+      parameter.truth_metadata.value_source_role === "USER_INPUT"
+    );
+    const profile = PRESSURE_SEWER_PIPELINE_PARAMETERS.filter((parameter) =>
+      parameter.truth_metadata.value_source_role
+        === "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE"
+    );
+    expect(ordinary).toHaveLength(8);
+    expect(profile).toHaveLength(46);
+    expect(Object.keys(PRESSURE_SEWER_PIPELINE_SHORT_INPUT).join(" ")).not.toMatch(
+      /trench_excavation|bedding_volume|surround_volume|backfill_volume|joint_quantity|labor_h|machine_h|trip_count/iu,
+    );
+    expect(Object.keys(PRESSURE_SEWER_PIPELINE_RUNTIME_INPUT).join(" ")).not.toMatch(
+      /trench_excavation_volume|bedding_volume|surround_volume|backfill_volume|joint_quantity|survey_labor_h$|excavator_machine_h$|delivery_trip_count/iu,
     );
   });
 
-  test("known route and selected pipe give useful rows and local needs", async () => {
-    const compiled = await compilePressureSewerPipelineR1({
+  test("extracts 100 metres from the exact short customer request without inventing count or geometry", () => {
+    expect(parsePressureSewerPipelineOrdinaryPromptR1(
+      "Строительство напорного канализационного трубопровода 100 метров",
+    )).toEqual({ psp_route_length_m: "100" });
+    expect(parsePressureSewerPipelineOrdinaryPromptR1(
+      "Строительство 800 м напорной канализации PE100-RC-SDR17-OD110-PN10, средняя глубина траншеи 1,8 м, фасонных частей 24, запорной арматуры 6, воздушных клапанов 4, промывных узлов 3.",
+    )).toEqual(Object.fromEntries(Object.entries(PRESSURE_SEWER_PIPELINE_SHORT_INPUT)
+      .map(([key, value]) => [key, String(value)])));
+  });
+
+  test("derives earthworks, materials, labor, mechanisms, logistics and acceptance", async () => {
+    const result = await compilePressureSewerPipelineR1({
       ...PRESSURE_SEWER_PIPELINE_SHORT_INPUT,
     });
-    expect(compiled.rows).toHaveLength(8);
-    expect(compiled.preliminaryNeeds).toHaveLength(29);
-    expect(compiled.rows).toEqual(expect.arrayContaining([
-      expect.objectContaining({ row_id: "rc09:psp_pipeline_install_acceptance", quantity: "1" }),
-      expect.objectContaining({ row_id: "rc09:psp_pipe", quantity: "800" }),
-      expect.objectContaining({ row_id: "rc09:psp-pipe-balance:installed-net", quantity: "800" }),
-    ]));
+    expect(result.preliminaryNeeds).toEqual([]);
+    expect(result.rows).toHaveLength(43);
+    expect(quantity(result.rows, "rc09:psp_pipeline_install_acceptance")).toBe(800);
+    expect(quantity(result.rows, "rc09:psp_trench_width")).toBeCloseTo(0.61, 9);
+    expect(quantity(result.rows, "rc09:psp_trench_excavation")).toBeCloseTo(878.4, 9);
+    expect(quantity(result.rows, "rc09:psp_bedding")).toBeCloseTo(56.12, 9);
+    expect(quantity(result.rows, "rc09:psp_surround")).toBeCloseTo(221.348947649, 9);
+    expect(quantity(result.rows, "rc09:psp_joint")).toBe(66);
+    expect(quantity(result.rows, "rc09:psp_chamber")).toBe(13);
+    expect(quantity(result.rows, "rc09:psp_cover")).toBe(13);
+    expect(quantity(result.rows, "rc09:labor:psp-pipe-appurtenance-install"))
+      .toBeCloseTo(523.2, 9);
+    expect(quantity(result.rows, "rc09:equipment:psp-excavator"))
+      .toBeCloseTo(25.097142857, 9);
+    expect(quantity(result.rows, "rc09:logistics:psp-removal")).toBe(25);
   });
 
-  test("compiles the thirty-four-row project fixture", async () => {
-    const compiled = await compilePressureSewerPipelineR1({
-      ...PRESSURE_SEWER_PIPELINE_ACCEPTANCE_INPUT,
+  test("recalculates the complete chain when primary length, diameter and depth change", async () => {
+    const first = await compilePressureSewerPipelineR1({
+      ...PRESSURE_SEWER_PIPELINE_SHORT_INPUT,
     });
-    expect(compiled.preliminaryNeeds).toEqual([]);
-    expect(compiled.rows).toHaveLength(34);
-    expect(compiled.rows).toEqual(expect.arrayContaining([
-      expect.objectContaining({ row_id: "rc09:psp_trench_excavation", quantity: "1760" }),
-      expect.objectContaining({ row_id: "rc09:psp_bedding", quantity: "144" }),
-      expect.objectContaining({ row_id: "rc09:psp_isolation_valve", quantity: "6" }),
-      expect.objectContaining({ row_id: "rc09:psp_air_valve", quantity: "4" }),
-      expect.objectContaining({ row_id: "rc09:psp_washout", quantity: "3" }),
-      expect.objectContaining({ row_id: "rc09:labor:psp-pipe-appurtenance-install", quantity: "680" }),
-      expect.objectContaining({ row_id: "rc09:equipment:psp-jointing", quantity: "96" }),
-      expect.objectContaining({ row_id: "rc09:logistics:psp-delivery", quantity: "20" }),
-    ]));
+    const changed = await compilePressureSewerPipelineR1({
+      ...PRESSURE_SEWER_PIPELINE_SHORT_INPUT,
+      psp_route_length_m: 100,
+      psp_pipe_outside_diameter_mm: 160,
+      psp_average_trench_depth_m: 2,
+    });
+    expect(quantity(changed.rows, "rc09:psp_pipeline_install_acceptance")).toBe(100);
+    expect(quantity(changed.rows, "rc09:psp_trench_excavation"))
+      .toBeLessThan(quantity(first.rows, "rc09:psp_trench_excavation"));
+    expect(quantity(changed.rows, "rc09:psp_bedding"))
+      .toBeLessThan(quantity(first.rows, "rc09:psp_bedding"));
+    expect(quantity(changed.rows, "rc09:psp_joint")).toBe(8);
+    expect(quantity(changed.rows, "rc09:psp_warning_tape")).toBe(105);
+    expect(quantity(changed.rows, "rc09:psp_pressure_test")).toBe(100);
+    expect(quantity(changed.rows, "rc09:psp_flushing")).toBe(100);
   });
 
-  test("separates installed pipe from supplier-segment rounding", async () => {
-    const compiled = await compilePressureSewerPipelineR1({
+  test("calculates supplier order and remainder from stock, loss, spare and package length", async () => {
+    const result = await compilePressureSewerPipelineR1({
       ...PRESSURE_SEWER_PIPELINE_ACCEPTANCE_INPUT,
-      psp_pipe_retained_spare_m: 15,
+      psp_pipe_available_stock_m: 100,
+      psp_pipe_retained_spare_m: 24,
       psp_pipe_supplier_segment_length_m: 12,
     });
-    const rows = new Map(compiled.rows.map((row) => [row.row_id, row]));
-    expect(rows.get("rc09:psp-pipe-balance:installed-net")?.quantity).toBe("800");
-    expect(rows.get("rc09:psp-pipe-balance:retained-spare")?.quantity).toBe("15");
-    expect(rows.get("rc09:psp-pipe-balance:total-need")?.quantity).toBe("815");
-    expect(rows.get("rc09:psp-pipe-balance:segment-count")?.quantity).toBe("68");
-    expect(rows.get("rc09:psp_pipe")?.quantity).toBe("816");
-    expect(rows.get("rc09:psp-pipe-balance:remainder")?.quantity).toBe("16");
-    expect(rows.get("rc09:psp-pipe-balance:surplus-beyond-spare")?.quantity).toBe("1");
-  });
-
-  test("keeps acceptance scope informational beside explicit labor", () => {
-    for (const rowId of ["rc09:psp_pipeline_install_acceptance", "rc09:psp_pressure_test",
-      "rc09:psp_flushing", "rc09:psp_asbuilt_documents"]) {
-      expect(PRESSURE_SEWER_PIPELINE_RESOURCES.find((row) => row.row_id === rowId)
-        ?.resource_graph).toEqual(expect.objectContaining({ costTreatment: "INFORMATIONAL_SCOPE" }));
-    }
+    expect(quantity(result.rows, "rc09:psp-pipe-balance:installed-net")).toBe(800);
+    expect(quantity(result.rows, "rc09:psp-pipe-balance:loss")).toBe(16);
+    expect(quantity(result.rows, "rc09:psp-pipe-balance:total-need")).toBe(840);
+    expect(quantity(result.rows, "rc09:psp-pipe-balance:net-need")).toBe(740);
+    expect(quantity(result.rows, "rc09:psp-pipe-balance:segment-count")).toBe(62);
+    expect(quantity(result.rows, "rc09:psp_pipe")).toBe(744);
+    expect(quantity(result.rows, "rc09:psp-pipe-balance:remainder")).toBe(28);
+    expect(quantity(result.rows, "rc09:psp-pipe-balance:surplus-beyond-spare")).toBe(4);
   });
 
   test("keeps casing, dewatering and road restoration conditional", async () => {
-    const compiled = await compilePressureSewerPipelineR1({
+    const result = await compilePressureSewerPipelineR1({
       ...PRESSURE_SEWER_PIPELINE_ACCEPTANCE_INPUT,
       psp_crossing_casing_mode: "REQUIRED",
       psp_crossing_casing_designation: "Стальной футляр по узлу пересечения",
       psp_crossing_casing_length_m: 36,
       psp_dewatering_mode: "REQUIRED",
       psp_dewatering_designation: "Иглофильтровая установка по ППР",
-      psp_dewatering_machine_h: 220,
+      psp_dewatering_duration_h: 40,
+      psp_dewatering_flow_m3_h: 12,
       psp_road_restoration_mode: "REQUIRED",
       psp_road_restoration_designation: "Дорожная одежда по ведомости восстановления",
-      psp_road_restoration_area_m2: 960,
+      psp_road_restoration_area_m2: 96,
     });
-    expect(compiled.preliminaryNeeds).toEqual([]);
-    expect(compiled.rows).toHaveLength(37);
+    expect(result.preliminaryNeeds).toEqual([]);
+    expect(result.rows).toHaveLength(47);
+    expect(quantity(result.rows, "rc09:psp_crossing_casing")).toBe(36);
+    expect(quantity(result.rows, "rc09:psp_dewatering")).toBe(40);
+    expect(quantity(result.rows, "rc09:psp_dewatering_volume")).toBe(480);
+    expect(quantity(result.rows, "rc09:psp_road_restoration")).toBe(96);
   });
 
-  test("rejects invalid quantities and unrelated identities", async () => {
+  test("rejects impossible project geometry and unrelated catalog identities", async () => {
     await expect(compilePressureSewerPipelineR1({
-      ...PRESSURE_SEWER_PIPELINE_SHORT_INPUT, psp_route_length_m: 0,
+      ...PRESSURE_SEWER_PIPELINE_SHORT_INPUT,
+      psp_route_length_m: 0,
     })).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
     await expect(compilePressureSewerPipelineR1(
       { ...PRESSURE_SEWER_PIPELINE_ACCEPTANCE_INPUT },

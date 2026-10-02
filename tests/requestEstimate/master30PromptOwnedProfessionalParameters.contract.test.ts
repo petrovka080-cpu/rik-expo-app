@@ -22,6 +22,12 @@ import {
   PRESSURE_PIPELINE_SHORT_INPUT,
 } from "../../src/lib/estimate/v4/pressurePipelineR1";
 import {
+  PRESSURE_SEWER_PIPELINE_CATALOG_ID,
+  PRESSURE_SEWER_PIPELINE_PARAMETERS,
+  PRESSURE_SEWER_PIPELINE_RUNTIME_INPUT,
+  PRESSURE_SEWER_PIPELINE_SHORT_INPUT,
+} from "../../src/lib/estimate/v4/pressureSewerPipelineR1";
+import {
   RESERVOIR_CLEAN_WATER_CATALOG_ID,
   RESERVOIR_CLEAN_WATER_SHORT_INPUT,
 } from "../../src/lib/estimate/v4/reservoirCleanWaterR1";
@@ -1376,6 +1382,79 @@ describe("MASTER-30 shared prompt-owned professional parameter ingress", () => {
       parameters: Object.fromEntries(Object.entries(PRESSURE_PIPELINE_SHORT_INPUT)
         .map(([key, value]) => [key, String(value)])),
       primaryMeasureParameterId: "ppl_route_length_m",
+    });
+  });
+
+  test("routes 100 metres of pressure sewer and leaves only seven real project facts unresolved", () => {
+    const parameterSchema = PRESSURE_SEWER_PIPELINE_PARAMETERS.map((parameter) => ({
+      parameterId: parameter.parameter_id,
+      ordinal: parameter.ordinal,
+      valueType: parameter.value_type,
+      unitId: parameter.unit_id,
+      titleRu: parameter.title_ru,
+      required: parameter.required,
+      defaultValue: Object.prototype.hasOwnProperty.call(
+        PRESSURE_SEWER_PIPELINE_RUNTIME_INPUT,
+        parameter.parameter_id,
+      )
+        ? PRESSURE_SEWER_PIPELINE_RUNTIME_INPUT[
+            parameter.parameter_id as keyof typeof PRESSURE_SEWER_PIPELINE_RUNTIME_INPUT
+          ]
+        : null,
+      constraints: parameter.constraints_json,
+      semanticParameterKey: parameter.truth_metadata.semantic_parameter_key,
+      visibilityRole: parameter.truth_metadata.visibility_role,
+      valueSourceRole: parameter.truth_metadata.value_source_role,
+      preliminaryCompilationAllowed: parameter.truth_metadata.preliminary_compilation_allowed,
+      guide: {
+        guideKind: "MEASUREMENT_RULE" as const,
+        guideShortRu: parameter.title_ru,
+        guideValidationPolicy: "MANDATORY_BLOCK" as const,
+        sourceRole: "USER_SUPPLIED_PRIMARY_FACT",
+      },
+      formulaConsumers: ["psp_formula_consumer_v2"],
+      resourceBranchConsumers: [],
+      normativeLinks: [],
+      validationRules: [],
+      provenance: {},
+    })) as unknown as CanonicalEstimateCatalogItem["parameterSchema"];
+    const catalog = {
+      catalogId: PRESSURE_SEWER_PIPELINE_CATALOG_ID,
+      workKey: "pressure_sewer_pipeline",
+      parameterSchema,
+    } as unknown as CanonicalEstimateCatalogItem;
+
+    let errorMessage = "";
+    try {
+      buildCanonicalBaselinePlan({
+        catalog,
+        prompt: "Строительство напорного канализационного трубопровода 100 метров",
+      });
+    } catch (error) {
+      errorMessage = error instanceof Error ? error.message : String(error);
+    }
+    expect(errorMessage).toContain("CANONICAL_BASELINE_CONTRACT_MISSING");
+    expect(errorMessage).not.toContain("psp_route_length_m");
+    expect(errorMessage).not.toContain("psp_survey_labor_h");
+    expect(errorMessage).not.toContain("psp_excavator_machine_h");
+    expect(errorMessage).not.toContain("psp_delivery_trip_count");
+    expect([
+      "psp_pipe_designation",
+      "psp_pipe_outside_diameter_mm",
+      "psp_average_trench_depth_m",
+      "psp_fitting_quantity_piece",
+      "psp_isolation_valve_quantity_piece",
+      "psp_air_valve_quantity_piece",
+      "psp_washout_quantity_piece",
+    ].every((parameterId) => errorMessage.includes(parameterId))).toBe(true);
+
+    expect(buildCanonicalBaselinePlan({
+      catalog,
+      prompt: "Строительство 800 м напорной канализации PE100-RC-SDR17-OD110-PN10, средняя глубина траншеи 1,8 м, фасонных частей 24, запорной арматуры 6, воздушных клапанов 4, промывных узлов 3.",
+    })).toMatchObject({
+      parameters: Object.fromEntries(Object.entries(PRESSURE_SEWER_PIPELINE_SHORT_INPUT)
+        .map(([key, value]) => [key, String(value)])),
+      primaryMeasureParameterId: "psp_route_length_m",
     });
   });
 

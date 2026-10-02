@@ -327,6 +327,27 @@ export function canonicalConsumerParameterInlineGuide(input: {
   return canonicalConsumerParameterSourceHint(input.parameter, input.guideKind);
 }
 
+export function canonicalConsumerEditableFieldValue(input: {
+  cardValue: AiEstimateParameterCard["value"];
+  revisionValue?: EstimateDraftRevision["params"][string]["value"];
+  parameter?: CanonicalParameter | null;
+}): string {
+  const displayedValue = input.revisionValue ?? input.cardValue;
+  // A replaceable preliminary profile is calculation input, but it is not
+  // user-entered data. Render the editor empty so its grey placeholder can
+  // show the accepted reference. A user confirmation changes provenance and
+  // the confirmed value then renders normally.
+  if (
+    input.parameter?.source === "ASSUMED"
+    && input.parameter.referenceValue != null
+    && displayedValue != null
+    && String(displayedValue) === String(input.parameter.referenceValue)
+  ) {
+    return "";
+  }
+  return displayedValue == null ? "" : String(displayedValue);
+}
+
 function missingParameterCount(revision: EstimateDraftRevision | null, fallback: number): number {
   if (!revision) return fallback;
   return revision.missingInputs.length;
@@ -1098,8 +1119,14 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
 
   private valueForCard(card: AiEstimateParameterCard): string {
     const currentValue = this.props.revision?.params[card.key]?.value;
-    if (currentValue != null) return String(currentValue);
-    return card.value == null ? "" : String(card.value);
+    const canonicalParameter = this.props.canonicalParameterSession?.parameters.find(
+      (parameter) => parameter.parameterId === card.key,
+    );
+    return canonicalConsumerEditableFieldValue({
+      cardValue: card.value,
+      revisionValue: currentValue,
+      parameter: canonicalParameter,
+    });
   }
 
   private draftSignature(cards: AiEstimateParameterCard[]): string {

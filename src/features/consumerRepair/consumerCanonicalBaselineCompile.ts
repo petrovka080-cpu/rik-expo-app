@@ -69,6 +69,10 @@ import {
   parsePressurePipelineOrdinaryPromptR1,
 } from "../../lib/estimate/v4/pressurePipelineR1";
 import {
+  PRESSURE_SEWER_PIPELINE_CATALOG_ID,
+  parsePressureSewerPipelineOrdinaryPromptR1,
+} from "../../lib/estimate/v4/pressureSewerPipelineR1";
+import {
   RESERVOIR_CLEAN_WATER_CATALOG_ID,
   parseReservoirCleanWaterOrdinaryPromptR1,
 } from "../../lib/estimate/v4/reservoirCleanWaterR1";
@@ -2208,6 +2212,9 @@ export function buildCanonicalBaselinePlan(input: {
   const pressurePipelineInput = input.catalog.catalogId === PRESSURE_PIPELINE_CATALOG_ID
     ? parsePressurePipelineOrdinaryPromptR1(input.prompt)
     : null;
+  const pressureSewerPipelineInput = input.catalog.catalogId === PRESSURE_SEWER_PIPELINE_CATALOG_ID
+    ? parsePressureSewerPipelineOrdinaryPromptR1(input.prompt)
+    : null;
   const reservoirCleanWaterInput = input.catalog.catalogId === RESERVOIR_CLEAN_WATER_CATALOG_ID
     ? parseReservoirCleanWaterOrdinaryPromptR1(input.prompt)
     : null;
@@ -2222,6 +2229,7 @@ export function buildCanonicalBaselinePlan(input: {
     && chlorinationStationInput == null
     && flushingDisinfectionInput == null
     && pressurePipelineInput == null
+    && pressureSewerPipelineInput == null
     && reservoirCleanWaterInput == null
     ? extractUserQuantity(input.prompt)
     : null;
@@ -2250,6 +2258,7 @@ export function buildCanonicalBaselinePlan(input: {
        ?? chlorinationStationInput
        ?? flushingDisinfectionInput
        ?? pressurePipelineInput
+       ?? pressureSewerPipelineInput
        ?? reservoirCleanWaterInput
        ?? {},
   );
@@ -2337,6 +2346,8 @@ export function buildCanonicalBaselinePlan(input: {
           ? "fld_pipeline_length_m"
         : pressurePipelineInput != null
           ? "ppl_route_length_m"
+        : pressureSewerPipelineInput != null
+          ? "psp_route_length_m"
         : reservoirCleanWaterInput != null
           ? "rcw_reservoir_count"
     : connectedUserQuantityParameterId
