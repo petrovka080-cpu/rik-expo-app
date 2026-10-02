@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "rik-expo-app.s27-28.road-crossing-sleeves-automatic-source-pack.v1",
+  "catalogId": "canonical-work:expanded:road_crossing_sleeves",
+  "sourceAuthority": "Visible preliminary quantity model, requiring approved crossing design, geotechnical information, product selection and method statement",
+  "scope": "One continuous steel casing crossing with explicitly selected installation method. Casing supply and site joints, support rings and elements, contact tape, compatible end-seal kits, applicable civil work, crew labor, mechanisms and logistics are separate quantity/cost owners. This source pack is not itself a published owner or accepted estimate.",
+  "engineeringAcceptanceClaimed": false,
+  "universalRatesClaimed": false,
+  "implementationStatus": "QUANTITY_COMPONENT_ONLY_NOT_PUBLISHED_NOT_FULL_OWNER",
+  "quantityComponent": {
+    "module": "src/lib/estimate/v4/roadCrossingSleevesQuantityModelR1.ts",
+    "verification": "tests/estimateNorms/roadCrossingSleevesQuantityModelR1.contract.test.ts",
+    "evaluator": "Existing canonical FormulaGraph only",
+    "inputPolicy": "The component takes explicitly supplied scalar inputs and does not create a runtime form or baseline. The full owner must classify source-backed replaceable assumptions separately from genuine project facts, and prefer certified pipe mass when available.",
+    "completedQuantityBoundaries": [
+      "physical sections and site joints independent from supplier bundle size",
+      "whole compatible stock, retained spare, rounded order and free remaining sections",
+      "wall thickness from actual OD and ID; reject nonpositive wall before evaluating mass",
+      "geometric transport mass with final mm2 conversion to avoid premature fixed-decimal area rounding",
+      "RACI-specific ring and selected-element counts and contact tape length"
+    ],
+    "requiredBeforeFullOwnerPublication": [
+      "assembled spacer and maximum joint-envelope clearance validation and actual load-rated product layout",
+      "explicit installation method with its civil work, reaction arrangement and groundwater measures",
+      "materials, WPS-dependent joint consumables, crew work, machine time and logistics",
+      "element/tape/seal procurement packaging, supplied-kit ownership and compatible actual prices or honest NULL",
+      "complete owner integration, rollback-only dry-run, one prepared apply and independent readback"
+    ]
+  },
+  "primarySources": [
+    {
+      "url": "https://www.racispacers.com/choosing-a-spacer/",
+      "role": "RACI-specific spacer selection and ring-layout rules",
+      "basis": "Selection depends on carrier and joint envelope diameters, casing internal diameter, clearance, filled carrier weight and crossing length. The manufacturer's preliminary ring rule is length/approved spacing+3; two rings protect each end.",
+      "restriction": "Do not apply RACI geometry, terminal rings or selection limits to other spacer systems. Diameter alone does not select a load-rated element. An approved layout and selected element remain project facts. Integer rounding is the application's conservative preliminary procurement rule, not a quoted universal installation norm."
+    },
+    {
+      "url": "https://www.racispacers.com/specifications/",
+      "role": "RACI installation and tape dependencies",
+      "basis": "Approved spacing depends on filled-pipe load and is at most 3 m for this system. Tape covers each ring's pipe circumference with width at least the selected ring width. Installation follows the quotation/order layout.",
+      "restriction": "Provided tape must not be purchased twice. Tape width and the selected ring geometry require product confirmation; preliminary quantities do not establish structural adequacy."
+    },
+    {
+      "url": "https://garlock.com.au/wp-content/uploads/2026/01/EndiTDUCasingEndSeal.Productdatasheet.2024-09-03-14-39-55.en_UK.pdf",
+      "role": "Example end-seal kit scope and included fasteners",
+      "basis": "The EPDM casing-end kit includes stainless fastening straps and protects the annular space from dirt and moisture.",
+      "restriction": "This is not a pressure-rated or universally groundwater-tight seal. Match the exact carrier/casing combination. Included straps have informational scope only, not a second purchase."
+    },
+    {
+      "url": "https://www.ssab.com/en/support/product-material-data/steel/20-questions",
+      "role": "Preliminary steel density for geometric transport mass",
+      "basis": "Approximate density 7.85 g/cm3 converts to 7850 kg/m3.",
+      "restriction": "The actual selected pipe's certified unit mass takes precedence. This physical approximation does not select grade, wall thickness or casing capacity."
+    },
+    {
+      "url": "https://www.pipejacking.org/about_pipe_jacking",
+      "role": "Method-specific work boundary and unknown project facts",
+      "basis": "Pipe jacking requires method-sized thrust/reception pits and a designed reaction arrangement; groundwater conditions can require additional seals and measures.",
+      "restriction": "No pit geometry, thrust capacity, geotechnical condition or groundwater measure is inferred from crossing length. Open-cut and trenchless scopes are not charged together."
+    }
+  ],
+  "projectFacts": [
+    "one continuous crossing length and confirmed installation method",
+    "selected steel casing designation, outside and inside diameters",
+    "carrier outside diameter and maximum bell/flange/coupling envelope",
+    "selected load-rated spacer element, approved ring pitch and assembled geometry",
+    "planned physical casing section length; not supplier bundle size",
+    "method-specific excavation dimensions, support and reaction arrangements",
+    "actual groundwater and optional annular-fill requirements"
+  ],
+  "dimensionPolicy": {
+    "geometry": "metres, square metres and cubic metres; explicit conversions for mm, kg and tonnes",
+    "pipeWall": "(casing outside diameter - casing inside diameter)/2; do not ask for a second independent wall thickness",
+    "geometricSteelMass": "pi/4*(OD^2-ID^2)*length*density",
+    "invalidGeometry": "Reject nonpositive wall or insufficient assembled clearance; never conceal it by max(0, geometry)"
+  },
+  "procurementPolicy": {
+    "physicalSections": "ceil(crossing length/planned section length)",
+    "siteJoints": "physical sections minus one for this continuous straight casing; no inferred additional branches",
+    "stock": "Only whole confirmed compatible casing sections; unidentified offcuts do not count as available installation stock",
+    "supplierBundles": "A bundle contains an integer number of compatible physical sections. Round new section demand by bundle count without changing installed sections or joints",
+    "balance": "Installed quantity, cutting/process loss, retained reserve, compatible stock, rounded new order and free remainder are distinct visible outputs",
+    "endSealFasteners": "Included kit straps are not independently payable or procurement-eligible"
+  },
+  "profilePolicy": {
+    "classification": "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE",
+    "presentation": "Effective values are actually filled in editable inputs, with a separate preliminary-source label and grey format/source guidance",
+    "approval": "Labor, productivity, consumption, loss, reserve, packaging and supplied-kit assumptions are editable scenario inputs, not universal standards or approved engineering decisions",
+    "cost": "Crew labor excludes machine operators already included in all-in machine rates; fuel and power included in those rates have no duplicate separate owner"
+  },
+  "excludedScope": [
+    "carrier pipeline purchase and installation outside the casing",
+    "pavement reconstruction and road traffic management unless separately and explicitly owned",
+    "automatic structural/geotechnical design, thrust-force approval or groundwater safety certification",
+    "HDD, pipe ramming or another method silently substituted for confirmed pipe jacking",
+    "grout net volume asserted from gross annular geometry without accounting for actual occupied volume",
+    "cost aggregation with a parent pipeline before crossing-specific trench and insertion overlaps are reconciled",
+    "invented prices"
+  ]
+}
