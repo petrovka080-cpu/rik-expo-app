@@ -527,6 +527,7 @@ async function main(): Promise<void> {
   atomicJson(OUTPUT, receipt);
   process.stdout.write(`${JSON.stringify({
     status: receipt.status,
+    master_sha256: receipt.master_sha256,
     backend_action: backendAction,
     capability_action: capabilityAction,
     backend_pid: backendPid,

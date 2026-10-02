@@ -102,5 +102,7 @@ describe("whole-app developer review runtime", () => {
     expect(identityResponse).toContain("containsCredentials: false");
     expect(identityResponse).toContain("containsTenantIdentity: false");
     expect(launcher).toContain("master_sha256 = [string]$BackendManager.master_sha256");
+    const managerStdout = manager.slice(manager.lastIndexOf("process.stdout.write("));
+    expect(managerStdout).toContain("master_sha256: receipt.master_sha256");
   });
 });
