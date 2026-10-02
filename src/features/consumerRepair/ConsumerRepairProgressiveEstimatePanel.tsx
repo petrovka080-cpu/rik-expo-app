@@ -171,11 +171,14 @@ function pluralizeRu(count: number, one: string, few: string, many: string): str
   return many;
 }
 
+let compactDisplayFormatter: Intl.NumberFormat | undefined;
+
 function compactRuNumber(value: number): string {
-  return new Intl.NumberFormat("ru-RU", {
+  compactDisplayFormatter ??= new Intl.NumberFormat("ru-RU", {
     maximumFractionDigits: 6,
     useGrouping: true,
-  }).format(value).replace(/[\u00a0\u202f]/gu, " ");
+  });
+  return compactDisplayFormatter.format(value).replace(/[\u00a0\u202f]/gu, " ");
 }
 
 export function canonicalNumericInputRule(input: {
@@ -686,7 +689,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
           accessibilityElementsHidden={!parametersOpen}
           importantForAccessibility={parametersOpen ? "auto" : "no-hide-descendants"}
         >
-        <ParameterDisclosurePanel
+        <RetainedParameterDisclosurePanel
           viewModel={viewModel}
           revision={currentRevision}
           canonicalParameterSession={canonicalParameterSession}
@@ -751,6 +754,34 @@ type ParameterDisclosurePanelProps = {
   onApplyParamBatch?: (
     patches: ConsumerRepairDraftRevisionParamBatchPatch[],
   ) => boolean | void | Promise<boolean | void>;
+};
+
+// Canonical cards are driven by the immutable session/revision, not BOQ row
+// previews. Keep a retained form out of unrelated row renders, while always
+// admitting changed source gates, callbacks, revision/session or editor state.
+const RetainedParameterDisclosurePanel = React.memo(
+  function RetainedParameterDisclosurePanel(props: ParameterDisclosurePanelProps) {
+    return <ParameterDisclosurePanel {...props} />;
+  },
+  (previous, next) => {
+    const keys = new Set([...Object.keys(previous), ...Object.keys(next)] as (keyof ParameterDisclosurePanelProps)[]);
+    if ([...keys].some(key => key !== "viewModel" && !Object.is(previous[key], next[key]))) return false;
+    if (!next.canonicalParameterSession) return previous.viewModel === next.viewModel;
+    const before = previous.viewModel?.sourceGates ?? [];
+    const after = next.viewModel?.sourceGates ?? [];
+    return before.length === after.length && before.every((gate, index) => {
+      const current = after[index]!;
+      const gateKeys = new Set([...Object.keys(gate), ...Object.keys(current)] as (keyof typeof gate)[]);
+      return [...gateKeys].every(key => Object.is(gate[key], current[key]));
+    });
+  },
+);
+
+type ParameterCardProjection = {
+  revision: EstimateDraftRevision | null;
+  session: CanonicalParameterSession | null;
+  legacyViewModel: RequestEstimateViewModel | null;
+  cards: AiEstimateParameterCard[];
 };
 
 type ParameterDisclosurePanelState = {
@@ -1042,6 +1073,15 @@ export class InlineParamEditor extends React.PureComponent<InlineParamEditorProp
 export class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePanelProps, ParameterDisclosurePanelState> {
   private submittedDraftValues: Record<string, string> | null = null;
   private submittedParentRevisionId: string | null = null;
+  // Only the current baseline/preview; never retain revision history or cache
+  // compiler/admission results. New immutable inputs invalidate immediately.
+  private baselineCardProjection: ParameterCardProjection | null = null;
+  private previewCardProjection: ParameterCardProjection | null = null;
+  private sessionPreview: {
+    session: CanonicalParameterSession | null;
+    draftValues: Record<string, string>;
+    value: CanonicalParameterSession | null;
+  } | null = null;
 
   state: ParameterDisclosurePanelState = {
     showAllMissing: false,
@@ -1062,12 +1102,11 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
   }
 
   componentDidUpdate(prevProps: ParameterDisclosurePanelProps): void {
-    const nextDraftSignature = this.draftSignature(this.buildCards());
+    const nextDraftSignature = this.draftSignature(this.buildBaselineCards());
     const revisionChanged =
       prevProps.revision?.revisionId !== this.props.revision?.revisionId;
     const canonicalSessionChanged =
-      prevProps.canonicalParameterSession?.fingerprint !==
-      this.props.canonicalParameterSession?.fingerprint;
+      prevProps.canonicalParameterSession !== this.props.canonicalParameterSession;
     const hasUnsavedUserInput = this.dirtyKeys().length > 0;
     if (revisionChanged) {
       if (!hasUnsavedUserInput) {
@@ -1107,18 +1146,45 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
   };
 
   private editableCanonicalParameterSession(): CanonicalParameterSession | null {
-    return buildConsumerRepairCanonicalSessionPreview({
-      session: this.props.canonicalParameterSession ?? null,
+    const session = this.props.canonicalParameterSession ?? null;
+    if (this.sessionPreview?.session === session && this.sessionPreview.draftValues === this.state.draftValues) {
+      return this.sessionPreview.value;
+    }
+    const value = buildConsumerRepairCanonicalSessionPreview({
+      session,
       draftValues: this.state.draftValues,
     });
+    this.sessionPreview = { session, draftValues: this.state.draftValues, value };
+    return value;
+  }
+
+  private cardProjection(session: CanonicalParameterSession | null, previous: ParameterCardProjection | null): ParameterCardProjection {
+    const legacyViewModel = session ? null : this.props.viewModel;
+    if (previous?.revision === this.props.revision && previous.session === session && previous.legacyViewModel === legacyViewModel) return previous;
+    return {
+      revision: this.props.revision,
+      session,
+      legacyViewModel,
+      cards: buildConsumerRepairProgressiveParameterCards({
+        revision: this.props.revision,
+        viewModel: this.props.viewModel,
+        canonicalParameterSession: session,
+      }),
+    };
+  }
+
+  private buildBaselineCards(): AiEstimateParameterCard[] {
+    const next = this.cardProjection(this.props.canonicalParameterSession ?? null, this.baselineCardProjection);
+    if (next !== this.baselineCardProjection) this.previewCardProjection = null;
+    this.baselineCardProjection = next;
+    return this.baselineCardProjection.cards;
   }
 
   private buildCards(): AiEstimateParameterCard[] {
-    return buildConsumerRepairProgressiveParameterCards({
-      revision: this.props.revision,
-      viewModel: this.props.viewModel,
-      canonicalParameterSession: this.editableCanonicalParameterSession(),
-    });
+    const session = this.editableCanonicalParameterSession();
+    if (session === (this.props.canonicalParameterSession ?? null)) return this.buildBaselineCards();
+    this.previewCardProjection = this.cardProjection(session, this.previewCardProjection);
+    return this.previewCardProjection.cards;
   }
 
   private valueForCard(card: AiEstimateParameterCard): string {
@@ -1140,7 +1206,8 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
   }
 
   private rebaseDraftOnCurrentRevision(preserveKeys: string[]): void {
-    const cards = this.buildCards();
+    // An old unsaved preview must not become the new revision's baseline.
+    const cards = this.buildBaselineCards();
     const baselineValues = Object.fromEntries(cards.map((card) => [card.key, this.valueForCard(card)]));
     const preservedValues = Object.fromEntries(
       preserveKeys
@@ -1460,11 +1527,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     const canonicalSession = this.editableCanonicalParameterSession();
     const canonicalBlockingParameterIds = new Set(canonicalSession?.blockingMissingParameterIds ?? []);
     const baselineMissingParameterIds = new Set(
-      buildConsumerRepairProgressiveParameterCards({
-        revision: this.props.revision,
-        viewModel: this.props.viewModel,
-        canonicalParameterSession: this.props.canonicalParameterSession ?? null,
-      })
+      this.buildBaselineCards()
         .filter((card) => card.missing)
         .map((card) => card.key),
     );

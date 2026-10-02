@@ -286,13 +286,19 @@ describe("capital renovation batch parameter apply", () => {
   });
 
   it("reuses the existing capital renovation calculator instead of duplicating formulas in the runtime adapter", () => {
-    const source = fs.readFileSync(
+    const compatibilityEntry = fs.readFileSync(
       path.resolve(__dirname, "../../src/lib/estimate/buildEstimateFromInlineWorkPrompt.ts"),
       "utf8",
     );
+    expect(compatibilityEntry).toContain('export * from "./backendPlatform/canonicalEstimateHistoricalIngress"');
+    expect(compatibilityEntry).not.toContain("areaM2 * 5 * 18");
+    const source = fs.readFileSync(
+      path.resolve(__dirname, "../../src/lib/estimate/backendPlatform/canonicalEstimateHistoricalIngress.ts"),
+      "utf8",
+    );
 
-    expect(source).toContain("buildCapitalRenovationRows");
-    expect(source).toContain("calculateCapitalRenovationGeometry");
+    expect(source).toContain("const geometry = calculateCapitalRenovationGeometry(calculatorInput)");
+    expect(source).toContain("const rows = buildCapitalRenovationRows(geometry)");
     expect(source).not.toContain("screedMixKg");
     expect(source).not.toContain("areaM2 * 5 * 18");
   });

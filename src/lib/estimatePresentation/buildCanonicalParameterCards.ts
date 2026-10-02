@@ -48,6 +48,14 @@ function revisionRequiredLabel(requiredFor: AiEstimateParameterCard["requiredFor
   return "для точного расчёта";
 }
 
+let parameterDisplayFormatter: Intl.NumberFormat | undefined;
+
+function displayNumber(value: number): string {
+  // Display only; actual values, input precision and canonical validation stay intact.
+  parameterDisplayFormatter ??= new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 3 });
+  return parameterDisplayFormatter.format(value);
+}
+
 function revisionDisplayValue(
   key: string,
   value: EstimateDraftRevision["params"][string]["value"] | null,
@@ -56,7 +64,7 @@ function revisionDisplayValue(
   if (value == null || value === "") return "нужно уточнить";
   if (typeof value === "boolean") return value ? "Да" : "Нет";
   const text = typeof value === "number"
-    ? new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 3 }).format(value)
+    ? displayNumber(value)
     : String(value);
   if (containsForbiddenAiEstimateVisibleToken(text) || /^[a-z0-9]+(?:_[a-z0-9]+)+$/iu.test(text)) {
     return "уточняется";
@@ -248,7 +256,7 @@ function displayValue(parameter: CanonicalParameter): string {
   if (choice) return choice.label;
   if (typeof parameter.value === "boolean") return parameter.value ? "Да" : "Нет";
   const value = typeof parameter.value === "number"
-    ? new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 3 }).format(parameter.value)
+    ? displayNumber(parameter.value)
     : String(parameter.value);
   const unit = aiEstimateRuUnitForParameter(parameter.parameterId, parameter.unit);
   return unit ? `${value} ${unit}` : value;
