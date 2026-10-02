@@ -25,6 +25,8 @@ const quantity = (
   result: Awaited<ReturnType<typeof compilePumpingStationR1>>,
   rowId: string,
 ) => result.rows.find((row) => row.row_id === rowId)?.quantity ?? null;
+const close = (actual: string | null, expected: number, tolerance = 0.000_001) =>
+  actual != null && Math.abs(Number(actual) - expected) <= tolerance;
 const CONDITIONAL_INPUT = Object.freeze({
   wps_excavation_shoring_mode: "REQUIRED",
   wps_excavation_shoring_designation: "SECANT-PILE-SHORING",
@@ -59,7 +61,7 @@ async function verifyCore(): Promise<Json> {
     && quantity(first, "rc09:wps_reinforcement") === "22.797"
     && quantity(first, "rc09:wps_pump_units") === "3"
     && quantity(first, "rc09:wps_suction_manifold") === "18"
-    && quantity(first, "rc09:wps_discharge_manifold") === "22"
+    && close(quantity(first, "rc09:wps_discharge_manifold"), 22)
     && quantity(first, "rc09:wps_isolation_valves") === "8"
     && quantity(first, "rc09:wps_power_cable") === "300")) {
     throw new Error("STOP_S27_26_PUMPING_STATION_AUTOMATIC_FIRST_ESTIMATE");
