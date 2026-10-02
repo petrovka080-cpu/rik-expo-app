@@ -56,6 +56,10 @@ import {
   FILTRATION_STATION_CATALOG_ID,
   parseFiltrationStationOrdinaryPromptR1,
 } from "../../lib/estimate/v4/filtrationStationR1";
+import {
+  CHLORINATION_STATION_CATALOG_ID,
+  parseChlorinationStationOrdinaryPromptR1,
+} from "../../lib/estimate/v4/chlorinationStationR1";
 
 type UserQuantity = { value: string; unit: "pcs" | "m2" | "m3" | "m" | "kg" | "t" | null };
 type CanonicalBaselinePlan = {
@@ -2183,6 +2187,9 @@ export function buildCanonicalBaselinePlan(input: {
   const filtrationStationInput = input.catalog.catalogId === FILTRATION_STATION_CATALOG_ID
     ? parseFiltrationStationOrdinaryPromptR1(input.prompt)
     : null;
+  const chlorinationStationInput = input.catalog.catalogId === CHLORINATION_STATION_CATALOG_ID
+    ? parseChlorinationStationOrdinaryPromptR1(input.prompt)
+    : null;
   const userQuantity = pumpStationInput == null && stripFoundationInput == null
     && asphaltDrainageInput == null && asphaltRoadInput == null
     && formworkFramiXlifeInput == null && ricsNrm2FormworkInput == null
@@ -2191,6 +2198,7 @@ export function buildCanonicalBaselinePlan(input: {
     && anchorGroupInstallationInput == null
     && bulkheadFrameInput == null
     && filtrationStationInput == null
+    && chlorinationStationInput == null
     ? extractUserQuantity(input.prompt)
     : null;
   let userQuantityParameterId: string | null = null;
@@ -2215,6 +2223,7 @@ export function buildCanonicalBaselinePlan(input: {
       ?? anchorGroupInstallationInput
       ?? bulkheadFrameInput
       ?? filtrationStationInput
+      ?? chlorinationStationInput
       ?? {},
   );
   const textExtractedParameterIds = Object.keys(submittedInputs);
@@ -2295,6 +2304,8 @@ export function buildCanonicalBaselinePlan(input: {
           ? R4_A13_BULKHEAD_FRAME_PRIMARY_MEASURE_PARAMETER_ID
         : filtrationStationInput != null
           ? "flt_station_count"
+        : chlorinationStationInput != null
+          ? "chl_station_count"
     : connectedUserQuantityParameterId
     ?? formulaConnectedPrimaryParameterId;
   const preferredPrimaryParameter = input.catalog.parameterSchema.find(

@@ -9,6 +9,10 @@ import {
   FILTRATION_STATION_CATALOG_ID,
   FILTRATION_STATION_SHORT_INPUT,
 } from "../../src/lib/estimate/v4/filtrationStationR1";
+import {
+  CHLORINATION_STATION_CATALOG_ID,
+  CHLORINATION_STATION_SHORT_INPUT,
+} from "../../src/lib/estimate/v4/chlorinationStationR1";
 
 function schema(parameterIds: readonly string[]): CanonicalEstimateCatalogItem["parameterSchema"] {
   return parameterIds.map((parameterId, ordinal) => ({
@@ -1089,6 +1093,108 @@ describe("MASTER-30 shared prompt-owned professional parameter ingress", () => {
       parameters: Object.fromEntries(Object.entries(FILTRATION_STATION_SHORT_INPUT)
         .map(([key, value]) => [key, String(value)])),
       primaryMeasureParameterId: "flt_station_count",
+    });
+  });
+
+  test("collects only six genuinely unknown chlorination facts after a short request", () => {
+    const textParameters = new Set([
+      "chl_station_designation",
+      "chl_dosing_package_designation",
+    ]);
+    const integerParameters = new Set([
+      "chl_station_count",
+      "chl_injection_point_count",
+    ]);
+    const parameterSchema = [
+      ...Object.keys(CHLORINATION_STATION_SHORT_INPUT).map((parameterId, ordinal) => ({
+        parameterId,
+        ordinal,
+        valueType: textParameters.has(parameterId)
+          ? "text" as const
+          : parameterId === "chl_disinfectant_technology"
+            ? "enum" as const
+            : integerParameters.has(parameterId) ? "integer" as const : "decimal" as const,
+        unitId: null,
+        titleRu: parameterId,
+        required: true,
+        preliminaryCompilationAllowed: false,
+        defaultValue: null,
+        constraints: parameterId === "chl_disinfectant_technology"
+          ? { values: ["SODIUM_HYPOCHLORITE"] }
+          : {},
+        semanticParameterKey: `chlorination-station:${parameterId}`,
+        visibilityRole: "USER_INPUT" as const,
+        valueSourceRole: "USER_INPUT" as const,
+        guide: {
+          guideKind: "MEASUREMENT_RULE" as const,
+          guideShortRu: parameterId,
+          guideValidationPolicy: "MANDATORY_BLOCK" as const,
+          sourceRole: "USER_SUPPLIED_PRIMARY_FACT",
+        },
+        normativeLinks: [],
+        formulaConsumers: [`${parameterId}_formula`],
+        resourceBranchConsumers: [],
+        validationRules: [],
+        provenance: {},
+      })),
+      {
+        parameterId: "chl_building_length_m",
+        ordinal: 8,
+        valueType: "decimal" as const,
+        unitId: "m",
+        titleRu: "Видимая профильная длина здания",
+        required: true,
+        preliminaryCompilationAllowed: true,
+        defaultValue: null,
+        constraints: {},
+        semanticParameterKey: "chlorination-station:chl_building_length_m",
+        visibilityRole: "USER_INPUT" as const,
+        valueSourceRole: "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE" as const,
+        guide: {
+          guideKind: "PROJECT_DEFINED" as const,
+          guideShortRu: "Видимый профиль",
+          guideValidationPolicy: "ADVISORY_REASON_REQUIRED" as const,
+          sourceRole: "VISIBLE_PRELIMINARY_ENGINEERING_PROFILE_REQUIRES_PROJECT_CONFIRMATION",
+        },
+        normativeLinks: [],
+        formulaConsumers: ["chl_building_formula"],
+        resourceBranchConsumers: [],
+        validationRules: [],
+        provenance: {},
+      },
+    ] as unknown as CanonicalEstimateCatalogItem["parameterSchema"];
+    const catalog = {
+      catalogId: CHLORINATION_STATION_CATALOG_ID,
+      workKey: "chlorination_station",
+      parameterSchema,
+    } as unknown as CanonicalEstimateCatalogItem;
+
+    let errorMessage = "";
+    try {
+      buildCanonicalBaselinePlan({
+        catalog,
+        prompt: "смета на станцию хлорирования производительностью 1000 м3 в сутки",
+      });
+    } catch (error) {
+      errorMessage = error instanceof Error ? error.message : String(error);
+    }
+    expect(errorMessage).toContain("CANONICAL_BASELINE_CONTRACT_MISSING");
+    expect(errorMessage).not.toContain("chl_station_count");
+    expect(errorMessage).not.toContain("chl_design_flow_m3_day");
+    expect(errorMessage).not.toContain("chl_building_length_m");
+    expect(Object.keys(CHLORINATION_STATION_SHORT_INPUT)
+      .filter((parameterId) => ![
+        "chl_station_count", "chl_design_flow_m3_day",
+      ].includes(parameterId))
+      .every((parameterId) => errorMessage.includes(parameterId))).toBe(true);
+
+    expect(buildCanonicalBaselinePlan({
+      catalog,
+      prompt: "Строительство 1 станции хлорирования CHL-NAOCL-1000-1IP производительностью 1000 м3/сут, технология гипохлорит натрия, расчётная доза 2 мг/л, раствор концентрацией 12.5%, дозирующий пакет DS-NAOCL-2X15LPH-PVC, 1 точка ввода.",
+    })).toMatchObject({
+      parameters: Object.fromEntries(Object.entries(CHLORINATION_STATION_SHORT_INPUT)
+        .map(([key, value]) => [key, String(value)])),
+      primaryMeasureParameterId: "chl_station_count",
     });
   });
 });
