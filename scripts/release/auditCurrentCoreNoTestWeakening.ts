@@ -410,6 +410,7 @@ const S2725_CUMULATIVE_ADDITIVE_TEST_PATHS = [
   "tests/estimateNorms/drywallBulkheadFullCycleS2723.contract.test.ts",
   "tests/estimateNorms/drywallCeilingP113FullCycleS2723.contract.test.ts",
   "tests/estimateNorms/electricalElecorCableChannelStandardS2723.contract.test.ts",
+  "tests/estimateNorms/filtrationStationR1.contract.test.ts",
   "tests/estimateNorms/gravitySewerCollectorR1.contract.test.ts",
   "tests/estimateNorms/houseWaterConnectionR1.contract.test.ts",
   "tests/estimateNorms/hvacWavinHep2o22HeatingStandardS2723.contract.test.ts",
