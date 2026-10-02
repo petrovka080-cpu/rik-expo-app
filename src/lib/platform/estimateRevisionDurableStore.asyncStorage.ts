@@ -453,7 +453,25 @@ implements EstimateRevisionDurableStore {
           checksum: serialized.checksum,
           serializedBundle: serialized.serializedBundle,
         });
-        await this.writeEnvelope(key, serialized.version, envelope);
+        // Reserve discoverability before allocating the large payload. An
+        // index failure must not strand an otherwise complete unindexed
+        // envelope. This inert entry is not a commit: only the pointer is.
+        await this.stageRevisionIndex(key, serialized.version);
+        const reusableStagedEnvelope = existing?.version === serialized.version
+          && existing.previousVersion === currentVersion
+          && existing.checksum === serialized.checksum
+          && existing.serializedBundle === serialized.serializedBundle
+          && parseDurableEnvelopeBundle(
+            existing,
+            key,
+            ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.asyncStorage,
+          );
+        // A retry of exactly the same complete staged content must not create
+        // new chunk keys merely because committedAt changes. Corrupt, partial
+        // or differently based envelopes are still written and verified anew.
+        if (!reusableStagedEnvelope) {
+          await this.writeEnvelope(key, serialized.version, envelope);
+        }
         this.inject("after_revision_write");
 
         const verifiedEnvelope = await this.readEnvelope(key, serialized.version);
@@ -471,7 +489,6 @@ implements EstimateRevisionDurableStore {
         // Both indexes are staged before the pointer commit. An interruption
         // here can expose only an inert index entry; a committed pointer can
         // therefore never become undiscoverable after process restart.
-        await this.stageRevisionIndex(key, serialized.version);
         await this.ensureLogicalKeyIndexed(key);
 
         this.inject("before_pointer_switch");

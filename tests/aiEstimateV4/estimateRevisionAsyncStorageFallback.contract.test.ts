@@ -185,6 +185,131 @@ function largeBundle(
 }
 
 describe("native AsyncStorage durable fallback", () => {
+  test("reuses a complete unchanged staged chunk envelope across failed retries without accumulating timestamp-addressed copies", async () => {
+    jest.useFakeTimers();
+    try {
+      jest.setSystemTime(new Date("2026-10-03T00:00:00.000Z"));
+      const storage = new CursorWindowBoundedAsyncStorageDouble(ASYNC_STORAGE_DURABLE_CHUNK_MAX_CHARS);
+      let failStaging = false;
+      const createStore = () => new AsyncStorageEstimateRevisionDurableStore(storage, {
+        failureInjector: point => { if (failStaging && point === "after_revision_write") throw new Error("OWNED_STAGED_WRITE_FAILURE"); },
+      });
+      const store = createStore();
+      const first = await store.writeBundleAtomically("async-storage-estimate", null, bundle("r1"));
+      if (first.status === "FAILED") throw new Error(first.error.message);
+      const committedRecords = new Map(storage.values);
+      const next = bundle("r2");
+      next.items[0]!.titleRu = "test-owned large pending row " + "x".repeat(2 * ASYNC_STORAGE_DURABLE_CHUNK_MAX_CHARS);
+      failStaging = true;
+      let firstStagedChunkCount = 0;
+      for (let retry = 0; retry < 4; retry += 1) {
+        jest.setSystemTime(new Date(Date.UTC(2026, 9, 3, 0, 0, retry + 1)));
+        // Fresh JS adapter each time: reuse must come from durable verified
+        // content, not an in-memory shortcut that disappears on restart.
+        expect(await createStore().writeBundleAtomically("async-storage-estimate", first.version, next)).toMatchObject({ status: "FAILED" });
+        const chunkCount = [...storage.values.keys()].filter(key => key.includes(":chunk:")).length;
+        if (retry === 0) firstStagedChunkCount = chunkCount;
+        expect(firstStagedChunkCount).toBeGreaterThan(1);
+        expect(chunkCount).toBe(firstStagedChunkCount);
+        for (const [key, value] of committedRecords) {
+          if (!key.includes("__revision_index__")) expect(storage.values.get(key)).toBe(value);
+        }
+        expect((await store.readBundle("async-storage-estimate"))?.estimateDraftRevisionState?.currentRevisionId).toBe("r1");
+      }
+      failStaging = false;
+      expect(await store.writeBundleAtomically("async-storage-estimate", first.version, next)).toMatchObject({ status: "WRITTEN" });
+      expect([...storage.values.keys()].filter(key => key.includes(":chunk:")).length).toBe(firstStagedChunkCount);
+      expect((await store.readBundle("async-storage-estimate"))?.items[0]?.titleRu).toBe(next.items[0]!.titleRu);
+      expect((await new AsyncStorageEstimateRevisionDurableStore(storage).recoverLastValid("async-storage-estimate"))?.estimateDraftRevisionState?.currentRevisionId).toBe("r2");
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  test("a failed revision-index reservation writes no undiscoverable chunk payload and preserves the committed head", async () => {
+    class IndexFailureStorage extends CursorWindowBoundedAsyncStorageDouble {
+      failIndex = false;
+      override async setItem(key: string, value: string): Promise<void> {
+        if (this.failIndex && key.includes("__revision_index__")) throw new Error("OWNED_INDEX_RESERVATION_FAILURE");
+        await super.setItem(key, value);
+      }
+    }
+    const storage = new IndexFailureStorage(ASYNC_STORAGE_DURABLE_CHUNK_MAX_CHARS);
+    const store = new AsyncStorageEstimateRevisionDurableStore(storage);
+    const first = await store.writeBundleAtomically("async-storage-estimate", null, bundle("r1"));
+    if (first.status === "FAILED") throw new Error(first.error.message);
+    const committedRecords = new Map(storage.values);
+    const next = bundle("r2");
+    next.items[0]!.titleRu = "test-owned large pending row " + "x".repeat(2 * ASYNC_STORAGE_DURABLE_CHUNK_MAX_CHARS);
+    storage.failIndex = true;
+    expect(await store.writeBundleAtomically("async-storage-estimate", first.version, next)).toMatchObject({ status: "FAILED" });
+    expect(storage.values.size).toBe(committedRecords.size);
+    for (const [key, value] of committedRecords) expect(storage.values.get(key)).toBe(value);
+    expect((await store.readBundle("async-storage-estimate"))?.estimateDraftRevisionState?.currentRevisionId).toBe("r1");
+    storage.failIndex = false;
+    expect(await store.writeBundleAtomically("async-storage-estimate", first.version, next)).toMatchObject({ status: "WRITTEN" });
+    expect((await store.readBundle("async-storage-estimate"))?.estimateDraftRevisionState?.currentRevisionId).toBe("r2");
+  });
+
+  test("changed pending content is not reused merely because its explicit revision id matches", async () => {
+    const storage = new AsyncStorageDouble();
+    let failStaging = false;
+    const store = new AsyncStorageEstimateRevisionDurableStore(storage, {
+      failureInjector: point => { if (failStaging && point === "after_revision_write") throw new Error("OWNED_STAGED_WRITE_FAILURE"); },
+    });
+    const first = await store.writeBundleAtomically("async-storage-estimate", null, bundle("r1"));
+    if (first.status === "FAILED") throw new Error(first.error.message);
+    failStaging = true;
+    expect(await store.writeBundleAtomically("async-storage-estimate", first.version, bundle("r2"))).toMatchObject({ status: "FAILED" });
+    const changed = bundle("r2");
+    changed.items[0]!.quantity = 79;
+    const result = await new AsyncStorageEstimateRevisionDurableStore(storage).writeBundleAtomically("async-storage-estimate", first.version, changed);
+    expect(result).toMatchObject({ status: "WRITTEN" });
+    expect((await store.readBundle("async-storage-estimate"))?.items[0]?.quantity).toBe(79);
+    expect((await store.readBundle("async-storage-estimate"))?.estimateDraftRevisionState?.currentRevisionId).toBe("r2");
+  });
+
+  test("an invalid staged envelope with matching bytes/checksum/version is repaired, never reused without validating its logical key", async () => {
+    const storage = new AsyncStorageDouble();
+    let failStaging = false;
+    const store = new AsyncStorageEstimateRevisionDurableStore(storage, {
+      failureInjector: point => { if (failStaging && point === "after_revision_write") throw new Error("OWNED_STAGED_WRITE_FAILURE"); },
+    });
+    const first = await store.writeBundleAtomically("async-storage-estimate", null, bundle("r1"));
+    if (first.status === "FAILED") throw new Error(first.error.message);
+    const committedHead = [...storage.values.entries()].find(([key]) => key.includes(encodeURIComponent(first.version)))!;
+    failStaging = true;
+    expect(await store.writeBundleAtomically("async-storage-estimate", first.version, bundle("r2"))).toMatchObject({ status: "FAILED" });
+    const staged = [...storage.values.entries()].find(([key]) => key.includes("@revision:") && key.includes("r2"));
+    if (!staged) throw new Error("OWNED_STAGED_ENVELOPE_MISSING");
+    storage.values.set(staged[0], JSON.stringify({ ...JSON.parse(staged[1]), key: "OTHER_TEST_DRAFT" }));
+    const result = await new AsyncStorageEstimateRevisionDurableStore(storage).writeBundleAtomically("async-storage-estimate", first.version, bundle("r2"));
+    expect(result).toMatchObject({ status: "WRITTEN" });
+    expect((await store.readBundle("async-storage-estimate"))?.estimateDraftRevisionState?.currentRevisionId).toBe("r2");
+    expect(storage.values.get(committedHead[0])).toBe(committedHead[1]);
+  });
+
+  test("a staged envelope based on an older head is not reused after another complete revision commits", async () => {
+    const storage = new AsyncStorageDouble();
+    let failurePoint: DurableFailurePoint | null = null;
+    const store = new AsyncStorageEstimateRevisionDurableStore(storage, {
+      failureInjector: point => { if (point === failurePoint) throw new Error(`OWNED_FAILURE_${point}`); },
+    });
+    const first = await store.writeBundleAtomically("async-storage-estimate", null, bundle("r1"));
+    if (first.status === "FAILED") throw new Error(first.error.message);
+    failurePoint = "after_revision_write";
+    expect(await store.writeBundleAtomically("async-storage-estimate", first.version, bundle("r3"))).toMatchObject({ status: "FAILED" });
+    failurePoint = "before_orphan_cleanup";
+    const second = await store.writeBundleAtomically("async-storage-estimate", first.version, bundle("r2"));
+    if (second.status === "FAILED") throw new Error(second.error.message);
+    expect(second.status).toBe("WRITTEN");
+    const third = await new AsyncStorageEstimateRevisionDurableStore(storage).writeBundleAtomically("async-storage-estimate", second.version, bundle("r3"));
+    if (third.status === "FAILED") throw new Error(third.error.message);
+    const envelope = [...storage.values.entries()].find(([key]) => key.includes("@revision:") && key.includes(encodeURIComponent(third.version)));
+    expect(JSON.parse(envelope?.[1] ?? "{}")).toMatchObject({ previousVersion: second.version });
+    expect((await store.readBundle("async-storage-estimate"))?.estimateDraftRevisionState?.currentRevisionId).toBe("r3");
+  });
+
   test("factory selects the crash-safe fallback when the installed binary lacks ExpoSQLite", () => {
     const storage = new AsyncStorageDouble();
     const store = createEstimateRevisionDurableStore({
