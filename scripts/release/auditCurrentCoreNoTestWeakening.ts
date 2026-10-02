@@ -441,6 +441,7 @@ const S2725_CUMULATIVE_ADDITIVE_TEST_PATHS = [
   "tests/estimateNorms/stormwaterDrainageR1.contract.test.ts",
   "tests/estimateNorms/stripFoundationS2715FullComposition.contract.test.ts",
   "tests/estimateNorms/upsSystemR1.contract.test.ts",
+  "tests/estimateNorms/valvesChambersR1.contract.test.ts",
   "tests/estimateNorms/villageSewerNetworkR1.contract.test.ts",
   "tests/estimateNorms/villageWaterSupplyR1.contract.test.ts",
   "tests/estimateNorms/wastewaterTreatmentPlantR1.contract.test.ts",
