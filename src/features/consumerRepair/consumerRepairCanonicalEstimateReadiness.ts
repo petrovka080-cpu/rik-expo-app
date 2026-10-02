@@ -1,10 +1,22 @@
 import type { CanonicalParameterSession } from "../../lib/estimate/canonicalParameters";
 import { canonicalParameterAffectsEstimateCalculation } from "../../lib/estimate/canonicalParameters";
 import type { ConsumerRepairDraftBundle } from "../../lib/consumerRequests";
+import { consumerRepairCanonicalBackendBinding } from "./consumerRepairBackendOwnership";
 import {
   consumerEstimateUnpricedPayableItems,
   consumerEstimateUnresolvedQuantityItems,
 } from "../../lib/consumerRequests/consumerEstimateReadiness";
+
+/** Revision sessions are immutable, but their editor projection belongs to one draft. */
+export function consumerRepairCanonicalParameterSessionMatchesBundle(
+  session: CanonicalParameterSession | null | undefined,
+  bundle: ConsumerRepairDraftBundle | null | undefined,
+): boolean {
+  const binding = consumerRepairCanonicalBackendBinding(bundle ?? null);
+  return Boolean(session && bundle && binding
+    && session.draftId === bundle.draft.id
+    && session.revisionId === binding.revisionId);
+}
 
 export function consumerRepairCanonicalMissingParameterCount(
   session: CanonicalParameterSession | null | undefined,

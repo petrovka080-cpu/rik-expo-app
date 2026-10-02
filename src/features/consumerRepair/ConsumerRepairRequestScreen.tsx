@@ -91,6 +91,7 @@ import type { CanonicalParameterSession } from "../../lib/estimate/canonicalPara
 import {
   consumerRepairCanonicalEstimateBlocksApproval,
   consumerRepairCanonicalMissingParameterCount,
+  consumerRepairCanonicalParameterSessionMatchesBundle,
   consumerRepairCanonicalUnresolvedRowCount,
 } from "./consumerRepairCanonicalEstimateReadiness";
 import { consumerCanonicalPrecompileParameterOverrides } from "./consumerCanonicalParameterEditor";
@@ -428,7 +429,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       currentBinding &&
       (
         previousBinding?.revisionId !== currentBinding.revisionId ||
-        this.state.canonicalBackendParameterSession?.revisionId !== currentBinding.revisionId
+        !consumerRepairCanonicalParameterSessionMatchesBundle(this.state.canonicalBackendParameterSession, this.state.bundle)
       )
     ) {
       void this.hydrateCurrentCanonicalParameterSession();
@@ -991,8 +992,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     statusMessage?: string,
     parameterSession?: CanonicalParameterSession | null,
   ) {
-    const binding = consumerRepairCanonicalBackendBinding(bundle);
-    const retainedSession = this.state.canonicalBackendParameterSession?.revisionId === binding?.revisionId
+    const retainedSession = consumerRepairCanonicalParameterSessionMatchesBundle(this.state.canonicalBackendParameterSession, bundle)
       ? this.state.canonicalBackendParameterSession
       : null;
     this.setState({
@@ -1013,12 +1013,12 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const binding = consumerRepairCanonicalBackendBinding(bundle);
     if (!binding) return null;
     const retained = this.state.canonicalBackendParameterSession;
-    if (retained?.revisionId === binding.revisionId) return retained;
+    if (retained && consumerRepairCanonicalParameterSessionMatchesBundle(retained, bundle)) return retained;
     const session = await this.props.onLoadCanonicalParameterSession(
       binding.revisionId,
       bundle.draft.id,
     );
-    if (session.revisionId !== binding.revisionId) {
+    if (!consumerRepairCanonicalParameterSessionMatchesBundle(session, bundle)) {
       throw new Error("CANONICAL_PARAMETER_SESSION_REVISION_MISMATCH");
     }
     return session;
@@ -1029,7 +1029,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     if (
       !bundle ||
       !binding ||
-      this.state.canonicalBackendParameterSession?.revisionId === binding.revisionId ||
+      consumerRepairCanonicalParameterSessionMatchesBundle(this.state.canonicalBackendParameterSession, bundle) ||
       this.canonicalParameterSessionLoadInFlightRevisionId === binding.revisionId ||
       this.canonicalParameterSessionLoadFailedRevisionId === binding.revisionId
     ) return;
@@ -1038,7 +1038,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       const session = await this.loadCanonicalParameterSessionForBundle(bundle);
       if (
         session &&
-        consumerRepairCanonicalBackendBinding(this.state.bundle)?.revisionId === binding.revisionId
+        consumerRepairCanonicalParameterSessionMatchesBundle(session, this.state.bundle)
       ) {
         this.canonicalParameterSessionLoadFailedRevisionId = null;
         this.setState({ canonicalBackendParameterSession: session });
@@ -2627,11 +2627,14 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       this.handleActionContextError(error);
       return;
     }
+    // Opening an already loaded immutable revision is a local UI action.
+    // Do not repeat the catalog/parameter-session request on every toggle.
+    if (consumerRepairCanonicalParameterSessionMatchesBundle(this.state.canonicalBackendParameterSession, current)) return;
     this.setState({ statusMessage: "Загружаем параметры выбранной версии сметы…" });
     try {
       this.canonicalParameterSessionLoadFailedRevisionId = null;
-      const session = await this.props.onLoadCanonicalParameterSession(binding.revisionId, current.draft.id);
-      if (consumerRepairCanonicalBackendBinding(this.state.bundle)?.revisionId !== binding.revisionId) return;
+      const session = await this.loadCanonicalParameterSessionForBundle(current);
+      if (!session || !consumerRepairCanonicalParameterSessionMatchesBundle(session, this.state.bundle)) return;
       this.setState({
         canonicalBackendParameterSession: session,
         statusMessage: session.parameters.length > 0
@@ -2639,6 +2642,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           : "Дополнительные параметры для этой работы не требуются.",
       });
     } catch (error) {
+      if (this.state.bundle?.draft.id !== current.draft.id
+        || consumerRepairCanonicalBackendBinding(this.state.bundle)?.revisionId !== binding.revisionId) return;
       this.setState({
         statusMessage: error instanceof Error
           ? error.message
