@@ -5,7 +5,7 @@
   "scope": "One continuous steel casing crossing with explicitly selected installation method. Casing supply and site joints, support rings and elements, contact tape, compatible end-seal kits, applicable civil work, crew labor, mechanisms and logistics are separate quantity/cost owners. This source pack is not itself a published owner or accepted estimate.",
   "engineeringAcceptanceClaimed": false,
   "universalRatesClaimed": false,
-  "implementationStatus": "QUANTITY_SPACER_SUPPLY_CIVIL_GEOMETRY_COMPONENTS_NOT_PUBLISHED_NOT_FULL_OWNER",
+  "implementationStatus": "QUANTITY_SPACER_SUPPLY_CIVIL_GEOMETRY_MMA_JOINT_RESOURCE_COMPONENTS_NOT_PUBLISHED_NOT_FULL_OWNER",
   "quantityComponent": {
     "module": "src/lib/estimate/v4/roadCrossingSleevesQuantityModelR1.ts",
     "verification": "tests/estimateNorms/roadCrossingSleevesQuantityModelR1.contract.test.ts",
@@ -15,6 +15,8 @@
     "procurementVerification": "tests/estimateNorms/roadCrossingSleevesProcurementR1.contract.test.ts",
     "civilGeometryModule": "src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1.ts",
     "civilGeometryVerification": "tests/estimateNorms/roadCrossingSleevesCivilGeometryR1.contract.test.ts",
+    "jointResourceModule": "src/lib/estimate/v4/roadCrossingSleevesJointResourcesR1.ts",
+    "jointResourceVerification": "tests/estimateNorms/roadCrossingSleevesJointResourcesR1.contract.test.ts",
     "evaluator": "Existing canonical FormulaGraph only",
     "inputPolicy": "The component takes explicitly supplied scalar inputs and does not create a runtime form or baseline. The full owner must classify source-backed replaceable assumptions separately from genuine project facts, and prefer certified pipe mass when available.",
     "completedQuantityBoundaries": [
@@ -31,13 +33,19 @@
       "only the three new supply orders own material cost/procurement; balance outputs, supplied tape and kit fasteners have no duplicate cost; compatible prices remain honest NULL when unavailable",
       "explicit method-specific rectangular geometry: open trench/bedding/outside casing fill space OR thrust/reception pits and actual-diameter bore, never both methods' excavation",
       "pit dimensions remain actual project facts as crossing length changes; unsupported shapes/methods and impossible geometry are not silently substituted or clamped",
-      "civil geometry controls are informational only, not invented paid construction operations or a soil reuse/haul classification"
+      "civil geometry controls are informational only, not invented paid construction operations or a soil reuse/haul classification",
+      "selected applicable MMA joint procedure: physical site joints times actual gross electrode kg/joint, aggregate crew person-hours/joint and actual equipment hours/joint; no universal productivity or electrode-efficiency factor",
+      "gross electrode consumption already includes process losses; reserve, compatible stock, whole mass packs, rounded new order and free remainder are separate outputs, without a second loss factor",
+      "joint cost owners are only new electrode purchase, all crew labor and personnel-free equipment with energy included; balances, joint count, energy and another generic welding operation have no duplicate payment"
     ],
     "requiredBeforeFullOwnerPublication": [
       "actual load-rated product selection and approved layout; tested geometric compatibility alone is not structural acceptance",
       "integration of actual method-specific civil work, support/reaction arrangement, groundwater measures and net pit return fill after retained structures",
       "actual slopes/end ramps/nonrectangular shafts or other methods outside the implemented rectangular component; never approximate these by the accepted simple geometry without confirmation",
-      "materials, WPS-dependent joint consumables, crew work, machine time and logistics",
+      "actual approved WPS and product/rate selection; integration of the MMA joint resource component, excluded automatically for a single-section crossing with no site joints; a reference string alone is not WPS approval",
+      "other welding processes require their own actual compatible consumables/cost basis; never substitute this MMA component or its fixtures",
+      "separate actual joint preparation, fit-up, inspection/NDT, repairs, coating, drying/storage and lifting owners; machine/crew/material overlaps reconciled before full publication",
+      "materials and method-specific civil execution, crew work, machine time and logistics outside the implemented joint resource boundary",
       "integration of the tested element/tape/seal supply component with exact project product selection and approved geometry; the full owner must include authoritative spacer geometry rows",
       "approved multi-course tape scope when a single full-width course is not selected; no automatic narrow-tape consumption assumption",
       "actual compatible selected-product prices or honest NULL; no test prices or designations admitted to a prepared owner",
@@ -70,6 +78,18 @@
       "restriction": "The actual selected pipe's certified unit mass takes precedence. This physical approximation does not select grade, wall thickness or casing capacity."
     },
     {
+      "url": "https://www.twi-global.com/technical-knowledge/job-knowledge/welding-costs-096",
+      "role": "Welding consumption and disjoint cost-basis boundary, not project rates",
+      "basis": "Deposited metal differs from purchased consumable mass. Actual process/product losses and operating time must be distinguished from joint setup, total crew work and equipment costs.",
+      "restriction": "No published illustrative factor or productivity is installed as a universal default. The component accepts explicit approved gross consumption and aggregate crew/equipment rates. Joint preparation, fit-up and inspection remain separately owned."
+    },
+    {
+      "url": "https://www.twi-global.com/technical-knowledge/faqs/faq-how-can-a-manual-metal-arc-electrode-have-an-electrode-efficiency-greater-than-100",
+      "role": "Prevents a core-wire efficiency percentage from becoming gross purchased-electrode recovery",
+      "basis": "MMA electrode efficiency may compare deposited mass to core-wire mass and exceed 100 percent because the coating contributes metal.",
+      "restriction": "Do not treat that percentage as the fraction of total purchased coated-electrode mass recovered, invert it into a generic purchase factor or charge process losses twice."
+    },
+    {
       "url": "https://www.pipejacking.org/about_pipe_jacking",
       "role": "Method-specific work boundary and unknown project facts",
       "basis": "Pipe jacking requires method-sized thrust/reception pits and a designed reaction arrangement; groundwater conditions can require additional seals and measures.",
@@ -86,7 +106,9 @@
     "actual groundwater and optional annular-fill requirements",
     "external excavation dimensions for the selected rectangular method; usable pit dimensions are not substituted for excavation dimensions",
     "actual selected jacking excavation diameter; it is not inferred from casing OD",
-    "actual approved full-width bedding thickness for the open rectangular branch; no hidden bedding or pit size"
+    "actual approved full-width bedding thickness for the open rectangular branch; no hidden bedding or pit size",
+    "applicable approved MMA WPS, selected electrode, actual gross kg/joint including process losses, usable compatible stock/reserve and actual net pack mass",
+    "aggregate joint crew person-hours excluding separately owned material/equipment cost; actual equipment hours with all personnel excluded and energy included"
   ],
   "dimensionPolicy": {
     "geometry": "metres, square metres and cubic metres; explicit conversions for mm, kg and tonnes",
