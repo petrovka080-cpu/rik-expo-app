@@ -6,6 +6,7 @@ import {
 } from "react-native";
 
 import type { ConsumerRepairRequestItem } from "../../lib/consumerRequests/consumerRequestTypes";
+import { consumerRepairRowCanonicalRevisionId, consumerRepairRowCode } from "./consumerRepairRowMetadata";
 import {
   createConsumerRepairQuantityEditOperationId,
   recordConsumerRepairQuantityEditStage,
@@ -241,6 +242,13 @@ export function useConsumerRepairItemRowEditing({
         itemId: item.id,
       });
     }
+    if (consumerRepairRowCanonicalRevisionId(item) && consumerRepairRowCode(item)) {
+      // Canonical edits only stage the visible draft and provenance; there is
+      // no durable transaction until explicit Apply. Waiting for a later frame
+      // here leaves the new input labelled as the old automatic quantity.
+      onQuantityChange(item.id, nextValue, meta);
+      return;
+    }
     runAfterQuantityInputPaint(() => {
       recordConsumerRepairQuantityEditStage({
         ...meta,
@@ -250,7 +258,7 @@ export function useConsumerRepairItemRowEditing({
     }, () => {
       onQuantityChange(item.id, nextValue, meta);
     }, nativeVisible);
-  }, [item.id, item.quantity, onQuantityChange]);
+  }, [item, onQuantityChange]);
 
   const beginQuantityEdit = React.useCallback(() => {
     quantityEditingRef.current = true;

@@ -61,6 +61,60 @@ function expectMode(item: ConsumerRepairRequestItem, expected: string) {
 }
 
 describe("canonical pending row quantity provenance", () => {
+  it("stages stepper quantity and manual provenance together without waiting for a future animation frame", () => {
+    const editor = stagedEditor();
+    const frame = jest.spyOn(globalThis, "requestAnimationFrame").mockImplementation(() => 1);
+    let renderer!: ReactTestRenderer;
+    const renderRow = () => <ConsumerRepairItemRow item={editor.current()}
+      onDecrease={jest.fn()} onIncrease={jest.fn()}
+      onQuantityChange={(id, value) => {
+        void editor.mutable.changeItemQuantity(id, value);
+        renderer.update(renderRow());
+      }} onUnitPriceChange={jest.fn()} onRemove={jest.fn()} />;
+    try {
+      act(() => { renderer = TestRenderer.create(renderRow()); });
+      act(() => { renderer.root.findByProps({ testID: "consumer-repair-item-plus-test-owned-row" }).props.onPress(); });
+      expect(editor.current().quantity).toBe(15.25);
+      expect(renderer.root.findByProps({ testID: "consumer-repair-item-quantity-input-test-owned-row" }).props.value).toBe("15.25");
+      expect(renderer.root.findByProps({ testID: "consumer-repair-item-quantity-mode-test-owned-row" }).props.children).toBe("Введено вручную. По формуле: 14.25 м³.");
+      expect(frame).not.toHaveBeenCalled();
+      expect(editor.recalculate).not.toHaveBeenCalled();
+      expect(editor.original.quantity).toBe(14.25);
+      act(() => { renderer.root.findByProps({ testID: "consumer-repair-item-plus-test-owned-row" }).props.onPress(); });
+      expect(editor.current().quantity).toBe(16.25);
+      expect(consumerRepairRowCalculatedQuantity(editor.current())).toBe(14.25);
+      act(() => { renderer.root.findByProps({ testID: "consumer-repair-item-restore-calculated-test-owned-row" }).props.onPress(); });
+      expect(editor.current().quantity).toBe(14.25);
+      expect(renderer.root.findByProps({ testID: "consumer-repair-item-quantity-mode-test-owned-row" }).props.children).toBe("Рассчитано автоматически: 14.25 м³. Поле можно изменить.");
+      expect(editor.recalculate).not.toHaveBeenCalled();
+    } finally {
+      act(() => renderer?.unmount());
+      frame.mockRestore();
+    }
+  });
+
+  it("retains the post-paint durable transaction path for non-backend rows", async () => {
+    const editor = stagedEditor({ sourceParameters: {} });
+    const callbacks: FrameRequestCallback[] = [];
+    const frame = jest.spyOn(globalThis, "requestAnimationFrame").mockImplementation(callback => { callbacks.push(callback); return callbacks.length; });
+    const onQuantityChange = jest.fn();
+    let renderer!: ReactTestRenderer;
+    try {
+      act(() => { renderer = TestRenderer.create(<ConsumerRepairItemRow item={editor.current()}
+        onDecrease={jest.fn()} onIncrease={jest.fn()} onQuantityChange={onQuantityChange}
+        onUnitPriceChange={jest.fn()} onRemove={jest.fn()} />); });
+      act(() => { renderer.root.findByProps({ testID: "consumer-repair-item-plus-test-owned-row" }).props.onPress(); });
+      expect(renderer.root.findByProps({ testID: "consumer-repair-item-quantity-input-test-owned-row" }).props.value).toBe("15.25");
+      expect(onQuantityChange).not.toHaveBeenCalled();
+      expect(callbacks).toHaveLength(1);
+      await act(async () => { callbacks[0]!(0); await Promise.resolve(); });
+      expect(onQuantityChange).toHaveBeenCalledTimes(1);
+      expect(onQuantityChange.mock.calls[0]?.slice(0, 2)).toEqual(["test-owned-row", "15.25"]);
+    } finally {
+      act(() => renderer?.unmount());
+      frame.mockRestore();
+    }
+  });
   it("shows a staged manual value against the unchanged formula before Apply, without saving", async () => {
     const editor = stagedEditor();
     await editor.mutable.changeItemQuantity("test-owned-row", "16");
