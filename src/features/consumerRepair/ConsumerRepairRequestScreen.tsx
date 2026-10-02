@@ -83,6 +83,7 @@ import {
 } from "./consumerRepairBackendOwnership";
 import { canReuseConsumerRepairCanonicalDraft } from "./consumerRepairCanonicalDraftReuse";
 import {
+  consumerRepairRowCalculatedQuantity,
   consumerRepairRowCode,
   consumerRepairRowHasManualQuantity,
   consumerRepairRowIncludedInProcurement,
@@ -153,8 +154,14 @@ function applyVisibleCanonicalRowDraft(
     ...bundle,
     items: bundle.items.map((item) => {
       if (item.id !== itemId) return item;
-      const quantity = Object.prototype.hasOwnProperty.call(amendment, "quantity")
-        ? amendment.quantity == null ? null : Number(amendment.quantity)
+      const quantityChanged = Object.prototype.hasOwnProperty.call(amendment, "quantity");
+      // Capture the authoritative formula result before changing the visible
+      // quantity. Repeated pending edits must not turn a manual value into a
+      // new formula baseline. This annotates the unsaved preview, not the norm.
+      const calculatedQuantity = consumerRepairRowCalculatedQuantity(item);
+      const manualQuantity = amendment.quantity != null;
+      const quantity = quantityChanged
+        ? manualQuantity ? Number(amendment.quantity) : calculatedQuantity
         : item.quantity;
       const unitPrice = Object.prototype.hasOwnProperty.call(amendment, "unitPrice")
         ? amendment.unitPrice == null ? null : Number(amendment.unitPrice)
@@ -166,8 +173,15 @@ function applyVisibleCanonicalRowDraft(
         totalPrice: quantity != null && unitPrice != null
           ? roundMoney(quantity * unitPrice)
           : null,
-        ...(Object.prototype.hasOwnProperty.call(amendment, "quantity")
-          ? { quantityEditedByConsumer: quantity != null }
+        ...(quantityChanged
+          ? {
+            quantityEditedByConsumer: manualQuantity,
+            sourceParameters: {
+              ...item.sourceParameters,
+              manualQuantityOverride: manualQuantity,
+              calculatedQuantityBeforeOverride: calculatedQuantity,
+            },
+          }
           : {}),
       };
     }),

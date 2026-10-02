@@ -24,6 +24,7 @@ const allowedActions = new Set([
   "request-estimate-show-more-parameters", "request-estimate-filled-parameters-toggle",
   "request-estimate-derived-parameters-toggle", "consumer-estimate-make-pdf",
   "consumer-estimate-open-procurement", "request-estimate-technical-details-toggle",
+  "request-estimate-items-editor", "request-estimate-row-batch-apply",
 ]);
 function input(args: string[]) {
   execFileSync(adb, ["-s", device, "shell", "input", ...args], { timeout: 20_000, windowsHide: true });

@@ -258,13 +258,15 @@ function ConsumerRepairItemRowComponent({
                 Норма не задана — введите подтверждённое количество
               </Text>
             ) : null}
-            {calculatedQuantity != null ? (
+            {calculatedQuantity != null || manualQuantityOverride ? (
               <Text
                 style={manualQuantityOverride ? styles.manualQuantityHint : styles.calculatedQuantityHint}
                 testID={`consumer-repair-item-quantity-mode-${item.id}`}
               >
                 {manualQuantityOverride
-                  ? `Введено вручную. По формуле: ${calculatedQuantity} ${unitLabel}.`
+                  ? calculatedQuantity != null
+                    ? `Введено вручную. По формуле: ${calculatedQuantity} ${unitLabel}.`
+                    : "Введено вручную. Расчётное количество пока неизвестно."
                   : `Рассчитано автоматически: ${calculatedQuantity} ${unitLabel}. Поле можно изменить.`}
               </Text>
             ) : null}
