@@ -102,6 +102,23 @@ async function main(): Promise<void> {
     invariant(!/water_intake|coagulat|flocculat|sediment|disinfect_block|clean_water_reservoir|distribution_pipeline/iu
       .test(JSON.stringify(resources.map((row) => row.row_id))),
     "STOP_S27_26_FILTRATION_STATION_READBACK_ADJACENT_SCOPE");
+    const ordinaryParameters = parameters.filter((parameter) =>
+      parameter.truth_metadata?.value_source_role === "USER_INPUT");
+    const profileParameters = parameters.filter((parameter) =>
+      parameter.truth_metadata?.value_source_role
+        === "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE");
+    invariant(ordinaryParameters.length === 10
+      && ordinaryParameters.every((parameter) =>
+        parameter.required === true
+        && parameter.truth_metadata?.preliminary_compilation_allowed === false
+        && (parameter.truth_metadata?.guide as Json | undefined)
+          ?.guide_validation_policy === "MANDATORY_BLOCK")
+      && profileParameters.length === 92
+      && profileParameters.every((parameter) =>
+        parameter.truth_metadata?.preliminary_compilation_allowed === true
+        && (parameter.truth_metadata?.guide as Json | undefined)?.guide_validation_policy
+          === "ADVISORY_REASON_REQUIRED"),
+    "STOP_S27_26_FILTRATION_STATION_READBACK_PRIMARY_FACT_COLLECTION_POLICY");
 
     const dimensions = /внутренн\p{L}*\s+размер\p{L}*\s+(\d+(?:[,.]\d+)?)\s*[xх×]\s*(\d+(?:[,.]\d+)?)\s*м/iu
       .exec(PROMPT);
@@ -245,6 +262,8 @@ async function main(): Promise<void> {
         prompt: PROMPT,
         submittedParameters: ordinary,
         primaryFactCount: Object.keys(ordinary).length,
+        mandatoryBeforeCompile: ordinaryParameters.length,
+        visibleProfileNotOrdinaryQuestions: profileParameters.length,
       },
       persisted: {
         parameterCount: parameters.length,

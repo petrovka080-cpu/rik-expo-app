@@ -52,6 +52,10 @@ import { extractStripFoundationReinforcementCanonicalParametersR1 } from "../../
 import { extractAnchorGroupInstallationCanonicalParametersR1 } from "../../lib/estimate/ownedDomain/anchorGroupInstallationProductionBindingR1";
 import { NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID } from "../../lib/estimate/v4/domainFactory";
 import { MASONRY_BRICK_WALL_BIA_TN10_NEUTRAL_CATALOG_IDS } from "../../lib/estimate/v4/masonryBrickWallBiaTn10R1";
+import {
+  FILTRATION_STATION_CATALOG_ID,
+  parseFiltrationStationOrdinaryPromptR1,
+} from "../../lib/estimate/v4/filtrationStationR1";
 
 type UserQuantity = { value: string; unit: "pcs" | "m2" | "m3" | "m" | "kg" | "t" | null };
 type CanonicalBaselinePlan = {
@@ -2176,6 +2180,9 @@ export function buildCanonicalBaselinePlan(input: {
   const bulkheadFrameInput = input.catalog.catalogId === R4_A13_BULKHEAD_FRAME_CATALOG_ID
     ? parseR4A13BulkheadFramePrompt(input.prompt)
     : null;
+  const filtrationStationInput = input.catalog.catalogId === FILTRATION_STATION_CATALOG_ID
+    ? parseFiltrationStationOrdinaryPromptR1(input.prompt)
+    : null;
   const userQuantity = pumpStationInput == null && stripFoundationInput == null
     && asphaltDrainageInput == null && asphaltRoadInput == null
     && formworkFramiXlifeInput == null && ricsNrm2FormworkInput == null
@@ -2183,6 +2190,7 @@ export function buildCanonicalBaselinePlan(input: {
     && stripFoundationReinforcementInput == null
     && anchorGroupInstallationInput == null
     && bulkheadFrameInput == null
+    && filtrationStationInput == null
     ? extractUserQuantity(input.prompt)
     : null;
   let userQuantityParameterId: string | null = null;
@@ -2206,6 +2214,7 @@ export function buildCanonicalBaselinePlan(input: {
       ?? concretePlacementInput ?? stripFoundationReinforcementInput
       ?? anchorGroupInstallationInput
       ?? bulkheadFrameInput
+      ?? filtrationStationInput
       ?? {},
   );
   const textExtractedParameterIds = Object.keys(submittedInputs);
@@ -2284,6 +2293,8 @@ export function buildCanonicalBaselinePlan(input: {
           ? "anchor_bolt_quantity_piece"
         : bulkheadFrameInput != null
           ? R4_A13_BULKHEAD_FRAME_PRIMARY_MEASURE_PARAMETER_ID
+        : filtrationStationInput != null
+          ? "flt_station_count"
     : connectedUserQuantityParameterId
     ?? formulaConnectedPrimaryParameterId;
   const preferredPrimaryParameter = input.catalog.parameterSchema.find(

@@ -159,7 +159,7 @@ async function verifyCore(): Promise<Json> {
 }
 
 void runMasterSingleDefinitionSuccessorR1({
-  contract: "rik-expo-app.s27-26.filtration-station-automatic-successor.v1",
+  contract: "rik-expo-app.s27-26.filtration-station-automatic-successor.v2",
   stopCode: "S27_26_FILTRATION_STATION_AUTOMATIC",
   applicationName: "s27-26-filtration-station-automatic-successor",
   expectedBranch: "codex/r4-a5-clean-08b18902",
@@ -168,9 +168,9 @@ void runMasterSingleDefinitionSuccessorR1({
   masterSha256: process.env.R4A13_MASTER_SHA256
     ?? "c0cc1dc8b4bccbd1025f6c78426bd4f3d3dd464254b2aa534fea0d8e576ff91b",
   parentReleaseId: process.env.R4A13_PARENT_DEFINITION_RELEASE_ID
-    ?? "0fa843d1-c720-530c-8bee-9d0c2a3a0bf4",
+    ?? "ec8290a2-7986-51ba-aad6-dfc30cd9f171",
   parentSearchReleaseId: process.env.R4A13_PARENT_SEARCH_RELEASE_ID
-    ?? "ef4fd021-43b5-5327-b4ca-b8e65b371c0a",
+    ?? "a7caac8a-3a89-510f-b7c9-2fcbb9adaa66",
   currentReleasePath: resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json"),
   outputRoot: resolve(".release-runtime/r568/s27-26/filtration-station-automatic-successor"),
   sourcePaths: [
@@ -179,6 +179,8 @@ void runMasterSingleDefinitionSuccessorR1({
     "src/lib/estimate/v4/filtrationStationR1.ts",
     "tests/estimateNorms/filtrationStationR1.contract.test.ts",
     "src/features/consumerRepair/consumerCanonicalBaselineCompile.ts",
+    "src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics.ts",
+    "src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics.test.ts",
     "tests/requestEstimate/master30PromptOwnedProfessionalParameters.contract.test.ts",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
     "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts",
@@ -198,7 +200,7 @@ void runMasterSingleDefinitionSuccessorR1({
   runtimeProfileClassification: FILTRATION_STATION_RUNTIME_CLASSIFICATION,
   runtimeProfileSourceIds: FILTRATION_STATION_RUNTIME_SOURCE_IDS,
   verifyCore,
-  expectedParentShape: [4, 45, 45],
+  expectedParentShape: [108, 76, 76],
   benchmarkOrdinal: 67,
   validationScenario: "Q5_FILTRATION_STATION_AUTOMATIC_S27_26",
   passport: {

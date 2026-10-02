@@ -5,6 +5,10 @@ import {
   "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
 import type { CanonicalEstimateCatalogItem } from
   "../../src/lib/estimate/backendPlatform/contracts";
+import {
+  FILTRATION_STATION_CATALOG_ID,
+  FILTRATION_STATION_SHORT_INPUT,
+} from "../../src/lib/estimate/v4/filtrationStationR1";
 
 function schema(parameterIds: readonly string[]): CanonicalEstimateCatalogItem["parameterSchema"] {
   return parameterIds.map((parameterId, ordinal) => ({
@@ -990,5 +994,101 @@ describe("MASTER-30 shared prompt-owned professional parameter ingress", () => {
       catalog,
       prompt: "Монтаж каркаса, объём конструкции 20 м³, BBS подтверждена",
     }).primaryMeasureParameterId).toBe("rebar_d12_mass_kg");
+  });
+
+  test("collects only the eight genuinely unknown filtration facts before compile", () => {
+    const textParameters = new Set([
+      "flt_station_designation",
+      "flt_filter_media_designation",
+      "flt_underdrain_designation",
+      "flt_backwash_package_designation",
+    ]);
+    const parameterSchema = [
+      ...Object.keys(FILTRATION_STATION_SHORT_INPUT).map((parameterId, ordinal) => ({
+        parameterId,
+        ordinal,
+        valueType: textParameters.has(parameterId)
+          ? "text" as const
+          : parameterId.endsWith("_count") ? "integer" as const : "decimal" as const,
+        unitId: null,
+        titleRu: parameterId,
+        required: true,
+        preliminaryCompilationAllowed: false,
+        defaultValue: null,
+        constraints: {},
+        semanticParameterKey: `filtration-station:${parameterId}`,
+        visibilityRole: "USER_INPUT" as const,
+        valueSourceRole: "USER_INPUT" as const,
+        guide: {
+          guideKind: "MEASUREMENT_RULE" as const,
+          guideShortRu: parameterId,
+          guideValidationPolicy: "MANDATORY_BLOCK" as const,
+          sourceRole: "USER_SUPPLIED_PRIMARY_FACT",
+        },
+        normativeLinks: [],
+        formulaConsumers: [`${parameterId}_formula`],
+        resourceBranchConsumers: [],
+        validationRules: [],
+        provenance: {},
+      })),
+      {
+        parameterId: "flt_wall_thickness_m",
+        ordinal: 10,
+        valueType: "decimal" as const,
+        unitId: "m",
+        titleRu: "Видимая профильная толщина",
+        required: true,
+        preliminaryCompilationAllowed: true,
+        defaultValue: null,
+        constraints: {},
+        semanticParameterKey: "filtration-station:flt_wall_thickness_m",
+        visibilityRole: "USER_INPUT" as const,
+        valueSourceRole: "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE" as const,
+        guide: {
+          guideKind: "PROJECT_DEFINED" as const,
+          guideShortRu: "Видимый профиль",
+          guideValidationPolicy: "ADVISORY_REASON_REQUIRED" as const,
+          sourceRole: "VISIBLE_PRELIMINARY_ENGINEERING_PROFILE_REQUIRES_PROJECT_CONFIRMATION",
+        },
+        normativeLinks: [],
+        formulaConsumers: ["flt_wall_formula"],
+        resourceBranchConsumers: [],
+        validationRules: [],
+        provenance: {},
+      },
+    ] as unknown as CanonicalEstimateCatalogItem["parameterSchema"];
+    const catalog = {
+      catalogId: FILTRATION_STATION_CATALOG_ID,
+      workKey: "filtration_station",
+      parameterSchema,
+    } as unknown as CanonicalEstimateCatalogItem;
+
+    let errorMessage = "";
+    try {
+      buildCanonicalBaselinePlan({
+        catalog,
+        prompt: "смета на фильтровальную станцию производительностью 1000 м3 в сутки",
+      });
+    } catch (error) {
+      errorMessage = error instanceof Error ? error.message : String(error);
+    }
+    expect(errorMessage).toContain("CANONICAL_BASELINE_CONTRACT_MISSING");
+    expect(errorMessage).not.toContain("flt_station_count");
+    expect(errorMessage).not.toContain("flt_design_capacity_m3_day");
+    expect(errorMessage).not.toContain("flt_wall_thickness_m");
+    expect(Object.keys(FILTRATION_STATION_SHORT_INPUT)
+      .filter((parameterId) => ![
+        "flt_station_count", "flt_design_capacity_m3_day",
+      ].includes(parameterId))
+      .every((parameterId) => errorMessage.includes(parameterId))).toBe(true);
+
+    expect(buildCanonicalBaselinePlan({
+      catalog,
+      prompt: "Строительство 1 фильтровальной станции FS-RGF-5000-4C производительностью 5000 м3/сут: 4 фильтровальные ячейки внутренним размером 8 x 5 м; загрузка DUAL-MEDIA-ANTHRACITE-SAND-POTABLE глубиной 0.8 м; дренаж HDPE-BLOCK-UNDERDRAIN-AIR-WATER; промывочный пакет BW-2P2B-AIR-WATER-5000.",
+    })).toMatchObject({
+      parameters: Object.fromEntries(Object.entries(FILTRATION_STATION_SHORT_INPUT)
+        .map(([key, value]) => [key, String(value)])),
+      primaryMeasureParameterId: "flt_station_count",
+    });
   });
 });

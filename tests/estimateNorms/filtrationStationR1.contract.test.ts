@@ -8,6 +8,7 @@ import {
   FILTRATION_STATION_RUNTIME_INPUT,
   FILTRATION_STATION_SHORT_INPUT,
   compileFiltrationStationR1,
+  parseFiltrationStationOrdinaryPromptR1,
 } from "../../src/lib/estimate/v4/filtrationStationR1";
 
 const quantity = async (input: Record<string, unknown>, rowId: string) => {
@@ -30,6 +31,31 @@ describe("S27.26 automatic complete potable-water filtration-station owner", () 
     expect(Object.keys(FILTRATION_STATION_SHORT_INPUT).join(" ")).not.toMatch(
       /excavation|concrete_volume|reinforcement_mass|labor|machine|trip|package_count|pipe_length/iu,
     );
+    const ordinary = FILTRATION_STATION_PARAMETERS.slice(0, 10);
+    const profile = FILTRATION_STATION_PARAMETERS.slice(10, 102);
+    expect(ordinary.every((parameter) =>
+      parameter.truth_metadata.preliminary_compilation_allowed === false
+      && (parameter.truth_metadata.guide as Record<string, unknown>)
+        .guide_validation_policy === "MANDATORY_BLOCK"
+    )).toBe(true);
+    expect(profile.every((parameter) =>
+      parameter.truth_metadata.preliminary_compilation_allowed === true
+      && (parameter.truth_metadata.guide as Record<string, unknown>)
+        .guide_validation_policy === "ADVISORY_REASON_REQUIRED"
+    )).toBe(true);
+  });
+
+  test("extracts stated primary facts and leaves genuinely unknown facts for the form", () => {
+    expect(parseFiltrationStationOrdinaryPromptR1(
+      "смета на фильтровальную станцию производительностью 1000 м3 в сутки",
+    )).toEqual({
+      flt_station_count: "1",
+      flt_design_capacity_m3_day: "1000",
+    });
+    expect(parseFiltrationStationOrdinaryPromptR1(
+      "Строительство 1 фильтровальной станции FS-RGF-5000-4C производительностью 5000 м3/сут: 4 фильтровальные ячейки внутренним размером 8 x 5 м; загрузка DUAL-MEDIA-ANTHRACITE-SAND-POTABLE глубиной 0.8 м; дренаж HDPE-BLOCK-UNDERDRAIN-AIR-WATER; промывочный пакет BW-2P2B-AIR-WATER-5000.",
+    )).toEqual(Object.fromEntries(Object.entries(FILTRATION_STATION_SHORT_INPUT)
+      .map(([key, value]) => [key, String(value)])));
   });
 
   test("ordinary facts compile the complete non-conditional resource chain", async () => {

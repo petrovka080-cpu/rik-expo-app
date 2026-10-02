@@ -67,6 +67,27 @@ describe("canonical preliminary-stage validation", () => {
       { code: "REQUIRED", parameterId: "approved_repair_method_designation" },
     ])).toEqual([]);
   });
+
+  it("collects only explicitly mandatory primary facts before compilation", () => {
+    const schema = {
+      parameterId: "flt_filter_cell_count",
+      valueType: "integer",
+      visibilityRole: "USER_INPUT",
+      valueSourceRole: "USER_INPUT",
+      preliminaryCompilationAllowed: false,
+      guide: {
+        guideValidationPolicy: "MANDATORY_BLOCK",
+        sourceRole: "USER_SUPPLIED_PRIMARY_FACT",
+      },
+    } as never;
+
+    expect(canonicalEstimateParameterAllowsPreliminaryCompilation(schema)).toBe(false);
+    expect(canonicalEstimateBlockingParameterIssues([schema], [
+      { code: "REQUIRED", parameterId: "flt_filter_cell_count" },
+    ])).toEqual([
+      { code: "REQUIRED", parameterId: "flt_filter_cell_count" },
+    ]);
+  });
 });
 
 describe("canonical estimate parameter choice labels", () => {

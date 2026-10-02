@@ -134,7 +134,7 @@ export function canonicalEstimateParameterChangesPreliminaryEstimate(
 }
 
 export function canonicalEstimateParameterAllowsPreliminaryCompilation(
-  _schema: ParameterSchema,
+  schema: ParameterSchema,
 ): boolean {
   // MASTER (22): every catalogue work must expose its applicable composition
   // before every exact quantity or branch choice is known. Legacy `false`
@@ -142,7 +142,18 @@ export function canonicalEstimateParameterAllowsPreliminaryCompilation(
   // preliminary input into a hard failure. Invalid supplied values and
   // cross-field conflicts remain blocking, while unresolved values remain
   // visible as preliminary needs outside totals and procurement.
-  return true;
+  // New automatic construction owners explicitly distinguish the small set
+  // of real user/project facts from their visible replaceable engineering
+  // profile. Only that fail-closed combination opens parameter collection;
+  // legacy `false` flags remain non-blocking until their definitions receive
+  // the same explicit policy and source ownership.
+  const mandatoryPrimaryFact = schema.preliminaryCompilationAllowed === false
+    && schema.guide?.guideValidationPolicy === "MANDATORY_BLOCK"
+    && String(schema.valueSourceRole ?? "") === "USER_INPUT";
+  const mandatoryConditionalProjectFact = schema.preliminaryCompilationAllowed === false
+    && schema.guide?.guideValidationPolicy === "MANDATORY_BLOCK"
+    && String(schema.valueSourceRole ?? "") === "CONDITIONAL_PROJECT_FACT";
+  return !(mandatoryPrimaryFact || mandatoryConditionalProjectFact);
 }
 
 /**

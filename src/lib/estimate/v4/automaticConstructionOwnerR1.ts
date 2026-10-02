@@ -115,7 +115,11 @@ export function buildAutomaticConstructionOwnerR1(
       input_origin_class: spec.kind === "ordinary" ? "KNOWN_PRIMARY_WORK_SCOPE"
         : spec.kind === "profile" ? "VISIBLE_PRELIMINARY_ENGINEERING_PROFILE"
           : "APPROVED_PROJECT_OR_METHOD_STATEMENT",
-      preliminary_compilation_allowed: true,
+      // A first estimate may use the visible engineering profile, but it must
+      // not turn an actually unknown primary/project fact into dozens of
+      // resource-level preliminary needs. Those facts belong to the compact
+      // parameter collection screen before compile.
+      preliminary_compilation_allowed: spec.kind === "profile",
       source_confirmation_required: spec.kind !== "ordinary",
       guide: {
         guide_kind: spec.kind === "ordinary" ? "MEASUREMENT_RULE" : "PROJECT_DEFINED",
@@ -130,8 +134,9 @@ export function buildAutomaticConstructionOwnerR1(
         source_snapshot_hash: config.sourceMetadata.artifact_sha256,
         applicability: config.applicabilityRu,
         verified_at: "2026-10-02T00:00:00+06:00",
-        guide_validation_policy:
-          "ASK_ONLY_PRIMARY_FACTS_DEFER_CONDITIONAL_FACTS_CALCULATE_DERIVED_QUANTITIES",
+        guide_validation_policy: spec.kind === "profile"
+          ? "ADVISORY_REASON_REQUIRED"
+          : "MANDATORY_BLOCK",
       },
       hidden_default_forbidden: true,
       runtime_profile_value: spec.kind === "profile",
