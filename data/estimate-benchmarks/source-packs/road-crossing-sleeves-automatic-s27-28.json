@@ -19,6 +19,8 @@
     "jointResourceVerification": "tests/estimateNorms/roadCrossingSleevesJointResourcesR1.contract.test.ts",
     "casingMaterialModule": "src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1.ts",
     "casingMaterialVerification": "tests/estimateNorms/roadCrossingSleevesCasingMaterialR1.contract.test.ts",
+    "componentIntegrationModule": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",
+    "componentIntegrationVerification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
     "evaluator": "Existing canonical FormulaGraph only",
     "inputPolicy": "The component takes explicitly supplied scalar inputs and does not create a runtime form or baseline. The full owner must classify source-backed replaceable assumptions separately from genuine project facts, and prefer certified pipe mass when available.",
     "completedQuantityBoundaries": [
