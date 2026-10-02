@@ -1,6 +1,7 @@
 param(
   [switch]$PreflightOnly,
   [switch]$UseStandaloneLocalEstimateDatabase,
+  [string]$MasterPath = "",
   [ValidateRange(1024, 65535)]
   [int]$Port = 8081
 )
@@ -19,6 +20,20 @@ function Get-ConfiguredValue([string]$Name) {
     $value = [Environment]::GetEnvironmentVariable($Name, "User")
   }
   return [string]$value
+}
+
+function Resolve-MasterSpecSha256([string]$Path) {
+  if (-not [string]::IsNullOrWhiteSpace($Path)) {
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+      throw "WHOLE_APP_MASTER_SPEC_FILE_MISSING"
+    }
+    return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+  }
+  $configured = (Get-ConfiguredValue "LOCAL_DEVELOPER_MASTER_SHA256").Trim().ToLowerInvariant()
+  if ($configured -and $configured -notmatch '^[0-9a-f]{64}$') {
+    throw "WHOLE_APP_MASTER_SPEC_SHA256_INVALID"
+  }
+  return $configured
 }
 
 function Get-OptionalProviderValue([object]$Provider, [string]$Name) {
@@ -73,6 +88,14 @@ if ($GitRootExitCode -ne 0 `
   Fail-Review "PROJECT_ROOT_MISMATCH" "используйте только $ExpectedCanonicalRoot; копии и другие worktree не являются рабочим ядром"
 }
 Set-Location -LiteralPath $Root
+
+# An explicitly selected current MASTER takes precedence over any historical
+# process/user value. The backend must attest that exact digest even before an
+# ordinary signed-in request is available; never infer it from matching code.
+$RequestedMasterSha256 = Resolve-MasterSpecSha256 -Path $MasterPath
+if (-not [string]::IsNullOrWhiteSpace($RequestedMasterSha256)) {
+  $env:LOCAL_DEVELOPER_MASTER_SHA256 = $RequestedMasterSha256
+}
 
 $WholeAppUrl = Get-ConfiguredValue "STAGING_SUPABASE_URL"
 $WholeAppKey = Get-ConfiguredValue "STAGING_SUPABASE_READONLY_KEY"
@@ -232,6 +255,7 @@ $RuntimeIdentityOk = $RuntimeIdentity.schemaVersion -eq "rik-expo-app.local-runt
   -and $RuntimeIdentityRoot.Equals($Root, [System.StringComparison]::OrdinalIgnoreCase) `
   -and [string]$RuntimeIdentity.sourceHead -eq $BuildCommit `
   -and [string]$RuntimeIdentity.sourceTree -eq [string]$Identity.sourceTreeHash `
+  -and [string]$RuntimeIdentity.specSha256 -eq [string]$BackendManager.master_sha256 `
   -and [string]$RuntimeIdentity.definitionReleaseId -eq [string]$BackendManager.definition_release_id `
   -and [string]$RuntimeIdentity.searchReleaseId -eq [string]$BackendManager.search_release_id `
   -and [string]$RuntimeFrontend.sourceTreeHash -eq [string]$Identity.sourceTreeHash `
@@ -337,6 +361,7 @@ if (-not $ready -or -not (Test-WebBundleReady -Port $Port -TimeoutSec 180)) {
   source_tree_hash = [string]$Identity.sourceTreeHash
   product_source_hash = [string]$Identity.productSourceHash
   js_bundle_fingerprint = [string]$Identity.jsBundleFingerprint
+  master_sha256 = [string]$BackendManager.master_sha256
   build_commit = $BuildCommit
   build_branch = $BuildBranch
   definition_release_id = [string]$BackendManager.definition_release_id

@@ -205,6 +205,7 @@ function runtimeIdentityMatches(identity: Json | null, desired: Json): boolean {
     manifestOwnedByCurrentWorktree(identity) &&
     identity?.sourceHead === desired.sourceHead &&
     identity?.sourceTree === desired.sourceTree &&
+    identity?.specSha256 === desired.masterSha256 &&
     identity?.runtimeSourceSha256 === desired.backendRuntimeSourceSha256 &&
     identity?.definitionReleaseId === desired.releaseId &&
     identity?.searchReleaseId === desired.searchReleaseId &&
@@ -447,6 +448,9 @@ async function main(): Promise<void> {
       action: exactBefore ? "REUSE" : capabilityAction,
       auth_profile: BACKEND_AUTH_PROFILE,
       active_jobs: activeJobs,
+      definition_release_id: desired.releaseId,
+      search_release_id: desired.searchReleaseId,
+      master_sha256: desired.masterSha256,
       production_requests: 0,
     })}\n`);
     return;

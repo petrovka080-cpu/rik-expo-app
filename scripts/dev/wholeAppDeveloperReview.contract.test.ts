@@ -83,4 +83,24 @@ describe("whole-app developer review runtime", () => {
     expect(backend).not.toContain("authProviderUrl: SUPABASE_AUTH_URL");
     expect(backend).not.toContain("authPublicKey: SUPABASE_AUTH_API_KEY");
   });
+
+  it("binds an explicitly selected MASTER file and rejects reuse on specification drift without reading auth", () => {
+    const launcher = source("scripts/dev/startWholeAppDeveloperReview.ps1");
+    const manager = source("scripts/dev/ensureLocalDeveloperCanonicalBackend.ts");
+    const backend = source("scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts");
+    expect(launcher).toContain('[string]$MasterPath = ""');
+    expect(launcher).toContain('Test-Path -LiteralPath $Path -PathType Leaf');
+    expect(launcher).toContain('Get-FileHash -LiteralPath $Path -Algorithm SHA256');
+    expect(launcher).toContain('Resolve-MasterSpecSha256 -Path $MasterPath');
+    expect(launcher).toContain('$env:LOCAL_DEVELOPER_MASTER_SHA256 = $RequestedMasterSha256');
+    expect(launcher).toContain('$RuntimeIdentity.specSha256 -eq [string]$BackendManager.master_sha256');
+    const identityGuard = manager.slice(manager.indexOf("function runtimeIdentityMatches("), manager.indexOf("function manifestMatches("));
+    expect(identityGuard).toContain('identity?.specSha256 === desired.masterSha256');
+    expect(identityGuard).not.toContain("authenticatedManifest");
+    const identityResponse = backend.slice(backend.indexOf('path[0] === "runtime-identity"'), backend.indexOf("if (!requestPrincipalStorage.getStore())"));
+    expect(identityResponse).toContain("specSha256: R45_RUNTIME_SPEC_SHA256");
+    expect(identityResponse).toContain("containsCredentials: false");
+    expect(identityResponse).toContain("containsTenantIdentity: false");
+    expect(launcher).toContain("master_sha256 = [string]$BackendManager.master_sha256");
+  });
 });

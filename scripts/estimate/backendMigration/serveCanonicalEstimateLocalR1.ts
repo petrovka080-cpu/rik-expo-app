@@ -3979,6 +3979,7 @@ async function route(
       workingDirectory: process.cwd(),
       sourceHead: R45_RUNTIME_SOURCE_HEAD,
       sourceTree: R45_RUNTIME_SOURCE_TREE,
+      specSha256: R45_RUNTIME_SPEC_SHA256,
       runtimeSourceSha256: CANONICAL_ESTIMATE_RUNTIME_SOURCE_SHA256,
       definitionReleaseId: TARGET_RELEASE_ID || null,
       searchReleaseId: TARGET_SEARCH_RELEASE_ID || null,
