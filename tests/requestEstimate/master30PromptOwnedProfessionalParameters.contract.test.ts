@@ -13,6 +13,10 @@ import {
   CHLORINATION_STATION_CATALOG_ID,
   CHLORINATION_STATION_SHORT_INPUT,
 } from "../../src/lib/estimate/v4/chlorinationStationR1";
+import {
+  FLUSHING_DISINFECTION_CATALOG_ID,
+  FLUSHING_DISINFECTION_SHORT_INPUT,
+} from "../../src/lib/estimate/v4/flushingDisinfectionR1";
 
 function schema(parameterIds: readonly string[]): CanonicalEstimateCatalogItem["parameterSchema"] {
   return parameterIds.map((parameterId, ordinal) => ({
@@ -1195,6 +1199,102 @@ describe("MASTER-30 shared prompt-owned professional parameter ingress", () => {
       parameters: Object.fromEntries(Object.entries(CHLORINATION_STATION_SHORT_INPUT)
         .map(([key, value]) => [key, String(value)])),
       primaryMeasureParameterId: "chl_station_count",
+    });
+  });
+
+  test("collects only six unknown flushing-method facts after geometry is stated", () => {
+    const textParameters = new Set(["fld_pipeline_designation"]);
+    const parameterSchema = [
+      ...Object.keys(FLUSHING_DISINFECTION_SHORT_INPUT).map((parameterId, ordinal) => ({
+        parameterId,
+        ordinal,
+        valueType: textParameters.has(parameterId)
+          ? "text" as const
+          : parameterId === "fld_disinfectant_technology"
+            ? "enum" as const
+            : parameterId === "fld_isolated_section_count"
+              ? "integer" as const : "decimal" as const,
+        unitId: null,
+        titleRu: parameterId,
+        required: true,
+        preliminaryCompilationAllowed: false,
+        defaultValue: null,
+        constraints: parameterId === "fld_disinfectant_technology"
+          ? { values: ["SODIUM_HYPOCHLORITE"] }
+          : {},
+        semanticParameterKey: `flushing-disinfection:${parameterId}`,
+        visibilityRole: "USER_INPUT" as const,
+        valueSourceRole: "USER_INPUT" as const,
+        guide: {
+          guideKind: "MEASUREMENT_RULE" as const,
+          guideShortRu: parameterId,
+          guideValidationPolicy: "MANDATORY_BLOCK" as const,
+          sourceRole: "USER_SUPPLIED_PRIMARY_FACT",
+        },
+        normativeLinks: [],
+        formulaConsumers: [`${parameterId}_formula`],
+        resourceBranchConsumers: [],
+        validationRules: [],
+        provenance: {},
+      })),
+      {
+        parameterId: "fld_flushing_turnovers",
+        ordinal: 8,
+        valueType: "decimal" as const,
+        unitId: "ratio",
+        titleRu: "Видимая профильная кратность промывки",
+        required: true,
+        preliminaryCompilationAllowed: true,
+        defaultValue: null,
+        constraints: {},
+        semanticParameterKey: "flushing-disinfection:fld_flushing_turnovers",
+        visibilityRole: "USER_INPUT" as const,
+        valueSourceRole: "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE" as const,
+        guide: {
+          guideKind: "PROJECT_DEFINED" as const,
+          guideShortRu: "Видимый профиль",
+          guideValidationPolicy: "ADVISORY_REASON_REQUIRED" as const,
+          sourceRole: "VISIBLE_PRELIMINARY_ENGINEERING_PROFILE_REQUIRES_PROJECT_CONFIRMATION",
+        },
+        normativeLinks: [],
+        formulaConsumers: ["fld_flush_water_formula"],
+        resourceBranchConsumers: [],
+        validationRules: [],
+        provenance: {},
+      },
+    ] as unknown as CanonicalEstimateCatalogItem["parameterSchema"];
+    const catalog = {
+      catalogId: FLUSHING_DISINFECTION_CATALOG_ID,
+      workKey: "flushing_disinfection",
+      parameterSchema,
+    } as unknown as CanonicalEstimateCatalogItem;
+
+    let errorMessage = "";
+    try {
+      buildCanonicalBaselinePlan({
+        catalog,
+        prompt: "промыть и дезинфицировать 1000 м трубопровода, внутренний диаметр 100 мм",
+      });
+    } catch (error) {
+      errorMessage = error instanceof Error ? error.message : String(error);
+    }
+    expect(errorMessage).toContain("CANONICAL_BASELINE_CONTRACT_MISSING");
+    expect(errorMessage).not.toContain("fld_pipeline_length_m");
+    expect(errorMessage).not.toContain("fld_pipeline_internal_diameter_mm");
+    expect(errorMessage).not.toContain("fld_flushing_turnovers");
+    expect(Object.keys(FLUSHING_DISINFECTION_SHORT_INPUT)
+      .filter((parameterId) => ![
+        "fld_pipeline_length_m", "fld_pipeline_internal_diameter_mm",
+      ].includes(parameterId))
+      .every((parameterId) => errorMessage.includes(parameterId))).toBe(true);
+
+    expect(buildCanonicalBaselinePlan({
+      catalog,
+      prompt: "Промывка и дезинфекция трубопровода PE100-RC-SDR17-OD110-ID100 длиной 1000 м, внутренний диаметр 100 мм, 2 изолированных участка, гипохлорит натрия, активный хлор 50 мг/л, раствор концентрацией 12.5%, выдержка 24 ч.",
+    })).toMatchObject({
+      parameters: Object.fromEntries(Object.entries(FLUSHING_DISINFECTION_SHORT_INPUT)
+        .map(([key, value]) => [key, String(value)])),
+      primaryMeasureParameterId: "fld_pipeline_length_m",
     });
   });
 });

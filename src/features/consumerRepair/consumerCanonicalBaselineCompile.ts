@@ -60,6 +60,10 @@ import {
   CHLORINATION_STATION_CATALOG_ID,
   parseChlorinationStationOrdinaryPromptR1,
 } from "../../lib/estimate/v4/chlorinationStationR1";
+import {
+  FLUSHING_DISINFECTION_CATALOG_ID,
+  parseFlushingDisinfectionOrdinaryPromptR1,
+} from "../../lib/estimate/v4/flushingDisinfectionR1";
 
 type UserQuantity = { value: string; unit: "pcs" | "m2" | "m3" | "m" | "kg" | "t" | null };
 type CanonicalBaselinePlan = {
@@ -2190,6 +2194,9 @@ export function buildCanonicalBaselinePlan(input: {
   const chlorinationStationInput = input.catalog.catalogId === CHLORINATION_STATION_CATALOG_ID
     ? parseChlorinationStationOrdinaryPromptR1(input.prompt)
     : null;
+  const flushingDisinfectionInput = input.catalog.catalogId === FLUSHING_DISINFECTION_CATALOG_ID
+    ? parseFlushingDisinfectionOrdinaryPromptR1(input.prompt)
+    : null;
   const userQuantity = pumpStationInput == null && stripFoundationInput == null
     && asphaltDrainageInput == null && asphaltRoadInput == null
     && formworkFramiXlifeInput == null && ricsNrm2FormworkInput == null
@@ -2199,6 +2206,7 @@ export function buildCanonicalBaselinePlan(input: {
     && bulkheadFrameInput == null
     && filtrationStationInput == null
     && chlorinationStationInput == null
+    && flushingDisinfectionInput == null
     ? extractUserQuantity(input.prompt)
     : null;
   let userQuantityParameterId: string | null = null;
@@ -2224,6 +2232,7 @@ export function buildCanonicalBaselinePlan(input: {
       ?? bulkheadFrameInput
       ?? filtrationStationInput
       ?? chlorinationStationInput
+      ?? flushingDisinfectionInput
       ?? {},
   );
   const textExtractedParameterIds = Object.keys(submittedInputs);
@@ -2306,6 +2315,8 @@ export function buildCanonicalBaselinePlan(input: {
           ? "flt_station_count"
         : chlorinationStationInput != null
           ? "chl_station_count"
+        : flushingDisinfectionInput != null
+          ? "fld_pipeline_length_m"
     : connectedUserQuantityParameterId
     ?? formulaConnectedPrimaryParameterId;
   const preferredPrimaryParameter = input.catalog.parameterSchema.find(
