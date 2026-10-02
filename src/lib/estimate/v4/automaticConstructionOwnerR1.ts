@@ -22,6 +22,7 @@ export type AutomaticParameterSpec = Readonly<{
   min?: number;
   max?: number;
   requiredWhen?: Readonly<{ parameterId: string; value: string }>;
+  resourceBranchConsumers?: readonly string[];
 }>;
 
 export type AutomaticRowSpec = Readonly<{
@@ -134,6 +135,9 @@ export function buildAutomaticConstructionOwnerR1(
       },
       hidden_default_forbidden: true,
       runtime_profile_value: spec.kind === "profile",
+      ...(spec.resourceBranchConsumers ? {
+        resource_branch_consumers: [...spec.resourceBranchConsumers],
+      } : {}),
       synthetic: false,
     },
   }));

@@ -21,6 +21,17 @@ describe("S27.25 automatic factory potable-water booster-skid owner", () => {
     expect(Object.keys(BOOSTER_PUMPING_STATION_SHORT_INPUT).join(" ")).not.toMatch(
       /quantity|labor|machine|trip|test_count|grout_volume/iu,
     );
+    const parameterById = new Map(BOOSTER_PUMPING_STATION_PARAMETERS.map(
+      (parameter) => [parameter.parameter_id, parameter],
+    ));
+    for (const parameterId of [
+      "bps_duty_pump_count_per_skid",
+      "bps_standby_pump_count_per_skid",
+    ]) {
+      expect(parameterById.get(parameterId)?.truth_metadata).toEqual(expect.objectContaining({
+        resource_branch_consumers: ["rc09:bps_pump_units"],
+      }));
+    }
   });
 
   test("ordinary facts compile the complete non-conditional resource chain without questions", async () => {

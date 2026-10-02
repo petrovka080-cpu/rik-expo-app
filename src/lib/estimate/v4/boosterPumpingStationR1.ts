@@ -36,8 +36,8 @@ const ordinary: readonly AutomaticParameterSpec[] = Object.freeze([
 
 const profile: readonly AutomaticParameterSpec[] = Object.freeze([
   { id: "bps_pump_installed_piece_per_skid", title: "Насосов в составе одного skid", valueType: "integer", unitId: "piece", kind: "profile", defaultValue: 3, min: 1 },
-  { id: "bps_duty_pump_count_per_skid", title: "Рабочих насосов в одном skid", valueType: "integer", unitId: "piece", kind: "profile", defaultValue: 2, min: 1 },
-  { id: "bps_standby_pump_count_per_skid", title: "Резервных насосов в одном skid", valueType: "integer", unitId: "piece", kind: "profile", defaultValue: 1, min: 0 },
+  { id: "bps_duty_pump_count_per_skid", title: "Рабочих насосов в одном skid", valueType: "integer", unitId: "piece", kind: "profile", defaultValue: 2, min: 1, resourceBranchConsumers: ["rc09:bps_pump_units"] },
+  { id: "bps_standby_pump_count_per_skid", title: "Резервных насосов в одном skid", valueType: "integer", unitId: "piece", kind: "profile", defaultValue: 1, min: 0, resourceBranchConsumers: ["rc09:bps_pump_units"] },
   { id: "bps_pump_designation", title: "Марка насосного агрегата", valueType: "text", unitId: null, kind: "profile", defaultValue: "VM-45M3H-45M-30KW" },
   { id: "bps_motor_power_kw", title: "Мощность двигателя одного насоса", valueType: "decimal", unitId: "kW", kind: "profile", defaultValue: 30, min: 0.000_001 },
   { id: "bps_skid_length_m", title: "Длина рамы skid", valueType: "decimal", unitId: "m", kind: "profile", defaultValue: 3, min: 0.000_001 },
