@@ -141,6 +141,14 @@ export function consumerRepairCanonicalRowNativeId(
   return parts.every(Boolean) ? `canonical-estimate-row-identity|${parts.join("|")}` : undefined;
 }
 
+// One current presentation projection per live row. Compare the actual scalar
+// signals on every read, including nested legacy metadata mutated in place.
+// Quantity, pricing and source/admission decisions are never cached here.
+const currentCategorySignals = new WeakMap<ConsumerRepairRowMetadataCarrier, {
+  tokens: readonly string[];
+  signals: readonly string[];
+}>();
+
 export function consumerRepairRowCategorySignals(
   item: ConsumerRepairRowMetadataCarrier,
 ): string[] {
@@ -149,7 +157,7 @@ export function consumerRepairRowCategorySignals(
   const smartCategory = smartProjection && typeof smartProjection === "object"
     ? (smartProjection as { category?: unknown }).category
     : null;
-  return [
+  const tokens = [
     source.rowKind,
     source.row_kind,
     source.section,
@@ -157,7 +165,14 @@ export function consumerRepairRowCategorySignals(
     source.asphaltV4ProfessionalCategory,
     smartCategory,
     item.category,
-  ]
-    .map((value) => text(value).toLocaleLowerCase("ru-RU"))
-    .filter(Boolean);
+  ].map(text);
+  const current = currentCategorySignals.get(item);
+  if (current && tokens.every((token, index) => token === current.tokens[index])) {
+    // Callers historically receive a mutable array. Never expose the retained
+    // internal projection and let a caller poison another category read.
+    return [...current.signals];
+  }
+  const signals = tokens.filter(Boolean).map(token => token.toLocaleLowerCase("ru-RU"));
+  currentCategorySignals.set(item, { tokens, signals });
+  return [...signals];
 }

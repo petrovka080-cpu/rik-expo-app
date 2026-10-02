@@ -91,6 +91,12 @@ const UNIT_LABELS_RU: Record<string, string> = {
   "\u0420\u040e\u0432\u201a\u00ac\u0420\u040e\u0432\u0402\u045a": "\u0448\u0442",
 };
 
+// The registry and compatibility labels are static. Retain only bounded,
+// exact-input display labels, not quantities or dimensional conversions.
+const currentUnitLabels = new Map<string, string>();
+const MAX_UNIT_LABEL_CACHE_SIZE = 128;
+const MAX_CACHED_UNIT_LABEL_LENGTH = 128;
+
 export function formatEstimateUnitLabel(unit?: string | null): string {
   const normalized = String(unit ?? "").trim();
   if (!normalized) return "";
@@ -98,11 +104,22 @@ export function formatEstimateUnitLabel(unit?: string | null): string {
   // direct Map lookup so a cold Hermes build does not initialize Unicode NFKC
   // merely to display common labels such as `pcs`, `m2`, or `kg`. Aliases keep
   // the existing normalized resolution path and therefore the same semantics.
-  return getProfessionalUnitDefinition(normalized)?.displayRu ??
-    resolveProfessionalUnitDefinition(normalized)?.displayRu ??
+  const canonical = getProfessionalUnitDefinition(normalized);
+  if (canonical) return canonical.displayRu;
+  const current = currentUnitLabels.get(normalized);
+  if (current !== undefined) return current;
+  const label = resolveProfessionalUnitDefinition(normalized)?.displayRu ??
     UNIT_LABELS_RU[normalized] ??
     UNIT_LABELS_RU[normalized.toLowerCase()] ??
     normalized;
+  if (normalized.length <= MAX_CACHED_UNIT_LABEL_LENGTH && typeof label === "string") {
+    if (currentUnitLabels.size >= MAX_UNIT_LABEL_CACHE_SIZE) {
+      const oldest = currentUnitLabels.keys().next().value;
+      if (oldest !== undefined) currentUnitLabels.delete(oldest);
+    }
+    currentUnitLabels.set(normalized, label);
+  }
+  return label;
 }
 
 export function hasRawEstimateUnitLabel(text: string): boolean {

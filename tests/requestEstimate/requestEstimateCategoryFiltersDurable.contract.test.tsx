@@ -7,12 +7,14 @@ import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
 import { ConsumerRepairItemRow } from "../../src/features/consumerRepair/ConsumerRepairItemRow";
 import {
   REQUEST_ESTIMATE_CATEGORY_FILTERS,
+  EstimateMaterialSearchAddControl,
   RequestEstimateItemsEditor,
   mapCanonicalResourceToCatalogPickerItem,
   requestEstimateCategoryFilterForItem,
 } from "../../src/features/consumerRepair/RequestEstimateItemsEditor";
 import type { RequestEstimateViewModel } from "../../src/features/consumerRepair/requestEstimateViewModel";
 import type { ConsumerRepairRequestItem } from "../../src/lib/consumerRequests";
+import * as rowMetadata from "../../src/features/consumerRepair/consumerRepairRowMetadata";
 
 jest.mock("@expo/vector-icons", () => ({
   Ionicons: () => null,
@@ -96,6 +98,34 @@ function visibleRowCount(renderer: ReactTestRenderer): number {
 }
 
 describe("durable request estimate category filters", () => {
+  it("classifies each current filtered row once and reuses that category to reveal a collapsed search match", () => {
+    jest.useFakeTimers();
+    const classify = jest.spyOn(rowMetadata, "consumerRepairRowCategorySignals");
+    let renderer: ReactTestRenderer | undefined;
+    try {
+      renderer = renderEditor();
+      expect(classify).toHaveBeenCalledTimes(45);
+      classify.mockClear();
+      act(() => renderer!.root.findByProps({ testID: "request-estimate-category-filter-machinery" }).props.onPress());
+      expect(visibleRowCount(renderer)).toBe(36);
+      expect(classify).toHaveBeenCalledTimes(45);
+      classify.mockClear();
+      act(() => renderer!.root.findByProps({ testID: "request-estimate-items-search" }).props.onChangeText("equipment 0"));
+      expect(classify).toHaveBeenCalledTimes(1);
+      expect(renderer.root.findByType(EstimateMaterialSearchAddControl).props.existingMatches).toEqual([
+        { itemId: "equipment-0", titleRu: "Точная позиция equipment 0", categoryFilterId: "machinery" },
+      ]);
+      expect(visibleRowCount(renderer)).toBe(0);
+      act(() => renderer!.root.findByProps({ testID: "estimate-material-search-existing-equipment-0" }).props.onPress());
+      expect(visibleRowCount(renderer)).toBe(1);
+      expect(renderer.root.findByProps({ testID: "request-estimate-items-total-count" }).props.children).toBe("45 позиций");
+    } finally {
+      act(() => renderer?.unmount());
+      classify.mockRestore();
+      jest.useRealTimers();
+    }
+  });
+
   it.each([
     ["Механизмы", "Механизмы и оборудование", "machinery"],
     ["Испытания и контроль качества", "Контроль", "services"],

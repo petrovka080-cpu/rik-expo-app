@@ -50,7 +50,8 @@ const MAX_TRACE_EVENTS = 160;
 /** Developer-only attribution of synchronous work during a pending row action. */
 export function measureConsumerRepairQuantityRenderWork<T>(
   phase: "SCREEN_RENDER_MODEL" | "DRAFT_VIEW_MODEL" | "PUBLIC_TITLE_ADMISSION"
-    | "PUBLIC_ROW_SECTIONS" | "VISIBLE_LINES" | "PREVIEW_SECTIONS" | "CALCULATION_PREVIEW" | "NORM_SOURCE_PREVIEW",
+    | "PUBLIC_ROW_SECTIONS" | "VISIBLE_LINES" | "PREVIEW_SECTIONS" | "CALCULATION_PREVIEW" | "NORM_SOURCE_PREVIEW"
+    | "CATEGORY_FILTERS" | "EXISTING_ROW_SEARCH",
   work: () => T,
 ): T {
   const isDev = typeof __DEV__ !== "undefined" ? __DEV__ : process.env.NODE_ENV !== "production";

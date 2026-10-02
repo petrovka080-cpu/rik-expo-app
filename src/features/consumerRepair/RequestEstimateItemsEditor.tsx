@@ -7,7 +7,7 @@ import { searchCanonicalEstimateResources } from "../../lib/estimate/backendPlat
 import type { CanonicalEstimateResourceSearchItem } from "../../lib/estimate/backendPlatform/contracts";
 import { registerTimeout, type TimerRegistryHandle } from "../../lib/lifecycle/timerRegistry";
 import { ConsumerRepairItemRow } from "./ConsumerRepairItemRow";
-import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
+import { measureConsumerRepairQuantityRenderWork, type ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
 import type {
   RequestEstimateSectionViewModel,
   RequestEstimateViewModel,
@@ -451,10 +451,10 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
             !this.state.showOnlyUnresolved || consumerRepairRowIsCanonicalPreliminaryNeed(item)),
       };
     }).filter((section) => section.items.length > 0);
-    const filteredEntries = filteredSections.flatMap((section) => section.items.map((item) => ({
+    const filteredEntries = measureConsumerRepairQuantityRenderWork("CATEGORY_FILTERS", () => filteredSections.flatMap((section) => section.items.map((item) => ({
       item,
       categoryFilterId: requestEstimateCategoryFilterForItem(item, section.id),
-    })));
+    }))));
     const categoryCounts = filteredEntries.reduce<Partial<Record<RequestEstimateCategoryFilterId, number>>>(
       (counts, entry) => ({
         ...counts,
@@ -472,11 +472,11 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
       : visibleItems;
     const technicalDetailCount = filteredEntries.filter((entry) =>
       consumerRepairRowIsNonPayable(entry.item)).length;
-    const existingMatches: ExistingEstimateSearchMatch[] = filteredSections.flatMap((section) =>
-      section.items.map((item) => ({
+    const existingMatches: ExistingEstimateSearchMatch[] = measureConsumerRepairQuantityRenderWork("EXISTING_ROW_SEARCH", () => filteredEntries
+      .map(({ item, categoryFilterId }) => ({
         itemId: item.id,
         titleRu: item.titleRu,
-        categoryFilterId: requestEstimateCategoryFilterForItem(item, section.id),
+        categoryFilterId,
       })));
 
     return (
