@@ -106,6 +106,7 @@ type Props = ItemEditorHandlers & ParameterHandlers & {
 
 type ProgressivePanelState = {
   parametersOpen: boolean;
+  parametersMounted: boolean;
   positionsOpen: boolean;
   procurementOpen: boolean;
 };
@@ -459,6 +460,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
     // and source gaps remain explicit in the summary and behind the refinement
     // action, but they must not replace the result with a large form on mount.
     parametersOpen: false,
+    parametersMounted: false,
     positionsOpen: shouldOpenPositionsByDefault(this.props),
     // Artifact binding can move the draft panel between screen slots and
     // remount this component. Keep procurement available, but do not let it
@@ -499,7 +501,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
 
   private toggleParameters = () => {
     const parametersOpen = !this.state.parametersOpen;
-    this.setState({ parametersOpen }, () => {
+    this.setState({ parametersOpen, parametersMounted: true }, () => {
       if (parametersOpen) this.props.onRefineCanonicalParameters?.();
     });
   };
@@ -517,7 +519,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
   };
 
   private openIncompleteRequirements = () => {
-    this.setState({ parametersOpen: true, positionsOpen: false }, () => {
+    this.setState({ parametersOpen: true, parametersMounted: true, positionsOpen: false }, () => {
       this.props.onRefineCanonicalParameters?.();
     });
   };
@@ -672,7 +674,14 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
         </View>
       ) : null}
 
-      {parametersOpen ? (
+      {this.state.parametersMounted ? (
+        <View
+          testID="request-estimate-parameter-editor-surface"
+          style={parametersOpen ? undefined : { display: "none" }}
+          pointerEvents={parametersOpen ? "auto" : "none"}
+          accessibilityElementsHidden={!parametersOpen}
+          importantForAccessibility={parametersOpen ? "auto" : "no-hide-descendants"}
+        >
         <ParameterDisclosurePanel
           viewModel={viewModel}
           revision={currentRevision}
@@ -685,6 +694,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
           onCancelParamEdit={onCancelParamEdit}
           onApplyParamBatch={onApplyParamBatch}
         />
+        </View>
       ) : null}
 
       {positionsOpen ? (

@@ -10,6 +10,7 @@ import {
   ConsumerRepairDraftQuickActions,
   ConsumerRepairProgressiveEstimatePanel,
   InlineParamEditor,
+  ParameterDisclosurePanel,
 } from "./ConsumerRepairProgressiveEstimatePanel";
 import { EstimateMaterialSearchAddControl } from "./RequestEstimateItemsEditor";
 import { ConsumerRepairItemRow } from "./ConsumerRepairItemRow";
@@ -361,8 +362,28 @@ describe("InlineParamEditor R3 parameter guide", () => {
       .map((node) => String(node.props.children ?? ""))
       .join(" ")).toContain("Рассчитано или подставлено приложением — можно изменить");
 
+    const editorInstance = renderer.root.findByType(ParameterDisclosurePanel).instance;
+    act(() => renderer.root.findByProps({ testID: "editable-param-popover-input" }).props.onChangeText("40"));
+    expect(renderer.root.findByProps({ testID: "editable-param-popover-input" }).props.value).toBe("40");
+    expect(renderer.root.findByProps({ testID: "editable-param-batch-dirty-count" })).toBeTruthy();
     act(() => renderer.root.findByProps({ testID: "request-estimate-parameters-toggle" }).props.onPress());
-    expect(renderer.root.findAllByProps({ testID: "request-estimate-parameter-panel" })).toHaveLength(0);
+    const hiddenSurface = renderer.root.findByProps({ testID: "request-estimate-parameter-editor-surface" });
+    expect(hiddenSurface.props.style).toEqual({ display: "none" });
+    expect(hiddenSurface.props.pointerEvents).toBe("none");
+    expect(hiddenSurface.props.accessibilityElementsHidden).toBe(true);
+    expect(hiddenSurface.props.importantForAccessibility).toBe("no-hide-descendants");
+    expect(renderer.root.findByType(ParameterDisclosurePanel).instance).toBe(editorInstance);
+    // Collapse is not Cancel; reopening must neither rebuild the editor nor
+    // discard an unapplied replacement of the automatic application value.
+    for (let index = 0; index < 20; index += 1) {
+      act(() => renderer.root.findByProps({ testID: "request-estimate-parameters-toggle" }).props.onPress());
+      expect(renderer.root.findByProps({ testID: "request-estimate-parameter-editor-surface" }).props.style).toBeUndefined();
+      expect(renderer.root.findByType(ParameterDisclosurePanel).instance).toBe(editorInstance);
+      expect(renderer.root.findByProps({ testID: "editable-param-popover-input" }).props.value).toBe("40");
+      expect(renderer.root.findByProps({ testID: "editable-param-batch-dirty-count" })).toBeTruthy();
+      act(() => renderer.root.findByProps({ testID: "request-estimate-parameters-toggle" }).props.onPress());
+    }
+    expect(onRefineCanonicalParameters).toHaveBeenCalledTimes(21);
   });
 
   it("does not turn persisted BOQ assumptions into inputs when the canonical user-input set is empty", () => {
