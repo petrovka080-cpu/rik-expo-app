@@ -3,6 +3,9 @@ type ConsumerRepairRowMetadataCarrier = {
   itemType?: string;
   unit?: string | null;
   category?: string | null;
+  quantity?: number | null;
+  formulaId?: string | null;
+  quantityFormula?: string | null;
   sourceParameters?: Readonly<Record<string, unknown>> | null;
 };
 
@@ -100,6 +103,26 @@ export function consumerRepairRowHasManualQuantity(
   item: ConsumerRepairRowMetadataCarrier | null | undefined,
 ): boolean {
   return metadata(item).manualQuantityOverride === true;
+}
+
+export function consumerRepairRowCalculatedQuantity(
+  item: ConsumerRepairRowMetadataCarrier | null | undefined,
+): number | null {
+  if (!item) return null;
+  const rawBaseline = metadata(item).calculatedQuantityBeforeOverride;
+  const baseline = typeof rawBaseline === "number" || typeof rawBaseline === "string"
+    ? Number(rawBaseline)
+    : Number.NaN;
+  if (Number.isFinite(baseline) && baseline >= 0) return baseline;
+  if (
+    metadata(item).canonicalPreliminaryNeed !== true
+    && !consumerRepairRowHasManualQuantity(item)
+    && (text(item.formulaId) || text(item.quantityFormula))
+    && typeof item.quantity === "number"
+    && Number.isFinite(item.quantity)
+    && item.quantity >= 0
+  ) return item.quantity;
+  return null;
 }
 
 export function consumerRepairCanonicalRowNativeId(

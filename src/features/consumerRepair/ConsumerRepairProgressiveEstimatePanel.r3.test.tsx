@@ -19,7 +19,7 @@ jest.mock("@expo/vector-icons", () => ({
 }));
 
 describe("InlineParamEditor R3 parameter guide", () => {
-  it("keeps an unconfirmed profile value out of the input so the grey reference remains visible", () => {
+  it("keeps an application profile value filled, editable and visibly sourced", () => {
     expect(canonicalConsumerEditableFieldValue({
       cardValue: 0.12,
       revisionValue: 0.12,
@@ -27,7 +27,7 @@ describe("InlineParamEditor R3 parameter guide", () => {
         source: "ASSUMED",
         referenceValue: 0.12,
       } as never,
-    })).toBe("");
+    })).toBe("0.12");
     expect(canonicalConsumerParameterPlaceholder({
       parameter: {
         source: "ASSUMED",
@@ -300,12 +300,13 @@ describe("InlineParamEditor R3 parameter guide", () => {
             revisionId: "revision-987",
             status: "PRELIMINARY_WITH_ASSUMPTIONS",
             parameters: [{
-              parameterId: "area_m2",
-              label: "Площадь покрытия",
-              description: "Площадь покрытия по исходному запросу",
-              value: 987,
+              parameterId: "excavator_productivity_m3_h",
+              label: "Производительность экскаватора",
+              description: "Предварительная производительность механизма",
+              value: 35,
+              referenceValue: 35,
               valueType: "number",
-              unit: "м²",
+              unit: "м³/ч",
               requiredLevel: "CONTRACT_REQUIRED",
               visibilityCondition: { kind: "ALWAYS" },
               validation: { min: 1 },
@@ -314,8 +315,8 @@ describe("InlineParamEditor R3 parameter guide", () => {
               state: "ASSUMED",
               confidence: 0.7,
               assumption: "Предварительно принято из исходного запроса.",
-              affectsRows: ["asphalt:area"],
-              affectsFormula: ["asphalt:area:formula"],
+              affectsRows: ["earthworks:excavator"],
+              affectsFormula: ["earthworks:excavator:formula"],
               normativeSource: null,
               displayOrder: 1,
               sourceText: "Из исходного запроса",
@@ -324,7 +325,7 @@ describe("InlineParamEditor R3 parameter guide", () => {
             }],
             blockingMissingParameterIds: [],
             contractMissingParameterIds: [],
-            assumptionParameterIds: ["area_m2"],
+            assumptionParameterIds: ["excavator_productivity_m3_h"],
             invalidParameterIds: [],
           } as never}
           onRefineCanonicalParameters={onRefineCanonicalParameters}
@@ -344,11 +345,21 @@ describe("InlineParamEditor R3 parameter guide", () => {
     act(() => renderer.root.findByProps({ testID: "request-estimate-parameters-toggle" }).props.onPress());
     expect(onRefineCanonicalParameters).toHaveBeenCalledTimes(1);
     expect(renderer.root.findByProps({ testID: "request-estimate-parameter-panel" })).toBeTruthy();
-    expect(renderer.root.findByProps({ testID: "editable-param-popover-input" }).props.value).toBe("987");
-    expect(renderer.root.findByProps({ testID: "editable-param-chip-area_m2" })
+    expect(renderer.root.findByProps({ testID: "editable-param-popover-input" }).props.value).toBe("35");
+    expect(renderer.root.findByProps({
+      testID: "editable-param-inline-guide-excavator_productivity_m3_h",
+    }).props.children).toBe("принято 35");
+    expect(renderer.root.findByProps({ testID: "editable-param-chip-excavator_productivity_m3_h" })
       .findAllByType("Text" as never)
       .map((node) => String(node.props.children ?? ""))
       .join(" ")).toContain("№ 1.");
+    expect(renderer.root.findByProps({
+      testID: "editable-param-application-value-excavator_productivity_m3_h",
+    }).props.children).toContain("Поле можно изменить");
+    expect(renderer.root.findByProps({ testID: "request-estimate-assumed-parameters" })
+      .findAllByType("Text" as never)
+      .map((node) => String(node.props.children ?? ""))
+      .join(" ")).toContain("Рассчитано или подставлено приложением — можно изменить");
 
     act(() => renderer.root.findByProps({ testID: "request-estimate-parameters-toggle" }).props.onPress());
     expect(renderer.root.findAllByProps({ testID: "request-estimate-parameter-panel" })).toHaveLength(0);

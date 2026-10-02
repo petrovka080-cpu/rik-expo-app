@@ -27,6 +27,18 @@ const PRELIMINARY_DOCUMENT_SOURCE_ROLES = new Set<string>([
   "PROJECT_SPECIFIC_INPUT",
 ]);
 
+const VISIBLE_REPLACEABLE_PROFILE_CLASSIFICATIONS = new Set<string>([
+  "ASSUMPTION",
+  "VISIBLE_PRELIMINARY_SCENARIO",
+  "RUNTIME_STRUCTURAL_DEFAULT",
+]);
+
+const VISIBLE_REPLACEABLE_PROFILE_SOURCE_ROLES = new Set<string>([
+  "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE",
+  "VISIBLE_PRELIMINARY_SCENARIO",
+  "VISIBLE_BASELINE_ASSUMPTION",
+]);
+
 const CANONICAL_CHOICE_LABELS_RU: Readonly<Record<string, string>> = Object.freeze({
   ACCEPTED: "Принято, ремонт не требуется",
   LOCAL_REPAIR_REQUIRED: "Требуется локальный ремонт",
@@ -108,6 +120,37 @@ export function canonicalEstimateParameterHasCalculationConsumer(
 ): boolean {
   return (schema.formulaConsumers?.length ?? 0) > 0
     || (schema.resourceBranchConsumers?.length ?? 0) > 0;
+}
+
+/**
+ * A published runtime profile is an application-supplied calculation input,
+ * not a hidden norm or a generated output. It must remain visible and
+ * replaceable even when its technical id resembles a productivity or labor
+ * norm that the ordinary consumer-input admission intentionally rejects.
+ */
+export function isCanonicalEstimateVisibleReplaceableProfile(
+  schema: ParameterSchema,
+): boolean {
+  if (schema.visibilityRole !== "USER_INPUT") return false;
+  if (!canonicalEstimateParameterHasCalculationConsumer(schema)) return false;
+  const classification = String(schema.runtimeProfileClassification ?? "")
+    .trim()
+    .toUpperCase();
+  const sourceRole = String(schema.valueSourceRole ?? "").trim().toUpperCase();
+  return VISIBLE_REPLACEABLE_PROFILE_CLASSIFICATIONS.has(classification)
+    || VISIBLE_REPLACEABLE_PROFILE_SOURCE_ROLES.has(sourceRole);
+}
+
+/** A required user choice can select/name a concrete BOQ resource without entering a formula. */
+export function isCanonicalEstimateVisibleUserResourceSelectionParameter(
+  schema: ParameterSchema,
+): boolean {
+  if (schema.visibilityRole !== "USER_INPUT") return false;
+  if (schema.required !== true || schema.valueType !== "text") return false;
+  if ((schema.resourceBranchConsumers?.length ?? 0) === 0) return false;
+  const sourceRole = String(schema.valueSourceRole ?? "").trim().toUpperCase();
+  return ["USER_INPUT", "USER_MEASURED", "PROJECT_SPECIFIC_INPUT"].includes(sourceRole)
+    && !isCanonicalEstimateSourceManagedParameter(schema);
 }
 
 /**

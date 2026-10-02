@@ -333,18 +333,8 @@ export function canonicalConsumerEditableFieldValue(input: {
   parameter?: CanonicalParameter | null;
 }): string {
   const displayedValue = input.revisionValue ?? input.cardValue;
-  // A replaceable preliminary profile is calculation input, but it is not
-  // user-entered data. Render the editor empty so its grey placeholder can
-  // show the accepted reference. A user confirmation changes provenance and
-  // the confirmed value then renders normally.
-  if (
-    input.parameter?.source === "ASSUMED"
-    && input.parameter.referenceValue != null
-    && displayedValue != null
-    && String(displayedValue) === String(input.parameter.referenceValue)
-  ) {
-    return "";
-  }
+  // Application-calculated/profile values are real active inputs. Keep them
+  // visibly filled and editable; provenance is shown beside the field.
   return displayedValue == null ? "" : String(displayedValue);
 }
 
@@ -1042,7 +1032,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
   state: ParameterDisclosurePanelState = {
     showAllMissing: false,
     filledOpen: true,
-    derivedOpen: false,
+    derivedOpen: true,
     draftValues: {},
     baselineValues: {},
     draftRevisionId: null,
@@ -1357,6 +1347,15 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       guideShortRu: card.guideShortRu,
       unitLabel: card.unitRu,
     });
+    const applicationValueStatus = card.missing
+      ? null
+      : card.source === "catalog_default"
+        ? `Приложение рассчитало или подставило: ${meta}. Поле можно изменить.`
+        : card.source === "formula_derived"
+          ? card.editable
+            ? `Рассчитано приложением: ${meta}. Поле можно изменить.`
+            : `Рассчитано приложением: ${meta}. Измените исходные данные или количество позиции.`
+          : null;
 
     return (
       <View key={card.key} style={styles.parameterRow} testID={`editable-param-chip-${card.key}`}>
@@ -1400,6 +1399,14 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
             <Text style={styles.guideInfoButtonText}>i</Text>
           </Pressable>
         </View>
+        {applicationValueStatus ? (
+          <Text
+            style={styles.parameterMeta}
+            testID={`editable-param-application-value-${card.key}`}
+          >
+            {applicationValueStatus}
+          </Text>
+        ) : null}
         {guideExpanded ? <View style={styles.guideDetailsPanel}>
           {validationHint ? <Text style={styles.parameterMeta}>{validationHint}</Text> : null}
           {canonicalParameter?.normativeSource ? (
@@ -1533,7 +1540,12 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
         </Text>
         {canonicalSession && assumptionCards.length > 0 ? (
           <Text style={styles.panelMeta}>
-            Допущений, которые можно уточнить: {assumptionCards.length}
+            Параметров, рассчитанных или подставленных приложением и доступных для изменения: {assumptionCards.length}
+          </Text>
+        ) : null}
+        {derivedCards.length > 0 ? (
+          <Text style={styles.panelMeta}>
+            Параметров, рассчитанных приложением: {derivedCards.length}
           </Text>
         ) : null}
       </View>
@@ -1686,7 +1698,10 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       ) : null}
       {assumptionCards.length > 0 ? (
         <View style={styles.parameterGroup} testID="request-estimate-assumed-parameters">
-          <Text style={styles.groupTitle}>Явные предварительные допущения</Text>
+          <Text style={styles.groupTitle}>Рассчитано или подставлено приложением — можно изменить</Text>
+          <Text style={styles.parameterMeta}>
+            Значения уже заполнены. Их можно заменить вручную; серым показаны подсказки для незаполненных полей.
+          </Text>
           {assumptionCards.map((card) => renderParameter(card, "Допущение"))}
         </View>
       ) : null}
@@ -1699,7 +1714,9 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
             testID="request-estimate-derived-parameters-toggle"
           >
             <Text style={styles.inlineToggleText}>
-              {derivedOpen ? "Скрыть рассчитанные параметры" : `Рассчитанные параметры: ${derivedCards.length}`}
+              {derivedOpen
+                ? `Скрыть рассчитанные параметры (${derivedCards.length})`
+                : `Показать рассчитанные параметры (${derivedCards.length})`}
             </Text>
           </Pressable>
           {derivedOpen ? (

@@ -296,6 +296,15 @@ export function useConsumerRepairItemRowEditing({
     commitQuantityText(formatInputNumber(Math.max(0, baseQuantity + delta)), "stepper");
   }, [commitQuantityText, item.quantity, quantityText]);
 
+  const restoreCalculatedQuantity = React.useCallback((calculatedQuantity: number) => {
+    quantityEditingRef.current = false;
+    setQuantityEditing(false);
+    const nextValue = formatInputNumber(calculatedQuantity);
+    quantityCommittedValueRef.current = nextValue;
+    setQuantityText(nextValue);
+    onQuantityChange(item.id, "");
+  }, [item.id, onQuantityChange]);
+
   const rememberQuantitySelection = React.useCallback((
     event: NativeSyntheticEvent<TextInputSelectionChangeEventData>,
   ) => {
@@ -336,6 +345,7 @@ export function useConsumerRepairItemRowEditing({
     beginPriceEdit,
     finishPriceEdit,
     stepQuantity,
+    restoreCalculatedQuantity,
     rememberQuantitySelection,
     rememberPriceSelection,
   };

@@ -46,6 +46,8 @@ import {
   isCanonicalEstimateConsumerSuppliedParameter,
   isCanonicalEstimateSourceManagedParameter,
   isCanonicalEstimateUserEditableParameter,
+  isCanonicalEstimateVisibleReplaceableProfile,
+  isCanonicalEstimateVisibleUserResourceSelectionParameter,
 } from "../../lib/estimate/backendPlatform/canonicalEstimateParameterSemantics";
 
 type EditableSchema = CanonicalEstimateCatalogItem["parameterSchema"][number];
@@ -122,7 +124,9 @@ export function canonicalCatalogCustomRowClassification(
 }
 
 export function isConsumerMeaningfulCanonicalParameter(schema: EditableSchema): boolean {
-  return isCanonicalEstimateConsumerSuppliedParameter(schema);
+  return isCanonicalEstimateConsumerSuppliedParameter(schema)
+    || isCanonicalEstimateVisibleReplaceableProfile(schema)
+    || isCanonicalEstimateVisibleUserResourceSelectionParameter(schema);
 }
 
 export function consumerCanonicalPrecompileParameterOverrides(input: {
@@ -300,6 +304,7 @@ function parameterVisibilityCondition(schema: EditableSchema): CanonicalParamete
 function buildParameter(input: {
   schema: EditableSchema;
   parameters: Record<string, unknown>;
+  referenceParameters?: Record<string, unknown> | null;
   parentParameters?: Record<string, unknown> | null;
   userInputSnapshot?: Record<string, unknown> | null;
   sourceOverride?: CanonicalParameter["source"];
@@ -309,7 +314,16 @@ function buildParameter(input: {
     input.schema.titleRu,
   );
   const value = scalarValue(input.schema, input.parameters[input.schema.parameterId]);
-  const referenceValue = scalarValue(input.schema, input.schema.defaultValue);
+  const hasRuntimeReference = Object.prototype.hasOwnProperty.call(
+    input.referenceParameters ?? {},
+    input.schema.parameterId,
+  );
+  const referenceValue = scalarValue(
+    input.schema,
+    hasRuntimeReference
+      ? input.referenceParameters?.[input.schema.parameterId]
+      : input.schema.defaultValue,
+  );
   const source = input.sourceOverride ?? parameterSource({
     schema: input.schema,
     value,
@@ -394,6 +408,7 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
   draftId: string;
   revisionId: string;
   parameters: Record<string, unknown>;
+  referenceParameters?: Record<string, unknown> | null;
   parentParameters?: Record<string, unknown> | null;
   userInputSnapshot?: Record<string, unknown> | null;
   activeNeedParameterIds: ReadonlySet<string>;
@@ -416,6 +431,7 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
     .map((schema) => buildParameter({
       schema,
       parameters: input.parameters,
+      referenceParameters: input.referenceParameters,
       parentParameters: input.parentParameters,
       userInputSnapshot: input.userInputSnapshot,
       sourceOverride: input.parameters[schema.parameterId] == null
@@ -569,6 +585,9 @@ export function buildConsumerCanonicalParameterSession(input: {
     draftId: input.draftId,
     revisionId: input.revision.revisionId,
     parameters: input.revision.parameters,
+    referenceParameters: input.revision.acceptedBaselineSnapshot
+      ?? input.revision.assumptionSnapshot
+      ?? null,
     parentParameters: input.parent?.parameters ?? null,
     userInputSnapshot: input.revision.userInputSnapshot,
     activeNeedParameterIds: new Set([
@@ -619,11 +638,17 @@ export function buildConsumerCanonicalPrecompileParameterSession(input: {
       explicitIds.has(parameterId) || textExtractedIds.has(parameterId)
     ),
   );
+  const referenceParameters = Object.fromEntries(
+    Object.entries(input.parameters).filter(([parameterId]) =>
+      sourceByParameterId.get(parameterId) === "ASSUMED"
+    ),
+  );
   return buildConsumerCanonicalParameterSessionFromValues({
     catalog: input.catalog,
     draftId: input.draftId,
     revisionId: `precompile:${sessionIdentity}`,
     parameters: input.parameters,
+    referenceParameters,
     userInputSnapshot,
     activeNeedParameterIds: new Set(input.missingParameterIds),
     sourceByParameterId,

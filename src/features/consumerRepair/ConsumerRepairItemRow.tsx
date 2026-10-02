@@ -17,6 +17,7 @@ import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityE
 import { buildRequestEstimateProfessionalRowEvidence } from "./requestEstimateViewModel";
 import {
   consumerRepairCanonicalRowNativeId,
+  consumerRepairRowCalculatedQuantity,
   consumerRepairRowCode,
   consumerRepairRowCostTreatment,
   consumerRepairRowHasManualQuantity,
@@ -102,6 +103,7 @@ function ConsumerRepairItemRowComponent({
   const sourceManagedNeed = consumerRepairRowHasSourceManagedQuantity(item);
   const nonPayableRow = consumerRepairRowIsNonPayable(item);
   const manualQuantityOverride = consumerRepairRowHasManualQuantity(item);
+  const calculatedQuantity = consumerRepairRowCalculatedQuantity(item);
   const preliminaryNeed = consumerRepairRowIsCanonicalPreliminaryNeed(item);
   const missingRequirementLabels = consumerRepairRowMissingRequirementLabels(item);
   const {
@@ -126,6 +128,7 @@ function ConsumerRepairItemRowComponent({
     beginPriceEdit,
     finishPriceEdit,
     stepQuantity,
+    restoreCalculatedQuantity,
     rememberQuantitySelection,
     rememberPriceSelection,
   } = useConsumerRepairItemRowEditing({
@@ -255,12 +258,26 @@ function ConsumerRepairItemRowComponent({
                 Норма не задана — введите подтверждённое количество
               </Text>
             ) : null}
+            {calculatedQuantity != null ? (
+              <Text
+                style={manualQuantityOverride ? styles.manualQuantityHint : styles.calculatedQuantityHint}
+                testID={`consumer-repair-item-quantity-mode-${item.id}`}
+              >
+                {manualQuantityOverride
+                  ? `Введено вручную. По формуле: ${calculatedQuantity} ${unitLabel}.`
+                  : `Рассчитано автоматически: ${calculatedQuantity} ${unitLabel}. Поле можно изменить.`}
+              </Text>
+            ) : null}
             {manualQuantityOverride ? (
               <Pressable
                 accessibilityRole="button"
                 onPress={() => {
-                  setQuantityText("");
-                  onQuantityChange(item.id, "");
+                  if (calculatedQuantity == null) {
+                    setQuantityText("");
+                    onQuantityChange(item.id, "");
+                    return;
+                  }
+                  restoreCalculatedQuantity(calculatedQuantity);
                 }}
                 style={styles.restoreCalculatedButton}
                 testID={`consumer-repair-item-restore-calculated-${item.id}`}
@@ -547,6 +564,20 @@ const styles = StyleSheet.create({
     fontSize: 10,
     lineHeight: 13,
     fontWeight: "700",
+  },
+  calculatedQuantityHint: {
+    maxWidth: 230,
+    color: "#64748B",
+    fontSize: 10,
+    lineHeight: 14,
+    fontWeight: "700",
+  },
+  manualQuantityHint: {
+    maxWidth: 230,
+    color: "#9A3412",
+    fontSize: 10,
+    lineHeight: 14,
+    fontWeight: "800",
   },
   restoreCalculatedButton: {
     alignSelf: "flex-start",

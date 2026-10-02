@@ -9,15 +9,22 @@ import type { CanonicalParameter } from "./canonicalParameterCore";
 export function canonicalParameterAffectsEstimateCalculation(
   parameter: Pick<
     CanonicalParameter,
-    "affectsFormula" | "affectsRows" | "allowedValues" | "requiredLevel" | "valueType"
+    "affectsFormula" | "affectsRows" | "allowedValues" | "referenceValue" | "requiredLevel" | "value" | "valueType"
   >,
 ): boolean {
   if (parameter.affectsFormula.length > 0) return true;
   if (parameter.affectsRows.length === 0) return false;
+  // A replaceable runtime profile can own a text designation used directly
+  // by resource rows without appearing in a numeric formula. Its immutable
+  // accepted reference distinguishes it from an unrelated document field.
+  if (parameter.referenceValue != null && parameter.value != null) return true;
   if (parameter.requiredLevel === "OPTIONAL") return false;
-  // A backend-selected preliminary need can use a text designation to choose
-  // a concrete resource branch. It is calculation-relevant once promoted to
-  // BLOCKING_REQUIRED, unlike a document-only field with no row consumer.
+  // A backend-selected preliminary need or required user designation can
+  // choose a concrete BOQ resource without entering a numeric formula. A
+  // document-only field still has no row consumer and was returned above.
   if (parameter.requiredLevel === "BLOCKING_REQUIRED") return true;
-  return parameter.valueType === "boolean" || parameter.allowedValues.length > 0;
+  return parameter.requiredLevel === "CONTRACT_REQUIRED"
+    || parameter.requiredLevel === "CONDITIONAL"
+    || parameter.valueType === "boolean"
+    || parameter.allowedValues.length > 0;
 }

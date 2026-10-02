@@ -8,6 +8,8 @@ import {
   isCanonicalEstimateParameterRequiredForValues,
   isCanonicalEstimateSourceManagedParameter,
   isCanonicalEstimateUserEditableParameter,
+  isCanonicalEstimateVisibleReplaceableProfile,
+  isCanonicalEstimateVisibleUserResourceSelectionParameter,
 } from "./canonicalEstimateParameterSemantics";
 
 describe("canonical preliminary-stage validation", () => {
@@ -171,6 +173,60 @@ describe("canonical estimate parameter choice labels", () => {
 });
 
 describe("canonical professional norm ownership", () => {
+  it.each([
+    ["ASSUMPTION", "PRIMARY_SOURCE_NORM"],
+    ["VISIBLE_PRELIMINARY_SCENARIO", "PRIMARY_SOURCE_NORM"],
+    ["RUNTIME_STRUCTURAL_DEFAULT", "PRIMARY_SOURCE_NORM"],
+    ["NORMATIVE", "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE"],
+    ["NORMATIVE", "VISIBLE_PRELIMINARY_SCENARIO"],
+    ["NORMATIVE", "VISIBLE_BASELINE_ASSUMPTION"],
+  ])("exposes every central replaceable application-profile marker (%s/%s)", (
+    runtimeProfileClassification,
+    valueSourceRole,
+  ) => {
+    const schema = {
+      parameterId: "machine_productivity_m3_h",
+      titleRu: "Производительность механизма",
+      valueType: "decimal",
+      visibilityRole: "USER_INPUT",
+      valueSourceRole,
+      runtimeProfileClassification,
+      formulaConsumers: ["formula"],
+      resourceBranchConsumers: ["row"],
+      constraints: {},
+    } as never;
+
+    expect(isCanonicalEstimateVisibleReplaceableProfile(schema)).toBe(true);
+  });
+
+  it("keeps an ordinary protected norm hidden but exposes a required resource choice", () => {
+    const norm = {
+      parameterId: "machine_productivity_m3_h",
+      titleRu: "Производительность механизма",
+      valueType: "decimal",
+      visibilityRole: "USER_INPUT",
+      valueSourceRole: "PRIMARY_SOURCE_NORM",
+      runtimeProfileClassification: "NORMATIVE",
+      formulaConsumers: ["formula"],
+      resourceBranchConsumers: ["row"],
+      constraints: {},
+    } as never;
+    const resourceChoice = {
+      parameterId: "pipe_designation",
+      titleRu: "Обозначение трубы",
+      valueType: "text",
+      required: true,
+      visibilityRole: "USER_INPUT",
+      valueSourceRole: "PROJECT_SPECIFIC_INPUT",
+      formulaConsumers: [],
+      resourceBranchConsumers: ["pipe_row"],
+      constraints: {},
+    } as never;
+
+    expect(isCanonicalEstimateVisibleReplaceableProfile(norm)).toBe(false);
+    expect(isCanonicalEstimateVisibleUserResourceSelectionParameter(resourceChoice)).toBe(true);
+  });
+
   it.each([
     ["machine_roller_productivity_m2_per_machine_hour", "Производительность катка"],
     ["repair_compound_kg_per_repair_m2", "Расход ремонтной смеси"],

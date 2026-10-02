@@ -233,6 +233,17 @@ export function buildRequestEstimateProfessionalRowEvidence(
   const quantity = item.quantity == null
     ? "\u0442\u0440\u0435\u0431\u0443\u0435\u0442 \u0438\u0441\u0445\u043e\u0434\u043d\u044b\u0445 \u0434\u0430\u043d\u043d\u044b\u0445"
     : formatQuantityValue(item.quantity, item.unitLabel || item.unit);
+  const rawCalculatedQuantity = item.sourceParameters?.calculatedQuantityBeforeOverride;
+  const calculatedQuantity = typeof rawCalculatedQuantity === "number" || typeof rawCalculatedQuantity === "string"
+    ? Number(rawCalculatedQuantity)
+    : Number.NaN;
+  const formulaResult = item.sourceParameters?.manualQuantityOverride === true
+    && Number.isFinite(calculatedQuantity)
+    ? formatQuantityValue(calculatedQuantity, item.unitLabel || item.unit)
+    : quantity;
+  const manualQuantitySuffix = item.sourceParameters?.manualQuantityOverride === true
+    ? ` Ручное значение: ${quantity}.`
+    : "";
   const dependencies = Array.isArray(projection.parameterDependencies)
     ? projection.parameterDependencies.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     : [];
@@ -258,7 +269,7 @@ export function buildRequestEstimateProfessionalRowEvidence(
       : `${"\u0426\u0435\u043d\u0430 \u0437\u0430 \u0435\u0434\u0438\u043d\u0438\u0446\u0443"}: ${formatEstimateMoney(item.unitPrice, item.currency)}${sourceLabel ? `. ${"\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a"}: ${sourceLabel}` : ""}.`;
 
   return {
-    formulaLabel: `${"\u0420\u0430\u0441\u0447\u0451\u0442 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0430"}: ${formula}. ${"\u0420\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442"}: ${quantity}.`,
+    formulaLabel: `${"\u0420\u0430\u0441\u0447\u0451\u0442 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0430"}: ${formula}. ${"\u0420\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442 \u0444\u043e\u0440\u043c\u0443\u043b\u044b"}: ${formulaResult}.${manualQuantitySuffix}`,
     parameterLabel,
     normativeLabel: `${"\u041d\u043e\u0440\u043c\u0430"}: ${normSource}${locator ? `; ${"\u0442\u043e\u0447\u043d\u0430\u044f \u043f\u0440\u0438\u0432\u044f\u0437\u043a\u0430"}: ${locator}` : ""}.`,
     priceLabel,

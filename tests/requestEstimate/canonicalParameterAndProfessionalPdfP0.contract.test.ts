@@ -9,6 +9,7 @@ import {
   isCanonicalEstimateConsumerSuppliedParameter,
   isCanonicalEstimateParameterRequiredForValues,
   isCanonicalEstimateUserEditableParameter,
+  isCanonicalEstimateVisibleReplaceableProfile,
 } from "../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics";
 import { buildCanonicalParameterCards } from "../../src/lib/estimatePresentation/buildCanonicalParameterCards";
 import {
@@ -33,6 +34,9 @@ function revision(input: {
   parameters: Record<string, unknown>;
   rowCount?: number;
   preliminaryNeeds?: CanonicalEstimateRevisionView["preliminaryNeeds"];
+  userInputSnapshot?: Record<string, unknown> | null;
+  acceptedBaselineSnapshot?: Record<string, unknown> | null;
+  assumptionSnapshot?: Record<string, unknown> | null;
 }): CanonicalEstimateRevisionView {
   return {
     apiVersion: ESTIMATE_PLATFORM_API_VERSION,
@@ -44,6 +48,9 @@ function revision(input: {
     status: "ready",
     currencyCode: "KGS",
     parameters: input.parameters,
+    userInputSnapshot: input.userInputSnapshot,
+    acceptedBaselineSnapshot: input.acceptedBaselineSnapshot,
+    assumptionSnapshot: input.assumptionSnapshot,
     amendmentContract: { rowOverrides: {}, customRows: [], releaseMigration: null },
     preliminaryNeeds: input.preliminaryNeeds,
     totals: { amount: null },
@@ -180,6 +187,73 @@ describe("P0 canonical parameter editor and professional PDF", () => {
       valueSourceRole: "USER_MEASURED",
       formulaConsumers: ["formula:area"],
     })).toBe(true);
+  });
+
+  it("shows an application-supplied runtime profile as an editable field with its accepted reference", () => {
+    const profileParameter = {
+      ...asphaltCatalog.parameterSchema[0],
+      parameterId: "excavator_productivity_m3_h",
+      ordinal: 20,
+      titleRu: "Производительность экскаватора",
+      unitId: "m3_per_hour",
+      defaultValue: null,
+      valueSourceRole: "VISIBLE_PRELIMINARY_SCENARIO" as const,
+      runtimeProfileClassification: "ASSUMPTION",
+      formulaConsumers: ["formula:excavator_hours"],
+    };
+    const catalog: CanonicalEstimateCatalogItem = {
+      ...asphaltCatalog,
+      parameterSchema: [profileParameter],
+    };
+    const parent = revision({
+      revisionId: ASPHALT_REVISION_ID,
+      catalogId: ASPHALT_CATALOG_ID,
+      parameters: { excavator_productivity_m3_h: 35 },
+      acceptedBaselineSnapshot: { excavator_productivity_m3_h: 35 },
+    });
+
+    expect(isCanonicalEstimateConsumerSuppliedParameter(profileParameter)).toBe(false);
+    expect(isCanonicalEstimateVisibleReplaceableProfile(profileParameter)).toBe(true);
+
+    const rootSession = buildConsumerCanonicalParameterSession({
+      catalog,
+      revision: parent,
+      draftId: "visible-runtime-profile",
+    });
+    expect(rootSession.parameters).toEqual([
+      expect.objectContaining({
+        parameterId: "excavator_productivity_m3_h",
+        value: 35,
+        referenceValue: 35,
+        source: "ASSUMED",
+      }),
+    ]);
+    expect(buildCanonicalParameterCards({ session: rootSession, revision: null })).toEqual([
+      expect.objectContaining({
+        key: "excavator_productivity_m3_h",
+        source: "catalog_default",
+        editable: true,
+      }),
+    ]);
+
+    const child = revision({
+      revisionId: "a09900f2-5711-4ab6-9735-b73d41372f7a",
+      parentRevisionId: ASPHALT_REVISION_ID,
+      catalogId: ASPHALT_CATALOG_ID,
+      parameters: { excavator_productivity_m3_h: 40 },
+      acceptedBaselineSnapshot: { excavator_productivity_m3_h: 35 },
+    });
+    const childSession = buildConsumerCanonicalParameterSession({
+      catalog,
+      revision: child,
+      parent,
+      draftId: "edited-runtime-profile",
+    });
+    expect(childSession.parameters[0]).toMatchObject({
+      value: 40,
+      referenceValue: 35,
+      source: "USER_EXPLICIT",
+    });
   });
 
   it("activates source-managed requirements only for the selected technology branch", () => {
