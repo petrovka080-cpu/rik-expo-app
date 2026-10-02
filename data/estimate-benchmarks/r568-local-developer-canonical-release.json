@@ -1,13 +1,13 @@
 {
   "schemaVersion": "r568-local-developer-canonical-release.v1",
   "status": "ACTIVE_LOCAL_DEVELOPER_CANONICAL_RELEASE",
-  "definitionReleaseId": "f2bfdfe7-f8ff-580b-bf8b-ef998f2e5769",
-  "searchReleaseId": "57a9a909-1f84-54ac-9d4a-c49902fa8085",
+  "definitionReleaseId": "cff26f4d-563f-5b93-8aae-378a20922a8a",
+  "searchReleaseId": "bb819ef0-0d54-5409-af67-d2660f56e227",
   "definitionReleaseStatus": "prepared",
   "searchReleaseStatus": "draft",
-  "definitionSnapshotSha256": "1d790e027a0ce22de6ddec6b1473668545e7138b8a8ba9fb0adcece2aafd40a9",
-  "manifestHashChainSha256": "1d790e027a0ce22de6ddec6b1473668545e7138b8a8ba9fb0adcece2aafd40a9",
-  "searchHashChainSha256": "14703fb2e00a68757ad98aa8afe5b9ef95b4e5592925fe361003a69094050a43",
+  "definitionSnapshotSha256": "ec8fe1dfee8683dadbd917242a3280c0ebdbbf16a8a6a3cf5b9f80419288aa01",
+  "manifestHashChainSha256": "ec8fe1dfee8683dadbd917242a3280c0ebdbbf16a8a6a3cf5b9f80419288aa01",
+  "searchHashChainSha256": "de412868adbfe6efab8b73a3efadb16282785d3d935bcdbb676654cd9a479522",
   "identities": 11610,
   "visibleCanonicalDefinitions": 10322,
   "aliasesRedirects": 1288,
@@ -15,7 +15,7 @@
   "runtimeAdditionalAdmissions": 9,
   "currentInventoryRowsIncludingAliases": 11619,
   "denominatorNote": "11610 is the immutable historical source-identity reconciliation (10322 canonical owners plus 1288 redirects); the current cumulative runtime also preserves 9 separately identified inherited admissions.",
-  "owner": "S27_26_RESERVOIR_CLEAN_WATER_AUTOMATIC_SUCCESSOR",
+  "owner": "S27_27_PRESSURE_SEWER_PIPELINE_AUTOMATIC_SUCCESSOR",
   "productionAccessed": false,
   "fakeGreenClaimed": false
 }
