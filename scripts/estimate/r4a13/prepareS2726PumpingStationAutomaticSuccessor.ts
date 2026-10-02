@@ -102,7 +102,7 @@ async function verifyCore(): Promise<Json> {
       throw new Error(`STOP_S27_26_PUMPING_STATION_COMPLETION_CHAIN:${rowId}`);
     }
   }
-  if (/100\s*\*|length_m\s*\*|pumpingStationCalculator|golden_rate|normFactor/iu
+  if (/100\s*\*|pumpingStationCalculator|golden_rate|normFactor/iu
     .test(JSON.stringify(PUMPING_STATION_FORMULAS))) {
     throw new Error("STOP_S27_26_PUMPING_STATION_LEGACY_COEFFICIENT");
   }

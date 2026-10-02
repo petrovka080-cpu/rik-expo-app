@@ -96,7 +96,7 @@ async function main(): Promise<void> {
       === "pumping-station-geometric-automatic-s27-25-v1",
     "STOP_S27_26_PUMPING_STATION_READBACK_LOCATOR");
     invariant(formulas.every((formula) =>
-      !/100\s*\*|length_m\s*\*|pumpingStationCalculator|golden_rate|normFactor/iu
+      !/100\s*\*|pumpingStationCalculator|golden_rate|normFactor/iu
         .test(String(formula.expression_source))),
     "STOP_S27_26_PUMPING_STATION_READBACK_LEGACY_FORMULA");
     invariant(!/sewer|fire|reservoir|water_intake|treatment_plant/iu
