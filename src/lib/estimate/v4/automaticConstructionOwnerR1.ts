@@ -165,9 +165,12 @@ export function buildAutomaticConstructionOwnerR1(
         guide_kind: spec.kind === "ordinary" ? "MEASUREMENT_RULE" : "PROJECT_DEFINED",
         guide_short_ru: spec.kind === "ordinary"
           ? `${spec.title}: укажите только фактическое исходное значение.`
-          : `${spec.title}: видимое предварительное значение; замените по проекту или спецификации.`,
+          : spec.kind === "profile"
+            ? `${spec.title}: видимое предварительное значение; замените по проекту или спецификации.`
+            : `${spec.title}: укажите подтверждённое значение из проекта, спецификации или технологической карты.`,
         source_role: spec.kind === "ordinary" ? "USER_SUPPLIED_PRIMARY_FACT"
-          : "VISIBLE_PRELIMINARY_ENGINEERING_PROFILE_REQUIRES_PROJECT_CONFIRMATION",
+          : spec.kind === "profile" ? "VISIBLE_PRELIMINARY_ENGINEERING_PROFILE_REQUIRES_PROJECT_CONFIRMATION"
+            : "PROJECT_DOCUMENTATION",
         source_document: config.sourceId,
         source_locator: config.sourceMetadata.exact_locator,
         guide_version: config.contract,

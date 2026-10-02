@@ -13,6 +13,23 @@ const left: AutomaticParameterSpec = { id: "left", title: "Left", kind: "ordinar
 const right: AutomaticParameterSpec = { id: "right", title: "Right", kind: "ordinary", valueType: "integer", unitId: "mm" };
 
 describe("automatic owner uses existing numeric peer contract", () => {
+  it("does not label an unknown conditional project fact as a prefilled application profile", () => {
+    const condition = { kind: "greater_than" as const, parameterId: "left", valueParameterId: "right" };
+    const owner = buildAutomaticConstructionOwnerR1({ ...config, ordinary: [left, right],
+      profile: [{ id: "scenario_rate", title: "Scenario", kind: "profile", valueType: "decimal", unitId: "mm", defaultValue: 2 }],
+      conditional: [{ id: "wps", title: "WPS", kind: "conditional", valueType: "text", unitId: null, requiredWhen: condition }] });
+    const actual = owner.parameters.find(parameter => parameter.parameter_id === "wps")!;
+    expect(actual.default_value).toBeNull();
+    expect(actual.truth_metadata.guide).toMatchObject({
+      guide_short_ru: "WPS: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      source_role: "PROJECT_DOCUMENTATION", guide_validation_policy: "MANDATORY_BLOCK",
+    });
+    expect(owner.runtimeInput).toEqual({ scenario_rate: 2 });
+    expect(owner.parameters.find(parameter => parameter.parameter_id === "scenario_rate")?.truth_metadata.guide).toMatchObject({
+      guide_short_ru: "Scenario: видимое предварительное значение; замените по проекту или спецификации.",
+      guide_validation_policy: "ADVISORY_REASON_REQUIRED",
+    });
+  });
   it("projects the same peer condition to required inputs and resources without a second entered flag", () => {
     const condition = { kind: "greater_than" as const, parameterId: "left", valueParameterId: "right" };
     const conditional: AutomaticParameterSpec = { id: "wps", title: "WPS", kind: "conditional", valueType: "text", unitId: null, requiredWhen: condition };

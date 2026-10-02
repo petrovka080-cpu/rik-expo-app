@@ -5,7 +5,7 @@
   "scope": "One continuous steel casing crossing with explicitly selected installation method. Casing supply and site joints, support rings and elements, contact tape, compatible end-seal kits, applicable civil work, crew labor, mechanisms and logistics are separate quantity/cost owners. This source pack is not itself a published owner or accepted estimate.",
   "engineeringAcceptanceClaimed": false,
   "universalRatesClaimed": false,
-  "implementationStatus": "QUANTITY_SPACER_SUPPLY_CIVIL_GEOMETRY_MMA_JOINT_RESOURCE_COMPONENTS_NOT_PUBLISHED_NOT_FULL_OWNER",
+  "implementationStatus": "QUANTITY_SPACER_SUPPLY_CIVIL_GEOMETRY_MMA_JOINT_CASING_MATERIAL_COMPONENTS_NOT_PUBLISHED_NOT_FULL_OWNER",
   "quantityComponent": {
     "module": "src/lib/estimate/v4/roadCrossingSleevesQuantityModelR1.ts",
     "verification": "tests/estimateNorms/roadCrossingSleevesQuantityModelR1.contract.test.ts",
@@ -17,6 +17,8 @@
     "civilGeometryVerification": "tests/estimateNorms/roadCrossingSleevesCivilGeometryR1.contract.test.ts",
     "jointResourceModule": "src/lib/estimate/v4/roadCrossingSleevesJointResourcesR1.ts",
     "jointResourceVerification": "tests/estimateNorms/roadCrossingSleevesJointResourcesR1.contract.test.ts",
+    "casingMaterialModule": "src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1.ts",
+    "casingMaterialVerification": "tests/estimateNorms/roadCrossingSleevesCasingMaterialR1.contract.test.ts",
     "evaluator": "Existing canonical FormulaGraph only",
     "inputPolicy": "The component takes explicitly supplied scalar inputs and does not create a runtime form or baseline. The full owner must classify source-backed replaceable assumptions separately from genuine project facts, and prefer certified pipe mass when available.",
     "completedQuantityBoundaries": [
@@ -37,7 +39,8 @@
       "selected applicable MMA joint procedure: physical site joints times actual gross electrode kg/joint, aggregate crew person-hours/joint and actual equipment hours/joint; no universal productivity or electrode-efficiency factor",
       "gross electrode consumption already includes process losses; reserve, compatible stock, whole mass packs, rounded new order and free remainder are separate outputs, without a second loss factor",
       "joint cost owners are only new electrode purchase, all crew labor and personnel-free equipment with energy included; balances, joint count, energy and another generic welding operation have no duplicate payment",
-      "shared InclusionGraph compares crossing length to actual physical section length: a single-section crossing excludes joint resources and does not require WPS/consumable/crew/equipment inputs; either unknown length remains an explicit undecided branch"
+      "shared InclusionGraph compares crossing length to actual physical section length: a single-section crossing excludes joint resources and does not require WPS/consumable/crew/equipment inputs; either unknown length remains an explicit undecided branch",
+      "one explicitly selected casing metre order reuses the existing whole-section quantity graph; installed/cut/spare/stock/new order/unused sections are distinct informational balances, not a second section, package or geometric-mass charge"
     ],
     "requiredBeforeFullOwnerPublication": [
       "actual load-rated product selection and approved layout; tested geometric compatibility alone is not structural acceptance",
@@ -50,6 +53,8 @@
       "integration of the tested element/tape/seal supply component with exact project product selection and approved geometry; the full owner must include authoritative spacer geometry rows",
       "approved multi-course tape scope when a single full-width course is not selected; no automatic narrow-tape consumption assumption",
       "actual compatible selected-product prices or honest NULL; no test prices or designations admitted to a prepared owner",
+      "verify the selected product, compatible existing stock and supplier sections actually match the declared physical section length; geometric cutting remainder is not automatically usable stock or an extra universal loss factor",
+      "an explicit manual material-order quantity is a visible purchase exception, not a rewrite of geometry; full-owner procurement approval must reconcile the formula-reference balances with that applied order",
       "complete owner integration, rollback-only dry-run, one prepared apply and independent readback"
     ]
   },
