@@ -517,6 +517,15 @@ function isGenericHelperItem(item: ConsumerRepairRequestItem): boolean {
   return isProfessionalEstimateHelperRow(rowDisplayInput(item));
 }
 
+let quantityDisplayFormatter: Intl.NumberFormat | undefined;
+
+function formatQuantityDisplayNumber(value: number): string {
+  // Display only: keep the same locale and precision without constructing an
+  // ICU formatter for each row on every quantity interaction in Hermes.
+  quantityDisplayFormatter ??= new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 3 });
+  return quantityDisplayFormatter.format(value);
+}
+
 function formatQuantityForItems(items: ConsumerRepairRequestItem[]): string {
   if (items.length === 0) return "\u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c";
   if (items.some((item) => item.quantity == null)) return "Количество нужно уточнить";
@@ -524,7 +533,7 @@ function formatQuantityForItems(items: ConsumerRepairRequestItem[]): string {
   const sameUnit = items.every((item) => displayUnitLabelForItem(item) === unitLabel);
   if (!sameUnit) return `${items.length} \u043f\u043e\u0437.`;
   const total = items.reduce((sum, item) => sum + (Number.isFinite(item.quantity ?? NaN) ? item.quantity ?? 0 : 0), 0);
-  if (total > 0) return `${new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 3 }).format(total)} ${unitLabel}`;
+  if (total > 0) return `${formatQuantityDisplayNumber(total)} ${unitLabel}`;
   return `${items.length} \u043f\u043e\u0437.`;
 }
 
@@ -570,7 +579,7 @@ function sourceParamNumber(item: ConsumerRepairRequestItem, key: string): number
 }
 
 function formatAssumptionValue(value: number, unit: string): string {
-  return `${new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 3 }).format(value)} ${unit}`.trim();
+  return `${formatQuantityDisplayNumber(value)} ${unit}`.trim();
 }
 
 function buildCapitalRenovationAssumptionRows(bundle: ConsumerRepairDraftBundle): RequestEstimateAssumptionRow[] {
@@ -714,7 +723,7 @@ function sourceParamText(item: ConsumerRepairRequestItem, key: string): string {
 }
 
 function formatQuantityValue(value: number, unit: string | null | undefined): string {
-  const formatted = new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 3 }).format(value);
+  const formatted = formatQuantityDisplayNumber(value);
   const unitLabel = formatEstimateUnitLabel(unit);
   return [formatted, unitLabel].filter(Boolean).join(" ");
 }
@@ -1135,7 +1144,13 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
       items: viewBundle.items
         .filter((item) => itemSection(item) === id)
         .sort((a, b) => itemSortRank(a) - itemSortRank(b))
-        .map((item) => ({ ...item, titleRu: publicItemTitle(item, canonicalTitleItems.has(item)) })),
+        .map((item) => {
+          const titleRu = publicItemTitle(item, canonicalTitleItems.has(item));
+          // Admission and public naming still run against the current bundle.
+          // Preserve unchanged row props so editing one quantity does not
+          // defeat the row's React.memo and rerender every neighbouring input.
+          return titleRu === item.titleRu ? item : { ...item, titleRu };
+        }),
     }))
     .filter((section) => section.items.length > 0);
   const sourceLabels = uniqueSourceLabels(viewBundle);
