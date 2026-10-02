@@ -62,19 +62,26 @@ async function replace(parameterId: string, value: string) {
   capture(`field-${parameterId}-${Date.now()}`, after, { parameterId, requestedValue: value, observedValue: field?.text ?? null });
   if (field?.text !== value) throw new Error(`S2728_INPUT_VALUE_NOT_CONFIRMED:${parameterId}`);
 }
-async function measureWarmPanelOpens() {
+async function measureWarmPanelOpens(revisionId: string, expectedLength: string) {
+  // The caller must name the saved revision and its actual primary value.
+  // Never silently measure an earlier fixture after a manual/primary/reset cycle.
+  if (!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/u.test(revisionId)
+    || !/^\d+(?:\.\d+)?$/u.test(expectedLength)
+    || !Number.isFinite(Number(expectedLength)) || Number(expectedLength) <= 0) {
+    throw new Error("S2728_CURRENT_REVISION_AND_LENGTH_REQUIRED");
+  }
   const identity = JSON.parse(readFileSync(resolve(".release-runtime/r568/runtime/whole-app-developer-current/backend.json"), "utf8"));
   const auditPath = resolve(`.release-runtime/r568/runtime/whole-app-developer-current/runtime/backend-${String(identity.compatibility_tuple.sourceTree).slice(0, 12)}/request-audit.jsonl`);
   const auditRows = () => readFileSync(auditPath, "utf8").trim().split(/\r?\n/u).filter(Boolean).map(line => JSON.parse(line) as {method: string; path: string});
   const memory = () => execFileSync(adb, ["-s", device, "shell", "dumpsys", "meminfo", "com.azisbek_dzhantaev.rikexpoapp"], {encoding: "utf8", timeout: 20_000, windowsHide: true})
     .split(/\r?\n/u).filter(line => /TOTAL PSS:|TOTAL RSS:|TOTAL SWAP PSS:|Java Heap:|Native Heap:/u.test(line)).map(line => line.trim());
-  const revisionId = "4e7d1840-ec80-4b44-b924-8f86607c379e";
   // Revision and toggle need not fit into the same native viewport.
   const revision = await seekNode(adb, device, n => n.resourceId.includes(`--revision-${revisionId}--`), 90, "coarse");
   if (!revision.node) throw new Error("S2728_OWNED_CURRENT_REVISION_NOT_VISIBLE");
   const before = await seekNode(adb, device, n => nodeHasId(n, "request-estimate-parameters-toggle") && n.enabled, 90, "coarse");
   if (!before.node) throw new Error("S2728_CURRENT_PARAMETER_TOGGLE_NOT_VISIBLE");
-  if (before.snapshot.nodes.some(n => n.resourceId === "editable-param-batch-dirty-count")) throw new Error("S2728_UNSAVED_INPUT_DO_NOT_TOGGLE");
+  if (before.snapshot.nodes.some(n => n.resourceId === "editable-param-batch-dirty-count"
+    || n.resourceId === "request-estimate-row-batch-bar")) throw new Error("S2728_UNSAVED_INPUT_DO_NOT_TOGGLE");
   if (before.node.contentDesc.includes("Скрыть")) {
     tapNode(adb, device, before.node);
     const closed = dumpUi(adb, device);
@@ -82,6 +89,7 @@ async function measureWarmPanelOpens() {
   }
   const auditStart = auditRows().length;
   const memoryBefore = memory();
+  const memorySamples = [{ completedOpens: 0, observedAt: new Date().toISOString(), lines: memoryBefore }];
   const durationsMs: number[] = [];
   for (let index = 0; index < 20; index += 1) {
     const closed = dumpUi(adb, device);
@@ -90,27 +98,37 @@ async function measureWarmPanelOpens() {
     const startedAt = Date.now();
     if (!tapNode(adb, device, toggle)) throw new Error("S2728_PANEL_OPEN_TAP_FAILED");
     const isInteractive = (snapshot: UiSnapshot) => snapshot.nodes.some(n => n.resourceId === "request-estimate-parameter-panel")
-      && snapshot.nodes.some(n => n.resourceId === "editable-param-popover-input" && n.contentDesc === "Проектная длина напорного канализационного трубопровода" && n.text === "200" && n.enabled);
+      && snapshot.nodes.some(n => n.resourceId === "editable-param-popover-input" && n.contentDesc === "Проектная длина напорного канализационного трубопровода" && n.text === expectedLength && n.enabled);
     const opened = await waitForSnapshot(adb, device, isInteractive, 10_000);
     if (!isInteractive(opened)) throw new Error("S2728_CURRENT_INPUT_NOT_INTERACTIVE");
     durationsMs.push(Date.now() - startedAt);
     const openToggle = opened.nodes.find(n => n.resourceId === "request-estimate-parameters-toggle" && n.enabled);
     if (!openToggle || !tapNode(adb, device, openToggle)) throw new Error("S2728_PANEL_CLOSE_TAP_FAILED");
+    // Sampling is outside the measured opening interval. This is a sampled
+    // high-water mark, not a claim to have observed every transient allocation.
+    memorySamples.push({ completedOpens: index + 1, observedAt: new Date().toISOString(), lines: memory() });
     if ((index + 1) % 5 === 0) process.stdout.write(`${JSON.stringify({warmPanelMeasurements: index + 1, latestMs: durationsMs.at(-1)})}\n`);
   }
   const ordered = [...durationsMs].sort((a, b) => a - b);
   const p50Ms = ordered[Math.ceil(ordered.length * 0.5) - 1];
   const p95Ms = ordered[Math.ceil(ordered.length * 0.95) - 1];
   const requests = auditRows().slice(auditStart);
+  const pssKiB = memorySamples.flatMap(sample => sample.lines.flatMap(line => {
+    const match = /TOTAL PSS:\s+(\d+)/u.exec(line);
+    return match ? [Number(match[1])] : [];
+  }));
   capture(`warm-panel-measurements-${Date.now()}`, dumpUi(adb, device), {
-    revisionId, operation: "open already-loaded current-revision parameter panel",
+    revisionId, expectedLength, operation: "open already-loaded current-revision parameter panel",
     method: "ADB tap to UIAutomator observing parameter panel and editable current length; includes automation overhead; excludes locator/close time",
-    measurementScope: "20 warm opens only, not cold reopen, first-action frame or peak-memory acceptance",
+    measurementScope: "20 warm opens and sampled memory only, not cold reopen, first-action frame or continuous peak-memory acceptance",
     durationsMs, p50Ms, p95Ms, maxMs: ordered.at(-1), budgetMs: 3_000,
     warmPanelBudgetMet: p95Ms <= 3_000,
     parameterSessionRequestCount: requests.filter(row => row.path.includes("/parameter-session")).length,
     calculationMutationRequestCount: requests.filter(row => row.method === "POST" && /\/jobs\/(?:compile|recalculate)/u.test(row.path)).length,
-    memoryBefore, memoryAfter: memory(),
+    memoryBefore, memoryAfter: memory(), memorySamples,
+    sampledPeakPssKiB: pssKiB.length === memorySamples.length ? Math.max(...pssKiB) : null,
+    retainedPssDeltaKiB: pssKiB.length === memorySamples.length ? pssKiB.at(-1)! - pssKiB[0] : null,
+    memoryScope: "dumpsys meminfo at baseline and after each close; retained delta is not forced-GC/leak/continuous peak acceptance",
   });
 }
 async function main() {
@@ -123,14 +141,14 @@ if (command === "--capture") {
   for (const [parameterId, fixtureValue] of Object.entries(fixture)) await replace(parameterId, fixtureValue);
 } else if (command === "--field" && argument && value) {
   await replace(argument, value);
-} else if (command === "--measure-warm-panels") {
-  await measureWarmPanelOpens();
+} else if (command === "--measure-warm-panels" && argument && value) {
+  await measureWarmPanelOpens(argument, value);
 } else if (command === "--tap" && argument && allowedActions.has(argument)) {
   const found = await seekNode(adb, device, n => nodeHasId(n, argument) && n.enabled, 90, "coarse");
   if (!found.node) throw new Error(`S2728_ACTION_NOT_OBSERVED:${argument}`);
   const startedAt = Date.now();
   if (!tapNode(adb, device, found.node)) throw new Error(`S2728_ACTION_FAILED:${argument}`);
   capture(`tap-${argument}-${startedAt}`, dumpUi(adb, device), { actionId: argument, startedAt, elapsedMs: Date.now() - startedAt });
-} else throw new Error("Use --capture STEP | --fill-primary | --field PARAM VALUE | --tap OBSERVED_ID | --measure-warm-panels");
+} else throw new Error("Use --capture STEP | --fill-primary | --field PARAM VALUE | --tap OBSERVED_ID | --measure-warm-panels SAVED_REVISION_ID CURRENT_LENGTH");
 }
 void main().catch(error => { process.stderr.write(`${String(error)}\n`); process.exitCode = 1; });

@@ -113,4 +113,36 @@ describe("bounded quantity React-commit evidence, not physical-frame acceptance"
       expect(StyleSheet.flatten(input.props.style).width).toBe(140);
     } finally { act(() => renderer?.unmount()); }
   });
+
+  it("attributes synchronous render work only to an active action, not to a completed or old one", () => {
+    const clock = jest.spyOn(performance, "now").mockReturnValue(100);
+    const log = jest.spyOn(logger, "info").mockImplementation(() => undefined);
+    const result = { businessResult: "unchanged" };
+    const work = jest.fn(() => { clock.mockReturnValue(120); return result; });
+    expect(trace.measureConsumerRepairQuantityRenderWork("DRAFT_VIEW_MODEL", work)).toBe(result);
+    expect(log).not.toHaveBeenCalled();
+    clock.mockReturnValue(100);
+    trace.recordConsumerRepairQuantityEditStage({ ...event, stage: "QUANTITY_ACTION_RECEIVED" });
+    expect(trace.measureConsumerRepairQuantityRenderWork("DRAFT_VIEW_MODEL", work)).toBe(result);
+    expect(JSON.parse(log.mock.calls[0]![1] as string)).toEqual({ phase: "DRAFT_VIEW_MODEL", elapsedMs: 20,
+      measurementScope: "SYNCHRONOUS_JS_WORK_NOT_NATIVE_FRAME_OR_SAVE" });
+    trace.recordConsumerRepairQuantityReactCommit({ ...event, baseRevisionId: "test-parent" });
+    log.mockClear();
+    expect(trace.measureConsumerRepairQuantityRenderWork("DRAFT_VIEW_MODEL", work)).toBe(result);
+    expect(log).not.toHaveBeenCalled();
+    clock.mockReturnValue(200);
+    trace.recordConsumerRepairQuantityEditStage({ ...event, operationId: "old", stage: "QUANTITY_ACTION_RECEIVED" });
+    clock.mockReturnValue(5_201);
+    trace.measureConsumerRepairQuantityRenderWork("DRAFT_VIEW_MODEL", () => result);
+    expect(log).not.toHaveBeenCalled();
+  });
+
+  it("never changes a work result or its original error when render diagnostics fail", () => {
+    trace.recordConsumerRepairQuantityEditStage({ ...event, stage: "QUANTITY_ACTION_RECEIVED" });
+    jest.spyOn(logger, "info").mockImplementation(() => { throw new Error("TEST_LOG_FAILURE"); });
+    const result = {};
+    expect(trace.measureConsumerRepairQuantityRenderWork("PUBLIC_TITLE_ADMISSION", () => result)).toBe(result);
+    const failure = new Error("ORIGINAL_WORK_FAILURE");
+    expect(() => trace.measureConsumerRepairQuantityRenderWork("PUBLIC_TITLE_ADMISSION", () => { throw failure; })).toThrow(failure);
+  });
 });

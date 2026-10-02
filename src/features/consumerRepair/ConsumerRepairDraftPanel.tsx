@@ -16,6 +16,7 @@ import {
 } from "./ConsumerRepairProgressiveEstimatePanel";
 import { buildConsumerRepairEditableHistorySummary } from "./consumerRepairEditableHistorySummary";
 import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
+import { measureConsumerRepairQuantityRenderWork } from "./consumerRepairQuantityEditTrace";
 import type { ConsumerRepairParamEditState } from "./requestEstimateScreenActions";
 import { buildRequestEstimateViewModel } from "./requestEstimateViewModel";
 import {
@@ -113,7 +114,7 @@ export function ConsumerRepairDraftPanel({
   onSelectRoadScope,
   roadScopeSelectionBusy = false,
 }: Props): React.ReactElement {
-  const viewModel = buildRequestEstimateViewModel(bundle);
+  const viewModel = measureConsumerRepairQuantityRenderWork("DRAFT_VIEW_MODEL", () => buildRequestEstimateViewModel(bundle));
   const estimateDraftSession = bundle?.estimateDraftSession ?? null;
   const offeredScopeIds = new Set(
     estimateDraftSession?.scopeRequirement?.offeredScopePresetIds ??

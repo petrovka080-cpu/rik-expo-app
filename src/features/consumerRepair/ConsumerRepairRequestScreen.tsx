@@ -56,6 +56,7 @@ import { CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION } from "../../lib/estimate
 import {
   createConsumerRepairQuantityEditOperationId,
   recordConsumerRepairQuantityEditStage,
+  measureConsumerRepairQuantityRenderWork,
   type ConsumerRepairQuantityChangeMeta,
 } from "./consumerRepairQuantityEditTrace";
 import { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequestScreenRenderModel";
@@ -3192,9 +3193,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     this.cachedScreenView = (
       <ConsumerRepairRequestScreenView
         state={viewState}
-        renderModel={buildConsumerRepairRequestRenderModel(viewState, {
+        renderModel={measureConsumerRepairQuantityRenderWork("SCREEN_RENDER_MODEL", () => buildConsumerRepairRequestRenderModel(viewState, {
           includeWorkSuggestions: this.workSuggestionsEnabled,
-        })}
+        }))}
         problemInputRef={this.problemInputRef} onGoToMarket={this.goToMarket}
         onProblemTextChange={this.changeProblemText}
         onCityChange={(city) => this.setState({ city, validationErrors: [] })}

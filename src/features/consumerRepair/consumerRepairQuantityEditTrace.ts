@@ -47,6 +47,42 @@ type QuantityEditTraceGlobal = typeof globalThis & {
 
 const MAX_TRACE_EVENTS = 160;
 
+/** Developer-only attribution of synchronous work during a pending row action. */
+export function measureConsumerRepairQuantityRenderWork<T>(
+  phase: "SCREEN_RENDER_MODEL" | "DRAFT_VIEW_MODEL" | "PUBLIC_TITLE_ADMISSION"
+    | "PUBLIC_ROW_SECTIONS" | "VISIBLE_LINES" | "PREVIEW_SECTIONS" | "CALCULATION_PREVIEW" | "NORM_SOURCE_PREVIEW",
+  work: () => T,
+): T {
+  const isDev = typeof __DEV__ !== "undefined" ? __DEV__ : process.env.NODE_ENV !== "production";
+  if (!isDev) return work();
+  let action: ConsumerRepairQuantityEditTraceEvent | undefined;
+  let startedAt: number | undefined;
+  try {
+    const events = (globalThis as QuantityEditTraceGlobal).__consumerRepairQuantityEditTrace?.events ?? [];
+    for (let index = events.length - 1; index >= 0; index -= 1) {
+      if (events[index]?.stage === "QUANTITY_ACTION_RECEIVED") { action = events[index]; break; }
+    }
+    const now = nowMonotonicMs();
+    if (action && now >= action.monotonicMs && now - action.monotonicMs <= 5_000
+      && !events.some(event => event.operationId === action!.operationId && event.stage === "ROW_DRAFT_REACT_COMMITTED")) {
+      startedAt = now;
+    }
+  } catch { /* Diagnostics cannot prevent synchronous product work. */ }
+  try {
+    return work();
+  } finally {
+    if (startedAt != null) {
+      try {
+        const elapsed = nowMonotonicMs() - startedAt;
+        logger.info("RikEstimateRowRenderWork", JSON.stringify({
+          phase, elapsedMs: Number.isFinite(elapsed) && elapsed >= 0 ? Math.round(elapsed * 100) / 100 : null,
+          measurementScope: "SYNCHRONOUS_JS_WORK_NOT_NATIVE_FRAME_OR_SAVE",
+        }));
+      } catch { /* Preserve the result or original product error. */ }
+    }
+  }
+}
+
 function nowMonotonicMs(): number {
   const perf = (globalThis as { performance?: { now?: () => number } }).performance;
   return typeof perf?.now === "function" ? Math.round(perf.now() * 100) / 100 : Date.now();

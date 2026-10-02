@@ -28,6 +28,7 @@ import {
 import { consumerRepairCanonicalEstimateBlocksApproval } from "./consumerRepairCanonicalEstimateReadiness";
 import { consumerRepairRowIsNonPayable } from "./consumerRepairRowMetadata";
 import { publicBoqDisplayNameRu } from "../../lib/estimate/publicBoqNaming";
+import { measureConsumerRepairQuantityRenderWork } from "./consumerRepairQuantityEditTrace";
 
 export type RequestEstimateManualCatalogItem = {
   id: string;
@@ -503,6 +504,23 @@ function publicItemTitle(item: ConsumerRepairRequestItem, canonicalTitleVerified
     return "\u0420\u0430\u0441\u0445\u043e\u0434\u043d\u044b\u0435 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b \u043f\u043e \u043d\u043e\u0440\u043c\u0430\u043c";
   }
   return normalized || "\u041f\u043e\u0437\u0438\u0446\u0438\u044f \u0441\u043c\u0435\u0442\u044b";
+}
+
+// One last display clone per live source item, without retaining old bundles
+// or caching admission. Re-evaluate the current title before every lookup.
+const publicTitleProjections = new WeakMap<ConsumerRepairRequestItem, ConsumerRepairRequestItem>();
+
+function itemWithPublicTitle(item: ConsumerRepairRequestItem, titleRu: string): ConsumerRepairRequestItem {
+  if (titleRu === item.titleRu) return item;
+  const previous = publicTitleProjections.get(item);
+  const keys = Object.keys(item) as (keyof ConsumerRepairRequestItem)[];
+  // Also guard legacy shallow in-place edits: quantity, price, provenance
+  // reference and added/removed fields must never be copied from an old view.
+  if (previous?.titleRu === titleRu && keys.length === Object.keys(previous).length
+    && keys.every(key => key === "titleRu" || Object.is(previous[key], item[key]))) return previous;
+  const projected = { ...item, titleRu };
+  publicTitleProjections.set(item, projected);
+  return projected;
 }
 
 export function requestEstimatePublicItemTitle(
@@ -1099,7 +1117,7 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
   const viewBundle = visibleEstimateItems.length === bundle.items.length
     ? bundle
     : { ...bundle, items: visibleEstimateItems };
-  const canonicalTitleItems = admissionVerifiedCanonicalTitleItems(viewBundle);
+  const canonicalTitleItems = measureConsumerRepairQuantityRenderWork("PUBLIC_TITLE_ADMISSION", () => admissionVerifiedCanonicalTitleItems(viewBundle));
   const durableSummary = bundle.durableHistorySummary ?? null;
   const rawItemCount = viewBundle.items.length || durableSummary?.rowCount || 0;
   const preliminaryNeedCount = viewBundle.items.filter(
@@ -1137,7 +1155,7 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     : hasCapitalRenovationCalculator
     ? CAPITAL_RENOVATION_SECTION_IDS
     : ["materials", "labor", "equipment", "logistics", "other"];
-  const sections = sectionIds
+  const sections = measureConsumerRepairQuantityRenderWork("PUBLIC_ROW_SECTIONS", () => sectionIds
     .map((id) => ({
       id,
       title: sectionTitle(id),
@@ -1149,10 +1167,10 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
           // Admission and public naming still run against the current bundle.
           // Preserve unchanged row props so editing one quantity does not
           // defeat the row's React.memo and rerender every neighbouring input.
-          return titleRu === item.titleRu ? item : { ...item, titleRu };
+          return itemWithPublicTitle(item, titleRu);
         }),
     }))
-    .filter((section) => section.items.length > 0);
+    .filter((section) => section.items.length > 0));
   const sourceLabels = uniqueSourceLabels(viewBundle);
   const professionalPreview = Boolean(bundle.structuredEstimatePayload) || hasExpandedComplexCalculator || hasAsphaltProfessionalSections || viewBundle.items.length > 20;
   const productionTrust = buildConsumerRepairProductionTrust({
@@ -1223,10 +1241,10 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     fullTotalStatusLabel: fullTotalPublicLabel(productionTrust.full_total_status, missingPrices),
     pilotBadgeLabel: pilotMode.badgeLabelRu,
     pilotDisclosureLabel: pilotMode.disclosureRu,
-    visibleLines: sections
+    visibleLines: measureConsumerRepairQuantityRenderWork("VISIBLE_LINES", () => sections
       .flatMap((section) => section.items)
       .filter((item) => !consumerRepairRowIsNonPayable(item))
-      .map(visibleLineForItem),
+      .map(visibleLineForItem)),
     assumptionRows: [
       ...buildProfessionalBoqRiskAssumptionRows(viewBundle),
       ...(hasAsphaltV4
@@ -1237,9 +1255,9 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     ],
     sections,
     professionalPreview,
-    previewSections: buildPreviewSections(sections),
-    calculationPreviewLines: buildCalculationPreviewLines(viewBundle),
-    normSourcePreviewLines: buildNormSourcePreviewLines(viewBundle, sourceLabels),
+    previewSections: measureConsumerRepairQuantityRenderWork("PREVIEW_SECTIONS", () => buildPreviewSections(sections)),
+    calculationPreviewLines: measureConsumerRepairQuantityRenderWork("CALCULATION_PREVIEW", () => buildCalculationPreviewLines(viewBundle)),
+    normSourcePreviewLines: measureConsumerRepairQuantityRenderWork("NORM_SOURCE_PREVIEW", () => buildNormSourcePreviewLines(viewBundle, sourceLabels)),
     rawItemCount,
     calculatedItemCount,
     preliminaryNeedCount,
