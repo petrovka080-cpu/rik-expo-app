@@ -13,6 +13,27 @@ const left: AutomaticParameterSpec = { id: "left", title: "Left", kind: "ordinar
 const right: AutomaticParameterSpec = { id: "right", title: "Right", kind: "ordinary", valueType: "integer", unitId: "mm" };
 
 describe("automatic owner uses existing numeric peer contract", () => {
+  it("projects the same peer condition to required inputs and resources without a second entered flag", () => {
+    const condition = { kind: "greater_than" as const, parameterId: "left", valueParameterId: "right" };
+    const conditional: AutomaticParameterSpec = { id: "wps", title: "WPS", kind: "conditional", valueType: "text", unitId: null, requiredWhen: condition };
+    const owner = buildAutomaticConstructionOwnerR1({ ...config, ordinary: [left, right], conditional: [conditional],
+      rows: [{ ...config.rows[0]!, inclusion: condition }] });
+    expect(owner.parameters[2]).toMatchObject({ required: false, default_value: null, constraints_json: { requiredWhen: condition } });
+    expect(owner.parameters[2]?.constraints_json).not.toHaveProperty("forbiddenWhen");
+    expect(owner.resources[0]?.inclusion_ast).toEqual(condition);
+    expect(owner.runtimeInput).toEqual({});
+  });
+  it.each([
+    ["missing", undefined], ["mismatched units", { ...right, unitId: "m" }], ["nonnumeric", { ...right, valueType: "text" as const }],
+  ] as const)("rejects %s inclusion peers in required input and resource paths", (_label, peer) => {
+    const condition = { kind: "greater_than" as const, parameterId: "left", valueParameterId: "right" };
+    for (const location of ["parameter", "resource"]) {
+      expect(() => buildAutomaticConstructionOwnerR1({ ...config, ordinary: [left, ...(peer ? [peer] : [])],
+        conditional: location === "parameter" ? [{ id: "wps", title: "WPS", kind: "conditional", valueType: "text", unitId: null, requiredWhen: condition }] : [],
+        rows: [{ ...config.rows[0]!, ...(location === "resource" ? { inclusion: condition } : {}) }],
+      })).toThrow("AUTOMATIC_INCLUSION_PEER_INVALID:left:right");
+    }
+  });
   it("copies non-arithmetic resource facts into the existing gate without changing owners that do not declare them", () => {
     const ids = ["right"];
     const owner = buildAutomaticConstructionOwnerR1({ ...config, ordinary: [left, right], rows: [{ ...config.rows[0]!, inputParameterIds: ids }] });

@@ -110,8 +110,23 @@ export function resolveInclusionGraph(
   if (kind === "in" && (!Array.isArray(ast.values) || ast.values.length === 0)) {
     throw new InclusionGraphEvaluationError("in node requires values");
   }
-  if (kind.startsWith("greater_than") || kind.startsWith("less_than")) {
-    finiteNumber(ast.value, `${parameterId}.value`);
+  const numericComparison = kind.startsWith("greater_than") || kind.startsWith("less_than");
+  const hasPeerOperand = Object.prototype.hasOwnProperty.call(ast, "valueParameterId");
+  const valueParameterId = hasPeerOperand && typeof ast.valueParameterId === "string"
+    ? ast.valueParameterId.trim() : "";
+  if (hasPeerOperand && (!numericComparison || !valueParameterId
+    || Object.prototype.hasOwnProperty.call(ast, "value"))) {
+    throw new InclusionGraphEvaluationError("numeric comparison requires exactly one literal or peer operand");
+  }
+  if (numericComparison && !hasPeerOperand) finiteNumber(ast.value, `${parameterId}.value`);
+  if (hasPeerOperand) {
+    // Compare the two original facts, not a second user-entered calculated
+    // applicability flag. Keep unknowns explicit and zero as a real value.
+    const missingParameterIds = [...new Set([parameterId, valueParameterId].filter(id =>
+      !Object.prototype.hasOwnProperty.call(parameters, id)
+      || parameters[id] === undefined || parameters[id] === null || parameters[id] === ""
+    ))].sort();
+    if (missingParameterIds.length) return { value: null, missingParameterIds };
   }
   if (!Object.prototype.hasOwnProperty.call(parameters, parameterId)
     || parameters[parameterId] === undefined
@@ -126,10 +141,12 @@ export function resolveInclusionGraph(
   if (kind === "in") {
     return { value: (ast.values as unknown[]).includes(actual), missingParameterIds: [] };
   }
-  if (kind === "greater_than") return { value: finiteNumber(actual, parameterId) > finiteNumber(ast.value, `${parameterId}.value`), missingParameterIds: [] };
-  if (kind === "greater_than_or_equal") return { value: finiteNumber(actual, parameterId) >= finiteNumber(ast.value, `${parameterId}.value`), missingParameterIds: [] };
-  if (kind === "less_than") return { value: finiteNumber(actual, parameterId) < finiteNumber(ast.value, `${parameterId}.value`), missingParameterIds: [] };
-  if (kind === "less_than_or_equal") return { value: finiteNumber(actual, parameterId) <= finiteNumber(ast.value, `${parameterId}.value`), missingParameterIds: [] };
+  const right = finiteNumber(hasPeerOperand ? parameters[valueParameterId] : ast.value,
+    hasPeerOperand ? valueParameterId : `${parameterId}.value`);
+  if (kind === "greater_than") return { value: finiteNumber(actual, parameterId) > right, missingParameterIds: [] };
+  if (kind === "greater_than_or_equal") return { value: finiteNumber(actual, parameterId) >= right, missingParameterIds: [] };
+  if (kind === "less_than") return { value: finiteNumber(actual, parameterId) < right, missingParameterIds: [] };
+  if (kind === "less_than_or_equal") return { value: finiteNumber(actual, parameterId) <= right, missingParameterIds: [] };
   throw new InclusionGraphEvaluationError(`unsupported inclusion AST kind ${kind || "<empty>"}`);
 }
 

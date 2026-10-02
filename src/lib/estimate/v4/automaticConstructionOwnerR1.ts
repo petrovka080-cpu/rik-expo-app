@@ -13,6 +13,11 @@ import { NUMERIC_PARAMETER_RELATIONS, type NumericParameterPeerConstraints } fro
 type Json = Record<string, unknown>;
 
 export type AutomaticParameterKind = "ordinary" | "profile" | "conditional";
+type AutomaticPeerCondition = Readonly<{
+  kind: "greater_than";
+  parameterId: string;
+  valueParameterId: string;
+}>;
 export type AutomaticParameterSpec = Readonly<{
   id: string;
   title: string;
@@ -24,7 +29,7 @@ export type AutomaticParameterSpec = Readonly<{
   min?: number;
   max?: number;
   numericPeerConstraints?: NumericParameterPeerConstraints;
-  requiredWhen?: Readonly<{ parameterId: string; value: string }>;
+  requiredWhen?: Readonly<{ parameterId: string; value: string }> | AutomaticPeerCondition;
   resourceBranchConsumers?: readonly string[];
 }>;
 
@@ -38,7 +43,7 @@ export type AutomaticRowSpec = Readonly<{
   expression: string;
   procurement?: boolean;
   costTreatment?: "OWN_COST" | "INFORMATIONAL_SCOPE" | "INCLUDED_IN_RESOURCE_ROWS";
-  inclusion?: Readonly<{ kind: "equals"; parameterId: string; value: string }>;
+  inclusion?: Readonly<{ kind: "equals"; parameterId: string; value: string }> | AutomaticPeerCondition;
   titleParameterIds?: readonly string[];
   /** Required product/method facts consumed by this resource even when they
    * are not arithmetic operands. Uses the canonical compiler's existing gate. */
@@ -89,12 +94,13 @@ function constraints(spec: AutomaticParameterSpec): Json {
     ...(spec.max == null ? {} : { max: spec.max }),
     ...spec.numericPeerConstraints,
     ...(spec.requiredWhen ? {
-      requiredWhen: { kind: "equals", ...spec.requiredWhen },
-      forbiddenWhen: {
+      requiredWhen: "kind" in spec.requiredWhen
+        ? { ...spec.requiredWhen } : { kind: "equals", ...spec.requiredWhen },
+      ...("kind" in spec.requiredWhen ? {} : { forbiddenWhen: {
         kind: "equals",
         parameterId: spec.requiredWhen.parameterId,
         value: "NOT_REQUIRED",
-      },
+      } }),
     } : {}),
   };
 }
@@ -104,6 +110,20 @@ export function buildAutomaticConstructionOwnerR1(
 ): AutomaticOwnerDefinition {
   const specs = [...config.ordinary, ...config.profile, ...config.conditional];
   const specsById = new Map(specs.map((spec) => [spec.id, spec]));
+  const validatePeerCondition = (condition: AutomaticPeerCondition): void => {
+    const left = specsById.get(condition.parameterId);
+    const right = specsById.get(condition.valueParameterId);
+    if (!left || !right || !["decimal", "integer"].includes(left.valueType)
+      || !["decimal", "integer"].includes(right.valueType) || left.unitId !== right.unitId) {
+      throw new Error(`AUTOMATIC_INCLUSION_PEER_INVALID:${condition.parameterId}:${condition.valueParameterId}`);
+    }
+  };
+  for (const spec of specs) {
+    if (spec.requiredWhen && "kind" in spec.requiredWhen) validatePeerCondition(spec.requiredWhen);
+  }
+  for (const row of config.rows) {
+    if (row.inclusion?.kind === "greater_than") validatePeerCondition(row.inclusion);
+  }
   for (const spec of specs) {
     for (const [rule] of NUMERIC_PARAMETER_RELATIONS) {
       const peerId = spec.numericPeerConstraints?.[rule];

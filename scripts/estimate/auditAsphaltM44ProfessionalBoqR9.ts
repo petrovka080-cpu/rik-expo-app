@@ -647,9 +647,11 @@ function buildParameterMatrix(
         ? "ALWAYS"
         : definition.visibilityCondition.kind === "PARAMETER_EQUALS"
           ? `${definition.visibilityCondition.parameterId}=${String(definition.visibilityCondition.value)}`
-          : definition.visibilityCondition.conditions
-            .map((candidate) => `${candidate.parameterId}=${String(candidate.value)}`)
-            .join(" OR ");
+          : definition.visibilityCondition.kind === "INCLUSION_GRAPH"
+            ? JSON.stringify(definition.visibilityCondition.ast)
+            : definition.visibilityCondition.conditions
+              .map((candidate) => `${candidate.parameterId}=${String(candidate.value)}`)
+              .join(definition.visibilityCondition.kind === "ALL_OF" ? " AND " : " OR ");
       const derivedRule = definition.parameterId === "area_m2" &&
         schema.definitions.some((candidate) => candidate.parameterId === "length_m")
         ? "area_m2 = length_m × width_m; read-only when derived"

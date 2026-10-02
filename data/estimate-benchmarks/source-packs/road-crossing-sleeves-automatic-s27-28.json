@@ -36,13 +36,14 @@
       "civil geometry controls are informational only, not invented paid construction operations or a soil reuse/haul classification",
       "selected applicable MMA joint procedure: physical site joints times actual gross electrode kg/joint, aggregate crew person-hours/joint and actual equipment hours/joint; no universal productivity or electrode-efficiency factor",
       "gross electrode consumption already includes process losses; reserve, compatible stock, whole mass packs, rounded new order and free remainder are separate outputs, without a second loss factor",
-      "joint cost owners are only new electrode purchase, all crew labor and personnel-free equipment with energy included; balances, joint count, energy and another generic welding operation have no duplicate payment"
+      "joint cost owners are only new electrode purchase, all crew labor and personnel-free equipment with energy included; balances, joint count, energy and another generic welding operation have no duplicate payment",
+      "shared InclusionGraph compares crossing length to actual physical section length: a single-section crossing excludes joint resources and does not require WPS/consumable/crew/equipment inputs; either unknown length remains an explicit undecided branch"
     ],
     "requiredBeforeFullOwnerPublication": [
       "actual load-rated product selection and approved layout; tested geometric compatibility alone is not structural acceptance",
       "integration of actual method-specific civil work, support/reaction arrangement, groundwater measures and net pit return fill after retained structures",
       "actual slopes/end ramps/nonrectangular shafts or other methods outside the implemented rectangular component; never approximate these by the accepted simple geometry without confirmation",
-      "actual approved WPS and product/rate selection; integration of the MMA joint resource component, excluded automatically for a single-section crossing with no site joints; a reference string alone is not WPS approval",
+      "actual approved WPS and product/rate selection plus full-owner integration of the tested conditional MMA joint resource component; a reference string alone is not WPS approval",
       "other welding processes require their own actual compatible consumables/cost basis; never substitute this MMA component or its fixtures",
       "separate actual joint preparation, fit-up, inspection/NDT, repairs, coating, drying/storage and lifting owners; machine/crew/material overlaps reconciled before full publication",
       "materials and method-specific civil execution, crew work, machine time and logistics outside the implemented joint resource boundary",

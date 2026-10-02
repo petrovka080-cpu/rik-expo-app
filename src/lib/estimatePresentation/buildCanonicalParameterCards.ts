@@ -13,6 +13,7 @@ import type {
   CanonicalParameterSession,
 } from "../estimate/canonicalParameters/canonicalParameterCore";
 import { canonicalParameterAffectsEstimateCalculation } from "../estimate/canonicalParameters/canonicalParameterCalculationRelevance";
+import { resolveCanonicalParameterVisibility } from "../estimate/canonicalParameters/canonicalParameterCore";
 import { getAsphaltParameterV4 } from "../estimate/v4/asphalt/asphaltWorkSpecificParameterSchemaV4";
 import type { WorkSpecificParameterV4 } from "../estimate/v4/professionalEstimateV4Contract";
 
@@ -273,20 +274,7 @@ export function buildCanonicalParameterCards(input: {
     .filter((parameter) => parameter.value != null)
     .map((parameter) => [parameter.parameterId, parameter.value!]));
   const conditionState = (parameter: CanonicalParameter): boolean | null => {
-    const condition = parameter.visibilityCondition;
-    if (condition.kind === "ALWAYS") return true;
-    const matches = (candidate: { parameterId: string; value: string | number | boolean }): boolean | null =>
-      sessionValues.has(candidate.parameterId)
-        ? sessionValues.get(candidate.parameterId) === candidate.value
-        : null;
-    if (condition.kind === "PARAMETER_EQUALS") return matches(condition);
-    const states = condition.conditions.map(matches);
-    if (condition.kind === "ALL_OF") {
-      if (states.includes(false)) return false;
-      return states.every((state) => state === true) ? true : null;
-    }
-    if (states.includes(true)) return true;
-    return states.every((state) => state === false) ? false : null;
+    return resolveCanonicalParameterVisibility(parameter.visibilityCondition, sessionValues);
   };
   const tracedCalculationParameterIds = new Set(
     (input.revision?.trace.params ?? [])

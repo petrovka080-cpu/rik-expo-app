@@ -1,4 +1,5 @@
 import { estimateDeterministicHash } from "../estimateDeterministicHash";
+import { resolveInclusionGraph, type InclusionGraphAst } from "../backendPlatform/inclusionGraph";
 
 export const CANONICAL_PARAMETER_CORE_SCHEMA_VERSION =
   "canonical-parameter-core:2026-07-28.v1" as const;
@@ -33,6 +34,7 @@ export type CanonicalParameterState =
 
 export type CanonicalParameterVisibilityCondition =
   | { kind: "ALWAYS" }
+  | { kind: "INCLUSION_GRAPH"; ast: Readonly<InclusionGraphAst> }
   | {
       kind: "PARAMETER_EQUALS";
       parameterId: string;
@@ -169,20 +171,33 @@ export type CanonicalParameterSession = {
   updatedAt: string;
 };
 
+/** One parameter-visibility owner for core, backend-session adapter and cards.
+ * Reuses the canonical branch evaluator; never calculates a resource quantity. */
+export function resolveCanonicalParameterVisibility(
+  condition: CanonicalParameterVisibilityCondition,
+  values: ReadonlyMap<string, CanonicalParameterValue>,
+): boolean | null {
+  if (condition.kind === "ALWAYS") return true;
+  if (condition.kind === "INCLUSION_GRAPH") {
+    return resolveInclusionGraph(condition.ast, Object.fromEntries(values)).value;
+  }
+  const matches = (candidate: { parameterId: string; value: CanonicalParameterValue }): boolean | null =>
+    values.has(candidate.parameterId) ? values.get(candidate.parameterId) === candidate.value : null;
+  if (condition.kind === "PARAMETER_EQUALS") return matches(condition);
+  const states = condition.conditions.map(matches);
+  if (condition.kind === "ALL_OF") {
+    if (states.includes(false)) return false;
+    return states.every(state => state === true) ? true : null;
+  }
+  if (states.includes(true)) return true;
+  return states.every(state => state === false) ? false : null;
+}
+
 function isVisible(
   definition: CanonicalParameterDefinition,
   values: ReadonlyMap<string, CanonicalParameterValue>,
 ): boolean {
-  if (definition.visibilityCondition.kind === "ALWAYS") return true;
-  if (definition.visibilityCondition.kind === "PARAMETER_EQUALS") {
-    return values.get(definition.visibilityCondition.parameterId) ===
-      definition.visibilityCondition.value;
-  }
-  const matches = (condition: { parameterId: string; value: CanonicalParameterValue }) =>
-    values.get(condition.parameterId) === condition.value;
-  return definition.visibilityCondition.kind === "ALL_OF"
-    ? definition.visibilityCondition.conditions.every(matches)
-    : definition.visibilityCondition.conditions.some(matches);
+  return resolveCanonicalParameterVisibility(definition.visibilityCondition, values) === true;
 }
 
 function validateValue(

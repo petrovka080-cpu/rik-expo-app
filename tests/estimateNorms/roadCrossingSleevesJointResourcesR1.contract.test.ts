@@ -1,6 +1,7 @@
 import { buildAutomaticConstructionOwnerR1 } from "../../src/lib/estimate/v4/automaticConstructionOwnerR1";
 import { compileCanonicalEstimateCore } from "../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
 import { estimateDeterministicHash } from "../../src/lib/estimate/estimateDeterministicHash";
+import { validateCanonicalEstimateParameterInputs } from "../../src/lib/estimate/backendPlatform/canonicalEstimateParameterValidation";
 import { ROAD_CROSSING_SLEEVES_QUANTITY_PARAMETERS_R1 } from "../../src/lib/estimate/v4/roadCrossingSleevesQuantityModelR1";
 import {
   ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1 as parameters, ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_ROWS_R1 as rows,
@@ -12,7 +13,7 @@ const definition = buildAutomaticConstructionOwnerR1({
   sourceMetadata: { source_title: "Actual joint resources; TWI cost-basis boundary", source_document_version: "test-2026-10-03", definition_hash: "a".repeat(64),
     exact_locator: "https://www.twi-global.com/technical-knowledge/job-knowledge/welding-costs-096", artifact_sha256: "a".repeat(64) },
   applicabilityRu: "Подтверждённая карта MMA стыка выбранного футляра; не полная работа или приёмка WPS",
-  ordinary: [...ROAD_CROSSING_SLEEVES_QUANTITY_PARAMETERS_R1, ...parameters], profile: [], conditional: [], rows,
+  ordinary: [...ROAD_CROSSING_SLEEVES_QUANTITY_PARAMETERS_R1], profile: [], conditional: parameters, rows,
   excludedUnownedAssumptions: ["WPS approval", "preparation/fit-up", "NDT/repairs/coating", "drying/storage", "lifting", "full crossing"],
 });
 // Synthetic verification facts ONLY. No fixture consumption, productivity,
@@ -55,9 +56,41 @@ describe("actual road-casing joint resources through the shared compiler", () =>
     const result = await compile({ ...fixture, rcs_crossing_length_m: length });
     const joints = Math.ceil(length / 12) - 1;
     expect(q(result, "site_joint_count")).toBe(joints);
-    expect(q(result, "electrode_consumed")).toBe(joints * 2);
-    expect(q(result, "crew_person_hours")).toBe(joints * 3);
-    expect(q(result, "equipment_hours")).toBe(joints * 4);
+    if (joints === 0) {
+      expect(result.rows.map(r => r.row_id)).toEqual([id("site_joint_count")]);
+      expect(result.preliminaryNeeds).toHaveLength(0);
+    } else {
+      expect(q(result, "electrode_consumed")).toBe(joints * 2);
+      expect(q(result, "crew_person_hours")).toBe(joints * 3);
+      expect(q(result, "equipment_hours")).toBe(joints * 4);
+    }
+  });
+
+  it("does not ask for WPS, electrode, crew or equipment facts with no site joints", async () => {
+    const input: Record<string, unknown> = { ...fixture, rcs_crossing_length_m: 12 };
+    for (const parameter of parameters) delete input[parameter.id];
+    const result = await compile(input);
+    expect(result.rows.map(r => r.row_id)).toEqual([id("site_joint_count")]);
+    expect(q(result, "site_joint_count")).toBe(0);
+    expect(result.preliminaryNeeds).toHaveLength(0);
+    const schema = [...ROAD_CROSSING_SLEEVES_QUANTITY_PARAMETERS_R1, ...parameters].map((p, ordinal) => ({
+      parameterId: p.id, ordinal, valueType: p.valueType, unitId: p.unitId, titleRu: p.title,
+      required: p.kind !== "conditional", defaultValue: p.defaultValue ?? null,
+      constraints: definition.parameters.find(candidate => candidate.parameter_id === p.id)?.constraints_json ?? {},
+    }));
+    expect(validateCanonicalEstimateParameterInputs({ schema, rawInputs: input }).issues).toEqual([]);
+    const withJoints = await compile({ ...input, rcs_crossing_length_m: 12.001 });
+    expect(withJoints.preliminaryNeeds.find(n => n.row_id === id("electrode_ordered"))?.missing_parameter_ids).toContain("rcs_joint_wps_reference");
+    expect(validateCanonicalEstimateParameterInputs({ schema, rawInputs: { ...input, rcs_crossing_length_m: 12.001 } })
+      .issues.filter(issue => issue.code === "REQUIRED_WHEN").map(issue => issue.parameterId)).toEqual(parameters.map(p => p.id));
+  });
+
+  it("cannot add a manual paid joint resource to an inapplicable one-section branch", async () => {
+    const result = await compile({ ...fixture, rcs_crossing_length_m: 12 }, {
+      [id("crew_person_hours")]: { quantity: "999", provenance },
+    });
+    expect(result.rows.some(r => r.row_id === id("crew_person_hours"))).toBe(false);
+    expect(result.preliminaryNeeds).toHaveLength(0);
   });
 
   it("supplier casing bundles and spare sections never add installed joints or welding resources", async () => {

@@ -26,10 +26,12 @@ import {
 } from "../../lib/estimate/backendPlatform/contracts";
 import {
   CANONICAL_PARAMETER_CORE_SCHEMA_VERSION,
+  resolveCanonicalParameterVisibility,
   type CanonicalParameter,
   type CanonicalParameterSession,
   type CanonicalParameterValue,
 } from "../../lib/estimate/canonicalParameters/canonicalParameterCore";
+import { resolveInclusionGraph } from "../../lib/estimate/backendPlatform/inclusionGraph";
 import { canonicalParameterAffectsEstimateCalculation } from "../../lib/estimate/canonicalParameters/canonicalParameterCalculationRelevance";
 import { estimateDeterministicHash } from "../../lib/estimate/estimateDeterministicHash";
 import {
@@ -264,11 +266,11 @@ function objectVisibilityCondition(raw: unknown): CanonicalParameter["visibility
     const flattenable = children.every((candidate) =>
       candidate?.kind === "PARAMETER_EQUALS" || candidate?.kind === targetKind
     );
-    if (!flattenable || flattened.length === 0) return null;
-    return {
-      kind: targetKind,
-      conditions: flattened,
-    };
+    if (flattenable && flattened.length > 0) return { kind: targetKind, conditions: flattened };
+  }
+  if (["literal", "parameter", "present", "not", "and", "or", "greater_than", "greater_than_or_equal", "less_than", "less_than_or_equal"].includes(String(condition.kind))) {
+    resolveInclusionGraph(condition, {});
+    return { kind: "INCLUSION_GRAPH", ast: JSON.parse(JSON.stringify(condition)) as Record<string, unknown> };
   }
   return null;
 }
@@ -464,20 +466,7 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
     // supported expression, an absent dependency is unknown while an explicit
     // mismatch is false; this keeps a selected backend need visible without
     // reviving a branch the user's known inputs disabled.
-    const condition = parameter.visibilityCondition;
-    if (condition.kind === "ALWAYS") return true;
-    const matches = (candidate: { parameterId: string; value: CanonicalParameterValue }): boolean | null =>
-      values.has(candidate.parameterId)
-        ? values.get(candidate.parameterId) === candidate.value
-        : null;
-    if (condition.kind === "PARAMETER_EQUALS") return matches(condition);
-    const states = condition.conditions.map(matches);
-    if (condition.kind === "ALL_OF") {
-      if (states.includes(false)) return false;
-      return states.every((state) => state === true) ? true : null;
-    }
-    if (states.includes(true)) return true;
-    return states.every((state) => state === false) ? false : null;
+    return resolveCanonicalParameterVisibility(parameter.visibilityCondition, values);
   };
   const rawVisibleParameters = allParameters.filter((parameter) => {
     const state = conditionState(parameter);
