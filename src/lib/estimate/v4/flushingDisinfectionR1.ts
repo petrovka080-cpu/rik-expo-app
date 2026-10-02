@@ -57,7 +57,6 @@ const profile: readonly AutomaticParameterSpec[] = Object.freeze([
   { id: "fld_fitting_piece_per_section", title: "Переходников и фитингов на участок", valueType: "decimal", unitId: "pcs_per_system", kind: "profile", defaultValue: 12, min: 0 },
   { id: "fld_support_piece_per_hose_m", title: "Опор и фиксаторов на метр рукава", valueType: "decimal", unitId: "pcs_per_m", kind: "profile", defaultValue: 0.25, min: 0 },
   { id: "fld_consumable_set_per_section", title: "Комплектов прокладок, крепежа и расходников", valueType: "decimal", unitId: "set_per_system", kind: "profile", defaultValue: 1, min: 0 },
-  { id: "fld_solution_density_kg_l", title: "Плотность поставочного раствора", valueType: "decimal", unitId: "kg_per_l", kind: "profile", defaultValue: 1.2, min: 0.000_001 },
   { id: "fld_reagent_retained_reserve_fraction", title: "Сохраняемый резерв реагента", valueType: "decimal", unitId: "ratio", kind: "profile", defaultValue: 0.1, min: 0 },
   { id: "fld_reagent_available_stock_kg", title: "Подтверждённый складской остаток реагента", valueType: "decimal", unitId: "kg", kind: "profile", defaultValue: 0, min: 0 },
   { id: "fld_reagent_supplier_package_kg", title: "Масса реагента в поставочной упаковке", valueType: "decimal", unitId: "kg", kind: "profile", defaultValue: 30, min: 0.000_001 },

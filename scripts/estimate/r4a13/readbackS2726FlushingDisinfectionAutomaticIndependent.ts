@@ -54,7 +54,7 @@ async function main(): Promise<void> {
       where m.release_id=$1 and m.catalog_id=$2`, [current.definitionReleaseId, CATALOG_ID]))
       .rows[0] as Json;
     invariant(target && [target.parameter_count, target.formula_count, target.resource_count]
-      .map(Number).join(":") === "64:55:55",
+      .map(Number).join(":") === "63:55:55",
     "STOP_S27_26_FLUSHING_DISINFECTION_READBACK_SHAPE");
     invariant(target.runtime_publication_state === "CANDIDATE"
       && target.content_status === "CANDIDATE_READY"
@@ -113,7 +113,7 @@ async function main(): Promise<void> {
         && parameter.truth_metadata?.preliminary_compilation_allowed === false
         && (parameter.truth_metadata?.guide as Json | undefined)
           ?.guide_validation_policy === "MANDATORY_BLOCK")
-      && profileParameters.length === 52
+      && profileParameters.length === 51
       && profileParameters.every((parameter) =>
         parameter.truth_metadata?.preliminary_compilation_allowed === true
         && (parameter.truth_metadata?.guide as Json | undefined)?.guide_validation_policy

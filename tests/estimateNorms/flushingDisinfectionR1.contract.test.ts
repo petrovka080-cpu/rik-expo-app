@@ -16,12 +16,15 @@ describe("S27.26 automatic pipeline flushing and disinfection owner", () => {
       "canonical-work:expanded:flushing_disinfection",
     );
     expect(Object.keys(FLUSHING_DISINFECTION_SHORT_INPUT)).toHaveLength(8);
-    expect(Object.keys(FLUSHING_DISINFECTION_RUNTIME_INPUT)).toHaveLength(52);
-    expect(FLUSHING_DISINFECTION_PARAMETERS).toHaveLength(64);
+    expect(Object.keys(FLUSHING_DISINFECTION_RUNTIME_INPUT)).toHaveLength(51);
+    expect(FLUSHING_DISINFECTION_PARAMETERS).toHaveLength(63);
     expect(FLUSHING_DISINFECTION_FORMULAS).toHaveLength(55);
     expect(FLUSHING_DISINFECTION_RESOURCES).toHaveLength(55);
     const ordinary = FLUSHING_DISINFECTION_PARAMETERS.slice(0, 8);
-    const profile = FLUSHING_DISINFECTION_PARAMETERS.slice(8, 60);
+    const profile = FLUSHING_DISINFECTION_PARAMETERS.filter((parameter) =>
+      parameter.truth_metadata.value_source_role
+        === "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE"
+    );
     expect(ordinary.every((parameter) =>
       parameter.truth_metadata.preliminary_compilation_allowed === false
       && (parameter.truth_metadata.guide as Record<string, unknown>)
