@@ -1,13 +1,13 @@
 {
   "schemaVersion": "r568-local-developer-canonical-release.v1",
   "status": "ACTIVE_LOCAL_DEVELOPER_CANONICAL_RELEASE",
-  "definitionReleaseId": "0fa843d1-c720-530c-8bee-9d0c2a3a0bf4",
-  "searchReleaseId": "ef4fd021-43b5-5327-b4ca-b8e65b371c0a",
+  "definitionReleaseId": "ec8290a2-7986-51ba-aad6-dfc30cd9f171",
+  "searchReleaseId": "a7caac8a-3a89-510f-b7c9-2fcbb9adaa66",
   "definitionReleaseStatus": "prepared",
   "searchReleaseStatus": "draft",
-  "definitionSnapshotSha256": "79381909e079ea3c2300d817b6cb001fe087942623cd4a1a365cf451380dd618",
-  "manifestHashChainSha256": "79381909e079ea3c2300d817b6cb001fe087942623cd4a1a365cf451380dd618",
-  "searchHashChainSha256": "d3f237131ddda518d08deb91a8660881933973a06b57f836637dd6f3d644e461",
+  "definitionSnapshotSha256": "f67c9de899f498941e6de747345a385ab345674ca2aea461d23d090123268385",
+  "manifestHashChainSha256": "f67c9de899f498941e6de747345a385ab345674ca2aea461d23d090123268385",
+  "searchHashChainSha256": "91d0130ae5ffe6d0886e7a3a483a8d2f977f7437e84ccbc433d5ff1d48e7b5e9",
   "identities": 11610,
   "visibleCanonicalDefinitions": 10322,
   "aliasesRedirects": 1288,
@@ -15,7 +15,7 @@
   "runtimeAdditionalAdmissions": 9,
   "currentInventoryRowsIncludingAliases": 11619,
   "denominatorNote": "11610 is the immutable historical source-identity reconciliation (10322 canonical owners plus 1288 redirects); the current cumulative runtime also preserves 9 separately identified inherited admissions.",
-  "owner": "S27_26_VALVES_CHAMBERS_AUTOMATIC_SUCCESSOR",
+  "owner": "S27_26_FILTRATION_STATION_AUTOMATIC_SUCCESSOR",
   "productionAccessed": false,
   "fakeGreenClaimed": false
 }
