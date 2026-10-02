@@ -36,6 +36,7 @@ describe("canonicalEstimateClient access-token refresh", () => {
     resetCanonicalEstimateRuntimeCompatibilityForTests();
     for (const name of [
       "EXPO_PUBLIC_LOCAL_DEVELOPER_REVIEW",
+      "EXPO_PUBLIC_CANONICAL_ESTIMATE_REQUIRE_RUNTIME_COMPATIBILITY",
       "EXPO_PUBLIC_CANONICAL_ESTIMATE_DEFINITION_RELEASE_ID",
       "EXPO_PUBLIC_CANONICAL_ESTIMATE_SEARCH_RELEASE_ID",
       "EXPO_PUBLIC_BUILD_COMMIT",
@@ -160,9 +161,12 @@ describe("canonicalEstimateClient access-token refresh", () => {
     }
   });
 
-  it("checks the exact local runtime tuple before the first estimate request", async () => {
+  it.each([
+    ["EXPO_PUBLIC_LOCAL_DEVELOPER_REVIEW", "1"],
+    ["EXPO_PUBLIC_CANONICAL_ESTIMATE_REQUIRE_RUNTIME_COMPATIBILITY", "true"],
+  ])("checks the exact runtime tuple before transport with %s", async (mode, flag) => {
     Object.assign(process.env, {
-      EXPO_PUBLIC_LOCAL_DEVELOPER_REVIEW: "1",
+      [mode]: flag,
       EXPO_PUBLIC_CANONICAL_ESTIMATE_DEFINITION_RELEASE_ID: "definition-release",
       EXPO_PUBLIC_CANONICAL_ESTIMATE_SEARCH_RELEASE_ID: "search-release",
       EXPO_PUBLIC_BUILD_COMMIT: "source-head",
@@ -204,9 +208,12 @@ describe("canonicalEstimateClient access-token refresh", () => {
     });
   });
 
-  it("fails closed when the local frontend and backend tuples differ", async () => {
+  it.each([
+    ["EXPO_PUBLIC_LOCAL_DEVELOPER_REVIEW", "1"],
+    ["EXPO_PUBLIC_CANONICAL_ESTIMATE_REQUIRE_RUNTIME_COMPATIBILITY", "true"],
+  ])("fails closed on frontend/backend mismatch with %s", async (mode, flag) => {
     Object.assign(process.env, {
-      EXPO_PUBLIC_LOCAL_DEVELOPER_REVIEW: "1",
+      [mode]: flag,
       EXPO_PUBLIC_CANONICAL_ESTIMATE_DEFINITION_RELEASE_ID: "definition-release",
       EXPO_PUBLIC_CANONICAL_ESTIMATE_SEARCH_RELEASE_ID: "search-release",
       EXPO_PUBLIC_BUILD_COMMIT: "source-head",
@@ -231,5 +238,18 @@ describe("canonicalEstimateClient access-token refresh", () => {
       code: "RUNTIME_COMPATIBILITY_MISMATCH_definitionReleaseId",
     });
     expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not bypass a missing tuple for the ordinary whole-app session", async () => {
+    process.env.EXPO_PUBLIC_CANONICAL_ESTIMATE_REQUIRE_RUNTIME_COMPATIBILITY = "true";
+    mockGetSession.mockResolvedValue({
+      data: { session: { access_token: "ordinary-token", expires_at: Math.floor(Date.now() / 1_000) + 60 } },
+      error: null,
+    });
+    await expect(getCanonicalEstimateRevision(revisionId)).rejects.toMatchObject({
+      code: "RUNTIME_COMPATIBILITY_CONFIG_MISSING",
+    });
+    expect(mockFetchWithRequestTimeout).not.toHaveBeenCalled();
+    expect(mockRefreshSession).not.toHaveBeenCalled();
   });
 });

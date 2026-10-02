@@ -40,6 +40,7 @@ import {
   type ForemanAiEstimateDraftMapping,
 } from "../../lib/foremanAiEstimate";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
+import { logger } from "../../lib/logger";
 import {
   canonicalEstimateBlockingParameterIssues,
   canonicalEstimateParameterChoiceLabelRu,
@@ -665,6 +666,7 @@ export async function loadConsumerCanonicalParameterSession(input: {
   revisionId: string;
   draftId: string;
 }): Promise<CanonicalParameterSession> {
+  const startedAt = Date.now();
   const { revision, catalog, parent } = await getCanonicalEstimateParameterSessionSnapshot(input.revisionId);
   if (catalog.releaseId !== revision.releaseId) {
     throw new CanonicalEstimateApiError("Параметры не открыты: версия каталога не совпадает со сметой.", {
@@ -672,7 +674,13 @@ export async function loadConsumerCanonicalParameterSession(input: {
       httpStatus: 409,
     });
   }
-  return buildConsumerCanonicalParameterSession({ catalog, revision, parent, draftId: input.draftId });
+  const session = buildConsumerCanonicalParameterSession({ catalog, revision, parent, draftId: input.draftId });
+  logger.releaseEvidence("RikEstimateParameters", "REVISION_PARAMETER_SESSION_READY", {
+    stage: "REVISION_PARAMETER_SESSION_READY", elapsedMs: Date.now() - startedAt,
+    revisionId: revision.revisionId, parameterCount: session.parameters.length,
+    missingCount: session.blockingMissingParameterIds.length,
+  });
+  return session;
 }
 
 export async function loadConsumerCanonicalRevisionDraftMapping(input: {

@@ -88,9 +88,15 @@ import {
   requestEstimateCanonicalDeepLinkSessionWorkspaceDraftId,
   requestEstimateControllerWorkspaceKey,
   requestEstimateFreshBuildKey,
+  shouldPublishInitialConsumerCanonicalPreview,
 } from "../../src/features/consumerRepair/ConsumerRepairRequestScreenContainer";
 
 describe("consumer repair durable storage startup UI", () => {
+  it("keeps ordinary parameter/row amendments in their existing editor", () => {
+    expect(shouldPublishInitialConsumerCanonicalPreview({})).toBe(false);
+    expect(shouldPublishInitialConsumerCanonicalPreview({ showInitialPreview: false })).toBe(false);
+    expect(shouldPublishInitialConsumerCanonicalPreview({ showInitialPreview: true })).toBe(true);
+  });
   it("reuses one bounded transient draft for sequential canonical deep links", () => {
     const firstRevisionId = "4aa65e39-a938-4a98-8309-94aeb60d1ba0";
     const secondRevisionId = "0f6ad5bb-5664-4e9f-bb4a-0f4d008292c4";

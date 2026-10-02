@@ -2446,11 +2446,19 @@ export async function compileConsumerCanonicalBaseline(input: {
   selectedRoadScope?: AsphaltScopeSelectionIdV5 | null;
   parameterOverrides?: Record<string, CanonicalEstimateParameterInputValue>;
 }): Promise<ForemanAiEstimateDraftMapping> {
+  const startedAt = Date.now();
+  logger.releaseEvidence("RikEstimateParameters", "BASELINE_CATALOG_REQUESTED", {
+    stage: "BASELINE_CATALOG_REQUESTED", catalogId: input.catalogId,
+  });
   const catalog = await getCanonicalEstimateCatalogItem(input.catalogId).catch((error: unknown) => {
     if (error instanceof CanonicalEstimateApiError && error.code === "NOT_FOUND") {
       throw new Error(`CANONICAL_BACKEND_DEFINITION_MISSING:${input.catalogId}`);
     }
     throw error;
+  });
+  logger.releaseEvidence("RikEstimateParameters", "BASELINE_CATALOG_RECEIVED", {
+    stage: "BASELINE_CATALOG_RECEIVED", elapsedMs: Date.now() - startedAt,
+    catalogId: catalog.catalogId, parameterCount: catalog.parameterSchema.length,
   });
   let baseline: CanonicalBaselinePlan;
   try {
@@ -2462,17 +2470,20 @@ export async function compileConsumerCanonicalBaseline(input: {
     });
   } catch (error) {
     if (!(error instanceof CanonicalBaselineContractMissingError)) throw error;
-    throw new ConsumerCanonicalBaselineNeedsParametersError(
-      error.message,
-      buildConsumerCanonicalPrecompileParameterSession({
-        catalog,
-        draftId: input.draftId,
-        parameters: error.parameters,
-        missingParameterIds: error.missingParameterIds,
-        userExplicitParameterIds: error.userExplicitParameterIds,
-        textExtractedParameterIds: error.textExtractedParameterIds,
-      }),
-    );
+    const session = buildConsumerCanonicalPrecompileParameterSession({
+      catalog,
+      draftId: input.draftId,
+      parameters: error.parameters,
+      missingParameterIds: error.missingParameterIds,
+      userExplicitParameterIds: error.userExplicitParameterIds,
+      textExtractedParameterIds: error.textExtractedParameterIds,
+    });
+    logger.releaseEvidence("RikEstimateParameters", "PRECOMPILE_SESSION_READY", {
+      stage: "PRECOMPILE_SESSION_READY", elapsedMs: Date.now() - startedAt,
+      parameterCount: session.parameters.length,
+      missingCount: session.blockingMissingParameterIds.length,
+    });
+    throw new ConsumerCanonicalBaselineNeedsParametersError(error.message, session);
   }
   const parameters = baseline.parameters;
   const compileInput = {

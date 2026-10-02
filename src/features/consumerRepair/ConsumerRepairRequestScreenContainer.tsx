@@ -320,7 +320,16 @@ type PersistConsumerCanonicalDraftOptions = {
   replaceCanonicalRevisionHistory?: boolean;
   evidenceBuildStartedAt?: number;
   expectedWorkspaceGeneration?: number;
+  showInitialPreview?: boolean;
 };
+
+export function shouldPublishInitialConsumerCanonicalPreview(
+  options: Pick<PersistConsumerCanonicalDraftOptions, "showInitialPreview">,
+): boolean {
+  // A normal editor amendment must stay in the current form. The early,
+  // full-screen result belongs only to an explicitly requested initial build.
+  return options.showInitialPreview === true;
+}
 
 function useConsumerCanonicalDraftPersistence(input: {
   consumerUserId: string | null;
@@ -369,49 +378,51 @@ function useConsumerCanonicalDraftPersistence(input: {
       && Number.isFinite(row.quantity)
     );
     const preliminaryNeedCount = canonicalBackend.preliminaryNeeds?.length ?? 0;
-    await new Promise<void>((resolvePublished) => {
-      const settlePublished = () => {
-        if (pendingPreviewPublishedRef.current === settlePublished) {
-          pendingPreviewPublishedRef.current = null;
-        }
-        resolvePublished();
-      };
-      pendingPreviewPublishedRef.current = settlePublished;
-      setPreview({
-        revisionId: canonicalBackend.revisionId,
-        titleRu: mapping.payload.workTitle?.trim() || "Предварительная смета",
-        calculatedRows: calculatedRows.slice(0, 4).map((row) => ({
-          id: row.rowId,
-          titleRu: row.visibleName,
-          quantity: row.quantity,
-          unit: row.unit?.trim() || "ед.",
-        })),
+    if (shouldPublishInitialConsumerCanonicalPreview(options)) {
+      await new Promise<void>((resolvePublished) => {
+        const settlePublished = () => {
+          if (pendingPreviewPublishedRef.current === settlePublished) {
+            pendingPreviewPublishedRef.current = null;
+          }
+          resolvePublished();
+        };
+        pendingPreviewPublishedRef.current = settlePublished;
+        setPreview({
+          revisionId: canonicalBackend.revisionId,
+          titleRu: mapping.payload.workTitle?.trim() || "Предварительная смета",
+          calculatedRows: calculatedRows.slice(0, 4).map((row) => ({
+            id: row.rowId,
+            titleRu: row.visibleName,
+            quantity: row.quantity,
+            unit: row.unit?.trim() || "ед.",
+          })),
+          calculatedRowCount: calculatedRows.length,
+          preliminaryNeedCount,
+          saved: false,
+          onPublished: settlePublished,
+          onOpenFullEstimate: () => {
+            const pending = pendingBundleRef.current;
+            if (!pending || !screenRef.current) return;
+            screenRef.current.acceptCanonicalBackendDraft(pending, {
+              persistenceStatus: "saved",
+              onPublished: () => {
+                pendingBundleRef.current = null;
+                setPreview((current) =>
+                  current?.revisionId === canonicalBackend.revisionId ? null : current
+                );
+              },
+            });
+          },
+        });
+      });
+      assertCurrentWorkspace();
+      logger.releaseEvidence("RikEstimateBuild", "MEANINGFUL_UI_PUBLISHED", {
+        stage: "MEANINGFUL_UI_PUBLISHED",
+        elapsedMs: Date.now() - evidenceBuildStartedAt,
         calculatedRowCount: calculatedRows.length,
         preliminaryNeedCount,
-        saved: false,
-        onPublished: settlePublished,
-        onOpenFullEstimate: () => {
-          const pending = pendingBundleRef.current;
-          if (!pending || !screenRef.current) return;
-          screenRef.current.acceptCanonicalBackendDraft(pending, {
-            persistenceStatus: "saved",
-            onPublished: () => {
-              pendingBundleRef.current = null;
-              setPreview((current) =>
-                current?.revisionId === canonicalBackend.revisionId ? null : current
-              );
-            },
-          });
-        },
       });
-    });
-    assertCurrentWorkspace();
-    logger.releaseEvidence("RikEstimateBuild", "MEANINGFUL_UI_PUBLISHED", {
-      stage: "MEANINGFUL_UI_PUBLISHED",
-      elapsedMs: Date.now() - evidenceBuildStartedAt,
-      calculatedRowCount: calculatedRows.length,
-      preliminaryNeedCount,
-    });
+    }
     try {
       assertCurrentWorkspace();
       const bundle = upsertConsumerRepairCanonicalBackendDraft({
@@ -475,7 +486,7 @@ function useConsumerCanonicalDraftPersistence(input: {
           elapsedMs: Date.now() - evidenceBuildStartedAt,
         });
       }
-      pendingBundleRef.current = bundle;
+      if (shouldPublishInitialConsumerCanonicalPreview(options)) pendingBundleRef.current = bundle;
       setPreview((current) =>
         current?.revisionId === binding.revisionId ? { ...current, saved: true } : current
       );
@@ -691,6 +702,13 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
       ) : durableHydrationPending ? (
         <View testID="consumer-repair-exact-draft-hydration-gate" style={styles.exactDraftHydrationGate} />
       ) : (
+        <View
+          style={styles.root}
+          testID="consumer-repair-controller-surface"
+          pointerEvents={canonicalEstimatePreview ? "none" : "auto"}
+          accessibilityElementsHidden={Boolean(canonicalEstimatePreview)}
+          importantForAccessibility={canonicalEstimatePreview ? "no-hide-descendants" : "auto"}
+        >
         <ConsumerRepairRequestScreenController
           key={controllerWorkspaceKey}
           ref={screenRef}
@@ -743,6 +761,7 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
               {
                 evidenceBuildStartedAt: buildStartedAt,
                 expectedWorkspaceGeneration,
+                showInitialPreview: true,
               },
             ) ?? null;
             return persisted;
@@ -815,6 +834,7 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
               {
                 replaceCanonicalRevisionHistory,
                 expectedWorkspaceGeneration,
+                showInitialPreview: props.initialCanonicalRevisionId?.trim() === revisionId,
               },
             );
             if (bundle && workspacePlan.replaceCanonicalRevisionHistory) {
@@ -928,6 +948,7 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
             })}
           MobilePhotoCaptureFlowNode={photoCapture.flow}
         />
+        </View>
       )}
       {canonicalEstimatePreview ? (
         <CanonicalEstimateMeaningfulPreviewCard preview={canonicalEstimatePreview} />

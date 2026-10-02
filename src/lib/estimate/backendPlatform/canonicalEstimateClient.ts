@@ -66,7 +66,11 @@ type CanonicalEstimateRuntimeManifest = {
 };
 
 function localDeveloperRuntimeExpectedTuple(): Record<string, string> | null {
-  if (process.env.EXPO_PUBLIC_LOCAL_DEVELOPER_REVIEW !== "1") return null;
+  // Runtime compatibility is independent of the developer-only auth broker.
+  // The whole-app launcher keeps normal staging sessions and removes the
+  // broker flag, but still requires this exact authenticated backend tuple.
+  if (process.env.EXPO_PUBLIC_LOCAL_DEVELOPER_REVIEW !== "1"
+    && process.env.EXPO_PUBLIC_CANONICAL_ESTIMATE_REQUIRE_RUNTIME_COMPATIBILITY !== "true") return null;
   const expected = {
     definitionReleaseId: String(process.env.EXPO_PUBLIC_CANONICAL_ESTIMATE_DEFINITION_RELEASE_ID ?? "").trim(),
     searchReleaseId: String(process.env.EXPO_PUBLIC_CANONICAL_ESTIMATE_SEARCH_RELEASE_ID ?? "").trim(),

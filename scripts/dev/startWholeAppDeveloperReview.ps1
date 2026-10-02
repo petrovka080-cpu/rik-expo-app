@@ -271,6 +271,7 @@ $env:EXPO_PUBLIC_BUILD_TIME = (Get-Date).ToUniversalTime().ToString("o")
 $env:EXPO_PUBLIC_CANONICAL_ESTIMATE_DEFINITION_RELEASE_ID = [string]$BackendManager.definition_release_id
 $env:EXPO_PUBLIC_CANONICAL_ESTIMATE_SEARCH_RELEASE_ID = [string]$BackendManager.search_release_id
 $env:EXPO_PUBLIC_CANONICAL_ESTIMATE_CAPABILITY_ID = [string]$BackendManager.capability_id
+$env:EXPO_PUBLIC_CANONICAL_ESTIMATE_REQUIRE_RUNTIME_COMPATIBILITY = "true"
 $env:EXPO_PUBLIC_BFF_READONLY_STAGING_ENABLED = "false"
 $env:EXPO_PUBLIC_BFF_READONLY_STAGING_TRAFFIC_PERCENT = "0"
 Remove-Item Env:\LOCAL_DEVELOPER_REVIEW -ErrorAction SilentlyContinue
