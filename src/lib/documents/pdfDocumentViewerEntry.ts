@@ -72,22 +72,17 @@ export async function pushPdfDocumentViewerRouteSafely(
   await new Promise<void>((resolve, reject) => {
     const runPush = () => {
       try {
-        const shouldPushViewerRoute = Platform.OS === "ios" || Platform.OS === "web";
         logPdfViewerNavigationInfo("viewer_route_replace_start", {
           href: hrefForDiagnostics,
           platform: Platform.OS,
-          method: shouldPushViewerRoute ? "push" : "replace",
+          method: "push",
         });
-        if (shouldPushViewerRoute) {
-          if (typeof rootRouter?.push === "function") {
-            rootRouter.push(href);
-          } else {
-            router.push(href);
-          }
-        } else if (typeof rootRouter?.replace === "function") {
-          rootRouter.replace(href);
-        } else if (typeof router.replace === "function") {
-          router.replace(href);
+        // Preserve the caller in the Android router stack. Replacing it made
+        // the native PDF handoff depend entirely on an in-memory viewer route;
+        // after activity/process recreation the user could return to launcher
+        // instead of the estimate that opened the document.
+        if (typeof rootRouter?.push === "function") {
+          rootRouter.push(href);
         } else {
           router.push(href);
         }

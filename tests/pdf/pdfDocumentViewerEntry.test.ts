@@ -162,7 +162,7 @@ describe("pdfDocumentViewerEntry", () => {
     expect(router.replace).not.toHaveBeenCalled();
   });
 
-  it("dismisses modal, waits for interactions, then delays Android navigation by one frame", async () => {
+  it("dismisses modal, preserves the Android caller, then delays viewer push by one frame", async () => {
     Object.defineProperty(Platform, "OS", {
       configurable: true,
       value: "android",
@@ -173,8 +173,8 @@ describe("pdfDocumentViewerEntry", () => {
       callback();
       return { cancel: jest.fn() };
     });
-    mockRootRouterReplace.mockImplementation(() => {
-      order.push("replace");
+    mockRootRouterPush.mockImplementation(() => {
+      order.push("push");
     });
     jest.spyOn(global, "setTimeout").mockImplementation(((callback: () => void) => {
       order.push("timer");
@@ -194,8 +194,9 @@ describe("pdfDocumentViewerEntry", () => {
       },
     );
 
-    expect(order).toEqual(["before", "interactions", "timer", "replace"]);
-    expect(mockRootRouterReplace).toHaveBeenCalledWith("/pdf-viewer?sessionId=session-android&openToken=");
+    expect(order).toEqual(["before", "interactions", "timer", "push"]);
+    expect(mockRootRouterPush).toHaveBeenCalledWith("/pdf-viewer?sessionId=session-android&openToken=");
+    expect(mockRootRouterReplace).not.toHaveBeenCalled();
     expect(router.push).not.toHaveBeenCalled();
     expect(router.replace).not.toHaveBeenCalled();
   });

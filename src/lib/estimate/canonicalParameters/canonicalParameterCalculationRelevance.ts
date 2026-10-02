@@ -9,7 +9,7 @@ import type { CanonicalParameter } from "./canonicalParameterCore";
 export function canonicalParameterAffectsEstimateCalculation(
   parameter: Pick<
     CanonicalParameter,
-    "affectsFormula" | "affectsRows" | "allowedValues" | "referenceValue" | "requiredLevel" | "value" | "valueType"
+    "affectsFormula" | "affectsRows" | "allowedValues" | "referenceValue" | "requiredLevel" | "value" | "valueType" | "resourceSelectionInput"
   >,
 ): boolean {
   if (parameter.affectsFormula.length > 0) return true;
@@ -23,8 +23,7 @@ export function canonicalParameterAffectsEstimateCalculation(
   // choose a concrete BOQ resource without entering a numeric formula. A
   // document-only field still has no row consumer and was returned above.
   if (parameter.requiredLevel === "BLOCKING_REQUIRED") return true;
-  return parameter.requiredLevel === "CONTRACT_REQUIRED"
-    || parameter.requiredLevel === "CONDITIONAL"
+  return parameter.resourceSelectionInput === true
     || parameter.valueType === "boolean"
     || parameter.allowedValues.length > 0;
 }

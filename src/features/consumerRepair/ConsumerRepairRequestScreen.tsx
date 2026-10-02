@@ -22,6 +22,7 @@ import type {
 } from "../../lib/consumerRequests/consumerRequestTypes";
 import {
   awaitConsumerRepairBundleDurableCommit,
+  hasUnhydratedTransactionalConsumerRepairBundles,
   hydrateNextTransactionalConsumerRepairHistoryPage,
 } from "../../lib/consumerRequests/consumerRequestRepository";
 import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate/globalWorkSmartSearch";
@@ -505,7 +506,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const freshLaunchWorkspace =
       isFreshRequestEstimateLaunchWorkspace(this.props);
     const expectedPrompt = this.props.initialProblemText?.trim() ?? "";
-    this.historyLoaded = true;
+    // Exact-route hydration deliberately restores only the selected draft.
+    // Keep history lazy while indexed native bundles remain so opening the
+    // editor never waits for the archive payloads.
+    this.historyLoaded = !hasUnhydratedTransactionalConsumerRepairBundles();
     this.setState((current) => {
       const currentBundleOwnsFreshLaunch = Boolean(
         freshLaunchWorkspace &&
@@ -737,11 +741,26 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
   }
   private ensureHistoryLoaded = () => {
-    if (this.historyLoaded) return;
-    const history = listConsumerRepairRequestHistory(this.props.consumerUserId);
-    const approvedHistoryPage = listConsumerRepairApprovedHistory(this.props.consumerUserId);
-    this.historyLoaded = true;
-    this.setState({ history, approvedHistoryPage });
+    if (this.durableHistoryLoadInFlight) return;
+    // Saving/reopening the current estimate can mark the in-memory history
+    // ready while older native bundles remain only in the durable index.
+    // Explicit history access must still recover a bounded archive page.
+    if (this.historyLoaded && !hasUnhydratedTransactionalConsumerRepairBundles()) return;
+    this.durableHistoryLoadInFlight = true;
+    void hydrateNextTransactionalConsumerRepairHistoryPage().then(() => {
+      const history = listConsumerRepairRequestHistory(this.props.consumerUserId);
+      const approvedHistoryPage = listConsumerRepairApprovedHistory(this.props.consumerUserId);
+      this.historyLoaded = true;
+      this.setState({ history, approvedHistoryPage });
+    }).catch(() => {
+      // Leave historyLoaded false so a later explicit history action can retry.
+      // The current estimate remains usable even when an archive page is corrupt.
+      this.setState({
+        statusMessage: "Историю смет не удалось загрузить. Текущая смета сохранена; повторите открытие истории.",
+      });
+    }).finally(() => {
+      this.durableHistoryLoadInFlight = false;
+    });
   };
   private findKnownHistoryBundle(requestDraftId: string): ConsumerRepairDraftBundle | null {
     return this.state.history.find((candidate) => candidate.draft.id === requestDraftId)
@@ -1975,7 +1994,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           },
         }), {
           router,
-          returnTo: `/request?canonicalRevisionId=${encodeURIComponent(context.revisionId)}`,
+          // The action context owns the exact local return identity. Reusing it
+          // prevents PDF back from replacing unsaved state with a new canonical
+          // projection after Android activity/process recreation.
+          returnTo: context.returnRoute,
         });
         this.setState({ statusMessage: "Профессиональный PDF выбранной версии открыт." });
         return;
@@ -2056,7 +2078,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         },
       }), {
         router,
-        returnTo: `/request?canonicalRevisionId=${encodeURIComponent(canonical.revisionId)}`,
+        returnTo: context?.returnRoute
+          ?? `/request?canonicalRevisionId=${encodeURIComponent(canonical.revisionId)}`,
       });
       this.setState({ statusMessage: "Профессиональный PDF выбранной версии открыт из истории." });
       return;

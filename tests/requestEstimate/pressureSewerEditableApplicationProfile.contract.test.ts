@@ -123,6 +123,14 @@ describe("S27.27 pressure-sewer application profile in the consumer parameter pa
       expect.objectContaining({ key: "psp_pipe_expected_loss_fraction", value: 0.02 }),
       expect.objectContaining({ key: "psp_crossing_casing_mode", value: "NOT_REQUIRED" }),
     ]));
+    for (const parameterId of [
+      "psp_crossing_casing_mode", "psp_dewatering_mode", "psp_road_restoration_mode",
+    ]) {
+      expect(cards.find((card) => card.key === parameterId)?.choices).toEqual([
+        { value: "NOT_REQUIRED", labelRu: "Не требуется" },
+        { value: "REQUIRED", labelRu: "Требуется" },
+      ]);
+    }
 
     const filledParameters = {
       ...revision.parameters,

@@ -148,6 +148,8 @@ export function isCanonicalEstimateVisibleUserResourceSelectionParameter(
   if (schema.visibilityRole !== "USER_INPUT") return false;
   if (schema.required !== true || schema.valueType !== "text") return false;
   if ((schema.resourceBranchConsumers?.length ?? 0) === 0) return false;
+  // Contract/document links may refer to a row without choosing its resource.
+  if (/(?:^|_)(?:reference|approval|certificate|document)(?:_|$)/iu.test(schema.parameterId)) return false;
   const sourceRole = String(schema.valueSourceRole ?? "").trim().toUpperCase();
   return ["USER_INPUT", "USER_MEASURED", "PROJECT_SPECIFIC_INPUT"].includes(sourceRole)
     && !isCanonicalEstimateSourceManagedParameter(schema);
@@ -295,6 +297,10 @@ export function canonicalEstimateParameterChoiceLabelRu(
   fallback?: string,
 ): string {
   const normalized = String(value);
+  // Decision values describe opposite branch choices. Do not fall back to the
+  // parameter's generic guide/title for both options.
+  if (normalized === "NOT_REQUIRED") return "Не требуется";
+  if (normalized === "REQUIRED") return "Требуется";
   const constructionLabel = CONSTRUCTION_CHOICE_LABELS_RU[normalized];
   if (constructionLabel) return constructionLabel;
   if (parameterId === "concrete_class" && /^B\d+(?:[.,]\d+)?$/u.test(normalized)) {

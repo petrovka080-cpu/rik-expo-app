@@ -115,6 +115,8 @@ export type CanonicalParameter = {
   normativeSource: CanonicalParameterNormativeSource;
   displayOrder: number;
   sourceText: string | null;
+  /** An explicitly user-owned resource designation, not a documentary row reference. */
+  resourceSelectionInput?: boolean;
   valid: boolean;
   validationIssues: readonly string[];
 };

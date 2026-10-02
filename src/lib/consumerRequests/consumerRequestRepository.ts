@@ -41,7 +41,12 @@ const store = {
 };
 
 const APPROVED_HISTORY_FULL_DURABLE_RECORD_LIMIT = 6;
-export const TRANSACTIONAL_CONSUMER_REPAIR_HYDRATION_PAGE_SIZE = 20;
+/**
+ * Native transactional bundles can each contain several MiB of immutable BOQ
+ * state. Keep history paging deliberately smaller than the visual list page so
+ * opening history cannot recreate the former all-archive startup hydration.
+ */
+export const TRANSACTIONAL_CONSUMER_REPAIR_HYDRATION_PAGE_SIZE = 5;
 
 export const CONSUMER_REPAIR_DURABLE_STORE_LEGACY_KEY = "rik.consumer_repair.request_bundles.v1";
 export const CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY = "rik.consumer_repair.request_bundles.v2.manifest";
@@ -827,19 +832,26 @@ export async function hydrateTransactionalConsumerRepairRequestStore(
     const unhydratedIds = transactionalDurableBundleIds.filter((requestDraftId) =>
       !hydratedTransactionalDurableBundleIds.has(requestDraftId)
     );
-    const eagerIds = storage
-      ? unhydratedIds
-      : unhydratedIds.slice(0, TRANSACTIONAL_CONSUMER_REPAIR_HYDRATION_PAGE_SIZE);
-    const exactRequestedDraftId = requestedDraftId?.trim();
-    if (
-      exactRequestedDraftId
-      && transactionalDurableBundleIds.includes(exactRequestedDraftId)
-      && !hydratedTransactionalDurableBundleIds.has(exactRequestedDraftId)
-      && !eagerIds.includes(exactRequestedDraftId)
-    ) {
-      eagerIds.push(exactRequestedDraftId);
+    // Keep the established browser migration contract: web storage is already
+    // record-oriented and callers expect the in-memory compatibility store to
+    // be complete after initialization. The Android/native store is the one
+    // whose multi-MiB revision envelopes must stay off the startup path.
+    if (storage) {
+      await hydrateTransactionalDurableBundleIds(unhydratedIds);
+      return;
     }
-    await hydrateTransactionalDurableBundleIds(eagerIds);
+    const exactRequestedDraftId = requestedDraftId?.trim();
+    // Startup owns only the compact key index. An exact estimate route reads
+    // exactly that bundle; the history surface explicitly requests bounded
+    // pages through hydrateNextTransactionalConsumerRepairHistoryPage(). The
+    // previous native path eagerly recovered up to 20 bundles here, so opening
+    // one saved estimate parsed the entire observed 94 MiB / 437-record archive.
+    if (
+      !exactRequestedDraftId
+      || !transactionalDurableBundleIds.includes(exactRequestedDraftId)
+      || hydratedTransactionalDurableBundleIds.has(exactRequestedDraftId)
+    ) return;
+    await hydrateTransactionalDurableBundleIds([exactRequestedDraftId]);
   });
 }
 

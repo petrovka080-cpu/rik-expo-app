@@ -21,6 +21,7 @@ describe("consumer repair durable quantity edit transaction", () => {
     expect(screen).toContain("buildEmptyConsumerRepairApprovedHistoryPage");
     expect(screen).toContain("historyLoaded");
     expect(screen).toContain("ensureHistoryLoaded");
+    expect(screen).toContain("this.historyLoaded && !hasUnhydratedTransactionalConsumerRepairBundles()");
     expect(screen).not.toMatch(/[^A-Za-z]updateConsumerRepairRequestItemQuantity[^A-Za-z]/);
   });
 

@@ -383,6 +383,7 @@ function buildParameter(input: {
     assumption: source === "ASSUMED" ? "Предварительно принято из утверждённого baseline этой работы." : null,
     affectsRows: input.schema.resourceBranchConsumers ?? [],
     affectsFormula: input.schema.formulaConsumers ?? [],
+    resourceSelectionInput: isCanonicalEstimateVisibleUserResourceSelectionParameter(input.schema),
     normativeSource: normative ? {
       profile: "KG_PROFILE",
       sourceId: normative.sourceId,

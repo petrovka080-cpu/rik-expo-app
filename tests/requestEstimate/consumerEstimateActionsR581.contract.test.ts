@@ -494,6 +494,7 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
       requestItemId: "request-item-50",
       ownerId: "consumer-1",
       companyId: "company-1",
+      returnRoute: "/request?draftId=consumer_draft_msy7qou1_douawj",
       returnScrollPosition: 812,
     });
     expect(() => buildConsumerEstimateActionContext({
