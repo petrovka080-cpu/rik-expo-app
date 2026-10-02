@@ -253,7 +253,7 @@ void runMasterSingleDefinitionSuccessorR1({
     },
   },
   locator: {
-    key: "filtration-station-geometric-automatic-s27-26-v1",
+    key: "filtration-station-geometric-automatic-s27-26-v2",
     payload: {
       kind: "VISIBLE_PRELIMINARY_ENGINEERING_PROFILE_REQUIRES_PROJECT_CONFIRMATION",
       exactLocator: FILTRATION_STATION_SOURCE_METADATA.exact_locator,
