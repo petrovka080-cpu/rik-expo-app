@@ -1,8 +1,11 @@
+import { logger } from "../../lib/logger";
+
 export type ConsumerRepairQuantityEditSource = "stepper" | "direct_input" | "programmatic";
 
 export type ConsumerRepairQuantityEditStage =
   | "QUANTITY_ACTION_RECEIVED"
   | "VISIBLE_INPUT_UPDATED"
+  | "ROW_DRAFT_REACT_COMMITTED"
   | "CANONICAL_MUTATION_APPLIED"
   | "PERSISTENCE_ENQUEUED"
   | "RECALCULATION_STARTED"
@@ -79,5 +82,29 @@ export function recordConsumerRepairQuantityEditStage(
     target.__consumerRepairQuantityEditTrace = trace;
   } catch {
     // Trace is diagnostic-only and must never block estimate editing.
+  }
+}
+
+/** React commit acknowledgement, not a native frame/p95 or durable save. */
+export function recordConsumerRepairQuantityReactCommit(
+  event: ConsumerRepairQuantityChangeMeta & { itemId: string; baseRevisionId: string },
+): number | null {
+  try {
+    const trace = (globalThis as QuantityEditTraceGlobal).__consumerRepairQuantityEditTrace;
+    const action = trace?.events.find(candidate => candidate.operationId === event.operationId
+      && candidate.itemId === event.itemId && candidate.stage === "QUANTITY_ACTION_RECEIVED");
+    const elapsed = action ? nowMonotonicMs() - action.monotonicMs : null;
+    const elapsedMs = elapsed != null && Number.isFinite(elapsed) && elapsed >= 0
+      ? Math.round(elapsed * 100) / 100 : null;
+    recordConsumerRepairQuantityEditStage({ ...event, stage: "ROW_DRAFT_REACT_COMMITTED", elapsedMs });
+    // Keep developer evidence small, without a title, quantity, price or token.
+    // A missing/evicted start is unknown, never a fabricated zero-duration PASS.
+    logger.info("RikEstimateRowReaction", JSON.stringify({
+      stage: "ROW_DRAFT_REACT_COMMITTED", source: event.source, elapsedMs,
+      measurementScope: "JS_ACTION_TO_REACT_COMMIT_NOT_NATIVE_FRAME_OR_SAVE",
+    }));
+    return elapsedMs;
+  } catch {
+    return null;
   }
 }

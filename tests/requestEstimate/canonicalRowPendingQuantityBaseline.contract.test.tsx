@@ -4,6 +4,7 @@ import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
 import { ConsumerRepairItemRow } from "../../src/features/consumerRepair/ConsumerRepairItemRow";
 import { ConsumerRepairRequestScreenController } from "../../src/features/consumerRepair/ConsumerRepairRequestScreen";
 import { consumerRepairRowCalculatedQuantity } from "../../src/features/consumerRepair/consumerRepairRowMetadata";
+import * as quantityTrace from "../../src/features/consumerRepair/consumerRepairQuantityEditTrace";
 import type { ConsumerRepairDraftBundle, ConsumerRepairRequestItem } from "../../src/lib/consumerRequests/consumerRequestTypes";
 
 jest.mock("@expo/vector-icons", () => ({ Ionicons: () => null }));
@@ -64,6 +65,7 @@ describe("canonical pending row quantity provenance", () => {
   it("stages stepper quantity and manual provenance together without waiting for a future animation frame", () => {
     const editor = stagedEditor();
     const frame = jest.spyOn(globalThis, "requestAnimationFrame").mockImplementation(() => 1);
+    const committed = jest.spyOn(quantityTrace, "recordConsumerRepairQuantityReactCommit");
     let renderer!: ReactTestRenderer;
     const renderRow = () => <ConsumerRepairItemRow item={editor.current()}
       onDecrease={jest.fn()} onIncrease={jest.fn()}
@@ -80,16 +82,21 @@ describe("canonical pending row quantity provenance", () => {
       expect(frame).not.toHaveBeenCalled();
       expect(editor.recalculate).not.toHaveBeenCalled();
       expect(editor.original.quantity).toBe(14.25);
+      expect(committed).toHaveBeenCalledTimes(1);
       act(() => { renderer.root.findByProps({ testID: "consumer-repair-item-plus-test-owned-row" }).props.onPress(); });
       expect(editor.current().quantity).toBe(16.25);
       expect(consumerRepairRowCalculatedQuantity(editor.current())).toBe(14.25);
+      expect(committed).toHaveBeenCalledTimes(2);
       act(() => { renderer.root.findByProps({ testID: "consumer-repair-item-restore-calculated-test-owned-row" }).props.onPress(); });
       expect(editor.current().quantity).toBe(14.25);
       expect(renderer.root.findByProps({ testID: "consumer-repair-item-quantity-mode-test-owned-row" }).props.children).toBe("Рассчитано автоматически: 14.25 м³. Поле можно изменить.");
       expect(editor.recalculate).not.toHaveBeenCalled();
+      expect(committed).toHaveBeenCalledTimes(3);
+      expect(committed.mock.calls[2]![0]).toMatchObject({ source: "programmatic", nextQuantity: 14.25, baseRevisionId: "test-parent" });
     } finally {
       act(() => renderer?.unmount());
       frame.mockRestore();
+      committed.mockRestore();
     }
   });
 

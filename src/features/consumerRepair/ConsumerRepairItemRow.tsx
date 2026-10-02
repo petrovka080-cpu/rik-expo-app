@@ -228,7 +228,7 @@ function ConsumerRepairItemRowComponent({
                 placeholderTextColor="#94A3B8"
                 selectTextOnFocus={Platform.OS !== "web"}
                 selection={Platform.OS !== "web" && quantityEditing ? quantitySelection : undefined}
-                style={styles.input}
+                style={[styles.input, styles.quantityInput]}
                 testID={`consumer-repair-item-quantity-input-${item.id}`}
                 accessibilityLabel={`${"\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e"} ${item.titleRu}: ${quantityText} ${unitLabel}`}
               />
@@ -617,6 +617,11 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     paddingHorizontal: 8,
     backgroundColor: "#FFFFFF",
+  },
+  quantityInput: {
+    // Keep calculated decimals visible instead of showing only the tail of
+    // quantities such as 69.171546141. Input precision is not changed.
+    width: 140,
   },
   priceInput: {
     width: 106,

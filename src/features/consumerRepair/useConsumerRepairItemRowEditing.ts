@@ -6,10 +6,11 @@ import {
 } from "react-native";
 
 import type { ConsumerRepairRequestItem } from "../../lib/consumerRequests/consumerRequestTypes";
-import { consumerRepairRowCanonicalRevisionId, consumerRepairRowCode } from "./consumerRepairRowMetadata";
+import { consumerRepairRowCanonicalRevisionId, consumerRepairRowCode, consumerRepairRowHasManualQuantity } from "./consumerRepairRowMetadata";
 import {
   createConsumerRepairQuantityEditOperationId,
   recordConsumerRepairQuantityEditStage,
+  recordConsumerRepairQuantityReactCommit,
   type ConsumerRepairQuantityChangeMeta,
   type ConsumerRepairQuantityEditSource,
 } from "./consumerRepairQuantityEditTrace";
@@ -127,6 +128,13 @@ export function useConsumerRepairItemRowEditing({
   const itemPriceText = formatInputNumber(item.unitPrice);
   const itemSpecificationText = item.titleRu;
   const quantityInputRef = React.useRef<React.ElementRef<typeof TextInput> | null>(null);
+  const pendingQuantityActionRef = React.useRef<{
+    meta: ConsumerRepairQuantityChangeMeta;
+    itemId: string;
+    baseRevisionId: string;
+    expectedQuantityText: string;
+    expectedManual: boolean;
+  } | null>(null);
   const quantityEditingRef = React.useRef(false);
   const quantityCommittedValueRef = React.useRef<string | null>(null);
   const priceEditingRef = React.useRef(false);
@@ -147,6 +155,20 @@ export function useConsumerRepairItemRowEditing({
   const [specificationText, setSpecificationText] = React.useState(itemSpecificationText);
   const [specificationEditing, setSpecificationEditing] = React.useState(false);
   const [professionalEvidenceOpen, setProfessionalEvidenceOpen] = React.useState(false);
+
+  React.useLayoutEffect(() => {
+    const pending = pendingQuantityActionRef.current;
+    if (!pending) return;
+    if (pending.itemId !== item.id || pending.baseRevisionId !== consumerRepairRowCanonicalRevisionId(item)) {
+      pendingQuantityActionRef.current = null;
+      return;
+    }
+    // Local input state alone is not a parent/provenance acknowledgement.
+    if (itemQuantityText !== pending.expectedQuantityText
+      || consumerRepairRowHasManualQuantity(item) !== pending.expectedManual) return;
+    pendingQuantityActionRef.current = null;
+    recordConsumerRepairQuantityReactCommit({ ...pending.meta, itemId: item.id, baseRevisionId: pending.baseRevisionId });
+  }, [item, itemQuantityText]);
 
   React.useEffect(() => {
     if (!quantityEditingRef.current) {
@@ -224,6 +246,10 @@ export function useConsumerRepairItemRowEditing({
       stage: "QUANTITY_ACTION_RECEIVED",
       itemId: item.id,
     });
+    const baseRevisionId = consumerRepairRowCanonicalRevisionId(item);
+    pendingQuantityActionRef.current = baseRevisionId && consumerRepairRowCode(item)
+      ? { meta, itemId: item.id, baseRevisionId, expectedQuantityText: formatInputNumber(nextQuantity), expectedManual: true }
+      : null;
     setQuantityText(nextValue);
     if (source === "direct_input") {
       recordConsumerRepairQuantityEditStage({
@@ -308,10 +334,21 @@ export function useConsumerRepairItemRowEditing({
     quantityEditingRef.current = false;
     setQuantityEditing(false);
     const nextValue = formatInputNumber(calculatedQuantity);
+    const baseRevisionId = consumerRepairRowCanonicalRevisionId(item);
+    const meta: ConsumerRepairQuantityChangeMeta = {
+      operationId: createConsumerRepairQuantityEditOperationId({ itemId: item.id, source: "programmatic", nextQuantity: calculatedQuantity }),
+      source: "programmatic", previousQuantity: item.quantity ?? null, nextQuantity: calculatedQuantity,
+    };
+    const canonical = Boolean(baseRevisionId && consumerRepairRowCode(item));
+    if (canonical && baseRevisionId) {
+      recordConsumerRepairQuantityEditStage({ ...meta, itemId: item.id, stage: "QUANTITY_ACTION_RECEIVED" });
+      pendingQuantityActionRef.current = { meta, itemId: item.id, baseRevisionId, expectedQuantityText: nextValue, expectedManual: false };
+    }
     quantityCommittedValueRef.current = nextValue;
     setQuantityText(nextValue);
-    onQuantityChange(item.id, "");
-  }, [item.id, onQuantityChange]);
+    if (canonical) onQuantityChange(item.id, "", meta);
+    else onQuantityChange(item.id, "");
+  }, [item, onQuantityChange]);
 
   const rememberQuantitySelection = React.useCallback((
     event: NativeSyntheticEvent<TextInputSelectionChangeEventData>,
