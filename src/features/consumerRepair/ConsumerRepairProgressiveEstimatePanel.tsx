@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
+  Keyboard,
   Platform,
   Pressable,
   StyleSheet,
@@ -501,6 +502,9 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
 
   private toggleParameters = () => {
     const parametersOpen = !this.state.parametersOpen;
+    // Retain draft values, not native focus on a now-hidden input. Otherwise
+    // Android can reopen the keyboard when the retained editor is revealed.
+    if (!parametersOpen) Keyboard.dismiss();
     this.setState({ parametersOpen, parametersMounted: true }, () => {
       if (parametersOpen) this.props.onRefineCanonicalParameters?.();
     });

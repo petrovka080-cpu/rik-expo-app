@@ -7,6 +7,7 @@ import {
 } from "../backendPlatform/canonicalEstimateCompileCore";
 import { compileFormulaGraph } from "../backendPlatform/formulaGraph";
 import { estimateDeterministicHash } from "../estimateDeterministicHash";
+import { NUMERIC_PARAMETER_RELATIONS, type NumericParameterPeerConstraints } from "../backendPlatform/numericParameterRelations";
 
 type Json = Record<string, unknown>;
 
@@ -21,6 +22,7 @@ export type AutomaticParameterSpec = Readonly<{
   values?: readonly string[];
   min?: number;
   max?: number;
+  numericPeerConstraints?: NumericParameterPeerConstraints;
   requiredWhen?: Readonly<{ parameterId: string; value: string }>;
   resourceBranchConsumers?: readonly string[];
 }>;
@@ -80,6 +82,7 @@ function constraints(spec: AutomaticParameterSpec): Json {
     ...(spec.valueType === "text" ? { minLength: 1, maxLength: 1_000 } : {}),
     ...(spec.min == null ? {} : { min: spec.min }),
     ...(spec.max == null ? {} : { max: spec.max }),
+    ...spec.numericPeerConstraints,
     ...(spec.requiredWhen ? {
       requiredWhen: { kind: "equals", ...spec.requiredWhen },
       forbiddenWhen: {
@@ -95,6 +98,18 @@ export function buildAutomaticConstructionOwnerR1(
   config: OwnerConfig,
 ): AutomaticOwnerDefinition {
   const specs = [...config.ordinary, ...config.profile, ...config.conditional];
+  const specsById = new Map(specs.map((spec) => [spec.id, spec]));
+  for (const spec of specs) {
+    for (const [rule] of NUMERIC_PARAMETER_RELATIONS) {
+      const peerId = spec.numericPeerConstraints?.[rule];
+      if (peerId == null) continue;
+      const peer = specsById.get(peerId);
+      if (!peer || !["decimal", "integer"].includes(spec.valueType)
+        || !["decimal", "integer"].includes(peer.valueType) || spec.unitId !== peer.unitId) {
+        throw new Error(`AUTOMATIC_NUMERIC_PEER_CONSTRAINT_INVALID:${spec.id}.${rule}=${peerId}`);
+      }
+    }
+  }
   const ordinaryIds = config.ordinary.map((spec) => spec.id);
   const parameters = specs.map((spec, ordinal) => ({
     parameter_id: spec.id,

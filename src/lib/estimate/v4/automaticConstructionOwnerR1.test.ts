@@ -1,0 +1,33 @@
+import { buildAutomaticConstructionOwnerR1, type AutomaticParameterSpec } from "./automaticConstructionOwnerR1";
+import { NUMERIC_PARAMETER_RELATIONS } from "../backendPlatform/numericParameterRelations";
+
+const config: Parameters<typeof buildAutomaticConstructionOwnerR1>[0] = {
+  contract: "numeric-peer-owner-test", semanticOwner: "test-owner",
+  sourceId: "test-source", normId: "test-preliminary",
+  sourceMetadata: { source_title: "Test fixture, not an engineering norm", source_document_version: "test", definition_hash: "a".repeat(64), exact_locator: "Test only", artifact_sha256: "a".repeat(64) },
+  applicabilityRu: "Тест контракта, не строительный профиль",
+  ordinary: [], profile: [], conditional: [], excludedUnownedAssumptions: [],
+  rows: [{ rowId: "test:row", section: "Test", category: "material", title: "Test", unitId: "mm", formulaId: "test:formula", expression: "left" }],
+};
+const left: AutomaticParameterSpec = { id: "left", title: "Left", kind: "ordinary", valueType: "decimal", unitId: "mm" };
+const right: AutomaticParameterSpec = { id: "right", title: "Right", kind: "ordinary", valueType: "integer", unitId: "mm" };
+
+describe("automatic owner uses existing numeric peer contract", () => {
+  it.each(NUMERIC_PARAMETER_RELATIONS.map(([rule]) => [rule] as const))("projects %s without a second geometry validator", rule => {
+    const owner = buildAutomaticConstructionOwnerR1({ ...config, ordinary: [{ ...left, numericPeerConstraints: { [rule]: "right" } }, right] });
+    expect(owner.parameters[0]?.constraints_json).toEqual({ [rule]: "right" });
+    expect(owner.parameters[0]?.default_value).toBeNull();
+    expect(owner.runtimeInput).toEqual({});
+  });
+
+  it.each([
+    ["missing peer", undefined, left],
+    ["different units", { ...right, unitId: "m" }, left],
+    ["nonnumeric peer", { ...right, valueType: "text" }, left],
+    ["nonnumeric subject", right, { ...left, valueType: "text" }],
+  ] as const)("rejects %s before producing a publishable owner", (_label, peer, subject) => {
+    expect(() => buildAutomaticConstructionOwnerR1({
+      ...config, ordinary: [{ ...subject, numericPeerConstraints: { greaterThanParameter: "right" } }, ...(peer ? [peer] : [])],
+    })).toThrow("AUTOMATIC_NUMERIC_PEER_CONSTRAINT_INVALID:left.greaterThanParameter=right");
+  });
+});

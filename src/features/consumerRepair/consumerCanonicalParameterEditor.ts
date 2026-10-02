@@ -12,6 +12,7 @@ import {
 import { canonicalEstimateRecalculateIdempotencyKey } from "../../lib/estimate/backendPlatform/canonicalEstimateCommandIdentity";
 import { adaptCanonicalRevisionToStructuredEstimate } from "../../lib/estimate/backendPlatform/canonicalEstimateForemanAdapter";
 import {
+  canonicalNumericPeerConstraintMessageRu,
   validateCanonicalEstimateParameterInputs,
   type CanonicalParameterValidationIssue,
 } from "../../lib/estimate/backendPlatform/canonicalEstimateParameterValidation";
@@ -757,10 +758,12 @@ export async function recalculateConsumerCanonicalEstimate(input: {
   });
   if (blockingIssues.length > 0) {
     const geometryConflict = blockingIssues.some((issue) => issue.code === "GEOMETRY_CONFLICT");
+    const peerIssue = blockingIssues.find((issue) => issue.code === "CROSS_FIELD");
+    const peerMessage = peerIssue ? canonicalNumericPeerConstraintMessageRu(catalog.parameterSchema, peerIssue) : null;
     throw new CanonicalEstimateApiError(
       geometryConflict
         ? "Параметры не сохранены: площадь не совпадает с длиной × шириной. Исправьте площадь либо размеры объекта."
-        : `Параметры не сохранены: ${blockingIssues.map((issue) => `${issue.parameterId}:${issue.code}`).join(", ")}.`,
+        : peerMessage ?? `Параметры не сохранены: ${blockingIssues.map((issue) => `${issue.parameterId}:${issue.code}`).join(", ")}.`,
       { code: "INVALID_PARAMETER_INPUT", httpStatus: 400 },
     );
   }

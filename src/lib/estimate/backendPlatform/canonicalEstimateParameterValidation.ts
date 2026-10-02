@@ -4,6 +4,7 @@ import type {
   CanonicalEstimateParameterInputValue,
 } from "./contracts";
 import { evaluateInclusionGraph } from "./inclusionGraph";
+import { NUMERIC_PARAMETER_RELATIONS, type NumericParameterRelation } from "./numericParameterRelations";
 
 type ParameterSchema = CanonicalEstimateCatalogItem["parameterSchema"][number];
 type ParameterValue = CanonicalEstimateParameterInputValue;
@@ -22,9 +23,11 @@ export type CanonicalParameterValidationIssue = {
     | "REQUIRES"
     | "REQUIRED_WHEN"
     | "FORBIDDEN_WHEN"
+    | "CROSS_FIELD"
     | "GEOMETRY_CONFLICT";
   parameterId: string;
   relatedParameterId?: string;
+  constraint?: NumericParameterRelation;
 };
 
 export type CanonicalParameterValidationResult = {
@@ -32,6 +35,19 @@ export type CanonicalParameterValidationResult = {
   parameters: Record<string, ParameterValue>;
   issues: CanonicalParameterValidationIssue[];
 };
+
+export function canonicalNumericPeerConstraintMessageRu(
+  schema: ParameterSchema[],
+  issue: CanonicalParameterValidationIssue,
+): string | null {
+  if (issue.code !== "CROSS_FIELD" || !issue.constraint) return null;
+  const symbols: Record<NumericParameterRelation, string> = {
+    equalToParameter: "=", greaterThanOrEqualParameter: "≥", greaterThanParameter: ">",
+    lessThanOrEqualParameter: "≤", lessThanParameter: "<",
+  };
+  const title = (id: string) => schema.find(definition => definition.parameterId === id)?.titleRu || id;
+  return `Параметры не сохранены: должно выполняться «${title(issue.parameterId)} ${symbols[issue.constraint]} ${title(issue.relatedParameterId ?? "") }». Уточните связанные значения.`;
+}
 
 function stringList(value: unknown): string[] {
   return Array.isArray(value)
@@ -109,6 +125,7 @@ export function validateCanonicalEstimateParameterInputs(input: {
 }): CanonicalParameterValidationResult {
   const parameters: Record<string, ParameterValue> = {};
   const issues: CanonicalParameterValidationIssue[] = [];
+  const byId = new Map(input.schema.map((definition) => [definition.parameterId, definition]));
 
   for (const definition of input.schema) {
     if (definition.visibilityRole === "INTERNAL_ONLY" || definition.visibilityRole === "USER_DERIVED_READONLY") continue;
@@ -179,6 +196,23 @@ export function validateCanonicalEstimateParameterInputs(input: {
   for (const definition of input.schema) {
     if (definition.visibilityRole === "INTERNAL_ONLY" || definition.visibilityRole === "USER_DERIVED_READONLY") continue;
     const value = parameters[definition.parameterId];
+    if ((definition.valueType === "decimal" || definition.valueType === "integer") && isPresent(value)) {
+      for (const [constraint, compare] of NUMERIC_PARAMETER_RELATIONS) {
+        const peerId = definition.constraints[constraint];
+        if (peerId == null) continue;
+        const relatedParameterId = String(peerId);
+        const peer = byId.get(relatedParameterId);
+        // Protected parameters may be comparison evidence, never user overrides.
+        const peerValue = peer?.visibilityRole === "INTERNAL_ONLY" || peer?.visibilityRole === "USER_DERIVED_READONLY"
+          ? parseValue(peer, input.rawInputs[relatedParameterId])
+          : parameters[relatedParameterId];
+        if (!peer || (peer.valueType !== "decimal" && peer.valueType !== "integer")
+          || !isPresent(peerValue) || !Number.isFinite(Number(peerValue))
+          || !compare(Number(value), Number(peerValue))) {
+          issues.push({ code: "CROSS_FIELD", parameterId: definition.parameterId, relatedParameterId, constraint });
+        }
+      }
+    }
     if (isActive(value)) {
       for (const relatedParameterId of stringList(definition.constraints.mutuallyExclusiveWith)) {
         if (isActive(parameters[relatedParameterId])) issues.push({ code: "MUTUALLY_EXCLUSIVE", parameterId: definition.parameterId, relatedParameterId });
@@ -212,6 +246,6 @@ export function validateCanonicalEstimateParameterInputs(input: {
     }
   }
 
-  const unique = new Map(issues.map((issue) => [`${issue.code}:${issue.parameterId}:${issue.relatedParameterId ?? ""}`, issue]));
+  const unique = new Map(issues.map((issue) => [`${issue.code}:${issue.parameterId}:${issue.relatedParameterId ?? ""}:${issue.constraint ?? ""}`, issue]));
   return { ok: unique.size === 0, parameters, issues: [...unique.values()] };
 }

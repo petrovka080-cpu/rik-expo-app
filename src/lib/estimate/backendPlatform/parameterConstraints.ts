@@ -1,4 +1,5 @@
 import { evaluateInclusionGraph } from "./inclusionGraph";
+import { NUMERIC_PARAMETER_RELATIONS } from "./numericParameterRelations";
 
 export type CanonicalParameterDefinitionRecord = {
   parameter_id?: unknown;
@@ -230,13 +231,7 @@ export function validateCanonicalEstimateParameters(
           return fail(`parameter is not a multiple ${id}`);
         }
       }
-      for (const [rule, compare] of [
-        ["equalToParameter", (left: number, right: number) => left === right],
-        ["greaterThanOrEqualParameter", (left: number, right: number) => left >= right],
-        ["greaterThanParameter", (left: number, right: number) => left > right],
-        ["lessThanOrEqualParameter", (left: number, right: number) => left <= right],
-        ["lessThanParameter", (left: number, right: number) => left < right],
-      ] as const) {
+      for (const [rule, compare] of NUMERIC_PARAMETER_RELATIONS) {
         const peerId = constraints[rule];
         if (peerId == null) continue;
         const peerValue = values[String(peerId)];

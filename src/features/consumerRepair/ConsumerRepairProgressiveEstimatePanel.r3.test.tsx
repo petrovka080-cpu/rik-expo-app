@@ -1,5 +1,5 @@
 import React from "react";
-import { TextInput } from "react-native";
+import { Keyboard, TextInput } from "react-native";
 import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
 
 import {
@@ -265,6 +265,8 @@ describe("InlineParamEditor R3 parameter guide", () => {
   });
 
   it("opens, shows the persisted value, refreshes the exact session, and closes again", () => {
+    const dismissKeyboard = jest.spyOn(Keyboard, "dismiss");
+    dismissKeyboard.mockClear();
     const onRefineCanonicalParameters = jest.fn();
     const noop = jest.fn();
     let renderer!: ReactTestRenderer;
@@ -345,6 +347,7 @@ describe("InlineParamEditor R3 parameter guide", () => {
     expect(renderer.root.findAllByProps({ testID: "request-estimate-parameter-panel" })).toHaveLength(0);
     act(() => renderer.root.findByProps({ testID: "request-estimate-parameters-toggle" }).props.onPress());
     expect(onRefineCanonicalParameters).toHaveBeenCalledTimes(1);
+    expect(dismissKeyboard).not.toHaveBeenCalled();
     expect(renderer.root.findByProps({ testID: "request-estimate-parameter-panel" })).toBeTruthy();
     expect(renderer.root.findByProps({ testID: "editable-param-popover-input" }).props.value).toBe("35");
     expect(renderer.root.findByProps({
@@ -372,6 +375,7 @@ describe("InlineParamEditor R3 parameter guide", () => {
     expect(hiddenSurface.props.pointerEvents).toBe("none");
     expect(hiddenSurface.props.accessibilityElementsHidden).toBe(true);
     expect(hiddenSurface.props.importantForAccessibility).toBe("no-hide-descendants");
+    expect(dismissKeyboard).toHaveBeenCalledTimes(1);
     expect(renderer.root.findByType(ParameterDisclosurePanel).instance).toBe(editorInstance);
     // Collapse is not Cancel; reopening must neither rebuild the editor nor
     // discard an unapplied replacement of the automatic application value.
@@ -384,6 +388,8 @@ describe("InlineParamEditor R3 parameter guide", () => {
       act(() => renderer.root.findByProps({ testID: "request-estimate-parameters-toggle" }).props.onPress());
     }
     expect(onRefineCanonicalParameters).toHaveBeenCalledTimes(21);
+    expect(dismissKeyboard).toHaveBeenCalledTimes(21);
+    dismissKeyboard.mockRestore();
   });
 
   it("does not turn persisted BOQ assumptions into inputs when the canonical user-input set is empty", () => {
