@@ -423,6 +423,7 @@ const S2725_CUMULATIVE_ADDITIVE_TEST_PATHS = [
   "tests/estimateNorms/masterSingleDefinitionFormulaConsistency.contract.test.ts",
   "tests/estimateNorms/outfallStructureR1.contract.test.ts",
   "tests/estimateNorms/pipeBeddingBackfillR1.contract.test.ts",
+  "tests/estimateNorms/pressurePipelineR1.contract.test.ts",
   "tests/estimateNorms/pressureSewerPipelineR1.contract.test.ts",
   "tests/estimateNorms/pumpingStationR1.contract.test.ts",
   "tests/estimateNorms/rainwaterInletsR1.contract.test.ts",

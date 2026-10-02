@@ -17,6 +17,10 @@ import {
   FLUSHING_DISINFECTION_CATALOG_ID,
   FLUSHING_DISINFECTION_SHORT_INPUT,
 } from "../../src/lib/estimate/v4/flushingDisinfectionR1";
+import {
+  PRESSURE_PIPELINE_CATALOG_ID,
+  PRESSURE_PIPELINE_SHORT_INPUT,
+} from "../../src/lib/estimate/v4/pressurePipelineR1";
 
 function schema(parameterIds: readonly string[]): CanonicalEstimateCatalogItem["parameterSchema"] {
   return parameterIds.map((parameterId, ordinal) => ({
@@ -1295,6 +1299,79 @@ describe("MASTER-30 shared prompt-owned professional parameter ingress", () => {
       parameters: Object.fromEntries(Object.entries(FLUSHING_DISINFECTION_SHORT_INPUT)
         .map(([key, value]) => [key, String(value)])),
       primaryMeasureParameterId: "fld_pipeline_length_m",
+    });
+  });
+
+  test("routes only stated pressure-pipeline facts and leaves derived work quantities to the calculator", () => {
+    const ordinaryIds = Object.keys(PRESSURE_PIPELINE_SHORT_INPUT);
+    const parameterSchema = [
+      ...schema(ordinaryIds).map((parameter, ordinal) => ({
+        ...parameter,
+        ordinal,
+        required: true,
+        preliminaryCompilationAllowed: false,
+        valueType: parameter.parameterId === "ppl_installation_technology"
+          ? "enum" as const
+          : [
+              "ppl_route_length_m", "ppl_pipe_outside_diameter_mm",
+              "ppl_average_trench_depth_m", "ppl_connection_node_count",
+              "ppl_construction_section_count",
+            ].includes(parameter.parameterId) ? "decimal" as const : "text" as const,
+        constraints: parameter.parameterId === "ppl_installation_technology"
+          ? { values: ["HDPE_BUTT_FUSION_OPEN_TRENCH"] } : {},
+        valueSourceRole: "USER_INPUT" as const,
+        guide: {
+          guideKind: "MEASUREMENT_RULE" as const,
+          guideShortRu: parameter.parameterId,
+          guideValidationPolicy: "MANDATORY_BLOCK" as const,
+          sourceRole: "USER_SUPPLIED_PRIMARY_FACT",
+        },
+        formulaConsumers: parameter.parameterId === "ppl_route_length_m"
+          ? ["ppl_acceptance_v1"] : ["ppl_scope_consumer_v1"],
+      })),
+      {
+        ...schema(["ppl_side_clearance_m"])[0],
+        ordinal: ordinaryIds.length,
+        required: true,
+        valueType: "decimal" as const,
+        unitId: "m",
+        preliminaryCompilationAllowed: true,
+        valueSourceRole: "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE" as const,
+        formulaConsumers: ["ppl_trench_width_v1"],
+      },
+    ] as unknown as CanonicalEstimateCatalogItem["parameterSchema"];
+    const catalog = {
+      catalogId: PRESSURE_PIPELINE_CATALOG_ID,
+      workKey: "pressure_pipeline",
+      parameterSchema,
+    } as unknown as CanonicalEstimateCatalogItem;
+
+    let errorMessage = "";
+    try {
+      buildCanonicalBaselinePlan({
+        catalog,
+        prompt: "Проложить 1000 м PE100-RC-SDR17-OD160-PN10 стыковой сваркой",
+      });
+    } catch (error) {
+      errorMessage = error instanceof Error ? error.message : String(error);
+    }
+    expect(errorMessage).toContain("CANONICAL_BASELINE_CONTRACT_MISSING");
+    expect(errorMessage).not.toContain("ppl_route_length_m");
+    expect(errorMessage).not.toContain("ppl_pipe_designation");
+    expect(errorMessage).not.toContain("ppl_pipe_outside_diameter_mm");
+    expect(errorMessage).not.toContain("ppl_installation_technology");
+    expect(errorMessage).not.toContain("ppl_side_clearance_m");
+    expect(errorMessage).toContain("ppl_average_trench_depth_m");
+    expect(errorMessage).toContain("ppl_connection_node_count");
+    expect(errorMessage).toContain("ppl_construction_section_count");
+
+    expect(buildCanonicalBaselinePlan({
+      catalog,
+      prompt: "Строительство 1000 м напорного трубопровода PE100-RC-SDR17-OD160-PN10, наружный диаметр 160 мм, средняя глубина траншеи 1,6 м, 2 проектных узла подключения, 2 самостоятельных строительных участка, стыковая сварка открытым способом.",
+    })).toMatchObject({
+      parameters: Object.fromEntries(Object.entries(PRESSURE_PIPELINE_SHORT_INPUT)
+        .map(([key, value]) => [key, String(value)])),
+      primaryMeasureParameterId: "ppl_route_length_m",
     });
   });
 });

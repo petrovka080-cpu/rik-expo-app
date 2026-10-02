@@ -64,6 +64,10 @@ import {
   FLUSHING_DISINFECTION_CATALOG_ID,
   parseFlushingDisinfectionOrdinaryPromptR1,
 } from "../../lib/estimate/v4/flushingDisinfectionR1";
+import {
+  PRESSURE_PIPELINE_CATALOG_ID,
+  parsePressurePipelineOrdinaryPromptR1,
+} from "../../lib/estimate/v4/pressurePipelineR1";
 
 type UserQuantity = { value: string; unit: "pcs" | "m2" | "m3" | "m" | "kg" | "t" | null };
 type CanonicalBaselinePlan = {
@@ -2197,6 +2201,9 @@ export function buildCanonicalBaselinePlan(input: {
   const flushingDisinfectionInput = input.catalog.catalogId === FLUSHING_DISINFECTION_CATALOG_ID
     ? parseFlushingDisinfectionOrdinaryPromptR1(input.prompt)
     : null;
+  const pressurePipelineInput = input.catalog.catalogId === PRESSURE_PIPELINE_CATALOG_ID
+    ? parsePressurePipelineOrdinaryPromptR1(input.prompt)
+    : null;
   const userQuantity = pumpStationInput == null && stripFoundationInput == null
     && asphaltDrainageInput == null && asphaltRoadInput == null
     && formworkFramiXlifeInput == null && ricsNrm2FormworkInput == null
@@ -2207,6 +2214,7 @@ export function buildCanonicalBaselinePlan(input: {
     && filtrationStationInput == null
     && chlorinationStationInput == null
     && flushingDisinfectionInput == null
+    && pressurePipelineInput == null
     ? extractUserQuantity(input.prompt)
     : null;
   let userQuantityParameterId: string | null = null;
@@ -2231,9 +2239,10 @@ export function buildCanonicalBaselinePlan(input: {
       ?? anchorGroupInstallationInput
       ?? bulkheadFrameInput
       ?? filtrationStationInput
-      ?? chlorinationStationInput
-      ?? flushingDisinfectionInput
-      ?? {},
+       ?? chlorinationStationInput
+       ?? flushingDisinfectionInput
+       ?? pressurePipelineInput
+       ?? {},
   );
   const textExtractedParameterIds = Object.keys(submittedInputs);
   Object.assign(submittedInputs, input.parameterOverrides ?? {});
@@ -2317,6 +2326,8 @@ export function buildCanonicalBaselinePlan(input: {
           ? "chl_station_count"
         : flushingDisinfectionInput != null
           ? "fld_pipeline_length_m"
+        : pressurePipelineInput != null
+          ? "ppl_route_length_m"
     : connectedUserQuantityParameterId
     ?? formulaConnectedPrimaryParameterId;
   const preferredPrimaryParameter = input.catalog.parameterSchema.find(
