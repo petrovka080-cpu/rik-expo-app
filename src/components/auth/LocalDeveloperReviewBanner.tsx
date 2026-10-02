@@ -29,10 +29,12 @@ export function LocalDeveloperReviewBanner({
   authenticatedRole = null,
   authSessionResolved = true,
   hasAuthenticatedSession,
+  automaticOwnerRestoreEnabled = true,
 }: {
   authenticatedRole?: string | null;
   authSessionResolved?: boolean;
   hasAuthenticatedSession?: boolean;
+  automaticOwnerRestoreEnabled?: boolean;
 }) {
   const enabled = isLocalDeveloperReviewEnabled();
   const authenticatedSession =
@@ -79,6 +81,11 @@ export function LocalDeveloperReviewBanner({
     setCheckingAccess(true);
     setError(false);
     const establishAccess = async () => {
+      if (!authenticatedSession && !authenticatedRole && !automaticOwnerRestoreEnabled) {
+        setDeveloperAuthorized(false);
+        setActiveRole(null);
+        return;
+      }
       if (
         !authenticatedSession &&
         !authenticatedRole &&
@@ -113,7 +120,13 @@ export function LocalDeveloperReviewBanner({
     return () => {
       mounted = false;
     };
-  }, [authenticatedRole, authenticatedSession, authSessionResolved, enabled]);
+  }, [
+    authenticatedRole,
+    authenticatedSession,
+    authSessionResolved,
+    automaticOwnerRestoreEnabled,
+    enabled,
+  ]);
 
   if (!enabled) return null;
 

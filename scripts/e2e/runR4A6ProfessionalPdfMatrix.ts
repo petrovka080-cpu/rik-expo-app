@@ -199,7 +199,7 @@ async function main(): Promise<void> {
             normalizedText.includes(`Страница ${index + 1} из ${extracted.pageCount}`)).every(Boolean),
         repeatedTableHeader: rowCount < 100 || tableHeaderCount >= 2,
         clientTitle: normalizedText.includes("Профессиональная смета"),
-        technicalAppendix: normalizedText.includes("Техническое приложение"),
+        technicalAppendixAbsent: !normalizedText.includes("Техническое приложение"),
         firstRow: normalizedText.includes("Профессиональная позиция 1") || rowCount === 1,
         lastRow: normalizedText.includes(lastTitle),
         allRowsInOrder,

@@ -1,5 +1,5 @@
 import type { ConsumerRepairAiDraft } from "../../../consumerRequests/consumerRequestTypes";
-import type { BuildEstimateFromInlineWorkPromptInput } from "../../buildEstimateFromInlineWorkPrompt";
+import type { BuildEstimateFromInlineWorkPromptInput } from "../../backendPlatform/canonicalEstimateHistoricalIngress";
 import {
   compileAsphaltRelatedProfessionalEstimateV4,
   isExactAsphaltRelatedConsumerDraftV4 as isExactCompiledAsphaltRelatedDraftV4,

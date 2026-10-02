@@ -4,8 +4,8 @@ import path from "node:path";
 import { runEstimateStructuredPipelineUiPdfBindingCloseout } from "../../scripts/audit/runEstimateStructuredPipelineUiPdfBindingCloseout";
 
 describe("structured estimate pipeline final matrix", () => {
-  it("writes green closeout proof", () => {
-    const proof = runEstimateStructuredPipelineUiPdfBindingCloseout();
+  it("writes green closeout proof", async () => {
+    const proof = await runEstimateStructuredPipelineUiPdfBindingCloseout();
     expect(proof.failures).toEqual([]);
     const matrixPath = path.resolve(process.cwd(), "artifacts", "S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING", "matrix.json");
     expect(fs.existsSync(matrixPath)).toBe(true);

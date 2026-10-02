@@ -250,10 +250,124 @@ function normalizeExpression(expression: string): string {
   return expression.replace(/\s+/g, " ").trim();
 }
 
+type KnownProductionFormulaEvaluation = Readonly<{
+  value: number;
+  variablesUsed: string[];
+  functionsUsed: string[];
+}>;
+
+function frozenFormulaTerms(values: string[]): string[] {
+  return Object.freeze(values) as string[];
+}
+
+const VARIABLES_NORM_Q = frozenFormulaTerms(["normFactor", "q"]);
+const VARIABLES_NORM_Q_WASTE = frozenFormulaTerms(["normFactor", "q", "wasteFactor"]);
+const VARIABLES_MIN_NORM_PACKAGE_Q = frozenFormulaTerms(["minQty", "normFactor", "packageSize", "q"]);
+const VARIABLES_MIN_PACKAGE_Q = frozenFormulaTerms(["minQty", "packageSize", "q"]);
+const VARIABLES_Q_WASTE = frozenFormulaTerms(["q", "wasteFactor", "wasteRatio"]);
+const VARIABLES_Q_WASTE_RATIO = frozenFormulaTerms(["q", "wasteRatio"]);
+const VARIABLES_NORM_Q_CONVERSION = frozenFormulaTerms(["normFactor", "q", "unitConversionFactor"]);
+const VARIABLES_MIN_QTY = frozenFormulaTerms(["minQty"]);
+const FUNCTIONS_ROUND_TO = frozenFormulaTerms(["round_to"]);
+const FUNCTIONS_CEIL_MAX = frozenFormulaTerms(["ceil", "max"]);
+const FUNCTIONS_ROUND_TO_CONVERT = frozenFormulaTerms(["round_to", "unit_convert"]);
+const NO_FORMULA_FUNCTIONS = frozenFormulaTerms([]);
+
+function roundTo(value: number, precision: number): number {
+  const factor = 10 ** precision;
+  return Math.round(value * factor) / factor;
+}
+
+function evaluateKnownProductionFormula(
+  expression: string,
+  context: ProductionFormulaDslContext,
+): KnownProductionFormulaEvaluation | null {
+  const number = (key: string) => contextNumber(context, key);
+  if (expression === "round_to(q * normFactor, 4)") {
+    return {
+      value: roundTo(number("q") * number("normFactor"), 4),
+      variablesUsed: VARIABLES_NORM_Q,
+      functionsUsed: FUNCTIONS_ROUND_TO,
+    };
+  }
+  if (expression === "round_to(q * normFactor * wasteFactor, 4)") {
+    return {
+      value: roundTo(number("q") * number("normFactor") * number("wasteFactor"), 4),
+      variablesUsed: VARIABLES_NORM_Q_WASTE,
+      functionsUsed: FUNCTIONS_ROUND_TO,
+    };
+  }
+  if (expression === "max(minQty, ceil(q * normFactor / packageSize))") {
+    return {
+      value: Math.max(number("minQty"), Math.ceil(number("q") * number("normFactor") / number("packageSize"))),
+      variablesUsed: VARIABLES_MIN_NORM_PACKAGE_Q,
+      functionsUsed: FUNCTIONS_CEIL_MAX,
+    };
+  }
+  if (expression === "max(minQty, ceil(q / packageSize))") {
+    return {
+      value: Math.max(number("minQty"), Math.ceil(number("q") / number("packageSize"))),
+      variablesUsed: VARIABLES_MIN_PACKAGE_Q,
+      functionsUsed: FUNCTIONS_CEIL_MAX,
+    };
+  }
+  if (expression === "round_to(q * wasteRatio * wasteFactor, 4)") {
+    return {
+      value: roundTo(number("q") * number("wasteRatio") * number("wasteFactor"), 4),
+      variablesUsed: VARIABLES_Q_WASTE,
+      functionsUsed: FUNCTIONS_ROUND_TO,
+    };
+  }
+  if (expression === "round_to(q * wasteRatio, 4)") {
+    return {
+      value: roundTo(number("q") * number("wasteRatio"), 4),
+      variablesUsed: VARIABLES_Q_WASTE_RATIO,
+      functionsUsed: FUNCTIONS_ROUND_TO,
+    };
+  }
+  if (expression === "round_to(unit_convert(q, unitConversionFactor) * normFactor, 4)") {
+    return {
+      value: roundTo(number("q") * number("unitConversionFactor") * number("normFactor"), 4),
+      variablesUsed: VARIABLES_NORM_Q_CONVERSION,
+      functionsUsed: FUNCTIONS_ROUND_TO_CONVERT,
+    };
+  }
+  if (expression === "minQty") {
+    return {
+      value: number("minQty"),
+      variablesUsed: VARIABLES_MIN_QTY,
+      functionsUsed: NO_FORMULA_FUNCTIONS,
+    };
+  }
+  return null;
+}
+
+function productionFormulaEvaluation(input: {
+  expression: string;
+  normalizedExpression?: string;
+  value: number;
+  variablesUsed: string[];
+  functionsUsed: string[];
+}): ProductionFormulaDslEvaluation {
+  if (!Number.isFinite(input.value)) throw new Error("PRODUCTION_FORMULA_DSL_NON_FINITE_RESULT");
+  const rounded = roundTo(input.value, 4);
+  const normalizedExpression = input.normalizedExpression ?? normalizeExpression(input.expression);
+  return {
+    value: rounded,
+    expression: input.expression,
+    normalizedExpression,
+    variablesUsed: input.variablesUsed,
+    functionsUsed: input.functionsUsed,
+    trace: `expression=${normalizedExpression}; variables=${input.variablesUsed.join(",") || "none"}; functions=${input.functionsUsed.join(",") || "none"}; result=${rounded}`,
+  };
+}
+
 export function evaluateProductionFormulaDsl(
   expression: string,
   context: ProductionFormulaDslContext,
 ): ProductionFormulaDslEvaluation {
+  const known = evaluateKnownProductionFormula(expression, context);
+  if (known) return productionFormulaEvaluation({ expression, normalizedExpression: expression, ...known });
   const state: ParserState = {
     tokens: tokenize(expression),
     index: 0,
@@ -263,23 +377,14 @@ export function evaluateProductionFormulaDsl(
   };
   const value = parseComparison(state);
   if (peek(state).type !== "eof") throw new Error("PRODUCTION_FORMULA_DSL_TRAILING_TOKEN");
-  if (!Number.isFinite(value)) throw new Error("PRODUCTION_FORMULA_DSL_NON_FINITE_RESULT");
-  const rounded = Math.round(value * 10_000) / 10_000;
   const variablesUsed = [...state.variablesUsed].sort();
   const functionsUsed = [...state.functionsUsed].sort();
-  return {
-    value: rounded,
+  return productionFormulaEvaluation({
     expression,
-    normalizedExpression: normalizeExpression(expression),
+    value,
     variablesUsed,
     functionsUsed,
-    trace: [
-      `expression=${normalizeExpression(expression)}`,
-      `variables=${variablesUsed.join(",") || "none"}`,
-      `functions=${functionsUsed.join(",") || "none"}`,
-      `result=${rounded}`,
-    ].join("; "),
-  };
+  });
 }
 
 export function validateProductionFormulaDsl(

@@ -649,6 +649,7 @@ export function compileAsphaltProfessionalEstimateV4(
     formula_trace: area.expression,
     assumption_ids: quantityBasisAssumptions,
   };
+  const referenceQuantityOnly = quantityBasis.basis_type === "reference";
   const facts = buildFactSet(values, assumptionsByKey, derivedKeys);
   const asphaltLayers = normalizeAsphaltLayers(values);
   const crushedLayers = normalizeCrushedLayers(values);
@@ -760,11 +761,13 @@ export function compileAsphaltProfessionalEstimateV4(
     const formula = addFormula(row.formula_id, row.expression, row.input_units, row.unit_id, sourceIds, `${row.inclusion_reason_ru} Формула: ${row.expression}. Результат: ${round(row.quantity)} ${row.unit_id}.`);
     const category = validateCategoryUnitV4({ category: row.category, unit_id: row.unit_id, professional_name_ru: row.name_ru });
     categoryBlockers.push(...category.blockers.map((blocker) => `${row.row_id}:${blocker}`));
-    const costTreatment = row.costing_mode ?? (row.informational
+    const costTreatment = referenceQuantityOnly
       ? "ANALYTICAL_ONLY"
-      : costingMode === "RESOURCE_MODE"
-        ? row.category === "work" ? "ANALYTICAL_ONLY" : "RESOURCE_BASED"
-        : row.category === "work" ? "COMPOSITE_RATE" : "ANALYTICAL_ONLY");
+      : row.costing_mode ?? (row.informational
+        ? "ANALYTICAL_ONLY"
+        : costingMode === "RESOURCE_MODE"
+          ? row.category === "work" ? "ANALYTICAL_ONLY" : "RESOURCE_BASED"
+          : row.category === "work" ? "COMPOSITE_RATE" : "ANALYTICAL_ONLY");
     const definition: BoqLineDefinitionV4 = {
       row_id: row.row_id,
       wbs_code: row.wbs_code,
@@ -799,7 +802,7 @@ export function compileAsphaltProfessionalEstimateV4(
       cost_ownership_id: row.cost_ownership_id ?? `cost:${row.row_id}`,
       semantic_owner_id: semanticOwner.ownerId,
       semantic_owner_class: semanticOwner.ownerClass,
-      informational: row.informational ?? false,
+      informational: referenceQuantityOnly || (row.informational ?? false),
       component_type: row.component_type ?? componentType(row.category),
       specification_status: binding.accepted
         ? "SOURCE_CONFIRMED"
@@ -807,7 +810,7 @@ export function compileAsphaltProfessionalEstimateV4(
         ?? (/^asphalt_layer_\d+_material$/u.test(row.row_id)
           ? "SPECIFICATION_REQUIRES_PROJECT_CONFIRMATION"
           : "PRELIMINARY_ENGINEERING_ASSUMPTION"),
-      procurement_eligible: row.procurement === true,
+      procurement_eligible: !referenceQuantityOnly && row.procurement === true,
       confidence: "high",
       explanation_trace_ru: formula.explanation_trace_ru,
     };
@@ -816,7 +819,7 @@ export function compileAsphaltProfessionalEstimateV4(
       definition,
       quantity: round(row.quantity),
       formula_input_values: row.input_values,
-      included_in_procurement: row.procurement === true,
+      included_in_procurement: !referenceQuantityOnly && row.procurement === true,
       assumption_ids: binding.accepted ? [] : assumptionIds,
       normative_binding: binding,
     });
@@ -854,15 +857,17 @@ export function compileAsphaltProfessionalEstimateV4(
         source_ids: sourceIds,
       });
     }
-    commercial.push({
-      commercial_line_id: `commercial:${row.row_id}`,
-      source_row_ids: [row.row_id],
-      title_ru: row.name_ru,
-      quantity: round(row.quantity),
-      unit_id: row.unit_id,
-      price_observation_ids: [],
-    });
-    if (row.procurement) {
+    if (!referenceQuantityOnly) {
+      commercial.push({
+        commercial_line_id: `commercial:${row.row_id}`,
+        source_row_ids: [row.row_id],
+        title_ru: row.name_ru,
+        quantity: round(row.quantity),
+        unit_id: row.unit_id,
+        price_observation_ids: [],
+      });
+    }
+    if (!referenceQuantityOnly && row.procurement) {
       procurement.push({
         procurement_line_id: `procurement:${row.row_id}`,
         resource_id: `resource:${row.row_id}`,

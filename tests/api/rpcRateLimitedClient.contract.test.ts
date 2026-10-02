@@ -2,7 +2,10 @@ import {
   RpcRateLimiter,
   RpcRuntimeRateLimitError,
 } from "../../src/lib/api/rpcRateLimitedClient";
-import { createRpcRateLimitedSupabaseClient } from "../../src/lib/api/supabaseRpcAdapter";
+import {
+  callRateLimitedSupabaseRpc,
+  createRpcRateLimitedSupabaseClient,
+} from "../../src/lib/api/supabaseRpcAdapter";
 
 type FakeRpcResult = {
   data: unknown;
@@ -105,5 +108,31 @@ describe("api: rate-limited RPC client", () => {
 
     expect(rpc).toHaveBeenCalledTimes(121);
     expect(sleeps.some((ms) => ms > 0)).toBe(true);
+  });
+
+  it("does not schedule an already rate-limited mutation client through the same limiter twice", async () => {
+    const rpc = jest.fn((fn: string, args?: unknown) =>
+      createFakeBuilder({ data: { fn, args }, error: null }),
+    );
+    const client = createRpcRateLimitedSupabaseClient({ rpc });
+
+    const result = await Promise.race([
+      callRateLimitedSupabaseRpc(client, "buyer_rfq_create_and_publish_v1", {
+        p_request_item_ids: ["request-item-1"],
+      }),
+      new Promise<"deadlocked">((resolve) => {
+        setTimeout(() => resolve("deadlocked"), 100);
+      }),
+    ]);
+
+    expect(result).not.toBe("deadlocked");
+    expect(result).toEqual({
+      data: {
+        fn: "buyer_rfq_create_and_publish_v1",
+        args: { p_request_item_ids: ["request-item-1"] },
+      },
+      error: null,
+    });
+    expect(rpc).toHaveBeenCalledTimes(1);
   });
 });

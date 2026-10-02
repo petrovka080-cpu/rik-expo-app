@@ -6,7 +6,7 @@ import {
 jest.setTimeout(240_000);
 
 describe("blackbox historical broken cases", () => {
-  it("keeps the seven specialist outcomes proven and blocks three unverified catalog estimates", () => {
+  it("keeps incomplete prompts localized and rejects every unadmitted source claim", () => {
     const historical = evaluateBlackboxCases(
       expandBlackboxCorpus().filter((item) => item.source === "mandatory_broken_history"),
     );
@@ -15,14 +15,14 @@ describe("blackbox historical broken cases", () => {
     expect(historical).toHaveLength(10);
     expect(historical.filter((item) => item.professional).map((item) => item.case_id)).toEqual([
       "diamond_drilling_bare",
-      "diamond_drilling_full",
       "profile_sheet_fence_bare",
-      "profile_sheet_fence_full",
       "mansard_roof_bare",
-      "mansard_roof_full",
       "apartment_54",
     ]);
     expect(historical.filter((item) => !item.professional).map((item) => item.case_id)).toEqual([
+      "diamond_drilling_full",
+      "profile_sheet_fence_full",
+      "mansard_roof_full",
       "masonry_400_gas_block",
       "screed_100_50",
       "reinforcement_slab_100_12_200",
@@ -30,6 +30,12 @@ describe("blackbox historical broken cases", () => {
     expect(byId.get("diamond_drilling_full")?.selected_template_id).toBeTruthy();
     expect(byId.get("profile_sheet_fence_full")?.selected_template_id).toBeTruthy();
     expect(byId.get("mansard_roof_full")?.selected_template_id).toBeTruthy();
+    for (const caseId of ["diamond_drilling_full", "profile_sheet_fence_full", "mansard_roof_full"]) {
+      expect(byId.get(caseId)?.blocking_reasons).toEqual(expect.arrayContaining([
+        "blackbox_generic_fallback_detected",
+        "blackbox_norm_source_missing",
+      ]));
+    }
     expect(byId.get("diamond_drilling_bare")?.missing_parameters.length).toBeGreaterThan(0);
     expect(byId.get("profile_sheet_fence_bare")?.missing_parameters.length).toBeGreaterThan(0);
     expect(byId.get("mansard_roof_bare")?.missing_parameters.length).toBeGreaterThan(0);

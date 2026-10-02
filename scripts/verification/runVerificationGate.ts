@@ -7,15 +7,22 @@ import { clearInterval, clearTimeout, setInterval, setTimeout } from "node:timer
 
 import { startWindowsCurrentCoreMemoryMonitor } from "../release/currentCoreMemoryMonitor";
 import {
+  AFFECTED_JEST_OLD_SPACE_MIB,
   buildAffectedJestShardPlan,
   resolveAffectedJestShardCount,
 } from "./affectedJestSharding";
 import { buildVerificationPlan, type VerificationLevel } from "./impactAnalyzer";
+import { hashDistributedReceiptStringList } from "./mergeDistributedAffectedJestShardReceipts";
 import { mergeVerificationShards, type ShardResult } from "./verificationShardMerger";
 
 function arg(name: string): string | undefined {
   const prefix = `--${name}=`;
   return process.argv.find((value) => value.startsWith(prefix))?.slice(prefix.length);
+}
+
+function argValues(name: string): string[] {
+  const prefix = `--${name}=`;
+  return process.argv.filter((value) => value.startsWith(prefix)).map((value) => value.slice(prefix.length));
 }
 
 function git(args: string[]): string {
@@ -49,8 +56,8 @@ function changedFiles(baseSha: string, headSha: string): string[] {
 }
 
 type JestJson = Record<string, unknown> & {
-  assertionResults?: Array<Record<string, unknown>>;
-  testResults?: Array<Record<string, unknown>>;
+  assertionResults?: Record<string, unknown>[];
+  testResults?: Record<string, unknown>[];
 };
 
 type JestShardRuntime = {
@@ -90,10 +97,279 @@ type JestShardRuntime = {
 
 export const AFFECTED_VERIFICATION_BUDGET_MS = 600_000;
 export const AFFECTED_VERIFICATION_TECHNICAL_TIMEOUT_MS = 720_000;
+export const DISTRIBUTED_AFFECTED_REQUIRED_AVAILABLE_BYTES = 8_771_948_544;
+export const MAX_DISTRIBUTED_AFFECTED_JEST_STANDARD_SHARDS = 16;
 const TERMINATION_GRACE_MS = 5_000;
+export const RESOURCE_ADMISSION_SETTLE_MAX_MS = 30_000;
+export const RESOURCE_ADMISSION_SAMPLE_INTERVAL_MS = 2_000;
 const HEARTBEAT_INTERVAL_MS = 5_000;
 const MEMORY_MONITOR_GRACE_MS = 500;
 const JEST_PROCESS_ROOT_PATH = path.resolve("scripts/release/currentCoreJestBatchRoot.mjs");
+
+export type VerificationResourceAdmission = Readonly<{
+  sampled_at: string;
+  free_physical_bytes: number;
+  required_available_bytes: number;
+  passed: boolean;
+  settle_wait_ms: number;
+  sample_count: number;
+  samples: readonly Readonly<{
+    sampled_at: string;
+    free_physical_bytes: number;
+    passed: boolean;
+  }>[];
+}>;
+
+export function resolveAffectedVerificationPredictedCriticalPathMs(input: Readonly<{
+  distributedExecution: boolean;
+  sequentialWaveWeightMs: number;
+  shardWeightsMs: readonly number[];
+}>): number {
+  if (!input.distributedExecution) return input.sequentialWaveWeightMs;
+  if (input.shardWeightsMs.length === 0) return 0;
+  return Math.max(...input.shardWeightsMs);
+}
+
+export async function awaitVerificationResourceAdmission(input: Readonly<{
+  requiredAvailableBytes: number;
+  technicalDeadlineAtMs: number;
+  sampleFreePhysicalBytes?: () => number;
+  nowMs?: () => number;
+  sleep?: (durationMs: number) => Promise<void>;
+  maximumSettleMs?: number;
+  sampleIntervalMs?: number;
+}>): Promise<VerificationResourceAdmission> {
+  const sampleFreePhysicalBytes = input.sampleFreePhysicalBytes ?? os.freemem;
+  const nowMs = input.nowMs ?? Date.now;
+  const sleep = input.sleep ?? ((durationMs: number) => new Promise<void>((resolveSleep) => {
+    setTimeout(resolveSleep, durationMs);
+  }));
+  const maximumSettleMs = input.maximumSettleMs ?? RESOURCE_ADMISSION_SETTLE_MAX_MS;
+  const sampleIntervalMs = input.sampleIntervalMs ?? RESOURCE_ADMISSION_SAMPLE_INTERVAL_MS;
+  if (!Number.isSafeInteger(input.requiredAvailableBytes) || input.requiredAvailableBytes <= 0) {
+    throw new Error("verification_resource_admission_required_bytes_invalid");
+  }
+  if (!Number.isSafeInteger(maximumSettleMs) || maximumSettleMs < 0) {
+    throw new Error("verification_resource_admission_settle_ms_invalid");
+  }
+  if (!Number.isSafeInteger(sampleIntervalMs) || sampleIntervalMs <= 0) {
+    throw new Error("verification_resource_admission_sample_interval_ms_invalid");
+  }
+  const startedAtMs = nowMs();
+  const latestSampleAtMs = Math.min(
+    startedAtMs + maximumSettleMs,
+    input.technicalDeadlineAtMs - TERMINATION_GRACE_MS * 2,
+  );
+  const samples: Array<{
+    sampled_at: string;
+    free_physical_bytes: number;
+    passed: boolean;
+  }> = [];
+  while (true) {
+    const sampledAtMs = nowMs();
+    const freePhysicalBytes = sampleFreePhysicalBytes();
+    const passed = freePhysicalBytes >= input.requiredAvailableBytes;
+    samples.push({
+      sampled_at: new Date(sampledAtMs).toISOString(),
+      free_physical_bytes: freePhysicalBytes,
+      passed,
+    });
+    if (passed || sampledAtMs >= latestSampleAtMs) break;
+    await sleep(Math.min(sampleIntervalMs, latestSampleAtMs - sampledAtMs));
+  }
+  const terminal = samples[samples.length - 1]!;
+  return Object.freeze({
+    sampled_at: terminal.sampled_at,
+    free_physical_bytes: terminal.free_physical_bytes,
+    required_available_bytes: input.requiredAvailableBytes,
+    passed: terminal.passed,
+    settle_wait_ms: Math.max(0, Date.parse(terminal.sampled_at) - startedAtMs),
+    sample_count: samples.length,
+    samples: Object.freeze(samples.map((sample) => Object.freeze(sample))),
+  });
+}
+
+export function classifyAffectedVerificationSuites(suites: readonly string[]): {
+  jest: string[];
+  playwright: string[];
+} {
+  const playwright: string[] = [];
+  const jest: string[] = [];
+  for (const suite of suites) {
+    if (/\.web\.spec\.[cm]?[jt]sx?$/i.test(suite)) playwright.push(suite);
+    else jest.push(suite);
+  }
+  return { jest, playwright };
+}
+
+export function resolveAffectedPlaywrightRunnerOwnership(input: {
+  root: string;
+  suites: readonly string[];
+}): {
+  runner: "playwright";
+  config_path: string;
+  cli_path: string | null;
+  project: "chromium";
+  workers: 1;
+  command: string[] | null;
+  owned_suites: string[];
+  unowned_suites: string[];
+  complete: boolean;
+  execution_mode: "external-explicit";
+  requires_explicit_environment_and_actor_preflight: true;
+} {
+  const configPath = path.join(input.root, "playwright.config.ts");
+  const cliPath = path.join(input.root, "node_modules", "playwright", "cli.js");
+  const infrastructureReady = fs.existsSync(configPath) && fs.existsSync(cliPath);
+  const relative = (value: string) => path.relative(input.root, value).replace(/\\/g, "/");
+  const suites = [...input.suites];
+
+  return {
+    runner: "playwright",
+    config_path: relative(configPath),
+    cli_path: fs.existsSync(cliPath) ? relative(cliPath) : null,
+    project: "chromium",
+    workers: 1,
+    command: infrastructureReady
+      ? [
+          process.execPath,
+          relative(cliPath),
+          "test",
+          ...suites,
+          `--config=${relative(configPath)}`,
+          "--project=chromium",
+          "--workers=1",
+        ]
+      : null,
+    owned_suites: infrastructureReady ? suites : [],
+    unowned_suites: infrastructureReady ? [] : suites,
+    complete: suites.length === 0 || infrastructureReady,
+    execution_mode: "external-explicit",
+    requires_explicit_environment_and_actor_preflight: true,
+  };
+}
+
+type PlaywrightJsonTest = {
+  expectedStatus?: unknown;
+  results?: unknown;
+  status?: unknown;
+};
+
+type PlaywrightJsonSpec = {
+  file?: unknown;
+  line?: unknown;
+  ok?: unknown;
+  tests?: unknown;
+  title?: unknown;
+};
+
+type PlaywrightJsonSuite = {
+  file?: unknown;
+  specs?: unknown;
+  suites?: unknown;
+};
+
+function playwrightResultPassed(test: PlaywrightJsonTest): boolean {
+  if (test.status !== "expected" || test.expectedStatus !== "passed" || !Array.isArray(test.results)) return false;
+  const terminal = test.results.at(-1) as { status?: unknown } | undefined;
+  return terminal?.status === "passed";
+}
+
+export function validateAffectedPlaywrightResultEvidence(input: {
+  root: string;
+  expectedSuites: readonly string[];
+  resultFiles: readonly string[];
+}): {
+  complete: boolean;
+  passed_suites: string[];
+  missing_suites: string[];
+  suite_evidence: {
+    suite: string;
+    result_path: string;
+    result_sha256: string;
+    test_ids: string[];
+  }[];
+  rejected_result_files: string[];
+} {
+  const expected = [...input.expectedSuites];
+  const expectedSet = new Set(expected);
+  const byBasename = new Map<string, string[]>();
+  for (const suite of expected) {
+    const basename = path.posix.basename(suite.replace(/\\/g, "/"));
+    byBasename.set(basename, [...(byBasename.get(basename) ?? []), suite]);
+  }
+  const relative = (value: string) => path.relative(input.root, value).replace(/\\/g, "/");
+  const successful = new Map<string, {
+    result_path: string;
+    result_sha256: string;
+    test_ids: string[];
+  }>();
+  const rejectedResultFiles: string[] = [];
+
+  for (const rawResultFile of input.resultFiles) {
+    const resultFile = path.resolve(input.root, rawResultFile);
+    if (!fs.existsSync(resultFile)) {
+      rejectedResultFiles.push(relative(resultFile));
+      continue;
+    }
+    let payload: { suites?: unknown };
+    try {
+      payload = JSON.parse(fs.readFileSync(resultFile, "utf8")) as { suites?: unknown };
+    } catch {
+      rejectedResultFiles.push(relative(resultFile));
+      continue;
+    }
+    if (!Array.isArray(payload.suites)) {
+      rejectedResultFiles.push(relative(resultFile));
+      continue;
+    }
+    const observed = new Map<string, { allPassed: boolean; testIds: Set<string> }>();
+    const stack = [...payload.suites] as PlaywrightJsonSuite[];
+    while (stack.length > 0) {
+      const suite = stack.pop();
+      if (!suite || typeof suite !== "object") continue;
+      if (Array.isArray(suite.suites)) stack.push(...suite.suites as PlaywrightJsonSuite[]);
+      if (!Array.isArray(suite.specs)) continue;
+      for (const spec of suite.specs as PlaywrightJsonSpec[]) {
+        const rawFile = typeof spec.file === "string"
+          ? spec.file.replace(/\\/g, "/")
+          : typeof suite.file === "string" ? suite.file.replace(/\\/g, "/") : "";
+        const direct = expectedSet.has(rawFile) ? rawFile : null;
+        const basenameMatches = byBasename.get(path.posix.basename(rawFile)) ?? [];
+        const selected = direct ?? (basenameMatches.length === 1 ? basenameMatches[0] : null);
+        if (!selected) continue;
+        const tests = Array.isArray(spec.tests) ? spec.tests as PlaywrightJsonTest[] : [];
+        const passed = spec.ok === true && tests.length > 0 && tests.every(playwrightResultPassed);
+        const testId = `${String(spec.title ?? "")}:${String(spec.line ?? "")}`;
+        const current = observed.get(selected) ?? { allPassed: true, testIds: new Set<string>() };
+        current.allPassed = current.allPassed && passed;
+        current.testIds.add(testId);
+        observed.set(selected, current);
+      }
+    }
+    const resultPath = relative(resultFile);
+    const resultSha256 = sha256File(resultFile);
+    for (const [suite, terminal] of observed) {
+      if (terminal.allPassed && terminal.testIds.size > 0) {
+        successful.set(suite, {
+          result_path: resultPath,
+          result_sha256: resultSha256,
+          test_ids: [...terminal.testIds].sort((left, right) => left.localeCompare(right, "en")),
+        });
+      }
+    }
+  }
+
+  const passedSuites = expected.filter((suite) => successful.has(suite));
+  const missingSuites = expected.filter((suite) => !successful.has(suite));
+  return {
+    complete: expected.length === 0 || missingSuites.length === 0,
+    passed_suites: passedSuites,
+    missing_suites: missingSuites,
+    suite_evidence: passedSuites.map((suite) => ({ suite, ...successful.get(suite)! })),
+    rejected_result_files: rejectedResultFiles,
+  };
+}
 
 export function evaluateAffectedVerificationPlanReadiness(input: {
   selectedSuites: number;
@@ -236,6 +512,16 @@ export function affectedJestCliArgs(input: {
   ];
 }
 
+export function affectedJestNodeOptions(current: string | undefined): string {
+  const retained = (current ?? "")
+    .replace(/(?:^|\s)--max-old-space-size(?:=|\s+)\d+(?=\s|$)/gu, " ")
+    .replace(/\s+/gu, " ")
+    .trim();
+  return [retained, `--max-old-space-size=${AFFECTED_JEST_OLD_SPACE_MIB}`]
+    .filter(Boolean)
+    .join(" ");
+}
+
 function processExists(pid: number | null): boolean {
   if (!pid) return false;
   try {
@@ -296,7 +582,7 @@ function failedAssertions(result: JestJson): string[] {
   return Array.isArray(result.testResults)
     ? result.testResults.flatMap((suite) =>
       Array.isArray(suite.assertionResults)
-        ? (suite.assertionResults as Array<Record<string, unknown>>)
+        ? (suite.assertionResults as Record<string, unknown>[])
           .filter((assertion) => assertion.status === "failed")
           .map((assertion) => String(assertion.fullName ?? assertion.title ?? "unknown"))
         : [],
@@ -354,6 +640,7 @@ export function runJestShard(input: {
       env: {
         ...process.env,
         AFFECTED_JEST_PROGRESS_PATH: progressPath,
+        NODE_OPTIONS: affectedJestNodeOptions(process.env.NODE_OPTIONS),
       },
     });
     const pid = child.pid ?? null;
@@ -572,9 +859,38 @@ async function run(): Promise<void> {
     throw new Error(`invalid_verification_technical_timeout_ms:${technicalTimeoutMs}:budget:${budgetMs}`);
   }
   const technicalDeadlineAtMs = started.getTime() + technicalTimeoutMs;
+  const maximumParallelProcessRootsArg = arg("max-process-roots");
+  const maximumParallelProcessRoots = maximumParallelProcessRootsArg == null
+    ? undefined
+    : Number(maximumParallelProcessRootsArg);
+  if (
+    maximumParallelProcessRoots != null
+    && (!Number.isInteger(maximumParallelProcessRoots) || maximumParallelProcessRoots < 1)
+  ) {
+    throw new Error(`invalid_verification_max_process_roots:${maximumParallelProcessRootsArg}`);
+  }
+  const distributedExecution = process.argv.includes("--distributed-execution");
+  if (distributedExecution && level !== "affected") {
+    throw new Error("distributed_execution_requires_affected_level");
+  }
+  const requestedShardCountArg = arg("shard-count");
+  const requestedShardCount = requestedShardCountArg == null
+    ? undefined
+    : Number(requestedShardCountArg);
+  if (
+    requestedShardCount != null
+    && (
+      level !== "affected"
+      || !Number.isInteger(requestedShardCount)
+      || requestedShardCount < 1
+      || requestedShardCount > MAX_DISTRIBUTED_AFFECTED_JEST_STANDARD_SHARDS
+    )
+  ) {
+    throw new Error(`invalid_verification_shard_count:${requestedShardCountArg}`);
+  }
   const baseSha = arg("base") ?? git(["rev-parse", "HEAD"]);
   const headSha = arg("head") ?? git(["rev-parse", "HEAD"]);
-  const plan = buildVerificationPlan({ baseSha, headSha, level, changedFiles: changedFiles(baseSha, headSha) });
+  const plan = buildVerificationPlan({ baseSha, headSha, level, changedFiles: changedFiles(baseSha, headSha), root });
   const outputDir = path.resolve(arg("output-dir") ?? path.join(".release-runtime", "verification-v1", headSha, level));
   const planPath = path.join(outputDir, "plan.json");
   writeJson(planPath, plan);
@@ -584,8 +900,30 @@ async function run(): Promise<void> {
   const stderrPath = path.join(outputDir, "stderr.log");
   const suites = plan.selected_suites.filter((suite) => fs.existsSync(path.join(root, suite)));
   const missingSuites = plan.selected_suites.filter((suite) => !fs.existsSync(path.join(root, suite)));
-  const shardCount = level === "affected" ? resolveAffectedJestShardCount(suites.length) : 1;
-  const shardPlan = buildAffectedJestShardPlan({ root, suites, shardCount });
+  const runnerSuites = classifyAffectedVerificationSuites(suites);
+  const playwrightOwnership = resolveAffectedPlaywrightRunnerOwnership({
+    root,
+    suites: runnerSuites.playwright,
+  });
+  const unsupportedRunnerSuites = playwrightOwnership.unowned_suites;
+  const playwrightExecutionSuites = playwrightOwnership.owned_suites;
+  const playwrightResultFiles = argValues("playwright-result").map((value) => path.resolve(root, value));
+  const playwrightEvidence = validateAffectedPlaywrightResultEvidence({
+    root,
+    expectedSuites: playwrightExecutionSuites,
+    resultFiles: playwrightResultFiles,
+  });
+  const jestSuites = runnerSuites.jest;
+  const shardCount = level === "affected"
+    ? requestedShardCount ?? resolveAffectedJestShardCount(jestSuites.length)
+    : 1;
+  const shardPlan = buildAffectedJestShardPlan({
+    root,
+    suites: jestSuites,
+    shardCount,
+    calibrationPath: arg("calibration"),
+    maximumParallelProcessRoots,
+  });
   const shardPlanPath = path.join(outputDir, "shard-plan.json");
   writeJson(shardPlanPath, {
     schema: "verification-affected-jest-shard-plan/v1",
@@ -602,12 +940,19 @@ async function run(): Promise<void> {
   if (process.argv.includes("--plan-only")) {
     const validationErrors = shardPlan.validation.missing.length
       + shardPlan.validation.duplicates.length
-      + shardPlan.validation.unexpected.length;
+      + shardPlan.validation.unexpected.length
+      + unsupportedRunnerSuites.length
+      + playwrightEvidence.missing_suites.length;
+    const predictedCriticalPathMs = resolveAffectedVerificationPredictedCriticalPathMs({
+      distributedExecution,
+      sequentialWaveWeightMs: shardPlan.resource_plan.predicted_critical_path_weight_ms,
+      shardWeightsMs: shardPlan.shards.map((shard) => shard.weight),
+    });
     const readiness = evaluateAffectedVerificationPlanReadiness({
-      selectedSuites: suites.length,
+      selectedSuites: jestSuites.length,
       calibratedSuites: shardPlan.calibration_coverage.calibrated_selected_suites,
       executionProfileCompatible: shardPlan.calibration_coverage.execution_profile_compatible,
-      predictedCriticalPathMs: shardPlan.resource_plan.predicted_critical_path_weight_ms,
+      predictedCriticalPathMs,
       budgetMs,
       missingSuites: missingSuites.length,
       validationErrors,
@@ -622,15 +967,154 @@ async function run(): Promise<void> {
       shard_plan_path: path.relative(root, shardPlanPath).replace(/\\/g, "/"),
       shard_manifest_sha256: shardPlan.manifest_sha256,
       shard_calibration_coverage: shardPlan.calibration_coverage,
+      runner_ownership: {
+        jest_suites: jestSuites,
+        playwright_suites: runnerSuites.playwright,
+        unsupported_runner_suites: unsupportedRunnerSuites,
+        complete: unsupportedRunnerSuites.length === 0,
+        playwright: playwrightOwnership,
+      },
+      playwright_execution: {
+        suites: playwrightExecutionSuites,
+        complete: playwrightEvidence.complete,
+        evidence: playwrightEvidence,
+        status: playwrightEvidence.complete
+          ? "NOT_REQUIRED"
+          : "BLOCKED_EXTERNAL_EXPLICIT_EXECUTION_REQUIRED",
+      },
       resource_plan: shardPlan.resource_plan,
+      execution_topology: distributedExecution
+        ? "one-isolated-runner-per-shard"
+        : "bounded-sequential-resource-waves",
       ...plan,
     }, null, 2)}\n`);
     if (!readiness.passed) process.exitCode = 1;
     return;
   }
   const runId = started.toISOString().replace(/[:.]/g, "-");
+  const executeShardArg = arg("execute-shard");
+  if (executeShardArg != null) {
+    if (level !== "affected") throw new Error("distributed_shard_requires_affected_level");
+    const executeShardId = Number(executeShardArg);
+    if (!Number.isInteger(executeShardId) || executeShardId < 0) {
+      throw new Error(`invalid_verification_execute_shard:${executeShardArg}`);
+    }
+    const selectedShard = shardPlan.shards.find((shard) => shard.shard_id === executeShardId);
+    if (!selectedShard) throw new Error(`verification_execute_shard_missing:${executeShardId}`);
+    const selectedWave = shardPlan.resource_plan.waves.find((wave) =>
+      wave.shards.some((shard) => shard.shard_id === executeShardId)
+    );
+    if (!selectedWave) throw new Error(`verification_execute_shard_wave_missing:${executeShardId}`);
+    const requiredAvailableBytes = distributedExecution
+      ? DISTRIBUTED_AFFECTED_REQUIRED_AVAILABLE_BYTES
+      : selectedWave.minimum_free_physical_bytes + selectedWave.closeout_reserve_bytes;
+    const shardTechnicalDeadlineAtMs = Date.now() + technicalTimeoutMs;
+    const admission = await awaitVerificationResourceAdmission({
+      requiredAvailableBytes,
+      technicalDeadlineAtMs: shardTechnicalDeadlineAtMs,
+    });
+    const prerequisitesPassed = missingSuites.length === 0
+      && unsupportedRunnerSuites.length === 0
+      && playwrightEvidence.complete
+      && admission.passed;
+    const shardRun = prerequisitesPassed
+      ? await runJestShard({
+        root,
+        outputDir,
+        runId,
+        shardId: selectedShard.shard_id,
+        resourceWaveId: selectedWave.wave_id,
+        suites: selectedShard.test_files,
+        technicalDeadlineAtMs: shardTechnicalDeadlineAtMs,
+      })
+      : null;
+    const terminalPlan = buildVerificationPlan({
+      baseSha,
+      headSha,
+      level,
+      changedFiles: changedFiles(baseSha, headSha),
+      root,
+    });
+    const inputDriftDetected = terminalPlan.input_fingerprint !== plan.input_fingerprint;
+    const expectedSuites = [...selectedShard.test_files]
+      .sort((left, right) => left.localeCompare(right, "en"));
+    const observedSuites = [...(shardRun?.observedSuites ?? [])]
+      .sort((left, right) => left.localeCompare(right, "en"));
+    const membershipPassed = JSON.stringify(observedSuites) === JSON.stringify(expectedSuites);
+    const compatibleEvidenceSha256 = crypto.createHash("sha256")
+      .update(`${JSON.stringify(playwrightEvidence.suite_evidence)}\n`, "utf8")
+      .digest("hex");
+    const shardPassed = prerequisitesPassed
+      && shardRun?.status === 0
+      && shardRun.result.success === true
+      && membershipPassed
+      && !shardRun.timedOut
+      && !shardRun.orphanDetected
+      && shardRun.memoryEvidenceStatus !== "INFRASTRUCTURE_RED"
+      && !inputDriftDetected;
+    const receipt = {
+      schema: "verification-distributed-affected-jest-shard-receipt/v1",
+      final_status: shardPassed
+        ? "GREEN_DISTRIBUTED_AFFECTED_JEST_SHARD"
+        : "RED_DISTRIBUTED_AFFECTED_JEST_SHARD",
+      subject: {
+        base_sha: baseSha,
+        head_sha: headSha,
+        input_fingerprint: plan.input_fingerprint,
+        terminal_input_fingerprint: terminalPlan.input_fingerprint,
+        input_drift_detected: inputDriftDetected,
+      },
+      membership: {
+        full_selected_jest_suites: jestSuites.length,
+        full_selected_playwright_suites: playwrightExecutionSuites.length,
+        shard_manifest_sha256: shardPlan.manifest_sha256,
+        shard_id: executeShardId,
+        resource_wave_id: selectedWave.wave_id,
+        expected_suite_count: expectedSuites.length,
+        expected_suites_sha256: hashDistributedReceiptStringList(expectedSuites),
+        observed_suite_count: observedSuites.length,
+        observed_suites_sha256: hashDistributedReceiptStringList(observedSuites),
+        passed: membershipPassed,
+      },
+      playwright_evidence: {
+        complete: playwrightEvidence.complete,
+        expected_suite_count: playwrightExecutionSuites.length,
+        expected_suites_sha256: hashDistributedReceiptStringList(playwrightExecutionSuites),
+        compatible_evidence_sha256: compatibleEvidenceSha256,
+      },
+      admission: {
+        required_available_bytes: requiredAvailableBytes,
+        free_physical_bytes: admission.free_physical_bytes,
+        passed: admission.passed,
+      },
+      execution: shardRun == null ? null : {
+        started_at: shardRun.startedAt,
+        ended_at: shardRun.endedAt,
+        duration_ms: Date.parse(shardRun.endedAt) - Date.parse(shardRun.startedAt),
+        exit_code: shardRun.status,
+        observed_exit_code: shardRun.observedExitCode,
+        result_success: shardRun.result.success === true,
+        passed_suites: numeric(shardRun.result, "numPassedTestSuites"),
+        failed_suites: numeric(shardRun.result, "numFailedTestSuites"),
+        passed_tests: numeric(shardRun.result, "numPassedTests"),
+        failed_tests: numeric(shardRun.result, "numFailedTests"),
+        pending_tests: numeric(shardRun.result, "numPendingTests"),
+        failed_assertion_count: shardRun.failedAssertions.length,
+        technical_timed_out: shardRun.timedOut,
+        orphan_detected: shardRun.orphanDetected,
+        memory_evidence_status: shardRun.memoryEvidenceStatus,
+        process_tree_memory_peak_bytes: shardRun.memoryPeakBytes,
+      },
+      slo_ms: budgetMs,
+      technical_timeout_ms: technicalTimeoutMs,
+    };
+    writeJson(path.join(outputDir, "distributed-shard-receipt.json"), receipt);
+    process.stdout.write(`${JSON.stringify(receipt, null, 2)}\n`);
+    if (!shardPassed) process.exitCode = 1;
+    return;
+  }
   const shardRuns: JestShardRuntime[] = [];
-  const resourceAdmissions: Array<{
+  const resourceAdmissions: {
     wave_id: number;
     sampled_at: string;
     free_physical_bytes: number;
@@ -639,21 +1123,37 @@ async function run(): Promise<void> {
     closeout_reserve_bytes: number;
     required_available_bytes: number;
     passed: boolean;
-  }> = [];
+    settle_wait_ms: number;
+    sample_count: number;
+    samples: VerificationResourceAdmission["samples"];
+  }[] = [];
   let resourceBlocked = false;
-  if (missingSuites.length === 0 && suites.length > 0) {
+  const runnerOwnershipBlocked = unsupportedRunnerSuites.length > 0;
+  const playwrightExecutionBlocked = !playwrightEvidence.complete;
+  if (
+    missingSuites.length === 0
+    && !runnerOwnershipBlocked
+    && !playwrightExecutionBlocked
+    && jestSuites.length > 0
+  ) {
     for (const wave of shardPlan.resource_plan.waves) {
-      const freePhysicalBytes = os.freemem();
       const requiredAvailableBytes = wave.minimum_free_physical_bytes + wave.closeout_reserve_bytes;
+      const measuredAdmission = await awaitVerificationResourceAdmission({
+        requiredAvailableBytes,
+        technicalDeadlineAtMs,
+      });
       const admission = {
         wave_id: wave.wave_id,
-        sampled_at: new Date().toISOString(),
-        free_physical_bytes: freePhysicalBytes,
+        sampled_at: measuredAdmission.sampled_at,
+        free_physical_bytes: measuredAdmission.free_physical_bytes,
         total_physical_bytes: os.totalmem(),
         minimum_free_physical_bytes: wave.minimum_free_physical_bytes,
         closeout_reserve_bytes: wave.closeout_reserve_bytes,
         required_available_bytes: requiredAvailableBytes,
-        passed: freePhysicalBytes >= requiredAvailableBytes,
+        passed: measuredAdmission.passed,
+        settle_wait_ms: measuredAdmission.settle_wait_ms,
+        sample_count: measuredAdmission.sample_count,
+        samples: measuredAdmission.samples,
       };
       resourceAdmissions.push(admission);
       if (!admission.passed) {
@@ -695,11 +1195,19 @@ async function run(): Promise<void> {
   }));
   const fanIn = mergeVerificationShards({
     expectedShardIds: shardPlan.shards.map((shard) => shard.shard_id),
-    expectedSuites: suites,
+    expectedSuites: jestSuites,
     subjectSha,
     manifestHash: shardPlan.manifest_sha256,
     results: shardResults,
   });
+  const terminalPlan = buildVerificationPlan({
+    baseSha,
+    headSha,
+    level,
+    changedFiles: changedFiles(baseSha, headSha),
+    root,
+  });
+  const inputDriftDetected = terminalPlan.input_fingerprint !== plan.input_fingerprint;
   const ended = new Date();
   const durationMs = ended.getTime() - started.getTime();
   const failures = failedAssertions(jest);
@@ -727,9 +1235,12 @@ async function run(): Promise<void> {
         ),
     };
   });
-  const observedSuiteSet = new Set(shardRuns.flatMap((shard) => shard.observedSuites));
+  const observedSuiteSet = new Set([
+    ...shardRuns.flatMap((shard) => shard.observedSuites),
+    ...playwrightEvidence.passed_suites,
+  ]);
   const incompleteSuiteIds = suites.filter((suite) => !observedSuiteSet.has(suite));
-  const functionalExitCode = missingSuites.length === 0 && !resourceBlocked && fanIn.exit_code === 0 && jest.success === true && !technicalTimedOut && !orphanDetected ? 0 : 1;
+  const functionalExitCode = missingSuites.length === 0 && !runnerOwnershipBlocked && !playwrightExecutionBlocked && !resourceBlocked && !inputDriftDetected && fanIn.exit_code === 0 && jest.success === true && !technicalTimedOut && !orphanDetected ? 0 : 1;
   const functionalPassed = functionalExitCode === 0;
   const sloPassed = durationMs <= budgetMs;
   const passed = functionalPassed && sloPassed;
@@ -747,6 +1258,7 @@ async function run(): Promise<void> {
       shard.heartbeatPath,
       shard.memoryEvidencePath,
     ]),
+    ...playwrightResultFiles,
   ].filter(fs.existsSync);
   const summary = {
     schema: "verification-gate-summary/v1",
@@ -755,6 +1267,13 @@ async function run(): Promise<void> {
     base_sha: baseSha,
     head_sha: headSha,
     input_fingerprint: plan.input_fingerprint,
+    input_integrity: {
+      passed: !inputDriftDetected,
+      initial_input_fingerprint: plan.input_fingerprint,
+      terminal_input_fingerprint: terminalPlan.input_fingerprint,
+      changed_files_at_start: plan.changed_files,
+      changed_files_at_terminal: terminalPlan.changed_files,
+    },
     selected_domains: plan.selections.filter((item) => item.selected).flatMap((item) => item.domains),
     selected_suites: suites,
     selected_producers: plan.selected_producers,
@@ -774,6 +1293,23 @@ async function run(): Promise<void> {
       resource_admissions: resourceAdmissions,
       resource_usage: resourceUsageByWave,
       resource_blocked: resourceBlocked,
+      runner_ownership_blocked: runnerOwnershipBlocked,
+      runner_ownership: {
+        jest_suites: jestSuites,
+        playwright_suites: runnerSuites.playwright,
+        unsupported_runner_suites: unsupportedRunnerSuites,
+        complete: !runnerOwnershipBlocked,
+        playwright: playwrightOwnership,
+      },
+      playwright_execution: {
+        suites: playwrightExecutionSuites,
+        blocked: playwrightExecutionBlocked,
+        complete: playwrightEvidence.complete,
+        evidence: playwrightEvidence,
+        status: playwrightExecutionBlocked
+          ? "BLOCKED_EXTERNAL_EXPLICIT_EXECUTION_REQUIRED"
+          : "NOT_REQUIRED",
+      },
       shards: shardPlan.shards,
       runtime: shardRuns.map((shard) => ({
         shard_id: shard.shardId,
@@ -826,6 +1362,8 @@ async function run(): Promise<void> {
       technical_timed_out: technicalTimedOut,
       orphan_detected: orphanDetected,
       resource_blocked: resourceBlocked,
+      playwright_execution_blocked: playwrightExecutionBlocked,
+      input_drift_detected: inputDriftDetected,
       process_tree_memory_evidence_incomplete: processTreeMemoryEvidenceIncomplete,
       technical_timeout_ms: technicalTimeoutMs,
       technical_deadline_at: new Date(technicalDeadlineAtMs).toISOString(),
@@ -836,13 +1374,19 @@ async function run(): Promise<void> {
     budget: { limit_ms: budgetMs, actual_ms: durationMs, passed: durationMs <= budgetMs },
     final_status: passed
       ? "GREEN_VERIFICATION_GATE"
-      : resourceBlocked
-        ? "BLOCKED_RESOURCE_VERIFICATION_GATE"
-      : technicalTimedOut || orphanDetected
-        ? "TIMEOUT_VERIFICATION_GATE"
-        : functionalPassed && !sloPassed
-          ? "RED_SLO_VERIFICATION_GATE"
-          : "RED_VERIFICATION_GATE",
+      : runnerOwnershipBlocked
+        ? "BLOCKED_RUNNER_OWNERSHIP_VERIFICATION_GATE"
+        : playwrightExecutionBlocked
+          ? "BLOCKED_PLAYWRIGHT_EXTERNAL_EXECUTION_VERIFICATION_GATE"
+          : inputDriftDetected
+            ? "RED_INPUT_DRIFT_VERIFICATION_GATE"
+          : resourceBlocked
+            ? "BLOCKED_RESOURCE_VERIFICATION_GATE"
+            : technicalTimedOut || orphanDetected
+              ? "TIMEOUT_VERIFICATION_GATE"
+              : functionalPassed && !sloPassed
+                ? "RED_SLO_VERIFICATION_GATE"
+                : "RED_VERIFICATION_GATE",
     fake_green_claimed: false,
   };
   writeJson(path.join(outputDir, "summary.json"), summary);

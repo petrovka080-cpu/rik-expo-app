@@ -17,16 +17,22 @@ export const DRYWALL_CEILING_BULKHEAD_REVISION_MIGRATION_VERSION_V3 =
   "drywall-ceiling-bulkhead-revision-migration:v3" as const;
 
 const AUTHORIZED = new Set<string>(DRYWALL_CEILING_BULKHEAD_PROFESSIONAL_CATALOG_IDS_V3);
+const AUTHORIZED_INVENTORY = INTERIOR_FINISHES_DOMAIN_INVENTORY.filter((item) =>
+  AUTHORIZED.has(item.catalog_id)
+);
 
 function catalogIdFromRevision(revision: EstimateDraftRevision): string | null {
-  const rowCatalogId = revision.boq.rows
-    .map((row) => row.sourceParameters?.catalogId)
-    .find((value): value is string => typeof value === "string" && AUTHORIZED.has(value));
   const direct = revision.resolvedIdentity?.requestedCatalogWorkId;
   if (direct && AUTHORIZED.has(direct)) return direct;
-  if (rowCatalogId) return rowCatalogId;
-  return INTERIOR_FINISHES_DOMAIN_INVENTORY.find((item) =>
-    AUTHORIZED.has(item.catalog_id) && (
+  for (const row of revision.boq.rows) {
+    const rowCatalogId = row.sourceParameters?.catalogId;
+    if (typeof rowCatalogId === "string" && AUTHORIZED.has(rowCatalogId)) return rowCatalogId;
+  }
+  // The migration owns only 16 catalog records. Scanning the complete 2,250
+  // record interior inventory on every unrelated parameter edit made the
+  // global revision path quadratic in catalog size.
+  return AUTHORIZED_INVENTORY.find((item) =>
+    (
       item.work_key === revision.professionalWorkId ||
       item.catalog_id === revision.selectedTemplateId ||
       revision.selectedTemplateId.includes(item.catalog_id)

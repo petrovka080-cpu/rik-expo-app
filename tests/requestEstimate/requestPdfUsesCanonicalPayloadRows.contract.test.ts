@@ -12,7 +12,12 @@ import {
   generateAiEstimatePdf,
 } from "../../src/lib/ai/estimatePdf";
 import { buildConsumerRepairStructuredEstimatePdfViewModel } from "../../src/lib/consumerRequests/consumerRequestPdfService";
-import { extractEstimatePdfText, validateEstimatePdf } from "../../src/lib/estimatePdf";
+import {
+  extractEstimatePdfText,
+  renderEstimatePdfBinaryDocument,
+  validateEstimatePdf,
+} from "../../src/lib/estimatePdf";
+import { publicBoqDisplayNameRu } from "../../src/lib/estimate/publicBoqNaming";
 import { normalizeRuText } from "../../src/lib/text/encoding";
 import {
   foundationDraftWithManualCatalogItem,
@@ -74,7 +79,10 @@ describe("request PDF uses canonical payload rows", () => {
     expect(viewModel?.runtimeTrace.selectedTool).toBe("consumer_repair_canonical_payload");
     expect(viewModel?.runtimeTrace.traceId).toContain(payload.parityFingerprint);
 
-    const payloadNames = payload.items.map((item) => readable(item.titleRu)).sort();
+    const payloadNames = payload.items.map((item) => readable(publicBoqDisplayNameRu({
+      sourceNameRu: item.titleRu,
+      rowType: item.itemType,
+    }))).sort();
     const pdfViewNames = viewModel!.sections.flatMap((section) => section.rows.map((row) => row.name)).sort();
     expect(pdfViewNames).toEqual(payloadNames);
 
@@ -95,6 +103,35 @@ describe("request PDF uses canonical payload rows", () => {
     expect(text).not.toContain("consumer_request_payload");
     expect(text).not.toContain("consumer_repair_canonical_payload");
     expect(text).not.toContain("calculate_global_estimate");
+  });
+
+  it("uses the shared concise material title in the rendered PDF without mutating the payload", () => {
+    const bundle = foundationDraftWithManualCatalogItem();
+    const verbose = "Герметик битумно-полимерный ТЕХНОНИКОЛЬ №42 для узлов водоотвода, ведро 12 кг — предварительная упаковка до сверки поставщика";
+    const concise = "Герметик ТЕХНОНИКОЛЬ №42, 12 кг";
+    const items = bundle.items.map((item, index) => index === 0 ? {
+      ...item,
+      titleRu: verbose,
+      itemType: "material" as const,
+      category: "materials",
+    } : item);
+    const viewModel = buildConsumerRepairStructuredEstimatePdfViewModel({
+      draft: bundle.draft,
+      items,
+      media: bundle.media,
+      generatedAt: "2026-10-01T00:00:00.000Z",
+    });
+
+    expect(items[0]?.titleRu).toBe(verbose);
+    expect(viewModel?.sections.flatMap((section) => section.rows.map((row) => row.name)))
+      .toContain(concise);
+
+    const pdf = renderEstimatePdfBinaryDocument(viewModel!);
+    const validation = validateEstimatePdf({ pdf: pdf.bytes, requiredText: [concise] });
+    expect(validation.valid).toBe(true);
+    const text = extractEstimatePdfText(pdf.bytes);
+    expect(text).toContain(concise);
+    expect(text).not.toContain(verbose);
   });
 
   it("keeps consumer PDF service free of prompt-based estimate recalculation", () => {
@@ -132,5 +169,33 @@ describe("request PDF uses canonical payload rows", () => {
     expect(validation.text).not.toContain("materialKey:");
     expect(validation.text).not.toContain("rateKey:");
     expect(validation.text).not.toContain("consumer_request_payload");
+  });
+
+  it("uses the shared concise material title through the AI PDF consumer-draft adapter", () => {
+    const bundle = foundationDraftWithManualCatalogItem();
+    const verbose = "Эмульсия битумная катионная для двух сплошных слоёв сцепления: стяжка/нижний асфальт и нижний/верхний асфальт; марка уточняется проектом";
+    const concise = "Битумная эмульсия для слоёв сцепления";
+    const firstItemId = bundle.items[0]!.id;
+    const sourceBundle = {
+      ...bundle,
+      items: bundle.items.map((item) => item.id === firstItemId ? {
+        ...item,
+        titleRu: verbose,
+        itemType: "material" as const,
+        category: "materials",
+      } : item),
+    };
+    const source = buildAiEstimatePdfSourceFromConsumerRepairDraft(sourceBundle);
+    const names = source.estimate.sections.flatMap((section) => section.rows.map((row) => row.name));
+
+    expect(sourceBundle.items[0]?.titleRu).toBe(verbose);
+    expect(names).toContain(concise);
+    expect(names).not.toContain(verbose);
+
+    const result = generateAiEstimatePdf({ source, userConfirmed: true });
+    const validation = validateEstimatePdf({ pdf: result.access.uri, requiredText: [concise] });
+    expect(validation.valid).toBe(true);
+    expect(validation.text).toContain(concise);
+    expect(validation.text).not.toContain(verbose);
   });
 });

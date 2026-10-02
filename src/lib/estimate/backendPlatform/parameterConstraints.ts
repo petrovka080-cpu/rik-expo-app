@@ -221,6 +221,15 @@ export function validateCanonicalEstimateParameters(
       if (valueType === "integer" && !Number.isInteger(numeric)) return fail(`invalid integer ${id}`);
       if (constraints.min != null && numeric < Number(constraints.min)) return fail(`parameter below minimum ${id}`);
       if (constraints.max != null && numeric > Number(constraints.max)) return fail(`parameter above maximum ${id}`);
+      if (constraints.multipleOf != null) {
+        const multipleOf = finiteNumber(constraints.multipleOf, `${id}.multipleOf`);
+        if (multipleOf <= 0) return fail(`invalid multiple ${id}`);
+        const quotient = numeric / multipleOf;
+        const tolerance = Math.max(1, Math.abs(quotient)) * Number.EPSILON * 16;
+        if (Math.abs(quotient - Math.round(quotient)) > tolerance) {
+          return fail(`parameter is not a multiple ${id}`);
+        }
+      }
       for (const [rule, compare] of [
         ["equalToParameter", (left: number, right: number) => left === right],
         ["greaterThanOrEqualParameter", (left: number, right: number) => left >= right],

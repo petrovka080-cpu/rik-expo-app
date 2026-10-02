@@ -36,9 +36,9 @@ function createDraft(input: { problemText?: string; contactPhone?: string | null
   return approveConsumerRepairRequestDraft({ requestDraftId: bundle.draft.id, userId: USER_ID });
 }
 
-function expectSendError(requestDraftId: string, code: string): { status: number; codeFound: boolean; messageRu: string } {
+async function expectSendError(requestDraftId: string, code: string): Promise<{ status: number; codeFound: boolean; messageRu: string }> {
   try {
-    sendConsumerRepairRequestToMarketplace({ requestDraftId, userId: USER_ID });
+    await sendConsumerRepairRequestToMarketplace({ requestDraftId, userId: USER_ID });
   } catch (error) {
     if (!(error instanceof ConsumerRepairValidationError)) throw error;
     return {
@@ -59,11 +59,11 @@ async function main() {
   const noDescription = createDraft({ problemText: "коротко" });
   const noMedia = createDraft({ media: false });
 
-  const noContactResult = expectSendError(noContact.draft.id, "CONTACT_REQUIRED");
-  const noDescriptionResult = expectSendError(noDescription.draft.id, "DESCRIPTION_REQUIRED");
-  const noMediaResult = expectSendError(noMedia.draft.id, "MEDIA_REQUIRED");
+  const noContactResult = await expectSendError(noContact.draft.id, "CONTACT_REQUIRED");
+  const noDescriptionResult = await expectSendError(noDescription.draft.id, "DESCRIPTION_REQUIRED");
+  const noMediaResult = await expectSendError(noMedia.draft.id, "MEDIA_REQUIRED");
 
-  const sent = sendConsumerRepairRequestToMarketplace({
+  const sent = await sendConsumerRepairRequestToMarketplace({
     requestDraftId: approved.draft.id,
     userId: USER_ID,
     idempotencyKey: "web-proof",
@@ -111,7 +111,7 @@ async function main() {
     throw new Error("B2C request marketplace validation/PDF open proof failed.");
   }
 
-  console.log(JSON.stringify(matrix, null, 2));
+  console.info(JSON.stringify(matrix, null, 2));
 }
 
 main().catch((error) => {

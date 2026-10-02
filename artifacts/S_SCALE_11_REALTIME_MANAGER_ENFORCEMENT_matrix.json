@@ -1,9 +1,9 @@
 {
   "wave": "S_SCALE_11_REALTIME_MANAGER_ENFORCEMENT_CLOSEOUT",
-  "final_status": "GREEN_SCALE_REALTIME_MANAGER_ENFORCEMENT_READY",
+  "final_status": "BLOCKED_SCALE_REALTIME_MANAGER_ENFORCEMENT",
   "direct_realtime_channels_remaining": 0,
-  "unmanaged_subscriptions_remaining": 0,
-  "all_subscriptions_have_owner": true,
+  "unmanaged_subscriptions_remaining": 1,
+  "all_subscriptions_have_owner": false,
   "unsubscribe_all_by_owner_supported": true,
   "double_cleanup_safe": true,
   "auth_logout_cleanup_safe": true,

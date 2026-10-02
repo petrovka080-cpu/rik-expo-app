@@ -4,18 +4,18 @@ import path from "node:path";
 import { runEstimateStructuredPipelineUiPdfBindingCloseout } from "../../scripts/audit/runEstimateStructuredPipelineUiPdfBindingCloseout";
 
 describe("estimate structured pipeline UI/PDF binding closeout", () => {
-  it("keeps request, marketplace, history, foreman AI, and PDF rows on the structured source of truth", () => {
+  it("keeps request, marketplace, history, foreman AI, and PDF rows on the structured source of truth", async () => {
     const artifactDir = path.resolve(
       process.cwd(),
       ".release-runtime",
       "jest-artifacts",
       "S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING",
     );
-    const proof = (() => {
+    const proof = await (async () => {
       const previousArtifactDir = process.env.ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING_ARTIFACT_DIR;
       process.env.ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING_ARTIFACT_DIR = artifactDir;
       try {
-        return runEstimateStructuredPipelineUiPdfBindingCloseout();
+        return await runEstimateStructuredPipelineUiPdfBindingCloseout();
       } finally {
         if (previousArtifactDir === undefined) {
           delete process.env.ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING_ARTIFACT_DIR;

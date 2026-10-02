@@ -1,6 +1,7 @@
 import { CONSUMER_REPAIR_CONTEXT, assertConsumerRepairScope } from "./consumerRequestAccessPolicy";
 import { logger } from "../logger";
 import { createConsumerRepairEvent } from "./consumerRequestAuditTrail";
+import { consumerRepairSourceRequestDraftId } from "./consumerRequestHistoryLineage";
 import {
   approveConsumerRepairRequestDraft as approveDraftRecord,
   createConsumerRepairRequestDraft as createDraftRecord,
@@ -284,15 +285,6 @@ function consumerRepairApprovedHistoryRecordStatus(
   return "approved";
 }
 
-function sourceDraftIdForApprovedHistoryRecord(bundle: ConsumerRepairDraftBundle): string {
-  const sourceEvent = [...bundle.events].reverse().find((event) => {
-    const sourceRequestDraftId = event.payload?.sourceRequestDraftId;
-    return typeof sourceRequestDraftId === "string" && sourceRequestDraftId.trim().length > 0;
-  });
-  const sourceRequestDraftId = sourceEvent?.payload?.sourceRequestDraftId;
-  return typeof sourceRequestDraftId === "string" ? sourceRequestDraftId : bundle.draft.id;
-}
-
 export function buildApprovedEstimateHistoryRecord(
   bundle: ConsumerRepairDraftBundle,
 ): ApprovedEstimateHistoryRecord {
@@ -337,7 +329,7 @@ export function buildApprovedEstimateHistoryRecord(
 
   return {
     approvedEstimateId: bundle.draft.id,
-    sourceDraftId: sourceDraftIdForApprovedHistoryRecord(bundle),
+    sourceDraftId: consumerRepairSourceRequestDraftId(bundle),
     sourceRevisionId,
     sourceReleaseId: canonicalReleaseId || bundle.durableHistorySummary?.sourceReleaseId || null,
     sourceSnapshotId,
@@ -1489,7 +1481,7 @@ export function attachConsumerRepairEstimateRowPhoto(input: {
     const itemCatalogId = String(item.sourceParameters?.canonicalBackendCatalogId ?? "").trim();
     if (!authoritativeTenantId
       || authoritativeOwnerUserId !== input.ownerUserId
-      || authoritativeRequestId !== bundle.draft.id
+      || authoritativeRequestId !== consumerRepairSourceRequestDraftId(bundle)
       || !itemCatalogId
       || authoritativeCatalogId !== itemCatalogId
       || authoritativeStorageBucket !== "private-media"
@@ -1576,7 +1568,7 @@ export function synchronizeConsumerRepairAuthoritativePhotoAttachments(input: {
   rowIds.delete("");
   const authoritative = input.attachments.map((attachment): ConsumerRepairEstimateAttachment => {
     if (attachment.ownerUserId !== input.ownerUserId
-      || attachment.requestId !== bundle.draft.id
+      || attachment.requestId !== consumerRepairSourceRequestDraftId(bundle)
       || attachment.parentRevisionId !== input.revisionId
       || catalogIds.size !== 1
       || !catalogIds.has(attachment.catalogId)
@@ -1787,7 +1779,7 @@ export function createConsumerRepairDraftFromHistorySnapshot(input: {
         actorType: "consumer",
         actorUserId: userId,
         payload: {
-          sourceRequestDraftId: source.draft.id,
+          sourceRequestDraftId: consumerRepairSourceRequestDraftId(source),
           sourceStatus: source.draft.status,
           sourceRevisionId: canonicalBackendBindingForItems(source.items)?.revisionId
             ?? source.estimateRevisionState?.current_revision_id
@@ -1907,7 +1899,7 @@ export function archiveConsumerRepairApprovedHistoryRecord(input: {
 export function deleteConsumerRepairRequestDraft(input: {
   requestDraftId: string;
   userId?: string;
-}): void {
+}): ConsumerRepairDraftBundle {
   const bundle = getConsumerRepairBundle(input.requestDraftId);
   const userId = input.userId ?? bundle.draft.consumerUserId;
   if (userId !== bundle.draft.consumerUserId) {
@@ -1919,6 +1911,12 @@ export function deleteConsumerRepairRequestDraft(input: {
       },
     ]);
   }
+  // A previous delete may have switched the durable pointer even when its
+  // read-back failed. Let the same owner retry the exact terminal operation;
+  // the caller still has to verify durable status/revision before clearing UI.
+  if (bundle.draft.status === "deleted_by_user") {
+    return bundle;
+  }
   if (bundle.draft.status !== "draft") {
     throw new ConsumerRepairValidationError([
       {
@@ -1928,7 +1926,7 @@ export function deleteConsumerRepairRequestDraft(input: {
       },
     ]);
   }
-  deleteConsumerRepairBundle(input.requestDraftId);
+  return deleteConsumerRepairBundle(input.requestDraftId);
 }
 
 export function __resetConsumerRepairRequestStoreForTests(): void {

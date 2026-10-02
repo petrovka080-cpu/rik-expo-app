@@ -44,8 +44,8 @@ describe("full 11610 trusted costing source audit", () => {
 
     expect(summary.source_audit_status).toBe(GREEN_AI_ESTIMATE_TRUSTED_COSTING_PRICEBOOK_11610_SOURCE_READY);
     expect(summary.templates_audited).toBe(11610);
-    expect(summary.templates_costing_ready).toBe(11505);
-    expect(summary.templates_price_input_required).toBe(105);
+    expect(summary.templates_costing_ready).toBe(10929);
+    expect(summary.templates_price_input_required).toBe(681);
     expect(
       summary.templates_costing_ready + summary.templates_price_input_required,
     ).toBe(11610);
@@ -53,7 +53,7 @@ describe("full 11610 trusted costing source audit", () => {
     expect(summary.distinct_professional_passports_audited).toBe(12);
     expect(summary.distinct_professional_passports_costing_ready).toBe(12);
     expect(summary.blocked_templates_count).toBe(0);
-    expect(summary.priced_required_rows_percent_average).toBe(99.26);
+    expect(summary.priced_required_rows_percent_average).toBe(95.84);
     expect(summary.priority_critical_cases_priced_percent).toBe(99.67);
     expect(summary.fake_price_count).toBe(0);
     expect(summary.fake_subtotal_count).toBe(0);

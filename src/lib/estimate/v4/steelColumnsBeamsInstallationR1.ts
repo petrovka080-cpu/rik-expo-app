@@ -34,6 +34,10 @@ const CONDITIONAL_DETAILS = new Set([
   "structural_fireproofing_area_m2",
 ]);
 
+const PRELIMINARY_TITLE_DETAIL_PARAMETER_IDS = new Set([
+  "fabricated_element_schedule_designation",
+]);
+
 const PARAMETER_SPECS = Object.freeze([
   ["element_count_piece", "Количество стальных колонн и балок", "decimal", "piece", null],
   ["total_installed_mass_t", "Общая масса монтируемых колонн и балок", "decimal", "t", null],
@@ -90,7 +94,8 @@ readonly SteelColumnsBeamsInstallationParameter[] = Object.freeze(PARAMETER_SPEC
     value_type: valueType,
     unit_id: unitId,
     title_ru: titleRu,
-    required: !CONDITIONAL_DETAILS.has(parameterId),
+    required: !CONDITIONAL_DETAILS.has(parameterId)
+      && !PRELIMINARY_TITLE_DETAIL_PARAMETER_IDS.has(parameterId),
     default_value: null,
     constraints_json: {
       ...(enumValues

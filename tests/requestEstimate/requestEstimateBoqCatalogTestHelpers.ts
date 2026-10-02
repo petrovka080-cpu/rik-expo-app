@@ -99,7 +99,7 @@ export function foundationPdfBundleWithManualCatalogItem(): ConsumerRepairDraftB
   return generateConsumerRepairRequestPdfForDraft({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
 }
 
-export function foundationSendBundleWithManualCatalogItem(): ConsumerRepairDraftBundle {
+export async function foundationSendBundleWithManualCatalogItem(): Promise<ConsumerRepairDraftBundle> {
   let bundle = foundationDraftWithManualCatalogItem();
   bundle = attachConsumerRepairMedia({ requestDraftId: bundle.draft.id, mediaKind: "photo" });
   bundle = updateConsumerRepairRequestDraft({
@@ -111,7 +111,7 @@ export function foundationSendBundleWithManualCatalogItem(): ConsumerRepairDraft
     },
   });
   bundle = approveCanonicalConsumerRepairAuditDraft({ bundle });
-  return sendCanonicalConsumerRepairAuditDraft({
+  return await sendCanonicalConsumerRepairAuditDraft({
     bundle,
     idempotencyKey: `test:${bundle.draft.id}`,
   });

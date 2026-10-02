@@ -41,7 +41,8 @@ function textFact(facts: readonly UserFactV4[], key: string): string | null {
 }
 
 export function asphaltParameterApplicabilityV4(facts: readonly UserFactV4[]): Record<string, boolean> {
-  const geometry = textFact(facts, "geometry_method");
+  const geometryFact = factByKey(facts, "geometry_method");
+  const geometry = geometryFact?.confirmed ? textFact(facts, "geometry_method") : null;
   const constructionMode = textFact(facts, "construction_mode");
   const milling = booleanFact(facts, "milling_required");
   const sand = booleanFact(facts, "sand_layer_required");
@@ -61,6 +62,7 @@ export function asphaltParameterApplicabilityV4(facts: readonly UserFactV4[]): R
   const fullRoadInfrastructure = scopeProfile === "new_full_road_infrastructure";
   const stormSewer = booleanFact(facts, "storm_sewer_required");
   const lighting = booleanFact(facts, "lighting_required");
+  const productProfileId = textFact(facts, "product_profile_id");
   const mapping: Record<string, boolean> = {};
   const set = (key: string, value: boolean) => { mapping[asphaltParameterIdV4(key)] = value; };
   set("area_m2", geometry !== "length_width" && geometry !== "project_document");
@@ -110,6 +112,14 @@ export function asphaltParameterApplicabilityV4(facts: readonly UserFactV4[]): R
   set("groundwater_condition", constructionMode === "new_construction");
   set("longitudinal_slope_percent", drainageRequired === true || purpose === "public_road" || purpose === "access_road");
   set("laboratory_test_interval_m2_per_test", Boolean(laboratory && laboratory !== "none" && laboratory !== "unknown"));
+  // Exact-table fields belong to the explicitly selected normative product
+  // profile. They must not displace basic user geometry questions in the
+  // initial question budget when no exact table profile was selected.
+  for (const parameter of ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4.parameters) {
+    const match = parameter.applicability_condition.match(/^product_profile_id\s*==\s*(\S+)$/u);
+    if (!match) continue;
+    mapping[parameter.parameter_id] = productProfileId === match[1];
+  }
   return mapping;
 }
 
@@ -136,7 +146,16 @@ function understoodLines(facts: readonly UserFactV4[]): AsphaltUnderstoodLineV4[
     if (!item || !parameter) continue;
     const value = formatFactValue(parameter, item.value);
     if (!value) continue;
-    lines.push({ label_ru: parameter.professional_name_ru, value_ru: value, provenance_ru: item.provenance === "project_document" ? "Из проекта" : "Из текста пользователя" });
+    const provenanceRu = item.provenance === "project_document"
+      ? "Из проекта"
+      : ["work_specific_default", "family_default"].includes(item.provenance)
+        ? "Предварительное допущение — уточнить"
+        : item.provenance === "ai_inference"
+          ? "Рассчитано из введённых данных"
+          : item.provenance === "unknown"
+            ? "Источник не подтверждён"
+            : "Из текста пользователя";
+    lines.push({ label_ru: parameter.professional_name_ru, value_ru: value, provenance_ru: provenanceRu });
   }
   return lines;
 }

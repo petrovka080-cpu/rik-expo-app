@@ -207,11 +207,8 @@ const ASPHALT_RELATED_VISIBILITY: Readonly<Record<string, {
   combined_removal_productivity_m3_per_machine_hour: { parameterId: "removal_method", value: "COMBINED" },
   loader_productivity_t_per_machine_hour: { parameterId: "loading_required", value: true },
   base_cleaning_productivity_m2_per_man_hour: { parameterId: "base_cleaning_required", value: true },
-  waterproofing_material_kg_m2: { parameterId: "bridge_deck_package_required", value: true },
-  protective_layer_density_t_m3: { parameterId: "bridge_deck_package_required", value: true },
-  expansion_joint_sealant_kg_m: { parameterId: "bridge_deck_package_required", value: true },
-  bridge_waterproofing_productivity_m2_per_man_hour: { parameterId: "bridge_deck_package_required", value: true },
-  bridge_waterproofing_machine_productivity_m2_per_machine_hour: { parameterId: "bridge_deck_package_required", value: true },
+  waterproofing_membrane_m2_per_m2: { parameterId: "waterproofing_condition", value: "REPLACEMENT_REQUIRED" },
+  bridge_waterproofing_equipment_set_count: { parameterId: "waterproofing_condition", value: "REPLACEMENT_REQUIRED" },
 });
 
 const ASPHALT_REMOVAL_OPERATION_CLASSES_V4 = new Set([
@@ -247,7 +244,14 @@ export const ASPHALT_RELATED_CANONICAL_PARAMETER_SCHEMAS_V4: readonly CanonicalP
         "base_material_type",
         "base_material_compaction_factor",
       ].includes(key) && keys.includes("base_condition") && keys.includes("base_construction_required");
-      const conditional = localRepairOrBaseConstruction ||
+      const waterproofingRepairOrReplacement = [
+        "waterproofing_repair_area_m2",
+        "waterproofing_primer_rate_l_m2",
+        "waterproofing_membrane_m2_per_m2",
+        "protective_layer_thickness_mm",
+        "bridge_waterproofing_equipment_set_count",
+      ].includes(key) && keys.includes("waterproofing_condition");
+      const conditional = localRepairOrBaseConstruction || waterproofingRepairOrReplacement ||
         Boolean(visibility && keys.includes(visibility.parameterId));
       const geometryAlternative = ["area_m2", "length_m", "width_m"].includes(key) &&
         keys.includes("area_m2") && keys.includes("length_m") && keys.includes("width_m");
@@ -277,6 +281,14 @@ export const ASPHALT_RELATED_CANONICAL_PARAMETER_SCHEMAS_V4: readonly CanonicalP
               { parameterId: "base_condition", value: "LOCAL_REPAIR_REQUIRED" },
             ]),
           }
+          : waterproofingRepairOrReplacement
+            ? {
+              kind: "ANY_OF" as const,
+              conditions: Object.freeze([
+                { parameterId: "waterproofing_condition", value: "LOCAL_REPAIR_REQUIRED" },
+                { parameterId: "waterproofing_condition", value: "REPLACEMENT_REQUIRED" },
+              ]),
+            }
           : conditional && visibility
             ? { kind: "PARAMETER_EQUALS" as const, ...visibility }
             : { kind: "ALWAYS" as const },

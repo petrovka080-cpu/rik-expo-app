@@ -397,12 +397,12 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
       validationRules: [],
       provenance: {},
     });
-    const catalog = {
+    const catalog = Object.assign({} as CanonicalEstimateCatalogItem, {
       parameterSchema: [
         parameter("area_m2", "\u043c\u00b2"),
         parameter("asphalt_paver_layer_1_coverage_area_m2", null, true),
       ],
-    } as unknown as CanonicalEstimateCatalogItem;
+    });
 
     const inputs = buildCanonicalBaselineInputs({
       catalog,
@@ -419,7 +419,7 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
   ] as const)(
     "lets explicit user input replace a visible baseline for %s",
     (parameterId, unitId, prompt, expected) => {
-      const catalog = {
+      const catalog = Object.assign({} as CanonicalEstimateCatalogItem, {
         parameterSchema: [{
           parameterId,
           ordinal: 0,
@@ -435,7 +435,7 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
           formulaConsumers: ["formula:primary-measure"],
           resourceBranchConsumers: ["row:primary-resource"],
         }],
-      } as unknown as CanonicalEstimateCatalogItem;
+      });
 
       expect(buildCanonicalBaselineInputs({ catalog, prompt })).toEqual({
         [parameterId]: expected,
@@ -443,8 +443,8 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     },
   );
 
-  it("fails closed when a frozen definition exposes derived coverage as required user input", () => {
-    const catalog = {
+  it("does not force a derived coverage output into the preliminary user form", () => {
+    const catalog = Object.assign({} as CanonicalEstimateCatalogItem, {
       parameterSchema: [{
         parameterId: "area_m2",
         ordinal: 0,
@@ -470,12 +470,12 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
         visibilityRole: "USER_INPUT",
         valueSourceRole: "USER_MEASURED",
       }],
-    } as unknown as CanonicalEstimateCatalogItem;
+    });
 
-    expect(() => buildCanonicalBaselineInputs({
+    expect(buildCanonicalBaselineInputs({
       catalog,
       prompt: "Асфальтирование 5000 кв метров",
-    })).toThrow("CANONICAL_BASELINE_CONTRACT_MISSING:asphalt_paver_layer_1_coverage_area_m2");
+    })).toEqual({ area_m2: "5000" });
   });
 
   it("routes a line action only with exact immutable identity and return position", () => {
@@ -502,6 +502,23 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
       ownerId: "another-user",
       requestItemId: "request-item-50",
     })).toThrow(ConsumerEstimateActionContextError);
+  });
+
+  it("prefers the canonical backend catalog identity over a short selected-work key", () => {
+    const bundle = canonicalBundle();
+    bundle.draft.selectedCatalogWorkId = "concrete_foundation_interior_anchor_group_pour_high_load";
+    bundle.items[0].sourceParameters = {
+      ...bundle.items[0].sourceParameters,
+      canonicalBackendCatalogId:
+        "canonical-work:base:concrete_foundation_interior_anchor_group_pour_high_load",
+    };
+    expect(buildConsumerEstimateActionContext({
+      action: "openProfessionalPdf",
+      bundle,
+      ownerId: "consumer-1",
+    }).definitionId).toBe(
+      "canonical-work:base:concrete_foundation_interior_anchor_group_pour_high_load",
+    );
   });
 
   it("hides formula internals and rejects corrupted numeric ranges", () => {
@@ -539,10 +556,9 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
       formulaConsumers: ["paver-hours"],
       resourceBranchConsumers: ["paver-row"],
     } as never;
-    const undeclaredOwner = {
-      ...(area as unknown as Record<string, unknown>),
+    const undeclaredOwner = Object.assign({}, area, {
       visibilityRole: undefined,
-    } as never;
+    }) as never;
     expect(isConsumerMeaningfulCanonicalParameter(internal)).toBe(false);
     expect(isConsumerMeaningfulCanonicalParameter(derivedBoqQuantity)).toBe(false);
     expect(isConsumerMeaningfulCanonicalParameter(internalProductivity)).toBe(false);
@@ -551,6 +567,93 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     expect(normalizedCanonicalNumericValidation({ minimum: Number.EPSILON, maximum: 0, integer: false })).toEqual({});
     expect(normalizedCanonicalNumericValidation({ minimum: 1, maximum: 0, integer: false })).toEqual({});
     expect(normalizedCanonicalNumericValidation({ minimum: 40, maximum: 60, integer: false })).toEqual({ min: 40, max: 60 });
+  });
+
+  it("shows source-backed runtime values as editable assumptions or norms and preserves a manual override", () => {
+    const parameter = (input: Record<string, unknown>) => ({
+      parameterId: "material_volume_factor",
+      ordinal: 0,
+      valueType: "decimal",
+      unitId: "ratio",
+      titleRu: "Коэффициент геометрического объёма материала",
+      required: true,
+      defaultValue: null,
+      constraints: { min: 0.000001 },
+      semanticParameterKey: "material_volume_factor",
+      visibilityRole: "USER_INPUT",
+      valueSourceRole: "SOURCE_BACKED_PRELIMINARY_PROFILE",
+      normativeLinks: [{
+        sourceId: "method",
+        documentTitleRu: "Метод производства работ",
+        editionStatus: "v1",
+        locator: "section 4",
+        verifiedAt: "2026-09-25T00:00:00+06:00",
+      }],
+      formulaConsumers: ["material-volume"],
+      resourceBranchConsumers: ["material-row"],
+      validationRules: [],
+      provenance: {},
+      ...input,
+    });
+    const catalog = {
+      catalogId: "source-backed-profile",
+      workKey: "source-backed-profile",
+      definitionVersion: 2,
+      parameterSchema: [
+        parameter({ defaultValue: 1, runtimeProfileClassification: "ASSUMPTION" }),
+        parameter({
+          parameterId: "packer_spacing_thickness_ratio",
+          ordinal: 1,
+          titleRu: "Шаг пакеров к толщине элемента",
+          semanticParameterKey: "packer_spacing_thickness_ratio",
+          defaultValue: 0.5,
+          runtimeProfileClassification: "NORMATIVE",
+        }),
+      ],
+    } as never;
+    const revision = (overrides: Record<string, unknown> = {}) => ({
+      revisionId: "source-backed-revision",
+      checksumSha256: "source-backed-checksum",
+      parameterSchemaHash: "source-backed-schema",
+      compilerVersion: "source-backed-compiler",
+      createdAt: "2026-09-25T00:00:00.000Z",
+      parameters: { material_volume_factor: 1, packer_spacing_thickness_ratio: 0.5 },
+      userInputSnapshot: {},
+      preliminaryNeeds: [],
+      ...overrides,
+    }) as never;
+
+    const initial = buildConsumerCanonicalParameterSession({
+      catalog,
+      revision: revision(),
+      draftId: "source-backed-draft",
+    });
+    expect(initial.parameters.map((entry) => entry.parameterId)).toEqual([
+      "material_volume_factor",
+      "packer_spacing_thickness_ratio",
+    ]);
+    expect(initial.parameters.map((entry) => entry.source)).toEqual([
+      "ASSUMED",
+      "NORMATIVE_DERIVED",
+    ]);
+    expect(initial.parameters.map((entry) => entry.referenceSource)).toEqual([
+      "ASSUMED",
+      "NORMATIVE_DERIVED",
+    ]);
+    expect(initial.parameters.map((entry) => entry.referenceValue)).toEqual([1, 0.5]);
+
+    const edited = buildConsumerCanonicalParameterSession({
+      catalog,
+      parent: revision(),
+      revision: revision({
+        revisionId: "source-backed-revision-child",
+        parameters: { material_volume_factor: 1.1, packer_spacing_thickness_ratio: 0.5 },
+        userInputSnapshot: { material_volume_factor: 1.1 },
+      }),
+      draftId: "source-backed-draft",
+    });
+    expect(edited.parameters.find((entry) => entry.parameterId === "material_volume_factor")?.source)
+      .toBe("USER_EXPLICIT");
   });
 
   it("keeps recognized calculation values but drops document-only precision profiles before preliminary compile", () => {
@@ -660,7 +763,7 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
       baselineDisplay: "50 мм",
       guideShortRu: "По проекту",
     });
-    expect(placeholder).toBe("Предварительно принято: 50 мм · норма: 40–60");
+    expect(placeholder).toBe("Предварительно принято: 50 мм · допустимо: 40–60");
     expect(placeholder).not.toMatch(/e-\d|2\.220446|Нормативный диапазон: числовое значение/u);
   });
 
@@ -767,11 +870,25 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
       screen.indexOf("private sendHistoryToMarket"),
     );
     expect(editFlow).toContain("openExactCanonicalRevisionInConsumerEditor");
+    expect(editFlow).toContain("createConsumerRepairDraftFromHistorySnapshot");
+    expect(editFlow).toContain('reason: "edit_as_new_revision"');
+    expect(editFlow).toContain("source: editableSource");
+    expect(editFlow).toContain("requestDraftId: editableSource?.draft.id");
     expect(editFlow).toContain("expectedReleaseId: binding.releaseId");
     expect(editFlow).not.toContain("onOpenCanonicalEstimate");
     expect(screen).toContain("onLoadCanonicalParameterSession(");
     expect(screen).toContain('router.setParams({ canonicalRevisionId: "", draftId: bundle.draft.id })');
     expect(container).not.toContain("ProfessionalEstimateComposer");
+  });
+
+  it("validates the marketplace artifact against the immutable backend catalog identity", () => {
+    const screen = read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
+    const sendFlow = screen.slice(
+      screen.indexOf("private sendHistoryToMarket"),
+      screen.indexOf("private decreaseItem"),
+    );
+    expect(sendFlow).toContain("expectedCatalogId: canonicalRevision.catalogId");
+    expect(sendFlow).not.toContain("expectedCatalogId: source.draft.selectedCatalogWorkId");
   });
 
   it("preserves every persisted backend row instead of filtering the DTO", () => {

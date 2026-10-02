@@ -39,4 +39,25 @@ describe("consumer repair canonical draft reuse", () => {
       requestedCatalogId: null,
     })).toBe(false);
   });
+
+  test("treats a short selected-work key as the same canonical backend catalog", () => {
+    expect(canReuseConsumerRepairCanonicalDraft({
+      ...unchanged,
+      existingCatalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_pour_high_load",
+      requestedCatalogId: "concrete_foundation_interior_anchor_group_pour_high_load",
+    })).toBe(true);
+    expect(canReuseConsumerRepairCanonicalDraft({
+      ...unchanged,
+      existingCatalogId: "concrete_foundation_interior_anchor_group_pour_high_load",
+      requestedCatalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_pour_high_load",
+    })).toBe(true);
+  });
+
+  test("does not collapse two canonical namespaces with the same work key", () => {
+    expect(canReuseConsumerRepairCanonicalDraft({
+      ...unchanged,
+      existingCatalogId: "canonical-work:base:catalog-formwork",
+      requestedCatalogId: "canonical-work:master:catalog-formwork",
+    })).toBe(false);
+  });
 });

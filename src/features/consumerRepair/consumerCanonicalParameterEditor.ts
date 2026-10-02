@@ -1,4 +1,7 @@
-import type { ConsumerRepairDraftRevisionParamBatchPatch } from "../../lib/consumerRequests";
+import type {
+  ConsumerRepairDraftBundle,
+  ConsumerRepairDraftRevisionParamBatchPatch,
+} from "../../lib/consumerRequests";
 import {
   getCanonicalEstimateCatalogItem,
   getCanonicalEstimateParameterSessionSnapshot,
@@ -193,15 +196,29 @@ function parameterSource(input: {
 }): CanonicalParameter["source"] {
   if (input.value == null) return "MISSING";
   if (input.schema.visibilityRole === "USER_DERIVED_READONLY") return "CALCULATED";
+  if (input.rootUserInputPresent
+    && String(input.rootUserInputValue) === String(input.value)) return "USER_EXPLICIT";
   if (input.parentValue !== undefined) {
     return String(input.parentValue) === String(input.value) ? "PROJECT_SPECIFIC" : "USER_EXPLICIT";
   }
-  if (input.rootUserInputPresent
-    && String(input.rootUserInputValue) === String(input.value)) return "USER_EXPLICIT";
   // A root revision can contain a value accepted by the definition baseline or
   // extracted during initial compilation. Neither is a confirmation click in
   // this editor, so it must never be presented as user-confirmed provenance.
   return "ASSUMED";
+}
+
+function runtimeProfileParameterSource(
+  schema: EditableSchema,
+): CanonicalParameter["source"] {
+  const classification = String(schema.runtimeProfileClassification ?? "")
+    .trim()
+    .toUpperCase();
+  if (classification === "ASSUMPTION"
+    || classification === "VISIBLE_PRELIMINARY_SCENARIO"
+    || classification === "RUNTIME_STRUCTURAL_DEFAULT"
+    || schema.valueSourceRole === "VISIBLE_PRELIMINARY_SCENARIO"
+    || schema.valueSourceRole === "VISIBLE_BASELINE_ASSUMPTION") return "ASSUMED";
+  return "NORMATIVE_DERIVED";
 }
 
 function scalarConditionValue(value: unknown): CanonicalParameterValue | null {
@@ -292,6 +309,7 @@ function buildParameter(input: {
     input.schema.titleRu,
   );
   const value = scalarValue(input.schema, input.parameters[input.schema.parameterId]);
+  const referenceValue = scalarValue(input.schema, input.schema.defaultValue);
   const source = input.sourceOverride ?? parameterSource({
     schema: input.schema,
     value,
@@ -322,6 +340,10 @@ function buildParameter(input: {
     label: labelRu,
     description: input.schema.descriptionRu || guide?.guideShortRu || labelRu,
     value,
+    referenceValue,
+    referenceSource: referenceValue == null
+      ? undefined
+      : runtimeProfileParameterSource(input.schema),
     valueType: input.schema.valueType === "decimal" || input.schema.valueType === "integer"
       ? "number"
       : input.schema.valueType === "boolean" ? "boolean" : "string",
@@ -385,32 +407,64 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
 }): CanonicalParameterSession {
   const allParameters = input.catalog.parameterSchema
     .filter((schema) => isConsumerMeaningfulCanonicalParameter(schema)
+      || (input.parameters[schema.parameterId] != null
+        && isCanonicalEstimateUserEditableParameter(schema))
       || (input.activeNeedParameterIds.has(schema.parameterId)
-        && (isCanonicalEstimateUserEditableParameter(schema)
+        && (schema.visibilityRole === "USER_INPUT"
+          || isCanonicalEstimateUserEditableParameter(schema)
           || isCanonicalEstimateSourceManagedParameter(schema))))
     .map((schema) => buildParameter({
       schema,
       parameters: input.parameters,
       parentParameters: input.parentParameters,
       userInputSnapshot: input.userInputSnapshot,
-      sourceOverride: isCanonicalEstimateSourceManagedParameter(schema)
-        ? "NORMATIVE_DERIVED"
-        : input.parameters[schema.parameterId] == null
-          ? undefined
-          : input.sourceByParameterId?.get(schema.parameterId),
+      sourceOverride: input.parameters[schema.parameterId] == null
+        ? isCanonicalEstimateSourceManagedParameter(schema)
+          ? runtimeProfileParameterSource(schema)
+          : undefined
+        : input.sourceByParameterId?.get(schema.parameterId)
+          ?? (Object.prototype.hasOwnProperty.call(
+            input.userInputSnapshot ?? {},
+            schema.parameterId,
+          )
+            ? "USER_EXPLICIT"
+            : input.parentParameters?.[schema.parameterId] !== undefined
+            && String(input.parentParameters[schema.parameterId])
+              !== String(input.parameters[schema.parameterId])
+              ? "USER_EXPLICIT"
+              : isCanonicalEstimateSourceManagedParameter(schema)
+                ? runtimeProfileParameterSource(schema)
+                : undefined),
     }));
   const values = new Map(allParameters
     .filter((parameter) => parameter.value != null)
     .map((parameter) => [parameter.parameterId, parameter.value!] as const));
-  const rawVisibleParameters = allParameters.filter((parameter) => {
+  const conditionState = (parameter: CanonicalParameter): boolean | null => {
+    // A backend need is authoritative only inside its applicable branch. The
+    // client parser maps an unsupported/newer expression to ALWAYS. For a
+    // supported expression, an absent dependency is unknown while an explicit
+    // mismatch is false; this keeps a selected backend need visible without
+    // reviving a branch the user's known inputs disabled.
     const condition = parameter.visibilityCondition;
     if (condition.kind === "ALWAYS") return true;
-    const matches = (candidate: { parameterId: string; value: CanonicalParameterValue }) =>
-      values.get(candidate.parameterId) === candidate.value;
+    const matches = (candidate: { parameterId: string; value: CanonicalParameterValue }): boolean | null =>
+      values.has(candidate.parameterId)
+        ? values.get(candidate.parameterId) === candidate.value
+        : null;
     if (condition.kind === "PARAMETER_EQUALS") return matches(condition);
-    return condition.kind === "ALL_OF"
-      ? condition.conditions.every(matches)
-      : condition.conditions.some(matches);
+    const states = condition.conditions.map(matches);
+    if (condition.kind === "ALL_OF") {
+      if (states.includes(false)) return false;
+      return states.every((state) => state === true) ? true : null;
+    }
+    if (states.includes(true)) return true;
+    return states.every((state) => state === false) ? false : null;
+  };
+  const rawVisibleParameters = allParameters.filter((parameter) => {
+    const state = conditionState(parameter);
+    return input.activeNeedParameterIds.has(parameter.parameterId)
+      ? state !== false
+      : state === true;
   });
   const visibleParameters = rawVisibleParameters.map((parameter): CanonicalParameter =>
     parameter.value == null && input.activeNeedParameterIds.has(parameter.parameterId)
@@ -460,6 +514,8 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
       id: parameter.parameterId,
       value: parameter.value,
       source: parameter.source,
+      referenceValue: parameter.referenceValue,
+      referenceSource: parameter.referenceSource,
     })),
   });
   return {
@@ -695,6 +751,7 @@ export async function recalculateConsumerCanonicalEstimate(input: {
       }),
       catalogId: revision.catalogId,
       parentRevisionId: revision.revisionId,
+      organizationId: revision.organizationId ?? null,
       ...requestIdentity,
       parameters,
       currencyCode: revision.currencyCode,
@@ -703,7 +760,7 @@ export async function recalculateConsumerCanonicalEstimate(input: {
     },
   });
   if (result.revision.parentRevisionId !== revision.revisionId) {
-    throw new CanonicalEstimateApiError("Пересчёт остановлен: backend вернул неверную дочернюю версию.", {
+    throw new CanonicalEstimateApiError("Пересчёт остановлен: backend вернул несогласованный результат.", {
       code: "CHILD_REVISION_IDENTITY_MISMATCH",
       httpStatus: 409,
     });
@@ -728,7 +785,7 @@ export async function recalculateConsumerCanonicalEstimate(input: {
   });
   const parity = verifyForemanAiEstimatePayloadParity(mapping);
   if (!parity.ok) {
-    throw new CanonicalEstimateApiError("Дочерняя версия не сохранена: нарушено соответствие строк backend.", {
+    throw new CanonicalEstimateApiError("Изменения не сохранены: нарушено соответствие строк backend.", {
       code: "CANONICAL_RECALC_PARITY_FAILED",
       httpStatus: 409,
     });
@@ -742,6 +799,32 @@ export async function recalculateConsumerCanonicalEstimate(input: {
       draftId: input.draftId,
     }),
   };
+}
+
+export async function recalculateAndPersistConsumerCanonicalEstimate(input: {
+  revisionId: string;
+  draftId: string;
+  problemText: string;
+  patches: ConsumerRepairDraftRevisionParamBatchPatch[];
+  rowOverrides?: Record<string, CanonicalEstimateRowOverride>;
+  persist: (
+    mapping: ForemanAiEstimateDraftMapping,
+    problemText: string,
+    draftId: string,
+  ) => Promise<ConsumerRepairDraftBundle | null | undefined>;
+  recalculate?: typeof recalculateConsumerCanonicalEstimate;
+}): Promise<{ session: CanonicalParameterSession; bundle: ConsumerRepairDraftBundle }> {
+  const recalculate = input.recalculate ?? recalculateConsumerCanonicalEstimate;
+  const result = await recalculate({
+    revisionId: input.revisionId,
+    draftId: input.draftId,
+    problemText: input.problemText,
+    patches: input.patches,
+    rowOverrides: input.rowOverrides,
+  });
+  const bundle = await input.persist(result.mapping, input.problemText, input.draftId);
+  if (!bundle) throw new Error("CANONICAL_CONSUMER_CHILD_DRAFT_PERSIST_FAILED");
+  return { session: result.session, bundle };
 }
 
 export async function recalculateConsumerCanonicalCatalogSelection(input: {
@@ -815,6 +898,7 @@ export async function recalculateConsumerCanonicalCatalogSelection(input: {
       })}`,
       catalogId: revision.catalogId,
       parentRevisionId: revision.revisionId,
+      organizationId: revision.organizationId ?? null,
       ...requestIdentityForRecalculation({
         revision,
         catalog,
@@ -827,7 +911,7 @@ export async function recalculateConsumerCanonicalCatalogSelection(input: {
     },
   });
   if (result.revision.parentRevisionId !== revision.revisionId) {
-    throw new CanonicalEstimateApiError("Товар не выбран: backend вернул неверную дочернюю версию.", {
+    throw new CanonicalEstimateApiError("Товар не выбран: backend вернул несогласованный результат.", {
       code: "CHILD_REVISION_IDENTITY_MISMATCH",
       httpStatus: 409,
     });
@@ -852,7 +936,7 @@ export async function recalculateConsumerCanonicalCatalogSelection(input: {
   });
   const parity = verifyForemanAiEstimatePayloadParity(mapping);
   if (!parity.ok || mapping.payload.rows.length !== result.revision.rowCount) {
-    throw new CanonicalEstimateApiError("Товар не выбран: нарушено соответствие строк дочерней версии.", {
+    throw new CanonicalEstimateApiError("Товар не выбран: нарушено соответствие строк результата.", {
       code: "CANONICAL_CATALOG_SELECTION_PARITY_FAILED",
       httpStatus: 409,
     });
@@ -934,6 +1018,7 @@ export async function recalculateConsumerCanonicalCatalogAddition(input: {
       })}`,
       catalogId: revision.catalogId,
       parentRevisionId: revision.revisionId,
+      organizationId: revision.organizationId ?? null,
       ...requestIdentityForRecalculation({ revision, catalog, problemText: input.problemText }),
       parameters: parameterValidation.parameters,
       currencyCode: revision.currencyCode,

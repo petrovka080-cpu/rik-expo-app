@@ -225,7 +225,8 @@ function receiverAtLine(projectRoot: string, file: string, line: number): string
 }
 
 function fileImportsWrappedSupabase(text: string): boolean {
-  return /import\s+\{\s*supabase\s*\}\s+from\s+["'][^"']*supabaseClient["']/.test(text);
+  return /import\s+\{\s*supabase\s*\}\s+from\s+["'][^"']*supabaseClient["']/.test(text)
+    || /(?:await\s+)?import\s*\(\s*["'][^"']*supabaseClient["']\s*\)/.test(text);
 }
 
 function fileImportsCoreClient(text: string): boolean {

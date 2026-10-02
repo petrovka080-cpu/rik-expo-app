@@ -172,19 +172,26 @@ async function assertClaimedJobAdmission(admin: AdminClient, job: ClaimedJob): P
   }
 }
 
-async function loadPriceItems(admin: AdminClient, snapshotIds: string[]) {
+async function loadPriceItems(
+  admin: AdminClient,
+  definitionVersionId: string,
+  snapshotIds: string[],
+) {
   const prices = new Map<string, Record<string, unknown>>();
   if (snapshotIds.length === 0) return prices;
-  const { data, error } = await admin
-    .from("estimate_price_snapshot_item")
-    .select("snapshot_id,price_key,unit_id,unit_price,currency_code,estimate_price_snapshot!inner(route_id,captured_at)")
-    .in("snapshot_id", snapshotIds)
-    .order("captured_at", { foreignTable: "estimate_price_snapshot", ascending: false })
-    .limit(20_000);
+  const { data, error } = await admin.rpc("estimate_resolve_compile_price_items_v1", {
+    p_definition_version_id: definitionVersionId,
+    p_snapshot_ids: snapshotIds,
+  });
   if (error) throw Object.assign(new Error("price snapshot load failed"), { code: "PRICE_LOAD_FAILED" });
   for (const item of data ?? []) {
     const key = `${item.price_key}:${item.unit_id}`;
-    if (!prices.has(key)) prices.set(key, item);
+    if (!prices.has(key)) {
+      prices.set(key, {
+        ...item,
+        estimate_price_snapshot: { route_id: item.route_id },
+      });
+    }
   }
   return prices;
 }
@@ -296,9 +303,9 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
     }
     parentRevision = parent;
   }
-  const effectiveUserParameters = { ...inheritedUserParameters, ...submittedParameters };
+  let effectiveUserParameters = { ...inheritedUserParameters, ...submittedParameters };
   const snapshotIds = Array.isArray(job.input_payload?.priceSnapshotIds) ? job.input_payload.priceSnapshotIds : [];
-  const prices = await loadPriceItems(admin, snapshotIds);
+  const prices = await loadPriceItems(admin, definition.id, snapshotIds);
   const compiled = await compileCanonicalEstimateCore({
     operation: job.operation as "compile" | "recalculate",
     compilerVersion: WORKER_VERSION,
@@ -323,6 +330,7 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
   });
   const { rows, totals } = compiled;
   const parameters = compiled.parameters;
+  effectiveUserParameters = { ...effectiveUserParameters, ...compiled.derivedParameters };
   const currencyCode = compiled.totals.currencyCode;
   const baselineAssumptions = Object.fromEntries(Object.entries(baselineParameters)
     .filter(([parameterId, value]) => !(parameterId in effectiveUserParameters)

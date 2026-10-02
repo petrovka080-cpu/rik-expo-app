@@ -8,24 +8,34 @@ import { buildStripFoundationContentPassportR3 } from "./buildStripFoundationCon
 import {
   REAL_PROFESSIONAL_ESTIMATES_R2_SPEC_SHA256,
   REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT,
-  STRIP_FOUNDATION_FORMULAS,
   STRIP_FOUNDATION_GOLD_INPUT,
-  STRIP_FOUNDATION_INPUTS,
-  STRIP_FOUNDATION_ROWS,
   compileStripFoundationEstimate,
 } from "./reinforcedConcreteStripFoundationR1";
 import { auditRealProfessionalRowsR1 } from "./realProfessionalEstimateContentGateR1";
+import { auditStripFoundationScopeCompletenessR1 } from "../../../src/lib/estimate/v4/stripFoundationScopeCompletenessR1";
+import {
+  STRIP_FOUNDATION_PROFESSIONAL_FORMULAS_R2,
+  STRIP_FOUNDATION_PROFESSIONAL_GOLD_INPUT_R2,
+  STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2,
+  STRIP_FOUNDATION_PROFESSIONAL_ROWS_R2,
+  auditStripFoundationProfessionalCompositionR2,
+  compileStripFoundationProfessionalGoldR2,
+  stripFoundationProfessionalParameterConsumerRowIdsR2,
+} from "../../../src/lib/estimate/v4/stripFoundationProfessionalCompositionR2";
 
 type Json = Record<string, any>;
 
-const EXPECTED_BRANCH = "codex/p0-one-monolith-r5";
+const EXPECTED_BRANCH = "codex/r4-a5-clean-08b18902";
 const PREDECESSOR_RELEASE_ID = process.env.CANONICAL_ESTIMATE_TARGET_RELEASE_ID
   ?? "4c5affaf-5f63-5d04-b036-875c684f8c45";
 const ACTIVE_RELEASE_ID = "da29dc2b-1384-5487-b8da-6ee93f4e514e";
 const TARGET_CATALOG_ID = "concrete_foundation_interior_strip_foundation_form_standard";
-const MASTER_SPEC_PATH = resolve("C:/Users/User/Downloads/MASTER_TZ_REAL_PROFESSIONAL_ESTIMATES_R1_RU (1).md");
-const CONTRACT = "real-professional-estimates-r2.concrete-strip-foundation-successor.v1";
-const RELEASE_KEY = `real-professional-estimates-r2-concrete-strip-${REAL_PROFESSIONAL_ESTIMATES_R2_SPEC_SHA256.slice(0, 8)}`;
+const GOVERNING_MASTER_PATH = resolve(
+  "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (29).md",
+);
+const GOVERNING_MASTER_SHA256 = "d7825274f1a6b8db4724ac4df667d86f0d17967dc00de63d9045f2a29b172e70";
+const CONTRACT = "real-professional-estimates-r2.concrete-strip-foundation-successor.v2";
+const RELEASE_KEY = `real-professional-estimates-r2-concrete-strip-${REAL_PROFESSIONAL_ESTIMATES_R2_SPEC_SHA256.slice(0, 8)}-professional-composition-r2`;
 const DATABASE_URL = process.env.MONOLITH_ESTIMATE_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/batch009_fire_r5_a";
 const APPLY = process.argv.includes("--apply");
@@ -101,9 +111,9 @@ async function insertBatches(
 }
 
 async function main(): Promise<void> {
-  invariant(existsSync(MASTER_SPEC_PATH), "CONCRETE_R6_R2_MASTER_SPEC_MISSING");
-  invariant(sha256(readFileSync(MASTER_SPEC_PATH)) === REAL_PROFESSIONAL_ESTIMATES_R2_SPEC_SHA256,
-    "CONCRETE_R6_R2_MASTER_SPEC_SHA256_DRIFT");
+  invariant(existsSync(GOVERNING_MASTER_PATH), "CONCRETE_R6_S25_MASTER_SPEC_MISSING");
+  invariant(sha256(readFileSync(GOVERNING_MASTER_PATH)) === GOVERNING_MASTER_SHA256,
+    "CONCRETE_R6_S25_MASTER_SPEC_SHA256_DRIFT");
   const branch = git(["branch", "--show-current"]);
   const head = git(["rev-parse", "HEAD"]);
   const tree = git(["show", "-s", "--format=%T", "HEAD"]);
@@ -113,7 +123,10 @@ async function main(): Promise<void> {
     const allowedDirtyPaths = [
       "scripts/estimate/batch001008R2/",
       "scripts/estimate/concreteBackendR6/",
+      "src/lib/estimate/v4/stripFoundationProfessionalCompositionR2.ts",
+      "src/lib/estimate/v4/stripFoundationScopeCompletenessR1.ts",
       "tests/estimateBackend/concreteR6Professional.contract.test.ts",
+      "tests/estimateNorms/stripFoundationCanonicalPassportR4A10.contract.test.ts",
     ];
     const unexpectedDirtyPaths = worktreeStatus.split(/\r?\n/u).filter(Boolean)
       .map((line) => line.slice(3).replaceAll("\\", "/"))
@@ -122,26 +135,44 @@ async function main(): Promise<void> {
       `CONCRETE_R6_APPLY_UNEXPECTED_DIRTY_PATHS:${unexpectedDirtyPaths.join(",")}`);
   }
 
-  const compiledGold = compileStripFoundationEstimate(STRIP_FOUNDATION_GOLD_INPUT);
-  invariant(auditRealProfessionalRowsR1(compiledGold).length === 0, "CONCRETE_R6_GOLD_CONTENT_GATE_RED");
-  invariant(new Set(compiledGold.map((row) => row.category)).size === 4, "CONCRETE_R6_GOLD_FOUR_CATEGORIES_RED");
+  const legacyCompiledGold = compileStripFoundationEstimate(STRIP_FOUNDATION_GOLD_INPUT);
+  invariant(auditRealProfessionalRowsR1(legacyCompiledGold).length === 0,
+    "CONCRETE_R6_LEGACY_GOLD_CONTENT_GATE_RED");
+  const compiledGold = compileStripFoundationProfessionalGoldR2();
+  const compositionDecision = auditStripFoundationProfessionalCompositionR2();
+  invariant(compositionDecision.status === "GREEN",
+    `CONCRETE_R6_PROFESSIONAL_COMPOSITION_RED:${compositionDecision.errors.join("|")}`);
+  invariant(new Set(compiledGold.map((row) => row.category)).size === 5,
+    "CONCRETE_R6_GOLD_FIVE_CATEGORIES_RED");
 
   const releaseId = deterministicUuid(`${CONTRACT}:release:${RELEASE_KEY}`);
   const definitionId = deterministicUuid(`${CONTRACT}:definition:${TARGET_CATALOG_ID}`);
   const baselineId = deterministicUuid(`${CONTRACT}:baseline:${TARGET_CATALOG_ID}`);
-  const {
-    formulaConsumers,
-    resourceConsumers,
-    decision: contentPassportDecision,
-  } = buildStripFoundationContentPassportR3();
-  const goldInputValues = Object.fromEntries(Object.entries(STRIP_FOUNDATION_GOLD_INPUT)
+  const { decision: legacyContentPassportDecision } = buildStripFoundationContentPassportR3();
+  const formulaConsumers = Object.fromEntries(STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2.map((parameter) => [
+    parameter.parameterId,
+    STRIP_FOUNDATION_PROFESSIONAL_FORMULAS_R2
+      .filter((formula) => formula.inputParameterIds.includes(parameter.parameterId))
+      .map((formula) => formula.formulaId)
+      .sort(),
+  ]));
+  const resourceConsumers = Object.fromEntries(STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2.map((parameter) => [
+    parameter.parameterId,
+    stripFoundationProfessionalParameterConsumerRowIdsR2(parameter.parameterId),
+  ]));
+  const scopeCompleteness = auditStripFoundationScopeCompletenessR1({
+    currentDefinitionRowIds: STRIP_FOUNDATION_PROFESSIONAL_ROWS_R2.map((row) => row.rowId),
+  });
+  const goldInputValues = Object.fromEntries(Object.entries(STRIP_FOUNDATION_PROFESSIONAL_GOLD_INPUT_R2)
     .filter(([parameterId]) => (resourceConsumers[parameterId]?.length ?? 0) > 0));
-  invariant(Object.keys(goldInputValues).length === Object.keys(STRIP_FOUNDATION_GOLD_INPUT).length,
+  invariant(Object.keys(goldInputValues).length === Object.keys(STRIP_FOUNDATION_PROFESSIONAL_GOLD_INPUT_R2).length,
     "CONCRETE_R6_GOLD_INPUT_WITHOUT_CONSUMER");
-  invariant(contentPassportDecision.allowed,
-    `CONCRETE_R6_R3_CONTENT_PASSPORT_RED:${contentPassportDecision.errors.join("|")}`);
+  invariant(legacyContentPassportDecision.allowed,
+    `CONCRETE_R6_R3_LEGACY_CONTENT_PASSPORT_RED:${legacyContentPassportDecision.errors.join("|")}`);
+  invariant(scopeCompleteness.status === "GREEN",
+    `CONCRETE_R6_SCOPE_COMPLETENESS_RED:${scopeCompleteness.unresolvedExpectationIds.join("|")}`);
 
-  const parameterSchemaSha256 = sha256(STRIP_FOUNDATION_INPUTS.map((parameter) => [
+  const parameterSchemaSha256 = sha256(STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2.map((parameter) => [
     parameter.parameterId,
     parameter.valueType,
     parameter.unitId,
@@ -153,19 +184,32 @@ async function main(): Promise<void> {
   const acceptanceEvidenceSha256 = sha256({
     contract: CONTRACT,
     specSha256: REAL_PROFESSIONAL_ESTIMATES_R2_SPEC_SHA256,
+    governingMasterSha256: GOVERNING_MASTER_SHA256,
     parameterSchemaSha256,
     goldInputValues,
     goldRows: compiledGold.map((row) => [row.rowId, row.category, row.evaluatedQuantity, row.normalizedUom]),
     formulaConsumers,
     resourceConsumers,
-    contentPassportDecision,
+    legacyContentPassportDecision,
+    compositionDecision,
+    scopeCompleteness,
   });
+  const professionalPassport = {
+    ...REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT,
+    inputSchema: STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2,
+    formulas: STRIP_FOUNDATION_PROFESSIONAL_FORMULAS_R2,
+    rows: STRIP_FOUNDATION_PROFESSIONAL_ROWS_R2,
+    contentStatus: "prepared_professional_composition" as const,
+    compositionDecision,
+    scopeCompleteness,
+  };
   const definitionSha256 = sha256({
     contract: CONTRACT,
-    passport: REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT,
+    passport: professionalPassport,
     parameterSchemaSha256,
-    formulas: STRIP_FOUNDATION_FORMULAS.map((formula) => [formula.formulaId, sha256(formula.ast)]),
-    rows: STRIP_FOUNDATION_ROWS,
+    formulas: STRIP_FOUNDATION_PROFESSIONAL_FORMULAS_R2
+      .map((formula) => [formula.formulaId, sha256(formula.ast)]),
+    rows: STRIP_FOUNDATION_PROFESSIONAL_ROWS_R2,
   });
 
   const client = new Client({
@@ -208,6 +252,7 @@ async function main(): Promise<void> {
         schemaVersion: CONTRACT,
         capturedAt: new Date().toISOString(),
         specSha256: REAL_PROFESSIONAL_ESTIMATES_R2_SPEC_SHA256,
+        governingMasterSha256: GOVERNING_MASTER_SHA256,
         source: { branch, head, tree, clean: worktreeStatus === "" },
         predecessorReleaseId: PREDECESSOR_RELEASE_ID,
         candidateReleaseId: releaseId,
@@ -288,7 +333,7 @@ async function main(): Promise<void> {
       && JSON.stringify(stable(normativeLocator.locator)) === JSON.stringify(stable(normativeLocatorPayload)),
     "CONCRETE_R6_KRER_LOCATOR_DRIFT");
 
-    const parameters = STRIP_FOUNDATION_INPUTS.map((parameter, ordinal) => ({
+    const parameters = STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2.map((parameter, ordinal) => ({
       definition_version_id: definitionId,
       parameter_id: parameter.parameterId,
       ordinal,
@@ -346,10 +391,11 @@ async function main(): Promise<void> {
         },
         contract: CONTRACT,
         spec_sha256: REAL_PROFESSIONAL_ESTIMATES_R2_SPEC_SHA256,
+        governing_master_sha256: GOVERNING_MASTER_SHA256,
       },
       approved_template_baseline_id: baselineId,
     }));
-    const formulas = STRIP_FOUNDATION_FORMULAS.map((formula) => ({
+    const formulas = STRIP_FOUNDATION_PROFESSIONAL_FORMULAS_R2.map((formula) => ({
       definition_version_id: definitionId,
       formula_id: formula.formulaId,
       output_unit_id: formula.outputUnitId,
@@ -358,31 +404,21 @@ async function main(): Promise<void> {
       input_parameter_ids: formula.inputParameterIds,
       ast_sha256: sha256(formula.ast),
     }));
-    const sectionByCategory = {
-      material: "Конкретные материалы",
-      construction_work: "Конкретные строительные работы",
-      machine_equipment: "Конкретные машины и оборудование",
-      delivery: "Конкретная доставка",
-    } as const;
-    const physicalTypeByCategory = {
-      material: "material",
-      construction_work: "work",
-      machine_equipment: "equipment",
-      delivery: "transport",
-    } as const;
     const resourceIdByRowId = new Map<string, string>();
-    const resources = STRIP_FOUNDATION_ROWS.map((row, ordinal) => {
+    const resources = STRIP_FOUNDATION_PROFESSIONAL_ROWS_R2.map((row, ordinal) => {
       const id = deterministicUuid(`${CONTRACT}:resource:${TARGET_CATALOG_ID}:${row.rowId}`);
       resourceIdByRowId.set(row.rowId, id);
       const sourceMetadata = {
         truth_contract_version: "REAL_PROFESSIONAL_ESTIMATES_R2",
         contract: CONTRACT,
         specSha256: REAL_PROFESSIONAL_ESTIMATES_R2_SPEC_SHA256,
+        governingMasterSha256: GOVERNING_MASTER_SHA256,
         category: row.category,
         visibility: row.visibility,
-        procurementMode: row.procurementMode,
+        procurementEligible: row.procurementEligible,
         includedInParentRate: row.includedInParentRate,
         normSource: row.normSource,
+        ...row.sourceMetadata,
         ...(row.cargo ? { cargo: row.cargo } : {}),
       };
       const resourceGraph = {
@@ -390,7 +426,8 @@ async function main(): Promise<void> {
         formulaId: row.formulaId,
         category: row.category,
         normalizedUom: row.normalizedUom,
-        costOwner: row.costOwner,
+        costOwnerId: row.costOwnerId,
+        compositionOrigin: row.compositionOrigin,
         ...(row.cargo ? { cargo: row.cargo } : {}),
       };
       return {
@@ -398,17 +435,17 @@ async function main(): Promise<void> {
         definition_version_id: definitionId,
         row_id: row.rowId,
         ordinal,
-        section: sectionByCategory[row.category],
+        section: row.section,
         category: row.category,
         title_ru: row.canonicalRuName,
-        row_type: physicalTypeByCategory[row.category],
+        row_type: row.rowType,
         unit_id: row.normalizedUom,
         formula_id: row.formulaId,
         inclusion_ast: row.applicabilityExpression,
         resource_graph: resourceGraph,
         semantic_owner: row.semanticOwnerId,
-        cost_owner_id: row.costOwner === "rate_item" ? `rate-item:${row.rateItemId}` : row.semanticOwnerId,
-        procurement_eligible: row.category !== "construction_work" && !row.includedInParentRate,
+        cost_owner_id: row.costOwnerId,
+        procurement_eligible: row.procurementEligible,
         source_metadata: sourceMetadata,
         row_sha256: sha256({ contract: CONTRACT, row, sourceMetadata, resourceGraph }),
       };
@@ -427,17 +464,19 @@ async function main(): Promise<void> {
       input_classification: Object.fromEntries(Object.keys(goldInputValues).map((id) => [id, "ASSUMPTION"])),
       uom_by_parameter: Object.fromEntries(Object.keys(goldInputValues).map((id) => [
         id,
-        STRIP_FOUNDATION_INPUTS.find((parameter) => parameter.parameterId === id)?.unitId ?? null,
+        STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2.find((parameter) => parameter.parameterId === id)?.unitId ?? null,
       ])),
       formula_consumer_ids: Object.fromEntries(Object.keys(goldInputValues).map((id) => [id, formulaConsumers[id]])),
       resource_consumer_row_ids: Object.fromEntries(Object.keys(goldInputValues).map((id) => [id, resourceConsumers[id]])),
       normative_source_ids: Object.fromEntries(Object.keys(goldInputValues).map((id) => [
         id,
-        [STRIP_FOUNDATION_INPUTS.find((parameter) => parameter.parameterId === id)?.sourceRole ?? "PROJECT_DOCUMENTATION"],
+        [STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2.find((parameter) => parameter.parameterId === id)?.sourceRole
+          ?? "PROJECT_DOCUMENTATION"],
       ])),
       guide_provenance_ru: Object.fromEntries(Object.keys(goldInputValues).map((id) => [
         id,
-        STRIP_FOUNDATION_INPUTS.find((parameter) => parameter.parameterId === id)?.guideRu ?? "Параметр эталонного сценария.",
+        STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2.find((parameter) => parameter.parameterId === id)?.guideRu
+          ?? "Параметр эталонного сценария.",
       ])),
       proposal_source_refs: [{
         contract: CONTRACT,
@@ -509,7 +548,7 @@ async function main(): Promise<void> {
       releaseId,
       TARGET_CATALOG_ID,
       nextDefinitionVersion,
-      JSON.stringify(REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT),
+      JSON.stringify(professionalPassport),
       JSON.stringify({
         allowedScopes: REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT.allowedScopes,
         technologyChoices: REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT.technologyChoices,
@@ -605,7 +644,8 @@ async function main(): Promise<void> {
       resource.source_metadata,
       resource.row_sha256,
     ]));
-    const normativeRows = STRIP_FOUNDATION_ROWS.filter((row) => row.normSource.sourceKey === "krer_06_2015");
+    const normativeRows = STRIP_FOUNDATION_PROFESSIONAL_ROWS_R2
+      .filter((row) => row.normSource.sourceKey === "krer_06_2015");
     await insertBatches(client, "estimate_work_normative_binding", [
       "definition_version_id", "resource_spec_id", "locator_id", "applicability",
     ], normativeRows.map((row) => [
@@ -648,6 +688,7 @@ async function main(): Promise<void> {
       schemaVersion: CONTRACT,
       capturedAt: new Date().toISOString(),
       specSha256: REAL_PROFESSIONAL_ESTIMATES_R2_SPEC_SHA256,
+      governingMasterSha256: GOVERNING_MASTER_SHA256,
       source: { branch, head, tree, clean: worktreeStatus === "" },
       predecessorReleaseId: PREDECESSOR_RELEASE_ID,
       activeReleaseId: ACTIVE_RELEASE_ID,

@@ -1,6 +1,6 @@
 import { formatEstimateUnitLabel } from "../../../ai/globalEstimate/formatEstimateUnitLabel";
 import type { ConsumerRepairAiDraft } from "../../../consumerRequests";
-import type { BuildEstimateFromInlineWorkPromptInput } from "../../buildEstimateFromInlineWorkPrompt";
+import type { BuildEstimateFromInlineWorkPromptInput } from "../../backendPlatform/canonicalEstimateHistoricalIngress";
 import { estimateDeterministicHash } from "../../estimateDeterministicHash";
 import {
   DEFAULT_ROADWORKS_WAVE_A_INPUTS,

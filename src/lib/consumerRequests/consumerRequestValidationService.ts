@@ -1,4 +1,5 @@
 import { getConsumerRepairBundle } from "./consumerRequestRepository";
+import { consumerRepairSourceRequestDraftId } from "./consumerRequestHistoryLineage";
 import { consumerRepairPdfStorageObjectExists } from "./consumerRequestPdfStorage";
 import type {
   ConsumerRequestValidationErrorItem,
@@ -6,7 +7,6 @@ import type {
   ConsumerRepairDraftBundle,
 } from "./consumerRequestTypes";
 import {
-  consumerEstimateUnpricedPayableItems,
   consumerEstimateUnresolvedQuantityItems,
 } from "./consumerEstimateReadiness";
 
@@ -65,7 +65,7 @@ function hasCommittedCanonicalEstimatePhoto(bundle: ConsumerRepairDraftBundle): 
     attachment.deleted === false &&
     attachment.redacted === false &&
     attachment.authoritativeOwnerUserId === bundle.draft.consumerUserId &&
-    attachment.authoritativeRequestId === bundle.draft.id &&
+    attachment.authoritativeRequestId === consumerRepairSourceRequestDraftId(bundle) &&
     attachment.authoritativeStorageBucket === "private-media" &&
     Boolean(attachment.authoritativeAttachmentEventId) &&
     /^image\/(?:jpeg|png)$/u.test(attachment.mimeType) &&
@@ -176,15 +176,6 @@ export function validateConsumerRepairRequestForApprove(
     });
   }
 
-  const unpricedPayableItems = consumerEstimateUnpricedPayableItems(bundle);
-  if (unpricedPayableItems.length > 0) {
-    errors.push({
-      code: "ESTIMATE_PRICES_REQUIRED",
-      messageRu: `Смету нельзя подтвердить: у ${unpricedPayableItems.length} оплачиваемых позиций нет цены. Укажите цену вручную или выберите актуальный источник цены.`,
-      field: "items.unitPrice",
-    });
-  }
-
   if (bundle.items.length < 1) {
     errors.push({
       code: "ITEMS_REQUIRED",
@@ -214,6 +205,7 @@ export function validateConsumerRepairRequestForMarketplace(
     releaseId: string;
     status: "ready";
     sha256: string | null;
+    revisionChecksumSha256: string;
   } | null,
 ): ConsumerRequestValidationResult {
   const bundle = getConsumerRepairBundle(requestId);
@@ -302,6 +294,8 @@ export function validateConsumerRepairRequestForMarketplace(
     canonicalRevisionId && canonicalReleaseId && canonicalPdfEvent && canonicalArtifact &&
     canonicalArtifact.kind === "procurement" &&
     canonicalArtifact.status === "ready" && canonicalArtifact.artifactId.trim() &&
+    /^[0-9a-f]{64}$/.test(canonicalArtifact.sha256 ?? "") &&
+    /^[0-9a-f]{64}$/.test(canonicalArtifact.revisionChecksumSha256) &&
     canonicalArtifact.revisionId === canonicalRevisionId &&
     canonicalArtifact.releaseId === canonicalReleaseId,
   );

@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "rik-expo-app.s27-24.pressure-sewer-pipeline-balanced-source-pack.v1",
+  "catalogId": "canonical-work:expanded:pressure_sewer_pipeline",
+  "scope": "Complete construction, pressure testing and acceptance of one explicitly designed pressure-sewer pipeline: 800 m of selected HDPE PE100-RC SDR17 OD 110 PN10 pipe. Pipe-system materials, trench quantities, valves, air-release and washout assemblies, chambers, labor, mechanisms, QA and logistics are direct project inputs.",
+  "sourceAuthority": "Approved wastewater design organization, geotechnical engineer, pressure-pipe manufacturer, construction laboratory and approving project engineer",
+  "projectDocumentsRequired": [
+    "approved pressure-sewer plan and profile",
+    "approved pipe material, grade, SDR, diameter and pressure-class schedule",
+    "approved trench, bedding, surround, backfill and excess-soil quantities",
+    "approved joints, fittings, isolation valves, air-release, washout and chamber schedule",
+    "installation and jointing method with labor and mechanism quantities",
+    "pressure-testing, flushing and acceptance program",
+    "as-built survey and acceptance-document schedule",
+    "delivery and waste-removal plan",
+    "conditional crossing-casing, dewatering and road-restoration schedules",
+    "supplier pipe-segment length and approved retained spare length"
+  ],
+  "ordinaryFixture": {
+    "pipelineCount": 1,
+    "routeLengthM": 800,
+    "pipeMaterial": "HDPE",
+    "pipeGrade": "PE100-RC",
+    "sdrClass": "SDR17",
+    "outsideDiameterMm": 110,
+    "pressureClass": "PN10",
+    "pipeDesignation": "PE100-RC-SDR17-OD110-PN10"
+  },
+  "procurementBalance": {
+    "pipe": {
+      "installedNetLength": "psp_route_length_m",
+      "retainedSpareLength": "psp_pipe_retained_spare_m",
+      "supplierSegmentLength": "psp_pipe_supplier_segment_length_m"
+    },
+    "rules": {
+      "totalNeed": "installed net length + retained spare length",
+      "segmentCount": "ceil(total need / supplier segment length)",
+      "order": "segment count * supplier segment length",
+      "remainderAfterInstallation": "order - installed net length",
+      "surplusBeyondSpare": "remainder - retained spare length"
+    },
+    "visiblePreliminaryProfile": {
+      "psp_pipe_retained_spare_m": 0,
+      "psp_pipe_supplier_segment_length_m": 1
+    }
+  },
+  "acceptanceFixtureRole": "VALIDATION_FIXTURE_NOT_PROJECT_NORM",
+  "forbiddenClaims": [
+    "trench or material quantities derived from generic length coefficients",
+    "automatic manhole, connection-node, valve, air-release or washout spacing",
+    "automatic casing, dewatering or road restoration",
+    "universal pipe spare or supplier segment length",
+    "pumping station, gravity collector or building drainage included",
+    "invented price"
+  ]
+}

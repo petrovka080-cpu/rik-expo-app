@@ -29,6 +29,89 @@ describe("Asphalt V4 professional compiler", () => {
     }));
   });
 
+  test("keeps a 15000 m road request linear until width is known", () => {
+    const rawText =
+      "Дороги, транспорт и площадки: устройство асфальтобетонного покрытия — 15 000 м";
+    const preliminary = compileAsphaltProfessionalEstimateV4({ raw_text: rawText });
+    const geometryAssumptions = preliminary.preliminary_assembly_policy.assumptions.filter(
+      (assumption) => ["geometry_method", "area_m2"].includes(assumption.canonical_key),
+    );
+
+    expect(preliminary.quantity_basis).toMatchObject({
+      basis_type: "reference",
+      length_m: 15_000,
+      width_m: null,
+      area_m2: 1_000,
+      source: "reference_policy",
+      formula_trace: "area_m2",
+    });
+    expect(geometryAssumptions).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        canonical_key: "area_m2",
+        value: 1_000,
+        user_confirmed: false,
+      }),
+    ]));
+    expect(preliminary.compiled_rows.length).toBeGreaterThan(0);
+    expect(preliminary.compiled_rows.every((row) => row.quantity > 0)).toBe(true);
+    expect(preliminary.compiled_rows.every((row) =>
+      row.included_in_procurement === false
+      && row.definition.procurement_eligible === false
+      && row.definition.informational === true
+      && row.definition.costing_mode === "ANALYTICAL_ONLY"
+    )).toBe(true);
+    expect(preliminary.passport.procurement_lines).toEqual([]);
+    expect(preliminary.passport.commercial_lines).toEqual([]);
+    expect(preliminary.price_coverage.total_rows).toBe(0);
+    expect(preliminary.clarification.critical_required).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        parameter_id: "asphalt_concrete_pavement:parameter:width_m:v4",
+      }),
+    ]));
+    expect(preliminary.clarification.understood).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        label_ru: "Площадь покрытия",
+        value_ru: "1 000 м²",
+        provenance_ru: "Предварительное допущение — уточнить",
+      }),
+      expect.objectContaining({
+        label_ru: "Длина участка",
+        value_ru: "15 000 м",
+        provenance_ru: "Из текста пользователя",
+      }),
+    ]));
+    expect(preliminary.compiled_rows.some((row) =>
+      /цементобетон|cement[_ -]?concrete/iu.test([
+        row.definition.row_id,
+        row.definition.professional_name_ru,
+        row.definition.technical_specification_ru,
+      ].join(" "))
+    )).toBe(false);
+
+    expect(() => compileAsphaltProfessionalEstimateV4({
+      raw_text: rawText,
+      assumption_policy: "FORBID_QUANTITY_ASSUMPTIONS",
+    })).toThrow(
+      "ASPHALT_V4_QUANTITY_BASIS_MISSING;area=null;length=15000;width=null;geometry_method=null",
+    );
+  });
+
+  test("turns the same linear road into object procurement only after width is explicit", () => {
+    const project = compileAsphaltProfessionalEstimateV4({
+      raw_text:
+        "Дороги, транспорт и площадки: устройство асфальтобетонного покрытия — длина 15 000 м, ширина 7 м",
+    });
+
+    expect(project.quantity_basis).toMatchObject({
+      basis_type: "project",
+      length_m: 15_000,
+      width_m: 7,
+      area_m2: 105_000,
+    });
+    expect(project.compiled_rows.some((row) => row.included_in_procurement)).toBe(true);
+    expect(project.passport.procurement_lines.length).toBeGreaterThan(0);
+  });
+
   test("seals the complete vertical slice with every Phase 1 counter at zero", () => {
     const compilation = compileAsphaltProfessionalEstimateV4(asphaltPhase1CompleteInput());
     const audit = auditAsphaltProfessionalEstimateV4(compilation);
@@ -89,6 +172,32 @@ describe("Asphalt V4 professional compiler", () => {
       item.title_ru && item.why_it_matters_ru && item.how_to_answer_ru &&
       item.example_ru && item.changes_in_estimate_ru && item.missing_value_consequence_ru,
     )).toBe(true);
+  });
+
+  test.each([
+    "Устройство асфальтобетонного покрытия 900 м² толщиной 50 мм",
+    "Устройство асфальтобетонного покрытия 900 м² × 50 мм",
+    "Устройство верхнего слоя асфальтобетонного покрытия 900 м² толщиной 50 мм",
+    "Устройство асфальтобетонного покрытия 900 м², верхний слой 50 мм.",
+  ])("keeps the explicit 900 m2 by 50 mm wearing-layer geometry: %s", (rawText) => {
+    const extraction = extractAsphaltUserFactsV4(rawText);
+    const compilation = compileAsphaltProfessionalEstimateV4({
+      raw_text: rawText,
+      profile_override: "new_full_road_pavement",
+    });
+    const upper = compilation.compiled_rows.find((row) =>
+      row.definition.row_id === "asphalt_layer_2_material"
+    );
+
+    expect(extraction.extracted_parameter_keys).toEqual(expect.arrayContaining([
+      "area_m2",
+      "asphalt_layer_2_thickness_mm",
+    ]));
+    expect(upper?.formula_input_values).toEqual(expect.objectContaining({
+      area_m2: 900,
+      asphalt_layer_2_thickness_mm: 50,
+    }));
+    expect(upper?.quantity).toBe(107.865);
   });
 
   test("builds an explicit road-engineer package without claiming expert sign-off", () => {

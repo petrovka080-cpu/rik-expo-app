@@ -22,6 +22,7 @@ import {
   TEXT,
   buildContextText,
   buildRowInputs,
+  catalogRowClientId,
   displayNameOfCatalogItem,
   formatEstimateSection,
   formatEstimateUnit,
@@ -79,6 +80,7 @@ import { reconcilePendingCanonicalEstimateAdmissions } from "../../lib/estimate/
 import { currentUserId } from "../../lib/supabaseClient";
 import { validateCanonicalEstimateParameterInputs } from "../../lib/estimate/backendPlatform/canonicalEstimateParameterValidation";
 import { canonicalWorkSearchQueryFromPrompt } from "../../lib/estimate/backendPlatform/canonicalEstimateSearchInput";
+import { canonicalEstimateInitialParameterInputs } from "../../lib/estimate/backendPlatform/canonicalEstimatePromptParameters";
 import {
   canonicalEstimateBlockingParameterIssues,
   canonicalEstimateParameterAllowsPreliminaryCompilation,
@@ -332,8 +334,9 @@ function useProfessionalEstimateSelection({
 
   useEffect(() => {
     if (!visible || selectedCatalog || selectedSearchIdentity) return;
-    const query = canonicalWorkSearchQueryFromPrompt(text);
-    if (significantSearchLength(query) < 2) {
+    const promptQuery = text.trim();
+    const rankingFallbackQuery = canonicalWorkSearchQueryFromPrompt(text);
+    if (significantSearchLength(rankingFallbackQuery) < 2) {
       setCatalogSuggestions([]);
       setCatalogSearchPage(null);
       return;
@@ -343,7 +346,26 @@ function useProfessionalEstimateSelection({
     const timeout = setTimeout(async () => {
       setCatalogLoading(true);
       try {
-        const result = await searchCanonicalEstimateCatalog({ query, pageSize: 50, signal: controller.signal });
+        const promptResult = await searchCanonicalEstimateCatalog({
+          query: promptQuery,
+          pageSize: 50,
+          signal: controller.signal,
+        });
+        const fallbackResult = promptResult.items.length === 0
+          && rankingFallbackQuery !== promptQuery
+          ? await searchCanonicalEstimateCatalog({
+            query: rankingFallbackQuery,
+            pageSize: 50,
+            signal: controller.signal,
+          })
+          : null;
+        const result = fallbackResult
+          ? {
+            ...fallbackResult,
+            parsedQuantity: promptResult.parsedQuantity,
+            parsedUnit: promptResult.parsedUnit,
+          }
+          : promptResult;
         if (!controller.signal.aborted && sequence === catalogRequestSequence.current) {
           setCatalogSuggestions(result.items);
           setCatalogSearchPage(result);
@@ -448,7 +470,7 @@ function useProfessionalEstimateSelection({
 
   const handleLoadMoreWorkSuggestions = async () => {
     if (!catalogSearchPage?.nextCursor || catalogLoading) return;
-    const query = canonicalWorkSearchQueryFromPrompt(text);
+    const query = catalogSearchPage.rawQuery || canonicalWorkSearchQueryFromPrompt(text);
     const sequence = ++catalogRequestSequence.current;
     setCatalogLoading(true);
     try {
@@ -502,7 +524,6 @@ function useProfessionalEstimateSelection({
       const selectedFromSearchPage = catalogSearchPage;
       if (!selectedFromSearchPage) throw new Error("SEARCH_RESULT_SET_CONTEXT_MISSING");
       setSelectedSearchIdentity(suggestion);
-      setText(suggestion.canonicalNameRu);
       setCatalogSuggestions([]);
       setCatalogSearchPage(null);
       setShowAllParameters(false);
@@ -539,14 +560,11 @@ function useProfessionalEstimateSelection({
       }
       const catalog = await getCanonicalEstimateCatalogItem(suggestion.catalogId);
       setSelectedCatalog(catalog);
-      setParameterInputs(Object.fromEntries(catalog.parameterSchema.map((parameter) => [
-        parameter.parameterId,
-        parameter.defaultValue == null
-          ? (parameter.valueType === "array_object" ? [] : "")
-          : (parameter.valueType === "array_object" && Array.isArray(parameter.defaultValue)
-            ? parameter.defaultValue
-            : String(parameter.defaultValue)),
-      ])));
+      setParameterInputs(canonicalEstimateInitialParameterInputs({
+        catalog,
+        parsedQuantity: selectedFromSearchPage.parsedQuantity,
+        parsedUnit: selectedFromSearchPage.parsedUnit,
+      }));
       setMapping(null);
       setBundle(null);
       await loadHistory(catalog.catalogId);
@@ -655,6 +673,7 @@ function useProfessionalEstimateActions({
         idempotencyKey: `composer-recalc-${bundle.revision.revisionId}-${stableInputKey(next)}`.slice(0, 200),
         catalogId: selectedCatalog.catalogId,
         parentRevisionId: bundle.revision.revisionId,
+        organizationId: bundle.revision.organizationId ?? null,
         parameters: next.parameters,
         currencyCode: bundle.revision.currencyCode,
         rowOverrides: next.rowOverrides,
@@ -683,6 +702,7 @@ function useProfessionalEstimateActions({
             idempotencyKey: `composer-recalc-${bundle.revision.revisionId}-${stableInputKey(next)}`.slice(0, 200),
             catalogId: selectedCatalog.catalogId,
             parentRevisionId: bundle.revision.revisionId,
+            organizationId: bundle.revision.organizationId ?? null,
             parameters: next.parameters,
             currencyCode: bundle.revision.currencyCode,
             rowOverrides: next.rowOverrides,
@@ -731,7 +751,7 @@ function useProfessionalEstimateActions({
     setJobProgress(null);
     try {
       const request = {
-        idempotencyKey: `composer-${selectedCatalog.releaseId}-${selectedCatalog.catalogId}-${stableInputKey(parameters)}`.slice(0, 200),
+        idempotencyKey: `composer-${selectedCatalog.releaseId}-${selectedCatalog.catalogId}-${stableInputKey({ sourceRequestText: text.trim(), parameters })}`.slice(0, 200),
         catalogId: selectedCatalog.catalogId,
         sourceRequestText: text.trim(),
         primaryMeasureParameterId: selectedCatalog.parameterSchema
@@ -751,7 +771,7 @@ function useProfessionalEstimateActions({
           ownerUserId: await authenticatedOwnerUserId(),
           expectedReleaseId: selectedCatalog.releaseId,
           request: {
-            idempotencyKey: `composer-${selectedCatalog.releaseId}-${selectedCatalog.catalogId}-${stableInputKey(parameters)}`.slice(0, 200),
+            idempotencyKey: `composer-${selectedCatalog.releaseId}-${selectedCatalog.catalogId}-${stableInputKey({ sourceRequestText: text.trim(), parameters })}`.slice(0, 200),
             catalogId: selectedCatalog.catalogId,
             sourceRequestText: text.trim(),
             primaryMeasureParameterId: selectedCatalog.parameterSchema
@@ -837,7 +857,7 @@ function useProfessionalEstimateActions({
       setError(TEXT.catalogNeedsEstimate);
       return;
     }
-    const clientRowId = `rik-${item.rik_code}-${stableInputKey([item.rik_code, customRows.length])}`;
+    const clientRowId = catalogRowClientId(item, customRows.length);
     const nextCustomRows = [...customRows, {
       clientRowId,
       section: "materials",
@@ -999,7 +1019,7 @@ export default function ProfessionalEstimateComposer(props: ProfessionalEstimate
         </View>
         {editable ? <View style={styles.rowActions}>
           <Pressable testID="canonical-row-apply" disabled={loading} onPress={() => commitRow(row)} style={styles.smallPrimaryButton}><Text style={styles.smallPrimaryButtonText}>Сохранить изменение</Text></Pressable>
-          <Pressable disabled={loading} onPress={() => commitRow(row, { estimate: !row.includedInEstimate, procurement: row.includedInProcurement })} style={[styles.toggleButton, row.includedInEstimate && styles.toggleButtonActive]}><Text style={styles.toggleButtonText}>{row.includedInEstimate ? TEXT.remove : TEXT.restore}</Text></Pressable>
+          <Pressable testID="canonical-row-toggle-estimate" disabled={loading} onPress={() => commitRow(row, { estimate: !row.includedInEstimate, procurement: row.includedInProcurement })} style={[styles.toggleButton, row.includedInEstimate && styles.toggleButtonActive]}><Text style={styles.toggleButtonText}>{row.includedInEstimate ? TEXT.remove : TEXT.restore}</Text></Pressable>
           {row.buyerProcurementEligible ? <Pressable disabled={loading || !row.includedInEstimate} onPress={() => commitRow(row, { estimate: row.includedInEstimate, procurement: !row.includedInProcurement })} style={[styles.toggleButton, row.includedInProcurement && styles.toggleButtonActive]}><Text style={styles.toggleButtonText}>{TEXT.procurementFlag}</Text></Pressable> : null}
         </View> : <Text style={styles.catalogHint}>Строка из прежней версии сохранена для истории, но не входит в итог и закупку.</Text>}
       </View>
@@ -1261,8 +1281,8 @@ export default function ProfessionalEstimateComposer(props: ProfessionalEstimate
             </View>
             {bundle && rikQuickSearch ? <View style={styles.catalogPanel} testID="canonical-estimate-manual-catalog">
                   <Text style={styles.panelTitle}>{TEXT.catalogTitle}</Text><Text testID="foreman-ai-estimate-catalog-hint" style={styles.catalogHint}>{TEXT.catalogHint}</Text>
-              <View style={styles.catalogSearchRow}><TextInput testID="foreman-ai-estimate-catalog-search" value={catalogQuery} onChangeText={setCatalogQuery} placeholder={TEXT.catalogPlaceholder} style={styles.catalogInput} /><Pressable onPress={handleCatalogSearch} style={styles.smallPrimaryButton}><Text style={styles.smallPrimaryButtonText}>Найти</Text></Pressable></View>
-              <View style={styles.catalogRows}>{catalogRows.map((item) => <View key={item.rik_code} style={styles.catalogRow}><View style={styles.catalogRowText}><Text style={styles.catalogName}>{displayNameOfCatalogItem(item)}</Text><Text style={styles.catalogMeta}>{item.rik_code} · {item.uom_code ?? "unit"}</Text></View><Pressable onPress={() => handleAddCatalogRow(item)} style={styles.smallPrimaryButton}><Text style={styles.smallPrimaryButtonText}>{TEXT.add}</Text></Pressable></View>)}</View>
+              <View style={styles.catalogSearchRow}><TextInput testID="foreman-ai-estimate-catalog-search" value={catalogQuery} onChangeText={setCatalogQuery} placeholder={TEXT.catalogPlaceholder} style={styles.catalogInput} /><Pressable testID="foreman-ai-estimate-catalog-search-submit" onPress={handleCatalogSearch} style={styles.smallPrimaryButton}><Text style={styles.smallPrimaryButtonText}>Найти</Text></Pressable></View>
+              <View style={styles.catalogRows}>{catalogRows.map((item) => <View key={item.rik_code} style={styles.catalogRow}><View style={styles.catalogRowText}><Text style={styles.catalogName}>{displayNameOfCatalogItem(item)}</Text><Text style={styles.catalogMeta}>{item.rik_code} · {item.uom_code ?? "unit"}</Text></View><Pressable testID="foreman-ai-estimate-catalog-add" onPress={() => handleAddCatalogRow(item)} style={styles.smallPrimaryButton}><Text style={styles.smallPrimaryButtonText}>{TEXT.add}</Text></Pressable></View>)}</View>
             </View> : null}
           </>}
           ListFooterComponent={<View style={styles.footer}>

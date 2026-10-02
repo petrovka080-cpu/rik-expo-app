@@ -17,9 +17,9 @@ describe("material service equipment catalog summaries", () => {
       "data/estimate-catalog/equipment-items/equipment-catalog-summary.json",
     );
 
-    expect(materials.material_catalog_rows_count).toBe(130000);
-    expect(materials.buyer_material_handoff_rows_count).toBe(130000);
-    expect(services.service_catalog_rows_count).toBe(60000);
-    expect(equipment.equipment_catalog_rows_count).toBe(30000);
+    expect(materials.material_catalog_rows_count).toBe(210000);
+    expect(materials.buyer_material_handoff_rows_count).toBe(210000);
+    expect(services.service_catalog_rows_count).toBe(100000);
+    expect(equipment.equipment_catalog_rows_count).toBe(50000);
   });
 });

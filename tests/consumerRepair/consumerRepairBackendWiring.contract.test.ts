@@ -8,6 +8,7 @@ describe("consumer repair backend wiring contract", () => {
     const actions = fs.readFileSync(path.join(root, "src/features/consumerRepair/requestEstimateScreenActions.ts"), "utf8");
     const marketplaceService = fs.readFileSync(path.join(root, "src/lib/consumerRequests/consumerRequestMarketplaceService.ts"), "utf8");
     const validationService = fs.readFileSync(path.join(root, "src/lib/consumerRequests/consumerRequestValidationService.ts"), "utf8");
+    const marketplaceTransport = fs.readFileSync(path.join(root, "src/lib/consumerRequests/consumerRequestMarketplace.transport.ts"), "utf8");
 
     expect(screen).toContain("../../lib/consumerRequests");
     expect(screen).toContain("approveConsumerRepairRequestDraft(");
@@ -24,6 +25,8 @@ describe("consumer repair backend wiring contract", () => {
     expect(marketplaceService).toContain("input.canonicalArtifact");
     expect(validationService).toContain("CONTACT_REQUIRED");
     expect(validationService).toContain("PDF_FILE_MISSING");
+    expect(marketplaceService).toContain("readPublishedListing(receipt.listing_id)");
+    expect(marketplaceTransport).toContain('"consumer_estimate_marketplace_publish_v1"');
     expect(screen).not.toMatch(/\bsupabase\b|\.from\s*\(|\.(?:insert|update|upsert|delete)\s*\(/i);
   });
 });

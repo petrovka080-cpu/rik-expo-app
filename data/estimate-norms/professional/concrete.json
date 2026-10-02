@@ -139,6 +139,7 @@
       "applicability": {
         "document": "ACI PRC-309-05 - Guide for Consolidation of Concrete",
         "operation": "consolidation of freshly placed concrete by internal vibration",
+        "automatic_production_binding_for_generic_concrete_forbidden": true,
         "project_specific_method_required": true,
         "project_specific_labor_hours_required": true,
         "project_specific_equipment_hours_required": true,
@@ -198,6 +199,7 @@
       "applicability": {
         "document": "ACI SPEC-308.1-23 - External Curing of Cast-in-Place Concrete—Specification",
         "operation": "external curing after placement of cast-in-place concrete",
+        "automatic_production_binding_for_generic_concrete_forbidden": true,
         "approved_project_method_required": true,
         "supported_external_methods": [
           "WATER_CURING",
@@ -261,6 +263,7 @@
       "applicability": {
         "document": "ACI PRC-302.1-15 - Guide to Concrete Floor and Slab Construction",
         "operation": "level and strike off freshly placed cast-in-place concrete slab",
+        "automatic_production_binding_for_generic_concrete_forbidden": true,
         "approved_project_method_required": true,
         "project_specific_elevation_slope_flatness_and_levelness_requirements_required": true,
         "project_specific_guide_takeoff_required_when_applicable": true,
@@ -328,6 +331,7 @@
       "applicability": {
         "document": "ACI 302.1R-15 - Guide to Concrete Floor and Slab Construction, Chapter 5",
         "operation": "install a project-specified isolation, construction, contraction, expansion or movement joint",
+        "automatic_production_binding_for_generic_concrete_forbidden": true,
         "approved_project_joint_type_geometry_and_detail_required": true,
         "project_specific_material_branches_required": true,
         "project_specific_direct_labor_and_equipment_hours_required": true,
@@ -407,6 +411,7 @@
           "ACI PRC-546-23 - Concrete Repair—Guide"
         ],
         "operation": "repair of an existing concrete slab under an approved assessment and repair design",
+        "automatic_production_binding_for_generic_concrete_forbidden": true,
         "condition_assessment_required": true,
         "approved_repair_design_and_method_required": true,
         "project_specific_material_takeoff_required": true,
@@ -481,6 +486,7 @@
           "ACI 117-10 - Specification for Tolerances for Concrete Construction and Materials"
         ],
         "operation": "placement and fixing of project-specified embedded items before concreting",
+        "automatic_production_binding_for_generic_concrete_forbidden": true,
         "approved_embedment_design_schedule_and_placement_drawing_required": true,
         "project_specific_position_and_elevation_tolerances_required": true,
         "project_specific_material_takeoff_required": true,

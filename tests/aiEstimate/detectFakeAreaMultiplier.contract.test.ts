@@ -6,7 +6,7 @@ import {
 import {
   detectEstimateFakeRows,
   type ContinuousEstimateDetectorRow,
-} from "../../src/lib/ai/estimateContinuousDetection";
+} from "../../scripts/estimate/detectors";
 
 function fakeRow(index: number): ContinuousEstimateDetectorRow {
   const delivery = index % 5 === 0;

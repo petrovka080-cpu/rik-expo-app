@@ -4,6 +4,7 @@ import { gitOutput, timestampForPath, writeJson } from "../estimate/buildControl
 import { createAiEstimateRuntime } from "../../src/lib/estimate/runtime/createAiEstimateRuntime";
 import { validateAiEstimateArtifactLifecycle } from "../../src/lib/estimate/artifacts/validateAiEstimateArtifactLifecycle";
 import { validateAiEstimateWorkClassification } from "../../src/lib/estimate/semantic/validateAiEstimateWorkClassification";
+import type { AiEstimateCatalogIndex } from "../../src/lib/estimate/catalog/AiEstimateCatalogIndex";
 
 export type AiEstimatePlatformCoreV2HarnessTarget = "web" | "android-chrome";
 
@@ -57,10 +58,11 @@ function runOneCase(index: number): boolean {
 export function runAiEstimatePlatformCoreV2Harness(input: {
   target: AiEstimatePlatformCoreV2HarnessTarget;
   cases?: number;
+  catalogIndex?: AiEstimateCatalogIndex;
 }) {
   const cases = input.cases ?? 100;
   const results = Array.from({ length: cases }, (_, index) => runOneCase(index));
-  const classifier = validateAiEstimateWorkClassification();
+  const classifier = validateAiEstimateWorkClassification({ index: input.catalogIndex });
   const artifacts = validateAiEstimateArtifactLifecycle();
   const passed = results.filter(Boolean).length;
   const summary: AiEstimatePlatformCoreV2HarnessSummary = {

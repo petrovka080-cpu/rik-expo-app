@@ -56,6 +56,9 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
         <Text style={styles.meta} testID="request-estimate-trust-level">
           {viewModel.trustLevelLabel}
         </Text>
+        <Text style={styles.meta} testID="request-estimate-commercial-level">
+          {viewModel.commercialEstimateLevelLabel}
+        </Text>
         {viewModel.procurementApplicabilityLabel ? (
           <Text style={styles.meta} testID="request-estimate-procurement-applicability">
             {viewModel.procurementApplicabilityLabel}

@@ -9,6 +9,23 @@ const NON_PAYABLE_COST_TREATMENTS = new Set([
   "CONTROL_OR_DOCUMENT",
 ]);
 
+type ConsumerEstimateCompositionCarrier = {
+  includedInEstimate?: boolean | null;
+  sourceParameters?: Readonly<Record<string, unknown>> | null;
+};
+
+export function isConsumerEstimateCompositionVisibleItem(
+  item: ConsumerEstimateCompositionCarrier,
+): boolean {
+  const source = item.sourceParameters;
+  const includedInEstimate = source?.includedInEstimate ?? item.includedInEstimate;
+  return includedInEstimate !== false
+    || source?.canonicalPreliminaryNeed === true
+    || NON_PAYABLE_COST_TREATMENTS.has(
+      String(source?.canonicalCostTreatment ?? ""),
+    );
+}
+
 export function isConsumerEstimateIncludedItem(
   item: ConsumerRepairRequestItem,
 ): boolean {
@@ -32,6 +49,7 @@ export function consumerEstimateUnresolvedQuantityItems(
   return bundle.items.filter((item) =>
     isConsumerEstimateIncludedItem(item)
       && item.sourceParameters?.canonicalPreliminaryNeed === true
+      && item.quantity == null
   );
 }
 

@@ -10,7 +10,7 @@ export * from "./globalEstimateTemplateService";
 export * from "./globalRateBookService";
 export * from "./globalTaxEngine";
 export * from "./globalTaxRuleService";
-export * from "./globalEstimateCalculator";
+export * from "../../estimate/backendPlatform/canonicalEstimateHistoricalGlobalProjection";
 export * from "./globalEstimateClient";
 export * from "./globalEstimateAnswerFormatter";
 export * from "./globalEstimateGuard";

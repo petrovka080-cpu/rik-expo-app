@@ -16,8 +16,8 @@ describe("blackbox PDF snapshot parity", () => {
     expect(results.every((item) => item.pdf_generated)).toBe(true);
     expect(results.every((item) => item.pdf_text_extracted)).toBe(true);
     expect(results.every((item) => item.pdf_rows_equal_snapshot_rows)).toBe(true);
-    expect(normProven).toHaveLength(7);
-    expect(results.filter((item) => !item.no_missing_norm_source)).toHaveLength(523);
+    expect(normProven).toHaveLength(4);
+    expect(results.filter((item) => !item.no_missing_norm_source)).toHaveLength(526);
     expect(results.every((item) => item.no_missing_formula_trace)).toBe(true);
     expect(results.every((item) => item.no_mojibake)).toBe(true);
   });

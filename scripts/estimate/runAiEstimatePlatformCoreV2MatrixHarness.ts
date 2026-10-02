@@ -89,6 +89,7 @@ export function runAiEstimatePlatformCoreV2MatrixHarness(): Promise<{
   const technicalDeadlineAt = startedAt + TECHNICAL_TIMEOUT_MS;
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [
+      "--max-old-space-size=1152",
       "--import",
       "tsx",
       childEntry,

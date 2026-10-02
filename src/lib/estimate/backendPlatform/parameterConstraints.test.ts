@@ -92,6 +92,20 @@ function approvedDefinition(bindingPatch: Record<string, unknown> = {}): Canonic
 }
 
 describe("canonical backend parameter precedence", () => {
+  test("enforces an exact positive multiple for stepped normative inputs", () => {
+    const stepped: CanonicalParameterDefinitionRecord = {
+      parameter_id: "layer_thickness_mm",
+      value_type: "decimal",
+      required: true,
+      default_value: null,
+      constraints_json: { min: 30, max: 200, multipleOf: 5 },
+    };
+    expect(validateCanonicalEstimateParameters([stepped], { layer_thickness_mm: 55 }))
+      .toMatchObject({ layer_thickness_mm: 55 });
+    expect(() => validateCanonicalEstimateParameters([stepped], { layer_thickness_mm: 52 }))
+      .toThrow("parameter is not a multiple layer_thickness_mm");
+  });
+
   it("rejects a numeric project quantity that no longer matches its approved schedule scope", () => {
     const definitions: CanonicalParameterDefinitionRecord[] = [
       {

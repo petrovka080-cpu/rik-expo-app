@@ -3,8 +3,11 @@ import path from "node:path";
 
 describe("global estimate backend calculation required", () => {
   it("routes compatibility ingress to an exact canonical backend job", () => {
-    const calculator = fs.readFileSync(path.join(process.cwd(), "src", "lib", "ai", "globalEstimate", "globalEstimateCalculator.ts"), "utf8");
+    const compatibilityAdapter = fs.readFileSync(path.join(process.cwd(), "src", "lib", "ai", "globalEstimate", "globalEstimateCalculator.ts"), "utf8");
+    const calculator = fs.readFileSync(path.join(process.cwd(), "src", "lib", "estimate", "backendPlatform", "canonicalEstimateHistoricalGlobalProjection.ts"), "utf8");
     const edge = fs.readFileSync(path.join(process.cwd(), "supabase", "functions", "calculate-global-estimate", "index.ts"), "utf8");
+    expect(compatibilityAdapter).toContain("canonicalEstimateHistoricalGlobalProjection");
+    expect(compatibilityAdapter).not.toContain("resolveGlobalRate");
     expect(calculator).toContain("resolveGlobalRate");
     expect(calculator).toContain("calculateGlobalTax");
     expect(calculator).toContain("evalQuantityFormula");

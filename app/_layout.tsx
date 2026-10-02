@@ -35,7 +35,9 @@ import {
   getLatestNativeViewUrl,
 } from "../src/lib/navigation/nativeIntentEvents";
 import {
+  isRikAppDeepLink,
   isPublicRequestRoutePathname,
+  resolveNativeAppDeepLinkTarget,
   resolvePublicRequestDeepLinkTarget,
   type PublicRequestDeepLinkTarget,
 } from "../src/lib/navigation/coreRoutes";
@@ -70,6 +72,10 @@ type PendingPublicRequestDeepLink = {
   source: PublicRequestDeepLinkSource;
   url: string;
   routedSources: PublicRequestDeepLinkSource[];
+};
+type PendingNativeAppDeepLink = {
+  source: PublicRequestDeepLinkSource;
+  url: string;
 };
 
 const NATIVE_VIEW_URL_DRAIN_STALE_MS = 2_500;
@@ -226,6 +232,7 @@ function RootLayout() {
   const rootNavigationState = useRootNavigationState();
   const rootNavigationReady = Boolean(rootNavigationState?.key);
   const pendingPublicRequestDeepLinkRef = useRef<PendingPublicRequestDeepLink | null>(null);
+  const pendingNativeAppDeepLinkRef = useRef<PendingNativeAppDeepLink | null>(null);
   const previousAuthenticatedUserIdRef = useRef<string | null>(null);
   const requestEstimateTargetCacheRef = useRef(
     new Map<string, RequestEstimateLaunchTargetV1>(),
@@ -738,6 +745,95 @@ function RootLayout() {
     rootNavigationReady,
   ]);
 
+  const openNativeAppDeepLink = useCallback((
+    url: string | null | undefined,
+    source: PublicRequestDeepLinkSource,
+  ) => {
+    if (openRequestEstimateDeepLink(url, source)) return true;
+    const resolvedUrl = String(url ?? "");
+    if (!resolvedUrl) return false;
+    const target = resolveNativeAppDeepLinkTarget(resolvedUrl);
+    if (!target) {
+      if (!isRikAppDeepLink(resolvedUrl)) return false;
+      pendingNativeAppDeepLinkRef.current = null;
+      clearLatestNativeViewUrl(resolvedUrl);
+      recordPlatformObservability({
+        screen: "startup",
+        surface: "native_deep_link",
+        category: "ui",
+        event: "native_app_deep_link_rejected",
+        result: "skipped",
+        extra: {
+          owner: "root_layout",
+          source,
+          reason: "route_not_allowlisted",
+        },
+      });
+      return true;
+    }
+    if (!rootNavigationReady) {
+      pendingNativeAppDeepLinkRef.current = { source, url: resolvedUrl };
+      recordPlatformObservability({
+        screen: "startup",
+        surface: "native_deep_link",
+        category: "ui",
+        event: "native_app_deep_link_deferred",
+        result: "skipped",
+        extra: {
+          owner: "root_layout",
+          source,
+          target: target.normalizedPath,
+          reason: "root_navigation_not_ready",
+        },
+      });
+      return true;
+    }
+    try {
+      router.replace(target.href as Href);
+      pendingNativeAppDeepLinkRef.current = null;
+      clearLatestNativeViewUrl(resolvedUrl);
+      recordPlatformObservability({
+        screen: "startup",
+        surface: "native_deep_link",
+        category: "ui",
+        event: "native_app_deep_link_navigation",
+        result: "success",
+        extra: {
+          owner: "root_layout",
+          source,
+          target: target.normalizedPath,
+          method: "replace_href",
+        },
+      });
+    } catch (error: unknown) {
+      pendingNativeAppDeepLinkRef.current = { source, url: resolvedUrl };
+      recordPlatformObservability({
+        screen: "startup",
+        surface: "native_deep_link",
+        category: "ui",
+        event: "native_app_deep_link_navigation_failed",
+        result: "error",
+        errorStage: "router_replace",
+        errorClass: error instanceof Error ? error.name : "Unknown",
+        errorMessage: error instanceof Error ? error.message : String(error),
+        fallbackUsed: false,
+        extra: {
+          owner: "root_layout",
+          source,
+          target: target.normalizedPath,
+        },
+      });
+    }
+    return true;
+  }, [openRequestEstimateDeepLink, rootNavigationReady]);
+
+  useEffect(() => {
+    if (!rootNavigationReady) return;
+    const pending = pendingNativeAppDeepLinkRef.current;
+    if (!pending) return;
+    openNativeAppDeepLink(pending.url, pending.source);
+  }, [openNativeAppDeepLink, rootNavigationReady]);
+
   useEffect(() => {
     const pending = requestEstimateIntentLifecycle.getPending();
     if (
@@ -821,14 +917,14 @@ function RootLayout() {
     if (expoLinkingProbeKeyRef.current === probeKey) return;
     expoLinkingProbeKeyRef.current = probeKey;
     if (Platform.OS !== "android") {
-      openRequestEstimateDeepLink(expoLinkingUrl, "expo_linking_url");
+      openNativeAppDeepLink(expoLinkingUrl, "expo_linking_url");
       return;
     }
     let active = true;
     void getLatestNativeViewUrl()
       .then((nativeUrl) => {
         if (!active) return;
-        openRequestEstimateDeepLink(
+        openNativeAppDeepLink(
           nativeUrl ?? expoLinkingUrl,
           nativeUrl ? "native_view_intent" : "expo_linking_url",
         );
@@ -847,12 +943,12 @@ function RootLayout() {
             error instanceof Error ? error.message : String(error),
           fallbackUsed: true,
         });
-        openRequestEstimateDeepLink(expoLinkingUrl, "expo_linking_url");
+        openNativeAppDeepLink(expoLinkingUrl, "expo_linking_url");
       });
     return () => {
       active = false;
     };
-  }, [expoLinkingUrl, openRequestEstimateDeepLink]);
+  }, [expoLinkingUrl, openNativeAppDeepLink]);
 
   // --- Native: public request deep links must not be trapped on auth screens ---
   // --- WEB: нормальный контейнер/скролл ---
@@ -890,7 +986,7 @@ function RootLayout() {
       nativeReadInFlightStartedAt = readStartedAt;
       void getLatestNativeViewUrl()
         .then((url) => {
-          if (active) openRequestEstimateDeepLink(url, "native_view_intent");
+          if (active) openNativeAppDeepLink(url, "native_view_intent");
         })
         .catch((error: unknown) => {
           if (nativeReadFailureRecorded) return;
@@ -921,10 +1017,10 @@ function RootLayout() {
     };
 
     const subscription = RNLinking.addEventListener("url", ({ url }) => {
-      if (active) openRequestEstimateDeepLink(url, "url_event");
+      if (active) openNativeAppDeepLink(url, "url_event");
     });
     const nativeSubscription = addNativeViewUrlListener((url) => {
-      if (active) openRequestEstimateDeepLink(url, "native_view_intent");
+      if (active) openNativeAppDeepLink(url, "native_view_intent");
     });
     const appStateSubscription = AppState.addEventListener("change", (nextState) => {
       if (nextState === "active") drainLatestNativeViewUrl();
@@ -938,7 +1034,7 @@ function RootLayout() {
       reactNativeInitialUrlReadStartedRef.current = true;
       void RNLinking.getInitialURL()
         .then((url) => {
-          if (active) openRequestEstimateDeepLink(url, "initial_url");
+          if (active) openNativeAppDeepLink(url, "initial_url");
         })
         .catch((error: unknown) => {
           recordPlatformObservability({
@@ -967,7 +1063,7 @@ function RootLayout() {
       nativeSubscription.remove();
       appStateSubscription.remove();
     };
-  }, [openRequestEstimateDeepLink]);
+  }, [openNativeAppDeepLink]);
 
   useEffect(() => {
     if (Platform.OS !== "web") return;
@@ -1101,6 +1197,7 @@ function RootLayout() {
             >
               <LocalDeveloperReviewBanner
                 authenticatedRole={authState.authenticatedRole}
+                automaticOwnerRestoreEnabled={!pathname.startsWith("/auth")}
                 authSessionResolved={
                   authState.sessionLoaded &&
                   authState.authSessionState.status !== "unknown"

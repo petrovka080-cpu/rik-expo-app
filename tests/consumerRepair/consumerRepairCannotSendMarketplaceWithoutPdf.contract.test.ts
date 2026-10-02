@@ -9,7 +9,7 @@ import { CONSUMER_REPAIR_TEST_USER_ID, createApprovedConsumerRepairRequest } fro
 describe("consumer repair marketplace PDF validation", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
 
-  it("blocks canonical marketplace send when the exact backend PDF artifact is not supplied", () => {
+  it("blocks canonical marketplace send when the exact backend PDF artifact is not supplied", async () => {
     const bundle = createApprovedConsumerRepairRequest();
     const pdf = bundle.pdfs[0];
     __deleteConsumerRepairPdfStorageObjectForTests({
@@ -17,13 +17,13 @@ describe("consumer repair marketplace PDF validation", () => {
       storageKey: pdf.storageKey,
     });
 
-    expect(() => sendConsumerRepairRequestToMarketplace({
+    await expect(sendConsumerRepairRequestToMarketplace({
       requestDraftId: bundle.draft.id,
       userId: CONSUMER_REPAIR_TEST_USER_ID,
-    })).toThrow(ConsumerRepairValidationError);
+    })).rejects.toThrow(ConsumerRepairValidationError);
 
     try {
-      sendConsumerRepairRequestToMarketplace({ requestDraftId: bundle.draft.id, userId: CONSUMER_REPAIR_TEST_USER_ID });
+      await sendConsumerRepairRequestToMarketplace({ requestDraftId: bundle.draft.id, userId: CONSUMER_REPAIR_TEST_USER_ID });
     } catch (error) {
       expect((error as ConsumerRepairValidationError).errors.map((item) => item.code)).toContain("PDF_REQUIRED");
     }

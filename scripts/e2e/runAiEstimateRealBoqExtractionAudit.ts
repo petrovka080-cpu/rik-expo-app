@@ -406,7 +406,7 @@ function buildBuyerRows(bundle: ConsumerRepairDraftBundle): ExtractedBoqRow[] {
   }));
 }
 
-function buildModelReadback(): ModelReadback {
+async function buildModelReadback(): Promise<ModelReadback> {
   __resetConsumerRepairRequestStoreForTests();
   __resetConsumerRepairPdfStorageForTests();
 
@@ -441,7 +441,7 @@ function buildModelReadback(): ModelReadback {
     requestDraftId: bundle.draft.id,
     mediaKind: "photo",
   });
-  bundle = sendConsumerRepairRequestToMarketplace({
+  bundle = await sendConsumerRepairRequestToMarketplace({
     requestDraftId: bundle.draft.id,
     userId,
     idempotencyKey: "ai-estimate-real-boq-audit",
@@ -754,7 +754,7 @@ async function main() {
   let result: AuditResult | null = null;
 
   try {
-    const modelReadback = buildModelReadback();
+    const modelReadback = await buildModelReadback();
     server = await ensureLocalWebServer();
     const runtime = await runRuntimeExtraction(server);
     const allRows = [
@@ -870,7 +870,7 @@ async function main() {
   if (result.final_status !== "GREEN_AI_ESTIMATE_NO_FAKE_AREA_MULTIPLIER_FOUND") {
     process.exitCode = 1;
   }
-  console.log(`${result.final_status} ${artifactJsonPath}`);
+  console.info(`${result.final_status} ${artifactJsonPath}`);
 }
 
 main().catch((error) => {

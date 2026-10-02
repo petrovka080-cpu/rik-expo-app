@@ -102,6 +102,21 @@ function asphaltLayersFromText(text: string, count: number | null): AsphaltLayer
   }));
 }
 
+function wearingLayerThicknessFromText(text: string, layerCount: number | null): number | null {
+  if (layerCount != null) return null;
+  if (!/(?:асфальт|дорожн[а-яё]*\s+покрыт|pavement)/iu.test(text)) return null;
+  if (/(?:ремонт|реконструкц|восстановлен|фрезерован|ямоч)/iu.test(text)) return null;
+  const directUpperLayerThickness = matchNumber(
+    text,
+    /верхн[а-яё]*\s+сло[а-яё]*[^.!?\d]{0,30}(?:толщин[а-яё]*\s*)?(?:—|–|-|:|=)?\s*(\d+(?:[,.]\d+)?)\s*(?:мм|mm)/iu,
+  );
+  if (directUpperLayerThickness != null) return directUpperLayerThickness;
+  return matchNumber(
+    text,
+    /(?:верхн[а-яё]*\s+сло[а-яё]*[^.!?]{0,80}|(?:асфальтобетонн|асфальтов)[а-яё]*\s+покрыт[а-яё]*[^.!?]{0,80})?(?:толщин[а-яё]*\s*(?:сло[а-яё]*\s*)?(?:—|–|-|:|=)?\s*|[×xх]\s*)(\d+(?:[,.]\d+)?)\s*(?:мм|mm)/iu,
+  );
+}
+
 function locationFromText(text: string): string | null {
   return text.match(/(Бишкек|Ош|Джалал-Абад|Каракол|Нарын|Талас|Баткен|Токмок)/iu)?.[1] ?? null;
 }
@@ -121,7 +136,7 @@ export function extractAsphaltUserFactsV4(rawText: string): AsphaltFactExtractio
     /(?:—|–|-)\s*(\d[\d\s]*(?:[,.]\d+)?)\s*(км|km|километр(?:а|ов)?|м|m|метр(?:а|ов)?)\s*[.!?]?$/iu,
   );
   const dimensionPair = text.match(
-    /(\d+(?:[,.]\d+)?)\s*(км|km|километр(?:а|ов)?|м|m|метр(?:а|ов)?)?\s*(?:[xх×]|на)\s*(\d+(?:[,.]\d+)?)\s*(км|km|километр(?:а|ов)?|м|m|метр(?:а|ов)?)/iu,
+    /(?<![\p{L}\d-])(\d+(?:[,.]\d+)?)\s*(км|km|километр(?:а|ов)?|м|m|метр(?:а|ов)?)?\s*(?:[xх×]|на)\s*(\d+(?:[,.]\d+)?)\s*(км|km|километр(?:а|ов)?|м(?!м)|m(?!m)|метр(?:а|ов)?)(?![\p{L}\d])/iu,
   );
   const pairLength = dimensionPair?.[1]
     ? (numberValue(dimensionPair[1]) ?? 0) * metricScale(dimensionPair[2] ?? dimensionPair[4])
@@ -189,6 +204,12 @@ export function extractAsphaltUserFactsV4(rawText: string): AsphaltFactExtractio
   if (layerCount != null) addFact(facts, "asphalt_layer_count", layerCount, "pcs");
   const layers = asphaltLayersFromText(text, layerCount);
   if (layers.length > 0) addFact(facts, "asphalt_layers", layers);
+  addFact(
+    facts,
+    "asphalt_layer_2_thickness_mm",
+    wearingLayerThicknessFromText(text, layerCount),
+    "mm",
+  );
 
   return {
     facts: [...facts.values()],

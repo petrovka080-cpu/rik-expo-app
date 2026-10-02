@@ -46,6 +46,19 @@ describe("authRouting", () => {
     expect(resolvePostAuthReturnTo(returnTo)).toBe(returnTo);
   });
 
+  it("preserves a protected market deep link through the login gate", () => {
+    const returnTo = buildCurrentRouteReturnTo("/market", {
+      category: "materials",
+    });
+
+    expect(returnTo).toBe("/market?category=materials");
+    expect(buildAuthLoginHref(returnTo)).toEqual({
+      pathname: "/auth/login",
+      params: { returnTo },
+    });
+    expect(resolvePostAuthReturnTo(returnTo)).toBe(returnTo);
+  });
+
   it("rejects external, auth-loop, malformed, and protocol-relative return targets", () => {
     for (const candidate of [
       "https://evil.invalid/request",

@@ -1,6 +1,8 @@
 import {
   buildGeneratedBenchmarkEstimate,
   loadGoldenBenchmarkCases,
+  loadGoldenBenchmarkReference,
+  PRODUCTION_NORM_APPLICABILITY_GATE_CASE_IDS,
 } from "../../scripts/estimate/goldenBenchmarkCore";
 
 describe("golden benchmark PDF and buyer handoff", () => {
@@ -24,8 +26,15 @@ describe("golden benchmark PDF and buyer handoff", () => {
 
       if (caseDef.current_runtime_contract?.expected_outcome === "NEEDS_INPUT") {
         needsInputGateCount += 1;
-        expect(caseDef.current_runtime_contract.version).toBe("canonical-pump-p0-gate-v1");
-        expect(caseDef.current_runtime_contract.historical_reference_status).toBe("READ_ONLY_SUPERSEDED_BY_P0_GATE");
+        if (caseDef.current_runtime_contract.version === "canonical-pump-p0-gate-v1") {
+          expect(caseDef.current_runtime_contract.historical_reference_status).toBe("READ_ONLY_SUPERSEDED_BY_P0_GATE");
+        } else {
+          expect(PRODUCTION_NORM_APPLICABILITY_GATE_CASE_IDS).toContain(caseDef.case_id);
+          expect(caseDef.current_runtime_contract.historical_reference_status)
+            .toBe("READ_ONLY_SUPERSEDED_BY_FAIL_CLOSED_NORM_GATE");
+          expect(caseDef.current_runtime_contract.required_inputs.length).toBeGreaterThan(0);
+          expect(loadGoldenBenchmarkReference(caseDef).rows.length).toBeGreaterThan(0);
+        }
         expect(estimate.estimate_level).toBe("NEEDS_INPUT");
         expect(estimate.missing_design_inputs.length).toBeGreaterThan(0);
         expect(estimate.rows).toEqual([]);
@@ -38,6 +47,6 @@ describe("golden benchmark PDF and buyer handoff", () => {
       }
     }
 
-    expect(needsInputGateCount).toBe(2);
+    expect(needsInputGateCount).toBe(2 + PRODUCTION_NORM_APPLICABILITY_GATE_CASE_IDS.length);
   });
 });

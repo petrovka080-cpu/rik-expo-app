@@ -2,7 +2,7 @@ import { createSnapshotFromDraftRevision } from "../../../features/estimates/cre
 import { renderPdfFromDraftRevision } from "../../../features/pdf/renderPdfFromDraftRevision";
 import { createBuyerHandoffFromDraftRevision } from "../../../features/procurement/createBuyerHandoffFromDraftRevision";
 import { applyAiEstimateParameterOverride } from "../applyAiEstimateParameterOverrides";
-import { createEstimateDraftRevision } from "../createEstimateDraftRevision";
+import { createEstimateDraftRevision } from "../backendPlatform/canonicalEstimateHistoricalDraftProjection";
 import type { AiEstimateArtifactLifecycleValidation } from "./AiEstimateArtifactLifecycle";
 import { validateAiEstimateBuyerPackageParity } from "./validateAiEstimateBuyerPackageParity";
 import { validateAiEstimatePdfSnapshotParity } from "./validateAiEstimatePdfSnapshotParity";

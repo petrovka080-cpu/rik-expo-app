@@ -5,7 +5,7 @@ import type {
 } from "../../consumerRequests/consumerRequestTypes";
 import { formatEstimateUnitLabel } from "../../ai/globalEstimate/formatEstimateUnitLabel";
 import type { EstimateDraftRevision, ProfessionalBoqRow } from "../estimateDraftRevisionContract";
-import { createEstimateDraftRevision } from "../createEstimateDraftRevision";
+import { createEstimateDraftRevision } from "../backendPlatform/canonicalEstimateHistoricalDraftProjection";
 import type { AiEstimateCreateDraftInput } from "./AiEstimateRuntimeContract";
 import {
   ASPHALT_PROFESSIONAL_NAME_RU_V4,

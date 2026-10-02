@@ -264,34 +264,41 @@ export function buildCanonicalParameterCards(input: {
   const sessionValues = new Map(input.session.parameters
     .filter((parameter) => parameter.value != null)
     .map((parameter) => [parameter.parameterId, parameter.value!]));
-  const conditionMatches = (parameter: CanonicalParameter): boolean => {
+  const conditionState = (parameter: CanonicalParameter): boolean | null => {
     const condition = parameter.visibilityCondition;
     if (condition.kind === "ALWAYS") return true;
-    if (condition.kind === "PARAMETER_EQUALS") {
-      return sessionValues.get(condition.parameterId) === condition.value;
+    const matches = (candidate: { parameterId: string; value: string | number | boolean }): boolean | null =>
+      sessionValues.has(candidate.parameterId)
+        ? sessionValues.get(candidate.parameterId) === candidate.value
+        : null;
+    if (condition.kind === "PARAMETER_EQUALS") return matches(condition);
+    const states = condition.conditions.map(matches);
+    if (condition.kind === "ALL_OF") {
+      if (states.includes(false)) return false;
+      return states.every((state) => state === true) ? true : null;
     }
-    const matches = (candidate: { parameterId: string; value: string | number | boolean }) =>
-      sessionValues.get(candidate.parameterId) === candidate.value;
-    return condition.kind === "ALL_OF"
-      ? condition.conditions.every(matches)
-      : condition.conditions.some(matches);
+    if (states.includes(true)) return true;
+    return states.every((state) => state === false) ? false : null;
   };
   const tracedCalculationParameterIds = new Set(
     (input.revision?.trace.params ?? [])
       .filter((parameter) => parameter.affectsRowIds.length > 0)
       .map((parameter) => parameter.key),
   );
+  const backendBlockingParameterIds = new Set(input.session.blockingMissingParameterIds);
   // The first calculation screen is global, not work-specific: it exposes
   // only values that a formula or a BOQ/resource branch actually consumes.
   // Documentary references with no calculation consumer remain durable on
   // old revisions but do not clutter or block this form.
-  const visibleParameters = input.session.parameters.filter((parameter) =>
-    parameter.parameterId !== "scope_profile"
+  const visibleParameters = input.session.parameters.filter((parameter) => {
+    const state = conditionState(parameter);
+    return parameter.parameterId !== "scope_profile"
     && (
       canonicalParameterAffectsEstimateCalculation(parameter)
       || tracedCalculationParameterIds.has(parameter.parameterId)
     )
-    && conditionMatches(parameter));
+    && (backendBlockingParameterIds.has(parameter.parameterId) ? state !== false : state === true);
+  });
   const derivedCountKeys = new Set(visibleParameters
     .map((parameter) => COMPOSITE_DERIVED_COUNT[parameter.parameterId])
     .filter((key): key is string => Boolean(key)));
@@ -317,8 +324,11 @@ export function buildCanonicalParameterCards(input: {
         : parameter.valueType === "boolean"
           ? "boolean"
           : parameter.allowedValues.length > 0 ? "select" : "text",
-      editable: parameter.source !== "NORMATIVE_DERIVED" && parameter.source !== "CALCULATED",
-      clickAction: parameter.source !== "NORMATIVE_DERIVED" && parameter.source !== "CALCULATED"
+      // A normative value is a visible starting point, not a locked control.
+      // The owner may replace it in this estimate while the reference and
+      // manual provenance remain distinct; calculated outputs stay read-only.
+      editable: parameter.source !== "CALCULATED",
+      clickAction: parameter.source !== "CALCULATED"
         ? "open_parameter_editor"
         : "read_only",
       noStepperControls: true,

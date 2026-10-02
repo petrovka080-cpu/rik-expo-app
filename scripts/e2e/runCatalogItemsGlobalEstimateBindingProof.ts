@@ -216,7 +216,7 @@ async function main() {
   expect(requestPayloadParity.passed, requestPayloadParity.failures[0] ?? "REQUEST_ESTIMATE_PAYLOAD_PARITY_FAILED", failures);
   expect(!rawCatalogIdVisibleInPdfSummary, "RAW_CATALOG_ID_VISIBLE_IN_PDF_SUMMARY", failures);
   bundle = approveConsumerRepairRequestDraft({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
-  bundle = sendConsumerRepairRequestToMarketplace({
+  bundle = await sendConsumerRepairRequestToMarketplace({
     requestDraftId: bundle.draft.id,
     userId: bundle.draft.consumerUserId,
     idempotencyKey: `catalog-binding:${bundle.draft.id}`,

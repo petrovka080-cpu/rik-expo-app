@@ -116,6 +116,7 @@ type RowSpec = {
   procurement?: boolean;
   resource_class: string;
   product_profile_id?: string;
+  inclusionCondition?: string;
 };
 
 export type IndividualProfessionalEstimatePassportV6 = {
@@ -212,13 +213,14 @@ function pricedRow(
   inputs: readonly string[],
   output_unit: string,
   calculate: RowSpec["calculate"],
-  options: Partial<Pick<RowSpec, "scopes" | "procurement" | "resource_class">> = {},
+  options: Partial<Pick<RowSpec, "scopes" | "procurement" | "resource_class" | "inclusionCondition">> = {},
 ): RowSpec {
   return {
     key, section, category, title, expression, inputs, output_unit, calculate,
     scopes: options.scopes ?? "BOTH",
     procurement: options.procurement ?? (category === "material" || category === "transport"),
     resource_class: options.resource_class ?? category,
+    ...(options.inclusionCondition ? { inclusionCondition: options.inclusionCondition } : {}),
   };
 }
 
@@ -550,11 +552,33 @@ function maximumScopeRows(
   variant: DrywallArchitecturalElementVariantV4,
   system: DrywallArchitecturalElementWorkContractV4["system"],
 ): RowSpec[] {
+  const additionalLayerKeys = new Set([
+    "clad_additional_layer_board",
+    "clad_additional_layer_screws",
+    "clad_additional_layer_installation",
+  ]);
   const candidates = system === "CEILING"
     ? drywallFlatCeilingMaximumScopeLinesV6(operation as DrywallFlatCeilingOperationV6, variant as DrywallFlatCeilingVariantV6)
     : drywallMaximumScopeLinesV5(operation, variant);
   return candidates.map((candidate) => {
     const derived = operation === "FRAME" && system === "CURVE" ? frameGeometryDerivedRow(candidate) : null;
+    if (operation === "CLAD" && additionalLayerKeys.has(candidate.key)) {
+      return pricedRow(
+        candidate.key,
+        candidate.section,
+        candidate.category,
+        candidate.title_ru,
+        `${candidate.quantity_parameter_id} × max(board_layer_count - 1, 0)`,
+        [candidate.quantity_parameter_id, "board_layer_count"],
+        candidate.unit_id,
+        (values) => values[candidate.quantity_parameter_id] * Math.max(values.board_layer_count - 1, 0),
+        {
+          procurement: candidate.procurement_eligible,
+          resource_class: candidate.resource_class,
+          inclusionCondition: "board_layer_count>1",
+        },
+      );
+    }
     return derived ?? pricedRow(
       candidate.key,
       candidate.section,
@@ -886,7 +910,10 @@ function buildParts(inventory: InteriorFinishesDomainInventoryRow): DrywallArchi
         ? [KNAUF_FUGENFUELLER_PERIMETER_SOURCE_ID]
         : []),
     ],
-    inclusion_condition: row.scopes === "FULL" ? "work_included=true AND scope_mode=FULL_APPLICABLE_SCOPE" : "work_included=true", procurement_eligible: row.procurement ?? false, normative_trace_v3: trace(contract, row),
+    inclusion_condition: [
+      row.scopes === "FULL" ? "work_included=true AND scope_mode=FULL_APPLICABLE_SCOPE" : "work_included=true",
+      row.inclusionCondition,
+    ].filter(Boolean).join(" AND "), procurement_eligible: row.procurement ?? false, normative_trace_v3: trace(contract, row),
     price_route_v3: row.ownership === "informational_output" ? { kind: "NOT_APPLICABLE_INFORMATIONAL_OUTPUT", reason: "Контрольный выход не образует повторной стоимости." } : { kind: "RUNTIME_VALIDATED_INPUT", unit_price_parameter_id: `unit_price_${row.key}_kgs`, price_basis_reference_parameter_id: "price_basis_reference", price_basis_date_parameter_id: "price_basis_date", currency_from_request: true, minimum_exclusive: 0 },
     resource_graph_node_v3: { graph_version: "ProfessionalResourceGraphV3", typed_child_boundary: contract.operation, resource_class: row.resource_class, dependency_ids: dependencies, non_cost_dependencies_only: contract.non_cost_dependencies.length > 0, context_parameter_ids: [
       ...contextIds,

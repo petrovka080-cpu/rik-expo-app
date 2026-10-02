@@ -1,0 +1,215 @@
+{
+  "schemaVersion": "rik-expo-app.s27-23.hvac-wavin-hep2o22-heating-source-pack.v1",
+  "profileId": "profile:hvac:heating-pipe:wavin-hep2o22:s27-23-r1",
+  "scope": "Supply and install an accessible horizontal internal heating distribution route using Wavin Hep2O 22 mm Barrier straight pipe and compatible push-fit fittings. The route profile includes supports, pipe-end preparation, SmartSleeves, fittings supplied by route geometry, installation, pressure testing, fill, air purge, inhibitor, logistics and acceptance. Hydraulic sizing, terminal units, valves, insulation, penetrations, fire stopping and boiler connections are separate technologies.",
+  "sources": [
+    {
+      "sourceId": "WAVIN_HEP2O_INSTALLER_GUIDE_2026_10_01",
+      "authority": "Wavin",
+      "officialUrl": "https://mediahub.wavin.com/m/585fd6c3724465db/original/Hep2O-Installer-Guide.pdf",
+      "artifactSha256": "4cda7cd405ebf091ca4762ed0495b51c7e0be55a47a1d2cc6077b6de814a5e15",
+      "exactLocator": "PDF pages 9-16, 34-37, 52-54, 60, 63-64 and 70-79: central-heating applicability and pressure/temperature table; 3 m and 6 m Barrier straight pipe; square cut, burr-free end, SmartSleeve and In4Sure joint sequence; 22 mm horizontal general-purpose support distance; thermal movement; boiler boundary and air purge; inhibitor recommendation; low/high pressure tests; 22 mm pipe, fittings, SmartSleeve, clips and tools",
+      "role": "PRIMARY_MANUFACTURER_SYSTEM_INSTALLATION_AND_TEST"
+    },
+    {
+      "sourceId": "WAVIN_HEP2O_HOW_TO_INSTALL_2026_10_01",
+      "authority": "Wavin",
+      "officialUrl": "https://wavin.com/gb/solutions/hep2o-key/how-to-install",
+      "artifactSha256": "635cebf408a43e092d209c653e33f73c11d57656fdbc876f63795553b5b6f970",
+      "exactLocator": "Official How to Install page: cut square and burr-free, insert one SmartSleeve into each prepared Hep2O pipe end, fully insert and verify the joint",
+      "role": "PRIMARY_MANUFACTURER_JOINT_SEQUENCE"
+    },
+    {
+      "sourceId": "WAVIN_HEP2O_BARRIER_PIPE_22X6_PRODUCT_2026_10_01",
+      "authority": "Wavin",
+      "officialUrl": "https://wavin.com/gb/p/3ad99f03-53a6-4a99-ab95-e8b6b38716ce/hep2o-barrier-pipe-wt-22-l6",
+      "artifactSha256": "4bcdf8d6615481a3752b0fbda36606e89aed0110ad2ac249eee51ae3fae65ca2",
+      "exactLocator": "Official product page: HXX06/22W, 22 mm outer diameter, 2.15 mm wall, 6 m straight length and bundle of 20 pieces",
+      "role": "PRIMARY_MANUFACTURER_PIPE_SKU_AND_PACKAGE"
+    },
+    {
+      "sourceId": "KG_KRER_18_2015_OFFICIAL",
+      "authority": "Ministry of Construction, Architecture and Housing and Communal Services of the Kyrgyz Republic",
+      "officialUrl": "https://minstroy.gov.kg/ru/kyzmat/434/show",
+      "artifactSha256": "e03a5b71d06410d6e3cb5ac8035abee343ab0a778d98150cb772704e001ad5dc",
+      "exactLocator": "Official publication and attached KRER No. 18 'Internal heating systems'; used for scope and operation classification only, not to invent a universal productivity or price",
+      "role": "KG_INTERNAL_HEATING_SCOPE"
+    },
+    {
+      "sourceId": "S27_23_VISIBLE_HEP2O22_HEATING_PLANNING_PROFILE",
+      "authority": "S27.23 visible replaceable planning profile",
+      "officialUrl": "local://visible-planning-profile/hvac-wavin-hep2o22-heating-standard-s27-23",
+      "artifactSha256": "RECORDED_AS_SOURCE_PACK_SHA256_BY_DEFINITION_OWNER",
+      "exactLocator": "selectedPreliminaryProfile fields and engineeringLimitations in this immutable source pack",
+      "role": "VISIBLE_REPLACEABLE_ASSUMPTIONS"
+    }
+  ],
+  "selectedPreliminaryProfile": {
+    "manufacturerSystem": "Wavin Hep2O Barrier pipe HXX06/22W and compatible 22 mm fittings",
+    "serviceProfile": "HEATING_WATER_HORIZONTAL_ACCESSIBLE_GENERAL_PURPOSE",
+    "pipeSectionLengthM": 6,
+    "pipeBundleItem": 20,
+    "pipeOuterDiameterMm": 22,
+    "pipeWallThicknessMm": 2.15,
+    "pipeExpectedWastePercent": 5,
+    "pipeReservePercent": 5,
+    "supportMaximumSpanM": 0.5,
+    "supportPackageItem": 100,
+    "anchorPackageItem": 100,
+    "screwPackageItem": 100,
+    "drillProductivityPointPerMachineHour": 60,
+    "drillBitCapacityPoint": 200,
+    "cuttingProductivityMPerShift": 120,
+    "cutterBladeCapacityCut": 50,
+    "cleaningWipePerPreparedEnd": 1,
+    "cleaningWipePackageItem": 100,
+    "threadedAdapterPerPtfeRoll": 10,
+    "routeProductivityMPerManHour": 4,
+    "endPreparationProductivityPerManHour": 15,
+    "nodeProductivityItemPerManHour": 10,
+    "supportProductivityPointPerManHour": 20,
+    "pressureTestSectionLengthM": 100,
+    "pressureTestHPerSection": 2,
+    "workingPressureBar": 4,
+    "lowPressureTestBar": 0.75,
+    "highPressureInitialPumpMin": 15,
+    "fillCycles": 1,
+    "inhibitorDoseLPerM3": 10,
+    "deliveryTripCount": 1,
+    "wasteRemovalTripCount": 1,
+    "workingHeightM": 2.5,
+    "substrateProfile": "SOLID_MASONRY_PRELIMINARY",
+    "assumptionPolicy": "Wavin system identity, heating applicability, dimensions, straight length, bundle size, joint sequence, SmartSleeve rule, general-purpose support maximum span, thermal movement warning, the 0.5–1 bar low-test range, 1.5-times-maximum-working-pressure high test, minimum 15-minute initial pumping period, one-third pressure reduction, 45-minute monitoring periods and air-purge/inhibitor requirements are tied to the official sources. Expected cutting loss and retained usable reserve are separate visible quantities: only the expected loss is deducted from the forecast remaining stock. Packages, productivities, substrate, height, working pressure, test-section length, inhibitor dose and logistics are visible replaceable planning assumptions. Support count and all fitting/end counts are project layout facts and are never hidden or inferred from route length."
+  },
+  "acceptanceFixture": {
+    "routeLengthM": 100,
+    "supportCount": 201,
+    "preparedPipeEndCount": 40,
+    "straightConnectorCount": 14,
+    "elbowCount": 4,
+    "teeCount": 1,
+    "threadedAdapterCount": 1,
+    "stopEndCount": 0
+  },
+  "independentRequiredComponents": [
+    {
+      "semanticKey": "route-and-applicability",
+      "requiredRowIds": [
+        "hvac-hep2o22:01:operation:route-survey",
+        "hvac-hep2o22:01:operation:route-layout",
+        "hvac-hep2o22:01:control:system-applicability"
+      ]
+    },
+    {
+      "semanticKey": "pipe-procurement-and-cutting",
+      "requiredRowIds": [
+        "hvac-hep2o22:02:material:pipe-net",
+        "hvac-hep2o22:02:material:pipe-expected-waste",
+        "hvac-hep2o22:02:material:pipe-reserve",
+        "hvac-hep2o22:02:control:required-sections",
+        "hvac-hep2o22:02:material:pipe-bundles",
+        "hvac-hep2o22:02:control:ordered-sections",
+        "hvac-hep2o22:02:control:ordered-length",
+        "hvac-hep2o22:02:control:available-before-losses",
+        "hvac-hep2o22:02:control:pipe-remainder",
+        "hvac-hep2o22:02:control:system-volume",
+        "hvac-hep2o22:02:operation:cutting",
+        "hvac-hep2o22:02:equipment:pipe-cutter",
+        "hvac-hep2o22:02:consumable:cutter-blades"
+      ]
+    },
+    {
+      "semanticKey": "supports-and-fastening",
+      "requiredRowIds": [
+        "hvac-hep2o22:03:fastener:supports",
+        "hvac-hep2o22:03:fastener:support-packages",
+        "hvac-hep2o22:03:fastener:anchor-packages",
+        "hvac-hep2o22:03:fastener:screw-packages",
+        "hvac-hep2o22:03:control:support-max-span",
+        "hvac-hep2o22:03:control:support-order",
+        "hvac-hep2o22:03:control:support-remainder",
+        "hvac-hep2o22:03:operation:drill-and-fix",
+        "hvac-hep2o22:03:equipment:rotary-hammer",
+        "hvac-hep2o22:03:consumable:drill-bits"
+      ]
+    },
+    {
+      "semanticKey": "pipe-end-preparation-and-smartsleeves",
+      "requiredRowIds": [
+        "hvac-hep2o22:04:operation:prepare-ends",
+        "hvac-hep2o22:04:component:smartsleeves",
+        "hvac-hep2o22:04:consumable:cleaning-wipes",
+        "hvac-hep2o22:04:consumable:wipe-packages",
+        "hvac-hep2o22:04:labor:end-preparation",
+        "hvac-hep2o22:04:control:joint-recognition",
+        "hvac-hep2o22:04:control:no-extra-lubricant"
+      ]
+    },
+    {
+      "semanticKey": "route-fittings",
+      "requiredRowIds": [
+        "hvac-hep2o22:05:component:straight-connectors",
+        "hvac-hep2o22:05:component:elbows",
+        "hvac-hep2o22:05:component:tees",
+        "hvac-hep2o22:05:component:threaded-adapters",
+        "hvac-hep2o22:05:component:stop-ends",
+        "hvac-hep2o22:05:operation:straight-connectors",
+        "hvac-hep2o22:05:operation:elbows",
+        "hvac-hep2o22:05:operation:tees",
+        "hvac-hep2o22:05:operation:threaded-adapters",
+        "hvac-hep2o22:05:operation:stop-ends",
+        "hvac-hep2o22:05:consumable:ptfe",
+        "hvac-hep2o22:05:labor:node-installation"
+      ]
+    },
+    {
+      "semanticKey": "assembly-and-labor",
+      "requiredRowIds": [
+        "hvac-hep2o22:06:operation:pipe-installation",
+        "hvac-hep2o22:06:labor:route-installation",
+        "hvac-hep2o22:06:labor:support-installation",
+        "hvac-hep2o22:06:control:thermal-movement-review"
+      ]
+    },
+    {
+      "semanticKey": "test-fill-purge-and-inhibitor",
+      "requiredRowIds": [
+        "hvac-hep2o22:07:operation:low-pressure-test",
+        "hvac-hep2o22:07:control:low-test-pressure",
+        "hvac-hep2o22:07:control:low-test-hold",
+        "hvac-hep2o22:07:operation:high-pressure-test",
+        "hvac-hep2o22:07:control:test-pressure",
+        "hvac-hep2o22:07:control:high-pressure-pump",
+        "hvac-hep2o22:07:control:reduced-test-pressure",
+        "hvac-hep2o22:07:equipment:test-pump",
+        "hvac-hep2o22:07:material:test-water",
+        "hvac-hep2o22:07:operation:fill-and-purge",
+        "hvac-hep2o22:07:material:fill-water",
+        "hvac-hep2o22:07:material:inhibitor",
+        "hvac-hep2o22:07:control:air-purge",
+        "hvac-hep2o22:07:control:test-record"
+      ]
+    },
+    {
+      "semanticKey": "logistics-cleanup-and-acceptance",
+      "requiredRowIds": [
+        "hvac-hep2o22:08:delivery:materials",
+        "hvac-hep2o22:08:consumable:waste-bags",
+        "hvac-hep2o22:08:operation:cleanup",
+        "hvac-hep2o22:08:delivery:waste",
+        "hvac-hep2o22:08:control:acceptance"
+      ]
+    }
+  ],
+  "engineeringLimitations": [
+    "Net route length, expected cutting loss, retained usable reserve, ordered length, pre-loss surplus and forecast usable remainder are separate ledger quantities.",
+    "Both Wavin tests are explicit: low pressure 0.5-1 bar for 45 minutes, then high pressure at not less than 1.5 times maximum working pressure with at least 15 minutes pumping, reduction to one third and 45 minutes monitoring.",
+    "This is a selected 22 mm accessible horizontal internal heating route. Project hydraulic sizing, temperatures, pressure, heat load, fire and seismic requirements remain controlling before purchase.",
+    "The acceptance support count is a verified layout fact. The 0.5 m manufacturer distance is a maximum for a general-purpose horizontal run and is not multiplied blindly into a hidden universal count.",
+    "Prepared ends, connectors, elbows, tees, threaded adapters and stop ends are route topology facts; unresolved values stay visible and never become zero.",
+    "Terminal units, pumps, valves, manifolds, insulation, penetrations, fire stopping, builders work, boiler connection boundaries and finishes are separate technologies.",
+    "The manufacturer requires compatibility checks at heat sources and may require a copper boundary; this profile does not silently include a boiler connection.",
+    "The KG source classifies internal-heating work. It is not used to invent a universal labor or machine productivity; planning productivities remain visible and editable.",
+    "Prices are not imported from a foreign catalog. Unknown KGS prices stay null and never become zero."
+  ]
+}

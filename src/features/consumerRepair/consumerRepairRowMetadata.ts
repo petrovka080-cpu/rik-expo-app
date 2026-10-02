@@ -14,6 +14,12 @@ function text(value: unknown): string {
   return String(value ?? "").trim();
 }
 
+const VISIBLE_NON_PAYABLE_COST_TREATMENTS = new Set([
+  "INCLUDED_IN_RESOURCE_ROWS",
+  "INFORMATIONAL_SCOPE",
+  "CONTROL_OR_DOCUMENT",
+]);
+
 export function consumerRepairRowCode(item: ConsumerRepairRowMetadataCarrier | null | undefined): string {
   return text(metadata(item).rowCode);
 }
@@ -46,6 +52,54 @@ export function consumerRepairRowIsCanonicalPreliminaryNeed(
   item: ConsumerRepairRowMetadataCarrier | null | undefined,
 ): boolean {
   return metadata(item).canonicalPreliminaryNeed === true;
+}
+
+export function consumerRepairRowMissingRequirementLabels(
+  item: ConsumerRepairRowMetadataCarrier | null | undefined,
+): string[] {
+  const requirements = metadata(item).missingParameterRequirements;
+  if (!Array.isArray(requirements)) return [];
+  return [...new Set(requirements.flatMap((requirement) => {
+    if (!requirement || typeof requirement !== "object" || Array.isArray(requirement)) return [];
+    const source = requirement as Record<string, unknown>;
+    const label = text(source.titleRu || source.labelRu || source.parameterTitleRu || source.parameterId);
+    return label ? [label] : [];
+  }))];
+}
+
+export function consumerRepairRowHasSourceManagedQuantity(
+  item: ConsumerRepairRowMetadataCarrier | null | undefined,
+): boolean {
+  const source = metadata(item);
+  const requirements = source.missingParameterRequirements;
+  return source.canonicalPreliminaryNeed === true
+    && Array.isArray(requirements)
+    && requirements.some((requirement) =>
+      requirement != null
+      && typeof requirement === "object"
+      && !Array.isArray(requirement)
+      && (requirement as Record<string, unknown>).sourceConfirmationRequired === true
+    );
+}
+
+export function consumerRepairRowIsNonPayable(
+  item: ConsumerRepairRowMetadataCarrier | null | undefined,
+): boolean {
+  const source = metadata(item);
+  return source.payable === false
+    || VISIBLE_NON_PAYABLE_COST_TREATMENTS.has(text(source.canonicalCostTreatment));
+}
+
+export function consumerRepairRowCostTreatment(
+  item: ConsumerRepairRowMetadataCarrier | null | undefined,
+): string {
+  return text(metadata(item).canonicalCostTreatment);
+}
+
+export function consumerRepairRowHasManualQuantity(
+  item: ConsumerRepairRowMetadataCarrier | null | undefined,
+): boolean {
+  return metadata(item).manualQuantityOverride === true;
 }
 
 export function consumerRepairCanonicalRowNativeId(

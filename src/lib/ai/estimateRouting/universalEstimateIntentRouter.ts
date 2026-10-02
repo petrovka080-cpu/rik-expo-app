@@ -1,4 +1,4 @@
-import { calculateGlobalConstructionEstimateSync } from "../globalEstimate/globalEstimateCalculator";
+import { calculateGlobalConstructionEstimateSync } from "../../estimate/backendPlatform/canonicalEstimateHistoricalGlobalProjection";
 import type { GlobalEstimateInput, GlobalWorkCategory } from "../globalEstimate/globalEstimateTypes";
 import { resolveGlobalWorkType } from "../globalEstimate/globalWorkTypeResolver";
 import { classifyEstimateIntent } from "./estimateIntentClassifier";

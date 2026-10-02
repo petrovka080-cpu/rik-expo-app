@@ -254,7 +254,126 @@ describe("P0 canonical parameter editor and professional PDF", () => {
     expect(session.status).toBe("BLOCKING_REQUIRED");
   });
 
-  it("does not let the legacy asphalt passport hide active canonical transport inputs", () => {
+  it("shows an active project-specific text requirement even when it only selects a resource branch", () => {
+    const catalog: CanonicalEstimateCatalogItem = {
+      ...asphaltCatalog,
+      parameterSchema: [{
+        ...asphaltCatalog.parameterSchema[0],
+        parameterId: "lifting_equipment_designation",
+        ordinal: 73,
+        titleRu: "Обозначение подъёмного оборудования",
+        valueType: "text",
+        unitId: null,
+        required: false,
+        defaultValue: null,
+        formulaConsumers: [],
+        resourceBranchConsumers: ["equipment:reinforcement:lifting"],
+        visibilityRole: "USER_INPUT",
+        requiredWhen: {
+          kind: "equals",
+          parameterId: "lifting_equipment_applicable",
+          value: true,
+        },
+      }],
+    };
+    const current = revision({
+      revisionId: ASPHALT_REVISION_ID,
+      catalogId: ASPHALT_CATALOG_ID,
+      parameters: {},
+      preliminaryNeeds: [{
+        rowId: "equipment:reinforcement:lifting",
+        ordinal: 0,
+        section: "Механизмы",
+        category: "machine_equipment",
+        titleRu: "Подъёмное оборудование для арматурных каркасов",
+        unitId: "machine_hour",
+        quantity: "240",
+        unitPrice: null,
+        needState: "CONDITION_REQUIRED",
+        missingParameterIds: ["lifting_equipment_designation"],
+        selected: true,
+        procurementEligible: false,
+        formulaId: "formula:lifting_equipment",
+        calculationTrace: {},
+        normativeTrace: [],
+        needSha256: "c".repeat(64),
+      }],
+    });
+
+    const session = buildConsumerCanonicalParameterSession({ catalog, revision: current, draftId: "lifting-need" });
+
+    expect(session.parameters).toHaveLength(1);
+    expect(session.parameters[0]).toMatchObject({
+      parameterId: "lifting_equipment_designation",
+      label: "Обозначение подъёмного оборудования",
+      requiredLevel: "BLOCKING_REQUIRED",
+      state: "BLOCKING_REQUIRED",
+      valid: false,
+    });
+    expect(session.blockingMissingParameterIds).toEqual(["lifting_equipment_designation"]);
+    expect(buildCanonicalParameterCards({ session, revision: null })).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        key: "lifting_equipment_designation",
+        missing: true,
+        editable: true,
+      }),
+    ]));
+  });
+
+  it("does not require lifting equipment details after that preliminary row is excluded", () => {
+    const catalog: CanonicalEstimateCatalogItem = {
+      ...asphaltCatalog,
+      parameterSchema: [{
+        ...asphaltCatalog.parameterSchema[0],
+        parameterId: "lifting_equipment_designation",
+        ordinal: 73,
+        titleRu: "Обозначение подъёмного оборудования",
+        valueType: "text",
+        unitId: null,
+        required: false,
+        defaultValue: null,
+        formulaConsumers: [],
+        resourceBranchConsumers: ["equipment:reinforcement:lifting"],
+        visibilityRole: "USER_INPUT",
+        requiredWhen: {
+          kind: "equals",
+          parameterId: "lifting_equipment_applicable",
+          value: true,
+        },
+      }],
+    };
+    const current = revision({
+      revisionId: ASPHALT_REVISION_ID,
+      catalogId: ASPHALT_CATALOG_ID,
+      parameters: {},
+      preliminaryNeeds: [{
+        rowId: "equipment:reinforcement:lifting",
+        ordinal: 0,
+        section: "Механизмы",
+        category: "machine_equipment",
+        titleRu: "Подъёмное оборудование для арматурных каркасов",
+        unitId: "machine_hour",
+        quantity: "240",
+        unitPrice: null,
+        needState: "CONDITION_REQUIRED",
+        missingParameterIds: ["lifting_equipment_designation"],
+        selected: false,
+        procurementEligible: false,
+        formulaId: "formula:lifting_equipment",
+        calculationTrace: {},
+        normativeTrace: [],
+        needSha256: "d".repeat(64),
+      }],
+    });
+
+    const session = buildConsumerCanonicalParameterSession({ catalog, revision: current, draftId: "lifting-excluded" });
+
+    expect(session.parameters).toEqual([]);
+    expect(session.blockingMissingParameterIds).toEqual([]);
+    expect(session.status).toBe("COMPLETE");
+  });
+
+  it("does not ask the consumer to invent canonical transport productivity inputs", () => {
     const visibleArea = asphaltCatalog.parameterSchema[0];
     const catalog: CanonicalEstimateCatalogItem = {
       ...asphaltCatalog,
@@ -288,18 +407,20 @@ describe("P0 canonical parameter editor and professional PDF", () => {
     const session = buildConsumerCanonicalParameterSession({ catalog, revision: root, draftId: "transport-inputs" });
     const cardKeys = buildCanonicalParameterCards({ session, revision: null }).map((card) => card.key);
 
-    expect(cardKeys).toEqual(expect.arrayContaining([
-      "truck_average_speed_km_per_machine_hour",
-      "truck_turnaround_machine_hours",
-    ]));
+    expect(cardKeys).not.toContain("truck_average_speed_km_per_machine_hour");
+    expect(cardKeys).not.toContain("truck_turnaround_machine_hours");
+    expect(cardKeys).toEqual(asphaltCatalog.parameterSchema.map((parameter) => parameter.parameterId));
   });
 
   it("preserves the complete public position name and technical designation around a colon", () => {
-    const item = (titleRu: string, sourceParameters: Record<string, unknown> = {}) => ({
+    const item = (titleRu: string, sourceParameters: Record<string, unknown> = {}) => Object.assign(
+      {} as ConsumerRepairRequestItem,
+      {
       id: titleRu,
       titleRu,
       sourceParameters,
-    }) as unknown as ConsumerRepairRequestItem;
+      },
+    );
 
     expect(requestEstimatePublicItemTitle(item("Учёт технологических обрезков: Опора напорного трубопровода")))
       .toBe("Учёт технологических обрезков: Опора напорного трубопровода");
@@ -528,7 +649,9 @@ describe("P0 canonical parameter editor and professional PDF", () => {
     expect(runtime).toContain("canonicalProfessionalArtifactMetadataIdentityMatches");
     expect(api).toContain("canonicalProfessionalArtifactMetadataIdentityMatches");
     expect(professionalProjection).toContain("Профессиональная смета");
-    expect(professionalProjection).toContain("Техническое приложение");
+    expect(professionalProjection).not.toContain("Техническое приложение");
+    expect(professionalProjection).not.toContain("Definition version");
+    expect(professionalProjection).not.toContain("Checksum строки");
     expect(professionalProjection).toContain('CANONICAL_PROFESSIONAL_PDF_CATEGORY_ORDER');
     expect(artifactContract).toContain('man_hour: "чел.-ч"');
     expect(runtime).not.toContain("?token=local-dev-signed-artifact-r1");

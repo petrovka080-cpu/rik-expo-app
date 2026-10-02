@@ -69,6 +69,34 @@ type CanonicalDefinitionClonePlanInput = {
 
 export type CanonicalDefinitionPublishPlan = ReturnType<typeof createCanonicalDefinitionClonePlan>;
 
+/**
+ * Price routes may be carried to a successor only when the stable cost owner
+ * and the unit are unchanged. A similar title, ordinal or category is not a
+ * price identity and must never be used to copy a numeric price silently.
+ */
+export function canonicalPublisherEffectivePriceKey(
+  resource: CanonicalPublisherJson,
+  bindingPriceKey?: unknown,
+): string {
+  return String(resource.cost_owner_id ?? "").trim()
+    || String(bindingPriceKey ?? "").trim()
+    || String(resource.row_id ?? "").trim();
+}
+
+export function canonicalPublisherPriceBindingIsCompatible(input: Readonly<{
+  sourceResource: CanonicalPublisherJson;
+  targetResource: CanonicalPublisherJson;
+  sourceBindingPriceKey: unknown;
+}>): boolean {
+  return String(input.sourceResource.unit_id ?? "").trim() !== ""
+    && String(input.sourceResource.unit_id ?? "").trim()
+      === String(input.targetResource.unit_id ?? "").trim()
+    && canonicalPublisherEffectivePriceKey(
+      input.sourceResource,
+      input.sourceBindingPriceKey,
+    ) === canonicalPublisherEffectivePriceKey(input.targetResource);
+}
+
 function invariant(value: unknown, code: string): asserts value {
   if (!value) throw new Error(code);
 }
@@ -576,6 +604,34 @@ function canonicalPlanPayloadSha256(plan: CanonicalDefinitionPublishPlan): strin
   return sha256(canonicalPlanPayload(plan));
 }
 
+async function inheritCompatiblePriceRouteBindings(
+  client: Client,
+  plan: CanonicalDefinitionPublishPlan,
+): Promise<number> {
+  const inherited = await client.query(`insert into public.estimate_resource_price_route_binding(
+      resource_spec_id,route_id,price_key,priority)
+    select distinct on (target.id,source_binding.route_id)
+      target.id,source_binding.route_id,source_binding.price_key,source_binding.priority
+    from public.estimate_resource_spec target
+    join public.estimate_resource_spec source
+      on source.definition_version_id=$1
+      and source.unit_id=target.unit_id
+    join public.estimate_resource_price_route_binding source_binding
+      on source_binding.resource_spec_id=source.id
+    join public.estimate_price_route route
+      on route.id=source_binding.route_id and route.active
+    where target.definition_version_id=$2
+      and coalesce(nullif(trim(source.cost_owner_id),''),source_binding.price_key)
+        =coalesce(nullif(trim(target.cost_owner_id),''),target.row_id)
+    order by target.id,source_binding.route_id,source_binding.priority,source.id
+    on conflict(resource_spec_id,route_id) do nothing
+    returning resource_spec_id`, [
+    plan.baseline.source_definition_version_id,
+    plan.definition.id,
+  ]);
+  return inherited.rowCount ?? 0;
+}
+
 export async function publishCanonicalDefinitionDraft(
   client: Client,
   plan: CanonicalDefinitionPublishPlan,
@@ -624,6 +680,10 @@ export async function publishCanonicalDefinitionDraft(
     jsonb(resource.source_metadata, "STOP_CANONICAL_PUBLISHER_WRITE_RESOURCE_SOURCE", "object"),
     resource.row_sha256,
   ]));
+  const inheritedCompatiblePriceBindingCount = await inheritCompatiblePriceRouteBindings(
+    client,
+    plan,
+  );
   await client.query(`insert into public.estimate_approved_template_baseline(
       id,baseline_key,catalog_id,definition_version_id,source_definition_version_id,parameter_schema_sha256,
       input_values,input_classification,uom_by_parameter,formula_consumer_ids,resource_consumer_row_ids,
@@ -685,7 +745,10 @@ export async function publishCanonicalDefinitionDraft(
     binding.definition_version_id, binding.resource_spec_id, binding.locator_id,
     jsonb(binding.applicability, "STOP_CANONICAL_PUBLISHER_WRITE_BINDING_APPLICABILITY", "object"),
   ]));
-  return auditPersistedCanonicalDefinition(client, plan);
+  return {
+    ...await auditPersistedCanonicalDefinition(client, plan),
+    inheritedCompatiblePriceBindingCount,
+  };
 }
 
 function selected(row: CanonicalPublisherJson, columns: readonly string[]): CanonicalPublisherJson {
@@ -728,6 +791,14 @@ export async function auditPersistedCanonicalDefinition(
     from public.estimate_work_normative_binding binding
     join public.estimate_resource_spec resource on resource.id=binding.resource_spec_id
     where binding.definition_version_id=$1 order by resource.ordinal`, [
+    plan.definition.id,
+  ])).rows as CanonicalPublisherJson[];
+  const priceBindings = (await client.query(`select price_binding.resource_spec_id,
+      price_binding.route_id,price_binding.price_key,price_binding.priority
+    from public.estimate_resource_price_route_binding price_binding
+    join public.estimate_resource_spec resource on resource.id=price_binding.resource_spec_id
+    where resource.definition_version_id=$1
+    order by resource.ordinal,price_binding.priority,price_binding.route_id`, [
     plan.definition.id,
   ])).rows as CanonicalPublisherJson[];
 
@@ -773,6 +844,7 @@ export async function auditPersistedCanonicalDefinition(
     formulaCount: formulas.length,
     resourceCount: resources.length,
     normativeBindingCount: bindings.length,
+    compatiblePriceBindingCount: priceBindings.length,
     payloadSha256: persistedSha256,
     decision,
   };

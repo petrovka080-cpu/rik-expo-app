@@ -26,6 +26,9 @@ const ARCHITECTURAL_AUTHORIZED = new Set(DRYWALL_ARCHITECTURAL_ELEMENT_PROFESSIO
 const FLAT_CEILING_AUTHORIZED = new Set(DRYWALL_FLAT_CEILING_PROFESSIONAL_CATALOG_IDS_V6);
 const DOMAIN_COMPLETION_AUTHORIZED = new Set(DRYWALL_DOMAIN_COMPLETION_CATALOG_IDS_V7);
 const AUTHORIZED = new Set([...ARCHITECTURAL_AUTHORIZED, ...FLAT_CEILING_AUTHORIZED, ...DOMAIN_COMPLETION_AUTHORIZED]);
+const AUTHORIZED_INVENTORY = INTERIOR_FINISHES_DOMAIN_INVENTORY.filter((item) =>
+  AUTHORIZED.has(item.catalog_id)
+);
 
 function assertRevisionIdentityIntegrity(
   revision: EstimateDraftRevision,
@@ -92,10 +95,13 @@ function isIdentityBoundAccessSupplement(
 function catalogIdFromRevision(revision: EstimateDraftRevision): string | null {
   const direct = revision.resolvedIdentity?.requestedCatalogWorkId;
   if (direct && AUTHORIZED.has(direct)) return direct;
-  const rowCatalogId = revision.boq.rows.map((row) => row.sourceParameters?.catalogId)
-    .find((value): value is string => typeof value === "string" && AUTHORIZED.has(value));
-  if (rowCatalogId) return rowCatalogId;
-  return INTERIOR_FINISHES_DOMAIN_INVENTORY.find((item) => AUTHORIZED.has(item.catalog_id) && (
+  for (const row of revision.boq.rows) {
+    const rowCatalogId = row.sourceParameters?.catalogId;
+    if (typeof rowCatalogId === "string" && AUTHORIZED.has(rowCatalogId)) return rowCatalogId;
+  }
+  // Preserve inventory-order matching while limiting the fallback to the 484
+  // catalog records this migration can actually own.
+  return AUTHORIZED_INVENTORY.find((item) => (
     item.work_key === revision.professionalWorkId || item.catalog_id === revision.selectedTemplateId ||
     revision.selectedTemplateId.includes(item.catalog_id)
   ))?.catalog_id ?? null;

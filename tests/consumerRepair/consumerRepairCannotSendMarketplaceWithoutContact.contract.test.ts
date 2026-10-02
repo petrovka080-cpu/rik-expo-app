@@ -9,20 +9,20 @@ import { CONSUMER_REPAIR_TEST_USER_ID, createApprovedConsumerRepairRequest } fro
 describe("consumer repair marketplace contact validation", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
 
-  it("blocks marketplace send without contact phone in backend service", () => {
+  it("blocks marketplace send without contact phone in backend service", async () => {
     const approved = createApprovedConsumerRepairRequest();
     const bundle = updateConsumerRepairRequestDraft({
       requestDraftId: approved.draft.id,
       patch: { contactPhone: null },
     });
 
-    expect(() => sendConsumerRepairRequestToMarketplace({
+    await expect(sendConsumerRepairRequestToMarketplace({
       requestDraftId: bundle.draft.id,
       userId: CONSUMER_REPAIR_TEST_USER_ID,
-    })).toThrow(ConsumerRepairValidationError);
+    })).rejects.toThrow(ConsumerRepairValidationError);
 
     try {
-      sendConsumerRepairRequestToMarketplace({ requestDraftId: bundle.draft.id, userId: CONSUMER_REPAIR_TEST_USER_ID });
+      await sendConsumerRepairRequestToMarketplace({ requestDraftId: bundle.draft.id, userId: CONSUMER_REPAIR_TEST_USER_ID });
     } catch (error) {
       expect((error as ConsumerRepairValidationError).statusCode).toBe(422);
       expect((error as ConsumerRepairValidationError).errors.map((item) => item.code)).toContain("CONTACT_REQUIRED");

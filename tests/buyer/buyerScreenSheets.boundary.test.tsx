@@ -1,6 +1,5 @@
 import React from "react";
 import TestRenderer, { act } from "react-test-renderer";
-import { View } from "react-native";
 
 import type { BuyerScreenSheetsProps } from "../../src/screens/buyer/components/BuyerScreenSheets";
 import { BuyerScreenSheets } from "../../src/screens/buyer/components/BuyerScreenSheets";
@@ -288,6 +287,15 @@ describe("BuyerScreenSheets boundary", () => {
   it("exports the sheets as a memoized render boundary", () => {
     const sheetsBoundary = BuyerScreenSheets as unknown as { $$typeof?: symbol };
     expect(sheetsBoundary.$$typeof).toBe(Symbol.for("react.memo"));
+  });
+
+  it("binds the shared FIO modal to the buyer surface", () => {
+    let renderer!: TestRenderer.ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(<BuyerScreenSheets {...buildProps()} />);
+    });
+
+    expect(renderer.root.findByProps({ testID: "fio-modal" }).props.modalProps.surface).toBe("buyer");
   });
 
   it("keeps proposal details as the only active sheet body for prop_details", () => {

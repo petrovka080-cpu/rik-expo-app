@@ -942,14 +942,34 @@ export const PRODUCTION_WORK_ALIASES_10000: readonly ProductionWorkAlias[] = Obj
 
 const ALIAS_TO_WORK_KEY = new Map(PRODUCTION_WORK_ALIASES_10000.map((alias) => [alias.normalizedAlias, alias.workKey]));
 
+const LABOR_PRICE_SOURCE_PRIORITY: ProductionPriceSourcePriority[] = [
+  "ratebook",
+  "regional_default",
+  "manual_required",
+];
+const SERVICE_PRICE_SOURCE_PRIORITY: ProductionPriceSourcePriority[] = [
+  "ratebook",
+  "manual_required",
+];
+const MATERIAL_PRICE_SOURCE_PRIORITY: ProductionPriceSourcePriority[] = [
+  "catalog",
+  "supplier",
+  "ratebook",
+  "regional_default",
+  "manual_required",
+];
+Object.freeze(LABOR_PRICE_SOURCE_PRIORITY);
+Object.freeze(SERVICE_PRICE_SOURCE_PRIORITY);
+Object.freeze(MATERIAL_PRICE_SOURCE_PRIORITY);
+
 function sourcePriorityFor(section: ProductionTemplateSection): ProductionPriceSourcePriority[] {
   if (section === "labor" || section === "preparation" || section === "quality_control") {
-    return ["ratebook", "regional_default", "manual_required"];
+    return LABOR_PRICE_SOURCE_PRIORITY;
   }
   if (section === "overhead" || section === "tax") {
-    return ["ratebook", "manual_required"];
+    return SERVICE_PRICE_SOURCE_PRIORITY;
   }
-  return ["catalog", "supplier", "ratebook", "regional_default", "manual_required"];
+  return MATERIAL_PRICE_SOURCE_PRIORITY;
 }
 
 function allowedUnit(definition: ProductionWorkDefinition, ...candidates: ProductionDefaultUnit[]): ProductionDefaultUnit {
@@ -970,10 +990,10 @@ function semanticUnitOverride(section: ProductionTemplateSection, name: string):
 
 function semanticProductionUnit(
   section: ProductionTemplateSection,
-  term: string,
+  normalizedTerm: string,
   definition: ProductionWorkDefinition,
 ): ProductionDefaultUnit {
-  const name = term.toLocaleLowerCase("ru-RU");
+  const name = normalizedTerm;
   // The shared plaster/paint vocabulary calls its primary material
   // "смесь или краска". For the wall-putty owner the resolved Ceresit CT 126
   // and CT 127 product profiles are mass-based, so the generic word "краска"
@@ -1077,53 +1097,55 @@ function displayUnitForProductionTemplate(unit: ProductionDefaultUnit): string {
 
 type ProductionTemplateTerm = {
   term: string;
+  normalizedTerm: string;
   rowCodeIndex: number;
 };
 
+const PROFESSIONAL_DEPTH_TERMS: Partial<Record<ProductionTemplateSection, readonly string[]>> = {
+  materials: [
+    "\u0442\u0435\u0445\u043d\u043e\u043b\u043e\u0433\u0438\u0447\u0435\u0441\u043a\u0438\u0439 \u0437\u0430\u043f\u0430\u0441 \u043e\u0441\u043d\u043e\u0432\u043d\u043e\u0433\u043e \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u0430",
+    "\u0437\u0430\u0449\u0438\u0442\u043d\u043e\u0435 \u043f\u043e\u043a\u0440\u044b\u0442\u0438\u0435 \u0437\u043e\u043d\u044b \u0440\u0430\u0431\u043e\u0442",
+    "\u043c\u0430\u0440\u043a\u0438\u0440\u043e\u0432\u043e\u0447\u043d\u044b\u0435 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b",
+  ],
+  components: [
+    "\u043a\u043e\u043c\u043f\u043b\u0435\u043a\u0442 \u0443\u0437\u043b\u043e\u0432 \u043f\u0440\u0438\u043c\u044b\u043a\u0430\u043d\u0438\u044f",
+    "\u0440\u0435\u043c\u043e\u043d\u0442\u043d\u044b\u0435 \u0432\u0441\u0442\u0430\u0432\u043a\u0438 \u0438 \u0434\u043e\u0431\u043e\u0440\u043d\u044b\u0435 \u044d\u043b\u0435\u043c\u0435\u043d\u0442\u044b",
+    "\u0437\u0430\u043a\u043b\u0430\u0434\u043d\u044b\u0435 \u044d\u043b\u0435\u043c\u0435\u043d\u0442\u044b \u043f\u043e \u043c\u0435\u0441\u0442\u0443",
+  ],
+  consumables: [
+    "\u0440\u0430\u0441\u0445\u043e\u0434\u043d\u044b\u0435 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b \u0434\u043b\u044f \u0438\u043d\u0441\u0442\u0440\u0443\u043c\u0435\u043d\u0442\u0430",
+    "\u0441\u0440\u0435\u0434\u0441\u0442\u0432\u0430 \u0437\u0430\u0449\u0438\u0442\u044b \u0433\u043e\u0442\u043e\u0432\u044b\u0445 \u043f\u043e\u0432\u0435\u0440\u0445\u043d\u043e\u0441\u0442\u0435\u0439",
+  ],
+  preparation: [
+    "\u0432\u0445\u043e\u0434\u043d\u043e\u0439 \u0437\u0430\u043c\u0435\u0440 \u0438 \u0444\u043e\u0442\u043e\u0444\u0438\u043a\u0441\u0430\u0446\u0438\u044f",
+    "\u043f\u043b\u0430\u043d \u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0441\u0442\u0432\u0430 \u0440\u0430\u0431\u043e\u0442",
+    "\u043e\u0440\u0433\u0430\u043d\u0438\u0437\u0430\u0446\u0438\u044f \u0432\u0440\u0435\u043c\u0435\u043d\u043d\u043e\u0439 \u0437\u043e\u043d\u044b",
+  ],
+  labor: [
+    "\u043f\u0440\u0438\u0435\u043c\u043a\u0430 \u043e\u0441\u043d\u043e\u0432\u0430\u043d\u0438\u044f \u043f\u0435\u0440\u0435\u0434 \u043d\u0430\u0447\u0430\u043b\u043e\u043c",
+    "\u0442\u0435\u0445\u043d\u043e\u043b\u043e\u0433\u0438\u0447\u0435\u0441\u043a\u0430\u044f \u0432\u044b\u0434\u0435\u0440\u0436\u043a\u0430 \u0438 \u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c \u043e\u043f\u0435\u0440\u0430\u0446\u0438\u0439",
+    "\u0444\u0438\u043d\u0438\u0448\u043d\u0430\u044f \u0441\u0434\u0430\u0447\u0430 \u0443\u0447\u0430\u0441\u0442\u043a\u0430",
+  ],
+  equipment: [
+    "\u0438\u0437\u043c\u0435\u0440\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0439 \u043a\u043e\u043c\u043f\u043b\u0435\u043a\u0442",
+    "\u043a\u043e\u043c\u043f\u043b\u0435\u043a\u0442 \u043c\u0430\u043b\u043e\u0439 \u043c\u0435\u0445\u0430\u043d\u0438\u0437\u0430\u0446\u0438\u0438",
+  ],
+  logistics: [
+    "\u043a\u043e\u043c\u043f\u043b\u0435\u043a\u0442\u0430\u0446\u0438\u044f \u0438 \u0432\u043d\u0443\u0442\u0440\u0438\u043f\u043b\u043e\u0449\u0430\u0434\u043e\u0447\u043d\u0430\u044f \u043f\u043e\u0434\u0430\u0447\u0430",
+    "\u043e\u0431\u0440\u0430\u0442\u043d\u0430\u044f \u043b\u043e\u0433\u0438\u0441\u0442\u0438\u043a\u0430 \u0442\u0430\u0440\u044b",
+  ],
+  waste: [
+    "\u0441\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u043a\u0430 \u0438 \u0443\u043f\u0430\u043a\u043e\u0432\u043a\u0430 \u043e\u0442\u0445\u043e\u0434\u043e\u0432",
+    "\u0443\u0431\u043e\u0440\u043a\u0430 \u0440\u0430\u0431\u043e\u0447\u0435\u0439 \u0437\u043e\u043d\u044b",
+  ],
+  quality_control: [
+    "\u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u0438\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0439 \u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u0430\u0446\u0438\u0438",
+    "\u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c \u043a\u043e\u043c\u043f\u043b\u0435\u043a\u0442\u043d\u043e\u0441\u0442\u0438 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u043e\u0432",
+    "\u0438\u0442\u043e\u0433\u043e\u0432\u044b\u0439 \u0447\u0435\u043a-\u043b\u0438\u0441\u0442 \u043f\u0440\u0438\u0435\u043c\u043a\u0438",
+  ],
+};
+
 function rowTermsFor(packItem: CategoryPack): { section: ProductionTemplateSection; terms: ProductionTemplateTerm[] }[] {
-  const professionalDepthTerms: Partial<Record<ProductionTemplateSection, string[]>> = {
-    materials: [
-      "\u0442\u0435\u0445\u043d\u043e\u043b\u043e\u0433\u0438\u0447\u0435\u0441\u043a\u0438\u0439 \u0437\u0430\u043f\u0430\u0441 \u043e\u0441\u043d\u043e\u0432\u043d\u043e\u0433\u043e \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u0430",
-      "\u0437\u0430\u0449\u0438\u0442\u043d\u043e\u0435 \u043f\u043e\u043a\u0440\u044b\u0442\u0438\u0435 \u0437\u043e\u043d\u044b \u0440\u0430\u0431\u043e\u0442",
-      "\u043c\u0430\u0440\u043a\u0438\u0440\u043e\u0432\u043e\u0447\u043d\u044b\u0435 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b",
-    ],
-    components: [
-      "\u043a\u043e\u043c\u043f\u043b\u0435\u043a\u0442 \u0443\u0437\u043b\u043e\u0432 \u043f\u0440\u0438\u043c\u044b\u043a\u0430\u043d\u0438\u044f",
-      "\u0440\u0435\u043c\u043e\u043d\u0442\u043d\u044b\u0435 \u0432\u0441\u0442\u0430\u0432\u043a\u0438 \u0438 \u0434\u043e\u0431\u043e\u0440\u043d\u044b\u0435 \u044d\u043b\u0435\u043c\u0435\u043d\u0442\u044b",
-      "\u0437\u0430\u043a\u043b\u0430\u0434\u043d\u044b\u0435 \u044d\u043b\u0435\u043c\u0435\u043d\u0442\u044b \u043f\u043e \u043c\u0435\u0441\u0442\u0443",
-    ],
-    consumables: [
-      "\u0440\u0430\u0441\u0445\u043e\u0434\u043d\u044b\u0435 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b \u0434\u043b\u044f \u0438\u043d\u0441\u0442\u0440\u0443\u043c\u0435\u043d\u0442\u0430",
-      "\u0441\u0440\u0435\u0434\u0441\u0442\u0432\u0430 \u0437\u0430\u0449\u0438\u0442\u044b \u0433\u043e\u0442\u043e\u0432\u044b\u0445 \u043f\u043e\u0432\u0435\u0440\u0445\u043d\u043e\u0441\u0442\u0435\u0439",
-    ],
-    preparation: [
-      "\u0432\u0445\u043e\u0434\u043d\u043e\u0439 \u0437\u0430\u043c\u0435\u0440 \u0438 \u0444\u043e\u0442\u043e\u0444\u0438\u043a\u0441\u0430\u0446\u0438\u044f",
-      "\u043f\u043b\u0430\u043d \u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0441\u0442\u0432\u0430 \u0440\u0430\u0431\u043e\u0442",
-      "\u043e\u0440\u0433\u0430\u043d\u0438\u0437\u0430\u0446\u0438\u044f \u0432\u0440\u0435\u043c\u0435\u043d\u043d\u043e\u0439 \u0437\u043e\u043d\u044b",
-    ],
-    labor: [
-      "\u043f\u0440\u0438\u0435\u043c\u043a\u0430 \u043e\u0441\u043d\u043e\u0432\u0430\u043d\u0438\u044f \u043f\u0435\u0440\u0435\u0434 \u043d\u0430\u0447\u0430\u043b\u043e\u043c",
-      "\u0442\u0435\u0445\u043d\u043e\u043b\u043e\u0433\u0438\u0447\u0435\u0441\u043a\u0430\u044f \u0432\u044b\u0434\u0435\u0440\u0436\u043a\u0430 \u0438 \u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c \u043e\u043f\u0435\u0440\u0430\u0446\u0438\u0439",
-      "\u0444\u0438\u043d\u0438\u0448\u043d\u0430\u044f \u0441\u0434\u0430\u0447\u0430 \u0443\u0447\u0430\u0441\u0442\u043a\u0430",
-    ],
-    equipment: [
-      "\u0438\u0437\u043c\u0435\u0440\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0439 \u043a\u043e\u043c\u043f\u043b\u0435\u043a\u0442",
-      "\u043a\u043e\u043c\u043f\u043b\u0435\u043a\u0442 \u043c\u0430\u043b\u043e\u0439 \u043c\u0435\u0445\u0430\u043d\u0438\u0437\u0430\u0446\u0438\u0438",
-    ],
-    logistics: [
-      "\u043a\u043e\u043c\u043f\u043b\u0435\u043a\u0442\u0430\u0446\u0438\u044f \u0438 \u0432\u043d\u0443\u0442\u0440\u0438\u043f\u043b\u043e\u0449\u0430\u0434\u043e\u0447\u043d\u0430\u044f \u043f\u043e\u0434\u0430\u0447\u0430",
-      "\u043e\u0431\u0440\u0430\u0442\u043d\u0430\u044f \u043b\u043e\u0433\u0438\u0441\u0442\u0438\u043a\u0430 \u0442\u0430\u0440\u044b",
-    ],
-    waste: [
-      "\u0441\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u043a\u0430 \u0438 \u0443\u043f\u0430\u043a\u043e\u0432\u043a\u0430 \u043e\u0442\u0445\u043e\u0434\u043e\u0432",
-      "\u0443\u0431\u043e\u0440\u043a\u0430 \u0440\u0430\u0431\u043e\u0447\u0435\u0439 \u0437\u043e\u043d\u044b",
-    ],
-    quality_control: [
-      "\u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u0438\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0439 \u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u0430\u0446\u0438\u0438",
-      "\u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c \u043a\u043e\u043c\u043f\u043b\u0435\u043a\u0442\u043d\u043e\u0441\u0442\u0438 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u043e\u0432",
-      "\u0438\u0442\u043e\u0433\u043e\u0432\u044b\u0439 \u0447\u0435\u043a-\u043b\u0438\u0441\u0442 \u043f\u0440\u0438\u0435\u043c\u043a\u0438",
-    ],
-  };
   const baseRowCount =
     packItem.materialTerms.length +
     packItem.componentTerms.length +
@@ -1140,13 +1162,13 @@ function rowTermsFor(packItem: CategoryPack): { section: ProductionTemplateSecti
   const withBase = (terms: string[]): ProductionTemplateTerm[] =>
     terms.map((term) => {
       baseIndex += 1;
-      return { term, rowCodeIndex: baseIndex };
+      return { term, normalizedTerm: term.toLocaleLowerCase("ru-RU"), rowCodeIndex: baseIndex };
     });
   const withDepth = (section: ProductionTemplateSection, terms: string[]): ProductionTemplateTerm[] => [
     ...withBase(terms),
-    ...(professionalDepthTerms[section] ?? []).map((term) => {
+    ...(PROFESSIONAL_DEPTH_TERMS[section] ?? []).map((term) => {
       depthIndex += 1;
-      return { term, rowCodeIndex: depthIndex };
+      return { term, normalizedTerm: term.toLocaleLowerCase("ru-RU"), rowCodeIndex: depthIndex };
     }),
   ];
   const rows: { section: ProductionTemplateSection; terms: (ProductionTemplateTerm | string)[] }[] = [
@@ -1167,10 +1189,21 @@ function rowTermsFor(packItem: CategoryPack): { section: ProductionTemplateSecti
     terms: terms.map((entry) => {
       if (typeof entry !== "string") return entry;
       baseIndex += 1;
-      return { term: entry, rowCodeIndex: baseIndex };
+      return {
+        term: entry,
+        normalizedTerm: entry.toLocaleLowerCase("ru-RU"),
+        rowCodeIndex: baseIndex,
+      };
     }),
   }));
 }
+
+const ROW_TERMS_BY_CATEGORY = Object.fromEntries(
+  (Object.keys(CATEGORY_PACKS) as ProductionTemplate10000Category[]).map((category) => [
+    category,
+    rowTermsFor(CATEGORY_PACKS[category]),
+  ]),
+) as Record<ProductionTemplate10000Category, ReturnType<typeof rowTermsFor>>;
 
 export function getProductionWorkDefinition10000(workKey: string): ProductionWorkDefinition | undefined {
   return DEFINITION_BY_WORK_KEY.get(workKey);
@@ -1278,20 +1311,23 @@ function getProductionProjectGroupExpandedTemplate10000(
   return rememberBounded(EXPANDED_TEMPLATE_CACHE, group.workKey, frozenTemplate);
 }
 
-export function getProductionExpandedTemplate10000(workKey: string): ProductionExpandedEstimateTemplate {
-  const cached = EXPANDED_TEMPLATE_CACHE.get(workKey);
-  if (cached) return cached;
-  const definition = getProductionWorkDefinition10000(workKey);
-  const projectGroup = getProductionProjectTemplateGroup10000(workKey);
-  if (!definition && projectGroup) return getProductionProjectGroupExpandedTemplate10000(projectGroup);
-  if (!definition) throw new Error(`PRODUCTION_TEMPLATE_10000_WORK_NOT_FOUND:${workKey}`);
-  const packItem = CATEGORY_PACKS[definition.category];
+type ProductionExpandedTemplateBuild = Readonly<{
+  template: ProductionExpandedEstimateTemplate;
+  norms: readonly ReturnType<typeof buildEstimateNormItemForTemplateRow>[];
+}>;
+
+function buildProductionExpandedTemplate10000(
+  definition: ProductionWorkDefinition,
+): ProductionExpandedTemplateBuild {
   const elementLabel = aliasTermsFor(definition).element.ru;
-  const rows = rowTermsFor(packItem).flatMap(({ section, terms }) =>
-    terms.map(({ term, rowCodeIndex }) => {
-      const unit = semanticProductionUnit(section, term, definition);
-      const materialLike = ["materials", "components", "consumables", "waste"].includes(section);
-      const laborLike = ["labor", "preparation", "quality_control", "overhead"].includes(section);
+  const norms: ReturnType<typeof buildEstimateNormItemForTemplateRow>[] = [];
+  const rows = ROW_TERMS_BY_CATEGORY[definition.category].flatMap(({ section, terms }) =>
+    terms.map(({ term, normalizedTerm, rowCodeIndex }) => {
+      const unit = semanticProductionUnit(section, normalizedTerm, definition);
+      const materialLike = section === "materials" || section === "components" ||
+        section === "consumables" || section === "waste";
+      const laborLike = section === "labor" || section === "preparation" ||
+        section === "quality_control" || section === "overhead";
       const rowCode = `${definition.workKey}_${section}_${String(rowCodeIndex).padStart(2, "0")}`;
       const lineType = lineTypeForSection(section);
       const rowBase = {
@@ -1317,6 +1353,7 @@ export function getProductionExpandedTemplate10000(workKey: string): ProductionE
         warningIfMissingPrice: "Цена не подтверждена pricebook/catalog; требуется ручное подтверждение перед коммерческим предложением.",
       };
       const norm = buildEstimateNormItemForTemplateRow(definition, rowBase);
+      norms.push(norm);
       return {
         ...rowBase,
         quantityFormula: norm.formula,
@@ -1344,7 +1381,18 @@ export function getProductionExpandedTemplate10000(workKey: string): ProductionE
     rows,
   };
   const frozenTemplate = freezeExpandedTemplate(template);
-  return rememberBounded(EXPANDED_TEMPLATE_CACHE, workKey, frozenTemplate);
+  return { template: frozenTemplate, norms };
+}
+
+export function getProductionExpandedTemplate10000(workKey: string): ProductionExpandedEstimateTemplate {
+  const cached = EXPANDED_TEMPLATE_CACHE.get(workKey);
+  if (cached) return cached;
+  const definition = getProductionWorkDefinition10000(workKey);
+  const projectGroup = getProductionProjectTemplateGroup10000(workKey);
+  if (!definition && projectGroup) return getProductionProjectGroupExpandedTemplate10000(projectGroup);
+  if (!definition) throw new Error(`PRODUCTION_TEMPLATE_10000_WORK_NOT_FOUND:${workKey}`);
+  const built = buildProductionExpandedTemplate10000(definition);
+  return rememberBounded(EXPANDED_TEMPLATE_CACHE, workKey, built.template);
 }
 
 function stableHash(value: unknown): string {
@@ -1358,7 +1406,7 @@ function stableHash(value: unknown): string {
 }
 
 function freezeTemplateRow(row: ProductionExpandedTemplateRow): ProductionExpandedTemplateRow {
-  Object.freeze(row.priceSourcePriority);
+  if (!Object.isFrozen(row.priceSourcePriority)) Object.freeze(row.priceSourcePriority);
   return Object.freeze(row);
 }
 
@@ -1371,10 +1419,12 @@ function freezeExpandedTemplate(template: ProductionExpandedEstimateTemplate): P
 }
 
 function freezeCompiledRow(row: ProductionCompiledExpandedRow): ProductionCompiledExpandedRow {
-  if (Array.isArray(row.sourceParameters.formulaVariables)) {
+  if (Array.isArray(row.sourceParameters.formulaVariables) &&
+      !Object.isFrozen(row.sourceParameters.formulaVariables)) {
     Object.freeze(row.sourceParameters.formulaVariables);
   }
-  if (Array.isArray(row.sourceParameters.formulaFunctions)) {
+  if (Array.isArray(row.sourceParameters.formulaFunctions) &&
+      !Object.isFrozen(row.sourceParameters.formulaFunctions)) {
     Object.freeze(row.sourceParameters.formulaFunctions);
   }
   const formulaContext = row.sourceParameters.formulaContext;
@@ -1541,56 +1591,47 @@ export function compileProductionExpandedEstimate10000(input: {
     });
   }
   if (!definition) throw new Error(`PRODUCTION_TEMPLATE_10000_WORK_NOT_FOUND:${input.workKey}`);
-  const template = getProductionExpandedTemplate10000(input.workKey);
   const quantity = input.quantity && Number.isFinite(input.quantity) && input.quantity > 0 ? input.quantity : 100;
   const cacheKey = `${definition.workKey}:${quantity}:${input.countryCode ?? "KG"}`;
   const cached = COMPILED_ESTIMATE_CACHE.get(cacheKey);
   if (cached) return cached;
+  let template = EXPANDED_TEMPLATE_CACHE.get(input.workKey);
+  let precomputedNorms: readonly ReturnType<typeof buildEstimateNormItemForTemplateRow>[] | undefined;
+  if (!template) {
+    const built = buildProductionExpandedTemplate10000(definition);
+    template = rememberBounded(EXPANDED_TEMPLATE_CACHE, input.workKey, built.template);
+    precomputedNorms = built.norms;
+  }
   const currency = currencyForProductionTemplateRegion(input.countryCode ?? "KG");
-  const rows: ProductionCompiledExpandedRow[] = template.rows.map((row) => {
-    const norm = buildEstimateNormItemForTemplateRow(definition, row);
+  const rows: ProductionCompiledExpandedRow[] = template.rows.map((row, rowIndex) => {
+    const norm = precomputedNorms?.[rowIndex] ?? buildEstimateNormItemForTemplateRow(definition, row);
     const formulaContext = formulaContextFromEstimateNormItem(norm, quantity);
     const formulaResult = evaluateProductionFormulaDsl(row.quantityFormula, formulaContext);
     const rowQuantity = formulaResult.value;
     const outputUnit = norm.unit as ProductionDefaultUnit;
+    const displayUnit = displayUnitForProductionTemplate(outputUnit);
     const templateId = template.templateKey;
     const templateVersion = template.version;
     const formulaId = `${row.formulaDefinitionId}_${row.rowCode}`;
+    const calculationTrace = `template=${templateId}; templateVersion=${templateVersion}; baseQuantity=${quantity} ${definition.defaultUnit}; formula=${row.quantityFormula}; ${formulaResult.trace}; normId=${norm.norm_id}; normVersion=${norm.norm_version}; normSource=${norm.source_id}; normFamily=${norm.norm_family_id}; normRate=${norm.consumption_rate}; normFactor=${formulaContext.normFactor}; wastePercent=${formulaContext.wastePercent}; normReviewStatus=${norm.review_status}; normProvenance=${norm.source_provenance}; rounding=${norm.rounding_policy}; result=${rowQuantity} ${outputUnit}`;
     return {
       ...row,
       unit: outputUnit,
       quantity: rowQuantity,
-      displayUnit: displayUnitForProductionTemplate(outputUnit),
+      displayUnit,
       unitPrice: null,
       total: null,
       currency,
       priceStatus: "PRICE_MISSING",
       missingPriceHandledHonestly: true,
       formulaId,
-      calculationTrace: [
-        `template=${templateId}`,
-        `templateVersion=${templateVersion}`,
-        `baseQuantity=${quantity} ${definition.defaultUnit}`,
-        `formula=${row.quantityFormula}`,
-        formulaResult.trace,
-        `normId=${norm.norm_id}`,
-        `normVersion=${norm.norm_version}`,
-        `normSource=${norm.source_id}`,
-        `normFamily=${norm.norm_family_id}`,
-        `normRate=${norm.consumption_rate}`,
-        `normFactor=${formulaContext.normFactor}`,
-        `wastePercent=${formulaContext.wastePercent}`,
-        `normReviewStatus=${norm.review_status}`,
-        `normProvenance=${norm.source_provenance}`,
-        `rounding=${norm.rounding_policy}`,
-        `result=${rowQuantity} ${outputUnit}`,
-      ].join("; "),
+      calculationTrace,
       sourceParameters: {
         baseQuantity: quantity,
         baseUnit: definition.defaultUnit,
         templateRowUnit: row.unit,
         rowUnit: outputUnit,
-        displayUnit: displayUnitForProductionTemplate(outputUnit),
+        displayUnit,
         workKey: definition.workKey,
         rowCode: row.rowCode,
         recipeId: row.recipeId,

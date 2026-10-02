@@ -66,9 +66,14 @@ create table if not exists public.r551_local_developer_membership (
   role text not null check (role in ('foreman','director','buyer','accountant','warehouse','contractor','security','estimator','engineer','consumer','platform_developer')),
   active boolean not null default true,
   created_at timestamptz not null default now(),
-  unique (tenant_id, user_id),
-  unique (tenant_id, role)
+  unique (tenant_id, user_id)
 );
+
+-- A company can have several foremen, buyers, accountants, and developers.
+-- The earlier local fixture accidentally made a role unique per tenant, which
+-- prevented an existing reviewer account from receiving a normal membership.
+alter table public.r551_local_developer_membership
+  drop constraint if exists r551_local_developer_membership_tenant_id_role_key;
 
 alter table public.r551_local_developer_membership
   drop constraint if exists r551_local_developer_membership_role_check;
@@ -675,6 +680,139 @@ async function jsonRequest(url: string, init: RequestInit) {
   return { status: response.status, body };
 }
 
+function deterministicUuid(seed: string): string {
+  const hex = createHash("sha256").update(seed).digest("hex").slice(0, 32).split("");
+  hex[12] = "5";
+  hex[16] = ((Number.parseInt(hex[16] ?? "0", 16) & 0x3) | 0x8).toString(16);
+  const value = hex.join("");
+  return `${value.slice(0, 8)}-${value.slice(8, 12)}-${value.slice(12, 16)}-${value.slice(16, 20)}-${value.slice(20)}`;
+}
+
+function sqlUuid(value: string, code: string): string {
+  invariant(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(value), code);
+  return `'${value}'::uuid`;
+}
+
+async function findProviderUserByEmail(email: string, secret: string): Promise<Json> {
+  invariant(/^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(email), "R551_ATTACH_EMAIL_INVALID");
+  for (let page = 1; page <= 20; page += 1) {
+    const result = await jsonRequest(
+      `${PROVIDER_URL}/auth/v1/admin/users?page=${page}&per_page=100`,
+      { headers: { apikey: secret, Authorization: `Bearer ${secret}` } },
+    );
+    invariant(result.status === 200, `R551_ATTACH_USER_LIST_${result.status}`);
+    const users = Array.isArray(result.body?.users) ? result.body.users : [];
+    const match = users.find(
+      (candidate: Json) => String(candidate.email ?? "").trim().toLowerCase() === email,
+    );
+    if (match) return match;
+    if (users.length < 100) break;
+  }
+  throw new Error("R551_ATTACH_USER_NOT_FOUND");
+}
+
+async function attachExistingLocalDeveloper(email: string, keys: ReturnType<typeof providerKeys>): Promise<void> {
+  invariant(
+    process.env.R551_ATTACH_EXISTING_CONFIRM === "local-provider-only",
+    "R551_ATTACH_CONFIRMATION_REQUIRED",
+  );
+  const user = await findProviderUserByEmail(email, keys.secret);
+  const userId = String(user.id ?? "").trim().toLowerCase();
+  const membershipId = deterministicUuid(`r551-existing-reviewer:${userId}:membership`);
+  const userIdSql = sqlUuid(userId, "R551_ATTACH_USER_ID_INVALID");
+  const membershipIdSql = sqlUuid(membershipId, "R551_ATTACH_MEMBERSHIP_ID_INVALID");
+  const tenantIdSql = sqlUuid(TEST_TENANT_ID, "R551_ATTACH_TENANT_ID_INVALID");
+
+  runProviderSql(`
+begin;
+insert into public.r551_local_developer_membership(id,tenant_id,user_id,role,active)
+values (${membershipIdSql},${tenantIdSql},${userIdSql},'platform_developer',true)
+on conflict(tenant_id,user_id) do update set
+  id=excluded.id,role=excluded.role,active=true;
+
+insert into public.r541_app_auth_profile(user_id,resolved_role,tenant_id,membership_id)
+values (${userIdSql},'platform_developer',${tenantIdSql},${membershipIdSql})
+on conflict(user_id) do update set
+  resolved_role=excluded.resolved_role,
+  tenant_id=excluded.tenant_id,
+  membership_id=excluded.membership_id,
+  updated_at=now();
+
+insert into public.profiles(user_id,role)
+values (${userIdSql},'platform_developer')
+on conflict(user_id) do update set role=excluded.role;
+
+insert into public.company_members(company_id,user_id,role)
+values ('66666666-6666-4666-8666-666666666661'::uuid,${userIdSql},'director')
+on conflict(company_id,user_id) do update set role=excluded.role;
+
+insert into public.developer_access_overrides(
+  user_id,entitlement,is_enabled,allowed_roles,active_effective_role,
+  can_access_all_office_routes,can_impersonate_for_mutations,expires_at,
+  reason,created_by,updated_at
+) values (
+  ${userIdSql},'platform_developer',true,
+  array['foreman','director','buyer','accountant','warehouse','contractor','security','estimator','engineer']::text[],
+  'foreman',true,true,null,
+  'Existing local reviewer attached through server-authorized membership',
+  ${userIdSql},now()
+) on conflict(user_id) do update set
+  entitlement=excluded.entitlement,
+  is_enabled=excluded.is_enabled,
+  allowed_roles=excluded.allowed_roles,
+  active_effective_role=excluded.active_effective_role,
+  can_access_all_office_routes=excluded.can_access_all_office_routes,
+  can_impersonate_for_mutations=excluded.can_impersonate_for_mutations,
+  expires_at=excluded.expires_at,
+  reason=excluded.reason,
+  updated_at=now();
+
+insert into public.developer_override_audit_log(
+  actor_user_id,actor_role,effective_role,override_enabled,action_name,details
+) values (
+  ${userIdSql},'platform_developer','foreman',true,'existing_local_reviewer_attached',
+  jsonb_build_object('source','provisionLocalDeveloperReview','local_only',true)
+);
+notify pgrst, 'reload schema';
+commit;
+`);
+
+  const existingAppMetadata =
+    user.app_metadata && typeof user.app_metadata === "object" && !Array.isArray(user.app_metadata)
+      ? user.app_metadata
+      : {};
+  const updated = await jsonRequest(`${PROVIDER_URL}/auth/v1/admin/users/${userId}`, {
+    method: "PUT",
+    headers: {
+      apikey: keys.secret,
+      Authorization: `Bearer ${keys.secret}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      app_metadata: {
+        ...existingAppMetadata,
+        tenant_id: TEST_TENANT_ID,
+        membership_id: membershipId,
+        role: "platform_developer",
+        local_developer_review: true,
+      },
+    }),
+  });
+  invariant(updated.status === 200 && updated.body?.id === userId, `R551_ATTACH_METADATA_${updated.status}`);
+
+  process.stdout.write(`${JSON.stringify({
+    status: "GREEN_R551_EXISTING_LOCAL_REVIEWER_ATTACHED",
+    user_id: userId,
+    tenant_id: TEST_TENANT_ID,
+    membership_id: membershipId,
+    base_role: "platform_developer",
+    active_effective_role: "foreman",
+    office_role_count: ROLES.length,
+    password_used: false,
+    production_accessed: false,
+  })}\n`);
+}
+
 function runProviderSql(sql: string): void {
   execFileSync(
     "docker",
@@ -989,6 +1127,12 @@ async function main(): Promise<void> {
   const keys = providerKeys();
   runProviderSql(SQL_FOUNDATION);
 
+  const attachEmail = String(process.env.R551_ATTACH_EXISTING_EMAIL ?? "").trim().toLowerCase();
+  if (attachEmail) {
+    await attachExistingLocalDeveloper(attachEmail, keys);
+    return;
+  }
+
   const previous = loadExistingCredentials();
   const principals: Principal[] = [];
   for (const role of PRINCIPAL_ROLES) {
@@ -1017,8 +1161,8 @@ async function main(): Promise<void> {
     membershipSql.push(`
       insert into public.r551_local_developer_membership(id,tenant_id,user_id,role,active)
       values ('${principal.membership_id}'::uuid,'${TEST_TENANT_ID}'::uuid,'${principal.user_id}'::uuid,'${principal.role}',true)
-      on conflict(tenant_id,role) do update set
-        id=excluded.id,user_id=excluded.user_id,active=true;
+      on conflict(tenant_id,user_id) do update set
+        id=excluded.id,role=excluded.role,active=true;
     `);
   }
   invariant(/^[0-9a-f-]{36}$/iu.test(owner.user_id), "R551_OWNER_USER_ID_RED");
@@ -1027,8 +1171,8 @@ async function main(): Promise<void> {
   membershipSql.push(`
     insert into public.r551_local_developer_membership(id,tenant_id,user_id,role,active)
     values ('${owner.membership_id}'::uuid,'${TEST_TENANT_ID}'::uuid,'${owner.user_id}'::uuid,'${OWNER_ROLE}',true)
-    on conflict(tenant_id,role) do update set
-      id=excluded.id,user_id=excluded.user_id,active=true;
+    on conflict(tenant_id,user_id) do update set
+      id=excluded.id,role=excluded.role,active=true;
 
     update public.developer_access_overrides
     set entitlement=null,is_enabled=false,active_effective_role=null,

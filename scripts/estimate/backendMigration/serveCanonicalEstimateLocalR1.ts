@@ -67,7 +67,14 @@ import {
 } from "../../../src/lib/estimate/backendPlatform/estimateAdmissionR3";
 import { canonicalEstimateCandidateAdmissionIdempotencyKey } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCommandIdentity";
 import { normalizePublicBoqNameRu } from "../../../src/lib/estimate/publicBoqNaming";
-import { canonicalEstimatePreliminaryNeedsFromAmendmentContract } from "../../../src/lib/estimate/backendPlatform/contracts";
+import {
+  canonicalEstimateEffectivePriceSnapshotIds,
+  canonicalEstimatePreliminaryNeedsFromAmendmentContract,
+} from "../../../src/lib/estimate/backendPlatform/contracts";
+import {
+  canonicalEstimateRevisionDetailFromStorage,
+  canonicalEstimateRevisionRowFromStorage,
+} from "../../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper";
 import {
   normalizeCanonicalCatalogSearchQuery as normalizeSearchQuery,
   parseCanonicalCatalogSearchIntent as parseSearchIntent,
@@ -77,6 +84,9 @@ import {
   isGenericPublicBoqResourceName,
   isPublicBoqNameStructurallyValid,
 } from "../../../src/lib/estimate/semanticBoqGate";
+import {
+  resolveCanonicalEstimateProfileInputsS2723,
+} from "../../../src/lib/estimate/backendPlatform/canonicalEstimateProfileInputResolverS2723";
 
 const API_VERSION = "2026-08-14.r2";
 const COMPILER_VERSION = "canonical-estimate-local-runtime.r6";
@@ -119,15 +129,35 @@ const SUPABASE_AUTH_URL = String(
 const SUPABASE_AUTH_API_KEY = String(
   process.env.CANONICAL_ESTIMATE_SUPABASE_AUTH_API_KEY ?? "",
 ).trim();
+const SUPABASE_AUTH_URL_SHA256 = createHash("sha256")
+  .update(SUPABASE_AUTH_URL)
+  .digest("hex");
+const SUPABASE_AUTH_API_KEY_SHA256 = createHash("sha256")
+  .update(SUPABASE_AUTH_API_KEY)
+  .digest("hex");
 const SUPABASE_PRINCIPAL_RPC = String(
   process.env.CANONICAL_ESTIMATE_SUPABASE_PRINCIPAL_RPC ?? "",
 ).trim();
 const SUPABASE_PRINCIPAL_RPC_RE = /^[a-z][a-z0-9_]{0,62}$/u;
+type SupabasePrincipalMode = "CANONICAL_RPC" | "SIGNED_CLAIMS_OR_COMPANY_MEMBERSHIP";
+const SUPABASE_PRINCIPAL_MODE_INPUT = String(
+  process.env.CANONICAL_ESTIMATE_SUPABASE_PRINCIPAL_MODE ?? "CANONICAL_RPC",
+)
+  .trim()
+  .toUpperCase();
+if (
+  SUPABASE_PRINCIPAL_MODE_INPUT !== "CANONICAL_RPC" &&
+  SUPABASE_PRINCIPAL_MODE_INPUT !== "SIGNED_CLAIMS_OR_COMPANY_MEMBERSHIP"
+) {
+  throw new Error("CANONICAL_ESTIMATE_SUPABASE_PRINCIPAL_MODE_INVALID");
+}
+const SUPABASE_PRINCIPAL_MODE = SUPABASE_PRINCIPAL_MODE_INPUT as SupabasePrincipalMode;
 if (
   LOCAL_AUTH_MODE === "STRICT_SESSION_INTROSPECTION" &&
   (!SUPABASE_AUTH_URL ||
     !SUPABASE_AUTH_API_KEY ||
-    !SUPABASE_PRINCIPAL_RPC_RE.test(SUPABASE_PRINCIPAL_RPC))
+    (SUPABASE_PRINCIPAL_MODE === "CANONICAL_RPC" &&
+      !SUPABASE_PRINCIPAL_RPC_RE.test(SUPABASE_PRINCIPAL_RPC)))
 ) {
   throw new Error("CANONICAL_ESTIMATE_SUPABASE_INTROSPECTION_CONFIG_REQUIRED");
 }
@@ -147,6 +177,12 @@ const ALLOW_PREPARED_RELEASE_COMPILE =
 const R3_RUNTIME_ENVIRONMENT = String(
   process.env.CANONICAL_ESTIMATE_RUNTIME_ENVIRONMENT ?? "local",
 ).trim();
+const ALLOW_PERSONAL_PRINCIPAL =
+  String(
+    process.env.CANONICAL_ESTIMATE_ALLOW_PERSONAL_PRINCIPAL ?? "false",
+  )
+    .trim()
+    .toLowerCase() === "true";
 const R3_CAPABILITY_ENVIRONMENT = String(
   process.env.CANONICAL_ESTIMATE_ADMISSION_CAPABILITY_ENVIRONMENT ?? "",
 ).trim();
@@ -203,6 +239,34 @@ const DATABASE_URL =
   "postgresql://postgres@127.0.0.1:55432/master11610_r1";
 const SEARCH_DATABASE_URL =
   process.env.CANONICAL_ESTIMATE_SEARCH_DATABASE_URL ?? DATABASE_URL;
+const ALLOW_RUNTIME_TENANT_CAPABILITY_DERIVATION =
+  String(
+    process.env.CANONICAL_ESTIMATE_ALLOW_RUNTIME_TENANT_CAPABILITY_DERIVATION ?? "false",
+  )
+    .trim()
+    .toLowerCase() === "true";
+if (
+  ALLOW_RUNTIME_TENANT_CAPABILITY_DERIVATION &&
+  !(
+    LOCAL_AUTH_MODE === "STRICT_SESSION_INTROSPECTION" &&
+    R3_CAPABILITY_TENANT_BINDING === "request-principal" &&
+    R3_RUNTIME_ENVIRONMENT === "local-developer-r568-whole-app" &&
+    /^postgresql:\/\/[^@/]+@(?:127[.]0[.]0[.]1|localhost):55432\//u.test(DATABASE_URL)
+  )
+) {
+  throw new Error("CANONICAL_ESTIMATE_RUNTIME_TENANT_CAPABILITY_DERIVATION_FORBIDDEN");
+}
+if (
+  ALLOW_PERSONAL_PRINCIPAL &&
+  !(
+    LOCAL_AUTH_MODE === "STRICT_SESSION_INTROSPECTION" &&
+    SUPABASE_PRINCIPAL_MODE === "SIGNED_CLAIMS_OR_COMPANY_MEMBERSHIP" &&
+    R3_RUNTIME_ENVIRONMENT === "local-developer-r568-whole-app" &&
+    /^postgresql:\/\/[^@/]+@(?:127[.]0[.]0[.]1|localhost):55432\//u.test(DATABASE_URL)
+  )
+) {
+  throw new Error("CANONICAL_ESTIMATE_PERSONAL_PRINCIPAL_FORBIDDEN");
+}
 const TARGET_SEARCH_RELEASE_ID = String(
   process.env.CANONICAL_ESTIMATE_TARGET_SEARCH_RELEASE_ID ?? "",
 ).trim();
@@ -283,6 +347,7 @@ type JsonRecord = Record<string, unknown>;
 type LocalPrincipal = {
   ownerUserId: string;
   tenantId: string;
+  organizationId: string | null;
   membershipId: string;
   role: string;
   sessionReference: string;
@@ -324,6 +389,7 @@ function fixturePrincipal(sessionCredential: string): LocalPrincipal {
   return {
     ownerUserId: FIXTURE_CONFIG.ownerUserId,
     tenantId: FIXTURE_CONFIG.tenantId,
+    organizationId: FIXTURE_CONFIG.tenantId,
     membershipId: FIXTURE_CONFIG.membershipId,
     role: FIXTURE_CONFIG.role,
     sessionReference: sha256({ fixtureSession: sessionCredential }),
@@ -335,7 +401,8 @@ function fixturePrincipal(sessionCredential: string): LocalPrincipal {
 function resolveRequestOrganizationId(value: unknown): string | null {
   const supplied = value == null ? "" : String(value).trim();
   if (LOCAL_AUTH_MODE === "STRICT_SESSION_INTROSPECTION") {
-    if (supplied && supplied !== currentTenantId()) {
+    const organizationId = currentPrincipal().organizationId;
+    if (supplied && supplied !== organizationId) {
       throw Object.assign(
         new Error(
           "organization identity does not match the authenticated tenant",
@@ -346,7 +413,7 @@ function resolveRequestOrganizationId(value: unknown): string | null {
         },
       );
     }
-    return currentTenantId();
+    return organizationId;
   }
   return supplied || null;
 }
@@ -446,15 +513,120 @@ async function requireLocalPrincipal(
         ? (user.app_metadata as JsonRecord)
         : {};
     const ownerUserId = String(user.id ?? "").trim();
-    const tenantId = String(
+    let tenantId = String(
       appMetadata.tenant_id ?? appMetadata.organization_id ?? "",
     ).trim();
-    const membershipId = String(appMetadata.membership_id ?? "").trim();
-    const role = String(appMetadata.role ?? "")
+    let membershipId = String(appMetadata.membership_id ?? "").trim();
+    let role = String(appMetadata.role ?? "")
       .trim()
       .toLowerCase();
+    if (!LOCAL_AUTHENTICATED_USER_ID_RE.test(ownerUserId)) {
+      throw Object.assign(
+        new Error("Supabase session has no valid owner identity"),
+        {
+          code: "AUTH_FORBIDDEN",
+          httpStatus: 403,
+        },
+      );
+    }
+    if (SUPABASE_PRINCIPAL_MODE === "SIGNED_CLAIMS_OR_COMPANY_MEMBERSHIP") {
+      const claimedTenantIsValid = LOCAL_AUTHENTICATED_USER_ID_RE.test(tenantId);
+      const membershipUrl = new URL(`${SUPABASE_AUTH_URL}/rest/v1/company_members`);
+      membershipUrl.searchParams.set("select", "company_id,role");
+      membershipUrl.searchParams.set("user_id", `eq.${ownerUserId}`);
+      membershipUrl.searchParams.set("limit", "2");
+      let membershipResolution: Response;
+      try {
+        membershipResolution = await fetch(membershipUrl, {
+          method: "GET",
+          headers: {
+            Authorization: authorization,
+            apikey: SUPABASE_AUTH_API_KEY,
+          },
+          signal: AbortSignal.timeout(10_000),
+        });
+      } catch {
+        throw Object.assign(new Error("Supabase membership provider is unavailable"), {
+          code: "AUTH_PROVIDER_UNAVAILABLE",
+          httpStatus: 503,
+        });
+      }
+      if (!membershipResolution.ok) {
+        const forbidden =
+          membershipResolution.status === 401 || membershipResolution.status === 403;
+        throw Object.assign(
+          new Error(
+            forbidden
+              ? "Supabase membership is unauthorized or inactive"
+              : "Supabase membership provider is unavailable",
+          ),
+          {
+            code: forbidden ? "AUTH_FORBIDDEN" : "AUTH_PROVIDER_UNAVAILABLE",
+            httpStatus: forbidden ? 403 : 503,
+          },
+        );
+      }
+      const membershipRows = (await membershipResolution.json().catch(() => null)) as
+        | JsonRecord[]
+        | null;
+      const claimedMembership = claimedTenantIsValid && Array.isArray(membershipRows)
+        ? membershipRows.find((candidate) =>
+            String(candidate.company_id ?? "").trim() === tenantId
+          ) ?? null
+        : null;
+      const resolvedMembership = claimedMembership ?? (
+        Array.isArray(membershipRows) && membershipRows.length === 1
+          ? membershipRows[0]
+          : null
+      );
+      if (resolvedMembership) {
+        tenantId = String(resolvedMembership.company_id ?? "").trim();
+        role = String(resolvedMembership.role ?? "")
+          .trim()
+          .toLowerCase();
+        if (!LOCAL_AUTHENTICATED_USER_ID_RE.test(membershipId)) membershipId = tenantId;
+      } else if (ALLOW_PERSONAL_PRINCIPAL && Array.isArray(membershipRows)) {
+        // A stale tenant claim, no membership, or an unselected multi-company
+        // account must not block the owner's personal estimate. Falling back
+        // here deliberately grants no organization identity or ERP role.
+        return {
+          ownerUserId,
+          tenantId: ownerUserId,
+          organizationId: null,
+          membershipId: ownerUserId,
+          role: "consumer",
+          sessionReference: sha256({ supabaseSessionCredential: token }),
+          correlationId: randomUUID(),
+          authMode: "STRICT_SESSION_INTROSPECTION",
+        };
+      } else {
+        throw Object.assign(
+          new Error("Supabase session has no active unambiguous company membership"),
+          { code: "AUTH_FORBIDDEN", httpStatus: 403 },
+        );
+      }
+      if (
+        !LOCAL_AUTHENTICATED_USER_ID_RE.test(tenantId) ||
+        !LOCAL_AUTHENTICATED_USER_ID_RE.test(membershipId) ||
+        !LOCAL_AUTHENTICATED_ROLE_RE.test(role)
+      ) {
+        throw Object.assign(
+          new Error("Supabase membership has no valid tenant and role identity"),
+          { code: "AUTH_FORBIDDEN", httpStatus: 403 },
+        );
+      }
+      return {
+        ownerUserId,
+        tenantId,
+        organizationId: tenantId,
+        membershipId,
+        role,
+        sessionReference: sha256({ supabaseSessionCredential: token }),
+        correlationId: randomUUID(),
+        authMode: "STRICT_SESSION_INTROSPECTION",
+      };
+    }
     if (
-      !LOCAL_AUTHENTICATED_USER_ID_RE.test(ownerUserId) ||
       !LOCAL_AUTHENTICATED_USER_ID_RE.test(tenantId) ||
       !LOCAL_AUTHENTICATED_USER_ID_RE.test(membershipId) ||
       !LOCAL_AUTHENTICATED_ROLE_RE.test(role)
@@ -463,10 +635,7 @@ async function requireLocalPrincipal(
         new Error(
           "Supabase session has no valid owner, tenant, membership, and role identity",
         ),
-        {
-          code: "AUTH_FORBIDDEN",
-          httpStatus: 403,
-        },
+        { code: "AUTH_FORBIDDEN", httpStatus: 403 },
       );
     }
     let principalResolution: Response;
@@ -544,6 +713,7 @@ async function requireLocalPrincipal(
     return {
       ownerUserId,
       tenantId,
+      organizationId: tenantId,
       membershipId,
       role,
       sessionReference: sha256({ supabaseSessionCredential: token }),
@@ -710,7 +880,7 @@ async function resolveCandidateCapabilityId(
   client: PoolClient,
 ): Promise<string> {
   if (R3_CAPABILITY_TENANT_BINDING === "fixed") return R3_CAPABILITY_ID;
-  const result = await client.query(
+  const queryPrincipalCapabilities = () => client.query(
     `select capability.id::text
        from public.estimate_candidate_capability_r3 capability
       where capability.environment=$1
@@ -733,6 +903,63 @@ async function resolveCandidateCapabilityId(
       R3_CAPABILITY_SOURCE_TREE,
     ],
   );
+  let result = await queryPrincipalCapabilities();
+  if (result.rows.length === 0 && ALLOW_RUNTIME_TENANT_CAPABILITY_DERIVATION) {
+    await client.query(
+      "select pg_advisory_xact_lock(hashtextextended($1,0))",
+      [`whole-app-developer-capability:${currentTenantId()}`],
+    );
+    result = await queryPrincipalCapabilities();
+    if (result.rows.length === 0) {
+      const trustedBase = await client.query(
+        `select 1
+           from public.estimate_candidate_capability_r3 capability
+          where capability.id=$1::uuid
+            and capability.environment=$2
+            and capability.release_id=$3::uuid
+            and capability.search_release_id=$4::uuid
+            and capability.expires_at>clock_timestamp()
+            and $5::timestamptz>clock_timestamp()
+            and capability.expires_at>=$5::timestamptz
+            and capability.purpose='estimate_candidate_admission_r3'
+            and capability.source_head=$6
+            and capability.source_tree=$7
+            and capability.revoked_at is null`,
+        [
+          R3_CAPABILITY_ID,
+          R3_CAPABILITY_ENVIRONMENT,
+          R3_CAPABILITY_RELEASE_ID,
+          R3_CAPABILITY_SEARCH_RELEASE_ID,
+          R3_CAPABILITY_EXPIRES_AT,
+          R3_CAPABILITY_SOURCE_HEAD,
+          R3_CAPABILITY_SOURCE_TREE,
+        ],
+      );
+      if (trustedBase.rows.length !== 1) {
+        throw Object.assign(new Error("base candidate capability is unavailable"), {
+          code: "AUTH_FORBIDDEN",
+          httpStatus: 403,
+        });
+      }
+      await client.query(
+        `insert into public.estimate_candidate_capability_r3(
+           environment,tenant_id,release_id,search_release_id,expires_at,purpose,
+           source_head,source_tree,issued_by
+         ) values($1,$2::uuid,$3::uuid,$4::uuid,$5::timestamptz,
+           'estimate_candidate_admission_r3',$6,$7,'whole_app_developer_runtime')`,
+        [
+          R3_CAPABILITY_ENVIRONMENT,
+          currentTenantId(),
+          R3_CAPABILITY_RELEASE_ID,
+          R3_CAPABILITY_SEARCH_RELEASE_ID,
+          R3_CAPABILITY_EXPIRES_AT,
+          R3_CAPABILITY_SOURCE_HEAD,
+          R3_CAPABILITY_SOURCE_TREE,
+        ],
+      );
+      result = await queryPrincipalCapabilities();
+    }
+  }
   if (result.rows.length !== 1) {
     throw Object.assign(
       new Error(
@@ -969,6 +1196,7 @@ async function resolveDefaultPriceSnapshotIds(
   client: PoolClient,
   releaseId: string | null,
   catalogId: string,
+  currencyCode: string,
 ): Promise<string[]> {
   if (!releaseId) return [];
   const result = await client.query(
@@ -983,17 +1211,19 @@ async function resolveDefaultPriceSnapshotIds(
      cross join lateral (
        select snapshot.id
        from public.estimate_price_snapshot snapshot
-       where snapshot.route_id=route.id
-         and snapshot.currency_code=route.currency_code
-         and (snapshot.valid_until is null or snapshot.valid_until>=now())
+        where snapshot.route_id=route.id
+          and snapshot.currency_code=route.currency_code
+          and snapshot.captured_at<=now()
+          and (snapshot.valid_until is null or snapshot.valid_until>=now())
        order by snapshot.captured_at desc,snapshot.id
        limit 1
      ) latest
      where manifest.release_id=$1 and manifest.catalog_id=$2
        and manifest.baseline_ready and manifest.scenario_ready
+       and route.currency_code=$3
      order by latest.id::text
-     limit 100`,
-    [releaseId, catalogId],
+     limit 64`,
+    [releaseId, catalogId, currencyCode],
   );
   return result.rows.map((row) => String(row.snapshot_id));
 }
@@ -1276,13 +1506,18 @@ async function createJob(
         ? body.priceSnapshotIds.filter((value): value is string =>
             typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(value))
         : [];
-      const priceSnapshotIds = requestedPriceSnapshotIds.length > 0
-        ? requestedPriceSnapshotIds
+      const compatibleDefaultPriceSnapshotIds = requestedPriceSnapshotIds.length > 0
+        ? []
         : await resolveDefaultPriceSnapshotIds(
             client,
             compilationAdmission.decision.releaseId,
             catalogId,
+            currencyCode,
           );
+      const priceSnapshotIds = canonicalEstimateEffectivePriceSnapshotIds({
+        requested: requestedPriceSnapshotIds,
+        compatibleDefaults: compatibleDefaultPriceSnapshotIds,
+      });
       const inputPayload = {
         parameters,
         currencyCode,
@@ -1849,10 +2084,16 @@ async function compileClaimedJob(
     }
     parentRevision = parent;
   }
-  const effectiveUserParameters = {
+  let effectiveUserParameters = {
     ...inheritedUserParameters,
     ...submittedParameters,
   };
+  const profileInputResolution = resolveCanonicalEstimateProfileInputsS2723({
+    catalogId: String(job.catalog_id),
+    confirmedParameters,
+    effectiveUserParameters,
+  });
+  confirmedParameters = { ...profileInputResolution.confirmedParameters };
   const formulas = (
     await client.query(
       "select formula_id,ast,input_parameter_ids,ast_sha256 from public.estimate_formula_graph where definition_version_id=$1",
@@ -1892,17 +2133,33 @@ async function compileClaimedJob(
     ? []
     : (
         await client.query(
-          `select item.snapshot_id::text,item.price_key,item.unit_id,item.unit_price::text,
-            item.currency_code,jsonb_build_object('route_id',snapshot.route_id::text) estimate_price_snapshot
-           from public.estimate_price_snapshot_item item
-           join public.estimate_price_snapshot snapshot on snapshot.id=item.snapshot_id
-           where item.snapshot_id=any($1::uuid[])
-           order by snapshot.captured_at desc,item.price_key,item.unit_id
-           limit 20000`,
-          [priceSnapshotIds],
+          `select distinct on (
+             coalesce(nullif(trim(resource.cost_owner_id),''),binding.price_key),
+             resource.unit_id
+           )
+             item.snapshot_id::text,
+             coalesce(nullif(trim(resource.cost_owner_id),''),binding.price_key) price_key,
+             item.unit_id,item.unit_price::text,item.currency_code,
+             jsonb_build_object('route_id',snapshot.route_id::text) estimate_price_snapshot
+           from public.estimate_resource_spec resource
+           join public.estimate_resource_price_route_binding binding
+             on binding.resource_spec_id=resource.id
+           join public.estimate_price_snapshot snapshot
+             on snapshot.id=any($1::uuid[])
+             and snapshot.route_id=binding.route_id
+           join public.estimate_price_snapshot_item item
+             on item.snapshot_id=snapshot.id
+             and item.price_key=coalesce(nullif(trim(resource.cost_owner_id),''),binding.price_key)
+             and item.unit_id=resource.unit_id
+           join public.estimate_price_route route on route.id=snapshot.route_id
+           where resource.definition_version_id=$2
+           order by
+             coalesce(nullif(trim(resource.cost_owner_id),''),binding.price_key),
+             resource.unit_id,binding.priority,route.priority,
+             snapshot.captured_at desc,snapshot.id`,
+          [priceSnapshotIds, definition.id],
         )
-      ).rows.filter((row, index, rows) => rows.findIndex((candidate) =>
-        candidate.price_key === row.price_key && candidate.unit_id === row.unit_id) === index);
+      ).rows;
   const compiled = await compileCanonicalEstimateCore({
     operation: String(job.operation) as "compile" | "recalculate",
     compilerVersion: COMPILER_VERSION,
@@ -1932,6 +2189,10 @@ async function compileClaimedJob(
     hashJson: sha256,
   });
   const { parameters, rows, totals } = compiled;
+  effectiveUserParameters = {
+    ...effectiveUserParameters,
+    ...compiled.derivedParameters,
+  };
   const baselineAssumptions = Object.fromEntries(
     Object.entries(baselineParameters).filter(
       ([parameterId, value]) =>
@@ -3262,49 +3523,20 @@ function localDraftView(row: Record<string, any>) {
   };
 }
 
-function localRevisionView(revision: Record<string, any>) {
-  return {
-    apiVersion: API_VERSION,
-    revisionId: revision.id,
-    parentRevisionId: revision.parent_revision_id,
-    releaseId: revision.release_id,
-    catalogId: revision.catalog_id,
-    revisionNumber: revision.revision_number,
-    status: revision.status,
-    currencyCode: revision.currency_code,
-    parameters: revision.input_parameters,
-    sourceRequestText: revision.source_request_text ?? null,
-    sourceRequestHash: revision.source_request_hash ?? null,
-    canonicalWorkTitleRu: revision.canonical_work_title_ru ?? null,
-    displayTitleRu: revision.display_title_ru ?? null,
-    primaryMeasureParameterId: revision.primary_measure_parameter_id ?? null,
-    primaryMeasureValue:
-      revision.primary_measure_value == null
-        ? null
-        : String(revision.primary_measure_value),
-    primaryMeasureUnitId: revision.primary_measure_unit_id ?? null,
-    normalizedIntent: revision.normalized_intent ?? null,
-    definitionVersionId: revision.definition_version_id ?? null,
-    groupId: revision.group_id ?? null,
-    searchReleaseId: revision.search_release_id ?? null,
-    userInputSnapshot: revision.user_input_snapshot ?? null,
-    acceptedBaselineSnapshot: revision.accepted_baseline_snapshot ?? null,
-    assumptionSnapshot: revision.assumption_snapshot ?? null,
-    formulaGraphVersion: revision.formula_graph_version ?? null,
-    revisionContractVersion: revision.revision_contract_version ?? null,
-    amendmentContract: revision.amendment_contract,
-    preliminaryNeeds: canonicalEstimatePreliminaryNeedsFromAmendmentContract(revision.amendment_contract),
-    totals: revision.totals,
-    rowCount: revision.row_count,
-    checksumSha256: revision.checksum_sha256,
-    compilerVersion: revision.compiler_version,
-    definitionVersion: revision.definition_version ?? null,
-    compilerOwner: revision.compiler_owner ?? "backend",
-    parameterSchemaHash: revision.parameter_schema_hash ?? null,
-    inputHash: revision.input_hash ?? null,
-    outputHash: revision.output_hash ?? revision.checksum_sha256,
-    createdAt: revision.created_at,
-  };
+function localRevisionView(
+  revision: Record<string, any>,
+  environment: {
+    contentAdmission?: AdmissionDecision;
+    legacyWarningRu?: string | null;
+  } = {},
+) {
+  return canonicalEstimateRevisionDetailFromStorage(revision, {
+    ...environment,
+    // Prepared-release storage uses the owner UUID as the isolated personal
+    // scope. It is not an organization identity and must not be reflected
+    // back into a later client command as though the actor had a tenant.
+    principalOrganizationId: currentPrincipal().organizationId,
+  });
 }
 
 function localParameterSessionSchema(
@@ -3402,6 +3634,11 @@ function localParameterSessionSchema(
             ? "PROJECT_DOCUMENTATION"
             : "BACKEND_DERIVED"
           : undefined),
+      runtimeProfileClassification: String(
+        baseline?.input_classification?.[parameterId]
+          ?? truth.runtime_profile_classification
+          ?? "",
+      ).trim() || undefined,
       guide: localParameterGuideView(effectiveGuide),
       compositeItemSchema: composite
         ? {
@@ -3730,6 +3967,33 @@ async function route(
     response.end(bytes);
     return;
   }
+  if (
+    request.method === "GET" &&
+    path.length === 1 &&
+    path[0] === "runtime-identity"
+  ) {
+    return send(response, 200, {
+      schemaVersion: "rik-expo-app.local-runtime-identity.v1",
+      runtimeRole: "FULL_CANONICAL_ESTIMATE_BACKEND",
+      processId: process.pid,
+      workingDirectory: process.cwd(),
+      sourceHead: R45_RUNTIME_SOURCE_HEAD,
+      sourceTree: R45_RUNTIME_SOURCE_TREE,
+      runtimeSourceSha256: CANONICAL_ESTIMATE_RUNTIME_SOURCE_SHA256,
+      definitionReleaseId: TARGET_RELEASE_ID || null,
+      searchReleaseId: TARGET_SEARCH_RELEASE_ID || null,
+      authProviderUrlSha256: SUPABASE_AUTH_URL_SHA256,
+      authPublicKeySha256: SUPABASE_AUTH_API_KEY_SHA256,
+      frontendBuildIdentity: {
+        sourceTreeHash: R568_FRONTEND_SOURCE_TREE_HASH,
+        productSourceHash: R568_FRONTEND_PRODUCT_SOURCE_HASH,
+        jsBundleFingerprint: R568_FRONTEND_JS_BUNDLE_FINGERPRINT,
+        buildCommit: R568_FRONTEND_BUILD_COMMIT,
+      },
+      containsCredentials: false,
+      containsTenantIdentity: false,
+    });
+  }
   if (!requestPrincipalStorage.getStore()) {
     const principal = await requireLocalPrincipal(request);
     return requestPrincipalStorage.run(principal, () =>
@@ -3853,8 +4117,13 @@ async function route(
       specSha256: R45_RUNTIME_SPEC_SHA256,
       authMode: LOCAL_AUTH_MODE,
       authPrincipalContractVersion: "r52-a7.strict-principal.v1",
-      principalResolutionRpc:
+      authPrincipalMode:
         LOCAL_AUTH_MODE === "STRICT_SESSION_INTROSPECTION"
+          ? SUPABASE_PRINCIPAL_MODE
+          : null,
+      principalResolutionRpc:
+        LOCAL_AUTH_MODE === "STRICT_SESSION_INTROSPECTION" &&
+        SUPABASE_PRINCIPAL_MODE === "CANONICAL_RPC"
           ? SUPABASE_PRINCIPAL_RPC
           : null,
       capabilityTenantBinding: R3_CAPABILITY_TENANT_BINDING,
@@ -4511,19 +4780,34 @@ async function route(
           "select set_config('request.jwt.claim.sub',$1,true)",
           [currentOwnerId()],
         );
+        await client.query(
+          "select public.estimate_apply_draft_event_r2($1,$2,$3,$4,$5::jsonb,$6)",
+          [
+            path[1],
+            body.idempotencyKey,
+            body.baseOptimisticVersion,
+            body.eventKind,
+            JSON.stringify(body.patch ?? {}),
+            body.deviceId ?? null,
+          ],
+        );
+        // node-postgres exposes a table-composite function result as a single
+        // PostgreSQL record string. Passing that value to localDraftView loses
+        // every field (including draftId), so subsequent autosaves target
+        // /drafts/undefined/events. Read the persisted row back while the same
+        // owner-scoped transaction is active and return the normal row shape.
         const row = (
           await client.query(
-            "select public.estimate_apply_draft_event_r2($1,$2,$3,$4,$5::jsonb,$6) value",
-            [
-              path[1],
-              body.idempotencyKey,
-              body.baseOptimisticVersion,
-              body.eventKind,
-              JSON.stringify(body.patch ?? {}),
-              body.deviceId ?? null,
-            ],
+            "select * from public.estimate_draft where id=$1 and owner_user_id=$2",
+            [path[1], currentOwnerId()],
           )
-        ).rows[0]?.value;
+        ).rows[0];
+        if (!row) {
+          throw Object.assign(new Error("draft not found after event"), {
+            code: "NOT_FOUND",
+            httpStatus: 404,
+          });
+        }
         await client.query("commit");
         return row;
       } catch (error) {
@@ -4756,51 +5040,11 @@ async function route(
       revision,
       "revision_read",
     );
-    return send(response, 200, {
-      apiVersion: API_VERSION,
-      revisionId: revision.id,
-      parentRevisionId: revision.parent_revision_id,
-      releaseId: revision.release_id,
-      catalogId: revision.catalog_id,
-      revisionNumber: revision.revision_number,
-      status: revision.status,
-      currencyCode: revision.currency_code,
-      parameters: revision.input_parameters,
-      sourceRequestText: revision.source_request_text ?? null,
-      sourceRequestHash: revision.source_request_hash ?? null,
-      canonicalWorkTitleRu: revision.canonical_work_title_ru ?? null,
-      displayTitleRu: revision.display_title_ru ?? null,
-      primaryMeasureParameterId: revision.primary_measure_parameter_id ?? null,
-      primaryMeasureValue:
-        revision.primary_measure_value == null
-          ? null
-          : String(revision.primary_measure_value),
-      primaryMeasureUnitId: revision.primary_measure_unit_id ?? null,
-      normalizedIntent: revision.normalized_intent ?? null,
-      definitionVersionId: revision.definition_version_id ?? null,
-      groupId: revision.group_id ?? null,
-      searchReleaseId: revision.search_release_id ?? null,
-      userInputSnapshot: revision.user_input_snapshot ?? null,
-      acceptedBaselineSnapshot: revision.accepted_baseline_snapshot ?? null,
-      assumptionSnapshot: revision.assumption_snapshot ?? null,
-      formulaGraphVersion: revision.formula_graph_version ?? null,
-      revisionContractVersion: revision.revision_contract_version ?? null,
-      amendmentContract: revision.amendment_contract,
-      preliminaryNeeds: canonicalEstimatePreliminaryNeedsFromAmendmentContract(revision.amendment_contract),
-      totals: revision.totals,
-      rowCount: revision.row_count,
-      checksumSha256: revision.checksum_sha256,
-      compilerVersion: revision.compiler_version,
-      definitionVersion: revision.definition_version ?? null,
-      compilerOwner: revision.compiler_owner ?? "backend",
-      parameterSchemaHash: revision.parameter_schema_hash ?? null,
-      inputHash: revision.input_hash ?? null,
-      outputHash: revision.output_hash ?? revision.checksum_sha256,
+    return send(response, 200, localRevisionView(revision, {
       contentAdmission: contentAdmission.decision,
       legacyWarningRu:
         "Старая версия создана прежней моделью расчёта; для нового расчёта сформируйте исправленную версию.",
-      createdAt: revision.created_at,
-    });
+    }));
   }
   if (
     request.method === "GET" &&
@@ -4839,8 +5083,21 @@ async function route(
         (
           await client.query(
             `
-      select rr.* from public.estimate_revision_row rr
+      select rr.*,
+        (rp.row_id is not null) _price_record_present,
+        rp.price_snapshot_id::text _price_snapshot_id,
+        rp.route_id::text _price_route_id,
+        rp.unit_price::text _price_unit_price,
+        rp.currency_code _price_currency_code,
+        rp.resolution_trace _price_resolution_trace,
+        snapshot.captured_at::text _price_snapshot_captured_at,
+        route.source_kind _price_route_source_kind
+      from public.estimate_revision_row rr
       join public.estimate_revision r on r.id=rr.revision_id
+      left join public.estimate_revision_row_price rp
+        on rp.revision_id=rr.revision_id and rp.row_id=rr.row_id
+      left join public.estimate_price_snapshot snapshot on snapshot.id=rp.price_snapshot_id
+      left join public.estimate_price_route route on route.id=coalesce(rp.route_id,snapshot.route_id)
       where rr.revision_id=$1 and (r.owner_user_id=$2 or r.organization_id=$3)
         and rr.ordinal>$4 order by rr.ordinal limit $5
     `,
@@ -4859,25 +5116,22 @@ async function route(
       apiVersion: API_VERSION,
       revisionId: path[1],
       contentAdmission: contentAdmission.decision,
-      rows: page.map((row) => ({
-        rowId: row.row_id,
-        ordinal: row.ordinal,
-        section: row.section,
-        category: row.category,
-        titleRu: row.title_ru,
-        unitId: row.unit_id,
-        quantity: row.quantity == null ? null : String(row.quantity),
-        unitPrice: row.unit_price == null ? null : String(row.unit_price),
-        amount: row.amount == null ? null : String(row.amount),
-        currencyCode: row.currency_code,
-        procurementEligible: row.procurement_eligible,
-        includedInEstimate: row.included_in_estimate,
-        includedInProcurement: row.included_in_procurement,
-        ownershipStatus: row.ownership_status,
-        calculationTrace: row.calculation_trace,
-        normativeTrace: row.normative_trace,
-        rowSha256: row.row_sha256,
-      })),
+      rows: page.map((row) => canonicalEstimateRevisionRowFromStorage(
+        row,
+        row._price_record_present
+          ? {
+              price_snapshot_id: row._price_snapshot_id,
+              route_id: row._price_route_id,
+              unit_price: row._price_unit_price,
+              currency_code: row._price_currency_code,
+              resolution_trace: row._price_resolution_trace,
+            }
+          : null,
+        {
+          snapshot_captured_at: row._price_snapshot_captured_at,
+          route_source_kind: row._price_route_source_kind,
+        },
+      )),
       nextCursor:
         rows.length > limit
           ? Buffer.from(
@@ -5338,6 +5592,11 @@ async function route(
                   ? "PROJECT_DOCUMENTATION"
                   : "BACKEND_DERIVED"
                 : undefined),
+            runtimeProfileClassification: String(
+              baseline?.input_classification?.[parameterId]
+                ?? truth.runtime_profile_classification
+                ?? "",
+            ).trim() || undefined,
             guide: localParameterGuideView(effectiveGuide),
             compositeItemSchema: composite
               ? {
@@ -5472,8 +5731,13 @@ server.listen(PORT, "0.0.0.0", () => {
       ...(FIXTURE_CONFIG ? { fixtureOwnerId: FIXTURE_CONFIG.ownerUserId } : {}),
       authMode: LOCAL_AUTH_MODE,
       authPrincipalContractVersion: "r52-a7.strict-principal.v1",
-      principalResolutionRpc:
+      authPrincipalMode:
         LOCAL_AUTH_MODE === "STRICT_SESSION_INTROSPECTION"
+          ? SUPABASE_PRINCIPAL_MODE
+          : null,
+      principalResolutionRpc:
+        LOCAL_AUTH_MODE === "STRICT_SESSION_INTROSPECTION" &&
+        SUPABASE_PRINCIPAL_MODE === "CANONICAL_RPC"
           ? SUPABASE_PRINCIPAL_RPC
           : null,
       capabilityTenantBinding: R3_CAPABILITY_TENANT_BINDING,

@@ -21,6 +21,9 @@ describe("estimate 10000 readiness manifest", () => {
     expect(manifest.templates.filter((item) => item.readiness_status === "READY_PROFESSIONAL")).toHaveLength(0);
     expect(manifest.templates.filter((item) => item.readiness_status === "NOT_READY_MISSING_NORM")).toHaveLength(10000);
     expect(manifest.templates.filter((item) => item.readiness_status === "NOT_READY_GENERIC_FALLBACK")).toHaveLength(0);
-    expect(manifest.templates.filter((item) => item.norm_source_status === "PARTIAL_SOURCE_BACKED")).toHaveLength(10000);
+    expect(manifest.templates.filter((item) => item.norm_source_status === "UNVERIFIED_SOURCE")).toHaveLength(10000);
+    expect(manifest.templates.every((item) =>
+      item.blocking_reasons.includes("not_every_row_has_source_backed_norm")
+    )).toBe(true);
   });
 });

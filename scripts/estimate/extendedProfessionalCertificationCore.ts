@@ -7,7 +7,7 @@ import { buildProfessionalExpandedGlobalEstimate } from "../../src/lib/ai/estima
 import {
   detectEstimateFakeRows,
   structuredRowsForDetector,
-} from "../../src/lib/ai/estimateContinuousDetection/continuousAiEstimateDetector";
+} from "./detectors/continuousAiEstimateDetector";
 import {
   GREEN_AI_ESTIMATE_10000_TEMPLATES_EXTENDED_VALIDATION_NO_BUILDS,
   validateAllProductionTemplatesExtended10000,

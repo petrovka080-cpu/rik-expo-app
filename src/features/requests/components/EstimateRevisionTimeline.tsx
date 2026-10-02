@@ -63,7 +63,7 @@ export function EstimateRevisionTimeline({
       style={styles.panel}
       testID="estimate-revision-timeline"
     >
-      <Text style={styles.title} testID={compiledRevisionMarkerTestId}>Версия {currentNumber}</Text>
+      <Text style={styles.title} testID={compiledRevisionMarkerTestId}>Текущий расчёт</Text>
       <Text style={styles.meta} testID="estimate-current-revision-artifacts">{artifactStatus}</Text>
     </View>
   );

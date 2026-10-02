@@ -4,6 +4,7 @@ import {
   HOT_WATER_BOILER_PIPING_FORMULAS,
   HOT_WATER_BOILER_PIPING_PARAMETERS,
   HOT_WATER_BOILER_PIPING_RESOURCES,
+  HOT_WATER_BOILER_PIPING_RUNTIME_INPUT,
   HOT_WATER_BOILER_PIPING_SHORT_INPUT,
   compileHotWaterBoilerPipingR1,
 } from "../../src/lib/estimate/v4/hotWaterBoilerPipingR1";
@@ -31,9 +32,15 @@ describe("MASTER hot-water boiler piping owner", () => {
   test("uses the exact expanded boiler-installation owner without historical project rates", () => {
     expect(HOT_WATER_BOILER_PIPING_CATALOG_ID)
       .toBe("canonical-work:expanded:boiler_installation");
-    expect(HOT_WATER_BOILER_PIPING_PARAMETERS).toHaveLength(29);
-    expect(HOT_WATER_BOILER_PIPING_FORMULAS).toHaveLength(14);
-    expect(HOT_WATER_BOILER_PIPING_RESOURCES).toHaveLength(14);
+    expect(HOT_WATER_BOILER_PIPING_PARAMETERS).toHaveLength(45);
+    expect(HOT_WATER_BOILER_PIPING_FORMULAS).toHaveLength(35);
+    expect(HOT_WATER_BOILER_PIPING_RESOURCES).toHaveLength(35);
+    expect(HOT_WATER_BOILER_PIPING_RUNTIME_INPUT).toEqual({
+      boiler_retained_spare_set: 0,
+      boiler_supplier_pack_size_set: 1,
+      burner_retained_spare_set: 0,
+      burner_supplier_pack_size_set: 1,
+    });
     expect(JSON.stringify(HOT_WATER_BOILER_PIPING_FORMULAS))
       .not.toMatch(/golden_rate|normFactor|boiler_count\s*\*\s*(?:4|1\.2)/iu);
     expect(HOT_WATER_BOILER_PIPING_RESOURCES.map((row) => row.row_id))
@@ -44,31 +51,78 @@ describe("MASTER hot-water boiler piping owner", () => {
     const compiled = await compileHotWaterBoilerPipingR1({
       ...HOT_WATER_BOILER_PIPING_SHORT_INPUT,
     });
-    expect(compiled.rows).toHaveLength(4);
+    expect(compiled.rows).toHaveLength(16);
     expect(compiled.rows).toEqual(expect.arrayContaining([
       expect.objectContaining({ row_id: REQUIRED[0], quantity: "1", unit_id: "set" }),
       expect.objectContaining({ row_id: REQUIRED[1], quantity: "1", unit_id: "set" }),
       expect.objectContaining({ row_id: REQUIRED[2], quantity: "1", unit_id: "set" }),
       expect.objectContaining({ row_id: REQUIRED[8], quantity: "1", unit_id: "test" }),
     ]));
-    expect(compiled.preliminaryNeeds).toHaveLength(10);
+    expect(compiled.preliminaryNeeds).toHaveLength(19);
     expect(compiled.preliminaryNeeds.map((need) => need.row_id))
       .toEqual(expect.arrayContaining([...REQUIRED.slice(3, 8), ...CONDITIONAL]));
   });
 
-  test("compiles the nine-row evidence-bound mandatory fixture", async () => {
+  test("compiles the thirty-row evidence-bound mandatory fixture", async () => {
     const compiled = await compileHotWaterBoilerPipingR1({
       ...HOT_WATER_BOILER_PIPING_ACCEPTANCE_INPUT,
     });
     expect(compiled.preliminaryNeeds).toEqual([]);
-    expect(compiled.rows).toHaveLength(9);
+    expect(compiled.rows).toHaveLength(30);
     expect(compiled.rows).toEqual(expect.arrayContaining([
       expect.objectContaining({ row_id: REQUIRED[3], quantity: "4", unit_id: "set" }),
       expect.objectContaining({ row_id: REQUIRED[4], quantity: "4", unit_id: "pcs" }),
       expect.objectContaining({ row_id: REQUIRED[5], quantity: "1", unit_id: "set" }),
       expect.objectContaining({ row_id: REQUIRED[6], quantity: "1", unit_id: "set" }),
       expect.objectContaining({ row_id: REQUIRED[7], quantity: "1.1", unit_id: "kg" }),
+      expect.objectContaining({ row_id: "rc09:boiler_commissioning_record", quantity: "1", unit_id: "document" }),
+      expect.objectContaining({ row_id: "rc09:labor:boiler-installation-piping", quantity: "48", unit_id: "man_hour" }),
+      expect.objectContaining({ row_id: "rc09:labor:boiler-commissioning", quantity: "16", unit_id: "man_hour" }),
+      expect.objectContaining({ row_id: "rc09:equipment:boiler-lifting", quantity: "8", unit_id: "machine_hour" }),
+      expect.objectContaining({ row_id: "rc09:equipment:boiler-welding", quantity: "12", unit_id: "machine_hour" }),
+      expect.objectContaining({ row_id: "rc09:equipment:boiler-hydraulic-test-pump", quantity: "4", unit_id: "machine_hour" }),
+      expect.objectContaining({ row_id: "rc09:equipment:boiler-flue-gas-analyzer", quantity: "4", unit_id: "machine_hour" }),
+      expect.objectContaining({ row_id: "rc09:logistics:boiler-delivery", quantity: "1", unit_id: "trip" }),
+      expect.objectContaining({ row_id: "rc09:logistics:boiler-waste-removal", quantity: "1", unit_id: "trip" }),
     ]));
+  });
+
+  test("separates boiler and burner procurement balances", async () => {
+    const compiled = await compileHotWaterBoilerPipingR1({
+      ...HOT_WATER_BOILER_PIPING_ACCEPTANCE_INPUT,
+      boiler_retained_spare_set: 1,
+      boiler_supplier_pack_size_set: 2,
+      burner_retained_spare_set: 2,
+      burner_supplier_pack_size_set: 4,
+    });
+    const rows = new Map(compiled.rows.map((row) => [row.row_id, row]));
+    expect(rows.get("rc09:hot_water_boiler_500kw")?.quantity).toBe("2");
+    expect(rows.get("rc09:boiler-balance:installed-net")?.quantity).toBe("1");
+    expect(rows.get("rc09:boiler-balance:retained-spare")?.quantity).toBe("1");
+    expect(rows.get("rc09:boiler-balance:total-need")?.quantity).toBe("2");
+    expect(rows.get("rc09:boiler-balance:package-count")?.quantity).toBe("1");
+    expect(rows.get("rc09:boiler-balance:remainder")?.quantity).toBe("1");
+    expect(rows.get("rc09:boiler-balance:surplus-beyond-reserve")?.quantity).toBe("0");
+    expect(rows.get("rc09:modulating_gas_burner_500kw")?.quantity).toBe("4");
+    expect(rows.get("rc09:burner-balance:installed-net")?.quantity).toBe("1");
+    expect(rows.get("rc09:burner-balance:retained-spare")?.quantity).toBe("2");
+    expect(rows.get("rc09:burner-balance:total-need")?.quantity).toBe("3");
+    expect(rows.get("rc09:burner-balance:package-count")?.quantity).toBe("1");
+    expect(rows.get("rc09:burner-balance:remainder")?.quantity).toBe("3");
+    expect(rows.get("rc09:burner-balance:surplus-beyond-reserve")?.quantity).toBe("1");
+  });
+
+  test("keeps scope and test records informational beside explicit labor", () => {
+    for (const rowId of [
+      "rc09:hot_water_boiler_install_pipe",
+      "rc09:boiler_hydraulic_safety_commission",
+      "rc09:boiler_commissioning_record",
+    ]) {
+      const row = HOT_WATER_BOILER_PIPING_RESOURCES.find((item) => item.row_id === rowId);
+      expect(row?.resource_graph).toEqual(expect.objectContaining({
+        costTreatment: "INFORMATIONAL_SCOPE",
+      }));
+    }
   });
 
   test("keeps five boiler-house auxiliaries conditional", async () => {
@@ -91,7 +145,7 @@ describe("MASTER hot-water boiler piping owner", () => {
       water_treatment_quantity: 1,
     });
     expect(compiled.preliminaryNeeds).toEqual([]);
-    expect(compiled.rows).toHaveLength(14);
+    expect(compiled.rows).toHaveLength(35);
     expect(compiled.rows.map((row) => row.row_id))
       .toEqual(expect.arrayContaining([...CONDITIONAL]));
   });

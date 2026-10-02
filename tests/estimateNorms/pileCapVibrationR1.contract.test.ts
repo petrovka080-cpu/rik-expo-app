@@ -39,7 +39,9 @@ function catalog(target: (typeof PILE_CAP_VIBRATION_TARGETS)[number]): Canonical
       valueSourceRole: String(parameter.truth_metadata.value_source_role ?? "") as never,
       preliminaryCompilationAllowed:
         parameter.truth_metadata.preliminary_compilation_allowed === true,
-      formulaConsumers: [],
+      formulaConsumers: PILE_CAP_VIBRATION_FORMULAS
+        .filter((formula) => formula.input_parameter_ids.includes(parameter.parameter_id))
+        .map((formula) => formula.formula_id),
       resourceBranchConsumers: [],
     })),
   };

@@ -13,7 +13,8 @@
   "scripts": {
     "start": "expo start",
     "web": "expo start --web -c",
-    "dev:local-review": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/dev/startLocalDeveloperReview.ps1",
+    "dev:local-review": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/dev/startWholeAppDeveloperReview.ps1",
+    "dev:estimate-proof-review": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/dev/startLocalDeveloperReview.ps1",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "lint": "expo lint",
@@ -48,6 +49,8 @@
     "e2e:maestro:critical": "tsx scripts/e2e/run-maestro-critical.ts",
     "e2e:maestro:external-ai": "tsx scripts/e2e/run-maestro-external-ai.ts",
     "e2e:office-market-live-web": "tsx scripts/e2e/runOfficeMarketLiveWebE2E.ts",
+    "e2e:office-market-live-native-android": "tsx scripts/e2e/runOfficeMarketLiveNativeAndroidE2E.ts",
+    "e2e:office-market-live-native-actions": "tsx scripts/e2e/runOfficeMarketLiveNativeActions.ts",
     "gate:office-ai-market-live": "tsx scripts/e2e/runOfficeMarketLiveWebE2E.ts",
     "gate:office-ai-market-live:drift": "tsx scripts/gates/checkOfficeAiMarketLiveRoleDrift.ts",
     "gate:office-ai-market-live:cleanup-audit": "tsx scripts/gates/auditOfficeAiMarketLiveCleanup.ts",

@@ -5,21 +5,28 @@ import { dirname, resolve } from "node:path";
 
 import { Client } from "pg";
 
+import { canonicalApprovedBaselineRuntimeParameters } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline";
+import {
+  compileCanonicalEstimateCore,
+  type CanonicalEstimateFormulaDefinition,
+  type CanonicalEstimateParameterDefinition,
+  type CanonicalEstimateResourceDefinition,
+} from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
 import { compileFormulaGraph } from "../../../src/lib/estimate/backendPlatform/formulaGraph";
 import { ASPHALT_RELATED_EXTRA_PROFILES_V4 } from "../../../src/lib/estimate/v4/asphalt/asphaltRelatedSemanticRegistryV4";
 
 type Json = Record<string, any>;
 
-const CONTRACT = "rik-expo-app.r4-a13-6.r9-bridge-asphalt-completion.v1";
-const MASTER_PATH = resolve("C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (1).md");
-const MASTER_SHA256 = "684d0c00e02c83acfcbaeb48a763bd68e83865fd9242903b114baa7350dccda9";
+const CONTRACT = "rik-expo-app.s26.bridge-asphalt-tds-successor.v2";
+const MASTER_PATH = resolve("C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (30).md");
+const MASTER_SHA256 = "b343a9b26ff6ea56823cf9fed479995462e7a3eff551b648627fc8d35278bac7";
 const CURRENT_RELEASE_PATH = resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json");
 const TARGET_CATALOG_ID = "canonical-work:expanded:bridge_asphalt";
 const EXPECTED_BRANCH = "codex/r4-a5-clean-08b18902";
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const APPLY = process.argv.includes("--apply");
-const OUTPUT_ROOT = resolve(".release-runtime/r4a13-6/r9-complete-estimates");
+const OUTPUT_ROOT = resolve(".release-runtime/r4a13-6/s26-bridge-asphalt");
 const SOURCE_PATHS = [
   "scripts/estimate/r9/prepareR9BridgeAsphaltSuccessor.ts",
   "src/features/consumerRepair/ConsumerRepairItemRow.tsx",
@@ -27,6 +34,9 @@ const SOURCE_PATHS = [
   "src/features/consumerRepair/consumerCanonicalParameterEditor.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimateParameterValidation.ts",
   "src/lib/estimate/backendPlatform/formulaGraph.ts",
+  "src/lib/estimate/canonicalParameters/registeredCanonicalParameterSchemas.ts",
+  "src/lib/estimate/v4/asphalt/asphaltAssociatedWorkAssembliesV4.ts",
+  "src/lib/estimate/v4/asphalt/asphaltRelatedBaselineAssumptionsV4.ts",
   "src/lib/estimate/v4/asphalt/asphaltRelatedSemanticRegistryV4.ts",
   "src/lib/estimate/v4/asphalt/compileAsphaltRelatedProfessionalEstimateV4.ts",
   "src/lib/estimate/v4/asphalt/compileAsphaltRelatedThroughCoreV4.ts",
@@ -56,14 +66,23 @@ const KRER_30 = Object.freeze({
 const WATERPROOFING_BRANCH_PARAMETERS = new Set([
   "waterproofing_repair_area_m2",
   "waterproofing_primer_rate_l_m2",
+  "waterproofing_membrane_m2_per_m2",
   "protective_layer_thickness_mm",
-  "expansion_joint_length_m",
+  "bridge_waterproofing_equipment_set_count",
+]);
+
+const REMOVED_UNSUPPORTED_PARAMETER_IDS = new Set([
   "waterproofing_material_kg_m2",
   "protective_layer_density_t_m3",
-  "expansion_joint_sealant_kg_m",
   "bridge_waterproofing_productivity_m2_per_man_hour",
   "bridge_waterproofing_machine_productivity_m2_per_machine_hour",
 ]);
+
+const BRIDGE_TDS_SOURCES = Object.freeze({
+  membrane: "manufacturer_tds:tn-doroga-most-b:tds-05-by:2017-12",
+  primer: "manufacturer_tds:primer-03:tech-sheet-6.02-by:2017-05",
+  joint: "project_bridge_joint_detail",
+});
 
 function invariant(value: unknown, code: string): asserts value {
   if (!value) throw new Error(code);
@@ -135,6 +154,118 @@ function sourceRowId(resource: Json): string {
   return String(resource.resource_graph?.sourceRowId ?? "");
 }
 
+function isRemovedUnsupportedBridgeResource(resource: Json): boolean {
+  return sourceRowId(resource) === "bridge_asphalt:bridge:labor";
+}
+
+function bridgeResourceOverride(sourceId: string): Json {
+  if (sourceId === "bridge_asphalt:bridge:waterproofing") {
+    return {
+      title_ru: "ТЕХНОЭЛАСТМОСТ Б — рулонная гидроизоляция мостового полотна",
+      unit_id: "m2",
+      row_type: "material",
+      section: "Мостовая плита",
+      category: "Материалы",
+      semantic_owner: "bridge:waterproofing",
+      normativeSourceIds: [BRIDGE_TDS_SOURCES.membrane],
+    };
+  }
+  if (sourceId === "bridge_asphalt:bridge:primer") {
+    return {
+      title_ru: "Праймер битумно-полимерный ТЕХНОНИКОЛЬ № 03",
+      unit_id: "l",
+      row_type: "material",
+      section: "Мостовая плита",
+      category: "Материалы",
+      semantic_owner: "bridge:primer",
+      normativeSourceIds: [BRIDGE_TDS_SOURCES.primer],
+    };
+  }
+  if (sourceId === "bridge_asphalt:bridge:protective_layer") {
+    return {
+      title_ru: "Защитная армированная бетонная стяжка гидроизоляции",
+      unit_id: "m3",
+      row_type: "material",
+      section: "Мостовая плита",
+      category: "Материалы",
+      semantic_owner: "bridge:protective_layer",
+      normativeSourceIds: [BRIDGE_TDS_SOURCES.membrane],
+    };
+  }
+  if (sourceId === "bridge_asphalt:bridge:joint_sealant") {
+    return {
+      title_ru: "Герметик сопряжений у деформационных швов",
+      unit_id: "kg",
+      row_type: "material",
+      section: "Мостовая плита",
+      category: "Материалы",
+      semantic_owner: "bridge:joint_sealant",
+      normativeSourceIds: [BRIDGE_TDS_SOURCES.joint],
+    };
+  }
+  if (sourceId === "bridge_asphalt:bridge:waterproofing_output") {
+    return {
+      title_ru: "Устройство гидроизоляции и защитного слоя мостового полотна",
+      unit_id: "m2",
+      row_type: "service",
+      section: "Мостовая плита",
+      category: "Работы и труд",
+      semantic_owner: "bridge:waterproofing_output",
+      normativeSourceIds: [BRIDGE_TDS_SOURCES.membrane, BRIDGE_TDS_SOURCES.primer],
+    };
+  }
+  if (sourceId === "bridge_asphalt:bridge:machine") {
+    return {
+      title_ru: "Комплект газопламенного оборудования для наплавления гидроизоляции",
+      unit_id: "set",
+      row_type: "equipment",
+      section: "Механизмы и оборудование",
+      category: "Механизмы",
+      semantic_owner: "bridge:equipment",
+      sourceRowId: "bridge_asphalt:bridge:equipment",
+      normativeSourceIds: [BRIDGE_TDS_SOURCES.membrane],
+    };
+  }
+  return {};
+}
+
+function buildS26Parameters(sourceParameters: readonly Json[], keepIds: ReadonlySet<string>): Json[] {
+  const byId = new Map(sourceParameters.map((parameter) => [String(parameter.parameter_id), parameter]));
+  const membraneTemplate = byId.get("waterproofing_membrane_m2_per_m2")
+    ?? byId.get("waterproofing_material_kg_m2");
+  const equipmentTemplate = byId.get("bridge_waterproofing_equipment_set_count")
+    ?? byId.get("bridge_waterproofing_machine_productivity_m2_per_machine_hour");
+  invariant(membraneTemplate && equipmentTemplate, "STOP_S26_BRIDGE_PARAMETER_TEMPLATE_MISSING");
+  byId.set("waterproofing_membrane_m2_per_m2", {
+    ...membraneTemplate,
+    parameter_id: "waterproofing_membrane_m2_per_m2",
+    title_ru: "Расход рулонной гидроизоляции ТЕХНОЭЛАСТМОСТ Б",
+    unit_id: "m2_m2",
+    constraints_json: { min: 0.001, max: 5 },
+  });
+  byId.set("bridge_waterproofing_equipment_set_count", {
+    ...equipmentTemplate,
+    parameter_id: "bridge_waterproofing_equipment_set_count",
+    title_ru: "Комплект оборудования для наплавления гидроизоляции",
+    unit_id: "set",
+    constraints_json: { min: 0.001, max: 100 },
+  });
+  for (const parameterId of REMOVED_UNSUPPORTED_PARAMETER_IDS) byId.delete(parameterId);
+  const jointLength = byId.get("expansion_joint_length_m");
+  invariant(jointLength, "STOP_S26_BRIDGE_JOINT_LENGTH_PARAMETER_MISSING");
+  byId.set("expansion_joint_length_m", {
+    ...jointLength,
+    // Zero is the explicit, source-managed state "no applicable expansion-joint
+    // sealing in this estimate". Positive project length activates the row.
+    constraints_json: { ...(jointLength.constraints_json ?? {}), min: 0 },
+  });
+  return [...keepIds].map((parameterId) => {
+    const parameter = byId.get(parameterId);
+    invariant(parameter, `STOP_S26_BRIDGE_PARAMETER_MISSING:${parameterId}`);
+    return parameter;
+  });
+}
+
 function asphaltMass(layer: "binder" | "wearing"): string {
   const thickness = layer === "binder" ? "binder_layer_thickness_mm" : "wearing_layer_thickness_mm";
   return `area_m2 * ${thickness} / 1000 * asphalt_density_t_m3 * (1 + asphalt_waste_percent / 100)`;
@@ -162,8 +293,24 @@ function replacementExpression(rowId: string): string | null {
     asphalt_layer_2_truck_trips: `ceil((${wearingMass}) / truck_payload_t)`,
     dump_trucks_layer_2: `ceil((${wearingMass}) / truck_payload_t) * (2 * asphalt_plant_distance_km / truck_average_speed_km_per_machine_hour + truck_turnaround_machine_hours)`,
     asphalt_temperature_control: `ceil((ceil((${binderMass}) / truck_payload_t) + ceil((${wearingMass}) / truck_payload_t)) / temperature_control_trips_per_test)`,
+    "bridge:waterproofing": "waterproofing_repair_area_m2 * waterproofing_membrane_m2_per_m2",
+    "bridge:primer": "waterproofing_repair_area_m2 * waterproofing_primer_rate_l_m2",
+    "bridge:protective_layer": "waterproofing_repair_area_m2 * protective_layer_thickness_mm / 1000",
+    "bridge:joint_sealant": "expansion_joint_length_m * expansion_joint_sealant_kg_m",
+    "bridge:waterproofing_output": "waterproofing_repair_area_m2",
+    "bridge:machine": "bridge_waterproofing_equipment_set_count",
   };
   return exact[suffix] ?? null;
+}
+
+function jointSealantCondition(): Json {
+  return {
+    kind: "and",
+    operands: [
+      waterproofingCondition(),
+      { kind: "greater_than", parameterId: "expansion_joint_length_m", value: 0 },
+    ],
+  };
 }
 
 function waterproofingCondition(): Json {
@@ -263,8 +410,8 @@ async function cloneSearch(client: Client, input: {
     from public.estimate_search_typed_relation where search_release_id=$2`, [input.searchReleaseId, input.parentSearchReleaseId]);
   await client.query(`update public.estimate_search_document set required_inputs_count=$3,
       clarification_fields=$4::jsonb,
-      source_provenance=source_provenance||jsonb_build_object('r9BridgeFocusedSchema',true,
-        'r9DerivedGeometry','length_m*width_m','r9SourceManagedInputsVisible',true),
+      source_provenance=source_provenance||jsonb_build_object('s26BridgeTdsSystem',true,
+        's26DerivedGeometry','length_m*width_m','s26SourceManagedInputsVisible',true),
       document_sha256=encode(extensions.digest(convert_to(document_sha256||':'||$5,'UTF8'),'sha256'),'hex')
     where search_release_id=$1 and catalog_id=$2`, [
     input.searchReleaseId, TARGET_CATALOG_ID, input.clarificationFields.length,
@@ -290,7 +437,10 @@ async function main(): Promise<void> {
   const profile = ASPHALT_RELATED_EXTRA_PROFILES_V4.find((candidate) => candidate.canonicalWorkKey === "bridge_asphalt");
   invariant(profile, "STOP_R9_BRIDGE_PROFILE_MISSING");
   const keepIds = new Set([...profile.requiredParameters, ...profile.optionalParameters]);
-  invariant(keepIds.size === 49 && !keepIds.has("bridge_deck_package_required") && !keepIds.has("sand_layer_required"),
+  invariant(keepIds.size === 47 && !keepIds.has("bridge_deck_package_required") && !keepIds.has("sand_layer_required")
+    && ![...REMOVED_UNSUPPORTED_PARAMETER_IDS].some((parameterId) => keepIds.has(parameterId))
+    && keepIds.has("waterproofing_membrane_m2_per_m2")
+    && keepIds.has("bridge_waterproofing_equipment_set_count"),
     `STOP_R9_BRIDGE_SCHEMA_SOURCE_DRIFT:${keepIds.size}`);
   const head = git("rev-parse", "HEAD");
   const tree = git("rev-parse", "HEAD^{tree}");
@@ -298,7 +448,7 @@ async function main(): Promise<void> {
   const current = JSON.parse(readFileSync(CURRENT_RELEASE_PATH, "utf8")) as Json;
   invariant(current.productionAccessed === false, "STOP_R9_CURRENT_PRODUCTION_ACCESS_FLAG");
 
-  const client = new Client({ connectionString: DATABASE_URL, application_name: "r9-bridge-asphalt-successor" });
+  const client = new Client({ connectionString: DATABASE_URL, application_name: "s26-bridge-asphalt-tds-successor" });
   await client.connect();
   let receipt: Json;
   try {
@@ -314,7 +464,8 @@ async function main(): Promise<void> {
       from public.estimate_cumulative_manifest_entry manifest
       join public.estimate_definition_version definition on definition.id=manifest.definition_version_id
       where manifest.release_id=$1 and manifest.catalog_id=$2`, [predecessorReleaseId, TARGET_CATALOG_ID])).rows[0] as Json;
-    invariant(target && Number(target.parameters) === 103 && Number(target.formulas) === 51 && Number(target.resources) === 51,
+    const targetGeometry = `${Number(target?.parameters)}:${Number(target?.formulas)}:${Number(target?.resources)}`;
+    invariant(target && ["49:51:51", "47:50:50"].includes(targetGeometry),
       `STOP_R9_TARGET_GEOMETRY_DRIFT:${JSON.stringify(target)}`);
     const fingerprint = sha256({ contract: CONTRACT, masterSha256: MASTER_SHA256,
       predecessorReleaseId, predecessorSearchReleaseId, sourceHashes, keepIds: [...keepIds].sort() });
@@ -322,11 +473,11 @@ async function main(): Promise<void> {
     const searchReleaseId = uuid(`${CONTRACT}:${fingerprint}:search`);
     const definitionId = uuid(`${CONTRACT}:${fingerprint}:definition:${TARGET_CATALOG_ID}`);
     const baselineId = uuid(`${CONTRACT}:${fingerprint}:baseline:${TARGET_CATALOG_ID}`);
-    const releaseKey = `r4-a13-6-r9-bridge-${fingerprint.slice(0, 16)}`;
+    const releaseKey = `s26-bridge-tds-${fingerprint.slice(0, 16)}`;
     const existing = (await client.query("select status from public.estimate_definition_release where id=$1", [releaseId])).rows[0] as Json | undefined;
     if (existing) {
       invariant(existing.status === "prepared", "STOP_R9_EXISTING_RELEASE_DRIFT");
-      receipt = { status: "GREEN_R9_BRIDGE_SUCCESSOR_ALREADY_PREPARED_NOT_ACTIVE", idempotent: true,
+      receipt = { status: "GREEN_S26_BRIDGE_TDS_SUCCESSOR_ALREADY_PREPARED_NOT_ACTIVE", idempotent: true,
         successor: { releaseId, searchReleaseId, definitionId, baselineId, releaseKey }, fingerprint };
     } else {
       const sourceParameters = (await client.query("select * from public.estimate_parameter_definition where definition_version_id=$1 order by ordinal", [target.definition_version_id])).rows as Json[];
@@ -339,53 +490,86 @@ async function main(): Promise<void> {
       const bindings = Number((await client.query("select count(*)::int value from public.estimate_work_normative_binding where definition_version_id=$1", [target.definition_version_id])).rows[0].value);
       invariant(operations === 0 && bindings === 0, `STOP_R9_UNCLONED_CHILD_TABLE:${operations}:${bindings}`);
 
-      const resourceByFormula = new Map(sourceResources.map((resource) => [String(resource.formula_id), resource]));
-      const formulas = sourceFormulas.map((formula): Json => {
+      const retainedSourceResources = sourceResources.filter((resource) => !isRemovedUnsupportedBridgeResource(resource));
+      const retainedFormulaIds = new Set(retainedSourceResources.map((resource) => String(resource.formula_id)));
+      const resourceByFormula = new Map(retainedSourceResources.map((resource) => [String(resource.formula_id), resource]));
+      const formulas = sourceFormulas.filter((formula) => retainedFormulaIds.has(String(formula.formula_id)))
+        .map((formula): CanonicalEstimateFormulaDefinition & Json => {
         const resource = resourceByFormula.get(String(formula.formula_id));
         invariant(resource, `STOP_R9_FORMULA_RESOURCE_MISSING:${formula.formula_id}`);
-        const expression = replacementExpression(sourceRowId(resource)) ?? String(formula.expression_source);
+        const sourceId = sourceRowId(resource);
+        const override = bridgeResourceOverride(sourceId);
+        const expression = replacementExpression(sourceId) ?? String(formula.expression_source);
         const compiled = compileFormulaGraph(expression);
         invariant(compiled.inputParameterIds.every((parameterId) => keepIds.has(parameterId)),
           `STOP_R9_FORMULA_PARAMETER_OUTSIDE_SCHEMA:${formula.formula_id}:${compiled.inputParameterIds.join(",")}`);
-        return { ...formula, definition_version_id: definitionId, expression_source: compiled.source,
+        return { ...formula, formula_id: String(formula.formula_id), definition_version_id: definitionId,
+          output_unit_id: override.unit_id ?? formula.output_unit_id, expression_source: compiled.source,
           ast: compiled.ast, input_parameter_ids: compiled.inputParameterIds, ast_sha256: sha256(compiled.ast) };
       });
       const formulaById = new Map(formulas.map((formula) => [String(formula.formula_id), formula]));
       const resourceIdByRow = new Map<string, string>();
-      const resources = sourceResources.map((resource): Json => {
+      const resources = retainedSourceResources.map((resource, ordinal): CanonicalEstimateResourceDefinition & Json => {
         const id = uuid(`${CONTRACT}:${fingerprint}:resource:${resource.row_id}`);
         resourceIdByRow.set(String(resource.row_id), id);
         const formula = formulaById.get(String(resource.formula_id));
         invariant(formula, `STOP_R9_RESOURCE_FORMULA_MISSING:${resource.formula_id}`);
         const sourceId = sourceRowId(resource);
         const bridgeRepairRow = sourceId.startsWith("bridge_asphalt:bridge:") && !sourceId.endsWith(":deck_acceptance");
-        const inclusionAst = bridgeRepairRow ? waterproofingCondition() : resource.inclusion_ast;
+        const override = bridgeResourceOverride(sourceId);
+        const inclusionAst = sourceId === "bridge_asphalt:bridge:joint_sealant"
+          ? jointSealantCondition()
+          : bridgeRepairRow ? waterproofingCondition() : resource.inclusion_ast;
         invariant([...collectConditionParameterIds(inclusionAst)].every((parameterId) => keepIds.has(parameterId)),
           `STOP_R9_INCLUSION_PARAMETER_OUTSIDE_SCHEMA:${resource.row_id}`);
         const resourceGraph = {
           ...(resource.resource_graph ?? {}),
           contract: CONTRACT,
+          sourceRowId: override.sourceRowId ?? sourceId,
           sourceExpression: formula.expression_source,
           quantityBasis: formula.expression_source,
           parameterSources: formula.input_parameter_ids,
           visibleDerivedAssumptions: sourceId.includes("asphalt_layer_")
             ? [{ reasonRu: "Два слоя заданы обязательными параметрами мостового профиля; коэффициенты 1000 и 100 — только преобразования мм→м и %→долю." }]
             : [],
-          r9BridgeFocusedSchema: true,
+          s26BridgeTdsSystem: true,
         };
+        const exactNormativeTrace = Array.isArray(override.normativeSourceIds)
+          ? override.normativeSourceIds.map((sourceId: string) => ({
+            sourceId,
+            exactLocator: sourceId === BRIDGE_TDS_SOURCES.primer
+              ? "Технический лист 6.02-BY, 05.2017; расход 0,25–0,35 л/м²"
+              : sourceId === BRIDGE_TDS_SOURCES.membrane
+                ? "TDS-05-BY, 12.2017; ТН-ДОРОГА МОСТ Б; расход 1,12 м²/м²; защитная стяжка 40 мм"
+                : "Подтверждённый проектный узел деформационного шва",
+            bindingStatus: sourceId === BRIDGE_TDS_SOURCES.joint
+              ? "PROJECT_DETAIL_REQUIRED"
+              : "MANUFACTURER_TDS_EXACT_SYSTEM",
+            role: sourceId === BRIDGE_TDS_SOURCES.joint
+              ? "Применимость и расход герметика только по проектному узлу"
+              : "Числовая норма выбранной совместимой рулонной системы",
+          }))
+          : resource.source_metadata?.normativeTrace;
         const sourceMetadata = {
           ...(resource.source_metadata ?? {}),
           contract: CONTRACT,
-          normativeTrace: [KRER_27, KRER_30].map((source) => ({
-            sourceId: source.sourceKey,
-            exactLocator: `${source.tableCode}; PDF pages ${source.pdfPages.join("–")}`,
-            bindingStatus: "APPLICABILITY_ONLY_EXACT_VARIANT_REQUIRED_FOR_NUMERIC_RATE",
-            role: source.role,
-          })),
+          normativeTrace: exactNormativeTrace,
+          normativeSourceIds: override.normativeSourceIds ?? resource.source_metadata?.normativeSourceIds,
           r9FixtureConstantsRemoved: replacementExpression(sourceId) != null,
+          unsupportedGenericLaborAndMachineRatesRemoved: true,
         };
-        return { ...resource, id, definition_version_id: definitionId, inclusion_ast: inclusionAst,
+        return { ...resource, ...override, id, row_id: String(resource.row_id), definition_version_id: definitionId, ordinal,
+          section: String(override.section ?? resource.section),
+          category: String(override.category ?? resource.category),
+          title_ru: String(override.title_ru ?? resource.title_ru),
+          unit_id: String(override.unit_id ?? resource.unit_id),
+          formula_id: String(resource.formula_id),
+          inclusion_ast: inclusionAst,
           resource_graph: resourceGraph, source_metadata: sourceMetadata,
+          procurement_eligible: Boolean(override.procurement_eligible ?? resource.procurement_eligible),
+          cost_owner_id: override.cost_owner_id == null
+            ? resource.cost_owner_id == null ? null : String(resource.cost_owner_id)
+            : String(override.cost_owner_id),
           row_sha256: sha256({ rowId: resource.row_id, formulaAstSha256: formula.ast_sha256,
             inclusionAst, resourceGraph, sourceMetadata }) };
       });
@@ -396,25 +580,85 @@ async function main(): Promise<void> {
           || collectConditionParameterIds(resource.inclusion_ast).has(parameterId)).map((resource) => resource.row_id).sort()]));
       const requiredIds = new Set(profile.requiredParameters);
       const conditional = waterproofingCondition();
-      const parameters = sourceParameters.filter((parameter) => keepIds.has(String(parameter.parameter_id)))
-        .map((parameter, ordinal): Json => {
+      const parameters = buildS26Parameters(sourceParameters, keepIds)
+        .map((parameter, ordinal): CanonicalEstimateParameterDefinition & Json => {
           const parameterId = String(parameter.parameter_id);
           const branchParameter = WATERPROOFING_BRANCH_PARAMETERS.has(parameterId);
+          const baseTruth = { ...(parameter.truth_metadata ?? {}) };
+          delete baseTruth.required_when;
+          delete baseTruth.visible_when;
+          const constraints = { ...(parameter.constraints_json ?? {}) };
+          delete constraints.requiredWhen;
           const truth = {
-            ...(parameter.truth_metadata ?? {}),
+            ...baseTruth,
             contract: CONTRACT,
             formula_consumers: formulaConsumers[parameterId] ?? [],
             resource_branch_consumers: resourceConsumers[parameterId] ?? [],
             ...(branchParameter ? { required_when: conditional, visible_when: conditional } : {}),
             source_confirmation_required: parameter.truth_metadata?.source_confirmation_required === true,
-            r9BridgeFocusedSchema: true,
+            s26BridgeTdsSystem: true,
           };
-          return { ...parameter, definition_version_id: definitionId, ordinal,
+          return { ...parameter, parameter_id: parameterId, value_type: String(parameter.value_type),
+            definition_version_id: definitionId, ordinal,
             required: requiredIds.has(parameterId), default_value: null,
-            constraints_json: { ...(parameter.constraints_json ?? {}), ...(branchParameter ? { requiredWhen: conditional } : {}) },
+            constraints_json: { ...constraints, ...(branchParameter ? { requiredWhen: conditional } : {}) },
             truth_metadata: truth, approved_template_baseline_id: null };
         });
       invariant(parameters.length === keepIds.size, `STOP_R9_FILTERED_PARAMETER_COUNT:${parameters.length}`);
+      const runtimeBaseline = canonicalApprovedBaselineRuntimeParameters(sourceBaseline);
+      const submittedFixture = Object.fromEntries(Object.entries(sourceBaseline.input_values ?? {})
+        .filter(([parameterId]) => keepIds.has(parameterId)
+          && String(sourceBaseline.input_classification?.[parameterId] ?? "") === "VALIDATION_FIXTURE"));
+      const compileScenario = async (scenario: string, overrides: Json, expectedRows: number): Promise<Json> => {
+        const compiled = await compileCanonicalEstimateCore({
+          operation: "compile",
+          compilerVersion: `${CONTRACT}:${scenario}`,
+          catalogId: TARGET_CATALOG_ID,
+          primaryMeasureParameterId: "area_m2",
+          parameterDefinitions: parameters,
+          formulaDefinitions: formulas,
+          resourceDefinitions: resources,
+          submittedParameters: { ...submittedFixture, ...overrides },
+          confirmedParameters: runtimeBaseline,
+          currencyCode: "KGS",
+          priceSnapshotIds: [],
+          priceItems: [],
+          maximumResourceRows: 100,
+          hashJson: sha256,
+        });
+        invariant(compiled.rows.length === expectedRows && compiled.preliminaryNeeds.length === 0,
+          `STOP_S26_BRIDGE_COMPILE_${scenario}:${compiled.rows.length}:${compiled.preliminaryNeeds.length}`);
+        return compiled;
+      };
+      const acceptedCompile = await compileScenario("ACCEPTED_150X32", {
+        area_m2: 4_800,
+        waterproofing_condition: "ACCEPTED",
+      }, 44);
+      const replacementCompile = await compileScenario("REPLACEMENT_150X32", {
+        area_m2: 4_800,
+        waterproofing_condition: "REPLACEMENT_REQUIRED",
+        waterproofing_repair_area_m2: 4_800,
+      }, 49);
+      const localRepairCompile = await compileScenario("LOCAL_REPAIR_120", {
+        area_m2: 4_800,
+        waterproofing_condition: "LOCAL_REPAIR_REQUIRED",
+        waterproofing_repair_area_m2: 120,
+      }, 49);
+      const exactQuantity = (compiled: Json, rowSuffix: string): number => Number(
+        compiled.rows.find((row: Json) => String(row.row_id).endsWith(rowSuffix))?.quantity,
+      );
+      invariant(exactQuantity(replacementCompile, ":r555:45") === 5_376
+        && exactQuantity(replacementCompile, ":r555:46") === 1_440
+        && exactQuantity(replacementCompile, ":r555:47") === 192
+        && exactQuantity(replacementCompile, ":r555:49") === 4_800
+        && exactQuantity(replacementCompile, ":r555:51") === 1,
+      "STOP_S26_BRIDGE_REPLACEMENT_EXACT_QUANTITY_DRIFT");
+      invariant(exactQuantity(localRepairCompile, ":r555:45") === 134.4
+        && exactQuantity(localRepairCompile, ":r555:46") === 36
+        && exactQuantity(localRepairCompile, ":r555:47") === 4.8
+        && exactQuantity(localRepairCompile, ":r555:49") === 120
+        && exactQuantity(localRepairCompile, ":r555:51") === 1,
+      "STOP_S26_BRIDGE_LOCAL_REPAIR_EXACT_QUANTITY_DRIFT");
       const nextDefinitionVersion = Number((await client.query(
         "select coalesce(max(definition_version),0)::int+1 value from public.estimate_definition_version where catalog_id=$1",
         [TARGET_CATALOG_ID],
@@ -427,18 +671,41 @@ async function main(): Promise<void> {
         formulas: formulas.map((value) => [value.formula_id, value.expression_source, value.ast_sha256]),
         resources: resources.map((value) => [value.row_id, value.inclusion_ast, value.row_sha256]) });
       const acceptanceEvidenceSha256 = sha256({ definitionSha256, parameterSchemaSha256,
-        scenario: "bridge_asphalt_200x32_6400_m2", sourceSha256: [KRER_27.sha256, KRER_30.sha256] });
+        scenario: "bridge_asphalt_150x32_4800_m2",
+        exactSystemSources: [BRIDGE_TDS_SOURCES.membrane, BRIDGE_TDS_SOURCES.primer] });
       const clarificationFields = parameters.filter((parameter) => parameter.truth_metadata?.visibility_role === "USER_INPUT"
-        && (parameter.required || (parameter.truth_metadata?.resource_branch_consumers ?? []).length > 0))
+        && (parameter.required || (Array.isArray(parameter.truth_metadata?.resource_branch_consumers)
+          && parameter.truth_metadata.resource_branch_consumers.length > 0)))
         .map((parameter) => ({ parameterId: parameter.parameter_id, titleRu: parameter.title_ru,
-          unitId: parameter.unit_id, required: parameter.required, requiredWhen: parameter.truth_metadata.required_when ?? null }));
+          unitId: parameter.unit_id, required: parameter.required, requiredWhen: parameter.truth_metadata?.required_when ?? null }));
       const baselineInputIds = new Set([...keepIds].filter((parameterId) =>
         Object.prototype.hasOwnProperty.call(sourceBaseline.input_values, parameterId)
         && resourceConsumers[parameterId]?.length > 0));
-      const baselineInputValues = pick(sourceBaseline.input_values, baselineInputIds);
-      const baselineClassification = Object.fromEntries([...baselineInputIds]
-        .map((parameterId) => [parameterId, "VALIDATION_FIXTURE"]));
-      const baselineUom = pick(sourceBaseline.uom_by_parameter, baselineInputIds);
+      const baselineInputValues: Json = {
+        ...pick(sourceBaseline.input_values, baselineInputIds),
+        waterproofing_membrane_m2_per_m2: 1.12,
+        waterproofing_primer_rate_l_m2: 0.3,
+        protective_layer_thickness_mm: 40,
+        bridge_waterproofing_equipment_set_count: 1,
+        expansion_joint_length_m: 0,
+      };
+      for (const parameterId of REMOVED_UNSUPPORTED_PARAMETER_IDS) delete baselineInputValues[parameterId];
+      const baselineClassification = Object.fromEntries(Object.keys(baselineInputValues)
+        .map((parameterId) => [parameterId, [
+          "waterproofing_membrane_m2_per_m2",
+          "waterproofing_primer_rate_l_m2",
+          "protective_layer_thickness_mm",
+          "bridge_waterproofing_equipment_set_count",
+        ].includes(parameterId) ? "NORMATIVE"
+          : parameterId === "expansion_joint_length_m" ? "DERIVED" : "VALIDATION_FIXTURE"]));
+      const baselineUom: Json = {
+        ...pick(sourceBaseline.uom_by_parameter, baselineInputIds),
+        waterproofing_membrane_m2_per_m2: "m2_m2",
+        waterproofing_primer_rate_l_m2: "l_m2",
+        protective_layer_thickness_mm: "mm",
+        bridge_waterproofing_equipment_set_count: "set",
+      };
+      for (const parameterId of REMOVED_UNSUPPORTED_PARAMETER_IDS) delete baselineUom[parameterId];
 
       await client.query("begin");
       await client.query("set local lock_timeout='5s'");
@@ -448,15 +715,23 @@ async function main(): Promise<void> {
         await client.query(`insert into public.estimate_definition_release(
             id,release_key,schema_version,status,source_commit,source_tree,source_manifest_sha256,
             definition_count,resource_row_count,metadata,parent_release_id,source_package_sha256,parameter_count,formula_count)
-          select $1,$2,schema_version,'draft',$3,$4,$5,definition_count,resource_row_count,
-            metadata||$6::jsonb,$7,$8,parameter_count-$9+$10,formula_count
+          select $1,$2,schema_version,'draft',$3,$4,$5,definition_count,resource_row_count-$11+$12,
+            metadata||$6::jsonb,$7,$8,parameter_count-$9+$10,formula_count-$13+$14
           from public.estimate_definition_release where id=$7`, [
           releaseId, releaseKey, head, tree, sha256(`${CONTRACT}:${fingerprint}:draft`),
           JSON.stringify({ contract: CONTRACT, masterSha256: MASTER_SHA256, sourceHashes,
             lifecycle: "DRAFT_FORWARD_ONLY", sourceFingerprint: fingerprint, replacedDefinitionCount: 1,
-            targetCatalogId: TARGET_CATALOG_ID, activationAllowed: false, productionEligible: false }),
+            targetCatalogId: TARGET_CATALOG_ID, activationAllowed: false, productionEligible: false,
+            compileAcceptance: {
+              acceptedRows: acceptedCompile.rows.length,
+              replacementRows: replacementCompile.rows.length,
+              localRepairRows: localRepairCompile.rows.length,
+              preliminaryNeeds: 0,
+            } }),
           predecessorReleaseId, sha256({ contract: CONTRACT, fingerprint, definitionSha256 }),
           Number(target.parameters), parameters.length,
+          Number(target.resources), resources.length,
+          Number(target.formulas), formulas.length,
         ]);
         await client.query(`insert into public.estimate_cumulative_manifest_entry(
             release_id,catalog_id,definition_version_id,source_batch,source_release_id,domain_id,
@@ -476,13 +751,13 @@ async function main(): Promise<void> {
           JSON.stringify(target.applicability ?? {}), definitionSha256,
           JSON.stringify({ ...(target.source_metadata ?? {}), contract: CONTRACT,
             predecessorDefinitionId: target.definition_version_id, parameterSchemaSha256,
-            acceptanceEvidenceSha256, exactGeometryScenario: "200*32=6400 m2" }),
+            acceptanceEvidenceSha256, exactGeometryScenario: "150*32=4800 m2" }),
         ]);
         await insertRows(client, "estimate_parameter_definition", [
           "definition_version_id", "parameter_id", "ordinal", "value_type", "unit_id", "title_ru", "required",
           "default_value", "constraints_json", "truth_metadata", "approved_template_baseline_id",
         ], parameters.map((parameter) => [definitionId, parameter.parameter_id, parameter.ordinal,
-          parameter.value_type, parameter.unit_id, parameter.title_ru, parameter.required, null,
+          parameter.value_type, parameter.unit_id, parameter.title_ru, parameter.required, parameter.default_value,
           parameter.constraints_json, parameter.truth_metadata, null]));
         await insertRows(client, "estimate_formula_graph", [
           "definition_version_id", "formula_id", "output_unit_id", "expression_source", "ast", "input_parameter_ids", "ast_sha256",
@@ -499,10 +774,12 @@ async function main(): Promise<void> {
         const priceBindings = (await client.query(`select source.row_id,binding.route_id::text route_id,binding.price_key,binding.priority
           from public.estimate_resource_spec source join public.estimate_resource_price_route_binding binding
             on binding.resource_spec_id=source.id where source.definition_version_id=$1`, [target.definition_version_id])).rows as Json[];
-        invariant(priceBindings.length === resources.length, `STOP_R9_PRICE_BINDING_COUNT:${priceBindings.length}`);
+        const retainedPriceBindings = priceBindings.filter((binding) => resourceIdByRow.has(String(binding.row_id)));
+        invariant(retainedPriceBindings.length <= resources.length,
+          `STOP_R9_PRICE_BINDING_OVERFLOW:${retainedPriceBindings.length}:${resources.length}`);
         await insertRows(client, "estimate_resource_price_route_binding", [
           "resource_spec_id", "route_id", "price_key", "priority",
-        ], priceBindings.map((binding) => [resourceIdByRow.get(String(binding.row_id)), binding.route_id, binding.price_key, binding.priority]));
+        ], retainedPriceBindings.map((binding) => [resourceIdByRow.get(String(binding.row_id)), binding.route_id, binding.price_key, binding.priority]));
         await client.query(`insert into public.estimate_approved_template_baseline(
             id,baseline_key,catalog_id,definition_version_id,source_definition_version_id,parameter_schema_sha256,
             input_values,input_classification,uom_by_parameter,formula_consumer_ids,resource_consumer_row_ids,
@@ -514,12 +791,18 @@ async function main(): Promise<void> {
           TARGET_CATALOG_ID, definitionId, target.definition_version_id, parameterSchemaSha256,
           JSON.stringify(baselineInputValues), JSON.stringify(baselineClassification), JSON.stringify(baselineUom),
           JSON.stringify(formulaConsumers), JSON.stringify(resourceConsumers),
-          JSON.stringify(Object.fromEntries([...baselineInputIds]
-            .map((parameterId) => [parameterId, [KRER_27.sourceKey, KRER_30.sourceKey]]))),
+          JSON.stringify(Object.fromEntries(Object.keys(baselineInputValues)
+            .map((parameterId) => [parameterId,
+              parameterId === "waterproofing_primer_rate_l_m2"
+                ? [BRIDGE_TDS_SOURCES.primer]
+                : ["waterproofing_membrane_m2_per_m2", "protective_layer_thickness_mm",
+                  "bridge_waterproofing_equipment_set_count"].includes(parameterId)
+                  ? [BRIDGE_TDS_SOURCES.membrane]
+                  : [KRER_27.sourceKey]]))),
           JSON.stringify(Object.fromEntries(parameters.map((parameter) => [parameter.parameter_id, parameter.title_ru]))),
           JSON.stringify([...(sourceBaseline.proposal_source_refs ?? []), { contract: CONTRACT, masterSha256: MASTER_SHA256 }]),
           JSON.stringify([...(sourceBaseline.validation_scenario_refs ?? []), {
-            scenario: "R9_BRIDGE_ASPHALT_200_X_32_EQUALS_6400", acceptanceEvidenceSha256,
+            scenario: "S26_BRIDGE_ASPHALT_150_X_32_EQUALS_4800", acceptanceEvidenceSha256,
           }]), acceptanceEvidenceSha256, releaseId, target.approved_template_baseline_id, sourceBaseline.contract_version,
         ]);
         await client.query("update public.estimate_parameter_definition set approved_template_baseline_id=$2 where definition_version_id=$1", [definitionId, baselineId]);
@@ -532,7 +815,7 @@ async function main(): Promise<void> {
           sourcePassport.identity_mode, sourcePassport.redirect_catalog_id, sourcePassport.physical_result_ru,
           JSON.stringify(sourcePassport.included_scope_ru ?? []), JSON.stringify(sourcePassport.excluded_scope_ru ?? []),
           JSON.stringify(sourcePassport.capability_matrix ?? {}), parameters.length, formulas.length, resources.length,
-          JSON.stringify({ ...(sourcePassport.decision ?? {}), allowed: true, r9BridgeCompletion: "GREEN" }),
+          JSON.stringify({ ...(sourcePassport.decision ?? {}), allowed: true, s26BridgeTdsSystem: "GREEN" }),
           sha256({ source: sourcePassport.payload_sha256, definitionSha256, parameterSchemaSha256 }), head, tree,
         ]);
         await client.query(`update public.estimate_definition_version
@@ -585,27 +868,32 @@ async function main(): Promise<void> {
           from public.estimate_resource_spec where definition_version_id=$1`, [definitionId])).rows[0] as Json;
         invariant(Number(audit.identities) === 10_331 && Number(audit.replaced) === 1,
           `STOP_R9_MANIFEST_AUDIT:${JSON.stringify(audit)}`);
-        invariant(Number(parameterAudit.parameters) === 49 && Number(parameterAudit.required) === profile.requiredParameters.length
+        invariant(Number(parameterAudit.parameters) === 47 && Number(parameterAudit.required) === profile.requiredParameters.length
           && Number(parameterAudit.conditional) === WATERPROOFING_BRANCH_PARAMETERS.size && Number(parameterAudit.defaults) === 0,
         `STOP_R9_PARAMETER_AUDIT:${JSON.stringify(parameterAudit)}`);
-        invariant(Number(formulaAudit.formulas) === 51 && Number(formulaAudit.fixture_expressions) === 0,
+        invariant(Number(formulaAudit.formulas) === 50 && Number(formulaAudit.fixture_expressions) === 0,
           `STOP_R9_FORMULA_AUDIT:${JSON.stringify(formulaAudit)}`);
-        invariant(Number(resourceAudit.resources) === 51 && Number(resourceAudit.obsolete_branches) === 0
-          && Number(resourceAudit.waterproofing_branches) === 7,
+        invariant(Number(resourceAudit.resources) === 50 && Number(resourceAudit.obsolete_branches) === 0
+          && Number(resourceAudit.waterproofing_branches) === 6,
         `STOP_R9_RESOURCE_AUDIT:${JSON.stringify(resourceAudit)}`);
         await client.query(`update public.estimate_definition_release set source_manifest_sha256=$2,status='prepared',sealed_at=clock_timestamp(),
           metadata=metadata||$3::jsonb where id=$1 and status='draft'`, [
           releaseId, audit.snapshot, JSON.stringify({ lifecycle: "PREPARED_NOT_ACTIVE", searchReleaseId,
             searchSnapshotSha256: search.snapshot_sha256, bridgeParameterCount: parameters.length,
-            exactGeometryScenario: "200*32=6400 m2", fixtureFormulaCount: 0 }),
+            exactGeometryScenario: "150*32=4800 m2", fixtureFormulaCount: 0,
+            bridgeTdsSources: [BRIDGE_TDS_SOURCES.membrane, BRIDGE_TDS_SOURCES.primer],
+            unsupportedGenericLaborAndMachineRatesRemoved: true }),
         ]);
-        receipt = { status: APPLY ? "GREEN_R9_BRIDGE_SUCCESSOR_PREPARED_NOT_ACTIVE" : "GREEN_R9_BRIDGE_SUCCESSOR_DRY_RUN_ROLLED_BACK",
+        receipt = { status: APPLY ? "GREEN_S26_BRIDGE_TDS_SUCCESSOR_PREPARED_NOT_ACTIVE" : "GREEN_S26_BRIDGE_TDS_SUCCESSOR_DRY_RUN_ROLLED_BACK",
           idempotent: false, predecessor: { releaseId: predecessorReleaseId, searchReleaseId: predecessorSearchReleaseId,
             definitionId: target.definition_version_id }, successor: { releaseId, searchReleaseId, definitionId,
             baselineId, releaseKey }, fingerprint, audit: { manifest: audit, parameters: parameterAudit,
             formulas: formulaAudit, resources: resourceAudit, search,
-            officialSources: [KRER_27, KRER_30].map((source) => ({ sourceKey: source.sourceKey,
-              artifactSha256: source.sha256, numericRateBound: false })) } };
+            officialSources: [
+              { sourceKey: KRER_27.sourceKey, artifactSha256: KRER_27.sha256, numericRateBound: false },
+              { sourceKey: BRIDGE_TDS_SOURCES.membrane, numericRateBound: true },
+              { sourceKey: BRIDGE_TDS_SOURCES.primer, numericRateBound: true },
+            ] } };
         if (APPLY) await client.query("commit"); else await client.query("rollback");
       } catch (error) {
         await client.query("rollback");
@@ -623,7 +911,7 @@ async function main(): Promise<void> {
           definitionSnapshotSha256: receipt.audit.manifest.snapshot,
           manifestHashChainSha256: receipt.audit.manifest.snapshot,
           searchHashChainSha256: receipt.audit.search.snapshot_sha256,
-          owner: "R4_A13_6_R9_BRIDGE_ASPHALT_COMPLETION_OWNER", productionAccessed: false, fakeGreenClaimed: false });
+          owner: "S26_BRIDGE_ASPHALT_TDS_SUCCESSOR_OWNER", productionAccessed: false, fakeGreenClaimed: false });
       }
     }
     const body = { schemaVersion: `${CONTRACT}.receipt.v1`, capturedAt: new Date().toISOString(),
@@ -631,7 +919,7 @@ async function main(): Promise<void> {
         sourceHashes }, masterSha256: MASTER_SHA256, targetCatalogId: TARGET_CATALOG_ID,
       ...receipt!, productionAccessed: false, deployPerformed: false, activationPerformed: false };
     const sealed = { ...body, receiptSha256: sha256(body) };
-    if (APPLY && !receipt!.idempotent) atomicJson(resolve(OUTPUT_ROOT, `02_R9_BRIDGE_SUCCESSOR_${head}.json`), sealed);
+    if (APPLY && !receipt!.idempotent) atomicJson(resolve(OUTPUT_ROOT, `02_S26_BRIDGE_TDS_SUCCESSOR_${head}.json`), sealed);
     process.stdout.write(`${JSON.stringify(sealed, null, 2)}\n`);
   } finally {
     await client.end();

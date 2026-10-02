@@ -85,6 +85,16 @@ const PROMPT = [
 ].join(" ");
 
 describe("consumer NRMCA CIP 31 strip-foundation baseline", () => {
+  test("routes an ordinary full 150 m strip-foundation request without a quantity questionnaire", () => {
+    const plan = buildCanonicalBaselinePlan({
+      catalog: catalog(),
+      prompt: "Нужна полная смета ленточного фундамента 150 м.",
+    });
+
+    expect(plan.primaryMeasureParameterId).toBe("total_axis_length_m");
+    expect(plan.parameters).toEqual({ total_axis_length_m: "150" });
+  });
+
   test("routes the exact project evidence into the existing canonical strip-foundation compile request", () => {
     const plan = buildCanonicalBaselinePlan({ catalog: catalog(), prompt: PROMPT });
     expect(plan.primaryMeasureParameterId).toBe("total_axis_length_m");

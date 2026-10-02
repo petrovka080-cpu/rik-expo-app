@@ -826,7 +826,7 @@ describe("releaseGuard.shared", () => {
       });
       expect(REQUIRED_RELEASE_GATES).toContainEqual({
         name: "final-50k-92-external-live-proof-closeout",
-        command: "npx tsx scripts/audit/runExternalLiveProofCloseout.ts --after-gates",
+        command: "npx tsx scripts/audit/runExternalLiveProofCloseout.ts",
       });
     });
 

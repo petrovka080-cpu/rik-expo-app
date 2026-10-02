@@ -128,6 +128,10 @@ const DEFAULT_CONCURRENCY = 2;
 const DEFAULT_MICROBATCH_FILES = 20;
 const DEFAULT_MICROBATCH_TIMEOUT_MS = 1_200_000;
 
+export const FULL_JEST_EXCLUSIVE_MICROBATCH_TEST_PATHS = Object.freeze([
+  "tests/estimateRuntime/editableParam11610Readiness.test.ts",
+]);
+
 function sha256(value: string | Buffer): string {
   return crypto.createHash("sha256").update(value).digest("hex");
 }
@@ -294,10 +298,19 @@ export function planJestShardMicrobatches(
     throw new Error(`invalid_microbatch_file_count:${maximumFiles}`);
   }
   const result: JestShardMicrobatchPlan[] = [];
-  for (let offset = 0; offset < shard.test_files.length; offset += maximumFiles) {
+  const exclusive = new Set<string>(FULL_JEST_EXCLUSIVE_MICROBATCH_TEST_PATHS);
+  const exclusiveTestFiles = shard.test_files.filter((testPath) => exclusive.has(testPath));
+  const regularTestFiles = shard.test_files.filter((testPath) => !exclusive.has(testPath));
+  for (const testPath of exclusiveTestFiles) {
     result.push({
       microbatch_id: result.length,
-      test_files: shard.test_files.slice(offset, offset + maximumFiles),
+      test_files: [testPath],
+    });
+  }
+  for (let offset = 0; offset < regularTestFiles.length; offset += maximumFiles) {
+    result.push({
+      microbatch_id: result.length,
+      test_files: regularTestFiles.slice(offset, offset + maximumFiles),
     });
   }
   return result;

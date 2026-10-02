@@ -1,6 +1,9 @@
 import {
   compileCanonicalEstimateCore,
   type CanonicalEstimateCompileCoreResult,
+  type CanonicalEstimateFormulaDefinition,
+  type CanonicalEstimateParameterDefinition,
+  type CanonicalEstimateResourceDefinition,
 } from "../../../backendPlatform/canonicalEstimateCompileCore";
 import { canonicalEstimateStableJson } from "../../../backendPlatform/canonicalEstimateDeterminism";
 import { canonicalEstimateSha256HexText } from "../../../backendPlatform/canonicalEstimateSha256";
@@ -893,35 +896,133 @@ function inclusionAst(resource: Batch004R56ResourceDefinition): Record<string, u
   return { kind: "and", operands: [work, { kind: "equals", parameterId: match[1], value: true }] };
 }
 
+function publisherCategory(category: string): string {
+  if (category === "labor") return "construction_work";
+  if (category === "equipment") return "machine_equipment";
+  if (category === "transport") return "delivery";
+  return category;
+}
+
+/**
+ * The durable publisher and the shared compile core consume one projection.
+ * This prevents the 393-definition database candidate from silently falling
+ * back to the old uniform 59-row placeholder graph.
+ */
+export function projectBatch004R56DefinitionToCanonicalRows(
+  definition: Batch004R56CanonicalSuccessorDefinition,
+  options: Readonly<{
+    includeRuntimePriceInputs?: boolean;
+    normalizePublisherCategories?: boolean;
+  }> = {},
+): Readonly<{
+  parameterDefinitions: (CanonicalEstimateParameterDefinition & Record<string, any>)[];
+  formulaDefinitions: (CanonicalEstimateFormulaDefinition & Record<string, any>)[];
+  resourceDefinitions: (CanonicalEstimateResourceDefinition & Record<string, any>)[];
+}> {
+  const includeRuntimePriceInputs = options.includeRuntimePriceInputs ?? true;
+  const parameterDefinitions = definition.parameters
+    .filter((entry) => includeRuntimePriceInputs || (
+      !entry.parameterId.startsWith("unit_price_")
+      && entry.parameterId !== "price_basis_reference"
+      && entry.parameterId !== "price_basis_date"
+    ))
+    .map((entry, ordinal) => ({
+      parameter_id: entry.parameterId,
+      ordinal,
+      value_type: valueType(entry),
+      unit_id: entry.unitId,
+      title_ru: entry.labelRu,
+      required: entry.requiredWhen.kind === "ALWAYS",
+      default_value: null,
+      constraints_json: {
+        ...(entry.minimum == null ? {} : { min: entry.minimum }),
+        ...(entry.maximum == null ? {} : { max: entry.maximum }),
+        ...(entry.choices.length === 0 ? {} : { values: entry.choices }),
+        ...(entry.inputType === "text" ? { maxLength: 1_000 } : {}),
+        ...(entry.requiredWhen.kind === "EQUALS"
+          ? { requiredWhen: { parameterId: entry.requiredWhen.parameter_id, equals: entry.requiredWhen.value } }
+          : {}),
+      },
+      truth_metadata: {
+        value_source_role: "EXPLICIT_NO_HIDDEN_DEFAULT",
+        formula_consumers: entry.formulaConsumerIds,
+        resource_branch_consumers: definition.resources
+          .filter((resource) => entry.formulaConsumerIds.includes(resource.formulaId)
+            || resource.resourceGraph?.context_parameter_ids.includes(entry.parameterId)
+            || resource.inclusionCondition.includes(`${entry.parameterId}=`))
+          .map((resource) => resource.rowId),
+        engineering_source_pack_hash: definition.passport.engineeringSourcePack.sourcePackHash,
+      },
+    }));
+  const formulaDefinitions = definition.formulas.map((entry) => {
+    const compiled = compileFormulaGraph(entry.expressionSource);
+    if (canonicalEstimateStableJson(compiled.inputParameterIds)
+      !== canonicalEstimateStableJson([...entry.inputParameterIds].sort())) {
+      throw new Error(`BATCH004_R56_FORMULA_INPUT_DRIFT:${entry.formulaId}`);
+    }
+    return {
+      formula_id: entry.formulaId,
+      output_unit_id: entry.outputUnitId,
+      expression_source: entry.expressionSource,
+      ast: compiled.ast,
+      input_parameter_ids: compiled.inputParameterIds,
+      ast_sha256: sha256(compiled.ast),
+    };
+  });
+  const resourceDefinitions = definition.resources.map((entry) => {
+    const resourceGraph = {
+      contract: "real-professional-estimates-r5.6.batch004-resource-graph.v1",
+      domain: "interior_finishes",
+      family: definition.family,
+      operation: definition.operation,
+      variant: definition.variant,
+      formulaId: entry.formulaId,
+      normalizedUom: entry.outputUnitId,
+      semanticOwnerId: entry.semanticOwnerId,
+      procurementOwnerId: entry.procurementOwnerId,
+      costOwner: "resource",
+      costTreatment: "OWN_COST",
+      payable: true,
+      noDoubleCount: true,
+      primaryMeasureParameterId: r56MeasureParameterId(definition),
+      sourceResourceGraph: entry.resourceGraph,
+      ...(entry.priceRoute ? { priceRoute: entry.priceRoute } : {}),
+    };
+    const sourceMetadata = {
+      normativeTrace: entry.normativeTrace,
+      normativeSourceIds: entry.normativeSourceIds,
+      engineeringSourcePackHash: definition.passport.engineeringSourcePack.sourcePackHash,
+      priceRoute: entry.priceRoute,
+    };
+    return {
+      id: entry.rowId,
+      row_id: entry.rowId,
+      ordinal: entry.ordinal,
+      section: entry.sectionRu,
+      category: options.normalizePublisherCategories
+        ? publisherCategory(entry.category)
+        : entry.category,
+      title_ru: entry.titleRu,
+      unit_id: entry.outputUnitId,
+      formula_id: entry.formulaId,
+      inclusion_ast: inclusionAst(entry),
+      resource_graph: resourceGraph,
+      procurement_eligible: entry.procurementEligible,
+      cost_owner_id: entry.costOwnerId,
+      source_metadata: sourceMetadata,
+      row_sha256: sha256({ entry, resourceGraph, sourceMetadata }),
+    };
+  });
+  return { parameterDefinitions, formulaDefinitions, resourceDefinitions };
+}
+
 export async function compileBatch004R56ThroughSharedCore(input: {
   definition: Batch004R56CanonicalSuccessorDefinition;
   values: Readonly<Record<string, Scalar>>;
   operation?: "compile" | "recalculate";
 }): Promise<CanonicalEstimateCompileCoreResult> {
-  const parameterDefinitions = input.definition.parameters.map((entry) => ({
-    parameter_id: entry.parameterId,
-    value_type: valueType(entry),
-    required: entry.requiredWhen.kind === "ALWAYS",
-    default_value: null,
-    constraints_json: {
-      ...(entry.minimum == null ? {} : { min: entry.minimum }),
-      ...(entry.maximum == null ? {} : { max: entry.maximum }),
-      ...(entry.choices.length === 0 ? {} : { values: entry.choices }),
-      ...(entry.inputType === "text" ? { maxLength: 1_000 } : {}),
-      ...(entry.requiredWhen.kind === "EQUALS" ? { requiredWhen: { parameterId: entry.requiredWhen.parameter_id, equals: entry.requiredWhen.value } } : {}),
-    },
-    truth_metadata: { value_source_role: "EXPLICIT_NO_HIDDEN_DEFAULT", formula_consumers: entry.formulaConsumerIds, engineering_source_pack_hash: input.definition.passport.engineeringSourcePack.sourcePackHash },
-  }));
-  const formulaDefinitions = input.definition.formulas.map((entry) => {
-    const compiled = compileFormulaGraph(entry.expressionSource);
-    if (canonicalEstimateStableJson(compiled.inputParameterIds) !== canonicalEstimateStableJson([...entry.inputParameterIds].sort())) throw new Error(`BATCH004_R56_FORMULA_INPUT_DRIFT:${entry.formulaId}`);
-    return { formula_id: entry.formulaId, ast: compiled.ast, input_parameter_ids: compiled.inputParameterIds, ast_sha256: sha256(compiled.ast) };
-  });
-  const resourceDefinitions = input.definition.resources.map((entry) => {
-    const resourceGraph = { contract: "real-professional-estimates-r5.6.batch004-resource-graph.v1", domain: "interior_finishes", family: input.definition.family, operation: input.definition.operation, variant: input.definition.variant, semanticOwnerId: entry.semanticOwnerId, procurementOwnerId: entry.procurementOwnerId, sourceResourceGraph: entry.resourceGraph };
-    const sourceMetadata = { normativeTrace: entry.normativeTrace, normativeSourceIds: entry.normativeSourceIds, engineeringSourcePackHash: input.definition.passport.engineeringSourcePack.sourcePackHash, priceRoute: entry.priceRoute };
-    return { id: entry.rowId, row_id: entry.rowId, ordinal: entry.ordinal, section: entry.sectionRu, category: entry.category, title_ru: entry.titleRu, unit_id: entry.outputUnitId, formula_id: entry.formulaId, inclusion_ast: inclusionAst(entry), resource_graph: resourceGraph, procurement_eligible: entry.procurementEligible, cost_owner_id: entry.costOwnerId, source_metadata: sourceMetadata, row_sha256: sha256({ entry, resourceGraph, sourceMetadata }) };
-  });
+  const { parameterDefinitions, formulaDefinitions, resourceDefinitions } =
+    projectBatch004R56DefinitionToCanonicalRows(input.definition);
   const priceItems = input.definition.resources.map((entry) => {
     if (entry.priceRoute?.kind !== "RUNTIME_VALIDATED_INPUT") throw new Error(`BATCH004_R56_PRICE_ROUTE_MISSING:${entry.rowId}`);
     const unitPrice = input.values[entry.priceRoute.unit_price_parameter_id];

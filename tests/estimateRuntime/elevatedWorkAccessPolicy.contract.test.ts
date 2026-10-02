@@ -154,6 +154,28 @@ describe("professional elevated-work access policy", () => {
     expect(result.items.some((row) => row.titleRu === "Подъёмник листов ГКЛ для монтажа потолка")).toBe(true);
   });
 
+  test("carries the measured-work dependency into area-driven access shifts", () => {
+    const source = draft({ titleRu: "Ремонт фасада здания 100 м²" });
+    const firstItem = source.items[0];
+    if (!firstItem) throw new Error("test draft item missing");
+    firstItem.quantityFormula = "facade_area_m2 * 1.02";
+
+    const result = applyElevatedWorkAccessPolicy(source, { prompt: source.titleRu });
+    const equipment = result.items.find((row) =>
+      row.sourceParameters?.rowCode === "elevated_access_equipment"
+    );
+    const assembly = result.items.find((row) =>
+      row.sourceParameters?.rowCode === "elevated_access_assembly_reposition_dismantle"
+    );
+    const delivery = result.items.find((row) =>
+      row.sourceParameters?.rowCode === "elevated_access_delivery_return"
+    );
+
+    expect(equipment?.sourceParameters?.affectedBy).toContain("facade_area_m2");
+    expect(assembly?.sourceParameters?.affectedBy).toContain("facade_area_m2");
+    expect(delivery?.sourceParameters?.affectedBy).toBeUndefined();
+  });
+
   test("binds supplemental access rows to the selected professional work identity", () => {
     const source = draft({ titleRu: "Монтаж подвесных воздуховодов вентиляции 100 м²" });
     source.selectedWork = {

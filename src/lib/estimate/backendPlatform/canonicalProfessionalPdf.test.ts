@@ -59,7 +59,7 @@ function rows(
 }
 
 describe("R4-A6 canonical professional PDF", () => {
-  it("renders the required client form and technical projection from one immutable revision", () => {
+  it("renders the required client form without an internal technical appendix", () => {
     const projection = buildCanonicalProfessionalPdfProjection({
       revision: revision(45),
       rows: rows(45, { missingAt: 3, longTitleAt: 4 }),
@@ -67,7 +67,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a10");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-20-public-names");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,
@@ -88,8 +88,12 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(projection.html).toContain("<strong>Статус:</strong> Предварительная");
     expect(projection.html).toContain("Оценено частично");
     expect(projection.html).toContain("Полный итог: требуется уточнение цен");
-    expect(projection.html).toContain("Техническое приложение");
-    expect(projection.html).toContain("roof_area_m2");
+    expect(projection.html).not.toContain("Техническое приложение");
+    expect(projection.html).not.toContain("roof_area_m2");
+    expect(projection.html).not.toContain("Definition version");
+    expect(projection.html).not.toContain("Checksum строки");
+    expect(projection.footerTemplate).not.toContain("revision");
+    expect(projection.footerTemplate).not.toContain("checksum");
     expect(projection.html).toContain("м²");
     expect(projection.html).toContain("м³");
     expect(projection.html).toContain("Составил");
@@ -143,6 +147,49 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(() => buildCanonicalProfessionalPdfProjection({
       revision: revision(2), rows: mixedWithoutPrice, workTitleRu: "Смешанная валюта без цены",
     })).toThrow("multiple currencies");
+  });
+
+  it("does not present an unknown-price estimate as zero and keeps display numbering sequential", () => {
+    const unknownPriceRows = rows(2);
+    unknownPriceRows[0]!.ordinal = 17;
+    unknownPriceRows[1]!.ordinal = 42;
+    unknownPriceRows[0]!.unit_id = "m3_km";
+    for (const row of unknownPriceRows) {
+      row.unit_price = null;
+      row.amount = null;
+    }
+
+    const projection = buildCanonicalProfessionalPdfProjection({
+      revision: revision(2),
+      rows: unknownPriceRows,
+      workTitleRu: "Смета без цен",
+    });
+
+    expect(projection.pricedRowCount).toBe(0);
+    expect(projection.html).toContain("Цены не заполнены");
+    expect(projection.html).toContain("м³·км");
+    expect(projection.html).toContain('<td class="number">1</td>');
+    expect(projection.html).toContain('<td class="number">2</td>');
+    expect(projection.html).not.toContain('<td class="number">18</td>');
+    expect(projection.html).not.toContain('<td class="number">43</td>');
+    expect(projection.html).not.toContain("Оценено<br>0,00 сом");
+    expect(projection.html).not.toContain("Оценено частично<br>0,00 сом");
+  });
+
+  it("uses the concise public asphalt name in the PDF without mutating canonical rows", () => {
+    const sourceRows = rows(1);
+    const verboseTitle = "нижний слой: горячая плотная мелкозернистая асфальтобетонная смесь типа А по КРЕР 27-06-020-01 + 27-06-021-01 при принятой толщине; марка и состав уточняются проектом и паспортом завода";
+    sourceRows[0]!.title_ru = verboseTitle;
+
+    const projection = buildCanonicalProfessionalPdfProjection({
+      revision: revision(1),
+      rows: sourceRows,
+      workTitleRu: "Асфальтобетонное покрытие моста",
+    });
+
+    expect(projection.html).toContain("Нижний слой: асфальтобетонная смесь типа А");
+    expect(projection.html).not.toContain("горячая плотная мелкозернистая");
+    expect(sourceRows[0]!.title_ru).toBe(verboseTitle);
   });
 
   it("prints unresolved server-owned needs without inventing quantities or totals", () => {

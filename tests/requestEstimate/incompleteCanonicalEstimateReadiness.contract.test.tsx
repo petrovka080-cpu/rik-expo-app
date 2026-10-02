@@ -3,6 +3,8 @@ import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
 
 import { ConsumerRepairProgressiveEstimatePanel } from "../../src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel";
 import { ConsumerRepairRequestStickyActions } from "../../src/features/consumerRepair/ConsumerRepairRequestChrome";
+import { RequestEstimateItemsEditor } from "../../src/features/consumerRepair/RequestEstimateItemsEditor";
+import { ConsumerRepairRequestScreenController } from "../../src/features/consumerRepair/ConsumerRepairRequestScreen";
 import {
   consumerRepairCanonicalEstimateBlocksApproval,
   consumerRepairCanonicalMissingParameterCount,
@@ -142,7 +144,13 @@ describe("incomplete canonical estimate readiness", () => {
 
     expect(renderer.root.findByProps({ testID: "request-estimate-parameter-status" }).props.children)
       .toBe("Нужно уточнить: 8 параметров");
+    act(() => {
+      renderer.root.findByProps({ testID: "request-estimate-parameters-toggle" }).props.onPress();
+    });
     expect(renderer.root.findByProps({ testID: "request-estimate-parameter-panel" })).toBeTruthy();
+    act(() => {
+      renderer.root.findByProps({ testID: "request-estimate-positions-toggle" }).props.onPress();
+    });
     expect(renderer.root.findByProps({ testID: "request-estimate-composition-heading" }).props.children)
       .toBe("Предварительный состав");
     expect(renderer.root.findByProps({ testID: "request-estimate-incomplete-composition-notice" })).toBeTruthy();
@@ -195,7 +203,234 @@ describe("incomplete canonical estimate readiness", () => {
 
     const approval = renderer.root.findByProps({ testID: "consumer-repair-approve" });
     expect(approval.props.disabled).toBe(true);
-    expect(approval.props.accessibilityLabel).toBe("Нельзя подтвердить: без количества 24");
+    expect(approval.props.accessibilityLabel).toBe("Нельзя подтвердить: уточните позиции (24)");
+  });
+
+  it("highlights the exact unresolved row and offers one batch apply after several edits", () => {
+    const apply = jest.fn();
+    let renderer!: ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(
+        <RequestEstimateItemsEditor
+          viewModel={{
+            title: "Ленточный фундамент",
+            summary: "Ленточный фундамент",
+            totalLabel: "Итог не рассчитан",
+            priceStatusLabel: "0/1",
+            sourceConfidenceLabel: "high",
+            sourceLabels: [],
+            taxLabel: "",
+            trustLevelLabel: "Предварительно",
+            commercialEstimateLevelLabel: "Объёмы",
+            sourceQualityLabel: "",
+            expertReviewStatusLabel: "",
+            fullTotalStatusLabel: "",
+            visibleLines: [],
+            assumptionRows: [],
+            sections: [{
+              id: "equipment",
+              title: "Механизмы",
+              items: [{
+                id: "lifting-row",
+                requestDraftId: "draft-foundation",
+                itemType: "service",
+                titleRu: "Подъёмное оборудование для арматурных каркасов",
+                quantity: 240,
+                unit: "machine_hour",
+                unitPrice: null,
+                totalPrice: null,
+                currency: "KGS",
+                source: "ai_suggested",
+                editableByConsumer: true,
+                createdAt: "2026-09-23T00:00:00.000Z",
+                sourceParameters: {
+                  canonicalPreliminaryNeed: true,
+                  includedInEstimate: true,
+                  missingParameterRequirements: [{
+                    parameterId: "lifting_equipment_designation",
+                    titleRu: "Обозначение подъёмного оборудования",
+                  }],
+                },
+              }],
+            }],
+            professionalPreview: false,
+            previewSections: [],
+            calculationPreviewLines: [],
+            normSourcePreviewLines: [],
+            rawItemCount: 1,
+            calculatedItemCount: 0,
+            preliminaryNeedCount: 1,
+            manualCatalogItems: [],
+          }}
+          incompleteParameterCount={1}
+          pendingCanonicalRowEditCount={2}
+          onApplyCanonicalRowEdits={apply}
+          onDecrease={noop}
+          onIncrease={noop}
+          onQuantityChange={noop}
+          onUnitPriceChange={noop}
+          onRemove={noop}
+          onAddManual={noop}
+        />,
+      );
+    });
+
+    expect(renderer.root.findByProps({ testID: "request-estimate-unresolved-row-list" })).toBeTruthy();
+    expect(renderer.root.findByProps({ testID: "consumer-repair-item-unresolved-notice-lifting-row" })).toBeTruthy();
+    expect(visibleText(renderer)).toContain("Обозначение подъёмного оборудования");
+    expect(visibleText(renderer)).toContain("Количество 240 сохранено");
+    act(() => {
+      renderer.root.findByProps({ testID: "request-estimate-row-batch-apply" }).props.onPress();
+    });
+    expect(apply).toHaveBeenCalledTimes(1);
+  });
+
+  it("offers one action that applies pending row edits and confirms the resulting revision", () => {
+    const applyAndApprove = jest.fn();
+    let renderer!: ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(
+        <ConsumerRepairRequestStickyActions
+          approved={false}
+          sent={false}
+          hasBundle
+          hasSnapshot
+          approvalBlockedByEstimate
+          approvalPendingRowEditCount={3}
+          onOpenPdf={noop}
+          onMakePdf={noop}
+          onCreateNew={noop}
+          onDeleteDraft={noop}
+          onApproveDraft={noop}
+          onApplyAndApproveDraft={applyAndApprove}
+          onPrepareDraft={noop}
+        />,
+      );
+    });
+
+    expect(renderer.root.findByProps({ testID: "consumer-repair-approve" }).props.accessibilityLabel)
+      .toBe("Применить изменения и подтвердить смету");
+    const approval = renderer.root.findByProps({ testID: "consumer-repair-approve" });
+    expect(approval.props.disabled).toBe(false);
+    act(() => approval.props.onPress());
+    expect(applyAndApprove).toHaveBeenCalledTimes(1);
+  });
+
+  it("recalculates several staged rows once and approves exactly the resulting child revision", async () => {
+    const recalculate = jest.fn();
+    const baseRowSource = (rowCode: string) => ({
+      canonicalBackendRevisionId: "revision-base",
+      canonicalBackendReleaseId: "release-base",
+      rowCode,
+    });
+    const bundle = {
+      draft: {
+        id: "draft-batch",
+        title: "Смета",
+        problemText: "Ленточный фундамент",
+        status: "draft",
+      },
+      items: [
+        {
+          id: "row-item-1",
+          requestDraftId: "draft-batch",
+          itemType: "material",
+          titleRu: "Бетон",
+          quantity: 10,
+          unit: "m3",
+          unitPrice: null,
+          totalPrice: null,
+          currency: "KGS",
+          source: "ai_suggested",
+          editableByConsumer: true,
+          createdAt: "2026-09-23T00:00:00.000Z",
+          sourceParameters: baseRowSource("material:concrete"),
+        },
+        {
+          id: "row-item-2",
+          requestDraftId: "draft-batch",
+          itemType: "material",
+          titleRu: "Арматура",
+          quantity: 20,
+          unit: "kg",
+          unitPrice: null,
+          totalPrice: null,
+          currency: "KGS",
+          source: "ai_suggested",
+          editableByConsumer: true,
+          createdAt: "2026-09-23T00:00:00.000Z",
+          sourceParameters: baseRowSource("material:rebar"),
+        },
+      ],
+    };
+    let controller!: ConsumerRepairRequestScreenController;
+    recalculate.mockImplementation(async () => {
+      const currentBundle = (controller as never as { state: { bundle: typeof bundle } }).state.bundle;
+      return {
+        session: { revisionId: "revision-child" },
+        bundle: {
+          ...currentBundle,
+          items: currentBundle.items.map((item) => ({
+            ...item,
+            sourceParameters: {
+              ...item.sourceParameters,
+              canonicalBackendRevisionId: "revision-child",
+            },
+          })),
+        },
+      };
+    });
+    controller = new ConsumerRepairRequestScreenController({
+      consumerUserId: "consumer-batch",
+      onPrepareCanonicalEstimate: jest.fn(),
+      onLoadCanonicalRevisionDraft: jest.fn(),
+      onLoadCanonicalParameterSession: jest.fn(),
+      onRecalculateCanonicalEstimate: recalculate,
+      onSelectCanonicalCatalogItem: jest.fn(),
+      onAddCanonicalCatalogItem: jest.fn(),
+      onOpenPhotoForMaterialRecognition: jest.fn(),
+    });
+    const mutable = controller as never as {
+      state: Record<string, unknown> & { bundle: unknown; pendingCanonicalRowEditCount?: number };
+      setState: (update: unknown, callback?: () => void) => void;
+      changeItemQuantity: (itemId: string, value: string) => Promise<void>;
+      changeItemUnitPrice: (itemId: string, value: string) => Promise<void>;
+      applyPendingCanonicalRowEdits: () => Promise<boolean>;
+      applyAndApproveDraft: () => Promise<void>;
+      approveDraft: () => Promise<void>;
+      approvalExpectedCanonicalRevisionId: string | null;
+      refreshHistory: () => void;
+    };
+    mutable.state = { ...mutable.state, bundle };
+    mutable.setState = (update, callback) => {
+      const patch = typeof update === "function"
+        ? (update as (state: typeof mutable.state) => Partial<typeof mutable.state>)(mutable.state)
+        : update as Partial<typeof mutable.state>;
+      mutable.state = { ...mutable.state, ...patch };
+      callback?.();
+    };
+    mutable.refreshHistory = jest.fn();
+    let approvedRevisionId: string | null = null;
+    mutable.approveDraft = jest.fn(async () => {
+      approvedRevisionId = mutable.approvalExpectedCanonicalRevisionId;
+    });
+
+    await mutable.changeItemQuantity("row-item-1", "12");
+    await mutable.changeItemUnitPrice("row-item-2", "99");
+
+    expect(recalculate).not.toHaveBeenCalled();
+    expect(mutable.state.pendingCanonicalRowEditCount).toBe(2);
+
+    await mutable.applyAndApproveDraft();
+
+    expect(recalculate).toHaveBeenCalledTimes(1);
+    expect(recalculate.mock.calls[0][0].rowOverrides).toMatchObject({
+      "material:concrete": { quantity: 12 },
+      "material:rebar": { unitPrice: 99 },
+    });
+    expect(mutable.state.pendingCanonicalRowEditCount).toBe(0);
+    expect(mutable.approveDraft).toHaveBeenCalledTimes(1);
+    expect(approvedRevisionId).toBe("revision-child");
   });
 
   it("blocks confirmation with an explicit parameter message", () => {
@@ -224,7 +459,7 @@ describe("incomplete canonical estimate readiness", () => {
     expect(approval.props.accessibilityLabel).toBe("Заполните параметры сметы");
   });
 
-  it("explains that missing payable prices block confirmation", () => {
+  it("allows confirmation when only payable prices are missing", () => {
     let renderer!: ReactTestRenderer;
     act(() => {
       renderer = TestRenderer.create(
@@ -233,7 +468,7 @@ describe("incomplete canonical estimate readiness", () => {
           sent={false}
           hasBundle
           hasSnapshot
-          approvalBlockedByEstimate
+          approvalBlockedByEstimate={false}
           approvalMissingPriceCount={7}
           onOpenPdf={noop}
           onMakePdf={noop}
@@ -246,7 +481,10 @@ describe("incomplete canonical estimate readiness", () => {
     });
 
     const approval = renderer.root.findByProps({ testID: "consumer-repair-approve" });
-    expect(approval.props.disabled).toBe(true);
-    expect(approval.props.accessibilityLabel).toBe("Нельзя подтвердить: без цены 7");
+    expect(approval.props.disabled).toBe(false);
+    expect(approval.props.accessibilityLabel).toBe("Подтвердить смету");
+    expect(approval.props.accessibilityHint).toBe(
+      "Без цены остаются позиции: 7. Их можно заполнить позже.",
+    );
   });
 });

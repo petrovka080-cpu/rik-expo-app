@@ -10,7 +10,7 @@ describe("PDF architecture audit no markdown as truth", () => {
 
     expect(dataFlow.answers.doesPdfUseMarkdownAnswer).toBe(false);
     expect(actionService).toContain("input.source.structuredEstimate");
-    expect(actionService).toContain("createAiEstimatePdf");
+    expect(actionService).toContain("createEstimatePdf");
     expect(creator).toContain("structured GlobalEstimateResult");
     expect(actionService).not.toMatch(/markdown[^;\n]*(createEstimatePdf|createAiEstimatePdf)/i);
   });

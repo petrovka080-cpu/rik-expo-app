@@ -1,7 +1,7 @@
 import demolitionNormPack from "../../../../../data/estimate-norms/professional/demolition.json";
 import { estimateDeterministicHash } from "../../estimateDeterministicHash";
 import type { ProfessionalParameterValueV4 } from "../professionalProjectAssemblyV4";
-import type { ProfessionalPhysicalNormApplicabilityResolutionV1 } from "./professionalPhysicalNormApplicabilityV1";
+import type { ProfessionalPhysicalNormApplicabilityResolutionV1 } from "./professionalPhysicalNormApplicabilityTypesV1";
 
 const APPLICABILITY_VERSION = "professional-physical-norm-applicability:v1" as const;
 export const KRER46_DEMOLITION_PRODUCT_PROFILE_ID = "official-profile:kg-krer46:selected-demolition-table:v1" as const;

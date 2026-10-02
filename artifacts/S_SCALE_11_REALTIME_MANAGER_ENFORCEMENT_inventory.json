@@ -1,7 +1,49 @@
 {
   "wave": "S_SCALE_11_REALTIME_MANAGER_ENFORCEMENT_CLOSEOUT",
-  "generatedAt": "2026-05-20T04:11:18.794Z",
+  "generatedAt": "2026-09-20T17:01:53.996Z",
   "inventory": [
+    {
+      "file": "app/(tabs)/request/index.tsx",
+      "directSupabaseChannel": false,
+      "cleanupPresent": false,
+      "stableOwnerPresent": false,
+      "rawPayloadPrinted": false,
+      "secretsPrinted": false,
+      "broadExceptionUsed": false,
+      "status": "finding",
+      "owner": "unclassified_realtime_surface",
+      "classification": "unclassified_realtime_finding",
+      "unmanagedSubscribe": true,
+      "reason": "realtime surface did not match an exact managed owner pattern"
+    },
+    {
+      "file": "src/features/ai/AIAssistantScreen.helpers.ts",
+      "directSupabaseChannel": false,
+      "cleanupPresent": true,
+      "stableOwnerPresent": true,
+      "rawPayloadPrinted": false,
+      "secretsPrinted": false,
+      "broadExceptionUsed": false,
+      "status": "safe",
+      "owner": "request_estimate_intent_lifecycle",
+      "classification": "local_intent_listener_cleanup",
+      "unmanagedSubscribe": false,
+      "reason": "local request-intent lifecycle subscription returns its exact cleanup and logs only selected non-secret launch metadata"
+    },
+    {
+      "file": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
+      "directSupabaseChannel": false,
+      "cleanupPresent": true,
+      "stableOwnerPresent": true,
+      "rawPayloadPrinted": false,
+      "secretsPrinted": false,
+      "broadExceptionUsed": false,
+      "status": "safe",
+      "owner": "request_estimate_intent_lifecycle",
+      "classification": "local_intent_listener_cleanup",
+      "unmanagedSubscribe": false,
+      "reason": "consumer request ingress observes the local request-intent lifecycle and releases the exact listener during screen unmount"
+    },
     {
       "file": "src/lib/api/requestDraftSync.service.ts",
       "directSupabaseChannel": false,
@@ -85,6 +127,20 @@
       "classification": "manager_implementation",
       "unmanagedSubscribe": false,
       "reason": "central generic manager owns ref-counting, owner cleanup, and snapshots"
+    },
+    {
+      "file": "src/lib/supabaseClient.ts",
+      "directSupabaseChannel": false,
+      "cleanupPresent": true,
+      "stableOwnerPresent": true,
+      "rawPayloadPrinted": false,
+      "secretsPrinted": false,
+      "broadExceptionUsed": false,
+      "status": "safe",
+      "owner": "supabase_root_client_initializer",
+      "classification": "root_client_initializer",
+      "unmanagedSubscribe": false,
+      "reason": "root Supabase client initializer exposes bounded no-op realtime cleanup in unavailable mode and does not create or subscribe to channels"
     },
     {
       "file": "src/screens/accountant/accountant.realtime.lifecycle.ts",
@@ -227,5 +283,20 @@
       "reason": "callsite subscribes through central subscribeChannel with route/surface/bindings owner metadata and cleanup return path"
     }
   ],
-  "findings": []
+  "findings": [
+    {
+      "file": "app/(tabs)/request/index.tsx",
+      "directSupabaseChannel": false,
+      "cleanupPresent": false,
+      "stableOwnerPresent": false,
+      "rawPayloadPrinted": false,
+      "secretsPrinted": false,
+      "broadExceptionUsed": false,
+      "status": "finding",
+      "owner": "unclassified_realtime_surface",
+      "classification": "unclassified_realtime_finding",
+      "unmanagedSubscribe": true,
+      "reason": "realtime surface did not match an exact managed owner pattern"
+    }
+  ]
 }

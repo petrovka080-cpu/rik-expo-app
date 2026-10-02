@@ -64,7 +64,7 @@ describe("production norm-source evidence registry v1", () => {
     }
   });
 
-  it("keeps project productivity provenance separate from reviewed normative evidence", () => {
+  it("keeps project and manufacturer provenance separate from reviewed normative evidence", () => {
     const sourceIds = [
       ...ASPHALT_ASSOCIATED_WORK_CHILD_ASSEMBLIES_V4,
       ...ASPHALT_REMOVAL_RESOURCE_ASSEMBLIES_V4,
@@ -77,7 +77,9 @@ describe("production norm-source evidence registry v1", () => {
       "project_fleet_productivity_schedule",
       "project_marking_work_plan",
       "project_traffic_sign_work_plan",
-      "project_bridge_waterproofing_work_plan",
+      "manufacturer_tds:tn-doroga-most-b:tds-05-by:2017-12",
+      "manufacturer_tds:primer-03:tech-sheet-6.02-by:2017-05",
     ]));
+    expect(sourceIds).not.toContain("project_bridge_waterproofing_work_plan");
   });
 });

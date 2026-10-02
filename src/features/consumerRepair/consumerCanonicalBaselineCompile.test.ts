@@ -5,7 +5,49 @@ import {
   R4_A6_PUMP_STATION_PRIMARY_MEASURE_PARAMETER_ID,
 } from "../../lib/estimate/r4A6PumpStationProfessional";
 import {
+  VVGNG_LS_POWER_CABLE_CATALOG_ID,
+  VVGNG_LS_POWER_CABLE_PARAMETERS,
+} from "../../lib/estimate/v4/vvgngLsPowerCableR1";
+import {
+  LED_LUMINAIRE_INSTALLATION_CATALOG_ID,
+  LED_LUMINAIRE_INSTALLATION_PARAMETERS,
+} from "../../lib/estimate/v4/ledLuminaireInstallationR1";
+import {
+  CIRCUIT_BREAKER_INSTALLATION_CATALOG_ID,
+  CIRCUIT_BREAKER_INSTALLATION_PARAMETERS,
+} from "../../lib/estimate/v4/circuitBreakerInstallationR1";
+import {
+  RESIDUAL_CURRENT_DEVICE_INSTALLATION_CATALOG_ID,
+  RESIDUAL_CURRENT_DEVICE_INSTALLATION_PARAMETERS,
+} from "../../lib/estimate/v4/residualCurrentDeviceInstallationR1";
+import {
+  CAT6_TWISTED_PAIR_CABLE_CATALOG_ID,
+  CAT6_TWISTED_PAIR_CABLE_PARAMETERS,
+} from "../../lib/estimate/v4/cat6TwistedPairCableR1";
+import {
+  OPTICAL_FIBER_SPLICING_CATALOG_ID,
+  OPTICAL_FIBER_SPLICING_PARAMETERS,
+} from "../../lib/estimate/v4/opticalFiberSplicingR1";
+import {
+  ADDRESSABLE_SMOKE_DETECTOR_CATALOG_ID,
+  ADDRESSABLE_SMOKE_DETECTOR_PARAMETERS,
+} from "../../lib/estimate/v4/addressableSmokeDetectorR1";
+import {
+  PUMP_UNIT_ALIGNMENT_CONNECTION_CATALOG_ID,
+  PUMP_UNIT_ALIGNMENT_CONNECTION_PARAMETERS,
+} from "../../lib/estimate/v4/pumpUnitAlignmentConnectionR1";
+import {
+  HOT_WATER_BOILER_PIPING_CATALOG_ID,
+  HOT_WATER_BOILER_PIPING_PARAMETERS,
+} from "../../lib/estimate/v4/hotWaterBoilerPipingR1";
+import {
+  INDUSTRIAL_STEEL_PIPE_BUTT_WELD_CATALOG_ID,
+  INDUSTRIAL_STEEL_PIPE_BUTT_WELD_PARAMETERS,
+} from "../../lib/estimate/v4/industrialSteelPipeButtWeldR1";
+import {
   buildCanonicalBaselinePlan,
+  extractUserQuantity,
+  extractPromptOwnedProfessionalParameters,
   R4_A13_BULKHEAD_FRAME_CATALOG_ID,
 } from "./consumerCanonicalBaselineCompile";
 
@@ -41,6 +83,22 @@ function pumpCatalog(): CanonicalEstimateCatalogItem {
 }
 
 describe("consumer canonical W5 baseline", () => {
+  it.each([
+    ["Бетонирование основания — 20 m3", "20"],
+    ["Бетонирование основания — 20 m³", "20"],
+    ["Бетонирование основания — 20 м3", "20"],
+    ["Бетонирование основания — 20 м³", "20"],
+  ])("extracts a cubic-metre quantity from %s", (prompt, value) => {
+    expect(extractUserQuantity(prompt)).toEqual({ value, unit: "m3" });
+  });
+
+  it.each(["5 000 м²", "5\u00a0000 м²", "15\u202f000 м"])(
+    "keeps grouped thousands in %s as one quantity",
+    (prompt) => {
+      expect(extractUserQuantity(prompt)?.value).toBe(prompt.startsWith("5") ? "5000" : "15000");
+    },
+  );
+
   it("keeps the bare pump request free of invented project facts for preliminary composition", () => {
     expect(buildCanonicalBaselinePlan({ catalog: pumpCatalog(), prompt: fixture.barePromptRu }))
       .toMatchObject({
@@ -60,6 +118,56 @@ describe("consumer canonical W5 baseline", () => {
 });
 
 describe("consumer canonical W12 preliminary handoff", () => {
+  const geometryParameter = (
+    parameterId: string,
+    ordinal: number,
+    required = true,
+  ): CanonicalEstimateCatalogItem["parameterSchema"][number] => ({
+    parameterId,
+    ordinal,
+    valueType: "decimal",
+    unitId: parameterId.endsWith("_m2") ? "m2" : parameterId.endsWith("_m3") ? "m3" : "m",
+    titleRu: parameterId,
+    required,
+    defaultValue: null,
+    constraints: { min: 0.001 },
+    semanticParameterKey: parameterId,
+    visibilityRole: "USER_INPUT",
+    valueSourceRole: "USER_MEASURED",
+    formulaConsumers: ["formula:geometry"],
+  });
+
+  it("maps explicitly labelled geometry through the selected schema", () => {
+    expect(extractPromptOwnedProfessionalParameters([
+      geometryParameter("total_axis_length_m", 0),
+      geometryParameter("strip_width_m", 1),
+      geometryParameter("strip_height_m", 2),
+    ], "ленточный фундамент длиной 150 метров шириной 0,7 метра высотой 1,2 метра"))
+      .toEqual({
+        total_axis_length_m: "150",
+        strip_width_m: "0.7",
+        strip_height_m: "1.2",
+      });
+  });
+
+  it("leaves an explicitly labelled dimension unresolved when the schema target is ambiguous", () => {
+    expect(extractPromptOwnedProfessionalParameters([
+      geometryParameter("route_length_m", 0),
+      geometryParameter("joint_length_m", 1),
+      geometryParameter("strip_width_m", 2),
+      geometryParameter("optional_height_m", 3, false),
+    ], "длина 80 м, ширина 2 м, высота 3 м"))
+      .toEqual({ strip_width_m: "2", optional_height_m: "3" });
+  });
+
+  it("keeps explicit optional geometry and converts compatible centimetres and millimetres", () => {
+    expect(extractPromptOwnedProfessionalParameters([
+      geometryParameter("optional_height_m", 0, false),
+      geometryParameter("strip_width_m", 1),
+    ], "высота 120 см, ширина 700 мм"))
+      .toEqual({ optional_height_m: "1.2", strip_width_m: "0.7" });
+  });
+
   it("submits UI boolean choices with their canonical boolean type", () => {
     const catalog: CanonicalEstimateCatalogItem = {
       catalogId: "canonical-work:test:boolean-parameter",
@@ -169,6 +277,48 @@ describe("consumer canonical W12 preliminary handoff", () => {
       primaryMeasureParameterId: "area_m2",
     });
   });
+
+  it("submits only 500 m2 to the selected full P113 ceiling owner", () => {
+    const parameterSchema: CanonicalEstimateCatalogItem["parameterSchema"] = ([
+      ["area_m2", "m2", "USER_MEASURED"],
+      ["room_length_m", "m", "PROJECT_DOCUMENTATION"],
+      ["room_width_m", "m", "PROJECT_DOCUMENTATION"],
+      ["control_joint_length_m", "m", "PROJECT_DOCUMENTATION"],
+    ] as const).map(([parameterId, unitId, valueSourceRole], ordinal) => ({
+      parameterId,
+      ordinal,
+      valueType: "decimal",
+      unitId,
+      titleRu: parameterId,
+      required: true,
+      preliminaryCompilationAllowed: true,
+      defaultValue: null,
+      constraints: { min: parameterId === "control_joint_length_m" ? 0 : 0.001 },
+      visibilityRole: "USER_INPUT",
+      valueSourceRole,
+    }));
+    const catalog: CanonicalEstimateCatalogItem = {
+      catalogId:
+        "canonical-work:base:drywall_ceiling_interior_drywall_ceiling_install_large_area",
+      releaseId: "00000000-0000-5000-8000-000000000018",
+      namespace: "global",
+      domain: "interior_finishes",
+      workKey: "drywall_ceiling_interior_drywall_ceiling_install_large_area",
+      titleRu: "Полное устройство потолка КНАУФ П 113",
+      definitionVersion: 12,
+      applicability: {},
+      professionalMetadata: {},
+      parameterSchema,
+    };
+
+    expect(buildCanonicalBaselinePlan({
+      catalog,
+      prompt: "Полное устройство потолка из гипсокартона 500 м².",
+    })).toMatchObject({
+      parameters: { area_m2: "500" },
+      primaryMeasureParameterId: "area_m2",
+    });
+  });
 });
 
 describe("consumer canonical bulkhead frame preliminary handoff", () => {
@@ -245,6 +395,578 @@ describe("consumer canonical bulkhead frame preliminary handoff", () => {
   });
 });
 
+describe("consumer canonical complete bulkhead handoff", () => {
+  it("routes the ordinary 50 m² request to the complete owner without inventing geometry", () => {
+    const parameterSchema: CanonicalEstimateCatalogItem["parameterSchema"] = [
+      ["area_m2", "m2", 0],
+      ["bulkhead_length_m", "m", 1],
+      ["bottom_face_width_m", "m", 2],
+      ["side_face_height_m", "m", 3],
+      ["support_point_count", "item", 4],
+    ].map(([parameterId, unitId, ordinal]) => ({
+      parameterId: String(parameterId),
+      ordinal: Number(ordinal),
+      valueType: "decimal" as const,
+      unitId: String(unitId),
+      titleRu: String(parameterId),
+      required: true,
+      preliminaryCompilationAllowed: true,
+      defaultValue: null,
+      constraints: { min: 0.000001 },
+      visibilityRole: "USER_INPUT" as const,
+      valueSourceRole: "USER_MEASURED" as const,
+    }));
+    const catalog: CanonicalEstimateCatalogItem = {
+      catalogId:
+        "canonical-work:base:drywall_ceiling_interior_bulkhead_install_standard",
+      releaseId: "00000000-0000-5000-8000-000000000019",
+      namespace: "global",
+      domain: "interior_finishes",
+      workKey: "drywall_ceiling_interior_bulkhead_install_standard",
+      titleRu: "Полное устройство потолочного короба из гипсокартона",
+      definitionVersion: 13,
+      applicability: {},
+      professionalMetadata: {},
+      parameterSchema,
+    };
+
+    expect(buildCanonicalBaselinePlan({
+      catalog,
+      prompt: "Полное устройство потолочного короба из гипсокартона 50 м².",
+    })).toMatchObject({
+      parameters: { area_m2: "50" },
+      primaryMeasureParameterId: "area_m2",
+    });
+  });
+});
+
+describe("consumer canonical VVGng-LS power-cable handoff", () => {
+  it("keeps the 150 m route and exact cable identity without inventing project resources", () => {
+    const catalog: CanonicalEstimateCatalogItem = {
+      catalogId: VVGNG_LS_POWER_CABLE_CATALOG_ID,
+      releaseId: "00000000-0000-5000-8000-000000000021",
+      namespace: "global",
+      domain: "electrical",
+      workKey: "electrical_interior_vvg_cable_lay_standard",
+      titleRu: "Прокладка силового кабеля ВВГнг(А)-LS 5×6 мм²",
+      definitionVersion: 5,
+      applicability: {},
+      professionalMetadata: {},
+      parameterSchema: VVGNG_LS_POWER_CABLE_PARAMETERS.map((parameter) => ({
+        parameterId: parameter.parameter_id,
+        ordinal: parameter.ordinal,
+        valueType: parameter.value_type as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["valueType"],
+        unitId: parameter.unit_id,
+        titleRu: parameter.title_ru,
+        required: parameter.required,
+        defaultValue: parameter.default_value,
+        constraints: parameter.constraints_json ?? {},
+        semanticParameterKey: String(
+          parameter.truth_metadata.semantic_parameter_key ?? parameter.parameter_id,
+        ),
+        visibilityRole: parameter.truth_metadata.visibility_role as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["visibilityRole"],
+        valueSourceRole: parameter.truth_metadata.value_source_role as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["valueSourceRole"],
+        preliminaryCompilationAllowed:
+          parameter.truth_metadata.preliminary_compilation_allowed === true,
+      })),
+    };
+
+    const plan = buildCanonicalBaselinePlan({
+      catalog,
+      prompt: "Прокладка силового кабеля ВВГнг(А)-LS 5×6 мм², длина трассы 150 м.",
+    });
+
+    expect(plan.primaryMeasureParameterId).toBe("length_m");
+    expect(plan.parameters).toEqual({
+      length_m: "150",
+      cable_mark: "ВВГнг(А)-LS",
+      core_count: "5",
+      conductor_area_mm2: "6",
+    });
+    expect(plan.parameters).not.toHaveProperty("cable_installation_labor_h");
+    expect(plan.parameters).not.toHaveProperty("cable_expected_loss_ratio");
+  });
+});
+
+describe("consumer canonical LED-luminaire installation handoff", () => {
+  it("keeps the exact 30-piece luminaire scope without inventing project resources", () => {
+    const catalog: CanonicalEstimateCatalogItem = {
+      catalogId: LED_LUMINAIRE_INSTALLATION_CATALOG_ID,
+      releaseId: "00000000-0000-5000-8000-000000000023",
+      namespace: "global",
+      domain: "electrical",
+      workKey: "electrical_interior_lighting_install_standard",
+      titleRu: "Монтаж накладного светодиодного светильника 36 Вт IP40",
+      definitionVersion: 5,
+      applicability: {},
+      professionalMetadata: {},
+      parameterSchema: LED_LUMINAIRE_INSTALLATION_PARAMETERS.map((parameter) => ({
+        parameterId: parameter.parameter_id,
+        ordinal: parameter.ordinal,
+        valueType: parameter.value_type as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["valueType"],
+        unitId: parameter.unit_id,
+        titleRu: parameter.title_ru,
+        required: parameter.required,
+        defaultValue: parameter.default_value,
+        constraints: parameter.constraints_json ?? {},
+        semanticParameterKey: String(
+          parameter.truth_metadata.semantic_parameter_key ?? parameter.parameter_id,
+        ),
+        visibilityRole: parameter.truth_metadata.visibility_role as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["visibilityRole"],
+        valueSourceRole: parameter.truth_metadata.value_source_role as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["valueSourceRole"],
+        preliminaryCompilationAllowed:
+          parameter.truth_metadata.preliminary_compilation_allowed === true,
+      })),
+    };
+
+    const plan = buildCanonicalBaselinePlan({
+      catalog,
+      prompt: "Монтаж 30 накладных LED-светильников 36 Вт IP40, накладной монтаж.",
+    });
+
+    expect(plan.primaryMeasureParameterId).toBe("luminaire_count");
+    expect(plan.parameters).toEqual({
+      luminaire_count: "30",
+      rated_power: "36_W",
+      ingress_protection: "IP40",
+      mounting_type: "SURFACE",
+    });
+    expect(plan.parameters).not.toHaveProperty("luminaire_installation_labor_h");
+    expect(plan.parameters).not.toHaveProperty("luminaire_retained_spare_piece");
+  });
+});
+
+describe("consumer canonical circuit-breaker installation handoff", () => {
+  it("keeps only the explicitly selected device facts and count", () => {
+    const catalog: CanonicalEstimateCatalogItem = {
+      catalogId: CIRCUIT_BREAKER_INSTALLATION_CATALOG_ID,
+      releaseId: "00000000-0000-5000-8000-000000000025",
+      namespace: "global",
+      domain: "electrical",
+      workKey: "electrical_interior_breaker_install_standard",
+      titleRu: "Монтаж автоматического выключателя на существующей DIN-рейке",
+      definitionVersion: 4,
+      applicability: {},
+      professionalMetadata: {},
+      parameterSchema: CIRCUIT_BREAKER_INSTALLATION_PARAMETERS.map((parameter) => ({
+        parameterId: parameter.parameter_id,
+        ordinal: parameter.ordinal,
+        valueType: parameter.value_type as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["valueType"],
+        unitId: parameter.unit_id,
+        titleRu: parameter.title_ru,
+        required: parameter.required,
+        defaultValue: parameter.default_value,
+        constraints: parameter.constraints_json ?? {},
+        semanticParameterKey: String(
+          parameter.truth_metadata.semantic_parameter_key ?? parameter.parameter_id,
+        ),
+        visibilityRole: parameter.truth_metadata.visibility_role as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["visibilityRole"],
+        valueSourceRole: parameter.truth_metadata.value_source_role as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["valueSourceRole"],
+        preliminaryCompilationAllowed:
+          parameter.truth_metadata.preliminary_compilation_allowed === true,
+      })),
+    };
+
+    const plan = buildCanonicalBaselinePlan({
+      catalog,
+      prompt: "Установить 12 шт. автоматических выключателей, модель IEK BA47-29, 1P C16, 6 kA, 230 V, на существующую DIN-рейку.",
+    });
+
+    expect(plan.primaryMeasureParameterId).toBe("breaker_count");
+    expect(plan.parameters).toEqual({
+      breaker_count: "12",
+      breaker_product_designation: "IEK BA47-29",
+      pole_configuration: "1P",
+      trip_curve: "C",
+      rated_current_a: "16",
+      breaking_capacity_ka: "6",
+      rated_voltage_v: "230",
+      mounting_system: "EXISTING_DIN_RAIL",
+    });
+    expect(plan.parameters).not.toHaveProperty("selection_basis_reference");
+    expect(plan.parameters).not.toHaveProperty("breaker_installation_labor_h");
+    expect(plan.parameters).not.toHaveProperty("breaker_retained_spare_piece");
+  });
+});
+
+describe("consumer canonical residual-current-device installation handoff", () => {
+  it("keeps only the explicitly selected RCCB facts and count", () => {
+    const catalog: CanonicalEstimateCatalogItem = {
+      catalogId: RESIDUAL_CURRENT_DEVICE_INSTALLATION_CATALOG_ID,
+      releaseId: "00000000-0000-5000-8000-000000000026",
+      namespace: "global",
+      domain: "electrical",
+      workKey: "electrical_interior_rcd_install_standard",
+      titleRu: "Монтаж выбранного УЗО на существующей DIN-рейке",
+      definitionVersion: 4,
+      applicability: {},
+      professionalMetadata: {},
+      parameterSchema: RESIDUAL_CURRENT_DEVICE_INSTALLATION_PARAMETERS.map((parameter) => ({
+        parameterId: parameter.parameter_id,
+        ordinal: parameter.ordinal,
+        valueType: parameter.value_type as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["valueType"],
+        unitId: parameter.unit_id,
+        titleRu: parameter.title_ru,
+        required: parameter.required,
+        defaultValue: parameter.default_value,
+        constraints: parameter.constraints_json ?? {},
+        semanticParameterKey: String(
+          parameter.truth_metadata.semantic_parameter_key ?? parameter.parameter_id,
+        ),
+        visibilityRole: parameter.truth_metadata.visibility_role as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["visibilityRole"],
+        valueSourceRole: parameter.truth_metadata.value_source_role as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["valueSourceRole"],
+        preliminaryCompilationAllowed:
+          parameter.truth_metadata.preliminary_compilation_allowed === true,
+      })),
+    };
+
+    const plan = buildCanonicalBaselinePlan({
+      catalog,
+      prompt: "Установить 8 шт. УЗО, модель ABB F202, RCCB 2P 40 A, 30 mA, тип A, 230 V, на существующую DIN-рейку.",
+    });
+
+    expect(plan.primaryMeasureParameterId).toBe("rcd_count");
+    expect(plan.parameters).toEqual({
+      rcd_count: "8",
+      rcd_product_designation: "ABB F202",
+      rcd_device_type: "RCCB",
+      pole_configuration: "2P",
+      rated_current_a: "40",
+      rated_residual_current_ma: "30",
+      residual_current_type: "A",
+      rated_voltage_v: "230",
+      mounting_system: "EXISTING_DIN_RAIL",
+    });
+    expect(plan.parameters).not.toHaveProperty("selection_basis_reference");
+    expect(plan.parameters).not.toHaveProperty("rcd_installation_labor_h");
+    expect(plan.parameters).not.toHaveProperty("rcd_retained_spare_piece");
+  });
+});
+
+describe("consumer canonical addressable smoke-detector handoff", () => {
+  it("keeps selected detector and base identity without inventing project resources", () => {
+    const catalog: CanonicalEstimateCatalogItem = {
+      catalogId: ADDRESSABLE_SMOKE_DETECTOR_CATALOG_ID,
+      releaseId: "00000000-0000-5000-8000-000000000027",
+      namespace: "global",
+      domain: "fire_alarm",
+      workKey: "electrical_interior_fire_alarm_install_standard",
+      titleRu: "Монтаж адресного дымового извещателя с базой",
+      definitionVersion: 5,
+      applicability: {},
+      professionalMetadata: {},
+      parameterSchema: ADDRESSABLE_SMOKE_DETECTOR_PARAMETERS.map((parameter) => ({
+        parameterId: parameter.parameter_id,
+        ordinal: parameter.ordinal,
+        valueType: parameter.value_type as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["valueType"],
+        unitId: parameter.unit_id,
+        titleRu: parameter.title_ru,
+        required: parameter.required,
+        defaultValue: parameter.default_value,
+        constraints: parameter.constraints_json ?? {},
+        semanticParameterKey: String(
+          parameter.truth_metadata.semantic_parameter_key ?? parameter.parameter_id,
+        ),
+        visibilityRole: parameter.truth_metadata.visibility_role as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["visibilityRole"],
+        valueSourceRole: parameter.truth_metadata.value_source_role as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["valueSourceRole"],
+        preliminaryCompilationAllowed:
+          parameter.truth_metadata.preliminary_compilation_allowed === true,
+      })),
+    };
+
+    const plan = buildCanonicalBaselinePlan({
+      catalog,
+      prompt: "Установить 25 шт. адресных оптико-электронных дымовых извещателей, модель извещателя DET-A25-OPT, модель базы BASE-A25.",
+    });
+
+    expect(plan.primaryMeasureParameterId).toBe("detector_count");
+    expect(plan.parameters).toEqual({
+      detector_count: "25",
+      detector_type: "ADDRESSABLE_OPTICAL_SMOKE",
+      base_type: "MATCHED_ADDRESSABLE_DETECTOR_BASE",
+      detector_product_designation: "DET-A25-OPT",
+      base_product_designation: "BASE-A25",
+    });
+    expect(plan.parameters).not.toHaveProperty("fastener_quantity_set");
+    expect(plan.parameters).not.toHaveProperty("detector_installation_labor_h");
+    expect(plan.parameters).not.toHaveProperty("detector_retained_spare_piece");
+  });
+});
+
+describe("consumer canonical pump-unit installation handoff", () => {
+  it("keeps selected pump, count and passport duty without inventing project resources", () => {
+    const catalog: CanonicalEstimateCatalogItem = {
+      catalogId: PUMP_UNIT_ALIGNMENT_CONNECTION_CATALOG_ID,
+      releaseId: "00000000-0000-5000-8000-000000000028",
+      namespace: "global",
+      domain: "plumbing",
+      workKey: "plumbing_interior_pump_install_standard",
+      titleRu: "Монтаж, центровка и подключение насосного агрегата на раме",
+      definitionVersion: 5,
+      applicability: {},
+      professionalMetadata: {},
+      parameterSchema: PUMP_UNIT_ALIGNMENT_CONNECTION_PARAMETERS.map((parameter) => ({
+        parameterId: parameter.parameter_id,
+        ordinal: parameter.ordinal,
+        valueType: parameter.value_type as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["valueType"],
+        unitId: parameter.unit_id,
+        titleRu: parameter.title_ru,
+        required: parameter.required,
+        defaultValue: parameter.default_value,
+        constraints: parameter.constraints_json ?? {},
+        semanticParameterKey: String(
+          parameter.truth_metadata.semantic_parameter_key ?? parameter.parameter_id,
+        ),
+        visibilityRole: parameter.truth_metadata.visibility_role as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["visibilityRole"],
+        valueSourceRole: parameter.truth_metadata.value_source_role as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["valueSourceRole"],
+        preliminaryCompilationAllowed:
+          parameter.truth_metadata.preliminary_compilation_allowed === true,
+      })),
+    };
+
+    const plan = buildCanonicalBaselinePlan({
+      catalog,
+      prompt: "Смонтировать 2 насосных агрегата, модель PUMP-Q45-H55, на раме, Q=45 м3/ч, H=55 м.",
+    });
+
+    expect(plan.primaryMeasureParameterId).toBe("pump_count");
+    expect(plan.parameters).toEqual({
+      pump_count: "2",
+      pump_unit_product_designation: "PUMP-Q45-H55",
+      design_flow_m3_h: "45",
+      design_head_m: "55",
+      pump_configuration: "PUMP_MOTOR_ON_BASEFRAME",
+    });
+    expect(plan.parameters).not.toHaveProperty("anchor_set_quantity");
+    expect(plan.parameters).not.toHaveProperty("pump_installation_alignment_labor_h");
+    expect(plan.parameters).not.toHaveProperty("pump_retained_spare_set");
+  });
+});
+
+describe("consumer canonical hot-water boiler piping handoff", () => {
+  it("keeps selected boiler, burner and passport duty without inventing project resources", () => {
+    const catalog: CanonicalEstimateCatalogItem = {
+      catalogId: HOT_WATER_BOILER_PIPING_CATALOG_ID,
+      releaseId: "00000000-0000-5000-8000-000000000029",
+      namespace: "global",
+      domain: "heating",
+      workKey: "hot_water_boiler_piping",
+      titleRu: "Монтаж и обвязка водогрейного котла 500 кВт на природном газе",
+      definitionVersion: 7,
+      applicability: {},
+      professionalMetadata: {},
+      parameterSchema: HOT_WATER_BOILER_PIPING_PARAMETERS.map((parameter) => ({
+        parameterId: parameter.parameter_id,
+        ordinal: parameter.ordinal,
+        valueType: parameter.value_type as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["valueType"],
+        unitId: parameter.unit_id,
+        titleRu: parameter.title_ru,
+        required: parameter.required,
+        defaultValue: parameter.default_value,
+        constraints: parameter.constraints_json ?? {},
+        semanticParameterKey: String(
+          parameter.truth_metadata.semantic_parameter_key ?? parameter.parameter_id,
+        ),
+        visibilityRole: parameter.truth_metadata.visibility_role as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["visibilityRole"],
+        valueSourceRole: parameter.truth_metadata.value_source_role as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["valueSourceRole"],
+        preliminaryCompilationAllowed:
+          parameter.truth_metadata.preliminary_compilation_allowed === true,
+      })),
+    };
+
+    const plan = buildCanonicalBaselinePlan({
+      catalog,
+      prompt: "Смонтировать и обвязать 1 водогрейный котёл, модель котла BOILER-500-NG, 500 кВт, природный газ, отдельная модулируемая газовая горелка, модель горелки BURNER-500-MOD.",
+    });
+
+    expect(plan.primaryMeasureParameterId).toBe("boiler_count");
+    expect(plan.parameters).toEqual({
+      boiler_count: "1",
+      thermal_power_kw: "500",
+      fuel_type: "NATURAL_GAS",
+      burner_configuration: "SEPARATE_MODULATING_GAS_BURNER",
+      boiler_product_designation: "BOILER-500-NG",
+      burner_product_designation: "BURNER-500-MOD",
+    });
+    expect(plan.parameters).not.toHaveProperty("flange_set_quantity");
+    expect(plan.parameters).not.toHaveProperty("boiler_installation_piping_labor_h");
+    expect(plan.parameters).not.toHaveProperty("boiler_retained_spare_set");
+  });
+});
+
+describe("consumer canonical industrial steel pipe butt-weld handoff", () => {
+  it("keeps joint geometry, steel and selected WPS without inventing project resources", () => {
+    const catalog: CanonicalEstimateCatalogItem = {
+      catalogId: INDUSTRIAL_STEEL_PIPE_BUTT_WELD_CATALOG_ID,
+      releaseId: "00000000-0000-5000-8000-000000000030",
+      namespace: "global",
+      domain: "process_piping",
+      workKey: "industrial_steel_pipe_butt_weld",
+      titleRu: "Сварка стыка стального технологического трубопровода",
+      definitionVersion: 5,
+      applicability: {},
+      professionalMetadata: {},
+      parameterSchema: INDUSTRIAL_STEEL_PIPE_BUTT_WELD_PARAMETERS.map((parameter) => ({
+        parameterId: parameter.parameter_id,
+        ordinal: parameter.ordinal,
+        valueType: parameter.value_type as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["valueType"],
+        unitId: parameter.unit_id,
+        titleRu: parameter.title_ru,
+        required: parameter.required,
+        defaultValue: parameter.default_value,
+        constraints: parameter.constraints_json ?? {},
+        semanticParameterKey: String(
+          parameter.truth_metadata.semantic_parameter_key ?? parameter.parameter_id,
+        ),
+        visibilityRole: parameter.truth_metadata.visibility_role as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["visibilityRole"],
+        valueSourceRole: parameter.truth_metadata.value_source_role as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["valueSourceRole"],
+        preliminaryCompilationAllowed:
+          parameter.truth_metadata.preliminary_compilation_allowed === true,
+      })),
+    };
+
+    const plan = buildCanonicalBaselinePlan({
+      catalog,
+      prompt: "Сварить 16 стыков трубы Ø219×8 мм, сталь 09Г2С, WPS WPS-219-GMAW.",
+    });
+
+    expect(plan.primaryMeasureParameterId).toBe("joint_count");
+    expect(plan.parameters).toEqual({
+      joint_count: "16",
+      outside_diameter_mm: "219",
+      wall_thickness_mm: "8",
+      steel_grade: "09Г2С",
+      welding_procedure_designation: "WPS-219-GMAW",
+    });
+    expect(plan.parameters).not.toHaveProperty("welding_wire_mass_kg");
+    expect(plan.parameters).not.toHaveProperty("weld_fitup_labor_h");
+    expect(plan.parameters).not.toHaveProperty("welding_wire_retained_reserve_kg");
+  });
+});
+
+describe("consumer canonical Cat.6 cable handoff", () => {
+  it("keeps route length, line count and cable identity without inventing project resources", () => {
+    const catalog: CanonicalEstimateCatalogItem = {
+      catalogId: CAT6_TWISTED_PAIR_CABLE_CATALOG_ID,
+      releaseId: "00000000-0000-5000-8000-000000000024",
+      namespace: "global",
+      domain: "telecom",
+      workKey: "site_telecom_connection",
+      titleRu: "Прокладка кабеля U/UTP Cat.6, 4 пары, LSZH",
+      definitionVersion: 4,
+      applicability: {},
+      professionalMetadata: {},
+      parameterSchema: CAT6_TWISTED_PAIR_CABLE_PARAMETERS.map((parameter) => ({
+        parameterId: parameter.parameter_id,
+        ordinal: parameter.ordinal,
+        valueType: parameter.value_type as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["valueType"],
+        unitId: parameter.unit_id,
+        titleRu: parameter.title_ru,
+        required: parameter.required,
+        defaultValue: parameter.default_value,
+        constraints: parameter.constraints_json ?? {},
+        semanticParameterKey: String(
+          parameter.truth_metadata.semantic_parameter_key ?? parameter.parameter_id,
+        ),
+        visibilityRole: parameter.truth_metadata.visibility_role as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["visibilityRole"],
+        valueSourceRole: parameter.truth_metadata.value_source_role as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["valueSourceRole"],
+        preliminaryCompilationAllowed:
+          parameter.truth_metadata.preliminary_compilation_allowed === true,
+      })),
+    };
+
+    const plan = buildCanonicalBaselinePlan({
+      catalog,
+      prompt: "Прокладка 300 м кабеля U/UTP Cat.6 LSZH для 12 линий.",
+    });
+
+    expect(plan.primaryMeasureParameterId).toBe("length_m");
+    expect(plan.parameters).toEqual({
+      length_m: "300",
+      line_count: "12",
+      cable_type: "U_UTP_CAT6_4PAIR_LSZH",
+    });
+    expect(plan.parameters).not.toHaveProperty("cat6_installation_labor_h");
+    expect(plan.parameters).not.toHaveProperty("cable_expected_loss_ratio");
+  });
+});
+
+describe("consumer canonical optical-fiber splicing handoff", () => {
+  it("keeps the splice count and fiber standard without inventing consumables or labor", () => {
+    const catalog: CanonicalEstimateCatalogItem = {
+      catalogId: OPTICAL_FIBER_SPLICING_CATALOG_ID,
+      releaseId: "00000000-0000-5000-8000-000000000025",
+      namespace: "global",
+      domain: "telecom",
+      workKey: "fiber_optic_connection",
+      titleRu: "Сварка оптических волокон SM G.652D с измерением затухания",
+      definitionVersion: 4,
+      applicability: {},
+      professionalMetadata: {},
+      parameterSchema: OPTICAL_FIBER_SPLICING_PARAMETERS.map((parameter) => ({
+        parameterId: parameter.parameter_id,
+        ordinal: parameter.ordinal,
+        valueType: parameter.value_type as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["valueType"],
+        unitId: parameter.unit_id,
+        titleRu: parameter.title_ru,
+        required: parameter.required,
+        defaultValue: parameter.default_value,
+        constraints: parameter.constraints_json ?? {},
+        semanticParameterKey: String(
+          parameter.truth_metadata.semantic_parameter_key ?? parameter.parameter_id,
+        ),
+        visibilityRole: parameter.truth_metadata.visibility_role as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["visibilityRole"],
+        valueSourceRole: parameter.truth_metadata.value_source_role as
+          CanonicalEstimateCatalogItem["parameterSchema"][number]["valueSourceRole"],
+        preliminaryCompilationAllowed:
+          parameter.truth_metadata.preliminary_compilation_allowed === true,
+      })),
+    };
+
+    const plan = buildCanonicalBaselinePlan({
+      catalog,
+      prompt: "Сварка оптических волокон: количество 48 шт, волокно SM G.652D.",
+    });
+
+    expect(plan.primaryMeasureParameterId).toBe("splice_count");
+    expect(plan.parameters).toEqual({
+      splice_count: "48",
+      fiber_standard: "SM_G652D",
+    });
+    expect(plan.parameters).not.toHaveProperty("fiber_splicing_labor_h");
+    expect(plan.parameters).not.toHaveProperty("sleeve_expected_waste_piece");
+  });
+});
+
 describe("consumer canonical R6 asphalt admission handoff", () => {
   const asphaltCatalog = (): CanonicalEstimateCatalogItem => ({
     catalogId: "canonical-work:expanded:asphalt_concrete_pavement",
@@ -296,6 +1018,91 @@ describe("consumer canonical R6 asphalt admission handoff", () => {
     })),
   });
 
+  const bridgeAsphaltCatalog = (): CanonicalEstimateCatalogItem => {
+    const catalog = asphaltCatalog();
+    catalog.catalogId = "canonical-work:expanded:bridge_asphalt";
+    catalog.workKey = "bridge_asphalt";
+    catalog.parameterSchema = catalog.parameterSchema.map((parameter) => ({
+      ...parameter,
+      parameterId: parameter.parameterId === "length_m"
+        ? "bridge_length_m"
+        : parameter.parameterId === "width_m"
+          ? "bridge_width_m"
+          : parameter.parameterId,
+      valueSourceRole: ["length_m", "width_m"].includes(parameter.parameterId)
+        ? "USER_MEASURED"
+        : parameter.valueSourceRole,
+    }));
+    return catalog;
+  };
+
+  const asphaltLevelCatalog = (): CanonicalEstimateCatalogItem => ({
+    catalogId:
+      "canonical-work:base:paving_roads_landscape_interior_asphalt_level_small_area",
+    releaseId: "00000000-0000-5000-8000-000000000017",
+    namespace: "global",
+    domain: "roadworks",
+    workKey: "paving_roads_landscape_interior_asphalt_level_small_area",
+    titleRu: "Выравнивание асфальтового покрытия на малой площади",
+    definitionVersion: 12,
+    applicability: {},
+    professionalMetadata: {},
+    parameterSchema: [
+      {
+        parameterId: "area_m2",
+        ordinal: 0,
+        valueType: "decimal",
+        unitId: "m2",
+        titleRu: "Площадь выравниваемого участка",
+        required: true,
+        preliminaryCompilationAllowed: true,
+        defaultValue: null,
+        constraints: { min: 0.001 },
+        visibilityRole: "USER_INPUT",
+        valueSourceRole: "USER_MEASURED",
+      },
+      {
+        parameterId: "layer_thickness_mm",
+        ordinal: 1,
+        valueType: "decimal",
+        unitId: "mm",
+        titleRu: "Общая толщина выравнивающего слоя",
+        required: true,
+        preliminaryCompilationAllowed: true,
+        defaultValue: null,
+        constraints: { min: 30, max: 200, multipleOf: 5 },
+        visibilityRole: "USER_INPUT",
+        valueSourceRole: "USER_MEASURED",
+      },
+    ],
+  });
+
+  const asphaltCompactionCatalog = (): CanonicalEstimateCatalogItem => ({
+    catalogId:
+      "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_large_area",
+    releaseId: "00000000-0000-5000-8000-000000000020",
+    namespace: "global",
+    domain: "roadworks",
+    workKey: "paving_roads_landscape_interior_asphalt_compact_large_area",
+    titleRu: "Уплотнение уже уложенного асфальтового покрытия большой площади",
+    definitionVersion: 8,
+    applicability: {},
+    professionalMetadata: {},
+    parameterSchema: [{
+      parameterId: "area_m2",
+      ordinal: 0,
+      valueType: "decimal",
+      unitId: "m2",
+      titleRu: "Площадь уплотняемого покрытия",
+      required: true,
+      preliminaryCompilationAllowed: true,
+      defaultValue: null,
+      constraints: { min: 0.001 },
+      visibilityRole: "USER_INPUT",
+      valueSourceRole: "USER_MEASURED",
+    }],
+  });
+
   it("keeps the 15 km input while scope and width remain genuinely unresolved", () => {
     const plan = buildCanonicalBaselinePlan({
       catalog: asphaltCatalog(),
@@ -307,6 +1114,16 @@ describe("consumer canonical R6 asphalt admission handoff", () => {
     expect(plan.parameters).not.toHaveProperty("area_m2");
     expect(plan.parameters).not.toHaveProperty("width_m");
     expect(plan.parameters).not.toHaveProperty("project_scope");
+  });
+
+  it("routes only the measured area to the standalone 5000 m² compaction owner", () => {
+    const plan = buildCanonicalBaselinePlan({
+      catalog: asphaltCompactionCatalog(),
+      prompt: "Только уплотнение уже уложенного асфальта 5 000 м².",
+    });
+
+    expect(plan.primaryMeasureParameterId).toBe("area_m2");
+    expect(plan.parameters).toEqual({ area_m2: "5000" });
   });
 
   it("submits the saved scope and explicit geometry to the backend without hidden Wave A values", () => {
@@ -358,6 +1175,70 @@ describe("consumer canonical R6 asphalt admission handoff", () => {
     expect(Object.values(plan.parameters)).not.toContain(150);
   });
 
+  it("routes the ordinary 900 m2 by 50 mm paving request without inventing plan geometry", () => {
+    const plan = buildCanonicalBaselinePlan({
+      catalog: asphaltCatalog(),
+      prompt: "Устройство асфальтобетонного покрытия 900 м², верхний слой 50 мм.",
+    });
+
+    expect(plan.primaryMeasureParameterId).toBe("area_m2");
+    expect(plan.parameters).toMatchObject({
+      area_m2: 900,
+      wearing_layer_thickness_mm: 50,
+    });
+    expect(plan.parameters).not.toHaveProperty("length_m");
+    expect(plan.parameters).not.toHaveProperty("width_m");
+  });
+
+  it("routes the MASTER 900 m2 x 50 mm shorthand to the same explicit inputs", () => {
+    const plan = buildCanonicalBaselinePlan({
+      catalog: asphaltCatalog(),
+      prompt: "Устройство асфальтобетонного покрытия 900 м² × 50 мм.",
+    });
+
+    expect(plan.parameters).toMatchObject({
+      area_m2: 900,
+      wearing_layer_thickness_mm: 50,
+    });
+    expect(plan.parameters).not.toHaveProperty("length_m");
+    expect(plan.parameters).not.toHaveProperty("width_m");
+  });
+
+  it("keeps a non-default 70 mm upper layer from ordinary text", () => {
+    const plan = buildCanonicalBaselinePlan({
+      catalog: asphaltCatalog(),
+      prompt: "Устройство асфальтобетонного покрытия 900 м², верхний слой 70 мм.",
+    });
+
+    expect(plan.parameters).toMatchObject({
+      area_m2: 900,
+      wearing_layer_thickness_mm: 70,
+    });
+    expect(plan.parameters).not.toHaveProperty("asphalt_layer_2_thickness_mm");
+  });
+
+  it("keeps the 100 m2 leveling request free of an invented layer thickness", () => {
+    const plan = buildCanonicalBaselinePlan({
+      catalog: asphaltLevelCatalog(),
+      prompt: "Выравнивание асфальтового покрытия 100 м².",
+    });
+
+    expect(plan.primaryMeasureParameterId).toBe("area_m2");
+    expect(plan.parameters).toEqual({ area_m2: "100" });
+  });
+
+  it("submits the leveling thickness only when the user states it", () => {
+    const plan = buildCanonicalBaselinePlan({
+      catalog: asphaltLevelCatalog(),
+      prompt: "Выравнивание асфальтового покрытия 100 м² толщиной 100 мм.",
+    });
+
+    expect(plan.parameters).toEqual({
+      area_m2: "100",
+      layer_thickness_mm: "100",
+    });
+  });
+
   it("turns on only explicit road-infrastructure child packages", () => {
     const plan = buildCanonicalBaselinePlan({
       catalog: asphaltCatalog(),
@@ -379,9 +1260,7 @@ describe("consumer canonical R6 asphalt admission handoff", () => {
   });
 
   it("recognizes the exact bridge profile and derives 6,400 m² from 200 by 32 metres", () => {
-    const catalog = asphaltCatalog();
-    catalog.catalogId = "canonical-work:expanded:bridge_asphalt";
-    catalog.workKey = "bridge_asphalt";
+    const catalog = bridgeAsphaltCatalog();
 
     const plan = buildCanonicalBaselinePlan({
       catalog,
@@ -389,8 +1268,8 @@ describe("consumer canonical R6 asphalt admission handoff", () => {
     });
 
     expect(plan.parameters).toMatchObject({
-      length_m: 200,
-      width_m: 32,
+      bridge_length_m: 200,
+      bridge_width_m: 32,
       area_m2: "6400",
     });
     expect(plan.primaryMeasureParameterId).toBe("area_m2");
@@ -400,15 +1279,13 @@ describe("consumer canonical R6 asphalt admission handoff", () => {
     ["Асфальтобетонное покрытие моста 200 × 3,2 м", 3.2, "640"],
     ["Асфальтобетонное покрытие моста: длина 200 м, ширина 30 м", 30, "6000"],
   ])("keeps every typed width digit and derives area for %s", (prompt, width, area) => {
-    const catalog = asphaltCatalog();
-    catalog.catalogId = "canonical-work:expanded:bridge_asphalt";
-    catalog.workKey = "bridge_asphalt";
+    const catalog = bridgeAsphaltCatalog();
 
     const plan = buildCanonicalBaselinePlan({ catalog, prompt });
 
     expect(plan.parameters).toMatchObject({
-      length_m: 200,
-      width_m: width,
+      bridge_length_m: 200,
+      bridge_width_m: width,
       area_m2: area,
     });
   });

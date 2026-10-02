@@ -89,8 +89,12 @@ export function buildCanonicalConsumerRepairRevisionFixture(
   const scenario = scenarioForHistoryFixture(problemText);
   const currency = options.currency ?? "KGS";
   const rowSource = (rowId: string) => ({
+    rowCode: rowId,
+    rowSha256: "a".repeat(64),
     canonicalBackendRevisionId: revisionId,
     canonicalBackendReleaseId: CANONICAL_CONSUMER_TEST_RELEASE_ID,
+    canonicalBackendCatalogId: "canonical-work:test:consumer-history-fixture",
+    canonicalBackendOwnershipStatus: "OWNED",
     canonicalBackendRowId: rowId,
     compilerOwner: "backend",
     fixtureKind: "already_compiled_canonical_revision",
@@ -160,6 +164,7 @@ export function canonicalArtifactForConsumerRepairRevisionFixture(
   releaseId: string;
   status: "ready";
   sha256: string;
+  revisionChecksumSha256: string;
 } {
   const artifactId = String(bundle.pdfs[0]?.id ?? "").trim();
   const revisionId = String(bundle.items[0]?.sourceParameters?.canonicalBackendRevisionId ?? "").trim();
@@ -173,5 +178,6 @@ export function canonicalArtifactForConsumerRepairRevisionFixture(
     releaseId,
     status: "ready",
     sha256: "c".repeat(64),
+    revisionChecksumSha256: "d".repeat(64),
   };
 }

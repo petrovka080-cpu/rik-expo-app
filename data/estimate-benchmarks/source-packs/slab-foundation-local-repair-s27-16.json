@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "rik-expo-app.s27-17.slab-foundation-local-repair-source-pack.v2",
+  "authoredIndependentlyFromDefinitionRows": true,
+  "reviewedAt": "2026-09-30T00:00:00+06:00",
+  "scope": "Placement of a slab foundation on an accepted base together with a specifically selected local cementitious repair system. Reinforcement and formwork are outside this operation.",
+  "sources": [
+    {
+      "sourceId": "nrmca_cip31_ordering_ready_mixed_concrete",
+      "authority": "National Ready Mixed Concrete Association",
+      "url": "https://www.nrmca.org/wp-content/uploads/2021/01/31pr.pdf",
+      "exactLocator": "CIP 31 — Ordering Ready Mixed Concrete: order 4–10% over plan dimensions and communicate mixture properties and placement method.",
+      "ownedFacts": ["selected low-bound order allowance = 4%", "mixture designation remains a project/purchaser fact"]
+    },
+    {
+      "sourceId": "nrmca_cip11_curing_in_place_concrete",
+      "authority": "National Ready Mixed Concrete Association",
+      "url": "https://www.nrmca.org/wp-content/uploads/2021/01/11pr.pdf",
+      "exactLocator": "CIP 11 — Curing In-Place Concrete: water, plastic sheets and liquid membrane-forming compounds are distinct methods; plastic sheet complies with ASTM C171 and is at least 4 mil (0.10 mm); liquid compounds comply with ASTM C309/C1315 and follow the manufacturer application rate.",
+      "ownedFacts": ["three curing branches are not interchangeable", "plastic sheet minimum thickness = 0.10 mm"]
+    },
+    {
+      "sourceId": "sika_monotop_4012_pds_2026_03",
+      "authority": "Sika",
+      "url": "https://industry.sika.com/dam/dms/za01/b/sika-monotop-4012.pdf",
+      "exactLocator": "Product Data Sheet, March 2026: one-part fibre reinforced class R4 repair mortar; horizontal application 6–120 mm; consumption about 1.9 kg/m²/mm; 25 kg bag; 3.75–3.9 L water per bag; no bonding primer required for this selected system.",
+      "ownedFacts": ["repair mortar rate = 1.9 kg/m²/mm", "bag = 25 kg", "selected mixing water = upper PDS value 3.9 L per 25 kg of actually mixed dry mortar", "procurement rounding leaves a separately visible dry remainder", "repair depth applicability = 6–120 mm", "separate bonding primer is not required"]
+    },
+    {
+      "sourceId": "sika_antisol_a_pds",
+      "authority": "Sika",
+      "url": "https://mys.sika.com/dam/dms/my01/3/sika_antisol_a.pdf",
+      "exactLocator": "Product Data Sheet: ready-to-use water-dispersed acrylic curing compound, no dilution; coverage 5–6.5 m²/L; packages 5 L, 20 L and 200 L.",
+      "ownedFacts": ["selected conservative coverage = 5 m²/L", "selected procurement package = 20 L", "product is ready to use and is not diluted"]
+    }
+  ],
+  "selectedPreliminaryProfile": {
+    "concreteOrderAllowancePercent": 4,
+    "placementMethod": "DIRECT_CHUTE",
+    "concreteDeliveryDistanceKm": 15,
+    "curingMethod": "LIQUID_COMPOUND",
+    "liquidCuringProduct": "Sika Antisol A, готовый к применению, без разбавления",
+    "liquidCuringCoverageM2PerL": 5,
+    "liquidCuringPackageL": 20,
+    "sheetSpecification": "Плёнка полиэтиленовая для ухода по ASTM C171, толщина не менее 0,10 мм",
+    "sheetLayoutFactor": 1.1,
+    "repairProduct": "Sika MonoTop-4012, R4, фиброармированный цементный ремонтный раствор",
+    "repairMortarKgPerM2Mm": 1.9,
+    "repairBagKg": 25,
+    "repairMixingWaterLPerBag": 3.9,
+    "winterMode": false,
+    "constructionJointMode": "NONE",
+    "qualityDocumentCount": 1,
+    "assumptionPolicy": "Concrete mixture, slab thickness and repair geometry are object facts. Published manufacturer rates are normative profile values. The 15 km route and 10% sheet-layout factor are visible replaceable preliminary assumptions; neither is a hidden material coefficient. The default curing branch is the named ready-to-use liquid compound."
+  },
+  "independentRequiredComponents": [
+    {"semanticKey":"material.ready_mix","operationId":"slab-placement","category":"material","specification":"Ready-mixed concrete with purchaser-supplied mixture designation","condition":"always","sourceId":"nrmca_cip31_ordering_ready_mixed_concrete","unitId":"m3","quantityRule":"area × thickness × 1.04","priceRelation":"OWN_COST","formulaId":"slab_repair_concrete_order_s2716","resolution":{"kind":"ROW","rowId":"slab-repair:material:ready-mix"}},
+    {"semanticKey":"work.place_compact","operationId":"slab-placement","category":"labor","specification":"Placement and vibration scope measured by placed concrete volume","condition":"always","sourceId":"nrmca_cip31_ordering_ready_mixed_concrete","unitId":"m3","quantityRule":"geometric slab volume","priceRelation":"OWN_COST","formulaId":"slab_repair_concrete_volume_s2716","resolution":{"kind":"ROW","rowId":"slab-repair:work:place-compact"}},
+    {"semanticKey":"equipment.vibrator","operationId":"slab-placement","category":"equipment","specification":"Deep vibrator and operator included in placement owner without invented hours","condition":"always","sourceId":"nrmca_cip31_ordering_ready_mixed_concrete","unitId":"m3","quantityRule":"geometric slab volume","priceRelation":"INCLUDED_IN_PARENT","formulaId":"slab_repair_concrete_volume_s2716","resolution":{"kind":"INCLUDED_COMPONENT_ROW","rowId":"slab-repair:included:deep-vibrator","parentRowId":"slab-repair:work:place-compact"}},
+    {"semanticKey":"material.repair_mortar","operationId":"local-base-repair","category":"material","specification":"Sika MonoTop-4012 R4 in 25 kg bags","condition":"local repair selected","sourceId":"sika_monotop_4012_pds_2026_03","unitId":"item","quantityRule":"ceil(area × depth × 1.9 / 25)","priceRelation":"OWN_COST","formulaId":"slab_repair_mortar_bags_s2716","resolution":{"kind":"ROW","rowId":"slab-repair:material:repair-mortar-bags"}},
+    {"semanticKey":"material.repair_water","operationId":"local-base-repair","category":"material","specification":"Clean mixing water at selected upper PDS rate 3.9 L per 25 kg of actually mixed dry mortar; unopened dry procurement remainder is not mixed","condition":"local repair selected","sourceId":"sika_monotop_4012_pds_2026_03","unitId":"l","quantityRule":"net mortar kg ÷ 25 × 3.9","priceRelation":"OWN_COST","formulaId":"slab_repair_mixing_water_s2716","resolution":{"kind":"ROW","rowId":"slab-repair:material:mixing-water"}},
+    {"semanticKey":"control.repair_dry_remainder","operationId":"local-base-repair","category":"material","specification":"Purchased dry repair mortar remaining after the calculated net mass is consumed; not mixed and not purchased a second time","condition":"local repair selected","sourceId":"sika_monotop_4012_pds_2026_03","unitId":"kg","quantityRule":"whole purchased bags × 25 kg − net mortar kg","priceRelation":"INFORMATIONAL_SCOPE","formulaId":"slab_repair_mortar_dry_remainder_s2716","resolution":{"kind":"ROW","rowId":"slab-repair:control:repair-mortar-dry-remainder"}},
+    {"semanticKey":"work.repair_removal","operationId":"local-base-repair","category":"labor","specification":"Removal of unsound material to repair depth","condition":"local repair selected","sourceId":"sika_monotop_4012_pds_2026_03","unitId":"m3","quantityRule":"repair area × depth","priceRelation":"OWN_COST","formulaId":"slab_repair_removed_volume_s2716","resolution":{"kind":"ROW","rowId":"slab-repair:work:remove-unsound-base"}},
+    {"semanticKey":"work.repair_preparation","operationId":"local-base-repair","category":"labor","specification":"Mechanical preparation and SSD substrate preparation","condition":"local repair selected","sourceId":"sika_monotop_4012_pds_2026_03","unitId":"m2","quantityRule":"repair area","priceRelation":"OWN_COST","formulaId":"slab_repair_local_area_s2716","resolution":{"kind":"ROW","rowId":"slab-repair:work:prepare-substrate"}},
+    {"semanticKey":"work.repair_place","operationId":"local-base-repair","category":"labor","specification":"Mixing, placing and finishing selected repair mortar","condition":"local repair selected","sourceId":"sika_monotop_4012_pds_2026_03","unitId":"m2","quantityRule":"repair area","priceRelation":"OWN_COST","formulaId":"slab_repair_local_area_s2716","resolution":{"kind":"ROW","rowId":"slab-repair:work:place-repair-mortar"}},
+    {"semanticKey":"waste.repair","operationId":"local-base-repair","category":"waste","specification":"Collection and removal of broken-out base material","condition":"local repair selected","sourceId":"sika_monotop_4012_pds_2026_03","unitId":"m3","quantityRule":"removed repair volume; bulking and disposal route refined by contractor","priceRelation":"OWN_COST","formulaId":"slab_repair_removed_volume_s2716","resolution":{"kind":"ROW","rowId":"slab-repair:waste:removed-base"}},
+    {"semanticKey":"curing.liquid_product","operationId":"curing","category":"material","specification":"Sika Antisol A ready-to-use liquid curing compound, 20 L package","condition":"LIQUID_COMPOUND","sourceId":"sika_antisol_a_pds","unitId":"item","quantityRule":"ceil(area / 5 / 20)","priceRelation":"OWN_COST","formulaId":"slab_repair_liquid_curing_packages_s2716","resolution":{"kind":"ROW","rowId":"slab-repair:material:liquid-curing-packages"}},
+    {"semanticKey":"curing.sheet","operationId":"curing","category":"material","specification":"ASTM C171 polyethylene curing sheet at least 0.10 mm","condition":"SHEET","sourceId":"nrmca_cip11_curing_in_place_concrete","unitId":"m2","quantityRule":"area × visible layout factor","priceRelation":"OWN_COST","formulaId":"slab_repair_curing_sheet_s2716","resolution":{"kind":"ROW","rowId":"slab-repair:material:curing-sheet"}},
+    {"semanticKey":"curing.water","operationId":"curing","category":"material","specification":"Curing water; site plan rate required because CIP 11 does not publish a universal L/m² rate","condition":"WATER","sourceId":"nrmca_cip11_curing_in_place_concrete","unitId":"l","quantityRule":"area × project curing-water rate","priceRelation":"OWN_COST","formulaId":"slab_repair_curing_water_s2716","resolution":{"kind":"ROW","rowId":"slab-repair:material:curing-water"}},
+    {"semanticKey":"work.finish","operationId":"surface-finishing","category":"labor","specification":"Finish exposed slab surface","condition":"always","sourceId":"nrmca_cip11_curing_in_place_concrete","unitId":"m2","quantityRule":"slab area","priceRelation":"OWN_COST","formulaId":"slab_repair_area_s2716","resolution":{"kind":"ROW","rowId":"slab-repair:work:finish-surface"}},
+    {"semanticKey":"work.cure","operationId":"curing","category":"labor","specification":"Apply and maintain selected curing system","condition":"always","sourceId":"nrmca_cip11_curing_in_place_concrete","unitId":"m2","quantityRule":"slab area","priceRelation":"OWN_COST","formulaId":"slab_repair_area_s2716","resolution":{"kind":"ROW","rowId":"slab-repair:work:cure"}},
+    {"semanticKey":"delivery.concrete","operationId":"delivery","category":"transport","specification":"Ready-mixed concrete delivery by route distance","condition":"separate delivery","sourceId":"nrmca_cip31_ordering_ready_mixed_concrete","unitId":"m3_km","quantityRule":"ordered concrete × route distance","priceRelation":"OWN_COST","formulaId":"slab_repair_concrete_delivery_s2716","resolution":{"kind":"ROW","rowId":"slab-repair:delivery:ready-mix"}},
+    {"semanticKey":"document.quality","operationId":"quality","category":"document","specification":"Concrete delivery tickets, material passports and placement/curing record","condition":"always","sourceId":"nrmca_cip31_ordering_ready_mixed_concrete","unitId":"document","quantityRule":"one record set","priceRelation":"CONTROL_OR_DOCUMENT","formulaId":"slab_repair_quality_documents_s2716","resolution":{"kind":"ROW","rowId":"slab-repair:document:quality-set"}}
+  ],
+  "explicitExclusions": [
+    "whole-slab reinforcement",
+    "whole-slab formwork",
+    "foundation excavation and subbase replacement outside measured repair patches",
+    "winter heating when winter mode is false",
+    "pump or crane when direct chute is selected",
+    "waterstop when construction-joint mode is NONE",
+    "separate bonding primer for the selected MonoTop-4012 system"
+  ]
+}

@@ -7,7 +7,11 @@ const child = require("node:child_process");
 const crypto = require("node:crypto");
 const { chromium } = require("playwright");
 const { createClient } = require("@supabase/supabase-js");
-const dotenv = require("dotenv");
+const { computeReleaseFingerprints } = require("../release/computeReleaseFingerprints");
+const {
+  loadOfficeMarketLiveEnv,
+  verifyExternalOfficeRuntimeReceipts,
+} = require("./officeMarketLiveHarnessContracts");
 const { MARKET_ADD_MEDIA_LIMITS } = require("../../src/lib/media/mediaLimits");
 const {
   buildRequestContextLines,
@@ -21,8 +25,8 @@ const runStartedAt = new Date().toISOString();
 const runId = runStartedAt.replace(/[:.]/g, "-");
 const artifactDir = path.join(projectRoot, ".release-runtime", "office-ai-market-live-e2e", runId);
 fs.mkdirSync(artifactDir, { recursive: true });
-dotenv.config({ path: path.join(projectRoot, ".env.staging.local"), override: false });
-dotenv.config({ path: path.join(projectRoot, ".env.office-e2e.local"), override: false });
+const fixtureEnv = loadOfficeMarketLiveEnv(projectRoot);
+const fixtureConfigRoot = fixtureEnv.configRoot;
 
 const baseUrl = String(process.env.RIK_WEB_BASE_URL || "http://127.0.0.1:8091").replace(/\/$/, "");
 const supabaseUrl = String(process.env.STAGING_SUPABASE_URL || process.env.EXPO_PUBLIC_SUPABASE_URL || "").trim();
@@ -32,6 +36,7 @@ const expectedCompanyId = String(process.env.OFFICE_E2E_COMPANY_ID || "").trim()
 const targetEnvironment = String(process.env.OFFICE_E2E_TARGET_ENV || process.env.APP_ENV || "staging").trim().toLowerCase();
 const summaryPath = path.join(artifactDir, "summary.json");
 const progressPath = path.join(artifactDir, "progress.log");
+const sourceFingerprints = computeReleaseFingerprints();
 
 const requiredRoles = [
   { key: "FOREMAN", expected: "foreman", route: "/office/foreman" },
@@ -48,6 +53,14 @@ const result = {
   base_url: baseUrl,
   branch: null,
   source_sha: null,
+  source_tree_hash: sourceFingerprints.sourceTreeHash,
+  product_source_hash: sourceFingerprints.productSourceHash,
+  js_bundle_fingerprint: sourceFingerprints.jsBundleFingerprint,
+  fixture_config_root_is_project_root: fixtureConfigRoot === projectRoot,
+  fixture_env_files_loaded: fixtureEnv.loadedFiles.length,
+  external_runtime_receipts_verified: false,
+  external_runtime_receipts: null,
+  external_runtime_ports_verified: false,
   target_environment: targetEnvironment,
   run_started_at: runStartedAt,
   backend_reachable: false,
@@ -174,6 +187,7 @@ const result = {
   },
   dialogs: [],
   console_errors: [],
+  console_error_details: [],
   console_warnings: [],
   console_actionable_warnings: [],
   console_known_framework_warnings: [],
@@ -313,6 +327,11 @@ async function ensureWebAppReachable() {
         ...process.env,
         RIK_WEB_BASE_URL: baseUrl,
         BROWSER: "none",
+        // The live runner accepts server-side STAGING_* names, while Expo only
+        // embeds explicitly public names into the Web bundle. Keep both sides
+        // pinned to the same guarded staging project.
+        EXPO_PUBLIC_SUPABASE_URL: supabaseUrl,
+        EXPO_PUBLIC_SUPABASE_ANON_KEY: supabaseAnonKey,
       },
       detached: process.platform !== "win32",
       windowsHide: true,
@@ -323,6 +342,33 @@ async function ensureWebAppReachable() {
 
   await poll("web app reachable", async () => (await fetchReachable(baseUrl)) ? true : null, 120_000, 1_000);
   result.backend_reachable = true;
+}
+
+async function verifyExternalRuntime(): Promise<void> {
+  if (String(process.env.LIVE_E2E_START_WEB || "1") !== "0") return;
+  const sourceSha = child.execSync("git rev-parse HEAD", { cwd: projectRoot, encoding: "utf8" }).trim();
+  const proof = verifyExternalOfficeRuntimeReceipts({
+    projectRoot,
+    baseUrl,
+    sourceSha,
+    fingerprints: sourceFingerprints,
+  });
+  const backendResponse = await fetch(`http://127.0.0.1:${proof.backendPort}/`, {
+    method: "OPTIONS",
+    signal: AbortSignal.timeout(15_000),
+  }).catch(() => null);
+  if (backendResponse?.status !== 204) throw new Error("STOP_EXTERNAL_RUNTIME_BACKEND_PORT_UNREACHABLE");
+  result.external_runtime_receipts_verified = true;
+  result.external_runtime_ports_verified = true;
+  result.external_runtime_receipts = {
+    metro: path.relative(projectRoot, proof.metroReceiptPath).replace(/\\/gu, "/"),
+    backend: path.relative(projectRoot, proof.backendReceiptPath).replace(/\\/gu, "/"),
+    web_port: proof.webPort,
+    backend_port: proof.backendPort,
+    definition_release_id: proof.definitionReleaseId,
+    search_release_id: proof.searchReleaseId,
+    capability_verified: proof.capabilityVerified,
+  };
 }
 
 async function ensureAuthReachable() {
@@ -843,7 +889,19 @@ async function setupPage(page) {
   });
   page.on("console", (message) => {
     const text = redact(message.text());
-    if (message.type() === "error") result.console_errors.push(text);
+    if (message.type() === "error") {
+      result.console_errors.push(text);
+      const location = message.location();
+      result.console_error_details.push({
+        step: result.error_step,
+        text,
+        location: {
+          url: redact(location.url || ""),
+          line_number: Number.isInteger(location.lineNumber) ? location.lineNumber : null,
+          column_number: Number.isInteger(location.columnNumber) ? location.columnNumber : null,
+        },
+      });
+    }
     if (message.type() === "warning") {
       result.console_warnings.push(text);
       const warning = classifyConsoleWarning(text);
@@ -891,7 +949,28 @@ async function newRolePage(browser, roleKey) {
   await setupPage(page);
   const credentials = roleCred(roleKey);
   await page.goto(`${baseUrl}/auth/login`, { waitUntil: "domcontentloaded", timeout: 60_000 });
-  await byTestId(page, "auth.login.email").waitFor({ state: "visible", timeout: 60_000 });
+  await byTestId(page, "auth.login.email").waitFor({ state: "visible", timeout: 60_000 }).catch(async (error) => {
+    const role = roleKey.toLowerCase();
+    const screenshotPath = path.join(artifactDir, `browser-login-${role}-failure.png`);
+    const diagnosticPath = path.join(artifactDir, `browser-login-${role}-failure.json`);
+    const diagnostic = {
+      role,
+      url: redact(page.url()),
+      title: clean(await page.title().catch(() => "")),
+      bodyText: clean(await page.locator("body").innerText({ timeout: 5_000 }).catch(() => "")).slice(0, 4_000),
+      loginScreenCount: await byTestId(page, "auth.login.screen").count().catch(() => 0),
+      loginEmailCount: await byTestId(page, "auth.login.email").count().catch(() => 0),
+      capturedAtUtc: new Date().toISOString(),
+    };
+    await page.screenshot({ path: screenshotPath, fullPage: true }).catch(() => undefined);
+    fs.writeFileSync(diagnosticPath, `${JSON.stringify(diagnostic, null, 2)}\n`, "utf8");
+    result.browser_login_diagnostic = {
+      ...diagnostic,
+      screenshot: path.relative(projectRoot, screenshotPath).replace(/\\/gu, "/"),
+      artifact: path.relative(projectRoot, diagnosticPath).replace(/\\/gu, "/"),
+    };
+    throw error;
+  });
   await byTestId(page, "auth.login.email").fill(credentials.email);
   await byTestId(page, "auth.login.password").fill(credentials.password);
   await byTestId(page, "auth.login.submit").click();
@@ -999,33 +1078,103 @@ async function createForemanEstimate(page, marker, mode) {
     mode === "manual" ? `ламинат укладка 28 м2 ${marker}` : `укладка ковролина 45 м2 ${marker}`,
   );
   const suggestion = byTestId(page, "foreman-ai-estimate-work-suggestion-1");
-  if (await suggestion.isVisible({ timeout: 8_000 }).catch(() => false)) {
-    await suggestion.click();
-  }
+  await suggestion.waitFor({ state: "visible", timeout: 60_000 });
+  result.office[`foreman_${mode}_selected_suggestion`] = clean(await suggestion.innerText());
+  await suggestion.click();
+  await byTestId(page, "canonical-estimate-parameter-form").waitFor({ state: "visible", timeout: 60_000 });
+  await byTestId(page, "canonical-estimate-refine-parameters").click();
+  const primaryParameter = byTestId(page, "canonical-estimate-parameter-0");
+  await primaryParameter.waitFor({ state: "visible", timeout: 30_000 });
+  const expectedPromptQuantity = mode === "manual" ? "28" : "45";
+  await poll("prompt quantity seeded into primary estimate parameter", async () =>
+    (await primaryParameter.inputValue().catch(() => "")).replace(",", ".") === expectedPromptQuantity
+      ? true
+      : null,
+  30_000);
+  result.office[`foreman_${mode}_primary_parameter_from_prompt`] = expectedPromptQuantity;
+  await byTestId(page, "canonical-estimate-refine-parameters").click();
+  result.office[`foreman_${mode}_parameter_progress_before_compile`] = clean(
+    await byTestId(page, "canonical-estimate-required-parameter-progress").innerText(),
+  );
   await byTestId(page, "foreman-ai-estimate-generate").click();
-  await byTestId(page, "foreman-ai-estimate-row").first().waitFor({ state: "visible", timeout: 45_000 });
+  await byTestId(page, "foreman-ai-estimate-row").first().waitFor({ state: "visible", timeout: 120_000 }).catch(async (error) => {
+    await page.screenshot({ path: path.join(artifactDir, `foreman-after-generate-${mode}.png`), fullPage: true }).catch(() => undefined);
+    fs.writeFileSync(
+      path.join(artifactDir, `foreman-after-generate-${mode}.html`),
+      await page.content().catch(() => ""),
+      "utf8",
+    );
+    result.office[`foreman_${mode}_after_generate_url`] = page.url();
+    result.office[`foreman_${mode}_after_generate_body_excerpt`] = clean(await page.locator("body").textContent().catch(() => "")).slice(0, 2400);
+    throw error;
+  });
   mark("foreman_estimate_rows_visible", { mode });
 
   await byTestId(page, "foreman-ai-estimate-row-name").first().fill(marker);
   await byTestId(page, "foreman-ai-estimate-row-qty").first().fill(mode === "manual" ? "7" : "12");
   await byTestId(page, "foreman-ai-estimate-row-price").first().fill(mode === "manual" ? "900" : "700");
+  await byTestId(page, "canonical-row-apply").first().click();
   await poll("edited estimate row total", async () => {
     const text = await byTestId(page, "foreman-ai-estimate-row").first().innerText();
     return mode === "manual" ? (/6\s*300\s*KGS/.test(text) ? true : null) : (/8\s*400\s*KGS/.test(text) ? true : null);
-  }, 20_000);
+  }, 120_000).catch(async (error) => {
+    result.office[`foreman_${mode}_first_row_after_apply`] = clean(
+      await byTestId(page, "foreman-ai-estimate-row").first().innerText().catch(() => ""),
+    );
+    throw error;
+  });
 
   if (mode === "manual") {
     result.office.manual_estimate_row_name_qty_price_edited = true;
-    const remove = page.getByText("Убрать").first();
-    if (await remove.isVisible({ timeout: 5_000 }).catch(() => false)) {
-      await remove.click();
-      const restore = page.getByText("Вернуть").first();
-      await restore.waitFor({ state: "visible", timeout: 10_000 });
-      await restore.click();
-      result.office.manual_estimate_remove_restore_exercised = true;
-    }
-    await byTestId(page, "foreman-ai-estimate-catalog-search").fill("пена");
+    const inclusionToggle = byTestId(page, "canonical-row-toggle-estimate").first();
+    await poll("estimate row inclusion toggle enabled", async () =>
+      (await inclusionToggle.getAttribute("aria-disabled").catch(() => null)) !== "true"
+        ? true
+        : null,
+    30_000);
+    const excludedRevision = page.waitForResponse(
+      (response) => response.request().method() === "POST"
+        && new URL(response.url()).pathname.endsWith("/jobs/recalculate"),
+      { timeout: 60_000 },
+    );
+    await inclusionToggle.click();
+    const excludedResponse = await excludedRevision;
+    if (!excludedResponse.ok()) throw new Error(`estimate row exclusion recalculate failed: ${excludedResponse.status()}`);
+    await poll("estimate row excluded", async () =>
+      (await inclusionToggle.innerText().catch(() => "")).includes("Вернуть") ? true : null,
+    60_000).catch(async (error) => {
+      result.office.foreman_manual_toggle_after_exclude = clean(
+        await inclusionToggle.innerText().catch(() => ""),
+      );
+      result.office.foreman_manual_first_row_after_exclude = clean(
+        await byTestId(page, "foreman-ai-estimate-row").first().innerText().catch(() => ""),
+      );
+      throw error;
+    });
+    await poll("estimate row restore toggle enabled", async () =>
+      (await inclusionToggle.getAttribute("aria-disabled").catch(() => null)) !== "true"
+        ? true
+        : null,
+    30_000);
+    const restoredRevision = page.waitForResponse(
+      (response) => response.request().method() === "POST"
+        && new URL(response.url()).pathname.endsWith("/jobs/recalculate"),
+      { timeout: 60_000 },
+    );
+    await inclusionToggle.click();
+    const restoredResponse = await restoredRevision;
+    if (!restoredResponse.ok()) throw new Error(`estimate row restore recalculate failed: ${restoredResponse.status()}`);
+    await poll("estimate row restored", async () =>
+      (await inclusionToggle.innerText().catch(() => "")).includes("Убрать") ? true : null,
+    60_000);
+    await poll("estimate row restore recalculation settled", async () =>
+      (await inclusionToggle.getAttribute("aria-disabled").catch(() => null)) !== "true"
+        ? true
+        : null,
+    30_000);
+    result.office.manual_estimate_remove_restore_exercised = true;
     await byTestId(page, "foreman-ai-estimate-catalog-search").fill("MAT-BOLT");
+    await byTestId(page, "foreman-ai-estimate-catalog-search-submit").click();
     const addCatalog = byTestId(page, "foreman-ai-estimate-catalog-add").first();
     await addCatalog.waitFor({ state: "visible", timeout: 30_000 });
     const beforeRowSummary = clean(await byTestId(page, "foreman-ai-estimate-row-count").innerText());
@@ -1033,7 +1182,14 @@ async function createForemanEstimate(page, marker, mode) {
     if (!Number.isInteger(beforeRows) || beforeRows < 1) {
       throw new Error(`manual estimate row count is invalid before catalog add: ${beforeRowSummary}`);
     }
-    await activate(addCatalog);
+    const catalogRevision = page.waitForResponse(
+      (response) => response.request().method() === "POST"
+        && new URL(response.url()).pathname.endsWith("/jobs/recalculate"),
+      { timeout: 60_000 },
+    );
+    await addCatalog.click();
+    const catalogResponse = await catalogRevision;
+    if (!catalogResponse.ok()) throw new Error(`manual catalog add recalculate failed: ${catalogResponse.status()}`);
     await poll("catalog item added to manual estimate", async () => {
       const summary = clean(await byTestId(page, "foreman-ai-estimate-row-count").innerText());
       return Number(summary.match(/(\d+)\s*$/)?.[1] || "0") === beforeRows + 1 ? true : null;
@@ -1041,12 +1197,28 @@ async function createForemanEstimate(page, marker, mode) {
     result.office.manual_estimate_catalog_add_exercised = true;
   }
 
-  await byTestId(page, "foreman-ai-estimate-add-draft").click();
-  await poll("composer closed", async () => (await byTestId(page, "professional-estimate-composer").count()) === 0 ? true : null, 20_000);
+  const addDraft = byTestId(page, "foreman-ai-estimate-add-draft");
+  await poll("add estimate to draft enabled", async () =>
+    (await addDraft.getAttribute("aria-disabled").catch(() => null)) !== "true" ? true : null,
+  30_000);
+  await addDraft.click();
+  await poll("composer closed", async () => (await byTestId(page, "professional-estimate-composer").count()) === 0 ? true : null, 20_000).catch(async (error) => {
+    result.office[`foreman_${mode}_add_draft_button_aria_disabled`] = await addDraft.getAttribute("aria-disabled").catch(() => null);
+    result.office[`foreman_${mode}_after_add_draft_body_excerpt`] = clean(
+      await page.locator("body").textContent().catch(() => ""),
+    ).slice(-3200);
+    throw error;
+  });
   await byTestId(page, "foreman-draft-open").waitFor({ state: "visible", timeout: 45_000 });
+  result.office[`foreman_${mode}_draft_summary_after_add`] = clean(await byTestId(page, "foreman-draft-open").innerText());
   await byTestId(page, "foreman-draft-open").click();
   await byTestId(page, "foreman-draft-send").waitFor({ state: "visible", timeout: 45_000 });
-  await poll("draft includes marker", async () => ((await page.locator("body").textContent()) || "").includes(marker) ? true : null, 20_000);
+  await poll("draft includes marker", async () => ((await page.locator("body").textContent()) || "").includes(marker) ? true : null, 20_000).catch(async (error) => {
+    result.office[`foreman_${mode}_draft_body_without_marker`] = clean(
+      await page.locator("body").textContent().catch(() => ""),
+    ).slice(-6000);
+    throw error;
+  });
   await byTestId(page, "foreman-draft-send").click();
   await sleep(3_000);
   mark("foreman_estimate_sent", { mode });
@@ -1915,6 +2087,7 @@ function applyFlatSummaryFields() {
   }
   await ensureAuthReachable();
   await ensureWebAppReachable();
+  await verifyExternalRuntime();
 
   result.source_sha = child.execSync("git rev-parse HEAD", { cwd: projectRoot, encoding: "utf8" }).trim();
   result.branch = child.execSync("git branch --show-current", { cwd: projectRoot, encoding: "utf8" }).trim();

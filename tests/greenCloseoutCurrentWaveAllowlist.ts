@@ -5,6 +5,35 @@ import { join } from "path";
 
 const normalizePath = (file: string) => file.replace(/\\/g, "/").replace(/^\.\//, "");
 
+const PLATFORM_DEVELOPER_ESTIMATOR_ACCESS_MIGRATION =
+  "supabase/migrations/20260928120000_platform_developer_estimator_full_access.sql";
+const PLATFORM_DEVELOPER_ESTIMATOR_ACCESS_MIGRATION_SHA256 =
+  "911daa9bd66c9d3f170ae9d56939d3f9205490db099a64f19baa8f321b7c8757";
+const CONSUMER_ESTIMATE_MARKETPLACE_FULL_HANDOFF_MIGRATION =
+  "supabase/migrations/20260929190000_consumer_estimate_marketplace_full_estimate_handoff.sql";
+const CONSUMER_ESTIMATE_MARKETPLACE_FULL_HANDOFF_MIGRATION_SHA256 =
+  "fa73cf1cc1ce140798c83d7615e829babebfd82314925205ca34a18d0b0e4dac";
+
+export function isApprovedPlatformDeveloperEstimatorAccessMigration(
+  file: string,
+  repoRoot: string,
+): boolean {
+  if (normalizePath(file) !== PLATFORM_DEVELOPER_ESTIMATOR_ACCESS_MIGRATION) return false;
+  const bytes = readFileSync(join(repoRoot, PLATFORM_DEVELOPER_ESTIMATOR_ACCESS_MIGRATION));
+  return createHash("sha256").update(bytes).digest("hex") ===
+    PLATFORM_DEVELOPER_ESTIMATOR_ACCESS_MIGRATION_SHA256;
+}
+
+export function isApprovedConsumerEstimateMarketplaceFullHandoffMigration(
+  file: string,
+  repoRoot: string,
+): boolean {
+  if (normalizePath(file) !== CONSUMER_ESTIMATE_MARKETPLACE_FULL_HANDOFF_MIGRATION) return false;
+  const bytes = readFileSync(join(repoRoot, CONSUMER_ESTIMATE_MARKETPLACE_FULL_HANDOFF_MIGRATION));
+  return createHash("sha256").update(bytes).digest("hex") ===
+    CONSUMER_ESTIMATE_MARKETPLACE_FULL_HANDOFF_MIGRATION_SHA256;
+}
+
 export function isExactEstimateRevisionStorageDependencyPatch(
   changedFiles: readonly string[],
   repoRoot: string,
@@ -58,6 +87,40 @@ export function withoutExactEstimateRevisionStorageDependencyFiles(
   );
 }
 
+function isExactWholeAppDeveloperReviewAndOfficeMarketScriptPatch(repoRoot: string): boolean {
+  const baseline = JSON.parse(
+    execFileSync("git", ["show", "HEAD:package.json"], {
+      cwd: repoRoot,
+      encoding: "utf8",
+    }),
+  ) as { scripts?: Record<string, string>; [key: string]: unknown };
+  const current = JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8")) as typeof baseline;
+  const withoutReviewScripts = (manifest: typeof baseline) => {
+    const scripts = { ...(manifest.scripts ?? {}) };
+    delete scripts["dev:local-review"];
+    delete scripts["dev:estimate-proof-review"];
+    delete scripts["e2e:office-market-live-native-android"];
+    delete scripts["e2e:office-market-live-native-actions"];
+    return { ...manifest, scripts };
+  };
+  return (
+    baseline.scripts?.["dev:local-review"] ===
+      "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/dev/startLocalDeveloperReview.ps1" &&
+    baseline.scripts?.["dev:estimate-proof-review"] == null &&
+    baseline.scripts?.["e2e:office-market-live-native-android"] == null &&
+    baseline.scripts?.["e2e:office-market-live-native-actions"] == null &&
+    current.scripts?.["dev:local-review"] ===
+      "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/dev/startWholeAppDeveloperReview.ps1" &&
+    current.scripts?.["dev:estimate-proof-review"] ===
+      "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/dev/startLocalDeveloperReview.ps1" &&
+    current.scripts?.["e2e:office-market-live-native-android"] ===
+      "tsx scripts/e2e/runOfficeMarketLiveNativeAndroidE2E.ts" &&
+    current.scripts?.["e2e:office-market-live-native-actions"] ===
+      "tsx scripts/e2e/runOfficeMarketLiveNativeActions.ts" &&
+    JSON.stringify(withoutReviewScripts(current)) === JSON.stringify(withoutReviewScripts(baseline))
+  );
+}
+
 const CURRENT_PLATFORM_INTEGRATION_GREEN_PATCH_FILES = new Set<string>([
   "app/auth/login.tsx",
   "app/auth/register.tsx",
@@ -92,6 +155,7 @@ const CURRENT_PLATFORM_INTEGRATION_GREEN_PATCH_FILES = new Set<string>([
   "src/lib/ai/aiRepository.ts",
   "src/lib/ai/geminiGateway.ts",
   "src/lib/ai/photoMaterialDraftRecognition.ts",
+  "src/lib/aiEstimatePdf/buildAiEstimatePdfViewModel.ts",
   "src/lib/api/buyer.ts",
   "src/lib/api/director_reports.adapters.ts",
   "src/lib/api/directorReportsScope.service.ts",
@@ -101,6 +165,7 @@ const CURRENT_PLATFORM_INTEGRATION_GREEN_PATCH_FILES = new Set<string>([
   "src/lib/developerOverride.test.ts",
   "src/lib/developerOverride.ts",
   "src/lib/foremanAiEstimate/foremanAiEstimateContracts.ts",
+  "src/lib/estimateStructuredPipeline/structuredEstimatePdfBinding.ts",
   "src/lib/media/services/mediaBackendUploadService.ts",
   "src/lib/mobilePhotoCapture/mobilePhotoUploadService.ts",
   "src/lib/officeRuntime/officeRuntimePolicy.ts",
@@ -155,11 +220,18 @@ const CURRENT_PLATFORM_INTEGRATION_GREEN_PATCH_FILES = new Set<string>([
   "tests/api/topListPaginationBatch6.contract.test.ts",
   "tests/app/office-warehouse-route-scope.test.tsx",
   "tests/estimateStructuredPipeline/structuredPipelineTestHelpers.ts",
+  "tests/estimateAcceptance/blackboxPdfSnapshotParity.contract.test.ts",
+  "tests/estimateReality/snapshotPdfParity10000.contract.test.ts",
+  "tests/estimateReality/p0PdfRowsMatchSnapshot.contract.test.ts",
   "tests/foreman/ForemanSubcontractController.test.tsx",
   "tests/foremanAiEstimateChain/legacyPickerRemovedFromForeman.contract.test.ts",
   "tests/i18n/officeRussianDisplay.contract.test.ts",
   "tests/office/useOfficeHubRoleAccess.test.tsx",
+  "tests/officeEstimate/expandedComplexPdfAndBuyerHandoff.contract.test.ts",
+  "tests/officeEstimate/capitalRenovation98GroupedPdf.contract.test.ts",
   "tests/officeAuth/roleGuards.contract.test.ts",
+  "tests/routes/pdf-viewer.lifecycle.test.tsx",
+  "tests/pdf/pdfDocumentViewerEntry.test.ts",
   "tests/request/approveCurrentUserHistoryOnly.contract.test.ts",
   "tests/request/approvedRequestHiddenFromOtherUsers.contract.test.ts",
   "tests/core/idempotencyMarketplacePublish.contract.test.ts",
@@ -210,6 +282,9 @@ const CURRENT_PLATFORM_INTEGRATION_GREEN_PATCH_FILES = new Set<string>([
   "supabase/migrations/20260908101500_r4a13_preliminary_only_revision_writer.sql",
   "supabase/migrations/20260908104500_r4a13_preliminary_primary_measure_revision_identity.sql",
   "tests/architecture/entrypointFixDoesNotReplacePdfRenderer.contract.test.ts",
+  "tests/architecture/pdfArchAuditNoMarkdownAsTruth.contract.test.ts",
+  "tests/architecture/pdfIntegrationNoMarkdownAsTruth.contract.test.ts",
+  "tests/architecture/pdfIntegrationNoMassMigration.contract.test.ts",
   "tests/architecture/pdfArchAuditNoScreenLocalPdfLayout.contract.test.ts",
   "tests/architecture/pdfTabularRegressionNoScreenLocalRows.contract.test.ts",
   "tests/architecture/requestEstimateDoesNotBreakLegacyPdf.contract.test.ts",
@@ -217,6 +292,17 @@ const CURRENT_PLATFORM_INTEGRATION_GREEN_PATCH_FILES = new Set<string>([
   "tests/estimateRuntime/offlineStorageDoesNotBlockEstimate.test.ts",
   "tests/officeEstimate/productionGradePdfBuyerHandoff.test.ts",
   "tests/officeEstimate/professionalBoqPdfBuyerHandoff.test.ts",
+  "tests/officeEstimate/durableLedgerPdfBuyer.contract.test.ts",
+  "tests/officeEstimate/directorPdfPriceSources.contract.test.ts",
+  "tests/officeEstimate/goldenBenchmarkPdfAndBuyer.contract.test.ts",
+  "tests/pdfLegacy/legacyPdfSnapshotTextUnchanged.contract.test.ts",
+  "tests/requestEstimate/estimateStructuredPipelineUiPdfBindingCloseout.contract.test.ts",
+  "tests/requestEstimate/canonicalParameterAndProfessionalPdfP0.contract.test.ts",
+  "supabase/migrations/20260920120000_consumer_estimate_marketplace_atomic_handoff.sql",
+  "supabase/migrations/20260922030000_developer_effective_role_get_my_role_priority.sql",
+  "supabase/migrations/20260922040000_estimate_default_compatible_price_snapshots.sql",
+  "supabase/migrations/20260922050000_strip_foundation_compatible_known_prices.sql",
+  "supabase/migrations/20260923110000_estimate_prepared_release_owner_migration_recalculate.sql",
 ]);
 
 const PROTECTED_LIVE_REQUEST_ANDROID_EVIDENCE_SHA256: Readonly<Record<string, string>> = {
@@ -247,6 +333,8 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
 
   return (
     CURRENT_PLATFORM_INTEGRATION_GREEN_PATCH_FILES.has(normalized) ||
+    isApprovedConsumerEstimateMarketplaceFullHandoffMigration(normalized, process.cwd()) ||
+    (normalized === "package.json" && isExactWholeAppDeveloperReviewAndOfficeMarketScriptPatch(process.cwd())) ||
     isByteIdenticalProtectedLiveRequestAndroidEvidence(normalized) ||
     normalized.startsWith("artifacts/S_GREEN_CLOSEOUT_") ||
     normalized.startsWith("artifacts/S_B2C_REQUEST_MARKETPLACE_VALIDATION_PDF_BACKEND_50K_") ||

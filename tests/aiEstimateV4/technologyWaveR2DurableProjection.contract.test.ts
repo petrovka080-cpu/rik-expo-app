@@ -33,7 +33,8 @@ function conditionMatches(
 ): boolean {
   return condition.split(/\s+AND\s+/u).every((clause) => {
     const [parameterId, expected] = clause.trim().split("=");
-    return parameterId != null && expected != null && String(values[parameterId]) === expected;
+    const runtimeParameterId = parameterId === "scope_mode" ? "estimate_scope_mode" : parameterId;
+    return runtimeParameterId != null && expected != null && String(values[runtimeParameterId]) === expected;
   });
 }
 
@@ -51,7 +52,18 @@ function expectExactApplicabilityPartition(
 
   for (const resource of definition.resources) {
     const occurrences = Number(rowIds.includes(resource.rowId)) + Number(needIds.includes(resource.rowId));
-    expect(occurrences).toBe(conditionMatches(resource.inclusionCondition, values) ? 1 : 0);
+    const expected = conditionMatches(resource.inclusionCondition, values) ? 1 : 0;
+    expect({
+      catalogId: definition.catalogId,
+      rowId: resource.rowId,
+      inclusionCondition: resource.inclusionCondition,
+      occurrences,
+    }).toEqual({
+      catalogId: definition.catalogId,
+      rowId: resource.rowId,
+      inclusionCondition: resource.inclusionCondition,
+      occurrences: expected,
+    });
   }
 }
 

@@ -1,6 +1,7 @@
 import { StyleSheet } from "react-native";
 
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
+import { estimateDeterministicHash } from "../../lib/estimate/estimateDeterministicHash";
 import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate/globalWorkSmartSearch";
 import type {
   ForemanAiEstimateDraftMapping,
@@ -122,6 +123,12 @@ export const buildContextText = (context: ForemanEstimateContext) =>
 
 export const displayNameOfCatalogItem = (item: CatalogQuickItem) =>
   String(item.name_human_ru || item.name_human || item.display_name || item.rik_code || "").trim();
+
+export const catalogRowClientId = (item: CatalogQuickItem, ordinal: number) =>
+  `rik-${estimateDeterministicHash({
+    rikCode: String(item.rik_code ?? "").trim(),
+    ordinal,
+  }).replace(/^eh_/u, "")}`;
 
 export const buildRowInputs = (mapping: ForemanAiEstimateDraftMapping | null): Record<string, RowInputState> =>
   Object.fromEntries(

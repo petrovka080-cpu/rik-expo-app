@@ -1,6 +1,6 @@
 import { assertGlobalEstimateResultSafe } from "./globalEstimateGuard";
 import type { GlobalEstimateInput, GlobalEstimateResult } from "./globalEstimateTypes";
-import { calculateGlobalConstructionEstimate } from "./globalEstimateCalculator";
+import { calculateGlobalConstructionEstimate } from "../../estimate/backendPlatform/canonicalEstimateHistoricalGlobalProjection";
 import { formatGlobalEstimateAnswer } from "./globalEstimateAnswerFormatter";
 
 export const GLOBAL_ESTIMATE_PRODUCTION_SAFE_WAVE =

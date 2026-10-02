@@ -135,6 +135,17 @@ describe("canonical backend revision projection", () => {
           rowCode: "conditional-haul-not-applicable",
           includedInEstimate: false,
         },
+      }, {
+        ...source.items[0]!,
+        id: "required-control-ledger-row",
+        titleRu: "Required control ledger row",
+        sourceParameters: {
+          ...source.items[0]!.sourceParameters,
+          rowCode: "required-control-ledger-row",
+          includedInEstimate: false,
+          canonicalCostTreatment: "CONTROL_OR_DOCUMENT",
+          payable: false,
+        },
       }],
     } as ConsumerRepairDraftBundle;
     const sourcePayload = payload(PARENT_ID, null, 120);
@@ -167,11 +178,14 @@ describe("canonical backend revision projection", () => {
     expect(current).toMatchObject({
       status: "needs_more_params_but_preliminary_available",
       estimateLevel: "PRELIMINARY_QUANTITY_BOQ",
-      applicableBoqRowsCount: 2,
+      applicableBoqRowsCount: 3,
     });
-    expect(current?.boq.rows).toHaveLength(2);
+    expect(current?.boq.rows).toHaveLength(3);
     expect(current?.boq.rows).toContainEqual(expect.objectContaining({
       rowId: "conditional-haul-not-applicable",
+    }));
+    expect(current?.boq.rows).toContainEqual(expect.objectContaining({
+      rowId: "required-control-ledger-row",
     }));
     expect(current?.missingInputs).toEqual([expect.objectContaining({
       key: "machine_roller_productivity_m2_per_machine_hour",

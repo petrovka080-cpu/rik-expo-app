@@ -5,7 +5,9 @@ import { dirname, resolve } from "node:path";
 type Json = Record<string, any>;
 
 const PROVIDER_URL = "http://127.0.0.1:54321";
-const BACKEND_URL = "http://127.0.0.1:8765";
+const BACKEND_URL = String(
+  process.env.LOCAL_DEVELOPER_CANONICAL_BACKEND_URL ?? "http://127.0.0.1:8765",
+).replace(/\/$/u, "");
 const CREDENTIALS = resolve(
   ".release-runtime/r551/runtime/local-developer/credentials.json",
 );

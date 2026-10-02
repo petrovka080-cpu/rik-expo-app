@@ -32,7 +32,7 @@ describe("consumer request estimate revision integration", () => {
     expect(bundle.pdfs[0].revisionId).toBe(exportedRevision.revision_id);
   });
 
-  it("binds marketplace payload and history row to the current revision", () => {
+  it("binds marketplace payload and history row to the current revision", async () => {
     let bundle = foundationDraftWithManualCatalogItem();
     bundle = attachConsumerRepairMedia({ requestDraftId: bundle.draft.id, mediaKind: "photo" });
     bundle = generateConsumerRepairRequestPdfForDraft({
@@ -45,7 +45,7 @@ describe("consumer request estimate revision integration", () => {
       userId: bundle.draft.consumerUserId,
       generatedAt: "2026-06-15T01:30:00.000Z",
     });
-    bundle = sendCanonicalConsumerRepairAuditDraft({
+    bundle = await sendCanonicalConsumerRepairAuditDraft({
       bundle,
       userId: bundle.draft.consumerUserId,
       idempotencyKey: `test:${bundle.draft.id}`,

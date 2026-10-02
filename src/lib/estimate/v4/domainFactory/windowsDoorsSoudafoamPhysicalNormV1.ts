@@ -1,7 +1,7 @@
 import windowsDoorsNormPack from "../../../../../data/estimate-norms/professional/windows_doors.json";
 import { estimateDeterministicHash } from "../../estimateDeterministicHash";
 import type { ProfessionalParameterValueV4 } from "../professionalProjectAssemblyV4";
-import type { ProfessionalPhysicalNormApplicabilityResolutionV1 } from "./professionalPhysicalNormApplicabilityV1";
+import type { ProfessionalPhysicalNormApplicabilityResolutionV1 } from "./professionalPhysicalNormApplicabilityTypesV1";
 
 const VERSION = "professional-physical-norm-applicability:v1" as const;
 export const SOUDAFOAM_GENIUS_9900539_PRODUCT_PROFILE_ID = "manufacturer-profile:soudal:soudafoam-window-door-genius:9900539:600ml:v1" as const;

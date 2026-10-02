@@ -4,6 +4,7 @@ import {
 } from "../../src/lib/consumerRequests";
 import {
   canonicalArtifactForApprovedConsumerRepairTestBundle,
+  consumerMarketplaceTransportForApprovedBundle,
   CONSUMER_REPAIR_TEST_USER_ID,
   createApprovedConsumerRepairRequest,
 } from "../consumerRepair/consumerRepairTestHelpers";
@@ -11,20 +12,23 @@ import {
 describe("Wave08 B2C marketplace send idempotency", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
 
-  it("keeps repeated send retry on the same marketplace demand and writes one terminal send event", () => {
+  it("keeps repeated send retry on the same marketplace demand and writes one terminal send event", async () => {
     const bundle = createApprovedConsumerRepairRequest();
     const canonicalArtifact = canonicalArtifactForApprovedConsumerRepairTestBundle(bundle);
-    const first = sendConsumerRepairRequestToMarketplace({
+    const transport = consumerMarketplaceTransportForApprovedBundle(bundle, canonicalArtifact);
+    const first = await sendConsumerRepairRequestToMarketplace({
       requestDraftId: bundle.draft.id,
       userId: CONSUMER_REPAIR_TEST_USER_ID,
       idempotencyKey: "wave08:b2c-send:same-intent",
       canonicalArtifact,
+      transport,
     });
-    const retry = sendConsumerRepairRequestToMarketplace({
+    const retry = await sendConsumerRepairRequestToMarketplace({
       requestDraftId: bundle.draft.id,
       userId: CONSUMER_REPAIR_TEST_USER_ID,
       idempotencyKey: "wave08:b2c-send:same-intent",
       canonicalArtifact,
+      transport,
     });
 
     expect(retry.marketplaceLink.marketplaceDemandId).toBe(first.marketplaceLink.marketplaceDemandId);

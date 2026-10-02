@@ -34,7 +34,7 @@ export const EXTENDED_100_SUMMARY_CACHE_SOURCES = [
   "data/estimate-golden-cases/extended-100-work-cases.json",
   "scripts/estimate/extendedProfessionalCertificationCore.ts",
   "src/lib/ai/builtInAi/builtInAiToolRegistry.ts",
-  "src/lib/ai/estimateContinuousDetection/continuousAiEstimateDetector.ts",
+  "scripts/estimate/detectors/continuousAiEstimateDetector.ts",
   "src/lib/ai/estimateCompiler/expandedEstimateCompiler.ts",
   "src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration.ts",
   "src/lib/consumerRequests/consumerRequestPdfService.ts",

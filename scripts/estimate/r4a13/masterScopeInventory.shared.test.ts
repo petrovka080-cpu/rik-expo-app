@@ -42,6 +42,23 @@ describe("S20 MASTER scope inventory", () => {
     }]);
   });
 
+  test("accepts the current markdown-heading appendix C boundary", () => {
+    const markdown = [
+      "| 1 | Внешняя строка | Не эталон |",
+      "## Приложение C. Тридцать технологических эталонов",
+      "| № | Эталон | Состав и граница |",
+      "|---|---|---|",
+      "| 1 | Бетонирование | Бетон без котлована |",
+      "## Приложение D. Сохранённые регрессии S265/S266",
+      "| 2 | Внешняя строка | Не эталон |",
+    ].join("\n");
+    expect(parseMasterTechnologyBenchmarks(markdown)).toEqual([{
+      ordinal: 1,
+      titleRu: "Бетонирование",
+      compositionBoundaryRu: "Бетон без котлована",
+    }]);
+  });
+
   test("requires the exact 200-ID sequence and 30 benchmark ordinals", () => {
     const criteria = Object.entries(MASTER_CRITERION_GROUP_COUNTS).flatMap(
       ([group, count]) => Array.from({ length: count }, (_, index) => ({

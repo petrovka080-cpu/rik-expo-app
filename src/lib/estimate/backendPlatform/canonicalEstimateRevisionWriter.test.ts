@@ -96,8 +96,8 @@ describe("canonicalEstimateRevisionWriter", () => {
     });
   });
 
-  it("uses the immutable definition passport title instead of a legacy generic work identity", async () => {
-    const identity = await buildCanonicalRevisionIdentity({
+  it("uses the immutable definition title and exposes the selected foundation scope", async () => {
+    const identityInput = {
       catalogId: "canonical-work:expanded:strip_foundation",
       parentRevisionId: null,
       requestIdentity: {
@@ -111,19 +111,27 @@ describe("canonicalEstimateRevisionWriter", () => {
         domain: "buildings",
       },
       parameterDefinitions: [{ parameter_id: "total_axis_length_m", unit_id: "m" }],
-      parameters: { total_axis_length_m: 40 },
-      effectiveUserParameters: { total_axis_length_m: 40 },
+      parameters: { total_axis_length_m: 40, scope_variant: "full_reinforced_structure" },
+      effectiveUserParameters: { total_axis_length_m: 40, scope_variant: "full_reinforced_structure" },
       baselineAssumptions: {},
       parent: null,
       searchReleaseId: "search-release-foundation-1",
       compilerVersion: "compiler.r1",
       hashText,
+    };
+    const identity = await buildCanonicalRevisionIdentity(identityInput);
+    const placementIdentity = await buildCanonicalRevisionIdentity({
+      ...identityInput,
+      parameters: { total_axis_length_m: 40, scope_variant: "placement_only" },
+      effectiveUserParameters: { total_axis_length_m: 40, scope_variant: "placement_only" },
     });
 
     expect(identity).toMatchObject({
       canonicalWorkTitleRu: "Устройство монолитного железобетонного ленточного фундамента",
-      displayTitleRu: "Устройство монолитного железобетонного ленточного фундамента — 40 м",
+      displayTitleRu: "Устройство монолитного железобетонного ленточного фундамента — Полное устройство железобетонной конструкции — 40 м",
     });
+    expect(placementIdentity.displayTitleRu)
+      .toBe("Устройство монолитного железобетонного ленточного фундамента — Только укладка и уход за бетонной смесью — 40 м");
   });
 
   it("selects one commit contract and one canonical payload shape", () => {

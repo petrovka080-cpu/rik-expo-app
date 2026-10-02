@@ -9,7 +9,10 @@ import { createRealMaterialQuantityPreview } from "../../src/lib/ai/professional
 import { compileAsphaltProfessionalEstimateV4 } from "../../src/lib/estimate/v4/asphalt/compileAsphaltProfessionalEstimateV4";
 import { expectProfessionalBoqEstimate } from "../estimateIntent/anyEstimateTestHelpers";
 
-const ASPHALT_BASELINE_RUNTIME_SHA256 = "ac505814782f169878a1cefad1b61c68c52df11e0a38ef373bd00328116c2e98";
+// Recomputed independently from the clean 351ffac source tree and the current
+// overlay.  The former ac505... value was committed without matching the
+// runtime bytes of that same source snapshot.
+const ASPHALT_BASELINE_RUNTIME_SHA256 = "d03c73fc26a20daf4409b7a3a114db6284356fba6650e08b67e781a220d39bb5";
 
 describe("BATCH005 R3 non-Electrical behavior immutability", () => {
   test("keeps the BATCH004 Asphalt runtime output byte-equivalent", () => {

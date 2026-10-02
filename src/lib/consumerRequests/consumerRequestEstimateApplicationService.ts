@@ -1,6 +1,6 @@
 import {
   buildGlobalEstimateFromEstimatorKernel,
-} from "../ai/globalEstimate/globalEstimateCalculator";
+} from "../estimate/backendPlatform/canonicalEstimateHistoricalGlobalProjection";
 import type { GlobalEstimateResult } from "../ai/globalEstimate/globalEstimateTypes";
 import { buildConsumerRepairAiDraftFromGlobalEstimate } from "./consumerRequestGlobalEstimateIntegration";
 import { createConsumerRepairRequestDraft } from "./consumerRequestService";

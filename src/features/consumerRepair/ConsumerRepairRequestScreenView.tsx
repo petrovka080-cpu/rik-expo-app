@@ -91,6 +91,7 @@ type ConsumerRepairRequestScreenViewProps = {
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
   onUnitPriceChange: (itemId: string, value: string) => void;
+  onApplyCanonicalRowEdits: () => boolean | void | Promise<boolean | void>;
   onSpecificationChange?: (itemId: string, value: string) => void;
   onOptionalChange?: (itemId: string, optional: boolean) => void;
   onRemove: (itemId: string) => void;
@@ -117,6 +118,7 @@ type ConsumerRepairRequestScreenViewProps = {
   onCreateNew: () => void;
   onDeleteDraft: () => void;
   onApproveDraft: () => void;
+  onApplyAndApproveDraft: () => void;
   onPrepareDraft: () => void;
   onSelectRoadScope: (scopePresetId: string) => void;
   onScrollPositionChange: (position: number) => void;
@@ -142,6 +144,7 @@ export function ConsumerRepairRequestScreenView({
   onIncrease,
   onQuantityChange,
   onUnitPriceChange,
+  onApplyCanonicalRowEdits,
   onSpecificationChange,
   onOptionalChange,
   onRemove,
@@ -168,6 +171,7 @@ export function ConsumerRepairRequestScreenView({
   onCreateNew,
   onDeleteDraft,
   onApproveDraft,
+  onApplyAndApproveDraft,
   onPrepareDraft,
   onSelectRoadScope,
   onScrollPositionChange,
@@ -203,8 +207,9 @@ export function ConsumerRepairRequestScreenView({
   const approvalBlockedByEstimate = Boolean(
     approvalBlockedByParameters ||
     approvalUnresolvedRowCount > 0 ||
-    approvalMissingPriceCount > 0 ||
+    (state.pendingCanonicalRowEditCount ?? 0) > 0 ||
     state.approvalCommitBusy ||
+    state.deleteCommitBusy ||
     state.canonicalEstimateMutationBusy ||
     currentDraftRevision?.status === "blocking_required" ||
     legacyEstimateRequiresRebuild ||
@@ -252,6 +257,7 @@ export function ConsumerRepairRequestScreenView({
           approvedHistoryPage={state.approvedHistoryPage}
           selectedHistoryId={state.selectedHistoryId}
           showPdfAction={Boolean(renderModel.bundle)}
+          pdfOpenBusy={state.pdfOpenBusy === true}
           marketplaceSendErrors={renderModel.marketplaceSendErrors}
           catalogPickerVisible={state.catalogPickerVisible}
           catalogPickerInitialQuery={state.catalogPickerInitialQuery}
@@ -274,6 +280,9 @@ export function ConsumerRepairRequestScreenView({
           onIncrease={onIncrease}
           onQuantityChange={onQuantityChange}
           onUnitPriceChange={onUnitPriceChange}
+          pendingCanonicalRowEditCount={state.pendingCanonicalRowEditCount ?? 0}
+          canonicalRowEditsApplying={state.canonicalEstimateMutationBusy === true}
+          onApplyCanonicalRowEdits={onApplyCanonicalRowEdits}
           onSpecificationChange={onSpecificationChange}
           onOptionalChange={onOptionalChange}
           onRemove={onRemove}
@@ -315,13 +324,17 @@ export function ConsumerRepairRequestScreenView({
           approvalBlockedByParameters={approvalBlockedByParameters}
           approvalUnresolvedRowCount={approvalUnresolvedRowCount}
           approvalMissingPriceCount={approvalMissingPriceCount}
+          approvalPendingRowEditCount={state.pendingCanonicalRowEditCount ?? 0}
           approvalCommitBusy={state.approvalCommitBusy || state.canonicalEstimateMutationBusy}
+          deleteCommitBusy={state.deleteCommitBusy}
+          pdfOpenBusy={state.pdfOpenBusy === true}
           needsFreshApproval={consumerRepairNeedsFreshApproval(renderModel.bundle)}
           onOpenPdf={() => onOpenPdf()}
           onMakePdf={onMakePdf}
           onCreateNew={onCreateNew}
           onDeleteDraft={onDeleteDraft}
           onApproveDraft={onApproveDraft}
+          onApplyAndApproveDraft={onApplyAndApproveDraft}
           onPrepareDraft={onPrepareDraft}
         />
       </AppScreenScroll>

@@ -1,10 +1,10 @@
 export { ConsumerRepairRequestScreen } from "./ConsumerRepairRequestScreenContainer";
 export {
   buildConsumerRepairAiDraft,
-  composeConsumerRepairDraftAnswerRu,
   CONSUMER_REPAIR_DANGEROUS_COPY,
   isDangerousConsumerRepairProblem,
-} from "./consumerRepairAiAdapter";
+} from "../../lib/consumerRequests/canonicalConsumerRepairHistoricalProjection";
+export { composeConsumerRepairDraftAnswerRu } from "./consumerRepairDraftAnswer";
 export {
   buildRequestEstimateDraftFromConsumerBundle,
   buildRequestEstimatePayload,

@@ -11,6 +11,38 @@ type AuditParameter = Readonly<{
   truth_metadata?: unknown;
 }>;
 
+type AuditContentPassport = Readonly<{
+  definitionVersionId?: unknown;
+  releaseId?: unknown;
+  catalogId?: unknown;
+  contractVersion?: unknown;
+  parameterCount?: unknown;
+  formulaCount?: unknown;
+  resourceCount?: unknown;
+  decision?: unknown;
+}>;
+
+export type CatalogContentEvidenceStatus =
+  | "CURRENT_WITH_INDEPENDENT_COMPLETENESS_MAP"
+  | "MISSING_CONTENT_PASSPORT"
+  | "STALE_CONTENT_PASSPORT_IDENTITY"
+  | "RED_CONTENT_PASSPORT"
+  | "STALE_CONTENT_PASSPORT_COUNTS"
+  | "MISSING_INDEPENDENT_COMPLETENESS_MAP"
+  | "INVALID_INDEPENDENT_COMPLETENESS_MAP";
+
+export type CatalogContentEvidenceDecision = Readonly<{
+  status: CatalogContentEvidenceStatus;
+  gapVerdict: string | null;
+  entryCount: number;
+}>;
+
+export const CATALOG_INDEPENDENT_COMPLETENESS_MAP_CONTRACT =
+  "rik-expo-app.s26-3.independent-completeness-map.v1" as const;
+
+const CONTENT_PASSPORT_CONTRACT = "real-professional-estimates-r3.content-passport.v1";
+const SHA256 = /^[0-9a-f]{64}$/u;
+
 const GEOMETRY_ID = /(?:^|_)(?:area|length|width|height|depth|diameter|radius|perimeter|volume|thickness|distance|span|rise|run|slope|opening|route)(?:_|$)/iu;
 const NON_GEOMETRY_ID = /(?:productivity|consumption|worker|labou?r|machine|shift|trip|price|cost|rate|factor|coefficient|reserve|loss|waste|density|dosage|coverage|package|count|quantity|mass|load|capacity|designation|reference|state|mode|type|class|required|included)/iu;
 const EXPLICIT_COUNTED_GEOMETRY_ID = /^(?:pile_count|anchor_group_count|bolts_per_group|element_count_piece|total_installed_mass_t)$/iu;
@@ -49,6 +81,127 @@ function textArray(value: unknown): string[] {
   return Array.isArray(value)
     ? value.map(text).filter(Boolean)
     : [];
+}
+
+function exactNonNegativeInteger(value: unknown): number | null {
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isInteger(parsed) && parsed >= 0 ? parsed : null;
+}
+
+/**
+ * Separates a structurally compilable definition from independently reviewed
+ * professional content. The completeness map is deliberately read from the
+ * existing content-passport decision payload, not inferred from the resource
+ * rows under audit: deriving the oracle from those rows would make omissions
+ * impossible to detect.
+ */
+export function evaluateCatalogIndependentContentEvidence(input: Readonly<{
+  expectedDefinitionVersionId: string;
+  expectedReleaseId: string;
+  expectedCatalogId: string;
+  expectedParameterCount: number;
+  expectedFormulaCount: number;
+  expectedResourceCount: number;
+  passport: AuditContentPassport | null | undefined;
+}>): CatalogContentEvidenceDecision {
+  const passport = input.passport;
+  if (passport == null || !text(passport.definitionVersionId)) {
+    return {
+      status: "MISSING_CONTENT_PASSPORT",
+      gapVerdict: "GAP_INDEPENDENT_CONTENT_PASSPORT_MISSING",
+      entryCount: 0,
+    };
+  }
+  if (text(passport.definitionVersionId) !== input.expectedDefinitionVersionId
+    || text(passport.releaseId) !== input.expectedReleaseId
+    || text(passport.catalogId) !== input.expectedCatalogId
+    || text(passport.contractVersion) !== CONTENT_PASSPORT_CONTRACT) {
+    return {
+      status: "STALE_CONTENT_PASSPORT_IDENTITY",
+      gapVerdict: "GAP_INDEPENDENT_CONTENT_PASSPORT_STALE",
+      entryCount: 0,
+    };
+  }
+
+  const decision = record(passport.decision);
+  if (decision?.allowed !== true || text(decision.status).toUpperCase() !== "GREEN"
+    || text(decision.contract) !== CONTENT_PASSPORT_CONTRACT) {
+    return {
+      status: "RED_CONTENT_PASSPORT",
+      gapVerdict: "GAP_INDEPENDENT_CONTENT_PASSPORT_RED",
+      entryCount: 0,
+    };
+  }
+  if (exactNonNegativeInteger(passport.parameterCount) !== input.expectedParameterCount
+    || exactNonNegativeInteger(passport.formulaCount) !== input.expectedFormulaCount
+    || exactNonNegativeInteger(passport.resourceCount) !== input.expectedResourceCount) {
+    return {
+      status: "STALE_CONTENT_PASSPORT_COUNTS",
+      gapVerdict: "GAP_INDEPENDENT_CONTENT_PASSPORT_STALE",
+      entryCount: 0,
+    };
+  }
+
+  const completeness = record(decision.independentCompletenessMap);
+  if (completeness == null) {
+    return {
+      status: "MISSING_INDEPENDENT_COMPLETENESS_MAP",
+      gapVerdict: "GAP_INDEPENDENT_COMPLETENESS_MAP_MISSING",
+      entryCount: 0,
+    };
+  }
+  const entries = completeness.entries;
+  const sourceKind = text(completeness.sourceKind);
+  const validHeader = text(completeness.contract) === CATALOG_INDEPENDENT_COMPLETENESS_MAP_CONTRACT
+    && ["NORMATIVE_OPERATION_MAP", "TECHNOLOGY_MAP", "PRODUCT_SYSTEM_TDS", "PROJECT_SYSTEM"]
+      .includes(sourceKind)
+    && completeness.generatedFromCurrentRows === false
+    && SHA256.test(text(completeness.evidenceSha256))
+    && Array.isArray(entries)
+    && entries.length > 0;
+  if (!validHeader) {
+    return {
+      status: "INVALID_INDEPENDENT_COMPLETENESS_MAP",
+      gapVerdict: "GAP_INDEPENDENT_COMPLETENESS_MAP_INVALID",
+      entryCount: Array.isArray(entries) ? entries.length : 0,
+    };
+  }
+
+  const entryKeys = new Set<string>();
+  const validEntries = entries.every((rawEntry) => {
+    const entry = record(rawEntry);
+    const resolution = record(entry?.resolution);
+    if (entry == null || resolution == null) return false;
+    const operationId = text(entry.operationId);
+    const expectedResourceId = text(entry.expectedResourceId);
+    const resolutionKind = text(resolution.kind);
+    const key = `${operationId}\u0000${expectedResourceId}`;
+    const targetPresent = resolutionKind === "ROW"
+      ? Boolean(text(resolution.rowId) && text(entry.formulaId))
+      : resolutionKind === "INCLUDED_COMPONENT_ROW"
+        ? Boolean(text(resolution.rowId) && text(resolution.parentRowId) && text(entry.formulaId))
+      : resolutionKind === "INCLUDED_IN_PARENT"
+        ? Boolean(text(resolution.parentRowId) && text(entry.formulaId))
+        : resolutionKind === "NOT_APPLICABLE"
+          ? Boolean(text(resolution.reasonRu))
+          : false;
+    const valid = Boolean(operationId && expectedResourceId && text(entry.condition)
+      && text(entry.sourceId) && targetPresent && !entryKeys.has(key));
+    if (valid) entryKeys.add(key);
+    return valid;
+  });
+  if (!validEntries) {
+    return {
+      status: "INVALID_INDEPENDENT_COMPLETENESS_MAP",
+      gapVerdict: "GAP_INDEPENDENT_COMPLETENESS_MAP_INVALID",
+      entryCount: entries.length,
+    };
+  }
+  return {
+    status: "CURRENT_WITH_INDEPENDENT_COMPLETENESS_MAP",
+    gapVerdict: null,
+    entryCount: entries.length,
+  };
 }
 
 function hasExactSourceTrace(binding: JsonRecord, sourceMetadata: unknown): boolean {

@@ -246,7 +246,12 @@ export function buildStructuredEstimateRequestDraft(
               return requirement ? [requirement] : [];
             }),
             includedInEstimate: need.selected,
-            includedInProcurement: false,
+            // A material does not stop being a procurement need merely because
+            // its quantity or specification is still preliminary.  The final
+            // Marketplace send remains gated by canonicalPreliminaryNeed, but
+            // the draft procurement scope must stay visible to the user.
+            includedInProcurement: need.selected && need.procurementEligible,
+            procurementEligible: need.procurementEligible,
             payable: false,
             smartEstimateProjectionV2: {
               progressiveDisclosure: true,

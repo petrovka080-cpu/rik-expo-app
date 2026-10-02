@@ -136,12 +136,16 @@ export function validateAllProductionTemplatesExtended10000(): ProductionTemplat
 
   for (const [index, definition] of PRODUCTION_WORK_DEFINITIONS_10000.entries()) {
     try {
-      const template = getProductionExpandedTemplate10000(definition.workKey);
+      // Compile first so the catalog can populate and reuse its immutable
+      // norm-binding cache before the definition is read for validation.
+      // Reading the template first discards that prepared binding work and
+      // makes the full 10,000-template proof rebuild it for every definition.
       const compiled = compileProductionExpandedEstimate10000({
         workKey: definition.workKey,
         quantity: 54,
         countryCode: "KG",
       });
+      const template = getProductionExpandedTemplate10000(definition.workKey);
       const boqValidation = validateProductionTemplateBoqDefinition10000({ definition, template, compiled });
       const pricingValidation = validateProductionTemplatePricingDefinition10000({ definition, template, compiled });
       boqValidationPassed = boqValidationPassed && boqValidation.passed;

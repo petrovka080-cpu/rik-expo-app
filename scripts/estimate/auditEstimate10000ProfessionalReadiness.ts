@@ -8,9 +8,9 @@ import {
 } from "./auditEstimateFunctionalReality10000";
 import { runCertifyAllEstimateNormBindings } from "./certifyAllEstimateNormBindings";
 import {
-  buildWorkFamilyCoveragePlan,
   GREEN_AI_ESTIMATE_10000_PROFESSIONAL_CATALOG_COVERAGE_READY_NO_BUILDS,
 } from "./buildWorkFamilyCoveragePlan";
+import { buildEstimate10000AuditProjection } from "./estimate10000AuditProjection";
 
 export const GREEN_AI_ESTIMATE_10000_REAL_PROFESSIONAL_CATALOG_READY_NO_BUILDS =
   "GREEN_AI_ESTIMATE_10000_REAL_PROFESSIONAL_CATALOG_READY_NO_BUILDS" as const;
@@ -18,12 +18,18 @@ export const STOP_AI_ESTIMATE_10000_REAL_PROFESSIONAL_CATALOG_NOT_READY =
   "STOP_AI_ESTIMATE_10000_REAL_PROFESSIONAL_CATALOG_NOT_READY" as const;
 
 export function auditEstimate10000ProfessionalReadiness(options: { writeManifest?: boolean; writeCatalogArtifacts?: boolean } = {}) {
+  const projection = buildEstimate10000AuditProjection({
+    writeCatalogArtifacts: options.writeCatalogArtifacts === true,
+  });
   const manifest = options.writeManifest === false
-    ? buildEstimate10000ReadinessManifest()
-    : writeEstimate10000ReadinessManifest();
-  const certification = runCertifyAllEstimateNormBindings({ writeSummary: false });
-  const functional = runEstimateFunctionalRealityAudit({ writeSummary: false });
-  const catalog = buildWorkFamilyCoveragePlan({ writeFiles: options.writeCatalogArtifacts === true });
+    ? buildEstimate10000ReadinessManifest({ projection })
+    : writeEstimate10000ReadinessManifest(undefined, { projection });
+  const certification = runCertifyAllEstimateNormBindings({ writeSummary: false, projection });
+  const functional = runEstimateFunctionalRealityAudit({
+    writeSummary: false,
+    precomputed: { manifest, certification },
+  });
+  const catalog = projection.catalog;
   const blockers = [
     manifest.manifest_total_templates !== 10000 ? "manifest_total_templates_not_10000" : "",
     manifest.ready_professional_count !== 10000 ? `ready_professional_count:${manifest.ready_professional_count}` : "",
@@ -81,6 +87,9 @@ export function auditEstimate10000ProfessionalReadiness(options: { writeManifest
     eas_started: false,
     release_started: false,
     full_jest_started: false,
+    audit_projection_schema: projection.schema,
+    audit_projection_definition_count: projection.definition_count,
+    audit_projection_compilation_count: projection.compilation_count,
     blockers,
   };
 }
@@ -98,7 +107,7 @@ if (process.argv[1]?.replace(/\\/g, "/").endsWith("/scripts/estimate/auditEstima
       writeManifest: true,
       writeCatalogArtifacts: true,
     });
-    console.log(JSON.stringify(result, null, 2));
+    console.info(JSON.stringify(result, null, 2));
     process.exitCode = result.final_status === GREEN_AI_ESTIMATE_10000_REAL_PROFESSIONAL_CATALOG_READY_NO_BUILDS ? 0 : 1;
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error));

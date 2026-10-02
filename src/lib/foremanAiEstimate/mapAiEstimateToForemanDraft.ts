@@ -41,7 +41,16 @@ const rowCodeForDraft = (row: StructuredEstimateRow): string => {
     row.rowId,
   ];
   const resolved = candidates.map(normalizeCodePart).find(Boolean);
-  return resolved ? `AI-${resolved}`.slice(0, 64) : `AI-${stableStructuredEstimateHash(row.rowId).slice(0, 12)}`;
+  const identityHash = stableStructuredEstimateHash({
+    rowId: row.rowId,
+    sectionType: row.sectionType,
+    code: row.code,
+  }).slice(0, 12);
+  const stem = resolved || "ROW";
+  // request_sync_draft_v2 treats rik_code as line identity. Long canonical row
+  // identifiers often share the same first 64 characters, so plain truncation
+  // silently merged distinct BOQ rows and discarded later manual titles.
+  return `AI-${stem.slice(0, 48)}-${identityHash}`.slice(0, 64);
 };
 
 const buildForemanAiNote = (params: {

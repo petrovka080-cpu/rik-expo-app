@@ -50,17 +50,42 @@ function adaptJson<T>(value: T): T {
   return value;
 }
 
+function removeOptionalDocumentaryInclusionGuards(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(removeOptionalDocumentaryInclusionGuards);
+  if (!value || typeof value !== "object") return value;
+  const record = value as Json;
+  if (
+    record.kind === "present" &&
+    typeof record.parameterId === "string" &&
+    OPTIONAL_DOCUMENTARY_PARAMETER_IDS.has(record.parameterId)
+  ) return { kind: "literal", value: true };
+  return Object.fromEntries(Object.entries(record).map(
+    ([key, item]) => [key, removeOptionalDocumentaryInclusionGuards(item)],
+  ));
+}
+
 export const BELT_VIBRATION_PARAMETERS = Object.freeze(
   CONCRETE_SLAB_VIBRATION_PARAMETERS.map((parameter) => {
     const documentary = OPTIONAL_DOCUMENTARY_PARAMETER_IDS.has(parameter.parameter_id);
     const truthMetadata = adaptJson(parameter.truth_metadata);
+    const adaptedConstraints = adaptJson(parameter.constraints_json ?? {});
+    const {
+      requiredWhen: _requiredWhen,
+      forbiddenWhen: _forbiddenWhen,
+      ...documentaryOptionalConstraints
+    } = adaptedConstraints;
+    const {
+      required_when: _truthRequiredWhen,
+      visible_when: _truthVisibleWhen,
+      ...documentaryOptionalTruthMetadata
+    } = truthMetadata;
     return {
       ...parameter,
       title_ru: beltText(parameter.title_ru),
       required: documentary ? false : parameter.required,
-      constraints_json: adaptJson(parameter.constraints_json ?? {}),
+      constraints_json: documentary ? documentaryOptionalConstraints : adaptedConstraints,
       truth_metadata: documentary ? {
-        ...truthMetadata,
+        ...documentaryOptionalTruthMetadata,
         preliminary_compilation_allowed: true,
         source_confirmation_required: false,
       } : truthMetadata,
@@ -72,12 +97,31 @@ export const BELT_VIBRATION_FORMULAS = CONCRETE_SLAB_VIBRATION_FORMULAS;
 export const BELT_VIBRATION_RESOURCES = Object.freeze(
   CONCRETE_SLAB_VIBRATION_RESOURCES.map((resource) => {
     const adapted = adaptJson(resource);
+    const physicalBinding = adapted.resource_graph?.professionalPhysicalNormBindingV1;
+    const physicalBindingRecord = physicalBinding && typeof physicalBinding === "object" && !Array.isArray(physicalBinding)
+      ? physicalBinding as Json
+      : null;
+    const applicabilityParameterIds = Array.isArray(physicalBindingRecord?.applicability_parameter_ids)
+      ? physicalBindingRecord.applicability_parameter_ids.filter(
+        (parameterId) => typeof parameterId === "string" && !OPTIONAL_DOCUMENTARY_PARAMETER_IDS.has(parameterId),
+      )
+      : null;
     return {
       ...adapted,
+      inclusion_ast: removeOptionalDocumentaryInclusionGuards(adapted.inclusion_ast) as Record<string, unknown>,
       row_id: resource.row_id
         .replace("work:concrete:slab-vibration", "work:concrete:belt-vibration")
         .replace("service:concrete:slab-vibration", "service:concrete:belt-vibration"),
       title_ru: beltText(resource.title_ru),
+      resource_graph: physicalBindingRecord && applicabilityParameterIds
+        ? {
+          ...adapted.resource_graph,
+          professionalPhysicalNormBindingV1: {
+            ...physicalBindingRecord,
+            applicability_parameter_ids: applicabilityParameterIds,
+          },
+        }
+        : adapted.resource_graph,
     };
   }),
 );

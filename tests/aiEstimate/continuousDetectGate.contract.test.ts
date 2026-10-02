@@ -1,7 +1,7 @@
 import {
   buildContinuousAiEstimateHeadlessSummary,
   GREEN_AI_ESTIMATE_CONTINUOUS_DETECT_GATE,
-} from "../../src/lib/ai/estimateContinuousDetection";
+} from "../../scripts/estimate/detectors";
 
 jest.setTimeout(60_000);
 
@@ -11,7 +11,7 @@ describe("continuous AI estimate detect gate", () => {
       phase: "post-fix",
       changedFiles: [
         "src/lib/ai/estimateCompiler/expandedEstimateCompiler.ts",
-        "src/lib/ai/estimateContinuousDetection/continuousAiEstimateDetector.ts",
+        "scripts/estimate/detectors/continuousAiEstimateDetector.ts",
         "scripts/e2e/runAiEstimateContinuousDetectGate.ts",
       ],
     });

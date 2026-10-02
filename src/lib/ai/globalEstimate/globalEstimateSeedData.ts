@@ -1075,6 +1075,136 @@ export const CARPET_TEMPLATE: GlobalEstimateTemplate = knownWorkTemplate({
   ],
 });
 
+export const LINOLEUM_TEMPLATE: GlobalEstimateTemplate = knownWorkTemplate({
+  workKey: "linoleum_laying",
+  materialRows: [
+    {
+      code: "linoleum_covering",
+      nameRu: "Линолеум с запасом на раскрой",
+      nameEn: "Linoleum with cutting waste allowance",
+      formula: "area * 1.08",
+    },
+    {
+      code: "linoleum_adhesive_tape",
+      nameRu: "Клей / двухсторонняя лента для фиксации линолеума",
+      nameEn: "Linoleum adhesive or double-sided fixing tape",
+      formula: "area",
+      rateKind: "auxiliary",
+    },
+    {
+      code: "linoleum_base_primer",
+      nameRu: "Грунтовка основания под линолеум",
+      nameEn: "Primer for the linoleum base",
+      formula: "area",
+      rateKind: "auxiliary",
+    },
+    {
+      code: "linoleum_baseboard",
+      nameRu: "Плинтус напольный",
+      nameEn: "Floor baseboard",
+      formula: "sqrt(area) * 4",
+      unitMetric: "linear_m",
+      unitImperial: "linear_ft",
+      rateKind: "auxiliary",
+    },
+    {
+      code: "linoleum_thresholds",
+      nameRu: "Порожки и стыковочные профили",
+      nameEn: "Thresholds and transition profiles",
+      formula: "ceil(area / 35)",
+      unitMetric: "pcs",
+      unitImperial: "pcs",
+      rateKind: "auxiliary",
+    },
+  ],
+  laborRows: [
+    { code: "linoleum_base_preparation", nameRu: "Подготовка основания под линолеум", nameEn: "Linoleum base preparation" },
+    { code: "linoleum_local_base_repair", nameRu: "Ремонт локальных дефектов основания", nameEn: "Local base defect repair", formula: "area * 0.12" },
+    { code: "linoleum_cutting", nameRu: "Раскрой линолеума", nameEn: "Linoleum cutting" },
+    { code: "linoleum_laying_work", nameRu: "Укладка линолеума", nameEn: "Linoleum laying" },
+    { code: "linoleum_rolling", nameRu: "Прокатка и контроль приклейки покрытия", nameEn: "Flooring rolling and adhesion check" },
+    {
+      code: "linoleum_baseboard_install",
+      nameRu: "Монтаж плинтуса",
+      nameEn: "Baseboard installation",
+      formula: "sqrt(area) * 4",
+      unitMetric: "linear_m",
+      unitImperial: "linear_ft",
+    },
+    {
+      code: "linoleum_threshold_install",
+      nameRu: "Монтаж порожков",
+      nameEn: "Threshold installation",
+      formula: "ceil(area / 35)",
+      unitMetric: "pcs",
+      unitImperial: "pcs",
+    },
+  ],
+  assumptionsRu: [
+    "Расчёт выполнен для укладки линолеума по подготовленному основанию.",
+    "Площадь покрытия, периметр плинтуса и количество порожков сохраняют разные единицы измерения.",
+    "Демонтаж старого покрытия и сплошное выравнивание включаются только после подтверждения.",
+  ],
+  questionsRu: [
+    "Какое текущее основание пола и требуется ли сплошное выравнивание?",
+    "Нужен ли демонтаж старого покрытия?",
+    "Какие плинтусы, порожки и способ фиксации линолеума выбраны?",
+  ],
+});
+
+export const PROCUREMENT_LIST_TEMPLATE: GlobalEstimateTemplate = knownWorkTemplate({
+  workKey: "procurement_list",
+  materialRows: [
+    {
+      code: "procurement_list_material_scope",
+      nameRu: "Материалы по сметным строкам для закупки",
+      nameEn: "Materials from estimate rows for procurement",
+      formula: "area",
+    },
+    {
+      code: "procurement_list_quantities",
+      nameRu: "Объёмы материалов и единицы закупки",
+      nameEn: "Material quantities and procurement units",
+      formula: "area",
+      rateKind: "auxiliary",
+    },
+    {
+      code: "procurement_list_sources",
+      nameRu: "Источники цен и подтверждения материалов",
+      nameEn: "Price sources and material evidence",
+      formula: "area",
+      rateKind: "auxiliary",
+    },
+  ],
+  laborRows: [
+    {
+      code: "procurement_list_reconciliation",
+      nameRu: "Сверка закупки со сметой и текущей ревизией",
+      nameEn: "Procurement reconciliation with the estimate revision",
+    },
+    {
+      code: "procurement_list_grouping",
+      nameRu: "Группировка закупки по материалам и поставщикам",
+      nameEn: "Procurement grouping by materials and suppliers",
+    },
+    {
+      code: "procurement_list_pdf",
+      nameRu: "Формирование PDF закупочного списка",
+      nameEn: "Procurement list PDF generation",
+    },
+  ],
+  assumptionsRu: [
+    "Закупочный список строится из текущей структурированной ревизии сметы.",
+    "Объёмы и единицы сохраняются по каждой сметной строке без объединения разных работ по названию.",
+    "Цена или поставщик без подтверждённого источника остаются на уточнении.",
+  ],
+  questionsRu: [
+    "Какая ревизия сметы является текущей для закупки?",
+    "Какие материалы уже закуплены или предоставляются заказчиком?",
+    "Нужно ли группировать PDF по поставщикам, этапам или объектам?",
+  ],
+});
+
 export const DRYWALL_PARTITION_TEMPLATE: GlobalEstimateTemplate = knownWorkTemplate({
   workKey: "drywall_partition",
   materialRows: [
@@ -1163,8 +1293,8 @@ function ceramicTileTemplate(workKey: string): GlobalEstimateTemplate {
     workKey,
     materialRows: [
       { code: `${workKey}_tile_with_waste`, nameRu: "Керамическая плитка с запасом на подрезку", nameEn: "Ceramic tile with waste allowance", formula: "area * 1.10" },
-      { code: `${workKey}_adhesive`, nameRu: "Плиточный клей", nameEn: "Tile adhesive", rateKind: "auxiliary" },
-      { code: `${workKey}_grout`, nameRu: "Затирка для швов", nameEn: "Tile grout", rateKind: "auxiliary" },
+      { code: `${workKey}_adhesive`, nameRu: "Плиточный клей", nameEn: "Tile adhesive", formula: "area * 5", rateKind: "auxiliary", unitMetric: "kg", unitImperial: "lbs" },
+      { code: `${workKey}_grout`, nameRu: "Затирка для швов", nameEn: "Tile grout", formula: "area * 0.4", rateKind: "auxiliary", unitMetric: "kg", unitImperial: "lbs" },
       {
         code: `${workKey}_primer`,
         nameRu: "Грунтовка основания",
@@ -1195,6 +1325,43 @@ function ceramicTileTemplate(workKey: string): GlobalEstimateTemplate {
 
 export const CERAMIC_TILE_TEMPLATE: GlobalEstimateTemplate = ceramicTileTemplate("ceramic_tile_laying");
 export const CERAMIC_TILE_FLOOR_TEMPLATE: GlobalEstimateTemplate = ceramicTileTemplate("ceramic_tile_floor_laying");
+
+export const WALL_PAINTING_TEMPLATE: GlobalEstimateTemplate = knownWorkTemplate({
+  workKey: "wall_painting",
+  materialRows: [
+    {
+      code: "wall_painting_material_1",
+      nameRu: "Краска интерьерная для двухслойного нанесения",
+      nameEn: "Interior paint for two-coat application",
+      formula: "area * 0.31",
+      unitMetric: "l",
+      unitImperial: "l",
+    },
+    {
+      code: "wall_painting_material_2",
+      nameRu: "Грунтовка основания перед окраской",
+      nameEn: "Substrate primer before painting",
+      formula: "area * 0.2",
+      rateKind: "auxiliary",
+      unitMetric: "l",
+      unitImperial: "l",
+    },
+  ],
+  laborRows: [
+    { code: "wall_painting_labor_1", nameRu: "Подготовка поверхности под окраску", nameEn: "Surface preparation for painting" },
+    { code: "wall_painting_labor_2", nameRu: "Окраска поверхности в два слоя", nameEn: "Two-coat surface painting" },
+  ],
+  assumptionsRu: [
+    "Расчёт выполнен для двухслойной окраски подготовленной поверхности.",
+    "Расход краски и грунтовки показан в литрах и подлежит уточнению по паспорту выбранного материала.",
+    "Ремонт дефектов основания включается после осмотра и обмера.",
+  ],
+  questionsRu: [
+    "Какой тип основания и его текущее состояние?",
+    "Какая краска выбрана и какой расход указан изготовителем?",
+    "Нужны ли локальный ремонт, шлифование или защита помещений?",
+  ],
+});
 
 export const GABLE_ROOF_TEMPLATE: GlobalEstimateTemplate = knownWorkTemplate({
   workKey: "gable_roof_installation",
@@ -2177,10 +2344,13 @@ export const WATERPROOFING_UNDER_TILE_TEMPLATE: GlobalEstimateTemplate = knownWo
 
 export const GLOBAL_ESTIMATE_TEMPLATES: readonly GlobalEstimateTemplate[] = GLOBAL_WORK_TYPE_DEFINITIONS.map((definition) =>
   definition.workKey === "laminate_laying" ? LAMINATE_TEMPLATE :
+    definition.workKey === "linoleum_laying" ? LINOLEUM_TEMPLATE :
+    definition.workKey === "procurement_list" ? PROCUREMENT_LIST_TEMPLATE :
     definition.workKey === "asphalt_paving" ? ASPHALT_TEMPLATE :
       definition.workKey === "strip_foundation" ? STRIP_FOUNDATION_TEMPLATE :
         definition.workKey === "ceramic_tile_laying" ? CERAMIC_TILE_TEMPLATE :
           definition.workKey === "ceramic_tile_floor_laying" ? CERAMIC_TILE_FLOOR_TEMPLATE :
+            definition.workKey === "wall_painting" ? WALL_PAINTING_TEMPLATE :
             definition.workKey === "carpet_laying" ? CARPET_TEMPLATE :
                 definition.workKey === "drywall_partition" ? DRYWALL_PARTITION_TEMPLATE :
                   definition.workKey === "drywall_wall_cladding" ? DRYWALL_WALL_CLADDING_TEMPLATE :
@@ -2416,6 +2586,12 @@ function buildRegionalRates(): GlobalRateRecord[] {
       { rateKey: `${definition.workKey}_labor`, basePrice: prices.labor, unit: definition.defaultMeasureUnit },
       { rateKey: `${definition.workKey}_equipment`, basePrice: Math.max(prices.auxiliary * 2, prices.labor * 0.2), unit: "set" as const },
       { rateKey: `${definition.workKey}_delivery`, basePrice: Math.max(prices.auxiliary * 3, prices.labor * 0.25), unit: "set" as const },
+      ...(definition.workKey === "linoleum_laying" ? [
+        { rateKey: "linoleum_laying_auxiliary", basePrice: prices.auxiliary, unit: "linear_m" as const },
+        { rateKey: "linoleum_laying_auxiliary", basePrice: prices.auxiliary, unit: "pcs" as const },
+        { rateKey: "linoleum_laying_labor", basePrice: prices.labor, unit: "linear_m" as const },
+        { rateKey: "linoleum_laying_labor", basePrice: prices.labor, unit: "pcs" as const },
+      ] : []),
     ] as const;
     return COUNTRIES.flatMap((country) =>
       rows.map((rowDefinition) => {

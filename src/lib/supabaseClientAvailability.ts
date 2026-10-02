@@ -110,7 +110,7 @@ export function buildSupabaseUnavailableDiagnostic(
   return JSON.stringify({
     status: "unavailable",
     reason,
-    recovery: "scripts/dev/startLocalDeveloperReview.ps1",
+    recovery: "scripts/dev/startWholeAppDeveloperReview.ps1",
     secretsIncluded: false,
   });
 }

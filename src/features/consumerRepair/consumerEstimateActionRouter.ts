@@ -62,10 +62,10 @@ export function buildConsumerEstimateActionContext(input: {
   }
   const draftId = required(input.bundle.draft.id, "draftId");
   const definitionId = [
-    input.bundle.draft.selectedCatalogWorkId,
     ...input.bundle.items.map((candidate) =>
       candidate.sourceParameters?.canonicalBackendCatalogId as string | null | undefined
     ),
+    input.bundle.draft.selectedCatalogWorkId,
   ].map((value) => String(value ?? "").trim()).find(Boolean) ?? null;
   const ownerId = required(input.ownerId, "ownerId");
   if (input.bundle.draft.consumerUserId !== ownerId) {

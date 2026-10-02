@@ -30,7 +30,9 @@ describe("professional estimate editor actions", () => {
     expect(progressivePanel).toContain('import { EstimateRevisionTimeline }');
     expect(progressivePanel).toContain('<EstimateRevisionTimeline state={this.props.revisionState} />');
     expect(progressivePanel).toContain('import { EstimateRevisionDiff }');
-    expect(progressivePanel).toContain('<EstimateRevisionDiff diff={latestDiff} />');
+    expect(progressivePanel).toContain('<EstimateRevisionDiff');
+    expect(progressivePanel).toContain('diff={latestDiff}');
+    expect(progressivePanel).toContain('parameters={canonicalParameterSession?.parameters}');
     expect(editor).toContain('testID="estimate-material-search-add-control"');
     expect(editor).toContain('placeholder="Найти в смете или добавить позицию…"');
     expect(editor).toContain('<Text style={styles.addCatalogButtonText}>+</Text>');

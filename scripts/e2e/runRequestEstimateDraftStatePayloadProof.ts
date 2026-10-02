@@ -127,7 +127,7 @@ function existingMatrixCommitSha(): string {
   }
 }
 
-export function runRequestEstimateDraftStatePayloadProof() {
+export async function runRequestEstimateDraftStatePayloadProof() {
   const failures: Failure[] = [];
   const audit = runRequestEstimateDraftStatePayloadAudit();
   addFailure(failures, audit.failures.length === 0, "AUDIT_FAILED", audit.failures);
@@ -177,7 +177,7 @@ export function runRequestEstimateDraftStatePayloadProof() {
   bundle = generateConsumerRepairRequestPdfForDraft({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
   const pdfPayload = buildConsumerRepairCanonicalDraftPayload(bundle, "pdf_generation");
   bundle = approveConsumerRepairRequestDraft({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
-  bundle = sendConsumerRepairRequestToMarketplace({
+  bundle = await sendConsumerRepairRequestToMarketplace({
     requestDraftId: bundle.draft.id,
     userId: bundle.draft.consumerUserId,
     idempotencyKey: `state-payload:${bundle.draft.id}`,
@@ -265,10 +265,10 @@ export function runRequestEstimateDraftStatePayloadProof() {
 }
 
 if (require.main === module) {
-  const result = runRequestEstimateDraftStatePayloadProof();
-  console.log(result.matrix.final_status);
+  const result = await runRequestEstimateDraftStatePayloadProof();
+  console.info(result.matrix.final_status);
   if (result.failures.length > 0) {
-    console.log(JSON.stringify(result.failures, null, 2));
+    console.info(JSON.stringify(result.failures, null, 2));
     process.exitCode = 1;
   }
 }

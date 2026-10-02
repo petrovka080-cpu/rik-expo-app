@@ -80,6 +80,7 @@ type WorkGroupSummary = {
 export type SourceQualityClassification =
   | "backend_norm_record"
   | "allowed_test_fixture"
+  | "allowed_acceptance_fixture"
   | "allowed_negative_contract"
   | "generated_family_default_rate"
   | "legacy_calculator_hardcoded_rate"
@@ -226,7 +227,10 @@ export function classifyHardcodedMatch(file: string, lineText: string): SourceQu
   if (normalized.endsWith("src/lib/database.types.ts")) {
     return "schema_type_reference";
   }
-  if (/\b(?:minimum|maximum)\s*:/.test(lineText)) {
+  if (
+    /\b(?:minimum|maximum)\s*:/.test(lineText) ||
+    /\bparameterId\s*===\s*["'][^"']+["']\s*\?\s*[0-9._]+\s*:/.test(lineText)
+  ) {
     return "parameter_schema_constraint";
   }
   if (/\bkg_per_ton\s*=\s*1000\b|\bbase_quantity_ton\s*\*\s*1000\b/i.test(lineText)) {
@@ -236,6 +240,15 @@ export function classifyHardcodedMatch(file: string, lineText: string): SourceQu
     return /source.*AI|source.*unknown|unknown_ai_generated/i.test(lineText)
       ? "allowed_negative_contract"
       : "allowed_test_fixture";
+  }
+  if (
+    (
+      /\/src\/lib\/estimate\/v4\/[^/]+ReinforcementR1\.ts$/u.test(rootedNormalized) ||
+      rootedNormalized.endsWith("/scripts/dev/runExactFormworkRicsNrm2WebAcceptance.ts")
+    ) &&
+    /\bselected_standard_mass_kg_per_m\s*:\s*[0-9]/u.test(lineText)
+  ) {
+    return "allowed_acceptance_fixture";
   }
   if (normalized.endsWith("src/lib/ai/professionalEstimateCalculator/realMaterialQuantityEngine.ts")) {
     return SPECIFIC_HARDCODED_RATE_PATTERN.test(lineText)
@@ -283,6 +296,7 @@ export function scanHardcodedNormRates(): {
   unrelated_rate_limit_or_persistence_match_count: number;
   backend_norm_record_match_count: number;
   allowed_test_fixture_match_count: number;
+  allowed_acceptance_fixture_match_count: number;
   allowed_negative_contract_match_count: number;
   sample_matches: Array<{
     file: string;
@@ -333,6 +347,7 @@ export function scanHardcodedNormRates(): {
     unrelated_rate_limit_or_persistence_match_count: counts.get("unrelated_rate_limit_or_persistence") ?? 0,
     backend_norm_record_match_count: counts.get("backend_norm_record") ?? 0,
     allowed_test_fixture_match_count: counts.get("allowed_test_fixture") ?? 0,
+    allowed_acceptance_fixture_match_count: counts.get("allowed_acceptance_fixture") ?? 0,
     allowed_negative_contract_match_count: counts.get("allowed_negative_contract") ?? 0,
     sample_matches: sampleMatches,
   };

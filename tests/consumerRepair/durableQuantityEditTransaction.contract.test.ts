@@ -29,15 +29,20 @@ describe("consumer repair durable quantity edit transaction", () => {
       path.resolve(process.cwd(), "src/features/consumerRepair/ConsumerRepairItemRow.tsx"),
       "utf8",
     );
+    const editingOwner = fs.readFileSync(
+      path.resolve(process.cwd(), "src/features/consumerRepair/useConsumerRepairItemRowEditing.ts"),
+      "utf8",
+    );
 
     expect(row).toContain("quantityText");
-    expect(row).toContain("setNativeQuantityInputText");
-    expect(row).toContain("getNode");
-    expect(row).toContain("visibleAlreadyRecorded");
-    expect(row).toContain("runAfterQuantityInputPaint");
-    expect(row).toContain("commitQuantityText");
-    expect(row).toContain("QUANTITY_ACTION_RECEIVED");
-    expect(row).toContain("VISIBLE_INPUT_UPDATED");
+    expect(row).toContain("useConsumerRepairItemRowEditing");
+    expect(editingOwner).toContain("setNativeQuantityInputText");
+    expect(editingOwner).toContain("getNode");
+    expect(editingOwner).toContain("visibleAlreadyRecorded");
+    expect(editingOwner).toContain("runAfterQuantityInputPaint");
+    expect(editingOwner).toContain("commitQuantityText");
+    expect(editingOwner).toContain("QUANTITY_ACTION_RECEIVED");
+    expect(editingOwner).toContain("VISIBLE_INPUT_UPDATED");
     expect(row).toContain("stepQuantity(1)");
     expect(row).not.toContain("traceOpen && hasCalculationTrace");
     expect(row).not.toContain("itemPriceTraceText");

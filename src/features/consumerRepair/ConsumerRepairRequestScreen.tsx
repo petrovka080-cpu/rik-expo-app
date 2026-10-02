@@ -4,11 +4,10 @@ import { Text, TextInput, View } from "react-native";
 import {
   approveConsumerRepairRequestDraft,
   attachConsumerRepairEstimateRowPhoto,
-  beginConsumerRepairCanonicalRoadScopeSelection,
   bindConsumerRepairCanonicalArtifactReady,
-  bindConsumerRepairCanonicalRoadScopeChoice,
   buildApprovedEstimateHistoryRecord,
   commitPreparedConsumerRepairRequestBundle,
+  createConsumerRepairDraftFromHistorySnapshot,
   createConsumerRepairRequestDraft,
   deleteConsumerRepairRequestDraft,
   listConsumerRepairApprovedHistory, listConsumerRepairRequestHistory, removeConsumerRepairRequestItem,
@@ -16,18 +15,19 @@ import {
   type ConsumerRepairDraftRevisionParamBatchPatch,
 } from "../../lib/consumerRequests/consumerRequestService";
 import { ConsumerRepairValidationError } from "../../lib/consumerRequests/consumerRequestMarketplaceService";
+import { consumerRepairSourceRequestDraftId } from "../../lib/consumerRequests/consumerRequestHistoryLineage";
 import { logger } from "../../lib/logger";
 import type {
   ConsumerRepairDraftBundle,
 } from "../../lib/consumerRequests/consumerRequestTypes";
 import {
+  awaitConsumerRepairBundleDurableCommit,
   hydrateNextTransactionalConsumerRepairHistoryPage,
 } from "../../lib/consumerRequests/consumerRequestRepository";
 import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate/globalWorkSmartSearch";
 import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
-import { awaitTransactionalConsumerRepairBundleCommit } from "../../lib/platform/consumerRepairTransactionalDurableBridge";
 import { recordRequestEstimateLaunchStage } from "../../lib/navigation/requestEstimateLaunchObservability";
 import {
   markRequestEstimateIntentStage,
@@ -62,7 +62,7 @@ import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairReq
 import { ConsumerRepairRequestScreenView } from "./ConsumerRepairRequestScreenView";
 import {
   appendNextApprovedHistoryPage,
-  addConsumerRepairCustomNoteItem, addConsumerRepairPhotoMaterialPlaceholder, applyConsumerRepairCatalogItemSelection, buildDeletedConsumerRepairDraftState,
+  addConsumerRepairCustomNoteItem, addConsumerRepairPhotoMaterialPlaceholder, applyConsumerRepairCatalogItemSelection,
   buildApprovedConsumerRepairWorkspaceClearedState,
   canonicalBaselineContractMissingStatusMessage,
   buildEstimateDraftSessionTransitionStatusMessage, canonicalSearchItemToConsumerRepairSuggestion,
@@ -83,6 +83,7 @@ import {
 import { canReuseConsumerRepairCanonicalDraft } from "./consumerRepairCanonicalDraftReuse";
 import {
   consumerRepairRowCode,
+  consumerRepairRowHasManualQuantity,
   consumerRepairRowIncludedInProcurement,
 } from "./consumerRepairRowMetadata";
 import type { CanonicalParameterSession } from "../../lib/estimate/canonicalParameters";
@@ -91,16 +92,18 @@ import {
   consumerRepairCanonicalMissingParameterCount,
   consumerRepairCanonicalUnresolvedRowCount,
 } from "./consumerRepairCanonicalEstimateReadiness";
-import { isConsumerCanonicalBroadAsphaltIdentity } from "./consumerCanonicalBaselineCompile";
 import { consumerCanonicalPrecompileParameterOverrides } from "./consumerCanonicalParameterEditor";
 import {
-  asphaltScopeSelectionQuestionForIntentV5,
-  isRoadScopeIdV4,
-  resolveRoadEstimateScopeV4,
-  resolveRoadSurfaceTechnologyV4,
-  ROAD_SCOPE_RESOLVER_VERSION_V4,
-  type AsphaltScopeSelectionIdV5,
-} from "../../lib/estimate/v4/asphalt";
+  beginConsumerCanonicalScopeSelection,
+  bindConsumerCanonicalScopeChoice,
+  CONSUMER_CANONICAL_SCOPE_RESOLVER_VERSION,
+  consumerCanonicalScopeSelectionQuestionForIntent,
+  isConsumerCanonicalScopedWorkIdentity,
+  isConsumerCanonicalScopeSelectionId,
+  resolveConsumerCanonicalEstimateScope,
+  resolveConsumerCanonicalSurfaceTechnology,
+  type ConsumerCanonicalScopeSelectionId,
+} from "./consumerCanonicalScopeWorkflow";
 import {
   buildConsumerEstimateActionContext,
   ConsumerEstimateActionContextError,
@@ -136,6 +139,36 @@ function applyVisibleQuantityDraft(
         }
         : item
     ),
+  };
+}
+
+function applyVisibleCanonicalRowDraft(
+  bundle: ConsumerRepairDraftBundle,
+  itemId: string,
+  amendment: Pick<CanonicalEstimateRowOverride, "quantity" | "unitPrice">,
+): ConsumerRepairDraftBundle {
+  return {
+    ...bundle,
+    items: bundle.items.map((item) => {
+      if (item.id !== itemId) return item;
+      const quantity = Object.prototype.hasOwnProperty.call(amendment, "quantity")
+        ? amendment.quantity == null ? null : Number(amendment.quantity)
+        : item.quantity;
+      const unitPrice = Object.prototype.hasOwnProperty.call(amendment, "unitPrice")
+        ? amendment.unitPrice == null ? null : Number(amendment.unitPrice)
+        : item.unitPrice;
+      return {
+        ...item,
+        quantity,
+        unitPrice,
+        totalPrice: quantity != null && unitPrice != null
+          ? roundMoney(quantity * unitPrice)
+          : null,
+        ...(Object.prototype.hasOwnProperty.call(amendment, "quantity")
+          ? { quantityEditedByConsumer: quantity != null }
+          : {}),
+      };
+    }),
   };
 }
 
@@ -182,7 +215,7 @@ export type ConsumerRepairRequestScreenControllerProps = ConsumerRepairRequestSc
     problemText: string,
     catalogId: string,
     requestDraftId?: string | null,
-    selectedRoadScope?: AsphaltScopeSelectionIdV5 | null,
+    selectedRoadScope?: ConsumerCanonicalScopeSelectionId | null,
     parameterOverrides?: Record<string, CanonicalEstimateParameterInputValue>,
   ) => Promise<ConsumerRepairDraftBundle | null>;
   onLoadCanonicalRevisionDraft: (input: {
@@ -333,14 +366,12 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private canonicalBaselineCompileInFlight = false;
   private canonicalParameterSessionLoadInFlightRevisionId: string | null = null;
   private canonicalParameterSessionLoadFailedRevisionId: string | null = null;
-  private canonicalQuantityRecalculationInFlightKey: string | null = null;
-  private canonicalPriceRecalculationInFlightKey: string | null = null;
   private canonicalRowAmendmentInFlightKey: string | null = null;
   private canonicalParameterBatchInFlight = false;
+  private pendingCanonicalRowOverrides: Record<string, CanonicalEstimateRowOverride> = {};
+  private pendingCanonicalRowBaseRevisionId: string | null = null;
   private canonicalRowMutationInFlight = (): boolean => Boolean(
-    this.canonicalQuantityRecalculationInFlightKey
-      || this.canonicalPriceRecalculationInFlightKey
-      || this.canonicalRowAmendmentInFlightKey
+    this.canonicalRowAmendmentInFlightKey
       || this.canonicalParameterBatchInFlight
   );
   private reportCanonicalRowMutationInFlight = (): void => {
@@ -349,6 +380,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
   };
   private approvalCommitInFlight = false;
+  private approvalExpectedCanonicalRevisionId: string | null = null;
+  private deleteCommitInFlight = false;
   private durableHistoryLoadInFlight = false;
   private canonicalWorkSearchTimer: ReturnType<typeof setTimeout> | null = null;
   private canonicalWorkSearchAbortController: AbortController | null = null;
@@ -379,6 +412,17 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   ): void {
     const previousBinding = consumerRepairCanonicalBackendBinding(prevState.bundle);
     const currentBinding = consumerRepairCanonicalBackendBinding(this.state.bundle);
+    if (
+      this.pendingCanonicalRowBaseRevisionId != null
+      && currentBinding?.revisionId !== this.pendingCanonicalRowBaseRevisionId
+      && this.canonicalRowAmendmentInFlightKey == null
+    ) {
+      this.pendingCanonicalRowOverrides = {};
+      this.pendingCanonicalRowBaseRevisionId = null;
+      if ((this.state.pendingCanonicalRowEditCount ?? 0) > 0) {
+        this.setState({ pendingCanonicalRowEditCount: 0 });
+      }
+    }
     if (
       currentBinding &&
       (
@@ -545,7 +589,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         source: null,
         requestDraftId: null,
         problemText: null,
-        successMessage: "Выбранная версия сметы открыта.",
+        successMessage: "Сохранённая смета открыта.",
       }).finally(() => this.props.onInitialLaunchBuildSettled?.());
       return;
     }
@@ -848,7 +892,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       if (!authoritative
         || authoritative.status !== "committed"
         || authoritative.ownerUserId !== context.ownerId
-        || authoritative.requestId !== context.requestId
+        || authoritative.requestId !== consumerRepairSourceRequestDraftId(current)
         || authoritative.parentRevisionId !== context.revisionId
         || authoritative.rowId !== context.lineId
         || authoritative.contentSha256 !== result.asset.contentSha256
@@ -890,7 +934,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const bundleForPhoto =
       this.state.bundle?.draft.id === result.draftId
         ? this.state.bundle
-        : this.state.history.find((candidate) => candidate.draft.id === result.draftId) ?? null;
+        : null;
 
     if (!bundleForPhoto) {
       this.setState({ statusMessage: "Черновик для подбора материала не найден. Откройте смету и повторите фото." });
@@ -1233,7 +1277,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       source: bundle,
       requestDraftId: bundle.draft.id,
       problemText: bundle.draft.problemText,
-      successMessage: "Параметры открыты в текущей смете. Сохранение создаст новую дочернюю версию.",
+      successMessage: "Параметры открыты. Внесите все правки и сохраните их одной кнопкой «Применить».",
     });
     return true;
   }
@@ -1280,6 +1324,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         history: listConsumerRepairRequestHistory(this.props.consumerUserId),
         approvedHistoryPage: listConsumerRepairApprovedHistory(this.props.consumerUserId),
         problemText: "",
+        city: bundle.draft.city ?? "",
+        addressText: bundle.draft.addressText ?? "",
+        preferredTimeText: bundle.draft.preferredTimeText ?? "",
+        contactPhone: bundle.draft.contactPhone ?? "",
         selectedWork: selectedWorkFromBundle(bundle),
         selectedHistoryId: null,
         canonicalBackendParameterSession: session,
@@ -1417,10 +1465,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       }
     }
 
-    let selectedRoadScope: AsphaltScopeSelectionIdV5 | null = null;
-    if (isConsumerCanonicalBroadAsphaltIdentity(selectedWork.selectedWorkKey)) {
+    let selectedRoadScope: ConsumerCanonicalScopeSelectionId | null = null;
+    if (isConsumerCanonicalScopedWorkIdentity(selectedWork.selectedWorkKey)) {
       const savedScope = pendingBundle.estimateDraftSession?.scopePresetId ?? null;
-      if (savedScope && isRoadScopeIdV4(savedScope)) {
+      if (savedScope && isConsumerCanonicalScopeSelectionId(savedScope)) {
         selectedRoadScope = savedScope;
       } else if (pendingBundle.estimateDraftSession?.status === "SCOPE_REQUIRED") {
         return {
@@ -1428,7 +1476,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           bundle: pendingBundle,
         };
       } else {
-        const technology = resolveRoadSurfaceTechnologyV4({
+        const technology = resolveConsumerCanonicalSurfaceTechnology({
           originalText: problemText,
           requestedCatalogWorkId: selectedWork.selectedWorkKey,
         });
@@ -1439,20 +1487,20 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
             message: technology.messageRu ?? "Уточните технологию дорожного покрытия.",
           };
         }
-        const resolution = resolveRoadEstimateScopeV4({
+        const resolution = resolveConsumerCanonicalEstimateScope({
           originalText: problemText,
           requestedCatalogWorkId: selectedWork.selectedWorkKey,
         });
         if (resolution.resolverStatus === "NEEDS_SCOPE_SELECTION") {
-          const question = asphaltScopeSelectionQuestionForIntentV5(problemText);
-          const saved = beginConsumerRepairCanonicalRoadScopeSelection({
+          const question = consumerCanonicalScopeSelectionQuestionForIntent(problemText);
+          const saved = beginConsumerCanonicalScopeSelection({
             requestDraftId: pendingBundle.draft.id,
             userId: this.props.consumerUserId,
             originalUserText: problemText,
             requestedCatalogWorkId: selectedWork.selectedWorkKey,
             offeredScopes: question.options.map(({ scopeId }) => scopeId),
             resolverEvidence: resolution.evidence,
-            resolverVersion: ROAD_SCOPE_RESOLVER_VERSION_V4,
+            resolverVersion: CONSUMER_CANONICAL_SCOPE_RESOLVER_VERSION,
           });
           return {
             status: "PENDING_DRAFT_ACTION",
@@ -1497,7 +1545,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       const errorCode = typeof error === "object" && error !== null && "code" in error
         ? String((error as { code?: unknown }).code ?? "")
         : "";
-      console.info("[RikEstimateBuild]", JSON.stringify({
+      logger.info("RikEstimateBuild", JSON.stringify({
         stage: "RUNTIME_DRAFT_FAILED",
         code: code.slice(0, 240),
         errorCode,
@@ -1587,11 +1635,11 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const current = this.state.bundle;
     if (!current || this.state.roadScopeSelectionBusy) return;
     const requirement = current.estimateDraftSession?.scopeRequirement;
-    if (!requirement || !isRoadScopeIdV4(selectedScope)) return;
+    if (!requirement || !isConsumerCanonicalScopeSelectionId(selectedScope)) return;
     this.setState({ roadScopeSelectionBusy: true, statusMessage: "Выбор сохраняется…" });
     let scoped: ConsumerRepairDraftBundle | null = null;
     try {
-      scoped = bindConsumerRepairCanonicalRoadScopeChoice({
+      scoped = bindConsumerCanonicalScopeChoice({
         requestDraftId: current.draft.id,
         userId: this.props.consumerUserId,
         selectedScope,
@@ -1635,15 +1683,77 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       this.setState({ roadScopeSelectionBusy: false });
     }
   };
-  private deleteDraft = () => {
+  private deleteDraft = async () => {
+    if (this.deleteCommitInFlight) return;
+    if (
+      this.approvalCommitInFlight ||
+      this.canonicalBaselineCompileInFlight ||
+      this.canonicalRowMutationInFlight() ||
+      this.state.roadScopeSelectionBusy ||
+      this.state.pdfOpenBusy
+    ) {
+      this.setState({
+        statusMessage: "Дождитесь завершения текущей операции, затем удалите черновик.",
+      });
+      return;
+    }
     const current = this.state.bundle;
     if (!current || current.draft.status !== "draft") return;
-    deleteConsumerRepairRequestDraft({ requestDraftId: current.draft.id, userId: this.props.consumerUserId });
-    this.setState(buildDeletedConsumerRepairDraftState("Заявка удалена."));
-    this.refreshHistory(null);
+    const requestDraftId = current.draft.id;
+    this.deleteCommitInFlight = true;
+    this.setState({
+      deleteCommitBusy: true,
+      statusMessage: "Удаляем выбранный черновик…",
+    });
+    try {
+      const deleted = deleteConsumerRepairRequestDraft({
+        requestDraftId,
+        userId: this.props.consumerUserId,
+      });
+      await awaitConsumerRepairBundleDurableCommit({
+        requestDraftId,
+        expectedStatus: "deleted_by_user",
+        expectedRevisionId: deleted.estimateDraftRevisionState?.currentRevisionId ?? null,
+        rollbackBundle: current,
+      });
+      const history = listConsumerRepairRequestHistory(this.props.consumerUserId);
+      const approvedHistoryPage = listConsumerRepairApprovedHistory(this.props.consumerUserId);
+      if (this.state.bundle?.draft.id !== requestDraftId) {
+        this.setState({ history, approvedHistoryPage });
+        return;
+      }
+      this.cancelCanonicalWorkSearch();
+      this.workSuggestionsEnabled = true;
+      this.setState(buildNewConsumerRepairRequestState(
+        "Черновик удалён. Можно выбрать следующую работу.",
+        history,
+        approvedHistoryPage,
+      ), () => {
+        router.replace("/request");
+      });
+    } catch (error) {
+      if (this.state.bundle?.draft.id !== requestDraftId) return;
+      if (error instanceof ConsumerRepairValidationError) {
+        this.handleValidationError(error);
+      } else {
+        logger.error("ConsumerRepairDelete", "durable delete commit failed", error);
+        this.setState({
+          statusMessage: "Удаление не подтверждено. Черновик оставлен на экране; повторите попытку.",
+        });
+      }
+    } finally {
+      this.deleteCommitInFlight = false;
+      this.setState({ deleteCommitBusy: false });
+    }
   };
   private approveDraft = async () => {
     if (this.approvalCommitInFlight) return;
+    if ((this.state.pendingCanonicalRowEditCount ?? 0) > 0) {
+      this.setState({
+        statusMessage: "Сначала нажмите «Применить изменения» у позиций. После одного общего пересчёта смету можно подтвердить.",
+      });
+      return;
+    }
     if (this.canonicalRowMutationInFlight()) {
       this.setState({
         statusMessage: "Дождитесь завершения пересчёта. Подтверждение будет доступно для новой сохранённой версии сметы.",
@@ -1668,6 +1778,15 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         this.setState({ statusMessage: "Сначала завершите расчёт сметы. Черновик сохранён." });
         return;
       }
+      if (
+        this.approvalExpectedCanonicalRevisionId != null
+        && canonical.revisionId !== this.approvalExpectedCanonicalRevisionId
+      ) {
+        this.setState({
+          statusMessage: "Подтверждение остановлено: после применения открылась другая версия сметы. Проверьте её и повторите действие.",
+        });
+        return;
+      }
       const parameterSession = await this.loadCanonicalParameterSessionForBundle(synced);
       if (consumerRepairCanonicalEstimateBlocksApproval(parameterSession)) {
         const missingCount = consumerRepairCanonicalMissingParameterCount(parameterSession);
@@ -1683,7 +1802,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         this.setState({
           bundle: synced,
           canonicalBackendParameterSession: parameterSession,
-          statusMessage: `Смету нельзя подтвердить: у ${unresolvedRowCount} применимых позиций ещё нет обоснованного количества. Нужен указанный источник нормы или проектных данных.`,
+          statusMessage: `Смету нельзя подтвердить: у ${unresolvedRowCount} применимых позиций не завершены обязательные уточнения — количество, условие применимости или источник расчёта. Проблемные позиции подсвечены в списке.`,
         });
         return;
       }
@@ -1716,10 +1835,11 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           sha256: canonicalArtifact.sha256,
         },
       });
-      await awaitTransactionalConsumerRepairBundleCommit({
+      await awaitConsumerRepairBundleDurableCommit({
         requestDraftId: bundle.draft.id,
         expectedStatus: bundle.draft.status,
         expectedRevisionId: bundle.estimateDraftRevisionState?.currentRevisionId ?? null,
+        rollbackBundle: synced,
       });
       const history = listConsumerRepairRequestHistory(this.props.consumerUserId);
       const durableApprovedHistoryPage = listConsumerRepairApprovedHistory(this.props.consumerUserId);
@@ -1746,11 +1866,20 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       const nextHistory = history.some((candidate) => candidate.draft.id === bundle.draft.id)
         ? history
         : [bundle, ...history];
+      if (this.state.bundle?.draft.id !== synced.draft.id) {
+        this.setState({ history: nextHistory, approvedHistoryPage });
+        return;
+      }
       this.setState(buildApprovedConsumerRepairWorkspaceClearedState({
         history: nextHistory,
         approvedHistoryPage,
-        statusMessage: "Заявка утверждена. PDF сохранён в истории, смета доступна там же для PDF, редактирования и отправки в маркет.",
-      }));
+        statusMessage: "Смета подтверждена и сохранена в истории. Можно выбрать следующую работу.",
+      }), () => {
+        // Approval commits the immutable revision before leaving its workspace.
+        // Clear both deep-link identities so the route cannot immediately
+        // rehydrate the just-approved estimate as the active editor.
+        router.replace("/request");
+      });
     } catch (error) {
       if (error instanceof ConsumerRepairValidationError) {
         this.handleValidationError(error);
@@ -1766,6 +1895,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       }
     } finally {
       this.approvalCommitInFlight = false;
+      this.approvalExpectedCanonicalRevisionId = null;
       this.setState({ approvalCommitBusy: false });
     }
   };
@@ -1864,12 +1994,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         statusMessage: "\u041e\u0442\u043a\u0440\u044b\u0432\u0430\u0435\u043c PDF\u2026",
       },
       () => {
-        const run = () => void this.completePdfOpen();
-        if (typeof requestAnimationFrame === "function") {
-          requestAnimationFrame(run);
-          return;
-        }
-        runAfterNextPaint(run);
+        // Start from the committed busy state immediately. Deferring the only
+        // action behind requestAnimationFrame made a valid tap look inert when
+        // the browser throttled frames or Android was still settling a scroll.
+        void this.completePdfOpen();
       },
     );
   };
@@ -1975,9 +2103,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     }));
   };
   private editHistoryDraft = async (requestDraftId: string) => {
-    const source = this.findKnownHistoryBundle(requestDraftId);
+    const historySource = this.findKnownHistoryBundle(requestDraftId);
     const record = this.findKnownHistoryRecord(requestDraftId);
-    const binding = consumerRepairCanonicalBackendBinding(source) ?? (
+    const binding = consumerRepairCanonicalBackendBinding(historySource) ?? (
       record?.sourceRevisionId && record.sourceReleaseId
         ? { revisionId: record.sourceRevisionId, releaseId: record.sourceReleaseId }
         : null
@@ -1989,13 +2117,20 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       return;
     }
     this.setState({ statusMessage: "Открываем выбранную историческую версию в текущей смете…" });
+    const editableSource = !historySource || historySource.draft.status === "draft"
+      ? historySource
+      : createConsumerRepairDraftFromHistorySnapshot({
+          sourceRequestDraftId: historySource.draft.id,
+          userId: this.props.consumerUserId,
+          reason: "edit_as_new_revision",
+        });
     await this.openExactCanonicalRevisionInConsumerEditor({
       revisionId: binding.revisionId,
       expectedReleaseId: binding.releaseId,
-      source,
-      requestDraftId: source?.draft.id ?? record?.approvedEstimateId ?? requestDraftId,
-      problemText: source?.draft.problemText?.trim() || record?.prompt?.trim() || record?.title,
-      successMessage: "Историческая версия открыта. Сохранение изменений создаст дочернюю версию; оригинал останется неизменным.",
+      source: editableSource,
+      requestDraftId: editableSource?.draft.id ?? record?.approvedEstimateId ?? requestDraftId,
+      problemText: historySource?.draft.problemText?.trim() || record?.prompt?.trim() || record?.title,
+      successMessage: "Историческая смета открыта. После сохранения исходный вариант останется в истории.",
     });
   };
   private sendHistoryToMarket = async (requestDraftId: string) => {
@@ -2017,10 +2152,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         artifact: canonicalArtifact,
         revision: canonicalRevision,
         expectedKind: "procurement",
-        expectedCatalogId: source.draft.selectedCatalogWorkId,
+        expectedCatalogId: canonicalRevision.catalogId,
         expectedRowCount: canonicalRevision.rowCount,
       });
-      this.setState(sendConsumerRepairHistoryToMarketplaceFromScreen({
+      this.setState(await sendConsumerRepairHistoryToMarketplaceFromScreen({
         requestDraftId,
         userId: this.props.consumerUserId,
         canonicalArtifact: {
@@ -2030,10 +2165,17 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           releaseId: canonicalArtifact.releaseId,
           status: "ready" as const,
           sha256: canonicalArtifact.sha256,
+          revisionChecksumSha256: canonicalRevision.checksumSha256,
         },
       }));
     } catch (error) {
-      this.handleValidationError(error);
+      if (error instanceof ConsumerRepairValidationError) {
+        this.handleValidationError(error);
+        return;
+      }
+      this.setState({
+        statusMessage: "Не удалось подтвердить отправку на сервере. Заявка сохранена и не отмечена отправленной; повторите попытку.",
+      });
     }
   };
   private decreaseItem = (itemId: string) => {
@@ -2060,71 +2202,139 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const bundle = applyVisibleQuantityDraft(current, itemId, (item.quantity ?? 0) + 1);
     this.updateCurrentBundleWithDeferredDurableQuantityCommit(bundle, itemId);
   };
+  private stageCanonicalRowEdit = (input: {
+    current: ConsumerRepairDraftBundle;
+    revisionId: string;
+    itemId: string;
+    rowId: string;
+    amendment: Pick<CanonicalEstimateRowOverride, "quantity" | "unitPrice">;
+  }): void => {
+    if (this.canonicalRowMutationInFlight() || this.approvalCommitInFlight) {
+      this.reportCanonicalRowMutationInFlight();
+      return;
+    }
+    if (
+      this.pendingCanonicalRowBaseRevisionId != null
+      && this.pendingCanonicalRowBaseRevisionId !== input.revisionId
+    ) {
+      this.pendingCanonicalRowOverrides = {};
+    }
+    this.pendingCanonicalRowBaseRevisionId = input.revisionId;
+    this.pendingCanonicalRowOverrides = {
+      ...this.pendingCanonicalRowOverrides,
+      [input.rowId]: {
+        ...this.pendingCanonicalRowOverrides[input.rowId],
+        ...input.amendment,
+        provenance: { kind: "manual", reason: "consumer_estimate_row_batch_edit" },
+      },
+    };
+    const pendingCount = Object.keys(this.pendingCanonicalRowOverrides).length;
+    this.setState((state) => ({
+      bundle: state.bundle?.draft.id === input.current.draft.id
+        ? applyVisibleCanonicalRowDraft(state.bundle, input.itemId, input.amendment)
+        : state.bundle,
+      pendingCanonicalRowEditCount: pendingCount,
+      statusMessage: `Изменения в ${pendingCount} поз. подготовлены. Введите остальные количества и цены, затем нажмите «Применить изменения».`,
+      validationErrors: [],
+    }));
+  };
+  private applyPendingCanonicalRowEdits = async (): Promise<boolean> => {
+    const current = this.state.bundle;
+    const binding = consumerRepairCanonicalBackendBinding(current);
+    const rowOverrides = { ...this.pendingCanonicalRowOverrides };
+    const pendingCount = Object.keys(rowOverrides).length;
+    if (!current || !binding || pendingCount === 0) return false;
+    if (binding.revisionId !== this.pendingCanonicalRowBaseRevisionId) {
+      this.setState({
+        statusMessage: "Версия сметы изменилась. Повторите ввод количества или цены в текущей версии.",
+      });
+      return false;
+    }
+    if (this.canonicalRowMutationInFlight() || this.approvalCommitInFlight) {
+      this.reportCanonicalRowMutationInFlight();
+      return false;
+    }
+    const inFlightKey = `${binding.revisionId}\u0000batch\u0000${pendingCount}`;
+    const mutationSource = { ...binding, draftId: current.draft.id };
+    this.canonicalRowAmendmentInFlightKey = inFlightKey;
+    this.setState({
+      canonicalEstimateMutationBusy: true,
+      statusMessage: `Применяем изменения в ${pendingCount} поз. и пересчитываем смету один раз…`,
+    });
+    try {
+      const result = await this.props.onRecalculateCanonicalEstimate({
+        revisionId: binding.revisionId,
+        requestDraftId: current.draft.id,
+        problemText: current.draft.problemText || current.draft.title || "Смета",
+        patches: [],
+        rowOverrides,
+      });
+      if (!consumerRepairCanonicalMutationSourceMatchesBundle(mutationSource, this.state.bundle)) return false;
+      this.pendingCanonicalRowOverrides = {};
+      this.pendingCanonicalRowBaseRevisionId = null;
+      await new Promise<void>((resolve) => this.setState({
+          bundle: result.bundle,
+          canonicalBackendParameterSession: result.session,
+          pendingCanonicalRowEditCount: 0,
+          selectedHistoryId: null,
+          statusMessage: `Изменения в ${pendingCount} поз. сохранены. Смета пересчитана один раз.`,
+          validationErrors: [],
+        }, resolve));
+      this.refreshHistory(result.bundle);
+      return true;
+    } catch (error) {
+      if (!consumerRepairCanonicalMutationSourceMatchesBundle(mutationSource, this.state.bundle)) return false;
+      this.setState({
+        statusMessage: error instanceof Error
+          ? error.message
+          : "Изменения не сохранены: backend не подтвердил результат. Введённые значения оставлены на экране.",
+      });
+      return false;
+    } finally {
+      if (this.canonicalRowAmendmentInFlightKey === inFlightKey) {
+        this.canonicalRowAmendmentInFlightKey = null;
+      }
+      this.setState({ canonicalEstimateMutationBusy: this.canonicalRowMutationInFlight() });
+    }
+  };
+  private applyAndApproveDraft = async (): Promise<void> => {
+    if ((this.state.pendingCanonicalRowEditCount ?? 0) > 0) {
+      const applied = await this.applyPendingCanonicalRowEdits();
+      if (!applied) return;
+    }
+    const canonical = consumerRepairCanonicalBackendBinding(this.state.bundle);
+    if (!canonical) {
+      this.setState({ statusMessage: "Подтверждение остановлено: новая backend-версия сметы не открылась." });
+      return;
+    }
+    this.approvalExpectedCanonicalRevisionId = canonical.revisionId;
+    await this.approveDraft();
+  };
   private changeItemQuantity = async (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => {
     const current = this.state.bundle;
     if (!current) return;
     const quantity = parseEditableEstimateNumberInput(value);
     const binding = consumerRepairCanonicalBackendBinding(current);
     if (binding) {
-      const mutationSource = { ...binding, draftId: current.draft.id };
       const item = current.items.find((candidate) => candidate.id === itemId);
       const rowId = consumerRepairRowCode(item);
       const quantityCleared = value.trim().length === 0;
-      const mayReturnToPreliminary = Boolean(rowId?.startsWith("manual:"));
+      const mayReturnToPreliminary = Boolean(
+        rowId?.startsWith("manual:") || consumerRepairRowHasManualQuantity(item),
+      );
       if (!item || !rowId
         || (quantity == null && !(quantityCleared && mayReturnToPreliminary))
         || (quantity != null && quantity < 0)) {
         this.setState({ statusMessage: "Количество не сохранено: укажите неотрицательное число для точной строки сметы." });
         return;
       }
-      const inFlightKey = `${binding.revisionId}\u0000${rowId}\u0000${quantity == null ? "UNRESOLVED" : quantity}`;
-      if (this.canonicalRowMutationInFlight()) {
-        this.reportCanonicalRowMutationInFlight();
-        return;
-      }
-      this.canonicalQuantityRecalculationInFlightKey = inFlightKey;
-      this.setState({ statusMessage: "Сохраняем количество и создаём дочернюю версию сметы…" });
-      try {
-        const result = await this.props.onRecalculateCanonicalEstimate({
-          revisionId: binding.revisionId,
-          requestDraftId: current.draft.id,
-          problemText: current.draft.problemText || current.draft.title || "Смета",
-          patches: [],
-          rowOverrides: {
-            [rowId]: {
-              quantity,
-              provenance: {
-                kind: "manual",
-                reason: quantity == null
-                  ? "consumer_estimate_quantity_cleared"
-                  : "consumer_estimate_quantity_edit",
-              },
-            },
-          },
-        });
-        if (!consumerRepairCanonicalMutationSourceMatchesBundle(mutationSource, this.state.bundle)) return;
-        this.setState({
-          bundle: result.bundle,
-          canonicalBackendParameterSession: result.session,
-          selectedHistoryId: null,
-          statusMessage: quantity == null
-            ? "Количество очищено. Позиция сохранена как предварительная потребность."
-            : "Количество сохранено. Создана новая дочерняя версия сметы.",
-          validationErrors: [],
-        });
-        this.refreshHistory(result.bundle);
-      } catch (error) {
-        if (!consumerRepairCanonicalMutationSourceMatchesBundle(mutationSource, this.state.bundle)) return;
-        this.setState({
-          statusMessage: error instanceof Error
-            ? error.message
-            : "Количество не сохранено: backend не подтвердил дочернюю версию сметы.",
-        });
-      } finally {
-        if (this.canonicalQuantityRecalculationInFlightKey === inFlightKey) {
-          this.canonicalQuantityRecalculationInFlightKey = null;
-        }
-      }
+      this.stageCanonicalRowEdit({
+        current,
+        revisionId: binding.revisionId,
+        itemId,
+        rowId,
+        amendment: { quantity },
+      });
       return;
     }
     const bundle = applyVisibleQuantityDraft(current, itemId, quantity ?? 0);
@@ -2149,65 +2359,25 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     this.updateCurrentBundleWithDeferredDurableQuantityCommit(bundle, itemId, { operation });
   };
   private changeItemUnitPrice = async (itemId: string, value: string) => {
-    const binding = this.state.bundle ? consumerRepairCanonicalBackendBinding(this.state.bundle) : null;
-    const inFlightKey = `${binding?.revisionId ?? "local"}\u0000${itemId}\u0000${value.trim()}`;
-    if (binding && this.canonicalRowMutationInFlight()) {
-      this.reportCanonicalRowMutationInFlight();
-      return;
-    }
-    this.canonicalPriceRecalculationInFlightKey = inFlightKey;
-    try {
-      await this.changeItemUnitPriceUnlocked(itemId, value);
-    } finally {
-      if (this.canonicalPriceRecalculationInFlightKey === inFlightKey) {
-        this.canonicalPriceRecalculationInFlightKey = null;
-      }
-    }
-  };
-  private changeItemUnitPriceUnlocked = async (itemId: string, value: string) => {
     const current = this.state.bundle;
     if (!current) return;
     const binding = consumerRepairCanonicalBackendBinding(current);
     if (binding) {
-      const mutationSource = { ...binding, draftId: current.draft.id };
       const item = current.items.find((candidate) => candidate.id === itemId);
       const rowId = consumerRepairRowCode(item);
       const unitPrice = parseEditableEstimateNumberInput(value);
-      if (!item || !rowId || unitPrice == null || unitPrice < 0) {
+      const priceCleared = value.trim().length === 0;
+      if (!item || !rowId || (unitPrice == null && !priceCleared) || (unitPrice != null && unitPrice < 0)) {
         this.setState({ statusMessage: "Цена не сохранена: укажите неотрицательное число для точной строки сметы." });
         return;
       }
-      this.setState({ statusMessage: "Сохраняем цену и создаём дочернюю версию сметы…" });
-      try {
-        const result = await this.props.onRecalculateCanonicalEstimate({
-          revisionId: binding.revisionId,
-          requestDraftId: current.draft.id,
-          problemText: current.draft.problemText || current.draft.title || "Смета",
-          patches: [],
-          rowOverrides: {
-            [rowId]: {
-              unitPrice,
-              provenance: { kind: "manual", reason: "consumer_estimate_price_edit" },
-            },
-          },
-        });
-        if (!consumerRepairCanonicalMutationSourceMatchesBundle(mutationSource, this.state.bundle)) return;
-        this.setState({
-          bundle: result.bundle,
-          canonicalBackendParameterSession: result.session,
-          selectedHistoryId: null,
-          statusMessage: "Цена сохранена. Создана новая дочерняя версия сметы.",
-          validationErrors: [],
-        });
-        this.refreshHistory(result.bundle);
-      } catch (error) {
-        if (!consumerRepairCanonicalMutationSourceMatchesBundle(mutationSource, this.state.bundle)) return;
-        this.setState({
-          statusMessage: error instanceof Error
-            ? error.message
-            : "Цена не сохранена: backend не подтвердил дочернюю версию сметы.",
-        });
-      }
+      this.stageCanonicalRowEdit({
+        current,
+        revisionId: binding.revisionId,
+        itemId,
+        rowId,
+        amendment: { unitPrice },
+      });
       return;
     }
     const bundle = updateConsumerRepairRequestItemUnitPrice({
@@ -2226,6 +2396,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   ): Promise<void> => {
     const current = this.state.bundle;
     if (!current) return;
+    if ((this.state.pendingCanonicalRowEditCount ?? 0) > 0) {
+      this.setState({ statusMessage: "Сначала примените подготовленные количества и цены одной кнопкой." });
+      return;
+    }
     const binding = consumerRepairCanonicalBackendBinding(current);
     const item = current.items.find((candidate) => candidate.id === itemId);
     const rowId = consumerRepairRowCode(item);
@@ -2271,7 +2445,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       this.setState({
         statusMessage: error instanceof Error
           ? error.message
-          : "Изменение не сохранено: backend не подтвердил дочернюю версию сметы.",
+          : "Изменение не сохранено: backend не подтвердил результат.",
       });
     } finally {
       if (this.canonicalRowAmendmentInFlightKey === inFlightKey) {
@@ -2290,8 +2464,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       itemId,
       { titleRu },
       "consumer_estimate_specification_edit",
-      "Сохраняем спецификацию и создаём дочернюю версию сметы…",
-      "Спецификация сохранена. Создана новая дочерняя версия сметы.",
+      "Сохраняем спецификацию…",
+      "Спецификация сохранена.",
     );
   };
   private changeItemOptional = (itemId: string, optional: boolean) => {
@@ -2303,8 +2477,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         includedInProcurement: optional ? false : consumerRepairRowIncludedInProcurement(item),
       },
       "consumer_estimate_optional_toggle",
-      "Сохраняем применимость позиции и создаём дочернюю версию сметы…",
-      "Применимость позиции сохранена. Создана новая дочерняя версия сметы.",
+      "Сохраняем применимость позиции…",
+      "Применимость позиции сохранена.",
     );
   };
   private applyParamPatch = async (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => {
@@ -2315,17 +2489,21 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private applyParamBatch = async (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => {
     const current = this.state.bundle;
     if (!current) return;
+    if ((this.state.pendingCanonicalRowEditCount ?? 0) > 0) {
+      this.setState({ statusMessage: "Сначала примените подготовленные количества и цены одной кнопкой." });
+      return false;
+    }
     const binding = consumerRepairCanonicalBackendBinding(current);
     if (!binding) {
       const collection = current.canonicalParameterSession;
       const catalogId = collection?.workPassportId?.trim();
       if (!collection || !catalogId) {
         this.setState({ statusMessage: "Параметры не сохранены: у сметы нет точной версии или схемы исходных данных." });
-        return;
+        return false;
       }
       if (this.approvalCommitInFlight || this.canonicalRowMutationInFlight()) {
         this.reportCanonicalRowMutationInFlight();
-        return;
+        return false;
       }
       const parameterOverrides = consumerCanonicalPrecompileParameterOverrides({
         session: collection,
@@ -2341,7 +2519,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           current.draft.problemText || current.draft.title || "Смета",
           catalogId,
           current.draft.id,
-          current.estimateDraftSession?.scopePresetId && isRoadScopeIdV4(current.estimateDraftSession.scopePresetId)
+          current.estimateDraftSession?.scopePresetId && isConsumerCanonicalScopeSelectionId(current.estimateDraftSession.scopePresetId)
             ? current.estimateDraftSession.scopePresetId
             : null,
           parameterOverrides,
@@ -2356,7 +2534,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
             `Данные сохранены. Осталось заполнить ${nextSession.blockingMissingParameterIds.length} обязательных параметров.`,
             nextSession,
           );
-          return;
+          return true;
         }
         const parameterSession = await this.loadCanonicalParameterSessionForBundle(recovered);
         this.updateCurrentBundle(
@@ -2364,27 +2542,28 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           "Исходные данные сохранены. Смета рассчитана — проверьте позиции и параметры.",
           parameterSession,
         );
+        return true;
       } catch (error) {
         this.setState({
           statusMessage: error instanceof Error
             ? error.message
             : "Исходные данные не сохранены: backend не подтвердил продолжение расчёта.",
         });
+        return false;
       } finally {
         this.canonicalParameterBatchInFlight = false;
         this.setState({ canonicalEstimateMutationBusy: this.canonicalRowMutationInFlight() });
       }
-      return;
     }
     const mutationSource = { ...binding, draftId: current.draft.id };
     if (this.approvalCommitInFlight || this.canonicalRowMutationInFlight()) {
       this.reportCanonicalRowMutationInFlight();
-      return;
+      return false;
     }
     this.canonicalParameterBatchInFlight = true;
     this.setState({
       canonicalEstimateMutationBusy: true,
-      statusMessage: "Сохраняем параметры и создаём дочернюю версию сметы…",
+      statusMessage: "Сохраняем все изменения и пересчитываем зависимые позиции…",
     });
     try {
       const result = await this.props.onRecalculateCanonicalEstimate({
@@ -2393,21 +2572,23 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         problemText: current.draft.problemText || current.draft.title || "Смета",
         patches,
       });
-      if (!consumerRepairCanonicalMutationSourceMatchesBundle(mutationSource, this.state.bundle)) return;
+      if (!consumerRepairCanonicalMutationSourceMatchesBundle(mutationSource, this.state.bundle)) return false;
       this.setState({
         bundle: result.bundle,
         canonicalBackendParameterSession: result.session,
         selectedHistoryId: null,
-        statusMessage: "Параметры сохранены. Создана новая дочерняя версия и пересчитаны зависимые позиции.",
+        statusMessage: "Изменения сохранены. Зависимые позиции пересчитаны.",
       });
       this.refreshHistory(result.bundle);
+      return true;
     } catch (error) {
-      if (!consumerRepairCanonicalMutationSourceMatchesBundle(mutationSource, this.state.bundle)) return;
+      if (!consumerRepairCanonicalMutationSourceMatchesBundle(mutationSource, this.state.bundle)) return false;
       this.setState({
         statusMessage: error instanceof Error
           ? error.message
-          : "Параметры не сохранены: backend не подтвердил дочернюю версию.",
+          : "Параметры не сохранены: backend не подтвердил результат.",
       });
+      return false;
     } finally {
       this.canonicalParameterBatchInFlight = false;
       this.setState({ canonicalEstimateMutationBusy: this.canonicalRowMutationInFlight() });
@@ -2535,8 +2716,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         itemId,
         { includedInEstimate: false, includedInProcurement: false },
         "consumer_estimate_row_exclusion",
-        "Исключаем позицию и создаём дочернюю версию сметы…",
-        "Позиция исключена из расчёта. Её можно вернуть; изменение сохранено в новой дочерней версии.",
+        "Исключаем позицию и сохраняем изменение…",
+        "Позиция исключена из расчёта. Её можно вернуть через историю изменений.",
       );
       return;
     }
@@ -2563,8 +2744,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           includedInProcurement: consumerRepairRowIncludedInProcurement(item),
         },
         "consumer_estimate_row_restore",
-        "Возвращаем позицию и создаём дочернюю версию сметы…",
-        "Позиция возвращена в расчёт. Изменение сохранено в новой дочерней версии.",
+        "Возвращаем позицию и сохраняем изменение…",
+        "Позиция возвращена в расчёт.",
       );
       return;
     }
@@ -2619,6 +2800,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         this.props.onOpenPhotoForMaterialRecognition({
           userId: context.ownerId,
           draftId: context.draftId,
+          canonicalRequestId: consumerRepairSourceRequestDraftId(bundle),
           targetItemId: targetItem.id,
           revisionId: context.revisionId,
           lineId: context.lineId!,
@@ -2704,7 +2886,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     }
     const canonicalContext = this.pendingCatalogActionContext;
     if (canonicalContext) {
-      this.setState({ statusMessage: "Сохраняем товар и создаём дочернюю версию сметы…" });
+      this.setState({ statusMessage: "Сохраняем выбранный товар…" });
       try {
         await this.props.onSelectCanonicalCatalogItem({
           context: canonicalContext,
@@ -2716,13 +2898,13 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           catalogPickerVisible: false,
           catalogPickerTargetItemId: null,
           catalogPickerInitialQuery: undefined,
-          statusMessage: `Товар выбран для строки. Создана дочерняя версия сметы: ${catalogItem.name}.`,
+          statusMessage: `Товар выбран и сохранён: ${catalogItem.name}.`,
         });
       } catch (error) {
         this.setState({
           statusMessage: error instanceof Error
             ? error.message
-            : "Товар не выбран: backend не подтвердил дочернюю версию.",
+            : "Товар не выбран: backend не подтвердил результат.",
         });
       }
       return;
@@ -2983,6 +3165,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         onRefineCanonicalParameters={this.refineCanonicalParameters}
         onDecrease={this.decreaseItem} onIncrease={this.increaseItem}
         onQuantityChange={this.changeItemQuantity} onUnitPriceChange={this.changeItemUnitPrice}
+        onApplyCanonicalRowEdits={this.applyPendingCanonicalRowEdits}
         onSpecificationChange={this.changeItemSpecification} onOptionalChange={this.changeItemOptional}
         onRemove={this.removeItem} onAddManual={this.addManualItem} onAddCustom={this.addCustomItem}
         onAddPhotoMaterialRecognition={this.addPhotoMaterialRecognition}
@@ -2999,7 +3182,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         onSendHistoryToMarket={this.sendHistoryToMarket} onCloseCatalogPicker={this.closeCatalogPicker}
         onSelectCatalogItem={this.addCatalogItem} onCreateNew={this.createNew}
         onDeleteDraft={this.deleteDraft}
-        onApproveDraft={this.approveDraft} onPrepareDraft={this.prepareDraft}
+        onApproveDraft={this.approveDraft} onApplyAndApproveDraft={this.applyAndApproveDraft} onPrepareDraft={this.prepareDraft}
         onSelectRoadScope={this.selectRoadScope}
         onOpenHistory={this.ensureHistoryLoaded}
         onLoadMoreHistory={this.loadMoreApprovedHistory}

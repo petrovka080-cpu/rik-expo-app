@@ -14,6 +14,7 @@ import type {
   ProfessionalResourceCompletenessPolicyV1,
 } from "../../domainFactory/professionalEstimateDomainFactoryV1";
 import {
+  CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_PRODUCT_PROFILE_ID,
   CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_PRODUCT_PROFILE_ID,
   CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_SOURCE_ID,
   CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_SOURCE_METADATA,
@@ -68,6 +69,7 @@ const KEEP_PARAMETER_IDS = new Set([
   "selected_consumption_kg_m2",
   "dry_interior_no_permanent_humidity_confirmed",
   "application_temperature_confirmed",
+  "ct126_tds_variant_confirmed",
   "selected_bag_size_kg",
 ]);
 
@@ -381,6 +383,12 @@ export function validateWallPuttyCt127Krer15InputsV1(input: {
 }): readonly string[] {
   if (input.workKey !== WALL_PUTTY_CT127_KRER15_WORK_KEY) return [];
   const values = input.parameterValues;
+  if (
+    values.product_profile_id?.value === CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_PRODUCT_PROFILE_ID &&
+    values.product_profile_id.source_type !== "VISIBLE_BASELINE_ASSUMPTION"
+  ) {
+    return [];
+  }
   const blockers: string[] = [];
   if (
     values.product_profile_id?.value !== CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_PRODUCT_PROFILE_ID ||

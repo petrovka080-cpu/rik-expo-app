@@ -8,6 +8,7 @@ import {
 import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/consumerRepairAiAdapter";
 import {
   canonicalArtifactForApprovedConsumerRepairTestBundle,
+  consumerMarketplaceTransportForApprovedBundle,
   CONSUMER_REPAIR_TEST_USER_ID,
   createApprovedConsumerRepairRequest,
 } from "./consumerRepairTestHelpers";
@@ -15,7 +16,7 @@ import {
 describe("history send to market uses approved snapshot", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
 
-  it("sends the approved history estimate and leaves a different active draft untouched", () => {
+  it("sends the approved history estimate and leaves a different active draft untouched", async () => {
     const laminate = createApprovedConsumerRepairRequest();
     const canonicalArtifact = canonicalArtifactForApprovedConsumerRepairTestBundle(laminate);
     const foundation = createConsumerRepairRequestDraft({
@@ -30,10 +31,11 @@ describe("history send to market uses approved snapshot", () => {
       requestDraftId: laminate.draft.id,
       userId: CONSUMER_REPAIR_TEST_USER_ID,
     });
-    const sent = sendConsumerRepairRequestToMarketplace({
+    const sent = await sendConsumerRepairRequestToMarketplace({
       requestDraftId: laminate.draft.id,
       userId: CONSUMER_REPAIR_TEST_USER_ID,
       canonicalArtifact,
+      transport: consumerMarketplaceTransportForApprovedBundle(laminate, canonicalArtifact),
     });
     const activeDraft = getConsumerRepairRequest(foundation.draft.id);
 

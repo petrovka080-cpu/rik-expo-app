@@ -1,7 +1,7 @@
 import masonryNormPack from "../../../../../data/estimate-norms/professional/masonry.json";
 import { estimateDeterministicHash } from "../../estimateDeterministicHash";
 import type { ProfessionalParameterValueV4 } from "../professionalProjectAssemblyV4";
-import type { ProfessionalPhysicalNormApplicabilityResolutionV1 } from "./professionalPhysicalNormApplicabilityV1";
+import type { ProfessionalPhysicalNormApplicabilityResolutionV1 } from "./professionalPhysicalNormApplicabilityTypesV1";
 
 const APPLICABILITY_VERSION = "professional-physical-norm-applicability:v1" as const;
 export const BIA_TN10_MASONRY_PRODUCT_PROFILE_ID = "standard-profile:bia-tn10:selected-table-4-fired-clay-brick:v1" as const;

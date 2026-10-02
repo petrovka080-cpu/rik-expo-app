@@ -5,6 +5,7 @@ import path from "node:path";
 import {
   classifyCompletedShardJestCacheCleanupError,
   cleanupCompletedShardJestCache,
+  FULL_JEST_EXCLUSIVE_MICROBATCH_TEST_PATHS,
   planJestShardMicrobatches,
   planWeightedJestShards,
   resolveAllowedWorkspaceOverlayPaths,
@@ -14,6 +15,7 @@ import {
 import {
   applyAffectedJestRuntimeCalibration,
   AFFECTED_JEST_EXECUTION_PROFILE,
+  AFFECTED_JEST_OLD_SPACE_MIB,
   buildAffectedJestShardPlan,
   estimateUnmeasuredAffectedJestRuntimeMs,
   MAX_LOCAL_AFFECTED_JEST_SHARDS,
@@ -21,13 +23,24 @@ import {
 } from "../../scripts/verification/affectedJestSharding";
 import {
   affectedJestCliArgs,
+  affectedJestNodeOptions,
   AFFECTED_VERIFICATION_BUDGET_MS,
   AFFECTED_VERIFICATION_TECHNICAL_TIMEOUT_MS,
+  awaitVerificationResourceAdmission,
+  classifyAffectedVerificationSuites,
   evaluateVerificationShardMemoryTerminal,
   evaluateVerificationShardProcessTerminal,
   evaluateAffectedVerificationPlanReadiness,
+  DISTRIBUTED_AFFECTED_REQUIRED_AVAILABLE_BYTES,
+  MAX_DISTRIBUTED_AFFECTED_JEST_STANDARD_SHARDS,
+  resolveAffectedVerificationPredictedCriticalPathMs,
+  resolveAffectedPlaywrightRunnerOwnership,
+  RESOURCE_ADMISSION_SAMPLE_INTERVAL_MS,
+  RESOURCE_ADMISSION_SETTLE_MAX_MS,
   runJestShard,
+  validateAffectedPlaywrightResultEvidence,
 } from "../../scripts/verification/runVerificationGate";
+import { collectPassingJestRuntimeMeasurements } from "../../scripts/verification/refreshAffectedJestRuntimeCalibration";
 
 function entry(testPath: string, weight: number): WeightedJestManifestEntry {
   return {
@@ -89,6 +102,24 @@ describe("deterministic sharded full Jest runner", () => {
       { microbatch_id: 2, test_files: ["tests/e.test.ts", "tests/f.test.ts"] },
     ]);
     expect(microbatches.flatMap((item) => item.test_files)).toEqual(shard.test_files);
+  });
+
+  it("runs the measured 11610 resource audit in its own microbatch", () => {
+    const resourceAudit = FULL_JEST_EXCLUSIVE_MICROBATCH_TEST_PATHS[0];
+    const shard = {
+      shard_id: 0,
+      weight: 390,
+      test_files: ["tests/a.test.ts", resourceAudit, "tests/b.test.ts", "tests/c.test.ts"],
+    };
+
+    const microbatches = planJestShardMicrobatches(shard, 2);
+
+    expect(microbatches).toEqual([
+      { microbatch_id: 0, test_files: [resourceAudit] },
+      { microbatch_id: 1, test_files: ["tests/a.test.ts", "tests/b.test.ts"] },
+      { microbatch_id: 2, test_files: ["tests/c.test.ts"] },
+    ]);
+    expect(new Set(microbatches.flatMap((item) => item.test_files))).toEqual(new Set(shard.test_files));
   });
 
   it("keeps measured long-running affected suites on separate bounded shards", () => {
@@ -166,6 +197,21 @@ describe("deterministic sharded full Jest runner", () => {
       duplicates: [],
       unexpected: [],
     });
+  });
+
+  it("models isolated distributed runners without lowering the approved memory admission", () => {
+    expect(DISTRIBUTED_AFFECTED_REQUIRED_AVAILABLE_BYTES).toBe(8_771_948_544);
+    expect(MAX_DISTRIBUTED_AFFECTED_JEST_STANDARD_SHARDS).toBe(16);
+    expect(resolveAffectedVerificationPredictedCriticalPathMs({
+      distributedExecution: false,
+      sequentialWaveWeightMs: 750_000,
+      shardWeightsMs: [133_000, 267_000, 350_000],
+    })).toBe(750_000);
+    expect(resolveAffectedVerificationPredictedCriticalPathMs({
+      distributedExecution: true,
+      sequentialWaveWeightMs: 750_000,
+      shardWeightsMs: [133_000, 267_000, 350_000],
+    })).toBe(350_000);
   });
 
   it("puts nested child-process suites in exclusive waves without losing normal suites", () => {
@@ -346,6 +392,172 @@ describe("deterministic sharded full Jest runner", () => {
     }
   });
 
+  it("uses the unmeasured peak floor only when a shard actually contains an unmeasured suite", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "affected-jest-measured-resource-floor-"));
+    try {
+      fs.mkdirSync(path.join(root, "tests"), { recursive: true });
+      for (const name of ["measured-a", "measured-b"]) {
+        fs.writeFileSync(path.join(root, "tests", `${name}.test.ts`), `test('${name}', () => undefined);\n`, "utf8");
+      }
+      const calibrationPath = path.join(root, "calibration.json");
+      fs.writeFileSync(calibrationPath, JSON.stringify({
+        schema: "verification-affected-jest-runtime-calibration/v1",
+        source_gate: "measured-resource-floor-proof",
+        source_sha: "fixture-sha",
+        execution_profile: AFFECTED_JEST_EXECUTION_PROFILE,
+        resource_policy: {
+          standard_wave_minimum_free_physical_bytes: 0,
+          closeout_reserve_bytes: 50,
+          maximum_standard_process_roots: 2,
+          unmeasured_standard_root_peak_bytes: 1_000,
+        },
+        resource_profiles: {
+          "tests/measured-a.test.ts": {
+            scheduling: "standard_outer_jest",
+            outer_jest_processes: 1,
+            nested_node_workers: 0,
+            child_old_space_mib: 2048,
+            minimum_free_physical_bytes: 80,
+            observed_peak_tree_working_set_bytes: 80,
+            evidence: "measured-a-fixture",
+          },
+          "tests/measured-b.test.ts": {
+            scheduling: "standard_outer_jest",
+            outer_jest_processes: 1,
+            nested_node_workers: 0,
+            child_old_space_mib: 2048,
+            minimum_free_physical_bytes: 70,
+            observed_peak_tree_working_set_bytes: 70,
+            evidence: "measured-b-fixture",
+          },
+        },
+        suites: {
+          "tests/measured-a.test.ts": 100,
+          "tests/measured-b.test.ts": 90,
+        },
+      }), "utf8");
+
+      const plan = buildAffectedJestShardPlan({
+        root,
+        suites: ["tests/measured-a.test.ts", "tests/measured-b.test.ts"],
+        shardCount: 2,
+        calibrationPath,
+      });
+
+      expect(plan.resource_plan.waves).toHaveLength(1);
+      expect(plan.resource_plan.waves[0]).toMatchObject({
+        resource_class: "standard_outer_jest",
+        maximum_parallel_process_roots: 2,
+        estimated_peak_process_tree_bytes: 150,
+        minimum_free_physical_bytes: 150,
+      });
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("fills nested runtime tails without increasing the measured process-tree peak", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "affected-jest-memory-safe-tail-"));
+    try {
+      const names = ["nested-a", "nested-b", "high-memory", "low-memory"];
+      fs.mkdirSync(path.join(root, "tests"), { recursive: true });
+      for (const name of names) {
+        fs.writeFileSync(path.join(root, "tests", `${name}.test.ts`), `test('${name}', () => undefined);\n`, "utf8");
+      }
+      const calibrationPath = path.join(root, "calibration.json");
+      fs.writeFileSync(calibrationPath, JSON.stringify({
+        schema: "verification-affected-jest-runtime-calibration/v1",
+        source_gate: "memory-safe-tail-proof",
+        source_sha: "fixture-sha",
+        execution_profile: AFFECTED_JEST_EXECUTION_PROFILE,
+        resource_policy: {
+          standard_wave_minimum_free_physical_bytes: 0,
+          closeout_reserve_bytes: 50,
+          maximum_standard_process_roots: 1,
+          unmeasured_standard_root_peak_bytes: 500,
+        },
+        resource_profiles: {
+          "tests/nested-a.test.ts": {
+            scheduling: "nested_process_tree",
+            outer_jest_processes: 1,
+            nested_node_workers: 1,
+            child_old_space_mib: 2048,
+            minimum_free_physical_bytes: 300,
+            observed_peak_tree_working_set_bytes: 300,
+            companion_standard_roots: 0,
+            nested_wave_group: "memory-safe-tail",
+            evidence: "nested-a-fixture",
+          },
+          "tests/nested-b.test.ts": {
+            scheduling: "nested_process_tree",
+            outer_jest_processes: 1,
+            nested_node_workers: 1,
+            child_old_space_mib: 2048,
+            minimum_free_physical_bytes: 300,
+            observed_peak_tree_working_set_bytes: 300,
+            companion_standard_roots: 0,
+            nested_wave_group: "memory-safe-tail",
+            evidence: "nested-b-fixture",
+          },
+          "tests/high-memory.test.ts": {
+            scheduling: "standard_outer_jest",
+            outer_jest_processes: 1,
+            nested_node_workers: 0,
+            child_old_space_mib: 2048,
+            minimum_free_physical_bytes: 500,
+            observed_peak_tree_working_set_bytes: 500,
+            evidence: "high-memory-fixture",
+          },
+          "tests/low-memory.test.ts": {
+            scheduling: "standard_outer_jest",
+            outer_jest_processes: 1,
+            nested_node_workers: 0,
+            child_old_space_mib: 2048,
+            minimum_free_physical_bytes: 100,
+            observed_peak_tree_working_set_bytes: 100,
+            evidence: "low-memory-fixture",
+          },
+        },
+        suites: {
+          "tests/nested-a.test.ts": 100,
+          "tests/nested-b.test.ts": 150,
+          "tests/high-memory.test.ts": 50,
+          "tests/low-memory.test.ts": 40,
+        },
+      }), "utf8");
+
+      const plan = buildAffectedJestShardPlan({
+        root,
+        suites: names.map((name) => `tests/${name}.test.ts`),
+        shardCount: 1,
+        calibrationPath,
+      });
+
+      expect(plan.resource_plan.waves[0]).toMatchObject({
+        resource_class: "nested_with_standard_companions",
+        estimated_peak_process_tree_bytes: 600,
+        minimum_free_physical_bytes: 600,
+      });
+      expect(plan.resource_plan.waves[0].shards[0].test_files).toEqual([
+        "tests/nested-b.test.ts",
+      ]);
+      expect(plan.resource_plan.waves[0].shards[1].test_files).toEqual([
+        "tests/low-memory.test.ts",
+        "tests/nested-a.test.ts",
+      ]);
+      expect(plan.resource_plan.waves[1].shards[0].test_files).toEqual([
+        "tests/high-memory.test.ts",
+      ]);
+      expect(validateWeightedJestShardPlan(plan.manifest, plan.shards)).toEqual({
+        missing: [],
+        duplicates: [],
+        unexpected: [],
+      });
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("co-schedules measured nested trees and serializes their pinned companions in one bounded root", () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "affected-jest-grouped-nested-wave-"));
     try {
@@ -412,7 +624,7 @@ describe("deterministic sharded full Jest runner", () => {
         },
         suites: {
           "tests/nested-a.test.ts": 100,
-          "tests/nested-b.test.ts": 80,
+          "tests/nested-b.test.ts": 70,
           "tests/paired-a.test.ts": 60,
           "tests/paired-b.test.ts": 50,
           "tests/normal-a.test.ts": 40,
@@ -438,15 +650,107 @@ describe("deterministic sharded full Jest runner", () => {
       });
       expect(plan.resource_plan.waves[0].shards.map((shard) => shard.test_files)).toEqual([
         ["tests/nested-a.test.ts"],
-        ["tests/nested-b.test.ts"],
+        ["tests/nested-b.test.ts", "tests/normal-b.test.ts"],
         ["tests/paired-a.test.ts", "tests/paired-b.test.ts"],
       ]);
       expect(plan.resource_plan.waves[1]).toMatchObject({
         resource_class: "standard_outer_jest",
-        maximum_parallel_process_roots: 2,
+        maximum_parallel_process_roots: 1,
         predicted_duration_weight_ms: 40,
-        estimated_peak_process_tree_bytes: 200,
+        estimated_peak_process_tree_bytes: 100,
       });
+      expect(validateWeightedJestShardPlan(plan.manifest, plan.shards)).toEqual({
+        missing: [],
+        duplicates: [],
+        unexpected: [],
+      });
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("can serialize every affected process root without dropping grouped or paired suites", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "affected-jest-serialized-resource-waves-"));
+    try {
+      const names = ["nested-a", "nested-b", "paired-a", "paired-b", "normal-a", "normal-b"];
+      fs.mkdirSync(path.join(root, "tests"), { recursive: true });
+      for (const name of names) {
+        fs.writeFileSync(path.join(root, "tests", `${name}.test.ts`), `test('${name}', () => undefined);\n`, "utf8");
+      }
+      const calibrationPath = path.join(root, "calibration.json");
+      fs.writeFileSync(calibrationPath, JSON.stringify({
+        schema: "verification-affected-jest-runtime-calibration/v1",
+        source_gate: "serialized-resource-profile-proof",
+        source_sha: "fixture-sha",
+        execution_profile: AFFECTED_JEST_EXECUTION_PROFILE,
+        resource_policy: {
+          standard_wave_minimum_free_physical_bytes: 0,
+          closeout_reserve_bytes: 50,
+          maximum_standard_process_roots: 3,
+          unmeasured_standard_root_peak_bytes: 100,
+        },
+        resource_profiles: {
+          "tests/nested-a.test.ts": {
+            scheduling: "nested_process_tree",
+            outer_jest_processes: 1,
+            nested_node_workers: 2,
+            child_old_space_mib: 1536,
+            minimum_free_physical_bytes: 500,
+            observed_peak_tree_working_set_bytes: 500,
+            companion_standard_roots: 1,
+            nested_wave_group: "heavy-current-core",
+            evidence: "nested-a-fixture",
+          },
+          "tests/nested-b.test.ts": {
+            scheduling: "nested_process_tree",
+            outer_jest_processes: 1,
+            nested_node_workers: 1,
+            child_old_space_mib: null,
+            minimum_free_physical_bytes: 400,
+            observed_peak_tree_working_set_bytes: 400,
+            companion_standard_roots: 1,
+            nested_wave_group: "heavy-current-core",
+            evidence: "nested-b-fixture",
+          },
+          "tests/paired-a.test.ts": {
+            scheduling: "paired_standard_process_tree",
+            paired_with: "tests/nested-a.test.ts",
+            outer_jest_processes: 1,
+            nested_node_workers: 1,
+            child_old_space_mib: null,
+            minimum_free_physical_bytes: 200,
+            observed_peak_tree_working_set_bytes: 200,
+            evidence: "paired-a-fixture",
+          },
+          "tests/paired-b.test.ts": {
+            scheduling: "paired_standard_process_tree",
+            paired_with: "tests/nested-b.test.ts",
+            outer_jest_processes: 1,
+            nested_node_workers: 0,
+            child_old_space_mib: null,
+            minimum_free_physical_bytes: 300,
+            observed_peak_tree_working_set_bytes: 300,
+            evidence: "paired-b-fixture",
+          },
+        },
+        suites: Object.fromEntries(names.map((name, index) => [`tests/${name}.test.ts`, 100 - index * 10])),
+      }), "utf8");
+
+      const plan = buildAffectedJestShardPlan({
+        root,
+        suites: names.map((name) => `tests/${name}.test.ts`),
+        shardCount: 4,
+        calibrationPath,
+        maximumParallelProcessRoots: 1,
+      });
+
+      expect(plan.resource_plan.maximum_parallel_process_roots_override).toBe(1);
+      expect(plan.resource_plan.waves.every((wave) => wave.maximum_parallel_process_roots === 1)).toBe(true);
+      expect(plan.resource_plan.waves.map((wave) => wave.shards.flatMap((shard) => shard.test_files))).toEqual([
+        ["tests/nested-a.test.ts"],
+        ["tests/nested-b.test.ts"],
+        ["tests/normal-a.test.ts", "tests/normal-b.test.ts", "tests/paired-a.test.ts", "tests/paired-b.test.ts"],
+      ]);
       expect(validateWeightedJestShardPlan(plan.manifest, plan.shards)).toEqual({
         missing: [],
         duplicates: [],
@@ -471,6 +775,216 @@ describe("deterministic sharded full Jest runner", () => {
     expect(args).toContain("--runInBand");
     expect(args).not.toContain("--detectOpenHandles");
     expect(args.some((value) => value.includes("affectedJestProgressReporter.cjs"))).toBe(true);
+    const inheritedHeapOption = ["--max-old", "space-size=8192"].join("-");
+    const nodeOptions = affectedJestNodeOptions(`--require=fixture.cjs ${inheritedHeapOption}`);
+    expect(nodeOptions).toContain("--require=fixture.cjs");
+    expect(nodeOptions).toContain(String(AFFECTED_JEST_OLD_SPACE_MIB));
+    expect(nodeOptions).not.toContain("8192");
+    expect(AFFECTED_JEST_EXECUTION_PROFILE).toContain(String(AFFECTED_JEST_OLD_SPACE_MIB));
+  });
+
+  it("waits only a bounded interval for post-wave memory reclamation without lowering admission", async () => {
+    let nowMs = Date.parse("2026-09-27T13:00:00.000Z");
+    const freePhysicalBytes = [850, 950, 1_000];
+    const sleeps: number[] = [];
+    const admission = await awaitVerificationResourceAdmission({
+      requiredAvailableBytes: 1_000,
+      technicalDeadlineAtMs: nowMs + 120_000,
+      maximumSettleMs: 30_000,
+      sampleIntervalMs: 2_000,
+      nowMs: () => nowMs,
+      sampleFreePhysicalBytes: () => freePhysicalBytes.shift()!,
+      sleep: async (durationMs) => {
+        sleeps.push(durationMs);
+        nowMs += durationMs;
+      },
+    });
+
+    expect(admission).toMatchObject({
+      free_physical_bytes: 1_000,
+      required_available_bytes: 1_000,
+      passed: true,
+      settle_wait_ms: 4_000,
+      sample_count: 3,
+    });
+    expect(admission.samples.map((sample) => sample.free_physical_bytes)).toEqual([850, 950, 1_000]);
+    expect(sleeps).toEqual([2_000, 2_000]);
+    expect(RESOURCE_ADMISSION_SETTLE_MAX_MS).toBe(30_000);
+    expect(RESOURCE_ADMISSION_SAMPLE_INTERVAL_MS).toBe(2_000);
+  });
+
+  it("stays RED when the unchanged memory threshold is not met before the bounded deadline", async () => {
+    let nowMs = Date.parse("2026-09-27T13:00:00.000Z");
+    const admission = await awaitVerificationResourceAdmission({
+      requiredAvailableBytes: 1_000,
+      technicalDeadlineAtMs: nowMs + 120_000,
+      maximumSettleMs: 5_000,
+      sampleIntervalMs: 2_000,
+      nowMs: () => nowMs,
+      sampleFreePhysicalBytes: () => 999,
+      sleep: async (durationMs) => {
+        nowMs += durationMs;
+      },
+    });
+
+    expect(admission).toMatchObject({
+      free_physical_bytes: 999,
+      required_available_bytes: 1_000,
+      passed: false,
+      settle_wait_ms: 5_000,
+      sample_count: 4,
+    });
+    expect(admission.samples.every((sample) => sample.passed === false)).toBe(true);
+  });
+
+  it("keeps Playwright Web specs out of Jest", () => {
+    expect(classifyAffectedVerificationSuites([
+      "tests/unit/a.contract.test.ts",
+      "tests/e2e/estimate.web.spec.ts",
+      "tests/e2e/estimate.WEB.SPEC.TSX",
+    ])).toEqual({
+      jest: ["tests/unit/a.contract.test.ts"],
+      playwright: [
+        "tests/e2e/estimate.web.spec.ts",
+        "tests/e2e/estimate.WEB.SPEC.TSX",
+      ],
+    });
+  });
+
+  it("binds affected Web specs to the installed Playwright Chromium owner without executing them", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "affected-playwright-owner-"));
+    try {
+      fs.mkdirSync(path.join(root, "node_modules", "playwright"), { recursive: true });
+      fs.writeFileSync(path.join(root, "playwright.config.ts"), "export default {};\n", "utf8");
+      fs.writeFileSync(path.join(root, "node_modules", "playwright", "cli.js"), "", "utf8");
+
+      const ownership = resolveAffectedPlaywrightRunnerOwnership({
+        root,
+        suites: ["tests/e2e/estimate.web.spec.ts"],
+      });
+
+      expect(ownership).toMatchObject({
+        runner: "playwright",
+        config_path: "playwright.config.ts",
+        cli_path: "node_modules/playwright/cli.js",
+        project: "chromium",
+        workers: 1,
+        owned_suites: ["tests/e2e/estimate.web.spec.ts"],
+        unowned_suites: [],
+        complete: true,
+        execution_mode: "external-explicit",
+        requires_explicit_environment_and_actor_preflight: true,
+      });
+      expect(ownership.command).toEqual([
+        process.execPath,
+        "node_modules/playwright/cli.js",
+        "test",
+        "tests/e2e/estimate.web.spec.ts",
+        "--config=playwright.config.ts",
+        "--project=chromium",
+        "--workers=1",
+      ]);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("fails runner ownership closed when the Playwright CLI or config is absent", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "affected-playwright-unowned-"));
+    try {
+      expect(resolveAffectedPlaywrightRunnerOwnership({
+        root,
+        suites: ["tests/e2e/estimate.web.spec.ts"],
+      })).toMatchObject({
+        owned_suites: [],
+        unowned_suites: ["tests/e2e/estimate.web.spec.ts"],
+        complete: false,
+        command: null,
+      });
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("aggregates exact Playwright path terminals and rejects skips or failed attempts", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "affected-playwright-evidence-"));
+    try {
+      const first = path.join(root, "first.json");
+      const recovery = path.join(root, "recovery.json");
+      const spec = (file: string, title: string, passed: boolean) => ({
+        file: path.basename(file),
+        title,
+        line: 1,
+        ok: passed,
+        tests: [{
+          expectedStatus: "passed",
+          status: passed ? "expected" : "unexpected",
+          results: [{ status: passed ? "passed" : "failed" }],
+        }],
+      });
+      fs.writeFileSync(first, JSON.stringify({
+        suites: [{ specs: [
+          spec("tests/e2e/a.web.spec.ts", "a", true),
+          spec("tests/e2e/b.web.spec.ts", "b", false),
+        ] }],
+      }));
+      fs.writeFileSync(recovery, JSON.stringify({
+        suites: [{ specs: [spec("tests/e2e/b.web.spec.ts", "b", true)] }],
+      }));
+
+      expect(validateAffectedPlaywrightResultEvidence({
+        root,
+        expectedSuites: ["tests/e2e/a.web.spec.ts", "tests/e2e/b.web.spec.ts"],
+        resultFiles: [first, recovery],
+      })).toMatchObject({
+        complete: true,
+        passed_suites: ["tests/e2e/a.web.spec.ts", "tests/e2e/b.web.spec.ts"],
+        missing_suites: [],
+        rejected_result_files: [],
+      });
+
+      const skipped = path.join(root, "skipped.json");
+      fs.writeFileSync(skipped, JSON.stringify({
+        suites: [{ specs: [{
+          file: "a.web.spec.ts",
+          title: "a",
+          line: 1,
+          ok: true,
+          tests: [{ expectedStatus: "skipped", status: "expected", results: [{ status: "skipped" }] }],
+        }] }],
+      }));
+      expect(validateAffectedPlaywrightResultEvidence({
+        root,
+        expectedSuites: ["tests/e2e/a.web.spec.ts"],
+        resultFiles: [skipped],
+      })).toMatchObject({ complete: false, missing_suites: ["tests/e2e/a.web.spec.ts"] });
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("calibrates a Jest suite only from a positive passing terminal", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "affected-calibration-"));
+    try {
+      const resultPath = path.join(root, "result.json");
+      fs.mkdirSync(path.join(root, "tests"));
+      fs.writeFileSync(path.join(root, "tests", "a.test.ts"), "test('a', () => undefined);\n");
+      fs.writeFileSync(resultPath, JSON.stringify({
+        testResults: [{
+          name: path.join(root, "tests", "a.test.ts"),
+          status: "passed",
+          perfStats: { runtime: 123.2 },
+        }],
+      }));
+
+      expect(collectPassingJestRuntimeMeasurements({
+        root,
+        targetSuites: ["tests/a.test.ts"],
+        resultFiles: [resultPath],
+      })).toEqual({ "tests/a.test.ts": 124 });
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
   });
 
   it("rejects a plan-only GREEN when calibration is incomplete or the predicted critical path exceeds SLO", () => {

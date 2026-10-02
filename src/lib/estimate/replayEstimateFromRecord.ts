@@ -4,7 +4,7 @@ import { createBuyerHandoffFromDraftRevision } from "../../features/procurement/
 import {
   createEstimateDraftRevision,
   resolvedEstimateIdentityChecksum,
-} from "./createEstimateDraftRevision";
+} from "./backendPlatform/canonicalEstimateHistoricalDraftProjection";
 import { buildEstimateReplayRecord } from "./buildEstimateReplayRecord";
 import { compareEstimateReplayRecords } from "./compareEstimateReplayResult";
 import type {
@@ -124,12 +124,21 @@ function replayCanonicalResolvedIdentity(
   record: EstimateReplayRecord,
 ): EstimateReplayRunResult {
   const identity = record.resolved_identity;
+  const explicitReplayParameters = Object.fromEntries(
+    Object.entries(identity.resolvedParameters).filter(([, parameter]) =>
+      parameter.source === "user_input" || parameter.source === "edited_by_user"
+    ),
+  );
   const actual = buildReplayCandidate({
     record,
     rawInput: identity.originalPrompt,
     selectedTemplateId: identity.calculationStrategyId,
     selectedWorkKey: identity.requestedCatalogWorkId ?? undefined,
-    paramOverrides: identity.resolvedParameters,
+    // Derived values and visible defaults belong to the pinned compiler/model,
+    // not to the user. Replaying them as explicit inputs can turn a legitimate
+    // old L x W basis into a false geometry conflict and would mask real drift
+    // when a version-owned assumption changes.
+    paramOverrides: explicitReplayParameters,
   });
   return {
     expected: record,

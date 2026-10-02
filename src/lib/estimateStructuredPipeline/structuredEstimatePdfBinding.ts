@@ -5,6 +5,18 @@ import type {
 } from "../estimatePdf/estimatePdfTypes";
 import type { StructuredEstimatePayload } from "./structuredEstimateTypes";
 
+export function buildEstimatePdfDocumentNumber(
+  estimate: EstimatePdfInput["estimate"],
+): string {
+  let hash = 2166136261;
+  const source = `${estimate.estimateId}:${estimate.work.title}:${estimate.totals.grandTotal}`;
+  for (let index = 0; index < source.length; index += 1) {
+    hash ^= source.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `AI-EST-${(hash >>> 0).toString().padStart(10, "0")}`;
+}
+
 function percent(rate: number | undefined): string | undefined {
   if (rate === undefined) return undefined;
   return `${Math.round(rate * 10000) / 100}%`;
@@ -18,6 +30,7 @@ function requestMetaFields(input: EstimatePdfInput, payload: StructuredEstimateP
   const details = input.requestDetails;
   const address = [details?.city, details?.addressText].map((value) => String(value ?? "").trim()).filter(Boolean).join(", ");
   return [
+    { label: "\u0414\u043e\u043a\u0443\u043c\u0435\u043d\u0442 \u2116", value: buildEstimatePdfDocumentNumber(payload.sourceEstimate) },
     { label: "\u0414\u0430\u0442\u0430", value: details?.approvedAt ?? details?.createdAt ?? input.generatedAt },
     { label: "\u0420\u0430\u0431\u043e\u0442\u0430", value: payload.workTitle },
     details?.status ? { label: "\u0421\u0442\u0430\u0442\u0443\u0441", value: details.status } : null,
@@ -70,7 +83,7 @@ export function buildStructuredEstimatePdfViewModel(
       grand: payload.totals.displayGrandTotal,
     },
     tax: {
-      label: payload.tax.taxLabel,
+      label: payload.sourceEstimate.tax.taxLabel?.trim() || payload.tax.taxLabel,
       rate: percent(payload.sourceEstimate.tax.taxRate),
       included: payload.tax.included,
       amount: payload.totals.displayTaxTotal,

@@ -13,11 +13,17 @@ describe("consumer repair no direct marketplace DB write architecture", () => {
       .join("\n");
     const service = read("src/lib/consumerRequests/consumerRequestService.ts");
     const marketplaceService = read("src/lib/consumerRequests/consumerRequestMarketplaceService.ts");
+    const marketplaceTransport = read("src/lib/consumerRequests/consumerRequestMarketplace.transport.ts");
 
     expect(feature).not.toContain("consumer_marketplace_links");
     expect(feature).not.toMatch(/marketplaceDemandId\s*:\s*id\("marketplace_demand"\)|status\s*:\s*["']sent_to_marketplace["']/);
     expect(service).not.toMatch(/status\s*:\s*["']sent_to_marketplace["']/);
     expect(marketplaceService).toMatch(/status\s*:\s*["']sent_to_marketplace["']/);
-    expect(marketplaceService).toMatch(/marketplaceDemandId:\s*id\("marketplace_demand"\)/);
+    expect(marketplaceService).not.toContain('id("marketplace_demand")');
+    expect(marketplaceService).toContain("readPublishedListing(receipt.listing_id)");
+    expect(marketplaceService.indexOf("readPublishedListing(receipt.listing_id)"))
+      .toBeLessThan(marketplaceService.indexOf('status: "sent"'));
+    expect(marketplaceTransport).toContain('"consumer_estimate_marketplace_publish_v1"');
+    expect(marketplaceTransport).toContain('.from("market_listings")');
   });
 });

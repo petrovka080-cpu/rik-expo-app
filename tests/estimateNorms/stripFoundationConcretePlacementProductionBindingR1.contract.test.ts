@@ -11,7 +11,7 @@ import {
 } from "../../src/lib/estimate/v4/stripFoundationConcretePlacementR1";
 
 describe("strip foundation concrete placement production prompt binding", () => {
-  test("round-trips all 32 explicit project and NRMCA values", () => {
+  test("round-trips all 33 active project and NRMCA values while omitting the inactive joint details", () => {
     const target = STRIP_FOUNDATION_CONCRETE_PLACEMENT_TARGETS[0];
     const fixture = stripFoundationConcretePlacementAcceptanceInputR1(target.contextKey);
     const details = stripFoundationConcretePlacementPromptDetailsR1(fixture);
@@ -19,7 +19,16 @@ describe("strip foundation concrete placement production prompt binding", () => 
       catalogId: target.catalogId,
       text: `${target.titleRu}\n${details.join("\n")}`,
     });
-    expect(details).toHaveLength(STRIP_FOUNDATION_CONCRETE_PLACEMENT_PARAMETERS.length);
+    expect(STRIP_FOUNDATION_CONCRETE_PLACEMENT_PARAMETERS).toHaveLength(36);
+    expect(Object.keys(fixture)).toHaveLength(33);
+    expect(STRIP_FOUNDATION_CONCRETE_PLACEMENT_PARAMETERS
+      .filter((parameter) => parameter.required === false)
+      .map((parameter) => parameter.parameter_id)).toEqual([
+      "construction_joint_waterstop_specification",
+      "construction_joint_waterstop_length_m",
+      "construction_joint_installation_worker_h",
+    ]);
+    expect(details).toHaveLength(Object.keys(fixture).length);
     expect(extracted).toEqual(fixture);
     expect(extractStripFoundationConcretePlacementCanonicalParametersR1({
       catalogId: target.catalogId,
@@ -34,7 +43,7 @@ describe("strip foundation concrete placement production prompt binding", () => 
     })).toBeNull();
   });
 
-  test("routes the exact 32-value schedule through the ordinary consumer baseline", () => {
+  test("routes the exact 33-value active schedule through the ordinary consumer baseline", () => {
     const target = STRIP_FOUNDATION_CONCRETE_PLACEMENT_TARGETS[0];
     const fixture = stripFoundationConcretePlacementAcceptanceInputR1(target.contextKey);
     const catalog: CanonicalEstimateCatalogItem = {

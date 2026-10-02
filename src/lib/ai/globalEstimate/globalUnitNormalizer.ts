@@ -14,6 +14,7 @@ function globalUnitForRegistryCode(code: string): GlobalUnitInput["normalizedUni
     code === "trip" ||
     code === "kg" ||
     code === "lbs" ||
+    code === "l" ||
     code === "m3" ||
     code === "cu_ft"
   ) {
@@ -79,6 +80,7 @@ export function normalizeGlobalUnit(rawUnit: string | undefined): GlobalUnitInpu
   if (unit === "trip" || unit === "\u0440\u0435\u0439\u0441" || unit === "\u0440\u0435\u0439\u0441\u0430" || unit === "\u0440\u0435\u0439\u0441\u043e\u0432") return "trip";
   if (unit === "kg" || unit === "\u043a\u0433" || unit === "РєРі") return "kg";
   if (unit === "lbs" || unit === "lb") return "lbs";
+  if (unit === "l" || unit === "liter" || unit === "litre" || unit === "литр" || unit === "л") return "l";
   if (unit === "m3" || unit === "\u043c3" || unit === "Рј3" || unit.includes("\u043a\u0443\u0431")) return "m3";
   if (unit === "cu_ft" || unit === "ft3" || unit === "ftВі") return "cu_ft";
   if (
@@ -115,6 +117,7 @@ export function displayUnitFor(unit: GlobalUnitInput["normalizedUnit"], unitSyst
   if (unit === "trip") return unitSystem === "metric" ? "\u0440\u0435\u0439\u0441" : "trip";
   if (unit === "kg") return "\u043a\u0433";
   if (unit === "lbs") return "lbs";
+  if (unit === "l") return unitSystem === "metric" ? "л" : "l";
   if (unit === "m3") return "\u043c\u00b3";
   if (unit === "cu_ft") return "cu ft";
   if (unit === "ton") return "\u0442";

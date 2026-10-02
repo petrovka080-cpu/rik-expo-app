@@ -35,6 +35,7 @@ export {
   type ConsumerRepairPayloadSourceGovernanceResult,
 } from "./consumerRequestPayloadParity";
 export { ConsumerRepairValidationError, sendConsumerRepairRequestToMarketplace } from "./consumerRequestMarketplaceService";
+export { consumerRepairSourceRequestDraftId } from "./consumerRequestHistoryLineage";
 export {
   APPROVED_HISTORY_SCALE_MATRIX,
   evaluateApprovedHistoryScaleMatrix,

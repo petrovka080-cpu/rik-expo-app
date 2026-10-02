@@ -18,7 +18,19 @@ import {
   STRIP_FOUNDATION_FORMULAS,
   STRIP_FOUNDATION_INPUTS,
   STRIP_FOUNDATION_ROWS,
+  stripFoundationParameterConsumerRowIds,
 } from "../../src/lib/estimate/v4/reinforcedConcreteStripFoundationR1";
+import { auditStripFoundationScopeCompletenessR1 } from "../../src/lib/estimate/v4/stripFoundationScopeCompletenessR1";
+import {
+  STRIP_FOUNDATION_COMPOSED_TYPED_CHILD_ROW_IDS_R2,
+  STRIP_FOUNDATION_PROFESSIONAL_GOLD_INPUT_R2,
+  STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2,
+  STRIP_FOUNDATION_PROFESSIONAL_ROWS_R2,
+  STRIP_FOUNDATION_SOURCE_GAP_ROW_IDS_R2,
+  auditStripFoundationProfessionalCompositionR2,
+  compileStripFoundationProfessionalGoldR2,
+  stripFoundationProfessionalParameterConsumerRowIdsR2,
+} from "../../src/lib/estimate/v4/stripFoundationProfessionalCompositionR2";
 import {
   createStripFoundationCanonicalBackendAuditRevision,
   recalculateStripFoundationCanonicalBackendAuditRevision,
@@ -70,10 +82,27 @@ describe("R4-A10 canonical strip-foundation catalog passport", () => {
     expect(COMPATIBILITY_ROWS).toBe(STRIP_FOUNDATION_ROWS);
   });
 
-  test("replaces the high-rise fallback with the 55/28/39 canonical backend definition", () => {
+  test("replaces the high-rise fallback with the 68/28/39 canonical backend definition", () => {
     const passport = buildProfessionalWorkPassport(TEMPLATE_ID);
     expect(passport).not.toBeNull();
-    expect(STRIP_FOUNDATION_INPUTS).toHaveLength(55);
+    expect(STRIP_FOUNDATION_INPUTS).toHaveLength(68);
+    expect(STRIP_FOUNDATION_INPUTS.map((input) => input.parameterId)).toEqual(
+      expect.arrayContaining([
+        "product_profile_id",
+        "plan_volume_calculation_reference",
+        "mix_design_or_project_specification_reference",
+        "mixture_designation",
+        "placement_location",
+        "contingency_selection_justification",
+        "delivery_schedule_and_truck_capacity",
+        "producer_order_confirmation",
+        "estimator_approval_reference",
+        "reinforcement_product_profile_id",
+        "bar_bending_schedule_reference",
+        "structural_drawing_and_revision_reference",
+        "reinforcement_estimator_approval_reference",
+      ]),
+    );
     expect(STRIP_FOUNDATION_FORMULAS).toHaveLength(28);
     expect(STRIP_FOUNDATION_ROWS).toHaveLength(39);
     expect(passport).toMatchObject({
@@ -100,6 +129,282 @@ describe("R4-A10 canonical strip-foundation catalog passport", () => {
     ]));
     const serialized = JSON.stringify(passport);
     for (const fingerprint of WRONG_BUILDING_FINGERPRINTS) expect(serialized).not.toContain(fingerprint);
+  });
+
+  test("binds every professional parameter to its canonical consumer rows", () => {
+    for (const parameter of STRIP_FOUNDATION_INPUTS) {
+      expect(stripFoundationParameterConsumerRowIds(parameter.parameterId)).not.toEqual([]);
+    }
+    expect(stripFoundationParameterConsumerRowIds("bar_bending_schedule_reference")).toEqual(["reinforcement"]);
+    expect(stripFoundationParameterConsumerRowIds("placement_location")).toEqual(["main_concrete"]);
+    expect(stripFoundationParameterConsumerRowIds("concrete_class")).toContain("main_concrete");
+
+    const passport = buildProfessionalWorkPassport(TEMPLATE_ID);
+    const reinforcement = passport?.boqRecipe.allRows.find((row) => row.rowId === "reinforcement");
+    const mainConcrete = passport?.boqRecipe.allRows.find((row) => row.rowId === "main_concrete");
+    expect(reinforcement?.formulaContext?.professionalParameterIds).toContain("bar_bending_schedule_reference");
+    expect(mainConcrete?.formulaContext?.professionalParameterIds).toContain("placement_location");
+  });
+
+  test("does not mistake the compiler's own 39-row inventory for an independent completeness proof", () => {
+    const audit = auditStripFoundationScopeCompletenessR1();
+
+    expect(audit).toMatchObject({
+      status: "RED",
+      productionBuilderUsedAsOracle: false,
+      fixedRowQuotaUsed: false,
+    });
+    expect(audit.unresolvedExpectationIds).toEqual(expect.arrayContaining([
+      "site_layout_and_axis_control",
+      "as_built_survey_and_record",
+      "formwork_accessories_and_release_agent",
+      "formwork_cleaning_and_return_logistics",
+      "formwork_tie_consumable_components",
+      "reinforcement_accessories",
+      "reinforcement_handling_and_control",
+      "reinforcement_lifting",
+      "concrete_quality_control",
+      "water_curing_material_and_supply",
+      "concrete_construction_joints",
+      "waterproofing_system_accessories",
+      "horizontal_cutoff_waterproofing",
+      "temporary_excavation_support_and_dewatering",
+      "cleanup_and_non_soil_construction_waste",
+    ]));
+    expect(audit.decisions.find((decision) =>
+      decision.expectationId === "reinforcement_handling_and_control"
+    )?.disposition).toBe("AVAILABLE_TYPED_CHILD_NOT_COMPOSED");
+    expect(audit.decisions.find((decision) =>
+      decision.expectationId === "concrete_placement_and_compaction"
+    )?.disposition).toBe("INCLUDED_IN_CURRENT_DEFINITION");
+    expect(audit.decisions.find((decision) =>
+      decision.expectationId === "concrete_quality_control"
+    )?.disposition).toBe("AVAILABLE_TYPED_CHILD_NOT_COMPOSED");
+  });
+
+  test("composes unique typed-child resources and closes source-backed gaps explicitly", () => {
+    expect(auditStripFoundationProfessionalCompositionR2()).toMatchObject({
+      status: "GREEN",
+      errors: [],
+      baseRowCount: 39,
+      typedChildRowCount: 10,
+      sourceGapRowCount: 27,
+      composedRowCount: 76,
+    });
+    const rowIds = STRIP_FOUNDATION_PROFESSIONAL_ROWS_R2.map((row) => row.rowId);
+    expect(rowIds).toEqual(expect.arrayContaining([
+      ...STRIP_FOUNDATION_COMPOSED_TYPED_CHILD_ROW_IDS_R2,
+      ...STRIP_FOUNDATION_SOURCE_GAP_ROW_IDS_R2,
+    ]));
+    expect(rowIds).not.toEqual(expect.arrayContaining([
+      "material:reinforcement:steel-approved-schedule",
+      "material:concrete:ready-mix",
+      "work:concrete:place-and-compact",
+      "delivery:concrete:ready-mix",
+    ]));
+
+    const scope = auditStripFoundationScopeCompletenessR1({ currentDefinitionRowIds: rowIds });
+    expect(scope.status).toBe("GREEN");
+    expect(scope.unresolvedExpectationIds).toEqual([]);
+    expect(scope.decisions.find((decision) =>
+      decision.expectationId === "reinforcement_handling_and_control"
+    )).toMatchObject({
+      disposition: "INCLUDED_IN_CURRENT_DEFINITION",
+      composedTypedChildRowIds: [
+        "work:reinforcement:unload-store",
+        "work:reinforcement:cover-control",
+        "service:reinforcement:inspection",
+        "service:reinforcement:mill-certificates",
+      ],
+    });
+    expect(STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2.filter((input) =>
+      stripFoundationProfessionalParameterConsumerRowIdsR2(input.parameterId).length === 0
+    )).toEqual([]);
+    const compiled = compileStripFoundationProfessionalGoldR2();
+    expect(compiled).toEqual(expect.arrayContaining([
+      expect.objectContaining({ category: "material" }),
+      expect.objectContaining({ category: "construction_work" }),
+      expect.objectContaining({ category: "machine_equipment" }),
+      expect.objectContaining({ category: "delivery" }),
+      expect.objectContaining({ category: "service" }),
+    ]));
+    expect(compiled).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        rowId: "material:waterproofing:system-primer",
+        normalizedUom: "l",
+        evaluatedQuantity: "6",
+      }),
+      expect.objectContaining({
+        rowId: "work:waterproofing:system-primer-application",
+        normalizedUom: "m2",
+        evaluatedQuantity: "120",
+      }),
+      expect.objectContaining({
+        rowId: "material:reinforcement:spacer-chairs",
+        normalizedUom: "piece",
+        evaluatedQuantity: "480",
+      }),
+      expect.objectContaining({
+        rowId: "material:formwork:release-agent",
+        normalizedUom: "l",
+        evaluatedQuantity: "1.2",
+      }),
+      expect.objectContaining({
+        rowId: "bituminous_waterproofing",
+        normalizedUom: "l",
+        evaluatedQuantity: "480",
+      }),
+      expect.objectContaining({
+        rowId: "material:waterproofing:detail-reinforcement",
+        normalizedUom: "m2",
+        evaluatedQuantity: "132",
+      }),
+      expect.objectContaining({
+        rowId: "delivery:formwork:return-kit",
+        normalizedUom: "t_km",
+        evaluatedQuantity: "216",
+      }),
+      expect.objectContaining({
+        rowId: "service:foundation:as-built-survey",
+        normalizedUom: "m",
+        evaluatedQuantity: "40",
+      }),
+      expect.objectContaining({
+        rowId: "document:foundation:as-built-survey-record",
+        normalizedUom: "document",
+        evaluatedQuantity: "1",
+      }),
+      expect.objectContaining({
+        rowId: "material:waterproofing:horizontal-cutoff",
+        normalizedUom: "m2",
+        evaluatedQuantity: "22",
+      }),
+      expect.objectContaining({
+        rowId: "work:waterproofing:horizontal-cutoff-install",
+        normalizedUom: "m2",
+        evaluatedQuantity: "22",
+      }),
+      expect.objectContaining({
+        rowId: "material:formwork:tie-consumables-separate",
+        normalizedUom: "piece",
+        evaluatedQuantity: "160",
+        procurementEligible: true,
+      }),
+      expect.objectContaining({
+        rowId: "material:earthworks:excavation-support",
+        normalizedUom: "m2",
+        evaluatedQuantity: "96",
+      }),
+      expect.objectContaining({
+        rowId: "equipment:earthworks:dewatering",
+        normalizedUom: "machine_hour",
+        evaluatedQuantity: "14",
+      }),
+      expect.objectContaining({
+        rowId: "work:foundation:site-cleanup",
+        normalizedUom: "man_hour",
+        evaluatedQuantity: "12",
+      }),
+      expect.objectContaining({
+        rowId: "delivery:foundation:construction-waste-haul",
+        normalizedUom: "t_km",
+        evaluatedQuantity: "12",
+      }),
+      expect.objectContaining({
+        rowId: "service:foundation:construction-waste-disposal",
+        normalizedUom: "t",
+        evaluatedQuantity: "0.8",
+      }),
+    ]));
+  });
+
+  test("keeps water-curing material and separate supply equipment conditional and source-owned", () => {
+    const compiled = compileStripFoundationProfessionalGoldR2({
+      ...STRIP_FOUNDATION_PROFESSIONAL_GOLD_INPUT_R2,
+      curing_method: "water",
+      curing_water_m3: 12,
+      curing_water_supply_mode: "separate_equipment",
+      curing_water_supply_equipment_designation: "PROJECT-WATER-SUPPLY-01",
+      curing_water_supply_machine_h: 9,
+    });
+    expect(compiled).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        rowId: "material:concrete:curing-water",
+        evaluatedQuantity: "12",
+      }),
+      expect.objectContaining({
+        rowId: "equipment:concrete:curing-water-supply",
+        evaluatedQuantity: "9",
+      }),
+    ]));
+    expect(compiled.some((row) => row.rowId === "curing_membrane")).toBe(false);
+
+    const withoutSeparateEquipment = compileStripFoundationProfessionalGoldR2({
+      ...STRIP_FOUNDATION_PROFESSIONAL_GOLD_INPUT_R2,
+      curing_method: "water",
+      curing_water_m3: 12,
+      curing_water_supply_mode: "site_connection_included_in_curing_work",
+    });
+    expect(withoutSeparateEquipment.some(
+      (row) => row.rowId === "material:concrete:curing-water",
+    )).toBe(true);
+    expect(withoutSeparateEquipment.some(
+      (row) => row.rowId === "equipment:concrete:curing-water-supply",
+    )).toBe(false);
+  });
+
+  test("keeps included and separately purchased formwork tie consumables mutually exclusive", () => {
+    const included = compileStripFoundationProfessionalGoldR2({
+      ...STRIP_FOUNDATION_PROFESSIONAL_GOLD_INPUT_R2,
+      formwork_tie_consumables_supply_mode: "included_in_formwork_system",
+    });
+    expect(included).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        rowId: "material:formwork:tie-consumables-included",
+        evaluatedQuantity: "160",
+        includedInParentRate: true,
+        procurementEligible: false,
+      }),
+    ]));
+    expect(included.some(
+      (row) => row.rowId === "material:formwork:tie-consumables-separate",
+    )).toBe(false);
+  });
+
+  test("does not add temporary works or separate waste costs when the project says they are not separate", () => {
+    const compiled = compileStripFoundationProfessionalGoldR2({
+      ...STRIP_FOUNDATION_PROFESSIONAL_GOLD_INPUT_R2,
+      excavation_support_required: false,
+      excavation_dewatering_required: false,
+      site_cleanup_cost_mode: "included_in_primary_works",
+      non_soil_waste_handling_mode: "included_in_primary_works",
+    });
+    expect(compiled.some((row) => [
+      "material:earthworks:excavation-support",
+      "work:earthworks:excavation-support-install-remove",
+      "equipment:earthworks:dewatering",
+      "work:foundation:site-cleanup",
+      "material:foundation:waste-packaging",
+      "work:foundation:waste-sort-load",
+      "delivery:foundation:construction-waste-haul",
+      "service:foundation:construction-waste-disposal",
+    ].includes(row.rowId))).toBe(false);
+  });
+
+  test("gives legacy estimates editable non-applicable defaults for newly introduced conditional branches", () => {
+    const defaults = Object.fromEntries(STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2
+      .filter((parameter) => parameter.defaultValue != null)
+      .map((parameter) => [parameter.parameterId, parameter.defaultValue]));
+    expect(defaults).toMatchObject({
+      formwork_supply_mode: "contractor_owned",
+      as_built_survey_included: false,
+      horizontal_cutoff_waterproofing_included: false,
+      formwork_tie_consumables_required: false,
+      excavation_support_required: false,
+      excavation_dewatering_required: false,
+      site_cleanup_cost_mode: "included_in_primary_works",
+      non_soil_waste_handling_mode: "included_in_primary_works",
+    });
   });
 
   test("uses the same shared owner at every selectable estimate level", () => {

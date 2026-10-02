@@ -1,7 +1,7 @@
 import {
   detectEstimateFakeRows,
   type ContinuousEstimateDetectorRow,
-} from "../../src/lib/ai/estimateContinuousDetection";
+} from "../../scripts/estimate/detectors";
 
 function detectorRow(overrides: Partial<ContinuousEstimateDetectorRow> = {}): ContinuousEstimateDetectorRow {
   return {

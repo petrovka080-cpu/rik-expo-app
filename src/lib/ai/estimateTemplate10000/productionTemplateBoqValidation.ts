@@ -145,6 +145,20 @@ function validationContext(quantity: number): ProductionFormulaDslContext {
   };
 }
 
+const TEMPLATE_FORMULA_VALIDATION_CONTEXT = Object.freeze(validationContext(100));
+const TEMPLATE_FORMULA_VALIDATION_CACHE = new Map<
+  string,
+  ReturnType<typeof validateProductionFormulaDsl>
+>();
+
+function validateTemplateFormula(formula: string): ReturnType<typeof validateProductionFormulaDsl> {
+  const cached = TEMPLATE_FORMULA_VALIDATION_CACHE.get(formula);
+  if (cached) return cached;
+  const validation = validateProductionFormulaDsl(formula, TEMPLATE_FORMULA_VALIDATION_CONTEXT);
+  TEMPLATE_FORMULA_VALIDATION_CACHE.set(formula, validation);
+  return validation;
+}
+
 function hasRowsInSection(compiled: ProductionCompiledExpandedEstimate, section: ProductionTemplateSection): boolean {
   return compiled.rows.some((row) => row.section === section);
 }
@@ -192,7 +206,26 @@ export function validateProductionTemplateBoqDefinition10000(input: {
   let priceNullable = true;
   let amountNullable = true;
 
-  const template = input.template ?? getProductionExpandedTemplate10000(definition.workKey);
+  let template = input.template;
+  let compiled = input.compiled;
+  if (!template && !compiled) {
+    // Compile first so the catalog builds the immutable template and its norm
+    // bindings in one pass. Fetching the template first discarded those
+    // precomputed bindings and forced every row to rebuild them during compile.
+    compiled = compileProductionExpandedEstimate10000({
+      workKey: definition.workKey,
+      quantity: 54,
+      countryCode: "KG",
+    });
+    template = getProductionExpandedTemplate10000(definition.workKey);
+  } else {
+    template ??= getProductionExpandedTemplate10000(definition.workKey);
+    compiled ??= compileProductionExpandedEstimate10000({
+      workKey: definition.workKey,
+      quantity: 54,
+      countryCode: "KG",
+    });
+  }
   if (!template.requiredInputs.some((param) => param.key === "q" && param.required)) {
     schemaValid = false;
     failures.push({ workKey: definition.workKey, templateKey, blocker: "REQUIRED_Q_SCHEMA_MISSING" });
@@ -207,7 +240,10 @@ export function validateProductionTemplateBoqDefinition10000(input: {
       formulaValid = false;
       failures.push({ workKey: definition.workKey, templateKey, rowCode: row.rowCode, blocker: "FORMULA_DEFINITION_ID_MISSING" });
     }
-    const validation = validateProductionFormulaDsl(row.quantityFormula, validationContext(100));
+    // The catalog deliberately reuses a small, immutable formula vocabulary.
+    // Validate every distinct expression exactly once against the same fixed
+    // audit context instead of reparsing it for every one of ~599k rows.
+    const validation = validateTemplateFormula(row.quantityFormula);
     if (!validation.valid) {
       formulaValid = false;
       failures.push({
@@ -223,11 +259,6 @@ export function validateProductionTemplateBoqDefinition10000(input: {
     }
   }
 
-  const compiled = input.compiled ?? compileProductionExpandedEstimate10000({
-    workKey: definition.workKey,
-    quantity: 54,
-    countryCode: "KG",
-  });
   for (const requiredSection of REQUIRED_SECTIONS) {
     if (!hasRowsInSection(compiled, requiredSection)) {
       if (requiredSection === "materials") materialRecipeValid = false;

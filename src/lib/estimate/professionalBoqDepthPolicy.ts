@@ -1,4 +1,4 @@
-export const PROFESSIONAL_BOQ_MAIN_UI_PREVIEW_MAX_ROWS = 80;
+export const PROFESSIONAL_BOQ_MAIN_UI_PREVIEW_MAX_ROWS = Number.POSITIVE_INFINITY;
 export const PROFESSIONAL_BOQ_FORBIDDEN_GLOBAL_ROW_CAP = 45;
 
 export type ProfessionalBoqRowCapSurface =
@@ -13,20 +13,21 @@ export type ProfessionalBoqRowCapSurface =
 export type ProfessionalBoqDepthPolicy = {
   mainUiPreviewMaxRows: number;
   fullDataRowCapAllowed: false;
-  allowedCappedSurface: "main_ui_preview";
+  allowedCappedSurface: null;
 };
 
 export const PROFESSIONAL_BOQ_DEPTH_POLICY: ProfessionalBoqDepthPolicy = {
   mainUiPreviewMaxRows: PROFESSIONAL_BOQ_MAIN_UI_PREVIEW_MAX_ROWS,
   fullDataRowCapAllowed: false,
-  allowedCappedSurface: "main_ui_preview",
+  allowedCappedSurface: null,
 };
 
 const FORBIDDEN_ROW_CAP_RE =
   /\b(?:slice\s*\(\s*0\s*,\s*45\s*\)|MAX_ROWS\s*=\s*45|maxRows\s*:\s*45|limitRows\s*:\s*45|previewRows\s*:\s*45|mainUiRows\s*:\s*45)\b/;
 
 export function isProfessionalBoqMainUiPreviewSurface(surface: ProfessionalBoqRowCapSurface): boolean {
-  return surface === PROFESSIONAL_BOQ_DEPTH_POLICY.allowedCappedSurface;
+  void surface;
+  return false;
 }
 
 export function detectForbiddenProfessionalBoqRowCapInText(text: string): boolean {
@@ -38,9 +39,6 @@ export function assertProfessionalBoqFullDepthRows(input: {
   expectedRowsCount: number;
   actualRowsCount: number;
 }): { passed: boolean; reason: string | null } {
-  if (isProfessionalBoqMainUiPreviewSurface(input.surface)) {
-    return { passed: true, reason: null };
-  }
   if (input.actualRowsCount < input.expectedRowsCount) {
     return {
       passed: false,

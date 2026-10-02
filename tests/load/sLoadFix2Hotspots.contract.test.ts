@@ -1,7 +1,11 @@
 import fs from "fs";
 import path from "path";
 import { execFileSync } from "child_process";
-import { withoutExactEstimateRevisionStorageDependencyFiles } from "../greenCloseoutCurrentWaveAllowlist";
+import {
+  isApprovedConsumerEstimateMarketplaceFullHandoffMigration,
+  isApprovedPlatformDeveloperEstimatorAccessMigration,
+  withoutExactEstimateRevisionStorageDependencyFiles,
+} from "../greenCloseoutCurrentWaveAllowlist";
 
 const repoRoot = path.resolve(__dirname, "../..");
 
@@ -49,6 +53,12 @@ const isApprovedAiActionLedgerMigrationProposal = (file: string) =>
 const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
   const normalized = file.replace(/\\/g, "/");
   return (
+    normalized === "android/app/src/main/java/com/azisbek_dzhantaev/rikexpoapp/MainActivity.kt" ||
+    normalized === "supabase/migrations/20260920120000_consumer_estimate_marketplace_atomic_handoff.sql" ||
+    normalized === "supabase/migrations/20260922030000_developer_effective_role_get_my_role_priority.sql" ||
+    normalized === "supabase/migrations/20260922040000_estimate_default_compatible_price_snapshots.sql" ||
+    normalized === "supabase/migrations/20260922050000_strip_foundation_compatible_known_prices.sql" ||
+    normalized === "supabase/migrations/20260923110000_estimate_prepared_release_owner_migration_recalculate.sql" ||
     normalized.startsWith("artifacts/S_GREEN_CLOSEOUT_") ||
     normalized.startsWith("artifacts/S_GLOBAL_ESTIMATE_PRODUCTION_SAFE_") ||
     normalized.startsWith("artifacts/S_AI_ESTIMATE_TO_PDF_") ||
@@ -312,7 +322,9 @@ describe("S-LOAD-FIX-2 targeted hotspot optimization contract", () => {
         !isLaterApprovedWarehouseIssueSourcePatch(file) &&
         !isApprovedAiActionLedgerMigrationProposal(file) &&
         !isApprovedGreenCloseoutCurrentWavePatch(file) &&
+        !isApprovedConsumerEstimateMarketplaceFullHandoffMigration(file, repoRoot) &&
         !isApprovedOfficeMarketRegressionHarnessPatch(file) &&
+        !isApprovedPlatformDeveloperEstimatorAccessMigration(file, repoRoot) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|ios\/|android\/|supabase\/migrations\/|maestro\/|node_modules\/|android\/app\/build\/)/.test(
           file.replace(/\\/g, "/"),
         ) ||

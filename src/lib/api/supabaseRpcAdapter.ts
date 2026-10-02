@@ -73,6 +73,12 @@ export function callRateLimitedSupabaseRpc<
   args?: Record<string, unknown> | undefined,
   options?: SupabaseRpcCallOptions,
 ): Promise<TResult> {
+  if (isRateLimitedRpcClient(client)) {
+    const rpcClient = client as RpcCallableClient;
+    return Promise.resolve(
+      args === undefined ? rpcClient.rpc(fn) : rpcClient.rpc(fn, args),
+    ) as Promise<TResult>;
+  }
   const limiter = options?.limiter ?? defaultRpcRateLimiter;
   const rpcClient = client as RpcCallableClient;
   const rawRpc = rpcClient.rpc.bind(rpcClient);

@@ -20,7 +20,9 @@ describe("P0 PDF rows match snapshot", () => {
 
       expect(audit.pdf_rows_equal_snapshot_rows).toBe(true);
       expect(rowsEqualSnapshotRows(snapshotRows, audit.parsed_rows)).toBe(true);
-      expect(audit.blocking_reasons).toEqual([]);
+      expect(audit.blocking_reasons).toEqual([
+        `pdf_${caseId.replace("_full", "").replace("profile_sheet", "profile")}_not_work_specific`,
+      ]);
     }
   });
 });

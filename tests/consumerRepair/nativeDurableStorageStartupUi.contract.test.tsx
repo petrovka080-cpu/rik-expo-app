@@ -304,6 +304,55 @@ describe("consumer repair durable storage startup UI", () => {
     });
   });
 
+  it("keeps the fresh native workspace mounted when its durable draft id is bound to the route", async () => {
+    mockInitializeDurableStorage.mockImplementation(
+      () => new Promise<void>(() => undefined),
+    );
+    const baseProps = {
+      consumerUserId: "consumer-test-user",
+      initialProblemText: "\u0430\u0441\u0444\u0430\u043b\u044c\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u0435 5000 \u043c\u00b2",
+      launchId: "request-estimate:native-asphalt-launch",
+      launchFingerprint: "native-asphalt-fingerprint",
+      autoPrepare: true,
+    };
+    let renderer!: TestRenderer.ReactTestRenderer;
+
+    await act(async () => {
+      renderer = TestRenderer.create(<ConsumerRepairRequestScreen {...baseProps} />);
+      await Promise.resolve();
+    });
+    expect(controllerMountCount).toBe(1);
+    expect(mockInitializeDurableStorage).not.toHaveBeenCalled();
+
+    await act(async () => {
+      if (!settleInitialLaunchBuild) throw new Error("initial_launch_settlement_callback_missing");
+      settleInitialLaunchBuild();
+      await Promise.resolve();
+    });
+    expect(mockInitializeDurableStorage).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      renderer.update(
+        <ConsumerRepairRequestScreen
+          {...baseProps}
+          initialDraftId="consumer-draft-native-asphalt"
+        />,
+      );
+      await Promise.resolve();
+    });
+
+    expect(controllerMountCount).toBe(1);
+    expect(mockInitializeDurableStorage).toHaveBeenCalledTimes(2);
+    expect(renderer.root.findByProps({ testID: "consumer-repair-screen" })).toBeTruthy();
+    expect(renderer.root.findAllByProps({
+      testID: "consumer-repair-exact-draft-hydration-gate",
+    })).toHaveLength(0);
+
+    await act(async () => {
+      renderer.unmount();
+    });
+  });
+
   it("waits for an exact canonical revision launch to settle before hydrating history", async () => {
     mockInitializeDurableStorage.mockResolvedValueOnce();
     let renderer!: TestRenderer.ReactTestRenderer;

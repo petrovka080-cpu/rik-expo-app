@@ -3,7 +3,7 @@ import { buildConsumerRepairStructuredEstimatePdfViewModel } from "../../src/lib
 import {
   detectEstimateFakeRows,
   type ContinuousEstimateDetectorRow,
-} from "../../src/lib/ai/estimateContinuousDetection";
+} from "../../scripts/estimate/detectors";
 import { capitalRenovationBundle } from "../estimateCalculator/capitalRenovationTestHelpers";
 
 function fakePdfRows(): ContinuousEstimateDetectorRow[] {

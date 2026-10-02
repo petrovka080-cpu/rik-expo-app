@@ -15,7 +15,7 @@ import {
 } from "./requestEstimateBoqCatalogTestHelpers";
 
 describe("request estimate payload parity", () => {
-  it("keeps canonical save, PDF, and send payloads aligned", () => {
+  it("keeps canonical save, PDF, and send payloads aligned", async () => {
     let bundle = foundationDraftWithManualCatalogItem();
     bundle = updateConsumerRepairRequestDraft({
       requestDraftId: bundle.draft.id,
@@ -32,7 +32,7 @@ describe("request estimate payload parity", () => {
     bundle = approveCanonicalConsumerRepairAuditDraft({ bundle });
     const pdfPayload = buildConsumerRepairCanonicalDraftPayload(bundle, "pdf_generation");
 
-    bundle = sendCanonicalConsumerRepairAuditDraft({
+    bundle = await sendCanonicalConsumerRepairAuditDraft({
       bundle,
       idempotencyKey: `payload-parity:${bundle.draft.id}`,
     });

@@ -305,6 +305,20 @@ const SOURCE_BY_ID = new Map(ESTIMATE_NORM_SOURCES.map((source) => [source.sourc
 const FORMULA_FUNCTIONS = new Set(["round_to", "max", "min", "ceil", "floor", "if", "unit_convert", "sqrt", "pow"]);
 
 function compactKey(value: string): string {
+  if (value.length > 0 && value.length <= 140) {
+    let alreadyCompact = value.charCodeAt(0) !== 95 && value.charCodeAt(value.length - 1) !== 95;
+    let previousUnderscore = false;
+    for (let index = 0; alreadyCompact && index < value.length; index += 1) {
+      const code = value.charCodeAt(index);
+      const underscore = code === 95;
+      alreadyCompact =
+        (code >= 97 && code <= 122) ||
+        (code >= 48 && code <= 57) ||
+        (underscore && !previousUnderscore);
+      previousUnderscore = underscore;
+    }
+    if (alreadyCompact) return value;
+  }
   return value
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "_")
@@ -322,11 +336,6 @@ function normalizeUnitKey(value: string): string {
   return unit;
 }
 
-function isUnit(value: string, ...units: string[]): boolean {
-  const unit = normalizeUnitKey(value);
-  return units.some((candidate) => normalizeUnitKey(candidate) === unit);
-}
-
 function recipeTypeFor(row: EstimateNormGenericTemplateInput["row"]): EstimateNormRecipeType {
   if (row.lineType === "equipment" || row.section === "equipment") return "equipment";
   if (row.lineType === "work" || row.section === "labor" || row.section === "preparation" || row.section === "quality_control") return "labor";
@@ -340,22 +349,6 @@ function sourceForRecipe(recipeType: EstimateNormRecipeType, section: string): E
   if (recipeType === "equipment" || section === "equipment") return SOURCE_BY_ID.get("src_norm_estimator_manual_service_policy_2026_07")!;
   if (section === "waste") return SOURCE_BY_ID.get("src_norm_public_reference_construction_methods_2026_07")!;
   return SOURCE_BY_ID.get("src_norm_estimator_manual_service_policy_2026_07")!;
-}
-
-function professionalCatalogBackfillSourceId(input: {
-  workGroup: EstimateNormWorkGroupKey;
-  recipeType: EstimateNormRecipeType;
-  section: string;
-  unit: string;
-}): string {
-  return `${PROFESSIONAL_NORM_PACK_SOURCE_PREFIX}${[
-    "catalog",
-    compactKey(input.workGroup),
-    compactKey(input.recipeType),
-    compactKey(input.section),
-    compactKey(input.unit),
-    "v1",
-  ].join("_")}`;
 }
 
 const REVIEWED_PACKAGE_QUANTITY_BY_SECTION: Readonly<Record<string, number>> = Object.freeze({
@@ -387,10 +380,9 @@ const REVIEWED_SCALAR_BY_SECTION_AND_UNIT: Readonly<Record<string, number>> = Ob
   default: 1,
 });
 
-function reviewedPackageQuantity(section: string, unit: string): number {
-  const normalizedUnit = normalizeUnitKey(unit);
-  const sectionUnitKey = `${compactKey(section)}_${normalizedUnit}`;
-  const sectionKey = `${compactKey(section)}_default`;
+function reviewedPackageQuantity(compactSection: string, normalizedUnit: string): number {
+  const sectionUnitKey = `${compactSection}_${normalizedUnit}`;
+  const sectionKey = `${compactSection}_default`;
   const unitKey = `${normalizedUnit}_default`;
   return REVIEWED_PACKAGE_QUANTITY_BY_SECTION[sectionUnitKey] ??
     REVIEWED_PACKAGE_QUANTITY_BY_SECTION[sectionKey] ??
@@ -398,8 +390,8 @@ function reviewedPackageQuantity(section: string, unit: string): number {
     REVIEWED_PACKAGE_QUANTITY_BY_SECTION.default;
 }
 
-function reviewedFormulaScalar(section: string, unit: string): number {
-  const key = `${compactKey(section)}_${normalizeUnitKey(unit)}`;
+function reviewedFormulaScalar(compactSection: string, normalizedUnit: string): number {
+  const key = `${compactSection}_${normalizedUnit}`;
   return REVIEWED_SCALAR_BY_SECTION_AND_UNIT[key] ?? REVIEWED_SCALAR_BY_SECTION_AND_UNIT.default;
 }
 
@@ -416,6 +408,22 @@ function reviewedSourceTitle(input: {
 }
 
 function formulaInputs(formula: string): string[] {
+  if (formula === "round_to(q * normFactor, 4)") return ["normFactor", "q"];
+  if (formula === "round_to(q * normFactor * wasteFactor, 4)") {
+    return ["normFactor", "q", "wasteFactor"];
+  }
+  if (formula === "max(minQty, ceil(q * normFactor / packageSize))") {
+    return ["minQty", "normFactor", "packageSize", "q"];
+  }
+  if (formula === "max(minQty, ceil(q / packageSize))") return ["minQty", "packageSize", "q"];
+  if (formula === "round_to(q * wasteRatio * wasteFactor, 4)") {
+    return ["q", "wasteFactor", "wasteRatio"];
+  }
+  if (formula === "round_to(q * wasteRatio, 4)") return ["q", "wasteRatio"];
+  if (formula === "round_to(unit_convert(q, unitConversionFactor) * normFactor, 4)") {
+    return ["normFactor", "q", "unitConversionFactor"];
+  }
+  if (formula === "minQty") return ["minQty"];
   const identifiers = formula.match(/[A-Za-z_][A-Za-z0-9_]*/g) ?? [];
   return [...new Set(identifiers.filter((identifier) => !FORMULA_FUNCTIONS.has(identifier)))].sort();
 }
@@ -428,6 +436,10 @@ function hasForbiddenAiNormSourceMarker(value: string): boolean {
 }
 
 function roundingPolicyFor(formula: string): EstimateNormItem["rounding_policy"] {
+  if (formula === "max(minQty, ceil(q * normFactor / packageSize))" ||
+      formula === "max(minQty, ceil(q / packageSize))") return "ceil_to_package";
+  if (formula === "minQty") return "min_quantity";
+  if (formula.startsWith("round_to(")) return "round_to_4";
   if (/ceil\s*\([^)]*\/\s*packageSize/.test(formula)) return "ceil_to_package";
   if (/ceil\s*\(/.test(formula)) return "ceil_to_whole_unit";
   if (/minQty/.test(formula) && !/round_to/.test(formula)) return "min_quantity";
@@ -461,6 +473,10 @@ export function resolveNormWorkGroupForCategory(category: string): EstimateNormW
 }
 
 function rowAwareNormWorkGroup(input: EstimateNormGenericTemplateInput): EstimateNormWorkGroupKey {
+  if (input.row.section === "equipment") return "equipment_rent";
+  if (input.row.section === "logistics" || input.row.section === "delivery") return "delivery";
+  if (input.row.section === "waste") return "waste_removal";
+  if (input.row.section === "overhead" || input.row.section === "tax" || input.row.section === "quality_control") return "documentation";
   const categoryGroup = resolveNormWorkGroupForCategory(input.category) ?? "services";
   const text = compactKey([
     input.category,
@@ -472,10 +488,6 @@ function rowAwareNormWorkGroup(input: EstimateNormGenericTemplateInput): Estimat
     input.row.titleRu ?? "",
     input.row.title ?? "",
   ].join(" "));
-  if (input.row.section === "equipment") return "equipment_rent";
-  if (input.row.section === "logistics" || input.row.section === "delivery") return "delivery";
-  if (input.row.section === "waste") return "waste_removal";
-  if (input.row.section === "overhead" || input.row.section === "tax" || input.row.section === "quality_control") return "documentation";
   if (text.includes("baseboard")) return "baseboards";
   if (text.includes("low_voltage") || text.includes("internet") || text.includes("video") || text.includes("intercom") || text.includes("access_control")) return "low_voltage";
   if (text.includes("fire_alarm") || text.includes("fire_partition") || text.includes("fireproof")) return "fire_safety";
@@ -501,6 +513,8 @@ function rowAwareNormWorkGroup(input: EstimateNormGenericTemplateInput): Estimat
 export function buildEstimateNormItemForGenericRow(input: EstimateNormGenericTemplateInput): EstimateNormItem {
   const rowCode = input.row.rowCode ?? input.row.code ?? "row";
   const recipeType = recipeTypeFor(input.row);
+  const normalizedRowUnit = normalizeUnitKey(input.row.unit);
+  const compactSection = compactKey(input.row.section);
   const professionalNormPack = recipeType === "material"
     ? resolveProfessionalNormPackItemForTemplate(input)
     : undefined;
@@ -508,20 +522,24 @@ export function buildEstimateNormItemForGenericRow(input: EstimateNormGenericTem
     ? null
     : sourceForRecipe(recipeType, input.row.section);
   const workGroup = professionalNormPack?.workGroup ?? rowAwareNormWorkGroup(input);
-  const packageSize = professionalNormPack?.packageSize ?? reviewedPackageQuantity(input.row.section, input.row.unit);
-  const consumptionRate = professionalNormPack?.consumptionRate ?? reviewedFormulaScalar(input.row.section, input.row.unit);
+  const packageSize = professionalNormPack?.packageSize ?? reviewedPackageQuantity(compactSection, normalizedRowUnit);
+  const consumptionRate = professionalNormPack?.consumptionRate ?? reviewedFormulaScalar(compactSection, normalizedRowUnit);
   const quantityFormula = professionalNormPack?.quantityFormulaOverride ?? input.row.quantityFormula;
   const inputs = formulaInputs(quantityFormula);
   const wastePercent = professionalNormPack?.wastePercent ?? 5;
   const wasteFactor = 1 + wastePercent / 100;
-  const wasteRatio = professionalNormPack ? wastePercent / 100 : isUnit(input.row.unit, "kg", "lbs") ? 0.05 : 0.03;
+  const wasteRatio = professionalNormPack
+    ? wastePercent / 100
+    : normalizedRowUnit === "kg" || normalizedRowUnit === "lbs" ? 0.05 : 0.03;
   const normUnit = professionalNormPack?.unit ?? input.row.unit;
-  const sourceId = professionalNormPack?.sourceId ?? professionalCatalogBackfillSourceId({
-    workGroup,
-    recipeType,
-    section: input.row.section,
-    unit: normUnit,
-  });
+  const compactWorkGroup = compactKey(workGroup);
+  const compactRecipeType = compactKey(recipeType);
+  const compactNormUnit = compactKey(normUnit);
+  const compactTemplateKey = compactKey(input.templateKey);
+  const compactRowCode = compactKey(rowCode);
+  const compactProfessionalNormId = professionalNormPack ? compactKey(professionalNormPack.normId) : null;
+  const sourceId = professionalNormPack?.sourceId ??
+    `${PROFESSIONAL_NORM_PACK_SOURCE_PREFIX}catalog_${compactWorkGroup}_${compactRecipeType}_${compactSection}_${compactNormUnit}_v1`;
   const sourceTitle = professionalNormPack?.sourceTitle ?? reviewedSourceTitle({
     workGroup,
     recipeType,
@@ -536,14 +554,14 @@ export function buildEstimateNormItemForGenericRow(input: EstimateNormGenericTem
   const reviewStatus = professionalNormPack?.reviewStatus ?? source!.review_status;
   const roundingPolicy = roundingPolicyFor(quantityFormula);
   const normIdStem = professionalNormPack
-    ? `professional_pack:${compactKey(professionalNormPack.normId)}:${compactKey(input.templateKey)}:${compactKey(rowCode)}`
-    : `professional_pack:catalog_${compactKey(workGroup)}_${compactKey(recipeType)}_${compactKey(input.row.section)}:${compactKey(input.templateKey)}:${compactKey(rowCode)}`;
+    ? `professional_pack:${compactProfessionalNormId}:${compactTemplateKey}:${compactRowCode}`
+    : `professional_pack:catalog_${compactWorkGroup}_${compactRecipeType}_${compactSection}:${compactTemplateKey}:${compactRowCode}`;
 
   return {
     norm_id: `norm:${ESTIMATE_NORM_KNOWLEDGE_BASE_VERSION}:${normIdStem}`,
     norm_family_id: professionalNormPack
-      ? `norm_family:${workGroup}:professional_pack:${compactKey(professionalNormPack.normId)}`
-      : `norm_family:${workGroup}:professional_pack:${compactKey(recipeType)}:${compactKey(input.row.section)}:${compactKey(normUnit)}`,
+      ? `norm_family:${workGroup}:professional_pack:${compactProfessionalNormId}`
+      : `norm_family:${workGroup}:professional_pack:${compactRecipeType}:${compactSection}:${compactNormUnit}`,
     norm_version: ESTIMATE_NORM_KNOWLEDGE_BASE_VERSION,
     work_group: workGroup,
     category: input.category,
@@ -571,7 +589,7 @@ export function buildEstimateNormItemForGenericRow(input: EstimateNormGenericTem
     waste_factor: wasteFactor,
     waste_ratio: wasteRatio,
     rounding_policy: roundingPolicy,
-    conversion_policy: /unit_convert/.test(quantityFormula) ? "unit_convert_factor" : "same_unit",
+    conversion_policy: quantityFormula.includes("unit_convert") ? "unit_convert_factor" : "same_unit",
     dimensional_contract: {
       workBasisUnit: input.defaultUnit,
       resourceOutputUnit: normUnit,

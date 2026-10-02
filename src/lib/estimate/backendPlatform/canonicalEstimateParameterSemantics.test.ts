@@ -96,6 +96,14 @@ describe("canonical estimate parameter choice labels", () => {
       .toBe("Морозостойкость F150");
     expect(canonicalEstimateParameterChoiceLabelRu("mobility", "P4"))
       .toBe("Подвижность P4");
+    expect(canonicalEstimateParameterChoiceLabelRu("delivery_pricing_mode", "SEPARATE"))
+      .toBe("Доставка отдельной строкой");
+    expect(canonicalEstimateParameterChoiceLabelRu("delivery_pricing_mode", "INCLUDED_IN_SUPPLY"))
+      .toBe("Доставка включена в поставку");
+    expect(canonicalEstimateParameterChoiceLabelRu("construction_joint_mode", "NONE"))
+      .toBe("Не требуется");
+    expect(canonicalEstimateParameterChoiceLabelRu("construction_joint_mode", "WATERSTOP"))
+      .toBe("Рабочий шов с гидрошпонкой");
   });
 
   it("keeps calculation inputs on the first screen and defers document-only profile fields", () => {

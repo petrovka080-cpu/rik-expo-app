@@ -2,6 +2,7 @@ import {
   buildDrywallIndividualProfessionalEstimatePassportV5,
   drywallMaximumScopeLinesV5,
 } from "../../src/lib/estimate/v4/domains/interiorFinishesComplete";
+import { compileProfessionalProjectAssemblyV4 } from "../../src/lib/estimate/v4/professionalProjectAssemblyV4";
 import {
   allTechnologyWaveParts,
   exactTechnologyWaveParts,
@@ -78,10 +79,17 @@ describe("BATCH-002 active Wave-55 maximum professional estimate expansion R1", 
       const formulaInputs = new Set(rows.flatMap((row) => row.formula.input_parameter_ids));
       const derivedInputs = new Set((part.schema.derived_parameter_rules ?? []).flatMap((rule) =>
         rule.alternatives.flatMap((alternative) => alternative.input_parameter_ids)));
-      for (const parameter of part.schema.parameters) {
-        if (parameter.parameter_id.startsWith("unit_price_") || controlParameters.has(parameter.parameter_id) || part.contract.non_cost_dependencies.includes(parameter.parameter_id)) continue;
-        expect(formulaInputs.has(parameter.parameter_id) || derivedInputs.has(parameter.parameter_id)).toBe(true);
-      }
+      const disconnected = part.schema.parameters.filter((parameter) =>
+        !parameter.parameter_id.startsWith("unit_price_")
+        && !controlParameters.has(parameter.parameter_id)
+        && !part.contract.non_cost_dependencies.includes(parameter.parameter_id)
+        && !formulaInputs.has(parameter.parameter_id)
+        && !derivedInputs.has(parameter.parameter_id)
+      ).map((parameter) => parameter.parameter_id);
+      expect({ catalogId: part.contract.catalog_id, disconnected }).toEqual({
+        catalogId: part.contract.catalog_id,
+        disconnected: [],
+      });
     }
   });
 
@@ -113,5 +121,39 @@ describe("BATCH-002 active Wave-55 maximum professional estimate expansion R1", 
     expect(quantity("frame_mep_reinforcement")).toBeCloseTo(5.04, 6);
     expect(quantity("frame_reinforcement_connectors")).toBeCloseTo(32, 6);
     expect(quantity("frame_anchor_drilling")).toBe(74);
+  });
+
+  test("includes additional CLAD layers only when board_layer_count is greater than one", () => {
+    const catalogId = "drywall_ceiling_interior_curve_clad_standard";
+    const part = exactTechnologyWaveParts(catalogId);
+    const baseValues = technologyWaveParameterValues(catalogId);
+    const compile = (boardLayerCount: number) => compileProfessionalProjectAssemblyV4({
+      project_assembly_id: `technology-wave:${catalogId}:${boardLayerCount}`,
+      parent_passport_id: part.contract.professional_proof_bundle_id,
+      parent_revision_id: null,
+      requested_catalog_id: catalogId,
+      requested_work_key: part.contract.work_key,
+      scope_mode: "FULL_APPLICABLE_SCOPE",
+      parameter_values: {
+        ...baseValues,
+        board_layer_count: { ...baseValues.board_layer_count!, value: boardLayerCount },
+      },
+      child_assemblies: part.child_assemblies,
+    });
+    const additionalKeys = [
+      "clad_additional_layer_board",
+      "clad_additional_layer_screws",
+      "clad_additional_layer_installation",
+    ];
+
+    expect(compile(1).compiled_rows.filter((row) =>
+      additionalKeys.some((key) => row.row_id.endsWith(`:row:${key}`))
+    )).toEqual([]);
+    const twoLayerRows = compile(2).compiled_rows.filter((row) =>
+      additionalKeys.some((key) => row.row_id.endsWith(`:row:${key}`))
+    );
+    expect(twoLayerRows).toHaveLength(3);
+    expect(twoLayerRows.every((row) => row.quantity > 0)).toBe(true);
+    expect(twoLayerRows.every((row) => row.inclusion_condition.endsWith("board_layer_count>1"))).toBe(true);
   });
 });

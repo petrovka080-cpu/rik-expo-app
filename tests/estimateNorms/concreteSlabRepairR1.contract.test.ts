@@ -88,16 +88,18 @@ describe("concrete slab repair canonical family", () => {
     expect(quantity("delivery:concrete:slab-repair-waste")).toBe(4);
   });
 
-  it("fails closed for missing assessment data or a wrong conditional branch", async () => {
+  it("keeps missing design evidence local while rejecting a wrong conditional branch", async () => {
     const target = CONCRETE_SLAB_REPAIR_TARGETS.find(
       (candidate) => candidate.contextKey === "wet_zone",
     )!;
     const input = concreteSlabRepairAcceptanceInputR1(target.contextKey);
     const { approved_repair_design_reference: _missing, ...withoutDesign } = input;
-    await expect(compileConcreteSlabRepairR1(
+    const preliminary = await compileConcreteSlabRepairR1(
       withoutDesign,
       { catalogId: target.catalogId },
-    )).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+    );
+    expect(preliminary.preliminaryNeeds.flatMap((need) => need.missing_parameter_ids))
+      .toContain("approved_repair_design_reference");
 
     const smallTarget = CONCRETE_SLAB_REPAIR_TARGETS.find(
       (candidate) => candidate.contextKey === "small_area",

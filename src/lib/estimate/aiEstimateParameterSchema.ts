@@ -1,6 +1,6 @@
 import {
   buildProfessionalWorkPassport,
-  listProfessionalWorkPassportTemplateIds,
+  getProfessionalWorkPassportTemplateCount,
 } from "./buildProfessionalWorkPassport";
 import type { EstimateDraftRevisionMissingInput, EstimateDraftRevisionParam } from "./estimateDraftRevisionContract";
 import {
@@ -339,7 +339,7 @@ export function buildAiEstimateParameterSchema(
     templateId: passport.templateId,
     templateNameRu: passport.localizedNameRu,
     familyId: passport.familyId,
-    catalogTotalTemplates: listProfessionalWorkPassportTemplateIds().length,
+    catalogTotalTemplates: getProfessionalWorkPassportTemplateCount(),
     supportsFreeOrderInput: true,
     missingInputPolicy: "show_missing_and_continue_preliminary_boq",
     professionalCompletenessPromptRu: "Для профессиональной сметы уточните недостающие размеры, материалы, условия площадки и проектные данные.",

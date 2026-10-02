@@ -2,7 +2,7 @@ import type {
   ConsumerRepairAiDraft,
   ConsumerRepairItemType,
 } from "../../../../consumerRequests/consumerRequestTypes";
-import type { BuildEstimateFromInlineWorkPromptInput } from "../../../buildEstimateFromInlineWorkPrompt";
+import type { BuildEstimateFromInlineWorkPromptInput } from "../../../backendPlatform/canonicalEstimateHistoricalIngress";
 import {
   compileProfessionalEstimateDomainV1,
   constructionNormativeRegistryV1,
@@ -35,6 +35,7 @@ import {
   type ProfessionalMaterialQuantityBasisV1,
 } from "../../../professionalMaterialQuantityContract";
 import { interiorFinishesDomainFactory } from "./domainPackage";
+import { interiorFinishesWave1DomainFactory } from "../interiorFinishesWave1/domainPackage";
 import {
   INTERIOR_FINISHES_COMPLETE_DOMAIN_ID,
   INTERIOR_FINISHES_DOMAIN_INVENTORY,
@@ -182,8 +183,14 @@ function constructionState(inventory: InteriorFinishesDomainInventoryRow): "NEW"
     : "NEW";
 }
 
-function normativeSourceId(inventory: InteriorFinishesDomainInventoryRow): string {
-  if (isWallPuttyCt127Krer15Target(inventory)) {
+function normativeSourceId(
+  inventory: InteriorFinishesDomainInventoryRow,
+  productProfileId: unknown,
+): string {
+  if (
+    isWallPuttyCt127Krer15Target(inventory) &&
+    productProfileId === CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_PRODUCT_PROFILE_ID
+  ) {
     return WALL_PUTTY_CT127_KRER15_SOURCE_ID;
   }
   return constructionState(inventory) === "REPAIR"
@@ -197,11 +204,15 @@ export function buildInteriorFinishesProductionDraftV1(
   const inventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find((candidate) =>
     candidate.catalog_id === input.catalog_id && candidate.work_key === input.work_key);
   if (!inventory) throw new Error(`INTERIOR_EXACT_BINDING_NOT_FOUND:${input.catalog_id}:${input.work_key}`);
+  const domainFactory = input.parameter_values.product_profile_id?.value ===
+    CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_PRODUCT_PROFILE_ID
+    ? interiorFinishesWave1DomainFactory
+    : interiorFinishesDomainFactory;
   const physicalNormSourceIds = input.physical_norm_resolution
     ? input.physical_norm_resolution.source_ids ?? [input.physical_norm_resolution.source_id]
     : [];
   const compileResult = compileProfessionalEstimateDomainV1(
-    interiorFinishesDomainFactory,
+    domainFactory,
     constructionNormativeRegistryV1,
     {
       catalog_id: input.catalog_id,
@@ -223,8 +234,8 @@ export function buildInteriorFinishesProductionDraftV1(
   if (compilation.compiled_rows.length === 0) {
     throw new Error(`INTERIOR_EMPTY_PRODUCTION_BOQ:${input.catalog_id}`);
   }
-  const technology = interiorFinishesDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
-  const schema = interiorFinishesDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
+  const technology = domainFactory.technology_by_id.get(inventory.canonical_technology_id);
+  const schema = domainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
   if (!technology || !schema) throw new Error(`INTERIOR_PRODUCTION_SCHEMA_NOT_FOUND:${input.catalog_id}`);
   const passportId = `domain-passport:${input.catalog_id}:v1`;
   const requestedCatalogWorkId = input.catalog_id;
@@ -290,9 +301,9 @@ export function buildInteriorFinishesProductionDraftV1(
     sourceParameters: {
       professionalDomainFactoryV1: true,
       productionBindingVersion: INTERIOR_FINISHES_PRODUCTION_BINDING_VERSION,
-      domainId: INTERIOR_FINISHES_COMPLETE_DOMAIN_ID,
-      domainVersion: interiorFinishesDomainFactory.package.manifest.domain_version,
-      domainPackageHash: interiorFinishesDomainFactory.package_hash,
+      domainId: domainFactory.package.manifest.domain_id,
+      domainVersion: domainFactory.package.manifest.domain_version,
+      domainPackageHash: domainFactory.package_hash,
       catalogId: input.catalog_id,
       requestedCatalogWorkId,
       workKey: input.work_key,
@@ -455,8 +466,12 @@ export function buildInteriorFinishesFromInlineInputV1(
     identities.includes(candidate.catalog_id) || identities.includes(candidate.work_key) ||
     identities.includes(candidate.template_id) || identities.includes(`domain-passport:${candidate.catalog_id}:v1`)) ?? null;
   if (!inventory) return { exact_match: false, inventory: null, missing_parameter_ids: [], production: null };
-  const technology = interiorFinishesDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
-  const schema = interiorFinishesDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
+  const domainFactory = input.paramOverrides?.product_profile_id?.value ===
+    CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_PRODUCT_PROFILE_ID
+    ? interiorFinishesWave1DomainFactory
+    : interiorFinishesDomainFactory;
+  const technology = domainFactory.technology_by_id.get(inventory.canonical_technology_id);
+  const schema = domainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
   if (!technology || !schema) throw new Error(`INTERIOR_INLINE_SCHEMA_NOT_FOUND:${inventory.catalog_id}`);
   const baseline = buildProfessionalDomainVisibleBaselineV1({
     schema,
@@ -518,7 +533,7 @@ export function buildInteriorFinishesFromInlineInputV1(
     };
   }
   const parameterValues = physicalNormResolution.parameter_values;
-  const sourceId = normativeSourceId(inventory);
+  const sourceId = normativeSourceId(inventory, parameterValues.product_profile_id?.value);
   const production = buildInteriorFinishesProductionDraftV1({
     catalog_id: inventory.catalog_id,
     work_key: inventory.work_key,

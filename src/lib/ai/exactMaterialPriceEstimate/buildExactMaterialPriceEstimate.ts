@@ -2,7 +2,7 @@ import {
   buildGlobalEstimateInputWithSelectedWork,
   buildGlobalSelectedWorkBinding,
 } from "../globalEstimate/globalWorkSmartSearch";
-import { calculateGlobalConstructionEstimateSync } from "../globalEstimate/globalEstimateCalculator";
+import { calculateGlobalConstructionEstimateSync } from "../../estimate/backendPlatform/canonicalEstimateHistoricalGlobalProjection";
 import { formatEstimateUnitLabel } from "../globalEstimate/formatEstimateUnitLabel";
 import type { GlobalEstimateInput, SourceBackedEstimateRow } from "../globalEstimate/globalEstimateTypes";
 import { normalizeRuText } from "../../text/encoding";

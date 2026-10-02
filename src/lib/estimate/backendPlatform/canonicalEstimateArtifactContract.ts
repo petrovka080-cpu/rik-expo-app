@@ -280,7 +280,7 @@ export function canonicalArtifactUnit(row: Record<string, unknown>): string {
   const localized: Record<string, string> = {
     set: "компл.", item: "шт.", pcs: "шт.", piece: "шт.", piece_day: "шт.·сут",
     man_hour: "чел.-ч", machine_hour: "маш.-ч", day: "сут", stage: "этап",
-    t_km: "т·км", kg: "кг", t: "т", l: "л", m: "м", m2: "м²", m3: "м³",
+    t_km: "т·км", m3_km: "м³·км", kg: "кг", t: "т", l: "л", m: "м", m2: "м²", m3: "м³",
     trip: "рейс", document: "док.", ratio: "коэф.", service: "услуга",
   };
   if (unit !== "test") return localized[unit] ?? unit;

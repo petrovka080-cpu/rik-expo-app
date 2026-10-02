@@ -1,0 +1,159 @@
+import {
+  ESTIMATE_PLATFORM_API_VERSION,
+  canonicalEstimatePreliminaryNeedsFromAmendmentContract,
+  type CanonicalEstimateRevisionRowPriceSource,
+  type CanonicalEstimateRevisionRowView,
+  type CanonicalEstimateRevisionView,
+} from "./contracts";
+import type { AdmissionDecision } from "./estimateAdmissionR3";
+
+type StorageRecord = Record<string, unknown>;
+
+export class CanonicalEstimateRevisionReadContractError extends Error {
+  readonly code = "REVISION_READ_CONTRACT_INVALID";
+
+  constructor(message: string) {
+    super(message);
+    this.name = "CanonicalEstimateRevisionReadContractError";
+  }
+}
+
+function record(value: unknown): StorageRecord {
+  return value != null && typeof value === "object" && !Array.isArray(value)
+    ? value as StorageRecord
+    : {};
+}
+
+function nullableText(value: unknown): string | null {
+  return value == null ? null : String(value);
+}
+
+function requiredPriceSnapshotIds(row: StorageRecord): string[] {
+  if (!Object.prototype.hasOwnProperty.call(row, "price_snapshot_ids")) {
+    throw new CanonicalEstimateRevisionReadContractError(
+      "full revision storage projection omitted price_snapshot_ids",
+    );
+  }
+  if (!Array.isArray(row.price_snapshot_ids)
+    || row.price_snapshot_ids.some((value) => typeof value !== "string" || value.length === 0)) {
+    throw new CanonicalEstimateRevisionReadContractError(
+      "full revision storage projection returned invalid price_snapshot_ids",
+    );
+  }
+  return [...row.price_snapshot_ids] as string[];
+}
+
+export function canonicalEstimateRevisionDetailFromStorage(
+  row: StorageRecord,
+  environment: {
+    contentAdmission?: AdmissionDecision;
+    legacyWarningRu?: string | null;
+    principalOrganizationId?: string | null;
+  } = {},
+): CanonicalEstimateRevisionView {
+  const amendmentContract = record(row.amendment_contract);
+  return {
+    apiVersion: ESTIMATE_PLATFORM_API_VERSION,
+    revisionId: String(row.id ?? ""),
+    parentRevisionId: nullableText(row.parent_revision_id),
+    organizationId: Object.prototype.hasOwnProperty.call(environment, "principalOrganizationId")
+      ? environment.principalOrganizationId ?? null
+      : nullableText(row.organization_id),
+    releaseId: String(row.release_id ?? ""),
+    catalogId: String(row.catalog_id ?? ""),
+    revisionNumber: Number(row.revision_number),
+    status: String(row.status ?? "") as CanonicalEstimateRevisionView["status"],
+    currencyCode: String(row.currency_code ?? ""),
+    priceSnapshotIds: requiredPriceSnapshotIds(row),
+    parameters: record(row.input_parameters),
+    sourceRequestText: nullableText(row.source_request_text),
+    sourceRequestHash: nullableText(row.source_request_hash),
+    canonicalWorkTitleRu: nullableText(row.canonical_work_title_ru),
+    displayTitleRu: nullableText(row.display_title_ru),
+    primaryMeasureParameterId: nullableText(row.primary_measure_parameter_id),
+    primaryMeasureValue: nullableText(row.primary_measure_value),
+    primaryMeasureUnitId: nullableText(row.primary_measure_unit_id),
+    normalizedIntent: row.normalized_intent == null ? null : record(row.normalized_intent),
+    definitionVersionId: nullableText(row.definition_version_id),
+    groupId: nullableText(row.group_id),
+    searchReleaseId: nullableText(row.search_release_id),
+    userInputSnapshot: row.user_input_snapshot == null ? null : record(row.user_input_snapshot),
+    acceptedBaselineSnapshot: row.accepted_baseline_snapshot == null
+      ? null
+      : record(row.accepted_baseline_snapshot),
+    assumptionSnapshot: row.assumption_snapshot == null ? null : record(row.assumption_snapshot),
+    formulaGraphVersion: nullableText(row.formula_graph_version),
+    revisionContractVersion: nullableText(row.revision_contract_version),
+    amendmentContract: amendmentContract as CanonicalEstimateRevisionView["amendmentContract"],
+    preliminaryNeeds: canonicalEstimatePreliminaryNeedsFromAmendmentContract(amendmentContract),
+    totals: record(row.totals),
+    rowCount: Number(row.row_count),
+    checksumSha256: String(row.checksum_sha256 ?? ""),
+    compilerVersion: String(row.compiler_version ?? ""),
+    definitionVersion: row.definition_version == null ? null : Number(row.definition_version),
+    compilerOwner: row.compiler_owner == null
+      ? "backend"
+      : String(row.compiler_owner) as CanonicalEstimateRevisionView["compilerOwner"],
+    parameterSchemaHash: nullableText(row.parameter_schema_hash),
+    inputHash: nullableText(row.input_hash),
+    outputHash: nullableText(row.output_hash ?? row.checksum_sha256),
+    ...(environment.contentAdmission == null ? {} : { contentAdmission: environment.contentAdmission }),
+    ...(environment.legacyWarningRu === undefined ? {} : { legacyWarningRu: environment.legacyWarningRu }),
+    createdAt: String(row.created_at ?? ""),
+  };
+}
+
+function priceSourceKind(
+  row: StorageRecord,
+  price: StorageRecord | null,
+  trace: StorageRecord,
+): CanonicalEstimateRevisionRowPriceSource["kind"] {
+  if (price?.price_snapshot_id != null) return "AUTOMATIC_SNAPSHOT";
+  const traceKind = String(trace.kind ?? "");
+  if (traceKind === "manual_override" || traceKind === "manual_custom_row") return "MANUAL";
+  if (trace.migrated === true || (price == null && row.unit_price != null)) return "LEGACY_UNKNOWN";
+  if (price != null && price.unit_price != null) return "LEGACY_UNKNOWN";
+  return "UNPRICED";
+}
+
+export function canonicalEstimateRevisionRowFromStorage(
+  row: StorageRecord,
+  price: StorageRecord | null,
+  sourceEvidence: StorageRecord | null = null,
+): CanonicalEstimateRevisionRowView {
+  const trace = record(price?.resolution_trace);
+  const priceSource: CanonicalEstimateRevisionRowPriceSource = {
+    kind: priceSourceKind(row, price, trace),
+    snapshotId: nullableText(price?.price_snapshot_id),
+    routeId: nullableText(price?.route_id),
+    priceKey: typeof trace.priceKey === "string" && trace.priceKey.length > 0 ? trace.priceKey : null,
+    unitId: String(row.unit_id ?? ""),
+    unitPrice: nullableText(price?.unit_price ?? row.unit_price),
+    currencyCode: nullableText(price?.currency_code ?? row.currency_code),
+    snapshotCapturedAt: nullableText(sourceEvidence?.snapshot_captured_at),
+    routeSourceKind: sourceEvidence?.route_source_kind == null
+      ? null
+      : String(sourceEvidence.route_source_kind) as CanonicalEstimateRevisionRowPriceSource["routeSourceKind"],
+    resolutionTrace: trace,
+  };
+  return {
+    rowId: String(row.row_id ?? ""),
+    ordinal: Number(row.ordinal),
+    section: String(row.section ?? ""),
+    category: String(row.category ?? ""),
+    titleRu: String(row.title_ru ?? ""),
+    unitId: String(row.unit_id ?? ""),
+    quantity: nullableText(row.quantity),
+    unitPrice: nullableText(row.unit_price),
+    amount: nullableText(row.amount),
+    currencyCode: nullableText(row.currency_code),
+    procurementEligible: row.procurement_eligible === true,
+    includedInEstimate: row.included_in_estimate === true,
+    includedInProcurement: row.included_in_procurement === true,
+    ownershipStatus: String(row.ownership_status ?? "OWNED") as CanonicalEstimateRevisionRowView["ownershipStatus"],
+    calculationTrace: record(row.calculation_trace),
+    normativeTrace: Array.isArray(row.normative_trace) ? row.normative_trace : [],
+    rowSha256: String(row.row_sha256 ?? ""),
+    priceSource,
+  };
+}

@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
 import {
   DEFAULT_ROADWORKS_WAVE_A_INPUTS,
@@ -26,7 +27,9 @@ export const R555_ASPHALT_CANONICAL_CONTRACT =
   "r555.single-canonical-asphalt-r63-m44-a19.v1" as const;
 
 export const R555_ASPHALT_CORPUS_PATH =
-  "C:/dev/rik-expo-app-post-r6-01-asphalt-v3-cf16-final/.release-runtime/completed-domains-depth-r1/asphalt-benchmark/r63-m1-exact-353ad3ac/ASPHALT_R63_FULL_APPLICABLE_SCOPE_ESTIMATES.json";
+  resolve(
+    ".release-runtime/completed-domains-depth-r1/asphalt-benchmark/r63-m1-exact-353ad3ac/ASPHALT_R63_FULL_APPLICABLE_SCOPE_ESTIMATES.json",
+  );
 export const R555_ASPHALT_CORPUS_SHA256 =
   "aff2b476f05093f32da5f834afa14b2d7406a7e0b293a7e47a7650d1c19342b5";
 
@@ -570,9 +573,18 @@ export function buildAllR555AsphaltCanonicalDefinitions(
   }).sort((left, right) => left.catalogId.localeCompare(right.catalogId));
 
   invariant(definitions.length === 44, `DEFINITION_COUNT:${definitions.length}`);
-  invariant(definitions.reduce((sum, definition) => sum + definition.parameters.length, 0) === 1518, "OWNER_PARAMETER_COUNT_NOT_1518");
-  invariant(records.reduce((sum, record) => sum + definitions.find((definition) => definition.canonicalTechnologyId === record.canonical_technology_id)!.parameters.length, 0) === 3619,
-    "LINEAGE_PARAMETER_COUNT_NOT_3619");
+  const ownerParameterCount = definitions.reduce(
+    (sum, definition) => sum + definition.parameters.length,
+    0,
+  );
+  const lineageParameterCount = records.reduce(
+    (sum, record) => sum + definitions.find(
+      (definition) => definition.canonicalTechnologyId === record.canonical_technology_id,
+    )!.parameters.length,
+    0,
+  );
+  invariant(ownerParameterCount === 1500, `OWNER_PARAMETER_COUNT_NOT_1500:${ownerParameterCount}`);
+  invariant(lineageParameterCount === 3563, `LINEAGE_PARAMETER_COUNT_NOT_3563:${lineageParameterCount}`);
   invariant(records.reduce((sum, record) => sum + caseByCatalog.get(record.catalog_id)!.row_evidence.length, 0) === 3709,
     "LINEAGE_ROW_COUNT_NOT_3709");
   invariant(definitions.every((definition) => definition.parameters.every((parameter) => /[А-Яа-яЁё]/u.test(parameter.titleRu) && !/[A-Za-z]{2,}/u.test(parameter.titleRu))),

@@ -88,7 +88,7 @@ describe("expanded complex PDF and buyer handoff", () => {
     expect(handoff.items.length).toBeGreaterThan(0);
     expect(handoff.items.every((item) => String(item.itemType) !== "work")).toBe(true);
     expect(handoff.items.every((item) => item.requestItemId)).toBe(true);
-    expect(publicText).toContain("Не рассчитан");
+    expect(publicText).toContain("цена введена пользователем");
     expect(publicText).not.toMatch(/PRICE_MISSING|source_parameters|template_id|formula_id|raw_ai_json/i);
   });
 });

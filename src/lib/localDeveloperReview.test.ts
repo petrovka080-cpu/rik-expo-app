@@ -15,6 +15,7 @@ import {
   isLocalDeveloperConsumerReviewEnabled,
   isLocalDeveloperReviewEnabled,
   LOCAL_DEVELOPER_REVIEW_ROLES,
+  resolveLocalDeveloperBrokerUrl,
   restoreLocalDeveloperOwnerSession,
   switchLocalDeveloperPrincipal,
   switchLocalDeveloperConsumerPrincipal,
@@ -65,6 +66,27 @@ describe("localDeveloperReview", () => {
     expect(isLocalDeveloperReviewEnabled({ ...valid, hostname: "app.example.com" })).toBe(false);
     expect(isLocalDeveloperReviewEnabled({ ...valid, port: "8190" })).toBe(false);
     expect(isLocalDeveloperReviewEnabled({ ...valid, clientEnvironment: "production" })).toBe(false);
+    expect(isLocalDeveloperReviewEnabled({
+      ...valid,
+      port: "8101",
+      expectedWebPort: "8101",
+    })).toBe(true);
+    expect(isLocalDeveloperReviewEnabled({
+      ...valid,
+      port: "8101",
+      expectedWebPort: "443",
+    })).toBe(false);
+  });
+
+  it("accepts only an explicit HTTP loopback broker origin", () => {
+    expect(resolveLocalDeveloperBrokerUrl()).toBe("http://127.0.0.1:54329");
+    expect(resolveLocalDeveloperBrokerUrl("http://localhost:54330")).toBe("http://localhost:54330");
+    expect(() => resolveLocalDeveloperBrokerUrl("https://localhost:54330")).toThrow(
+      "LOCAL_DEVELOPER_AUTH_BROKER_URL_FORBIDDEN",
+    );
+    expect(() => resolveLocalDeveloperBrokerUrl("http://example.com:54330")).toThrow(
+      "LOCAL_DEVELOPER_AUTH_BROKER_URL_FORBIDDEN",
+    );
   });
 
   it("allows only the consumer login on a local-developer native runtime", async () => {
@@ -154,6 +176,56 @@ describe("localDeveloperReview", () => {
       access_token: "owner-access-token",
       refresh_token: "owner-refresh-token",
     });
+  });
+
+  it("serializes automatic owner restore before an explicit consumer switch", async () => {
+    let releaseOwnerResponse!: () => void;
+    const ownerResponseReady = new Promise<void>((resolve) => {
+      releaseOwnerResponse = resolve;
+    });
+    (global.fetch as jest.Mock).mockImplementation(async (input: string) => {
+      if (input.endsWith("/owner-session")) {
+        await ownerResponseReady;
+        return {
+          ok: true,
+          json: async () => ({
+            actor: "owner",
+            role: "platform_developer",
+            access_token: "owner-access-token",
+            refresh_token: "owner-refresh-token",
+          }),
+        };
+      }
+      return {
+        ok: true,
+        json: async () => ({
+          role: "consumer",
+          access_token: "consumer-access-token",
+          refresh_token: "consumer-refresh-token",
+        }),
+      };
+    });
+    const runtime = {
+      publicFlag: "1",
+      platform: "web",
+      hostname: "localhost",
+      port: "8081",
+      clientEnvironment: "local_developer",
+    };
+
+    const ownerRestore = restoreLocalDeveloperOwnerSession(runtime);
+    const consumerSwitch = switchLocalDeveloperConsumerPrincipal(runtime);
+    await Promise.resolve();
+    releaseOwnerResponse();
+    await expect(Promise.all([ownerRestore, consumerSwitch])).resolves.toEqual([
+      undefined,
+      undefined,
+    ]);
+
+    expect(mockSetSession.mock.calls).toEqual([
+      [{ access_token: "owner-access-token", refresh_token: "owner-refresh-token" }],
+      [{ access_token: "consumer-access-token", refresh_token: "consumer-refresh-token" }],
+    ]);
   });
 
   it("does not contact the broker when canonical sign-out fails", async () => {

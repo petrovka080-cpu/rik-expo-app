@@ -1,4 +1,4 @@
-import type { BuildEstimateFromInlineWorkPromptInput } from "../../buildEstimateFromInlineWorkPrompt";
+import type { BuildEstimateFromInlineWorkPromptInput } from "../../backendPlatform/canonicalEstimateHistoricalIngress";
 import {
   compileProfessionalProjectAssemblyV4,
   type ProfessionalEstimateScopeModeV4,
@@ -55,11 +55,9 @@ export const ASPHALT_SURFACING_RESOURCE_LEVEL_PARAMETER_KEYS_V4 = Object.freeze(
 
 export const ASPHALT_BRIDGE_RESOURCE_LEVEL_PARAMETER_KEYS_V4 = Object.freeze([
   ...ASPHALT_SURFACING_RESOURCE_LEVEL_PARAMETER_KEYS_V4,
-  "waterproofing_material_kg_m2",
-  "protective_layer_density_t_m3",
+  "waterproofing_membrane_m2_per_m2",
   "expansion_joint_sealant_kg_m",
-  "bridge_waterproofing_productivity_m2_per_man_hour",
-  "bridge_waterproofing_machine_productivity_m2_per_machine_hour",
+  "bridge_waterproofing_equipment_set_count",
 ] as const);
 
 export const ASPHALT_RESOURCE_LEVEL_CORE_PARAMETER_KEYS_V4 = Object.freeze([
@@ -163,6 +161,7 @@ export type AsphaltRelatedCoreRowV4 = {
   childPassportId: string | null;
   childRevisionId: string | null;
   scopeTriggerParameter: string | null;
+  inclusionCondition: string;
   assumptionIds: readonly string[];
 };
 
@@ -183,6 +182,7 @@ function parameterValues(
   values: Readonly<Record<string, unknown>>,
   profile: AsphaltRelatedProfileV4,
   assumptionKeys: ReadonlySet<string>,
+  derivedKeys: ReadonlySet<string>,
 ): Record<string, ProfessionalParameterValueV4> {
   const result: Record<string, ProfessionalParameterValueV4> = {};
   for (const [key, value] of Object.entries(values)) {
@@ -190,15 +190,20 @@ function parameterValues(
     const override = input.paramOverrides?.[key];
     const baseline = assumptionKeys.has(key) ? getAsphaltRelatedBaselineAssumptionV4(profile, key) : null;
     const sourceText = override?.source ?? null;
-    const type = sourceType(sourceText, baseline != null);
+    const derived = derivedKeys.has(key);
+    const type = derived ? "PROJECT_DOCUMENT" : sourceType(sourceText, baseline != null);
     result[key] = {
       value,
       unit_id: null,
       source_type: type,
-      source_id: baseline?.sourceId ?? (sourceText?.trim() || `user-input:${key}`),
+      source_id: derived
+        ? `derived:full-waterproofing-replacement:${key}=area_m2`
+        : baseline?.sourceId ?? (sourceText?.trim() || `user-input:${key}`),
       captured_at: "1970-01-01T00:00:00.000Z",
       confidence: type === "USER_EXPLICIT" ? "medium" : "high",
-      applicability: `exact catalog ${profile.canonicalCatalogRecordId}; parameter ${key}`,
+      applicability: derived
+        ? `exact catalog ${profile.canonicalCatalogRecordId}; full replacement area follows confirmed deck area`
+        : `exact catalog ${profile.canonicalCatalogRecordId}; parameter ${key}`,
     };
   }
   return result;
@@ -403,6 +408,7 @@ function baseRow(
     childPassportId: null,
     childRevisionId: null,
     scopeTriggerParameter: null,
+    inclusionCondition: "EXACT_ASPHALT_CORE_RESOURCE_ASSEMBLY",
     assumptionIds: row.assumption_ids,
   };
 }
@@ -413,6 +419,7 @@ export function compileAsphaltRelatedThroughCoreV4(input: {
   values: Readonly<Record<string, unknown>>;
   scopeMode: ProfessionalEstimateScopeModeV4;
   assumptionKeys: ReadonlySet<string>;
+  derivedKeys?: ReadonlySet<string>;
 }): {
   baseCompilation: AsphaltProfessionalEstimateCompilationV4;
   childCompilation: ReturnType<typeof compileProfessionalProjectAssemblyV4>;
@@ -451,7 +458,13 @@ export function compileAsphaltRelatedThroughCoreV4(input: {
     requested_catalog_id: input.sourceInput.selectedWorkKey ?? input.sourceInput.selectedTemplateId ?? input.profile.canonicalCatalogRecordId,
     requested_work_key: input.profile.canonicalWorkKey,
     scope_mode: input.scopeMode,
-    parameter_values: parameterValues(input.sourceInput, input.values, input.profile, input.assumptionKeys),
+    parameter_values: parameterValues(
+      input.sourceInput,
+      input.values,
+      input.profile,
+      input.assumptionKeys,
+      input.derivedKeys ?? new Set(),
+    ),
     child_assemblies: ASPHALT_ASSOCIATED_WORK_CHILD_ASSEMBLIES_V4,
   });
   const childRows: AsphaltRelatedCoreRowV4[] = childCompilation.compiled_rows.map((row) => ({
@@ -473,6 +486,7 @@ export function compileAsphaltRelatedThroughCoreV4(input: {
     childPassportId: row.child_passport_id,
     childRevisionId: row.child_revision_id,
     scopeTriggerParameter: row.scope_trigger_parameter,
+    inclusionCondition: row.inclusion_condition,
     assumptionIds: [],
   }));
   return {
@@ -514,7 +528,13 @@ export function compileAsphaltRemovalThroughCoreV4(input: {
     requested_catalog_id: input.sourceInput.selectedWorkKey ?? input.sourceInput.selectedTemplateId ?? input.profile.canonicalCatalogRecordId,
     requested_work_key: input.profile.canonicalWorkKey,
     scope_mode: input.scopeMode,
-    parameter_values: parameterValues(input.sourceInput, removalValues, input.profile, input.assumptionKeys),
+    parameter_values: parameterValues(
+      input.sourceInput,
+      removalValues,
+      input.profile,
+      input.assumptionKeys,
+      new Set(),
+    ),
     child_assemblies: ASPHALT_REMOVAL_RESOURCE_ASSEMBLIES_V4,
   });
   const rows: AsphaltRelatedCoreRowV4[] = childCompilation.compiled_rows.map((row) => ({
@@ -536,6 +556,7 @@ export function compileAsphaltRemovalThroughCoreV4(input: {
     childPassportId: row.child_passport_id,
     childRevisionId: row.child_revision_id,
     scopeTriggerParameter: row.scope_trigger_parameter,
+    inclusionCondition: row.inclusion_condition,
     assumptionIds: [],
   }));
   return {

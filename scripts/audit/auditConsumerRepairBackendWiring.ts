@@ -24,16 +24,17 @@ const screen = read(screenPath);
 const actions = read("src/features/consumerRepair/requestEstimateScreenActions.ts");
 const route = read("app/(tabs)/request/index.tsx");
 const marketplaceService = read("src/lib/consumerRequests/consumerRequestMarketplaceService.ts");
+const marketplaceTransport = read("src/lib/consumerRequests/consumerRequestMarketplace.transport.ts");
 const pdfService = read("src/lib/consumerRequests/consumerRequestPdfService.ts");
 const validationService = read("src/lib/consumerRequests/consumerRequestValidationService.ts");
-const hardeningMigrationPath = "supabase/migrations/20260521153000_b2c_consumer_repair_marketplace_validation_pdf_hardening.sql";
+const hardeningMigrationPath = "supabase/migrations/20260920120000_consumer_estimate_marketplace_atomic_handoff.sql";
 
 const featureSources = listSourceFiles("src/features/consumerRepair")
   .map((file) => [file, read(file)] as const);
 const consumerRequestSources = listSourceFiles("src/lib/consumerRequests")
   .map((file) => [file, read(file)] as const);
 
-const directDbWritePattern = /\bsupabase\b|\.from\s*\(|\.(?:insert|update|upsert|delete)\s*\(/i;
+const directDbWritePattern = /\.(?:from|rpc)\s*\(\s*["'`]/i;
 const directMarketplaceLinkWrites = consumerRequestSources
   .filter(([file]) => !file.endsWith("consumerRequestMarketplaceService.ts"))
   .filter(([, source]) => /consumer_marketplace_links|marketplaceDemandId\s*:\s*id\("marketplace_demand"\)/.test(source))
@@ -60,11 +61,15 @@ const matrix = {
   no_direct_insert_into_consumer_marketplace_links_outside_service: directMarketplaceLinkWrites.length === 0,
   no_direct_status_sent_to_marketplace_outside_service: directSentStatusWrites.length === 0,
   approve_uses_service: screen.includes("approveConsumerRepairRequestDraft("),
-  send_uses_marketplace_service: screen.includes("sendConsumerRepairRequestToMarketplace(")
-    && marketplaceService.includes("validateConsumerRepairRequestForMarketplace(input.requestDraftId, input.userId)"),
-  pdf_open_uses_service: screen.includes("buildConsumerRepairRequestPdfViewerNavigation(")
-    && actions.includes("getConsumerRepairRequestPdf(")
-    && screen.includes('pathname: "/pdf-viewer"'),
+  send_uses_marketplace_service: actions.includes("sendConsumerRepairRequestToMarketplace(")
+    && marketplaceService.includes("validateConsumerRepairRequestForMarketplace(")
+    && marketplaceService.includes("readPublishedListing(receipt.listing_id)")
+    && marketplaceTransport.includes('"consumer_estimate_marketplace_publish_v1"'),
+  pdf_open_uses_service: screen.includes("getCanonicalEstimateRevision(")
+    && screen.includes("buildCanonicalEstimateArtifact({")
+    && screen.includes("assertCanonicalEstimateArtifactIdentity({")
+    && screen.includes("previewPdfDocument(createPdfDocumentDescriptor({")
+    && screen.includes('expectedKind: "pdf"'),
   pdf_service_uploads_before_row: pdfService.indexOf("uploadConsumerRepairPdfObject") < pdfService.indexOf("return {"),
   validation_service_blocks_empty_submit: [
     "CONTACT_REQUIRED",
@@ -93,4 +98,4 @@ if (!passed) {
   process.exit(1);
 }
 
-console.log(JSON.stringify({ ...matrix, passed }, null, 2));
+console.info(JSON.stringify({ ...matrix, passed }, null, 2));

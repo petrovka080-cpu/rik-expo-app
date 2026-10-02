@@ -52,31 +52,67 @@ function completeRevision() {
 }
 
 describe("Asphalt V4 runtime vertical slice", () => {
-  test.each([
-    [undefined, "free-text"],
-    ["asphalt_concrete_pavement", "selected canonical work"],
-  ])("keeps ambiguous asphalt scope fail-closed for %s (%s)", (selectedWorkKey, _label) => {
+  test("starts the catalog-resolved asphalt owner as a full cycle but still requires missing geometry", () => {
     const rawInput = "Дороги, транспорт и площадки: устройство асфальтобетонного покрытия — 15 000 м";
     const result = buildEstimateFromInlineWorkPrompt({
       rawInput,
       currency: "KGS",
-      selectedWorkKey,
     });
 
     expect(result).toMatchObject({
       draft: null,
       canBuildPreliminaryEstimate: false,
-      blockingReason: "road_scope_selection_required",
+      blockingReason: "ROAD_GEOMETRY_REQUIRED",
       roadScopeResolution: {
-        resolverStatus: "NEEDS_SCOPE_SELECTION",
+        resolverStatus: "RESOLVED",
         originalText: rawInput,
-        selectedScopeId: null,
+        selectedScopeId: "FULL_PAVEMENT_STRUCTURE",
       },
     });
     expect(result.parseResult.extractedParams.length_m).toEqual(expect.objectContaining({
       value: 15000,
       canonicalUnit: "m",
     }));
+  });
+
+  test("the selected canonical asphalt owner defaults to the full cycle but still requires missing geometry", () => {
+    const rawInput = "Дороги, транспорт и площадки: устройство асфальтобетонного покрытия — 15 000 м";
+    const result = buildEstimateFromInlineWorkPrompt({
+      rawInput,
+      currency: "KGS",
+      selectedWorkKey: "asphalt_concrete_pavement",
+    });
+
+    expect(result).toMatchObject({
+      draft: null,
+      canBuildPreliminaryEstimate: false,
+      blockingReason: "ROAD_GEOMETRY_REQUIRED",
+      roadScopeResolution: {
+        resolverStatus: "RESOLVED",
+        selectedScopeId: "FULL_PAVEMENT_STRUCTURE",
+      },
+    });
+  });
+
+  test("builds 900 m2 by 50 mm as area plus wearing-layer thickness", () => {
+    const result = buildEstimateFromInlineWorkPrompt({
+      rawInput: "Устройство асфальтобетонного покрытия 900 м² × 50 мм",
+      currency: "KGS",
+      selectedWorkKey: "asphalt_concrete_pavement",
+    });
+    const upperLayer = result.draft?.items.find(
+      (item) => item.sourceParameters?.rowCode === "asphalt_layer_2_material",
+    );
+
+    expect(result).toMatchObject({
+      canBuildPreliminaryEstimate: true,
+      roadScopeResolution: { selectedScopeId: "FULL_PAVEMENT_STRUCTURE" },
+    });
+    expect(result.blockingReason).toBeUndefined();
+    expect(result.parseResult.extractedParams.area_m2?.value).toBe(900);
+    expect(result.parseResult.extractedParams.length_m).toBeUndefined();
+    expect(result.parseResult.extractedParams.width_m).toBeUndefined();
+    expect(Number(upperLayer?.quantity)).toBe(107.865);
   });
 
   test("does not replace missing width with reference area after scope selection", () => {
@@ -203,7 +239,7 @@ describe("Asphalt V4 runtime vertical slice", () => {
     const procurementIds = revision.boq.rows.filter((row) => row.includedInProcurement).map((row) => row.rowId).sort();
 
     expect(pdf.pdf.rowsEqualLatestRevision).toBe(true);
-    expect(pdf.pdf.body).toContain("Асфальтобетонная смесь для нижнего связующего слоя");
+    expect(pdf.pdf.body).toContain("Горячая асфальтобетонная смесь для нижнего слоя");
     expect(pdf.pdf.body).toContain("Стоимость не рассчитана");
     expect(pdf.pdf.body).not.toContain("Итого: 0 сом");
     expect(buyer.buyerHandoff.items.map((item) => item.rowId).sort()).toEqual(procurementIds);

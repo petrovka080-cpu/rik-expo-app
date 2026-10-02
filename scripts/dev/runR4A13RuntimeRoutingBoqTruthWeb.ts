@@ -1144,6 +1144,7 @@ async function runCase(page: Page, spec: typeof CASES[number]): Promise<Json> {
   }
 
   let confirmation: Json = { attempted: false };
+  let deletion: Json = { attempted: false };
   if (fullWorkflow.attempted === true) {
     invariant(procurement.attempted === true && procurement.status === "ready",
       `${spec.id}:FULL_PROCUREMENT_NOT_READY`);
@@ -1170,16 +1171,32 @@ async function runCase(page: Page, spec: typeof CASES[number]): Promise<Json> {
     await approve.waitFor({ state: "visible", timeout: 30_000 });
     invariant(await approve.isEnabled(), `${spec.id}:FULL_APPROVAL_DISABLED:${await approve.innerText()}`);
     await approve.click();
-    const status = page.getByTestId("consumer-repair-status");
-    await status.waitFor({ state: "visible", timeout: 120_000 });
-    await page.waitForFunction(() => {
-      const value = document.querySelector('[data-testid="consumer-repair-status"]')?.textContent ?? "";
-      return value.includes("\u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0430")
-        || value.includes("\u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0451\u043d\u0430");
-    }, undefined, { timeout: 120_000 });
-    const statusText = (await status.innerText()).trim();
+    await page.waitForURL((url) =>
+      url.pathname === "/request"
+      && !url.searchParams.has("draftId")
+      && !url.searchParams.has("canonicalRevisionId"),
+    { timeout: 120_000 });
+    await page.getByTestId("consumer-repair-problem-input")
+      .waitFor({ state: "visible", timeout: 120_000 });
+    const cleanRequestRouteUrl = new URL(page.url());
+    invariant(
+      await page.locator('[data-testid^="request-estimate-item-anchor-"]').count() === 0,
+      `${spec.id}:CONFIRMED_ESTIMATE_REAPPEARED_ON_CLEAN_ROUTE`,
+    );
     const confirmationScreenshot = resolve(OUTPUT_ROOT, `${spec.id}_CONFIRMED.png`);
     await page.screenshot({ path: confirmationScreenshot, fullPage: true });
+
+    await page.getByTestId("consumer-repair-history-button").click();
+    await page.getByTestId("consumer-repair-history-modal")
+      .waitFor({ state: "visible", timeout: 30_000 });
+    await page.getByTestId(`consumer-repair-history-revision-${activeRevisionId}`)
+      .last()
+      .waitFor({ state: "visible", timeout: 30_000 });
+    const historyScreenshot = resolve(OUTPUT_ROOT, `${spec.id}_CONFIRMED_HISTORY.png`);
+    await page.screenshot({ path: historyScreenshot, fullPage: true });
+    await page.getByTestId("consumer-repair-history-close").click();
+    await page.getByTestId("consumer-repair-history-modal")
+      .waitFor({ state: "hidden", timeout: 30_000 });
 
     await page.goto(`${ORIGIN}/request?canonicalRevisionId=${encodeURIComponent(activeRevisionId)}`, {
       waitUntil: "commit",
@@ -1196,10 +1213,156 @@ async function runCase(page: Page, spec: typeof CASES[number]): Promise<Json> {
       attempted: true,
       confirmed: true,
       revisionId: activeRevisionId,
-      statusText,
+      cleanRequestRoute: true,
+      activeRouteQuery: cleanRequestRouteUrl.search,
       screenshot: confirmationScreenshot,
+      historyScreenshot,
+      historyOpenedFromCleanRequestRoute: true,
       reopenedAfterConfirmation: true,
     };
+
+    if (spec.id === "W12_PREPARE_500_M2") {
+      await page.goto(`${ORIGIN}/request`, { waitUntil: "commit", timeout: 180_000 });
+      await page.getByTestId("local-developer-review-banner").waitFor({ timeout: 180_000 });
+      await enterConsumer(page);
+
+      const disposableInput = page.getByTestId("consumer-repair-problem-input");
+      const disposableSearchPromise = page.waitForResponse((response) =>
+        response.url().startsWith(`${BACKEND}/search/catalog?`) && response.status() === 200,
+      { timeout: 120_000 });
+      const [disposableSearchResponse] = await Promise.all([
+        disposableSearchPromise,
+        disposableInput.fill(prompt),
+      ]);
+      let disposableSearch = await json(disposableSearchResponse);
+      invariant(disposableSearch.searchIndexReleaseId === SEARCH_RELEASE_ID,
+        `${spec.id}:DELETE_SEARCH_RELEASE_DRIFT`);
+      const disposableItems = Array.isArray(disposableSearch.items)
+        ? [...disposableSearch.items as Json[]]
+        : [];
+      let disposableSelectedIndex = disposableItems.findIndex((item) =>
+        String(item.catalogId) === spec.catalogId);
+      let disposableSearchPageCount = 1;
+      while (
+        disposableSelectedIndex < 0
+        && disposableSearch.nextCursor
+        && disposableSearchPageCount < 20
+      ) {
+        const nextPagePromise = page.waitForResponse((response) =>
+          response.url().startsWith(`${BACKEND}/search/catalog?`)
+            && response.url().includes("cursor=")
+            && response.status() === 200,
+        { timeout: 120_000 });
+        const [nextPageResponse] = await Promise.all([
+          nextPagePromise,
+          page.getByTestId("consumer-repair-work-search-load-more").click(),
+        ]);
+        disposableSearch = await json(nextPageResponse);
+        invariant(disposableSearch.searchIndexReleaseId === SEARCH_RELEASE_ID,
+          `${spec.id}:DELETE_SEARCH_PAGE_RELEASE_DRIFT`);
+        const pageItems = Array.isArray(disposableSearch.items)
+          ? disposableSearch.items as Json[]
+          : [];
+        for (const item of pageItems) {
+          if (!disposableItems.some((candidate) => candidate.catalogId === item.catalogId)) {
+            disposableItems.push(item);
+          }
+        }
+        disposableSelectedIndex = disposableItems.findIndex((item) =>
+          String(item.catalogId) === spec.catalogId);
+        disposableSearchPageCount += 1;
+      }
+      invariant(disposableSelectedIndex >= 0, `${spec.id}:DELETE_CATALOG_NOT_FOUND`);
+      const disposableSuggestion = page.getByTestId(
+        `consumer-repair-work-suggestion-${disposableSelectedIndex + 1}`,
+      );
+      const disposableSuggestionsList = page.getByTestId("consumer-repair-work-suggestions");
+      for (
+        let attempt = 0;
+        attempt < 12 && await disposableSuggestion.count() === 0;
+        attempt += 1
+      ) {
+        await disposableSuggestionsList.evaluate((element, input) => {
+          const list = element as HTMLElement;
+          const targetOffset = Math.max(0, (input.selectedIndex * 58) - 120);
+          list.scrollTop = input.attempt === 0
+            ? targetOffset
+            : Math.min(list.scrollHeight, targetOffset + (input.attempt * 164));
+          list.dispatchEvent(new Event("scroll", { bubbles: true }));
+        }, { selectedIndex: disposableSelectedIndex, attempt });
+        await page.waitForTimeout(150);
+      }
+      await disposableSuggestion.waitFor({ state: "visible", timeout: 120_000 });
+      await disposableSuggestion.click();
+
+      const disposableCompilePromise = page.waitForResponse((response) =>
+        response.url().endsWith("/jobs/compile") && response.request().method() === "POST",
+      { timeout: 30_000 });
+      const [disposableCompileResponse] = await Promise.all([
+        disposableCompilePromise,
+        page.getByTestId("consumer-repair-prepare-draft").click(),
+      ]);
+      const disposableCompileBody = await json(disposableCompileResponse);
+      invariant(disposableCompileResponse.status() === 202,
+        `${spec.id}:DELETE_COMPILE_HTTP_${disposableCompileResponse.status()}`);
+      const disposableRevisionId = await waitForJobRevision(
+        authorization,
+        String(disposableCompileBody.jobId ?? ""),
+      );
+
+      const deleteDraft = page.getByTestId("consumer-repair-delete-draft");
+      await deleteDraft.waitFor({ state: "visible", timeout: 120_000 });
+      await deleteDraft.click();
+      await page.getByTestId("consumer-repair-delete-confirmation")
+        .waitFor({ state: "visible", timeout: 30_000 });
+      await page.getByTestId("consumer-repair-delete-confirm").click();
+      await page.waitForURL((url) =>
+        url.pathname === "/request"
+        && !url.searchParams.has("draftId")
+        && !url.searchParams.has("canonicalRevisionId"),
+      { timeout: 120_000 });
+      await disposableInput.waitFor({ state: "visible", timeout: 120_000 });
+      invariant(
+        await page.locator('[data-testid^="request-estimate-item-anchor-"]').count() === 0,
+        `${spec.id}:DELETED_ESTIMATE_REAPPEARED_ON_CLEAN_ROUTE`,
+      );
+      const deleteScreenshot = resolve(OUTPUT_ROOT, `${spec.id}_DELETED.png`);
+      await page.screenshot({ path: deleteScreenshot, fullPage: true });
+
+      await page.reload({ waitUntil: "commit", timeout: 180_000 });
+      await page.getByTestId("local-developer-review-banner").waitFor({ timeout: 180_000 });
+      await enterConsumer(page);
+      const reloadedCleanRouteUrl = new URL(page.url());
+      invariant(
+        reloadedCleanRouteUrl.pathname === "/request"
+          && !reloadedCleanRouteUrl.searchParams.has("draftId")
+          && !reloadedCleanRouteUrl.searchParams.has("canonicalRevisionId"),
+        `${spec.id}:DELETED_ROUTE_RESTORED_AFTER_RELOAD`,
+      );
+      invariant(
+        await page.locator('[data-testid^="request-estimate-item-anchor-"]').count() === 0,
+        `${spec.id}:DELETED_ESTIMATE_REAPPEARED_AFTER_RELOAD`,
+      );
+      await page.getByTestId("consumer-repair-history-button").click();
+      await page.getByTestId("consumer-repair-history-modal")
+        .waitFor({ state: "visible", timeout: 30_000 });
+      await page.getByTestId(`consumer-repair-history-revision-${activeRevisionId}`)
+        .last()
+        .waitFor({ state: "visible", timeout: 30_000 });
+      const deleteReloadScreenshot = resolve(OUTPUT_ROOT, `${spec.id}_DELETED_RELOAD_HISTORY.png`);
+      await page.screenshot({ path: deleteReloadScreenshot, fullPage: true });
+      await page.getByTestId("consumer-repair-history-close").click();
+      deletion = {
+        attempted: true,
+        deleted: true,
+        disposableRevisionId,
+        cleanRequestRoute: true,
+        didNotReappearAfterReload: true,
+        approvedHistoryPreserved: true,
+        screenshot: deleteScreenshot,
+        reloadHistoryScreenshot: deleteReloadScreenshot,
+      };
+    }
   }
 
   const expectedNavigationAborts = requestFailures.filter((failure) => {
@@ -1289,6 +1452,7 @@ async function runCase(page: Page, spec: typeof CASES[number]): Promise<Json> {
     procurement,
     pdf,
     confirmation,
+    deletion,
     exposedRouteProofMarkers,
     screenshot,
     backendRequests,

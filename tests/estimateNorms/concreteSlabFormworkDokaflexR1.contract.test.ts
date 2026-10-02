@@ -127,10 +127,18 @@ describe("Dokaflex floor-slab formwork component through the shared canonical co
     }, { catalogId: target.catalogId })).rejects.toThrow(
       "cross-field rule measured_formwork_contact_area_m2.equalToParameter=project_formwork_layout_contact_area_m2 failed",
     );
-    await expect(compileFormworkDokaflexConcreteSlabR1({
+    const incomplete = await compileFormworkDokaflexConcreteSlabR1({
       ...fixture,
       structural_spacing_check_reference: undefined,
-    }, { catalogId: target.catalogId })).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+    }, { catalogId: target.catalogId });
+    expect(incomplete.preliminaryNeeds).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        missing_parameter_ids: expect.arrayContaining(["structural_spacing_check_reference"]),
+      }),
+    ]));
+    expect(incomplete.preliminaryNeeds.every((need) =>
+      !incomplete.rows.some((row) => row.row_id === need.row_id)
+    )).toBe(true);
     await expect(compileFormworkDokaflexConcreteSlabR1(
       { ...fixture },
       { catalogId: "canonical-work:base:concrete_foundation_interior_concrete_slab_form_standard" },

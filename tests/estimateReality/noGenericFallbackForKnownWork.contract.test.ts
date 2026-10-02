@@ -9,8 +9,10 @@ describe("known work generic fallback guard", () => {
       .filter((item) => ["diamond_drilling_full", "profile_sheet_fence_full", "mansard_roof_full", "apartment_54"].includes(item.case_id))
       .map(evaluateWorkSpecificityCase);
 
-    expect(knownWorks.every((item) => item.generic_known_work_is_hard_fail)).toBe(false);
-    expect(knownWorks.every((item) => item.known_work_generic_fallback_rejected)).toBe(false);
-    expect(knownWorks.every((item) => item.professional)).toBe(true);
+    const positiveCases = knownWorks.filter((item) => item.case_id !== "apartment_54");
+    expect(positiveCases.every((item) => item.generic_known_work_is_hard_fail)).toBe(true);
+    expect(positiveCases.every((item) => item.known_work_generic_fallback_rejected)).toBe(true);
+    expect(positiveCases.every((item) => !item.professional)).toBe(true);
+    expect(knownWorks.find((item) => item.case_id === "apartment_54")?.professional).toBe(true);
   });
 });

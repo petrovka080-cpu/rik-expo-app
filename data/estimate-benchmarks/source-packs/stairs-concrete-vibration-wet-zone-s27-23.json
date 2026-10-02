@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "rik-expo-app.s27-23.stairs-concrete-vibration-wet-zone-source-pack.v1",
+  "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_vibrate_wet_zone",
+  "contextKey": "WET_ZONE",
+  "contextRu": "влажная зона лестничного марша или площадки",
+  "contextSlug": "wet-zone",
+  "rowPrefix": "concrete-stairs-vibration-wet-zone",
+  "sharedTechnologySourcePackSha256": "248c48012ed587514fa90d6ca7ef4eae59604aed3b8fcc04a09e4a4cbdbf57ac",
+  "sources": [
+    {
+      "sourceId": "ACI_309_CONSOLIDATION_PREVIEW_2026_10_01",
+      "authority": "American Concrete Institute",
+      "officialUrl": "https://www.concrete.org/Portals/0/Files/PDF/Previews/30905_2pager.pdf",
+      "artifactSha256": "20b986aa1c5905745dc5fceec4ab42921e56dec48952c2bfc8b38161dbb555de",
+      "exactLocator": "Public preview pp. 1-2: method applicability, internal vibrators, procedure and quality control; no universal productivity."
+    },
+    {
+      "sourceId": "WACKER_NEUSON_IRFU_TECHNICAL_DATA_2026_10_01",
+      "authority": "Wacker Neuson",
+      "officialUrl": "https://www.wackerneuson.com/ru/en/products/concrete-technology/internal-vibrators/irfu/technical-data/tab",
+      "artifactSha256": "e72748781710b261244489c21e53944be476c9d0325a2b7d8269e1054440cf51",
+      "exactLocator": "IRFU45 technical-data row: protection class I / protective earthing and degree of protection IP67, together with 0.88 kW and 45 mm head."
+    },
+    {
+      "sourceId": "WACKER_NEUSON_IRFU_BODYGUARD_2026_10_01",
+      "authority": "Wacker Neuson",
+      "officialUrl": "https://www.wackerneuson.com/us/products/concrete-technology/internal-vibrators/irfu",
+      "artifactSha256": "8fe9504c8fa6b83172b833f8a274f87398c4051315078bf48f5c74b8ab227abb",
+      "exactLocator": "Bodyguard section: integrated personal-protection switch monitors current and interrupts the power supply within 3 ms when fault current occurs."
+    },
+    {
+      "sourceId": "WACKER_NEUSON_IRFU_MODEL_VARIATIONS_2026_10_01",
+      "authority": "Wacker Neuson",
+      "officialUrl": "https://www.wackerneuson.com/latam/en/products/concrete-technology/internal-vibrators/irfu/model-variations/tab",
+      "artifactSha256": "18411f2dc195384257bef059dfec3e8050813428888dba91aee32cc4cd3bbe32",
+      "exactLocator": "IRFU45/230/5 model row: electric internal vibrator with integrated frequency converter and integrated Bodyguard personal-protection switch."
+    }
+  ],
+  "acceptanceFixture": {
+    "consolidatedConcreteVolumeM3": 15,
+    "changedConcreteVolumeM3": 20,
+    "wetZoneElectricalPlanReference": "EL-WET-STAIRS-VIB-REV-A"
+  },
+  "contextPolicy": "IP67, protective earthing and integrated Bodyguard are equipment facts, not permission to ignore the project temporary-electrical plan. Electrical-protection and extension-cable rows remain visible needs until that plan is identified; all productivity remains a visible replaceable assumption."
+}

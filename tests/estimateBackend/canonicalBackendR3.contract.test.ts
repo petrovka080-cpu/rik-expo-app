@@ -216,6 +216,22 @@ describe("MASTER 11610 canonical backend R3 production contracts", () => {
     expect(gateway).toContain(
       "request principal candidate capability is ambiguous",
     );
+    expect(gateway).toContain("SIGNED_CLAIMS_OR_COMPANY_MEMBERSHIP");
+    expect(gateway).toContain("/rest/v1/company_members");
+    expect(gateway).toContain(
+      'membershipUrl.searchParams.set("user_id", `eq.${ownerUserId}`)',
+    );
+    expect(gateway).toContain(
+      "Supabase session has no active unambiguous company membership",
+    );
+    expect(gateway).toContain(
+      "CANONICAL_ESTIMATE_ALLOW_RUNTIME_TENANT_CAPABILITY_DERIVATION",
+    );
+    expect(gateway).toContain(
+      "CANONICAL_ESTIMATE_RUNTIME_TENANT_CAPABILITY_DERIVATION_FORBIDDEN",
+    );
+    expect(gateway).toContain("whole-app-developer-capability:${currentTenantId()}");
+    expect(gateway).toContain("whole_app_developer_runtime");
     expect(gateway).toContain(
       "resolveRequestOrganizationId(body.organizationId)",
     );

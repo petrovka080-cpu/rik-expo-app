@@ -67,11 +67,19 @@ describe("pedestal formwork through the shared RICS/Frami core", () => {
 
   test("fails closed without the approved drawing and for an unrelated catalog item", async () => {
     const fixture = formworkFramiXlifePedestalAcceptanceInputR1("standard");
-    await expect(compileFormworkFramiXlifeProjectKitR1({
+    const incomplete = await compileFormworkFramiXlifeProjectKitR1({
       ...fixture,
       project_drawing_reference: undefined,
-    }, { catalogId: FORMWORK_FRAMI_XLIFE_PEDESTAL_TARGETS[0].catalogId }))
-      .rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+    }, { catalogId: FORMWORK_FRAMI_XLIFE_PEDESTAL_TARGETS[0].catalogId });
+    expect(incomplete.preliminaryNeeds).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        quantity: "120",
+        missing_parameter_ids: expect.arrayContaining(["project_drawing_reference"]),
+      }),
+    ]));
+    expect(incomplete.preliminaryNeeds.every((need) =>
+      !incomplete.rows.some((row) => row.row_id === need.row_id)
+    )).toBe(true);
     await expect(compileFormworkFramiXlifeProjectKitR1(
       { ...fixture },
       { catalogId: "canonical-work:unsupported" },

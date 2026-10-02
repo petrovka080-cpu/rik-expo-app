@@ -330,6 +330,7 @@ export function buildEstimatePdfTextLines(viewModel: EstimatePdfViewModel): stri
     `Налог: ${viewModel.totals.tax}`,
     `Общий итог: ${viewModel.totals.grand}`,
     "",
+    "Налог / источники / точность",
     "Налоговый статус",
     [
       viewModel.tax.label,
@@ -338,6 +339,9 @@ export function buildEstimatePdfTextLines(viewModel: EstimatePdfViewModel): stri
       `сумма ${viewModel.tax.amount}`,
       viewModel.tax.warning,
     ].filter(Boolean).join("; "),
+    "",
+    "Источники",
+    ...(viewModel.sources.length ? viewModel.sources : ["Источники не указаны"]),
     "",
     "Допущения",
     ...(viewModel.assumptions.length ? viewModel.assumptions : ["Нет допущений"]),
@@ -378,12 +382,12 @@ function showStructuredText(
   size = FONT_SIZE,
   extractText?: string | null,
 ): void {
-  const clean = String(text ?? "").replace(/\r/g, " ").replace(/\t/g, " ").replace(/\s+/g, " ").trim() || " ";
+  const clean = normalizeStructuredText(text) || " ";
   const cleanExtractText = extractText === null
     ? null
     : extractText === undefined
       ? clean
-    : String(extractText).replace(/\r/g, " ").replace(/\t/g, " ").replace(/\s+/g, " ").trim() || " ";
+      : normalizeStructuredText(extractText) || " ";
   page.texts.push(clean);
   if (cleanExtractText !== null && cleanExtractText !== clean) {
     page.texts.push(cleanExtractText);
@@ -396,6 +400,16 @@ function showStructuredText(
     visibleTextHex: encodePdfInterGlyphTextHex(clean),
     extractText: cleanExtractText,
   }));
+}
+
+function normalizeStructuredText(value: string): string {
+  // Keep non-breaking spaces produced by the shared money formatter. They are
+  // part of the user-visible amount (for example `6 678 189 сом`), not layout
+  // whitespace that the PDF renderer may silently rewrite.
+  return String(value ?? "")
+    .replace(/[\r\n\t\f\v]+/g, " ")
+    .replace(/ {2,}/g, " ")
+    .trim();
 }
 
 function drawStructuredRect(page: StructuredPdfPage, x: number, y: number, width: number, height: number): void {
@@ -425,7 +439,7 @@ function addStructuredParagraphList(page: StructuredPdfPage, y: number, lines: s
 }
 
 function fitMetaValue(value: string): string {
-  const clean = String(value ?? "").replace(/\s+/g, " ").trim();
+  const clean = normalizeStructuredText(value);
   if (clean.length <= 58) return clean;
   return `${clean.slice(0, 55).trimEnd()}...`;
 }
@@ -447,7 +461,7 @@ function estimatePdfCellValue(row: EstimatePdfTableRow, columnKey: EstimatePdfTa
 }
 
 function fitEstimatePdfCellText(value: string, width: number): string {
-  const clean = String(value ?? "").replace(/\s+/g, " ").trim();
+  const clean = normalizeStructuredText(value);
   const max = Math.max(4, Math.floor((width - 8) / 4.4));
   if (clean.length <= max) return clean;
   return `${clean.slice(0, Math.max(1, max - 3)).trimEnd()}...`;
@@ -602,7 +616,9 @@ function buildStructuredEstimatePages(viewModel: EstimatePdfViewModel): Structur
   });
   y -= 88;
 
-  y = addStructuredSectionTitle(page, y, "Налог и точность");
+  y = addStructuredSectionTitle(page, y, "Налог / источники / точность");
+  showStructuredText(page, LEFT + 8, y, "Налоговый статус", FONT_SIZE);
+  y -= 12;
   showStructuredText(
     page,
     LEFT + 8,
@@ -614,6 +630,23 @@ function buildStructuredEstimatePages(viewModel: EstimatePdfViewModel): Structur
   if (viewModel.tax.warning) {
     showStructuredText(page, LEFT + 8, y, viewModel.tax.warning, SMALL_FONT);
     y -= 12;
+  }
+
+  showStructuredText(page, LEFT + 8, y, "Источники", FONT_SIZE);
+  y -= 12;
+  const visibleSources = viewModel.sources.length
+    ? viewModel.sources
+    : ["Источники не указаны"];
+  for (const source of visibleSources) {
+    if (y < BOTTOM + 24) {
+      page = startStructuredPage(pages);
+      y = TOP;
+      y = addStructuredSectionTitle(page, y, "Налог / источники / точность — продолжение");
+      showStructuredText(page, LEFT + 8, y, "Источники — продолжение", FONT_SIZE);
+      y -= 12;
+    }
+    showStructuredText(page, LEFT + 8, y, `- ${source}`, SMALL_FONT);
+    y -= 11;
   }
 
   const visibleAssumptions = viewModel.assumptions.length

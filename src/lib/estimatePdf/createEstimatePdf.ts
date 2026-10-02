@@ -4,6 +4,7 @@ import type { EstimatePdfDocument, EstimatePdfInput } from "./estimatePdfTypes";
 import { validateEstimatePdf } from "./validateEstimatePdf";
 
 export type CreateEstimatePdfResult = EstimatePdfDocument & {
+  viewModel: ReturnType<typeof buildEstimatePdfViewModel>;
   validation: ReturnType<typeof validateEstimatePdf>;
   pdfTrace: {
     pdf_uses_structured_global_estimate_result: true;
@@ -30,6 +31,7 @@ export function createEstimatePdf(input: EstimatePdfInput): CreateEstimatePdfRes
   }
   return {
     ...pdf,
+    viewModel,
     validation,
     pdfTrace: {
       pdf_uses_structured_global_estimate_result: true,

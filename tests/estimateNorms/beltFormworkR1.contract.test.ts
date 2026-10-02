@@ -65,13 +65,14 @@ describe("monolithic-belt formwork through the shared RICS/Frami core", () => {
     expect(serialized).not.toContain("Армирование монолитного пояса");
   });
 
-  test("fails closed without the approved drawing and for an unrelated catalog item", async () => {
+  test("keeps a missing drawing local and rejects an unrelated catalog item", async () => {
     const fixture = formworkFramiXlifeBeltAcceptanceInputR1("standard");
-    await expect(compileFormworkFramiXlifeProjectKitR1({
+    const preliminary = await compileFormworkFramiXlifeProjectKitR1({
       ...fixture,
       project_drawing_reference: undefined,
-    }, { catalogId: FORMWORK_FRAMI_XLIFE_BELT_TARGETS[0].catalogId }))
-      .rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+    }, { catalogId: FORMWORK_FRAMI_XLIFE_BELT_TARGETS[0].catalogId });
+    expect(preliminary.preliminaryNeeds.flatMap((need) => need.missing_parameter_ids))
+      .toContain("project_drawing_reference");
     await expect(compileFormworkFramiXlifeProjectKitR1(
       { ...fixture },
       { catalogId: "canonical-work:unsupported" },

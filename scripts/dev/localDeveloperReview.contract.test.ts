@@ -13,6 +13,10 @@ describe("R5.5.1 local developer review tooling", () => {
     expect(launcher).toContain("PORT_8081_FOREIGN_OWNER_PID_");
     expect(launcher).toContain("$NormalizedCommand.Contains($NormalizedRoot)");
     expect(launcher).toContain('EXPO_PUBLIC_LOCAL_DEVELOPER_REVIEW = "1"');
+    expect(launcher).toContain('$env:LOCAL_DEVELOPER_WEB_PORT = [string]$Port');
+    expect(launcher).toContain('$env:EXPO_PUBLIC_LOCAL_DEVELOPER_WEB_PORT = [string]$Port');
+    expect(launcher).toContain('[int]$MetroReceipt.web_port -eq $Port');
+    expect(launcher).toContain('web_port = $Port');
     expect(launcher).toContain("provisionLocalDeveloperReview.ts");
     expect(launcher).toContain("serveLocalDeveloperAuthBroker.ts");
     expect(launcher).toContain("probeLocalDeveloperCanonicalBackend.ts");
@@ -52,7 +56,14 @@ describe("R5.5.1 local developer review tooling", () => {
     expect(backendManager).toContain("LOCAL_DEVELOPER_EVIDENCE_ROOT");
     expect(backendManager).toContain('resolve(EVIDENCE_ROOT, "backend.json")');
     expect(backendManager).toContain("request_audit_path");
-    expect(backendManager).toContain("0ff759893b3660c64e094de5763b443e35fa9ec8cb861132a7bed455d763e3ac");
+    expect(backendManager).toContain("backendRuntimeClosureSha256(BACKEND_SOURCE)");
+    expect(backendManager).toContain(
+      "tuple.backendRuntimeSourceSha256 === desired.backendRuntimeSourceSha256",
+    );
+    expect(backendManager).toContain(
+      "CANONICAL_ESTIMATE_RUNTIME_SOURCE_SHA256: input.desired.backendRuntimeSourceSha256",
+    );
+    expect(backendManager).not.toContain("0ff759893b3660c64e094de5763b443e35fa9ec8cb861132a7bed455d763e3ac");
     expect(backendManager).not.toContain("9262479c9c9fb3107c4541046c367db7934c875ea8354cc472a7529788635d1b");
     expect(launcher).toContain("LOCAL_DEVELOPER_EVIDENCE_ROOT");
     expect(androidJourney).toContain("R4_A6_ANDROID_BACKEND_AUDIT_PATH");
@@ -78,8 +89,9 @@ describe("R5.5.1 local developer review tooling", () => {
     expect(provisioner).toContain("/^[A-Za-z0-9]+$/u.test(principal.password)");
     expect(roleRegistry).toContain('"security"');
     expect(provisioner).toContain("service_key_in_browser: false");
-    expect(broker).toContain('"http://localhost:8081"');
-    expect(broker).toContain('"http://127.0.0.1:8081"');
+    expect(broker).toContain('`http://localhost:${configuredWebPort}`');
+    expect(broker).toContain('`http://127.0.0.1:${configuredWebPort}`');
+    expect(broker).toContain("LOCAL_DEVELOPER_WEB_PORT_INVALID");
     expect(broker).not.toContain('"http://localhost:8190"');
     expect(broker).toContain("origin_forbidden");
     expect(broker).toContain('requestUrl.pathname === "/owner-session"');
@@ -110,6 +122,7 @@ describe("R5.5.1 local developer review tooling", () => {
     const banner = source("src/components/auth/LocalDeveloperReviewBanner.tsx");
     expect(rootLayout).toContain("authSessionResolved=");
     expect(rootLayout).toContain("hasAuthenticatedSession=");
+    expect(rootLayout).toContain('automaticOwnerRestoreEnabled={!pathname.startsWith("/auth")}');
     expect(banner).toContain("!enabled || !authSessionResolved");
     expect(banner).toContain("!authenticatedSession");
     expect(banner).toContain("ownerSessionRestoreInFlight");

@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "drywall-ceiling-frame-p113-preliminary-profile-r1.v1",
+  "authoredIndependentlyFromDefinitionRows": true,
+  "catalogId": "canonical-work:base:drywall_ceiling_interior_drywall_ceiling_frame_large_area",
+  "scope": "Каркас плоского подвесного потолка КНАУФ П 113 на одноуровневом металлическом каркасе для прямоугольного помещения 10 × 15,8 м; без листов ГКЛ, крепежа листов, заделки швов, окраски и иных отделочных стадий.",
+  "sources": [
+    {
+      "sourceId": "KNAUF_P113_SYSTEM_PAGE_2026",
+      "authority": "ООО КНАУФ ГИПС",
+      "officialUrl": "https://www.knauf.ru/systems/potolki/potolki-gipsokarton/p-113-a/",
+      "exactLocator": "Состав системы на 1 м² и схема монтажа: ПП 60×27 — 2,9 м; удлинитель — 0,2 шт.; одноуровневый соединитель — 1,7 шт.; прямой подвес и анкер — 0,7 шт.; LN 9 — 1,4 шт.; крепёж ПН — 2 шт./м; значения ориентировочные, без отходов раскроя, уточняются по проекту.",
+      "role": "MANUFACTURER_SYSTEM_AND_PRELIMINARY_QUANTITY_NORMS"
+    },
+    {
+      "sourceId": "MASTER_S26_5_APPENDIX_P7_CONTROL_SCENARIO",
+      "authority": "Согласованный MASTER S26.5",
+      "officialUrl": null,
+      "exactLocator": "Приложение П.7: frame-only; геометрия 10 × 15,8 м; материалы каркаса, отдельные операции монтажа, лазер, перфоратор, шуруповёрт, инструмент резки, средство доступа и применимая логистика.",
+      "role": "EXPLICIT_ACCEPTANCE_SCENARIO_AND_SCOPE_BOUNDARY"
+    },
+    {
+      "sourceId": "KG_SP_KR_65_101_2025_FRAME_WORKS",
+      "authority": "Нормативная система Кыргызской Республики",
+      "officialUrl": null,
+      "exactLocator": "Правила производства и приёмки внутренних отделочных и каркасных работ; общие требования не подменяют ведомость деталей выбранной системы.",
+      "role": "WORK_EXECUTION_AND_ACCEPTANCE"
+    },
+    {
+      "sourceId": "VISIBLE_REPLACEABLE_SITE_PROFILE_P7_R1",
+      "authority": "Предварительный профиль планирования, не норма производителя",
+      "officialUrl": null,
+      "exactLocator": "Сменность инструмента и доступа, число рейсов и условия объекта показываются серым внутри компактных редактируемых строк и заменяются ППР, обмером, раскладкой и паспортами выбранной техники.",
+      "role": "VISIBLE_REPLACEABLE_ASSUMPTION"
+    }
+  ],
+  "independentRequiredComposition": [
+    { "componentId": "ceiling-profile", "rowKey": "p113_ceiling_profile", "category": "material", "sourceId": "KNAUF_P113_SYSTEM_PAGE_2026", "quantityBasis": "area × visible P113 rate 2.9 m/m²" },
+    { "componentId": "perimeter-track", "rowKey": "p113_perimeter_track", "category": "material", "sourceId": "MASTER_S26_5_APPENDIX_P7_CONTROL_SCENARIO", "quantityBasis": "2 × (room length + room width)" },
+    { "componentId": "profile-extensions", "rowKey": "p113_profile_extensions", "category": "material", "sourceId": "KNAUF_P113_SYSTEM_PAGE_2026", "quantityBasis": "ceil(area × visible P113 rate 0.2 item/m²)" },
+    { "componentId": "single-level-connectors", "rowKey": "p113_single_level_connectors", "category": "material", "sourceId": "KNAUF_P113_SYSTEM_PAGE_2026", "quantityBasis": "ceil(area × visible P113 rate 1.7 item/m²)" },
+    { "componentId": "direct-hangers", "rowKey": "p113_direct_hangers", "category": "material", "sourceId": "KNAUF_P113_SYSTEM_PAGE_2026", "quantityBasis": "ceil(area × visible selected-hanger rate 0.7 item/m²)" },
+    { "componentId": "hanger-anchors", "rowKey": "p113_hanger_anchors", "category": "material", "sourceId": "KNAUF_P113_SYSTEM_PAGE_2026", "quantityBasis": "ceil(area × visible anchor rate 0.7 item/m²)" },
+    { "componentId": "ln9-screws", "rowKey": "p113_ln9_screws", "category": "material", "sourceId": "KNAUF_P113_SYSTEM_PAGE_2026", "quantityBasis": "ceil(area × visible P113 rate 1.4 item/m²)" },
+    { "componentId": "perimeter-fasteners", "rowKey": "p113_perimeter_fasteners", "category": "material", "sourceId": "KNAUF_P113_SYSTEM_PAGE_2026", "quantityBasis": "ceil(perimeter × visible rate 2 item/m)" },
+    { "componentId": "sealing-tape", "rowKey": "p113_sealing_tape", "category": "material", "sourceId": "MASTER_S26_5_APPENDIX_P7_CONTROL_SCENARIO", "quantityBasis": "full selected sealed perimeter" },
+    { "componentId": "axis-setting-out", "rowKey": "p113_axis_setting_out", "category": "labor", "sourceId": "MASTER_S26_5_APPENDIX_P7_CONTROL_SCENARIO", "quantityBasis": "ceiling area" },
+    { "componentId": "perimeter-track-installation", "rowKey": "p113_perimeter_track_installation", "category": "labor", "sourceId": "MASTER_S26_5_APPENDIX_P7_CONTROL_SCENARIO", "quantityBasis": "room perimeter" },
+    { "componentId": "hanger-installation", "rowKey": "p113_hanger_installation", "category": "labor", "sourceId": "MASTER_S26_5_APPENDIX_P7_CONTROL_SCENARIO", "quantityBasis": "calculated selected hanger count" },
+    { "componentId": "ceiling-profile-installation", "rowKey": "p113_ceiling_profile_installation", "category": "labor", "sourceId": "MASTER_S26_5_APPENDIX_P7_CONTROL_SCENARIO", "quantityBasis": "calculated PP 60×27 length" },
+    { "componentId": "profile-extension-installation", "rowKey": "p113_profile_extension_installation", "category": "labor", "sourceId": "MASTER_S26_5_APPENDIX_P7_CONTROL_SCENARIO", "quantityBasis": "calculated extension count" },
+    { "componentId": "single-level-connector-installation", "rowKey": "p113_connector_installation", "category": "labor", "sourceId": "MASTER_S26_5_APPENDIX_P7_CONTROL_SCENARIO", "quantityBasis": "calculated connector count" },
+    { "componentId": "frame-alignment", "rowKey": "p113_frame_alignment", "category": "labor", "sourceId": "MASTER_S26_5_APPENDIX_P7_CONTROL_SCENARIO", "quantityBasis": "ceiling area; separate only because selected price profile does not include it in installation rates" },
+    { "componentId": "internal-material-handling", "rowKey": "p113_internal_material_handling", "category": "labor", "sourceId": "MASTER_S26_5_APPENDIX_P7_CONTROL_SCENARIO", "quantityBasis": "ceiling area" },
+    { "componentId": "access-operations", "rowKey": "p113_access_operations", "category": "labor", "sourceId": "VISIBLE_REPLACEABLE_SITE_PROFILE_P7_R1", "quantityBasis": "ceil(area / visible planned area per shift)" },
+    { "componentId": "laser-level", "rowKey": "p113_laser_level", "category": "equipment", "sourceId": "MASTER_S26_5_APPENDIX_P7_CONTROL_SCENARIO", "quantityBasis": "ceil(area / visible planned area per shift)" },
+    { "componentId": "rotary-hammer", "rowKey": "p113_rotary_hammer", "category": "equipment", "sourceId": "MASTER_S26_5_APPENDIX_P7_CONTROL_SCENARIO", "quantityBasis": "ceil(area / visible planned area per shift)" },
+    { "componentId": "screwdriver", "rowKey": "p113_screwdriver", "category": "equipment", "sourceId": "MASTER_S26_5_APPENDIX_P7_CONTROL_SCENARIO", "quantityBasis": "ceil(area / visible planned area per shift)" },
+    { "componentId": "profile-cutting-tool", "rowKey": "p113_profile_cutting_tool", "category": "equipment", "sourceId": "MASTER_S26_5_APPENDIX_P7_CONTROL_SCENARIO", "quantityBasis": "ceil(area / visible planned area per shift)" },
+    { "componentId": "mobile-access-system", "rowKey": "p113_access_equipment", "category": "equipment", "sourceId": "VISIBLE_REPLACEABLE_SITE_PROFILE_P7_R1", "quantityBasis": "ceil(area / visible planned area per shift)" },
+    { "componentId": "long-profile-delivery", "rowKey": "p113_material_delivery", "category": "transport", "sourceId": "MASTER_S26_5_APPENDIX_P7_CONTROL_SCENARIO", "quantityBasis": "visible consolidated trip count" },
+    { "componentId": "access-delivery", "rowKey": "p113_access_delivery", "category": "transport", "sourceId": "VISIBLE_REPLACEABLE_SITE_PROFILE_P7_R1", "quantityBasis": "visible inbound trip count" },
+    { "componentId": "access-return", "rowKey": "p113_access_return", "category": "transport", "sourceId": "VISIBLE_REPLACEABLE_SITE_PROFILE_P7_R1", "quantityBasis": "visible return trip count" },
+    { "componentId": "packaging-waste-removal", "rowKey": "p113_waste_removal", "category": "transport", "sourceId": "VISIBLE_REPLACEABLE_SITE_PROFILE_P7_R1", "quantityBasis": "visible waste trip count" }
+  ],
+  "explicitlyNotApplicable": [
+    "drywall sheets",
+    "drywall sheet screws",
+    "joint compound",
+    "joint reinforcing tape",
+    "primer and paint",
+    "alternative hangers not selected by the P113 profile",
+    "duplicate generic frame installation line",
+    "generic incoming mass-distance delivery when explicit trips are selected"
+  ]
+}

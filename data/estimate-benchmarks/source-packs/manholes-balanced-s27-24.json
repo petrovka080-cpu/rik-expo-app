@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "rik-expo-app.s27-24.manholes-balanced-source-pack.v1",
+  "catalogId": "canonical-work:expanded:manholes",
+  "scope": "Construction, testing and acceptance of 6 explicitly selected MH-RC-1800x1200-H3.0-C30/37-D400-DN300 cast-in-place reinforced-concrete rectangular access manholes. Structural concrete, reinforcement, formwork, waterstops, covers and frames, steps, connectors, seals, benching, waterproofing, bedding, earthworks, labor, mechanisms, QA and logistics are direct project inputs.",
+  "sourceAuthority": "Approved sewerage and structural design organizations, concrete, reinforcement and cover suppliers, geotechnical engineer, construction laboratory and approving project engineer",
+  "projectDocumentsRequired": [
+    "approved manhole layout, structural drawings, elevations, depths and connection schedule",
+    "approved concrete, reinforcement, formwork, waterstop, cover, frame, step, seal and connector specification",
+    "approved benching, waterproofing and bedding schedule",
+    "approved excavation, backfill and excess-soil quantities",
+    "construction method with labor and mechanism quantities",
+    "survey, concrete-quality, watertightness and acceptance program",
+    "as-built and acceptance-document schedule",
+    "delivery and waste-removal plan",
+    "conditional dewatering, excavation-shoring and pavement-restoration schedules",
+    "supplier cover-kit package quantity and approved retained spare-cover quantity"
+  ],
+  "ordinaryFixture": {
+    "manholeCount": 6,
+    "manholeType": "CAST_IN_PLACE_RC_RECTANGULAR",
+    "manholeMaterial": "CAST_IN_PLACE_RC",
+    "internalLengthMm": 1800,
+    "internalWidthMm": 1200,
+    "depthM": 3,
+    "concreteClass": "C30/37",
+    "coverFrameDesignation": "TM-D400",
+    "coverLoadClass": "D400",
+    "connectorDiameterMm": 300,
+    "manholeDesignation": "MH-RC-1800x1200-H3.0-C30/37-D400-DN300"
+  },
+  "procurementBalance": {
+    "coverKits": {
+      "installedQuantity": "mnh_manhole_count",
+      "retainedSpareQuantity": "mnh_cover_retained_spare_piece",
+      "supplierPackageQuantity": "mnh_cover_supplier_package_quantity_piece"
+    },
+    "rules": {
+      "totalNeed": "installed quantity + retained spare quantity",
+      "packageCount": "ceil(total need / supplier package quantity)",
+      "order": "package count * supplier package quantity",
+      "remainderAfterInstallation": "order - installed quantity",
+      "surplusBeyondSpare": "remainder - retained spare quantity"
+    },
+    "visiblePreliminaryProfile": {
+      "mnh_cover_retained_spare_piece": 0,
+      "mnh_cover_supplier_package_quantity_piece": 1
+    }
+  },
+  "acceptanceFixtureRole": "VALIDATION_FIXTURE_NOT_PROJECT_NORM",
+  "forbiddenClaims": [
+    "whole sewer pipe or network scope inherited from a route template",
+    "manhole count or spacing derived from route length",
+    "concrete, reinforcement, formwork, earthwork, labor or mechanism quantities derived from a universal coefficient",
+    "automatic dewatering, shoring or pavement restoration",
+    "universal spare-cover or supplier package quantity",
+    "invented price"
+  ]
+}

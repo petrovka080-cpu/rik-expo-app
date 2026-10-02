@@ -128,6 +128,16 @@
   "tolerance_policy_id": "golden-benchmark-tolerance-v1",
   "expert_reviewer": "estimate-golden-benchmark-review-board",
   "review_status": "APPROVED_FOR_PRELIMINARY",
+  "current_runtime_contract": {
+    "version": "production-norm-applicability-gate-v1",
+    "expected_outcome": "NEEDS_INPUT",
+    "historical_reference_status": "READ_ONLY_SUPERSEDED_BY_FAIL_CLOSED_NORM_GATE",
+    "required_inputs": [
+      "Confirmed product/system specification for the exact work key",
+      "Project geometry and design parameters required by an applicable source-backed norm",
+      "Approved professional norm source with an executable applicability binding"
+    ]
+  },
   "source_refs": [
     "src_professional_norm_pack_screed_cement_sand_mix_kg_m2_50mm_v1",
     "src_professional_norm_pack_catalog_flooring_material_materials_m2_v1",

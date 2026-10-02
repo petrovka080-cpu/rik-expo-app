@@ -4,30 +4,14 @@ import {
   type EstimateContentPassportR3,
   type EstimateContentProvenanceKindR3,
 } from "../../../src/lib/estimate/backendPlatform/estimateContentPassportR3";
-import type { InclusionGraphAst } from "../../../src/lib/estimate/backendPlatform/inclusionGraph";
 import {
   REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT,
   STRIP_FOUNDATION_FORMULAS,
   STRIP_FOUNDATION_INPUTS,
   STRIP_FOUNDATION_ROWS,
+  stripFoundationParameterConsumerRowIds,
 } from "./reinforcedConcreteStripFoundationR1";
-
-function inclusionParameterIds(ast: InclusionGraphAst): string[] {
-  const kind = String(ast.kind ?? "");
-  if (kind === "parameter") return [String(ast.id ?? "")].filter(Boolean);
-  if (["equals", "not_equals", "in", "greater_than", "greater_than_or_equal", "less_than", "less_than_or_equal"].includes(kind)) {
-    return [String(ast.parameterId ?? "")].filter(Boolean);
-  }
-  if (kind === "not" && ast.operand && typeof ast.operand === "object" && !Array.isArray(ast.operand)) {
-    return inclusionParameterIds(ast.operand as InclusionGraphAst);
-  }
-  if ((kind === "and" || kind === "or") && Array.isArray(ast.operands)) {
-    return ast.operands
-      .filter((operand): operand is InclusionGraphAst => Boolean(operand) && typeof operand === "object" && !Array.isArray(operand))
-      .flatMap(inclusionParameterIds);
-  }
-  return [];
-}
+import { auditStripFoundationScopeCompletenessR1 } from "../../../src/lib/estimate/v4/stripFoundationScopeCompletenessR1";
 
 export function buildStripFoundationContentPassportR3(
   catalogId = "concrete_foundation_interior_strip_foundation_form_standard",
@@ -36,39 +20,8 @@ export function buildStripFoundationContentPassportR3(
   formulaConsumers: Record<string, string[]>;
   resourceConsumers: Record<string, string[]>;
   decision: ReturnType<typeof evaluateEstimateContentPassportR3>;
+  scopeCompleteness: ReturnType<typeof auditStripFoundationScopeCompletenessR1>;
 } {
-  const titleParameters: Record<string, readonly string[]> = {
-    concrete_class: ["main_concrete"],
-    watertightness: ["main_concrete"],
-    frost_resistance: ["main_concrete"],
-    mobility: ["main_concrete"],
-  };
-  const readyMixOrderEvidenceParameters = new Set([
-    "product_profile_id",
-    "plan_volume_calculation_reference",
-    "mix_design_or_project_specification_reference",
-    "mixture_designation",
-    "placement_location",
-    "contingency_selection_justification",
-    "delivery_schedule_and_truck_capacity",
-    "producer_order_confirmation",
-    "estimator_approval_reference",
-  ]);
-  const reinforcementScheduleEvidenceParameters = new Set([
-    "reinforcement_product_profile_id",
-    "bar_bending_schedule_reference",
-    "structural_drawing_and_revision_reference",
-    "bar_standard_and_grade",
-    "bar_size_designation",
-    "nominal_diameter_mm",
-    "shape_straight_bent_curved_or_link",
-    "bar_count_and_cut_length_m",
-    "selected_standard_mass_kg_per_m",
-    "laps_hooks_chairs_connectors_and_accessories_scope",
-    "fabrication_allowance_if_documented",
-    "supplier_bundle_or_length_constraints",
-    "reinforcement_estimator_approval_reference",
-  ]);
   const formulaConsumers = Object.fromEntries(STRIP_FOUNDATION_INPUTS.map((parameter) => [
     parameter.parameterId,
     STRIP_FOUNDATION_FORMULAS
@@ -76,16 +29,10 @@ export function buildStripFoundationContentPassportR3(
       .map((formula) => formula.formulaId)
       .sort(),
   ]));
-  const resourceConsumers = Object.fromEntries(STRIP_FOUNDATION_INPUTS.map((parameter) => {
-    const formulaIds = new Set(formulaConsumers[parameter.parameterId] ?? []);
-    const rows = STRIP_FOUNDATION_ROWS.filter((row) => formulaIds.has(row.formulaId)
-      || inclusionParameterIds(row.applicabilityExpression).includes(parameter.parameterId)
-      || titleParameters[parameter.parameterId]?.includes(row.rowId)
-      || (row.rowId === "main_concrete" && readyMixOrderEvidenceParameters.has(parameter.parameterId))
-      || (row.rowId === "reinforcement"
-        && reinforcementScheduleEvidenceParameters.has(parameter.parameterId)));
-    return [parameter.parameterId, rows.map((row) => row.rowId).sort()];
-  }));
+  const resourceConsumers = Object.fromEntries(STRIP_FOUNDATION_INPUTS.map((parameter) => [
+    parameter.parameterId,
+    stripFoundationParameterConsumerRowIds(parameter.parameterId),
+  ]));
   const provenanceByCategory: Record<string, EstimateContentProvenanceKindR3> = {
     material: "CANONICAL_PHYSICAL_RESOURCE",
     construction_work: "EXPLICIT_CONSTRUCTION_OPERATION",
@@ -151,5 +98,6 @@ export function buildStripFoundationContentPassportR3(
     formulaConsumers,
     resourceConsumers,
     decision: evaluateEstimateContentPassportR3(passport),
+    scopeCompleteness: auditStripFoundationScopeCompletenessR1(),
   };
 }

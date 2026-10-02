@@ -247,7 +247,7 @@ async function buildRequestPayloadEvidence() {
   const marketplaceSend = buildConsumerRepairCanonicalDraftPayload(bundle, "marketplace_send");
   const parity = compareConsumerRepairPayloadParity({ draftSave, pdfGeneration, marketplaceSend });
   const governance = [draftSave, pdfGeneration, marketplaceSend].map(validateConsumerRepairPayloadSourceGovernance);
-  const sendResult = sendConsumerRepairRequestToMarketplace({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
+  const sendResult = await sendConsumerRepairRequestToMarketplace({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
   const selectedIds = bundle.items
     .map((item) => item.selectedCatalogItemId ?? item.catalogItemId)
     .filter((item): item is string => Boolean(item))
@@ -593,7 +593,7 @@ export async function runRequestEstimateCatalogBoqLiveReleaseGate() {
 if (require.main === module) {
   runRequestEstimateCatalogBoqLiveReleaseGate()
     .then((result) => {
-      console.log(result.matrix.final_status);
+      console.info(result.matrix.final_status);
       if (result.failures.length > 0) {
         console.error(JSON.stringify(result.failures, null, 2));
         process.exitCode = 1;

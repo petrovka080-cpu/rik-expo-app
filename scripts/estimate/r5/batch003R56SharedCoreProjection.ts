@@ -3,6 +3,9 @@ import { createHash } from "node:crypto";
 import {
   compileCanonicalEstimateCore,
   type CanonicalEstimateCompileCoreResult,
+  type CanonicalEstimateFormulaDefinition,
+  type CanonicalEstimateParameterDefinition,
+  type CanonicalEstimateResourceDefinition,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
 import { canonicalEstimateStableJson } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism";
 import { compileFormulaGraph } from "../../../src/lib/estimate/backendPlatform/formulaGraph";
@@ -373,17 +376,20 @@ function buildDrywallPreparationScopeR4A13(input: {
   parameters: readonly Batch003R56ParameterDefinition[];
 } {
   const rows = [
-    ["protection_cover", "Материалы защиты помещения", "material", "Укрывная полиэтиленовая плёнка и защитный картон для подтверждённой площади оборудования и пола", "m2", "protected_area_m2", "unit_price_successor_protection_cover_kgs", true, "work area protection material"],
-    ["masking_tape", "Материалы защиты помещения", "material", "Малярная лента для герметизации укрытий и защиты примыканий", "m", "protection_perimeter_m", "unit_price_successor_masking_tape_kgs", true, "masking and protection tape"],
-    ["waste_bags", "Материалы для уборки", "material", "Прочные мешки для подтверждённого объёма пыли и отходов локального ремонта ГКЛ", "item", "waste_bag_count", "unit_price_successor_waste_bags_kgs", true, "repair waste bags"],
+    ["protection_cover", "Материалы защиты помещения", "material", "Полиэтиленовая защитная плёнка 4×50 м для укрытия пола и оборудования", "item", "ceil(area_m2 * protected_area_ratio_to_ceiling * protective_film_overlap_factor / protective_film_roll_coverage_m2)", "unit_price_successor_protection_cover_kgs", true, "selected protective film roll"],
+    ["masking_tape", "Материалы защиты помещения", "material", "Малярная лента выбранной ширины, рулон 50 м, для укрытий и примыканий", "item", "ceil(area_m2 * protection_tape_m_per_ceiling_m2 / masking_tape_roll_length_m)", "unit_price_successor_masking_tape_kgs", true, "selected masking tape roll"],
+    ["waste_bags", "Материалы для уборки", "material", "Прочные строительные мешки для упаковки, пыли и отходов шпаклевания", "item", "ceil(area_m2 / waste_bag_coverage_m2_per_item)", "unit_price_successor_waste_bags_kgs", true, "preparation waste bags"],
     ["primer", "Грунтование", "material", "Выбранная грунтовка, совместимая с картонной поверхностью ГКЛ", "kg", "area_m2 * primer_kg_per_m2 * primer_layer_count", "unit_price_successor_primer_kgs", true, "selected compatible drywall primer"],
-    ["finish_paste", "Сплошное финишное шпаклевание", "material", "Финишная шпаклёвочная паста выбранного продукта", "kg", "area_m2 * finish_paste_consumption_kg_m2 * (1 + finish_paste_order_reserve_percent / 100)", "unit_price_successor_finish_paste_kgs", true, "selected finish paste for thin continuous skim coat"],
+    ["finish_paste", "Сплошное финишное шпаклевание", "material", "Финишная шпаклёвочная паста выбранного продукта и фасовки", "item", "ceil(area_m2 * finish_paste_consumption_kg_m2 * (1 + finish_paste_order_reserve_percent / 100) / finish_paste_package_kg)", "unit_price_successor_finish_paste_kgs", true, "selected finish paste package for thin continuous skim coat"],
     ["finish_abrasive", "Шлифование", "material", "Абразивный круг P240, совместимый с выбранной шлифовальной машиной", "item", "ceil(area_m2 / finish_abrasive_productivity_m2_per_item)", "unit_price_successor_finish_abrasive_kgs", true, "P240 compatible sanding disc"],
+    ["safety_glasses", "Средства защиты", "material", "Защитные очки для шпаклевания и шлифования потолка", "item", "height_worker_count", "unit_price_successor_safety_glasses_kgs", true, "eye protection required by selected product safety sheet"],
+    ["protective_gloves", "Средства защиты", "material", "Защитные перчатки для работы с финишной шпаклёвкой", "item", "height_worker_count * ceil(area_m2 / preliminary_area_m2_per_shift) * ppe_glove_pairs_per_worker_shift", "unit_price_successor_protective_gloves_kgs", true, "skin protection required by selected product safety sheet"],
+    ["dust_respirators", "Средства защиты", "material", "Респиратор для защиты органов дыхания при шпаклевании и шлифовании", "item", "height_worker_count * ceil(area_m2 / preliminary_area_m2_per_shift) * ppe_respirators_per_worker_shift", "unit_price_successor_dust_respirators_kgs", true, "respiratory protection required by selected product safety sheet"],
     ["joint_compound", "Локальный ремонт", "material", "Шпаклёвочная смесь для ремонта швов и локальных дефектов ГКЛ", "kg", "area_m2 * repair_area_share_percent / 100 * repair_compound_kg_per_repair_m2", "unit_price_successor_joint_compound_kgs", true, "drywall joint repair compound"],
     ["joint_tape", "Локальный ремонт", "material", "Бумажная армирующая лента для ремонтируемых швов ГКЛ", "m", "repair_joint_length_m", "unit_price_successor_joint_tape_kgs", true, "drywall paper joint tape"],
     ["abrasive", "Локальный ремонт", "material", "Абразивная сетка зернистостью P120–P180 для шлифования отремонтированных участков ГКЛ", "item", "ceil(area_m2 * repair_area_share_percent / 100 / abrasive_productivity_m2_per_item)", "unit_price_successor_abrasive_kgs", true, "drywall abrasive mesh"],
     ["condition_survey", "Подготовительные работы", "labor", "Осмотр потолка из ГКЛ, простукивание и разметка трещин, отслоений и повреждённых швов", "m2", "area_m2", "unit_price_successor_condition_survey_kgs", false, "drywall ceiling condition survey"],
-    ["room_protection", "Подготовительные работы", "labor", "Укрытие оборудования, пола, кабельных трасс и инженерных установок помещения", "m2", "protected_area_m2", "unit_price_successor_room_protection_kgs", false, "technical room protection work"],
+    ["room_protection", "Подготовительные работы", "labor", "Укрытие оборудования, пола, кабельных трасс и инженерных установок помещения", "m2", "area_m2 * protected_area_ratio_to_ceiling", "unit_price_successor_room_protection_kgs", false, "technical room protection work"],
     ["surface_cleaning", "Подготовительные работы", "labor", "Очистка потолка из ГКЛ от пыли, слабых участков и загрязнений", "m2", "area_m2", "unit_price_successor_surface_cleaning_kgs", false, "drywall ceiling surface cleaning"],
     ["defect_opening", "Локальный ремонт", "labor", "Расшивка трещин и удаление непрочных участков шпаклёвки в местах локального ремонта", "m", "repair_joint_length_m", "unit_price_successor_defect_opening_kgs", false, "drywall defect opening"],
     ["joint_repair", "Локальный ремонт", "labor", "Локальный ремонт повреждений и швов ГКЛ шпаклёвочной смесью с бумажной лентой", "m", "repair_joint_length_m", "unit_price_successor_joint_repair_kgs", false, "drywall joint repair work"],
@@ -393,11 +399,13 @@ function buildDrywallPreparationScopeR4A13(input: {
     ["finish_sanding", "Шлифование", "labor", "Шлифование финишно шпаклёванного потолка абразивом P240 или мельче", "m2", "area_m2", "unit_price_successor_finish_sanding_kgs", false, "finish coat sanding"],
     ["post_sanding_dust_removal", "Обеспыливание", "labor", "Обеспыливание потолка после финишного шлифования", "m2", "area_m2", "unit_price_successor_post_sanding_dust_removal_kgs", false, "post-sanding dust removal"],
     ["readiness_control", "Контроль результата", "labor", "Контроль сухости, прочности и готовности потолка из ГКЛ к следующей отделочной операции", "m2", "area_m2", "unit_price_successor_readiness_control_kgs", false, "drywall ceiling readiness control"],
-    ["access_operations", "Работы со средствами доступа", "labor", "Подготовка, проверка, перестановка и завершение работы с подтверждённым средством доступа", "shift", "access_equipment_shift_count", "unit_price_successor_access_operations_kgs", false, "selected access system operations"],
-    ["dust_extractor", "Механизация подготовки", "equipment", "Промышленный строительный пылесос класса пыли M с насадкой для потолка", "shift", "dust_extractor_shift_count", "unit_price_successor_dust_extractor_kgs", true, "construction dust extraction equipment"],
-    ["access_equipment", "Средства доступа", "equipment", "Средство доступа выбранного типа для подтверждённых условий рабочей зоны", "shift", "access_equipment_shift_count", "unit_price_successor_access_equipment_kgs", true, "selected elevated work access system"],
+    ["cleanup", "Уборка", "labor", "Уборка и сбор упаковки, пыли и отходов после шпаклевания потолка", "m2", "area_m2", "unit_price_successor_cleanup_kgs", false, "post-work cleaning and waste collection"],
+    ["access_operations", "Работы со средствами доступа", "labor", "Подготовка, проверка, перестановка и завершение работы с подтверждённым средством доступа", "shift", "ceil(area_m2 / preliminary_area_m2_per_shift)", "unit_price_successor_access_operations_kgs", false, "selected access system operations"],
+    ["dust_extractor", "Механизация подготовки", "equipment", "Промышленный строительный пылесос класса пыли M с насадкой для потолка", "shift", "ceil(area_m2 / preliminary_area_m2_per_shift)", "unit_price_successor_dust_extractor_kgs", true, "construction dust extraction equipment"],
+    ["sanding_machine", "Механизация подготовки", "equipment", "Шлифовальная машина для стен и потолков с подключением пылеудаления", "shift", "ceil(area_m2 / preliminary_area_m2_per_shift)", "unit_price_successor_sanding_machine_kgs", true, "selected ceiling sanding machine"],
+    ["access_equipment", "Средства доступа", "equipment", "Передвижная вышка-тура с ограждением для подтверждённых условий рабочей зоны", "shift", "ceil(area_m2 / preliminary_area_m2_per_shift)", "unit_price_successor_access_equipment_kgs", true, "selected elevated work access system"],
     ["fall_protection", "Защита от падения", "equipment", "Система защиты от падения выбранного типа для подтверждённой численности бригады", "set", "fall_protection_set_count", "unit_price_successor_fall_protection_kgs", true, "selected fall protection system"],
-    ["work_light", "Освещение рабочей зоны", "equipment", "Переносное рабочее освещение для контроля поверхности потолка", "shift", "work_lighting_shift_count", "unit_price_successor_work_light_kgs", true, "temporary work lighting"],
+    ["work_light", "Освещение рабочей зоны", "equipment", "Переносное рабочее освещение для контроля поверхности потолка", "shift", "ceil(area_m2 / preliminary_area_m2_per_shift)", "unit_price_successor_work_light_kgs", true, "temporary work lighting"],
     ["material_delivery", "Логистика материалов", "transport", "Доставка выбранных материалов на объект", "trip", "material_delivery_trip_count", "unit_price_successor_material_delivery_kgs", true, "material delivery"],
     ["access_delivery", "Логистика средств доступа", "transport", "Доставка подтверждённого средства доступа на объект", "trip", "access_delivery_trip_count", "unit_price_successor_access_delivery_kgs", true, "access equipment inbound delivery"],
     ["access_return", "Логистика средств доступа", "transport", "Возврат подтверждённого средства доступа поставщику", "trip", "access_return_trip_count", "unit_price_successor_access_return_kgs", true, "access equipment return"],
@@ -412,7 +420,7 @@ function buildDrywallPreparationScopeR4A13(input: {
       unitId,
     )
   );
-  const repairKeys = new Set(["waste_bags", "joint_compound", "joint_tape", "abrasive", "defect_opening", "joint_repair", "sanding"]);
+  const repairKeys = new Set(["joint_compound", "joint_tape", "abrasive", "defect_opening", "joint_repair", "sanding"]);
   const primerKeys = new Set(["primer", "primer_application"]);
   const thinFinishKeys = new Set([
     "finish_paste",
@@ -420,6 +428,10 @@ function buildDrywallPreparationScopeR4A13(input: {
     "finish_paste_application",
     "finish_sanding",
     "post_sanding_dust_removal",
+    "sanding_machine",
+    "safety_glasses",
+    "protective_gloves",
+    "dust_respirators",
   ]);
   const accessKeys = new Set(["access_operations", "access_equipment", "access_delivery", "access_return"]);
   const finishPasteTrace: ProfessionalNormativeRowTraceV3 = {
@@ -444,7 +456,7 @@ function buildDrywallPreparationScopeR4A13(input: {
       formula: formulas[ordinal],
       priceParameterId,
       inclusionCondition: repairKeys.has(key)
-        ? "work_included=true AND repair_requirement_state=REQUIRED"
+        ? "work_included=true AND repair_requirement_state!=NOT_REQUIRED"
         : primerKeys.has(key)
           ? "work_included=true AND primer_requirement_state=REQUIRED"
         : thinFinishKeys.has(key)
@@ -510,15 +522,18 @@ function buildDrywallPreparationScopeR4A13(input: {
     customParameter({ parameterId: "repair_compound_kg_per_repair_m2", labelRu: "Расход выбранной шпаклёвочной смеси на 1 м² локального ремонта", unitId: "kg/m2", minimum: 0.000001, maximum: 50, requiredWhen: requiredWhen("repair_requirement_state", "REQUIRED") }),
     customParameter({ parameterId: "repair_joint_length_m", labelRu: "Общая длина повреждённых швов и трещин потолка из ГКЛ", unitId: "m", minimum: 0, requiredWhen: requiredWhen("repair_requirement_state", "REQUIRED") }),
     customParameter({ parameterId: "abrasive_productivity_m2_per_item", labelRu: "Площадь обработки одной абразивной сеткой выбранной марки", unitId: "m2/item", minimum: 0.000001, requiredWhen: requiredWhen("repair_requirement_state", "REQUIRED") }),
-    customParameter({ parameterId: "waste_bag_count", labelRu: "Подтверждённое количество мешков для пыли и отходов ремонта", unitId: "item", minimum: 0, requiredWhen: requiredWhen("repair_requirement_state", "REQUIRED") }),
     state("primer_requirement_state", "Требуется ли грунтование для выбранной операции и основания", ["REQUIRED", "NOT_REQUIRED_BY_SELECTED_SYSTEM", "NOT_REQUIRED", "NEEDS_PRODUCT_OR_SUBSTRATE_INPUT"]),
     customParameter({ parameterId: "primer_product_reference", labelRu: "Точное наименование выбранной грунтовки", inputType: "text", requiredWhen: requiredWhen("primer_requirement_state", "REQUIRED") }),
     customParameter({ parameterId: "primer_kg_per_m2", labelRu: "Паспортный расход выбранной грунтовки на один слой", unitId: "kg/m2", minimum: 0.000001, maximum: 10, requiredWhen: requiredWhen("primer_requirement_state", "REQUIRED") }),
     customParameter({ parameterId: "primer_layer_count", labelRu: "Число слоёв грунтовки по паспорту материала", unitId: "item", minimum: 1, maximum: 10, requiredWhen: requiredWhen("primer_requirement_state", "REQUIRED") }),
-    customParameter({ parameterId: "protected_area_m2", labelRu: "Подтверждённая площадь оборудования и пола, требующая укрытия", unitId: "m2", minimum: 0 }),
-    customParameter({ parameterId: "protection_perimeter_m", labelRu: "Подтверждённая длина границ укрытия и защищаемых примыканий", unitId: "m", minimum: 0 }),
+    customParameter({ parameterId: "protected_area_ratio_to_ceiling", labelRu: "Отношение площади укрытия к площади потолка", unitId: "ratio", minimum: 0, maximum: 10 }),
+    customParameter({ parameterId: "protective_film_overlap_factor", labelRu: "Коэффициент нахлёстов защитной плёнки", unitId: "ratio", minimum: 1, maximum: 2 }),
+    customParameter({ parameterId: "protective_film_roll_coverage_m2", labelRu: "Площадь плёнки в выбранном рулоне", unitId: "m2", minimum: 0.000001 }),
+    customParameter({ parameterId: "protection_tape_m_per_ceiling_m2", labelRu: "Длина малярной ленты на 1 м² потолка по раскладке", unitId: "m_per_m2", minimum: 0 }),
+    customParameter({ parameterId: "masking_tape_roll_length_m", labelRu: "Длина малярной ленты в выбранном рулоне", unitId: "m", minimum: 0.000001 }),
+    customParameter({ parameterId: "waste_bag_coverage_m2_per_item", labelRu: "Площадь работ на один строительный мешок", unitId: "m2_per_item", minimum: 0.000001 }),
     state("dust_extractor_requirement_state", "Нужен ли отдельный промышленный пылесос", ["REQUIRED", "INCLUDED_IN_CONTRACTOR_SCOPE", "NOT_REQUIRED", "NEEDS_SITE_INPUT"]),
-    customParameter({ parameterId: "dust_extractor_shift_count", labelRu: "Подтверждённое число смен промышленного пылесоса", unitId: "shift", minimum: 0.000001, requiredWhen: requiredWhen("dust_extractor_requirement_state", "REQUIRED") }),
+    customParameter({ parameterId: "preliminary_area_m2_per_shift", labelRu: "Предварительная площадь обработки за смену", unitId: "m2_per_shift", minimum: 0.000001 }),
     state("elevated_work_requirement_state", "Состояние потребности в средствах доступа", ["REQUIRED", "NOT_REQUIRED", "NEEDS_SITE_INPUT"]),
     customParameter({ parameterId: "working_height_m", labelRu: "Рабочая высота от пола до потолка", unitId: "m", minimum: 0.000001, maximum: 300 }),
     state("access_environment", "Среда установки средства доступа", ["INDOOR", "OUTDOOR", "MIXED"]),
@@ -530,18 +545,18 @@ function buildDrywallPreparationScopeR4A13(input: {
     customParameter({ parameterId: "access_platform_load_kg", labelRu: "Расчётная нагрузка на рабочую площадку", unitId: "kg", minimum: 0.000001, requiredWhen: requiredWhen("elevated_work_requirement_state", "REQUIRED") }),
     customParameter({ parameterId: "access_restrictions", labelRu: "Ограничения рабочей зоны и маршрута подачи", inputType: "text", requiredWhen: requiredWhen("elevated_work_requirement_state", "REQUIRED") }),
     state("access_supply_mode", "Способ обеспечения средством доступа", ["RENTAL", "CONTRACTOR_OWNED", "CUSTOMER_PROVIDED", "INCLUDED_IN_MAIN_CONTRACT"]),
-    customParameter({ parameterId: "access_equipment_shift_count", labelRu: "Подтверждённое число смен средства доступа", unitId: "shift", minimum: 0.000001, requiredWhen: requiredWhen("elevated_work_requirement_state", "REQUIRED") }),
     state("fall_protection_requirement_state", "Состояние потребности в отдельной защите от падения", ["REQUIRED", "INCLUDED_IN_ACCESS_SYSTEM", "NOT_REQUIRED", "NEEDS_SITE_INPUT"]),
     customParameter({ parameterId: "fall_protection_system_reference", labelRu: "Выбранная система защиты от падения", inputType: "text", requiredWhen: requiredWhen("fall_protection_requirement_state", "REQUIRED") }),
     customParameter({ parameterId: "fall_protection_set_count", labelRu: "Подтверждённое число комплектов защиты от падения", unitId: "set", minimum: 0.000001, requiredWhen: requiredWhen("fall_protection_requirement_state", "REQUIRED") }),
-    customParameter({ parameterId: "height_worker_count", labelRu: "Численность бригады, одновременно работающей на высоте", unitId: "item", minimum: 1, requiredWhen: requiredWhen("fall_protection_requirement_state", "REQUIRED") }),
-    customParameter({ parameterId: "work_lighting_shift_count", labelRu: "Подтверждённое число смен переносного рабочего освещения", unitId: "shift", minimum: 0 }),
+    customParameter({ parameterId: "height_worker_count", labelRu: "Численность бригады, одновременно работающей на высоте", unitId: "item", minimum: 1 }),
+    customParameter({ parameterId: "ppe_glove_pairs_per_worker_shift", labelRu: "Пар защитных перчаток на работника за смену", unitId: "item_per_person_shift", minimum: 0.000001 }),
+    customParameter({ parameterId: "ppe_respirators_per_worker_shift", labelRu: "Респираторов на работника за смену", unitId: "item_per_person_shift", minimum: 0.000001 }),
     customParameter({ parameterId: "material_delivery_trip_count", labelRu: "Подтверждённое число рейсов доставки выбранных материалов", unitId: "trip", minimum: 0 }),
     state("access_transport_pricing_mode", "Как учитывается логистика средства доступа", ["SEPARATE_LEGS", "ROUND_TRIP_INCLUDED", "INCLUDED_IN_RENTAL", "OWN_TRANSPORT"]),
     customParameter({ parameterId: "access_delivery_trip_count", labelRu: "Подтверждённое число рейсов доставки средства доступа", unitId: "trip", minimum: 0, requiredWhen: requiredWhen("access_transport_pricing_mode", "SEPARATE_LEGS") }),
     customParameter({ parameterId: "access_return_trip_count", labelRu: "Подтверждённое число рейсов возврата средства доступа", unitId: "trip", minimum: 0, requiredWhen: requiredWhen("access_transport_pricing_mode", "SEPARATE_LEGS") }),
     customParameter({ parameterId: "waste_removal_trip_count", labelRu: "Подтверждённое число рейсов вывоза упаковки, пыли и отходов", unitId: "trip", minimum: 0 }),
-    ...rows.map(([key, , , titleRu, unitId, , priceParameterId]) => customParameter({
+    ...rows.map(([_key, , , titleRu, unitId, , priceParameterId]) => customParameter({
       parameterId: priceParameterId,
       labelRu: `Цена: ${titleRu}`,
       unitId: `KGS/${unitId}`,
@@ -589,8 +604,30 @@ function buildP113FrameScopeR4A13(input: {
     applicability: "Только явно выбранный предварительный вариант КНАУФ П 113; периметр берётся из геометрии, штучные количества округляются вверх и уточняются по проекту.",
     foreign_mandatory_for_kg: false,
   };
-  const resources = rows.map(([key, sectionRu, titleRu, , , priceParameterId, resourceClass], ordinal) =>
-    customResource({
+  const p113ContextParameterIds = [
+    "structural_substrate_type",
+    "ceiling_load_verification_state",
+    "hanger_system_reference",
+    "structural_anchor_reference",
+    "frame_access_system_type",
+    "working_height_m",
+  ] as const;
+  const withP113Context = (resource: Batch003R56ResourceDefinition): Batch003R56ResourceDefinition => ({
+    ...resource,
+    resourceGraph: resource.resourceGraph == null
+      ? null
+      : {
+          ...resource.resourceGraph,
+          context_parameter_ids: [
+            ...new Set([
+              ...resource.resourceGraph.context_parameter_ids,
+              ...p113ContextParameterIds,
+            ]),
+          ],
+        },
+  });
+  const materialResources = rows.map(([key, sectionRu, titleRu, , , priceParameterId, resourceClass], ordinal) =>
+    withP113Context(customResource({
       catalogId: input.catalogId,
       ownerId: input.ownerId,
       operation: "FRAME",
@@ -609,8 +646,66 @@ function buildP113FrameScopeR4A13(input: {
       repair: false,
       additionalNormativeTrace: [sourceTrace],
       additionalNormativeSourceIds: [sourceTrace.source_id],
-    })
+    }))
   );
+  const supportRows = [
+    ["p113_axis_setting_out", "Разметка", "labor", "Разметка осей и уровня одноуровневого каркаса П 113", "m2", "area_m2", "unit_price_successor_p113_axis_setting_out_kgs", false, "P113 frame axis setting out"],
+    ["p113_perimeter_track_installation", "Монтаж каркаса", "labor", "Монтаж направляющего профиля ПН 28×27 по периметру", "m", "2 * (room_length_m + room_width_m)", "unit_price_successor_p113_perimeter_track_installation_kgs", false, "P113 perimeter track installation"],
+    ["p113_hanger_installation", "Монтаж каркаса", "labor", "Монтаж прямых подвесов с анкеровкой к подтверждённому основанию", "item", "ceil(area_m2 * 0.7)", "unit_price_successor_p113_hanger_installation_kgs", false, "P113 direct hanger installation"],
+    ["p113_ceiling_profile_installation", "Монтаж каркаса", "labor", "Монтаж потолочного профиля ПП 60×27", "m", "area_m2 * 2.9", "unit_price_successor_p113_ceiling_profile_installation_kgs", false, "P113 ceiling profile installation"],
+    ["p113_profile_extension_installation", "Монтаж каркаса", "labor", "Монтаж удлинителей потолочного профиля ПП 60×27", "item", "ceil(area_m2 * 0.2)", "unit_price_successor_p113_profile_extension_installation_kgs", false, "P113 profile extension installation"],
+    ["p113_connector_installation", "Монтаж каркаса", "labor", "Монтаж одноуровневых соединителей ПП 60×27", "item", "ceil(area_m2 * 1.7)", "unit_price_successor_p113_connector_installation_kgs", false, "P113 single-level connector installation"],
+    ["p113_frame_alignment", "Выверка каркаса", "labor", "Выверка плоскости и уровня смонтированного каркаса П 113", "m2", "area_m2", "unit_price_successor_p113_frame_alignment_kgs", false, "P113 frame alignment"],
+    ["p113_internal_material_handling", "Внутриплощадочное перемещение", "labor", "Подача и раскладка профилей, подвесов и соединителей в рабочей зоне", "m2", "area_m2", "unit_price_successor_p113_internal_material_handling_kgs", false, "P113 internal material handling"],
+    ["p113_access_operations", "Работы со средствами доступа", "labor", "Подготовка, проверка и перестановка выбранного средства доступа", "shift", "access_equipment_shift_count", "unit_price_successor_p113_access_operations_kgs", false, "P113 access operations"],
+    ["p113_laser_level", "Механизация", "equipment", "Лазерный нивелир для разметки и выверки каркаса", "shift", "access_equipment_shift_count", "unit_price_successor_p113_laser_level_kgs", true, "P113 laser level"],
+    ["p113_rotary_hammer", "Механизация", "equipment", "Перфоратор для крепления подвесов и направляющих к основанию", "shift", "access_equipment_shift_count", "unit_price_successor_p113_rotary_hammer_kgs", true, "P113 rotary hammer"],
+    ["p113_screwdriver", "Механизация", "equipment", "Шуруповёрт для соединения элементов металлического каркаса", "shift", "access_equipment_shift_count", "unit_price_successor_p113_screwdriver_kgs", true, "P113 screwdriver"],
+    ["p113_profile_cutting_tool", "Механизация", "equipment", "Инструмент для резки металлического профиля по раскладке", "shift", "access_equipment_shift_count", "unit_price_successor_p113_profile_cutting_tool_kgs", true, "P113 profile cutting tool"],
+    ["p113_access_equipment", "Средства доступа", "equipment", "Передвижная вышка-тура или подмости с ограждением для выбранной рабочей высоты", "shift", "access_equipment_shift_count", "unit_price_successor_p113_access_equipment_kgs", true, "P113 selected access equipment"],
+    ["p113_material_delivery", "Логистика материалов", "transport", "Доставка длинномерных профилей и комплектующих каркаса", "trip", "material_delivery_trip_count", "unit_price_successor_p113_material_delivery_kgs", true, "P113 long profile delivery"],
+    ["p113_access_delivery", "Логистика средств доступа", "transport", "Доставка выбранного средства доступа на объект", "trip", "access_delivery_trip_count", "unit_price_successor_p113_access_delivery_kgs", true, "P113 access delivery"],
+    ["p113_access_return", "Логистика средств доступа", "transport", "Возврат выбранного средства доступа поставщику", "trip", "access_return_trip_count", "unit_price_successor_p113_access_return_kgs", true, "P113 access return"],
+    ["p113_waste_removal", "Вывоз отходов", "transport", "Вывоз упаковки и отходов раскроя металлического профиля", "trip", "waste_removal_trip_count", "unit_price_successor_p113_waste_removal_kgs", true, "P113 packaging and cutting waste removal"],
+  ] as const;
+  const supportFormulas = supportRows.map(([key, , , , unitId, expression]) =>
+    customFormula(
+      input.catalogId,
+      key,
+      expression,
+      compileFormulaGraph(expression).inputParameterIds,
+      unitId,
+    )
+  );
+  const supportResources = supportRows.map(([
+    key,
+    sectionRu,
+    category,
+    titleRu,
+    ,
+    ,
+    priceParameterId,
+    procurementEligible,
+    resourceClass,
+  ], ordinal) => withP113Context(customResource({
+    catalogId: input.catalogId,
+    ownerId: input.ownerId,
+    operation: "FRAME",
+    key,
+    ordinal: materialResources.length + ordinal,
+    sectionRu,
+    category,
+    titleRu,
+    formula: supportFormulas[ordinal],
+    priceParameterId,
+    inclusionCondition: "work_included=true AND frame_quantity_basis=P113_TYPICAL_PRELIMINARY",
+    resourceClass,
+    procurementEligible,
+    repair: false,
+    additionalNormativeTrace: [sourceTrace],
+    additionalNormativeSourceIds: [sourceTrace.source_id],
+  })));
+  const resources = [...materialResources, ...supportResources];
   const p113When: ProfessionalParameterConditionV1 = {
     kind: "EQUALS",
     parameter_id: "frame_quantity_basis",
@@ -626,7 +721,96 @@ function buildP113FrameScopeR4A13(input: {
     customParameter({ parameterId: "room_length_m", labelRu: "Длина помещения по внутреннему контуру", unitId: "m", minimum: 0.000001, requiredWhen: p113When }),
     customParameter({ parameterId: "room_width_m", labelRu: "Ширина помещения по внутреннему контуру", unitId: "m", minimum: 0.000001, requiredWhen: p113When }),
     customParameter({ parameterId: "perimeter_sealing_required", labelRu: "Предусмотрена уплотнительная лента по полному периметру", inputType: "boolean", requiredWhen: p113When }),
-    ...rows.map(([key, , titleRu, unitId, , priceParameterId]) => customParameter({
+    customParameter({ parameterId: "structural_substrate_type", labelRu: "Тип несущего основания для анкеровки подвесов", inputType: "choice", choices: ["REINFORCED_CONCRETE_SLAB", "STEEL_STRUCTURE", "TIMBER_STRUCTURE", "OTHER_PROJECT_DEFINED"], requiredWhen: p113When }),
+    customParameter({ parameterId: "ceiling_load_verification_state", labelRu: "Состояние проверки нагрузки и шага элементов каркаса", inputType: "choice", choices: ["P113_PRELIMINARY_PENDING_PROJECT_CHECK", "PROJECT_VERIFIED"], requiredWhen: p113When }),
+    customParameter({ parameterId: "hanger_system_reference", labelRu: "Выбранная система подвесов", inputType: "text", requiredWhen: p113When }),
+    customParameter({ parameterId: "structural_anchor_reference", labelRu: "Совместимый анкер подвеса для выбранного основания", inputType: "text", requiredWhen: p113When }),
+    customParameter({ parameterId: "frame_access_system_type", labelRu: "Выбранное средство доступа для монтажа каркаса", inputType: "choice", choices: ["MOBILE_TOWER", "FRAME_SCAFFOLD", "SCISSOR_LIFT", "CONTRACTOR_COMPATIBLE_ACCESS"], requiredWhen: p113When }),
+    customParameter({ parameterId: "material_delivery_trip_count", labelRu: "Число рейсов доставки длинномерных профилей и комплектующих", unitId: "trip", minimum: 0, requiredWhen: p113When }),
+    customParameter({ parameterId: "access_return_trip_count", labelRu: "Число рейсов возврата выбранного средства доступа", unitId: "trip", minimum: 0, requiredWhen: p113When }),
+    customParameter({ parameterId: "waste_removal_trip_count", labelRu: "Число рейсов вывоза упаковки и отходов раскроя", unitId: "trip", minimum: 0, requiredWhen: p113When }),
+    ...rows.map(([_key, , titleRu, unitId, , priceParameterId]) => customParameter({
+      parameterId: priceParameterId,
+      labelRu: `Цена: ${titleRu}`,
+      unitId: `KGS/${unitId}`,
+      minimum: 0,
+      required: false,
+    })),
+    ...supportRows.map(([_key, , , titleRu, unitId, , priceParameterId]) => customParameter({
+      parameterId: priceParameterId,
+      labelRu: `Цена: ${titleRu}`,
+      unitId: `KGS/${unitId}`,
+      minimum: 0,
+      required: false,
+    })),
+  ];
+  return { formulas: [...formulas, ...supportFormulas], resources, parameters };
+}
+
+function buildGenericFrameOperationalScopeR4A13(input: {
+  catalogId: string;
+  ownerId: string;
+}): {
+  formulas: readonly Batch003R56FormulaDefinition[];
+  resources: readonly Batch003R56ResourceDefinition[];
+  parameters: readonly Batch003R56ParameterDefinition[];
+} {
+  // These rows replace the former all-in-one area-priced operation row. Each
+  // quantity is either a visible project takeoff already used by the matching
+  // material row or an independent equipment-shift input. This keeps the
+  // estimate useful without inventing productivity, collapsing unlike units,
+  // or charging the same frame work twice.
+  const rows = [
+    ["frame_setting_out_work", "Разметка каркаса", "labor", "Разметка осей, уровня и точек подвесов каркаса", "m2", "area_m2", "unit_price_successor_frame_setting_out_work_kgs", false, "frame setting out measured by ceiling area"],
+    ["frame_anchor_work", "Анкеровка каркаса", "labor", "Подготовка отверстий, установка и контроль анкеров каркаса", "item", "quantity_slab_hanger_anchors + quantity_perimeter_track_anchors", "unit_price_successor_frame_anchor_work_kgs", false, "frame anchor installation measured by installed anchors"],
+    ["frame_profile_cutting_work", "Подготовка профиля", "labor", "Раскрой профилей и защита обработанных кромок", "m", "quantity_perimeter_track + quantity_primary_ceiling_profile + quantity_secondary_ceiling_profile + quantity_access_hatch_reinforcement_profile + quantity_mep_opening_reinforcement_profile + quantity_movement_joint_profile", "unit_price_successor_frame_profile_cutting_work_kgs", false, "frame profile cutting measured by processed profile length"],
+    ["frame_perimeter_installation_work", "Монтаж каркаса", "labor", "Монтаж периметрального направляющего профиля", "m", "quantity_perimeter_track", "unit_price_successor_frame_perimeter_installation_work_kgs", false, "perimeter track installation measured by installed length"],
+    ["frame_hanger_installation_work", "Монтаж каркаса", "labor", "Монтаж подвесов и тяг к подтверждённому основанию", "item", "quantity_adjustable_hangers", "unit_price_successor_frame_hanger_installation_work_kgs", false, "hanger installation measured by installed hangers"],
+    ["frame_profile_grid_installation_work", "Монтаж каркаса", "labor", "Монтаж несущих, поперечных и усиливающих профилей", "m", "quantity_primary_ceiling_profile + quantity_secondary_ceiling_profile + quantity_access_hatch_reinforcement_profile + quantity_mep_opening_reinforcement_profile + quantity_movement_joint_profile", "unit_price_successor_frame_profile_grid_installation_work_kgs", false, "ceiling profile grid installation measured by installed length"],
+    ["frame_alignment_work", "Выверка каркаса", "labor", "Выверка уровня, плоскости и жёсткости каркаса", "m2", "area_m2", "unit_price_successor_frame_alignment_work_kgs", false, "frame alignment measured by accepted ceiling area"],
+    ["frame_measurement_equipment", "Механизация каркаса", "equipment", "Лазерный нивелир и трассоискатель для разметки каркаса", "shift", "frame_measurement_equipment_shift_count", "unit_price_successor_frame_measurement_equipment_kgs", true, "frame measurement equipment by confirmed shift"],
+    ["frame_anchor_equipment", "Механизация каркаса", "equipment", "Перфоратор с промышленным пылеудалением для анкеровки", "shift", "frame_anchor_equipment_shift_count", "unit_price_successor_frame_anchor_equipment_kgs", true, "frame anchor drilling equipment by confirmed shift"],
+    ["frame_assembly_equipment", "Механизация каркаса", "equipment", "Инструмент раскроя профиля и шуруповёрт монтажа соединений", "shift", "frame_assembly_equipment_shift_count", "unit_price_successor_frame_assembly_equipment_kgs", true, "frame cutting and assembly equipment by confirmed shift"],
+  ] as const;
+  const formulas = rows.map(([key, , , , unitId, expression]) =>
+    customFormula(
+      input.catalogId,
+      key,
+      expression,
+      compileFormulaGraph(expression).inputParameterIds,
+      unitId,
+    )
+  );
+  const resources = rows.map(([
+    key,
+    sectionRu,
+    category,
+    titleRu,
+    ,
+    ,
+    priceParameterId,
+    procurementEligible,
+    resourceClass,
+  ], ordinal) => customResource({
+    catalogId: input.catalogId,
+    ownerId: input.ownerId,
+    operation: "FRAME",
+    key,
+    ordinal,
+    sectionRu,
+    category,
+    titleRu,
+    formula: formulas[ordinal],
+    priceParameterId,
+    resourceClass,
+    procurementEligible,
+    repair: false,
+  }));
+  const parameters = [
+    customParameter({ parameterId: "frame_measurement_equipment_shift_count", labelRu: "Подтверждённое число смен измерительного оборудования каркаса", unitId: "shift", minimum: 0 }),
+    customParameter({ parameterId: "frame_anchor_equipment_shift_count", labelRu: "Подтверждённое число смен оборудования анкеровки и пылеудаления", unitId: "shift", minimum: 0 }),
+    customParameter({ parameterId: "frame_assembly_equipment_shift_count", labelRu: "Подтверждённое число смен оборудования раскроя и сборки каркаса", unitId: "shift", minimum: 0 }),
+    ...rows.map(([_key, , , titleRu, unitId, , priceParameterId]) => customParameter({
       parameterId: priceParameterId,
       labelRu: `Цена: ${titleRu}`,
       unitId: `KGS/${unitId}`,
@@ -723,11 +907,16 @@ function buildDefinitionWithoutHash(catalogId: string) {
   const repair = parts.contract.operation === "REPAIR";
   const prepare = parts.contract.operation === "PREPARE";
   const frame = parts.contract.operation === "FRAME";
+  const p113Frame = frame
+    && catalogId === "drywall_ceiling_interior_drywall_ceiling_frame_large_area";
   const preparationScope = prepare
     ? buildDrywallPreparationScopeR4A13({ catalogId, ownerId })
     : null;
-  const frameScope = frame
+  const frameScope = p113Frame
     ? buildP113FrameScopeR4A13({ catalogId, ownerId })
+    : null;
+  const genericFrameOperationalScope = frame && !p113Frame
+    ? buildGenericFrameOperationalScopeR4A13({ catalogId, ownerId })
     : null;
 
   const retainedMaterialRows = prepare
@@ -774,7 +963,7 @@ function buildDefinitionWithoutHash(catalogId: string) {
       titleRu: visibleMaterialTitle(parts.contract.operation, key, row.title_ru),
       formulaId: materialFormulas[ordinal].formulaId,
       outputUnitId: row.formula.output_unit_id,
-      inclusionCondition: frame
+      inclusionCondition: p113Frame
         ? `${row.inclusion_condition} AND frame_quantity_basis=PROJECT_TAKEOFF`
         : row.inclusion_condition,
       costOwnership: "priced_resource" as const,
@@ -848,7 +1037,7 @@ function buildDefinitionWithoutHash(catalogId: string) {
       ]
     : [];
   const customFormulas = [
-    operationWorkFormula,
+    ...(genericFrameOperationalScope?.formulas ?? [operationWorkFormula]),
     deliveryFormula,
     wasteHaulFormula,
     accessEquipmentFormula,
@@ -857,8 +1046,12 @@ function buildDefinitionWithoutHash(catalogId: string) {
     ...preparationFormulas,
     ...(frameScope?.formulas ?? []),
   ];
-  const customResources: Batch003R56ResourceDefinition[] = [
-    customResource({
+  const primaryOperationResources: Batch003R56ResourceDefinition[] = genericFrameOperationalScope
+    ? genericFrameOperationalScope.resources.map((resource) => ({
+        ...resource,
+        ordinal: scopedMaterialResources.length + resource.ordinal,
+      }))
+    : [customResource({
       catalogId,
       ownerId,
       operation: parts.contract.operation,
@@ -869,20 +1062,29 @@ function buildDefinitionWithoutHash(catalogId: string) {
       titleRu: operationScope.workTitleRu,
       formula: operationWorkFormula,
       priceParameterId: "unit_price_successor_operation_work_kgs",
+      inclusionCondition: p113Frame
+        ? "work_included=true AND frame_quantity_basis=PROJECT_TAKEOFF"
+        : undefined,
       resourceClass: "measurable construction operation",
       repair,
-    }),
+    })];
+  const supportStartOrdinal = scopedMaterialResources.length + primaryOperationResources.length;
+  const customResources: Batch003R56ResourceDefinition[] = [
+    ...primaryOperationResources,
     customResource({
       catalogId,
       ownerId,
       operation: parts.contract.operation,
       key: "incoming_delivery",
-      ordinal: scopedMaterialResources.length + 1,
+      ordinal: supportStartOrdinal,
       sectionRu: "Логистика",
       category: "transport",
       titleRu: "Единая входящая доставка материалов по подтвержденной массе и маршруту",
       formula: deliveryFormula,
       priceParameterId: "unit_price_successor_delivery_kgs",
+      inclusionCondition: p113Frame
+        ? "work_included=true AND frame_quantity_basis=PROJECT_TAKEOFF"
+        : undefined,
       resourceClass: "consolidated incoming material transport",
       procurementEligible: true,
       repair,
@@ -892,12 +1094,15 @@ function buildDefinitionWithoutHash(catalogId: string) {
       ownerId,
       operation: parts.contract.operation,
       key: "waste_haul",
-      ordinal: scopedMaterialResources.length + 2,
+      ordinal: supportStartOrdinal + 1,
       sectionRu: "Отходы",
       category: "transport",
       titleRu: "Единый вывоз подтвержденной массы строительных отходов",
       formula: wasteHaulFormula,
       priceParameterId: "unit_price_successor_waste_haul_kgs",
+      inclusionCondition: p113Frame
+        ? "work_included=true AND frame_quantity_basis=PROJECT_TAKEOFF"
+        : undefined,
       resourceClass: "consolidated construction waste transport",
       procurementEligible: true,
       repair,
@@ -907,13 +1112,15 @@ function buildDefinitionWithoutHash(catalogId: string) {
       ownerId,
       operation: parts.contract.operation,
       key: "access_equipment",
-      ordinal: scopedMaterialResources.length + 3,
+      ordinal: supportStartOrdinal + 2,
       sectionRu: "Оборудование доступа",
       category: "equipment",
       titleRu: "Передвижная вышка-тура или подмости с ограждением — тип уточнить по рабочей высоте",
       formula: accessEquipmentFormula,
       priceParameterId: "unit_price_successor_access_equipment_kgs",
-      inclusionCondition: "work_included=true AND access_equipment_required=true",
+      inclusionCondition: p113Frame
+        ? "work_included=true AND frame_quantity_basis=PROJECT_TAKEOFF AND access_equipment_required=true"
+        : "work_included=true AND access_equipment_required=true",
       resourceClass: "conditional access equipment measured by shift",
       procurementEligible: true,
       repair,
@@ -923,13 +1130,15 @@ function buildDefinitionWithoutHash(catalogId: string) {
       ownerId,
       operation: parts.contract.operation,
       key: "access_temporary_works",
-      ordinal: scopedMaterialResources.length + 4,
+      ordinal: supportStartOrdinal + 3,
       sectionRu: "Работы со средствами доступа",
       category: "labor",
       titleRu: "Монтаж, ежесменная проверка, перестановка и демонтаж вышки-туры или подмостей",
       formula: accessTemporaryWorksFormula,
       priceParameterId: "unit_price_successor_access_temporary_works_kgs",
-      inclusionCondition: "work_included=true AND access_equipment_required=true",
+      inclusionCondition: p113Frame
+        ? "work_included=true AND frame_quantity_basis=PROJECT_TAKEOFF AND access_equipment_required=true"
+        : "work_included=true AND access_equipment_required=true",
       resourceClass: "conditional access temporary works measured by shift",
       repair,
     }),
@@ -938,13 +1147,15 @@ function buildDefinitionWithoutHash(catalogId: string) {
       ownerId,
       operation: parts.contract.operation,
       key: "access_delivery_return",
-      ordinal: scopedMaterialResources.length + 5,
+      ordinal: supportStartOrdinal + 4,
       sectionRu: "Логистика средств доступа",
       category: "transport",
       titleRu: "Доставка и возврат вышки-туры, подмостей или подъёмника",
       formula: accessDeliveryReturnFormula,
       priceParameterId: "unit_price_successor_access_delivery_return_kgs",
-      inclusionCondition: "work_included=true AND access_equipment_required=true",
+      inclusionCondition: p113Frame
+        ? "work_included=true AND frame_quantity_basis=PROJECT_TAKEOFF AND access_equipment_required=true"
+        : "work_included=true AND access_equipment_required=true",
       resourceClass: "conditional access equipment delivery and return",
       procurementEligible: true,
       repair,
@@ -1011,7 +1222,11 @@ function buildDefinitionWithoutHash(catalogId: string) {
       : []),
   ];
   const customParameters = preparationScope?.parameters
-    ?? [...legacyCustomParameters, ...(frameScope?.parameters ?? [])];
+    ?? [
+      ...legacyCustomParameters,
+      ...(frameScope?.parameters ?? []),
+      ...(genericFrameOperationalScope?.parameters ?? []),
+    ];
   const parameterCandidates = new Map<string, Batch003R56ParameterDefinition>();
   for (const parameter of parts.schema.parameters) {
     parameterCandidates.set(parameter.parameter_id, {
@@ -1048,6 +1263,7 @@ function buildDefinitionWithoutHash(catalogId: string) {
         "access_equipment_required",
         "working_height_m",
         ...(frameScope?.parameters.map((parameter) => parameter.parameterId) ?? []),
+        ...(genericFrameOperationalScope?.parameters.map((parameter) => parameter.parameterId) ?? []),
       ]);
   const consumersByParameterId = new Map<string, Set<string>>();
   for (const formula of formulas) {
@@ -1172,15 +1388,16 @@ function inclusionAst(
 ): Record<string, unknown> {
   const operands: Record<string, unknown>[] = [];
   for (const clause of resource.inclusionCondition.split(/\s+AND\s+/u)) {
-    const match = /^([a-z][a-z0-9_]*)=(.+)$/u.exec(clause.trim());
+    const match = /^([a-z][a-z0-9_]*)(!?=)(.+)$/u.exec(clause.trim());
     if (!match) {
       throw new Error(`BATCH003_R56_INCLUSION_UNSUPPORTED:${resource.rowId}:${resource.inclusionCondition}`);
     }
     const parameterId = match[1] === "scope_mode" ? "estimate_scope_mode" : match[1];
-    const value = match[2] === "true" ? true : match[2] === "false" ? false : match[2];
+    const valueToken = match[3];
+    const value = valueToken === "true" ? true : valueToken === "false" ? false : valueToken;
     operands.push(parameterId === "work_included" && value === true
       ? { kind: "parameter", id: parameterId }
-      : { kind: "equals", parameterId, value });
+      : { kind: match[2] === "!=" ? "not_equals" : "equals", parameterId, value });
   }
   for (const parameterId of formulaInputParameterIds) {
     operands.push({ kind: "present", parameterId });
@@ -1188,54 +1405,111 @@ function inclusionAst(
   return operands.length === 1 ? operands[0] : { kind: "and", operands };
 }
 
-export async function compileBatch003R56ThroughSharedCore(input: {
-  definition: Batch003R56CanonicalSuccessorDefinition;
-  values: Readonly<Record<string, Scalar>>;
-  operation?: "compile" | "recalculate";
-}): Promise<CanonicalEstimateCompileCoreResult> {
-  const parameterDefinitions = input.definition.parameters.map((parameter) => ({
-    parameter_id: parameter.parameterId,
-    value_type: valueType(parameter),
-    required: parameter.required && parameter.requiredWhen.kind === "ALWAYS",
-    default_value: null,
-    constraints_json: constraints(parameter),
+function publisherCategory(category: string): string {
+  if (category === "labor") return "construction_work";
+  if (category === "transport") return "service";
+  return category;
+}
+
+/**
+ * One projection owns both direct shared-core compilation and durable DB
+ * publication. Keeping this conversion here prevents the prepared profile and
+ * the ordinary backend release from silently diverging again.
+ */
+export function projectBatch003R56DefinitionToCanonicalRows(
+  definition: Batch003R56CanonicalSuccessorDefinition,
+  options: Readonly<{
+    includeRuntimePriceInputs?: boolean;
+    normalizePublisherCategories?: boolean;
+  }> = {},
+): Readonly<{
+  parameterDefinitions: readonly (CanonicalEstimateParameterDefinition & Record<string, any>)[];
+  formulaDefinitions: readonly (CanonicalEstimateFormulaDefinition & Record<string, any>)[];
+  resourceDefinitions: readonly (CanonicalEstimateResourceDefinition & Record<string, any>)[];
+}> {
+  const includeRuntimePriceInputs = options.includeRuntimePriceInputs ?? true;
+  const parameterDefinitions = definition.parameters
+    .filter((parameter) => includeRuntimePriceInputs
+      || !parameter.parameterId.startsWith("unit_price_"))
+    .map((parameter, ordinal) => ({
+      parameter_id: parameter.parameterId,
+      ordinal,
+      value_type: valueType(parameter),
+      unit_id: parameter.unitId,
+      title_ru: parameter.labelRu,
+      required: parameter.required && parameter.requiredWhen.kind === "ALWAYS",
+      default_value: null,
+      constraints_json: constraints(parameter),
       truth_metadata: {
-      value_source_role: "EXPLICIT_NO_HIDDEN_DEFAULT",
-      ...(input.definition.operation === "PREPARE" && parameter.required
-        ? { preliminary_compilation_allowed: true }
-        : {}),
+        value_source_role: "EXPLICIT_NO_HIDDEN_DEFAULT",
+        ...(definition.operation === "PREPARE" && parameter.required
+          ? { preliminary_compilation_allowed: true }
+          : {}),
         formula_consumers: parameter.formulaConsumerIds,
-        resource_branch_consumers: input.definition.resources
-        .filter((resource) => parameter.formulaConsumerIds.includes(resource.formulaId)
-          || resource.titleSpecificationParameterIds?.includes(parameter.parameterId)
-          || resource.inclusionCondition.split(/\s+AND\s+/u)
-            .some((clause) => clause.trim().startsWith(`${parameter.parameterId}=`)))
-        .map((resource) => resource.rowId),
-      engineering_source_pack_hash: input.definition.passport.engineeringSourcePack.sourcePackHash,
-    },
-  }));
-  const formulaDefinitions = input.definition.formulas.map((formula) => {
+        resource_branch_consumers: definition.resources
+          .filter((resource) => parameter.formulaConsumerIds.includes(resource.formulaId)
+            || resource.titleSpecificationParameterIds?.includes(parameter.parameterId)
+            || resource.resourceGraph?.context_parameter_ids.includes(parameter.parameterId)
+            || resource.inclusionCondition.split(/\s+AND\s+/u)
+              .some((clause) => new RegExp(`^${parameter.parameterId}(?:=|!=)`, "u").test(clause.trim())))
+          .map((resource) => resource.rowId),
+        engineering_source_pack_hash: definition.passport.engineeringSourcePack.sourcePackHash,
+      },
+    }));
+  const formulaDefinitions = definition.formulas.map((formula) => {
     const compiled = compileFormulaGraph(formula.expressionSource);
     const declared = [...formula.inputParameterIds].sort();
     if (canonicalEstimateStableJson(compiled.inputParameterIds) !== canonicalEstimateStableJson(declared)) {
-      throw new Error(`BATCH003_R56_FORMULA_INPUT_DRIFT:${input.definition.catalogId}:${formula.formulaId}`);
+      throw new Error(`BATCH003_R56_FORMULA_INPUT_DRIFT:${definition.catalogId}:${formula.formulaId}`);
     }
     return {
       formula_id: formula.formulaId,
+      output_unit_id: formula.outputUnitId,
+      expression_source: formula.expressionSource,
       ast: compiled.ast,
       input_parameter_ids: compiled.inputParameterIds,
       ast_sha256: sha256(compiled.ast),
     };
   });
-  const resourceDefinitions = input.definition.resources.map((resource) => {
+  const resourceDefinitions = definition.resources.map((resource) => {
+    const contextualInputParameterIds = definition.operation === "PREPARE"
+      && resource.rowId.endsWith(":access_equipment")
+      ? [
+          "working_height_m",
+          "access_environment",
+          "access_system_type",
+          "access_platform_height_m",
+          "access_horizontal_reach_m",
+          "access_route_clear_width_m",
+          "access_base_load_capacity_kg_m2",
+          "access_platform_load_kg",
+          "access_restrictions",
+          "access_supply_mode",
+        ]
+      : definition.operation === "PREPARE" && resource.rowId.endsWith(":fall_protection")
+        ? ["fall_protection_system_reference"]
+        : [];
     const resourceGraph = {
       contract: "real-professional-estimates-r5.6.batch003-resource-graph.v1",
       domain: "interior_finishes",
-      operation: input.definition.operation,
-      variant: input.definition.variant,
+      operation: definition.operation,
+      variant: definition.variant,
+      formulaId: resource.formulaId,
+      normalizedUom: resource.outputUnitId,
       semanticOwnerId: resource.semanticOwnerId,
       procurementOwnerId: resource.procurementOwnerId,
+      costOwner: "resource",
+      costTreatment: "OWN_COST",
+      payable: true,
+      noDoubleCount: true,
+      primaryMeasureParameterId: definition.operation === "FINISH_JOINT"
+        ? "joint_length_m"
+        : definition.operation === "REPAIR" ? "defect_area_m2" : "area_m2",
+      ...(contextualInputParameterIds.length > 0
+        ? { inputParameterIds: contextualInputParameterIds }
+        : {}),
       sourceResourceGraph: resource.resourceGraph,
+      ...(resource.priceRoute ? { priceRoute: resource.priceRoute } : {}),
       ...(resource.titleSpecificationParameterIds
         ? { titleSpecificationParameterIds: resource.titleSpecificationParameterIds }
         : {}),
@@ -1249,7 +1523,7 @@ export async function compileBatch003R56ThroughSharedCore(input: {
     const sourceMetadata = {
       normativeTrace: resource.normativeTrace,
       normativeSourceIds: resource.normativeSourceIds,
-      engineeringSourcePackHash: input.definition.passport.engineeringSourcePack.sourcePackHash,
+      engineeringSourcePackHash: definition.passport.engineeringSourcePack.sourcePackHash,
       priceRoute: resource.priceRoute,
     };
     return {
@@ -1257,13 +1531,15 @@ export async function compileBatch003R56ThroughSharedCore(input: {
       row_id: resource.rowId,
       ordinal: resource.ordinal,
       section: resource.sectionRu,
-      category: resource.category,
+      category: options.normalizePublisherCategories
+        ? publisherCategory(resource.category)
+        : resource.category,
       title_ru: resource.titleRu,
       unit_id: resource.outputUnitId,
       formula_id: resource.formulaId,
       inclusion_ast: inclusionAst(
         resource,
-        input.definition.formulas.find((formula) => formula.formulaId === resource.formulaId)?.inputParameterIds ?? [],
+        definition.formulas.find((formula) => formula.formulaId === resource.formulaId)?.inputParameterIds ?? [],
       ),
       resource_graph: resourceGraph,
       procurement_eligible: resource.procurementEligible,
@@ -1272,6 +1548,16 @@ export async function compileBatch003R56ThroughSharedCore(input: {
       row_sha256: sha256({ resource, resourceGraph, sourceMetadata }),
     };
   });
+  return { parameterDefinitions, formulaDefinitions, resourceDefinitions };
+}
+
+export async function compileBatch003R56ThroughSharedCore(input: {
+  definition: Batch003R56CanonicalSuccessorDefinition;
+  values: Readonly<Record<string, Scalar>>;
+  operation?: "compile" | "recalculate";
+}): Promise<CanonicalEstimateCompileCoreResult> {
+  const { parameterDefinitions, formulaDefinitions, resourceDefinitions } =
+    projectBatch003R56DefinitionToCanonicalRows(input.definition);
   const priceItems = input.definition.resources.flatMap((resource) => {
     if (resource.priceRoute?.kind !== "RUNTIME_VALIDATED_INPUT") return [];
     const unitPrice = input.values[resource.priceRoute.unit_price_parameter_id];
@@ -1291,9 +1577,9 @@ export async function compileBatch003R56ThroughSharedCore(input: {
     operation: input.operation ?? "compile",
     compilerVersion: "canonical-estimate-compile-core-r1",
     catalogId: input.definition.catalogId,
-    parameterDefinitions,
-    formulaDefinitions,
-    resourceDefinitions,
+    parameterDefinitions: [...parameterDefinitions],
+    formulaDefinitions: [...formulaDefinitions],
+    resourceDefinitions: [...resourceDefinitions],
     submittedParameters: { ...input.values },
     confirmedParameters: {},
     currencyCode: "KGS",

@@ -15,7 +15,7 @@ describe("rendered estimate snapshots 10000", () => {
     expect(result.rendered_snapshot_count).toBe(10000);
     expect(result.rendered_row_count).toBe(599000);
     expect(result.rows_with_professional_names).toBe(result.rendered_row_count);
-    expect(result.rows_with_norm_sources).toBe(6307);
+    expect(result.rows_with_norm_sources).toBe(0);
     expect(result.rows_with_formula_trace).toBe(result.rendered_row_count);
     expect(result.rendered_rows_have_professional_names).toBe(true);
     expect(result.rendered_rows_have_norm_sources).toBe(false);

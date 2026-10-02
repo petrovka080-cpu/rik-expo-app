@@ -3,7 +3,7 @@ import {
   draftItemRowsForDetector,
   rowCode,
 } from "./capitalRenovationTestHelpers";
-import { detectEstimateFakeRows } from "../../src/lib/ai/estimateContinuousDetection";
+import { detectEstimateFakeRows } from "../../scripts/estimate/detectors";
 
 describe("no fake rows after apartment wet-zone formula change", () => {
   it("keeps apartment calculator rows real, traced, and above wet-zone material threshold", () => {

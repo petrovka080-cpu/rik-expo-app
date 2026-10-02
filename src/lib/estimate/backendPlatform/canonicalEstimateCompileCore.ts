@@ -31,6 +31,9 @@ export type CanonicalEstimateParameterDefinition = {
 
 export type CanonicalEstimateFormulaDefinition = {
   formula_id: string;
+  /** Persisted formula metadata; the evaluator itself consumes the compiled AST. */
+  output_unit_id?: string;
+  expression_source?: string;
   ast: FormulaAst;
   input_parameter_ids: string[];
   ast_sha256: string;
@@ -165,6 +168,8 @@ export type CanonicalEstimateCompileCoreInput = {
 
 export type CanonicalEstimateCompileCoreResult = {
   parameters: Record<string, unknown>;
+  /** Exact lookup outputs added by the common compiler, excluding explicit/default values. */
+  derivedParameters: Record<string, unknown>;
   rows: CanonicalEstimateCompiledRow[];
   preliminaryNeeds: CanonicalEstimateCompiledPreliminaryNeed[];
   totals: {
@@ -192,6 +197,110 @@ type JsonRecord = Record<string, unknown>;
 
 function compilerError(message: string, code: string): Error {
   return Object.assign(new Error(message), { code });
+}
+
+function normalizedExactLookupValue(
+  value: unknown,
+  definition: CanonicalEstimateParameterDefinition | undefined,
+): unknown {
+  if (definition?.value_type === "decimal"
+    || definition?.value_type === "integer"
+    || definition?.value_type === "number") {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? numeric : value;
+  }
+  return value;
+}
+
+/**
+ * Resolves a source-backed exact lookup declared on the target parameter.
+ * The policy deliberately does not interpolate: a missing table tuple remains
+ * a normal preliminary need and can only be replaced by an explicit value.
+ */
+function resolveCanonicalDerivedExactLookups(
+  definitions: readonly CanonicalEstimateParameterDefinition[],
+  inputParameters: Readonly<Record<string, unknown>>,
+): Record<string, unknown> {
+  const definitionsById = new Map(definitions.map((definition) => [
+    definition.parameter_id,
+    definition,
+  ]));
+  const parameters = { ...inputParameters };
+  for (const definition of definitions) {
+    const rawPolicy = definition.truth_metadata?.derived_exact_lookup_v1;
+    if (rawPolicy == null) continue;
+    if (!rawPolicy || typeof rawPolicy !== "object" || Array.isArray(rawPolicy)) {
+      throw compilerError(
+        `derived exact lookup invalid ${definition.parameter_id}`,
+        "DEFINITION_INTEGRITY_FAILED",
+      );
+    }
+    const policy = rawPolicy as JsonRecord;
+    const allowedKeys = new Set(["version", "inputParameterIds", "rows", "interpolation"]);
+    const inputParameterIds = Array.isArray(policy.inputParameterIds)
+      ? policy.inputParameterIds.map((value) => typeof value === "string" ? value.trim() : "")
+      : [];
+    const rows = Array.isArray(policy.rows) ? policy.rows : [];
+    if (Object.keys(policy).some((key) => !allowedKeys.has(key))
+      || policy.version !== "canonical-derived-exact-lookup:v1"
+      || policy.interpolation !== "FORBIDDEN"
+      || inputParameterIds.length === 0
+      || inputParameterIds.length > 8
+      || new Set(inputParameterIds).size !== inputParameterIds.length
+      || inputParameterIds.includes(definition.parameter_id)
+      || inputParameterIds.some((parameterId) =>
+        !parameterId || !definitionsById.has(parameterId))
+      || rows.length === 0
+      || rows.length > 100) {
+      throw compilerError(
+        `derived exact lookup contract invalid ${definition.parameter_id}`,
+        "DEFINITION_INTEGRITY_FAILED",
+      );
+    }
+
+    const normalizedRows = new Map<string, unknown>();
+    for (const rawRow of rows) {
+      if (!rawRow || typeof rawRow !== "object" || Array.isArray(rawRow)) {
+        throw compilerError(
+          `derived exact lookup row invalid ${definition.parameter_id}`,
+          "DEFINITION_INTEGRITY_FAILED",
+        );
+      }
+      const row = rawRow as JsonRecord;
+      const rowKeys = Object.keys(row);
+      const inputValues = Array.isArray(row.inputValues) ? row.inputValues : [];
+      if (rowKeys.some((key) => !["inputValues", "outputValue"].includes(key))
+        || !Object.prototype.hasOwnProperty.call(row, "outputValue")
+        || row.outputValue == null
+        || typeof row.outputValue === "object"
+        || inputValues.length !== inputParameterIds.length) {
+        throw compilerError(
+          `derived exact lookup row contract invalid ${definition.parameter_id}`,
+          "DEFINITION_INTEGRITY_FAILED",
+        );
+      }
+      const key = JSON.stringify(inputValues.map((value, index) =>
+        normalizedExactLookupValue(value, definitionsById.get(inputParameterIds[index]!))));
+      if (normalizedRows.has(key)) {
+        throw compilerError(
+          `derived exact lookup duplicate row ${definition.parameter_id}`,
+          "DEFINITION_INTEGRITY_FAILED",
+        );
+      }
+      normalizedRows.set(key, row.outputValue);
+    }
+
+    const currentValue = parameters[definition.parameter_id];
+    if (currentValue != null && currentValue !== "") continue;
+    const actualInputs = inputParameterIds.map((parameterId) => parameters[parameterId]);
+    if (actualInputs.some((value) => value == null || value === "")) continue;
+    const actualKey = JSON.stringify(actualInputs.map((value, index) =>
+      normalizedExactLookupValue(value, definitionsById.get(inputParameterIds[index]!))));
+    if (normalizedRows.has(actualKey)) {
+      parameters[definition.parameter_id] = normalizedRows.get(actualKey);
+    }
+  }
+  return parameters;
 }
 
 function boundedText(value: unknown, field: string, maxLength: number): string {
@@ -283,6 +392,32 @@ type CanonicalTitleSpecification = {
   mode: "APPEND" | "REPLACE";
   separator: " — " | " ";
 };
+
+function canonicalParameterRequiredNow(
+  definition: CanonicalEstimateParameterDefinition | undefined,
+  parameters: Record<string, unknown>,
+): boolean {
+  if (!definition) return false;
+  if (definition.required) return true;
+  const constraints = definition.constraints_json;
+  if (!constraints || typeof constraints !== "object" || Array.isArray(constraints)) return false;
+  const requiredWhen = constraints.requiredWhen;
+  if (!requiredWhen || typeof requiredWhen !== "object" || Array.isArray(requiredWhen)) return false;
+  const condition = requiredWhen as Record<string, unknown>;
+  if (typeof condition.kind === "string" && condition.kind.trim()) {
+    try {
+      return resolveInclusionGraph(condition, parameters).value === true;
+    } catch {
+      throw compilerError(
+        `required parameter condition invalid ${definition.parameter_id}`,
+        "DEFINITION_INTEGRITY_FAILED",
+      );
+    }
+  }
+  const parameterId = typeof condition.parameterId === "string" ? condition.parameterId : "";
+  return Boolean(parameterId) && Object.prototype.hasOwnProperty.call(condition, "equals")
+    && parameters[parameterId] === condition.equals;
+}
 
 function canonicalTitleSpecification(
   resource: CanonicalEstimateResourceDefinition,
@@ -631,7 +766,7 @@ export async function compileCanonicalEstimateCore(
       }
     }
   }
-  const parameters = validateCanonicalEstimateParameters(
+  const initiallyValidatedParameters = validateCanonicalEstimateParameters(
     input.parameterDefinitions,
     input.submittedParameters,
     {
@@ -639,13 +774,29 @@ export async function compileCanonicalEstimateCore(
       baselineContext: { catalogId: input.catalogId },
     },
   );
+  const parameters = validateCanonicalEstimateParameters(
+    input.parameterDefinitions,
+    resolveCanonicalDerivedExactLookups(
+      input.parameterDefinitions,
+      initiallyValidatedParameters,
+    ),
+    {
+      confirmedParameters: {},
+      baselineContext: { catalogId: input.catalogId },
+    },
+  );
+  const derivedParameters = Object.fromEntries(Object.entries(parameters).filter(
+    ([parameterId, value]) =>
+      JSON.stringify(initiallyValidatedParameters[parameterId]) !== JSON.stringify(value),
+  ));
   const formulaParameters = Object.fromEntries(
     Object.entries(parameters).filter(([, value]) =>
       typeof value === "number" || typeof value === "string" || typeof value === "boolean"),
   ) as Record<string, FormulaParameterValue>;
-  const definitionParameterIds = new Set(
-    input.parameterDefinitions.map((parameter) => parameter.parameter_id),
+  const parameterDefinitionsById = new Map(
+    input.parameterDefinitions.map((parameter) => [parameter.parameter_id, parameter]),
   );
+  const definitionParameterIds = new Set(parameterDefinitionsById.keys());
   const formulas = new Map(input.formulaDefinitions.map((formula) => [formula.formula_id, formula]));
   const prices = new Map<string, CanonicalEstimatePriceItem>();
   for (const item of input.priceItems ?? []) {
@@ -711,7 +862,9 @@ export async function compileCanonicalEstimateCore(
       const value = formulaParameters[parameterId];
       return value === undefined || value === null || value === "";
     });
-    const manualQuantity = override != null && Object.prototype.hasOwnProperty.call(override, "quantity")
+    const manualQuantity = override != null
+      && Object.prototype.hasOwnProperty.call(override, "quantity")
+      && override.quantity != null
       ? nonNegativeNumericText(override.quantity, `${resource.row_id}.quantity`)
       : null;
     const inclusionOnlyWaitsForFormulaInputs = inclusion.value == null
@@ -774,6 +927,29 @@ export async function compileCanonicalEstimateCore(
       const value = parameters[parameterId];
       return value == null || (typeof value === "string" && value.trim() === "");
     });
+    const missingRequiredTitleSpecificationParameterIds = missingTitleSpecificationParameterIds.filter(
+      (parameterId) => canonicalParameterRequiredNow(parameterDefinitionsById.get(parameterId), parameters),
+    );
+    const rawConsumerParameterIds = resource.resource_graph?.inputParameterIds;
+    if (rawConsumerParameterIds != null && (
+      !Array.isArray(rawConsumerParameterIds) ||
+      rawConsumerParameterIds.some((parameterId) =>
+        typeof parameterId !== "string" || !definitionParameterIds.has(parameterId)
+      )
+    )) {
+      throw compilerError(
+        `resource input parameters invalid ${resource.row_id}`,
+        "DEFINITION_INTEGRITY_FAILED",
+      );
+    }
+    const missingRequiredConsumerParameterIds = (Array.isArray(rawConsumerParameterIds)
+      ? rawConsumerParameterIds
+      : []).filter((parameterId): parameterId is string => {
+      if (typeof parameterId !== "string") return false;
+      const value = parameters[parameterId];
+      return (value == null || (typeof value === "string" && value.trim() === ""))
+        && canonicalParameterRequiredNow(parameterDefinitionsById.get(parameterId), parameters);
+    });
     const normalizedTitleSpecificationValues = titleSpecificationValues.flatMap((value) => {
       if (typeof value !== "string") return [];
       const normalized = value.trim();
@@ -782,17 +958,21 @@ export async function compileCanonicalEstimateCore(
 
     if ((inclusion.value == null && !inclusionResolvedByManualQuantity)
       || (missingFormulaParameterIds.length > 0 && manualQuantity == null)
-      || missingPhysicalNormParameterIds.length > 0) {
+      || (missingPhysicalNormParameterIds.length > 0 && manualQuantity == null)
+      || missingRequiredTitleSpecificationParameterIds.length > 0
+      || missingRequiredConsumerParameterIds.length > 0) {
       const needState = inclusion.value == null && !inclusionOnlyWaitsForFormulaInputs
         ? "CONDITION_REQUIRED" as const
         : (missingFormulaParameterIds.length > 0 && manualQuantity == null)
-          || missingPhysicalNormParameterIds.length > 0
+          || (missingPhysicalNormParameterIds.length > 0 && manualQuantity == null)
           ? "QUANTITY_REQUIRED" as const
           : "CONDITION_REQUIRED" as const;
       const missingParameterIds = [...new Set([
         ...(needState === "CONDITION_REQUIRED" ? inclusion.missingParameterIds : []),
         ...(manualQuantity == null ? missingFormulaParameterIds : []),
-        ...missingPhysicalNormParameterIds,
+        ...(manualQuantity == null ? missingPhysicalNormParameterIds : []),
+        ...missingRequiredTitleSpecificationParameterIds,
+        ...missingRequiredConsumerParameterIds,
       ])].sort();
       const selected = override?.includedInEstimate !== false;
       const unitPrice = override != null && Object.prototype.hasOwnProperty.call(override, "unitPrice")
@@ -927,6 +1107,12 @@ export async function compileCanonicalEstimateCore(
       }),
       ...(physicalNormQuantityParity == null ? {} : { physicalNormQuantityParity }),
       ...(provenance == null ? {} : { manualAmendment: provenance }),
+      ...(manualQuantity == null ? {} : {
+        manualQuantityOverride: true,
+        calculatedQuantityBeforeOverride: missingFormulaParameterIds.length === 0
+          ? evaluateFormulaGraph(formula.ast, formulaParameters)
+          : null,
+      }),
     };
     const normativeTrace = Array.isArray(resource.source_metadata?.normativeTrace)
       ? resource.source_metadata.normativeTrace
@@ -1114,6 +1300,7 @@ export async function compileCanonicalEstimateCore(
   const priceSnapshotIds = input.priceSnapshotIds ?? [];
   return {
     parameters,
+    derivedParameters,
     rows,
     preliminaryNeeds,
     totals,

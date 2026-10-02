@@ -1,12 +1,17 @@
 import type { AsphaltRelatedProfileV4 } from "./asphaltRelatedSemanticContractV4";
 
 export const ASPHALT_RELATED_BASELINE_ASSUMPTION_VERSION_V4 =
-  "asphalt-related-visible-baseline:r5.2:2026-08-17.v1" as const;
+  "asphalt-related-visible-baseline:r5.3:2026-09-22.v1" as const;
+
+const BRIDGE_ROLLED_SYSTEM_SOURCE_VERSION_V4 =
+  "tn-doroga-most-b:tds-05-by:2017-12|primer-03:tech-sheet-6.02-by:2017-05" as const;
 
 export type AsphaltRelatedBaselineAssumptionV4 = {
   value: string | number | boolean;
   sourceId: string;
-  sourceVersion: typeof ASPHALT_RELATED_BASELINE_ASSUMPTION_VERSION_V4;
+  sourceVersion:
+    | typeof ASPHALT_RELATED_BASELINE_ASSUMPTION_VERSION_V4
+    | typeof BRIDGE_ROLLED_SYSTEM_SOURCE_VERSION_V4;
   reasonRu: string;
 };
 
@@ -49,6 +54,7 @@ const BASELINE_VALUES: Readonly<Record<string, string | number | boolean>> = Obj
   protective_layer_thickness_mm: 40,
   asphalt_waste_percent: 3,
   base_emulsion_rate_l_m2: 0.3,
+  emulsion_rate_l_m2: 0.3,
   surface_cleaner_productivity_m2_per_machine_hour: 500,
   bitumen_distributor_productivity_m2_per_machine_hour: 800,
   paver_productivity_m2_per_machine_hour: 300,
@@ -79,10 +85,41 @@ const BASELINE_VALUES: Readonly<Record<string, string | number | boolean>> = Obj
   combined_removal_productivity_m3_per_machine_hour: 12,
 });
 
+/**
+ * Admitted preliminary bridge-deck system for the already selected ROLLED
+ * technology.  These values are product-system data, not questionnaire
+ * placeholders: the system sheet gives 1.12 m2 of membrane per m2 of deck and
+ * a 40 mm reinforced protective screed; Primer No. 03 has a published
+ * 0.25-0.35 l/m2 range, whose visible preliminary point is 0.30 l/m2.
+ * A different technology must not reuse this profile.
+ */
+const BRIDGE_ROLLED_SYSTEM_VALUES: Readonly<Record<string, string | number | boolean>> = Object.freeze({
+  waterproofing_membrane_m2_per_m2: 1.12,
+  waterproofing_primer_rate_l_m2: 0.3,
+  protective_layer_thickness_mm: 40,
+  bridge_waterproofing_equipment_set_count: 1,
+});
+
 export function getAsphaltRelatedBaselineAssumptionV4(
   profile: AsphaltRelatedProfileV4,
   parameterKey: string,
 ): AsphaltRelatedBaselineAssumptionV4 | null {
+  if (
+    profile.canonicalWorkKey === "bridge_asphalt" &&
+    Object.prototype.hasOwnProperty.call(BRIDGE_ROLLED_SYSTEM_VALUES, parameterKey)
+  ) {
+    const value = BRIDGE_ROLLED_SYSTEM_VALUES[parameterKey]!;
+    return {
+      value,
+      sourceId: `manufacturer_tds:tn-doroga-most-b:${parameterKey}`,
+      sourceVersion: BRIDGE_ROLLED_SYSTEM_SOURCE_VERSION_V4,
+      reasonRu: parameterKey === "waterproofing_primer_rate_l_m2"
+        ? "Для предварительной рулонной системы принят видимый расход 0,30 л/м² внутри опубликованного диапазона 0,25–0,35 л/м²; при выборе другого материала применяется его TDS."
+        : parameterKey === "bridge_waterproofing_equipment_set_count"
+          ? "Один функциональный комплект оборудования показан на выбранный фронт наплавления; машино-часы без ППР или совместимой нормы не выдумываются."
+          : "Значение получено из выбранной предварительной системы ТН-ДОРОГА МОСТ Б; пользователь может заменить систему подтверждённой проектной спецификацией.",
+    };
+  }
   const value = parameterKey === "removal_method" && profile.canonicalWorkKey === "asphalt_milling"
     ? "COLD_MILLING"
     : BASELINE_VALUES[parameterKey];

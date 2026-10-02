@@ -2,6 +2,7 @@ import { selectCanonicalArtifactRows } from "../../src/lib/estimate/backendPlatf
 import { compileProfessionalProjectAssemblyV4 } from "../../src/lib/estimate/v4/professionalProjectAssemblyV4";
 import {
   buildDrywallDomainCompletionSuccessorPackagePartsR56,
+  projectBatch004R56DefinitionToCanonicalRows,
 } from "../../src/lib/estimate/v4/domains/interiorFinishesComplete/drywallDomainCompletionSuccessorR56";
 import { INTERIOR_FINISHES_DOMAIN_INVENTORY } from "../../src/lib/estimate/v4/domains/interiorFinishesComplete/inventory";
 import { interiorFinishesDomainFactory } from "../../src/lib/estimate/v4/domains/interiorFinishesComplete/domainPackage";
@@ -67,6 +68,20 @@ describe("BATCH-004 R5.6 canonical drywall-domain successor", () => {
     }
   });
 
+  test("excludes the complete runtime-price input family from durable validation baselines", () => {
+    for (const definition of buildAllBatch004R56CanonicalSuccessorDefinitions()) {
+      const projected = projectBatch004R56DefinitionToCanonicalRows(definition, {
+        includeRuntimePriceInputs: false,
+        normalizePublisherCategories: true,
+      });
+      expect(projected.parameterDefinitions.some((parameter) =>
+        parameter.parameter_id.startsWith("unit_price_")
+        || parameter.parameter_id === "price_basis_reference"
+        || parameter.parameter_id === "price_basis_date"
+      )).toBe(false);
+    }
+  });
+
   test("compiles 393/393 through the shared core and preserves procurement selection", async () => {
     for (const definition of buildAllBatch004R56CanonicalSuccessorDefinitions()) {
       const values = batch004R56FixtureValues(definition);
@@ -96,16 +111,47 @@ describe("BATCH-004 R5.6 canonical drywall-domain successor", () => {
     }
   });
 
-  test("fails closed on missing primary quantity and missing work price for every definition", async () => {
+  test("projects missing primary quantity as exact row-level needs and still fails closed on invalid quantity or missing work price", async () => {
     for (const definition of buildAllBatch004R56CanonicalSuccessorDefinitions()) {
-      const values = { ...batch004R56FixtureValues(definition) };
+      const completeValues = batch004R56FixtureValues(definition);
+      const values = { ...completeValues };
       const primary = definition.parameters.find((parameter) => ["area_m2", "joint_length_m", "defect_area_m2", "opening_count_item"].includes(parameter.parameterId));
       expect(primary).toBeDefined();
       delete values[primary!.parameterId];
-      await expect(compileBatch004R56ThroughSharedCore({ definition, values })).rejects.toBeDefined();
-      const withoutPrice = { ...batch004R56FixtureValues(definition) };
+      const incomplete = await compileBatch004R56ThroughSharedCore({ definition, values });
+      const affectedFormulaIds = new Set(definition.formulas
+        .filter((formula) => formula.inputParameterIds.includes(primary!.parameterId))
+        .map((formula) => formula.formulaId));
+      const affectedRowIds = definition.resources
+        .filter((resource) => affectedFormulaIds.has(resource.formulaId))
+        .map((resource) => resource.rowId);
+      const unaffectedRowIds = definition.resources
+        .filter((resource) => !affectedFormulaIds.has(resource.formulaId))
+        .map((resource) => resource.rowId);
+
+      expect(affectedRowIds.length).toBeGreaterThan(0);
+      expect(incomplete.rows.map((row) => row.row_id)).toEqual(unaffectedRowIds);
+      expect(incomplete.preliminaryNeeds.map((need) => need.row_id)).toEqual(affectedRowIds);
+      expect(incomplete.preliminaryNeeds.every((need) =>
+        need.need_state === "QUANTITY_REQUIRED"
+        && need.quantity === null
+        && need.missing_parameter_ids.length === 1
+        && need.missing_parameter_ids[0] === primary!.parameterId
+      )).toBe(true);
+      expect(new Set([
+        ...incomplete.rows.map((row) => row.row_id),
+        ...incomplete.preliminaryNeeds.map((need) => need.row_id),
+      ])).toEqual(new Set(definition.resources.map((resource) => resource.rowId)));
+
+      await expect(compileBatch004R56ThroughSharedCore({
+        definition,
+        values: { ...completeValues, [primary!.parameterId]: -1 },
+      })).rejects.toBeDefined();
+
+      const withoutPrice = { ...completeValues };
       delete withoutPrice.unit_price_operation_work;
-      await expect(compileBatch004R56ThroughSharedCore({ definition, values: withoutPrice })).rejects.toBeDefined();
+      await expect(compileBatch004R56ThroughSharedCore({ definition, values: withoutPrice }))
+        .rejects.toThrow(/BATCH004_R56_PRICE_INPUT_MISSING/u);
     }
   });
 

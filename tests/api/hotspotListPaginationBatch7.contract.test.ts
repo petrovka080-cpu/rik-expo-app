@@ -2,6 +2,7 @@ import { execFileSync } from "child_process";
 import { readFileSync } from "fs";
 import { join } from "path";
 import {
+  isApprovedPlatformDeveloperEstimatorAccessMigration,
   isApprovedGreenCloseoutCurrentWavePatch as isApprovedSharedGreenCloseoutCurrentWavePatch,
   withoutExactEstimateRevisionStorageDependencyFiles,
 } from "../greenCloseoutCurrentWaveAllowlist";
@@ -10,6 +11,13 @@ const root = join(__dirname, "..", "..");
 
 const read = (relativePath: string) =>
   readFileSync(join(root, relativePath), "utf8");
+
+const isApprovedS279CanonicalDraftProjectionStorageOwnerPatch = (file: string) =>
+  file === "src/lib/estimate/storage/validateAiEstimateStorageBoundary.ts" &&
+  read(file).includes(
+    'from "../backendPlatform/canonicalEstimateHistoricalDraftProjection"',
+  ) &&
+  !read(file).includes('from "../createEstimateDraftRevision"');
 
 const changedFiles = () =>
   execFileSync("git", ["status", "--short", "--untracked-files=all"], {
@@ -426,6 +434,7 @@ const isApprovedAiToolTransportBoundaryPatch = (file: string) =>
 
 const isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch = (file: string) =>
   [
+    "android/app/src/main/java/com/azisbek_dzhantaev/rikexpoapp/MainActivity.kt",
     "scripts/foreman_warehouse_pdf_android_runtime_verify.ts",
     "tests/scripts/foremanWarehouseAndroidRuntimeLoopBoundary.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
@@ -766,7 +775,11 @@ const isApprovedR4A134CanonicalPdfAndRevisionClassificationPatch = (file: string
     "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts",
     "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts",
     "tests/aiEstimate/detectPdfFakeRows.contract.test.ts",
+    "tests/architecture/pdfArchAuditNoMarkdownAsTruth.contract.test.ts",
+    "tests/architecture/pdfIntegrationNoMarkdownAsTruth.contract.test.ts",
+    "tests/architecture/pdfIntegrationNoMassMigration.contract.test.ts",
     "tests/officeEstimate/directorPdfPriceSources.contract.test.ts",
+    "tests/pdfLegacy/legacyPdfSnapshotTextUnchanged.contract.test.ts",
     "supabase/migrations/20260908043000_r4a13_approved_baseline_runtime_classification.sql",
     "supabase/migrations/20260908050000_r4a13_runtime_eligible_baseline_revision_writer.sql",
     "supabase/migrations/20260908101500_r4a13_preliminary_only_revision_writer.sql",
@@ -1003,6 +1016,8 @@ describe("S-PAG-7 hotspot list read pagination", () => {
         !isApprovedReal10000DiverseConstructionWorksAcceptancePatch(file) &&
         !isApprovedAiEstimateCanaryEvaluationRolloutDecisionPatch(file) &&
         !isApprovedPlatformDirectorFactContractPatch(file) &&
+        !isApprovedS279CanonicalDraftProjectionStorageOwnerPatch(file) &&
+        !isApprovedPlatformDeveloperEstimatorAccessMigration(file, root) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
         ) ||

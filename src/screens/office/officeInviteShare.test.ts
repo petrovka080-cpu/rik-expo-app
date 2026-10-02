@@ -16,6 +16,10 @@ describe("officeInviteShare", () => {
       setStringAsync: (...args: [string]) => clipboardSetStringAsync(...args),
     }));
 
+    jest.doMock("../profile/profile.helpers", () => ({
+      getProfileRoleLabel: (role: string) => role === "foreman" ? "Прораб" : role,
+    }));
+
     return require("./officeInviteShare") as typeof import("./officeInviteShare");
   };
 

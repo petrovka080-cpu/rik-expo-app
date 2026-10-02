@@ -98,7 +98,16 @@ function userVisibleObjectLabel(plan: EstimatorReasoningPlan): string {
   if (plan.semanticFrame.materialSystem?.startsWith(openWorldLabelPrefix)) {
     return plan.semanticFrame.materialSystem.slice(openWorldLabelPrefix.length);
   }
-  return USER_VISIBLE_OBJECT_LABELS_RU[plan.semanticFrame.object] ?? visibleObjectLabelForKey(plan.semanticFrame.object);
+  const mapped = USER_VISIBLE_OBJECT_LABELS_RU[plan.semanticFrame.object];
+  if (mapped) return mapped;
+  const sharedMapped = visibleObjectLabelForKey(plan.semanticFrame.object);
+  if (sharedMapped !== "работы по указанному домену") return sharedMapped;
+  const planScope = plan.titleRu
+    .replace(/^Профессиональная предварительная смета(?:\s+на|:)\s*/iu, "")
+    .trim();
+  return planScope && visibleEstimateLabelViolations(planScope).length === 0
+    ? planScope
+    : "работы на объекте";
 }
 
 function buildFallbackObjectSpecificRows(plan: EstimatorReasoningPlan, quantity: number): DynamicProfessionalBoqRow[] {

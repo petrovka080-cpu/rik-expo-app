@@ -135,13 +135,13 @@
       "gate": "revision-storage-replay-contracts",
       "levels": ["affected", "pr"],
       "suites": [
-        "tests/estimateImmutableRevision/auditArtifacts.contract.test.ts",
-        "tests/estimateImmutableRevision/currentReleaseReadiness.contract.test.ts",
-        "tests/estimateImmutableRevision/storageContract.contract.test.ts",
-        "tests/estimateImmutableRevision/storagePersistenceRuntimeProof.contract.test.ts",
-        "tests/estimateReplayAudit/currentReleaseReadiness.contract.test.ts",
-        "tests/estimateReplayAudit/replayAuditArtifact.contract.test.ts",
-        "tests/estimateReplayAudit/replayRuntimeProof.contract.test.ts"
+        "tests/estimateRevisions/oldRevisionImmutable.contract.test.ts",
+        "tests/aiEstimateV4/estimateRevisionDurableStore.contract.test.ts",
+        "tests/aiEstimateV4/estimateRevisionDurablePlatformAdapters.contract.test.ts",
+        "tests/consumerRepair/approvedHistoryDurableStorageMigration.contract.test.ts",
+        "tests/estimateRuntime/replayableCoreContract.test.ts",
+        "tests/estimateRuntime/replayableCoreAudit.test.ts",
+        "tests/consumerRepair/approvedHistoryReplay.contract.test.ts"
       ],
       "producers": []
     },

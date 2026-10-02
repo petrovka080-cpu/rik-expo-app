@@ -321,7 +321,7 @@ export function AccountantScreenView(model: AccountantScreenComposition) {
       </CardModal>
 
       <NotificationsModal visible={bellOpen} notifs={notifs} onMarkAllRead={markAllRead} onClose={() => setBellOpen(false)} />
-      <WarehouseFioModal visible={isFioConfirmVisible} initialFio={accountantFio} onConfirm={handleFioConfirm} loading={isFioLoading} history={accountantHistory} />
+      <WarehouseFioModal surface="accountant" visible={isFioConfirmVisible} initialFio={accountantFio} onConfirm={handleFioConfirm} loading={isFioLoading} history={accountantHistory} />
       </RoleScreenLayout>
     </SafeView >
   );

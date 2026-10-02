@@ -116,30 +116,49 @@ function declaredMaterialQuantityBasis(
   return validBasis;
 }
 
-function primitiveInputs(value: unknown): ProfessionalMaterialQuantityFormulaInputs {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
-  const result: ProfessionalMaterialQuantityFormulaInputs = {};
-  for (const [key, item] of Object.entries(value as Record<string, unknown>)) {
-    if (typeof item === "number" || typeof item === "string" || typeof item === "boolean" || item === null) {
-      result[key] = item;
-    }
+function isPrimitiveFormulaInput(
+  value: unknown,
+): value is ProfessionalMaterialQuantityFormulaInputs[string] {
+  return value === null ||
+    typeof value === "number" ||
+    typeof value === "string" ||
+    typeof value === "boolean";
+}
+
+function assignPrimitiveInputs(
+  target: ProfessionalMaterialQuantityFormulaInputs,
+  value: unknown,
+): void {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return;
+  for (const key of Object.keys(value as Record<string, unknown>)) {
+    const item = (value as Record<string, unknown>)[key];
+    if (isPrimitiveFormulaInput(item)) target[key] = item;
   }
-  return result;
 }
 
 function formulaContextInputs(row: ProfessionalBoqRow): ProfessionalMaterialQuantityFormulaInputs {
   const source = row.sourceParameters ?? {};
-  const topLevel = primitiveInputs(source);
-  const context = primitiveInputs((source as Record<string, unknown>).formulaContext);
+  const contextValue = (source as Record<string, unknown>).formulaContext;
+  const context = contextValue && typeof contextValue === "object" && !Array.isArray(contextValue)
+    ? contextValue as Record<string, unknown>
+    : null;
   if (source.asphaltV4 === true) {
     const formulaSymbols = extractFormulaSymbols(row.quantityFormula?.trim() || row.formulaId?.trim() || "");
     return formulaSymbols.reduce<ProfessionalMaterialQuantityFormulaInputs>((result, key) => {
-      if (Object.hasOwn(context, key)) result[key] = context[key];
-      else if (Object.hasOwn(topLevel, key)) result[key] = topLevel[key];
+      const contextInput = context?.[key];
+      const topLevelInput = (source as Record<string, unknown>)[key];
+      if (context && Object.hasOwn(context, key) && isPrimitiveFormulaInput(contextInput)) {
+        result[key] = contextInput;
+      } else if (Object.hasOwn(source, key) && isPrimitiveFormulaInput(topLevelInput)) {
+        result[key] = topLevelInput;
+      }
       return result;
     }, {});
   }
-  return { ...context, ...topLevel };
+  const result: ProfessionalMaterialQuantityFormulaInputs = {};
+  assignPrimitiveInputs(result, context);
+  assignPrimitiveInputs(result, source);
+  return result;
 }
 
 function extractFormulaSymbols(formula: string): string[] {

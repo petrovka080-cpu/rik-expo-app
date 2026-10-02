@@ -233,16 +233,32 @@ function rowInclusionSatisfied(
   request: Pick<ProfessionalProjectAssemblyRequestV4, "scope_mode" | "parameter_values">,
 ): boolean {
   const clauses = condition.split(/\s+AND\s+/u).map((clause) => clause.trim());
-  if (clauses.length === 0 || clauses.some((clause) => !/^[a-z0-9_]+=(?:true|false|[A-Z_]+)$/u.test(clause))) {
+  const parsedClauses = clauses.map((clause) => clause.match(
+    /^([a-z0-9_]+)(=|>=|<=|>|<)(true|false|[A-Z_]+|-?(?:\d+(?:\.\d+)?|\.\d+))$/u,
+  ));
+  if (clauses.length === 0 || parsedClauses.some((clause) => clause == null)) {
     return true;
   }
-  return clauses.every((clause) => {
-    const [parameterId, expected] = clause.split("=");
-    if (parameterId === "scope_mode") return request.scope_mode === expected;
+  return parsedClauses.every((clause) => {
+    if (!clause) return true;
+    const [, parameterId, operator, expected] = clause;
+    if (parameterId === "scope_mode") return operator === "=" && request.scope_mode === expected;
     const actual = request.parameter_values[parameterId]?.value;
-    if (expected === "true") return actual === true;
-    if (expected === "false") return actual === false;
-    return actual === expected;
+    if (operator === "=") {
+      if (expected === "true") return actual === true;
+      if (expected === "false") return actual === false;
+      if (/^-?(?:\d+(?:\.\d+)?|\.\d+)$/u.test(expected)) {
+        return numericValue(request.parameter_values[parameterId]) === Number(expected);
+      }
+      return actual === expected;
+    }
+    const numericActual = numericValue(request.parameter_values[parameterId]);
+    const numericExpected = Number(expected);
+    if (numericActual == null || !Number.isFinite(numericExpected)) return false;
+    if (operator === ">") return numericActual > numericExpected;
+    if (operator === ">=") return numericActual >= numericExpected;
+    if (operator === "<") return numericActual < numericExpected;
+    return numericActual <= numericExpected;
   });
 }
 

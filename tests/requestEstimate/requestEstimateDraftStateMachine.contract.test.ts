@@ -27,8 +27,8 @@ describe("request estimate draft state machine", () => {
     ).toThrow("CONSUMER_REPAIR_DRAFT_TRANSITION_SEND_NOT_ALLOWED");
   });
 
-  it("blocks item mutations after marketplace send", () => {
-    const sent = foundationSendBundleWithManualCatalogItem();
+  it("blocks item mutations after marketplace send", async () => {
+    const sent = await foundationSendBundleWithManualCatalogItem();
     expect(sent.draft.status).toBe("sent_to_marketplace");
     expect(() =>
       updateConsumerRepairRequestItemQuantity({

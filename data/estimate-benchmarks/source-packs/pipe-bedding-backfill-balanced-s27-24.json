@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "rik-expo-app.s27-24.pipe-bedding-backfill-balanced-source-pack.v1",
+  "catalogId": "canonical-work:expanded:pipe_bedding_backfill",
+  "scope": "Preparation of the support zone, bedding, haunch and selected backfill for 850 m of an explicitly selected DN/OD 315 pipeline trench. Geotextile, foundation aggregate, 180 m3 project bedding/surround material, selected backfill, warning tape, preparation, compaction, testing, labor, mechanisms, QA and logistics are direct project inputs.",
+  "sourceAuthority": "Approved pipeline and geotechnical design organizations, material suppliers, construction laboratory and approving project engineer",
+  "ordinaryFixture": {
+    "routeLengthM": 850,
+    "pipeOutsideDiameterMm": 315,
+    "assemblyDesignation": "BDF-315-GTX300-SAND-PGS-K095",
+    "geotextileDesignation": "GEOTEXTILE-300-GSM",
+    "beddingMaterial": "WASHED_SAND",
+    "beddingThicknessMm": 150,
+    "surroundCoverAbovePipeMm": 300,
+    "backfillMaterial": "SAND_GRAVEL_MIX",
+    "compactionCoefficient": 0.95,
+    "installedBeddingSurroundVolumeM3": 180
+  },
+  "procurementBalance": {
+    "beddingSurroundMaterial": {
+      "installedQuantity": "pbb_bedding_surround_installed_volume_m3",
+      "retainedReserveQuantity": "pbb_bedding_retained_reserve_m3",
+      "supplierLoadQuantity": "pbb_bedding_supplier_load_m3"
+    },
+    "visiblePreliminaryProfile": {
+      "pbb_bedding_retained_reserve_m3": 0,
+      "pbb_bedding_supplier_load_m3": 1
+    }
+  },
+  "acceptanceFixtureRole": "VALIDATION_FIXTURE_NOT_PROJECT_NORM",
+  "forbiddenClaims": [
+    "pipe supply or laying, manholes, connections or whole-network testing",
+    "material, earthwork, labor or mechanism quantities derived from route-length coefficients",
+    "automatic unsuitable-soil replacement, dewatering or shoring",
+    "universal reserve or supplier-load quantity",
+    "invented price"
+  ]
+}

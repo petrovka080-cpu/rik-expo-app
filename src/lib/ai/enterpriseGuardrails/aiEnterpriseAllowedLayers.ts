@@ -57,12 +57,6 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
-    layer: "estimateContinuousDetection",
-    root: "src/lib/ai/estimateContinuousDetection",
-    purpose: "Continuous estimate detection and governed draft projection across request, history, PDF, and buyer entrypoints.",
-    screenMayImportDirectly: false,
-  },
-  {
     layer: "estimateEngine",
     root: "src/lib/ai/estimateEngine",
     purpose: "Construction estimate intent, quantity, and price composition with answer-first guards.",

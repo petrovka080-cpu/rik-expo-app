@@ -1,6 +1,7 @@
 import {
   buildProfessionalWorkPassport,
   clearProfessionalWorkPassportBuildCaches,
+  getProfessionalWorkPassportTemplateCount,
   listProfessionalWorkPassportTemplateIds,
 } from "./buildProfessionalWorkPassport";
 import {
@@ -101,6 +102,7 @@ const QUANTITY_PARAMETER_KEYS = new Set([
   "height_m",
   "ceiling_height_m",
   "thickness_m",
+  "depth_m",
   "depth_mm",
   "trench_depth_m",
   "trench_width_m",
@@ -314,7 +316,7 @@ export function buildAiEstimateNormativeWorkParameterPassport(
     templateNameRu: passport.localizedNameRu,
     familyId: passport.familyId,
     workFamily,
-    catalogTotalTemplates: listProfessionalWorkPassportTemplateIds().length,
+    catalogTotalTemplates: getProfessionalWorkPassportTemplateCount(),
     rowCount: passport.boqRecipe.rowCount,
     sourceQuality: passport.sources.sourceQuality,
     requirements,

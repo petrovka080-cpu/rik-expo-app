@@ -233,6 +233,7 @@ export const CATALOG_TRANSPORT_BFF_CONTRACT = Object.freeze({
   wiredToAppRuntime: true,
   productionTrafficEnabled: false,
   callsSupabaseDirectlyFromClient: false,
+  unavailableCompatibilityFallback: "supabase_rls_readonly",
 } as const);
 
 export const CATALOG_TRANSPORT_BFF_OPERATION_CONTRACTS = Object.freeze([
@@ -487,4 +488,4 @@ export const CATALOG_TRANSPORT_BFF_OPERATION_CONTRACTS = Object.freeze([
 ] as const satisfies readonly CatalogTransportBffOperationContract[]);
 
 export const CATALOG_TRANSPORT_BFF_FAIL_CLOSED_POLICY =
-  "Catalog reads use the canonical BFF owner exclusively; unavailable or invalid BFF transport fails closed without a direct client database fallback.";
+  "Catalog reads prefer the canonical BFF owner; an unavailable transport uses the bounded Supabase RLS read adapter until BFF traffic is live, while a BFF application error fails closed without fallback.";

@@ -1,13 +1,13 @@
 # S_SCALE_11_REALTIME_MANAGER_ENFORCEMENT_CLOSEOUT
 
-final_status: GREEN_SCALE_REALTIME_MANAGER_ENFORCEMENT_READY
-generated_at: 2026-05-20T04:11:18.794Z
+final_status: BLOCKED_SCALE_REALTIME_MANAGER_ENFORCEMENT
+generated_at: 2026-09-20T17:01:53.996Z
 
 ## Current Truth
 
 - direct_realtime_channels_remaining: 0
-- unmanaged_subscriptions_remaining: 0
-- all_subscriptions_have_owner: true
+- unmanaged_subscriptions_remaining: 1
+- all_subscriptions_have_owner: false
 - unsubscribe_all_by_owner_supported: true
 - active_channels_return_to_baseline: true
 

@@ -18,7 +18,9 @@ import {
   getConsumerRepairPdfStorageObject,
   listConsumerRepairRequestHistory,
   sendConsumerRepairRequestToMarketplace,
+  updateConsumerRepairRequestItemUnitPrice,
 } from "../../src/lib/consumerRequests";
+import { consumerMarketplaceTransportForApprovedBundle } from "../consumerRepair/consumerRepairTestHelpers";
 import { extractEstimatePdfText, validateEstimatePdf } from "../../src/lib/estimatePdf";
 import { visibleEstimateLabelViolations } from "../../src/lib/estimatePresentation/visibleEstimateLabelPolicy";
 import {
@@ -146,24 +148,40 @@ export function buildRequestBundleFromPayload(payload: StructuredEstimatePayload
     contactPhone: "+996700000000",
     aiDraft: {
       ...aiDraft,
-      items: aiDraft.items.map((item, index) => ({
-        ...item,
-        sourceParameters: {
-          ...item.sourceParameters,
-          canonicalBackendRevisionId: revisionId,
-          canonicalBackendReleaseId: releaseId,
-          canonicalBackendRowId: `structured-pipeline-row-${index + 1}`,
-        },
-      })),
+      items: aiDraft.items.map((item, index) => {
+        const rowId = `structured-pipeline-row-${index + 1}`;
+        return {
+          ...item,
+          sourceParameters: {
+            ...item.sourceParameters,
+            canonicalBackendRevisionId: revisionId,
+            canonicalBackendReleaseId: releaseId,
+            canonicalBackendRowId: rowId,
+            canonicalBackendCatalogId: `structured-pipeline:${payload.workKey}`,
+            rowSha256: createHash("sha256")
+              .update(`${revisionId}:${releaseId}:${rowId}:${item.titleRu}:${item.quantity}:${item.unit}`)
+              .digest("hex"),
+          },
+        };
+      }),
     },
   });
 }
 
-export function buildApprovedMarketplaceBundle(payload: StructuredEstimatePayload) {
+export async function buildApprovedMarketplaceBundle(payload: StructuredEstimatePayload) {
   let bundle = buildRequestBundleFromPayload(payload);
   const revisionId = String(bundle.items[0]?.sourceParameters?.canonicalBackendRevisionId ?? "");
   const releaseId = String(bundle.items[0]?.sourceParameters?.canonicalBackendReleaseId ?? "");
   bundle = attachConsumerRepairMedia({ requestDraftId: bundle.draft.id, mediaKind: "photo" });
+  for (const item of bundle.items) {
+    if (item.unitPrice == null) {
+      bundle = updateConsumerRepairRequestItemUnitPrice({
+        requestDraftId: bundle.draft.id,
+        itemId: item.id,
+        unitPrice: 100,
+      });
+    }
+  }
   bundle = generateConsumerRepairRequestPdfForDraft({
     requestDraftId: bundle.draft.id,
     userId: bundle.draft.consumerUserId,
@@ -188,12 +206,14 @@ export function buildApprovedMarketplaceBundle(payload: StructuredEstimatePayloa
     ...canonicalPdfArtifact,
     artifactId: `structured-pipeline-canonical-procurement:${revisionId}`,
     kind: "procurement" as const,
+    revisionChecksumSha256: "d".repeat(64),
   };
-  return sendConsumerRepairRequestToMarketplace({
+  return await sendConsumerRepairRequestToMarketplace({
     requestDraftId: bundle.draft.id,
     userId: bundle.draft.consumerUserId,
     idempotencyKey: `structured-pipeline:${bundle.draft.id}`,
     canonicalArtifact: canonicalProcurementArtifact,
+    transport: consumerMarketplaceTransportForApprovedBundle(bundle, canonicalProcurementArtifact),
   });
 }
 
@@ -238,8 +258,8 @@ export function foremanMessageForPayload(payload: StructuredEstimatePayload) {
   };
 }
 
-export function historyBindingForPayload(payload: StructuredEstimatePayload) {
-  const bundle = buildApprovedMarketplaceBundle(payload);
+export async function historyBindingForPayload(payload: StructuredEstimatePayload) {
+  const bundle = await buildApprovedMarketplaceBundle(payload);
   const history = listConsumerRepairRequestHistory(bundle.draft.consumerUserId);
   const binding = buildStructuredEstimateHistoryBinding({ payload, bundle });
   const marketplacePayload = buildConsumerRepairCanonicalDraftPayload(bundle, "marketplace_send");

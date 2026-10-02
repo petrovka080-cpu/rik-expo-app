@@ -18,9 +18,42 @@ interface Props {
     onConfirm: (fio: string) => void;
     loading?: boolean;
     history?: string[];
+    surface?: FioModalSurface;
 }
 
-export default function WarehouseFioModal({ visible, initialFio, onConfirm, loading, history = [] }: Props) {
+export type FioModalSurface = "warehouse" | "buyer" | "accountant" | "foreman";
+
+const FIO_MODAL_SUBTITLES: Record<FioModalSurface, { confirmed: string; initial: string }> = {
+    warehouse: {
+        confirmed: "Это необходимо для формирования корректных складских документов на сегодня.",
+        initial: "Введите ваше ФИО для начала работы со складским экраном.",
+    },
+    buyer: {
+        confirmed: "Это необходимо для корректного оформления заявок и предложений снабжения на сегодня.",
+        initial: "Введите ваше ФИО для начала работы на экране снабжения.",
+    },
+    accountant: {
+        confirmed: "Это необходимо для формирования корректных финансовых документов на сегодня.",
+        initial: "Введите ваше ФИО для начала работы на экране бухгалтерии.",
+    },
+    foreman: {
+        confirmed: "Это необходимо для корректного оформления заявок и документов прораба на сегодня.",
+        initial: "Введите ваше ФИО для начала работы на экране прораба.",
+    },
+};
+
+export function resolveFioModalSubtitle(surface: FioModalSurface, isConfirmedMode: boolean): string {
+    return isConfirmedMode ? FIO_MODAL_SUBTITLES[surface].confirmed : FIO_MODAL_SUBTITLES[surface].initial;
+}
+
+export default function WarehouseFioModal({
+    visible,
+    initialFio,
+    onConfirm,
+    loading,
+    history = [],
+    surface = "warehouse",
+}: Props) {
     const [fio, setFio] = useState(initialFio);
 
     useEffect(() => {
@@ -61,9 +94,7 @@ export default function WarehouseFioModal({ visible, initialFio, onConfirm, load
                         </Text>
 
                         <Text style={st.subTitle}>
-                            {isConfirmedMode
-                                ? "Это необходимо для формирования корректных складских документов на сегодня."
-                                : "Введите ваше ФИО для начала работы со складским экраном."}
+                            {resolveFioModalSubtitle(surface, isConfirmedMode)}
                         </Text>
 
                         <View style={st.inputWrapper}>

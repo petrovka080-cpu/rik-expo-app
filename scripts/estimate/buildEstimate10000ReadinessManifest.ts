@@ -12,6 +12,8 @@ import {
   isDefinitionCoveredByBackfillBatches,
   type CatalogBackfillBatchId,
 } from "./catalogBackfillConveyor";
+import type { Estimate10000CompiledAuditEntry } from "./buildWorkFamilyCoveragePlan";
+import type { Estimate10000AuditProjection } from "./estimate10000AuditProjection";
 
 export const ESTIMATE_10000_READINESS_MANIFEST_PATH =
   "data/estimate-templates/estimate-10000-readiness-manifest.json" as const;
@@ -172,14 +174,17 @@ export function buildNormSourceInventory(): NormInventoryItem[] {
     });
 }
 
-function templateReadiness(definition: (typeof PRODUCTION_WORK_DEFINITIONS_10000)[number]): Estimate10000ReadinessTemplate {
-  const compiled = compileProductionExpandedEstimate10000({
+export function buildEstimate10000ReadinessTemplate(
+  definition: (typeof PRODUCTION_WORK_DEFINITIONS_10000)[number],
+  precomputed?: Estimate10000CompiledAuditEntry,
+): Estimate10000ReadinessTemplate {
+  const compiled = precomputed?.estimate ?? compileProductionExpandedEstimate10000({
     workKey: definition.workKey,
     quantity: 100,
     countryCode: "KG",
   });
-  const catalogBinding = buildProfessionalTemplateCatalogBinding(definition);
-  const rowReality = classifyEstimateRowsReality(compiled.rows);
+  const catalogBinding = precomputed?.templateBinding ?? buildProfessionalTemplateCatalogBinding(definition);
+  const rowReality = precomputed?.rowReality ?? classifyEstimateRowsReality(compiled.rows);
   const materialRows = compiled.rows.filter((row) => row.section === "materials" || row.lineType === "material");
   const laborRows = compiled.rows.filter((row) => row.section === "labor" || row.lineType === "work");
   const formulaPresent = compiled.rows.every((row) => Boolean(row.formulaId && row.calculationTrace?.includes("formula=")));
@@ -265,19 +270,10 @@ function templateReadiness(definition: (typeof PRODUCTION_WORK_DEFINITIONS_10000
   };
 }
 
-export function buildEstimate10000ReadinessManifest(): Estimate10000ReadinessManifest {
-  const templates: Estimate10000ReadinessTemplate[] = [];
-  const cacheBatchSize = 100;
-  try {
-    for (let index = 0; index < PRODUCTION_WORK_DEFINITIONS_10000.length; index += 1) {
-      if (index > 0 && index % cacheBatchSize === 0) {
-        clearProductionExpandedEstimate10000Caches();
-      }
-      templates.push(templateReadiness(PRODUCTION_WORK_DEFINITIONS_10000[index]));
-    }
-  } finally {
-    clearProductionExpandedEstimate10000Caches();
-  }
+export function buildEstimate10000ReadinessManifestFromTemplates(
+  templates: Estimate10000ReadinessTemplate[],
+  generatedAt = new Date().toISOString(),
+): Estimate10000ReadinessManifest {
   const readyProfessionalCount = templates.filter((item) => item.readiness_status === "READY_PROFESSIONAL").length;
   const quantityOnlyPriceMissingCount = templates.filter((item) =>
     item.readiness_status === "READY_QUANTITY_ONLY_PRICE_MISSING"
@@ -287,7 +283,7 @@ export function buildEstimate10000ReadinessManifest(): Estimate10000ReadinessMan
   const fullGreen = templates.length === 10000 && readyProfessionalCount === 10000 && notReadyCount === 0 && genericFallbackCount === 0;
   return {
     schema: "estimate-10000-readiness-manifest-v1",
-    generated_at: new Date().toISOString(),
+    generated_at: generatedAt,
     manifest_total_templates: templates.length,
     approved_backfill_batch_ids: [...DEFAULT_PROFESSIONAL_BACKFILL_BATCH_IDS],
     manifest_every_template_classified: templates.every((item) => Boolean(item.readiness_status)),
@@ -302,8 +298,30 @@ export function buildEstimate10000ReadinessManifest(): Estimate10000ReadinessMan
   };
 }
 
-export function writeEstimate10000ReadinessManifest(filePath = ESTIMATE_10000_READINESS_MANIFEST_PATH): Estimate10000ReadinessManifest {
-  const manifest = buildEstimate10000ReadinessManifest();
+export function buildEstimate10000ReadinessManifest(options: {
+  projection?: Estimate10000AuditProjection;
+} = {}): Estimate10000ReadinessManifest {
+  if (options.projection) return options.projection.manifest;
+  const templates: Estimate10000ReadinessTemplate[] = [];
+  const cacheBatchSize = 100;
+  try {
+    for (let index = 0; index < PRODUCTION_WORK_DEFINITIONS_10000.length; index += 1) {
+      if (index > 0 && index % cacheBatchSize === 0) {
+        clearProductionExpandedEstimate10000Caches();
+      }
+      templates.push(buildEstimate10000ReadinessTemplate(PRODUCTION_WORK_DEFINITIONS_10000[index]));
+    }
+  } finally {
+    clearProductionExpandedEstimate10000Caches();
+  }
+  return buildEstimate10000ReadinessManifestFromTemplates(templates);
+}
+
+export function writeEstimate10000ReadinessManifest(
+  filePath = ESTIMATE_10000_READINESS_MANIFEST_PATH,
+  options: { projection?: Estimate10000AuditProjection } = {},
+): Estimate10000ReadinessManifest {
+  const manifest = buildEstimate10000ReadinessManifest(options);
   const fullPath = path.join(process.cwd(), filePath);
   mkdirSync(path.dirname(fullPath), { recursive: true });
   writeFileSync(fullPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");

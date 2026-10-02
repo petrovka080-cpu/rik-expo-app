@@ -178,6 +178,18 @@ function buildRows(
   presentation: EstimatePresentationViewModel,
   estimate: GlobalEstimateResult,
 ): StructuredEstimateSection[] {
+  const configuredRateKeyUsage = new Map<string, Set<string>>();
+  for (const row of presentation.sections.flatMap((section) => section.rows)) {
+    if (!row.rateKey || row.sourceEvidence[0]?.sourceType !== "configured_reference") continue;
+    const rowCodes = configuredRateKeyUsage.get(row.rateKey) ?? new Set<string>();
+    rowCodes.add(row.code);
+    configuredRateKeyUsage.set(row.rateKey, rowCodes);
+  }
+  const sharedConfiguredRateKeys = new Set(
+    [...configuredRateKeyUsage.entries()]
+      .filter(([, rowCodes]) => rowCodes.size > 1)
+      .map(([rateKey]) => rateKey),
+  );
   return presentation.sections.map((section): StructuredEstimateSection => ({
     sectionNumber: section.sectionNumber,
     title: section.title,
@@ -216,13 +228,18 @@ function buildRows(
         materialKey: row.materialKey,
         catalogItemId: row.catalogItemId,
       };
+      const genericSharedConfiguredRate = Boolean(
+        row.rateKey && sharedConfiguredRateKeys.has(row.rateKey),
+      );
       const priceResolutionRow =
-        estimate.work.workKey === "electrical_area_installation"
+        estimate.work.workKey === "electrical_area_installation" || genericSharedConfiguredRate
           ? {
               ...baseRow,
-              // Compiler reference rates are not purchase history. Preserve
-              // row/source provenance outside pricing, but require the pricing
-              // engine to find an independently accepted catalog source.
+              // Compiler reference rates and a single generic configured rate
+              // reused by several different rows are quantity scaffolding, not
+              // independent purchase-price evidence. Preserve row/source
+              // provenance outside pricing and require an exact catalog source
+              // or an explicit user price for every such row.
               unitPrice: null,
               total: null,
               sourceId: null,
@@ -299,6 +316,17 @@ const CONTROL_PAID_ROW_PATTERNS = [
 
 function formatMoney(value: number, currency: string): string {
   return formatEstimateMoney(value, currency);
+}
+
+function preserveDisplayMoneyWhenUnchanged(
+  value: number,
+  originalValue: number,
+  originalDisplay: string,
+  currency: string,
+): string {
+  return closeMoney(value, originalValue) && originalDisplay.trim()
+    ? originalDisplay
+    : formatMoney(value, currency);
 }
 
 function isControlPaidRow(row: EstimatePresentationRow): boolean {
@@ -466,10 +494,30 @@ export function buildStructuredEstimatePayload(
     deliveryTotal,
     taxTotal,
     grandTotal: roundMoney(pricedSubtotal + taxTotal),
-    displayMaterialsTotal: formatMoney(materialsTotal, presentation.totals.currency),
-    displayLaborTotal: formatMoney(laborTotal, presentation.totals.currency),
-    displayTaxTotal: formatMoney(taxTotal, presentation.totals.currency),
-    displayGrandTotal: formatMoney(roundMoney(pricedSubtotal + taxTotal), presentation.totals.currency),
+    displayMaterialsTotal: preserveDisplayMoneyWhenUnchanged(
+      materialsTotal,
+      presentation.totals.materialsTotal,
+      presentation.totals.displayMaterialsTotal,
+      presentation.totals.currency,
+    ),
+    displayLaborTotal: preserveDisplayMoneyWhenUnchanged(
+      laborTotal,
+      presentation.totals.laborTotal,
+      presentation.totals.displayLaborTotal,
+      presentation.totals.currency,
+    ),
+    displayTaxTotal: preserveDisplayMoneyWhenUnchanged(
+      taxTotal,
+      presentation.totals.taxTotal,
+      presentation.totals.displayTaxTotal,
+      presentation.totals.currency,
+    ),
+    displayGrandTotal: preserveDisplayMoneyWhenUnchanged(
+      roundMoney(pricedSubtotal + taxTotal),
+      presentation.totals.grandTotal,
+      presentation.totals.displayGrandTotal,
+      presentation.totals.currency,
+    ),
   };
   const pricedTax = {
     ...presentation.tax,

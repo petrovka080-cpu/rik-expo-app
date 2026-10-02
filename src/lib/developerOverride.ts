@@ -72,6 +72,16 @@ const normalizeRole = (value: unknown): string | null => {
 
 const normalizeBool = (value: unknown): boolean => value === true;
 
+const hasOwn = (value: Record<string, unknown>, key: string): boolean =>
+  Object.prototype.hasOwnProperty.call(value, key);
+
+const isFutureOrOpenEndedExpiry = (value: unknown): boolean => {
+  const raw = String(value ?? "").trim();
+  if (!raw) return true;
+  const timestamp = Date.parse(raw);
+  return Number.isFinite(timestamp) && timestamp > Date.now();
+};
+
 function readNativeUpdateChannel(): string | null {
   if (Platform.OS === "web") return null;
   try {
@@ -169,11 +179,27 @@ export function normalizeDeveloperOverrideContext(
     normalizeRole(row.entitlement) === PLATFORM_DEVELOPER_ENTITLEMENT;
   const explicitActorRole =
     normalizeRole(row.actorRole) === PLATFORM_DEVELOPER_ENTITLEMENT;
-  const serverAuthorized =
+  const explicitlyServerAuthorized =
     Boolean(actorUserId) &&
     explicitEntitlement &&
     explicitActorRole &&
     normalizeRole(row.authorizationSource) === "server_entitlement";
+  // Compatibility for the protected H1.8 staging RPC that predates the
+  // entitlement metadata fields. This is deliberately limited to payloads
+  // where those fields are absent (not explicitly denied), the full server
+  // capability is present, and the protected grant is still unexpired.
+  const legacyProtectedServerAuthorized =
+    Boolean(actorUserId) &&
+    !hasOwn(row, "actorRole") &&
+    !hasOwn(row, "entitlement") &&
+    !hasOwn(row, "authorizationSource") &&
+    normalizeBool(row.isEnabled) &&
+    normalizeBool(row.canAccessAllOfficeRoutes) &&
+    normalizeBool(row.canImpersonateForMutations) &&
+    allowedRoles.length > 0 &&
+    isFutureOrOpenEndedExpiry(row.expiresAt);
+  const serverAuthorized =
+    explicitlyServerAuthorized || legacyProtectedServerAuthorized;
   const authorizationSource =
     serverAuthorized
       ? "server_entitlement"

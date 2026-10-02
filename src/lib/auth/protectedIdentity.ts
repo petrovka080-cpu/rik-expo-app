@@ -1,4 +1,8 @@
 import type { SupabaseClientUnavailableReason } from "../supabaseClientAvailability";
+import {
+  isServerAuthorizedPlatformDeveloper,
+  type DeveloperOverrideContext,
+} from "../developerOverride";
 
 export type ProtectedIdentityFailureStatus =
   | "no_session"
@@ -43,6 +47,7 @@ export type ProtectedIdentityFacts = {
   resolvedRole: string | null;
   source?: ProtectedIdentity["source"];
   targetOrganizationId?: string | null;
+  developerOverride?: DeveloperOverrideContext | null;
 };
 
 const DENIED_PRINCIPAL_ROLES = new Set(["cross_tenant", "revoked"]);
@@ -70,12 +75,28 @@ export function classifyProtectedIdentity(
   const claimedRole = clean(facts.claimedRole);
   const resolvedRole = clean(facts.resolvedRole);
   if (!resolvedRole) return { status: "missing_role" };
-  if (claimedRole && claimedRole !== resolvedRole) {
-    return { status: "identity_mismatch" };
-  }
   if (resolvedRole === "revoked") return { status: "revoked_session" };
   if (DENIED_PRINCIPAL_ROLES.has(resolvedRole)) {
     return { status: "cross_tenant" };
+  }
+
+  const developerOverride = facts.developerOverride;
+  const activeEffectiveRole = clean(
+    developerOverride?.activeEffectiveRole,
+  )?.toLowerCase() ?? null;
+  const serverAuthorizedEffectiveRole =
+    isServerAuthorizedPlatformDeveloper(developerOverride) &&
+    developerOverride?.isActive === true &&
+    clean(developerOverride?.actorUserId) === clean(facts.userId) &&
+    activeEffectiveRole !== null &&
+    (developerOverride?.allowedRoles ?? []).some(
+      (role) => clean(role)?.toLowerCase() === activeEffectiveRole,
+    );
+  const effectiveRole = serverAuthorizedEffectiveRole
+    ? activeEffectiveRole
+    : resolvedRole;
+  if (claimedRole && claimedRole !== effectiveRole && !serverAuthorizedEffectiveRole) {
+    return { status: "identity_mismatch" };
   }
   const targetOrganizationId = clean(facts.targetOrganizationId);
   if (targetOrganizationId && targetOrganizationId !== organizationId) {
@@ -89,7 +110,7 @@ export function classifyProtectedIdentity(
       email: clean(facts.email),
       organizationId,
       membershipId,
-      role: resolvedRole,
+      role: effectiveRole,
       profileEnsured: true,
       source: facts.source ?? "provider_verified_claims",
     },

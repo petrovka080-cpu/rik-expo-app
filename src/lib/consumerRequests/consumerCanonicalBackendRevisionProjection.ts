@@ -13,6 +13,7 @@ import type {
   ConsumerRepairRequestItem,
 } from "./consumerRequestTypes";
 import { consumerEstimateNormSourceAdmissionReport } from "./consumerEstimateNormSourceReadiness";
+import { isConsumerEstimateCompositionVisibleItem } from "./consumerEstimateReadiness";
 
 export const CANONICAL_BACKEND_REVISION_PROJECTION_VERSION =
   "canonical-estimate-backend-projection.v1" as const;
@@ -232,11 +233,12 @@ export function appendCanonicalBackendRevisionProjection(input: {
       })),
       rows,
     },
-    // Keep conditionally excluded rows in the durable bundle so a later
-    // parameter change can restore them, but do not advertise them as active
-    // BOQ rows in the shared revision marker/UI contract.
+    // Keep manually excluded rows in the durable bundle so a later parameter
+    // change can restore them. Structural non-payable rows remain applicable:
+    // they are the technology/completeness ledger even though they are not
+    // summed as independent costs.
     applicableBoqRowsCount: input.nextBundle.items.filter(
-      (item) => item.sourceParameters?.includedInEstimate !== false,
+      isConsumerEstimateCompositionVisibleItem,
     ).length,
     trace: {
       traceId: `canonical_backend_trace:${metadata.revisionId}`,
@@ -300,7 +302,7 @@ export function canonicalBackendRevisionProjectionForSave(
       (item) => item.sourceParameters?.canonicalPreliminaryNeed !== true,
     ).length
     || (current.applicableBoqRowsCount ?? bundle.items.length) !== bundle.items.filter(
-      (item) => item.sourceParameters?.includedInEstimate !== false,
+      isConsumerEstimateCompositionVisibleItem,
     ).length
   ) return null;
   return state;

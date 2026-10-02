@@ -11,6 +11,11 @@ import {
   AUTONOMOUS_ESTIMATE_PROGRAM_RUNTIME_ROOT,
   buildAutonomousEstimatePriorityPlan,
 } from "./buildAutonomousEstimatePriorityPlan";
+import {
+  estimateAuditSourceInputSha256,
+  readContentAddressedEstimateAuditCache,
+  writeContentAddressedEstimateAuditCache,
+} from "./contentAddressedEstimateAuditCache";
 
 export const GREEN_AI_ESTIMATE_RENDERED_SNAPSHOTS_10000_READY_NO_BUILDS =
   "GREEN_AI_ESTIMATE_RENDERED_SNAPSHOTS_10000_READY_NO_BUILDS" as const;
@@ -45,20 +50,46 @@ export type RenderedEstimateSnapshots10000Summary = {
   raw_10000_snapshot_files_not_committed: true;
   fake_green_claimed: false;
   marketplace_touched: false;
-  sample_snapshots: Array<{
+  sample_snapshots: {
     template_id: string;
     work_key: string;
     row_count: number;
     compiled_hash: string;
     first_row_code: string | null;
     first_norm_source_id: string | null;
-  }>;
+  }[];
   runtime_summary_path: string | null;
   blockers: string[];
 };
 
 const GENERIC_ROW_PATTERN =
   /Материалы:\s|Дополнительные материалы:|Дополнительные работы:|Оборудование и инструмент:|Прочие материалы|Прочие работы|Строительные материалы|Монтажные работы|generic material|generic labor|fallback|other_construction_work/i;
+
+const RENDERED_SNAPSHOTS_CACHE_SCHEMA = "rendered-estimate-snapshots-10000-cache/v1";
+const RENDERED_SNAPSHOTS_CACHE_ROOT = path.resolve(
+  ".release-runtime/rendered-estimate-snapshots-10000/content-addressed-cache",
+);
+
+function isCompleteRenderedSnapshotSummary(
+  value: unknown,
+): value is RenderedEstimateSnapshots10000Summary {
+  if (!value || typeof value !== "object") return false;
+  const summary = value as RenderedEstimateSnapshots10000Summary;
+  return typeof summary.batch_id === "string" &&
+    summary.rendered_template_count > 0 &&
+    summary.rendered_snapshot_count === summary.rendered_template_count &&
+    summary.rendered_row_count > 0 &&
+    Array.isArray(summary.sample_snapshots) &&
+    summary.sample_snapshots.length > 0 &&
+    summary.sample_snapshots.length <= 20 &&
+    Array.isArray(summary.blockers) &&
+    summary.snapshots_materialized_in_memory === false &&
+    summary.full_snapshot_files_written === false &&
+    summary.raw_10000_snapshot_files_not_committed === true &&
+    summary.fake_green_claimed === false &&
+    summary.marketplace_touched === false &&
+    summary.runtime_summary_path == null;
+}
 
 function timestampForPath(): string {
   return new Date().toISOString().replace(/[:.]/g, "-");
@@ -88,6 +119,25 @@ export function renderEstimateSnapshots10000(options: {
 } = {}): RenderedEstimateSnapshots10000Summary {
   const batchId = options.batchId ?? "full-10000-verification";
   const acceptanceMode = options.acceptanceMode ?? false;
+  const cacheInputSha256 = options.writeSummary === true
+    ? null
+    : estimateAuditSourceInputSha256(
+      `${RENDERED_SNAPSHOTS_CACHE_SCHEMA}\0batch=${batchId}\0acceptance=${acceptanceMode}`,
+    );
+  const cachePath = cacheInputSha256 == null
+    ? null
+    : path.resolve(RENDERED_SNAPSHOTS_CACHE_ROOT, `${cacheInputSha256}.json`);
+  const cached = cachePath == null || cacheInputSha256 == null
+    ? null
+    : readContentAddressedEstimateAuditCache({
+      cachePath,
+      inputSha256: cacheInputSha256,
+      schema: RENDERED_SNAPSHOTS_CACHE_SCHEMA,
+      validate: isCompleteRenderedSnapshotSummary,
+    });
+  if (cached && cached.batch_id === batchId && cached.acceptance_mode === acceptanceMode) {
+    return cached;
+  }
   const definitionIds = definitionIdsForBatch(batchId);
   const selectedDefinitions = PRODUCTION_WORK_DEFINITIONS_10000.filter((definition) =>
     definitionIds.has(definition.templateKey)
@@ -113,6 +163,7 @@ export function renderEstimateSnapshots10000(options: {
       quantity: 100,
       countryCode: "KG",
     });
+    const sourceRowsByCode = new Map(estimate.rows.map((row) => [row.rowCode, row]));
     if (estimate.rows.length === 0) blockers.push(`${definition.workKey}:rendered_rows_empty`);
     if (sampleSnapshots.length < 20) {
       sampleSnapshots.push({
@@ -150,7 +201,7 @@ export function renderEstimateSnapshots10000(options: {
       if (row.includedInProcurement) {
         buyerHandoffRows += 1;
         if (row.lineType === "work" || row.section === "labor") buyerHandoffWorkRows += 1;
-        const source = estimate.rows.find((candidate) => candidate.rowCode === row.rowCode);
+        const source = sourceRowsByCode.get(row.rowCode);
         if (!source || source.quantity !== row.quantity || source.unit !== row.unit) {
           buyerHandoffQuantityMismatches += 1;
         }
@@ -216,6 +267,14 @@ export function renderEstimateSnapshots10000(options: {
     mkdirSync(runtimeDir, { recursive: true });
     summary.runtime_summary_path = path.relative(process.cwd(), runtimeSummaryPath).replace(/\\/g, "/");
     writeFileSync(runtimeSummaryPath, `${JSON.stringify(summary, null, 2)}\n`, "utf8");
+  } else if (cachePath && cacheInputSha256) {
+    writeContentAddressedEstimateAuditCache({
+      cachePath,
+      inputSha256: cacheInputSha256,
+      payload: summary,
+      schema: RENDERED_SNAPSHOTS_CACHE_SCHEMA,
+      validate: isCompleteRenderedSnapshotSummary,
+    });
   }
   return summary;
 }
@@ -229,7 +288,7 @@ if (process.argv[1]?.replace(/\\/g, "/").endsWith("/scripts/estimate/renderEstim
       writeSummary: true,
       acceptanceMode: process.argv.includes("--acceptance-mode") || process.argv.includes("--all"),
     });
-    console.log(JSON.stringify(summary, null, 2));
+    console.info(JSON.stringify(summary, null, 2));
     process.exitCode =
       summary.final_status === GREEN_AI_ESTIMATE_RENDERED_SNAPSHOTS_10000_READY_NO_BUILDS ? 0 : 1;
   } catch (error) {

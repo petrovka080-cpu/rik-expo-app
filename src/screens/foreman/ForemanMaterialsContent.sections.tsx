@@ -322,6 +322,7 @@ export function ForemanMaterialsModalStack(props: ModalStackProps) {
       />
 
       <WarehouseFioModal
+        surface="foreman"
         visible={props.isFioConfirmVisible}
         initialFio={props.foreman}
         onConfirm={props.handleFioConfirm}

@@ -103,6 +103,34 @@ describe("R4 canonical estimate title parity", () => {
       .toEqual(items.map((item) => ({ title: item.titleRu, quantity: 1, unit: "service", type: "service" })));
   });
 
+  it("shows the concise bridge material name in the main estimate without mutating canonical data", () => {
+    const verbose = "нижний слой: горячая плотная мелкозернистая асфальтобетонная смесь типа А по КРЕР 27-06-020-01 + 27-06-021-01 при принятой толщине; марка и состав уточняются проектом и паспортом завода — Горячая плотная мелкозернистая асфальтобетонная смесь типа А по варианту КРЕР 27-06-020-01; марка и состав по проекту и паспорту завода";
+    const concise = "Нижний слой: асфальтобетонная смесь типа А";
+    const item = {
+      ...canonicalItem("bridge-asphalt:lower-layer-mix", verbose, "4".repeat(64), 20),
+      itemType: "material" as const,
+      category: "materials",
+    };
+    const bundle = serverBoundBundle([item]);
+    const visible = buildRequestEstimateViewModel(bundle)!.sections.flatMap((section) => section.items);
+
+    expect(bundle.items[0]?.titleRu).toBe(verbose);
+    expect(requestEstimatePublicItemTitle(item, bundle)).toBe(concise);
+    expect(visible).toHaveLength(1);
+    expect(visible[0]?.titleRu).toBe(concise);
+    expect(visible[0]).not.toBe(item);
+
+    const rejectedItem = {
+      ...item,
+      sourceParameters: {
+        ...item.sourceParameters,
+        rowSha256: "invalid-admission-sha",
+      },
+    };
+    const rejectedBundle = { ...bundle, items: [rejectedItem] };
+    expect(requestEstimatePublicItemTitle(rejectedItem, rejectedBundle)).toBe(verbose);
+  });
+
   it("does not allow a lone client revision id to bypass sanitization", () => {
     const title = "Пользовательская строка revision";
     const item = {

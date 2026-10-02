@@ -5,6 +5,7 @@ import {
 } from "../../src/lib/consumerRequests";
 import {
   canonicalArtifactForApprovedConsumerRepairTestBundle,
+  consumerMarketplaceTransportForApprovedBundle,
   CONSUMER_REPAIR_TEST_USER_ID,
   createApprovedConsumerRepairRequest,
 } from "./consumerRepairTestHelpers";
@@ -12,20 +13,23 @@ import {
 describe("consumer repair marketplace idempotency contract", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
 
-  it("does not create a duplicate marketplace demand on repeated send", () => {
+  it("does not create a duplicate marketplace demand on repeated send", async () => {
     const bundle = createApprovedConsumerRepairRequest();
     const canonicalArtifact = canonicalArtifactForApprovedConsumerRepairTestBundle(bundle);
-    const first = sendConsumerRepairRequestToMarketplace({
+    const transport = consumerMarketplaceTransportForApprovedBundle(bundle, canonicalArtifact);
+    const first = await sendConsumerRepairRequestToMarketplace({
       requestDraftId: bundle.draft.id,
       userId: CONSUMER_REPAIR_TEST_USER_ID,
       idempotencyKey: "same-submit",
       canonicalArtifact,
+      transport,
     });
-    const second = sendConsumerRepairRequestToMarketplace({
+    const second = await sendConsumerRepairRequestToMarketplace({
       requestDraftId: bundle.draft.id,
       userId: CONSUMER_REPAIR_TEST_USER_ID,
       idempotencyKey: "same-submit",
       canonicalArtifact,
+      transport,
     });
 
     expect(second.marketplaceLink.marketplaceDemandId).toBe(first.marketplaceLink.marketplaceDemandId);
@@ -33,7 +37,7 @@ describe("consumer repair marketplace idempotency contract", () => {
     expect(second.events.some((event) => event.eventType === "marketplace_send_idempotent_replay")).toBe(true);
   });
 
-  it("rejects a procurement artifact whose revision differs from the immutable approval event", () => {
+  it("rejects a procurement artifact whose revision differs from the immutable approval event", async () => {
     const bundle = createApprovedConsumerRepairRequest();
     const canonicalArtifact = canonicalArtifactForApprovedConsumerRepairTestBundle(bundle);
     const send = () => sendConsumerRepairRequestToMarketplace({
@@ -45,9 +49,9 @@ describe("consumer repair marketplace idempotency contract", () => {
       },
     });
 
-    expect(send).toThrow(ConsumerRepairValidationError);
+    await expect(send()).rejects.toThrow(ConsumerRepairValidationError);
     try {
-      send();
+      await send();
     } catch (error) {
       expect((error as ConsumerRepairValidationError).errors.map((entry) => entry.code))
         .toContain("PDF_REQUIRED");

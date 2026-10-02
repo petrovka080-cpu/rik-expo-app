@@ -8,20 +8,20 @@ import {
 describe("Wave08 rollback on validation failure", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
 
-  it("does not create terminal marketplace state or success event when B2C validation fails", () => {
+  it("does not create terminal marketplace state or success event when B2C validation fails", async () => {
     const bundle = createConsumerRepairRequestDraft({
       consumerUserId: "consumer-rollback",
       problemText: "",
       contactPhone: null,
     });
 
-    expect(() =>
+    await expect(
       sendConsumerRepairRequestToMarketplace({
         requestDraftId: bundle.draft.id,
         userId: "consumer-rollback",
         idempotencyKey: "wave08:rollback:b2c",
       }),
-    ).toThrow();
+    ).rejects.toThrow();
 
     const after = getConsumerRepairRequest(bundle.draft.id);
     expect(after.marketplaceLink.status).toBe("not_sent");

@@ -6,7 +6,9 @@ import type {
   GlobalEstimateResult,
   GlobalEstimateSourceFreshness,
 } from "../ai/globalEstimate/globalEstimateTypes";
+import { publicBoqDisplayNameRu } from "../estimate/publicBoqNaming";
 import { toVisibleEstimateLabel } from "../estimatePresentation/visibleEstimateLabelPolicy";
+import { buildEstimatePdfDocumentNumber } from "../estimateStructuredPipeline/structuredEstimatePdfBinding";
 import type { AiEstimatePdfInput, AiEstimatePdfViewModel } from "./aiEstimatePdfTypes";
 
 function compact(value: string): string {
@@ -28,16 +30,6 @@ function documentStatus(mode: AiEstimatePdfInput["documentMode"]): string {
   if (mode === "proposal") return "Предложение";
   if (mode === "estimate") return "Смета";
   return "Черновик";
-}
-
-function documentNumber(estimate: GlobalEstimateResult): string {
-  let hash = 2166136261;
-  const source = `${estimate.estimateId}:${estimate.work.title}:${estimate.totals.grandTotal}`;
-  for (let index = 0; index < source.length; index += 1) {
-    hash ^= source.charCodeAt(index);
-    hash = Math.imul(hash, 16777619);
-  }
-  return `AI-EST-${(hash >>> 0).toString().padStart(10, "0")}`;
 }
 
 function confidenceLabel(confidence: GlobalEstimateConfidence): string {
@@ -167,11 +159,14 @@ export function buildAiEstimatePdfViewModel(input: AiEstimatePdfInput): AiEstima
       index: String(index + 1),
       rowNumber: row.rowNumber,
       code: row.code,
-      name: humanizeText(toVisibleEstimateLabel({
-        label: row.name,
-        materialKey: row.materialKey,
-        sectionType: section.type,
-      })),
+      name: publicBoqDisplayNameRu({
+        sourceNameRu: humanizeText(toVisibleEstimateLabel({
+          label: row.name,
+          materialKey: row.materialKey,
+          sectionType: section.type,
+        })),
+        rowType: section.type,
+      }),
       category: compact(section.title || section.type),
       quantity: displayQuantity(row.quantity, row.unit),
       unit: compact(formatEstimateUnitLabel(row.unit)),
@@ -182,7 +177,7 @@ export function buildAiEstimatePdfViewModel(input: AiEstimatePdfInput): AiEstima
     })),
   );
 
-  const number = documentNumber(estimate);
+  const number = buildEstimatePdfDocumentNumber(estimate);
   const generatedAt = displayDate(input.generatedAt);
   const inputVolume = displayQuantity(estimate.input.volume, estimate.input.unit);
   const taxWarning =

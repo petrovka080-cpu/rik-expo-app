@@ -2,7 +2,7 @@ import {
   capitalRenovationBundle,
   draftItemRowsForDetector,
 } from "../estimateCalculator/capitalRenovationTestHelpers";
-import { detectEstimateFakeRows } from "../../src/lib/ai/estimateContinuousDetection";
+import { detectEstimateFakeRows } from "../../scripts/estimate/detectors";
 
 describe("estimate pricing no fake default price contract", () => {
   it("does not emit fake 980/default price clusters for real apartment calculator rows", () => {

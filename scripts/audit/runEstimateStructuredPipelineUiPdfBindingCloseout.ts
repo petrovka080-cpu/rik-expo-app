@@ -6,8 +6,9 @@ import { answerBuiltInAi } from "../../src/lib/ai/builtInAi";
 import { buildAiEstimatePdfSourceFromGlobalEstimate, generateAiEstimatePdf } from "../../src/lib/ai/estimatePdf";
 import { createAiEstimatePdf } from "../../src/lib/aiEstimatePdf";
 import {
-  __resetConsumerRepairRequestStoreForTests, approveConsumerRepairRequestDraft, attachConsumerRepairMedia, buildConsumerRepairCanonicalDraftPayload, createConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, getConsumerRepairPdfStorageObject, listConsumerRepairRequestHistory, sendConsumerRepairRequestToMarketplace } from "../../src/lib/consumerRequests";
+  __resetConsumerRepairRequestStoreForTests, approveConsumerRepairRequestDraft, attachConsumerRepairMedia, buildConsumerRepairCanonicalDraftPayload, createConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, getConsumerRepairPdfStorageObject, listConsumerRepairRequestHistory, sendConsumerRepairRequestToMarketplace, updateConsumerRepairRequestItemUnitPrice } from "../../src/lib/consumerRequests";
 import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
+import type { ConsumerEstimateMarketplaceTransport } from "../../src/lib/consumerRequests/consumerRequestMarketplace.transport";
 import type { GlobalEstimateResult } from "../../src/lib/ai/globalEstimate";
 import { extractEstimatePdfText, validateEstimatePdf } from "../../src/lib/estimatePdf";
 import { visibleEstimateLabelViolations } from "../../src/lib/estimatePresentation/visibleEstimateLabelPolicy";
@@ -26,7 +27,6 @@ const REVISION = "REV_AFTER_MULTI_DOMAIN_PROFESSIONAL_BOQ_EXACT_MATERIALS_GREEN_
 const GREEN = "GREEN_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING_READY";
 const BLOCKED = "BLOCKED_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING";
 const DEFAULT_ARTIFACT_DIR = path.resolve(process.cwd(), "artifacts", "S_ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING");
-const ARTIFACT_DIR_ENV = "ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING_ARTIFACT_DIR";
 const PREVIOUS_ARTIFACT_DIR = path.resolve(
   process.cwd(),
   "artifacts",
@@ -34,7 +34,7 @@ const PREVIOUS_ARTIFACT_DIR = path.resolve(
 );
 
 function artifactDir(): string {
-  const explicitDir = process.env[ARTIFACT_DIR_ENV];
+  const explicitDir = process.env.ESTIMATE_STRUCTURED_PIPELINE_UI_PDF_BINDING_ARTIFACT_DIR;
   if (explicitDir) return path.resolve(process.cwd(), explicitDir);
   if (process.env.JEST_WORKER_ID) {
     return path.resolve(
@@ -408,8 +408,8 @@ function catalogModalBindingMatrix(payloads: StructuredEstimatePayload[], failur
   return proof;
 }
 
-function requestMarketplaceHistoryProof(payloads: StructuredEstimatePayload[], failures: CloseoutFailure[]) {
-  const rows = payloads.map((payload, payloadIndex) => {
+async function requestMarketplaceHistoryProof(payloads: StructuredEstimatePayload[], failures: CloseoutFailure[]) {
+  const rows = await Promise.all(payloads.map(async (payload, payloadIndex) => {
     __resetConsumerRepairRequestStoreForTests();
     const aiDraft = buildConsumerRepairAiDraftFromGlobalEstimate(payload.sourceEstimate);
     const revisionId = `10000000-0000-4000-8000-${String(payloadIndex + 1).padStart(12, "0")}`;
@@ -423,18 +423,33 @@ function requestMarketplaceHistoryProof(payloads: StructuredEstimatePayload[], f
       contactPhone: "+996700000000",
       aiDraft: {
         ...aiDraft,
-        items: aiDraft.items.map((item, itemIndex) => ({
-          ...item,
-          sourceParameters: {
-            ...item.sourceParameters,
-            canonicalBackendRevisionId: revisionId,
-            canonicalBackendReleaseId: releaseId,
-            canonicalBackendRowId: `structured-closeout-row-${itemIndex + 1}`,
-          },
-        })),
+        items: aiDraft.items.map((item, itemIndex) => {
+          const rowId = `structured-closeout-row-${itemIndex + 1}`;
+          return {
+            ...item,
+            sourceParameters: {
+              ...item.sourceParameters,
+              canonicalBackendRevisionId: revisionId,
+              canonicalBackendReleaseId: releaseId,
+              canonicalBackendRowId: rowId,
+              canonicalBackendCatalogId: `structured-closeout:${payload.workKey}`,
+              rowSha256: createHash("sha256")
+                .update(`${revisionId}:${releaseId}:${rowId}:${item.titleRu}:${item.quantity}:${item.unit}`)
+                .digest("hex"),
+            },
+          };
+        }),
       },
     });
     bundle = attachConsumerRepairMedia({ requestDraftId: bundle.draft.id, mediaKind: "photo" });
+    for (const item of bundle.items) {
+      if (item.unitPrice != null) continue;
+      bundle = updateConsumerRepairRequestItemUnitPrice({
+        requestDraftId: bundle.draft.id,
+        itemId: item.id,
+        unitPrice: 100,
+      });
+    }
     bundle = generateConsumerRepairRequestPdfForDraft({
       requestDraftId: bundle.draft.id,
       userId: bundle.draft.consumerUserId,
@@ -449,6 +464,7 @@ function requestMarketplaceHistoryProof(payloads: StructuredEstimatePayload[], f
       status: "ready" as const,
       sha256: object ? createHash("sha256").update(object.body).digest("hex") : null,
     };
+    if (!canonicalArtifact.sha256) throw new Error("STRUCTURED_CLOSEOUT_CANONICAL_PDF_SHA_MISSING");
     const requestPdfText = object ? extractEstimatePdfText(object.body) : "";
     const requestPdfValidation = object
       ? validateEstimatePdf({ pdf: object.body, requiredText: [payload.rows[0]?.visibleName ?? payload.workTitle] })
@@ -463,12 +479,42 @@ function requestMarketplaceHistoryProof(payloads: StructuredEstimatePayload[], f
       ...canonicalArtifact,
       artifactId: `structured-closeout-canonical-procurement:${revisionId}`,
       kind: "procurement" as const,
+      revisionChecksumSha256: createHash("sha256").update(`${revisionId}:${releaseId}`).digest("hex"),
     };
-    bundle = sendConsumerRepairRequestToMarketplace({
+    const idempotencyKey = `structured-closeout:${bundle.draft.id}`;
+    const transport: ConsumerEstimateMarketplaceTransport = {
+      async publish() {
+        return {
+          listing_id: revisionId,
+          created: true,
+          server_status: "active",
+          revision_id: revisionId,
+          release_id: releaseId,
+          artifact_id: canonicalProcurementArtifact.artifactId,
+        };
+      },
+      async readPublishedListing() {
+        return {
+          id: revisionId,
+          user_id: bundle.draft.consumerUserId,
+          status: "active",
+          client_mutation_id: idempotencyKey,
+          items_json: [{
+            name: bundle.items[0]?.titleRu ?? payload.workTitle,
+            qty: bundle.items[0]?.quantity ?? 1,
+            canonical_revision_id: revisionId,
+            canonical_release_id: releaseId,
+            canonical_artifact_id: canonicalProcurementArtifact.artifactId,
+          }],
+        };
+      },
+    };
+    bundle = await sendConsumerRepairRequestToMarketplace({
       requestDraftId: bundle.draft.id,
       userId: bundle.draft.consumerUserId,
-      idempotencyKey: `structured-closeout:${bundle.draft.id}`,
+      idempotencyKey,
       canonicalArtifact: canonicalProcurementArtifact,
+      transport,
     });
     const marketplacePayload = buildConsumerRepairCanonicalDraftPayload(bundle, "marketplace_send");
     const history = listConsumerRepairRequestHistory(bundle.draft.consumerUserId);
@@ -504,12 +550,12 @@ function requestMarketplaceHistoryProof(payloads: StructuredEstimatePayload[], f
       historyBinding,
       fake_green_claimed: false,
     };
-  });
+  }));
   return rows;
 }
 
-function aiMarketplaceForemanHistoryMatrix(payloads: StructuredEstimatePayload[], failures: CloseoutFailure[]) {
-  const requestRows = requestMarketplaceHistoryProof(payloads, failures);
+async function aiMarketplaceForemanHistoryMatrix(payloads: StructuredEstimatePayload[], failures: CloseoutFailure[]) {
+  const requestRows = await requestMarketplaceHistoryProof(payloads, failures);
   const rows = payloads.map((payload) => {
     const foreman = buildStructuredEstimateForemanBinding(payload, "structured-closeout-foreman");
     const foremanRowsMatch = sameStrings(
@@ -636,7 +682,7 @@ function externalArtifactBooleans() {
   };
 }
 
-export function runEstimateStructuredPipelineUiPdfBindingCloseout() {
+export async function runEstimateStructuredPipelineUiPdfBindingCloseout() {
   const failures: CloseoutFailure[] = [];
   const previous = previousBoqGreenProof(failures);
   const payloads = buildPayloads(failures);
@@ -652,7 +698,7 @@ export function runEstimateStructuredPipelineUiPdfBindingCloseout() {
   const request = requestBindingMatrix(payloads, failures);
   const pdf = pdfBindingMatrix(payloads, failures);
   const catalog = catalogModalBindingMatrix(payloads, failures);
-  const aiMarketplaceForemanHistory = aiMarketplaceForemanHistoryMatrix(payloads, failures);
+  const aiMarketplaceForemanHistory = await aiMarketplaceForemanHistoryMatrix(payloads, failures);
   const parity = uiPdfRowsParity(payloads, failures);
   const scans = visibleScans(payloads);
   const external = externalArtifactBooleans();
@@ -764,10 +810,14 @@ export function runEstimateStructuredPipelineUiPdfBindingCloseout() {
 }
 
 if (require.main === module) {
-  const proof = runEstimateStructuredPipelineUiPdfBindingCloseout();
-  console.log(proof.failures.length === 0 ? GREEN : BLOCKED);
-  if (proof.failures.length > 0) {
-    console.error(JSON.stringify(proof.failures, null, 2));
+  void runEstimateStructuredPipelineUiPdfBindingCloseout().then((proof) => {
+    console.info(proof.failures.length === 0 ? GREEN : BLOCKED);
+    if (proof.failures.length > 0) {
+      console.error(JSON.stringify(proof.failures, null, 2));
+      process.exitCode = 1;
+    }
+  }).catch((error) => {
+    console.error(error);
     process.exitCode = 1;
-  }
+  });
 }

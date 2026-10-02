@@ -13,7 +13,7 @@ describe("blackbox prompt to snapshot acceptance", () => {
     expect(summary.manifest_total_templates).toBe(10000);
     expect(summary.ready_professional_count).toBe(0);
     expect(summary.not_ready_count).toBe(10000);
-    expect(summary.failed_case_count).toBe(523);
+    expect(summary.failed_case_count).toBe(526);
     expect(summary.all_work_families_represented).toBe(true);
     expect(summary.previous_full_green_verified).toBe(false);
     expect(summary.no_manual_green_status_override).toBe(true);

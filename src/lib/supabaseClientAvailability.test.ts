@@ -56,7 +56,7 @@ describe("Supabase client availability", () => {
     expect(JSON.parse(diagnostic)).toEqual({
       status: "unavailable",
       reason: "missing_anon_key",
-      recovery: "scripts/dev/startLocalDeveloperReview.ps1",
+      recovery: "scripts/dev/startWholeAppDeveloperReview.ps1",
       secretsIncluded: false,
     });
     expect(diagnostic).not.toMatch(/https?:|eyJ|token/i);

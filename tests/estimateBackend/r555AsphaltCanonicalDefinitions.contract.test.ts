@@ -22,7 +22,7 @@ describe("R5.5.5 canonical asphalt definitions", () => {
       boqRows: 3709,
       parameters: 3889,
       canonicalDefinitionRows: 1300,
-      canonicalDefinitionParameters: 1572,
+      canonicalDefinitionParameters: 1500,
       missing: 0,
       unexplained: 0,
       duplicate: 0,

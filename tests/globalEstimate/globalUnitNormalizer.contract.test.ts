@@ -7,6 +7,8 @@ describe("global unit normalizer", () => {
     expect(normalizeGlobalUnit("sq ft")).toBe("sq_ft");
     expect(normalizeGlobalUnit("пог. м")).toBe("linear_m");
     expect(normalizeGlobalUnit("рейсов")).toBe("trip");
+    expect(normalizeGlobalUnit("литр")).toBe("l");
     expect(displayUnitFor("trip", "metric")).toBe("рейс");
+    expect(displayUnitFor("l", "metric")).toBe("л");
   });
 });

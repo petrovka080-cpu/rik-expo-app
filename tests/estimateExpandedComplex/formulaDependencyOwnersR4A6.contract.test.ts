@@ -163,4 +163,20 @@ describe("R4-A6 expanded formula dependency owners", () => {
     expect(evaluateFormulaGraph(drainage, { is_gabion: false, length_m: 150 })).toBe("0");
     expect(() => evaluateFormulaGraph(drainage, { length_m: 150 })).toThrow("missing parameter is_gabion");
   });
+
+  it("keeps the retaining-wall and gabion catalog choices explicit", () => {
+    const retainingWall = passportFor("retaining_wall");
+    const gabionWall = passportFor("gabion_wall");
+    const retainingKeys = [
+      ...retainingWall.parameterSchema.required,
+      ...retainingWall.parameterSchema.optional,
+    ].map((parameter) => parameter.key);
+    const gabionKeys = [
+      ...gabionWall.parameterSchema.required,
+      ...gabionWall.parameterSchema.optional,
+    ].map((parameter) => parameter.key);
+
+    expect(retainingKeys).not.toContain("is_gabion");
+    expect(gabionKeys).toContain("is_gabion");
+  });
 });

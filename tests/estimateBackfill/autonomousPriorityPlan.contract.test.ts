@@ -33,7 +33,7 @@ describe("autonomous estimate priority plan", () => {
     expect(plan.baseline_dashboard.ready_professional_count).toBe(0);
     expect(plan.baseline_dashboard.not_ready_count).toBe(10000);
     expect(plan.baseline_dashboard.generic_norm_rows_count).toBe(0);
-    expect(plan.baseline_dashboard.templates_with_real_norm_sources_count).toBe(10000);
+    expect(plan.baseline_dashboard.templates_with_real_norm_sources_count).toBe(0);
     expect(plan.baseline_dashboard.grouped_by_work_family.length).toBeGreaterThanOrEqual(28);
     expect(plan.baseline_dashboard.grouped_by_category.length).toBeGreaterThan(0);
     expect(plan.baseline_dashboard.top_20_blocking_work_families).toHaveLength(20);

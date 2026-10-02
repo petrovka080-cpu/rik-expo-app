@@ -108,5 +108,32 @@ export function classifyProfessionalNormSourceAdmission(
 }
 
 export function isAdmittedProfessionalNormSource(input: ProfessionalNormSourceAdmissionInput): boolean {
-  return classifyProfessionalNormSourceAdmission(input).admitted;
+  const sourceId = text(input.normSourceId);
+  if (!sourceId) return false;
+  const normId = text(input.normId);
+  const normVersion = text(input.normVersion);
+  const staticRegistryItem = PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS.find((item) => item.sourceId === sourceId);
+  if (staticRegistryItem) {
+    return staticRegistryItem.normId === normId && staticRegistryItem.sourceDocumentVersion === normVersion;
+  }
+  const resolution = record(input.sourceParameters?.professionalPhysicalNormApplicabilityV1);
+  if (!resolution || resolution.status !== "APPLIED" ||
+      (Array.isArray(resolution.blockers) && resolution.blockers.length > 0)) return false;
+  const candidate = physicalResolutionCandidates(resolution).find((value) =>
+    text(value.source_id) === sourceId &&
+    text(value.norm_id) === normId &&
+    text(value.source_document_version) === normVersion &&
+    text(value.source_definition_hash)
+  );
+  if (!candidate) return false;
+  const sourceDefinitionHash = text(candidate.source_definition_hash);
+  const binding = CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1.find((value) =>
+    value.source_id === sourceId &&
+    value.norm_id === normId &&
+    value.source_document_version === normVersion &&
+    value.source_definition_hash === sourceDefinitionHash
+  );
+  if (!binding) return false;
+  const sourceCard = constructionNormativeRegistryV1.get(sourceId);
+  return Boolean(sourceCard && (sourceCard.status === "active" || sourceCard.status === "project-specific"));
 }

@@ -5,11 +5,12 @@ import {
   createConsumerRepairRequestDraft,
   sendConsumerRepairRequestToMarketplace,
 } from "../../src/lib/consumerRequests";
+import { consumerMarketplaceTransportForApprovedBundle } from "./consumerRepairTestHelpers";
 
 describe("canonical backend artifact parity", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
 
-  it("keeps PDF and procurement on the exact backend revision and release", () => {
+  it("keeps PDF and procurement on the exact backend revision and release", async () => {
     const userId = "canonical-artifact-owner";
     const revisionId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
     const releaseId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
@@ -37,6 +38,7 @@ describe("canonical backend artifact parity", () => {
             canonicalBackendReleaseId: releaseId,
             canonicalBackendRowId: "row-001",
             canonicalBackendCatalogId: catalogId,
+            rowSha256: "4".repeat(64),
           },
         }],
         missingData: [],
@@ -74,17 +76,20 @@ describe("canonical backend artifact parity", () => {
         sha256: "1".repeat(64),
       },
     });
-    bundle = sendConsumerRepairRequestToMarketplace({
+    const procurementArtifact = {
+      artifactId: "backend-procurement-artifact",
+      kind: "procurement" as const,
+      revisionId,
+      releaseId,
+      status: "ready" as const,
+      sha256: "1".repeat(64),
+      revisionChecksumSha256: "3".repeat(64),
+    };
+    bundle = await sendConsumerRepairRequestToMarketplace({
       requestDraftId: bundle.draft.id,
       userId,
-      canonicalArtifact: {
-        artifactId: "backend-procurement-artifact",
-        kind: "procurement",
-        revisionId,
-        releaseId,
-        status: "ready",
-        sha256: "1".repeat(64),
-      },
+      canonicalArtifact: procurementArtifact,
+      transport: consumerMarketplaceTransportForApprovedBundle(bundle, procurementArtifact),
     });
 
     expect(bundle.draft.status).toBe("sent_to_marketplace");

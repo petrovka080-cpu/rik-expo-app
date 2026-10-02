@@ -193,7 +193,7 @@ function BuyerScreenSheetsInner({
 
   return (
     <>
-      <WarehouseFioModal {...fioModal} />
+      <WarehouseFioModal {...fioModal} surface="buyer" />
 
       <BuyerSheetShell isOpen={isSheetOpen} onClose={closeSheet} s={s} title={sheetTitle}>
         <View style={[s.sheetBody, { flex: 1, minHeight: 0 }]}>

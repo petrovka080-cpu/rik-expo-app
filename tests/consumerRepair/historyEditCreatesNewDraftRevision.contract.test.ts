@@ -1,6 +1,7 @@
 import {
   __resetConsumerRepairRequestStoreForTests,
   ConsumerRepairValidationError,
+  consumerRepairSourceRequestDraftId,
   createConsumerRepairDraftFromHistorySnapshot,
   getConsumerRepairRequest,
   listApprovedEstimateHistoryRecords,
@@ -39,6 +40,7 @@ describe("history edit creates new draft revision", () => {
     )).toBe(true);
     expect(sourceAfterEdit.draft.status).toBe("consumer_approved");
     expect(sourceAfterEdit.pdfs[0]?.revisionId).toBe(approved.pdfs[0]?.revisionId);
+    expect(consumerRepairSourceRequestDraftId(draft)).toBe(approved.draft.id);
   });
 
   it("fails closed instead of mutating an approved canonical revision locally", () => {

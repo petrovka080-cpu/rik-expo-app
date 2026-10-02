@@ -1,4 +1,4 @@
-import { createEstimateDraftRevision } from "../createEstimateDraftRevision";
+import { createEstimateDraftRevision } from "../backendPlatform/canonicalEstimateHistoricalDraftProjection";
 import { createInMemoryAiEstimateHistoryStore } from "./AiEstimateHistoryStore";
 import { createInMemoryAiEstimateRevisionStore } from "./AiEstimateRevisionStore";
 import { AI_ESTIMATE_STORAGE_POLICY, redactAiEstimateStorageDiagnostic } from "./AiEstimateStoragePolicy";

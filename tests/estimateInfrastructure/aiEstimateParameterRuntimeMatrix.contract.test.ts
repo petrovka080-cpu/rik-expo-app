@@ -1,15 +1,18 @@
 import { execFileSync } from "node:child_process";
+import path from "node:path";
 
-import { GREEN_AI_ESTIMATE_PARAMETER_RUNTIME_MATRIX_READY } from "../../scripts/estimate/runAiEstimateParameterRuntimeMatrix";
+import { GREEN_AI_ESTIMATE_PARAMETER_RUNTIME_MATRIX_READY } from "../../scripts/estimate/aiEstimateParameterRuntimeMatrixContract";
 
 function runRuntimeMatrixCli(): Record<string, unknown> {
-  const command = process.platform === "win32"
-    ? "npx.cmd tsx scripts/estimate/runAiEstimateParameterRuntimeMatrix.ts"
-    : "npx tsx scripts/estimate/runAiEstimateParameterRuntimeMatrix.ts";
-  const output = execFileSync(command, {
+  const output = execFileSync(process.execPath, [
+    "--max-old-space-size=896",
+    "--import",
+    "tsx",
+    path.join(process.cwd(), "scripts", "estimate", "runAiEstimateParameterRuntimeMatrix.ts"),
+  ], {
     cwd: process.cwd(),
     encoding: "utf8",
-    shell: true,
+    windowsHide: true,
     timeout: 240_000,
     maxBuffer: 1024 * 1024,
   });

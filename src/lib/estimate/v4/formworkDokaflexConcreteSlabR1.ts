@@ -503,6 +503,11 @@ function resource(input: {
       universalAreaRateApplied: false,
       universalTurnoverFactorApplied: false,
       ...(input.source === "DOKA_PROJECT" ? {
+        inputParameterIds: [
+          "formwork_system_profile_id", "manufacturer_document_reference",
+          "slab_thickness_cm", "propping_height_m", "structural_spacing_check_reference",
+          "project_formwork_layout_reference", "system_engineer_approval_reference",
+        ],
         formworkSystemProfileParameterId: "formwork_system_profile_id",
         manufacturerDocumentParameterId: "manufacturer_document_reference",
         systemApplicabilityParameterIds: [

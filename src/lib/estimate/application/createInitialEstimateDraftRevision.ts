@@ -1,7 +1,7 @@
 import {
   createEstimateDraftRevision,
   type CreateEstimateDraftRevisionInput,
-} from "../createEstimateDraftRevision";
+} from "../backendPlatform/canonicalEstimateHistoricalDraftProjection";
 
 export function createInitialEstimateDraftRevision(input: CreateEstimateDraftRevisionInput) {
   return createEstimateDraftRevision(input);

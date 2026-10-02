@@ -82,7 +82,8 @@ export const PILE_CAP_REPAIR_SOURCE_METADATA = Object.freeze({
   operation_class: "REPAIR_EXISTING_CONCRETE_PILE_CAP",
   quantity_basis: "APPROVED_REPAIR_METHOD_AND_DIRECT_PROJECT_SCHEDULE",
   documentary_references_optional: true,
-  repair_technology_and_material_designation_required: true,
+  preliminary_title_refinements_optional: true,
+  repair_technology_and_material_designation_required_for_final_acceptance: true,
   conditional_branch_quantities_never_invented: true,
   calculation_inputs_never_invented: true,
 });

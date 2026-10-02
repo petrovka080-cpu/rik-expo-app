@@ -1,7 +1,7 @@
 import landscapingNormPack from "../../../../../data/estimate-norms/professional/landscaping.json";
 import { estimateDeterministicHash } from "../../estimateDeterministicHash";
 import type { ProfessionalParameterValueV4 } from "../professionalProjectAssemblyV4";
-import type { ProfessionalPhysicalNormApplicabilityResolutionV1 } from "./professionalPhysicalNormApplicabilityV1";
+import type { ProfessionalPhysicalNormApplicabilityResolutionV1 } from "./professionalPhysicalNormApplicabilityTypesV1";
 
 const VERSION = "professional-physical-norm-applicability:v1" as const;
 export const RAIN_BIRD_XFD_06_12_500_PRODUCT_PROFILE_ID =

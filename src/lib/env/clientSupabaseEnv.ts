@@ -11,7 +11,7 @@ export function normalizeSupabaseUrl(value: string): string {
     const url = new URL(value);
     if (!/^https?:$/i.test(url.protocol)) return "";
     url.pathname = url.pathname.replace(/\/+$/, "");
-    return url.toString();
+    return url.toString().replace(/\/+$/, "");
   } catch {
     return "";
   }

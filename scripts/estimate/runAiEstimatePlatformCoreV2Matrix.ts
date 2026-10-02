@@ -1,7 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { buildAiEstimateCatalogIndex } from "../../src/lib/estimate/catalog/buildAiEstimateCatalogIndex";
+import {
+  buildAiEstimateCatalogIndex,
+  clearAiEstimateCatalogIndexCache,
+} from "../../src/lib/estimate/catalog/buildAiEstimateCatalogIndex";
 import { buildNormativeParameterCompletenessModel } from "../../src/lib/estimate/buildNormativeParameterCompletenessModel";
 import { createInMemoryAiEstimateHistoryStore } from "../../src/lib/estimate/storage/AiEstimateHistoryStore";
 import { validateAiEstimateBuyerPackageParity } from "../../src/lib/estimate/artifacts/validateAiEstimateBuyerPackageParity";
@@ -73,6 +76,38 @@ function stableSample<T>(values: readonly T[], count: number, salt: number): T[]
     selected.push(values[sourceIndex]);
   }
   return selected;
+}
+
+type PlatformCoreV2Case = {
+  templateId: string;
+  localizedNameRu: string;
+};
+
+function buildPlatformCoreV2CasePlan(timings: PlatformCoreV2StageTiming[]) {
+  const index = recordPlatformCoreV2Stage(timings, "catalog_index", 11610, () =>
+    buildAiEstimateCatalogIndex());
+  try {
+    const compactCase = (entry: (typeof index.entries)[number]): PlatformCoreV2Case => ({
+      templateId: entry.templateId,
+      localizedNameRu: entry.localizedNameRu,
+    });
+    return {
+      catalogIndex: index,
+      catalogEntryCount: index.entries.length,
+      catalogTotalTemplates: index.catalogTotalTemplates,
+      random: stableSample(index.entries, 1000, 1).map(compactCase),
+      critical: stableSample(
+        index.entries.filter((entry) => entry.complexityClass !== "simple"),
+        200,
+        2,
+      ).map(compactCase),
+      override: stableSample(index.entries, 200, 3).map(compactCase),
+      missing: stableSample(index.entries, 100, 4).map(compactCase),
+      artifacts: stableSample(index.entries, 100, 5).map(compactCase),
+    };
+  } finally {
+    clearAiEstimateCatalogIndexCache();
+  }
 }
 
 function promptForTemplate(templateId: string, localizedNameRu: string, index: number): string {
@@ -302,124 +337,259 @@ function runPdfBuyerCase(
   }
 }
 
+function runAndSummarizeCreateCases(
+  runtime: ReturnType<typeof createAiEstimateRuntime>,
+  cases: readonly PlatformCoreV2Case[],
+  captureTemplateIds: ReadonlySet<string> = new Set(),
+) {
+  const summary = {
+    passed: 0,
+    failures: [] as CreateCaseResult[],
+    registeredBackendOnlyCases: 0,
+    clientPassed: 0,
+    clientCases: 0,
+    clientNeedsInputCases: 0,
+    clientNeedsInputTemplateIds: [] as string[],
+    backendOnlyPassed: 0,
+    backendOnlyCases: 0,
+  };
+  const capturedResults = new Map<string, CreateCaseResult>();
+  cases.forEach((item, caseIndex) => {
+    const result = runCreateCase(runtime, item.templateId, item.localizedNameRu, caseIndex);
+    if (result.passed) summary.passed += 1;
+    else summary.failures.push(result);
+    if (result.registered_backend_only) {
+      summary.registeredBackendOnlyCases += 1;
+      summary.backendOnlyCases += 1;
+      if (result.passed) summary.backendOnlyPassed += 1;
+    } else {
+      summary.clientCases += 1;
+      if (result.passed) summary.clientPassed += 1;
+      if (result.outcome === "client_needs_input_honestly_blocked") {
+        summary.clientNeedsInputCases += 1;
+        summary.clientNeedsInputTemplateIds.push(result.template_id);
+      }
+    }
+    if (captureTemplateIds.has(result.template_id)) {
+      capturedResults.set(result.template_id, result);
+    }
+  });
+  return { summary, capturedResults };
+}
+
+function buildTransferredBackendOnlyRouteCases(results: ReadonlyMap<string, CreateCaseResult>) {
+  return PLATFORM_CORE_V2_TRANSFERRED_BACKEND_ONLY_TEMPLATE_ROUTES.map((expectedRoute) => {
+    const route = resolveRegisteredProfessionalEstimateSelectionV1(expectedRoute.template_id);
+    const result = results.get(expectedRoute.template_id);
+    const clientAlternateCompileDetected = Boolean(
+      result && (result.row_count > 0 || result.outcome === "client_compiled_nonempty_boq"),
+    );
+    const passed = Boolean(
+      route &&
+      result &&
+      route.catalog_id === expectedRoute.catalog_id &&
+      route.domain_id === expectedRoute.domain_id &&
+      result.registered_backend_only &&
+      result.status === "failed" &&
+      result.row_count === 0 &&
+      result.outcome === "registered_backend_only_honestly_blocked" &&
+      result.passed &&
+      !clientAlternateCompileDetected,
+    );
+    return {
+      source_template_id: expectedRoute.template_id,
+      expected_catalog_id: expectedRoute.catalog_id,
+      expected_domain_id: expectedRoute.domain_id,
+      resolved_catalog_id: route?.catalog_id ?? null,
+      resolved_domain_id: route?.domain_id ?? null,
+      critical_sampled: Boolean(result),
+      registered_backend_only: result?.registered_backend_only ?? false,
+      client_status: result?.status ?? null,
+      client_row_count: result?.row_count ?? null,
+      client_alternate_compile_detected: clientAlternateCompileDetected,
+      outcome: result?.outcome ?? null,
+      passed,
+    };
+  });
+}
+
+function runAndSummarizeOverrideCases(
+  runtime: ReturnType<typeof createAiEstimateRuntime>,
+  cases: readonly PlatformCoreV2Case[],
+) {
+  const summary = {
+    passed: 0,
+    failures: [] as OverrideCaseResult[],
+    registeredBackendOnlyCases: 0,
+    clientPassed: 0,
+    clientCases: 0,
+    backendOnlyPassed: 0,
+    backendOnlyCases: 0,
+    nonCalculationReadyCases: 0,
+  };
+  cases.forEach((item, caseIndex) => {
+    const result = runOverrideCase(runtime, item.templateId, item.localizedNameRu, caseIndex);
+    if (result.passed) summary.passed += 1;
+    else summary.failures.push(result);
+    if (result.registered_backend_only) {
+      summary.registeredBackendOnlyCases += 1;
+      summary.backendOnlyCases += 1;
+      if (result.passed) summary.backendOnlyPassed += 1;
+    } else {
+      summary.clientCases += 1;
+      if (result.passed) summary.clientPassed += 1;
+    }
+    if (result.reason === "non_calculation_ready_case_honestly_blocked") {
+      summary.nonCalculationReadyCases += 1;
+    }
+  });
+  return summary;
+}
+
+function runAndSummarizeArtifactCases(
+  runtime: ReturnType<typeof createAiEstimateRuntime>,
+  cases: readonly PlatformCoreV2Case[],
+) {
+  const summary = {
+    readyCases: 0,
+    honestlyBlockedCases: 0,
+    honestlyBlockedTemplateIds: [] as string[],
+    pdfPassed: 0,
+    buyerPassed: 0,
+  };
+  cases.forEach((item, caseIndex) => {
+    const result = runPdfBuyerCase(runtime, item.templateId, item.localizedNameRu, caseIndex);
+    if (result.honestlyBlocked) {
+      summary.honestlyBlockedCases += 1;
+      summary.honestlyBlockedTemplateIds.push(result.template_id);
+    } else {
+      summary.readyCases += 1;
+    }
+    if (result.pdf) summary.pdfPassed += 1;
+    if (result.buyer) summary.buyerPassed += 1;
+  });
+  return summary;
+}
+
+function runHistoryWriteCases(runtime: ReturnType<typeof createAiEstimateRuntime>): number {
+  const historyStore = createInMemoryAiEstimateHistoryStore();
+  for (let index = 0; index < 100; index += 1) {
+    const revision = runtime.createDraft({
+      estimateDraftId: `platform-core-v2-history-${index}`,
+      rawInput: `capital apartment repair ${90 + index} m2`,
+      selectedTemplateId: "demolition_interior_tile_remove_standard_professional_expanded_v1",
+      createdAt: new Date(Date.UTC(2026, 6, 9, 0, index)).toISOString(),
+    }).revision;
+    historyStore.approve({
+      id: `history-${revision.revisionId}`,
+      userId: "platform-core-v2",
+      revisionId: revision.revisionId,
+      approvedAt: new Date(Date.UTC(2026, 6, 9, 0, index)).toISOString(),
+      revision,
+    });
+  }
+  let cursorApprovedAt: string | null = null;
+  let reloadedCount = 0;
+  let totalApprovedCount = 0;
+  const reloadedIds = new Set<string>();
+  do {
+    const page = historyStore.listApproved("platform-core-v2", {
+      cursorApprovedAt,
+      limit: 10,
+    });
+    totalApprovedCount = page.totalApprovedCount;
+    for (const record of page.records) {
+      if (record.revisionId !== record.revision.revisionId || reloadedIds.has(record.id)) return 0;
+      reloadedIds.add(record.id);
+      reloadedCount += 1;
+    }
+    cursorApprovedAt = page.nextCursorApprovedAt;
+  } while (cursorApprovedAt);
+  return totalApprovedCount === 100 && reloadedCount === 100 && reloadedIds.size === 100
+    ? reloadedCount
+    : 0;
+}
+
 export function runAiEstimatePlatformCoreV2Matrix(input: { writeSummary?: boolean } = {}) {
   const stageTimings: PlatformCoreV2StageTiming[] = [];
-  const index = recordPlatformCoreV2Stage(stageTimings, "catalog_index", 11610, () =>
-    buildAiEstimateCatalogIndex());
-  const templates = index.entries.map((entry) => entry.templateId);
-  const localizedNameByTemplateId = new Map(
-    index.entries.map((entry) => [entry.templateId, entry.localizedNameRu]),
-  );
-  const random = stableSample(templates, 1000, 1);
-  const critical = stableSample(index.entries.filter((entry) => entry.complexityClass !== "simple").map((entry) => entry.templateId), 200, 2);
-  const override = stableSample(templates, 200, 3);
-  const missing = stableSample(templates, 100, 4);
-  const artifacts = stableSample(templates, 100, 5);
-  const historyStore = createInMemoryAiEstimateHistoryStore();
+  const {
+    catalogIndex,
+    catalogEntryCount,
+    catalogTotalTemplates,
+    random,
+    critical,
+    override,
+    missing,
+    artifacts,
+  } = buildPlatformCoreV2CasePlan(stageTimings);
   const runtime = createAiEstimateRuntime();
-  const localizedName = (templateId: string) => localizedNameByTemplateId.get(templateId) ?? templateId;
 
-  const randomResults = recordPlatformCoreV2Stage(stageTimings, "random_create_draft", random.length, () =>
-    random.map((templateId, caseIndex) =>
-      runCreateCase(runtime, templateId, localizedName(templateId), caseIndex)
-    ));
-  const randomPassed = randomResults.filter((result) => result.passed).length;
-  const randomClientResults = randomResults.filter((result) => !result.registered_backend_only);
-  const randomBackendOnlyResults = randomResults.filter((result) => result.registered_backend_only);
-  const criticalResults = recordPlatformCoreV2Stage(stageTimings, "critical_create_draft", critical.length, () =>
-    critical.map((templateId, caseIndex) =>
-      runCreateCase(runtime, templateId, localizedName(templateId), caseIndex)
-    ));
-  const criticalPassed = criticalResults.filter((result) => result.passed).length;
-  const criticalClientResults = criticalResults.filter((result) => !result.registered_backend_only);
-  const criticalBackendOnlyResults = criticalResults.filter((result) => result.registered_backend_only);
-  const transferredBackendOnlyRouteCases = PLATFORM_CORE_V2_TRANSFERRED_BACKEND_ONLY_TEMPLATE_ROUTES.map(
-    (expectedRoute) => {
-      const route = resolveRegisteredProfessionalEstimateSelectionV1(expectedRoute.template_id);
-      const result = criticalResults.find((candidate) => candidate.template_id === expectedRoute.template_id);
-      const clientAlternateCompileDetected = Boolean(
-        result && (result.row_count > 0 || result.outcome === "client_compiled_nonempty_boq"),
-      );
-      const passed = Boolean(
-        route &&
-        result &&
-        route.catalog_id === expectedRoute.catalog_id &&
-        route.domain_id === expectedRoute.domain_id &&
-        result.registered_backend_only &&
-        result.status === "failed" &&
-        result.row_count === 0 &&
-        result.outcome === "registered_backend_only_honestly_blocked" &&
-        result.passed &&
-        !clientAlternateCompileDetected,
+  const randomSummary = recordPlatformCoreV2Stage(
+    stageTimings,
+    "random_create_draft",
+    random.length,
+    () => runAndSummarizeCreateCases(runtime, random).summary,
+  );
+  const criticalStage = recordPlatformCoreV2Stage(
+    stageTimings,
+    "critical_create_draft",
+    critical.length,
+    () => {
+      const results = runAndSummarizeCreateCases(
+        runtime,
+        critical,
+        new Set(PLATFORM_CORE_V2_TRANSFERRED_BACKEND_ONLY_TEMPLATE_ROUTES.map((route) => route.template_id)),
       );
       return {
-        source_template_id: expectedRoute.template_id,
-        expected_catalog_id: expectedRoute.catalog_id,
-        expected_domain_id: expectedRoute.domain_id,
-        resolved_catalog_id: route?.catalog_id ?? null,
-        resolved_domain_id: route?.domain_id ?? null,
-        critical_sampled: Boolean(result),
-        registered_backend_only: result?.registered_backend_only ?? false,
-        client_status: result?.status ?? null,
-        client_row_count: result?.row_count ?? null,
-        client_alternate_compile_detected: clientAlternateCompileDetected,
-        outcome: result?.outcome ?? null,
-        passed,
+        summary: results.summary,
+        transferredBackendOnlyRouteCases: buildTransferredBackendOnlyRouteCases(results.capturedResults),
       };
     },
   );
+  const criticalSummary = criticalStage.summary;
+  const transferredBackendOnlyRouteCases = criticalStage.transferredBackendOnlyRouteCases;
   const transferredBackendOnlyRoutesPassed = transferredBackendOnlyRouteCases.every((result) => result.passed);
-  const overrideResults = recordPlatformCoreV2Stage(stageTimings, "parameter_override", override.length, () =>
-    override.map((templateId, caseIndex) =>
-      runOverrideCase(runtime, templateId, localizedName(templateId), caseIndex)
-    ));
-  const overridePassed = overrideResults.filter((result) => result.passed).length;
-  const overrideClientResults = overrideResults.filter((result) => !result.registered_backend_only);
-  const overrideBackendOnlyResults = overrideResults.filter((result) => result.registered_backend_only);
-  const missingPassed = recordPlatformCoreV2Stage(stageTimings, "missing_input", missing.length, () =>
-    missing.filter((templateId, caseIndex) =>
-      runMissingCase(runtime, templateId, localizedName(templateId), caseIndex)
-    ).length);
-  const artifactResults = recordPlatformCoreV2Stage(stageTimings, "pdf_buyer_artifacts", artifacts.length, () =>
-    artifacts.map((templateId, caseIndex) =>
-      runPdfBuyerCase(runtime, templateId, localizedName(templateId), caseIndex)
-    ));
-  const pdfPassed = artifactResults.filter((result) => result.pdf).length;
-  const buyerPassed = artifactResults.filter((result) => result.buyer).length;
-  const artifactsHonestlyBlocked = artifactResults.filter((result) => result.honestlyBlocked).length;
-  const artifactReadyCases = artifactResults.length - artifactsHonestlyBlocked;
-  recordPlatformCoreV2Stage(stageTimings, "history_write", 100, () => {
-    for (let index = 0; index < 100; index += 1) {
-      const revision = runtime.createDraft({
-        estimateDraftId: `platform-core-v2-history-${index}`,
-        rawInput: `capital apartment repair ${90 + index} m2`,
-        selectedTemplateId: "demolition_interior_tile_remove_standard_professional_expanded_v1",
-        createdAt: new Date(Date.UTC(2026, 6, 9, 0, index)).toISOString(),
-      }).revision;
-      historyStore.approve({
-        id: `history-${revision.revisionId}`,
-        userId: "platform-core-v2",
-        revisionId: revision.revisionId,
-        approvedAt: new Date(Date.UTC(2026, 6, 9, 0, index)).toISOString(),
-        revision,
-      });
-    }
+  const overrideSummary = recordPlatformCoreV2Stage(
+    stageTimings,
+    "parameter_override",
+    override.length,
+    () => runAndSummarizeOverrideCases(runtime, override),
+  );
+  const missingPassed = recordPlatformCoreV2Stage(stageTimings, "missing_input", missing.length, () => {
+    let passed = 0;
+    missing.forEach((item, caseIndex) => {
+      if (runMissingCase(runtime, item.templateId, item.localizedNameRu, caseIndex)) passed += 1;
+    });
+    return passed;
   });
-  const historyReloadPassed = historyStore.listApproved("platform-core-v2", { limit: 100 }).totalApprovedCount;
+  const artifactSummary = recordPlatformCoreV2Stage(
+    stageTimings,
+    "pdf_buyer_artifacts",
+    artifacts.length,
+    () => runAndSummarizeArtifactCases(runtime, artifacts),
+  );
+  const historyReloadPassed = recordPlatformCoreV2Stage(
+    stageTimings,
+    "history_write",
+    100,
+    () => runHistoryWriteCases(runtime),
+  );
   const web = recordPlatformCoreV2Stage(stageTimings, "web_smoke", 100, () =>
-    runAiEstimatePlatformCoreV2Harness({ target: "web", cases: 100 }));
+    runAiEstimatePlatformCoreV2Harness({ target: "web", cases: 100, catalogIndex }));
   const android = recordPlatformCoreV2Stage(stageTimings, "android_smoke", 100, () =>
-    runAiEstimatePlatformCoreV2Harness({ target: "android-chrome", cases: 100 }));
+    runAiEstimatePlatformCoreV2Harness({ target: "android-chrome", cases: 100, catalogIndex }));
   const blockers = [
-    index.entries.length === 11610 ? "" : "catalog_coverage",
-    randomPassed === 1000 ? "" : "random_create_draft",
-    criticalPassed === 200 ? "" : "critical_create_draft",
+    catalogEntryCount === 11610 ? "" : "catalog_coverage",
+    randomSummary.passed === 1000 ? "" : "random_create_draft",
+    criticalSummary.passed === 200 ? "" : "critical_create_draft",
     transferredBackendOnlyRoutesPassed ? "" : "transferred_backend_only_routes",
-    overridePassed === 200 ? "" : "parameter_override",
+    overrideSummary.passed === 200 ? "" : "parameter_override",
     missingPassed === 100 ? "" : "missing_input",
-    pdfPassed === artifactReadyCases ? "" : "pdf_snapshot_parity",
-    buyerPassed === artifactReadyCases ? "" : "buyer_package_parity",
-    artifactReadyCases + artifactsHonestlyBlocked === 100 ? "" : "artifact_case_partition",
+    artifactSummary.pdfPassed === artifactSummary.readyCases ? "" : "pdf_snapshot_parity",
+    artifactSummary.buyerPassed === artifactSummary.readyCases ? "" : "buyer_package_parity",
+    artifactSummary.readyCases + artifactSummary.honestlyBlockedCases === 100
+      ? ""
+      : "artifact_case_partition",
     historyReloadPassed === 100 ? "" : "history_reload",
     web.cases_passed === 100 ? "" : "web_smoke",
     android.cases_passed === 100 ? "" : "android_smoke",
@@ -432,46 +602,42 @@ export function runAiEstimatePlatformCoreV2Matrix(input: { writeSummary?: boolea
     branch: gitOutput(["branch", "--show-current"]),
     upstream_sync: gitOutput(["rev-list", "--left-right", "--count", "@{u}...HEAD"]).replace(/\s+/g, " "),
     platform_core_v2_matrix_created: true,
-    catalog_coverage: `${index.entries.length}/${index.catalogTotalTemplates}`,
-    random_create_draft_cases_passed: `${randomPassed}/1000`,
-    random_create_draft_failures: randomResults.filter((result) => !result.passed),
-    random_registered_backend_only_cases: randomResults.filter((result) => result.registered_backend_only).length,
-    random_client_compile_cases_passed: `${randomClientResults.filter((result) => result.passed).length}/${randomClientResults.length}`,
-    random_client_needs_input_honestly_blocked_cases: randomClientResults.filter(
-      (result) => result.outcome === "client_needs_input_honestly_blocked",
-    ).length,
-    random_client_needs_input_honestly_blocked_template_ids: randomClientResults.filter(
-      (result) => result.outcome === "client_needs_input_honestly_blocked",
-    ).map((result) => result.template_id),
-    random_backend_only_honestly_blocked_cases_passed: `${randomBackendOnlyResults.filter((result) => result.passed).length}/${randomBackendOnlyResults.length}`,
-    critical_create_draft_cases_passed: `${criticalPassed}/200`,
-    critical_create_draft_failures: criticalResults.filter((result) => !result.passed),
-    critical_registered_backend_only_cases: criticalResults.filter((result) => result.registered_backend_only).length,
-    critical_client_compile_cases_passed: `${criticalClientResults.filter((result) => result.passed).length}/${criticalClientResults.length}`,
-    critical_client_needs_input_honestly_blocked_cases: criticalClientResults.filter(
-      (result) => result.outcome === "client_needs_input_honestly_blocked",
-    ).length,
-    critical_client_needs_input_honestly_blocked_template_ids: criticalClientResults.filter(
-      (result) => result.outcome === "client_needs_input_honestly_blocked",
-    ).map((result) => result.template_id),
-    critical_backend_only_honestly_blocked_cases_passed: `${criticalBackendOnlyResults.filter((result) => result.passed).length}/${criticalBackendOnlyResults.length}`,
+    catalog_coverage: `${catalogEntryCount}/${catalogTotalTemplates}`,
+    random_create_draft_cases_passed: `${randomSummary.passed}/1000`,
+    random_create_draft_failures: randomSummary.failures,
+    random_registered_backend_only_cases: randomSummary.registeredBackendOnlyCases,
+    random_client_compile_cases_passed: `${randomSummary.clientPassed}/${randomSummary.clientCases}`,
+    random_client_needs_input_honestly_blocked_cases: randomSummary.clientNeedsInputCases,
+    random_client_needs_input_honestly_blocked_template_ids:
+      randomSummary.clientNeedsInputTemplateIds,
+    random_backend_only_honestly_blocked_cases_passed:
+      `${randomSummary.backendOnlyPassed}/${randomSummary.backendOnlyCases}`,
+    critical_create_draft_cases_passed: `${criticalSummary.passed}/200`,
+    critical_create_draft_failures: criticalSummary.failures,
+    critical_registered_backend_only_cases: criticalSummary.registeredBackendOnlyCases,
+    critical_client_compile_cases_passed:
+      `${criticalSummary.clientPassed}/${criticalSummary.clientCases}`,
+    critical_client_needs_input_honestly_blocked_cases: criticalSummary.clientNeedsInputCases,
+    critical_client_needs_input_honestly_blocked_template_ids:
+      criticalSummary.clientNeedsInputTemplateIds,
+    critical_backend_only_honestly_blocked_cases_passed:
+      `${criticalSummary.backendOnlyPassed}/${criticalSummary.backendOnlyCases}`,
     transferred_backend_only_route_cases: transferredBackendOnlyRouteCases,
-    parameter_override_cases_passed: `${overridePassed}/200`,
-    parameter_override_failures: overrideResults.filter((result) => !result.passed),
-    parameter_override_registered_backend_only_cases: overrideResults.filter((result) => result.registered_backend_only).length,
-    parameter_override_executed_cases_passed: `${overrideClientResults.filter((result) => result.passed).length}/${overrideClientResults.length}`,
-    parameter_override_backend_only_honestly_blocked_cases_passed: `${overrideBackendOnlyResults.filter((result) => result.passed).length}/${overrideBackendOnlyResults.length}`,
-    parameter_override_non_calculation_ready_cases: overrideResults.filter(
-      (result) => result.reason === "non_calculation_ready_case_honestly_blocked",
-    ).length,
+    parameter_override_cases_passed: `${overrideSummary.passed}/200`,
+    parameter_override_failures: overrideSummary.failures,
+    parameter_override_registered_backend_only_cases: overrideSummary.registeredBackendOnlyCases,
+    parameter_override_executed_cases_passed:
+      `${overrideSummary.clientPassed}/${overrideSummary.clientCases}`,
+    parameter_override_backend_only_honestly_blocked_cases_passed:
+      `${overrideSummary.backendOnlyPassed}/${overrideSummary.backendOnlyCases}`,
+    parameter_override_non_calculation_ready_cases: overrideSummary.nonCalculationReadyCases,
     missing_input_cases_passed: `${missingPassed}/100`,
-    artifact_ready_cases: artifactReadyCases,
-    pdf_snapshot_parity_cases_passed: `${pdfPassed}/${artifactReadyCases}`,
-    buyer_package_parity_cases_passed: `${buyerPassed}/${artifactReadyCases}`,
-    artifact_needs_input_honestly_blocked_cases: artifactsHonestlyBlocked,
-    artifact_needs_input_honestly_blocked_template_ids: artifactResults.filter(
-      (result) => result.honestlyBlocked,
-    ).map((result) => result.template_id),
+    artifact_ready_cases: artifactSummary.readyCases,
+    pdf_snapshot_parity_cases_passed: `${artifactSummary.pdfPassed}/${artifactSummary.readyCases}`,
+    buyer_package_parity_cases_passed: `${artifactSummary.buyerPassed}/${artifactSummary.readyCases}`,
+    artifact_needs_input_honestly_blocked_cases: artifactSummary.honestlyBlockedCases,
+    artifact_needs_input_honestly_blocked_template_ids:
+      artifactSummary.honestlyBlockedTemplateIds,
     history_reload_cases_passed: `${historyReloadPassed}/100`,
     web_smoke_cases_passed: `${web.cases_passed}/100`,
     android_smoke_cases_passed: `${android.cases_passed}/100`,

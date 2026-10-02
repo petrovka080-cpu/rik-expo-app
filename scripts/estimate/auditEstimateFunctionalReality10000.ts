@@ -66,6 +66,11 @@ export type EstimateFunctionalRealitySummary = {
   runtime_summary_path?: string;
 };
 
+export type EstimateFunctionalRealityPrecomputedInputs = Readonly<{
+  manifest: Estimate10000ReadinessManifest;
+  certification: ReturnType<typeof runCertifyAllEstimateNormBindings>;
+}>;
+
 function gitOutput(args: string[]): string {
   try {
     return execFileSync("git", args, { encoding: "utf8" }).trim();
@@ -120,10 +125,18 @@ function writeRuntimeArtifacts(input: {
   return summaryPath;
 }
 
-export function runEstimateFunctionalRealityAudit(options: { writeSummary?: boolean } = {}): EstimateFunctionalRealitySummary {
+export function runEstimateFunctionalRealityAudit(options: {
+  writeSummary?: boolean;
+  precomputed?: EstimateFunctionalRealityPrecomputedInputs;
+} = {}): EstimateFunctionalRealitySummary {
   const cases = FUNCTIONAL_REALITY_CASES.map(evaluateWorkSpecificityCase);
-  const manifest = buildEstimate10000ReadinessManifest();
-  const certification = runCertifyAllEstimateNormBindings({ writeSummary: false });
+  // The professional-readiness owner already computes these two complete audits.
+  // Reuse only that exact pair when supplied; standalone callers still execute
+  // both audits themselves. This preserves every assertion while avoiding a
+  // second 10k compilation inside the same parent audit.
+  const manifest = options.precomputed?.manifest ?? buildEstimate10000ReadinessManifest();
+  const certification = options.precomputed?.certification
+    ?? runCertifyAllEstimateNormBindings({ writeSummary: false });
   const caseById = new Map(cases.map((item) => [item.case_id, item]));
   const diamondCases = cases.filter((item) => item.work_type === "diamond_concrete_drilling");
   const fenceCases = cases.filter((item) => item.work_type === "profile_sheet_fence");
@@ -225,7 +238,7 @@ if (process.argv[1]?.replace(/\\/g, "/").endsWith("/scripts/estimate/auditEstima
   try {
     requireAllFlag();
     const summary = runEstimateFunctionalRealityAudit();
-    console.log(JSON.stringify(summary, null, 2));
+    console.info(JSON.stringify(summary, null, 2));
     process.exitCode = summary.final_status === GREEN_AI_ESTIMATE_10000_FUNCTIONAL_REALITY_AUDIT_READY_NO_BUILDS ? 0 : 1;
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error));

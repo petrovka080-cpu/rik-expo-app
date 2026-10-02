@@ -10,6 +10,7 @@ import {
 } from "../../src/lib/ai/expandedComplexWorks";
 import {
   compileProductionExpandedEstimate10000,
+  isProfessionalNormPackSourceId,
   type ProductionCompiledExpandedRow,
 } from "../../src/lib/ai/estimateTemplate10000";
 import { buildProductionTrustInventory } from "../../src/features/estimates/governance/productionTrustInventory";
@@ -63,6 +64,33 @@ export type GoldenBenchmarkEngine =
 
 export type GoldenBenchmarkLineType = "material" | "work" | "equipment" | "service" | "helper";
 
+export const PRODUCTION_NORM_APPLICABILITY_GATE_CASE_IDS = Object.freeze([
+  "mandatory-003-gas-block-masonry-400",
+  "mandatory-004-screed-100-50mm",
+  "mandatory-008-slab-rebar-100",
+  "mandatory-011-paint-200-two-coats",
+  "mandatory-012-gkl-partition-80",
+] as const);
+
+export const PRODUCTION_NORM_APPLICABILITY_REQUIRED_INPUTS = Object.freeze([
+  "Confirmed product/system specification for the exact work key",
+  "Project geometry and design parameters required by an applicable source-backed norm",
+  "Approved professional norm source with an executable applicability binding",
+] as const);
+
+export type GoldenBenchmarkCurrentRuntimeContract =
+  | {
+      version: "canonical-pump-p0-gate-v1";
+      expected_outcome: "NEEDS_INPUT";
+      historical_reference_status: "READ_ONLY_SUPERSEDED_BY_P0_GATE";
+    }
+  | {
+      version: "production-norm-applicability-gate-v1";
+      expected_outcome: "NEEDS_INPUT";
+      historical_reference_status: "READ_ONLY_SUPERSEDED_BY_FAIL_CLOSED_NORM_GATE";
+      required_inputs: string[];
+    };
+
 export type GoldenBenchmarkCase = {
   case_id: string;
   prompt: string;
@@ -92,11 +120,7 @@ export type GoldenBenchmarkCase = {
   work_key?: string;
   quantity?: number;
   expected_row_codes?: string[];
-  current_runtime_contract?: {
-    version: "canonical-pump-p0-gate-v1";
-    expected_outcome: "NEEDS_INPUT";
-    historical_reference_status: "READ_ONLY_SUPERSEDED_BY_P0_GATE";
-  };
+  current_runtime_contract?: GoldenBenchmarkCurrentRuntimeContract;
 };
 
 export type GoldenBenchmarkIndex = {
@@ -679,23 +703,61 @@ export function buildGeneratedBenchmarkEstimate(caseDef: GoldenBenchmarkCase): G
     quantity: caseDef.quantity ?? 100,
     countryCode: caseDef.pricebook_region,
   });
+  const inputParameters = {
+    work_key: compiled.workKey,
+    quantity: caseDef.quantity ?? 100,
+    country_code: caseDef.pricebook_region,
+    template_key: compiled.templateKey,
+    compiled_hash: compiled.compiledHash,
+  };
+  const normApplicabilityContract = caseDef.current_runtime_contract?.version ===
+    "production-norm-applicability-gate-v1"
+    ? caseDef.current_runtime_contract
+    : null;
+  const hasExecutableProfessionalNorm = compiled.rows.some((row) =>
+    isProfessionalNormPackSourceId(row.normSourceId)
+  );
+  if (normApplicabilityContract && !hasExecutableProfessionalNorm) {
+    return {
+      case_id: caseDef.case_id,
+      prompt: caseDef.prompt,
+      estimate_level: "NEEDS_INPUT",
+      input_parameters: inputParameters,
+      missing_design_inputs: [...normApplicabilityContract.required_inputs],
+      assumptions: [
+        "Historical benchmark BOQ is retained read-only and is not a current quantity claim.",
+        "No BOQ or procurement rows may be emitted until an applicable source-backed professional norm is executable.",
+      ],
+      rows: [],
+      procurement_subset: [],
+      pdf_sections: [
+        "Cover",
+        "Estimate level and trust",
+        "Input parameters",
+        "Assumptions and missing design inputs",
+        "Norm/source applicability gate",
+      ],
+      pdf_row_codes: [],
+      buyer_row_codes: [],
+      final_total_displayed: false,
+      total: null,
+      source_refs: [],
+      trace_refs: [],
+      browser_route_marker_used: false,
+      env_flag_used_as_browser_proof: false,
+    };
+  }
   const rows = compiled.rows.map((row, index) => rowFromProduction(caseDef.case_id, row, index));
   return {
     case_id: caseDef.case_id,
     prompt: caseDef.prompt,
     estimate_level: caseDef.estimate_level,
-    input_parameters: {
-      work_key: compiled.workKey,
-      quantity: caseDef.quantity ?? 100,
-      country_code: caseDef.pricebook_region,
-      template_key: compiled.templateKey,
-      compiled_hash: compiled.compiledHash,
-    },
+    input_parameters: inputParameters,
     missing_design_inputs: caseDef.missing_design_inputs_expected
       ? ["Project drawings / scope confirmation required before detailed BOQ"]
       : [],
     assumptions: [
-      "Production template 10000 BOQ compiled from governed professional norm pack.",
+      "Production template 10000 BOQ compiled from the governed production template; professional status still requires an applicable source-backed norm.",
       "Prices are not final unless a verified pricebook or supplier quote is attached.",
     ],
     rows,
@@ -1228,14 +1290,20 @@ export function validateGoldenBenchmarkDataset() {
       index.current_runtime_contracts.expanded_complex_authored_rows.applies_to_engine === "expanded_complex" &&
       index.current_runtime_contracts.expanded_complex_authored_rows.historical_reference_status === "READ_ONLY_SUPERSEDED_PADDING_ROWS" &&
       index.current_runtime_contracts.expanded_complex_authored_rows.current_requirement === "ALL_NON_PADDING_REFERENCE_ROWS_MUST_MATCH_AND_PADDING_MUST_STAY_ABSENT" &&
-      cases.every((item) =>
-        !item.current_runtime_contract || (
-          item.current_runtime_contract.version === "canonical-pump-p0-gate-v1" &&
-          item.current_runtime_contract.expected_outcome === "NEEDS_INPUT" &&
-          item.current_runtime_contract.historical_reference_status === "READ_ONLY_SUPERSEDED_BY_P0_GATE" &&
-          item.missing_design_inputs_expected
-        )
-      )
+      cases.every((item) => {
+        const contract = item.current_runtime_contract;
+        if (!contract) return true;
+        if (!item.missing_design_inputs_expected || contract.expected_outcome !== "NEEDS_INPUT") return false;
+        if (contract.version === "canonical-pump-p0-gate-v1") {
+          return contract.historical_reference_status === "READ_ONLY_SUPERSEDED_BY_P0_GATE";
+        }
+        return (
+          contract.version === "production-norm-applicability-gate-v1" &&
+          contract.historical_reference_status === "READ_ONLY_SUPERSEDED_BY_FAIL_CLOSED_NORM_GATE" &&
+          item.engine === "production_template_10000" &&
+          contract.required_inputs.length > 0
+        );
+      })
     ),
   };
 }

@@ -1,4 +1,5 @@
 import { buildAiEstimateCatalogIndex } from "../catalog/buildAiEstimateCatalogIndex";
+import type { AiEstimateCatalogIndex } from "../catalog/AiEstimateCatalogIndex";
 import { classifyAiEstimateWork } from "./classifyAiEstimateWork";
 
 export type AiEstimateWorkClassificationValidation = {
@@ -36,8 +37,10 @@ const GOLDEN_CASES = [
   { text: "остекление витражей", family: "glazing" },
 ] as const;
 
-export function validateAiEstimateWorkClassification(): AiEstimateWorkClassificationValidation {
-  const index = buildAiEstimateCatalogIndex();
+export function validateAiEstimateWorkClassification(
+  input: { index?: AiEstimateCatalogIndex } = {},
+): AiEstimateWorkClassificationValidation {
+  const index = input.index ?? buildAiEstimateCatalogIndex();
   const classifiedCount = index.entries.filter((entry) => classifyAiEstimateWork(entry).family !== "other").length;
   const goldenResults = GOLDEN_CASES.map((item) => ({
     expected: item.family,

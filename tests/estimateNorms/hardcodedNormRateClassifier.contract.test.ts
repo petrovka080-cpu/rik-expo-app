@@ -34,6 +34,17 @@ describe("hardcoded norm-rate audit classifier", () => {
       "src/lib/estimate/v4/domains/interiorFinishesComplete/domainPackage.ts",
       'primer_consumption_kg_per_measure: { unitId: "kg_per_measure", minimum: 0.000001 }',
     )).toBe("parameter_schema_constraint");
+    expect(classifyHardcodedMatch(
+      "src/lib/estimate/v4/stripFoundationReinforcementR1.ts",
+      '|| parameterId === "selected_standard_mass_kg_per_m" ? 0.000_001 : 0 }',
+    )).toBe("parameter_schema_constraint");
+  });
+
+  it("separates an explicit reinforcement acceptance fixture from a production default", () => {
+    expect(classifyHardcodedMatch(
+      "src/lib/estimate/v4/anchorGroupReinforcementR1.ts",
+      "selected_standard_mass_kg_per_m: 1.552,",
+    )).toBe("allowed_acceptance_fixture");
   });
 
   it("recognizes reviewed physical source-pack values as managed backend records", () => {

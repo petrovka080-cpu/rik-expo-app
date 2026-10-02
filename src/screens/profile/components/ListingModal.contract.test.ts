@@ -17,6 +17,11 @@ describe("ListingModal source contract", () => {
     expectTestId("add-listing-flow-close");
     expectTestId("add-listing-flow-publish");
     expectTestId("add-listing-item-confirm");
+    expectTestId("market-add-title");
+    expectTestId("market-add-description");
+    expectTestId("market-add-city");
+    expectTestId("market-add-price");
+    expectTestId("market-add-phone");
     expect(source).toContain("React19SafeModal");
     expect(source).toContain("KeyboardAvoidingView");
     expect(source).toContain("SafeAreaView");

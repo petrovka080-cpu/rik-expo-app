@@ -112,9 +112,20 @@ describe("BATCH001 R2 SINGLE_CANONICAL_RUNTIME_PROOF", () => {
       const initialValues = batch001DrywallGoldFixtureValuesR3(definition);
       const initial = await compileBatch001R56ThroughSharedCore({ definition, values: initialValues });
       const initialBytes = canonicalEstimateStableJson(initial);
+      const initialRowIds = new Set(initial.rows.map((row) => row.row_id));
+      const editRoute = definition.resources.flatMap((resource) => {
+        if (!initialRowIds.has(resource.rowId)) return [];
+        const formula = definition.runtimeFormulas.find((candidate) => candidate.formulaId === resource.formulaId);
+        if (!formula || formula.inputParameterIds.length !== 1
+          || formula.expressionSource.trim() !== formula.inputParameterIds[0]
+          || typeof initialValues[formula.inputParameterIds[0]!] !== "number") return [];
+        return [{ resource, formula, parameterId: formula.inputParameterIds[0]! }];
+      })[0];
+      expect(editRoute).toBeDefined();
+      const editedParameterId = editRoute!.parameterId;
       const editedValues = {
         ...initialValues,
-        horizontal_face_area_m2: Number(initialValues.horizontal_face_area_m2) + 15,
+        [editedParameterId]: Number(initialValues[editedParameterId]) + 15,
       };
       const edited = await compileBatch001R56ThroughSharedCore({
         definition,
@@ -122,7 +133,9 @@ describe("BATCH001 R2 SINGLE_CANONICAL_RUNTIME_PROOF", () => {
         operation: "recalculate",
       });
       expect(edited.revisionProjection.catalogId).toBe(definition.catalogId);
-      expect(edited.rows).not.toEqual(initial.rows);
+      expect(edited.rows.find((row) => row.row_id === editRoute!.resource.rowId)?.quantity)
+        .not.toBe(initial.rows.find((row) => row.row_id === editRoute!.resource.rowId)?.quantity);
+      expect(editRoute!.formula.inputParameterIds).toEqual([editedParameterId]);
       expect(canonicalEstimateStableJson(initial)).toBe(initialBytes);
 
       const selected = selectCanonicalArtifactRows(initial.rows);
@@ -138,9 +151,9 @@ describe("BATCH001 R2 SINGLE_CANONICAL_RUNTIME_PROOF", () => {
         input_parameters: initial.parameters,
         revision_number: 1,
         created_at: "2026-08-13T06:00:00.000Z",
-        primary_measure_parameter_id: "horizontal_face_area_m2",
-        primary_measure_value: initial.parameters.horizontal_face_area_m2,
-        primary_measure_unit_id: "m2",
+        primary_measure_parameter_id: editedParameterId,
+        primary_measure_value: initial.parameters[editedParameterId],
+        primary_measure_unit_id: editRoute!.formula.outputUnitId,
       };
       const pdf = buildCanonicalProfessionalPdfProjection({
         revision,

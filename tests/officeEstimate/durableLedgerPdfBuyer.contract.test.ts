@@ -5,20 +5,22 @@ import {
 } from "../../src/lib/consumerRequests";
 import {
   canonicalArtifactForApprovedConsumerRepairTestBundle,
+  consumerMarketplaceTransportForApprovedBundle,
   createApprovedConsumerRepairRequest,
 } from "../consumerRepair/consumerRepairTestHelpers";
 
 describe("office estimate durable ledger pdf buyer refs", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
 
-  it("binds current revision pdf and buyer handoff refs into approved history", () => {
+  it("binds current revision pdf and buyer handoff refs into approved history", async () => {
     const approved = createApprovedConsumerRepairRequest({ userId: "office-ledger-owner" });
     const canonicalArtifact = canonicalArtifactForApprovedConsumerRepairTestBundle(approved);
-    const sent = sendConsumerRepairRequestToMarketplace({
+    const sent = await sendConsumerRepairRequestToMarketplace({
       requestDraftId: approved.draft.id,
       userId: "office-ledger-owner",
       idempotencyKey: "office-ledger-marketplace-1",
       canonicalArtifact,
+      transport: consumerMarketplaceTransportForApprovedBundle(approved, canonicalArtifact),
     });
     const history = listConsumerRepairApprovedHistory("office-ledger-owner", { limit: 20 });
     const approvedPdfArtifactId = approved.events.find(

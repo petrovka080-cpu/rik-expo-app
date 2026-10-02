@@ -130,6 +130,11 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
       : [];
     const resourceGraph = record(row.calculationTrace?.resourceGraph);
     const costTreatment = String(resourceGraph?.costTreatment ?? "").trim() || null;
+    const nonPayableComposition = [
+      "INCLUDED_IN_RESOURCE_ROWS",
+      "INFORMATIONAL_SCOPE",
+      "CONTROL_OR_DOCUMENT",
+    ].includes(costTreatment ?? "");
     const physicalNormApplicability = projectCanonicalEstimatePhysicalNormApplicabilityV1({
       revision: input.revision,
       row,
@@ -165,7 +170,11 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
         normativeTrace: row.normativeTrace,
         normativeRowTraceV3: normativeTrace,
         priceRouteV3: {
-          kind: unitPrice == null ? "CANONICAL_BACKEND_PRICE_MISSING" : "CANONICAL_BACKEND_ROW_PRICE",
+          kind: nonPayableComposition
+            ? "NOT_APPLICABLE_INFORMATIONAL_OUTPUT"
+            : unitPrice == null
+              ? "CANONICAL_BACKEND_PRICE_MISSING"
+              : "CANONICAL_BACKEND_ROW_PRICE",
         },
         smartEstimateProjectionV2: {
           progressiveDisclosure: true,
@@ -187,9 +196,12 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
         canonicalCostTreatment: costTreatment,
         payable: costTreatment == null
           ? row.includedInEstimate
-          : !["INCLUDED_IN_RESOURCE_ROWS", "INFORMATIONAL_SCOPE", "CONTROL_OR_DOCUMENT"].includes(costTreatment),
+          : !nonPayableComposition,
         includedInEstimate: row.includedInEstimate,
         includedInProcurement: row.includedInProcurement,
+        manualQuantityOverride: row.calculationTrace?.manualQuantityOverride === true,
+        calculatedQuantityBeforeOverride:
+          row.calculationTrace?.calculatedQuantityBeforeOverride ?? null,
         ...(physicalNormApplicability == null ? {} : {
           professionalPhysicalNormApplicabilityV1: physicalNormApplicability,
         }),
@@ -203,7 +215,7 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
       catalogItemId: null,
       includedInEstimate: row.includedInEstimate,
       includedInProcurement: row.includedInProcurement,
-      optional: !row.includedInEstimate,
+      optional: !row.includedInEstimate && !nonPayableComposition,
       editable: row.ownershipStatus !== "MIGRATED_UNOWNED_EXCLUDED_FROM_TOTAL",
     };
   });

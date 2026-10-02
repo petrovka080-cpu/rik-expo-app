@@ -6,14 +6,22 @@ import { resolve } from "node:path";
 type Json = Record<string, any>;
 
 const HOST = "127.0.0.1";
-const PORT = 54_329;
+const configuredPort = Number(process.env.LOCAL_DEVELOPER_AUTH_BROKER_PORT ?? 54_329);
+const configuredWebPort = Number(process.env.LOCAL_DEVELOPER_WEB_PORT ?? 8_081);
+invariantPort(configuredPort, "LOCAL_DEVELOPER_AUTH_BROKER_PORT_INVALID");
+invariantPort(configuredWebPort, "LOCAL_DEVELOPER_WEB_PORT_INVALID");
+const PORT = configuredPort;
 const CREDENTIALS = resolve(
   ".release-runtime/r551/runtime/local-developer/credentials.json",
 );
 const ALLOWED_ORIGINS = new Set([
-  "http://localhost:8081",
-  "http://127.0.0.1:8081",
+  `http://localhost:${configuredWebPort}`,
+  `http://127.0.0.1:${configuredWebPort}`,
 ]);
+
+function invariantPort(value: number, code: string): asserts value is number {
+  if (!Number.isInteger(value) || value < 1024 || value > 65_535) throw new Error(code);
+}
 
 function invariant(value: unknown, code: string): asserts value {
   if (!value) throw new Error(code);

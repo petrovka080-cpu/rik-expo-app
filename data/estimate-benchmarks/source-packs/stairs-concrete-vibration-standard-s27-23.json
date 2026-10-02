@@ -1,0 +1,121 @@
+{
+  "schemaVersion": "rik-expo-app.s27-23.stairs-concrete-vibration-standard-source-pack.v1",
+  "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_vibrate_standard",
+  "scope": "Atomic internal-vibration operation for freshly placed stair concrete; concrete supply, placement, formwork, reinforcement, finishing and curing remain with their owning operations.",
+  "sources": [
+    {
+      "sourceId": "ACI_309_CONSOLIDATION_PREVIEW_2026_10_01",
+      "authority": "American Concrete Institute",
+      "officialUrl": "https://www.concrete.org/Portals/0/Files/PDF/Previews/30905_2pager.pdf",
+      "artifactSha256": "20b986aa1c5905745dc5fceec4ab42921e56dec48952c2bfc8b38161dbb555de",
+      "exactLocator": "Public preview pp. 1-2: consolidation removes entrapped air; contents identify vibration, internal vibrators, procedure and quality control. The public preview does not provide universal productivity.",
+      "role": "METHOD_APPLICABILITY_NOT_UNIVERSAL_PRODUCTIVITY"
+    },
+    {
+      "sourceId": "WACKER_NEUSON_IRFU_TECHNICAL_DATA_2026_10_01",
+      "authority": "Wacker Neuson",
+      "officialUrl": "https://www.wackerneuson.com/ru/en/products/concrete-technology/internal-vibrators/irfu/technical-data/tab",
+      "artifactSha256": "e72748781710b261244489c21e53944be476c9d0325a2b7d8269e1054440cf51",
+      "exactLocator": "IRFU45/230/5 technical-data row: 0.88 kW, 45 mm head, 5 m hose, 15 m cable, 12,000 1/min, IP67, 220-240 V.",
+      "role": "SELECTED_EQUIPMENT_TECHNICAL_DATA"
+    },
+    {
+      "sourceId": "S27_23_VISIBLE_STAIRS_VIBRATION_PLANNING_PROFILE",
+      "authority": "Visible replaceable preliminary planning profile",
+      "officialUrl": null,
+      "artifactSha256": null,
+      "exactLocator": "All productivity, labor, rental, cleaning, quality-control and logistics values are visible inputs and must be replaced by the approved method statement, equipment schedule and supplier quote.",
+      "role": "VISIBLE_REPLACEABLE_PRELIMINARY_ASSUMPTION"
+    }
+  ],
+  "selectedPreliminaryProfile": {
+    "approvedConsolidationMethod": "INTERNAL_VIBRATION",
+    "selectedVibratorReference": "Wacker Neuson IRFU45/230/5 preliminary selection",
+    "vibratorHeadDiameterMm": 45,
+    "vibratorNominalPowerKw": 0.88,
+    "vibratorVibrationsPerMin": 12000,
+    "machineProductivityM3PerMachineHour": 3,
+    "laborProductivityM3PerManHour": 0.8,
+    "rentalShiftHour": 8,
+    "activeVibratorCount": 1,
+    "backupVibratorCount": 1,
+    "electricalProtectionSetCount": 1,
+    "extensionCableSetCount": 1,
+    "cleaningLaborHPerUsedVibrator": 0.25,
+    "cleaningWaterM3PerUsedVibrator": 0.025,
+    "cleaningBrushCount": 1,
+    "cleaningWipePackageCount": 1,
+    "washWaterContainerCount": 1,
+    "qualityRecordCount": 1,
+    "mobilizationTripCount": 2,
+    "washWaterDisposalTripCount": 1,
+    "assumptionPolicy": "ACI 309 is used only for method applicability. Machine productivity, labor productivity and support quantities are editable first-estimate assumptions, never universal ACI or manufacturer norms; equipment suitability must be confirmed against the stair geometry, reinforcement spacing and approved method statement. Machine-hours describe use, rental shifts are the payable equipment owner, and the informational machine-use row must not be priced again. Cleaning labor and water are calculated per used vibrator, not copied from operating machine-hours."
+  },
+  "acceptanceFixture": {
+    "consolidatedConcreteVolumeM3": 12,
+    "changedConcreteVolumeM3": 18
+  },
+  "engineeringLimitations": [
+    "Manufacturer power and head data do not prove the visible 3 m3/machine-hour or 0.8 m3/man-hour planning assumptions; those values require replacement by the approved method or norm.",
+    "Machine use is informational and rental shifts own equipment cost. Cleaning has its own labor quantity and does not reuse operating machine-hours, preventing double payment.",
+    "The profile does not calculate or procure concrete; concrete belongs to the placement operation.",
+    "The 45 mm head is a preliminary equipment selection and requires confirmation against member dimensions, reinforcement spacing and mixture workability.",
+    "Automatic hours are first-estimate planning quantities derived from visible editable productivities, not quoted ACI productivities.",
+    "Unknown prices remain null until a supplier or project price source is selected.",
+    "Waste-water handling is a visible planning scope and must be reconciled with the approved environmental method."
+  ],
+  "independentRequiredComponents": [
+    {
+      "semanticKey": "scope_and_applicability",
+      "requiredRowIds": [
+        "concrete-stairs-vibration:01:control:scope-volume",
+        "concrete-stairs-vibration:01:control:method-applicability",
+        "concrete-stairs-vibration:01:control:equipment-suitability"
+      ]
+    },
+    {
+      "semanticKey": "equipment_preparation",
+      "requiredRowIds": [
+        "concrete-stairs-vibration:02:operation:equipment-check",
+        "concrete-stairs-vibration:02:equipment:electrical-protection",
+        "concrete-stairs-vibration:02:equipment:extension-cable"
+      ]
+    },
+    {
+      "semanticKey": "consolidation_operation",
+      "requiredRowIds": [
+        "concrete-stairs-vibration:03:operation:internal-vibration",
+        "concrete-stairs-vibration:03:labor:vibration-crew",
+        "concrete-stairs-vibration:03:equipment:active-vibrator",
+        "concrete-stairs-vibration:03:equipment:rental-shifts",
+        "concrete-stairs-vibration:03:equipment:backup-vibrator",
+        "concrete-stairs-vibration:03:material:electricity"
+      ]
+    },
+    {
+      "semanticKey": "equipment_cleaning",
+      "requiredRowIds": [
+        "concrete-stairs-vibration:04:operation:cleaning",
+        "concrete-stairs-vibration:04:labor:cleaning",
+        "concrete-stairs-vibration:04:consumable:cleaning-water",
+        "concrete-stairs-vibration:04:consumable:brush",
+        "concrete-stairs-vibration:04:consumable:wipes",
+        "concrete-stairs-vibration:04:equipment:wash-water-container"
+      ]
+    },
+    {
+      "semanticKey": "quality_control",
+      "requiredRowIds": [
+        "concrete-stairs-vibration:05:control:quality-record",
+        "concrete-stairs-vibration:05:control:no-concrete-double-count"
+      ]
+    },
+    {
+      "semanticKey": "logistics_and_waste",
+      "requiredRowIds": [
+        "concrete-stairs-vibration:06:delivery:mobilization",
+        "concrete-stairs-vibration:06:delivery:wash-water"
+      ]
+    }
+  ]
+}

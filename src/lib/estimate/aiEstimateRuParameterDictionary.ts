@@ -60,6 +60,7 @@ const PARAMETER_DICTIONARY: Record<string, AiEstimateRuParameterDictionaryEntry>
   thickness_m: entry("thickness_m", "Толщина", "m", ["толщина"], "толщина", "Толщина слоя, стены, покрытия или конструкции."),
   insulation_thickness_mm: entry("insulation_thickness_mm", "Толщина утепления", "mm", ["утепление", "толщина утеплителя"], "толщина утепления", "Толщина теплоизоляции."),
   insulation_mm: entry("insulation_mm", "Толщина утеплителя", "mm", ["утеплитель"], "толщина утеплителя", "Толщина утеплителя в миллиметрах."),
+  depth_m: entry("depth_m", "Глубина", "m", ["глубина скважины", "глубина бурения"], "глубина", "Глубина скважины, выработки или конструкции в метрах."),
   depth_mm: entry("depth_mm", "Глубина", "mm", ["глубина"], "глубина", "Глубина штробы, отверстия, слоя или узла."),
   trench_depth_m: entry("trench_depth_m", "Глубина траншеи", "m", ["глубина траншеи"], "глубина траншеи", "Глубина траншеи для земляных работ."),
   diameter_mm: entry("diameter_mm", "Диаметр", "mm", ["диаметр", "DN", "сечение"], "диаметр", "Диаметр трубы, отверстия или инженерного элемента."),
@@ -140,6 +141,7 @@ const TECHNICAL_HIDDEN_KEYS = new Set([
 
 const UNIT_LABELS: Record<string, string> = {
   m3_h: "\u043c\u00b3/\u0447",
+  m3_per_hour: "м³/ч",
   m3_day: "\u043c\u00b3/\u0441\u0443\u0442",
   m2: "м²",
   sq_m: "м²",
@@ -164,7 +166,9 @@ const UNIT_LABELS: Record<string, string> = {
   t_km: "т·км",
   "t*km": "т·км",
   kg_m3: "кг/м³",
+  m2_per_m3: "м²/м³",
   percent: "%",
+  ratio: "коэф.",
   one: "",
   km: "км",
   l_m2: "л/м²",
@@ -172,6 +176,7 @@ const UNIT_LABELS: Record<string, string> = {
   hour: "ч",
   man_hour: "чел.-ч",
   machine_hour: "маш.-ч",
+  machine_hour_per_m3: "маш.-ч/м³",
   m2_man_hour: "м²/чел.-ч",
   m2_machine_hour: "м²/маш.-ч",
   m3_machine_hour: "м³/маш.-ч",

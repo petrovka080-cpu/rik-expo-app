@@ -17,6 +17,7 @@ import {
   REPORTS_AI_ASSISTANT_ROUTE,
   REPORTS_DASHBOARD_ROUTE,
   REPORTS_MODULE_ROUTES,
+  resolveNativeAppDeepLinkTarget,
   resolvePublicRequestDeepLinkTarget,
   SELLER_ROUTE,
   SUPPLIER_MAP_ROUTE,
@@ -99,5 +100,29 @@ describe("coreRoutes", () => {
       params: { prompt: "roof 120" },
       normalizedPath: "/request",
     });
+  });
+
+  it("maps allowlisted rik app links to internal Expo Router routes", () => {
+    expect(resolveNativeAppDeepLinkTarget("rik://market?category=materials")).toEqual({
+      href: "/(tabs)/market?category=materials",
+      normalizedPath: "/market",
+      query: "?category=materials",
+    });
+    expect(resolveNativeAppDeepLinkTarget("rik://office/buyer")).toEqual({
+      href: "/office/buyer",
+      normalizedPath: "/office/buyer",
+      query: "",
+    });
+    expect(resolveNativeAppDeepLinkTarget("rik://product/listing-1?from=market")).toEqual({
+      href: "/product/listing-1?from=market",
+      normalizedPath: "/product/listing-1",
+      query: "?from=market",
+    });
+  });
+
+  it("rejects external and unknown native routes", () => {
+    expect(resolveNativeAppDeepLinkTarget("https://example.test/market")).toBeNull();
+    expect(resolveNativeAppDeepLinkTarget("rik://unknown-route")).toBeNull();
+    expect(resolveNativeAppDeepLinkTarget("rik://office/not-a-role")).toBeNull();
   });
 });

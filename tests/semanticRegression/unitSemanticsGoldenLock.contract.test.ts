@@ -1,6 +1,7 @@
 import { SEMANTIC_CONFUSION_GOLDEN_PROMPTS } from "../../src/lib/ai/constructionInterpreter/fixtures/semanticConfusionGoldenPairs";
 import { validateConstructionUnitSemantics } from "../../src/lib/ai/constructionFormulas";
 import { answerBuiltInAi } from "../../src/lib/ai/builtInAi";
+import { buildTemplateRatebookEstimate } from "../globalEstimate/globalEstimateTemplateRatebookTestHelpers";
 import { allEstimateRows, evaluateSemanticPrompt, lowerText, writeOpenWorldArtifact } from "./openWorldSemanticTestHelpers";
 
 describe("open-world unit semantics golden lock", () => {
@@ -68,6 +69,20 @@ describe("open-world unit semantics golden lock", () => {
     expect(validateConstructionUnitSemantics(estimate!).failures).toEqual([]);
   });
 
+  it("keeps the explicit linoleum ratebook template dimensional by resource", () => {
+    const estimate = buildTemplateRatebookEstimate("linoleum_laying", 60);
+    const rows = allEstimateRows(estimate);
+    const byCode = new Map(rows.map((row) => [row.code, row]));
+
+    expect(byCode.get("linoleum_covering")?.unit).toBe("sq_m");
+    expect(byCode.get("linoleum_adhesive_tape")?.unit).toBe("sq_m");
+    expect(byCode.get("linoleum_baseboard")?.unit).toBe("linear_m");
+    expect(byCode.get("linoleum_thresholds")?.unit).toBe("pcs");
+    expect(byCode.get("linoleum_baseboard_install")?.unit).toBe("linear_m");
+    expect(byCode.get("linoleum_threshold_install")?.unit).toBe("pcs");
+    expect(validateConstructionUnitSemantics(estimate).failures).toEqual([]);
+  });
+
   it("does not treat every professional WBS phase in a concrete-delivery scope as a logistics trip", () => {
     const answer = answerBuiltInAi({
       text: "смета на доставка бетона 30 м³",
@@ -83,12 +98,15 @@ describe("open-world unit semantics golden lock", () => {
     expect(estimate).toBeDefined();
     expect(estimate!.work.workKey).toBe("concrete_delivery");
     const rows = allEstimateRows(estimate!);
-    const concreteRows = rows.filter((row) => /бетон|бетононасос|заливк/i.test(row.name));
+    const concreteRows = rows.filter((row) => ["material_1", "labor_4", "equipment_2"].includes(row.code));
+    const contextualPlanningRows = rows.filter((row) => ["survey", "layout"].includes(row.code));
     const tripRows = rows.filter((row) => row.unit === "trip");
 
     expect(rows).toHaveLength(14);
     expect(concreteRows).toHaveLength(3);
     expect(concreteRows.every((row) => row.unit === "m3")).toBe(true);
+    expect(contextualPlanningRows).toHaveLength(2);
+    expect(contextualPlanningRows.every((row) => row.unit === "set")).toBe(true);
     expect(tripRows).toHaveLength(1);
     expect(tripRows.every((row) => /доставк|логист/i.test(row.name))).toBe(true);
     expect(rows.some((row) => row.unit === "m3")).toBe(true);

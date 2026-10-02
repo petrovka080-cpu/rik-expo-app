@@ -14,11 +14,15 @@ describe("template professional readiness classification", () => {
     expect(classified.formula_status).toBe("PRESENT");
     expect(classified.material_recipe_status).toBe("PRESENT");
     expect(classified.labor_recipe_status).toBe("PRESENT");
-    expect(classified.norm_source_type).toBe("partial_versioned_professional_norm_pack");
+    expect(classified.norm_source_type).toBe("unverified_source");
     expect(classified.unit_policy_id).toBeTruthy();
     expect(classified.ui_renderer_policy_id).toBeTruthy();
     expect(classified.pdf_policy_id).toBeTruthy();
     expect(classified.buyer_handoff_policy_id).toBeTruthy();
-    expect(classified.professional_acceptance_blockers).toEqual(["not_every_row_has_source_backed_norm"]);
+    expect(classified.professional_acceptance_blockers).toEqual([
+      "not_every_row_has_source_backed_norm",
+      "unverified_norm_source_rows:59",
+      "unverified_norm_source",
+    ]);
   });
 });

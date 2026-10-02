@@ -100,7 +100,7 @@ function workingHeightMFromDraft(draft: ConsumerRepairAiDraft): number | null {
   return null;
 }
 
-function basisAreaM2(draft: ConsumerRepairAiDraft): number | null {
+function basisAreaRows(draft: ConsumerRepairAiDraft): ConsumerRepairAiDraft["items"] {
   const areaRows = draft.items.filter((item) =>
     ["m2", "sq_m", "sqm"].includes(item.unit.toLocaleLowerCase("en")) &&
     item.quantity != null && Number.isFinite(item.quantity) &&
@@ -109,10 +109,25 @@ function basisAreaM2(draft: ConsumerRepairAiDraft): number | null {
   const measuredWorkRows = areaRows.filter((item) =>
     item.itemType === "work" && item.sourceParameters?.includedInEstimate !== false
   );
-  const areas = (measuredWorkRows.length > 0 ? measuredWorkRows : areaRows)
+  return measuredWorkRows.length > 0 ? measuredWorkRows : areaRows;
+}
+
+function basisAreaM2(draft: ConsumerRepairAiDraft): number | null {
+  const areas = basisAreaRows(draft)
     .map((item) => item.quantity)
     .filter((value): value is number => value != null && Number.isFinite(value) && value > 0);
   return areas.length > 0 ? Math.max(...areas) : null;
+}
+
+function basisAreaDependencyKeys(draft: ConsumerRepairAiDraft): string[] {
+  const keys = basisAreaRows(draft).flatMap((item) => {
+    const declared = Array.isArray(item.sourceParameters?.affectedBy)
+      ? item.sourceParameters.affectedBy.filter((value): value is string => typeof value === "string")
+      : [];
+    const formulaIdentifiers = (item.quantityFormula ?? "").match(/[a-zA-Z_][a-zA-Z0-9_]*/g) ?? [];
+    return [...declared, ...formulaIdentifiers];
+  });
+  return [...new Set(keys)];
 }
 
 function accessShiftCount(areaM2: number | null): number {
@@ -174,6 +189,7 @@ function accessSourceParameters(input: {
   areaM2: number | null;
   workingHeightM: number | null;
   procurement: boolean;
+  affectedBy?: readonly string[];
 }): Record<string, unknown> {
   return {
     elevatedWorkAccessPolicy: ACCESS_POLICY_ID,
@@ -185,6 +201,7 @@ function accessSourceParameters(input: {
       ? "WORKING_HEIGHT_CONFIRMATION_REQUIRED"
       : "PRELIMINARY_SELECTION_REQUIRES_PPR_CONFIRMATION",
     includedInProcurement: input.procurement,
+    ...(input.affectedBy?.length ? { affectedBy: [...input.affectedBy] } : {}),
   };
 }
 
@@ -203,6 +220,7 @@ function accessItem(input: {
   procurement: boolean;
   currency: string;
   normFamilyId: string;
+  affectedBy?: readonly string[];
 }): ConsumerRepairAiDraft["items"][number] {
   return {
     itemType: input.itemType,
@@ -263,6 +281,7 @@ function normalizeExistingAccessItem(input: {
   workingHeightM: number | null;
   procurement: boolean;
   category?: string;
+  affectedBy?: readonly string[];
 }): ConsumerRepairAiDraft["items"][number] {
   return {
     ...input.item,
@@ -286,6 +305,7 @@ function normalizeExistingAccessItem(input: {
         areaM2: input.areaM2,
         workingHeightM: input.workingHeightM,
         procurement: input.procurement,
+        affectedBy: input.affectedBy,
       }),
     },
   };
@@ -313,6 +333,7 @@ export function applyElevatedWorkAccessPolicy(
   ) return draft;
 
   const areaM2 = basisAreaM2(draft);
+  const areaDependencyKeys = basisAreaDependencyKeys(draft);
   const shifts = accessShiftCount(areaM2);
   const currency = draft.items.find((item) => item.currency?.trim())?.currency?.trim() ?? "KGS";
   const accessSystem = preliminaryAccessSystem(requestScopeText, workingHeightM);
@@ -350,6 +371,7 @@ export function applyElevatedWorkAccessPolicy(
         workingHeightM,
         procurement: true,
         category: "equipment",
+        affectedBy: areaDependencyKeys,
       });
     }
     if (ACCESS_ASSEMBLY_RE.test(item.titleRu)) {
@@ -360,6 +382,7 @@ export function applyElevatedWorkAccessPolicy(
         areaM2,
         workingHeightM,
         procurement: false,
+        affectedBy: areaDependencyKeys,
       });
     }
     if (ACCESS_DELIVERY_RE.test(item.titleRu)) {
@@ -392,6 +415,7 @@ export function applyElevatedWorkAccessPolicy(
         workingHeightM,
         procurement: true,
         category: "equipment",
+        affectedBy: areaDependencyKeys,
       });
     }
     if (CONCRETE_ACCESS_EQUIPMENT_RE.test(item.titleRu)) {
@@ -403,6 +427,7 @@ export function applyElevatedWorkAccessPolicy(
         workingHeightM,
         procurement: true,
         category: "equipment",
+        affectedBy: areaDependencyKeys,
       });
     }
     return item;
@@ -425,6 +450,7 @@ export function applyElevatedWorkAccessPolicy(
       procurement: true,
       currency,
       normFamilyId: accessSystem.normFamilyId,
+      affectedBy: areaDependencyKeys,
     }));
   }
   if (!hasAssembly) {
@@ -443,6 +469,7 @@ export function applyElevatedWorkAccessPolicy(
       procurement: false,
       currency,
       normFamilyId: accessSystem.normFamilyId,
+      affectedBy: areaDependencyKeys,
     }));
   }
   if (!hasDelivery) {
@@ -497,6 +524,7 @@ export function applyElevatedWorkAccessPolicy(
       procurement: true,
       currency,
       normFamilyId: "norm-family:elevated-access:drywall-board-lift",
+      affectedBy: areaDependencyKeys,
     }));
   }
 

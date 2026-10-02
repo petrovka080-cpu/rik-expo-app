@@ -22,11 +22,15 @@ import type {
   EstimateDraftRevision,
   ProfessionalBoqRow,
 } from "../../src/lib/estimate/estimateDraftRevisionContract";
+import {
+  GREEN_AI_ESTIMATE_PARAMETER_RUNTIME_MATRIX_READY,
+  STOP_AI_ESTIMATE_PARAMETER_RUNTIME_MATRIX_FAILED,
+} from "./aiEstimateParameterRuntimeMatrixContract";
 
-export const GREEN_AI_ESTIMATE_PARAMETER_RUNTIME_MATRIX_READY =
-  "GREEN_AI_ESTIMATE_PARAMETER_RUNTIME_MATRIX_READY" as const;
-export const STOP_AI_ESTIMATE_PARAMETER_RUNTIME_MATRIX_FAILED =
-  "STOP_AI_ESTIMATE_PARAMETER_RUNTIME_MATRIX_FAILED" as const;
+export {
+  GREEN_AI_ESTIMATE_PARAMETER_RUNTIME_MATRIX_READY,
+  STOP_AI_ESTIMATE_PARAMETER_RUNTIME_MATRIX_FAILED,
+} from "./aiEstimateParameterRuntimeMatrixContract";
 
 type MatrixBucket = "random" | "critical" | "infrastructure" | "repair" | "foreman";
 

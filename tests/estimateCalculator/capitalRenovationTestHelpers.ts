@@ -6,7 +6,7 @@ import {
   type ConsumerRepairRequestItem,
 } from "../../src/lib/consumerRequests";
 import { createCanonicalConsumerRepairAuditDraft } from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
-import type { ContinuousEstimateDetectorRow } from "../../src/lib/ai/estimateContinuousDetection";
+import type { ContinuousEstimateDetectorRow } from "../../scripts/estimate/detectors";
 import {
   ELEVATED_WORK_ACCESS_POLICY_ID,
   ELEVATED_WORK_ACCESS_SUPPLEMENT_ROW_CODES,

@@ -1,8 +1,32 @@
 import {
+  CATALOG_INDEPENDENT_COMPLETENESS_MAP_CONTRACT,
+  evaluateCatalogIndependentContentEvidence,
   isCatalogFirstEstimateKnownGeometryParameter,
   isCatalogFirstEstimateProjectSpecificRefinementParameter,
   sourceBackedPhysicalNormOutputParameterIds,
 } from "./catalogFirstEstimateMinimumInputAudit.shared";
+
+const passportIdentity = {
+  definitionVersionId: "definition-v1",
+  releaseId: "release-v1",
+  catalogId: "canonical-work:base:test",
+  contractVersion: "real-professional-estimates-r3.content-passport.v1",
+  parameterCount: 2,
+  formulaCount: 1,
+  resourceCount: 1,
+};
+
+function evaluateContent(passport: Record<string, unknown> | null) {
+  return evaluateCatalogIndependentContentEvidence({
+    expectedDefinitionVersionId: "definition-v1",
+    expectedReleaseId: "release-v1",
+    expectedCatalogId: "canonical-work:base:test",
+    expectedParameterCount: 2,
+    expectedFormulaCount: 1,
+    expectedResourceCount: 1,
+    passport,
+  });
+}
 
 const sourceIdentity = {
   source_id: "source:knauf-d112",
@@ -26,6 +50,96 @@ function resource(input: {
 }
 
 describe("catalog first-estimate professional-source classification", () => {
+  test("does not treat a missing content passport as professional completeness", () => {
+    expect(evaluateContent(null)).toEqual({
+      status: "MISSING_CONTENT_PASSPORT",
+      gapVerdict: "GAP_INDEPENDENT_CONTENT_PASSPORT_MISSING",
+      entryCount: 0,
+    });
+  });
+
+  test("does not accept a structural GREEN without an independent completeness map", () => {
+    expect(evaluateContent({
+      ...passportIdentity,
+      decision: {
+        contract: passportIdentity.contractVersion,
+        allowed: true,
+        status: "GREEN",
+      },
+    }).status).toBe("MISSING_INDEPENDENT_COMPLETENESS_MAP");
+  });
+
+  test("accepts a current independent operation-to-resource mapping", () => {
+    expect(evaluateContent({
+      ...passportIdentity,
+      decision: {
+        contract: passportIdentity.contractVersion,
+        allowed: true,
+        status: "GREEN",
+        independentCompletenessMap: {
+          contract: CATALOG_INDEPENDENT_COMPLETENESS_MAP_CONTRACT,
+          sourceKind: "NORMATIVE_OPERATION_MAP",
+          generatedFromCurrentRows: false,
+          evidenceSha256: "a".repeat(64),
+          entries: [{
+            operationId: "operation:prepare",
+            expectedResourceId: "resource:primer",
+            condition: "selected_system_requires_primer",
+            sourceId: "tds:system:v1:section-4",
+            formulaId: "formula:primer",
+            resolution: { kind: "ROW", rowId: "row:primer" },
+          }],
+        },
+      },
+    })).toEqual({
+      status: "CURRENT_WITH_INDEPENDENT_COMPLETENESS_MAP",
+      gapVerdict: null,
+      entryCount: 1,
+    });
+  });
+
+  test.each([
+    ["generated from audited rows", { generatedFromCurrentRows: true }],
+    ["missing source", { entries: [{
+      operationId: "operation:prepare",
+      expectedResourceId: "resource:primer",
+      condition: "required",
+      formulaId: "formula:primer",
+      resolution: { kind: "ROW", rowId: "row:primer" },
+    }] }],
+    ["unexplained not-applicable", { entries: [{
+      operationId: "operation:prepare",
+      expectedResourceId: "resource:primer",
+      condition: "selected_system_requires_primer",
+      sourceId: "tds:system:v1:section-4",
+      resolution: { kind: "NOT_APPLICABLE" },
+    }] }],
+  ])("rejects an invalid independent completeness map: %s", (_label, override) => {
+    const baseMap = {
+      contract: CATALOG_INDEPENDENT_COMPLETENESS_MAP_CONTRACT,
+      sourceKind: "TECHNOLOGY_MAP",
+      generatedFromCurrentRows: false,
+      evidenceSha256: "b".repeat(64),
+      entries: [{
+        operationId: "operation:prepare",
+        expectedResourceId: "resource:primer",
+        condition: "required",
+        sourceId: "tds:system:v1:section-4",
+        formulaId: "formula:primer",
+        resolution: { kind: "ROW", rowId: "row:primer" },
+      }],
+    };
+    expect(evaluateContent({
+      ...passportIdentity,
+      decision: {
+        contract: passportIdentity.contractVersion,
+        allowed: true,
+        status: "GREEN",
+        independentCompletenessMap: { ...baseMap, ...override },
+      },
+    }).status).toBe("INVALID_INDEPENDENT_COMPLETENESS_MAP");
+  });
+
   test("does not promote source-confirmed project quantities to initial geometry", () => {
     expect(isCatalogFirstEstimateKnownGeometryParameter({
       parameter_id: "area_m2",

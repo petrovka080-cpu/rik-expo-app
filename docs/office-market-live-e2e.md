@@ -12,6 +12,57 @@ Remove-Item Env:\LIVE_E2E
 
 The runner is intentionally separate from release, build, native, and full-Jest gates.
 
+## Native Android command
+
+The native matrix is a separate terminal and consumes one explicit GREEN Web summary so
+the exact isolated request and Market listing created by that run can be read back from the
+installed application:
+
+```powershell
+$env:LIVE_E2E = "1"
+$env:OFFICE_E2E_SOURCE_WEB_SUMMARY = ".release-runtime/office-ai-market-live-e2e/<timestamp>/summary.json"
+npm run e2e:office-market-live-native-android
+Remove-Item Env:\OFFICE_E2E_SOURCE_WEB_SUMMARY
+Remove-Item Env:\LIVE_E2E
+```
+
+The native runner requires the installed `com.azisbek_dzhantaev.rikexpoapp` development
+application on an API 34 emulator. It does not build or install an APK, clear application
+data, wipe the emulator, start Chrome, or use developer role switching. Each of the six
+prepared staging actors signs in and out through the ordinary native UI. The runner checks
+the allowed role screen, live business rows, a denied cross-role route, and the linked Market
+feed/detail/owner-history surfaces.
+
+This terminal is a role/guard/read smoke, not acceptance of native ERP mutations,
+estimate lifecycle, documents, or Market media creation. Those actions require their own
+receipts. Its green status is:
+
+```text
+GREEN_OFFICE_AI_MARKET_NATIVE_ROLE_GUARD_READ_SMOKE_NO_BUILD_NO_APP_DATA_CLEAR
+```
+
+After a failed run, a validated contiguous GREEN role prefix can be reused without replaying
+it. Set `OFFICE_E2E_NATIVE_RESUME_SUMMARY` to that failed run's `summary.json`; the runner
+requires the same source SHA, linked Web summary, API 34 device, successful sign-outs, role
+order, and Market proof before it resumes at the first unfinished role.
+
+The separate mutation terminal consumes both the Web summary and the GREEN native smoke:
+
+```powershell
+$env:LIVE_E2E = "1"
+$env:OFFICE_E2E_SOURCE_WEB_SUMMARY = ".release-runtime/office-ai-market-live-e2e/<timestamp>/summary.json"
+$env:OFFICE_E2E_SOURCE_NATIVE_SMOKE_SUMMARY = ".release-runtime/office-ai-market-live-native-android-e2e/<timestamp>/summary.json"
+npm run e2e:office-market-live-native-actions
+```
+
+It creates an RFQ for one exact item in the isolated Web-run request, verifies its tender/item
+readback and native reopen, then creates a run-namespaced Market listing. The Market path uses
+the Android system photo picker, exercises upload/replace/remove/re-add, publishes through the
+ordinary owner UI, verifies the listing/media rows and public image bytes, and reopens both the
+native detail and owner history. It does not clear app data, build/install an APK, or use a
+service-role key. Its terminal is
+`GREEN_OFFICE_MARKET_NATIVE_ACTIONS_AND_MEDIA_READBACK`.
+
 ## Required Environment
 
 - `OFFICE_E2E_TARGET_ENV` must not be `production`.
@@ -26,6 +77,18 @@ The runner is intentionally separate from release, build, native, and full-Jest 
 - `E2E_ACCOUNTANT_EMAIL` / `E2E_ACCOUNTANT_PASSWORD`
 
 Missing or invalid credentials stop the run non-zero. There is no developer full-access fallback.
+
+## Authentication ownership
+
+This harness is the source of truth for live platform role acceptance. Every role starts at
+`/auth/login`, signs in with its own prepared staging account, and keeps that account for the
+whole business flow. It must not enter through `/request`, create anonymous users, or call
+`developer_set_effective_role_v1`.
+
+`scripts/dev/runLocalDeveloperRoleMatrixSmoke.ts` is a historical local-developer entitlement
+smoke. Its single owner session and effective-role switch are useful only for that local review
+surface; they are not evidence for staging role isolation, ERP, Market, or S27.5 platform
+acceptance.
 
 ## Evidence
 

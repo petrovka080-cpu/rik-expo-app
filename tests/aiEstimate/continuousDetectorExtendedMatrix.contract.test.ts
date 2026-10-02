@@ -1,4 +1,4 @@
-import { detectEstimateFakeRows, type ContinuousEstimateDetectorRow } from "../../src/lib/ai/estimateContinuousDetection/continuousAiEstimateDetector";
+import { detectEstimateFakeRows, type ContinuousEstimateDetectorRow } from "../../scripts/estimate/detectors/continuousAiEstimateDetector";
 import { extended100CertificationSummary } from "../estimateGolden/extended100TestHelpers";
 
 function detectorRow(input: Partial<ContinuousEstimateDetectorRow> = {}): ContinuousEstimateDetectorRow {

@@ -5,7 +5,7 @@ import { bindEstimateRowsToCatalogItems } from "../globalEstimate/catalogBinding
 import type { EstimateCatalogBindingResult } from "../globalEstimate/catalogBinding/globalEstimateCatalogBindingTypes";
 import type { CatalogItemForEstimate } from "../../catalog/catalogItemTypes";
 import {
-  __resetConsumerRepairRequestStoreForTests, addConsumerRepairRequestCatalogItem, approveConsumerRepairRequestDraft, attachConsumerRepairMedia, buildConsumerRepairCanonicalDraftPayload, compareConsumerRepairPayloadParity, createConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, getConsumerRepairRequestPdf, selectConsumerRepairRequestItemCatalogCandidate, sendConsumerRepairRequestToMarketplace, updateConsumerRepairRequestDraft, updateConsumerRepairRequestItemQuantity, validateConsumerRepairPayloadSourceGovernance } from "../../consumerRequests";
+  __resetConsumerRepairRequestStoreForTests, addConsumerRepairRequestCatalogItem, attachConsumerRepairMedia, buildConsumerRepairCanonicalDraftPayload, compareConsumerRepairPayloadParity, createConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, getConsumerRepairRequestPdf, selectConsumerRepairRequestItemCatalogCandidate, updateConsumerRepairRequestDraft, updateConsumerRepairRequestItemQuantity, validateConsumerRepairPayloadSourceGovernance } from "../../consumerRequests";
 import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../consumerRequests/consumerRequestGlobalEstimateIntegration";
 import type {
   ConsumerRepairCanonicalDraftPayload,
@@ -43,6 +43,7 @@ export type BuiltInAi1000PostBoqValidation = {
   category_resolved: string | null;
   correct_work_or_category_resolved: boolean;
   professional_boq_depth_passed: boolean;
+  professional_boq_depth_blockers: string[];
   professional_formula_quality_passed: boolean;
   boq_row_count: number;
   minimum_boq_rows: number;
@@ -297,19 +298,12 @@ async function buildPayloadTrace(input: {
     generatedAt: "2026-05-26T00:00:00.000Z",
   });
   bundle = attachConsumerRepairMedia({ requestDraftId: bundle.draft.id, mediaKind: "photo" });
-  bundle = approveConsumerRepairRequestDraft({
-    requestDraftId: bundle.draft.id,
-    userId: bundle.draft.consumerUserId,
-    generatedAt: "2026-05-26T00:00:00.000Z",
-  });
-
   const draftSave = buildConsumerRepairCanonicalDraftPayload(bundle, "draft_save");
   const pdfGeneration = buildConsumerRepairCanonicalDraftPayload(bundle, "pdf_generation");
   const marketplaceSend = buildConsumerRepairCanonicalDraftPayload(bundle, "marketplace_send");
   const parity = compareConsumerRepairPayloadParity({ draftSave, pdfGeneration, marketplaceSend });
   const sourceGovernance = [draftSave, pdfGeneration, marketplaceSend].map(validateConsumerRepairPayloadSourceGovernance);
   const pdf = getConsumerRepairRequestPdf({ requestDraftId: bundle.draft.id });
-  const sent = sendConsumerRepairRequestToMarketplace({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
 
   return normalizePayloadTrace({
     requestDraftId: bundle.draft.id,
@@ -319,7 +313,7 @@ async function buildPayloadTrace(input: {
     parity,
     sourceGovernance,
     pdfOpened: pdf.signedUrl.startsWith("data:application/pdf;base64,"),
-    marketplaceStatus: sent.marketplaceLink.status,
+    marketplaceStatus: "payload_ready_not_sent",
     manualCatalogItemId,
     editedQuantityPreserved: target
       ? draftSave.items.some((item) => item.id === target.id && item.quantity === Math.max(1, Number((target.quantity ?? 1).toFixed(2))))
@@ -447,6 +441,7 @@ export async function validateBuiltInAi1000PostBoqResult(
     category_resolved: estimate?.work.category ?? answer.route.category ?? null,
     correct_work_or_category_resolved: correctWorkResolution,
     professional_boq_depth_passed: depth?.passed ?? false,
+    professional_boq_depth_blockers: depth?.blockers ?? [],
     professional_formula_quality_passed: formula?.passed ?? false,
     boq_row_count: estimateRows.length,
     minimum_boq_rows: depth?.minimumRows ?? testCase.minimumBoqRows ?? 0,

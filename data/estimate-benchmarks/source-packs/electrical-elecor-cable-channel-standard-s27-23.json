@@ -1,0 +1,152 @@
+{
+  "schemaVersion": "rik-expo-app.s27-23.electrical-elecor-cable-channel-standard-source-pack.v1",
+  "profileId": "profile:electrical-cable-channel:elecor-40x25-standard:s27-23-r1",
+  "scope": "Supply and install an IEK ELECOR 40x25 white surface cable-channel route in a standard interior zone. Cable supply, cable pulling, devices, fire-rated routing and concealed works are separate technologies.",
+  "sources": [
+    {
+      "sourceId": "IEK_PLASTIC_CABLE_SYSTEMS_CATALOG_2026",
+      "authority": "IEK GROUP",
+      "officialUrl": "https://www.iek.ru/upload/iblock/e16/txvbl1aqwvzyemqxfotnfmzg3xmwil7u/Plastikovye-kabelenesushchie-sistemy.pdf",
+      "artifactSha256": "cd936577d94a7ab3a877a5548055bebd91dc7738a4476835e188ab1b2f5eb59a",
+      "exactLocator": "PDF pages 7-11; page 10 product table for ELECOR 40x25 white CKK10-040-025-1-K01 and 24 m package; pages 10-11 accessory selection table for 40x25 KМН/KМВ/KМП/KМТ/KМC/KМЗ; product length 2 m",
+      "role": "PRIMARY_MANUFACTURER_PRODUCT_AND_COMPATIBILITY"
+    },
+    {
+      "sourceId": "IEK_ELECOR_40X25_PRODUCT_PAGES_2026_10_01",
+      "authority": "IEK GROUP",
+      "officialUrl": "https://www.iek.ru/products/catalog/sistemy_dlya_prokladki_kabelya/kabel_kanaly_plastikovye/kabel_kanaly_elecor/aksessuary_dlya_magistralnykh_kabel_kanalov_belye",
+      "artifactSha256": "869e6805b12b6aacc03b884de3bbb1492441890db6d50f2dd58190fc75069cfc",
+      "exactLocator": "Official catalog category and captured official product pages: straight connector, inner corner, outer corner and end cap for ELECOR 40x25; accessories are compatible with ELECOR/ECOLINE and supplied as 4 items per set",
+      "role": "PRIMARY_MANUFACTURER_ACCESSORY_AND_PACKAGING"
+    },
+    {
+      "sourceId": "KG_KRERM_08_2015_ELECTRICAL_OFFICIAL",
+      "authority": "Министерство строительства, архитектуры и ЖКХ Кыргызской Республики",
+      "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/montazoborudovania-62169004e91aaf866.70682138.pdf",
+      "artifactSha256": "a0c3a8684c66a3d7ce5b30b5340562972e11f6a0df92a2240770af46fdae2c54",
+      "exactLocator": "Official КРЕРм-08-2015 publication snapshot and publication page; used for electrical-installation scope classification only, not as an unverified universal productivity rate",
+      "role": "KG_ELECTRICAL_INSTALLATION_SCOPE"
+    },
+    {
+      "sourceId": "S27_23_VISIBLE_CABLE_CHANNEL_PLANNING_PROFILE",
+      "authority": "S27.23 visible replaceable planning profile",
+      "officialUrl": "local://visible-planning-profile/electrical-elecor-cable-channel-standard-s27-23",
+      "artifactSha256": "RECORDED_AS_SOURCE_PACK_SHA256_BY_DEFINITION_OWNER",
+      "exactLocator": "selectedPreliminaryProfile fields and engineeringLimitations in this immutable source pack",
+      "role": "VISIBLE_REPLACEABLE_ASSUMPTIONS"
+    }
+  ],
+  "selectedPreliminaryProfile": {
+    "manufacturerSystem": "IEK ELECOR 40x25 white",
+    "channelSku": "CKK10-040-025-1-K01",
+    "channelSectionLengthM": 2,
+    "channelTransportPackM": 24,
+    "accessoryItemsPerSet": 4,
+    "channelReservePercent": 5,
+    "continuousRouteCount": 1,
+    "fastenerSpacingM": 0.5,
+    "fastenerPackageItem": 100,
+    "installerProductivityMPerManHour": 4,
+    "drillProductivityPointPerMachineHour": 60,
+    "cuttingProductivityMPerShift": 120,
+    "deliveryTripCount": 1,
+    "wasteRemovalTripCount": 1,
+    "workingHeightM": 2.5,
+    "substrateProfile": "SOLID_MASONRY_PRELIMINARY",
+    "assumptionPolicy": "The manufacturer system, exact SKU, 2 m section, 24 m transport package and compatible 40x25 accessory family are bound to official IEK documents. Installed section and straight-joint demand are calculated from the mounted route, never from transport-pack quantity; changing a purchase package may change order and remainder but cannot add installation joints. Reserve, route continuity, support spacing, fastening package, productivity, substrate, height and logistics are visible replaceable planning assumptions. Corner, tee and open-end counts are never inferred from route length and remain visible dependent clarifications."
+  },
+  "acceptanceFixture": {
+    "routeLengthM": 100,
+    "innerCornerCount": 2,
+    "outerCornerCount": 2,
+    "flatAngleCount": 1,
+    "teeCount": 1,
+    "openEndCount": 2
+  },
+  "independentRequiredComponents": [
+    {
+      "semanticKey": "route-survey-and-layout",
+      "requiredRowIds": [
+        "electrical-elecor:01:operation:route-survey",
+        "electrical-elecor:01:operation:route-layout",
+        "electrical-elecor:01:control:substrate-and-capacity"
+      ]
+    },
+    {
+      "semanticKey": "channel-procurement-and-cutting",
+      "requiredRowIds": [
+        "electrical-elecor:02:material:channel-net",
+        "electrical-elecor:02:material:channel-reserve",
+        "electrical-elecor:02:material:channel-packs",
+        "electrical-elecor:02:control:channel-order",
+        "electrical-elecor:02:control:channel-remainder",
+        "electrical-elecor:02:operation:cutting",
+        "electrical-elecor:02:equipment:cutting-tool",
+        "electrical-elecor:02:consumable:cutting-blades"
+      ]
+    },
+    {
+      "semanticKey": "base-fastening",
+      "requiredRowIds": [
+        "electrical-elecor:03:fastener:points",
+        "electrical-elecor:03:fastener:packages",
+        "electrical-elecor:03:control:fastener-order",
+        "electrical-elecor:03:control:fastener-remainder",
+        "electrical-elecor:03:operation:drill-and-fix",
+        "electrical-elecor:03:equipment:rotary-hammer",
+        "electrical-elecor:03:consumable:drill-bits"
+      ]
+    },
+    {
+      "semanticKey": "straight-joints",
+      "requiredRowIds": [
+        "electrical-elecor:04:component:straight-connectors-net",
+        "electrical-elecor:04:component:straight-connector-sets",
+        "electrical-elecor:04:control:straight-connector-order",
+        "electrical-elecor:04:control:straight-connector-remainder",
+        "electrical-elecor:04:operation:straight-joints"
+      ]
+    },
+    {
+      "semanticKey": "route-nodes",
+      "requiredRowIds": [
+        "electrical-elecor:05:component:inner-corner-sets",
+        "electrical-elecor:05:component:outer-corner-sets",
+        "electrical-elecor:05:component:flat-angle-sets",
+        "electrical-elecor:05:component:tee-sets",
+        "electrical-elecor:05:component:end-cap-sets",
+        "electrical-elecor:05:operation:inner-corners",
+        "electrical-elecor:05:operation:outer-corners",
+        "electrical-elecor:05:operation:flat-angles",
+        "electrical-elecor:05:operation:tees",
+        "electrical-elecor:05:operation:end-caps"
+      ]
+    },
+    {
+      "semanticKey": "assembly-labor",
+      "requiredRowIds": [
+        "electrical-elecor:06:operation:channel-installation",
+        "electrical-elecor:06:labor:installer-hours",
+        "electrical-elecor:06:operation:cover-closure"
+      ]
+    },
+    {
+      "semanticKey": "logistics-cleanup-and-acceptance",
+      "requiredRowIds": [
+        "electrical-elecor:07:delivery:materials",
+        "electrical-elecor:07:consumable:waste-bags",
+        "electrical-elecor:07:operation:cleanup",
+        "electrical-elecor:07:delivery:waste",
+        "electrical-elecor:07:control:acceptance"
+      ]
+    }
+  ],
+  "engineeringLimitations": [
+    "Transport packaging is procurement only. Installed section count is based on route length and section length, so spare sections do not receive fictitious straight connectors.",
+    "The 40x25 system is a selected preliminary manufacturer profile; cable fill, conductor system, fire classification and route environment must be checked before purchase.",
+    "Fastener type and capacity must be replaced after the actual substrate and loading are known; the preliminary solid-masonry profile is not structural approval.",
+    "Cable, cable pulling, terminations, devices, penetrations, fire stopping and energization are excluded from this bounded installation technology.",
+    "The КРЕРм source is not used to invent a universal labor or machine productivity; planning productivities remain visible and editable.",
+    "Unknown prices stay null and do not convert to zero."
+  ]
+}

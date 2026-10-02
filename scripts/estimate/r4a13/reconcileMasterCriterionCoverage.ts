@@ -35,10 +35,22 @@ const MASTER = resolve(
   "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (23).md",
 );
 const FINAL_ACCEPTANCE = resolve(ROOT, "master-final-reconciliation-v1/acceptance.json");
-const OUTPUT = resolve(ROOT, "master-criterion-coverage-v2/acceptance.json");
+const OUTPUT = resolve(ROOT, "master-criterion-coverage-v3/acceptance.json");
 const HISTORICAL_FUNCTIONAL = resolve(
   ".release-runtime/r4a13-6/affected-r4-final-candidate/jest-result.json",
 );
+const E6_LIVE = resolve(ROOT, "e6-marketplace-live-v1/acceptance.json");
+const E6_FAILURE_ATOMIC = resolve(ROOT, "e6-failure-atomic-v1/jest.json");
+const E6_CONSUMER_FOCUSED = resolve(ROOT, "e6-static-v1/consumer-focused-jest.json");
+const E6_CONSUMER_ARCHITECTURE = resolve(ROOT, "e6-affected-regression-v1/consumer-architecture.json");
+const E6_CORE_HISTORY = resolve(ROOT, "e6-affected-regression-v1/core-history.json");
+const E6_REQUEST_PAYLOAD = resolve(ROOT, "e6-affected-regression-v1/request-payload.json");
+const E6_BACKEND_WIRING = resolve(
+  "artifacts/S_B2C_REQUEST_MARKETPLACE_VALIDATION_PDF_BACKEND_50K_backend_wiring.json",
+);
+const E6_AI_PAYLOAD_WEB = resolve(ROOT, "e6-static-v1/ai1000-payload-playwright.stdout.log");
+const E6_TYPECHECK_ALL = resolve(ROOT, "e6-typecheck-v3/typecheck.stdout.log");
+const E6_TYPECHECK_FINAL = resolve(ROOT, "e6-typecheck-final/typecheck.stdout.log");
 const DATABASE_URL = process.env.R4A13_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const MASTER_SHA256 = "f02577c56d436913fd347a480a9ec45b25d25f25cc2b31eae2d0c2ae29c79fde";
@@ -58,6 +70,14 @@ function sha256(value: string | Buffer): string {
 
 function readJson(path: string): Json {
   return JSON.parse(readFileSync(path, "utf8").replace(/^\uFEFF/u, "")) as Json;
+}
+
+function readText(path: string): string {
+  const bytes = readFileSync(path);
+  if (bytes.length >= 2 && bytes[0] === 0xff && bytes[1] === 0xfe) {
+    return bytes.subarray(2).toString("utf16le");
+  }
+  return bytes.toString("utf8").replace(/^\uFEFF/u, "");
 }
 
 function evidence(path: string, expectedSha256?: string): EvidenceRef {
@@ -128,6 +148,23 @@ function assertHasTest(result: Json, suffix: string): void {
   invariant((result.testResults as Json[]).some((entry) => String(entry.name)
     .replaceAll("\\", "/").endsWith(suffix) && entry.status === "passed"),
   `HISTORICAL_TEST:${suffix}`);
+}
+
+function assertJestGreen(
+  label: string,
+  result: Json,
+  expectedSuites: number,
+  expectedTests: number,
+): void {
+  invariant(result.success === true, `${label}:SUCCESS`);
+  invariant(result.numPassedTestSuites === expectedSuites
+    && result.numTotalTestSuites === expectedSuites
+    && result.numFailedTestSuites === 0,
+  `${label}:SUITES`);
+  invariant(result.numPassedTests === expectedTests
+    && result.numTotalTests === expectedTests
+    && result.numFailedTests === 0,
+  `${label}:TESTS`);
 }
 
 const domainRules = [
@@ -207,6 +244,11 @@ const domainRules = [
     claims: ["photo_regression", "security_role_regression"],
   },
   {
+    id: "marketplace_integrity",
+    pattern: /market|marketplace|erp|маркет|закуп|procurement|offline|офлайн|concurr|конкур|atomic|атом|idempoten|retry|повтор/u,
+    claims: ["marketplace_atomic_handoff", "failure_atomicity", "marketplace_client_regression"],
+  },
+  {
     id: "release_boundary",
     pattern: /deploy|activation|release|ota|выпуск|production|store|публикац|активац/u,
     claims: ["release_boundary", "git_preservation"],
@@ -272,6 +314,105 @@ async function main(): Promise<void> {
   const [sourceRoleTests, sourceRoleTestsRef] = artifact(finalAcceptance, "sourceRoleTests");
   const [pumpTests, pumpTestsRef] = artifact(finalAcceptance, "pumpTests");
   const [aggregate, aggregateRef] = artifact(finalAcceptance, "aggregate");
+
+  const e6LiveRef = evidence(E6_LIVE,
+    "f3d0e95fee7eb0c45be2f3b84e589b4ceb837f9adce6b8473dcce2b40b7e60bd");
+  const e6FailureAtomicRef = evidence(E6_FAILURE_ATOMIC,
+    "5f52ad4d5cbd309862afb70cf72c2a3156de2462add559dd9bd2db63246f39f3");
+  const e6ConsumerFocusedRef = evidence(E6_CONSUMER_FOCUSED,
+    "5d2203af40c3c3447ffedf12f987f4870d08bed6e0e711d94cb76da5bc5aaad4");
+  const e6ConsumerArchitectureRef = evidence(E6_CONSUMER_ARCHITECTURE,
+    "ee5c4123b02398f0e5f7de05ed37d23fae98f44342d6f0dcf4237d402d446b4e");
+  const e6CoreHistoryRef = evidence(E6_CORE_HISTORY,
+    "4f04fd8c9d2e1c516acfc3e03f86ae90b89c0af910b5e4d896c0049168888d3c");
+  const e6RequestPayloadRef = evidence(E6_REQUEST_PAYLOAD,
+    "7b48ec8b9161c7cef3b58ee3f4b44d2a3696ae4dc12c1e679bcda525651e0792");
+  const e6BackendWiringRef = evidence(E6_BACKEND_WIRING,
+    "86bd6a1eb2d5cc958ac4e64a3f3b2fe76ffd6b9d57aff96e37e31f374d94dc3b");
+  const e6AiPayloadWebRef = evidence(E6_AI_PAYLOAD_WEB,
+    "1e9d1e82937cfe461497d63ef7452e45eb07b3961e931341d4e109deac490b56");
+  const e6TypecheckAllRef = evidence(E6_TYPECHECK_ALL,
+    "eca6b5d620f4f66113e09193da4d45d52197dd4616565470b3c3e97566151183");
+  const e6TypecheckFinalRef = evidence(E6_TYPECHECK_FINAL,
+    "50dbab0da92ea307badc76bd435540f8d081c825f28c80be639b038a48afc090");
+  const e6MigrationRef = evidence(resolve(
+    "supabase/migrations/20260920120000_consumer_estimate_marketplace_atomic_handoff.sql",
+  ));
+  const e6ServiceRef = evidence(resolve(
+    "src/lib/consumerRequests/consumerRequestMarketplaceService.ts",
+  ));
+  const e6TransportRef = evidence(resolve(
+    "src/lib/consumerRequests/consumerRequestMarketplace.transport.ts",
+  ));
+
+  const e6Live = readJson(E6_LIVE);
+  invariant(e6Live.status === "GREEN_E6_ATOMIC_SERVER_CONFIRMED_MARKETPLACE_HANDOFF"
+    && e6Live.receiptSha256 === receiptSha256(e6Live)
+    && e6Live.idempotency?.firstCreated === true
+    && e6Live.idempotency?.replayCreated === false
+    && e6Live.idempotency?.sameListingId === true
+    && e6Live.idempotency?.listingCount === 1
+    && e6Live.idempotency?.handoffCount === 1
+    && e6Live.recipientRead?.listingVisible === true
+    && e6Live.recipientRead?.privateHandoffVisibleCount === 0
+    && e6Live.recipientRead?.projectedRowCount === 36
+    && e6Live.recipientRead?.exactCanonicalLineage === true
+    && e6Live.recipientRead?.visibleNamesPresent === true
+    && e6Live.recipientRead?.positiveQuantitiesPresent === true
+    && e6Live.negativeAttempts?.length === 4
+    && e6Live.negativeAttempts.every((attempt: Json) => attempt.blocked === true)
+    && e6Live.sourceCandidate?.unchanged === true
+    && e6Live.execution?.sourceDatabaseReadOnly === true
+    && e6Live.execution?.productionAccessed === false
+    && e6Live.execution?.candidateActivated === false
+    && e6Live.execution?.deployPerformed === false
+    && e6Live.execution?.releasePerformed === false
+    && e6Live.execution?.otaPerformed === false
+    && e6Live.blockers?.length === 0,
+  "E6_LIVE_HANDOFF");
+  const e6FailureAtomic = readJson(E6_FAILURE_ATOMIC);
+  const e6ConsumerFocused = readJson(E6_CONSUMER_FOCUSED);
+  const e6ConsumerArchitecture = readJson(E6_CONSUMER_ARCHITECTURE);
+  const e6CoreHistory = readJson(E6_CORE_HISTORY);
+  const e6RequestPayload = readJson(E6_REQUEST_PAYLOAD);
+  assertJestGreen("E6_FAILURE_ATOMIC", e6FailureAtomic, 4, 42);
+  assertJestGreen("E6_CONSUMER_FOCUSED", e6ConsumerFocused, 5, 7);
+  assertJestGreen("E6_CONSUMER_ARCHITECTURE", e6ConsumerArchitecture, 16, 19);
+  assertJestGreen("E6_CORE_HISTORY", e6CoreHistory, 6, 8);
+  assertJestGreen("E6_REQUEST_PAYLOAD", e6RequestPayload, 4, 6);
+  const e6BackendWiring = readJson(E6_BACKEND_WIRING);
+  invariant(e6BackendWiring.passed === true
+    && e6BackendWiring.no_direct_supabase_writes_from_feature === true
+    && e6BackendWiring.send_uses_marketplace_service === true
+    && e6BackendWiring.pdf_open_uses_service === true
+    && e6BackendWiring.direct_marketplace_link_write_files?.length === 0
+    && e6BackendWiring.direct_sent_status_write_files?.length === 0,
+  "E6_BACKEND_WIRING");
+  const e6AiPayloadWeb = readText(E6_AI_PAYLOAD_WEB);
+  invariant(/1 passed/u.test(e6AiPayloadWeb) && !/\bfailed\b/u.test(e6AiPayloadWeb),
+    "E6_AI_PAYLOAD_WEB");
+  const e6TypecheckAll = readText(E6_TYPECHECK_ALL);
+  const e6TypecheckFinal = readText(E6_TYPECHECK_FINAL);
+  invariant([
+    "tsconfig.typecheck.tests-heavy.json exit=0",
+    "tsconfig.typecheck.tests-rest.json exit=0",
+    "shards=4",
+    "status=GREEN",
+  ].every((value) => e6TypecheckAll.includes(value)), "E6_TEST_TYPECHECK");
+  invariant([
+    "tsconfig.typecheck.product.json exit=0",
+    "tsconfig.typecheck.scripts.json exit=0",
+  ].every((value) => e6TypecheckFinal.includes(value)), "E6_PRODUCT_SCRIPT_TYPECHECK");
+  const e6ServiceSource = readFileSync(resolve(
+    "src/lib/consumerRequests/consumerRequestMarketplaceService.ts",
+  ), "utf8");
+  const e6TransportSource = readFileSync(resolve(
+    "src/lib/consumerRequests/consumerRequestMarketplace.transport.ts",
+  ), "utf8");
+  invariant(!e6ServiceSource.includes('id("marketplace_demand")')
+    && e6ServiceSource.includes("readPublishedListing(receipt.listing_id)")
+    && e6TransportSource.includes('"consumer_estimate_marketplace_publish_v1"'),
+  "E6_CLIENT_SERVER_CONFIRMATION_SOURCE");
 
   invariant(scope.master?.sha256 === MASTER_SHA256
     && scope.counts?.criteria === 200
@@ -627,6 +768,50 @@ async function main(): Promise<void> {
       assertions: ["photo material-recognition entry contract passed inside 203-suite functional gate"],
       evidence: [historicalFunctionalRef],
     },
+    marketplace_atomic_handoff: {
+      status: "GREEN_VERIFIED",
+      assertions: [
+        "atomic authenticated server write",
+        "same-intent replay creates no duplicate",
+        "recipient reads 36 exact positive named rows",
+        "private handoff remains owner-only",
+        "wrong role/cross-tenant/cross-owner/checksum attempts blocked 4/4",
+      ],
+      evidence: [e6LiveRef, e6MigrationRef],
+    },
+    failure_atomicity: {
+      status: "GREEN_VERIFIED",
+      assertions: [
+        "offline failure has no false success",
+        "formula failure does not persist a child or stale quantity",
+        "partial proposal failure rolls back",
+        "idempotent recovery preserves immutable parent state",
+      ],
+      evidence: [e6FailureAtomicRef, e6ConsumerFocusedRef, e6CoreHistoryRef],
+    },
+    marketplace_client_regression: {
+      status: "GREEN_VERIFIED",
+      assertions: [
+        "client persists sent only after RPC receipt and exact listing readback",
+        "no local marketplace demand identity generation",
+        "feature layer has no direct table write",
+        "three AI payload proofs remain explicitly unsent",
+        "affected regression 31/31 suites and 40/40 tests",
+        "TypeScript product/scripts/heavy/rest shards GREEN",
+      ],
+      evidence: [
+        e6ConsumerFocusedRef,
+        e6ConsumerArchitectureRef,
+        e6CoreHistoryRef,
+        e6RequestPayloadRef,
+        e6BackendWiringRef,
+        e6AiPayloadWebRef,
+        e6TypecheckAllRef,
+        e6TypecheckFinalRef,
+        e6ServiceRef,
+        e6TransportRef,
+      ],
+    },
     single_core: {
       status: "GREEN_VERIFIED",
       assertions: ["canonical compile-core passed", "no screen-local PDF calculation passed", "current ingress/source contracts passed"],
@@ -705,6 +890,17 @@ async function main(): Promise<void> {
       && criterion.evidenceArtifactCount > 0),
   "CRITERION_COVERAGE");
 
+  const marketplaceCoverage = criterionCoverage.filter((criterion) =>
+    criterion.matchedRules.includes("marketplace_integrity")
+  );
+  invariant(marketplaceCoverage.length > 0
+    && marketplaceCoverage.every((criterion) => [
+      "marketplace_atomic_handoff",
+      "failure_atomicity",
+      "marketplace_client_regression",
+    ].every((claimId) => criterion.evidenceClaims.includes(claimId))),
+  "E6_CRITERION_CLAIM_COVERAGE");
+
   const usedClaimIds = new Set(criterionCoverage.flatMap((criterion) => criterion.evidenceClaims));
   invariant([...usedClaimIds].every((claimId) => claims[claimId]?.status === "GREEN_VERIFIED"),
     "USED_CLAIMS_GREEN");
@@ -721,9 +917,9 @@ async function main(): Promise<void> {
   }
 
   const report: Json = {
-    schemaVersion: "rik-expo-app.r4-a13-6.master-criterion-coverage.v2",
+    schemaVersion: "rik-expo-app.r4-a13-6.master-criterion-coverage.v3",
     generatedAt: new Date().toISOString(),
-    status: "GREEN_MASTER_200_CRITERIA_EXPLICIT_CLAIM_ARTIFACT_COVERAGE",
+    status: "GREEN_MASTER_200_CRITERIA_EXPLICIT_E6_CLAIM_ARTIFACT_COVERAGE",
     supersedesCriterionSectionOf: finalAcceptanceRef,
     master: {
       path: MASTER.replaceAll("\\", "/"),
@@ -752,6 +948,7 @@ async function main(): Promise<void> {
       criteriaWithExplicitRule: criterionCoverage.filter((criterion) => criterion.matchedRules.length > 0).length,
       verifiedClaims: Object.keys(claims).length,
       usedClaims: usedClaimIds.size,
+      marketplaceCriteriaWithExplicitE6Claims: marketplaceCoverage.length,
       benchmarksAccepted: 30,
       catalogMinimumAccepted: 10_331,
       catalogRefinedAccepted: 10_331,
@@ -763,6 +960,12 @@ async function main(): Promise<void> {
       historicalFunctionalSuitesPassed: 203,
       historicalFunctionalTestsPassed: 710,
       performanceSamplesPassed: 80,
+      e6ServerRecipientRowsVerified: 36,
+      e6NegativeAuthorizationAttemptsBlocked: 4,
+      e6FailureAtomicSuitesPassed: 4,
+      e6FailureAtomicTestsPassed: 42,
+      e6AffectedSuitesPassed: 31,
+      e6AffectedTestsPassed: 40,
     },
     claims,
     criteria: criterionCoverage,

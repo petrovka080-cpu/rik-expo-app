@@ -12,7 +12,7 @@ import type {
   ProfessionalEstimateScopeModeV4,
   ProfessionalParameterValueV4,
 } from "../../professionalProjectAssemblyV4";
-import type { BuildEstimateFromInlineWorkPromptInput } from "../../../buildEstimateFromInlineWorkPrompt";
+import type { BuildEstimateFromInlineWorkPromptInput } from "../../../backendPlatform/canonicalEstimateHistoricalIngress";
 import {
   INTERIOR_FINISHES_WAVE_1_INVENTORY,
   type InteriorFinishesWave1InventoryRow,

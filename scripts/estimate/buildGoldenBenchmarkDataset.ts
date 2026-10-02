@@ -10,6 +10,8 @@ import {
 } from "../../src/lib/ai/estimateTemplate10000";
 import {
   GOLDEN_BENCHMARK_ROOT,
+  PRODUCTION_NORM_APPLICABILITY_GATE_CASE_IDS,
+  PRODUCTION_NORM_APPLICABILITY_REQUIRED_INPUTS,
   buildGeneratedBenchmarkEstimate,
   buildReferenceBoqFromGenerated,
   type GoldenBenchmarkCase,
@@ -446,6 +448,8 @@ function resolveWorkFamily(seed: CaseSeed): string {
 
 function buildCase(seed: CaseSeed): GoldenBenchmarkCase {
   const workFamilyId = resolveWorkFamily(seed);
+  const productionNormApplicabilityGate = PRODUCTION_NORM_APPLICABILITY_GATE_CASE_IDS
+    .some((caseId) => caseId === seed.case_id);
   const caseDef: GoldenBenchmarkCase = {
     case_id: seed.case_id,
     prompt: seed.prompt,
@@ -480,7 +484,14 @@ function buildCase(seed: CaseSeed): GoldenBenchmarkCase {
           expected_outcome: "NEEDS_INPUT",
           historical_reference_status: "READ_ONLY_SUPERSEDED_BY_P0_GATE",
         }
-      : undefined,
+      : productionNormApplicabilityGate
+        ? {
+            version: "production-norm-applicability-gate-v1",
+            expected_outcome: "NEEDS_INPUT",
+            historical_reference_status: "READ_ONLY_SUPERSEDED_BY_FAIL_CLOSED_NORM_GATE",
+            required_inputs: [...PRODUCTION_NORM_APPLICABILITY_REQUIRED_INPUTS],
+          }
+        : undefined,
   };
   const generated = buildGeneratedBenchmarkEstimate(caseDef);
   const reference = buildReferenceBoqFromGenerated(caseDef, generated);

@@ -18,6 +18,7 @@ import {
   isCanonicalEstimateConsumerSuppliedParameter,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics";
 import {
+  evaluateCatalogIndependentContentEvidence,
   isCatalogFirstEstimateKnownGeometryParameter,
   isCatalogFirstEstimateProjectSpecificRefinementParameter,
   sourceBackedPhysicalNormOutputParameterIds,
@@ -89,13 +90,23 @@ async function main(): Promise<void> {
       `select manifest.catalog_id,manifest.definition_version_id::text definition_version_id,
         manifest.approved_template_baseline_id::text approved_template_baseline_id,
         manifest.domain_id,manifest.source_batch,definition.definition_version,
-        definition.passport,identity.title_ru,
+        definition.passport,definition.content_status,definition.content_gate_status,identity.title_ru,
+        content_passport.definition_version_id::text content_passport_definition_version_id,
+        content_passport.release_id::text content_passport_release_id,
+        content_passport.catalog_id content_passport_catalog_id,
+        content_passport.contract_version content_passport_contract_version,
+        content_passport.parameter_count content_passport_parameter_count,
+        content_passport.formula_count content_passport_formula_count,
+        content_passport.resource_count content_passport_resource_count,
+        content_passport.decision content_passport_decision,
         coalesce(baseline.input_values,'{}'::jsonb) input_values,
         coalesce(baseline.input_classification,'{}'::jsonb) input_classification,
         baseline.validation_scenario_refs,baseline.acceptance_evidence_sha256
        from public.estimate_cumulative_manifest_entry manifest
        join public.estimate_definition_version definition on definition.id=manifest.definition_version_id
        join public.estimate_work_identity identity on identity.catalog_id=manifest.catalog_id
+       left join public.estimate_content_passport_r3 content_passport
+         on content_passport.definition_version_id=definition.id
        join public.estimate_approved_template_baseline baseline
          on baseline.id=manifest.approved_template_baseline_id
        where manifest.release_id=$1 and manifest.baseline_ready and manifest.scenario_ready
@@ -294,6 +305,24 @@ async function main(): Promise<void> {
             && !["NORMATIVE", "DERIVED"].includes(String(definition.input_classification?.[parameterId] ?? "").toUpperCase())
             ? [parameterId]
             : []);
+        const contentEvidence = evaluateCatalogIndependentContentEvidence({
+          expectedDefinitionVersionId: definitionId,
+          expectedReleaseId: RELEASE_ID,
+          expectedCatalogId: String(definition.catalog_id),
+          expectedParameterCount: definitionParameters.length,
+          expectedFormulaCount: definitionFormulas.length,
+          expectedResourceCount: definitionResources.length,
+          passport: definition.content_passport_definition_version_id == null ? null : {
+            definitionVersionId: definition.content_passport_definition_version_id,
+            releaseId: definition.content_passport_release_id,
+            catalogId: definition.content_passport_catalog_id,
+            contractVersion: definition.content_passport_contract_version,
+            parameterCount: definition.content_passport_parameter_count,
+            formulaCount: definition.content_passport_formula_count,
+            resourceCount: definition.content_passport_resource_count,
+            decision: definition.content_passport_decision,
+          },
+        });
         const verdict = minimum.status !== "COMPILED"
           ? "GAP_NO_USEFUL_MINIMUM_INPUT_ESTIMATE"
           : minimum.expertUserInputParameterIds.length > 0
@@ -304,7 +333,8 @@ async function main(): Promise<void> {
               ? "GAP_REFINEMENT_NOT_COMPLETE"
               : negativeBaselineAssumptions.length > 0
                 ? "GAP_NEGATIVE_CONDITION_RESTORED_FROM_BASELINE"
-                : "MECHANISM_GREEN_CONTENT_REVIEW_PENDING";
+                : contentEvidence.gapVerdict
+                  ?? "MECHANISM_AND_CONTENT_MAP_GREEN_RUNTIME_ACCEPTANCE_PENDING";
         outcomes.push({
           catalogId: definition.catalog_id,
           titleRu: definition.title_ru,
@@ -318,6 +348,9 @@ async function main(): Promise<void> {
           knownGeometryInputIds: Object.keys(geometryInputs).sort(),
           runtimeBaselineParameterIds: Object.keys(runtimeBaseline).sort(),
           negativeBaselineAssumptions,
+          definitionContentStatus: definition.content_status,
+          definitionContentGateStatus: definition.content_gate_status,
+          contentEvidence,
           minimum,
           refinement,
           verdict,
@@ -356,6 +389,13 @@ async function main(): Promise<void> {
           entry.minimum.projectSpecificRefinementParameterIds?.length > 0).length,
         negativeBaselineAssumption: outcomes.filter((entry) =>
           entry.negativeBaselineAssumptions.length > 0).length,
+        currentIndependentCompletenessMap: outcomes.filter((entry) =>
+          entry.contentEvidence.status === "CURRENT_WITH_INDEPENDENT_COMPLETENESS_MAP").length,
+        missingContentPassport: outcomes.filter((entry) =>
+          entry.contentEvidence.status === "MISSING_CONTENT_PASSPORT").length,
+        missingOrInvalidIndependentCompletenessMap: outcomes.filter((entry) =>
+          ["MISSING_INDEPENDENT_COMPLETENESS_MAP", "INVALID_INDEPENDENT_COMPLETENESS_MAP"]
+            .includes(entry.contentEvidence.status)).length,
         refinedFixtureCompiledWithoutNeeds: outcomes.filter((entry) =>
           entry.refinement.status === "COMPILED" && entry.refinement.preliminaryNeedCount === 0).length,
       },
@@ -388,6 +428,9 @@ async function main(): Promise<void> {
       `- Ожидают применимость при уже подтверждённом physical-norm source: ${summary.counts.sourceBackedPhysicalNormOutputPendingApplicability}.`,
       `- Имеют добровольные проектные/PPR/QA-уточнения, не являющиеся универсальной нормой: ${summary.counts.projectSpecificRefinement}.`,
       `- Восстанавливают отрицательное условие из ненормативного baseline: ${summary.counts.negativeBaselineAssumption}.`,
+      `- Имеют актуальный паспорт с независимой картой операция→ресурс: ${summary.counts.currentIndependentCompletenessMap}/${definitions.length}.`,
+      `- Не имеют паспорта профессионального состава: ${summary.counts.missingContentPassport}.`,
+      `- Не имеют либо имеют невалидную независимую карту комплектности: ${summary.counts.missingOrInvalidIndependentCompletenessMap}.`,
       `- Явно объявляют общий сценарий first-estimate-then-refine: ${summary.counts.declaredFirstEstimateThenRefine}/${definitions.length}.`,
       `- Наблюдаемый диапазон состава: ${summary.observedCompositionRange?.minimum ?? "n/a"}…${summary.observedCompositionRange?.maximum ?? "n/a"}; порог строк не применялся.`,
       "",
@@ -395,7 +438,7 @@ async function main(): Promise<void> {
       "",
       ...Object.entries(byVerdict).map(([verdict, count]) => `- ${verdict}: ${count}`),
       "",
-      "`MECHANISM_GREEN_CONTENT_REVIEW_PENDING` означает только пригодность общего механизма минимального ввода и уточнения. Полнота технологического состава должна подтверждаться независимой картой, а не самим текущим определением.",
+      "`MECHANISM_AND_CONTENT_MAP_GREEN_RUNTIME_ACCEPTANCE_PENDING` означает, что механизм и независимо составленная карта комплектности актуальны. Это всё ещё не заменяет обычную Web/native-приёмку сохранённой ревизии.",
       "",
       `Receipt SHA-256: \`${receiptSha256}\``,
       "",

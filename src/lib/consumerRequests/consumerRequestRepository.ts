@@ -954,29 +954,77 @@ export async function awaitConsumerRepairBundleDurableCommit(input: {
   requestDraftId: string;
   expectedStatus: ConsumerRepairDraftBundle["draft"]["status"];
   expectedRevisionId: string | null;
+  /**
+   * Last UI-visible state before a terminal approve/delete transition. It is
+   * restored in memory only when a completed durable read proves that the
+   * terminal state was not committed. An unavailable/indeterminate read never
+   * overwrites the attempted terminal state.
+   */
+  rollbackBundle?: ConsumerRepairDraftBundle;
 }): Promise<void> {
   const current = store.bundles.get(input.requestDraftId) ?? null;
   if (!current) throw new Error("CONSUMER_REPAIR_DURABLE_COMMIT_BUNDLE_MISSING");
+  const matchesExpectedCommit = (bundle: ConsumerRepairDraftBundle | null): boolean => {
+    const revisionId = bundle?.estimateDraftRevisionState?.currentRevisionId ?? null;
+    return Boolean(
+      bundle &&
+      bundle.draft.status === input.expectedStatus &&
+      revisionId === input.expectedRevisionId
+    );
+  };
+  const restoreConclusiveDurableState = (
+    durableBundle: ConsumerRepairDraftBundle | null,
+  ): void => {
+    const replacement = durableBundle ?? input.rollbackBundle ?? null;
+    if (!replacement || replacement.draft.id !== input.requestDraftId) return;
+    const normalized = normalizeEstimateDraftSessionCompatibilityView(replacement);
+    store.bundles.set(input.requestDraftId, cloneConsumerRepairValue(normalized));
+    syncConsumerRepairBundleToAiEstimateLedger(normalized);
+  };
   const storage = getWebDurableStorage();
   const usesTransactionalStorage =
     isReactNativeRuntime() ||
     isLargeConsumerRepairRevisionBundle(current) ||
     isConsumerRepairApprovedHistoryStatus(current.draft.status);
   if (usesTransactionalStorage) {
-    await awaitTransactionalConsumerRepairBundleCommit(input);
+    try {
+      await awaitTransactionalConsumerRepairBundleCommit(input);
+      return;
+    } catch (commitError) {
+      // The queue result alone is insufficient: a read-back may have failed
+      // after the atomic pointer switched. Re-read durable truth. A matching
+      // terminal state is success; a readable previous/null state is a proven
+      // non-commit and can safely restore the editable in-memory draft.
+      let durableReadCompleted = false;
+      let durableBundle: ConsumerRepairDraftBundle | null = null;
+      try {
+        durableBundle = await readTransactionalConsumerRepairBundle(input.requestDraftId);
+        durableReadCompleted = true;
+      } catch {
+        // Unknown outcome: preserve both the screen data and attempted state;
+        // a later retry can reconcile it without reporting false success.
+      }
+      if (durableReadCompleted && matchesExpectedCommit(durableBundle)) return;
+      if (durableReadCompleted) restoreConclusiveDurableState(durableBundle);
+      throw commitError;
+    }
+  }
+  if (!storage) {
+    if (input.rollbackBundle) {
+      restoreConclusiveDurableState(input.rollbackBundle);
+      throw new Error("CONSUMER_REPAIR_LOCAL_DURABLE_STORAGE_UNAVAILABLE");
+    }
     return;
   }
-  if (!storage) return;
-  const persisted = readDurableBundle(storage, input.requestDraftId);
-  const persistedRevisionId =
-    persisted?.estimateDraftRevisionState?.currentRevisionId ?? null;
-  if (
-    !persisted ||
-    persisted.draft.status !== input.expectedStatus ||
-    persistedRevisionId !== input.expectedRevisionId
-  ) {
-    throw new Error("CONSUMER_REPAIR_LOCAL_DURABLE_COMMIT_NOT_DURABLE");
+  let persisted: ConsumerRepairDraftBundle | null;
+  try {
+    persisted = readDurableBundle(storage, input.requestDraftId);
+  } catch {
+    throw new Error("CONSUMER_REPAIR_LOCAL_DURABLE_COMMIT_OUTCOME_UNKNOWN");
   }
+  if (matchesExpectedCommit(persisted)) return;
+  restoreConclusiveDurableState(persisted);
+  throw new Error("CONSUMER_REPAIR_LOCAL_DURABLE_COMMIT_NOT_DURABLE");
 }
 
 export function findConsumerRepairBundle(

@@ -142,7 +142,11 @@ class DeliveryFields extends React.PureComponent<DeliveryFieldsProps, DeliveryFi
           </Pressable>
         ) : (
           <>
-            {!deliveryReady ? <Text style={styles.requiredHint}>Адрес и телефон обязательны.</Text> : null}
+            {!deliveryReady ? (
+              <Text style={styles.requiredHint}>
+                Адрес и телефон понадобятся только при отправке сметы в Маркет.
+              </Text>
+            ) : null}
             <TextInput value={city} onChangeText={onCityChange} placeholder="Город" placeholderTextColor="#94A3B8" style={screenStyles.input} testID="consumer-repair-city-input" />
             <TextInput value={addressText} onChangeText={onAddressTextChange} placeholder="Адрес" placeholderTextColor="#94A3B8" style={screenStyles.input} testID="consumer-repair-address-input" />
 

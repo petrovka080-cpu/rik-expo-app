@@ -7,6 +7,7 @@ import {
   ESTIMATE_PLATFORM_API_VERSION,
   assertCreateRequest,
   assertUuid,
+  canonicalEstimateEffectivePriceSnapshotIds,
   canonicalEstimatePreliminaryNeedsFromAmendmentContract,
 } from "../../../src/lib/estimate/backendPlatform/contracts.ts";
 import {
@@ -20,6 +21,10 @@ import {
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDefinitionRegistry.ts";
 import { canonicalProfessionalArtifactMetadataIdentityMatches } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts";
 import { canonicalDefinitionTitleRu } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts";
+import {
+  canonicalEstimateRevisionDetailFromStorage,
+  canonicalEstimateRevisionRowFromStorage,
+} from "../../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper.ts";
 
 const FUNCTION_NAME = "canonical-estimate";
 const MAX_ROWS_PAGE = 500;
@@ -402,11 +407,31 @@ async function createCompileJob(request: Request, requester: ReturnType<typeof c
       httpStatus: 400,
     });
   }
-  await assertProductionAdmission(
+  const admission = await assertProductionAdmission(
     requester,
     body.catalogId,
     operation === "compile" ? "direct_catalog_compile" : "parameter_recalculation",
   );
+  const requestedPriceSnapshotIds = body.priceSnapshotIds ?? [];
+  let compatibleDefaultPriceSnapshotIds: string[] = [];
+  if (requestedPriceSnapshotIds.length === 0) {
+    const { data: defaultPriceSnapshots, error: defaultPriceSnapshotsError } = await requester.rpc(
+      "estimate_resolve_default_price_snapshot_ids_v1",
+      {
+        p_catalog_id: body.catalogId,
+        p_currency_code: body.currencyCode,
+        p_release_id: admission.releaseId,
+      },
+    );
+    if (defaultPriceSnapshotsError) normalizeDbError(defaultPriceSnapshotsError);
+    compatibleDefaultPriceSnapshotIds = (Array.isArray(defaultPriceSnapshots) ? defaultPriceSnapshots : [])
+      .map((entry) => String(entry?.snapshot_id ?? "").trim())
+      .filter(Boolean);
+  }
+  const priceSnapshotIds = canonicalEstimateEffectivePriceSnapshotIds({
+    requested: requestedPriceSnapshotIds,
+    compatibleDefaults: compatibleDefaultPriceSnapshotIds,
+  });
   const { data, error } = await requester.rpc("estimate_create_compile_job_v1", {
     p_idempotency_key: body.idempotencyKey,
     p_operation: operation,
@@ -416,7 +441,7 @@ async function createCompileJob(request: Request, requester: ReturnType<typeof c
     p_input_payload: {
       parameters: body.parameters,
       currencyCode: body.currencyCode,
-      priceSnapshotIds: body.priceSnapshotIds ?? [],
+      priceSnapshotIds,
       ...(operation === "compile" || suppliedRequestIdentity ? {
         requestIdentity: { sourceRequestText, primaryMeasureParameterId },
       } : {}),
@@ -991,35 +1016,14 @@ async function readRevision(requester: ReturnType<typeof createClient>, revision
   assertUuid(revisionId, "revisionId");
   const { data, error } = await requester
     .from("estimate_revision")
-    .select("id,parent_revision_id,release_id,catalog_id,definition_version_id,revision_number,status,input_parameters,amendment_contract,currency_code,totals,row_count,checksum_sha256,compiler_version,definition_version,compiler_owner,parameter_schema_hash,input_hash,output_hash,created_at")
+    .select("id,parent_revision_id,organization_id,release_id,catalog_id,definition_version_id,revision_number,status,input_parameters,price_snapshot_ids,amendment_contract,currency_code,totals,row_count,checksum_sha256,compiler_version,definition_version,compiler_owner,parameter_schema_hash,input_hash,output_hash,source_request_text,source_request_hash,canonical_work_title_ru,display_title_ru,primary_measure_parameter_id,primary_measure_value,primary_measure_unit_id,normalized_intent,group_id,search_release_id,user_input_snapshot,accepted_baseline_snapshot,assumption_snapshot,formula_graph_version,revision_contract_version,created_at")
     .eq("id", revisionId)
     .single();
   if (error) normalizeDbError(error);
-  return {
-    apiVersion: ESTIMATE_PLATFORM_API_VERSION,
-    revisionId: data.id,
-    parentRevisionId: data.parent_revision_id,
-    releaseId: data.release_id,
-    catalogId: data.catalog_id,
-    revisionNumber: data.revision_number,
-    status: data.status,
-    parameters: data.input_parameters,
-    amendmentContract: data.amendment_contract,
-    preliminaryNeeds: canonicalEstimatePreliminaryNeedsFromAmendmentContract(data.amendment_contract),
-    currencyCode: data.currency_code,
-    totals: data.totals,
-    rowCount: data.row_count,
-    checksumSha256: data.checksum_sha256,
-    compilerVersion: data.compiler_version,
-    definitionVersion: data.definition_version,
-    compilerOwner: data.compiler_owner,
-    parameterSchemaHash: data.parameter_schema_hash,
-    inputHash: data.input_hash,
-    outputHash: data.output_hash,
+  return canonicalEstimateRevisionDetailFromStorage(data, {
     contentAdmission: legacyReadAdmission(data, "revision_read"),
     legacyWarningRu: "Старая версия создана прежней моделью расчёта; для нового расчёта сформируйте исправленную версию.",
-    createdAt: data.created_at,
-  };
+  });
 }
 
 function revisionView(data: Record<string, unknown>) {
@@ -1027,6 +1031,7 @@ function revisionView(data: Record<string, unknown>) {
     apiVersion: ESTIMATE_PLATFORM_API_VERSION,
     revisionId: data.id,
     parentRevisionId: data.parent_revision_id,
+    organizationId: data.organization_id,
     releaseId: data.release_id,
     catalogId: data.catalog_id,
     revisionNumber: data.revision_number,
@@ -1063,7 +1068,7 @@ async function readRevisionHistory(request: Request, requester: ReturnType<typeo
   }
   let query = requester
     .from("estimate_revision")
-    .select("id,parent_revision_id,release_id,catalog_id,definition_version_id,revision_number,status,input_parameters,amendment_contract,currency_code,totals,row_count,checksum_sha256,compiler_version,definition_version,compiler_owner,parameter_schema_hash,input_hash,output_hash,created_at")
+    .select("id,parent_revision_id,organization_id,release_id,catalog_id,definition_version_id,revision_number,status,input_parameters,amendment_contract,currency_code,totals,row_count,checksum_sha256,compiler_version,definition_version,compiler_owner,parameter_schema_hash,input_hash,output_hash,created_at")
     .eq("catalog_id", catalogId)
     .order("revision_number", { ascending: false })
     .limit(limit + 1);
@@ -1108,29 +1113,65 @@ async function readRevisionRows(request: Request, requester: ReturnType<typeof c
   if (error) normalizeDbError(error);
   const hasMore = data.length > limit;
   const page = hasMore ? data.slice(0, limit) : data;
+  const rowIds = page.map((row) => String(row.row_id));
+  const priceByRowId = new Map<string, Record<string, unknown>>();
+  if (rowIds.length > 0) {
+    const { data: prices, error: pricesError } = await requester
+      .from("estimate_revision_row_price")
+      .select("row_id,price_snapshot_id,route_id,unit_price,currency_code,resolution_trace")
+      .eq("revision_id", revisionId)
+      .in("row_id", rowIds);
+    if (pricesError) normalizeDbError(pricesError);
+    for (const price of prices ?? []) priceByRowId.set(String(price.row_id), price);
+  }
+  const snapshotIds = [...new Set([...priceByRowId.values()]
+    .map((price) => price.price_snapshot_id)
+    .filter((value): value is string => typeof value === "string" && value.length > 0))];
+  const routeIds = new Set([...priceByRowId.values()]
+    .map((price) => price.route_id)
+    .filter((value): value is string => typeof value === "string" && value.length > 0));
+  const snapshotById = new Map<string, Record<string, unknown>>();
+  const routeById = new Map<string, Record<string, unknown>>();
+  if (snapshotIds.length > 0 || routeIds.size > 0) {
+    // Authorization is established by requester reads above. The service client
+    // only resolves immutable, allow-listed source evidence hidden by price RLS.
+    const admin = requireAdmin();
+    if (snapshotIds.length > 0) {
+      const { data: snapshots, error: snapshotsError } = await admin
+        .from("estimate_price_snapshot")
+        .select("id,route_id,captured_at")
+        .in("id", snapshotIds);
+      if (snapshotsError) normalizeDbError(snapshotsError);
+      for (const snapshot of snapshots ?? []) {
+        snapshotById.set(String(snapshot.id), snapshot);
+        if (typeof snapshot.route_id === "string") routeIds.add(snapshot.route_id);
+      }
+    }
+    if (routeIds.size > 0) {
+      const { data: routes, error: routesError } = await admin
+        .from("estimate_price_route")
+        .select("id,source_kind")
+        .in("id", [...routeIds]);
+      if (routesError) normalizeDbError(routesError);
+      for (const route of routes ?? []) routeById.set(String(route.id), route);
+    }
+  }
   return {
     apiVersion: ESTIMATE_PLATFORM_API_VERSION,
     revisionId,
     contentAdmission,
-    rows: page.map((row) => ({
-      rowId: row.row_id,
-      ordinal: row.ordinal,
-      section: row.section,
-      category: row.category,
-      titleRu: row.title_ru,
-      unitId: row.unit_id,
-      quantity: row.quantity == null ? null : String(row.quantity),
-      unitPrice: row.unit_price == null ? null : String(row.unit_price),
-      amount: row.amount == null ? null : String(row.amount),
-      currencyCode: row.currency_code,
-      procurementEligible: row.procurement_eligible,
-      includedInEstimate: row.included_in_estimate,
-      includedInProcurement: row.included_in_procurement,
-      ownershipStatus: row.ownership_status,
-      calculationTrace: row.calculation_trace,
-      normativeTrace: row.normative_trace,
-      rowSha256: row.row_sha256,
-    })),
+    rows: page.map((row) => {
+      const price = priceByRowId.get(String(row.row_id)) ?? null;
+      const snapshot = price?.price_snapshot_id == null
+        ? null
+        : snapshotById.get(String(price.price_snapshot_id)) ?? null;
+      const routeId = price?.route_id ?? snapshot?.route_id;
+      const route = routeId == null ? null : routeById.get(String(routeId)) ?? null;
+      return canonicalEstimateRevisionRowFromStorage(row, price, {
+        snapshot_captured_at: snapshot?.captured_at ?? null,
+        route_source_kind: route?.source_kind ?? null,
+      });
+    }),
     nextCursor: hasMore ? createCursor(page[page.length - 1].ordinal) : null,
   };
 }

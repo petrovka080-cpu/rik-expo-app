@@ -12,6 +12,7 @@ import {
   buildInteriorFinishesFromInlineInputV1,
   interiorFinishesDomainFactory,
 } from "../../src/lib/estimate/v4/domains/interiorFinishesComplete";
+import { interiorFinishesWave1DomainFactory } from "../../src/lib/estimate/v4/domains/interiorFinishesWave1";
 import type { ProfessionalParameterValueV4 } from "../../src/lib/estimate/v4/professionalProjectAssemblyV4";
 
 const CAPTURED_AT = "2026-09-12T00:00:00.000Z";
@@ -196,9 +197,14 @@ describe("Ceresit CT 126 canonical physical norm", () => {
       (row) => row.work_key === WALL_PUTTY_APPLY_WORK_KEY,
     );
     if (!inventory) throw new Error("CERESIT_CT126_RUNTIME_WALL_PUTTY_WORK_MISSING");
-    const technology = interiorFinishesDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
-    const schema = interiorFinishesDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
-    if (!technology || !schema) throw new Error("CERESIT_CT126_RUNTIME_WALL_PUTTY_SCHEMA_MISSING");
+    const publicTechnology = interiorFinishesDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
+    const publicSchema = interiorFinishesDomainFactory.schema_by_id.get(publicTechnology?.parameter_schema_id ?? "");
+    const technology = interiorFinishesWave1DomainFactory.technology_by_id.get(inventory.canonical_technology_id);
+    const schema = interiorFinishesWave1DomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
+    if (!publicTechnology || !publicSchema || !technology || !schema) {
+      throw new Error("CERESIT_CT126_RUNTIME_WALL_PUTTY_SCHEMA_MISSING");
+    }
+    expect(publicTechnology).toMatchObject({ operation_class: "APPLY", material_system: "WALL_PUTTY" });
     expect(technology).toMatchObject({ operation_class: "APPLY", material_system: "WALL_PUTTY" });
 
     const exactQuestionIds = [
@@ -212,6 +218,8 @@ describe("Ceresit CT 126 canonical physical norm", () => {
     ];
     expect(schema.parameters.filter((parameter) => exactQuestionIds.includes(parameter.parameter_id))
       .map((parameter) => parameter.parameter_id)).toEqual(exactQuestionIds);
+    expect(publicSchema.parameters.some((parameter) =>
+      parameter.parameter_id === "ct126_tds_variant_confirmed")).toBe(true);
     expect(schema.parameters.filter((parameter) => exactQuestionIds.includes(parameter.parameter_id))
       .every((parameter) => parameter.required_when.kind === "EQUALS"
         ? parameter.required_when.parameter_id === "product_profile_id" &&
@@ -261,6 +269,7 @@ describe("Ceresit CT 126 canonical physical norm", () => {
       calculated_ct126_procurement_quantity_kg: 240,
       calculated_ct126_bag_count: 12,
     });
+    expect(materialRow?.sourceParameters?.domainId).toBe("interior_finishes_wave_1");
     expect(materialRow?.sourceParameters?.professionalMaterialQuantityBasisV1).toMatchObject({
       version: "professional-material-quantity-basis:v1",
       netQuantity: 240,

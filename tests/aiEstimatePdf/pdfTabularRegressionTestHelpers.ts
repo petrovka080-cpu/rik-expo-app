@@ -82,7 +82,7 @@ export function buildLegacyPdfRegressionProof() {
   const extraction = extractEstimatePdfTextForProof({
     pdf: pdf.bytes,
     knownWorkKey: estimate.work.workKey,
-    requiredText: [estimate.totals.displayGrandTotal],
+    requiredText: [pdf.viewModel.totals.grand],
   });
   return { estimate, pdf, extraction };
 }

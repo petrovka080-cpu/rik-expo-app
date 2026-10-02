@@ -24,9 +24,6 @@ export const MASTER_CRITERION_GROUP_COUNTS = Object.freeze({
 } as const);
 
 const CRITERION_ID = /^(R6|R7|R8|R9|S12|S14|S15|S15B|S15C|S19)-(\d{2})$/u;
-const BENCHMARK_HEADING = "**Приложение B. Тридцать сохранённых технологических эталонов**";
-const NEXT_APPENDIX_HEADING = "**Приложение C. Преемственность прежних обязательств**";
-
 function markdownCells(line: string): string[] {
   if (!line.startsWith("|") || !line.endsWith("|")) return [];
   return line.slice(1, -1).split("|").map((cell) => cell.trim());
@@ -45,10 +42,23 @@ export function parseMasterCriteria(markdown: string): MasterCriterion[] {
 }
 
 export function parseMasterTechnologyBenchmarks(markdown: string): MasterTechnologyBenchmark[] {
-  const start = markdown.indexOf(BENCHMARK_HEADING);
-  const end = markdown.indexOf(NEXT_APPENDIX_HEADING, start + BENCHMARK_HEADING.length);
-  if (start < 0 || end < 0 || end <= start) return [];
-  return markdown.slice(start, end).split(/\r?\n/u).flatMap((line) => {
+  const lines = markdown.split(/\r?\n/u);
+  const normalizeHeading = (line: string): string => line
+    .replace(/^#{1,6}\s*/u, "")
+    .replace(/^\*\*/u, "")
+    .replace(/\*\*$/u, "")
+    .trim();
+  const start = lines.findIndex((line) => {
+    const heading = normalizeHeading(line);
+    return /^Приложение [A-E]\. /u.test(heading)
+      && heading.includes("Тридцать")
+      && heading.includes("технологических эталонов");
+  });
+  if (start < 0) return [];
+  const nextOffset = lines.slice(start + 1).findIndex((line) =>
+    /^Приложение [A-E]\. /u.test(normalizeHeading(line)));
+  const end = nextOffset < 0 ? lines.length : start + 1 + nextOffset;
+  return lines.slice(start + 1, end).flatMap((line) => {
     const cells = markdownCells(line);
     if (cells.length !== 3 || !/^\d{1,2}$/u.test(cells[0] ?? "")) return [];
     return [{

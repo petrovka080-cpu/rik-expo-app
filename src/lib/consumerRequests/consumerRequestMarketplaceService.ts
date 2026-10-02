@@ -4,13 +4,29 @@ import { bindConsumerRepairEstimateRevisionRequest } from "./consumerRequestEdit
 import { getConsumerRepairBundle, saveConsumerRepairBundle } from "./consumerRequestRepository";
 import { validateConsumerRepairRequestForMarketplace } from "./consumerRequestValidationService";
 import { recordEstimateTelemetryEvent } from "../../features/estimates/telemetry/estimateTelemetryRecorder";
+import {
+  consumerEstimateMarketplaceTransport,
+  type ConsumerEstimateMarketplaceListingRow,
+  type ConsumerEstimateMarketplaceTransport,
+} from "./consumerRequestMarketplace.transport";
 import type {
   ConsumerMarketplaceLink,
   ConsumerRequestValidationErrorItem,
   ConsumerRepairDraftBundle,
 } from "./consumerRequestTypes";
+import type { Json } from "../database.types";
 
 const id = (prefix: string) => `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+
+type ConsumerMarketplaceCanonicalArtifact = {
+  artifactId: string;
+  kind: "procurement";
+  revisionId: string;
+  releaseId: string;
+  status: "ready";
+  sha256: string | null;
+  revisionChecksumSha256: string;
+};
 
 export class ConsumerRepairValidationError extends Error {
   readonly statusCode = 422;
@@ -35,19 +51,132 @@ export function createConsumerMarketplaceLink(requestDraftId: string): ConsumerM
   };
 }
 
-export function sendConsumerRepairRequestToMarketplace(input: {
+function marketplaceKind(category: string, itemType: string): string {
+  const normalized = category.trim().toLocaleLowerCase("en-US");
+  if (normalized === "material") return "material";
+  if (["work", "construction_work", "labor"].includes(normalized)) return "work";
+  if (["transport", "delivery"].includes(normalized)) return "delivery";
+  if (["equipment", "rent"].includes(normalized)) return "rent";
+  if (["service", "document", "other"].includes(normalized)) return "service";
+  if (itemType === "material") return "material";
+  if (itemType === "work") return "work";
+  return "service";
+}
+
+export function canonicalConsumerRepairMarketplaceProjection(
+  bundle: ConsumerRepairDraftBundle,
+  artifact: ConsumerMarketplaceCanonicalArtifact,
+): { canonicalCatalogId: string; title: string; items: Json[] } {
+  const estimateItems = bundle.items.filter((item) =>
+    item.sourceParameters?.canonicalPreliminaryNeed !== true
+  );
+  const rows = estimateItems.map((item): Json => {
+    const source = item.sourceParameters ?? {};
+    const rowId = String(source.rowCode ?? source.canonicalBackendRowId ?? "").trim();
+    const revisionId = String(source.canonicalBackendRevisionId ?? "").trim();
+    const releaseId = String(source.canonicalBackendReleaseId ?? "").trim();
+    const rowSha256 = String(source.rowSha256 ?? "").trim();
+    const smartProjection = source.smartEstimateProjectionV2;
+    const canonicalSourceCategory = smartProjection
+      && typeof smartProjection === "object"
+      && !Array.isArray(smartProjection)
+      ? String((smartProjection as Record<string, Json>).sourceCategory ?? "").trim()
+      : "";
+    const category = String(
+      canonicalSourceCategory || source.category || source.rowKind || item.category || item.itemType,
+    ).trim();
+    const quantity = Number(item.quantity);
+    if (
+      !rowId ||
+      revisionId !== artifact.revisionId ||
+      releaseId !== artifact.releaseId ||
+      !/^[0-9a-f]{64}$/u.test(rowSha256) ||
+      !Number.isFinite(quantity) ||
+      quantity <= 0 ||
+      !String(item.unit ?? "").trim()
+    ) {
+      throw new Error("CONSUMER_MARKETPLACE_CANONICAL_ROW_PROJECTION_INCOMPLETE");
+    }
+    const includedInProcurement = source.includedInProcurement === true;
+    return {
+      rik_code: rowId,
+      name: item.titleRu,
+      uom: String(item.unit),
+      qty: quantity,
+      price: item.unitPrice == null ? null : Number(item.unitPrice),
+      kind: marketplaceKind(category, item.itemType),
+      section: String(source.section ?? category),
+      canonical_category: category,
+      included_in_estimate: source.includedInEstimate !== false,
+      included_in_procurement: includedInProcurement,
+      procurement_eligible: source.procurementEligible === true || includedInProcurement,
+      canonical_row_sha256: rowSha256,
+      canonical_revision_id: artifact.revisionId,
+      canonical_release_id: artifact.releaseId,
+      canonical_artifact_id: artifact.artifactId,
+    };
+  });
+  if (rows.length !== estimateItems.length || new Set(rows.map((row) =>
+    String((row as Record<string, Json>).rik_code)
+  )).size !== rows.length) {
+    throw new Error("CONSUMER_MARKETPLACE_CANONICAL_ROW_PROJECTION_NOT_UNIQUE");
+  }
+  const catalogIds = new Set(estimateItems.map((item) =>
+    String(item.sourceParameters?.canonicalBackendCatalogId ?? "").trim()
+  ));
+  catalogIds.delete("");
+  if (catalogIds.size !== 1 || rows.length < 1) {
+    throw new Error("CONSUMER_MARKETPLACE_CANONICAL_CATALOG_PROJECTION_INCOMPLETE");
+  }
+  return {
+    canonicalCatalogId: [...catalogIds][0],
+    title: String(
+      bundle.draft.selectedWorkTitleRu ?? bundle.draft.title ?? bundle.draft.aiSummaryRu ?? "Смета",
+    ).trim(),
+    items: rows,
+  };
+}
+
+function assertPublishedListingIdentity(input: {
+  listing: ConsumerEstimateMarketplaceListingRow;
+  userId: string;
+  idempotencyKey: string;
+  revisionId: string;
+  releaseId: string;
+  artifactId: string;
+}): void {
+  const { listing } = input;
+  if (
+    listing.user_id !== input.userId ||
+    !["active", "published", "draft"].includes(listing.status) ||
+    listing.client_mutation_id !== input.idempotencyKey
+  ) {
+    throw new Error("CONSUMER_MARKETPLACE_LISTING_READBACK_IDENTITY_MISMATCH");
+  }
+  if (!Array.isArray(listing.items_json) || listing.items_json.length < 1) {
+    throw new Error("CONSUMER_MARKETPLACE_LISTING_ITEMS_MISSING");
+  }
+  const exactLineage = listing.items_json.every((item) => {
+    if (!item || typeof item !== "object" || Array.isArray(item)) return false;
+    const row = item as Record<string, unknown>;
+    return row.canonical_revision_id === input.revisionId &&
+      row.canonical_release_id === input.releaseId &&
+      row.canonical_artifact_id === input.artifactId &&
+      typeof row.name === "string" && row.name.trim().length > 0 &&
+      typeof row.qty === "number" && Number.isFinite(row.qty) && row.qty > 0;
+  });
+  if (!exactLineage) {
+    throw new Error("CONSUMER_MARKETPLACE_LISTING_LINEAGE_MISMATCH");
+  }
+}
+
+export async function sendConsumerRepairRequestToMarketplace(input: {
   requestDraftId: string;
   userId: string;
   idempotencyKey?: string | null;
-  canonicalArtifact?: {
-    artifactId: string;
-    kind: "procurement";
-    revisionId: string;
-    releaseId: string;
-    status: "ready";
-    sha256: string | null;
-  } | null;
-}): ConsumerRepairDraftBundle {
+  canonicalArtifact?: ConsumerMarketplaceCanonicalArtifact | null;
+  transport?: ConsumerEstimateMarketplaceTransport;
+}): Promise<ConsumerRepairDraftBundle> {
   const validation = validateConsumerRepairRequestForMarketplace(
     input.requestDraftId,
     input.userId,
@@ -79,8 +208,94 @@ export function sendConsumerRepairRequestToMarketplace(input: {
   }
 
   const alreadySent = bundle.marketplaceLink.status === "sent" && Boolean(bundle.marketplaceLink.marketplaceDemandId);
+  const action = alreadySent ? "idempotent_marketplace_replay" : "send_to_marketplace";
+  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action });
+  const artifact = input.canonicalArtifact;
+  if (!artifact || typeof artifact.sha256 !== "string" || !/^[0-9a-f]{64}$/.test(artifact.sha256) ||
+      !/^[0-9a-f]{64}$/.test(artifact.revisionChecksumSha256)) {
+    throw new Error("CONSUMER_MARKETPLACE_CANONICAL_IDENTITY_INCOMPLETE");
+  }
+  const idempotencyKey = input.idempotencyKey ??
+    bundle.marketplaceLink.idempotencyKey ??
+    `consumer-marketplace:${input.requestDraftId}`;
+  const transport = input.transport ?? consumerEstimateMarketplaceTransport;
+  const projection = canonicalConsumerRepairMarketplaceProjection(bundle, artifact);
+  const description = [
+    bundle.draft.problemText,
+    bundle.draft.aiSummaryRu,
+    bundle.draft.selectedWorkTitleRu,
+  ].map((value) => String(value ?? "").trim()).filter(Boolean).join(". ");
+  let receipt: Awaited<ReturnType<ConsumerEstimateMarketplaceTransport["publish"]>>;
+  let remoteStage: "publish" | "readback" = "publish";
+  try {
+    receipt = await transport.publish({
+      localRequestId: input.requestDraftId,
+      revisionId: artifact.revisionId,
+      releaseId: artifact.releaseId,
+      artifactId: artifact.artifactId,
+      idempotencyKey,
+      expectedRevisionChecksumSha256: artifact.revisionChecksumSha256,
+      expectedArtifactSha256: artifact.sha256,
+      canonicalCatalogId: projection.canonicalCatalogId,
+      title: projection.title,
+      description,
+      city: String(bundle.draft.city ?? "").trim(),
+      addressText: String(bundle.draft.addressText ?? "").trim(),
+      contactPhone: String(bundle.draft.contactPhone ?? "").trim(),
+      expectedRowCount: projection.items.length,
+      items: projection.items,
+    });
+    if (
+      !receipt.listing_id ||
+      !["active", "published", "draft"].includes(receipt.server_status) ||
+      receipt.revision_id !== artifact.revisionId ||
+      receipt.release_id !== artifact.releaseId ||
+      receipt.artifact_id !== artifact.artifactId
+    ) {
+      throw new Error("CONSUMER_MARKETPLACE_PUBLISH_RECEIPT_IDENTITY_MISMATCH");
+    }
+    remoteStage = "readback";
+    const publishedListing = await transport.readPublishedListing(receipt.listing_id);
+    assertPublishedListingIdentity({
+      listing: publishedListing,
+      userId: input.userId,
+      idempotencyKey,
+      revisionId: artifact.revisionId,
+      releaseId: artifact.releaseId,
+      artifactId: artifact.artifactId,
+    });
+  } catch (error) {
+    const failedAt = new Date().toISOString();
+    saveConsumerRepairBundle({
+      ...bundle,
+      draft: {
+        ...bundle.draft,
+        lastMarketplaceSubmitAttemptAt: failedAt,
+        updatedAt: failedAt,
+      },
+      events: [
+        ...bundle.events,
+        auditConsumerRepairRequestEvent({
+          requestId: input.requestDraftId,
+          actorUserId: input.userId,
+          eventType: "marketplace_send_failed",
+          payload: {
+            stage: remoteStage,
+            idempotencyKey,
+            canonicalRevisionId: artifact.revisionId,
+            procurementArtifactId: artifact.artifactId,
+            errorCode: error instanceof Error ? error.name : "UNKNOWN_ERROR",
+          },
+        }),
+      ],
+    });
+    throw error;
+  }
+
   if (alreadySent) {
-    assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "idempotent_marketplace_replay" });
+    if (bundle.marketplaceLink.marketplaceDemandId !== receipt.listing_id) {
+      throw new Error("CONSUMER_MARKETPLACE_IDEMPOTENT_LISTING_MISMATCH");
+    }
     return saveConsumerRepairBundle({
       ...bundle,
       events: [
@@ -90,20 +305,19 @@ export function sendConsumerRepairRequestToMarketplace(input: {
           actorUserId: input.userId,
           eventType: "marketplace_send_idempotent_replay",
           payload: {
-            marketplaceDemandId: bundle.marketplaceLink.marketplaceDemandId,
-            idempotencyKey: input.idempotencyKey ?? bundle.marketplaceLink.idempotencyKey ?? null,
+            marketplaceDemandId: receipt.listing_id,
+            idempotencyKey,
           },
         }),
       ],
     });
   }
 
-  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "send_to_marketplace" });
   const marketplaceLink: ConsumerMarketplaceLink = {
     ...bundle.marketplaceLink,
-    marketplaceDemandId: id("marketplace_demand"),
+    marketplaceDemandId: receipt.listing_id,
     status: "sent",
-    idempotencyKey: input.idempotencyKey ?? `consumer_marketplace:${input.requestDraftId}`,
+    idempotencyKey,
     sentAt: now,
   };
   const marketplaceDemandId = marketplaceLink.marketplaceDemandId;
@@ -132,7 +346,7 @@ export function sendConsumerRepairRequestToMarketplace(input: {
       idempotency_key_present: Boolean(input.idempotencyKey),
       canonical_revision_id: canonicalRevisionId || null,
       canonical_release_id: canonicalReleaseId || null,
-      procurement_artifact_id: input.canonicalArtifact?.artifactId ?? null,
+      procurement_artifact_id: artifact.artifactId,
     },
   });
 
@@ -158,9 +372,11 @@ export function sendConsumerRepairRequestToMarketplace(input: {
           idempotencyKey: marketplaceLink.idempotencyKey,
           canonicalRevisionId: canonicalRevisionId || null,
           canonicalReleaseId: canonicalReleaseId || null,
-          procurementArtifactId: input.canonicalArtifact?.artifactId ?? null,
-          procurementArtifactKind: input.canonicalArtifact?.kind ?? null,
-          procurementArtifactSha256: input.canonicalArtifact?.sha256 ?? null,
+          procurementArtifactId: artifact.artifactId,
+          procurementArtifactKind: artifact.kind,
+          procurementArtifactSha256: artifact.sha256,
+          canonicalRevisionChecksumSha256: artifact.revisionChecksumSha256,
+          serverCreated: receipt.created,
         },
       }),
     ],

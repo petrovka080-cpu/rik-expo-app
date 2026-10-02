@@ -6,7 +6,7 @@ import {
 import {
   detectEstimateFakeRows,
   type ContinuousEstimateDetectorRow,
-} from "../../src/lib/ai/estimateContinuousDetection";
+} from "../../scripts/estimate/detectors";
 
 describe("continuous AI estimate buyer BOQ detector", () => {
   it("rejects buyer work rows and sends only procurement material/service rows with matching quantities", () => {

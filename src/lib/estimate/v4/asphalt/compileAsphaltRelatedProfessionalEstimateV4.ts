@@ -1,6 +1,6 @@
 import { formatEstimateUnitLabel } from "../../../ai/globalEstimate/formatEstimateUnitLabel";
 import type { ConsumerRepairAiDraft, ConsumerRepairItemType } from "../../../consumerRequests/consumerRequestTypes";
-import type { BuildEstimateFromInlineWorkPromptInput } from "../../buildEstimateFromInlineWorkPrompt";
+import type { BuildEstimateFromInlineWorkPromptInput } from "../../backendPlatform/canonicalEstimateHistoricalIngress";
 import { estimateDeterministicHash } from "../../estimateDeterministicHash";
 import { applyProfessionalBoqRuntimeContract } from "../../professionalBoqAssumptions";
 import type { DomainResolutionReadiness } from "../../estimateDraftRevisionContract";
@@ -239,11 +239,9 @@ export const ASPHALT_RELATED_PARAMETER_METADATA_V4: Readonly<Record<string, Asph
   lighting_crane_machine_hours: { labelRu: "Машино-часы автокрана по норме или ППР", tier: "P1", unit: "machine_hour", minimum: Number.EPSILON },
   lighting_test_count: { labelRu: "Количество электрических измерений и испытаний по программе", tier: "P1", unit: "test", minimum: 1, integer: true },
   bridge_deck_package_required: { labelRu: "Включить мостовую гидроизоляцию, защитный слой и сопряжения", tier: "P0", allowedValues: [true, false] },
-  waterproofing_material_kg_m2: { labelRu: "Расход мостового гидроизоляционного материала по проекту", tier: "P0", unit: "kg_m2", minimum: Number.EPSILON },
-  protective_layer_density_t_m3: { labelRu: "Плотность материала защитного слоя по паспорту", tier: "P0", unit: "t_m3", minimum: Number.EPSILON },
+  waterproofing_membrane_m2_per_m2: { labelRu: "Расход рулонной мостовой гидроизоляции выбранной системы", tier: "P0", unit: "m2_m2", minimum: 1 },
   expansion_joint_sealant_kg_m: { labelRu: "Расход герметика сопряжений у деформационных швов", tier: "P0", unit: "kg_m", minimum: Number.EPSILON },
-  bridge_waterproofing_productivity_m2_per_man_hour: { labelRu: "Нормативная производительность труда гидроизоляционных работ", tier: "P0", unit: "m2_man_hour", minimum: Number.EPSILON },
-  bridge_waterproofing_machine_productivity_m2_per_machine_hour: { labelRu: "Производительность установки нанесения мостовой гидроизоляции", tier: "P0", unit: "m2_machine_hour", minimum: Number.EPSILON },
+  bridge_waterproofing_equipment_set_count: { labelRu: "Комплект оборудования для наплавления выбранной рулонной системы", tier: "P0", unit: "set", minimum: 1, integer: true },
   asphalt_removal_package_required: { labelRu: "Включить ресурсный пакет демонтажа асфальтобетона", tier: "P0", allowedValues: [true] },
   removal_labor_productivity_m2_per_man_hour: { labelRu: "Нормативная производительность труда демонтажного звена", tier: "P0", unit: "m2_man_hour", minimum: Number.EPSILON },
   removal_control_interval_m2_per_test: { labelRu: "Периодичность контроля границ, глубины и основания после удаления", tier: "P0", unit: "m2_test", minimum: Number.EPSILON },
@@ -280,6 +278,7 @@ type ExactParameterSet = {
   missingRequired: string[];
   missingNormative: string[];
   assumptionKeys: string[];
+  derivedKeys: string[];
 };
 
 type ExactBoqSeed = {
@@ -394,6 +393,22 @@ function inferredString(input: BuildEstimateFromInlineWorkPromptInput, key: stri
 function parameterValue(input: BuildEstimateFromInlineWorkPromptInput, key: string): unknown {
   const direct = explicitOverride(input, key);
   if (direct !== undefined && direct !== null && direct !== "") return direct;
+  if (key === "tack_coat_rate_l_m2") {
+    // Wave-A revisions persisted the same physical l/m2 input under the
+    // earlier key. Preserve that explicit user/project value when reading an
+    // old estimate, while keeping the canonical key authoritative whenever
+    // both are present. This is a compatibility alias, never a hidden rate.
+    const legacyRate = explicitOverride(input, "tack_coat_l_m2");
+    if (legacyRate !== undefined && legacyRate !== null && legacyRate !== "") return legacyRate;
+  }
+  if (key === "emulsion_rate_l_m2") {
+    // The shared multi-layer core names the same interface-emulsion input
+    // generically. Exact related passports historically persisted either the
+    // R8 tack-coat key or the older Wave-A key; both remain explicit values.
+    const relatedRate = explicitOverride(input, "tack_coat_rate_l_m2")
+      ?? explicitOverride(input, "tack_coat_l_m2");
+    if (relatedRate !== undefined && relatedRate !== null && relatedRate !== "") return relatedRate;
+  }
   if (key === "area_m2" || key === "removal_area_m2") {
     const counterpart = key === "area_m2" ? "removal_area_m2" : "area_m2";
     const other = explicitOverride(input, counterpart);
@@ -437,9 +452,46 @@ function extractParameters(
   const parameterKeys = asphaltRelatedParameterKeysForProfileV4(profile);
   const values = Object.fromEntries(parameterKeys.map((key) => [key, parameterValue(input, key)]));
   const assumptionKeys: string[] = [];
-  // R6: historical examples are references, not effective inputs. Values
-  // admitted by parameterValue are explicit user/project values; an ordinary
-  // open or recalculate therefore keeps every absent parameter unresolved.
+  const derivedKeys: string[] = [];
+  // The selected exact work profile owns a versioned, visible preliminary
+  // baseline. Apply it only when the user/project did not provide a value;
+  // explicit values (including invalid ones that must be reported) always win.
+  // Geometry is never invented from the 100 m2 reference example.
+  for (const key of parameterKeys) {
+    if (key === "area_m2" || key === "removal_area_m2") continue;
+    const current = values[key];
+    if (current !== undefined && current !== null && current !== "") continue;
+    if (
+      profile.canonicalWorkKey === "bridge_asphalt" &&
+      [
+        "waterproofing_membrane_m2_per_m2",
+        "waterproofing_primer_rate_l_m2",
+        "protective_layer_thickness_mm",
+        "bridge_waterproofing_equipment_set_count",
+      ].includes(key) &&
+      values.waterproofing_type !== "ROLLED"
+    ) continue;
+    const baseline = getAsphaltRelatedBaselineAssumptionV4(profile, key);
+    if (!baseline) continue;
+    values[key] = baseline.value;
+    assumptionKeys.push(key);
+  }
+  const bridgeWaterproofingWorkRequired = profile.canonicalWorkKey === "bridge_asphalt" &&
+    (values.waterproofing_condition === "LOCAL_REPAIR_REQUIRED" ||
+      values.waterproofing_condition === "REPLACEMENT_REQUIRED");
+  const bridgeRolledSystemApplicable = bridgeWaterproofingWorkRequired && values.waterproofing_type === "ROLLED";
+  if (
+    bridgeWaterproofingWorkRequired &&
+    values.waterproofing_condition === "REPLACEMENT_REQUIRED" &&
+    !validParameter("waterproofing_repair_area_m2", values.waterproofing_repair_area_m2) &&
+    validParameter("area_m2", values.area_m2)
+  ) {
+    // Full replacement follows the confirmed deck area.  Local repair never
+    // receives this derivation because its actual repair boundary is a fact of
+    // the object, not a professional rate or a safe percentage assumption.
+    values.waterproofing_repair_area_m2 = values.area_m2;
+    derivedKeys.push("waterproofing_repair_area_m2");
+  }
   for (const key of [
     "asphalt_reference_design_id", "asphalt_reference_design_sha256",
     "asphalt_reference_design_manifest", "asphalt_reference_design_fingerprint",
@@ -497,7 +549,7 @@ function extractParameters(
     ...(values.lighting_required === true
       ? ["lighting_pole_count", "lighting_luminaire_count", "lighting_cable_length_m", "lighting_cabinet_count"]
       : []),
-    ...(values.waterproofing_condition === "LOCAL_REPAIR_REQUIRED" || values.waterproofing_condition === "REPLACEMENT_REQUIRED"
+    ...(bridgeRolledSystemApplicable
       ? ["waterproofing_repair_area_m2", "waterproofing_primer_rate_l_m2"]
       : []),
     ...(values.milling_required === true ? ["milling_depth_mm", "number_of_passes"] : []),
@@ -554,12 +606,12 @@ function extractParameters(
       ...(values.parking_geometry_required === true
         ? ["parking_space_count", "parking_aisle_length_m", "parking_entry_exit_count"]
         : []),
-      ...(profile.applicationContext === "BRIDGE_OR_STRUCTURE" && values.bridge_deck_package_required === true
-        ? ["waterproofing_repair_area_m2", "protective_layer_thickness_mm", "expansion_joint_length_m"]
+      ...(profile.applicationContext === "BRIDGE_OR_STRUCTURE" && bridgeRolledSystemApplicable
+        ? ["waterproofing_repair_area_m2", "protective_layer_thickness_mm", "bridge_waterproofing_equipment_set_count"]
         : []),
     ]
-    : profile.applicationContext === "BRIDGE_OR_STRUCTURE" && values.bridge_deck_package_required === true
-      ? ["waterproofing_repair_area_m2", "protective_layer_thickness_mm", "expansion_joint_length_m"]
+    : profile.applicationContext === "BRIDGE_OR_STRUCTURE" && bridgeRolledSystemApplicable
+      ? ["waterproofing_repair_area_m2", "protective_layer_thickness_mm", "bridge_waterproofing_equipment_set_count"]
       : [];
   const normativeKeys = installationAssemblyRequired
     ? [
@@ -590,8 +642,14 @@ function extractParameters(
         "parking_layout_consumable_kg_per_space", "parking_layout_productivity_space_per_man_hour",
         "parking_survey_productivity_space_per_machine_hour", "parking_geometry_control_interval_m2_per_test",
       ] : []),
-      ...(profile.applicationContext === "BRIDGE_OR_STRUCTURE" && values.bridge_deck_package_required === true
-        ? ["waterproofing_material_kg_m2", "waterproofing_primer_rate_l_m2", "protective_layer_density_t_m3", "expansion_joint_sealant_kg_m", "bridge_waterproofing_productivity_m2_per_man_hour", "bridge_waterproofing_machine_productivity_m2_per_machine_hour"]
+      ...(profile.applicationContext === "BRIDGE_OR_STRUCTURE" && bridgeRolledSystemApplicable
+        ? [
+          "waterproofing_membrane_m2_per_m2",
+          "waterproofing_primer_rate_l_m2",
+          ...(validParameter("expansion_joint_length_m", values.expansion_joint_length_m)
+            ? ["expansion_joint_sealant_kg_m"]
+            : []),
+        ]
         : []),
       ...(reinstatement ? [
         "removal_labor_productivity_m2_per_man_hour",
@@ -617,6 +675,10 @@ function extractParameters(
       ...(values.boundary_cut_required === true ? ["boundary_cut_consumable_kg_m", "boundary_cut_productivity_m_per_man_hour", "boundary_saw_productivity_m_per_machine_hour"] : []),
     ];
   const normativeKeySet = new Set(normativeKeys);
+  const bridgeAreaNeedsScopeReview = bridgeRolledSystemApplicable &&
+    validParameter("area_m2", values.area_m2) &&
+    validParameter("waterproofing_repair_area_m2", values.waterproofing_repair_area_m2) &&
+    Number(values.waterproofing_repair_area_m2) > Number(values.area_m2);
   const missingRequired = [
     ...profile.requiredParameters,
     ...(profile.canonicalWorkKey === "asphalt_demolition" ? ["work_scope"] : []),
@@ -631,6 +693,7 @@ function extractParameters(
     ...fullScopeDecisionKeys,
     ...fullStructureKeys.filter((key) => !normativeKeySet.has(key)),
     ...childProjectKeys,
+    ...(bridgeAreaNeedsScopeReview ? ["waterproofing_area_scope_review"] : []),
     ...(!installation ? [
       "removal_control_interval_m2_per_test",
       "removal_documentation_count",
@@ -641,11 +704,18 @@ function extractParameters(
     .filter((key, index, all) => all.indexOf(key) === index && !validParameter(key, values[key]));
   const missingNormative = normativeKeys
     .filter((key, index, all) => all.indexOf(key) === index && !validParameter(key, values[key]));
+  if (bridgeWaterproofingWorkRequired && !bridgeRolledSystemApplicable) {
+    // Do not turn a missing admitted system into a questionnaire for material
+    // rates and productivities.  It is one explicit source-coverage gap for
+    // the catalog owner to fill with a compatible TDS/profile.
+    missingNormative.push("bridge_waterproofing_system_profile_source_gap");
+  }
   return {
     values,
     missingRequired,
     missingNormative,
     assumptionKeys,
+    derivedKeys,
   };
 }
 
@@ -682,9 +752,7 @@ function coreRowsToSeeds(rows: readonly AsphaltRelatedCoreRowV4[]): ExactBoqSeed
     phaseOwner: "PHASE_2_INSTALLATION",
     includedInProcurement: row.includedInProcurement,
     materialKey: row.category === "material" ? row.semanticOwner : null,
-    inclusionCondition: row.scopeTriggerParameter
-      ? `${row.scopeTriggerParameter}=true; typed child assembly ${row.childPassportId}`
-      : "EXACT_ASPHALT_CORE_RESOURCE_ASSEMBLY",
+    inclusionCondition: row.inclusionCondition,
     rounding: "ROUND_HALF_UP_6",
     formulaInputValues: row.formulaInputValues,
     costOwnership: row.costOwnership,
@@ -1413,7 +1481,8 @@ function readinessLabelRu(readiness: DomainResolutionReadiness): string {
 }
 
 function metadataFor(profile: AsphaltRelatedProfileV4): Record<string, AsphaltRelatedParameterMetadataV4> {
-  return Object.fromEntries(
+  return {
+    ...Object.fromEntries(
     asphaltRelatedParameterKeysForProfileV4(profile)
       .map((key) => {
         const metadata = ASPHALT_RELATED_PARAMETER_METADATA_V4[key] ?? {
@@ -1429,7 +1498,16 @@ function metadataFor(profile: AsphaltRelatedProfileV4): Record<string, AsphaltRe
           referenceExampleReasonRu: baseline.reasonRu,
         } : metadata];
       }),
-  );
+    ),
+    waterproofing_area_scope_review: {
+      labelRu: "Площадь гидроизоляции больше площади полотна: укажите отдельные поверхности или исправьте границы работ",
+      tier: "P0",
+    },
+    bridge_waterproofing_system_profile_source_gap: {
+      labelRu: "Для выбранного типа мостовой гидроизоляции ещё не подключён совместимый профиль/TDS",
+      tier: "P0",
+    },
+  };
 }
 
 /**
@@ -1472,6 +1550,7 @@ export function compileAsphaltRelatedProfessionalEstimateV4(
       values: parameters.values,
       scopeMode,
       assumptionKeys: new Set(parameters.assumptionKeys),
+      derivedKeys: new Set(parameters.derivedKeys),
     })
     : null;
   const removalCompilation = precompileReadiness === "CALCULATION_READY" && removalOperation && scopeMode

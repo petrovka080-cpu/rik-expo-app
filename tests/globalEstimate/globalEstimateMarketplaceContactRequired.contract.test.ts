@@ -30,10 +30,13 @@ describe("global estimate marketplace contact contract", () => {
     bundle = updateConsumerRepairRequestDraft({ requestDraftId: bundle.draft.id, patch: { contactPhone: null } });
 
     expect(validateConsumerRepairRequestForMarketplace(bundle.draft.id, bundle.draft.consumerUserId).errors.map((error) => error.code)).toContain("CONTACT_REQUIRED");
-    expect(() => sendConsumerRepairRequestToMarketplace({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId })).toThrow();
+    await expect(sendConsumerRepairRequestToMarketplace({
+      requestDraftId: bundle.draft.id,
+      userId: bundle.draft.consumerUserId,
+    })).rejects.toThrow();
 
     bundle = updateConsumerRepairRequestDraft({ requestDraftId: bundle.draft.id, patch: { contactPhone: "+1 214 555 0100" } });
-    const sent = sendCanonicalConsumerRepairAuditDraft({ bundle });
+    const sent = await sendCanonicalConsumerRepairAuditDraft({ bundle });
     expect(sent.marketplaceLink.status).toBe("sent");
   });
 });

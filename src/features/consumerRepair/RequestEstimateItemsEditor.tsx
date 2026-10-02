@@ -1,5 +1,5 @@
 import React from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
@@ -15,6 +15,7 @@ import type {
 import {
   consumerRepairRowCategorySignals,
   consumerRepairRowIsCanonicalPreliminaryNeed,
+  consumerRepairRowIsNonPayable,
 } from "./consumerRepairRowMetadata";
 
 export type RequestEstimateCategoryFilterId =
@@ -25,10 +26,10 @@ export type RequestEstimateCategoryFilterId =
   | "services"
   | "delivery";
 
-export const REQUEST_ESTIMATE_CATEGORY_FILTERS: ReadonlyArray<{
+export const REQUEST_ESTIMATE_CATEGORY_FILTERS: readonly {
   id: RequestEstimateCategoryFilterId;
   label: string;
-}> = [
+}[] = [
   { id: "all", label: "Все" },
   { id: "materials", label: "Материалы" },
   { id: "labor", label: "Работы" },
@@ -51,6 +52,9 @@ type Props = {
   incompleteParameterCount?: number | null;
   incompleteResolutionLabel?: string;
   onResolveIncomplete?: () => void;
+  pendingCanonicalRowEditCount?: number;
+  canonicalRowEditsApplying?: boolean;
+  onApplyCanonicalRowEdits?: () => boolean | void | Promise<boolean | void>;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
@@ -64,6 +68,7 @@ type Props = {
   onOpenPhoto?: (itemId: string) => void;
   showPhotoButtons?: boolean;
   rowPhotoThumbnails?: Readonly<Record<string, string>>;
+  rowPhotoAttachmentItemIds?: ReadonlySet<string>;
 };
 
 type State = {
@@ -74,7 +79,13 @@ type State = {
   catalogError: string | null;
   lastCatalogQuery: string | null;
   collapsedCategoryIds: Partial<Record<Exclude<RequestEstimateCategoryFilterId, "all">, true>>;
+  showOnlyUnresolved: boolean;
+  showTechnicalDetails: boolean;
+  visibleRowLimit: number;
 };
+
+const ANDROID_INITIAL_ROW_LIMIT = 16;
+const ANDROID_ROW_BATCH_SIZE = 16;
 
 type ExistingEstimateSearchMatch = {
   itemId: string;
@@ -251,6 +262,9 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
     catalogError: null,
     lastCatalogQuery: null,
     collapsedCategoryIds: {},
+    showOnlyUnresolved: false,
+    showTechnicalDetails: false,
+    visibleRowLimit: ANDROID_INITIAL_ROW_LIMIT,
   };
 
   static getDerivedStateFromProps(props: Props, state: State): Partial<State> | null {
@@ -265,6 +279,9 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
           catalogError: null,
           lastCatalogQuery: null,
           collapsedCategoryIds: {},
+          showOnlyUnresolved: false,
+          showTechnicalDetails: false,
+          visibleRowLimit: ANDROID_INITIAL_ROW_LIMIT,
         };
   }
 
@@ -398,6 +415,9 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
       incompleteParameterCount = 0,
       incompleteResolutionLabel = "Открыть обязательные данные",
       onResolveIncomplete,
+      pendingCanonicalRowEditCount = 0,
+      canonicalRowEditsApplying = false,
+      onApplyCanonicalRowEdits,
       onDecrease,
       onIncrease,
       onQuantityChange,
@@ -411,6 +431,8 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
     } = this.props;
     const hasPreliminaryNeeds = viewModel.sections.some((section) =>
       section.items.some(consumerRepairRowIsCanonicalPreliminaryNeed));
+    const unresolvedItems = viewModel.sections.flatMap((section) =>
+      section.items.filter(consumerRepairRowIsCanonicalPreliminaryNeed));
     const compositionIncomplete = incompleteParameterCount == null
       || incompleteParameterCount > 0
       || hasPreliminaryNeeds;
@@ -418,14 +440,15 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
     const filteredSections = viewModel.sections.map((section) => {
       return {
         ...section,
-        items: normalizedQuery
+        items: (normalizedQuery
           ? section.items.filter((item) => [
               item.titleRu,
               item.category,
               item.quantityFormula,
               item.normSourceTitle,
             ].some((value) => String(value ?? "").toLocaleLowerCase("ru-RU").includes(normalizedQuery)))
-          : section.items,
+          : section.items).filter((item) =>
+            !this.state.showOnlyUnresolved || consumerRepairRowIsCanonicalPreliminaryNeed(item)),
       };
     }).filter((section) => section.items.length > 0);
     const filteredEntries = filteredSections.flatMap((section) => section.items.map((item) => ({
@@ -442,7 +465,13 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
     );
     const visibleItems = filteredEntries
       .filter((entry) => !this.state.collapsedCategoryIds[entry.categoryFilterId])
+      .filter((entry) => this.state.showTechnicalDetails || !consumerRepairRowIsNonPayable(entry.item))
       .map((entry) => entry.item);
+    const renderedItems = Platform.OS === "android"
+      ? visibleItems.slice(0, this.state.visibleRowLimit)
+      : visibleItems;
+    const technicalDetailCount = filteredEntries.filter((entry) =>
+      consumerRepairRowIsNonPayable(entry.item)).length;
     const existingMatches: ExistingEstimateSearchMatch[] = filteredSections.flatMap((section) =>
       section.items.map((item) => ({
         itemId: item.id,
@@ -454,7 +483,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
       <View style={styles.wrap} testID="request-estimate-items-editor-content">
         <View style={styles.headingRow}>
           <Text style={styles.heading} testID="request-estimate-composition-heading">
-            {compositionIncomplete ? "Предварительный состав" : "Полная смета"}
+            {compositionIncomplete ? "Предварительный состав" : "Позиции сметы"}
           </Text>
           <Text style={styles.rowCount} testID="request-estimate-items-total-count">
             {viewModel.preliminaryNeedCount
@@ -465,8 +494,34 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
         {compositionIncomplete ? (
           <View style={styles.incompleteNotice} testID="request-estimate-incomplete-composition-notice">
             <Text style={styles.incompleteNoticeText}>
-              Смета ещё не готова: рассчитаны {viewModel.calculatedItemCount ?? 0} строк, у {viewModel.preliminaryNeedCount ?? 0} применимых позиций нет обоснованного количества. Они не входят в сумму и закупку.
+              Смета ещё не готова: рассчитаны {viewModel.calculatedItemCount ?? 0} строк, у {viewModel.preliminaryNeedCount ?? 0} применимых позиций не завершены обязательные уточнения. До уточнения они не входят в сумму и закупку.
             </Text>
+            {unresolvedItems.length > 0 ? (
+              <View style={styles.blockingRowsList} testID="request-estimate-unresolved-row-list">
+                <Text style={styles.blockingRowsTitle}>Требуют уточнения:</Text>
+                {unresolvedItems.slice(0, 5).map((item) => (
+                  <Text key={item.id} style={styles.blockingRowText}>• {item.titleRu}</Text>
+                ))}
+              </View>
+            ) : null}
+            {unresolvedItems.length > 0 ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ selected: this.state.showOnlyUnresolved }}
+                onPress={() => this.setState((state) => ({
+                  showOnlyUnresolved: !state.showOnlyUnresolved,
+                  collapsedCategoryIds: {},
+                }))}
+                style={styles.unresolvedFilterAction}
+                testID="request-estimate-show-only-unresolved"
+              >
+                <Text style={styles.unresolvedFilterActionText}>
+                  {this.state.showOnlyUnresolved
+                    ? "Показать все позиции"
+                    : `Показать только требующие уточнения (${unresolvedItems.length})`}
+                </Text>
+              </Pressable>
+            ) : null}
             {onResolveIncomplete ? (
               <Pressable
                 accessibilityRole="button"
@@ -477,6 +532,25 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
                 <Text style={styles.incompleteActionText}>{incompleteResolutionLabel}</Text>
               </Pressable>
             ) : null}
+          </View>
+        ) : null}
+        {pendingCanonicalRowEditCount > 0 && onApplyCanonicalRowEdits ? (
+          <View style={styles.rowBatchBar} testID="request-estimate-row-batch-bar">
+            <Text style={styles.rowBatchText}>
+              Изменения в {pendingCanonicalRowEditCount} поз. ещё не сохранены. Можно продолжать ввод в других строках.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ disabled: canonicalRowEditsApplying }}
+              disabled={canonicalRowEditsApplying}
+              onPress={() => { void onApplyCanonicalRowEdits(); }}
+              style={[styles.rowBatchApply, canonicalRowEditsApplying ? styles.rowBatchApplyDisabled : null]}
+              testID="request-estimate-row-batch-apply"
+            >
+              <Text style={styles.rowBatchApplyText}>
+                {canonicalRowEditsApplying ? "Применяем…" : "Применить изменения"}
+              </Text>
+            </Pressable>
           </View>
         ) : null}
         <EstimateMaterialSearchAddControl
@@ -491,6 +565,24 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
           onSelectExisting={this.selectExistingMatch}
           onSelectCatalogItem={this.selectCatalogItem}
         />
+        {technicalDetailCount > 0 ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ expanded: this.state.showTechnicalDetails }}
+            onPress={() => this.setState((state) => ({
+              showTechnicalDetails: !state.showTechnicalDetails,
+              visibleRowLimit: ANDROID_INITIAL_ROW_LIMIT,
+            }))}
+            style={styles.unresolvedFilterAction}
+            testID="request-estimate-technical-details-toggle"
+          >
+            <Text style={styles.unresolvedFilterActionText}>
+              {this.state.showTechnicalDetails
+                ? "Скрыть включённые и контрольные подробности"
+                : `Показать включённые и контрольные подробности (${technicalDetailCount})`}
+            </Text>
+          </Pressable>
+        ) : null}
         <View
           accessibilityRole="tablist"
           style={styles.categoryFilters}
@@ -526,7 +618,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
           </Text>
         ) : null}
         <View style={styles.section} testID="request-estimate-flat-row-list">
-          {visibleItems.map((item, index) => (
+          {renderedItems.map((item, index) => (
             <View
               focusable
               key={`${item.id}-${index}`}
@@ -545,10 +637,39 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
                 onOpenPhoto={onOpenPhoto}
                 showPhotoButton={showPhotoButtons === true}
                 photoThumbnailUri={this.props.rowPhotoThumbnails?.[item.id] ?? null}
+                hasPhotoAttachment={this.props.rowPhotoAttachmentItemIds?.has(item.id) === true}
               />
             </View>
           ))}
         </View>
+        {Platform.OS === "android" && renderedItems.length < visibleItems.length ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => this.setState((state) => ({
+              visibleRowLimit: state.visibleRowLimit + ANDROID_ROW_BATCH_SIZE,
+            }))}
+            style={styles.unresolvedFilterAction}
+            testID="request-estimate-load-more-rows"
+          >
+            <Text style={styles.unresolvedFilterActionText}>
+              {`Показать ещё ${Math.min(ANDROID_ROW_BATCH_SIZE, visibleItems.length - renderedItems.length)} · показано ${renderedItems.length} из ${visibleItems.length}`}
+            </Text>
+          </Pressable>
+        ) : null}
+        {pendingCanonicalRowEditCount > 0 && onApplyCanonicalRowEdits ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ disabled: canonicalRowEditsApplying }}
+            disabled={canonicalRowEditsApplying}
+            onPress={() => { void onApplyCanonicalRowEdits(); }}
+            style={[styles.rowBatchApply, canonicalRowEditsApplying ? styles.rowBatchApplyDisabled : null]}
+            testID="request-estimate-row-batch-apply-bottom"
+          >
+            <Text style={styles.rowBatchApplyText}>
+              {canonicalRowEditsApplying ? "Применяем…" : `Применить изменения (${pendingCanonicalRowEditCount})`}
+            </Text>
+          </Pressable>
+        ) : null}
       </View>
     );
   }
@@ -594,6 +715,63 @@ const styles = StyleSheet.create({
   incompleteActionText: {
     color: "#FFFFFF",
     fontSize: 12,
+    fontWeight: "900",
+  },
+  blockingRowsList: {
+    gap: 3,
+  },
+  blockingRowsTitle: {
+    color: "#92400E",
+    fontSize: 12,
+    fontWeight: "900",
+  },
+  blockingRowText: {
+    color: "#78350F",
+    fontSize: 12,
+    fontWeight: "800",
+  },
+  unresolvedFilterAction: {
+    alignSelf: "flex-start",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#D97706",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  unresolvedFilterActionText: {
+    color: "#92400E",
+    fontSize: 12,
+    fontWeight: "900",
+  },
+  rowBatchBar: {
+    gap: 8,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#0F766E",
+    backgroundColor: "#F0FDFA",
+    padding: 10,
+  },
+  rowBatchText: {
+    color: "#115E59",
+    fontSize: 12,
+    fontWeight: "800",
+    lineHeight: 17,
+  },
+  rowBatchApply: {
+    minHeight: 42,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 9,
+    backgroundColor: "#0F766E",
+    paddingHorizontal: 14,
+  },
+  rowBatchApplyDisabled: {
+    opacity: 0.6,
+  },
+  rowBatchApplyText: {
+    color: "#FFFFFF",
+    fontSize: 13,
     fontWeight: "900",
   },
   rowCount: {

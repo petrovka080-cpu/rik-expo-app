@@ -2715,8 +2715,9 @@ describe("real professional norm packs audit", () => {
       PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID,
     ))].sort();
 
-    expect(basisParameters).toHaveLength(35);
-    expect(Object.keys(PROFESSIONAL_NORM_PACK_BASIS_QUESTIONS_RU)).toHaveLength(34);
+    expect(basisParameters).toHaveLength(41);
+    expect(Object.keys(PROFESSIONAL_NORM_PACK_BASIS_QUESTIONS_RU)).toHaveLength(41);
+    expect(basisParameters.filter((key) => !PROFESSIONAL_NORM_PACK_BASIS_QUESTIONS_RU[key])).toEqual([]);
     expect(PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID).toMatchObject({
       concrete_nrmca_cip31_selected_contingency_m3_m3_v1: "plan_dimension_concrete_volume_m3",
       formwork_rics_nrm2_measured_contact_area_same_unit_routing_v1: "measured_formwork_contact_area_m2",
@@ -2787,7 +2788,7 @@ describe("real professional norm packs audit", () => {
       "concrete_aci_spec_308_1_23_project_curing_schedule_v1",
     ]);
     expect(unregistered.every((item) =>
-      item.work_basis_unit == null
+      item.work_basis_unit != null
       && item.output_unit === "project_schedule"
       && item.disposition === "NO_DIMENSIONALLY_COMPATIBLE_ROW"
     )).toBe(true);

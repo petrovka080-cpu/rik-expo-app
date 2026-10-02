@@ -92,16 +92,53 @@ function sectionType(row: EstimateRealityRowInput): string {
   return String(row.section ?? row.sectionType ?? "").trim();
 }
 
+const UNIT_DIMENSION_BY_KEY: Readonly<Record<string, EstimateQuantityDimension>> = Object.freeze({
+  m2: "area",
+  "m²": "area",
+  sqm: "area",
+  sq_m: "area",
+  square_m: "area",
+  square_meter: "area",
+  m3: "volume",
+  "m³": "volume",
+  cbm: "volume",
+  cubic_m: "volume",
+  cubic_meter: "volume",
+  m: "length",
+  lm: "length",
+  linear_m: "length",
+  meter: "length",
+  metre: "length",
+  kg: "mass",
+  kilogram: "mass",
+  t: "mass",
+  ton: "mass",
+  tonne: "mass",
+  piece: "count",
+  pieces: "count",
+  pcs: "count",
+  pc: "count",
+  set: "count",
+  sets: "count",
+  trip: "count",
+  trips: "count",
+  point: "count",
+  points: "count",
+  h: "time",
+  hr: "time",
+  hour: "time",
+  hours: "time",
+  man_hour: "time",
+  machine_hour: "time",
+});
+
 function unitDimension(unitValue: unknown): EstimateQuantityDimension {
-  const unit = String(unitValue ?? "").trim().toLowerCase().replace(/\s+/g, "_");
+  const rawUnit = String(unitValue ?? "");
+  const direct = UNIT_DIMENSION_BY_KEY[rawUnit];
+  if (direct) return direct;
+  const unit = rawUnit.trim().toLowerCase().replace(/\s+/g, "_");
   if (!unit) return "unknown";
-  if (["m2", "m²", "sqm", "sq_m", "square_m", "square_meter"].includes(unit)) return "area";
-  if (["m3", "m³", "cbm", "cubic_m", "cubic_meter"].includes(unit)) return "volume";
-  if (["m", "lm", "linear_m", "meter", "metre"].includes(unit)) return "length";
-  if (["kg", "kilogram", "t", "ton", "tonne"].includes(unit)) return "mass";
-  if (["piece", "pieces", "pcs", "pc", "set", "sets", "trip", "trips", "point", "points"].includes(unit)) return "count";
-  if (["h", "hr", "hour", "hours", "man_hour", "machine_hour"].includes(unit)) return "time";
-  return "other";
+  return UNIT_DIMENSION_BY_KEY[unit] ?? "other";
 }
 
 function finiteNumber(value: unknown): number | null {
@@ -109,11 +146,24 @@ function finiteNumber(value: unknown): number | null {
 }
 
 function traceResult(trace: string): number | null {
-  const matches = [
-    ...trace.matchAll(/(?:^|;\s*)result=(-?\d+(?:\.\d+)?(?:e[+-]?\d+)?)(?=\s|;|$)/gi),
-  ];
-  const finalResult = matches[matches.length - 1]?.[1];
-  return finalResult == null ? null : finiteNumber(Number(finalResult));
+  const marker = "result=";
+  const markerIndex = trace.lastIndexOf(marker);
+  if (markerIndex < 0) return null;
+  const separatorIndex = trace.lastIndexOf(";", markerIndex);
+  if (markerIndex > 0) {
+    const prefix = trace.slice(separatorIndex + 1, markerIndex);
+    if (separatorIndex < 0 || prefix.trim() !== "") return null;
+  }
+  const valueStart = markerIndex + marker.length;
+  let valueEnd = valueStart;
+  while (valueEnd < trace.length) {
+    const code = trace.charCodeAt(valueEnd);
+    if (code === 59 || code === 32 || code === 9 || code === 10 || code === 13) break;
+    valueEnd += 1;
+  }
+  const value = trace.slice(valueStart, valueEnd);
+  if (!/^-?\d+(?:\.\d+)?(?:e[+-]?\d+)?$/i.test(value)) return null;
+  return finiteNumber(Number(value));
 }
 
 function requiredParametersValid(sourceParameters: Record<string, unknown> | null | undefined): boolean {
@@ -122,13 +172,14 @@ function requiredParametersValid(sourceParameters: Record<string, unknown> | nul
   const context = sourceParameters?.formulaContext;
   if (!context || typeof context !== "object" || Array.isArray(context)) return false;
   const values = context as Record<string, unknown>;
-  return requirements.every((requirement) => {
+  for (const requirement of requirements) {
     if (!requirement || typeof requirement !== "object" || Array.isArray(requirement)) return false;
     const record = requirement as Record<string, unknown>;
-    if (record.required !== true) return true;
+    if (record.required !== true) continue;
     const key = String(record.key ?? "").trim();
-    return Boolean(key) && values[key] !== undefined && values[key] !== null;
-  });
+    if (!key || values[key] === undefined || values[key] === null) return false;
+  }
+  return true;
 }
 
 export function isGeneratedFamilyDefaultSource(sourceId: string | null | undefined): boolean {
@@ -143,7 +194,33 @@ export function isGeneratedFamilyDefaultSource(sourceId: string | null | undefin
   );
 }
 
-export function classifyEstimateRowReality(row: EstimateRealityRowInput): EstimateRowRealityClassification {
+type EstimateRealitySummaryAccumulator = {
+  rowCount: number;
+  professionalSourcePrefixClaimCount: number;
+  sourceBackedCount: number;
+  genericFamilyDefaultCount: number;
+  invalidFakeSourceCount: number;
+  suspiciousMaterialM2Count: number;
+  blindQuantityCopyCount: number;
+  blindCopyWithoutFormulaTraceCount: number;
+  identityFormulaWithoutVerifiedCoefficientCount: number;
+  unitDimensionMismatchCount: number;
+  formulaMechanicallyCompilableCount: number;
+  formulaRuntimeValidCount: number;
+  formulaSemanticUnverifiedCount: number;
+  normSourceUnregisteredCount: number;
+  normSourceVerifiedCount: number;
+  requiredParametersValidCount: number;
+  procurementApplicableCount: number;
+  priceCoveredCount: number;
+  professionalReadyCount: number;
+  missingFormulaTraceCount: number;
+};
+
+function classifyEstimateRowRealityInternal(
+  row: EstimateRealityRowInput,
+  summary?: EstimateRealitySummaryAccumulator,
+): EstimateRowRealityClassification | null {
   const sourceId = String(row.normSourceId ?? row.sourceParameters?.normSourceId ?? "").trim();
   const claimsProfessionalSourcePrefix = isProfessionalNormPackSourceId(sourceId);
   const normSourceVerified = isAdmittedProfessionalNormSource({
@@ -154,13 +231,19 @@ export function classifyEstimateRowReality(row: EstimateRealityRowInput): Estima
   });
   const isSourceBacked = normSourceVerified;
   const normSourceUnregistered = !normSourceVerified;
-  const isFamilyDefault = isGeneratedFamilyDefaultSource(sourceId);
+  const isFamilyDefault = !claimsProfessionalSourcePrefix && Boolean(sourceId) && (
+    sourceId.includes("generated_family_default") ||
+    sourceId.includes("family_default") ||
+    sourceId.startsWith("src_norm_") ||
+    sourceId.startsWith("src_generated_")
+  );
   const isGenerated = isFamilyDefault || sourceId.includes("generated");
   const isHistoricalPriceOnly =
     String(row.sourceParameters?.priceSourceType ?? "").includes("historical") ||
     String(row.priceStatus ?? "").includes("historical");
   const trace = String(row.calculationTrace ?? "");
   const title = rowTitle(row);
+  const rowSectionType = sectionType(row);
   const unit = String(row.unit ?? "").trim();
   const quantity = typeof row.quantity === "number" && Number.isFinite(row.quantity) ? row.quantity : null;
   const baseQuantity = finiteNumber(row.sourceParameters?.baseQuantity);
@@ -221,7 +304,7 @@ export function classifyEstimateRowReality(row: EstimateRealityRowInput): Estima
     row.unitPrice == null &&
     row.total == null &&
     (row.priceStatus === "PRICE_MISSING" || row.priceStatus === "missing" || row.priceStatus == null);
-  const materialLike = sectionType(row) === "materials" || row.lineType === "material";
+  const materialLike = rowSectionType === "materials" || row.lineType === "material";
   const procurementApplicable = row.includedInProcurement === true || materialLike;
   const priceCovered = procurementApplicable && hasPriceSource && !missingPriceState && !isHistoricalPriceOnly;
   const suspiciousMaterialM2 = materialLike && unit === "m2" && !isSourceBacked;
@@ -232,25 +315,6 @@ export function classifyEstimateRowReality(row: EstimateRealityRowInput): Estima
       : sourceId
         ? "INVALID_FAKE_SOURCE"
         : "UNKNOWN_SOURCE";
-  const blockingReasons = [
-    !isSourceBacked ? "row_not_source_backed_professional_norm" : "",
-    claimsProfessionalSourcePrefix && normSourceUnregistered ? "unregistered_professional_source_claim" : "",
-    isFamilyDefault ? "generated_family_default_not_professional" : "",
-    !row.normId ? "norm_id_missing" : "",
-    !row.normVersion ? "norm_version_missing" : "",
-    !hasFormulaTrace ? "formula_trace_missing" : "",
-    !mechanicallyCompilable ? "formula_not_mechanically_compilable" : "",
-    !formulaRuntimeValid ? "formula_runtime_invalid" : "",
-    !parametersValid ? "required_formula_parameters_unverified" : "",
-    normSourceUnregistered ? "norm_source_unregistered" : "",
-    identityFormulaWithoutVerifiedCoefficient ? "identity_formula_without_verified_coefficient" : "",
-    unitDimensionMismatch ? "unit_dimension_mismatch" : "",
-    formulaSemanticUnverified ? "formula_semantic_unverified" : "",
-    suspiciousMaterialM2 ? "generic_material_m2_unit" : "",
-    !hasPriceSource && !missingPriceState ? "price_without_ratebook_source" : "",
-    isHistoricalPriceOnly ? "historical_price_only_not_ratebook" : "",
-    procurementApplicable && !priceCovered ? "procurement_price_not_covered" : "",
-  ].filter(Boolean);
   const professionalReady =
     mechanicallyCompilable &&
     formulaRuntimeValid &&
@@ -260,10 +324,50 @@ export function classifyEstimateRowReality(row: EstimateRealityRowInput): Estima
     !identityFormulaWithoutVerifiedCoefficient &&
     (!procurementApplicable || priceCovered) &&
     Boolean(row.normId && row.normVersion);
-
+  if (summary) {
+    summary.rowCount += 1;
+    if (claimsProfessionalSourcePrefix) summary.professionalSourcePrefixClaimCount += 1;
+    if (isSourceBacked) summary.sourceBackedCount += 1;
+    if (isFamilyDefault) summary.genericFamilyDefaultCount += 1;
+    if (sourceStatus === "INVALID_FAKE_SOURCE") summary.invalidFakeSourceCount += 1;
+    if (suspiciousMaterialM2) summary.suspiciousMaterialM2Count += 1;
+    if (quantityCopiedFromUserInput) summary.blindQuantityCopyCount += 1;
+    if (blindCopyWithoutFormulaTrace) summary.blindCopyWithoutFormulaTraceCount += 1;
+    if (identityFormulaWithoutVerifiedCoefficient) summary.identityFormulaWithoutVerifiedCoefficientCount += 1;
+    if (unitDimensionMismatch) summary.unitDimensionMismatchCount += 1;
+    if (mechanicallyCompilable) summary.formulaMechanicallyCompilableCount += 1;
+    if (formulaRuntimeValid) summary.formulaRuntimeValidCount += 1;
+    if (formulaSemanticUnverified) summary.formulaSemanticUnverifiedCount += 1;
+    if (normSourceUnregistered) summary.normSourceUnregisteredCount += 1;
+    if (normSourceVerified) summary.normSourceVerifiedCount += 1;
+    if (parametersValid) summary.requiredParametersValidCount += 1;
+    if (procurementApplicable) summary.procurementApplicableCount += 1;
+    if (priceCovered) summary.priceCoveredCount += 1;
+    if (professionalReady) summary.professionalReadyCount += 1;
+    if (!hasFormulaTrace) summary.missingFormulaTraceCount += 1;
+    return null;
+  }
+  const blockingReasons: string[] = [];
+  if (!isSourceBacked) blockingReasons.push("row_not_source_backed_professional_norm");
+  if (claimsProfessionalSourcePrefix && normSourceUnregistered) blockingReasons.push("unregistered_professional_source_claim");
+  if (isFamilyDefault) blockingReasons.push("generated_family_default_not_professional");
+  if (!row.normId) blockingReasons.push("norm_id_missing");
+  if (!row.normVersion) blockingReasons.push("norm_version_missing");
+  if (!hasFormulaTrace) blockingReasons.push("formula_trace_missing");
+  if (!mechanicallyCompilable) blockingReasons.push("formula_not_mechanically_compilable");
+  if (!formulaRuntimeValid) blockingReasons.push("formula_runtime_invalid");
+  if (!parametersValid) blockingReasons.push("required_formula_parameters_unverified");
+  if (normSourceUnregistered) blockingReasons.push("norm_source_unregistered");
+  if (identityFormulaWithoutVerifiedCoefficient) blockingReasons.push("identity_formula_without_verified_coefficient");
+  if (unitDimensionMismatch) blockingReasons.push("unit_dimension_mismatch");
+  if (formulaSemanticUnverified) blockingReasons.push("formula_semantic_unverified");
+  if (suspiciousMaterialM2) blockingReasons.push("generic_material_m2_unit");
+  if (!hasPriceSource && !missingPriceState) blockingReasons.push("price_without_ratebook_source");
+  if (isHistoricalPriceOnly) blockingReasons.push("historical_price_only_not_ratebook");
+  if (procurementApplicable && !priceCovered) blockingReasons.push("procurement_price_not_covered");
   return {
     row_id: rowId(row),
-    section_type: sectionType(row),
+    section_type: rowSectionType,
     title,
     unit,
     quantity,
@@ -300,33 +404,126 @@ export function classifyEstimateRowReality(row: EstimateRealityRowInput): Estima
   };
 }
 
+export function classifyEstimateRowReality(row: EstimateRealityRowInput): EstimateRowRealityClassification {
+  return classifyEstimateRowRealityInternal(row)!;
+}
+
 export function classifyEstimateRowsReality(rows: readonly EstimateRealityRowInput[]) {
-  const classifications = rows.map(classifyEstimateRowReality);
+  const classifications: EstimateRowRealityClassification[] = [];
+  let professionalSourcePrefixClaimCount = 0;
+  let sourceBackedCount = 0;
+  let genericFamilyDefaultCount = 0;
+  let invalidFakeSourceCount = 0;
+  let suspiciousMaterialM2Count = 0;
+  let blindQuantityCopyCount = 0;
+  let blindCopyWithoutFormulaTraceCount = 0;
+  let identityFormulaWithoutVerifiedCoefficientCount = 0;
+  let unitDimensionMismatchCount = 0;
+  let formulaMechanicallyCompilableCount = 0;
+  let formulaRuntimeValidCount = 0;
+  let formulaSemanticUnverifiedCount = 0;
+  let normSourceUnregisteredCount = 0;
+  let normSourceVerifiedCount = 0;
+  let requiredParametersValidCount = 0;
+  let procurementApplicableCount = 0;
+  let priceCoveredCount = 0;
+  let professionalReadyCount = 0;
+  let missingFormulaTraceCount = 0;
+  for (const row of rows) {
+    const classification = classifyEstimateRowReality(row);
+    classifications.push(classification);
+    if (classification.claims_professional_source_prefix) professionalSourcePrefixClaimCount += 1;
+    if (classification.is_source_backed) sourceBackedCount += 1;
+    if (classification.is_family_default) genericFamilyDefaultCount += 1;
+    if (classification.source_status === "INVALID_FAKE_SOURCE") invalidFakeSourceCount += 1;
+    if (classification.suspicious_material_m2) suspiciousMaterialM2Count += 1;
+    if (classification.quantity_copied_from_user_input) blindQuantityCopyCount += 1;
+    if (classification.blind_copy_without_formula_trace) blindCopyWithoutFormulaTraceCount += 1;
+    if (classification.identity_formula_without_verified_coefficient) identityFormulaWithoutVerifiedCoefficientCount += 1;
+    if (classification.unit_dimension_mismatch) unitDimensionMismatchCount += 1;
+    if (classification.formula_mechanically_compilable) formulaMechanicallyCompilableCount += 1;
+    if (classification.formula_runtime_valid) formulaRuntimeValidCount += 1;
+    if (classification.formula_semantic_unverified) formulaSemanticUnverifiedCount += 1;
+    if (classification.norm_source_unregistered) normSourceUnregisteredCount += 1;
+    if (classification.norm_source_verified) normSourceVerifiedCount += 1;
+    if (classification.required_parameters_valid) requiredParametersValidCount += 1;
+    if (classification.procurement_applicable) procurementApplicableCount += 1;
+    if (classification.price_covered) priceCoveredCount += 1;
+    if (classification.professional_ready) professionalReadyCount += 1;
+    if (!classification.has_formula_trace) missingFormulaTraceCount += 1;
+  }
   return {
     classifications,
     row_count: classifications.length,
-    professional_source_prefix_claim_count: classifications.filter(
-      (row) => row.claims_professional_source_prefix,
-    ).length,
-    source_backed_count: classifications.filter((row) => row.is_source_backed).length,
-    generic_family_default_count: classifications.filter((row) => row.is_family_default).length,
-    invalid_fake_source_count: classifications.filter((row) => row.source_status === "INVALID_FAKE_SOURCE").length,
-    suspicious_material_m2_count: classifications.filter((row) => row.suspicious_material_m2).length,
-    blind_quantity_copy_count: classifications.filter((row) => row.quantity_copied_from_user_input).length,
-    blind_copy_without_formula_trace: classifications.filter((row) => row.blind_copy_without_formula_trace).length,
-    identity_formula_without_verified_coefficient: classifications.filter(
-      (row) => row.identity_formula_without_verified_coefficient,
-    ).length,
-    unit_dimension_mismatch: classifications.filter((row) => row.unit_dimension_mismatch).length,
-    formula_mechanically_compilable: classifications.filter((row) => row.formula_mechanically_compilable).length,
-    formula_runtime_valid: classifications.filter((row) => row.formula_runtime_valid).length,
-    formula_semantic_unverified: classifications.filter((row) => row.formula_semantic_unverified).length,
-    norm_source_unregistered: classifications.filter((row) => row.norm_source_unregistered).length,
-    norm_source_verified: classifications.filter((row) => row.norm_source_verified).length,
-    required_parameters_valid: classifications.filter((row) => row.required_parameters_valid).length,
-    procurement_applicable: classifications.filter((row) => row.procurement_applicable).length,
-    price_covered: classifications.filter((row) => row.price_covered).length,
-    professional_ready: classifications.filter((row) => row.professional_ready).length,
-    missing_formula_trace_count: classifications.filter((row) => !row.has_formula_trace).length,
+    professional_source_prefix_claim_count: professionalSourcePrefixClaimCount,
+    source_backed_count: sourceBackedCount,
+    generic_family_default_count: genericFamilyDefaultCount,
+    invalid_fake_source_count: invalidFakeSourceCount,
+    suspicious_material_m2_count: suspiciousMaterialM2Count,
+    blind_quantity_copy_count: blindQuantityCopyCount,
+    blind_copy_without_formula_trace: blindCopyWithoutFormulaTraceCount,
+    identity_formula_without_verified_coefficient: identityFormulaWithoutVerifiedCoefficientCount,
+    unit_dimension_mismatch: unitDimensionMismatchCount,
+    formula_mechanically_compilable: formulaMechanicallyCompilableCount,
+    formula_runtime_valid: formulaRuntimeValidCount,
+    formula_semantic_unverified: formulaSemanticUnverifiedCount,
+    norm_source_unregistered: normSourceUnregisteredCount,
+    norm_source_verified: normSourceVerifiedCount,
+    required_parameters_valid: requiredParametersValidCount,
+    procurement_applicable: procurementApplicableCount,
+    price_covered: priceCoveredCount,
+    professional_ready: professionalReadyCount,
+    missing_formula_trace_count: missingFormulaTraceCount,
+  };
+}
+
+export function summarizeEstimateRowsReality(
+  rows: readonly EstimateRealityRowInput[],
+): ReturnType<typeof classifyEstimateRowsReality> {
+  const summary: EstimateRealitySummaryAccumulator = {
+    rowCount: 0,
+    professionalSourcePrefixClaimCount: 0,
+    sourceBackedCount: 0,
+    genericFamilyDefaultCount: 0,
+    invalidFakeSourceCount: 0,
+    suspiciousMaterialM2Count: 0,
+    blindQuantityCopyCount: 0,
+    blindCopyWithoutFormulaTraceCount: 0,
+    identityFormulaWithoutVerifiedCoefficientCount: 0,
+    unitDimensionMismatchCount: 0,
+    formulaMechanicallyCompilableCount: 0,
+    formulaRuntimeValidCount: 0,
+    formulaSemanticUnverifiedCount: 0,
+    normSourceUnregisteredCount: 0,
+    normSourceVerifiedCount: 0,
+    requiredParametersValidCount: 0,
+    procurementApplicableCount: 0,
+    priceCoveredCount: 0,
+    professionalReadyCount: 0,
+    missingFormulaTraceCount: 0,
+  };
+  for (const row of rows) classifyEstimateRowRealityInternal(row, summary);
+  return {
+    classifications: [],
+    row_count: summary.rowCount,
+    professional_source_prefix_claim_count: summary.professionalSourcePrefixClaimCount,
+    source_backed_count: summary.sourceBackedCount,
+    generic_family_default_count: summary.genericFamilyDefaultCount,
+    invalid_fake_source_count: summary.invalidFakeSourceCount,
+    suspicious_material_m2_count: summary.suspiciousMaterialM2Count,
+    blind_quantity_copy_count: summary.blindQuantityCopyCount,
+    blind_copy_without_formula_trace: summary.blindCopyWithoutFormulaTraceCount,
+    identity_formula_without_verified_coefficient: summary.identityFormulaWithoutVerifiedCoefficientCount,
+    unit_dimension_mismatch: summary.unitDimensionMismatchCount,
+    formula_mechanically_compilable: summary.formulaMechanicallyCompilableCount,
+    formula_runtime_valid: summary.formulaRuntimeValidCount,
+    formula_semantic_unverified: summary.formulaSemanticUnverifiedCount,
+    norm_source_unregistered: summary.normSourceUnregisteredCount,
+    norm_source_verified: summary.normSourceVerifiedCount,
+    required_parameters_valid: summary.requiredParametersValidCount,
+    procurement_applicable: summary.procurementApplicableCount,
+    price_covered: summary.priceCoveredCount,
+    professional_ready: summary.professionalReadyCount,
+    missing_formula_trace_count: summary.missingFormulaTraceCount,
   };
 }

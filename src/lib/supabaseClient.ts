@@ -1135,3 +1135,76 @@ export async function currentUserId(): Promise<string | null> {
 
   return session?.user?.id ?? null;
 }
+
+export type ConsumerEstimatePrincipalResolution =
+  | {
+      status: "ready";
+      userId: string;
+      sessionKind: "existing" | "anonymous";
+    }
+  | {
+      status: "configuration_unavailable";
+      diagnostic: string;
+    }
+  | {
+      status: "provider_unavailable" | "invalid_session" | "guest_session_unavailable";
+      message: string;
+    };
+
+let consumerEstimatePrincipalInflight: Promise<ConsumerEstimatePrincipalResolution> | null = null;
+
+async function resolveConsumerEstimatePrincipal(): Promise<ConsumerEstimatePrincipalResolution> {
+  if (supabaseClientAvailability.status === "unavailable") {
+    return {
+      status: "configuration_unavailable",
+      diagnostic: supabaseClientAvailability.diagnostic,
+    };
+  }
+  const current = await getSessionSafe({ caller: "consumer_estimate_identity" });
+  if (current.session?.user) {
+    const verified = await supabase.auth.getUser();
+    if (verified.error || !verified.data.user || verified.data.user.id !== current.session.user.id) {
+      return {
+        status: "invalid_session",
+        message: "Текущая сессия сметы недействительна. Войдите снова или повторите проверку.",
+      };
+    }
+    return {
+      status: "ready",
+      userId: verified.data.user.id,
+      sessionKind: "existing",
+    };
+  }
+  if (current.degraded) {
+    return {
+      status: "provider_unavailable",
+      message: "Сервис персональной сессии временно недоступен. Черновик не изменён.",
+    };
+  }
+  const anonymous = await supabase.auth.signInAnonymously();
+  const anonymousUserId = anonymous.data.session?.user?.id ?? anonymous.data.user?.id ?? null;
+  if (anonymous.error || !anonymousUserId || !anonymous.data.session) {
+    return {
+      status: "guest_session_unavailable",
+      message: "Гостевая сессия сметы недоступна. Можно войти в аккаунт и продолжить.",
+    };
+  }
+  return {
+    status: "ready",
+    userId: anonymousUserId,
+    sessionKind: "anonymous",
+  };
+}
+
+export function ensureConsumerEstimatePrincipal(): Promise<ConsumerEstimatePrincipalResolution> {
+  if (consumerEstimatePrincipalInflight) return consumerEstimatePrincipalInflight;
+  consumerEstimatePrincipalInflight = resolveConsumerEstimatePrincipal()
+    .catch(() => ({
+      status: "provider_unavailable" as const,
+      message: "Сервис персональной сессии временно недоступен. Черновик не изменён.",
+    }))
+    .finally(() => {
+      consumerEstimatePrincipalInflight = null;
+    });
+  return consumerEstimatePrincipalInflight;
+}

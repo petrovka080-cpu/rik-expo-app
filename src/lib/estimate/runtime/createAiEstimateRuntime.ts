@@ -5,12 +5,12 @@ import {
   applyAiEstimateParameterOverride,
 } from "../applyAiEstimateParameterOverrides";
 import { buildAiEstimateNormativeWorkParameterPassport } from "../aiEstimateNormativeWorkParameterPassport";
-import { createEstimateDraftRevision } from "../createEstimateDraftRevision";
+import { createEstimateDraftRevision } from "../backendPlatform/canonicalEstimateHistoricalDraftProjection";
 import { buildAiEstimateFormulaDag } from "../formula/buildAiEstimateFormulaDag";
 import { buildAiEstimateParameterGraph } from "../graph/buildAiEstimateParameterGraph";
 import { buildNormativeParameterCompletenessModel } from "../buildNormativeParameterCompletenessModel";
 import { parseUserParamPatch } from "../parseUserParamPatch";
-import { recalculateEstimateDraftRevision } from "../recalculateEstimateDraftRevision";
+import { recalculateEstimateDraftRevision } from "../backendPlatform/canonicalEstimateHistoricalRecalculation";
 import {
   createDefaultAiEstimateRuntimePorts,
   type AiEstimateRuntimePorts,

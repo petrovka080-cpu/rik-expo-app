@@ -13,7 +13,7 @@ import {
 } from "../../src/lib/estimate/professionalCostCalculator";
 import type { ProfessionalCostingResult } from "../../src/lib/estimate/professionalCostingContract";
 import {
-  resolveCatalogProfessionalCoverageV4,
+  buildCatalogProfessionalCoverageLedgerV4,
   type CatalogProfessionalCoverageRowV4,
 } from "../../src/lib/estimate/v4/catalogProfessionalCoverageLedgerV4";
 import { validateProfessionalCosting } from "../../src/lib/estimate/validateProfessionalCosting";
@@ -492,12 +492,15 @@ export function audit11610TrustedCostingPricebook(input: {
   writeSamples?: boolean;
 } = {}) {
   const pricebook = validateProfessionalPricebook();
+  const coverageByCatalogId = new Map(
+    buildCatalogProfessionalCoverageLedgerV4().rows.map((row) => [row.catalogId, row] as const),
+  );
   const validations: TrustedCostingTemplateAuditRow[] = [];
   for (const [index, templateId] of listProfessionalWorkPassportTemplateIds().entries()) {
     const passport = buildProfessionalWorkPassport(templateId);
     if (!passport) continue;
     const result = calculateCostForPassportWithCompleteInputs(passport);
-    const coverage = resolveCatalogProfessionalCoverageV4(catalogIdForPassport(passport));
+    const coverage = coverageByCatalogId.get(catalogIdForPassport(passport)) ?? null;
     validations.push(auditRow({
       coverage,
       templateId,

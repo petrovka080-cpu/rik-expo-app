@@ -27,7 +27,6 @@ import {
 import {
   calculateGlobalConstructionEstimateSync,
   findForbiddenRequestEstimateUserText,
-  formatEstimateUnitLabel,
   validateEstimateBoqDepth,
 } from "../../src/lib/ai/globalEstimate";
 
@@ -81,7 +80,7 @@ function normalizeManualCatalogItems(items: RequestEstimateManualCatalogItem[]):
   }));
 }
 
-export function buildRequestAiEstimateBoqCatalogProofMatrix() {
+export async function buildRequestAiEstimateBoqCatalogProofMatrix() {
   const audit = runRequestAiEstimateBoqCatalogAudit();
   const result = calculateGlobalConstructionEstimateSync({
     text: FOUNDATION_PROMPT,
@@ -144,7 +143,7 @@ export function buildRequestAiEstimateBoqCatalogProofMatrix() {
   });
   let sendBundle = attachConsumerRepairMedia({ requestDraftId: pdfBundle.draft.id, mediaKind: "photo" });
   sendBundle = approveConsumerRepairRequestDraft({ requestDraftId: sendBundle.draft.id, userId: sendBundle.draft.consumerUserId });
-  sendBundle = sendConsumerRepairRequestToMarketplace({
+  sendBundle = await sendConsumerRepairRequestToMarketplace({
     requestDraftId: sendBundle.draft.id,
     userId: sendBundle.draft.consumerUserId,
     idempotencyKey: `request-estimate-proof:${sendBundle.draft.id}`,
@@ -315,8 +314,8 @@ export function buildRequestAiEstimateBoqCatalogProofMatrix() {
 }
 
 if (require.main === module) {
-  const result = buildRequestAiEstimateBoqCatalogProofMatrix();
-  console.log(result.matrix.final_status);
+  const result = await buildRequestAiEstimateBoqCatalogProofMatrix();
+  console.info(result.matrix.final_status);
   if (result.matrix.final_status !== GREEN) {
     console.error(JSON.stringify(result.failures, null, 2));
     process.exitCode = 1;

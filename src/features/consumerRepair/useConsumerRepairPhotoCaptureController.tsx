@@ -23,7 +23,9 @@ import {
 export type OpenConsumerRepairPhotoForMaterialRecognitionInput = {
   userId: string;
   draftId: string;
+  canonicalRequestId?: string;
   targetItemId: string;
+  workspaceGeneration?: number;
   revisionId?: string;
   lineId?: string;
   purpose?: "material_recognition" | "line_attachment";
@@ -33,6 +35,7 @@ export type OpenConsumerRepairPhotoForMaterialRecognitionInput = {
 export type ConsumerRepairPhotoMaterialCaptureResult = {
   draftId: string;
   targetItemId: string;
+  workspaceGeneration: number;
   scanId: string;
   asset: CapturedPhotoAsset;
   storedImage: PhotoMaterialStoredImage;
@@ -44,7 +47,8 @@ export type ConsumerRepairPhotoMaterialCaptureResult = {
 };
 
 type ConsumerRepairPhotoCaptureControllerInput = {
-  onStatusMessage: (message: string | null) => void;
+  workspaceGeneration: number;
+  onStatusMessage: (message: string | null, workspaceGeneration: number) => void;
   onMaterialPhotoCaptured?: (
     result: ConsumerRepairPhotoMaterialCaptureResult,
   ) => void;
@@ -53,7 +57,9 @@ type ConsumerRepairPhotoCaptureControllerInput = {
 type ActivePhotoCapture = {
   scanId: string;
   draftId: string;
+  backendRequestId: string;
   targetItemId: string;
+  workspaceGeneration: number;
   targetRowId: string;
   kind: "PRODUCT_FRONT" | "OTHER";
   revisionId: string | null;
@@ -85,6 +91,7 @@ function photoMaterialScanFeaturePolicy(
 }
 
 export function useConsumerRepairPhotoCaptureController({
+  workspaceGeneration,
   onStatusMessage,
   onMaterialPhotoCaptured,
 }: ConsumerRepairPhotoCaptureControllerInput): {
@@ -95,20 +102,64 @@ export function useConsumerRepairPhotoCaptureController({
 } {
   const [activeCapture, setActiveCapture] =
     React.useState<ActivePhotoCapture | null>(null);
+  const currentWorkspaceGenerationRef = React.useRef(workspaceGeneration);
+  const activeCommitAbortRef = React.useRef<{
+    scanId: string;
+    workspaceGeneration: number;
+    controller: AbortController;
+  } | null>(null);
+  currentWorkspaceGenerationRef.current = workspaceGeneration;
 
-  const closePhotoCapture = () => setActiveCapture(null);
+  const cancelActivePhotoCommit = (scanId?: string) => {
+    const pending = activeCommitAbortRef.current;
+    if (!pending || (scanId && pending.scanId !== scanId)) return;
+    pending.controller.abort();
+    activeCommitAbortRef.current = null;
+  };
+
+  React.useEffect(() => {
+    const pending = activeCommitAbortRef.current;
+    if (pending && pending.workspaceGeneration !== workspaceGeneration) {
+      pending.controller.abort();
+      activeCommitAbortRef.current = null;
+    }
+    setActiveCapture((current) =>
+      current?.workspaceGeneration === workspaceGeneration ? current : null
+    );
+    return () => {
+      const latest = activeCommitAbortRef.current;
+      if (latest?.workspaceGeneration === workspaceGeneration) {
+        latest.controller.abort();
+        activeCommitAbortRef.current = null;
+      }
+    };
+  }, [workspaceGeneration]);
+
+  const closePhotoCapture = (scanId: string) => {
+    cancelActivePhotoCommit(scanId);
+    setActiveCapture((current) => current?.scanId === scanId ? null : current);
+  };
 
   const openPhotoForMaterialRecognition = ({
     userId,
     draftId,
+    canonicalRequestId,
     targetItemId,
+    workspaceGeneration: requestedWorkspaceGeneration = workspaceGeneration,
     revisionId,
     lineId,
     purpose = "material_recognition",
     bundle,
   }: OpenConsumerRepairPhotoForMaterialRecognitionInput) => {
+    const captureWorkspaceGeneration = Number.isSafeInteger(requestedWorkspaceGeneration)
+      ? requestedWorkspaceGeneration
+      : workspaceGeneration;
     try {
+      if (captureWorkspaceGeneration !== currentWorkspaceGenerationRef.current) {
+        throw new Error("PHOTO_WORKSPACE_REPLACED");
+      }
       const exactLineId = lineId?.trim() || targetItemId;
+      const backendRequestId = canonicalRequestId?.trim() || draftId;
       if (purpose === "line_attachment") {
         const item = bundle.items.find((candidate) => candidate.id === targetItemId);
         const itemLineId = consumerRepairRowCode(item);
@@ -127,7 +178,9 @@ export function useConsumerRepairPhotoCaptureController({
         setActiveCapture({
           scanId: `estimate-line-photo:${revisionId}:${exactLineId}:${Date.now()}`,
           draftId,
+          backendRequestId,
           targetItemId,
+          workspaceGeneration: captureWorkspaceGeneration,
           targetRowId: exactLineId,
           kind: "OTHER",
           revisionId,
@@ -135,13 +188,13 @@ export function useConsumerRepairPhotoCaptureController({
           purpose,
           storageIdentity: {
             tenantId: bundle.draft.orgId?.trim() || userId,
-            requestId: draftId,
+            requestId: backendRequestId,
             revisionId,
             rowId: exactLineId,
           },
           catalogId,
         });
-        onStatusMessage(null);
+        onStatusMessage(null, captureWorkspaceGeneration);
         return;
       }
       const bundleWithRevision =
@@ -165,7 +218,9 @@ export function useConsumerRepairPhotoCaptureController({
       setActiveCapture({
         scanId: scanSession.scanId,
         draftId,
+        backendRequestId,
         targetItemId,
+        workspaceGeneration: captureWorkspaceGeneration,
         targetRowId: scanSession.targetRowId,
         kind: "PRODUCT_FRONT",
         revisionId: revisionId?.trim() || currentRevision.revision_id,
@@ -173,18 +228,19 @@ export function useConsumerRepairPhotoCaptureController({
         purpose,
         storageIdentity: {
           tenantId: bundle.draft.orgId?.trim() || userId,
-          requestId: draftId,
+          requestId: backendRequestId,
           revisionId: revisionId?.trim() || currentRevision.revision_id,
           rowId: scanSession.targetRowId,
         },
         catalogId: String(bundle.draft.selectedCatalogWorkId ?? "").trim() || currentRevision.estimate_id,
       });
-      onStatusMessage(null);
+      onStatusMessage(null, captureWorkspaceGeneration);
     } catch (error) {
       onStatusMessage(
         error instanceof Error
           ? error.message
           : "Не удалось открыть фото для материала.",
+        captureWorkspaceGeneration,
       );
     }
   };
@@ -201,25 +257,50 @@ export function useConsumerRepairPhotoCaptureController({
           queueUploadOnUse={false}
           storageIdentity={activeCapture.storageIdentity}
           commitPhotoOnUse={activeCapture.purpose === "line_attachment" ? async (asset) => {
-            const committed = await commitCanonicalEstimateRowPhoto({
-              asset,
-              requestId: activeCapture.draftId,
-              catalogId: activeCapture.catalogId,
-              revisionId: activeCapture.revisionId!,
-              rowId: activeCapture.lineId,
-            });
-            return {
-              storedImage: committed.storedImage,
-              authoritativeAttachment: committed.attachment,
+            if (activeCapture.workspaceGeneration !== currentWorkspaceGenerationRef.current) {
+              throw new Error("PHOTO_WORKSPACE_REPLACED");
+            }
+            cancelActivePhotoCommit();
+            const controller = new AbortController();
+            activeCommitAbortRef.current = {
+              scanId: activeCapture.scanId,
+              workspaceGeneration: activeCapture.workspaceGeneration,
+              controller,
             };
+            try {
+              const committed = await commitCanonicalEstimateRowPhoto({
+                asset,
+                requestId: activeCapture.backendRequestId,
+                catalogId: activeCapture.catalogId,
+                revisionId: activeCapture.revisionId!,
+                rowId: activeCapture.lineId,
+                signal: controller.signal,
+              });
+              if (activeCapture.workspaceGeneration !== currentWorkspaceGenerationRef.current) {
+                throw new Error("PHOTO_WORKSPACE_REPLACED");
+              }
+              return {
+                storedImage: committed.storedImage,
+                authoritativeAttachment: committed.attachment,
+              };
+            } finally {
+              if (activeCommitAbortRef.current?.controller === controller) {
+                activeCommitAbortRef.current = null;
+              }
+            }
           } : undefined}
-          onCancel={closePhotoCapture}
-          onError={onStatusMessage}
+          onCancel={() => closePhotoCapture(activeCapture.scanId)}
+          onError={(message) => onStatusMessage(message, activeCapture.workspaceGeneration)}
           onCaptured={(result) => {
-            onStatusMessage("Распознаём материал по фото...");
+            if (activeCapture.workspaceGeneration !== currentWorkspaceGenerationRef.current) {
+              closePhotoCapture(activeCapture.scanId);
+              return;
+            }
+            onStatusMessage("Распознаём материал по фото...", activeCapture.workspaceGeneration);
             onMaterialPhotoCaptured?.({
               draftId: activeCapture.draftId,
               targetItemId: activeCapture.targetItemId,
+              workspaceGeneration: activeCapture.workspaceGeneration,
               scanId: activeCapture.scanId,
               asset: result.asset,
               storedImage: result.storedImage,
@@ -229,7 +310,7 @@ export function useConsumerRepairPhotoCaptureController({
               storageIdentity: activeCapture.storageIdentity,
               authoritativeAttachment: result.authoritativeAttachment,
             });
-            closePhotoCapture();
+            closePhotoCapture(activeCapture.scanId);
           }}
         />
       </React.Suspense>

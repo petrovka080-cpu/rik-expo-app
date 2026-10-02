@@ -6,17 +6,9 @@ import type {
   ConsumerRepairDraftBundle,
   ConsumerRepairStatus,
 } from "./consumerRequestTypes";
+import { consumerRepairSourceRequestDraftId } from "./consumerRequestHistoryLineage";
 
 const consumerRepairEstimateLedgerStore = createInMemoryAiEstimateLedgerStore();
-
-function sourceDraftIdForBundle(bundle: ConsumerRepairDraftBundle): string {
-  const sourceEvent = [...bundle.events].reverse().find((event) => {
-    const sourceRequestDraftId = event.payload?.sourceRequestDraftId;
-    return typeof sourceRequestDraftId === "string" && sourceRequestDraftId.trim().length > 0;
-  });
-  const sourceRequestDraftId = sourceEvent?.payload?.sourceRequestDraftId;
-  return typeof sourceRequestDraftId === "string" ? sourceRequestDraftId : bundle.draft.id;
-}
 
 function statusToLedgerStatus(status: ConsumerRepairStatus): AiEstimateLedgerStatus {
   if (status === "consumer_approved") return "approved";
@@ -182,7 +174,7 @@ export function syncConsumerRepairBundleToAiEstimateLedger(bundle: ConsumerRepai
     createdAt: bundle.draft.createdAt,
     updatedAt,
     status: statusToLedgerStatus(bundle.draft.status),
-    sourceDraftId: sourceDraftIdForBundle(bundle),
+    sourceDraftId: consumerRepairSourceRequestDraftId(bundle),
     currentRevisionId,
     sourceReleaseId,
     sourceSnapshotId: currentSnapshotId,

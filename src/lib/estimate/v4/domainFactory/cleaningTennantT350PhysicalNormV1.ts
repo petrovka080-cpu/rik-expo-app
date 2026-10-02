@@ -1,7 +1,7 @@
 import cleaningNormPack from "../../../../../data/estimate-norms/professional/cleaning.json";
 import { estimateDeterministicHash } from "../../estimateDeterministicHash";
 import type { ProfessionalParameterValueV4 } from "../professionalProjectAssemblyV4";
-import type { ProfessionalPhysicalNormApplicabilityResolutionV1 } from "./professionalPhysicalNormApplicabilityV1";
+import type { ProfessionalPhysicalNormApplicabilityResolutionV1 } from "./professionalPhysicalNormApplicabilityTypesV1";
 
 const VERSION = "professional-physical-norm-applicability:v1" as const;
 export const TENNANT_T350_CONVENTIONAL_PRODUCT_PROFILE_ID = "manufacturer-profile:tennant-t350:600mm-dual-disk:conventional:v1" as const;

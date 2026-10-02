@@ -26,6 +26,17 @@ function measureP95(fn: () => void, runs = 50): number {
   return values[Math.floor(values.length * 0.95)] ?? 0;
 }
 
+async function measureAsyncP95(fn: () => Promise<void>, runs = 10): Promise<number> {
+  const values: number[] = [];
+  for (let index = 0; index < runs; index += 1) {
+    const started = performance.now();
+    await fn();
+    values.push(performance.now() - started);
+  }
+  values.sort((a, b) => a - b);
+  return values[Math.floor(values.length * 0.95)] ?? 0;
+}
+
 async function main() {
   __resetConsumerRepairRequestStoreForTests();
 
@@ -40,12 +51,12 @@ async function main() {
   bundle = attachConsumerRepairMedia({ requestDraftId: bundle.draft.id, mediaKind: "document" });
   bundle = approveConsumerRepairRequestDraft({ requestDraftId: bundle.draft.id, userId: USER_ID });
 
-  const firstSend = sendConsumerRepairRequestToMarketplace({
+  const firstSend = await sendConsumerRepairRequestToMarketplace({
     requestDraftId: bundle.draft.id,
     userId: USER_ID,
     idempotencyKey: "scale-proof",
   });
-  const duplicateSend = sendConsumerRepairRequestToMarketplace({
+  const duplicateSend = await sendConsumerRepairRequestToMarketplace({
     requestDraftId: bundle.draft.id,
     userId: USER_ID,
     idempotencyKey: "scale-proof",
@@ -62,8 +73,8 @@ async function main() {
   const validationP95 = measureP95(() => {
     validateConsumerRepairRequestForMarketplace(bundle.draft.id, USER_ID);
   });
-  const sendP95 = measureP95(() => {
-    sendConsumerRepairRequestToMarketplace({
+  const sendP95 = await measureAsyncP95(async () => {
+    await sendConsumerRepairRequestToMarketplace({
       requestDraftId: bundle.draft.id,
       userId: USER_ID,
       idempotencyKey: "scale-proof",
@@ -142,7 +153,7 @@ async function main() {
     throw new Error("B2C consumer repair 50k scale proof failed.");
   }
 
-  console.log(JSON.stringify(summary, null, 2));
+  console.info(JSON.stringify(summary, null, 2));
 }
 
 main().catch((error) => {

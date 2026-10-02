@@ -97,6 +97,9 @@ export type CanonicalParameter = {
   label: string;
   description: string;
   value: CanonicalParameterValue | null;
+  /** Immutable catalogue/profile reference shown inside the editor after overrides. */
+  referenceValue?: CanonicalParameterValue | null;
+  referenceSource?: CanonicalParameterSource;
   valueType: CanonicalParameterValueType;
   unit: string | null;
   requiredLevel: CanonicalParameterRequiredLevel;

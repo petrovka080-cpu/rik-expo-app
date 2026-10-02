@@ -43,6 +43,7 @@ import { buildInteriorFinishesFromInlineInputV1 } from "../../src/lib/estimate/v
 import { getAsphaltRelatedProfileByCatalogRecordIdV4 } from "../../src/lib/estimate/v4/asphalt/asphaltRelatedSemanticRegistryV4";
 import type { UserParamPatchOperation } from "../../src/lib/estimate/validateUserParamPatch";
 import type { StructuredEstimatePayload } from "../../src/lib/estimateStructuredPipeline/structuredEstimateTypes";
+import type { ConsumerEstimateMarketplaceTransport } from "../../src/lib/consumerRequests/consumerRequestMarketplace.transport";
 
 const AUDIT_RELEASE_ID = "a8000000-0000-4000-8000-000000000001";
 
@@ -1008,6 +1009,9 @@ export function createCanonicalConsumerRepairAuditDraft(
       pendingRoadScopeSelection: null,
       aiDraft: {
         ...input.aiDraft,
+        // This audit-only draft persists the canonical parameter collection;
+        // it does not ask the retired frontend compiler to create a BOQ.
+        canonicalBackendRequired: false,
         runtimeEstimateDraftRevision: undefined,
         items: [],
       },
@@ -1189,12 +1193,12 @@ export function approveCanonicalConsumerRepairAuditRequest(input: {
   });
 }
 
-export function sendCanonicalConsumerRepairAuditDraft(input: {
+export async function sendCanonicalConsumerRepairAuditDraft(input: {
   bundle: ConsumerRepairDraftBundle;
   userId?: string;
   generatedAt?: string;
   idempotencyKey?: string;
-}): ConsumerRepairDraftBundle {
+}): Promise<ConsumerRepairDraftBundle> {
   const approved = input.bundle.draft.status === "consumer_approved"
     ? input.bundle
     : approveCanonicalConsumerRepairAuditDraft(input);
@@ -1206,19 +1210,56 @@ export function sendCanonicalConsumerRepairAuditDraft(input: {
     approved.items[0]?.sourceParameters?.canonicalBackendReleaseId ?? "",
   ).trim();
   if (!revisionId || !releaseId) throw new Error("CANONICAL_AUDIT_REVISION_BINDING_MISSING");
-  return sendConsumerRepairRequestToMarketplace({
+  const artifactId = `audit_procurement_${deterministicUuid(`${approved.draft.id}:${revisionId}`)}`;
+  const artifactSha256 = createHash("sha256")
+    .update(`${approved.draft.id}:${revisionId}:${releaseId}:procurement`)
+    .digest("hex");
+  const revisionChecksumSha256 = createHash("sha256")
+    .update(`${revisionId}:${releaseId}:revision`)
+    .digest("hex");
+  const listingId = deterministicUuid(`${approved.draft.id}:${revisionId}:marketplace-listing`);
+  const idempotencyKey = input.idempotencyKey ?? `audit-marketplace:${approved.draft.id}`;
+  const transport: ConsumerEstimateMarketplaceTransport = {
+    async publish() {
+      return {
+        listing_id: listingId,
+        created: true,
+        server_status: "active",
+        revision_id: revisionId,
+        release_id: releaseId,
+        artifact_id: artifactId,
+      };
+    },
+    async readPublishedListing() {
+      const item = approved.items.find((candidate) => (candidate.quantity ?? 0) > 0);
+      return {
+        id: listingId,
+        user_id: userId,
+        status: "active",
+        client_mutation_id: idempotencyKey,
+        items_json: [{
+          name: item?.titleRu ?? "Canonical audit estimate row",
+          qty: item?.quantity ?? 1,
+          canonical_revision_id: revisionId,
+          canonical_release_id: releaseId,
+          canonical_artifact_id: artifactId,
+        }],
+      };
+    },
+  };
+  return await sendConsumerRepairRequestToMarketplace({
     requestDraftId: approved.draft.id,
     userId,
-    idempotencyKey: input.idempotencyKey,
+    idempotencyKey,
     canonicalArtifact: {
-      artifactId: `audit_procurement_${deterministicUuid(`${approved.draft.id}:${revisionId}`)}`,
+      artifactId,
       kind: "procurement",
       revisionId,
       releaseId,
       status: "ready",
-      sha256: createHash("sha256")
-        .update(`${approved.draft.id}:${revisionId}:${releaseId}:procurement`)
-        .digest("hex"),
+      sha256: artifactSha256,
+      revisionChecksumSha256,
     },
+    transport,
   });
 }

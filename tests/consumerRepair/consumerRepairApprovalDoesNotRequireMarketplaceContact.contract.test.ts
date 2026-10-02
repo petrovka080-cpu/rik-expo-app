@@ -1,16 +1,22 @@
 import {
   __resetConsumerRepairRequestStoreForTests,
   addConsumerRepairRequestItem,
+  approveConsumerRepairRequestDraft,
   ConsumerRepairValidationError,
   createConsumerRepairRequestDraft,
+  generateConsumerRepairRequestPdfForDraft,
   sendConsumerRepairRequestToMarketplace,
 } from "../../src/lib/consumerRequests";
-import { approveCanonicalConsumerRepairAuditRequest as approveConsumerRepairRequestDraft } from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
+import { approveCanonicalConsumerRepairAuditRequest } from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
+import {
+  buildCanonicalConsumerRepairRevisionFixture,
+  canonicalArtifactForConsumerRepairRevisionFixture,
+} from "./canonicalConsumerRepairRevisionFixture";
 
 describe("consumer estimate approval boundary", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
 
-  it("approves a complete estimate without delivery contact but keeps marketplace validation strict", () => {
+  it("approves a complete estimate without delivery contact but keeps marketplace validation strict", async () => {
     let bundle = createConsumerRepairRequestDraft({
       consumerUserId: "approval-boundary-user",
       problemText: "Профессиональная предварительная смета электромонтажных работ",
@@ -32,7 +38,7 @@ describe("consumer estimate approval boundary", () => {
       addedBy: "ai",
     });
 
-    const approved = approveConsumerRepairRequestDraft({
+    const approved = approveCanonicalConsumerRepairAuditRequest({
       requestDraftId: bundle.draft.id,
       userId: bundle.draft.consumerUserId,
     });
@@ -41,15 +47,15 @@ describe("consumer estimate approval boundary", () => {
     expect(approved.pdfs[0]?.pdfStatus).toBe("generated");
     expect(approved.pdfs[0]?.revisionId).toBeTruthy();
 
-    expect(() =>
+    await expect(
       sendConsumerRepairRequestToMarketplace({
         requestDraftId: approved.draft.id,
         userId: approved.draft.consumerUserId,
       }),
-    ).toThrow(ConsumerRepairValidationError);
+    ).rejects.toThrow(ConsumerRepairValidationError);
 
     try {
-      sendConsumerRepairRequestToMarketplace({
+      await sendConsumerRepairRequestToMarketplace({
         requestDraftId: approved.draft.id,
         userId: approved.draft.consumerUserId,
       });
@@ -61,5 +67,34 @@ describe("consumer estimate approval boundary", () => {
         expect.arrayContaining(["CONTACT_REQUIRED", "DELIVERY_ADDRESS_REQUIRED"]),
       );
     }
+  });
+
+  it("approves known quantities without prices and does not invent a total", () => {
+    let bundle = createConsumerRepairRequestDraft({
+      consumerUserId: "unpriced-approval-user",
+      problemText: "Ведомость объемов готова, рыночные цены будут заполнены позднее",
+      repairType: "foundation",
+      city: "Bishkek",
+      addressText: null,
+      contactPhone: null,
+      aiDraft: buildCanonicalConsumerRepairRevisionFixture(
+        "Устройство монолитного железобетонного ленточного фундамента",
+      ),
+    });
+    expect(bundle.items.every((item) => item.unitPrice == null && item.totalPrice == null)).toBe(true);
+    bundle = generateConsumerRepairRequestPdfForDraft({
+      requestDraftId: bundle.draft.id,
+      userId: bundle.draft.consumerUserId,
+    });
+
+    const approved = approveConsumerRepairRequestDraft({
+      requestDraftId: bundle.draft.id,
+      userId: bundle.draft.consumerUserId,
+      canonicalArtifact: canonicalArtifactForConsumerRepairRevisionFixture(bundle),
+    });
+
+    expect(approved.draft.status).toBe("consumer_approved");
+    expect(approved.items.every((item) => item.unitPrice == null && item.totalPrice == null)).toBe(true);
+    expect(approved.pdfs[0]?.pdfStatus).toBe("generated");
   });
 });

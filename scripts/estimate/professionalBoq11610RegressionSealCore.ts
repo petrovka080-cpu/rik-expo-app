@@ -37,7 +37,15 @@ import {
 } from "../../src/lib/estimate/aiEstimateRuParameterDictionary";
 import type { EstimateDraftRevision } from "../../src/lib/estimate/estimateDraftRevisionContract";
 import type { ProfessionalWorkPassport } from "../../src/lib/estimate/workPassportContract";
+import { ASPHALT_V4_RUNTIME_TEMPLATE_ID } from "../../src/lib/estimate/v4/asphalt/asphaltV4Constants";
+import { resolveAsphaltRelatedExactRoutingV4 } from "../../src/lib/estimate/v4/asphalt/asphaltRelatedExactRoutingV4";
 import { resolveRegisteredProfessionalEstimateSelectionV1 } from "../../src/lib/estimate/v4/domains/registeredProfessionalEstimateDomainsV1";
+import {
+  boundaryProfessionalBoq11610AuditNumericValue,
+  buildProfessionalBoq11610AuditParamOverrides,
+  nextProfessionalBoq11610AuditNumericValue,
+  selectProfessionalBoq11610AuditEditableParam,
+} from "./professionalBoq11610AuditFixtures";
 import { auditAiEstimateExactDependencyMatching } from "./auditAiEstimateExactDependencyMatching";
 import { auditAiEstimateParameterCoverage11610 } from "./auditAiEstimateParameterCoverage11610";
 import { auditAiEstimateDurableLedgerHistoryScale50000 } from "./auditAiEstimateDurableLedgerHistoryScale50000";
@@ -271,22 +279,6 @@ function classifyCriticalFamily(row: CatalogRow): CriticalWorkFamily {
   return "other";
 }
 
-function chooseEditableParam(revision: EstimateDraftRevision): string | null {
-  return revision.trace.params
-    .filter((param) => param.affectsRowIds.length > 0 && typeof revision.params[param.key]?.value === "number")
-    .sort((a, b) => b.affectsRowIds.length - a.affectsRowIds.length || a.key.localeCompare(b.key))[0]?.key ?? null;
-}
-
-function nextNumericValue(value: unknown): string {
-  if (typeof value !== "number" || !Number.isFinite(value)) return "2";
-  return String(Math.max(1, Math.round((value * 1.23 + 1) * 100) / 100));
-}
-
-function boundaryCrossingNumericValue(value: unknown): string {
-  if (typeof value !== "number" || !Number.isFinite(value)) return "100";
-  return String(Math.max(100, Math.round((Math.abs(value) * 12 + 10) * 100) / 100));
-}
-
 function makeGeneratedPrompt(row: CatalogRow): string {
   const keys = [
     ...row.passport.parameterSchema.required,
@@ -312,42 +304,18 @@ function createCatalogAuditRevision(input: {
   artifacts?: EstimateDraftRevision["artifacts"];
 }): EstimateDraftRevision {
   const registered = resolveRegisteredProfessionalEstimateSelectionV1(input.row.templateId);
+  const paramOverrides = buildProfessionalBoq11610AuditParamOverrides(
+    input.row.templateId,
+    input.createdAt,
+  );
   if (registered) {
-    const declaredParameterIds = new Set(
-      registered.canonical_parameter_schema.definitions.map((definition) => definition.parameterId),
-    );
-    const paramOverrides: EstimateDraftRevision["params"] = {};
-    if (declaredParameterIds.has("normative_rate_code")) {
-      paramOverrides.normative_rate_code = {
-        value: "PROJECT-VERIFIED-EXACT-RATE-CODE",
-        source: "user_input",
-        sourceText: "catalog-regression-audit:project-confirmed-normative-rate",
-        lastChangedAt: input.createdAt,
-      };
-    }
-    if (declaredParameterIds.has("access_equipment_shift_count")) {
-      paramOverrides.access_equipment_shift_count = {
-        value: 3,
-        source: "user_input",
-        sourceText: "catalog-regression-audit:project-confirmed-access-schedule",
-        lastChangedAt: input.createdAt,
-      };
-    }
-    if (declaredParameterIds.has("access_delivery_trip_count")) {
-      paramOverrides.access_delivery_trip_count = {
-        value: 2,
-        source: "user_input",
-        sourceText: "catalog-regression-audit:project-confirmed-access-schedule",
-        lastChangedAt: input.createdAt,
-      };
-    }
     return createRegisteredProfessionalDomainAuditRevision({
       templateId: input.row.templateId,
       estimateDraftId: input.estimateDraftId,
       rawInput: input.rawInput,
       createdAt: input.createdAt,
       artifacts: input.artifacts,
-      paramOverrides: Object.keys(paramOverrides).length > 0 ? paramOverrides : undefined,
+      paramOverrides,
     });
   }
   if (isStripFoundationCanonicalBackendPassport(input.row.passport)) {
@@ -375,6 +343,7 @@ function createCatalogAuditRevision(input: {
     selectedTemplateName: input.row.passport.localizedNameRu,
     createdAt: input.createdAt,
     artifacts: input.artifacts,
+    paramOverrides,
   });
 }
 
@@ -447,13 +416,20 @@ export function runProfessionalBoq11610GeneratedPromptMatrixShard(start: number,
     const registeredSource = revision.boq.rows.find(
       (item) => item.sourceParameters?.professionalDomainFactoryV1 === true,
     )?.sourceParameters;
+    const asphaltRouting = resolveAsphaltRelatedExactRoutingV4(row.templateId);
+    const canonicallyRoutedAsphaltFamilyRecognized =
+      (asphaltRouting.status === "BOUND_EXTRA" || asphaltRouting.status === "BOUND_ROADWORKS") &&
+      revision.selectedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID &&
+      revision.matchedFamily === asphaltRouting.canonicalWorkKey &&
+      revision.resolvedIdentity?.requestedCatalogWorkId === row.templateId;
     const familyRecognizedForCase = registered
       ? revision.selectedTemplateId === registeredSource?.professionalEstimatePassportId &&
         revision.matchedFamily === registered.work_key &&
         revision.resolvedIdentity?.requestedCatalogWorkId === registered.work_key &&
         registeredSource?.workKey === registered.work_key &&
         registeredSource?.catalogId === registered.catalog_id
-      : revision.selectedTemplateId === row.templateId && Boolean(revision.matchedFamily);
+      : canonicallyRoutedAsphaltFamilyRecognized ||
+        (revision.selectedTemplateId === row.templateId && Boolean(revision.matchedFamily));
     if (familyRecognizedForCase) familyRecognized += 1;
     else if (familyRecognitionFailures.length < 20) {
       familyRecognitionFailures.push({
@@ -536,19 +512,28 @@ export function runProfessionalBoq11610FormulaInvariantMatrixShard(start: number
       continue;
     }
     const row = { templateId, passport };
-    const revision = createCatalogAuditRevision({
-      row,
-      estimateDraftId: `formula-invariant-${index}`,
-      rawInput: makeGeneratedPrompt(row),
-      createdAt: "2026-07-11T00:00:00.000Z",
-      artifacts: {
-        snapshotId: `snapshot-${index}`,
-        pdfArtifactId: `pdf-${index}`,
-        buyerHandoffId: `buyer-${index}`,
-        artifactsValidForRevisionId: `revision-${index}`,
-      },
-    });
-    const paramKey = chooseEditableParam(revision);
+    let revision;
+    try {
+      revision = createCatalogAuditRevision({
+        row,
+        estimateDraftId: `formula-invariant-${index}`,
+        rawInput: makeGeneratedPrompt(row),
+        createdAt: "2026-07-11T00:00:00.000Z",
+        artifacts: {
+          snapshotId: `snapshot-${index}`,
+          pdfArtifactId: `pdf-${index}`,
+          buyerHandoffId: `buyer-${index}`,
+          artifactsValidForRevisionId: `revision-${index}`,
+        },
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(
+        `FORMULA_INVARIANT_REVISION_CREATE_FAILED:${index}:${templateId}:${message}`,
+        { cause: error },
+      );
+    }
+    const paramKey = selectProfessionalBoq11610AuditEditableParam(revision);
     if (!paramKey) {
       const reasoned = row.passport.riskPolicy.contractReadyWithoutReview === false;
       if (reasoned) reasonedNonEditable += 1;
@@ -597,7 +582,7 @@ export function runProfessionalBoq11610FormulaInvariantMatrixShard(start: number
     let result;
     try {
       result = recalculate(
-        nextNumericValue(revision.params[paramKey]?.value),
+        nextProfessionalBoq11610AuditNumericValue(revision.params[paramKey]?.value),
         "2026-07-11T00:01:00.000Z",
       );
       // A ceil/min/max formula can legitimately remain on the same discrete
@@ -607,7 +592,7 @@ export function runProfessionalBoq11610FormulaInvariantMatrixShard(start: number
       if (result.diff.changedRows.length === 0) {
         plateauBoundaryProbes += 1;
         const boundaryResult = recalculate(
-          boundaryCrossingNumericValue(revision.params[paramKey]?.value),
+          boundaryProfessionalBoq11610AuditNumericValue(revision.params[paramKey]?.value),
           "2026-07-11T00:02:00.000Z",
         );
         if (boundaryResult.diff.changedRows.length > 0) plateauBoundaryProbePasses += 1;

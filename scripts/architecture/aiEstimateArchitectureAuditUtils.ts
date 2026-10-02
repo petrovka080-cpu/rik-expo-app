@@ -32,8 +32,11 @@ export function directCircularImportCount(files: readonly string[]): number {
   const candidates = new Set(files.map((file) => file.replace(/\.tsx?$/, "")));
   for (const file of files) {
     const text = read(file);
-    const deps = [...text.matchAll(/from ["'](\.[^"']+)["']/g)]
-      .map((match) => path.normalize(path.join(path.dirname(file), match[1])).replace(/\\/g, "/"))
+    // `import type` edges are erased by TypeScript and cannot form a runtime
+    // module cycle. Mixed imports remain runtime edges and are audited.
+    const deps = [...text.matchAll(/^\s*import\s+([\s\S]*?)\s+from\s+["'](\.[^"']+)["'];?/gm)]
+      .filter((match) => !/^type\b/u.test(match[1].trim()))
+      .map((match) => path.normalize(path.join(path.dirname(file), match[2])).replace(/\\/g, "/"))
       .map((dep) => dep.replace(/\.tsx?$/, ""))
       .filter((dep) => candidates.has(dep));
     byModule.set(file.replace(/\.tsx?$/, ""), deps);

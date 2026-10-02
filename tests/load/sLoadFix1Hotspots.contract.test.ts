@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { execFileSync } from "child_process";
 import {
+  isApprovedPlatformDeveloperEstimatorAccessMigration,
   isApprovedGreenCloseoutCurrentWavePatch as isApprovedSharedGreenCloseoutCurrentWavePatch,
   withoutExactEstimateRevisionStorageDependencyFiles,
 } from "../greenCloseoutCurrentWaveAllowlist";
@@ -401,6 +402,7 @@ const isApprovedAuditNightBattle117DirectorProposalDecisionTransportBoundaryPatc
 
 const isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch = (file: string) =>
   [
+    "android/app/src/main/java/com/azisbek_dzhantaev/rikexpoapp/MainActivity.kt",
     "scripts/foreman_warehouse_pdf_android_runtime_verify.ts",
     "tests/scripts/foremanWarehouseAndroidRuntimeLoopBoundary.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
@@ -952,7 +954,11 @@ const isApprovedR4A134CanonicalPdfAndRevisionClassificationPatch = (file: string
     "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts",
     "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts",
     "tests/aiEstimate/detectPdfFakeRows.contract.test.ts",
+    "tests/architecture/pdfArchAuditNoMarkdownAsTruth.contract.test.ts",
+    "tests/architecture/pdfIntegrationNoMarkdownAsTruth.contract.test.ts",
+    "tests/architecture/pdfIntegrationNoMassMigration.contract.test.ts",
     "tests/officeEstimate/directorPdfPriceSources.contract.test.ts",
+    "tests/pdfLegacy/legacyPdfSnapshotTextUnchanged.contract.test.ts",
     "supabase/migrations/20260908043000_r4a13_approved_baseline_runtime_classification.sql",
     "supabase/migrations/20260908050000_r4a13_runtime_eligible_baseline_revision_writer.sql",
     "supabase/migrations/20260908101500_r4a13_preliminary_only_revision_writer.sql",
@@ -1187,6 +1193,7 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
         !isApprovedReal10000DiverseConstructionWorksAcceptancePatch(file) &&
         !isApprovedAiEstimateCanaryEvaluationRolloutDecisionPatch(file) &&
         !isApprovedPlatformDirectorFactContractPatch(file) &&
+        !isApprovedPlatformDeveloperEstimatorAccessMigration(file, repoRoot) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|ios\/|android\/|supabase\/migrations\/|maestro\/|node_modules\/|android\/app\/build\/)/.test(
           file.replace(/\\/g, "/"),
         ) ||

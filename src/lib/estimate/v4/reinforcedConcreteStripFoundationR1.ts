@@ -286,9 +286,9 @@ export const STRIP_FOUNDATION_INPUTS: readonly StripFoundationInput[] = Object.f
   input("rebar_bending_productivity_t_h", "Производительность станка гибки", "t_per_hour", "Берётся из паспорта выбранного станка гибки и не показывается как пользовательский вопрос.", { visibilityRole: "INTERNAL_ONLY", requiredWhen: siteFabricatedRebar, sourceRole: "SELECTED_EQUIPMENT_PASSPORT" }),
   input("heating_transformer_productivity_m3_h", "Производительность комплекта прогрева", "m3_per_hour", "Берётся из утверждённой схемы прогрева и паспорта оборудования.", { visibilityRole: "INTERNAL_ONLY", requiredWhen: winter, sourceRole: "SELECTED_EQUIPMENT_PASSPORT" }),
   input("delivery_separately_priced", "Доставка отдельной строкой", null, "Отключите, если доставка уже включена в цену материала.", { valueType: "boolean", defaultValue: true }),
-  input("concrete_delivery_distance_km", "Доставка бетонной смеси", "km", "Маршрут автобетоносмесителя от РБУ до объекта.", { defaultValue: 0 }),
-  input("reinforcement_delivery_distance_km", "Доставка арматуры", "km", "Маршрут бортового автомобиля от поставщика до объекта.", { defaultValue: 0 }),
-  input("formwork_delivery_distance_km", "Доставка опалубки", "km", "Маршрут бортового автомобиля с выбранной опалубочной системой.", { defaultValue: 0 }),
+  input("concrete_delivery_distance_km", "Расстояние доставки бетонной смеси", "km", "Укажите подтверждённый маршрут автобетоносмесителя от РБУ до объекта; неизвестное расстояние нельзя заменять нулём.", { requiredWhen: and(fullScope, readyMix, separateDelivery) }),
+  input("reinforcement_delivery_distance_km", "Расстояние доставки арматуры", "km", "Укажите подтверждённый маршрут бортового автомобиля от поставщика до объекта; неизвестное расстояние нельзя заменять нулём.", { requiredWhen: and(fullScope, separateDelivery) }),
+  input("formwork_delivery_distance_km", "Расстояние доставки опалубки", "km", "Укажите подтверждённый маршрут автомобиля с выбранной опалубочной системой; неизвестное расстояние нельзя заменять нулём.", { requiredWhen: and(fullScope, separateDelivery) }),
   input("groundworks_included", "Разработка грунта входит в состав", null, "Подтвердите по границе работ, включает ли смета разработку котлована или траншей под ленту.", { valueType: "boolean", defaultValue: null, requiredWhen: fullScope }),
   input("excavation_volume_m3", "Проектный объём разработки грунта", "m3", "Укажите объём по проектному профилю котлована или траншей с учётом откосов и рабочих зон.", { requiredWhen: groundworks }),
   input("excavator_productivity_m3_h", "Производительность экскаватора", "m3_per_hour", "Берётся из паспорта выбранного экскаватора и технологической схемы разработки грунта.", { visibilityRole: "INTERNAL_ONLY", requiredWhen: groundworks, sourceRole: "SELECTED_EQUIPMENT_PASSPORT" }),
@@ -380,11 +380,15 @@ export const STRIP_FOUNDATION_ROWS: readonly StripFoundationBoqRow[] = Object.fr
     titleSpecificationMode: "APPEND",
     titleSpecificationSeparator: " ",
   }),
-  row("preparation_concrete", "material", "Бетонная смесь для подготовки", "m3", "preparation_volume", preparation, projectSource("бетонная подготовка и её класс")),
-  row("reinforcement", "material", "Арматурная сталь по проектной ведомости стержней", "t", "reinforcement_mass", fullScope, projectSource("ведомость расхода стали")),
+  row("preparation_concrete", "material", "Бетонная смесь для подготовки — класс по рабочей документации", "m3", "preparation_volume", preparation, projectSource("бетонная подготовка и её класс")),
+  row("reinforcement", "material", "Арматурная сталь по проектной ведомости стержней", "t", "reinforcement_mass", fullScope, projectSource("ведомость расхода стали"), {
+    titleSpecificationParameterIds: ["bar_standard_and_grade", "bar_size_designation"],
+    titleSpecificationMode: "APPEND",
+    titleSpecificationSeparator: " ",
+  }),
   row("binding_wire", "material", "Проволока вязальная отожжённая", "kg", "binding_wire_mass", fullScope, projectSource("ведомость армирования")),
-  row("formwork_system", "material", "Щитовая опалубочная система", "m2", "formwork_contact_area", fullScope, projectSource("выбранная опалубочная система")),
-  row("curing_membrane", "material", "Плёнка для ухода за бетоном", "m2", "curing_top_area", membraneCuring, SN52),
+  row("formwork_system", "material", "Комплект щитовой опалубочной системы по проектной раскладке", "m2", "formwork_contact_area", fullScope, projectSource("выбранная опалубочная система")),
+  row("curing_membrane", "material", "Плёнка для укрытия и влажностного ухода за бетоном", "m2", "curing_top_area", membraneCuring, SN52),
   row("winter_heating_cable", "material", "Прогревочный кабель для бетона", "m", "winter_heating_cable", winter, projectSource("утверждённая схема электропрогрева")),
 
   row("preparation_work", "construction_work", "Устройство бетонной подготовки", "m3", "preparation_volume", preparation, KRER_060100109),
@@ -436,6 +440,83 @@ export const STRIP_FOUNDATION_ROWS: readonly StripFoundationBoqRow[] = Object.fr
     cargo: { cargoRu: "излишний грунт", vehicleRu: "автомобиль-самосвал", physicalQuantityFormulaId: "excavation_volume", physicalQuantityUom: "m3", distanceParameterId: "soil_disposal_distance_km" },
   }),
 ]);
+
+const READY_MIX_ORDER_EVIDENCE_PARAMETER_IDS = new Set([
+  "product_profile_id",
+  "plan_volume_calculation_reference",
+  "mix_design_or_project_specification_reference",
+  "mixture_designation",
+  "placement_location",
+  "contingency_selection_justification",
+  "delivery_schedule_and_truck_capacity",
+  "producer_order_confirmation",
+  "estimator_approval_reference",
+]);
+
+const REINFORCEMENT_SCHEDULE_EVIDENCE_PARAMETER_IDS = new Set([
+  "reinforcement_product_profile_id",
+  "bar_bending_schedule_reference",
+  "structural_drawing_and_revision_reference",
+  "bar_standard_and_grade",
+  "bar_size_designation",
+  "nominal_diameter_mm",
+  "shape_straight_bent_curved_or_link",
+  "bar_count_and_cut_length_m",
+  "selected_standard_mass_kg_per_m",
+  "laps_hooks_chairs_connectors_and_accessories_scope",
+  "fabrication_allowance_if_documented",
+  "supplier_bundle_or_length_constraints",
+  "reinforcement_estimator_approval_reference",
+]);
+
+function inclusionParameterIds(ast: InclusionGraphAst): string[] {
+  const kind = String(ast.kind ?? "");
+  if (kind === "parameter") return [String(ast.id ?? "")].filter(Boolean);
+  if ([
+    "equals",
+    "not_equals",
+    "in",
+    "greater_than",
+    "greater_than_or_equal",
+    "less_than",
+    "less_than_or_equal",
+  ].includes(kind)) {
+    return [String(ast.parameterId ?? "")].filter(Boolean);
+  }
+  if (kind === "not" && ast.operand && typeof ast.operand === "object" && !Array.isArray(ast.operand)) {
+    return inclusionParameterIds(ast.operand as InclusionGraphAst);
+  }
+  if ((kind === "and" || kind === "or") && Array.isArray(ast.operands)) {
+    return ast.operands
+      .filter((operand): operand is InclusionGraphAst => (
+        Boolean(operand) && typeof operand === "object" && !Array.isArray(operand)
+      ))
+      .flatMap(inclusionParameterIds);
+  }
+  return [];
+}
+
+/**
+ * Shared ownership map for every professional input that changes a row, its
+ * applicability, its public specification, or the evidence required to order it.
+ */
+export function stripFoundationParameterConsumerRowIds(parameterId: string): string[] {
+  const formulaIds = new Set(
+    STRIP_FOUNDATION_FORMULAS
+      .filter((formula) => formula.inputParameterIds.includes(parameterId))
+      .map((formula) => formula.formulaId),
+  );
+  return STRIP_FOUNDATION_ROWS
+    .filter((row) => (
+      formulaIds.has(row.formulaId)
+      || inclusionParameterIds(row.applicabilityExpression).includes(parameterId)
+      || row.titleSpecificationParameterIds?.includes(parameterId)
+      || (row.rowId === "main_concrete" && READY_MIX_ORDER_EVIDENCE_PARAMETER_IDS.has(parameterId))
+      || (row.rowId === "reinforcement" && REINFORCEMENT_SCHEDULE_EVIDENCE_PARAMETER_IDS.has(parameterId))
+    ))
+    .map((row) => row.rowId)
+    .sort();
+}
 
 export const REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT = Object.freeze({
   definitionId: "r6-concrete:reinforced-concrete-strip-foundation",

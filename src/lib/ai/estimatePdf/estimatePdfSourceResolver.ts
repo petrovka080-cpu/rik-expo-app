@@ -1,6 +1,7 @@
 import type { ConsumerRepairDraftBundle } from "../../consumerRequests";
+import { publicBoqDisplayNameRu } from "../../estimate/publicBoqNaming";
 import type { ConstructionEstimateAnswer } from "../estimateEngine";
-import { calculateGlobalConstructionEstimateSync } from "../globalEstimate/globalEstimateCalculator";
+import { calculateGlobalConstructionEstimateSync } from "../../estimate/backendPlatform/canonicalEstimateHistoricalGlobalProjection";
 import type { GlobalEstimateResult } from "../globalEstimate/globalEstimateTypes";
 import { buildAiEstimatePdfSourceFromGlobalEstimate } from "./estimatePdfGlobalResultAdapter";
 import type { AiEstimatePdfSource } from "./estimatePdfTypes";
@@ -112,7 +113,10 @@ export function buildAiEstimatePdfSourceFromConsumerRepairDraft(
     const catalogBound = item.source === "catalog_item" || Boolean(item.catalogItemId || item.selectedCatalogItemId);
     return {
       rowNumber: String(index + 1),
-      name: item.titleRu,
+      name: publicBoqDisplayNameRu({
+        sourceNameRu: item.titleRu,
+        rowType: item.itemType,
+      }),
       quantity: item.quantity ?? "уточнить",
       unit: item.unit ?? "",
       unitLabel: item.unitLabel ?? item.unit ?? null,

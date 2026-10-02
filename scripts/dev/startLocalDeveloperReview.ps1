@@ -135,7 +135,22 @@ catch {
   Fail-Preflight "LOCAL_PROVIDER_HEALTH_RED" "перезапустите локальный Supabase provider и повторите запуск"
 }
 
-$CanonicalBackendUrl = "http://127.0.0.1:8765"
+$CanonicalBackendUrl = if (-not [string]::IsNullOrWhiteSpace($env:LOCAL_DEVELOPER_CANONICAL_BACKEND_URL)) {
+  [string]$env:LOCAL_DEVELOPER_CANONICAL_BACKEND_URL
+}
+else {
+  "http://127.0.0.1:8765"
+}
+try {
+  $CanonicalBackendUri = [Uri]$CanonicalBackendUrl
+}
+catch {
+  Fail-Preflight "CANONICAL_BACKEND_URL_INVALID" "use an HTTP loopback URL"
+}
+if ($CanonicalBackendUri.Scheme -ne "http" -or $LoopbackHosts -notcontains $CanonicalBackendUri.Host) {
+  Fail-Preflight "CANONICAL_BACKEND_URL_FORBIDDEN" "use an HTTP loopback URL"
+}
+$env:LOCAL_DEVELOPER_BACKEND_PORT = [string]$CanonicalBackendUri.Port
 
 $Node = (Get-Command node -ErrorAction Stop).Source
 $IdentityTool = Join-Path $Root "scripts\dev\printLocalDeveloperBuildIdentity.ts"
@@ -190,6 +205,12 @@ else {
 $env:LOCAL_DEVELOPER_EVIDENCE_ROOT = $RuntimeEvidenceRoot
 
 $Port = 8081
+if (-not [string]::IsNullOrWhiteSpace($env:LOCAL_DEVELOPER_METRO_PORT)) {
+  $Port = [int]$env:LOCAL_DEVELOPER_METRO_PORT
+}
+if ($Port -lt 1024 -or $Port -gt 65535) {
+  Fail-Preflight "METRO_PORT_INVALID" "use an unprivileged TCP port"
+}
 
 function Test-ConsumerRouteReady {
   param(
@@ -245,7 +266,8 @@ foreach ($ExistingPid in $ExistingPids) {
         [string]$MetroReceipt.source_tree_hash -eq [string]$Identity.sourceTreeHash -and
         [string]$MetroReceipt.product_source_hash -eq [string]$Identity.productSourceHash -and
         [string]$MetroReceipt.js_bundle_fingerprint -eq [string]$Identity.jsBundleFingerprint -and
-        [string]$MetroReceipt.build_commit -eq $BuildCommit
+        [string]$MetroReceipt.build_commit -eq $BuildCommit -and
+        [int]$MetroReceipt.web_port -eq $Port
     }
     catch {
       $MetroIdentityMatches = $false
@@ -258,7 +280,7 @@ $SourceFingerprint = ([string]$Identity.productSourceHash).Substring(0, 12)
 $BundleFingerprint = ([string]$Identity.jsBundleFingerprint).Substring(0, 12)
 
 Write-Host "LOCAL_DEVELOPER_PREFLIGHT_GREEN"
-Write-Host "URL=http://localhost:8081"
+Write-Host "URL=http://localhost:$Port"
 Write-Host "environment=local_developer"
 Write-Host "provider_public_fingerprint=$PublicFingerprint"
 Write-Host "source_fingerprint=$SourceFingerprint"
@@ -346,7 +368,9 @@ if (
 # These variables live only in this wrapper and the one Metro child. Changing
 # any EXPO_PUBLIC_* value therefore always follows the owned-Metro stop above.
 $env:LOCAL_DEVELOPER_REVIEW = "1"
+$env:LOCAL_DEVELOPER_WEB_PORT = [string]$Port
 $env:EXPO_PUBLIC_LOCAL_DEVELOPER_REVIEW = "1"
+$env:EXPO_PUBLIC_LOCAL_DEVELOPER_WEB_PORT = [string]$Port
 $env:EXPO_PUBLIC_APP_ENV = "local_developer"
 $env:EXPO_PUBLIC_RELEASE_LABEL = "LOCAL_DEVELOPMENT"
 $env:EXPO_PUBLIC_SUPABASE_URL = $ApiUrl
@@ -498,6 +522,7 @@ if (-not (Test-ConsumerRouteReady -TimeoutSec 180 -WarmBundle)) {
   definition_release_id = [string]$BackendManagerResult.definition_release_id
   search_release_id = [string]$BackendManagerResult.search_release_id
   capability_id = [string]$BackendManagerResult.capability_id
+  web_port = $Port
 } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $MetroReceiptPath -Encoding UTF8
 Write-Host "runtime_action=started_exact_healthy_runtime"
 Write-Host "backend_pid=$($BackendManagerResult.backend_pid)"

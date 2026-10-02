@@ -27,6 +27,7 @@ describe("catalog transport BFF routing contract", () => {
         wiredToAppRuntime: true,
         productionTrafficEnabled: false,
         callsSupabaseDirectlyFromClient: false,
+        unavailableCompatibilityFallback: "supabase_rls_readonly",
       }),
     );
     expect(CATALOG_TRANSPORT_BFF_REFERENCE_PAGE_DEFAULTS).toEqual({
@@ -67,19 +68,24 @@ describe("catalog transport BFF routing contract", () => {
     ).toBe(true);
   });
 
-  it("keeps the app transport on the canonical BFF owner and fails closed", () => {
+  it("keeps BFF primary, restores bounded reads while it is unavailable, and fails closed on BFF errors", () => {
     const transportSource = readProjectFile("src/lib/catalog/catalog.transport.ts");
+    const compatibilitySource = readProjectFile("src/lib/catalog/catalog.transport.supabase.ts");
 
     expect(transportSource).toContain("callCatalogTransportBffRead");
-    expect(transportSource).toContain("Canonical catalog backend unavailable");
-    expect(transportSource).not.toContain("catalog.transport.supabase");
-    expect(transportSource).not.toContain("FromSupabase");
+    expect(transportSource).toContain("catalog.transport.supabase");
+    expect(transportSource).toContain('bffResult.status === "error"');
+    expect(transportSource).toContain("return await fallback()");
     expect(transportSource).not.toContain("supabase.rpc(");
     expect(transportSource).not.toContain("supabase.from(");
     expect(transportSource).not.toContain(".rpc(");
     expect(transportSource).not.toContain(".from(");
+    expect(compatibilitySource).toContain('supabase.from("rik_items")');
+    expect(compatibilitySource).toContain('supabase.rpc("rik_quick_ru"');
+    expect(compatibilitySource).toContain("loadPagedRowsWithCeiling");
     expect(CATALOG_TRANSPORT_BFF_FAIL_CLOSED_POLICY).toContain("fails closed");
-    expect(CATALOG_TRANSPORT_BFF_FAIL_CLOSED_POLICY).toContain("without a direct client database fallback");
+    expect(CATALOG_TRANSPORT_BFF_FAIL_CLOSED_POLICY).toContain("Supabase RLS read adapter");
+    expect(CATALOG_TRANSPORT_BFF_FAIL_CLOSED_POLICY).toContain("BFF application error");
   });
 
   it("routes the map catalog search modal through the catalog transport boundary", () => {

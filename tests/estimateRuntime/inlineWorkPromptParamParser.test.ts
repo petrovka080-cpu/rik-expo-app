@@ -76,6 +76,16 @@ describe("inline work prompt parameter parser", () => {
     expect(cable.cable_section?.value).toBe("4x50");
   });
 
+  it("keeps area times layer thickness out of plan geometry", () => {
+    const params = extractWorkParamsFromInlinePrompt(
+      "Устройство асфальтобетонного покрытия 900 м² × 50 мм",
+    );
+
+    expect(params.area_m2?.value).toBe(900);
+    expect(params.length_m).toBeUndefined();
+    expect(params.width_m).toBeUndefined();
+  });
+
   it("rejects zero geometry and flags implausible road dimensions for confirmation", () => {
     const zero = extractWorkParamsFromInlinePrompt("асфальт длина 0 м, ширина 0 м");
     const implausible = extractWorkParamsFromInlinePrompt("асфальт длина 2000 м, ширина 500 м");

@@ -22,13 +22,17 @@ import {
   consumerRepairRevisionUsesGenericFallback,
   primaryConsumerRepairCanonicalBackendBinding,
 } from "./consumerRepairBackendOwnership";
-import { consumerRepairRowCode } from "./consumerRepairRowMetadata";
+import {
+  consumerRepairRowCanonicalRevisionId,
+  consumerRepairRowCode,
+} from "./consumerRepairRowMetadata";
 
 type Props = {
   bundle: ConsumerRepairDraftBundle | null;
   aiAnswerRu: string | null;
   hasSelectedApprovedHistory?: boolean;
   showPdfAction?: boolean;
+  pdfOpenBusy?: boolean;
   onMakePdf?: () => void;
   onOpenProcurement?: () => void;
   onRefineCanonicalParameters?: () => void;
@@ -36,6 +40,9 @@ type Props = {
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
   onUnitPriceChange: (itemId: string, value: string) => void;
+  pendingCanonicalRowEditCount?: number;
+  canonicalRowEditsApplying?: boolean;
+  onApplyCanonicalRowEdits?: () => boolean | void | Promise<boolean | void>;
   onSpecificationChange?: (itemId: string, value: string) => void;
   onOptionalChange?: (itemId: string, optional: boolean) => void;
   onRemove: (itemId: string) => void;
@@ -75,6 +82,7 @@ export function ConsumerRepairDraftPanel({
   bundle,
   hasSelectedApprovedHistory,
   showPdfAction,
+  pdfOpenBusy = false,
   onMakePdf,
   onOpenProcurement,
   onRefineCanonicalParameters,
@@ -82,6 +90,9 @@ export function ConsumerRepairDraftPanel({
   onIncrease,
   onQuantityChange,
   onUnitPriceChange,
+  pendingCanonicalRowEditCount,
+  canonicalRowEditsApplying,
+  onApplyCanonicalRowEdits,
   onSpecificationChange,
   onOptionalChange,
   onRemove,
@@ -138,14 +149,27 @@ export function ConsumerRepairDraftPanel({
   const latestDiff = revisionState?.diffs[revisionState.diffs.length - 1] ?? null;
   const rowPhotoThumbnails = Object.fromEntries((bundle?.items ?? []).flatMap((item) => {
     const rowId = consumerRepairRowCode(item);
+    const canonicalRevisionId = consumerRepairRowCanonicalRevisionId(item);
     if (!rowId) return [];
     const attachment = [...(bundle?.estimateAttachments ?? [])].reverse().find((candidate) =>
       !candidate.deleted
       && candidate.rowId === rowId
-      && candidate.revisionId === currentRevision?.revisionId
+      && candidate.revisionId === canonicalRevisionId
       && Boolean(candidate.thumbnailReference?.trim())
     );
     return attachment?.thumbnailReference ? [[item.id, attachment.thumbnailReference]] : [];
+  }));
+  const rowPhotoAttachmentItemIds = new Set((bundle?.items ?? []).flatMap((item) => {
+    const rowId = consumerRepairRowCode(item);
+    const canonicalRevisionId = consumerRepairRowCanonicalRevisionId(item);
+    if (!rowId) return [];
+    const attachment = [...(bundle?.estimateAttachments ?? [])].reverse().find((candidate) =>
+      !candidate.deleted
+      && candidate.serverCommitted === true
+      && candidate.rowId === rowId
+      && candidate.revisionId === canonicalRevisionId
+    );
+    return attachment ? [item.id] : [];
   }));
   const selectedCatalogWorkId = bundle?.draft.selectedCatalogWorkId?.trim() ?? "";
   const canonicalProfessionalWorkId = currentRevision?.professionalWorkId?.trim() ?? "";
@@ -315,6 +339,7 @@ export function ConsumerRepairDraftPanel({
             !bundle.canonicalParameterSession
           )}
           showPdfAction={showPdfAction}
+          pdfOpenBusy={pdfOpenBusy}
           onMakePdf={onMakePdf}
           onOpenProcurement={onOpenProcurement}
           onRefineCanonicalParameters={onRefineCanonicalParameters}
@@ -322,6 +347,9 @@ export function ConsumerRepairDraftPanel({
           onIncrease={onIncrease}
           onQuantityChange={onQuantityChange}
           onUnitPriceChange={onUnitPriceChange}
+          pendingCanonicalRowEditCount={pendingCanonicalRowEditCount}
+          canonicalRowEditsApplying={canonicalRowEditsApplying}
+          onApplyCanonicalRowEdits={onApplyCanonicalRowEdits}
           onSpecificationChange={onSpecificationChange}
           onOptionalChange={onOptionalChange}
           onRemove={onRemove}
@@ -329,6 +357,7 @@ export function ConsumerRepairDraftPanel({
           onAddPhotoMaterialRecognition={onAddPhotoMaterialRecognition}
           onOpenPhotoForEstimateItem={onOpenPhotoForEstimateItem}
           rowPhotoThumbnails={rowPhotoThumbnails}
+          rowPhotoAttachmentItemIds={rowPhotoAttachmentItemIds}
           onAddCustom={onAddCustom}
           onRestoreLastRemoved={onRestoreLastRemoved}
           canRestoreLastRemoved={canRestoreLastRemoved}
@@ -368,12 +397,16 @@ export function ConsumerRepairDraftPanel({
           {showPdfAction && onMakePdf ? (
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Сделать PDF"
+              accessibilityLabel={pdfOpenBusy ? "Открываем PDF" : "Сделать PDF"}
+              accessibilityState={{ busy: pdfOpenBusy, disabled: pdfOpenBusy }}
+              disabled={pdfOpenBusy}
               onPress={onMakePdf}
               style={styles.pdfButton}
               testID="consumer-estimate-make-pdf"
             >
-              <Text style={styles.pdfButtonText}>Сделать PDF</Text>
+              <Text style={styles.pdfButtonText}>
+                {pdfOpenBusy ? "Открываем PDF…" : "Сделать PDF"}
+              </Text>
             </Pressable>
           ) : null}
         </>

@@ -4,7 +4,6 @@ import type { TextInput } from "react-native";
 import {
   addConsumerRepairRequestCatalogItem,
   addConsumerRepairRequestItem,
-  createConsumerRepairRequestDraft,
   listConsumerRepairApprovedHistory,
   listConsumerRepairRequestHistory,
   selectConsumerRepairRequestItemCatalogItem,
@@ -12,7 +11,6 @@ import {
   type ConsumerRepairApprovedHistoryPage,
 } from "../../lib/consumerRequests/consumerRequestService";
 import {
-  ConsumerRepairValidationError,
   sendConsumerRepairRequestToMarketplace,
 } from "../../lib/consumerRequests/consumerRequestMarketplaceService";
 import type {
@@ -86,7 +84,9 @@ export type ConsumerRepairRequestScreenState = {
   roadScopeSelectionBusy?: boolean;
   pdfOpenBusy?: boolean;
   approvalCommitBusy?: boolean;
+  deleteCommitBusy?: boolean;
   canonicalEstimateMutationBusy?: boolean;
+  pendingCanonicalRowEditCount?: number;
   bundle: ConsumerRepairDraftBundle | null;
   history: ConsumerRepairDraftBundle[];
   approvedHistoryPage: ConsumerRepairApprovedHistoryPage;
@@ -120,7 +120,7 @@ export function buildEmptyConsumerRepairApprovedHistoryPage(
   };
 }
 
-export function sendConsumerRepairHistoryToMarketplaceFromScreen(input: {
+export async function sendConsumerRepairHistoryToMarketplaceFromScreen(input: {
   requestDraftId: string;
   userId: string;
   canonicalArtifact: {
@@ -130,12 +130,13 @@ export function sendConsumerRepairHistoryToMarketplaceFromScreen(input: {
     releaseId: string;
     status: "ready";
     sha256: string | null;
+    revisionChecksumSha256: string;
   };
-}): Pick<
+}): Promise<Pick<
   ConsumerRepairRequestScreenState,
   "history" | "approvedHistoryPage" | "selectedHistoryId" | "validationErrors" | "statusMessage"
-> {
-  sendConsumerRepairRequestToMarketplace({
+>> {
+  await sendConsumerRepairRequestToMarketplace({
     requestDraftId: input.requestDraftId,
     userId: input.userId,
     idempotencyKey: `consumer-marketplace:${input.requestDraftId}`,

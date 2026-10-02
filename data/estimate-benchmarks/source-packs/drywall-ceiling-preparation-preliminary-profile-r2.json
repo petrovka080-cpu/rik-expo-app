@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "drywall-ceiling-preparation-preliminary-profile-r2.v2",
+  "authoredIndependentlyFromDefinitionRows": true,
+  "catalogId": "canonical-work:base:drywall_ceiling_interior_drywall_ceiling_prepare_large_area",
+  "scope": "Существующий потолок из ГКЛ неизвестного до обследования состояния; первая смета рассчитывает очистку, защиту, тонкое сплошное шпаклевание 0,3 мм, шлифование и обеспыливание, а ремонт дефектов и швов сохраняет локальной условной ветвью до обмера; без окраски, нового каркаса и новых листов.",
+  "sources": [
+    {
+      "sourceId": "KNAUF_ROTBAND_PASTA_PROFI_IL_2025_02",
+      "authority": "ООО КНАУФ ГИПС",
+      "officialUrl": "https://www.knauf.ru/upload/iblock/ab4/nh124j9e1rc8oe5tn6d1z1yey4pwcgpb/36_IL_KNAUF_Rotband_Pasta_Profi_25_03_2025_v01_Preview.pdf",
+      "exactLocator": "Информационный лист 02/2025, стр. 1–2: фасовки 5/18/25 кг; стр. 2: 0,48 кг/м² при 0,3 мм, грунтование не требуется, P240 или мельче, удаление пыли, защита дыхания/кожи/глаз.",
+      "role": "MANUFACTURER_PRODUCT_AND_SAFETY_REQUIREMENTS"
+    },
+    {
+      "sourceId": "MASTER_S26_4_APPENDIX_P6_CONTROL_SCENARIO",
+      "authority": "Согласованный MASTER S26.4",
+      "officialUrl": null,
+      "exactLocator": "Приложение П.6: 500 м²; 5% резерва; укрытие 500×1,10; рулон 4×50 м; лента 120 м, рулон 50 м; ремонт и грунтование исключены для выбранного варианта.",
+      "role": "EXPLICIT_ACCEPTANCE_SCENARIO"
+    },
+    {
+      "sourceId": "KG_SP_KR_65_101_2025_FINISHING_WORKS",
+      "authority": "Нормативная система Кыргызской Республики",
+      "officialUrl": null,
+      "exactLocator": "Правила производства и приёмки отделочных работ; конкретные количества материалов не подменяются общими требованиями.",
+      "role": "WORK_EXECUTION_AND_ACCEPTANCE"
+    },
+    {
+      "sourceId": "VISIBLE_REPLACEABLE_SITE_PROFILE_P6_R2",
+      "authority": "Предварительный профиль планирования, не норматив расхода",
+      "officialUrl": null,
+      "exactLocator": "Все значения сменности, производительности, доступа, логистики, мешков и расхода абразива показываются в UI серым внутри редактируемой строки и заменяются ППР, обмером и паспортом выбранной техники. Состояние старого потолка не объявляется исправным: до обследования ремонтная ветвь остаётся условной с локальными потребностями в площади дефектов и длине повреждённых швов.",
+      "role": "VISIBLE_REPLACEABLE_ASSUMPTION"
+    }
+  ],
+  "independentRequiredComposition": [
+    { "componentId": "protective-film-rolls", "rowKey": "protection_cover", "category": "material", "sourceId": "MASTER_S26_4_APPENDIX_P6_CONTROL_SCENARIO", "quantityBasis": "ceil(area × protection ratio × overlap / roll coverage)" },
+    { "componentId": "masking-tape-rolls", "rowKey": "masking_tape", "category": "material", "sourceId": "MASTER_S26_4_APPENDIX_P6_CONTROL_SCENARIO", "quantityBasis": "ceil(area × tape layout rate / roll length)" },
+    { "componentId": "waste-bags", "rowKey": "waste_bags", "category": "material", "sourceId": "VISIBLE_REPLACEABLE_SITE_PROFILE_P6_R2", "quantityBasis": "ceil(area / visible area per bag)" },
+    { "componentId": "finish-paste-packages", "rowKey": "finish_paste", "category": "material", "sourceId": "KNAUF_ROTBAND_PASTA_PROFI_IL_2025_02", "quantityBasis": "ceil(area × 0.48 × (1 + reserve) / 18 kg)" },
+    { "componentId": "p240-abrasive", "rowKey": "finish_abrasive", "category": "material", "sourceId": "KNAUF_ROTBAND_PASTA_PROFI_IL_2025_02", "quantityBasis": "ceil(area / visible selected-disc productivity)" },
+    { "componentId": "safety-glasses", "rowKey": "safety_glasses", "category": "material", "sourceId": "KNAUF_ROTBAND_PASTA_PROFI_IL_2025_02", "quantityBasis": "one selected eye-protection item per worker" },
+    { "componentId": "protective-gloves", "rowKey": "protective_gloves", "category": "material", "sourceId": "KNAUF_ROTBAND_PASTA_PROFI_IL_2025_02", "quantityBasis": "workers × shifts × visible pairs per worker-shift" },
+    { "componentId": "respiratory-protection", "rowKey": "dust_respirators", "category": "material", "sourceId": "KNAUF_ROTBAND_PASTA_PROFI_IL_2025_02", "quantityBasis": "workers × shifts × visible respirators per worker-shift" },
+    { "componentId": "condition-survey", "rowKey": "condition_survey", "category": "labor", "sourceId": "KG_SP_KR_65_101_2025_FINISHING_WORKS", "quantityBasis": "ceiling area" },
+    { "componentId": "room-protection-work", "rowKey": "room_protection", "category": "labor", "sourceId": "MASTER_S26_4_APPENDIX_P6_CONTROL_SCENARIO", "quantityBasis": "area × measured protection ratio" },
+    { "componentId": "surface-cleaning", "rowKey": "surface_cleaning", "category": "labor", "sourceId": "KNAUF_ROTBAND_PASTA_PROFI_IL_2025_02", "quantityBasis": "ceiling area" },
+    { "componentId": "finish-paste-application", "rowKey": "finish_paste_application", "category": "labor", "sourceId": "KNAUF_ROTBAND_PASTA_PROFI_IL_2025_02", "quantityBasis": "ceiling area" },
+    { "componentId": "finish-sanding", "rowKey": "finish_sanding", "category": "labor", "sourceId": "KNAUF_ROTBAND_PASTA_PROFI_IL_2025_02", "quantityBasis": "ceiling area" },
+    { "componentId": "post-sanding-dust-removal", "rowKey": "post_sanding_dust_removal", "category": "labor", "sourceId": "KNAUF_ROTBAND_PASTA_PROFI_IL_2025_02", "quantityBasis": "ceiling area" },
+    { "componentId": "readiness-control", "rowKey": "readiness_control", "category": "labor", "sourceId": "KG_SP_KR_65_101_2025_FINISHING_WORKS", "quantityBasis": "ceiling area" },
+    { "componentId": "cleanup", "rowKey": "cleanup", "category": "labor", "sourceId": "MASTER_S26_4_APPENDIX_P6_CONTROL_SCENARIO", "quantityBasis": "ceiling area" },
+    { "componentId": "access-operations", "rowKey": "access_operations", "category": "labor", "sourceId": "VISIBLE_REPLACEABLE_SITE_PROFILE_P6_R2", "quantityBasis": "ceil(area / visible area per shift)" },
+    { "componentId": "dust-extractor", "rowKey": "dust_extractor", "category": "equipment", "sourceId": "VISIBLE_REPLACEABLE_SITE_PROFILE_P6_R2", "quantityBasis": "ceil(area / visible area per shift)" },
+    { "componentId": "sanding-machine", "rowKey": "sanding_machine", "category": "equipment", "sourceId": "VISIBLE_REPLACEABLE_SITE_PROFILE_P6_R2", "quantityBasis": "ceil(area / visible area per shift)" },
+    { "componentId": "mobile-tower", "rowKey": "access_equipment", "category": "equipment", "sourceId": "VISIBLE_REPLACEABLE_SITE_PROFILE_P6_R2", "quantityBasis": "ceil(area / visible area per shift)" },
+    { "componentId": "work-light", "rowKey": "work_light", "category": "equipment", "sourceId": "VISIBLE_REPLACEABLE_SITE_PROFILE_P6_R2", "quantityBasis": "ceil(area / visible area per shift)" },
+    { "componentId": "material-delivery", "rowKey": "material_delivery", "category": "transport", "sourceId": "VISIBLE_REPLACEABLE_SITE_PROFILE_P6_R2", "quantityBasis": "visible consolidated trip count" },
+    { "componentId": "access-delivery", "rowKey": "access_delivery", "category": "transport", "sourceId": "VISIBLE_REPLACEABLE_SITE_PROFILE_P6_R2", "quantityBasis": "visible inbound trip count" },
+    { "componentId": "access-return", "rowKey": "access_return", "category": "transport", "sourceId": "VISIBLE_REPLACEABLE_SITE_PROFILE_P6_R2", "quantityBasis": "visible return trip count" },
+    { "componentId": "waste-removal", "rowKey": "waste_removal", "category": "transport", "sourceId": "VISIBLE_REPLACEABLE_SITE_PROFILE_P6_R2", "quantityBasis": "visible waste trip count" }
+  ],
+  "conditionalRequiredComposition": [
+    { "componentId": "repair-compound", "rowKey": "joint_compound", "category": "material", "condition": "repair_requirement_state != NOT_REQUIRED", "sourceId": "KG_SP_KR_65_101_2025_FINISHING_WORKS", "quantityBasis": "measured repair area × selected compatible compound rate" },
+    { "componentId": "repair-joint-tape", "rowKey": "joint_tape", "category": "material", "condition": "repair_requirement_state != NOT_REQUIRED", "sourceId": "KG_SP_KR_65_101_2025_FINISHING_WORKS", "quantityBasis": "measured damaged joint and crack length" },
+    { "componentId": "repair-abrasive", "rowKey": "abrasive", "category": "material", "condition": "repair_requirement_state != NOT_REQUIRED", "sourceId": "VISIBLE_REPLACEABLE_SITE_PROFILE_P6_R2", "quantityBasis": "measured repair area / selected abrasive productivity" },
+    { "componentId": "defect-opening", "rowKey": "defect_opening", "category": "labor", "condition": "repair_requirement_state != NOT_REQUIRED", "sourceId": "KG_SP_KR_65_101_2025_FINISHING_WORKS", "quantityBasis": "measured damaged joint and crack length" },
+    { "componentId": "joint-repair-work", "rowKey": "joint_repair", "category": "labor", "condition": "repair_requirement_state != NOT_REQUIRED", "sourceId": "KG_SP_KR_65_101_2025_FINISHING_WORKS", "quantityBasis": "measured damaged joint and crack length" },
+    { "componentId": "repair-sanding", "rowKey": "sanding", "category": "labor", "condition": "repair_requirement_state != NOT_REQUIRED", "sourceId": "KG_SP_KR_65_101_2025_FINISHING_WORKS", "quantityBasis": "measured repair area" }
+  ],
+  "explicitlyNotApplicable": [
+    "new drywall sheets",
+    "new ceiling frame",
+    "unconditional purchase of joint compound and joint tape before defect measurements",
+    "primer for the selected Rotband Pasta Profi system on the prepared substrate",
+    "painting",
+    "separate fall-arrest purchase when included in the selected guarded access system"
+  ]
+}

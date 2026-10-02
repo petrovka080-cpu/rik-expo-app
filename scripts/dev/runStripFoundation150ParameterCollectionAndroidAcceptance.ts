@@ -309,8 +309,8 @@ async function main(): Promise<void> {
     await waitForText(page.getByTestId("estimate-revision-diff-param-strip_width_m"), /0\.6.*0\.7/u);
     await waitForText(page.getByTestId("estimate-current-revision-artifacts"), /PDF.*закупк.*актуальн/iu);
     const approve = page.getByTestId("consumer-repair-approve").last();
-    invariant(await approve.isDisabled(), "UNVERIFIED_PRICES_MUST_BLOCK_APPROVAL");
-    await waitForText(approve, /без цены 15/iu);
+    invariant(!(await approve.isDisabled()), "UNPRICED_ESTIMATE_APPROVAL_MUST_REMAIN_AVAILABLE");
+    await waitForText(approve, /подтвердить без цен.*15/iu);
 
     captureDeviceEvidence();
     await page.screenshot({ path: path.join(OUTPUT_ROOT, "foundation-150-android-page.png"), fullPage: true });

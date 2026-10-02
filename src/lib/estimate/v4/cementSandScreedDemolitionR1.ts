@@ -13,6 +13,47 @@ type Json = Record<string, unknown>;
 
 export const CEMENT_SAND_SCREED_DEMOLITION_CATALOG_ID =
   "canonical-work:base:demolition_interior_screed_remove_standard";
+export const CEMENT_SAND_SCREED_DEMOLITION_VARIANTS = Object.freeze({
+  standard: Object.freeze({
+    catalogId: CEMENT_SAND_SCREED_DEMOLITION_CATALOG_ID,
+    catalogVariant: "STANDARD",
+    canonicalNameRu: "Демонтаж существующей цементно-песчаной стяжки",
+  }),
+  large_area: Object.freeze({
+    catalogId: "canonical-work:base:demolition_interior_screed_remove_large_area",
+    catalogVariant: "LARGE_AREA_SEARCH_IDENTITY",
+    canonicalNameRu:
+      "Демонтаж существующей цементно-песчаной стяжки — большая площадь",
+  }),
+  small_area: Object.freeze({
+    catalogId: "canonical-work:base:demolition_interior_screed_remove_small_area",
+    catalogVariant: "SMALL_AREA_SEARCH_IDENTITY",
+    canonicalNameRu:
+      "Демонтаж существующей цементно-песчаной стяжки — малая площадь",
+  }),
+  wet_zone: Object.freeze({
+    catalogId: "canonical-work:base:demolition_interior_screed_remove_wet_zone",
+    catalogVariant: "WET_ZONE_SEARCH_IDENTITY",
+    canonicalNameRu:
+      "Демонтаж существующей цементно-песчаной стяжки — влажная зона",
+  }),
+} as const);
+export type CementSandScreedDemolitionVariantKey =
+  keyof typeof CEMENT_SAND_SCREED_DEMOLITION_VARIANTS;
+export const CEMENT_SAND_SCREED_DEMOLITION_CATALOG_IDS = Object.freeze(
+  Object.values(CEMENT_SAND_SCREED_DEMOLITION_VARIANTS).map((variant) =>
+    variant.catalogId),
+);
+
+export function resolveCementSandScreedDemolitionVariant(
+  variantKey: CementSandScreedDemolitionVariantKey,
+) {
+  const variant = CEMENT_SAND_SCREED_DEMOLITION_VARIANTS[variantKey];
+  if (!variant) {
+    throw new Error(`CEMENT_SAND_SCREED_DEMOLITION_VARIANT_UNSUPPORTED:${variantKey}`);
+  }
+  return variant;
+}
 export const CEMENT_SAND_SCREED_DEMOLITION_SOURCE_ID =
   "project_cement_sand_screed_demolition_package_v1";
 export const CEMENT_SAND_SCREED_DEMOLITION_NORM_ID =
@@ -236,6 +277,57 @@ readonly CanonicalEstimateResourceDefinition[] = Object.freeze([
   resource({ rowId: "rc09:screed_demolition_dust_suppression_water", ordinal: 8, section: "Условные материалы", category: "material", titleRu: "Вода для пылеподавления при демонтаже стяжки", unitId: "l", formulaId: "screed_demolition_dust_suppression_water_volume_v1", inclusionAst: equals("dust_suppression_mode", "REQUIRED"), procurementEligible: true, sourceRole: "APPROVED_DEMOLITION_METHOD_DUST_SUPPRESSION_BRANCH" }),
 ]);
 
+export const CEMENT_SAND_SCREED_DEMOLITION_INDEPENDENT_COMPLETENESS_MAP =
+  Object.freeze({
+    contract: "rik-expo-app.s26-3.independent-completeness-map.v1",
+    sourceKind: "PROJECT_SYSTEM",
+    generatedFromCurrentRows: false,
+    evidenceSha256:
+      "ea0968e14f00128dbcaa946aa550ad15789c4ce6a3430ef710e069b7c8aa4da8",
+    evidenceReferences: [
+      CEMENT_SAND_SCREED_DEMOLITION_SOURCE_METADATA.source_title,
+      CEMENT_SAND_SCREED_DEMOLITION_SOURCE_METADATA.exact_locator,
+    ],
+    entries: CEMENT_SAND_SCREED_DEMOLITION_RESOURCES.map((row) => ({
+      operationId: row.row_id.replace(/^rc09:/u, ""),
+      expectedResourceId: `required-operation:${row.row_id}`,
+      category: row.category,
+      specification: row.title_ru,
+      condition: row.row_id === "rc09:screed_demolition_dust_suppression_water"
+        ? "dust_suppression_mode=REQUIRED"
+        : "selected_cement_sand_screed_demolition_scope",
+      sourceId: CEMENT_SAND_SCREED_DEMOLITION_SOURCE_ID,
+      unitId: row.unit_id,
+      quantityRule: row.row_id === "rc09:screed_demolition"
+        ? "CONFIRMED_EXISTING_SCREED_AREA"
+        : "DIRECT_APPROVED_PROJECT_OR_METHOD_INPUT",
+      detailPrinciple:
+        "NO_HIDDEN_AREA_CLASS_FACTOR_AND_NO_UNCONFIRMED_CONSUMPTION_OR_PRODUCTIVITY",
+      priceRelation: "OWN_COST",
+      formulaId: row.formula_id,
+      resolution: { kind: "ROW", rowId: row.row_id },
+    })),
+  });
+
+export function validateCementSandScreedDemolitionCompleteness(
+  resources: readonly CanonicalEstimateResourceDefinition[] =
+  CEMENT_SAND_SCREED_DEMOLITION_RESOURCES,
+): true {
+  const actual = new Set(resources.map((row) => row.row_id));
+  const expected = CEMENT_SAND_SCREED_DEMOLITION_INDEPENDENT_COMPLETENESS_MAP.entries;
+  if (actual.size !== expected.length) {
+    throw new Error("CEMENT_SAND_SCREED_DEMOLITION_COMPLETENESS_COUNT_MISMATCH");
+  }
+  for (const entry of expected) {
+    if (!actual.has(entry.resolution.rowId)) {
+      throw new Error(
+        `CEMENT_SAND_SCREED_DEMOLITION_COMPLETENESS_ROW_MISSING:${entry.resolution.rowId}`,
+      );
+    }
+  }
+  return true;
+}
+
 export const CEMENT_SAND_SCREED_DEMOLITION_SHORT_INPUT = Object.freeze({
   area_m2: 150,
   existing_screed_thickness_mm: 50,
@@ -266,9 +358,10 @@ export async function compileCementSandScreedDemolitionR1(
   options: Readonly<{ catalogId?: string }> = {},
 ): Promise<CanonicalEstimateCompileCoreResult> {
   const catalogId = options.catalogId ?? CEMENT_SAND_SCREED_DEMOLITION_CATALOG_ID;
-  if (catalogId !== CEMENT_SAND_SCREED_DEMOLITION_CATALOG_ID) {
+  if (!(CEMENT_SAND_SCREED_DEMOLITION_CATALOG_IDS as readonly string[]).includes(catalogId)) {
     throw new Error(`CEMENT_SAND_SCREED_DEMOLITION_CATALOG_UNSUPPORTED:${catalogId}`);
   }
+  validateCementSandScreedDemolitionCompleteness();
   return compileCanonicalEstimateCore({
     operation: "compile",
     compilerVersion: "canonical-estimate-compiler.cement-sand-screed-demolition-r1",

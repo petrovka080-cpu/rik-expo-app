@@ -16,8 +16,8 @@ export {
   type LocalDeveloperReviewRole,
 } from "./localDeveloperReviewRoles";
 
-const BROKER_URL = "http://127.0.0.1:54329";
-const LOCAL_DEVELOPER_WEB_ORIGIN = "http://localhost:8081";
+const DEFAULT_BROKER_URL = "http://127.0.0.1:54329";
+const DEFAULT_LOCAL_DEVELOPER_WEB_PORT = "8081";
 const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 
 type LocalDeveloperRuntimeProbe = {
@@ -26,7 +26,45 @@ type LocalDeveloperRuntimeProbe = {
   hostname?: string | null;
   port?: string | null;
   clientEnvironment?: string | null;
+  expectedWebPort?: string | null;
 };
+
+function configuredLocalDeveloperWebPort(input?: string | null): string {
+  const value = String(
+    input ?? process.env.EXPO_PUBLIC_LOCAL_DEVELOPER_WEB_PORT ?? DEFAULT_LOCAL_DEVELOPER_WEB_PORT,
+  ).trim();
+  const port = Number(value);
+  return Number.isInteger(port) && port >= 1024 && port <= 65_535
+    ? String(port)
+    : "";
+}
+
+export function resolveLocalDeveloperBrokerUrl(
+  configured = process.env.EXPO_PUBLIC_LOCAL_DEVELOPER_AUTH_BROKER_URL,
+): string {
+  const value = String(configured ?? DEFAULT_BROKER_URL).trim();
+  try {
+    const url = new URL(value);
+    const port = Number(url.port);
+    if (
+      url.protocol === "http:" &&
+      LOOPBACK_HOSTS.has(url.hostname.toLowerCase()) &&
+      Number.isInteger(port) &&
+      port >= 1024 &&
+      port <= 65_535 &&
+      (url.pathname === "/" || url.pathname === "") &&
+      !url.username &&
+      !url.password &&
+      !url.search &&
+      !url.hash
+    ) {
+      return url.origin;
+    }
+  } catch {
+    // Fail closed below; a session token must never be sent to an invalid target.
+  }
+  throw new Error("LOCAL_DEVELOPER_AUTH_BROKER_URL_FORBIDDEN");
+}
 
 function localDeveloperRuntime(input: LocalDeveloperRuntimeProbe = {}) {
   return {
@@ -47,11 +85,13 @@ function localDeveloperRuntime(input: LocalDeveloperRuntimeProbe = {}) {
 
 export function isLocalDeveloperReviewEnabled(input: LocalDeveloperRuntimeProbe = {}): boolean {
   const { publicFlag, platform, hostname, port, clientEnvironment } = localDeveloperRuntime(input);
+  const expectedWebPort = configuredLocalDeveloperWebPort(input.expectedWebPort);
   return (
     publicFlag === "1" &&
     platform === "web" &&
     LOOPBACK_HOSTS.has(String(hostname ?? "").toLowerCase()) &&
-    String(port ?? "") === "8081" &&
+    expectedWebPort !== "" &&
+    String(port ?? "") === expectedWebPort &&
     clientEnvironment === "local_developer"
   );
 }
@@ -73,7 +113,9 @@ type BrokerSession = {
   refresh_token?: unknown;
 };
 
-async function installLocalDeveloperBrokerSession(params: {
+let localDeveloperSessionInstallTail: Promise<void> = Promise.resolve();
+
+async function installLocalDeveloperBrokerSessionNow(params: {
   path: "/owner-session" | "/session";
   body: Record<string, unknown>;
   expectedActor?: "owner";
@@ -98,7 +140,7 @@ async function installLocalDeveloperBrokerSession(params: {
     throw new Error("LOCAL_DEVELOPER_SUPABASE_UNAVAILABLE");
   }
 
-  const response = await fetch(`${BROKER_URL}${params.path}`, {
+  const response = await fetch(`${resolveLocalDeveloperBrokerUrl()}${params.path}`, {
     method: "POST",
     cache: "no-store",
     credentials: "omit",
@@ -108,7 +150,7 @@ async function installLocalDeveloperBrokerSession(params: {
       // remains loopback-only and origin-sealed, while the Android acceptance
       // harness exposes that same port through adb reverse.
       ...(typeof document === "undefined"
-        ? { Origin: LOCAL_DEVELOPER_WEB_ORIGIN }
+        ? { Origin: `http://localhost:${configuredLocalDeveloperWebPort()}` }
         : {}),
     },
     body: JSON.stringify(params.body),
@@ -133,6 +175,16 @@ async function installLocalDeveloperBrokerSession(params: {
     refresh_token: refreshToken,
   });
   if (error) throw new Error("LOCAL_DEVELOPER_PROVIDER_SESSION_REJECTED");
+}
+
+function installLocalDeveloperBrokerSession(
+  params: Parameters<typeof installLocalDeveloperBrokerSessionNow>[0],
+): Promise<void> {
+  const queued = localDeveloperSessionInstallTail
+    .catch(() => undefined)
+    .then(() => installLocalDeveloperBrokerSessionNow(params));
+  localDeveloperSessionInstallTail = queued.catch(() => undefined);
+  return queued;
 }
 
 async function switchLocalDeveloperProviderPrincipal(

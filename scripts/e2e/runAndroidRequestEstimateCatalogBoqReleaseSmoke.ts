@@ -153,7 +153,7 @@ export async function runAndroidRequestEstimateCatalogBoqReleaseSmoke() {
   const pdfGeneration = buildConsumerRepairCanonicalDraftPayload(bundle, "pdf_generation");
   const marketplaceSend = buildConsumerRepairCanonicalDraftPayload(bundle, "marketplace_send");
   const parity = compareConsumerRepairPayloadParity({ draftSave, pdfGeneration, marketplaceSend });
-  const sendResult = sendConsumerRepairRequestToMarketplace({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
+  const sendResult = await sendConsumerRepairRequestToMarketplace({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
   const productSearch = answerBuiltInAi({
     text: PRODUCT_SEARCH_PROMPT,
     route: "/product/search",
@@ -226,7 +226,7 @@ export async function runAndroidRequestEstimateCatalogBoqReleaseSmoke() {
 if (require.main === module) {
   runAndroidRequestEstimateCatalogBoqReleaseSmoke()
     .then((result) => {
-      console.log(result.passed ? "GREEN_ANDROID_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_READY" : "BLOCKED_ANDROID_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_FAILED");
+      console.info(result.passed ? "GREEN_ANDROID_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_READY" : "BLOCKED_ANDROID_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_FAILED");
       if (!result.passed) process.exitCode = 1;
     })
     .catch((error) => {

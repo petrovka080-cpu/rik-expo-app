@@ -36,16 +36,26 @@ describe("road scope truth V4", () => {
     expect(ROAD_SCOPE_SELECTION_QUESTION_RU.options).toHaveLength(4);
   });
 
-  test("does not silently downgrade an asphalt-concrete pavement operation to surfacing-only", () => {
+  test("starts the canonical asphalt-concrete pavement owner as a full pavement cycle", () => {
     const result = resolveRoadScopeV4({
       originalText: "Асфальтобетонное покрытие 2000 метров длина и 32 метра ширина",
       requestedCatalogWorkId: "asphalt_concrete_pavement",
     });
 
     expect(result).toMatchObject({
+      resolverStatus: "RESOLVED",
+      selectedScopeId: "FULL_PAVEMENT_STRUCTURE",
+      evidence: ["canonical_asphalt_pavement_default_full_cycle"],
+    });
+  });
+
+  test("does not mix an explicitly narrow compaction request into the full pavement cycle", () => {
+    expect(resolveRoadScopeV4({
+      originalText: "Только уплотнение асфальтобетонного покрытия 5000 м²",
+      requestedCatalogWorkId: "asphalt_concrete_pavement",
+    })).toMatchObject({
       resolverStatus: "NEEDS_SCOPE_SELECTION",
       selectedScopeId: null,
-      evidence: ["road_intent_present", "scope_not_explicit"],
     });
   });
 

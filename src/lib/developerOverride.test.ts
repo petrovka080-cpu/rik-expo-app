@@ -11,7 +11,7 @@ import {
 } from "./developerOverride";
 
 describe("developerOverride", () => {
-  it("rejects legacy override payloads without an explicit server entitlement", () => {
+  it("rejects an expired legacy protected override payload", () => {
     const legacy = normalizeDeveloperOverrideContext({
       actorUserId: "user-1",
       isEnabled: true,
@@ -38,6 +38,44 @@ describe("developerOverride", () => {
       reason: "runtime verification",
     });
     expect(isServerAuthorizedPlatformDeveloper(legacy)).toBe(false);
+  });
+
+  it("accepts an unexpired protected legacy server payload without trusting local flags", () => {
+    const legacy = normalizeDeveloperOverrideContext({
+      actorUserId: "user-1",
+      isEnabled: true,
+      isActive: true,
+      allowedRoles: ["Buyer", "director", "security", "engineer"],
+      activeEffectiveRole: "BUYER",
+      canAccessAllOfficeRoutes: true,
+      canImpersonateForMutations: true,
+      expiresAt: "2099-05-16T00:00:00Z",
+      reason: "protected staging RPC compatibility",
+    });
+
+    expect(legacy.actorRole).toBe("platform_developer");
+    expect(legacy.entitlement).toBe("platform_developer");
+    expect(legacy.authorizationSource).toBe("server_entitlement");
+    expect(isServerAuthorizedPlatformDeveloper(legacy)).toBe(true);
+  });
+
+  it("does not reinterpret an explicit server denial as a legacy entitlement", () => {
+    const denied = normalizeDeveloperOverrideContext({
+      actorUserId: "user-1",
+      actorRole: null,
+      entitlement: null,
+      authorizationSource: "none",
+      isEnabled: true,
+      isActive: false,
+      allowedRoles: ["director"],
+      activeEffectiveRole: null,
+      canAccessAllOfficeRoutes: true,
+      canImpersonateForMutations: true,
+      expiresAt: "2099-05-16T00:00:00Z",
+      reason: "explicit denial",
+    });
+
+    expect(isServerAuthorizedPlatformDeveloper(denied)).toBe(false);
   });
 
   it("keeps every selectable developer presentation role explicit while authorization stays server-owned", () => {

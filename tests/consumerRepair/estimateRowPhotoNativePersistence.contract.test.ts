@@ -4,6 +4,7 @@ import {
   __resetConsumerRepairRequestStoreForTests,
   __simulateConsumerRepairRequestStoreReloadForTests,
   attachConsumerRepairEstimateRowPhoto,
+  createConsumerRepairEvent,
   createConsumerRepairRequestDraft,
   synchronizeConsumerRepairAuthoritativePhotoAttachments,
 } from "../../src/lib/consumerRequests";
@@ -12,6 +13,7 @@ import {
   getConsumerRepairBundle,
   hydrateTransactionalConsumerRepairRequestStore,
   listConsumerRepairBundlesForUser,
+  saveConsumerRepairBundle,
   setConsumerRepairTransactionalDurableStoreForTests,
 } from "../../src/lib/consumerRequests/consumerRequestRepository";
 import { InMemoryEstimateRevisionDurableStore } from "../../src/lib/platform/estimateRevisionDurableStore";
@@ -43,7 +45,7 @@ describe("estimate row photo native persistence", () => {
     Reflect.deleteProperty(globalThis, "navigator");
   });
 
-  it("restores one exact row/revision attachment without changing its parent or PDF set", async () => {
+  it("restores one exact history-derived row/revision attachment without changing its parent or PDF set", async () => {
     const ownerUserId = "photo-owner-user";
     const revisionId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
     const releaseId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
@@ -77,12 +79,26 @@ describe("estimate row photo native persistence", () => {
         dangerousDiyBlocked: false,
       },
     });
-    const requestItemId = created.items[0]!.id;
-    const parentBefore = created.items[0]!.sourceParameters?.canonicalBackendRevisionId;
-    const pdfsBefore = created.pdfs;
+    const canonicalSourceRequestId = "ffffffff-ffff-4fff-8fff-ffffffffffff";
+    const historyDerived = saveConsumerRepairBundle({
+      ...created,
+      events: [
+        ...created.events,
+        createConsumerRepairEvent({
+          requestDraftId: created.draft.id,
+          eventType: "history_snapshot_edit_as_new_revision",
+          actorType: "consumer",
+          actorUserId: ownerUserId,
+          payload: { sourceRequestDraftId: canonicalSourceRequestId },
+        }),
+      ],
+    });
+    const requestItemId = historyDerived.items[0]!.id;
+    const parentBefore = historyDerived.items[0]!.sourceParameters?.canonicalBackendRevisionId;
+    const pdfsBefore = historyDerived.pdfs;
 
     const attached = attachConsumerRepairEstimateRowPhoto({
-      requestDraftId: created.draft.id,
+      requestDraftId: historyDerived.draft.id,
       ownerUserId,
       revisionId,
       releaseId,
@@ -98,7 +114,7 @@ describe("estimate row photo native persistence", () => {
       authoritativeAttachmentEventId: attachmentEventId,
       authoritativeTenantId: tenantId,
       authoritativeOwnerUserId: ownerUserId,
-      authoritativeRequestId: created.draft.id,
+      authoritativeRequestId: canonicalSourceRequestId,
       authoritativeCatalogId: catalogId,
       authoritativeStorageBucket: "private-media",
       signedUrlExpiresAt: "2026-08-19T16:00:00.000Z",
@@ -136,7 +152,7 @@ describe("estimate row photo native persistence", () => {
         attachmentEventId,
         tenantId,
         ownerUserId,
-        requestId: reopened.draft.id,
+        requestId: canonicalSourceRequestId,
         catalogId,
         rowId,
         parentRevisionId: revisionId,
@@ -155,7 +171,7 @@ describe("estimate row photo native persistence", () => {
     });
     expect(refreshed.estimateAttachments?.[0]).toMatchObject({
       id: attachmentId,
-      authoritativeRequestId: reopened.draft.id,
+      authoritativeRequestId: canonicalSourceRequestId,
       authoritativeCatalogId: catalogId,
       authoritativeTenantId: tenantId,
       storageReference: "estimate-photo/r55/committed/cc/" + "c".repeat(64) + ".jpg",

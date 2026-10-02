@@ -6,6 +6,7 @@ import {
   PRODUCTION_WORK_DEFINITIONS_10000,
 } from "../../src/lib/ai/estimateTemplate10000";
 import { isDefinitionCoveredByBackfillBatches } from "./catalogBackfillConveyor";
+import type { Estimate10000AuditProjection } from "./estimate10000AuditProjection";
 
 export const GREEN_ALL_ESTIMATE_NORM_BINDINGS_CERTIFIED_NO_BUILDS =
   "GREEN_ALL_ESTIMATE_NORM_BINDINGS_CERTIFIED_NO_BUILDS" as const;
@@ -14,44 +15,97 @@ export const STOP_ALL_ESTIMATE_NORM_BINDINGS_NOT_CERTIFIED =
 
 const RUNTIME_ROOT = ".release-runtime/ai-estimate-all-norm-bindings-certification";
 
-export function runCertifyAllEstimateNormBindings(options: { writeSummary?: boolean } = {}) {
-  let realRows = 0;
-  let genericRows = 0;
-  let rowCount = 0;
-  let templatesWithRealRows = 0;
-  let templatesOnlyGeneric = 0;
+export type EstimateNormBindingCertificationSummary = {
+  final_status:
+    | typeof GREEN_ALL_ESTIMATE_NORM_BINDINGS_CERTIFIED_NO_BUILDS
+    | typeof STOP_ALL_ESTIMATE_NORM_BINDINGS_NOT_CERTIFIED;
+  template_count: number;
+  row_count: number;
+  real_norm_pack_rows_count: number;
+  generic_norm_rows_count: number;
+  templates_with_real_norm_pack_rows_count: number;
+  templates_only_generic_norms_count: number;
+  fake_green_claimed: false;
+  production_db_touched: false;
+  native_build_started: false;
+  eas_started: false;
+  release_started: false;
+};
 
-  for (const definition of PRODUCTION_WORK_DEFINITIONS_10000) {
-    const template = getProductionExpandedTemplate10000(definition.workKey);
-    const coveredByBackfill = isDefinitionCoveredByBackfillBatches(definition);
-    const templateRealRows = coveredByBackfill
-      ? template.rows.filter((row) => isRegisteredProfessionalNormPackSourceId(row.normSourceId)).length
-      : 0;
-    const templateGenericRows = template.rows.length - templateRealRows;
-    rowCount += template.rows.length;
-    realRows += templateRealRows;
-    genericRows += templateGenericRows;
-    if (templateRealRows > 0) templatesWithRealRows += 1;
-    if (templateRealRows === 0) templatesOnlyGeneric += 1;
-  }
+export type EstimateNormBindingCertificationAccumulator = {
+  templateCount: number;
+  realRows: number;
+  genericRows: number;
+  rowCount: number;
+  templatesWithRealRows: number;
+  templatesOnlyGeneric: number;
+};
 
-  const green = templatesOnlyGeneric === 0 && genericRows === 0;
-  const summary = {
+export function createEstimateNormBindingCertificationAccumulator(): EstimateNormBindingCertificationAccumulator {
+  return {
+    templateCount: 0,
+    realRows: 0,
+    genericRows: 0,
+    rowCount: 0,
+    templatesWithRealRows: 0,
+    templatesOnlyGeneric: 0,
+  };
+}
+
+export function consumeEstimateNormBindingCertification(input: {
+  accumulator: EstimateNormBindingCertificationAccumulator;
+  definition: (typeof PRODUCTION_WORK_DEFINITIONS_10000)[number];
+  rows: ReturnType<typeof getProductionExpandedTemplate10000>["rows"];
+}): void {
+  const coveredByBackfill = isDefinitionCoveredByBackfillBatches(input.definition);
+  const templateRealRows = coveredByBackfill
+    ? input.rows.filter((row) => isRegisteredProfessionalNormPackSourceId(row.normSourceId)).length
+    : 0;
+  const templateGenericRows = input.rows.length - templateRealRows;
+  input.accumulator.templateCount += 1;
+  input.accumulator.rowCount += input.rows.length;
+  input.accumulator.realRows += templateRealRows;
+  input.accumulator.genericRows += templateGenericRows;
+  if (templateRealRows > 0) input.accumulator.templatesWithRealRows += 1;
+  if (templateRealRows === 0) input.accumulator.templatesOnlyGeneric += 1;
+}
+
+export function buildEstimateNormBindingCertificationSummary(
+  accumulator: EstimateNormBindingCertificationAccumulator,
+): EstimateNormBindingCertificationSummary {
+  const green = accumulator.templatesOnlyGeneric === 0 && accumulator.genericRows === 0;
+  return {
     final_status: green
       ? GREEN_ALL_ESTIMATE_NORM_BINDINGS_CERTIFIED_NO_BUILDS
       : STOP_ALL_ESTIMATE_NORM_BINDINGS_NOT_CERTIFIED,
-    template_count: PRODUCTION_WORK_DEFINITIONS_10000.length,
-    row_count: rowCount,
-    real_norm_pack_rows_count: realRows,
-    generic_norm_rows_count: genericRows,
-    templates_with_real_norm_pack_rows_count: templatesWithRealRows,
-    templates_only_generic_norms_count: templatesOnlyGeneric,
+    template_count: accumulator.templateCount,
+    row_count: accumulator.rowCount,
+    real_norm_pack_rows_count: accumulator.realRows,
+    generic_norm_rows_count: accumulator.genericRows,
+    templates_with_real_norm_pack_rows_count: accumulator.templatesWithRealRows,
+    templates_only_generic_norms_count: accumulator.templatesOnlyGeneric,
     fake_green_claimed: false,
     production_db_touched: false,
     native_build_started: false,
     eas_started: false,
     release_started: false,
   };
+}
+
+export function runCertifyAllEstimateNormBindings(options: {
+  writeSummary?: boolean;
+  projection?: Estimate10000AuditProjection;
+} = {}): EstimateNormBindingCertificationSummary {
+  const accumulator = createEstimateNormBindingCertificationAccumulator();
+
+  if (!options.projection) {
+    for (const definition of PRODUCTION_WORK_DEFINITIONS_10000) {
+      const template = getProductionExpandedTemplate10000(definition.workKey);
+      consumeEstimateNormBindingCertification({ accumulator, definition, rows: template.rows });
+    }
+  }
+  const summary = options.projection?.certification
+    ?? buildEstimateNormBindingCertificationSummary(accumulator);
 
   if (options.writeSummary !== false) {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");

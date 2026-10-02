@@ -5,7 +5,10 @@ import {
   canonicalArtifactUnit,
   canonicalArtifactVisibleRowTitle,
 } from "../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract";
-import { normalizePublicBoqNameRu } from "../../src/lib/estimate/publicBoqNaming";
+import {
+  normalizePublicBoqNameRu,
+  publicBoqDisplayNameRu,
+} from "../../src/lib/estimate/publicBoqNaming";
 import { sanitizeRequestEstimatePublicText } from "../../src/features/consumerRepair/requestEstimateViewModel";
 
 describe("consumer estimate procurement presentation", () => {
@@ -35,7 +38,7 @@ describe("consumer estimate procurement presentation", () => {
     expect(panel).toContain("canonicalMaterialQuantityBasisFromRow");
     expect(panel).toContain("quantityBasis?.procurementQuantity");
     expect(panel).toContain("row.titleRu");
-    expect(panel).toContain("normalizePublicBoqNameRu");
+    expect(panel).toContain("publicBoqDisplayNameRu");
     expect(panel).toContain("formatEstimateUnitLabel");
   });
 
@@ -50,6 +53,79 @@ describe("consumer estimate procurement presentation", () => {
     );
     expect(canonicalArtifactUnit({ unit_id: "piece" })).toBe("шт.");
     expect(canonicalArtifactUnit({ unit_id: "m3" })).toBe("м³");
+  });
+
+  it("collapses the repeated bridge asphalt specification in every public projection", () => {
+    const verbose = "нижний слой: горячая плотная мелкозернистая асфальтобетонная смесь типа А по КРЕР 27-06-020-01 + 27-06-021-01 при принятой толщине; марка и состав уточняются проектом и паспортом завода — Горячая плотная мелкозернистая асфальтобетонная смесь типа А по варианту КРЕР 27-06-020-01; марка и состав по проекту и паспорту завода";
+    expect(normalizePublicBoqNameRu({ sourceNameRu: verbose }))
+      .toBe("Нижний слой: асфальтобетонная смесь типа А");
+    expect(canonicalArtifactVisibleRowTitle({ title_ru: verbose }))
+      .toBe("Нижний слой: асфальтобетонная смесь типа А");
+  });
+
+  it("removes explanatory noise from long material names without blind truncation", () => {
+    const cases = [
+      [
+        "Эмульсия битумная катионная для двух сплошных слоёв сцепления: стяжка/нижний асфальт и нижний/верхний асфальт; марка уточняется проектом",
+        "Битумная эмульсия для слоёв сцепления",
+      ],
+      [
+        "Герметик битумно-полимерный ТЕХНОНИКОЛЬ №42 для узлов водоотвода, ведро 12 кг — предварительная упаковка до сверки поставщика",
+        "Герметик ТЕХНОНИКОЛЬ №42, 12 кг",
+      ],
+      [
+        "Сетка сварная А500С Ø6 мм, 100×100 мм, карта 2×3 м (≈26,64 кг): раскладка с нахлёстом 200 мм и заказ целыми картами",
+        "Сетка А500С Ø6, 100×100 мм, карта 2×3 м",
+      ],
+      [
+        "ТЕХНОЭЛАСТМОСТ Б: дополнительные детали 1×1 м у водоотводных трубок — нетто, включено в общий заказ рулонов",
+        "ТЕХНОЭЛАСТМОСТ Б, детали 1×1 м у водоотвода",
+      ],
+      [
+        "Многооборотная бортовая опалубка: ламинированная фанера 18 мм и брус 50×100 мм (аренда/оборотный комплект)",
+        "Опалубка: фанера 18 мм + брус 50×100 мм",
+      ],
+      [
+        "Товарный бетон выравнивающего слоя мостовой плиты — готовая смесь, класс и показатели стойкости по проекту",
+        "Бетон выравнивающего слоя мостовой плиты",
+      ],
+      [
+        "верхний слой: малый нормативный ресурс дорожного битума по КРЕР — не заменяет сплошной слой сцепления",
+        "Верхний слой: битум по КРЕР (добавка)",
+      ],
+      [
+        "Укрывная полиэтиленовая плёнка и защитный картон для подтверждённой площади оборудования и пола",
+        "Укрывная плёнка и защитный картон",
+      ],
+      [
+        "Вода или одобренный состав против налипания для пневматических шин; без дизельного топлива",
+        "Вода/состав для шин (без дизтоплива)",
+      ],
+      [
+        "Кабель межблочный медный негорючий по паспорту оборудования без неуказанного запаса",
+        "Негорючий межблочный кабель по паспорту",
+      ],
+    ] as const;
+
+    for (const [sourceNameRu, expected] of cases) {
+      const normalized = normalizePublicBoqNameRu({ sourceNameRu });
+      expect(normalized).toBe(expected);
+      expect(normalized.length).toBeLessThanOrEqual(44);
+      expect(canonicalArtifactVisibleRowTitle({ title_ru: sourceNameRu })).toBe(expected);
+    }
+
+    const specificationCritical =
+      "Доски хвойных пород необрезные, длина 4–6,5 м, ширина любая, толщина 44 мм и более, III сорт";
+    expect(normalizePublicBoqNameRu({ sourceNameRu: specificationCritical }))
+      .toBe(specificationCritical);
+  });
+
+  it("preserves non-material canonical titles byte-for-byte", () => {
+    const title = "Контроль Ω:  revision  № 2";
+    expect(publicBoqDisplayNameRu({ sourceNameRu: title, rowType: "service" }))
+      .toBe(title);
+    expect(publicBoqDisplayNameRu({ sourceNameRu: title, rowType: "work" }))
+      .toBe(title);
   });
 
   it("keeps backend applicability codes out of the consumer error message", () => {

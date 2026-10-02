@@ -28,15 +28,12 @@ describe("config contract — clientSupabaseEnv", () => {
 
   it("normalizeSupabaseUrl handles valid URL", () => {
     const result = normalizeSupabaseUrl("https://abc.supabase.co/");
-    // URL.toString() preserves the origin slash
-    expect(result).toMatch(/^https:\/\/abc\.supabase\.co/);
-    expect(result).not.toMatch(/\/\/$/); // no double trailing slashes
+    expect(result).toBe("https://abc.supabase.co");
   });
 
   it("normalizeSupabaseUrl strips extra trailing slashes", () => {
     const result = normalizeSupabaseUrl("https://abc.supabase.co///");
-    // Multiple trailing slashes reduced to at most the origin slash
-    expect(result).not.toMatch(/\/\/\//);
+    expect(result).toBe("https://abc.supabase.co");
   });
 
   it("normalizeSupabaseUrl returns empty for empty input", () => {

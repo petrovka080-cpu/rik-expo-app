@@ -1,7 +1,7 @@
 import React from "react";
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { Text, TextInput } from "react-native";
+import { Platform, Text, TextInput } from "react-native";
 import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
 
 import { ConsumerRepairItemRow } from "../../src/features/consumerRepair/ConsumerRepairItemRow";
@@ -187,6 +187,66 @@ describe("durable request estimate category filters", () => {
     expect(renderer.root.findAll((node) =>
       typeof node.props.testID === "string" && node.props.testID.startsWith("request-estimate-section-"),
     )).toHaveLength(0);
+  });
+
+  it("keeps included and control rows out of the purchasing list until details are expanded", () => {
+    const payable = item(1, "material");
+    const control = {
+      ...item(2, "service"),
+      sourceParameters: {
+        rowKind: "service",
+        payable: false,
+        canonicalCostTreatment: "CONTROL_OR_DOCUMENT",
+      },
+    };
+    const viewModel: RequestEstimateViewModel = {
+      ...viewModel45(),
+      sections: [{ id: "professional_test", title: "Details", items: [payable, control] }],
+      rawItemCount: 2,
+    };
+    const noop = jest.fn();
+    let renderer!: ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(
+        <RequestEstimateItemsEditor
+          viewModel={viewModel}
+          onDecrease={noop}
+          onIncrease={noop}
+          onQuantityChange={noop}
+          onUnitPriceChange={noop}
+          onSpecificationChange={noop}
+          onRemove={noop}
+          onAddManual={noop}
+        />,
+      );
+    });
+
+    expect(visibleRowCount(renderer)).toBe(1);
+    expect(renderer.root.findAllByProps({
+      testID: `consumer-repair-item-unit-price-input-${control.id}`,
+    })).toHaveLength(0);
+    act(() => renderer.root.findByProps({
+      testID: "request-estimate-technical-details-toggle",
+    }).props.onPress());
+    expect(visibleRowCount(renderer)).toBe(2);
+    expect(renderer.root.findAllByProps({
+      testID: `consumer-repair-item-unit-price-input-${control.id}`,
+    })).toHaveLength(0);
+  });
+
+  it("renders large Android estimates in stable editable batches", () => {
+    const originalPlatform = Object.getOwnPropertyDescriptor(Platform, "OS");
+    Object.defineProperty(Platform, "OS", { configurable: true, value: "android" });
+    try {
+      const renderer = renderEditor();
+      expect(visibleRowCount(renderer)).toBe(16);
+      expect(renderer.root.findByProps({ testID: "request-estimate-items-total-count" }).props.children)
+        .toBe("45 позиций");
+      act(() => renderer.root.findByProps({ testID: "request-estimate-load-more-rows" }).props.onPress());
+      expect(visibleRowCount(renderer)).toBe(32);
+    } finally {
+      if (originalPlatform) Object.defineProperty(Platform, "OS", originalPlatform);
+    }
   });
 
   it("shows the position name once normally and one editable name field while editing", () => {

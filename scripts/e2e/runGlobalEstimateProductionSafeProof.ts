@@ -132,7 +132,7 @@ export async function runGlobalEstimatePdfMarketplaceProof() {
   assert(!blocked.ok && blocked.errors.some((error) => error.code === "PDF_REQUIRED"), "GLOBAL_ESTIMATE_MARKETPLACE_REQUIRES_APPROVED_PDF");
   let blockedErrorCodes: string[] = [];
   try {
-    sendConsumerRepairRequestToMarketplace({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
+    await sendConsumerRepairRequestToMarketplace({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
   } catch (error) {
     blockedErrorCodes = ((error as ConsumerRepairValidationError).errors ?? []).map((item) => item.code);
   }
@@ -144,7 +144,7 @@ export async function runGlobalEstimatePdfMarketplaceProof() {
     patch: { contactPhone: "+1 214 555 0100" },
   });
   bundle = approveConsumerRepairRequestDraft({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
-  const sent = sendConsumerRepairRequestToMarketplace({
+  const sent = await sendConsumerRepairRequestToMarketplace({
     requestDraftId: bundle.draft.id,
     userId: bundle.draft.consumerUserId,
     idempotencyKey: "global-estimate-marketplace-proof",
@@ -305,7 +305,7 @@ export async function writeGlobalEstimateProductionSafeArtifacts() {
 
 if (require.main === module) {
   writeGlobalEstimateProductionSafeArtifacts()
-    .then((matrix) => console.log(JSON.stringify(matrix, null, 2)))
+    .then((matrix) => console.info(JSON.stringify(matrix, null, 2)))
     .catch((error) => {
       console.error(error);
       process.exitCode = 1;

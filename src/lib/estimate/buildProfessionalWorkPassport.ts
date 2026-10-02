@@ -41,6 +41,7 @@ import {
   STRIP_FOUNDATION_FORMULAS,
   STRIP_FOUNDATION_INPUTS,
   STRIP_FOUNDATION_ROWS,
+  stripFoundationParameterConsumerRowIds,
   type StripFoundationInput,
 } from "./v4/reinforcedConcreteStripFoundationR1";
 
@@ -94,6 +95,8 @@ const expandedTemplateById = new Map(
 const expandedCoverageByTemplateId = new Map(
   (expandedCoverageJson as { templates: ExpandedCoverageRow[] }).templates.map((row) => [row.template_id, row]),
 );
+const PROFESSIONAL_WORK_PASSPORT_CACHE_LIMIT = 128;
+const professionalWorkPassportCache = new Map<string, ProfessionalWorkPassport>();
 const baseLocalizedNameCounts = baseManifestTemplates.reduce((counts, template) => {
   counts.set(template.localized_name_ru, (counts.get(template.localized_name_ru) ?? 0) + 1);
   return counts;
@@ -109,7 +112,22 @@ function localizedBaseTemplateTitle(manifestRow: BaseWorkTemplateManifestRow): s
 export function clearProfessionalWorkPassportBuildCaches(): void {
   professionalWorkPassportTemplateIndexCache = null;
   professionalWorkPassportRegistryFingerprintCache = null;
+  professionalWorkPassportCache.clear();
   clearProductionExpandedEstimate10000Caches();
+}
+
+function rememberProfessionalWorkPassport(
+  templateId: string,
+  passport: ProfessionalWorkPassport,
+): ProfessionalWorkPassport {
+  professionalWorkPassportCache.delete(templateId);
+  professionalWorkPassportCache.set(templateId, passport);
+  while (professionalWorkPassportCache.size > PROFESSIONAL_WORK_PASSPORT_CACHE_LIMIT) {
+    const oldest = professionalWorkPassportCache.keys().next().value;
+    if (oldest == null) break;
+    professionalWorkPassportCache.delete(oldest);
+  }
+  return passport;
 }
 
 function canonicalUnit(unit: string, rowId: string): CanonicalProfessionalBoqUnit {
@@ -195,7 +213,15 @@ function expandedRecipeRow(row: ExpandedComplexBoqRow): ProfessionalBoqRecipeRow
 }
 
 function groupRecipeRows(rows: ProfessionalBoqRecipeRow[]): ProfessionalWorkPassport["boqRecipe"] {
-  const normalizedRows = rows.map((row): ProfessionalBoqRecipeRow => {
+  const normalizedRows: ProfessionalBoqRecipeRow[] = [];
+  const workRows: ProfessionalBoqRecipeRow[] = [];
+  const materialRows: ProfessionalBoqRecipeRow[] = [];
+  const laborRows: ProfessionalBoqRecipeRow[] = [];
+  const serviceRows: ProfessionalBoqRecipeRow[] = [];
+  const equipmentRows: ProfessionalBoqRecipeRow[] = [];
+  const transportRows: ProfessionalBoqRecipeRow[] = [];
+  const rowTypes = new Set<WorkPassportRowType>();
+  for (const row of rows) {
     const trace = row.calculationTraceTemplate.trim();
     const withSource = trace.includes(row.normSourceId)
       ? trace
@@ -203,20 +229,27 @@ function groupRecipeRows(rows: ProfessionalBoqRecipeRow[]): ProfessionalWorkPass
     const calculationTraceTemplate = /(?:^|[;\s])normVersion=/i.test(withSource)
       ? withSource
       : `${withSource}; normVersion=${row.normVersion}`;
-    return calculationTraceTemplate === row.calculationTraceTemplate
+    const normalizedRow = calculationTraceTemplate === row.calculationTraceTemplate
       ? row
       : { ...row, calculationTraceTemplate };
-  });
-  const byType = (rowType: WorkPassportRowType) => normalizedRows.filter((row) => row.rowType === rowType);
-  const requiredRowTypes = [...new Set(normalizedRows.map((row) => row.rowType))].sort() as WorkPassportRowType[];
+    normalizedRows.push(normalizedRow);
+    rowTypes.add(normalizedRow.rowType);
+    if (normalizedRow.rowType === "work") workRows.push(normalizedRow);
+    else if (normalizedRow.rowType === "material") materialRows.push(normalizedRow);
+    else if (normalizedRow.rowType === "labor") laborRows.push(normalizedRow);
+    else if (normalizedRow.rowType === "service") serviceRows.push(normalizedRow);
+    else if (normalizedRow.rowType === "equipment") equipmentRows.push(normalizedRow);
+    else if (normalizedRow.rowType === "transport") transportRows.push(normalizedRow);
+  }
+  const requiredRowTypes = [...rowTypes].sort() as WorkPassportRowType[];
   return {
     allRows: normalizedRows,
-    workRows: byType("work"),
-    materialRows: byType("material"),
-    laborRows: byType("labor"),
-    serviceRows: byType("service"),
-    equipmentRows: byType("equipment"),
-    transportRows: byType("transport"),
+    workRows,
+    materialRows,
+    laborRows,
+    serviceRows,
+    equipmentRows,
+    transportRows,
     requiredRowTypes,
     rowCount: rows.length,
   };
@@ -273,8 +306,8 @@ function scopedManifestId(id: string, previousFamilyId: string, nextFamilyId: st
 export function buildProfessionalWorkPassportForBaseTemplate(
   manifestRow: BaseWorkTemplateManifestRow,
 ): ProfessionalWorkPassport {
-  const template = getProductionExpandedTemplate10000(manifestRow.work_key);
   const compiled = compileProductionExpandedEstimate10000({ workKey: manifestRow.work_key });
+  const template = getProductionExpandedTemplate10000(manifestRow.work_key);
   const familyId = correctedBaseFamilyId(manifestRow);
   const localizedNameRu = localizedBaseTemplateTitle(manifestRow);
   const normPackId = scopedManifestId(manifestRow.norm_pack_id, manifestRow.work_family_id, familyId);
@@ -424,6 +457,14 @@ function stripFoundationConditionDependencies(
 
 function r4A10StripFoundationRows(): ProfessionalBoqRecipeRow[] {
   const formulaById = new Map(STRIP_FOUNDATION_FORMULAS.map((formula) => [formula.formulaId, formula]));
+  const professionalParameterIdsByRowId = new Map(
+    STRIP_FOUNDATION_ROWS.map((row) => [
+      row.rowId,
+      STRIP_FOUNDATION_INPUTS
+        .filter((parameter) => stripFoundationParameterConsumerRowIds(parameter.parameterId).includes(row.rowId))
+        .map((parameter) => parameter.parameterId),
+    ]),
+  );
   return STRIP_FOUNDATION_ROWS.map((row): ProfessionalBoqRecipeRow => {
     const formula = formulaById.get(row.formulaId);
     if (!formula) throw new Error(`WORK_PASSPORT_STRIP_FOUNDATION_FORMULA_MISSING:${row.rowId}:${row.formulaId}`);
@@ -463,6 +504,7 @@ function r4A10StripFoundationRows(): ProfessionalBoqRecipeRow[] {
       ].join("; "),
       formulaContext: {
         inputParameterIds: formula.inputParameterIds,
+        professionalParameterIds: professionalParameterIdsByRowId.get(row.rowId) ?? [],
         applicabilityExpression: row.applicabilityExpression,
         semanticOwnerId: row.semanticOwnerId,
         resourceId: row.resourceId,
@@ -670,10 +712,22 @@ export function buildProfessionalWorkPassportForExpandedTemplate(
 }
 
 export function buildProfessionalWorkPassport(templateId: string): ProfessionalWorkPassport | null {
+  const cached = professionalWorkPassportCache.get(templateId);
+  if (cached) return cached;
   const base = baseManifestTemplateById.get(templateId);
-  if (base) return buildProfessionalWorkPassportForBaseTemplate(base);
+  if (base) {
+    return rememberProfessionalWorkPassport(
+      templateId,
+      buildProfessionalWorkPassportForBaseTemplate(base),
+    );
+  }
   const expanded = expandedTemplateById.get(templateId);
-  if (expanded) return buildProfessionalWorkPassportForExpandedTemplate(expanded);
+  if (expanded) {
+    return rememberProfessionalWorkPassport(
+      templateId,
+      buildProfessionalWorkPassportForExpandedTemplate(expanded),
+    );
+  }
   return null;
 }
 
@@ -792,6 +846,10 @@ export function listProfessionalWorkPassportTemplateIds(): string[] {
   ];
 }
 
+export function getProfessionalWorkPassportTemplateCount(): number {
+  return baseManifestTemplates.length + expandedTemplates.length;
+}
+
 export function getProfessionalWorkPassportBuildCacheStats(): {
   immutableRegistrySizes: {
     baseManifestTemplates: number;
@@ -803,6 +861,8 @@ export function getProfessionalWorkPassportBuildCacheStats(): {
   templateIndexLoaded: boolean;
   templateIndexEntryCount: number;
   registryFingerprintLoaded: boolean;
+  professionalPassportCacheSize: number;
+  professionalPassportCacheLimit: number;
   productionExpanded: ReturnType<typeof getProductionExpandedEstimate10000CacheStats>;
 } {
   return {
@@ -816,6 +876,8 @@ export function getProfessionalWorkPassportBuildCacheStats(): {
     templateIndexLoaded: professionalWorkPassportTemplateIndexCache !== null,
     templateIndexEntryCount: professionalWorkPassportTemplateIndexCache?.entries.length ?? 0,
     registryFingerprintLoaded: professionalWorkPassportRegistryFingerprintCache !== null,
+    professionalPassportCacheSize: professionalWorkPassportCache.size,
+    professionalPassportCacheLimit: PROFESSIONAL_WORK_PASSPORT_CACHE_LIMIT,
     productionExpanded: getProductionExpandedEstimate10000CacheStats(),
   };
 }

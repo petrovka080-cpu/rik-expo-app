@@ -145,12 +145,12 @@ function runPassportCase(bucket: MatrixBucket, templateId: string, index: number
     const cards = buildAiEstimateParameterCards({ revision, includeMissing: true });
     const questions = buildAiEstimateMissingInputQuestions({ revision, model });
     const trace = validateAiEstimateQuantityTrace({ revision });
-    const dedicatedRoadworksParameterOwner = revision.boq.rows.some(
-      (row) => row.sourceParameters?.roadworksWaveA === true,
+    const dedicatedRoadParameterOwner = revision.boq.rows.some(
+      (row) => row.sourceParameters?.roadworksWaveA === true || row.sourceParameters?.asphaltV4 === true,
     ) && Boolean(revision.workSpecificParameterSchemaId) && cards.length > 0;
     const honestNeedsInput = isHonestNeedsInputRevision(revision);
-    const passed = (Boolean(model) || dedicatedRoadworksParameterOwner) &&
-      cards.length >= (model?.filledRequirements.length ?? (dedicatedRoadworksParameterOwner ? 1 : 0)) &&
+    const passed = (Boolean(model) || dedicatedRoadParameterOwner) &&
+      cards.length >= (model?.filledRequirements.length ?? (dedicatedRoadParameterOwner ? 1 : 0)) &&
       (questions?.questions.length ?? 0) <= 5 &&
       (trace.ok || honestNeedsInput);
     return {
@@ -159,7 +159,7 @@ function runPassportCase(bucket: MatrixBucket, templateId: string, index: number
       passed,
       reason: passed
         ? undefined
-        : `model:${Boolean(model)} dedicated:${dedicatedRoadworksParameterOwner} needs_input:${honestNeedsInput} cards:${cards.length} questions:${questions?.questions.length ?? -1} trace:${trace.blockingReasons.join("|")}`,
+        : `model:${Boolean(model)} dedicated:${dedicatedRoadParameterOwner} needs_input:${honestNeedsInput} cards:${cards.length} questions:${questions?.questions.length ?? -1} trace:${trace.blockingReasons.join("|")}`,
     };
   } catch (error) {
     return {

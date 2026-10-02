@@ -3,7 +3,7 @@ import {
   recalculateEstimateDraftRevision,
   recalculateEstimateDraftRevisionBatch,
   type RecalculateEstimateDraftRevisionResult,
-} from "./recalculateEstimateDraftRevision";
+} from "./backendPlatform/canonicalEstimateHistoricalRecalculation";
 import type { EstimateDraftRevision } from "./estimateDraftRevisionContract";
 import type { UserParamPatchOperation } from "./validateUserParamPatch";
 import { buildAiEstimateParameterCards, type AiEstimateParameterCard } from "./buildAiEstimateParameterCards";

@@ -1,0 +1,2434 @@
+{
+  "contract": "rik-expo-app.s27-21.asphalt-level-small-area-independent-source-pack.v1",
+  "snapshotProvenance": {
+    "source": "accepted_local_canonical_definition_graph",
+    "releaseId": "85db481e-021a-52f2-838d-9e225ea1c125",
+    "definitionVersionId": "febc0918-91e6-5804-95a6-a43f3742e7ca",
+    "definitionVersion": 11,
+    "originalEvidenceSha256": "4152f0c985bd561831b74cb88e11fafc1026d23462d4b2564da81eba605e9a5a",
+    "capturedAt": "2026-09-30T00:00:00+06:00",
+    "purpose": "freeze_KRER_27_06_019_02_owner_after_shared_27_06_020_profile_drift"
+  },
+  "sourceMetadata": {
+    "source_title": "КРЕР-2015 № 27, таблица 27-06-019-02: выравнивающий слой из асфальтобетонной смеси",
+    "source_authority": "Министерство строительства Кыргызской Республики; NAPA/FAA; Asphalt Institute",
+    "source_document_version": "KRER_2015_27_06_019_02_S27_16_SMALL_AREA_LEVELING",
+    "source_kind": "NORMATIVE_OPERATION_MAP",
+    "official_url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no27avtomobilnyedorogi_compressed-43769083f584ff787.06841542.pdf",
+    "artifact_sha256": "cd3d6735d1bbdda5957945b7682f032785c76624b54a435edfe5d2ef5e107161",
+    "effective_from": "2015-01-01",
+    "exact_locator": "КРЕР-2015, сборник 27, таблица 27-06-019-02, PDF pages 91–92: измеритель 1000 м²; базовая толщина 30 мм; отдельная опубликованная поправка на каждые следующие 5 мм.",
+    "use_restriction": "Предварительный профиль применим только к принятому основанию и участку, доступному для механизированной укладки. Общая толщина вводится пользователем; число конструктивных слоёв и максимальная толщина слоя подтверждаются проектом/ППР. Фрезерование, ремонт основания, новый щебёночный слой, водоотвод, бордюры и разметка не включены."
+  },
+  "publicationMetadata": {
+    "normId": "KRER-27-06-019-02-THICKNESS-INCREMENTS-S27-16",
+    "contract": "rik-expo-app.s27-16.asphalt-level-small-area-successor.v1",
+    "sourceId": "kg_krer_27_06_019_02_2015",
+    "masterSha256": "295d0e9efe88a1915396e406adf1d76fa90a4c488548a3f376017f8e6c4f059b",
+    "activationAllowed": false,
+    "sourceFingerprint": "22c649036a90ae63ac6b47b726310a41cd84e3b43cd8cf7ebcb2fdb68c9d5e3b",
+    "productionEligible": false,
+    "invalidSuppliedValuePolicy": "REJECT",
+    "knownWorkScopeFirstEstimate": true,
+    "missingProjectQuantityPolicy": "PRELIMINARY_NEED"
+  },
+  "passport": {
+    "workKey": "paving_roads_landscape_interior_asphalt_level_small_area",
+    "catalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_level_small_area",
+    "canonicalRuName": "Выравнивание асфальтового покрытия на малой площади",
+    "projectSourceId": "kg_krer_27_06_019_02_2015",
+    "physicalResultRu": "Принятое основание выровнено горячей плотной мелкозернистой асфальтобетонной смесью по подтверждённой послойной схеме, покрытие уложено, уплотнено и передано на контроль."
+  },
+  "baseline": {
+    "inputValues": {
+      "area_m2": 100,
+      "haul_distance_km": 20,
+      "truck_capacity_t": 20,
+      "acceptance_lot_m2": 1000,
+      "layer_thickness_mm": 100,
+      "truck_turnaround_h": 0.5,
+      "work_journal_count": 1,
+      "krer_base_thickness_mm": 30,
+      "towing_wire_t_per_1000m2": 0.00613,
+      "truck_average_speed_km_h": 40,
+      "crane_machine_h_per_1000m2": 0.04,
+      "paver_machine_h_per_1000m2": 3.19,
+      "hardwood_bars_m3_per_1000m2": 0.13,
+      "krer_increment_thickness_mm": 5,
+      "labor_base_man_h_per_1000m2": 50.96,
+      "roller_machine_h_per_1000m2": 2.55,
+      "traffic_control_setup_count": 1,
+      "asphalt_mix_base_t_per_1000m2": 70.6,
+      "execution_documentation_count": 1,
+      "road_bitumen_base_t_per_1000m2": 0.06,
+      "technical_kerosene_t_per_1000m2": 0.00054,
+      "labor_increment_man_h_per_1000m2": 1.36,
+      "material_passport_register_count": 1,
+      "tar_sprayer_machine_h_per_1000m2": 0.24,
+      "asphalt_mix_increment_t_per_1000m2": 11.8,
+      "tractor_brush_machine_h_per_1000m2": 0.75,
+      "road_bitumen_increment_t_per_1000m2": 0.01,
+      "onboard_vehicle_machine_h_per_1000m2": 0.07,
+      "mobilization_count_per_unique_machine": 1,
+      "surface_grinder_increment_machine_h_per_1000m2": 0.04
+    },
+    "inputClassification": {
+      "area_m2": "VALIDATION_FIXTURE",
+      "haul_distance_km": "ASSUMPTION",
+      "truck_capacity_t": "ASSUMPTION",
+      "acceptance_lot_m2": "ASSUMPTION",
+      "layer_thickness_mm": "VALIDATION_FIXTURE",
+      "truck_turnaround_h": "ASSUMPTION",
+      "work_journal_count": "DERIVED",
+      "krer_base_thickness_mm": "NORMATIVE",
+      "towing_wire_t_per_1000m2": "NORMATIVE",
+      "truck_average_speed_km_h": "ASSUMPTION",
+      "crane_machine_h_per_1000m2": "NORMATIVE",
+      "paver_machine_h_per_1000m2": "NORMATIVE",
+      "hardwood_bars_m3_per_1000m2": "NORMATIVE",
+      "krer_increment_thickness_mm": "NORMATIVE",
+      "labor_base_man_h_per_1000m2": "NORMATIVE",
+      "roller_machine_h_per_1000m2": "NORMATIVE",
+      "traffic_control_setup_count": "ASSUMPTION",
+      "asphalt_mix_base_t_per_1000m2": "NORMATIVE",
+      "execution_documentation_count": "DERIVED",
+      "road_bitumen_base_t_per_1000m2": "NORMATIVE",
+      "technical_kerosene_t_per_1000m2": "NORMATIVE",
+      "labor_increment_man_h_per_1000m2": "NORMATIVE",
+      "material_passport_register_count": "DERIVED",
+      "tar_sprayer_machine_h_per_1000m2": "NORMATIVE",
+      "asphalt_mix_increment_t_per_1000m2": "NORMATIVE",
+      "tractor_brush_machine_h_per_1000m2": "NORMATIVE",
+      "road_bitumen_increment_t_per_1000m2": "NORMATIVE",
+      "onboard_vehicle_machine_h_per_1000m2": "NORMATIVE",
+      "mobilization_count_per_unique_machine": "ASSUMPTION",
+      "surface_grinder_increment_machine_h_per_1000m2": "NORMATIVE"
+    },
+    "normativeSourceIds": {
+      "area_m2": [],
+      "haul_distance_km": [],
+      "truck_capacity_t": [],
+      "acceptance_lot_m2": [],
+      "layer_thickness_mm": [],
+      "truck_turnaround_h": [],
+      "work_journal_count": [],
+      "krer_base_thickness_mm": [
+        "kg_krer_27_06_019_02_2015"
+      ],
+      "towing_wire_t_per_1000m2": [
+        "kg_krer_27_06_019_02_2015"
+      ],
+      "truck_average_speed_km_h": [],
+      "crane_machine_h_per_1000m2": [
+        "kg_krer_27_06_019_02_2015"
+      ],
+      "paver_machine_h_per_1000m2": [
+        "kg_krer_27_06_019_02_2015"
+      ],
+      "hardwood_bars_m3_per_1000m2": [
+        "kg_krer_27_06_019_02_2015"
+      ],
+      "krer_increment_thickness_mm": [
+        "kg_krer_27_06_019_02_2015"
+      ],
+      "labor_base_man_h_per_1000m2": [
+        "kg_krer_27_06_019_02_2015"
+      ],
+      "roller_machine_h_per_1000m2": [
+        "kg_krer_27_06_019_02_2015"
+      ],
+      "traffic_control_setup_count": [],
+      "asphalt_mix_base_t_per_1000m2": [
+        "kg_krer_27_06_019_02_2015"
+      ],
+      "execution_documentation_count": [],
+      "road_bitumen_base_t_per_1000m2": [
+        "kg_krer_27_06_019_02_2015"
+      ],
+      "technical_kerosene_t_per_1000m2": [
+        "kg_krer_27_06_019_02_2015"
+      ],
+      "labor_increment_man_h_per_1000m2": [
+        "kg_krer_27_06_019_02_2015"
+      ],
+      "material_passport_register_count": [],
+      "tar_sprayer_machine_h_per_1000m2": [
+        "kg_krer_27_06_019_02_2015"
+      ],
+      "asphalt_mix_increment_t_per_1000m2": [
+        "kg_krer_27_06_019_02_2015"
+      ],
+      "tractor_brush_machine_h_per_1000m2": [
+        "kg_krer_27_06_019_02_2015"
+      ],
+      "road_bitumen_increment_t_per_1000m2": [
+        "kg_krer_27_06_019_02_2015"
+      ],
+      "onboard_vehicle_machine_h_per_1000m2": [
+        "kg_krer_27_06_019_02_2015"
+      ],
+      "mobilization_count_per_unique_machine": [],
+      "surface_grinder_increment_machine_h_per_1000m2": [
+        "kg_krer_27_06_019_02_2015"
+      ]
+    }
+  },
+  "parameterSpecs": [
+    {
+      "parameterId": "area_m2",
+      "ordinal": 0,
+      "valueType": "decimal",
+      "unitId": "m2",
+      "titleRu": "Площадь устраиваемого асфальтобетонного покрытия",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 0.001
+      }
+    },
+    {
+      "parameterId": "layer_thickness_mm",
+      "ordinal": 1,
+      "valueType": "decimal",
+      "unitId": "mm",
+      "titleRu": "Общая проектная толщина асфальтобетонного выравнивания",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "max": 200,
+        "min": 30,
+        "multipleOf": 5
+      }
+    },
+    {
+      "parameterId": "krer_base_thickness_mm",
+      "ordinal": 2,
+      "valueType": "decimal",
+      "unitId": "mm",
+      "titleRu": "Базовая толщина таблицы КРЕР 27-06-019",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "max": 30,
+        "min": 30
+      }
+    },
+    {
+      "parameterId": "krer_increment_thickness_mm",
+      "ordinal": 3,
+      "valueType": "decimal",
+      "unitId": "mm",
+      "titleRu": "Шаг поправки толщины КРЕР",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "max": 5,
+        "min": 5
+      }
+    },
+    {
+      "parameterId": "labor_base_man_h_per_1000m2",
+      "ordinal": 4,
+      "valueType": "decimal",
+      "unitId": "man_hour_per_1000m2",
+      "titleRu": "Труд рабочих на 1000 м² при базовой толщине",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 0.000001
+      }
+    },
+    {
+      "parameterId": "labor_increment_man_h_per_1000m2",
+      "ordinal": 5,
+      "valueType": "decimal",
+      "unitId": "man_hour_per_1000m2",
+      "titleRu": "Добавочный труд на 1000 м² на каждые 5 мм",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 0.000001
+      }
+    },
+    {
+      "parameterId": "crane_machine_h_per_1000m2",
+      "ordinal": 6,
+      "valueType": "decimal",
+      "unitId": "machine_hour_per_1000m2",
+      "titleRu": "Автокран на 1000 м²",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 0.000001
+      }
+    },
+    {
+      "parameterId": "tar_sprayer_machine_h_per_1000m2",
+      "ordinal": 7,
+      "valueType": "decimal",
+      "unitId": "machine_hour_per_1000m2",
+      "titleRu": "Гудронатор ручной на 1000 м²",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 0.000001
+      }
+    },
+    {
+      "parameterId": "roller_machine_h_per_1000m2",
+      "ordinal": 8,
+      "valueType": "decimal",
+      "unitId": "machine_hour_per_1000m2",
+      "titleRu": "Каток 8 т на 1000 м²",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 0.000001
+      }
+    },
+    {
+      "parameterId": "paver_machine_h_per_1000m2",
+      "ordinal": 9,
+      "valueType": "decimal",
+      "unitId": "machine_hour_per_1000m2",
+      "titleRu": "Асфальтоукладчик на 1000 м²",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 0.000001
+      }
+    },
+    {
+      "parameterId": "tractor_brush_machine_h_per_1000m2",
+      "ordinal": 10,
+      "valueType": "decimal",
+      "unitId": "machine_hour_per_1000m2",
+      "titleRu": "Дорожная щётка с трактором на 1000 м²",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 0.000001
+      }
+    },
+    {
+      "parameterId": "onboard_vehicle_machine_h_per_1000m2",
+      "ordinal": 11,
+      "valueType": "decimal",
+      "unitId": "machine_hour_per_1000m2",
+      "titleRu": "Бортовой автомобиль до 5 т на 1000 м²",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 0.000001
+      }
+    },
+    {
+      "parameterId": "surface_grinder_increment_machine_h_per_1000m2",
+      "ordinal": 12,
+      "valueType": "decimal",
+      "unitId": "machine_hour_per_1000m2",
+      "titleRu": "Машина для шлифования поверхности на 1000 м² на каждые 5 мм",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 0.000001
+      }
+    },
+    {
+      "parameterId": "road_bitumen_base_t_per_1000m2",
+      "ordinal": 13,
+      "valueType": "decimal",
+      "unitId": "t_per_1000m2",
+      "titleRu": "Битум дорожный на 1000 м² при базовой толщине",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 0.000001
+      }
+    },
+    {
+      "parameterId": "road_bitumen_increment_t_per_1000m2",
+      "ordinal": 14,
+      "valueType": "decimal",
+      "unitId": "t_per_1000m2",
+      "titleRu": "Добавочный битум на 1000 м² на каждые 5 мм",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 0.000001
+      }
+    },
+    {
+      "parameterId": "technical_kerosene_t_per_1000m2",
+      "ordinal": 15,
+      "valueType": "decimal",
+      "unitId": "t_per_1000m2",
+      "titleRu": "Керосин технический на 1000 м²",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 0.000001
+      }
+    },
+    {
+      "parameterId": "hardwood_bars_m3_per_1000m2",
+      "ordinal": 16,
+      "valueType": "decimal",
+      "unitId": "m3_per_1000m2",
+      "titleRu": "Брусья боковых упоров на 1000 м²",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 0.000001
+      }
+    },
+    {
+      "parameterId": "towing_wire_t_per_1000m2",
+      "ordinal": 17,
+      "valueType": "decimal",
+      "unitId": "t_per_1000m2",
+      "titleRu": "Проволока буксировочная на 1000 м²",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 0.000001
+      }
+    },
+    {
+      "parameterId": "asphalt_mix_base_t_per_1000m2",
+      "ordinal": 18,
+      "valueType": "decimal",
+      "unitId": "t_per_1000m2",
+      "titleRu": "Смесь асфальтобетонная на 1000 м² при базовой толщине",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 0.000001
+      }
+    },
+    {
+      "parameterId": "asphalt_mix_increment_t_per_1000m2",
+      "ordinal": 19,
+      "valueType": "decimal",
+      "unitId": "t_per_1000m2",
+      "titleRu": "Добавочная смесь на 1000 м² на каждые 5 мм",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 0.000001
+      }
+    },
+    {
+      "parameterId": "haul_distance_km",
+      "ordinal": 20,
+      "valueType": "decimal",
+      "unitId": "km",
+      "titleRu": "Расстояние доставки смеси",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 0.001
+      }
+    },
+    {
+      "parameterId": "truck_capacity_t",
+      "ordinal": 21,
+      "valueType": "decimal",
+      "unitId": "t",
+      "titleRu": "Грузоподъёмность самосвала",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 0.001
+      }
+    },
+    {
+      "parameterId": "truck_average_speed_km_h",
+      "ordinal": 22,
+      "valueType": "decimal",
+      "unitId": "km_h",
+      "titleRu": "Средняя скорость самосвала по маршруту",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 0.001
+      }
+    },
+    {
+      "parameterId": "truck_turnaround_h",
+      "ordinal": 23,
+      "valueType": "decimal",
+      "unitId": "machine_hour",
+      "titleRu": "Погрузка, ожидание и выгрузка одного рейса",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 0.001
+      }
+    },
+    {
+      "parameterId": "acceptance_lot_m2",
+      "ordinal": 24,
+      "valueType": "decimal",
+      "unitId": "m2",
+      "titleRu": "Площадь предварительной партии контроля",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 0.001
+      }
+    },
+    {
+      "parameterId": "work_journal_count",
+      "ordinal": 25,
+      "valueType": "integer",
+      "unitId": "document",
+      "titleRu": "Журнал производства работ",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 1
+      }
+    },
+    {
+      "parameterId": "execution_documentation_count",
+      "ordinal": 26,
+      "valueType": "integer",
+      "unitId": "document",
+      "titleRu": "Комплект исполнительной документации",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 1
+      }
+    },
+    {
+      "parameterId": "material_passport_register_count",
+      "ordinal": 27,
+      "valueType": "integer",
+      "unitId": "document",
+      "titleRu": "Реестр паспортов материалов",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 1
+      }
+    },
+    {
+      "parameterId": "traffic_control_setup_count",
+      "ordinal": 28,
+      "valueType": "integer",
+      "unitId": "set",
+      "titleRu": "Комплект организации безопасной рабочей зоны",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 1
+      }
+    },
+    {
+      "parameterId": "mobilization_count_per_unique_machine",
+      "ordinal": 29,
+      "valueType": "integer",
+      "unitId": "service",
+      "titleRu": "Мобилизация и возврат одной уникальной машины",
+      "required": true,
+      "defaultValue": null,
+      "constraints": {
+        "min": 1
+      }
+    }
+  ],
+  "formulaSpecs": [
+    {
+      "formulaId": "asphalt_install_acceptance_lots_v1",
+      "outputUnitId": "pcs",
+      "expression": "ceil(area_m2/acceptance_lot_m2)"
+    },
+    {
+      "formulaId": "asphalt_install_area_v1",
+      "outputUnitId": "m2",
+      "expression": "area_m2"
+    },
+    {
+      "formulaId": "asphalt_install_crane_v1",
+      "outputUnitId": "machine_hour",
+      "expression": "area_m2/1000*crane_machine_h_per_1000m2"
+    },
+    {
+      "formulaId": "asphalt_install_execution_docs_v1",
+      "outputUnitId": "document",
+      "expression": "execution_documentation_count"
+    },
+    {
+      "formulaId": "asphalt_install_hardwood_bars_v1",
+      "outputUnitId": "m3",
+      "expression": "area_m2/1000*hardwood_bars_m3_per_1000m2"
+    },
+    {
+      "formulaId": "asphalt_install_labor_v1",
+      "outputUnitId": "man_hour",
+      "expression": "area_m2/1000*(labor_base_man_h_per_1000m2+((layer_thickness_mm-krer_base_thickness_mm)/krer_increment_thickness_mm)*labor_increment_man_h_per_1000m2)"
+    },
+    {
+      "formulaId": "asphalt_install_material_passports_v1",
+      "outputUnitId": "document",
+      "expression": "material_passport_register_count"
+    },
+    {
+      "formulaId": "asphalt_install_mix_v1",
+      "outputUnitId": "t",
+      "expression": "area_m2/1000*(asphalt_mix_base_t_per_1000m2+((layer_thickness_mm-krer_base_thickness_mm)/krer_increment_thickness_mm)*asphalt_mix_increment_t_per_1000m2)"
+    },
+    {
+      "formulaId": "asphalt_install_mobilization_v1",
+      "outputUnitId": "service",
+      "expression": "mobilization_count_per_unique_machine"
+    },
+    {
+      "formulaId": "asphalt_install_onboard_vehicle_v1",
+      "outputUnitId": "machine_hour",
+      "expression": "area_m2/1000*onboard_vehicle_machine_h_per_1000m2"
+    },
+    {
+      "formulaId": "asphalt_install_paver_v1",
+      "outputUnitId": "machine_hour",
+      "expression": "area_m2/1000*paver_machine_h_per_1000m2"
+    },
+    {
+      "formulaId": "asphalt_install_road_bitumen_v1",
+      "outputUnitId": "t",
+      "expression": "area_m2/1000*(road_bitumen_base_t_per_1000m2+((layer_thickness_mm-krer_base_thickness_mm)/krer_increment_thickness_mm)*road_bitumen_increment_t_per_1000m2)"
+    },
+    {
+      "formulaId": "asphalt_install_roller_v1",
+      "outputUnitId": "machine_hour",
+      "expression": "area_m2/1000*roller_machine_h_per_1000m2"
+    },
+    {
+      "formulaId": "asphalt_install_surface_grinder_v1",
+      "outputUnitId": "machine_hour",
+      "expression": "area_m2/1000*((layer_thickness_mm-krer_base_thickness_mm)/krer_increment_thickness_mm)*surface_grinder_increment_machine_h_per_1000m2"
+    },
+    {
+      "formulaId": "asphalt_install_tar_sprayer_v1",
+      "outputUnitId": "machine_hour",
+      "expression": "area_m2/1000*tar_sprayer_machine_h_per_1000m2"
+    },
+    {
+      "formulaId": "asphalt_install_technical_kerosene_v1",
+      "outputUnitId": "t",
+      "expression": "area_m2/1000*technical_kerosene_t_per_1000m2"
+    },
+    {
+      "formulaId": "asphalt_install_ton_km_v1",
+      "outputUnitId": "t_km",
+      "expression": "area_m2/1000*(asphalt_mix_base_t_per_1000m2+((layer_thickness_mm-krer_base_thickness_mm)/krer_increment_thickness_mm)*asphalt_mix_increment_t_per_1000m2)*haul_distance_km"
+    },
+    {
+      "formulaId": "asphalt_install_towing_wire_v1",
+      "outputUnitId": "t",
+      "expression": "area_m2/1000*towing_wire_t_per_1000m2"
+    },
+    {
+      "formulaId": "asphalt_install_tractor_brush_v1",
+      "outputUnitId": "machine_hour",
+      "expression": "area_m2/1000*tractor_brush_machine_h_per_1000m2"
+    },
+    {
+      "formulaId": "asphalt_install_traffic_control_v1",
+      "outputUnitId": "set",
+      "expression": "traffic_control_setup_count"
+    },
+    {
+      "formulaId": "asphalt_install_truck_machine_h_v1",
+      "outputUnitId": "machine_hour",
+      "expression": "ceil(area_m2/1000*(asphalt_mix_base_t_per_1000m2+((layer_thickness_mm-krer_base_thickness_mm)/krer_increment_thickness_mm)*asphalt_mix_increment_t_per_1000m2)/truck_capacity_t)*(2*haul_distance_km/truck_average_speed_km_h+truck_turnaround_h)"
+    },
+    {
+      "formulaId": "asphalt_install_truck_trips_v1",
+      "outputUnitId": "trip",
+      "expression": "ceil(area_m2/1000*(asphalt_mix_base_t_per_1000m2+((layer_thickness_mm-krer_base_thickness_mm)/krer_increment_thickness_mm)*asphalt_mix_increment_t_per_1000m2)/truck_capacity_t)"
+    },
+    {
+      "formulaId": "asphalt_install_work_journal_v1",
+      "outputUnitId": "document",
+      "expression": "work_journal_count"
+    },
+    {
+      "formulaId": "asphalt_level_geometric_volume_s2716",
+      "outputUnitId": "m3",
+      "expression": "area_m2*layer_thickness_mm/1000"
+    }
+  ],
+  "resourceSpecs": [
+    {
+      "rowId": "asphalt:control:geometric-compacted-volume",
+      "ordinal": 0,
+      "section": "Расчёт объёма",
+      "category": "service",
+      "titleRu": "Геометрический объём уплотнённого асфальтобетонного покрытия",
+      "unitId": "m3",
+      "formulaId": "asphalt_level_geometric_volume_s2716",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:control:geometric-compacted-volume",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "parentRowId": null,
+      "sourceId": "s27_16_geometry"
+    },
+    {
+      "rowId": "asphalt:operation:base-acceptance-cleaning",
+      "ordinal": 1,
+      "section": "Технологические операции",
+      "category": "service",
+      "titleRu": "Приёмка и очистка подготовленного основания",
+      "unitId": "m2",
+      "formulaId": "asphalt_install_area_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:operation:base-acceptance-cleaning",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "parentRowId": null,
+      "sourceId": "kg_krer_27_06_019_02_2015"
+    },
+    {
+      "rowId": "asphalt:operation:side-stop-setting",
+      "ordinal": 2,
+      "section": "Технологические операции",
+      "category": "service",
+      "titleRu": "Установка боковых упоров",
+      "unitId": "m2",
+      "formulaId": "asphalt_install_area_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:operation:side-stop-setting",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "parentRowId": null,
+      "sourceId": "kg_krer_27_06_019_02_2015"
+    },
+    {
+      "rowId": "asphalt:operation:bitumen-application",
+      "ordinal": 3,
+      "section": "Технологические операции",
+      "category": "service",
+      "titleRu": "Распределение дорожного битума по принятой технологии",
+      "unitId": "m2",
+      "formulaId": "asphalt_install_area_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:operation:bitumen-application",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "parentRowId": null,
+      "sourceId": "kg_krer_27_06_019_02_2015"
+    },
+    {
+      "rowId": "asphalt:operation:mix-receiving-feed",
+      "ordinal": 4,
+      "section": "Технологические операции",
+      "category": "service",
+      "titleRu": "Приёмка, разгрузка и непрерывная подача горячей смеси",
+      "unitId": "t",
+      "formulaId": "asphalt_install_mix_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:operation:mix-receiving-feed",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "parentRowId": null,
+      "sourceId": "napa_faa_asphalt_paving_handbook_2025"
+    },
+    {
+      "rowId": "asphalt:operation:mechanical-paving",
+      "ordinal": 5,
+      "section": "Технологические операции",
+      "category": "service",
+      "titleRu": "Механизированная укладка покрытия по подтверждённой послойной схеме",
+      "unitId": "m2",
+      "formulaId": "asphalt_install_area_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:operation:mechanical-paving",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "parentRowId": null,
+      "sourceId": "kg_krer_27_06_019_02_2015"
+    },
+    {
+      "rowId": "asphalt:operation:rolling-compaction",
+      "ordinal": 6,
+      "section": "Технологические операции",
+      "category": "service",
+      "titleRu": "Уплотнение покрытия катком по технологической схеме",
+      "unitId": "m2",
+      "formulaId": "asphalt_install_area_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:operation:rolling-compaction",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "parentRowId": null,
+      "sourceId": "kg_krer_27_06_019_02_2015"
+    },
+    {
+      "rowId": "asphalt:operation:edge-joint-finishing",
+      "ordinal": 7,
+      "section": "Технологические операции",
+      "category": "service",
+      "titleRu": "Отделка кромок, сопряжений и поверхности",
+      "unitId": "m2",
+      "formulaId": "asphalt_install_area_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:operation:edge-joint-finishing",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "parentRowId": null,
+      "sourceId": "kg_krer_27_06_019_02_2015"
+    },
+    {
+      "rowId": "asphalt:operation:final-clean-handover",
+      "ordinal": 8,
+      "section": "Технологические операции",
+      "category": "service",
+      "titleRu": "Финальная очистка и передача покрытия на контроль",
+      "unitId": "m2",
+      "formulaId": "asphalt_install_area_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:operation:final-clean-handover",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "parentRowId": null,
+      "sourceId": "napa_faa_asphalt_paving_handbook_2025"
+    },
+    {
+      "rowId": "asphalt:material:hot-dense-fine-mix",
+      "ordinal": 9,
+      "section": "Материалы",
+      "category": "material",
+      "titleRu": "Смесь асфальтобетонная горячая плотная мелкозернистая, вариант КРЕР 27-06-019-02",
+      "unitId": "t",
+      "formulaId": "asphalt_install_mix_v1",
+      "procurementEligible": true,
+      "costOwnerId": "asphalt:material:hot-dense-fine-mix",
+      "costTreatment": "OWN_COST",
+      "parentRowId": null,
+      "sourceId": "kg_krer_27_06_019_02_2015"
+    },
+    {
+      "rowId": "asphalt:material:road-bitumen",
+      "ordinal": 10,
+      "section": "Материалы",
+      "category": "material",
+      "titleRu": "Битум нефтяной дорожный жидкий",
+      "unitId": "t",
+      "formulaId": "asphalt_install_road_bitumen_v1",
+      "procurementEligible": true,
+      "costOwnerId": "asphalt:material:road-bitumen",
+      "costTreatment": "OWN_COST",
+      "parentRowId": null,
+      "sourceId": "kg_krer_27_06_019_02_2015"
+    },
+    {
+      "rowId": "asphalt:material:technical-kerosene",
+      "ordinal": 11,
+      "section": "Материалы",
+      "category": "material",
+      "titleRu": "Керосин технический для технологических целей",
+      "unitId": "t",
+      "formulaId": "asphalt_install_technical_kerosene_v1",
+      "procurementEligible": true,
+      "costOwnerId": "asphalt:material:technical-kerosene",
+      "costTreatment": "OWN_COST",
+      "parentRowId": null,
+      "sourceId": "kg_krer_27_06_019_02_2015"
+    },
+    {
+      "rowId": "asphalt:material:hardwood-side-stop-bars",
+      "ordinal": 12,
+      "section": "Материалы",
+      "category": "material",
+      "titleRu": "Брусья обрезные из твёрдых пород для боковых упоров",
+      "unitId": "m3",
+      "formulaId": "asphalt_install_hardwood_bars_v1",
+      "procurementEligible": true,
+      "costOwnerId": "asphalt:material:hardwood-side-stop-bars",
+      "costTreatment": "OWN_COST",
+      "parentRowId": null,
+      "sourceId": "kg_krer_27_06_019_02_2015"
+    },
+    {
+      "rowId": "asphalt:material:steel-towing-wire",
+      "ordinal": 13,
+      "section": "Материалы",
+      "category": "material",
+      "titleRu": "Проволока стальная низкоуглеродистая буксировочная",
+      "unitId": "t",
+      "formulaId": "asphalt_install_towing_wire_v1",
+      "procurementEligible": true,
+      "costOwnerId": "asphalt:material:steel-towing-wire",
+      "costTreatment": "OWN_COST",
+      "parentRowId": null,
+      "sourceId": "kg_krer_27_06_019_02_2015"
+    },
+    {
+      "rowId": "asphalt:labor:road-workers",
+      "ordinal": 14,
+      "section": "Труд",
+      "category": "construction_work",
+      "titleRu": "Труд рабочих-строителей по КРЕР 27-06-019-02",
+      "unitId": "man_hour",
+      "formulaId": "asphalt_install_labor_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:labor:road-workers",
+      "costTreatment": "OWN_COST",
+      "parentRowId": null,
+      "sourceId": "kg_krer_27_06_019_02_2015"
+    },
+    {
+      "rowId": "asphalt:equipment:crane-10t",
+      "ordinal": 15,
+      "section": "Машины и механизмы",
+      "category": "equipment",
+      "titleRu": "Кран на автомобильном ходу 10 т",
+      "unitId": "machine_hour",
+      "formulaId": "asphalt_install_crane_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:equipment:crane-10t",
+      "costTreatment": "OWN_COST",
+      "parentRowId": null,
+      "sourceId": "kg_krer_27_06_019_02_2015"
+    },
+    {
+      "rowId": "asphalt:equipment:hand-tar-sprayer",
+      "ordinal": 16,
+      "section": "Машины и механизмы",
+      "category": "equipment",
+      "titleRu": "Гудронатор ручной",
+      "unitId": "machine_hour",
+      "formulaId": "asphalt_install_tar_sprayer_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:equipment:hand-tar-sprayer",
+      "costTreatment": "OWN_COST",
+      "parentRowId": null,
+      "sourceId": "kg_krer_27_06_019_02_2015"
+    },
+    {
+      "rowId": "asphalt:equipment:smooth-roller-8t",
+      "ordinal": 17,
+      "section": "Машины и механизмы",
+      "category": "equipment",
+      "titleRu": "Каток дорожный самоходный гладкий 8 т",
+      "unitId": "machine_hour",
+      "formulaId": "asphalt_install_roller_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:equipment:smooth-roller-8t",
+      "costTreatment": "OWN_COST",
+      "parentRowId": null,
+      "sourceId": "kg_krer_27_06_019_02_2015"
+    },
+    {
+      "rowId": "asphalt:equipment:asphalt-paver",
+      "ordinal": 18,
+      "section": "Машины и механизмы",
+      "category": "equipment",
+      "titleRu": "Асфальтоукладчик",
+      "unitId": "machine_hour",
+      "formulaId": "asphalt_install_paver_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:equipment:asphalt-paver",
+      "costTreatment": "OWN_COST",
+      "parentRowId": null,
+      "sourceId": "kg_krer_27_06_019_02_2015"
+    },
+    {
+      "rowId": "asphalt:equipment:tractor-road-brush",
+      "ordinal": 19,
+      "section": "Машины и механизмы",
+      "category": "equipment",
+      "titleRu": "Щётка дорожная навесная с трактором",
+      "unitId": "machine_hour",
+      "formulaId": "asphalt_install_tractor_brush_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:equipment:tractor-road-brush",
+      "costTreatment": "OWN_COST",
+      "parentRowId": null,
+      "sourceId": "kg_krer_27_06_019_02_2015"
+    },
+    {
+      "rowId": "asphalt:equipment:onboard-vehicle-5t",
+      "ordinal": 20,
+      "section": "Машины и механизмы",
+      "category": "equipment",
+      "titleRu": "Автомобиль бортовой грузоподъёмностью до 5 т",
+      "unitId": "machine_hour",
+      "formulaId": "asphalt_install_onboard_vehicle_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:equipment:onboard-vehicle-5t",
+      "costTreatment": "OWN_COST",
+      "parentRowId": null,
+      "sourceId": "kg_krer_27_06_019_02_2015"
+    },
+    {
+      "rowId": "asphalt:equipment:surface-grinder",
+      "ordinal": 21,
+      "section": "Машины и механизмы",
+      "category": "equipment",
+      "titleRu": "Машина для шлифования поверхности покрытия",
+      "unitId": "machine_hour",
+      "formulaId": "asphalt_install_surface_grinder_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:equipment:surface-grinder",
+      "costTreatment": "OWN_COST",
+      "parentRowId": null,
+      "sourceId": "kg_krer_27_06_019_02_2015"
+    },
+    {
+      "rowId": "asphalt:included:operator:crane-10t",
+      "ordinal": 22,
+      "section": "Состав машино-часа",
+      "category": "construction_work",
+      "titleRu": "Машинист/оператор: Кран 10 т",
+      "unitId": "machine_hour",
+      "formulaId": "asphalt_install_crane_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:included:operator:crane-10t",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "parentRowId": "asphalt:equipment:crane-10t",
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:included:fuel-energy:crane-10t",
+      "ordinal": 23,
+      "section": "Состав машино-часа",
+      "category": "service",
+      "titleRu": "Топливо, энергия и эксплуатационные жидкости: Кран 10 т",
+      "unitId": "machine_hour",
+      "formulaId": "asphalt_install_crane_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:included:fuel-energy:crane-10t",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "parentRowId": "asphalt:equipment:crane-10t",
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:included:operator:hand-tar-sprayer",
+      "ordinal": 24,
+      "section": "Состав машино-часа",
+      "category": "construction_work",
+      "titleRu": "Машинист/оператор: Гудронатор ручной",
+      "unitId": "machine_hour",
+      "formulaId": "asphalt_install_tar_sprayer_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:included:operator:hand-tar-sprayer",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "parentRowId": "asphalt:equipment:hand-tar-sprayer",
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:included:fuel-energy:hand-tar-sprayer",
+      "ordinal": 25,
+      "section": "Состав машино-часа",
+      "category": "service",
+      "titleRu": "Топливо, энергия и эксплуатационные жидкости: Гудронатор ручной",
+      "unitId": "machine_hour",
+      "formulaId": "asphalt_install_tar_sprayer_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:included:fuel-energy:hand-tar-sprayer",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "parentRowId": "asphalt:equipment:hand-tar-sprayer",
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:included:operator:smooth-roller-8t",
+      "ordinal": 26,
+      "section": "Состав машино-часа",
+      "category": "construction_work",
+      "titleRu": "Машинист/оператор: Каток 8 т",
+      "unitId": "machine_hour",
+      "formulaId": "asphalt_install_roller_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:included:operator:smooth-roller-8t",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "parentRowId": "asphalt:equipment:smooth-roller-8t",
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:included:fuel-energy:smooth-roller-8t",
+      "ordinal": 27,
+      "section": "Состав машино-часа",
+      "category": "service",
+      "titleRu": "Топливо, энергия и эксплуатационные жидкости: Каток 8 т",
+      "unitId": "machine_hour",
+      "formulaId": "asphalt_install_roller_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:included:fuel-energy:smooth-roller-8t",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "parentRowId": "asphalt:equipment:smooth-roller-8t",
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:included:operator:asphalt-paver",
+      "ordinal": 28,
+      "section": "Состав машино-часа",
+      "category": "construction_work",
+      "titleRu": "Машинист/оператор: Асфальтоукладчик",
+      "unitId": "machine_hour",
+      "formulaId": "asphalt_install_paver_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:included:operator:asphalt-paver",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "parentRowId": "asphalt:equipment:asphalt-paver",
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:included:fuel-energy:asphalt-paver",
+      "ordinal": 29,
+      "section": "Состав машино-часа",
+      "category": "service",
+      "titleRu": "Топливо, энергия и эксплуатационные жидкости: Асфальтоукладчик",
+      "unitId": "machine_hour",
+      "formulaId": "asphalt_install_paver_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:included:fuel-energy:asphalt-paver",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "parentRowId": "asphalt:equipment:asphalt-paver",
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:included:operator:tractor-road-brush",
+      "ordinal": 30,
+      "section": "Состав машино-часа",
+      "category": "construction_work",
+      "titleRu": "Машинист/оператор: Трактор с дорожной щёткой",
+      "unitId": "machine_hour",
+      "formulaId": "asphalt_install_tractor_brush_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:included:operator:tractor-road-brush",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "parentRowId": "asphalt:equipment:tractor-road-brush",
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:included:fuel-energy:tractor-road-brush",
+      "ordinal": 31,
+      "section": "Состав машино-часа",
+      "category": "service",
+      "titleRu": "Топливо, энергия и эксплуатационные жидкости: Трактор с дорожной щёткой",
+      "unitId": "machine_hour",
+      "formulaId": "asphalt_install_tractor_brush_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:included:fuel-energy:tractor-road-brush",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "parentRowId": "asphalt:equipment:tractor-road-brush",
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:included:operator:onboard-vehicle-5t",
+      "ordinal": 32,
+      "section": "Состав машино-часа",
+      "category": "construction_work",
+      "titleRu": "Машинист/оператор: Бортовой автомобиль",
+      "unitId": "machine_hour",
+      "formulaId": "asphalt_install_onboard_vehicle_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:included:operator:onboard-vehicle-5t",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "parentRowId": "asphalt:equipment:onboard-vehicle-5t",
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:included:fuel-energy:onboard-vehicle-5t",
+      "ordinal": 33,
+      "section": "Состав машино-часа",
+      "category": "service",
+      "titleRu": "Топливо, энергия и эксплуатационные жидкости: Бортовой автомобиль",
+      "unitId": "machine_hour",
+      "formulaId": "asphalt_install_onboard_vehicle_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:included:fuel-energy:onboard-vehicle-5t",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "parentRowId": "asphalt:equipment:onboard-vehicle-5t",
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:included:operator:surface-grinder",
+      "ordinal": 34,
+      "section": "Состав машино-часа",
+      "category": "construction_work",
+      "titleRu": "Машинист/оператор: Машина для шлифования",
+      "unitId": "machine_hour",
+      "formulaId": "asphalt_install_surface_grinder_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:included:operator:surface-grinder",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "parentRowId": "asphalt:equipment:surface-grinder",
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:included:fuel-energy:surface-grinder",
+      "ordinal": 35,
+      "section": "Состав машино-часа",
+      "category": "service",
+      "titleRu": "Топливо, энергия и эксплуатационные жидкости: Машина для шлифования",
+      "unitId": "machine_hour",
+      "formulaId": "asphalt_install_surface_grinder_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:included:fuel-energy:surface-grinder",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "parentRowId": "asphalt:equipment:surface-grinder",
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:included:roller-water-scrapers",
+      "ordinal": 36,
+      "section": "Состав машино-часа",
+      "category": "service",
+      "titleRu": "Система смачивания вальцов и скребки катка",
+      "unitId": "machine_hour",
+      "formulaId": "asphalt_install_roller_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:included:roller-water-scrapers",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "parentRowId": "asphalt:equipment:smooth-roller-8t",
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:included:paver-screed-grade-control",
+      "ordinal": 37,
+      "section": "Состав машино-часа",
+      "category": "service",
+      "titleRu": "Подогрев выглаживающей плиты и система контроля профиля асфальтоукладчика",
+      "unitId": "machine_hour",
+      "formulaId": "asphalt_install_paver_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:included:paver-screed-grade-control",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "parentRowId": "asphalt:equipment:asphalt-paver",
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:delivery:truck-trips",
+      "ordinal": 38,
+      "section": "Доставка смеси",
+      "category": "service",
+      "titleRu": "Рейсы самосвалов с горячей асфальтобетонной смесью",
+      "unitId": "trip",
+      "formulaId": "asphalt_install_truck_trips_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:delivery:truck-trips",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "parentRowId": null,
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:delivery:ton-km",
+      "ordinal": 39,
+      "section": "Доставка смеси",
+      "category": "service",
+      "titleRu": "Транспортная работа по доставке горячей смеси",
+      "unitId": "t_km",
+      "formulaId": "asphalt_install_ton_km_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:delivery:ton-km",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "parentRowId": null,
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:delivery:truck-machine-hours",
+      "ordinal": 40,
+      "section": "Доставка смеси",
+      "category": "equipment",
+      "titleRu": "Автосамосвалы: движение, погрузка, ожидание и разгрузка",
+      "unitId": "machine_hour",
+      "formulaId": "asphalt_install_truck_machine_h_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:delivery:truck-machine-hours",
+      "costTreatment": "OWN_COST",
+      "parentRowId": null,
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:mobilization:paver",
+      "ordinal": 41,
+      "section": "Мобилизация техники",
+      "category": "service",
+      "titleRu": "Доставка на объект и возврат асфальтоукладчика",
+      "unitId": "service",
+      "formulaId": "asphalt_install_mobilization_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:mobilization:paver",
+      "costTreatment": "OWN_COST",
+      "parentRowId": null,
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:mobilization:roller",
+      "ordinal": 42,
+      "section": "Мобилизация техники",
+      "category": "service",
+      "titleRu": "Доставка на объект и возврат катка 8 т",
+      "unitId": "service",
+      "formulaId": "asphalt_install_mobilization_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:mobilization:roller",
+      "costTreatment": "OWN_COST",
+      "parentRowId": null,
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:mobilization:tar-sprayer",
+      "ordinal": 43,
+      "section": "Мобилизация техники",
+      "category": "service",
+      "titleRu": "Доставка на объект и возврат гудронатора",
+      "unitId": "service",
+      "formulaId": "asphalt_install_mobilization_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:mobilization:tar-sprayer",
+      "costTreatment": "OWN_COST",
+      "parentRowId": null,
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:mobilization:tractor-brush",
+      "ordinal": 44,
+      "section": "Мобилизация техники",
+      "category": "service",
+      "titleRu": "Доставка на объект и возврат трактора с дорожной щёткой",
+      "unitId": "service",
+      "formulaId": "asphalt_install_mobilization_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:mobilization:tractor-brush",
+      "costTreatment": "OWN_COST",
+      "parentRowId": null,
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:quality:material-passports",
+      "ordinal": 45,
+      "section": "Контроль качества",
+      "category": "service",
+      "titleRu": "Входной контроль и реестр паспортов асфальтобетонной смеси и битума",
+      "unitId": "document",
+      "formulaId": "asphalt_install_material_passports_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:quality:material-passports",
+      "costTreatment": "CONTROL_OR_DOCUMENT",
+      "parentRowId": null,
+      "sourceId": "napa_faa_asphalt_paving_handbook_2025"
+    },
+    {
+      "rowId": "asphalt:quality:mix-temperature",
+      "ordinal": 46,
+      "section": "Контроль качества",
+      "category": "service",
+      "titleRu": "Контроль температуры смеси при каждом рейсе",
+      "unitId": "pcs",
+      "formulaId": "asphalt_install_truck_trips_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:quality:mix-temperature",
+      "costTreatment": "CONTROL_OR_DOCUMENT",
+      "parentRowId": null,
+      "sourceId": "napa_faa_asphalt_paving_handbook_2025"
+    },
+    {
+      "rowId": "asphalt:quality:bitumen-application",
+      "ordinal": 47,
+      "section": "Контроль качества",
+      "category": "service",
+      "titleRu": "Контроль равномерности нанесения дорожного битума",
+      "unitId": "pcs",
+      "formulaId": "asphalt_install_acceptance_lots_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:quality:bitumen-application",
+      "costTreatment": "CONTROL_OR_DOCUMENT",
+      "parentRowId": null,
+      "sourceId": "napa_faa_asphalt_paving_handbook_2025"
+    },
+    {
+      "rowId": "asphalt:quality:layer-thickness",
+      "ordinal": 48,
+      "section": "Контроль качества",
+      "category": "service",
+      "titleRu": "Контроль толщины слоя покрытия",
+      "unitId": "pcs",
+      "formulaId": "asphalt_install_acceptance_lots_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:quality:layer-thickness",
+      "costTreatment": "CONTROL_OR_DOCUMENT",
+      "parentRowId": null,
+      "sourceId": "napa_faa_asphalt_paving_handbook_2025"
+    },
+    {
+      "rowId": "asphalt:quality:density",
+      "ordinal": 49,
+      "section": "Контроль качества",
+      "category": "service",
+      "titleRu": "Контроль плотности уплотнённого покрытия",
+      "unitId": "pcs",
+      "formulaId": "asphalt_install_acceptance_lots_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:quality:density",
+      "costTreatment": "CONTROL_OR_DOCUMENT",
+      "parentRowId": null,
+      "sourceId": "napa_faa_asphalt_paving_handbook_2025"
+    },
+    {
+      "rowId": "asphalt:quality:smoothness",
+      "ordinal": 50,
+      "section": "Контроль качества",
+      "category": "service",
+      "titleRu": "Контроль ровности поверхности",
+      "unitId": "pcs",
+      "formulaId": "asphalt_install_acceptance_lots_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:quality:smoothness",
+      "costTreatment": "CONTROL_OR_DOCUMENT",
+      "parentRowId": null,
+      "sourceId": "napa_faa_asphalt_paving_handbook_2025"
+    },
+    {
+      "rowId": "asphalt:quality:grade-slope",
+      "ordinal": 51,
+      "section": "Контроль качества",
+      "category": "service",
+      "titleRu": "Геодезический контроль отметок и поперечного уклона",
+      "unitId": "pcs",
+      "formulaId": "asphalt_install_acceptance_lots_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:quality:grade-slope",
+      "costTreatment": "CONTROL_OR_DOCUMENT",
+      "parentRowId": null,
+      "sourceId": "napa_faa_asphalt_paving_handbook_2025"
+    },
+    {
+      "rowId": "asphalt:document:work-journal",
+      "ordinal": 52,
+      "section": "Исполнительная документация",
+      "category": "service",
+      "titleRu": "Журнал производства работ и операционного контроля",
+      "unitId": "document",
+      "formulaId": "asphalt_install_work_journal_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:document:work-journal",
+      "costTreatment": "CONTROL_OR_DOCUMENT",
+      "parentRowId": null,
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:document:execution-set",
+      "ordinal": 53,
+      "section": "Исполнительная документация",
+      "category": "service",
+      "titleRu": "Комплект исполнительных схем, актов и протоколов",
+      "unitId": "document",
+      "formulaId": "asphalt_install_execution_docs_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:document:execution-set",
+      "costTreatment": "CONTROL_OR_DOCUMENT",
+      "parentRowId": null,
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:document:delivery-register",
+      "ordinal": 54,
+      "section": "Исполнительная документация",
+      "category": "service",
+      "titleRu": "Реестр рейсов, температур и партий смеси",
+      "unitId": "document",
+      "formulaId": "asphalt_install_material_passports_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:document:delivery-register",
+      "costTreatment": "CONTROL_OR_DOCUMENT",
+      "parentRowId": null,
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:organization:traffic-control",
+      "ordinal": 55,
+      "section": "Организация работ",
+      "category": "service",
+      "titleRu": "Организация безопасной рабочей зоны и регулирование движения",
+      "unitId": "set",
+      "formulaId": "asphalt_install_traffic_control_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:organization:traffic-control",
+      "costTreatment": "OWN_COST",
+      "parentRowId": null,
+      "sourceId": "s26_4_selected_preliminary_profile_r1"
+    },
+    {
+      "rowId": "asphalt:organization:continuous-flow",
+      "ordinal": 56,
+      "section": "Организация работ",
+      "category": "service",
+      "titleRu": "Организация непрерывного потока доставки, укладки и уплотнения",
+      "unitId": "m2",
+      "formulaId": "asphalt_install_area_v1",
+      "procurementEligible": false,
+      "costOwnerId": "asphalt:organization:continuous-flow",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "parentRowId": null,
+      "sourceId": "asphalt_institute_engineering_faq"
+    }
+  ],
+  "independentCompletenessEntries": [
+    {
+      "unitId": "m2",
+      "category": "operation",
+      "sourceId": "kg_krer_27_06_019_02_2015",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_area_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:operation:base-acceptance-cleaning"
+      },
+      "operationId": "operation.accepted_base",
+      "quantityRule": "area_m2",
+      "priceRelation": "INFORMATIONAL_SCOPE",
+      "specification": "Acceptance and mechanical cleaning of the already prepared base",
+      "detailPrinciple": "distinct technology operation",
+      "expectedResourceId": "required-component:operation.accepted_base_cleaning"
+    },
+    {
+      "unitId": "m2",
+      "category": "operation",
+      "sourceId": "kg_krer_27_06_019_02_2015",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_area_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:operation:side-stop-setting"
+      },
+      "operationId": "operation.side_stops",
+      "quantityRule": "area_m2",
+      "priceRelation": "INFORMATIONAL_SCOPE",
+      "specification": "Setting side stops before mechanical paving",
+      "detailPrinciple": "distinct technology operation",
+      "expectedResourceId": "required-component:operation.side_stop_setting"
+    },
+    {
+      "unitId": "m2",
+      "category": "operation",
+      "sourceId": "kg_krer_27_06_019_02_2015",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_area_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:operation:bitumen-application"
+      },
+      "operationId": "operation.tack_application",
+      "quantityRule": "area_m2",
+      "priceRelation": "INFORMATIONAL_SCOPE",
+      "specification": "Distribution of the normed petroleum road bitumen",
+      "detailPrinciple": "distinct technology operation",
+      "expectedResourceId": "required-component:operation.bitumen_application"
+    },
+    {
+      "unitId": "t",
+      "category": "operation",
+      "sourceId": "napa_faa_asphalt_paving_handbook_2025",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_mix_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:operation:mix-receiving-feed"
+      },
+      "operationId": "operation.hot_mix_feed",
+      "quantityRule": "calculated hot-mix mass",
+      "priceRelation": "INFORMATIONAL_SCOPE",
+      "specification": "Receiving, unloading and continuous feed of hot mix",
+      "detailPrinciple": "distinct technology operation",
+      "expectedResourceId": "required-component:operation.mix_receiving_feed"
+    },
+    {
+      "unitId": "m2",
+      "category": "operation",
+      "sourceId": "kg_krer_27_06_019_02_2015",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_area_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:operation:mechanical-paving"
+      },
+      "operationId": "operation.asphalt_paving",
+      "quantityRule": "area_m2",
+      "priceRelation": "INFORMATIONAL_SCOPE",
+      "specification": "Mechanical placement of one hot-mix course",
+      "detailPrinciple": "distinct technology operation",
+      "expectedResourceId": "required-component:operation.mechanical_paving"
+    },
+    {
+      "unitId": "m2",
+      "category": "operation",
+      "sourceId": "kg_krer_27_06_019_02_2015",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_area_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:operation:rolling-compaction"
+      },
+      "operationId": "operation.rolling",
+      "quantityRule": "area_m2",
+      "priceRelation": "INFORMATIONAL_SCOPE",
+      "specification": "Rolling and compaction within the selected placement technology",
+      "detailPrinciple": "distinct technology operation",
+      "expectedResourceId": "required-component:operation.rolling_compaction"
+    },
+    {
+      "unitId": "m2",
+      "category": "operation",
+      "sourceId": "kg_krer_27_06_019_02_2015",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_area_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:operation:edge-joint-finishing"
+      },
+      "operationId": "operation.surface_finishing",
+      "quantityRule": "area_m2",
+      "priceRelation": "INFORMATIONAL_SCOPE",
+      "specification": "Finishing edges, joints and the paved surface",
+      "detailPrinciple": "distinct technology operation",
+      "expectedResourceId": "required-component:operation.edge_joint_finishing"
+    },
+    {
+      "unitId": "m2",
+      "category": "operation",
+      "sourceId": "napa_faa_asphalt_paving_handbook_2025",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_area_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:operation:final-clean-handover"
+      },
+      "operationId": "operation.handover",
+      "quantityRule": "area_m2",
+      "priceRelation": "INFORMATIONAL_SCOPE",
+      "specification": "Final cleaning and handover for acceptance checks",
+      "detailPrinciple": "distinct technology operation",
+      "expectedResourceId": "required-component:operation.final_clean_handover"
+    },
+    {
+      "unitId": "t",
+      "category": "material",
+      "sourceId": "kg_krer_27_06_019_02_2015",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_mix_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:material:hot-dense-fine-mix"
+      },
+      "operationId": "operation.asphalt_paving",
+      "quantityRule": "KRER base mass plus 5 mm increments",
+      "priceRelation": "OWN_COST",
+      "specification": "Factory-produced dense fine-grained hot asphalt mix for KRER 27-06-019-02; ingredients are not separately procured",
+      "detailPrinciple": "separately purchased finished product",
+      "expectedResourceId": "required-component:material.hot_dense_fine_mix"
+    },
+    {
+      "unitId": "t",
+      "category": "material",
+      "sourceId": "kg_krer_27_06_019_02_2015",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_road_bitumen_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:material:road-bitumen"
+      },
+      "operationId": "operation.tack_application",
+      "quantityRule": "KRER base mass plus 5 mm increments",
+      "priceRelation": "OWN_COST",
+      "specification": "Petroleum road bitumen stated by KRER 27-06-019-02",
+      "detailPrinciple": "separately purchased material",
+      "expectedResourceId": "required-component:material.road_bitumen"
+    },
+    {
+      "unitId": "t",
+      "category": "consumable",
+      "sourceId": "kg_krer_27_06_019_02_2015",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_technical_kerosene_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:material:technical-kerosene"
+      },
+      "operationId": "operation.tack_application",
+      "quantityRule": "KRER rate multiplied by area/1000",
+      "priceRelation": "OWN_COST",
+      "specification": "Technical kerosene stated by KRER 27-06-019-02",
+      "detailPrinciple": "separately used consumable",
+      "expectedResourceId": "required-component:material.technical_kerosene"
+    },
+    {
+      "unitId": "m3",
+      "category": "component",
+      "sourceId": "kg_krer_27_06_019_02_2015",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_hardwood_bars_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:material:hardwood-side-stop-bars"
+      },
+      "operationId": "operation.side_stops",
+      "quantityRule": "KRER rate multiplied by area/1000",
+      "priceRelation": "OWN_COST",
+      "specification": "Hardwood side-stop bars stated by KRER 27-06-019-02",
+      "detailPrinciple": "separately used component",
+      "expectedResourceId": "required-component:component.hardwood_side_stop_bars"
+    },
+    {
+      "unitId": "t",
+      "category": "fastener",
+      "sourceId": "kg_krer_27_06_019_02_2015",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_towing_wire_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:material:steel-towing-wire"
+      },
+      "operationId": "operation.side_stops",
+      "quantityRule": "KRER rate multiplied by area/1000",
+      "priceRelation": "OWN_COST",
+      "specification": "Low-carbon steel towing wire stated by KRER 27-06-019-02",
+      "detailPrinciple": "separately used fastener/component",
+      "expectedResourceId": "required-component:component.steel_towing_wire"
+    },
+    {
+      "unitId": "man_hour",
+      "category": "labor",
+      "sourceId": "kg_krer_27_06_019_02_2015",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_labor_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:labor:road-workers"
+      },
+      "operationId": "operation.full_course_installation",
+      "quantityRule": "KRER base labor plus 5 mm increments",
+      "priceRelation": "OWN_COST",
+      "specification": "Construction workers for the complete KRER operation scope",
+      "detailPrinciple": "direct labor distinct from machine operators",
+      "expectedResourceId": "required-component:labor.road_workers"
+    },
+    {
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "sourceId": "kg_krer_27_06_019_02_2015",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_crane_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:equipment:crane-10t"
+      },
+      "operationId": "operation.full_course_installation",
+      "quantityRule": "KRER machine-hour rate multiplied by area/1000",
+      "priceRelation": "OWN_COST",
+      "specification": "Truck-mounted crane, 10 t",
+      "detailPrinciple": "distinct machine",
+      "expectedResourceId": "required-component:equipment.crane_10t"
+    },
+    {
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "sourceId": "kg_krer_27_06_019_02_2015",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_tar_sprayer_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:equipment:hand-tar-sprayer"
+      },
+      "operationId": "operation.tack_application",
+      "quantityRule": "KRER machine-hour rate multiplied by area/1000",
+      "priceRelation": "OWN_COST",
+      "specification": "Hand tar sprayer",
+      "detailPrinciple": "distinct machine",
+      "expectedResourceId": "required-component:equipment.hand_tar_sprayer"
+    },
+    {
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "sourceId": "kg_krer_27_06_019_02_2015",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_roller_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:equipment:smooth-roller-8t"
+      },
+      "operationId": "operation.rolling",
+      "quantityRule": "KRER machine-hour rate multiplied by area/1000",
+      "priceRelation": "OWN_COST",
+      "specification": "Self-propelled smooth road roller, 8 t",
+      "detailPrinciple": "distinct machine",
+      "expectedResourceId": "required-component:equipment.smooth_roller_8t"
+    },
+    {
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "sourceId": "kg_krer_27_06_019_02_2015",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_paver_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:equipment:asphalt-paver"
+      },
+      "operationId": "operation.asphalt_paving",
+      "quantityRule": "KRER machine-hour rate multiplied by area/1000",
+      "priceRelation": "OWN_COST",
+      "specification": "Asphalt paver",
+      "detailPrinciple": "distinct machine",
+      "expectedResourceId": "required-component:equipment.asphalt_paver"
+    },
+    {
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "sourceId": "kg_krer_27_06_019_02_2015",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_tractor_brush_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:equipment:tractor-road-brush"
+      },
+      "operationId": "operation.accepted_base",
+      "quantityRule": "KRER machine-hour rate multiplied by area/1000",
+      "priceRelation": "OWN_COST",
+      "specification": "Tractor-mounted road brush",
+      "detailPrinciple": "distinct machine",
+      "expectedResourceId": "required-component:equipment.tractor_road_brush"
+    },
+    {
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "sourceId": "kg_krer_27_06_019_02_2015",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_onboard_vehicle_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:equipment:onboard-vehicle-5t"
+      },
+      "operationId": "operation.full_course_installation",
+      "quantityRule": "KRER machine-hour rate multiplied by area/1000",
+      "priceRelation": "OWN_COST",
+      "specification": "On-board vehicle up to 5 t",
+      "detailPrinciple": "distinct machine",
+      "expectedResourceId": "required-component:equipment.onboard_vehicle_5t"
+    },
+    {
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "sourceId": "kg_krer_27_06_019_02_2015",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_surface_grinder_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:equipment:surface-grinder"
+      },
+      "operationId": "operation.surface_finishing",
+      "quantityRule": "KRER increment rate multiplied by area/1000 and number of 5 mm increments",
+      "priceRelation": "OWN_COST",
+      "specification": "Surface grinder required by the KRER thickness increment row",
+      "detailPrinciple": "distinct machine",
+      "expectedResourceId": "required-component:equipment.surface_grinder"
+    },
+    {
+      "unitId": "machine_hour",
+      "category": "labor",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_crane_v1",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "asphalt:included:operator:crane-10t",
+        "parentRowId": "asphalt:equipment:crane-10t"
+      },
+      "operationId": "operation.full_course_installation",
+      "quantityRule": "same operating time as crane",
+      "priceRelation": "INCLUDED_IN_PARENT",
+      "specification": "Crane operator included in the crane machine-hour price",
+      "detailPrinciple": "visible included machine component",
+      "expectedResourceId": "required-component:included.crane_operator"
+    },
+    {
+      "unitId": "machine_hour",
+      "category": "consumable",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_crane_v1",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "asphalt:included:fuel-energy:crane-10t",
+        "parentRowId": "asphalt:equipment:crane-10t"
+      },
+      "operationId": "operation.full_course_installation",
+      "quantityRule": "same operating time as crane",
+      "priceRelation": "INCLUDED_IN_PARENT",
+      "specification": "Crane fuel, energy and operating fluids included in the crane machine-hour price",
+      "detailPrinciple": "visible included machine component",
+      "expectedResourceId": "required-component:included.crane_fuel_energy"
+    },
+    {
+      "unitId": "machine_hour",
+      "category": "labor",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_tar_sprayer_v1",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "asphalt:included:operator:hand-tar-sprayer",
+        "parentRowId": "asphalt:equipment:hand-tar-sprayer"
+      },
+      "operationId": "operation.tack_application",
+      "quantityRule": "same operating time as tar sprayer",
+      "priceRelation": "INCLUDED_IN_PARENT",
+      "specification": "Tar-sprayer operator included in the machine-hour price",
+      "detailPrinciple": "visible included machine component",
+      "expectedResourceId": "required-component:included.tar_sprayer_operator"
+    },
+    {
+      "unitId": "machine_hour",
+      "category": "consumable",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_tar_sprayer_v1",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "asphalt:included:fuel-energy:hand-tar-sprayer",
+        "parentRowId": "asphalt:equipment:hand-tar-sprayer"
+      },
+      "operationId": "operation.tack_application",
+      "quantityRule": "same operating time as tar sprayer",
+      "priceRelation": "INCLUDED_IN_PARENT",
+      "specification": "Tar-sprayer fuel, energy and operating fluids included in the machine-hour price",
+      "detailPrinciple": "visible included machine component",
+      "expectedResourceId": "required-component:included.tar_sprayer_fuel_energy"
+    },
+    {
+      "unitId": "machine_hour",
+      "category": "labor",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_roller_v1",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "asphalt:included:operator:smooth-roller-8t",
+        "parentRowId": "asphalt:equipment:smooth-roller-8t"
+      },
+      "operationId": "operation.rolling",
+      "quantityRule": "same operating time as roller",
+      "priceRelation": "INCLUDED_IN_PARENT",
+      "specification": "Roller operator included in the roller machine-hour price",
+      "detailPrinciple": "visible included machine component",
+      "expectedResourceId": "required-component:included.roller_operator"
+    },
+    {
+      "unitId": "machine_hour",
+      "category": "consumable",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_roller_v1",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "asphalt:included:fuel-energy:smooth-roller-8t",
+        "parentRowId": "asphalt:equipment:smooth-roller-8t"
+      },
+      "operationId": "operation.rolling",
+      "quantityRule": "same operating time as roller",
+      "priceRelation": "INCLUDED_IN_PARENT",
+      "specification": "Roller fuel, energy and operating fluids included in the roller machine-hour price",
+      "detailPrinciple": "visible included machine component",
+      "expectedResourceId": "required-component:included.roller_fuel_energy"
+    },
+    {
+      "unitId": "machine_hour",
+      "category": "labor",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_paver_v1",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "asphalt:included:operator:asphalt-paver",
+        "parentRowId": "asphalt:equipment:asphalt-paver"
+      },
+      "operationId": "operation.asphalt_paving",
+      "quantityRule": "same operating time as paver",
+      "priceRelation": "INCLUDED_IN_PARENT",
+      "specification": "Paver operator included in the paver machine-hour price",
+      "detailPrinciple": "visible included machine component",
+      "expectedResourceId": "required-component:included.paver_operator"
+    },
+    {
+      "unitId": "machine_hour",
+      "category": "consumable",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_paver_v1",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "asphalt:included:fuel-energy:asphalt-paver",
+        "parentRowId": "asphalt:equipment:asphalt-paver"
+      },
+      "operationId": "operation.asphalt_paving",
+      "quantityRule": "same operating time as paver",
+      "priceRelation": "INCLUDED_IN_PARENT",
+      "specification": "Paver fuel, energy and operating fluids included in the paver machine-hour price",
+      "detailPrinciple": "visible included machine component",
+      "expectedResourceId": "required-component:included.paver_fuel_energy"
+    },
+    {
+      "unitId": "machine_hour",
+      "category": "labor",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_tractor_brush_v1",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "asphalt:included:operator:tractor-road-brush",
+        "parentRowId": "asphalt:equipment:tractor-road-brush"
+      },
+      "operationId": "operation.accepted_base",
+      "quantityRule": "same operating time as tractor brush",
+      "priceRelation": "INCLUDED_IN_PARENT",
+      "specification": "Tractor/brush operator included in the machine-hour price",
+      "detailPrinciple": "visible included machine component",
+      "expectedResourceId": "required-component:included.tractor_brush_operator"
+    },
+    {
+      "unitId": "machine_hour",
+      "category": "consumable",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_tractor_brush_v1",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "asphalt:included:fuel-energy:tractor-road-brush",
+        "parentRowId": "asphalt:equipment:tractor-road-brush"
+      },
+      "operationId": "operation.accepted_base",
+      "quantityRule": "same operating time as tractor brush",
+      "priceRelation": "INCLUDED_IN_PARENT",
+      "specification": "Tractor/brush fuel, energy and operating fluids included in the machine-hour price",
+      "detailPrinciple": "visible included machine component",
+      "expectedResourceId": "required-component:included.tractor_brush_fuel_energy"
+    },
+    {
+      "unitId": "machine_hour",
+      "category": "labor",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_onboard_vehicle_v1",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "asphalt:included:operator:onboard-vehicle-5t",
+        "parentRowId": "asphalt:equipment:onboard-vehicle-5t"
+      },
+      "operationId": "operation.full_course_installation",
+      "quantityRule": "same operating time as on-board vehicle",
+      "priceRelation": "INCLUDED_IN_PARENT",
+      "specification": "On-board vehicle driver included in the vehicle machine-hour price",
+      "detailPrinciple": "visible included machine component",
+      "expectedResourceId": "required-component:included.onboard_vehicle_operator"
+    },
+    {
+      "unitId": "machine_hour",
+      "category": "consumable",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_onboard_vehicle_v1",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "asphalt:included:fuel-energy:onboard-vehicle-5t",
+        "parentRowId": "asphalt:equipment:onboard-vehicle-5t"
+      },
+      "operationId": "operation.full_course_installation",
+      "quantityRule": "same operating time as on-board vehicle",
+      "priceRelation": "INCLUDED_IN_PARENT",
+      "specification": "On-board vehicle fuel and operating fluids included in the vehicle machine-hour price",
+      "detailPrinciple": "visible included machine component",
+      "expectedResourceId": "required-component:included.onboard_vehicle_fuel_energy"
+    },
+    {
+      "unitId": "machine_hour",
+      "category": "labor",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_surface_grinder_v1",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "asphalt:included:operator:surface-grinder",
+        "parentRowId": "asphalt:equipment:surface-grinder"
+      },
+      "operationId": "operation.surface_finishing",
+      "quantityRule": "same operating time as surface grinder",
+      "priceRelation": "INCLUDED_IN_PARENT",
+      "specification": "Surface-grinder operator included in the machine-hour price",
+      "detailPrinciple": "visible included machine component",
+      "expectedResourceId": "required-component:included.surface_grinder_operator"
+    },
+    {
+      "unitId": "machine_hour",
+      "category": "consumable",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_surface_grinder_v1",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "asphalt:included:fuel-energy:surface-grinder",
+        "parentRowId": "asphalt:equipment:surface-grinder"
+      },
+      "operationId": "operation.surface_finishing",
+      "quantityRule": "same operating time as surface grinder",
+      "priceRelation": "INCLUDED_IN_PARENT",
+      "specification": "Surface-grinder fuel, energy and operating fluids included in the machine-hour price",
+      "detailPrinciple": "visible included machine component",
+      "expectedResourceId": "required-component:included.surface_grinder_fuel_energy"
+    },
+    {
+      "unitId": "machine_hour",
+      "category": "component",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_roller_v1",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "asphalt:included:roller-water-scrapers",
+        "parentRowId": "asphalt:equipment:smooth-roller-8t"
+      },
+      "operationId": "operation.rolling",
+      "quantityRule": "same operating time as roller",
+      "priceRelation": "INCLUDED_IN_PARENT",
+      "specification": "Roller drum wetting and scraper system included in the roller machine-hour price",
+      "detailPrinciple": "visible included machine component",
+      "expectedResourceId": "required-component:included.roller_water_scrapers"
+    },
+    {
+      "unitId": "machine_hour",
+      "category": "component",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_paver_v1",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "asphalt:included:paver-screed-grade-control",
+        "parentRowId": "asphalt:equipment:asphalt-paver"
+      },
+      "operationId": "operation.asphalt_paving",
+      "quantityRule": "same operating time as paver",
+      "priceRelation": "INCLUDED_IN_PARENT",
+      "specification": "Paver screed heating and grade-control system included in the paver machine-hour price",
+      "detailPrinciple": "visible included machine component",
+      "expectedResourceId": "required-component:included.paver_screed_grade_control"
+    },
+    {
+      "unitId": "trip",
+      "category": "logistics",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_truck_trips_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:delivery:truck-trips"
+      },
+      "operationId": "operation.hot_mix_delivery",
+      "quantityRule": "ceil(hot-mix mass/truck capacity)",
+      "priceRelation": "INFORMATIONAL_SCOPE",
+      "specification": "Calculated number of hot-mix truck trips",
+      "detailPrinciple": "visible logistics metric",
+      "expectedResourceId": "required-component:logistics.hot_mix_truck_trips"
+    },
+    {
+      "unitId": "t_km",
+      "category": "logistics",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_ton_km_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:delivery:ton-km"
+      },
+      "operationId": "operation.hot_mix_delivery",
+      "quantityRule": "hot-mix mass multiplied by one-way haul distance",
+      "priceRelation": "INFORMATIONAL_SCOPE",
+      "specification": "Transport work for hot-mix delivery",
+      "detailPrinciple": "visible logistics metric",
+      "expectedResourceId": "required-component:logistics.hot_mix_ton_km"
+    },
+    {
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_truck_machine_h_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:delivery:truck-machine-hours"
+      },
+      "operationId": "operation.hot_mix_delivery",
+      "quantityRule": "trips multiplied by round-trip travel and turnaround time",
+      "priceRelation": "OWN_COST",
+      "specification": "Delivery trucks including travel, loading, waiting and unloading",
+      "detailPrinciple": "single price-owning delivery basis",
+      "expectedResourceId": "required-component:logistics.delivery_truck_hours"
+    },
+    {
+      "unitId": "service",
+      "category": "service",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_mobilization_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:mobilization:paver"
+      },
+      "operationId": "operation.mobilization",
+      "quantityRule": "one mobilization service",
+      "priceRelation": "OWN_COST",
+      "specification": "Transport asphalt paver to and from site",
+      "detailPrinciple": "distinct mobilization service",
+      "expectedResourceId": "required-component:logistics.mobilize_paver"
+    },
+    {
+      "unitId": "service",
+      "category": "service",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_mobilization_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:mobilization:roller"
+      },
+      "operationId": "operation.mobilization",
+      "quantityRule": "one mobilization service",
+      "priceRelation": "OWN_COST",
+      "specification": "Transport 8 t roller to and from site",
+      "detailPrinciple": "distinct mobilization service",
+      "expectedResourceId": "required-component:logistics.mobilize_roller"
+    },
+    {
+      "unitId": "service",
+      "category": "service",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_mobilization_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:mobilization:tar-sprayer"
+      },
+      "operationId": "operation.mobilization",
+      "quantityRule": "one mobilization service",
+      "priceRelation": "OWN_COST",
+      "specification": "Transport tar sprayer to and from site",
+      "detailPrinciple": "distinct mobilization service",
+      "expectedResourceId": "required-component:logistics.mobilize_tar_sprayer"
+    },
+    {
+      "unitId": "service",
+      "category": "service",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_mobilization_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:mobilization:tractor-brush"
+      },
+      "operationId": "operation.mobilization",
+      "quantityRule": "one mobilization service",
+      "priceRelation": "OWN_COST",
+      "specification": "Transport tractor road brush to and from site",
+      "detailPrinciple": "distinct mobilization service",
+      "expectedResourceId": "required-component:logistics.mobilize_tractor_brush"
+    },
+    {
+      "unitId": "document",
+      "category": "quality_service",
+      "sourceId": "napa_faa_asphalt_paving_handbook_2025",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_material_passports_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:quality:material-passports"
+      },
+      "operationId": "operation.incoming_control",
+      "quantityRule": "one controlled register",
+      "priceRelation": "CONTROL_OR_DOCUMENT",
+      "specification": "Incoming control and register of mix and bitumen passports",
+      "detailPrinciple": "distinct quality-control service",
+      "expectedResourceId": "required-component:quality.material_passport_register"
+    },
+    {
+      "unitId": "pcs",
+      "category": "quality_service",
+      "sourceId": "napa_faa_asphalt_paving_handbook_2025",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_truck_trips_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:quality:mix-temperature"
+      },
+      "operationId": "operation.delivery_control",
+      "quantityRule": "one check per truck trip",
+      "priceRelation": "CONTROL_OR_DOCUMENT",
+      "specification": "Hot-mix temperature control for each truck trip",
+      "detailPrinciple": "distinct quality-control service",
+      "expectedResourceId": "required-component:quality.mix_temperature"
+    },
+    {
+      "unitId": "pcs",
+      "category": "quality_service",
+      "sourceId": "napa_faa_asphalt_paving_handbook_2025",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_acceptance_lots_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:quality:bitumen-application"
+      },
+      "operationId": "operation.tack_application_control",
+      "quantityRule": "one check per preliminary acceptance lot",
+      "priceRelation": "CONTROL_OR_DOCUMENT",
+      "specification": "Check uniformity of petroleum road-bitumen application",
+      "detailPrinciple": "distinct quality-control service",
+      "expectedResourceId": "required-component:quality.bitumen_application"
+    },
+    {
+      "unitId": "pcs",
+      "category": "quality_service",
+      "sourceId": "napa_faa_asphalt_paving_handbook_2025",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_acceptance_lots_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:quality:layer-thickness"
+      },
+      "operationId": "operation.paving_control",
+      "quantityRule": "one check per preliminary acceptance lot",
+      "priceRelation": "CONTROL_OR_DOCUMENT",
+      "specification": "Placed-course thickness control",
+      "detailPrinciple": "distinct quality-control service",
+      "expectedResourceId": "required-component:quality.layer_thickness"
+    },
+    {
+      "unitId": "pcs",
+      "category": "quality_service",
+      "sourceId": "napa_faa_asphalt_paving_handbook_2025",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_acceptance_lots_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:quality:density"
+      },
+      "operationId": "operation.compaction_control",
+      "quantityRule": "one check per preliminary acceptance lot",
+      "priceRelation": "CONTROL_OR_DOCUMENT",
+      "specification": "Compacted pavement density control",
+      "detailPrinciple": "distinct quality-control service",
+      "expectedResourceId": "required-component:quality.density"
+    },
+    {
+      "unitId": "pcs",
+      "category": "quality_service",
+      "sourceId": "napa_faa_asphalt_paving_handbook_2025",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_acceptance_lots_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:quality:smoothness"
+      },
+      "operationId": "operation.surface_control",
+      "quantityRule": "one check per preliminary acceptance lot",
+      "priceRelation": "CONTROL_OR_DOCUMENT",
+      "specification": "Paved-surface smoothness control",
+      "detailPrinciple": "distinct quality-control service",
+      "expectedResourceId": "required-component:quality.smoothness"
+    },
+    {
+      "unitId": "pcs",
+      "category": "quality_service",
+      "sourceId": "napa_faa_asphalt_paving_handbook_2025",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_acceptance_lots_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:quality:grade-slope"
+      },
+      "operationId": "operation.geometry_control",
+      "quantityRule": "one check per preliminary acceptance lot",
+      "priceRelation": "CONTROL_OR_DOCUMENT",
+      "specification": "Survey control of grade and cross slope",
+      "detailPrinciple": "distinct quality-control service",
+      "expectedResourceId": "required-component:quality.grade_slope"
+    },
+    {
+      "unitId": "document",
+      "category": "document",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_work_journal_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:document:work-journal"
+      },
+      "operationId": "operation.execution_records",
+      "quantityRule": "one journal",
+      "priceRelation": "CONTROL_OR_DOCUMENT",
+      "specification": "Work and operational-control journal",
+      "detailPrinciple": "informational record; not material completeness",
+      "expectedResourceId": "required-component:document.work_journal"
+    },
+    {
+      "unitId": "document",
+      "category": "document",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_execution_docs_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:document:execution-set"
+      },
+      "operationId": "operation.execution_records",
+      "quantityRule": "one documentation set",
+      "priceRelation": "CONTROL_OR_DOCUMENT",
+      "specification": "As-built diagrams, acts and test protocols",
+      "detailPrinciple": "informational record; not material completeness",
+      "expectedResourceId": "required-component:document.execution_set"
+    },
+    {
+      "unitId": "document",
+      "category": "document",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_material_passports_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:document:delivery-register"
+      },
+      "operationId": "operation.delivery_control",
+      "quantityRule": "one register",
+      "priceRelation": "CONTROL_OR_DOCUMENT",
+      "specification": "Register of mix trips, temperatures and batches",
+      "detailPrinciple": "informational record; not material completeness",
+      "expectedResourceId": "required-component:document.delivery_register"
+    },
+    {
+      "unitId": "set",
+      "category": "service",
+      "sourceId": "s26_4_selected_preliminary_profile_r1",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_traffic_control_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:organization:traffic-control"
+      },
+      "operationId": "operation.site_organization",
+      "quantityRule": "one service set",
+      "priceRelation": "OWN_COST",
+      "specification": "Safe work-zone organization and traffic control as a procured service",
+      "detailPrinciple": "complete procured service, not loose unverified materials",
+      "expectedResourceId": "required-component:organization.work_zone_control"
+    },
+    {
+      "unitId": "m2",
+      "category": "operation",
+      "sourceId": "asphalt_institute_engineering_faq",
+      "condition": "selected_KRER_27_06_019_02_profile_on_accepted_mechanically_accessible_base",
+      "formulaId": "asphalt_install_area_v1",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "asphalt:organization:continuous-flow"
+      },
+      "operationId": "operation.site_organization",
+      "quantityRule": "area_m2",
+      "priceRelation": "INFORMATIONAL_SCOPE",
+      "specification": "Coordination of continuous delivery, paving and compaction flow",
+      "detailPrinciple": "distinct organization operation",
+      "expectedResourceId": "required-component:organization.continuous_flow"
+    }
+  ]
+}

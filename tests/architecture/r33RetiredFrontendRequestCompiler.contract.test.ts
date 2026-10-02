@@ -61,8 +61,11 @@ describe("R3.3 retired frontend request compiler", () => {
   it("persists the R6 road scope before resuming through the canonical backend", () => {
     const screen = read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
     const container = read("src/features/consumerRepair/ConsumerRepairRequestScreenContainer.tsx");
-    expect(screen).toContain("beginConsumerRepairCanonicalRoadScopeSelection");
-    expect(screen).toContain("bindConsumerRepairCanonicalRoadScopeChoice");
+    const scopeWorkflow = read("src/features/consumerRepair/consumerCanonicalScopeWorkflow.ts");
+    expect(screen).toContain("beginConsumerCanonicalScopeSelection");
+    expect(screen).toContain("bindConsumerCanonicalScopeChoice");
+    expect(scopeWorkflow).toContain("beginConsumerRepairCanonicalRoadScopeSelection");
+    expect(scopeWorkflow).toContain("bindConsumerRepairCanonicalRoadScopeChoice");
     expect(screen).toContain("selectedRoadScope = savedScope");
     expect(screen).toContain("onPrepareCanonicalEstimate(");
     expect(screen).not.toContain("selectConsumerRepairRoadScopeV4");

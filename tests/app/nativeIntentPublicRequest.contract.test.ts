@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import {
   isPublicRequestRoutePathname,
+  resolveNativeAppDeepLinkTarget,
   resolvePublicRequestDeepLinkTarget,
 } from "../../src/lib/navigation/coreRoutes";
 import { resolveRequestEstimateLaunchTargetV1 } from "../../src/lib/navigation/requestEstimateLaunchPayload";
@@ -41,6 +42,18 @@ describe("native intent public request route", () => {
     ).toBe("rik://market?product=1");
   });
 
+  it("routes non-request rik links through the native app allowlist", () => {
+    expect(resolveNativeAppDeepLinkTarget("rik://market?product=1")).toMatchObject({
+      href: "/(tabs)/market?product=1",
+      normalizedPath: "/market",
+    });
+    expect(resolveNativeAppDeepLinkTarget("rik://office/warehouse")).toMatchObject({
+      href: "/office/warehouse",
+      normalizedPath: "/office/warehouse",
+    });
+    expect(resolveNativeAppDeepLinkTarget("rik://not-a-real-screen")).toBeNull();
+  });
+
   it("passes request deep link query params to router-safe params", () => {
     expect(resolvePublicRequestDeepLinkTarget("rik:///request?prompt=roof+120&autoPdf=1")).toMatchObject({
       pathname: "/(tabs)/request",
@@ -73,6 +86,12 @@ describe("native intent public request route", () => {
     );
 
     expect(rootLayoutSource).toContain("resolvePublicRequestDeepLinkTarget");
+    expect(rootLayoutSource).toContain("resolveNativeAppDeepLinkTarget");
+    expect(rootLayoutSource).toContain("openNativeAppDeepLink");
+    expect(rootLayoutSource).toContain("pendingNativeAppDeepLinkRef");
+    expect(rootLayoutSource).toContain("native_app_deep_link_navigation");
+    expect(rootLayoutSource).toContain("native_app_deep_link_rejected");
+    expect(rootLayoutSource).toContain("clearLatestNativeViewUrl(resolvedUrl)");
     expect(rootLayoutSource).toContain("useRootNavigationState");
     expect(rootLayoutSource).toContain("rootNavigationReady");
     expect(rootLayoutSource).toContain("pendingPublicRequestDeepLinkRef");
@@ -275,6 +294,10 @@ describe("native intent public request route", () => {
       mainActivitySource.indexOf("super.onNewIntent(intent)"),
     );
     expect(mainActivitySource.lastIndexOf("RikIntentModule.captureViewIntent(intent, RikIntentModule.activeReactContext())")).toBeGreaterThan(
+      mainActivitySource.indexOf("super.onNewIntent(intent)"),
+    );
+    expect(mainActivitySource).toContain('intent.data?.scheme.equals("rik", ignoreCase = true)');
+    expect(mainActivitySource.indexOf('intent.data?.scheme.equals("rik", ignoreCase = true)')).toBeLessThan(
       mainActivitySource.indexOf("super.onNewIntent(intent)"),
     );
     expect(mainActivitySource).not.toContain("currentReactContext");

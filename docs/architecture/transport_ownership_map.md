@@ -2,9 +2,9 @@
 
 Status: locked baseline
 Generated from: `npx tsx scripts/architecture_anti_regression_suite.ts --json`
-Baseline date: 2026-09-08
+Baseline date: 2026-09-20
 Scanner source SHA-256: `45a63b16999fb2857cbb78e367442eef7a896ac64a252de597aecd45d0d4a864`
-Scanner inventory SHA-256: `7dc654a501ed1695d8977f792d7f16b92e306ecaa61e71f6d987ce95d0da5d0f`
+Scanner inventory SHA-256: `e04f18dcd48daad297cd00658141d8ae3e89967da975e07d3a4ffe7bbe0a5b99`
 Production feature enablement: NO
 Production traffic migrated: NO
 Deploy or OTA implied: NO
@@ -22,9 +22,9 @@ Realtime capacity changed: NO
 
 ## Scanner Baseline
 
-- Total direct Supabase findings: 187
-- Transport-controlled findings: 143
-- Transport-owned files with provider findings: 70
+- Total direct Supabase findings: 198
+- Transport-controlled findings: 154
+- Transport-owned files with provider findings: 72
 - Service bypass findings: 0
 - Service bypass files: 0
 - Test-only findings: 44
@@ -32,10 +32,10 @@ Realtime capacity changed: NO
 
 ## Provider Surface Summary
 
-- auth: 51 findings across 32 files
-- read: 22 findings across 10 files
+- auth: 54 findings across 32 files
+- read: 25 findings across 11 files
 - realtime: 7 findings across 2 files
-- rpc: 32 findings across 20 files
+- rpc: 37 findings across 22 files
 - storage: 13 findings across 6 files
 - write: 18 findings across 13 files
 
@@ -94,8 +94,10 @@ Realtime auth, channel creation, and channel cleanup are transport-owned. This m
 - `src/lib/catalog/catalog.bff.client.ts` - auth
 - `src/lib/catalog/catalog.proposalCreation.transport.ts` - rpc
 - `src/lib/catalog/catalog.request.transport.ts` - read, rpc, write
+- `src/lib/catalog/catalog.transport.supabase.ts` - read, rpc
 - `scripts/server/stagingBffCatalogTransportReadPort.ts` - canonical server-side catalog read/RPC owner; client transport fails closed
 - `src/lib/chat.auth.transport.ts` - auth
+- `src/lib/consumerRequests/consumerRequestMarketplace.transport.ts` - rpc
 - `src/lib/documents/attachmentOpener.storage.transport.ts` - storage
 - `src/lib/estimate/backendPlatform/canonicalEstimateAuth.transport.ts` - auth
 - `src/lib/files.storage.transport.ts` - storage, write

@@ -38,6 +38,6 @@ describe("capital renovation 98 confirm snapshot", () => {
       net_wall_area_m2: 297.5,
     });
     expect(rows.every((row) => row.formulaId || row.calculationTrace)).toBe(true);
-    expect(rows.every((row) => row.priceStatus === "PRICE_MISSING")).toBe(true);
+    expect(rows.every((row) => row.priceStatus === "USER_ENTERED_PRICE")).toBe(true);
   });
 });

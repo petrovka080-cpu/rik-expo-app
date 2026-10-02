@@ -35,6 +35,65 @@ export type PublicRequestDeepLinkTarget = {
   normalizedPath: string;
 };
 
+export type NativeAppDeepLinkTarget = {
+  href: string;
+  normalizedPath: string;
+  query: string;
+};
+
+const NATIVE_APP_EXACT_ROUTES = new Set([
+  "/",
+  "/add",
+  "/ai",
+  "/ai-approval-inbox",
+  "/ai-command-center",
+  "/ai-procurement-copilot",
+  "/auctions",
+  "/calculator",
+  "/chat",
+  "/market",
+  "/market/my-listings",
+  "/office",
+  "/office/accountant",
+  "/office/buyer",
+  "/office/contractor",
+  "/office/director",
+  "/office/foreman",
+  "/office/reports",
+  "/office/security",
+  "/office/warehouse",
+  "/pdf-viewer",
+  "/profile",
+  "/reports/ai-assistant",
+  "/reports/dashboard",
+  "/request",
+  "/seller",
+  "/sign-in",
+  "/supplierMap",
+  "/supplierShowcase",
+  "/suppliers-map",
+]);
+
+const NATIVE_APP_DYNAMIC_ROUTE_PATTERNS = [
+  /^\/admin\/global-estimate(?:\/(?:audit|change-control|coverage|import|pricebook|qa|sources|tax-rules|templates|work-types))?$/,
+  /^\/auction\/[^/]+$/,
+  /^\/auth\/(?:login|register|reset)$/,
+  /^\/product\/[^/]+$/,
+  /^\/request\/[^/]+$/,
+];
+
+const NATIVE_APP_TAB_ROUTE_MAP: Record<string, string> = {
+  "/ai": "/(tabs)/ai",
+  "/auctions": "/(tabs)/auctions",
+  "/chat": "/(tabs)/chat",
+  "/market": "/(tabs)/market",
+  "/office": "/(tabs)/office",
+  "/profile": "/(tabs)/profile",
+  "/request": "/(tabs)/request",
+  "/supplierMap": "/(tabs)/supplierMap",
+  "/suppliers-map": "/(tabs)/suppliers-map",
+};
+
 export type ReportsModuleRouteKey = "dashboard" | "ai-assistant";
 
 export const REPORTS_MODULE_ROUTES: Record<ReportsModuleRouteKey, Href> = {
@@ -175,6 +234,27 @@ export function resolvePublicRequestDeepLinkTarget(
     href: `${PUBLIC_REQUEST_ROUTE}${query}`,
     params: parseQueryParams(query),
     normalizedPath,
+  };
+}
+
+export function isRikAppDeepLink(path: string | null | undefined): boolean {
+  return typeof path === "string" && /^rik:\/\//i.test(path.trim());
+}
+
+export function resolveNativeAppDeepLinkTarget(
+  path: string | null | undefined,
+): NativeAppDeepLinkTarget | null {
+  if (!isRikAppDeepLink(path)) return null;
+  const { routePath, query } = splitIntentPathAndQuery(String(path));
+  const normalizedPath = normalizeIntentRoutePath(routePath);
+  const allowed = NATIVE_APP_EXACT_ROUTES.has(normalizedPath)
+    || NATIVE_APP_DYNAMIC_ROUTE_PATTERNS.some((pattern) => pattern.test(normalizedPath));
+  if (!allowed) return null;
+  const navigationPath = NATIVE_APP_TAB_ROUTE_MAP[normalizedPath] ?? normalizedPath;
+  return {
+    href: `${navigationPath}${query}`,
+    normalizedPath,
+    query,
   };
 }
 

@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "rik-expo-app.s27-24.well-construction-shaft-well-joint-seal-source-pack.v1",
+  "catalogId": "canonical-work:expanded:well_construction",
+  "scope": "Construction of one explicitly selected shallow reinforced-concrete shaft water-intake well WIW-RC-DN2000-18M, 18 m deep and 2000 mm internal diameter, with 20 KS20.9 lining rings, 65 m bentonite joint seal, two 15 m3/h submersible pumps, 30 m OD63 discharge pipe and one PP20-2 cover slab. Excavation, base filter, sanitary seal, headworks, electrical-controls, cleaning, testing, labor, mechanisms and logistics are project-owned.",
+  "sourceAuthority": "Approved hydrogeological project for a shallow water-intake well, shaft and lining drawings, precast-ring and joint-seal schedules, base-filter detail, pump duty calculation, sanitary-zone detail, electrical-control drawings, pumping-test program, laboratory requirements, suppliers and approving project engineer",
+  "ordinaryFixture": {
+    "wellCount": 1,
+    "wellDesignation": "WIW-RC-DN2000-18M",
+    "wellType": "SHALLOW_RC_SHAFT_INFILTRATION_WELL",
+    "purpose": "POTABLE_WATER_INTAKE",
+    "shaftDepthM": 18,
+    "internalDiameterMm": 2000,
+    "liningRingInstalledPiece": 20,
+    "liningRingDesignation": "RC-WELL-RING-KS20.9",
+    "jointSealInstalledM": 65,
+    "jointSealDesignation": "BENTONITE-JOINT-SEAL-20X25",
+    "pumpInstalledPiece": 2,
+    "pumpDesignation": "SUBMERSIBLE-15M3H-35M",
+    "dischargePipeInstalledM": 30,
+    "dischargePipeDesignation": "HDPE-PE100-SDR17-OD63",
+    "coverSlabInstalledPiece": 1,
+    "coverSlabDesignation": "RC-WELL-COVER-PP20-2"
+  },
+  "procurementBalance": {
+    "installedJointSealM": 65,
+    "retainedSpareM": 5,
+    "supplierRollLengthM": 20,
+    "totalNeedM": 70,
+    "rollCount": 4,
+    "orderedM": 80,
+    "remainderAfterInstallationM": 15,
+    "surplusBeyondRetainedSpareM": 10
+  },
+  "approvedProjectQuantities": {
+    "baseFilterGravelM3": 12,
+    "baseFilterGeotextileM2": 55,
+    "bottomConcreteM3": 6,
+    "sanitaryClaySealM3": 22,
+    "externalBackfillM3": 145,
+    "hatchPiece": 1,
+    "ladderM": 18,
+    "valvePiece": 6,
+    "instrumentSet": 1,
+    "controlPanelSet": 1,
+    "powerCableM": 55,
+    "earthingSet": 1,
+    "consumablesSet": 1,
+    "cleaningCycle": 2,
+    "pumpingTestH": 48,
+    "waterAnalysisTest": 3,
+    "disinfectionCycle": 2,
+    "electricalTest": 1,
+    "asBuiltDocument": 1,
+    "laborH": {
+      "survey": 80,
+      "excavationAndLining": 960,
+      "mechanical": 280,
+      "electricalControls": 160,
+      "qaDocumentation": 200
+    },
+    "equipmentH": {
+      "excavatorCrane": 240,
+      "dewateringPump": 120,
+      "compactor": 80
+    },
+    "logisticsTrip": {
+      "materialDelivery": 24,
+      "wasteRemoval": 18
+    }
+  },
+  "conditionalBranches": {
+    "excavationShoring": "NOT_REQUIRED unless the approved temporary-works design requires it",
+    "groundwaterDewatering": "NOT_REQUIRED unless the approved method statement requires it beyond the direct construction pumping allowance",
+    "temporaryAccess": "NOT_REQUIRED unless the approved site plan requires it"
+  },
+  "exclusions": [
+    "deep drilled production borehole casing and screen quantities",
+    "external distribution network, clean-water reservoir, treatment plant and sewerage",
+    "depth-derived lining, filter, labor, mechanism or logistics quantities",
+    "unapproved groundwater, temporary works, materials, equipment or prices"
+  ]
+}

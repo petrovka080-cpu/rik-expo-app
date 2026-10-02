@@ -1,5 +1,6 @@
 import { buildVerificationPlan, type ImpactOwnershipMap } from "../../scripts/verification/impactAnalyzer";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 
 const base = "a".repeat(40);
@@ -26,10 +27,40 @@ describe("Verification Architecture V1 impact analyzer", () => {
   });
 
   it("is deterministic and binds base/head SHA and the complete input", () => {
-    const first = buildVerificationPlan({ baseSha: base, headSha: head, changedFiles: ["docs/b.md", "docs/a.md"], level: "local" });
-    const second = buildVerificationPlan({ baseSha: base, headSha: head, changedFiles: ["docs/a.md", "docs/b.md"], level: "local" });
-    expect(second).toEqual(first);
-    expect(first.input_fingerprint).toMatch(/^[0-9a-f]{64}$/);
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "verification-plan-input-"));
+    try {
+      fs.mkdirSync(path.join(root, "docs"), { recursive: true });
+      fs.writeFileSync(path.join(root, "docs", "a.md"), "first-a", "utf8");
+      fs.writeFileSync(path.join(root, "docs", "b.md"), "first-b", "utf8");
+      const first = buildVerificationPlan({ baseSha: base, headSha: head, changedFiles: ["docs/b.md", "docs/a.md"], level: "local", root });
+      const second = buildVerificationPlan({ baseSha: base, headSha: head, changedFiles: ["docs/a.md", "docs/b.md"], level: "local", root });
+      expect(second).toEqual(first);
+      expect(first.input_fingerprint).toMatch(/^[0-9a-f]{64}$/);
+      expect(first.changed_file_sources).toEqual([
+        expect.objectContaining({ path: "docs/a.md", state: "present", kind: "file" }),
+        expect.objectContaining({ path: "docs/b.md", state: "present", kind: "file" }),
+      ]);
+
+      fs.writeFileSync(path.join(root, "docs", "a.md"), "second-a", "utf8");
+      const afterContentChange = buildVerificationPlan({ baseSha: base, headSha: head, changedFiles: ["docs/a.md", "docs/b.md"], level: "local", root });
+      expect(afterContentChange.input_fingerprint).not.toBe(first.input_fingerprint);
+      expect(afterContentChange.changed_file_sources[0]?.content_sha256)
+        .not.toBe(first.changed_file_sources[0]?.content_sha256);
+
+      fs.rmSync(path.join(root, "docs", "b.md"));
+      const afterDeletion = buildVerificationPlan({ baseSha: base, headSha: head, changedFiles: ["docs/a.md", "docs/b.md"], level: "local", root });
+      expect(afterDeletion.input_fingerprint).not.toBe(afterContentChange.input_fingerprint);
+      expect(afterDeletion.changed_file_sources[1]).toEqual({
+        path: "docs/b.md",
+        state: "deleted",
+        kind: null,
+        size_bytes: null,
+        content_sha256: null,
+        link_target_sha256: null,
+      });
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
     expect(() => buildVerificationPlan({ baseSha: "short", headSha: head, changedFiles: [], level: "local" })).toThrow("exact_sha_required");
   });
 

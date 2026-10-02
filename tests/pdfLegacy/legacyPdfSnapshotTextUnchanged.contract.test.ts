@@ -6,9 +6,9 @@ function normalizePdfExtractedWhitespace(text: string): string {
 
 describe("legacy PDF text snapshot", () => {
   it("preserves the old text-table shape for legacy estimates", () => {
-    const { extraction, estimate } = buildLegacyPdfProof();
+    const { extraction, pdf } = buildLegacyPdfProof();
     expect(normalizePdfExtractedWhitespace(extraction.text)).toContain(
-      normalizePdfExtractedWhitespace(estimate.totals.displayGrandTotal),
+      normalizePdfExtractedWhitespace(pdf.viewModel.totals.grand),
     );
     expect(extraction.text).toContain("|");
   });

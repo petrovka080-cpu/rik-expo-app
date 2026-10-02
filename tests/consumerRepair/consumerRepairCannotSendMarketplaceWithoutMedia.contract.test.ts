@@ -8,16 +8,16 @@ import { CONSUMER_REPAIR_TEST_USER_ID, createApprovedConsumerRepairRequest } fro
 describe("consumer repair marketplace media validation", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
 
-  it("blocks marketplace send without photo, video, or document media", () => {
+  it("blocks marketplace send without photo, video, or document media", async () => {
     const bundle = createApprovedConsumerRepairRequest({ withMedia: false });
 
-    expect(() => sendConsumerRepairRequestToMarketplace({
+    await expect(sendConsumerRepairRequestToMarketplace({
       requestDraftId: bundle.draft.id,
       userId: CONSUMER_REPAIR_TEST_USER_ID,
-    })).toThrow(ConsumerRepairValidationError);
+    })).rejects.toThrow(ConsumerRepairValidationError);
 
     try {
-      sendConsumerRepairRequestToMarketplace({ requestDraftId: bundle.draft.id, userId: CONSUMER_REPAIR_TEST_USER_ID });
+      await sendConsumerRepairRequestToMarketplace({ requestDraftId: bundle.draft.id, userId: CONSUMER_REPAIR_TEST_USER_ID });
     } catch (error) {
       expect((error as ConsumerRepairValidationError).errors.map((item) => item.code)).toContain("MEDIA_REQUIRED");
       expect((error as ConsumerRepairValidationError).message).toContain("Добавьте хотя бы одно фото");

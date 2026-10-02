@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "rik-expo-app.s27-24.pump-unit-alignment-connection-balanced-source-pack.v1",
+  "catalogId": "canonical-work:base:plumbing_interior_pump_install_standard",
+  "scope": "Atomic mounting, alignment, connection and individual testing of two explicitly selected pump-motor units on baseframes, Q=45 m3/h and H=55 m. Station collectors, water reservoir, automation and the complete pumping station are excluded.",
+  "sourceAuthority": "Approved plumbing project organization, selected pump manufacturer and approving project engineer",
+  "projectDocumentsRequired": [
+    "approved pump schedule and exact selected pump-motor-baseframe passport",
+    "foundation and baseframe drawing with anchor and shim schedules",
+    "grout placement card and approved non-shrink grout quantity",
+    "piping connection schedule with flange kits and conditional flexible connectors",
+    "method statement with installation/alignment labor, lifting and torque-tool quantities",
+    "alignment and individual test program with laser tool, vibration analyzer and labor quantities",
+    "individual test record schedule",
+    "delivery and waste-removal plan",
+    "supplier pack size and approved retained-spare quantity"
+  ],
+  "ordinaryFixture": {
+    "pumpCount": 2,
+    "pumpProductDesignation": "PUMP-Q45-H55",
+    "designFlowM3H": 45,
+    "designHeadM": 55,
+    "pumpConfiguration": "PUMP_MOTOR_ON_BASEFRAME"
+  },
+  "procurementBalance": {
+    "installedNetQuantity": "pump_count",
+    "retainedSpare": "pump_retained_spare_set",
+    "packageSize": "pump_supplier_pack_size_set",
+    "totalNeed": "installed net quantity + retained spare",
+    "packageCount": "ceil(total need / supplier pack size)",
+    "order": "package count * supplier pack size",
+    "remainderAfterInstallation": "order - installed net quantity",
+    "surplusBeyondReserve": "remainder - retained spare",
+    "visiblePreliminaryProfile": {
+      "pump_retained_spare_set": 0,
+      "pump_supplier_pack_size_set": 1
+    }
+  },
+  "acceptanceFixtureRole": "VALIDATION_FIXTURE_NOT_PROJECT_NORM",
+  "forbiddenClaims": [
+    "automatic pump selection or hydraulic design",
+    "universal spare or supplier package",
+    "universal anchor, shim, grout, flange, isolator or connector consumption",
+    "universal labor, lifting, alignment, test or logistics productivity",
+    "station collectors, water reservoir, automation or complete pumping station included",
+    "invented price"
+  ]
+}

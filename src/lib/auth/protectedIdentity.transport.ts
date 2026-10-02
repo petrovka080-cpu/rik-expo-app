@@ -1,6 +1,7 @@
 import type { User } from "@supabase/supabase-js";
 
 import { callEnsureMyProfileRpc, callGetMyRoleRpc } from "../api/profile.transport";
+import { loadDeveloperOverrideContext } from "../developerOverride";
 import {
   getSessionSafe,
   supabase,
@@ -48,6 +49,19 @@ function metadata(user: User): {
     membershipId: text(appMetadata.membership_id),
     role: text(appMetadata.role)?.toLowerCase() ?? null,
   };
+}
+
+function hasCompleteProviderClaims(claims: ReturnType<typeof metadata>): boolean {
+  return Boolean(claims.organizationId && claims.membershipId && claims.role);
+}
+
+function providerClaimsDiffer(
+  left: ReturnType<typeof metadata>,
+  right: ReturnType<typeof metadata>,
+): boolean {
+  return left.organizationId !== right.organizationId ||
+    left.membershipId !== right.membershipId ||
+    left.role !== right.role;
 }
 
 function rpcFailureStatus(
@@ -119,8 +133,25 @@ export async function loadProtectedIdentity(
       status: invalidSessionStatus(verifiedUserResult.error, session.expires_at),
     };
   }
-  const user = verifiedUserResult.data.user;
-  const claims = metadata(user);
+  let user = verifiedUserResult.data.user;
+  let claims = metadata(user);
+  const sessionClaims = metadata(session.user);
+
+  // An administrator can assign an organization/role while this browser still
+  // holds an older access token. getUser() sees the current provider record,
+  // while RPCs continue to read claims from that stale token. Refresh once at
+  // this boundary so the visible "Повторить" action can recover without a
+  // forced logout/login cycle and without weakening any server-side checks.
+  if (
+    hasCompleteProviderClaims(claims) &&
+    providerClaimsDiffer(sessionClaims, claims)
+  ) {
+    const refreshed = await supabase.auth.refreshSession();
+    if (!refreshed.error && refreshed.data.session?.user) {
+      user = refreshed.data.session.user;
+      claims = metadata(user);
+    }
+  }
 
   const ensured = await callEnsureMyProfileRpc();
   if (ensured.error) return { status: rpcFailureStatus(ensured.error, claims) };
@@ -129,6 +160,9 @@ export async function loadProtectedIdentity(
   if (roleResult.error) return { status: rpcFailureStatus(roleResult.error, claims) };
   const resolvedRole = text(roleResult.data)?.toLowerCase() ?? null;
   if (!resolvedRole) return { status: "missing_role" };
+  const developerOverride = claims.role && claims.role !== resolvedRole
+    ? await loadDeveloperOverrideContext().catch(() => null)
+    : null;
 
   if (claims.organizationId && claims.membershipId) {
     return classifyProtectedIdentity({
@@ -142,6 +176,7 @@ export async function loadProtectedIdentity(
       resolvedRole,
       source: "provider_verified_claims",
       targetOrganizationId,
+      developerOverride,
     });
   }
 
@@ -158,5 +193,6 @@ export async function loadProtectedIdentity(
     resolvedRole,
     source: "verified_company_membership",
     targetOrganizationId,
+    developerOverride,
   });
 }

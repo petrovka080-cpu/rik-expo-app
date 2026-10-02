@@ -13,7 +13,7 @@ import {
   type ContinuousDetectPhase,
   type ContinuousDetectTarget,
   type ContinuousEstimateDetectorRow,
-} from "../../src/lib/ai/estimateContinuousDetection";
+} from "../estimate/detectors";
 
 type WebServerHandle = {
   baseUrl: string;

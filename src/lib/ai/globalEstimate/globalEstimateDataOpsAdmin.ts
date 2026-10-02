@@ -1,4 +1,4 @@
-import { calculateGlobalConstructionEstimate } from "./globalEstimateCalculator";
+import { calculateGlobalConstructionEstimate } from "../../estimate/backendPlatform/canonicalEstimateHistoricalGlobalProjection";
 import {
   GLOBAL_PRICE_SOURCES,
   GLOBAL_RATE_MATERIALS,

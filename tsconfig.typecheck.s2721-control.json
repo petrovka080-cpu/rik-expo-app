@@ -1,0 +1,33 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": ".cache/typecheck/s2721-control.tsbuildinfo"
+  },
+  "include": [
+    "scripts/estimate/r4a13/auditS2721Batch005CurrentGap.ts",
+    "scripts/estimate/r4a13/auditS2721Batch004TypeBoundaryClosure.ts",
+    "scripts/estimate/r4a13/batch005S2721ControlCollapsedProjection.ts",
+    "scripts/estimate/r4a13/auditS2721Batch005ControlCollapse.ts",
+    "tests/estimateBackend/batch005S2721ControlCollapsedProjection.contract.test.ts",
+    "scripts/estimate/r4a13/waterS2721ControlCollapsedProjection.ts",
+    "scripts/estimate/r4a13/auditS2721Batch006ControlCollapse.ts",
+    "tests/estimateBackend/waterS2721ControlCollapsedProjection.contract.test.ts",
+    "scripts/estimate/r4a13/hvacS2721DocumentCollapsedProjection.ts",
+    "scripts/estimate/r4a13/auditS2721Batch007DocumentCollapse.ts",
+    "tests/estimateBackend/hvacS2721DocumentCollapsedProjection.contract.test.ts",
+    "scripts/estimate/r4a13/concreteS2721HistoricalDocumentLedger.ts",
+    "scripts/estimate/r4a13/auditS2721Batch008HistoricalDocumentLedger.ts",
+    "tests/estimateBackend/concreteS2721HistoricalDocumentLedger.contract.test.ts",
+    "src/lib/estimate/publicBoqNaming.ts",
+    "src/features/consumerRepair/requestEstimateViewModel.ts",
+    "src/features/consumerRepair/requestEstimateViewModel.r4.test.ts",
+    "tests/consumerRepair/procurementArtifactStaysInProductUi.contract.test.ts",
+    "scripts/estimate/r4a13/auditS2721PublicMaterialNameNoise.ts",
+    "src/lib/consumerRequests/consumerRequestPdfService.ts",
+    "src/lib/ai/estimatePdf/estimatePdfSourceResolver.ts",
+    "tests/requestEstimate/requestPdfUsesCanonicalPayloadRows.contract.test.ts",
+    "src/lib/aiEstimatePdf/buildAiEstimatePdfViewModel.ts",
+    "tests/aiEstimatePdf/aiEstimatePdfViewModel.contract.test.ts"
+  ]
+}

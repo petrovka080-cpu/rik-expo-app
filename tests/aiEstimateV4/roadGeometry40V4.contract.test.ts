@@ -33,6 +33,11 @@ describe("Road geometry V4 40-case contract", () => {
     });
     expect(parseRoadGeometryV4("площадь 32000 м², толщина 50 мм")).toMatchObject({ thicknessMm: 50 });
   });
+  test("treats area times millimetres as layer thickness, not plan dimensions", () => {
+    expect(parseRoadGeometryV4("площадь 900 м² × 50 мм")).toMatchObject({
+      status: "RESOLVED", areaM2: 900, lengthM: null, widthM: null, thicknessMm: 50,
+    });
+  });
   test("does not treat price or lane count as geometry", () => {
     expect(parseRoadGeometryV4("цена 5000 сом, 4 полосы")).toMatchObject({
       status: "INCOMPLETE", lengthM: null, widthM: null, areaM2: null,

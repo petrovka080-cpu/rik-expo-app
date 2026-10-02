@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "rik-expo-app.s27-24.distribution-pipeline-pipe-procurement-source-pack.v1",
+  "catalogId": "canonical-work:expanded:distribution_pipeline",
+  "scope": "Construction and acceptance of one explicitly selected potable-water distribution main DPM-HDPE-PE100-RC-SDR17-OD225-PN10, 1800 m long, including the approved trench and bedding schedule, pipe joints, fittings, isolation valves, fire hydrants, chambers, warning tape, thrust restraint, flushing, pressure testing, disinfection, potable-water analysis, labor, equipment, records and logistics.",
+  "sourceAuthority": "Approved potable-water distribution-main plan and profile, hydraulic calculation, geotechnical report, pipe-system and appurtenance schedules, bill of quantities, method statement, testing and disinfection program, accredited water laboratory, suppliers and approving project engineer",
+  "ordinaryFixture": {
+    "mainCount": 1,
+    "routeLengthM": 1800,
+    "pipeMaterial": "HDPE",
+    "pipeGrade": "PE100-RC",
+    "sdrClass": "SDR17",
+    "pipeOutsideDiameterMm": 225,
+    "pressureClass": "PN10",
+    "pipeDesignation": "PE100-RC-SDR17-OD225-PN10"
+  },
+  "procurementBalance": {
+    "installedPipeM": 1800,
+    "retainedSpareM": 24,
+    "supplierSegmentLengthM": 12,
+    "totalNeedM": 1824,
+    "segmentCount": 152,
+    "orderedM": 1824,
+    "remainderAfterInstallationM": 24,
+    "surplusBeyondRetainedSpareM": 0
+  },
+  "approvedProjectQuantities": {
+    "trenchExcavationM3": 3960,
+    "beddingM3": 324,
+    "pipeSurroundM3": 756,
+    "backfillM3": 2460,
+    "excessSoilM3": 1176,
+    "pipeJointPiece": 149,
+    "fittingPiece": 34,
+    "valvePiece": 12,
+    "hydrantPiece": 8,
+    "chamberPiece": 14,
+    "coverPiece": 14,
+    "warningTapeM": 1890,
+    "flushingWaterM3": 160,
+    "pressureTestM": 1800,
+    "disinfectionM": 1800,
+    "thrustBlockConcreteM3": 18.6,
+    "thrustRestraintPiece": 22,
+    "valveExtensionPiece": 12,
+    "markerPostPiece": 20,
+    "disinfectionReagentKg": 48,
+    "potableWaterSampleCount": 6,
+    "laboratoryAnalysisCount": 6,
+    "hydrotestPumpMachineH": 48,
+    "asBuiltDocumentCount": 1,
+    "laborH": {
+      "survey": 240,
+      "earthworks": 1180,
+      "pipeAndAppurtenanceInstallation": 1460,
+      "qaAndDocumentation": 260
+    },
+    "equipmentH": {
+      "excavator": 420,
+      "compactor": 330,
+      "pipeJointing": 220,
+      "crane": 96
+    },
+    "logisticsTrip": {
+      "delivery": 42,
+      "soilAndWasteRemoval": 98
+    }
+  },
+  "conditionalBranches": {
+    "crossingCasing": "NOT_REQUIRED unless an approved crossing detail requires a casing",
+    "groundwaterDewatering": "NOT_REQUIRED unless the geotechnical and method documents require dewatering",
+    "roadReinstatement": "NOT_REQUIRED unless the approved alignment and reinstatement schedule require it"
+  },
+  "exclusions": [
+    "complete village or settlement network, house connections, internal plumbing, sewer and stormwater systems",
+    "length-derived trench, fittings, valves, hydrants, chambers, labor, equipment or logistics",
+    "automatic selection of crossings, dewatering, road reinstatement, retained spare or supplier segment length",
+    "unapproved materials, equipment, quantities and prices"
+  ]
+}

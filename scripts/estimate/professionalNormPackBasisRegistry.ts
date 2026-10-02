@@ -11,6 +11,12 @@ export const PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID = Object.freeze({
   ceilings_knauf_d112_standard_uniflott_kg_m2_v1: "ceiling_area_m2",
   ceilings_knauf_d112_standard_wall_fastener_piece_m2_v1: "area_m2",
   cleaning_tennant_t350_600mm_conventional_practical_hour_m2_v1: "cleanable_hard_floor_area_m2",
+  concrete_aci_309_project_consolidation_schedule_v1: "consolidated_concrete_volume_m3",
+  concrete_aci_302_1_15_project_joint_schedule_v1: "joint_length_m",
+  concrete_aci_302_1_15_project_leveling_schedule_v1: "leveled_concrete_volume_m3",
+  concrete_aci_562_25_546_23_project_repair_schedule_v1: "repair_scope_volume_m3",
+  concrete_aci_spec_301_20_117_10_project_embedment_schedule_v1: "embedded_item_count_piece",
+  concrete_aci_spec_308_1_23_project_curing_schedule_v1: "cured_concrete_volume_m3",
   concrete_nrmca_cip31_selected_contingency_m3_m3_v1: "plan_dimension_concrete_volume_m3",
   delivery_ford_transit_v363_max_payload_trip_per_kg_v1: "cargo_weight_kg",
   demolition_krer46_selected_table_same_unit_routing_v1: "measured_project_quantity",
@@ -76,7 +82,7 @@ export function inferProfessionalNormPackBasisUnit(parameterKey: string): Profes
   if (parameterKey === "designed_detector_point_count") return "point";
   if (parameterKey === "shift_count") return "day";
   if (parameterKey === "construction_estimated_cost_chapters_1_9_currency") return "currency";
-  if (parameterKey.endsWith("_count")) return "piece";
+  if (parameterKey.endsWith("_count") || parameterKey.endsWith("_count_piece")) return "piece";
   if (parameterKey === "measured_project_quantity" || parameterKey === "project_capacity_measure") {
     return "selected_unit";
   }

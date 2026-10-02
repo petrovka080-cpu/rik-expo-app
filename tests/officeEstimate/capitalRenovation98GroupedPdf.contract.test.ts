@@ -39,7 +39,8 @@ describe("capital renovation 98 grouped PDF", () => {
     expect(publicText).toContain("98 \u043c\u00b2");
     expect(publicText).toContain("9\u00a0702 \u043a\u0433");
     expect(publicText).toContain("357 \u043a\u0433");
-    expect(publicText).toContain("\u041d\u0435 \u0440\u0430\u0441\u0441\u0447\u0438\u0442\u0430\u043d");
+    expect(publicText).toContain("цена введена пользователем");
+    expect(publicText).not.toContain("\u041d\u0435 \u0440\u0430\u0441\u0441\u0447\u0438\u0442\u0430\u043d");
     expect(publicText).not.toMatch(/PRICE_MISSING|round_to|normFactor|formula=|template=|source_parameters/i);
   });
 });

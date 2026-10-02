@@ -7,7 +7,7 @@ import {
 import {
   buildProfessionalExpandedGlobalEstimate,
   isProfessionalExpandedWorkSupported,
-} from "../estimateCompiler/expandedEstimateCompiler";
+} from "../../estimate/backendPlatform/canonicalEstimateHistoricalExpandedProjection";
 import { isRouteFastPathProfessionalExpandedWorkSupported } from "../estimateCompiler/professionalEstimateRouteCapabilities";
 import {
   calculateGlobalConstructionEstimateSync,

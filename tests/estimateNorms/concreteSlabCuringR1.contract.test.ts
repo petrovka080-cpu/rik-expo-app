@@ -98,10 +98,20 @@ describe("concrete slab curing canonical family", () => {
     )!;
     const wetInput = concreteSlabCuringAcceptanceInputR1(wetTarget.contextKey);
     const { wet_covering_area_m2: _missing, ...withoutCovering } = wetInput;
-    await expect(compileConcreteSlabCuringR1(
+    const incomplete = await compileConcreteSlabCuringR1(
       withoutCovering,
       { catalogId: wetTarget.catalogId },
-    )).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+    );
+    expect(incomplete.preliminaryNeeds).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        row_id: "material:concrete:wet-curing-covering",
+        quantity: null,
+        missing_parameter_ids: ["wet_covering_area_m2"],
+      }),
+    ]));
+    expect(incomplete.rows.some(
+      (row) => row.row_id === "material:concrete:wet-curing-covering",
+    )).toBe(false);
 
     await expect(compileConcreteSlabCuringR1({
       ...wetInput,

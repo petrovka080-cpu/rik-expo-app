@@ -36,6 +36,9 @@ describe("canonical estimate revision deep link", () => {
     expect(container).toContain("canonicalDeepLinkWorkspaceDraftIdsByConsumer");
     expect(container).toContain("requestEstimateCanonicalDeepLinkSessionWorkspaceDraftId");
     expect(container).toContain("rememberRequestEstimateCanonicalDeepLinkSessionWorkspace");
+    expect(container).toContain("getCanonicalEstimateRevision(binding.revisionId)");
+    expect(container).not.toContain("getCanonicalEstimateRevisionHistory");
+    expect(container).not.toContain("CANONICAL_COMPILE_HISTORY_REVISION_MISSING");
     expect(service).toContain(
       "previousBundle: input.replaceCanonicalRevisionHistory ? null : existing",
     );

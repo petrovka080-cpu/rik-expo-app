@@ -27,6 +27,7 @@ const OPTIONAL_DOCUMENTARY_PARAMETER_IDS = new Set([
   "method_statement_reference",
   "equipment_schedule_reference",
   "quality_plan_reference",
+  "mobilization_scope_reference",
 ]);
 
 const PRELIMINARY_AFTER_KNOWN_VOLUME_PARAMETER_IDS = new Set(
@@ -76,7 +77,9 @@ function pileCapParameter(
   if (!OPTIONAL_DOCUMENTARY_PARAMETER_IDS.has(parameter.parameter_id)) {
     return {
       ...adapted,
-      required: semanticOriginal.required,
+      required: PRELIMINARY_AFTER_KNOWN_VOLUME_PARAMETER_IDS.has(parameter.parameter_id)
+        ? false
+        : semanticOriginal.required,
       constraints_json: semanticOriginal.constraints_json,
       truth_metadata: {
         ...semanticOriginal.truth_metadata,
@@ -95,6 +98,20 @@ function pileCapParameter(
       source_confirmation_required: false,
     },
   };
+}
+
+function removeOptionalDocumentaryInclusionGuards(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(removeOptionalDocumentaryInclusionGuards);
+  if (!value || typeof value !== "object") return value;
+  const record = value as Json;
+  if (
+    record.kind === "present" &&
+    typeof record.parameterId === "string" &&
+    OPTIONAL_DOCUMENTARY_PARAMETER_IDS.has(record.parameterId)
+  ) return { kind: "literal", value: true };
+  return Object.fromEntries(Object.entries(record).map(
+    ([key, item]) => [key, removeOptionalDocumentaryInclusionGuards(item)],
+  ));
 }
 
 export const PILE_CAP_VIBRATION_TARGETS = Object.freeze(
@@ -137,6 +154,9 @@ export const PILE_CAP_VIBRATION_RESOURCES = Object.freeze(
           : null;
     return {
       ...adapted,
+      inclusion_ast: isWorkScope
+        ? { kind: "literal", value: true }
+        : removeOptionalDocumentaryInclusionGuards(adapted.inclusion_ast) as Record<string, unknown>,
       row_id: resource.row_id.replaceAll("pedestal-vibration", "pile-cap-vibration"),
       title_ru: pileCapText(resource.title_ru),
       unit_id: isWorkScope ? "m3" : adapted.unit_id,

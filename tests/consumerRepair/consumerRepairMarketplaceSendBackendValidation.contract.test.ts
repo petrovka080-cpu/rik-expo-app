@@ -1,4 +1,10 @@
-import { __resetConsumerRepairRequestStoreForTests, getConsumerRepairRequest, sendConsumerRepairRequestToMarketplace, updateConsumerRepairRequestDraft } from "../../src/lib/consumerRequests";
+import {
+  __resetConsumerRepairRequestStoreForTests,
+  ConsumerRepairValidationError,
+  getConsumerRepairRequest,
+  sendConsumerRepairRequestToMarketplace,
+  updateConsumerRepairRequestDraft,
+} from "../../src/lib/consumerRequests";
 import { validateConsumerRepairRequestForMarketplace } from "../../src/lib/consumerRequests/consumerRequestValidationService";
 import {
   CONSUMER_REPAIR_TEST_USER_ID,
@@ -8,13 +14,16 @@ import {
 describe("consumer repair backend marketplace validation contract", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
 
-  it("returns validation errors and records blocked audit event instead of success", () => {
+  it("returns validation errors and records blocked audit event instead of success", async () => {
     const approved = createApprovedConsumerRepairRequest();
     const bundle = updateConsumerRepairRequestDraft({
       requestDraftId: approved.draft.id,
-      patch: { contactPhone: null, problemText: "коротко" },
+      patch: { contactPhone: null, problemText: "short" },
     });
-    const validation = validateConsumerRepairRequestForMarketplace(bundle.draft.id, CONSUMER_REPAIR_TEST_USER_ID);
+    const validation = validateConsumerRepairRequestForMarketplace(
+      bundle.draft.id,
+      CONSUMER_REPAIR_TEST_USER_ID,
+    );
 
     expect(validation.ok).toBe(false);
     expect(validation.errors.map((item) => item.code)).toEqual(expect.arrayContaining([
@@ -22,10 +31,10 @@ describe("consumer repair backend marketplace validation contract", () => {
       "DESCRIPTION_REQUIRED",
     ]));
 
-    expect(() => sendConsumerRepairRequestToMarketplace({
+    await expect(sendConsumerRepairRequestToMarketplace({
       requestDraftId: bundle.draft.id,
       userId: CONSUMER_REPAIR_TEST_USER_ID,
-    })).toThrow("Укажите телефон");
+    })).rejects.toBeInstanceOf(ConsumerRepairValidationError);
 
     const afterBlocked = getConsumerRepairRequest(bundle.draft.id);
     expect(afterBlocked.events.some((event) => event.eventType === "marketplace_send_blocked")).toBe(true);

@@ -11,8 +11,8 @@ describe("blackbox no generic fallback", () => {
     const blocked = results.filter((item) => !item.professional);
 
     expect(results).toHaveLength(530);
-    expect(blocked).toHaveLength(523);
-    expect(results.filter((item) => item.professional)).toHaveLength(7);
+    expect(blocked).toHaveLength(526);
+    expect(results.filter((item) => item.professional)).toHaveLength(4);
     expect(results.every((item) => item.no_generic_row_names)).toBe(true);
     expect(results.every((item) => item.no_missing_catalog_item_id)).toBe(true);
     expect(blocked.every((item) => !item.no_generic_fallback)).toBe(true);

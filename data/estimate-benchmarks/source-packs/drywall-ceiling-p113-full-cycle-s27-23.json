@@ -1,0 +1,141 @@
+{
+  "schemaVersion": "drywall-ceiling-p113-full-cycle-s27-23.v1",
+  "authoredIndependentlyFromDefinitionRows": true,
+  "catalogId": "canonical-work:base:drywall_ceiling_interior_drywall_ceiling_install_large_area",
+  "scope": "Полное устройство плоского подвесного потолка КНАУФ П 113 с однослойной обшивкой ГСП 12,5 мм: каркас, обшивка, заделка стыков, грунтование, применимые расходники, труд, механизмы, доступ и логистика. Геометрия периметра и длина деформационных швов не выводятся из одной площади и остаются видимыми уточнениями.",
+  "sources": [
+    {
+      "sourceId": "KNAUF_P11_TECHNICAL_SHEET_2025_02",
+      "authority": "ООО КНАУФ ГИПС",
+      "officialUrl": "https://www.knauf.ru/upload/iblock/b1d/9yh37ql79yendgkn7fepgoaowc5u347z/25-IL-P11-Potolki-iz-KNAUF_listov-_08_04_2025_-v01-Preview.pdf",
+      "exactLocator": "Технический лист 02/2025, стр. 2–3: порядок работ; таблица 2: П 113 — ГСП 1,0 м²/м², ПП 60×27 2,9 м/м², удлинитель 0,2 шт./м², одноуровневый соединитель 1,7 шт./м², подвес 0,7 шт./м², LN 1,4 шт./м², TN 3,5×25 23 шт./м², анкер 0,7 шт./м², шпаклёвка 0,4 кг/м², лента 1,2 м/м², Тифенгрунд 0,1 л/м²; ПН, дюбели и Треннфикс — по периметру.",
+      "role": "PRIMARY_MANUFACTURER_SYSTEM_QUANTITY_AND_SEQUENCE"
+    },
+    {
+      "sourceId": "KNAUF_P113_SYSTEM_PAGE_2026",
+      "authority": "ООО КНАУФ ГИПС",
+      "officialUrl": "https://www.knauf.ru/systems/potolki/p-113-a/",
+      "exactLocator": "Состав комплектной системы, технические характеристики и область применения П 113; страница проверена 2026-10-01.",
+      "role": "PRIMARY_MANUFACTURER_APPLICABILITY"
+    },
+    {
+      "sourceId": "VISIBLE_REPLACEABLE_P113_PROCUREMENT_PROFILE_S2723",
+      "authority": "Предварительный профиль планирования S27.23",
+      "officialUrl": null,
+      "exactLocator": "Размеры поставки, резерв раскроя, производительность, сменность и рейсы показаны пользователю и заменяются паспортом выбранного товара, ППР и условиями объекта.",
+      "role": "VISIBLE_REPLACEABLE_PACKAGING_AND_EXECUTION_ASSUMPTIONS"
+    }
+  ],
+  "selectedPreliminaryProfile": {
+    "system": "KNAUF_P113_SINGLE_LEVEL_ONE_LAYER_12_5_MM",
+    "materialReservePercent": 5,
+    "hardwareReservePercent": 3,
+    "profilePieceLengthM": 3,
+    "boardSheetAreaM2": 2.4,
+    "tn25PackageItem": 1000,
+    "lnPackageItem": 100,
+    "perimeterFastenerPackageItem": 100,
+    "sealingTapeRollM": 30,
+    "separationTapeRollM": 50,
+    "jointCompoundBagKg": 25,
+    "jointTapeRollM": 75,
+    "primerCanL": 10,
+    "abrasiveProductivityM2Item": 40,
+    "workProductivityM2Shift": 50,
+    "deliveryTripCount": 1,
+    "accessDeliveryTripCount": 1,
+    "accessReturnTripCount": 1,
+    "wasteRemovalTripCount": 1,
+    "workingHeightM": 3.4,
+    "assumptionPolicy": "FIRST_ESTIMATE_NOW; ALL PACKAGING, RESERVE, PRODUCTIVITY, ACCESS AND LOGISTICS VALUES ARE VISIBLE, EDITABLE AND REPLACEABLE; ROOM PERIMETER AND CONTROL-JOINT LENGTH ARE NEVER INVENTED FROM AREA"
+  },
+  "independentRequiredComponents": [
+    {
+      "semanticKey": "stage01.workfront",
+      "requiredRowIds": [
+        "ceiling-p113-full:01:operation:survey",
+        "ceiling-p113-full:01:operation:setout",
+        "ceiling-p113-full:01:equipment:laser",
+        "ceiling-p113-full:01:delivery:materials"
+      ]
+    },
+    {
+      "semanticKey": "stage02.frame",
+      "requiredRowIds": [
+        "ceiling-p113-full:02:material:pp-profile-pieces",
+        "ceiling-p113-full:02:component:extensions",
+        "ceiling-p113-full:02:component:connectors",
+        "ceiling-p113-full:02:component:hangers",
+        "ceiling-p113-full:02:fastener:hanger-anchors",
+        "ceiling-p113-full:02:fastener:ln-packages",
+        "ceiling-p113-full:02:material:pn-profile-pieces",
+        "ceiling-p113-full:02:fastener:perimeter-packages",
+        "ceiling-p113-full:02:consumable:sealing-tape-rolls",
+        "ceiling-p113-full:02:operation:frame-installation"
+      ]
+    },
+    {
+      "semanticKey": "stage03.cladding",
+      "requiredRowIds": [
+        "ceiling-p113-full:03:material:gsp-sheets",
+        "ceiling-p113-full:03:fastener:tn25-packages",
+        "ceiling-p113-full:03:operation:board-cutting",
+        "ceiling-p113-full:03:operation:board-installation",
+        "ceiling-p113-full:03:equipment:board-lift"
+      ]
+    },
+    {
+      "semanticKey": "stage04.joints",
+      "requiredRowIds": [
+        "ceiling-p113-full:04:material:joint-compound-bags",
+        "ceiling-p113-full:04:material:joint-tape-rolls",
+        "ceiling-p113-full:04:material:separation-tape-rolls",
+        "ceiling-p113-full:04:operation:joint-filling"
+      ]
+    },
+    {
+      "semanticKey": "stage05.surface",
+      "requiredRowIds": [
+        "ceiling-p113-full:05:material:primer-cans",
+        "ceiling-p113-full:05:consumable:abrasive",
+        "ceiling-p113-full:05:operation:sanding",
+        "ceiling-p113-full:05:operation:priming",
+        "ceiling-p113-full:05:equipment:dust-extraction"
+      ]
+    },
+    {
+      "semanticKey": "stage06.large_area_joint",
+      "requiredRowIds": [
+        "ceiling-p113-full:06:material:control-joint-pieces",
+        "ceiling-p113-full:06:operation:control-joint-installation"
+      ]
+    },
+    {
+      "semanticKey": "stage07.access_and_tools",
+      "requiredRowIds": [
+        "ceiling-p113-full:07:equipment:access",
+        "ceiling-p113-full:07:equipment:rotary-hammer",
+        "ceiling-p113-full:07:equipment:profile-cutter",
+        "ceiling-p113-full:07:equipment:screwdriver",
+        "ceiling-p113-full:07:operation:access",
+        "ceiling-p113-full:07:delivery:access-in",
+        "ceiling-p113-full:07:delivery:access-out"
+      ]
+    },
+    {
+      "semanticKey": "stage08.completion",
+      "requiredRowIds": [
+        "ceiling-p113-full:08:operation:cleanup",
+        "ceiling-p113-full:08:control:acceptance",
+        "ceiling-p113-full:08:delivery:waste"
+      ]
+    }
+  ],
+  "engineeringLimitations": [
+    "П 113 является предварительно выбранной комплектной системой; тип листа, несущая способность подвесов и анкеров подтверждаются проектом и основанием.",
+    "Нормы изготовителя приведены для 100 м² без потерь раскроя; 5% и 3% — отдельные видимые плановые резервы, а не нормы КНАУФ.",
+    "ПН 28×27, его крепёж, уплотнительная и разделительная ленты считаются только после ввода длины и ширины помещения.",
+    "Деформационный шов большой площади остаётся видимой потребностью до ввода проектной длины; нулевая длина означает подтверждённую неприменимость.",
+    "Цены не выводятся из источника и остаются null до выбора прайс-листа или предложения поставщика."
+  ]
+}

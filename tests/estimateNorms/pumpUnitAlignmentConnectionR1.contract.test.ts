@@ -4,6 +4,7 @@ import {
   PUMP_UNIT_ALIGNMENT_CONNECTION_FORMULAS,
   PUMP_UNIT_ALIGNMENT_CONNECTION_PARAMETERS,
   PUMP_UNIT_ALIGNMENT_CONNECTION_RESOURCES,
+  PUMP_UNIT_ALIGNMENT_CONNECTION_RUNTIME_INPUT,
   PUMP_UNIT_ALIGNMENT_CONNECTION_SHORT_INPUT,
   compilePumpUnitAlignmentConnectionR1,
 } from "../../src/lib/estimate/v4/pumpUnitAlignmentConnectionR1";
@@ -27,9 +28,13 @@ describe("MASTER pump-unit alignment and connection owner", () => {
   test("uses the exact pump owner without importing historical project rates", () => {
     expect(PUMP_UNIT_ALIGNMENT_CONNECTION_CATALOG_ID)
       .toBe("canonical-work:base:plumbing_interior_pump_install_standard");
-    expect(PUMP_UNIT_ALIGNMENT_CONNECTION_PARAMETERS).toHaveLength(20);
-    expect(PUMP_UNIT_ALIGNMENT_CONNECTION_FORMULAS).toHaveLength(10);
-    expect(PUMP_UNIT_ALIGNMENT_CONNECTION_RESOURCES).toHaveLength(10);
+    expect(PUMP_UNIT_ALIGNMENT_CONNECTION_PARAMETERS).toHaveLength(32);
+    expect(PUMP_UNIT_ALIGNMENT_CONNECTION_FORMULAS).toHaveLength(24);
+    expect(PUMP_UNIT_ALIGNMENT_CONNECTION_RESOURCES).toHaveLength(24);
+    expect(PUMP_UNIT_ALIGNMENT_CONNECTION_RUNTIME_INPUT).toEqual({
+      pump_retained_spare_set: 0,
+      pump_supplier_pack_size_set: 1,
+    });
     expect(JSON.stringify(PUMP_UNIT_ALIGNMENT_CONNECTION_FORMULAS))
       .not.toMatch(/golden_rate|normFactor|pump_count\s*\*\s*(?:45|2|0\.5)/iu);
     expect(PUMP_UNIT_ALIGNMENT_CONNECTION_RESOURCES.map((row) => row.row_id))
@@ -50,25 +55,60 @@ describe("MASTER pump-unit alignment and connection owner", () => {
       expect.objectContaining({ row_id: REQUIRED[1], quantity: "2", unit_id: "set" }),
       expect.objectContaining({ row_id: REQUIRED[7], quantity: "2", unit_id: "test" }),
     ]));
-    expect(compiled.rows).toHaveLength(3);
+    expect(compiled.rows).toHaveLength(9);
     expect(compiled.preliminaryNeeds.map((need) => need.row_id))
       .toEqual(expect.arrayContaining([...REQUIRED.slice(2, 7), ...CONDITIONAL]));
-    expect(compiled.preliminaryNeeds).toHaveLength(7);
+    expect(compiled.preliminaryNeeds).toHaveLength(15);
+    expect(compiled.preliminaryNeeds.map((need) => need.row_id))
+      .toEqual(expect.arrayContaining([
+        "rc09:pump_test_record", "rc09:labor:pump-installation-alignment",
+        "rc09:labor:pump-testing", "rc09:equipment:pump-lifting",
+        "rc09:equipment:pump-torque-tool", "rc09:equipment:pump-vibration-analyzer",
+        "rc09:logistics:pump-delivery", "rc09:logistics:pump-waste-removal",
+      ]));
   });
 
-  test("compiles the evidence-bound eight-row fixture", async () => {
+  test("compiles the project fixture with labor, mechanisms, records and logistics", async () => {
     const compiled = await compilePumpUnitAlignmentConnectionR1({
       ...PUMP_UNIT_ALIGNMENT_CONNECTION_ACCEPTANCE_INPUT,
     });
     expect(compiled.preliminaryNeeds).toEqual([]);
-    expect(compiled.rows).toHaveLength(8);
+    expect(compiled.rows).toHaveLength(22);
     expect(compiled.rows).toEqual(expect.arrayContaining([
       expect.objectContaining({ row_id: REQUIRED[2], quantity: "2", unit_id: "set" }),
       expect.objectContaining({ row_id: REQUIRED[3], quantity: "2", unit_id: "set" }),
       expect.objectContaining({ row_id: REQUIRED[4], quantity: "84", unit_id: "kg" }),
       expect.objectContaining({ row_id: REQUIRED[5], quantity: "4", unit_id: "set" }),
       expect.objectContaining({ row_id: REQUIRED[6], quantity: "1", unit_id: "shift" }),
+      expect.objectContaining({ row_id: "rc09:pump_test_record", quantity: "2" }),
+      expect.objectContaining({ row_id: "rc09:labor:pump-installation-alignment", quantity: "36" }),
+      expect.objectContaining({ row_id: "rc09:labor:pump-testing", quantity: "12" }),
+      expect.objectContaining({ row_id: "rc09:equipment:pump-lifting", quantity: "8" }),
+      expect.objectContaining({ row_id: "rc09:equipment:pump-torque-tool", quantity: "6" }),
+      expect.objectContaining({ row_id: "rc09:equipment:pump-vibration-analyzer", quantity: "4" }),
+      expect.objectContaining({ row_id: "rc09:logistics:pump-delivery", quantity: "1" }),
+      expect.objectContaining({ row_id: "rc09:logistics:pump-waste-removal", quantity: "1" }),
     ]));
+    expect(compiled.rows.find((row) => row.row_id === REQUIRED[0])
+      ?.included_in_estimate).toBe(false);
+    expect(compiled.rows.find((row) => row.row_id === REQUIRED[7])
+      ?.included_in_estimate).toBe(false);
+  });
+
+  test("separates installed pumps, retained reserve, packages, order and remainder", async () => {
+    const compiled = await compilePumpUnitAlignmentConnectionR1({
+      ...PUMP_UNIT_ALIGNMENT_CONNECTION_ACCEPTANCE_INPUT,
+      pump_retained_spare_set: 1,
+      pump_supplier_pack_size_set: 2,
+    });
+    const rows = new Map(compiled.rows.map((row) => [row.row_id, row]));
+    expect(rows.get("rc09:pump-balance:installed-net")?.quantity).toBe("2");
+    expect(rows.get("rc09:pump-balance:retained-spare")?.quantity).toBe("1");
+    expect(rows.get("rc09:pump-balance:total-need")?.quantity).toBe("3");
+    expect(rows.get("rc09:pump-balance:package-count")?.quantity).toBe("2");
+    expect(rows.get(REQUIRED[1])?.quantity).toBe("4");
+    expect(rows.get("rc09:pump-balance:remainder")?.quantity).toBe("2");
+    expect(rows.get("rc09:pump-balance:surplus-beyond-reserve")?.quantity).toBe("1");
   });
 
   test("keeps vibration isolators and flexible connectors conditional", async () => {
@@ -82,7 +122,7 @@ describe("MASTER pump-unit alignment and connection owner", () => {
       flexible_connector_quantity_set: 4,
     });
     expect(compiled.preliminaryNeeds).toEqual([]);
-    expect(compiled.rows).toHaveLength(10);
+    expect(compiled.rows).toHaveLength(24);
     expect(compiled.rows.map((row) => row.row_id))
       .toEqual(expect.arrayContaining([...CONDITIONAL]));
   });

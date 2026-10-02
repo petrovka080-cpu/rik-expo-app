@@ -361,6 +361,7 @@ export function ListingModal({
 
               <LabeledInput
                 ref={titleInputRef}
+                testID="market-add-title"
                 label={UI_COPY.titleLabel}
                 value={listingForm.listingTitle}
                 onChangeText={onChangeListingTitle}
@@ -434,6 +435,7 @@ export function ListingModal({
 
               <LabeledInput
                 ref={descriptionInputRef}
+                testID="market-add-description"
                 label={UI_COPY.descriptionLabel}
                 value={listingForm.listingDescription}
                 onChangeText={onChangeListingDescription}
@@ -450,6 +452,7 @@ export function ListingModal({
               />
 
               <LabeledInput
+                testID="market-add-city"
                 label={UI_COPY.cityLabel}
                 value={listingForm.listingCity}
                 onChangeText={onChangeListingCity}
@@ -462,6 +465,7 @@ export function ListingModal({
               />
 
               <LabeledInput
+                testID="market-add-price"
                 label={UI_COPY.priceLabel}
                 value={listingForm.listingPrice}
                 onChangeText={onChangeListingPrice}
@@ -475,6 +479,7 @@ export function ListingModal({
 
               <LabeledInput
                 ref={phoneInputRef}
+                testID="market-add-phone"
                 label={UI_COPY.phoneLabel}
                 value={listingForm.listingPhone}
                 onChangeText={onChangeListingPhone}
@@ -536,6 +541,7 @@ export function ListingModal({
                 showsVerticalScrollIndicator
               >
                 <LabeledInput
+                  testID="market-add-item-city"
                   label={UI_COPY.cityLabel}
                   value={editingItem.city || ""}
                   onChangeText={onChangeEditingItemCity}
@@ -543,6 +549,7 @@ export function ListingModal({
                 />
 
                 <LabeledInput
+                  testID="market-add-item-uom"
                   label={UI_COPY.uomLabel}
                   value={editingItem.uom || ""}
                   onChangeText={onChangeEditingItemUom}
@@ -550,6 +557,7 @@ export function ListingModal({
                 />
 
                 <LabeledInput
+                  testID="market-add-item-qty"
                   label={UI_COPY.qtyInputLabel}
                   value={editingItem.qty}
                   onChangeText={onChangeEditingItemQty}
@@ -558,6 +566,7 @@ export function ListingModal({
                 />
 
                 <LabeledInput
+                  testID="market-add-item-price"
                   label={UI_COPY.priceInputLabel}
                   value={editingItem.price}
                   onChangeText={onChangeEditingItemPrice}

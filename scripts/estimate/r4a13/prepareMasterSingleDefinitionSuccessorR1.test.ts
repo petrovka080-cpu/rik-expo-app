@@ -1,0 +1,227 @@
+import { CATALOG_INDEPENDENT_COMPLETENESS_MAP_CONTRACT } from "./catalogFirstEstimateMinimumInputAudit.shared";
+import {
+  canonicalPublisherEffectivePriceKey,
+  canonicalPublisherPriceBindingIsCompatible,
+} from "./canonicalDefinitionPublisherR1";
+import {
+  resolveMasterSingleDefinitionNextCounts,
+  validateIndependentCompletenessMapReferences,
+} from "./prepareMasterSingleDefinitionSuccessorR1";
+
+const formulas = [{ formula_id: "formula:roller-hours" }];
+const resources = [{ row_id: "row:roller", formula_id: "formula:roller-hours" }];
+const resourcesWithIncludedComponent = [
+  ...resources,
+  {
+    row_id: "row:roller-water",
+    formula_id: "formula:roller-hours",
+    resource_graph: {
+      costTreatment: "INCLUDED_IN_RESOURCE_ROWS",
+      parentCostOwnerId: "row:roller",
+    },
+  },
+];
+
+function completenessMap(resolution: Record<string, unknown> = {
+  kind: "ROW",
+  rowId: "row:roller",
+}) {
+  return {
+    contract: CATALOG_INDEPENDENT_COMPLETENESS_MAP_CONTRACT,
+    sourceKind: "TECHNOLOGY_MAP",
+    generatedFromCurrentRows: false,
+    evidenceSha256: "a".repeat(64),
+    entries: [{
+      operationId: "operation:breakdown-rolling",
+      expectedResourceId: "resource:breakdown-roller",
+      condition: "asphalt_compaction_selected",
+      sourceId: "source:technology-map:v1",
+      formulaId: "formula:roller-hours",
+      resolution,
+    }],
+  };
+}
+
+describe("master successor independent completeness references", () => {
+  test("accepts an independently authored entry that resolves to the published row and formula", () => {
+    expect(validateIndependentCompletenessMapReferences({
+      completenessMap: completenessMap(),
+      formulaDefinitions: formulas,
+      resourceDefinitions: resources,
+    })).toEqual([]);
+  });
+
+  test("accepts an operation explicitly included in an existing parent row", () => {
+    expect(validateIndependentCompletenessMapReferences({
+      completenessMap: completenessMap({
+        kind: "INCLUDED_IN_PARENT",
+        parentRowId: "row:roller",
+      }),
+      formulaDefinitions: formulas,
+      resourceDefinitions: resources,
+    })).toEqual([]);
+  });
+
+  test("accepts an independently required visible component included in a parent price", () => {
+    expect(validateIndependentCompletenessMapReferences({
+      completenessMap: completenessMap({
+        kind: "INCLUDED_COMPONENT_ROW",
+        rowId: "row:roller-water",
+        parentRowId: "row:roller",
+      }),
+      formulaDefinitions: formulas,
+      resourceDefinitions: resourcesWithIncludedComponent,
+    })).toEqual([]);
+  });
+
+  test("rejects removal of an independently required included component", () => {
+    expect(validateIndependentCompletenessMapReferences({
+      completenessMap: completenessMap({
+        kind: "INCLUDED_COMPONENT_ROW",
+        rowId: "row:roller-water",
+        parentRowId: "row:roller",
+      }),
+      formulaDefinitions: formulas,
+      resourceDefinitions: resources,
+    })).toContain("ENTRY_0_ROW_REFERENCE");
+  });
+
+  test("rejects removal or rewiring of the price-owning parent", () => {
+    const map = completenessMap({
+      kind: "INCLUDED_COMPONENT_ROW",
+      rowId: "row:roller-water",
+      parentRowId: "row:roller",
+    });
+    expect(validateIndependentCompletenessMapReferences({
+      completenessMap: map,
+      formulaDefinitions: formulas,
+      resourceDefinitions: resourcesWithIncludedComponent.slice(1),
+    })).toContain("ENTRY_0_PARENT_ROW_REFERENCE");
+    expect(validateIndependentCompletenessMapReferences({
+      completenessMap: map,
+      formulaDefinitions: formulas,
+      resourceDefinitions: [
+        resources[0],
+        {
+          ...resourcesWithIncludedComponent[1],
+          resource_graph: {
+            costTreatment: "INCLUDED_IN_RESOURCE_ROWS",
+            parentCostOwnerId: "row:other",
+          },
+        },
+      ],
+    })).toContain("ENTRY_0_PARENT_ROW_MISMATCH");
+  });
+
+  test("rejects stale row and formula references", () => {
+    expect(validateIndependentCompletenessMapReferences({
+      completenessMap: completenessMap(),
+      formulaDefinitions: [{ formula_id: "formula:other" }],
+      resourceDefinitions: [{ row_id: "row:other", formula_id: "formula:other" }],
+    })).toEqual(expect.arrayContaining([
+      "ENTRY_0_ROW_REFERENCE",
+      "ENTRY_0_FORMULA_REFERENCE",
+    ]));
+  });
+
+  test("rejects a row whose formula differs from the independent map", () => {
+    expect(validateIndependentCompletenessMapReferences({
+      completenessMap: completenessMap(),
+      formulaDefinitions: formulas,
+      resourceDefinitions: [{ row_id: "row:roller", formula_id: "formula:other" }],
+    })).toContain("ENTRY_0_ROW_FORMULA_MISMATCH");
+  });
+
+  test("rejects a map generated from the current rows", () => {
+    expect(validateIndependentCompletenessMapReferences({
+      completenessMap: {
+        ...completenessMap(),
+        generatedFromCurrentRows: true,
+      },
+      formulaDefinitions: formulas,
+      resourceDefinitions: resources,
+    })).toContain("NOT_INDEPENDENT");
+  });
+});
+
+describe("master successor compatible price inheritance", () => {
+  const sourceResource = {
+    row_id: "source:roller",
+    cost_owner_id: "stable:roller-rental",
+    unit_id: "machine_hour",
+  };
+
+  test("uses the stable cost owner before a route-local price key", () => {
+    expect(canonicalPublisherEffectivePriceKey(sourceResource, "route:legacy-key"))
+      .toBe("stable:roller-rental");
+  });
+
+  test("keeps a price route only for the same cost owner and unit", () => {
+    expect(canonicalPublisherPriceBindingIsCompatible({
+      sourceResource,
+      targetResource: {
+        row_id: "renamed:roller",
+        cost_owner_id: "stable:roller-rental",
+        unit_id: "machine_hour",
+      },
+      sourceBindingPriceKey: "route:legacy-key",
+    })).toBe(true);
+    expect(canonicalPublisherPriceBindingIsCompatible({
+      sourceResource,
+      targetResource: {
+        row_id: "renamed:roller",
+        cost_owner_id: "stable:roller-rental",
+        unit_id: "shift",
+      },
+      sourceBindingPriceKey: "route:legacy-key",
+    })).toBe(false);
+    expect(canonicalPublisherPriceBindingIsCompatible({
+      sourceResource,
+      targetResource: {
+        row_id: "renamed:roller",
+        cost_owner_id: "stable:other-rental",
+        unit_id: "machine_hour",
+      },
+      sourceBindingPriceKey: "route:legacy-key",
+    })).toBe(false);
+  });
+
+  test("falls back to binding and row identities when cost owners are absent", () => {
+    expect(canonicalPublisherPriceBindingIsCompatible({
+      sourceResource: { row_id: "legacy-row", unit_id: "kg" },
+      targetResource: { row_id: "stable-price-key", unit_id: "kg" },
+      sourceBindingPriceKey: "stable-price-key",
+    })).toBe(true);
+  });
+});
+
+describe("master successor definition count modes", () => {
+  const parent = { definitions: 10_331, parameters: 32_450, formulas: 586_735, resources: 586_965 };
+  const nextTarget = { parameters: 3, formulas: 4, resources: 4 };
+
+  test("append adds one identity and the full new definition shape", () => {
+    expect(resolveMasterSingleDefinitionNextCounts({
+      parent,
+      previousTarget: null,
+      nextTarget,
+    })).toEqual({
+      definitions: 10_332,
+      parameters: 32_453,
+      formulas: 586_739,
+      resources: 586_969,
+    });
+  });
+
+  test("replacement preserves the identity denominator and swaps only the target shape", () => {
+    expect(resolveMasterSingleDefinitionNextCounts({
+      parent,
+      previousTarget: { parameters: 2, formulas: 2, resources: 3 },
+      nextTarget,
+    })).toEqual({
+      definitions: 10_331,
+      parameters: 32_451,
+      formulas: 586_737,
+      resources: 586_966,
+    });
+  });
+});

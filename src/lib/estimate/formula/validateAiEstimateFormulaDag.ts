@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 
 import { buildAiEstimateCatalogIndex } from "../catalog/buildAiEstimateCatalogIndex";
 import { applyAiEstimateParameterOverride } from "../applyAiEstimateParameterOverrides";
-import { createEstimateDraftRevision } from "../createEstimateDraftRevision";
+import { createEstimateDraftRevision } from "../backendPlatform/canonicalEstimateHistoricalDraftProjection";
 import { estimateDeterministicHash } from "../estimateDeterministicHash";
 import { buildProfessionalWorkPassport } from "../buildProfessionalWorkPassport";
 import { buildAiEstimateFormulaDag } from "./buildAiEstimateFormulaDag";

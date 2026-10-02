@@ -78,7 +78,7 @@ describe("estimate revision diff UI", () => {
     })).toBe("PDF и пакет закупки актуальны");
   });
 
-  it("shows the immutable backend revision ordinal instead of renumbering a loaded history slice", () => {
+  it("keeps the immutable backend ordinal in audit metadata without exposing it as UI noise", () => {
     const revision = {
       ...createEstimateDraftRevision({
         estimateDraftId: "backend-ordinal-ui",
@@ -99,7 +99,8 @@ describe("estimate revision diff UI", () => {
       }} />);
     });
     const tree = renderer.toJSON();
-    expect(visibleText(tree)).toContain("Версия 4");
+    expect(visibleText(tree)).toContain("Текущий расчёт");
+    expect(visibleText(tree)).not.toContain("Версия 4");
     expect(visibleText(tree)).not.toContain("Текущая версия:");
     expect(collectJsonTestIds(tree).some(({ testID }) => testID.includes("--ordinal-4--"))).toBe(true);
     expect(collectJsonTestIds(tree).some(({ testID }) =>

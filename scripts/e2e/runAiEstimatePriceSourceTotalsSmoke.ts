@@ -19,7 +19,7 @@ import {
   detectEstimateFakeRows,
   GREEN_AI_ESTIMATE_CONTINUOUS_DETECT_GATE,
   type ContinuousEstimateDetectorRow,
-} from "../../src/lib/ai/estimateContinuousDetection";
+} from "../estimate/detectors";
 import type { StructuredEstimatePayload } from "../../src/lib/estimateStructuredPipeline";
 
 type Target = "web" | "android-chrome";

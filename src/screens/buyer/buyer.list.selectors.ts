@@ -27,9 +27,10 @@ export function matchesBuyerSearchQuery(
 
   const candidate = item as Record<string, unknown>;
   const id = String(candidate.id || candidate.request_id || "").toLowerCase();
+  const legacyRequestId = String(candidate.request_id_old ?? "").toLowerCase();
   const titleKey = String(candidate.id || "");
   const title = titleByPid ? String(titleByPid[titleKey] || "").toLowerCase() : "";
-  if (id.includes(q) || title.includes(q)) return true;
+  if (id.includes(q) || legacyRequestId.includes(q) || title.includes(q)) return true;
 
   if (Array.isArray(candidate.items)) {
     return candidate.items.some((raw) => {

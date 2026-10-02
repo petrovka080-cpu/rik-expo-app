@@ -67,7 +67,7 @@ export async function runAndroidRequestEstimateDraftStatePayloadSmoke() {
   const pdfPayload = buildConsumerRepairCanonicalDraftPayload(bundle, "pdf_generation");
   const pdf = getConsumerRepairRequestPdf({ requestDraftId: bundle.draft.id });
   bundle = approveConsumerRepairRequestDraft({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
-  bundle = sendConsumerRepairRequestToMarketplace({
+  bundle = await sendConsumerRepairRequestToMarketplace({
     requestDraftId: bundle.draft.id,
     userId: bundle.draft.consumerUserId,
     idempotencyKey: `android-state-payload:${bundle.draft.id}`,
@@ -98,7 +98,7 @@ export async function runAndroidRequestEstimateDraftStatePayloadSmoke() {
 if (require.main === module) {
   runAndroidRequestEstimateDraftStatePayloadSmoke()
     .then((result) => {
-      console.log(result.passed ? "GREEN_ANDROID_REQUEST_ESTIMATE_DRAFT_STATE_PAYLOAD_READY" : "BLOCKED_ANDROID_REQUEST_ESTIMATE_DRAFT_STATE_PAYLOAD_FAILED");
+      console.info(result.passed ? "GREEN_ANDROID_REQUEST_ESTIMATE_DRAFT_STATE_PAYLOAD_READY" : "BLOCKED_ANDROID_REQUEST_ESTIMATE_DRAFT_STATE_PAYLOAD_FAILED");
       if (!result.passed) process.exitCode = 1;
     })
     .catch((error) => {

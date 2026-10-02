@@ -37,5 +37,5 @@ describe("editable param 11610 readiness", () => {
       shard.ready === shard.assigned &&
       shard.blockers.length === 0 &&
       shard.cache_bounded)).toBe(true);
-  }, 300000);
+  }, 540000);
 });

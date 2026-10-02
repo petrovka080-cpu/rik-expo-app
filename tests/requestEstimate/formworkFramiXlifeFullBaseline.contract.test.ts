@@ -110,10 +110,21 @@ describe("ordinary Web baseline for the full Frami Xlife project kit", () => {
   });
 
   test("does not inject the named manufacturer schedule into another catalog", () => {
-    expect(() => buildCanonicalBaselinePlan({
+    const plan = buildCanonicalBaselinePlan({
       catalog: catalog("canonical-work:base:unrelated-formwork"),
       prompt: FULL_PROJECT_PROMPT,
-    })).toThrow("CANONICAL_BASELINE_CONTRACT_MISSING");
+    });
+
+    expect(plan.parameters).toMatchObject({
+      measured_formwork_contact_area_m2: 100,
+      project_drawing_reference: "ACCEPTANCE-FW-PC-WZ-001-REV-A",
+      permanent_or_removable_formwork: "REMOVABLE",
+    });
+    expect(plan.parameters).not.toHaveProperty("frami_xlife_panel_count");
+    expect(plan.parameters).not.toHaveProperty("frami_xlife_corner_element_count");
+    expect(plan.parameters).not.toHaveProperty("frami_xlife_panel_clamp_count");
+    expect(Object.keys(plan.parameters).length).toBeLessThan(Object.keys(FORMWORK_FRAMI_XLIFE_EXACT_INPUT).length);
+    expect(plan.primaryMeasureParameterId).toBe("measured_formwork_contact_area_m2");
   });
 
   test("keeps the explicitly owned shipping mass visible in the common editor", () => {

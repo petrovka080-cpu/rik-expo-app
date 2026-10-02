@@ -1,7 +1,7 @@
 import deliveryNormPack from "../../../../../data/estimate-norms/professional/delivery.json";
 import { estimateDeterministicHash } from "../../estimateDeterministicHash";
 import type { ProfessionalParameterValueV4 } from "../professionalProjectAssemblyV4";
-import type { ProfessionalPhysicalNormApplicabilityResolutionV1 } from "./professionalPhysicalNormApplicabilityV1";
+import type { ProfessionalPhysicalNormApplicabilityResolutionV1 } from "./professionalPhysicalNormApplicabilityTypesV1";
 
 const APPLICABILITY_VERSION = "professional-physical-norm-applicability:v1" as const;
 export const FORD_TRANSIT_V363_DELIVERY_PRODUCT_PROFILE_ID =

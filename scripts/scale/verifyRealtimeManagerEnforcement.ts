@@ -361,6 +361,31 @@ function classifyRealtimeFile(repoRoot: string, file: string): RealtimeManagerIn
     };
   }
 
+  if (file === "app/(tabs)/request/index.tsx") {
+    const lifecycleSource = fs.readFileSync(
+      path.join(repoRoot, "src/lib/navigation/requestEstimateLaunchLifecycle.ts"),
+      "utf8",
+    );
+    const safe =
+      source.includes("useSyncExternalStore(") &&
+      source.includes("requestEstimateIntentLifecycle.subscribe(onStoreChange)") &&
+      source.includes("requestEstimateIntentLifecycle.getSnapshot()") &&
+      lifecycleSource.includes("subscribe(listener: () => void): () => void") &&
+      lifecycleSource.includes("this.listeners.delete(listener)") &&
+      !source.includes("supabase.channel(") &&
+      !source.includes("subscribeChannel({");
+    return {
+      ...base,
+      status: safe && !rawPayloadPrinted && !secretsPrinted && !broadExceptionUsed ? "safe" : "finding",
+      owner: "request_estimate_intent_lifecycle",
+      classification: "local_external_store_subscription",
+      cleanupPresent: safe,
+      stableOwnerPresent: safe,
+      unmanagedSubscribe: !safe,
+      reason: "React useSyncExternalStore owns the exact local request-intent unsubscribe returned by the lifecycle store; no Supabase realtime channel is involved",
+    };
+  }
+
   if (
     source.includes("listener?.subscription?.unsubscribe()") ||
     source.includes("listener.subscription.unsubscribe()") ||

@@ -8,7 +8,7 @@ import {
 } from "../estimateCalculator/capitalRenovationTestHelpers";
 
 describe("director PDF price sources contract", () => {
-  it("shows missing price state and norm source per capital renovation row without raw debug text", () => {
+  it("shows the audit-harness user price and norm source per capital renovation row without raw debug text", () => {
     const bundle = capitalRenovationBundle();
     const composition = capitalRenovationComposition(bundle.items);
     const approved = approveCanonicalConsumerRepairAuditDraft({
@@ -37,11 +37,7 @@ describe("director PDF price sources contract", () => {
       "Сантехника",
     ]));
     expect(sourceLabels.length).toBeGreaterThan(0);
-    expect(sourceLabels.every((label) =>
-      label.includes("Источник цены не выбран") || label.includes("Цена аренды/услуги не выбрана")
-    )).toBe(true);
-    expect(sourceLabels.some((label) => label.includes("Источник цены не выбран"))).toBe(true);
-    expect(sourceLabels.some((label) => label.includes("Цена аренды/услуги не выбрана"))).toBe(true);
+    expect(sourceLabels.every((label) => label.includes("цена введена пользователем"))).toBe(true);
     expect(sourceLabels.every((label) => label.includes("количество рассчитано по норме"))).toBe(true);
     expect(sourceLabels.some((label) => label.includes("версия норм: 2026.07.03"))).toBe(true);
     expect(sourceLabels.some((label) => label.includes("версия норм: 2026.09.07"))).toBe(true);

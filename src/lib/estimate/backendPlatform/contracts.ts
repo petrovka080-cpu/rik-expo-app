@@ -38,6 +38,19 @@ export type CanonicalEstimateCreateRequest = {
   priceSnapshotIds?: string[];
 };
 
+export function canonicalEstimateEffectivePriceSnapshotIds(input: {
+  requested?: readonly string[] | null;
+  compatibleDefaults?: readonly string[] | null;
+}): string[] {
+  const requested = (input.requested ?? [])
+    .map((value) => String(value).trim())
+    .filter(Boolean);
+  if (requested.length > 0) return requested;
+  return [...new Set((input.compatibleDefaults ?? [])
+    .map((value) => String(value).trim())
+    .filter(Boolean))].slice(0, 64);
+}
+
 export type CanonicalEstimateRecalculateRequest = CanonicalEstimateCreateRequest & {
   parentRevisionId: string;
   releaseMigration?: {
@@ -190,11 +203,15 @@ export type CanonicalEstimateRevisionView = {
   apiVersion: typeof ESTIMATE_PLATFORM_API_VERSION;
   revisionId: string;
   parentRevisionId: string | null;
+  /** Exact tenant of the immutable revision; reused for every child command. */
+  organizationId?: string | null;
   releaseId: string;
   catalogId: string;
   revisionNumber: number;
   status: "ready" | "failed" | "archived";
   currencyCode: string;
+  /** Immutable price evidence selected for this compile; empty means no compatible source existed. */
+  priceSnapshotIds?: string[];
   parameters: Record<string, unknown>;
   /** Immutable R6 request identity. Null only for revisions created before R6. */
   sourceRequestText?: string | null;
@@ -304,6 +321,9 @@ export type CanonicalEstimateParameterValueSourceRole =
   | "NORM_REQUIRED_BUT_PROJECT_SELECTED"
   | "MANUFACTURER_CONFIRMED"
   | "SELECTED_EQUIPMENT_PASSPORT"
+  | "SOURCE_BACKED_PRELIMINARY_PROFILE"
+  | "VISIBLE_PRELIMINARY_SCENARIO"
+  | "VISIBLE_BASELINE_ASSUMPTION"
   | "BACKEND_DERIVED"
   | "PRICE_INPUT";
 
@@ -402,6 +422,21 @@ export type CanonicalEstimateRevisionRowView = {
   calculationTrace: Record<string, unknown>;
   normativeTrace: unknown[];
   rowSha256: string;
+  /** Immutable price evidence saved with this exact revision row. */
+  priceSource?: CanonicalEstimateRevisionRowPriceSource;
+};
+
+export type CanonicalEstimateRevisionRowPriceSource = {
+  kind: "AUTOMATIC_SNAPSHOT" | "MANUAL" | "UNPRICED" | "LEGACY_UNKNOWN";
+  snapshotId: string | null;
+  routeId: string | null;
+  priceKey: string | null;
+  unitId: string;
+  unitPrice: string | null;
+  currencyCode: string | null;
+  snapshotCapturedAt: string | null;
+  routeSourceKind: "supplier" | "catalog" | "manual" | "normative" | "fallback" | null;
+  resolutionTrace: Record<string, unknown>;
 };
 
 export type CanonicalEstimateRevisionHistoryPage = {
@@ -610,6 +645,8 @@ export type CanonicalEstimateCatalogItem = {
     allowedRangeOrOptions?: unknown;
     defaultPolicy?: string;
     valueSourceRole?: CanonicalEstimateParameterValueSourceRole;
+    /** Classification of an automatically supplied runtime profile value. */
+    runtimeProfileClassification?: string;
     guide?: CanonicalEstimateParameterGuide;
     compositeItemSchema?: CanonicalEstimateCompositeItemSchema;
     sharedInputBindingPolicy?: Record<string, unknown>;

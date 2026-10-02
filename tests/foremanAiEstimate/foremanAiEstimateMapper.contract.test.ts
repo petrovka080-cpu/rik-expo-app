@@ -36,6 +36,8 @@ describe("foreman AI professional estimate mapper", () => {
     expect(mapping.payload.rows.length).toBeGreaterThan(20);
     expect(mapping.rows).toHaveLength(mapping.payload.rows.length);
     expect(mapping.requestDraftLines.length).toBeGreaterThan(buyerRows.length);
+    expect(new Set(mapping.requestDraftLines.map((row) => row.rik_code)).size).toBe(mapping.requestDraftLines.length);
+    expect(mapping.requestDraftLines.every((row) => row.rik_code.length <= 64)).toBe(true);
     expect(mapping.rows.some((row) => row.section === "labor")).toBe(true);
     expect(buyerRows.length).toBeGreaterThan(0);
     expect(buyerRows.every((row) => row.kind === "material")).toBe(true);

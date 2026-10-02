@@ -26,8 +26,17 @@ type Json = Record<string, unknown>;
 const OPTIONAL_DOCUMENTARY_PARAMETER_IDS = new Set([
   "condition_assessment_reference",
   "approved_repair_design_reference",
+  "approved_repair_method_designation",
   "repair_method_statement_reference",
+  "repair_material_designation",
+  "bonding_agent_designation",
+  "reinforcement_treatment_designation",
+  "curing_material_designation",
+  "removal_equipment_designation",
+  "mixing_equipment_designation",
+  "dust_control_equipment_designation",
   "quality_plan_reference",
+  "waste_route_reference",
 ]);
 
 const ORIGINAL_PARAMETER_BY_ID = new Map(
@@ -60,6 +69,20 @@ function adaptJson<T>(value: T): T {
 function withoutRequiredWhen(value: Json): Json {
   const { requiredWhen: _requiredWhen, ...rest } = value;
   return rest;
+}
+
+function removeOptionalDocumentaryInclusionGuards(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(removeOptionalDocumentaryInclusionGuards);
+  if (!value || typeof value !== "object") return value;
+  const record = value as Json;
+  if (
+    record.kind === "present" &&
+    typeof record.parameterId === "string" &&
+    OPTIONAL_DOCUMENTARY_PARAMETER_IDS.has(record.parameterId)
+  ) return { kind: "literal", value: true };
+  return Object.fromEntries(Object.entries(record).map(
+    ([key, item]) => [key, removeOptionalDocumentaryInclusionGuards(item)],
+  ));
 }
 
 function pedestalParameter(
@@ -134,6 +157,7 @@ export const PEDESTAL_REPAIR_RESOURCES = Object.freeze(
                         : null;
     return {
       ...adapted,
+      inclusion_ast: removeOptionalDocumentaryInclusionGuards(adapted.inclusion_ast) as Record<string, unknown>,
       row_id: resource.row_id.replaceAll("column-base-repair", "pedestal-repair"),
       title_ru: pedestalText(resource.title_ru),
       resource_graph: titleSpecificationParameterIds == null
@@ -157,7 +181,8 @@ export const PEDESTAL_REPAIR_SOURCE_METADATA = Object.freeze({
   operation_class: "REPAIR_EXISTING_CONCRETE_PEDESTAL",
   quantity_basis: "APPROVED_REPAIR_METHOD_AND_DIRECT_PROJECT_SCHEDULE",
   documentary_references_optional: true,
-  repair_technology_and_material_designation_required: true,
+  preliminary_title_refinements_optional: true,
+  repair_technology_and_material_designation_required_for_final_acceptance: true,
   conditional_branch_quantities_never_invented: true,
   calculation_inputs_never_invented: true,
 });

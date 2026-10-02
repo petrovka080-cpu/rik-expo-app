@@ -61,15 +61,12 @@ describe("native estimate build timing evidence", () => {
     ), "utf8");
     const compile = source.indexOf("await compileConsumerCanonicalBaseline");
     const ready = source.indexOf('stage: "RUNTIME_DRAFT_READY"', compile);
-    const persistOwner = source.indexOf("const persistCanonicalDraft");
+    const persistOwner = source.indexOf("function useConsumerCanonicalDraftPersistence");
     const earlyUiProjection = source.indexOf(
-      "setCanonicalEstimatePreview({",
+      "setPreview({",
       persistOwner,
     );
-    const previewRender = source.indexOf(
-      "<CanonicalEstimateMeaningfulPreviewCard",
-      earlyUiProjection,
-    );
+    const previewRender = source.indexOf("<CanonicalEstimateMeaningfulPreviewCard");
     const meaningfulUi = source.indexOf(
       'stage: "MEANINGFUL_UI_PUBLISHED"',
       earlyUiProjection,
@@ -90,17 +87,27 @@ describe("native estimate build timing evidence", () => {
     const voluntaryFullProjection = source.indexOf(
       "consumer-estimate-open-full-estimate",
     );
+    const persistHook = source.indexOf(
+      "const persistCanonicalDraft = useConsumerCanonicalDraftPersistence",
+      persistOwner,
+    );
+    const persistInvocation = source.indexOf(
+      "const persisted = await persistCanonicalDraft(",
+      ready,
+    );
 
     expect(compile).toBeGreaterThan(-1);
     expect(ready).toBeGreaterThan(compile);
     expect(earlyUiProjection).toBeGreaterThan(persistOwner);
-    expect(previewRender).toBeGreaterThan(earlyUiProjection);
+    expect(previewRender).toBeGreaterThan(-1);
     expect(meaningfulUi).toBeGreaterThan(earlyUiProjection);
     expect(localProjection).toBeGreaterThan(meaningfulUi);
     expect(durableCommit).toBeGreaterThan(persistOwner);
     expect(persisted).toBeGreaterThan(durableCommit);
     expect(savedUiProjection).toBeGreaterThan(persisted);
     expect(voluntaryFullProjection).toBeGreaterThan(-1);
+    expect(persistHook).toBeGreaterThan(persistOwner);
+    expect(persistInvocation).toBeGreaterThan(ready);
     expect(source.match(/stage: "MEANINGFUL_UI_PUBLISHED"/g)).toHaveLength(1);
     expect(source.match(/stage: "BUNDLE_PERSISTED"/g)).toHaveLength(1);
   });

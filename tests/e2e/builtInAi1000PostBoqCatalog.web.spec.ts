@@ -42,6 +42,27 @@ function pickCases() {
 }
 
 test.describe("built-in AI 1000 post-BOQ catalog web proof", () => {
+  test("keeps the three request payload cases honest without a synthetic market send", async () => {
+    const payloadCases = BUILT_IN_AI_1000_POST_BOQ_CATALOG_CASES.filter(
+      (item) => item.requiresRequestPayloadParity,
+    );
+    expect(payloadCases).toHaveLength(3);
+
+    const validations = [];
+    for (const testCase of payloadCases) {
+      validations.push(await validateBuiltInAi1000PostBoqResult(testCase));
+    }
+
+    for (const validation of validations) {
+      expect(validation.payloadTrace).not.toBeNull();
+      expect(validation.payloadTrace?.parity.passed).toBe(true);
+      expect(validation.payloadTrace?.sourceGovernance.every((item) => item.passed)).toBe(true);
+      expect(validation.payloadTrace?.pdfOpened).toBe(true);
+      expect(validation.payloadTrace?.editedQuantityPreserved).toBe(true);
+      expect(validation.payloadTrace?.marketplaceStatus).toBe("payload_ready_not_sent");
+    }
+  });
+
   test("runs 100 live web cases after BOQ/catalog core", async ({ page }) => {
     await ensureLiveWebApp();
     fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
@@ -56,7 +77,18 @@ test.describe("built-in AI 1000 post-BOQ catalog web proof", () => {
     expect(webCases).toHaveLength(100);
 
     const validations = await Promise.all(webCases.map(({ testCase }) => validateBuiltInAi1000PostBoqResult(testCase)));
-    expect(validations.every((item) => item.passed)).toBe(true);
+    const failedValidations = validations
+      .filter((item) => !item.passed)
+      .map((item) => ({
+        id: item.id,
+        anchor: item.anchor,
+        blockers: item.blockers,
+        depthBlockers: item.professional_boq_depth_blockers,
+        workKey: item.work_key_resolved,
+        boqRows: item.boq_row_count,
+        minimumBoqRows: item.minimum_boq_rows,
+      }));
+    expect(failedValidations, JSON.stringify(failedValidations, null, 2)).toEqual([]);
 
     const representative = [
       { name: "foundation_request", route: "/request", testCase: groups.request[0] },

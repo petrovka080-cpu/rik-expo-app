@@ -30,6 +30,17 @@ class MainActivity : ReactActivity() {
   override fun onNewIntent(intent: Intent) {
     setIntent(intent)
     RikIntentModule.captureViewIntent(intent, RikIntentModule.activeReactContext())
+    // Application links are owned by RikIntentModule. Passing the same warm
+    // VIEW intent into Expo Linking can address a Kotlin event emitter while
+    // the dev-client module registry is being replaced and crash MainActivity.
+    // Keep Expo handling for its own exp+ scheme and all non-application
+    // intents, but do not dispatch a second copy of a rik:// link.
+    if (
+      intent.action == Intent.ACTION_VIEW &&
+      intent.data?.scheme.equals("rik", ignoreCase = true)
+    ) {
+      return
+    }
     super.onNewIntent(intent)
     setIntent(intent)
     RikIntentModule.captureViewIntent(intent, RikIntentModule.activeReactContext())

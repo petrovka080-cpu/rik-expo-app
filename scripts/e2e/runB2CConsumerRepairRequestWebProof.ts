@@ -48,7 +48,6 @@ function assert(condition: unknown, message: string): void {
 async function main() {
   __resetConsumerRepairRequestStoreForTests();
 
-  const routeSource = read("app/(tabs)/request/index.tsx");
   const tabsSource = read("app/(tabs)/_layout.tsx");
   const screenSource = read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
   const mediaSource = read("src/features/consumerRepair/ConsumerRepairMediaButtons.tsx");
@@ -82,7 +81,7 @@ async function main() {
   bundle = approveConsumerRepairRequestDraft({ requestDraftId: bundle.draft.id, userId: "consumer-proof" });
   const pdf = getConsumerRepairRequestPdf({ requestDraftId: bundle.draft.id });
   const history = listConsumerRepairRequestHistory("consumer-proof");
-  bundle = sendConsumerRepairRequestToMarketplace({ requestDraftId: bundle.draft.id, userId: "consumer-proof" });
+  bundle = await sendConsumerRepairRequestToMarketplace({ requestDraftId: bundle.draft.id, userId: "consumer-proof" });
 
   const inventory = {
     wave: WAVE,
@@ -280,7 +279,7 @@ Status: ${releaseVerifyPassed ? GREEN_STATUS : BLOCKED_RELEASE_VERIFY_STATUS}
 - Full release verify status: ${releaseVerifyPassed ? "passed" : "not completed by this proof runner"}.
 `);
 
-  console.log(JSON.stringify(matrix, null, 2));
+  console.info(JSON.stringify(matrix, null, 2));
 }
 
 main().catch((error) => {

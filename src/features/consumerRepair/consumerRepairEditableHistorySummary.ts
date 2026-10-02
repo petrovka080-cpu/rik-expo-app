@@ -13,6 +13,8 @@ export function buildConsumerRepairEditableHistorySummary(
   return {
     revisions,
     diffs,
-    labelRu: `Версий сметы: ${revisions} · изменений: ${diffs}`,
+    labelRu: diffs > 0
+      ? `Сохранённых изменений: ${diffs}`
+      : "Сохранённых изменений пока нет",
   };
 }

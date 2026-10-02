@@ -49,7 +49,7 @@ describe("consumer estimate multi-digit input", () => {
     expect(renderer.root.findByProps({ testID: "consumer-repair-item-quantity-input-row-1" }).props.value)
       .toBe("150");
     expect(renderer.root.findByProps({ testID: "consumer-repair-item-quantity-input-row-1" }).props.selection)
-      .toEqual({ start: 0, end: 2 });
+      .toEqual(Platform.OS === "web" ? undefined : { start: 0, end: 2 });
 
     act(() => {
       renderer.root.findByProps({ testID: "consumer-repair-item-quantity-input-row-1" }).props.onBlur();
@@ -157,7 +157,8 @@ describe("consumer estimate multi-digit input", () => {
       getInput().props.onChangeText("55");
       getInput().props.onChangeText("55,25");
     });
-    expect(getInput().props.selection).toEqual({ start: 1, end: 1 });
+    expect(getInput().props.selection)
+      .toEqual(Platform.OS === "web" ? undefined : { start: 1, end: 1 });
     expect(getInput().props.value).toBe("55,25");
     expect(onUnitPriceChange).not.toHaveBeenCalled();
 

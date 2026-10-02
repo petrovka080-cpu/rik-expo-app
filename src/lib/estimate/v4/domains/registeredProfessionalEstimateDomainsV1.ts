@@ -41,63 +41,93 @@ function registeredInteriorCategoryKey(sourceDomainId: string): GlobalWorkCatego
   return "plastering";
 }
 
+type RegisteredDomainInventoryRow =
+  | (typeof INTERIOR_FINISHES_DOMAIN_INVENTORY)[number]
+  | (typeof ELECTRICAL_DOMAIN_INVENTORY)[number]
+  | (typeof HVAC_DOMAIN_INVENTORY)[number];
+
+type RegisteredDomainDescriptor = {
+  domainId: string;
+  inventory: readonly RegisteredDomainInventoryRow[];
+  parameterSchemas: readonly CanonicalParameterSchema[];
+  categoryKey: (row: RegisteredDomainInventoryRow) => GlobalWorkCategory;
+  categoryTitleRu: string;
+};
+
+const REGISTERED_DOMAIN_DESCRIPTORS: readonly RegisteredDomainDescriptor[] = [
+  {
+    domainId: INTERIOR_FINISHES_COMPLETE_DOMAIN_ID,
+    inventory: INTERIOR_FINISHES_DOMAIN_INVENTORY,
+    parameterSchemas: INTERIOR_FINISHES_CANONICAL_PARAMETER_SCHEMAS,
+    categoryKey: (row) => registeredInteriorCategoryKey(row.source_domain_id),
+    categoryTitleRu: "Внутренние отделочные работы",
+  },
+  {
+    domainId: ELECTRICAL_COMPLETE_DOMAIN_ID,
+    inventory: ELECTRICAL_DOMAIN_INVENTORY,
+    parameterSchemas: ELECTRICAL_CANONICAL_PARAMETER_SCHEMAS,
+    categoryKey: () => "electrical",
+    categoryTitleRu: "Электромонтажные работы",
+  },
+  {
+    domainId: HVAC_COMPLETE_DOMAIN_ID,
+    inventory: HVAC_DOMAIN_INVENTORY,
+    parameterSchemas: HVAC_CANONICAL_PARAMETER_SCHEMAS,
+    categoryKey: () => "heating_hvac",
+    categoryTitleRu: "Отопление, вентиляция и кондиционирование",
+  },
+] as const;
+
+function buildRegisteredProfessionalEstimateSelectionIndexV1(): ReadonlyMap<
+  string,
+  RegisteredProfessionalEstimateSelectionV1
+> {
+  const selections = new Map<string, RegisteredProfessionalEstimateSelectionV1>();
+  for (const descriptor of REGISTERED_DOMAIN_DESCRIPTORS) {
+    const schemaByWorkKey = new Map(
+      descriptor.parameterSchemas.map((schema) => [schema.canonicalWorkKey, schema]),
+    );
+    for (const inventory of descriptor.inventory) {
+      const canonicalParameterSchema = schemaByWorkKey.get(inventory.work_key);
+      if (!canonicalParameterSchema) {
+        throw new Error(`REGISTERED_PROFESSIONAL_DOMAIN_SCHEMA_NOT_FOUND:${inventory.catalog_id}`);
+      }
+      const selection = Object.freeze({
+        domain_id: descriptor.domainId,
+        catalog_id: inventory.catalog_id,
+        work_key: inventory.work_key,
+        template_id: `domain-passport:${inventory.catalog_id}:v1`,
+        title_ru: inventory.localized_name_ru,
+        category_key: descriptor.categoryKey(inventory),
+        category_title_ru: descriptor.categoryTitleRu,
+        canonical_parameter_schema: canonicalParameterSchema,
+        calculation_strategy_id: canonicalParameterSchema.calculationVersion,
+        engine_version: REGISTERED_PROFESSIONAL_ESTIMATE_DOMAINS_VERSION_V1,
+      });
+      // Preserve the former Array.find precedence: interior before electrical
+      // before HVAC, and the first row inside each inventory wins.
+      for (const identity of [
+        inventory.catalog_id,
+        inventory.work_key,
+        inventory.template_id,
+        `domain-passport:${inventory.catalog_id}:v1`,
+      ]) {
+        if (!selections.has(identity)) selections.set(identity, selection);
+      }
+    }
+  }
+  return selections;
+}
+
+const REGISTERED_PROFESSIONAL_ESTIMATE_SELECTION_INDEX_V1 =
+  buildRegisteredProfessionalEstimateSelectionIndexV1();
+
 export function resolveRegisteredProfessionalEstimateSelectionV1(
   identity: string | null | undefined,
 ): RegisteredProfessionalEstimateSelectionV1 | null {
   const exactIdentity = normalizedIdentity(identity);
   if (!exactIdentity) return null;
-  const interiorInventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find((candidate) =>
-    exactIdentity === candidate.catalog_id ||
-    exactIdentity === candidate.work_key ||
-    exactIdentity === candidate.template_id ||
-    exactIdentity === `domain-passport:${candidate.catalog_id}:v1`
-  );
-  const electricalInventory = interiorInventory ? undefined : ELECTRICAL_DOMAIN_INVENTORY.find((candidate) =>
-    exactIdentity === candidate.catalog_id ||
-    exactIdentity === candidate.work_key ||
-    exactIdentity === candidate.template_id ||
-    exactIdentity === `domain-passport:${candidate.catalog_id}:v1`
-  );
-  const hvacInventory = interiorInventory || electricalInventory ? undefined : HVAC_DOMAIN_INVENTORY.find((candidate) =>
-    exactIdentity === candidate.catalog_id ||
-    exactIdentity === candidate.work_key ||
-    exactIdentity === candidate.template_id ||
-    exactIdentity === `domain-passport:${candidate.catalog_id}:v1`
-  );
-  const inventory = interiorInventory ?? electricalInventory ?? hvacInventory;
-  if (!inventory) return null;
-  const electrical = Boolean(electricalInventory);
-  const hvac = Boolean(hvacInventory);
-  const canonicalParameterSchema = (electrical
-    ? ELECTRICAL_CANONICAL_PARAMETER_SCHEMAS
-    : hvac
-    ? HVAC_CANONICAL_PARAMETER_SCHEMAS
-    : INTERIOR_FINISHES_CANONICAL_PARAMETER_SCHEMAS).find(
-      (schema) => schema.canonicalWorkKey === inventory.work_key,
-    );
-  if (!canonicalParameterSchema) {
-    throw new Error(`REGISTERED_PROFESSIONAL_DOMAIN_SCHEMA_NOT_FOUND:${inventory.catalog_id}`);
-  }
-  return Object.freeze({
-    domain_id: electrical
-      ? ELECTRICAL_COMPLETE_DOMAIN_ID
-      : hvac
-      ? HVAC_COMPLETE_DOMAIN_ID
-      : INTERIOR_FINISHES_COMPLETE_DOMAIN_ID,
-    catalog_id: inventory.catalog_id,
-    work_key: inventory.work_key,
-    template_id: `domain-passport:${inventory.catalog_id}:v1`,
-    title_ru: inventory.localized_name_ru,
-    category_key: electrical ? "electrical" : hvac ? "heating_hvac" : registeredInteriorCategoryKey(inventory.source_domain_id),
-    category_title_ru: electrical
-      ? "Электромонтажные работы"
-      : hvac
-      ? "Отопление, вентиляция и кондиционирование"
-      : "\u0412\u043d\u0443\u0442\u0440\u0435\u043d\u043d\u0438\u0435 \u043e\u0442\u0434\u0435\u043b\u043e\u0447\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b",
-    canonical_parameter_schema: canonicalParameterSchema,
-    calculation_strategy_id: canonicalParameterSchema.calculationVersion,
-    engine_version: REGISTERED_PROFESSIONAL_ESTIMATE_DOMAINS_VERSION_V1,
-  });
+  return REGISTERED_PROFESSIONAL_ESTIMATE_SELECTION_INDEX_V1.get(exactIdentity) ?? null;
 }
 
 export function buildRegisteredProfessionalEstimateParameterCollectionDraftV1(input: {

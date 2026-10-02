@@ -81,10 +81,20 @@ describe("concrete slab leveling canonical family", () => {
     )!;
     const input = concreteSlabLevelingAcceptanceInputR1(target.contextKey);
     const { screed_guide_length_m: _missing, ...withoutGuideQuantity } = input;
-    await expect(compileConcreteSlabLevelingR1(
+    const incomplete = await compileConcreteSlabLevelingR1(
       withoutGuideQuantity,
       { catalogId: target.catalogId },
-    )).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+    );
+    expect(incomplete.preliminaryNeeds).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        row_id: "material:concrete:screed-guides",
+        quantity: null,
+        missing_parameter_ids: ["screed_guide_length_m"],
+      }),
+    ]));
+    expect(incomplete.rows.some(
+      (row) => row.row_id === "material:concrete:screed-guides",
+    )).toBe(false);
 
     const smallTarget = CONCRETE_SLAB_LEVELING_TARGETS.find(
       (candidate) => candidate.contextKey === "small_area",

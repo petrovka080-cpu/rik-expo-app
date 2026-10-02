@@ -5,7 +5,7 @@ import {
 import {
   detectEstimateFakeRows,
   type ContinuousEstimateDetectorRow,
-} from "../../src/lib/ai/estimateContinuousDetection";
+} from "../../scripts/estimate/detectors";
 
 function fakePriceRow(index: number): ContinuousEstimateDetectorRow {
   return {

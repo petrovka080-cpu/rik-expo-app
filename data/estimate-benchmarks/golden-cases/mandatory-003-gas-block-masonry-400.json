@@ -128,6 +128,16 @@
   "tolerance_policy_id": "golden-benchmark-tolerance-v1",
   "expert_reviewer": "estimate-golden-benchmark-review-board",
   "review_status": "APPROVED_FOR_PRELIMINARY",
+  "current_runtime_contract": {
+    "version": "production-norm-applicability-gate-v1",
+    "expected_outcome": "NEEDS_INPUT",
+    "historical_reference_status": "READ_ONLY_SUPERSEDED_BY_FAIL_CLOSED_NORM_GATE",
+    "required_inputs": [
+      "Confirmed product/system specification for the exact work key",
+      "Project geometry and design parameters required by an applicable source-backed norm",
+      "Approved professional norm source with an executable applicability binding"
+    ]
+  },
   "source_refs": [
     "src_professional_norm_pack_masonry_aac_block_600_200_200_piece_m2_wall_v1",
     "src_professional_norm_pack_masonry_thin_bed_block_adhesive_kg_m2_200mm_v1",

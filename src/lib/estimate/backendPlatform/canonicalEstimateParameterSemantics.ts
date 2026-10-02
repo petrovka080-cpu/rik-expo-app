@@ -10,6 +10,7 @@ const SOURCE_MANAGED_CONSUMER_ROLES = new Set<ParameterSchema["valueSourceRole"]
   "NORM_REQUIRED_BUT_PROJECT_SELECTED",
   "MANUFACTURER_CONFIRMED",
   "SELECTED_EQUIPMENT_PASSPORT",
+  "SOURCE_BACKED_PRELIMINARY_PROFILE",
   "BACKEND_DERIVED",
 ]);
 
@@ -64,6 +65,10 @@ const CONSTRUCTION_CHOICE_LABELS_RU: Readonly<Record<string, string>> = Object.f
   direct_chute: "Прямая выгрузка из автобетоносмесителя",
   membrane: "Плёнкообразующий состав",
   water: "Водный уход",
+  SEPARATE: "Доставка отдельной строкой",
+  INCLUDED_IN_SUPPLY: "Доставка включена в поставку",
+  NONE: "Не требуется",
+  WATERSTOP: "Рабочий шов с гидрошпонкой",
   sand: "Песчаная подушка",
   crushed_stone: "Щебёночная подушка",
   bituminous_coating: "Обмазочная битумная гидроизоляция",

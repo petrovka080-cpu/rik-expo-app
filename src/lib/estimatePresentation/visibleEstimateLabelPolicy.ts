@@ -118,6 +118,8 @@ const OBJECT_LABELS_RU: Record<string, string> = {
   industrial_floor: "\u043f\u0440\u043e\u043c\u044b\u0448\u043b\u0435\u043d\u043d\u044b\u0439 \u043f\u043e\u043b",
   drywall_system: "\u0441\u0438\u0441\u0442\u0435\u043c\u0430 \u0413\u041a\u041b",
   floor_covering: "\u043d\u0430\u043f\u043e\u043b\u044c\u043d\u043e\u0435 \u043f\u043e\u043a\u0440\u044b\u0442\u0438\u0435",
+  tile_surface: "\u043f\u043b\u0438\u0442\u043e\u0447\u043d\u043e\u0435 \u043f\u043e\u043a\u0440\u044b\u0442\u0438\u0435",
+  insulation_system: "\u0441\u0438\u0441\u0442\u0435\u043c\u0430 \u0442\u0435\u043f\u043b\u043e\u0438\u0437\u043e\u043b\u044f\u0446\u0438\u0438",
   earthwork_scope: "земляные работы",
   fire_alarm_system: "пожарная сигнализация",
   apartment_renovation: "ремонт квартиры",

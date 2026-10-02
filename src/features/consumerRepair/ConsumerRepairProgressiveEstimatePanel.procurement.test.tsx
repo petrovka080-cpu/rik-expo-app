@@ -3,6 +3,10 @@ import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
 
 import { ConsumerRepairProgressiveEstimatePanel } from "./ConsumerRepairProgressiveEstimatePanel";
 
+type ProgressiveEstimateViewModel = React.ComponentProps<
+  typeof ConsumerRepairProgressiveEstimatePanel
+>["viewModel"];
+
 jest.mock("@expo/vector-icons", () => ({
   Ionicons: () => null,
 }));
@@ -29,7 +33,7 @@ const viewModel = {
   normSourcePreviewLines: [],
   rawItemCount: 0,
   manualCatalogItems: [],
-} as never;
+} as ProgressiveEstimateViewModel;
 
 function revision(procurementReady: boolean) {
   const revisionId = "revision-anchor-52";
@@ -63,11 +67,14 @@ function revision(procurementReady: boolean) {
   } as never;
 }
 
-function panel(currentRevision: ReturnType<typeof revision>) {
+function panel(
+  currentRevision: ReturnType<typeof revision>,
+  model = viewModel,
+) {
   const noop = jest.fn();
   return (
     <ConsumerRepairProgressiveEstimatePanel
-      viewModel={viewModel}
+      viewModel={model}
       revisionState={null}
       currentRevision={currentRevision}
       latestDiff={null}
@@ -111,5 +118,36 @@ describe("canonical procurement preview remount", () => {
     expect(renderer.root.findByProps({
       testID: "consumer-estimate-procurement-row-material:anchor-group:anchor-bolts",
     })).toBeTruthy();
+  });
+
+  it("keeps a user-opened positions panel in front of the procurement preview", () => {
+    let renderer!: ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(panel(revision(true)));
+    });
+
+    act(() => {
+      renderer.root.findByProps({ testID: "request-estimate-positions-toggle" }).props.onPress();
+    });
+
+    expect(renderer.root.findByProps({ testID: "request-estimate-positions-panel" }))
+      .toBeTruthy();
+    expect(renderer.root.findAllByProps({ testID: "consumer-estimate-procurement-list" }))
+      .toHaveLength(0);
+  });
+
+  it("shows every position by default when the estimate has no preliminary needs", () => {
+    let renderer!: ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(panel(revision(true), {
+        ...viewModel,
+        preliminaryNeedCount: 0,
+      } as never));
+    });
+
+    expect(renderer.root.findByProps({ testID: "request-estimate-positions-panel" }))
+      .toBeTruthy();
+    expect(renderer.root.findAllByProps({ testID: "consumer-estimate-procurement-list" }))
+      .toHaveLength(0);
   });
 });

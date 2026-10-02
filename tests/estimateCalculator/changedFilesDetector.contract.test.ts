@@ -1,7 +1,7 @@
 import {
   changedFilesDetector,
   selectAffectedEstimateDetectorTests,
-} from "../../src/lib/ai/estimateContinuousDetection";
+} from "../../scripts/estimate/detectors";
 
 describe("changed files AI estimate detector", () => {
   it("selects affected formula/template/UI tests before the full matrix", () => {

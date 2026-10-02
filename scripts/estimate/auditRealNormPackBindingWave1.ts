@@ -302,6 +302,7 @@ export function runRealNormPackBindingWave1Audit(options: { writeSummary?: boole
     .map((item) => item.normId)
     .filter((normId) => !availabilityNormIds.has(normId))
     .sort();
+  const normPackItemsAvailable = wave1RegistryItems.length > 0 && missingRegistryNormIds.length === 0;
   const routingSummary = runEstimateEngineRoutingAudit({ writeSummary: false });
   const apartmentCase = starterCases.find((item) => item.case_id === "apartment_54_uses_wave1_real_norm_packs");
   const groupCase = (group: Wave1Group) => starterCases.some((item) =>
@@ -327,7 +328,7 @@ export function runRealNormPackBindingWave1Audit(options: { writeSummary?: boole
     packFiles.itemsCount >= 12 &&
     packFiles.parsed &&
     normPackItemsLoaded &&
-    missingRegistryNormIds.length === 0 &&
+    normPackItemsAvailable &&
     wave1GroupsBound &&
     rowsHaveSourceBackedNormIds &&
     groupCase("tile") &&
@@ -357,7 +358,7 @@ export function runRealNormPackBindingWave1Audit(options: { writeSummary?: boole
     source_backed_norm_items_count: packFiles.itemsCount,
     norm_pack_files_parsed: packFiles.parsed,
     norm_pack_items_loaded_into_backend_norm_registry: normPackItemsLoaded,
-    norm_pack_items_available_to_formula_engine: missingRegistryNormIds.length === 0,
+    norm_pack_items_available_to_formula_engine: normPackItemsAvailable,
     wave1_required_groups: REQUIRED_WAVE1_GROUPS,
     wave1_backend_registry_groups: PROFESSIONAL_NORM_PACK_GROUPS,
     wave1_norm_pack_groups_bound: wave1GroupsBound,

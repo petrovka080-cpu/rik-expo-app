@@ -1,11 +1,15 @@
 import {
   CEMENT_SAND_SCREED_DEMOLITION_ACCEPTANCE_INPUT,
   CEMENT_SAND_SCREED_DEMOLITION_CATALOG_ID,
+  CEMENT_SAND_SCREED_DEMOLITION_CATALOG_IDS,
   CEMENT_SAND_SCREED_DEMOLITION_FORMULAS,
+  CEMENT_SAND_SCREED_DEMOLITION_INDEPENDENT_COMPLETENESS_MAP,
   CEMENT_SAND_SCREED_DEMOLITION_PARAMETERS,
   CEMENT_SAND_SCREED_DEMOLITION_RESOURCES,
   CEMENT_SAND_SCREED_DEMOLITION_SHORT_INPUT,
+  CEMENT_SAND_SCREED_DEMOLITION_VARIANTS,
   compileCementSandScreedDemolitionR1,
+  validateCementSandScreedDemolitionCompleteness,
 } from "../../src/lib/estimate/v4/cementSandScreedDemolitionR1";
 
 const REQUIRED_ROW_IDS = [
@@ -49,6 +53,31 @@ describe("MASTER cement-sand screed demolition owner", () => {
     );
     expect(compiled.preliminaryNeeds).toHaveLength(8);
     expect(compiled.preliminaryNeeds.every((need) => need.quantity == null)).toBe(true);
+  });
+
+  test("reuses the exact composition for neutral context identities without area-class factors", async () => {
+    expect(CEMENT_SAND_SCREED_DEMOLITION_CATALOG_IDS).toHaveLength(4);
+    expect(validateCementSandScreedDemolitionCompleteness()).toBe(true);
+    expect(CEMENT_SAND_SCREED_DEMOLITION_INDEPENDENT_COMPLETENESS_MAP.entries)
+      .toHaveLength(CEMENT_SAND_SCREED_DEMOLITION_RESOURCES.length);
+    for (const variant of Object.values(CEMENT_SAND_SCREED_DEMOLITION_VARIANTS)) {
+      const compiled = await compileCementSandScreedDemolitionR1(
+        { ...CEMENT_SAND_SCREED_DEMOLITION_SHORT_INPUT },
+        { catalogId: variant.catalogId },
+      );
+      expect(compiled.rows).toEqual([
+        expect.objectContaining({
+          row_id: REQUIRED_ROW_IDS[0],
+          quantity: "150",
+          unit_id: "m2",
+        }),
+      ]);
+      expect(compiled.preliminaryNeeds).toHaveLength(8);
+    }
+    expect(JSON.stringify({
+      formulas: CEMENT_SAND_SCREED_DEMOLITION_FORMULAS,
+      resources: CEMENT_SAND_SCREED_DEMOLITION_RESOURCES,
+    })).not.toMatch(/large_area_factor|small_area_factor|wet_zone_factor|minimum_area/iu);
   });
 
   test("compiles the evidence-bound eight-row fixture without unresolved needs", async () => {

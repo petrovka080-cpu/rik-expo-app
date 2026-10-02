@@ -7,7 +7,7 @@ describe("PDF integration no mass migration", () => {
     );
     const action = readRepoFile("src/lib/ai/estimatePdf/estimatePdfActionService.ts");
     expect(matrix.mass_pdf_migration_performed).toBe(false);
-    expect(action).toContain("createAiEstimatePdf");
+    expect(action).toContain("createEstimatePdf");
     expect(action).toContain("generateConsumerRepairRequestPdf");
   });
 });

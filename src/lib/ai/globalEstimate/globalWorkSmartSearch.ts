@@ -475,39 +475,55 @@ function candidateSearchIndex(definition: GlobalWorkTypeDefinition): CandidateSe
 
 function damerauLevenshteinAtMost(left: string, right: string, maxDistance: number): boolean {
   if (Math.abs(left.length - right.length) > maxDistance) return false;
-  const distances = Array.from({ length: left.length + 1 }, (_, row) =>
-    Array.from({ length: right.length + 1 }, (__, column) => (row === 0 ? column : column === 0 ? row : 0)),
-  );
+  const unreachable = maxDistance + 1;
+  let previousPrevious: Int16Array | null = null;
+  let previous = new Int16Array(right.length + 1);
+  for (let column = 0; column <= right.length; column += 1) {
+    previous[column] = column <= maxDistance ? column : unreachable;
+  }
   for (let row = 1; row <= left.length; row += 1) {
-    for (let column = 1; column <= right.length; column += 1) {
+    const current = new Int16Array(right.length + 1);
+    current.fill(unreachable);
+    if (row <= maxDistance) current[0] = row;
+    const firstColumn = Math.max(1, row - maxDistance);
+    const lastColumn = Math.min(right.length, row + maxDistance);
+    for (let column = firstColumn; column <= lastColumn; column += 1) {
       const substitutionCost = left[row - 1] === right[column - 1] ? 0 : 1;
-      distances[row][column] = Math.min(
-        distances[row - 1][column] + 1,
-        distances[row][column - 1] + 1,
-        distances[row - 1][column - 1] + substitutionCost,
+      current[column] = Math.min(
+        previous[column] + 1,
+        current[column - 1] + 1,
+        previous[column - 1] + substitutionCost,
       );
       if (
+        previousPrevious &&
         row > 1 &&
         column > 1 &&
         left[row - 1] === right[column - 2] &&
         left[row - 2] === right[column - 1]
       ) {
-        distances[row][column] = Math.min(distances[row][column], distances[row - 2][column - 2] + 1);
+        current[column] = Math.min(current[column], previousPrevious[column - 2] + 1);
       }
     }
+    previousPrevious = previous;
+    previous = current;
   }
-  return distances[left.length][right.length] <= maxDistance;
+  return previous[right.length] <= maxDistance;
 }
 
 function tokenMatches(queryToken: string, candidateTokens: Set<string>): boolean {
   if (candidateTokens.has(queryToken)) return true;
   if (queryToken.length < 4) return false;
-  return [...candidateTokens].some((token) => {
-    if (token.length < 4) return false;
+  for (const token of candidateTokens) {
+    if (token.length < 4) continue;
     if (token.startsWith(queryToken) || queryToken.startsWith(token)) return true;
     const typoBudget = Math.min(2, Math.floor(Math.max(queryToken.length, token.length) / 6));
-    return typoBudget > 0 && queryToken[0] === token[0] && damerauLevenshteinAtMost(queryToken, token, typoBudget);
-  });
+    if (
+      typoBudget > 0 &&
+      queryToken[0] === token[0] &&
+      damerauLevenshteinAtMost(queryToken, token, typoBudget)
+    ) return true;
+  }
+  return false;
 }
 
 function scoreDefinition(params: {

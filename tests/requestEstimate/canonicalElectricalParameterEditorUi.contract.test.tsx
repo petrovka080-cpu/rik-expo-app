@@ -76,7 +76,7 @@ function parameter(input: {
     confidence: missing ? 0 : 0.7,
     assumption: missing ? null : "Backend baseline pending explicit confirmation.",
     affectsRows: [],
-    affectsFormula: [],
+    affectsFormula: [`formula:${input.parameterId}`],
     normativeSource: null,
     displayOrder: input.displayOrder,
     sourceText: "backend canonical parameter-session fixture",
@@ -246,16 +246,20 @@ describe("backend-projected canonical parameter editor UI replacement contract",
 
   it("renders five separate editable backend parameters with visible values and assumptions", () => {
     const { renderer } = renderElectricalPanel("complete");
-    const keys = ["area_m2", "route_length_m", "outlet_count", "switch_count", "lighting_point_count"];
+    const values = {
+      area_m2: "87",
+      route_length_m: "154",
+      outlet_count: "10",
+      switch_count: "10",
+      lighting_point_count: "8",
+    };
     const tree = renderer.toJSON();
-    keys.forEach((key) => expect(countJsonTestId(tree, `editable-param-chip-${key}`)).toBe(1));
+    for (const [key, value] of Object.entries(values)) {
+      expect(countJsonTestId(tree, `editable-param-chip-${key}`)).toBe(1);
+      expect(renderer.root.findByProps({ testID: `editable-param-chip-${key}` })
+        .findByProps({ testID: "editable-param-popover-input" }).props.value).toBe(value);
+    }
     expect(countJsonTestId(tree, "request-estimate-assumed-parameters")).toBe(1);
-    const text = visibleText(tree);
-    expect(text).toMatch(/Площадь[\s\S]*87/u);
-    expect(text).toMatch(/Длина кабельной трассы[\s\S]*154/u);
-    expect(text).toMatch(/Количество розеток[\s\S]*10/u);
-    expect(text).toMatch(/Количество выключателей[\s\S]*10/u);
-    expect(text).toMatch(/Количество точек освещения[\s\S]*8/u);
   });
 
   it("preserves an unsaved parameter while a refreshed backend session changes fingerprint", () => {
@@ -391,6 +395,10 @@ describe("backend-projected canonical parameter editor UI replacement contract",
     expect(countJsonTestId(delivery.toJSON(), "consumer-repair-address-input")).toBe(1);
     expect(countJsonTestId(delivery.toJSON(), "consumer-repair-phone-input")).toBe(1);
     expect(countJsonTestId(delivery.toJSON(), "consumer-repair-time-input")).toBe(1);
+    expect(visibleText(delivery.toJSON())).toContain(
+      "Адрес и телефон понадобятся только при отправке сметы в Маркет.",
+    );
+    expect(visibleText(delivery.toJSON())).not.toContain("Адрес и телефон обязательны.");
     act(() => delivery.unmount());
   });
 

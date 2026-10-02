@@ -34,7 +34,7 @@ import type {
   EstimateDraftRevisionState,
 } from "../../lib/estimate/estimateDraftRevisionContract";
 import { canonicalMaterialQuantityBasisFromRow } from "../../lib/estimate/backendPlatform/canonicalMaterialQuantityProjection";
-import { normalizePublicBoqNameRu } from "../../lib/estimate/publicBoqNaming";
+import { publicBoqDisplayNameRu } from "../../lib/estimate/publicBoqNaming";
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
@@ -61,6 +61,9 @@ type ItemEditorHandlers = {
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
   onUnitPriceChange: (itemId: string, value: string) => void;
+  pendingCanonicalRowEditCount?: number;
+  canonicalRowEditsApplying?: boolean;
+  onApplyCanonicalRowEdits?: () => boolean | void | Promise<boolean | void>;
   onSpecificationChange?: (itemId: string, value: string) => void;
   onOptionalChange?: (itemId: string, optional: boolean) => void;
   onRemove: (itemId: string) => void;
@@ -68,6 +71,7 @@ type ItemEditorHandlers = {
   onAddPhotoMaterialRecognition?: () => void;
   onOpenPhotoForEstimateItem?: (itemId: string) => void;
   rowPhotoThumbnails?: Readonly<Record<string, string>>;
+  rowPhotoAttachmentItemIds?: ReadonlySet<string>;
   onAddCustom: () => void;
   onRestoreLastRemoved?: () => void;
   canRestoreLastRemoved?: boolean;
@@ -81,7 +85,9 @@ type ParameterHandlers = {
   onSaveParamEdit?: (rawValue: string) => void;
   onCancelParamEdit?: () => void;
   onApplyParamPatch?: (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => void;
-  onApplyParamBatch?: (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => void;
+  onApplyParamBatch?: (
+    patches: ConsumerRepairDraftRevisionParamBatchPatch[],
+  ) => boolean | void | Promise<boolean | void>;
 };
 
 type Props = ItemEditorHandlers & ParameterHandlers & {
@@ -92,6 +98,7 @@ type Props = ItemEditorHandlers & ParameterHandlers & {
   canonicalParameterSession?: CanonicalParameterSession | null;
   canonicalParameterReadinessPending?: boolean;
   showPdfAction?: boolean;
+  pdfOpenBusy?: boolean;
   onMakePdf?: () => void;
   onOpenProcurement?: () => void;
   onRefineCanonicalParameters?: () => void;
@@ -108,6 +115,15 @@ function hasCurrentProcurementArtifact(revision: EstimateDraftRevision | null): 
     revision?.artifacts.procurementArtifactId
     && revision.artifacts.procurementValidForRevisionId === revision.revisionId,
   );
+}
+
+function shouldOpenPositionsByDefault(props: Props): boolean {
+  const preliminaryNeedCount = props.viewModel.preliminaryNeedCount;
+  if (preliminaryNeedCount == null) return false;
+  // When a row blocks confirmation, open the list immediately so the amber
+  // notice and the "only unresolved" filter are visible without hunting.
+  if (preliminaryNeedCount > 0) return true;
+  return props.canonicalParameterSession?.status !== "BLOCKING_REQUIRED";
 }
 
 export type CanonicalProcurementPreviewRow = {
@@ -129,7 +145,10 @@ export function buildCanonicalProcurementPreviewRows(
       const quantityBasis = row.materialQuantity ?? canonicalMaterialQuantityBasisFromRow(row);
       return {
         rowId: row.rowId,
-        titleRu: normalizePublicBoqNameRu({ sourceNameRu: row.titleRu }),
+        titleRu: publicBoqDisplayNameRu({
+          sourceNameRu: row.titleRu,
+          rowType: row.rowType,
+        }),
         quantity: quantityBasis?.procurementQuantity ?? row.quantity,
         unit: formatEstimateUnitLabel(
           quantityBasis?.procurementUnit ?? row.unitLabel ?? row.unit,
@@ -153,8 +172,8 @@ function pluralizeRu(count: number, one: string, few: string, many: string): str
 function compactRuNumber(value: number): string {
   return new Intl.NumberFormat("ru-RU", {
     maximumFractionDigits: 6,
-    useGrouping: false,
-  }).format(value);
+    useGrouping: true,
+  }).format(value).replace(/[\u00a0\u202f]/gu, " ");
 }
 
 export function canonicalNumericInputRule(input: {
@@ -188,23 +207,27 @@ export function canonicalConsumerParameterPlaceholder(input: {
   unitLabel?: string | null;
 }): string {
   const validation = input.parameter?.validation;
-  const hasNormRange = Boolean(
+  const hasValidatedRange = Boolean(
     input.parameter?.normativeSource &&
     validation?.min != null &&
     validation?.max != null &&
     validation.max > validation.min
   );
-  const norm = hasNormRange
-    ? `Норма: ${compactRuNumber(validation!.min!)}–${compactRuNumber(validation!.max!)}`
+  const validatedRange = hasValidatedRange
+    ? `Допустимо: ${compactRuNumber(validation!.min!)}–${compactRuNumber(validation!.max!)}`
     : null;
   if (input.parameter?.source === "ASSUMED" && input.baselineDisplay.trim()) {
-    return `Предварительно принято: ${input.baselineDisplay.trim()}${norm ? ` · ${norm.toLocaleLowerCase("ru-RU")}` : ""}`;
+    return `Предварительно принято: ${input.baselineDisplay.trim()}${validatedRange ? ` · ${validatedRange.toLocaleLowerCase("ru-RU")}` : ""}`;
   }
-  if (norm) return `${norm}. Возьмите значение из указанного нормативного источника.`;
+  if (validatedRange) return `${validatedRange}. Источник и область применения доступны по «i».`;
 
   const parameterId = input.parameter?.parameterId ?? "";
   const valueType = input.parameter?.valueType;
   const unit = String(input.unitLabel ?? input.parameter?.unit ?? "").trim();
+  const constructionExample = canonicalConstructionParameterExample(parameterId);
+  if (constructionExample) {
+    return `${constructionExample} — укажите значение из проекта или спецификации, не применяйте пример как норму.`;
+  }
   if (/(?:reference|drawing|schedule|confirmation|approval|certificate|document)(?:_|$)/iu.test(parameterId)) {
     return "Введите номер или название документа, например «КЖ-12, лист 4»; если документа нет, поле не должно блокировать предварительный расчёт.";
   }
@@ -220,6 +243,88 @@ export function canonicalConsumerParameterPlaceholder(input: {
   const guide = String(input.guideShortRu ?? "").trim();
   if (guide && !/^по проекту\.?$/iu.test(guide)) return guide;
   return "Введите конкретное значение из обмера, чертежа или спецификации; не указывайте наугад.";
+}
+
+function canonicalConstructionParameterExample(parameterId: string): string | null {
+  const examples: Readonly<Record<string, string>> = {
+    concrete_class: "Например: B25",
+    watertightness: "Например: W6",
+    frost_resistance: "Например: F150",
+    mobility: "Например: П4 (P4)",
+  };
+  if (examples[parameterId]) return examples[parameterId];
+  if (/(?:^|_)concrete_(?:strength_)?class(?:_|$)/iu.test(parameterId)) return "Например: B25";
+  if (/(?:^|_)watertightness(?:_|$)/iu.test(parameterId)) return "Например: W6";
+  if (/(?:^|_)frost_resistance(?:_|$)/iu.test(parameterId)) return "Например: F150";
+  if (/(?:^|_)concrete_(?:mix_)?mobility(?:_|$)/iu.test(parameterId)) return "Например: П4 (P4)";
+  return null;
+}
+
+function canonicalConsumerParameterSourceHint(
+  parameter: CanonicalParameter | null | undefined,
+  guideKind: AiEstimateParameterCard["guideKind"],
+): string {
+  const parameterId = parameter?.parameterId ?? "";
+  const unit = parameter?.unit ?? "";
+  if (/(?:worker|labor|man_hour|person_shift|crew).*(?:_h|hour|shift)?|(?:_worker_h|_labor_h)$/iu.test(parameterId)
+    || unit === "man_hour" || unit === "person_shift") {
+    return "из КРЕР/ППР";
+  }
+  if (/(?:machine|equipment|productivity|shift)/iu.test(parameterId)
+    || unit === "machine_hour" || unit === "shift") {
+    return "паспорт/ППР";
+  }
+  if (/(?:price|cost|tariff|quote)/iu.test(parameterId)) return "из КП/прайса";
+  if (/(?:distance|haul|route)/iu.test(parameterId)) return "маршрут/КП";
+  if (/(?:rate|consumption|coverage|yield)/iu.test(parameterId)) {
+    return parameter?.normativeSource ? "норма по «i»" : "паспорт/проект";
+  }
+  if (/(?:area|volume|length|width|height|depth|thickness|diameter|dimension|perimeter)/iu.test(parameterId)) {
+    return "чертёж/обмер";
+  }
+  if (/(?:count|quantity|number|amount)/iu.test(parameterId)) return "проект/ведомость";
+  if (guideKind === "MANUFACTURER_GUIDANCE") return "по паспорту";
+  if (guideKind === "MEASUREMENT_RULE") return "чертёж/обмер";
+  if (parameter?.normativeSource) return "источник по «i»";
+  return "проект/ведомость";
+}
+
+export function canonicalConsumerParameterInlineGuide(input: {
+  parameter: CanonicalParameter | null | undefined;
+  baselineValue: string;
+  guideKind?: AiEstimateParameterCard["guideKind"];
+}): string {
+  const baseline = input.baselineValue.trim();
+  // Number("") is 0 in JavaScript. An empty reference must never be rendered
+  // as a real zero norm in a construction input.
+  const numericBaseline = baseline ? Number(baseline.replace(",", ".")) : Number.NaN;
+  const displayBaseline = baseline && Number.isFinite(numericBaseline)
+    ? compactRuNumber(numericBaseline)
+    : baseline;
+  // A filled value owns its own provenance. The immutable catalogue reference
+  // is consulted only while the field itself is still missing.
+  const guideSource = input.parameter?.value != null
+    ? input.parameter.source
+    : input.parameter?.referenceSource ?? input.parameter?.source;
+  if (displayBaseline) {
+    if (guideSource === "NORMATIVE_DERIVED"
+      && input.parameter?.normativeSource
+      && input.guideKind === "MANUFACTURER_GUIDANCE") {
+      return `паспорт ${displayBaseline}`;
+    }
+    if (guideSource === "ASSUMED") return `принято ${displayBaseline}`;
+    if (guideSource === "CALCULATED") return `расчёт ${displayBaseline}`;
+    if (guideSource === "NORMATIVE_DERIVED" && (!Number.isFinite(numericBaseline) || numericBaseline > 0)) {
+      return `норма ${displayBaseline}`;
+    }
+  }
+  if (input.guideKind === "MEASUREMENT_RULE") {
+    return canonicalConsumerParameterSourceHint(input.parameter, input.guideKind);
+  }
+  if (input.parameter?.source === "TEXT_EXTRACTED" || input.parameter?.source === "USER_EXPLICIT") {
+    return "по данным объекта";
+  }
+  return canonicalConsumerParameterSourceHint(input.parameter, input.guideKind);
 }
 
 function missingParameterCount(revision: EstimateDraftRevision | null, fallback: number): number {
@@ -343,14 +448,13 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
     // and source gaps remain explicit in the summary and behind the refinement
     // action, but they must not replace the result with a large form on mount.
     parametersOpen: false,
-    positionsOpen:
-      this.props.viewModel.preliminaryNeedCount === 0
-      &&
-      !hasCurrentProcurementArtifact(this.props.currentRevision)
-      && this.props.canonicalParameterSession?.status !== "BLOCKING_REQUIRED",
+    positionsOpen: shouldOpenPositionsByDefault(this.props),
     // Artifact binding can move the draft panel between screen slots and
-    // remount this component. The revision therefore keeps the preview open.
-    procurementOpen: hasCurrentProcurementArtifact(this.props.currentRevision),
+    // remount this component. Keep procurement available, but do not let it
+    // replace a complete detailed BOQ as the default projection.
+    procurementOpen:
+      hasCurrentProcurementArtifact(this.props.currentRevision)
+      && !shouldOpenPositionsByDefault(this.props),
   };
 
   componentDidUpdate(prevProps: Props): void {
@@ -366,7 +470,12 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
     }
     const previousProcurementReady = hasCurrentProcurementArtifact(prevProps.currentRevision);
     const currentProcurementReady = hasCurrentProcurementArtifact(this.props.currentRevision);
-    if (currentProcurementReady && !previousProcurementReady && !this.state.procurementOpen) {
+    if (
+      currentProcurementReady
+      && !previousProcurementReady
+      && !this.state.procurementOpen
+      && !this.state.positionsOpen
+    ) {
       this.setState({ procurementOpen: true, positionsOpen: false });
     } else if (
       currentRevisionId !== previousRevisionId
@@ -385,7 +494,10 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
   };
 
   private togglePositions = () => {
-    this.setState((state) => ({ positionsOpen: !state.positionsOpen }));
+    this.setState((state) => ({
+      positionsOpen: !state.positionsOpen,
+      procurementOpen: state.positionsOpen ? state.procurementOpen : false,
+    }));
   };
 
   private openProcurement = () => {
@@ -407,12 +519,16 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
       canonicalParameterSession,
       canonicalParameterReadinessPending = false,
       showPdfAction,
+      pdfOpenBusy = false,
       onMakePdf,
       onOpenProcurement,
       onDecrease,
       onIncrease,
       onQuantityChange,
       onUnitPriceChange,
+      pendingCanonicalRowEditCount,
+      canonicalRowEditsApplying,
+      onApplyCanonicalRowEdits,
       onSpecificationChange,
       onOptionalChange,
       onRemove,
@@ -420,6 +536,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
       onAddPhotoMaterialRecognition,
       onOpenPhotoForEstimateItem,
       rowPhotoThumbnails,
+      rowPhotoAttachmentItemIds,
       onAddCustom,
       onRestoreLastRemoved,
       canRestoreLastRemoved,
@@ -489,13 +606,17 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
         {showPdfAction && onMakePdf ? (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Сделать PDF"
+            accessibilityLabel={pdfOpenBusy ? "Открываем PDF" : "Сделать PDF"}
+            accessibilityState={{ busy: pdfOpenBusy, disabled: pdfOpenBusy }}
+            disabled={pdfOpenBusy}
             onPress={onMakePdf}
             style={styles.actionButton}
             testID="consumer-estimate-make-pdf"
           >
             <Ionicons name="document-text-outline" size={16} color="#334155" />
-            <Text style={styles.actionButtonText}>PDF</Text>
+            <Text style={styles.actionButtonText}>
+              {pdfOpenBusy ? "Открываем PDF…" : "PDF"}
+            </Text>
           </Pressable>
         ) : null}
         {currentRevision?.boq.rows.some((row) => row.includedInProcurement) && onOpenProcurement ? (
@@ -517,7 +638,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
           <View style={styles.panelHeader}>
             <Text style={styles.panelTitle}>Список закупки</Text>
             <Text style={styles.panelMeta}>
-              {`${procurementRows.length} ${pluralizeRu(procurementRows.length, "позиция", "позиции", "позиций")} · версия №${currentRevision?.canonicalRevisionNumber ?? "—"}`}
+              {`${procurementRows.length} ${pluralizeRu(procurementRows.length, "позиция", "позиции", "позиций")} · текущий расчёт`}
             </Text>
           </View>
           {procurementRows.map((row) => (
@@ -569,6 +690,9 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
           onIncrease={onIncrease}
           onQuantityChange={onQuantityChange}
           onUnitPriceChange={onUnitPriceChange}
+          pendingCanonicalRowEditCount={pendingCanonicalRowEditCount}
+          canonicalRowEditsApplying={canonicalRowEditsApplying}
+          onApplyCanonicalRowEdits={onApplyCanonicalRowEdits}
           onSpecificationChange={onSpecificationChange}
           onOptionalChange={onOptionalChange}
           onRemove={onRemove}
@@ -576,6 +700,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
           onAddPhotoMaterialRecognition={onAddPhotoMaterialRecognition}
           onOpenPhotoForEstimateItem={onOpenPhotoForEstimateItem}
           rowPhotoThumbnails={rowPhotoThumbnails}
+          rowPhotoAttachmentItemIds={rowPhotoAttachmentItemIds}
           onAddCustom={onAddCustom}
           onRestoreLastRemoved={onRestoreLastRemoved}
           canRestoreLastRemoved={canRestoreLastRemoved}
@@ -598,7 +723,9 @@ type ParameterDisclosurePanelProps = {
   onOpenParamEditor?: (operation: UserParamPatchOperation, paramKey: string) => void;
   onSaveParamEdit?: (rawValue: string) => void;
   onCancelParamEdit?: () => void;
-  onApplyParamBatch?: (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => void;
+  onApplyParamBatch?: (
+    patches: ConsumerRepairDraftRevisionParamBatchPatch[],
+  ) => boolean | void | Promise<boolean | void>;
 };
 
 type ParameterDisclosurePanelState = {
@@ -612,6 +739,7 @@ type ParameterDisclosurePanelState = {
   validationErrors: Record<string, string>;
   explicitlyConfirmedMissingValues: Record<string, true>;
   expandedGuideDetails: Record<string, true>;
+  applyState: "idle" | "pending" | "success" | "error";
 };
 
 export function isConsumerRepairParameterExplicitlyDirty(input: {
@@ -647,6 +775,7 @@ type InlineParamEditorProps = {
   hint?: string;
   choices?: { value: string; labelRu: string }[];
   guideShortRu: string;
+  embeddedGuideRu?: string;
   structuredGroup?: AiEstimateParameterCard["structuredGroup"];
   clarificationControl?: AiEstimateParameterCard["clarificationControl"];
   onChange: (paramKey: string, rawValue: string) => void;
@@ -746,12 +875,19 @@ export class InlineParamEditor extends React.PureComponent<InlineParamEditorProp
   };
 
   render(): React.ReactElement {
-    const { paramKey, label, inputKind, value, unitLabel, dirty, error, hint, choices, guideShortRu, structuredGroup, clarificationControl, onChange } = this.props;
+    const { paramKey, label, inputKind, value, unitLabel, dirty, error, hint, choices, guideShortRu, embeddedGuideRu, structuredGroup, clarificationControl, onChange } = this.props;
     const keyboardType = inputKind === "number" ? "decimal-pad" : "default";
     const compositeItems = this.compositeItems();
+    const compactScalar = !structuredGroup
+      && clarificationControl !== "file_upload"
+      && (!choices || choices.length === 0)
+      && inputKind === "number";
 
     return (
-      <View style={styles.inlineParamEditor} testID={`editable-param-inline-editor-${paramKey}`}>
+      <View
+        style={[styles.inlineParamEditor, compactScalar ? styles.inlineParamEditorCompact : null]}
+        testID={`editable-param-inline-editor-${paramKey}`}
+      >
         <View style={styles.inlineParamEditorBody} testID="editable-param-popover">
           {structuredGroup ? (
             <View style={styles.typedCompositeEditor} testID={`typed-composite-editor-${paramKey}`}>
@@ -827,7 +963,7 @@ export class InlineParamEditor extends React.PureComponent<InlineParamEditorProp
               ))}
             </View>
           ) : (
-            <View>
+            <View style={compactScalar ? styles.inlineParamInputShell : null}>
               <TextInput
                 value={value}
                 importantForAutofill="no"
@@ -836,28 +972,37 @@ export class InlineParamEditor extends React.PureComponent<InlineParamEditorProp
                 onBlur={() => this.blurControl(paramKey)}
                 onSelectionChange={(event) => this.rememberSelection(paramKey, event)}
                 keyboardType={keyboardType}
-                placeholder={value.trim() ? undefined : guideShortRu}
+                placeholder={value.trim() ? undefined : embeddedGuideRu ? "Введите" : guideShortRu}
                 placeholderTextColor="#64748B"
                 accessibilityLabel={label}
                 accessibilityHint={`${guideShortRu}${unitLabel ? `, ${unitLabel}` : ""}`}
                 selection={this.activeSelection(paramKey)}
-                style={styles.inlineParamInput}
+                style={[styles.inlineParamInput, compactScalar ? styles.inlineParamInputCompact : null]}
                 testID="editable-param-popover-input"
               />
+              {compactScalar && embeddedGuideRu ? (
+                <Text
+                  numberOfLines={1}
+                  pointerEvents="none"
+                  style={styles.inlineParamEmbeddedGuide}
+                  testID={`editable-param-inline-guide-${paramKey}`}
+                >
+                  {embeddedGuideRu}
+                </Text>
+              ) : null}
             </View>
           )}
-          {!structuredGroup && guideShortRu ? (
+          {!structuredGroup && !compactScalar && guideShortRu ? (
             <Text style={styles.inlineGuideChip} testID={`editable-param-guide-${paramKey}`}>
               {guideShortRu}
             </Text>
           ) : null}
-          {hint ? <Text style={styles.parameterMeta}>{hint}</Text> : null}
-          <Text
-            style={[styles.inlineParamDirty, dirty ? null : styles.inlineParamDirtyHidden]}
-            testID={`editable-param-dirty-${paramKey}`}
-          >
-            {dirty ? "Изменено" : " "}
-          </Text>
+          {!compactScalar && hint ? <Text style={styles.parameterMeta}>{hint}</Text> : null}
+          {dirty ? (
+            <Text style={styles.inlineParamDirty} testID={`editable-param-dirty-${paramKey}`}>
+              Изменено
+            </Text>
+          ) : null}
           {error ? (
             <Text style={styles.inlineParamError} testID={`editable-param-validation-error-${paramKey}`}>
               {error}
@@ -884,6 +1029,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     validationErrors: {},
     explicitlyConfirmedMissingValues: {},
     expandedGuideDetails: {},
+    applyState: "idle",
   };
 
   componentDidMount(): void {
@@ -1029,6 +1175,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       explicitlyConfirmedMissingValues: card?.missing
         ? { ...state.explicitlyConfirmedMissingValues, [paramKey]: true }
         : state.explicitlyConfirmedMissingValues,
+      applyState: "idle",
     }));
   };
 
@@ -1048,6 +1195,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       draftValues: { ...this.state.baselineValues },
       validationErrors: {},
       explicitlyConfirmedMissingValues: {},
+      applyState: "idle",
     });
   };
 
@@ -1081,7 +1229,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
           (integer === true && !Number.isInteger(parsed))
         ) {
           const ruleOwner = canonicalParameter.normativeSource
-            ? "нормативный диапазон"
+            ? "допустимый диапазон ввода"
             : "правило проверки ввода";
           validationErrors[key] = `${canonicalParameter.label}: ${ruleOwner} — ${rule}.`;
           continue;
@@ -1116,7 +1264,20 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     }));
     this.submittedDraftValues = { ...this.state.draftValues };
     this.submittedParentRevisionId = this.props.revision?.revisionId ?? this.state.draftRevisionId;
-    this.props.onApplyParamBatch?.(patches);
+    this.setState({ applyState: "pending" });
+    try {
+      const result = this.props.onApplyParamBatch?.(patches);
+      if (result && typeof (result as Promise<boolean | void>).then === "function") {
+        void (result as Promise<boolean | void>).then(
+          (applied) => this.setState({ applyState: applied === false ? "error" : "success" }),
+          () => this.setState({ applyState: "error" }),
+        );
+      } else {
+        this.setState({ applyState: result === false ? "error" : "success" });
+      }
+    } catch {
+      this.setState({ applyState: "error" });
+    }
   }
 
   private continuePreliminaryCompilation = (): void => {
@@ -1136,20 +1297,18 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       paramEditorEnabled,
     } = this.props;
     const rawValue = this.initialEditValue(card);
-    const baseline = this.state.baselineValues[card.key] ?? "";
+    const canonicalParameter = this.editableCanonicalParameterSession()?.parameters.find(
+      (parameter) => parameter.parameterId === card.key,
+    );
+    const baseline = canonicalParameter?.referenceValue == null
+      ? this.state.baselineValues[card.key] ?? ""
+      : String(canonicalParameter.referenceValue);
     const isDirty = isConsumerRepairParameterExplicitlyDirty({
       baselineValue: baseline,
       draftValue: rawValue,
       explicitlyConfirmedMissingValue: this.state.explicitlyConfirmedMissingValues[card.key] === true,
     });
-    const meta = card.missing
-      ? card.editable
-        ? card.requiredForLabelRu
-        : "Нужен подтверждённый источник; вручную не вводится."
-      : card.displayValueRu;
-    const canonicalParameter = this.editableCanonicalParameterSession()?.parameters.find(
-      (parameter) => parameter.parameterId === card.key,
-    );
+    const meta = card.missing ? card.requiredForLabelRu : card.displayValueRu;
     const hasValidNormRange = Boolean(
       canonicalParameter?.normativeSource &&
       canonicalParameter.validation.min != null &&
@@ -1157,7 +1316,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       canonicalParameter.validation.max > canonicalParameter.validation.min
     );
     const validationHint = canonicalParameter?.valueType === "number" && hasValidNormRange
-      ? `Норма: ${canonicalNumericInputRule({
+      ? `Допустимый диапазон ввода: ${canonicalNumericInputRule({
         ...canonicalParameter.validation,
         unit: card.unitRu,
       })}.`
@@ -1193,6 +1352,11 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
               hint={validationHint}
               choices={card.choices}
               guideShortRu={placeholder}
+              embeddedGuideRu={canonicalConsumerParameterInlineGuide({
+                parameter: canonicalParameter,
+                baselineValue: baseline,
+                guideKind: card.guideKind,
+              })}
               structuredGroup={card.structuredGroup}
               clarificationControl={card.clarificationControl}
               onChange={this.changeDraftValue}
@@ -1290,7 +1454,8 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       card.source !== "formula_derived" &&
       !assumptionCards.includes(card)
     );
-    const derivedCards = cards.filter((card) => card.source === "formula_derived");
+    const derivedCards = cards.filter((card) =>
+      card.source === "formula_derived" && !missingCardIds.has(card.key));
     const criticalMissingCards = missingCards.filter(
       (card) => card.clarificationTier === "critical",
     );
@@ -1305,6 +1470,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       ];
     const hiddenMissingCount = Math.max(0, missingCards.length - visibleMissingCards.length);
     const dirtyCount = this.dirtyKeys().length;
+    const applyPending = this.state.applyState === "pending";
     const clarification = this.props.revision?.professionalClarification;
     const calculationRequirementIds = canonicalSession
       ? consumerRepairCanonicalCalculationRequirementIds(canonicalSession)
@@ -1319,7 +1485,11 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       && (calculationRequirementIds?.invalidParameterIds.length ?? 0) === 0
       && this.props.onApplyParamBatch,
     );
-    const sourceGateCount = this.props.viewModel?.sourceGates?.length ?? 0;
+    const visibleCardIds = new Set(cards.map((card) => card.key));
+    const visibleSourceGates = (this.props.viewModel?.sourceGates ?? []).filter(
+      (gate) => !visibleCardIds.has(gate.parameterId),
+    );
+    const sourceGateCount = visibleSourceGates.length;
 
     return (
     <View style={styles.parameterPanel} testID="request-estimate-parameter-panel">
@@ -1340,13 +1510,13 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
           </Text>
         ) : null}
       </View>
-      {(this.props.viewModel?.sourceGates?.length ?? 0) > 0 ? (
+      {visibleSourceGates.length > 0 ? (
         <View style={styles.parameterGroup} testID="request-estimate-source-gates">
           <Text style={styles.groupTitle}>Нужен подтверждённый источник</Text>
           <Text style={styles.parameterMeta}>
             Эти значения должен предоставить расчётный каталог или специалист. Поля для угадывания заказчиком отключены.
           </Text>
-          {(this.props.viewModel?.sourceGates ?? []).map((gate) => (
+          {visibleSourceGates.map((gate) => (
             <View key={gate.parameterId} style={styles.sourceGateRow} testID={`request-estimate-source-gate-${gate.parameterId}`}>
               <Text style={styles.parameterLabel}>{gate.title}</Text>
               <Text style={styles.parameterMeta}>{gate.sourceRequirement}</Text>
@@ -1372,11 +1542,18 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
           <View style={styles.batchActions}>
             <Pressable
               accessibilityRole="button"
+              disabled={applyPending}
               onPress={this.applyDraftChanges}
-              style={[styles.inlineParamButton, styles.inlineParamPrimaryButton]}
+              style={[
+                styles.inlineParamButton,
+                styles.inlineParamPrimaryButton,
+                applyPending ? styles.inlineParamButtonDisabled : null,
+              ]}
               testID="editable-param-batch-apply"
             >
-              <Text style={styles.inlineParamPrimaryText}>Применить и сформировать смету</Text>
+              <Text style={styles.inlineParamPrimaryText}>
+                {applyPending ? "Применяется…" : "Применить"}
+              </Text>
             </Pressable>
             <Pressable
               accessibilityRole="button"
@@ -1393,6 +1570,16 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
             </Text>
           ) : null}
         </View>
+      ) : null}
+      {this.state.applyState === "success" ? (
+        <Text style={styles.successStatus} testID="request-estimate-parameter-apply-success">
+          Применено и рассчитано. Все изменения сохранены вместе.
+        </Text>
+      ) : null}
+      {this.state.applyState === "error" ? (
+        <Text style={styles.inlineParamError} testID="request-estimate-parameter-apply-error">
+          Не применено. Введённые значения сохранены на экране — исправьте указанную ошибку и повторите.
+        </Text>
       ) : null}
       {dirtyCount === 0 && canContinueWithoutDocumentOnlyFields ? (
         <View style={styles.batchBar} testID="editable-param-preliminary-continue-bar">
@@ -1509,6 +1696,9 @@ function EstimatePositionsPanel({
   onIncrease,
   onQuantityChange,
   onUnitPriceChange,
+  pendingCanonicalRowEditCount,
+  canonicalRowEditsApplying,
+  onApplyCanonicalRowEdits,
   onSpecificationChange,
   onOptionalChange,
   onRemove,
@@ -1516,6 +1706,7 @@ function EstimatePositionsPanel({
   onAddPhotoMaterialRecognition,
   onOpenPhotoForEstimateItem,
   rowPhotoThumbnails,
+  rowPhotoAttachmentItemIds,
   onAddCustom,
   onRestoreLastRemoved,
   canRestoreLastRemoved,
@@ -1555,6 +1746,9 @@ function EstimatePositionsPanel({
         onIncrease={onIncrease}
         onQuantityChange={onQuantityChange}
         onUnitPriceChange={onUnitPriceChange}
+        pendingCanonicalRowEditCount={pendingCanonicalRowEditCount}
+        canonicalRowEditsApplying={canonicalRowEditsApplying}
+        onApplyCanonicalRowEdits={onApplyCanonicalRowEdits}
         onSpecificationChange={onSpecificationChange}
         onOptionalChange={onOptionalChange}
         onRemove={onRemove}
@@ -1563,6 +1757,7 @@ function EstimatePositionsPanel({
         onOpenPhoto={onOpenPhotoForEstimateItem}
         showPhotoButtons={Boolean(onOpenPhotoForEstimateItem)}
         rowPhotoThumbnails={rowPhotoThumbnails}
+        rowPhotoAttachmentItemIds={rowPhotoAttachmentItemIds}
       />
       {canRestoreLastRemoved && onRestoreLastRemoved ? (
         <Pressable
@@ -1783,20 +1978,20 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
   parameterRow: {
-    minHeight: 46,
-    gap: 5,
+    minHeight: 36,
+    gap: 3,
     borderBottomWidth: 1,
     borderBottomColor: "#E2E8F0",
     backgroundColor: "#FFFFFF",
     paddingHorizontal: 2,
-    paddingVertical: 6,
+    paddingVertical: 3,
   },
   compactParameterLine: {
-    minHeight: 40,
+    minHeight: 32,
     flexDirection: "row",
     alignItems: "center",
     flexWrap: "wrap",
-    gap: 8,
+    gap: 6,
   },
   parameterRowMain: {
     minHeight: 32,
@@ -1868,6 +2063,13 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 150,
   },
+  inlineParamEditorCompact: {
+    flexGrow: 0,
+    flexShrink: 1,
+    flexBasis: 190,
+    minWidth: 120,
+    maxWidth: 220,
+  },
   inlineParamEditorBody: {
     gap: 4,
   },
@@ -1914,15 +2116,42 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
   inlineParamInput: {
-    minHeight: 38,
+    minHeight: 32,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#CBD5E1",
     backgroundColor: "#FFFFFF",
     color: "#0F172A",
-    paddingHorizontal: 10,
-    fontSize: 13,
+    paddingHorizontal: 8,
+    fontSize: 12,
     fontWeight: "800",
+  },
+  inlineParamInputCompact: {
+    flex: 1,
+    minWidth: 54,
+    borderWidth: 0,
+    borderRadius: 0,
+    backgroundColor: "transparent",
+  },
+  inlineParamInputShell: {
+    minHeight: 32,
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    backgroundColor: "#FFFFFF",
+    overflow: "hidden",
+  },
+  inlineParamEmbeddedGuide: {
+    maxWidth: 104,
+    flexShrink: 1,
+    color: "#94A3B8",
+    fontSize: 10,
+    lineHeight: 13,
+    fontWeight: "700",
+    paddingRight: 7,
   },
   inlineParamUnit: {
     color: "#64748B",
@@ -1944,6 +2173,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 10,
+  },
+  inlineParamButtonDisabled: {
+    opacity: 0.55,
   },
   inlineParamPrimaryButton: {
     borderColor: "#0F766E",

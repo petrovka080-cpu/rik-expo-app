@@ -1,11 +1,5 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-
-import existingEquipmentRatesJson from "../../data/estimate/pricebook/equipment-rates.json";
-import existingLaborRatesJson from "../../data/estimate/pricebook/labor-rates.json";
-import existingMaterialPricesJson from "../../data/estimate/pricebook/material-prices.json";
-import existingServiceRatesJson from "../../data/estimate/pricebook/service-rates.json";
-import existingTransportRatesJson from "../../data/estimate/pricebook/transport-rates.json";
 
 import { normalizeCanonicalProfessionalBoqUnit } from "../../src/lib/estimate/canonicalUnits";
 import {
@@ -294,12 +288,17 @@ function sortRecords(records: ProfessionalPriceRecord[]): ProfessionalPriceRecor
 
 function existingPricebookRecords(): ProfessionalPriceRecord[] {
   return [
-    existingMaterialPricesJson,
-    existingLaborRatesJson,
-    existingEquipmentRatesJson,
-    existingServiceRatesJson,
-    existingTransportRatesJson,
-  ].flatMap((file) => (file as { records: ProfessionalPriceRecord[] }).records ?? []);
+    "material-prices.json",
+    "labor-rates.json",
+    "equipment-rates.json",
+    "service-rates.json",
+    "transport-rates.json",
+  ].flatMap((fileName) => {
+    const file = JSON.parse(
+      readFileSync(path.join(OUT_DIR, fileName), "utf8"),
+    ) as { records?: ProfessionalPriceRecord[] };
+    return file.records ?? [];
+  });
 }
 
 export function generateProfessionalPricebookData(): {

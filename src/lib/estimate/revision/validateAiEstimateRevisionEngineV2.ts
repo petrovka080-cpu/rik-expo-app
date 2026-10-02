@@ -1,7 +1,7 @@
 import { applyAiEstimateMissingInputAnswer } from "../applyAiEstimateMissingInputAnswer";
 import { applyAiEstimateParameterOverride } from "../applyAiEstimateParameterOverrides";
-import { createInitialEstimateDraftRevisionState } from "../createEstimateDraftRevision";
-import { appendRecalculatedEstimateDraftRevision } from "../recalculateEstimateDraftRevision";
+import { createInitialEstimateDraftRevisionState } from "../backendPlatform/canonicalEstimateHistoricalDraftProjection";
+import { appendRecalculatedEstimateDraftRevision } from "../backendPlatform/canonicalEstimateHistoricalRecalculation";
 import { parseUserParamPatch } from "../parseUserParamPatch";
 import { validateAiEstimateRevisionChain } from "./validateAiEstimateRevisionChain";
 

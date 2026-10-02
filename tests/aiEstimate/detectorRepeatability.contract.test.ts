@@ -1,7 +1,7 @@
 import {
   buildContinuousAiEstimateHeadlessSummary,
   GREEN_AI_ESTIMATE_CONTINUOUS_DETECT_GATE,
-} from "../../src/lib/ai/estimateContinuousDetection";
+} from "../../scripts/estimate/detectors";
 
 jest.setTimeout(90_000);
 

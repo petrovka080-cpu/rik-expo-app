@@ -33,7 +33,7 @@ describe("ConfigRecoveryState", () => {
       .join(" ");
 
     expect(text).toContain("Сервис авторизации не настроен");
-    expect(text).toContain("scripts/dev/startLocalDeveloperReview.ps1");
+    expect(text).toContain("scripts/dev/startWholeAppDeveloperReview.ps1");
     expect(text).not.toContain("[object Object]");
     expect(text).not.toMatch(/access_token|refresh_token|service_role/i);
   });

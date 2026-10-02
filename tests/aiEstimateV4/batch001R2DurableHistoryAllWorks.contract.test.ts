@@ -31,9 +31,12 @@ describe("BATCH001 R2 durable history all works", () => {
       expect(reopened.projection.catalogId).toBe(catalogId);
       expect(reopened.rows.length).toBeGreaterThan(0);
 
+      const editedParameterId = initialValues.horizontal_face_area_m2 == null
+        ? "area_m2"
+        : "horizontal_face_area_m2";
       const editedValues = {
         ...initialValues,
-        horizontal_face_area_m2: Number(initialValues.horizontal_face_area_m2) + 15,
+        [editedParameterId]: Number(initialValues[editedParameterId]) + 15,
       };
       const recalculated = await compileBatch001R56ThroughSharedCore({
         definition,
@@ -48,8 +51,8 @@ describe("BATCH001 R2 durable history all works", () => {
       };
       expect(edited.parentRevisionId).toBe(revision.revisionId);
       expect(edited.projection.catalogId).toBe(catalogId);
-      expect(edited.projection.parameters.horizontal_face_area_m2)
-        .toBe(editedValues.horizontal_face_area_m2);
+      expect(edited.projection.parameters[editedParameterId])
+        .toBe(editedValues[editedParameterId]);
       expect(edited.rows).not.toEqual(revision.rows);
       expect(revision).toEqual(reopened);
     },

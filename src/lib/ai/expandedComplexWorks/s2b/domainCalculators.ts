@@ -74,7 +74,11 @@ export function calculateStormwaterNetworkEstimate(input: CalcInput, ctx: S2BCal
     parameters: { length_m: lengthM, diameter_mm: diameterMm, rain_inlets_count: rainInlets, slope_permille: slopePermille, trench_width_m: trenchWidthM, trench_depth_m: trenchDepthM },
     rows,
     assumptions: ["Ливневая сеть рассчитывается отдельно от бытовой канализации; водосбор и выпуск требуют проектных отметок."],
-    formulaSteps: ["stormwater_trench_excavation_m3 = length_m * trench_width_m * trench_depth_m", "stormwater_manholes_pcs = ceil(length_m / 60) + 1"],
+    formulaSteps: [
+      "stormwater_trench_excavation_m3 = length_m * trench_width_m * trench_depth_m",
+      "rain_inlets_count = max(4, ceil(length_m / 70)) unless supplied by the project",
+      "stormwater_manholes_pcs = ceil(length_m / 60) + 1",
+    ],
     missingInputs: [...ctx.commonMissingInputs(family), "Расчётный расход дождя", "Отметки выпуска", "Водосборная площадь"],
   });
 }
@@ -183,10 +187,10 @@ export function calculateElectricalNetworkEstimate(input: CalcInput, ctx: S2BCal
     ctx.row({ family, code: "cable_routes_lm", titleRu: "Кабельные трассы внутри здания", lineType: "work", group: "routes", quantity: cableLength, unit: "m", formula: "max(80, area_m2 * 2.4)" }),
     ctx.row({ family, code: "power_cable_lm", titleRu: "Силовой кабель", lineType: "material", group: "cable", quantity: cableLength * 1.08, unit: "m", formula: "cable_routes_lm * 1.08", materialKey: "building_power_cable" }),
     ctx.row({ family, code: "conduit_tray_lm", titleRu: "Гофра, трубы или лотки", lineType: "material", group: "cable_support", quantity: cableLength * 0.75, unit: "m", formula: "cable_routes_lm * 0.75", materialKey: "conduit_tray" }),
-    ctx.row({ family, code: "junction_boxes_pcs", titleRu: "Распределительные коробки", lineType: "material", group: "accessories", quantity: Math.ceil(points / 4), unit: "pcs", formula: "ceil(points / 4)", materialKey: "junction_boxes" }),
+    ctx.row({ family, code: "junction_boxes_pcs", titleRu: "Распределительные коробки", lineType: "material", group: "accessories", quantity: Math.ceil(points / 4), unit: "pcs", formula: "ceil(points_count / 4)", materialKey: "junction_boxes" }),
     ctx.row({ family, code: "socket_switch_points_pcs", titleRu: "Точки розеток, выключателей и выводов", lineType: "material", group: "finish_points", quantity: points, unit: "pcs", formula: "max(18, ceil(area_m2 * 0.45))", materialKey: "electrical_points" }),
     ctx.row({ family, code: "distribution_panel_set", titleRu: "Распределительный щит", lineType: "equipment", group: "panels", quantity: 1, unit: "set", formula: "one distribution panel; price missing until specification", materialKey: "distribution_panel" }),
-    ctx.row({ family, code: "breakers_rcd_pcs", titleRu: "Автоматы и УЗО", lineType: "material", group: "protection", quantity: Math.max(8, Math.ceil(points / 6)), unit: "pcs", formula: "max(8, ceil(points / 6))", materialKey: "breakers_rcd" }),
+    ctx.row({ family, code: "breakers_rcd_pcs", titleRu: "Автоматы и УЗО", lineType: "material", group: "protection", quantity: Math.max(8, Math.ceil(points / 6)), unit: "pcs", formula: "max(8, ceil(points_count / 6))", materialKey: "breakers_rcd" }),
     ctx.row({ family, code: "grounding_set", titleRu: "Заземление и уравнивание потенциалов", lineType: "material", group: "grounding", quantity: 1, unit: "set", formula: "grounding set", materialKey: "building_grounding" }),
     ctx.row({ family, code: "commissioning_measurements_set", titleRu: "Измерения и протоколы электролаборатории", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "commissioning measurement set", procurement: true }),
   ];

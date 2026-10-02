@@ -2,7 +2,7 @@ import type {
   ConsumerRepairAiDraft,
   ConsumerRepairItemType,
 } from "../../../../consumerRequests/consumerRequestTypes";
-import type { BuildEstimateFromInlineWorkPromptInput } from "../../../buildEstimateFromInlineWorkPrompt";
+import type { BuildEstimateFromInlineWorkPromptInput } from "../../../backendPlatform/canonicalEstimateHistoricalIngress";
 import {
   compileProfessionalEstimateDomainV1,
   constructionNormativeRegistryV1,

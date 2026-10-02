@@ -22,9 +22,11 @@ export const SERVER_RACK_42U_GROUNDING_SOURCE_METADATA = Object.freeze({
   source_title: "Утверждённая спецификация серверных шкафов, планы расстановки и заземления, узлы крепления, кабельный журнал и программа измерений",
   source_authority: "Проектная организация СС/ЭОМ, изготовитель шкафа, служба контроля качества и утверждающий инженер проекта",
   source_document_version: "PROJECT_SERVER_RACK_42U_D1200_PRODUCT_FIXING_BONDING_ACCESSORIES_QA_REVISION_EXPLICIT",
-  definition_hash: "eh_project_server_rack_42u_grounding_schedule_details_qa_r1",
+  definition_hash: "da1ec3b0f8bd2388378d25bc0cd451f55098cf5e9b73a018c951ddd640fd7289",
   exact_locator: "6 серверных шкафов высотой 42U и глубиной 1200 мм; ширина и исполнение шкафа, анкеры, комплект уравнивания потенциалов, PE-проводник, наконечники, cage nuts и организаторы — только по утверждённым спецификации, планам, узлам и кабельному журналу; цоколь, PDU и вертикальный организатор — только по явным проектным условиям",
   use_restriction: "Известные количество, высота и глубина определяют монтаж/заземление и индивидуальную проверку непрерывности. Ширина, модель и количества комплектующих не выводятся из исторических коэффициентов. UPS, батареи, охлаждение, пожаротушение, СКУД и полный серверный зал исключены.",
+  source_kind: "PROJECT_DOCUMENT_PACKAGE_REQUIRED",
+  artifact_sha256: "da1ec3b0f8bd2388378d25bc0cd451f55098cf5e9b73a018c951ddd640fd7289",
 });
 
 const CONDITIONAL_PREFIXES = [
@@ -36,7 +38,17 @@ const CONDITIONAL_DETAILS = new Set(CONDITIONAL_PREFIXES.flatMap((prefix) => [
   `${prefix}_designation`,
   `${prefix}_quantity`,
 ]));
-const KNOWN_SCOPE = ["rack_count", "rack_height_u", "rack_depth_mm"];
+const KNOWN_SCOPE = [
+  "rack_count",
+  "rack_height_u",
+  "rack_depth_mm",
+  "rack_width_designation",
+  "rack_designation",
+];
+const VISIBLE_PRELIMINARY_PROFILE = new Set([
+  "rack_retained_spare_piece",
+  "rack_supplier_pack_size_piece",
+]);
 
 const PARAMETER_SPECS = Object.freeze([
   ["rack_count", "Количество серверных шкафов", "integer", "pcs", null],
@@ -65,6 +77,17 @@ const PARAMETER_SPECS = Object.freeze([
   ["vertical_cable_organizer_mode", "Вертикальный кабельный организатор входит в объём", "enum", null, ["NOT_REQUIRED", "REQUIRED"]],
   ["vertical_cable_organizer_designation", "Вертикальный кабельный организатор по спецификации", "text", null, null],
   ["vertical_cable_organizer_quantity", "Количество вертикальных кабельных организаторов", "decimal", "pcs", null],
+  ["rack_retained_spare_piece", "Сохраняемый резерв серверных шкафов", "decimal", "pcs", null],
+  ["rack_supplier_pack_size_piece", "Количество шкафов в поставочной упаковке", "decimal", "pcs", null],
+  ["ground_continuity_report_designation", "Акт измерения непрерывности защитных соединений", "text", null, null],
+  ["ground_continuity_report_quantity_document", "Количество актов измерения непрерывности", "decimal", "document", null],
+  ["rack_installation_labor_h", "Труд монтажников и электромонтажников по установке и заземлению", "decimal", "man_hour", null],
+  ["rack_testing_labor_h", "Труд электролаборатории по проверке защитных соединений", "decimal", "man_hour", null],
+  ["rack_handling_machine_h", "Работа механизма перемещения и позиционирования шкафов", "decimal", "machine_hour", null],
+  ["rack_torque_tool_machine_h", "Работа тарированного инструмента затяжки крепежа", "decimal", "machine_hour", null],
+  ["ground_continuity_tester_machine_h", "Работа измерителя непрерывности защитных соединений", "decimal", "machine_hour", null],
+  ["rack_delivery_trip_count", "Рейсы доставки шкафов и комплектующих", "integer", "trip", null],
+  ["rack_packaging_removal_trip_count", "Рейсы вывоза упаковки шкафов", "integer", "trip", null],
 ] as const);
 
 function conditionalConstraints(parameterId: string): Json {
@@ -98,7 +121,9 @@ readonly ServerRack42uGroundingParameter[] = Object.freeze(PARAMETER_SPECS.map(
     constraints_json: {
       ...(enumValues ? { values: enumValues }
         : valueType === "decimal" || valueType === "integer"
-          ? { min: valueType === "integer" ? 1 : 0.000_001 }
+          ? { min: parameterId === "rack_retained_spare_piece"
+            ? 0
+            : valueType === "integer" ? 1 : 0.000_001 }
           : valueType === "text" ? { minLength: 1, maxLength: 1_000 } : {}),
       ...conditionalConstraints(parameterId),
     },
@@ -107,12 +132,18 @@ readonly ServerRack42uGroundingParameter[] = Object.freeze(PARAMETER_SPECS.map(
       semantic_parameter_key: `server-rack-42u-grounding:${parameterId}`,
       visibility_role: "USER_INPUT",
       value_source_role: KNOWN_SCOPE.includes(parameterId)
-        ? "USER_INPUT" : "PROJECT_SPECIFIC_INPUT",
+        ? "USER_INPUT"
+        : VISIBLE_PRELIMINARY_PROFILE.has(parameterId)
+          ? "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE"
+          : "PROJECT_SPECIFIC_INPUT",
       input_origin_class: KNOWN_SCOPE.includes(parameterId)
         ? "KNOWN_WORK_SCOPE"
+        : VISIBLE_PRELIMINARY_PROFILE.has(parameterId)
+          ? "VISIBLE_PRELIMINARY_PROCUREMENT_BALANCE"
         : "APPROVED_RACK_SCHEDULE_FIXING_BONDING_ACCESSORY_OR_QA_DOCUMENTATION",
       preliminary_compilation_allowed: true,
-      source_confirmation_required: !KNOWN_SCOPE.includes(parameterId),
+      source_confirmation_required: !KNOWN_SCOPE.includes(parameterId)
+        && !VISIBLE_PRELIMINARY_PROFILE.has(parameterId),
       guide: {
         guide_kind: KNOWN_SCOPE.includes(parameterId) ? "MEASUREMENT_RULE" : "PROJECT_DEFINED",
         guide_short_ru: KNOWN_SCOPE.includes(parameterId)
@@ -120,20 +151,38 @@ readonly ServerRack42uGroundingParameter[] = Object.freeze(PARAMETER_SPECS.map(
           : `${titleRu}: укажите по утверждённой спецификации, плану, узлу или кабельному журналу.`,
         source_role: KNOWN_SCOPE.includes(parameterId)
           ? "USER_SUPPLIED_OR_APPROVED_RACK_SCOPE"
+          : VISIBLE_PRELIMINARY_PROFILE.has(parameterId)
+            ? "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE"
           : "APPROVED_RACK_SCHEDULE_FIXING_BONDING_ACCESSORY_OR_QA_DOCUMENTATION",
         source_document: SERVER_RACK_42U_GROUNDING_SOURCE_ID,
         source_locator: SERVER_RACK_42U_GROUNDING_SOURCE_METADATA.exact_locator,
         guide_version: "server-rack-42u-grounding-r1",
-        source_snapshot_hash: "6cafec0dae0b1009ec0eacf7c8cb6c3c16f5a631b2e4dbcf59dd5894bf579432",
+        source_snapshot_hash: SERVER_RACK_42U_GROUNDING_SOURCE_METADATA.artifact_sha256,
         applicability: "Только для монтажа, анкеровки и заземления известных серверных шкафов; полный серверный зал исключён.",
         verified_at: "2026-09-19T00:00:00+06:00",
         guide_validation_policy:
           "DEFER_MISSING_PROJECT_VALUE_ROW_LOCALLY_REJECT_INVALID_SUPPLIED_VALUE",
       },
       hidden_default_forbidden: true,
+      runtime_profile_value: VISIBLE_PRELIMINARY_PROFILE.has(parameterId),
       synthetic: false,
     },
   })),
+);
+
+export const SERVER_RACK_42U_GROUNDING_RUNTIME_INPUT = Object.freeze({
+  rack_retained_spare_piece: 0,
+  rack_supplier_pack_size_piece: 1,
+});
+export const SERVER_RACK_42U_GROUNDING_RUNTIME_CLASSIFICATION = Object.freeze(
+  Object.fromEntries(Object.keys(SERVER_RACK_42U_GROUNDING_RUNTIME_INPUT).map(
+    (parameterId) => [parameterId, "ASSUMPTION"],
+  )) as Readonly<Record<string, "ASSUMPTION">>,
+);
+export const SERVER_RACK_42U_GROUNDING_RUNTIME_SOURCE_IDS = Object.freeze(
+  Object.fromEntries(Object.keys(SERVER_RACK_42U_GROUNDING_RUNTIME_INPUT).map(
+    (parameterId) => [parameterId, [SERVER_RACK_42U_GROUNDING_SOURCE_ID]],
+  )) as Readonly<Record<string, readonly string[]>>,
 );
 
 function formula(formulaId: string, outputUnitId: string, expression: string) {
@@ -151,7 +200,8 @@ function formula(formulaId: string, outputUnitId: string, expression: string) {
 export const SERVER_RACK_42U_GROUNDING_FORMULAS:
 readonly CanonicalEstimateFormulaDefinition[] = Object.freeze([
   formula("server_rack_42u_install_ground_count_v1", "pcs", "rack_count"),
-  formula("server_rack_42u_product_count_v1", "pcs", "rack_count"),
+  formula("server_rack_42u_product_order_v2", "pcs",
+    "ceil((rack_count+rack_retained_spare_piece)/rack_supplier_pack_size_piece)*rack_supplier_pack_size_piece"),
   formula("server_rack_anchor_set_quantity_v1", "set", "anchor_set_quantity"),
   formula("server_rack_bonding_kit_quantity_v1", "set", "bonding_kit_quantity"),
   formula("copper_pe_conductor_length_v1", "m", "pe_conductor_length_m"),
@@ -162,6 +212,23 @@ readonly CanonicalEstimateFormulaDefinition[] = Object.freeze([
   formula("rack_plinth_quantity_v1", "pcs", "rack_plinth_quantity"),
   formula("rack_pdu_quantity_v1", "pcs", "rack_pdu_quantity"),
   formula("vertical_cable_organizer_quantity_v1", "pcs", "vertical_cable_organizer_quantity"),
+  formula("server_rack_installed_net_v2", "pcs", "rack_count"),
+  formula("server_rack_retained_spare_v2", "pcs", "rack_retained_spare_piece"),
+  formula("server_rack_total_need_v2", "pcs", "rack_count+rack_retained_spare_piece"),
+  formula("server_rack_package_count_v2", "package",
+    "ceil((rack_count+rack_retained_spare_piece)/rack_supplier_pack_size_piece)"),
+  formula("server_rack_remainder_v2", "pcs",
+    "ceil((rack_count+rack_retained_spare_piece)/rack_supplier_pack_size_piece)*rack_supplier_pack_size_piece-rack_count"),
+  formula("server_rack_surplus_v2", "pcs",
+    "max(0,ceil((rack_count+rack_retained_spare_piece)/rack_supplier_pack_size_piece)*rack_supplier_pack_size_piece-rack_count-rack_retained_spare_piece)"),
+  formula("ground_continuity_report_quantity_v2", "document", "ground_continuity_report_quantity_document"),
+  formula("rack_installation_labor_v2", "man_hour", "rack_installation_labor_h"),
+  formula("rack_testing_labor_v2", "man_hour", "rack_testing_labor_h"),
+  formula("rack_handling_machine_v2", "machine_hour", "rack_handling_machine_h"),
+  formula("rack_torque_tool_machine_v2", "machine_hour", "rack_torque_tool_machine_h"),
+  formula("ground_continuity_tester_machine_v2", "machine_hour", "ground_continuity_tester_machine_h"),
+  formula("rack_delivery_v2", "trip", "rack_delivery_trip_count"),
+  formula("rack_packaging_removal_v2", "trip", "rack_packaging_removal_trip_count"),
 ]);
 
 const literalTrue = Object.freeze({ kind: "literal", value: true });
@@ -183,6 +250,7 @@ function resource(input: {
   procurementEligible: boolean;
   inclusionAst?: Json;
   titleParameterIds?: string[];
+  costTreatment?: "OWN_COST" | "INFORMATIONAL_SCOPE" | "INCLUDED_IN_RESOURCE_ROWS";
 }): CanonicalEstimateResourceDefinition {
   const resourceGraph = {
     formulaId: input.formulaId,
@@ -195,6 +263,7 @@ function resource(input: {
       titleSpecificationSeparator: " — ",
     } : {}),
     scopeContextParameterIds: KNOWN_SCOPE,
+    costTreatment: input.costTreatment ?? "OWN_COST",
   };
   const sourceMetadata = {
     truth_contract_version: "R3",
@@ -214,6 +283,7 @@ function resource(input: {
     excludedUnownedAssumptions: [
       "historical one-set-per-rack, four-metre, four-lug, twenty-four-cage-nut or two-organizer rates",
       "automatic plinth, PDU or vertical-organizer quantities",
+      "automatic retained spare, supplier package, labor, equipment, testing or logistics quantity",
       "UPS, battery system, server-room cooling, fire suppression or access control",
       "full server room",
       "invented price",
@@ -242,10 +312,11 @@ readonly CanonicalEstimateResourceDefinition[] = Object.freeze([
   resource({ rowId: "rc09:server_rack_42u_install_ground", ordinal: 0,
     section: "Работы", category: "construction_work", titleRu: "Монтаж, анкеровка и заземление серверного шкафа 42U",
     unitId: "pcs", formulaId: "server_rack_42u_install_ground_count_v1",
-    sourceRole: "USER_SUPPLIED_OR_APPROVED_RACK_SCOPE", procurementEligible: false }),
+    sourceRole: "USER_SUPPLIED_OR_APPROVED_RACK_SCOPE", procurementEligible: false,
+    costTreatment: "INFORMATIONAL_SCOPE" }),
   resource({ rowId: "rc09:server_rack_42u_600x1200", ordinal: 1,
     section: "Оборудование", category: "equipment", titleRu: "Шкаф серверный 42U глубиной 1200 мм по спецификации",
-    unitId: "pcs", formulaId: "server_rack_42u_product_count_v1",
+    unitId: "pcs", formulaId: "server_rack_42u_product_order_v2",
     titleParameterIds: ["rack_width_designation", "rack_designation"],
     sourceRole: "APPROVED_RACK_SCHEDULE", procurementEligible: true }),
   resource({ rowId: "rc09:server_rack_anchor_set", ordinal: 2,
@@ -275,7 +346,8 @@ readonly CanonicalEstimateResourceDefinition[] = Object.freeze([
   resource({ rowId: "rc09:rack_ground_continuity_test", ordinal: 8,
     section: "Контроль", category: "service", titleRu: "Измерение непрерывности защитного соединения серверного шкафа",
     unitId: "test", formulaId: "rack_ground_continuity_test_count_v1",
-    sourceRole: "USER_SUPPLIED_RACK_COUNT_AND_APPROVED_QA_PROGRAM", procurementEligible: true }),
+    sourceRole: "USER_SUPPLIED_RACK_COUNT_AND_APPROVED_QA_PROGRAM", procurementEligible: false,
+    costTreatment: "INFORMATIONAL_SCOPE" }),
   resource({ rowId: "rc09:rack_plinth", ordinal: 9,
     section: "Условное оборудование", category: "equipment", titleRu: "Цоколь серверного шкафа",
     unitId: "pcs", formulaId: "rack_plinth_quantity_v1", inclusionAst: equals("rack_plinth_mode", "REQUIRED"),
@@ -288,24 +360,91 @@ readonly CanonicalEstimateResourceDefinition[] = Object.freeze([
     section: "Условное оборудование", category: "equipment", titleRu: "Органайзер кабельный вертикальный серверного шкафа",
     unitId: "pcs", formulaId: "vertical_cable_organizer_quantity_v1", inclusionAst: equals("vertical_cable_organizer_mode", "REQUIRED"),
     titleParameterIds: ["vertical_cable_organizer_designation"], sourceRole: "APPROVED_RACK_EQUIPMENT_LAYOUT", procurementEligible: true }),
+  resource({ rowId: "rc09:server-rack-balance:installed-net", ordinal: 12,
+    section: "Баланс серверных шкафов", category: "equipment", titleRu: "Количество устанавливаемых серверных шкафов",
+    unitId: "pcs", formulaId: "server_rack_installed_net_v2", procurementEligible: false,
+    sourceRole: "VISIBLE_PROCUREMENT_BALANCE", costTreatment: "INFORMATIONAL_SCOPE" }),
+  resource({ rowId: "rc09:server-rack-balance:retained-spare", ordinal: 13,
+    section: "Баланс серверных шкафов", category: "equipment", titleRu: "Сохраняемый резерв серверных шкафов",
+    unitId: "pcs", formulaId: "server_rack_retained_spare_v2", procurementEligible: false,
+    sourceRole: "VISIBLE_PROCUREMENT_BALANCE", costTreatment: "INFORMATIONAL_SCOPE" }),
+  resource({ rowId: "rc09:server-rack-balance:total-need", ordinal: 14,
+    section: "Баланс серверных шкафов", category: "equipment", titleRu: "Общая потребность в серверных шкафах",
+    unitId: "pcs", formulaId: "server_rack_total_need_v2", procurementEligible: false,
+    sourceRole: "VISIBLE_PROCUREMENT_BALANCE", costTreatment: "INFORMATIONAL_SCOPE" }),
+  resource({ rowId: "rc09:server-rack-balance:package-count", ordinal: 15,
+    section: "Баланс серверных шкафов", category: "equipment", titleRu: "Количество поставочных упаковок серверных шкафов",
+    unitId: "package", formulaId: "server_rack_package_count_v2", procurementEligible: false,
+    sourceRole: "VISIBLE_PROCUREMENT_BALANCE", costTreatment: "INFORMATIONAL_SCOPE" }),
+  resource({ rowId: "rc09:server-rack-balance:remainder", ordinal: 16,
+    section: "Баланс серверных шкафов", category: "equipment", titleRu: "Остаток серверных шкафов после монтажа",
+    unitId: "pcs", formulaId: "server_rack_remainder_v2", procurementEligible: false,
+    sourceRole: "VISIBLE_PROCUREMENT_BALANCE", costTreatment: "INFORMATIONAL_SCOPE" }),
+  resource({ rowId: "rc09:server-rack-balance:surplus-beyond-spare", ordinal: 17,
+    section: "Баланс серверных шкафов", category: "equipment", titleRu: "Свободный остаток шкафов сверх сохраняемого резерва",
+    unitId: "pcs", formulaId: "server_rack_surplus_v2", procurementEligible: false,
+    sourceRole: "VISIBLE_PROCUREMENT_BALANCE", costTreatment: "INFORMATIONAL_SCOPE" }),
+  resource({ rowId: "rc09:rack_ground_continuity_report", ordinal: 18,
+    section: "Контроль", category: "service", titleRu: "Акт измерения непрерывности защитных соединений шкафов",
+    unitId: "document", formulaId: "ground_continuity_report_quantity_v2", procurementEligible: false,
+    titleParameterIds: ["ground_continuity_report_designation"], sourceRole: "APPROVED_QA_PROGRAM",
+    costTreatment: "INFORMATIONAL_SCOPE" }),
+  resource({ rowId: "rc09:labor:rack-installation-grounding", ordinal: 19,
+    section: "Труд", category: "construction_work", titleRu: "Труд монтажников и электромонтажников: установка, крепление и заземление шкафов",
+    unitId: "man_hour", formulaId: "rack_installation_labor_v2", procurementEligible: false,
+    sourceRole: "APPROVED_INSTALLATION_METHOD" }),
+  resource({ rowId: "rc09:labor:rack-grounding-test", ordinal: 20,
+    section: "Труд", category: "construction_work", titleRu: "Труд электролаборатории: проверка защитных соединений",
+    unitId: "man_hour", formulaId: "rack_testing_labor_v2", procurementEligible: false,
+    sourceRole: "APPROVED_QA_PROGRAM" }),
+  resource({ rowId: "rc09:equipment:rack-handling", ordinal: 21,
+    section: "Механизмы и инструмент", category: "equipment", titleRu: "Механизм перемещения и позиционирования серверных шкафов",
+    unitId: "machine_hour", formulaId: "rack_handling_machine_v2", procurementEligible: true,
+    sourceRole: "APPROVED_INSTALLATION_METHOD" }),
+  resource({ rowId: "rc09:equipment:rack-torque-tool", ordinal: 22,
+    section: "Механизмы и инструмент", category: "equipment", titleRu: "Тарированный инструмент затяжки анкеров и заземляющих соединений",
+    unitId: "machine_hour", formulaId: "rack_torque_tool_machine_v2", procurementEligible: true,
+    sourceRole: "APPROVED_INSTALLATION_METHOD" }),
+  resource({ rowId: "rc09:equipment:ground-continuity-tester", ordinal: 23,
+    section: "Механизмы и инструмент", category: "equipment", titleRu: "Измеритель непрерывности защитных соединений",
+    unitId: "machine_hour", formulaId: "ground_continuity_tester_machine_v2", procurementEligible: true,
+    sourceRole: "APPROVED_QA_PROGRAM" }),
+  resource({ rowId: "rc09:logistics:rack-delivery", ordinal: 24,
+    section: "Логистика", category: "service", titleRu: "Доставка серверных шкафов, комплектующих и инструмента",
+    unitId: "trip", formulaId: "rack_delivery_v2", procurementEligible: true,
+    sourceRole: "APPROVED_LOGISTICS_PLAN" }),
+  resource({ rowId: "rc09:logistics:rack-packaging-removal", ordinal: 25,
+    section: "Логистика", category: "service", titleRu: "Сбор и вывоз упаковки серверных шкафов",
+    unitId: "trip", formulaId: "rack_packaging_removal_v2", procurementEligible: true,
+    sourceRole: "APPROVED_WASTE_PLAN" }),
 ]);
 
 export const SERVER_RACK_42U_GROUNDING_SHORT_INPUT = Object.freeze({
   rack_count: 6,
   rack_height_u: 42,
   rack_depth_mm: 1200,
+  rack_width_designation: "600 мм",
+  rack_designation: "RACK-42U-600X1200",
+  ...SERVER_RACK_42U_GROUNDING_RUNTIME_INPUT,
 });
 
 export const SERVER_RACK_42U_GROUNDING_ACCEPTANCE_INPUT = Object.freeze({
   ...SERVER_RACK_42U_GROUNDING_SHORT_INPUT,
-  rack_width_designation: "600 мм",
-  rack_designation: "Шкаф 42U 600×1200 мм с перфорированными дверями по спецификации",
   anchor_set_designation: "Комплект анкеров по узлу крепления и паспорту шкафа", anchor_set_quantity: 6,
   bonding_kit_designation: "Комплект перемычек дверей и съёмных панелей", bonding_kit_quantity: 6,
   pe_conductor_designation: "Проводник медный гибкий 16 мм² по плану заземления", pe_conductor_length_m: 27,
   copper_lug_designation: "Наконечник медный лужёный 16 мм² по кабельному журналу", copper_lug_quantity: 30,
   cage_nut_bolt_designation: "Комплект клеточной гайки и винта М6 по раскладке оборудования", cage_nut_bolt_quantity: 132,
   horizontal_cable_organizer_designation: "Органайзер горизонтальный 19 дюймов 1U по спецификации", horizontal_cable_organizer_quantity: 18,
+  ground_continuity_report_designation: "Акт измерения непрерывности защитных соединений шкафов",
+  ground_continuity_report_quantity_document: 1,
+  rack_installation_labor_h: 72,
+  rack_testing_labor_h: 12,
+  rack_handling_machine_h: 10,
+  rack_torque_tool_machine_h: 8,
+  ground_continuity_tester_machine_h: 6,
+  rack_delivery_trip_count: 1,
+  rack_packaging_removal_trip_count: 1,
   rack_plinth_mode: "NOT_REQUIRED",
   rack_pdu_mode: "NOT_REQUIRED",
   vertical_cable_organizer_mode: "NOT_REQUIRED",
@@ -328,10 +467,10 @@ export async function compileServerRack42uGroundingR1(
     formulaDefinitions: [...SERVER_RACK_42U_GROUNDING_FORMULAS],
     resourceDefinitions: [...SERVER_RACK_42U_GROUNDING_RESOURCES],
     submittedParameters,
-    confirmedParameters: {},
+    confirmedParameters: { ...SERVER_RACK_42U_GROUNDING_RUNTIME_INPUT },
     currencyCode: "KGS",
     priceItems: [],
-    maximumResourceRows: 20,
+    maximumResourceRows: 40,
     hashJson: async (value) => JSON.stringify(value),
   });
 }

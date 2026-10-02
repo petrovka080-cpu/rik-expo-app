@@ -1,0 +1,251 @@
+{
+  "schemaVersion": "rik-expo-app.s27-19.asphalt-install-large-area-krer27-hot-profile.v2",
+  "authoredIndependentlyFromDefinitionRows": true,
+  "reviewedAt": "2026-09-22T00:00:00+06:00",
+  "masterSpecification": {
+    "edition": "S27.19",
+    "sha256": "8a3e6f8b2d56278f738245f1cd38e0f2b48552211740e85c21ace66511bbd2a7"
+  },
+  "scope": "Full installation of one 50 mm hot dense fine-grained asphalt-concrete surface course on an accepted prepared base over a large area. Base and subbase construction, drainage, kerbs and road marking are separate scopes.",
+  "sources": [
+    {
+      "sourceId": "kg_krer_27_06_020_01_021_01_2015",
+      "authority": "Ministry of Construction of the Kyrgyz Republic",
+      "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no27avtomobilnyedorogi_compressed-43769083f584ff787.06841542.pdf",
+      "artifactSha256": "cd3d6735d1bbdda5957945b7682f032785c76624b54a435edfe5d2ef5e107161",
+      "exactLocator": "КРЕР-2015, сборник 27 «Автомобильные дороги», таблица 27-06-020, вариант 27-06-020-01, печатные страницы 92-93: горячая плотная мелкозернистая смесь типа А/Б/В при плотности каменных материалов 2,5-2,9 т/м³, базовый слой 4 см; таблица 27-06-021, вариант 27-06-021-01, печатные страницы 96-97: поправка на каждые 0,5 см.",
+      "ownedFacts": [
+        "scope operations: base cleaning, side-stop setting, mechanical placement by asphalt paver, rolling and surface finishing",
+        "base measure = 1000 m2 at 40 mm",
+        "construction workers = 38.3 man-h per 1000 m2 plus 0.09 man-h per additional 5 mm",
+        "truck crane 10 t = 0.03 machine-h per 1000 m2",
+        "hand tar sprayer = 1.4 machine-h per 1000 m2 plus 0.18 machine-h per additional 5 mm",
+        "8 t self-propelled smooth roller = 3.96 machine-h per 1000 m2",
+        "13 t self-propelled smooth roller = 11.51 machine-h per 1000 m2",
+        "watering machine 6000 l = 0.79 machine-h per 1000 m2",
+        "asphalt paver = 3.19 machine-h per 1000 m2",
+        "on-board vehicle up to 5 t = 0.04 machine-h per 1000 m2",
+        "petroleum road bitumen = 0.0108 t per 1000 m2 plus 0.0014 t per additional 5 mm",
+        "technical kerosene = 0.0052 t per 1000 m2",
+        "hardwood side-stop bars = 0.15 m3 per 1000 m2",
+        "dense fine-grained hot asphalt mix type A = 96.6 t per 1000 m2 plus 12.1 t per additional 5 mm"
+      ]
+    },
+    {
+      "sourceId": "napa_faa_asphalt_paving_handbook_2025",
+      "authority": "National Asphalt Pavement Association and U.S. Federal Aviation Administration",
+      "url": "https://rosap.ntl.bts.gov/view/dot/92679",
+      "exactLocator": "Asphalt Paving Handbook, 2025: chapters on project preparation, delivery, placement, compaction, joints and quality control.",
+      "ownedFacts": [
+        "delivery temperature and continuity are controlled",
+        "placement, joints, compaction and acceptance are distinct operations",
+        "actual rolling pattern and testing frequency remain project-specific"
+      ]
+    },
+    {
+      "sourceId": "asphalt_institute_engineering_faq",
+      "authority": "Asphalt Institute",
+      "url": "https://www.asphaltinstitute.org/engineering/engineering-faqs/",
+      "exactLocator": "Engineering FAQs: paver speed, roller speed, roller coverage and number of rollers.",
+      "ownedFacts": [
+        "equipment flow must be coordinated",
+        "roller coverage depends on speed, width and passes"
+      ]
+    },
+    {
+      "sourceId": "s27_19_selected_hot_asphalt_profile_r2",
+      "authority": "Visible replaceable preliminary scenario",
+      "exactLocator": "selectedPreliminaryProfile in this independently reviewed source pack",
+      "ownedFacts": [
+        "50 mm one-course scenario before optional refinement",
+        "20 km preliminary haul and 20 t truck",
+        "one acceptance lot per 1000 m2",
+        "machine operator and operating consumables are visible components included in the corresponding machine-hour price",
+        "truck trips and ton-kilometres are visible logistics metrics included in the delivery truck machine-hour price",
+        "one mobilization service for each listed transported machine"
+      ]
+    }
+  ],
+  "selectedPreliminaryProfile": {
+    "krerVariant": "27-06-020-01 + 27-06-021-01",
+    "areaM2": 5000,
+    "layerThicknessMm": 50,
+    "baseThicknessMm": 40,
+    "incrementThicknessMm": 5,
+    "haulDistanceKm": 20,
+    "truckCapacityT": 20,
+    "truckAverageSpeedKmH": 40,
+    "truckTurnaroundH": 0.5,
+    "acceptanceLotM2": 1000,
+    "workJournalCount": 1,
+    "executionDocumentationCount": 1,
+    "materialPassportRegisterCount": 1,
+    "trafficControlSetupCount": 1,
+    "mobilizationCountPerUniqueMachine": 1,
+    "assumptionPolicy": "Only area is a user fact. A 50 mm single-course hot-asphalt profile uses KRER 27-06-020-01 at 40 mm plus two 27-06-021-01 increments. Logistics/QA values remain visible replaceable assumptions; the approved pavement design, exact mix passport, haul route and quality plan override them."
+  },
+  "krerRatesPer1000M2": {
+    "laborBaseManH": 38.3,
+    "laborPerAdditional5MmManH": 0.09,
+    "craneMachineH": 0.03,
+    "tarSprayerMachineH": 1.4,
+    "tarSprayerPerAdditional5MmMachineH": 0.18,
+    "roller8tMachineH": 3.96,
+    "roller13tMachineH": 11.51,
+    "watering6000lMachineH": 0.79,
+    "asphaltPaverMachineH": 3.19,
+    "onboardVehicleMachineH": 0.04,
+    "roadBitumenBaseT": 0.0108,
+    "roadBitumenPerAdditional5MmT": 0.0014,
+    "technicalKeroseneT": 0.0052,
+    "hardwoodBarsM3": 0.15,
+    "asphaltMixBaseT": 96.6,
+    "asphaltMixPerAdditional5MmT": 12.1
+  },
+  "expectedComponentGroups": [
+    {
+      "groupId": "operations",
+      "components": [
+        "base acceptance and cleaning",
+        "side-stop setting",
+        "bitumen/tack application",
+        "mix receiving and continuous feed",
+        "mechanical paving",
+        "rolling/compaction",
+        "edge, joint and surface finishing"
+      ]
+    },
+    {
+      "groupId": "materials",
+      "components": [
+        "dense fine-grained hot asphalt mix",
+        "road bitumen",
+        "technical kerosene",
+        "hardwood side-stop bars"
+      ]
+    },
+    {
+      "groupId": "equipment",
+      "components": [
+        "asphalt paver",
+        "8 t smooth roller",
+        "hand tar sprayer",
+        "watering machine with 6000 l tank",
+        "13 t self-propelled smooth roller",
+        "crane",
+        "on-board vehicle"
+      ]
+    },
+    {
+      "groupId": "included-machine-components",
+      "components": [
+        "operator for each machine",
+        "fuel/energy for each machine",
+        "roller water/scraper system",
+        "paver screed heating and grade control"
+      ]
+    },
+    {
+      "groupId": "logistics",
+      "components": [
+        "truck trips",
+        "ton-kilometres",
+        "truck machine-hours",
+        "one shared mobilization of paver, 8 t and 13 t rollers, tar sprayer and watering machine"
+      ]
+    },
+    {
+      "groupId": "quality-and-documents",
+      "components": [
+        "material passport register",
+        "temperature control per truckload",
+        "bitumen application control",
+        "thickness control",
+        "density control",
+        "smoothness control",
+        "grade/slope control",
+        "work journal",
+        "execution documentation"
+      ]
+    },
+    {
+      "groupId": "organization",
+      "components": [
+        "traffic/work-zone control",
+        "continuous large-area paving flow"
+      ]
+    }
+  ],
+  "independentRequiredComponents": [
+    {"semanticKey":"operation.accepted_base_cleaning","operationId":"operation.accepted_base","category":"operation","specification":"Acceptance and mechanical cleaning of the already prepared base","condition":"selected_full_single_course_large_area_profile","sourceId":"kg_krer_27_06_020_01_021_01_2015","unitId":"m2","quantityRule":"area_m2","detailPrinciple":"distinct technology operation","priceRelation":"INFORMATIONAL_SCOPE","formulaId":"asphalt_install_area_v1","resolution":{"kind":"ROW","rowId":"asphalt:operation:base-acceptance-cleaning"}},
+    {"semanticKey":"operation.side_stop_setting","operationId":"operation.side_stops","category":"operation","specification":"Setting side stops before mechanical paving","condition":"selected_full_single_course_large_area_profile","sourceId":"kg_krer_27_06_020_01_021_01_2015","unitId":"m2","quantityRule":"area_m2","detailPrinciple":"distinct technology operation","priceRelation":"INFORMATIONAL_SCOPE","formulaId":"asphalt_install_area_v1","resolution":{"kind":"ROW","rowId":"asphalt:operation:side-stop-setting"}},
+    {"semanticKey":"operation.bitumen_application","operationId":"operation.tack_application","category":"operation","specification":"Distribution of the normed petroleum road bitumen","condition":"selected_full_single_course_large_area_profile","sourceId":"kg_krer_27_06_020_01_021_01_2015","unitId":"m2","quantityRule":"area_m2","detailPrinciple":"distinct technology operation","priceRelation":"INFORMATIONAL_SCOPE","formulaId":"asphalt_install_area_v1","resolution":{"kind":"ROW","rowId":"asphalt:operation:bitumen-application"}},
+    {"semanticKey":"operation.mix_receiving_feed","operationId":"operation.hot_mix_feed","category":"operation","specification":"Receiving, unloading and continuous feed of hot mix","condition":"selected_full_single_course_large_area_profile","sourceId":"napa_faa_asphalt_paving_handbook_2025","unitId":"t","quantityRule":"calculated hot-mix mass","detailPrinciple":"distinct technology operation","priceRelation":"INFORMATIONAL_SCOPE","formulaId":"asphalt_install_mix_v1","resolution":{"kind":"ROW","rowId":"asphalt:operation:mix-receiving-feed"}},
+    {"semanticKey":"operation.mechanical_paving","operationId":"operation.asphalt_paving","category":"operation","specification":"Mechanical placement of one hot-mix course","condition":"selected_full_single_course_large_area_profile","sourceId":"kg_krer_27_06_020_01_021_01_2015","unitId":"m2","quantityRule":"area_m2","detailPrinciple":"distinct technology operation","priceRelation":"INFORMATIONAL_SCOPE","formulaId":"asphalt_install_area_v1","resolution":{"kind":"ROW","rowId":"asphalt:operation:mechanical-paving"}},
+    {"semanticKey":"operation.rolling_compaction","operationId":"operation.rolling","category":"operation","specification":"Rolling and compaction within the selected placement technology","condition":"selected_full_single_course_large_area_profile","sourceId":"kg_krer_27_06_020_01_021_01_2015","unitId":"m2","quantityRule":"area_m2","detailPrinciple":"distinct technology operation","priceRelation":"INFORMATIONAL_SCOPE","formulaId":"asphalt_install_area_v1","resolution":{"kind":"ROW","rowId":"asphalt:operation:rolling-compaction"}},
+    {"semanticKey":"operation.edge_joint_finishing","operationId":"operation.surface_finishing","category":"operation","specification":"Finishing edges, joints and the paved surface","condition":"selected_full_single_course_large_area_profile","sourceId":"kg_krer_27_06_020_01_021_01_2015","unitId":"m2","quantityRule":"area_m2","detailPrinciple":"distinct technology operation","priceRelation":"INFORMATIONAL_SCOPE","formulaId":"asphalt_install_area_v1","resolution":{"kind":"ROW","rowId":"asphalt:operation:edge-joint-finishing"}},
+    {"semanticKey":"operation.final_clean_handover","operationId":"operation.handover","category":"operation","specification":"Final cleaning and handover for acceptance checks","condition":"selected_full_single_course_large_area_profile","sourceId":"napa_faa_asphalt_paving_handbook_2025","unitId":"m2","quantityRule":"area_m2","detailPrinciple":"distinct technology operation","priceRelation":"INFORMATIONAL_SCOPE","formulaId":"asphalt_install_area_v1","resolution":{"kind":"ROW","rowId":"asphalt:operation:final-clean-handover"}},
+
+    {"semanticKey":"material.hot_dense_fine_mix","operationId":"operation.asphalt_paving","category":"material","specification":"Factory-produced hot dense fine-grained asphalt mix type A/B/V, mineral density 2.5-2.9 t/m3, KRER 27-06-020-01 plus 27-06-021-01 for 50 mm; exact type and grade are confirmed by design and plant passport","condition":"selected_full_single_course_large_area_profile","sourceId":"kg_krer_27_06_020_01_021_01_2015","unitId":"t","quantityRule":"KRER 40 mm base mass plus two 5 mm increments","detailPrinciple":"separately purchased finished product","priceRelation":"OWN_COST","formulaId":"asphalt_install_mix_v1","resolution":{"kind":"ROW","rowId":"asphalt:material:hot-dense-fine-mix"}},
+    {"semanticKey":"material.road_bitumen","operationId":"operation.tack_application","category":"material","specification":"Petroleum road bitumen from KRER 27-06-020-01 and 27-06-021-01","condition":"selected_full_single_course_large_area_profile","sourceId":"kg_krer_27_06_020_01_021_01_2015","unitId":"t","quantityRule":"KRER base mass plus 5 mm increments","detailPrinciple":"separately purchased material","priceRelation":"OWN_COST","formulaId":"asphalt_install_road_bitumen_v1","resolution":{"kind":"ROW","rowId":"asphalt:material:road-bitumen"}},
+    {"semanticKey":"material.technical_kerosene","operationId":"operation.tack_application","category":"consumable","specification":"Technical kerosene from KRER 27-06-020-01","condition":"selected_full_single_course_large_area_profile","sourceId":"kg_krer_27_06_020_01_021_01_2015","unitId":"t","quantityRule":"KRER rate multiplied by area/1000","detailPrinciple":"separately used consumable","priceRelation":"OWN_COST","formulaId":"asphalt_install_technical_kerosene_v1","resolution":{"kind":"ROW","rowId":"asphalt:material:technical-kerosene"}},
+    {"semanticKey":"component.hardwood_side_stop_bars","operationId":"operation.side_stops","category":"component","specification":"Hardwood side-stop bars from KRER 27-06-020-01","condition":"selected_full_single_course_large_area_profile","sourceId":"kg_krer_27_06_020_01_021_01_2015","unitId":"m3","quantityRule":"KRER rate multiplied by area/1000","detailPrinciple":"separately used component","priceRelation":"OWN_COST","formulaId":"asphalt_install_hardwood_bars_v1","resolution":{"kind":"ROW","rowId":"asphalt:material:hardwood-side-stop-bars"}},
+    {"semanticKey":"labor.road_workers","operationId":"operation.full_course_installation","category":"labor","specification":"Construction workers for the complete KRER operation scope","condition":"selected_full_single_course_large_area_profile","sourceId":"kg_krer_27_06_020_01_021_01_2015","unitId":"man_hour","quantityRule":"KRER 27-06-020-01 plus 27-06-021-01 labor rate","detailPrinciple":"direct labor distinct from machine operators","priceRelation":"OWN_COST","formulaId":"asphalt_install_labor_v1","resolution":{"kind":"ROW","rowId":"asphalt:labor:road-workers"}},
+
+    {"semanticKey":"equipment.crane_10t","operationId":"operation.full_course_installation","category":"equipment","specification":"Truck-mounted crane, 10 t","condition":"selected_full_single_course_large_area_profile","sourceId":"kg_krer_27_06_020_01_021_01_2015","unitId":"machine_hour","quantityRule":"KRER 27-06-020-01 machine-hour rate multiplied by area/1000","detailPrinciple":"distinct machine","priceRelation":"OWN_COST","formulaId":"asphalt_install_crane_v1","resolution":{"kind":"ROW","rowId":"asphalt:equipment:crane-10t"}},
+    {"semanticKey":"equipment.hand_tar_sprayer","operationId":"operation.tack_application","category":"equipment","specification":"Hand tar sprayer","condition":"selected_full_single_course_large_area_profile","sourceId":"kg_krer_27_06_020_01_021_01_2015","unitId":"machine_hour","quantityRule":"KRER 27-06-020-01 plus 27-06-021-01 machine-hour rate multiplied by area/1000","detailPrinciple":"distinct machine","priceRelation":"OWN_COST","formulaId":"asphalt_install_tar_sprayer_v1","resolution":{"kind":"ROW","rowId":"asphalt:equipment:hand-tar-sprayer"}},
+    {"semanticKey":"equipment.smooth_roller_8t","operationId":"operation.rolling","category":"equipment","specification":"Self-propelled smooth road roller, 8 t","condition":"selected_full_single_course_large_area_profile","sourceId":"kg_krer_27_06_020_01_021_01_2015","unitId":"machine_hour","quantityRule":"KRER 27-06-020-01 machine-hour rate multiplied by area/1000","detailPrinciple":"distinct machine","priceRelation":"OWN_COST","formulaId":"asphalt_install_roller_v1","resolution":{"kind":"ROW","rowId":"asphalt:equipment:smooth-roller-8t"}},
+    {"semanticKey":"equipment.asphalt_paver","operationId":"operation.asphalt_paving","category":"equipment","specification":"Asphalt paver","condition":"selected_full_single_course_large_area_profile","sourceId":"kg_krer_27_06_020_01_021_01_2015","unitId":"machine_hour","quantityRule":"KRER 27-06-020-01 machine-hour rate multiplied by area/1000","detailPrinciple":"distinct machine","priceRelation":"OWN_COST","formulaId":"asphalt_install_paver_v1","resolution":{"kind":"ROW","rowId":"asphalt:equipment:asphalt-paver"}},
+    {"semanticKey":"equipment.watering_machine_6000l","operationId":"operation.rolling","category":"equipment","specification":"Watering machine with 6000 l tank","condition":"selected_full_single_course_large_area_profile","sourceId":"kg_krer_27_06_020_01_021_01_2015","unitId":"machine_hour","quantityRule":"KRER 27-06-020-01 machine-hour rate multiplied by area/1000","detailPrinciple":"distinct machine","priceRelation":"OWN_COST","formulaId":"asphalt_install_tractor_brush_v1","resolution":{"kind":"ROW","rowId":"asphalt:equipment:tractor-road-brush"}},
+    {"semanticKey":"equipment.onboard_vehicle_5t","operationId":"operation.full_course_installation","category":"equipment","specification":"On-board vehicle up to 5 t","condition":"selected_full_single_course_large_area_profile","sourceId":"kg_krer_27_06_020_01_021_01_2015","unitId":"machine_hour","quantityRule":"KRER 27-06-020-01 machine-hour rate multiplied by area/1000","detailPrinciple":"distinct machine","priceRelation":"OWN_COST","formulaId":"asphalt_install_onboard_vehicle_v1","resolution":{"kind":"ROW","rowId":"asphalt:equipment:onboard-vehicle-5t"}},
+    {"semanticKey":"equipment.smooth_roller_13t","operationId":"operation.rolling","category":"equipment","specification":"Self-propelled smooth road roller, 13 t","condition":"selected_full_single_course_large_area_profile","sourceId":"kg_krer_27_06_020_01_021_01_2015","unitId":"machine_hour","quantityRule":"KRER 27-06-020-01 machine-hour rate multiplied by area/1000","detailPrinciple":"distinct machine","priceRelation":"OWN_COST","formulaId":"asphalt_install_surface_grinder_v1","resolution":{"kind":"ROW","rowId":"asphalt:equipment:surface-grinder"}},
+
+    {"semanticKey":"included.crane_operator","operationId":"operation.full_course_installation","category":"labor","specification":"Crane operator included in the crane machine-hour price","condition":"selected_full_single_course_large_area_profile","sourceId":"s26_4_selected_preliminary_profile_r1","unitId":"machine_hour","quantityRule":"same operating time as crane","detailPrinciple":"visible included machine component","priceRelation":"INCLUDED_IN_PARENT","formulaId":"asphalt_install_crane_v1","resolution":{"kind":"INCLUDED_COMPONENT_ROW","rowId":"asphalt:included:operator:crane-10t","parentRowId":"asphalt:equipment:crane-10t"}},
+    {"semanticKey":"included.crane_fuel_energy","operationId":"operation.full_course_installation","category":"consumable","specification":"Crane fuel, energy and operating fluids included in the crane machine-hour price","condition":"selected_full_single_course_large_area_profile","sourceId":"s26_4_selected_preliminary_profile_r1","unitId":"machine_hour","quantityRule":"same operating time as crane","detailPrinciple":"visible included machine component","priceRelation":"INCLUDED_IN_PARENT","formulaId":"asphalt_install_crane_v1","resolution":{"kind":"INCLUDED_COMPONENT_ROW","rowId":"asphalt:included:fuel-energy:crane-10t","parentRowId":"asphalt:equipment:crane-10t"}},
+    {"semanticKey":"included.tar_sprayer_operator","operationId":"operation.tack_application","category":"labor","specification":"Tar-sprayer operator included in the machine-hour price","condition":"selected_full_single_course_large_area_profile","sourceId":"s26_4_selected_preliminary_profile_r1","unitId":"machine_hour","quantityRule":"same operating time as tar sprayer","detailPrinciple":"visible included machine component","priceRelation":"INCLUDED_IN_PARENT","formulaId":"asphalt_install_tar_sprayer_v1","resolution":{"kind":"INCLUDED_COMPONENT_ROW","rowId":"asphalt:included:operator:hand-tar-sprayer","parentRowId":"asphalt:equipment:hand-tar-sprayer"}},
+    {"semanticKey":"included.tar_sprayer_fuel_energy","operationId":"operation.tack_application","category":"consumable","specification":"Tar-sprayer fuel, energy and operating fluids included in the machine-hour price","condition":"selected_full_single_course_large_area_profile","sourceId":"s26_4_selected_preliminary_profile_r1","unitId":"machine_hour","quantityRule":"same operating time as tar sprayer","detailPrinciple":"visible included machine component","priceRelation":"INCLUDED_IN_PARENT","formulaId":"asphalt_install_tar_sprayer_v1","resolution":{"kind":"INCLUDED_COMPONENT_ROW","rowId":"asphalt:included:fuel-energy:hand-tar-sprayer","parentRowId":"asphalt:equipment:hand-tar-sprayer"}},
+    {"semanticKey":"included.roller_operator","operationId":"operation.rolling","category":"labor","specification":"Roller operator included in the roller machine-hour price","condition":"selected_full_single_course_large_area_profile","sourceId":"s26_4_selected_preliminary_profile_r1","unitId":"machine_hour","quantityRule":"same operating time as roller","detailPrinciple":"visible included machine component","priceRelation":"INCLUDED_IN_PARENT","formulaId":"asphalt_install_roller_v1","resolution":{"kind":"INCLUDED_COMPONENT_ROW","rowId":"asphalt:included:operator:smooth-roller-8t","parentRowId":"asphalt:equipment:smooth-roller-8t"}},
+    {"semanticKey":"included.roller_fuel_energy","operationId":"operation.rolling","category":"consumable","specification":"Roller fuel, energy and operating fluids included in the roller machine-hour price","condition":"selected_full_single_course_large_area_profile","sourceId":"s26_4_selected_preliminary_profile_r1","unitId":"machine_hour","quantityRule":"same operating time as roller","detailPrinciple":"visible included machine component","priceRelation":"INCLUDED_IN_PARENT","formulaId":"asphalt_install_roller_v1","resolution":{"kind":"INCLUDED_COMPONENT_ROW","rowId":"asphalt:included:fuel-energy:smooth-roller-8t","parentRowId":"asphalt:equipment:smooth-roller-8t"}},
+    {"semanticKey":"included.paver_operator","operationId":"operation.asphalt_paving","category":"labor","specification":"Paver operator included in the paver machine-hour price","condition":"selected_full_single_course_large_area_profile","sourceId":"s26_4_selected_preliminary_profile_r1","unitId":"machine_hour","quantityRule":"same operating time as paver","detailPrinciple":"visible included machine component","priceRelation":"INCLUDED_IN_PARENT","formulaId":"asphalt_install_paver_v1","resolution":{"kind":"INCLUDED_COMPONENT_ROW","rowId":"asphalt:included:operator:asphalt-paver","parentRowId":"asphalt:equipment:asphalt-paver"}},
+    {"semanticKey":"included.paver_fuel_energy","operationId":"operation.asphalt_paving","category":"consumable","specification":"Paver fuel, energy and operating fluids included in the paver machine-hour price","condition":"selected_full_single_course_large_area_profile","sourceId":"s26_4_selected_preliminary_profile_r1","unitId":"machine_hour","quantityRule":"same operating time as paver","detailPrinciple":"visible included machine component","priceRelation":"INCLUDED_IN_PARENT","formulaId":"asphalt_install_paver_v1","resolution":{"kind":"INCLUDED_COMPONENT_ROW","rowId":"asphalt:included:fuel-energy:asphalt-paver","parentRowId":"asphalt:equipment:asphalt-paver"}},
+    {"semanticKey":"included.watering_machine_operator","operationId":"operation.rolling","category":"labor","specification":"Watering-machine operator included in the machine-hour price","condition":"selected_full_single_course_large_area_profile","sourceId":"s27_19_selected_hot_asphalt_profile_r2","unitId":"machine_hour","quantityRule":"same operating time as watering machine","detailPrinciple":"visible included machine component","priceRelation":"INCLUDED_IN_PARENT","formulaId":"asphalt_install_tractor_brush_v1","resolution":{"kind":"INCLUDED_COMPONENT_ROW","rowId":"asphalt:included:operator:tractor-road-brush","parentRowId":"asphalt:equipment:tractor-road-brush"}},
+    {"semanticKey":"included.watering_machine_fuel_energy","operationId":"operation.rolling","category":"consumable","specification":"Watering-machine fuel, energy and operating fluids included in the machine-hour price","condition":"selected_full_single_course_large_area_profile","sourceId":"s27_19_selected_hot_asphalt_profile_r2","unitId":"machine_hour","quantityRule":"same operating time as watering machine","detailPrinciple":"visible included machine component","priceRelation":"INCLUDED_IN_PARENT","formulaId":"asphalt_install_tractor_brush_v1","resolution":{"kind":"INCLUDED_COMPONENT_ROW","rowId":"asphalt:included:fuel-energy:tractor-road-brush","parentRowId":"asphalt:equipment:tractor-road-brush"}},
+    {"semanticKey":"included.onboard_vehicle_operator","operationId":"operation.full_course_installation","category":"labor","specification":"On-board vehicle driver included in the vehicle machine-hour price","condition":"selected_full_single_course_large_area_profile","sourceId":"s26_4_selected_preliminary_profile_r1","unitId":"machine_hour","quantityRule":"same operating time as on-board vehicle","detailPrinciple":"visible included machine component","priceRelation":"INCLUDED_IN_PARENT","formulaId":"asphalt_install_onboard_vehicle_v1","resolution":{"kind":"INCLUDED_COMPONENT_ROW","rowId":"asphalt:included:operator:onboard-vehicle-5t","parentRowId":"asphalt:equipment:onboard-vehicle-5t"}},
+    {"semanticKey":"included.onboard_vehicle_fuel_energy","operationId":"operation.full_course_installation","category":"consumable","specification":"On-board vehicle fuel and operating fluids included in the vehicle machine-hour price","condition":"selected_full_single_course_large_area_profile","sourceId":"s26_4_selected_preliminary_profile_r1","unitId":"machine_hour","quantityRule":"same operating time as on-board vehicle","detailPrinciple":"visible included machine component","priceRelation":"INCLUDED_IN_PARENT","formulaId":"asphalt_install_onboard_vehicle_v1","resolution":{"kind":"INCLUDED_COMPONENT_ROW","rowId":"asphalt:included:fuel-energy:onboard-vehicle-5t","parentRowId":"asphalt:equipment:onboard-vehicle-5t"}},
+    {"semanticKey":"included.smooth_roller_13t_operator","operationId":"operation.rolling","category":"labor","specification":"13 t roller operator included in the machine-hour price","condition":"selected_full_single_course_large_area_profile","sourceId":"s27_19_selected_hot_asphalt_profile_r2","unitId":"machine_hour","quantityRule":"same operating time as 13 t roller","detailPrinciple":"visible included machine component","priceRelation":"INCLUDED_IN_PARENT","formulaId":"asphalt_install_surface_grinder_v1","resolution":{"kind":"INCLUDED_COMPONENT_ROW","rowId":"asphalt:included:operator:surface-grinder","parentRowId":"asphalt:equipment:surface-grinder"}},
+    {"semanticKey":"included.smooth_roller_13t_fuel_energy","operationId":"operation.rolling","category":"consumable","specification":"13 t roller fuel, energy and operating fluids included in the machine-hour price","condition":"selected_full_single_course_large_area_profile","sourceId":"s27_19_selected_hot_asphalt_profile_r2","unitId":"machine_hour","quantityRule":"same operating time as 13 t roller","detailPrinciple":"visible included machine component","priceRelation":"INCLUDED_IN_PARENT","formulaId":"asphalt_install_surface_grinder_v1","resolution":{"kind":"INCLUDED_COMPONENT_ROW","rowId":"asphalt:included:fuel-energy:surface-grinder","parentRowId":"asphalt:equipment:surface-grinder"}},
+    {"semanticKey":"included.roller_water_scrapers","operationId":"operation.rolling","category":"component","specification":"Roller drum wetting and scraper system included in the roller machine-hour price","condition":"selected_full_single_course_large_area_profile","sourceId":"s26_4_selected_preliminary_profile_r1","unitId":"machine_hour","quantityRule":"same operating time as roller","detailPrinciple":"visible included machine component","priceRelation":"INCLUDED_IN_PARENT","formulaId":"asphalt_install_roller_v1","resolution":{"kind":"INCLUDED_COMPONENT_ROW","rowId":"asphalt:included:roller-water-scrapers","parentRowId":"asphalt:equipment:smooth-roller-8t"}},
+    {"semanticKey":"included.paver_screed_grade_control","operationId":"operation.asphalt_paving","category":"component","specification":"Paver screed heating and grade-control system included in the paver machine-hour price","condition":"selected_full_single_course_large_area_profile","sourceId":"s26_4_selected_preliminary_profile_r1","unitId":"machine_hour","quantityRule":"same operating time as paver","detailPrinciple":"visible included machine component","priceRelation":"INCLUDED_IN_PARENT","formulaId":"asphalt_install_paver_v1","resolution":{"kind":"INCLUDED_COMPONENT_ROW","rowId":"asphalt:included:paver-screed-grade-control","parentRowId":"asphalt:equipment:asphalt-paver"}},
+
+    {"semanticKey":"logistics.hot_mix_truck_trips","operationId":"operation.hot_mix_delivery","category":"logistics","specification":"Calculated number of hot-mix truck trips","condition":"selected_full_single_course_large_area_profile","sourceId":"s26_4_selected_preliminary_profile_r1","unitId":"trip","quantityRule":"ceil(hot-mix mass/truck capacity)","detailPrinciple":"visible logistics metric","priceRelation":"INFORMATIONAL_SCOPE","formulaId":"asphalt_install_truck_trips_v1","resolution":{"kind":"ROW","rowId":"asphalt:delivery:truck-trips"}},
+    {"semanticKey":"logistics.hot_mix_ton_km","operationId":"operation.hot_mix_delivery","category":"logistics","specification":"Transport work for hot-mix delivery","condition":"selected_full_single_course_large_area_profile","sourceId":"s26_4_selected_preliminary_profile_r1","unitId":"t_km","quantityRule":"hot-mix mass multiplied by one-way haul distance","detailPrinciple":"visible logistics metric","priceRelation":"INFORMATIONAL_SCOPE","formulaId":"asphalt_install_ton_km_v1","resolution":{"kind":"ROW","rowId":"asphalt:delivery:ton-km"}},
+    {"semanticKey":"logistics.delivery_truck_hours","operationId":"operation.hot_mix_delivery","category":"equipment","specification":"Delivery trucks including travel, loading, waiting and unloading","condition":"selected_full_single_course_large_area_profile","sourceId":"s26_4_selected_preliminary_profile_r1","unitId":"machine_hour","quantityRule":"trips multiplied by round-trip travel and turnaround time","detailPrinciple":"single price-owning delivery basis","priceRelation":"OWN_COST","formulaId":"asphalt_install_truck_machine_h_v1","resolution":{"kind":"ROW","rowId":"asphalt:delivery:truck-machine-hours"}},
+    {"semanticKey":"logistics.mobilize_paver","operationId":"operation.mobilization","category":"service","specification":"Transport asphalt paver to and from site","condition":"selected_full_single_course_large_area_profile","sourceId":"s26_4_selected_preliminary_profile_r1","unitId":"service","quantityRule":"one mobilization service","detailPrinciple":"distinct mobilization service","priceRelation":"OWN_COST","formulaId":"asphalt_install_mobilization_v1","resolution":{"kind":"ROW","rowId":"asphalt:mobilization:paver"}},
+    {"semanticKey":"logistics.mobilize_roller","operationId":"operation.mobilization","category":"service","specification":"Transport 8 t roller to and from site","condition":"selected_full_single_course_large_area_profile","sourceId":"s26_4_selected_preliminary_profile_r1","unitId":"service","quantityRule":"one mobilization service","detailPrinciple":"distinct mobilization service","priceRelation":"OWN_COST","formulaId":"asphalt_install_mobilization_v1","resolution":{"kind":"ROW","rowId":"asphalt:mobilization:roller"}},
+    {"semanticKey":"logistics.mobilize_roller_13t","operationId":"operation.mobilization","category":"service","specification":"Transport 13 t roller to and from site","condition":"selected_full_single_course_large_area_profile","sourceId":"s26_4_selected_preliminary_profile_r1","unitId":"service","quantityRule":"one mobilization service","detailPrinciple":"distinct mobilization service","priceRelation":"OWN_COST","formulaId":"asphalt_install_mobilization_v1","resolution":{"kind":"ROW","rowId":"asphalt:mobilization:roller-13t"}},
+    {"semanticKey":"logistics.mobilize_tar_sprayer","operationId":"operation.mobilization","category":"service","specification":"Transport tar sprayer to and from site","condition":"selected_full_single_course_large_area_profile","sourceId":"s26_4_selected_preliminary_profile_r1","unitId":"service","quantityRule":"one mobilization service","detailPrinciple":"distinct mobilization service","priceRelation":"OWN_COST","formulaId":"asphalt_install_mobilization_v1","resolution":{"kind":"ROW","rowId":"asphalt:mobilization:tar-sprayer"}},
+    {"semanticKey":"logistics.mobilize_watering_machine","operationId":"operation.mobilization","category":"service","specification":"Transport watering machine to and from site","condition":"selected_full_single_course_large_area_profile","sourceId":"s27_19_selected_hot_asphalt_profile_r2","unitId":"service","quantityRule":"one mobilization service","detailPrinciple":"distinct mobilization service","priceRelation":"OWN_COST","formulaId":"asphalt_install_mobilization_v1","resolution":{"kind":"ROW","rowId":"asphalt:mobilization:tractor-brush"}},
+
+    {"semanticKey":"quality.material_passport_register","operationId":"operation.incoming_control","category":"quality_service","specification":"Incoming control and register of mix and bitumen passports","condition":"selected_full_single_course_large_area_profile","sourceId":"napa_faa_asphalt_paving_handbook_2025","unitId":"document","quantityRule":"one controlled register","detailPrinciple":"distinct quality-control service","priceRelation":"OWN_COST","formulaId":"asphalt_install_material_passports_v1","resolution":{"kind":"ROW","rowId":"asphalt:quality:material-passports"}},
+    {"semanticKey":"quality.mix_temperature","operationId":"operation.delivery_control","category":"quality_service","specification":"Hot-mix temperature control for each truck trip","condition":"selected_full_single_course_large_area_profile","sourceId":"napa_faa_asphalt_paving_handbook_2025","unitId":"pcs","quantityRule":"one check per truck trip","detailPrinciple":"distinct quality-control service","priceRelation":"OWN_COST","formulaId":"asphalt_install_truck_trips_v1","resolution":{"kind":"ROW","rowId":"asphalt:quality:mix-temperature"}},
+    {"semanticKey":"quality.bitumen_application","operationId":"operation.tack_application_control","category":"quality_service","specification":"Check uniformity of petroleum road-bitumen application","condition":"selected_full_single_course_large_area_profile","sourceId":"napa_faa_asphalt_paving_handbook_2025","unitId":"pcs","quantityRule":"one check per preliminary acceptance lot","detailPrinciple":"distinct quality-control service","priceRelation":"OWN_COST","formulaId":"asphalt_install_acceptance_lots_v1","resolution":{"kind":"ROW","rowId":"asphalt:quality:bitumen-application"}},
+    {"semanticKey":"quality.layer_thickness","operationId":"operation.paving_control","category":"quality_service","specification":"Placed-course thickness control","condition":"selected_full_single_course_large_area_profile","sourceId":"napa_faa_asphalt_paving_handbook_2025","unitId":"pcs","quantityRule":"one check per preliminary acceptance lot","detailPrinciple":"distinct quality-control service","priceRelation":"OWN_COST","formulaId":"asphalt_install_acceptance_lots_v1","resolution":{"kind":"ROW","rowId":"asphalt:quality:layer-thickness"}},
+    {"semanticKey":"quality.density","operationId":"operation.compaction_control","category":"quality_service","specification":"Compacted pavement density control","condition":"selected_full_single_course_large_area_profile","sourceId":"napa_faa_asphalt_paving_handbook_2025","unitId":"pcs","quantityRule":"one check per preliminary acceptance lot","detailPrinciple":"distinct quality-control service","priceRelation":"OWN_COST","formulaId":"asphalt_install_acceptance_lots_v1","resolution":{"kind":"ROW","rowId":"asphalt:quality:density"}},
+    {"semanticKey":"quality.smoothness","operationId":"operation.surface_control","category":"quality_service","specification":"Paved-surface smoothness control","condition":"selected_full_single_course_large_area_profile","sourceId":"napa_faa_asphalt_paving_handbook_2025","unitId":"pcs","quantityRule":"one check per preliminary acceptance lot","detailPrinciple":"distinct quality-control service","priceRelation":"OWN_COST","formulaId":"asphalt_install_acceptance_lots_v1","resolution":{"kind":"ROW","rowId":"asphalt:quality:smoothness"}},
+    {"semanticKey":"quality.grade_slope","operationId":"operation.geometry_control","category":"quality_service","specification":"Survey control of grade and cross slope","condition":"selected_full_single_course_large_area_profile","sourceId":"napa_faa_asphalt_paving_handbook_2025","unitId":"pcs","quantityRule":"one check per preliminary acceptance lot","detailPrinciple":"distinct quality-control service","priceRelation":"OWN_COST","formulaId":"asphalt_install_acceptance_lots_v1","resolution":{"kind":"ROW","rowId":"asphalt:quality:grade-slope"}},
+    {"semanticKey":"document.work_journal","operationId":"operation.execution_records","category":"document","specification":"Work and operational-control journal","condition":"selected_full_single_course_large_area_profile","sourceId":"s26_4_selected_preliminary_profile_r1","unitId":"document","quantityRule":"one journal","detailPrinciple":"informational record; not material completeness","priceRelation":"CONTROL_OR_DOCUMENT","formulaId":"asphalt_install_work_journal_v1","resolution":{"kind":"ROW","rowId":"asphalt:document:work-journal"}},
+    {"semanticKey":"document.execution_set","operationId":"operation.execution_records","category":"document","specification":"As-built diagrams, acts and test protocols","condition":"selected_full_single_course_large_area_profile","sourceId":"s26_4_selected_preliminary_profile_r1","unitId":"document","quantityRule":"one documentation set","detailPrinciple":"informational record; not material completeness","priceRelation":"CONTROL_OR_DOCUMENT","formulaId":"asphalt_install_execution_docs_v1","resolution":{"kind":"ROW","rowId":"asphalt:document:execution-set"}},
+    {"semanticKey":"document.delivery_register","operationId":"operation.delivery_control","category":"document","specification":"Register of mix trips, temperatures and batches","condition":"selected_full_single_course_large_area_profile","sourceId":"s26_4_selected_preliminary_profile_r1","unitId":"document","quantityRule":"one register","detailPrinciple":"informational record; not material completeness","priceRelation":"CONTROL_OR_DOCUMENT","formulaId":"asphalt_install_material_passports_v1","resolution":{"kind":"ROW","rowId":"asphalt:document:delivery-register"}},
+    {"semanticKey":"organization.work_zone_control","operationId":"operation.site_organization","category":"service","specification":"Safe work-zone organization and traffic control as a procured service","condition":"selected_full_single_course_large_area_profile","sourceId":"s26_4_selected_preliminary_profile_r1","unitId":"set","quantityRule":"one service set","detailPrinciple":"complete procured service, not loose unverified materials","priceRelation":"OWN_COST","formulaId":"asphalt_install_traffic_control_v1","resolution":{"kind":"ROW","rowId":"asphalt:organization:traffic-control"}},
+    {"semanticKey":"organization.continuous_flow","operationId":"operation.site_organization","category":"operation","specification":"Coordination of continuous delivery, paving and compaction flow","condition":"selected_full_single_course_large_area_profile","sourceId":"asphalt_institute_engineering_faq","unitId":"m2","quantityRule":"area_m2","detailPrinciple":"distinct organization operation","priceRelation":"INFORMATIONAL_SCOPE","formulaId":"asphalt_install_area_v1","resolution":{"kind":"ROW","rowId":"asphalt:organization:continuous-flow"}}
+  ],
+  "explicitExclusions": [
+    "base and subbase construction",
+    "drainage",
+    "kerbs",
+    "road marking",
+    "milling or demolition of an existing pavement",
+    "winter or night-work measures unless selected",
+    "invented prices"
+  ]
+}

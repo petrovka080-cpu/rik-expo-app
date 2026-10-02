@@ -8,6 +8,7 @@ import {
 } from "../../src/lib/consumerRequests";
 import { isConsumerEstimatePayableItem } from "../../src/lib/consumerRequests/consumerEstimateReadiness";
 import { buildCanonicalConsumerRepairRevisionFixture } from "./canonicalConsumerRepairRevisionFixture";
+import type { ConsumerEstimateMarketplaceTransport } from "../../src/lib/consumerRequests/consumerRequestMarketplace.transport";
 
 export const CONSUMER_REPAIR_TEST_USER_ID = "consumer-1";
 export const CONSUMER_REPAIR_VALID_PROBLEM = "Хочу уложить ламинат на 100 кв м в комнате, нужен ремонт пола";
@@ -27,6 +28,7 @@ export function canonicalArtifactForApprovedConsumerRepairTestBundle(
   releaseId: string;
   status: "ready";
   sha256: string | null;
+  revisionChecksumSha256: string;
 } {
   const event = [...bundle.events].reverse().find((candidate) =>
     candidate.eventType === "consumer_approved_canonical_backend_pdf"
@@ -44,6 +46,46 @@ export function canonicalArtifactForApprovedConsumerRepairTestBundle(
     releaseId,
     status: "ready",
     sha256: typeof event?.payload.sha256 === "string" ? event.payload.sha256 : null,
+    revisionChecksumSha256: "d".repeat(64),
+  };
+}
+
+export function consumerMarketplaceTransportForApprovedBundle(
+  bundle: ConsumerRepairDraftBundle,
+  artifact = canonicalArtifactForApprovedConsumerRepairTestBundle(bundle),
+): ConsumerEstimateMarketplaceTransport {
+  const listingId = artifact.revisionId;
+  let created = true;
+  let idempotencyKey = "";
+  return {
+    async publish(input) {
+      idempotencyKey = input.idempotencyKey;
+      const receipt = {
+        listing_id: listingId,
+        created,
+        server_status: "active",
+        revision_id: artifact.revisionId,
+        release_id: artifact.releaseId,
+        artifact_id: artifact.artifactId,
+      };
+      created = false;
+      return receipt;
+    },
+    async readPublishedListing() {
+      return {
+        id: listingId,
+        user_id: bundle.draft.consumerUserId,
+        status: "active",
+        client_mutation_id: idempotencyKey,
+        items_json: [{
+          name: bundle.items[0]?.titleRu ?? "Тестовая позиция",
+          qty: bundle.items[0]?.quantity ?? 1,
+          canonical_revision_id: artifact.revisionId,
+          canonical_release_id: artifact.releaseId,
+          canonical_artifact_id: artifact.artifactId,
+        }],
+      };
+    },
   };
 }
 

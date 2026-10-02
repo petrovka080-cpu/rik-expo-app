@@ -1,6 +1,12 @@
 import type { ProfessionalBoqLineItemQuality, ProfessionalBoqLineItemRowType } from "./professionalBoqLineItemQualityContract";
 
-export const PROFESSIONAL_BOQ_MAIN_UI_MAX_ROWS = 80;
+/**
+ * Kept as an exported compatibility symbol for older callers.  The ordinary
+ * estimate UI must not truncate a technological composition, so the effective
+ * default is unbounded.  Callers that intentionally build a labelled preview
+ * may still pass an explicit finite value.
+ */
+export const PROFESSIONAL_BOQ_MAIN_UI_MAX_ROWS = Number.POSITIVE_INFINITY;
 
 export type ProfessionalBoqSectionId =
   | "materials"
@@ -64,7 +70,9 @@ export function buildProfessionalBoqGroupedMainViewModel(
   maxRows = PROFESSIONAL_BOQ_MAIN_UI_MAX_ROWS,
 ): ProfessionalBoqGroupedMainViewModel {
   const sections: ProfessionalBoqGroupedSection[] = [];
-  let remaining = Math.max(0, maxRows);
+  let remaining = Number.isFinite(maxRows)
+    ? Math.max(0, maxRows)
+    : rows.length;
 
   for (const sectionId of SECTION_ORDER) {
     const sectionRows = rows.filter((row) => professionalBoqSectionForRowType(row.rowType).sectionId === sectionId);

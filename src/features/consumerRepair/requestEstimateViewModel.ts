@@ -21,8 +21,13 @@ import { buildEstimatePilotModeViewState } from "../estimates/runtime/estimatePi
 import { professionalBoqRiskRowsFromSourceParameters } from "../../lib/estimate/professionalBoqAssumptions";
 import { resolvedEstimateIdentityChecksum } from "../../lib/estimate/resolvedEstimateIdentityChecksum";
 import { CANONICAL_BACKEND_REVISION_PROJECTION_VERSION } from "../../lib/consumerRequests/consumerCanonicalBackendRevisionProjection";
-import { isConsumerEstimatePayableItem } from "../../lib/consumerRequests/consumerEstimateReadiness";
+import {
+  isConsumerEstimateCompositionVisibleItem,
+  isConsumerEstimatePayableItem,
+} from "../../lib/consumerRequests/consumerEstimateReadiness";
 import { consumerRepairCanonicalEstimateBlocksApproval } from "./consumerRepairCanonicalEstimateReadiness";
+import { consumerRepairRowIsNonPayable } from "./consumerRepairRowMetadata";
+import { publicBoqDisplayNameRu } from "../../lib/estimate/publicBoqNaming";
 
 export type RequestEstimateManualCatalogItem = {
   id: string;
@@ -466,10 +471,14 @@ function admissionVerifiedCanonicalTitleItems(
 
 function publicItemTitle(item: ConsumerRepairRequestItem, canonicalTitleVerified = false): string {
   if (canonicalTitleVerified) {
-    // An accepted canonical backend row is immutable evidence. Its title must
-    // stay byte-for-byte equivalent at the UI boundary: translating technical
-    // tokens here breaks backend/UI parity even though the row itself is intact.
-    return item.titleRu;
+    // Keep the immutable canonical title in the bundle, while applying the
+    // shared public naming projection only to material rows. Work, service and
+    // control-row titles are specification-bearing and must remain byte-stable.
+    // PDF and procurement use the same projection for the noisy material names.
+    return publicBoqDisplayNameRu({
+      sourceNameRu: item.titleRu,
+      rowType: item.itemType,
+    });
   }
   const normalized = sanitizeRequestEstimatePublicText(
     professionalEstimateRowVisibleName(rowDisplayInput(item)),
@@ -514,7 +523,7 @@ function formatUnitPriceForItems(items: ConsumerRepairRequestItem[]): string {
   const first = priced[0];
   const samePrice = priced.every((item) => item.unitPrice === first.unitPrice && item.currency === first.currency);
   if (!samePrice || priced.length !== items.length) return `${priced.length}/${items.length} \u0441 \u0446\u0435\u043d\u043e\u0439`;
-  return `${formatEstimateMoney(first.unitPrice ?? 0, first.currency)} / ${displayUnitLabelForItem(first)}`;
+  return `${formatEstimateMoney(first.unitPrice!, first.currency)} / ${displayUnitLabelForItem(first)}`;
 }
 
 function formatTotalForItems(items: ConsumerRepairRequestItem[]): string {
@@ -522,7 +531,7 @@ function formatTotalForItems(items: ConsumerRepairRequestItem[]): string {
   if (priced.length === 0) return "\u0418\u0442\u043e\u0433 \u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c";
   if (priced.length !== items.length) return "\u0418\u0442\u043e\u0433 \u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c";
   const currency = priced[0].currency;
-  const total = priced.reduce((sum, item) => sum + (item.totalPrice ?? 0), 0);
+  const total = priced.reduce((sum, item) => sum + item.totalPrice!, 0);
   return formatEstimateMoney(total, currency);
 }
 
@@ -744,7 +753,9 @@ function buildPreviewRow(section: RequestEstimateSectionViewModel, items: Consum
 
 function previewCalculationLabel(item: ConsumerRepairRequestItem): string | null {
   if (item.sourceParameters?.canonicalPreliminaryNeed === true) {
-    return "Позиция предусмотрена технологией; количество и условия нужно уточнить";
+    return item.quantity == null
+      ? "Позиция предусмотрена технологией; количество нужно уточнить"
+      : "Предварительное количество рассчитано; уточните характеристики или условия";
   }
   if (item.quantityFormula || item.calculationTrace || item.normId || item.templateId) {
     return "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0440\u0430\u0441\u0441\u0447\u0438\u0442\u0430\u043d\u043e \u043f\u043e \u043d\u043e\u0440\u043c\u0435";
@@ -767,9 +778,16 @@ function normSourceLabel(item: ConsumerRepairRequestItem): string | null {
 }
 
 function bundlePriceStatusLabel(bundle: ConsumerRepairDraftBundle): string {
-  const calculatedItems = bundle.items.filter((item) => item.sourceParameters?.canonicalPreliminaryNeed !== true);
+  const calculatedItems = bundle.items.filter((item) =>
+    item.sourceParameters?.canonicalPreliminaryNeed !== true || item.quantity != null
+  );
   const costedItems = calculatedItems.filter((item) => item.sourceParameters?.includedInEstimate !== false);
-  const preliminaryNeedCount = bundle.items.length - calculatedItems.length;
+  const unresolvedQuantityCount = bundle.items.filter((item) =>
+    item.sourceParameters?.canonicalPreliminaryNeed === true && item.quantity == null
+  ).length;
+  const provisionalQuantityCount = bundle.items.filter((item) =>
+    item.sourceParameters?.canonicalPreliminaryNeed === true && item.quantity != null
+  ).length;
   const missing = costedItems.filter((item) => item.unitPrice == null || item.totalPrice == null).length;
   const manual = costedItems.filter((item) =>
     item.priceStatus === "USER_PRICE_OVERRIDE" || item.priceStatus === "USER_ENTERED_PRICE"
@@ -779,7 +797,10 @@ function bundlePriceStatusLabel(bundle: ConsumerRepairDraftBundle): string {
     `${priced}/${costedItems.length} стоимостных строк имеют цену`,
     manual > 0 ? `${manual} ${"\u0432\u0440\u0443\u0447\u043d\u0443\u044e"}` : null,
     missing > 0 ? `${missing} ${"\u043d\u0443\u0436\u043d\u043e \u0437\u0430\u043f\u043e\u043b\u043d\u0438\u0442\u044c"}` : null,
-    preliminaryNeedCount > 0 ? `${preliminaryNeedCount} без количества` : null,
+    provisionalQuantityCount > 0
+      ? `${provisionalQuantityCount} с предварительным количеством`
+      : null,
+    unresolvedQuantityCount > 0 ? `${unresolvedQuantityCount} без количества` : null,
   ].filter(Boolean);
   return parts.join(" · ");
 }
@@ -1050,13 +1071,11 @@ function revisionViewLabels(bundle: ConsumerRepairDraftBundle): Pick<
 
 export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle | null): RequestEstimateViewModel | null {
   if (!bundle) return null;
-  // Keep excluded canonical rows in the durable bundle so they can be restored,
-  // but do not render them as active estimate positions. The backend row flag is
-  // the authoritative projection contract for delete/restore revisions.
-  const visibleEstimateItems = bundle.items.filter((item) =>
-    item.sourceParameters?.includedInEstimate !== false
-    || item.sourceParameters?.canonicalPreliminaryNeed === true
-  );
+  // Keep manually excluded canonical rows in the durable bundle so they can be
+  // restored. Structural non-payable rows remain visible: they are part of the
+  // technology/completeness ledger even though their cost is owned by another
+  // row or they are an informational/control output and must not be summed.
+  const visibleEstimateItems = bundle.items.filter(isConsumerEstimateCompositionVisibleItem);
   const viewBundle = visibleEstimateItems.length === bundle.items.length
     ? bundle
     : { ...bundle, items: visibleEstimateItems };
@@ -1066,11 +1085,15 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
   const preliminaryNeedCount = viewBundle.items.filter(
     (item) => item.sourceParameters?.canonicalPreliminaryNeed === true,
   ).length;
-  const calculatedItemCount = Math.max(0, rawItemCount - preliminaryNeedCount);
+  const calculatedItemCount = viewBundle.items.filter((item) =>
+    item.sourceParameters?.canonicalPreliminaryNeed !== true || item.quantity != null
+  ).length;
   const sourceGates = buildRequestEstimateSourceGates(viewBundle.items);
   const hasProcurementItems = viewBundle.items.some((item) =>
     item.sourceParameters?.includedInProcurement
-      ?? (item.itemType !== "work" && item.itemType !== "document")
+      ?? (item.sourceParameters?.canonicalPreliminaryNeed === true
+        ? item.sourceParameters?.procurementEligible === true
+        : item.itemType !== "work" && item.itemType !== "document")
   );
   const payableItems = viewBundle.items.filter((item) =>
     item.sourceParameters?.canonicalPreliminaryNeed !== true
@@ -1174,7 +1197,10 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     fullTotalStatusLabel: fullTotalPublicLabel(productionTrust.full_total_status, missingPrices),
     pilotBadgeLabel: pilotMode.badgeLabelRu,
     pilotDisclosureLabel: pilotMode.disclosureRu,
-    visibleLines: sections.flatMap((section) => section.items).map(visibleLineForItem),
+    visibleLines: sections
+      .flatMap((section) => section.items)
+      .filter((item) => !consumerRepairRowIsNonPayable(item))
+      .map(visibleLineForItem),
     assumptionRows: [
       ...buildProfessionalBoqRiskAssumptionRows(viewBundle),
       ...(hasAsphaltV4

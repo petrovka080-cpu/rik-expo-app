@@ -185,6 +185,7 @@ export default function WarehouseModalsManager(props: WarehouseModalsManagerProp
       ) : null}
 
       <WarehouseFioModal
+        surface="warehouse"
         visible={props.isFioConfirmVisible}
         initialFio={props.warehousemanFio}
         onConfirm={props.handleFioConfirm}

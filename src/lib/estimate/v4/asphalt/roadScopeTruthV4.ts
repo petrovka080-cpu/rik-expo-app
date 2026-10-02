@@ -27,7 +27,7 @@ export function isRoadScopeIdV4(value: string): value is AsphaltScopeSelectionId
 }
 
 export type RoadScopeResolverStatusV4 = "RESOLVED" | "NEEDS_SCOPE_SELECTION" | "NOT_ROAD";
-export const ROAD_SCOPE_RESOLVER_VERSION_V4 = "road-scope-resolver-v4.1.0" as const;
+export const ROAD_SCOPE_RESOLVER_VERSION_V4 = "road-scope-resolver-v4.2.0" as const;
 
 export type RoadScopeResolutionV4 = {
   resolverStatus: RoadScopeResolverStatusV4;
@@ -112,6 +112,8 @@ const REPAIR =
 const SURFACING_ACTION = /(?:улож|уклад|асфальтир|асфальттоо|покрыт|overlay|surfacing)/iu;
 const SURFACING_ONLY =
   /(?:не\s+нужн[а-яё]*\s+полн[а-яё]*\s+дорог|только\s+(?:верхн[а-яё]*\s+сло|асфальт|покрыт)|без\s+(?:нов[а-яё]*\s+)?основан)/iu;
+const EXPLICIT_NARROW_ASPHALT_OPERATION =
+  /(?:только|лишь)\s+(?:уплотнен|уплотнён|укат|фрезерован|выравниван|ремонт|укладк[а-яё]*\s+верхн[а-яё]*\s+сло)/iu;
 const PARKING = /(?:парковк|автостоян|\bparking\b)/iu;
 const NEW_PARKING = /(?:построи[а-яё]*|строительств[а-яё]*|нов[а-яё]*)[^.]{0,50}(?:парковк|автостоян)|(?:парковк|автостоян)[^.]{0,50}(?:с\s+нуля|нов[а-яё]*\s+строительств)/iu;
 const PARKING_OVERLAY = /(?:обнов|усилен|нов[а-яё]*\s+сло[а-яё]*\s+по\s+существ|поверх\s+существ|overlay)/iu;
@@ -196,12 +198,13 @@ function lengthInMeters(value: string, unit: string): number {
 
 export function parseRoadGeometryV4(rawText: string): RoadGeometryResolutionV4 {
   const text = rawText.normalize("NFKC").replace(/\u00a0/g, " ");
-  const pair = text.match(/(-?\d[\d\s]*(?:[,.]\d+)?)\s*(км|km|м|m)\s*(?:×|x|х|на)\s*(-?\d[\d\s]*(?:[,.]\d+)?)\s*(км|km|м|m)/iu);
+  const pair = text.match(/(?<![\p{L}\d-])(-?\d[\d\s]*(?:[,.]\d+)?)\s*(км|km|м(?!м)|m(?!m))\s*(?:×|x|х|на)\s*(-?\d[\d\s]*(?:[,.]\d+)?)\s*(км|km|м(?!м)|m(?!m))(?![\p{L}\d])/iu);
   const labelledLength = text.match(/(?:длин[а-яё]*|протяж[а-яё]*|length)\s*[:=]?\s*(-?\d[\d\s]*(?:[,.]\d+)?)\s*(км|km|м|m)/iu);
   const labelledWidth = text.match(/(?:ширин[а-яё]*|width)\s*[:=]?\s*(-?\d[\d\s]*(?:[,.]\d+)?)\s*(км|km|м|m)/iu);
   const trailingLength = text.match(/(?:—|–|-)\s*(-?\d[\d\s]*(?:[,.]\d+)?)\s*(км|km|м|m)\s*[.!?]?$/iu);
   const areaMatch = text.match(/(?:площад[а-яё]*\s*[:=]?\s*)?(-?\d[\d\s]*(?:[,.]\d+)?)\s*(?:м²|м2|m2|sqm)/iu);
-  const thickness = text.match(/(?:толщин[а-яё]*\s*[:=]?\s*)(-?\d+(?:[,.]\d+)?)\s*(мм|mm|см|cm|м|m)/iu);
+  const thickness = text.match(/(?:толщин[а-яё]*\s*[:=]?\s*)(-?\d+(?:[,.]\d+)?)\s*(мм|mm|см|cm|м|m)/iu)
+    ?? text.match(/(?:м²|м2|m2|sqm)\s*(?:×|x|х)\s*(-?\d+(?:[,.]\d+)?)\s*(мм|mm)/iu);
   const lengthM = pair
     ? lengthInMeters(pair[1], pair[2])
     : labelledLength
@@ -409,6 +412,19 @@ export function resolveRoadScopeV4(input: {
   }
   if (PREPARED_BASE.test(originalText) && SURFACING_ACTION.test(originalText)) {
     return resolved(originalText, input.requestedCatalogWorkId, "ROAD_SURFACING_ONLY", ["prepared_base_explicit"]);
+  }
+  const normalizedCatalogWorkId = input.requestedCatalogWorkId
+    .normalize("NFKC")
+    .toLocaleLowerCase("ru-RU")
+    .trim();
+  const canonicalAsphaltPavementSelected =
+    normalizedCatalogWorkId === "asphalt_concrete_pavement" ||
+    normalizedCatalogWorkId === "canonical-work:expanded:asphalt_concrete_pavement" ||
+    normalizedCatalogWorkId.startsWith("asphalt_concrete_pavement_");
+  if (canonicalAsphaltPavementSelected && !EXPLICIT_NARROW_ASPHALT_OPERATION.test(originalText)) {
+    return resolved(originalText, input.requestedCatalogWorkId, "FULL_PAVEMENT_STRUCTURE", [
+      "canonical_asphalt_pavement_default_full_cycle",
+    ]);
   }
   return {
     resolverStatus: "NEEDS_SCOPE_SELECTION",

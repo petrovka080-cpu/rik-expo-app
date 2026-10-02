@@ -63,9 +63,18 @@ function dropDerivedQuantitiesInvalidatedByPatch(
   patch: UserParamPatch,
 ): void {
   const invalidatesVolume = new Set(["length_m", "height_m", "thickness_m", "width_m", "depth_mm"]);
-  if (!invalidatesVolume.has(patch.paramKey)) return;
-  if (params.volume_m3?.source === "derived" || params.volume_m3?.sourceText?.includes("*")) {
+  if (invalidatesVolume.has(patch.paramKey) &&
+      (params.volume_m3?.source === "derived" || params.volume_m3?.sourceText?.includes("*"))) {
     delete params.volume_m3;
+  }
+  if (["length_m", "width_m"].includes(patch.paramKey) &&
+      (params.area_m2?.source === "derived" ||
+        params.area_m2?.source === "default_assumption" ||
+        params.area_m2?.sourceText?.includes("*"))) {
+    // A length/width edit invalidates only a calculated area. An explicitly
+    // entered area is deliberately retained so inconsistent geometry still
+    // fails closed and asks the user to choose the authoritative measure.
+    delete params.area_m2;
   }
 }
 

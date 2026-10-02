@@ -3,7 +3,7 @@ import {
   buildRegulatedSafeEstimatePlan,
 } from "../../../ai/estimatorKernel";
 import { buildOwnedDomainEstimatorReasoningPlan } from "../../ownedDomain/buildOwnedDomainEstimatorReasoningPlan";
-import { buildGlobalEstimateFromEstimatorKernel } from "../../../ai/globalEstimate/globalEstimateCalculator";
+import { buildGlobalEstimateFromEstimatorKernel } from "../../backendPlatform/canonicalEstimateHistoricalGlobalProjection";
 import { compileDynamicProfessionalBoq } from "../../../ai/professionalBoq/compileDynamicProfessionalBoq";
 import { expandOwnedDomainProfessionalBoq } from "../../ownedDomain/expandOwnedDomainBoqRows";
 import { applyProfessionalBoqRuntimeContract } from "../../buildProfessionalBoqDraft";

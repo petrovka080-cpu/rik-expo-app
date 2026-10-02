@@ -66,6 +66,22 @@ describe("LocalDeveloperReviewBanner", () => {
     expect(mockRestoreLocalDeveloperOwnerSession).toHaveBeenCalledTimes(1);
   });
 
+  it("does not race an explicit login-screen principal with automatic owner restore", async () => {
+    await act(async () => {
+      TestRenderer.create(
+        <LocalDeveloperReviewBanner
+          authenticatedRole={null}
+          automaticOwnerRestoreEnabled={false}
+          authSessionResolved
+          hasAuthenticatedSession={false}
+        />,
+      );
+    });
+
+    expect(mockRestoreLocalDeveloperOwnerSession).not.toHaveBeenCalled();
+    expect(mockLoadDeveloperOverrideContext).not.toHaveBeenCalled();
+  });
+
   it("keeps an existing owner session and verifies its server entitlement", async () => {
     await act(async () => {
       TestRenderer.create(

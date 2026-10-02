@@ -1,7 +1,7 @@
 import roofingNormPack from "../../../../../data/estimate-norms/professional/roofing.json";
 import { estimateDeterministicHash } from "../../estimateDeterministicHash";
 import type { ProfessionalParameterValueV4 } from "../professionalProjectAssemblyV4";
-import type { ProfessionalPhysicalNormApplicabilityResolutionV1 } from "./professionalPhysicalNormApplicabilityV1";
+import type { ProfessionalPhysicalNormApplicabilityResolutionV1 } from "./professionalPhysicalNormApplicabilityTypesV1";
 
 const APPLICABILITY_VERSION = "professional-physical-norm-applicability:v1" as const;
 

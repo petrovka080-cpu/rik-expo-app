@@ -6,15 +6,13 @@ import {
   getProfessionalWorkPassportBuildCacheStats,
   listProfessionalWorkPassportTemplateIds,
 } from "../../src/lib/estimate/buildProfessionalWorkPassport";
+import { applyAiEstimateParameterOverride } from "../../src/lib/estimate/applyAiEstimateParameterOverrides";
 import { createEstimateDraftRevision } from "../../src/lib/estimate/createEstimateDraftRevision";
-import { parseUserParamPatch } from "../../src/lib/estimate/parseUserParamPatch";
-import { recalculateEstimateDraftRevision } from "../../src/lib/estimate/recalculateEstimateDraftRevision";
 import { validateEstimateDraftRevision } from "../../src/lib/estimate/validateEstimateDraftRevision";
 import {
   clearAiEstimateFormulaRuntimeCaches,
   getAiEstimateFormulaRuntimeCacheStats,
 } from "../../src/lib/estimate/formula/evaluateAiEstimateQuantityFormula";
-import type { EstimateDraftRevision } from "../../src/lib/estimate/estimateDraftRevisionContract";
 import { resolveRegisteredProfessionalEstimateSelectionV1 } from "../../src/lib/estimate/v4/domains/registeredProfessionalEstimateDomainsV1";
 import {
   createRegisteredProfessionalDomainAuditRevision,
@@ -25,6 +23,17 @@ import {
   isPumpStationCanonicalBackendPassport,
   recalculatePumpStationCanonicalBackendAuditRevision,
 } from "../../scripts/estimate/pumpStationCanonicalBackendAuditAdapter";
+import {
+  boundaryProfessionalBoq11610AuditNumericValue,
+  buildProfessionalBoq11610AuditParamOverrides,
+  nextProfessionalBoq11610AuditNumericValue,
+  selectProfessionalBoq11610AuditEditableParam,
+} from "../../scripts/estimate/professionalBoq11610AuditFixtures";
+import {
+  createStripFoundationCanonicalBackendAuditRevision,
+  isStripFoundationCanonicalBackendPassport,
+  recalculateStripFoundationCanonicalBackendAuditRevision,
+} from "../../scripts/estimate/stripFoundationCanonicalBackendAuditAdapter";
 
 export const EDITABLE_PARAM_11610_SHARD_COUNT = 24;
 
@@ -136,28 +145,16 @@ function verifyEditableParam11610Entries(
       const registeredSelection = resolveRegisteredProfessionalEstimateSelectionV1(templateId);
       if (registeredSelection) {
         try {
-          const registeredDefinitions = registeredSelection.canonical_parameter_schema.definitions;
-          const registeredFixtureOverrides: EstimateDraftRevision["params"] = {};
-          const addConfirmedFixtureValue = (parameterId: string, value: number | string): void => {
-            if (!registeredDefinitions.some((definition) => definition.parameterId === parameterId)) return;
-            registeredFixtureOverrides[parameterId] = {
-              value,
-              source: "user_input",
-              sourceText: `readiness-fixture:project-confirmed-${parameterId}`,
-              lastChangedAt: "2026-07-07T00:00:00.000Z",
-            };
-          };
-          addConfirmedFixtureValue("normative_rate_code", "PROJECT-VERIFIED-EXACT-RATE-CODE");
-          addConfirmedFixtureValue("access_equipment_shift_count", 3);
-          addConfirmedFixtureValue("access_delivery_trip_count", 2);
+          const registeredFixtureOverrides = buildProfessionalBoq11610AuditParamOverrides(
+            templateId,
+            "2026-07-07T00:00:00.000Z",
+          );
           const r1 = createRegisteredProfessionalDomainAuditRevision({
             templateId,
             estimateDraftId: `readiness-${index}`,
             rawInput: `${registeredSelection.title_ru} площадь 100 м2 длина 10 м ширина 10 м`,
             createdAt: "2026-07-07T00:00:00.000Z",
-            paramOverrides: Object.keys(registeredFixtureOverrides).length > 0
-              ? registeredFixtureOverrides
-              : undefined,
+            paramOverrides: registeredFixtureOverrides,
           });
           const candidate = r1.trace.params
             .filter((parameter) =>
@@ -213,33 +210,99 @@ function verifyEditableParam11610Entries(
         continue;
       }
 
-      const r1 = createEstimateDraftRevision({
-        estimateDraftId: `readiness-${index}`,
-        rawInput: `${passport.localizedNameRu} 100 м2`,
-        selectedTemplateId: templateId,
-        selectedTemplateName: passport.localizedNameRu,
-        createdAt: "2026-07-07T00:00:00.000Z",
-      });
-      const patch = parseUserParamPatch({
-        revision: r1,
-        operation: r1.params.area_m2 ? "update_param" : "add_param",
-        paramKey: "area_m2",
-        rawValue: "80 м2",
-      });
-      const { revision: r2 } = recalculateEstimateDraftRevision(r1, patch, {
-        createdAt: "2026-07-07T00:01:00.000Z",
-        revisionIndex: 2,
-      });
+      const createdAt = "2026-07-07T00:00:00.000Z";
+      const stripFoundation = isStripFoundationCanonicalBackendPassport(passport);
+      const r1 = stripFoundation
+        ? createStripFoundationCanonicalBackendAuditRevision({
+            passport,
+            estimateDraftId: `readiness-${index}`,
+            rawInput: `${passport.localizedNameRu} 100 м2`,
+            createdAt,
+          })
+        : createEstimateDraftRevision({
+            estimateDraftId: `readiness-${index}`,
+            rawInput: `${passport.localizedNameRu} 100 м2`,
+            selectedTemplateId: templateId,
+            selectedTemplateName: passport.localizedNameRu,
+            createdAt,
+            paramOverrides: buildProfessionalBoq11610AuditParamOverrides(templateId, createdAt),
+          });
+      const paramKey = selectProfessionalBoq11610AuditEditableParam(r1);
+      if (!paramKey) {
+        blockers.push(`${templateId}:editable_parameter_missing`);
+        continue;
+      }
+      const beforeValue = r1.params[paramKey]?.value;
+      const recalculate = (rawValue: string, editCreatedAt: string) =>
+        stripFoundation
+          ? recalculateStripFoundationCanonicalBackendAuditRevision({
+              passport,
+              previous: r1,
+              operation: "update_param",
+              paramKey,
+              rawValue,
+              createdAt: editCreatedAt,
+              revisionIndex: 2,
+            })
+          : applyAiEstimateParameterOverride({
+              revision: r1,
+              operation: "update_param",
+              paramKey,
+              rawValue,
+              createdAt: editCreatedAt,
+              revisionIndex: 2,
+            });
+      let result = recalculate(
+        nextProfessionalBoq11610AuditNumericValue(beforeValue),
+        "2026-07-07T00:01:00.000Z",
+      );
+      if (result.diff.changedRowsCount === 0) {
+        result = recalculate(
+          boundaryProfessionalBoq11610AuditNumericValue(beforeValue),
+          "2026-07-07T00:02:00.000Z",
+        );
+      }
+      const { revision: r2, diff } = result;
       const validation = validateEstimateDraftRevision(r2);
-      if (
+      const affectedRowIds = new Set(
+        r1.trace.params.find((parameter) => parameter.key === paramKey)?.affectsRowIds ?? [],
+      );
+      const changedRowsOutsideTrace = diff.changedRows
+        .filter((row) => !affectedRowIds.has(row.rowId))
+        .map((row) => row.rowId);
+      const identityPreserved = (
         r1.selectedTemplateId === templateId &&
-        r2.selectedTemplateId === templateId &&
+        r2.selectedTemplateId === templateId
+      ) || (
+        r1.selectedTemplateId === r2.selectedTemplateId &&
+        r1.resolvedIdentity?.requestedCatalogWorkId === templateId &&
+        r2.resolvedIdentity?.requestedCatalogWorkId === templateId &&
+        r1.resolvedIdentity?.passportId === `professional-estimate-passport:v4:${templateId}` &&
+        r2.resolvedIdentity?.passportId === r1.resolvedIdentity.passportId
+      );
+      if (
+        identityPreserved &&
         r2.previousRevisionId === r1.revisionId &&
-        r2.params.area_m2?.value === 80 &&
+        r2.params[paramKey]?.value !== beforeValue &&
         r2.boq.rows.length > 0 &&
+        diff.changedRowsCount > 0 &&
+        diff.changedRows.every((row) => affectedRowIds.has(row.rowId)) &&
         validation.valid
       ) ready += 1;
-      else blockers.push(`${templateId}:${validation.failures.join("|") || "editable_revision_failed"}`);
+      else {
+        const failedPredicates = [
+          !identityPreserved ? "identity_not_preserved" : "",
+          r2.previousRevisionId !== r1.revisionId ? "revision_sequence_not_preserved" : "",
+          r2.params[paramKey]?.value === beforeValue ? "edited_parameter_not_changed" : "",
+          r2.boq.rows.length === 0 ? "recalculated_boq_empty" : "",
+          diff.changedRowsCount <= 0 ? "dependent_rows_not_changed" : "",
+          changedRowsOutsideTrace.length > 0
+            ? `changed_row_outside_dependency_trace(param=${paramKey};outside=${changedRowsOutsideTrace.slice(0, 6).join(",")};affected=${affectedRowIds.size};changed=${diff.changedRowsCount})`
+            : "",
+          ...validation.failures,
+        ].filter(Boolean);
+        blockers.push(`${templateId}:${failedPredicates.join("|") || "editable_revision_failed"}`);
+      }
     }
 
     return {
@@ -289,6 +352,8 @@ function runEditableParam11610Shard(shardIndex: number): {
     const entries = editableParam11610ShardEntries(shardIndex);
     const result = verifyEditableParam11610Shard(shardIndex);
     const cacheBounded =
+      result.cacheStats.professionalPassportCacheSize <=
+        result.cacheStats.professionalPassportCacheLimit &&
       result.cacheStats.productionExpanded.expandedTemplateCacheSize <=
         result.cacheStats.productionExpanded.limitPerCache &&
       result.cacheStats.productionExpanded.compiledEstimateCacheSize <=

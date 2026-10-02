@@ -3,10 +3,10 @@ import { renderPdfFromDraftRevision } from "../../features/pdf/renderPdfFromDraf
 import { createBuyerHandoffFromDraftRevision } from "../../features/procurement/createBuyerHandoffFromDraftRevision";
 import { buildForemanAiEstimateEntry } from "../foreman/buildForemanAiEstimateEntry";
 import { compareEstimateDraftRevisions } from "./compareEstimateDraftRevisions";
-import { createEstimateDraftRevision } from "./createEstimateDraftRevision";
+import { createEstimateDraftRevision } from "./backendPlatform/canonicalEstimateHistoricalDraftProjection";
 import type { EstimateLineageSeal, EstimateLineageValidation, EstimateArtifactLineageRef } from "./estimateLineageContract";
 import { parseUserParamPatch } from "./parseUserParamPatch";
-import { recalculateEstimateDraftRevision } from "./recalculateEstimateDraftRevision";
+import { recalculateEstimateDraftRevision } from "./backendPlatform/canonicalEstimateHistoricalRecalculation";
 
 function hashText(value: string): string {
   let hash = 0;

@@ -1,5 +1,5 @@
 import type { EstimateDraftRevision } from "../estimateDraftRevisionContract";
-import { recalculateEstimateDraftRevision } from "../recalculateEstimateDraftRevision";
+import { recalculateEstimateDraftRevision } from "../backendPlatform/canonicalEstimateHistoricalRecalculation";
 import type { UserParamPatch } from "../validateUserParamPatch";
 
 export function applyAiEstimateRevisionPatch(input: {

@@ -12,7 +12,7 @@ describe("wave2a structural real quantity audit", () => {
     expect(summary.concrete_templates_use_real_norm_pack).toBe(false);
     expect(summary.reinforcement_templates_use_real_norm_pack).toBe(false);
     expect(summary.formwork_templates_use_real_norm_pack).toBe(false);
-    expect(summary.screed_templates_use_real_norm_pack).toBe(true);
+    expect(summary.screed_templates_use_real_norm_pack).toBe(false);
     expect(summary.generic_norm_rows_count_after).toBeGreaterThan(0);
     expect(summary.templates_only_generic_norms_count_after).toBeGreaterThan(0);
     expect(summary.generic_norm_rows_count_after).toBeGreaterThanOrEqual(

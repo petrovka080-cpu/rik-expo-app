@@ -86,10 +86,21 @@ describe("concrete slab embedded-items canonical family", () => {
     )!;
     const input = concreteSlabEmbeddedItemsAcceptanceInputR1(target.contextKey);
     const { approved_placement_drawing_reference: _missing, ...withoutDrawing } = input;
-    await expect(compileConcreteSlabEmbeddedItemsR1(
+    const incomplete = await compileConcreteSlabEmbeddedItemsR1(
       withoutDrawing,
       { catalogId: target.catalogId },
-    )).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+    );
+    const drawingNeeds = incomplete.preliminaryNeeds.filter((need) =>
+      need.missing_parameter_ids.includes("approved_placement_drawing_reference")
+    );
+    expect(drawingNeeds.map((need) => need.row_id).sort()).toEqual([
+      "service:concrete:slab-embedded-items-inspection",
+      "work:concrete:slab-embedded-items-layout",
+      "work:concrete:slab-embedded-items-positioning",
+    ]);
+    expect(drawingNeeds.every((need) =>
+      !incomplete.rows.some((row) => row.row_id === need.row_id)
+    )).toBe(true);
 
     const smallTarget = CONCRETE_SLAB_EMBEDDED_ITEMS_TARGETS.find(
       (candidate) => candidate.contextKey === "small_area",

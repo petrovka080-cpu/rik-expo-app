@@ -910,14 +910,14 @@ function schemaFor(
   if (calculatorId === "retainingWallCalculator") {
     return [
       ...common,
-      {
+      ...(familyId === "gabion_wall" ? [{
         key: "is_gabion",
         labelRu: "Габионная конструкция",
         inputKind: "boolean",
-        defaultValue: familyId === "gabion_wall",
+        defaultValue: true,
         requiredFor: [],
         missingBlocksDetailed: false,
-      },
+      } satisfies ExpandedComplexParameterSchemaField] : []),
       length,
       { key: "height_m", labelRu: "Высота стены", unit: "m", requiredFor: preliminaryAndDetailed, missingBlocksDetailed: true },
       { key: "thickness_m", labelRu: "Толщина стены", unit: "m", requiredFor: preliminaryAndDetailed, missingBlocksDetailed: true },
@@ -1699,7 +1699,7 @@ export function damHydraulicCalculator(input: CalcInput): ExpandedComplexCalcula
     row({ family, code: "formwork_m2", titleRu: "Опалубка водосброса", lineType: "work", group: "spillway", quantity: heightM * 40, unit: "m2", formula: "height_m * 40" }),
     row({ family, code: "rebar_t", titleRu: "Арматура водосброса", lineType: "material", group: "spillway", quantity: heightM * 6 * 0.11, unit: "t", formula: "spillway_concrete_m3 * 0.11", materialKey: "rebar" }),
     row({ family, code: "compactor_shifts", titleRu: "Каток / трамбовка", lineType: "equipment", group: "equipment", quantity: Math.ceil(fill / 1800), unit: "shift", formula: "ceil(embankment_fill_m3 / 1800)" }),
-    row({ family, code: "excavator_shifts", titleRu: "Экскаватор", lineType: "equipment", group: "equipment", quantity: Math.ceil((fill + lengthM * crestWidthM * 0.4) / 2500), unit: "shift", formula: "ceil(total_earthworks_m3 / 2500)" }),
+    row({ family, code: "excavator_shifts", titleRu: "Экскаватор", lineType: "equipment", group: "equipment", quantity: Math.ceil((fill + lengthM * crestWidthM * 0.4) / 2500), unit: "shift", formula: "ceil((embankment_fill_m3 + excavation_m3) / 2500)" }),
     row({ family, code: "bulldozer_shifts", titleRu: "Бульдозер", lineType: "equipment", group: "equipment", quantity: Math.ceil(fill / 2200), unit: "shift", formula: "ceil(embankment_fill_m3 / 2200)" }),
     row({ family, code: "dump_truck_trips", titleRu: "Самосвалы для грунта", lineType: "equipment", group: "logistics", quantity: Math.ceil(fill / 10), unit: "trip", formula: "ceil(embankment_fill_m3 / 10)" }),
     row({ family, code: "compaction_control_set", titleRu: "Контроль уплотнения тела дамбы", lineType: "service", group: "quality", quantity: Math.ceil(fill / 2500), unit: "set", formula: "ceil(embankment_fill_m3 / 2500)", procurement: true }),
@@ -2054,6 +2054,10 @@ export function lowRiseBuildingCalculator(input: CalcInput): ExpandedComplexCalc
   ].filter((item): item is string => Boolean(item));
   const foundationConcreteM3 = areaM2 * (hasFoundationType && /плит/i.test(text) ? 0.16 : 0.11);
   const wallVolumeM3 = wallAreaM2 * 0.3;
+  const floorAreaFormula = "floor_area_m2 = area_m2 / floors";
+  const perimeterFormula = Number.isFinite(lengthM) && Number.isFinite(widthM)
+    ? "perimeter_m = 2 * (length_m + width_m)"
+    : "perimeter_m = sqrt(floor_area_m2) * 4";
   const rows = [
     row({ family, code: "lowrise_site_setting_out_set", titleRu: "Разбивка осей частного дома", lineType: "service", group: "preparation", quantity: 1, unit: "set", formula: "one setting-out package", procurement: true }),
     row({ family, code: "lowrise_topsoil_stripping_m3", titleRu: "Снятие растительного слоя", lineType: "work", group: "earthworks", quantity: areaM2 * 0.08, unit: "m3", formula: "area_m2 * 0.08" }),
@@ -2124,7 +2128,10 @@ export function lowRiseBuildingCalculator(input: CalcInput): ExpandedComplexCalc
       "Цены, модели оборудования и конструктивные решения не подставляются без проекта и спецификаций.",
     ],
     formulaSteps: [
+      floorAreaFormula,
+      perimeterFormula,
       "wall_area_m2 = perimeter_m * wall_height_m * floors",
+      "wall_volume_m3 = wall_area_m2 * 0.3",
       "foundation_concrete_m3 = area_m2 * foundation coefficient",
       "roof_area_m2 = floor_area_m2 * 1.25",
     ],

@@ -761,6 +761,7 @@ export const SUPABASE_RPC_RATE_LIMIT_POLICY_REGISTRY: readonly SupabaseRpcRateLi
     ...rpcPolicies(
       [
         "request_item_add_or_inc",
+        "consumer_estimate_marketplace_publish_v1",
         "request_items_set_status",
         "request_reopen_atomic_v1",
         "request_submit_atomic_v1",

@@ -1,7 +1,7 @@
 import wasteNormPack from "../../../../../data/estimate-norms/professional/waste_removal.json";
 import { estimateDeterministicHash } from "../../estimateDeterministicHash";
 import type { ProfessionalParameterValueV4 } from "../professionalProjectAssemblyV4";
-import type { ProfessionalPhysicalNormApplicabilityResolutionV1 } from "./professionalPhysicalNormApplicabilityV1";
+import type { ProfessionalPhysicalNormApplicabilityResolutionV1 } from "./professionalPhysicalNormApplicabilityTypesV1";
 const VERSION = "professional-physical-norm-applicability:v1" as const;
 export const EPA_CD_CONCRETE_PRODUCT_PROFILE_ID = "public-reference:us-epa-2016:cd-concrete-860-lb-yd3:v1" as const;
 export const EPA_CD_COMPOSITE_PRODUCT_PROFILE_ID = "public-reference:us-epa-2016:cd-composite-417-lb-yd3:v1" as const;

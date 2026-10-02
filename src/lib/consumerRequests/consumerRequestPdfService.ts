@@ -14,6 +14,7 @@ import {
 } from "./consumerRequestPdfStorage";
 import { formatEstimateMoney } from "../ai/globalEstimate/formatEstimateMoney";
 import { formatEstimateUnitLabel } from "../ai/globalEstimate/formatEstimateUnitLabel";
+import { publicBoqDisplayNameRu } from "../estimate/publicBoqNaming";
 import { formatEstimateUserTextRu } from "../ai/globalEstimate/formatEstimateUserTextRu";
 import { isAdmittedProfessionalNormSource } from "../estimate/professionalNormSourceAdmission";
 import {
@@ -155,7 +156,10 @@ function pdfRowDisplayInput(item: PdfPayloadItem) {
 }
 
 function publicItemTitle(item: PdfPayloadItem): string {
-  const canonicalTitle = publicPdfText(item.titleRu);
+  const canonicalTitle = publicPdfText(publicBoqDisplayNameRu({
+    sourceNameRu: item.titleRu,
+    rowType: item.itemType,
+  }));
   if (canonicalTitle) return canonicalTitle;
   const normalized = publicPdfText(professionalEstimateRowVisibleName(pdfRowDisplayInput(item)))
     .replace(/^\s*\d+(?:\.\d+)*\s+/u, "")
@@ -210,7 +214,7 @@ function groupSectionItems(type: string, items: PdfPayloadItem[]): PdfPayloadIte
 function groupedItemTotal(items: PdfPayloadItem[]): number | null {
   const priced = items.filter((item) => item.totalPrice != null);
   if (priced.length !== items.length) return null;
-  return Math.round(priced.reduce((sum, item) => sum + (item.totalPrice ?? 0), 0) * 100) / 100;
+  return Math.round(priced.reduce((sum, item) => sum + item.totalPrice!, 0) * 100) / 100;
 }
 
 function groupedUnitPrice(items: PdfPayloadItem[], currency: string): string {
@@ -221,9 +225,9 @@ function groupedUnitPrice(items: PdfPayloadItem[], currency: string): string {
   return same ? displayUnitPrice(first.unitPrice, displayUnitLabel(first.unitLabel, first.unit), first.currency ?? currency) : `${priced.length}/${items.length} с ценой`;
 }
 
-function itemTotal(item: PdfPayloadItem): number {
+function itemTotal(item: PdfPayloadItem): number | null {
   return item.totalPrice ?? (
-    item.quantity != null && item.unitPrice != null ? Math.round(item.quantity * item.unitPrice * 100) / 100 : 0
+    item.quantity != null && item.unitPrice != null ? Math.round(item.quantity * item.unitPrice * 100) / 100 : null
   );
 }
 
@@ -336,7 +340,8 @@ function totalsByType(items: PdfPayloadItem[]): Record<string, number> {
   return items.reduce<Record<string, number>>(
     (totals, item) => {
       const type = sectionTypeForItem(item);
-      totals[type] = Math.round(((totals[type] ?? 0) + itemTotal(item)) * 100) / 100;
+      const total = itemTotal(item);
+      if (total != null) totals[type] = Math.round(((totals[type] ?? 0) + total) * 100) / 100;
       return totals;
     },
     { materials: 0, labor: 0, equipment: 0, delivery: 0 },
@@ -355,7 +360,7 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
   const items = input.items;
   const pricedItems = items.filter((item) => item.unitPrice != null && item.totalPrice != null);
   const currency = pricedItems[0]?.currency ?? items[0]?.currency ?? "KGS";
-  const grandTotal = pricedItems.reduce((sum, item) => sum + (item.totalPrice ?? 0), 0);
+  const grandTotal = pricedItems.reduce((sum, item) => sum + item.totalPrice!, 0);
   const fingerprint = input.canonicalPayload?.parityFingerprint ?? pdfBoqFingerprint(items);
   const capitalSectionOrder = (Object.keys(CAPITAL_RENOVATION_GROUP_TITLES) as CapitalRenovationGroupId[])
     .map((groupId) => `capital_${groupId}`);
@@ -573,7 +578,7 @@ export function buildConsumerRepairPdfSummary(input: {
   supplement?: ConsumerRepairPdfSupplement;
 }): string {
   const pricedRows = input.items.filter((item) => item.unitPrice != null && item.totalPrice != null);
-  const estimatedTotal = pricedRows.reduce((sum, item) => sum + (item.totalPrice ?? 0), 0);
+  const estimatedTotal = pricedRows.reduce((sum, item) => sum + item.totalPrice!, 0);
   const totalCurrency = pricedRows[0]?.currency ?? "KGS";
   const itemLines = input.items.map((item, index) =>
     [

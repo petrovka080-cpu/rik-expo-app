@@ -8,10 +8,7 @@ import { Client } from "pg";
 import { buildStripFoundationContentPassportR3 } from "../concreteBackendR6/buildStripFoundationContentPassportR3";
 import {
   REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT,
-  STRIP_FOUNDATION_FORMULAS,
   STRIP_FOUNDATION_GOLD_INPUT,
-  STRIP_FOUNDATION_INPUTS,
-  STRIP_FOUNDATION_ROWS,
   compileStripFoundationEstimate,
 } from "../concreteBackendR6/reinforcedConcreteStripFoundationR1";
 import { auditRealProfessionalRowsR1 } from "../concreteBackendR6/realProfessionalEstimateContentGateR1";
@@ -26,29 +23,49 @@ import {
   REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA,
 } from "../../../src/lib/estimate/v4/domainFactory";
 import { normalizeCanonicalCatalogSearchQuery } from "../../../src/lib/estimate/backendPlatform/catalogSearchIntent";
+import { auditStripFoundationScopeCompletenessR1 } from "../../../src/lib/estimate/v4/stripFoundationScopeCompletenessR1";
+import {
+  STRIP_FOUNDATION_PROFESSIONAL_FORMULAS_R2,
+  STRIP_FOUNDATION_PROFESSIONAL_GOLD_INPUT_R2,
+  STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2,
+  STRIP_FOUNDATION_PROFESSIONAL_ROWS_R2,
+  auditStripFoundationProfessionalCompositionR2,
+  compileStripFoundationProfessionalGoldR2,
+  stripFoundationProfessionalParameterConsumerRowIdsR2,
+} from "../../../src/lib/estimate/v4/stripFoundationProfessionalCompositionR2";
 
 type Json = Record<string, any>;
 
-const MASTER_PATH = resolve("C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (5).md");
-const MASTER_SHA256 = "acd012705f74c90c9fc7a3483dcd2b2f7b929ef090ba4be6482d059c359dedc0";
+const MASTER_PATH = resolve("C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (55).md");
+const MASTER_SHA256 = "8f354905ca67e93d8c4383d90d1c59d6ba060db6363fe255afa3c51a0fecece5";
 const CURRENT_RELEASE_PATH = resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json");
-const DEFAULT_PARENT_RELEASE_ID = "8791b75f-683f-5e72-a56a-54abc2f82379";
-const DEFAULT_PARENT_SEARCH_RELEASE_ID = "320b582e-5a6d-5354-b3bf-f801e4490303";
+const DEFAULT_PARENT_RELEASE_ID = "6fc0b37c-4236-53ed-ac18-934b1a52c3bf";
+const DEFAULT_PARENT_SEARCH_RELEASE_ID = "c6b4c6de-99e6-5216-9590-92b66f91b827";
 const TARGET_CATALOG_ID = "canonical-work:expanded:strip_foundation";
 const TARGET_SEARCH_ALIAS_RU = "ленточный фундамент";
 const TARGET_CANONICAL_SEARCH_NAME = normalizeCanonicalCatalogSearchQuery(
   REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT.canonicalRuName,
 );
-const CONTRACT = "rik-expo-app.r4-a13-6.strip-foundation-cip31-rebar-schedule-successor.v2";
+const CONTRACT = "rik-expo-app.s27-15.strip-foundation-full-composition-successor.v8";
 const EXPECTED_BRANCH = "codex/r4-a5-clean-08b18902";
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const APPLY = process.argv.includes("--apply");
-const OUTPUT_ROOT = resolve(".release-runtime/r4a13-6/exact-physical-norm-successors/strip-foundation-nrmca-cip31");
+const OUTPUT_ROOT = resolve(".release-runtime/r568/s27-15/strip-foundation-full-composition-successor-v8");
+const COMPATIBLE_KNOWN_PRICE_ROUTE_KEY = "s25:canonical-strip-foundation:compatible-r58-kgs";
+const COMPATIBLE_KNOWN_PRICE_ROW_IDS = Object.freeze([
+  "main_concrete",
+  "reinforcement",
+  "binding_wire",
+  "formwork_system",
+  "reinforcement_install",
+] as const);
 const SOURCE_PATHS = [
   "scripts/estimate/concreteBackendR6/buildStripFoundationContentPassportR3.ts",
   "scripts/estimate/concreteBackendR6/reinforcedConcreteStripFoundationR1.ts",
   "src/lib/estimate/v4/reinforcedConcreteStripFoundationR1.ts",
+  "src/lib/estimate/v4/stripFoundationProfessionalCompositionR2.ts",
+  "src/lib/estimate/v4/stripFoundationScopeCompletenessR1.ts",
   "src/lib/estimate/v4/domainFactory/professionalPhysicalNormApplicabilityV1.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimatePhysicalNormProjection.ts",
   "data/estimate-norms/professional/concrete.json",
@@ -57,6 +74,7 @@ const SOURCE_PATHS = [
   "scripts/estimate/r4a9/prepareR4A9StripFoundationSuccessor.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts",
+  "tests/estimateNorms/stripFoundationS2715FullComposition.contract.test.ts",
 ] as const;
 
 const argValue = (name: string): string | null => {
@@ -276,7 +294,7 @@ async function cloneSearch(client: Client, input: {
     select $1,source_catalog_id,target_catalog_id,relationship_type,direction,source_locator,
       applicability_predicate,required_when,mutually_exclusive_with,explanation_ru,relation_sha256
     from public.estimate_search_typed_relation where search_release_id=$2`, [input.searchReleaseId, input.predecessorSearchReleaseId]);
-  const clarificationFields = STRIP_FOUNDATION_INPUTS
+  const clarificationFields = STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2
     .filter((parameter) => parameter.visibilityRole === "USER_INPUT")
     .map((parameter) => ({ parameterId: parameter.parameterId, titleRu: parameter.titleRu, unitId: parameter.unitId }));
   const content = buildStripFoundationContentPassportR3(TARGET_CATALOG_ID).passport;
@@ -328,21 +346,56 @@ async function main(): Promise<void> {
     ?? DEFAULT_PARENT_SEARCH_RELEASE_ID;
   const head = git("rev-parse", "HEAD");
   const tree = git("rev-parse", "HEAD^{tree}");
-  const compiledGold = compileStripFoundationEstimate(STRIP_FOUNDATION_GOLD_INPUT);
-  invariant(auditRealProfessionalRowsR1(compiledGold).length === 0, "STOP_R4_A10_FOUNDATION_CONTENT_GATE_RED");
-  invariant(new Set(compiledGold.map((row) => row.category)).size === 4, "STOP_R4_A10_FOUNDATION_CATEGORY_GATE_RED");
+  const legacyCompiledGold = compileStripFoundationEstimate(STRIP_FOUNDATION_GOLD_INPUT);
+  invariant(auditRealProfessionalRowsR1(legacyCompiledGold).length === 0,
+    "STOP_R4_A10_FOUNDATION_CONTENT_GATE_RED");
+  const fullFoundation150Input = {
+    ...STRIP_FOUNDATION_PROFESSIONAL_GOLD_INPUT_R2,
+    total_axis_length_m: 150,
+    strip_width_m: 0.8,
+    strip_height_m: 2,
+    concrete_order_allowance_percent: 8,
+    preparation_thickness_m: 0.1,
+    reinforcement_mass_t: 28.8,
+    binding_wire_mass_kg: 345.6,
+    formwork_transport_mass_t: 45,
+    concrete_delivery_distance_km: 25,
+    reinforcement_delivery_distance_km: 30,
+    formwork_delivery_distance_km: 18,
+    excavation_volume_m3: 540,
+    foundation_bedding_volume_m3: 36,
+    bedding_delivery_distance_km: 20,
+    waterproofing_area_m2: 600,
+    backfill_volume_m3: 210,
+    mechanical_coupler_quantity_piece: 144,
+    lifting_machine_h: 24,
+    construction_joint_waterstop_length_m: 60,
+    construction_joint_installation_worker_h: 24,
+    horizontal_cutoff_waterproofing_area_m2: 120,
+    formwork_tie_consumables_quantity_piece: 600,
+    excavation_support_area_m2: 900,
+    excavation_dewatering_machine_h: 40,
+    site_cleanup_worker_h: 36,
+    non_soil_waste_mass_t: 3.5,
+    non_soil_waste_packaging_quantity_piece: 70,
+  } as const;
+  const compiledGold = compileStripFoundationProfessionalGoldR2(fullFoundation150Input);
+  invariant(new Set(compiledGold.map((row) => row.category)).size === 6, "STOP_R4_A10_FOUNDATION_CATEGORY_GATE_RED");
+  invariant(compiledGold.find((row) => row.rowId === "concrete_placement")?.evaluatedQuantity === "240"
+    && compiledGold.find((row) => row.rowId === "main_concrete")?.evaluatedQuantity === "259.2",
+  "STOP_S27_15_FOUNDATION_150M_QUANTITY_CHAIN_RED");
   const exactNrmcaInput = {
-    ...STRIP_FOUNDATION_GOLD_INPUT,
+    ...fullFoundation150Input,
     product_profile_id: NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID,
     concrete_order_allowance_percent: 8,
-    plan_volume_calculation_reference: "KJ-4 axes 1-8/A-D rev.5",
-    mix_design_or_project_specification_reference: "KJ-4 note 7; mix card RM-25-114",
-    mixture_designation: "B25 W6 F150 P4, RM-25-114",
-    placement_location: "Strip foundation axes 1-8/A-D, pour 1",
-    contingency_selection_justification: "Complex formwork and pump remainder per method statement",
-    delivery_schedule_and_truck_capacity: "4 trucks x 8 m3; final load confirmed before dispatch",
-    producer_order_confirmation: "RM-PRODUCER-2026-0912-17",
-    estimator_approval_reference: "EST-APPROVAL-2026-0912-04",
+    plan_volume_calculation_reference: "S27.15-ACCEPTANCE-КЖ: 150 м × 0,8 м × 2,0 м",
+    mix_design_or_project_specification_reference: "S27.15-ACCEPTANCE-СПЕЦ-БЕТОН-01",
+    mixture_designation: "B25 W6 F150 P4 — приёмочная проектная фикстура",
+    placement_location: "S27.15-ACCEPTANCE: лента по осям 1–12",
+    contingency_selection_justification: "8% выбраны только для этой приёмочной фикстуры, а не как универсальная норма",
+    delivery_schedule_and_truck_capacity: "S27.15-ACCEPTANCE: график и вместимость миксеров подтверждены",
+    producer_order_confirmation: "S27.15-ACCEPTANCE-РБУ-01",
+    estimator_approval_reference: "S27.15-ACCEPTANCE-СМЕТЧИК-01",
     reinforcement_product_profile_id: REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID,
     bar_bending_schedule_reference: "BBS-S01-REV-D",
     structural_drawing_and_revision_reference: "STR-S01-REV-D",
@@ -362,19 +415,19 @@ async function main(): Promise<void> {
   const exactConcrete = compiledExactNrmca.find((row) => row.rowId === "main_concrete");
   const exactDelivery = compiledExactNrmca.find((row) => row.rowId === "concrete_delivery");
   const exactReinforcement = compiledExactNrmca.find((row) => row.rowId === "reinforcement");
-  invariant(exactConcrete?.evaluatedQuantity === "32.4"
+  invariant(exactConcrete?.evaluatedQuantity === "259.2"
     && exactConcrete.normSource.sourceKey === NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID
     && exactConcrete.professionalPhysicalNormApplicabilityV1?.status === "APPLIED",
   "STOP_R4_A13_6_NRMCA_EXACT_SCENARIO_RED");
-  invariant(exactDelivery?.cargoQuantity === "32.4"
+  invariant(exactDelivery?.cargoQuantity === "259.2"
     && exactDelivery.professionalPhysicalNormApplicabilityV1?.source_id
       === NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
   "STOP_R4_A13_6_NRMCA_DELIVERY_PROJECTION_RED");
-  invariant(exactReinforcement?.evaluatedQuantity === "2.4"
+  invariant(exactReinforcement?.evaluatedQuantity === "28.8"
     && exactReinforcement.normSource.sourceKey === REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID
     && exactReinforcement.professionalPhysicalNormApplicabilityV1?.status === "APPLIED"
     && exactReinforcement.professionalPhysicalNormApplicabilityV1
-      .calculated_reinforcement_schedule_weight_kg === 2_400,
+      .calculated_reinforcement_schedule_weight_kg === 28_800,
   "STOP_R4_A13_6_REINFORCEMENT_SCHEDULE_EXACT_SCENARIO_RED");
   let formerTwoPercentRejected = false;
   try {
@@ -397,16 +450,16 @@ async function main(): Promise<void> {
     "STOP_R4_A13_6_REINFORCEMENT_INVALID_SHAPE_ACCEPTED");
   const sourceHashes = SOURCE_PATHS.map((path) => ({ path, sha256: sha256(readFileSync(resolve(path))) }));
   const exactNrmcaAcceptance = {
-    projectVolumeM3: 30,
+    projectVolumeM3: 240,
     selectedContingencyPercent: 8,
-    orderQuantityM3: 32.4,
-    deliveryQuantityM3: 32.4,
+    orderQuantityM3: 259.2,
+    deliveryQuantityM3: 259.2,
     formerTwoPercentRejected,
     sourceId: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
   };
   const exactReinforcementAcceptance = {
-    approvedScheduleWeightKg: 2_400,
-    estimateQuantityT: 2.4,
+    approvedScheduleWeightKg: 28_800,
+    estimateQuantityT: 28.8,
     invalidShapeRejected: invalidReinforcementShapeRejected,
     automaticKgPerM3Allowance: false,
     sourceId: REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID,
@@ -418,7 +471,7 @@ async function main(): Promise<void> {
   const searchReleaseId = uuid(`${CONTRACT}:${fingerprint}:search`);
   const definitionId = uuid(`${CONTRACT}:${fingerprint}:definition:${TARGET_CATALOG_ID}`);
   const baselineId = uuid(`${CONTRACT}:${fingerprint}:baseline:${TARGET_CATALOG_ID}`);
-  const releaseKey = `r4-a13-6-strip-foundation-nrmca-cip31-${fingerprint.slice(0, 16)}`;
+  const releaseKey = `r4-a13-6-strip-foundation-professional-composition-r5-${fingerprint.slice(0, 16)}`;
   const current = JSON.parse(readFileSync(CURRENT_RELEASE_PATH, "utf8")) as Json;
   invariant(
     (current.definitionReleaseId === predecessorReleaseId && current.searchReleaseId === predecessorSearchReleaseId)
@@ -426,19 +479,66 @@ async function main(): Promise<void> {
     "STOP_R4_A10_CURRENT_RELEASE_DRIFT",
   );
 
-  const { passport: contentPassport, formulaConsumers, resourceConsumers, decision } =
+  const { passport: legacyContentPassport, decision: legacyDecision } =
     buildStripFoundationContentPassportR3(TARGET_CATALOG_ID);
-  invariant(decision.allowed, `STOP_R4_A10_CONTENT_PASSPORT_RED:${decision.errors.join("|")}`);
-  const safeBaselineInputs = Object.fromEntries(STRIP_FOUNDATION_INPUTS.flatMap((parameter) => {
+  const compositionDecision = auditStripFoundationProfessionalCompositionR2();
+  const scopeCompleteness = auditStripFoundationScopeCompletenessR1({
+    currentDefinitionRowIds: STRIP_FOUNDATION_PROFESSIONAL_ROWS_R2.map((row) => row.rowId),
+  });
+  invariant(legacyDecision.allowed, `STOP_R4_A10_CONTENT_PASSPORT_RED:${legacyDecision.errors.join("|")}`);
+  invariant(compositionDecision.status === "GREEN",
+    `STOP_R4_A13_6_PROFESSIONAL_COMPOSITION_RED:${compositionDecision.errors.join("|")}`);
+  invariant(scopeCompleteness.status === "GREEN",
+    `STOP_R4_A13_6_SCOPE_COMPLETENESS_RED:${scopeCompleteness.unresolvedExpectationIds.join("|")}`);
+  invariant(COMPATIBLE_KNOWN_PRICE_ROW_IDS.every((rowId) =>
+    STRIP_FOUNDATION_PROFESSIONAL_ROWS_R2.some((row) => row.rowId === rowId)),
+  "STOP_R4_A13_6_COMPATIBLE_PRICE_TARGET_ROW_MISSING");
+  const formulaConsumers = Object.fromEntries(STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2.map((parameter) => [
+    parameter.parameterId,
+    STRIP_FOUNDATION_PROFESSIONAL_FORMULAS_R2
+      .filter((formula) => formula.inputParameterIds.includes(parameter.parameterId))
+      .map((formula) => formula.formulaId)
+      .sort(),
+  ]));
+  const resourceConsumers = Object.fromEntries(STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2.map((parameter) => [
+    parameter.parameterId,
+    stripFoundationProfessionalParameterConsumerRowIdsR2(parameter.parameterId),
+  ]));
+  const decision = {
+    contract: "real-professional-estimates-r3.content-passport.v1",
+    status: "GREEN",
+    allowed: true,
+    quantityScope: "FULL",
+    priceState: "PARTIAL_NEEDS_PRICE",
+    activationAllowed: false,
+    productionEligible: false,
+    waveContract: CONTRACT,
+    legacyContentPassportDecision: legacyDecision,
+    compositionDecision,
+    scopeCompleteness,
+  } as const;
+  const contentPassport = {
+    ...legacyContentPassport,
+    inputSchema: STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2,
+    formulas: STRIP_FOUNDATION_PROFESSIONAL_FORMULAS_R2,
+    rows: STRIP_FOUNDATION_PROFESSIONAL_ROWS_R2,
+    compositionDecision,
+    scopeCompleteness,
+  };
+  const safeBaselineInputs = Object.fromEntries(STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2.flatMap((parameter) => {
     const value = parameter.defaultValue ?? (parameter.visibilityRole === "INTERNAL_ONLY"
-      ? STRIP_FOUNDATION_GOLD_INPUT[parameter.parameterId]
+      ? STRIP_FOUNDATION_PROFESSIONAL_GOLD_INPUT_R2[parameter.parameterId]
       : undefined);
     return value == null ? [] : [[parameter.parameterId, value]];
   }));
   const hiddenGeometry = ["total_axis_length_m", "strip_width_m", "strip_height_m", "reinforcement_mass_t"]
     .filter((parameterId) => safeBaselineInputs[parameterId] != null);
   invariant(hiddenGeometry.length === 0, `STOP_R4_A10_HIDDEN_GEOMETRY_DEFAULT:${hiddenGeometry.join(",")}`);
-  const parameterSchemaSha256 = sha256(STRIP_FOUNDATION_INPUTS.map((parameter) => [
+  const unboundBaselineInputs = Object.keys(safeBaselineInputs)
+    .filter((parameterId) => (resourceConsumers[parameterId] ?? []).length === 0);
+  invariant(unboundBaselineInputs.length === 0,
+    `STOP_R4_A13_6_BASELINE_INPUT_WITHOUT_RESOURCE_CONSUMER:${unboundBaselineInputs.join(",")}`);
+  const parameterSchemaSha256 = sha256(STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2.map((parameter) => [
     parameter.parameterId, parameter.valueType, parameter.unitId, parameter.required, parameter.requiredWhen ?? null,
     parameter.choices ?? [], parameter.visibilityRole,
   ]));
@@ -447,12 +547,16 @@ async function main(): Promise<void> {
     gold: compiledGold.map((row) => [row.rowId, row.category, row.evaluatedQuantity, row.normalizedUom]),
   });
   const definitionSha256 = sha256({
-    contract: CONTRACT, passport: REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT,
-    parameters: STRIP_FOUNDATION_INPUTS, formulas: STRIP_FOUNDATION_FORMULAS.map((formula) => formula.ast),
-    resources: STRIP_FOUNDATION_ROWS,
+    contract: CONTRACT, passport: contentPassport,
+    parameters: STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2,
+    formulas: STRIP_FOUNDATION_PROFESSIONAL_FORMULAS_R2.map((formula) => formula.ast),
+    resources: STRIP_FOUNDATION_PROFESSIONAL_ROWS_R2,
   });
 
-  const client = new Client({ connectionString: DATABASE_URL, application_name: "r4-a13-6-strip-foundation-nrmca-cip31-successor" });
+  const client = new Client({
+    connectionString: DATABASE_URL,
+    application_name: "r4-a13-6-strip-foundation-professional-composition-successor",
+  });
   await client.connect();
   let receipt: Json;
   try {
@@ -462,7 +566,11 @@ async function main(): Promise<void> {
       const audit = (await client.query(`select count(*)::int identities,
           count(*) filter(where catalog_id=$2 and definition_version_id=$3)::int repaired
         from public.estimate_cumulative_manifest_entry where release_id=$1`, [releaseId, TARGET_CATALOG_ID, definitionId])).rows[0] as Json;
-      receipt = { status: "GREEN_R4_A13_6_NRMCA_FOUNDATION_SUCCESSOR_ALREADY_PREPARED_NOT_ACTIVE", idempotent: true, audit };
+      receipt = {
+        status: "GREEN_R4_A13_6_FOUNDATION_PROFESSIONAL_COMPOSITION_ALREADY_PREPARED_NOT_ACTIVE",
+        idempotent: true,
+        audit,
+      };
     } else {
       const predecessor = (await client.query("select * from public.estimate_definition_release where id=$1", [predecessorReleaseId])).rows[0] as Json;
       const target = (await client.query(`select manifest.*,definition.definition_version,
@@ -472,7 +580,8 @@ async function main(): Promise<void> {
         from public.estimate_cumulative_manifest_entry manifest
         join public.estimate_definition_version definition on definition.id=manifest.definition_version_id
         where manifest.release_id=$1 and manifest.catalog_id=$2`, [predecessorReleaseId, TARGET_CATALOG_ID])).rows[0] as Json;
-      invariant(predecessor?.status === "prepared" && Number(predecessor.definition_count) === 10_331, "STOP_R4_A10_PREDECESSOR_RELEASE_DRIFT");
+      invariant(predecessor?.status === "prepared" && Number(predecessor.definition_count) > 0,
+        "STOP_S27_15_PREDECESSOR_RELEASE_DRIFT");
       invariant(target && Number(target.parameters) > 0 && Number(target.formulas) > 0 && Number(target.resources) > 0, "STOP_R4_A10_PREDECESSOR_TARGET_DRIFT");
       const nextDefinitionVersion = Number((await client.query(
         "select coalesce(max(definition_version),0)::int+1 value from public.estimate_definition_version where catalog_id=$1",
@@ -480,16 +589,28 @@ async function main(): Promise<void> {
       )).rows[0].value);
       const nextCounts = {
         definitions: Number(predecessor.definition_count),
-        parameters: Number(predecessor.parameter_count) - Number(target.parameters) + STRIP_FOUNDATION_INPUTS.length,
-        formulas: Number(predecessor.formula_count) - Number(target.formulas) + STRIP_FOUNDATION_FORMULAS.length,
-        resources: Number(predecessor.resource_row_count) - Number(target.resources) + STRIP_FOUNDATION_ROWS.length,
+        parameters: Number(predecessor.parameter_count) - Number(target.parameters)
+          + STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2.length,
+        formulas: Number(predecessor.formula_count) - Number(target.formulas)
+          + STRIP_FOUNDATION_PROFESSIONAL_FORMULAS_R2.length,
+        resources: Number(predecessor.resource_row_count) - Number(target.resources)
+          + STRIP_FOUNDATION_PROFESSIONAL_ROWS_R2.length,
       };
       if (!APPLY) {
         receipt = {
-          status: "GREEN_R4_A13_6_NRMCA_FOUNDATION_SUCCESSOR_PRECHECK_NO_MUTATION", idempotent: false,
+          status: "GREEN_R4_A13_6_FOUNDATION_PROFESSIONAL_COMPOSITION_PRECHECK_NO_MUTATION",
+          idempotent: false,
           predecessor: { releaseId: predecessorReleaseId, searchReleaseId: predecessorSearchReleaseId, definitionId: target.definition_version_id },
           successor: { releaseId, searchReleaseId, definitionId, baselineId, releaseKey, nextCounts },
-          technologicalCore: { parameters: STRIP_FOUNDATION_INPUTS.length, formulas: STRIP_FOUNDATION_FORMULAS.length, resources: STRIP_FOUNDATION_ROWS.length, compiledRows: compiledGold.length },
+          technologicalCore: {
+            parameters: STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2.length,
+            formulas: STRIP_FOUNDATION_PROFESSIONAL_FORMULAS_R2.length,
+            resources: STRIP_FOUNDATION_PROFESSIONAL_ROWS_R2.length,
+            compiledRows: compiledGold.length,
+            compositionDecision,
+            scopeCompleteness,
+            compatibleKnownPriceRowIds: COMPATIBLE_KNOWN_PRICE_ROW_IDS,
+          },
         };
       } else {
         await client.query("begin");
@@ -523,19 +644,63 @@ async function main(): Promise<void> {
               source_metadata,content_status,content_gate_status)
             values($1,$2,$3,$4,$5::jsonb,$6::jsonb,$7,$8::jsonb,'QUARANTINED','RED')`, [
             definitionId, releaseId, TARGET_CATALOG_ID, nextDefinitionVersion,
-            JSON.stringify({ ...REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT, catalogId: TARGET_CATALOG_ID }),
+            JSON.stringify({ ...contentPassport, catalogId: TARGET_CATALOG_ID }),
             JSON.stringify({ allowedScopes: REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT.allowedScopes,
               technologyChoices: REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT.technologyChoices, failClosed: true }),
             definitionSha256,
             JSON.stringify({ contract: CONTRACT, predecessorDefinitionId: target.definition_version_id,
               parameterSchemaSha256, acceptanceEvidenceSha256, noHiddenGeometryDefaults: true }),
           ]);
-          const parameters = STRIP_FOUNDATION_INPUTS.map((parameter, ordinal) => [
+          await client.query(`insert into public.estimate_approved_template_baseline(
+              id,baseline_key,catalog_id,definition_version_id,source_definition_version_id,parameter_schema_sha256,
+              input_values,input_classification,uom_by_parameter,formula_consumer_ids,resource_consumer_row_ids,
+              normative_source_ids,guide_provenance_ru,proposal_source_refs,validation_scenario_refs,
+              acceptance_evidence_sha256,accepted_release_id,accepted_at,supersedes_baseline_id,contract_version)
+            values($1,$2,$3,$4,$5,$6,$7::jsonb,$8::jsonb,$9::jsonb,$10::jsonb,$11::jsonb,$12::jsonb,$13::jsonb,
+              $14::jsonb,$15::jsonb,$16,$17,clock_timestamp(),$18,'APPROVED_TEMPLATE_BASELINE_R54_V1')`, [
+            baselineId, `${CONTRACT}:${fingerprint.slice(0, 16)}:${TARGET_CATALOG_ID}`, TARGET_CATALOG_ID,
+            definitionId, target.definition_version_id, parameterSchemaSha256, JSON.stringify(safeBaselineInputs),
+            JSON.stringify(Object.fromEntries(Object.keys(safeBaselineInputs).map((id) => [id, "ASSUMPTION"]))),
+            JSON.stringify(Object.fromEntries(Object.keys(safeBaselineInputs).map((id) => [id,
+              STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2.find((item) => item.parameterId === id)?.unitId ?? null]))),
+            JSON.stringify(Object.fromEntries(Object.keys(safeBaselineInputs).map((id) => [id, formulaConsumers[id] ?? []]))),
+            JSON.stringify(Object.fromEntries(Object.keys(safeBaselineInputs).map((id) => [id, resourceConsumers[id] ?? []]))),
+            JSON.stringify(Object.fromEntries(Object.keys(safeBaselineInputs).map((id) => [id, [
+              STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2.find((item) => item.parameterId === id)?.sourceRole
+                ?? "PROJECT_DOCUMENTATION",
+            ]]))),
+            JSON.stringify(Object.fromEntries(Object.keys(safeBaselineInputs).map((id) => [id,
+              STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2.find((item) => item.parameterId === id)?.guideRu ?? ""]))),
+            JSON.stringify([{ contract: CONTRACT, masterSha256: MASTER_SHA256, sourceHashes }]),
+            JSON.stringify([{ scenario: "STRIP_FOUNDATION_TECHNOLOGICAL_GOLD", acceptanceEvidenceSha256 }]),
+            acceptanceEvidenceSha256, releaseId, target.approved_template_baseline_id,
+          ]);
+          const parameters = STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2.map((parameter, ordinal) => [
             definitionId, parameter.parameterId, ordinal, parameter.valueType, parameter.unitId,
-            parameter.titleRu, parameter.requiredWhen == null ? parameter.required : false, null,
+            parameter.titleRu, parameter.requiredWhen == null ? parameter.required : false,
+            parameter.defaultValue == null ? null : JSON.stringify(parameter.defaultValue),
             { ...(parameter.choices ? { values: parameter.choices } : {}), ...(parameter.requiredWhen ? { requiredWhen: parameter.requiredWhen } : {}) },
             { semantic_parameter_key: parameter.parameterId, visibility_role: parameter.visibilityRole,
-              value_source_role: parameter.visibilityRole === "INTERNAL_ONLY" ? parameter.sourceRole : "PROJECT_SPECIFIC_INPUT",
+              value_source_role: parameter.defaultValue == null
+                ? (parameter.visibilityRole === "INTERNAL_ONLY" ? parameter.sourceRole : "PROJECT_SPECIFIC_INPUT")
+                : "VISIBLE_BASELINE_ASSUMPTION",
+              ...(parameter.defaultValue == null ? {} : {
+                baseline_assumption_id: `${baselineId}:${parameter.parameterId}`,
+                provenance: {
+                  sourceCatalogId: TARGET_CATALOG_ID,
+                  sourceReleaseId: predecessorReleaseId,
+                  sourceDefinitionVersionId: target.definition_version_id,
+                  sourceParameterSchemaId: parameterSchemaSha256,
+                  baselineOwner: "approved-template-baseline:r54",
+                  approvedTemplateBaselineId: baselineId,
+                  acceptanceEvidenceSha256,
+                  approvedTemplateBinding: {
+                    parameterId: parameter.parameterId,
+                    classification: "ASSUMPTION",
+                    value: parameter.defaultValue,
+                  },
+                },
+              }),
               guide: { guide_kind: parameter.valueType === "enum" || parameter.valueType === "boolean" ? "ENUM_DECISION_RULE" : "MEASUREMENT_RULE",
                 guide_short_ru: parameter.guideRu, source_role: parameter.sourceRole, guide_version: CONTRACT,
                 source_snapshot_hash: sha256({ parameterId: parameter.parameterId, guide: parameter.guideRu }),
@@ -543,7 +708,7 @@ async function main(): Promise<void> {
               required_when: parameter.requiredWhen ?? null,
               formula_consumers: formulaConsumers[parameter.parameterId] ?? [],
               resource_branch_consumers: resourceConsumers[parameter.parameterId] ?? [], contract: CONTRACT },
-            null,
+            baselineId,
           ]);
           await insertRows(client, "estimate_parameter_definition", [
             "definition_version_id", "parameter_id", "ordinal", "value_type", "unit_id", "title_ru", "required",
@@ -551,19 +716,25 @@ async function main(): Promise<void> {
           ], parameters);
           await insertRows(client, "estimate_formula_graph", [
             "definition_version_id", "formula_id", "output_unit_id", "expression_source", "ast", "input_parameter_ids", "ast_sha256",
-          ], STRIP_FOUNDATION_FORMULAS.map((formula) => [
+          ], STRIP_FOUNDATION_PROFESSIONAL_FORMULAS_R2.map((formula) => [
             definitionId, formula.formulaId, formula.outputUnitId, formula.source, formula.ast, formula.inputParameterIds, sha256(formula.ast),
           ]));
           const resourceIdByRow = new Map<string, string>();
-          const categorySection = { material: "Материалы", construction_work: "Работы", machine_equipment: "Машины и механизмы", delivery: "Доставка" } as const;
-          const rowType = { material: "material", construction_work: "labor", machine_equipment: "equipment", delivery: "service" } as const;
-          const resources = STRIP_FOUNDATION_ROWS.map((row, ordinal) => {
+          const rowType = {
+            material: "material",
+            construction_work: "labor",
+            machine_equipment: "equipment",
+            delivery: "service",
+            service: "service",
+            document: "service",
+          } as const;
+          const resources = STRIP_FOUNDATION_PROFESSIONAL_ROWS_R2.map((row, ordinal) => {
             const id = uuid(`${CONTRACT}:${fingerprint}:resource:${row.rowId}`);
             resourceIdByRow.set(row.rowId, id);
             const isReadyMixOrderOwner = row.rowId === "main_concrete";
             const isReinforcementScheduleOwner = row.rowId === "reinforcement";
-            const sourceMetadata = { contract: CONTRACT, category: row.category, visibility: row.visibility,
-              procurementMode: row.procurementMode, includedInParentRate: row.includedInParentRate,
+            const sourceMetadata = { ...row.sourceMetadata, contract: CONTRACT, category: row.category, visibility: row.visibility,
+              procurementEligible: row.procurementEligible, includedInParentRate: row.includedInParentRate,
               normSource: row.normSource,
               normativeTrace: isReadyMixOrderOwner
                 ? [row.normSource, NRMCA_CIP31_NORMATIVE_TRACE]
@@ -582,7 +753,9 @@ async function main(): Promise<void> {
               } : {}),
               ...(row.cargo ? { cargo: row.cargo } : {}) };
             const resourceGraph = { semanticOwnerId: row.semanticOwnerId, formulaId: row.formulaId,
-              category: row.category, normalizedUom: row.normalizedUom, costOwner: row.costOwner,
+              category: row.category, normalizedUom: row.normalizedUom, costOwnerId: row.costOwnerId,
+              compositionOrigin: row.compositionOrigin,
+              ...(row.includedInParentRate ? { costTreatment: "INCLUDED_IN_RESOURCE_ROWS" } : {}),
               ...(isReadyMixOrderOwner ? {
                 professionalPhysicalNormBindingV1: NRMCA_CIP31_RESOURCE_BINDING,
               } : {}),
@@ -593,11 +766,10 @@ async function main(): Promise<void> {
               ...(row.titleSpecificationMode ? { titleSpecificationMode: row.titleSpecificationMode } : {}),
               ...(row.titleSpecificationSeparator ? { titleSpecificationSeparator: row.titleSpecificationSeparator } : {}),
               ...(row.cargo ? { cargo: row.cargo } : {}) };
-            return [id, definitionId, row.rowId, ordinal, categorySection[row.category], row.category,
+            return [id, definitionId, row.rowId, ordinal, row.section, row.category,
               row.canonicalRuName, rowType[row.category], row.normalizedUom, row.formulaId,
               row.applicabilityExpression, resourceGraph, row.semanticOwnerId,
-              row.costOwner === "rate_item" ? `rate-item:${row.rateItemId}` : row.semanticOwnerId,
-              row.category !== "construction_work" && !row.includedInParentRate, sourceMetadata,
+              row.costOwnerId, row.procurementEligible, sourceMetadata,
               sha256({ contract: CONTRACT, row, sourceMetadata, resourceGraph })];
           });
           await insertRows(client, "estimate_resource_spec", [
@@ -605,27 +777,19 @@ async function main(): Promise<void> {
             "unit_id", "formula_id", "inclusion_ast", "resource_graph", "semantic_owner", "cost_owner_id",
             "procurement_eligible", "source_metadata", "row_sha256",
           ], resources);
-          await client.query(`insert into public.estimate_approved_template_baseline(
-              id,baseline_key,catalog_id,definition_version_id,source_definition_version_id,parameter_schema_sha256,
-              input_values,input_classification,uom_by_parameter,formula_consumer_ids,resource_consumer_row_ids,
-              normative_source_ids,guide_provenance_ru,proposal_source_refs,validation_scenario_refs,
-              acceptance_evidence_sha256,accepted_release_id,accepted_at,supersedes_baseline_id,contract_version)
-            values($1,$2,$3,$4,$5,$6,$7::jsonb,$8::jsonb,$9::jsonb,$10::jsonb,$11::jsonb,$12::jsonb,$13::jsonb,
-              $14::jsonb,$15::jsonb,$16,$17,clock_timestamp(),$18,'APPROVED_TEMPLATE_BASELINE_R54_V1')`, [
-            baselineId, `${CONTRACT}:${fingerprint.slice(0, 16)}:${TARGET_CATALOG_ID}`, TARGET_CATALOG_ID,
-            definitionId, target.definition_version_id, parameterSchemaSha256, JSON.stringify(safeBaselineInputs),
-            JSON.stringify(Object.fromEntries(Object.keys(safeBaselineInputs).map((id) => [id, "ASSUMPTION"]))),
-            JSON.stringify(Object.fromEntries(Object.keys(safeBaselineInputs).map((id) => [id, STRIP_FOUNDATION_INPUTS.find((item) => item.parameterId === id)?.unitId ?? null]))),
-            JSON.stringify(Object.fromEntries(Object.keys(safeBaselineInputs).map((id) => [id, formulaConsumers[id] ?? []]))),
-            JSON.stringify(Object.fromEntries(Object.keys(safeBaselineInputs).map((id) => [id, resourceConsumers[id] ?? []]))),
-            JSON.stringify(Object.fromEntries(Object.keys(safeBaselineInputs).map((id) => [id, [STRIP_FOUNDATION_INPUTS.find((item) => item.parameterId === id)?.sourceRole ?? "PROJECT_DOCUMENTATION"]]))),
-            JSON.stringify(Object.fromEntries(Object.keys(safeBaselineInputs).map((id) => [id, STRIP_FOUNDATION_INPUTS.find((item) => item.parameterId === id)?.guideRu ?? ""]))),
-            JSON.stringify([{ contract: CONTRACT, masterSha256: MASTER_SHA256, sourceHashes }]),
-            JSON.stringify([{ scenario: "STRIP_FOUNDATION_TECHNOLOGICAL_GOLD", acceptanceEvidenceSha256 }]),
-            acceptanceEvidenceSha256, releaseId, target.approved_template_baseline_id,
-          ]);
-          await client.query(`update public.estimate_parameter_definition set approved_template_baseline_id=$2
-            where definition_version_id=$1 and approved_template_baseline_id is null`, [definitionId, baselineId]);
+          const compatibleKnownPriceRoute = (await client.query(
+            "select id::text from public.estimate_price_route where route_key=$1 and active and currency_code='KGS'",
+            [COMPATIBLE_KNOWN_PRICE_ROUTE_KEY],
+          )).rows[0] as Json | undefined;
+          invariant(compatibleKnownPriceRoute,
+            "STOP_R4_A13_6_COMPATIBLE_PRICE_MIGRATION_MISSING");
+          await insertRows(client, "estimate_resource_price_route_binding", [
+            "resource_spec_id", "route_id", "price_key", "priority",
+          ], COMPATIBLE_KNOWN_PRICE_ROW_IDS.map((rowId) => {
+            const row = STRIP_FOUNDATION_PROFESSIONAL_ROWS_R2.find((candidate) => candidate.rowId === rowId);
+            invariant(row, `STOP_R4_A13_6_COMPATIBLE_PRICE_ROW_MISSING:${rowId}`);
+            return [resourceIdByRow.get(rowId), compatibleKnownPriceRoute.id, row.costOwnerId, 10];
+          }));
           await client.query(`insert into public.estimate_content_passport_r3(
               definition_version_id,release_id,catalog_id,contract_version,identity_mode,redirect_catalog_id,
               physical_result_ru,included_scope_ru,excluded_scope_ru,capability_matrix,parameter_count,
@@ -633,8 +797,9 @@ async function main(): Promise<void> {
             values($1,$2,$3,$4,$5,null,$6,$7::jsonb,$8::jsonb,$9::jsonb,$10,$11,$12,$13::jsonb,$14,$15,$16)`, [
             definitionId, releaseId, TARGET_CATALOG_ID, contentPassport.contract, contentPassport.identityMode,
             contentPassport.physicalResultRu, JSON.stringify(contentPassport.includedScopeRu), JSON.stringify(contentPassport.excludedScopeRu),
-            JSON.stringify(contentPassport.capabilityMatrix), STRIP_FOUNDATION_INPUTS.length, STRIP_FOUNDATION_FORMULAS.length,
-            STRIP_FOUNDATION_ROWS.length, JSON.stringify(decision), sha256(contentPassport), head, tree,
+            JSON.stringify(contentPassport.capabilityMatrix), STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2.length,
+            STRIP_FOUNDATION_PROFESSIONAL_FORMULAS_R2.length,
+            STRIP_FOUNDATION_PROFESSIONAL_ROWS_R2.length, JSON.stringify(decision), sha256(contentPassport), head, tree,
           ]);
           await client.query(`update public.estimate_definition_version set
               content_status='CANDIDATE_READY',content_gate_status='GREEN'
@@ -649,7 +814,9 @@ async function main(): Promise<void> {
               values($1,$2,$3,$4::jsonb,null) on conflict(source_id,locator_key) do nothing`, [locatorId, normative.id, locatorKey, JSON.stringify(locatorPayload)]);
             const stored = (await client.query("select id::text from public.estimate_normative_locator where source_id=$1 and locator_key=$2", [normative.id, locatorKey])).rows[0] as Json;
             await insertRows(client, "estimate_work_normative_binding", ["definition_version_id", "resource_spec_id", "locator_id", "applicability"],
-              STRIP_FOUNDATION_ROWS.filter((row) => row.normSource.sourceKey === "krer_06_2015").map((row) => [
+              STRIP_FOUNDATION_PROFESSIONAL_ROWS_R2
+                .filter((row) => row.normSource.sourceKey === "krer_06_2015")
+                .map((row) => [
                 definitionId, resourceIdByRow.get(row.rowId), stored.id,
                 { rateCode: row.normSource.rateCode, tableCode: row.normSource.tableCode, pdfPage: row.normSource.pdfPage },
               ]));
@@ -814,7 +981,9 @@ async function main(): Promise<void> {
             "src_professional_norm_pack_concrete_ready_mix_m3_m3_placed_v1",
             "src_professional_norm_pack_reinforcement_rebar_kg_m3_concrete_element_v1",
           ])).rows[0] as Json;
-          invariant(Number(manifest.identities) === 10_331 && Number(manifest.repaired) === 1, `STOP_R4_A10_MANIFEST_AUDIT:${JSON.stringify(manifest)}`);
+          invariant(Number(manifest.identities) === Number(predecessor.definition_count)
+            && Number(manifest.repaired) === 1,
+          `STOP_S27_15_MANIFEST_AUDIT:${JSON.stringify(manifest)}`);
           invariant(Number(exactNormAudit.nrmca_normalized_bindings) === 1
             && Number(exactNormAudit.reinforcement_normalized_bindings) === 1
             && Number(exactNormAudit.nrmca_conditional_owner_rows) === 1
@@ -825,22 +994,32 @@ async function main(): Promise<void> {
           await client.query(`update public.estimate_definition_release set source_manifest_sha256=$2,status='prepared',sealed_at=clock_timestamp(),
             metadata=metadata||$3::jsonb where id=$1 and status='draft'`, [
             releaseId, manifest.snapshot, JSON.stringify({ lifecycle: "PREPARED_NOT_ACTIVE", searchReleaseId,
-              searchSnapshotSha256: search.snapshot_sha256, technologicalRows: STRIP_FOUNDATION_ROWS.length,
+              searchSnapshotSha256: search.snapshot_sha256,
+              technologicalRows: STRIP_FOUNDATION_PROFESSIONAL_ROWS_R2.length,
               exactNrmcaCip31: exactNrmcaAcceptance,
               exactReinforcementBarSchedule: exactReinforcementAcceptance,
               normalizedNrmcaBindingCount: 1,
               normalizedReinforcementBindingCount: 1 }),
           ]);
           await client.query("commit");
-          receipt = { status: "GREEN_R4_A13_6_NRMCA_FOUNDATION_SUCCESSOR_PREPARED_NOT_ACTIVE", idempotent: false,
+          receipt = {
+            status: "GREEN_R4_A13_6_FOUNDATION_PROFESSIONAL_COMPOSITION_PREPARED_NOT_ACTIVE",
+            idempotent: false,
             predecessor: { releaseId: predecessorReleaseId, searchReleaseId: predecessorSearchReleaseId,
               definitionId: target.definition_version_id },
             successor: { releaseId, searchReleaseId, definitionId, baselineId, releaseKey, nextCounts },
             audit: { ...manifest, search, exactNormAudit, hiddenGeometryDefaults: hiddenGeometry.length,
               safeBaselineInputs: Object.keys(safeBaselineInputs), exactNrmcaAcceptance,
               exactReinforcementAcceptance,
-              technologicalCore: { parameters: STRIP_FOUNDATION_INPUTS.length, formulas: STRIP_FOUNDATION_FORMULAS.length,
-                resources: STRIP_FOUNDATION_ROWS.length, compiledRows: compiledGold.length } } };
+              technologicalCore: {
+                parameters: STRIP_FOUNDATION_PROFESSIONAL_INPUTS_R2.length,
+                formulas: STRIP_FOUNDATION_PROFESSIONAL_FORMULAS_R2.length,
+                resources: STRIP_FOUNDATION_PROFESSIONAL_ROWS_R2.length,
+                compiledRows: compiledGold.length,
+                compositionDecision,
+                scopeCompleteness,
+                compatibleKnownPriceRowIds: COMPATIBLE_KNOWN_PRICE_ROW_IDS,
+              } } };
         } catch (error) {
           await client.query("rollback");
           throw error;
@@ -857,6 +1036,9 @@ async function main(): Promise<void> {
     ...receipt!, productionAccessed: false, deployPerformed: false, activationPerformed: false,
     releasePerformed: false };
   const sealed = { ...body, receiptSha256: sha256(body) };
+  if (!APPLY) {
+    atomicJson(resolve(OUTPUT_ROOT, `00_FOUNDATION_SUCCESSOR_PRECHECK_${head}.json`), sealed);
+  }
   if (APPLY && !receipt!.idempotent) {
     atomicJson(resolve(OUTPUT_ROOT, `01_FOUNDATION_SUCCESSOR_${head}.json`), sealed);
     atomicJson(CURRENT_RELEASE_PATH, {
@@ -868,8 +1050,8 @@ async function main(): Promise<void> {
       definitionSnapshotSha256: receipt!.audit.snapshot,
       manifestHashChainSha256: receipt!.audit.snapshot,
       searchHashChainSha256: receipt!.audit.search.snapshot_sha256,
-      currentRuntimeDefinitions: 10_331,
-      owner: "EXACT_NRMCA_CIP31_AND_APPROVED_REBAR_SCHEDULE_FULL_STRIP_FOUNDATION_SUCCESSOR",
+      currentRuntimeDefinitions: Number(receipt!.audit.identities),
+      owner: "S27_15_STRIP_FOUNDATION_FULL_COMPOSITION_SUCCESSOR_V8",
       productionAccessed: false,
       fakeGreenClaimed: false,
     });

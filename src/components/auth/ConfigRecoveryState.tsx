@@ -38,7 +38,7 @@ export function ConfigRecoveryState({
           командой, затем повторите проверку. Пароли и токены сюда вводить не нужно.
         </Text>
         <Text style={styles.hint} testID="config-recovery-command">
-          scripts/dev/startLocalDeveloperReview.ps1
+          scripts/dev/startWholeAppDeveloperReview.ps1
         </Text>
         <View style={styles.actions}>
           <Pressable

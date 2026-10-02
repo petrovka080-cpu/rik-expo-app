@@ -1,7 +1,7 @@
 import earthworksNormPack from "../../../../../data/estimate-norms/professional/earthworks.json";
 import { estimateDeterministicHash } from "../../estimateDeterministicHash";
 import type { ProfessionalParameterValueV4 } from "../professionalProjectAssemblyV4";
-import type { ProfessionalPhysicalNormApplicabilityResolutionV1 } from "./professionalPhysicalNormApplicabilityV1";
+import type { ProfessionalPhysicalNormApplicabilityResolutionV1 } from "./professionalPhysicalNormApplicabilityTypesV1";
 const VERSION = "professional-physical-norm-applicability:v1" as const;
 export const FHWA_FP24_SECTION208_PRODUCT_PROFILE_ID = "public-standard:fhwa-fp24:section-208:structural-backfill:v1" as const;
 export const FHWA_FP24_SECTION208_NORM_ID = "earthworks_fhwa_fp24_structural_backfill_lifts_per_m_v1" as const;

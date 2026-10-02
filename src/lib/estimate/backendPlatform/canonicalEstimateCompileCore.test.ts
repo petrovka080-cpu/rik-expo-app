@@ -714,6 +714,51 @@ describe("canonicalEstimateCompileCore", () => {
     });
   });
 
+  it("keeps a row out of procurement when its required consumer identity is missing", async () => {
+    const input = baseInput();
+    input.parameterDefinitions.push({
+      parameter_id: "approved_material_specification",
+      value_type: "text",
+      required: true,
+      default_value: null,
+      constraints_json: { maxLength: 500 },
+    });
+    input.resourceDefinitions[0]!.resource_graph = {
+      inputParameterIds: ["approved_material_specification", "area_m2"],
+    };
+
+    const result = await compileCanonicalEstimateCore(input);
+
+    expect(result.rows).toHaveLength(0);
+    expect(result.preliminaryNeeds).toHaveLength(1);
+    expect(result.preliminaryNeeds[0]).toMatchObject({
+      row_id: "material:board",
+      quantity: "11",
+      need_state: "CONDITION_REQUIRED",
+      missing_parameter_ids: ["approved_material_specification"],
+      procurement_eligible: true,
+    });
+  });
+
+  it("does not block a calculable row on an explicitly optional consumer reference", async () => {
+    const input = baseInput();
+    input.parameterDefinitions.push({
+      parameter_id: "optional_document_reference",
+      value_type: "text",
+      required: false,
+      default_value: null,
+      constraints_json: { maxLength: 500 },
+    });
+    input.resourceDefinitions[0]!.resource_graph = {
+      inputParameterIds: ["optional_document_reference", "area_m2"],
+    };
+
+    const result = await compileCanonicalEstimateCore(input);
+
+    expect(result.rows).toHaveLength(1);
+    expect(result.preliminaryNeeds).toHaveLength(0);
+  });
+
   it("fails closed on ambiguous or incomplete multi-parameter title definitions", async () => {
     const input = baseInput();
     input.parameterDefinitions.push({
@@ -753,6 +798,114 @@ describe("canonicalEstimateCompileCore", () => {
       titleSpecificationParameterId: "exact_material_title_ru",
       titleSpecificationMode: "UNSAFE_MODE",
     };
+
+    await expect(compileCanonicalEstimateCore(input)).rejects.toMatchObject({
+      code: "DEFINITION_INTEGRITY_FAILED",
+    });
+  });
+
+  it("resolves a declared exact source lookup in the common compiler", async () => {
+    const input = baseInput();
+    input.parameterDefinitions.push(
+      {
+        parameter_id: "material_temperature_c",
+        value_type: "decimal",
+        required: true,
+        default_value: null,
+        constraints_json: { min: 5, max: 35 },
+      },
+      {
+        parameter_id: "accelerator_percent",
+        value_type: "decimal",
+        required: true,
+        default_value: null,
+        constraints_json: { min: 0, max: 5 },
+      },
+      {
+        parameter_id: "reaction_time_min",
+        value_type: "decimal",
+        required: false,
+        default_value: null,
+        constraints_json: { min: 1 },
+        truth_metadata: {
+          derived_exact_lookup_v1: {
+            version: "canonical-derived-exact-lookup:v1",
+            inputParameterIds: ["material_temperature_c", "accelerator_percent"],
+            rows: [
+              { inputValues: [20, 0], outputValue: 135 },
+              { inputValues: [5, 2], outputValue: 16 },
+            ],
+            interpolation: "FORBIDDEN",
+          },
+        },
+      },
+    );
+    input.submittedParameters = {
+      area_m2: 10,
+      material_temperature_c: "20",
+      accelerator_percent: "0",
+    };
+
+    const result = await compileCanonicalEstimateCore(input);
+
+    expect(result.parameters.reaction_time_min).toBe(135);
+    expect(result.derivedParameters).toEqual({ reaction_time_min: 135 });
+  });
+
+  it("keeps an explicit lookup target and does not interpolate an unknown tuple", async () => {
+    const input = baseInput();
+    input.parameterDefinitions.push({
+      parameter_id: "temperature_c",
+      value_type: "decimal",
+      required: true,
+      default_value: null,
+      constraints_json: { min: 5, max: 35 },
+    }, {
+      parameter_id: "reaction_time_min",
+      value_type: "decimal",
+      required: false,
+      default_value: null,
+      constraints_json: { min: 1 },
+      truth_metadata: {
+        derived_exact_lookup_v1: {
+          version: "canonical-derived-exact-lookup:v1",
+          inputParameterIds: ["temperature_c"],
+          rows: [{ inputValues: [20], outputValue: 135 }],
+          interpolation: "FORBIDDEN",
+        },
+      },
+    });
+    input.submittedParameters = { area_m2: 10, temperature_c: 15 };
+    const unresolved = await compileCanonicalEstimateCore(input);
+    expect(unresolved.parameters.reaction_time_min).toBeUndefined();
+    expect(unresolved.derivedParameters).toEqual({});
+
+    input.submittedParameters.reaction_time_min = 90;
+    const confirmed = await compileCanonicalEstimateCore(input);
+    expect(confirmed.parameters.reaction_time_min).toBe(90);
+    expect(confirmed.derivedParameters).toEqual({});
+  });
+
+  it("fails closed on duplicate exact source lookup rows", async () => {
+    const input = baseInput();
+    input.parameterDefinitions.push({
+      parameter_id: "derived_quantity",
+      value_type: "decimal",
+      required: false,
+      default_value: null,
+      constraints_json: { min: 0 },
+      truth_metadata: {
+        derived_exact_lookup_v1: {
+          version: "canonical-derived-exact-lookup:v1",
+          inputParameterIds: ["area_m2"],
+          rows: [
+            { inputValues: [10], outputValue: 1 },
+            { inputValues: ["10"], outputValue: 2 },
+          ],
+          interpolation: "FORBIDDEN",
+        },
+      },
+    });
 
     await expect(compileCanonicalEstimateCore(input)).rejects.toMatchObject({
       code: "DEFINITION_INTEGRITY_FAILED",

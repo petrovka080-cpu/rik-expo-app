@@ -15,7 +15,7 @@ import {
 describe("consumer repair marketplace approval gate", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
 
-  it("blocks marketplace send before explicit approval", () => {
+  it("blocks marketplace send before explicit approval", async () => {
     const bundle = createConsumerRepairRequestDraft({
       consumerUserId: CONSUMER_REPAIR_TEST_USER_ID,
       problemText: CONSUMER_REPAIR_VALID_PROBLEM,
@@ -25,13 +25,13 @@ describe("consumer repair marketplace approval gate", () => {
     });
     attachConsumerRepairMedia({ requestDraftId: bundle.draft.id, mediaKind: "photo" });
 
-    expect(() => sendConsumerRepairRequestToMarketplace({
+    await expect(sendConsumerRepairRequestToMarketplace({
       requestDraftId: bundle.draft.id,
       userId: CONSUMER_REPAIR_TEST_USER_ID,
-    })).toThrow(ConsumerRepairValidationError);
+    })).rejects.toThrow(ConsumerRepairValidationError);
 
     try {
-      sendConsumerRepairRequestToMarketplace({ requestDraftId: bundle.draft.id, userId: CONSUMER_REPAIR_TEST_USER_ID });
+      await sendConsumerRepairRequestToMarketplace({ requestDraftId: bundle.draft.id, userId: CONSUMER_REPAIR_TEST_USER_ID });
     } catch (error) {
       expect((error as ConsumerRepairValidationError).errors.map((item) => item.code)).toContain("REQUEST_NOT_APPROVED");
     }

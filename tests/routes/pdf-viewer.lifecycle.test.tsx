@@ -19,14 +19,19 @@ const mockMarkPdfOpenVisible = jest.fn();
 const mockFailPdfOpenVisible = jest.fn();
 const mockMarkPdfOpenRouteMounted = jest.fn();
 
-jest.mock("expo-router", () => ({
-  router: {
-    back: (...args: unknown[]) => mockRouterBack(...args),
-    replace: (...args: unknown[]) => mockRouterReplace(...args),
-  },
-  useLocalSearchParams: (...args: unknown[]) =>
-    mockUseLocalSearchParams(...args),
-}));
+jest.mock("expo-router", () => {
+  const mockReact = jest.requireActual("react") as typeof import("react");
+  return {
+    router: {
+      back: (...args: unknown[]) => mockRouterBack(...args),
+      replace: (...args: unknown[]) => mockRouterReplace(...args),
+    },
+    useFocusEffect: (callback: React.EffectCallback) =>
+      mockReact.useEffect(callback, [callback]),
+    useLocalSearchParams: (...args: unknown[]) =>
+      mockUseLocalSearchParams(...args),
+  };
+});
 
 jest.mock("react-native-safe-area-context", () => ({
   SafeAreaView: ({ children }: { children: React.ReactNode }) => children,
@@ -150,7 +155,6 @@ describe("PdfViewerScreen web lifecycle", () => {
       renderer = TestRenderer.create(<PdfViewerScreen />);
       await flush();
     });
-
     const iframe = renderer!.root.find((node) => node.type === "iframe");
     expect(String(iframe.props["data-render-key"])).toContain("pdf-render:");
     expect(String(iframe.props["data-render-key"])).toContain(":direct_asset_");

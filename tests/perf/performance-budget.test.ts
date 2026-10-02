@@ -190,15 +190,38 @@ describe("performance budget вЂ” bundle module count", () => {
     );
     const sR555PublicRussianTechnologyTitleOwnerFiles =
       r555PublicRussianTechnologyTitleOwnerFiles.length;
+    const s278F09SubjectProfileOwnerPaths = new Set([
+      "src/lib/estimate/v4/addressableSmokeDetectorClassifiedVariantsR1.ts",
+      "src/lib/estimate/v4/fireAlarmDetectorReplacementVariantsR1.ts",
+      "src/lib/estimate/v4/fireAlarmFunctionalTestVariantsR1.ts",
+      "src/lib/estimate/v4/fireAlarmProjectPreparationVariantsR1.ts",
+      "src/lib/estimate/v4/fireAlarmSystemExpandedR1.ts",
+      "src/lib/estimate/v4/fireproofZoneInjectionRepairVariantsR1.ts",
+      "src/lib/estimate/v4/woodFireproofingLayerStrengtheningVariantsR1.ts",
+      "src/lib/estimate/v4/woodFireproofingLocalRepairVariantsR1.ts",
+      "src/lib/estimate/v4/woodFireproofingSealingVariantsR1.ts",
+      "src/lib/estimate/v4/woodFireproofingSurfaceCleaningVariantsR1.ts",
+      "src/lib/estimate/v4/woodFireproofingSurfacePreparationVariantsR1.ts",
+    ]);
+    const s278F09SubjectProfileOwnerFiles = currentSourceFiles
+      .filter((file) => s278F09SubjectProfileOwnerPaths.has(file))
+      .sort();
+    const sS278F09SubjectProfileOwnerFiles = s278F09SubjectProfileOwnerFiles.length;
+    const s278F09SubjectProfileOwnerIdentity = createHash("sha256")
+      .update(`${s278F09SubjectProfileOwnerFiles.join("\n")}\n`, "utf8")
+      .digest("hex");
     const postSealCanonicalEstimateOwnerPaths = new Set([
       "src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline.test.ts",
       "src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline.ts",
       "src/lib/estimate/backendPlatform/canonicalEstimateAuth.transport.ts",
+      "src/lib/estimate/backendPlatform/canonicalEstimatePromptParameters.test.ts",
+      "src/lib/estimate/backendPlatform/canonicalEstimatePromptParameters.ts",
       "src/lib/estimate/backendPlatform/canonicalFormulaSourceBinding.test.ts",
       "src/lib/estimate/backendPlatform/canonicalFormulaSourceBinding.ts",
       "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts",
       "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts",
       "src/lib/estimate/backendPlatform/inclusionGraph.test.ts",
+      "src/lib/estimate/v4/domainFactory/professionalPhysicalNormApplicabilityTypesV1.ts",
       "src/lib/estimate/v4/reinforcedConcreteStripFoundationR1.ts",
     ]);
     const postSealCanonicalEstimateOwnerFiles = currentSourceFiles
@@ -213,6 +236,7 @@ describe("performance budget вЂ” bundle module count", () => {
         (file) =>
           !sourceFilesAtGrowthBaseline.has(file) &&
           !preAttributedCanonicalEstimateGrowthFiles.has(file) &&
+          !s278F09SubjectProfileOwnerPaths.has(file) &&
           !postSealCanonicalEstimateOwnerPaths.has(file) &&
           (file.startsWith("src/lib/estimate/v4/") ||
             file.startsWith("src/lib/estimate/backendPlatform/")),
@@ -245,6 +269,63 @@ describe("performance budget вЂ” bundle module count", () => {
     const r4A13CoreExtensionOwnerIdentity = createHash("sha256")
       .update(`${r4A13CoreExtensionOwnerFiles.join("\n")}\n`, "utf8")
       .digest("hex");
+    const r4A13NormAndRuntimeOwnerFiles = [
+      "src/components/auth/LocalDeveloperReviewBanner.test.tsx",
+      "src/features/consumerRepair/consumerCanonicalArtifactHydration.test.ts",
+      "src/features/consumerRepair/consumerCanonicalArtifactHydration.ts",
+      "src/features/consumerRepair/consumerCanonicalBaselineCompile.test.ts",
+      "src/features/consumerRepair/consumerCanonicalScopeWorkflow.ts",
+      "src/features/consumerRepair/consumerRepairBackendOwnership.test.ts",
+      "src/features/consumerRepair/consumerRepairCanonicalDraftReuse.ts",
+      "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.procurement.test.tsx",
+      "src/lib/ai/editableEstimate/applyEditableEstimateUnitPriceBatchOverride.ts",
+      "src/lib/ai/estimateCompiler/expandedTemplateRowReconciliation.ts",
+      "src/lib/ai/expandedComplexWorks/s2b/domainBlockCoverage.ts",
+      "src/lib/catalog/catalog.transport.supabase.ts",
+      "src/lib/consumerRequests/consumerEstimateNormSourceReadiness.ts",
+      "src/lib/consumerRequests/consumerEstimateReadiness.ts",
+      "src/lib/consumerRequests/consumerRequestMarketplace.transport.ts",
+      "src/lib/estimate/canonicalParameters/canonicalParameterCalculationRelevance.ts",
+      "src/lib/estimate/formula/evaluateAiEstimateQuantityFormula.test.ts",
+      "src/lib/estimate/ownedDomain/anchorGroupInstallationProductionBindingR1.ts",
+      "src/lib/estimate/ownedDomain/applyOwnedDomainPhysicalNormConsumersV1.ts",
+      "src/lib/estimate/ownedDomain/carpentrySikagardWoodPreserverProductionBindingV1.ts",
+      "src/lib/estimate/ownedDomain/cleaningTennantT350ProductionBindingV1.ts",
+      "src/lib/estimate/ownedDomain/concretePlacementProductionBindingR1.ts",
+      "src/lib/estimate/ownedDomain/deliveryFordTransitProductionBindingV1.ts",
+      "src/lib/estimate/ownedDomain/demolitionKrer46ProductionBindingV1.ts",
+      "src/lib/estimate/ownedDomain/documentationKgDesignPriceProductionBindingV1.ts",
+      "src/lib/estimate/ownedDomain/earthworksFhwaFp24ProductionBindingV1.ts",
+      "src/lib/estimate/ownedDomain/equipmentRentUnitedRentalsProductionBindingV1.ts",
+      "src/lib/estimate/ownedDomain/facadeRockwoolFixrockProductionBindingV1.ts",
+      "src/lib/estimate/ownedDomain/fireSafetySiemensFdb221ProductionBindingV1.ts",
+      "src/lib/estimate/ownedDomain/formworkDokaflexProductionBindingR1.ts",
+      "src/lib/estimate/ownedDomain/formworkFramiXlifeProductionBindingR1.ts",
+      "src/lib/estimate/ownedDomain/formworkRicsNrm2ProductionBindingV1.ts",
+      "src/lib/estimate/ownedDomain/insulationRockwoolComfortboard80ProductionBindingV1.ts",
+      "src/lib/estimate/ownedDomain/landscapingRainBirdXfdProductionBindingV1.ts",
+      "src/lib/estimate/ownedDomain/lowVoltageLegrand049272ProductionBindingV1.ts",
+      "src/lib/estimate/ownedDomain/masonryBiaTn10ProductionBindingV1.ts",
+      "src/lib/estimate/ownedDomain/metalworkJotunHardtopXpProductionBindingV1.ts",
+      "src/lib/estimate/ownedDomain/reinforcementBarScheduleProductionBindingV1.ts",
+      "src/lib/estimate/ownedDomain/roofingSarnafilAt18ProductionBindingV1.ts",
+      "src/lib/estimate/ownedDomain/servicesKgAuthorSupervisionProductionBindingV1.ts",
+      "src/lib/estimate/ownedDomain/sewerageWavinOsmaC3766BkProductionBindingV1.ts",
+      "src/lib/estimate/ownedDomain/stripFoundationConcretePlacementProductionBindingR1.ts",
+      "src/lib/estimate/ownedDomain/stripFoundationReinforcementProductionBindingR1.ts",
+      "src/lib/estimate/ownedDomain/wasteRemovalEpaProductionBindingV1.ts",
+      "src/lib/estimate/ownedDomain/windowsDoorsSoudafoamProductionBindingV1.ts",
+      "src/lib/estimate/professionalNormPackBasisQuestionsRu.ts",
+      "src/lib/estimate/professionalNormSourceAdmission.ts",
+      "src/lib/estimate/publicBoqNaming.ts",
+      "src/lib/estimate/r4A10AsphaltDrainagePrompt.ts",
+      "src/lib/estimate/r4A6PumpStationProfessional.test.ts",
+      "src/lib/estimate/r4A6PumpStationProfessional.ts",
+      "src/lib/estimate/semanticBoqGate.ts",
+      "src/lib/mobilePhotoCapture/mobilePhotoWebFileSystem.ts",
+      "src/screens/foreman/foreman.dicts.transport.ts",
+    ].filter((file) => currentSourceFiles.includes(file));
+    const sR4A13NormAndRuntimeOwnerFiles = r4A13NormAndRuntimeOwnerFiles.length;
     const t8ConsumerRepairApplicationServiceOwnerFiles = currentSourceFiles.filter(
       (file) =>
         /^src\/lib\/consumerRequests\/.*applicationService.*\.ts$/i.test(file),
@@ -852,17 +933,24 @@ describe("performance budget вЂ” bundle module count", () => {
       countFilesRecursive(path.join(SRC, "lib", "consumerRequests"), /^(?!.*\.test\.ts$).*\.ts$/);
     const canonicalConsumerEstimatePlatformOwnerFiles = [
       "src/features/consumerRepair/consumerCanonicalBaselineCompile.ts",
+      "src/features/consumerRepair/consumerCanonicalArtifactHydration.ts",
       "src/features/consumerRepair/consumerCanonicalParameterEditor.ts",
+      "src/features/consumerRepair/consumerCanonicalScopeWorkflow.ts",
       "src/features/consumerRepair/consumerEstimateActionRouter.ts",
       "src/features/consumerRepair/consumerRepairBackendOwnership.ts",
       "src/features/consumerRepair/consumerRepairCanonicalEstimateReadiness.ts",
       "src/features/consumerRepair/consumerRepairCanonicalSessionPreview.ts",
+      "src/features/consumerRepair/consumerRepairCalculationTraceState.ts",
+      "src/features/consumerRepair/consumerRepairCanonicalDraftReuse.ts",
       "src/features/consumerRepair/consumerRepairDraftAnswer.ts",
       "src/features/consumerRepair/consumerRepairQuantityEditTrace.ts",
       "src/features/consumerRepair/consumerRepairRowMetadata.ts",
+      "src/lib/consumerRequests/canonicalConsumerRepairHistoricalProjection.ts",
       "src/lib/consumerRequests/consumerCanonicalBackendRevisionProjection.ts",
       "src/lib/consumerRequests/consumerRequestEstimateApplicationService.ts",
       "src/lib/consumerRequests/consumerRequestExactRoadworksCalculationStateMigration.ts",
+      "src/lib/consumerRequests/consumerRequestHistoryLineage.ts",
+      "src/lib/consumerRequests/consumerRequestMarketplace.transport.ts",
     ].filter((file) => currentSourceFiles.includes(file));
     const sCanonicalConsumerEstimatePlatformOwnerFiles =
       canonicalConsumerEstimatePlatformOwnerFiles.length;
@@ -921,10 +1009,10 @@ describe("performance budget вЂ” bundle module count", () => {
       countFilesRecursive(path.join(SRC, "lib", "ai", "globalLocalContext"), /\.ts$/) +
       countFilesRecursive(path.join(SRC, "lib", "ai", "localRateSources"), /\.ts$/) +
       countFilesRecursive(path.join(SRC, "lib", "ai", "globalCatalogPolicy"), /\.ts$/);
-    const sEditableEstimateWorkspaceCoreFiles = countFilesRecursive(
-      path.join(SRC, "lib", "ai", "editableEstimate"),
-      /\.ts$/,
+    const editableEstimateWorkspaceCoreFiles = currentSourceFiles.filter(
+      (file) => file.startsWith("src/lib/ai/editableEstimate/") && /\.ts$/.test(file),
     );
+    const sEditableEstimateWorkspaceCoreFiles = editableEstimateWorkspaceCoreFiles.length;
     const sEstimateRevisionAuditSnapshotFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "estimateRevisions"),
       /\.ts$/,
@@ -1033,6 +1121,7 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "features", "consumerRepair", "ConsumerRepairRequestScreenView.tsx"),
       path.join(SRC, "features", "consumerRepair", "ConsumerRepairRequestScreenContainer.tsx"),
       path.join(SRC, "features", "consumerRepair", "useConsumerRepairPhotoCaptureController.tsx"),
+      path.join(SRC, "features", "consumerRepair", "useConsumerRepairItemRowEditing.ts"),
     ].filter((file) => fs.existsSync(file)).length;
     const sConsumerRepairGovernancePersistenceBoundaryFiles = [
       path.join(SRC, "lib", "consumerRequests", "approvedHistoryScaleMatrix.ts"),
@@ -2243,19 +2332,26 @@ describe("performance budget вЂ” bundle module count", () => {
     ).toBeLessThanOrEqual(24);
     expect(canonicalConsumerEstimatePlatformOwnerFiles).toEqual([
       "src/features/consumerRepair/consumerCanonicalBaselineCompile.ts",
+      "src/features/consumerRepair/consumerCanonicalArtifactHydration.ts",
       "src/features/consumerRepair/consumerCanonicalParameterEditor.ts",
+      "src/features/consumerRepair/consumerCanonicalScopeWorkflow.ts",
       "src/features/consumerRepair/consumerEstimateActionRouter.ts",
       "src/features/consumerRepair/consumerRepairBackendOwnership.ts",
       "src/features/consumerRepair/consumerRepairCanonicalEstimateReadiness.ts",
       "src/features/consumerRepair/consumerRepairCanonicalSessionPreview.ts",
+      "src/features/consumerRepair/consumerRepairCalculationTraceState.ts",
+      "src/features/consumerRepair/consumerRepairCanonicalDraftReuse.ts",
       "src/features/consumerRepair/consumerRepairDraftAnswer.ts",
       "src/features/consumerRepair/consumerRepairQuantityEditTrace.ts",
       "src/features/consumerRepair/consumerRepairRowMetadata.ts",
+      "src/lib/consumerRequests/canonicalConsumerRepairHistoricalProjection.ts",
       "src/lib/consumerRequests/consumerCanonicalBackendRevisionProjection.ts",
       "src/lib/consumerRequests/consumerRequestEstimateApplicationService.ts",
       "src/lib/consumerRequests/consumerRequestExactRoadworksCalculationStateMigration.ts",
+      "src/lib/consumerRequests/consumerRequestHistoryLineage.ts",
+      "src/lib/consumerRequests/consumerRequestMarketplace.transport.ts",
     ]);
-    expect(sCanonicalConsumerEstimatePlatformOwnerFiles).toBe(12);
+    expect(sCanonicalConsumerEstimatePlatformOwnerFiles).toBe(19);
     expect(sRequestEstimateBoqCatalogViewFiles).toBeLessThanOrEqual(3);
     expect(sRequestEstimateBoqCatalogCatalogFiles).toBeLessThanOrEqual(3);
     expect(sCatalogItemsGlobalEstimateBindingCatalogFiles).toBeLessThanOrEqual(2);
@@ -2265,7 +2361,19 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sOpenWorldPrimitiveBoqCompilerFiles).toBeLessThanOrEqual(30);
     expect(sAiEstimateChangeControlFiles).toBeLessThanOrEqual(26);
     expect(sGlobalLocalEstimatePlatformFiles).toBeLessThanOrEqual(28);
-    expect(sEditableEstimateWorkspaceCoreFiles).toBeLessThanOrEqual(9);
+    expect(editableEstimateWorkspaceCoreFiles).toEqual([
+      "src/lib/ai/editableEstimate/applyEditableEstimateOverride.ts",
+      "src/lib/ai/editableEstimate/applyEditableEstimateUnitPriceBatchOverride.ts",
+      "src/lib/ai/editableEstimate/editableEstimateAuditTrail.ts",
+      "src/lib/ai/editableEstimate/editableEstimateSnapshot.ts",
+      "src/lib/ai/editableEstimate/editableEstimateSnapshotHash.ts",
+      "src/lib/ai/editableEstimate/editableEstimateTypes.ts",
+      "src/lib/ai/editableEstimate/index.ts",
+      "src/lib/ai/editableEstimate/manualPricePolicy.ts",
+      "src/lib/ai/editableEstimate/recalculateEditableEstimateTotals.ts",
+      "src/lib/ai/editableEstimate/validateEditableEstimateSnapshot.ts",
+    ]);
+    expect(sEditableEstimateWorkspaceCoreFiles).toBeLessThanOrEqual(10);
     expect(sEstimateRevisionAuditSnapshotImplementationFiles).toBeLessThanOrEqual(13);
     expect(estimateRevisionAuditSnapshotBarrelFiles).toEqual([
       "src/lib/ai/estimateRevisions/index.ts",
@@ -2313,26 +2421,47 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sEstimateToProjectExecutionProcurementHandoffFiles).toBeLessThanOrEqual(3);
     expect(sAiEstimateProductionCanaryControlPlaneFiles).toBeLessThanOrEqual(34);
     expect(sAiEstimateLimitedPublicBetaGovernanceFiles).toBeLessThanOrEqual(11);
-    // Exact working-tree baseline on 2026-07-24. This intentionally includes
+    expect(s278F09SubjectProfileOwnerFiles).toEqual([
+      "src/lib/estimate/v4/addressableSmokeDetectorClassifiedVariantsR1.ts",
+      "src/lib/estimate/v4/fireAlarmDetectorReplacementVariantsR1.ts",
+      "src/lib/estimate/v4/fireAlarmFunctionalTestVariantsR1.ts",
+      "src/lib/estimate/v4/fireAlarmProjectPreparationVariantsR1.ts",
+      "src/lib/estimate/v4/fireAlarmSystemExpandedR1.ts",
+      "src/lib/estimate/v4/fireproofZoneInjectionRepairVariantsR1.ts",
+      "src/lib/estimate/v4/woodFireproofingLayerStrengtheningVariantsR1.ts",
+      "src/lib/estimate/v4/woodFireproofingLocalRepairVariantsR1.ts",
+      "src/lib/estimate/v4/woodFireproofingSealingVariantsR1.ts",
+      "src/lib/estimate/v4/woodFireproofingSurfaceCleaningVariantsR1.ts",
+      "src/lib/estimate/v4/woodFireproofingSurfacePreparationVariantsR1.ts",
+    ]);
+    expect(sS278F09SubjectProfileOwnerFiles).toBe(11);
+    expect(s278F09SubjectProfileOwnerIdentity).toBe(
+      "7935c49eb38d5350cfa3ca0fa5d176b0a8083008a261fabf1aac995c02e4dcfe",
+    );
+    // Exact working-tree baseline after the admitted S27.9 common-owner
+    // migration. This intentionally includes
     // untracked source modules, so the next .ts/.tsx addition fails before commit.
-    expect(sPostBaselineCanonicalEstimateV4AndBackendOwnerFiles).toBe(160);
+    expect(sPostBaselineCanonicalEstimateV4AndBackendOwnerFiles).toBe(345);
     expect(postBaselineCanonicalEstimateV4AndBackendOwnerIdentity).toBe(
-      "df1fc4e27bda7ad51b63a6eab6d72da21c8f643160a83ec52ef11db5727c2b10",
+      "1873fa38d5e3edc4c30aa5cea01b7735bfa55b3eb9bd12dba49be0edc79bcc94",
     );
     expect(postSealCanonicalEstimateOwnerFiles).toEqual([
       "src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline.test.ts",
       "src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline.ts",
       "src/lib/estimate/backendPlatform/canonicalEstimateAuth.transport.ts",
+      "src/lib/estimate/backendPlatform/canonicalEstimatePromptParameters.test.ts",
+      "src/lib/estimate/backendPlatform/canonicalEstimatePromptParameters.ts",
       "src/lib/estimate/backendPlatform/canonicalFormulaSourceBinding.test.ts",
       "src/lib/estimate/backendPlatform/canonicalFormulaSourceBinding.ts",
       "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts",
       "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts",
       "src/lib/estimate/backendPlatform/inclusionGraph.test.ts",
+      "src/lib/estimate/v4/domainFactory/professionalPhysicalNormApplicabilityTypesV1.ts",
       "src/lib/estimate/v4/reinforcedConcreteStripFoundationR1.ts",
     ]);
-    expect(sPostSealCanonicalEstimateOwnerFiles).toBe(9);
+    expect(sPostSealCanonicalEstimateOwnerFiles).toBe(12);
     expect(postSealCanonicalEstimateOwnerIdentity).toBe(
-      "1900574b3e76f47ca5578f0047b7c9a84ecc78a34271430a1cf425cc9ec1436d",
+      "c4ca5ce1fc38a030067c483d341189e42c5c6bd9181bc691cf6c23c853424a06",
     );
     expect(
       postBaselineCanonicalEstimateV4AndBackendOwnerFiles.every(
@@ -2342,12 +2471,14 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(
       sPostBaselineGovernedSourceGrowthFiles -
         sPostBaselineCanonicalEstimateV4AndBackendOwnerFiles -
+        sS278F09SubjectProfileOwnerFiles -
         sPostSealCanonicalEstimateOwnerFiles -
         sR33MaterialSelectionReviewOwnerFiles -
         sR555CanonicalClientAuthRefreshProofFiles -
         sR555PublicRussianTechnologyTitleOwnerFiles -
         sCurrentCorePostCheckpointSourceFiles -
         sR4A13CoreExtensionOwnerFiles -
+        sR4A13NormAndRuntimeOwnerFiles -
         sT8ConsumerRepairApplicationServiceOwnerFiles -
         sT8ProfessionalUnitOntologyOwnerFiles -
         sT8OfficeDirectionFacadeOwnerFiles -
@@ -2362,6 +2493,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sPlatformDeveloperAccessOwnerFiles,
     ).toBeLessThanOrEqual(508);
     expect(sCurrentCorePostCheckpointSourceFiles).toBeLessThanOrEqual(7);
+    expect(sR4A13NormAndRuntimeOwnerFiles).toBe(54);
     expect(r4A13CoreExtensionOwnerFiles).toEqual([
       "src/features/consumerRepair/consumerRepairCanonicalEstimateReadiness.ts",
       "src/features/consumerRepair/consumerRepairRowMetadata.ts",
@@ -2420,7 +2552,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sRequestEstimateStatePayloadFiles).toBeLessThanOrEqual(2);
     expect(sRequestEstimateFeatureStateMachineFiles).toBeLessThanOrEqual(6);
     expect(sEditableEstimateWorkspaceConsumerRepairFiles).toBeLessThanOrEqual(2);
-    expect(sConsumerRepairRequestScreenOwnerSplitFiles).toBeLessThanOrEqual(3);
+    expect(sConsumerRepairRequestScreenOwnerSplitFiles).toBeLessThanOrEqual(4);
     expect(sConsumerRepairGovernancePersistenceBoundaryFiles).toBeLessThanOrEqual(9);
     expect(sAiAlwaysOnExternalKnowledgeFiles).toBeLessThanOrEqual(4);
     expect(sAiEstimateEngineFiles).toBeLessThanOrEqual(9);

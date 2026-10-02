@@ -9,7 +9,7 @@ import {
 
 const inventory = JSON.parse(readFileSync(resolve(
   ".release-runtime/real-useful-estimates-r4/evidence/current-green/04_AUTHORITATIVE_WORK_GROUP_INVENTORY_R4.json",
-), "utf8")) as { groups: Array<{ batch_id: string; member_catalog_ids: string[] }> };
+), "utf8")) as { groups: { batch_id: string; member_catalog_ids: string[] }[] };
 const contentIds = new Set(inventory.groups
   .filter((group) => group.batch_id === "BATCH-005")
   .flatMap((group) => group.member_catalog_ids));

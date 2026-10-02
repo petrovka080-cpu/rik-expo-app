@@ -7,7 +7,13 @@ import path from "node:path";
 const EXPECTED_MANIFEST_TOTAL = 11610;
 const EXPECTED_SHARD_COUNT = 24;
 const WORKER_COUNT = 2;
-const WORKER_TIMEOUT_MS = 260_000;
+const CHILD_OLD_SPACE_MIB = 1280;
+// The strict dependency-trace pass now exercises the complete recalculation
+// path for every entry.  On the supported 16 GiB Windows profile each worker
+// needs a little over the former 260 s ceiling, even though every completed
+// shard remains bounded and GREEN.  Keep the same two-worker/fail-closed
+// topology and give each owned process a measured technical closeout window.
+const WORKER_TIMEOUT_MS = 480_000;
 const MANIFEST_TIMEOUT_MS = 60_000;
 const TERMINATION_GRACE_MS = 2_000;
 const BOUNDED_CLOSEOUT_MS = 5_000;
@@ -123,7 +129,7 @@ export type EditableParam11610HarnessTerminal = {
     external_jest_workers: 1;
     reusable_child_workers: 2;
     contiguous_chunks: 24;
-    child_old_space_mib: 1536;
+    child_old_space_mib: 1280;
     explicit_gc_between_chunks: true;
     cache_clear_scope: "per_chunk";
   };
@@ -182,7 +188,7 @@ function runOwnedChild(input: {
   return new Promise((resolve) => {
     const child = spawn(
       process.execPath,
-      ["--expose-gc", "--max-old-space-size=1536", "--import", "tsx", input.childEntry, ...input.args],
+      ["--expose-gc", `--max-old-space-size=${CHILD_OLD_SPACE_MIB}`, "--import", "tsx", input.childEntry, ...input.args],
       {
         cwd: process.cwd(),
         env: { ...process.env, NODE_ENV: "test" },
@@ -521,7 +527,7 @@ export async function runEditableParam11610Harness(): Promise<EditableParam11610
       external_jest_workers: 1,
       reusable_child_workers: 2,
       contiguous_chunks: EXPECTED_SHARD_COUNT,
-      child_old_space_mib: 1536,
+      child_old_space_mib: CHILD_OLD_SPACE_MIB,
       explicit_gc_between_chunks: true,
       cache_clear_scope: "per_chunk",
     },

@@ -357,6 +357,7 @@ describe("ForemanMaterialsContent sections", () => {
     };
     const fioModalProps = latestWarehouseFioModalProps as {
       onConfirm: (fio: string) => Promise<void>;
+      surface: string;
     };
 
     const pickedRows: PickedRow[] = [{ rik_code: "R-1", name: "Материал", qty: "2", note: "" }];
@@ -380,5 +381,6 @@ describe("ForemanMaterialsContent sections", () => {
     expect(props.onSendDraft).toHaveBeenCalledTimes(1);
     expect(props.onPdf).toHaveBeenCalledTimes(1);
     expect(props.handleFioConfirm).toHaveBeenCalledWith("Иванов И.И.");
+    expect(fioModalProps.surface).toBe("foreman");
   });
 });

@@ -29,6 +29,8 @@ describe("office market live web E2E harness contract", () => {
     expect(runnerSource).toContain("nxrnjywzxxfdpqmzjorh");
     expect(runnerSource).toContain("ensureAuthReachable");
     expect(runnerSource).toContain("ensureWebAppReachable");
+    expect(runnerSource).toContain("EXPO_PUBLIC_SUPABASE_URL: supabaseUrl");
+    expect(runnerSource).toContain("EXPO_PUBLIC_SUPABASE_ANON_KEY: supabaseAnonKey");
     expect(runnerSource).toContain("GREEN_OFFICE_AI_MARKET_LIVE_WEB_E2E_HARNESS_NO_BUILDS");
     expect(runnerSource).not.toContain("GREEN_OFFICE_AI_ESTIMATE_MARKET_MEDIA_WEB_HARDENING_NO_BUILDS");
   });
@@ -48,6 +50,20 @@ describe("office market live web E2E harness contract", () => {
     expect(runnerSource).toContain("company_id_hash");
     expect(runnerSource).toContain("hashValue");
     expect(runnerSource).toContain("developer_full_access_used_as_proof: false");
+  });
+
+  it("uses normal role login and cannot substitute the local developer role matrix", () => {
+    expect(runnerSource).toContain('await page.goto(`${baseUrl}/auth/login`');
+    expect(runnerSource).toContain("client.auth.signInWithPassword(credentials)");
+    expect(runnerSource).not.toContain("developer_set_effective_role_v1");
+    expect(runnerSource).not.toContain("local-developer-role-toggle");
+    expect(runnerSource).not.toContain("auth.signUp");
+    expect(docsSource).toContain(
+      "This harness is the source of truth for live platform role acceptance.",
+    );
+    expect(docsSource).toContain(
+      "surface; they are not evidence for staging role isolation, ERP, Market, or S27.5 platform",
+    );
   });
 
   it("covers live office, buyer, role-surface, and marketplace invariants", () => {

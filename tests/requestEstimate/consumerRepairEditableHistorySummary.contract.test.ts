@@ -1,14 +1,16 @@
+import { readFileSync } from "node:fs";
+
 import { buildConsumerRepairEditableHistorySummary } from "../../src/features/consumerRepair/consumerRepairEditableHistorySummary";
 
 describe("consumer repair editable history summary", () => {
-  it("exposes the restored 4-revision / 3-diff history without relabeling canonical R1", () => {
+  it("shows saved user changes without exposing the internal revision chain", () => {
     expect(buildConsumerRepairEditableHistorySummary({
       revisions: [{}, {}, {}, {}],
       diffs: [{}, {}, {}],
     })).toEqual({
       revisions: 4,
       diffs: 3,
-      labelRu: "Версий сметы: 4 · изменений: 3",
+      labelRu: "Сохранённых изменений: 3",
     });
   });
 
@@ -17,5 +19,20 @@ describe("consumer repair editable history summary", () => {
       revisions: [{}],
       diffs: [],
     })).toBeNull();
+  });
+
+  it("does not expose parent-child storage terminology in user-facing estimate messages", () => {
+    const copy = [
+      "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
+      "src/features/consumerRepair/ConsumerRepairRequestScreenContainer.tsx",
+      "src/features/consumerRepair/ConsumerRepairRequestChrome.tsx",
+      "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.tsx",
+      "src/features/consumerRepair/consumerCanonicalParameterEditor.ts",
+      "src/features/consumerRepair/consumerRepairEditableHistorySummary.ts",
+      "src/features/requests/components/EstimateRevisionTimeline.tsx",
+    ].map((path) => readFileSync(path, "utf8")).join("\n");
+    expect(copy.toLocaleLowerCase("ru-RU")).not.toContain("дочерн");
+    expect(copy).not.toContain("новой версии сметы");
+    expect(copy).not.toContain("версия №");
   });
 });

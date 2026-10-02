@@ -23,9 +23,8 @@ describe("AI estimate platform core v2 matrix", () => {
     expect(summary.random_create_draft_cases_passed).toBe("1000/1000");
     expect(summary.random_client_compile_cases_passed).toBe("793/793");
     expect(summary.random_backend_only_honestly_blocked_cases_passed).toBe("207/207");
-    expect(summary.random_client_needs_input_honestly_blocked_cases).toBe(2);
+    expect(summary.random_client_needs_input_honestly_blocked_cases).toBe(1);
     expect(summary.random_client_needs_input_honestly_blocked_template_ids).toEqual([
-      "bridge_asphalt_rom_concept_expanded_complex_v1",
       "pumping_station_as_built_estimate_expanded_complex_v1",
     ]);
     expect(summary.critical_client_compile_cases_passed).toBe("155/155");

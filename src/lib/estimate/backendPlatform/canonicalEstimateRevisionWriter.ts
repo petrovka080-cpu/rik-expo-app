@@ -1,3 +1,5 @@
+import { canonicalEstimateParameterChoiceLabelRu } from "./canonicalEstimateParameterSemantics";
+
 export const CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION =
   "ONE_CANONICAL_ESTIMATE_R6_REVISION_IDENTITY_V1" as const;
 export const CANONICAL_ESTIMATE_PRELIMINARY_REVISION_CONTRACT_VERSION =
@@ -79,6 +81,12 @@ function publicMeasureValue(value: unknown): string {
   return new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 6 }).format(numeric);
 }
 
+function canonicalScopeTitleRu(parameters: Record<string, unknown>): string | null {
+  const scopeVariant = String(parameters.scope_variant ?? "").trim();
+  if (scopeVariant !== "full_reinforced_structure" && scopeVariant !== "placement_only") return null;
+  return canonicalEstimateParameterChoiceLabelRu("scope_variant", scopeVariant);
+}
+
 function writerError(message: string, code: string): Error {
   return Object.assign(new Error(message), { code });
 }
@@ -116,10 +124,14 @@ export async function buildCanonicalRevisionIdentity(
     throw writerError("canonical work title is unavailable", "DEFINITION_INTEGRITY_FAILED");
   }
   const primaryMeasureUnitId = String(primary.unit_id ?? "").trim();
+  const scopeTitleRu = canonicalScopeTitleRu(input.parameters);
+  const scopedWorkTitleRu = scopeTitleRu
+    ? `${canonicalWorkTitleRu} — ${scopeTitleRu}`
+    : canonicalWorkTitleRu;
   const displayTitleRu = primaryMeasureResolved
-    ? `${canonicalWorkTitleRu} — ${publicMeasureValue(primaryMeasureValue)}`
+    ? `${scopedWorkTitleRu} — ${publicMeasureValue(primaryMeasureValue)}`
       + `${primaryMeasureUnitId ? ` ${publicUnitRu(primaryMeasureUnitId)}` : ""}`
-    : `${canonicalWorkTitleRu} — объём нужно уточнить`;
+    : `${scopedWorkTitleRu} — объём нужно уточнить`;
   const contractVersion = parentHasCanonicalIdentity
     ? parentContractVersion
     : primaryMeasureResolved

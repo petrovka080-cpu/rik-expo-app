@@ -12732,6 +12732,57 @@
       "validFrom": "2026-07-07",
       "trustLevel": "preliminary_only",
       "notes": "Generated from explicit norm-family/type/unit coverage metadata; preliminary total only, contract total forbidden."
+    },
+    {
+      "priceId": "pb_labor_m2_2a448454",
+      "nomenclatureId": "norm_family:plaster:professional_pack:labor:labor:m2|labor|m2",
+      "itemType": "labor",
+      "name": "подготовка основания для штукатурки стен",
+      "unit": "m2",
+      "unitPrice": 252,
+      "currency": "KGS",
+      "region": "KG",
+      "sourceId": "kg_preliminary_labor_market_assumption_2026_07",
+      "sourceType": "market_assumption",
+      "sourceLabel": "labor preliminary market assumption for norm_family:plaster:professional_pack:labor:labor:m2",
+      "retrievedAt": "2026-07-07T00:00:00+06:00",
+      "validFrom": "2026-07-07",
+      "trustLevel": "preliminary_only",
+      "notes": "Generated from explicit norm-family/type/unit coverage metadata; preliminary total only, contract total forbidden."
+    },
+    {
+      "priceId": "pb_labor_m2_5ffe0fb3",
+      "nomenclatureId": "norm_family:plaster:professional_pack:labor:preparation:m2|labor|m2",
+      "itemType": "labor",
+      "name": "очистка для штукатурки стен",
+      "unit": "m2",
+      "unitPrice": 324.8,
+      "currency": "KGS",
+      "region": "KG",
+      "sourceId": "kg_preliminary_labor_market_assumption_2026_07",
+      "sourceType": "market_assumption",
+      "sourceLabel": "labor preliminary market assumption for norm_family:plaster:professional_pack:labor:preparation:m2",
+      "retrievedAt": "2026-07-07T00:00:00+06:00",
+      "validFrom": "2026-07-07",
+      "trustLevel": "preliminary_only",
+      "notes": "Generated from explicit norm-family/type/unit coverage metadata; preliminary total only, contract total forbidden."
+    },
+    {
+      "priceId": "pb_labor_set_5b968201",
+      "nomenclatureId": "norm_family:plaster:professional_pack:labor:preparation:set|labor|set",
+      "itemType": "labor",
+      "name": "осмотр поверхности для штукатурки стен",
+      "unit": "set",
+      "unitPrice": 2625,
+      "currency": "KGS",
+      "region": "KG",
+      "sourceId": "kg_preliminary_labor_market_assumption_2026_07",
+      "sourceType": "market_assumption",
+      "sourceLabel": "labor preliminary market assumption for norm_family:plaster:professional_pack:labor:preparation:set",
+      "retrievedAt": "2026-07-07T00:00:00+06:00",
+      "validFrom": "2026-07-07",
+      "trustLevel": "preliminary_only",
+      "notes": "Generated from explicit norm-family/type/unit coverage metadata; preliminary total only, contract total forbidden."
     }
   ]
 }

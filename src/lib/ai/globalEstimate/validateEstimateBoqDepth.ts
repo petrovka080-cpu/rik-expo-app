@@ -101,6 +101,17 @@ function hasQuantity(item: EstimateDepthRow): boolean {
   return Number.isFinite(item.row.quantity) && item.row.quantity > 0 && item.row.unit.trim().length > 0;
 }
 
+function isExplicitlyBlockedConditionalRow(item: EstimateDepthRow): boolean {
+  const sourceParameters = item.row.sourceParameters ?? {};
+  const parameterBlockerIds = sourceParameters.parameterBlockerIds;
+  return item.row.includedInEstimate === false &&
+    item.row.includedInProcurement === false &&
+    item.row.priceStatus === "unavailable" &&
+    sourceParameters.conditionalStatus === "blocked_missing_parameters" &&
+    Array.isArray(parameterBlockerIds) &&
+    parameterBlockerIds.length > 0;
+}
+
 function hasWbs(item: EstimateDepthRow): boolean {
   return item.sectionType !== "tax" && item.row.rowNumber.trim().length > 0;
 }
@@ -171,7 +182,9 @@ export function validateEstimateBoqDepth(result: GlobalEstimateResult): Estimate
   const duplicateSignatureSet = new Set(duplicateSemanticSignatures);
   const genericRows = rows.filter(isGenericRow).map(rowId);
   const artificialPaddingRows = rows.filter(isArtificialPaddingRow).map(rowId);
-  const rowsWithoutQuantity = rows.filter((item) => !hasQuantity(item)).map(rowId);
+  const rowsWithoutQuantity = rows
+    .filter((item) => !hasQuantity(item) && !isExplicitlyBlockedConditionalRow(item))
+    .map(rowId);
   const rowsWithoutWbs = rows.filter((item) => !hasWbs(item)).map(rowId);
   const rowsWithoutSourceLink = rows.filter((item) => !hasSourceLink(item)).map(rowId);
   const rowsWithoutPriceEvidenceOrRfq = rows.filter((item) => !hasPriceEvidenceOrRfq(item)).map(rowId);
@@ -181,6 +194,7 @@ export function validateEstimateBoqDepth(result: GlobalEstimateResult): Estimate
   const meaningful = rows.filter((item) =>
     !isGenericRow(item) &&
     !isArtificialPaddingRow(item) &&
+    !isExplicitlyBlockedConditionalRow(item) &&
     !duplicateSignatureSet.has(semanticSignature(item)) &&
     hasQuantity(item) &&
     hasWbs(item) &&

@@ -14,9 +14,32 @@ export type AffectedJestRuntimeCalibration = {
   source_gate: string;
   source_sha: string;
   execution_profile?: string;
+  compatible_prior_execution_profiles?: string[];
   measured_at?: string | null;
   measurement_scope?: string;
   suites: Record<string, number>;
+  suite_provenance?: Record<string, {
+    suite_sha256: string;
+    execution_profile: string;
+    result_path: string;
+    result_sha256: string;
+    result_status: "passed";
+    result_success: true;
+    runtime_ms: number;
+    runtime_source: string;
+    process_tree_memory_path: string;
+    process_tree_memory_sha256: string;
+    process_tree_memory_status: "COMPLETE";
+    process_tree_peak_bytes: number;
+    process_tree_samples: number;
+    process_tree_descendants_observed: number;
+    gate_summary_path: string;
+    gate_summary_sha256: string;
+    close_observed: true;
+    timed_out: false;
+    orphan_detected: false;
+    measured_at: string;
+  }>;
   conservative_unmeasured_suites?: Record<string, {
     weight_ms: number;
     basis: string;
@@ -68,7 +91,9 @@ const DEFAULT_CALIBRATION_PATH = path.join(
 );
 
 export const MAX_LOCAL_AFFECTED_JEST_SHARDS = 4;
-export const AFFECTED_JEST_EXECUTION_PROFILE = "run-in-band:no-detect-open-handles:sandbox-injected-math:progress-reporter/v2";
+export const AFFECTED_JEST_OLD_SPACE_MIB = 2_048;
+export const AFFECTED_JEST_EXECUTION_PROFILE =
+  `run-in-band:no-detect-open-handles:sandbox-injected-math:progress-reporter:node-old-space-${AFFECTED_JEST_OLD_SPACE_MIB}/v3`;
 export const AFFECTED_JEST_PLANNING_WEIGHT_UNIT = "estimated-milliseconds";
 
 export function estimateUnmeasuredAffectedJestRuntimeMs(input: {
@@ -115,11 +140,13 @@ function estimateShardPeakBytes(input: {
   profiles: Readonly<Record<string, ResourceProfile>>;
   unmeasuredRootPeakBytes: number;
 }): number {
+  const observedPeaks = input.shard.test_files.map((testPath) =>
+    input.profiles[testPath]?.observed_peak_tree_working_set_bytes ?? 0
+  );
+  const hasUnmeasuredSuite = observedPeaks.some((peakBytes) => peakBytes <= 0);
   return Math.max(
-    input.unmeasuredRootPeakBytes,
-    ...input.shard.test_files.map((testPath) =>
-      input.profiles[testPath]?.observed_peak_tree_working_set_bytes ?? 0
-    ),
+    hasUnmeasuredSuite ? input.unmeasuredRootPeakBytes : 0,
+    ...observedPeaks,
   );
 }
 
@@ -132,11 +159,22 @@ function nestedWorkersForShard(
   ));
 }
 
+function estimatedSuitePeakBytes(
+  entry: WeightedJestManifestEntry,
+  profiles: Readonly<Record<string, ResourceProfile>>,
+  unmeasuredRootPeakBytes: number,
+): number {
+  const measured = profiles[entry.test_path]?.observed_peak_tree_working_set_bytes ?? 0;
+  return measured > 0 ? measured : unmeasuredRootPeakBytes;
+}
+
 function planCompanionShards(input: {
   available: readonly WeightedJestManifestEntry[];
   pinned: readonly WeightedJestManifestEntry[];
+  profiles: Readonly<Record<string, ResourceProfile>>;
   rootCount: number;
   targetWeight: number;
+  unmeasuredRootPeakBytes: number;
 }): {
   shards: ReturnType<typeof planWeightedJestShards>;
   assignedPaths: Set<string>;
@@ -155,7 +193,12 @@ function planCompanionShards(input: {
   const assignedPaths = new Set(input.pinned.map((entry) => entry.test_path));
   const candidates = input.available
     .filter((entry) => !assignedPaths.has(entry.test_path))
-    .sort((left, right) => right.weight - left.weight || left.test_path.localeCompare(right.test_path, "en"));
+    .sort((left, right) =>
+      estimatedSuitePeakBytes(left, input.profiles, input.unmeasuredRootPeakBytes)
+        - estimatedSuitePeakBytes(right, input.profiles, input.unmeasuredRootPeakBytes)
+      || right.weight - left.weight
+      || left.test_path.localeCompare(right.test_path, "en")
+    );
   const weightOf = (entries: readonly WeightedJestManifestEntry[]) =>
     entries.reduce((total, entry) => total + entry.weight, 0);
   for (const candidate of candidates) {
@@ -180,6 +223,56 @@ function planCompanionShards(input: {
           .sort((left, right) => left.localeCompare(right, "en")),
       })),
   };
+}
+
+function fillSequentialShardTails(input: {
+  shards: readonly ReturnType<typeof planWeightedJestShards>[number][];
+  available: readonly WeightedJestManifestEntry[];
+  assignedPaths: ReadonlySet<string>;
+  profiles: Readonly<Record<string, ResourceProfile>>;
+  targetWeight: number;
+  unmeasuredRootPeakBytes: number;
+}): {
+  shards: ReturnType<typeof planWeightedJestShards>;
+  assignedPaths: Set<string>;
+} {
+  const shards = input.shards.map((shard) => ({
+    ...shard,
+    test_files: [...shard.test_files],
+  }));
+  const assignedPaths = new Set(input.assignedPaths);
+  const candidates = input.available
+    .filter((entry) => !assignedPaths.has(entry.test_path))
+    .sort((left, right) => right.weight - left.weight || left.test_path.localeCompare(right.test_path, "en"));
+  for (const candidate of candidates) {
+    const candidatePeakBytes = estimatedSuitePeakBytes(
+      candidate,
+      input.profiles,
+      input.unmeasuredRootPeakBytes,
+    );
+    const target = shards
+      .map((shard, index) => ({
+        index,
+        peakBytes: estimateShardPeakBytes({
+          shard,
+          profiles: input.profiles,
+          unmeasuredRootPeakBytes: input.unmeasuredRootPeakBytes,
+        }),
+        weight: shard.weight,
+      }))
+      .filter(({ peakBytes, weight }) =>
+        weight + candidate.weight <= input.targetWeight
+        && candidatePeakBytes <= peakBytes
+      )
+      .sort((left, right) => left.weight - right.weight || left.index - right.index)[0];
+    if (!target) continue;
+    const shard = shards[target.index];
+    shard.weight += candidate.weight;
+    shard.test_files.push(candidate.test_path);
+    shard.test_files.sort((left, right) => left.localeCompare(right, "en"));
+    assignedPaths.add(candidate.test_path);
+  }
+  return { shards, assignedPaths };
 }
 
 function planMemoryAwareStandardShards(input: {
@@ -230,7 +323,14 @@ export function buildAffectedJestShardPlan(input: {
   suites: readonly string[];
   shardCount: number;
   calibrationPath?: string;
+  maximumParallelProcessRoots?: number;
 }) {
+  if (
+    input.maximumParallelProcessRoots != null
+    && (!Number.isInteger(input.maximumParallelProcessRoots) || input.maximumParallelProcessRoots < 1)
+  ) {
+    throw new Error(`invalid_affected_jest_maximum_parallel_process_roots:${input.maximumParallelProcessRoots}`);
+  }
   const calibrationPath = path.resolve(
     input.root,
     input.calibrationPath ?? DEFAULT_CALIBRATION_PATH,
@@ -323,57 +423,83 @@ export function buildAffectedJestShardPlan(input: {
     const groupId = configuredGroup || `single:${entry.test_path}`;
     nestedGroups.set(groupId, [...(nestedGroups.get(groupId) ?? []), entry]);
   }
-  for (const groupEntries of nestedGroups.values()) {
-    const groupPaths = new Set(groupEntries.map((entry) => entry.test_path));
-    const resourceProfiles = groupEntries.map((entry) => appliedResourceProfiles[entry.test_path]);
-    const pinned = pairedEntries
-      .filter((candidate) => groupPaths.has(appliedResourceProfiles[candidate.test_path]?.paired_with ?? ""))
-      .sort((left, right) => right.weight - left.weight || left.test_path.localeCompare(right.test_path, "en"));
-    const generalAvailable = standardEntries.filter((candidate) =>
-      !pairedPaths.has(candidate.test_path)
-      && (appliedResourceProfiles[candidate.test_path]?.observed_peak_tree_working_set_bytes ?? 0)
-        <= unmeasuredRootPeakBytes
+  for (const configuredGroupEntries of nestedGroups.values()) {
+    const maximumNestedEntriesPerWave = input.maximumParallelProcessRoots
+      ?? configuredGroupEntries.length;
+    const groupSlices = Array.from(
+      { length: Math.ceil(configuredGroupEntries.length / maximumNestedEntriesPerWave) },
+      (_, index) => configuredGroupEntries.slice(
+        index * maximumNestedEntriesPerWave,
+        (index + 1) * maximumNestedEntriesPerWave,
+      ),
     );
-    const companionPlan = planCompanionShards({
-      available: generalAvailable,
-      pinned,
-      rootCount: Math.max(
+    for (const groupEntries of groupSlices) {
+      const groupPaths = new Set(groupEntries.map((entry) => entry.test_path));
+      const resourceProfiles = groupEntries.map((entry) => appliedResourceProfiles[entry.test_path]);
+      const pinned = pairedEntries
+        .filter((candidate) => groupPaths.has(appliedResourceProfiles[candidate.test_path]?.paired_with ?? ""))
+        .sort((left, right) => right.weight - left.weight || left.test_path.localeCompare(right.test_path, "en"));
+      const generalAvailable = standardEntries.filter((candidate) =>
+        !pairedPaths.has(candidate.test_path)
+        && (appliedResourceProfiles[candidate.test_path]?.observed_peak_tree_working_set_bytes ?? 0)
+          <= unmeasuredRootPeakBytes
+      );
+      const nestedShards = groupEntries.map((entry) => planWeightedJestShards([entry], 1)[0]);
+      const requestedCompanionRoots = Math.max(
         pinned.length > 0 ? 1 : 0,
         ...resourceProfiles.map((profile) => profile.companion_standard_roots ?? pinned.length),
-      ),
-      targetWeight: Math.max(...groupEntries.map((entry) => entry.weight)),
-    });
-    const nestedShards = groupEntries.map((entry) => planWeightedJestShards([entry], 1)[0]);
-    const waveShards = [...nestedShards, ...companionPlan.shards];
-    for (const shard of waveShards) shard.shard_id = nextShardId++;
-    const assigned = new Set([...companionPlan.assignedPaths, ...pinned.map((item) => item.test_path)]);
-    standardEntries = standardEntries.filter((candidate) => !assigned.has(candidate.test_path));
-    const estimatedPeakBytes = waveShards.reduce((total, shard) => total + estimateShardPeakBytes({
-      shard,
-      profiles: appliedResourceProfiles,
-      unmeasuredRootPeakBytes,
-    }), 0);
-    resourceWaves.push({
-      wave_id: resourceWaves.length,
-      resource_class: "nested_with_standard_companions",
-      maximum_parallel_process_roots: waveShards.length,
-      nested_node_workers: waveShards.reduce(
-        (total, shard) => total + nestedWorkersForShard(shard, appliedResourceProfiles),
-        0,
-      ),
-      minimum_free_physical_bytes: Math.max(
-        ...resourceProfiles.map((profile) => profile.minimum_free_physical_bytes),
-        estimatedPeakBytes,
-      ),
-      closeout_reserve_bytes: closeoutReserveBytes,
-      predicted_duration_weight_ms: Math.max(...waveShards.map((shard) => shard.weight)),
-      estimated_peak_process_tree_bytes: estimatedPeakBytes,
-      memory_estimate_basis: "sum of per-root maximum observed suite-tree peaks; unmeasured roots use the configured conservative estimate",
-      shards: waveShards,
-    });
+      );
+      const availableCompanionRoots = input.maximumParallelProcessRoots == null
+        ? requestedCompanionRoots
+        : Math.max(0, input.maximumParallelProcessRoots - nestedShards.length);
+      const companionPlan = planCompanionShards({
+        available: generalAvailable,
+        pinned,
+        profiles: appliedResourceProfiles,
+        rootCount: Math.min(requestedCompanionRoots, availableCompanionRoots),
+        targetWeight: Math.max(...groupEntries.map((entry) => entry.weight)),
+        unmeasuredRootPeakBytes,
+      });
+      const filledWave = fillSequentialShardTails({
+        shards: [...nestedShards, ...companionPlan.shards],
+        available: generalAvailable,
+        assignedPaths: companionPlan.assignedPaths,
+        profiles: appliedResourceProfiles,
+        targetWeight: Math.max(...groupEntries.map((entry) => entry.weight)),
+        unmeasuredRootPeakBytes,
+      });
+      const waveShards = filledWave.shards;
+      for (const shard of waveShards) shard.shard_id = nextShardId++;
+      standardEntries = standardEntries.filter((candidate) =>
+        !filledWave.assignedPaths.has(candidate.test_path)
+      );
+      const estimatedPeakBytes = waveShards.reduce((total, shard) => total + estimateShardPeakBytes({
+        shard,
+        profiles: appliedResourceProfiles,
+        unmeasuredRootPeakBytes,
+      }), 0);
+      resourceWaves.push({
+        wave_id: resourceWaves.length,
+        resource_class: "nested_with_standard_companions",
+        maximum_parallel_process_roots: waveShards.length,
+        nested_node_workers: waveShards.reduce(
+          (total, shard) => total + nestedWorkersForShard(shard, appliedResourceProfiles),
+          0,
+        ),
+        minimum_free_physical_bytes: Math.max(
+          ...resourceProfiles.map((profile) => profile.minimum_free_physical_bytes),
+          estimatedPeakBytes,
+        ),
+        closeout_reserve_bytes: closeoutReserveBytes,
+        predicted_duration_weight_ms: Math.max(...waveShards.map((shard) => shard.weight)),
+        estimated_peak_process_tree_bytes: estimatedPeakBytes,
+        memory_estimate_basis: "sum of per-root maximum observed suite-tree peaks; unmeasured roots use the configured conservative estimate",
+        shards: waveShards,
+      });
+    }
   }
   const unassignedPaired = standardEntries.filter((entry) => pairedPaths.has(entry.test_path));
-  if (unassignedPaired.length > 0) {
+  if (unassignedPaired.length > 0 && input.maximumParallelProcessRoots == null) {
     throw new Error(`affected_jest_paired_resource_profile_target_missing:${unassignedPaired.map((entry) => entry.test_path).join(",")}`);
   }
   if (standardEntries.length > 0) {
@@ -381,7 +507,12 @@ export function buildAffectedJestShardPlan(input: {
       ?? input.shardCount;
     const standardShards = planMemoryAwareStandardShards({
       entries: standardEntries,
-      shardCount: Math.min(input.shardCount, maximumStandardRoots, standardEntries.length),
+      shardCount: Math.min(
+        input.shardCount,
+        maximumStandardRoots,
+        input.maximumParallelProcessRoots ?? input.shardCount,
+        standardEntries.length,
+      ),
       profiles: appliedResourceProfiles,
       unmeasuredRootPeakBytes,
     });
@@ -452,6 +583,7 @@ export function buildAffectedJestShardPlan(input: {
     resource_plan: {
       schema: "verification-affected-jest-resource-plan/v1" as const,
       mode: "bounded_resource_waves" as const,
+      maximum_parallel_process_roots_override: input.maximumParallelProcessRoots ?? null,
       waves: resourceWaves,
       predicted_critical_path_weight_ms: resourceWaves.reduce(
         (total, wave) => total + wave.predicted_duration_weight_ms,

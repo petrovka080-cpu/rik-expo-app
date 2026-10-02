@@ -69,6 +69,7 @@ describe("pdfDocumentViewerEntry", () => {
     expect(result).toEqual({
       safeSessionId: "session 1",
       safeOpenToken: "token/1",
+      safeReturnTo: null,
       href: "/pdf-viewer?sessionId=session%201&openToken=token%2F1",
     });
   });

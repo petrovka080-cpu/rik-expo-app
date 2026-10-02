@@ -80,13 +80,17 @@ type StickyActionsProps = {
   approvalBlockedByParameters?: boolean;
   approvalUnresolvedRowCount?: number;
   approvalMissingPriceCount?: number;
+  approvalPendingRowEditCount?: number;
   approvalCommitBusy?: boolean;
+  deleteCommitBusy?: boolean;
+  pdfOpenBusy?: boolean;
   needsFreshApproval?: boolean;
   onOpenPdf: () => void;
   onMakePdf: () => void;
   onCreateNew: () => void;
   onDeleteDraft: () => void;
   onApproveDraft: () => void;
+  onApplyAndApproveDraft?: () => void;
   onPrepareDraft: () => void;
 };
 
@@ -102,13 +106,17 @@ export function ConsumerRepairRequestStickyActions({
   approvalBlockedByParameters = false,
   approvalUnresolvedRowCount = 0,
   approvalMissingPriceCount = 0,
+  approvalPendingRowEditCount = 0,
   approvalCommitBusy = false,
+  deleteCommitBusy = false,
+  pdfOpenBusy = false,
   needsFreshApproval = false,
   onOpenPdf,
   onMakePdf,
   onCreateNew,
   onDeleteDraft,
   onApproveDraft,
+  onApplyAndApproveDraft,
   onPrepareDraft,
 }: StickyActionsProps) {
   const [deleteConfirmationVisible, setDeleteConfirmationVisible] = React.useState(false);
@@ -116,12 +124,16 @@ export function ConsumerRepairRequestStickyActions({
   const shouldPrepareEstimate =
     !parameterCollectionRequired && (hasPendingPrompt || (!finalized && estimateRequiresRebuild));
   const canDeleteDraft = hasBundle && !approved && !sent;
+  const approvalActionLabel = "Подтвердить смету";
+  const approvalActionHint = approvalMissingPriceCount > 0
+    ? `Без цены остаются позиции: ${approvalMissingPriceCount}. Их можно заполнить позже.`
+    : undefined;
   const approvalBlockedLabel = approvalCommitBusy
     ? "Подтверждаем смету…"
-    : approvalUnresolvedRowCount > 0
-      ? `Нельзя подтвердить: без количества ${approvalUnresolvedRowCount}`
-      : approvalMissingPriceCount > 0
-        ? `Нельзя подтвердить: без цены ${approvalMissingPriceCount}`
+    : approvalPendingRowEditCount > 0
+      ? `Сначала примените изменения: ${approvalPendingRowEditCount}`
+      : approvalUnresolvedRowCount > 0
+      ? `Нельзя подтвердить: уточните позиции (${approvalUnresolvedRowCount})`
       : approvalBlockedByParameters
         ? "Заполните параметры сметы"
         : "Сначала рассчитайте смету";
@@ -139,12 +151,16 @@ export function ConsumerRepairRequestStickyActions({
         <Pressable
           accessibilityLabel="PDF"
           accessibilityRole="button"
+          accessibilityState={{ busy: pdfOpenBusy, disabled: pdfOpenBusy }}
+          disabled={pdfOpenBusy}
           onPress={finalized ? onOpenPdf : onMakePdf}
           style={[styles.bottomActionButton, styles.bottomActionSecondary]}
           testID={finalized ? "consumer-repair-open-pdf" : "consumer-estimate-make-pdf"}
         >
           <Ionicons name="download-outline" size={18} color="#0F172A" />
-          <Text style={styles.bottomActionSecondaryText}>PDF</Text>
+          <Text style={styles.bottomActionSecondaryText}>
+            {pdfOpenBusy ? "Открываем PDF…" : "PDF"}
+          </Text>
         </Pressable>
       ) : null}
       {shouldPrepareEstimate ? (
@@ -173,21 +189,32 @@ export function ConsumerRepairRequestStickyActions({
         </Pressable>
       ) : hasBundle ? (
         <Pressable
-          accessibilityLabel={approvalBlockedByEstimate ? approvalBlockedLabel : "Подтвердить смету"}
+          accessibilityLabel={approvalPendingRowEditCount > 0
+            ? "Применить изменения и подтвердить смету"
+            : approvalBlockedByEstimate ? approvalBlockedLabel : approvalActionLabel}
+          accessibilityHint={approvalPendingRowEditCount > 0
+            ? "Все подготовленные количества и цены будут сохранены одним пересчётом; подтверждён будет сохранённый результат."
+            : approvalBlockedByEstimate ? undefined : approvalActionHint}
           accessibilityRole="button"
-          accessibilityState={{ disabled: approvalBlockedByEstimate }}
-          disabled={approvalBlockedByEstimate}
-          onPress={onApproveDraft}
+          accessibilityState={{ disabled: approvalCommitBusy || (approvalBlockedByEstimate && approvalPendingRowEditCount === 0) }}
+          disabled={approvalCommitBusy || (approvalBlockedByEstimate && approvalPendingRowEditCount === 0)}
+          onPress={approvalPendingRowEditCount > 0
+            ? (onApplyAndApproveDraft ?? onApproveDraft)
+            : onApproveDraft}
           style={[
             styles.bottomActionButton,
             styles.bottomActionPrimary,
-            approvalBlockedByEstimate ? styles.bottomActionDisabled : null,
+            approvalCommitBusy || (approvalBlockedByEstimate && approvalPendingRowEditCount === 0)
+              ? styles.bottomActionDisabled
+              : null,
           ]}
           testID="consumer-repair-approve"
         >
           <Ionicons name="checkmark" size={20} color="#FFFFFF" />
           <Text style={styles.bottomActionPrimaryText}>
-            {approvalBlockedByEstimate ? approvalBlockedLabel : "Подтвердить смету"}
+            {approvalPendingRowEditCount > 0
+              ? approvalCommitBusy ? "Применяем и подтверждаем…" : "Применить и подтвердить"
+              : approvalBlockedByEstimate ? approvalBlockedLabel : approvalActionLabel}
           </Text>
         </Pressable>
       ) : (
@@ -203,15 +230,23 @@ export function ConsumerRepairRequestStickyActions({
         </Pressable>
       )}
       {canDeleteDraft ? (
-        <Pressable
-          accessibilityLabel="Удалить черновик"
-          accessibilityRole="button"
-          onPress={() => setDeleteConfirmationVisible(true)}
-          style={[styles.bottomActionButton, styles.bottomActionDanger]}
-          testID="consumer-repair-delete-draft"
-        >
-          <Ionicons name="trash-outline" size={18} color="#FFFFFF" />
-          <Text style={styles.bottomActionPrimaryText}>Удалить черновик</Text>
+          <Pressable
+            accessibilityLabel="Удалить черновик"
+            accessibilityRole="button"
+            accessibilityState={{ disabled: deleteCommitBusy }}
+            disabled={deleteCommitBusy}
+            onPress={() => setDeleteConfirmationVisible(true)}
+            style={[
+              styles.bottomActionButton,
+              styles.bottomActionDanger,
+              deleteCommitBusy ? styles.bottomActionDisabled : null,
+            ]}
+            testID="consumer-repair-delete-draft"
+          >
+            <Ionicons name="trash-outline" size={18} color="#FFFFFF" />
+            <Text style={styles.bottomActionPrimaryText}>
+              {deleteCommitBusy ? "Удаляем черновик…" : "Удалить черновик"}
+            </Text>
         </Pressable>
       ) : null}
       {canDeleteDraft && deleteConfirmationVisible ? (
@@ -237,6 +272,8 @@ export function ConsumerRepairRequestStickyActions({
             <Pressable
               accessibilityLabel="Подтвердить удаление черновика"
               accessibilityRole="button"
+              accessibilityState={{ disabled: deleteCommitBusy }}
+              disabled={deleteCommitBusy}
               onPress={() => {
                 setDeleteConfirmationVisible(false);
                 onDeleteDraft();
@@ -302,6 +339,7 @@ type ContentProps = {
   approvedHistoryPage: ConsumerRepairApprovedHistoryPage;
   selectedHistoryId: string | null;
   showPdfAction: boolean;
+  pdfOpenBusy?: boolean;
   marketplaceSendErrors: ConsumerRequestValidationErrorItem[];
   catalogPickerVisible: boolean;
   catalogPickerInitialQuery: string | undefined;
@@ -324,6 +362,9 @@ type ContentProps = {
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
   onUnitPriceChange: (itemId: string, value: string) => void;
+  pendingCanonicalRowEditCount?: number;
+  canonicalRowEditsApplying?: boolean;
+  onApplyCanonicalRowEdits?: () => boolean | void | Promise<boolean | void>;
   onSpecificationChange?: (itemId: string, value: string) => void;
   onOptionalChange?: (itemId: string, optional: boolean) => void;
   onRemove: (itemId: string) => void;
@@ -374,6 +415,7 @@ export function ConsumerRepairRequestContent({
   approvedHistoryPage,
   selectedHistoryId,
   showPdfAction,
+  pdfOpenBusy = false,
   marketplaceSendErrors,
   catalogPickerVisible,
   catalogPickerInitialQuery,
@@ -396,6 +438,9 @@ export function ConsumerRepairRequestContent({
   onIncrease,
   onQuantityChange,
   onUnitPriceChange,
+  pendingCanonicalRowEditCount,
+  canonicalRowEditsApplying,
+  onApplyCanonicalRowEdits,
   onSpecificationChange,
   onOptionalChange,
   onRemove,
@@ -445,6 +490,7 @@ export function ConsumerRepairRequestContent({
       aiAnswerRu={aiAnswerRu}
       hasSelectedApprovedHistory={hasSelectedApprovedHistory}
       showPdfAction={showPdfAction}
+      pdfOpenBusy={pdfOpenBusy}
       onMakePdf={onMakePdf}
       onOpenProcurement={onOpenProcurement}
       onRefineCanonicalParameters={onRefineCanonicalParameters}
@@ -452,6 +498,9 @@ export function ConsumerRepairRequestContent({
       onIncrease={onIncrease}
       onQuantityChange={onQuantityChange}
       onUnitPriceChange={onUnitPriceChange}
+      pendingCanonicalRowEditCount={pendingCanonicalRowEditCount}
+      canonicalRowEditsApplying={canonicalRowEditsApplying}
+      onApplyCanonicalRowEdits={onApplyCanonicalRowEdits}
       onSpecificationChange={onSpecificationChange}
       onOptionalChange={onOptionalChange}
       onRemove={onRemove}

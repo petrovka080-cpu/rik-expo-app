@@ -17,7 +17,10 @@ import {
 } from "../../src/features/estimates/catalog/workCatalogResolver";
 import type { ProfessionalWorkFamilyId } from "../../src/features/estimates/catalog/professionalCatalogTypes";
 import { hasMojibakeText } from "./auditEstimatePdfReality";
-import { classifyEstimateRowsReality } from "./classifyEstimateRowReality";
+import {
+  classifyEstimateRowsReality,
+  summarizeEstimateRowsReality,
+} from "./classifyEstimateRowReality";
 import {
   DEFAULT_PROFESSIONAL_BACKFILL_BATCH_IDS,
   type CatalogBackfillBatchId,
@@ -119,6 +122,20 @@ type WorkCatalogItemArtifact = {
   category: string;
 };
 
+export type Estimate10000CompiledAuditEntry = Readonly<{
+  definition: (typeof PRODUCTION_WORK_DEFINITIONS_10000)[number];
+  estimate: ReturnType<typeof compileProductionExpandedEstimate10000>;
+  templateBinding: ReturnType<typeof buildProfessionalTemplateCatalogBinding>;
+  catalogBindings: ReturnType<typeof buildProfessionalEstimateCatalogBindings>;
+  rowReality: ReturnType<typeof classifyEstimateRowsReality>;
+  materialRows: ReturnType<typeof resolveMaterialCatalogRows>;
+  serviceRows: ReturnType<typeof resolveServiceCatalogRows>;
+  equipmentRows: ReturnType<typeof resolveEquipmentCatalogRows>;
+  recipeCoverage: ReturnType<typeof resolveProfessionalRecipeCoverage>;
+  formulaAudit: ReturnType<typeof auditWorkFamilyFormulaEngine>;
+  hasTrace: boolean;
+}>;
+
 function writeJson(relativePath: string, value: unknown): void {
   const fullPath = path.join(process.cwd(), relativePath);
   mkdirSync(path.dirname(fullPath), { recursive: true });
@@ -155,7 +172,11 @@ function pushSample(values: string[], value: string): void {
   if (values.length < 5 && !values.includes(value)) values.push(value);
 }
 
-export function buildWorkFamilyCoveragePlan(options: { writeFiles?: boolean } = {}): WorkFamilyCoveragePlan {
+export function buildWorkFamilyCoveragePlan(options: {
+  writeFiles?: boolean;
+  projectionSink?: (entry: Estimate10000CompiledAuditEntry) => void;
+  summaryOnlyRowReality?: boolean;
+} = {}): WorkFamilyCoveragePlan {
   const familyMap = new Map<ProfessionalWorkFamilyId, FamilyCoverage>();
   const workCatalogItems: WorkCatalogItemArtifact[] = [];
   const rowCatalogIds = new Set<string>();
@@ -192,7 +213,9 @@ export function buildWorkFamilyCoveragePlan(options: { writeFiles?: boolean } = 
     const familyCoverage = familyMap.get(family) ?? emptyFamily(family);
     familyMap.set(family, familyCoverage);
 
-    const rowReality = classifyEstimateRowsReality(estimate.rows);
+    const rowReality = options.summaryOnlyRowReality
+      ? summarizeEstimateRowsReality(estimate.rows)
+      : classifyEstimateRowsReality(estimate.rows);
     const materialRows = resolveMaterialCatalogRows({ family, rows: estimate.rows });
     const serviceRows = resolveServiceCatalogRows({ family, rows: estimate.rows });
     const equipmentRows = resolveEquipmentCatalogRows({ family, rows: estimate.rows });
@@ -203,6 +226,19 @@ export function buildWorkFamilyCoveragePlan(options: { writeFiles?: boolean } = 
       repeatHash: estimate.compiledHash,
     });
     const hasTrace = estimateHasSavedCalculationTrace(estimate);
+    options.projectionSink?.({
+      definition,
+      estimate,
+      templateBinding,
+      catalogBindings,
+      rowReality,
+      materialRows,
+      serviceRows,
+      equipmentRows,
+      recipeCoverage,
+      formulaAudit,
+      hasTrace,
+    });
     const rowBindingsComplete =
       catalogBindings.rows.length === estimate.rows.length &&
       catalogBindings.rows.every((row) =>

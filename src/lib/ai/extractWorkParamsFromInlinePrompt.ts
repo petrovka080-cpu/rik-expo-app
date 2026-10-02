@@ -20,6 +20,9 @@ const LOCALIZED_DECIMAL = "\\d+(?:[\\s\u00a0]\\d{3})*(?:[,.]\\d+)?";
 const DECIMAL = `(${LOCALIZED_DECIMAL})`;
 const LINEAR_UNIT = "(км|km|мм|mm|см|cm|м|m|метр|метра|метров|meter|meters)";
 const POSITIVE_DECIMAL = `(?<![\\d-])(${LOCALIZED_DECIMAL})`;
+// A plan dimension must not begin inside a unit token such as the `2` in
+// normalized `м2`. Otherwise `900 м² × 50 мм` becomes bogus `2 × 50` geometry.
+const PLAN_GEOMETRY_DECIMAL = `(?<![\\p{L}\\d-])(${LOCALIZED_DECIMAL})`;
 const OPTIONAL_LINEAR_UNIT = "(км|km|мм|mm|см|cm|м|m|метр|метра|метров|meter|meters)?";
 const LENGTH_LABEL = "(?:длин(?:а|ой|у|ы)?|протяженн(?:ость|остью)|length)";
 const WIDTH_LABEL = "(?:ширин(?:а|ой|у|ы)?|width)";
@@ -127,7 +130,7 @@ function extractPlanDimensionPair(
 ): void {
   if (!hasPlanGeometryContext(text)) return;
   const pair = new RegExp(
-    `${POSITIVE_DECIMAL}\\s*${OPTIONAL_LINEAR_UNIT}\\s*(?:x|на)\\s*${POSITIVE_DECIMAL}\\s*${OPTIONAL_LINEAR_UNIT}`,
+    `${PLAN_GEOMETRY_DECIMAL}\\s*${OPTIONAL_LINEAR_UNIT}\\s*(?:x|на)\\s*${POSITIVE_DECIMAL}\\s*${OPTIONAL_LINEAR_UNIT}`,
     "iu",
   ).exec(text);
   if (!pair) return;

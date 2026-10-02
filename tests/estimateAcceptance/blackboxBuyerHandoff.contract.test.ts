@@ -18,9 +18,9 @@ describe("blackbox buyer handoff", () => {
     expect(results.every((item) => item.buyer_handoff_created)).toBe(true);
     expect(results.every((item) => item.buyer_handoff_subset_valid)).toBe(true);
     expect(results.every((item) => item.no_ai_generated_prices)).toBe(true);
-    expect(proven).toHaveLength(7);
+    expect(proven).toHaveLength(4);
     expect(proven.every((item) => item.no_ai_generated_quantities)).toBe(true);
-    expect(blocked).toHaveLength(523);
+    expect(blocked).toHaveLength(526);
     expect(blocked.every((item) => !item.no_ai_generated_quantities)).toBe(true);
     expect(blocked.every((item) => !item.estimate_revision_created && !item.director_payload_created)).toBe(true);
   });

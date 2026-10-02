@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "rik-expo-app.s27-24.village-water-supply-pressure-main-balanced-source-pack.v1",
+  "catalogId": "canonical-work:expanded:village_water_supply",
+  "scope": "Construction of one explicitly selected village pressure-water network VWS-HDPE-PE100-RC-OD160-110-4200 with 3000 m of OD160 PE100 SDR17 main, 1200 m of OD110 PE100 SDR17 branches, 36 valve chambers, 18 fire hydrants and 150 explicit house-service connection stubs. Direct survey, trench, bedding, pipe, fittings, valves, chambers, backfill, thrust blocks, labor, mechanisms, QA and logistics are project-owned.",
+  "sourceAuthority": "Approved village water-supply design, hydraulic calculation, longitudinal profiles, pipe-valve-chamber-hydrant schedules, house-service register, geotechnical report, hydraulic-test and disinfection program, suppliers and approving project engineer",
+  "ordinaryFixture": {
+    "networkCount": 1,
+    "networkDesignation": "VWS-HDPE-PE100-RC-OD160-110-4200",
+    "networkType": "PRESSURE_VILLAGE_WATER_SUPPLY",
+    "designFlowM3Day": 650,
+    "mainPipeInstalledM": 3000,
+    "mainPipeDesignation": "HDPE-PE100-SDR17-OD160",
+    "branchPipeInstalledM": 1200,
+    "branchPipeDesignation": "HDPE-PE100-SDR17-OD110",
+    "valveChamberPiece": 36,
+    "fireHydrantPiece": 18,
+    "houseServiceConnectionPiece": 150
+  },
+  "procurementBalance": {
+    "mainPipe": {
+      "installedQuantity": "vws_main_pipe_installed_m",
+      "retainedSpareQuantity": "vws_main_pipe_retained_spare_m",
+      "supplierBundleQuantity": "vws_main_pipe_supplier_bundle_length_m"
+    },
+    "visiblePreliminaryProfile": {
+      "vws_main_pipe_retained_spare_m": 0,
+      "vws_main_pipe_supplier_bundle_length_m": 1
+    }
+  },
+  "acceptanceFixtureRole": "VALIDATION_FIXTURE_NOT_PROJECT_NORM",
+  "forbiddenClaims": [
+    "source intake, borehole, pumping or treatment station, reservoir, water tower, internal plumbing or unrelated sewer scope",
+    "trench, bedding, valves, chambers, hydrants, connections, labor, mechanism or logistics quantities derived from total length, flow or diameter",
+    "automatic rock excavation, groundwater dewatering, traffic management or road reinstatement",
+    "universal retained spare or supplier-bundle length",
+    "invented price"
+  ]
+}

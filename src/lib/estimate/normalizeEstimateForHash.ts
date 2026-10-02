@@ -102,7 +102,7 @@ export function normalizeEstimateRevisionForHash(revision: EstimateDraftRevision
         canonicalUnit: param.canonicalUnit ?? null,
         source: param.source,
         affectsRowIds: [...param.affectsRowIds].sort(),
-      })),
+      })).sort((left, right) => left.key.localeCompare(right.key)),
       rows: revision.trace.rows.map((row) => ({
         rowId: row.rowId,
         formulaId: row.formulaId ?? null,

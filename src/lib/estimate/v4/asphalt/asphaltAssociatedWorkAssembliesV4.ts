@@ -8,6 +8,7 @@ import type {
 
 const FULL: readonly ProfessionalEstimateScopeModeV4[] = ["FULL_APPLICABLE_SCOPE"];
 const BOTH: readonly ProfessionalEstimateScopeModeV4[] = ["MINIMAL_EXPLICIT_SCOPE", "FULL_APPLICABLE_SCOPE"];
+const OPTIONAL: readonly ProfessionalEstimateScopeModeV4[] = [];
 
 function parameter(
   parameterId: string,
@@ -370,34 +371,30 @@ const BRIDGE_DECK_ACCEPTANCE_ASSEMBLY: ProfessionalChildAssemblyV4 = {
 
 const BRIDGE_ASSEMBLY: ProfessionalChildAssemblyV4 = {
   child_passport_id: "professional-estimate-passport:v4:bridge-deck-waterproofing",
-  child_passport_version: "4.1.0",
+  child_passport_version: "4.2.0",
   domain_owner: "bridges",
-  assembly_id: "typed-child:bridge-deck-waterproofing:v1",
+  assembly_id: "typed-child:bridge-deck-waterproofing:v2",
   title_ru: "Мостовая гидроизоляция, защитный слой и сопряжения",
-  scope_trigger_parameter: "bridge_deck_package_required",
-  scope_trigger_values: [true],
+  scope_trigger_parameter: "waterproofing_condition",
+  scope_trigger_values: ["LOCAL_REPAIR_REQUIRED", "REPLACEMENT_REQUIRED"],
   supported_scope_modes: BOTH,
   parameters: [
-    parameter("bridge_deck_package_required", "Включить мостовой пакет", "SCOPE_TRIGGER", null, BOTH),
-    parameter("area_m2", "Площадь мостового полотна", "PROJECT_QUANTITY", "m2", BOTH),
+    parameter("waterproofing_condition", "Состояние мостовой гидроизоляции", "SCOPE_TRIGGER", null, BOTH),
     parameter("waterproofing_repair_area_m2", "Площадь гидроизоляции", "PROJECT_QUANTITY", "m2", BOTH),
-    parameter("waterproofing_material_kg_m2", "Расход гидроизоляционного материала", "NORM_RATE", "kg_m2", BOTH),
+    parameter("waterproofing_membrane_m2_per_m2", "Расход рулонной гидроизоляции", "NORM_RATE", "m2_m2", BOTH),
     parameter("waterproofing_primer_rate_l_m2", "Расход праймера", "NORM_RATE", "l_m2", BOTH),
     parameter("protective_layer_thickness_mm", "Толщина защитного слоя", "PROJECT_QUANTITY", "mm", BOTH),
-    parameter("protective_layer_density_t_m3", "Плотность материала защитного слоя", "MATERIAL_PASSPORT_VALUE", "t_m3", BOTH),
-    parameter("expansion_joint_length_m", "Длина сопряжений деформационных швов", "PROJECT_QUANTITY", "m", BOTH),
-    parameter("expansion_joint_sealant_kg_m", "Расход герметика сопряжений", "NORM_RATE", "kg_m", BOTH),
-    parameter("bridge_waterproofing_productivity_m2_per_man_hour", "Производительность труда гидроизоляционных работ", "NORM_RATE", "m2_man_hour", BOTH),
-    parameter("bridge_waterproofing_machine_productivity_m2_per_machine_hour", "Производительность установки нанесения гидроизоляции", "NORM_RATE", "m2_machine_hour", BOTH),
+    parameter("bridge_waterproofing_equipment_set_count", "Комплект оборудования для наплавления", "PROJECT_QUANTITY", "set", BOTH),
+    parameter("expansion_joint_length_m", "Длина сопряжений деформационных швов", "PROJECT_QUANTITY", "m", OPTIONAL),
+    parameter("expansion_joint_sealant_kg_m", "Расход герметика сопряжений", "NORM_RATE", "kg_m", OPTIONAL),
   ],
   rows: [
-    rateRow({ id: "bridge:waterproofing", section: "Мостовая плита", category: "material", titleRu: "Гидроизоляционный материал мостового полотна", basisId: "waterproofing_repair_area_m2", basisUnit: "m2", rateId: "waterproofing_material_kg_m2", rateUnit: "kg_m2", outputUnit: "kg", operation: "multiply", owner: "bridge:waterproofing", procurement: true, sourceIds: ["project_bridge_waterproofing_specification"] }),
-    rateRow({ id: "bridge:primer", section: "Мостовая плита", category: "material", titleRu: "Праймер гидроизоляции мостового полотна", basisId: "waterproofing_repair_area_m2", basisUnit: "m2", rateId: "waterproofing_primer_rate_l_m2", rateUnit: "l_m2", outputUnit: "l", operation: "multiply", owner: "bridge:primer", procurement: true, sourceIds: ["project_bridge_waterproofing_specification"] }),
-    row({ row_id: "bridge:protective_layer", section: "Мостовая плита", category: "material", title_ru: "Материал защитного слоя гидроизоляции", formulaId: "bridge:protective_layer:formula:v1", expression: "area_m2 * protective_layer_thickness_mm / 1000 * protective_layer_density_t_m3", inputs: ["area_m2", "protective_layer_thickness_mm", "protective_layer_density_t_m3"], unitId: "t", calculate: (v) => v.area_m2 * v.protective_layer_thickness_mm / 1000 * v.protective_layer_density_t_m3, cost_ownership: "priced_resource", cost_owner_id: "bridge:protective_layer", semantic_owner: "bridge:protective_layer", normative_source_ids: ["project_bridge_deck_system"], inclusion_condition: "bridge deck system confirmed", procurement_eligible: true }),
-    rateRow({ id: "bridge:joint_sealant", section: "Мостовая плита", category: "material", titleRu: "Герметик сопряжений у деформационных швов", basisId: "expansion_joint_length_m", basisUnit: "m", rateId: "expansion_joint_sealant_kg_m", rateUnit: "kg_m", outputUnit: "kg", operation: "multiply", owner: "bridge:joint_sealant", procurement: true, sourceIds: ["project_bridge_joint_detail"] }),
+    rateRow({ id: "bridge:waterproofing", section: "Мостовая плита", category: "material", titleRu: "ТЕХНОЭЛАСТМОСТ Б — рулонная гидроизоляция мостового полотна", basisId: "waterproofing_repair_area_m2", basisUnit: "m2", rateId: "waterproofing_membrane_m2_per_m2", rateUnit: "m2_m2", outputUnit: "m2", operation: "multiply", owner: "bridge:waterproofing", procurement: true, sourceIds: ["manufacturer_tds:tn-doroga-most-b:tds-05-by:2017-12"] }),
+    rateRow({ id: "bridge:primer", section: "Мостовая плита", category: "material", titleRu: "Праймер битумно-полимерный ТЕХНОНИКОЛЬ № 03", basisId: "waterproofing_repair_area_m2", basisUnit: "m2", rateId: "waterproofing_primer_rate_l_m2", rateUnit: "l_m2", outputUnit: "l", operation: "multiply", owner: "bridge:primer", procurement: true, sourceIds: ["manufacturer_tds:primer-03:tech-sheet-6.02-by:2017-05"] }),
+    row({ row_id: "bridge:protective_layer", section: "Мостовая плита", category: "material", title_ru: "Защитная армированная бетонная стяжка гидроизоляции", formulaId: "bridge:protective_layer:formula:v2", expression: "waterproofing_repair_area_m2 * protective_layer_thickness_mm / 1000", inputs: ["waterproofing_repair_area_m2", "protective_layer_thickness_mm"], unitId: "m3", calculate: (v) => v.waterproofing_repair_area_m2 * v.protective_layer_thickness_mm / 1000, cost_ownership: "priced_resource", cost_owner_id: "bridge:protective_layer", semantic_owner: "bridge:protective_layer", normative_source_ids: ["manufacturer_tds:tn-doroga-most-b:tds-05-by:2017-12"], inclusion_condition: "waterproofing_repair_area_m2>0", procurement_eligible: true }),
+    row({ row_id: "bridge:joint_sealant", section: "Мостовая плита", category: "material", title_ru: "Герметик сопряжений у деформационных швов", formulaId: "bridge:joint_sealant:formula:v2", expression: "expansion_joint_length_m * expansion_joint_sealant_kg_m", inputs: ["expansion_joint_length_m", "expansion_joint_sealant_kg_m"], unitId: "kg", calculate: (v) => v.expansion_joint_length_m * v.expansion_joint_sealant_kg_m, cost_ownership: "priced_resource", cost_owner_id: "bridge:joint_sealant", semantic_owner: "bridge:joint_sealant", normative_source_ids: ["project_bridge_joint_detail"], inclusion_condition: "expansion_joint_length_m>0", procurement_eligible: true }),
     projectRow("bridge:waterproofing_output", "Мостовая плита", "work", "Устройство гидроизоляции и защитного слоя мостового полотна", "waterproofing_repair_area_m2", "m2", "bridge:waterproofing_output"),
-    rateRow({ id: "bridge:labor", section: "Труд", category: "labor", titleRu: "Труд гидроизоляционного звена", basisId: "waterproofing_repair_area_m2", basisUnit: "m2", rateId: "bridge_waterproofing_productivity_m2_per_man_hour", rateUnit: "m2_man_hour", outputUnit: "man_hour", operation: "divide", owner: "bridge:labor", sourceIds: ["project_bridge_waterproofing_work_plan"] }),
-    rateRow({ id: "bridge:machine", section: "Машины", category: "machinery", titleRu: "Установка нанесения мостовой гидроизоляции", basisId: "waterproofing_repair_area_m2", basisUnit: "m2", rateId: "bridge_waterproofing_machine_productivity_m2_per_machine_hour", rateUnit: "m2_machine_hour", outputUnit: "machine_hour", operation: "divide", owner: "bridge:machine", sourceIds: ["project_equipment_productivity_schedule"] }),
+    projectRow("bridge:equipment", "Машины", "machinery", "Комплект газопламенного оборудования для наплавления гидроизоляции", "bridge_waterproofing_equipment_set_count", "set", "bridge:equipment"),
   ],
 };
 

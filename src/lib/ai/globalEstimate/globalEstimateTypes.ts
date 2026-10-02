@@ -59,6 +59,7 @@ export type GlobalUnitInput = {
     | "trip"
     | "kg"
     | "lbs"
+    | "l"
     | "m3"
     | "cu_ft"
     | "ton";
@@ -74,6 +75,7 @@ export type GlobalUnitInput = {
     | "trip"
     | "kg"
     | "lbs"
+    | "l"
     | "m3"
     | "cu_ft"
     | "ton";
