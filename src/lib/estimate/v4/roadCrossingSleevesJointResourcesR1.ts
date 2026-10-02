@@ -58,7 +58,8 @@ const NEED = `max(0,(${TOTAL})-${STOCK})`;
 const PACKS = `ceil((${NEED})/${PACK})`;
 const ORDER = `(${PACKS})*${PACK}`;
 const REMAINING = `${STOCK}+(${ORDER})-(${CONSUMED})`;
-const METHOD_INPUTS = ["rcs_joint_wps_reference", "rcs_joint_welding_process", "rcs_casing_outside_diameter_mm", "rcs_casing_inside_diameter_mm"];
+const METHOD_INPUTS = ["rcs_crossing_length_m", "rcs_planned_physical_section_length_m",
+  "rcs_joint_wps_reference", "rcs_joint_welding_process", "rcs_casing_outside_diameter_mm", "rcs_casing_inside_diameter_mm"];
 const ELECTRODE_INPUTS = [...METHOD_INPUTS, "rcs_joint_electrode_designation"];
 
 function control(id: string, title: string, expression: string, unitId = "kg"): AutomaticRowSpec {

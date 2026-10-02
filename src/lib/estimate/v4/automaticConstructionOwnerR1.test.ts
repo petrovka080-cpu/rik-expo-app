@@ -1,4 +1,4 @@
-import { buildAutomaticConstructionOwnerR1, type AutomaticParameterSpec } from "./automaticConstructionOwnerR1";
+import { buildAutomaticConstructionOwnerR1, type AutomaticInclusionCondition, type AutomaticParameterSpec } from "./automaticConstructionOwnerR1";
 import { NUMERIC_PARAMETER_RELATIONS } from "../backendPlatform/numericParameterRelations";
 
 const config: Parameters<typeof buildAutomaticConstructionOwnerR1>[0] = {
@@ -13,6 +13,44 @@ const left: AutomaticParameterSpec = { id: "left", title: "Left", kind: "ordinar
 const right: AutomaticParameterSpec = { id: "right", title: "Right", kind: "ordinary", valueType: "integer", unitId: "mm" };
 
 describe("automatic owner uses existing numeric peer contract", () => {
+  it("projects mixed logical/literal conditions identically to inputs and resources", () => {
+    const condition: AutomaticInclusionCondition = { kind: "and", operands: [
+      { kind: "equals", parameterId: "method", value: "selected" },
+      { kind: "greater_than", parameterId: "left", value: 0 },
+      { kind: "or", operands: [{ kind: "greater_than", parameterId: "left", valueParameterId: "right" },
+        { kind: "equals", parameterId: "method", value: "selected" }] },
+    ] };
+    const owner = buildAutomaticConstructionOwnerR1({ ...config, ordinary: [left, right,
+      { id: "method", title: "Method", kind: "ordinary", valueType: "enum", unitId: null, values: ["selected"] }],
+      conditional: [{ id: "product", title: "Product", kind: "conditional", valueType: "text", unitId: null, requiredWhen: condition }],
+      rows: [{ ...config.rows[0]!, inclusion: condition }] });
+    expect(owner.parameters[3]?.constraints_json).toEqual({ minLength: 1, maxLength: 1_000, requiredWhen: condition });
+    expect(owner.resources[0]?.inclusion_ast).toEqual(condition);
+    expect(owner.runtimeInput).toEqual({});
+  });
+  it.each([
+    ["empty logical node", { kind: "and", operands: [] }],
+    ["nonfinite literal", { kind: "greater_than", parameterId: "left", value: NaN }],
+  ] as const)("delegates rejection of %s to the existing graph", (_label, condition) => {
+    expect(() => buildAutomaticConstructionOwnerR1({ ...config, ordinary: [left],
+      rows: [{ ...config.rows[0]!, inclusion: condition }] })).toThrow();
+  });
+  it.each([undefined, { ...left, valueType: "text" as const }])("rejects undeclared or nonnumeric literal subjects", subject => {
+    const condition: AutomaticInclusionCondition = { kind: "and", operands: [{ kind: "greater_than", parameterId: "left", value: 0 }] };
+    for (const location of ["parameter", "resource"]) {
+      expect(() => buildAutomaticConstructionOwnerR1({ ...config, ordinary: subject ? [subject] : [],
+        conditional: location === "parameter" ? [{ id: "product", title: "Product", kind: "conditional", valueType: "text", unitId: null, requiredWhen: condition }] : [],
+        rows: [{ ...config.rows[0]!, ...(location === "resource" ? { inclusion: condition } : {}) }],
+      })).toThrow("AUTOMATIC_INCLUSION_LITERAL_INVALID:left");
+    }
+  });
+  it("preserves the existing legacy required/forbidden equality contract", () => {
+    const owner = buildAutomaticConstructionOwnerR1({ ...config,
+      conditional: [{ id: "product", title: "Product", kind: "conditional", valueType: "text", unitId: null,
+        requiredWhen: { parameterId: "method", value: "selected" } }] });
+    expect(owner.parameters[0]?.constraints_json).toMatchObject({ requiredWhen: { kind: "equals", parameterId: "method", value: "selected" },
+      forbiddenWhen: { kind: "equals", parameterId: "method", value: "NOT_REQUIRED" } });
+  });
   it("does not label an unknown conditional project fact as a prefilled application profile", () => {
     const condition = { kind: "greater_than" as const, parameterId: "left", valueParameterId: "right" };
     const owner = buildAutomaticConstructionOwnerR1({ ...config, ordinary: [left, right],

@@ -5,7 +5,7 @@
   "scope": "One continuous steel casing crossing with explicitly selected installation method. Casing supply and site joints, support rings and elements, contact tape, compatible end-seal kits, applicable civil work, crew labor, mechanisms and logistics are separate quantity/cost owners. This source pack is not itself a published owner or accepted estimate.",
   "engineeringAcceptanceClaimed": false,
   "universalRatesClaimed": false,
-  "implementationStatus": "QUANTITY_SPACER_SUPPLY_CIVIL_GEOMETRY_MMA_JOINT_CASING_MATERIAL_COMPONENTS_NOT_PUBLISHED_NOT_FULL_OWNER",
+  "implementationStatus": "QUANTITY_SPACER_SUPPLY_CIVIL_GEOMETRY_MMA_JOINT_CASING_GRANULAR_BEDDING_COMPONENTS_NOT_PUBLISHED_NOT_FULL_OWNER",
   "quantityComponent": {
     "module": "src/lib/estimate/v4/roadCrossingSleevesQuantityModelR1.ts",
     "verification": "tests/estimateNorms/roadCrossingSleevesQuantityModelR1.contract.test.ts",
@@ -19,6 +19,8 @@
     "jointResourceVerification": "tests/estimateNorms/roadCrossingSleevesJointResourcesR1.contract.test.ts",
     "casingMaterialModule": "src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1.ts",
     "casingMaterialVerification": "tests/estimateNorms/roadCrossingSleevesCasingMaterialR1.contract.test.ts",
+    "beddingMaterialModule": "src/lib/estimate/v4/roadCrossingSleevesBeddingMaterialR1.ts",
+    "beddingMaterialVerification": "tests/estimateNorms/roadCrossingSleevesBeddingMaterialR1.contract.test.ts",
     "componentIntegrationModule": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",
     "componentIntegrationVerification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
     "evaluator": "Existing canonical FormulaGraph only",
@@ -41,8 +43,11 @@
       "selected applicable MMA joint procedure: physical site joints times actual gross electrode kg/joint, aggregate crew person-hours/joint and actual equipment hours/joint; no universal productivity or electrode-efficiency factor",
       "gross electrode consumption already includes process losses; reserve, compatible stock, whole mass packs, rounded new order and free remainder are separate outputs, without a second loss factor",
       "joint cost owners are only new electrode purchase, all crew labor and personnel-free equipment with energy included; balances, joint count, energy and another generic welding operation have no duplicate payment",
-      "shared InclusionGraph compares crossing length to actual physical section length: a single-section crossing excludes joint resources and does not require WPS/consumable/crew/equipment inputs; either unknown length remains an explicit undecided branch",
-      "one explicitly selected casing metre order reuses the existing whole-section quantity graph; installed/cut/spare/stock/new order/unused sections are distinct informational balances, not a second section, package or geometric-mass charge"
+      "shared InclusionGraph compares crossing length to actual physical section length: a single-section crossing excludes joint resources and does not require WPS/consumable/crew/equipment inputs; either unknown length remains an explicit undecided branch even with a manual paid-resource quantity",
+      "one explicitly selected casing metre order reuses the existing whole-section quantity graph; installed/cut/spare/stock/new order/unused sections are distinct informational balances, not a second section, package or geometric-mass charge",
+      "shared mixed InclusionGraph condition selects granular bedding only for confirmed open rectangular trench and positive full-width thickness; known zero/jacking excludes questions and payment while retaining inactive facts",
+      "finished bedding geometry times actual gross supplied-loose-volume ratio already including all process/compaction losses; compatible same-state stock, retained reserve, actual supply multiple, new order and free remainder are distinct outputs",
+      "only new ordered loose m3 own bedding material cost/procurement; consumption, supply multiples and geometric volume are not second charges or inferred truck trips; manual quantity cannot confirm unknown method/thickness/product"
     ],
     "requiredBeforeFullOwnerPublication": [
       "actual load-rated product selection and approved layout; tested geometric compatibility alone is not structural acceptance",
@@ -52,6 +57,7 @@
       "other welding processes require their own actual compatible consumables/cost basis; never substitute this MMA component or its fixtures",
       "separate actual joint preparation, fit-up, inspection/NDT, repairs, coating, drying/storage and lifting owners; machine/crew/material overlaps reconciled before full publication",
       "materials and method-specific civil execution, crew work, machine time and logistics outside the implemented joint resource boundary",
+      "selected granular bedding and its gross supplied-volume basis require actual approved project/product facts; other bedding technologies, laying/compaction execution, certified mass and freight remain outside this component",
       "integration of the tested element/tape/seal supply component with exact project product selection and approved geometry; the full owner must include authoritative spacer geometry rows",
       "approved multi-course tape scope when a single full-width course is not selected; no automatic narrow-tape consumption assumption",
       "actual compatible selected-product prices or honest NULL; no test prices or designations admitted to a prepared owner",
@@ -115,6 +121,7 @@
     "external excavation dimensions for the selected rectangular method; usable pit dimensions are not substituted for excavation dimensions",
     "actual selected jacking excavation diameter; it is not inferred from casing OD",
     "actual approved full-width bedding thickness for the open rectangular branch; no hidden bedding or pit size",
+    "selected granular bedding, actual gross loose-volume consumption including all compaction/process losses, compatible same-state loose stock/reserve and supplier volume multiple; no universal compaction factor",
     "applicable approved MMA WPS, selected electrode, actual gross kg/joint including process losses, usable compatible stock/reserve and actual net pack mass",
     "aggregate joint crew person-hours excluding separately owned material/equipment cost; actual equipment hours with all personnel excluded and energy included"
   ],

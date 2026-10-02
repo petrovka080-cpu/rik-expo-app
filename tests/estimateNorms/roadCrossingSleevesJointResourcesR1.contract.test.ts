@@ -92,6 +92,18 @@ describe("actual road-casing joint resources through the shared compiler", () =>
     expect(result.rows.some(r => r.row_id === id("crew_person_hours"))).toBe(false);
     expect(result.preliminaryNeeds).toHaveLength(0);
   });
+  it.each(["rcs_crossing_length_m", "rcs_planned_physical_section_length_m"])("manual quantity cannot decide unknown joint applicability fact %s", async key => {
+    const input = { ...fixture }; delete input[key];
+    const result = await compile(input, {
+      [id("electrode_ordered")]: { quantity: "99", provenance },
+      [id("crew_person_hours")]: { quantity: "99", provenance },
+      [id("equipment_hours")]: { quantity: "99", provenance },
+    });
+    for (const row of ["electrode_ordered", "crew_person_hours", "equipment_hours"]) {
+      expect(result.rows.some(r => r.row_id === id(row))).toBe(false);
+      expect(result.preliminaryNeeds.find(n => n.row_id === id(row))?.missing_parameter_ids).toContain(key);
+    }
+  });
 
   it("supplier casing bundles and spare sections never add installed joints or welding resources", async () => {
     const result = await compile({ ...fixture, rcs_supplier_bundle_section_count: 10, rcs_retained_spare_section_count: 8 });

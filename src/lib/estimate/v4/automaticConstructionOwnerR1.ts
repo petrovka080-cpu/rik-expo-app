@@ -9,6 +9,7 @@ import { compileFormulaGraph } from "../backendPlatform/formulaGraph";
 import { parseCanonicalFormulaOutputBoundsV1, type CanonicalFormulaOutputBoundsV1 } from "../backendPlatform/canonicalFormulaOutputBounds";
 import { estimateDeterministicHash } from "../estimateDeterministicHash";
 import { NUMERIC_PARAMETER_RELATIONS, type NumericParameterPeerConstraints } from "../backendPlatform/numericParameterRelations";
+import { resolveInclusionGraph } from "../backendPlatform/inclusionGraph";
 
 type Json = Record<string, unknown>;
 
@@ -17,7 +18,12 @@ type AutomaticPeerCondition = Readonly<{
   kind: "greater_than";
   parameterId: string;
   valueParameterId: string;
+  value?: never;
 }>;
+export type AutomaticInclusionCondition = AutomaticPeerCondition
+  | Readonly<{ kind: "equals"; parameterId: string; value: string }>
+  | Readonly<{ kind: "greater_than"; parameterId: string; value: number; valueParameterId?: never }>
+  | Readonly<{ kind: "and" | "or"; operands: readonly AutomaticInclusionCondition[] }>;
 export type AutomaticParameterSpec = Readonly<{
   id: string;
   title: string;
@@ -29,7 +35,7 @@ export type AutomaticParameterSpec = Readonly<{
   min?: number;
   max?: number;
   numericPeerConstraints?: NumericParameterPeerConstraints;
-  requiredWhen?: Readonly<{ parameterId: string; value: string }> | AutomaticPeerCondition;
+  requiredWhen?: Readonly<{ parameterId: string; value: string }> | AutomaticInclusionCondition;
   resourceBranchConsumers?: readonly string[];
 }>;
 
@@ -43,7 +49,7 @@ export type AutomaticRowSpec = Readonly<{
   expression: string;
   procurement?: boolean;
   costTreatment?: "OWN_COST" | "INFORMATIONAL_SCOPE" | "INCLUDED_IN_RESOURCE_ROWS";
-  inclusion?: Readonly<{ kind: "equals"; parameterId: string; value: string }> | AutomaticPeerCondition;
+  inclusion?: AutomaticInclusionCondition;
   titleParameterIds?: readonly string[];
   /** Required product/method facts consumed by this resource even when they
    * are not arithmetic operands. Uses the canonical compiler's existing gate. */
@@ -118,11 +124,30 @@ export function buildAutomaticConstructionOwnerR1(
       throw new Error(`AUTOMATIC_INCLUSION_PEER_INVALID:${condition.parameterId}:${condition.valueParameterId}`);
     }
   };
+  const validateConditionReferences = (condition: AutomaticInclusionCondition): void => {
+    if (condition.kind === "and" || condition.kind === "or") {
+      condition.operands.forEach(validateConditionReferences);
+    } else if (condition.kind === "greater_than") {
+      if (condition.valueParameterId !== undefined) validatePeerCondition(condition);
+      else {
+        const subject = specsById.get(condition.parameterId);
+        if (!subject || !["decimal", "integer"].includes(subject.valueType)) {
+          throw new Error(`AUTOMATIC_INCLUSION_LITERAL_INVALID:${condition.parameterId}`);
+        }
+      }
+    }
+  };
+  const validateCondition = (condition: AutomaticInclusionCondition): void => {
+    // The existing graph validates logical shape and finite literals, even
+    // with unknown values. This adapter only validates declared input types.
+    resolveInclusionGraph(condition, {});
+    validateConditionReferences(condition);
+  };
   for (const spec of specs) {
-    if (spec.requiredWhen && "kind" in spec.requiredWhen) validatePeerCondition(spec.requiredWhen);
+    if (spec.requiredWhen && "kind" in spec.requiredWhen) validateCondition(spec.requiredWhen);
   }
   for (const row of config.rows) {
-    if (row.inclusion?.kind === "greater_than") validatePeerCondition(row.inclusion);
+    if (row.inclusion) validateCondition(row.inclusion);
   }
   for (const spec of specs) {
     for (const [rule] of NUMERIC_PARAMETER_RELATIONS) {
