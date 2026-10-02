@@ -7,6 +7,7 @@ import {
 import { resolveInclusionGraph } from "./inclusionGraph";
 import { validateCanonicalEstimateParameters } from "./parameterConstraints";
 import { canonicalRoundDecimal } from "./canonicalEstimateDeterminism";
+import { parseCanonicalFormulaOutputBoundsV1, validateCanonicalFormulaOutputBoundsV1 } from "./canonicalFormulaOutputBounds";
 import {
   canonicalFixedQuantityStatedBySource,
   canonicalNormConstantQuantityBinding,
@@ -839,6 +840,9 @@ export async function compileCanonicalEstimateCore(
   for (const resource of input.resourceDefinitions) {
     const formula = formulas.get(resource.formula_id);
     if (!formula) throw compilerError("formula graph reference missing", "DEFINITION_INTEGRITY_FAILED");
+    const formulaOutputBounds = parseCanonicalFormulaOutputBoundsV1(
+      resource.resource_graph?.formulaOutputBoundsV1, resource.unit_id, formula.output_unit_id, resource.row_id,
+    );
     const override = overrides.get(resource.row_id);
     if (override != null && (!override || typeof override !== "object" || Array.isArray(override))) {
       throw compilerError(`invalid row override ${resource.row_id}`, "ROW_AMENDMENT_INVALID");
@@ -869,7 +873,7 @@ export async function compileCanonicalEstimateCore(
       : null;
     const inclusionOnlyWaitsForFormulaInputs = inclusion.value == null
       && inclusion.missingParameterIds.every((parameterId) => formula.input_parameter_ids.includes(parameterId));
-    const inclusionResolvedByManualQuantity = manualQuantity != null && inclusionOnlyWaitsForFormulaInputs;
+    const inclusionResolvedByManualQuantity = formulaOutputBounds == null && manualQuantity != null && inclusionOnlyWaitsForFormulaInputs;
     if (inclusion.value === false) continue;
 
     const physicalBinding = resource.resource_graph?.professionalPhysicalNormBindingV1;
@@ -955,21 +959,29 @@ export async function compileCanonicalEstimateCore(
       const normalized = value.trim();
       return normalized ? [normalized] : [];
     });
+    const formulaQuantity = missingFormulaParameterIds.length === 0
+      ? evaluateFormulaGraph(formula.ast, formulaParameters)
+      : null;
+    const formulaOutputBoundsTrace = formulaOutputBounds != null && inclusion.value === true && formulaQuantity != null
+      ? validateCanonicalFormulaOutputBoundsV1(formulaOutputBounds, formulaQuantity, resource.row_id)
+      : null;
+    const missingFormulaBlocksQuantity = missingFormulaParameterIds.length > 0
+      && (manualQuantity == null || formulaOutputBounds != null);
 
     if ((inclusion.value == null && !inclusionResolvedByManualQuantity)
-      || (missingFormulaParameterIds.length > 0 && manualQuantity == null)
+      || missingFormulaBlocksQuantity
       || (missingPhysicalNormParameterIds.length > 0 && manualQuantity == null)
       || missingRequiredTitleSpecificationParameterIds.length > 0
       || missingRequiredConsumerParameterIds.length > 0) {
       const needState = inclusion.value == null && !inclusionOnlyWaitsForFormulaInputs
         ? "CONDITION_REQUIRED" as const
-        : (missingFormulaParameterIds.length > 0 && manualQuantity == null)
+        : missingFormulaBlocksQuantity
           || (missingPhysicalNormParameterIds.length > 0 && manualQuantity == null)
           ? "QUANTITY_REQUIRED" as const
           : "CONDITION_REQUIRED" as const;
       const missingParameterIds = [...new Set([
         ...(needState === "CONDITION_REQUIRED" ? inclusion.missingParameterIds : []),
-        ...(manualQuantity == null ? missingFormulaParameterIds : []),
+        ...(manualQuantity == null || formulaOutputBounds != null ? missingFormulaParameterIds : []),
         ...(manualQuantity == null ? missingPhysicalNormParameterIds : []),
         ...missingRequiredTitleSpecificationParameterIds,
         ...missingRequiredConsumerParameterIds,
@@ -978,9 +990,7 @@ export async function compileCanonicalEstimateCore(
       const unitPrice = override != null && Object.prototype.hasOwnProperty.call(override, "unitPrice")
         ? nonNegativeNumericText(override.unitPrice, `${resource.row_id}.unitPrice`, true)
         : null;
-      const knownQuantity = manualQuantity ?? (missingFormulaParameterIds.length === 0
-        ? evaluateFormulaGraph(formula.ast, formulaParameters)
-        : null);
+      const knownQuantity = manualQuantity ?? formulaQuantity;
       const needWithoutHash = {
         row_id: resource.row_id,
         ordinal: resource.ordinal,
@@ -1007,7 +1017,12 @@ export async function compileCanonicalEstimateCore(
           preliminaryNeed: true,
           needState,
           missingParameterIds,
+          ...(formulaOutputBoundsTrace == null ? {} : { formulaOutputBounds: formulaOutputBoundsTrace }),
           ...(provenance == null ? {} : { manualAmendment: provenance }),
+          ...(manualQuantity == null ? {} : {
+            manualQuantityOverride: true,
+            calculatedQuantityBeforeOverride: formulaQuantity,
+          }),
         },
         normative_trace: Array.isArray(resource.source_metadata?.normativeTrace)
           ? resource.source_metadata.normativeTrace
@@ -1020,7 +1035,7 @@ export async function compileCanonicalEstimateCore(
       continue;
     }
 
-    const calculatedQuantity = manualQuantity ?? evaluateFormulaGraph(formula.ast, formulaParameters);
+    const calculatedQuantity = manualQuantity ?? formulaQuantity!;
     const priceKey = resource.cost_owner_id || resource.row_id;
     const price = prices.get(`${priceKey}:${resource.unit_id}`);
     if (price && price.currency_code !== input.currencyCode) {
@@ -1106,12 +1121,11 @@ export async function compileCanonicalEstimateCore(
         },
       }),
       ...(physicalNormQuantityParity == null ? {} : { physicalNormQuantityParity }),
+      ...(formulaOutputBoundsTrace == null ? {} : { formulaOutputBounds: formulaOutputBoundsTrace }),
       ...(provenance == null ? {} : { manualAmendment: provenance }),
       ...(manualQuantity == null ? {} : {
         manualQuantityOverride: true,
-        calculatedQuantityBeforeOverride: missingFormulaParameterIds.length === 0
-          ? evaluateFormulaGraph(formula.ast, formulaParameters)
-          : null,
+        calculatedQuantityBeforeOverride: formulaQuantity,
       }),
     };
     const normativeTrace = Array.isArray(resource.source_metadata?.normativeTrace)

@@ -9,6 +9,8 @@
   "quantityComponent": {
     "module": "src/lib/estimate/v4/roadCrossingSleevesQuantityModelR1.ts",
     "verification": "tests/estimateNorms/roadCrossingSleevesQuantityModelR1.contract.test.ts",
+    "spacerGeometryModule": "src/lib/estimate/v4/roadCrossingSleevesSpacerGeometryR1.ts",
+    "spacerGeometryVerification": "tests/estimateNorms/roadCrossingSleevesSpacerGeometryR1.contract.test.ts",
     "evaluator": "Existing canonical FormulaGraph only",
     "inputPolicy": "The component takes explicitly supplied scalar inputs and does not create a runtime form or baseline. The full owner must classify source-backed replaceable assumptions separately from genuine project facts, and prefer certified pipe mass when available.",
     "completedQuantityBoundaries": [
@@ -16,10 +18,12 @@
       "whole compatible stock, retained spare, rounded order and free remaining sections",
       "wall thickness from actual OD and ID; reject nonpositive wall before evaluating mass",
       "geometric transport mass with final mm2 conversion to avoid premature fixed-decimal area rounding",
-      "RACI-specific ring and selected-element counts and contact tape length"
+      "RACI-specific ring and selected-element counts and contact tape length",
+      "assembled RACI diameter derived from carrier OD and selected element height; maximum joint envelope is an actual project fact",
+      "RACI-specific joint and insertion diametral differences strictly greater than 15 mm, checked on authoritative formula outputs before manual row quantity overrides"
     ],
     "requiredBeforeFullOwnerPublication": [
-      "assembled spacer and maximum joint-envelope clearance validation and actual load-rated product layout",
+      "actual load-rated product selection and approved layout; tested geometric compatibility alone is not structural acceptance",
       "explicit installation method with its civil work, reaction arrangement and groundwater measures",
       "materials, WPS-dependent joint consumables, crew work, machine time and logistics",
       "element/tape/seal procurement packaging, supplied-kit ownership and compatible actual prices or honest NULL",
@@ -62,7 +66,7 @@
     "one continuous crossing length and confirmed installation method",
     "selected steel casing designation, outside and inside diameters",
     "carrier outside diameter and maximum bell/flange/coupling envelope",
-    "selected load-rated spacer element, approved ring pitch and assembled geometry",
+    "selected load-rated spacer element, approved ring pitch and actual element height; assembled diameter is calculated, not another independent question",
     "planned physical casing section length; not supplier bundle size",
     "method-specific excavation dimensions, support and reaction arrangements",
     "actual groundwater and optional annular-fill requirements"
@@ -70,6 +74,8 @@
   "dimensionPolicy": {
     "geometry": "metres, square metres and cubic metres; explicit conversions for mm, kg and tonnes",
     "pipeWall": "(casing outside diameter - casing inside diameter)/2; do not ask for a second independent wall thickness",
+    "raciAssembledDiameter": "carrier OD + 2 * selected RACI element height; do not ask for a second independent assembled diameter",
+    "raciDiametralDifferences": "assembled diameter - maximum joint envelope > 15 mm AND casing ID - assembled diameter > 15 mm; strict manufacturer-specific diametral limits, not radial clearances or structural approval",
     "geometricSteelMass": "pi/4*(OD^2-ID^2)*length*density",
     "invalidGeometry": "Reject nonpositive wall or insufficient assembled clearance; never conceal it by max(0, geometry)"
   },

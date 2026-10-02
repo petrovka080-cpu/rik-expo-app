@@ -6,6 +6,7 @@ import {
   type CanonicalEstimateResourceDefinition,
 } from "../backendPlatform/canonicalEstimateCompileCore";
 import { compileFormulaGraph } from "../backendPlatform/formulaGraph";
+import { parseCanonicalFormulaOutputBoundsV1, type CanonicalFormulaOutputBoundsV1 } from "../backendPlatform/canonicalFormulaOutputBounds";
 import { estimateDeterministicHash } from "../estimateDeterministicHash";
 import { NUMERIC_PARAMETER_RELATIONS, type NumericParameterPeerConstraints } from "../backendPlatform/numericParameterRelations";
 
@@ -39,6 +40,7 @@ export type AutomaticRowSpec = Readonly<{
   costTreatment?: "OWN_COST" | "INFORMATIONAL_SCOPE" | "INCLUDED_IN_RESOURCE_ROWS";
   inclusion?: Readonly<{ kind: "equals"; parameterId: string; value: string }>;
   titleParameterIds?: readonly string[];
+  formulaOutputBounds?: CanonicalFormulaOutputBoundsV1;
 }>;
 
 export type AutomaticOwnerDefinition = Readonly<{
@@ -175,6 +177,7 @@ export function buildAutomaticConstructionOwnerR1(
   });
 
   const resources = config.rows.map((row, ordinal) => {
+    const formulaOutputBounds = parseCanonicalFormulaOutputBoundsV1(row.formulaOutputBounds, row.unitId, row.unitId, row.rowId);
     const resourceGraph = {
       formulaId: row.formulaId,
       normalizedUom: row.unitId,
@@ -182,6 +185,7 @@ export function buildAutomaticConstructionOwnerR1(
       costOwner: "resource",
       scopeContextParameterIds: [...ordinaryIds],
       costTreatment: row.costTreatment ?? "OWN_COST",
+      ...(formulaOutputBounds == null ? {} : { formulaOutputBoundsV1: formulaOutputBounds }),
       ...(row.titleParameterIds ? {
         titleSpecificationParameterIds: [...row.titleParameterIds],
         titleSpecificationMode: "APPEND",

@@ -13,6 +13,12 @@ const left: AutomaticParameterSpec = { id: "left", title: "Left", kind: "ordinar
 const right: AutomaticParameterSpec = { id: "right", title: "Right", kind: "ordinary", valueType: "integer", unitId: "mm" };
 
 describe("automatic owner uses existing numeric peer contract", () => {
+  it("projects validated formula-output limits through the shared compiler contract", () => {
+    const policy = { schemaVersion: "canonical_formula_output_bounds_v1" as const, unitId: "mm", exclusiveMinimum: 15, reasonRu: "Test-only same-unit bound" };
+    const owner = buildAutomaticConstructionOwnerR1({ ...config, ordinary: [left], rows: [{ ...config.rows[0]!, formulaOutputBounds: policy }] });
+    expect(owner.resources[0]?.resource_graph.formulaOutputBoundsV1).toEqual(policy);
+    expect(() => buildAutomaticConstructionOwnerR1({ ...config, rows: [{ ...config.rows[0]!, formulaOutputBounds: { ...policy, unitId: "m" } }] })).toThrow("formula output bounds invalid test:row");
+  });
   it.each(NUMERIC_PARAMETER_RELATIONS.map(([rule]) => [rule] as const))("projects %s without a second geometry validator", rule => {
     const owner = buildAutomaticConstructionOwnerR1({ ...config, ordinary: [{ ...left, numericPeerConstraints: { [rule]: "right" } }, right] });
     expect(owner.parameters[0]?.constraints_json).toEqual({ [rule]: "right" });

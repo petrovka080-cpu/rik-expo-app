@@ -358,6 +358,11 @@ class FixedDecimal {
 
 export type FormulaParameterValue = string | number | bigint | boolean;
 
+/** Compare in the evaluator's fixed-decimal domain, without Number rounding. */
+export function compareFormulaGraphDecimals(left: string | number, right: string | number): number {
+  return FixedDecimal.parse(left).compare(FixedDecimal.parse(right));
+}
+
 function evaluateCondition(ast: FormulaAst, parameters: Record<string, FormulaParameterValue>): boolean {
   if (ast.kind !== "parameter") {
     throw new FormulaGraphError("INVALID_FORMULA", "conditional predicate must be a boolean parameter");
