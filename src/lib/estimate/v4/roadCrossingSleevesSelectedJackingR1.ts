@@ -37,13 +37,18 @@ const unsupported = new Set<string>([
   ROAD_CROSSING_SLEEVES_EXTERNAL_FILL_GEOMETRIES_R1.existingOwnerRequired,
 ]);
 const selectedMethod = Object.freeze({ rcs_civil_installation_method: methods.pipeJacking });
+// Reachability within the published technical boundary only. These facts are
+// never submitted/defaulted: the actual supported construction remains a
+// project question, while the unimplemented multilayer binding is unreachable.
+const selectedParameterBoundary = Object.freeze({ ...selectedMethod,
+  rcs_completion_restoration_construction: ROAD_CROSSING_SLEEVES_RESTORATION_CONSTRUCTIONS_R1.granular });
 /** A false branch is outside this immutable chosen technology. Unknown source
  * facts remain declared and visible. The shared graph decides both cases. */
 export const ROAD_CROSSING_SLEEVES_SELECTED_JACKING_ROWS_R1 = Object.freeze(ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1
   .filter(row => !row.inclusion || resolveInclusionGraph(row.inclusion, selectedMethod).value !== false));
 export const ROAD_CROSSING_SLEEVES_SELECTED_JACKING_PARAMETERS_R1: readonly AutomaticParameterSpec[] = Object.freeze(
   ROAD_CROSSING_SLEEVES_COMPONENT_PARAMETERS_R1.filter(parameter => !parameter.requiredWhen || resolveInclusionGraph(
-    "kind" in parameter.requiredWhen ? parameter.requiredWhen : { kind: "equals", ...parameter.requiredWhen }, selectedMethod).value !== false)
+    "kind" in parameter.requiredWhen ? parameter.requiredWhen : { kind: "equals", ...parameter.requiredWhen }, selectedParameterBoundary).value !== false)
     .map(parameter => parameter.values
     ? { ...parameter, values: parameter.values.filter(value => !unsupported.has(value)) } : parameter));
 export const ROAD_CROSSING_SLEEVES_SELECTED_JACKING_SCOPE_R1 = Object.freeze({

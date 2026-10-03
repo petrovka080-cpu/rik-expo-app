@@ -6,6 +6,7 @@ import { isCanonicalEstimateConsumerSuppliedParameter, isCanonicalEstimateSource
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { parseRoadCrossingSleevesSelectedJackingPromptR1 } from "../../src/lib/estimate/v4/roadCrossingSleevesSelectedJackingPromptR1";
+import { buildMasterParameterCalculationConsumers } from "../../scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1";
 const metadata = { source_title: "VALIDATION_FIXTURE, not project approval", source_document_version: "test-only", definition_hash: "a".repeat(64), artifact_sha256: "b".repeat(64), exact_locator: "test synthetic source" };
 const selected = buildRoadCrossingSleevesSelectedJackingR1(metadata);
 const definition = selected.definition;
@@ -24,6 +25,13 @@ const catalog: CanonicalEstimateCatalogItem = { catalogId: selected.scope.catalo
 const prompt = "переход продавливанием, длина футляра 24 м, наружный диаметр 720 мм, внутренний 700 мм, рабочая труба 110 мм";
 const compile = (submittedParameters: Record<string, unknown>) => compileAutomaticConstructionOwnerR1({ compilerVersion: "selected-contract", catalogId: selected.scope.catalogId, primaryMeasureParameterId: "rcs_crossing_length_m", definition, submittedParameters });
 describe("selected full jacking ordinary ingress and immutable ownership", () => {
+  it("satisfies the governed publisher consumer contract without unsupported-only project questions", () => {
+    const { resourceConsumers } = buildMasterParameterCalculationConsumers({ parameters: definition.parameters, formulas: definition.formulas, resources: definition.resources });
+    expect(definition.parameters.filter(parameter => !resourceConsumers[parameter.parameter_id]?.length).map(parameter => parameter.parameter_id)).toEqual([]);
+    expect(catalog.parameterSchema.some(p => p.parameterId === "rcs_completion_restoration_existing_full_owner_binding")).toBe(false);
+    expect(catalog.parameterSchema.find(p => p.parameterId === "rcs_completion_restoration_construction")?.defaultValue).toBeNull();
+    expect(definition.runtimeInput).toEqual({});
+  });
   it("opens the first composition with only explicit prompt facts and original local missing inputs", async () => {
     const plan = buildCanonicalBaselinePlan({ catalog, prompt });
     expect(plan.primaryMeasureParameterId).toBe("rcs_crossing_length_m");
