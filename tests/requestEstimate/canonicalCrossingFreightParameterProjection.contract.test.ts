@@ -10,7 +10,9 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_FREIGHT_MOD
   ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_MODES_R1 as casingPrepModes, ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_COST_BASIS_R1 as casingPrepBasis,
   ROAD_CROSSING_SLEEVES_COATING_MODES_R1 as coatingModes, ROAD_CROSSING_SLEEVES_COATING_KIT_COST_BASIS_R1 as coatingKitBasis,
   ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_MODES_R1 as connectionModes,
-  ROAD_CROSSING_SLEEVES_WATER_CONTROL_MODES_R1 as waterControlModes } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_WATER_CONTROL_MODES_R1 as waterControlModes,
+  ROAD_CROSSING_SLEEVES_WATER_RECEIVING_MODES_R1 as waterReceivingModes,
+  ROAD_CROSSING_SLEEVES_WATER_RECEIVING_COST_BASIS_R1 as waterReceivingBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_TRENCH_FILL_MODES_R1 as fillModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
 import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierSupplyModes } from "../../src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1";
@@ -266,6 +268,22 @@ describe("actual pump deployment and fuel facts through the common editor", () =
     const none = session({ ...water, rcs_water_control_mode: waterControlModes.notRequired });
     expect(none.parameters.find(p => p.parameterId === "rcs_water_control_program_reference")).toBeDefined();
     expect(none.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_water_control_calendar_hours")).toMatchObject({ value: 24 });
+  });
+  it("shows actual water receiving allocation filled/editable and retains paid receiver facts when the selected stream becomes zero", () => {
+    const receiving = { ...water, rcs_water_receiving_mode: waterReceivingModes.separate, rcs_water_receiving_excluded_water_m3: 8,
+      rcs_water_receiving_allocation_reference: "TEST actual quality/classification/route and one receiver of remaining whole stream",
+      rcs_water_receiving_receiver_designation: "TEST actual receiving service", rcs_water_receiving_receiver_reference: "TEST actual receiving capacity/quality/unit-account and complete separate service",
+      rcs_water_receiving_cost_basis: waterReceivingBasis };
+    const visible = cards(receiving);
+    for (const [key, value] of Object.entries(receiving).filter(([key]) => key.startsWith("rcs_water_receiving_"))) {
+      expect(visible.find(c => c.key === key)).toMatchObject({ value, editable: true, missing: false });
+      expect(visible.find(c => c.key === key)?.guideShortRu).toBeTruthy();
+    }
+    expect(visible.find(c => c.key === "rcs_water_receiving_excluded_water_m3")?.unitRu).toBe("м³");
+    const zero = session({ ...receiving, rcs_water_receiving_excluded_water_m3: 120 });
+    expect(zero.parameters.some(p => p.parameterId === "rcs_water_receiving_receiver_reference")).toBe(false);
+    expect(zero.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_water_receiving_receiver_reference")).toMatchObject({ value: receiving.rcs_water_receiving_receiver_reference });
+    expect(catalog.parameterSchema.some(p => /water_receiving.*(?:allocated_water|separate_receiving)/u.test(p.parameterId))).toBe(false);
   });
 });
 

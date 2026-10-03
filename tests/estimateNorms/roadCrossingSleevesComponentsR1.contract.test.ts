@@ -17,7 +17,9 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_COMPONENT_P
   ROAD_CROSSING_SLEEVES_COATING_CONSUMABLE_COST_BASIS_R1 as coatingConsumableBasis,
   ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_MODES_R1 as connectionModes, ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_MATERIAL_COST_BASIS_R1 as connectionBasis,
   ROAD_CROSSING_SLEEVES_WATER_CONTROL_MODES_R1 as waterControlModes, ROAD_CROSSING_SLEEVES_WATER_CONTROL_RENTAL_BASIS_R1 as waterControlRentalBasis,
-  ROAD_CROSSING_SLEEVES_WATER_CONTROL_FUEL_BASIS_R1 as waterControlFuelBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_WATER_CONTROL_FUEL_BASIS_R1 as waterControlFuelBasis,
+  ROAD_CROSSING_SLEEVES_WATER_RECEIVING_MODES_R1 as waterReceivingModes,
+  ROAD_CROSSING_SLEEVES_WATER_RECEIVING_COST_BASIS_R1 as waterReceivingBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierModes, ROAD_CROSSING_SLEEVES_CARRIER_COST_BASIS_R1 as carrierBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1 as jointParameters, ROAD_CROSSING_SLEEVES_JOINT_COST_BASES_R1 as bases } from "../../src/lib/estimate/v4/roadCrossingSleevesJointResourcesR1";
@@ -401,6 +403,8 @@ describe("actual PE carrier electrofusion resources and independent end ties", (
 
 describe("actual rented hydraulic sump pumping and separate group fuel", () => {
   const water: Record<string, unknown> = { ...fixture, rcs_water_control_mode: waterControlModes.hydraulicRental,
+    rcs_water_receiving_mode: waterReceivingModes.otherParty, rcs_water_receiving_excluded_water_m3: 0,
+    rcs_water_receiving_allocation_reference: "TEST actual one compatible receiver, no duplicate fee, whole output stream with explicit zero other allocation",
     rcs_water_control_program_reference: "TEST actual homogeneous hydraulic fuel-powered kit group, original water/head/flow/duty/discharge, no groundwater design approval",
     rcs_water_control_allocation_reference: "TEST exclusively allocated whole deployment period and actual standby sets, disjoint fuel/labor/lifts",
     rcs_water_control_kit_designation: "TEST actual full leased hydraulic pump/powerpack/lines/connectors/protection set",
@@ -515,6 +519,51 @@ describe("actual rented hydraulic sump pumping and separate group fuel", () => {
       const result = await compile(input, { [row("rental_set_hours")]: { quantity: "72", provenance } });
       expect(result.rows.some(r => r.row_id === row("rental_set_hours"))).toBe(false);
       expect(result.preliminaryNeeds.find(need => need.row_id === row("rental_set_hours"))?.missing_parameter_ids).toContain(fact);
+    });
+  const receiving = { ...water, rcs_water_receiving_mode: waterReceivingModes.separate, rcs_water_receiving_excluded_water_m3: 8,
+    rcs_water_receiving_receiver_designation: "TEST actual receiver full bounded water receiving service",
+    rcs_water_receiving_receiver_reference: "TEST actual quality/route/period/capacity/unit-account and full receiving service, separate onsite pump/filter/waste boundaries",
+    rcs_water_receiving_cost_basis: waterReceivingBasis };
+  const receivingRow = "rcs:water-receiving:separate_receiving_m3";
+  it("owns only actual remaining receiver water, keeps other allocations/pumping/fuel distinct and belongs to completion", async () => {
+    const result = await compile(receiving);
+    expect(result.preliminaryNeeds).toEqual([]); expect(q(result, receivingRow)).toBe(112);
+    expect(q(result, "rcs:water-receiving:allocated_water_m3")).toBe(112);
+    expect(q(result, row("pumped_water_m3"))).toBe(120); expect(q(result, row("rental_set_hours"))).toBe(72);
+    expect(result.rows.filter(r => r.row_id.startsWith("rcs:water-receiving:") && r.included_in_estimate)).toHaveLength(1);
+    expect(components.stageMatrix.filter(stage => stage.ownResourceIds.includes(receivingRow)).map(stage => stage.stageId)).toEqual(["completion"]);
+    const outside = await compile({ ...receiving, rcs_open_cut_excavation_width_m: 5 });
+    expect(q(outside, receivingRow)).toBe(112);
+  });
+  it("unknown receiving allocation stays local while independently known pump/fuel/civil work calculates", async () => {
+    const input: Record<string, unknown> = { ...receiving }; delete input.rcs_water_receiving_excluded_water_m3;
+    const result = await compile(input);
+    expect(q(result, row("pumped_water_m3"))).toBe(120); expect(q(result, row("fuel:ordered_l"))).toBe(20);
+    expect(q(result, "rcs:civil-execution:open_cut:equipment_hours")).toBe(21);
+    expect(result.preliminaryNeeds.every(need => need.missing_parameter_ids.includes("rcs_water_receiving_excluded_water_m3"))).toBe(true);
+  });
+  it("rejects water over-allocation before a manual receiving fee and never derives permission from quantity", async () => {
+    await expect(compile({ ...receiving, rcs_water_receiving_excluded_water_m3: 121 }, { [receivingRow]: { quantity: "112", provenance } })).rejects.toMatchObject({ code: "FORMULA_OUTPUT_BOUNDS_FAILED" });
+  });
+  it("other-party receiving and explicitly all-other water create no second fee; zero pumping needs no receiver facts", async () => {
+    const other = await compile({ ...receiving, rcs_water_receiving_mode: waterReceivingModes.otherParty });
+    expect(q(other, "rcs:water-receiving:allocated_water_m3")).toBe(112);
+    expect(other.rows.some(r => r.row_id === receivingRow)).toBe(false);
+    const allOther: Record<string, unknown> = { ...receiving, rcs_water_receiving_excluded_water_m3: 120 };
+    delete allOther.rcs_water_receiving_receiver_designation; delete allOther.rcs_water_receiving_receiver_reference; delete allOther.rcs_water_receiving_cost_basis;
+    const result = await compile(allOther); expect(result.preliminaryNeeds).toEqual([]);
+    expect(q(result, "rcs:water-receiving:allocated_water_m3")).toBe(0); expect(result.rows.some(r => r.row_id === receivingRow)).toBe(false);
+    const idle: Record<string, unknown> = { ...water, rcs_water_control_working_duty_fraction: 0, rcs_water_control_required_average_inflow_m3_h: 0 };
+    for (const key of Object.keys(idle)) if (key.startsWith("rcs_water_receiving_")) delete idle[key];
+    const idleResult = await compile(idle); expect(idleResult.preliminaryNeeds).toEqual([]);
+    expect(idleResult.rows.some(r => r.row_id.startsWith("rcs:water-receiving:"))).toBe(false);
+  });
+  it.each(["rcs_water_control_working_set_count", "rcs_water_control_calendar_hours", "rcs_water_control_working_duty_fraction", "rcs_water_control_flow_at_actual_head_m3_h", "rcs_water_control_actual_system_head_m", "rcs_water_control_discharge_reference", "rcs_water_receiving_excluded_water_m3", "rcs_water_receiving_allocation_reference", "rcs_water_receiving_receiver_reference", "rcs_water_receiving_cost_basis"])(
+    "manual receiving retains original water/receiver/cost gate %s", async fact => {
+      const input: Record<string, unknown> = { ...receiving }; delete input[fact];
+      const result = await compile(input, { [receivingRow]: { quantity: "112", provenance } });
+      expect(result.rows.some(r => r.row_id === receivingRow)).toBe(false);
+      expect(result.preliminaryNeeds.find(need => need.row_id === receivingRow)?.missing_parameter_ids).toContain(fact);
     });
 });
 

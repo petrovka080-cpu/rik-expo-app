@@ -829,6 +829,49 @@ export const ROAD_CROSSING_SLEEVES_WATER_CONTROL_ROWS_R1: readonly AutomaticRowS
   })(),
 ]);
 
+/** The receiver owns only the actually allocated output stream, not pumped
+ * water automatically assumed to be permitted discharge. Treatment need is
+ * project-specific: https://www.xylem.com/en-us/catalog/products--services/services/temporary-water-treatment/trench-dewatering/ */
+export const ROAD_CROSSING_SLEEVES_WATER_RECEIVING_MODES_R1 = Object.freeze({
+  separate: "Отдельно оплачиваемый приём всего фактически выделенного остатка воды одним подтверждённым получателем за м³",
+  otherParty: "Приём фактически выделенной воды обеспечен другой стороной без отдельной оплаты исполнителем",
+  other: "Разные получатели, неоднородная вода или иная граница оплаты: отдельная программа приёма",
+});
+export const ROAD_CROSSING_SLEEVES_WATER_RECEIVING_COST_BASIS_R1 = "Только приём фактически выделенного объёма воды в м³ подтверждённым получателем с полным составом его услуги; без насосов, очистки на объекте, доставки/перекачки и приёма фильтровальных отходов";
+const waterReceivingId = (suffix: string) => `rcs_water_receiving_${suffix}`;
+const waterOutputPositive: AutomaticInclusionCondition = { kind: "and", operands: [waterControlSelected,
+  { kind: "formula_greater_than", expression: waterControlVolume, unitId: "m3", value: 0 }] };
+const waterReceivingVolume = `(${waterControlVolume})-${waterReceivingId("excluded_water_m3")}`;
+const waterReceivingPaid: AutomaticInclusionCondition = { kind: "and", operands: [waterOutputPositive,
+  { kind: "equals", parameterId: waterReceivingId("mode"), value: ROAD_CROSSING_SLEEVES_WATER_RECEIVING_MODES_R1.separate },
+  { kind: "formula_greater_than", expression: waterReceivingVolume, unitId: "m3", value: 0 }] };
+const waterReceivingFacts = [...waterControlFacts, ...["working_set_count", "calendar_hours", "working_duty_fraction", "flow_at_actual_head_m3_h", "actual_system_head_m", "discharge_reference"].map(waterControlId),
+  waterReceivingId("mode"), waterReceivingId("allocation_reference"), waterReceivingId("excluded_water_m3")];
+export const ROAD_CROSSING_SLEEVES_WATER_RECEIVING_PARAMETERS_R1: readonly AutomaticParameterSpec[] = Object.freeze([
+  { id: waterReceivingId("mode"), title: "Фактическая граница приёма откачанной воды", valueType: "enum", unitId: null,
+    values: Object.values(ROAD_CROSSING_SLEEVES_WATER_RECEIVING_MODES_R1), kind: "conditional", requiredWhen: waterOutputPositive },
+  { id: waterReceivingId("allocation_reference"), title: "Фактическая классификация/качество воды, маршрут и один получатель всего выделенного потока после обработки; исключённый объём выделен другим целям/получателям, включая воду в отходах, без повторного учёта; расчёт не подтверждает допустимость сброса",
+    valueType: "text", unitId: null, kind: "conditional", requiredWhen: waterOutputPositive },
+  { id: waterReceivingId("excluded_water_m3"), title: "Фактически выделенная вода из откачанного объёма, которая остаётся/идёт другим целям или получателям и не оплачивается здесь, включая воду в фильтровальных отходах; отсутствие — явный 0",
+    valueType: "decimal", unitId: "m3", min: 0, kind: "conditional", requiredWhen: waterOutputPositive },
+  ...[ ["receiver_designation", "Фактический получатель всей выделенной воды и полная отдельная услуга приёма"],
+    ["receiver_reference", "Фактическое подтверждение качества, допустимости/вместимости/периода приёма, учёта м³ и полного состава услуги одного получателя без пересечения с ресурсами объекта"] ]
+    .map(([suffix, title]): AutomaticParameterSpec => ({ id: waterReceivingId(suffix), title, valueType: "text", unitId: null, kind: "conditional", requiredWhen: waterReceivingPaid })),
+  { id: waterReceivingId("cost_basis"), title: "Отдельная граница оплаты приёма воды", valueType: "enum", unitId: null,
+    values: [ROAD_CROSSING_SLEEVES_WATER_RECEIVING_COST_BASIS_R1], kind: "conditional", requiredWhen: waterReceivingPaid },
+]);
+export const ROAD_CROSSING_SLEEVES_WATER_RECEIVING_ROWS_R1: readonly AutomaticRowSpec[] = Object.freeze([
+  { rowId: "rcs:water-receiving:allocated_water_m3", formulaId: "rcs:water-receiving:allocated_water_m3", section: "Приём откачанной воды", category: "service",
+    title: "Фактически выделенный получателю остаток откачанной воды после исключения иных объёмов; без автоматического разрешения сброса", unitId: "m3",
+    expression: waterReceivingVolume, inclusion: waterOutputPositive, costTreatment: "INFORMATIONAL_SCOPE", inputParameterIds: waterReceivingFacts,
+    formulaOutputBounds: { schemaVersion: "canonical_formula_output_bounds_v1", unitId: "m3", minimum: 0,
+      reasonRu: "Другим целям/получателям и воде в отходах нельзя выделить больше исходного откачанного объёма; ручная услуга приёма не исправляет отрицательный баланс." } },
+  { rowId: "rcs:water-receiving:separate_receiving_m3", formulaId: "rcs:water-receiving:separate_receiving_m3", section: "Приём откачанной воды", category: "service",
+    title: "Отдельная полная услуга фактического получателя выделенной воды без повторной оплаты ресурсов объекта", unitId: "m3", expression: waterReceivingVolume,
+    inclusion: waterReceivingPaid, costTreatment: "OWN_COST", procurement: true, titleParameterIds: [waterReceivingId("receiver_designation")],
+    inputParameterIds: [...waterReceivingFacts, waterReceivingId("receiver_reference"), waterReceivingId("cost_basis")] },
+]);
+
 /** Actual initial straight-axis staking has its own physical resources.
  * FHWA FP-24 section 152 identifies selected survey/control methods, marking,
  * maintenance/replacement and final removal; it does not give this project's
@@ -1365,6 +1408,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_PARAMETERS_R1: readonly AutomaticPa
   ...ROAD_CROSSING_SLEEVES_COATING_CONSUMABLE_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_WATER_CONTROL_PARAMETERS_R1,
+  ...ROAD_CROSSING_SLEEVES_WATER_RECEIVING_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_PREPARATION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_INSPECTION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_FREIGHT_PARAMETERS_R1,
@@ -1389,6 +1433,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[
   ...ROAD_CROSSING_SLEEVES_COATING_CONSUMABLE_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_WATER_CONTROL_ROWS_R1,
+  ...ROAD_CROSSING_SLEEVES_WATER_RECEIVING_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_INSPECTION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1,
@@ -1404,7 +1449,7 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
   { stageId: "installation", titleRu: "Устройство перехода", rows: [
     ...ROAD_CROSSING_SLEEVES_CIVIL_ROWS_R1.filter(row => !["rcs:civil:open_cut_full_width_bedding_m3", "rcs:civil:open_cut_remaining_fill_space_m3"].includes(row.rowId)),
     ...ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_ROWS_R1, ...ROAD_CROSSING_SLEEVES_WATER_CONTROL_ROWS_R1.filter(row => !row.rowId.startsWith("rcs:water-control:removal:"))],
-    remaining: ["Крепление грунта и реакционные конструкции", "Подтверждение фактического водоотлива, очистка/фильтры и их отходы, отдельный приём воды и другие способы водопонижения", "Разделение разных партий и дополнительное перемещение грунта", "Применимые смазка и заполнение снаружи футляра"] },
+    remaining: ["Крепление грунта и реакционные конструкции", "Подтверждение фактического водоотлива, очистка/фильтры и их отходы, другие схемы приёма воды и способы водопонижения", "Разделение разных партий и дополнительное перемещение грунта", "Применимые смазка и заполнение снаружи футляра"] },
   { stageId: "bedding", titleRu: "Основание", rows: [
     ...ROAD_CROSSING_SLEEVES_CIVIL_ROWS_R1.filter(row => row.rowId === "rcs:civil:open_cut_full_width_bedding_m3"), ...ROAD_CROSSING_SLEEVES_BEDDING_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => row.rowId.startsWith("rcs:fill-execution:bedding:")),
@@ -1431,6 +1476,7 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
     ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => /^rcs:fill-execution:(?:pits|trench):/u.test(row.rowId))],
     remaining: ["Подтверждение пригодности и распределения повторно используемого грунта", "Послойные или другие материалы траншеи", "Подтверждение технологии укладки и уплотнения", "Фактические качество и отдельное распределение воды", "Разные партии грунта, пульпа и иные состояния"] },
   { stageId: "completion", titleRu: "Завершение перехода", rows: [...ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1,
+    ...ROAD_CROSSING_SLEEVES_WATER_RECEIVING_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_WATER_CONTROL_ROWS_R1.filter(row => row.rowId.startsWith("rcs:water-control:removal:")),
     ...ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1.filter(row => row.rowId.startsWith("rcs:preparation:removal:")),
     ...ROAD_CROSSING_SLEEVES_SOIL_ROWS_R1.filter(row => row.costTreatment === "OWN_COST")],
