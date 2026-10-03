@@ -6,7 +6,8 @@ import { ROAD_CROSSING_SLEEVES_CIVIL_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_CIVIL_
   ROAD_CROSSING_SLEEVES_CIVIL_EXPRESSIONS_R1 as civil, ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "./roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_ROWS_R1 } from "./roadCrossingSleevesJointResourcesR1";
 import { ROAD_CROSSING_SLEEVES_CASING_MATERIAL_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_CASING_MATERIAL_ROWS_R1,
-  ROAD_CROSSING_SLEEVES_CARRIER_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_CARRIER_ROWS_R1 } from "./roadCrossingSleevesCasingMaterialR1";
+  ROAD_CROSSING_SLEEVES_CARRIER_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_CARRIER_ROWS_R1,
+  ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierSupplyModes, ROAD_CROSSING_SLEEVES_CARRIER_EXPRESSIONS_R1 as carrierQuantities } from "./roadCrossingSleevesCasingMaterialR1";
 import { compileFormulaGraph } from "../backendPlatform/formulaGraph";
 import { ROAD_CROSSING_SLEEVES_BEDDING_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_BEDDING_ROWS_R1,
   ROAD_CROSSING_SLEEVES_BEDDING_APPLICABILITY_R1 } from "./roadCrossingSleevesBeddingMaterialR1";
@@ -540,6 +541,146 @@ export const ROAD_CROSSING_SLEEVES_COATING_CONSUMABLE_ROWS_R1: readonly Automati
   }),
 );
 
+/** One original straight section layout, not supplier order counts or a whole
+ * network. GF's manual identifies compatible couplings, cleaning/marking,
+ * peeling, alignment, full fusion/cooling and initial inspection resources:
+ * https://www.gfps.com/content/dam/gfps/us/products/joining-technology/electrofusion/msa-340/gfcp-us-electrofusion-installation-training-manual-en.pdf
+ * No brand, voltage, duration, SDR range, consumable rate or acceptance default.
+ * End ties are actual separate nodes, never an automatic two extra joints. */
+export const ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_MODES_R1 = Object.freeze({
+  electrofusion: "Одна прямая рабочая ПЭ-труба из исходных целых секций: по одной совместимой электромуфте на соединение, отдельные фактические концевые врезки того же вида",
+  otherParty: "Все соединения рабочей трубы и их ресурсы предоставлены другой стороной без отдельной оплаты исполнителем",
+  prejoined: "Отсутствие монтажных соединений и концевых врезок в выбранной работе подтверждено фактической схемой",
+  other: "Другие соединения, неодинаковые секции/узлы или иная поставка: отдельная программа ресурсов",
+});
+export const ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_MATERIAL_COST_BASIS_R1 = "Только новый заказ отдельного совместимого изделия или расходника соединений рабочей трубы с подтверждёнными потерями и резервом; без рабочей трубы, опор, концевых уплотнений футляра, всех работ, исполнителей, оборудования, энергии, доставки и отходов";
+const carrierConnectionId = (suffix: string) => `rcs_carrier_connection_${suffix}`;
+const carrierConnectionScope: AutomaticInclusionCondition = { kind: "greater_than", parameterId: "rcs_crossing_length_m", value: 0 };
+const carrierConnectionSelected: AutomaticInclusionCondition = { kind: "and", operands: [carrierConnectionScope,
+  { kind: "equals", parameterId: carrierConnectionId("mode"), value: ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_MODES_R1.electrofusion }] };
+const carrierConnectionFacts = ["rcs_crossing_length_m", "rcs_carrier_total_end_extension_m", "rcs_carrier_product_designation", "rcs_carrier_supply_mode",
+  "rcs_carrier_outside_diameter_mm", carrierConnectionId("mode"), carrierConnectionId("program_reference")];
+const carrierConnectionGroups = [
+  { key: "internal", title: "Монтажные соединения прямых секций рабочей трубы", quantity: `max(0,(${carrierQuantities.installed_section_count})-1)`,
+    facts: [...carrierConnectionFacts, "rcs_carrier_physical_supply_section_length_m"] },
+  { key: "ends", title: "Фактические концевые соединения рабочей трубы", quantity: carrierConnectionId("end_tie_in_count"),
+    facts: [...carrierConnectionFacts, carrierConnectionId("end_tie_in_count")] },
+].map(group => ({ ...group, id: (suffix: string) => carrierConnectionId(`${group.key}_${suffix}`),
+  positive: { kind: "and", operands: [carrierConnectionSelected, { kind: "formula_greater_than", expression: group.quantity, unitId: "piece", value: 0 }] } as AutomaticInclusionCondition }));
+const carrierConnectionWorks = [
+  { key: "joining", title: "Подготовка, полная электромуфтовая сварка и фиксация при охлаждении", boundary: "все фактические стадии очистки/маркировки/резки/зачистки/округления/сборки/фиксации, полный предусмотренный цикл или циклы сварки и охлаждения с фактическими условиями и защитой; без первоначального отдельного контроля, втягивания рабочей трубы, опор, материалов и доставки" },
+  { key: "inspection", title: "Первоначальный контроль соединений рабочей трубы", boundary: "предусмотренный программой первоначальный контроль совместимости/подготовки/ввода/циклов/выдержки выбранными приборами; без прогнозирования дефектов, ремонта, повторного контроля и испытания всей линии" },
+] as const;
+const carrierConnectionMaterials = [
+  { key: "couplers", title: "Совместимые полные электромуфты", unit: "piece" },
+  { key: "wash_water", title: "Пригодная вода первоначальной очистки", unit: "l" },
+  { key: "cleaner", title: "Совместимый очиститель соединений ПЭ-трубы", unit: "l" },
+  { key: "wipes", title: "Списываемые совместимые салфетки соединений", unit: "piece" },
+  { key: "markers", title: "Фактически списываемые совместимые маркеры", unit: "piece" },
+] as const;
+const carrierConnectionMaterialBranches = carrierConnectionGroups.flatMap(group => carrierConnectionMaterials.map(material => {
+  const id = (suffix: string) => group.id(`${material.key}_${suffix}`);
+  const gross = material.key === "couplers" ? `(${group.quantity})+${id("preinstall_unusable_count")}` : `(${group.quantity})*${id("gross_per_joint")}`;
+  const consumed = material.unit === "piece" ? `ceil(${gross})` : gross;
+  // A known real connection always needs one complete coupler, even while
+  // additional unusable units remain unknown. Do not hide its product passport
+  // or block independent complete joining work behind that purchase balance.
+  const positive: AutomaticInclusionCondition = material.key === "couplers" ? group.positive : { kind: "and", operands: [group.positive,
+    { kind: "formula_greater_than", expression: consumed, unitId: material.unit, value: 0 }] };
+  return { ...material, group, id, consumed, positive };
+}));
+export const ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_PARAMETERS_R1: readonly AutomaticParameterSpec[] = Object.freeze([
+  { id: carrierConnectionId("mode"), title: "Подтверждённая технология и граница соединений рабочей трубы", valueType: "enum", unitId: null,
+    values: Object.values(ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_MODES_R1), kind: "conditional", requiredWhen: carrierConnectionScope },
+  { id: carrierConnectionId("program_reference"), title: "Фактическая схема и программа соединений рабочей трубы: исходные одинаковые секции, разные монтажные/концевые узлы, совместимость ПЭ/толщины/давления/среды и электромуфт, условия/циклы/охлаждение/приборы/квалификация и отдельные границы оплаты",
+    valueType: "text", unitId: null, kind: "conditional", requiredWhen: carrierConnectionScope },
+  { id: carrierConnectionId("end_tie_in_count"), title: "Фактические концевые врезки выбранного перехода с той же электромуфтой, без повторения монтажных стыков; отсутствие в этой работе — явный 0, не автоматически 2",
+    valueType: "integer", unitId: "piece", min: 0, max: 2, kind: "conditional", requiredWhen: carrierConnectionSelected },
+  ...carrierConnectionGroups.flatMap(group => {
+    const text = (suffix: string, title: string): AutomaticParameterSpec => ({ id: group.id(suffix), title: `${group.title}: ${title}`,
+      valueType: "text", unitId: null, kind: "conditional", requiredWhen: group.positive });
+    return [text("allocation_reference", "фактические отдельные узлы, материалы и работы; без повторения других соединений и втягивания/опор рабочей трубы"),
+      { id: group.id("pipe_wall_thickness_mm"), title: `${group.title}: фактическая стенка выбранной рабочей ПЭ-трубы по паспорту; не стенка футляра`,
+        valueType: "decimal", unitId: "mm", min: 0.000_001, kind: "conditional", requiredWhen: group.positive } as AutomaticParameterSpec,
+      { id: group.id("coupler_outside_envelope_mm"), title: `${group.title}: фактический максимальный наружный габарит полного соединения с выступами; совместимость с исходным проходом/опорами`,
+        valueType: "decimal", unitId: "mm", min: 0.000_001, kind: "conditional", requiredWhen: group.positive,
+        numericPeerConstraints: { greaterThanParameter: "rcs_carrier_outside_diameter_mm", lessThanOrEqualParameter: "rcs_maximum_joint_envelope_diameter_mm" } } as AutomaticParameterSpec,
+      ...carrierConnectionWorks.flatMap(work => [text(`${work.key}_method_reference`, `фактическая совместимая процедура: ${work.boundary}`),
+        ...(["crew", "equipment"] as const).flatMap(owner => [
+          text(`${work.key}_${owner}_designation`, `${work.title}: ${owner === "crew" ? "все исполнители и операторы" : "весь совместимый комплект, фиксаторы/подготовка/защита или приборы, с энергией"}`),
+          { id: group.id(`${work.key}_${owner}_h_per_joint`), title: `${group.title}, ${work.title}: фактические ${owner === "crew" ? "суммарные человеко-часы" : "часы полного комплекта"} на завершённое соединение со всеми стадиями и охлаждением один раз`,
+            valueType: "decimal", unitId: `${owner === "crew" ? "man" : "machine"}_hour_per_piece`, min: 0, kind: "conditional", requiredWhen: group.positive } as AutomaticParameterSpec,
+          { id: group.id(`${work.key}_${owner}_cost_basis`), title: `${group.title}, ${work.title}: отдельная граница ${owner === "crew" ? "труда" : "техники"}`,
+            valueType: "enum", unitId: null, values: [ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_COST_BASES_R1[owner]], kind: "conditional", requiredWhen: group.positive } as AutomaticParameterSpec,
+        ])]),
+    ];
+  }),
+  ...carrierConnectionMaterialBranches.flatMap(material => {
+    const text = (suffix: string, title: string): AutomaticParameterSpec => ({ id: material.id(suffix), title: `${material.group.title}, ${material.title}: ${title}`,
+      valueType: "text", unitId: null, kind: "conditional", requiredWhen: material.positive });
+    const amount = (suffix: string, title: string, min = 0): AutomaticParameterSpec => ({ id: material.id(suffix), title: `${material.group.title}, ${material.title}: ${title}`,
+      valueType: material.unit === "piece" ? "integer" : "decimal", unitId: material.unit, min, kind: "conditional", requiredWhen: material.positive });
+    return [material.key === "couplers"
+      ? { id: material.id("preinstall_unusable_count"), title: `${material.group.title}: фактически непригодные муфты в ходе этой работы до установки, сверх одной полной муфты на узел; исходное наличие измерено до этих потерь, не прогноз дефектных швов и не дополнительные работы`,
+        valueType: "integer", unitId: "piece", min: 0, kind: "conditional", requiredWhen: material.group.positive } as AutomaticParameterSpec
+      : { id: material.id("gross_per_joint"), title: `${material.group.title}, ${material.title}: фактический полный расход на завершённое соединение с процессными потерями; целые затронутые изделия списаны по программе, отсутствие — явный 0`,
+        valueType: "decimal", unitId: `${material.unit}_per_piece`, min: 0, kind: "conditional", requiredWhen: material.group.positive } as AutomaticParameterSpec,
+      text("product_designation", "фактически выбранное совместимое изделие или материал"),
+      text("product_reference", "фактический паспорт/программа совместимости трубы и полной муфты, давления/среды/стенки/габарита или очистки/маркировки/списания; исходное пригодное наличие выделено только этой группе узлов"),
+      amount("compatible_stock", "пригодное исключительно выделенное наличие до работы, без будущих возвратов использованного"),
+      amount("retained_reserve", "сохраняемый пригодный резерв"), amount("supplier_pack_net", "фактическое нетто в новой поставочной упаковке", material.unit === "piece" ? 1 : 0.000_001),
+      { id: material.id("cost_basis"), title: `${material.group.title}, ${material.title}: отдельная граница нового заказа`, valueType: "enum", unitId: null,
+        values: [ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_MATERIAL_COST_BASIS_R1], kind: "conditional", requiredWhen: material.positive } as AutomaticParameterSpec,
+    ];
+  }),
+]);
+export const ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_ROWS_R1: readonly AutomaticRowSpec[] = Object.freeze([
+  { rowId: "rcs:carrier-connection:scope_length_m", formulaId: "rcs:carrier-connection:scope_length_m", section: "Соединения рабочей трубы", category: "service",
+    title: "Длина перехода в подтверждённой программе соединений; без повторной оплаты трубы", unitId: "m", expression: "rcs_crossing_length_m", inclusion: carrierConnectionScope,
+    costTreatment: "INFORMATIONAL_SCOPE", inputParameterIds: [carrierConnectionId("mode"), carrierConnectionId("program_reference")] },
+  { rowId: "rcs:carrier-connection:incompatible_supply_layout", formulaId: "rcs:carrier-connection:incompatible_supply_layout", section: "Контроль схемы рабочей трубы", category: "service",
+    title: "Выбранная электромуфтовая схема требует исходной поставки одинаковыми целыми секциями", unitId: "piece", expression: "-1",
+    inclusion: { kind: "and", operands: [carrierConnectionSelected, { kind: "or", operands: [carrierSupplyModes.customerSupplied, carrierSupplyModes.other].map((value): AutomaticInclusionCondition => ({ kind: "equals", parameterId: "rcs_carrier_supply_mode", value })) }] },
+    costTreatment: "INFORMATIONAL_SCOPE", formulaOutputBounds: { schemaVersion: "canonical_formula_output_bounds_v1", unitId: "piece", minimum: 0,
+      reasonRu: "Для иной поставки или заранее соединённой рабочей трубы нужна её фактическая схема узлов; исходные монтажные стыки нельзя выводить из неподтверждённой длины поставочных секций." } },
+  ...carrierConnectionGroups.flatMap((group): AutomaticRowSpec[] => {
+    const facts = [...group.facts, group.id("allocation_reference"), group.id("pipe_wall_thickness_mm"), group.id("coupler_outside_envelope_mm"),
+      "rcs_maximum_joint_envelope_diameter_mm", group.id("couplers_product_designation"), group.id("couplers_product_reference")];
+    return [{ rowId: `rcs:carrier-connection:${group.key}:joint_count`, formulaId: `rcs:carrier-connection:${group.key}:joint_count`, section: group.title, category: "service",
+      title: `${group.title}: фактическое число узлов, не закупка или швы футляра`, unitId: "piece", expression: group.quantity,
+      inclusion: carrierConnectionSelected, costTreatment: "INFORMATIONAL_SCOPE", inputParameterIds: group.facts },
+    { rowId: `rcs:carrier-connection:${group.key}:pipe_inside_diameter_mm`, formulaId: `rcs:carrier-connection:${group.key}:pipe_inside_diameter_mm`, section: group.title, category: "service",
+      title: `${group.title}: контроль фактической стенки рабочей трубы`, unitId: "mm", expression: `rcs_carrier_outside_diameter_mm-2*${group.id("pipe_wall_thickness_mm")}`,
+      inclusion: group.positive, costTreatment: "INFORMATIONAL_SCOPE", inputParameterIds: group.facts,
+      formulaOutputBounds: { schemaVersion: "canonical_formula_output_bounds_v1", unitId: "mm", exclusiveMinimum: 0,
+        reasonRu: "Две фактические стенки рабочей трубы должны быть меньше её наружного диаметра; ручное количество не исправляет невозможное сечение." } },
+    ...carrierConnectionWorks.flatMap(work => (["crew", "equipment"] as const).map((owner): AutomaticRowSpec => ({
+      rowId: `rcs:carrier-connection:${group.key}:${work.key}:${owner}_hours`, formulaId: `rcs:carrier-connection:${group.key}:${work.key}:${owner}_hours`, section: group.title,
+      category: owner === "crew" ? "labor" : "equipment", title: `${group.title}, ${work.title}: ${owner === "crew" ? "все исполнители" : "полный совместимый комплект с энергией"}`,
+      unitId: owner === "crew" ? "man_hour" : "machine_hour", expression: `(${group.quantity})*${group.id(`${work.key}_${owner}_h_per_joint`)}`,
+      inclusion: group.positive, costTreatment: "OWN_COST", procurement: true, titleParameterIds: [group.id(`${work.key}_${owner}_designation`)],
+      inputParameterIds: [...facts, group.id(`${work.key}_method_reference`), group.id(`${work.key}_${owner}_cost_basis`)],
+    }))),
+    ];
+  }),
+  ...carrierConnectionMaterialBranches.flatMap(material => {
+    const stock = material.id("compatible_stock"), reserve = material.id("retained_reserve"), pack = material.id("supplier_pack_net");
+    const need = `max(0,(${material.consumed})+${reserve}-${stock})`, count = `ceil((${need})/${pack})`, ordered = `(${count})*${pack}`, remaining = `${stock}+(${ordered})-(${material.consumed})`;
+    return ([ ["consumed", "фактическое потребление; непригодные муфты до монтажа не дополнительные работы", material.consumed],
+      ["new_need", "дополнительная потребность с резервом после пригодного наличия", need], ["supplier_pack_count", "число новых упаковок", count],
+      ["ordered", "новый отдельный заказ", ordered], ["remaining", "пригодный неиспользованный остаток с резервом", remaining],
+      ["free_beyond_reserve", "свободный пригодный остаток сверх резерва", `(${remaining})-${reserve}`] ] as const)
+      .map(([key, title, expression]): AutomaticRowSpec => ({ rowId: `rcs:carrier-connection-material:${material.group.key}:${material.key}:${key}`, formulaId: `rcs:carrier-connection-material:${material.group.key}:${material.key}:${key}`,
+        section: material.group.title, category: "material", title: `${material.title}: ${title}`, unitId: key === "supplier_pack_count" ? "package" : material.unit,
+        expression, inclusion: key === "consumed" ? material.group.positive : material.positive,
+        costTreatment: key === "ordered" ? "OWN_COST" : "INFORMATIONAL_SCOPE", procurement: key === "ordered",
+        inputParameterIds: [...material.group.facts, material.group.id("allocation_reference"), material.group.id("pipe_wall_thickness_mm"), material.group.id("coupler_outside_envelope_mm"), "rcs_maximum_joint_envelope_diameter_mm",
+          material.group.id("joining_method_reference"), material.group.id("couplers_product_designation"), material.group.id("couplers_product_reference"),
+          ...(key === "consumed" ? [] : [material.id("product_designation"), material.id("product_reference")]), ...(key === "ordered" ? [material.id("cost_basis")] : [])],
+        ...(key === "ordered" ? { titleParameterIds: [material.id("product_designation")] } : {}) }));
+  }),
+]);
+
 /** Actual initial straight-axis staking has its own physical resources.
  * FHWA FP-24 section 152 identifies selected survey/control methods, marking,
  * maintenance/replacement and final removal; it does not give this project's
@@ -794,6 +935,8 @@ const freightCargoGroups: readonly FreightCargo[] = [
     `rcs:coating:${zone.key}:ordered_kit_count`, zone.id("compatible_unmixed_kit_stock"), "piece")),
   ...coatingConsumableBranches.map(material => freightCargo(`coating_${material.zone.key}_${material.key}`, `${material.zone.title}: ${material.title}`, ROAD_CROSSING_SLEEVES_COATING_CONSUMABLE_ROWS_R1,
     `rcs:coating-consumable:${material.zone.key}:${material.key}:ordered`, material.id("compatible_stock"), material.unit, undefined, material.unit === "piece" ? undefined : material.id("supplier_pack_net"))),
+  ...carrierConnectionMaterialBranches.map(material => freightCargo(`carrier_connection_${material.group.key}_${material.key}`, `${material.group.title}: ${material.title}`, ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_ROWS_R1,
+    `rcs:carrier-connection-material:${material.group.key}:${material.key}:ordered`, material.id("compatible_stock"), material.unit, undefined, material.unit === "piece" ? undefined : material.id("supplier_pack_net"))),
 ];
 const freightId = (key: string, suffix: string) => `rcs_freight_${key}_${suffix}`;
 const freightLanes = freightCargoGroups.flatMap(cargo => (["new", "stock"] as const).map(lane => {
@@ -1045,7 +1188,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENTS_SCOPE_R1 = Object.freeze({
   omitted: Object.freeze([
     "Excavation support/reaction structures and groundwater measures; actual applicability and approved civil execution rates",
     "Approved pit return-fill technology, soil suitability/classification, heterogeneous/slurry allocations and non-granular/other bedding technologies",
-    "Clearance/site preparation, other survey layouts and actual control acceptance, applicable fencing/traffic measures, recovered markers/waste handling; joint repairs/reinspection and other NDT methods, coating actual acceptance, other coatings/multiple or partial/shared mixes, cured defects/reinspection and wet waste handling, carrier connections and actual loading/method/design approval",
+    "Clearance/site preparation, other survey layouts and actual control acceptance, applicable fencing/traffic measures, recovered markers/waste handling; joint repairs/reinspection and other NDT methods, coating actual acceptance, other coatings/multiple or partial/shared mixes, cured defects/reinspection and wet waste handling, PE carrier connection actual acceptance, other connections/layouts/testing/repairs/waste and actual loading/method/design approval",
     "Internal fill product/method approval, other/partial fills, external overbreak grouting, pressure/buoyancy/restraints, preparation/curing and water quality/allocation approval",
     "Consolidated delivery manifests, fittings/consumables freight, equipment delivery/return and extra soil sorting/site handling; actual certified mass, routes, receiving permission and prices remain project facts",
     "Full-owner reconciliation of explicit purchase exceptions with formula-reference balances",
@@ -1070,6 +1213,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_PARAMETERS_R1: readonly AutomaticPa
   ...ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_COATING_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_COATING_CONSUMABLE_PARAMETERS_R1,
+  ...ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_PREPARATION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_INSPECTION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_FREIGHT_PARAMETERS_R1,
@@ -1092,6 +1236,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[
   ...ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_COATING_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_COATING_CONSUMABLE_ROWS_R1,
+  ...ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_INSPECTION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1,
@@ -1120,8 +1265,9 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
     ...ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1.filter(row => /^rcs:mechanical:casing_/u.test(row.rowId))],
     remaining: ["Подтверждение технологии подготовки и другие/повторно используемые частичные расходники", "Другие методы контроля, фактические дефекты, ремонт и повторный контроль", "Приёмка фактического покрытия, другие покрытия и несколько/частичные/общие замесы, отходы и исправление дефектов", "Подтверждённая схема подъёма, фактическая несущая способность и направляющие при загрузке"] },
   { stageId: "carrier_and_supports", titleRu: "Рабочая труба, опоры и концевые узлы", rows: [...ROAD_CROSSING_SLEEVES_SPACER_GEOMETRY_ROWS_R1, ...ROAD_CROSSING_SLEEVES_PROCUREMENT_ROWS_R1,
+    ...ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_CARRIER_ROWS_R1, ...ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1.filter(row => !/^rcs:mechanical:casing_/u.test(row.rowId))],
-    remaining: ["Подтверждение рабочей трубы, иной поставки и совместимой технологии монтажа", "Соединители и соединения рабочей трубы", "Подтверждённые удерживающие и концевые конструкции"] },
+    remaining: ["Подтверждение рабочей трубы, фактической схемы/совместимости электромуфт, иной поставки и технологии монтажа", "Другие соединители, соединения разных видов, реальные дефекты и повторный контроль, испытания линии и отходы соединений", "Подтверждённые удерживающие и концевые конструкции"] },
   { stageId: "internal_fill", titleRu: "Заполнение внутри футляра", rows: [...ROAD_CROSSING_SLEEVES_INTERNAL_FILL_ROWS_R1, ...ROAD_CROSSING_SLEEVES_INTERNAL_WATER_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => row.rowId.startsWith("rcs:fill-execution:internal:"))],
     remaining: ["Подтверждение технологии смешивания, размещения и совместимого оборудования", "Применимые удерживающие конструкции и ограничения давления и плавучести", "Подготовка и выдержка", "Подтверждение качества и распределения воды", "Другие или частичные способы заполнения"] },

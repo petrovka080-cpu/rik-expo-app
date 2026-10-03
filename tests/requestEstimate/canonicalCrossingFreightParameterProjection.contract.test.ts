@@ -8,9 +8,11 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_FREIGHT_MOD
   ROAD_CROSSING_SLEEVES_COMPACTION_WATER_MODES_R1 as compactionWaterModes, ROAD_CROSSING_SLEEVES_COMPACTION_WATER_COST_BASIS_R1 as compactionWaterBasis,
   ROAD_CROSSING_SLEEVES_JACKING_LOADING_MODES_R1 as loadingModes,
   ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_MODES_R1 as casingPrepModes, ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_COST_BASIS_R1 as casingPrepBasis,
-  ROAD_CROSSING_SLEEVES_COATING_MODES_R1 as coatingModes, ROAD_CROSSING_SLEEVES_COATING_KIT_COST_BASIS_R1 as coatingKitBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_COATING_MODES_R1 as coatingModes, ROAD_CROSSING_SLEEVES_COATING_KIT_COST_BASIS_R1 as coatingKitBasis,
+  ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_MODES_R1 as connectionModes } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_TRENCH_FILL_MODES_R1 as fillModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
+import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierSupplyModes } from "../../src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1";
 import { buildConsumerCanonicalPrecompileParameterSession } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
 import { buildCanonicalParameterCards } from "../../src/lib/estimatePresentation/buildCanonicalParameterCards";
 import type { CanonicalEstimateCatalogItem, CanonicalEstimateParameterGuide, CanonicalEstimateParameterInputValue } from "../../src/lib/estimate/backendPlatform/contracts";
@@ -149,9 +151,10 @@ describe("actual coating programme and original inputs through the same publishe
     rcs_coating_damage_cleaner_gross_per_m2: 0.2, rcs_coating_damage_cleaner_product_reference: "TEST actual compatible cleaner and gross use programme",
   };
   it("keeps supplied source-bound coating facts editable with correct units and guides, including actual references", () => {
+    const visible = cards(coating);
     for (const [key, value] of Object.entries(coating).filter(([key]) => key.startsWith("rcs_coating_"))) {
-      expect(cards(coating).find(c => c.key === key)).toMatchObject({ value, editable: true, missing: false });
-      expect(cards(coating).find(c => c.key === key)?.guideShortRu).toBeTruthy();
+      expect(visible.find(c => c.key === key)).toMatchObject({ value, editable: true, missing: false });
+      expect(visible.find(c => c.key === key)?.guideShortRu).toBeTruthy();
     }
     for (const [key, unitRu] of [["gross_mixed_l_per_m2", "л/м²"], ["preparation_crew_h_per_m2", "чел.-ч/м²"], ["inspection_equipment_h_per_m2", "маш.-ч/м²"]]) {
       expect(cards(coating).find(c => c.key === `rcs_coating_damage_${key}`)?.unitRu).toBe(unitRu);
@@ -179,6 +182,53 @@ describe("actual coating programme and original inputs through the same publishe
       expect(result.parameters.some(p => p.parameterId === "rcs_coating_damage_gross_mixed_l_per_m2")).toBe(false);
       expect(result.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_coating_joint_band_width_m")).toMatchObject({ value: 0.4 });
     }
+  });
+});
+
+describe("actual carrier connection facts through the common publisher/editor", () => {
+  const input: Record<string, CanonicalEstimateParameterInputValue> = { ...fixture,
+    rcs_carrier_supply_mode: carrierSupplyModes.newSections,
+    rcs_carrier_connection_mode: connectionModes.electrofusion, rcs_carrier_connection_program_reference: "TEST actual separate PE internal and end connection programme",
+    rcs_carrier_total_end_extension_m: 2, rcs_carrier_physical_supply_section_length_m: 6,
+    rcs_carrier_connection_end_tie_in_count: 2, rcs_carrier_connection_internal_allocation_reference: "TEST actual exclusive group allocation",
+    rcs_carrier_connection_internal_pipe_wall_thickness_mm: 10, rcs_carrier_connection_internal_coupler_outside_envelope_mm: 190,
+    rcs_carrier_connection_internal_couplers_preinstall_unusable_count: 1,
+    rcs_carrier_connection_internal_couplers_product_reference: "TEST actual fitting/pipe/pressure/SDR/envelope compatibility",
+    rcs_carrier_connection_internal_joining_method_reference: "TEST actual compatible full procedure including cool-down",
+    rcs_carrier_connection_internal_joining_crew_h_per_joint: 2,
+    rcs_carrier_connection_internal_cleaner_gross_per_joint: 0.25,
+    rcs_carrier_connection_ends_couplers_product_reference: "TEST actual distinct end-tie compatible fitting",
+  };
+  it("makes already supplied original connection facts editable with source guides and correct units; no derived joint/order questions", () => {
+    const visible = cards(input);
+    for (const [key, value] of Object.entries(input).filter(([key]) => key.startsWith("rcs_carrier_connection_"))) {
+      expect(visible.map(c => c.key)).toContain(key);
+      expect(visible.find(c => c.key === key)).toMatchObject({ value, missing: false, editable: true });
+      expect(visible.find(c => c.key === key)?.guideShortRu).toBeTruthy();
+    }
+    expect(cards(input).find(c => c.key === "rcs_carrier_connection_internal_joining_crew_h_per_joint")?.unitRu).toBe("чел.-ч/шт.");
+    expect(cards(input).find(c => c.key === "rcs_carrier_connection_internal_cleaner_gross_per_joint")?.unitRu).toBe("л/шт.");
+    expect(catalog.parameterSchema.some(p => /carrier_connection.*(?:ordered|joint_count|remaining)/u.test(p.parameterId))).toBe(false);
+  });
+  it("unknown end tie count stays editable while internal actual connection fields remain active", () => {
+    const unknown = { ...input }; delete unknown.rcs_carrier_connection_end_tie_in_count;
+    expect(cards(unknown).find(c => c.key === "rcs_carrier_connection_end_tie_in_count")).toMatchObject({ value: null, missing: true, editable: true });
+    expect(session(unknown).parameters.find(p => p.parameterId === "rcs_carrier_connection_internal_joining_crew_h_per_joint")).toBeDefined();
+  });
+  it("known connection scope keeps the real coupler passport active with unknown additional unusable units", () => {
+    const unknown = { ...input }; delete unknown.rcs_carrier_connection_internal_couplers_preinstall_unusable_count;
+    expect(cards(unknown).find(c => c.key === "rcs_carrier_connection_internal_couplers_preinstall_unusable_count")).toMatchObject({ value: null, missing: true, editable: true });
+    expect(cards(unknown).find(c => c.key === "rcs_carrier_connection_internal_couplers_product_reference")).toMatchObject({ value: input.rcs_carrier_connection_internal_couplers_product_reference, missing: false, editable: true });
+    expect(cards(unknown).find(c => c.key === "rcs_carrier_connection_internal_joining_crew_h_per_joint")).toMatchObject({ value: 2, editable: true });
+  });
+  it("zero end ties and an explicitly prejoined boundary disable only their dependent facts while preserving values", () => {
+    const zero = session({ ...input, rcs_carrier_connection_end_tie_in_count: 0 });
+    expect(zero.parameters.some(p => p.parameterId === "rcs_carrier_connection_ends_couplers_product_reference")).toBe(false);
+    expect(zero.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_carrier_connection_ends_couplers_product_reference")).toMatchObject({ value: input.rcs_carrier_connection_ends_couplers_product_reference });
+    expect(zero.parameters.some(p => p.parameterId === "rcs_carrier_connection_internal_joining_crew_h_per_joint")).toBe(true);
+    const prejoined = session({ ...input, rcs_carrier_connection_mode: connectionModes.prejoined });
+    expect(prejoined.parameters.find(p => p.parameterId === "rcs_carrier_connection_program_reference")).toBeDefined();
+    expect(prejoined.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_carrier_connection_internal_joining_crew_h_per_joint")).toMatchObject({ value: 2 });
   });
 });
 

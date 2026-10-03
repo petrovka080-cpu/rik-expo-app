@@ -14,7 +14,8 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_COMPONENT_P
   ROAD_CROSSING_SLEEVES_JACKING_LOADING_MODES_R1 as loadingModes,
   ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_MODES_R1 as casingPrepModes, ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_COST_BASIS_R1 as casingPrepBasis,
   ROAD_CROSSING_SLEEVES_COATING_MODES_R1 as coatingModes, ROAD_CROSSING_SLEEVES_COATING_KIT_COST_BASIS_R1 as coatingKitBasis,
-  ROAD_CROSSING_SLEEVES_COATING_CONSUMABLE_COST_BASIS_R1 as coatingConsumableBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_COATING_CONSUMABLE_COST_BASIS_R1 as coatingConsumableBasis,
+  ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_MODES_R1 as connectionModes, ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_MATERIAL_COST_BASIS_R1 as connectionBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierModes, ROAD_CROSSING_SLEEVES_CARRIER_COST_BASIS_R1 as carrierBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1 as jointParameters, ROAD_CROSSING_SLEEVES_JOINT_COST_BASES_R1 as bases } from "../../src/lib/estimate/v4/roadCrossingSleevesJointResourcesR1";
@@ -31,6 +32,7 @@ const components = buildRoadCrossingSleevesComponentsR1({ source_title: "Owned i
 const definition = components.definition;
 // Synthetic actual-fact/price fixtures ONLY, never a published default or WPS approval.
 const fixture: Record<string, unknown> = {
+  rcs_carrier_connection_mode: connectionModes.otherParty, rcs_carrier_connection_program_reference: "TEST actual compatible carrier connections by another party, no duplicate executor charge",
   rcs_coating_mode: coatingModes.otherParty, rcs_coating_program_reference: "TEST actual compatible field coating resources provided by other party, no executor charge",
   rcs_casing_prep_material_mode: casingPrepModes.otherParty, rcs_casing_prep_material_program_reference: "TEST actual compatible preparation consumables provided by other party, no executor purchase",
   rcs_jacking_section_loading_cost_mode: loadingModes.included, rcs_jacking_section_loading_allocation_reference: "TEST whole section loading is included once in actual advance rates, disjoint from excavation and other mechanical work",
@@ -269,6 +271,128 @@ describe("actual disjoint field coating batches and all their initial resources"
     expect(q(result, "rcs:freight:coating_damage_cleaner_new:trip_count")).toBe(2);
     expect(q(result, "rcs:freight:coating_damage_cleaner_stock:trip_count")).toBe(1);
     await expect(compile({ ...input, rcs_freight_coating_damage_cleaner_offsite_stock_units: 0.2 })).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+  });
+});
+
+describe("actual PE carrier electrofusion resources and independent end ties", () => {
+  const connection: Record<string, unknown> = { ...fixture,
+    rcs_carrier_connection_mode: connectionModes.electrofusion, rcs_carrier_connection_program_reference: "TEST actual straight uniform PE section layout and separate compatible end ties, complete process/cooling and initial inspection",
+    rcs_carrier_supply_mode: carrierModes.newSections, rcs_carrier_total_end_extension_m: 2, rcs_carrier_physical_supply_section_length_m: 6,
+    rcs_carrier_damaged_whole_section_count: 0, rcs_carrier_compatible_whole_section_stock_count: 0,
+    rcs_carrier_retained_whole_section_count: 0, rcs_carrier_supplier_bundle_section_count: 2, rcs_carrier_pipe_cost_basis: carrierBasis,
+    rcs_carrier_connection_end_tie_in_count: 2,
+    ...Object.fromEntries(["internal", "ends"].flatMap(group => Object.entries({
+      allocation_reference: `TEST exclusive ${group} nodes, materials and disjoint operations`, pipe_wall_thickness_mm: 10, coupler_outside_envelope_mm: 190,
+      joining_method_reference: "TEST actual compatible clean/peel/round/clamp/fuse/full cycles/cooling programme, disjoint from insertion/inspection",
+      joining_crew_designation: "TEST all joining operators", joining_crew_h_per_joint: 2, joining_crew_cost_basis: executionBases.crew,
+      joining_equipment_designation: "TEST whole compatible cutter/peeler/clamp/fusion controller/power/protection set with energy", joining_equipment_h_per_joint: 1.5, joining_equipment_cost_basis: executionBases.equipment,
+      inspection_method_reference: "TEST actual initial compatible full joint inspection, no repairs/line testing",
+      inspection_crew_designation: "TEST all inspectors", inspection_crew_h_per_joint: 0.25, inspection_crew_cost_basis: executionBases.crew,
+      inspection_equipment_designation: "TEST compatible initial instruments with energy", inspection_equipment_h_per_joint: 0.1, inspection_equipment_cost_basis: executionBases.equipment,
+      couplers_preinstall_unusable_count: group === "internal" ? 1 : 0,
+    }).map(([key, value]) => [`rcs_carrier_connection_${group}_${key}`, value]))),
+    ...Object.fromEntries(["internal", "ends"].flatMap(group => ["couplers", "wash_water", "cleaner", "wipes", "markers"].flatMap(material => Object.entries({
+      ...(material === "couplers" ? {} : { gross_per_joint: ({ wash_water: 1, cleaner: 0.25, wipes: 2, markers: 0.1 } as Record<string, number>)[material] }),
+      product_designation: `TEST compatible ${material}`, product_reference: "TEST actual pipe/complete fitting/media/pressure/SDR/envelope or cleaning/marking/discard compatibility and exclusive allocated usability",
+      compatible_stock: material === "couplers" ? 1 : material === "cleaner" ? 0.1 : 0,
+      retained_reserve: material === "cleaner" ? 0.2 : 1, supplier_pack_net: material === "couplers" ? 3 : material === "cleaner" ? 0.5 : 2,
+      cost_basis: connectionBasis,
+    }).map(([key, value]) => [`rcs_carrier_connection_${group}_${material}_${key}`, value])))),
+  };
+  const row = (group: string, key: string) => `rcs:carrier-connection:${group}:${key}`;
+  const mRow = (group: string, material: string, key: string) => `rcs:carrier-connection-material:${group}:${material}:${key}`;
+  it("derives internal joints from original installed carrier sections, not casing sections or bought bundles; keeps actual end ties separate", async () => {
+    const result = await compile(connection);
+    expect(result.preliminaryNeeds).toEqual([]);
+    expect(q(result, row("internal", "joint_count"))).toBe(6);
+    expect(q(result, row("ends", "joint_count"))).toBe(2);
+    expect(q(result, row("internal", "joining:crew_hours"))).toBe(12);
+    expect(q(result, row("internal", "joining:equipment_hours"))).toBe(9);
+    expect(q(result, row("ends", "inspection:crew_hours"))).toBe(0.5);
+    const changed = await compile({ ...connection, rcs_planned_physical_section_length_m: 35,
+      rcs_carrier_supplier_bundle_section_count: 20, rcs_carrier_retained_whole_section_count: 8, rcs_carrier_damaged_whole_section_count: 3,
+      rcs_carrier_compatible_whole_section_stock_count: 40, rcs_carrier_connection_internal_couplers_preinstall_unusable_count: 4 });
+    expect(q(changed, row("internal", "joint_count"))).toBe(6);
+    expect(q(changed, row("internal", "joining:crew_hours"))).toBe(12);
+    expect(components.stageMatrix.filter(stage => stage.ownResourceIds.includes(mRow("internal", "couplers", "ordered"))).map(stage => stage.stageId)).toEqual(["carrier_and_supports"]);
+  });
+  it("uses one complete coupler per real node, adds only actual preinstall losses and reserve to purchases, and retains usable balances", async () => {
+    const result = await compile(connection);
+    expect(q(result, mRow("internal", "couplers", "consumed"))).toBe(7);
+    expect(q(result, mRow("internal", "couplers", "new_need"))).toBe(7);
+    expect(q(result, mRow("internal", "couplers", "ordered"))).toBe(9);
+    expect(q(result, mRow("internal", "couplers", "remaining"))).toBe(3);
+    expect(q(result, mRow("internal", "couplers", "free_beyond_reserve"))).toBe(2);
+    expect(q(result, mRow("internal", "cleaner", "consumed"))).toBe(1.5);
+    expect(q(result, mRow("internal", "cleaner", "ordered"))).toBe(2);
+    expect(q(result, mRow("internal", "cleaner", "free_beyond_reserve"))).toBe(0.4);
+    expect(q(result, mRow("internal", "wipes", "consumed"))).toBe(12);
+    expect(q(result, mRow("internal", "markers", "consumed"))).toBe(1);
+    expect(result.rows.filter(r => r.row_id.startsWith("rcs:carrier-connection-material:") && r.included_in_procurement).length).toBe(10);
+    expect(definition.parameters.some(p => /carrier_connection.*(?:joint_count|ordered|remaining)/u.test(p.parameter_id))).toBe(false);
+  });
+  it("unknown actual end ties leave internal fitting orders and all internal work known; zero ties disable only that group's resources", async () => {
+    const input = { ...connection }; delete input.rcs_carrier_connection_end_tie_in_count;
+    const unknown = await compile(input);
+    expect(q(unknown, row("internal", "joining:crew_hours"))).toBe(12);
+    expect(q(unknown, mRow("internal", "couplers", "ordered"))).toBe(9);
+    expect(unknown.preliminaryNeeds.every(need => need.missing_parameter_ids.includes("rcs_carrier_connection_end_tie_in_count"))).toBe(true);
+    const zero: Record<string, unknown> = { ...connection, rcs_carrier_connection_end_tie_in_count: 0 };
+    for (const key of Object.keys(zero)) if (key.startsWith("rcs_carrier_connection_ends_")) delete zero[key];
+    const result = await compile(zero);
+    expect(result.preliminaryNeeds).toEqual([]);
+    expect(q(result, row("ends", "joint_count"))).toBe(0);
+    expect(result.rows.some(r => /carrier-connection(?:-material)?:ends:/u.test(r.row_id) && r.included_in_procurement)).toBe(false);
+  });
+  it("missing original carrier section length leaves actual end ties and casing/civil work independent", async () => {
+    const input = { ...connection }; delete input.rcs_carrier_physical_supply_section_length_m;
+    const result = await compile(input);
+    expect(q(result, row("ends", "joining:crew_hours"))).toBe(4);
+    expect(q(result, mRow("ends", "couplers", "ordered"))).toBe(3);
+    expect(q(result, "rcs:mechanical:casing_preparation:crew_hours")).toBe(3);
+    expect(result.preliminaryNeeds.every(need => need.missing_parameter_ids.includes("rcs_carrier_physical_supply_section_length_m"))).toBe(true);
+  });
+  it.each(["rcs_carrier_connection_program_reference", "rcs_carrier_connection_internal_allocation_reference", "rcs_carrier_connection_internal_couplers_product_reference", "rcs_carrier_connection_internal_joining_method_reference", "rcs_carrier_connection_internal_pipe_wall_thickness_mm", "rcs_carrier_connection_internal_couplers_cost_basis"])(
+    "manual coupler order retains mandatory original compatibility/program/cost gate %s", async fact => {
+      const input = { ...connection }; delete input[fact];
+      const result = await compile(input, { [mRow("internal", "couplers", "ordered")]: { quantity: "9", provenance } });
+      expect(result.preliminaryNeeds.find(need => need.row_id === mRow("internal", "couplers", "ordered"))?.missing_parameter_ids).toContain(fact);
+      expect(result.rows.some(r => r.row_id === mRow("internal", "couplers", "ordered"))).toBe(false);
+    });
+  it("rejects unconfirmed supply layout, impossible wall or incompatible fitting envelope before manual orders", async () => {
+    const override = { [mRow("internal", "couplers", "ordered")]: { quantity: "1", provenance } };
+    await expect(compile({ ...connection, rcs_carrier_supply_mode: carrierModes.customerSupplied }, override)).rejects.toMatchObject({ code: "FORMULA_OUTPUT_BOUNDS_FAILED" });
+    await expect(compile({ ...connection, rcs_carrier_connection_internal_pipe_wall_thickness_mm: 80 }, override)).rejects.toMatchObject({ code: "FORMULA_OUTPUT_BOUNDS_FAILED" });
+    await expect(compile({ ...connection, rcs_carrier_connection_internal_coupler_outside_envelope_mm: 201 }, override)).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+    await expect(compile({ ...connection, rcs_carrier_connection_end_tie_in_count: 3 })).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+  });
+  it("missing cleaner supply packaging keeps actual cleaner consumption and full joining/cooling work known", async () => {
+    const input = { ...connection }; delete input.rcs_carrier_connection_internal_cleaner_supplier_pack_net;
+    const result = await compile(input);
+    expect(q(result, mRow("internal", "cleaner", "consumed"))).toBe(1.5);
+    expect(q(result, row("internal", "joining:equipment_hours"))).toBe(9);
+    expect(result.preliminaryNeeds.every(need => need.missing_parameter_ids.includes("rcs_carrier_connection_internal_cleaner_supplier_pack_net"))).toBe(true);
+  });
+  it("unknown preinstall unusable couplers leave actual joining and initial inspection known instead of assuming zero loss", async () => {
+    const input = { ...connection }; delete input.rcs_carrier_connection_internal_couplers_preinstall_unusable_count;
+    const result = await compile(input);
+    expect(q(result, row("internal", "joining:crew_hours"))).toBe(12);
+    expect(q(result, row("internal", "inspection:equipment_hours"))).toBe(0.6);
+    expect(result.preliminaryNeeds.every(need => need.missing_parameter_ids.includes("rcs_carrier_connection_internal_couplers_preinstall_unusable_count"))).toBe(true);
+    expect(result.rows.some(r => r.row_id === mRow("internal", "couplers", "ordered"))).toBe(false);
+  });
+  it("ships selected fittings as whole units and cleaner in full new containers, preserving original joint work", async () => {
+    const result = await compile({ ...connection,
+      ...Object.fromEntries(["couplers", "cleaner"].flatMap(material => Object.entries({ mode: freightModes.separate,
+        vehicle_designation: `TEST dedicated compatible ${material} cargo`, shipping_kg_per_unit: material === "couplers" ? 3 : 1,
+        payload_kg: 10, max_units_per_trip: material === "couplers" ? 5 : 0.75, cost_basis: freightBasis,
+      }).map(([key, value]) => [`rcs_freight_carrier_connection_internal_${material}_new_${key}`, value]))),
+    });
+    expect(q(result, "rcs:freight:carrier_connection_internal_couplers_new:cargo_units")).toBe(9);
+    expect(q(result, "rcs:freight:carrier_connection_internal_couplers_new:trip_count")).toBe(3);
+    expect(q(result, "rcs:freight:carrier_connection_internal_cleaner_new:effective_units_per_trip")).toBe(0.5);
+    expect(q(result, "rcs:freight:carrier_connection_internal_cleaner_new:trip_count")).toBe(4);
+    expect(q(result, row("internal", "joining:crew_hours"))).toBe(12);
   });
 });
 

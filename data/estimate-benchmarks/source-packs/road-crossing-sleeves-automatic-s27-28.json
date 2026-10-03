@@ -5,7 +5,7 @@
   "scope": "One continuous steel casing crossing with explicitly selected installation method. Casing supply and site joints, support rings and elements, contact tape, compatible end-seal kits, applicable civil work, crew labor, mechanisms and logistics are separate quantity/cost owners. This source pack is not itself a published owner or accepted estimate.",
   "engineeringAcceptanceClaimed": false,
   "universalRatesClaimed": false,
-  "implementationStatus": "COMPONENT_ASSEMBLY_WITH_ACTUAL_SUPPLY_FREIGHT_SOIL_STATES_HAUL_RECEIVING_INSPECTION_STAKING_WATER_JACKING_LOADING_CASING_PREPARATION_AND_DISJOINT_COATING_BATCH_RESOURCES_NOT_PUBLISHED_NOT_FULL_OWNER",
+  "implementationStatus": "COMPONENT_ASSEMBLY_WITH_ACTUAL_SUPPLY_FREIGHT_SOIL_STATES_HAUL_RECEIVING_INSPECTION_STAKING_WATER_JACKING_LOADING_CASING_PREPARATION_COATING_AND_PE_CARRIER_CONNECTION_RESOURCES_NOT_PUBLISHED_NOT_FULL_OWNER",
   "quantityComponent": {
     "module": "src/lib/estimate/v4/roadCrossingSleevesQuantityModelR1.ts",
     "verification": "tests/estimateNorms/roadCrossingSleevesQuantityModelR1.contract.test.ts",
@@ -124,6 +124,19 @@
       "receiving": "Explicit other-party receiving creates no charge. Separate receiving owns only excess loose m3 OR actual tonnes from moist shipping density, excluding transport and other execution; no invented disposal permission, prices or generic density",
       "independence": "Known bank/loose excavation remains calculable with unavailable fill/reuse data. Dependent balance/trips/receiving retain original geometry, actual state facts, suitability/allocation and route/receiver/cost boundaries even under manual paid quantities. Explicit zero reuse disables origin/conversion; zero excess disables truck/destination/receiving facts. Negative allocation is rejected rather than clamped",
       "open": "Material/technology/design/classification acceptance, mixed/slurry allocation, extra sorting/site handling, all other stage gaps and governed full-owner publication remain open"
+    },
+    "carrierConnectionResources": {
+      "module": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",
+      "verification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
+      "editorVerification": "tests/requestEstimate/canonicalCrossingFreightParameterProjection.contract.test.ts",
+      "scope": "One selected straight compatible PE carrier assembled from original uniform physical supply sections. Each initial internal joint uses one complete electrofusion coupler; actual same-kind end tie-ins are a separate disjoint group, with explicit 0..2 scope nodes rather than automatically inventing two. Customer/prejoined/other supply layouts require their actual separate programme",
+      "quantity": "Internal joints = max(0, ceil((original crossing length + actual end extensions)/original carrier physical section length) - 1). Casing section count, pipe order bundles/damage/reserves/stock and coupler package/order counts never become installed joints or additional joining work. Actual unusable couplers during this work before installation are separate material consumption, not forecast fusion failures",
+      "resources": "Each group separately owns the complete actual cleaning/marking/cutting/peeling/rerounding/assembly/clamping/full fusion cycles and cooling personnel and compatible equipment with power/energy and actual protection. Initial compatible instrument inspection is separate. Full couplers, suitable initial wash water, compatible cleaner, discarded wipes and actually discarded markers have exclusive compatible stock/reserve/net supplier packs/new order/remaining/free balances",
+      "integrity": "Source programme/allocation/pipe/fitting pressure/media/wall/envelope/method and disjoint cost gates remain under manual paid quantities. Impossible wall, incompatible original envelope or unsupported supply layout rejects before overrides. Unknown end nodes or original internal section length affects only dependent connections; independent known group/casing/civil work calculates. Missing supply packaging keeps consumption and complete joining work known",
+      "freight": "Shared dedicated cargo derives only from original selected orders or actual allocated off-site stock. Whole couplers/articles and unopened new cleaner/water packs are indivisible; certified shipping mass, payload and placement capacity remain actual facts. No extra fitting or fusion cycles inferred from package rounding",
+      "primarySource": "https://www.gfps.com/content/dam/gfps/us/products/joining-technology/electrofusion/msa-340/gfcp-us-electrofusion-installation-training-manual-en.pdf",
+      "sourceBoundary": "GF example separates tools, cleaning/marking/peeling, fit/clamp/fuse/cool and initial inspection. No foreign legal standard, brand, voltage/time/SDR default, consumable rate, quality approval or automatic re-fusion is inferred",
+      "open": "Actual layout/material/procedure/qualification acceptance, other/heterogeneous connections or supply, additional protection materials, actual failure/replacement/reinspection, full-line testing, shaving/offcut/fitting/wipe waste, prices, full crossing publication and user acceptance remain open"
     },
     "fieldCoatingResources": {
       "module": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",
