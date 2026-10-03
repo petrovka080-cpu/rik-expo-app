@@ -1,3 +1,4 @@
+import type { CanonicalEstimateParameterSessionSnapshot } from "./canonicalEstimateParameterSessionSnapshot";
 import { fetchWithRequestTimeout } from "../../requestTimeoutPolicy";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../../supabaseClient";
 import type { ConsumerEstimateHydrationTrace, ConsumerEstimateTransportPhase } from "../../consumerRequests/consumerEstimateHydrationTrace";
@@ -608,12 +609,7 @@ export function getCanonicalEstimateParameterSessionSnapshot(
   signal?: AbortSignal | null,
   hydrationTrace?: ConsumerEstimateHydrationTrace,
 ) {
-  return invoke<{
-    apiVersion: string;
-    revision: CanonicalEstimateRevisionView;
-    parent: CanonicalEstimateRevisionView | null;
-    catalog: CanonicalEstimateCatalogItem;
-  }>(`revisions/${encodeURIComponent(revisionId)}/parameter-session`, {
+  return invoke<CanonicalEstimateParameterSessionSnapshot>(`revisions/${encodeURIComponent(revisionId)}/parameter-session`, {
     signal,
     requestClass: "ui_scope_load",
     hydrationTrace,

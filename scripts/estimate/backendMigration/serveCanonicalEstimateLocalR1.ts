@@ -1,3 +1,4 @@
+import { projectCanonicalEstimateParameterSessionSnapshot } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSessionSnapshot";
 import {
   createHash,
   createHmac,
@@ -69,6 +70,7 @@ import {
 import { canonicalEstimateCandidateAdmissionIdempotencyKey } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCommandIdentity";
 import { normalizePublicBoqNameRu } from "../../../src/lib/estimate/publicBoqNaming";
 import {
+  type CanonicalEstimateCatalogItem,
   canonicalEstimateEffectivePriceSnapshotIds,
   canonicalEstimatePreliminaryNeedsFromAmendmentContract,
 } from "../../../src/lib/estimate/backendPlatform/contracts";
@@ -3762,7 +3764,9 @@ async function localParameterSessionSnapshot(revisionId: string) {
               [definition.cumulative_baseline_id],
             )
           ).rows[0] ?? null);
-    return {
+    return projectCanonicalEstimateParameterSessionSnapshot({
+      requestedRevisionId: revisionId,
+      definitionVersionId: String(definition.id),
       revision: localRevisionView(revision),
       parent: parent == null ? null : localRevisionView(parent),
       catalog: {
@@ -3779,9 +3783,9 @@ async function localParameterSessionSnapshot(revisionId: string) {
           String(identity.catalog_id),
           parameters,
           baseline,
-        ),
+        ) as CanonicalEstimateCatalogItem["parameterSchema"],
       },
-    };
+    });
   });
 }
 
@@ -4932,7 +4936,7 @@ async function route(
         code: "NOT_FOUND",
         httpStatus: 404,
       });
-    return send(response, 200, { apiVersion: API_VERSION, ...snapshot });
+    return send(response, 200, snapshot);
   }
   if (
     request.method === "GET" &&

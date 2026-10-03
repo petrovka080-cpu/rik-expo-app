@@ -1,3 +1,4 @@
+import { projectCanonicalEstimateParameterSessionSnapshot } from "../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSessionSnapshot";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -96,6 +97,24 @@ const asphaltCatalog: CanonicalEstimateCatalogItem = {
 };
 
 describe("P0 canonical parameter editor and professional PDF", () => {
+  it("builds the identical editable session from the bounded transport projection, including manual quantity needs", () => {
+    const parent = revision({ revisionId: PIPELINE_REVISION_ID, catalogId: ASPHALT_CATALOG_ID, parameters: { catchment_area_m2: "4500" } });
+    const child = revision({ revisionId: ASPHALT_REVISION_ID, parentRevisionId: parent.revisionId, catalogId: ASPHALT_CATALOG_ID,
+      parameters: { catchment_area_m2: "5000" }, userInputSnapshot: { catchment_area_m2: "5000" },
+      acceptedBaselineSnapshot: { drain_length_m: "120" }, preliminaryNeeds: [
+        { rowId: "active", selected: true, missingParameterIds: ["drain_length_m"], quantity: null, needState: "QUANTITY_REQUIRED" },
+        { rowId: "inactive", selected: false, missingParameterIds: ["existing_receiver"], quantity: null, needState: "CONDITION_REQUIRED" },
+        { rowId: "custom", selected: true, missingParameterIds: [], quantity: null, needState: "QUANTITY_REQUIRED" },
+      ].map((need, ordinal) => ({ ...need, needState: need.needState as "QUANTITY_REQUIRED" | "CONDITION_REQUIRED", ordinal, section: "test", category: "material", titleRu: "Тест", unitId: "m", unitPrice: null, procurementEligible: true, formulaId: "test", calculationTrace: { largeUnusedTrace: "x".repeat(100000) }, normativeTrace: [], needSha256: CHECKSUM })) });
+    const snapshot = projectCanonicalEstimateParameterSessionSnapshot({ requestedRevisionId: child.revisionId, definitionVersionId: "fixture-definition", revision: child, parent, catalog: asphaltCatalog });
+    expect(buildConsumerCanonicalParameterSession({ ...snapshot, draftId: "transport-parity" }))
+      .toEqual(buildConsumerCanonicalParameterSession({ revision: child, parent, catalog: asphaltCatalog, draftId: "transport-parity" }));
+    expect(snapshot.catalog).toBe(asphaltCatalog);
+    expect(snapshot.revision.preliminaryNeeds).toHaveLength(3);
+    expect(JSON.stringify(snapshot)).not.toContain("largeUnusedTrace");
+    expect(child.preliminaryNeeds?.[0].calculationTrace.largeUnusedTrace).toHaveLength(100000);
+  });
+
   it("keeps generated per-output and per-unit formula inputs out of the consumer form", () => {
     const visibleArea = asphaltCatalog.parameterSchema[0];
     expect(isCanonicalEstimateUserEditableParameter(visibleArea)).toBe(true);

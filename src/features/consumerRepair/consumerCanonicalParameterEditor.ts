@@ -1,3 +1,8 @@
+import {
+  assertCanonicalEstimateParameterSessionSnapshotIdentity,
+  type CanonicalEstimateParameterSessionRevision,
+  type CanonicalEstimateParameterSessionParent,
+} from "../../lib/estimate/backendPlatform/canonicalEstimateParameterSessionSnapshot";
 import type {
   ConsumerRepairDraftBundle,
   ConsumerRepairDraftRevisionParamBatchPatch,
@@ -552,8 +557,8 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
 
 export function buildConsumerCanonicalParameterSession(input: {
   catalog: CanonicalEstimateCatalogItem;
-  revision: CanonicalEstimateRevisionView;
-  parent?: CanonicalEstimateRevisionView | null;
+  revision: CanonicalEstimateParameterSessionRevision;
+  parent?: CanonicalEstimateParameterSessionParent | null;
   draftId: string;
 }): CanonicalParameterSession {
   const activeNeedParameterIds = new Set((input.revision.preliminaryNeeds ?? [])
@@ -659,8 +664,10 @@ export async function loadConsumerCanonicalParameterSession(input: {
 }): Promise<CanonicalParameterSession> {
   const startedAt = Date.now();
   const hydrationTrace = createConsumerEstimateHydrationTrace();
-  const { revision, catalog, parent } = await hydrationTrace.measureAsync("PARAMETER_SNAPSHOT_FETCH",
+  const snapshot = await hydrationTrace.measureAsync("PARAMETER_SNAPSHOT_FETCH",
     () => getCanonicalEstimateParameterSessionSnapshot(input.revisionId, undefined, hydrationTrace));
+  assertCanonicalEstimateParameterSessionSnapshotIdentity(snapshot, input.revisionId);
+  const { revision, catalog, parent } = snapshot;
   if (catalog.releaseId !== revision.releaseId) {
     throw new CanonicalEstimateApiError("Параметры не открыты: версия каталога не совпадает со сметой.", {
       code: "REVISION_RELEASE_MISMATCH",
