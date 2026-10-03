@@ -120,7 +120,8 @@ export const ROAD_CROSSING_SLEEVES_SHORING_ROWS_R1: readonly AutomaticRowSpec[] 
       .map(([suffix, expression]) => row(suffix, "разность подтверждённых исходных размеров; не расчёт устойчивости и не нормативный зазор", expression, "m", {
         inputParameterIds: [...facts, ...geometryFacts], formulaOutputBounds: bounds("m") })),
     ...operations.flatMap(op => {
-      const opFacts = [...facts, id(`${op.key}_method_reference`), id(op.quantity), ...(op.quantity === "placement_cycle_count" ? geometryFacts : [])];
+      const opFacts = [...facts, id(`${op.key}_method_reference`), id(op.quantity), ...(op.quantity === "placement_cycle_count" ? geometryFacts : []),
+        ...(op.key === "installation" && key !== "trench" ? [`rcs_shoring_gap_${key}_mode`, `rcs_shoring_gap_${key}_program_and_allocation_reference`] : [])];
       return [
         row(`${op.key}:crew_hours`, `${op.title}: все исполнители`, `${id(op.quantity)}*${id(`${op.key}_crew_h_per_unit`)}`, "man_hour", {
           category: "labor", costTreatment: "OWN_COST", procurement: true, titleParameterIds: [id(`${op.key}_crew_designation`)],

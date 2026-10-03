@@ -25,6 +25,8 @@ import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib
 import { ROAD_CROSSING_SLEEVES_SHORING_MODES_R1 as shoringModes, ROAD_CROSSING_SLEEVES_SHORING_RENTAL_BASIS_R1 as shoringRentalBasis,
   ROAD_CROSSING_SLEEVES_SHORING_WORK_BASES_R1 as shoringWorkBases } from "../../src/lib/estimate/v4/roadCrossingSleevesShoringR1";
 import { ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_MODES_R1 as shoringMaterialModes, ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_BASIS_R1 as shoringMaterialBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesShoringConsumablesR1";
+import { ROAD_CROSSING_SLEEVES_SHORING_GAP_MODES_R1 as gapModes, ROAD_CROSSING_SLEEVES_SHORING_GAP_SUPPLY_MODES_R1 as gapSupplyModes,
+  ROAD_CROSSING_SLEEVES_SHORING_GAP_WORK_MODES_R1 as gapWorkModes, ROAD_CROSSING_SLEEVES_SHORING_GAP_BASES_R1 as gapBases } from "../../src/lib/estimate/v4/roadCrossingSleevesShoringGapFillR1";
 import { ROAD_CROSSING_SLEEVES_REACTION_MODES_R1 as reactionModes, ROAD_CROSSING_SLEEVES_REACTION_RENTAL_BASIS_R1 as reactionRentalBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesReactionR1";
 import { ROAD_CROSSING_SLEEVES_SERVICE_WASTE_MODES_R1 as serviceWasteModes, ROAD_CROSSING_SLEEVES_SERVICE_WASTE_TRIP_BASIS_R1 as serviceWasteTripBasis,
   ROAD_CROSSING_SLEEVES_SERVICE_WASTE_RECEIVING_MODES_R1 as serviceWasteReceivingModes } from "../../src/lib/estimate/v4/roadCrossingSleevesServiceWasteR1";
@@ -68,6 +70,50 @@ const fixture: Record<string, CanonicalEstimateParameterInputValue> = {
 };
 const session = (parameters = fixture, missingParameterIds: string[] = []) => buildConsumerCanonicalPrecompileParameterSession({
   catalog, draftId: "owned-freight-editor", parameters, missingParameterIds, userExplicitParameterIds: Object.keys(parameters), textExtractedParameterIds: [],
+});
+
+describe("actual permanent rectangular contact-gap facts in the common editable parameter session", () => {
+  const gap: Record<string, CanonicalEstimateParameterInputValue> = { ...fixture, rcs_civil_installation_method: methods.pipeJacking,
+    rcs_shoring_thrust_mode: shoringModes.completeRental, rcs_shoring_thrust_complete_kit_count: 1, rcs_shoring_thrust_placement_cycle_count: 1,
+    rcs_shoring_thrust_installed_outer_length_m: 4, rcs_shoring_thrust_installed_outer_width_m: 3,
+    rcs_jacking_thrust_excavation_length_m: 6, rcs_jacking_thrust_excavation_width_m: 4, rcs_jacking_thrust_excavation_depth_m: 3,
+    rcs_jacking_thrust_permanent_occupied_volume_m3: 40,
+    rcs_shoring_gap_thrust_mode: gapModes.retainedRectangular,
+    rcs_shoring_gap_thrust_program_and_allocation_reference: "TEST actual permanent preplaced gap included in original permanent occupied volume once, no duplicate installation/final fill/water",
+    rcs_shoring_gap_thrust_rectangular_contact_reference: "TEST actual full rectangular four-sided contact, one kit/position/full depth/uniform gap, no protrusions/other occupants",
+    rcs_shoring_gap_thrust_granular_gross_loose_per_finished_m3: 1.2, rcs_shoring_gap_thrust_water_gross_l_per_finished_m3: 80,
+    rcs_shoring_gap_thrust_granular_supply_mode: gapSupplyModes.separate, rcs_shoring_gap_thrust_water_supply_mode: gapSupplyModes.separate,
+    rcs_shoring_gap_thrust_granular_product_designation: "TEST compatible loose granular material",
+    rcs_shoring_gap_thrust_granular_compatibility_reference: "TEST actual quality/state/loss/source allocation",
+    rcs_shoring_gap_thrust_granular_compatible_stock_m3: 5, rcs_shoring_gap_thrust_granular_retained_reserve_m3: 2,
+    rcs_shoring_gap_thrust_granular_supplier_multiple_m3: 5, rcs_shoring_gap_thrust_granular_cost_basis: gapBases.material,
+    rcs_shoring_gap_thrust_water_product_designation: "TEST compatible exclusively allocated water", rcs_shoring_gap_thrust_water_supplier_multiple_m3: 1,
+    rcs_shoring_gap_thrust_work_mode: gapWorkModes.separate, rcs_shoring_gap_thrust_work_method_reference: "TEST actual whole disjoint gap placing/watering/compaction",
+    rcs_shoring_gap_thrust_crew_designation: "TEST all gap crew including operators", rcs_shoring_gap_thrust_crew_h_per_finished_m3: 0.6,
+    rcs_shoring_gap_thrust_crew_cost_basis: gapBases.crew,
+  };
+  it("keeps original dimensions/contact/allocation/stock/rates already filled and editable without requesting derived gap volume or orders", () => {
+    const actual = cards(gap);
+    for (const [key, value] of Object.entries(gap).filter(([key]) => key.startsWith("rcs_shoring_gap_") || key.includes("installed_outer_") || key === "rcs_jacking_thrust_permanent_occupied_volume_m3")) {
+      expect(actual.find(c => c.key === key)).toMatchObject({ value, editable: true, missing: false });
+      expect(catalog.parameterSchema.find(p => p.parameterId === key)?.guide?.sourceSnapshotHash).toBe("a".repeat(64));
+    }
+    expect(actual.find(c => c.key === "rcs_shoring_gap_thrust_granular_supplier_multiple_m3")?.unitRu).toBe("м³");
+    expect(actual.find(c => c.key === "rcs_shoring_gap_thrust_water_gross_l_per_finished_m3")?.unitRu).toBe("л/м³");
+    expect(actual.find(c => c.key === "rcs_shoring_gap_thrust_crew_h_per_finished_m3")?.unitRu).toBe("чел.-ч/м³");
+    expect(catalog.parameterSchema.some(p => /shoring_gap.*(?:permanently_preplaced|gap_volume|ordered_m3|trip_count)$/u.test(p.parameterId))).toBe(false);
+  });
+  it("distinguishes unknown added water from explicit zero and retains inactive facts for technology edits", () => {
+    const input = { ...gap }; delete input.rcs_shoring_gap_thrust_water_gross_l_per_finished_m3;
+    expect(cards(input).find(c => c.key === "rcs_shoring_gap_thrust_water_gross_l_per_finished_m3")).toMatchObject({ value: null, missing: true, editable: true });
+    const zero = session({ ...gap, rcs_shoring_gap_thrust_water_gross_l_per_finished_m3: 0 });
+    expect(zero.parameters.some(p => p.parameterId === "rcs_shoring_gap_thrust_water_supplier_multiple_m3")).toBe(false);
+    expect(zero.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_shoring_gap_thrust_water_supplier_multiple_m3")).toMatchObject({ value: 1 });
+    const other = session({ ...gap, rcs_shoring_gap_thrust_mode: gapModes.other });
+    expect(other.parameters.find(p => p.parameterId === "rcs_shoring_gap_thrust_program_and_allocation_reference")).toBeDefined();
+    expect(other.parameters.some(p => p.parameterId === "rcs_shoring_gap_thrust_granular_supplier_multiple_m3")).toBe(false);
+    expect(other.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_shoring_gap_thrust_rectangular_contact_reference")).toMatchObject({ value: gap.rcs_shoring_gap_thrust_rectangular_contact_reference });
+  });
 });
 
 describe("actual complete service-waste programme in common parameter cards", () => {

@@ -33,6 +33,8 @@ import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib
 import { ROAD_CROSSING_SLEEVES_SHORING_MODES_R1 as shoringModes, ROAD_CROSSING_SLEEVES_SHORING_RENTAL_BASIS_R1 as shoringRentalBasis,
   ROAD_CROSSING_SLEEVES_SHORING_WORK_BASES_R1 as shoringWorkBases } from "../../src/lib/estimate/v4/roadCrossingSleevesShoringR1";
 import { ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_MODES_R1 as shoringMaterialModes, ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_BASIS_R1 as shoringMaterialBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesShoringConsumablesR1";
+import { ROAD_CROSSING_SLEEVES_SHORING_GAP_MODES_R1 as gapModes, ROAD_CROSSING_SLEEVES_SHORING_GAP_SUPPLY_MODES_R1 as gapSupplyModes,
+  ROAD_CROSSING_SLEEVES_SHORING_GAP_WORK_MODES_R1 as gapWorkModes, ROAD_CROSSING_SLEEVES_SHORING_GAP_BASES_R1 as gapBases } from "../../src/lib/estimate/v4/roadCrossingSleevesShoringGapFillR1";
 import { ROAD_CROSSING_SLEEVES_REACTION_MODES_R1 as reactionModes, ROAD_CROSSING_SLEEVES_REACTION_RENTAL_BASIS_R1 as reactionRentalBasis,
   ROAD_CROSSING_SLEEVES_REACTION_WORK_BASES_R1 as reactionWorkBases } from "../../src/lib/estimate/v4/roadCrossingSleevesReactionR1";
 import { ROAD_CROSSING_SLEEVES_SERVICE_WASTE_MODES_R1 as serviceWasteModes, ROAD_CROSSING_SLEEVES_SERVICE_WASTE_TRIP_BASIS_R1 as serviceWasteTripBasis,
@@ -51,6 +53,10 @@ const components = buildRoadCrossingSleevesComponentsR1({ source_title: "Owned i
 const definition = components.definition;
 // Synthetic actual-fact/price fixtures ONLY, never a published default or WPS approval.
 const fixture: Record<string, unknown> = {
+  ...Object.fromEntries(["thrust", "reception"].flatMap(key => [
+    [`rcs_shoring_gap_${key}_mode`, gapModes.other],
+    [`rcs_shoring_gap_${key}_program_and_allocation_reference`, "TEST actual other contact/fill/seal resources separately allocated and excluded from paid shoring installation, excavation and final fill; permanent original occupied volume includes retained preplaced fill once"],
+  ])),
   ...Object.fromEntries(["trench", "thrust", "reception", "reaction"].flatMap(key => [
     [`rcs_service_waste_${key}_mode`, serviceWasteModes.otherParty],
     [`rcs_service_waste_${key}_program_reference`, "TEST actual entire service waste collection/packaging/handling/receiving by other party without executor cost, no hidden zero waste or duplicate service"],
@@ -297,6 +303,117 @@ describe("actual full temporary shoring kits, disjoint programme resources and m
   };
   const mp = (material: string, suffix: string) => `rcs_shoring_material_trench_${material}_${suffix}`;
   const mr = (material: string, suffix: string) => `rcs:shoring-material:trench:${material}:${suffix}`;
+  const gp = (suffix: string) => `rcs_shoring_gap_thrust_${suffix}`;
+  const gr = (suffix: string) => `rcs:shoring-gap:thrust:${suffix}`;
+  const gap: Record<string, unknown> = { ...fixture, rcs_civil_installation_method: methods.pipeJacking,
+    ...Object.fromEntries(Object.entries(selected).filter(([key]) => key.startsWith("rcs_shoring_trench_")).map(([key, value]) => [key.replace("_trench_", "_thrust_"), value])),
+    rcs_shoring_thrust_complete_kit_count: 1, rcs_shoring_thrust_placement_cycle_count: 1,
+    rcs_shoring_thrust_installed_outer_width_m: 3, rcs_shoring_thrust_installed_height_m: 3.2,
+    rcs_jacking_thrust_permanent_occupied_volume_m3: 40,
+    [gp("mode")]: gapModes.retainedRectangular,
+    [gp("program_and_allocation_reference")]: "TEST all 36 finished m3 remain permanently preplaced in original occupied total 40, separate from 4 other m3; no duplicate installation/final-fill/water consumption or reuse",
+    [gp("rectangular_contact_reference")]: "TEST actual full four-sided rectangular contact 4x3m full 3m depth, one original kit/position, uniform complete gap, no protrusions/other occupants/unfilled parts",
+    [gp("granular_gross_loose_per_finished_m3")]: 1.2, [gp("water_gross_l_per_finished_m3")]: 80,
+    ...Object.fromEntries(["granular", "water"].flatMap((material, index) => Object.entries({
+      supply_mode: gapSupplyModes.separate, product_designation: `TEST actual compatible ${material}`,
+      compatibility_reference: "TEST actual exclusively allocated compatible material in stated condition/gross loss basis, no reuse or other operation allocation",
+      compatible_stock_m3: [5, 0.5][index], retained_reserve_m3: [2, 0.2][index], supplier_multiple_m3: [5, 1][index], cost_basis: gapBases.material,
+    }).map(([key, value]) => [gp(`${material}_${key}`), value]))),
+    [gp("work_mode")]: gapWorkModes.separate,
+    [gp("work_method_reference")]: "TEST all separate gap placing/watering/compaction, no double parent installation/excavation/final fill, material and freight separate",
+    ...Object.fromEntries(["crew", "equipment"].flatMap((owner, index) => Object.entries({
+      designation: `TEST all disjoint ${owner}`, h_per_finished_m3: [0.6, 0.2][index], cost_basis: gapBases[owner as "crew" | "equipment"],
+    }).map(([key, value]) => [gp(`${owner}_${key}`), value]))),
+    rcs_pit_fill_material_mode: fillModes.sameGranular, rcs_pit_fill_granular_product_designation: "TEST compatible separate FINAL return fill",
+    rcs_pit_fill_approved_reused_finished_m3: 0, rcs_pit_fill_gross_supplied_volume_ratio: 1.2,
+    rcs_pit_fill_compatible_loose_stock_m3: 0, rcs_pit_fill_retained_loose_reserve_m3: 0, rcs_pit_fill_supplier_loose_multiple_m3: 1,
+  };
+  it("preplaces the derived 36m3 gap once, with separate same-state material/water balances and all work, leaving 55m3 final return fill", async () => {
+    const result = await compile(gap, { [gr("granular:ordered_m3")]: { unitPrice: "2", provenance }, [gr("crew_hours")]: { unitPrice: "3", provenance } });
+    expect(result.preliminaryNeeds).toEqual([]); expect(q(result, gr("permanently_preplaced_finished_m3"))).toBe(36);
+    expect(q(result, gr("already_allocated_permanent_volume_margin_m3"))).toBe(4);
+    expect(q(result, gr("granular:consumed_m3"))).toBeCloseTo(43.2, 8); expect(q(result, gr("granular:ordered_m3"))).toBe(45);
+    expect(q(result, gr("granular:remaining_unused_m3"))).toBeCloseTo(6.8, 8); expect(q(result, gr("granular:free_unused_beyond_reserve_m3"))).toBeCloseTo(4.8, 8);
+    expect(q(result, gr("water:consumed_m3"))).toBeCloseTo(2.88, 8); expect(q(result, gr("water:ordered_m3"))).toBe(3);
+    expect(q(result, gr("water:remaining_unused_m3"))).toBeCloseTo(0.62, 8); expect(q(result, gr("water:free_unused_beyond_reserve_m3"))).toBeCloseTo(0.42, 8);
+    expect(q(result, gr("crew_hours"))).toBeCloseTo(21.6, 8); expect(q(result, gr("equipment_hours"))).toBeCloseTo(7.2, 8);
+    expect(q(result, "rcs:shoring:thrust:installation:crew_hours")).toBe(2);
+    expect(q(result, "rcs:pit-return:total_remaining_space_m3")).toBe(55); expect(q(result, "rcs:pit-fill:ordered_loose_m3")).toBe(66);
+    expect(q(result, "rcs:fill-execution:pits:crew_hours")).toBe(33); expect(Number(result.totals.amount)).toBeCloseTo(154.8, 8);
+    expect(result.rows.filter(r => r.row_id.startsWith("rcs:shoring-gap:") && r.included_in_estimate).map(r => r.row_id)).toEqual([gr("granular:ordered_m3"), gr("water:ordered_m3"), gr("crew_hours"), gr("equipment_hours")]);
+  });
+  it("uses original finished geometry for final water and gap work regardless of changed supplier stock/reserve/multiple", async () => {
+    const result = await compile({ ...gap, [gp("granular_supplier_multiple_m3")]: 50, [gp("granular_retained_reserve_m3")]: 20,
+      rcs_compaction_water_pits_gross_l_per_finished_m3: 100, rcs_compaction_water_pits_supply_mode: compactionWaterModes.otherParty,
+      rcs_compaction_water_pits_allocation_reference: "TEST entire separate FINAL fill water excludes permanent preplaced gap water",
+      rcs_compaction_water_pits_product_designation: "TEST compatible FINAL fill water",
+      rcs_compaction_water_pits_compatibility_reference: "TEST exclusive final 55 finished m3 only, no preplaced gap water" });
+    expect(result.preliminaryNeeds).toEqual([]); expect(q(result, gr("granular:ordered_m3"))).toBe(100);
+    expect(q(result, gr("permanently_preplaced_finished_m3"))).toBe(36); expect(q(result, gr("crew_hours"))).toBeCloseTo(21.6, 8);
+    expect(q(result, "rcs:compaction-water:pits:allocated_consumed_m3")).toBeCloseTo(5.5, 8);
+  });
+  it.each([ ["rcs_shoring_thrust_complete_kit_count", 2], ["rcs_shoring_thrust_placement_cycle_count", 2],
+    ["rcs_jacking_thrust_permanent_occupied_volume_m3", 35.9], ["rcs_shoring_thrust_installed_outer_width_m", 4.1] ] as const)("rejects incompatible original %s=%s before manual gap order/final fill/work", async (fact, value) => {
+    await expect(compile({ ...gap, [fact]: value }, { [gr("granular:ordered_m3")]: { quantity: "1", provenance },
+      [gr("crew_hours")]: { quantity: "1", provenance }, "rcs:pit-fill:ordered_loose_m3": { quantity: "1", provenance } })).rejects.toMatchObject({ code: "FORMULA_OUTPUT_BOUNDS_FAILED" });
+  });
+  it("keeps an unknown pit depth local even with a manual gap order, retaining rent, assembly, casing and joints", async () => {
+    const input = { ...gap }; delete input.rcs_jacking_thrust_excavation_depth_m;
+    const result = await compile(input, { [gr("granular:ordered_m3")]: { quantity: "999", provenance } });
+    expect(result.preliminaryNeeds.find(n => n.row_id === gr("granular:ordered_m3"))?.missing_parameter_ids).toContain("rcs_jacking_thrust_excavation_depth_m");
+    expect(q(result, "rcs:shoring:thrust:rental_set_hours")).toBe(24); expect(q(result, "rcs:shoring:thrust:assembly:crew_hours")).toBe(3);
+    expect(q(result, "rcs:casing:ordered_casing_length_m")).toBe(48); expect(q(result, "rcs:joint:crew_person_hours")).toBe(6);
+  });
+  it("an unknown total permanent occupation preserves known gap resources while final return fill and allocation control await that original fact", async () => {
+    const input = { ...gap }; delete input.rcs_jacking_thrust_permanent_occupied_volume_m3;
+    const result = await compile(input);
+    expect(result.preliminaryNeeds.find(n => n.row_id === gr("already_allocated_permanent_volume_margin_m3"))?.missing_parameter_ids).toContain("rcs_jacking_thrust_permanent_occupied_volume_m3");
+    expect(result.preliminaryNeeds.find(n => n.row_id === "rcs:pit-fill:ordered_loose_m3")?.missing_parameter_ids).toContain("rcs_jacking_thrust_permanent_occupied_volume_m3");
+    expect(q(result, gr("granular:ordered_m3"))).toBe(45); expect(q(result, gr("crew_hours"))).toBeCloseTo(21.6, 8);
+  });
+  it.each(["rectangular_contact_reference", "program_and_allocation_reference", "granular_compatibility_reference", "granular_supplier_multiple_m3"])("requires original %s before a manual gap order", async fact => {
+    const input = { ...gap }; delete input[gp(fact)];
+    const result = await compile(input, { [gr("granular:ordered_m3")]: { quantity: "999", provenance } });
+    expect(result.preliminaryNeeds.find(n => n.row_id === gr("granular:ordered_m3"))?.missing_parameter_ids).toContain(gp(fact));
+    expect(q(result, "rcs:shoring:thrust:rental_set_hours")).toBe(24);
+  });
+  it("requires gap allocation for paid parent installation under a manual override while preserving independent rent and assembly", async () => {
+    const input = { ...gap }; delete input[gp("program_and_allocation_reference")];
+    const result = await compile(input, { "rcs:shoring:thrust:installation:crew_hours": { quantity: "999", provenance } });
+    expect(result.preliminaryNeeds.find(n => n.row_id === "rcs:shoring:thrust:installation:crew_hours")?.missing_parameter_ids).toContain(gp("program_and_allocation_reference"));
+    expect(q(result, "rcs:shoring:thrust:assembly:crew_hours")).toBe(3); expect(q(result, "rcs:shoring:thrust:rental_set_hours")).toBe(24);
+  });
+  it("explicit zero added water removes only dependent water supply/freight; other-party material/work removes only its own costs", async () => {
+    const input = { ...gap, [gp("water_gross_l_per_finished_m3")]: 0 }; delete input[gp("water_product_designation")];
+    const zero = await compile(input); expect(zero.preliminaryNeeds).toEqual([]);
+    expect(zero.rows.some(r => r.row_id.startsWith(gr("water:")) || r.row_id.startsWith("rcs:freight:shoring_gap_thrust_water_"))).toBe(false);
+    expect(q(zero, gr("granular:ordered_m3"))).toBe(45); expect(q(zero, gr("crew_hours"))).toBeCloseTo(21.6, 8);
+    const supplied = await compile({ ...gap, [gp("granular_supply_mode")]: gapSupplyModes.otherParty, [gp("work_mode")]: gapWorkModes.otherParty }, {
+      [gr("granular:ordered_m3")]: { quantity: "999", unitPrice: "50", provenance }, [gr("crew_hours")]: { quantity: "999", unitPrice: "50", provenance } });
+    expect(supplied.preliminaryNeeds).toEqual([]); expect(q(supplied, gr("granular:consumed_m3"))).toBeCloseTo(43.2, 8);
+    expect(supplied.rows.some(r => [gr("granular:ordered_m3"), gr("crew_hours"), gr("equipment_hours")].includes(r.row_id))).toBe(false);
+    expect(q(supplied, gr("water:ordered_m3"))).toBe(3); expect(q(supplied, "rcs:pit-fill:ordered_loose_m3")).toBe(66);
+  });
+  it("delivers the new actual bulk order without treating a supplier volume multiple as indivisible packaging", async () => {
+    const result = await compile({ ...gap, ...Object.fromEntries(Object.entries({ mode: freightModes.separate,
+      allocation_reference: "TEST actual separate BULK loose volume route/placing, supplier multiple is not an indivisible container",
+      vehicle_designation: "TEST compatible bulk delivery", shipping_kg_per_unit: 1000, payload_kg: 2500, max_units_per_trip: 2.5, cost_basis: freightBasis,
+    }).map(([key, value]) => [`rcs_freight_shoring_gap_thrust_granular_new_${key}`, value])) });
+    expect(result.preliminaryNeeds).toEqual([]); expect(q(result, "rcs:freight:shoring_gap_thrust_granular_new:cargo_units")).toBe(45);
+    expect(q(result, "rcs:freight:shoring_gap_thrust_granular_new:effective_units_per_trip")).toBe(2.5);
+    expect(q(result, "rcs:freight:shoring_gap_thrust_granular_new:trip_count")).toBe(18);
+  });
+  it.each([gapModes.other, gapModes.notRequired])("deactivates unsupported/no-gap resources for %s but preserves actual parent installation and rent", async mode => {
+    const result = await compile({ ...gap, [gp("mode")]: mode }, { [gr("granular:ordered_m3")]: { quantity: "999", unitPrice: "50", provenance } });
+    expect(result.preliminaryNeeds).toEqual([]); expect(result.rows.some(r => r.row_id.startsWith("rcs:shoring-gap:thrust:") || r.row_id.startsWith("rcs:freight:shoring_gap_thrust_"))).toBe(false);
+    expect(q(result, "rcs:shoring:thrust:installation:crew_hours")).toBe(2); expect(q(result, "rcs:shoring:thrust:rental_set_hours")).toBe(24);
+  });
+  it("places permanent gap resource rows exactly once in installation and keeps original measures free of derived gap-volume questions", () => {
+    for (const suffix of ["permanently_preplaced_finished_m3", "granular:ordered_m3", "crew_hours", "equipment_hours"]) {
+      expect(components.stageMatrix.filter(s => s.ownResourceIds.includes(gr(suffix))).map(s => s.stageId)).toEqual(["installation"]);
+    }
+    expect(parameters.some(p => p.id.startsWith("rcs_shoring_gap_") && /(?:finished_volume|gap_volume|permanently_preplaced)/u.test(p.id))).toBe(false);
+  });
   const withConsumables: Record<string, unknown> = { ...selected,
     ...Object.fromEntries(["lubricant", "cleaner", "wipes"].flatMap((material, index) => Object.entries({
       program_and_compatibility_reference: "TEST actual complete disjoint gross consumption in initial kits, full cycles and whole-group calendar service; compatible unused stock, no other equipment fuel/materials",
@@ -1995,7 +2112,7 @@ describe("road-casing component integration, not full crossing acceptance", () =
   });
   it("returns the explicit omissions beside the definition, never a full/published/engineer-approved owner", () => {
     expect(components.scope).toMatchObject({ fullOwner: false, engineeringAccepted: false, readyForPublication: false });
-    expect(components.scope.omitted).toContain("Shoring/reaction actual design/method/load/interface approval, other consumables/gap filling/waste and other kits/programmes; foundations/retained concrete/piles/anchors and other reaction schemes, groundwater measures; actual applicability and approved civil execution rates");
+    expect(components.scope.omitted).toContain("Shoring/reaction actual design/method/load/interface approval, other consumables/waste and other kits/programmes; gap sealing, trenches, partial/nonrectangular/multiple/relocated/reused fill and retained-fill allocation approval; foundations/retained concrete/piles/anchors and other reaction schemes, groundwater measures; actual applicability and approved civil execution rates");
     for (const resource of definition.resources) expect(resource.source_metadata?.excludedUnownedAssumptions).toEqual([...components.scope.omitted]);
   });
 

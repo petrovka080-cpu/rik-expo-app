@@ -7,6 +7,18 @@
   "universalRatesClaimed": false,
   "implementationStatus": "COMPONENT_ASSEMBLY_WITH_ACTUAL_SUPPLY_FREIGHT_SOIL_STATES_HAUL_RECEIVING_INSPECTION_STAKING_COMPACTION_WATER_JACKING_LOADING_CASING_PREPARATION_COATING_PE_CONNECTIONS_HYDRAULIC_PUMPING_WATER_RECEIVING_AND_SINGLE_BAG_TREATMENT_RESOURCES_NOT_PUBLISHED_NOT_FULL_OWNER",
   "quantityComponent": {
+    "permanentRectangularShoringGapFillResources": {
+      "module": "src/lib/estimate/v4/roadCrossingSleevesShoringGapFillR1.ts",
+      "verification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts and tests/requestEstimate/canonicalCrossingFreightParameterProjection.contract.test.ts",
+      "engine": "Existing AutomaticOwner/FormulaGraph/InclusionGraph and actual-material freight factory, no second evaluator",
+      "scope": "Only one actual full four-sided closed rectangular contact kit in one rectangular thrust or reception pit, one original position, all outside gap permanently filled by one homogeneous compatible granular material; no protrusions, other occupants, partial volumes, relocations or reuse",
+      "geometry": "Original pit length*width minus original confirmed full rectangular outer contact length*width, multiplied by original pit depth. No second derived-volume input. Original kit and cycle counts must equal one; original outer/working/height compatibility remains enforced",
+      "allocation": "All permanent preplaced gap volume is already included exactly once in that pit's ORIGINAL permanent occupied volume along with other nonoverlapping occupation. A>=G is checked before manual overrides; original final return fill remains excavation-A, never subtracting G again. Unknown A preserves known G resources while final return fill/allocation await A. Parent installation needs explicit actual gap mode/full allocation",
+      "resources": "Actual gross supplied loose material and added water per finished gap m3, exclusive compatible initial stock/reserve/supplier multiples/new order/remaining/free balances; only new order priced. Actual all-personnel placing/watering/compaction and compatible equipment with energy are separate from parent installation/excavation/final fill. Water zero disables only dependent water resources; actual other-party supply/work disables only its own cost",
+      "freight": "Only actual new bulk order and separately allocated offsite stock under existing volume/mass/placement/payload full-trip owner. A supplier order volume multiple is not presumed indivisible packaging",
+      "sourceBoundary": "SBH actual full contact/removal-backfill programme distinguishes kit handling from gap fill. No example maker geometry, losses, productivity, foreign law, geotechnical decision or acceptance is installed",
+      "open": "Actual design/contact/retained-fill/material/water/placement/route acceptance; trenches/nonrectangular/partial/multiple/relocated/reused/removed/sealed/other gaps, other crossing stage resources, prices, full-owner publication/readback and actual Web/native user acceptance remain open"
+    },
     "module": "src/lib/estimate/v4/roadCrossingSleevesQuantityModelR1.ts",
     "verification": "tests/estimateNorms/roadCrossingSleevesQuantityModelR1.contract.test.ts",
     "spacerGeometryModule": "src/lib/estimate/v4/roadCrossingSleevesSpacerGeometryR1.ts",
