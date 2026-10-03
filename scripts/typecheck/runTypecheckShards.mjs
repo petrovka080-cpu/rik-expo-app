@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import path from "node:path";
 import process from "node:process";
+import { fileURLToPath } from "node:url";
 
 const projectRoot = process.cwd();
 const compiler = path.join(
@@ -10,12 +11,12 @@ const compiler = path.join(
   "bin",
   "tsc",
 );
-const shards = [
+export const requiredTypecheckShards = Object.freeze([
   "tsconfig.typecheck.product.json",
   "tsconfig.typecheck.scripts.json",
   "tsconfig.typecheck.tests-heavy.json",
   "tsconfig.typecheck.tests-rest.json",
-];
+]);
 
 function runShard(project) {
   return new Promise((resolve) => {
@@ -59,23 +60,34 @@ function runShard(project) {
   });
 }
 
-const startedAt = Date.now();
-const results = [];
 // A single full compiler already approaches the host's measured free-memory
 // window. Run complete coverage shards sequentially so the product, scripts
 // and both test partitions are all checked without four TypeScript heaps
 // competing and turning a type error into an OOM.
-for (const project of shards) {
-  const result = await runShard(project);
-  results.push(result);
-  const output = `${result.stdout}${result.stderr}`.trim();
-  if (output) process.stderr.write(`${output}\n`);
-  process.stdout.write(
-    `[typecheck] ${result.project} exit=${result.exitCode} durationMs=${result.durationMs}\n`,
-  );
+export async function runRequiredTypecheckShards(executeShard, reportResult = () => {}) {
+  const results = [];
+  let stoppedForHeapLimit = false;
+  for (const project of requiredTypecheckShards) {
+    const result = await executeShard(project);
+    results.push(result);
+    reportResult(result);
+    if (result.exitCode !== 0 && /(?:heap out of memory|reached heap limit|allocation failed[^\n]*heap)/iu.test(`${result.stdout}${result.stderr}`)) {
+      stoppedForHeapLimit = true;
+      break;
+    }
+  }
+  return { results, stoppedForHeapLimit, pendingProjects: requiredTypecheckShards.slice(results.length),
+    green: results.length === requiredTypecheckShards.length && results.every(result => result.exitCode === 0) };
 }
-const failed = results.filter((result) => result.exitCode !== 0);
-process.stdout.write(
-  `[typecheck] shards=${results.length} totalDurationMs=${Date.now() - startedAt} status=${failed.length === 0 ? "GREEN" : "RED"}\n`,
-);
-if (failed.length > 0) process.exitCode = 1;
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const startedAt = Date.now();
+  const outcome = await runRequiredTypecheckShards(runShard, result => {
+    const output = `${result.stdout}${result.stderr}`.trim();
+    if (output) process.stderr.write(`${output}\n`);
+    process.stdout.write(`[typecheck] ${result.project} exit=${result.exitCode} durationMs=${result.durationMs}\n`);
+  });
+  if (outcome.stoppedForHeapLimit) process.stderr.write(`[typecheck] stopped after heap limit; pending=${outcome.pendingProjects.join(",")}; resource diagnosis required before retry\n`);
+  process.stdout.write(`[typecheck] shards=${outcome.results.length} requiredShards=${requiredTypecheckShards.length} totalDurationMs=${Date.now() - startedAt} status=${outcome.green ? "GREEN" : "RED"}\n`);
+  if (!outcome.green) process.exitCode = 1;
+}
