@@ -24,6 +24,7 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_FREIGHT_MOD
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_SHORING_MODES_R1 as shoringModes, ROAD_CROSSING_SLEEVES_SHORING_RENTAL_BASIS_R1 as shoringRentalBasis,
   ROAD_CROSSING_SLEEVES_SHORING_WORK_BASES_R1 as shoringWorkBases } from "../../src/lib/estimate/v4/roadCrossingSleevesShoringR1";
+import { ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_MODES_R1 as shoringMaterialModes, ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_BASIS_R1 as shoringMaterialBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesShoringConsumablesR1";
 import { ROAD_CROSSING_SLEEVES_TRENCH_FILL_MODES_R1 as fillModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
 import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierSupplyModes } from "../../src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1";
 import { buildConsumerCanonicalPrecompileParameterSession } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
@@ -78,13 +79,42 @@ describe("actual full shoring programme through the common publisher and editabl
     rcs_shoring_trench_monitoring_equipment_h_per_unit: 0, rcs_shoring_trench_monitoring_equipment_cost_basis: shoringWorkBases.equipment,
   };
   it("shows actual kit/programme/geometry/BOM/rates with filled editable values, source guides and correct units", () => {
+    const actualCards = cards(shoring);
     for (const [key, value] of Object.entries(shoring).filter(([key]) => key.startsWith("rcs_shoring_"))) {
-      expect(cards(shoring).find(c => c.key === key)).toMatchObject({ value, editable: true, missing: false });
-      expect(cards(shoring).find(c => c.key === key)?.guideShortRu).toBeTruthy();
+      expect(actualCards.find(c => c.key === key)).toMatchObject({ value, editable: true, missing: false });
+      expect(actualCards.find(c => c.key === key)?.guideShortRu).toBeTruthy();
     }
-    expect(cards(shoring).find(c => c.key === "rcs_shoring_trench_installation_crew_h_per_unit")?.unitRu).toBe("чел.-ч/шт.");
-    expect(cards(shoring).find(c => c.key === "rcs_shoring_trench_calendar_hours")?.unitRu).toBe("ч");
+    expect(actualCards.find(c => c.key === "rcs_shoring_trench_installation_crew_h_per_unit")?.unitRu).toBe("чел.-ч/шт.");
+    expect(actualCards.find(c => c.key === "rcs_shoring_trench_calendar_hours")?.unitRu).toBe("ч");
     expect(catalog.parameterSchema.some(p => /shoring.*(?:rental_set_hours|trip_count|height_margin|remaining_m3)/u.test(p.parameterId))).toBe(false);
+  });
+  const material: Record<string, CanonicalEstimateParameterInputValue> = { ...shoring,
+    rcs_shoring_material_trench_cleaner_program_and_compatibility_reference: "TEST actual exclusive all-stage consumption, compatible unused stock and losses",
+    rcs_shoring_material_trench_cleaner_gross_per_initial_kit: 0.2, rcs_shoring_material_trench_cleaner_gross_per_placement_cycle: 0.1,
+    rcs_shoring_material_trench_cleaner_gross_per_group_calendar_hour: 0.01, rcs_shoring_material_trench_cleaner_mode: shoringMaterialModes.separate,
+    rcs_shoring_material_trench_cleaner_product_designation: "TEST actual compatible cleaner", rcs_shoring_material_trench_cleaner_cost_basis: shoringMaterialBasis,
+    rcs_shoring_material_trench_cleaner_compatible_unused_stock: 0.5, rcs_shoring_material_trench_cleaner_retained_reserve: 0.2,
+    rcs_shoring_material_trench_cleaner_supplier_pack_net: 1,
+  };
+  it("fills actual consumable programme rates and stock/order sources as editable facts with correct dimensions", () => {
+    const actualCards = cards(material);
+    for (const [key, value] of Object.entries(material).filter(([key]) => key.startsWith("rcs_shoring_material_"))) {
+      expect(actualCards.find(c => c.key === key)).toMatchObject({ value, editable: true, missing: false });
+      expect(actualCards.find(c => c.key === key)?.guideShortRu).toBeTruthy();
+    }
+    expect(actualCards.find(c => c.key === "rcs_shoring_material_trench_cleaner_gross_per_group_calendar_hour")?.unitRu).toBe("л/ч");
+    expect(catalog.parameterSchema.some(p => /shoring_material.*(?:consumed|ordered|remaining_unused|trip_count)$/u.test(p.parameterId))).toBe(false);
+  });
+  it("deactivates zero-consumption/other-party stock and freight while retaining earlier values; missing original rate stays editable", () => {
+    const zero = session({ ...material, rcs_shoring_material_trench_cleaner_gross_per_initial_kit: 0,
+      rcs_shoring_material_trench_cleaner_gross_per_placement_cycle: 0, rcs_shoring_material_trench_cleaner_gross_per_group_calendar_hour: 0 });
+    expect(zero.parameters.some(p => p.parameterId === "rcs_shoring_material_trench_cleaner_supplier_pack_net")).toBe(false);
+    expect(zero.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_shoring_material_trench_cleaner_supplier_pack_net")).toMatchObject({ value: 1 });
+    const supplied = session({ ...material, rcs_shoring_material_trench_cleaner_mode: shoringMaterialModes.otherParty });
+    expect(supplied.parameters.find(p => p.parameterId === "rcs_shoring_material_trench_cleaner_program_and_compatibility_reference")).toBeDefined();
+    expect(supplied.parameters.some(p => p.parameterId === "rcs_shoring_material_trench_cleaner_compatible_unused_stock")).toBe(false);
+    const input = { ...material }; delete input.rcs_shoring_material_trench_cleaner_gross_per_placement_cycle;
+    expect(cards(input).find(c => c.key === "rcs_shoring_material_trench_cleaner_gross_per_placement_cycle")).toMatchObject({ value: null, missing: true, editable: true });
   });
   it("retains a missing actual kit count as an editable original fact without deriving it from excavation volume", () => {
     const input = { ...shoring }; delete input.rcs_shoring_trench_complete_kit_count;

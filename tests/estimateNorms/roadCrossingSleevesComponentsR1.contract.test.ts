@@ -32,6 +32,7 @@ import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierModes, ROAD_CRO
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_SHORING_MODES_R1 as shoringModes, ROAD_CROSSING_SLEEVES_SHORING_RENTAL_BASIS_R1 as shoringRentalBasis,
   ROAD_CROSSING_SLEEVES_SHORING_WORK_BASES_R1 as shoringWorkBases } from "../../src/lib/estimate/v4/roadCrossingSleevesShoringR1";
+import { ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_MODES_R1 as shoringMaterialModes, ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_BASIS_R1 as shoringMaterialBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesShoringConsumablesR1";
 import { ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1 as jointParameters, ROAD_CROSSING_SLEEVES_JOINT_COST_BASES_R1 as bases } from "../../src/lib/estimate/v4/roadCrossingSleevesJointResourcesR1";
 import { ROAD_CROSSING_SLEEVES_PIT_FILL_MODES_R1 as fillModes,
   ROAD_CROSSING_SLEEVES_TRENCH_FILL_MODES_R1 as trenchModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
@@ -46,6 +47,8 @@ const components = buildRoadCrossingSleevesComponentsR1({ source_title: "Owned i
 const definition = components.definition;
 // Synthetic actual-fact/price fixtures ONLY, never a published default or WPS approval.
 const fixture: Record<string, unknown> = {
+  ...Object.fromEntries(parameters.filter(parameter => parameter.id.startsWith("rcs_shoring_material_") && /(?:_gross_per_|_program_and_compatibility_reference$)/u.test(parameter.id)).map(parameter => [parameter.id,
+    parameter.id.endsWith("_reference") ? "TEST actual complete programme confirms no separate gross consumption of this material in any stage; explicit zeros, not a product default" : 0])),
   ...Object.fromEntries(["trench", "thrust", "reception"].flatMap(key => [
     [`rcs_shoring_${key}_mode`, shoringModes.otherParty],
     [`rcs_shoring_${key}_program_reference`, "TEST actual applicable complete shoring resources supplied separately, no executor charge"],
@@ -176,6 +179,74 @@ describe("actual full temporary shoring kits, disjoint programme resources and m
       route_payload_kg: 900, max_complete_units_per_trip: 3, cost_basis: freightBasis,
     }).map(([key, value]) => [`rcs_equipment_mobilization_shoring_trench_kits_${direction}_${key}`, value]))),
   };
+  const mp = (material: string, suffix: string) => `rcs_shoring_material_trench_${material}_${suffix}`;
+  const mr = (material: string, suffix: string) => `rcs:shoring-material:trench:${material}:${suffix}`;
+  const withConsumables: Record<string, unknown> = { ...selected,
+    ...Object.fromEntries(["lubricant", "cleaner", "wipes"].flatMap((material, index) => Object.entries({
+      program_and_compatibility_reference: "TEST actual complete disjoint gross consumption in initial kits, full cycles and whole-group calendar service; compatible unused stock, no other equipment fuel/materials",
+      gross_per_initial_kit: [0.05, 0.2, 2][index], gross_per_placement_cycle: [0.02, 0.1, 1][index], gross_per_group_calendar_hour: [0, 0.01, 0][index],
+      mode: shoringMaterialModes.separate, product_designation: `TEST actual compatible ${material}`,
+      compatible_unused_stock: [0.1, 0.5, 3][index], retained_reserve: [0.05, 0.2, 2][index], supplier_pack_net: [0.25, 1, 5][index], cost_basis: shoringMaterialBasis,
+    }).map(([key, value]) => [mp(material, key), value]))),
+    ...Object.fromEntries(Object.entries({ mode: freightModes.separate, allocation_reference: "TEST actual dedicated sealed whole-package wipes delivery",
+      vehicle_designation: "TEST compatible carrier", shipping_kg_per_unit: 0.1, payload_kg: 0.8, max_units_per_trip: 8, cost_basis: freightBasis,
+    }).map(([key, value]) => [`rcs_freight_shoring_trench_wipes_new_${key}`, value])),
+  };
+  it("owns actual disjoint consumable contributions, complete new packages and unused balances without second rent/work/material charges", async () => {
+    const result = await compile(withConsumables, { [mr("wipes", "ordered")]: { unitPrice: "2", provenance } });
+    expect(result.preliminaryNeeds).toEqual([]);
+    expect(q(result, mr("lubricant", "consumed"))).toBeCloseTo(0.2, 8); expect(q(result, mr("lubricant", "ordered"))).toBe(0.25);
+    expect(q(result, mr("lubricant", "remaining_unused"))).toBeCloseTo(0.15, 8); expect(q(result, mr("lubricant", "free_unused_beyond_reserve"))).toBeCloseTo(0.1, 8);
+    expect(q(result, mr("cleaner", "consumed"))).toBeCloseTo(1.14, 8); expect(q(result, mr("cleaner", "ordered"))).toBe(1);
+    expect(q(result, mr("cleaner", "remaining_unused"))).toBeCloseTo(0.36, 8); expect(q(result, mr("cleaner", "free_unused_beyond_reserve"))).toBeCloseTo(0.16, 8);
+    expect(q(result, mr("wipes", "consumed"))).toBe(9); expect(q(result, mr("wipes", "supplier_pack_count"))).toBe(2);
+    expect(q(result, mr("wipes", "ordered"))).toBe(10); expect(q(result, mr("wipes", "remaining_unused"))).toBe(4); expect(q(result, mr("wipes", "free_unused_beyond_reserve"))).toBe(2);
+    expect(result.rows.filter(r => r.row_id.startsWith("rcs:shoring-material:") && r.included_in_estimate).map(r => r.row_id)).toEqual([mr("lubricant", "ordered"), mr("cleaner", "ordered"), mr("wipes", "ordered")]);
+    expect(result.totals.amount).toBe("20"); expect(q(result, row("rental_set_hours"))).toBe(48); expect(q(result, row("installation:crew_hours"))).toBe(10);
+  });
+  it("changes each actual consumption source independently instead of multiplying whole-group calendar service by every kit", async () => {
+    const kits = await compile({ ...withConsumables, [p("complete_kit_count")]: 3 });
+    expect(q(kits, mr("cleaner", "consumed"))).toBeCloseTo(1.34, 8); expect(q(kits, row("monitoring:crew_hours"))).toBe(6);
+    const cycles = await compile({ ...withConsumables, [p("placement_cycle_count")]: 6 });
+    expect(q(cycles, mr("cleaner", "consumed"))).toBeCloseTo(1.24, 8); expect(q(cycles, mr("wipes", "consumed"))).toBe(10);
+    const time = await compile({ ...withConsumables, [p("calendar_hours")]: 48 });
+    expect(q(time, mr("cleaner", "consumed"))).toBeCloseTo(1.38, 8); expect(q(time, mr("wipes", "consumed"))).toBe(9);
+    const packs = await compile({ ...withConsumables, [mp("wipes", "supplier_pack_net")]: 20, [mp("wipes", "retained_reserve")]: 10,
+      rcs_freight_shoring_trench_wipes_new_mode: freightModes.otherParty });
+    expect(q(packs, mr("wipes", "consumed"))).toBe(9); expect(q(packs, mr("wipes", "ordered"))).toBe(20);
+  });
+  it("transports only new complete unopened consumable packages, distinct from gross consumption and original equipment return", async () => {
+    const result = await compile(withConsumables);
+    expect(q(result, "rcs:freight:shoring_trench_wipes_new:cargo_units")).toBe(10);
+    expect(q(result, "rcs:freight:shoring_trench_wipes_new:effective_units_per_trip")).toBe(5);
+    expect(q(result, "rcs:freight:shoring_trench_wipes_new:trip_count")).toBe(2);
+    expect(q(result, "rcs:equipment-mobilization:shoring_trench_kits_return:complete_unit_count")).toBe(2);
+    await expect(compile({ ...withConsumables, rcs_freight_shoring_trench_wipes_new_max_units_per_trip: 4 }, {
+      "rcs:freight:shoring_trench_wipes_new:trip_count": { quantity: "1", provenance },
+    })).rejects.toMatchObject({ code: "FORMULA_OUTPUT_BOUNDS_FAILED" });
+  });
+  it("requires only the affected missing stock/order facts while preserving known consumption, other materials and kit work", async () => {
+    const input = { ...withConsumables }; delete input[mp("cleaner", "compatible_unused_stock")];
+    const result = await compile(input, { [mr("cleaner", "ordered")]: { quantity: "999", provenance } });
+    expect(result.preliminaryNeeds.find(n => n.row_id === mr("cleaner", "ordered"))?.missing_parameter_ids).toContain(mp("cleaner", "compatible_unused_stock"));
+    expect(q(result, mr("cleaner", "consumed"))).toBeCloseTo(1.14, 8); expect(q(result, mr("lubricant", "ordered"))).toBe(0.25);
+    expect(q(result, row("assembly:crew_hours"))).toBe(6); expect(q(result, row("rental_set_hours"))).toBe(48);
+  });
+  it.each(["product_designation", "program_and_compatibility_reference", "gross_per_placement_cycle", "supplier_pack_net"])("preserves original consumable %s gate under a manual order", async fact => {
+    const input = { ...withConsumables }; delete input[mp("cleaner", fact)];
+    const result = await compile(input, { [mr("cleaner", "ordered")]: { quantity: "999", provenance } });
+    expect(result.preliminaryNeeds.find(n => n.row_id === mr("cleaner", "ordered"))?.missing_parameter_ids).toContain(mp("cleaner", fact));
+    expect(q(result, mr("wipes", "ordered"))).toBe(10); expect(q(result, row("rental_set_hours"))).toBe(48);
+  });
+  it("explicit zero consumption and other-party supply remove only obsolete consumable purchases and dependent freight", async () => {
+    const zero = await compile({ ...withConsumables, [mp("wipes", "gross_per_initial_kit")]: 0, [mp("wipes", "gross_per_placement_cycle")]: 0 });
+    expect(q(zero, mr("wipes", "consumed"))).toBe(0); expect(zero.rows.some(r => r.row_id === mr("wipes", "ordered") || r.row_id.startsWith("rcs:freight:shoring_trench_wipes_"))).toBe(false);
+    const supplied = await compile({ ...withConsumables, [mp("cleaner", "mode")]: shoringMaterialModes.otherParty }, {
+      [mr("cleaner", "ordered")]: { quantity: "999", unitPrice: "20", provenance },
+    });
+    expect(q(supplied, mr("cleaner", "provided_by_other_party"))).toBeCloseTo(1.14, 8); expect(supplied.rows.some(r => r.row_id === mr("cleaner", "ordered"))).toBe(false);
+    expect(q(supplied, mr("wipes", "ordered"))).toBe(10);
+  });
   it("owns all calendar rent, initial assembly, actual placement/extraction, whole-group monitoring and original disassembly separately", async () => {
     const result = await compile(selected); expect(result.preliminaryNeeds).toEqual([]);
     expect(q(result, row("rental_set_hours"))).toBe(48);
@@ -1731,7 +1802,7 @@ describe("road-casing component integration, not full crossing acceptance", () =
   });
   it("returns the explicit omissions beside the definition, never a full/published/engineer-approved owner", () => {
     expect(components.scope).toMatchObject({ fullOwner: false, engineeringAccepted: false, readyForPublication: false });
-    expect(components.scope.omitted).toContain("Shoring actual design/method/load approval, consumables/gap filling/waste and other kits/programmes; reaction structures and groundwater measures; actual applicability and approved civil execution rates");
+    expect(components.scope.omitted).toContain("Shoring actual design/method/load approval, other consumables/gap filling/waste and other kits/programmes; reaction structures and groundwater measures; actual applicability and approved civil execution rates");
     for (const resource of definition.resources) expect(resource.source_metadata?.excludedUnownedAssumptions).toEqual([...components.scope.omitted]);
   });
 

@@ -125,6 +125,17 @@
       "independence": "Known bank/loose excavation remains calculable with unavailable fill/reuse data. Dependent balance/trips/receiving retain original geometry, actual state facts, suitability/allocation and route/receiver/cost boundaries even under manual paid quantities. Explicit zero reuse disables origin/conversion; zero excess disables truck/destination/receiving facts. Negative allocation is rejected rather than clamped",
       "open": "Material/technology/design/classification acceptance, mixed/slurry allocation, extra sorting/site handling, all other stage gaps and governed full-owner publication remain open"
     },
+    "temporaryShoringConsumableResources": {
+      "module": "src/lib/estimate/v4/roadCrossingSleevesShoringConsumablesR1.ts",
+      "verification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
+      "editorVerification": "tests/requestEstimate/canonicalCrossingFreightParameterProjection.contract.test.ts",
+      "scope": "Actual compatible shoring-parts lubricant, cleaner and new whole disposable wipes for each selected actual complete temporary shoring programme; other materials and gap fill are explicit open resources",
+      "consumption": "Original-kits*actual gross initial assembly/disassembly consumption + actual placement/extraction cycles*actual gross full-cycle consumption + one whole-group calendar interval*actual whole-group service consumption. All actual losses included once; whole wipes rounded once over the actual total programme. No manufacturer norm or equipment fuel/service material repeated",
+      "balance": "Gross actual consumption and exclusively allocated compatible unused initial stock, retained reserve, deficit, whole new supplier packs, rounded NEW order, unused remaining stock and free unused remainder are separate. No anticipated future recovery or used dirty wipes credited before buying; other-party supply and proven zero consumption deactivate only own purchase/stock/freight",
+      "freight": "Existing freight factory owns actual new unopened whole supplier packages by certified shipping mass/actual placement and route payload. Net kg/l/pieces per original full supplier pack are the new freight quantum; cannot carry one whole new package rejects before a manual trip quantity. Opened compatible offsite stock owns its separate actual load programme. Original shoring kit delivery/return, material consumption and new orders are distinct",
+      "integrity": "Actual programme/compatibility/product, original kits/cycles/calendar and gross contribution rates, compatible stock/reserve/pack/cost facts survive manual order quantities. Unknown one rate or stock leaves other known resources/consumption and kit work calculable. Filled actual source/rate/stock facts remain editable with Russian dimensional guides and real inactive-value retention",
+      "open": "Actual project/product/technology acceptance, other consumables, gap filling/sealing and its state/retained-fill/reuse reconciliation, used service materials/containers/waste and real disposal, reaction structures, other fleets, full-owner publication/readback and actual user acceptance remain open"
+    },
     "completeTemporaryShoringResources": {
       "module": "src/lib/estimate/v4/roadCrossingSleevesShoringR1.ts",
       "verification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
@@ -136,7 +147,7 @@
       "integrity": "Original kit count, full BOM/programme/source and original geometry survive manual overrides. Unknown excavation depth stays on dependent positioning/extraction while independently known rent, assembly, haul, casing and other resources calculate. Explicit nonrequired/other-party/unsupported modes deactivate old rent/work/freight while editor retains values. No project or product defaults",
       "primarySource": "https://sbh-verbau.de/fileadmin/Webseite/mehrwert/Downloads/EN/Anleitungen_EN/600-manhole-2015.pdf",
       "sourceBoundary": "Manufacturer manual distinguishes kit parts, assembly, installation and removal coordinated with backfill. No example dimensions, loads, depths, foreign legal applicability, universal box spacing, labour/equipment rates or design approval is inferred",
-      "open": "Actual applicable engineering/load/method approval, all actual shoring consumables, gap filling/sealing, their stock/reserve/order/remainders and wastes; other programmes, reaction structures, other fleets, full-owner publication/readback and actual user acceptance remain open"
+      "open": "Actual applicable engineering/load/method approval, other shoring consumables, gap filling/sealing and its state/retained-fill/reuse reconciliation and wastes; other programmes, reaction structures, other fleets, full-owner publication/readback and actual user acceptance remain open"
     },
     "completeWaterEquipmentMobilization": {
       "module": "src/lib/estimate/v4/roadCrossingSleevesEquipmentMobilizationR1.ts",
