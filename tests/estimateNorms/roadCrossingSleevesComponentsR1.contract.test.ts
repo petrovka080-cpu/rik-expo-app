@@ -4,7 +4,10 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_COMPONENT_P
   ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_COST_BASES_R1 as executionBases,
   ROAD_CROSSING_SLEEVES_MECHANICAL_COST_BASES_R1 as mechanicalBases,
   ROAD_CROSSING_SLEEVES_FREIGHT_MODES_R1 as freightModes,
-  ROAD_CROSSING_SLEEVES_FREIGHT_COST_BASIS_R1 as freightBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_FREIGHT_COST_BASIS_R1 as freightBasis,
+  ROAD_CROSSING_SLEEVES_SOIL_MODES_R1 as soilModes, ROAD_CROSSING_SLEEVES_SOIL_REUSE_ORIGINS_R1 as soilOrigins,
+  ROAD_CROSSING_SLEEVES_SOIL_DESTINATIONS_R1 as soilDestinations, ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_MODES_R1 as receivingModes,
+  ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_COST_BASIS_R1 as receivingBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierModes, ROAD_CROSSING_SLEEVES_CARRIER_COST_BASIS_R1 as carrierBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1 as jointParameters, ROAD_CROSSING_SLEEVES_JOINT_COST_BASES_R1 as bases } from "../../src/lib/estimate/v4/roadCrossingSleevesJointResourcesR1";
@@ -21,6 +24,7 @@ const components = buildRoadCrossingSleevesComponentsR1({ source_title: "Owned i
 const definition = components.definition;
 // Synthetic actual-fact/price fixtures ONLY, never a published default or WPS approval.
 const fixture: Record<string, unknown> = {
+  rcs_soil_trench_scope: soilModes.other, rcs_soil_jacking_scope: soilModes.other,
   ...Object.fromEntries(parameters.filter(parameter => parameter.id.startsWith("rcs_freight_")
     && /(?:_mode|_allocation_reference|_offsite_stock_units)$/u.test(parameter.id)).map(parameter => [parameter.id,
       parameter.id.endsWith("_mode") ? freightModes.otherParty : parameter.id.endsWith("_allocation_reference")
@@ -108,6 +112,129 @@ function compile(submittedParameters: Record<string, unknown> = fixture, rowOver
   });
 }
 const q = (result: Awaited<ReturnType<typeof compile>>, id: string) => Number(result.rows.find(row => row.row_id === id)?.quantity);
+
+describe("actual homogeneous soil allocation and separate haul/receiving in the same assembly", () => {
+  const soil: Record<string, unknown> = { ...selectedTrench,
+    rcs_soil_trench_scope: soilModes.uniform,
+    rcs_soil_trench_batch_reference: "TEST single classified homogeneous moist batch; actual state conversion only",
+    rcs_soil_trench_loose_per_bank_m3: 1.25,
+    rcs_soil_trench_allocation_reference: "TEST compatible reuse and disjoint allocations: current finished reuse, separate loose retained soil",
+    rcs_soil_trench_retained_loose_m3: 10, rcs_soil_trench_reuse_origin: soilOrigins.current,
+    rcs_soil_trench_reuse_loose_per_finished_m3: 1.2,
+    rcs_soil_trench_destination: soilDestinations.disposal,
+    rcs_soil_trench_destination_reference: "TEST approved material classification and named receiving site",
+    rcs_soil_trench_haul_mode: freightModes.separate,
+    rcs_soil_trench_haul_reference: "TEST actual dedicated soil route/trips; no overlapping loads",
+    rcs_soil_trench_vehicle_designation: "TEST compatible soil vehicle",
+    rcs_soil_trench_shipping_density_kg_m3: 1800,
+    rcs_soil_trench_vehicle_payload_kg: 10000, rcs_soil_trench_vehicle_loose_capacity_m3: 8,
+    rcs_soil_trench_haul_cost_basis: freightBasis,
+    rcs_soil_trench_receiving_mode: receivingModes.looseVolume, rcs_soil_trench_receiving_cost_basis: receivingBasis,
+  };
+  const prefix = "rcs:soil:trench:current:";
+  const trip = `${prefix}trip_count`, receiving = `${prefix}receiving_loose_m3`;
+  it("conserves bank/loose/finished allocations and pays only full haul plus distinct receiving", async () => {
+    const result = await compile(soil, { [trip]: { unitPrice: "70", provenance }, [receiving]: { unitPrice: "2", provenance } });
+    expect(result.preliminaryNeeds).toEqual([]);
+    expect(q(result, "rcs:soil:trench:excavated_bank_m3")).toBe(105);
+    expect(q(result, "rcs:soil:trench:excavated_loose_m3")).toBe(131.25);
+    expect(q(result, `${prefix}current_reused_finished_m3`)).toBe(20);
+    expect(q(result, `${prefix}current_reused_loose_m3`)).toBe(24);
+    expect(q(result, `${prefix}retained_loose_m3`)).toBe(10);
+    expect(q(result, `${prefix}excess_loose_m3`)).toBe(97.25);
+    expect(q(result, `${prefix}shipping_mass_kg`)).toBe(175050);
+    expect(q(result, `${prefix}effective_loose_m3_per_trip`)).toBeCloseTo(10000 / 1800, 8);
+    expect(q(result, trip)).toBe(18); expect(q(result, receiving)).toBe(97.25); expect(result.totals.amount).toBe("1454.5");
+    expect(result.rows.filter(row => row.row_id.startsWith("rcs:soil:") && row.included_in_procurement).map(row => row.row_id)).toEqual([trip, receiving]);
+    expect(q(result, "rcs:fill-execution:trench:crew_hours")).toBeGreaterThan(0);
+  });
+  it("does not reuse purchased fill stock, reserve or supply-rounding surplus as excavated soil", async () => {
+    const before = await compile(soil);
+    const changed = await compile({ ...soil, rcs_trench_fill_compatible_loose_stock_m3: 100,
+      rcs_trench_fill_retained_loose_reserve_m3: 50, rcs_trench_fill_supplier_loose_multiple_m3: 25,
+      rcs_trench_fill_gross_supplied_volume_ratio: 1.9 });
+    expect(q(changed, `${prefix}excess_loose_m3`)).toBe(q(before, `${prefix}excess_loose_m3`));
+    expect(q(changed, trip)).toBe(q(before, trip)); expect(q(changed, "rcs:trench-fill:ordered_loose_m3")).not.toBe(q(before, "rcs:trench-fill:ordered_loose_m3"));
+  });
+  it("derives current reuse from actual origin, asks only partial allocation and rejects allocating more than existing reuse", async () => {
+    const external: Record<string, unknown> = { ...soil, rcs_soil_trench_reuse_origin: soilOrigins.external };
+    delete external.rcs_soil_trench_reuse_loose_per_finished_m3;
+    const result = await compile(external); expect(result.preliminaryNeeds).toEqual([]);
+    expect(q(result, "rcs:soil:trench:external:current_reused_finished_m3")).toBe(0);
+    expect(q(result, "rcs:soil:trench:external:excess_loose_m3")).toBe(121.25);
+    expect(q(result, "rcs:trench-fill:approved_reused_finished_m3")).toBe(20);
+    const partial = await compile({ ...soil, rcs_soil_trench_reuse_origin: soilOrigins.partial, rcs_soil_trench_reuse_current_finished_m3: 5 });
+    expect(partial.preliminaryNeeds).toEqual([]); expect(q(partial, "rcs:soil:trench:partial:excess_loose_m3")).toBe(115.25);
+    await expect(compile({ ...soil, rcs_soil_trench_reuse_origin: soilOrigins.partial, rcs_soil_trench_reuse_current_finished_m3: 21 })).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+  });
+  it.each([0, "0"])("zero original reuse %s excludes origin/conversion; zero excess excludes destination, density, truck and receiving questions", async zero => {
+    const input: Record<string, unknown> = { ...soil, rcs_trench_fill_approved_reused_finished_m3: zero, rcs_soil_trench_retained_loose_m3: 131.25 };
+    for (const key of Object.keys(input)) if (key.startsWith("rcs_soil_trench_") && !["scope", "batch_reference", "loose_per_bank_m3", "allocation_reference", "retained_loose_m3"].some(s => key === `rcs_soil_trench_${s}`)) delete input[key];
+    const result = await compile(input); expect(result.preliminaryNeeds).toEqual([]);
+    expect(q(result, "rcs:soil:trench:zero_reuse:excess_loose_m3")).toBe(0);
+    expect(result.rows.some(row => row.row_id.startsWith("rcs:soil:") && row.included_in_procurement)).toBe(false);
+    for (const suffix of ["reuse_origin", "reuse_loose_per_finished_m3", "destination", "shipping_density_kg_m3", "vehicle_payload_kg", "receiving_mode"]) {
+      const parameter = definition.parameters.find(p => p.parameter_id === `rcs_soil_trench_${suffix}`)!;
+      expect(evaluateInclusionGraph(parameter.constraints_json!.requiredWhen as Record<string, unknown>, result.parameters)).toBe(false);
+    }
+  });
+  it("keeps missing reuse conversion local while known excavated volume and independent purchases continue, even with manual haul", async () => {
+    const input = { ...soil }; delete input.rcs_soil_trench_reuse_loose_per_finished_m3;
+    const result = await compile(input, { [trip]: { quantity: "999", provenance } });
+    expect(q(result, "rcs:soil:trench:excavated_loose_m3")).toBe(131.25);
+    expect(q(result, "rcs:casing:ordered_casing_length_m")).toBe(48); expect(q(result, beddingOwner)).toBe(6);
+    expect(result.rows.some(row => row.row_id === trip)).toBe(false);
+    expect(result.preliminaryNeeds.find(need => need.row_id === trip)?.missing_parameter_ids).toContain("rcs_soil_trench_reuse_loose_per_finished_m3");
+  });
+  it.each(["batch_reference", "allocation_reference", "destination_reference", "haul_reference", "vehicle_designation", "shipping_density_kg_m3", "vehicle_payload_kg"])(
+    "manual haul retains actual soil/route compatibility fact %s", async suffix => {
+      const input = { ...soil }; delete input[`rcs_soil_trench_${suffix}`];
+      const result = await compile(input, { [trip]: { quantity: "999", provenance } });
+      expect(result.rows.some(row => row.row_id === trip)).toBe(false);
+      expect(result.preliminaryNeeds.find(need => need.row_id === trip)?.missing_parameter_ids).toContain(`rcs_soil_trench_${suffix}`);
+      expect(q(result, "rcs:casing:ordered_casing_length_m")).toBe(48);
+    });
+  it("does not conceal impossible retained/reused allocations or overlapping charge bases", async () => {
+    await expect(compile({ ...soil, rcs_soil_trench_retained_loose_m3: 108 })).rejects.toMatchObject({ code: "FORMULA_OUTPUT_BOUNDS_FAILED" });
+    await expect(compile({ ...soil, rcs_soil_trench_reuse_loose_per_finished_m3: 10 })).rejects.toMatchObject({ code: "FORMULA_OUTPUT_BOUNDS_FAILED" });
+    await expect(compile({ ...soil, rcs_soil_trench_haul_cost_basis: "Разработка, транспорт и приём вместе" })).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+    await expect(compile({ ...soil, rcs_soil_trench_receiving_cost_basis: "Приём с перевозкой" })).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+  });
+  it("allows other-party haul with independently priced receiving in tonnes and uses placement as the other capacity limit", async () => {
+    const input: Record<string, unknown> = { ...soil, rcs_soil_trench_haul_mode: freightModes.otherParty, rcs_soil_trench_receiving_mode: receivingModes.mass };
+    for (const suffix of ["vehicle_designation", "vehicle_payload_kg", "vehicle_loose_capacity_m3", "haul_cost_basis"]) delete input[`rcs_soil_trench_${suffix}`];
+    const row = `${prefix}receiving_tonnes`;
+    const result = await compile(input, { [row]: { unitPrice: "3", provenance } });
+    expect(result.preliminaryNeeds).toEqual([]); expect(q(result, row)).toBe(175.05); expect(result.totals.amount).toBe("525.15");
+    expect(result.rows.some(r => r.row_id === trip)).toBe(false);
+    const placement = await compile({ ...soil, rcs_soil_trench_vehicle_payload_kg: 30000, rcs_soil_trench_vehicle_loose_capacity_m3: 4 });
+    expect(q(placement, trip)).toBe(25);
+  });
+  it("jacking uses only pits plus actual bore geometry and does not count an open trench or inflate reuse", async () => {
+    const input: Record<string, unknown> = { ...soil, rcs_civil_installation_method: methods.pipeJacking,
+      rcs_pit_fill_material_mode: fillModes.sameGranular, rcs_pit_fill_granular_product_designation: "TEST actual pit fill",
+      rcs_pit_fill_approved_reused_finished_m3: 20, rcs_pit_fill_gross_supplied_volume_ratio: 1.2,
+      rcs_pit_fill_compatible_loose_stock_m3: 0, rcs_pit_fill_retained_loose_reserve_m3: 0, rcs_pit_fill_supplier_loose_multiple_m3: 5 };
+    for (const [key, value] of Object.entries(soil).filter(([key]) => key.startsWith("rcs_soil_trench_"))) input[key.replace("rcs_soil_trench_", "rcs_soil_jacking_")] = value;
+    const result = await compile(input); expect(result.preliminaryNeeds).toEqual([]);
+    const bank = 72 + 30 + 3.141592654 / 4 * 580 ** 2 * 35 / 1000000;
+    // Canonical fixed-decimal operations round intermediate mm-area products;
+    // the independent floating-point volume uses a sub-microlitre tolerance.
+    expect(q(result, "rcs:soil:jacking:excavated_bank_m3")).toBeCloseTo(bank, 7);
+    expect(q(result, "rcs:soil:jacking:excavated_bank_m3")).toBe(q(result, "rcs:civil:jacking_total_geometric_excavation_m3"));
+    expect(q(result, "rcs:soil:jacking:current:excess_loose_m3")).toBeCloseTo(bank * 1.25 - 24 - 10, 7);
+    expect(result.rows.some(row => row.row_id.startsWith("rcs:soil:trench:"))).toBe(false);
+    expect(q(result, "rcs:civil-execution:jacking_pits:crew_hours")).toBe(40.8);
+  });
+  it("retains homogeneous excavation quantity when fill is unknown and leaves heterogeneous/slurry scope explicit", async () => {
+    const input = { ...soil }; delete input.rcs_trench_fill_material_mode;
+    const result = await compile(input); expect(q(result, "rcs:soil:trench:excavated_loose_m3")).toBe(131.25);
+    expect(result.preliminaryNeeds.find(need => need.row_id === trip)?.missing_parameter_ids).toContain("rcs_trench_fill_material_mode");
+    const other = await compile({ ...soil, rcs_soil_trench_scope: soilModes.other });
+    expect(other.rows.some(row => row.row_id.startsWith("rcs:soil:"))).toBe(false);
+    expect(components.scope.fullOwner).toBe(false); expect(components.scope.readyForPublication).toBe(false);
+  });
+});
 
 describe("full assembly freight with actual dedicated load plans", () => {
   const lane = (key: string, mass: number, payload: number, capacity: number, maxLength = 12): Record<string, unknown> => ({

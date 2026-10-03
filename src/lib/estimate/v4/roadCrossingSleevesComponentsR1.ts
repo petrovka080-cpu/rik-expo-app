@@ -295,6 +295,170 @@ export const ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1: readonly AutomaticRowSpec[] 
   }),
 );
 
+/** FHWA distinguishes in-situ, loose and finished earthwork states:
+ * https://highways.dot.gov/federal-lands/pddm/dpg/earthwork-design . Its example
+ * factors are not installed here. One documented homogeneous batch only;
+ * pit/drive mixtures and slurry need separate material-state allocations.
+ * Approved finished reuse is the EXISTING fill fact, not another soil demand.
+ * Purchase stock/reserve/surplus never becomes excavated soil a second time. */
+export const ROAD_CROSSING_SLEEVES_SOIL_MODES_R1 = Object.freeze({
+  uniform: "Одна подтверждённая однородная партия разработанного грунта",
+  other: "Разные партии, пульпа или другое состояние: отдельное распределение",
+});
+export const ROAD_CROSSING_SLEEVES_SOIL_REUSE_ORIGINS_R1 = Object.freeze({
+  current: "Весь уже выделенный материал засыпки взят из этой разработки",
+  external: "Весь уже выделенный материал засыпки поступает из другого источника",
+  partial: "Подтверждённая часть уже выделенного материала засыпки взята из этой разработки",
+});
+export const ROAD_CROSSING_SLEEVES_SOIL_DESTINATIONS_R1 = Object.freeze({
+  reuse: "Подтверждённое использование на другом объекте",
+  disposal: "Подтверждённый приём для размещения или утилизации",
+});
+export const ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_MODES_R1 = Object.freeze({
+  otherParty: "Приём обеспечивает другая сторона без отдельной оплаты исполнителем",
+  looseVolume: "Отдельная оплата приёма по фактическим рыхлым м³",
+  mass: "Отдельная оплата приёма по фактическим тоннам",
+});
+export const ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_COST_BASIS_R1 = "Только приём выбранной партии в подтверждённом месте; без разработки, сортировки, перевозки, погрузки, выгрузки, укладки и повторной оплаты тех же ресурсов";
+const soilId = (key: string, suffix: string) => `rcs_soil_${key}_${suffix}`;
+const soilWorks = [
+  { key: "trench", title: "Грунт открытой траншеи", method: methods.openCut, bank: civil.open_cut_excavation_m3,
+    fill: ROAD_CROSSING_SLEEVES_TRENCH_FILL_APPLICABILITY_R1, fillRows: ROAD_CROSSING_SLEEVES_TRENCH_FILL_ROWS_R1,
+    reuse: "rcs_trench_fill_approved_reused_finished_m3" },
+  { key: "jacking", title: "Грунт котлованов и проходки", method: methods.pipeJacking, bank: civil.jacking_total_geometric_excavation_m3,
+    fill: ROAD_CROSSING_SLEEVES_PIT_FILL_APPLICABILITY_R1, fillRows: ROAD_CROSSING_SLEEVES_PIT_FILL_ROWS_R1,
+    reuse: "rcs_pit_fill_approved_reused_finished_m3" },
+] as const;
+const soilBatches = soilWorks.map(work => {
+  const method: AutomaticInclusionCondition = { kind: "equals", parameterId: METHOD_ID, value: work.method };
+  const base: AutomaticInclusionCondition = { kind: "and", operands: [method,
+    { kind: "equals", parameterId: soilId(work.key, "scope"), value: ROAD_CROSSING_SLEEVES_SOIL_MODES_R1.uniform }] };
+  const balance: AutomaticInclusionCondition = { kind: "and", operands: [base, work.fill] };
+  const reusePositive: AutomaticInclusionCondition = { kind: "and", operands: [balance,
+    { kind: "greater_than", parameterId: work.reuse, value: 0 }] };
+  const partial: AutomaticInclusionCondition = { kind: "and", operands: [reusePositive,
+    { kind: "equals", parameterId: soilId(work.key, "reuse_origin"), value: ROAD_CROSSING_SLEEVES_SOIL_REUSE_ORIGINS_R1.partial }] };
+  const conversion: AutomaticInclusionCondition = { kind: "and", operands: [reusePositive, { kind: "or", operands: [
+    { kind: "equals", parameterId: soilId(work.key, "reuse_origin"), value: ROAD_CROSSING_SLEEVES_SOIL_REUSE_ORIGINS_R1.current },
+    { kind: "equals", parameterId: soilId(work.key, "reuse_origin"), value: ROAD_CROSSING_SLEEVES_SOIL_REUSE_ORIGINS_R1.partial },
+  ] }] };
+  const loose = `(${work.bank})*${soilId(work.key, "loose_per_bank_m3")}`;
+  const fillGeometry = work.fillRows.find(row => row.rowId.endsWith(":additional_finished_fill_m3"));
+  if (!fillGeometry) throw new Error(`RCS_SOIL_FILL_GEOMETRY_MISSING:${work.key}`);
+  // Original geometry gates survive manual paid-quantity exceptions. Supply
+  // product/ratio/stock are independent and not copied into soil allocation.
+  const geometryFacts = [...new Set([METHOD_ID, ...compileFormulaGraph(work.bank).inputParameterIds,
+    ...(fillGeometry.inputParameterIds ?? [])])];
+  const variants = [
+    { key: "zero_reuse", finished: "0", reuseLoose: "0", condition: { kind: "and", operands: [balance,
+      { kind: "less_than_or_equal", parameterId: work.reuse, value: 0 }] } as AutomaticInclusionCondition },
+    ...(["current", "external", "partial"] as const).map(origin => {
+      const finished = origin === "external" ? "0" : origin === "partial" ? soilId(work.key, "reuse_current_finished_m3") : work.reuse;
+      return { key: origin, finished, reuseLoose: origin === "external" ? "0" : `(${finished})*${soilId(work.key, "reuse_loose_per_finished_m3")}`,
+        condition: { kind: "and", operands: [reusePositive,
+          { kind: "equals", parameterId: soilId(work.key, "reuse_origin"), value: ROAD_CROSSING_SLEEVES_SOIL_REUSE_ORIGINS_R1[origin] }] } as AutomaticInclusionCondition };
+    }),
+  ].map(variant => {
+    const excess = `(${loose})-(${variant.reuseLoose})-${soilId(work.key, "retained_loose_m3")}`;
+    const positive: AutomaticInclusionCondition = { kind: "and", operands: [variant.condition,
+      { kind: "formula_greater_than", expression: excess, unitId: "m3", value: 0 }] };
+    return { ...variant, excess, positive };
+  });
+  const positive: AutomaticInclusionCondition = { kind: "or", operands: variants.map(variant => variant.positive) };
+  const separate: AutomaticInclusionCondition = { kind: "and", operands: [positive,
+    { kind: "equals", parameterId: soilId(work.key, "haul_mode"), value: ROAD_CROSSING_SLEEVES_FREIGHT_MODES_R1.separate }] };
+  const volumeFee: AutomaticInclusionCondition = { kind: "and", operands: [positive,
+    { kind: "equals", parameterId: soilId(work.key, "receiving_mode"), value: ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_MODES_R1.looseVolume }] };
+  const massFee: AutomaticInclusionCondition = { kind: "and", operands: [positive,
+    { kind: "equals", parameterId: soilId(work.key, "receiving_mode"), value: ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_MODES_R1.mass }] };
+  const massNeeded: AutomaticInclusionCondition = { kind: "or", operands: [separate, massFee] };
+  const capacity = `min(${soilId(work.key, "vehicle_loose_capacity_m3")},${soilId(work.key, "vehicle_payload_kg")}/${soilId(work.key, "shipping_density_kg_m3")})`;
+  return { work, method, base, balance, reusePositive, partial, conversion, loose, geometryFacts, variants,
+    positive, separate, volumeFee, massFee, massNeeded, capacity };
+});
+export const ROAD_CROSSING_SLEEVES_SOIL_PARAMETERS_R1: readonly AutomaticParameterSpec[] = Object.freeze(
+  soilBatches.flatMap(({ work, method, base, balance, reusePositive, partial, conversion, positive, separate, volumeFee, massFee, massNeeded }) => {
+    const text = (suffix: string, title: string, condition: AutomaticInclusionCondition): AutomaticParameterSpec => ({
+      id: soilId(work.key, suffix), title: `${work.title}: ${title}`, valueType: "text", unitId: null, kind: "conditional", requiredWhen: condition });
+    const numeric = (suffix: string, title: string, unitId: string, condition: AutomaticInclusionCondition, min = 0): AutomaticParameterSpec => ({
+      id: soilId(work.key, suffix), title: `${work.title}: ${title}`, valueType: "decimal", unitId, min, kind: "conditional", requiredWhen: condition });
+    const choice = (suffix: string, title: string, values: readonly string[], condition: AutomaticInclusionCondition): AutomaticParameterSpec => ({
+      id: soilId(work.key, suffix), title: `${work.title}: ${title}`, valueType: "enum", unitId: null, values, kind: "conditional", requiredWhen: condition });
+    return [
+      choice("scope", "подтверждённое состояние и разделение материала", Object.values(ROAD_CROSSING_SLEEVES_SOIL_MODES_R1), method),
+      text("batch_reference", "документ одной однородной партии, влажности и перехода из естественного в рыхлое состояние; разные грунты котлованов и проходки не объединять", base),
+      numeric("loose_per_bank_m3", "фактические рыхлые м³ на м³ этой разработки в естественном состоянии", "ratio", base, 0.000_001),
+      text("allocation_reference", "подтверждённая пригодность, происхождение и непересекающееся распределение этой партии; повторное использование не дублировать в поставочном наличии", balance),
+      numeric("retained_loose_m3", "подтверждённый остаток этой партии на площадке для других целей, отдельно от уже выделенной засыпки; подтвердите ноль при отсутствии", "m3", balance),
+      choice("reuse_origin", "фактическое происхождение уже выделенного в засыпку материала", Object.values(ROAD_CROSSING_SLEEVES_SOIL_REUSE_ORIGINS_R1), reusePositive),
+      { ...numeric("reuse_current_finished_m3", "фактическая часть уже выделенного материала засыпки из этой разработки в готовом уплотнённом эквиваленте", "m3", partial, 0.000_001),
+        numericPeerConstraints: { lessThanOrEqualParameter: work.reuse } },
+      numeric("reuse_loose_per_finished_m3", "фактические рыхлые м³ этой партии на готовый м³ выделенной засыпки, включая процессные потери; не коэффициент нового поставочного материала", "ratio", conversion, 0.000_001),
+      choice("destination", "фактическое назначение вывоза избытка", Object.values(ROAD_CROSSING_SLEEVES_SOIL_DESTINATIONS_R1), positive),
+      text("destination_reference", "подтверждённый класс материала, допустимый приём и место назначения; геометрия не подтверждает экологическую пригодность", positive),
+      choice("haul_mode", "кто оплачивает вывоз", Object.values(ROAD_CROSSING_SLEEVES_FREIGHT_MODES_R1), positive),
+      text("haul_reference", "фактический маршрут и только эта отдельная партия; без повторной оплаты тех же рейсов", positive),
+      text("vehicle_designation", "фактический совместимый транспорт по маршруту", separate),
+      numeric("shipping_density_kg_m3", "подтверждённая перевозочная масса рыхлого м³ с фактической влажностью", "kg_per_m3", massNeeded, 0.000_001),
+      numeric("vehicle_payload_kg", "фактическая допустимая полезная масса транспорта по маршруту", "kg", separate, 0.000_001),
+      numeric("vehicle_loose_capacity_m3", "допустимый рыхлый объём в одном рейсе по схеме размещения", "m3", separate, 0.000_001),
+      choice("haul_cost_basis", "граница полной отдельной транспортной расценки", [ROAD_CROSSING_SLEEVES_FREIGHT_COST_BASIS_R1], separate),
+      choice("receiving_mode", "отдельная оплата приёма партии", Object.values(ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_MODES_R1), positive),
+      choice("receiving_cost_basis", "граница отдельной расценки приёма", [ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_COST_BASIS_R1],
+        { kind: "or", operands: [volumeFee, massFee] }),
+    ];
+  }),
+);
+export const ROAD_CROSSING_SLEEVES_SOIL_ROWS_R1: readonly AutomaticRowSpec[] = Object.freeze(
+  soilBatches.flatMap(({ work, base, loose, geometryFacts, variants, capacity }): AutomaticRowSpec[] => {
+    const bankFacts = [METHOD_ID, ...compileFormulaGraph(work.bank).inputParameterIds, soilId(work.key, "scope"), soilId(work.key, "batch_reference")];
+    const row = (suffix: string, title: string, expression: string, unitId: string, inclusion: AutomaticInclusionCondition,
+      facts: readonly string[], minimum = 0): AutomaticRowSpec => ({ rowId: `rcs:soil:${work.key}:${suffix}`, formulaId: `rcs:soil:${work.key}:${suffix}`,
+      section: `Разработанный грунт: ${work.title}`, title, category: "service", unitId, expression, inclusion,
+      costTreatment: "INFORMATIONAL_SCOPE", inputParameterIds: [...new Set(facts)],
+      formulaOutputBounds: { schemaVersion: "canonical_formula_output_bounds_v1", unitId, minimum,
+        reasonRu: "Состояния и распределения этой партии должны сохранять неотрицательный баланс. Невозможное распределение не заменяется нулём или ручным количеством." } });
+    return [
+      row("excavated_bank_m3", "Разработанный грунт в естественном состоянии; не покупка или рыхлый груз", work.bank, "m3", base, bankFacts),
+      row("excavated_loose_m3", "Рыхлый объём всей подтверждённой партии после разработки", loose, "m3", base, bankFacts),
+      ...variants.flatMap((variant): AutomaticRowSpec[] => {
+        const prefix = variant.key;
+        const facts = [...bankFacts, ...geometryFacts, work.reuse, soilId(work.key, "loose_per_bank_m3"), soilId(work.key, "allocation_reference"),
+          soilId(work.key, "retained_loose_m3"), ...(variant.key === "zero_reuse" ? [] : [soilId(work.key, "reuse_origin")]),
+          ...(variant.key === "current" || variant.key === "partial" ? [soilId(work.key, "reuse_loose_per_finished_m3")] : []),
+          ...(variant.key === "partial" ? [soilId(work.key, "reuse_current_finished_m3")] : [])];
+        const destinationFacts = [...facts, soilId(work.key, "destination"), soilId(work.key, "destination_reference")];
+        const haulFacts = [...destinationFacts, soilId(work.key, "haul_mode"), soilId(work.key, "haul_reference"), soilId(work.key, "vehicle_designation"),
+          soilId(work.key, "haul_cost_basis"), soilId(work.key, "shipping_density_kg_m3"), soilId(work.key, "vehicle_payload_kg"), soilId(work.key, "vehicle_loose_capacity_m3")];
+        const separate: AutomaticInclusionCondition = { kind: "and", operands: [variant.positive,
+          { kind: "equals", parameterId: soilId(work.key, "haul_mode"), value: ROAD_CROSSING_SLEEVES_FREIGHT_MODES_R1.separate }] };
+        const fee = (mode: string): AutomaticInclusionCondition => ({ kind: "and", operands: [variant.positive,
+          { kind: "equals", parameterId: soilId(work.key, "receiving_mode"), value: mode }] });
+        const massFee = fee(ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_MODES_R1.mass);
+        const feeFacts = [...destinationFacts, soilId(work.key, "receiving_mode"), soilId(work.key, "receiving_cost_basis")];
+        const mass = `(${variant.excess})*${soilId(work.key, "shipping_density_kg_m3")}`;
+        return [
+          row(`${prefix}:current_reused_finished_m3`, "Выделенная из этой разработки часть уже принятой засыпки в готовом эквиваленте", variant.finished, "m3", variant.condition, facts),
+          row(`${prefix}:current_reused_loose_m3`, "Рыхлая часть этой партии, уже выделенная в засыпку со всеми процессными потерями", variant.reuseLoose, "m3", variant.condition, facts),
+          row(`${prefix}:retained_loose_m3`, "Остаток этой партии на площадке для других целей, без повторения засыпки", soilId(work.key, "retained_loose_m3"), "m3", variant.condition, facts),
+          row(`${prefix}:excess_loose_m3`, "Избыток разработанной партии к вывозу после выделенной засыпки и остатка на площадке", variant.excess, "m3", variant.condition, facts),
+          row(`${prefix}:shipping_mass_kg`, "Фактическая перевозочная масса только вывозимого избытка", mass, "kg",
+            { kind: "or", operands: [separate, massFee] }, [...destinationFacts, soilId(work.key, "shipping_density_kg_m3")]),
+          row(`${prefix}:effective_loose_m3_per_trip`, "Вместимость отдельного рейса грунта по массе и размещению", capacity, "m3", separate, haulFacts, 0.000_001),
+          { ...row(`${prefix}:trip_count`, "Полные отдельные рейсы вывоза избытка этой партии", `ceil((${variant.excess})/(${capacity}))`, "trip", separate, haulFacts),
+            category: "transport", costTreatment: "OWN_COST", procurement: true, titleParameterIds: [soilId(work.key, "vehicle_designation")] },
+          { ...row(`${prefix}:receiving_loose_m3`, "Отдельный приём вывозимого избытка в подтверждённом месте по рыхлому объёму", variant.excess, "m3",
+            fee(ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_MODES_R1.looseVolume), feeFacts), costTreatment: "OWN_COST", procurement: true,
+            titleParameterIds: [soilId(work.key, "destination")] },
+          { ...row(`${prefix}:receiving_tonnes`, "Отдельный приём вывозимого избытка в подтверждённом месте по фактической массе", `(${mass})/1000`, "tonne", massFee,
+            [...feeFacts, soilId(work.key, "shipping_density_kg_m3")]), costTreatment: "OWN_COST", procurement: true,
+            titleParameterIds: [soilId(work.key, "destination")] },
+        ];
+      }),
+    ];
+  }),
+);
+
 /** Composition of tested components ONLY. No second evaluator, profile defaults,
  * publication or claim of complete crossing execution. Return scope alongside
  * the definition so a caller cannot mistake arithmetic integration for a full
@@ -305,10 +469,10 @@ export const ROAD_CROSSING_SLEEVES_COMPONENTS_SCOPE_R1 = Object.freeze({
   fullOwner: false, engineeringAccepted: false, readyForPublication: false,
   omitted: Object.freeze([
     "Excavation support/reaction structures and groundwater measures; actual applicability and approved civil execution rates",
-    "Approved pit return-fill technology, suitability/reuse/haul/disposal of soil and non-granular/other bedding technologies",
+    "Approved pit return-fill technology, soil suitability/classification, heterogeneous/slurry allocations and non-granular/other bedding technologies",
     "Actual preparation consumables, joint NDT/repairs/coating/drying, jacking section loading, carrier connections and method/design approval",
     "Internal fill product/method approval, other/partial fills, external overbreak grouting, pressure/buoyancy/restraints, preparation/curing and water quality/allocation approval",
-    "Consolidated delivery manifests, fittings/consumables freight, equipment delivery/return and soil haul/disposal; actual certified mass, routes and prices remain project facts",
+    "Consolidated delivery manifests, fittings/consumables freight, equipment delivery/return and extra soil sorting/site handling; actual certified mass, routes, receiving permission and prices remain project facts",
     "Full-owner reconciliation of explicit purchase exceptions with formula-reference balances",
     "Actual product/layout/design acceptance and governed full-owner publication/readback/UI acceptance",
   ]),
@@ -328,6 +492,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_PARAMETERS_R1: readonly AutomaticPa
   ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_MECHANICAL_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_FREIGHT_PARAMETERS_R1,
+  ...ROAD_CROSSING_SLEEVES_SOIL_PARAMETERS_R1,
 ]);
 export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[] = Object.freeze([
   ...ROAD_CROSSING_SLEEVES_CASING_MATERIAL_ROWS_R1, ...ROAD_CROSSING_SLEEVES_SPACER_GEOMETRY_ROWS_R1,
@@ -343,6 +508,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[
   ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1,
+  ...ROAD_CROSSING_SLEEVES_SOIL_ROWS_R1,
 ]);
 
 /** Existing resources partitioned by actual construction stage. Open entries
@@ -354,7 +520,7 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
   { stageId: "installation", titleRu: "Устройство перехода", rows: [
     ...ROAD_CROSSING_SLEEVES_CIVIL_ROWS_R1.filter(row => !["rcs:civil:open_cut_full_width_bedding_m3", "rcs:civil:open_cut_remaining_fill_space_m3"].includes(row.rowId)),
     ...ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_ROWS_R1],
-    remaining: ["Крепление грунта и реакционные конструкции", "Водоотведение", "Разделение грунта, перемещение и вывоз", "Применимые смазка и заполнение снаружи футляра"] },
+    remaining: ["Крепление грунта и реакционные конструкции", "Водоотведение", "Разделение разных партий и дополнительное перемещение грунта", "Применимые смазка и заполнение снаружи футляра"] },
   { stageId: "bedding", titleRu: "Основание", rows: [
     ...ROAD_CROSSING_SLEEVES_CIVIL_ROWS_R1.filter(row => row.rowId === "rcs:civil:open_cut_full_width_bedding_m3"), ...ROAD_CROSSING_SLEEVES_BEDDING_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => row.rowId.startsWith("rcs:fill-execution:bedding:"))],
@@ -371,9 +537,11 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
   { stageId: "backfill", titleRu: "Обратная засыпка", rows: [
     ...ROAD_CROSSING_SLEEVES_CIVIL_ROWS_R1.filter(row => row.rowId === "rcs:civil:open_cut_remaining_fill_space_m3"),
     ...ROAD_CROSSING_SLEEVES_PIT_RETURN_ROWS_R1, ...ROAD_CROSSING_SLEEVES_PIT_FILL_ROWS_R1, ...ROAD_CROSSING_SLEEVES_TRENCH_FILL_ROWS_R1,
+    ...ROAD_CROSSING_SLEEVES_SOIL_ROWS_R1.filter(row => row.costTreatment !== "OWN_COST"),
     ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => /^rcs:fill-execution:(?:pits|trench):/u.test(row.rowId))],
-    remaining: ["Подтверждение пригодности и распределения повторно используемого грунта", "Послойные или другие материалы траншеи", "Подтверждение технологии укладки и уплотнения", "Фактически расходуемая вода и её отдельная поставка", "Состояния грунта и баланс вывоза"] },
-  { stageId: "completion", titleRu: "Завершение перехода", rows: [...ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1],
+    remaining: ["Подтверждение пригодности и распределения повторно используемого грунта", "Послойные или другие материалы траншеи", "Подтверждение технологии укладки и уплотнения", "Фактически расходуемая вода и её отдельная поставка", "Разные партии грунта, пульпа и иные состояния"] },
+  { stageId: "completion", titleRu: "Завершение перехода", rows: [...ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1,
+    ...ROAD_CROSSING_SLEEVES_SOIL_ROWS_R1.filter(row => row.costTreatment === "OWN_COST")],
     remaining: ["Применимое восстановление территории и покрытия", "Доставка и возврат оборудования; объединённые грузы, комплектующие и расходники", "Испытания и завершение без подмены материалов документами"] },
 ].map(({ rows, ...stage }) => Object.freeze({ ...stage, ownResourceIds: Object.freeze(rows.map(row => row.rowId)), remaining: Object.freeze(stage.remaining) })));
 function assertUnique(ids: readonly string[], kind: string): void {

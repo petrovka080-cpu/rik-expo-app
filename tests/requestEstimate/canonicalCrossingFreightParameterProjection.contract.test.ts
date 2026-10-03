@@ -1,5 +1,10 @@
 import { buildMasterParameterCalculationConsumers } from "../../scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1";
-import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_FREIGHT_MODES_R1 as modes, ROAD_CROSSING_SLEEVES_FREIGHT_COST_BASIS_R1 as basis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_FREIGHT_MODES_R1 as modes, ROAD_CROSSING_SLEEVES_FREIGHT_COST_BASIS_R1 as basis,
+  ROAD_CROSSING_SLEEVES_SOIL_MODES_R1 as soilModes, ROAD_CROSSING_SLEEVES_SOIL_REUSE_ORIGINS_R1 as soilOrigins,
+  ROAD_CROSSING_SLEEVES_SOIL_DESTINATIONS_R1 as destinations, ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_MODES_R1 as receivingModes,
+  ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_COST_BASIS_R1 as receivingBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
+import { ROAD_CROSSING_SLEEVES_TRENCH_FILL_MODES_R1 as fillModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
 import { buildConsumerCanonicalPrecompileParameterSession } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
 import { buildCanonicalParameterCards } from "../../src/lib/estimatePresentation/buildCanonicalParameterCards";
 import type { CanonicalEstimateCatalogItem, CanonicalEstimateParameterGuide, CanonicalEstimateParameterInputValue } from "../../src/lib/estimate/backendPlatform/contracts";
@@ -38,6 +43,55 @@ const fixture: Record<string, CanonicalEstimateParameterInputValue> = {
 };
 const session = (parameters = fixture, missingParameterIds: string[] = []) => buildConsumerCanonicalPrecompileParameterSession({
   catalog, draftId: "owned-freight-editor", parameters, missingParameterIds, userExplicitParameterIds: Object.keys(parameters), textExtractedParameterIds: [],
+});
+
+describe("actual soil-state facts through the same canonical publisher/editor", () => {
+  const soil: Record<string, CanonicalEstimateParameterInputValue> = { ...fixture,
+    rcs_civil_installation_method: methods.openCut, rcs_open_cut_excavation_width_m: 1.5, rcs_open_cut_excavation_depth_m: 2,
+    rcs_trench_fill_material_mode: fillModes.sameGranular, rcs_trench_fill_approved_reused_finished_m3: 20,
+    rcs_soil_trench_scope: soilModes.uniform, rcs_soil_trench_batch_reference: "TEST actual single homogeneous batch",
+    rcs_soil_trench_loose_per_bank_m3: 1.25, rcs_soil_trench_allocation_reference: "TEST actual disjoint reuse and retained allocation",
+    rcs_soil_trench_retained_loose_m3: 10, rcs_soil_trench_reuse_origin: soilOrigins.current,
+    rcs_soil_trench_reuse_loose_per_finished_m3: 1.2,
+    rcs_soil_trench_destination: destinations.disposal, rcs_soil_trench_destination_reference: "TEST actual material classification and receiver",
+    rcs_soil_trench_haul_mode: modes.separate, rcs_soil_trench_haul_reference: "TEST dedicated route and full trips",
+    rcs_soil_trench_vehicle_designation: "TEST actual compatible vehicle", rcs_soil_trench_shipping_density_kg_m3: 1800,
+    rcs_soil_trench_vehicle_payload_kg: 10000, rcs_soil_trench_vehicle_loose_capacity_m3: 8, rcs_soil_trench_haul_cost_basis: basis,
+    rcs_soil_trench_receiving_mode: receivingModes.mass, rcs_soil_trench_receiving_cost_basis: receivingBasis,
+  };
+  it("keeps supplied original soil facts editable with guides, units and no calculated-volume questions", () => {
+    for (const [key, value] of Object.entries(soil).filter(([key]) => key.startsWith("rcs_soil_trench_"))) {
+      expect(cards(soil).find(c => c.key === key)).toMatchObject({ value, editable: true, missing: false });
+      expect(cards(soil).find(c => c.key === key)?.guideShortRu).toBeTruthy();
+    }
+    expect(cards(soil).find(c => c.key === "rcs_soil_trench_shipping_density_kg_m3")?.unitRu).toBe("кг/м³");
+    expect(catalog.parameterSchema.some(p => /(?:excavated_loose|excess_loose|trip_count|effective_loose)/u.test(p.parameterId))).toBe(false);
+  });
+  it("preserves unavailable original reuse conversion as an editable missing fact instead of assuming zero", () => {
+    const input = { ...soil }; delete input.rcs_soil_trench_reuse_loose_per_finished_m3;
+    expect(cards(input).find(c => c.key === "rcs_soil_trench_reuse_loose_per_finished_m3")).toMatchObject({ value: null, missing: true, editable: true });
+    expect(session(input, ["rcs_soil_trench_reuse_loose_per_finished_m3"]).blockingMissingParameterIds).toContain("rcs_soil_trench_reuse_loose_per_finished_m3");
+  });
+  it("asks a partial original allocation only for actual partial origin and retains inactive earlier conversion", () => {
+    const external = session({ ...soil, rcs_soil_trench_reuse_origin: soilOrigins.external });
+    expect(external.parameters.some(p => p.parameterId === "rcs_soil_trench_reuse_loose_per_finished_m3")).toBe(false);
+    expect(external.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_soil_trench_reuse_loose_per_finished_m3")).toMatchObject({ value: 1.2 });
+    expect(cards({ ...soil, rcs_soil_trench_reuse_origin: soilOrigins.partial }).find(c => c.key === "rcs_soil_trench_reuse_current_finished_m3")).toMatchObject({ value: null, missing: true, editable: true });
+  });
+  it("zero reuse and zero calculated excess hide all destination/transport/receiving questions while retaining their values", () => {
+    const result = session({ ...soil, rcs_trench_fill_approved_reused_finished_m3: 0, rcs_soil_trench_retained_loose_m3: 131.25 });
+    for (const suffix of ["reuse_origin", "reuse_loose_per_finished_m3", "destination", "shipping_density_kg_m3", "vehicle_payload_kg", "receiving_mode"]) {
+      expect(result.parameters.some(p => p.parameterId === `rcs_soil_trench_${suffix}`)).toBe(false);
+    }
+    expect(result.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_soil_trench_vehicle_payload_kg")).toMatchObject({ value: 10000 });
+  });
+  it("other-party haul keeps a tonne receiver's original shipping density active but disables vehicle-only facts", () => {
+    const result = session({ ...soil, rcs_soil_trench_haul_mode: modes.otherParty });
+    expect(result.parameters.find(p => p.parameterId === "rcs_soil_trench_shipping_density_kg_m3")).toBeDefined();
+    expect(result.parameters.some(p => p.parameterId === "rcs_soil_trench_vehicle_payload_kg")).toBe(false);
+    const volume = session({ ...soil, rcs_soil_trench_haul_mode: modes.otherParty, rcs_soil_trench_receiving_mode: receivingModes.looseVolume });
+    expect(volume.parameters.some(p => p.parameterId === "rcs_soil_trench_shipping_density_kg_m3")).toBe(false);
+  });
 });
 const cards = (parameters = fixture) => buildCanonicalParameterCards({ session: session(parameters), revision: null });
 

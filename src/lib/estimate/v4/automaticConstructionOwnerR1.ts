@@ -24,6 +24,7 @@ export type AutomaticInclusionCondition = AutomaticPeerCondition
   | Readonly<{ kind: "formula_greater_than"; expression: string; unitId: string; value: number }>
   | Readonly<{ kind: "equals"; parameterId: string; value: string }>
   | Readonly<{ kind: "greater_than"; parameterId: string; value: number; valueParameterId?: never }>
+  | Readonly<{ kind: "less_than_or_equal"; parameterId: string; value: number; valueParameterId?: never }>
   | Readonly<{ kind: "and" | "or"; operands: readonly AutomaticInclusionCondition[] }>;
 export type AutomaticParameterSpec = Readonly<{
   id: string;
@@ -135,7 +136,7 @@ export function buildAutomaticConstructionOwnerR1(
           throw new Error(`AUTOMATIC_INCLUSION_FORMULA_INPUT_INVALID:${id}`);
         }
       }
-    } else if (condition.kind === "greater_than") {
+    } else if (condition.kind === "greater_than" || condition.kind === "less_than_or_equal") {
       if (condition.valueParameterId !== undefined) validatePeerCondition(condition);
       else {
         const subject = specsById.get(condition.parameterId);
