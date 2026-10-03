@@ -5,7 +5,8 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_FREIGHT_MOD
   ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_COST_BASIS_R1 as receivingBasis,
   ROAD_CROSSING_SLEEVES_INSPECTION_MODES_R1 as inspectionModes, ROAD_CROSSING_SLEEVES_INSPECTION_COUPLANT_COST_BASIS_R1 as couplantBasis,
   ROAD_CROSSING_SLEEVES_PREPARATION_MODES_R1 as preparationModes, ROAD_CROSSING_SLEEVES_PREPARATION_MATERIAL_COST_BASIS_R1 as preparationBasis,
-  ROAD_CROSSING_SLEEVES_COMPACTION_WATER_MODES_R1 as compactionWaterModes, ROAD_CROSSING_SLEEVES_COMPACTION_WATER_COST_BASIS_R1 as compactionWaterBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_COMPACTION_WATER_MODES_R1 as compactionWaterModes, ROAD_CROSSING_SLEEVES_COMPACTION_WATER_COST_BASIS_R1 as compactionWaterBasis,
+  ROAD_CROSSING_SLEEVES_JACKING_LOADING_MODES_R1 as loadingModes } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_TRENCH_FILL_MODES_R1 as fillModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
 import { buildConsumerCanonicalPrecompileParameterSession } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
@@ -130,6 +131,29 @@ describe("actual initial inspection through common metadata/editor", () => {
   });
 });
 const cards = (parameters = fixture) => buildCanonicalParameterCards({ session: session(parameters), revision: null });
+
+describe("actual jacking loading boundaries and editable equipment facts", () => {
+  const loading: Record<string, CanonicalEstimateParameterInputValue> = { ...fixture, rcs_civil_installation_method: methods.pipeJacking,
+    rcs_jacking_section_loading_cost_mode: loadingModes.separate, rcs_jacking_section_loading_allocation_reference: "TEST loading excluded from advance rates, no double charge",
+    rcs_mechanical_casing_jacking_loading_method_reference: "TEST actual compatible rigging/crane radius/mass and guide plan",
+    rcs_mechanical_casing_jacking_loading_equipment_designation: "TEST actual compatible lifting equipment", rcs_mechanical_casing_jacking_loading_equipment_h_per_unit: 0.2,
+  };
+  it("shows actual separate-loading facts filled and editable, without asking derived section counts", () => {
+    for (const [key, value] of Object.entries(loading).filter(([key]) => key.startsWith("rcs_jacking_section_loading_") || key.startsWith("rcs_mechanical_casing_jacking_loading_"))) {
+      expect(cards(loading).find(c => c.key === key)).toMatchObject({ value, editable: true, missing: false });
+    }
+    expect(cards(loading).find(c => c.key === "rcs_mechanical_casing_jacking_loading_equipment_h_per_unit")?.unitRu).toBe("маш.-ч/шт.");
+    expect(catalog.parameterSchema.some(p => /jacking_loading.*(?:scope_section_count|installed_section_count)/u.test(p.parameterId))).toBe(false);
+  });
+  it("included loading preserves its equipment/rate values inactive and keeps the actual disjoint allocation reference", () => {
+    const included = session({ ...loading, rcs_jacking_section_loading_cost_mode: loadingModes.included });
+    expect(included.parameters.find(p => p.parameterId === "rcs_jacking_section_loading_allocation_reference")).toBeDefined();
+    expect(included.parameters.some(p => p.parameterId === "rcs_mechanical_casing_jacking_loading_equipment_h_per_unit")).toBe(false);
+    expect(included.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_mechanical_casing_jacking_loading_equipment_h_per_unit")).toMatchObject({ value: 0.2 });
+    const open = session({ ...loading, rcs_civil_installation_method: methods.openCut });
+    expect(open.parameters.some(p => p.parameterId === "rcs_jacking_section_loading_cost_mode")).toBe(false);
+  });
+});
 
 describe("actual compaction-water facts through the same publisher/editor", () => {
   const water: Record<string, CanonicalEstimateParameterInputValue> = { ...fixture,

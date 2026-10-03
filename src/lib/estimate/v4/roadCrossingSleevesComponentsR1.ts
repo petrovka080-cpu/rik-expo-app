@@ -30,7 +30,19 @@ export const ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_COST_BASES_R1 = Object.freeze
   crew: "Все исполнители этой операции, включая операторов; без техники, энергии и материалов",
   equipment: "Без всех исполнителей; топливо и энергия включены; без доставки, креплений и водоотведения",
 });
+/** Loading/positioning a physical section is not drive metres or supplier
+ * packaging. PJA describes placing pipes on the aligned thrust-pit rails:
+ * https://pipejacking.org/about_pipe_jacking . Actual lifting capacity, access
+ * and disjoint loading/advancement boundaries remain project evidence. */
+export const ROAD_CROSSING_SLEEVES_JACKING_LOADING_MODES_R1 = Object.freeze({
+  included: "Загрузка и установка секций на направляющие включены в выбранные ресурсы проходки без отдельной оплаты",
+  separate: "Загрузка и установка секций на направляющие оплачиваются отдельно и исключены из ресурсов проходки",
+  otherParty: "Загрузка и установка секций выполняются другой стороной без оплаты исполнителем и исключены из ресурсов проходки",
+});
+const JACKING_LOADING_MODE = "rcs_jacking_section_loading_cost_mode";
+const JACKING_LOADING_REFERENCE = "rcs_jacking_section_loading_allocation_reference";
 const METHOD_ID = "rcs_civil_installation_method";
+const jackingLoadingScope: AutomaticInclusionCondition = { kind: "equals", parameterId: METHOD_ID, value: methods.pipeJacking };
 const civilExecutionWorks = [
   { key: "open_cut", title: "Разработка открытой траншеи", method: methods.openCut, unit: "m3",
     expression: civil.open_cut_excavation_m3,
@@ -77,6 +89,7 @@ export const ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_ROWS_R1: readonly AutomaticRo
     inclusion: { kind: "equals" as const, parameterId: METHOD_ID, value: work.method }, procurement: true,
     titleParameterIds: [executionId(work.key, `${owner}_designation`)],
     inputParameterIds: [METHOD_ID, ...work.facts, executionId(work.key, "method_reference"),
+      ...(work.key === "jacking_advance" ? [JACKING_LOADING_MODE, JACKING_LOADING_REFERENCE] : []),
       executionId(work.key, `${owner}_designation`), executionId(work.key, `${owner}_cost_basis`)],
   }))),
 );
@@ -220,6 +233,11 @@ const mechanicalWorks: readonly Readonly<{ key: string; title: string; quantity:
     facts: [METHOD_ID, "rcs_crossing_length_m", "rcs_planned_physical_section_length_m", "rcs_casing_product_designation", "rcs_casing_outside_diameter_mm", "rcs_casing_inside_diameter_mm"],
     inclusion: { kind: "equals", parameterId: METHOD_ID, value: methods.openCut },
     boundary: "совместимая схема строповки и установки используемых секций по фактической массе, вылету и доступу; без доставки и проходки" },
+  { key: "casing_jacking_loading", title: "Отдельная загрузка физических секций футляра при продавливании", quantity: quantities.installed_section_count, unit: "piece",
+    facts: [METHOD_ID, "rcs_crossing_length_m", "rcs_planned_physical_section_length_m", "rcs_casing_product_designation", "rcs_casing_outside_diameter_mm", "rcs_casing_inside_diameter_mm",
+      JACKING_LOADING_MODE, JACKING_LOADING_REFERENCE, "rcs_civil_jacking_advance_method_reference"],
+    inclusion: { kind: "and", operands: [jackingLoadingScope, { kind: "equals", parameterId: JACKING_LOADING_MODE, value: ROAD_CROSSING_SLEEVES_JACKING_LOADING_MODES_R1.separate }] },
+    boundary: "фактическая масса целой секции, совместимая строповка, грузоподъёмность на фактическом вылете, доступ и установка на согласованные направляющие; без проходки, резки, сварки, доставки и приписывания реакции или креплений" },
   { key: "supports", title: "Монтаж опорных колец и контактной ленты рабочей трубы", quantity: quantities.raci_installed_ring_count, unit: "piece",
     facts: ["rcs_crossing_length_m", "rcs_raci_approved_ring_pitch_m", "rcs_raci_selected_elements_per_ring", "rcs_casing_inside_diameter_mm", "rcs_carrier_outside_diameter_mm",
       "rcs_maximum_joint_envelope_diameter_mm", "rcs_raci_selected_element_height_mm", "rcs_raci_element_designation", "rcs_contact_tape_designation", "rcs_raci_ring_width_mm", "rcs_contact_tape_width_mm"],
@@ -233,8 +251,12 @@ const mechanicalWorks: readonly Readonly<{ key: string; title: string; quantity:
     boundary: "монтаж двух выбранных комплектов торцевого уплотнения; не удерживающие конструкции, подпорные заглушки или заделка под давлением" },
 ];
 const mechanicalId = (key: string, suffix: string) => `rcs_mechanical_${key}_${suffix}`;
-export const ROAD_CROSSING_SLEEVES_MECHANICAL_PARAMETERS_R1: readonly AutomaticParameterSpec[] = Object.freeze(
-  mechanicalWorks.flatMap(work => {
+export const ROAD_CROSSING_SLEEVES_MECHANICAL_PARAMETERS_R1: readonly AutomaticParameterSpec[] = Object.freeze([
+  { id: JACKING_LOADING_MODE, title: "Подтверждённая граница загрузки секций футляра с ресурсами проходки", valueType: "enum", unitId: null,
+    values: Object.values(ROAD_CROSSING_SLEEVES_JACKING_LOADING_MODES_R1), kind: "conditional", requiredWhen: jackingLoadingScope },
+  { id: JACKING_LOADING_REFERENCE, title: "Фактическая карта, распределение исполнителей и оборудования загрузки и проходки без повторной оплаты, включая установку секций на направляющие",
+    valueType: "text", unitId: null, kind: "conditional", requiredWhen: jackingLoadingScope },
+  ...mechanicalWorks.flatMap(work => {
     const base = { kind: "conditional" as const, requiredWhen: work.inclusion
       ?? { kind: "greater_than" as const, parameterId: "rcs_crossing_length_m", value: 0 } };
     const text = (suffix: string, title: string): AutomaticParameterSpec => ({ ...base, id: mechanicalId(work.key, suffix), title, valueType: "text", unitId: null });
@@ -248,9 +270,13 @@ export const ROAD_CROSSING_SLEEVES_MECHANICAL_PARAMETERS_R1: readonly AutomaticP
       text("crew_designation", `${work.title}: выбранные исполнители, включая операторов`), rate("crew"), basis("crew"),
       text("equipment_designation", `${work.title}: выбранный совместимый комплект техники`), rate("equipment"), basis("equipment")];
   }),
-);
-export const ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1: readonly AutomaticRowSpec[] = Object.freeze(
-  mechanicalWorks.flatMap(work => (["crew", "equipment"] as const).map(owner => ({
+]);
+export const ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1: readonly AutomaticRowSpec[] = Object.freeze([
+  { rowId: "rcs:mechanical:casing_jacking_loading:scope_section_count", formulaId: "rcs:mechanical:casing_jacking_loading:scope_section_count",
+    section: "Загрузка секций при продавливании", category: "service", title: "Установленные секции в подтверждённой границе загрузки; не дополнительная повторная оплата",
+    unitId: "piece", expression: quantities.installed_section_count, inclusion: jackingLoadingScope, costTreatment: "INFORMATIONAL_SCOPE",
+    inputParameterIds: [JACKING_LOADING_MODE, JACKING_LOADING_REFERENCE] },
+  ...mechanicalWorks.flatMap(work => (["crew", "equipment"] as const).map(owner => ({
     rowId: `rcs:mechanical:${work.key}:${owner}_hours`, formulaId: `rcs:mechanical:${work.key}:${owner}_hours`,
     section: `Монтаж: ${work.title}`, title: `${work.title}: ${owner === "crew" ? "труд всех исполнителей" : "комплект техники с энергией"}`,
     category: owner === "crew" ? "labor" : "equipment", unitId: owner === "crew" ? "man_hour" : "machine_hour",
@@ -258,7 +284,7 @@ export const ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1: readonly AutomaticRowSpec
     procurement: true, titleParameterIds: [mechanicalId(work.key, `${owner}_designation`)],
     inputParameterIds: [...work.facts, mechanicalId(work.key, "method_reference"), mechanicalId(work.key, `${owner}_designation`), mechanicalId(work.key, `${owner}_cost_basis`)],
   }))),
-);
+]);
 
 /** Actual initial straight-axis staking has its own physical resources.
  * FHWA FP-24 section 152 identifies selected survey/control methods, marking,
@@ -759,7 +785,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENTS_SCOPE_R1 = Object.freeze({
   omitted: Object.freeze([
     "Excavation support/reaction structures and groundwater measures; actual applicability and approved civil execution rates",
     "Approved pit return-fill technology, soil suitability/classification, heterogeneous/slurry allocations and non-granular/other bedding technologies",
-    "Clearance/site preparation, other survey layouts and actual control acceptance, applicable fencing/traffic measures, recovered markers/waste handling; joint repairs/reinspection and other NDT methods, coating/drying, jacking section loading, carrier connections and method/design approval",
+    "Clearance/site preparation, other survey layouts and actual control acceptance, applicable fencing/traffic measures, recovered markers/waste handling; joint repairs/reinspection and other NDT methods, coating/drying, carrier connections and actual loading/method/design approval",
     "Internal fill product/method approval, other/partial fills, external overbreak grouting, pressure/buoyancy/restraints, preparation/curing and water quality/allocation approval",
     "Consolidated delivery manifests, fittings/consumables freight, equipment delivery/return and extra soil sorting/site handling; actual certified mass, routes, receiving permission and prices remain project facts",
     "Full-owner reconciliation of explicit purchase exceptions with formula-reference balances",
@@ -824,7 +850,7 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
   { stageId: "casing", titleRu: "Футляр и стыки", rows: [...ROAD_CROSSING_SLEEVES_CASING_MATERIAL_ROWS_R1, ...ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_INSPECTION_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1.filter(row => /^rcs:mechanical:casing_/u.test(row.rowId))],
-    remaining: ["Подтверждение технологии подготовки и отдельные расходники", "Другие методы контроля, фактические дефекты, ремонт и повторный контроль", "Применимое восстановление защитного покрытия", "Загрузка секций при продавливании и подтверждённая схема подъёма"] },
+    remaining: ["Подтверждение технологии подготовки и отдельные расходники", "Другие методы контроля, фактические дефекты, ремонт и повторный контроль", "Применимое восстановление защитного покрытия", "Подтверждённая схема подъёма, фактическая несущая способность и направляющие при загрузке"] },
   { stageId: "carrier_and_supports", titleRu: "Рабочая труба, опоры и концевые узлы", rows: [...ROAD_CROSSING_SLEEVES_SPACER_GEOMETRY_ROWS_R1, ...ROAD_CROSSING_SLEEVES_PROCUREMENT_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_CARRIER_ROWS_R1, ...ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1.filter(row => !/^rcs:mechanical:casing_/u.test(row.rowId))],
     remaining: ["Подтверждение рабочей трубы, иной поставки и совместимой технологии монтажа", "Соединители и соединения рабочей трубы", "Подтверждённые удерживающие и концевые конструкции"] },

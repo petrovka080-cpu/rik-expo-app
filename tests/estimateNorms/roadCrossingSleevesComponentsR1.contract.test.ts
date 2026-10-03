@@ -10,7 +10,8 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_COMPONENT_P
   ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_COST_BASIS_R1 as receivingBasis,
   ROAD_CROSSING_SLEEVES_INSPECTION_MODES_R1 as inspectionModes, ROAD_CROSSING_SLEEVES_INSPECTION_COUPLANT_COST_BASIS_R1 as couplantBasis,
   ROAD_CROSSING_SLEEVES_PREPARATION_MODES_R1 as preparationModes, ROAD_CROSSING_SLEEVES_PREPARATION_MATERIAL_COST_BASIS_R1 as preparationBasis,
-  ROAD_CROSSING_SLEEVES_COMPACTION_WATER_MODES_R1 as compactionWaterModes, ROAD_CROSSING_SLEEVES_COMPACTION_WATER_COST_BASIS_R1 as compactionWaterBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_COMPACTION_WATER_MODES_R1 as compactionWaterModes, ROAD_CROSSING_SLEEVES_COMPACTION_WATER_COST_BASIS_R1 as compactionWaterBasis,
+  ROAD_CROSSING_SLEEVES_JACKING_LOADING_MODES_R1 as loadingModes } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierModes, ROAD_CROSSING_SLEEVES_CARRIER_COST_BASIS_R1 as carrierBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1 as jointParameters, ROAD_CROSSING_SLEEVES_JOINT_COST_BASES_R1 as bases } from "../../src/lib/estimate/v4/roadCrossingSleevesJointResourcesR1";
@@ -27,6 +28,7 @@ const components = buildRoadCrossingSleevesComponentsR1({ source_title: "Owned i
 const definition = components.definition;
 // Synthetic actual-fact/price fixtures ONLY, never a published default or WPS approval.
 const fixture: Record<string, unknown> = {
+  rcs_jacking_section_loading_cost_mode: loadingModes.included, rcs_jacking_section_loading_allocation_reference: "TEST whole section loading is included once in actual advance rates, disjoint from excavation and other mechanical work",
   // Explicit synthetic project evidence of no added compaction water; never a default.
   rcs_compaction_water_bedding_gross_l_per_finished_m3: 0, rcs_compaction_water_pits_gross_l_per_finished_m3: 0, rcs_compaction_water_trench_gross_l_per_finished_m3: 0,
   rcs_preparation_mode: preparationModes.otherParty, rcs_preparation_program_reference: "TEST actual staking/maintenance/removal provided by other party, no executor charge",
@@ -119,6 +121,60 @@ function compile(submittedParameters: Record<string, unknown> = fixture, rowOver
   });
 }
 const q = (result: Awaited<ReturnType<typeof compile>>, id: string) => Number(result.rows.find(row => row.row_id === id)?.quantity);
+
+describe("actual jacking section loading under an explicit disjoint cost boundary", () => {
+  const loading: Record<string, unknown> = { ...fixture, rcs_civil_installation_method: methods.pipeJacking,
+    rcs_jacking_section_loading_cost_mode: loadingModes.separate,
+    rcs_jacking_section_loading_allocation_reference: "TEST loading excluded from actual advancement person/equipment hours, separate compatible lifting and guide positioning",
+    rcs_mechanical_casing_jacking_loading_method_reference: "TEST confirmed certified section mass, compatible crane at actual radius, rigging/access and guides; no actual reaction design approval inferred",
+    rcs_mechanical_casing_jacking_loading_crew_designation: "TEST all loading personnel including operators", rcs_mechanical_casing_jacking_loading_crew_h_per_unit: 0.6,
+    rcs_mechanical_casing_jacking_loading_crew_cost_basis: mechanicalBases.crew,
+    rcs_mechanical_casing_jacking_loading_equipment_designation: "TEST actual compatible lifting/positioning equipment with energy", rcs_mechanical_casing_jacking_loading_equipment_h_per_unit: 0.2,
+    rcs_mechanical_casing_jacking_loading_equipment_cost_basis: mechanicalBases.equipment,
+  };
+  const crew = "rcs:mechanical:casing_jacking_loading:crew_hours", equipment = "rcs:mechanical:casing_jacking_loading:equipment_hours";
+  it("loads original installed physical sections once and keeps pit excavation/advance/welding resources separate", async () => {
+    const result = await compile(loading, { [crew]: { unitPrice: "10", provenance } });
+    expect(result.preliminaryNeeds).toEqual([]); expect(q(result, "rcs:mechanical:casing_jacking_loading:scope_section_count")).toBe(3);
+    expect(q(result, crew)).toBe(1.8); expect(q(result, equipment)).toBe(0.6); expect(result.totals.amount).toBe("18");
+    expect(q(result, "rcs:civil-execution:jacking_advance:crew_hours")).toBe(70); expect(q(result, "rcs:civil-execution:jacking_pits:crew_hours")).toBe(40.8);
+    expect(q(result, "rcs:joint:site_joint_count")).toBe(2);
+    expect(result.rows.some(r => r.row_id.startsWith("rcs:mechanical:casing_lowering:"))).toBe(false);
+    expect(components.stageMatrix.find(s => s.stageId === "casing")?.ownResourceIds).toContain(crew);
+  });
+  it("supplier bundles/reserve/damaged spares and compatible pipe stock cannot inflate section loading", async () => {
+    const result = await compile({ ...loading, rcs_compatible_stock_section_count: 100, rcs_retained_spare_section_count: 10, rcs_supplier_bundle_section_count: 20 });
+    expect(q(result, "rcs:casing:ordered_casing_length_m")).toBe(0); expect(q(result, crew)).toBe(1.8);
+    const changed = await compile({ ...loading, rcs_crossing_length_m: 37 });
+    expect(q(changed, crew)).toBe(2.4); expect(q(changed, "rcs:mechanical:casing_jacking_loading:scope_section_count")).toBe(4);
+  });
+  it("included or other-party loading never creates a second loading charge; open trench disables this entire branch", async () => {
+    for (const mode of [loadingModes.included, loadingModes.otherParty]) {
+      const input: Record<string, unknown> = { ...loading, rcs_jacking_section_loading_cost_mode: mode };
+      for (const key of Object.keys(input)) if (key.startsWith("rcs_mechanical_casing_jacking_loading_")) delete input[key];
+      const result = await compile(input); expect(result.preliminaryNeeds).toEqual([]);
+      expect(result.rows.filter(r => r.row_id.startsWith("rcs:mechanical:casing_jacking_loading:")).map(r => r.row_id)).toEqual(["rcs:mechanical:casing_jacking_loading:scope_section_count"]);
+      expect(q(result, "rcs:civil-execution:jacking_advance:crew_hours")).toBe(70);
+    }
+    const open = await compile({ ...loading, rcs_civil_installation_method: methods.openCut });
+    expect(open.rows.some(r => r.row_id.startsWith("rcs:mechanical:casing_jacking_loading:"))).toBe(false);
+  });
+  it("unknown loading/advance allocation gates only dependent cost owners, leaving known excavation and casing quantities calculated", async () => {
+    const input = { ...loading }; delete input.rcs_jacking_section_loading_cost_mode;
+    const result = await compile(input); expect(q(result, "rcs:civil-execution:jacking_pits:crew_hours")).toBe(40.8);
+    expect(q(result, "rcs:casing:ordered_casing_length_m")).toBe(48);
+    expect(result.rows.some(r => r.row_id === crew || r.row_id === "rcs:civil-execution:jacking_advance:crew_hours")).toBe(false);
+    expect(result.preliminaryNeeds.find(n => n.row_id === crew)?.missing_parameter_ids).toContain("rcs_jacking_section_loading_cost_mode");
+  });
+  it.each(["rcs_crossing_length_m", "rcs_planned_physical_section_length_m", "rcs_casing_inside_diameter_mm", "rcs_jacking_section_loading_allocation_reference",
+    "rcs_civil_jacking_advance_method_reference", "rcs_mechanical_casing_jacking_loading_method_reference"])(
+    "manual loading hours cannot bypass original geometry/actual compatible lifting and disjoint boundary %s", async key => {
+      const input = { ...loading }; delete input[key];
+      const result = await compile(input, { [equipment]: { quantity: "999", provenance } });
+      expect(result.rows.some(r => r.row_id === equipment)).toBe(false);
+      expect(result.preliminaryNeeds.find(n => n.row_id === equipment)?.missing_parameter_ids).toContain(key);
+    });
+});
 
 describe("actual compaction water for selected finished geometry, distinct from internal mixing and water application work", () => {
   const water: Record<string, unknown> = { ...fixture,
@@ -684,7 +740,7 @@ describe("road-casing component integration, not full crossing acceptance", () =
     const result = await compile(input);
     expect(result.rows.some(row => row.row_id.startsWith("rcs:civil:"))).toBe(false);
     expect(result.preliminaryNeeds.length).toBeGreaterThan(0);
-    expect(result.preliminaryNeeds.every(need => /^(?:rcs:civil:|rcs:civil-execution:|rcs:fill-execution:|rcs:compaction-water:|rcs:bedding:|rcs:pit-return:|rcs:mechanical:casing_lowering:|rcs:freight:(?:bedding|pits|trench)_new:cargo_units$)/u.test(need.row_id) && need.need_state === "CONDITION_REQUIRED")).toBe(true);
+    expect(result.preliminaryNeeds.every(need => /^(?:rcs:civil:|rcs:civil-execution:|rcs:fill-execution:|rcs:compaction-water:|rcs:bedding:|rcs:pit-return:|rcs:mechanical:casing_lowering:|rcs:mechanical:casing_jacking_loading:scope_section_count$|rcs:freight:(?:bedding|pits|trench)_new:cargo_units$)/u.test(need.row_id) && need.need_state === "CONDITION_REQUIRED")).toBe(true);
     expect([...new Set(result.preliminaryNeeds.flatMap(need => need.missing_parameter_ids))]).toEqual(["rcs_civil_installation_method"]);
     expect(result.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual([...owners, ...mechanicalOwners()]);
   });
