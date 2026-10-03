@@ -58,6 +58,7 @@ type BoundedDurableHydrationOutcome =
 type CanonicalEstimateMeaningfulPreview = {
   revisionId: string;
   titleRu: string;
+  explicitValidationFixture: boolean;
   calculatedRows: {
     id: string;
     titleRu: string;
@@ -70,6 +71,17 @@ type CanonicalEstimateMeaningfulPreview = {
   onPublished: () => void;
   onOpenFullEstimate: () => void;
 };
+
+export function canonicalEstimatePreviewIsExplicitValidationFixture(sourceRequestText?: string | null): boolean {
+  return /^ДЕМО\s*\/\s*VALIDATION_FIXTURE\s*:/iu.test(String(sourceRequestText ?? "").trim());
+}
+
+export function canonicalEstimatePreviewSaveStatusRu(input: { saved: boolean; preliminaryNeedCount: number }): string {
+  if (!input.saved) return "Сохраняем смету в черновике…";
+  return input.preliminaryNeedCount > 0
+    ? "Смета сохранена в черновике. Для полного расчёта нужны исходные сведения о количествах и условиях. Полный итог не рассчитан."
+    : "Смета сохранена в черновике. Откройте позиции и проверьте количества, источники и цены.";
+}
 
 function CanonicalEstimateMeaningfulPreviewCard({
   preview,
@@ -89,6 +101,11 @@ function CanonicalEstimateMeaningfulPreviewCard({
       testID="consumer-estimate-meaningful-preview"
     >
       <Text style={styles.meaningfulPreviewEyebrow}>Предварительная смета рассчитана</Text>
+      {preview.explicitValidationFixture ? (
+        <Text style={styles.meaningfulPreviewSaving} testID="consumer-estimate-preview-fixture-marker">
+          ДЕМО / VALIDATION_FIXTURE — испытательный состав. Проектная смета не утверждена.
+        </Text>
+      ) : null}
       <Text
         style={styles.meaningfulPreviewTitle}
         testID="request-estimate-selected-work-title"
@@ -110,9 +127,7 @@ function CanonicalEstimateMeaningfulPreviewCard({
         ))}
       </View>
       <Text style={styles.meaningfulPreviewSaving}>
-        {preview.saved
-          ? "Смета сохранена в черновике. Уточнения добровольны."
-          : "Сохраняем смету в черновике…"}
+        {canonicalEstimatePreviewSaveStatusRu(preview)}
       </Text>
       <Pressable
         accessibilityRole="button"
@@ -390,6 +405,7 @@ function useConsumerCanonicalDraftPersistence(input: {
         setPreview({
           revisionId: canonicalBackend.revisionId,
           titleRu: mapping.payload.workTitle?.trim() || "Предварительная смета",
+          explicitValidationFixture: canonicalEstimatePreviewIsExplicitValidationFixture(canonicalBackend.sourceRequestText),
           calculatedRows: calculatedRows.slice(0, 4).map((row) => ({
             id: row.rowId,
             titleRu: row.visibleName,

@@ -169,6 +169,8 @@ export type StructuredEstimatePayload = {
     revisionNumber: number;
     releaseId: string;
     catalogId: string;
+    /** Immutable source request only; display fallbacks must not classify a fixture. */
+    sourceRequestText?: string | null;
     createdAt: string;
     checksumSha256: string;
     formulaGraphVersion?: string | null;

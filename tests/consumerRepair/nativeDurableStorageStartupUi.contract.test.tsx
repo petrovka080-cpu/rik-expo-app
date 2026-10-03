@@ -89,9 +89,25 @@ import {
   requestEstimateControllerWorkspaceKey,
   requestEstimateFreshBuildKey,
   shouldPublishInitialConsumerCanonicalPreview,
+  canonicalEstimatePreviewIsExplicitValidationFixture,
+  canonicalEstimatePreviewSaveStatusRu,
 } from "../../src/features/consumerRepair/ConsumerRepairRequestScreenContainer";
 
 describe("consumer repair durable storage startup UI", () => {
+  it("labels only an explicitly marked immutable fixture and keeps missing quantity facts mandatory in preview copy", () => {
+    expect(canonicalEstimatePreviewIsExplicitValidationFixture(" ДЕМО / VALIDATION_FIXTURE: переход35м")).toBe(true);
+    expect(canonicalEstimatePreviewIsExplicitValidationFixture("Реальный объект, пример ДЕМО / VALIDATION_FIXTURE: внутри текста")).toBe(false);
+    expect(canonicalEstimatePreviewIsExplicitValidationFixture(null)).toBe(false);
+    expect(canonicalEstimatePreviewSaveStatusRu({ saved: true, preliminaryNeedCount: 1909 }))
+      .toContain("Для полного расчёта нужны исходные сведения");
+    expect(canonicalEstimatePreviewSaveStatusRu({ saved: true, preliminaryNeedCount: 1909 }))
+      .toContain("Полный итог не рассчитан");
+    expect(canonicalEstimatePreviewSaveStatusRu({ saved: true, preliminaryNeedCount: 0 }))
+      .toContain("проверьте количества, источники и цены");
+    expect(canonicalEstimatePreviewSaveStatusRu({ saved: false, preliminaryNeedCount: 1909 }))
+      .toBe("Сохраняем смету в черновике…");
+  });
+
   it("keeps ordinary parameter/row amendments in their existing editor", () => {
     expect(shouldPublishInitialConsumerCanonicalPreview({})).toBe(false);
     expect(shouldPublishInitialConsumerCanonicalPreview({ showInitialPreview: false })).toBe(false);

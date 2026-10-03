@@ -330,6 +330,7 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
       revisionNumber: input.revision.revisionNumber,
       releaseId: input.revision.releaseId,
       catalogId: input.revision.catalogId,
+      sourceRequestText: input.revision.sourceRequestText ?? null,
       createdAt: input.revision.createdAt,
       checksumSha256: input.revision.checksumSha256,
       formulaGraphVersion: input.revision.formulaGraphVersion,

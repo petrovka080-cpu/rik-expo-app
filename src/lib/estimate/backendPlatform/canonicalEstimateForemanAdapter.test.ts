@@ -81,9 +81,14 @@ describe("canonical estimate consumer professional proof", () => {
       createdAt: "2026-09-11T00:00:00.000Z",
     };
 
-    const draft = buildStructuredEstimateRequestDraft(
-      adaptCanonicalRevisionToStructuredEstimate({ catalog, revision, rows: [] }),
-    );
+    const payload = adaptCanonicalRevisionToStructuredEstimate({ catalog, revision, rows: [] });
+    expect(payload.canonicalBackend?.sourceRequestText).toBe(revision.sourceRequestText);
+    const legacy = adaptCanonicalRevisionToStructuredEstimate({ catalog,
+      revision: { ...revision, sourceRequestText: null }, rows: [],
+      inputText: "ДЕМО / VALIDATION_FIXTURE: display fallback only" });
+    expect(legacy.inputText).toBe("ДЕМО / VALIDATION_FIXTURE: display fallback only");
+    expect(legacy.canonicalBackend?.sourceRequestText).toBeNull();
+    const draft = buildStructuredEstimateRequestDraft(payload);
 
     expect(draft.items[0]?.sourceParameters?.missingParameterRequirements).toEqual([expect.objectContaining({
       parameterId: "machine_roller_productivity_m2_per_machine_hour",
