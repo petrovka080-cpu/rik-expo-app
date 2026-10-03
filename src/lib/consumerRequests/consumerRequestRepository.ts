@@ -35,6 +35,7 @@ import {
   setConsumerRepairTransactionalStoreForTests,
 } from "../platform/consumerRepairTransactionalDurableBridge";
 import type { EstimateRevisionDurableStore } from "../platform/estimateRevisionDurableStore";
+import { createConsumerEstimateHydrationTrace, type ConsumerEstimateHydrationTrace } from "./consumerEstimateHydrationTrace";
 
 const store = {
   bundles: new Map<string, ConsumerRepairDraftBundle>(),
@@ -802,33 +803,42 @@ async function initializeTransactionalDurableBundleIndex(storage: Storage | null
 
 async function hydrateTransactionalDurableBundleIds(
   requestDraftIds: readonly string[],
+  trace?: ConsumerEstimateHydrationTrace,
 ): Promise<number> {
   const ids = requestDraftIds.filter((requestDraftId) =>
     !hydratedTransactionalDurableBundleIds.has(requestDraftId)
   );
   if (ids.length === 0) return 0;
-  const recovered = await Promise.all(ids.map(async (requestDraftId) => ({
+  const recover = () => Promise.all(ids.map(async (requestDraftId) => ({
     requestDraftId,
     bundle: await readTransactionalConsumerRepairBundle(requestDraftId)
       .catch(() => null),
   })));
-  for (const { requestDraftId, bundle } of recovered) {
-    hydratedTransactionalDurableBundleIds.add(requestDraftId);
-    if (!bundle) continue;
-    const normalized = normalizeEstimateDraftSessionCompatibilityView(bundle);
-    store.bundles.set(requestDraftId, cloneConsumerRepairValue(normalized));
-    syncConsumerRepairBundleToAiEstimateLedger(normalized);
-  }
+  const recovered = trace ? await trace.measureAsync("DURABLE_BUNDLE_RECOVERY", recover) : await recover();
+  const project = () => {
+    for (const { requestDraftId, bundle } of recovered) {
+      hydratedTransactionalDurableBundleIds.add(requestDraftId);
+      if (!bundle) continue;
+      const normalized = normalizeEstimateDraftSessionCompatibilityView(bundle);
+      store.bundles.set(requestDraftId, cloneConsumerRepairValue(normalized));
+      syncConsumerRepairBundleToAiEstimateLedger(normalized);
+    }
+  };
+  if (trace) trace.measureSync("DURABLE_LOCAL_PROJECTION", project);
+  else project();
   return ids.length;
 }
 
 export async function hydrateTransactionalConsumerRepairRequestStore(
   requestedDraftId?: string,
 ): Promise<void> {
-  hydrateConsumerRepairRequestStore();
+  const trace = createConsumerEstimateHydrationTrace();
+  trace.measureSync("DURABLE_LEGACY_COMPATIBILITY", hydrateConsumerRepairRequestStore);
   const storage = getWebDurableStorage();
+  const finishQueueWait = trace.begin("DURABLE_QUEUE_WAIT");
   await enqueueTransactionalHydration(async () => {
-    await initializeTransactionalDurableBundleIndex(storage);
+    finishQueueWait();
+    await trace.measureAsync("DURABLE_INDEX", () => initializeTransactionalDurableBundleIndex(storage));
     const unhydratedIds = transactionalDurableBundleIds.filter((requestDraftId) =>
       !hydratedTransactionalDurableBundleIds.has(requestDraftId)
     );
@@ -837,7 +847,7 @@ export async function hydrateTransactionalConsumerRepairRequestStore(
     // be complete after initialization. The Android/native store is the one
     // whose multi-MiB revision envelopes must stay off the startup path.
     if (storage) {
-      await hydrateTransactionalDurableBundleIds(unhydratedIds);
+      await hydrateTransactionalDurableBundleIds(unhydratedIds, trace);
       return;
     }
     const exactRequestedDraftId = requestedDraftId?.trim();
@@ -851,7 +861,7 @@ export async function hydrateTransactionalConsumerRepairRequestStore(
       || !transactionalDurableBundleIds.includes(exactRequestedDraftId)
       || hydratedTransactionalDurableBundleIds.has(exactRequestedDraftId)
     ) return;
-    await hydrateTransactionalDurableBundleIds([exactRequestedDraftId]);
+    await hydrateTransactionalDurableBundleIds([exactRequestedDraftId], trace);
   });
 }
 

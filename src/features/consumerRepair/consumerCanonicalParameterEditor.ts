@@ -44,6 +44,7 @@ import {
 } from "../../lib/foremanAiEstimate";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
 import { logger } from "../../lib/logger";
+import { createConsumerEstimateHydrationTrace } from "../../lib/consumerRequests/consumerEstimateHydrationTrace";
 import {
   canonicalEstimateBlockingParameterIssues,
   canonicalEstimateParameterChoiceLabelRu,
@@ -657,14 +658,17 @@ export async function loadConsumerCanonicalParameterSession(input: {
   draftId: string;
 }): Promise<CanonicalParameterSession> {
   const startedAt = Date.now();
-  const { revision, catalog, parent } = await getCanonicalEstimateParameterSessionSnapshot(input.revisionId);
+  const hydrationTrace = createConsumerEstimateHydrationTrace();
+  const { revision, catalog, parent } = await hydrationTrace.measureAsync("PARAMETER_SNAPSHOT_FETCH",
+    () => getCanonicalEstimateParameterSessionSnapshot(input.revisionId));
   if (catalog.releaseId !== revision.releaseId) {
     throw new CanonicalEstimateApiError("Параметры не открыты: версия каталога не совпадает со сметой.", {
       code: "REVISION_RELEASE_MISMATCH",
       httpStatus: 409,
     });
   }
-  const session = buildConsumerCanonicalParameterSession({ catalog, revision, parent, draftId: input.draftId });
+  const session = hydrationTrace.measureSync("PARAMETER_SESSION_BUILD",
+    () => buildConsumerCanonicalParameterSession({ catalog, revision, parent, draftId: input.draftId }));
   logger.releaseEvidence("RikEstimateParameters", "REVISION_PARAMETER_SESSION_READY", {
     stage: "REVISION_PARAMETER_SESSION_READY", elapsedMs: Date.now() - startedAt,
     revisionId: revision.revisionId, parameterCount: session.parameters.length,

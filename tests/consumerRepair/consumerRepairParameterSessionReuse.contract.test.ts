@@ -2,6 +2,7 @@ import type { ConsumerRepairDraftBundle } from "../../src/lib/consumerRequests";
 import { CANONICAL_PARAMETER_CORE_SCHEMA_VERSION, type CanonicalParameterSession } from "../../src/lib/estimate/canonicalParameters";
 import { ConsumerRepairRequestScreenController } from "../../src/features/consumerRepair/ConsumerRepairRequestScreen";
 import { consumerRepairCanonicalParameterSessionMatchesBundle } from "../../src/features/consumerRepair/consumerRepairCanonicalEstimateReadiness";
+import { logger } from "../../src/lib/logger";
 
 jest.mock("@expo/vector-icons", () => ({ Ionicons: () => null }));
 
@@ -45,6 +46,25 @@ function controller(load: jest.Mock, cached: CanonicalParameterSession | null) {
 }
 
 describe("immutable revision parameter-session reuse", () => {
+  beforeEach(() => { jest.spyOn(logger, "releaseEvidence").mockImplementation(() => undefined); });
+  afterEach(() => jest.restoreAllMocks());
+  it("reports session publication only after its React callback, without user/draft/revision contents", async () => {
+    const evidence = jest.spyOn(logger, "releaseEvidence").mockImplementation(() => undefined);
+    const action = controller(jest.fn(async () => session()), null) as unknown as {
+      state: ReturnType<typeof controller>["state"];
+      setState: (update: Partial<ReturnType<typeof controller>["state"]>, callback?: () => void) => void;
+      hydrateCurrentCanonicalParameterSession: () => Promise<void>;
+    };
+    let commit: (() => void) | undefined;
+    action.setState = (update, callback) => { action.state = { ...action.state, ...update }; commit = callback; };
+    await action.hydrateCurrentCanonicalParameterSession();
+    expect(action.state.canonicalBackendParameterSession?.revisionId).toBe("revision-current");
+    expect(evidence.mock.calls.some(([, phase]) => phase === "CONTROLLER_SESSION_COMMIT")).toBe(false);
+    expect(commit).toBeDefined(); commit!();
+    const event = evidence.mock.calls.find(([, phase]) => phase === "CONTROLLER_SESSION_COMMIT")?.[2];
+    expect(event).toMatchObject({ status: "completed", phase: "CONTROLLER_SESSION_COMMIT", durationMs: expect.any(Number) });
+    expect(JSON.stringify(event)).not.toMatch(/draft-current|revision-current|consumer-test/u);
+  });
   it("requires the exact draft and revision, never a precompile or unrelated session", () => {
     expect(consumerRepairCanonicalParameterSessionMatchesBundle(session(), bundle())).toBe(true);
     expect(consumerRepairCanonicalParameterSessionMatchesBundle(session("draft-other"), bundle())).toBe(false);

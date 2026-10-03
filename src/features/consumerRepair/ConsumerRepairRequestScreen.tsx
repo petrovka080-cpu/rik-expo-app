@@ -17,6 +17,7 @@ import {
 import { ConsumerRepairValidationError } from "../../lib/consumerRequests/consumerRequestMarketplaceService";
 import { consumerRepairSourceRequestDraftId } from "../../lib/consumerRequests/consumerRequestHistoryLineage";
 import { logger } from "../../lib/logger";
+import { createConsumerEstimateHydrationTrace } from "../../lib/consumerRequests/consumerEstimateHydrationTrace";
 import type {
   ConsumerRepairDraftBundle,
 } from "../../lib/consumerRequests/consumerRequestTypes";
@@ -283,19 +284,21 @@ export function shouldDeferInitialHistoryLoad(props: ConsumerRepairRequestScreen
 }
 
 function buildInitialControllerState(props: ConsumerRepairRequestScreenControllerProps): State {
-  if (shouldDeferInitialHistoryLoad(props)) {
+  return createConsumerEstimateHydrationTrace().measureSync("CONTROLLER_INITIAL_STATE", () => {
+    if (shouldDeferInitialHistoryLoad(props)) {
+      return buildInitialConsumerRepairRequestState({
+        initialProblemText: props.initialProblemText,
+        initialDraftId: props.initialDraftId,
+        history: [],
+        approvedHistoryPage: buildEmptyConsumerRepairApprovedHistoryPage(),
+      });
+    }
     return buildInitialConsumerRepairRequestState({
       initialProblemText: props.initialProblemText,
       initialDraftId: props.initialDraftId,
-      history: [],
-      approvedHistoryPage: buildEmptyConsumerRepairApprovedHistoryPage(),
+      history: listConsumerRepairRequestHistory(props.consumerUserId),
+      approvedHistoryPage: listConsumerRepairApprovedHistory(props.consumerUserId),
     });
-  }
-  return buildInitialConsumerRepairRequestState({
-    initialProblemText: props.initialProblemText,
-    initialDraftId: props.initialDraftId,
-    history: listConsumerRepairRequestHistory(props.consumerUserId),
-    approvedHistoryPage: listConsumerRepairApprovedHistory(props.consumerUserId),
   });
 }
 
@@ -413,7 +416,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       requestEstimateIntentLifecycle.subscribe(
         this.syncRuntimeIngressProjection,
       );
+    const finishFirstPaintWait = createConsumerEstimateHydrationTrace().begin("CONTROLLER_FIRST_PAINT_WAIT");
     runAfterNextPaint(() => {
+      finishFirstPaintWait();
       this.applyInitialLaunchFlow();
       void this.hydrateCurrentCanonicalParameterSession();
     });
@@ -1056,7 +1061,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         consumerRepairCanonicalParameterSessionMatchesBundle(session, this.state.bundle)
       ) {
         this.canonicalParameterSessionLoadFailedRevisionId = null;
-        this.setState({ canonicalBackendParameterSession: session });
+        const finishCommit = createConsumerEstimateHydrationTrace().begin("CONTROLLER_SESSION_COMMIT");
+        // JS React commit boundary only; not native frame/draft-open acceptance.
+        this.setState({ canonicalBackendParameterSession: session }, () => finishCommit());
       }
     } catch (error) {
       if (consumerRepairCanonicalBackendBinding(this.state.bundle)?.revisionId === binding.revisionId) {

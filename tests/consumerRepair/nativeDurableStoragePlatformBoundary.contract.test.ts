@@ -1,4 +1,5 @@
 import { Platform } from "react-native";
+import { logger } from "../../src/lib/logger";
 
 import {
   __resetConsumerRepairRequestStoreForTests,
@@ -57,8 +58,10 @@ describe("consumer repair native durable storage platform boundary", () => {
     globalThis,
     "navigator",
   );
+  beforeEach(() => { jest.spyOn(logger, "releaseEvidence").mockImplementation(() => undefined); });
 
   afterEach(() => {
+    jest.restoreAllMocks();
     jest.useRealTimers();
     Object.defineProperty(Platform, "OS", {
       configurable: true,
@@ -227,6 +230,7 @@ describe("consumer repair native durable storage platform boundary", () => {
   });
 
   it("opens one native draft without reading the archive, then hydrates history in bounded newest-first pages", async () => {
+    const phaseEvidence = jest.spyOn(logger, "releaseEvidence").mockImplementation(() => undefined);
     Object.defineProperty(Platform, "OS", {
       configurable: true,
       get: () => "android",
@@ -274,6 +278,15 @@ describe("consumer repair native durable storage platform boundary", () => {
     const exactOnly = listConsumerRepairApprovedHistory("consumer-demo-user", { limit: 20 });
 
     expect(recoveryOrder).toEqual([exactDraftId]);
+    const phaseEvents = phaseEvidence.mock.calls.filter(([tag]) => tag === "RikEstimateHydration");
+    expect(phaseEvents.map(([, phase]) => phase)).toEqual(["DURABLE_LEGACY_COMPATIBILITY", "DURABLE_QUEUE_WAIT", "DURABLE_INDEX",
+      "DURABLE_BUNDLE_RECOVERY", "DURABLE_LOCAL_PROJECTION"]);
+    for (const [, , event] of phaseEvents) {
+      expect(Object.keys(event).sort()).toEqual(["durationMs", "elapsedMs", "phase", "status", "trace"]);
+      expect(event).toMatchObject({ status: "completed", durationMs: expect.any(Number), elapsedMs: expect.any(Number) });
+      expect(JSON.stringify(event)).not.toContain(exactDraftId);
+      expect(JSON.stringify(event)).not.toContain("consumer-demo-user");
+    }
     expect(exactOnly.items.map((bundle) => bundle.draft.id)).toEqual([exactDraftId]);
     expect(exactOnly.totalApprovedCount).toBe(1);
     expect(hasUnhydratedTransactionalConsumerRepairBundles()).toBe(true);
