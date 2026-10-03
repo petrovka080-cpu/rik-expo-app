@@ -313,7 +313,11 @@ foreach ($pidValue in @($listeners | Select-Object -ExpandProperty OwningProcess
   if ($owner.Name -ne "node.exe" -or -not $normalized.Contains($Root.Replace("\", "/")) -or $normalized -notmatch "expo[/\\]bin[/\\]cli") {
     Fail-Review "PORT_8081_FOREIGN_OWNER_PID_$pidValue" "освободите порт после проверки владельца"
   }
+  $OwnedMetroProcess = Get-Process -Id $pidValue -ErrorAction Stop
   Stop-Process -Id $pidValue -Force -ErrorAction Stop
+  if (-not $OwnedMetroProcess.WaitForExit(10000)) {
+    Fail-Review "OWNED_METRO_STOP_TIMEOUT_PID_$pidValue" "дождитесь завершения проверенного Metro перед тяжёлой типизацией"
+  }
 }
 
 $ExpoCli = Join-Path $Root "node_modules\expo\bin\cli"
@@ -323,11 +327,24 @@ if ($VerifyFullTypecheck) {
   # The old owned Metro has stopped; its Web/Android graph no longer competes
   # with the four complete compiler heaps. A failed check still restores Metro.
   $TypecheckFreeKiB = [int64](Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory
+  $TypecheckMemorySamples = @(@{ elapsed_ms = 0; free_kib = $TypecheckFreeKiB })
+  # Windows may release a terminated Metro graph after the process exits.
+  # Wait a bounded time for the SAME admission budget; do not lower it or
+  # stop unrelated processes. No compiler runs while memory is insufficient.
+  $TypecheckMemoryWait = [Diagnostics.Stopwatch]::StartNew()
+  while ($TypecheckFreeKiB -lt 3500000 -and $TypecheckMemoryWait.ElapsedMilliseconds -lt 20000) {
+    Start-Sleep -Milliseconds 500
+    $TypecheckFreeKiB = [int64](Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory
+    $TypecheckMemorySamples += @{ elapsed_ms = $TypecheckMemoryWait.ElapsedMilliseconds; free_kib = $TypecheckFreeKiB }
+  }
+  $TypecheckMemoryWait.Stop()
   $TypecheckAdmitted = $TypecheckFreeKiB -ge 3500000
   @{
     source_head = $BuildCommit
     captured_utc = (Get-Date).ToUniversalTime().ToString("o")
     actual_free_kib = $TypecheckFreeKiB
+    memory_wait_ms = $TypecheckMemoryWait.ElapsedMilliseconds
+    memory_samples = $TypecheckMemorySamples
     required_free_kib = 3500000
     heap_mib = 3072
     executed = $TypecheckAdmitted
