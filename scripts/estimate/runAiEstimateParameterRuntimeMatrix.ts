@@ -34,6 +34,12 @@ export {
 
 type MatrixBucket = "random" | "critical" | "infrastructure" | "repair" | "foreman";
 
+type RejectedGeometryProbe = {
+  param_key: string;
+  raw_value: string;
+  code: "ROAD_GEOMETRY_CONFLICT";
+};
+
 type RuntimeCaseResult = {
   bucket: MatrixBucket;
   template_id: string;
@@ -57,6 +63,7 @@ type RuntimeCaseResult = {
   revision_status?: EstimateDraftRevision["status"];
   revision_failure_reason?: string | null;
   edited_param_key?: string;
+  rejected_geometry_probes?: RejectedGeometryProbe[];
   unreported_changed_rows?: Array<{
     row_id: string;
     before_quantity: number | null;
@@ -234,7 +241,10 @@ function nextValue(value: unknown): string {
   return String(Math.max(1, Math.round((value * 1.17 + 1) * 100) / 100));
 }
 
-function chooseEditableParam(revision: EstimateDraftRevision): string | null {
+function chooseEditableParam(
+  revision: EstimateDraftRevision,
+  rejectedGeometryProbes: RejectedGeometryProbe[],
+): string | null {
   const candidates = editableParamCandidates(revision);
   const evidenced = candidates
     .map((key, index) => ({ key, index, score: runtimeEvidenceScore(revision, key) }))
@@ -251,17 +261,27 @@ function chooseEditableParam(revision: EstimateDraftRevision): string | null {
   ];
 
   for (const key of orderedCandidates) {
-    const probe = applyAiEstimateParameterOverride({
-      revision,
-      operation: "update_param",
-      paramKey: key,
-      rawValue: nextValue(revision.params[key]?.value),
-      createdAt: "2026-07-09T00:00:30.000Z",
-      revisionIndex: 1,
-    });
+    const rawValue = nextValue(revision.params[key]?.value);
+    let probe: ReturnType<typeof applyAiEstimateParameterOverride>;
+    try {
+      probe = applyAiEstimateParameterOverride({
+        revision,
+        operation: "update_param",
+        paramKey: key,
+        rawValue,
+        createdAt: "2026-07-09T00:00:30.000Z",
+        revisionIndex: 1,
+      });
+    } catch (error) {
+      if (!(error instanceof Error) || error.message.split(":", 1)[0] !== "ROAD_GEOMETRY_CONFLICT") {
+        throw error;
+      }
+      rejectedGeometryProbes.push({ param_key: key, raw_value: rawValue, code: "ROAD_GEOMETRY_CONFLICT" });
+      continue;
+    }
     if (probe.diff.changedRowsCount > 0) return key;
   }
-  return candidates[0] ?? null;
+  return null;
 }
 
 function runCase(bucket: MatrixBucket, templateId: string, index: number): RuntimeCaseResult {
@@ -385,7 +405,8 @@ function runCase(bucket: MatrixBucket, templateId: string, index: number): Runti
       reason: "non_calculation_ready_case_honestly_blocked",
     };
   }
-  const paramKey = chooseEditableParam(revisionWithArtifacts);
+  const rejectedGeometryProbes: RejectedGeometryProbe[] = [];
+  const paramKey = chooseEditableParam(revisionWithArtifacts, rejectedGeometryProbes);
   if (!paramKey) {
     return {
       bucket,
@@ -405,6 +426,7 @@ function runCase(bucket: MatrixBucket, templateId: string, index: number): Runti
       passed: false,
       registered_backend_only: false,
       reason: "editable_numeric_param_missing",
+      rejected_geometry_probes: rejectedGeometryProbes,
     };
   }
   const beforeHash = estimateDeterministicHash({
@@ -510,6 +532,7 @@ function runCase(bucket: MatrixBucket, templateId: string, index: number): Runti
         .join(",") || "revision_failed"
       : null,
     edited_param_key: paramKey,
+    rejected_geometry_probes: rejectedGeometryProbes,
     unreported_changed_rows: unreportedChangedRows,
     passed,
     registered_backend_only: false,
@@ -584,6 +607,19 @@ export function runAiEstimateParameterRuntimeMatrix(input: { writeSummary?: bool
       !result.registered_backend_only && result.reason === "non_calculation_ready_case_honestly_blocked"
     ).map((result) => result.template_id),
     parameter_edit_executed_cases: parameterEditResults.length,
+    rejected_geometry_probes: results.flatMap((result) =>
+      (result.rejected_geometry_probes ?? []).map((probe) => ({
+        bucket: result.bucket,
+        template_id: result.template_id,
+        ...probe,
+        edited_param_key: result.edited_param_key ?? null,
+      }))
+    ),
+    rejected_geometry_parameters_never_used_for_successful_edits: results.every((result) =>
+      !result.passed || !(result.rejected_geometry_probes ?? []).some((probe) =>
+        probe.param_key === result.edited_param_key
+      )
+    ),
     parameter_edit_changes_snapshot_hash: parameterEditResults.every((result) => result.parameter_edit_changes_snapshot_hash),
     affected_rows_change_after_parameter_edit: parameterEditResults.every((result) => result.affected_rows_change_after_parameter_edit),
     unaffected_rows_remain_stable: parameterEditResults.every((result) => result.unaffected_rows_remain_stable),

@@ -40,6 +40,13 @@ describe("AI estimate parameter runtime matrix", () => {
     expect(summary.foreman_client_compatible_cases_passed).toBe("46/46");
     expect(summary.foreman_registered_backend_only_honestly_blocked_cases_passed).toBe("4/4");
     expect(summary.affected_rows_change_after_parameter_edit).toBe(true);
+    expect(summary.rejected_geometry_parameters_never_used_for_successful_edits).toBe(true);
+    expect(summary.rejected_geometry_probes).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: "ROAD_GEOMETRY_CONFLICT", raw_value: expect.any(String) }),
+    ]));
+    for (const probe of summary.rejected_geometry_probes as Array<{ param_key: string; edited_param_key: string | null }>) {
+      expect(probe.edited_param_key).not.toBe(probe.param_key);
+    }
     expect(summary.failures).toEqual([]);
   }, 300_000);
 });
