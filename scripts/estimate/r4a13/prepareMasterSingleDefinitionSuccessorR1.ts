@@ -199,6 +199,41 @@ export function validateMasterFormulaGraphConsistency(
   return errors;
 }
 
+/** The exact metadata enrichment used by publication, also usable without a DB. */
+export function buildMasterParameterCalculationConsumers(input: Readonly<{
+  parameters: readonly Json[];
+  formulas: readonly Json[];
+  resources: readonly Json[];
+}>): Readonly<{
+  formulaConsumers: Record<string, string[]>;
+  resourceConsumers: Record<string, string[]>;
+}> {
+  const formulaConsumers: Record<string, string[]> = Object.fromEntries(input.parameters.map(
+    (parameter) => [
+      parameter.parameter_id,
+      input.formulas.filter((formula) => formula.input_parameter_ids.includes(parameter.parameter_id))
+        .map((formula) => formula.formula_id),
+    ],
+  ));
+  const resourceRowIds = new Set(input.resources.map((resource) => String(resource.row_id)));
+  const resourceConsumers: Record<string, string[]> = Object.fromEntries(input.parameters.map(
+    (parameter) => {
+      const inferred = input.resources.filter((resource) =>
+        formulaConsumers[parameter.parameter_id]!.includes(resource.formula_id)
+        || JSON.stringify(resource.resource_graph).includes(`"${parameter.parameter_id}"`)
+        || JSON.stringify(resource.inclusion_ast).includes(`"${parameter.parameter_id}"`))
+        .map((resource) => resource.row_id);
+      const declared = Array.isArray(parameter.truth_metadata?.resource_branch_consumers)
+        ? parameter.truth_metadata.resource_branch_consumers
+          .map(String)
+          .filter((rowId: string) => resourceRowIds.has(rowId))
+        : [];
+      return [parameter.parameter_id, inferred.length > 0 ? inferred : declared];
+    },
+  ));
+  return { formulaConsumers, resourceConsumers };
+}
+
 const CONTENT_PASSPORT_CONTRACT = "real-professional-estimates-r3.content-passport.v1";
 const BASELINE_CONTRACT = "APPROVED_TEMPLATE_BASELINE_R54_V1";
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
@@ -960,29 +995,9 @@ export async function runMasterSingleDefinitionSuccessorR1(
     invariant(completenessErrors.length === 0,
       `${stop(config, "INDEPENDENT_COMPLETENESS_MAP")}:${completenessErrors.join(",")}`);
   }
-  const formulaConsumers: Record<string, string[]> = Object.fromEntries(parameterRows.map(
-    (parameter) => [
-      parameter.parameter_id,
-      formulaRows.filter((formula) => formula.input_parameter_ids.includes(parameter.parameter_id))
-        .map((formula) => formula.formula_id),
-    ],
-  ));
-  const resourceRowIds = new Set(resourceRows.map((resource) => String(resource.row_id)));
-  const resourceConsumers: Record<string, string[]> = Object.fromEntries(parameterRows.map(
-    (parameter) => {
-      const inferred = resourceRows.filter((resource) =>
-        formulaConsumers[parameter.parameter_id]!.includes(resource.formula_id)
-        || JSON.stringify(resource.resource_graph).includes(`"${parameter.parameter_id}"`)
-        || JSON.stringify(resource.inclusion_ast).includes(`"${parameter.parameter_id}"`))
-        .map((resource) => resource.row_id);
-      const declared = Array.isArray(parameter.truth_metadata?.resource_branch_consumers)
-        ? parameter.truth_metadata.resource_branch_consumers
-          .map(String)
-          .filter((rowId: string) => resourceRowIds.has(rowId))
-        : [];
-      return [parameter.parameter_id, inferred.length > 0 ? inferred : declared];
-    },
-  ));
+  const { formulaConsumers, resourceConsumers } = buildMasterParameterCalculationConsumers({
+    parameters: parameterRows, formulas: formulaRows, resources: resourceRows,
+  });
   invariant(parameterRows.every((parameter) => resourceConsumers[parameter.parameter_id]!.length > 0),
     stop(config, "PARAMETER_WITHOUT_RESOURCE_CONSUMER"));
 

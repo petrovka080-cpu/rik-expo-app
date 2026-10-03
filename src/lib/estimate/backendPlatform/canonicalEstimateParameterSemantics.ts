@@ -141,17 +141,42 @@ export function isCanonicalEstimateVisibleReplaceableProfile(
     || VISIBLE_REPLACEABLE_PROFILE_SOURCE_ROLES.has(sourceRole);
 }
 
-/** A required user choice can select/name a concrete BOQ resource without entering a formula. */
+function hasDeclaredConditionalRequirement(schema: ParameterSchema): boolean {
+  const raw = schema.requiredWhen ?? schema.constraints.requiredWhen;
+  if (typeof raw === "string") {
+    return raw.trim().length > 0 && raw.split(/\s+OR\s+/iu)
+      .every(clause => /^([A-Za-z][A-Za-z0-9_.:-]*)\s*==\s*(.+)$/u.test(clause.trim()));
+  }
+  if (raw == null || typeof raw !== "object" || Array.isArray(raw)) return false;
+  const condition = raw as Record<string, unknown>;
+  if (typeof condition.kind === "string" && condition.kind.trim()) {
+    try {
+      // Validate with the shared graph, not a second applicability evaluator.
+      // Actual true/false/unknown visibility is resolved by the session owner.
+      evaluateInclusionGraph(condition, {});
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  return typeof condition.parameterId === "string" && condition.parameterId.trim().length > 0
+    && Object.prototype.hasOwnProperty.call(condition, "equals");
+}
+
+/** A required or conditionally required user choice can name a BOQ resource without a formula. */
 export function isCanonicalEstimateVisibleUserResourceSelectionParameter(
   schema: ParameterSchema,
 ): boolean {
   if (schema.visibilityRole !== "USER_INPUT") return false;
-  if (schema.required !== true || schema.valueType !== "text") return false;
+  if (schema.valueType !== "text") return false;
+  const conditionalRequirement = hasDeclaredConditionalRequirement(schema);
+  if (schema.required !== true && !conditionalRequirement) return false;
   if ((schema.resourceBranchConsumers?.length ?? 0) === 0) return false;
   // Contract/document links may refer to a row without choosing its resource.
   if (/(?:^|_)(?:reference|approval|certificate|document)(?:_|$)/iu.test(schema.parameterId)) return false;
   const sourceRole = String(schema.valueSourceRole ?? "").trim().toUpperCase();
-  return ["USER_INPUT", "USER_MEASURED", "PROJECT_SPECIFIC_INPUT"].includes(sourceRole)
+  return (["USER_INPUT", "USER_MEASURED", "PROJECT_SPECIFIC_INPUT"].includes(sourceRole)
+    || (sourceRole === "CONDITIONAL_PROJECT_FACT" && conditionalRequirement))
     && !isCanonicalEstimateSourceManagedParameter(schema);
 }
 

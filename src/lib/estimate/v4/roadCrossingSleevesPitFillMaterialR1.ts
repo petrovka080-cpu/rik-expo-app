@@ -44,7 +44,7 @@ export const ROAD_CROSSING_SLEEVES_PIT_FILL_PARAMETERS_R1: readonly AutomaticPar
     values: Object.values(ROAD_CROSSING_SLEEVES_PIT_FILL_MODES_R1), requiredWhen: { parameterId: METHOD, value: methods.pipeJacking } },
   { id: PRODUCT, title: "Выбранный совместимый зернистый материал для обоих котлованов по проектной спецификации",
     unitId: null, valueType: "text", kind: "conditional", requiredWhen: ROAD_CROSSING_SLEEVES_PIT_FILL_APPLICABILITY_R1 },
-  fact(REUSE, "Подтверждённый повторно используемый материал для обоих котлованов в эквиваленте готового уплотнённого объёма; не повторять в рыхлом наличии", "m3"),
+  fact(REUSE, "Подтверждённый повторно используемый материал для обоих котлованов в эквиваленте готового уплотнённого объёма, не повторять в рыхлом наличии", "m3"),
   fact(RATIO, "Фактический рыхлый поставочный объём на 1 м³ дополнительной готовой засыпки, уже со всеми потерями и уплотнением", "ratio", 0.000_001),
   fact(STOCK, "Совместимый рыхлый материал в наличии, без уже выделенного повторно используемого грунта", "m3"),
   fact(RESERVE, "Сохраняемый резерв выбранного материала в том же рыхлом поставочном состоянии", "m3"),

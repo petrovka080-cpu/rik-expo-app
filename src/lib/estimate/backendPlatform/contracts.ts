@@ -313,7 +313,11 @@ export function canonicalEstimatePreliminaryNeedsFromAmendmentContract(
 }
 
 export type CanonicalEstimateParameterValueSourceRole =
+  | "USER_INPUT"
   | "USER_MEASURED"
+  | "PROJECT_SPECIFIC_INPUT"
+  | "CONDITIONAL_PROJECT_FACT"
+  | "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE"
   | "PROJECT_DOCUMENTATION"
   | "ENGINEERING_DESIGN"
   | "SITE_SURVEY"

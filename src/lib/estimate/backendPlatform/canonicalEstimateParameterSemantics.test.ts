@@ -173,6 +173,36 @@ describe("canonical estimate parameter choice labels", () => {
 });
 
 describe("canonical professional norm ownership", () => {
+  const conditionalResourceChoice = {
+    parameterId: "selected_granular_product", titleRu: "Выбранный зернистый материал", ordinal: 0,
+    valueType: "text" as const, required: false, defaultValue: null, unitId: null,
+    visibilityRole: "USER_INPUT" as const, valueSourceRole: "CONDITIONAL_PROJECT_FACT" as const,
+    formulaConsumers: [], resourceBranchConsumers: ["selected_material_order"],
+    constraints: { requiredWhen: { kind: "equals", parameterId: "method", value: "selected" } },
+  };
+  it("admits an explicitly owned conditional resource choice without making its condition true", () => {
+    expect(isCanonicalEstimateVisibleUserResourceSelectionParameter(conditionalResourceChoice)).toBe(true);
+    expect(isCanonicalEstimateParameterRequiredForValues(conditionalResourceChoice, { method: "other" })).toBe(false);
+    expect(isCanonicalEstimateParameterRequiredForValues(conditionalResourceChoice, {})).toBe(false);
+    expect(isCanonicalEstimateParameterRequiredForValues(conditionalResourceChoice, { method: "selected" })).toBe(true);
+  });
+  it.each([undefined, {}, [], " ", "not an applicability expression", { kind: "unsupported" }])(
+    "keeps an unrequired resource-only text field out for an absent/invalid condition: %j", requiredWhen => {
+      expect(isCanonicalEstimateVisibleUserResourceSelectionParameter({ ...conditionalResourceChoice, constraints: { requiredWhen } })).toBe(false);
+    },
+  );
+  it.each([
+    { visibilityRole: "INTERNAL_ONLY" as const },
+    { valueSourceRole: "BACKEND_DERIVED" as const },
+    { valueSourceRole: "MANUFACTURER_CONFIRMED" as const },
+    { resourceBranchConsumers: [] },
+    { parameterId: "material_approval_reference" },
+    { parameterId: "material_document" },
+    { parameterId: "material_certificate" },
+    { titleRu: "Норма расхода материала" },
+  ])("does not admit protected/document/non-consumed fields by a conditional requirement: %j", patch => {
+    expect(isCanonicalEstimateVisibleUserResourceSelectionParameter({ ...conditionalResourceChoice, ...patch })).toBe(false);
+  });
   it.each([
     ["ASSUMPTION", "PRIMARY_SOURCE_NORM"],
     ["VISIBLE_PRELIMINARY_SCENARIO", "PRIMARY_SOURCE_NORM"],

@@ -4,9 +4,33 @@ import {
   canonicalPublisherPriceBindingIsCompatible,
 } from "./canonicalDefinitionPublisherR1";
 import {
+  buildMasterParameterCalculationConsumers,
   resolveMasterSingleDefinitionNextCounts,
   validateIndependentCompletenessMapReferences,
 } from "./prepareMasterSingleDefinitionSuccessorR1";
+
+describe("master publisher calculation consumers without DB publication", () => {
+  it("uses formula, resource fact/title gates and inclusion controls, not invented consumers", () => {
+    expect(buildMasterParameterCalculationConsumers({
+      parameters: ["quantity", "product", "method", "unused"].map(parameter_id => ({ parameter_id })),
+      formulas: [{ formula_id: "volume", input_parameter_ids: ["quantity"] }],
+      resources: [{ row_id: "order", formula_id: "volume", resource_graph: { titleSpecificationParameterIds: ["product"], inputParameterIds: ["method"] },
+        inclusion_ast: { kind: "equals", parameterId: "method", value: "selected" } }],
+    })).toEqual({
+      formulaConsumers: { quantity: ["volume"], product: [], method: [], unused: [] },
+      resourceConsumers: { quantity: ["order"], product: ["order"], method: ["order"], unused: [] },
+    });
+  });
+  it("retains declared fallback only for existing rows and preserves inferred-consumer precedence", () => {
+    expect(buildMasterParameterCalculationConsumers({
+      parameters: [{ parameter_id: "fallback", truth_metadata: { resource_branch_consumers: ["existing", "absent"] } },
+        { parameter_id: "inferred", truth_metadata: { resource_branch_consumers: ["existing"] } }],
+      formulas: [{ formula_id: "volume", input_parameter_ids: ["inferred"] }],
+      resources: [{ row_id: "existing", formula_id: "other", resource_graph: {}, inclusion_ast: {} },
+        { row_id: "calculated", formula_id: "volume", resource_graph: {}, inclusion_ast: {} }],
+    }).resourceConsumers).toEqual({ fallback: ["existing"], inferred: ["calculated"] });
+  });
+});
 
 const formulas = [{ formula_id: "formula:roller-hours" }];
 const resources = [{ row_id: "row:roller", formula_id: "formula:roller-hours" }];
