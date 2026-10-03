@@ -534,25 +534,6 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
             ) : null}
           </View>
         ) : null}
-        {pendingCanonicalRowEditCount > 0 && onApplyCanonicalRowEdits ? (
-          <View style={styles.rowBatchBar} testID="request-estimate-row-batch-bar">
-            <Text style={styles.rowBatchText}>
-              Изменения в {pendingCanonicalRowEditCount} поз. ещё не сохранены. Можно продолжать ввод в других строках.
-            </Text>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityState={{ disabled: canonicalRowEditsApplying }}
-              disabled={canonicalRowEditsApplying}
-              onPress={() => { void onApplyCanonicalRowEdits(); }}
-              style={[styles.rowBatchApply, canonicalRowEditsApplying ? styles.rowBatchApplyDisabled : null]}
-              testID="request-estimate-row-batch-apply"
-            >
-              <Text style={styles.rowBatchApplyText}>
-                {canonicalRowEditsApplying ? "Применяем…" : "Применить изменения"}
-              </Text>
-            </Pressable>
-          </View>
-        ) : null}
         <EstimateMaterialSearchAddControl
           query={this.state.searchQuery}
           existingMatches={existingMatches}
@@ -657,18 +638,23 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
           </Pressable>
         ) : null}
         {pendingCanonicalRowEditCount > 0 && onApplyCanonicalRowEdits ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ disabled: canonicalRowEditsApplying }}
-            disabled={canonicalRowEditsApplying}
-            onPress={() => { void onApplyCanonicalRowEdits(); }}
-            style={[styles.rowBatchApply, canonicalRowEditsApplying ? styles.rowBatchApplyDisabled : null]}
-            testID="request-estimate-row-batch-apply-bottom"
-          >
-            <Text style={styles.rowBatchApplyText}>
-              {canonicalRowEditsApplying ? "Применяем…" : `Применить изменения (${pendingCanonicalRowEditCount})`}
+          <View style={styles.rowBatchBar} testID="request-estimate-row-batch-bar">
+            <Text style={styles.rowBatchText}>
+              Изменения в {pendingCanonicalRowEditCount} поз. ещё не сохранены. Можно продолжать ввод в других строках.
             </Text>
-          </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ disabled: canonicalRowEditsApplying }}
+              disabled={canonicalRowEditsApplying}
+              onPress={() => { void onApplyCanonicalRowEdits(); }}
+              style={[styles.rowBatchApply, canonicalRowEditsApplying ? styles.rowBatchApplyDisabled : null]}
+              testID="request-estimate-row-batch-apply-bottom"
+            >
+              <Text style={styles.rowBatchApplyText}>
+                {canonicalRowEditsApplying ? "Применяем…" : `Применить изменения (${pendingCanonicalRowEditCount})`}
+              </Text>
+            </Pressable>
+          </View>
         ) : null}
       </View>
     );

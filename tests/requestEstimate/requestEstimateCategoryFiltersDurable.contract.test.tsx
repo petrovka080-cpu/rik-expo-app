@@ -98,6 +98,30 @@ function visibleRowCount(renderer: ReactTestRenderer): number {
 }
 
 describe("durable request estimate category filters", () => {
+  it("keeps focused quantity rows in place when queued changes appear, with the notice and sole Apply below rows", () => {
+    const noop = jest.fn();
+    const apply = jest.fn();
+    const model = viewModel45();
+    const editor = (count: number) => <RequestEstimateItemsEditor viewModel={model}
+      pendingCanonicalRowEditCount={count} onApplyCanonicalRowEdits={apply}
+      onDecrease={noop} onIncrease={noop} onQuantityChange={noop} onUnitPriceChange={noop}
+      onRemove={noop} onAddManual={noop} />;
+    let renderer!: ReactTestRenderer;
+    act(() => { renderer = TestRenderer.create(editor(0)); });
+    const input = renderer.root.findByProps({ testID: "consumer-repair-item-quantity-input-material-0" });
+    act(() => { input.props.onFocus(); input.props.onChangeText("12.5"); });
+    act(() => { renderer.update(editor(1)); });
+    const retained = renderer.root.findByProps({ testID: "consumer-repair-item-quantity-input-material-0" });
+    expect(retained).toBe(input);
+    expect(retained.props.value).toBe("12.5");
+    const order = renderer.root.findAll(node => ["request-estimate-flat-row-list", "request-estimate-row-batch-bar"].includes(node.props.testID))
+      .map(node => node.props.testID);
+    expect(order.indexOf("request-estimate-flat-row-list")).toBeLessThan(order.indexOf("request-estimate-row-batch-bar"));
+    expect(renderer.root.findAllByProps({ testID: "request-estimate-row-batch-apply" })).toHaveLength(0);
+    act(() => renderer.root.findByProps({ testID: "request-estimate-row-batch-apply-bottom" }).props.onPress());
+    expect(apply).toHaveBeenCalledTimes(1);
+    act(() => renderer.unmount());
+  });
   it("classifies each current filtered row once and reuses that category to reveal a collapsed search match", () => {
     jest.useFakeTimers();
     const classify = jest.spyOn(rowMetadata, "consumerRepairRowCategorySignals");

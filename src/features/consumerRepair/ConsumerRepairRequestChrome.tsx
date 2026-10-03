@@ -540,8 +540,8 @@ export function ConsumerRepairRequestContent({
           </Text>
         </View>
       ) : null}
-      {prioritizeDraftDecision ? statusNode : null}
       {prioritizeDraftDecision ? draftPanel : null}
+      {prioritizeDraftDecision ? statusNode : null}
       {showWorkSelection ? (
         <ConsumerRepairRequestFormCard
           problemText={problemText}
@@ -583,8 +583,8 @@ export function ConsumerRepairRequestContent({
           onContactPhoneChange={onContactPhoneChange}
         />
       ) : null}
-      {!prioritizeDraftDecision ? statusNode : null}
       {!prioritizeDraftDecision ? draftPanel : null}
+      {!prioritizeDraftDecision ? statusNode : null}
       <ConsumerRepairMarketplaceSend bundle={bundle} errors={marketplaceSendErrors} />
       <ConsumerRepairHistory
         revisionHistory={revisionHistory}

@@ -280,7 +280,7 @@ describe("incomplete canonical estimate readiness", () => {
     expect(visibleText(renderer)).toContain("Обозначение подъёмного оборудования");
     expect(visibleText(renderer)).toContain("Количество 240 сохранено");
     act(() => {
-      renderer.root.findByProps({ testID: "request-estimate-row-batch-apply" }).props.onPress();
+      renderer.root.findByProps({ testID: "request-estimate-row-batch-apply-bottom" }).props.onPress();
     });
     expect(apply).toHaveBeenCalledTimes(1);
   });

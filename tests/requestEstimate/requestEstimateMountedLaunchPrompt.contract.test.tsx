@@ -2,6 +2,7 @@ import React from "react";
 import TestRenderer, { act } from "react-test-renderer";
 
 import { ConsumerRepairRequestContent } from "../../src/features/consumerRepair/ConsumerRepairRequestChrome";
+import { ConsumerRepairDraftPanel } from "../../src/features/consumerRepair/ConsumerRepairDraftPanel";
 import type { ConsumerRepairDraftBundle } from "../../src/lib/consumerRequests";
 
 jest.mock("@expo/vector-icons", () => ({
@@ -137,6 +138,28 @@ function renderContent(currentBundle: ConsumerRepairDraftBundle) {
 }
 
 describe("mounted request launch prompt", () => {
+  it.each([false, true])("keeps an existing status below the mounted draft before and after the first queued edit (priority %s)", prioritized => {
+    const current = bundle("TEST prompt", "draft-status");
+    if (prioritized) current.structuredEstimatePayload = {} as never;
+    const content = (count: number) => React.cloneElement(renderContent(current), {
+      statusMessage: count ? "Изменение ещё не сохранено" : "Смета рассчитана",
+      pendingCanonicalRowEditCount: count,
+    });
+    let renderer!: TestRenderer.ReactTestRenderer;
+    act(() => { renderer = TestRenderer.create(content(0)); });
+    const panel = renderer.root.findByType(ConsumerRepairDraftPanel);
+    const assertOrder = () => {
+      const nodes = renderer.root.findAll(node => node.type === ConsumerRepairDraftPanel || node.props.testID === "consumer-repair-status");
+      expect(nodes.findIndex(node => node.type === ConsumerRepairDraftPanel))
+        .toBeLessThan(nodes.findIndex(node => node.props.testID === "consumer-repair-status"));
+    };
+    assertOrder();
+    act(() => { renderer.update(content(1)); });
+    expect(renderer.root.findByType(ConsumerRepairDraftPanel)).toBe(panel);
+    assertOrder();
+    expect(renderer.root.findByProps({ testID: "consumer-repair-status" }).props.children).toBe("Изменение ещё не сохранено");
+    act(() => renderer.unmount());
+  });
   it("renders the exact prompt and reacts to a new launch bundle without remount", () => {
     const firstPrompt = "Электрика 180 м2 — launch A";
     const secondPrompt = "Кровля 220 м2 — launch B";
