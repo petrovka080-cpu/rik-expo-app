@@ -6,7 +6,8 @@ import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib
 import { ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1 as jointParameters, ROAD_CROSSING_SLEEVES_JOINT_COST_BASES_R1 as bases } from "../../src/lib/estimate/v4/roadCrossingSleevesJointResourcesR1";
 import { ROAD_CROSSING_SLEEVES_PIT_FILL_MODES_R1 as fillModes,
   ROAD_CROSSING_SLEEVES_TRENCH_FILL_MODES_R1 as trenchModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
-import { ROAD_CROSSING_SLEEVES_INTERNAL_FILL_MODES_R1 as internalModes } from "../../src/lib/estimate/v4/roadCrossingSleevesInternalFillR1";
+import { ROAD_CROSSING_SLEEVES_INTERNAL_FILL_MODES_R1 as internalModes,
+  ROAD_CROSSING_SLEEVES_INTERNAL_WATER_MODES_R1 as waterModes, ROAD_CROSSING_SLEEVES_INTERNAL_WATER_COST_BASIS_R1 as waterBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesInternalFillR1";
 
 const components = buildRoadCrossingSleevesComponentsR1({ source_title: "Owned integration fixture for source-bounded components, not a full crossing",
   source_document_version: "test-2026-10-03", definition_hash: "a".repeat(64), artifact_sha256: "a".repeat(64),
@@ -14,7 +15,7 @@ const components = buildRoadCrossingSleevesComponentsR1({ source_title: "Owned i
 const definition = components.definition;
 // Synthetic actual-fact/price fixtures ONLY, never a published default or WPS approval.
 const fixture: Record<string, unknown> = {
-  ...Object.fromEntries(["bedding", "pits", "trench"].flatMap(key => Object.entries({
+  ...Object.fromEntries(["bedding", "pits", "trench", "internal"].flatMap(key => Object.entries({
     method_reference: "TEST selected placing/compaction method; synthetic rates only",
     crew_designation: "TEST all placing crew including operators", crew_h_per_finished_m3: 0.6, crew_cost_basis: executionBases.crew,
     equipment_designation: "TEST selected placing/compaction equipment with energy", equipment_h_per_finished_m3: 0.2, equipment_cost_basis: executionBases.equipment,
@@ -43,6 +44,7 @@ const fixture: Record<string, unknown> = {
   rcs_pit_fill_material_mode: fillModes.other,
   rcs_trench_fill_material_mode: trenchModes.other,
   rcs_internal_fill_mode: internalModes.none,
+  rcs_internal_fill_water_supply_mode: waterModes.customerSupplied,
   rcs_joint_wps_reference: "TEST-OWNED applicable MMA WPS", rcs_joint_welding_process: bases.process,
   rcs_joint_electrode_designation: "TEST-OWNED compatible electrode", rcs_joint_gross_electrode_kg_per_joint: 2,
   rcs_joint_electrode_retained_spare_kg: 1, rcs_joint_electrode_compatible_stock_kg: 0.5, rcs_joint_electrode_supplier_pack_kg: 2.5,
@@ -74,6 +76,10 @@ const selectedTrench: Record<string, unknown> = { ...fixture, rcs_trench_fill_ma
   rcs_trench_fill_granular_product_designation: "TEST actual trench product", rcs_trench_fill_other_permanent_occupied_volume_m3: 2,
   rcs_trench_fill_approved_reused_finished_m3: 20, rcs_trench_fill_gross_supplied_volume_ratio: 1.2,
   rcs_trench_fill_compatible_loose_stock_m3: 10, rcs_trench_fill_retained_loose_reserve_m3: 2, rcs_trench_fill_supplier_loose_multiple_m3: 5 };
+const selectedInternal: Record<string, unknown> = { ...fixture, rcs_internal_fill_mode: internalModes.dryGrout, rcs_internal_fill_permanent_occupied_m3: 0.1,
+  rcs_internal_fill_dry_product_designation: "TEST selected internal dry grout", rcs_internal_fill_gross_dry_mass_ratio: 1000,
+  rcs_internal_fill_compatible_dry_stock_kg: 100, rcs_internal_fill_retained_dry_reserve_kg: 25,
+  rcs_internal_fill_supplier_bag_net_kg: 50, rcs_internal_fill_mixing_water_l_for_selected_bag: 5 };
 const provenance = { kind: "manual", reason: "owned integration override" };
 function compile(submittedParameters: Record<string, unknown> = fixture, rowOverrides?: Record<string, Record<string, unknown>>) {
   return compileCanonicalEstimateCore({ operation: rowOverrides ? "recalculate" : "compile", compilerVersion: "rcs-components-test",
@@ -219,10 +225,7 @@ describe("road-casing component integration, not full crossing acceptance", () =
     })).rejects.toMatchObject({ code: "FORMULA_OUTPUT_BOUNDS_FAILED" });
   });
   it("adds one internal dry-product owner independent of outside excavation and pit fill, never a second water/bag charge", async () => {
-    const input = { ...fixture, rcs_internal_fill_mode: internalModes.dryGrout, rcs_internal_fill_permanent_occupied_m3: 0.1,
-      rcs_internal_fill_dry_product_designation: "TEST-OWNED selected internal grout", rcs_internal_fill_gross_dry_mass_ratio: 1000,
-      rcs_internal_fill_compatible_dry_stock_kg: 100, rcs_internal_fill_retained_dry_reserve_kg: 25,
-      rcs_internal_fill_supplier_bag_net_kg: 50, rcs_internal_fill_mixing_water_l_for_selected_bag: 5 };
+    const input = selectedInternal;
     const internalOwner = "rcs:internal-fill:ordered_dry_kg";
     const result = await compile(input, { [internalOwner]: { unitPrice: "4", provenance } });
     const independentNet = Math.PI / 4 * (510 ** 2 - 160 ** 2) * 35 / 1e6 - 0.1;
@@ -231,8 +234,8 @@ describe("road-casing component integration, not full crossing acceptance", () =
     expect(q(result, "rcs:internal-fill:net_fill_m3")).toBeCloseTo(independentNet, 6);
     expect(q(result, internalOwner)).toBe(independentOrder);
     expect(q(result, "rcs:internal-fill:mixing_water_m3")).toBeCloseTo(independentNet * 0.1, 6);
-    expect(result.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual([...owners, beddingOwner, internalOwner, ...executionOwners(methods.openCut), ...fillExecutionOwners("bedding")]);
-    expect(result.rows.filter(row => row.included_in_procurement).map(row => row.row_id)).toEqual([...owners, beddingOwner, internalOwner, ...executionOwners(methods.openCut), ...fillExecutionOwners("bedding")]);
+    expect(result.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual([...owners, beddingOwner, internalOwner, ...executionOwners(methods.openCut), ...fillExecutionOwners("bedding"), ...fillExecutionOwners("internal")]);
+    expect(result.rows.filter(row => row.included_in_procurement).map(row => row.row_id)).toEqual([...owners, beddingOwner, internalOwner, ...executionOwners(methods.openCut), ...fillExecutionOwners("bedding"), ...fillExecutionOwners("internal")]);
     expect(result.totals.amount).toBe(String(independentOrder * 4));
     const outsideChanged = await compile({ ...input, rcs_civil_installation_method: methods.pipeJacking,
       rcs_jacking_confirmed_excavation_diameter_mm: 800, rcs_jacking_thrust_excavation_width_m: 5 });
@@ -245,7 +248,7 @@ describe("road-casing component integration, not full crossing acceptance", () =
     const result = await compile(input, { "rcs:internal-fill:ordered_dry_kg": { quantity: "999", provenance } });
     expect(result.rows.some(row => row.row_id.startsWith("rcs:internal-fill:"))).toBe(false);
     expect(result.preliminaryNeeds.length).toBeGreaterThan(0);
-    expect(result.preliminaryNeeds.every(need => need.row_id.startsWith("rcs:internal-fill:")
+    expect(result.preliminaryNeeds.every(need => /^(?:rcs:internal-fill:|rcs:fill-execution:internal:)/u.test(need.row_id)
       && need.missing_parameter_ids.includes("rcs_internal_fill_mode"))).toBe(true);
     expect(result.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual(applicableOwners(methods.openCut));
   });
@@ -396,5 +399,63 @@ describe("road-casing component integration, not full crossing acceptance", () =
       need_state: "QUANTITY_REQUIRED", missing_parameter_ids: ["rcs_fill_trench_crew_h_per_finished_m3"] })]);
     expect(q(await compile({ ...selectedTrench, rcs_fill_trench_crew_h_per_finished_m3: 0 }), "rcs:fill-execution:trench:crew_hours")).toBe(0);
     await expect(compile({ ...selectedTrench, rcs_fill_trench_equipment_cost_basis: "All-in with operators" })).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+  });
+  it("mixes/places internal finished volume without increasing hours for dry bags, reserve or purchase surplus", async () => {
+    const result = await compile(selectedInternal);
+    const net = q(result, "rcs:internal-fill:net_fill_m3");
+    expect(q(result, "rcs:fill-execution:internal:crew_hours")).toBeCloseTo(net * 0.6, 6);
+    expect(q(result, "rcs:fill-execution:internal:equipment_hours")).toBeCloseTo(net * 0.2, 6);
+    expect(components.stageMatrix.find(stage => stage.stageId === "internal_fill")?.ownResourceIds).toEqual(expect.arrayContaining(fillExecutionOwners("internal")));
+    expect(components.stageMatrix.find(stage => stage.stageId === "backfill")?.ownResourceIds.some(id => id.startsWith("rcs:fill-execution:internal:"))).toBe(false);
+    for (const patch of [{ rcs_internal_fill_compatible_dry_stock_kg: 10000 }, { rcs_internal_fill_retained_dry_reserve_kg: 500 },
+      { rcs_internal_fill_supplier_bag_net_kg: 100, rcs_internal_fill_mixing_water_l_for_selected_bag: 10 }]) {
+      const changed = await compile({ ...selectedInternal, ...patch });
+      expect(q(changed, "rcs:fill-execution:internal:crew_hours")).toBe(q(result, "rcs:fill-execution:internal:crew_hours"));
+      expect(q(changed, "rcs:fill-execution:internal:equipment_hours")).toBe(q(result, "rcs:fill-execution:internal:equipment_hours"));
+    }
+    const pinned = await compile(selectedInternal, { "rcs:fill-execution:internal:crew_hours": { quantity: "9", provenance } });
+    expect(q(pinned, "rcs:fill-execution:internal:crew_hours")).toBe(9);
+    expect(q(pinned, "rcs:internal-fill:net_fill_m3")).toBe(net);
+  });
+  it("known internal execution is independent from missing outside method or dry supply ratio, while source geometry and technology stay required", async () => {
+    for (const missing of ["rcs_civil_installation_method", "rcs_internal_fill_gross_dry_mass_ratio", "rcs_internal_fill_compatible_dry_stock_kg"]) {
+      const input = { ...selectedInternal }; delete input[missing];
+      expect(q(await compile(input), "rcs:fill-execution:internal:crew_hours")).toBeGreaterThan(0);
+    }
+    for (const missing of ["rcs_carrier_outside_diameter_mm", "rcs_internal_fill_permanent_occupied_m3", "rcs_fill_internal_method_reference", "rcs_fill_internal_equipment_designation"]) {
+      const input = { ...selectedInternal }; delete input[missing];
+      const rowId = "rcs:fill-execution:internal:equipment_hours";
+      const result = await compile(input, { [rowId]: { quantity: "999", provenance } });
+      expect(result.rows.some(row => row.row_id === rowId)).toBe(false);
+      expect(result.preliminaryNeeds.find(need => need.row_id === rowId)?.missing_parameter_ids).toContain(missing);
+      expect(q(result, "rcs:civil-execution:open_cut:crew_hours")).toBe(52.5);
+    }
+  });
+  it.each([internalModes.none, internalModes.other])("excludes internal mixing/placing for a known inactive branch %s", async mode => {
+    const result = await compile({ ...selectedInternal, rcs_internal_fill_mode: mode }, {
+      "rcs:fill-execution:internal:crew_hours": { quantity: "999", provenance },
+    });
+    expect(result.preliminaryNeeds).toEqual([]);
+    expect(result.rows.some(row => row.row_id.startsWith("rcs:fill-execution:internal:"))).toBe(false);
+  });
+  it("adds exactly one separately selected mixing-water purchase without charging consumed water, bags or supplied water twice", async () => {
+    const input = { ...selectedInternal, rcs_internal_fill_water_supply_mode: waterModes.separatePurchase,
+      rcs_internal_fill_water_product_designation: "TEST suitable mixing water", rcs_internal_fill_water_compatibility_reference: "TEST selected grout water approval/allocation",
+      rcs_internal_fill_water_cost_basis: waterBasis, rcs_internal_fill_water_compatible_stock_m3: 0.1,
+      rcs_internal_fill_water_retained_reserve_m3: 0.05, rcs_internal_fill_water_supplier_multiple_m3: 0.1 };
+    const rowId = "rcs:internal-water:ordered_m3";
+    const result = await compile(input, { [rowId]: { unitPrice: "4", provenance } });
+    expect(result.preliminaryNeeds).toEqual([]);
+    expect(result.rows.filter(row => row.row_id.startsWith("rcs:internal-water:") && row.included_in_procurement).map(row => row.row_id)).toEqual([rowId]);
+    const consumed = q(result, "rcs:internal-fill:mixing_water_m3");
+    const ordered = Math.ceil((consumed + 0.05 - 0.1) / 0.1) * 0.1;
+    expect(q(result, rowId)).toBeCloseTo(ordered, 6);
+    expect(Number(result.totals.amount)).toBeCloseTo(ordered * 4, 6);
+    expect(q(result, "rcs:fill-execution:internal:crew_hours")).toBeGreaterThan(0);
+    expect(components.stageMatrix.find(stage => stage.stageId === "internal_fill")?.ownResourceIds).toContain(rowId);
+    const customer = await compile({ ...input, rcs_internal_fill_water_supply_mode: waterModes.customerSupplied }, { [rowId]: { quantity: "999", unitPrice: "4", provenance } });
+    expect(customer.rows.some(row => row.row_id.startsWith("rcs:internal-water:"))).toBe(false);
+    expect(q(customer, "rcs:internal-fill:mixing_water_m3")).toBe(consumed);
+    expect(customer.totals.amount).toBe("0");
   });
 });

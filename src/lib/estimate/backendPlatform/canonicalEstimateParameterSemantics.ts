@@ -163,7 +163,10 @@ function hasDeclaredConditionalRequirement(schema: ParameterSchema): boolean {
     && Object.prototype.hasOwnProperty.call(condition, "equals");
 }
 
-/** A required or conditionally required user choice can name a BOQ resource without a formula. */
+/** A required user choice or explicitly owned project gate can supply a BOQ
+ * resource without a numeric formula. Mandatory project gates are classified
+ * by immutable ownership/guide metadata, not by a reference-like field name.
+ */
 export function isCanonicalEstimateVisibleUserResourceSelectionParameter(
   schema: ParameterSchema,
 ): boolean {
@@ -172,9 +175,15 @@ export function isCanonicalEstimateVisibleUserResourceSelectionParameter(
   const conditionalRequirement = hasDeclaredConditionalRequirement(schema);
   if (schema.required !== true && !conditionalRequirement) return false;
   if ((schema.resourceBranchConsumers?.length ?? 0) === 0) return false;
-  // Contract/document links may refer to a row without choosing its resource.
-  if (/(?:^|_)(?:reference|approval|certificate|document)(?:_|$)/iu.test(schema.parameterId)) return false;
   const sourceRole = String(schema.valueSourceRole ?? "").trim().toUpperCase();
+  const mandatoryProjectGate = sourceRole === "CONDITIONAL_PROJECT_FACT"
+    && conditionalRequirement
+    && schema.preliminaryCompilationAllowed === false
+    && schema.guide?.guideKind === "PROJECT_DEFINED"
+    && schema.guide?.guideValidationPolicy === "MANDATORY_BLOCK";
+  // Legacy document links without explicit preliminary project-gate ownership
+  // remain excluded. Norm/source/derived ownership still fails admission below.
+  if (!mandatoryProjectGate && /(?:^|_)(?:reference|approval|certificate|document)(?:_|$)/iu.test(schema.parameterId)) return false;
   return (["USER_INPUT", "USER_MEASURED", "PROJECT_SPECIFIC_INPUT"].includes(sourceRole)
     || (sourceRole === "CONDITIONAL_PROJECT_FACT" && conditionalRequirement))
     && !isCanonicalEstimateSourceManagedParameter(schema);

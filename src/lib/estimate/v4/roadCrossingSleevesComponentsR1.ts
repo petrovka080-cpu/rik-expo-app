@@ -14,7 +14,9 @@ import { ROAD_CROSSING_SLEEVES_PIT_FILL_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_PIT
   ROAD_CROSSING_SLEEVES_TRENCH_FILL_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_TRENCH_FILL_ROWS_R1,
   ROAD_CROSSING_SLEEVES_PIT_FILL_APPLICABILITY_R1, ROAD_CROSSING_SLEEVES_TRENCH_FILL_APPLICABILITY_R1,
   ROAD_CROSSING_SLEEVES_TRENCH_FILL_EXPRESSIONS_R1 } from "./roadCrossingSleevesPitFillMaterialR1";
-import { ROAD_CROSSING_SLEEVES_INTERNAL_FILL_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_INTERNAL_FILL_ROWS_R1 } from "./roadCrossingSleevesInternalFillR1";
+import { ROAD_CROSSING_SLEEVES_INTERNAL_FILL_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_INTERNAL_FILL_ROWS_R1,
+  ROAD_CROSSING_SLEEVES_INTERNAL_FILL_APPLICABILITY_R1, ROAD_CROSSING_SLEEVES_INTERNAL_FILL_EXPRESSIONS_R1,
+  ROAD_CROSSING_SLEEVES_INTERNAL_WATER_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_INTERNAL_WATER_ROWS_R1 } from "./roadCrossingSleevesInternalFillR1";
 
 /** Execution arithmetic is part of this assembly, not a separate estimator.
  * PJA describes separate pits and an advancing excavation/jacking system:
@@ -83,7 +85,7 @@ export const ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_ROWS_R1: readonly AutomaticRo
  * explicit; missing supply ratio/order facts need not block known execution.
  */
 const fillExecutionWorks: readonly Readonly<{ key: string; title: string; expression: string;
-  inclusion: AutomaticInclusionCondition; facts: readonly string[] }>[] = [
+  inclusion: AutomaticInclusionCondition; facts: readonly string[]; basisRu?: string }>[] = [
   { key: "bedding", title: "Укладка и уплотнение зернистого основания", expression: civil.open_cut_full_width_bedding_m3,
     inclusion: ROAD_CROSSING_SLEEVES_BEDDING_APPLICABILITY_R1,
     facts: ["rcs_crossing_length_m", "rcs_open_cut_excavation_width_m", "rcs_open_cut_full_width_bedding_thickness_m", "rcs_bedding_granular_product_designation"] },
@@ -94,6 +96,11 @@ const fillExecutionWorks: readonly Readonly<{ key: string; title: string; expres
     inclusion: ROAD_CROSSING_SLEEVES_TRENCH_FILL_APPLICABILITY_R1,
     facts: ["rcs_crossing_length_m", "rcs_open_cut_excavation_width_m", "rcs_open_cut_excavation_depth_m",
       "rcs_open_cut_full_width_bedding_thickness_m", "rcs_casing_outside_diameter_mm", "rcs_trench_fill_other_permanent_occupied_volume_m3", "rcs_trench_fill_granular_product_designation"] },
+  { key: "internal", title: "Смешивание и размещение выбранной смеси внутри футляра", expression: ROAD_CROSSING_SLEEVES_INTERNAL_FILL_EXPRESSIONS_R1.net_fill_m3,
+    inclusion: ROAD_CROSSING_SLEEVES_INTERNAL_FILL_APPLICABILITY_R1,
+    basisRu: "готового внутреннего заполнения; смешивание и размещение со всеми процессными потерями по выбранной технологии, без оплаты сухого резерва и упаковок",
+    facts: ["rcs_crossing_length_m", "rcs_casing_inside_diameter_mm", "rcs_carrier_outside_diameter_mm",
+      "rcs_internal_fill_permanent_occupied_m3", "rcs_internal_fill_dry_product_designation"] },
 ];
 const fillExecutionId = (key: string, suffix: string) => `rcs_fill_${key}_${suffix}`;
 export const ROAD_CROSSING_SLEEVES_FILL_EXECUTION_PARAMETERS_R1: readonly AutomaticParameterSpec[] = Object.freeze(
@@ -101,14 +108,16 @@ export const ROAD_CROSSING_SLEEVES_FILL_EXECUTION_PARAMETERS_R1: readonly Automa
     const text = (suffix: string, title: string): AutomaticParameterSpec => ({ id: fillExecutionId(work.key, suffix), title,
       kind: "conditional", valueType: "text", unitId: null, requiredWhen: work.inclusion });
     const rate = (owner: "crew" | "equipment"): AutomaticParameterSpec => ({ id: fillExecutionId(work.key, `${owner}_h_per_finished_m3`),
-      title: `${work.title}: ${owner === "crew" ? "суммарные человеко-часы всех исполнителей" : "часы выбранного комплекта техники"} на м³ готового уплотнённого объёма, включая повторное использование`,
+      title: `${work.title}: ${owner === "crew" ? "суммарные человеко-часы всех исполнителей" : "часы выбранного комплекта техники"} на м³ ${work.basisRu ?? "готового уплотнённого объёма, включая повторное использование"}`,
       kind: "conditional", valueType: "decimal", unitId: `${owner === "crew" ? "man" : "machine"}_hour_per_m3`, min: 0, requiredWhen: work.inclusion });
     const basis = (owner: "crew" | "equipment"): AutomaticParameterSpec => ({ id: fillExecutionId(work.key, `${owner}_cost_basis`),
       title: `${work.title}: отдельная граница ${owner === "crew" ? "труда" : "техники"}`, kind: "conditional", valueType: "enum", unitId: null,
       values: [ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_COST_BASES_R1[owner]], requiredWhen: work.inclusion });
-    return [text("method_reference", `${work.title}: применимая карта укладки, слоёв и уплотнения с выбранной смесью и повторно используемым материалом; поставка, резерв и вывоз отдельно`),
+    return [text("method_reference", work.key === "internal"
+      ? `${work.title}: согласованная карта смешивания и размещения с фактическими ограничениями давления, плавучести, удержания и выдержки; вода, материалы и доставка отдельно`
+      : `${work.title}: применимая карта укладки, слоёв и уплотнения с выбранной смесью и повторно используемым материалом; поставка, резерв и вывоз отдельно`),
       text("crew_designation", `${work.title}: все исполнители, включая операторов`), rate("crew"), basis("crew"),
-      text("equipment_designation", `${work.title}: выбранный совместимый комплект для укладки и уплотнения`), rate("equipment"), basis("equipment")];
+      text("equipment_designation", `${work.title}: выбранный совместимый комплект ${work.key === "internal" ? "смешивания и размещения" : "для укладки и уплотнения"}`), rate("equipment"), basis("equipment")];
   }),
 );
 export const ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1: readonly AutomaticRowSpec[] = Object.freeze(
@@ -118,7 +127,7 @@ export const ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1: readonly AutomaticRow
     title: `${work.title}: ${owner === "crew" ? "суммарный труд всех исполнителей" : "выбранный комплект техники с энергией"}`,
     unitId: owner === "crew" ? "man_hour" : "machine_hour", expression: `(${work.expression})*${fillExecutionId(work.key, `${owner}_h_per_finished_m3`)}`,
     inclusion: work.inclusion, procurement: true, titleParameterIds: [fillExecutionId(work.key, `${owner}_designation`)],
-    inputParameterIds: [METHOD_ID, ...work.facts, fillExecutionId(work.key, "method_reference"),
+    inputParameterIds: [...(work.key === "internal" ? [] : [METHOD_ID]), ...work.facts, fillExecutionId(work.key, "method_reference"),
       fillExecutionId(work.key, `${owner}_designation`), fillExecutionId(work.key, `${owner}_cost_basis`)],
   }))),
 );
@@ -150,6 +159,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_PARAMETERS_R1: readonly AutomaticPa
   ...ROAD_CROSSING_SLEEVES_PIT_FILL_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_TRENCH_FILL_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_INTERNAL_FILL_PARAMETERS_R1,
+  ...ROAD_CROSSING_SLEEVES_INTERNAL_WATER_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_PARAMETERS_R1,
 ]);
@@ -161,6 +171,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[
   ...ROAD_CROSSING_SLEEVES_PIT_FILL_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_TRENCH_FILL_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_INTERNAL_FILL_ROWS_R1,
+  ...ROAD_CROSSING_SLEEVES_INTERNAL_WATER_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1,
 ]);
@@ -183,12 +194,13 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
     remaining: ["Подготовка, резка и сборка секций", "Контроль и исправление стыков", "Применимое восстановление защитного покрытия", "Подъём и установка без повторения проходческой операции"] },
   { stageId: "carrier_and_supports", titleRu: "Рабочая труба, опоры и концевые узлы", rows: [...ROAD_CROSSING_SLEEVES_SPACER_GEOMETRY_ROWS_R1, ...ROAD_CROSSING_SLEEVES_PROCUREMENT_ROWS_R1],
     remaining: ["Явная граница поставки рабочей трубы", "Монтаж опор, протаскивание трубы и концевые работы", "Подтверждённые удерживающие и концевые конструкции"] },
-  { stageId: "internal_fill", titleRu: "Заполнение внутри футляра", rows: [...ROAD_CROSSING_SLEEVES_INTERNAL_FILL_ROWS_R1],
-    remaining: ["Смешивание и размещение выбранной смеси", "Подготовка и выдержка", "Отдельная поставка фактически расходуемой воды", "Другие или частичные способы заполнения"] },
+  { stageId: "internal_fill", titleRu: "Заполнение внутри футляра", rows: [...ROAD_CROSSING_SLEEVES_INTERNAL_FILL_ROWS_R1, ...ROAD_CROSSING_SLEEVES_INTERNAL_WATER_ROWS_R1,
+    ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => row.rowId.startsWith("rcs:fill-execution:internal:"))],
+    remaining: ["Подтверждение технологии смешивания, размещения и совместимого оборудования", "Применимые удерживающие конструкции и ограничения давления и плавучести", "Подготовка и выдержка", "Подтверждение качества и распределения воды; отдельная доставка", "Другие или частичные способы заполнения"] },
   { stageId: "backfill", titleRu: "Обратная засыпка", rows: [
     ...ROAD_CROSSING_SLEEVES_CIVIL_ROWS_R1.filter(row => row.rowId === "rcs:civil:open_cut_remaining_fill_space_m3"),
     ...ROAD_CROSSING_SLEEVES_PIT_RETURN_ROWS_R1, ...ROAD_CROSSING_SLEEVES_PIT_FILL_ROWS_R1, ...ROAD_CROSSING_SLEEVES_TRENCH_FILL_ROWS_R1,
-    ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => !row.rowId.startsWith("rcs:fill-execution:bedding:"))],
+    ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => /^rcs:fill-execution:(?:pits|trench):/u.test(row.rowId))],
     remaining: ["Подтверждение пригодности и распределения повторно используемого грунта", "Послойные или другие материалы траншеи", "Подтверждение технологии укладки и уплотнения", "Фактически расходуемая вода и её отдельная поставка", "Состояния грунта и баланс вывоза"] },
   { stageId: "completion", titleRu: "Завершение перехода", rows: [],
     remaining: ["Применимое восстановление территории и покрытия", "Доставка и возврат оборудования", "Испытания и завершение без подмены материалов документами"] },

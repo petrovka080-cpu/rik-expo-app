@@ -31,6 +31,8 @@
     "internalFillModule": "src/lib/estimate/v4/roadCrossingSleevesInternalFillR1.ts",
     "internalFillVerification": "tests/estimateNorms/roadCrossingSleevesInternalFillR1.contract.test.ts",
     "internalFillParameterProjectionVerification": "tests/requestEstimate/canonicalInternalFillParameterProjection.contract.test.ts",
+    "internalWaterVerification": "tests/estimateNorms/roadCrossingSleevesInternalWaterR1.contract.test.ts",
+    "internalExecutionAndWaterBoundary": "Selected full dry internal fill uses original installed net internal geometry for actual disjoint mixing/placing crew and equipment rates. Dry stock/reserve/bag surplus do not change placing hours. Existing water consumption comes only from actual consumed dry kg and selected mixing litres per net-mass bag. Explicit customer-supplied water creates no executor purchase; explicit separate compatible water supply uses disjoint allocated m3 stock/reserve/multiple/new order/remainder and only its new order owns water cost. Water approval/allocation and supply cost boundary remain actual facts; powder, crew, equipment, energy and delivery are excluded from water price. Original mixing/geometry facts and selected technology remain required even under manual paid quantities. Pressure/buoyancy/restraints, curing, delivery and project approval remain open; not full-owner acceptance.",
     "componentIntegrationModule": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",
     "componentIntegrationVerification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
     "civilExecutionAndStageMatrix": {

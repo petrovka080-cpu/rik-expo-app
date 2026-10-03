@@ -280,7 +280,9 @@ function entry(
 }
 
 function looksTechnical(value: string): boolean {
-  return /[_{}[\];=]|PRICE_MISSING|PRELIMINARY_BOQ|better_accuracy|contract_ready|safety_review|user_input|edited_by_user|default_assumption/i.test(value);
+  // A semicolon is normal prose punctuation, including resource cost and
+  // allocation boundaries. It does not turn a human label into a code dump.
+  return /[_{}[\]=]|PRICE_MISSING|PRELIMINARY_BOQ|better_accuracy|contract_ready|safety_review|user_input|edited_by_user|default_assumption/i.test(value);
 }
 
 function hasCyrillic(value: string): boolean {

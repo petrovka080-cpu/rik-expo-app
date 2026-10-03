@@ -186,6 +186,30 @@ describe("canonical professional norm ownership", () => {
     expect(isCanonicalEstimateParameterRequiredForValues(conditionalResourceChoice, {})).toBe(false);
     expect(isCanonicalEstimateParameterRequiredForValues(conditionalResourceChoice, { method: "selected" })).toBe(true);
   });
+  const mandatoryProjectReference = {
+    ...conditionalResourceChoice, parameterId: "material_compatibility_reference", titleRu: "Выбранное проектное условие совместимости материала",
+    preliminaryCompilationAllowed: false,
+    guide: { guideKind: "PROJECT_DEFINED", guideValidationPolicy: "MANDATORY_BLOCK" } as never,
+  };
+  it.each(["material_compatibility_reference", "selected_technology_document", "project_material_approval", "project_material_selection"])(
+    "admits a real mandatory project resource gate from metadata regardless of name %s", parameterId => {
+      const schema = { ...mandatoryProjectReference, parameterId };
+      expect(isCanonicalEstimateVisibleUserResourceSelectionParameter(schema)).toBe(true);
+      expect(isCanonicalEstimateParameterRequiredForValues(schema, { method: "other" })).toBe(false);
+      expect(isCanonicalEstimateParameterRequiredForValues(schema, { method: "selected" })).toBe(true);
+    },
+  );
+  it.each([
+    { visibilityRole: "INTERNAL_ONLY" as const }, { valueSourceRole: "MANUFACTURER_CONFIRMED" as const },
+    { valueSourceRole: "BACKEND_DERIVED" as const }, { valueSourceRole: "MANDATORY_NORM_VALUE" as const },
+    { resourceBranchConsumers: [] }, { preliminaryCompilationAllowed: true },
+    { constraints: { requiredWhen: { kind: "unsupported" } } },
+    { guide: { guideKind: "DERIVED_VALUE_RULE", guideValidationPolicy: "MANDATORY_BLOCK" } as never },
+    { guide: { guideKind: "PROJECT_DEFINED", guideValidationPolicy: "ADVISORY_REASON_REQUIRED" } as never },
+    { titleRu: "Норма расхода материала" },
+  ])("a project reference name never bypasses protected ownership or missing gate metadata: %j", patch => {
+    expect(isCanonicalEstimateVisibleUserResourceSelectionParameter({ ...mandatoryProjectReference, ...patch })).toBe(false);
+  });
   it.each([undefined, {}, [], " ", "not an applicability expression", { kind: "unsupported" }])(
     "keeps an unrequired resource-only text field out for an absent/invalid condition: %j", requiredWhen => {
       expect(isCanonicalEstimateVisibleUserResourceSelectionParameter({ ...conditionalResourceChoice, constraints: { requiredWhen } })).toBe(false);

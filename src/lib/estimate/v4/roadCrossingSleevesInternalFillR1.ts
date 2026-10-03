@@ -1,4 +1,4 @@
-import type { AutomaticParameterSpec, AutomaticRowSpec } from "./automaticConstructionOwnerR1";
+import type { AutomaticInclusionCondition, AutomaticParameterSpec, AutomaticRowSpec } from "./automaticConstructionOwnerR1";
 
 /** ONE full continuous internal annulus and ONE approved preblended dry product.
  * This is not external overbreak grouting, a mix design or execution approval.
@@ -22,7 +22,10 @@ export const ROAD_CROSSING_SLEEVES_INTERNAL_FILL_MODES_R1 = Object.freeze({
   dryGrout: "Полное внутреннее заполнение одной согласованной сухой затворяемой смесью",
   other: "Другое или частичное заполнение внутри футляра: отдельный расчёт",
 });
-const inclusion = { kind: "equals" as const, parameterId: MODE, value: ROAD_CROSSING_SLEEVES_INTERNAL_FILL_MODES_R1.dryGrout };
+export const ROAD_CROSSING_SLEEVES_INTERNAL_FILL_APPLICABILITY_R1 = Object.freeze({
+  kind: "equals" as const, parameterId: MODE, value: ROAD_CROSSING_SLEEVES_INTERNAL_FILL_MODES_R1.dryGrout,
+});
+const inclusion = ROAD_CROSSING_SLEEVES_INTERNAL_FILL_APPLICABILITY_R1;
 const L = "rcs_crossing_length_m";
 const ID = "rcs_casing_inside_diameter_mm";
 const OD = "rcs_carrier_outside_diameter_mm";
@@ -95,4 +98,82 @@ export const ROAD_CROSSING_SLEEVES_INTERNAL_FILL_ROWS_R1: readonly AutomaticRowS
   row("free_dry_kg_beyond_reserve", "Свободная сухая смесь сверх сохраняемого резерва"),
   { ...row("mixing_water_m3", "Вода затворения расходуемой сухой смеси, без воды для нераскрытого резерва и округления заказа", "m3"),
     inputParameterIds: [...netGeometry, RATE, WATER, BAG] },
+]);
+
+/** Separate material ownership for actual mixing water. Customer-supplied
+ * water retains the existing visible consumption control and has no new paid
+ * purchase. Neither branch changes dry powder, crew/equipment or geometry.
+ * Every water quantity uses the same suitable m3 supply state; multiple counts
+ * are billing/supply quantities, never inferred delivery trips.
+ */
+export const ROAD_CROSSING_SLEEVES_INTERNAL_WATER_MODES_R1 = Object.freeze({
+  separatePurchase: "Отдельная закупка воды, совместимой с выбранной сухой смесью",
+  customerSupplied: "Подтверждённая вода заказчика; новой закупки исполнителем нет",
+});
+export const ROAD_CROSSING_SLEEVES_INTERNAL_WATER_COST_BASIS_R1 = "Только вода; без сухой смеси, всех исполнителей, техники, энергии и доставки";
+export const ROAD_CROSSING_SLEEVES_INTERNAL_WATER_SCOPE_R1 = Object.freeze({
+  fullOwner: false, engineeringAccepted: false,
+  consumption: "Existing actual consumed dry kg times selected mixing litres per net-mass bag, not ordered powder, unopened reserve or dry stock alone",
+  supply: "Separate suitable water stock, retained reserve, actual supply multiple, new order and remaining/free m3; allocations disjoint from other operations",
+  cost: "Only new suitable water order when explicitly selected; excludes powder, crew, equipment, energy and delivery",
+  customerSupplied: "Explicit actual project supply fact; consumed water remains visible but creates no executor purchase",
+  excluded: "Water quality/product acceptance and non-overlapping allocation, actual delivery and logistics, water used by other operations, full crossing",
+  purchaseOverride: ROAD_CROSSING_SLEEVES_INTERNAL_FILL_SCOPE_R1.purchaseOverride,
+});
+const W_MODE = "rcs_internal_fill_water_supply_mode";
+const W_PRODUCT = "rcs_internal_fill_water_product_designation";
+const W_REFERENCE = "rcs_internal_fill_water_compatibility_reference";
+const W_BASIS = "rcs_internal_fill_water_cost_basis";
+const W_STOCK = "rcs_internal_fill_water_compatible_stock_m3";
+const W_RESERVE = "rcs_internal_fill_water_retained_reserve_m3";
+const W_MULTIPLE = "rcs_internal_fill_water_supplier_multiple_m3";
+export const ROAD_CROSSING_SLEEVES_INTERNAL_WATER_APPLICABILITY_R1: AutomaticInclusionCondition = Object.freeze({
+  kind: "and", operands: Object.freeze([inclusion,
+    { kind: "equals" as const, parameterId: W_MODE, value: ROAD_CROSSING_SLEEVES_INTERNAL_WATER_MODES_R1.separatePurchase },
+  ]),
+});
+const waterFact = (id: string, title: string, min = 0): AutomaticParameterSpec => ({ id, title, unitId: "m3", valueType: "decimal",
+  kind: "conditional", min, requiredWhen: ROAD_CROSSING_SLEEVES_INTERNAL_WATER_APPLICABILITY_R1 });
+export const ROAD_CROSSING_SLEEVES_INTERNAL_WATER_PARAMETERS_R1: readonly AutomaticParameterSpec[] = Object.freeze([
+  { id: W_MODE, title: "Фактический вариант снабжения водой для затворения внутреннего заполнения", unitId: null,
+    valueType: "enum", kind: "conditional", values: Object.values(ROAD_CROSSING_SLEEVES_INTERNAL_WATER_MODES_R1), requiredWhen: inclusion },
+  { id: W_PRODUCT, title: "Выбранная вода для затворения смеси; не сухой компонент и не доставка", unitId: null,
+    valueType: "text", kind: "conditional", requiredWhen: ROAD_CROSSING_SLEEVES_INTERNAL_WATER_APPLICABILITY_R1 },
+  { id: W_REFERENCE, title: "Подтверждение совместимости выбранной воды с выбранной сухой смесью и назначения только этому замесу", unitId: null,
+    valueType: "text", kind: "conditional", requiredWhen: ROAD_CROSSING_SLEEVES_INTERNAL_WATER_APPLICABILITY_R1 },
+  { id: W_BASIS, title: "Отдельная граница стоимости воды затворения", unitId: null,
+    valueType: "enum", kind: "conditional", values: [ROAD_CROSSING_SLEEVES_INTERNAL_WATER_COST_BASIS_R1], requiredWhen: ROAD_CROSSING_SLEEVES_INTERNAL_WATER_APPLICABILITY_R1 },
+  waterFact(W_STOCK, "Подтверждённая совместимая вода для этого замеса в наличии; не повторять выделенную другим операциям"),
+  waterFact(W_RESERVE, "Сохраняемый резерв той же совместимой воды; не расходовать на сухой резерв смеси"),
+  waterFact(W_MULTIPLE, "Фактическая кратность нового заказа выбранной воды в м³; не число рейсов", 0.000_001),
+]);
+const W_CONSUMED = ROAD_CROSSING_SLEEVES_INTERNAL_FILL_EXPRESSIONS_R1.mixing_water_m3;
+const W_TOTAL = `(${W_CONSUMED})+${W_RESERVE}`;
+const W_NEED = `max(0,(${W_TOTAL})-${W_STOCK})`;
+const W_COUNT = `ceil((${W_NEED})/${W_MULTIPLE})`;
+const W_ORDER = `(${W_COUNT})*${W_MULTIPLE}`;
+const W_REMAINING = `${W_STOCK}+(${W_ORDER})-(${W_CONSUMED})`;
+export const ROAD_CROSSING_SLEEVES_INTERNAL_WATER_EXPRESSIONS_R1 = Object.freeze({
+  compatible_stock_m3: W_STOCK, retained_reserve_m3: W_RESERVE, total_need_m3: W_TOTAL,
+  new_need_m3: W_NEED, supplier_multiple_count: W_COUNT, ordered_m3: W_ORDER,
+  remaining_m3: W_REMAINING, free_m3_beyond_reserve: `(${W_REMAINING})-${W_RESERVE}`,
+});
+const waterInputs = [...netGeometry, PRODUCT, RATE, WATER, BAG, W_MODE];
+const waterRow = (key: keyof typeof ROAD_CROSSING_SLEEVES_INTERNAL_WATER_EXPRESSIONS_R1, title: string): AutomaticRowSpec => ({
+  rowId: `rcs:internal-water:${key}`, formulaId: `rcs:internal-water:${key}`, section: "Отдельная вода затворения внутреннего заполнения",
+  category: "material", title, unitId: key === "supplier_multiple_count" ? "package" : "m3",
+  expression: ROAD_CROSSING_SLEEVES_INTERNAL_WATER_EXPRESSIONS_R1[key], inclusion: ROAD_CROSSING_SLEEVES_INTERNAL_WATER_APPLICABILITY_R1,
+  costTreatment: "INFORMATIONAL_SCOPE", inputParameterIds: [MODE, W_MODE],
+});
+export const ROAD_CROSSING_SLEEVES_INTERNAL_WATER_ROWS_R1: readonly AutomaticRowSpec[] = Object.freeze([
+  waterRow("compatible_stock_m3", "Совместимая вода в наличии, выделенная этому замесу"),
+  waterRow("retained_reserve_m3", "Сохраняемый резерв воды, не расход замеса"),
+  waterRow("total_need_m3", "Фактический расход воды замеса с сохраняемым резервом"),
+  waterRow("new_need_m3", "Дополнительная потребность в воде после совместимого наличия"),
+  waterRow("supplier_multiple_count", "Число кратностей поставки воды; не отдельная оплата и не рейсы"),
+  { ...waterRow("ordered_m3", "Новый отдельный заказ совместимой воды для затворения внутреннего заполнения"),
+    costTreatment: "OWN_COST", procurement: true, titleParameterIds: [W_PRODUCT],
+    inputParameterIds: [...waterInputs, W_PRODUCT, W_REFERENCE, W_BASIS, W_STOCK, W_RESERVE, W_MULTIPLE] },
+  waterRow("remaining_m3", "Остаток совместимой воды после замеса, включая сохраняемый резерв"),
+  waterRow("free_m3_beyond_reserve", "Свободная совместимая вода после замеса сверх сохраняемого резерва"),
 ]);

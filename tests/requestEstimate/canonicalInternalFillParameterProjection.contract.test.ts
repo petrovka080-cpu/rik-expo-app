@@ -2,7 +2,9 @@ import { buildMasterParameterCalculationConsumers } from "../../scripts/estimate
 import { buildAutomaticConstructionOwnerR1 } from "../../src/lib/estimate/v4/automaticConstructionOwnerR1";
 import { ROAD_CROSSING_SLEEVES_QUANTITY_PARAMETERS_R1 as quantity } from "../../src/lib/estimate/v4/roadCrossingSleevesQuantityModelR1";
 import { ROAD_CROSSING_SLEEVES_INTERNAL_FILL_PARAMETERS_R1 as fill, ROAD_CROSSING_SLEEVES_INTERNAL_FILL_ROWS_R1 as fillRows,
-  ROAD_CROSSING_SLEEVES_INTERNAL_FILL_MODES_R1 as modes } from "../../src/lib/estimate/v4/roadCrossingSleevesInternalFillR1";
+  ROAD_CROSSING_SLEEVES_INTERNAL_FILL_MODES_R1 as modes, ROAD_CROSSING_SLEEVES_INTERNAL_WATER_PARAMETERS_R1 as water,
+  ROAD_CROSSING_SLEEVES_INTERNAL_WATER_ROWS_R1 as waterRows, ROAD_CROSSING_SLEEVES_INTERNAL_WATER_MODES_R1 as waterModes,
+  ROAD_CROSSING_SLEEVES_INTERNAL_WATER_COST_BASIS_R1 as waterBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesInternalFillR1";
 import { buildConsumerCanonicalPrecompileParameterSession, consumerCanonicalPrecompileParameterOverrides } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
 import { isCanonicalEstimateUserEditableParameter, isCanonicalEstimateVisibleUserResourceSelectionParameter } from "../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics";
 import { buildCanonicalParameterCards } from "../../src/lib/estimatePresentation/buildCanonicalParameterCards";
@@ -19,7 +21,7 @@ const definition = buildAutomaticConstructionOwnerR1({
     definition_hash: "a".repeat(64), artifact_sha256: "a".repeat(64), exact_locator: "owned test fixture" },
   applicabilityRu: "Подтверждённый полный внутренний зазор одного футляра",
   ordinary: [...quantity.filter(p => geometry.includes(p.id)), ...fill.filter(p => p.kind === "ordinary")], profile: [],
-  conditional: fill.filter(p => p.kind === "conditional"), rows: fillRows, excludedUnownedAssumptions: ["No full crossing or actual project approval"],
+  conditional: [...fill.filter(p => p.kind === "conditional"), ...water], rows: [...fillRows, ...waterRows], excludedUnownedAssumptions: ["No full crossing or actual project approval"],
 });
 const consumers = buildMasterParameterCalculationConsumers({ parameters: definition.parameters, formulas: definition.formulas, resources: definition.resources });
 // Real factory -> real publisher metadata -> common catalogue editor. No
@@ -51,6 +53,7 @@ const fixture: Record<string, CanonicalEstimateParameterInputValue> = {
   [MODE]: modes.dryGrout, [PRODUCT]: "Сухая смесь по выбранной согласованной спецификации", rcs_internal_fill_permanent_occupied_m3: 0.042477797,
   [RATE]: 1000, [STOCK]: 0, rcs_internal_fill_retained_dry_reserve_kg: 0,
   rcs_internal_fill_supplier_bag_net_kg: 50, rcs_internal_fill_mixing_water_l_for_selected_bag: 5,
+  rcs_internal_fill_water_supply_mode: waterModes.customerSupplied,
 };
 function session(parameters = fixture, missingParameterIds: string[] = []) {
   return buildConsumerCanonicalPrecompileParameterSession({ catalog, draftId: "owned-internal-fill-editor-draft", parameters, missingParameterIds,
@@ -74,7 +77,7 @@ describe("actual internal-fill facts through the common editable parameter adapt
       expect(result.find(c => c.key === fact.id)?.guideShortRu).toBeTruthy();
     }
     expect(consumers.formulaConsumers[PRODUCT]).toEqual([]);
-    expect(consumers.resourceConsumers[PRODUCT]).toEqual(["rcs:internal-fill:ordered_dry_kg"]);
+    expect(consumers.resourceConsumers[PRODUCT]).toEqual(["rcs:internal-fill:ordered_dry_kg", "rcs:internal-water:ordered_m3"]);
     expect(session().contractMissingParameterIds).toEqual([]);
     expect(session().blockingMissingParameterIds).toEqual([]);
     expect(result.find(c => c.key === STOCK)?.displayValueRu).not.toBe("нужно уточнить");
@@ -119,5 +122,31 @@ describe("actual internal-fill facts through the common editable parameter adapt
     expect(catalog.parameterSchema.find(p => p.parameterId === "rcs_internal_fill_mixing_water_l_for_selected_bag")?.unitId).toBe("l");
     expect(cards().find(c => c.key === RATE)?.guideShortRu).toContain("фиксированная числовая норма не установлена");
     expect(catalog.parameterSchema.every(p => p.defaultValue == null)).toBe(true); expect(definition.runtimeInput).toEqual({});
+  });
+  it("retains selected water compatibility, material, cost boundary and supplied zeros as real editable fields", () => {
+    const parameters: Record<string, CanonicalEstimateParameterInputValue> = { ...fixture, rcs_internal_fill_water_supply_mode: waterModes.separatePurchase,
+      rcs_internal_fill_water_product_designation: "Выбранная совместимая вода", rcs_internal_fill_water_compatibility_reference: "Согласованная спецификация воды и смеси",
+      rcs_internal_fill_water_cost_basis: waterBasis, rcs_internal_fill_water_compatible_stock_m3: 0,
+      rcs_internal_fill_water_retained_reserve_m3: 0, rcs_internal_fill_water_supplier_multiple_m3: 0.05 };
+    const result = cards(parameters);
+    expect(water.filter(fact => !result.some(card => card.key === fact.id)).map(fact => fact.id)).toEqual([]);
+    for (const fact of water) expect(result.find(card => card.key === fact.id)).toMatchObject({ value: parameters[fact.id], editable: true, missing: false });
+    expect(session(parameters).blockingMissingParameterIds).toEqual([]);
+    const patched = consumerCanonicalPrecompileParameterOverrides({ session: session(parameters), patches: [
+      { operation: "update_param", paramKey: "rcs_internal_fill_water_compatible_stock_m3", rawValue: "0.1" },
+      { operation: "update_param", paramKey: "rcs_internal_fill_water_compatibility_reference", rawValue: "Уточнённая спецификация совместимой воды" },
+    ] });
+    expect(patched.rcs_internal_fill_water_compatible_stock_m3).toBe("0.1");
+    expect(patched.rcs_internal_fill_water_compatibility_reference).toBe("Уточнённая спецификация совместимой воды");
+  });
+  it("customer-supplied water keeps retained separate-purchase facts inactive; unknown supply stays a local primary question", () => {
+    const stock = "rcs_internal_fill_water_compatible_stock_m3";
+    const inactive = session({ ...fixture, [stock]: 0.2 }, [stock]);
+    expect(inactive.parameters.some(parameter => parameter.parameterId === stock)).toBe(false);
+    expect(inactive.inactiveConditionalParameters?.find(parameter => parameter.parameterId === stock)).toMatchObject({ value: 0.2 });
+    expect(inactive.blockingMissingParameterIds).toEqual([]);
+    const input = { ...fixture }; delete input.rcs_internal_fill_water_supply_mode;
+    expect(cards(input, ["rcs_internal_fill_water_supply_mode"]).find(card => card.key === "rcs_internal_fill_water_supply_mode")).toMatchObject({ value: null, editable: true, missing: true });
+    expect(session(input, ["rcs_internal_fill_water_supply_mode"]).blockingMissingParameterIds).toContain("rcs_internal_fill_water_supply_mode");
   });
 });
