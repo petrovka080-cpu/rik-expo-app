@@ -337,11 +337,19 @@ if ($VerifyFullTypecheck) {
     $PriorTypecheckNodeOptions = $env:NODE_OPTIONS
     try {
       $env:NODE_OPTIONS = "--max-old-space-size=3072"
-      & $Node (Join-Path $Root "scripts/typecheck/runTypecheckShards.mjs") --diagnostics *> (Join-Path $RuntimeRoot "full-typecheck.log")
-      $FullTypecheckExitCode = $LASTEXITCODE
+      # Windows PowerShell treats native stderr diagnostics as terminating
+      # errors under Stop. Redirect in the child process, then read its real
+      # exit code; successful compiler diagnostics must not kill the runner.
+      $TypecheckProcess = Start-Process -FilePath $Node -ArgumentList @(
+        (Join-Path $Root "scripts/typecheck/runTypecheckShards.mjs"), "--diagnostics"
+      ) -WorkingDirectory $Root -WindowStyle Hidden -Wait -PassThru `
+        -RedirectStandardOutput (Join-Path $RuntimeRoot "full-typecheck.log") `
+        -RedirectStandardError (Join-Path $RuntimeRoot "full-typecheck.diagnostics.log")
+      $FullTypecheckExitCode = $TypecheckProcess.ExitCode
     }
     catch {
       $FullTypecheckExitCode = 1
+      $_.Exception.Message | Set-Content -LiteralPath (Join-Path $RuntimeRoot "full-typecheck-launch-error.log") -Encoding UTF8
       Write-Warning "Full typecheck failed; restoring the owned Metro runtime."
     }
     finally { $env:NODE_OPTIONS = $PriorTypecheckNodeOptions }
