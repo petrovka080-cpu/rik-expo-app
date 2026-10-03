@@ -328,6 +328,7 @@ class FixedDecimal {
     return Number(this.toString());
   }
   compare(other: FixedDecimal): number { return this.scaled < other.scaled ? -1 : this.scaled > other.scaled ? 1 : 0; }
+  isMultipleOf(other: FixedDecimal): boolean { return other.scaled !== 0n && this.scaled % other.scaled === 0n; }
   toString(): string {
     const negative = this.scaled < 0n;
     const absolute = negative ? -this.scaled : this.scaled;
@@ -361,6 +362,12 @@ export type FormulaParameterValue = string | number | bigint | boolean;
 /** Compare in the evaluator's fixed-decimal domain, without Number rounding. */
 export function compareFormulaGraphDecimals(left: string | number, right: string | number): number {
   return FixedDecimal.parse(left).compare(FixedDecimal.parse(right));
+}
+/** Whole supply must be exact in the storage/evaluator domain. Never round
+ * excess precision into a multiple that the submitted quantity did not have. */
+export function isFormulaGraphDecimalMultiple(value: string | number, quantum: string | number): boolean {
+  if ([value, quantum].some(input => /[1-9]/u.test((String(input).split(".")[1] ?? "").slice(FORMULA_DECIMAL_SCALE)))) return false;
+  return FixedDecimal.parse(value).isMultipleOf(FixedDecimal.parse(quantum));
 }
 
 function evaluateCondition(ast: FormulaAst, parameters: Record<string, FormulaParameterValue>): boolean {

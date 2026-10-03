@@ -1,4 +1,5 @@
 import type { AutomaticParameterSpec, AutomaticRowSpec } from "./automaticConstructionOwnerR1";
+import { effectivePurchaseBalanceExpressionsR1 } from "./effectivePurchaseBalanceR1";
 import { ROAD_CROSSING_SLEEVES_QUANTITY_EXPRESSIONS_R1 as quantities } from "./roadCrossingSleevesQuantityModelR1";
 
 /** Supply component, not a published/full crossing owner. Actual selected
@@ -44,37 +45,40 @@ export const ROAD_CROSSING_SLEEVES_PROCUREMENT_PARAMETERS_R1: readonly Automatic
   length("rcs_tape_supplier_roll_length_m", "Длина совместимой ленты в фактическом поставочном рулоне", 0.000_001),
 ]);
 
-function balance(installed: string, loss: string, spare: string, stock: string, pack: string, provided = "0") {
+function balance(prefix: string, unitId: string, installed: string, loss: string, spare: string, stock: string, pack: string, provided = "0") {
   const total = `(${installed})+${loss}+${spare}`;
   const need = `max(0,(${total})-${stock}-(${provided}))`;
   const packages = `ceil((${need})/${pack})`;
   const ordered = `(${packages})*${pack}`;
-  const remaining = `${stock}+(${provided})+(${ordered})-(${installed})-${loss}`;
-  return { installed, loss, spare, stock, provided, total, need, packages, ordered, remaining, free: `(${remaining})-${spare}` };
+  const effective = effectivePurchaseBalanceExpressionsR1({ ownerRowId: `rcs:${prefix}:ordered`, orderUnitId: unitId,
+    consumed: `(${installed})+${loss}`, stock: `${stock}+(${provided})`, reserve: spare, quantum: pack });
+  return { owner: effective.owner, expressions: { installed, loss, spare, stock, provided, total, need, packages: effective.packages,
+    ordered, remaining: effective.remaining, free: effective.free, consumptionShortage: effective.consumptionShortage, reserveDeficit: effective.reserveDeficit } };
 }
-const elements = balance(quantities.raci_installed_element_count,
+const elements = balance("raci-elements", "piece", quantities.raci_installed_element_count,
   "rcs_element_technological_loss_count", "rcs_element_retained_spare_count",
   "rcs_element_compatible_stock_count", "rcs_element_supplier_pack_count");
-const seals = balance(quantities.installed_end_seal_kit_count,
+const seals = balance("end-seal-kits", "piece", quantities.installed_end_seal_kit_count,
   "rcs_end_seal_technological_loss_count", "rcs_end_seal_retained_spare_count",
   "rcs_end_seal_compatible_stock_count", "rcs_end_seal_supplier_pack_count");
 // Link the inclusion to the actual NEW pack order, not to installed rings,
 // whole stock elements or an unrelated independently submitted tape total.
-const providedTape = `(${elements.packages})*rcs_tape_provided_m_per_element_pack`;
-const tape = balance(quantities.raci_installed_contact_tape_length_m,
+const providedTape = `(${elements.expressions.packages})*rcs_tape_provided_m_per_element_pack`;
+const tape = balance("contact-tape", "m", quantities.raci_installed_contact_tape_length_m,
   "rcs_tape_technological_loss_m", "rcs_tape_retained_spare_m",
   "rcs_tape_compatible_stock_m", "rcs_tape_supplier_roll_length_m", providedTape);
 
-const labels: Record<keyof ReturnType<typeof balance>, string> = {
+const labels: Record<keyof ReturnType<typeof balance>["expressions"], string> = {
   installed: "Смонтированное количество", loss: "Технологические потери",
   spare: "Сохраняемый резерв", stock: "Совместимое наличие", provided: "Включено в новую поставку опор",
   total: "Общая потребность с потерями и резервом", need: "Дополнительная потребность после наличия и комплектации",
   packages: "Количество новых поставочных упаковок", ordered: "Новый заказ после округления упаковок",
   remaining: "Остаток после монтажа и потерь", free: "Свободный остаток сверх сохраняемого резерва",
+  consumptionShortage: "Недостающее количество для монтажа и потерь; закупка не готова", reserveDeficit: "Непокрытый сохраняемый резерв; закупка не готова",
 };
 function rows(prefix: string, title: string, unitId: string, expressions: ReturnType<typeof balance>,
   titleParameterId: string, inputs: readonly string[]): AutomaticRowSpec[] {
-  return (Object.entries(expressions) as [keyof typeof expressions, string][])
+  return (Object.entries(expressions.expressions) as [keyof typeof expressions.expressions, string][])
     .filter(([key]) => key !== "provided" || prefix === "contact-tape")
     .map(([key, expression]) => ({
       rowId: `rcs:${prefix}:${key}`, section: key === "ordered" ? "Материалы дорожного футляра" : `Баланс: ${title}`,
@@ -82,6 +86,7 @@ function rows(prefix: string, title: string, unitId: string, expressions: Return
       unitId: key === "packages" ? "package" : unitId,
       formulaId: `rcs:${prefix}:${key}`, expression,
       procurement: key === "ordered", costTreatment: key === "ordered" ? "OWN_COST" : "INFORMATIONAL_SCOPE",
+      ...(key === "ordered" ? expressions.owner : {}),
       titleParameterIds: [titleParameterId], inputParameterIds: inputs,
     }));
 }

@@ -10,10 +10,11 @@ import { parseCanonicalFormulaOutputBoundsV1, type CanonicalFormulaOutputBoundsV
 import { estimateDeterministicHash } from "../estimateDeterministicHash";
 import { NUMERIC_PARAMETER_RELATIONS, type NumericParameterPeerConstraints } from "../backendPlatform/numericParameterRelations";
 import { resolveInclusionGraph } from "../backendPlatform/inclusionGraph";
+import type { CanonicalPurchaseBalanceV1 } from "../backendPlatform/canonicalPurchaseBalanceV1";
 
 type Json = Record<string, unknown>;
 
-export type AutomaticParameterKind = "ordinary" | "profile" | "conditional";
+export type AutomaticParameterKind = "ordinary" | "profile" | "conditional" | "internal";
 type AutomaticPeerCondition = Readonly<{
   kind: "greater_than";
   parameterId: string;
@@ -39,6 +40,7 @@ export type AutomaticParameterSpec = Readonly<{
   numericPeerConstraints?: NumericParameterPeerConstraints;
   requiredWhen?: Readonly<{ parameterId: string; value: string }> | AutomaticInclusionCondition;
   resourceBranchConsumers?: readonly string[];
+  effectiveQuantitySourceRowId?: string;
 }>;
 
 export type AutomaticRowSpec = Readonly<{
@@ -57,6 +59,10 @@ export type AutomaticRowSpec = Readonly<{
    * are not arithmetic operands. Uses the canonical compiler's existing gate. */
   inputParameterIds?: readonly string[];
   formulaOutputBounds?: CanonicalFormulaOutputBoundsV1;
+  effectiveQuantityOutput?: Readonly<{ parameterId: string; unitId: string }>;
+  purchaseBalance?: CanonicalPurchaseBalanceV1;
+  manualTransportQuantityPolicy?: Readonly<{ unitId: string; minimum: "calculated_quantity"; integer: boolean }>;
+  purchaseBalanceOwnerRowId?: string;
 }>;
 
 export type AutomaticOwnerDefinition = Readonly<{
@@ -116,7 +122,12 @@ function constraints(spec: AutomaticParameterSpec): Json {
 export function buildAutomaticConstructionOwnerR1(
   config: OwnerConfig,
 ): AutomaticOwnerDefinition {
-  const specs = [...config.ordinary, ...config.profile, ...config.conditional];
+  const internalSpecs: AutomaticParameterSpec[] = config.rows.flatMap(row => row.effectiveQuantityOutput ? [{
+    id: row.effectiveQuantityOutput.parameterId, title: `Принятое количество: ${row.title}`, valueType: "decimal", kind: "internal",
+    unitId: row.effectiveQuantityOutput.unitId, effectiveQuantitySourceRowId: row.rowId,
+  }] : []);
+  const specs = [...config.ordinary, ...config.profile, ...config.conditional, ...internalSpecs];
+  if (new Set(specs.map(spec => spec.id)).size !== specs.length) throw new Error("AUTOMATIC_EFFECTIVE_PARAMETER_DUPLICATE");
   const specsById = new Map(specs.map((spec) => [spec.id, spec]));
   const validatePeerCondition = (condition: AutomaticPeerCondition): void => {
     const left = specsById.get(condition.parameterId);
@@ -176,16 +187,19 @@ export function buildAutomaticConstructionOwnerR1(
     value_type: spec.valueType,
     unit_id: spec.unitId,
     title_ru: spec.title,
-    required: spec.kind !== "conditional",
+    required: spec.kind === "ordinary" || spec.kind === "profile",
     default_value: null,
     constraints_json: constraints(spec),
     truth_metadata: {
       contract: config.contract,
       semantic_parameter_key: `${config.semanticOwner}:${spec.id}`,
-      visibility_role: "USER_INPUT",
+      visibility_role: spec.kind === "internal" ? "INTERNAL_ONLY" : "USER_INPUT",
       value_source_role: spec.kind === "ordinary" ? "USER_INPUT"
         : spec.kind === "profile" ? "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE"
-          : "CONDITIONAL_PROJECT_FACT",
+          : spec.kind === "internal" ? "COMPILER_DERIVED_RESOURCE_QUANTITY" : "CONDITIONAL_PROJECT_FACT",
+      ...(spec.effectiveQuantitySourceRowId ? { effective_resource_quantity_v1: {
+        sourceRowId: spec.effectiveQuantitySourceRowId, unitId: spec.unitId,
+      } } : {}),
       input_origin_class: spec.kind === "ordinary" ? "KNOWN_PRIMARY_WORK_SCOPE"
         : spec.kind === "profile" ? "VISIBLE_PRELIMINARY_ENGINEERING_PROFILE"
           : "APPROVED_PROJECT_OR_METHOD_STATEMENT",
@@ -248,6 +262,10 @@ export function buildAutomaticConstructionOwnerR1(
       costOwner: "resource",
       scopeContextParameterIds: [...ordinaryIds],
       costTreatment: row.costTreatment ?? "OWN_COST",
+      ...(row.effectiveQuantityOutput ? { effectiveQuantityOutputV1: row.effectiveQuantityOutput } : {}),
+      ...(row.purchaseBalance ? { purchaseBalanceV1: row.purchaseBalance } : {}),
+      ...(row.manualTransportQuantityPolicy ? { manualTransportQuantityPolicyV1: row.manualTransportQuantityPolicy } : {}),
+      ...(row.purchaseBalanceOwnerRowId ? { purchaseBalanceOwnerRowId: row.purchaseBalanceOwnerRowId } : {}),
       ...(row.inputParameterIds ? { inputParameterIds: [...row.inputParameterIds] } : {}),
       ...(formulaOutputBounds == null ? {} : { formulaOutputBoundsV1: formulaOutputBounds }),
       ...(row.titleParameterIds ? {

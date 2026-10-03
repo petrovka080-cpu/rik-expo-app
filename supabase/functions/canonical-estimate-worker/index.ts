@@ -597,6 +597,7 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
     const projection = buildCanonicalProcurementProjection({
       revision,
       procurementRows: selectedProcurementRows,
+      sourceRows: selection.sourceRows,
     });
     bytes = new TextEncoder().encode(canonicalEstimateStableJson(projection));
     contentType = "application/json; charset=utf-8";

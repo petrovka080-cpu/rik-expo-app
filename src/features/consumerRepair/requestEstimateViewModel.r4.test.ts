@@ -75,6 +75,14 @@ function serverBoundBundle(items: ConsumerRepairRequestItem[]): ConsumerRepairDr
 }
 
 describe("R4 canonical estimate title parity", () => {
+  it("shows persisted purchase shortage instead of a generic calculated label after reopening", () => {
+    const item = canonicalItem("material:order", "Материал", "a".repeat(64), 0);
+    item.sourceParameters = { ...item.sourceParameters, canonicalPurchaseBalance: { unitId: "kg",
+      consumed: "105", effectiveOrder: "80", consumptionShortage: "20", reserveDeficit: "0", procurementReady: false } };
+    const visible = buildRequestEstimateViewModel(serverBoundBundle([item]))!;
+    expect(JSON.stringify(visible)).toContain("Закупка не готова");
+    expect(JSON.stringify(visible)).toContain("20 kg");
+  });
   it("preserves an accepted backend BOQ title containing the PPR abbreviation", () => {
     const title = "Оборудование доступа к рабочей зоне по проектному ППР";
 

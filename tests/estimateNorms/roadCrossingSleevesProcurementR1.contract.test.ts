@@ -45,6 +45,17 @@ const q = (result: Awaited<ReturnType<typeof compile>>, prefix: string, key: str
 const ownedReplacement = { kind: "manual", reason: "test-owned supply contract" };
 
 describe("road casing selected-product supply through the shared canonical compiler", () => {
+  it("reconciles supplied tape from the effective element packs before the separate tape order", async () => {
+    const automatic = await compile();
+    const manual = await compile(fixture, { "rcs:raci-elements:ordered": { quantity: "100", provenance: ownedReplacement } });
+    expect(q(automatic, "raci-elements", "ordered")).toBe(70);
+    expect(q(manual, "raci-elements", "packages")).toBe(10);
+    expect(q(manual, "raci-elements", "remaining")).toBe(40);
+    expect(q(manual, "contact-tape", "provided")).toBe(10);
+    expect(q(manual, "contact-tape", "ordered")).toBeLessThan(q(automatic, "contact-tape", "ordered"));
+    expect(q(manual, "raci-elements", "installed")).toBe(q(automatic, "raci-elements", "installed"));
+    expect((await compile()).revisionProjection).toEqual(automatic.revisionProjection);
+  });
   it("separates installed count, actual loss, reserve, stock, new packs and free remainder", async () => {
     const result = await compile();
     expect(result.preliminaryNeeds).toHaveLength(0);

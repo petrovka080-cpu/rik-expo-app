@@ -161,7 +161,9 @@ describe("canonical estimate consumer professional proof", () => {
         rowCode: "manual:catalog-rental",
         canonicalBackendOwnershipStatus: "PRELIMINARY_NEED",
         canonicalPreliminaryNeed: true,
-        includedInProcurement: false,
+        // The requested choice survives in draft metadata; preliminary rows
+        // remain excluded from canonical artifact source rows until resolved.
+        includedInProcurement: true,
         payable: false,
       },
     });
@@ -246,7 +248,7 @@ describe("canonical estimate consumer professional proof", () => {
     expect(proof?.parameterLabel).toContain("joint length");
     expect(proof?.normativeLabel).toContain("SELECTED_DRYWALL_SYSTEM_PASSPORT_R3");
     expect(proof?.normativeLabel).toContain("Технический лист: фактический расход материала.");
-    expect(proof?.formulaLabel).toContain("Результат: 10 кг");
+    expect(proof?.formulaLabel).toContain("Результат формулы: 10 кг");
   });
 
   it("projects backend sections and AI surface from one immutable compilation", () => {

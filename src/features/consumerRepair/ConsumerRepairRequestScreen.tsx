@@ -1,4 +1,5 @@
 import React from "react";
+import { canonicalPurchaseShortageMessageV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
 import { router } from "expo-router";
 import { Text, TextInput, View } from "react-native";
 import {
@@ -43,6 +44,7 @@ import {
   getCanonicalEstimateArtifact,
   getCanonicalEstimateCatalogItem,
   getCanonicalEstimateRevision,
+  getAllCanonicalEstimateRevisionRows,
   searchCanonicalEstimateCatalog,
 } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
 import {
@@ -2717,6 +2719,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         const currentRevision = current.estimateDraftRevisionState?.revisions.find(
           (candidate) => candidate.revisionId === context.revisionId,
         );
+        const rows = await getAllCanonicalEstimateRevisionRows({ revisionId: context.revisionId });
+        const shortage = canonicalPurchaseShortageMessageV1(rows);
+        if (shortage) throw new ConsumerEstimateActionContextError(shortage);
         const procurementAlreadyCurrent = Boolean(
           currentRevision?.artifacts.procurementArtifactId
           && currentRevision.artifacts.procurementValidForRevisionId === context.revisionId,

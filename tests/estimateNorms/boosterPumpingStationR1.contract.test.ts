@@ -12,6 +12,27 @@ import { compileCanonicalEstimateCore } from "../../src/lib/estimate/backendPlat
 import { estimateDeterministicHash } from "../../src/lib/estimate/estimateDeterministicHash";
 
 describe("S27.25 automatic factory potable-water booster-skid owner", () => {
+  test("reconciles manually purchased cable drums while preserving physical installation and electrical labor", async () => {
+    const provenance = { kind: "manual", reason: "actual cable purchase amendment" };
+    const base = { operation: "recalculate" as const, compilerVersion: "cable-effective-test", catalogId: BOOSTER_PUMPING_STATION_CATALOG_ID,
+      primaryMeasureParameterId: "bps_skid_count", parameterDefinitions: [...BOOSTER_PUMPING_STATION_PARAMETERS],
+      formulaDefinitions: [...BOOSTER_PUMPING_STATION_FORMULAS], resourceDefinitions: [...BOOSTER_PUMPING_STATION_RESOURCES],
+      submittedParameters: { ...BOOSTER_PUMPING_STATION_SHORT_INPUT }, confirmedParameters: { ...BOOSTER_PUMPING_STATION_RUNTIME_INPUT },
+      currencyCode: "KGS", priceItems: [], maximumResourceRows: BOOSTER_PUMPING_STATION_RESOURCES.length, hashJson: estimateDeterministicHash };
+    const automatic = await compileCanonicalEstimateCore(base);
+    const manual = await compileCanonicalEstimateCore({ ...base, rowOverrides: { "rc09:bps_power_cable": { quantity: "300", provenance } } });
+    const quantity = (result: typeof manual, id: string) => Number(result.rows.find(row => row.row_id === id)?.quantity);
+    const trace = manual.rows.find(row => row.row_id === "rc09:bps_power_cable")!.calculation_trace as { purchaseBalance: { consumed: string } };
+    const consumed = Number(trace.purchaseBalance.consumed);
+    expect(quantity(manual, "rc09:bps-cable-balance:drum-count")).toBe(3);
+    expect(quantity(manual, "rc09:bps-cable-balance:remainder")).toBeCloseTo(300 - consumed);
+    expect(quantity(manual, "rc09:bps-cable-balance:installed-net")).toBe(quantity(automatic, "rc09:bps-cable-balance:installed-net"));
+    expect(quantity(manual, "rc09:labor:bps-electrical")).toBe(quantity(automatic, "rc09:labor:bps-electrical"));
+    const shortage = await compileCanonicalEstimateCore({ ...base, rowOverrides: { "rc09:bps_power_cable": { quantity: "100", provenance } } });
+    expect(shortage.rows.find(row => row.row_id === "rc09:bps_power_cable")).toMatchObject({ included_in_procurement: false,
+      calculation_trace: { purchaseBalance: { procurementReady: false } } });
+    expect(shortage.rows.some(row => row.row_id === "rc09:bps-cable-balance:consumption-shortage" && Number(row.quantity) > 0)).toBe(true);
+  });
   test("retains factory pump amendments without a second payment above the skid owner", async () => {
     const provenance = { kind: "manual", reason: "factory BOM clarification" };
     const result = await compileCanonicalEstimateCore({
@@ -40,9 +61,9 @@ describe("S27.25 automatic factory potable-water booster-skid owner", () => {
       .toBe("canonical-work:expanded:booster_pumping_station");
     expect(Object.keys(BOOSTER_PUMPING_STATION_SHORT_INPUT)).toHaveLength(7);
     expect(Object.keys(BOOSTER_PUMPING_STATION_RUNTIME_INPUT)).toHaveLength(63);
-    expect(BOOSTER_PUMPING_STATION_PARAMETERS).toHaveLength(76);
-    expect(BOOSTER_PUMPING_STATION_FORMULAS).toHaveLength(55);
-    expect(BOOSTER_PUMPING_STATION_RESOURCES).toHaveLength(55);
+    expect(BOOSTER_PUMPING_STATION_PARAMETERS).toHaveLength(77);
+    expect(BOOSTER_PUMPING_STATION_FORMULAS).toHaveLength(57);
+    expect(BOOSTER_PUMPING_STATION_RESOURCES).toHaveLength(57);
     expect(Object.keys(BOOSTER_PUMPING_STATION_SHORT_INPUT).join(" ")).not.toMatch(
       /quantity|labor|machine|trip|test_count|grout_volume/iu,
     );

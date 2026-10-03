@@ -1,6 +1,14 @@
-import { compileFormulaGraph, evaluateFormulaGraph, FormulaGraphError } from "./formulaGraph";
+import { compileFormulaGraph, evaluateFormulaGraph, FormulaGraphError, isFormulaGraphDecimalMultiple } from "./formulaGraph";
 
 describe("canonical FormulaGraph", () => {
+  it("checks exact multiples at decimal storage scale without rounding into a supply or trip", () => {
+    expect(isFormulaGraphDecimalMultiple("1000000000.000001", "20")).toBe(false);
+    expect(isFormulaGraphDecimalMultiple("1000000000", "20")).toBe(true);
+    expect(isFormulaGraphDecimalMultiple("9007199254740992.5", "1")).toBe(false);
+    expect(isFormulaGraphDecimalMultiple("9007199254740993", "1")).toBe(true);
+    expect(isFormulaGraphDecimalMultiple("20.0000000001", "20")).toBe(false);
+    expect(isFormulaGraphDecimalMultiple("0.000000006", "0.000000002")).toBe(true);
+  });
   it("normalizes accepted operators and evaluates deterministically", () => {
     const formula = compileFormulaGraph("ceil((area_m2 × layers) / coverage_m2) + 0.125");
     expect(formula.inputParameterIds).toEqual(["area_m2", "coverage_m2", "layers"]);

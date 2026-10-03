@@ -1,4 +1,5 @@
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
+import { canonicalPurchaseShortageMessageV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
 import type {
   ConsumerRepairDraftBundle,
   ConsumerRepairRequestItem,
@@ -791,6 +792,9 @@ function buildPreviewRow(section: RequestEstimateSectionViewModel, items: Consum
 }
 
 function previewCalculationLabel(item: ConsumerRepairRequestItem): string | null {
+  const shortage = canonicalPurchaseShortageMessageV1([{ rowId: item.id, titleRu: item.titleRu,
+    calculationTrace: { purchaseBalance: item.sourceParameters?.canonicalPurchaseBalance } }]);
+  if (shortage) return shortage;
   if (item.sourceParameters?.canonicalPreliminaryNeed === true) {
     return item.quantity == null
       ? "Позиция предусмотрена технологией; количество нужно уточнить"

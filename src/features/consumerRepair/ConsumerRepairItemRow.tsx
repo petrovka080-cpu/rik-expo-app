@@ -11,6 +11,7 @@ import {
 } from "react-native";
 
 import { formatEstimateMoney } from "../../lib/ai/globalEstimate/formatEstimateMoney";
+import { canonicalPurchaseShortageMessageV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import type { ConsumerRepairRequestItem } from "../../lib/consumerRequests/consumerRequestTypes";
 import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
@@ -105,6 +106,8 @@ function ConsumerRepairItemRowComponent({
   const manualQuantityOverride = consumerRepairRowHasManualQuantity(item);
   const calculatedQuantity = consumerRepairRowCalculatedQuantity(item);
   const preliminaryNeed = consumerRepairRowIsCanonicalPreliminaryNeed(item);
+  const purchaseShortage = canonicalPurchaseShortageMessageV1([{ rowId: item.id, titleRu: item.titleRu,
+    calculationTrace: { purchaseBalance: item.sourceParameters?.canonicalPurchaseBalance } }]);
   const missingRequirementLabels = consumerRepairRowMissingRequirementLabels(item);
   const {
     quantityInputRef,
@@ -144,6 +147,12 @@ function ConsumerRepairItemRowComponent({
       nativeID={canonicalRowNativeId}
     >
       <View style={styles.main}>
+        {purchaseShortage ? (
+          <View accessibilityLiveRegion="polite" style={styles.unresolvedNotice}
+            testID={`consumer-repair-item-purchase-shortage-${item.id}`}>
+            <Text style={styles.unresolvedNoticeText}>{purchaseShortage}</Text>
+          </View>
+        ) : null}
         {preliminaryNeed ? (
           <View
             accessibilityLiveRegion="polite"

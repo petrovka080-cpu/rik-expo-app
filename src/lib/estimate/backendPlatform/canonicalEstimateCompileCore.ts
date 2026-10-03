@@ -20,6 +20,8 @@ import {
   isCanonicalEstimatePhysicalNormBindingActiveV1,
   resolveCanonicalEstimatePhysicalNormApplicabilityV1,
 } from "./canonicalEstimatePhysicalNormProjection";
+import { planCanonicalEffectiveResourceQuantitiesV1 } from "./canonicalEffectiveResourceQuantityV1";
+import { resolveCanonicalPurchaseBalanceV1, validateCanonicalManualTransportQuantityV1 } from "./canonicalPurchaseBalanceV1";
 
 export { canonicalRoundDecimal } from "./canonicalEstimateDeterminism";
 
@@ -802,11 +804,14 @@ export async function compileCanonicalEstimateCore(
       }
     }
   }
+  const effectiveQuantityPlan = planCanonicalEffectiveResourceQuantitiesV1(
+    input.parameterDefinitions, input.resourceDefinitions, input.formulaDefinitions,
+  );
   const initiallyValidatedParameters = validateCanonicalEstimateParameters(
     input.parameterDefinitions,
-    input.submittedParameters,
+    effectiveQuantityPlan.stripIncoming(input.submittedParameters),
     {
-      confirmedParameters: input.confirmedParameters,
+      confirmedParameters: effectiveQuantityPlan.stripIncoming(input.confirmedParameters),
       baselineContext: { catalogId: input.catalogId },
     },
   );
@@ -873,7 +878,11 @@ export async function compileCanonicalEstimateCore(
     }
   };
 
-  for (const resource of input.resourceDefinitions) {
+  const unresolvedEffectiveOutputs = new Map<string, string[]>();
+  const originalMissingIds = (ids: readonly string[]): string[] => [...new Set(ids.flatMap(id =>
+    effectiveQuantityPlan.owners.has(id) ? unresolvedEffectiveOutputs.get(id) ?? [] : [id],
+  ))].sort();
+  for (const resource of effectiveQuantityPlan.ordered) {
     const formula = formulas.get(resource.formula_id);
     if (!formula) throw compilerError("formula graph reference missing", "DEFINITION_INTEGRITY_FAILED");
     const formulaOutputBounds = parseCanonicalFormulaOutputBoundsV1(
@@ -887,6 +896,7 @@ export async function compileCanonicalEstimateCore(
       "titleRu", "quantity", "unitPrice", "includedInEstimate", "includedInProcurement", "provenance",
     ], `row override ${resource.row_id}`);
     const provenance = override == null ? null : manualProvenance(override.provenance, resource.row_id);
+    const effectiveOutput = effectiveQuantityPlan.outputs.get(resource.row_id);
     overrides.delete(resource.row_id);
     const inclusion = resolveInclusionGraph(resource.inclusion_ast, parameters);
     validateConditionalPositiveQuantityPolicy(resource, formula, parameters, definitionParameterIds);
@@ -909,9 +919,12 @@ export async function compileCanonicalEstimateCore(
       : null;
     const inclusionOnlyWaitsForFormulaInputs = inclusion.value == null
       && inclusion.missingParameterIds.every((parameterId) => formula.input_parameter_ids.includes(parameterId));
-    const inclusionResolvedByManualQuantity = formulaOutputBounds == null && manualQuantity != null && inclusionOnlyWaitsForFormulaInputs;
+    const inclusionResolvedByManualQuantity = effectiveOutput == null && formulaOutputBounds == null && manualQuantity != null
+      && inclusionOnlyWaitsForFormulaInputs && !inclusion.missingParameterIds.some(id => effectiveQuantityPlan.owners.has(id));
     if (inclusion.value === false) continue;
-    const { includedInEstimate, includedInProcurement, inclusionDecision } = resolveCanonicalResourceCostInclusion(resource, override);
+    const costInclusion = resolveCanonicalResourceCostInclusion(resource, override);
+    const { includedInEstimate, inclusionDecision } = costInclusion;
+    let { includedInProcurement } = costInclusion;
 
     const physicalBinding = resource.resource_graph?.professionalPhysicalNormBindingV1;
     const physicalBindingRecord = physicalBinding != null
@@ -1014,12 +1027,13 @@ export async function compileCanonicalEstimateCore(
     const formulaOutputBoundsTrace = formulaOutputBounds != null && inclusion.value === true && formulaQuantity != null
       ? validateCanonicalFormulaOutputBoundsV1(formulaOutputBounds, formulaQuantity, resource.row_id)
       : null;
+    const missingEffectiveParameterIds = missingFormulaParameterIds.filter(id => effectiveQuantityPlan.owners.has(id));
     const missingFormulaBlocksQuantity = missingFormulaParameterIds.length > 0
-      && (manualQuantity == null || formulaOutputBounds != null);
+      && (effectiveOutput != null || manualQuantity == null || formulaOutputBounds != null || missingEffectiveParameterIds.length > 0);
 
     if ((inclusion.value == null && !inclusionResolvedByManualQuantity)
       || missingFormulaBlocksQuantity
-      || (missingPhysicalNormParameterIds.length > 0 && manualQuantity == null)
+      || (missingPhysicalNormParameterIds.length > 0 && (manualQuantity == null || effectiveOutput != null))
       || missingRequiredTitleSpecificationParameterIds.length > 0
       || missingRequiredConsumerParameterIds.length > 0
       || missingNumericRelationParameterIds.length > 0) {
@@ -1030,14 +1044,15 @@ export async function compileCanonicalEstimateCore(
           || (missingPhysicalNormParameterIds.length > 0 && manualQuantity == null)
           ? "QUANTITY_REQUIRED" as const
           : "CONDITION_REQUIRED" as const;
-      const missingParameterIds = [...new Set([
+      const missingParameterIds = originalMissingIds([
         ...(needState === "CONDITION_REQUIRED" ? inclusion.missingParameterIds : []),
-        ...(manualQuantity == null || formulaOutputBounds != null ? missingFormulaParameterIds : []),
-        ...(manualQuantity == null ? missingPhysicalNormParameterIds : []),
+        ...(missingFormulaBlocksQuantity ? missingFormulaParameterIds : []),
+        ...(manualQuantity == null || effectiveOutput != null ? missingPhysicalNormParameterIds : []),
         ...missingRequiredTitleSpecificationParameterIds,
         ...missingRequiredConsumerParameterIds,
         ...missingNumericRelationParameterIds,
-      ])].sort();
+      ]);
+      if (effectiveOutput) unresolvedEffectiveOutputs.set(effectiveOutput.parameterId, missingParameterIds);
       const selected = includedInEstimate;
       const unitPrice = override != null && Object.prototype.hasOwnProperty.call(override, "unitPrice")
         ? nonNegativeNumericText(override.unitPrice, `${resource.row_id}.unitPrice`, true)
@@ -1097,6 +1112,11 @@ export async function compileCanonicalEstimateCore(
     const quantity = override?.quantity == null
       ? calculatedQuantity
       : nonNegativeNumericText(override.quantity, `${resource.row_id}.quantity`)!;
+    const purchaseBalance = resolveCanonicalPurchaseBalanceV1(resource.resource_graph?.purchaseBalanceV1,
+      resource.row_id, resource.unit_id, quantity, formulaParameters, definitionParameterIds);
+    if (purchaseBalance && !purchaseBalance.procurementReady) includedInProcurement = false;
+    const transportQuantity = validateCanonicalManualTransportQuantityV1(resource.resource_graph?.manualTransportQuantityPolicyV1,
+      resource.row_id, resource.unit_id, manualQuantity, formulaQuantity!);
     let physicalNormQuantityParity: JsonRecord | null = null;
     if (physicalBinding != null && typeof physicalBinding === "object" && !Array.isArray(physicalBinding)) {
       const rawOutputParameterId = (physicalBinding as JsonRecord).quantity_output_parameter_id;
@@ -1155,6 +1175,12 @@ export async function compileCanonicalEstimateCore(
       inputParameterIds: formula.input_parameter_ids,
       resourceGraph: resourceGraphForRevision(resource.resource_graph, parameters, resource.row_id),
       ...(inclusionDecision == null ? {} : { inclusionDecision }),
+      ...(purchaseBalance == null ? {} : { purchaseBalance }),
+      ...(transportQuantity == null ? {} : { transportQuantity }),
+      ...(effectiveOutput == null ? {} : { effectiveQuantityOutput: {
+        ...effectiveOutput, sourceRowId: resource.row_id, acceptedQuantity: quantity,
+        basis: manualQuantity == null ? "formula" : "manual_override",
+      } }),
       ...(titleSpecification.parameterIds.length === 0 ? {} : {
         titleSpecification: {
           mode: titleSpecification.mode,
@@ -1203,6 +1229,7 @@ export async function compileCanonicalEstimateCore(
       procurement_eligible: resource.procurement_eligible,
       included_in_estimate: includedInEstimate,
       included_in_procurement: includedInProcurement,
+      ...(purchaseBalance == null ? {} : { procurement_readiness: purchaseBalance.procurementReady ? "READY" : "SHORTAGE" }),
       ownership_status: includedInEstimate ? "OWNED" : "OWNED_EXCLUDED",
       calculation_trace: calculationTrace,
       normative_trace: normativeTrace,
@@ -1218,6 +1245,11 @@ export async function compileCanonicalEstimateCore(
       row_sha256: await input.hashJson(rowWithoutHash),
     } as CanonicalEstimateCompiledRow;
     rows.push(row);
+    if (effectiveOutput) {
+      parameters[effectiveOutput.parameterId] = quantity;
+      formulaParameters[effectiveOutput.parameterId] = quantity;
+      derivedParameters[effectiveOutput.parameterId] = quantity;
+    }
     rowIds.add(resource.row_id);
   }
 
@@ -1348,6 +1380,8 @@ export async function compileCanonicalEstimateCore(
     throw compilerError(`row override is not reachable: ${[...overrides.keys()][0]}`, "ROW_OVERRIDE_NOT_REACHED");
   }
 
+  rows.sort((left, right) => left.ordinal - right.ordinal);
+  preliminaryNeeds.sort((left, right) => left.ordinal - right.ordinal);
   const totals = {
     amount: totalAmount,
     includedRowCount: rows.filter((row) => row.included_in_estimate).length,

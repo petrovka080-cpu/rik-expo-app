@@ -1,5 +1,6 @@
 import type { AutomaticParameterSpec, AutomaticRowSpec } from "./automaticConstructionOwnerR1";
 import { ROAD_CROSSING_SLEEVES_QUANTITY_EXPRESSIONS_R1 as quantities } from "./roadCrossingSleevesQuantityModelR1";
+import { effectivePurchaseBalanceExpressionsR1 } from "./effectivePurchaseBalanceR1";
 
 /** One selected casing material order, not a full crossing or product approval.
  * Compatible whole sections, including existing stock and supplier bundles,
@@ -13,7 +14,7 @@ export const ROAD_CROSSING_SLEEVES_CASING_MATERIAL_SCOPE_R1 = Object.freeze({
   cost: "Only new ordered casing metres; no second section, bundle or geometric-mass payment",
   cutting: "Geometric remainder from used whole sections is separate from unused whole-section stock; not an approved reusable offcut",
   mass: "Geometric preliminary mass only, not a payable kilogram quantity or certified freight mass",
-  purchaseOverride: "An explicit row override is a visible purchase exception; control balances remain formula references and must be reconciled by the full owner before procurement approval",
+  purchaseOverride: "Accepted whole-bundle order drives supply balance and freight; consumption and reserve deficits prevent procurement readiness",
   excluded: "Product/structural approval, site joints, lifting, civil work, freight, carrier pipe and full crossing",
 });
 export const ROAD_CROSSING_SLEEVES_CASING_MATERIAL_PARAMETERS_R1: readonly AutomaticParameterSpec[] = Object.freeze([
@@ -25,6 +26,15 @@ function control(key: keyof typeof quantities, title: string, unitId: string): A
   return { rowId: `rcs:casing:${key}`, formulaId: `rcs:casing:${key}`, section: "Баланс секций стального футляра",
     category: "material", title, unitId, expression: quantities[key], costTreatment: "INFORMATIONAL_SCOPE" };
 }
+const casingBalance = effectivePurchaseBalanceExpressionsR1({ ownerRowId: "rcs:casing:ordered_casing_length_m", orderUnitId: "m",
+  consumed: `(${quantities.installed_whole_section_length_m})`, stock: "rcs_compatible_stock_section_count*rcs_planned_physical_section_length_m",
+  reserve: "rcs_retained_spare_section_count*rcs_planned_physical_section_length_m",
+  quantum: "rcs_supplier_bundle_section_count*rcs_planned_physical_section_length_m" });
+const casingSections = `(${casingBalance.effective})/rcs_planned_physical_section_length_m`;
+function casingSupplyControl(key: string, title: string, expression: string, unitId = "piece"): AutomaticRowSpec {
+  return { rowId: `rcs:casing:${key}`, formulaId: `rcs:casing:${key}`, section: "Баланс секций стального футляра",
+    category: "material", title, unitId, expression, costTreatment: "INFORMATIONAL_SCOPE" };
+}
 export const ROAD_CROSSING_SLEEVES_CASING_MATERIAL_ROWS_R1: readonly AutomaticRowSpec[] = Object.freeze([
   control("installed_length_m", "Длина смонтированного футляра, не повторный заказ материала", "m"),
   control("wall_thickness_mm", "Толщина стенки из фактических наружного и внутреннего диаметров", "mm"),
@@ -35,17 +45,21 @@ export const ROAD_CROSSING_SLEEVES_CASING_MATERIAL_ROWS_R1: readonly AutomaticRo
   control("total_section_need", "Потребность физических секций для монтажа и сохраняемого резерва", "piece"),
   control("compatible_stock_section_count", "Подтверждённые целые совместимые секции в наличии", "piece"),
   control("new_section_need", "Дополнительная потребность физических секций после наличия", "piece"),
-  control("supplier_bundle_count", "Количество новых поставочных пачек, не число монтажных стыков", "package"),
-  control("ordered_section_count", "Целые секции в новом заказе после округления пачек, без второй оплаты", "piece"),
+  casingSupplyControl("supplier_bundle_count", "Количество принятых новых поставочных пачек, не число монтажных стыков", casingBalance.packages, "package"),
+  casingSupplyControl("ordered_section_count", "Целые секции в принятом новом заказе, без второй оплаты", casingSections),
   { rowId: "rcs:casing:ordered_casing_length_m", formulaId: "rcs:casing:ordered_casing_length_m", section: "Материалы дорожного футляра",
     category: "material", title: "Новый заказ выбранного стального футляра целыми совместимыми секциями",
-    unitId: "m", expression: quantities.ordered_casing_length_m, procurement: true, costTreatment: "OWN_COST",
+    unitId: "m", expression: quantities.ordered_casing_length_m, procurement: true, costTreatment: "OWN_COST", ...casingBalance.owner,
     titleParameterIds: ["rcs_casing_product_designation"], inputParameterIds: ["rcs_casing_product_designation",
       "rcs_casing_outside_diameter_mm", "rcs_casing_inside_diameter_mm"] },
-  control("remaining_whole_section_count", "Остаток целых секций после монтажа, включая сохраняемый резерв", "piece"),
-  control("free_section_count_beyond_spare", "Свободные целые секции сверх сохраняемого резерва, без геометрического обрезка", "piece"),
+  casingSupplyControl("available_whole_section_count", "Подтверждённое наличие и принятые новые целые секции", `rcs_compatible_stock_section_count+(${casingSections})`),
+  casingSupplyControl("remaining_whole_section_count", "Остаток целых секций после монтажа, включая сохраняемый резерв", `(${casingBalance.remaining})/rcs_planned_physical_section_length_m`),
+  casingSupplyControl("free_section_count_beyond_spare", "Свободные целые секции сверх сохраняемого резерва, без геометрического обрезка", `(${casingBalance.free})/rcs_planned_physical_section_length_m`),
+  casingSupplyControl("consumption_shortage_section_count", "Недостающие целые секции для монтажа; закупка не готова", `(${casingBalance.consumptionShortage})/rcs_planned_physical_section_length_m`),
+  casingSupplyControl("reserve_deficit_section_count", "Непокрытый сохраняемый резерв целых секций; закупка не готова", `(${casingBalance.reserveDeficit})/rcs_planned_physical_section_length_m`),
   control("preliminary_installed_steel_mass_kg", "Предварительная геометрическая масса смонтированного футляра, не отдельная закупка", "kg"),
-  control("preliminary_ordered_steel_mass_kg", "Предварительная геометрическая масса нового заказа, не отдельная оплата или подтверждённый груз", "kg"),
+  casingSupplyControl("preliminary_ordered_steel_mass_kg", "Предварительная геометрическая масса принятого нового заказа, не отдельная оплата или подтверждённый груз",
+    `(${quantities.preliminary_installed_steel_mass_kg})/rcs_crossing_length_m*${casingBalance.effective}`, "kg"),
 ]);
 
 /** Carrier supply owns a different product and stock allocation from the casing.

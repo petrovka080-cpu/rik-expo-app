@@ -125,6 +125,6 @@ describe("selected casing material through the common quantity and cost owners",
     expect(scope).toMatchObject({ fullOwner: false, engineeringAccepted: false });
     expect(rows.some(row => /weld|freight|labor|machine/u.test(row.rowId))).toBe(false);
     expect(scope.mass).toContain("not a payable kilogram");
-    expect(scope.purchaseOverride).toContain("must be reconciled");
+    expect(scope.purchaseOverride).toContain("Accepted whole-bundle order drives supply balance and freight");
   });
 });

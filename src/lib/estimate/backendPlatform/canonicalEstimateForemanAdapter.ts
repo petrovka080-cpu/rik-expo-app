@@ -167,6 +167,7 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
       calculationTrace: JSON.stringify(row.calculationTrace),
       sourceParameters: {
         rowCode: row.rowId,
+        canonicalPurchaseBalance: row.calculationTrace.purchaseBalance,
         normativeTrace: row.normativeTrace,
         normativeRowTraceV3: normativeTrace,
         priceRouteV3: {

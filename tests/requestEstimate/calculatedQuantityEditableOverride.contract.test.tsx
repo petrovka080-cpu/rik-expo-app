@@ -50,6 +50,24 @@ function row(input: {
 }
 
 describe("calculated estimate quantity editable override", () => {
+  it("renders a persisted shortage beside the editable order and removes the warning after sufficient supply is reopened", () => {
+    const item = calculatedItem({ quantity: 80, unit: "kg", unitLabel: "кг", sourceParameters: {
+      canonicalPurchaseBalance: { unitId: "kg", consumed: "105", effectiveOrder: "80",
+        consumptionShortage: "20", reserveDeficit: "0", procurementReady: false },
+    } });
+    let renderer!: ReactTestRenderer;
+    act(() => { renderer = TestRenderer.create(row({ item, onQuantityChange: jest.fn() })); });
+    const notice = renderer.root.findByProps({ testID: "consumer-repair-item-purchase-shortage-row-calculated" });
+    expect(JSON.stringify(notice.props.children.props.children)).toContain("Закупка не готова");
+    expect(JSON.stringify(notice.props.children.props.children)).toContain("20 kg");
+    expect(renderer.root.findByProps({ testID: "consumer-repair-item-quantity-input-row-calculated" }).props.editable).not.toBe(false);
+    act(() => { renderer.update(row({ item: { ...item, quantity: 120, sourceParameters: {
+      canonicalPurchaseBalance: { unitId: "kg", consumed: "105", effectiveOrder: "120",
+        consumptionShortage: "0", reserveDeficit: "0", procurementReady: true },
+    } }, onQuantityChange: jest.fn() })); });
+    expect(renderer.root.findAllByProps({ testID: "consumer-repair-item-purchase-shortage-row-calculated" })).toHaveLength(0);
+    act(() => renderer.unmount());
+  });
   it("prefills the formula result in an editable input and labels that it can be changed", () => {
     const onQuantityChange = jest.fn();
     let renderer!: ReactTestRenderer;

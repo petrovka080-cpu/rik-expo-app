@@ -2961,6 +2961,7 @@ async function buildArtifactClaimedJob(
         buildCanonicalProcurementProjection({
           revision,
           procurementRows: selection.procurementRows,
+          sourceRows: selection.sourceRows,
         }),
       ),
       "utf8",

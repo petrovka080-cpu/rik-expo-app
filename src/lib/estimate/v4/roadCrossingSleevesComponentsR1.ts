@@ -1,4 +1,6 @@
 import { buildAutomaticConstructionOwnerR1, type AutomaticInclusionCondition, type AutomaticOwnerDefinition, type AutomaticParameterSpec, type AutomaticRowSpec } from "./automaticConstructionOwnerR1";
+import { effectiveResourceQuantityParameterId, reconcileDeclaredPurchaseBalanceRowsR1 } from "./effectivePurchaseBalanceR1";
+import { ROAD_CROSSING_SLEEVES_EFFECTIVE_BALANCES_R1 } from "./roadCrossingSleevesEffectivePurchaseBalancesR1";
 import { ROAD_CROSSING_SLEEVES_QUANTITY_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_QUANTITY_EXPRESSIONS_R1 as quantities } from "./roadCrossingSleevesQuantityModelR1";
 import { ROAD_CROSSING_SLEEVES_SPACER_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_SPACER_GEOMETRY_ROWS_R1 } from "./roadCrossingSleevesSpacerGeometryR1";
 import { ROAD_CROSSING_SLEEVES_PROCUREMENT_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_PROCUREMENT_ROWS_R1 } from "./roadCrossingSleevesProcurementR1";
@@ -1154,7 +1156,7 @@ const serviceWaste = buildRoadCrossingSleevesServiceWasteR1([...ROAD_CROSSING_SL
 export const ROAD_CROSSING_SLEEVES_SERVICE_WASTE_PARAMETERS_R1 = serviceWaste.parameters;
 export const ROAD_CROSSING_SLEEVES_SERVICE_WASTE_ROWS_R1 = serviceWaste.rows;
 type FreightCargo = Readonly<{ key: string; title: string; purchase: AutomaticRowSpec; stockId: string;
-  unit: "piece" | "m3" | "kg" | "l"; sectionLengthId?: string; quantum?: string }>;
+  unit: "piece" | "m" | "m3" | "kg" | "l"; sectionLengthId?: string; quantum?: string }>;
 function freightCargo(key: string, title: string, rows: readonly AutomaticRowSpec[], rowId: string,
   stockId: string, unit: FreightCargo["unit"], sectionLengthId?: string, quantum?: string): FreightCargo {
   const purchase = rows.find(row => row.rowId === rowId);
@@ -1162,12 +1164,20 @@ function freightCargo(key: string, title: string, rows: readonly AutomaticRowSpe
   return { key, title, purchase, stockId, unit, sectionLengthId, quantum };
 }
 const freightCargoGroups: readonly FreightCargo[] = [
+  freightCargo("electrodes", "Совместимые электроды выбранной WPS", ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_ROWS_R1,
+    "rcs:joint:electrode_ordered", "rcs_joint_electrode_compatible_stock_kg", "kg", undefined, "rcs_joint_electrode_supplier_pack_kg"),
   ...ROAD_CROSSING_SLEEVES_SHORING_GAP_CARGOS_R1.map(cargo => freightCargo(cargo.key, cargo.title, ROAD_CROSSING_SLEEVES_SHORING_GAP_ROWS_R1, cargo.rowId, cargo.stockId, cargo.unit)),
   ...shoringConsumables.cargos.map(cargo => freightCargo(cargo.key, cargo.title, shoringConsumables.rows, cargo.rowId, cargo.stockId, cargo.unit, undefined, cargo.quantum)),
   freightCargo("casing", "Секции стального футляра", ROAD_CROSSING_SLEEVES_CASING_MATERIAL_ROWS_R1,
     "rcs:casing:ordered_casing_length_m", "rcs_compatible_stock_section_count", "piece", "rcs_planned_physical_section_length_m"),
   freightCargo("carrier", "Секции рабочей трубы", ROAD_CROSSING_SLEEVES_CARRIER_ROWS_R1,
     "rcs:carrier:ordered_length_m", "rcs_carrier_compatible_whole_section_stock_count", "piece", "rcs_carrier_physical_supply_section_length_m"),
+  freightCargo("raci_elements", "Совместимые опорные элементы", ROAD_CROSSING_SLEEVES_PROCUREMENT_ROWS_R1,
+    "rcs:raci-elements:ordered", "rcs_element_compatible_stock_count", "piece", undefined, "rcs_element_supplier_pack_count"),
+  freightCargo("end_seal_kits", "Полные комплекты торцевого уплотнения", ROAD_CROSSING_SLEEVES_PROCUREMENT_ROWS_R1,
+    "rcs:end-seal-kits:ordered", "rcs_end_seal_compatible_stock_count", "piece", undefined, "rcs_end_seal_supplier_pack_count"),
+  freightCargo("contact_tape", "Совместимая контактная лента", ROAD_CROSSING_SLEEVES_PROCUREMENT_ROWS_R1,
+    "rcs:contact-tape:ordered", "rcs_tape_compatible_stock_m", "m", undefined, "rcs_tape_supplier_roll_length_m"),
   freightCargo("bedding", "Материал основания в рыхлом состоянии", ROAD_CROSSING_SLEEVES_BEDDING_ROWS_R1,
     "rcs:bedding:ordered_loose_m3", "rcs_bedding_compatible_loose_stock_m3", "m3"),
   freightCargo("pits", "Материал засыпки котлованов в рыхлом состоянии", ROAD_CROSSING_SLEEVES_PIT_FILL_ROWS_R1,
@@ -1204,7 +1214,7 @@ const freightLanes = freightCargoGroups.flatMap(cargo => (["new", "stock"] as co
   const key = `${cargo.key}_${lane}`;
   const offsite = freightId(cargo.key, "offsite_stock_units");
   const quantity = lane === "stock" ? offsite : cargo.sectionLengthId
-    ? `(${cargo.purchase.expression})/${cargo.sectionLengthId}` : cargo.purchase.expression;
+    ? `${effectiveResourceQuantityParameterId(cargo.purchase.rowId)}/${cargo.sectionLengthId}` : effectiveResourceQuantityParameterId(cargo.purchase.rowId);
   const applicability = cargo.purchase.inclusion ?? { kind: "greater_than" as const, parameterId: "rcs_crossing_length_m", value: 0 };
   const stockPositive: AutomaticInclusionCondition = { kind: "and", operands: [applicability,
     { kind: "greater_than", parameterId: cargo.stockId, value: 0 }] };
@@ -1269,7 +1279,8 @@ export const ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1: readonly AutomaticRowSpec[] 
         formulaOutputBounds: { schemaVersion: "canonical_formula_output_bounds_v1", unitId: cargo.unit, minimum: cargo.unit === "piece" ? 1 : 0.000_001,
           reasonRu: "Выбранный транспорт должен вмещать хотя бы одну допустимую единицу груза с тарой. Неподходящий транспорт не заменяется фиктивной вместимостью." } },
       { ...row("trip_count", `${cargo.title}: отдельные полные рейсы выбранного груза`, `ceil((${quantity})/(${capacity}))`, "trip", separate),
-        costTreatment: "OWN_COST", procurement: true, titleParameterIds: [freightId(key, "vehicle_designation")] },
+        costTreatment: "OWN_COST", procurement: true, titleParameterIds: [freightId(key, "vehicle_designation")],
+        manualTransportQuantityPolicy: { unitId: "trip", minimum: "calculated_quantity", integer: true } },
     ];
   }),
 );
@@ -1489,7 +1500,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_PARAMETERS_R1: readonly AutomaticPa
   ...ROAD_CROSSING_SLEEVES_EQUIPMENT_MOBILIZATION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_SOIL_PARAMETERS_R1,
 ]);
-export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[] = Object.freeze([
+export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[] = Object.freeze(reconcileDeclaredPurchaseBalanceRowsR1([
   ...ROAD_CROSSING_SLEEVES_CASING_MATERIAL_ROWS_R1, ...ROAD_CROSSING_SLEEVES_SPACER_GEOMETRY_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_PROCUREMENT_ROWS_R1, ...ROAD_CROSSING_SLEEVES_CIVIL_ROWS_R1, ...ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_CARRIER_ROWS_R1,
@@ -1520,7 +1531,9 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[
   ...ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_EQUIPMENT_MOBILIZATION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_SOIL_ROWS_R1,
-]);
+].map(row => freightCargoGroups.some(cargo => cargo.purchase.rowId === row.rowId) ? {
+  ...row, effectiveQuantityOutput: row.effectiveQuantityOutput ?? { parameterId: effectiveResourceQuantityParameterId(row.rowId), unitId: row.unitId },
+} : row), ROAD_CROSSING_SLEEVES_EFFECTIVE_BALANCES_R1));
 
 /** Existing resources partitioned by actual construction stage. Open entries
  * are concrete absent resources/decisions, never a fabricated completeness PASS.
@@ -1573,7 +1586,12 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
     ...ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1.filter(row => row.rowId.startsWith("rcs:preparation:removal:")),
     ...ROAD_CROSSING_SLEEVES_SOIL_ROWS_R1.filter(row => row.costTreatment === "OWN_COST")],
     remaining: ["Применимое восстановление территории и покрытия", "Доставка и возврат остальных механизмов; объединённые/разделённые грузы, иной возврат оборудования, другие комплектующие и расходники", "Фактический возврат пригодных колов и вывоз/приём отходов разбивки", "Испытания и завершение без подмены материалов документами"] },
-].map(({ rows, ...stage }) => Object.freeze({ ...stage, ownResourceIds: Object.freeze(rows.map(row => row.rowId)), remaining: Object.freeze(stage.remaining) })));
+].map(({ rows, ...stage }) => {
+  const owners = new Set(rows.map(row => row.rowId));
+  const stageRows = ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1.filter(row => owners.has(row.rowId)
+    || (row.purchaseBalanceOwnerRowId != null && owners.has(row.purchaseBalanceOwnerRowId)));
+  return Object.freeze({ ...stage, ownResourceIds: Object.freeze(stageRows.map(row => row.rowId)), remaining: Object.freeze(stage.remaining) });
+}));
 function assertUnique(ids: readonly string[], kind: string): void {
   const seen = new Set<string>();
   for (const id of ids) {

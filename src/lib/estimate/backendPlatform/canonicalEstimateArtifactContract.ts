@@ -1,5 +1,6 @@
 import { canonicalMaterialQuantityBasisFromRow } from "./canonicalMaterialQuantityProjection";
 import { normalizePublicBoqNameRu } from "../publicBoqNaming";
+import { assertCanonicalPurchaseReadinessV1 } from "./canonicalPurchaseBalanceV1";
 
 export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r7";
 export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:5";
@@ -137,7 +138,9 @@ function projectProcurementRow(row: CanonicalArtifactRow) {
 export function buildCanonicalProcurementProjection(input: {
   revision: CanonicalArtifactRevision;
   procurementRows: CanonicalArtifactRow[];
+  sourceRows?: CanonicalArtifactRow[];
 }) {
+  assertCanonicalPurchaseReadinessV1(input.sourceRows ?? input.procurementRows);
   const rows = input.procurementRows.map(projectProcurementRow);
   const groups = new Map<string, { section: string; category: string; rowIds: string[] }>();
   for (const row of rows) {

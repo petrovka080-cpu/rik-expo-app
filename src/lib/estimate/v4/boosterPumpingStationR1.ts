@@ -6,6 +6,7 @@ import {
   type AutomaticParameterSpec,
   type AutomaticRowSpec,
 } from "./automaticConstructionOwnerR1";
+import { effectivePurchaseBalanceExpressionsR1 } from "./effectivePurchaseBalanceR1";
 
 export const BOOSTER_PUMPING_STATION_CATALOG_ID =
   "canonical-work:expanded:booster_pumping_station";
@@ -118,6 +119,9 @@ const CABLE_GROSS = "bps_power_cable_route_length_m*(1+bps_cable_expected_loss_f
 const CABLE_NET = `max(0,${CABLE_GROSS}-bps_cable_available_stock_m)`;
 const CABLE_DRUMS = `ceil((${CABLE_NET})/bps_cable_supplier_drum_length_m)`;
 const CABLE_ORDER = `(${CABLE_DRUMS})*bps_cable_supplier_drum_length_m`;
+const cableBalance = effectivePurchaseBalanceExpressionsR1({ ownerRowId: "rc09:bps_power_cable", orderUnitId: "m",
+  consumed: "bps_power_cable_route_length_m*(1+bps_cable_expected_loss_fraction)", stock: "bps_cable_available_stock_m",
+  reserve: "bps_cable_retained_spare_m", quantum: "bps_cable_supplier_drum_length_m" });
 
 const included = "INCLUDED_IN_RESOURCE_ROWS" as const;
 const rows: readonly AutomaticRowSpec[] = Object.freeze([
@@ -136,7 +140,7 @@ const rows: readonly AutomaticRowSpec[] = Object.freeze([
   { rowId: "rc09:bps-grout-balance:installed-net", section: "Баланс раствора", category: "material", title: "Чистый геометрический объём подливки", unitId: "m3", formulaId: "bps_grout_net_v2", expression: GROUT_NET, costTreatment: "INFORMATIONAL_SCOPE" },
   { rowId: "rc09:bps_mcc_vfd", section: "Состав skid", category: "equipment", title: "Шкаф управления и частотного регулирования", unitId: "set", formulaId: "bps_mcc_vfd_v2", expression: "bps_skid_count", costTreatment: included, titleParameterIds: ["bps_mcc_vfd_designation"] },
   { rowId: "rc09:bps_plc_gateway", section: "Состав skid", category: "equipment", title: "ПЛК и шлюз диспетчеризации", unitId: "set", formulaId: "bps_plc_gateway_v2", expression: "bps_skid_count", costTreatment: included, titleParameterIds: ["bps_plc_gateway_designation"] },
-  { rowId: "rc09:bps_power_cable", section: "Электрика", category: "material", title: "Силовой кабель к закупке", unitId: "m", formulaId: "bps_power_cable_order_v2", expression: CABLE_ORDER, procurement: true, titleParameterIds: ["bps_cable_designation"] },
+  { rowId: "rc09:bps_power_cable", section: "Электрика", category: "material", title: "Силовой кабель к закупке", unitId: "m", formulaId: "bps_power_cable_order_v2", expression: CABLE_ORDER, procurement: true, titleParameterIds: ["bps_cable_designation"], ...cableBalance.owner },
   { rowId: "rc09:bps_cable_terminations", section: "Электрика", category: "material", title: "Оконцевания силовых кабелей", unitId: "set", formulaId: "bps_cable_terminations_v2", expression: TERMINATIONS, procurement: true },
   { rowId: "rc09:bps_earthing", section: "Электрика", category: "material", title: "Заземление и уравнивание потенциалов skid", unitId: "set", formulaId: "bps_earthing_v2", expression: "bps_skid_count", procurement: true, titleParameterIds: ["bps_earthing_designation"] },
   { rowId: "rc09:bps_cable_tray", section: "Электрика", category: "material", title: "Кабельный лоток", unitId: "m", formulaId: "bps_cable_tray_v2", expression: "bps_power_cable_route_length_m*bps_cable_tray_length_fraction", procurement: true, titleParameterIds: ["bps_cable_tray_designation"] },
@@ -170,9 +174,11 @@ const rows: readonly AutomaticRowSpec[] = Object.freeze([
   { rowId: "rc09:bps-cable-balance:available-stock", section: "Баланс кабеля", category: "material", title: "Подтверждённый доступный остаток кабеля", unitId: "m", formulaId: "bps_cable_stock_v2", expression: "bps_cable_available_stock_m", costTreatment: "INFORMATIONAL_SCOPE" },
   { rowId: "rc09:bps-cable-balance:total-need", section: "Баланс кабеля", category: "material", title: "Общая потребность в кабеле", unitId: "m", formulaId: "bps_cable_total_need_v2", expression: CABLE_GROSS, costTreatment: "INFORMATIONAL_SCOPE" },
   { rowId: "rc09:bps-cable-balance:net-order-need", section: "Баланс кабеля", category: "material", title: "Чистая потребность к заказу", unitId: "m", formulaId: "bps_cable_net_need_v2", expression: CABLE_NET, costTreatment: "INFORMATIONAL_SCOPE" },
-  { rowId: "rc09:bps-cable-balance:drum-count", section: "Баланс кабеля", category: "material", title: "Количество кабельных барабанов", unitId: "piece", formulaId: "bps_cable_drums_v2", expression: CABLE_DRUMS, costTreatment: "INFORMATIONAL_SCOPE" },
-  { rowId: "rc09:bps-cable-balance:remainder", section: "Баланс кабеля", category: "material", title: "Остаток кабеля после монтажа и потерь", unitId: "m", formulaId: "bps_cable_remainder_v2", expression: `bps_cable_available_stock_m+${CABLE_ORDER}-bps_power_cable_route_length_m-bps_power_cable_route_length_m*bps_cable_expected_loss_fraction`, costTreatment: "INFORMATIONAL_SCOPE" },
-  { rowId: "rc09:bps-cable-balance:surplus-beyond-spare", section: "Баланс кабеля", category: "material", title: "Свободный остаток кабеля сверх резерва", unitId: "m", formulaId: "bps_cable_surplus_v2", expression: `max(0,bps_cable_available_stock_m+${CABLE_ORDER}-(${CABLE_GROSS}))`, costTreatment: "INFORMATIONAL_SCOPE" },
+  { rowId: "rc09:bps-cable-balance:drum-count", section: "Баланс кабеля", category: "material", title: "Количество принятых кабельных барабанов", unitId: "piece", formulaId: "bps_cable_drums_v2", expression: cableBalance.packages, costTreatment: "INFORMATIONAL_SCOPE" },
+  { rowId: "rc09:bps-cable-balance:remainder", section: "Баланс кабеля", category: "material", title: "Остаток кабеля после монтажа и потерь", unitId: "m", formulaId: "bps_cable_remainder_v2", expression: cableBalance.remaining, costTreatment: "INFORMATIONAL_SCOPE" },
+  { rowId: "rc09:bps-cable-balance:surplus-beyond-spare", section: "Баланс кабеля", category: "material", title: "Свободный остаток кабеля сверх резерва", unitId: "m", formulaId: "bps_cable_surplus_v2", expression: cableBalance.free, costTreatment: "INFORMATIONAL_SCOPE" },
+  { rowId: "rc09:bps-cable-balance:consumption-shortage", section: "Баланс кабеля", category: "material", title: "Недостающий кабель для монтажа и потерь; закупка не готова", unitId: "m", formulaId: "bps_cable_consumption_shortage_v3", expression: cableBalance.consumptionShortage, inclusion: { kind: "formula_greater_than", expression: cableBalance.consumptionShortage, unitId: "m", value: 0 }, costTreatment: "INFORMATIONAL_SCOPE" },
+  { rowId: "rc09:bps-cable-balance:reserve-deficit", section: "Баланс кабеля", category: "material", title: "Непокрытый сохраняемый резерв кабеля; закупка не готова", unitId: "m", formulaId: "bps_cable_reserve_deficit_v3", expression: cableBalance.reserveDeficit, inclusion: { kind: "formula_greater_than", expression: cableBalance.reserveDeficit, unitId: "m", value: 0 }, costTreatment: "INFORMATIONAL_SCOPE" },
   { rowId: "rc09:bps_room_ventilation_upgrade", section: "Условные системы", category: "equipment", title: "Модернизация вентиляции помещения", unitId: "set", formulaId: "bps_room_ventilation_upgrade_v2", expression: "bps_room_ventilation_upgrade_quantity_set", procurement: true, inclusion: { kind: "equals", parameterId: "bps_room_ventilation_upgrade_mode", value: "REQUIRED" }, titleParameterIds: ["bps_room_ventilation_upgrade_designation"] },
   { rowId: "rc09:bps_floor_strengthening", section: "Условные работы", category: "construction_work", title: "Усиление существующего пола", unitId: "set", formulaId: "bps_floor_strengthening_v2", expression: "bps_floor_strengthening_quantity_set", procurement: true, inclusion: { kind: "equals", parameterId: "bps_floor_strengthening_mode", value: "REQUIRED" }, titleParameterIds: ["bps_floor_strengthening_designation"] },
   { rowId: "rc09:bps_standby_generator", section: "Условное оборудование", category: "equipment", title: "Резервная дизель-генераторная установка", unitId: "set", formulaId: "bps_standby_generator_v2", expression: "bps_standby_generator_quantity_set", procurement: true, inclusion: { kind: "equals", parameterId: "bps_standby_generator_mode", value: "REQUIRED" }, titleParameterIds: ["bps_standby_generator_designation"] },
