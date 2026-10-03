@@ -1,6 +1,10 @@
 import { buildAutomaticConstructionOwnerR1, type AutomaticInclusionCondition, type AutomaticOwnerDefinition, type AutomaticParameterSpec, type AutomaticRowSpec } from "./automaticConstructionOwnerR1";
 import { effectiveResourceQuantityParameterId, reconcileDeclaredPurchaseBalanceRowsR1 } from "./effectivePurchaseBalanceR1";
 import { ROAD_CROSSING_SLEEVES_EFFECTIVE_BALANCES_R1 } from "./roadCrossingSleevesEffectivePurchaseBalancesR1";
+import { ROAD_CROSSING_SLEEVES_SELECTED_COMPLETION_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_SELECTED_COMPLETION_ROWS_R1,
+  ROAD_CROSSING_SLEEVES_SELECTED_COMPLETION_CARGOS_R1, ROAD_CROSSING_SLEEVES_SELECTED_COMPLETION_EQUIPMENT_CARGOS_R1,
+  ROAD_CROSSING_SLEEVES_COMPLETION_WATER_WASTE_SCOPES_R1,
+  roadCrossingSleevesCompletionStageRowsR1 } from "./roadCrossingSleevesSelectedCompletionR1";
 import { ROAD_CROSSING_SLEEVES_QUANTITY_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_QUANTITY_EXPRESSIONS_R1 as quantities } from "./roadCrossingSleevesQuantityModelR1";
 import { ROAD_CROSSING_SLEEVES_SPACER_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_SPACER_GEOMETRY_ROWS_R1 } from "./roadCrossingSleevesSpacerGeometryR1";
 import { ROAD_CROSSING_SLEEVES_PROCUREMENT_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_PROCUREMENT_ROWS_R1 } from "./roadCrossingSleevesProcurementR1";
@@ -1125,7 +1129,35 @@ export const ROAD_CROSSING_SLEEVES_FREIGHT_MODES_R1 = Object.freeze({
 export const ROAD_CROSSING_SLEEVES_FREIGHT_COST_BASIS_R1 = "Один полный отдельный рейс этого груза: транспорт, водитель, энергия, погрузка, выгрузка и возврат; без материала, монтажа, других грузов и повторной оплаты тех же ресурсов";
 const filterRentalForMobilization = ROAD_CROSSING_SLEEVES_WATER_TREATMENT_ROWS_R1.find(row => row.rowId === "rcs:water-treatment:rental_set_hours");
 if (!filterRentalForMobilization?.inclusion) throw new Error("RCS_COMPLETE_FILTER_RENTAL_SCOPE_MISSING");
+// Explicitly selected programme owners, excluding the already declared rental
+// kits above. Hours are not shipping counts. Shared equipment is allocated once
+// by actual full inventory/reference, including an explicit zero allocation.
+const remainingEquipmentOwners = [
+  ...ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_ROWS_R1, ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1,
+  ...ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_ROWS_R1, ...ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1,
+  ...ROAD_CROSSING_SLEEVES_COATING_ROWS_R1, ...ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_ROWS_R1,
+  ...ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1, ...ROAD_CROSSING_SLEEVES_INSPECTION_ROWS_R1,
+].filter(row => row.category === "equipment" && row.unitId === "machine_hour" && row.procurement
+  && (row.costTreatment == null || row.costTreatment === "OWN_COST")).map(row => {
+  const key = `selected_${row.rowId.replace(/[^A-Za-z0-9_]/gu, "_")}`;
+  const countId = `rcs_equipment_allocation_${key}_complete_count`, referenceId = `rcs_equipment_allocation_${key}_reference`;
+  const designationId = row.titleParameterIds?.[0];
+  if (!designationId) throw new Error(`RCS_SELECTED_EQUIPMENT_DESIGNATION_MISSING:${row.rowId}`);
+  const selected = row.inclusion ?? { kind: "greater_than" as const, parameterId: "rcs_crossing_length_m", value: 0 };
+  return { key, row, countId, referenceId, designationId, selected };
+});
+export const ROAD_CROSSING_SLEEVES_REMAINING_EQUIPMENT_ALLOCATION_PARAMETERS_R1: readonly AutomaticParameterSpec[] = Object.freeze(
+  remainingEquipmentOwners.flatMap(owner => [
+    { id: owner.countId, title: `${owner.row.title}: фактически выделенные целые полные комплекты для доставки/возврата, включая резерв; общий комплект учитывается ровно у одного owner, не часы или материал`,
+      valueType: "integer" as const, unitId: "piece", kind: "conditional" as const, min: 0, requiredWhen: owner.selected },
+    { id: owner.referenceId, title: `${owner.row.title}: фактическая полная ведомость состава, совместимости и распределения доставки/возврата; явный 0 обоснован отсутствием отдельного груза/указанным общим owner, без второго рейса`,
+      valueType: "text" as const, unitId: null, kind: "conditional" as const, requiredWhen: owner.selected },
+  ]),
+);
 const equipmentMobilization = buildRoadCrossingSleevesEquipmentMobilizationR1([
+  ...ROAD_CROSSING_SLEEVES_SELECTED_COMPLETION_EQUIPMENT_CARGOS_R1,
+  ...remainingEquipmentOwners.map(owner => ({ key: owner.key, title: owner.row.title, quantityExpression: owner.countId, selected: owner.selected,
+    designationId: owner.designationId, facts: [...(owner.row.inputParameterIds ?? []), owner.referenceId] })),
   ROAD_CROSSING_SLEEVES_REACTION_CARGO_R1,
   ...ROAD_CROSSING_SLEEVES_SHORING_CARGOS_R1,
   { key: "water_pump_kits", title: "Полные гидравлические насосные комплекты с силовыми блоками и всем составом", quantityExpression: waterControlSets,
@@ -1145,18 +1177,68 @@ const shoringConsumables = buildRoadCrossingSleevesShoringConsumablesR1([...ROAD
   facts: ROAD_CROSSING_SLEEVES_REACTION_CARGO_R1.facts, kitCountId: "1", cyclesId: "1", calendarId: reactionId("calendar_hours") }]);
 export const ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_PARAMETERS_R1 = shoringConsumables.parameters;
 export const ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_ROWS_R1 = shoringConsumables.rows;
-const serviceWaste = buildRoadCrossingSleevesServiceWasteR1([...ROAD_CROSSING_SLEEVES_SHORING_CARGOS_R1.map(cargo => ({
+const actualConsumed = (source: readonly AutomaticRowSpec[], rowId: string): AutomaticRowSpec => {
+  const row = source.find(value => value.rowId === rowId);
+  if (!row) throw new Error(`RCS_ACTUAL_DISCARDED_SOURCE_MISSING:${rowId}`);
+  return row;
+};
+const casingPrepWipes = actualConsumed(ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_ROWS_R1, "rcs:casing-prep-material:wipes:consumed");
+const markerWasteScope: AutomaticInclusionCondition = { kind: "and", operands: [jackingLoadingScope, preparationAxis] };
+export const ROAD_CROSSING_SLEEVES_MARKER_WASTE_PARAMETERS_R1: readonly AutomaticParameterSpec[] = [
+  { id: "rcs_completion_markers_actual_discarded_installed_count", title: "Разбивка: фактические установленные/заменённые колья, утратившие пригодность и включённые в отдельный поток отходов; возврат пригодных и непригодность до установки отдельно",
+    valueType: "integer", unitId: "piece", kind: "conditional", min: 0, requiredWhen: markerWasteScope },
+];
+const cleanupWasteWork = ROAD_CROSSING_SLEEVES_SELECTED_COMPLETION_ROWS_R1.find(row => row.rowId === "rcs:completion:cleanup:crew_hours");
+if (!cleanupWasteWork?.inclusion) throw new Error("RCS_ACTUAL_CLEANUP_WASTE_SCOPE_MISSING");
+const serviceWaste = buildRoadCrossingSleevesServiceWasteR1([[...ROAD_CROSSING_SLEEVES_SHORING_CARGOS_R1.map(cargo => ({
   key: cargo.key.slice("shoring_".length, -"_kits".length), title: cargo.title, selected: cargo.selected, facts: cargo.facts,
 })), { key: "reaction", title: ROAD_CROSSING_SLEEVES_REACTION_CARGO_R1.title, selected: ROAD_CROSSING_SLEEVES_REACTION_CARGO_R1.selected,
   facts: ROAD_CROSSING_SLEEVES_REACTION_CARGO_R1.facts }].map(scope => {
   const wipes = shoringConsumables.rows.find(row => row.rowId === `rcs:shoring-material:${scope.key}:wipes:consumed`);
   if (!wipes) throw new Error(`RCS_ACTUAL_SERVICE_WIPES_MISSING:${scope.key}`);
   return { ...scope, wipesExpression: wipes.expression, wipesProductId: `rcs_shoring_material_${scope.key}_wipes_product_designation` };
-}));
+}), [
+  ...ROAD_CROSSING_SLEEVES_COMPLETION_WATER_WASTE_SCOPES_R1,
+  { key: "completion_cleanup", title: "Отдельная партия финальной уборки без уже учтённых грунта, воды и других потоков отходов", selected: cleanupWasteWork.inclusion,
+    facts: ["rcs_completion_cleanup_mode", "rcs_completion_cleanup_programme_reference"], wipesExpression: "0", wipesProductId: "rcs_completion_cleanup_programme_reference" },
+  { key: "completion_markers", title: "Все фактически непригодные колья, отходы материалов разбивки и исходная тара; пригодный возврат отдельно", selected: markerWasteScope,
+    facts: [...preparationFacts, "rcs_completion_markers_actual_discarded_installed_count"], wipesExpression: "0", wipesProductId: preparationId("stakes_product_designation"),
+    discardedFlow: { expression: `rcs_completion_markers_actual_discarded_installed_count+${preparationId("stakes_pre_install_unusable")}`, unitId: "piece" } },
+  { key: "filter_service", title: "Отдельные отходы обслуживания фильтровального комплекта без мешков/осадка и основной воды", selected: filterRentalForMobilization.inclusion,
+    facts: filterRentalForMobilization.inputParameterIds ?? [], wipesExpression: waterTreatmentId("kit_service_wipe_count"), wipesProductId: waterTreatmentId("kit_designation") },
+  { key: "casing_preparation", title: "Все списанные круги, салфетки, остатки и исходная тара подготовки футляра", selected: casingPrepSelected,
+    facts: casingPrepOriginalFacts, wipesExpression: casingPrepWipes.expression, wipesProductId: casingPrepId("wipes_product_designation"),
+    discardedFlow: { expression: `(${actualConsumed(ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_ROWS_R1, "rcs:casing-prep-material:cutting_discs:consumed").expression})+(${actualConsumed(ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_ROWS_R1, "rcs:casing-prep-material:grinding_discs:consumed").expression})`, unitId: "piece" } },
+  ...coatingZones.map(zone => ({ key: `coating_${zone.key}`, title: `${zone.title}: отдельные отходы подготовки/покрытия, весь непригодный замес и исходная тара`, selected: zone.positive,
+    facts: zone.facts, wipesExpression: actualConsumed(ROAD_CROSSING_SLEEVES_COATING_CONSUMABLE_ROWS_R1, `rcs:coating-consumable:${zone.key}:wipes:consumed`).expression,
+    wipesProductId: coatingId(`${zone.key}_wipes_product_designation`),
+    discardedFlow: { expression: actualConsumed(ROAD_CROSSING_SLEEVES_COATING_ROWS_R1, `rcs:coating:${zone.key}:activated_surplus_l`).expression, unitId: "l" } })),
+  ...carrierConnectionGroups.map(group => ({ key: `carrier_joining_${group.key}`, title: `${group.title}: отдельные отходы соединения, списанные изделия, непригодные до установки муфты и исходная тара`, selected: group.positive,
+    facts: group.facts, wipesExpression: actualConsumed(ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_ROWS_R1, `rcs:carrier-connection-material:${group.key}:wipes:consumed`).expression,
+    wipesProductId: group.id("wipes_product_designation"), discardedFlow: { expression: group.id("couplers_preinstall_unusable_count"), unitId: "piece" } })),
+  { key: "internal_fill_discard", title: "Весь priming/discard и непригодный замес внутреннего заполнения; материал и вода уже в gross расходе", selected: ROAD_CROSSING_SLEEVES_INTERNAL_FILL_APPLICABILITY_R1,
+    facts: ["rcs_fill_internal_method_reference", "rcs_completion_fill_priming_discard_reference"], wipesExpression: "0", wipesProductId: "rcs_internal_fill_dry_product_designation",
+    discardedFlow: { expression: "rcs_completion_fill_discard_wet_l", unitId: "l" }, minimumDiscardedDryKgExpression: "rcs_completion_fill_discard_dry_kg" },
+].map(scope => ({ ...scope, selected: { kind: "and" as const, operands: [jackingLoadingScope, scope.selected] } }))].flat());
 export const ROAD_CROSSING_SLEEVES_SERVICE_WASTE_PARAMETERS_R1 = serviceWaste.parameters;
 export const ROAD_CROSSING_SLEEVES_SERVICE_WASTE_ROWS_R1 = serviceWaste.rows;
+const markerReturnWork = ROAD_CROSSING_SLEEVES_SELECTED_COMPLETION_ROWS_R1.find(row => row.rowId === "rcs:completion:marker_return:crew_hours");
+if (!markerReturnWork?.inclusion) throw new Error("RCS_ACTUAL_MARKER_RETURN_SCOPE_MISSING");
+const markerReturnRows: readonly AutomaticRowSpec[] = [
+  { rowId: "rcs:completion:marker-return:physical_units", formulaId: "rcs:completion:marker-return:physical_units", section: "Возврат пригодных материалов разбивки",
+    category: "material", title: "Фактически пригодные возвращаемые колья по отдельной инвентаризации; не автоматический возврат всех установленных изделий в наличие",
+    unitId: "piece", expression: "rcs_completion_marker_return_amount", inclusion: markerReturnWork.inclusion,
+    costTreatment: "INFORMATIONAL_SCOPE", inputParameterIds: ["rcs_completion_marker_return_mode", "rcs_completion_marker_return_programme_reference"] },
+  { rowId: "rcs:completion:marker-return:installed_margin", formulaId: "rcs:completion:marker-return:installed_margin", section: "Возврат пригодных материалов разбивки",
+    category: "material", title: "Число возвращаемых пригодных колов не превышает все исходные установки и реальные замены",
+    unitId: "piece", expression: `(${markerEvents})-rcs_completion_marker_return_amount-rcs_completion_markers_actual_discarded_installed_count`, inclusion: markerReturnWork.inclusion,
+    costTreatment: "INFORMATIONAL_SCOPE", inputParameterIds: [...preparationFacts, "rcs_completion_marker_return_programme_reference"],
+    formulaOutputBounds: { schemaVersion: "canonical_formula_output_bounds_v1", unitId: "piece", minimum: 0,
+      reasonRu: "Нельзя вернуть больше пригодных колов, чем фактически установлено за всю программу; пригодность и количество возврата подтверждаются отдельно, непригодные до установки сюда не попадают." } },
+];
 type FreightCargo = Readonly<{ key: string; title: string; purchase: AutomaticRowSpec; stockId: string;
-  unit: "piece" | "m" | "m3" | "kg" | "l"; sectionLengthId?: string; quantum?: string }>;
+  unit: "piece" | "m" | "m3" | "kg" | "l"; sectionLengthId?: string; quantum?: string;
+  physicalReturnExpression?: string }>;
 function freightCargo(key: string, title: string, rows: readonly AutomaticRowSpec[], rowId: string,
   stockId: string, unit: FreightCargo["unit"], sectionLengthId?: string, quantum?: string): FreightCargo {
   const purchase = rows.find(row => row.rowId === rowId);
@@ -1164,6 +1246,10 @@ function freightCargo(key: string, title: string, rows: readonly AutomaticRowSpe
   return { key, title, purchase, stockId, unit, sectionLengthId, quantum };
 }
 const freightCargoGroups: readonly FreightCargo[] = [
+  { key: "recovered_markers", title: "Фактически пригодные возвращаемые колья разбивки", purchase: markerReturnRows[0],
+    stockId: "rcs_completion_marker_return_amount", unit: "piece", physicalReturnExpression: "rcs_completion_marker_return_amount" },
+  ...ROAD_CROSSING_SLEEVES_SELECTED_COMPLETION_CARGOS_R1.map(cargo => freightCargo(cargo.key, cargo.title,
+    ROAD_CROSSING_SLEEVES_SELECTED_COMPLETION_ROWS_R1, cargo.rowId, cargo.stockId, cargo.unit, undefined, cargo.quantum)),
   freightCargo("electrodes", "Совместимые электроды выбранной WPS", ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_ROWS_R1,
     "rcs:joint:electrode_ordered", "rcs_joint_electrode_compatible_stock_kg", "kg", undefined, "rcs_joint_electrode_supplier_pack_kg"),
   ...ROAD_CROSSING_SLEEVES_SHORING_GAP_CARGOS_R1.map(cargo => freightCargo(cargo.key, cargo.title, ROAD_CROSSING_SLEEVES_SHORING_GAP_ROWS_R1, cargo.rowId, cargo.stockId, cargo.unit)),
@@ -1210,10 +1296,10 @@ const freightCargoGroups: readonly FreightCargo[] = [
     "rcs:water-treatment:bags:ordered_count", waterTreatmentId("bag_compatible_stock_count"), "piece", undefined, waterTreatmentId("bag_supplier_pack_count")),
 ];
 const freightId = (key: string, suffix: string) => `rcs_freight_${key}_${suffix}`;
-const freightLanes = freightCargoGroups.flatMap(cargo => (["new", "stock"] as const).map(lane => {
+const freightLanes = freightCargoGroups.flatMap(cargo => (cargo.physicalReturnExpression ? ["return"] as const : ["new", "stock"] as const).map(lane => {
   const key = `${cargo.key}_${lane}`;
   const offsite = freightId(cargo.key, "offsite_stock_units");
-  const quantity = lane === "stock" ? offsite : cargo.sectionLengthId
+  const quantity = lane === "return" ? cargo.physicalReturnExpression! : lane === "stock" ? offsite : cargo.sectionLengthId
     ? `${effectiveResourceQuantityParameterId(cargo.purchase.rowId)}/${cargo.sectionLengthId}` : effectiveResourceQuantityParameterId(cargo.purchase.rowId);
   const applicability = cargo.purchase.inclusion ?? { kind: "greater_than" as const, parameterId: "rcs_crossing_length_m", value: 0 };
   const stockPositive: AutomaticInclusionCondition = { kind: "and", operands: [applicability,
@@ -1270,7 +1356,7 @@ export const ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1: readonly AutomaticRowSpec[] 
       ...(cargo.sectionLengthId ? [cargo.sectionLengthId, freightId(key, "max_section_length_m")] : [])];
     const row = (suffix: string, title: string, expression: string, unitId: string, inclusion: AutomaticInclusionCondition,
       inputParameterIds: readonly string[] = transportFacts): AutomaticRowSpec => ({ rowId: `${prefix}:${suffix}`, formulaId: `${prefix}:${suffix}`,
-      section: `Доставка: ${cargo.title} (${lane === "new" ? "новый заказ" : "наличие"})`, category: "transport", title,
+        section: `Доставка: ${cargo.title} (${lane === "new" ? "новый заказ" : lane === "return" ? "фактический возврат" : "наличие"})`, category: "transport", title,
       unitId, expression, inclusion, costTreatment: "INFORMATIONAL_SCOPE", inputParameterIds });
     return [
       row("cargo_units", `${cargo.title}: фактический груз к доставке, без повторной закупки`, quantity, cargo.unit, positive, originalFacts),
@@ -1468,6 +1554,8 @@ export const ROAD_CROSSING_SLEEVES_COMPONENTS_SCOPE_R1 = Object.freeze({
   ]),
 });
 export const ROAD_CROSSING_SLEEVES_COMPONENT_PARAMETERS_R1: readonly AutomaticParameterSpec[] = Object.freeze([
+  ...ROAD_CROSSING_SLEEVES_SELECTED_COMPLETION_PARAMETERS_R1,
+  ...ROAD_CROSSING_SLEEVES_MARKER_WASTE_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_QUANTITY_PARAMETERS_R1, ...ROAD_CROSSING_SLEEVES_SPACER_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_CASING_MATERIAL_PARAMETERS_R1, ...ROAD_CROSSING_SLEEVES_PROCUREMENT_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_CARRIER_PARAMETERS_R1,
@@ -1498,9 +1586,12 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_PARAMETERS_R1: readonly AutomaticPa
   ...ROAD_CROSSING_SLEEVES_INSPECTION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_FREIGHT_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_EQUIPMENT_MOBILIZATION_PARAMETERS_R1,
+  ...ROAD_CROSSING_SLEEVES_REMAINING_EQUIPMENT_ALLOCATION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_SOIL_PARAMETERS_R1,
 ]);
 export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[] = Object.freeze(reconcileDeclaredPurchaseBalanceRowsR1([
+  ...markerReturnRows,
+  ...ROAD_CROSSING_SLEEVES_SELECTED_COMPLETION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_CASING_MATERIAL_ROWS_R1, ...ROAD_CROSSING_SLEEVES_SPACER_GEOMETRY_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_PROCUREMENT_ROWS_R1, ...ROAD_CROSSING_SLEEVES_CIVIL_ROWS_R1, ...ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_CARRIER_ROWS_R1,
@@ -1531,7 +1622,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[
   ...ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_EQUIPMENT_MOBILIZATION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_SOIL_ROWS_R1,
-].map(row => freightCargoGroups.some(cargo => cargo.purchase.rowId === row.rowId) ? {
+].map(row => freightCargoGroups.some(cargo => cargo.purchase.rowId === row.rowId && !cargo.physicalReturnExpression) ? {
   ...row, effectiveQuantityOutput: row.effectiveQuantityOutput ?? { parameterId: effectiveResourceQuantityParameterId(row.rowId), unitId: row.unitId },
 } : row), ROAD_CROSSING_SLEEVES_EFFECTIVE_BALANCES_R1));
 
@@ -1539,9 +1630,10 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[
  * are concrete absent resources/decisions, never a fabricated completeness PASS.
  */
 export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
-  { stageId: "preparation", titleRu: "Подготовка участка", rows: ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1.filter(row => !row.rowId.startsWith("rcs:preparation:removal:")),
+  { stageId: "preparation", titleRu: "Подготовка участка", rows: [...roadCrossingSleevesCompletionStageRowsR1("preparation"), ...ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1.filter(row => !row.rowId.startsWith("rcs:preparation:removal:"))],
     remaining: ["Доступ, расчистка и подготовка площадки", "Другие схемы разбивки и фактическая приёмка геодезического контроля", "Применимые временные ограждения и организация движения"] },
   { stageId: "installation", titleRu: "Устройство перехода", rows: [
+    ...roadCrossingSleevesCompletionStageRowsR1("installation"),
     ...ROAD_CROSSING_SLEEVES_REACTION_ROWS_R1.filter(row => !row.rowId.startsWith("rcs:reaction:removal:")),
     ...ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_SHORING_GAP_ROWS_R1,
@@ -1551,6 +1643,7 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
     ...ROAD_CROSSING_SLEEVES_WATER_TREATMENT_ROWS_R1.filter(row => !/^rcs:water-treatment:(?:removal|waste):/u.test(row.rowId) && row.rowId !== "rcs:water-treatment:bags:wet_used_count")],
     remaining: ["Подтверждение проекта/нагрузок/метода/сопряжения крепления и упора, прочие расходники/отходы; герметизация, траншейные/непрямоугольные/частичные зазоры, несколько комплектов/положений, удаляемое или повторно используемое заполнение и его распределение; основания/оставляемый бетон/сваи/анкеры и другие реакционные конструкции", "Подтверждение фактического водоотлива/фильтрации/приёма и их отходы, другие схемы очистки/приёма воды и способы водопонижения", "Разделение разных партий и дополнительное перемещение грунта", "Применимые смазка и заполнение снаружи футляра"] },
   { stageId: "bedding", titleRu: "Основание", rows: [
+    ...roadCrossingSleevesCompletionStageRowsR1("bedding"),
     ...ROAD_CROSSING_SLEEVES_CIVIL_ROWS_R1.filter(row => row.rowId === "rcs:civil:open_cut_full_width_bedding_m3"), ...ROAD_CROSSING_SLEEVES_BEDDING_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => row.rowId.startsWith("rcs:fill-execution:bedding:")),
     ...ROAD_CROSSING_SLEEVES_COMPACTION_WATER_ROWS_R1.filter(row => row.rowId.startsWith("rcs:compaction-water:bedding:"))],
@@ -1561,11 +1654,11 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
     ...ROAD_CROSSING_SLEEVES_INSPECTION_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1.filter(row => /^rcs:mechanical:casing_/u.test(row.rowId))],
     remaining: ["Подтверждение технологии подготовки и другие/повторно используемые частичные расходники", "Другие методы контроля, фактические дефекты, ремонт и повторный контроль", "Приёмка фактического покрытия, другие покрытия и несколько/частичные/общие замесы, отходы и исправление дефектов", "Подтверждённая схема подъёма, фактическая несущая способность и направляющие при загрузке"] },
-  { stageId: "carrier_and_supports", titleRu: "Рабочая труба, опоры и концевые узлы", rows: [...ROAD_CROSSING_SLEEVES_SPACER_GEOMETRY_ROWS_R1, ...ROAD_CROSSING_SLEEVES_PROCUREMENT_ROWS_R1,
+  { stageId: "carrier_and_supports", titleRu: "Рабочая труба, опоры и концевые узлы", rows: [...roadCrossingSleevesCompletionStageRowsR1("carrier_and_supports"), ...ROAD_CROSSING_SLEEVES_SPACER_GEOMETRY_ROWS_R1, ...ROAD_CROSSING_SLEEVES_PROCUREMENT_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_CARRIER_ROWS_R1, ...ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1.filter(row => !/^rcs:mechanical:casing_/u.test(row.rowId))],
     remaining: ["Подтверждение рабочей трубы, фактической схемы/совместимости электромуфт, иной поставки и технологии монтажа", "Другие соединители, соединения разных видов, реальные дефекты и повторный контроль, испытания линии и отходы соединений", "Подтверждённые удерживающие и концевые конструкции"] },
-  { stageId: "internal_fill", titleRu: "Заполнение внутри футляра", rows: [...ROAD_CROSSING_SLEEVES_INTERNAL_FILL_ROWS_R1, ...ROAD_CROSSING_SLEEVES_INTERNAL_WATER_ROWS_R1,
+  { stageId: "internal_fill", titleRu: "Заполнение внутри футляра", rows: [...roadCrossingSleevesCompletionStageRowsR1("internal_fill"), ...ROAD_CROSSING_SLEEVES_INTERNAL_FILL_ROWS_R1, ...ROAD_CROSSING_SLEEVES_INTERNAL_WATER_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => row.rowId.startsWith("rcs:fill-execution:internal:"))],
     remaining: ["Подтверждение технологии смешивания, размещения и совместимого оборудования", "Применимые удерживающие конструкции и ограничения давления и плавучести", "Подготовка и выдержка", "Подтверждение качества и распределения воды", "Другие или частичные способы заполнения"] },
   { stageId: "backfill", titleRu: "Обратная засыпка", rows: [
@@ -1575,7 +1668,8 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
     ...ROAD_CROSSING_SLEEVES_COMPACTION_WATER_ROWS_R1.filter(row => !row.rowId.startsWith("rcs:compaction-water:bedding:")),
     ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => /^rcs:fill-execution:(?:pits|trench):/u.test(row.rowId))],
     remaining: ["Подтверждение пригодности и распределения повторно используемого грунта", "Послойные или другие материалы траншеи", "Подтверждение технологии укладки и уплотнения", "Фактические качество и отдельное распределение воды", "Разные партии грунта, пульпа и иные состояния"] },
-  { stageId: "completion", titleRu: "Завершение перехода", rows: [...ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1,
+  { stageId: "completion", titleRu: "Завершение перехода", rows: [...roadCrossingSleevesCompletionStageRowsR1("completion"), ...ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1,
+    ...markerReturnRows,
     ...ROAD_CROSSING_SLEEVES_SERVICE_WASTE_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_REACTION_ROWS_R1.filter(row => row.rowId.startsWith("rcs:reaction:removal:")),
     ...ROAD_CROSSING_SLEEVES_SHORING_ROWS_R1.filter(row => /^rcs:shoring:[^:]+:(?:extraction|disassembly):/u.test(row.rowId)),

@@ -46,13 +46,31 @@ import { ROAD_CROSSING_SLEEVES_INTERNAL_FILL_MODES_R1 as internalModes,
   ROAD_CROSSING_SLEEVES_INTERNAL_WATER_MODES_R1 as waterModes, ROAD_CROSSING_SLEEVES_INTERNAL_WATER_COST_BASIS_R1 as waterBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesInternalFillR1";
 import { evaluateInclusionGraph } from "../../src/lib/estimate/backendPlatform/inclusionGraph";
 import { aiEstimateRuUnitForParameter } from "../../src/lib/estimate/aiEstimateRuParameterDictionary";
+import { ROAD_CROSSING_SLEEVES_COMPLETION_PROGRAMMES_R1 as completionProgrammes, ROAD_CROSSING_SLEEVES_COMPLETION_MODES_R1 as completionModes,
+  ROAD_CROSSING_SLEEVES_COMPLETION_MATERIALS_R1 as completionMaterials } from "../../src/lib/estimate/v4/roadCrossingSleevesSelectedCompletionR1";
+import { ROAD_CROSSING_SLEEVES_REMAINING_EQUIPMENT_ALLOCATION_PARAMETERS_R1 as remainingEquipmentFacts,
+  ROAD_CROSSING_SLEEVES_SERVICE_WASTE_PARAMETERS_R1 as serviceWasteFacts } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 
 const components = buildRoadCrossingSleevesComponentsR1({ source_title: "Owned integration fixture for source-bounded components, not a full crossing",
   source_document_version: "test-2026-10-03", definition_hash: "a".repeat(64), artifact_sha256: "a".repeat(64),
   exact_locator: "data/estimate-benchmarks/source-packs/road-crossing-sleeves-automatic-s27-28.json" });
 const definition = components.definition;
 // Synthetic actual-fact/price fixtures ONLY, never a published default or WPS approval.
+const finiteCompletionFixture: Record<string, unknown> = {
+  // New finite programmes are explicitly outside these older component test
+  // scenarios. These are synthetic test allocations, never runtime defaults.
+  ...Object.fromEntries(completionProgrammes.flatMap(programme => [
+    [`rcs_completion_${programme.key}_mode`, completionModes.notRequired],
+    [`rcs_completion_${programme.key}_programme_reference`, "TEST this separate finite completion programme is outside the older component scenario"],
+  ])),
+  ...Object.fromEntries(remainingEquipmentFacts.map(parameter => [parameter.id, parameter.valueType === "integer" ? 0
+    : "TEST no separately shipped equipment for this older component scenario; full allocation supplied elsewhere"])),
+  ...Object.fromEntries(serviceWasteFacts.filter(parameter => parameter.values?.includes(serviceWasteModes.otherParty)
+    && !["rcs_service_waste_trench_mode", "rcs_service_waste_thrust_mode", "rcs_service_waste_reception_mode", "rcs_service_waste_reaction_mode"].includes(parameter.id))
+    .flatMap(parameter => [[parameter.id, serviceWasteModes.otherParty], [parameter.id.replace(/_mode$/u, "_program_reference"), "TEST full new service-waste stream allocated to another party in older component scenario"]])),
+};
 const fixture: Record<string, unknown> = {
+  ...finiteCompletionFixture,
   ...Object.fromEntries(["thrust", "reception"].flatMap(key => [
     [`rcs_shoring_gap_${key}_mode`, gapModes.other],
     [`rcs_shoring_gap_${key}_program_and_allocation_reference`, "TEST actual other contact/fill/seal resources separately allocated and excluded from paid shoring installation, excavation and final fill; permanent original occupied volume includes retained preplaced fill once"],
@@ -167,6 +185,22 @@ function compile(submittedParameters: Record<string, unknown> = fixture, rowOver
   });
 }
 const q = (result: Awaited<ReturnType<typeof compile>>, id: string) => Number(result.rows.find(row => row.row_id === id)?.quantity);
+
+describe("finite completion preserves original unknown project facts beside older component fixtures", () => {
+  it("shows the new original source needs when their explicit test-only allocation is removed", async () => {
+    const unresolved: Record<string, unknown> = { ...fixture, rcs_civil_installation_method: methods.pipeJacking,
+      // Explicit TEST facts for the other party's original marker installations; isolate the new unknown programme facts.
+      rcs_preparation_axis_marker_pitch_m: 10, rcs_preparation_additional_marker_count: 2, rcs_preparation_marker_replacement_count: 3 };
+    for (const id of Object.keys(finiteCompletionFixture)) delete unresolved[id];
+    const result = await compile(unresolved);
+    const missingIds = [...new Set(result.preliminaryNeeds.flatMap(row => row.missing_parameter_ids))].sort();
+    console.info(`W2_LEGACY_NEW_ORIGINAL_NEEDS:${JSON.stringify(missingIds)}`);
+    expect(missingIds).toContain("rcs_completion_site_mode");
+    expect(missingIds.some(id => id.startsWith("effective_resource_quantity_"))).toBe(false);
+    expect(missingIds.every(id => id.startsWith("rcs_completion_") || id.startsWith("rcs_equipment_allocation_selected_") || id.startsWith("rcs_equipment_mobilization_selected_")
+      || id.startsWith("rcs_service_waste_"))).toBe(true);
+  });
+});
 
 describe("actual one complete portable reaction assembly and its own resources", () => {
   const row = (key: string) => `rcs:reaction:${key}`;
@@ -1973,7 +2007,8 @@ describe("road-casing component integration, not full crossing acceptance", () =
     }
     expect(definition.parameters.filter(p => p.truth_metadata?.visibility_role !== "INTERNAL_ONLY").map(p => p.parameter_id).sort()).toEqual(parameters.map(p => p.id).sort());
     const outputs = definition.parameters.filter(p => p.truth_metadata?.visibility_role === "INTERNAL_ONLY");
-    expect(outputs).toHaveLength(59);
+    expect(outputs.filter(output => !String((output.truth_metadata.effective_resource_quantity_v1 as Record<string, unknown>).sourceRowId).startsWith("rcs:completion-material:"))).toHaveLength(59);
+    expect(outputs.filter(output => String((output.truth_metadata.effective_resource_quantity_v1 as Record<string, unknown>).sourceRowId).startsWith("rcs:completion-material:"))).toHaveLength(completionMaterials.length);
     expect(outputs.every(p => p.default_value == null && p.required === false && p.truth_metadata?.effective_resource_quantity_v1 != null)).toBe(true);
     expect(parameters.some(p => /(?:installed_section_count|ordered_casing_length|site_joint_count|assembled_diameter|total_geometric_excavation)/u.test(p.id))).toBe(false);
     expect(definition.runtimeInput).toEqual({});
@@ -2042,7 +2077,10 @@ describe("road-casing component integration, not full crossing acceptance", () =
     const result = await compile(input);
     expect(result.rows.some(row => row.row_id.startsWith("rcs:civil:"))).toBe(false);
     expect(result.preliminaryNeeds.length).toBeGreaterThan(0);
-    expect(result.preliminaryNeeds.every(need => /^(?:rcs:civil:|rcs:civil-execution:|rcs:fill-execution:|rcs:compaction-water:|rcs:bedding:|rcs:pit-return:|rcs:mechanical:casing_lowering:|rcs:mechanical:casing_jacking_loading:scope_section_count$|rcs:freight:(?:bedding|pits|trench)_new:cargo_units$)/u.test(need.row_id) && need.need_state === "CONDITION_REQUIRED")).toBe(true);
+    const newProgrammeAllocations = new Set(completionProgrammes.map(programme => `rcs:completion:${programme.key}:allocation`));
+    expect(result.preliminaryNeeds.filter(need => !/^(?:rcs:civil:|rcs:civil-execution:|rcs:fill-execution:|rcs:compaction-water:|rcs:bedding:|rcs:pit-return:|rcs:mechanical:casing_lowering:|rcs:mechanical:casing_jacking_loading:scope_section_count$|rcs:freight:(?:bedding|pits|trench)_new:cargo_units$)/u.test(need.row_id)
+      && !newProgrammeAllocations.has(need.row_id)).map(need => need.row_id)).toEqual([]);
+    expect(result.preliminaryNeeds.every(need => need.need_state === "CONDITION_REQUIRED")).toBe(true);
     expect([...new Set(result.preliminaryNeeds.flatMap(need => need.missing_parameter_ids))]).toEqual(["rcs_civil_installation_method"]);
     expect(result.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual([...owners, ...mechanicalOwners()]);
   });

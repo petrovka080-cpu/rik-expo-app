@@ -20,7 +20,12 @@ export const ROAD_CROSSING_SLEEVES_SERVICE_WASTE_RECEIVING_MODES_R1 = Object.fre
   otherParty: "Приём обеспечен отдельно другой стороной без оплаты исполнителем и без повторной платы за рейс",
 });
 export const ROAD_CROSSING_SLEEVES_SERVICE_WASTE_RECEIVING_BASIS_R1 = "Только приём подтверждённых фактических тонн этой совместимой партии, включая выбрасываемую сборную тару; без повторного сбора/упаковки/перевозки/исполнителей и приёма других отходов/воды";
-type Scope = Readonly<{ key: string; title: string; selected: AutomaticInclusionCondition; facts: readonly string[]; wipesExpression: string; wipesProductId: string }>;
+type Scope = Readonly<{ key: string; title: string; selected: AutomaticInclusionCondition; facts: readonly string[]; wipesExpression: string; wipesProductId: string;
+  /** Actual discarded flow, not purchased stock/reserve or a forecast fraction.
+   * A positive litre/piece flow proves nonzero waste; it does not supply density. */
+  discardedFlow?: Readonly<{ expression: string; unitId: string }>;
+  minimumDiscardedDryKgExpression?: string;
+}>;
 export function buildRoadCrossingSleevesServiceWasteR1(scopes: readonly Scope[]): Readonly<{
   parameters: readonly AutomaticParameterSpec[]; rows: readonly AutomaticRowSpec[];
 }> {
@@ -31,6 +36,8 @@ export function buildRoadCrossingSleevesServiceWasteR1(scopes: readonly Scope[])
     const positive: AutomaticInclusionCondition = { kind: "and", operands: [own, { kind: "greater_than", parameterId: id("net_waste_kg"), value: 0 }] };
     const wipesPositive: AutomaticInclusionCondition = { kind: "and", operands: [own,
       { kind: "formula_greater_than", expression: scope.wipesExpression, unitId: "piece", value: 0 }] };
+    const discardPositive: AutomaticInclusionCondition | null = scope.discardedFlow ? { kind: "and", operands: [own,
+      { kind: "formula_greater_than", expression: scope.discardedFlow.expression, unitId: scope.discardedFlow.unitId, value: 0 }] } : null;
     const packs = `ceil(${id("net_waste_kg")}/${id("effective_net_kg_per_container")})`;
     const capacity = `floor(min(${id("vehicle_container_places")},${id("route_payload_kg")}/${id("certified_max_shipping_kg_per_container")}))`;
     const gross = `${id("net_waste_kg")}+(${packs})*${id("container_tare_kg")}`;
@@ -39,7 +46,7 @@ export function buildRoadCrossingSleevesServiceWasteR1(scopes: readonly Scope[])
       id("effective_net_kg_per_container"), id("container_tare_kg"), id("certified_max_shipping_kg_per_container")];
     const haulFacts = [...packFacts, id("vehicle_designation"), id("route_and_handling_reference"), id("route_payload_kg"), id("vehicle_container_places"), id("trip_cost_basis"),
       id("receiver_designation"), id("receiving_reference"), id("receiving_mode")];
-    return { scope, id, own, positive, wipesPositive, packs, capacity, gross, facts, packFacts, haulFacts };
+    return { scope, id, own, positive, wipesPositive, discardPositive, packs, capacity, gross, facts, packFacts, haulFacts };
   });
   const parameters: AutomaticParameterSpec[] = parties.flatMap(({ scope, id, own, positive, wipesPositive }) => {
     const text = (suffix: string, title: string, when: AutomaticInclusionCondition = positive): AutomaticParameterSpec => ({ id: id(suffix), title: `${scope.title}: ${title}`,
@@ -73,7 +80,7 @@ export function buildRoadCrossingSleevesServiceWasteR1(scopes: readonly Scope[])
           { kind: "equals", parameterId: id("receiving_mode"), value: ROAD_CROSSING_SLEEVES_SERVICE_WASTE_RECEIVING_MODES_R1.tonnes }] } } as AutomaticParameterSpec,
     ];
   });
-  const rows: AutomaticRowSpec[] = parties.flatMap(({ scope, id, own, positive, wipesPositive, packs, capacity, gross, facts, packFacts, haulFacts }) => {
+  const rows: AutomaticRowSpec[] = parties.flatMap(({ scope, id, own, positive, wipesPositive, discardPositive, packs, capacity, gross, facts, packFacts, haulFacts }) => {
     const bounds = (unitId: string, minimum = 0) => ({ schemaVersion: "canonical_formula_output_bounds_v1" as const, unitId, minimum,
       reasonRu: "Все исходные одноразовые изделия остаются в партии, каждое полное место допустимо по вместимости/верхней массе/таре и транспорт вмещает хотя бы одно такое место. Несовместимость не исправляется нулём, средней массой или ручными рейсами/тоннами." });
     const row = (suffix: string, caption: string, expression: string, unitId: string, extra: Partial<AutomaticRowSpec> = {}): AutomaticRowSpec => ({
@@ -81,6 +88,14 @@ export function buildRoadCrossingSleevesServiceWasteR1(scopes: readonly Scope[])
       category: "service", expression, unitId, inclusion: positive, costTreatment: "INFORMATIONAL_SCOPE", inputParameterIds: packFacts, ...extra });
     return [
       row("net_waste_kg", "Фактическая масса всех отходов/выброшенной исходной тары до новой сборной тары", id("net_waste_kg"), "kg", { inclusion: own, inputParameterIds: facts }),
+      ...(discardPositive ? [row("actual_discard_nonzero_waste_kg", "Положительный фактический сброс включён в полную ненулевую партию отходов; плотность не предполагается", id("net_waste_kg"), "kg", {
+        inclusion: discardPositive, inputParameterIds: [...facts, ...compileFormulaGraph(scope.discardedFlow!.expression).inputParameterIds],
+        formulaOutputBounds: { ...bounds("kg"), exclusiveMinimum: 0,
+          reasonRu: "Фактически положительный сброс этой полной партии нельзя скрыть нулевой массой отходов. Масса/вода определяются фактической инвентаризацией, без предполагаемой плотности." },
+      })] : []),
+      ...(scope.minimumDiscardedDryKgExpression ? [row("actual_discard_dry_mass_margin_kg", "Масса полной партии покрывает весь фактически выброшенный сухой материал без второго заказа", `${id("net_waste_kg")}-(${scope.minimumDiscardedDryKgExpression})`, "kg", {
+        inclusion: own, inputParameterIds: [...facts, ...compileFormulaGraph(scope.minimumDiscardedDryKgExpression).inputParameterIds], formulaOutputBounds: bounds("kg"),
+      })] : []),
       row("all_original_wipes_count", "Все израсходованные одноразовые обтирочные изделия этой программы в партии отходов, не закупочные упаковки", scope.wipesExpression, "piece", {
         inclusion: wipesPositive, inputParameterIds: [...facts, ...compileFormulaGraph(scope.wipesExpression).inputParameterIds] }),
       row("wipe_mass_margin_kg", "Разность массы партии до новой тары и исходной сухой массы ВСЕХ израсходованных одноразовых изделий; не приписанное загрязнение", `${id("net_waste_kg")}-(${scope.wipesExpression})*${id("dry_kg_per_original_wipe")}`, "kg", {

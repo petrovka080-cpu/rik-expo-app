@@ -201,10 +201,30 @@ describe("canonical professional norm ownership", () => {
     expect(isCanonicalEstimateSourceManagedParameter(boundProjectReference)).toBe(false);
     expect(isCanonicalEstimateVisibleUserResourceSelectionParameter(boundProjectReference)).toBe(true);
   });
+  it("keeps owned actual rates and source references editable when missing facts defer to original row needs", () => {
+    const reference = { ...boundProjectReference, preliminaryCompilationAllowed: true };
+    expect(isCanonicalEstimateVisibleUserResourceSelectionParameter(reference)).toBe(true);
+    expect(isCanonicalEstimateSourceManagedParameter(reference)).toBe(false);
+    const rate = { ...reference, parameterId: "actual_machine_hours_per_m3", titleRu: "Фактические часы выбранного комплекта на м³", valueType: "decimal" as const,
+      constraints: { requiredWhen: { kind: "equals", parameterId: "method", value: "selected" }, min: 0 }, formulaConsumers: ["actual_equipment_hours"], unitId: "machine_hour_per_m3" };
+    expect(isCanonicalEstimateUserEditableParameter(rate)).toBe(true);
+    expect(isCanonicalEstimateConsumerSuppliedParameter(rate)).toBe(true);
+    expect(isCanonicalEstimateVisibleUserResourceSelectionParameter(rate)).toBe(true);
+    expect(canonicalEstimateParameterAllowsPreliminaryCompilation(rate)).toBe(true);
+    expect(canonicalEstimateBlockingParameterIssues([rate], [{ parameterId: rate.parameterId, code: "REQUIRED" },
+      { parameterId: rate.parameterId, code: "RANGE" }])).toEqual([{ parameterId: rate.parameterId, code: "RANGE" }]);
+    const physical = { ...rate, parameterId: "actual_elements_per_ring", titleRu: "Фактические элементы выбранного кольца", valueType: "integer" as const,
+      valueSourceRole: "PROJECT_SPECIFIC_INPUT" as const, required: true, constraints: { min: 1 } };
+    expect(isCanonicalEstimateConsumerSuppliedParameter(physical)).toBe(true);
+    for (const protectedRole of ["MANDATORY_NORM_VALUE", "MANUFACTURER_CONFIRMED", "SELECTED_EQUIPMENT_PASSPORT", "BACKEND_DERIVED"] as const) {
+      expect(isCanonicalEstimateConsumerSuppliedParameter({ ...rate, valueSourceRole: protectedRole })).toBe(false);
+    }
+    expect(isCanonicalEstimateConsumerSuppliedParameter({ ...rate, visibilityRole: "INTERNAL_ONLY" })).toBe(false);
+  });
   it.each([
     { valueSourceRole: "MANUFACTURER_CONFIRMED" as const }, { valueSourceRole: "MANDATORY_NORM_VALUE" as const },
     { valueSourceRole: "SELECTED_EQUIPMENT_PASSPORT" as const }, { valueSourceRole: "BACKEND_DERIVED" as const },
-    { visibilityRole: "INTERNAL_ONLY" as const }, { resourceBranchConsumers: [] }, { preliminaryCompilationAllowed: true },
+    { visibilityRole: "INTERNAL_ONLY" as const }, { resourceBranchConsumers: [] },
     { constraints: { ...boundProjectReference.constraints, maxLength: 1001 } },
     { guide: { ...(boundProjectReference.guide as object), sourceRole: "PRIMARY_SOURCE_NORM" } as never },
     { guide: { ...(boundProjectReference.guide as object), sourceSnapshotHash: "missing" } as never },
@@ -222,7 +242,7 @@ describe("canonical professional norm ownership", () => {
   it.each([
     { visibilityRole: "INTERNAL_ONLY" as const }, { valueSourceRole: "MANUFACTURER_CONFIRMED" as const },
     { valueSourceRole: "BACKEND_DERIVED" as const }, { valueSourceRole: "MANDATORY_NORM_VALUE" as const },
-    { resourceBranchConsumers: [] }, { preliminaryCompilationAllowed: true },
+    { resourceBranchConsumers: [] },
     { constraints: { requiredWhen: { kind: "unsupported" } } },
     { guide: { guideKind: "DERIVED_VALUE_RULE", guideValidationPolicy: "MANDATORY_BLOCK" } as never },
     { guide: { guideKind: "PROJECT_DEFINED", guideValidationPolicy: "ADVISORY_REASON_REQUIRED" } as never },

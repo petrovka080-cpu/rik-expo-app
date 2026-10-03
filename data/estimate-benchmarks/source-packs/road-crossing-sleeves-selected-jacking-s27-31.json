@@ -1,0 +1,137 @@
+{
+  "schemaVersion": "rik-expo-app.s27-31.road-crossing-sleeves-selected-jacking-source-pack.v1",
+  "catalogId": "canonical-work:expanded:road_crossing_sleeves",
+  "technicalScope": "One straight uniform casing, rectangular thrust/reception pits, supported full resource programmes only",
+  "sourceAuthority": "Existing primary-source scope boundaries plus actual project/product/method facts; no universal consumption/productivity or project approval",
+  "primarySources": [
+    {
+      "url": "https://www.twi-global.com/technical-knowledge/faqs/faq-what-is-surface-preparation-for-joining",
+      "role": "Actual joining-surface cleanliness and preparation compatibility",
+      "basis": "Joining depends on suitable clean/dry prepared surfaces; contamination and oxide removal depend on actual material and process",
+      "restriction": "No universal cutting/grinding/cleaner/wipe consumption, productivity, WPS approval or casing material acceptance is inferred"
+    },
+    {
+      "url": "https://www.nortonabrasives.com/en-gb/resources/expertise/frequently-asked-cutting-questions",
+      "role": "Separates cutting and grinding product applications",
+      "basis": "The selected abrasive must match its application and actual compatible equipment; a cutting article is not automatically a suitable grinding article",
+      "restriction": "No Norton product/rate is installed as a project default. Actual dimensions, rated speed, material/tool compatibility and discard/reuse method remain selected project/product facts"
+    },
+    {
+      "url": "https://highways.dot.gov/sites/fhwa.dot.gov/files/FP-24.pdf",
+      "role": "Section 152 distinguishes survey/control, marking, maintenance/replacement and removal; sections 204/301/302/725 distinguish moisture conditioning and suitable construction water",
+      "basis": "A survey program maintains/replaces usable temporary markings and removes them at completion. Selected placement requires actual moisture conditioning and suitable water without detrimental substances",
+      "restriction": "No US legal applicability, tolerance, point pitch, moisture target, productivity, added-water/material rate or acceptance is transplanted into the project. All selected facts remain explicit; this component does not replace actual project control/material acceptance"
+    },
+    {
+      "url": "https://gbr.sika.com/en/construction/concrete-repair/grouts/cementitious-grouts/sikagrout-212-fluid.html",
+      "role": "Example distinction between preblended dry powder, mixed yield, actual mixing water and usable dry stock; not approval for casing filling",
+      "basis": "The manufacturer specifies powder packaging, mixed yield and water addition separately, and restricts storage and application conditions.",
+      "restriction": "No Sika designation, example rate, bag size, water ratio or application range is a runtime default or proof of casing-fill suitability. Use the actual project-approved product/method facts; do not count preblended constituents again or assume wet grout is reusable dry inventory."
+    },
+    {
+      "url": "https://www.racispacers.com/choosing-a-spacer/",
+      "role": "RACI-specific spacer selection and ring-layout rules",
+      "basis": "Selection depends on carrier and joint envelope diameters, casing internal diameter, clearance, filled carrier weight and crossing length. The manufacturer's preliminary ring rule is length/approved spacing+3; two rings protect each end.",
+      "restriction": "Do not apply RACI geometry, terminal rings or selection limits to other spacer systems. Diameter alone does not select a load-rated element. An approved layout and selected element remain project facts. Integer rounding is the application's conservative preliminary procurement rule, not a quoted universal installation norm."
+    },
+    {
+      "url": "https://www.racispacers.com/specifications/",
+      "role": "RACI installation and tape dependencies",
+      "basis": "Approved spacing depends on filled-pipe load and is at most 3 m for this system. A single tape course covers each ring's pipe circumference with width at least the selected ring width; an additional adjacent course is allowed by the manufacturer when required, but is outside the implemented single-course component. Installation follows the quotation/order layout.",
+      "restriction": "Provided tape must not be purchased twice. Tape width and the selected ring geometry require product confirmation; preliminary quantities do not establish structural adequacy."
+    },
+    {
+      "url": "https://garlock.com.au/wp-content/uploads/2026/01/EndiTDUCasingEndSeal.Productdatasheet.2024-09-03-14-39-55.en_UK.pdf",
+      "role": "Example end-seal kit scope and included fasteners",
+      "basis": "The EPDM casing-end kit includes stainless fastening straps and protects the annular space from dirt and moisture.",
+      "restriction": "This is not a pressure-rated or universally groundwater-tight seal. Match the exact carrier/casing combination. Included straps have informational scope only, not a second purchase."
+    },
+    {
+      "url": "https://www.ssab.com/en/support/product-material-data/steel/20-questions",
+      "role": "Preliminary steel density for geometric transport mass",
+      "basis": "Approximate density 7.85 g/cm3 converts to 7850 kg/m3.",
+      "restriction": "The actual selected pipe's certified unit mass takes precedence. This physical approximation does not select grade, wall thickness or casing capacity."
+    },
+    {
+      "url": "https://www.twi-global.com/technical-knowledge/job-knowledge/welding-costs-096",
+      "role": "Welding consumption and disjoint cost-basis boundary, not project rates",
+      "basis": "Deposited metal differs from purchased consumable mass. Actual process/product losses and operating time must be distinguished from joint setup, total crew work and equipment costs.",
+      "restriction": "No published illustrative factor or productivity is installed as a universal default. The component accepts explicit approved gross consumption and aggregate crew/equipment rates. Joint preparation, fit-up and inspection remain separately owned."
+    },
+    {
+      "url": "https://www.twi-global.com/technical-knowledge/faqs/faq-how-can-a-manual-metal-arc-electrode-have-an-electrode-efficiency-greater-than-100",
+      "role": "Prevents a core-wire efficiency percentage from becoming gross purchased-electrode recovery",
+      "basis": "MMA electrode efficiency may compare deposited mass to core-wire mass and exceed 100 percent because the coating contributes metal.",
+      "restriction": "Do not treat that percentage as the fraction of total purchased coated-electrode mass recovered, invert it into a generic purchase factor or charge process losses twice."
+    },
+    {
+      "url": "https://highways.dot.gov/federal-lands/pddm/dpg/earthwork-design",
+      "role": "Distinct excavation, loose and finished-volume states; not a project conversion factor",
+      "basis": "Earthwork design distinguishes in-situ, loose and embankment material states and uses project geotechnical characteristics for volume changes.",
+      "restriction": "No illustrative FHWA factor, density or range is installed as a universal norm. This arithmetic component requires actual gross supplied-volume conversion and explicit finished-volume reuse without claiming project engineering acceptance."
+    },
+    {
+      "url": "https://www.fhwa.dot.gov/publications/research/infrastructure/structures/97148/app4.cfm",
+      "role": "Material suitability boundary, not permission to reuse all excavated soil",
+      "basis": "Fill material must meet applicable quality and compaction requirements; some soil types or contaminated/deleterious materials are unsuitable.",
+      "restriction": "A geometric excavation volume proves neither reusable quantity nor product suitability. Only explicitly confirmed compatible reuse in finished-volume equivalent is deducted; classification, testing and placement approval remain external project facts."
+    },
+    {
+      "url": "https://www.pipejacking.org/about_pipe_jacking",
+      "role": "Method-specific work boundary and unknown project facts",
+      "basis": "Pipe jacking requires method-sized thrust/reception pits and a designed reaction arrangement; groundwater conditions can require additional seals and measures.",
+      "restriction": "No pit geometry, thrust capacity, geotechnical condition or groundwater measure is inferred from crossing length. Open-cut and trenchless scopes are not charged together."
+    },
+    {
+      "url": "https://www.twi-global.com/what-we-do/services-and-support/asset-management/non-destructive-testing",
+      "role": "Distinct visual and ultrasonic testing methods and actual selected inspection procedures",
+      "basis": "Inspection methods test actual material/component characteristics without turning an inspection document into labor, equipment or consumables",
+      "restriction": "No project sample fraction, generic couplant rate, inspection productivity, inspector qualification or quality acceptance is installed"
+    },
+    {
+      "url": "https://www.twi-global.com/what-we-do/services-and-support/failure-analysis-and-repair/repair-procedure-development",
+      "role": "Actual defect characterization and compatible repair/reinspection procedures",
+      "basis": "Repair depends on actual defect size, position, material, method and inspection requirements",
+      "restriction": "Do not invent a universal defect percentage, charge hypothetical repairs as initial work or assume passing quality acceptance"
+    },
+    {
+      "url": "https://www.pipejacking.org/assets/pj/static/flipbook/inc/html/23.html",
+      "title": "An introduction to pipe jacking and microtunnelling",
+      "locator": "Page23, section6: Lubrication, Jacking loads and tolerances",
+      "role": "Distinct external overbreak annulus/lubrication and ground loss scope",
+      "restriction": "Only scope boundary. No illustrative load/tolerance/loss/rate, universal annulus supply coefficient or actual geological/injection volume becomes a project default"
+    },
+    {
+      "url": "https://dnk.sika.com/dam/dms/dk01/n/MS_Grouting%20Cementitious_07-2024_v6.pdf",
+      "title": "Cementitious grouting of machine bases and base plates",
+      "edition": "July2024/V3",
+      "locator": "Sections4.2–4.4 pp5–7;6.1–6.2 p9;7.3 p10;9.3–9.4 pp13–14;10 pp14–16;12 pp19–20",
+      "role": "Separate applicable preparation, compatible mixing/pumping equipment, containment, cleaning, curing, waste, quality and actual yield facts",
+      "restriction": "Guide for machine bases/base plates, not approval of casing fill. No sample equipment capacity/ratio/time/water/density/product/yield becomes a default. Actual casing/product/procedure pressure/buoyancy/compatibility and local engineer acceptance remain source-backed project facts. Existing paid full mix/place equipment owns BOM, original gross owns priming/discard material"
+    }
+  ],
+  "predecessorComponentSourcePack": {
+    "sha256": "57f5a4f1ba18cb8bfd744196d18138edcd9262dc645ef54d1eb479b66b31c64b",
+    "path": "data/estimate-benchmarks/source-packs/road-crossing-sleeves-automatic-s27-28.json"
+  },
+  "implementation": {
+    "unsupportedScope": "Exact declared alternative/unimplemented enum branches excluded from selected FULL definition; broad component owner remains incomplete",
+    "firstComposition": "Only explicit prompt facts; absent required project inputs defer to visible original row needs, invalid supplied values reject",
+    "waste": "Actual separate positive discarded flows require positive actual net waste, no inferred density, no duplicate order",
+    "compiler": "canonicalEstimateCompileCore",
+    "projectAdmission": "Unknown compatibility/design/method/rates/acceptance/routes/receivers/prices remain project facts; technical coverage does not claim engineering approval",
+    "paidFillBoundary": "Existing full mixer/pump/hose package owns mixing/placing/energy; BOM included, crew separate; priming/discard already in gross dry and mix-water",
+    "restoration": "One homogeneous granular layer only, separate actual restoration area times finished thickness; no multilayer or asphalt SKU",
+    "physicalInventory": "Traffic actual simultaneous inventory plus actual replacements independent days; curing actual area times applications times gross rate independent days",
+    "externalFill": "Source-confirmed uniform full annulus computed from actual excavation diameter, casing OD and length; other geological/injection geometry unsupported",
+    "ownerModule": "src/lib/estimate/v4/roadCrossingSleevesSelectedJackingR1.ts",
+    "quantityAuthority": "Original project geometry/process consumption; effective accepted purchase for supplied/balance/freight, original safety facts required even manual",
+    "finiteCompletionModule": "src/lib/estimate/v4/roadCrossingSleevesSelectedCompletionR1.ts"
+  },
+  "profilePolicy": {
+    "validationFixtureIsNotRuntimeInput": true,
+    "runtimeDefaults": {}
+  },
+  "engineeringAcceptanceClaimed": false,
+  "universalRatesClaimed": false
+}

@@ -76,6 +76,8 @@ import {
   RESERVOIR_CLEAN_WATER_CATALOG_ID,
   parseReservoirCleanWaterOrdinaryPromptR1,
 } from "../../lib/estimate/v4/reservoirCleanWaterR1";
+import { ROAD_CROSSING_SLEEVES_SELECTED_JACKING_CATALOG_ID_R1, ROAD_CROSSING_SLEEVES_PRIMARY_MEASURE_PARAMETER_ID_R1,
+  parseRoadCrossingSleevesSelectedJackingPromptR1 } from "../../lib/estimate/v4/roadCrossingSleevesSelectedJackingPromptR1";
 
 type UserQuantity = { value: string; unit: "pcs" | "m2" | "m3" | "m" | "kg" | "t" | null };
 type CanonicalBaselinePlan = {
@@ -2218,6 +2220,8 @@ export function buildCanonicalBaselinePlan(input: {
   const reservoirCleanWaterInput = input.catalog.catalogId === RESERVOIR_CLEAN_WATER_CATALOG_ID
     ? parseReservoirCleanWaterOrdinaryPromptR1(input.prompt)
     : null;
+  const selectedJackingInput = input.catalog.catalogId === ROAD_CROSSING_SLEEVES_SELECTED_JACKING_CATALOG_ID_R1
+    ? parseRoadCrossingSleevesSelectedJackingPromptR1(input.prompt) : null;
   const userQuantity = pumpStationInput == null && stripFoundationInput == null
     && asphaltDrainageInput == null && asphaltRoadInput == null
     && formworkFramiXlifeInput == null && ricsNrm2FormworkInput == null
@@ -2231,6 +2235,7 @@ export function buildCanonicalBaselinePlan(input: {
     && pressurePipelineInput == null
     && pressureSewerPipelineInput == null
     && reservoirCleanWaterInput == null
+    && selectedJackingInput == null
     ? extractUserQuantity(input.prompt)
     : null;
   let userQuantityParameterId: string | null = null;
@@ -2260,6 +2265,7 @@ export function buildCanonicalBaselinePlan(input: {
        ?? pressurePipelineInput
        ?? pressureSewerPipelineInput
        ?? reservoirCleanWaterInput
+       ?? selectedJackingInput
        ?? {},
   );
   const textExtractedParameterIds = Object.keys(submittedInputs);
@@ -2350,6 +2356,8 @@ export function buildCanonicalBaselinePlan(input: {
           ? "psp_route_length_m"
         : reservoirCleanWaterInput != null
           ? "rcw_reservoir_count"
+        : selectedJackingInput != null
+          ? ROAD_CROSSING_SLEEVES_PRIMARY_MEASURE_PARAMETER_ID_R1
     : connectedUserQuantityParameterId
     ?? formulaConnectedPrimaryParameterId;
   const preferredPrimaryParameter = input.catalog.parameterSchema.find(

@@ -165,11 +165,10 @@ function hasDeclaredConditionalRequirement(schema: ParameterSchema): boolean {
 
 function isMandatoryProjectNumericResourceFact(schema: ParameterSchema): boolean {
   return ["decimal", "integer"].includes(schema.valueType)
-    && schema.valueSourceRole === "CONDITIONAL_PROJECT_FACT"
-    && schema.preliminaryCompilationAllowed === false
+    && ["CONDITIONAL_PROJECT_FACT", "PROJECT_SPECIFIC_INPUT"].includes(String(schema.valueSourceRole))
     && schema.guide?.guideKind === "PROJECT_DEFINED"
     && schema.guide.guideValidationPolicy === "MANDATORY_BLOCK"
-    && hasDeclaredConditionalRequirement(schema)
+    && (hasDeclaredConditionalRequirement(schema) || (schema.valueSourceRole === "PROJECT_SPECIFIC_INPUT" && schema.required === true))
     && canonicalEstimateParameterHasCalculationConsumer(schema);
 }
 
@@ -180,8 +179,7 @@ function isMandatoryProjectNumericResourceFact(schema: ParameterSchema): boolean
 function isMandatoryProjectReferenceResourceFact(schema: ParameterSchema): boolean {
   const guide = schema.guide;
   return schema.valueType === "text"
-    && schema.valueSourceRole === "CONDITIONAL_PROJECT_FACT"
-    && schema.preliminaryCompilationAllowed === false
+    && ["CONDITIONAL_PROJECT_FACT", "PROJECT_SPECIFIC_INPUT"].includes(String(schema.valueSourceRole))
     && guide?.guideKind === "PROJECT_DEFINED"
     && guide.guideValidationPolicy === "MANDATORY_BLOCK"
     && guide.sourceRole === "PROJECT_DOCUMENTATION"
@@ -189,7 +187,7 @@ function isMandatoryProjectReferenceResourceFact(schema: ParameterSchema): boole
     && /^[a-f0-9]{64}$/iu.test(guide.sourceSnapshotHash ?? "")
     && schema.constraints.minLength === 1
     && typeof schema.constraints.maxLength === "number" && schema.constraints.maxLength > 0 && schema.constraints.maxLength <= 1000
-    && hasDeclaredConditionalRequirement(schema)
+    && (hasDeclaredConditionalRequirement(schema) || (schema.valueSourceRole === "PROJECT_SPECIFIC_INPUT" && schema.required === true))
     && (schema.resourceBranchConsumers?.length ?? 0) > 0;
 }
 
@@ -209,9 +207,8 @@ export function isCanonicalEstimateVisibleUserResourceSelectionParameter(
   if (schema.required !== true && !conditionalRequirement) return false;
   if ((schema.resourceBranchConsumers?.length ?? 0) === 0) return false;
   const sourceRole = String(schema.valueSourceRole ?? "").trim().toUpperCase();
-  const mandatoryProjectGate = sourceRole === "CONDITIONAL_PROJECT_FACT"
-    && conditionalRequirement
-    && schema.preliminaryCompilationAllowed === false
+  const mandatoryProjectGate = ((sourceRole === "CONDITIONAL_PROJECT_FACT" && conditionalRequirement)
+      || (sourceRole === "PROJECT_SPECIFIC_INPUT" && schema.required === true))
     && schema.guide?.guideKind === "PROJECT_DEFINED"
     && schema.guide?.guideValidationPolicy === "MANDATORY_BLOCK";
   // Legacy document links without explicit preliminary project-gate ownership

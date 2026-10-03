@@ -98,6 +98,12 @@ type OwnerConfig = Readonly<{
   conditional: readonly AutomaticParameterSpec[];
   rows: readonly AutomaticRowSpec[];
   excludedUnownedAssumptions: readonly string[];
+  /** Explicit selected-owner opt-in: absent facts become original row needs;
+   * supplied invalid facts and original resource safety gates stay blocking. */
+  deferMissingProjectFactsToRows?: boolean;
+  /** Actual unconditional project inventory/physical ratios, never norms,
+   * manufacturer passports or compiler-derived quantities. */
+  unconditionalProjectFactParameterIds?: readonly string[];
 }>;
 
 function constraints(spec: AutomaticParameterSpec): Json {
@@ -181,6 +187,14 @@ export function buildAutomaticConstructionOwnerR1(
     }
   }
   const ordinaryIds = config.ordinary.map((spec) => spec.id);
+  const unconditionalProjectFacts = new Set(config.unconditionalProjectFactParameterIds ?? []);
+  for (const id of unconditionalProjectFacts) {
+    const spec = specsById.get(id);
+    if (config.deferMissingProjectFactsToRows !== true || !spec || spec.kind !== "ordinary"
+      || spec.requiredWhen != null || !["decimal", "integer"].includes(spec.valueType)) {
+      throw new Error(`AUTOMATIC_UNCONDITIONAL_PROJECT_FACT_INVALID:${id}`);
+    }
+  }
   const parameters = specs.map((spec, ordinal) => ({
     parameter_id: spec.id,
     ordinal,
@@ -194,7 +208,7 @@ export function buildAutomaticConstructionOwnerR1(
       contract: config.contract,
       semantic_parameter_key: `${config.semanticOwner}:${spec.id}`,
       visibility_role: spec.kind === "internal" ? "INTERNAL_ONLY" : "USER_INPUT",
-      value_source_role: spec.kind === "ordinary" ? "USER_INPUT"
+      value_source_role: unconditionalProjectFacts.has(spec.id) ? "PROJECT_SPECIFIC_INPUT" : spec.kind === "ordinary" ? "USER_INPUT"
         : spec.kind === "profile" ? "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE"
           : spec.kind === "internal" ? "COMPILER_DERIVED_RESOURCE_QUANTITY" : "CONDITIONAL_PROJECT_FACT",
       ...(spec.effectiveQuantitySourceRowId ? { effective_resource_quantity_v1: {
@@ -203,20 +217,19 @@ export function buildAutomaticConstructionOwnerR1(
       input_origin_class: spec.kind === "ordinary" ? "KNOWN_PRIMARY_WORK_SCOPE"
         : spec.kind === "profile" ? "VISIBLE_PRELIMINARY_ENGINEERING_PROFILE"
           : "APPROVED_PROJECT_OR_METHOD_STATEMENT",
-      // A first estimate may use the visible engineering profile, but it must
-      // not turn an actually unknown primary/project fact into dozens of
-      // resource-level preliminary needs. Those facts belong to the compact
-      // parameter collection screen before compile.
-      preliminary_compilation_allowed: spec.kind === "profile",
-      source_confirmation_required: spec.kind !== "ordinary",
+      // Existing owners collect missing exact facts before compile. An
+      // explicitly selected owner may expose its first immutable composition
+      // with local row needs, retaining the same invalid-value/source guards.
+      preliminary_compilation_allowed: spec.kind === "profile" || (config.deferMissingProjectFactsToRows === true && spec.kind !== "internal"),
+      source_confirmation_required: spec.kind !== "ordinary" || unconditionalProjectFacts.has(spec.id),
       guide: {
-        guide_kind: spec.kind === "ordinary" ? "MEASUREMENT_RULE" : "PROJECT_DEFINED",
+        guide_kind: spec.kind === "ordinary" && !unconditionalProjectFacts.has(spec.id) ? "MEASUREMENT_RULE" : "PROJECT_DEFINED",
         guide_short_ru: spec.kind === "ordinary"
           ? `${spec.title}: укажите только фактическое исходное значение.`
           : spec.kind === "profile"
             ? `${spec.title}: видимое предварительное значение; замените по проекту или спецификации.`
             : `${spec.title}: укажите подтверждённое значение из проекта, спецификации или технологической карты.`,
-        source_role: spec.kind === "ordinary" ? "USER_SUPPLIED_PRIMARY_FACT"
+        source_role: spec.kind === "ordinary" && !unconditionalProjectFacts.has(spec.id) ? "USER_SUPPLIED_PRIMARY_FACT"
           : spec.kind === "profile" ? "VISIBLE_PRELIMINARY_ENGINEERING_PROFILE_REQUIRES_PROJECT_CONFIRMATION"
             : "PROJECT_DOCUMENTATION",
         source_document: config.sourceId,
