@@ -13,8 +13,13 @@ export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
-export function assertCanonicalProfessionalPdfJobRendererVersion(input: Record<string, unknown>): void {
-  if (input.rendererVersion != null && input.rendererVersion !== CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION) {
+export function assertCanonicalProfessionalPdfJobRendererVersion(input: unknown): void {
+  if (input == null || typeof input !== "object" || Array.isArray(input)) {
+    throw Object.assign(new Error("professional PDF job payload must be an object"), { code: "ARTIFACT_RENDERER_VERSION_MISMATCH" });
+  }
+  const payload = input as Record<string, unknown>;
+  if (Object.prototype.hasOwnProperty.call(payload, "rendererVersion")
+    && payload.rendererVersion !== CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION) {
     throw Object.assign(new Error("professional PDF job renderer does not match this worker"), { code: "ARTIFACT_RENDERER_VERSION_MISMATCH" });
   }
 }

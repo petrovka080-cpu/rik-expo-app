@@ -15,6 +15,10 @@ test("versioned professional PDF jobs reject an obsolete worker and retain legac
   expect(() => assertCanonicalProfessionalPdfJobRendererVersion({})).not.toThrow();
   expect(() => assertCanonicalProfessionalPdfJobRendererVersion({ rendererVersion: "canonical-professional-pdf.old" }))
     .toThrow(expect.objectContaining({ code: "ARTIFACT_RENDERER_VERSION_MISMATCH" }));
+  for (const invalid of [null, [], { rendererVersion: null }]) {
+    expect(() => assertCanonicalProfessionalPdfJobRendererVersion(invalid))
+      .toThrow(expect.objectContaining({ code: "ARTIFACT_RENDERER_VERSION_MISMATCH" }));
+  }
 });
 
 function revision(rowCount: number) {
@@ -84,7 +88,8 @@ describe("R4-A6 canonical professional PDF", () => {
     });
     expect(projection.html).toContain(label);
     expect(projection.html).not.toContain("HDPE_BUTT_FUSION_OPEN_TRENCH");
-    expect(publicBoqDisplayNameRu({ sourceNameRu: source.title_ru, rowType: "work" }))
+    expect(typeof source.title_ru).toBe("string");
+    expect(publicBoqDisplayNameRu({ sourceNameRu: String(source.title_ru), rowType: "work" }))
       .toBe(`Строительство и приёмка напорного канализационного трубопровода — ${label}`);
     expect(projection.rowCount).toBe(compiled.rows.length);
     expect(JSON.stringify(compiled)).toBe(snapshot);
