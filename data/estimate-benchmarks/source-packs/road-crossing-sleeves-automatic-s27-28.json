@@ -21,6 +21,8 @@
     "casingMaterialVerification": "tests/estimateNorms/roadCrossingSleevesCasingMaterialR1.contract.test.ts",
     "beddingMaterialModule": "src/lib/estimate/v4/roadCrossingSleevesBeddingMaterialR1.ts",
     "beddingMaterialVerification": "tests/estimateNorms/roadCrossingSleevesBeddingMaterialR1.contract.test.ts",
+    "pitReturnFillModule": "src/lib/estimate/v4/roadCrossingSleevesPitReturnFillR1.ts",
+    "pitReturnFillVerification": "tests/estimateNorms/roadCrossingSleevesPitReturnFillR1.contract.test.ts",
     "componentIntegrationModule": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",
     "componentIntegrationVerification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
     "evaluator": "Existing canonical FormulaGraph only",
@@ -47,11 +49,13 @@
       "one explicitly selected casing metre order reuses the existing whole-section quantity graph; installed/cut/spare/stock/new order/unused sections are distinct informational balances, not a second section, package or geometric-mass charge",
       "shared mixed InclusionGraph condition selects granular bedding only for confirmed open rectangular trench and positive full-width thickness; known zero/jacking excludes questions and payment while retaining inactive facts",
       "finished bedding geometry times actual gross supplied-loose-volume ratio already including all process/compaction losses; compatible same-state stock, retained reserve, actual supply multiple, new order and free remainder are distinct outputs",
-      "only new ordered loose m3 own bedding material cost/procurement; consumption, supply multiples and geometric volume are not second charges or inferred truck trips; manual quantity cannot confirm unknown method/thickness/product"
+      "only new ordered loose m3 own bedding material cost/procurement; consumption, supply multiples and geometric volume are not second charges or inferred truck trips; manual quantity cannot confirm unknown method/thickness/product",
+      "confirmed rectangular thrust/reception excavation minus each pit's actual non-overlapping permanent occupied volume gives remaining geometric space; original volumes stay explicit, missing is not zero, and invalid pits cannot compensate each other or be concealed by manual quantities",
+      "pit-space outputs remain editable informational controls, not soil suitability, compacted consumption, loose supply, annular grout, haul or additional paid excavation/fill owners"
     ],
     "requiredBeforeFullOwnerPublication": [
       "actual load-rated product selection and approved layout; tested geometric compatibility alone is not structural acceptance",
-      "integration of actual method-specific civil work, support/reaction arrangement, groundwater measures and net pit return fill after retained structures",
+      "integration of actual method-specific civil work, support/reaction arrangement, groundwater measures and approved pit return-fill technology/material and execution resources",
       "actual slopes/end ramps/nonrectangular shafts or other methods outside the implemented rectangular component; never approximate these by the accepted simple geometry without confirmation",
       "actual approved WPS and product/rate selection plus full-owner integration of the tested conditional MMA joint resource component; a reference string alone is not WPS approval",
       "other welding processes require their own actual compatible consumables/cost basis; never substitute this MMA component or its fixtures",
@@ -121,6 +125,7 @@
     "external excavation dimensions for the selected rectangular method; usable pit dimensions are not substituted for excavation dimensions",
     "actual selected jacking excavation diameter; it is not inferred from casing OD",
     "actual approved full-width bedding thickness for the open rectangular branch; no hidden bedding or pit size",
+    "each selected rectangular jacking pit's actual non-overlapping permanent occupied volume includes retained structures, casing ends and other excluded fill; temporary equipment is not permanent occupation and unknown is never zero",
     "selected granular bedding, actual gross loose-volume consumption including all compaction/process losses, compatible same-state loose stock/reserve and supplier volume multiple; no universal compaction factor",
     "applicable approved MMA WPS, selected electrode, actual gross kg/joint including process losses, usable compatible stock/reserve and actual net pack mass",
     "aggregate joint crew person-hours excluding separately owned material/equipment cost; actual equipment hours with all personnel excluded and energy included"

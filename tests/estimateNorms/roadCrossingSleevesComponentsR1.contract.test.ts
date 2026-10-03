@@ -30,6 +30,7 @@ const fixture: Record<string, unknown> = {
   rcs_jacking_thrust_excavation_length_m: 6, rcs_jacking_thrust_excavation_width_m: 4, rcs_jacking_thrust_excavation_depth_m: 3,
   rcs_jacking_reception_excavation_length_m: 4, rcs_jacking_reception_excavation_width_m: 3, rcs_jacking_reception_excavation_depth_m: 2.5,
   rcs_jacking_confirmed_excavation_diameter_mm: 580,
+  rcs_jacking_thrust_permanent_occupied_volume_m3: 12, rcs_jacking_reception_permanent_occupied_volume_m3: 7,
   rcs_joint_wps_reference: "TEST-OWNED applicable MMA WPS", rcs_joint_welding_process: bases.process,
   rcs_joint_electrode_designation: "TEST-OWNED compatible electrode", rcs_joint_gross_electrode_kg_per_joint: 2,
   rcs_joint_electrode_retained_spare_kg: 1, rcs_joint_electrode_compatible_stock_kg: 0.5, rcs_joint_electrode_supplier_pack_kg: 2.5,
@@ -121,7 +122,7 @@ describe("road-casing component integration, not full crossing acceptance", () =
     const result = await compile(input);
     expect(result.rows.some(row => row.row_id.startsWith("rcs:civil:"))).toBe(false);
     expect(result.preliminaryNeeds.length).toBeGreaterThan(0);
-    expect(result.preliminaryNeeds.every(need => /^(?:rcs:civil:|rcs:bedding:)/u.test(need.row_id) && need.need_state === "CONDITION_REQUIRED")).toBe(true);
+    expect(result.preliminaryNeeds.every(need => /^(?:rcs:civil:|rcs:bedding:|rcs:pit-return:)/u.test(need.row_id) && need.need_state === "CONDITION_REQUIRED")).toBe(true);
     expect([...new Set(result.preliminaryNeeds.flatMap(need => need.missing_parameter_ids))]).toEqual(["rcs_civil_installation_method"]);
     expect(result.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual(owners);
   });
@@ -131,6 +132,21 @@ describe("road-casing component integration, not full crossing acceptance", () =
     expect(result.preliminaryNeeds.length).toBeGreaterThan(0);
     expect(result.preliminaryNeeds.every(need => need.row_id.startsWith("rcs:joint:") && need.missing_parameter_ids.includes("rcs_joint_wps_reference"))).toBe(true);
     expect(result.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual([...owners.slice(0, 4), beddingOwner]);
+  });
+  it("reuses actual pit geometry and gates unknown retained volume locally, without an extra paid owner", async () => {
+    const input: Record<string, unknown> = { ...fixture, rcs_civil_installation_method: methods.pipeJacking };
+    const known = await compile(input);
+    expect(q(known, "rcs:pit-return:total_remaining_space_m3")).toBe(83);
+    const changedCrossing = await compile({ ...input, rcs_crossing_length_m: 70, rcs_jacking_confirmed_excavation_diameter_mm: 1000 });
+    expect(q(changedCrossing, "rcs:pit-return:total_remaining_space_m3")).toBe(83);
+    expect(known.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual(owners);
+    delete input.rcs_jacking_reception_permanent_occupied_volume_m3;
+    const unknown = await compile(input, { "rcs:pit-return:total_remaining_space_m3": { quantity: "999", provenance } });
+    expect(unknown.preliminaryNeeds).toHaveLength(2);
+    expect(unknown.preliminaryNeeds.every(need => need.row_id.startsWith("rcs:pit-return:") && need.missing_parameter_ids.includes("rcs_jacking_reception_permanent_occupied_volume_m3"))).toBe(true);
+    expect(q(unknown, "rcs:civil:jacking_reception_pit_excavation_m3")).toBe(30);
+    expect(q(unknown, "rcs:pit-return:thrust_remaining_space_m3")).toBe(60);
+    expect(unknown.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual(owners);
   });
   it("unknown joint envelope leaves casing and welding known, while RACI selection gates remain local", async () => {
     const input = { ...fixture }; delete input.rcs_maximum_joint_envelope_diameter_mm;

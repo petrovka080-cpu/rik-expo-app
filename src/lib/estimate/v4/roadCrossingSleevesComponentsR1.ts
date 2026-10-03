@@ -6,6 +6,7 @@ import { ROAD_CROSSING_SLEEVES_CIVIL_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_CIVIL_
 import { ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_ROWS_R1 } from "./roadCrossingSleevesJointResourcesR1";
 import { ROAD_CROSSING_SLEEVES_CASING_MATERIAL_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_CASING_MATERIAL_ROWS_R1 } from "./roadCrossingSleevesCasingMaterialR1";
 import { ROAD_CROSSING_SLEEVES_BEDDING_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_BEDDING_ROWS_R1 } from "./roadCrossingSleevesBeddingMaterialR1";
+import { ROAD_CROSSING_SLEEVES_PIT_RETURN_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_PIT_RETURN_ROWS_R1 } from "./roadCrossingSleevesPitReturnFillR1";
 
 /** Composition of tested components ONLY. No second evaluator, profile defaults,
  * publication or claim of complete crossing execution. Return scope alongside
@@ -17,7 +18,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENTS_SCOPE_R1 = Object.freeze({
   fullOwner: false, engineeringAccepted: false, readyForPublication: false,
   omitted: Object.freeze([
     "Method-specific civil execution resources, excavation support/reaction structures and groundwater measures",
-    "Actual net pit return fill, suitability/reuse/haul/disposal of soil and non-granular/other bedding technologies",
+    "Approved pit return-fill technology, suitability/reuse/haul/disposal of soil and non-granular/other bedding technologies",
     "Joint preparation/fit-up/NDT/repairs/coating/drying and method-specific insertion/lifting",
     "Actual logistics and certified freight mass, compatible prices and disjoint cost bases",
     "Full-owner reconciliation of explicit purchase exceptions with formula-reference balances",
@@ -29,11 +30,13 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_PARAMETERS_R1: readonly AutomaticPa
   ...ROAD_CROSSING_SLEEVES_CASING_MATERIAL_PARAMETERS_R1, ...ROAD_CROSSING_SLEEVES_PROCUREMENT_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_CIVIL_PARAMETERS_R1, ...ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_BEDDING_PARAMETERS_R1,
+  ...ROAD_CROSSING_SLEEVES_PIT_RETURN_PARAMETERS_R1,
 ]);
 export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[] = Object.freeze([
   ...ROAD_CROSSING_SLEEVES_CASING_MATERIAL_ROWS_R1, ...ROAD_CROSSING_SLEEVES_SPACER_GEOMETRY_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_PROCUREMENT_ROWS_R1, ...ROAD_CROSSING_SLEEVES_CIVIL_ROWS_R1, ...ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_BEDDING_ROWS_R1,
+  ...ROAD_CROSSING_SLEEVES_PIT_RETURN_ROWS_R1,
 ]);
 function assertUnique(ids: readonly string[], kind: string): void {
   const seen = new Set<string>();
