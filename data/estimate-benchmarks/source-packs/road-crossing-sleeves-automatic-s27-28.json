@@ -5,7 +5,7 @@
   "scope": "One continuous steel casing crossing with explicitly selected installation method. Casing supply and site joints, support rings and elements, contact tape, compatible end-seal kits, applicable civil work, crew labor, mechanisms and logistics are separate quantity/cost owners. This source pack is not itself a published owner or accepted estimate.",
   "engineeringAcceptanceClaimed": false,
   "universalRatesClaimed": false,
-  "implementationStatus": "COMPONENT_ASSEMBLY_WITH_ACTUAL_SUPPLY_FREIGHT_SOIL_STATES_HAUL_RECEIVING_INSPECTION_STAKING_COMPACTION_WATER_JACKING_LOADING_CASING_PREPARATION_COATING_PE_CONNECTIONS_HYDRAULIC_PUMPING_AND_WATER_RECEIVING_RESOURCES_NOT_PUBLISHED_NOT_FULL_OWNER",
+  "implementationStatus": "COMPONENT_ASSEMBLY_WITH_ACTUAL_SUPPLY_FREIGHT_SOIL_STATES_HAUL_RECEIVING_INSPECTION_STAKING_COMPACTION_WATER_JACKING_LOADING_CASING_PREPARATION_COATING_PE_CONNECTIONS_HYDRAULIC_PUMPING_WATER_RECEIVING_AND_SINGLE_BAG_TREATMENT_RESOURCES_NOT_PUBLISHED_NOT_FULL_OWNER",
   "quantityComponent": {
     "module": "src/lib/estimate/v4/roadCrossingSleevesQuantityModelR1.ts",
     "verification": "tests/estimateNorms/roadCrossingSleevesQuantityModelR1.contract.test.ts",
@@ -124,6 +124,19 @@
       "receiving": "Explicit other-party receiving creates no charge. Separate receiving owns only excess loose m3 OR actual tonnes from moist shipping density, excluding transport and other execution; no invented disposal permission, prices or generic density",
       "independence": "Known bank/loose excavation remains calculable with unavailable fill/reuse data. Dependent balance/trips/receiving retain original geometry, actual state facts, suitability/allocation and route/receiver/cost boundaries even under manual paid quantities. Explicit zero reuse disables origin/conversion; zero excess disables truck/destination/receiving facts. Negative allocation is rejected rather than clamped",
       "open": "Material/technology/design/classification acceptance, mixed/slurry allocation, extra sorting/site handling, all other stage gaps and governed full-owner publication remain open"
+    },
+    "singleBagWaterTreatmentResources": {
+      "module": "src/lib/estimate/v4/roadCrossingSleevesWaterTreatmentR1.ts",
+      "verification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
+      "editorVerification": "tests/requestEstimate/canonicalCrossingFreightParameterProjection.contract.test.ts",
+      "scope": "One actual complete leased passive housing with one bag for the entire homogeneous once-through stream of simultaneously working pumps; no recirculation, parallel housings, additional powered treatment or inferred contaminant removal approval",
+      "resources": "One kit's entire calendar lease, original housing/basket/support/connections/valves/measurement/protection and full actual included hose/coupling/service gasket/cleaner/lubricant/wipe BOM quantities. Offsite preparation/return cleaning included once; all actual onsite setup, monitoring, complete bag initial-insertion/change/final-removal cycles and final kit removal personnel/compatible separate machinery are disjoint. Pump energy owns all actual filter hydraulic loss already in original head",
+      "bags": "ceil(original pumped m3 / actually confirmed effective m3 per whole bag at actual quality/condition/pressure programme); not a universal manufacturer volume norm. Used wet bags and actual preinstall rejects consume material; rejects never add filtration cycles. Exclusive initial usable stock, retained reserve, whole supplier packs, new order, unused usable remainder and free surplus are separate; wet used bags are not reusable inventory",
+      "integrity": "Instantaneous filter capacity covers all simultaneously working pumps without multiplying by average duty or standby. Actual rated pressure covers actual maximum. Invalid flow/pressure rejects before manual rental/orders; original water/kit/programme/head/bag compatibility/effective capacity/cost gates remain under manual paid bags. Unknown effective capacity or pack size leaves independently known lease, setup, monitoring, pump fuel and civil work calculable. Idle-only zero water retains actual deployed kit lease but disables bag products/orders/cycles",
+      "freight": "Only whole newly ordered supplier bag packages or separately allocated whole usable offsite bags use shared actual certified mass/payload/placement freight. Packaging surplus and stock do not inflate treated volume, filtering cycles or extra equipment",
+      "primarySource": "https://www.eaton.com/content/dam/eaton/products/filtration-solutions/filter-systems-and-strainers/filters-and-strainers/bag-filter-housing/documents/installation-and-operation-manuals/eaton-installation-operation-maintenance-manual-bag-filter-housing-us.pdf",
+      "sourceBoundary": "Manufacturer example distinguishes complete accessories, operating compatibility, condition/differential-pressure bag changes and service supplies. No example flow/pressure/temperature/volume/maintenance norm, foreign rule, product selection or actual water-quality approval is installed",
+      "open": "Actual whole-kit/water/treatment/hydraulic/design/quality acceptance, wet bags/preinstall rejects/service waste and its collection/haul/receiving, extra protection materials, other treatment/heterogeneous/recirculating programmes, equipment delivery/return, prices, full crossing publication and actual user acceptance remain open"
     },
     "waterReceivingResources": {
       "module": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",

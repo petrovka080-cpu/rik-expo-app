@@ -12,7 +12,10 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_FREIGHT_MOD
   ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_MODES_R1 as connectionModes,
   ROAD_CROSSING_SLEEVES_WATER_CONTROL_MODES_R1 as waterControlModes,
   ROAD_CROSSING_SLEEVES_WATER_RECEIVING_MODES_R1 as waterReceivingModes,
-  ROAD_CROSSING_SLEEVES_WATER_RECEIVING_COST_BASIS_R1 as waterReceivingBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_WATER_RECEIVING_COST_BASIS_R1 as waterReceivingBasis,
+  ROAD_CROSSING_SLEEVES_WATER_TREATMENT_MODES_R1 as waterTreatmentModes,
+  ROAD_CROSSING_SLEEVES_WATER_TREATMENT_RENTAL_BASIS_R1 as waterTreatmentRentalBasis,
+  ROAD_CROSSING_SLEEVES_WATER_TREATMENT_BAG_BASIS_R1 as waterTreatmentBagBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_TRENCH_FILL_MODES_R1 as fillModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
 import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierSupplyModes } from "../../src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1";
@@ -284,6 +287,43 @@ describe("actual pump deployment and fuel facts through the common editor", () =
     expect(zero.parameters.some(p => p.parameterId === "rcs_water_receiving_receiver_reference")).toBe(false);
     expect(zero.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_water_receiving_receiver_reference")).toMatchObject({ value: receiving.rcs_water_receiving_receiver_reference });
     expect(catalog.parameterSchema.some(p => /water_receiving.*(?:allocated_water|separate_receiving)/u.test(p.parameterId))).toBe(false);
+  });
+  const treatment: Record<string, CanonicalEstimateParameterInputValue> = { ...water,
+    rcs_water_treatment_mode: waterTreatmentModes.singleBag, rcs_water_treatment_program_reference: "TEST actual homogeneous once-through common single-bag programme",
+    rcs_water_treatment_allocation_reference: "TEST exclusive common kit/full period and separately paid bags/disjoint operators",
+    rcs_water_treatment_kit_product_reference: "TEST actual complete kit/service BOM, water/flow/pressure compatibility, filter losses already in pump head",
+    rcs_water_treatment_confirmed_max_flow_m3_h: 15, rcs_water_treatment_actual_max_housing_pressure_bar: 2, rcs_water_treatment_rated_max_housing_pressure_bar: 4,
+    rcs_water_treatment_kit_service_gasket_count: 10, rcs_water_treatment_kit_service_cleaner_l: 0.2,
+    rcs_water_treatment_rental_cost_basis: waterTreatmentRentalBasis, rcs_water_treatment_bag_product_reference: "TEST actual whole-bag capacity before required pressure/condition change",
+    rcs_water_treatment_bag_effective_capacity_m3: 50, rcs_water_treatment_bag_actual_preinstall_unusable_count: 1, rcs_water_treatment_bag_compatible_stock_count: 1,
+    rcs_water_treatment_bag_retained_reserve_count: 2, rcs_water_treatment_bag_supplier_pack_count: 4, rcs_water_treatment_bag_cost_basis: waterTreatmentBagBasis,
+    rcs_water_treatment_bag_cycle_crew_h_per_unit: 0.4, rcs_water_treatment_monitoring_equipment_h_per_unit: 0,
+  };
+  it("fills actual whole filter and bag programme facts in editable controls with source guidance and physical units", () => {
+    const visible = cards(treatment);
+    for (const [key, value] of Object.entries(treatment).filter(([key]) => key.startsWith("rcs_water_treatment_"))) {
+      expect(visible.find(c => c.key === key)).toMatchObject({ value, editable: true, missing: false });
+      expect(visible.find(c => c.key === key)?.guideShortRu).toBeTruthy();
+    }
+    expect(visible.find(c => c.key === "rcs_water_treatment_bag_effective_capacity_m3")?.unitRu).toBe("м³/шт.");
+    expect(visible.find(c => c.key === "rcs_water_treatment_actual_max_housing_pressure_bar")?.unitRu).toBe("бар");
+    expect(visible.find(c => c.key === "rcs_water_treatment_monitoring_equipment_h_per_unit")?.unitRu).toBe("маш.-ч/ч");
+    expect(catalog.parameterSchema.some(p => /water_treatment.*(?:filtered_water|used_count|ordered_count|rental_set_hours)/u.test(p.parameterId))).toBe(false);
+  });
+  it("unknown effective bag capacity is an editable local need while known filter compatibility remains filled", () => {
+    const input = { ...treatment }; delete input.rcs_water_treatment_bag_effective_capacity_m3;
+    const visible = cards(input);
+    expect(visible.find(c => c.key === "rcs_water_treatment_bag_effective_capacity_m3")).toMatchObject({ value: null, missing: true, editable: true });
+    expect(visible.find(c => c.key === "rcs_water_treatment_confirmed_max_flow_m3_h")).toMatchObject({ value: 15, missing: false, editable: true });
+  });
+  it("idle zero water retains the deployed common kit while saved bag facts are inactive and durable", () => {
+    const idle = session({ ...treatment, rcs_water_control_working_duty_fraction: 0 });
+    expect(idle.parameters.find(p => p.parameterId === "rcs_water_treatment_rental_cost_basis")).toMatchObject({ value: waterTreatmentRentalBasis });
+    expect(idle.parameters.some(p => p.parameterId === "rcs_water_treatment_bag_effective_capacity_m3")).toBe(false);
+    expect(idle.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_water_treatment_bag_effective_capacity_m3")).toMatchObject({ value: 50 });
+    const noFilter = session({ ...treatment, rcs_water_treatment_mode: waterTreatmentModes.notRequired });
+    expect(noFilter.parameters.find(p => p.parameterId === "rcs_water_treatment_program_reference")).toBeDefined();
+    expect(noFilter.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_water_treatment_kit_product_reference")).toMatchObject({ value: treatment.rcs_water_treatment_kit_product_reference });
   });
 });
 

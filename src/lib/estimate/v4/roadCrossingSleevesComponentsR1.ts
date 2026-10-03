@@ -9,6 +9,7 @@ import { ROAD_CROSSING_SLEEVES_CASING_MATERIAL_PARAMETERS_R1, ROAD_CROSSING_SLEE
   ROAD_CROSSING_SLEEVES_CARRIER_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_CARRIER_ROWS_R1,
   ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierSupplyModes, ROAD_CROSSING_SLEEVES_CARRIER_EXPRESSIONS_R1 as carrierQuantities } from "./roadCrossingSleevesCasingMaterialR1";
 import { compileFormulaGraph } from "../backendPlatform/formulaGraph";
+import { buildRoadCrossingSleevesWaterTreatmentResourcesR1, roadCrossingSleevesWaterTreatmentParameterId as waterTreatmentId } from "./roadCrossingSleevesWaterTreatmentR1";
 import { ROAD_CROSSING_SLEEVES_BEDDING_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_BEDDING_ROWS_R1,
   ROAD_CROSSING_SLEEVES_BEDDING_APPLICABILITY_R1 } from "./roadCrossingSleevesBeddingMaterialR1";
 import { ROAD_CROSSING_SLEEVES_PIT_RETURN_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_PIT_RETURN_ROWS_R1,
@@ -20,6 +21,8 @@ import { ROAD_CROSSING_SLEEVES_PIT_FILL_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_PIT
 import { ROAD_CROSSING_SLEEVES_INTERNAL_FILL_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_INTERNAL_FILL_ROWS_R1,
   ROAD_CROSSING_SLEEVES_INTERNAL_FILL_APPLICABILITY_R1, ROAD_CROSSING_SLEEVES_INTERNAL_FILL_EXPRESSIONS_R1,
   ROAD_CROSSING_SLEEVES_INTERNAL_WATER_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_INTERNAL_WATER_ROWS_R1 } from "./roadCrossingSleevesInternalFillR1";
+export { ROAD_CROSSING_SLEEVES_WATER_TREATMENT_MODES_R1, ROAD_CROSSING_SLEEVES_WATER_TREATMENT_RENTAL_BASIS_R1,
+  ROAD_CROSSING_SLEEVES_WATER_TREATMENT_BAG_BASIS_R1 } from "./roadCrossingSleevesWaterTreatmentR1";
 
 /** Execution arithmetic is part of this assembly, not a separate estimator.
  * PJA describes separate pits and an advancing excavation/jacking system:
@@ -829,6 +832,14 @@ export const ROAD_CROSSING_SLEEVES_WATER_CONTROL_ROWS_R1: readonly AutomaticRowS
   })(),
 ]);
 
+const waterTreatment = buildRoadCrossingSleevesWaterTreatmentResourcesR1({ selected: waterControlSelected, facts: waterControlFacts,
+  calendarHoursId: waterControlId("calendar_hours"), volumeExpression: waterControlVolume,
+  workingSetCountId: waterControlId("working_set_count"), flowId: waterControlId("flow_at_actual_head_m3_h"),
+  headId: waterControlId("actual_system_head_m"), dischargeId: waterControlId("discharge_reference"),
+  originalVolumeParameterIds: ["working_set_count", "calendar_hours", "working_duty_fraction", "flow_at_actual_head_m3_h"].map(waterControlId),
+  crewCostBasis: ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_COST_BASES_R1.crew, equipmentCostBasis: ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_COST_BASES_R1.equipment });
+export const ROAD_CROSSING_SLEEVES_WATER_TREATMENT_PARAMETERS_R1 = waterTreatment.parameters;
+export const ROAD_CROSSING_SLEEVES_WATER_TREATMENT_ROWS_R1 = waterTreatment.rows;
 /** The receiver owns only the actually allocated output stream, not pumped
  * water automatically assumed to be permitted discharge. Treatment need is
  * project-specific: https://www.xylem.com/en-us/catalog/products--services/services/temporary-water-treatment/trench-dewatering/ */
@@ -1130,6 +1141,8 @@ const freightCargoGroups: readonly FreightCargo[] = [
     `rcs:carrier-connection-material:${material.group.key}:${material.key}:ordered`, material.id("compatible_stock"), material.unit, undefined, material.unit === "piece" ? undefined : material.id("supplier_pack_net"))),
   freightCargo("water_control_fuel", "Совместимое топливо насосной группы", ROAD_CROSSING_SLEEVES_WATER_CONTROL_ROWS_R1,
     "rcs:water-control:fuel:ordered_l", waterControlId("fuel_compatible_stock_l"), "l", undefined, waterControlId("fuel_supplier_pack_net_l")),
+  freightCargo("water_treatment_bags", "Совместимые целые сменные фильтровальные мешки", ROAD_CROSSING_SLEEVES_WATER_TREATMENT_ROWS_R1,
+    "rcs:water-treatment:bags:ordered_count", waterTreatmentId("bag_compatible_stock_count"), "piece", undefined, waterTreatmentId("bag_supplier_pack_count")),
 ];
 const freightId = (key: string, suffix: string) => `rcs_freight_${key}_${suffix}`;
 const freightLanes = freightCargoGroups.flatMap(cargo => (["new", "stock"] as const).map(lane => {
@@ -1147,7 +1160,7 @@ const freightLanes = freightCargoGroups.flatMap(cargo => (["new", "stock"] as co
   // New supplier packs are indivisible. Already allocated usable stock may
   // be in opened containers with its OWN certified shipping-mass/load plan.
   // Whole physical pipe sections remain indivisible in either lane.
-  const quantum = cargo.unit === "piece" ? "1" : lane === "new" ? cargo.quantum : undefined;
+  const quantum = lane === "new" && cargo.quantum ? cargo.quantum : cargo.unit === "piece" ? "1" : undefined;
   const rawCapacity = `min(${freightId(key, "max_units_per_trip")},${freightId(key, "payload_kg")}/${freightId(key, "shipping_kg_per_unit")})`;
   const capacity = quantum ? `floor((${rawCapacity})/(${quantum}))*(${quantum})` : rawCapacity;
   return { cargo, key, lane, offsite, quantity, stockPositive, positive, separate, capacity };
@@ -1408,6 +1421,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_PARAMETERS_R1: readonly AutomaticPa
   ...ROAD_CROSSING_SLEEVES_COATING_CONSUMABLE_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_WATER_CONTROL_PARAMETERS_R1,
+  ...ROAD_CROSSING_SLEEVES_WATER_TREATMENT_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_WATER_RECEIVING_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_PREPARATION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_INSPECTION_PARAMETERS_R1,
@@ -1433,6 +1447,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[
   ...ROAD_CROSSING_SLEEVES_COATING_CONSUMABLE_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_WATER_CONTROL_ROWS_R1,
+  ...ROAD_CROSSING_SLEEVES_WATER_TREATMENT_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_WATER_RECEIVING_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_INSPECTION_ROWS_R1,
@@ -1448,8 +1463,9 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
     remaining: ["Доступ, расчистка и подготовка площадки", "Другие схемы разбивки и фактическая приёмка геодезического контроля", "Применимые временные ограждения и организация движения"] },
   { stageId: "installation", titleRu: "Устройство перехода", rows: [
     ...ROAD_CROSSING_SLEEVES_CIVIL_ROWS_R1.filter(row => !["rcs:civil:open_cut_full_width_bedding_m3", "rcs:civil:open_cut_remaining_fill_space_m3"].includes(row.rowId)),
-    ...ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_ROWS_R1, ...ROAD_CROSSING_SLEEVES_WATER_CONTROL_ROWS_R1.filter(row => !row.rowId.startsWith("rcs:water-control:removal:"))],
-    remaining: ["Крепление грунта и реакционные конструкции", "Подтверждение фактического водоотлива, очистка/фильтры и их отходы, другие схемы приёма воды и способы водопонижения", "Разделение разных партий и дополнительное перемещение грунта", "Применимые смазка и заполнение снаружи футляра"] },
+    ...ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_ROWS_R1, ...ROAD_CROSSING_SLEEVES_WATER_CONTROL_ROWS_R1.filter(row => !row.rowId.startsWith("rcs:water-control:removal:")),
+    ...ROAD_CROSSING_SLEEVES_WATER_TREATMENT_ROWS_R1.filter(row => !row.rowId.startsWith("rcs:water-treatment:removal:") && row.rowId !== "rcs:water-treatment:bags:wet_used_count")],
+    remaining: ["Крепление грунта и реакционные конструкции", "Подтверждение фактического водоотлива/фильтрации/приёма и их отходы, другие схемы очистки/приёма воды и способы водопонижения", "Разделение разных партий и дополнительное перемещение грунта", "Применимые смазка и заполнение снаружи футляра"] },
   { stageId: "bedding", titleRu: "Основание", rows: [
     ...ROAD_CROSSING_SLEEVES_CIVIL_ROWS_R1.filter(row => row.rowId === "rcs:civil:open_cut_full_width_bedding_m3"), ...ROAD_CROSSING_SLEEVES_BEDDING_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => row.rowId.startsWith("rcs:fill-execution:bedding:")),
@@ -1476,6 +1492,7 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
     ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => /^rcs:fill-execution:(?:pits|trench):/u.test(row.rowId))],
     remaining: ["Подтверждение пригодности и распределения повторно используемого грунта", "Послойные или другие материалы траншеи", "Подтверждение технологии укладки и уплотнения", "Фактические качество и отдельное распределение воды", "Разные партии грунта, пульпа и иные состояния"] },
   { stageId: "completion", titleRu: "Завершение перехода", rows: [...ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1,
+    ...ROAD_CROSSING_SLEEVES_WATER_TREATMENT_ROWS_R1.filter(row => row.rowId.startsWith("rcs:water-treatment:removal:") || row.rowId === "rcs:water-treatment:bags:wet_used_count"),
     ...ROAD_CROSSING_SLEEVES_WATER_RECEIVING_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_WATER_CONTROL_ROWS_R1.filter(row => row.rowId.startsWith("rcs:water-control:removal:")),
     ...ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1.filter(row => row.rowId.startsWith("rcs:preparation:removal:")),

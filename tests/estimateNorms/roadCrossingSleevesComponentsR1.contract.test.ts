@@ -19,7 +19,10 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_COMPONENT_P
   ROAD_CROSSING_SLEEVES_WATER_CONTROL_MODES_R1 as waterControlModes, ROAD_CROSSING_SLEEVES_WATER_CONTROL_RENTAL_BASIS_R1 as waterControlRentalBasis,
   ROAD_CROSSING_SLEEVES_WATER_CONTROL_FUEL_BASIS_R1 as waterControlFuelBasis,
   ROAD_CROSSING_SLEEVES_WATER_RECEIVING_MODES_R1 as waterReceivingModes,
-  ROAD_CROSSING_SLEEVES_WATER_RECEIVING_COST_BASIS_R1 as waterReceivingBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_WATER_RECEIVING_COST_BASIS_R1 as waterReceivingBasis,
+  ROAD_CROSSING_SLEEVES_WATER_TREATMENT_MODES_R1 as waterTreatmentModes,
+  ROAD_CROSSING_SLEEVES_WATER_TREATMENT_RENTAL_BASIS_R1 as waterTreatmentRentalBasis,
+  ROAD_CROSSING_SLEEVES_WATER_TREATMENT_BAG_BASIS_R1 as waterTreatmentBagBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierModes, ROAD_CROSSING_SLEEVES_CARRIER_COST_BASIS_R1 as carrierBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1 as jointParameters, ROAD_CROSSING_SLEEVES_JOINT_COST_BASES_R1 as bases } from "../../src/lib/estimate/v4/roadCrossingSleevesJointResourcesR1";
@@ -403,6 +406,7 @@ describe("actual PE carrier electrofusion resources and independent end ties", (
 
 describe("actual rented hydraulic sump pumping and separate group fuel", () => {
   const water: Record<string, unknown> = { ...fixture, rcs_water_control_mode: waterControlModes.hydraulicRental,
+    rcs_water_treatment_mode: waterTreatmentModes.otherParty, rcs_water_treatment_program_reference: "TEST actual separate party owns all required water treatment resources, no executor charge",
     rcs_water_receiving_mode: waterReceivingModes.otherParty, rcs_water_receiving_excluded_water_m3: 0,
     rcs_water_receiving_allocation_reference: "TEST actual one compatible receiver, no duplicate fee, whole output stream with explicit zero other allocation",
     rcs_water_control_program_reference: "TEST actual homogeneous hydraulic fuel-powered kit group, original water/head/flow/duty/discharge, no groundwater design approval",
@@ -564,6 +568,105 @@ describe("actual rented hydraulic sump pumping and separate group fuel", () => {
       const result = await compile(input, { [receivingRow]: { quantity: "112", provenance } });
       expect(result.rows.some(r => r.row_id === receivingRow)).toBe(false);
       expect(result.preliminaryNeeds.find(need => need.row_id === receivingRow)?.missing_parameter_ids).toContain(fact);
+    });
+  const treatment: Record<string, unknown> = { ...water, rcs_water_treatment_mode: waterTreatmentModes.singleBag,
+    rcs_water_treatment_program_reference: "TEST actual homogeneous once-through whole water group, simultaneous working pumps, one common single-bag kit, pressure/differential/quality programme, no other treatment approval",
+    rcs_water_treatment_allocation_reference: "TEST one exclusively allocated common housing and complete kit/service supplies for entire period, no duplicate pump hose/personnel/service energy",
+    rcs_water_treatment_kit_designation: "TEST complete actual single-bag passive leased kit with basket/connections/support/isolation/drain/vent/measurement/protection",
+    rcs_water_treatment_kit_product_reference: "TEST all actual component passports and full kit/service BOM, actual water/pressure/flow/conditions compatible, filter losses already in pump system head, all actual service supplies included, no unaccounted onsite fluids",
+    rcs_water_treatment_confirmed_max_flow_m3_h: 15, rcs_water_treatment_actual_max_housing_pressure_bar: 2, rcs_water_treatment_rated_max_housing_pressure_bar: 4,
+    rcs_water_treatment_kit_interconnecting_hose_m: 4, rcs_water_treatment_kit_coupling_count: 4, rcs_water_treatment_kit_valve_node_count: 4,
+    rcs_water_treatment_kit_pressure_device_count: 2, rcs_water_treatment_kit_service_gasket_count: 10, rcs_water_treatment_kit_service_cleaner_l: 0.2,
+    rcs_water_treatment_kit_service_lubricant_kg: 0.01, rcs_water_treatment_kit_service_wipe_count: 20,
+    rcs_water_treatment_rental_cost_basis: waterTreatmentRentalBasis,
+    rcs_water_treatment_bag_product_designation: "TEST actual whole compatible bag",
+    rcs_water_treatment_bag_product_reference: "TEST actual bag/seal compatibility and exclusively allocated usable stock; effective uniform-water batch capacity before required pressure/condition change, not manufacturer norm",
+    rcs_water_treatment_bag_effective_capacity_m3: 50, rcs_water_treatment_bag_actual_preinstall_unusable_count: 1,
+    rcs_water_treatment_bag_compatible_stock_count: 1, rcs_water_treatment_bag_retained_reserve_count: 2, rcs_water_treatment_bag_supplier_pack_count: 4,
+    rcs_water_treatment_bag_cost_basis: waterTreatmentBagBasis,
+    ...Object.fromEntries(["setup", "removal", "bag_cycle", "monitoring"].flatMap((work, i) => Object.entries({
+      method_reference: "TEST complete actual disjoint filter procedure, bag first insertion/final removal and all depressurizing/draining/checks once; no duplicate pump operators, equipment 0 means explicit actual no separate machinery",
+      crew_designation: "TEST all filter personnel including actual operators", equipment_designation: "TEST all separate compatible filter machinery with energy; actual zero if passive included tooling suffices",
+      crew_h_per_unit: [2, 1, 0.4, 0.1][i], equipment_h_per_unit: [0.25, 0.1, 0, 0][i],
+      crew_cost_basis: executionBases.crew, equipment_cost_basis: executionBases.equipment,
+    }).map(([key, value]) => [`rcs_water_treatment_${work}_${key}`, value]))),
+  };
+  const filterRow = (key: string) => `rcs:water-treatment:${key}`;
+  it("owns one common complete passive kit and all disjoint setup/monitoring/bag-cycle/removal work rather than a filter per pump", async () => {
+    const result = await compile(treatment); expect(result.preliminaryNeeds).toEqual([]);
+    expect(q(result, filterRow("deployed_kit_count"))).toBe(1); expect(q(result, filterRow("rental_set_hours"))).toBe(24);
+    expect(q(result, filterRow("filtered_water_m3"))).toBe(120); expect(q(result, filterRow("flow_capacity_margin_m3_h"))).toBe(5);
+    expect(q(result, filterRow("pressure_margin_bar"))).toBe(2); expect(q(result, filterRow("setup:crew_hours"))).toBe(2);
+    expect(q(result, filterRow("bag_cycle:crew_hours"))).toBe(1.2); expect(q(result, filterRow("monitoring:crew_hours"))).toBe(2.4);
+    expect(q(result, filterRow("removal:equipment_hours"))).toBe(0.1);
+    expect(q(result, filterRow("kit:service_gasket_count"))).toBe(10);
+    expect(result.rows.filter(r => r.row_id.startsWith(filterRow("kit:"))).every(r => !r.included_in_estimate && !r.included_in_procurement)).toBe(true);
+    expect(components.stageMatrix.filter(stage => stage.ownResourceIds.includes(filterRow("removal:crew_hours"))).map(stage => stage.stageId)).toEqual(["completion"]);
+    expect(components.stageMatrix.filter(stage => stage.ownResourceIds.includes(filterRow("bags:wet_used_count"))).map(stage => stage.stageId)).toEqual(["completion"]);
+    const standby = await compile({ ...treatment, rcs_water_control_standby_set_count: 2 });
+    expect(q(standby, filterRow("rental_set_hours"))).toBe(24); expect(q(standby, filterRow("bags:used_count"))).toBe(3);
+  });
+  it("keeps used/wet/discarded/unopened stock/reserve/full packages separate and prices only the new rounded bag order", async () => {
+    const result = await compile(treatment);
+    expect(q(result, filterRow("bags:used_count"))).toBe(3); expect(q(result, filterRow("bags:wet_used_count"))).toBe(3);
+    expect(q(result, filterRow("bags:consumed_count"))).toBe(4); expect(q(result, filterRow("bags:new_need_count"))).toBe(5);
+    expect(q(result, filterRow("bags:supplier_pack_count"))).toBe(2); expect(q(result, filterRow("bags:ordered_count"))).toBe(8);
+    expect(q(result, filterRow("bags:remaining_count"))).toBe(5); expect(q(result, filterRow("bags:free_beyond_reserve_count"))).toBe(3);
+    const stock = await compile({ ...treatment, rcs_water_treatment_bag_compatible_stock_count: 10 });
+    expect(q(stock, filterRow("bags:ordered_count"))).toBe(0); expect(q(stock, filterRow("bags:remaining_count"))).toBe(6);
+    expect(q(stock, filterRow("bag_cycle:crew_hours"))).toBe(1.2);
+    expect(stock.rows.some(r => r.row_id.startsWith("rcs:freight:water_treatment_bags_new:"))).toBe(false);
+  });
+  it("unknown actual bag capacity leaves filter rental/setup/monitoring, pumping, fuel and civil work independent", async () => {
+    const input = { ...treatment }; delete input.rcs_water_treatment_bag_effective_capacity_m3;
+    const result = await compile(input);
+    expect(q(result, filterRow("rental_set_hours"))).toBe(24); expect(q(result, filterRow("setup:crew_hours"))).toBe(2);
+    expect(q(result, filterRow("monitoring:crew_hours"))).toBe(2.4); expect(q(result, row("pumped_water_m3"))).toBe(120);
+    expect(q(result, row("fuel:ordered_l"))).toBe(20); expect(q(result, "rcs:civil-execution:open_cut:equipment_hours")).toBe(21);
+    expect(result.preliminaryNeeds.every(need => need.missing_parameter_ids.includes("rcs_water_treatment_bag_effective_capacity_m3"))).toBe(true);
+  });
+  it("unknown supplier packaging retains actual used bags and full bag-cycle work; actual preinstall rejects do not add filtering cycles", async () => {
+    const input = { ...treatment }; delete input.rcs_water_treatment_bag_supplier_pack_count;
+    const result = await compile(input); expect(q(result, filterRow("bags:used_count"))).toBe(3);
+    expect(q(result, filterRow("bags:consumed_count"))).toBe(4); expect(q(result, filterRow("bag_cycle:crew_hours"))).toBe(1.2);
+    expect(result.preliminaryNeeds.every(need => need.missing_parameter_ids.includes("rcs_water_treatment_bag_supplier_pack_count"))).toBe(true);
+  });
+  it("checks instantaneous full-group flow rather than average duty and actual rated pressure before manual bags/rental", async () => {
+    await expect(compile({ ...treatment, rcs_water_treatment_confirmed_max_flow_m3_h: 6 }, { [filterRow("bags:ordered_count")]: { quantity: "8", provenance } })).rejects.toMatchObject({ code: "FORMULA_OUTPUT_BOUNDS_FAILED" });
+    await expect(compile({ ...treatment, rcs_water_control_working_duty_fraction: 0.05, rcs_water_control_required_average_inflow_m3_h: 0, rcs_water_treatment_confirmed_max_flow_m3_h: 6 })).rejects.toMatchObject({ code: "FORMULA_OUTPUT_BOUNDS_FAILED" });
+    await expect(compile({ ...treatment, rcs_water_treatment_actual_max_housing_pressure_bar: 5 }, { [filterRow("rental_set_hours")]: { quantity: "24", provenance } })).rejects.toMatchObject({ code: "FORMULA_OUTPUT_BOUNDS_FAILED" });
+  });
+  it("explicit idle zero water keeps the deployed filter rental while bag products/orders/cycles are inactive", async () => {
+    const input: Record<string, unknown> = { ...treatment, rcs_water_control_working_duty_fraction: 0, rcs_water_control_required_average_inflow_m3_h: 0 };
+    for (const key of Object.keys(input)) if (key.startsWith("rcs_water_treatment_bag_") && !key.startsWith("rcs_water_treatment_bag_cycle_")) delete input[key];
+    const result = await compile(input); expect(result.preliminaryNeeds).toEqual([]);
+    expect(q(result, filterRow("filtered_water_m3"))).toBe(0); expect(q(result, filterRow("rental_set_hours"))).toBe(24);
+    expect(result.rows.some(r => r.row_id.startsWith(filterRow("bags:")) || r.row_id.startsWith(filterRow("bag_cycle:")))).toBe(false);
+  });
+  it("ships actual full new bag packages separately from individually allocated offsite stock without changing used bags", async () => {
+    const input = { ...treatment,
+      rcs_freight_water_treatment_bags_new_mode: freightModes.separate, rcs_freight_water_treatment_bags_new_vehicle_designation: "TEST actual dedicated full-package filter bag vehicle",
+      rcs_freight_water_treatment_bags_new_shipping_kg_per_unit: 0.5, rcs_freight_water_treatment_bags_new_payload_kg: 20,
+      rcs_freight_water_treatment_bags_new_max_units_per_trip: 6, rcs_freight_water_treatment_bags_new_cost_basis: freightBasis,
+      rcs_freight_water_treatment_bags_offsite_stock_units: 1, rcs_freight_water_treatment_bags_stock_mode: freightModes.separate,
+      rcs_freight_water_treatment_bags_stock_vehicle_designation: "TEST actual individually allocated usable bag stock delivery",
+      rcs_freight_water_treatment_bags_stock_shipping_kg_per_unit: 0.2, rcs_freight_water_treatment_bags_stock_payload_kg: 20,
+      rcs_freight_water_treatment_bags_stock_max_units_per_trip: 1, rcs_freight_water_treatment_bags_stock_cost_basis: freightBasis };
+    const result = await compile(input);
+    expect(q(result, "rcs:freight:water_treatment_bags_new:effective_units_per_trip")).toBe(4);
+    expect(q(result, "rcs:freight:water_treatment_bags_new:trip_count")).toBe(2);
+    expect(q(result, "rcs:freight:water_treatment_bags_stock:trip_count")).toBe(1);
+    expect(q(result, filterRow("bags:used_count"))).toBe(3);
+    await expect(compile({ ...input, rcs_freight_water_treatment_bags_new_payload_kg: 1 }, {
+      "rcs:freight:water_treatment_bags_new:trip_count": { quantity: "2", provenance },
+    })).rejects.toMatchObject({ code: "FORMULA_OUTPUT_BOUNDS_FAILED" });
+  });
+  it.each(["rcs_water_control_working_duty_fraction", "rcs_water_control_flow_at_actual_head_m3_h", "rcs_water_control_actual_system_head_m", "rcs_water_treatment_program_reference", "rcs_water_treatment_kit_product_reference", "rcs_water_treatment_bag_effective_capacity_m3", "rcs_water_treatment_bag_product_reference", "rcs_water_treatment_bag_cost_basis"])(
+    "manual filter bag order retains original water/compatibility/capacity/cost gate %s", async fact => {
+      const input = { ...treatment }; delete input[fact];
+      const result = await compile(input, { [filterRow("bags:ordered_count")]: { quantity: "8", provenance } });
+      expect(result.rows.some(r => r.row_id === filterRow("bags:ordered_count"))).toBe(false);
+      expect(result.preliminaryNeeds.find(need => need.row_id === filterRow("bags:ordered_count"))?.missing_parameter_ids).toContain(fact);
     });
 });
 
