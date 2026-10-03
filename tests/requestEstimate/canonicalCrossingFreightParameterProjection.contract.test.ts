@@ -15,7 +15,11 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_FREIGHT_MOD
   ROAD_CROSSING_SLEEVES_WATER_RECEIVING_COST_BASIS_R1 as waterReceivingBasis,
   ROAD_CROSSING_SLEEVES_WATER_TREATMENT_MODES_R1 as waterTreatmentModes,
   ROAD_CROSSING_SLEEVES_WATER_TREATMENT_RENTAL_BASIS_R1 as waterTreatmentRentalBasis,
-  ROAD_CROSSING_SLEEVES_WATER_TREATMENT_BAG_BASIS_R1 as waterTreatmentBagBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_WATER_TREATMENT_BAG_BASIS_R1 as waterTreatmentBagBasis,
+  ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_MODES_R1 as waterWasteModes,
+  ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_TRIP_BASIS_R1 as waterWasteTripBasis,
+  ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_RECEIVING_MODES_R1 as waterWasteReceivingModes,
+  ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_RECEIVING_BASIS_R1 as waterWasteReceivingBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_TRENCH_FILL_MODES_R1 as fillModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
 import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierSupplyModes } from "../../src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1";
@@ -289,6 +293,7 @@ describe("actual pump deployment and fuel facts through the common editor", () =
     expect(catalog.parameterSchema.some(p => /water_receiving.*(?:allocated_water|separate_receiving)/u.test(p.parameterId))).toBe(false);
   });
   const treatment: Record<string, CanonicalEstimateParameterInputValue> = { ...water,
+    rcs_water_treatment_waste_mode: waterWasteModes.otherParty, rcs_water_treatment_waste_program_reference: "TEST all actual waste resources provided by separate party",
     rcs_water_treatment_mode: waterTreatmentModes.singleBag, rcs_water_treatment_program_reference: "TEST actual homogeneous once-through common single-bag programme",
     rcs_water_treatment_allocation_reference: "TEST exclusive common kit/full period and separately paid bags/disjoint operators",
     rcs_water_treatment_kit_product_reference: "TEST actual complete kit/service BOM, water/flow/pressure compatibility, filter losses already in pump head",
@@ -324,6 +329,29 @@ describe("actual pump deployment and fuel facts through the common editor", () =
     const noFilter = session({ ...treatment, rcs_water_treatment_mode: waterTreatmentModes.notRequired });
     expect(noFilter.parameters.find(p => p.parameterId === "rcs_water_treatment_program_reference")).toBeDefined();
     expect(noFilter.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_water_treatment_kit_product_reference")).toMatchObject({ value: treatment.rcs_water_treatment_kit_product_reference });
+  });
+  it("shows actual waste mass/max-pack/retained-water and full service boundary facts editable, while zero rejects/idle keep inactive values durable", () => {
+    const waste = { ...treatment, rcs_water_treatment_waste_mode: waterWasteModes.dedicated,
+      rcs_water_treatment_waste_program_reference: "TEST actual compatible wet/dry bag waste party, whole closed one-bag places with certified common upper load plan",
+      rcs_water_treatment_waste_allocation_reference: "TEST exclusive full party and retained-water/receiver allocation",
+      rcs_water_treatment_waste_container_product_reference: "TEST actual full sealed disposable bag place net/tare/upper shipping certificate",
+      rcs_water_treatment_waste_receiver_reference: "TEST actual classification/receiver/route and full accepting service",
+      rcs_water_treatment_waste_certified_max_shipping_kg_per_pack: 3.5, rcs_water_treatment_waste_wet_average_net_kg_per_used_bag: 2,
+      rcs_water_treatment_waste_dry_average_net_kg_per_preinstall_reject: 0.2, rcs_water_treatment_waste_retained_water_l_per_used_bag: 0.5,
+      rcs_water_treatment_waste_trip_cost_basis: waterWasteTripBasis, rcs_water_treatment_waste_receiving_mode: waterWasteReceivingModes.mass,
+      rcs_water_treatment_waste_receiving_cost_basis: waterWasteReceivingBasis };
+    const visible = cards(waste);
+    for (const [key, value] of Object.entries(waste).filter(([key]) => key.startsWith("rcs_water_treatment_waste_"))) {
+      expect(visible.find(c => c.key === key)).toMatchObject({ value, editable: true, missing: false });
+      expect(visible.find(c => c.key === key)?.guideShortRu).toBeTruthy();
+    }
+    expect(visible.find(c => c.key === "rcs_water_treatment_waste_retained_water_l_per_used_bag")?.unitRu).toBe("л/шт.");
+    const noReject = session({ ...waste, rcs_water_treatment_bag_actual_preinstall_unusable_count: 0 });
+    expect(noReject.parameters.some(p => p.parameterId === "rcs_water_treatment_waste_dry_average_net_kg_per_preinstall_reject")).toBe(false);
+    expect(noReject.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_water_treatment_waste_dry_average_net_kg_per_preinstall_reject")).toMatchObject({ value: 0.2 });
+    const idle = session({ ...waste, rcs_water_control_working_duty_fraction: 0 });
+    expect(idle.parameters.some(p => p.parameterId === "rcs_water_treatment_waste_receiver_reference")).toBe(false);
+    expect(idle.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_water_treatment_waste_receiver_reference")).toMatchObject({ value: waste.rcs_water_treatment_waste_receiver_reference });
   });
 });
 

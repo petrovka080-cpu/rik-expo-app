@@ -13,11 +13,23 @@ export const ROAD_CROSSING_SLEEVES_WATER_TREATMENT_MODES_R1 = Object.freeze({
 });
 export const ROAD_CROSSING_SLEEVES_WATER_TREATMENT_RENTAL_BASIS_R1 = "Календарное наличие одного полного пассивного фильтровального комплекта с фактическими корпусом/корзиной/рукавами/соединениями/опорами/клапанами/измерением/защитой и отдельно видимыми включёнными сервисными расходниками; подготовка перед выдачей и очистка после возврата включены, без сменных мешков, всех работ на объекте, подъёмной техники, насосной энергии, доставки/возврата и отходов";
 export const ROAD_CROSSING_SLEEVES_WATER_TREATMENT_BAG_BASIS_R1 = "Только новый заказ целых совместимых сменных мешков в фактических полных поставочных упаковках с отдельным пригодным наличием/резервом/фактической негодностью; без аренды, труда, энергии, доставки и обращения с отходами";
+export const ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_MODES_R1 = Object.freeze({
+  dedicated: "Все использованные мокрые и фактически негодные до установки мешки одной совместимой партии: один мешок в одном полном закрытом одноразовом месте, отдельные рейсы с общей подтверждённой верхней массой места",
+  otherParty: "Полное обращение со всеми мешками-отходами обеспечивает другая сторона без отдельной оплаты исполнителем",
+  other: "Другие/смешанные отходы, повторная тара или иная схема сбора/загрузки: отдельная программа ресурсов",
+});
+export const ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_TRIP_BASIS_R1 = "Один полный отдельный рейс только закрытых мест этой партии мешков-отходов: совместимая одноразовая тара по одному месту на мешок, упаковка/закрытие/сбор после снятия мешка, все исполнители, транспорт/энергия, погрузка/выгрузка и возврат; без снятия/дренирования мешков, аренды/фильтрации, других грузов и отдельного приёма отходов";
+export const ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_RECEIVING_MODES_R1 = Object.freeze({
+  mass: "Отдельный полный приём закрытых мест по фактическим тоннам с утилизируемой тарой",
+  otherParty: "Приём всех закрытых мест обеспечен другой стороной без отдельной оплаты исполнителем",
+});
+export const ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_RECEIVING_BASIS_R1 = "Только полный подтверждённый приём фактических тонн закрытых мест мешков/удержанных осадка и воды/одноразовой тары; без сбора/упаковки, перевозки и других этапов или приёма воды";
 export const roadCrossingSleevesWaterTreatmentParameterId = (suffix: string): string => `rcs_water_treatment_${suffix}`;
 type PumpContext = Readonly<{
   selected: AutomaticInclusionCondition; facts: readonly string[]; calendarHoursId: string; volumeExpression: string;
   workingSetCountId: string; flowId: string; headId: string; dischargeId: string; originalVolumeParameterIds: readonly string[];
   crewCostBasis: string; equipmentCostBasis: string;
+  receivingExcludedWaterId: string; receivingAllocationReferenceId: string;
 }>;
 export function buildRoadCrossingSleevesWaterTreatmentResourcesR1(pump: PumpContext): Readonly<{
   parameters: readonly AutomaticParameterSpec[]; rows: readonly AutomaticRowSpec[];
@@ -35,6 +47,18 @@ export function buildRoadCrossingSleevesWaterTreatmentResourcesR1(pump: PumpCont
   const need = `max(0,(${consumed})+${id("bag_retained_reserve_count")}-${id("bag_compatible_stock_count")})`;
   const packs = `ceil((${need})/${id("bag_supplier_pack_count")})`, ordered = `(${packs})*${id("bag_supplier_pack_count")}`;
   const remaining = `${id("bag_compatible_stock_count")}+(${ordered})-(${consumed})`;
+  const wasteOwned: AutomaticInclusionCondition = { kind: "and", operands: [positive,
+    { kind: "equals", parameterId: id("waste_mode"), value: ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_MODES_R1.dedicated }] };
+  const rejectsPositive: AutomaticInclusionCondition = { kind: "and", operands: [wasteOwned,
+    { kind: "greater_than", parameterId: id("bag_actual_preinstall_unusable_count"), value: 0 }] };
+  const wastePaidReceiving: AutomaticInclusionCondition = { kind: "and", operands: [wasteOwned,
+    { kind: "equals", parameterId: id("waste_receiving_mode"), value: ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_RECEIVING_MODES_R1.mass }] };
+  const wasteFacts = [...volumeFacts, id("bag_product_reference"), id("waste_mode"), id("waste_program_reference"), id("waste_allocation_reference"),
+    id("waste_container_designation"), id("waste_container_product_reference"), id("waste_receiver_reference")];
+  const wastePacks = consumed;
+  const wasteCapacity = `floor(min(${id("waste_max_packs_per_trip")},${id("waste_route_payload_kg")}/${id("waste_certified_max_shipping_kg_per_pack")}))`;
+  const wasteWetKg = `(${used})*${id("waste_wet_average_net_kg_per_used_bag")}`;
+  const wasteRetainedWater = `(${used})*${id("waste_retained_water_l_per_used_bag")}/1000`;
   // Every amount is the complete actual programme/BOM, not a guessed per-hour
   // consumption. Lease owns these items once; they are not new paid purchases.
   const kitMembers = [
@@ -81,6 +105,33 @@ export function buildRoadCrossingSleevesWaterTreatmentResourcesR1(pump: PumpCont
       .map(([suffix, title, min]): AutomaticParameterSpec => ({ id: id(String(suffix)), title: String(title), valueType: "integer", unitId: "piece", min: Number(min), kind: "conditional", requiredWhen: positive })),
     { id: id("bag_cost_basis"), title: "Отдельная граница нового заказа сменных мешков", valueType: "enum", unitId: null,
       values: [ROAD_CROSSING_SLEEVES_WATER_TREATMENT_BAG_BASIS_R1], kind: "conditional", requiredWhen: positive },
+    { id: id("waste_mode"), title: "Фактическая граница обращения со всеми использованными и негодными мешками", valueType: "enum", unitId: null,
+      values: Object.values(ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_MODES_R1), kind: "conditional", requiredWhen: positive },
+    { id: id("waste_program_reference"), title: "Фактическая программа всех мешков-отходов/их передачи другой стороне: состояние/состав/классификация/получатель, упаковка и полное распределение ресурсов; не прогноз отказов и не разрешение из расчёта",
+      valueType: "text", unitId: null, kind: "conditional", requiredWhen: positive },
+    ...[ ["waste_allocation_reference", "Фактическая единая совместимая партия только снятых мокрых/негодных до установки мешков, один мешок в одном закрытом одноразовом месте, исключительное распределение рейсов/исполнителей и удержанной воды; другие сервисные отходы не включены"],
+      ["waste_container_designation", "Фактическое полное совместимое закрытое одноразовое место для одного целого мешка-отхода с жидкостью/осадком"],
+      ["waste_container_product_reference", "Паспорт фактической полной тары, допустимость классификации/воды/частиц/герметизации и нетто/тары; фактический план удостоверяет общую верхнюю перевозочную массу каждого места, не среднюю массу вместо максимума"],
+      ["waste_receiver_reference", "Фактический совместимый получатель/маршрут/классификация/период и допустимость приёма всех закрытых мест с одноразовой тарой; без автоматической приёмки или пересечения с жидкой водой"],
+      ["waste_vehicle_designation", "Фактический совместимый транспорт для всех закрытых мест только этой партии"],
+    ].map(([suffix, title]): AutomaticParameterSpec => ({ id: id(suffix), title, valueType: "text", unitId: null, kind: "conditional", requiredWhen: wasteOwned })),
+    ...[ ["waste_container_tare_kg", "Фактическая масса полной одноразовой тары одного закрытого места", "kg_per_piece", 0.000_001],
+      ["waste_container_allowed_net_kg", "Фактическая допустимая масса содержимого одного полного выбранного места по паспорту/условиям", "kg", 0.000_001],
+      ["waste_certified_max_shipping_kg_per_pack", "Подтверждённая общая верхняя перевозочная масса каждого целого места с тарой по единой допустимой схеме загрузки; не средняя по партии", "kg_per_piece", 0.000_001],
+      ["waste_max_packs_per_trip", "Фактические целые места в одном отдельном рейсе по совместимой схеме размещения", "piece", 1],
+      ["waste_route_payload_kg", "Фактическая допустимая полезная масса транспорта для этого груза/маршрута", "kg", 0.000_001],
+      ["waste_wet_average_net_kg_per_used_bag", "Фактическая средняя полная масса одного снятого мешка с осадком/удержанной водой после предусмотренного дренирования; без новой внешней тары, по сводке всей партии", "kg_per_piece", 0.000_001],
+      ["waste_retained_water_l_per_used_bag", "Фактическая средняя вода из исходного потока, оставшаяся в каждом мешке после дренирования по сводке партии; уже выделена из отдельно принимаемой воды, отсутствие — явный 0", "l_per_piece", 0],
+    ].map(([suffix, title, unit, min]): AutomaticParameterSpec => ({ id: id(String(suffix)), title: String(title), valueType: unit === "piece" ? "integer" : "decimal",
+      unitId: String(unit), min: Number(min), kind: "conditional", requiredWhen: wasteOwned })),
+    { id: id("waste_dry_average_net_kg_per_preinstall_reject"), title: "Фактическая средняя полная масса одного негодного до установки мешка этой партии без новой внешней тары; нужна только при реальном положительном количестве",
+      valueType: "decimal", unitId: "kg_per_piece", min: 0.000_001, kind: "conditional", requiredWhen: rejectsPositive },
+    { id: id("waste_trip_cost_basis"), title: "Отдельная граница полной перевозки и предоставленного сбора/тары мешков-отходов", valueType: "enum", unitId: null,
+      values: [ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_TRIP_BASIS_R1], kind: "conditional", requiredWhen: wasteOwned },
+    { id: id("waste_receiving_mode"), title: "Фактическая граница приёма всех закрытых мест с одноразовой тарой", valueType: "enum", unitId: null,
+      values: Object.values(ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_RECEIVING_MODES_R1), kind: "conditional", requiredWhen: wasteOwned },
+    { id: id("waste_receiving_cost_basis"), title: "Отдельная граница полной оплаты приёма мешков-отходов с тарой", valueType: "enum", unitId: null,
+      values: [ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_RECEIVING_BASIS_R1], kind: "conditional", requiredWhen: wastePaidReceiving },
     ...works.flatMap(work => [
       { id: id(`${work.key}_method_reference`), title: `${work.title}: фактическая полная процедура и исключительная граница всех ресурсов; у мешков фактическая средневзвешенная полная программа включает первую установку и окончательное снятие, мокрые мешки не пригодный остаток`,
         valueType: "text", unitId: null, kind: "conditional", requiredWhen: work.inclusion } as AutomaticParameterSpec,
@@ -129,6 +180,49 @@ export function buildRoadCrossingSleevesWaterTreatmentResourcesR1(pump: PumpCont
         category: owner === "crew" ? "labor" : "equipment", inclusion: work.inclusion, costTreatment: "OWN_COST", procurement: true,
         titleParameterIds: [id(`${work.key}_${owner}_designation`)], inputParameterIds: [...facts, id(`${work.key}_method_reference`), id(`${work.key}_${owner}_cost_basis`),
           ...(work.key === "bag_cycle" ? [...volumeFacts, id("bag_product_reference")] : [])] }))),
+    row("waste:collection_pack_count", "Полные закрытые одноразовые места по одному на каждый снятый или фактически негодный мешок; тара/сбор включены в рейс один раз", wastePacks, "piece", {
+      category: "material", inclusion: wasteOwned, costTreatment: "INCLUDED_IN_RESOURCE_ROWS", inputParameterIds: wasteFacts }),
+    row("waste:wet_net_kg", "Фактическая масса всех снятых мешков с осадком и удержанной водой без новой тары", wasteWetKg, "kg", { inclusion: wasteOwned, inputParameterIds: wasteFacts }),
+    row("waste:dry_reject_net_kg", "Фактическая масса негодных до установки мешков без новой тары", `${id("bag_actual_preinstall_unusable_count")}*${id("waste_dry_average_net_kg_per_preinstall_reject")}`, "kg", {
+      inclusion: rejectsPositive, inputParameterIds: wasteFacts }),
+    row("waste:retained_water_m3", "Исходная откачанная вода, удержанная во всех снятых мешках после дренирования, отдельно от приёма жидкой воды", wasteRetainedWater, "m3", {
+      inclusion: wasteOwned, inputParameterIds: [...wasteFacts, pump.receivingAllocationReferenceId] }),
+    row("waste:water_allocation_margin_m3", "Вода, выделенная другим целям/получателям сверх воды в мешках-отходах; удержанная вода не принимается повторно", `${pump.receivingExcludedWaterId}-(${wasteRetainedWater})`, "m3", {
+      inclusion: wasteOwned, inputParameterIds: [...wasteFacts, pump.receivingAllocationReferenceId],
+      formulaOutputBounds: { schemaVersion: "canonical_formula_output_bounds_v1", unitId: "m3", minimum: 0,
+        reasonRu: "Вся фактически удержанная в мешках вода уже должна быть выделена из исходного потока, отдельно принимаемого как вода; ручные рейсы/услуги не исправляют повторное распределение." } }),
+    row("waste:container_net_capacity_margin_kg", "Допустимое содержимое полного закрытого места сверх удостоверенной верхней массы содержимого этой схемы", `${id("waste_container_allowed_net_kg")}-(${id("waste_certified_max_shipping_kg_per_pack")}-${id("waste_container_tare_kg")})`, "kg", {
+      inclusion: wasteOwned, inputParameterIds: wasteFacts,
+      formulaOutputBounds: { schemaVersion: "canonical_formula_output_bounds_v1", unitId: "kg", minimum: 0,
+        reasonRu: "Совместимая тара должна вмещать удостоверенную верхнюю массу содержимого одного места; средняя партия или ручной рейс не исправляет недостаточную вместимость." } }),
+    ...[ { key: "wet", average: id("waste_wet_average_net_kg_per_used_bag"), inclusion: wasteOwned },
+      { key: "dry_reject", average: id("waste_dry_average_net_kg_per_preinstall_reject"), inclusion: rejectsPositive } ]
+      .map(member => row(`waste:${member.key}_shipping_mass_margin_kg`, "Удостоверенная общая верхняя масса каждого места сверх фактической средней массы содержимого и тары; не доказательство максимума по одной средней",
+        `${id("waste_certified_max_shipping_kg_per_pack")}-${member.average}-${id("waste_container_tare_kg")}`, "kg", {
+          inclusion: member.inclusion, inputParameterIds: wasteFacts,
+          formulaOutputBounds: { schemaVersion: "canonical_formula_output_bounds_v1", unitId: "kg", minimum: 0,
+            reasonRu: "Удостоверенная верхняя масса каждого места не может быть меньше даже фактической средней массы с тарой; документ подтверждает все места, контроль не заменяет его средним значением." } })),
+    row("waste:effective_packs_per_trip", "Целые закрытые места в рейсе по фактическому размещению и удостоверенной верхней массе каждого места", wasteCapacity, "piece", {
+      inclusion: wasteOwned, inputParameterIds: wasteFacts,
+      formulaOutputBounds: { schemaVersion: "canonical_formula_output_bounds_v1", unitId: "piece", minimum: 1,
+        reasonRu: "Фактический транспорт должен перевозить хотя бы одно полное допустимое закрытое место с тарой; ручные рейсы не исправляют несовместимость." } }),
+    row("waste:haul_trip_count", "Полные отдельные рейсы только закрытых мест мешков-отходов со всей предоставленной тарой/сбором и ресурсами перевозки", `ceil((${wastePacks})/(${wasteCapacity}))`, "trip", {
+      category: "transport", inclusion: wasteOwned, costTreatment: "OWN_COST", procurement: true, titleParameterIds: [id("waste_vehicle_designation")],
+      inputParameterIds: [...wasteFacts, id("bag_actual_preinstall_unusable_count"), id("waste_vehicle_designation"), id("waste_trip_cost_basis"),
+        id("waste_certified_max_shipping_kg_per_pack"), id("waste_route_payload_kg"), id("waste_max_packs_per_trip"), id("waste_container_tare_kg"), id("waste_container_allowed_net_kg")] }),
+    ...[ { key: "no_preinstall_rejects", condition: { kind: "less_than_or_equal" as const, parameterId: id("bag_actual_preinstall_unusable_count"), value: 0 }, dryExpression: "" },
+      { key: "with_preinstall_rejects", condition: { kind: "greater_than" as const, parameterId: id("bag_actual_preinstall_unusable_count"), value: 0 },
+        dryExpression: `+${id("bag_actual_preinstall_unusable_count")}*${id("waste_dry_average_net_kg_per_preinstall_reject")}` } ]
+      .flatMap(branch => {
+        const gross = `(${wasteWetKg})+(${wastePacks})*${id("waste_container_tare_kg")}${branch.dryExpression}`;
+        const branchOwned: AutomaticInclusionCondition = { kind: "and", operands: [wasteOwned, branch.condition] };
+        return [row(`waste:${branch.key}:gross_shipping_kg`, "Фактическая общая масса этой партии мешков/осадка/воды/одноразовой тары; не верхняя масса, умноженная на партию", gross, "kg", {
+          inclusion: branchOwned, inputParameterIds: [...wasteFacts, id("bag_actual_preinstall_unusable_count")] }),
+        row(`waste:${branch.key}:receiving_t`, "Отдельный полный приём фактических тонн всей партии закрытых мест с одноразовой тарой без повторного сбора/перевозки или приёма воды", `(${gross})/1000`, "t", {
+          category: "service", inclusion: { kind: "and", operands: [wastePaidReceiving, branch.condition] }, costTreatment: "OWN_COST", procurement: true,
+          inputParameterIds: [...wasteFacts, id("bag_actual_preinstall_unusable_count"), id("waste_receiving_mode"), id("waste_receiving_cost_basis"), id("waste_wet_average_net_kg_per_used_bag"), id("waste_container_tare_kg"),
+            ...(branch.dryExpression ? [id("waste_dry_average_net_kg_per_preinstall_reject")] : [])] })];
+      }),
   ];
   return Object.freeze({ parameters: Object.freeze(parameters), rows: Object.freeze(rows) });
 }

@@ -22,7 +22,9 @@ import { ROAD_CROSSING_SLEEVES_INTERNAL_FILL_PARAMETERS_R1, ROAD_CROSSING_SLEEVE
   ROAD_CROSSING_SLEEVES_INTERNAL_FILL_APPLICABILITY_R1, ROAD_CROSSING_SLEEVES_INTERNAL_FILL_EXPRESSIONS_R1,
   ROAD_CROSSING_SLEEVES_INTERNAL_WATER_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_INTERNAL_WATER_ROWS_R1 } from "./roadCrossingSleevesInternalFillR1";
 export { ROAD_CROSSING_SLEEVES_WATER_TREATMENT_MODES_R1, ROAD_CROSSING_SLEEVES_WATER_TREATMENT_RENTAL_BASIS_R1,
-  ROAD_CROSSING_SLEEVES_WATER_TREATMENT_BAG_BASIS_R1 } from "./roadCrossingSleevesWaterTreatmentR1";
+  ROAD_CROSSING_SLEEVES_WATER_TREATMENT_BAG_BASIS_R1, ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_MODES_R1,
+  ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_TRIP_BASIS_R1, ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_RECEIVING_MODES_R1,
+  ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_RECEIVING_BASIS_R1 } from "./roadCrossingSleevesWaterTreatmentR1";
 
 /** Execution arithmetic is part of this assembly, not a separate estimator.
  * PJA describes separate pits and an advancing excavation/jacking system:
@@ -837,6 +839,7 @@ const waterTreatment = buildRoadCrossingSleevesWaterTreatmentResourcesR1({ selec
   workingSetCountId: waterControlId("working_set_count"), flowId: waterControlId("flow_at_actual_head_m3_h"),
   headId: waterControlId("actual_system_head_m"), dischargeId: waterControlId("discharge_reference"),
   originalVolumeParameterIds: ["working_set_count", "calendar_hours", "working_duty_fraction", "flow_at_actual_head_m3_h"].map(waterControlId),
+  receivingExcludedWaterId: "rcs_water_receiving_excluded_water_m3", receivingAllocationReferenceId: "rcs_water_receiving_allocation_reference",
   crewCostBasis: ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_COST_BASES_R1.crew, equipmentCostBasis: ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_COST_BASES_R1.equipment });
 export const ROAD_CROSSING_SLEEVES_WATER_TREATMENT_PARAMETERS_R1 = waterTreatment.parameters;
 export const ROAD_CROSSING_SLEEVES_WATER_TREATMENT_ROWS_R1 = waterTreatment.rows;
@@ -1464,7 +1467,7 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
   { stageId: "installation", titleRu: "Устройство перехода", rows: [
     ...ROAD_CROSSING_SLEEVES_CIVIL_ROWS_R1.filter(row => !["rcs:civil:open_cut_full_width_bedding_m3", "rcs:civil:open_cut_remaining_fill_space_m3"].includes(row.rowId)),
     ...ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_ROWS_R1, ...ROAD_CROSSING_SLEEVES_WATER_CONTROL_ROWS_R1.filter(row => !row.rowId.startsWith("rcs:water-control:removal:")),
-    ...ROAD_CROSSING_SLEEVES_WATER_TREATMENT_ROWS_R1.filter(row => !row.rowId.startsWith("rcs:water-treatment:removal:") && row.rowId !== "rcs:water-treatment:bags:wet_used_count")],
+    ...ROAD_CROSSING_SLEEVES_WATER_TREATMENT_ROWS_R1.filter(row => !/^rcs:water-treatment:(?:removal|waste):/u.test(row.rowId) && row.rowId !== "rcs:water-treatment:bags:wet_used_count")],
     remaining: ["Крепление грунта и реакционные конструкции", "Подтверждение фактического водоотлива/фильтрации/приёма и их отходы, другие схемы очистки/приёма воды и способы водопонижения", "Разделение разных партий и дополнительное перемещение грунта", "Применимые смазка и заполнение снаружи футляра"] },
   { stageId: "bedding", titleRu: "Основание", rows: [
     ...ROAD_CROSSING_SLEEVES_CIVIL_ROWS_R1.filter(row => row.rowId === "rcs:civil:open_cut_full_width_bedding_m3"), ...ROAD_CROSSING_SLEEVES_BEDDING_ROWS_R1,
@@ -1492,7 +1495,7 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
     ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => /^rcs:fill-execution:(?:pits|trench):/u.test(row.rowId))],
     remaining: ["Подтверждение пригодности и распределения повторно используемого грунта", "Послойные или другие материалы траншеи", "Подтверждение технологии укладки и уплотнения", "Фактические качество и отдельное распределение воды", "Разные партии грунта, пульпа и иные состояния"] },
   { stageId: "completion", titleRu: "Завершение перехода", rows: [...ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1,
-    ...ROAD_CROSSING_SLEEVES_WATER_TREATMENT_ROWS_R1.filter(row => row.rowId.startsWith("rcs:water-treatment:removal:") || row.rowId === "rcs:water-treatment:bags:wet_used_count"),
+    ...ROAD_CROSSING_SLEEVES_WATER_TREATMENT_ROWS_R1.filter(row => /^rcs:water-treatment:(?:removal|waste):/u.test(row.rowId) || row.rowId === "rcs:water-treatment:bags:wet_used_count"),
     ...ROAD_CROSSING_SLEEVES_WATER_RECEIVING_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_WATER_CONTROL_ROWS_R1.filter(row => row.rowId.startsWith("rcs:water-control:removal:")),
     ...ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1.filter(row => row.rowId.startsWith("rcs:preparation:removal:")),
