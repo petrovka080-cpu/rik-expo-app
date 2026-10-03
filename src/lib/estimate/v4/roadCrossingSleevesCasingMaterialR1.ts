@@ -47,3 +47,84 @@ export const ROAD_CROSSING_SLEEVES_CASING_MATERIAL_ROWS_R1: readonly AutomaticRo
   control("preliminary_installed_steel_mass_kg", "Предварительная геометрическая масса смонтированного футляра, не отдельная закупка", "kg"),
   control("preliminary_ordered_steel_mass_kg", "Предварительная геометрическая масса нового заказа, не отдельная оплата или подтверждённый груз", "kg"),
 ]);
+
+/** Carrier supply owns a different product and stock allocation from the casing.
+ * Scope: one approved straight carrier, with actual total end extensions. New
+ * stick supply counts whole physical sections; coil/other supply needs its own
+ * selected boundary. Customer supply never creates an executor pipe purchase.
+ */
+export const ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 = Object.freeze({
+  newSections: "Отдельная закупка рабочей трубы целыми физическими секциями",
+  customerSupplied: "Подтверждённая рабочая труба заказчика; новой закупки исполнителем нет",
+  other: "Другая поставка рабочей трубы: отдельная согласованная схема",
+});
+export const ROAD_CROSSING_SLEEVES_CARRIER_COST_BASIS_R1 = "Только рабочая труба; без соединителей, всех исполнителей, техники, энергии и доставки";
+const C_MODE = "rcs_carrier_supply_mode";
+const C_PRODUCT = "rcs_carrier_product_designation";
+const C_EXTENSION = "rcs_carrier_total_end_extension_m";
+const C_SECTION = "rcs_carrier_physical_supply_section_length_m";
+const C_DAMAGE = "rcs_carrier_damaged_whole_section_count";
+const C_STOCK = "rcs_carrier_compatible_whole_section_stock_count";
+const C_RESERVE = "rcs_carrier_retained_whole_section_count";
+const C_BUNDLE = "rcs_carrier_supplier_bundle_section_count";
+const C_BASIS = "rcs_carrier_pipe_cost_basis";
+const carrierInclusion = Object.freeze({ kind: "equals" as const, parameterId: C_MODE, value: ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1.newSections });
+const carrierCount = (id: string, title: string, min = 0): AutomaticParameterSpec => ({
+  id, title, kind: "conditional", valueType: "integer", unitId: "piece", min, requiredWhen: carrierInclusion,
+});
+export const ROAD_CROSSING_SLEEVES_CARRIER_PARAMETERS_R1: readonly AutomaticParameterSpec[] = Object.freeze([
+  { id: C_MODE, title: "Фактический вариант снабжения рабочей трубой", kind: "ordinary", valueType: "enum", unitId: null,
+    values: Object.values(ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1) },
+  { id: C_PRODUCT, title: "Выбранная совместимая рабочая труба с соединениями по спецификации", kind: "ordinary", valueType: "text", unitId: null },
+  { id: C_EXTENSION, title: "Фактическая суммарная длина концов рабочей трубы за пределами футляра; не назначать автоматически", kind: "ordinary", valueType: "decimal", unitId: "m", min: 0 },
+  { id: C_SECTION, title: "Длина одной фактической поставочной секции рабочей трубы; не длина секции футляра", kind: "conditional",
+    valueType: "decimal", unitId: "m", min: 0.000_001, requiredWhen: carrierInclusion },
+  carrierCount(C_DAMAGE, "Подтверждённые целые секции рабочей трубы, расходуемые сверх монтажа; геометрический обрезок уже учтён"),
+  carrierCount(C_STOCK, "Подтверждённые пригодные целые секции той же рабочей трубы и длины в наличии; без пересечений с другими работами"),
+  carrierCount(C_RESERVE, "Сохраняемый резерв целых секций рабочей трубы"),
+  carrierCount(C_BUNDLE, "Секций рабочей трубы в фактической поставочной пачке", 1),
+  { id: C_BASIS, title: "Граница отдельной стоимости рабочей трубы", kind: "conditional", valueType: "enum", unitId: null,
+    values: [ROAD_CROSSING_SLEEVES_CARRIER_COST_BASIS_R1], requiredWhen: carrierInclusion },
+]);
+const C_LENGTH = `rcs_crossing_length_m+${C_EXTENSION}`;
+const C_INSTALLED = `ceil((${C_LENGTH})/${C_SECTION})`;
+const C_CONSUMED = `(${C_INSTALLED})+${C_DAMAGE}`;
+const C_TOTAL = `(${C_CONSUMED})+${C_RESERVE}`;
+const C_NEED = `max(0,(${C_TOTAL})-${C_STOCK})`;
+const C_PACKS = `ceil((${C_NEED})/${C_BUNDLE})`;
+const C_ORDER = `(${C_PACKS})*${C_BUNDLE}`;
+const C_REMAINING = `${C_STOCK}+(${C_ORDER})-(${C_CONSUMED})`;
+export const ROAD_CROSSING_SLEEVES_CARRIER_EXPRESSIONS_R1 = Object.freeze({
+  installed_length_m: C_LENGTH, installed_section_count: C_INSTALLED,
+  cutting_remainder_m: `(${C_INSTALLED})*${C_SECTION}-(${C_LENGTH})`,
+  damaged_section_count: C_DAMAGE, compatible_stock_section_count: C_STOCK, retained_section_count: C_RESERVE,
+  consumed_section_count: C_CONSUMED, total_section_need: C_TOTAL, new_section_need: C_NEED,
+  supplier_bundle_count: C_PACKS, ordered_section_count: C_ORDER,
+  ordered_length_m: `(${C_ORDER})*${C_SECTION}`, remaining_section_count: C_REMAINING,
+  free_section_count: `(${C_REMAINING})-${C_RESERVE}`,
+});
+const carrierRow = (key: keyof typeof ROAD_CROSSING_SLEEVES_CARRIER_EXPRESSIONS_R1, title: string): AutomaticRowSpec => ({
+  rowId: `rcs:carrier:${key}`, formulaId: `rcs:carrier:${key}`, section: "Рабочая труба выбранного перехода", category: "material", title,
+  unitId: key.endsWith("_m") ? "m" : key === "supplier_bundle_count" ? "package" : "piece",
+  expression: ROAD_CROSSING_SLEEVES_CARRIER_EXPRESSIONS_R1[key], costTreatment: "INFORMATIONAL_SCOPE",
+  ...(key === "installed_length_m" ? {} : { inclusion: carrierInclusion }),
+  inputParameterIds: key === "installed_length_m" ? ["rcs_crossing_length_m", C_EXTENSION] : [C_MODE],
+});
+export const ROAD_CROSSING_SLEEVES_CARRIER_ROWS_R1: readonly AutomaticRowSpec[] = Object.freeze([
+  carrierRow("installed_length_m", "Длина рабочей трубы в футляре с фактическими концами; не повторная закупка"),
+  carrierRow("installed_section_count", "Целые физические секции рабочей трубы для монтажа"),
+  carrierRow("cutting_remainder_m", "Геометрический обрезок монтажных секций рабочей трубы; не автоматически пригодное наличие"),
+  carrierRow("damaged_section_count", "Фактические дополнительно расходуемые секции рабочей трубы"),
+  carrierRow("compatible_stock_section_count", "Совместимые целые секции рабочей трубы в наличии"),
+  carrierRow("retained_section_count", "Сохраняемый резерв секций рабочей трубы"),
+  carrierRow("consumed_section_count", "Секции рабочей трубы на монтаж и подтверждённые потери"),
+  carrierRow("total_section_need", "Общая потребность секций рабочей трубы с резервом"),
+  carrierRow("new_section_need", "Дополнительная потребность секций рабочей трубы после наличия"),
+  carrierRow("supplier_bundle_count", "Число новых поставочных пачек рабочей трубы; не монтажные соединения"),
+  carrierRow("ordered_section_count", "Новые целые секции рабочей трубы в заказе; без второй оплаты"),
+  { ...carrierRow("ordered_length_m", "Новый отдельный заказ выбранной рабочей трубы в метрах целых секций"),
+    costTreatment: "OWN_COST", procurement: true, titleParameterIds: [C_PRODUCT],
+    inputParameterIds: ["rcs_crossing_length_m", "rcs_carrier_outside_diameter_mm", C_EXTENSION, C_PRODUCT, C_MODE, C_SECTION, C_DAMAGE, C_STOCK, C_RESERVE, C_BUNDLE, C_BASIS] },
+  carrierRow("remaining_section_count", "Остаток целых секций рабочей трубы после монтажа и потерь, включая резерв"),
+  carrierRow("free_section_count", "Свободные целые секции рабочей трубы сверх сохраняемого резерва"),
+]);
