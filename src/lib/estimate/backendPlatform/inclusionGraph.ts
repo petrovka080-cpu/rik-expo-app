@@ -1,4 +1,22 @@
+import { compileFormulaGraph, evaluateFormulaGraph, compareFormulaGraphDecimals, type CompiledFormulaGraph } from "./formulaGraph";
+
 export type InclusionGraphAst = Record<string, unknown>;
+const conditionFormulas = new WeakMap<InclusionGraphAst, CompiledFormulaGraph>();
+
+function conditionFormula(ast: InclusionGraphAst): CompiledFormulaGraph {
+  if (typeof ast.expression !== "string" || !ast.expression.trim()
+    || typeof ast.unitId !== "string" || !ast.unitId.trim()
+    || typeof ast.value !== "number" || !Number.isFinite(ast.value)) {
+    throw new InclusionGraphEvaluationError("formula comparison requires an expression, output unit and finite threshold");
+  }
+  const cached = conditionFormulas.get(ast);
+  // Metadata is immutable in normal use. Also defend callers replacing a
+  // source expression on an existing object; never reuse a different formula.
+  if (cached?.source === ast.expression) return cached;
+  const formula = compileFormulaGraph(ast.expression);
+  conditionFormulas.set(ast, formula);
+  return formula;
+}
 
 export type InclusionGraphResolution = {
   /** null means that the definition branch cannot yet be decided from supplied inputs. */
@@ -44,6 +62,20 @@ export function resolveInclusionGraph(
     throw new InclusionGraphEvaluationError("inclusion AST must be an object");
   }
   const kind = String(ast.kind ?? "");
+  if (kind === "formula_greater_than") {
+    const formula = conditionFormula(ast);
+    const missing = formula.inputParameterIds.filter(id =>
+      parameters[id] === undefined || parameters[id] === null || parameters[id] === "");
+    if (missing.length) return { value: null, missingParameterIds: missing };
+    const numericParameters = Object.fromEntries(formula.inputParameterIds.map(id => {
+      const value = parameters[id];
+      finiteNumber(value, id);
+      // Validate scalar shape without converting exact decimal strings to
+      // floating point before the existing fixed-decimal graph evaluates them.
+      return [id, value as string | number];
+    }));
+    return { value: compareFormulaGraphDecimals(evaluateFormulaGraph(formula.ast, numericParameters), ast.value as number) > 0, missingParameterIds: [] };
+  }
   if (kind === "literal") {
     if (typeof ast.value !== "boolean") {
       throw new InclusionGraphEvaluationError("literal node requires boolean value");
@@ -161,6 +193,7 @@ export function inclusionGraphEvidenceParameterIds(
   unresolvedEvidenceCount: (ids: readonly string[]) => number = () => 0,
 ): string[] {
   if (ast.kind === "literal") return [];
+  if (ast.kind === "formula_greater_than") return [...conditionFormula(ast).inputParameterIds];
   if (ast.kind === "not") {
     return inclusionGraphEvidenceParameterIds(ast.operand as InclusionGraphAst, parameters, unresolvedEvidenceCount);
   }

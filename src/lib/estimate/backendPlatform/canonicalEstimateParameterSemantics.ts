@@ -163,6 +163,16 @@ function hasDeclaredConditionalRequirement(schema: ParameterSchema): boolean {
     && Object.prototype.hasOwnProperty.call(condition, "equals");
 }
 
+function isMandatoryProjectNumericResourceFact(schema: ParameterSchema): boolean {
+  return ["decimal", "integer"].includes(schema.valueType)
+    && schema.valueSourceRole === "CONDITIONAL_PROJECT_FACT"
+    && schema.preliminaryCompilationAllowed === false
+    && schema.guide?.guideKind === "PROJECT_DEFINED"
+    && schema.guide.guideValidationPolicy === "MANDATORY_BLOCK"
+    && hasDeclaredConditionalRequirement(schema)
+    && canonicalEstimateParameterHasCalculationConsumer(schema);
+}
+
 /** A required user choice or explicitly owned project gate can supply a BOQ
  * resource without a numeric formula. Mandatory project gates are classified
  * by immutable ownership/guide metadata, not by a reference-like field name.
@@ -171,6 +181,9 @@ export function isCanonicalEstimateVisibleUserResourceSelectionParameter(
   schema: ParameterSchema,
 ): boolean {
   if (schema.visibilityRole !== "USER_INPUT") return false;
+  if (["decimal", "integer"].includes(schema.valueType)) {
+    return isMandatoryProjectNumericResourceFact(schema) && isCanonicalEstimateUserEditableParameter(schema);
+  }
   if (schema.valueType !== "text") return false;
   const conditionalRequirement = hasDeclaredConditionalRequirement(schema);
   if (schema.required !== true && !conditionalRequirement) return false;
@@ -200,6 +213,9 @@ export function canonicalEstimateParameterChangesPreliminaryEstimate(
 ): boolean {
   if ((schema.formulaConsumers?.length ?? 0) > 0) return true;
   if ((schema.resourceBranchConsumers?.length ?? 0) === 0) return false;
+  // A declared actual numeric compatibility gate can affect a resource without
+  // being an arithmetic multiplier (e.g. the permitted transported length).
+  if (isMandatoryProjectNumericResourceFact(schema)) return true;
   const conditional = schema.requiredWhen ?? schema.constraints.requiredWhen;
   const optionalDocumentProfile = schema.valueType === "enum"
     && schema.required !== true
@@ -272,8 +288,12 @@ export function isCanonicalEstimateConsumerSuppliedParameter(schema: ParameterSc
  * that source.
  */
 export function isCanonicalEstimateSourceManagedParameter(schema: ParameterSchema): boolean {
-  return SOURCE_MANAGED_CONSUMER_ROLES.has(schema.valueSourceRole)
-    || canonicalEstimateParameterRequiresManagedProfessionalSource(schema);
+  if (SOURCE_MANAGED_CONSUMER_ROLES.has(schema.valueSourceRole)) return true;
+  // A mandatory actual project fact may contain words such as "mass per unit"
+  // or "capacity". Its immutable role/guide and consumers establish ownership;
+  // the technical-looking name alone cannot turn it into a hidden norm.
+  if (isMandatoryProjectNumericResourceFact(schema)) return false;
+  return canonicalEstimateParameterRequiresManagedProfessionalSource(schema);
 }
 
 /**

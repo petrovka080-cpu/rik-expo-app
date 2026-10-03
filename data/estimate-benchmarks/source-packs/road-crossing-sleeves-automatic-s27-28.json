@@ -5,7 +5,7 @@
   "scope": "One continuous steel casing crossing with explicitly selected installation method. Casing supply and site joints, support rings and elements, contact tape, compatible end-seal kits, applicable civil work, crew labor, mechanisms and logistics are separate quantity/cost owners. This source pack is not itself a published owner or accepted estimate.",
   "engineeringAcceptanceClaimed": false,
   "universalRatesClaimed": false,
-  "implementationStatus": "COMPONENT_ASSEMBLY_WITH_METHOD_SPECIFIC_EXECUTION_AND_PIT_OR_TRENCH_BACKFILL_SUPPLY_NOT_PUBLISHED_NOT_FULL_OWNER",
+  "implementationStatus": "COMPONENT_ASSEMBLY_WITH_EXECUTION_SUPPLY_AND_ACTUAL_DEDICATED_FREIGHT_NOT_PUBLISHED_NOT_FULL_OWNER",
   "quantityComponent": {
     "module": "src/lib/estimate/v4/roadCrossingSleevesQuantityModelR1.ts",
     "verification": "tests/estimateNorms/roadCrossingSleevesQuantityModelR1.contract.test.ts",
@@ -54,6 +54,16 @@
       "independence": "Unknown supply ratio or approved reuse allocation gates the dependent purchase/consumption, not already known finished-geometry placement work",
       "costBoundary": "All personnel including operators are in crew only; equipment excludes all personnel and includes energy. Material/water supply, delivery and soil haul are separate. No universal rates/defaults",
       "remaining": "Actual layer/material suitability and compaction method approval, separate actual water consumption/supply and logistics, mixed/other materials, engineering acceptance and full-owner publication"
+    },
+    "freight": {
+      "module": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",
+      "verification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
+      "scope": "Selected casing/carrier section orders, loose bedding/pit/trench fill, dry internal mix and separately purchased mixing water; each actual off-site stock allocation is a distinct documented delivery lane",
+      "quantity": "Use the existing rounded order, including retained reserve and supplier surplus. Do not use installed quantities or call supplier multiples vehicle trips. Site stock creates no stock haul; off-site portion cannot exceed compatible allocated stock",
+      "capacity": "Minimum of actual vehicle placement capacity and actual legal payload divided by certified shipping mass including packaging. Whole sections and dry supply bags stay indivisible; actual whole-section length must fit the documented vehicle/route. Geometric steel mass never substitutes for shipping mass",
+      "cost": "One separately documented full cargo round trip includes vehicle, driver, energy, loading, unloading and return. Material and installation stay separate. Explicit other-party delivery creates no second executor charge. Consolidated loads require a separate manifest; do not price the same shared trip twice",
+      "applicability": "The common inclusion resolver uses the bounded canonical FormulaGraph to decide whether shipment is positive. Zero shipment excludes route/truck questions. Missing original inputs remain local needs; manual trips cannot bypass source geometry, mass, route, cost basis or stock compatibility",
+      "remaining": "Actual project transport/route evidence and prices, consolidated manifests, fittings/consumables freight, equipment mobilization/demobilization, excavated soil allocation/haul/disposal, full-owner purchase-exception reconciliation and governed publication"
     },
     "evaluator": "Existing canonical FormulaGraph only",
     "inputPolicy": "The component takes explicitly supplied scalar inputs and does not create a runtime form or baseline. The full owner must classify source-backed replaceable assumptions separately from genuine project facts, and prefer certified pipe mass when available.",

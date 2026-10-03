@@ -269,7 +269,7 @@ function objectVisibilityCondition(raw: unknown): CanonicalParameter["visibility
     );
     if (flattenable && flattened.length > 0) return { kind: targetKind, conditions: flattened };
   }
-  if (["literal", "parameter", "present", "not", "and", "or", "greater_than", "greater_than_or_equal", "less_than", "less_than_or_equal"].includes(String(condition.kind))) {
+  if (["literal", "parameter", "present", "not", "and", "or", "greater_than", "greater_than_or_equal", "less_than", "less_than_or_equal", "formula_greater_than"].includes(String(condition.kind))) {
     resolveInclusionGraph(condition, {});
     return { kind: "INCLUSION_GRAPH", ast: JSON.parse(JSON.stringify(condition)) as Record<string, unknown> };
   }

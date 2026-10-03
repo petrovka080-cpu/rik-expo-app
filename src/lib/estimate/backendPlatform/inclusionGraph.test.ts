@@ -1,4 +1,29 @@
-import { evaluateInclusionGraph, resolveInclusionGraph, InclusionGraphEvaluationError } from "./inclusionGraph";
+import { evaluateInclusionGraph, resolveInclusionGraph, inclusionGraphEvidenceParameterIds, InclusionGraphEvaluationError } from "./inclusionGraph";
+
+describe("formula-dependent applicability through the canonical formula graph", () => {
+  const ast = { kind: "formula_greater_than", expression: "ceil(max(0,net_need_m3+reserve_m3-stock_m3)/multiple_m3)*multiple_m3", unitId: "m3", value: 0 };
+  it("distinguishes missing stock, explicit zero shipment and an actual rounded shipment", () => {
+    const input = { net_need_m3: 10, reserve_m3: 2, multiple_m3: 5 };
+    expect(resolveInclusionGraph(ast, input)).toEqual({ value: null, missingParameterIds: ["stock_m3"] });
+    expect(resolveInclusionGraph(ast, { ...input, stock_m3: 12 })).toEqual({ value: false, missingParameterIds: [] });
+    expect(resolveInclusionGraph(ast, { ...input, stock_m3: 0 })).toEqual({ value: true, missingParameterIds: [] });
+    expect(inclusionGraphEvidenceParameterIds(ast, input)).toEqual(["multiple_m3", "net_need_m3", "reserve_m3", "stock_m3"]);
+  });
+  it("uses decisive inactive branches without asking for an unused freight formula", () => {
+    expect(resolveInclusionGraph({ kind: "and", operands: [{ kind: "equals", parameterId: "method", value: "open_cut" }, ast] }, { method: "jacking" }))
+      .toEqual({ value: false, missingParameterIds: [] });
+  });
+  it("preserves fixed-decimal source strings around a large stock balance", () => {
+    expect(resolveInclusionGraph({ ...ast, expression: "need-stock" }, { need: "1000000000.000000001", stock: "1000000000" }))
+      .toEqual({ value: true, missingParameterIds: [] });
+  });
+  it("never converts broken formula metadata, bad numeric input or division by zero into a missing need", () => {
+    expect(() => resolveInclusionGraph({ ...ast, expression: "unknown_function(stock_m3)" }, {})).toThrow();
+    expect(() => resolveInclusionGraph({ ...ast, unitId: "" }, {})).toThrow(InclusionGraphEvaluationError);
+    expect(() => resolveInclusionGraph(ast, { net_need_m3: "broken", reserve_m3: 0, stock_m3: 0, multiple_m3: 1 })).toThrow(InclusionGraphEvaluationError);
+    expect(() => resolveInclusionGraph(ast, { net_need_m3: 10, reserve_m3: 0, stock_m3: 0, multiple_m3: 0 })).toThrow();
+  });
+});
 
 describe("inclusionGraph present", () => {
   it("gates formulas until their explicit input exists without treating zero as missing", () => {

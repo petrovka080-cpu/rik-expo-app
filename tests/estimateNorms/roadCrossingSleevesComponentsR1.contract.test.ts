@@ -2,7 +2,9 @@ import { compileCanonicalEstimateCore } from "../../src/lib/estimate/backendPlat
 import { estimateDeterministicHash } from "../../src/lib/estimate/estimateDeterministicHash";
 import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_COMPONENT_PARAMETERS_R1 as parameters,
   ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_COST_BASES_R1 as executionBases,
-  ROAD_CROSSING_SLEEVES_MECHANICAL_COST_BASES_R1 as mechanicalBases } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_MECHANICAL_COST_BASES_R1 as mechanicalBases,
+  ROAD_CROSSING_SLEEVES_FREIGHT_MODES_R1 as freightModes,
+  ROAD_CROSSING_SLEEVES_FREIGHT_COST_BASIS_R1 as freightBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierModes, ROAD_CROSSING_SLEEVES_CARRIER_COST_BASIS_R1 as carrierBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1 as jointParameters, ROAD_CROSSING_SLEEVES_JOINT_COST_BASES_R1 as bases } from "../../src/lib/estimate/v4/roadCrossingSleevesJointResourcesR1";
@@ -10,6 +12,8 @@ import { ROAD_CROSSING_SLEEVES_PIT_FILL_MODES_R1 as fillModes,
   ROAD_CROSSING_SLEEVES_TRENCH_FILL_MODES_R1 as trenchModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
 import { ROAD_CROSSING_SLEEVES_INTERNAL_FILL_MODES_R1 as internalModes,
   ROAD_CROSSING_SLEEVES_INTERNAL_WATER_MODES_R1 as waterModes, ROAD_CROSSING_SLEEVES_INTERNAL_WATER_COST_BASIS_R1 as waterBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesInternalFillR1";
+import { evaluateInclusionGraph } from "../../src/lib/estimate/backendPlatform/inclusionGraph";
+import { aiEstimateRuUnitForParameter } from "../../src/lib/estimate/aiEstimateRuParameterDictionary";
 
 const components = buildRoadCrossingSleevesComponentsR1({ source_title: "Owned integration fixture for source-bounded components, not a full crossing",
   source_document_version: "test-2026-10-03", definition_hash: "a".repeat(64), artifact_sha256: "a".repeat(64),
@@ -17,6 +21,10 @@ const components = buildRoadCrossingSleevesComponentsR1({ source_title: "Owned i
 const definition = components.definition;
 // Synthetic actual-fact/price fixtures ONLY, never a published default or WPS approval.
 const fixture: Record<string, unknown> = {
+  ...Object.fromEntries(parameters.filter(parameter => parameter.id.startsWith("rcs_freight_")
+    && /(?:_mode|_allocation_reference|_offsite_stock_units)$/u.test(parameter.id)).map(parameter => [parameter.id,
+      parameter.id.endsWith("_mode") ? freightModes.otherParty : parameter.id.endsWith("_allocation_reference")
+        ? "TEST actual separate supplier delivery included elsewhere, no second freight payment" : 0])),
   ...Object.fromEntries(["casing_preparation", "casing_lowering", "supports", "carrier_insertion", "end_seals"].flatMap(key => Object.entries({
     method_reference: "TEST agreed disjoint installation scope and compatible equipment/access/load plan",
     crew_designation: "TEST all operation personnel including operators", crew_h_per_unit: 1, crew_cost_basis: mechanicalBases.crew,
@@ -101,6 +109,106 @@ function compile(submittedParameters: Record<string, unknown> = fixture, rowOver
 }
 const q = (result: Awaited<ReturnType<typeof compile>>, id: string) => Number(result.rows.find(row => row.row_id === id)?.quantity);
 
+describe("full assembly freight with actual dedicated load plans", () => {
+  const lane = (key: string, mass: number, payload: number, capacity: number, maxLength = 12): Record<string, unknown> => ({
+    [`rcs_freight_${key}_mode`]: freightModes.separate,
+    [`rcs_freight_${key}_allocation_reference`]: "TEST actual route/load plan: one dedicated cargo, no overlapping supplier or stock trips",
+    [`rcs_freight_${key}_vehicle_designation`]: "TEST compatible dedicated vehicle",
+    [`rcs_freight_${key}_shipping_kg_per_unit`]: mass,
+    [`rcs_freight_${key}_payload_kg`]: payload,
+    [`rcs_freight_${key}_max_units_per_trip`]: capacity,
+    ...(/^(casing|carrier)_/u.test(key) ? { [`rcs_freight_${key}_max_section_length_m`]: maxLength } : {}),
+    [`rcs_freight_${key}_cost_basis`]: freightBasis,
+  });
+  const casing = { ...fixture, ...lane("casing_new", 1000, 2500, 5) };
+  const trip = "rcs:freight:casing_new:trip_count";
+  it("counts whole pipe sections by payload and placement, prices one full round trip and preserves installed joints", async () => {
+    const result = await compile(casing, { [trip]: { unitPrice: "70", provenance } });
+    expect(result.preliminaryNeeds).toEqual([]);
+    expect(q(result, "rcs:freight:casing_new:cargo_units")).toBe(4);
+    expect(q(result, "rcs:freight:casing_new:shipping_mass_kg")).toBe(4000);
+    expect(q(result, "rcs:freight:casing_new:effective_units_per_trip")).toBe(2);
+    expect(q(result, trip)).toBe(2); expect(result.totals.amount).toBe("140");
+    expect(q(result, "rcs:casing:installed_section_count")).toBe(3);
+    expect(q(result, "rcs:joint:site_joint_count")).toBe(2);
+    expect(result.rows.filter(row => row.row_id.startsWith("rcs:freight:") && row.included_in_procurement).map(row => row.row_id)).toEqual([trip]);
+    expect(components.stageMatrix.find(stage => stage.stageId === "completion")?.ownResourceIds).toContain(trip);
+  });
+  it("keeps newly ordered sections, off-site stock and site stock in distinct dedicated deliveries", async () => {
+    const input = { ...casing, rcs_compatible_stock_section_count: 2, rcs_freight_casing_offsite_stock_units: 2,
+      ...lane("casing_stock", 1000, 2500, 5) };
+    const stockTrip = "rcs:freight:casing_stock:trip_count";
+    const result = await compile(input, { [trip]: { unitPrice: "70", provenance }, [stockTrip]: { unitPrice: "50", provenance } });
+    expect(result.preliminaryNeeds).toEqual([]); expect(q(result, trip)).toBe(1); expect(q(result, stockTrip)).toBe(1);
+    expect(q(result, "rcs:casing:ordered_casing_length_m")).toBe(24); expect(result.totals.amount).toBe("120");
+    const onSite = await compile({ ...input, rcs_freight_casing_offsite_stock_units: 0 });
+    expect(onSite.rows.some(row => row.row_id.startsWith("rcs:freight:casing_stock:"))).toBe(false);
+    expect(q(onSite, trip)).toBe(1);
+    await expect(compile({ ...input, rcs_freight_casing_offsite_stock_units: 3 })).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+  });
+  it("uses supplied loose volume and actual bulk mass, never calls the order multiple a vehicle trip", async () => {
+    const result = await compile({ ...fixture, ...lane("bedding_new", 1800, 5000, 4) });
+    expect(result.preliminaryNeeds).toEqual([]);
+    expect(q(result, "rcs:bedding:ordered_loose_m3")).toBe(6);
+    expect(q(result, "rcs:bedding:supplier_multiple_count")).toBe(3);
+    expect(q(result, "rcs:freight:bedding_new:trip_count")).toBe(3);
+    const placementLimited = await compile({ ...fixture, ...lane("bedding_new", 1000, 20000, 4) });
+    expect(q(placementLimited, "rcs:freight:bedding_new:trip_count")).toBe(2);
+    expect(q(placementLimited, "rcs:fill-execution:bedding:crew_hours")).toBeCloseTo(3.15, 6);
+  });
+  it("keeps whole dry bags in a payload-limited load and never ships reserve as additional mixing water", async () => {
+    const result = await compile({ ...selectedInternal, ...lane("internal_dry_new", 1.1, 75, 100) });
+    expect(result.preliminaryNeeds).toEqual([]);
+    const kg = q(result, "rcs:internal-fill:ordered_dry_kg");
+    expect(q(result, "rcs:freight:internal_dry_new:effective_units_per_trip")).toBe(50);
+    expect(q(result, "rcs:freight:internal_dry_new:trip_count")).toBe(kg / 50);
+    const changed = await compile({ ...selectedInternal, rcs_internal_fill_retained_dry_reserve_kg: 125, ...lane("internal_dry_new", 1.1, 75, 100) });
+    expect(q(changed, "rcs:freight:internal_dry_new:trip_count")).toBe(kg / 50 + 2);
+    expect(q(changed, "rcs:internal-fill:mixing_water_m3")).toBe(q(result, "rcs:internal-fill:mixing_water_m3"));
+  });
+  it("automatically excludes zero shipment and its route/truck questions without a manually computed flag", async () => {
+    const input: Record<string, unknown> = { ...fixture, rcs_compatible_stock_section_count: 4, rcs_freight_casing_offsite_stock_units: 0 };
+    for (const key of Object.keys(input)) if (key.startsWith("rcs_freight_casing_new_")) delete input[key];
+    const result = await compile(input); expect(result.preliminaryNeeds).toEqual([]);
+    expect(q(result, "rcs:casing:ordered_casing_length_m")).toBe(0);
+    expect(result.rows.some(row => row.row_id.startsWith("rcs:freight:casing_"))).toBe(false);
+    for (const parameter of definition.parameters.filter(p => p.parameter_id.startsWith("rcs_freight_casing_new_"))) {
+      expect(evaluateInclusionGraph(parameter.constraints_json!.requiredWhen as Record<string, unknown>, result.parameters)).toBe(false);
+    }
+  });
+  it("keeps unavailable shipping mass local even under a manual trip override", async () => {
+    const input = { ...casing }; delete input.rcs_freight_casing_new_shipping_kg_per_unit;
+    const result = await compile(input, { [trip]: { quantity: "999", provenance } });
+    expect(result.preliminaryNeeds.map(need => need.row_id)).toEqual([
+      "rcs:freight:casing_new:shipping_mass_kg", "rcs:freight:casing_new:effective_units_per_trip", trip,
+    ]);
+    expect(result.preliminaryNeeds.every(need => need.missing_parameter_ids.includes("rcs_freight_casing_new_shipping_kg_per_unit"))).toBe(true);
+    expect(result.rows.some(row => row.row_id === trip)).toBe(false);
+    expect(q(result, "rcs:casing:ordered_casing_length_m")).toBe(48); expect(q(result, beddingOwner)).toBe(6);
+  });
+  it("cannot transport an unknown casing diameter through a manually supplied trip quantity", async () => {
+    const input = { ...casing }; delete input.rcs_casing_inside_diameter_mm;
+    const result = await compile(input, { [trip]: { quantity: "999", provenance } });
+    expect(result.preliminaryNeeds.find(need => need.row_id === trip)?.missing_parameter_ids).toContain("rcs_casing_inside_diameter_mm");
+    expect(q(result, beddingOwner)).toBe(6);
+  });
+  it("rejects impossible whole-section cargo, short vehicles and overlapping all-in cost bases", async () => {
+    await expect(compile({ ...casing, rcs_freight_casing_new_payload_kg: 999 })).rejects.toMatchObject({ code: "FORMULA_OUTPUT_BOUNDS_FAILED" });
+    await expect(compile({ ...casing, rcs_freight_casing_new_max_section_length_m: 11 })).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+    await expect(compile({ ...casing, rcs_freight_casing_new_cost_basis: "Материал, монтаж и доставка оплачиваются вместе" })).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+  });
+  it("requires an actual allocation document and preserves explicit other-party delivery without a second cost", async () => {
+    const input = { ...casing }; delete input.rcs_freight_casing_new_allocation_reference;
+    const result = await compile(input, { [trip]: { quantity: "999", provenance } });
+    expect(result.preliminaryNeeds.find(need => need.row_id === trip)?.missing_parameter_ids).toContain("rcs_freight_casing_new_allocation_reference");
+    const supplied = await compile({ ...casing, rcs_freight_casing_new_mode: freightModes.otherParty }, { [trip]: { unitPrice: "100", provenance } });
+    expect(supplied.rows.some(row => row.row_id === trip)).toBe(false); expect(supplied.totals.amount).toBe("0");
+    expect(supplied.parameters.rcs_freight_casing_new_payload_kg).toBe(2500);
+    expect(aiEstimateRuUnitForParameter("cargo_mass", "kg_per_piece")).toBe("кг/шт.");
+    expect(aiEstimateRuUnitForParameter("cargo_mass", "kg_per_kg")).toBe("кг/кг");
+  });
+});
+
 describe("road-casing component integration, not full crossing acceptance", () => {
   it("declares each original fact, formula and resource only once with no derived-question duplicates", () => {
     for (const ids of [definition.parameters.map(p => p.parameter_id), definition.formulas.map(f => f.formula_id), definition.resources.map(r => r.row_id)]) {
@@ -164,9 +272,9 @@ describe("road-casing component integration, not full crossing acceptance", () =
   it("unknown bedding product gates its purchase and execution, never the independently known casing or joint orders", async () => {
     const input = { ...fixture }; delete input.rcs_bedding_granular_product_designation;
     const result = await compile(input, { [beddingOwner]: { quantity: "999", provenance } });
-    expect(result.preliminaryNeeds).toHaveLength(3);
+    expect(result.preliminaryNeeds).toHaveLength(4);
     expect(result.preliminaryNeeds[0]).toMatchObject({ row_id: beddingOwner, missing_parameter_ids: ["rcs_bedding_granular_product_designation"] });
-    expect(result.preliminaryNeeds.map(need => need.row_id)).toEqual([beddingOwner, ...fillExecutionOwners("bedding")]);
+    expect(result.preliminaryNeeds.map(need => need.row_id)).toEqual([beddingOwner, ...fillExecutionOwners("bedding"), "rcs:freight:bedding_new:cargo_units"]);
     expect(result.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual([...owners, ...executionOwners(methods.openCut), ...mechanicalOwners(methods.openCut)]);
   });
   it("unknown civil method remains one fact at its exact branch needs, not an invented full-length trench", async () => {
@@ -174,7 +282,7 @@ describe("road-casing component integration, not full crossing acceptance", () =
     const result = await compile(input);
     expect(result.rows.some(row => row.row_id.startsWith("rcs:civil:"))).toBe(false);
     expect(result.preliminaryNeeds.length).toBeGreaterThan(0);
-    expect(result.preliminaryNeeds.every(need => /^(?:rcs:civil:|rcs:civil-execution:|rcs:fill-execution:|rcs:bedding:|rcs:pit-return:|rcs:mechanical:casing_lowering:)/u.test(need.row_id) && need.need_state === "CONDITION_REQUIRED")).toBe(true);
+    expect(result.preliminaryNeeds.every(need => /^(?:rcs:civil:|rcs:civil-execution:|rcs:fill-execution:|rcs:bedding:|rcs:pit-return:|rcs:mechanical:casing_lowering:|rcs:freight:(?:bedding|pits|trench)_new:cargo_units$)/u.test(need.row_id) && need.need_state === "CONDITION_REQUIRED")).toBe(true);
     expect([...new Set(result.preliminaryNeeds.flatMap(need => need.missing_parameter_ids))]).toEqual(["rcs_civil_installation_method"]);
     expect(result.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual([...owners, ...mechanicalOwners()]);
   });
@@ -227,7 +335,7 @@ describe("road-casing component integration, not full crossing acceptance", () =
     delete input.rcs_pit_fill_approved_reused_finished_m3;
     const unknown = await compile(input, { [pitFillOwner]: { quantity: "999", provenance } });
     expect(unknown.rows.some(row => row.row_id === pitFillOwner)).toBe(false);
-    expect(unknown.preliminaryNeeds.every(need => need.row_id.startsWith("rcs:pit-fill:") && need.missing_parameter_ids.includes("rcs_pit_fill_approved_reused_finished_m3"))).toBe(true);
+    expect(unknown.preliminaryNeeds.every(need => (need.row_id.startsWith("rcs:pit-fill:") || need.row_id === "rcs:freight:pits_new:cargo_units") && need.missing_parameter_ids.includes("rcs_pit_fill_approved_reused_finished_m3"))).toBe(true);
     expect(q(unknown, "rcs:pit-return:total_remaining_space_m3")).toBe(83);
     expect(unknown.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual([...owners, ...executionOwners(methods.pipeJacking), ...fillExecutionOwners("pits"), ...mechanicalOwners(methods.pipeJacking)]);
   });
@@ -260,7 +368,7 @@ describe("road-casing component integration, not full crossing acceptance", () =
     const result = await compile(input, { "rcs:internal-fill:ordered_dry_kg": { quantity: "999", provenance } });
     expect(result.rows.some(row => row.row_id.startsWith("rcs:internal-fill:"))).toBe(false);
     expect(result.preliminaryNeeds.length).toBeGreaterThan(0);
-    expect(result.preliminaryNeeds.every(need => /^(?:rcs:internal-fill:|rcs:fill-execution:internal:)/u.test(need.row_id)
+    expect(result.preliminaryNeeds.every(need => /^(?:rcs:internal-fill:|rcs:fill-execution:internal:|rcs:freight:internal_dry_new:cargo_units$)/u.test(need.row_id)
       && need.missing_parameter_ids.includes("rcs_internal_fill_mode"))).toBe(true);
     expect(result.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual(applicableOwners(methods.openCut));
   });
@@ -350,7 +458,7 @@ describe("road-casing component integration, not full crossing acceptance", () =
     expect(components.stageMatrix.find(stage => stage.stageId === "backfill")?.ownResourceIds).toContain("rcs:trench-fill:ordered_loose_m3");
     const missingProduct: Record<string, unknown> = { ...input }; delete missingProduct.rcs_trench_fill_granular_product_designation;
     const preliminary = await compile(missingProduct, { "rcs:trench-fill:ordered_loose_m3": { quantity: "999", provenance } });
-    expect(preliminary.preliminaryNeeds.map(need => need.row_id)).toEqual(["rcs:trench-fill:ordered_loose_m3", ...fillExecutionOwners("trench")]);
+    expect(preliminary.preliminaryNeeds.map(need => need.row_id)).toEqual(["rcs:trench-fill:ordered_loose_m3", ...fillExecutionOwners("trench"), "rcs:freight:trench_new:cargo_units"]);
     expect(preliminary.preliminaryNeeds.every(need => need.missing_parameter_ids.includes("rcs_trench_fill_granular_product_designation"))).toBe(true);
     expect(q(preliminary, beddingOwner)).toBe(6);
     expect(q(preliminary, "rcs:civil-execution:open_cut:crew_hours")).toBe(52.5);
@@ -386,7 +494,7 @@ describe("road-casing component integration, not full crossing acceptance", () =
   it("unknown supply ratios do not block independently known execution, while unknown actual equipment stays local", async () => {
     const input = { ...selectedTrench }; delete input.rcs_trench_fill_gross_supplied_volume_ratio;
     const result = await compile(input);
-    expect(result.preliminaryNeeds.every(need => need.row_id.startsWith("rcs:trench-fill:"))).toBe(true);
+    expect(result.preliminaryNeeds.every(need => need.row_id.startsWith("rcs:trench-fill:") || need.row_id === "rcs:freight:trench_new:cargo_units")).toBe(true);
     expect(q(result, "rcs:fill-execution:trench:crew_hours")).toBeGreaterThan(0);
     const missingEquipment = { ...selectedTrench }; delete missingEquipment.rcs_fill_trench_equipment_designation;
     const equipmentRow = "rcs:fill-execution:trench:equipment_hours";
