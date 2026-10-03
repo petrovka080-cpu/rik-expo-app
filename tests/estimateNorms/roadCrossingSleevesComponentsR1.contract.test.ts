@@ -8,7 +8,8 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_COMPONENT_P
   ROAD_CROSSING_SLEEVES_SOIL_MODES_R1 as soilModes, ROAD_CROSSING_SLEEVES_SOIL_REUSE_ORIGINS_R1 as soilOrigins,
   ROAD_CROSSING_SLEEVES_SOIL_DESTINATIONS_R1 as soilDestinations, ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_MODES_R1 as receivingModes,
   ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_COST_BASIS_R1 as receivingBasis,
-  ROAD_CROSSING_SLEEVES_INSPECTION_MODES_R1 as inspectionModes, ROAD_CROSSING_SLEEVES_INSPECTION_COUPLANT_COST_BASIS_R1 as couplantBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_INSPECTION_MODES_R1 as inspectionModes, ROAD_CROSSING_SLEEVES_INSPECTION_COUPLANT_COST_BASIS_R1 as couplantBasis,
+  ROAD_CROSSING_SLEEVES_PREPARATION_MODES_R1 as preparationModes, ROAD_CROSSING_SLEEVES_PREPARATION_MATERIAL_COST_BASIS_R1 as preparationBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierModes, ROAD_CROSSING_SLEEVES_CARRIER_COST_BASIS_R1 as carrierBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1 as jointParameters, ROAD_CROSSING_SLEEVES_JOINT_COST_BASES_R1 as bases } from "../../src/lib/estimate/v4/roadCrossingSleevesJointResourcesR1";
@@ -25,6 +26,7 @@ const components = buildRoadCrossingSleevesComponentsR1({ source_title: "Owned i
 const definition = components.definition;
 // Synthetic actual-fact/price fixtures ONLY, never a published default or WPS approval.
 const fixture: Record<string, unknown> = {
+  rcs_preparation_mode: preparationModes.otherParty, rcs_preparation_program_reference: "TEST actual staking/maintenance/removal provided by other party, no executor charge",
   rcs_inspection_mode: inspectionModes.otherParty, rcs_inspection_program_reference: "TEST actual separate inspector supplies its own resources, no executor charge",
   rcs_soil_trench_scope: soilModes.other, rcs_soil_jacking_scope: soilModes.other,
   ...Object.fromEntries(parameters.filter(parameter => parameter.id.startsWith("rcs_freight_")
@@ -114,6 +116,100 @@ function compile(submittedParameters: Record<string, unknown> = fixture, rowOver
   });
 }
 const q = (result: Awaited<ReturnType<typeof compile>>, id: string) => Number(result.rows.find(row => row.row_id === id)?.quantity);
+
+describe("actual staking resources, replacement and removal in the same crossing", () => {
+  const preparation: Record<string, unknown> = { ...fixture,
+    rcs_preparation_mode: preparationModes.straightAxis, rcs_preparation_program_reference: "TEST actual straight-axis program, control, additional points, replacements and removal boundaries",
+    rcs_preparation_axis_marker_pitch_m: 10, rcs_preparation_additional_marker_count: 2, rcs_preparation_marker_replacement_count: 3,
+    rcs_preparation_paint_gross_kg_per_marker: 0.02,
+    ...Object.fromEntries(["initial", "replacement", "removal"].flatMap((key, i) => Object.entries({
+      method_reference: "TEST actual compatible disjoint procedure and instruments, no material/transport charge",
+      crew_designation: "TEST all survey/installation/removal personnel", crew_h_per_marker: [0.4, 0.6, 0.2][i], crew_cost_basis: executionBases.crew,
+      equipment_designation: "TEST actual compatible survey/removal instruments with energy", equipment_h_per_marker: [0.1, 0.2, 0.05][i], equipment_cost_basis: executionBases.equipment,
+    }).map(([suffix, value]) => [`rcs_preparation_${key}_${suffix}`, value]))),
+    ...Object.fromEntries(["stakes", "paint"].flatMap((key, i) => Object.entries({
+      product_designation: `TEST actual compatible ${key}`, product_reference: "TEST actual compatible selected product and gross quantities",
+      compatible_stock: [3, 0.1][i], retained_reserve: [2, 0.05][i], supplier_pack_net: [5, 0.1][i], cost_basis: preparationBasis,
+    }).map(([suffix, value]) => [`rcs_preparation_${key}_${suffix}`, value]))),
+    rcs_preparation_stakes_pre_install_unusable: 1,
+  };
+  const row = (suffix: string) => `rcs:preparation:${suffix}`;
+  const stakeOrder = row("stakes:ordered"), paintOrder = row("paint:ordered");
+  it("counts both ends once and separates execution, gross material, whole packs, reserve and remainder", async () => {
+    const result = await compile(preparation, { [stakeOrder]: { unitPrice: "2", provenance }, [paintOrder]: { unitPrice: "10", provenance } });
+    expect(result.preliminaryNeeds).toEqual([]);
+    expect(q(result, row("axis_marker_count"))).toBe(5); expect(q(result, row("initial_marker_count"))).toBe(7);
+    expect(q(result, row("marker_installation_events"))).toBe(10);
+    expect(q(result, row("stakes:consumed"))).toBe(11); expect(q(result, stakeOrder)).toBe(10);
+    expect(q(result, row("stakes:supplier_pack_count"))).toBe(2); expect(q(result, row("stakes:remaining"))).toBe(2);
+    expect(q(result, row("stakes:free_beyond_reserve"))).toBe(0);
+    expect(q(result, row("paint:consumed"))).toBe(0.2); expect(q(result, row("paint:new_need"))).toBe(0.15);
+    expect(q(result, paintOrder)).toBe(0.2); expect(q(result, row("paint:remaining"))).toBe(0.1);
+    expect(q(result, row("paint:free_beyond_reserve"))).toBe(0.05); expect(result.totals.amount).toBe("22");
+    for (const [key, crew, equipment] of [["initial", 2.8, 0.7], ["replacement", 1.8, 0.6], ["removal", 1.4, 0.35]] as const) {
+      expect(q(result, row(`${key}:crew_hours`))).toBe(crew); expect(q(result, row(`${key}:equipment_hours`))).toBe(equipment);
+    }
+    expect(result.rows.filter(r => /^rcs:preparation:(?:stakes|paint):/u.test(r.row_id) && r.included_in_procurement).map(r => r.row_id)).toEqual([stakeOrder, paintOrder]);
+    expect(components.stageMatrix.find(s => s.stageId === "completion")?.ownResourceIds).toContain(row("removal:crew_hours"));
+    expect(components.stageMatrix.find(s => s.stageId === "preparation")?.ownResourceIds).not.toContain(row("removal:crew_hours"));
+  });
+  it("pack/reserve/pre-install damage never inflate work; replacement consumes a new marker without charging its removal twice", async () => {
+    const result = await compile({ ...preparation, rcs_preparation_stakes_pre_install_unusable: 20,
+      rcs_preparation_stakes_retained_reserve: 30, rcs_preparation_stakes_supplier_pack_net: 100 });
+    expect(q(result, stakeOrder)).toBe(100); expect(q(result, row("initial:crew_hours"))).toBe(2.8);
+    expect(q(result, row("removal:crew_hours"))).toBe(1.4);
+    const replaced = await compile({ ...preparation, rcs_preparation_marker_replacement_count: 5 });
+    expect(q(replaced, row("marker_installation_events"))).toBe(12); expect(q(replaced, row("replacement:crew_hours"))).toBe(3);
+    expect(q(replaced, row("paint:consumed"))).toBe(0.24); expect(q(replaced, row("removal:crew_hours"))).toBe(1.4);
+  });
+  it("zero replacements disable only replacement facts and retain explicit values; zero order needs no new transport", async () => {
+    const input: Record<string, unknown> = { ...preparation, rcs_preparation_marker_replacement_count: 0, rcs_preparation_stakes_compatible_stock: 20 };
+    for (const key of Object.keys(input)) if (key.startsWith("rcs_preparation_replacement_")) delete input[key];
+    const result = await compile(input); expect(result.preliminaryNeeds).toEqual([]);
+    expect(result.rows.some(r => r.row_id.startsWith(row("replacement:")))).toBe(false);
+    expect(q(result, row("initial:crew_hours"))).toBe(2.8); expect(q(result, stakeOrder)).toBe(0);
+    expect(result.rows.some(r => r.row_id.startsWith("rcs:freight:preparation_stakes_new:"))).toBe(false);
+  });
+  it("unknown pitch stays local while casing and excavation calculate; a manual order cannot invent a valid layout", async () => {
+    const input = { ...preparation }; delete input.rcs_preparation_axis_marker_pitch_m;
+    const result = await compile(input, { [stakeOrder]: { quantity: "999", provenance } });
+    expect(q(result, "rcs:casing:ordered_casing_length_m")).toBe(48); expect(q(result, "rcs:civil-execution:open_cut:crew_hours")).toBe(52.5);
+    expect(result.rows.some(r => r.row_id === stakeOrder)).toBe(false);
+    expect(result.preliminaryNeeds.find(n => n.row_id === stakeOrder)?.missing_parameter_ids).toContain("rcs_preparation_axis_marker_pitch_m");
+    expect(result.preliminaryNeeds.every(n => n.row_id.startsWith(row("")) || n.row_id.startsWith("rcs:freight:preparation_"))).toBe(true);
+  });
+  it.each(["rcs_crossing_length_m", "rcs_preparation_program_reference", "rcs_preparation_stakes_product_reference", "rcs_preparation_stakes_cost_basis"])(
+    "manual purchase retains original geometry/program/material boundary %s", async key => {
+      const input = { ...preparation }; delete input[key];
+      const result = await compile(input, { [stakeOrder]: { quantity: "999", provenance } });
+      expect(result.rows.some(r => r.row_id === stakeOrder)).toBe(false);
+      expect(result.preliminaryNeeds.find(n => n.row_id === stakeOrder)?.missing_parameter_ids).toContain(key);
+    });
+  it("missing paint packaging blocks its purchase only, leaving consumption and labor calculated", async () => {
+    const input = { ...preparation }; delete input.rcs_preparation_paint_supplier_pack_net;
+    const result = await compile(input); expect(q(result, row("paint:consumed"))).toBe(0.2);
+    expect(q(result, row("initial:crew_hours"))).toBe(2.8); expect(q(result, stakeOrder)).toBe(10);
+    expect(result.rows.some(r => r.row_id === paintOrder)).toBe(false);
+  });
+  it("other-party and other programs record scope without charging executor resources; jacking does not duplicate the survey axis", async () => {
+    for (const mode of [preparationModes.otherParty, preparationModes.other]) {
+      const result = await compile({ ...preparation, rcs_preparation_mode: mode });
+      expect(result.rows.filter(r => r.row_id.startsWith(row(""))).map(r => r.row_id)).toEqual([row("scope_length_m")]);
+      expect(result.parameters.rcs_preparation_axis_marker_pitch_m).toBe(10);
+    }
+    const jacked = await compile({ ...preparation, rcs_civil_installation_method: methods.pipeJacking });
+    expect(q(jacked, row("axis_marker_count"))).toBe(5); expect(q(jacked, row("initial:crew_hours"))).toBe(2.8);
+  });
+  it("new paint travels as indivisible packages with actual shipping mass; derived counts are never questions", async () => {
+    const result = await compile({ ...preparation,
+      rcs_freight_preparation_paint_new_mode: freightModes.separate, rcs_freight_preparation_paint_new_vehicle_designation: "TEST dedicated compatible paint transport",
+      rcs_freight_preparation_paint_new_shipping_kg_per_unit: 2, rcs_freight_preparation_paint_new_payload_kg: 100,
+      rcs_freight_preparation_paint_new_max_units_per_trip: 0.15, rcs_freight_preparation_paint_new_cost_basis: freightBasis });
+    expect(result.preliminaryNeeds).toEqual([]);
+    expect(q(result, "rcs:freight:preparation_paint_new:trip_count")).toBe(2);
+    expect(parameters.some(p => /(?:axis_marker_count|initial_marker_count|marker_installation_events|stakes_ordered|paint_ordered)/u.test(p.id))).toBe(false);
+  });
+});
 
 describe("actual initial joint inspection, equipment and couplant in the same crossing", () => {
   const inspection: Record<string, unknown> = { ...fixture, rcs_inspection_mode: inspectionModes.visualUt,

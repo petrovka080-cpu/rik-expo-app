@@ -3,7 +3,8 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_FREIGHT_MOD
   ROAD_CROSSING_SLEEVES_SOIL_MODES_R1 as soilModes, ROAD_CROSSING_SLEEVES_SOIL_REUSE_ORIGINS_R1 as soilOrigins,
   ROAD_CROSSING_SLEEVES_SOIL_DESTINATIONS_R1 as destinations, ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_MODES_R1 as receivingModes,
   ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_COST_BASIS_R1 as receivingBasis,
-  ROAD_CROSSING_SLEEVES_INSPECTION_MODES_R1 as inspectionModes, ROAD_CROSSING_SLEEVES_INSPECTION_COUPLANT_COST_BASIS_R1 as couplantBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_INSPECTION_MODES_R1 as inspectionModes, ROAD_CROSSING_SLEEVES_INSPECTION_COUPLANT_COST_BASIS_R1 as couplantBasis,
+  ROAD_CROSSING_SLEEVES_PREPARATION_MODES_R1 as preparationModes, ROAD_CROSSING_SLEEVES_PREPARATION_MATERIAL_COST_BASIS_R1 as preparationBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_TRENCH_FILL_MODES_R1 as fillModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
 import { buildConsumerCanonicalPrecompileParameterSession } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
@@ -128,6 +129,43 @@ describe("actual initial inspection through common metadata/editor", () => {
   });
 });
 const cards = (parameters = fixture) => buildCanonicalParameterCards({ session: session(parameters), revision: null });
+
+describe("actual survey program and resources through the common editor", () => {
+  const preparation: Record<string, CanonicalEstimateParameterInputValue> = { ...fixture,
+    rcs_preparation_mode: preparationModes.straightAxis, rcs_preparation_program_reference: "TEST actual survey/control/maintenance/removal program",
+    rcs_preparation_axis_marker_pitch_m: 10, rcs_preparation_additional_marker_count: 2, rcs_preparation_marker_replacement_count: 3,
+    rcs_preparation_initial_method_reference: "TEST actual initial survey/installation method",
+    rcs_preparation_initial_crew_designation: "TEST all actual survey crew", rcs_preparation_initial_crew_h_per_marker: 0.4,
+    rcs_preparation_replacement_method_reference: "TEST replacement includes removal of damaged marker",
+    rcs_preparation_replacement_crew_h_per_marker: 0.6,
+    rcs_preparation_paint_gross_kg_per_marker: 0.02, rcs_preparation_paint_product_designation: "TEST actual compatible paint",
+    rcs_preparation_paint_product_reference: "TEST actual paint and process consumption", rcs_preparation_paint_compatible_stock: 0.1,
+    rcs_preparation_paint_retained_reserve: 0.05, rcs_preparation_paint_supplier_pack_net: 0.1, rcs_preparation_paint_cost_basis: preparationBasis,
+  };
+  it("keeps filled actual layout, material and program facts editable with guides and original units", () => {
+    for (const [key, value] of Object.entries(preparation).filter(([key]) => key.startsWith("rcs_preparation_"))) {
+      expect(cards(preparation).find(c => c.key === key)).toMatchObject({ value, editable: true, missing: false });
+      expect(cards(preparation).find(c => c.key === key)?.guideShortRu).toBeTruthy();
+    }
+    expect(cards(preparation).find(c => c.key === "rcs_preparation_paint_gross_kg_per_marker")?.unitRu).toBe("кг/шт.");
+    expect(catalog.parameterSchema.some(p => /(?:axis_marker_count|initial_marker_count|marker_installation_events)/u.test(p.parameterId))).toBe(false);
+  });
+  it("unknown pitch remains an editable missing original fact, with no derived marker-count question", () => {
+    const input = { ...preparation }; delete input.rcs_preparation_axis_marker_pitch_m;
+    expect(cards(input).find(c => c.key === "rcs_preparation_axis_marker_pitch_m")).toMatchObject({ value: null, missing: true, editable: true });
+    expect(session(input, ["rcs_preparation_axis_marker_pitch_m"]).blockingMissingParameterIds).toContain("rcs_preparation_axis_marker_pitch_m");
+  });
+  it("zero replacements and other-party programs hide only inactive facts and retain them for switching back", () => {
+    const zero = session({ ...preparation, rcs_preparation_marker_replacement_count: 0 });
+    expect(zero.parameters.some(p => p.parameterId === "rcs_preparation_replacement_crew_h_per_marker")).toBe(false);
+    expect(zero.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_preparation_replacement_crew_h_per_marker")).toMatchObject({ value: 0.6 });
+    expect(zero.parameters.find(p => p.parameterId === "rcs_preparation_initial_crew_h_per_marker")).toBeDefined();
+    const other = session({ ...preparation, rcs_preparation_mode: preparationModes.otherParty });
+    expect(other.parameters.find(p => p.parameterId === "rcs_preparation_program_reference")).toBeDefined();
+    expect(other.parameters.some(p => p.parameterId === "rcs_preparation_paint_gross_kg_per_marker")).toBe(false);
+    expect(other.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_preparation_paint_gross_kg_per_marker")).toMatchObject({ value: 0.02 });
+  });
+});
 
 describe("actual crossing freight through common metadata and editor", () => {
   it("keeps every supplied freight fact editable, including a reference and a punctuated cost basis", () => {

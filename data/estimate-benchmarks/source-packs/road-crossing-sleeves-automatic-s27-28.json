@@ -5,7 +5,7 @@
   "scope": "One continuous steel casing crossing with explicitly selected installation method. Casing supply and site joints, support rings and elements, contact tape, compatible end-seal kits, applicable civil work, crew labor, mechanisms and logistics are separate quantity/cost owners. This source pack is not itself a published owner or accepted estimate.",
   "engineeringAcceptanceClaimed": false,
   "universalRatesClaimed": false,
-  "implementationStatus": "COMPONENT_ASSEMBLY_WITH_ACTUAL_SUPPLY_FREIGHT_SOIL_STATES_HAUL_RECEIVING_AND_INITIAL_INSPECTION_NOT_PUBLISHED_NOT_FULL_OWNER",
+  "implementationStatus": "COMPONENT_ASSEMBLY_WITH_ACTUAL_SUPPLY_FREIGHT_SOIL_STATES_HAUL_RECEIVING_INITIAL_INSPECTION_AND_STAKING_RESOURCES_NOT_PUBLISHED_NOT_FULL_OWNER",
   "quantityComponent": {
     "module": "src/lib/estimate/v4/roadCrossingSleevesQuantityModelR1.ts",
     "verification": "tests/estimateNorms/roadCrossingSleevesQuantityModelR1.contract.test.ts",
@@ -125,6 +125,17 @@
       "independence": "Known bank/loose excavation remains calculable with unavailable fill/reuse data. Dependent balance/trips/receiving retain original geometry, actual state facts, suitability/allocation and route/receiver/cost boundaries even under manual paid quantities. Explicit zero reuse disables origin/conversion; zero excess disables truck/destination/receiving facts. Negative allocation is rejected rather than clamped",
       "open": "Material/technology/design/classification acceptance, mixed/slurry allocation, extra sorting/site handling, all other stage gaps and governed full-owner publication remain open"
     },
+    "stakingResources": {
+      "module": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",
+      "verification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
+      "editorVerification": "tests/requestEstimate/canonicalCrossingFreightParameterProjection.contract.test.ts",
+      "scope": "Explicit actual straight-axis plan using one stake and separate marking paint per point; other-party scope has no duplicate executor charge and other layouts require their own program",
+      "quantity": "Both ends once: ceil(original crossing length/actual maximum pitch)+1 axis points, plus actual disjoint off-axis points. Actual replacement events add material and replacement work only. Initial control/layout/install/mark and final removal use initial points; replacement includes removing failed old markers so those are not removed twice at completion",
+      "resources": "Separate compatible crew/instrument hours and actual disjoint procedures. Stakes distinguish installations/replacements from actual pre-install unusable pieces; paint uses actual gross kg per installation including losses once. Compatible allocated pre-work stock, reserve, net supply packages, new order and unused/free remainder remain separate; only new material order owns purchase cost",
+      "freight": "Existing shared dedicated delivery applies to new stake pieces/new whole paint packages and separately allocated off-site stock. Actual shipping mass and load plan never come from a guessed material density",
+      "integrity": "Original geometry/program/product/cost boundaries survive manual paid quantities. Missing pitch remains local while casing/civil quantities calculate; missing supply pack blocks purchase only, not known material consumption or labor. Zero replacements disable only replacement facts; inactive values survive in the common editor",
+      "open": "Actual control/design acceptance, other layouts, clearance/site preparation, applicable fencing/traffic, recovered-marker inventory, marker waste transport/receiving, execution/price approval and governed full-owner publication remain open"
+    },
     "initialJointInspection": {
       "module": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",
       "verification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
@@ -138,6 +149,12 @@
     }
   },
   "primarySources": [
+    {
+      "url": "https://highways.dot.gov/sites/fhwa.dot.gov/files/FP-24.pdf",
+      "role": "Section 152 distinguishes selected survey/control methods, marking, maintenance/replacement and removal",
+      "basis": "A survey program requires actual control and methods, maintenance of usable markings, replacement when necessary and removal of temporary markings/stakes at completion",
+      "restriction": "No US legal applicability, tolerance, point pitch, productivity, material rate or acceptance is transplanted into the project. All selected resource facts remain explicit; this component does not replace actual project control acceptance"
+    },
     {
       "url": "https://gbr.sika.com/en/construction/concrete-repair/grouts/cementitious-grouts/sikagrout-212-fluid.html",
       "role": "Example distinction between preblended dry powder, mixed yield, actual mixing water and usable dry stock; not approval for casing filling",

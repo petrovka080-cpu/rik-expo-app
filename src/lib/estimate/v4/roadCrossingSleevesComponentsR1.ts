@@ -190,6 +190,116 @@ export const ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1: readonly AutomaticRowSpec
   }))),
 );
 
+/** Actual initial straight-axis staking has its own physical resources.
+ * FHWA FP-24 section 152 identifies selected survey/control methods, marking,
+ * maintenance/replacement and final removal; it does not give this project's
+ * pitch, point count, productivity or material rates. No US tolerance or legal
+ * acceptance is transplanted into this component. Additional off-axis points
+ * and replacement events are real disjoint plan facts, not derived duplicates.
+ * https://highways.dot.gov/sites/fhwa.dot.gov/files/FP-24.pdf */
+export const ROAD_CROSSING_SLEEVES_PREPARATION_MODES_R1 = Object.freeze({
+  straightAxis: "Прямая ось с одним колом на точку и отдельной маркировочной краской",
+  otherParty: "Готовая разбивка и её обслуживание предоставлены другой стороной без отдельной оплаты исполнителем",
+  other: "Другие схемы разбивки: отдельная программа ресурсов",
+});
+export const ROAD_CROSSING_SLEEVES_PREPARATION_MATERIAL_COST_BASIS_R1 = "Только новый заказ выбранного материала разбивки с учтёнными потерями и резервом; без труда, приборов, энергии, доставки, удаления и повторной оплаты тех же ресурсов";
+const preparationId = (suffix: string) => `rcs_preparation_${suffix}`;
+const preparationScope: AutomaticInclusionCondition = { kind: "greater_than", parameterId: "rcs_crossing_length_m", value: 0 };
+const preparationAxis: AutomaticInclusionCondition = { kind: "and", operands: [preparationScope,
+  { kind: "equals", parameterId: preparationId("mode"), value: ROAD_CROSSING_SLEEVES_PREPARATION_MODES_R1.straightAxis }] };
+const axisMarkerCount = "ceil(rcs_crossing_length_m/rcs_preparation_axis_marker_pitch_m)+1";
+const initialMarkerCount = `(${axisMarkerCount})+${preparationId("additional_marker_count")}`;
+const markerEvents = `(${initialMarkerCount})+${preparationId("marker_replacement_count")}`;
+const preparationFacts = ["rcs_crossing_length_m", preparationId("mode"), preparationId("program_reference"),
+  preparationId("axis_marker_pitch_m"), preparationId("additional_marker_count")];
+const preparationWorks = [
+  { key: "initial", title: "Первоначальная разбивка и установка маркированных точек", quantity: initialMarkerCount, inclusion: preparationAxis,
+    boundary: "проверка исходного геодезического контроля, разбивка, установка и маркировка точек; без расчистки, материалов, замены, удаления и исполнительной съёмки" },
+  { key: "replacement", title: "Подтверждённые замены маркированных точек", quantity: preparationId("marker_replacement_count"),
+    inclusion: { kind: "and", operands: [preparationAxis, { kind: "greater_than", parameterId: preparationId("marker_replacement_count"), value: 0 }] } as AutomaticInclusionCondition,
+    boundary: "снятие нарушенного кола и старой маркировки, повторная разбивка и установка замены; без материалов и повторного учёта снятого кола при завершении" },
+  { key: "removal", title: "Удаление действующей временной разбивки при завершении", quantity: initialMarkerCount, inclusion: preparationAxis,
+    boundary: "удаление оставшихся действующих колов и маркировки с согласованной защитой основания и исходных реперов; без уже снятых замен, материалов, транспортировки и приёма отходов" },
+];
+const preparationMaterials = [
+  { key: "stakes", title: "Колья выбранной разбивки", unit: "piece", consumed: markerEvents },
+  { key: "paint", title: "Маркировочная краска выбранной разбивки", unit: "kg", consumed: `(${markerEvents})*${preparationId("paint_gross_kg_per_marker")}` },
+] as const;
+export const ROAD_CROSSING_SLEEVES_PREPARATION_PARAMETERS_R1: readonly AutomaticParameterSpec[] = Object.freeze([
+  { id: preparationId("mode"), title: "Подтверждённая схема и граница оплаты разбивки перехода", valueType: "enum", unitId: null,
+    kind: "conditional", values: Object.values(ROAD_CROSSING_SLEEVES_PREPARATION_MODES_R1), requiredWhen: preparationScope },
+  { id: preparationId("program_reference"), title: "Фактическая программа разбивки, геодезический контроль, схема точек и границы первоначальной установки, замены и удаления",
+    valueType: "text", unitId: null, kind: "conditional", requiredWhen: preparationScope },
+  { id: preparationId("axis_marker_pitch_m"), title: "Подтверждённый максимальный интервал маркеров одной прямой оси; оба конца учитываются автоматически",
+    valueType: "decimal", unitId: "m", min: 0.000_001, kind: "conditional", requiredWhen: preparationAxis },
+  ...(["additional_marker_count", "marker_replacement_count"] as const).map(suffix => ({ id: preparationId(suffix),
+    title: suffix === "additional_marker_count" ? "Фактические дополнительные точки вне прямой оси по плану, без повторения концов и уже предоставленных исходных реперов"
+      : "Подтверждённые события замены маркированных точек по программе; не резерв материала или повторение первоначальных точек",
+    valueType: "integer", unitId: "piece", min: 0, kind: "conditional", requiredWhen: preparationAxis } as AutomaticParameterSpec)),
+  { id: preparationId("paint_gross_kg_per_marker"), title: "Полный расход выбранной маркировочной краски на первоначальную или заменяемую точку, уже со всеми процессными потерями",
+    valueType: "decimal", unitId: "kg_per_piece", min: 0, kind: "conditional", requiredWhen: preparationAxis },
+  ...preparationWorks.flatMap(work => {
+    const text = (suffix: string, title: string): AutomaticParameterSpec => ({ id: preparationId(`${work.key}_${suffix}`), title: `${work.title}: ${title}`,
+      valueType: "text", unitId: null, kind: "conditional", requiredWhen: work.inclusion });
+    return [text("method_reference", `фактическая процедура и граница: ${work.boundary}`),
+      ...(["crew", "equipment"] as const).flatMap(owner => [
+        text(`${owner}_designation`, owner === "crew" ? "фактические исполнители, включая операторов" : "фактические совместимые приборы или оборудование с энергией, без персонала"),
+        { id: preparationId(`${work.key}_${owner}_h_per_marker`), title: `${work.title}: ${owner === "crew" ? "суммарные человеко-часы" : "часы выбранного комплекта"} на фактическую точку или событие`,
+          valueType: "decimal", unitId: `${owner === "crew" ? "man" : "machine"}_hour_per_piece`, min: 0, kind: "conditional", requiredWhen: work.inclusion } as AutomaticParameterSpec,
+        { id: preparationId(`${work.key}_${owner}_cost_basis`), title: `${work.title}: отдельная граница ${owner === "crew" ? "труда" : "приборов или оборудования"}`,
+          valueType: "enum", unitId: null, values: [ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_COST_BASES_R1[owner]], kind: "conditional", requiredWhen: work.inclusion } as AutomaticParameterSpec,
+      ])];
+  }),
+  ...preparationMaterials.flatMap(material => {
+    const id = (suffix: string) => preparationId(`${material.key}_${suffix}`);
+    const text = (suffix: string, title: string): AutomaticParameterSpec => ({ id: id(suffix), title: `${material.title}: ${title}`,
+      valueType: "text", unitId: null, kind: "conditional", requiredWhen: preparationAxis });
+    const amount = (suffix: string, title: string, min = 0): AutomaticParameterSpec => ({ id: id(suffix), title: `${material.title}: ${title}`,
+      valueType: material.unit === "piece" ? "integer" : "decimal", unitId: material.unit, min, kind: "conditional", requiredWhen: preparationAxis });
+    return [text("product_designation", "выбранное совместимое изделие или материал"), text("product_reference", "подтверждённая спецификация и совместимость программы; без включения в другую расценку"),
+      ...(material.key === "stakes" ? [amount("pre_install_unusable", "фактические непригодные до установки единицы; не события замены уже установленных точек")] : []),
+      amount("compatible_stock", "пригодное выделенное наличие до начала работ; будущий возврат уже использованных материалов здесь не учитывать"),
+      amount("retained_reserve", "сохраняемый резерв выбранного материала"), amount("supplier_pack_net", "фактическое количество или масса без тары в упаковке", material.unit === "piece" ? 1 : 0.000_001),
+      { id: id("cost_basis"), title: `${material.title}: отдельная граница стоимости нового заказа`, valueType: "enum", unitId: null,
+        values: [ROAD_CROSSING_SLEEVES_PREPARATION_MATERIAL_COST_BASIS_R1], kind: "conditional", requiredWhen: preparationAxis } as AutomaticParameterSpec];
+  }),
+]);
+export const ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1: readonly AutomaticRowSpec[] = Object.freeze([
+  { rowId: "rcs:preparation:scope_length_m", formulaId: "rcs:preparation:scope_length_m", section: "Подготовка: разбивка перехода", category: "service",
+    title: "Длина перехода в выбранной программе разбивки; не отдельная повторная оплата", unitId: "m", expression: "rcs_crossing_length_m",
+    inclusion: preparationScope, costTreatment: "INFORMATIONAL_SCOPE", inputParameterIds: [preparationId("mode"), preparationId("program_reference")] },
+  ...([ ["axis_marker_count", "Точки одной прямой оси с обоими концами", axisMarkerCount],
+    ["initial_marker_count", "Первоначальные точки оси и непересекающиеся дополнительные точки", initialMarkerCount],
+    ["marker_installation_events", "Все установки колов, включая подтверждённые замены; не резерв или упаковки", markerEvents] ] as const)
+    .map(([key, title, expression]): AutomaticRowSpec => ({ rowId: `rcs:preparation:${key}`, formulaId: `rcs:preparation:${key}`,
+      section: "Подготовка: разбивка перехода", category: "service", title, unitId: "piece", expression,
+      inclusion: preparationAxis, costTreatment: "INFORMATIONAL_SCOPE", inputParameterIds: preparationFacts })),
+  ...preparationWorks.flatMap(work => (["crew", "equipment"] as const).map((owner): AutomaticRowSpec => ({
+    rowId: `rcs:preparation:${work.key}:${owner}_hours`, formulaId: `rcs:preparation:${work.key}:${owner}_hours`, section: work.title,
+    category: owner === "crew" ? "labor" : "equipment", title: `${work.title}: ${owner === "crew" ? "труд всех исполнителей" : "совместимые приборы или техника с энергией"}`,
+    unitId: owner === "crew" ? "man_hour" : "machine_hour", expression: `(${work.quantity})*${preparationId(`${work.key}_${owner}_h_per_marker`)}`,
+    inclusion: work.inclusion, procurement: true, titleParameterIds: [preparationId(`${work.key}_${owner}_designation`)],
+    inputParameterIds: [...preparationFacts, ...(work.key === "replacement" ? [preparationId("marker_replacement_count")] : []),
+      preparationId(`${work.key}_method_reference`), preparationId(`${work.key}_${owner}_cost_basis`)],
+  }))),
+  ...preparationMaterials.flatMap(material => {
+    const id = (suffix: string) => preparationId(`${material.key}_${suffix}`);
+    const consumed = `(${material.consumed})${material.key === "stakes" ? `+${id("pre_install_unusable")}` : ""}`;
+    const stock = id("compatible_stock"), reserve = id("retained_reserve"), pack = id("supplier_pack_net");
+    const need = `max(0,(${consumed})+${reserve}-${stock})`, packs = `ceil((${need})/${pack})`, ordered = `(${packs})*${pack}`;
+    const remaining = `${stock}+(${ordered})-(${consumed})`;
+    return ([ ["consumed", "Расход на установки и замены, включая процессные потери", consumed], ["new_need", "Дополнительная потребность с резервом после пригодного наличия", need],
+      ["supplier_pack_count", "Число новых упаковок; не работа или рейсы", packs], ["ordered", "Новый заказ выбранного материала разбивки", ordered],
+      ["remaining", "Неиспользованный остаток до возможного возврата ранее установленных материалов, включая резерв", remaining],
+      ["free_beyond_reserve", "Свободный неиспользованный материал сверх сохраняемого резерва", `(${remaining})-${reserve}`] ] as const)
+      .map(([key, title, expression]): AutomaticRowSpec => ({ rowId: `rcs:preparation:${material.key}:${key}`, formulaId: `rcs:preparation:${material.key}:${key}`,
+        section: material.title, category: "material", title: `${material.title}: ${title}`, unitId: key === "supplier_pack_count" ? "package" : material.unit,
+        expression, inclusion: preparationAxis, costTreatment: key === "ordered" ? "OWN_COST" : "INFORMATIONAL_SCOPE", procurement: key === "ordered",
+        inputParameterIds: [...preparationFacts, preparationId("marker_replacement_count"), id("product_designation"), id("product_reference"),
+          ...(key === "ordered" ? [id("cost_basis")] : [])], ...(key === "ordered" ? { titleParameterIds: [id("product_designation")] } : {}) }));
+  }),
+]);
+
 /** Inspection consumes real work/equipment/materials, not a document row.
  * TWI describes distinct inspection methods and procedure-specific repair:
  * https://www.twi-global.com/what-we-do/services-and-support/asset-management/non-destructive-testing
@@ -322,6 +432,10 @@ const freightCargoGroups: readonly FreightCargo[] = [
     "rcs:internal-water:ordered_m3", "rcs_internal_fill_water_compatible_stock_m3", "m3"),
   freightCargo("inspection_couplant", "Контактная среда первоначального ручного УЗК", ROAD_CROSSING_SLEEVES_INSPECTION_ROWS_R1,
     "rcs:inspection:couplant:ordered_kg", "rcs_inspection_couplant_compatible_stock_kg", "kg", undefined, "rcs_inspection_couplant_supplier_pack_net_kg"),
+  freightCargo("preparation_stakes", "Колья выбранной разбивки", ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1,
+    "rcs:preparation:stakes:ordered", "rcs_preparation_stakes_compatible_stock", "piece"),
+  freightCargo("preparation_paint", "Краска выбранной разбивки", ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1,
+    "rcs:preparation:paint:ordered", "rcs_preparation_paint_compatible_stock", "kg", undefined, "rcs_preparation_paint_supplier_pack_net"),
 ];
 const freightId = (key: string, suffix: string) => `rcs_freight_${key}_${suffix}`;
 const freightLanes = freightCargoGroups.flatMap(cargo => (["new", "stock"] as const).map(lane => {
@@ -573,7 +687,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENTS_SCOPE_R1 = Object.freeze({
   omitted: Object.freeze([
     "Excavation support/reaction structures and groundwater measures; actual applicability and approved civil execution rates",
     "Approved pit return-fill technology, soil suitability/classification, heterogeneous/slurry allocations and non-granular/other bedding technologies",
-    "Actual preparation consumables, joint repairs/reinspection and other NDT methods, coating/drying, jacking section loading, carrier connections and method/design approval",
+    "Clearance/site preparation, other survey layouts and actual control acceptance, applicable fencing/traffic measures, recovered markers/waste handling; joint repairs/reinspection and other NDT methods, coating/drying, jacking section loading, carrier connections and method/design approval",
     "Internal fill product/method approval, other/partial fills, external overbreak grouting, pressure/buoyancy/restraints, preparation/curing and water quality/allocation approval",
     "Consolidated delivery manifests, fittings/consumables freight, equipment delivery/return and extra soil sorting/site handling; actual certified mass, routes, receiving permission and prices remain project facts",
     "Full-owner reconciliation of explicit purchase exceptions with formula-reference balances",
@@ -594,6 +708,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_PARAMETERS_R1: readonly AutomaticPa
   ...ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_MECHANICAL_PARAMETERS_R1,
+  ...ROAD_CROSSING_SLEEVES_PREPARATION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_INSPECTION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_FREIGHT_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_SOIL_PARAMETERS_R1,
@@ -611,6 +726,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[
   ...ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1,
+  ...ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_INSPECTION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_SOIL_ROWS_R1,
@@ -620,8 +736,8 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[
  * are concrete absent resources/decisions, never a fabricated completeness PASS.
  */
 export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
-  { stageId: "preparation", titleRu: "Подготовка участка", rows: [],
-    remaining: ["Доступ, подготовка площадки и разбивка", "Применимые временные ограждения и организация движения"] },
+  { stageId: "preparation", titleRu: "Подготовка участка", rows: ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1.filter(row => !row.rowId.startsWith("rcs:preparation:removal:")),
+    remaining: ["Доступ, расчистка и подготовка площадки", "Другие схемы разбивки и фактическая приёмка геодезического контроля", "Применимые временные ограждения и организация движения"] },
   { stageId: "installation", titleRu: "Устройство перехода", rows: [
     ...ROAD_CROSSING_SLEEVES_CIVIL_ROWS_R1.filter(row => !["rcs:civil:open_cut_full_width_bedding_m3", "rcs:civil:open_cut_remaining_fill_space_m3"].includes(row.rowId)),
     ...ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_ROWS_R1],
@@ -647,8 +763,9 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
     ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => /^rcs:fill-execution:(?:pits|trench):/u.test(row.rowId))],
     remaining: ["Подтверждение пригодности и распределения повторно используемого грунта", "Послойные или другие материалы траншеи", "Подтверждение технологии укладки и уплотнения", "Фактически расходуемая вода и её отдельная поставка", "Разные партии грунта, пульпа и иные состояния"] },
   { stageId: "completion", titleRu: "Завершение перехода", rows: [...ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1,
+    ...ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1.filter(row => row.rowId.startsWith("rcs:preparation:removal:")),
     ...ROAD_CROSSING_SLEEVES_SOIL_ROWS_R1.filter(row => row.costTreatment === "OWN_COST")],
-    remaining: ["Применимое восстановление территории и покрытия", "Доставка и возврат оборудования; объединённые грузы, комплектующие и расходники", "Испытания и завершение без подмены материалов документами"] },
+    remaining: ["Применимое восстановление территории и покрытия", "Доставка и возврат оборудования; объединённые грузы, комплектующие и расходники", "Фактический возврат пригодных колов и вывоз/приём отходов разбивки", "Испытания и завершение без подмены материалов документами"] },
 ].map(({ rows, ...stage }) => Object.freeze({ ...stage, ownResourceIds: Object.freeze(rows.map(row => row.rowId)), remaining: Object.freeze(stage.remaining) })));
 function assertUnique(ids: readonly string[], kind: string): void {
   const seen = new Set<string>();
