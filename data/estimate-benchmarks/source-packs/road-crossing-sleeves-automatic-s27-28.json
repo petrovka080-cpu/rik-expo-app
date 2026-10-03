@@ -5,7 +5,7 @@
   "scope": "One continuous steel casing crossing with explicitly selected installation method. Casing supply and site joints, support rings and elements, contact tape, compatible end-seal kits, applicable civil work, crew labor, mechanisms and logistics are separate quantity/cost owners. This source pack is not itself a published owner or accepted estimate.",
   "engineeringAcceptanceClaimed": false,
   "universalRatesClaimed": false,
-  "implementationStatus": "QUANTITY_SPACER_SUPPLY_CIVIL_GEOMETRY_MMA_JOINT_CASING_GRANULAR_BEDDING_COMPONENTS_NOT_PUBLISHED_NOT_FULL_OWNER",
+  "implementationStatus": "QUANTITY_SPACER_SUPPLY_CIVIL_MMA_CASING_BEDDING_PIT_FILL_INTERNAL_DRY_FILL_COMPONENTS_NOT_PUBLISHED_NOT_FULL_OWNER",
   "quantityComponent": {
     "module": "src/lib/estimate/v4/roadCrossingSleevesQuantityModelR1.ts",
     "verification": "tests/estimateNorms/roadCrossingSleevesQuantityModelR1.contract.test.ts",
@@ -25,6 +25,9 @@
     "pitReturnFillVerification": "tests/estimateNorms/roadCrossingSleevesPitReturnFillR1.contract.test.ts",
     "pitFillMaterialModule": "src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1.ts",
     "pitFillMaterialVerification": "tests/estimateNorms/roadCrossingSleevesPitFillMaterialR1.contract.test.ts",
+    "internalFillModule": "src/lib/estimate/v4/roadCrossingSleevesInternalFillR1.ts",
+    "internalFillVerification": "tests/estimateNorms/roadCrossingSleevesInternalFillR1.contract.test.ts",
+    "internalFillParameterProjectionVerification": "tests/requestEstimate/canonicalInternalFillParameterProjection.contract.test.ts",
     "componentIntegrationModule": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",
     "componentIntegrationVerification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
     "evaluator": "Existing canonical FormulaGraph only",
@@ -44,6 +47,8 @@
       "explicit method-specific rectangular geometry: open trench/bedding/outside casing fill space OR thrust/reception pits and actual-diameter bore, never both methods' excavation",
       "pit dimensions remain actual project facts as crossing length changes; unsupported shapes/methods and impossible geometry are not silently substituted or clamped",
       "civil geometry controls are informational only, not invented paid construction operations or a soil reuse/haul classification",
+      "explicit optional full internal fill of one continuous casing using one approved preblended dry product: casing ID minus carrier OD geometry, actual non-overlapping occupied volume, gross dry kg per net m3 with all process losses, compatible usable dry stock/reserve, actual net-mass bags, rounded new order and dry remainder",
+      "internal mixing water uses actual litres per selected net-mass bag and consumed dry kg only, not unopened reserve/order surplus; informational until a disjoint water supply/cost owner exists, never a second dry constituent or bag purchase",
       "selected applicable MMA joint procedure: physical site joints times actual gross electrode kg/joint, aggregate crew person-hours/joint and actual equipment hours/joint; no universal productivity or electrode-efficiency factor",
       "gross electrode consumption already includes process losses; reserve, compatible stock, whole mass packs, rounded new order and free remainder are separate outputs, without a second loss factor",
       "joint cost owners are only new electrode purchase, all crew labor and personnel-free equipment with energy included; balances, joint count, energy and another generic welding operation have no duplicate payment",
@@ -62,6 +67,7 @@
       "integration of actual method-specific civil work, support/reaction arrangement, groundwater measures and approved pit return-fill technology/material and execution resources",
       "actual slopes/end ramps/nonrectangular shafts or other methods outside the implemented rectangular component; never approximate these by the accepted simple geometry without confirmation",
       "actual approved WPS and product/rate selection plus full-owner integration of the tested conditional MMA joint resource component; a reference string alone is not WPS approval",
+      "internal fill product/method approval, buoyancy/pressure/restraints/bulkheads and placing/mixing/cleaning/curing resources, disjoint water supply and logistics; partial/other fill and external overbreak grout remain separate unimplemented scopes",
       "other welding processes require their own actual compatible consumables/cost basis; never substitute this MMA component or its fixtures",
       "separate actual joint preparation, fit-up, inspection/NDT, repairs, coating, drying/storage and lifting owners; machine/crew/material overlaps reconciled before full publication",
       "materials and method-specific civil execution, crew work, machine time and logistics outside the implemented joint resource boundary",
@@ -75,6 +81,12 @@
     ]
   },
   "primarySources": [
+    {
+      "url": "https://gbr.sika.com/en/construction/concrete-repair/grouts/cementitious-grouts/sikagrout-212-fluid.html",
+      "role": "Example distinction between preblended dry powder, mixed yield, actual mixing water and usable dry stock; not approval for casing filling",
+      "basis": "The manufacturer specifies powder packaging, mixed yield and water addition separately, and restricts storage and application conditions.",
+      "restriction": "No Sika designation, example rate, bag size, water ratio or application range is a runtime default or proof of casing-fill suitability. Use the actual project-approved product/method facts; do not count preblended constituents again or assume wet grout is reusable dry inventory."
+    },
     {
       "url": "https://www.racispacers.com/choosing-a-spacer/",
       "role": "RACI-specific spacer selection and ring-layout rules",
@@ -138,6 +150,7 @@
     "planned physical casing section length; not supplier bundle size",
     "method-specific excavation dimensions, support and reaction arrangements",
     "actual groundwater and optional annular-fill requirements",
+    "explicit internal-fill mode; full-dry-product branch needs actual non-overlapping internal occupation beyond the carrier cylinder, approved product designation, gross dry kg/net m3 including losses, usable dry stock/reserve, bag net kg and actual mixing litres for that same bag; no hidden no-fill or dry-product default",
     "external excavation dimensions for the selected rectangular method; usable pit dimensions are not substituted for excavation dimensions",
     "actual selected jacking excavation diameter; it is not inferred from casing OD",
     "actual approved full-width bedding thickness for the open rectangular branch; no hidden bedding or pit size",
@@ -155,7 +168,8 @@
     "geometricSteelMass": "pi/4*(OD^2-ID^2)*length*density",
     "invalidGeometry": "Reject nonpositive wall or insufficient assembled clearance; never conceal it by max(0, geometry)",
     "civilGeometry": "Rectangular excavation length*width*depth; mm2 bore/casing area converted at the final volume. Open-cut outside fill space excludes bedding and full exterior casing displacement, not merely steel wall mass",
-    "civilBoundary": "Geometric nonnegative differences prove only dimensional feasibility, not engineering cover, shoring safety, reaction capacity, groundwater adequacy or material suitability"
+    "civilBoundary": "Geometric nonnegative differences prove only dimensional feasibility, not engineering cover, shoring safety, reaction capacity, groundwater adequacy or material suitability",
+    "internalFill": "pi/4*(casing ID^2-carrier OD^2)*crossing length/1000000 minus actual non-overlapping occupied m3; keep mm2 until final conversion, never use outside excavation or assume spacers/bells occupy zero"
   },
   "procurementPolicy": {
     "physicalSections": "ceil(crossing length/planned section length)",

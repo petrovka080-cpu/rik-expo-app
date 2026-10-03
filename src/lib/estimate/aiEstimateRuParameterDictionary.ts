@@ -166,6 +166,8 @@ const UNIT_LABELS: Record<string, string> = {
   t_km: "т·км",
   "t*km": "т·км",
   kg_m3: "кг/м³",
+  kg_per_m3: "кг/м³",
+  l: "л",
   m2_per_m3: "м²/м³",
   percent: "%",
   ratio: "коэф.",
