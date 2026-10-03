@@ -362,11 +362,16 @@ function withCanonicalCalculationState(
   bundle: ConsumerRepairDraftBundle,
   state: EstimateRevisionState,
 ): ConsumerRepairDraftBundle {
-  const alreadyBound = getBoundEstimateRevisionCalculationState(state);
-  const boundState = alreadyBound || !bundle.estimateDraftRevisionState
-    ? state
-    : bindEstimateRevisionCalculationState(state, bundle.estimateDraftRevisionState);
-  const canonicalCalculationState = getBoundEstimateRevisionCalculationState(boundState);
+  // The getter validates the entire immutable owner, including its calculation
+  // hash. Reuse that result within this synchronous read; never cache it across
+  // calls, where a changed/corrupt state must still fail closed.
+  let canonicalCalculationState = getBoundEstimateRevisionCalculationState(state);
+  let boundState = state;
+  if (!canonicalCalculationState && bundle.estimateDraftRevisionState) {
+    boundState = bindEstimateRevisionCalculationState(state, bundle.estimateDraftRevisionState);
+    // The binder has validated this exact state and binds the same reference.
+    canonicalCalculationState = bundle.estimateDraftRevisionState;
+  }
   return {
     ...bundle,
     estimateRevisionState: boundState,
@@ -615,8 +620,10 @@ export function bindConsumerRepairEstimateRevisionHistory(input: {
     binding.history_entry_id === input.history_entry_id
   );
   if (alreadyBound) return bundle;
+  const normalizedState = bundle.estimateRevisionState;
+  if (!normalizedState) throw new Error("CONSUMER_REPAIR_ESTIMATE_REVISION_STATE_MISSING");
   const { state } = bindEstimateRevisionToHistoryEntry({
-    state: currentRevisionState(bundle),
+    state: normalizedState,
     history_entry_id: input.history_entry_id,
     created_at: input.created_at,
   });
