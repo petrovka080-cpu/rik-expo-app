@@ -506,6 +506,7 @@ export const COMPONENT_PARAMETER_PREFIX_RU_R542: Readonly<Record<string, string>
 });
 
 export const WATER_MATERIAL_VARIANT_LABEL_RU_R542: Readonly<Record<string, string>> = Object.freeze({
+  HDPE_BUTT_FUSION_OPEN_TRENCH: "прокладка ПНД-трубы в открытой траншее со стыковой сваркой",
   PVC_SN8: "канализационная труба ПВХ класса SN8",
   PP_CORRUGATED: "гофрированная полипропиленовая труба",
   RC_PIPE: "железобетонная труба",
@@ -569,6 +570,15 @@ export function waterMaterialVariantLabelRuR542(value: string): string {
   if (exact) return exact;
   const match = value.match(/^(BOILER|COLLECTOR|FILTER|METER|PUMP|INSTALLATION)_(PROJECT_DUTY|DUTY_STANDBY|HIGH_EFFICIENCY)$/u);
   return match ? `${WATER_DYNAMIC_SYSTEM_RU[match[1]!]} — ${WATER_DYNAMIC_DUTY_RU[match[2]!]}` : value;
+}
+
+/** Change only an exact known terminal variant. Other public titles, including
+ * user punctuation/spacing and actual product designations, remain untouched. */
+export function localizeKnownTechnologyVariantSuffixRu(input: string): string {
+  return input.replace(/( — |: )([A-Z][A-Z0-9_]+)$/u, (whole, separator: string, machineValue: string) => {
+    const label = waterMaterialVariantLabelRuR542(machineValue);
+    return label === machineValue ? whole : `${separator}${label}`;
+  });
 }
 
 const EXACT_PUBLIC_LABEL_RU: Readonly<Record<string, string>> = Object.freeze({
@@ -650,10 +660,7 @@ export function localizeTechnologyTitleRu(input: string): string {
   for (const [source, target] of Object.entries(COMPONENT_PARAMETER_PREFIX_RU_R542)) {
     if (value.startsWith(`${source} — `)) value = `${target}${value.slice(source.length)}`;
   }
-  value = value.replace(/ — ([A-Z][A-Z0-9_]+)$/u, (whole, machineValue: string) => {
-    const label = waterMaterialVariantLabelRuR542(machineValue);
-    return label === machineValue ? whole : ` — ${label}`;
-  });
+  value = localizeKnownTechnologyVariantSuffixRu(value);
   return value
     .replace(/\bproject scope\b/giu, "проектный состав")
     .replace(/\bscope\b/giu, "состав")

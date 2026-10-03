@@ -5,6 +5,9 @@ import {
   CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION,
 } from "./canonicalProfessionalPdf";
 import type { CanonicalArtifactRow } from "./canonicalEstimateArtifactContract";
+import { canonicalEstimateParameterChoiceLabelRu } from "./canonicalEstimateParameterSemantics";
+import { publicBoqDisplayNameRu } from "../publicBoqNaming";
+import { compilePressureSewerPipelineR1, PRESSURE_SEWER_PIPELINE_SHORT_INPUT } from "../v4/pressureSewerPipelineR1";
 
 function revision(rowCount: number) {
   return {
@@ -59,6 +62,29 @@ function rows(
 }
 
 describe("R4-A6 canonical professional PDF", () => {
+  it("projects the real pressure-sewer technology in Russian across UI, choices and PDF without changing revision rows", async () => {
+    const compiled = await compilePressureSewerPipelineR1({ ...PRESSURE_SEWER_PIPELINE_SHORT_INPUT });
+    const snapshot = JSON.stringify(compiled);
+    const source = compiled.rows.find(row => row.row_id === "rc09:psp_pipeline_install_acceptance")!;
+    const label = "прокладка ПНД-трубы в открытой траншее со стыковой сваркой";
+    expect(source.title_ru).toContain("HDPE_BUTT_FUSION_OPEN_TRENCH");
+    expect(canonicalEstimateParameterChoiceLabelRu("psp_installation_technology", "HDPE_BUTT_FUSION_OPEN_TRENCH"))
+      .toBe(label);
+    const projection = buildCanonicalProfessionalPdfProjection({
+      revision: revision(compiled.rows.length), rows: compiled.rows,
+      workTitleRu: "Напорная канализация",
+    });
+    expect(projection.html).toContain(label);
+    expect(projection.html).not.toContain("HDPE_BUTT_FUSION_OPEN_TRENCH");
+    expect(publicBoqDisplayNameRu({ sourceNameRu: source.title_ru, rowType: "work" }))
+      .toBe(`Строительство и приёмка напорного канализационного трубопровода — ${label}`);
+    expect(projection.rowCount).toBe(compiled.rows.length);
+    expect(JSON.stringify(compiled)).toBe(snapshot);
+    expect(publicBoqDisplayNameRu({ sourceNameRu: "Труба — PE100 SDR17 PN10 DN110", rowType: "material" }))
+      .toBe("Труба — PE100 SDR17 PN10 DN110");
+    expect(publicBoqDisplayNameRu({ sourceNameRu: "Заказное изделие — UNKNOWN_PRODUCT_ID", rowType: "material" }))
+      .toBe("Заказное изделие — UNKNOWN_PRODUCT_ID");
+  });
   it("renders the required client form without an internal technical appendix", () => {
     const projection = buildCanonicalProfessionalPdfProjection({
       revision: revision(45),
@@ -67,7 +93,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-20-public-names");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-29-technology-labels");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,

@@ -9,7 +9,7 @@ import {
 } from "./canonicalEstimateArtifactContract";
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-20-public-names" as const;
+  "canonical-professional-pdf.r4-a13-s27-29-technology-labels" as const;
 
 export const CANONICAL_PROFESSIONAL_PDF_CATEGORY_ORDER = [
   "material",

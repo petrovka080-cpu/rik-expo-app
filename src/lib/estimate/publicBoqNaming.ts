@@ -1,3 +1,5 @@
+import { localizeKnownTechnologyVariantSuffixRu } from "./backendPlatform/russianTechnologyTitleR542";
+
 export type PublicBoqProcurementNamingProjection = {
   publicNameRu: string;
   specificationRu: string;
@@ -75,7 +77,7 @@ export function normalizePublicBoqNameRu(input: {
   sourceNameRu: string;
   workNameRu?: string | null;
 }): string {
-  const source = input.sourceNameRu.trim();
+  const source = localizeKnownTechnologyVariantSuffixRu(input.sourceNameRu.trim());
   const bridgeAsphaltCourse = source.match(
     /^(нижний|верхний)\s+слой\s*[:—–-].*асфальтобетонная\s+смесь.*тип(?:а)?\s+А(?:\s|$)/iu,
   );
@@ -236,7 +238,7 @@ export function publicBoqDisplayNameRu(input: {
 }): string {
   return input.rowType === "material" || input.rowType === "materials"
     ? normalizePublicBoqNameRu(input)
-    : input.sourceNameRu;
+    : localizeKnownTechnologyVariantSuffixRu(input.sourceNameRu);
 }
 
 function knownSpecification(publicNameRu: string, unitLabelRu: string): { specification: string; search: string } | null {

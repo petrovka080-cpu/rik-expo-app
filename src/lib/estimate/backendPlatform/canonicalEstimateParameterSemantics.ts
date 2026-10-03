@@ -363,6 +363,8 @@ export function canonicalEstimateParameterChoiceLabelRu(
   if (normalized === "PROJECT_SPECIFIED") return "По проектной документации";
   const canonicalLabel = CANONICAL_CHOICE_LABELS_RU[normalized];
   if (canonicalLabel) return canonicalLabel;
+  const technologyLabel = waterMaterialVariantLabelRuR542(normalized);
+  if (technologyLabel !== normalized) return technologyLabel;
   const safeFallback = fallback?.trim();
   if (safeFallback && /[А-Яа-яЁё]/u.test(safeFallback)) return safeFallback;
   if (/^[A-Za-z][A-Za-z0-9_:-]*$/u.test(normalized)) {
