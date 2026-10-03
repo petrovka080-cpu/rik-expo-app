@@ -7,7 +7,8 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_FREIGHT_MOD
   ROAD_CROSSING_SLEEVES_PREPARATION_MODES_R1 as preparationModes, ROAD_CROSSING_SLEEVES_PREPARATION_MATERIAL_COST_BASIS_R1 as preparationBasis,
   ROAD_CROSSING_SLEEVES_COMPACTION_WATER_MODES_R1 as compactionWaterModes, ROAD_CROSSING_SLEEVES_COMPACTION_WATER_COST_BASIS_R1 as compactionWaterBasis,
   ROAD_CROSSING_SLEEVES_JACKING_LOADING_MODES_R1 as loadingModes,
-  ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_MODES_R1 as casingPrepModes, ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_COST_BASIS_R1 as casingPrepBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_MODES_R1 as casingPrepModes, ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_COST_BASIS_R1 as casingPrepBasis,
+  ROAD_CROSSING_SLEEVES_COATING_MODES_R1 as coatingModes, ROAD_CROSSING_SLEEVES_COATING_KIT_COST_BASIS_R1 as coatingKitBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_TRENCH_FILL_MODES_R1 as fillModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
 import { buildConsumerCanonicalPrecompileParameterSession } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
@@ -132,6 +133,54 @@ describe("actual initial inspection through common metadata/editor", () => {
   });
 });
 const cards = (parameters = fixture) => buildCanonicalParameterCards({ session: session(parameters), revision: null });
+
+describe("actual coating programme and original inputs through the same publisher/editor", () => {
+  const coating: Record<string, CanonicalEstimateParameterInputValue> = { ...fixture,
+    rcs_casing_outside_diameter_mm: 530, rcs_coating_mode: coatingModes.wholeKitBrush,
+    rcs_coating_program_reference: "TEST actual disjoint single-batch compatible coating programme",
+    rcs_coating_joint_band_width_m: 0.4, rcs_coating_damage_area_m2: 3,
+    rcs_coating_damage_allocation_reference: "TEST exclusive actual zone allocation",
+    rcs_coating_damage_kit_designation: "TEST paired A+B kit", rcs_coating_damage_kit_product_reference: "TEST actual compatibility and climate/cure/inspection",
+    rcs_coating_damage_gross_mixed_l_per_m2: 0.6, rcs_coating_damage_kit_net_mixed_l: 2,
+    rcs_coating_damage_confirmed_single_batch_max_mixed_l: 10,
+    rcs_coating_damage_compatible_unmixed_kit_stock: 1, rcs_coating_damage_retained_kit_reserve: 1,
+    rcs_coating_damage_supplier_pack_kit_count: 2, rcs_coating_damage_kit_cost_basis: coatingKitBasis,
+    rcs_coating_damage_preparation_crew_h_per_m2: 0.5, rcs_coating_damage_inspection_equipment_h_per_m2: 0.25,
+    rcs_coating_damage_cleaner_gross_per_m2: 0.2, rcs_coating_damage_cleaner_product_reference: "TEST actual compatible cleaner and gross use programme",
+  };
+  it("keeps supplied source-bound coating facts editable with correct units and guides, including actual references", () => {
+    for (const [key, value] of Object.entries(coating).filter(([key]) => key.startsWith("rcs_coating_"))) {
+      expect(cards(coating).find(c => c.key === key)).toMatchObject({ value, editable: true, missing: false });
+      expect(cards(coating).find(c => c.key === key)?.guideShortRu).toBeTruthy();
+    }
+    for (const [key, unitRu] of [["gross_mixed_l_per_m2", "л/м²"], ["preparation_crew_h_per_m2", "чел.-ч/м²"], ["inspection_equipment_h_per_m2", "маш.-ч/м²"]]) {
+      expect(cards(coating).find(c => c.key === `rcs_coating_damage_${key}`)?.unitRu).toBe(unitRu);
+    }
+    expect(catalog.parameterSchema.some(p => /(?:activated_kit_count|ordered_kit_count|activated_surplus_l|remaining_unmixed)/u.test(p.parameterId))).toBe(false);
+  });
+  it("missing joint width stays editable while the independent damage resource inputs remain active", () => {
+    const input = { ...coating }; delete input.rcs_coating_joint_band_width_m;
+    expect(cards(input).find(c => c.key === "rcs_coating_joint_band_width_m")).toMatchObject({ value: null, missing: true, editable: true });
+    expect(session(input).parameters.find(p => p.parameterId === "rcs_coating_damage_kit_net_mixed_l")).toBeDefined();
+  });
+  it("zero damage or zero cleaner use disables only dependent facts and retains earlier filled values", () => {
+    const zero = session({ ...coating, rcs_coating_damage_area_m2: 0 });
+    expect(zero.parameters.some(p => p.parameterId === "rcs_coating_damage_kit_net_mixed_l")).toBe(false);
+    expect(zero.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_coating_damage_kit_net_mixed_l")).toMatchObject({ value: 2 });
+    const noCleaner = session({ ...coating, rcs_coating_damage_cleaner_gross_per_m2: 0 });
+    expect(noCleaner.parameters.some(p => p.parameterId === "rcs_coating_damage_cleaner_product_reference")).toBe(false);
+    expect(noCleaner.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_coating_damage_cleaner_product_reference")).toMatchObject({ value: coating.rcs_coating_damage_cleaner_product_reference });
+    expect(noCleaner.parameters.some(p => p.parameterId === "rcs_coating_damage_kit_net_mixed_l")).toBe(true);
+  });
+  it("other-party or explicitly not-required programme keeps its reference without inventing executor coating costs", () => {
+    for (const mode of [coatingModes.otherParty, coatingModes.notRequired]) {
+      const result = session({ ...coating, rcs_coating_mode: mode });
+      expect(result.parameters.find(p => p.parameterId === "rcs_coating_program_reference")).toBeDefined();
+      expect(result.parameters.some(p => p.parameterId === "rcs_coating_damage_gross_mixed_l_per_m2")).toBe(false);
+      expect(result.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_coating_joint_band_width_m")).toMatchObject({ value: 0.4 });
+    }
+  });
+});
 
 describe("actual casing-preparation material program through shared parameter semantics", () => {
   const material: Record<string, CanonicalEstimateParameterInputValue> = { ...fixture,

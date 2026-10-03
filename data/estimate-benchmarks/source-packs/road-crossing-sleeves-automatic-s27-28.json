@@ -5,7 +5,7 @@
   "scope": "One continuous steel casing crossing with explicitly selected installation method. Casing supply and site joints, support rings and elements, contact tape, compatible end-seal kits, applicable civil work, crew labor, mechanisms and logistics are separate quantity/cost owners. This source pack is not itself a published owner or accepted estimate.",
   "engineeringAcceptanceClaimed": false,
   "universalRatesClaimed": false,
-  "implementationStatus": "COMPONENT_ASSEMBLY_WITH_ACTUAL_SUPPLY_FREIGHT_SOIL_STATES_HAUL_RECEIVING_INSPECTION_STAKING_WATER_JACKING_LOADING_AND_CASING_PREPARATION_CONSUMABLES_NOT_PUBLISHED_NOT_FULL_OWNER",
+  "implementationStatus": "COMPONENT_ASSEMBLY_WITH_ACTUAL_SUPPLY_FREIGHT_SOIL_STATES_HAUL_RECEIVING_INSPECTION_STAKING_WATER_JACKING_LOADING_CASING_PREPARATION_AND_DISJOINT_COATING_BATCH_RESOURCES_NOT_PUBLISHED_NOT_FULL_OWNER",
   "quantityComponent": {
     "module": "src/lib/estimate/v4/roadCrossingSleevesQuantityModelR1.ts",
     "verification": "tests/estimateNorms/roadCrossingSleevesQuantityModelR1.contract.test.ts",
@@ -124,6 +124,22 @@
       "receiving": "Explicit other-party receiving creates no charge. Separate receiving owns only excess loose m3 OR actual tonnes from moist shipping density, excluding transport and other execution; no invented disposal permission, prices or generic density",
       "independence": "Known bank/loose excavation remains calculable with unavailable fill/reuse data. Dependent balance/trips/receiving retain original geometry, actual state facts, suitability/allocation and route/receiver/cost boundaries even under manual paid quantities. Explicit zero reuse disables origin/conversion; zero excess disables truck/destination/receiving facts. Negative allocation is rejected rather than clamped",
       "open": "Material/technology/design/classification acceptance, mixed/slurry allocation, extra sorting/site handling, all other stage gaps and governed full-owner publication remain open"
+    },
+    "fieldCoatingResources": {
+      "module": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",
+      "verification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
+      "editorVerification": "tests/requestEstimate/canonicalCrossingFreightParameterProjection.contract.test.ts",
+      "scope": "Selected brush repair of a cylindrical casing: original site-joint bands and actual other damage are disjoint. Each zone is explicitly one feasible separate whole paired-kit batch; factory repainting, multiple/partial/shared mixes and invented defects are excluded",
+      "geometry": "Joint area = original site joint count times actual outside circumference times confirmed axial band width including overlap. Damage area is an actual separately mapped fact, with explicit zero distinct from missing. Each area and their sum cannot exceed the actual outer cylinder; a manual quantity cannot conceal invalid geometry. Missing band width does not stop independent damage, civil or casing quantities",
+      "kits": "Actual gross mixed litres per area include process losses but exclude whole-mix rounding surplus. Whole activated A+B kits round up once. All activated volume must fit actual confirmed single-batch usable capacity. Exclusive compatible unopened full kits, retained unopened reserve and supplier multiples yield new order and unopened remaining/free kits. Activated surplus becomes wet waste after usable life and is never reusable unopened stock",
+      "resources": "Each zone separately owns actual surface preparation, whole-kit mixing/application and protected cure conditions, and initial compatible instrument inspection. All personnel and equipment with energy are disjoint. Compatible abrasive, cleaner, discarded wipes and applicators have actual gross consumption, exclusive stock/reserve/net packs/order/remaining/free balances; touched whole articles round under the explicit discard programme",
+      "costAndFreight": "Only new paired-kit and consumable orders own purchase cost, with both kit components once. Work and equipment own separate hours. Shared dedicated freight uses actual certified shipping mass and feasible placement/payload; new liquid/abrasive containers are indivisible while allocated usable opened stock has its own plan. Zero consumption/order disables only dependent resources",
+      "primarySources": [
+        "https://www.densona.com/products/protal-7200/",
+        "https://www.densona.com/wp-content/uploads/2020/04/Denso-Protal-7200-Brush-Application-Spec.pdf"
+      ],
+      "sourceBoundary": "Manufacturer example distinguishes paired components, surface preparation, mixing, brush application, conditions/cure and inspection. No product brand, rate, thickness, mixing ratio, usable time, climate limit or acceptance is installed as a project default",
+      "open": "Actual product/zone/batch/method acceptance, other coatings, multiple/partial/shared mixes, reused tooling, additional cure protection materials, actual repairs/reinspection, wet and preparation waste handling, prices, complete crossing publication/readback and user acceptance remain open"
     },
     "casingPreparationConsumables": {
       "module": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",

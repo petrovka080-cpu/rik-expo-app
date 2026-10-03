@@ -12,7 +12,9 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_COMPONENT_P
   ROAD_CROSSING_SLEEVES_PREPARATION_MODES_R1 as preparationModes, ROAD_CROSSING_SLEEVES_PREPARATION_MATERIAL_COST_BASIS_R1 as preparationBasis,
   ROAD_CROSSING_SLEEVES_COMPACTION_WATER_MODES_R1 as compactionWaterModes, ROAD_CROSSING_SLEEVES_COMPACTION_WATER_COST_BASIS_R1 as compactionWaterBasis,
   ROAD_CROSSING_SLEEVES_JACKING_LOADING_MODES_R1 as loadingModes,
-  ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_MODES_R1 as casingPrepModes, ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_COST_BASIS_R1 as casingPrepBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_MODES_R1 as casingPrepModes, ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_COST_BASIS_R1 as casingPrepBasis,
+  ROAD_CROSSING_SLEEVES_COATING_MODES_R1 as coatingModes, ROAD_CROSSING_SLEEVES_COATING_KIT_COST_BASIS_R1 as coatingKitBasis,
+  ROAD_CROSSING_SLEEVES_COATING_CONSUMABLE_COST_BASIS_R1 as coatingConsumableBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierModes, ROAD_CROSSING_SLEEVES_CARRIER_COST_BASIS_R1 as carrierBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1 as jointParameters, ROAD_CROSSING_SLEEVES_JOINT_COST_BASES_R1 as bases } from "../../src/lib/estimate/v4/roadCrossingSleevesJointResourcesR1";
@@ -29,6 +31,7 @@ const components = buildRoadCrossingSleevesComponentsR1({ source_title: "Owned i
 const definition = components.definition;
 // Synthetic actual-fact/price fixtures ONLY, never a published default or WPS approval.
 const fixture: Record<string, unknown> = {
+  rcs_coating_mode: coatingModes.otherParty, rcs_coating_program_reference: "TEST actual compatible field coating resources provided by other party, no executor charge",
   rcs_casing_prep_material_mode: casingPrepModes.otherParty, rcs_casing_prep_material_program_reference: "TEST actual compatible preparation consumables provided by other party, no executor purchase",
   rcs_jacking_section_loading_cost_mode: loadingModes.included, rcs_jacking_section_loading_allocation_reference: "TEST whole section loading is included once in actual advance rates, disjoint from excavation and other mechanical work",
   // Explicit synthetic project evidence of no added compaction water; never a default.
@@ -123,6 +126,151 @@ function compile(submittedParameters: Record<string, unknown> = fixture, rowOver
   });
 }
 const q = (result: Awaited<ReturnType<typeof compile>>, id: string) => Number(result.rows.find(row => row.row_id === id)?.quantity);
+
+describe("actual disjoint field coating batches and all their initial resources", () => {
+  // Deliberately synthetic single-batch evidence, not manufacturer defaults.
+  const coating: Record<string, unknown> = { ...fixture, rcs_coating_mode: coatingModes.wholeKitBrush,
+    rcs_coating_program_reference: "TEST actual two separate single batches; feasible conditions/life, nonoverlapping zones, full kits and touched article discard",
+    rcs_coating_joint_band_width_m: 0.4, rcs_coating_damage_area_m2: 3,
+    ...Object.fromEntries(["joints", "damage"].flatMap(zone => Object.entries({
+      allocation_reference: `TEST exclusively allocated single ${zone} batch, no shared mix or material`,
+      kit_designation: "TEST compatible complete A+B kit", kit_product_reference: "TEST actual compatible paired kit, thickness, climate/cure/inspection and usability",
+      gross_mixed_l_per_m2: 0.6, kit_net_mixed_l: 2, confirmed_single_batch_max_mixed_l: 10,
+      compatible_unmixed_kit_stock: 1, retained_kit_reserve: 1, supplier_pack_kit_count: 2, kit_cost_basis: coatingKitBasis,
+    }).map(([key, value]) => [`rcs_coating_${zone}_${key}`, value]))),
+    ...Object.fromEntries(["joints", "damage"].flatMap(zone => ["preparation", "application", "inspection"].flatMap(work => Object.entries({
+      method_reference: `TEST actual compatible ${work}, disjoint work/material and single batch conditions`,
+      crew_designation: "TEST all inspectors/operators/applicators", crew_h_per_m2: 0.5, crew_cost_basis: executionBases.crew,
+      equipment_designation: "TEST actual compatible whole procedure/equipment/instrument set with energy", equipment_h_per_m2: 0.25, equipment_cost_basis: executionBases.equipment,
+    }).map(([key, value]) => [`rcs_coating_${zone}_${work}_${key}`, value])))),
+    ...Object.fromEntries(["joints", "damage"].flatMap(zone => ["abrasive", "cleaner", "wipes", "applicators"].flatMap((material, index) => Object.entries({
+      gross_per_m2: [0.5, 0.2, 0.5, 0.1][index], product_designation: `TEST actual compatible ${material}`,
+      product_reference: "TEST exclusive compatible consumed/discarded article programme; no reusable tooling or recovered stock",
+      compatible_stock: material === "cleaner" ? 0.1 : 0, retained_reserve: material === "cleaner" ? 0.2 : 1,
+      supplier_pack_net: material === "cleaner" ? 0.5 : 2, cost_basis: coatingConsumableBasis,
+    }).map(([key, value]) => [`rcs_coating_${zone}_${material}_${key}`, value])))),
+  };
+  const row = (zone: string, key: string) => `rcs:coating:${zone}:${key}`;
+  const cRow = (zone: string, material: string, key: string) => `rcs:coating-consumable:${zone}:${material}:${key}`;
+  it("uses original site joints and full circumference/band width, with separate actual damage, labor/equipment and casing stage", async () => {
+    const result = await compile(coating);
+    const area = 2 * Math.PI * 0.53 * 0.4;
+    expect(result.preliminaryNeeds).toEqual([]);
+    expect(q(result, row("joints", "area_m2"))).toBeCloseTo(area, 7);
+    expect(q(result, row("damage", "area_m2"))).toBe(3);
+    for (const work of ["preparation", "application", "inspection"]) {
+      expect(q(result, row("joints", `${work}:crew_hours`))).toBeCloseTo(area * 0.5, 7);
+      expect(q(result, row("damage", `${work}:equipment_hours`))).toBe(0.75);
+    }
+    const changed = await compile({ ...coating, rcs_supplier_bundle_section_count: 10, rcs_retained_spare_section_count: 9, rcs_compatible_stock_section_count: 20 });
+    expect(q(changed, row("joints", "area_m2"))).toBe(q(result, row("joints", "area_m2")));
+    const stages = components.stageMatrix.filter(stage => stage.ownResourceIds.includes(row("damage", "ordered_kit_count")));
+    expect(stages.map(stage => stage.stageId)).toEqual(["casing"]);
+    expect(components.scope.fullOwner).toBe(false);
+  });
+  it("activates whole A+B kits once, separates wet surplus from unopened stock, and charges only new whole paired orders", async () => {
+    const result = await compile(coating);
+    expect(q(result, row("damage", "gross_mixed_need_l"))).toBe(1.8);
+    expect(q(result, row("damage", "activated_kit_count"))).toBe(1);
+    expect(q(result, row("damage", "activated_mixed_l"))).toBe(2);
+    expect(q(result, row("damage", "activated_surplus_l"))).toBe(0.2);
+    expect(q(result, row("damage", "new_kit_need"))).toBe(1);
+    expect(q(result, row("damage", "ordered_kit_count"))).toBe(2);
+    expect(q(result, row("damage", "remaining_unmixed_kit_count"))).toBe(2);
+    expect(q(result, row("damage", "free_unmixed_kit_count"))).toBe(1);
+    expect(result.rows.filter(r => r.row_id.startsWith("rcs:coating:damage:") && r.included_in_procurement).map(r => r.row_id)).toEqual([
+      row("damage", "ordered_kit_count"), ...["preparation", "application", "inspection"].flatMap(work => [row("damage", `${work}:crew_hours`), row("damage", `${work}:equipment_hours`)])]);
+    expect(definition.parameters.some(p => /(?:activated_kit_count|ordered_kit_count|activated_surplus|component_[ab]_order)/u.test(p.parameter_id))).toBe(false);
+  });
+  it("calculates independent damage and civil work when original joint band width is unknown", async () => {
+    const input = { ...coating }; delete input.rcs_coating_joint_band_width_m;
+    const result = await compile(input);
+    expect(q(result, row("damage", "ordered_kit_count"))).toBe(2);
+    expect(q(result, row("damage", "inspection:crew_hours"))).toBe(1.5);
+    expect(q(result, "rcs:civil-execution:open_cut:equipment_hours")).toBe(21);
+    expect(result.preliminaryNeeds.length).toBeGreaterThan(0);
+    expect(result.preliminaryNeeds.every(need => need.missing_parameter_ids.includes("rcs_coating_joint_band_width_m") && !need.row_id.includes(":damage:"))).toBe(true);
+  });
+  it("explicit zero damage needs no kits, consumables, works or transport and is distinct from missing damage", async () => {
+    const input: Record<string, unknown> = { ...coating, rcs_coating_damage_area_m2: 0 };
+    for (const key of Object.keys(input)) if (key.startsWith("rcs_coating_damage_") && key !== "rcs_coating_damage_area_m2") delete input[key];
+    const result = await compile(input);
+    expect(result.preliminaryNeeds).toEqual([]);
+    expect(q(result, row("damage", "area_m2"))).toBe(0);
+    expect(result.rows.some(r => r.row_id.includes(":damage:") && r.included_in_procurement)).toBe(false);
+    const missing = { ...input }; delete missing.rcs_coating_damage_area_m2;
+    expect((await compile(missing)).preliminaryNeeds.some(need => need.missing_parameter_ids.includes("rcs_coating_damage_area_m2"))).toBe(true);
+  });
+  it("a single casing section disables joint bands while damage still calculates and checks its own cylinder limit", async () => {
+    const input: Record<string, unknown> = { ...coating, rcs_crossing_length_m: 12 }; delete input.rcs_coating_joint_band_width_m;
+    const result = await compile(input);
+    expect(result.preliminaryNeeds).toEqual([]);
+    expect(result.rows.some(r => r.row_id.startsWith("rcs:coating:joints:"))).toBe(false);
+    expect(q(result, row("damage", "ordered_kit_count"))).toBe(2);
+    await expect(compile({ ...input, rcs_coating_damage_area_m2: 25 })).rejects.toMatchObject({ code: "FORMULA_OUTPUT_BOUNDS_FAILED" });
+  });
+  it("rejects impossible combined areas or a whole mix exceeding actual usable capacity before any manual quantities", async () => {
+    await expect(compile({ ...coating, rcs_coating_joint_band_width_m: 20 }, { [row("joints", "area_m2")]: { quantity: "1", provenance } })).rejects.toMatchObject({ code: "FORMULA_OUTPUT_BOUNDS_FAILED" });
+    await expect(compile({ ...coating, rcs_coating_damage_confirmed_single_batch_max_mixed_l: 1.9 }, { [row("damage", "ordered_kit_count")]: { quantity: "1", provenance } })).rejects.toMatchObject({ code: "FORMULA_OUTPUT_BOUNDS_FAILED" });
+  });
+  it.each(["rcs_casing_inside_diameter_mm", "rcs_coating_program_reference", "rcs_coating_damage_allocation_reference", "rcs_coating_damage_kit_product_reference", "rcs_coating_damage_kit_cost_basis", "rcs_coating_damage_confirmed_single_batch_max_mixed_l"])(
+    "manual paid kit cannot bypass original geometry/program/product/batch/cost fact %s", async fact => {
+      const input = { ...coating }; delete input[fact];
+      const result = await compile(input, { [row("damage", "ordered_kit_count")]: { quantity: "2", provenance } });
+      expect(result.rows.some(r => r.row_id === row("damage", "ordered_kit_count"))).toBe(false);
+      expect(result.preliminaryNeeds.find(need => need.row_id === row("damage", "ordered_kit_count"))?.missing_parameter_ids).toContain(fact);
+    });
+  it("unknown supply pack leaves mixed consumption and all actual area-based works known", async () => {
+    const input = { ...coating }; delete input.rcs_coating_damage_supplier_pack_kit_count;
+    const result = await compile(input);
+    expect(q(result, row("damage", "gross_mixed_need_l"))).toBe(1.8);
+    expect(q(result, row("damage", "application:crew_hours"))).toBe(1.5);
+    expect(result.preliminaryNeeds.every(need => need.missing_parameter_ids.includes("rcs_coating_damage_supplier_pack_kit_count"))).toBe(true);
+  });
+  it("owns separate cleaner/abrasive/wipe/applicator orders and does not turn pack surplus into additional work", async () => {
+    const result = await compile(coating);
+    expect(q(result, cRow("damage", "cleaner", "consumed"))).toBe(0.6);
+    expect(q(result, cRow("damage", "cleaner", "new_need"))).toBe(0.7);
+    expect(q(result, cRow("damage", "cleaner", "ordered"))).toBe(1);
+    expect(q(result, cRow("damage", "cleaner", "remaining"))).toBe(0.5);
+    expect(q(result, cRow("damage", "cleaner", "free_beyond_reserve"))).toBe(0.3);
+    expect(q(result, cRow("damage", "wipes", "consumed"))).toBe(2);
+    expect(q(result, cRow("damage", "applicators", "consumed"))).toBe(1);
+    const changed = await compile({ ...coating, rcs_coating_damage_cleaner_supplier_pack_net: 5 });
+    expect(q(changed, cRow("damage", "cleaner", "ordered"))).toBe(5);
+    expect(q(changed, row("damage", "preparation:crew_hours"))).toBe(1.5);
+  });
+  it("zero gross use excludes only that consumable's product/order/freight; a missing use never becomes zero", async () => {
+    const input: Record<string, unknown> = { ...coating, rcs_coating_damage_cleaner_gross_per_m2: 0 }; delete input.rcs_coating_damage_cleaner_product_reference;
+    const zero = await compile(input);
+    expect(zero.preliminaryNeeds).toEqual([]);
+    expect(q(zero, cRow("damage", "cleaner", "consumed"))).toBe(0);
+    expect(zero.rows.some(r => r.row_id === cRow("damage", "cleaner", "ordered"))).toBe(false);
+    delete input.rcs_coating_damage_cleaner_gross_per_m2;
+    expect((await compile(input)).preliminaryNeeds.some(need => need.missing_parameter_ids.includes("rcs_coating_damage_cleaner_gross_per_m2"))).toBe(true);
+  });
+  it("ships new full kits and unopened cleaner packs separately from compatible opened stock with its own mass/load plan", async () => {
+    const input = { ...coating, rcs_freight_coating_damage_kits_new_mode: freightModes.separate,
+      rcs_freight_coating_damage_kits_new_vehicle_designation: "TEST compatible complete A+B kit cargo",
+      rcs_freight_coating_damage_kits_new_shipping_kg_per_unit: 3, rcs_freight_coating_damage_kits_new_payload_kg: 10,
+      rcs_freight_coating_damage_kits_new_max_units_per_trip: 5, rcs_freight_coating_damage_kits_new_cost_basis: freightBasis,
+      rcs_freight_coating_damage_cleaner_new_mode: freightModes.separate,
+      rcs_freight_coating_damage_cleaner_new_vehicle_designation: "TEST compatible cleaner containers",
+      rcs_freight_coating_damage_cleaner_new_shipping_kg_per_unit: 1, rcs_freight_coating_damage_cleaner_new_payload_kg: 10,
+      rcs_freight_coating_damage_cleaner_new_max_units_per_trip: 0.75, rcs_freight_coating_damage_cleaner_new_cost_basis: freightBasis,
+      rcs_freight_coating_damage_cleaner_offsite_stock_units: 0.1, rcs_freight_coating_damage_cleaner_stock_mode: freightModes.separate,
+      rcs_freight_coating_damage_cleaner_stock_vehicle_designation: "TEST separate opened suitable stock",
+      rcs_freight_coating_damage_cleaner_stock_shipping_kg_per_unit: 1, rcs_freight_coating_damage_cleaner_stock_payload_kg: 10,
+      rcs_freight_coating_damage_cleaner_stock_max_units_per_trip: 0.1, rcs_freight_coating_damage_cleaner_stock_cost_basis: freightBasis };
+    const result = await compile(input);
+    expect(q(result, "rcs:freight:coating_damage_kits_new:shipping_mass_kg")).toBe(6);
+    expect(q(result, "rcs:freight:coating_damage_kits_new:trip_count")).toBe(1);
+    expect(q(result, "rcs:freight:coating_damage_cleaner_new:effective_units_per_trip")).toBe(0.5);
+    expect(q(result, "rcs:freight:coating_damage_cleaner_new:trip_count")).toBe(2);
+    expect(q(result, "rcs:freight:coating_damage_cleaner_stock:trip_count")).toBe(1);
+    await expect(compile({ ...input, rcs_freight_coating_damage_cleaner_offsite_stock_units: 0.2 })).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+  });
+});
 
 describe("actual casing preparation consumables, distinct from welding and preparation work", () => {
   const material: Record<string, unknown> = { ...fixture, rcs_casing_prep_material_mode: casingPrepModes.abrasive,

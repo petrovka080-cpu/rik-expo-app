@@ -365,6 +365,181 @@ export const ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_ROWS_R1: readonly Automa
   }),
 ]);
 
+/** Selected field repair is two disjoint documented batches, not whole factory
+ * recoating or invented defects. Denso's brush specification distinguishes
+ * preparation, paired-component mixing, application/cure and inspection:
+ * https://www.densona.com/wp-content/uploads/2020/04/Denso-Protal-7200-Brush-Application-Spec.pdf
+ * No product, DFT, rate, mixing ratio, pot life or climate limit is a default.
+ * The explicitly selected program activates WHOLE paired kits; leftover mixed
+ * product after its usable life is wet waste, never unopened usable stock. */
+export const ROAD_CROSSING_SLEEVES_COATING_MODES_R1 = Object.freeze({
+  wholeKitBrush: "Кистевое восстановление цилиндрического футляра целыми двухкомпонентными комплектами; стыки и иные повреждения — по одной отдельной непересекающейся партии с подтверждённой пригодностью всего замеса",
+  otherParty: "Восстановление покрытия и все его ресурсы предоставлены другой стороной без отдельной оплаты исполнителем",
+  notRequired: "Отсутствие восстановления покрытия подтверждено проектной программой",
+  other: "Другие покрытия, частичные замесы или общий замес зон: отдельная программа ресурсов",
+});
+export const ROAD_CROSSING_SLEEVES_COATING_KIT_COST_BASIS_R1 = "Только новый заказ полных согласованных двухкомпонентных комплектов, включающих оба компонента; без второй оплаты компонентов, подготовки, замеса/нанесения/выдержки/контроля как работ, всех исполнителей, оборудования, энергии, доставки и отходов";
+export const ROAD_CROSSING_SLEEVES_COATING_CONSUMABLE_COST_BASIS_R1 = "Только новый заказ отдельного совместимого расходника покрытия, со всеми процессными потерями и резервом; без комплектов покрытия, работ подготовки/нанесения/контроля, всех исполнителей, оборудования, энергии, доставки, отходов и повторной оплаты";
+const coatingId = (suffix: string) => `rcs_coating_${suffix}`;
+const coatingScope: AutomaticInclusionCondition = { kind: "greater_than", parameterId: "rcs_crossing_length_m", value: 0 };
+const coatingSelected: AutomaticInclusionCondition = { kind: "and", operands: [coatingScope,
+  { kind: "equals", parameterId: coatingId("mode"), value: ROAD_CROSSING_SLEEVES_COATING_MODES_R1.wholeKitBrush }] };
+const coatingJointScope: AutomaticInclusionCondition = { kind: "and", operands: [coatingSelected,
+  { kind: "formula_greater_than", expression: quantities.site_joint_count, unitId: "piece", value: 0 }] };
+const coatingJointArea = `(${quantities.site_joint_count})*3.141592654*rcs_casing_outside_diameter_mm/1000*${coatingId("joint_band_width_m")}`;
+const coatingBaseFacts = ["rcs_crossing_length_m", "rcs_casing_outside_diameter_mm", "rcs_casing_inside_diameter_mm", "rcs_casing_product_designation", coatingId("mode"), coatingId("program_reference")];
+const coatingZones = [
+  { key: "joints", title: "Полосы монтажных стыков футляра", area: coatingJointArea, inclusion: coatingJointScope,
+    facts: [...coatingBaseFacts, "rcs_planned_physical_section_length_m", "rcs_joint_wps_reference", coatingId("joint_band_width_m")] },
+  { key: "damage", title: "Фактически повреждённые участки вне полос стыков", area: coatingId("damage_area_m2"), inclusion: coatingSelected,
+    facts: [...coatingBaseFacts, coatingId("damage_area_m2")] },
+].map(zone => ({ ...zone, id: (suffix: string) => coatingId(`${zone.key}_${suffix}`),
+  positive: { kind: "and", operands: [zone.inclusion, { kind: "formula_greater_than", expression: zone.area, unitId: "m2", value: 0 }] } as AutomaticInclusionCondition }));
+const coatingWorks = [
+  { key: "preparation", title: "Очистка и подготовка поверхности под покрытие", boundary: "очистка, подготовка поверхности и края старого покрытия; без подготовки стыка под сварку, материала покрытия, нанесения и контроля" },
+  { key: "application", title: "Замес, кистевое нанесение и защита на время выдержки", boundary: "замес целых комплектов, нанесение и фактическое обеспечение выдержки при согласованных условиях; без поверхностной подготовки, материалов, контроля и доставки" },
+  { key: "inspection", title: "Первоначальный контроль восстановленного покрытия", boundary: "первоначальный предусмотренный программой контроль профиля/условий/толщины/выдержки/сплошности совместимыми приборами; без прогнозирования дефектов, исправления и повторного контроля" },
+] as const;
+const coatingKit = (zone: typeof coatingZones[number]) => {
+  const mixed = `(${zone.area})*${zone.id("gross_mixed_l_per_m2")}`;
+  const activated = `ceil((${mixed})/${zone.id("kit_net_mixed_l")})`;
+  const need = `max(0,(${activated})+${zone.id("retained_kit_reserve")}-${zone.id("compatible_unmixed_kit_stock")})`;
+  const packs = `ceil((${need})/${zone.id("supplier_pack_kit_count")})`, ordered = `(${packs})*${zone.id("supplier_pack_kit_count")}`;
+  const remaining = `${zone.id("compatible_unmixed_kit_stock")}+(${ordered})-(${activated})`;
+  return { mixed, activated, need, packs, ordered, remaining };
+};
+export const ROAD_CROSSING_SLEEVES_COATING_PARAMETERS_R1: readonly AutomaticParameterSpec[] = Object.freeze([
+  { id: coatingId("mode"), title: "Подтверждённая технология и граница ресурсов восстановления покрытия футляра", valueType: "enum", unitId: null,
+    values: Object.values(ROAD_CROSSING_SLEEVES_COATING_MODES_R1), kind: "conditional", requiredWhen: coatingScope },
+  { id: coatingId("program_reference"), title: "Фактическая программа совместимого покрытия, отдельные зоны и партии, исходное покрытие/повреждения, толщина, условия, целые комплекты, замес/выдержка/контроль и границы оплаты",
+    valueType: "text", unitId: null, kind: "conditional", requiredWhen: coatingScope },
+  { id: coatingId("joint_band_width_m"), title: "Фактическая осевая ширина покрытия каждой полосы стыка, включая подтверждённые нахлёсты на исходное покрытие; не ширина шва",
+    valueType: "decimal", unitId: "m", min: 0.000_001, kind: "conditional", requiredWhen: coatingJointScope },
+  { id: coatingId("damage_area_m2"), title: "Фактическая площадь иных повреждённых участков с краевой подготовкой, без повторения полос стыков; отсутствие подтверждается явным 0, не прогнозом процента дефектов",
+    valueType: "decimal", unitId: "m2", min: 0, kind: "conditional", requiredWhen: coatingSelected },
+  ...coatingZones.flatMap(zone => {
+    const text = (suffix: string, title: string): AutomaticParameterSpec => ({ id: zone.id(suffix), title: `${zone.title}: ${title}`,
+      valueType: "text", unitId: null, kind: "conditional", requiredWhen: zone.positive });
+    const amount = (suffix: string, title: string, unitId: string, min: number, integer = false): AutomaticParameterSpec => ({ id: zone.id(suffix), title: `${zone.title}: ${title}`,
+      valueType: integer ? "integer" : "decimal", unitId, min, kind: "conditional", requiredWhen: zone.positive });
+    return [text("allocation_reference", "фактическое отдельное распределение комплектов/расходников и партии работ, без совместного замеса и пересечения с другой зоной или операцией"),
+      text("kit_designation", "выбранный полный совместимый двухкомпонентный комплект; оба компонента входят в одну покупку"),
+      text("kit_product_reference", "паспорт и совместимость исходного/ремонтного покрытия, парных компонентов, толщины, условия замеса/нанесения/выдержки/контроля и пригодности несмешанных комплектов"),
+      amount("gross_mixed_l_per_m2", "фактически расходуемый смешанный продукт на площадь с процессными потерями; без остатка округления целого замеса", "l_per_m2", 0.000_001),
+      amount("kit_net_mixed_l", "фактический смешанный объём одного полного парного комплекта без тары, не объём одного компонента", "l", 0.000_001),
+      amount("confirmed_single_batch_max_mixed_l", "подтверждённый максимальный объём всего единственного замеса этой зоны, который будет применён в фактических условиях в пределах пригодности; не универсальный паспортный расход", "l", 0.000_001),
+      amount("compatible_unmixed_kit_stock", "пригодные полные несмешанные комплекты в наличии, выделенные исключительно этой партии; не активированный продукт или несогласованные остатки компонентов", "piece", 0, true),
+      amount("retained_kit_reserve", "сохраняемые полные несмешанные комплекты", "piece", 0, true),
+      amount("supplier_pack_kit_count", "полных парных комплектов в новой поставочной упаковке", "piece", 1, true),
+      { id: zone.id("kit_cost_basis"), title: `${zone.title}: отдельная граница нового заказа комплекта`, valueType: "enum", unitId: null,
+        values: [ROAD_CROSSING_SLEEVES_COATING_KIT_COST_BASIS_R1], kind: "conditional", requiredWhen: zone.positive } as AutomaticParameterSpec,
+      ...coatingWorks.flatMap(work => [text(`${work.key}_method_reference`, `фактическая совместимая процедура: ${work.boundary}`),
+        ...(["crew", "equipment"] as const).flatMap(owner => [
+          text(`${work.key}_${owner}_designation`, `${work.title}: ${owner === "crew" ? "все исполнители, включая операторов" : "весь выбранный совместимый комплект с энергией"}`),
+          amount(`${work.key}_${owner}_h_per_m2`, `${work.title}: фактические ${owner === "crew" ? "суммарные человеко-часы" : "часы комплекта"} по выбранному плану на площадь; фактические замесы и условия включены один раз`, `${owner === "crew" ? "man" : "machine"}_hour_per_m2`, 0),
+          { id: zone.id(`${work.key}_${owner}_cost_basis`), title: `${zone.title}: ${work.title}, отдельная граница ${owner === "crew" ? "труда" : "техники"}`, valueType: "enum", unitId: null,
+            values: [ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_COST_BASES_R1[owner]], kind: "conditional", requiredWhen: zone.positive } as AutomaticParameterSpec,
+        ])]),
+    ];
+  }),
+]);
+export const ROAD_CROSSING_SLEEVES_COATING_ROWS_R1: readonly AutomaticRowSpec[] = Object.freeze([
+  { rowId: "rcs:coating:scope_length_m", formulaId: "rcs:coating:scope_length_m", section: "Восстановление защитного покрытия", category: "service",
+    title: "Длина перехода в подтверждённой программе покрытия; без повторной оплаты", unitId: "m", expression: "rcs_crossing_length_m", inclusion: coatingScope,
+    costTreatment: "INFORMATIONAL_SCOPE", inputParameterIds: [coatingId("mode"), coatingId("program_reference")] },
+  { rowId: "rcs:coating:unallocated_outer_area_m2", formulaId: "rcs:coating:unallocated_outer_area_m2", section: "Контроль площадей покрытия", category: "service",
+    title: "Внешняя цилиндрическая площадь вне отдельных полос стыков и иных повреждений; не автоматически перекрашиваемая площадь", unitId: "m2",
+    expression: `3.141592654*rcs_casing_outside_diameter_mm/1000*rcs_crossing_length_m-(${coatingJointArea})-${coatingId("damage_area_m2")}`,
+    inclusion: coatingJointScope, costTreatment: "INFORMATIONAL_SCOPE", inputParameterIds: [...coatingBaseFacts, coatingId("damage_area_m2")],
+    formulaOutputBounds: { schemaVersion: "canonical_formula_output_bounds_v1", unitId: "m2", minimum: 0,
+      reasonRu: "Отдельные непересекающиеся зоны не могут превышать всю цилиндрическую поверхность фактического футляра; геометрия и карта зон должны быть исправлены, а не скрыты ручным количеством." } },
+  ...coatingZones.flatMap((zone): AutomaticRowSpec[] => {
+    const kit = coatingKit(zone), facts = [...zone.facts, zone.id("allocation_reference"), zone.id("kit_designation"), zone.id("kit_product_reference")];
+    const row = (key: string, title: string, expression: string, unitId: string, inclusion = zone.positive): AutomaticRowSpec => ({
+      rowId: `rcs:coating:${zone.key}:${key}`, formulaId: `rcs:coating:${zone.key}:${key}`, section: `Покрытие: ${zone.title}`, category: "material",
+      title: `${zone.title}: ${title}`, unitId, expression, inclusion, costTreatment: "INFORMATIONAL_SCOPE", inputParameterIds: facts,
+    });
+    return [{ ...row("area_m2", "фактическая отдельная площадь, не вся заводская окраска", zone.area, "m2", zone.inclusion), inputParameterIds: zone.facts },
+      { ...row("available_outer_area_m2", "внешняя цилиндрическая площадь за вычетом одной зоны; контроль геометрии без повторной оплаты", `3.141592654*rcs_casing_outside_diameter_mm/1000*rcs_crossing_length_m-(${zone.area})`, "m2", zone.inclusion), inputParameterIds: zone.facts,
+      formulaOutputBounds: { schemaVersion: "canonical_formula_output_bounds_v1", unitId: "m2", minimum: 0,
+        reasonRu: "Одна зона не может превышать всю внешнюю цилиндрическую поверхность фактического футляра." } },
+      row("gross_mixed_need_l", "фактически расходуемый смешанный продукт с процессными потерями", kit.mixed, "l"),
+      row("activated_kit_count", "полные комплекты, активируемые для отдельной партии, не новый заказ", kit.activated, "piece"),
+      row("activated_mixed_l", "весь активированный смешанный продукт, включая остаток целого замеса", `(${kit.activated})*${zone.id("kit_net_mixed_l")}`, "l"),
+      row("activated_surplus_l", "остаток активированного замеса сверх фактического расхода, после срока пригодности не складское наличие", `(${kit.activated})*${zone.id("kit_net_mixed_l")}-(${kit.mixed})`, "l"),
+      { ...row("single_batch_available_capacity_l", "запас подтверждённой применимости одного полного замеса; другие партии требуют отдельной программы", `${zone.id("confirmed_single_batch_max_mixed_l")}-(${kit.activated})*${zone.id("kit_net_mixed_l")}`, "l"),
+        formulaOutputBounds: { schemaVersion: "canonical_formula_output_bounds_v1", unitId: "l", minimum: 0,
+          reasonRu: "Весь активируемый объём должен укладываться в подтверждённую применимость одного замеса этой зоны; несколько замесов нельзя скрывать общим округлением или ручным заказом." } },
+      row("new_kit_need", "дополнительные полные комплекты с резервом после пригодного несмешанного наличия", kit.need, "piece"),
+      row("supplier_pack_count", "число новых упаковок полных комплектов; не работы или рейсы", kit.packs, "package"),
+      { ...row("ordered_kit_count", "новый заказ полных парных комплектов с обоими компонентами", kit.ordered, "piece"),
+        costTreatment: "OWN_COST", procurement: true, titleParameterIds: [zone.id("kit_designation")], inputParameterIds: [...facts, zone.id("kit_cost_basis"), zone.id("confirmed_single_batch_max_mixed_l")] },
+      row("remaining_unmixed_kit_count", "пригодные неактивированные комплекты после партии, включая сохраняемый резерв", kit.remaining, "piece"),
+      row("free_unmixed_kit_count", "свободные пригодные неактивированные комплекты сверх резерва", `(${kit.remaining})-${zone.id("retained_kit_reserve")}`, "piece"),
+      ...coatingWorks.flatMap(work => (["crew", "equipment"] as const).map((owner): AutomaticRowSpec => ({
+        ...row(`${work.key}:${owner}_hours`, `${work.title}: ${owner === "crew" ? "все исполнители" : "совместимое оборудование с энергией"}`, `(${zone.area})*${zone.id(`${work.key}_${owner}_h_per_m2`)}`, owner === "crew" ? "man_hour" : "machine_hour"),
+        category: owner === "crew" ? "labor" : "equipment", costTreatment: "OWN_COST", procurement: true,
+        titleParameterIds: [zone.id(`${work.key}_${owner}_designation`)], inputParameterIds: [...facts, zone.id(`${work.key}_method_reference`), zone.id(`${work.key}_${owner}_cost_basis`)],
+      }))),
+    ];
+  }),
+]);
+
+// Only the selected single-batch discard programme rounds touched articles to
+// whole consumed units. Reusable brushes/tools and recovered abrasive are not
+// invented future stock. Their actual programmes remain separate.
+const coatingConsumables = [
+  { key: "abrasive", title: "Совместимый абразив подготовки покрытия", unit: "kg", work: "preparation" },
+  { key: "cleaner", title: "Совместимый очиститель покрытия", unit: "l", work: "preparation" },
+  { key: "wipes", title: "Списываемые салфетки подготовки покрытия", unit: "piece", work: "preparation" },
+  { key: "applicators", title: "Списываемые аппликаторы нанесения покрытия", unit: "piece", work: "application" },
+] as const;
+const coatingConsumableBranches = coatingZones.flatMap(zone => coatingConsumables.map(material => {
+  const id = (suffix: string) => zone.id(`${material.key}_${suffix}`);
+  const gross = `(${zone.area})*${id("gross_per_m2")}`;
+  const consumed = material.unit === "piece" ? `ceil(${gross})` : gross;
+  const positive: AutomaticInclusionCondition = { kind: "and", operands: [zone.positive,
+    { kind: "formula_greater_than", expression: consumed, unitId: material.unit, value: 0 }] };
+  return { ...material, zone, id, consumed, positive };
+}));
+export const ROAD_CROSSING_SLEEVES_COATING_CONSUMABLE_PARAMETERS_R1: readonly AutomaticParameterSpec[] = Object.freeze(
+  coatingConsumableBranches.flatMap(material => {
+    const text = (suffix: string, title: string): AutomaticParameterSpec => ({ id: material.id(suffix), title: `${material.zone.title}, ${material.title}: ${title}`,
+      valueType: "text", unitId: null, kind: "conditional", requiredWhen: material.positive });
+    const amount = (suffix: string, title: string, min = 0): AutomaticParameterSpec => ({ id: material.id(suffix), title: `${material.zone.title}, ${material.title}: ${title}`,
+      valueType: material.unit === "piece" ? "integer" : "decimal", unitId: material.unit, min, kind: "conditional", requiredWhen: material.positive });
+    return [
+      { id: material.id("gross_per_m2"), title: `${material.zone.title}, ${material.title}: фактический полный расход на площадь со всеми процессными потерями; целые затронутые изделия списываются по программе, отсутствие — явный 0`,
+        valueType: "decimal", unitId: `${material.unit}_per_m2`, min: 0, kind: "conditional", requiredWhen: material.zone.positive } as AutomaticParameterSpec,
+      text("product_designation", "фактически выбранный совместимый расходник"),
+      text("product_reference", "фактическая совместимость с исходным/ремонтным покрытием, процедурой и инструментом, правило полного расхода/списания, отдельное распределение партии и пригодность наличия"),
+      amount("compatible_stock", "пригодное исключительно выделенное наличие до этой партии; без возврата уже использованных или смешанных материалов"),
+      amount("retained_reserve", "сохраняемый пригодный резерв"), amount("supplier_pack_net", "фактическое нетто в новой поставочной упаковке", material.unit === "piece" ? 1 : 0.000_001),
+      { id: material.id("cost_basis"), title: `${material.zone.title}, ${material.title}: отдельная граница нового заказа`, valueType: "enum", unitId: null,
+        values: [ROAD_CROSSING_SLEEVES_COATING_CONSUMABLE_COST_BASIS_R1], kind: "conditional", requiredWhen: material.positive } as AutomaticParameterSpec,
+    ];
+  }),
+);
+export const ROAD_CROSSING_SLEEVES_COATING_CONSUMABLE_ROWS_R1: readonly AutomaticRowSpec[] = Object.freeze(
+  coatingConsumableBranches.flatMap(material => {
+    const stock = material.id("compatible_stock"), reserve = material.id("retained_reserve"), pack = material.id("supplier_pack_net");
+    const need = `max(0,(${material.consumed})+${reserve}-${stock})`, count = `ceil((${need})/${pack})`, ordered = `(${count})*${pack}`;
+    const remaining = `${stock}+(${ordered})-(${material.consumed})`;
+    return ([ ["consumed", "фактический полный расход; целые затронутые изделия списываются по программе", material.consumed],
+      ["new_need", "дополнительная потребность с резервом после пригодного наличия", need], ["supplier_pack_count", "число новых упаковок", count],
+      ["ordered", "новый отдельный заказ расходника", ordered], ["remaining", "неиспользованный пригодный остаток с резервом", remaining],
+      ["free_beyond_reserve", "свободный пригодный остаток сверх резерва", `(${remaining})-${reserve}`] ] as const)
+      .map(([key, title, expression]): AutomaticRowSpec => ({ rowId: `rcs:coating-consumable:${material.zone.key}:${material.key}:${key}`, formulaId: `rcs:coating-consumable:${material.zone.key}:${material.key}:${key}`,
+        section: `Покрытие: ${material.zone.title}`, category: "material", title: `${material.title}: ${title}`, unitId: key === "supplier_pack_count" ? "package" : material.unit,
+        expression, inclusion: key === "consumed" ? material.zone.positive : material.positive,
+        costTreatment: key === "ordered" ? "OWN_COST" : "INFORMATIONAL_SCOPE", procurement: key === "ordered",
+        inputParameterIds: [...material.zone.facts, material.zone.id("allocation_reference"), material.zone.id(`${material.work}_method_reference`),
+          ...(key === "consumed" ? [] : [material.id("product_designation"), material.id("product_reference")]),
+          ...(key === "ordered" ? [material.id("cost_basis")] : [])],
+        ...(key === "ordered" ? { titleParameterIds: [material.id("product_designation")] } : {}) }));
+  }),
+);
+
 /** Actual initial straight-axis staking has its own physical resources.
  * FHWA FP-24 section 152 identifies selected survey/control methods, marking,
  * maintenance/replacement and final removal; it does not give this project's
@@ -615,6 +790,10 @@ const freightCargoGroups: readonly FreightCargo[] = [
     `rcs:compaction-water:${work.key}:ordered_m3`, work.id("compatible_stock_m3"), "m3")),
   ...casingPrepMaterialBranches.map(material => freightCargo(`casing_prep_${material.key}`, material.title, ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_ROWS_R1,
     `rcs:casing-prep-material:${material.key}:ordered`, material.id("compatible_stock"), material.unit, undefined, material.unit === "l" ? material.id("supplier_pack_net") : undefined)),
+  ...coatingZones.map(zone => freightCargo(`coating_${zone.key}_kits`, `${zone.title}: полные несмешанные комплекты покрытия`, ROAD_CROSSING_SLEEVES_COATING_ROWS_R1,
+    `rcs:coating:${zone.key}:ordered_kit_count`, zone.id("compatible_unmixed_kit_stock"), "piece")),
+  ...coatingConsumableBranches.map(material => freightCargo(`coating_${material.zone.key}_${material.key}`, `${material.zone.title}: ${material.title}`, ROAD_CROSSING_SLEEVES_COATING_CONSUMABLE_ROWS_R1,
+    `rcs:coating-consumable:${material.zone.key}:${material.key}:ordered`, material.id("compatible_stock"), material.unit, undefined, material.unit === "piece" ? undefined : material.id("supplier_pack_net"))),
 ];
 const freightId = (key: string, suffix: string) => `rcs_freight_${key}_${suffix}`;
 const freightLanes = freightCargoGroups.flatMap(cargo => (["new", "stock"] as const).map(lane => {
@@ -866,7 +1045,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENTS_SCOPE_R1 = Object.freeze({
   omitted: Object.freeze([
     "Excavation support/reaction structures and groundwater measures; actual applicability and approved civil execution rates",
     "Approved pit return-fill technology, soil suitability/classification, heterogeneous/slurry allocations and non-granular/other bedding technologies",
-    "Clearance/site preparation, other survey layouts and actual control acceptance, applicable fencing/traffic measures, recovered markers/waste handling; joint repairs/reinspection and other NDT methods, coating/drying, carrier connections and actual loading/method/design approval",
+    "Clearance/site preparation, other survey layouts and actual control acceptance, applicable fencing/traffic measures, recovered markers/waste handling; joint repairs/reinspection and other NDT methods, coating actual acceptance, other coatings/multiple or partial/shared mixes, cured defects/reinspection and wet waste handling, carrier connections and actual loading/method/design approval",
     "Internal fill product/method approval, other/partial fills, external overbreak grouting, pressure/buoyancy/restraints, preparation/curing and water quality/allocation approval",
     "Consolidated delivery manifests, fittings/consumables freight, equipment delivery/return and extra soil sorting/site handling; actual certified mass, routes, receiving permission and prices remain project facts",
     "Full-owner reconciliation of explicit purchase exceptions with formula-reference balances",
@@ -889,6 +1068,8 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_PARAMETERS_R1: readonly AutomaticPa
   ...ROAD_CROSSING_SLEEVES_COMPACTION_WATER_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_MECHANICAL_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_PARAMETERS_R1,
+  ...ROAD_CROSSING_SLEEVES_COATING_PARAMETERS_R1,
+  ...ROAD_CROSSING_SLEEVES_COATING_CONSUMABLE_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_PREPARATION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_INSPECTION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_FREIGHT_PARAMETERS_R1,
@@ -909,6 +1090,8 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[
   ...ROAD_CROSSING_SLEEVES_COMPACTION_WATER_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_ROWS_R1,
+  ...ROAD_CROSSING_SLEEVES_COATING_ROWS_R1,
+  ...ROAD_CROSSING_SLEEVES_COATING_CONSUMABLE_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_INSPECTION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1,
@@ -932,9 +1115,10 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
     remaining: ["Подтверждение технологии слоёв и уплотнения основания", "Фактические качество и отдельное распределение воды", "Применимое основание котлованов"] },
   { stageId: "casing", titleRu: "Футляр и стыки", rows: [...ROAD_CROSSING_SLEEVES_CASING_MATERIAL_ROWS_R1, ...ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_ROWS_R1,
+    ...ROAD_CROSSING_SLEEVES_COATING_ROWS_R1, ...ROAD_CROSSING_SLEEVES_COATING_CONSUMABLE_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_INSPECTION_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1.filter(row => /^rcs:mechanical:casing_/u.test(row.rowId))],
-    remaining: ["Подтверждение технологии подготовки и другие/повторно используемые частичные расходники", "Другие методы контроля, фактические дефекты, ремонт и повторный контроль", "Применимое восстановление защитного покрытия", "Подтверждённая схема подъёма, фактическая несущая способность и направляющие при загрузке"] },
+    remaining: ["Подтверждение технологии подготовки и другие/повторно используемые частичные расходники", "Другие методы контроля, фактические дефекты, ремонт и повторный контроль", "Приёмка фактического покрытия, другие покрытия и несколько/частичные/общие замесы, отходы и исправление дефектов", "Подтверждённая схема подъёма, фактическая несущая способность и направляющие при загрузке"] },
   { stageId: "carrier_and_supports", titleRu: "Рабочая труба, опоры и концевые узлы", rows: [...ROAD_CROSSING_SLEEVES_SPACER_GEOMETRY_ROWS_R1, ...ROAD_CROSSING_SLEEVES_PROCUREMENT_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_CARRIER_ROWS_R1, ...ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1.filter(row => !/^rcs:mechanical:casing_/u.test(row.rowId))],
     remaining: ["Подтверждение рабочей трубы, иной поставки и совместимой технологии монтажа", "Соединители и соединения рабочей трубы", "Подтверждённые удерживающие и концевые конструкции"] },
