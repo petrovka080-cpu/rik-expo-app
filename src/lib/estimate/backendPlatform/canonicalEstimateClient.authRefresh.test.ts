@@ -1,7 +1,9 @@
 import {
   getCanonicalEstimateRevision,
+  getCanonicalEstimateParameterSessionSnapshot,
   resetCanonicalEstimateRuntimeCompatibilityForTests,
 } from "./canonicalEstimateClient";
+import { createConsumerEstimateHydrationTrace, type ConsumerEstimateHydrationPhaseEvent } from "../../consumerRequests/consumerEstimateHydrationTrace";
 
 const mockGetSession = jest.fn();
 const mockRefreshSession = jest.fn();
@@ -251,5 +253,94 @@ describe("canonicalEstimateClient access-token refresh", () => {
     });
     expect(mockFetchWithRequestTimeout).not.toHaveBeenCalled();
     expect(mockRefreshSession).not.toHaveBeenCalled();
+  });
+
+  it("separates snapshot auth, exact runtime compatibility, HTTP and decoding without recording contents", async () => {
+    let time = 0;
+    const events: ConsumerEstimateHydrationPhaseEvent[] = [];
+    const trace = createConsumerEstimateHydrationTrace({ clock: () => time, report: event => { events.push(event); } });
+    Object.assign(process.env, {
+      EXPO_PUBLIC_CANONICAL_ESTIMATE_REQUIRE_RUNTIME_COMPATIBILITY: "true",
+      EXPO_PUBLIC_CANONICAL_ESTIMATE_DEFINITION_RELEASE_ID: "definition-release",
+      EXPO_PUBLIC_CANONICAL_ESTIMATE_SEARCH_RELEASE_ID: "search-release",
+      EXPO_PUBLIC_BUILD_COMMIT: "source-head",
+      EXPO_PUBLIC_RELEASE_SOURCE_TREE_HASH: "source-tree",
+      EXPO_PUBLIC_RELEASE_PRODUCT_SOURCE_HASH: "product-tree",
+      EXPO_PUBLIC_RELEASE_JS_BUNDLE_FINGERPRINT: "bundle-fingerprint",
+      EXPO_PUBLIC_CANONICAL_ESTIMATE_CAPABILITY_ID: "capability-id",
+    });
+    mockGetSession.mockImplementation(async () => {
+      time += 7;
+      return { data: { session: { access_token: "private-auth", expires_at: Math.floor(Date.now() / 1000) + 60 } }, error: null };
+    });
+    const payload = { revision: { revisionId, parameters: { privateBusiness: "private-specification" } }, catalog: {}, parent: null };
+    const response = new Response(JSON.stringify(payload), { status: 200 });
+    const json = response.json.bind(response);
+    response.json = async () => { time += 19; return json(); };
+    mockFetchWithRequestTimeout
+      .mockImplementationOnce(async () => {
+        time += 41;
+        return new Response(JSON.stringify({ runtimeRole: "FULL_CANONICAL_ESTIMATE_BACKEND", authMode: "STRICT_SESSION_INTROSPECTION",
+          activeCompileJobCount: 0, capability: { status: "ACTIVE", ttlSeconds: 7200 }, compatibilityTuple: {
+            definitionReleaseId: "definition-release", searchReleaseId: "search-release", sourceHead: "source-head", sourceTree: "source-tree",
+            frontendSourceTreeHash: "source-tree", frontendProductSourceHash: "product-tree", frontendJsBundleFingerprint: "bundle-fingerprint", capabilityId: "capability-id",
+          } }), { status: 200 });
+      })
+      .mockImplementationOnce(async () => { time += 13; return response; });
+    const signal = new AbortController().signal;
+    await expect(getCanonicalEstimateParameterSessionSnapshot(revisionId, signal, trace)).resolves.toEqual(payload);
+    expect(mockGetSession).toHaveBeenCalledTimes(1);
+    expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(2);
+    expect(mockFetchWithRequestTimeout.mock.calls[1]?.[1]).toMatchObject({ method: "GET", signal });
+    expect(mockFetchWithRequestTimeout.mock.calls[1]?.[2]).toMatchObject({ requestClass: "ui_scope_load" });
+    expect(events.map(({ phase, durationMs, status }) => ({ phase, durationMs, status }))).toEqual([
+      { phase: "PARAMETER_TRANSPORT_AUTH", durationMs: 7, status: "completed" },
+      { phase: "PARAMETER_TRANSPORT_COMPATIBILITY", durationMs: 41, status: "completed" },
+      { phase: "PARAMETER_TRANSPORT_HTTP", durationMs: 13, status: "completed" },
+      { phase: "PARAMETER_TRANSPORT_DECODE", durationMs: 19, status: "completed" },
+    ]);
+    for (const event of events) expect(Object.keys(event).sort()).toEqual(["durationMs", "elapsedMs", "phase", "status", "trace"]);
+    expect(JSON.stringify(events)).not.toMatch(/private-|parameters|revisionId|source-head|11111111|Bearer/u);
+  });
+
+  it("tracing preserves the single 401 refresh/retry without retaining a token or response in events", async () => {
+    const events: ConsumerEstimateHydrationPhaseEvent[] = [];
+    const trace = createConsumerEstimateHydrationTrace({ report: event => { events.push(event); } });
+    mockGetSession.mockResolvedValue({ data: { session: { access_token: "private-initial", expires_at: Math.floor(Date.now() / 1000) + 60 } }, error: null });
+    mockRefreshSession.mockResolvedValue({ data: { session: { access_token: "private-refreshed" } }, error: null });
+    mockFetchWithRequestTimeout.mockResolvedValueOnce(new Response("private-401-body", { status: 401 })).mockResolvedValueOnce(successfulResponse());
+    await expect(getCanonicalEstimateParameterSessionSnapshot(revisionId, null, trace)).resolves.toEqual({ revisionId });
+    expect(mockRefreshSession).toHaveBeenCalledTimes(1);
+    expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(2);
+    expect(events.map(event => event.phase)).toEqual([
+      "PARAMETER_TRANSPORT_AUTH", "PARAMETER_TRANSPORT_COMPATIBILITY", "PARAMETER_TRANSPORT_HTTP",
+      "PARAMETER_TRANSPORT_AUTH", "PARAMETER_TRANSPORT_COMPATIBILITY", "PARAMETER_TRANSPORT_HTTP", "PARAMETER_TRANSPORT_DECODE",
+    ]);
+    expect(JSON.stringify(events)).not.toMatch(/private-|11111111|Bearer/u);
+  });
+
+  it("tracing preserves fail-closed compatibility and the original transport rejection", async () => {
+    const events: ConsumerEstimateHydrationPhaseEvent[] = [];
+    const trace = createConsumerEstimateHydrationTrace({ report: event => { events.push(event); } });
+    mockGetSession.mockResolvedValue({ data: { session: { access_token: "private-auth", expires_at: Math.floor(Date.now() / 1000) + 60 } }, error: null });
+    process.env.EXPO_PUBLIC_CANONICAL_ESTIMATE_REQUIRE_RUNTIME_COMPATIBILITY = "true";
+    await expect(getCanonicalEstimateParameterSessionSnapshot(revisionId, null, trace)).rejects.toMatchObject({ code: "RUNTIME_COMPATIBILITY_CONFIG_MISSING" });
+    expect(mockFetchWithRequestTimeout).not.toHaveBeenCalled();
+    expect(events.at(-1)).toMatchObject({ phase: "PARAMETER_TRANSPORT_COMPATIBILITY", status: "failed" });
+    delete process.env.EXPO_PUBLIC_CANONICAL_ESTIMATE_REQUIRE_RUNTIME_COMPATIBILITY;
+    const error = new Error("private-network-body");
+    mockFetchWithRequestTimeout.mockRejectedValue(error);
+    await expect(getCanonicalEstimateParameterSessionSnapshot(revisionId, null, trace)).rejects.toBe(error);
+    expect(events.at(-1)).toMatchObject({ phase: "PARAMETER_TRANSPORT_HTTP", status: "failed" });
+    expect(JSON.stringify(events)).not.toMatch(/private-|CONFIG_MISSING|11111111/u);
+  });
+
+  it("a failing diagnostic sink cannot change successful or malformed-response normalization", async () => {
+    const trace = createConsumerEstimateHydrationTrace({ report: () => { throw new Error("private-sink-error"); } });
+    mockGetSession.mockResolvedValue({ data: { session: { access_token: "private-auth", expires_at: Math.floor(Date.now() / 1000) + 60 } }, error: null });
+    mockFetchWithRequestTimeout.mockResolvedValueOnce(successfulResponse()).mockResolvedValueOnce(new Response("malformed", { status: 502 }));
+    await expect(getCanonicalEstimateParameterSessionSnapshot(revisionId, null, trace)).resolves.toEqual({ revisionId });
+    await expect(getCanonicalEstimateParameterSessionSnapshot(revisionId, null, trace)).rejects.toMatchObject({ code: "BACKEND_OPERATION_FAILED", httpStatus: 502 });
+    expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(2);
   });
 });

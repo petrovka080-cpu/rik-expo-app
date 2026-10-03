@@ -660,7 +660,7 @@ export async function loadConsumerCanonicalParameterSession(input: {
   const startedAt = Date.now();
   const hydrationTrace = createConsumerEstimateHydrationTrace();
   const { revision, catalog, parent } = await hydrationTrace.measureAsync("PARAMETER_SNAPSHOT_FETCH",
-    () => getCanonicalEstimateParameterSessionSnapshot(input.revisionId));
+    () => getCanonicalEstimateParameterSessionSnapshot(input.revisionId, undefined, hydrationTrace));
   if (catalog.releaseId !== revision.releaseId) {
     throw new CanonicalEstimateApiError("Параметры не открыты: версия каталога не совпадает со сметой.", {
       code: "REVISION_RELEASE_MISMATCH",

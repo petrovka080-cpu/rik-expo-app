@@ -1,5 +1,6 @@
 import { fetchWithRequestTimeout } from "../../requestTimeoutPolicy";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../../supabaseClient";
+import type { ConsumerEstimateHydrationTrace, ConsumerEstimateTransportPhase } from "../../consumerRequests/consumerEstimateHydrationTrace";
 import {
   CanonicalEstimateApiError,
   type CanonicalEstimateArtifactView,
@@ -185,9 +186,15 @@ async function invoke<T>(path: string, options: {
   body?: unknown;
   signal?: AbortSignal | null;
   requestClass?: "lightweight_lookup" | "ui_scope_load" | "mutation_request";
+  hydrationTrace?: ConsumerEstimateHydrationTrace;
 } = {}): Promise<T> {
   const method = options.method ?? "GET";
-  const execute = (token: string) => fetchWithRequestTimeout(
+  // Optional fixed-phase diagnostics for snapshot hydration only. No token,
+  // path, request/response body or error text enters the trace; transport,
+  // compatibility, cancellation and the single 401 retry remain unchanged.
+  const measureTransport = <Result>(phase: ConsumerEstimateTransportPhase, operation: () => Promise<Result>): Promise<Result> =>
+    options.hydrationTrace ? options.hydrationTrace.measureAsync(phase, operation) : operation();
+  const execute = (token: string) => measureTransport("PARAMETER_TRANSPORT_HTTP", () => fetchWithRequestTimeout(
     `${resolveFunctionUrl()}/${path.replace(/^\/+/, "")}`,
     {
       method,
@@ -208,18 +215,18 @@ async function invoke<T>(path: string, options: {
       surface: "canonical_estimate_backend",
       sourceKind: "canonical_estimate_edge_function",
     },
-  );
-  let token = await accessToken();
-  await ensureLocalDeveloperRuntimeCompatibility(token);
+  ));
+  let token = await measureTransport("PARAMETER_TRANSPORT_AUTH", () => accessToken());
+  await measureTransport("PARAMETER_TRANSPORT_COMPATIBILITY", () => ensureLocalDeveloperRuntimeCompatibility(token));
   let response = await execute(token);
   if (response.status === 401) {
-    token = await accessToken(true);
+    token = await measureTransport("PARAMETER_TRANSPORT_AUTH", () => accessToken(true));
     runtimeCompatibilityVerifiedAt = 0;
-    await ensureLocalDeveloperRuntimeCompatibility(token);
+    await measureTransport("PARAMETER_TRANSPORT_COMPATIBILITY", () => ensureLocalDeveloperRuntimeCompatibility(token));
     response = await execute(token);
   }
   let payload: unknown = null;
-  try { payload = await response.json(); } catch { /* normalized below */ }
+  try { payload = await measureTransport("PARAMETER_TRANSPORT_DECODE", () => response.json()); } catch { /* normalized below */ }
   if (!response.ok) {
     const envelope = (payload ?? {}) as ApiErrorEnvelope;
     throw new CanonicalEstimateApiError(
@@ -599,6 +606,7 @@ export function getCanonicalEstimateRevision(revisionId: string, signal?: AbortS
 export function getCanonicalEstimateParameterSessionSnapshot(
   revisionId: string,
   signal?: AbortSignal | null,
+  hydrationTrace?: ConsumerEstimateHydrationTrace,
 ) {
   return invoke<{
     apiVersion: string;
@@ -608,6 +616,7 @@ export function getCanonicalEstimateParameterSessionSnapshot(
   }>(`revisions/${encodeURIComponent(revisionId)}/parameter-session`, {
     signal,
     requestClass: "ui_scope_load",
+    hydrationTrace,
   });
 }
 

@@ -737,7 +737,7 @@ describe("P0 canonical parameter editor and professional PDF", () => {
     const runtime = readFileSync(resolve(process.cwd(), "scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts"), "utf8");
 
     expect(editor).toContain("getCanonicalEstimateCatalogItem(revision.catalogId, null, revision.releaseId)");
-    expect(editor).toContain("getCanonicalEstimateParameterSessionSnapshot(input.revisionId)");
+    expect(editor).toContain("getCanonicalEstimateParameterSessionSnapshot(input.revisionId, undefined, hydrationTrace)");
     expect(client).toContain("?releaseId=${encodeURIComponent(releaseId.trim())}");
     expect(client).toContain("/parameter-session`");
     expect(runtime).toContain('url.searchParams.get("releaseId") ?? TARGET_RELEASE_ID');

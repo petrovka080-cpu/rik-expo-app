@@ -12,7 +12,12 @@ export type ConsumerEstimatePresentationPhase =
   | "PRESENTATION_REVISION_DISPLAY"
   | "PRESENTATION_HISTORY_SUMMARY"
   | "PRESENTATION_BACKEND_BINDING";
-export type ConsumerEstimateHydrationPhase = ConsumerEstimatePresentationPhase
+export type ConsumerEstimateTransportPhase =
+  | "PARAMETER_TRANSPORT_AUTH"
+  | "PARAMETER_TRANSPORT_COMPATIBILITY"
+  | "PARAMETER_TRANSPORT_HTTP"
+  | "PARAMETER_TRANSPORT_DECODE";
+export type ConsumerEstimateHydrationPhase = ConsumerEstimatePresentationPhase | ConsumerEstimateTransportPhase
   | "DURABLE_LEGACY_COMPATIBILITY"
   | "DURABLE_QUEUE_WAIT"
   | "DURABLE_INDEX"
