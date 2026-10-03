@@ -125,6 +125,19 @@
       "independence": "Known bank/loose excavation remains calculable with unavailable fill/reuse data. Dependent balance/trips/receiving retain original geometry, actual state facts, suitability/allocation and route/receiver/cost boundaries even under manual paid quantities. Explicit zero reuse disables origin/conversion; zero excess disables truck/destination/receiving facts. Negative allocation is rejected rather than clamped",
       "open": "Material/technology/design/classification acceptance, mixed/slurry allocation, extra sorting/site handling, all other stage gaps and governed full-owner publication remain open"
     },
+    "completeWaterEquipmentMobilization": {
+      "module": "src/lib/estimate/v4/roadCrossingSleevesEquipmentMobilizationR1.ts",
+      "verification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
+      "editorVerification": "tests/requestEstimate/canonicalCrossingFreightParameterProjection.contract.test.ts",
+      "scope": "Whole original actual homogeneous complete pump kits including standby and one common complete passive filter kit. Dedicated inbound and return directions are separately documented; split parts, combined pickup/dropoff/shared loads or changed returned inventory need another actual manifest",
+      "quantity": "Original working+standby complete pump kit count, one original common filter kit, never calendar/operating hours, fuel/bag orders/pack surplus, number of pump working periods or casing sections. Idle-only zero water retains actual deployed equipment movement. All original full units return in this expressly bounded branch; no predicted losses or unconfirmed return fraction",
+      "resources": "Each actual full dedicated direction trip includes complete compatible transport/handling means, all personnel/energy/loading/unloading and transport-vehicle return. Handover to/from site storage is disjoint from actual kit installation/removal lifting; rental excludes freight. Inbound/return actual shipping state/mass/packing/route can differ. Confirmed other-party or no-movement directions create no own transport charge; source allocation remains mandatory",
+      "capacity": "floor(min(actual whole complete-unit placement capacity, route legal payload/certified full equipment shipping kg per unit with all parts/tare)); ceil(original complete units/capacity). Cannot carry one whole complete unit rejects before manual trips instead of splitting or substituting operating mass. No material/fuel purchase duplicated",
+      "integrity": "Original cargo count, complete kit/programme/BOM, actual direction/allocation/state/load/route/cost references survive manual trips. Unknown one return state's shipping mass leaves independently known inbound, other equipment, rental, fuel and civil work calculable; no derived trip/count question is added to user input",
+      "primarySource": "https://www.eaton.com/content/dam/eaton/products/filtration-solutions/filter-systems-and-strainers/filters-and-strainers/bag-filter-housing/documents/installation-and-operation-manuals/eaton-installation-operation-maintenance-manual-bag-filter-housing-us.pdf",
+      "sourceBoundary": "Manufacturer example identifies appropriate transport/lifting attachments. No actual route approval, vehicle, universal mass/load capacity, parts/payload, equipment loss, local legal limit or transport price is inferred",
+      "open": "Actual whole-load/design/condition/route acceptance, mobilization of other civil/installation/inspection/placing fleets, combined/shared/split loads or partial returns, extra packaging/protection/waste resources, prices, full-owner publication and actual user acceptance remain open"
+    },
     "filterBagWasteResources": {
       "module": "src/lib/estimate/v4/roadCrossingSleevesWaterTreatmentR1.ts",
       "verification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",

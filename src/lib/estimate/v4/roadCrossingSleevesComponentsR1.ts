@@ -10,6 +10,7 @@ import { ROAD_CROSSING_SLEEVES_CASING_MATERIAL_PARAMETERS_R1, ROAD_CROSSING_SLEE
   ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierSupplyModes, ROAD_CROSSING_SLEEVES_CARRIER_EXPRESSIONS_R1 as carrierQuantities } from "./roadCrossingSleevesCasingMaterialR1";
 import { compileFormulaGraph } from "../backendPlatform/formulaGraph";
 import { buildRoadCrossingSleevesWaterTreatmentResourcesR1, roadCrossingSleevesWaterTreatmentParameterId as waterTreatmentId } from "./roadCrossingSleevesWaterTreatmentR1";
+import { buildRoadCrossingSleevesEquipmentMobilizationR1 } from "./roadCrossingSleevesEquipmentMobilizationR1";
 import { ROAD_CROSSING_SLEEVES_BEDDING_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_BEDDING_ROWS_R1,
   ROAD_CROSSING_SLEEVES_BEDDING_APPLICABILITY_R1 } from "./roadCrossingSleevesBeddingMaterialR1";
 import { ROAD_CROSSING_SLEEVES_PIT_RETURN_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_PIT_RETURN_ROWS_R1,
@@ -25,6 +26,7 @@ export { ROAD_CROSSING_SLEEVES_WATER_TREATMENT_MODES_R1, ROAD_CROSSING_SLEEVES_W
   ROAD_CROSSING_SLEEVES_WATER_TREATMENT_BAG_BASIS_R1, ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_MODES_R1,
   ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_TRIP_BASIS_R1, ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_RECEIVING_MODES_R1,
   ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_RECEIVING_BASIS_R1 } from "./roadCrossingSleevesWaterTreatmentR1";
+export { ROAD_CROSSING_SLEEVES_EQUIPMENT_MOBILIZATION_MODES_R1 } from "./roadCrossingSleevesEquipmentMobilizationR1";
 
 /** Execution arithmetic is part of this assembly, not a separate estimator.
  * PJA describes separate pits and an advancing excavation/jacking system:
@@ -1103,6 +1105,18 @@ export const ROAD_CROSSING_SLEEVES_FREIGHT_MODES_R1 = Object.freeze({
   otherParty: "Доставку обеспечивает другая сторона без отдельной оплаты исполнителем",
 });
 export const ROAD_CROSSING_SLEEVES_FREIGHT_COST_BASIS_R1 = "Один полный отдельный рейс этого груза: транспорт, водитель, энергия, погрузка, выгрузка и возврат; без материала, монтажа, других грузов и повторной оплаты тех же ресурсов";
+const filterRentalForMobilization = ROAD_CROSSING_SLEEVES_WATER_TREATMENT_ROWS_R1.find(row => row.rowId === "rcs:water-treatment:rental_set_hours");
+if (!filterRentalForMobilization?.inclusion) throw new Error("RCS_COMPLETE_FILTER_RENTAL_SCOPE_MISSING");
+const equipmentMobilization = buildRoadCrossingSleevesEquipmentMobilizationR1([
+  { key: "water_pump_kits", title: "Полные гидравлические насосные комплекты с силовыми блоками и всем составом", quantityExpression: waterControlSets,
+    selected: waterControlSelected, designationId: waterControlId("kit_designation"),
+    facts: [...waterControlFacts, waterControlId("kit_product_reference"), ...waterControlKitMembers.map(member => waterControlId(`kit_${member.key}`))] },
+  { key: "water_filter_kit", title: "Один полный общий пассивный фильтровальный комплект со всем предусмотренным составом", quantityExpression: "1",
+    selected: filterRentalForMobilization.inclusion, designationId: waterTreatmentId("kit_designation"),
+    facts: (filterRentalForMobilization.inputParameterIds ?? []).filter(parameter => parameter !== waterControlId("calendar_hours")) },
+], ROAD_CROSSING_SLEEVES_FREIGHT_COST_BASIS_R1);
+export const ROAD_CROSSING_SLEEVES_EQUIPMENT_MOBILIZATION_PARAMETERS_R1 = equipmentMobilization.parameters;
+export const ROAD_CROSSING_SLEEVES_EQUIPMENT_MOBILIZATION_ROWS_R1 = equipmentMobilization.rows;
 type FreightCargo = Readonly<{ key: string; title: string; purchase: AutomaticRowSpec; stockId: string;
   unit: "piece" | "m3" | "kg" | "l"; sectionLengthId?: string; quantum?: string }>;
 function freightCargo(key: string, title: string, rows: readonly AutomaticRowSpec[], rowId: string,
@@ -1399,7 +1413,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENTS_SCOPE_R1 = Object.freeze({
     "Approved pit return-fill technology, soil suitability/classification, heterogeneous/slurry allocations and non-granular/other bedding technologies",
     "Clearance/site preparation, other survey layouts and actual control acceptance, applicable fencing/traffic measures, recovered markers/waste handling; joint repairs/reinspection and other NDT methods, coating actual acceptance, other coatings/multiple or partial/shared mixes, cured defects/reinspection and wet waste handling, PE carrier connection actual acceptance, other connections/layouts/testing/repairs/waste and actual loading/method/design approval",
     "Internal fill product/method approval, other/partial fills, external overbreak grouting, pressure/buoyancy/restraints, preparation/curing and water quality/allocation approval",
-    "Consolidated delivery manifests, fittings/consumables freight, equipment delivery/return and extra soil sorting/site handling; actual certified mass, routes, receiving permission and prices remain project facts",
+    "Consolidated delivery manifests, other fittings/consumables freight, delivery/return of other construction fleets and changed/split equipment loads, extra soil sorting/site handling; actual certified mass, routes, receiving permission and prices remain project facts",
     "Full-owner reconciliation of explicit purchase exceptions with formula-reference balances",
     "Actual product/layout/design acceptance and governed full-owner publication/readback/UI acceptance",
   ]),
@@ -1429,6 +1443,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_PARAMETERS_R1: readonly AutomaticPa
   ...ROAD_CROSSING_SLEEVES_PREPARATION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_INSPECTION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_FREIGHT_PARAMETERS_R1,
+  ...ROAD_CROSSING_SLEEVES_EQUIPMENT_MOBILIZATION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_SOIL_PARAMETERS_R1,
 ]);
 export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[] = Object.freeze([
@@ -1455,6 +1470,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[
   ...ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_INSPECTION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1,
+  ...ROAD_CROSSING_SLEEVES_EQUIPMENT_MOBILIZATION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_SOIL_ROWS_R1,
 ]);
 
@@ -1495,12 +1511,13 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
     ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => /^rcs:fill-execution:(?:pits|trench):/u.test(row.rowId))],
     remaining: ["Подтверждение пригодности и распределения повторно используемого грунта", "Послойные или другие материалы траншеи", "Подтверждение технологии укладки и уплотнения", "Фактические качество и отдельное распределение воды", "Разные партии грунта, пульпа и иные состояния"] },
   { stageId: "completion", titleRu: "Завершение перехода", rows: [...ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1,
+    ...ROAD_CROSSING_SLEEVES_EQUIPMENT_MOBILIZATION_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_WATER_TREATMENT_ROWS_R1.filter(row => /^rcs:water-treatment:(?:removal|waste):/u.test(row.rowId) || row.rowId === "rcs:water-treatment:bags:wet_used_count"),
     ...ROAD_CROSSING_SLEEVES_WATER_RECEIVING_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_WATER_CONTROL_ROWS_R1.filter(row => row.rowId.startsWith("rcs:water-control:removal:")),
     ...ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1.filter(row => row.rowId.startsWith("rcs:preparation:removal:")),
     ...ROAD_CROSSING_SLEEVES_SOIL_ROWS_R1.filter(row => row.costTreatment === "OWN_COST")],
-    remaining: ["Применимое восстановление территории и покрытия", "Доставка и возврат оборудования; объединённые грузы, комплектующие и расходники", "Фактический возврат пригодных колов и вывоз/приём отходов разбивки", "Испытания и завершение без подмены материалов документами"] },
+    remaining: ["Применимое восстановление территории и покрытия", "Доставка и возврат остальных механизмов; объединённые/разделённые грузы, иной возврат оборудования, другие комплектующие и расходники", "Фактический возврат пригодных колов и вывоз/приём отходов разбивки", "Испытания и завершение без подмены материалов документами"] },
 ].map(({ rows, ...stage }) => Object.freeze({ ...stage, ownResourceIds: Object.freeze(rows.map(row => row.rowId)), remaining: Object.freeze(stage.remaining) })));
 function assertUnique(ids: readonly string[], kind: string): void {
   const seen = new Set<string>();

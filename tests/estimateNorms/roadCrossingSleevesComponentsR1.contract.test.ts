@@ -26,7 +26,8 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_COMPONENT_P
   ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_MODES_R1 as waterWasteModes,
   ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_TRIP_BASIS_R1 as waterWasteTripBasis,
   ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_RECEIVING_MODES_R1 as waterWasteReceivingModes,
-  ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_RECEIVING_BASIS_R1 as waterWasteReceivingBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_RECEIVING_BASIS_R1 as waterWasteReceivingBasis,
+  ROAD_CROSSING_SLEEVES_EQUIPMENT_MOBILIZATION_MODES_R1 as equipmentMobilizationModes } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierModes, ROAD_CROSSING_SLEEVES_CARRIER_COST_BASIS_R1 as carrierBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1 as jointParameters, ROAD_CROSSING_SLEEVES_JOINT_COST_BASES_R1 as bases } from "../../src/lib/estimate/v4/roadCrossingSleevesJointResourcesR1";
@@ -43,6 +44,8 @@ const components = buildRoadCrossingSleevesComponentsR1({ source_title: "Owned i
 const definition = components.definition;
 // Synthetic actual-fact/price fixtures ONLY, never a published default or WPS approval.
 const fixture: Record<string, unknown> = {
+  ...Object.fromEntries(parameters.filter(parameter => parameter.id.startsWith("rcs_equipment_mobilization_") && /(?:_mode|_allocation_reference)$/u.test(parameter.id)).map(parameter => [parameter.id,
+    parameter.id.endsWith("_mode") ? equipmentMobilizationModes.otherParty : "TEST actual entire equipment direction provided by separate party with complete allocation/source, no executor cost or duplicate trip"])),
   rcs_water_control_mode: waterControlModes.otherParty, rcs_water_control_program_reference: "TEST actual separate party supplies all water control resources, no executor charge",
   rcs_carrier_connection_mode: connectionModes.otherParty, rcs_carrier_connection_program_reference: "TEST actual compatible carrier connections by another party, no duplicate executor charge",
   rcs_coating_mode: coatingModes.otherParty, rcs_coating_program_reference: "TEST actual compatible field coating resources provided by other party, no executor charge",
@@ -751,6 +754,69 @@ describe("actual rented hydraulic sump pumping and separate group fuel", () => {
       const result = await compile(input, { [filterRow("waste:haul_trip_count")]: { quantity: "2", provenance } });
       expect(result.rows.some(r => r.row_id === filterRow("waste:haul_trip_count"))).toBe(false);
       expect(result.preliminaryNeeds.find(need => need.row_id === filterRow("waste:haul_trip_count"))?.missing_parameter_ids).toContain(fact);
+    });
+  const equipment: Record<string, unknown> = { ...treatment,
+    ...Object.fromEntries(["water_pump_kits_inbound", "water_pump_kits_return", "water_filter_kit_inbound", "water_filter_kit_return"].flatMap((lane, i) => Object.entries({
+      mode: equipmentMobilizationModes.separate,
+      allocation_reference: "TEST actual exclusive full equipment direction/cargo/site storage handover and separate dedicated full trip; no combined pickup/delivery or other equipment/material cargo, no duplicate installation/lift/lease payment",
+      condition_and_load_reference: "TEST actual FULL homogeneous equipment packing/parts/tare/mass/dimensions/route/load/unload/secure plan; return actual drained/closed condition after disjoint removal; all full units returned, split/lost parts need another programme",
+      vehicle_designation: `TEST actual compatible full equipment vehicle and handling means ${lane}`,
+      shipping_kg_per_complete_unit: [200, 180, 100, 80][i], route_payload_kg: [500, 1000, 200, 100][i], max_complete_units_per_trip: [3, 1, 2, 1][i],
+      cost_basis: freightBasis,
+    }).map(([key, value]) => [`rcs_equipment_mobilization_${lane}_${key}`, value]))),
+  };
+  const equipmentRow = (lane: string, key: string) => `rcs:equipment-mobilization:${lane}:${key}`;
+  it("ships original working/standby full pump kits and one shared full filter once in each disjoint direction, independent of time/material packs", async () => {
+    const result = await compile(equipment); expect(result.preliminaryNeeds).toEqual([]);
+    expect(q(result, equipmentRow("water_pump_kits_inbound", "complete_unit_count"))).toBe(3);
+    expect(q(result, equipmentRow("water_pump_kits_inbound", "shipping_mass_kg"))).toBe(600);
+    expect(q(result, equipmentRow("water_pump_kits_inbound", "effective_complete_units_per_trip"))).toBe(2);
+    expect(q(result, equipmentRow("water_pump_kits_inbound", "trip_count"))).toBe(2);
+    expect(q(result, equipmentRow("water_pump_kits_return", "shipping_mass_kg"))).toBe(540);
+    expect(q(result, equipmentRow("water_pump_kits_return", "trip_count"))).toBe(3);
+    expect(q(result, equipmentRow("water_filter_kit_inbound", "complete_unit_count"))).toBe(1);
+    expect(q(result, equipmentRow("water_filter_kit_inbound", "trip_count"))).toBe(1);
+    expect(q(result, equipmentRow("water_filter_kit_return", "shipping_mass_kg"))).toBe(80);
+    expect(q(result, filterRow("rental_set_hours"))).toBe(24); expect(q(result, filterRow("bags:ordered_count"))).toBe(8);
+    expect(q(result, row("rental_set_hours"))).toBe(72); expect(q(result, row("fuel:ordered_l"))).toBe(20);
+    expect(result.rows.filter(r => r.row_id.startsWith("rcs:equipment-mobilization:") && r.included_in_estimate)).toHaveLength(4);
+    expect(components.stageMatrix.filter(stage => stage.ownResourceIds.includes(equipmentRow("water_pump_kits_inbound", "trip_count"))).map(stage => stage.stageId)).toEqual(["completion"]);
+    const longerPeriod = await compile({ ...equipment, rcs_water_control_calendar_hours: 48, rcs_water_treatment_bag_supplier_pack_count: 10 });
+    expect(q(longerPeriod, equipmentRow("water_pump_kits_inbound", "trip_count"))).toBe(2);
+    expect(q(longerPeriod, equipmentRow("water_filter_kit_return", "trip_count"))).toBe(1);
+  });
+  it("unknown return state/mass leaves original inbound equipment, rentals/materials and civil work calculable", async () => {
+    const input = { ...equipment }; delete input.rcs_equipment_mobilization_water_pump_kits_return_shipping_kg_per_complete_unit;
+    const result = await compile(input); expect(q(result, equipmentRow("water_pump_kits_inbound", "trip_count"))).toBe(2);
+    expect(q(result, equipmentRow("water_filter_kit_return", "trip_count"))).toBe(1); expect(q(result, row("fuel:ordered_l"))).toBe(20);
+    expect(q(result, "rcs:civil-execution:open_cut:equipment_hours")).toBe(21);
+    expect(result.preliminaryNeeds.every(need => need.missing_parameter_ids.includes("rcs_equipment_mobilization_water_pump_kits_return_shipping_kg_per_complete_unit"))).toBe(true);
+  });
+  it("actual idle-only zero water retains full equipment delivery/return but disables dependent bag/freight work", async () => {
+    const result = await compile({ ...equipment, rcs_water_control_working_duty_fraction: 0, rcs_water_control_required_average_inflow_m3_h: 0 });
+    expect(result.preliminaryNeeds).toEqual([]); expect(q(result, equipmentRow("water_pump_kits_inbound", "trip_count"))).toBe(2);
+    expect(q(result, equipmentRow("water_filter_kit_return", "trip_count"))).toBe(1);
+    expect(result.rows.some(r => r.row_id === filterRow("bags:ordered_count"))).toBe(false);
+  });
+  it("one direction provided by another party or confirmed without movement has no second trip charge and does not hide the other direction", async () => {
+    const input = { ...equipment, rcs_equipment_mobilization_water_pump_kits_inbound_mode: equipmentMobilizationModes.noMovement,
+      rcs_equipment_mobilization_water_pump_kits_return_mode: equipmentMobilizationModes.otherParty };
+    const result = await compile(input);
+    expect(q(result, equipmentRow("water_pump_kits_inbound", "complete_unit_count"))).toBe(3);
+    expect(result.rows.some(r => r.row_id === equipmentRow("water_pump_kits_inbound", "trip_count") || r.row_id === equipmentRow("water_pump_kits_return", "trip_count"))).toBe(false);
+    expect(q(result, equipmentRow("water_filter_kit_return", "trip_count"))).toBe(1);
+  });
+  it("rejects a vehicle that cannot carry one full complete equipment unit before a manual trip override", async () => {
+    await expect(compile({ ...equipment, rcs_equipment_mobilization_water_pump_kits_return_route_payload_kg: 179 }, {
+      [equipmentRow("water_pump_kits_return", "trip_count")]: { quantity: "3", provenance },
+    })).rejects.toMatchObject({ code: "FORMULA_OUTPUT_BOUNDS_FAILED" });
+  });
+  it.each(["rcs_water_control_working_set_count", "rcs_water_control_standby_set_count", "rcs_water_control_program_reference", "rcs_water_control_kit_product_reference", "rcs_water_control_kit_coupling_count", "rcs_equipment_mobilization_water_pump_kits_inbound_allocation_reference", "rcs_equipment_mobilization_water_pump_kits_inbound_condition_and_load_reference", "rcs_equipment_mobilization_water_pump_kits_inbound_cost_basis"])(
+    "manual equipment trip retains original full cargo/kit/allocation/route/cost gate %s", async fact => {
+      const input = { ...equipment }; delete input[fact];
+      const result = await compile(input, { [equipmentRow("water_pump_kits_inbound", "trip_count")]: { quantity: "2", provenance } });
+      expect(result.rows.some(r => r.row_id === equipmentRow("water_pump_kits_inbound", "trip_count"))).toBe(false);
+      expect(result.preliminaryNeeds.find(need => need.row_id === equipmentRow("water_pump_kits_inbound", "trip_count"))?.missing_parameter_ids).toContain(fact);
     });
 });
 

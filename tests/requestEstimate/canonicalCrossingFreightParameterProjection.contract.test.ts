@@ -19,7 +19,8 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_FREIGHT_MOD
   ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_MODES_R1 as waterWasteModes,
   ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_TRIP_BASIS_R1 as waterWasteTripBasis,
   ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_RECEIVING_MODES_R1 as waterWasteReceivingModes,
-  ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_RECEIVING_BASIS_R1 as waterWasteReceivingBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_RECEIVING_BASIS_R1 as waterWasteReceivingBasis,
+  ROAD_CROSSING_SLEEVES_EQUIPMENT_MOBILIZATION_MODES_R1 as equipmentMobilizationModes } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_TRENCH_FILL_MODES_R1 as fillModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
 import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierSupplyModes } from "../../src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1";
@@ -352,6 +353,34 @@ describe("actual pump deployment and fuel facts through the common editor", () =
     const idle = session({ ...waste, rcs_water_control_working_duty_fraction: 0 });
     expect(idle.parameters.some(p => p.parameterId === "rcs_water_treatment_waste_receiver_reference")).toBe(false);
     expect(idle.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_water_treatment_waste_receiver_reference")).toMatchObject({ value: waste.rcs_water_treatment_waste_receiver_reference });
+  });
+  it("shows original equipment delivery/return route and complete-unit capacity facts editable without asking for derived trips or equipment counts", () => {
+    const equipment = { ...treatment,
+      rcs_equipment_mobilization_water_pump_kits_inbound_mode: equipmentMobilizationModes.separate,
+      rcs_equipment_mobilization_water_pump_kits_inbound_allocation_reference: "TEST full actual exclusive original complete kits and this inbound direction only, no other cargos/return/setup charge",
+      rcs_equipment_mobilization_water_pump_kits_inbound_condition_and_load_reference: "TEST actual full kit/parts/packing/condition/route/wholeunit certified loading/handling plan",
+      rcs_equipment_mobilization_water_pump_kits_inbound_vehicle_designation: "TEST actual compatible full transport/handling service",
+      rcs_equipment_mobilization_water_pump_kits_inbound_shipping_kg_per_complete_unit: 200,
+      rcs_equipment_mobilization_water_pump_kits_inbound_route_payload_kg: 500,
+      rcs_equipment_mobilization_water_pump_kits_inbound_max_complete_units_per_trip: 3,
+      rcs_equipment_mobilization_water_pump_kits_inbound_cost_basis: basis,
+      rcs_equipment_mobilization_water_filter_kit_return_mode: equipmentMobilizationModes.separate,
+      rcs_equipment_mobilization_water_filter_kit_return_allocation_reference: "TEST original one common filter return after removal, actual different drained condition, exclusively bounded full separate trip",
+      rcs_equipment_mobilization_water_filter_kit_return_condition_and_load_reference: "TEST actual full filter parts/packing/drain/return route and load plan",
+      rcs_equipment_mobilization_water_filter_kit_return_shipping_kg_per_complete_unit: 80,
+    };
+    const visible = cards(equipment);
+    for (const [key, value] of Object.entries(equipment).filter(([key]) => key.startsWith("rcs_equipment_mobilization_"))) {
+      expect(visible.find(c => c.key === key)).toMatchObject({ value, editable: true, missing: false });
+      expect(visible.find(c => c.key === key)?.guideShortRu).toBeTruthy();
+    }
+    expect(visible.find(c => c.key === "rcs_equipment_mobilization_water_pump_kits_inbound_shipping_kg_per_complete_unit")?.unitRu).toBe("кг/шт.");
+    expect(catalog.parameterSchema.some(p => /equipment_mobilization.*(?:trip_count|complete_unit_count|shipping_mass)/u.test(p.parameterId))).toBe(false);
+    const noFilter = session({ ...equipment, rcs_water_treatment_mode: waterTreatmentModes.notRequired });
+    expect(noFilter.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_equipment_mobilization_water_filter_kit_return_shipping_kg_per_complete_unit")).toMatchObject({ value: 80 });
+    const onSite = session({ ...equipment, rcs_equipment_mobilization_water_pump_kits_inbound_mode: equipmentMobilizationModes.noMovement });
+    expect(onSite.parameters.find(p => p.parameterId === "rcs_equipment_mobilization_water_pump_kits_inbound_allocation_reference")).toBeDefined();
+    expect(onSite.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_equipment_mobilization_water_pump_kits_inbound_shipping_kg_per_complete_unit")).toMatchObject({ value: 200 });
   });
 });
 
