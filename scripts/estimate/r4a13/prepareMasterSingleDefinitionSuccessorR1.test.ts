@@ -30,6 +30,33 @@ describe("master publisher calculation consumers without DB publication", () => 
         { row_id: "calculated", formula_id: "volume", resource_graph: {}, inclusion_ast: {} }],
     }).resourceConsumers).toEqual({ fallback: ["existing"], inferred: ["calculated"] });
   });
+  it("serializes each needed resource graph once across many fields, without losing nested source/branch consumers", () => {
+    const graphReads: number[] = [], inclusionReads: number[] = [];
+    const parameters = Array.from({ length: 30 }, (_, index) => ({ parameter_id: `actual_${index}` }));
+    const resources = Array.from({ length: 12 }, (_, index) => ({ row_id: `actual-row-${index}`, formula_id: "not-consumed-formula",
+      resource_graph: { toJSON: () => { graphReads.push(index); return { deeply: { nested: { inputParameterIds: [`actual_${index}`] } } }; } },
+      inclusion_ast: { toJSON: () => { inclusionReads.push(index); return { kind: "equals", parameterId: `actual_${index + 12}`, value: "chosen" }; } },
+    }));
+    const result = buildMasterParameterCalculationConsumers({ parameters, formulas: [], resources });
+    expect(graphReads).toHaveLength(resources.length); expect(inclusionReads).toHaveLength(resources.length);
+    for (let index = 0; index < 12; index += 1) {
+      expect(result.resourceConsumers[`actual_${index}`]).toEqual([`actual-row-${index}`]);
+      expect(result.resourceConsumers[`actual_${index + 12}`]).toEqual([`actual-row-${index}`]);
+    }
+    expect(result.resourceConsumers.actual_29).toEqual([]);
+  });
+  it("preserves formula short-circuiting and rereads changed definitions without a retained global serialization cache", () => {
+    const forbidden = { toJSON: () => { throw new Error("Formula ownership must not serialize an unused branch"); } };
+    expect(buildMasterParameterCalculationConsumers({ parameters: [{ parameter_id: "quantity" }],
+      formulas: [{ formula_id: "f", input_parameter_ids: ["quantity"] }],
+      resources: [{ row_id: "r", formula_id: "f", resource_graph: forbidden, inclusion_ast: forbidden }],
+    }).resourceConsumers).toEqual({ quantity: ["r"] });
+    const resource = { row_id: "r", formula_id: "none", resource_graph: { inputParameterIds: ["first"] }, inclusion_ast: {} };
+    const input = { parameters: ["first", "next"].map(parameter_id => ({ parameter_id })), formulas: [], resources: [resource] };
+    expect(buildMasterParameterCalculationConsumers(input).resourceConsumers).toEqual({ first: ["r"], next: [] });
+    resource.resource_graph.inputParameterIds = ["next"];
+    expect(buildMasterParameterCalculationConsumers(input).resourceConsumers).toEqual({ first: [], next: ["r"] });
+  });
 });
 
 const formulas = [{ formula_id: "formula:roller-hours" }];
