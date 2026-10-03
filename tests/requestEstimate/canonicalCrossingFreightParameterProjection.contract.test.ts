@@ -22,6 +22,8 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_FREIGHT_MOD
   ROAD_CROSSING_SLEEVES_WATER_TREATMENT_WASTE_RECEIVING_BASIS_R1 as waterWasteReceivingBasis,
   ROAD_CROSSING_SLEEVES_EQUIPMENT_MOBILIZATION_MODES_R1 as equipmentMobilizationModes } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
+import { ROAD_CROSSING_SLEEVES_SHORING_MODES_R1 as shoringModes, ROAD_CROSSING_SLEEVES_SHORING_RENTAL_BASIS_R1 as shoringRentalBasis,
+  ROAD_CROSSING_SLEEVES_SHORING_WORK_BASES_R1 as shoringWorkBases } from "../../src/lib/estimate/v4/roadCrossingSleevesShoringR1";
 import { ROAD_CROSSING_SLEEVES_TRENCH_FILL_MODES_R1 as fillModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
 import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierSupplyModes } from "../../src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1";
 import { buildConsumerCanonicalPrecompileParameterSession } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
@@ -62,6 +64,44 @@ const fixture: Record<string, CanonicalEstimateParameterInputValue> = {
 };
 const session = (parameters = fixture, missingParameterIds: string[] = []) => buildConsumerCanonicalPrecompileParameterSession({
   catalog, draftId: "owned-freight-editor", parameters, missingParameterIds, userExplicitParameterIds: Object.keys(parameters), textExtractedParameterIds: [],
+});
+
+describe("actual full shoring programme through the common publisher and editable parameter session", () => {
+  const shoring: Record<string, CanonicalEstimateParameterInputValue> = { ...fixture, rcs_civil_installation_method: methods.openCut,
+    rcs_shoring_trench_mode: shoringModes.completeRental, rcs_shoring_trench_program_reference: "TEST actual source-bounded whole programme/allocation",
+    rcs_shoring_trench_kit_designation: "TEST full compatible kit", rcs_shoring_trench_kit_product_reference: "TEST actual complete passport/BOM",
+    rcs_shoring_trench_complete_kit_count: 2, rcs_shoring_trench_calendar_hours: 24, rcs_shoring_trench_placement_cycle_count: 5,
+    rcs_shoring_trench_rental_cost_basis: shoringRentalBasis, rcs_shoring_trench_kit_top_panels_per_complete_kit: 0,
+    rcs_shoring_trench_geometry_and_load_reference: "TEST actual dimensional/structural/method proof, not outside excavation inferred from useful width",
+    rcs_shoring_trench_installed_outer_width_m: 1.4, rcs_shoring_trench_usable_width_m: 1,
+    rcs_shoring_trench_installation_crew_h_per_unit: 2, rcs_shoring_trench_installation_crew_cost_basis: shoringWorkBases.crew,
+    rcs_shoring_trench_monitoring_equipment_h_per_unit: 0, rcs_shoring_trench_monitoring_equipment_cost_basis: shoringWorkBases.equipment,
+  };
+  it("shows actual kit/programme/geometry/BOM/rates with filled editable values, source guides and correct units", () => {
+    for (const [key, value] of Object.entries(shoring).filter(([key]) => key.startsWith("rcs_shoring_"))) {
+      expect(cards(shoring).find(c => c.key === key)).toMatchObject({ value, editable: true, missing: false });
+      expect(cards(shoring).find(c => c.key === key)?.guideShortRu).toBeTruthy();
+    }
+    expect(cards(shoring).find(c => c.key === "rcs_shoring_trench_installation_crew_h_per_unit")?.unitRu).toBe("чел.-ч/шт.");
+    expect(cards(shoring).find(c => c.key === "rcs_shoring_trench_calendar_hours")?.unitRu).toBe("ч");
+    expect(catalog.parameterSchema.some(p => /shoring.*(?:rental_set_hours|trip_count|height_margin|remaining_m3)/u.test(p.parameterId))).toBe(false);
+  });
+  it("retains a missing actual kit count as an editable original fact without deriving it from excavation volume", () => {
+    const input = { ...shoring }; delete input.rcs_shoring_trench_complete_kit_count;
+    expect(cards(input).find(c => c.key === "rcs_shoring_trench_complete_kit_count")).toMatchObject({ value: null, missing: true, editable: true });
+    expect(session(input, ["rcs_shoring_trench_complete_kit_count"]).blockingMissingParameterIds).toContain("rcs_shoring_trench_complete_kit_count");
+  });
+  it("switches method and technology using real conditions while retaining earlier inactive values for reopening", () => {
+    const pits = session({ ...shoring, rcs_civil_installation_method: methods.pipeJacking });
+    expect(pits.parameters.some(p => p.parameterId.startsWith("rcs_shoring_trench_"))).toBe(false);
+    expect(pits.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_shoring_trench_complete_kit_count")).toMatchObject({ value: 2 });
+    expect(pits.parameters.find(p => p.parameterId === "rcs_shoring_thrust_mode")).toBeDefined();
+    const none = session({ ...shoring, rcs_shoring_trench_mode: shoringModes.notRequired });
+    expect(none.parameters.find(p => p.parameterId === "rcs_shoring_trench_program_reference")).toBeDefined();
+    expect(none.parameters.some(p => p.parameterId === "rcs_shoring_trench_calendar_hours")).toBe(false);
+    expect(none.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_shoring_trench_calendar_hours")).toMatchObject({ value: 24 });
+    expect(definition.runtimeInput).toEqual({});
+  });
 });
 
 describe("actual soil-state facts through the same canonical publisher/editor", () => {

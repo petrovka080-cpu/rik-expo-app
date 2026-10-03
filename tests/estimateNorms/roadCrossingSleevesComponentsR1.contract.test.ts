@@ -30,6 +30,8 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_COMPONENT_P
   ROAD_CROSSING_SLEEVES_EQUIPMENT_MOBILIZATION_MODES_R1 as equipmentMobilizationModes } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierModes, ROAD_CROSSING_SLEEVES_CARRIER_COST_BASIS_R1 as carrierBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
+import { ROAD_CROSSING_SLEEVES_SHORING_MODES_R1 as shoringModes, ROAD_CROSSING_SLEEVES_SHORING_RENTAL_BASIS_R1 as shoringRentalBasis,
+  ROAD_CROSSING_SLEEVES_SHORING_WORK_BASES_R1 as shoringWorkBases } from "../../src/lib/estimate/v4/roadCrossingSleevesShoringR1";
 import { ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1 as jointParameters, ROAD_CROSSING_SLEEVES_JOINT_COST_BASES_R1 as bases } from "../../src/lib/estimate/v4/roadCrossingSleevesJointResourcesR1";
 import { ROAD_CROSSING_SLEEVES_PIT_FILL_MODES_R1 as fillModes,
   ROAD_CROSSING_SLEEVES_TRENCH_FILL_MODES_R1 as trenchModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
@@ -44,6 +46,10 @@ const components = buildRoadCrossingSleevesComponentsR1({ source_title: "Owned i
 const definition = components.definition;
 // Synthetic actual-fact/price fixtures ONLY, never a published default or WPS approval.
 const fixture: Record<string, unknown> = {
+  ...Object.fromEntries(["trench", "thrust", "reception"].flatMap(key => [
+    [`rcs_shoring_${key}_mode`, shoringModes.otherParty],
+    [`rcs_shoring_${key}_program_reference`, "TEST actual applicable complete shoring resources supplied separately, no executor charge"],
+  ])),
   ...Object.fromEntries(parameters.filter(parameter => parameter.id.startsWith("rcs_equipment_mobilization_") && /(?:_mode|_allocation_reference)$/u.test(parameter.id)).map(parameter => [parameter.id,
     parameter.id.endsWith("_mode") ? equipmentMobilizationModes.otherParty : "TEST actual entire equipment direction provided by separate party with complete allocation/source, no executor cost or duplicate trip"])),
   rcs_water_control_mode: waterControlModes.otherParty, rcs_water_control_program_reference: "TEST actual separate party supplies all water control resources, no executor charge",
@@ -143,6 +149,114 @@ function compile(submittedParameters: Record<string, unknown> = fixture, rowOver
   });
 }
 const q = (result: Awaited<ReturnType<typeof compile>>, id: string) => Number(result.rows.find(row => row.row_id === id)?.quantity);
+
+describe("actual full temporary shoring kits, disjoint programme resources and mobilisation", () => {
+  const p = (key: string) => `rcs_shoring_trench_${key}`;
+  const row = (key: string) => `rcs:shoring:trench:${key}`;
+  const selected: Record<string, unknown> = { ...fixture,
+    ...Object.fromEntries(Object.entries({ mode: shoringModes.completeRental,
+      program_reference: "TEST actual approved two identical kits, five complete placement/extraction cycles; separate site operations, no excavation/fill/reaction overlap",
+      kit_designation: "TEST full compatible kit", kit_product_reference: "TEST complete actual BOM, original kit passports, all parts and removal/return",
+      complete_kit_count: 2, calendar_hours: 24, placement_cycle_count: 5, rental_cost_basis: shoringRentalBasis,
+      kit_base_panels_per_complete_kit: 2, kit_top_panels_per_complete_kit: 0, kit_struts_frames_per_complete_kit: 2,
+      kit_extensions_per_complete_kit: 0, kit_connectors_per_complete_kit: 0, kit_fastener_sets_per_complete_kit: 8, kit_special_tackle_per_complete_kit: 1,
+      geometry_and_load_reference: "TEST actual permissible assembly/load/design/method; outside excavation distinct from usable working dimensions",
+      installed_outer_length_m: 4, installed_outer_width_m: 1.4, installed_height_m: 2.2, required_projection_m: 0.1,
+      usable_width_m: 1, usable_length_m: 3.2, required_usable_width_m: 0.8, required_usable_length_m: 3,
+    }).map(([key, value]) => [p(key), value])),
+    ...Object.fromEntries(["assembly", "installation", "monitoring", "extraction", "disassembly"].flatMap((key, index) => Object.entries({
+      method_reference: "TEST complete separate operation and actual compatible load/handling/sequence; no second earthwork/fill/transport",
+      crew_designation: "TEST all operation personnel", crew_h_per_unit: [3, 2, 0.25, 1.2, 0.5][index], crew_cost_basis: shoringWorkBases.crew,
+      equipment_designation: "TEST compatible equipment with energy without crew", equipment_h_per_unit: [0.5, 1.5, 0, 0.75, 0][index], equipment_cost_basis: shoringWorkBases.equipment,
+    }).map(([suffix, value]) => [p(`${key}_${suffix}`), value]))),
+    ...Object.fromEntries(["inbound", "return"].flatMap((direction, index) => Object.entries({
+      mode: equipmentMobilizationModes.separate, allocation_reference: "TEST dedicated complete kits actual direction/site/route, no double empty return",
+      condition_and_load_reference: "TEST original full homogeneous BOM with actual condition/packing/load masses and route",
+      vehicle_designation: "TEST compatible complete hauling/handling means", shipping_kg_per_complete_unit: [500, 480][index],
+      route_payload_kg: 900, max_complete_units_per_trip: 3, cost_basis: freightBasis,
+    }).map(([key, value]) => [`rcs_equipment_mobilization_shoring_trench_kits_${direction}_${key}`, value]))),
+  };
+  it("owns all calendar rent, initial assembly, actual placement/extraction, whole-group monitoring and original disassembly separately", async () => {
+    const result = await compile(selected); expect(result.preliminaryNeeds).toEqual([]);
+    expect(q(result, row("rental_set_hours"))).toBe(48);
+    expect(q(result, row("assembly:crew_hours"))).toBe(6); expect(q(result, row("assembly:equipment_hours"))).toBe(1);
+    expect(q(result, row("installation:crew_hours"))).toBe(10); expect(q(result, row("installation:equipment_hours"))).toBe(7.5);
+    expect(q(result, row("monitoring:crew_hours"))).toBe(6); expect(q(result, row("monitoring:equipment_hours"))).toBe(0);
+    expect(q(result, row("extraction:crew_hours"))).toBe(6); expect(q(result, row("extraction:equipment_hours"))).toBe(3.75);
+    expect(q(result, row("disassembly:crew_hours"))).toBe(1); expect(q(result, row("disassembly:equipment_hours"))).toBe(0);
+    const own = result.rows.filter(r => r.row_id.startsWith("rcs:shoring:") && r.included_in_estimate);
+    expect(own).toHaveLength(11); expect(own.every(r => r.included_in_procurement)).toBe(true);
+    expect(components.scope).toMatchObject({ fullOwner: false, engineeringAccepted: false, readyForPublication: false });
+  });
+  it("lists actual complete BOM quantities in rent once, without treating included hardware as new purchases or permanent pit displacement", async () => {
+    const result = await compile(selected);
+    expect(q(result, row("included:base_panels"))).toBe(4); expect(q(result, row("included:fastener_sets"))).toBe(16);
+    expect(q(result, row("included:top_panels"))).toBe(0);
+    expect(result.rows.filter(r => r.row_id.includes(":included:")).every(r => !r.included_in_estimate && !r.included_in_procurement)).toBe(true);
+    const manual = await compile(selected, { [row("included:base_panels")]: { quantity: "999", unitPrice: "100", provenance } });
+    expect(manual.rows.find(r => r.row_id === row("included:base_panels"))).toMatchObject({ included_in_estimate: false, included_in_procurement: false });
+    expect(q(manual, row("rental_set_hours"))).toBe(48); expect(manual.totals.amount).toBe("0");
+    expect(result.rows.some(r => r.row_id.startsWith("rcs:shoring:thrust:") || r.row_id.startsWith("rcs:shoring:reception:"))).toBe(false);
+    const pits = await compile({ ...fixture, rcs_civil_installation_method: methods.pipeJacking,
+      ...Object.fromEntries(Object.entries(selected).filter(([key]) => key.startsWith("rcs_shoring_trench_")).map(([key, value]) => [key.replace("_trench_", "_thrust_"), value])),
+      rcs_shoring_thrust_installed_height_m: 3.2,
+    });
+    expect(q(pits, "rcs:shoring:thrust:rental_set_hours")).toBe(48);
+    expect(q(pits, "rcs:pit-return:total_remaining_space_m3")).toBe(83);
+  });
+  it("keeps excavation dimensions and material supply packs from inflating actual kits, handling cycles or rent", async () => {
+    const result = await compile({ ...selected, rcs_crossing_length_m: 70, rcs_open_cut_excavation_depth_m: 1.8,
+      rcs_supplier_bundle_section_count: 100, rcs_retained_spare_section_count: 20 });
+    expect(q(result, row("rental_set_hours"))).toBe(48); expect(q(result, row("installation:crew_hours"))).toBe(10);
+    expect(q(result, row("monitoring:crew_hours"))).toBe(6); expect(q(result, row("disassembly:crew_hours"))).toBe(1);
+    expect(q(result, "rcs:equipment-mobilization:shoring_trench_kits_inbound:complete_unit_count")).toBe(2);
+  });
+  it("ships and returns original full kits, not multiplied rent hours or placement cycles, with different actual direction masses", async () => {
+    const result = await compile(selected);
+    expect(q(result, "rcs:equipment-mobilization:shoring_trench_kits_inbound:shipping_mass_kg")).toBe(1000);
+    expect(q(result, "rcs:equipment-mobilization:shoring_trench_kits_inbound:trip_count")).toBe(2);
+    expect(q(result, "rcs:equipment-mobilization:shoring_trench_kits_return:shipping_mass_kg")).toBe(960);
+    expect(q(result, "rcs:equipment-mobilization:shoring_trench_kits_return:trip_count")).toBe(2);
+  });
+  it("localises an unknown excavation depth to positioning and removal, retaining known rent, assembly, transport, casing and welding", async () => {
+    const input = { ...selected }; delete input.rcs_open_cut_excavation_depth_m;
+    const result = await compile(input, { [row("installation:crew_hours")]: { quantity: "999", provenance } });
+    expect(result.preliminaryNeeds.find(n => n.row_id === row("installation:crew_hours"))?.missing_parameter_ids).toContain("rcs_open_cut_excavation_depth_m");
+    expect(result.preliminaryNeeds.find(n => n.row_id === row("extraction:equipment_hours"))?.missing_parameter_ids).toContain("rcs_open_cut_excavation_depth_m");
+    expect(q(result, row("rental_set_hours"))).toBe(48); expect(q(result, row("assembly:crew_hours"))).toBe(6);
+    expect(q(result, "rcs:equipment-mobilization:shoring_trench_kits_inbound:trip_count")).toBe(2);
+    expect(q(result, "rcs:casing:ordered_casing_length_m")).toBe(48); expect(q(result, "rcs:joint:crew_person_hours")).toBe(6);
+  });
+  it.each(["complete_kit_count", "kit_product_reference", "program_reference", "kit_fastener_sets_per_complete_kit"])("requires original %s before a manual rent override", async fact => {
+    const input = { ...selected }; delete input[p(fact)];
+    const result = await compile(input, { [row("rental_set_hours")]: { quantity: "999", provenance } });
+    expect(result.preliminaryNeeds.find(n => n.row_id === row("rental_set_hours"))?.missing_parameter_ids).toContain(p(fact));
+    expect(result.preliminaryNeeds.find(n => n.row_id === row("rental_set_hours"))?.quantity).toBe("999");
+    expect(q(result, "rcs:joint:crew_person_hours")).toBe(6);
+  });
+  it.each([ ["installed_outer_width_m", 2], ["installed_outer_length_m", 40], ["installed_height_m", 1.9],
+    ["usable_width_m", 0.5], ["usable_length_m", 2], ["placement_cycle_count", 1] ] as const)("rejects incompatible %s=%s before any manual positioning quantity", async (fact, value) => {
+    await expect(compile({ ...selected, [p(fact)]: value }, { [row("installation:crew_hours")]: { quantity: "999", provenance } })).rejects.toMatchObject({ code: "FORMULA_OUTPUT_BOUNDS_FAILED" });
+  });
+  it("retains an unknown rate as missing, accepts proven zero separate machinery and rejects equipment prices including crew", async () => {
+    const input = { ...selected }; delete input[p("monitoring_equipment_h_per_unit")];
+    const missing = await compile(input); expect(missing.preliminaryNeeds.find(n => n.row_id === row("monitoring:equipment_hours"))?.missing_parameter_ids).toContain(p("monitoring_equipment_h_per_unit"));
+    const zero = await compile(selected); expect(q(zero, row("monitoring:equipment_hours"))).toBe(0);
+    await expect(compile({ ...selected, [p("installation_equipment_cost_basis")]: "all-in operators and equipment" })).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+  });
+  it.each([shoringModes.notRequired, shoringModes.otherParty, shoringModes.other])("does not keep obsolete rent/installation/haul charges after changing technology to %s", async mode => {
+    const result = await compile({ ...selected, [p("mode")]: mode }, { [row("rental_set_hours")]: { quantity: "999", unitPrice: "3", provenance } });
+    expect(result.rows.some(r => r.row_id.startsWith("rcs:shoring:trench:") || r.row_id.startsWith("rcs:equipment-mobilization:shoring_trench_kits_"))).toBe(false);
+    expect(q(result, "rcs:casing:ordered_casing_length_m")).toBe(48);
+  });
+  it("places rent/installation and all removal/return in exactly one actual stage each", () => {
+    expect(components.stageMatrix.filter(s => s.ownResourceIds.includes(row("rental_set_hours"))).map(s => s.stageId)).toEqual(["installation"]);
+    for (const suffix of ["extraction:crew_hours", "disassembly:equipment_hours"]) {
+      expect(components.stageMatrix.filter(s => s.ownResourceIds.includes(row(suffix))).map(s => s.stageId)).toEqual(["completion"]);
+    }
+    expect(components.stageMatrix.find(s => s.stageId === "completion")?.ownResourceIds).toContain("rcs:equipment-mobilization:shoring_trench_kits_return:trip_count");
+  });
+});
 
 describe("actual disjoint field coating batches and all their initial resources", () => {
   // Deliberately synthetic single-batch evidence, not manufacturer defaults.
@@ -1617,7 +1731,7 @@ describe("road-casing component integration, not full crossing acceptance", () =
   });
   it("returns the explicit omissions beside the definition, never a full/published/engineer-approved owner", () => {
     expect(components.scope).toMatchObject({ fullOwner: false, engineeringAccepted: false, readyForPublication: false });
-    expect(components.scope.omitted).toContain("Excavation support/reaction structures and groundwater measures; actual applicability and approved civil execution rates");
+    expect(components.scope.omitted).toContain("Shoring actual design/method/load approval, consumables/gap filling/waste and other kits/programmes; reaction structures and groundwater measures; actual applicability and approved civil execution rates");
     for (const resource of definition.resources) expect(resource.source_metadata?.excludedUnownedAssumptions).toEqual([...components.scope.omitted]);
   });
 
