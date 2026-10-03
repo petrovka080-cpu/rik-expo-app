@@ -16,7 +16,7 @@ import type {
   EstimateDraftRevisionState,
   ProfessionalBoqRow,
 } from "../estimate/estimateDraftRevisionContract";
-import { strFromU8, strToU8, unzlibSync, zlibSync } from "fflate";
+import { DecodeUTF8, strFromU8, strToU8, unzlibSync, zlibSync } from "fflate";
 import {
   createEstimateDraftSession,
   hydrateExactDraft,
@@ -27,6 +27,12 @@ import {
   isConsumerRepairApprovedHistoryStatus,
 } from "./consumerRepairDurableSavePolicy";
 import { safeJsonParseValue } from "../format";
+import {
+  ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES,
+  MAX_ESTIMATE_REVISION_DURABLE_ENVELOPE_BYTES,
+  estimateRevisionUtf8ByteLength,
+  stableEstimateRevisionChecksum,
+} from "./estimateRevisionDurableSerialization";
 
 const CONSUMER_REPAIR_DURABLE_COMPACT_ITEMS_SCHEMA = "consumer_repair_bundle_compact_items_v1" as const;
 const CONSUMER_REPAIR_DURABLE_EDITABLE_ROWS_SCHEMA =
@@ -35,6 +41,11 @@ const CONSUMER_REPAIR_DURABLE_HISTORY_SUMMARY_SCHEMA =
   "consumer_repair_durable_history_summary_v1" as const;
 const CONSUMER_REPAIR_DURABLE_COMPRESSED_REVISION_STATE_SCHEMA =
   "consumer_repair_estimate_revision_state_zlib_v1" as const;
+const CONSUMER_REPAIR_DURABLE_COMPRESSED_BUNDLE_SCHEMA = "consumer_repair_bundle_zlib_v1" as const;
+// The observed complete crossing generation is 32,277,797 UTF-8 bytes. This
+// decoded-resource budget accommodates four such history generations without
+// raising any adapter's stored-byte capacity or discarding their hash basis.
+export const CONSUMER_REPAIR_DURABLE_MAX_DECODED_BUNDLE_BYTES = 128 * 1024 * 1024;
 
 const CONSUMER_REPAIR_DURABLE_ITEM_FIELDS = [
   "id",
@@ -191,6 +202,37 @@ function recordFromUnknown(value: unknown): Record<string, unknown> | null {
   return value as Record<string, unknown>;
 }
 
+function flatDurableStringChunk(chunk: string): string {
+  // Engines without TextDecoder use fflate's per-character string fallback.
+  // Flatten each bounded chunk immediately, instead of retaining one rope
+  // node per character of a complete 32+ MiB canonical history.
+  const units = new Uint16Array(chunk.length);
+  for (let index = 0; index < chunk.length; index += 1) units[index] = chunk.charCodeAt(index);
+  return String.fromCharCode(...units);
+}
+
+function durableUtf8BytesToString(bytes: Uint8Array): string {
+  const chunks: string[] = [];
+  let decodedByteOffset = 0;
+  const decoder = new DecodeUTF8(chunk => {
+    const flattened = flatDurableStringChunk(chunk);
+    // Both native non-fatal TextDecoder and the library fallback can replace
+    // malformed UTF-8. Accept only a byte-exact round trip of emitted text.
+    const reencoded = strToU8(flattened);
+    for (let index = 0; index < reencoded.length; index += 1) {
+      if (reencoded[index] !== bytes[decodedByteOffset + index]) throw new Error("CONSUMER_REPAIR_DURABLE_INVALID_UTF8");
+    }
+    decodedByteOffset += reencoded.length;
+    chunks.push(flattened);
+  });
+  const chunkSize = 16 * 1024;
+  for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+    decoder.push(bytes.subarray(offset, offset + chunkSize), offset + chunkSize >= bytes.length);
+  }
+  if (decodedByteOffset !== bytes.length) throw new Error("CONSUMER_REPAIR_DURABLE_INVALID_UTF8");
+  return chunks.join("");
+}
+
 function durableBytesToBase64(bytes: Uint8Array): string {
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
   const chunks: string[] = [];
@@ -208,7 +250,7 @@ function durableBytesToBase64(bytes: Uint8Array): string {
       chunk += index + 1 < bytes.length ? alphabet[(triplet >> 6) & 63] : "=";
       chunk += index + 2 < bytes.length ? alphabet[triplet & 63] : "=";
     }
-    chunks.push(chunk);
+    chunks.push(flatDurableStringChunk(chunk));
   }
   return chunks.join("");
 }
@@ -219,7 +261,8 @@ function durableBase64ToBytes(value: string): Uint8Array {
     throw new Error("CONSUMER_REPAIR_DURABLE_COMPRESSED_STATE_INVALID_BASE64");
   }
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-  const bytes: number[] = [];
+  const bytes = new Uint8Array(clean.length / 4 * 3 - (clean.endsWith("==") ? 2 : clean.endsWith("=") ? 1 : 0));
+  let byteIndex = 0;
   for (let index = 0; index < clean.length; index += 4) {
     const first = alphabet.indexOf(clean[index]);
     const second = alphabet.indexOf(clean[index + 1]);
@@ -229,11 +272,11 @@ function durableBase64ToBytes(value: string): Uint8Array {
       throw new Error("CONSUMER_REPAIR_DURABLE_COMPRESSED_STATE_INVALID_BASE64");
     }
     const triplet = (first << 18) | (second << 12) | ((third < 0 ? 0 : third) << 6) | (fourth < 0 ? 0 : fourth);
-    bytes.push((triplet >> 16) & 255);
-    if (third >= 0) bytes.push((triplet >> 8) & 255);
-    if (fourth >= 0) bytes.push(triplet & 255);
+    bytes[byteIndex++] = (triplet >> 16) & 255;
+    if (third >= 0) bytes[byteIndex++] = (triplet >> 8) & 255;
+    if (fourth >= 0) bytes[byteIndex++] = triplet & 255;
   }
-  return new Uint8Array(bytes);
+  return bytes;
 }
 
 function isScalar(value: unknown): value is string | number | boolean | null {
@@ -968,7 +1011,7 @@ export function encodeConsumerRepairBundleForDurableStorage(bundle: ConsumerRepa
   const approvedHistorySummaryBundle =
     isConsumerRepairApprovedHistoryStatus(bundle.draft.status)
     && bundle.durableHistorySummary?.fullSnapshotAvailable === false;
-  return {
+  const encoded = {
     ...bundle,
     items: undefined,
     itemsCompactV1: encodeConsumerRepairDurableItems(
@@ -981,10 +1024,58 @@ export function encodeConsumerRepairBundleForDurableStorage(bundle: ConsumerRepa
     editableEstimateSnapshot: encodeEditableEstimateSnapshotForDurableStorage(bundle.editableEstimateSnapshot),
     estimateRevisionState: encodeEstimateRevisionStateForDurableStorage(bundle.estimateRevisionState),
   };
+  const raw = JSON.stringify(encoded);
+  const rawByteLength = estimateRevisionUtf8ByteLength(raw);
+  if (rawByteLength <= MAX_ESTIMATE_REVISION_DURABLE_ENVELOPE_BYTES) return encoded;
+  if (rawByteLength > CONSUMER_REPAIR_DURABLE_MAX_DECODED_BUNDLE_BYTES) {
+    throw new Error("CONSUMER_REPAIR_DURABLE_DECODED_SIZE_BUDGET_EXCEEDED");
+  }
+  const compressed = zlibSync(strToU8(raw), { level: 6 });
+  const envelope = {
+    schema: CONSUMER_REPAIR_DURABLE_COMPRESSED_BUNDLE_SCHEMA,
+    codec: "zlib+base64",
+    requestDraftId: bundle.draft.id,
+    rawByteLength,
+    compressedByteLength: compressed.length,
+    rawChecksum: stableEstimateRevisionChecksum(raw),
+    payload: durableBytesToBase64(compressed),
+  };
+  return estimateRevisionUtf8ByteLength(JSON.stringify(envelope)) < rawByteLength ? envelope : encoded;
 }
 
 export function decodeConsumerRepairBundleFromDurableStorage(value: unknown): ConsumerRepairDraftBundle | null {
   const record = recordFromUnknown(value);
+  const hasCompressedBundleMarker = typeof record?.schema === "string"
+    && record.schema.startsWith("consumer_repair_bundle_zlib_");
+  if (hasCompressedBundleMarker && record?.schema !== CONSUMER_REPAIR_DURABLE_COMPRESSED_BUNDLE_SCHEMA) return null;
+  if (record?.schema === CONSUMER_REPAIR_DURABLE_COMPRESSED_BUNDLE_SCHEMA) {
+    const rawByteLength = record.rawByteLength;
+    const compressedByteLength = record.compressedByteLength;
+    if (record.codec !== "zlib+base64" || typeof record.requestDraftId !== "string" || !record.requestDraftId
+      || typeof record.rawChecksum !== "string" || !/^[a-f0-9]{16}$/u.test(record.rawChecksum)
+      || typeof rawByteLength !== "number" || !Number.isSafeInteger(rawByteLength) || rawByteLength <= 0
+      || rawByteLength > CONSUMER_REPAIR_DURABLE_MAX_DECODED_BUNDLE_BYTES
+      || typeof compressedByteLength !== "number" || !Number.isSafeInteger(compressedByteLength) || compressedByteLength <= 0
+      || compressedByteLength > ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.sqlite
+      || typeof record.payload !== "string" || record.payload.length !== 4 * Math.ceil(compressedByteLength / 3)
+      || /[^A-Za-z0-9+/=]/u.test(record.payload)) return null;
+    try {
+      const compressed = durableBase64ToBytes(record.payload);
+      if (compressed.length !== compressedByteLength || durableBytesToBase64(compressed) !== record.payload) return null;
+      // fflate's bounded output truncates overflow. The extra byte makes an
+      // understated size fail closed instead of accepting a truncated body.
+      const rawBytes = unzlibSync(compressed, { out: new Uint8Array(rawByteLength + 1) });
+      if (rawBytes.length !== rawByteLength) return null;
+      const raw = durableUtf8BytesToString(rawBytes);
+      if (estimateRevisionUtf8ByteLength(raw) !== rawByteLength || stableEstimateRevisionChecksum(raw) !== record.rawChecksum) return null;
+      const inner = recordFromUnknown(safeJsonParseValue<unknown>(raw, null));
+      if (!inner || (typeof inner.schema === "string" && inner.schema.startsWith("consumer_repair_bundle_zlib_"))) return null;
+      const decoded = decodeConsumerRepairBundleFromDurableStorage(inner);
+      return decoded?.draft.id === record.requestDraftId ? decoded : null;
+    } catch {
+      return null;
+    }
+  }
   const draft = recordFromUnknown(record?.draft);
   const draftId = typeof draft?.id === "string" ? draft.id : null;
   if (!record || !draftId) return null;

@@ -3,6 +3,7 @@ import { logger } from "../logger";
 import { createEstimateRevisionDurableStore } from "./estimateRevisionDurableStore.factory";
 import {
   estimateRevisionUtf8ByteLength,
+  readCommittedEstimateRevisionBundleVersion,
   serializeRevisionBundle,
   type DurableWriteResult,
   type EstimateRevisionDurableStore,
@@ -221,7 +222,7 @@ async function commitTransactionalConsumerRepairBundleWrite(
     const current = await store.readBundle(key);
     evidence("TARGET_READ_COMPLETED", { previousCommitPresent: current != null });
     const expectedVersion = current
-      ? serializeRevisionBundle(current).version
+      ? readCommittedEstimateRevisionBundleVersion(current, key) ?? serializeRevisionBundle(current).version
       : null;
     // Native request bundles contain several compatibility projections of the
     // same immutable estimate. Persist only the canonical compact projection;

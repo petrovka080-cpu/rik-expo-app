@@ -162,11 +162,19 @@ describe("EstimateRevisionDurableStore", () => {
       maximumBundle(1),
     );
     if (baseline.status === "FAILED") throw new Error(baseline.error.message);
+    // A repeated character is now losslessly compressible. Keep this capacity
+    // regression meaningful with deterministic, incompressible test evidence.
+    const evidenceBytes = new Uint8Array(22 * 1024 * 1024);
+    let evidenceSeed = 0x72af1933;
+    for (let index = 0; index < evidenceBytes.length; index += 1) {
+      evidenceSeed ^= evidenceSeed << 13;
+      evidenceSeed ^= evidenceSeed >>> 17;
+      evidenceSeed ^= evidenceSeed << 5;
+      evidenceBytes[index] = evidenceSeed & 0xff;
+    }
     const oversized = {
       ...maximumBundle(2),
-      oversizedEvidence: "x".repeat(
-        ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.memory,
-      ),
+      oversizedEvidence: Buffer.from(evidenceBytes).toString("base64"),
     } as RevisionBundle;
 
     expect(await store.writeBundleAtomically(

@@ -1,14 +1,19 @@
 import { IDBFactory } from "fake-indexeddb";
+import { strFromU8, strToU8, zlibSync } from "fflate";
 
 import {
   ESTIMATE_REVISION_DB_NAME,
   ESTIMATE_REVISION_IDB_STORE_NAME,
   IndexedDbEstimateRevisionDurableStore,
+  migrateLegacyEstimateRevisionBundle,
   SQLiteEstimateRevisionDurableStore,
   type RevisionBundle,
   type SQLiteDatabaseLike,
 } from "../../src/lib/platform/estimateRevisionDurableStore";
-import { sanitizeConsumerRepairTransactionalBundle } from "../../src/lib/platform/consumerRepairTransactionalDurableBridge";
+import { flushTransactionalConsumerRepairWrites, queueTransactionalConsumerRepairBundleWrite, sanitizeConsumerRepairTransactionalBundle, setConsumerRepairTransactionalStoreForTests } from "../../src/lib/platform/consumerRepairTransactionalDurableBridge";
+import { CONSUMER_REPAIR_DURABLE_MAX_DECODED_BUNDLE_BYTES, decodeConsumerRepairBundleFromDurableStorage, encodeConsumerRepairBundleForDurableStorage } from "../../src/lib/platform/compactConsumerRepairDurableState";
+import { createDurableEnvelope, estimateRevisionUtf8ByteLength, parseDurableEnvelopeBundle, readCommittedEstimateRevisionBundleVersion, serializeRevisionBundle, stableEstimateRevisionChecksum } from "../../src/lib/platform/estimateRevisionDurableStore.contract";
+import { AsyncStorageEstimateRevisionDurableStore } from "../../src/lib/platform/estimateRevisionDurableStore.asyncStorage";
 
 function bundle(version: "r1" | "r2"): RevisionBundle {
   return {
@@ -127,6 +132,149 @@ class TransactionalSQLiteDouble implements SQLiteDatabaseLike {
 }
 
 describe("transactional platform durable adapters", () => {
+  afterEach(async () => {
+    await flushTransactionalConsumerRepairWrites();
+    setConsumerRepairTransactionalStoreForTests(null);
+  });
+
+  function largeCanonicalBundle(version: "r1" | "r2"): RevisionBundle {
+    const base = bundle(version);
+    const needs = Array.from({ length: 1933 }, (_, index) => ({
+      rowId: `canonical-source-${index}`, quantity: index === 0 ? 72 : 0,
+      calculationTrace: `source-${index}:Русское исходное уточнение 🧪;` + "TEST: original source fact remains unknown; ".repeat(245),
+      sourceParameters: { missingParameterIds: [`actual_source_${index}`],
+        canonicalPurchaseBalance: { consumptionShortage: "20", procurementReady: false },
+        canonicalCostTreatment: "INFORMATIONAL_SCOPE", includedInEstimate: false },
+    }));
+    return { ...base, estimateDraftRevisionState: {
+      ...base.estimateDraftRevisionState!,
+      revisions: (version === "r1" ? ["r1"] : ["r1", "r2"]).map(id => ({
+        revisionId: id, boq: { rows: needs }, params: { actual_source: "TEST" },
+        missingInputs: needs.map(row => row.sourceParameters.missingParameterIds[0]),
+      })),
+      diffs: version === "r2" ? [{ fromRevisionId: "r1", toRevisionId: "r2", changedRows: ["canonical-source-0"] }] : [],
+    } } as unknown as RevisionBundle;
+  }
+
+  test("upgrades a valid large RAW SQLite predecessor using its actual committed CAS token", async () => {
+    const parent = largeCanonicalBundle("r1");
+    const oldEncoded = encodeConsumerRepairBundleForDurableStorage(bundle("r1")) as Record<string, unknown>;
+    oldEncoded.estimateDraftRevisionState = parent.estimateDraftRevisionState;
+    const oldRaw = JSON.stringify(oldEncoded);
+    expect(estimateRevisionUtf8ByteLength(oldRaw)).toBeGreaterThan(16 * 1024 * 1024);
+    expect(estimateRevisionUtf8ByteLength(oldRaw)).toBeLessThan(32 * 1024 * 1024);
+    const oldChecksum = stableEstimateRevisionChecksum(oldRaw);
+    const oldVersion = `r1:content:${oldChecksum}`;
+    const key = parent.draft.id;
+    const database = new TransactionalSQLiteDouble();
+    database.records.set(`${key}\u0000${oldVersion}`, JSON.stringify(createDurableEnvelope({ key, version: oldVersion, previousVersion: null, checksum: oldChecksum, serializedBundle: oldRaw })));
+    database.pointers.set(key, { current_version: oldVersion, previous_version: null });
+    const store = new SQLiteEstimateRevisionDurableStore(async () => database);
+    const loaded = (await store.readBundle(key))!;
+    expect(readCommittedEstimateRevisionBundleVersion(loaded, key)).toBe(oldVersion);
+    expect(readCommittedEstimateRevisionBundleVersion(loaded, "other-key")).toBeNull();
+    expect(readCommittedEstimateRevisionBundleVersion({ ...loaded }, key)).toBeNull();
+    expect(serializeRevisionBundle(loaded).version).not.toBe(oldVersion);
+    // The independent legacy migration path also compares with the actual RAW
+    // predecessor, rather than the version invented by the current encoder.
+    const migrationDatabase = new TransactionalSQLiteDouble();
+    migrationDatabase.records = new Map(database.records);
+    migrationDatabase.pointers = new Map(database.pointers);
+    const migrationStore = new SQLiteEstimateRevisionDurableStore(async () => migrationDatabase);
+    const legacyValues = new Map([["legacy-bundle", JSON.stringify(loaded)]]);
+    expect(await migrateLegacyEstimateRevisionBundle({ key, legacyStorageKey: "legacy-bundle", pointerStorageKey: "legacy-pointer",
+      storage: { getItem: slot => legacyValues.get(slot) ?? null, setItem: (slot, value) => { legacyValues.set(slot, value); },
+        removeItem: slot => { legacyValues.delete(slot); } }, durableStore: migrationStore,
+    })).toMatchObject({ status: "MIGRATED", version: serializeRevisionBundle(loaded).version });
+    expect(legacyValues.has("legacy-bundle")).toBe(false);
+    expect(migrationDatabase.records.size).toBe(2);
+    expect(stableEstimateRevisionChecksum(JSON.stringify((await migrationStore.readBundle(key))!.estimateDraftRevisionState)))
+      .toBe(stableEstimateRevisionChecksum(JSON.stringify(parent.estimateDraftRevisionState)));
+    setConsumerRepairTransactionalStoreForTests(store);
+    const child = largeCanonicalBundle("r2");
+    const result = await queueTransactionalConsumerRepairBundleWrite({ bundle: child, storage: null });
+    expect(result).toMatchObject({ status: "WRITTEN", previousVersion: oldVersion });
+    const reopened = (await store.readBundle(key))!;
+    expect(stableEstimateRevisionChecksum(JSON.stringify(reopened.estimateDraftRevisionState)))
+      .toBe(stableEstimateRevisionChecksum(JSON.stringify(child.estimateDraftRevisionState)));
+    expect(reopened.estimateDraftRevisionState!.revisions.map(revision => revision.revisionId)).toEqual(["r1", "r2"]);
+    expect(database.records.size).toBe(2);
+    expect(await store.writeBundleAtomically(key, oldVersion, child)).toMatchObject({ status: "FAILED", error: { code: "CONFLICT" } });
+  });
+
+  test("stores and reads the complete canonical history within the unchanged native 16 MiB capacity", async () => {
+    const values = new Map<string, string>();
+    const store = new AsyncStorageEstimateRevisionDurableStore({
+      getItem: async key => values.get(key) ?? null,
+      setItem: async (key, value) => { values.set(key, value); },
+      removeItem: async key => { values.delete(key); },
+    });
+    const input = largeCanonicalBundle("r2");
+    const serialized = serializeRevisionBundle(input);
+    expect(estimateRevisionUtf8ByteLength(serialized.serializedBundle)).toBeLessThan(16 * 1024 * 1024);
+    expect(JSON.parse(serialized.serializedBundle).schema).toBe("consumer_repair_bundle_zlib_v1");
+    const result = await store.writeBundleAtomically(input.draft.id, null, input);
+    expect(result.status).toBe("WRITTEN");
+    const reopened = (await store.recoverLastValid(input.draft.id))!;
+    expect(stableEstimateRevisionChecksum(JSON.stringify(reopened.estimateDraftRevisionState)))
+      .toBe(stableEstimateRevisionChecksum(JSON.stringify(input.estimateDraftRevisionState)));
+    expect(reopened.items[0]).toMatchObject(input.items[0]);
+  });
+
+  test("rejects corrupt, oversized, truncated and nested compressed bodies and invalid envelope identity", () => {
+    const encoded = encodeConsumerRepairBundleForDurableStorage(largeCanonicalBundle("r1")) as Record<string, unknown>;
+    expect(decodeConsumerRepairBundleFromDurableStorage({ ...bundle("r1"), schema: "consumer_repair_bundle_zlib_v2" })).toBeNull();
+    for (const patch of [
+      { rawByteLength: Number(encoded.rawByteLength) - 1 },
+      { rawByteLength: Number(encoded.rawByteLength) + 1 },
+      { rawByteLength: CONSUMER_REPAIR_DURABLE_MAX_DECODED_BUNDLE_BYTES + 1 },
+      { compressedByteLength: Number(encoded.compressedByteLength) + 1 },
+      { rawChecksum: "0".repeat(16) }, { requestDraftId: "other-key" },
+      { payload: "!!!!" },
+    ]) expect(decodeConsumerRepairBundleFromDurableStorage({ ...encoded, ...patch })).toBeNull();
+    const nestedRaw = JSON.stringify(encoded);
+    const nestedBytes = zlibSync(strToU8(nestedRaw), { level: 6 });
+    expect(decodeConsumerRepairBundleFromDurableStorage({ ...encoded, rawByteLength: strToU8(nestedRaw).length,
+      rawChecksum: stableEstimateRevisionChecksum(nestedRaw), compressedByteLength: nestedBytes.length,
+      payload: Buffer.from(nestedBytes).toString("base64") })).toBeNull();
+    const futureNestedRaw = JSON.stringify({ ...bundle("r1"), schema: "consumer_repair_bundle_zlib_v2" });
+    const futureNestedBytes = zlibSync(strToU8(futureNestedRaw), { level: 6 });
+    expect(decodeConsumerRepairBundleFromDurableStorage({ ...encoded, rawByteLength: strToU8(futureNestedRaw).length,
+      rawChecksum: stableEstimateRevisionChecksum(futureNestedRaw), compressedByteLength: futureNestedBytes.length,
+      payload: Buffer.from(futureNestedBytes).toString("base64") })).toBeNull();
+    const serialized = serializeRevisionBundle(bundle("r1"));
+    const envelope = createDurableEnvelope({ key: "platform-adapter-estimate", ...serialized, previousVersion: null });
+    expect(parseDurableEnvelopeBundle({ ...envelope, version: "" }, "platform-adapter-estimate")).toBeNull();
+    expect(parseDurableEnvelopeBundle({ ...envelope, key: "other-key" }, "other-key")).toBeNull();
+  });
+
+  test("preserves 2/3/4-byte characters across streamed UTF-8 boundaries and rejects malformed bytes", () => {
+    const wrapper = (rawBytes: Uint8Array, decodedRaw: string) => {
+      const compressed = zlibSync(rawBytes, { level: 6 });
+      return { schema: "consumer_repair_bundle_zlib_v1", codec: "zlib+base64", requestDraftId: "platform-adapter-estimate",
+        rawByteLength: rawBytes.length, compressedByteLength: compressed.length,
+        rawChecksum: stableEstimateRevisionChecksum(decodedRaw), payload: Buffer.from(compressed).toString("base64") };
+    };
+    for (const character of ["я", "界", "🧪"]) {
+      const prefixLength = strToU8(JSON.stringify({ ...bundle("r1"), unicodeEvidence: "" }).split('"unicodeEvidence":"')[0] + '"unicodeEvidence":"').length;
+      const input = { ...bundle("r1"), unicodeEvidence: "x".repeat(16 * 1024 - 1 - prefixLength) + character + "конец" };
+      const raw = JSON.stringify(input);
+      expect(decodeConsumerRepairBundleFromDurableStorage(wrapper(strToU8(raw), raw)))
+        .toMatchObject({ unicodeEvidence: input.unicodeEvidence });
+    }
+    const shell = JSON.stringify({ ...bundle("r1"), unicodeEvidence: "" });
+    const emptyFieldOffset = shell.lastIndexOf('""') + 1;
+    for (const invalid of [[0xc2, 0xff], [0xed, 0xa0, 0x80], [0xe2, 0x82]]) {
+      const before = strToU8(shell.slice(0, emptyFieldOffset));
+      const after = strToU8(shell.slice(emptyFieldOffset));
+      const bytes = new Uint8Array(before.length + invalid.length + after.length);
+      bytes.set(before); bytes.set(invalid, before.length); bytes.set(after, before.length + invalid.length);
+      let decodedRaw = "";
+      try { decodedRaw = strFromU8(bytes); } catch { /* An incomplete tail is invalid in both library paths. */ }
+      expect(decodeConsumerRepairBundleFromDurableStorage(wrapper(bytes, decodedRaw))).toBeNull();
+    }
+  });
+
   test("persists attachment metadata without binaries, signed URLs, or secret fields", () => {
     const input = {
       ...bundle("r1"),

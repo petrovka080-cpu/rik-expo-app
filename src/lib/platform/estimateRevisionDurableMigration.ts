@@ -1,5 +1,6 @@
 import {
   messageFromDurableError,
+  readCommittedEstimateRevisionBundleVersion,
   serializeRevisionBundle,
   stableEstimateRevisionChecksum,
   type DurableWriteErrorCode,
@@ -64,7 +65,7 @@ export async function migrateLegacyEstimateRevisionBundle(input: {
   }
   const result = await input.durableStore.writeBundleAtomically(
     input.key,
-    existingCanonical?.version ?? null,
+    existing ? readCommittedEstimateRevisionBundleVersion(existing, input.key) ?? existingCanonical?.version ?? null : null,
     bundle,
   );
   if (result.status === "FAILED") {

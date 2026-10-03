@@ -1,3 +1,4 @@
+import { MAX_ESTIMATE_REVISION_DURABLE_ENVELOPE_BYTES, stableEstimateRevisionChecksum, estimateRevisionUtf8ByteLength } from "./estimateRevisionDurableSerialization";
 import type { ConsumerRepairDraftBundle } from "../consumerRequests/consumerRequestTypes";
 import { safeJsonParse } from "../format";
 import {
@@ -6,7 +7,18 @@ import {
   encodeConsumerRepairBundleForDurableStorage,
 } from "./compactConsumerRepairDurableState";
 
+export { ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES, MAX_ESTIMATE_REVISION_DURABLE_ENVELOPE_BYTES, MAX_ESTIMATE_REVISION_DURABLE_RECORD_BYTES, stableEstimateRevisionChecksum, estimateRevisionUtf8ByteLength } from "./estimateRevisionDurableSerialization";
+
 export type RevisionBundle = ConsumerRepairDraftBundle;
+
+// A decoded bundle's CAS token belongs to the validated stored representation.
+// Re-encoding with a newer codec must not invent a different predecessor token.
+const committedBundleVersions = new WeakMap<RevisionBundle, { key: string; version: string }>();
+
+export function readCommittedEstimateRevisionBundleVersion(bundle: RevisionBundle, key: string): string | null {
+  const committed = committedBundleVersions.get(bundle);
+  return committed?.key === key ? committed.version : null;
+}
 
 export type DurableWriteErrorCode =
   | "CONFLICT"
@@ -82,16 +94,7 @@ export type DurableFailureInjector = (point: DurableFailurePoint) => void;
 
 export const ESTIMATE_REVISION_DB_NAME = "rik-estimate-revision-durable-v1";
 export const ESTIMATE_REVISION_IDB_STORE_NAME = "revision-records";
-export const ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES = {
-  memory: 16 * 1024 * 1024,
-  asyncStorage: 16 * 1024 * 1024,
-  indexedDb: 24 * 1024 * 1024,
-  sqlite: 32 * 1024 * 1024,
-} as const;
-export const MAX_ESTIMATE_REVISION_DURABLE_ENVELOPE_BYTES =
-  ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.memory;
-export const MAX_ESTIMATE_REVISION_DURABLE_RECORD_BYTES =
-  ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.sqlite * 2 + 64 * 1024;
+
 const POINTER_PREFIX = "@pointer:";
 const REVISION_PREFIX = "@revision:";
 
@@ -118,44 +121,6 @@ export function durableWriteErrorCode(error: unknown): DurableWriteErrorCode {
 
 export function messageFromDurableError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
-}
-
-export function stableEstimateRevisionChecksum(value: string): string {
-  let first = 2166136261;
-  let second = 2246822519;
-  for (let index = 0; index < value.length; index += 1) {
-    const code = value.charCodeAt(index);
-    first = Math.imul(first ^ code, 16777619);
-    second = Math.imul(second ^ code, 3266489917);
-  }
-  return `${(first >>> 0).toString(16).padStart(8, "0")}${(second >>> 0).toString(16).padStart(8, "0")}`;
-}
-
-export function estimateRevisionUtf8ByteLength(value: string): number {
-  let bytes = 0;
-  for (let index = 0; index < value.length; index += 1) {
-    const code = value.charCodeAt(index);
-    if (code < 0x80) {
-      bytes += 1;
-    } else if (code < 0x800) {
-      bytes += 2;
-    } else if (
-      code >= 0xd800 &&
-      code <= 0xdbff &&
-      index + 1 < value.length
-    ) {
-      const low = value.charCodeAt(index + 1);
-      if (low >= 0xdc00 && low <= 0xdfff) {
-        bytes += 4;
-        index += 1;
-      } else {
-        bytes += 3;
-      }
-    } else {
-      bytes += 3;
-    }
-  }
-  return bytes;
 }
 
 export function serializeRevisionBundle(
@@ -202,6 +167,9 @@ export function parseDurableEnvelopeBundle(
     envelope.schemaVersion !== "estimate_revision_durable_envelope_v1" ||
     !("key" in envelope) ||
     envelope.key !== expectedKey ||
+    !("version" in envelope) ||
+    typeof envelope.version !== "string" ||
+    !envelope.version.trim() ||
     !("serializedBundle" in envelope) ||
     typeof envelope.serializedBundle !== "string" ||
     !("checksum" in envelope) ||
@@ -217,7 +185,9 @@ export function parseDurableEnvelopeBundle(
   );
   if (!parsed.ok) return null;
   const decoded = decodeConsumerRepairBundleFromDurableStorage(parsed.value);
-  return decoded?.draft?.id ? decoded : null;
+  if (decoded?.draft?.id !== expectedKey) return null;
+  committedBundleVersions.set(decoded, { key: expectedKey, version: envelope.version });
+  return decoded;
 }
 
 export function durableRevisionRecordKey(key: string, version: string): string {
