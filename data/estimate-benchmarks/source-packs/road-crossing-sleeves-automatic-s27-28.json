@@ -5,7 +5,7 @@
   "scope": "One continuous steel casing crossing with explicitly selected installation method. Casing supply and site joints, support rings and elements, contact tape, compatible end-seal kits, applicable civil work, crew labor, mechanisms and logistics are separate quantity/cost owners. This source pack is not itself a published owner or accepted estimate.",
   "engineeringAcceptanceClaimed": false,
   "universalRatesClaimed": false,
-  "implementationStatus": "QUANTITY_SPACER_SUPPLY_CIVIL_MMA_CASING_BEDDING_PIT_FILL_INTERNAL_DRY_FILL_COMPONENTS_NOT_PUBLISHED_NOT_FULL_OWNER",
+  "implementationStatus": "COMPONENT_ASSEMBLY_WITH_METHOD_SPECIFIC_CIVIL_EXECUTION_AND_FULL_STAGE_GAP_MATRIX_NOT_PUBLISHED_NOT_FULL_OWNER",
   "quantityComponent": {
     "module": "src/lib/estimate/v4/roadCrossingSleevesQuantityModelR1.ts",
     "verification": "tests/estimateNorms/roadCrossingSleevesQuantityModelR1.contract.test.ts",
@@ -30,6 +30,16 @@
     "internalFillParameterProjectionVerification": "tests/requestEstimate/canonicalInternalFillParameterProjection.contract.test.ts",
     "componentIntegrationModule": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",
     "componentIntegrationVerification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
+    "civilExecutionAndStageMatrix": {
+      "module": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",
+      "matrixExport": "ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1",
+      "scope": "Selected open-trench excavation, thrust/reception pit excavation and combined drive/soil-removal jacking system; actual pit dimensions are separate from drive length and bore volume",
+      "quantities": "Existing geometric excavation times selected total-crew person-hours or selected equipment-hours per unit; jacking advance uses drive metres, not pit/bore double counting",
+      "inputAuthority": "Applicable method statement, ground/access conditions, actual selected equipment and disjoint cost bases; no universal rate or synthetic fixture default",
+      "costBoundary": "All personnel including operators in crew only; equipment excludes all personnel and includes its energy. Shoring, reaction structures, water control and logistics remain separate unresolved owners",
+      "manualBoundary": "A direct manual hour exception retains its provenance but cannot replace unknown original geometry, selected technology or equipment compatibility",
+      "matrixBoundary": "Every declared resource belongs to exactly one stage. Concrete absent resources remain listed; this is not full-owner or engineering acceptance"
+    },
     "evaluator": "Existing canonical FormulaGraph only",
     "inputPolicy": "The component takes explicitly supplied scalar inputs and does not create a runtime form or baseline. The full owner must classify source-backed replaceable assumptions separately from genuine project facts, and prefer certified pipe mass when available.",
     "completedQuantityBoundaries": [
@@ -186,7 +196,7 @@
     "classification": "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE",
     "presentation": "Effective values are actually filled in editable inputs, with a separate preliminary-source label and grey format/source guidance",
     "approval": "Labor, productivity, consumption, loss, reserve, packaging and supplied-kit assumptions are editable scenario inputs, not universal standards or approved engineering decisions",
-    "cost": "Crew labor excludes machine operators already included in all-in machine rates; fuel and power included in those rates have no duplicate separate owner"
+    "cost": "Each resource's explicit cost basis owns personnel, energy and materials once. Selected civil execution keeps all personnel including operators in crew, and energy in personnel-excluded equipment. An all-in equipment rate cannot be combined with that separate crew basis. No duplicate fuel/power owner"
   },
   "excludedScope": [
     "carrier pipeline purchase and installation outside the casing",
