@@ -1,4 +1,5 @@
 import type { AutomaticInclusionCondition, AutomaticParameterSpec, AutomaticRowSpec } from "./automaticConstructionOwnerR1";
+import { compileFormulaGraph } from "../backendPlatform/formulaGraph";
 
 /** SAME AutomaticOwner resources. Actual gross consumption separates original
  * assembly/disassembly, every placement/extraction and whole-group calendar
@@ -30,7 +31,7 @@ export function buildRoadCrossingSleevesShoringConsumablesR1(scopes: readonly Sc
       { kind: "formula_greater_than", expression: consumed, unitId: material.unit, value: 0 }] };
     const own: AutomaticInclusionCondition = { kind: "and", operands: [positive,
       { kind: "equals", parameterId: id("mode"), value: ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_MODES_R1.separate }] };
-    const facts = [...scope.facts, scope.kitCountId, scope.cyclesId, scope.calendarId, id("program_and_compatibility_reference"),
+    const facts = [...scope.facts, ...[scope.kitCountId, scope.cyclesId, scope.calendarId].flatMap(expression => compileFormulaGraph(expression).inputParameterIds), id("program_and_compatibility_reference"),
       id("gross_per_initial_kit"), id("gross_per_placement_cycle"), id("gross_per_group_calendar_hour")];
     const purchaseFacts = [...facts, id("mode"), id("product_designation"), id("cost_basis"), id("compatible_unused_stock"), id("retained_reserve"), id("supplier_pack_net")];
     const need = `max(0,(${consumed})+${id("retained_reserve")}-${id("compatible_unused_stock")})`, packs = `ceil((${need})/${id("supplier_pack_net")})`;

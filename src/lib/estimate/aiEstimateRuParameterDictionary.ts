@@ -179,6 +179,7 @@ const UNIT_LABELS: Record<string, string> = {
   l_per_m3: "л/м³",
   l_per_hour: "л/ч",
   kg_per_hour: "кг/ч",
+  kn: "кН",
   piece_per_hour: "шт./ч",
   man_hour_per_hour: "чел.-ч/ч",
   machine_hour_per_hour: "маш.-ч/ч",

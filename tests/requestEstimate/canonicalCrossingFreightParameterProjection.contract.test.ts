@@ -25,6 +25,7 @@ import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib
 import { ROAD_CROSSING_SLEEVES_SHORING_MODES_R1 as shoringModes, ROAD_CROSSING_SLEEVES_SHORING_RENTAL_BASIS_R1 as shoringRentalBasis,
   ROAD_CROSSING_SLEEVES_SHORING_WORK_BASES_R1 as shoringWorkBases } from "../../src/lib/estimate/v4/roadCrossingSleevesShoringR1";
 import { ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_MODES_R1 as shoringMaterialModes, ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_BASIS_R1 as shoringMaterialBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesShoringConsumablesR1";
+import { ROAD_CROSSING_SLEEVES_REACTION_MODES_R1 as reactionModes, ROAD_CROSSING_SLEEVES_REACTION_RENTAL_BASIS_R1 as reactionRentalBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesReactionR1";
 import { ROAD_CROSSING_SLEEVES_TRENCH_FILL_MODES_R1 as fillModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
 import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierSupplyModes } from "../../src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1";
 import { buildConsumerCanonicalPrecompileParameterSession } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
@@ -65,6 +66,40 @@ const fixture: Record<string, CanonicalEstimateParameterInputValue> = {
 };
 const session = (parameters = fixture, missingParameterIds: string[] = []) => buildConsumerCanonicalPrecompileParameterSession({
   catalog, draftId: "owned-freight-editor", parameters, missingParameterIds, userExplicitParameterIds: Object.keys(parameters), textExtractedParameterIds: [],
+});
+
+describe("actual portable reaction parameters and unchanged common editor", () => {
+  const reaction: Record<string, CanonicalEstimateParameterInputValue> = { ...fixture, rcs_civil_installation_method: methods.pipeJacking,
+    rcs_reaction_mode: reactionModes.portableRental, rcs_reaction_allocation_reference: "TEST actual reaction excluded from paid drive and all other resource owners",
+    rcs_reaction_program_and_design_reference: "TEST actual one complete portable backstop and removable compatible interface/ground/design/conditions/return",
+    rcs_reaction_kit_designation: "TEST complete actual portable kit", rcs_reaction_kit_product_reference: "TEST full compatible BOM/passports/tackle",
+    rcs_reaction_calendar_hours: 24, rcs_reaction_rental_cost_basis: reactionRentalBasis,
+    rcs_reaction_kit_reusable_alignment_sets_count: 2, rcs_reaction_kit_removable_restraint_sets_count: 0,
+    rcs_reaction_configuration_and_force_reference: "TEST actual complete entire backstop/interface/ground force and useful placement envelope",
+    rcs_reaction_installed_required_width_m: 2.5, rcs_reaction_available_working_width_m: 3,
+    rcs_reaction_required_full_reaction_kn: 300, rcs_reaction_admissible_full_reaction_kn: 350,
+  };
+  it("fills actual whole-kit/force/programme/geometry inputs with source guides, dimensions and editable values", () => {
+    const actualCards = cards(reaction);
+    for (const [key, value] of Object.entries(reaction).filter(([key]) => key.startsWith("rcs_reaction_"))) {
+      expect(actualCards.find(c => c.key === key)).toMatchObject({ value, editable: true, missing: false });
+      expect(actualCards.find(c => c.key === key)?.guideShortRu).toBeTruthy();
+    }
+    expect(actualCards.find(c => c.key === "rcs_reaction_admissible_full_reaction_kn")?.unitRu).toBe("кН");
+    expect(catalog.parameterSchema.some(p => /reaction_(?:complete_kit_count|force_margin|rental_set_hours)$/u.test(p.parameterId))).toBe(false);
+    expect(catalog.parameterSchema.some(p => p.parameterId === "1")).toBe(false);
+  });
+  it("keeps missing actual force editable and deactivates old kit facts by real method/technology while preserving earlier values", () => {
+    const input = { ...reaction }; delete input.rcs_reaction_admissible_full_reaction_kn;
+    expect(cards(input).find(c => c.key === "rcs_reaction_admissible_full_reaction_kn")).toMatchObject({ value: null, missing: true, editable: true });
+    const open = session({ ...reaction, rcs_civil_installation_method: methods.openCut });
+    expect(open.parameters.some(p => p.parameterId.startsWith("rcs_reaction_"))).toBe(false);
+    expect(open.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_reaction_admissible_full_reaction_kn")).toMatchObject({ value: 350 });
+    const supplied = session({ ...reaction, rcs_reaction_mode: reactionModes.otherParty });
+    expect(supplied.parameters.find(p => p.parameterId === "rcs_reaction_allocation_reference")).toBeDefined();
+    expect(supplied.parameters.some(p => p.parameterId === "rcs_reaction_calendar_hours")).toBe(false);
+    expect(supplied.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_reaction_calendar_hours")).toMatchObject({ value: 24 });
+  });
 });
 
 describe("actual full shoring programme through the common publisher and editable parameter session", () => {

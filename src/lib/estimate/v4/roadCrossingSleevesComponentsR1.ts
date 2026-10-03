@@ -14,6 +14,8 @@ import { buildRoadCrossingSleevesEquipmentMobilizationR1 } from "./roadCrossingS
 import { ROAD_CROSSING_SLEEVES_SHORING_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_SHORING_ROWS_R1,
   ROAD_CROSSING_SLEEVES_SHORING_CARGOS_R1, roadCrossingSleevesShoringParameterId as shoringId } from "./roadCrossingSleevesShoringR1";
 import { buildRoadCrossingSleevesShoringConsumablesR1 } from "./roadCrossingSleevesShoringConsumablesR1";
+import { ROAD_CROSSING_SLEEVES_REACTION_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_REACTION_ROWS_R1, ROAD_CROSSING_SLEEVES_REACTION_CARGO_R1,
+  roadCrossingSleevesReactionParameterId as reactionId } from "./roadCrossingSleevesReactionR1";
 import { ROAD_CROSSING_SLEEVES_BEDDING_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_BEDDING_ROWS_R1,
   ROAD_CROSSING_SLEEVES_BEDDING_APPLICABILITY_R1 } from "./roadCrossingSleevesBeddingMaterialR1";
 import { ROAD_CROSSING_SLEEVES_PIT_RETURN_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_PIT_RETURN_ROWS_R1,
@@ -33,6 +35,7 @@ export { ROAD_CROSSING_SLEEVES_EQUIPMENT_MOBILIZATION_MODES_R1 } from "./roadCro
 export { ROAD_CROSSING_SLEEVES_SHORING_MODES_R1, ROAD_CROSSING_SLEEVES_SHORING_RENTAL_BASIS_R1,
   ROAD_CROSSING_SLEEVES_SHORING_WORK_BASES_R1 } from "./roadCrossingSleevesShoringR1";
 export { ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_MODES_R1, ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_BASIS_R1 } from "./roadCrossingSleevesShoringConsumablesR1";
+export { ROAD_CROSSING_SLEEVES_REACTION_MODES_R1, ROAD_CROSSING_SLEEVES_REACTION_RENTAL_BASIS_R1, ROAD_CROSSING_SLEEVES_REACTION_WORK_BASES_R1 } from "./roadCrossingSleevesReactionR1";
 
 /** Execution arithmetic is part of this assembly, not a separate estimator.
  * PJA describes separate pits and an advancing excavation/jacking system:
@@ -103,7 +106,7 @@ export const ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_ROWS_R1: readonly AutomaticRo
     inclusion: { kind: "equals" as const, parameterId: METHOD_ID, value: work.method }, procurement: true,
     titleParameterIds: [executionId(work.key, `${owner}_designation`)],
     inputParameterIds: [METHOD_ID, ...work.facts, executionId(work.key, "method_reference"),
-      ...(work.key === "jacking_advance" ? [JACKING_LOADING_MODE, JACKING_LOADING_REFERENCE] : []),
+      ...(work.key === "jacking_advance" ? [JACKING_LOADING_MODE, JACKING_LOADING_REFERENCE, reactionId("mode"), reactionId("allocation_reference")] : []),
       executionId(work.key, `${owner}_designation`), executionId(work.key, `${owner}_cost_basis`)],
   }))),
 );
@@ -1114,6 +1117,7 @@ export const ROAD_CROSSING_SLEEVES_FREIGHT_COST_BASIS_R1 = "Один полны�
 const filterRentalForMobilization = ROAD_CROSSING_SLEEVES_WATER_TREATMENT_ROWS_R1.find(row => row.rowId === "rcs:water-treatment:rental_set_hours");
 if (!filterRentalForMobilization?.inclusion) throw new Error("RCS_COMPLETE_FILTER_RENTAL_SCOPE_MISSING");
 const equipmentMobilization = buildRoadCrossingSleevesEquipmentMobilizationR1([
+  ROAD_CROSSING_SLEEVES_REACTION_CARGO_R1,
   ...ROAD_CROSSING_SLEEVES_SHORING_CARGOS_R1,
   { key: "water_pump_kits", title: "Полные гидравлические насосные комплекты с силовыми блоками и всем составом", quantityExpression: waterControlSets,
     selected: waterControlSelected, designationId: waterControlId("kit_designation"),
@@ -1124,11 +1128,12 @@ const equipmentMobilization = buildRoadCrossingSleevesEquipmentMobilizationR1([
 ], ROAD_CROSSING_SLEEVES_FREIGHT_COST_BASIS_R1);
 export const ROAD_CROSSING_SLEEVES_EQUIPMENT_MOBILIZATION_PARAMETERS_R1 = equipmentMobilization.parameters;
 export const ROAD_CROSSING_SLEEVES_EQUIPMENT_MOBILIZATION_ROWS_R1 = equipmentMobilization.rows;
-const shoringConsumables = buildRoadCrossingSleevesShoringConsumablesR1(ROAD_CROSSING_SLEEVES_SHORING_CARGOS_R1.map(cargo => {
+const shoringConsumables = buildRoadCrossingSleevesShoringConsumablesR1([...ROAD_CROSSING_SLEEVES_SHORING_CARGOS_R1.map(cargo => {
   const key = cargo.key.slice("shoring_".length, -"_kits".length);
   return { key, title: cargo.title, selected: cargo.selected, facts: cargo.facts, kitCountId: shoringId(key, "complete_kit_count"),
     cyclesId: shoringId(key, "placement_cycle_count"), calendarId: shoringId(key, "calendar_hours") };
-}));
+}), { key: "reaction", title: "Полный переносной реакционный упор: материалы всей программы", selected: ROAD_CROSSING_SLEEVES_REACTION_CARGO_R1.selected,
+  facts: ROAD_CROSSING_SLEEVES_REACTION_CARGO_R1.facts, kitCountId: "1", cyclesId: "1", calendarId: reactionId("calendar_hours") }]);
 export const ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_PARAMETERS_R1 = shoringConsumables.parameters;
 export const ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_ROWS_R1 = shoringConsumables.rows;
 type FreightCargo = Readonly<{ key: string; title: string; purchase: AutomaticRowSpec; stockId: string;
@@ -1424,7 +1429,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENTS_SCOPE_R1 = Object.freeze({
   catalogId: "canonical-work:expanded:road_crossing_sleeves",
   fullOwner: false, engineeringAccepted: false, readyForPublication: false,
   omitted: Object.freeze([
-    "Shoring actual design/method/load approval, other consumables/gap filling/waste and other kits/programmes; reaction structures and groundwater measures; actual applicability and approved civil execution rates",
+    "Shoring/reaction actual design/method/load/interface approval, other consumables/gap filling/waste and other kits/programmes; foundations/retained concrete/piles/anchors and other reaction schemes, groundwater measures; actual applicability and approved civil execution rates",
     "Approved pit return-fill technology, soil suitability/classification, heterogeneous/slurry allocations and non-granular/other bedding technologies",
     "Clearance/site preparation, other survey layouts and actual control acceptance, applicable fencing/traffic measures, recovered markers/waste handling; joint repairs/reinspection and other NDT methods, coating actual acceptance, other coatings/multiple or partial/shared mixes, cured defects/reinspection and wet waste handling, PE carrier connection actual acceptance, other connections/layouts/testing/repairs/waste and actual loading/method/design approval",
     "Internal fill product/method approval, other/partial fills, external overbreak grouting, pressure/buoyancy/restraints, preparation/curing and water quality/allocation approval",
@@ -1439,6 +1444,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_PARAMETERS_R1: readonly AutomaticPa
   ...ROAD_CROSSING_SLEEVES_CARRIER_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_CIVIL_PARAMETERS_R1, ...ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_SHORING_PARAMETERS_R1,
+  ...ROAD_CROSSING_SLEEVES_REACTION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_BEDDING_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_PIT_RETURN_PARAMETERS_R1,
@@ -1468,6 +1474,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[
   ...ROAD_CROSSING_SLEEVES_PROCUREMENT_ROWS_R1, ...ROAD_CROSSING_SLEEVES_CIVIL_ROWS_R1, ...ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_CARRIER_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_SHORING_ROWS_R1,
+  ...ROAD_CROSSING_SLEEVES_REACTION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_BEDDING_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_PIT_RETURN_ROWS_R1,
@@ -1500,12 +1507,13 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
   { stageId: "preparation", titleRu: "Подготовка участка", rows: ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1.filter(row => !row.rowId.startsWith("rcs:preparation:removal:")),
     remaining: ["Доступ, расчистка и подготовка площадки", "Другие схемы разбивки и фактическая приёмка геодезического контроля", "Применимые временные ограждения и организация движения"] },
   { stageId: "installation", titleRu: "Устройство перехода", rows: [
+    ...ROAD_CROSSING_SLEEVES_REACTION_ROWS_R1.filter(row => !row.rowId.startsWith("rcs:reaction:removal:")),
     ...ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_SHORING_ROWS_R1.filter(row => !/^rcs:shoring:[^:]+:(?:extraction|disassembly):/u.test(row.rowId)),
     ...ROAD_CROSSING_SLEEVES_CIVIL_ROWS_R1.filter(row => !["rcs:civil:open_cut_full_width_bedding_m3", "rcs:civil:open_cut_remaining_fill_space_m3"].includes(row.rowId)),
     ...ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_ROWS_R1, ...ROAD_CROSSING_SLEEVES_WATER_CONTROL_ROWS_R1.filter(row => !row.rowId.startsWith("rcs:water-control:removal:")),
     ...ROAD_CROSSING_SLEEVES_WATER_TREATMENT_ROWS_R1.filter(row => !/^rcs:water-treatment:(?:removal|waste):/u.test(row.rowId) && row.rowId !== "rcs:water-treatment:bags:wet_used_count")],
-    remaining: ["Подтверждение проекта/нагрузок/метода крепления, прочие расходники/заполнение зазоров/отходы и другие схемы; реакционные конструкции", "Подтверждение фактического водоотлива/фильтрации/приёма и их отходы, другие схемы очистки/приёма воды и способы водопонижения", "Разделение разных партий и дополнительное перемещение грунта", "Применимые смазка и заполнение снаружи футляра"] },
+    remaining: ["Подтверждение проекта/нагрузок/метода/сопряжения крепления и упора, прочие расходники/заполнение зазоров/отходы и другие схемы; основания/оставляемый бетон/сваи/анкеры и другие реакционные конструкции", "Подтверждение фактического водоотлива/фильтрации/приёма и их отходы, другие схемы очистки/приёма воды и способы водопонижения", "Разделение разных партий и дополнительное перемещение грунта", "Применимые смазка и заполнение снаружи футляра"] },
   { stageId: "bedding", titleRu: "Основание", rows: [
     ...ROAD_CROSSING_SLEEVES_CIVIL_ROWS_R1.filter(row => row.rowId === "rcs:civil:open_cut_full_width_bedding_m3"), ...ROAD_CROSSING_SLEEVES_BEDDING_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => row.rowId.startsWith("rcs:fill-execution:bedding:")),
@@ -1532,6 +1540,7 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
     ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => /^rcs:fill-execution:(?:pits|trench):/u.test(row.rowId))],
     remaining: ["Подтверждение пригодности и распределения повторно используемого грунта", "Послойные или другие материалы траншеи", "Подтверждение технологии укладки и уплотнения", "Фактические качество и отдельное распределение воды", "Разные партии грунта, пульпа и иные состояния"] },
   { stageId: "completion", titleRu: "Завершение перехода", rows: [...ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1,
+    ...ROAD_CROSSING_SLEEVES_REACTION_ROWS_R1.filter(row => row.rowId.startsWith("rcs:reaction:removal:")),
     ...ROAD_CROSSING_SLEEVES_SHORING_ROWS_R1.filter(row => /^rcs:shoring:[^:]+:(?:extraction|disassembly):/u.test(row.rowId)),
     ...ROAD_CROSSING_SLEEVES_EQUIPMENT_MOBILIZATION_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_WATER_TREATMENT_ROWS_R1.filter(row => /^rcs:water-treatment:(?:removal|waste):/u.test(row.rowId) || row.rowId === "rcs:water-treatment:bags:wet_used_count"),
