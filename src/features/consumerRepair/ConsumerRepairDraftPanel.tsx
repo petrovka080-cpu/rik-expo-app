@@ -9,6 +9,7 @@ import type { UserParamPatchOperation } from "../../lib/estimate/validateUserPar
 import { asphaltScopeSelectionQuestionForIntentV5 } from "../../lib/estimate/v4/asphalt";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
 import { getConsumerRepairCalculationStateForReadOnlyDisplay } from "../../lib/consumerRequests/consumerRequestExactRoadworksCalculationStateMigration";
+import { createConsumerEstimatePresentationTrace, type ConsumerEstimatePresentationTrace } from "../../lib/consumerRequests/consumerEstimateHydrationTrace";
 import {
   ConsumerRepairDraftQuickActions,
   ConsumerRepairProgressiveEstimatePanel,
@@ -114,7 +115,12 @@ export function ConsumerRepairDraftPanel({
   onSelectRoadScope,
   roadScopeSelectionBusy = false,
 }: Props): React.ReactElement {
-  const viewModel = measureConsumerRepairQuantityRenderWork("DRAFT_VIEW_MODEL", () => buildRequestEstimateViewModel(bundle));
+  const firstPresentation = React.useRef<ConsumerEstimatePresentationTrace | null>(null);
+  if (bundle && !firstPresentation.current) firstPresentation.current = createConsumerEstimatePresentationTrace();
+  const trace = firstPresentation.current;
+  const viewModel = measureConsumerRepairQuantityRenderWork("DRAFT_VIEW_MODEL", () => trace && bundle
+    ? trace.measureSync("PRESENTATION_DRAFT_MODEL", () => buildRequestEstimateViewModel(bundle, trace))
+    : buildRequestEstimateViewModel(bundle));
   const estimateDraftSession = bundle?.estimateDraftSession ?? null;
   const offeredScopeIds = new Set(
     estimateDraftSession?.scopeRequirement?.offeredScopePresetIds ??
@@ -145,7 +151,9 @@ export function ConsumerRepairDraftPanel({
       estimateDraftSession.status === "STALE_RESULT_REJECTED" ||
       estimateDraftSession.status === "COMPILE_FAILED"
     );
-  const revisionState = getConsumerRepairCalculationStateForReadOnlyDisplay(bundle);
+  const revisionState = trace && bundle
+    ? trace.measureSync("PRESENTATION_REVISION_DISPLAY", () => getConsumerRepairCalculationStateForReadOnlyDisplay(bundle))
+    : getConsumerRepairCalculationStateForReadOnlyDisplay(bundle);
   const currentRevision = revisionState?.revisions.find((revision) => revision.revisionId === revisionState.currentRevisionId) ?? null;
   const latestDiff = revisionState?.diffs[revisionState.diffs.length - 1] ?? null;
   const rowPhotoThumbnails = Object.fromEntries((bundle?.items ?? []).flatMap((item) => {
@@ -178,10 +186,12 @@ export function ConsumerRepairDraftPanel({
   const hasProcurementRows = Boolean(
     currentRevision?.boq.rows.some((row) => row.includedInProcurement),
   );
-  const editableHistorySummary = buildConsumerRepairEditableHistorySummary(
-    revisionState,
-  );
-  const canonical = bundle ? primaryConsumerRepairCanonicalBackendBinding(bundle) : null;
+  const editableHistorySummary = trace && bundle
+    ? trace.measureSync("PRESENTATION_HISTORY_SUMMARY", () => buildConsumerRepairEditableHistorySummary(revisionState))
+    : buildConsumerRepairEditableHistorySummary(revisionState);
+  const canonical = trace && bundle
+    ? trace.measureSync("PRESENTATION_BACKEND_BINDING", () => primaryConsumerRepairCanonicalBackendBinding(bundle))
+    : bundle ? primaryConsumerRepairCanonicalBackendBinding(bundle) : null;
   const parameterCollection = !canonical && bundle?.canonicalParameterSession?.status === "BLOCKING_REQUIRED"
     ? bundle.canonicalParameterSession
     : null;

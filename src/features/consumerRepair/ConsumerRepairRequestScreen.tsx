@@ -17,7 +17,7 @@ import {
 import { ConsumerRepairValidationError } from "../../lib/consumerRequests/consumerRequestMarketplaceService";
 import { consumerRepairSourceRequestDraftId } from "../../lib/consumerRequests/consumerRequestHistoryLineage";
 import { logger } from "../../lib/logger";
-import { createConsumerEstimateHydrationTrace } from "../../lib/consumerRequests/consumerEstimateHydrationTrace";
+import { createConsumerEstimateHydrationTrace, createConsumerEstimatePresentationTrace } from "../../lib/consumerRequests/consumerEstimateHydrationTrace";
 import type {
   ConsumerRepairDraftBundle,
 } from "../../lib/consumerRequests/consumerRequestTypes";
@@ -191,6 +191,7 @@ function applyVisibleCanonicalRowDraft(
 }
 
 function runAfterNextPaint(task: () => void): void {
+  // Historical helper name: this defers a JS task, not a native paint/frame.
   if (typeof queueMicrotask === "function") {
     queueMicrotask(task);
     return;
@@ -409,6 +410,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private currentScrollPosition = 0;
   private pendingCatalogActionContext: ConsumerEstimateActionContext | null = null;
   private problemInputRef = React.createRef<TextInput>();
+  private readonly firstPresentationTrace = createConsumerEstimatePresentationTrace();
   state: State = buildInitialControllerState(this.props);
   componentDidMount(): void {
     this.syncRuntimeIngressProjection();
@@ -416,9 +418,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       requestEstimateIntentLifecycle.subscribe(
         this.syncRuntimeIngressProjection,
       );
-    const finishFirstPaintWait = createConsumerEstimateHydrationTrace().begin("CONTROLLER_FIRST_PAINT_WAIT");
+    const finishDeferredTaskWait = createConsumerEstimateHydrationTrace().begin("CONTROLLER_DEFERRED_TASK_WAIT");
     runAfterNextPaint(() => {
-      finishFirstPaintWait();
+      finishDeferredTaskWait();
       this.applyInitialLaunchFlow();
       void this.hydrateCurrentCanonicalParameterSession();
     });
@@ -3200,9 +3202,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     this.cachedScreenView = (
       <ConsumerRepairRequestScreenView
         state={viewState}
-        renderModel={measureConsumerRepairQuantityRenderWork("SCREEN_RENDER_MODEL", () => buildConsumerRepairRequestRenderModel(viewState, {
-          includeWorkSuggestions: this.workSuggestionsEnabled,
-        }))}
+        renderModel={measureConsumerRepairQuantityRenderWork("SCREEN_RENDER_MODEL", () => {
+          const build = () => buildConsumerRepairRequestRenderModel(viewState, { includeWorkSuggestions: this.workSuggestionsEnabled });
+          return viewState.bundle ? this.firstPresentationTrace.measureSync("PRESENTATION_SCREEN_MODEL", build) : build();
+        })}
         problemInputRef={this.problemInputRef} onGoToMarket={this.goToMarket}
         onProblemTextChange={this.changeProblemText}
         onCityChange={(city) => this.setState({ city, validationErrors: [] })}

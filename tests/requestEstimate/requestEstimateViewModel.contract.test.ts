@@ -1,4 +1,5 @@
 import { buildRequestEstimateViewModel } from "../../src/features/consumerRepair/requestEstimateViewModel";
+import { createConsumerEstimatePresentationTrace, type ConsumerEstimateHydrationPhaseEvent } from "../../src/lib/consumerRequests/consumerEstimateHydrationTrace";
 import {
   foundationDraftWithManualCatalogItem,
   foundationViewModel,
@@ -96,5 +97,35 @@ describe("request estimate view model", () => {
         calculationLabel: "Предварительное количество рассчитано; уточните характеристики или условия",
       }),
     );
+  });
+  it("attributes first model phases without changing output, input, or later quantity/price edits", () => {
+    const source = foundationDraftWithManualCatalogItem();
+    const original = JSON.stringify(source);
+    const events: ConsumerEstimateHydrationPhaseEvent[] = [];
+    const trace = createConsumerEstimatePresentationTrace({ clock: () => 0, report: event => { events.push(event); } });
+    const baseline = buildRequestEstimateViewModel(source);
+    expect(buildRequestEstimateViewModel(source, trace)).toEqual(baseline);
+    expect(events.map(event => event.phase)).toEqual([
+      "PRESENTATION_PUBLIC_TITLE_ADMISSION", "PRESENTATION_PUBLIC_ROW_SECTIONS", "PRESENTATION_VISIBLE_LINES",
+      "PRESENTATION_PREVIEW_SECTIONS", "PRESENTATION_CALCULATION_PREVIEW", "PRESENTATION_NORM_SOURCE_PREVIEW",
+    ]);
+    expect(JSON.stringify(source)).toBe(original);
+    const manual = source.items.find(item => item.source === "catalog_item")!;
+    const changed = { ...source, items: source.items.map(item => item.id === manual.id
+      ? { ...item, quantity: 7, totalPrice: 35000 } : item) };
+    const current = buildRequestEstimateViewModel(changed, trace);
+    expect(current).toEqual(buildRequestEstimateViewModel(changed));
+    expect(current?.manualCatalogItems.find(item => item.id === manual.id)?.quantity).toBe(7);
+    expect(events).toHaveLength(6);
+    expect(JSON.stringify(source)).toBe(original);
+    expect(JSON.stringify(events)).not.toMatch(/titleRu|quantity|sourceParameters|requestDraftId/u);
+  });
+  it("does not consume first populated model measurements while no bundle exists", () => {
+    const events: ConsumerEstimateHydrationPhaseEvent[] = [];
+    const trace = createConsumerEstimatePresentationTrace({ clock: () => 0, report: event => { events.push(event); } });
+    expect(buildRequestEstimateViewModel(null, trace)).toBeNull();
+    expect(events).toHaveLength(0);
+    expect(buildRequestEstimateViewModel(foundationDraftWithManualCatalogItem(), trace)).not.toBeNull();
+    expect(events).toHaveLength(6);
   });
 });

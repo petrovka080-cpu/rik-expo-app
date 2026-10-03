@@ -1,13 +1,25 @@
 import { logger } from "../logger";
 
-export type ConsumerEstimateHydrationPhase =
+export type ConsumerEstimatePresentationPhase =
+  | "PRESENTATION_SCREEN_MODEL"
+  | "PRESENTATION_DRAFT_MODEL"
+  | "PRESENTATION_PUBLIC_TITLE_ADMISSION"
+  | "PRESENTATION_PUBLIC_ROW_SECTIONS"
+  | "PRESENTATION_VISIBLE_LINES"
+  | "PRESENTATION_PREVIEW_SECTIONS"
+  | "PRESENTATION_CALCULATION_PREVIEW"
+  | "PRESENTATION_NORM_SOURCE_PREVIEW"
+  | "PRESENTATION_REVISION_DISPLAY"
+  | "PRESENTATION_HISTORY_SUMMARY"
+  | "PRESENTATION_BACKEND_BINDING";
+export type ConsumerEstimateHydrationPhase = ConsumerEstimatePresentationPhase
   | "DURABLE_LEGACY_COMPATIBILITY"
   | "DURABLE_QUEUE_WAIT"
   | "DURABLE_INDEX"
   | "DURABLE_BUNDLE_RECOVERY"
   | "DURABLE_LOCAL_PROJECTION"
   | "CONTROLLER_INITIAL_STATE"
-  | "CONTROLLER_FIRST_PAINT_WAIT"
+  | "CONTROLLER_DEFERRED_TASK_WAIT"
   | "CONTROLLER_SESSION_COMMIT"
   | "PARAMETER_SNAPSHOT_FETCH"
   | "PARAMETER_SESSION_BUILD";
@@ -68,3 +80,23 @@ export function createConsumerEstimateHydrationTrace(input: {
   });
 }
 export type ConsumerEstimateHydrationTrace = ReturnType<typeof createConsumerEstimateHydrationTrace>;
+
+/** One synchronous sample per fixed phase and mounted presentation owner.
+ * This only limits diagnostics, never caches a model/validation result. Later
+ * calls still execute against their current bundle and preserve real errors.
+ * No identifiers or content are retained, and no native paint is measured.
+ */
+export function createConsumerEstimatePresentationTrace(
+  input: Parameters<typeof createConsumerEstimateHydrationTrace>[0] = {},
+) {
+  const trace = createConsumerEstimateHydrationTrace(input);
+  const measured = new Set<ConsumerEstimatePresentationPhase>();
+  return Object.freeze({
+    measureSync<T>(phase: ConsumerEstimatePresentationPhase, operation: () => T): T {
+      if (measured.has(phase)) return operation();
+      measured.add(phase);
+      return trace.measureSync(phase, operation);
+    },
+  });
+}
+export type ConsumerEstimatePresentationTrace = ReturnType<typeof createConsumerEstimatePresentationTrace>;

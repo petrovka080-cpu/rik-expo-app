@@ -29,6 +29,7 @@ import { consumerRepairCanonicalEstimateBlocksApproval } from "./consumerRepairC
 import { consumerRepairRowIsNonPayable } from "./consumerRepairRowMetadata";
 import { publicBoqDisplayNameRu } from "../../lib/estimate/publicBoqNaming";
 import { measureConsumerRepairQuantityRenderWork } from "./consumerRepairQuantityEditTrace";
+import type { ConsumerEstimatePresentationTrace } from "../../lib/consumerRequests/consumerEstimateHydrationTrace";
 
 export type RequestEstimateManualCatalogItem = {
   id: string;
@@ -1107,8 +1108,18 @@ function revisionViewLabels(bundle: ConsumerRepairDraftBundle): Pick<
   };
 }
 
-export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle | null): RequestEstimateViewModel | null {
+export function buildRequestEstimateViewModel(
+  bundle: ConsumerRepairDraftBundle | null,
+  presentationTrace?: ConsumerEstimatePresentationTrace | null,
+): RequestEstimateViewModel | null {
   if (!bundle) return null;
+  const measure = <T,>(
+    phase: "PUBLIC_TITLE_ADMISSION" | "PUBLIC_ROW_SECTIONS" | "VISIBLE_LINES"
+      | "PREVIEW_SECTIONS" | "CALCULATION_PREVIEW" | "NORM_SOURCE_PREVIEW",
+    work: () => T,
+  ): T => measureConsumerRepairQuantityRenderWork(phase, () => presentationTrace
+    ? presentationTrace.measureSync(`PRESENTATION_${phase}`, work)
+    : work());
   // Keep manually excluded canonical rows in the durable bundle so they can be
   // restored. Structural non-payable rows remain visible: they are part of the
   // technology/completeness ledger even though their cost is owned by another
@@ -1117,7 +1128,7 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
   const viewBundle = visibleEstimateItems.length === bundle.items.length
     ? bundle
     : { ...bundle, items: visibleEstimateItems };
-  const canonicalTitleItems = measureConsumerRepairQuantityRenderWork("PUBLIC_TITLE_ADMISSION", () => admissionVerifiedCanonicalTitleItems(viewBundle));
+  const canonicalTitleItems = measure("PUBLIC_TITLE_ADMISSION", () => admissionVerifiedCanonicalTitleItems(viewBundle));
   const durableSummary = bundle.durableHistorySummary ?? null;
   const rawItemCount = viewBundle.items.length || durableSummary?.rowCount || 0;
   const preliminaryNeedCount = viewBundle.items.filter(
@@ -1155,7 +1166,7 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     : hasCapitalRenovationCalculator
     ? CAPITAL_RENOVATION_SECTION_IDS
     : ["materials", "labor", "equipment", "logistics", "other"];
-  const sections = measureConsumerRepairQuantityRenderWork("PUBLIC_ROW_SECTIONS", () => sectionIds
+  const sections = measure("PUBLIC_ROW_SECTIONS", () => sectionIds
     .map((id) => ({
       id,
       title: sectionTitle(id),
@@ -1241,7 +1252,7 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     fullTotalStatusLabel: fullTotalPublicLabel(productionTrust.full_total_status, missingPrices),
     pilotBadgeLabel: pilotMode.badgeLabelRu,
     pilotDisclosureLabel: pilotMode.disclosureRu,
-    visibleLines: measureConsumerRepairQuantityRenderWork("VISIBLE_LINES", () => sections
+    visibleLines: measure("VISIBLE_LINES", () => sections
       .flatMap((section) => section.items)
       .filter((item) => !consumerRepairRowIsNonPayable(item))
       .map(visibleLineForItem)),
@@ -1255,9 +1266,9 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     ],
     sections,
     professionalPreview,
-    previewSections: measureConsumerRepairQuantityRenderWork("PREVIEW_SECTIONS", () => buildPreviewSections(sections)),
-    calculationPreviewLines: measureConsumerRepairQuantityRenderWork("CALCULATION_PREVIEW", () => buildCalculationPreviewLines(viewBundle)),
-    normSourcePreviewLines: measureConsumerRepairQuantityRenderWork("NORM_SOURCE_PREVIEW", () => buildNormSourcePreviewLines(viewBundle, sourceLabels)),
+    previewSections: measure("PREVIEW_SECTIONS", () => buildPreviewSections(sections)),
+    calculationPreviewLines: measure("CALCULATION_PREVIEW", () => buildCalculationPreviewLines(viewBundle)),
+    normSourcePreviewLines: measure("NORM_SOURCE_PREVIEW", () => buildNormSourcePreviewLines(viewBundle, sourceLabels)),
     rawItemCount,
     calculatedItemCount,
     preliminaryNeedCount,
