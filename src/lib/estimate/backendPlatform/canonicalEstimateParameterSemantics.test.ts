@@ -191,6 +191,26 @@ describe("canonical professional norm ownership", () => {
     preliminaryCompilationAllowed: false,
     guide: { guideKind: "PROJECT_DEFINED", guideValidationPolicy: "MANDATORY_BLOCK" } as never,
   };
+  const boundProjectReference = {
+    ...mandatoryProjectReference, titleRu: "Подтверждённая совместимость и полный расход выбранного материала по документу проекта",
+    constraints: { ...mandatoryProjectReference.constraints, minLength: 1, maxLength: 1000 },
+    guide: { guideKind: "PROJECT_DEFINED", guideValidationPolicy: "MANDATORY_BLOCK", sourceRole: "PROJECT_DOCUMENTATION",
+      sourceDocument: "Owned project specification", sourceLocator: "Actual project procedure/material paragraph", sourceSnapshotHash: "a".repeat(64) } as never,
+  };
+  it("keeps an immutable bounded project reference editable when its human title mentions consumption", () => {
+    expect(isCanonicalEstimateSourceManagedParameter(boundProjectReference)).toBe(false);
+    expect(isCanonicalEstimateVisibleUserResourceSelectionParameter(boundProjectReference)).toBe(true);
+  });
+  it.each([
+    { valueSourceRole: "MANUFACTURER_CONFIRMED" as const }, { valueSourceRole: "MANDATORY_NORM_VALUE" as const },
+    { valueSourceRole: "SELECTED_EQUIPMENT_PASSPORT" as const }, { valueSourceRole: "BACKEND_DERIVED" as const },
+    { visibilityRole: "INTERNAL_ONLY" as const }, { resourceBranchConsumers: [] }, { preliminaryCompilationAllowed: true },
+    { constraints: { ...boundProjectReference.constraints, maxLength: 1001 } },
+    { guide: { ...(boundProjectReference.guide as object), sourceRole: "PRIMARY_SOURCE_NORM" } as never },
+    { guide: { ...(boundProjectReference.guide as object), sourceSnapshotHash: "missing" } as never },
+  ])("a consumption-related reference cannot bypass protected ownership or unbound metadata: %j", patch => {
+    expect(isCanonicalEstimateVisibleUserResourceSelectionParameter({ ...boundProjectReference, ...patch })).toBe(false);
+  });
   it.each(["material_compatibility_reference", "selected_technology_document", "project_material_approval", "project_material_selection"])(
     "admits a real mandatory project resource gate from metadata regardless of name %s", parameterId => {
       const schema = { ...mandatoryProjectReference, parameterId };

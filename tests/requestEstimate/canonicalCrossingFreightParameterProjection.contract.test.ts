@@ -2,7 +2,8 @@ import { buildMasterParameterCalculationConsumers } from "../../scripts/estimate
 import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_FREIGHT_MODES_R1 as modes, ROAD_CROSSING_SLEEVES_FREIGHT_COST_BASIS_R1 as basis,
   ROAD_CROSSING_SLEEVES_SOIL_MODES_R1 as soilModes, ROAD_CROSSING_SLEEVES_SOIL_REUSE_ORIGINS_R1 as soilOrigins,
   ROAD_CROSSING_SLEEVES_SOIL_DESTINATIONS_R1 as destinations, ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_MODES_R1 as receivingModes,
-  ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_COST_BASIS_R1 as receivingBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_COST_BASIS_R1 as receivingBasis,
+  ROAD_CROSSING_SLEEVES_INSPECTION_MODES_R1 as inspectionModes, ROAD_CROSSING_SLEEVES_INSPECTION_COUPLANT_COST_BASIS_R1 as couplantBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_TRENCH_FILL_MODES_R1 as fillModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
 import { buildConsumerCanonicalPrecompileParameterSession } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
@@ -91,6 +92,39 @@ describe("actual soil-state facts through the same canonical publisher/editor", 
     expect(result.parameters.some(p => p.parameterId === "rcs_soil_trench_vehicle_payload_kg")).toBe(false);
     const volume = session({ ...soil, rcs_soil_trench_haul_mode: modes.otherParty, rcs_soil_trench_receiving_mode: receivingModes.looseVolume });
     expect(volume.parameters.some(p => p.parameterId === "rcs_soil_trench_shipping_density_kg_m3")).toBe(false);
+  });
+});
+
+describe("actual initial inspection through common metadata/editor", () => {
+  const inspection: Record<string, CanonicalEstimateParameterInputValue> = { ...fixture,
+    rcs_inspection_mode: inspectionModes.visualUt, rcs_inspection_program_reference: "TEST actual initial visual/UT program",
+    rcs_inspection_ut_joint_fraction: 0.5, rcs_inspection_ut_method_reference: "TEST actual compatible inspection procedure",
+    rcs_inspection_ut_crew_designation: "TEST all inspectors", rcs_inspection_ut_crew_h_per_joint: 0.6,
+    rcs_inspection_couplant_product_designation: "TEST actual couplant", rcs_inspection_couplant_product_reference: "TEST product and gross consumption",
+    rcs_inspection_couplant_gross_kg_per_joint: 0.3, rcs_inspection_couplant_compatible_stock_kg: 0.1,
+    rcs_inspection_couplant_retained_reserve_kg: 0.2, rcs_inspection_couplant_supplier_pack_net_kg: 0.5, rcs_inspection_couplant_cost_basis: couplantBasis,
+  };
+  it("shows actual inspection/couplant facts already filled and editable with their shared guides and units", () => {
+    for (const [key, value] of Object.entries(inspection).filter(([key]) => key.startsWith("rcs_inspection_"))) {
+      expect(cards(inspection).map(c => c.key)).toContain(key);
+      expect(cards(inspection).find(c => c.key === key)).toMatchObject({ value, editable: true, missing: false });
+    }
+    expect(cards(inspection).find(c => c.key === "rcs_inspection_couplant_gross_kg_per_joint")?.unitRu).toBe("кг/шт.");
+    expect(catalog.parameterSchema.some(p => /(?:initial_joint_count|couplant_ordered|couplant_consumed)/u.test(p.parameterId))).toBe(false);
+  });
+  it("zero UT selection disables its crew/equipment/material fields without discarding prior values", () => {
+    const result = session({ ...inspection, rcs_inspection_ut_joint_fraction: 0 });
+    expect(result.parameters.find(p => p.parameterId === "rcs_inspection_ut_joint_fraction")).toBeDefined();
+    expect(result.parameters.some(p => p.parameterId === "rcs_inspection_couplant_gross_kg_per_joint")).toBe(false);
+    expect(result.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_inspection_couplant_gross_kg_per_joint")).toMatchObject({ value: 0.3 });
+    expect(cards(inspection).find(c => c.key === "rcs_inspection_couplant_gross_kg_per_joint")).toMatchObject({ value: 0.3, editable: true });
+  });
+  it("no site joints disables the entire inspection scope while another-party program keeps its real reference", () => {
+    const single = session({ ...inspection, rcs_crossing_length_m: 12 });
+    expect(single.parameters.some(p => p.parameterId.startsWith("rcs_inspection_"))).toBe(false);
+    const other = session({ ...inspection, rcs_inspection_mode: inspectionModes.otherParty });
+    expect(other.parameters.find(p => p.parameterId === "rcs_inspection_program_reference")).toBeDefined();
+    expect(other.parameters.some(p => p.parameterId === "rcs_inspection_ut_joint_fraction")).toBe(false);
   });
 });
 const cards = (parameters = fixture) => buildCanonicalParameterCards({ session: session(parameters), revision: null });

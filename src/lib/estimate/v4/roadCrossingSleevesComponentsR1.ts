@@ -190,6 +190,104 @@ export const ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1: readonly AutomaticRowSpec
   }))),
 );
 
+/** Inspection consumes real work/equipment/materials, not a document row.
+ * TWI describes distinct inspection methods and procedure-specific repair:
+ * https://www.twi-global.com/what-we-do/services-and-support/asset-management/non-destructive-testing
+ * https://www.twi-global.com/what-we-do/services-and-support/failure-analysis-and-repair/repair-procedure-development
+ * No required sample fraction, defect rate or repair quantity is inferred.
+ * This branch is initial visual/manual-UT inspection only, not acceptance. */
+export const ROAD_CROSSING_SLEEVES_INSPECTION_MODES_R1 = Object.freeze({
+  visual: "Отдельный визуальный контроль по подтверждённой программе",
+  visualUt: "Отдельные визуальный и ручной ультразвуковой контроль по подтверждённой программе",
+  otherParty: "Контроль другой стороны без отдельных ресурсов исполнителя",
+  other: "Другие методы контроля: отдельная программа ресурсов",
+});
+export const ROAD_CROSSING_SLEEVES_INSPECTION_COUPLANT_COST_BASIS_R1 = "Только новый заказ контактной среды с учтёнными процессными потерями и резервом; без контроля, персонала, оборудования, энергии, доставки и повторной оплаты тех же материалов";
+const inspectionId = (suffix: string) => `rcs_inspection_${suffix}`;
+const siteJointsPositive: AutomaticInclusionCondition = { kind: "greater_than", parameterId: "rcs_crossing_length_m",
+  valueParameterId: "rcs_planned_physical_section_length_m" };
+const inspectionVisual: AutomaticInclusionCondition = { kind: "and", operands: [siteJointsPositive,
+  { kind: "or", operands: [ROAD_CROSSING_SLEEVES_INSPECTION_MODES_R1.visual, ROAD_CROSSING_SLEEVES_INSPECTION_MODES_R1.visualUt]
+    .map(value => ({ kind: "equals", parameterId: inspectionId("mode"), value })) }] };
+const inspectionUtProgram: AutomaticInclusionCondition = { kind: "and", operands: [siteJointsPositive,
+  { kind: "equals", parameterId: inspectionId("mode"), value: ROAD_CROSSING_SLEEVES_INSPECTION_MODES_R1.visualUt }] };
+const inspectedUtJointCount = `ceil((${quantities.site_joint_count})*${inspectionId("ut_joint_fraction")})`;
+const inspectionUt: AutomaticInclusionCondition = { kind: "and", operands: [inspectionUtProgram,
+  { kind: "formula_greater_than", expression: inspectedUtJointCount, unitId: "piece", value: 0 }] };
+const inspectionFacts = ["rcs_crossing_length_m", "rcs_planned_physical_section_length_m", "rcs_casing_outside_diameter_mm", "rcs_casing_inside_diameter_mm",
+  "rcs_joint_wps_reference", "rcs_joint_welding_process", inspectionId("mode"), inspectionId("program_reference")];
+const inspectionWorks = [
+  { key: "visual", title: "Визуальный контроль монтажных стыков", count: quantities.site_joint_count, inclusion: inspectionVisual },
+  { key: "ut", title: "Ручной ультразвуковой контроль выбранных монтажных стыков", count: inspectedUtJointCount, inclusion: inspectionUt },
+];
+export const ROAD_CROSSING_SLEEVES_INSPECTION_PARAMETERS_R1: readonly AutomaticParameterSpec[] = Object.freeze([
+  { id: inspectionId("mode"), title: "Фактическая программа и граница оплаты контроля монтажных стыков", valueType: "enum", unitId: null,
+    kind: "conditional", values: Object.values(ROAD_CROSSING_SLEEVES_INSPECTION_MODES_R1), requiredWhen: siteJointsPositive },
+  { id: inspectionId("program_reference"), title: "Применимая программа первоначального контроля: метод, объём, выбранные стыки, доступ, критерии и исполнитель; ремонт и повторный контроль отдельно",
+    valueType: "text", unitId: null, kind: "conditional", requiredWhen: siteJointsPositive },
+  { id: inspectionId("ut_joint_fraction"), title: "Подтверждённая доля монтажных стыков для первоначального ручного УЗК от 0 до 1 по программе; количество целых стыков рассчитывается",
+    valueType: "decimal", unitId: "ratio", min: 0, max: 1, kind: "conditional", requiredWhen: inspectionUtProgram },
+  { id: inspectionId("couplant_cost_basis"), title: "Отдельная граница стоимости контактной среды первоначального УЗК", valueType: "enum", unitId: null,
+    values: [ROAD_CROSSING_SLEEVES_INSPECTION_COUPLANT_COST_BASIS_R1], kind: "conditional", requiredWhen: inspectionUt },
+  ...inspectionWorks.flatMap(work => {
+    const text = (suffix: string, title: string): AutomaticParameterSpec => ({ id: inspectionId(`${work.key}_${suffix}`), title: `${work.title}: ${title}`,
+      valueType: "text", unitId: null, kind: "conditional", requiredWhen: work.inclusion });
+    const rate = (owner: "crew" | "equipment"): AutomaticParameterSpec => ({ id: inspectionId(`${work.key}_${owner}_h_per_joint`),
+      title: `${work.title}: ${owner === "crew" ? "суммарные человеко-часы всех исполнителей" : "часы выбранного комплекта техники"} на первоначально проверяемый целый стык`,
+      valueType: "decimal", unitId: `${owner === "crew" ? "man" : "machine"}_hour_per_piece`, min: 0, kind: "conditional", requiredWhen: work.inclusion });
+    const basis = (owner: "crew" | "equipment"): AutomaticParameterSpec => ({ id: inspectionId(`${work.key}_${owner}_cost_basis`),
+      title: `${work.title}: отдельная граница ${owner === "crew" ? "труда" : "оборудования"}`, valueType: "enum", unitId: null,
+      kind: "conditional", values: [ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_COST_BASES_R1[owner]], requiredWhen: work.inclusion });
+    return [text("method_reference", "подтверждённая применимость процедуры к материалу, толщине стенки, геометрии, поверхности, доступу и квалификации; без сварки, подготовки поверхности, ремонта и покрытия"),
+      text("crew_designation", "фактические исполнители, включая операторов"), rate("crew"), basis("crew"),
+      text("equipment_designation", "фактическое совместимое оборудование с энергией, без персонала и расходников"), rate("equipment"), basis("equipment")];
+  }),
+  ...(["product_designation", "product_reference", "gross_kg_per_joint", "compatible_stock_kg", "retained_reserve_kg", "supplier_pack_net_kg"] as const).map(suffix => {
+    const titles = { product_designation: "Выбранная совместимая контактная среда ручного УЗК", product_reference: "Фактическая совместимость и полный расход контактной среды по выбранной процедуре; не включена в другую расценку",
+      gross_kg_per_joint: "Полный расход контактной среды на первоначально проверяемый стык, включая все потери", compatible_stock_kg: "Пригодное совместимое наличие контактной среды",
+      retained_reserve_kg: "Сохраняемый резерв контактной среды", supplier_pack_net_kg: "Фактическая масса контактной среды без тары в поставочной упаковке" };
+    const isText = suffix === "product_designation" || suffix === "product_reference";
+    return { id: inspectionId(`couplant_${suffix}`), title: titles[suffix], valueType: isText ? "text" : "decimal", unitId: isText ? null : suffix === "gross_kg_per_joint" ? "kg_per_piece" : "kg",
+      ...(isText ? {} : { min: suffix === "supplier_pack_net_kg" ? 0.000_001 : 0 }), kind: "conditional", requiredWhen: inspectionUt } as AutomaticParameterSpec;
+  }),
+]);
+export const ROAD_CROSSING_SLEEVES_INSPECTION_ROWS_R1: readonly AutomaticRowSpec[] = Object.freeze([
+  { rowId: "rcs:inspection:program_joint_count", formulaId: "rcs:inspection:program_joint_count", section: "Контроль монтажных стыков", category: "service",
+    title: "Монтажные стыки в подтверждённой программе контроля; не повторная оплата сварки или документа", unitId: "piece", expression: quantities.site_joint_count,
+    inclusion: siteJointsPositive, costTreatment: "INFORMATIONAL_SCOPE", inputParameterIds: inspectionFacts },
+  { rowId: "rcs:inspection:ut:initial_joint_count", formulaId: "rcs:inspection:ut:initial_joint_count", section: "Первоначальный ручной УЗК", category: "service",
+    title: "Количество целых монтажных стыков выбранной первоначальной программы УЗК; не дефекты или ремонт", unitId: "piece", expression: inspectedUtJointCount,
+    inclusion: inspectionUtProgram, costTreatment: "INFORMATIONAL_SCOPE", inputParameterIds: inspectionFacts },
+  ...inspectionWorks.flatMap(work => (["crew", "equipment"] as const).map((owner): AutomaticRowSpec => ({
+    rowId: `rcs:inspection:${work.key}:${owner}_hours`, formulaId: `rcs:inspection:${work.key}:${owner}_hours`, section: work.title,
+    category: owner === "crew" ? "labor" : "equipment", title: `${work.title}: ${owner === "crew" ? "труд всех исполнителей" : "комплект техники с энергией"}`,
+    unitId: owner === "crew" ? "man_hour" : "machine_hour", expression: `(${work.count})*${inspectionId(`${work.key}_${owner}_h_per_joint`)}`,
+    inclusion: work.inclusion, procurement: true, titleParameterIds: [inspectionId(`${work.key}_${owner}_designation`)],
+    inputParameterIds: [...inspectionFacts, ...(work.key === "ut" ? [inspectionId("ut_joint_fraction")] : []), inspectionId(`${work.key}_method_reference`),
+      inspectionId(`${work.key}_${owner}_cost_basis`)],
+  }))),
+  ...((): AutomaticRowSpec[] => {
+    const consumed = `(${inspectedUtJointCount})*${inspectionId("couplant_gross_kg_per_joint")}`;
+    const reserve = inspectionId("couplant_retained_reserve_kg"), stock = inspectionId("couplant_compatible_stock_kg"), pack = inspectionId("couplant_supplier_pack_net_kg");
+    const need = `max(0,(${consumed})+${reserve}-${stock})`, packs = `ceil((${need})/${pack})`, ordered = `(${packs})*${pack}`;
+    const remaining = `${stock}+(${ordered})-(${consumed})`;
+    const facts = [...inspectionFacts, inspectionId("ut_method_reference"), inspectionId("ut_joint_fraction"), inspectionId("couplant_product_designation"), inspectionId("couplant_product_reference")];
+    const rows: readonly (readonly [string, string, string])[] = [
+      ["consumed_kg", "Расход контактной среды на первоначальный УЗК, со всеми потерями", consumed],
+      ["new_need_kg", "Дополнительная потребность контактной среды с резервом после пригодного наличия", need],
+      ["supplier_pack_count", "Число новых упаковок контактной среды; не рейсы или труд", packs],
+      ["ordered_kg", "Новый заказ совместимой контактной среды первоначального УЗК", ordered],
+      ["remaining_kg", "Остаток контактной среды после первоначального УЗК, включая резерв", remaining],
+      ["free_kg_beyond_reserve", "Свободная контактная среда сверх сохраняемого резерва", `(${remaining})-${reserve}`],
+    ];
+    return rows.map(([key, title, expression]): AutomaticRowSpec => ({ rowId: `rcs:inspection:couplant:${key}`, formulaId: `rcs:inspection:couplant:${key}`,
+      section: "Контактная среда первоначального ручного УЗК", category: "material", title, expression, unitId: key === "supplier_pack_count" ? "package" : "kg",
+      inclusion: inspectionUt, costTreatment: key === "ordered_kg" ? "OWN_COST" : "INFORMATIONAL_SCOPE", procurement: key === "ordered_kg",
+      inputParameterIds: [...facts, ...(key === "ordered_kg" ? [inspectionId("couplant_cost_basis")] : [])],
+      ...(key === "ordered_kg" ? { titleParameterIds: [inspectionId("couplant_product_designation")] } : {}) }));
+  })(),
+]);
+
 /** Freight is derived from the selected material order, not installation or
  * supplier multiples. Existing stock has a separate actual off-site allocation.
  * Every lane is a dedicated documented load: consolidated loads require a
@@ -222,6 +320,8 @@ const freightCargoGroups: readonly FreightCargo[] = [
     "rcs:internal-fill:ordered_dry_kg", "rcs_internal_fill_compatible_dry_stock_kg", "kg", undefined, "rcs_internal_fill_supplier_bag_net_kg"),
   freightCargo("internal_water", "Вода для затворения внутреннего заполнения", ROAD_CROSSING_SLEEVES_INTERNAL_WATER_ROWS_R1,
     "rcs:internal-water:ordered_m3", "rcs_internal_fill_water_compatible_stock_m3", "m3"),
+  freightCargo("inspection_couplant", "Контактная среда первоначального ручного УЗК", ROAD_CROSSING_SLEEVES_INSPECTION_ROWS_R1,
+    "rcs:inspection:couplant:ordered_kg", "rcs_inspection_couplant_compatible_stock_kg", "kg", undefined, "rcs_inspection_couplant_supplier_pack_net_kg"),
 ];
 const freightId = (key: string, suffix: string) => `rcs_freight_${key}_${suffix}`;
 const freightLanes = freightCargoGroups.flatMap(cargo => (["new", "stock"] as const).map(lane => {
@@ -236,7 +336,10 @@ const freightLanes = freightCargoGroups.flatMap(cargo => (["new", "stock"] as co
     { kind: "formula_greater_than", expression: quantity, unitId: cargo.unit, value: 0 }] };
   const separate: AutomaticInclusionCondition = { kind: "and", operands: [positive,
     { kind: "equals", parameterId: freightId(key, "mode"), value: ROAD_CROSSING_SLEEVES_FREIGHT_MODES_R1.separate }] };
-  const quantum = cargo.unit === "piece" ? "1" : cargo.quantum;
+  // New supplier packs are indivisible. Already allocated usable stock may
+  // be in opened containers with its OWN certified shipping-mass/load plan.
+  // Whole physical pipe sections remain indivisible in either lane.
+  const quantum = cargo.unit === "piece" ? "1" : lane === "new" ? cargo.quantum : undefined;
   const rawCapacity = `min(${freightId(key, "max_units_per_trip")},${freightId(key, "payload_kg")}/${freightId(key, "shipping_kg_per_unit")})`;
   const capacity = quantum ? `floor((${rawCapacity})/(${quantum}))*(${quantum})` : rawCapacity;
   return { cargo, key, lane, offsite, quantity, stockPositive, positive, separate, capacity };
@@ -470,7 +573,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENTS_SCOPE_R1 = Object.freeze({
   omitted: Object.freeze([
     "Excavation support/reaction structures and groundwater measures; actual applicability and approved civil execution rates",
     "Approved pit return-fill technology, soil suitability/classification, heterogeneous/slurry allocations and non-granular/other bedding technologies",
-    "Actual preparation consumables, joint NDT/repairs/coating/drying, jacking section loading, carrier connections and method/design approval",
+    "Actual preparation consumables, joint repairs/reinspection and other NDT methods, coating/drying, jacking section loading, carrier connections and method/design approval",
     "Internal fill product/method approval, other/partial fills, external overbreak grouting, pressure/buoyancy/restraints, preparation/curing and water quality/allocation approval",
     "Consolidated delivery manifests, fittings/consumables freight, equipment delivery/return and extra soil sorting/site handling; actual certified mass, routes, receiving permission and prices remain project facts",
     "Full-owner reconciliation of explicit purchase exceptions with formula-reference balances",
@@ -491,6 +594,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_PARAMETERS_R1: readonly AutomaticPa
   ...ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_MECHANICAL_PARAMETERS_R1,
+  ...ROAD_CROSSING_SLEEVES_INSPECTION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_FREIGHT_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_SOIL_PARAMETERS_R1,
 ]);
@@ -507,6 +611,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[
   ...ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1,
+  ...ROAD_CROSSING_SLEEVES_INSPECTION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_SOIL_ROWS_R1,
 ]);
@@ -526,8 +631,9 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
     ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => row.rowId.startsWith("rcs:fill-execution:bedding:"))],
     remaining: ["Подтверждение технологии слоёв и уплотнения основания", "Фактически расходуемая вода и её отдельная поставка", "Применимое основание котлованов"] },
   { stageId: "casing", titleRu: "Футляр и стыки", rows: [...ROAD_CROSSING_SLEEVES_CASING_MATERIAL_ROWS_R1, ...ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_ROWS_R1,
+    ...ROAD_CROSSING_SLEEVES_INSPECTION_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1.filter(row => /^rcs:mechanical:casing_/u.test(row.rowId))],
-    remaining: ["Подтверждение технологии подготовки и отдельные расходники", "Контроль и исправление стыков", "Применимое восстановление защитного покрытия", "Загрузка секций при продавливании и подтверждённая схема подъёма"] },
+    remaining: ["Подтверждение технологии подготовки и отдельные расходники", "Другие методы контроля, фактические дефекты, ремонт и повторный контроль", "Применимое восстановление защитного покрытия", "Загрузка секций при продавливании и подтверждённая схема подъёма"] },
   { stageId: "carrier_and_supports", titleRu: "Рабочая труба, опоры и концевые узлы", rows: [...ROAD_CROSSING_SLEEVES_SPACER_GEOMETRY_ROWS_R1, ...ROAD_CROSSING_SLEEVES_PROCUREMENT_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_CARRIER_ROWS_R1, ...ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1.filter(row => !/^rcs:mechanical:casing_/u.test(row.rowId))],
     remaining: ["Подтверждение рабочей трубы, иной поставки и совместимой технологии монтажа", "Соединители и соединения рабочей трубы", "Подтверждённые удерживающие и концевые конструкции"] },

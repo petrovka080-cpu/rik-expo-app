@@ -7,7 +7,8 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_COMPONENT_P
   ROAD_CROSSING_SLEEVES_FREIGHT_COST_BASIS_R1 as freightBasis,
   ROAD_CROSSING_SLEEVES_SOIL_MODES_R1 as soilModes, ROAD_CROSSING_SLEEVES_SOIL_REUSE_ORIGINS_R1 as soilOrigins,
   ROAD_CROSSING_SLEEVES_SOIL_DESTINATIONS_R1 as soilDestinations, ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_MODES_R1 as receivingModes,
-  ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_COST_BASIS_R1 as receivingBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_COST_BASIS_R1 as receivingBasis,
+  ROAD_CROSSING_SLEEVES_INSPECTION_MODES_R1 as inspectionModes, ROAD_CROSSING_SLEEVES_INSPECTION_COUPLANT_COST_BASIS_R1 as couplantBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierModes, ROAD_CROSSING_SLEEVES_CARRIER_COST_BASIS_R1 as carrierBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1 as jointParameters, ROAD_CROSSING_SLEEVES_JOINT_COST_BASES_R1 as bases } from "../../src/lib/estimate/v4/roadCrossingSleevesJointResourcesR1";
@@ -24,6 +25,7 @@ const components = buildRoadCrossingSleevesComponentsR1({ source_title: "Owned i
 const definition = components.definition;
 // Synthetic actual-fact/price fixtures ONLY, never a published default or WPS approval.
 const fixture: Record<string, unknown> = {
+  rcs_inspection_mode: inspectionModes.otherParty, rcs_inspection_program_reference: "TEST actual separate inspector supplies its own resources, no executor charge",
   rcs_soil_trench_scope: soilModes.other, rcs_soil_jacking_scope: soilModes.other,
   ...Object.fromEntries(parameters.filter(parameter => parameter.id.startsWith("rcs_freight_")
     && /(?:_mode|_allocation_reference|_offsite_stock_units)$/u.test(parameter.id)).map(parameter => [parameter.id,
@@ -112,6 +114,99 @@ function compile(submittedParameters: Record<string, unknown> = fixture, rowOver
   });
 }
 const q = (result: Awaited<ReturnType<typeof compile>>, id: string) => Number(result.rows.find(row => row.row_id === id)?.quantity);
+
+describe("actual initial joint inspection, equipment and couplant in the same crossing", () => {
+  const inspection: Record<string, unknown> = { ...fixture, rcs_inspection_mode: inspectionModes.visualUt,
+    rcs_inspection_program_reference: "TEST selected initial visual+manual UT program, actual selected joints and criteria; no predicted repair",
+    rcs_inspection_ut_joint_fraction: 0.5,
+    ...Object.fromEntries(["visual", "ut"].flatMap(key => Object.entries({
+      method_reference: "TEST confirmed procedure, actual steel/wall/geometry/access and inspector qualification",
+      crew_designation: "TEST all qualified inspectors/operators", crew_h_per_joint: 0.6, crew_cost_basis: executionBases.crew,
+      equipment_designation: "TEST actual calibrated compatible inspection equipment", equipment_h_per_joint: 0.2, equipment_cost_basis: executionBases.equipment,
+    }).map(([suffix, value]) => [`rcs_inspection_${key}_${suffix}`, value]))),
+    rcs_inspection_couplant_product_designation: "TEST actual compatible UT couplant", rcs_inspection_couplant_product_reference: "TEST applicable product/procedure, disjoint gross consumption",
+    rcs_inspection_couplant_gross_kg_per_joint: 0.3, rcs_inspection_couplant_compatible_stock_kg: 0.1,
+    rcs_inspection_couplant_retained_reserve_kg: 0.2, rcs_inspection_couplant_supplier_pack_net_kg: 0.5,
+    rcs_inspection_couplant_cost_basis: couplantBasis,
+  };
+  const order = "rcs:inspection:couplant:ordered_kg";
+  it("derives initial selected whole joints and distinct inspection hours/material balances without changing welding", async () => {
+    const result = await compile(inspection, { [order]: { unitPrice: "4", provenance },
+      "rcs:inspection:ut:crew_hours": { unitPrice: "10", provenance } });
+    expect(result.preliminaryNeeds).toEqual([]);
+    expect(q(result, "rcs:inspection:program_joint_count")).toBe(2); expect(q(result, "rcs:inspection:ut:initial_joint_count")).toBe(1);
+    expect(q(result, "rcs:inspection:visual:crew_hours")).toBe(1.2); expect(q(result, "rcs:inspection:ut:crew_hours")).toBe(0.6);
+    expect(q(result, "rcs:inspection:ut:equipment_hours")).toBe(0.2);
+    expect(q(result, "rcs:inspection:couplant:consumed_kg")).toBe(0.3); expect(q(result, order)).toBe(0.5);
+    expect(q(result, "rcs:inspection:couplant:remaining_kg")).toBe(0.3); expect(q(result, "rcs:inspection:couplant:free_kg_beyond_reserve")).toBe(0.1);
+    expect(result.totals.amount).toBe("8"); expect(q(result, "rcs:joint:crew_person_hours")).toBe(6);
+    expect(result.rows.filter(row => row.row_id.startsWith("rcs:inspection:couplant:") && row.included_in_procurement).map(row => row.row_id)).toEqual([order]);
+    expect(components.stageMatrix.find(stage => stage.stageId === "casing")?.ownResourceIds).toContain(order);
+  });
+  it("supplier pack/reserve/stock cannot inflate inspection count or crew/equipment hours", async () => {
+    const before = await compile(inspection);
+    const changed = await compile({ ...inspection, rcs_inspection_couplant_retained_reserve_kg: 10,
+      rcs_inspection_couplant_supplier_pack_net_kg: 5, rcs_inspection_couplant_compatible_stock_kg: 3 });
+    expect(q(changed, order)).not.toBe(q(before, order));
+    expect(q(changed, "rcs:inspection:ut:crew_hours")).toBe(q(before, "rcs:inspection:ut:crew_hours"));
+    const all = await compile({ ...inspection, rcs_inspection_ut_joint_fraction: 1 });
+    expect(q(all, "rcs:inspection:ut:initial_joint_count")).toBe(2); expect(q(all, "rcs:inspection:couplant:consumed_kg")).toBe(0.6);
+    await expect(compile({ ...inspection, rcs_inspection_ut_joint_fraction: 1.1 })).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+  });
+  it("zero UT fraction and visual-only scope keep visual inspection but disable UT-specific material/equipment questions", async () => {
+    for (const patch of [{ rcs_inspection_ut_joint_fraction: 0 }, { rcs_inspection_mode: inspectionModes.visual }]) {
+      const input: Record<string, unknown> = { ...inspection, ...patch };
+      for (const key of Object.keys(input)) if (key.startsWith("rcs_inspection_couplant_") || key.startsWith("rcs_inspection_ut_") && key !== "rcs_inspection_ut_joint_fraction") delete input[key];
+      const result = await compile(input); expect(result.preliminaryNeeds).toEqual([]);
+      expect(q(result, "rcs:inspection:visual:crew_hours")).toBe(1.2);
+      expect(result.rows.some(row => row.row_id.startsWith("rcs:inspection:couplant:") || row.row_id === "rcs:inspection:ut:crew_hours")).toBe(false);
+    }
+  });
+  it("no site joints disables all initial inspection facts; other-party/other program retains its explicit boundary without executor costs", async () => {
+    const single: Record<string, unknown> = { ...inspection, rcs_crossing_length_m: 12 };
+    for (const key of Object.keys(single)) if (key.startsWith("rcs_inspection_")) delete single[key];
+    const result = await compile(single); expect(result.preliminaryNeeds).toEqual([]); expect(result.rows.some(row => row.row_id.startsWith("rcs:inspection:"))).toBe(false);
+    for (const mode of [inspectionModes.otherParty, inspectionModes.other]) {
+      const other = await compile({ ...inspection, rcs_inspection_mode: mode });
+      expect(other.rows.filter(row => row.row_id.startsWith("rcs:inspection:")).map(row => row.row_id)).toEqual(["rcs:inspection:program_joint_count"]);
+      expect(other.parameters.rcs_inspection_ut_joint_fraction).toBe(0.5);
+    }
+  });
+  it("an unknown UT fraction leaves known visual inspection and other materials calculated, never invents defects or repeats", async () => {
+    const input = { ...inspection }; delete input.rcs_inspection_ut_joint_fraction;
+    const result = await compile(input, { "rcs:inspection:ut:crew_hours": { quantity: "999", provenance } });
+    expect(q(result, "rcs:inspection:visual:crew_hours")).toBe(1.2); expect(q(result, "rcs:casing:ordered_casing_length_m")).toBe(48);
+    expect(result.rows.some(row => row.row_id === "rcs:inspection:ut:crew_hours")).toBe(false);
+    expect(result.preliminaryNeeds.find(need => need.row_id === "rcs:inspection:ut:crew_hours")?.missing_parameter_ids).toContain("rcs_inspection_ut_joint_fraction");
+  });
+  it.each(["rcs_inspection_program_reference", "rcs_inspection_ut_method_reference", "rcs_casing_inside_diameter_mm", "rcs_inspection_couplant_product_reference", "rcs_inspection_couplant_cost_basis"])(
+    "manual couplant order cannot bypass actual quality/source fact %s", async key => {
+      const input = { ...inspection }; delete input[key];
+      const result = await compile(input, { [order]: { quantity: "999", provenance } });
+      expect(result.rows.some(row => row.row_id === order)).toBe(false);
+      expect(result.preliminaryNeeds.find(need => need.row_id === order)?.missing_parameter_ids).toContain(key);
+      expect(q(result, beddingOwner)).toBe(6);
+    });
+  it("unknown supply packaging blocks only material order while actual consumption and inspection labor stay calculated", async () => {
+    const input = { ...inspection }; delete input.rcs_inspection_couplant_supplier_pack_net_kg;
+    const result = await compile(input); expect(q(result, "rcs:inspection:couplant:consumed_kg")).toBe(0.3);
+    expect(q(result, "rcs:inspection:ut:crew_hours")).toBe(0.6); expect(result.rows.some(row => row.row_id === order)).toBe(false);
+    expect(result.preliminaryNeeds.find(need => need.row_id === order)?.missing_parameter_ids).toContain("rcs_inspection_couplant_supplier_pack_net_kg");
+  });
+  it("ships rounded new couplant bags and allocated off-site stock through the existing actual dedicated freight owner", async () => {
+    const lane = (key: string) => Object.fromEntries(Object.entries({ mode: freightModes.separate, allocation_reference: "TEST actual dedicated couplant route/load", vehicle_designation: "TEST compatible small cargo vehicle",
+      shipping_kg_per_unit: 1.1, payload_kg: 10, max_units_per_trip: 10, cost_basis: freightBasis }).map(([suffix, value]) => [`rcs_freight_inspection_couplant_${key}_${suffix}`, value]));
+    const result = await compile({ ...inspection, rcs_freight_inspection_couplant_offsite_stock_units: 0.1, ...lane("new"), ...lane("stock"),
+      rcs_freight_inspection_couplant_stock_payload_kg: 0.2, rcs_freight_inspection_couplant_stock_max_units_per_trip: 0.2 });
+    expect(result.preliminaryNeeds).toEqual([]); expect(q(result, "rcs:freight:inspection_couplant_new:cargo_units")).toBe(0.5);
+    expect(q(result, "rcs:freight:inspection_couplant_new:trip_count")).toBe(1);
+    expect(q(result, "rcs:freight:inspection_couplant_stock:cargo_units")).toBe(0.1);
+    expect(q(result, "rcs:freight:inspection_couplant_stock:trip_count")).toBe(1);
+    // Whole supply packs apply to NEW goods. Existing compatible usable stock
+    // can be an already opened container; inspect its actual allocation below.
+    expect(q(result, "rcs:inspection:couplant:consumed_kg")).toBe(0.3);
+  });
+});
 
 describe("actual homogeneous soil allocation and separate haul/receiving in the same assembly", () => {
   const soil: Record<string, unknown> = { ...selectedTrench,
@@ -417,7 +512,8 @@ describe("road-casing component integration, not full crossing acceptance", () =
     const input = { ...fixture }; delete input.rcs_joint_wps_reference;
     const result = await compile(input);
     expect(result.preliminaryNeeds.length).toBeGreaterThan(0);
-    expect(result.preliminaryNeeds.every(need => need.row_id.startsWith("rcs:joint:") && need.missing_parameter_ids.includes("rcs_joint_wps_reference"))).toBe(true);
+    expect(result.preliminaryNeeds.every(need => /^(?:rcs:joint:|rcs:inspection:program_joint_count$)/u.test(need.row_id)
+      && need.missing_parameter_ids.includes("rcs_joint_wps_reference"))).toBe(true);
     expect(result.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual([...owners.slice(0, 4), beddingOwner, ...executionOwners(methods.openCut), ...fillExecutionOwners("bedding"), ...mechanicalOwners(methods.openCut)]);
   });
   it("reuses actual pit geometry and gates unknown retained volume locally, without an extra paid owner", async () => {

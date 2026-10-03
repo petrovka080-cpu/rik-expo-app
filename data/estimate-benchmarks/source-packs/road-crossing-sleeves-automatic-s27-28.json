@@ -5,7 +5,7 @@
   "scope": "One continuous steel casing crossing with explicitly selected installation method. Casing supply and site joints, support rings and elements, contact tape, compatible end-seal kits, applicable civil work, crew labor, mechanisms and logistics are separate quantity/cost owners. This source pack is not itself a published owner or accepted estimate.",
   "engineeringAcceptanceClaimed": false,
   "universalRatesClaimed": false,
-  "implementationStatus": "COMPONENT_ASSEMBLY_WITH_ACTUAL_SUPPLY_FREIGHT_SOIL_STATES_HAUL_AND_RECEIVING_NOT_PUBLISHED_NOT_FULL_OWNER",
+  "implementationStatus": "COMPONENT_ASSEMBLY_WITH_ACTUAL_SUPPLY_FREIGHT_SOIL_STATES_HAUL_RECEIVING_AND_INITIAL_INSPECTION_NOT_PUBLISHED_NOT_FULL_OWNER",
   "quantityComponent": {
     "module": "src/lib/estimate/v4/roadCrossingSleevesQuantityModelR1.ts",
     "verification": "tests/estimateNorms/roadCrossingSleevesQuantityModelR1.contract.test.ts",
@@ -60,7 +60,7 @@
       "verification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
       "scope": "Selected casing/carrier section orders, loose bedding/pit/trench fill, dry internal mix and separately purchased mixing water; each actual off-site stock allocation is a distinct documented delivery lane",
       "quantity": "Use the existing rounded order, including retained reserve and supplier surplus. Do not use installed quantities or call supplier multiples vehicle trips. Site stock creates no stock haul; off-site portion cannot exceed compatible allocated stock",
-      "capacity": "Minimum of actual vehicle placement capacity and actual legal payload divided by certified shipping mass including packaging. Whole sections and dry supply bags stay indivisible; actual whole-section length must fit the documented vehicle/route. Geometric steel mass never substitutes for shipping mass",
+      "capacity": "Minimum of actual vehicle placement capacity and actual legal payload divided by certified shipping mass including packaging. Whole sections remain indivisible in both lanes; new supplier dry/consumable packs remain whole. Already allocated usable stock in opened containers follows its own documented packaging and actual shipping mass/placement plan. Whole section length fits the vehicle/route. Geometric steel mass never substitutes for shipping mass",
       "cost": "One separately documented full cargo round trip includes vehicle, driver, energy, loading, unloading and return. Material and installation stay separate. Explicit other-party delivery creates no second executor charge. Consolidated loads require a separate manifest; do not price the same shared trip twice",
       "applicability": "The common inclusion resolver uses the bounded canonical FormulaGraph to decide whether shipment is positive. Zero shipment excludes route/truck questions. Missing original inputs remain local needs; manual trips cannot bypass source geometry, mass, route, cost basis or stock compatibility",
       "remaining": "Actual project transport/route evidence and prices, consolidated manifests, fittings/consumables freight, equipment mobilization/demobilization, excavated soil allocation/haul/disposal, full-owner purchase-exception reconciliation and governed publication"
@@ -124,6 +124,17 @@
       "receiving": "Explicit other-party receiving creates no charge. Separate receiving owns only excess loose m3 OR actual tonnes from moist shipping density, excluding transport and other execution; no invented disposal permission, prices or generic density",
       "independence": "Known bank/loose excavation remains calculable with unavailable fill/reuse data. Dependent balance/trips/receiving retain original geometry, actual state facts, suitability/allocation and route/receiver/cost boundaries even under manual paid quantities. Explicit zero reuse disables origin/conversion; zero excess disables truck/destination/receiving facts. Negative allocation is rejected rather than clamped",
       "open": "Material/technology/design/classification acceptance, mixed/slurry allocation, extra sorting/site handling, all other stage gaps and governed full-owner publication remain open"
+    },
+    "initialJointInspection": {
+      "module": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",
+      "verification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
+      "editorVerification": "tests/requestEstimate/canonicalCrossingFreightParameterProjection.contract.test.ts",
+      "scope": "Initial visual or initial visual plus manually applied UT under an actual project-selected compatible procedure; other methods and actual defect repair/reinspection remain separate",
+      "quantity": "Existing installed physical sections minus one determines site joints, never supplier packs or reserve. Only actual UT program fraction 0..1 determines ceil(site joints*fraction) whole initially selected joints; no generic mandatory fraction or defect prediction",
+      "resources": "Distinct all-inspector person-hours and compatible equipment-hours with energy, original WPS/casing geometry/procedure/program/access/qualification gates. Actual compatible couplant gross kg per selected joint includes process losses once; stock/reserve/net supply pack/new order/remaining/free remainder use distinct same-state quantities; only new kg order owns material cost",
+      "freight": "Existing dedicated freight owner applies to rounded new couplant order and separately allocated off-site usable stock. New packages indivisible; opened usable stock follows its own documented actual shipping mass and placement plan, never forced to new pack mass. Whole physical pipe sections remain indivisible in both lanes",
+      "integrity": "Missing selected UT fraction leaves known visual resources and independent material orders. Manual quantities retain original source/geometry/program/material cost gates. Zero UT selection and no site joints disable corresponding facts while retaining previous values. Other-party program records its boundary without a second executor charge",
+      "notAccepted": "No NDT method adequacy, qualification, quality acceptance, repair rate, environmental coating or full-owner publication inferred"
     }
   },
   "primarySources": [
@@ -186,6 +197,18 @@
       "role": "Method-specific work boundary and unknown project facts",
       "basis": "Pipe jacking requires method-sized thrust/reception pits and a designed reaction arrangement; groundwater conditions can require additional seals and measures.",
       "restriction": "No pit geometry, thrust capacity, geotechnical condition or groundwater measure is inferred from crossing length. Open-cut and trenchless scopes are not charged together."
+    },
+    {
+      "url": "https://www.twi-global.com/what-we-do/services-and-support/asset-management/non-destructive-testing",
+      "role": "Distinct visual and ultrasonic testing methods and actual selected inspection procedures",
+      "basis": "Inspection methods test actual material/component characteristics without turning an inspection document into labor, equipment or consumables",
+      "restriction": "No project sample fraction, generic couplant rate, inspection productivity, inspector qualification or quality acceptance is installed"
+    },
+    {
+      "url": "https://www.twi-global.com/what-we-do/services-and-support/failure-analysis-and-repair/repair-procedure-development",
+      "role": "Actual defect characterization and compatible repair/reinspection procedures",
+      "basis": "Repair depends on actual defect size, position, material, method and inspection requirements",
+      "restriction": "Do not invent a universal defect percentage, charge hypothetical repairs as initial work or assume passing quality acceptance"
     }
   ],
   "projectFacts": [

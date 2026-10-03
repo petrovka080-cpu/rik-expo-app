@@ -173,6 +173,26 @@ function isMandatoryProjectNumericResourceFact(schema: ParameterSchema): boolean
     && canonicalEstimateParameterHasCalculationConsumer(schema);
 }
 
+/** A bounded reference to actual project documentation can mention a rate or
+ * consumption. Its checked immutable guide/ownership and real row consumers
+ * distinguish it from entering a free-form professional norm. Protected norm,
+ * equipment/manufacturer and derived roles are still checked first below. */
+function isMandatoryProjectReferenceResourceFact(schema: ParameterSchema): boolean {
+  const guide = schema.guide;
+  return schema.valueType === "text"
+    && schema.valueSourceRole === "CONDITIONAL_PROJECT_FACT"
+    && schema.preliminaryCompilationAllowed === false
+    && guide?.guideKind === "PROJECT_DEFINED"
+    && guide.guideValidationPolicy === "MANDATORY_BLOCK"
+    && guide.sourceRole === "PROJECT_DOCUMENTATION"
+    && Boolean(guide.sourceDocument?.trim() && guide.sourceLocator?.trim())
+    && /^[a-f0-9]{64}$/iu.test(guide.sourceSnapshotHash ?? "")
+    && schema.constraints.minLength === 1
+    && typeof schema.constraints.maxLength === "number" && schema.constraints.maxLength > 0 && schema.constraints.maxLength <= 1000
+    && hasDeclaredConditionalRequirement(schema)
+    && (schema.resourceBranchConsumers?.length ?? 0) > 0;
+}
+
 /** A required user choice or explicitly owned project gate can supply a BOQ
  * resource without a numeric formula. Mandatory project gates are classified
  * by immutable ownership/guide metadata, not by a reference-like field name.
@@ -292,7 +312,7 @@ export function isCanonicalEstimateSourceManagedParameter(schema: ParameterSchem
   // A mandatory actual project fact may contain words such as "mass per unit"
   // or "capacity". Its immutable role/guide and consumers establish ownership;
   // the technical-looking name alone cannot turn it into a hidden norm.
-  if (isMandatoryProjectNumericResourceFact(schema)) return false;
+  if (isMandatoryProjectNumericResourceFact(schema) || isMandatoryProjectReferenceResourceFact(schema)) return false;
   return canonicalEstimateParameterRequiresManagedProfessionalSource(schema);
 }
 
