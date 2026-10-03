@@ -3,11 +3,19 @@ import {
   canonicalProfessionalPdfCategory,
   CANONICAL_PROFESSIONAL_PDF_CATEGORY_ORDER,
   CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION,
+  assertCanonicalProfessionalPdfJobRendererVersion,
 } from "./canonicalProfessionalPdf";
 import type { CanonicalArtifactRow } from "./canonicalEstimateArtifactContract";
 import { canonicalEstimateParameterChoiceLabelRu } from "./canonicalEstimateParameterSemantics";
 import { publicBoqDisplayNameRu } from "../publicBoqNaming";
 import { compilePressureSewerPipelineR1, PRESSURE_SEWER_PIPELINE_SHORT_INPUT } from "../v4/pressureSewerPipelineR1";
+
+test("versioned professional PDF jobs reject an obsolete worker and retain legacy compatibility", () => {
+  expect(() => assertCanonicalProfessionalPdfJobRendererVersion({ rendererVersion: CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION })).not.toThrow();
+  expect(() => assertCanonicalProfessionalPdfJobRendererVersion({})).not.toThrow();
+  expect(() => assertCanonicalProfessionalPdfJobRendererVersion({ rendererVersion: "canonical-professional-pdf.old" }))
+    .toThrow(expect.objectContaining({ code: "ARTIFACT_RENDERER_VERSION_MISMATCH" }));
+});
 
 function revision(rowCount: number) {
   return {

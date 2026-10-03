@@ -51,6 +51,7 @@ import {
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract";
 import {
   CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION,
+  assertCanonicalProfessionalPdfJobRendererVersion,
   buildCanonicalProfessionalPdfProjection,
 } from "../../../src/lib/estimate/backendPlatform/canonicalProfessionalPdf";
 import {
@@ -1811,10 +1812,15 @@ async function createArtifactJob(
           }),
         ],
       );
-      const created = await client.query(
-        "select * from public.estimate_create_artifact_job_v1($1,$2,$3)",
-        [idempotencyKey, revisionId, kind],
-      );
+      const created = kind === "professional_pdf"
+        ? await client.query(
+          "select * from public.estimate_create_professional_pdf_job_v2($1,$2,$3)",
+          [idempotencyKey, revisionId, CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION],
+        )
+        : await client.query(
+          "select * from public.estimate_create_artifact_job_v1($1,$2,$3)",
+          [idempotencyKey, revisionId, kind],
+        );
       await client.query("commit");
       return created.rows[0];
     } catch (error) {
@@ -2963,6 +2969,7 @@ async function buildArtifactClaimedJob(
     extension = "json";
     renderer = "canonical-procurement-local.r2";
   } else if (job.operation === "professional_pdf") {
+    assertCanonicalProfessionalPdfJobRendererVersion(job.input_payload ?? {});
     const identity = (
       await client.query(
         "select title_ru from public.estimate_work_identity where catalog_id=$1",
@@ -3042,7 +3049,9 @@ async function buildArtifactClaimedJob(
     renderer = "playwright-local.r2";
   }
   const artifactSha256 = createHash("sha256").update(bytes).digest("hex");
-  const storageKey = `${job.owner_user_id}/${revisionId}/${job.operation}/${revision.checksum_sha256}.${extension}`;
+  // Keep previous derived file bytes when a professional renderer changes.
+  const fileIdentity = job.operation === "professional_pdf" ? `${revision.checksum_sha256}-${artifactSha256}` : revision.checksum_sha256;
+  const storageKey = `${job.owner_user_id}/${revisionId}/${job.operation}/${fileIdentity}.${extension}`;
   const path = artifactFilePath(storageKey);
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, bytes);

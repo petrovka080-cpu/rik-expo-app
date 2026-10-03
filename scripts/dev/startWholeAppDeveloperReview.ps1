@@ -1,6 +1,7 @@
 param(
   [switch]$PreflightOnly,
   [switch]$UseStandaloneLocalEstimateDatabase,
+  [switch]$VerifyFullTypecheck,
   [string]$MasterPath = "",
   [ValidateRange(1024, 65535)]
   [int]$Port = 8081
@@ -316,6 +317,41 @@ foreach ($pidValue in @($listeners | Select-Object -ExpandProperty OwningProcess
 }
 
 $ExpoCli = Join-Path $Root "node_modules\expo\bin\cli"
+New-Item -ItemType Directory -Path $RuntimeRoot -Force | Out-Null
+$FullTypecheckExitCode = $null
+if ($VerifyFullTypecheck) {
+  # The old owned Metro has stopped; its Web/Android graph no longer competes
+  # with the four complete compiler heaps. A failed check still restores Metro.
+  $TypecheckFreeKiB = [int64](Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory
+  $TypecheckAdmitted = $TypecheckFreeKiB -ge 3500000
+  @{
+    source_head = $BuildCommit
+    captured_utc = (Get-Date).ToUniversalTime().ToString("o")
+    actual_free_kib = $TypecheckFreeKiB
+    required_free_kib = 3500000
+    heap_mib = 3072
+    executed = $TypecheckAdmitted
+    coverage = "all four unchanged full typecheck projects before Metro start"
+  } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $RuntimeRoot "full-typecheck-admission.json") -Encoding UTF8
+  if ($TypecheckAdmitted) {
+    $PriorTypecheckNodeOptions = $env:NODE_OPTIONS
+    try {
+      $env:NODE_OPTIONS = "--max-old-space-size=3072"
+      & $Node (Join-Path $Root "scripts/typecheck/runTypecheckShards.mjs") --diagnostics *> (Join-Path $RuntimeRoot "full-typecheck.log")
+      $FullTypecheckExitCode = $LASTEXITCODE
+    }
+    catch {
+      $FullTypecheckExitCode = 1
+      Write-Warning "Full typecheck failed; restoring the owned Metro runtime."
+    }
+    finally { $env:NODE_OPTIONS = $PriorTypecheckNodeOptions }
+  }
+  else {
+    $FullTypecheckExitCode = 1
+    Write-Warning "Full typecheck admission rejected: freeKiB=$TypecheckFreeKiB requiredKiB=3500000; no compiler executed."
+  }
+  Write-Host "full_typecheck_exit=$FullTypecheckExitCode"
+}
 $MetroStdout = Join-Path $RuntimeRoot "metro.stdout.log"
 $MetroStderr = Join-Path $RuntimeRoot "metro.stderr.log"
 New-Item -ItemType Directory -Path $RuntimeRoot -Force | Out-Null
@@ -376,4 +412,7 @@ if (-not $ready -or -not (Test-WebBundleReady -Port $Port -TimeoutSec 180)) {
 Write-Host "runtime_action=started_whole_app_staging_plus_local_estimate"
 Write-Host "backend_pid=$($BackendManager.backend_pid)"
 Write-Host "metro_pid=$($Metro.Id)"
+if ($VerifyFullTypecheck -and $FullTypecheckExitCode -ne 0) {
+  Fail-Review "FULL_TYPECHECK_NOT_GREEN_RUNTIME_RESTORED" "проверьте full-typecheck-admission.json и full-typecheck.log в $RuntimeRoot"
+}
 exit 0

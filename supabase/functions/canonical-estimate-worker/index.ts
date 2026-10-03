@@ -28,6 +28,7 @@ import {
 import {
   buildCanonicalProfessionalPdfProjection,
   CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION,
+  assertCanonicalProfessionalPdfJobRendererVersion,
 } from "../../../src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts";
 import {
   buildCanonicalEstimateRegistryEntry,
@@ -602,6 +603,7 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
     extension = "json";
     renderer = "canonical-procurement-projection.r2";
   } else if (job.operation === "professional_pdf") {
+    assertCanonicalProfessionalPdfJobRendererVersion(job.input_payload ?? {});
     const { data: identity, error: identityError } = await admin
       .from("estimate_work_identity")
       .select("title_ru")
@@ -657,7 +659,8 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
   }
   const artifactSha256 = await sha256Bytes(bytes);
   const bucketId = String(Deno.env.get("CANONICAL_ESTIMATE_ARTIFACT_BUCKET") ?? "estimate-artifacts").trim();
-  const storageKey = `${job.owner_user_id}/${revision.id}/${job.operation}/${revision.checksum_sha256}.${extension}`;
+  const fileIdentity = job.operation === "professional_pdf" ? `${revision.checksum_sha256}-${artifactSha256}` : revision.checksum_sha256;
+  const storageKey = `${job.owner_user_id}/${revision.id}/${job.operation}/${fileIdentity}.${extension}`;
   const { error: uploadError } = await admin.storage.from(bucketId).upload(storageKey, bytes, {
     contentType,
     upsert: true,

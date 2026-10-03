@@ -11,6 +11,14 @@ import {
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
   "canonical-professional-pdf.r4-a13-s27-29-technology-labels" as const;
 
+/** A versioned job must be rendered by the server revision that accepted it.
+ * Older jobs without this field retain their existing worker compatibility. */
+export function assertCanonicalProfessionalPdfJobRendererVersion(input: Record<string, unknown>): void {
+  if (input.rendererVersion != null && input.rendererVersion !== CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION) {
+    throw Object.assign(new Error("professional PDF job renderer does not match this worker"), { code: "ARTIFACT_RENDERER_VERSION_MISMATCH" });
+  }
+}
+
 export const CANONICAL_PROFESSIONAL_PDF_CATEGORY_ORDER = [
   "material",
   "work",

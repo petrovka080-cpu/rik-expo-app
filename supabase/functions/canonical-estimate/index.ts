@@ -20,6 +20,7 @@ import {
   CanonicalEstimateDefinitionRegistry,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDefinitionRegistry.ts";
 import { canonicalProfessionalArtifactMetadataIdentityMatches } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts";
+import { CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION } from "../../../src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts";
 import { canonicalDefinitionTitleRu } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts";
 import {
   canonicalEstimateRevisionDetailFromStorage,
@@ -571,11 +572,17 @@ async function createArtifactJob(
     kind === "procurement" ? "procurement_artifact_create" : "pdf_artifact_create",
     sourceRevision.release_id,
   );
-  const { data, error } = await requester.rpc("estimate_create_artifact_job_v1", {
-    p_idempotency_key: idempotencyKey,
-    p_revision_id: revisionId,
-    p_artifact_kind: kind,
-  });
+  const { data, error } = kind === "professional_pdf"
+    ? await requester.rpc("estimate_create_professional_pdf_job_v2", {
+      p_idempotency_key: idempotencyKey,
+      p_revision_id: revisionId,
+      p_renderer_version: CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION,
+    })
+    : await requester.rpc("estimate_create_artifact_job_v1", {
+      p_idempotency_key: idempotencyKey,
+      p_revision_id: revisionId,
+      p_artifact_kind: kind,
+    });
   if (error) normalizeDbError(error);
   const result = Array.isArray(data) ? data[0] : data;
   return {
