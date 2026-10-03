@@ -5,7 +5,7 @@
   "scope": "One continuous steel casing crossing with explicitly selected installation method. Casing supply and site joints, support rings and elements, contact tape, compatible end-seal kits, applicable civil work, crew labor, mechanisms and logistics are separate quantity/cost owners. This source pack is not itself a published owner or accepted estimate.",
   "engineeringAcceptanceClaimed": false,
   "universalRatesClaimed": false,
-  "implementationStatus": "COMPONENT_ASSEMBLY_WITH_ACTUAL_SUPPLY_FREIGHT_SOIL_STATES_HAUL_RECEIVING_INSPECTION_STAKING_COMPACTION_WATER_AND_JACKING_LOADING_NOT_PUBLISHED_NOT_FULL_OWNER",
+  "implementationStatus": "COMPONENT_ASSEMBLY_WITH_ACTUAL_SUPPLY_FREIGHT_SOIL_STATES_HAUL_RECEIVING_INSPECTION_STAKING_WATER_JACKING_LOADING_AND_CASING_PREPARATION_CONSUMABLES_NOT_PUBLISHED_NOT_FULL_OWNER",
   "quantityComponent": {
     "module": "src/lib/estimate/v4/roadCrossingSleevesQuantityModelR1.ts",
     "verification": "tests/estimateNorms/roadCrossingSleevesQuantityModelR1.contract.test.ts",
@@ -33,7 +33,7 @@
     "internalFillParameterProjectionVerification": "tests/requestEstimate/canonicalInternalFillParameterProjection.contract.test.ts",
     "internalWaterVerification": "tests/estimateNorms/roadCrossingSleevesInternalWaterR1.contract.test.ts",
     "carrierSupplyVerification": "tests/estimateNorms/roadCrossingSleevesCarrierMaterialR1.contract.test.ts",
-    "carrierAndMechanicalBoundary": "Actual carrier product and total end extensions are distinct from casing length/stock/section supply. Explicit customer supply creates no executor pipe purchase. Selected new whole carrier sections have distinct damage, compatible allocated stock, retained reserve, physical section length and supplier bundle counts; only new ordered carrier metres own pipe cost, excluding connections/people/equipment/energy/freight. Installed pipe length includes actual end extensions, but internal insertion uses crossing length only. Mechanical preparation and open-cut lowering use installed casing sections, supports use installed rings, end kit installation uses two actual scoped ends; supplier rounding/reserve/stock never inflate mechanical work. Project method, compatible equipment/access/lifting/traction/cost-boundary facts remain required under manual hours. Actual jacking lifting/guide approval, preparation consumables, carrier joints and engineering approval remain open; no full owner/publication acceptance.",
+    "carrierAndMechanicalBoundary": "Actual carrier product and total end extensions are distinct from casing length/stock/section supply. Explicit customer supply creates no executor pipe purchase. Selected new whole carrier sections have distinct damage, compatible allocated stock, retained reserve, physical section length and supplier bundle counts; only new ordered carrier metres own pipe cost, excluding connections/people/equipment/energy/freight. Installed pipe length includes actual end extensions, but internal insertion uses crossing length only. Mechanical preparation and open-cut lowering use installed casing sections, supports use installed rings, end kit installation uses two actual scoped ends; supplier rounding/reserve/stock never inflate mechanical work. Project method, compatible equipment/access/lifting/traction/cost-boundary facts remain required under manual hours. Actual jacking lifting/guide approval, other preparation methods and partial reusable tooling, carrier joints and engineering approval remain open; no full owner/publication acceptance.",
     "internalExecutionAndWaterBoundary": "Selected full dry internal fill uses original installed net internal geometry for actual disjoint mixing/placing crew and equipment rates. Dry stock/reserve/bag surplus do not change placing hours. Existing water consumption comes only from actual consumed dry kg and selected mixing litres per net-mass bag. Explicit customer-supplied water creates no executor purchase; explicit separate compatible water supply uses disjoint allocated m3 stock/reserve/multiple/new order/remainder and only its new order owns water cost. Water approval/allocation and supply cost boundary remain actual facts; powder, crew, equipment, energy and delivery are excluded from water price. Original mixing/geometry facts and selected technology remain required even under manual paid quantities. Pressure/buoyancy/restraints, curing, delivery and project approval remain open; not full-owner acceptance.",
     "componentIntegrationModule": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",
     "componentIntegrationVerification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
@@ -125,6 +125,17 @@
       "independence": "Known bank/loose excavation remains calculable with unavailable fill/reuse data. Dependent balance/trips/receiving retain original geometry, actual state facts, suitability/allocation and route/receiver/cost boundaries even under manual paid quantities. Explicit zero reuse disables origin/conversion; zero excess disables truck/destination/receiving facts. Negative allocation is rejected rather than clamped",
       "open": "Material/technology/design/classification acceptance, mixed/slurry allocation, extra sorting/site handling, all other stage gaps and governed full-owner publication remain open"
     },
+    "casingPreparationConsumables": {
+      "module": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",
+      "verification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
+      "editorVerification": "tests/requestEstimate/canonicalCrossingFreightParameterProjection.contract.test.ts",
+      "scope": "Actual compatible abrasive cutting/grinding, cleaner and wipe program for installed casing sections; touched whole abrasive/wipe articles are discarded under explicit program, never silently treated as fractional reusable inventory",
+      "quantity": "Original installed physical section count times actual gross product consumption including all process losses. Whole discarded articles round upward once before stock/reserve/whole supply packs; liquid cleaner remains in actual litres. Supplier casing packs, reserves and stock never inflate preparation consumption or work",
+      "cost": "Only each new selected material order owns purchase cost; existing mechanical preparation already owns all cutting/preparation/cleaning personnel and equipment with energy. Welding, inspection, coating and delivery remain distinct. Explicit other-party consumables create no duplicate executor purchase",
+      "freight": "Shared original-source-bound dedicated freight includes selected article orders and actual liquid cleaner. New liquid packs remain indivisible; usable opened off-site cleaner stock uses its own certified mass/load plan, never a forced new-pack quantum",
+      "integrity": "Actual program/product/tool compatibility and original geometry/method facts survive manual orders. Zero actual use hides only dependent product/supply/freight facts and retains values. Missing supply packaging leaves known consumed quantities and preparation work; missing gross consumption remains local, never guessed from packaging",
+      "open": "Actual material/tool/rated-speed/procedure acceptance, other preparation methods, partial reusable tooling, marker and casing-preparation wastes, prices, coating and governed full-owner publication remain open"
+    },
     "jackingSectionLoading": {
       "module": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",
       "verification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
@@ -169,6 +180,18 @@
     }
   },
   "primarySources": [
+    {
+      "url": "https://www.twi-global.com/technical-knowledge/faqs/faq-what-is-surface-preparation-for-joining",
+      "role": "Actual joining-surface cleanliness and preparation compatibility",
+      "basis": "Joining depends on suitable clean/dry prepared surfaces; contamination and oxide removal depend on actual material and process",
+      "restriction": "No universal cutting/grinding/cleaner/wipe consumption, productivity, WPS approval or casing material acceptance is inferred"
+    },
+    {
+      "url": "https://www.nortonabrasives.com/en-gb/resources/expertise/frequently-asked-cutting-questions",
+      "role": "Separates cutting and grinding product applications",
+      "basis": "The selected abrasive must match its application and actual compatible equipment; a cutting article is not automatically a suitable grinding article",
+      "restriction": "No Norton product/rate is installed as a project default. Actual dimensions, rated speed, material/tool compatibility and discard/reuse method remain selected project/product facts"
+    },
     {
       "url": "https://highways.dot.gov/sites/fhwa.dot.gov/files/FP-24.pdf",
       "role": "Section 152 distinguishes survey/control, marking, maintenance/replacement and removal; sections 204/301/302/725 distinguish moisture conditioning and suitable construction water",

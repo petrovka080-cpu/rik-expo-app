@@ -11,7 +11,8 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_COMPONENT_P
   ROAD_CROSSING_SLEEVES_INSPECTION_MODES_R1 as inspectionModes, ROAD_CROSSING_SLEEVES_INSPECTION_COUPLANT_COST_BASIS_R1 as couplantBasis,
   ROAD_CROSSING_SLEEVES_PREPARATION_MODES_R1 as preparationModes, ROAD_CROSSING_SLEEVES_PREPARATION_MATERIAL_COST_BASIS_R1 as preparationBasis,
   ROAD_CROSSING_SLEEVES_COMPACTION_WATER_MODES_R1 as compactionWaterModes, ROAD_CROSSING_SLEEVES_COMPACTION_WATER_COST_BASIS_R1 as compactionWaterBasis,
-  ROAD_CROSSING_SLEEVES_JACKING_LOADING_MODES_R1 as loadingModes } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_JACKING_LOADING_MODES_R1 as loadingModes,
+  ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_MODES_R1 as casingPrepModes, ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_COST_BASIS_R1 as casingPrepBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierModes, ROAD_CROSSING_SLEEVES_CARRIER_COST_BASIS_R1 as carrierBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1 as jointParameters, ROAD_CROSSING_SLEEVES_JOINT_COST_BASES_R1 as bases } from "../../src/lib/estimate/v4/roadCrossingSleevesJointResourcesR1";
@@ -28,6 +29,7 @@ const components = buildRoadCrossingSleevesComponentsR1({ source_title: "Owned i
 const definition = components.definition;
 // Synthetic actual-fact/price fixtures ONLY, never a published default or WPS approval.
 const fixture: Record<string, unknown> = {
+  rcs_casing_prep_material_mode: casingPrepModes.otherParty, rcs_casing_prep_material_program_reference: "TEST actual compatible preparation consumables provided by other party, no executor purchase",
   rcs_jacking_section_loading_cost_mode: loadingModes.included, rcs_jacking_section_loading_allocation_reference: "TEST whole section loading is included once in actual advance rates, disjoint from excavation and other mechanical work",
   // Explicit synthetic project evidence of no added compaction water; never a default.
   rcs_compaction_water_bedding_gross_l_per_finished_m3: 0, rcs_compaction_water_pits_gross_l_per_finished_m3: 0, rcs_compaction_water_trench_gross_l_per_finished_m3: 0,
@@ -121,6 +123,83 @@ function compile(submittedParameters: Record<string, unknown> = fixture, rowOver
   });
 }
 const q = (result: Awaited<ReturnType<typeof compile>>, id: string) => Number(result.rows.find(row => row.row_id === id)?.quantity);
+
+describe("actual casing preparation consumables, distinct from welding and preparation work", () => {
+  const material: Record<string, unknown> = { ...fixture, rcs_casing_prep_material_mode: casingPrepModes.abrasive,
+    rcs_casing_prep_material_program_reference: "TEST actual compatible cutting/grinding/cleaning program, gross rates and whole touched abrasive/wipe discard; no reused partial tooling",
+    ...Object.fromEntries(["cutting_discs", "grinding_discs", "cleaner", "wipes"].flatMap((key, i) => Object.entries({
+      gross_per_installed_section: [0.5, 0.25, 0.2, 2][i], product_designation: `TEST actual compatible ${key}`,
+      product_reference: "TEST actual material/tool compatibility, rated speed/application, selected cleaning procedure",
+      compatible_stock: [1, 0, 0.1, 2][i], retained_reserve: [1, 1, 0.2, 2][i], supplier_pack_net: [5, 2, 0.5, 10][i], cost_basis: casingPrepBasis,
+    }).map(([suffix, value]) => [`rcs_casing_prep_material_${key}_${suffix}`, value]))),
+  };
+  const row = (key: string, suffix: string) => `rcs:casing-prep-material:${key}:${suffix}`;
+  const order = row("cutting_discs", "ordered");
+  it("derives gross consumption from installed sections and rounds whole discarded articles and supplier packs separately", async () => {
+    const result = await compile(material, { [order]: { unitPrice: "2", provenance } });
+    expect(result.preliminaryNeeds).toEqual([]); expect(q(result, row("cutting_discs", "consumed"))).toBe(2);
+    expect(q(result, order)).toBe(5); expect(q(result, row("cutting_discs", "remaining"))).toBe(4);
+    expect(q(result, row("cutting_discs", "free_beyond_reserve"))).toBe(3);
+    expect(q(result, row("grinding_discs", "consumed"))).toBe(1); expect(q(result, row("grinding_discs", "ordered"))).toBe(2);
+    expect(q(result, row("cleaner", "consumed"))).toBe(0.6); expect(q(result, row("cleaner", "ordered"))).toBe(1);
+    expect(q(result, row("cleaner", "remaining"))).toBe(0.5); expect(q(result, row("cleaner", "free_beyond_reserve"))).toBe(0.3);
+    expect(q(result, row("wipes", "consumed"))).toBe(6); expect(q(result, row("wipes", "ordered"))).toBe(10);
+    expect(result.totals.amount).toBe("10"); expect(q(result, "rcs:mechanical:casing_preparation:crew_hours")).toBe(3);
+    expect(q(result, "rcs:joint:electrode_ordered")).toBe(5);
+    expect(result.rows.filter(r => r.row_id.startsWith("rcs:casing-prep-material:") && r.included_in_procurement).map(r => r.row_id)).toEqual(
+      ["cutting_discs", "grinding_discs", "cleaner", "wipes"].map(key => row(key, "ordered")));
+  });
+  it("casing and consumable stock/reserve/pack orders do not increase preparation work or section consumption", async () => {
+    const result = await compile({ ...material, rcs_compatible_stock_section_count: 20, rcs_retained_spare_section_count: 5,
+      rcs_casing_prep_material_cutting_discs_retained_reserve: 20, rcs_casing_prep_material_cutting_discs_supplier_pack_net: 50 });
+    expect(q(result, "rcs:casing:ordered_casing_length_m")).toBe(0); expect(q(result, order)).toBe(50);
+    expect(q(result, row("cutting_discs", "consumed"))).toBe(2); expect(q(result, "rcs:mechanical:casing_preparation:crew_hours")).toBe(3);
+  });
+  it("zero actual use disables product/stock/order/freight facts for that material and differs from missing gross use", async () => {
+    const input: Record<string, unknown> = { ...material, rcs_casing_prep_material_cutting_discs_gross_per_installed_section: 0 };
+    for (const key of Object.keys(input)) if (key.startsWith("rcs_casing_prep_material_cutting_discs_") && !key.endsWith("gross_per_installed_section")) delete input[key];
+    const zero = await compile(input); expect(zero.preliminaryNeeds).toEqual([]); expect(q(zero, row("cutting_discs", "consumed"))).toBe(0);
+    expect(zero.rows.some(r => r.row_id === order || r.row_id.startsWith("rcs:freight:casing_prep_cutting_discs_"))).toBe(false);
+    delete input.rcs_casing_prep_material_cutting_discs_gross_per_installed_section;
+    const unknown = await compile(input); expect(unknown.preliminaryNeeds.find(n => n.row_id === order)?.missing_parameter_ids).toContain("rcs_casing_prep_material_cutting_discs_gross_per_installed_section");
+    expect(q(unknown, "rcs:joint:crew_person_hours")).toBe(6);
+  });
+  it.each(["rcs_planned_physical_section_length_m", "rcs_casing_inside_diameter_mm", "rcs_casing_prep_material_program_reference",
+    "rcs_mechanical_casing_preparation_method_reference", "rcs_mechanical_casing_preparation_equipment_designation", "rcs_casing_prep_material_cutting_discs_product_reference", "rcs_casing_prep_material_cutting_discs_cost_basis"])(
+    "manual consumable purchase cannot bypass original geometry/program/tool/product/cost fact %s", async key => {
+      const input = { ...material }; delete input[key];
+      const result = await compile(input, { [order]: { quantity: "999", provenance } });
+      expect(result.rows.some(r => r.row_id === order)).toBe(false); expect(result.preliminaryNeeds.find(n => n.row_id === order)?.missing_parameter_ids).toContain(key);
+    });
+  it("unknown supply packaging blocks purchase only while consumed material and preparation labor remain calculated", async () => {
+    const input = { ...material }; delete input.rcs_casing_prep_material_cleaner_supplier_pack_net;
+    const result = await compile(input); expect(q(result, row("cleaner", "consumed"))).toBe(0.6);
+    expect(q(result, "rcs:mechanical:casing_preparation:crew_hours")).toBe(3); expect(q(result, order)).toBe(5);
+    expect(result.rows.some(r => r.row_id === row("cleaner", "ordered"))).toBe(false);
+  });
+  it("other-party/other preparation resources are explicit separate scopes without a second executor material charge", async () => {
+    for (const mode of [casingPrepModes.otherParty, casingPrepModes.other]) {
+      const result = await compile({ ...material, rcs_casing_prep_material_mode: mode });
+      expect(result.rows.filter(r => r.row_id.startsWith("rcs:casing-prep-material:")).map(r => r.row_id)).toEqual(["rcs:casing-prep-material:scope_length_m"]);
+      expect(q(result, "rcs:mechanical:casing_preparation:crew_hours")).toBe(3);
+    }
+  });
+  it("new cleaner uses indivisible actual liquid packs and opened usable off-site stock uses its own mass/load plan", async () => {
+    const input = { ...material, rcs_freight_casing_prep_cleaner_new_mode: freightModes.separate,
+      rcs_freight_casing_prep_cleaner_new_vehicle_designation: "TEST dedicated compatible cleaner load/route",
+      rcs_freight_casing_prep_cleaner_new_shipping_kg_per_unit: 0.9, rcs_freight_casing_prep_cleaner_new_payload_kg: 100,
+      rcs_freight_casing_prep_cleaner_new_max_units_per_trip: 0.75, rcs_freight_casing_prep_cleaner_new_cost_basis: freightBasis,
+      rcs_freight_casing_prep_cleaner_offsite_stock_units: 0.1, rcs_freight_casing_prep_cleaner_stock_mode: freightModes.separate,
+      rcs_freight_casing_prep_cleaner_stock_vehicle_designation: "TEST separately allocated opened compatible cleaner stock",
+      rcs_freight_casing_prep_cleaner_stock_shipping_kg_per_unit: 1, rcs_freight_casing_prep_cleaner_stock_payload_kg: 100,
+      rcs_freight_casing_prep_cleaner_stock_max_units_per_trip: 0.1, rcs_freight_casing_prep_cleaner_stock_cost_basis: freightBasis };
+    const result = await compile(input); expect(result.preliminaryNeeds).toEqual([]);
+    expect(q(result, "rcs:freight:casing_prep_cleaner_new:effective_units_per_trip")).toBe(0.5);
+    expect(q(result, "rcs:freight:casing_prep_cleaner_new:trip_count")).toBe(2);
+    expect(q(result, "rcs:freight:casing_prep_cleaner_stock:trip_count")).toBe(1);
+    expect(parameters.some(p => /casing_prep_material.*(?:consumed|ordered|installed_section_count)/u.test(p.id))).toBe(false);
+  });
+});
 
 describe("actual jacking section loading under an explicit disjoint cost boundary", () => {
   const loading: Record<string, unknown> = { ...fixture, rcs_civil_installation_method: methods.pipeJacking,

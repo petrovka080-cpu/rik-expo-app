@@ -6,7 +6,8 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_FREIGHT_MOD
   ROAD_CROSSING_SLEEVES_INSPECTION_MODES_R1 as inspectionModes, ROAD_CROSSING_SLEEVES_INSPECTION_COUPLANT_COST_BASIS_R1 as couplantBasis,
   ROAD_CROSSING_SLEEVES_PREPARATION_MODES_R1 as preparationModes, ROAD_CROSSING_SLEEVES_PREPARATION_MATERIAL_COST_BASIS_R1 as preparationBasis,
   ROAD_CROSSING_SLEEVES_COMPACTION_WATER_MODES_R1 as compactionWaterModes, ROAD_CROSSING_SLEEVES_COMPACTION_WATER_COST_BASIS_R1 as compactionWaterBasis,
-  ROAD_CROSSING_SLEEVES_JACKING_LOADING_MODES_R1 as loadingModes } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_JACKING_LOADING_MODES_R1 as loadingModes,
+  ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_MODES_R1 as casingPrepModes, ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_COST_BASIS_R1 as casingPrepBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_TRENCH_FILL_MODES_R1 as fillModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
 import { buildConsumerCanonicalPrecompileParameterSession } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
@@ -131,6 +132,36 @@ describe("actual initial inspection through common metadata/editor", () => {
   });
 });
 const cards = (parameters = fixture) => buildCanonicalParameterCards({ session: session(parameters), revision: null });
+
+describe("actual casing-preparation material program through shared parameter semantics", () => {
+  const material: Record<string, CanonicalEstimateParameterInputValue> = { ...fixture,
+    rcs_casing_prep_material_mode: casingPrepModes.abrasive, rcs_casing_prep_material_program_reference: "TEST actual compatible preparation/discard program",
+    rcs_casing_prep_material_cleaner_gross_per_installed_section: 0.2, rcs_casing_prep_material_cleaner_product_designation: "TEST actual compatible cleaner",
+    rcs_casing_prep_material_cleaner_product_reference: "TEST actual cleaner/material/tool compatibility and preparation method",
+    rcs_casing_prep_material_cleaner_compatible_stock: 0.1, rcs_casing_prep_material_cleaner_retained_reserve: 0.2,
+    rcs_casing_prep_material_cleaner_supplier_pack_net: 0.5, rcs_casing_prep_material_cleaner_cost_basis: casingPrepBasis,
+  };
+  it("keeps real program/product/rate/stock facts filled and editable, using litres per physical unit", () => {
+    for (const [key, value] of Object.entries(material).filter(([key]) => key.startsWith("rcs_casing_prep_material_"))) {
+      expect(cards(material).find(c => c.key === key)).toMatchObject({ value, editable: true, missing: false });
+      expect(cards(material).find(c => c.key === key)?.guideShortRu).toBeTruthy();
+    }
+    expect(cards(material).find(c => c.key === "rcs_casing_prep_material_cleaner_gross_per_installed_section")?.unitRu).toBe("л/шт.");
+    expect(catalog.parameterSchema.some(p => /casing_prep_material.*(?:ordered|consumed)/u.test(p.parameterId))).toBe(false);
+  });
+  it("retains a missing original gross consumption as one editable fact rather than deriving it from supplier packaging", () => {
+    const input = { ...material }; delete input.rcs_casing_prep_material_cleaner_gross_per_installed_section;
+    expect(cards(input).find(c => c.key === "rcs_casing_prep_material_cleaner_gross_per_installed_section")).toMatchObject({ value: null, missing: true, editable: true });
+  });
+  it("zero use and explicit other-party scope keep inactive prior values without new supply questions", () => {
+    const zero = session({ ...material, rcs_casing_prep_material_cleaner_gross_per_installed_section: 0 });
+    expect(zero.parameters.some(p => p.parameterId === "rcs_casing_prep_material_cleaner_supplier_pack_net")).toBe(false);
+    expect(zero.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_casing_prep_material_cleaner_supplier_pack_net")).toMatchObject({ value: 0.5 });
+    const other = session({ ...material, rcs_casing_prep_material_mode: casingPrepModes.otherParty });
+    expect(other.parameters.find(p => p.parameterId === "rcs_casing_prep_material_program_reference")).toBeDefined();
+    expect(other.parameters.some(p => p.parameterId === "rcs_casing_prep_material_cleaner_gross_per_installed_section")).toBe(false);
+  });
+});
 
 describe("actual jacking loading boundaries and editable equipment facts", () => {
   const loading: Record<string, CanonicalEstimateParameterInputValue> = { ...fixture, rcs_civil_installation_method: methods.pipeJacking,

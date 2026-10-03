@@ -286,6 +286,85 @@ export const ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1: readonly AutomaticRowSpec
   }))),
 ]);
 
+/** TWI distinguishes clean/dry compatible joining surfaces; Norton distinguishes
+ * cutting from grinding applications. These sources supply NO project rate.
+ * The supported program consumes/discards whole touched abrasive/wipe units;
+ * partial reusable tooling and other preparation methods require their own
+ * program. Cutting, preparation and cleaning personnel/equipment already belong
+ * to the existing mechanical preparation operation, never another labor charge.
+ * https://www.twi-global.com/technical-knowledge/faqs/faq-what-is-surface-preparation-for-joining
+ * https://www.nortonabrasives.com/en-gb/resources/expertise/frequently-asked-cutting-questions */
+export const ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_MODES_R1 = Object.freeze({
+  abrasive: "Раздельные отрезные и шлифовальные круги, очиститель и салфетки; затронутые целые круги и салфетки списываются после операции по подтверждённой карте",
+  otherParty: "Расходники подготовки предоставлены другой стороной без закупки исполнителем",
+  other: "Другие способы подготовки и повторно используемые частичные расходники: отдельная программа",
+});
+export const ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_COST_BASIS_R1 = "Только новый заказ выбранного расходника подготовки со всеми учтёнными потерями и резервом; без резки/подготовки как работы, всех исполнителей, оборудования, энергии, сварки, покрытия, доставки и повторной оплаты расходников";
+const casingPrepId = (suffix: string) => `rcs_casing_prep_material_${suffix}`;
+const casingPrepScope: AutomaticInclusionCondition = { kind: "greater_than", parameterId: "rcs_crossing_length_m", value: 0 };
+const casingPrepSelected: AutomaticInclusionCondition = { kind: "and", operands: [casingPrepScope,
+  { kind: "equals", parameterId: casingPrepId("mode"), value: ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_MODES_R1.abrasive }] };
+const casingPrepOriginalFacts = ["rcs_crossing_length_m", "rcs_planned_physical_section_length_m", "rcs_casing_product_designation",
+  "rcs_casing_outside_diameter_mm", "rcs_casing_inside_diameter_mm", "rcs_mechanical_casing_preparation_method_reference",
+  "rcs_mechanical_casing_preparation_equipment_designation", casingPrepId("mode"), casingPrepId("program_reference")];
+const casingPrepMaterials = [
+  { key: "cutting_discs", title: "Совместимые отрезные круги подготовки футляра", unit: "piece" },
+  { key: "grinding_discs", title: "Совместимые шлифовальные круги подготовки футляра", unit: "piece" },
+  { key: "cleaner", title: "Совместимый очиститель подготовки футляра", unit: "l" },
+  { key: "wipes", title: "Салфетки подготовки футляра", unit: "piece" },
+] as const;
+const casingPrepMaterialBranches = casingPrepMaterials.map(material => {
+  const id = (suffix: string) => casingPrepId(`${material.key}_${suffix}`);
+  const gross = `(${quantities.installed_section_count})*${id("gross_per_installed_section")}`;
+  const consumed = material.unit === "piece" ? `ceil(${gross})` : gross;
+  const positive: AutomaticInclusionCondition = { kind: "and", operands: [casingPrepSelected,
+    { kind: "formula_greater_than", expression: consumed, unitId: material.unit, value: 0 }] };
+  return { ...material, id, consumed, positive };
+});
+export const ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_PARAMETERS_R1: readonly AutomaticParameterSpec[] = Object.freeze([
+  { id: casingPrepId("mode"), title: "Подтверждённая программа и граница закупки расходников подготовки футляра", valueType: "enum", unitId: null,
+    values: Object.values(ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_MODES_R1), kind: "conditional", requiredWhen: casingPrepScope },
+  { id: casingPrepId("program_reference"), title: "Фактическая программа расходников, область подготовки, совместимость материала и оборудования и правила списания целых затронутых единиц без повторной оплаты",
+    valueType: "text", unitId: null, kind: "conditional", requiredWhen: casingPrepScope },
+  ...casingPrepMaterialBranches.flatMap(material => {
+    const text = (suffix: string, title: string): AutomaticParameterSpec => ({ id: material.id(suffix), title: `${material.title}: ${title}`,
+      valueType: "text", unitId: null, kind: "conditional", requiredWhen: material.positive });
+    const amount = (suffix: string, title: string, min = 0): AutomaticParameterSpec => ({ id: material.id(suffix), title: `${material.title}: ${title}`,
+      valueType: material.unit === "piece" ? "integer" : "decimal", unitId: material.unit, min, kind: "conditional", requiredWhen: material.positive });
+    return [
+      { id: material.id("gross_per_installed_section"), title: `${material.title}: фактический полный расход на установленную физическую секцию, со всеми потерями по карте; явный 0 означает отсутствие этого расходника`,
+        valueType: "decimal", unitId: `${material.unit}_per_piece`, min: 0, kind: "conditional", requiredWhen: casingPrepSelected } as AutomaticParameterSpec,
+      text("product_designation", "фактически выбранное совместимое изделие или материал"),
+      text("product_reference", "применимость конкретной операции, совместимость с материалом и инструментом; назначение круга, размеры и допустимая скорость по паспорту, условия очистки по карте"),
+      amount("compatible_stock", "пригодное выделенное наличие до работы; только целые пригодные изделия или совместимый очиститель, без будущего возврата уже списанных единиц"),
+      amount("retained_reserve", "сохраняемый резерв пригодного расходника"), amount("supplier_pack_net", "фактическое число единиц или литров без тары в новой упаковке", material.unit === "piece" ? 1 : 0.000_001),
+      { id: material.id("cost_basis"), title: `${material.title}: отдельная граница нового заказа`, valueType: "enum", unitId: null,
+        values: [ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_COST_BASIS_R1], kind: "conditional", requiredWhen: material.positive } as AutomaticParameterSpec,
+    ];
+  }),
+]);
+export const ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_ROWS_R1: readonly AutomaticRowSpec[] = Object.freeze([
+  { rowId: "rcs:casing-prep-material:scope_length_m", formulaId: "rcs:casing-prep-material:scope_length_m", section: "Расходники подготовки футляра", category: "service",
+    title: "Длина перехода в подтверждённой программе расходников; без повторной оплаты подготовки", unitId: "m", expression: "rcs_crossing_length_m",
+    inclusion: casingPrepScope, costTreatment: "INFORMATIONAL_SCOPE", inputParameterIds: [casingPrepId("mode"), casingPrepId("program_reference")] },
+  ...casingPrepMaterialBranches.flatMap(material => {
+    const stock = material.id("compatible_stock"), reserve = material.id("retained_reserve"), pack = material.id("supplier_pack_net");
+    const need = `max(0,(${material.consumed})+${reserve}-${stock})`, count = `ceil((${need})/${pack})`, ordered = `(${count})*${pack}`;
+    const remaining = `${stock}+(${ordered})-(${material.consumed})`;
+    return ([ ["consumed", "фактический расход, со списанием затронутых целых изделий по выбранной программе", material.consumed],
+      ["new_need", "дополнительная потребность с резервом после пригодного наличия", need], ["supplier_pack_count", "число новых упаковок; не монтаж или доставка", count],
+      ["ordered", "новый отдельный заказ выбранного расходника", ordered], ["remaining", "неиспользованный пригодный остаток, включая сохраняемый резерв", remaining],
+      ["free_beyond_reserve", "свободный неиспользованный пригодный остаток сверх резерва", `(${remaining})-${reserve}`] ] as const)
+      .map(([key, title, expression]): AutomaticRowSpec => ({ rowId: `rcs:casing-prep-material:${material.key}:${key}`, formulaId: `rcs:casing-prep-material:${material.key}:${key}`,
+        section: material.title, category: "material", title: `${material.title}: ${title}`, unitId: key === "supplier_pack_count" ? "package" : material.unit,
+        expression, inclusion: key === "consumed" ? casingPrepSelected : material.positive,
+        costTreatment: key === "ordered" ? "OWN_COST" : "INFORMATIONAL_SCOPE", procurement: key === "ordered",
+        inputParameterIds: [...casingPrepOriginalFacts, ...(key === "consumed" ? [] : [material.id("product_designation"), material.id("product_reference")]),
+          ...(key === "ordered" ? [material.id("cost_basis")] : [])],
+        ...(key === "ordered" ? { titleParameterIds: [material.id("product_designation")] } : {}) }));
+  }),
+]);
+
 /** Actual initial straight-axis staking has its own physical resources.
  * FHWA FP-24 section 152 identifies selected survey/control methods, marking,
  * maintenance/replacement and final removal; it does not give this project's
@@ -504,7 +583,7 @@ export const ROAD_CROSSING_SLEEVES_FREIGHT_MODES_R1 = Object.freeze({
 });
 export const ROAD_CROSSING_SLEEVES_FREIGHT_COST_BASIS_R1 = "Один полный отдельный рейс этого груза: транспорт, водитель, энергия, погрузка, выгрузка и возврат; без материала, монтажа, других грузов и повторной оплаты тех же ресурсов";
 type FreightCargo = Readonly<{ key: string; title: string; purchase: AutomaticRowSpec; stockId: string;
-  unit: "piece" | "m3" | "kg"; sectionLengthId?: string; quantum?: string }>;
+  unit: "piece" | "m3" | "kg" | "l"; sectionLengthId?: string; quantum?: string }>;
 function freightCargo(key: string, title: string, rows: readonly AutomaticRowSpec[], rowId: string,
   stockId: string, unit: FreightCargo["unit"], sectionLengthId?: string, quantum?: string): FreightCargo {
   const purchase = rows.find(row => row.rowId === rowId);
@@ -534,6 +613,8 @@ const freightCargoGroups: readonly FreightCargo[] = [
     "rcs:preparation:paint:ordered", "rcs_preparation_paint_compatible_stock", "kg", undefined, "rcs_preparation_paint_supplier_pack_net"),
   ...compactionWaterWorks.map(work => freightCargo(`compaction_water_${work.key}`, `Вода: ${work.title}`, ROAD_CROSSING_SLEEVES_COMPACTION_WATER_ROWS_R1,
     `rcs:compaction-water:${work.key}:ordered_m3`, work.id("compatible_stock_m3"), "m3")),
+  ...casingPrepMaterialBranches.map(material => freightCargo(`casing_prep_${material.key}`, material.title, ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_ROWS_R1,
+    `rcs:casing-prep-material:${material.key}:ordered`, material.id("compatible_stock"), material.unit, undefined, material.unit === "l" ? material.id("supplier_pack_net") : undefined)),
 ];
 const freightId = (key: string, suffix: string) => `rcs_freight_${key}_${suffix}`;
 const freightLanes = freightCargoGroups.flatMap(cargo => (["new", "stock"] as const).map(lane => {
@@ -807,6 +888,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_PARAMETERS_R1: readonly AutomaticPa
   ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_COMPACTION_WATER_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_MECHANICAL_PARAMETERS_R1,
+  ...ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_PREPARATION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_INSPECTION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_FREIGHT_PARAMETERS_R1,
@@ -826,6 +908,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[
   ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_COMPACTION_WATER_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1,
+  ...ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_INSPECTION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1,
@@ -848,9 +931,10 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
     ...ROAD_CROSSING_SLEEVES_COMPACTION_WATER_ROWS_R1.filter(row => row.rowId.startsWith("rcs:compaction-water:bedding:"))],
     remaining: ["Подтверждение технологии слоёв и уплотнения основания", "Фактические качество и отдельное распределение воды", "Применимое основание котлованов"] },
   { stageId: "casing", titleRu: "Футляр и стыки", rows: [...ROAD_CROSSING_SLEEVES_CASING_MATERIAL_ROWS_R1, ...ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_ROWS_R1,
+    ...ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_INSPECTION_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1.filter(row => /^rcs:mechanical:casing_/u.test(row.rowId))],
-    remaining: ["Подтверждение технологии подготовки и отдельные расходники", "Другие методы контроля, фактические дефекты, ремонт и повторный контроль", "Применимое восстановление защитного покрытия", "Подтверждённая схема подъёма, фактическая несущая способность и направляющие при загрузке"] },
+    remaining: ["Подтверждение технологии подготовки и другие/повторно используемые частичные расходники", "Другие методы контроля, фактические дефекты, ремонт и повторный контроль", "Применимое восстановление защитного покрытия", "Подтверждённая схема подъёма, фактическая несущая способность и направляющие при загрузке"] },
   { stageId: "carrier_and_supports", titleRu: "Рабочая труба, опоры и концевые узлы", rows: [...ROAD_CROSSING_SLEEVES_SPACER_GEOMETRY_ROWS_R1, ...ROAD_CROSSING_SLEEVES_PROCUREMENT_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_CARRIER_ROWS_R1, ...ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1.filter(row => !/^rcs:mechanical:casing_/u.test(row.rowId))],
     remaining: ["Подтверждение рабочей трубы, иной поставки и совместимой технологии монтажа", "Соединители и соединения рабочей трубы", "Подтверждённые удерживающие и концевые конструкции"] },
