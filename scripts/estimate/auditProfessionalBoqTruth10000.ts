@@ -5,7 +5,7 @@ import path from "node:path";
 import expandedManifestJson from "../../data/estimate-catalog/expanded-complex-readiness-manifest.json";
 import expandedTemplatesJson from "../../data/estimate-catalog/expanded-complex/templates.json";
 import expandedCoverageJson from "../../data/estimate-catalog/expanded-complex/template-coverage.json";
-import baseManifestJson from "../../data/estimate-templates/estimate-10000-readiness-manifest.json";
+import { estimate10000ReadinessManifest as baseManifestJson } from "../../src/lib/estimate/estimate10000ReadinessManifest";
 import {
   clearProductionExpandedEstimate10000Caches,
   compileProductionExpandedEstimate10000,

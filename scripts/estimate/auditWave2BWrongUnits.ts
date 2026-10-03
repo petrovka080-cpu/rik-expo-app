@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
-import baseManifestJson from "../../data/estimate-templates/estimate-10000-readiness-manifest.json";
+import { estimate10000ReadinessManifest as baseManifestJson } from "../../src/lib/estimate/estimate10000ReadinessManifest";
 import {
   compileProductionExpandedEstimate10000,
   type ProductionCompiledExpandedRow,

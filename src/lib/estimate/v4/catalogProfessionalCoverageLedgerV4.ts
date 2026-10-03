@@ -1,4 +1,4 @@
-import baseManifestJson from "../../../../data/estimate-templates/estimate-10000-readiness-manifest.json";
+import { estimate10000ReadinessManifest as baseManifestJson } from "../estimate10000ReadinessManifest";
 import expandedTemplatesJson from "../../../../data/estimate-catalog/expanded-complex/templates.json";
 
 import { estimateDeterministicHash } from "../estimateDeterministicHash";

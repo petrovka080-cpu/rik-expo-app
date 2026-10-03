@@ -12,7 +12,7 @@ import {
 } from "../estimate/buildProfessionalWorkPassport";
 import type { ProfessionalWorkPassport } from "../estimate/workPassportContract";
 import { normalizeInlineWorkPromptText } from "./extractWorkParamsFromInlinePrompt";
-import baseManifestJson from "../../../data/estimate-templates/estimate-10000-readiness-manifest.json";
+import { estimate10000ReadinessManifest as baseManifestJson } from "../estimate/estimate10000ReadinessManifest";
 
 export type InlineWorkTemplateMatchSource = "user_selected" | "auto_matched" | "ambiguous";
 

@@ -1,4 +1,4 @@
-import baseManifestJson from "../../../../../../data/estimate-templates/estimate-10000-readiness-manifest.json";
+import { estimate10000ReadinessManifest as baseManifestJson } from "../../../estimate10000ReadinessManifest";
 
 import { estimateDeterministicHash } from "../../../estimateDeterministicHash";
 import type { ProfessionalCatalogBindingV1 } from "../../domainFactory";

@@ -1,4 +1,4 @@
-import workCatalog from "../../../../../data/estimate-catalog/work-items/work-catalog-10000.json";
+import { workCatalog10000Artifact as workCatalog } from "../../workCatalog10000Artifact";
 
 export const ROADWORKS_WAVE_A_SOURCE_SHA = "e1e258f2";
 

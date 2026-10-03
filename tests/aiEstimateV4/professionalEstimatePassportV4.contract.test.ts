@@ -1,4 +1,4 @@
-import baseManifest from "../../data/estimate-templates/estimate-10000-readiness-manifest.json";
+import { estimate10000ReadinessManifest as baseManifest } from "../../src/lib/estimate/estimate10000ReadinessManifest";
 import expandedTemplates from "../../data/estimate-catalog/expanded-complex/templates.json";
 import { professionalEstimatePassportId } from "../../src/lib/estimate/v4/professionalEstimatePassportV4";
 

@@ -1,4 +1,4 @@
-import estimate10000Manifest from "../../../../data/estimate-templates/estimate-10000-readiness-manifest.json";
+import { estimate10000ReadinessManifest as estimate10000Manifest } from "../../../lib/estimate/estimate10000ReadinessManifest";
 import expandedComplexManifest from "../../../../data/estimate-catalog/expanded-complex-readiness-manifest.json";
 import sourceQualityRegistry from "../../../../data/estimate-governance/source-quality-registry.json";
 import expertReviewRegistry from "../../../../data/estimate-governance/expert-review-registry.json";

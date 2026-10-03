@@ -2,11 +2,11 @@ import { createHash } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
-import baseCatalog from "../../data/estimate-catalog/work-items/work-catalog-10000.json";
+import { workCatalog10000Artifact as baseCatalog } from "../../src/lib/estimate/workCatalog10000Artifact";
 import expandedReadiness from "../../data/estimate-catalog/expanded-complex-readiness-manifest.json";
 import expandedFamilies from "../../data/estimate-catalog/expanded-complex/work-families.json";
 import expandedTemplates from "../../data/estimate-catalog/expanded-complex/templates.json";
-import readiness10000 from "../../data/estimate-templates/estimate-10000-readiness-manifest.json";
+import { estimate10000ReadinessManifest as readiness10000 } from "../../src/lib/estimate/estimate10000ReadinessManifest";
 import {
   BUILT_IN_AI_1000_CONSTRUCTION_CASES,
   BUILT_IN_AI_1000_WORK_ALIASES,

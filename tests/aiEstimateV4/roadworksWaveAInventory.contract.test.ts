@@ -1,4 +1,4 @@
-import catalog from "../../data/estimate-catalog/work-items/work-catalog-10000.json";
+import { workCatalog10000Artifact as catalog } from "../../src/lib/estimate/workCatalog10000Artifact";
 import {
   RoadworksWaveAInventory,
   auditRoadworksWaveA,
