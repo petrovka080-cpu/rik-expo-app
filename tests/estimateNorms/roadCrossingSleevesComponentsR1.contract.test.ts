@@ -3,6 +3,7 @@ import { estimateDeterministicHash } from "../../src/lib/estimate/estimateDeterm
 import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_COMPONENT_PARAMETERS_R1 as parameters } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1 as jointParameters, ROAD_CROSSING_SLEEVES_JOINT_COST_BASES_R1 as bases } from "../../src/lib/estimate/v4/roadCrossingSleevesJointResourcesR1";
+import { ROAD_CROSSING_SLEEVES_PIT_FILL_MODES_R1 as fillModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
 
 const components = buildRoadCrossingSleevesComponentsR1({ source_title: "Owned integration fixture for source-bounded components, not a full crossing",
   source_document_version: "test-2026-10-03", definition_hash: "a".repeat(64), artifact_sha256: "a".repeat(64),
@@ -31,6 +32,7 @@ const fixture: Record<string, unknown> = {
   rcs_jacking_reception_excavation_length_m: 4, rcs_jacking_reception_excavation_width_m: 3, rcs_jacking_reception_excavation_depth_m: 2.5,
   rcs_jacking_confirmed_excavation_diameter_mm: 580,
   rcs_jacking_thrust_permanent_occupied_volume_m3: 12, rcs_jacking_reception_permanent_occupied_volume_m3: 7,
+  rcs_pit_fill_material_mode: fillModes.other,
   rcs_joint_wps_reference: "TEST-OWNED applicable MMA WPS", rcs_joint_welding_process: bases.process,
   rcs_joint_electrode_designation: "TEST-OWNED compatible electrode", rcs_joint_gross_electrode_kg_per_joint: 2,
   rcs_joint_electrode_retained_spare_kg: 1, rcs_joint_electrode_compatible_stock_kg: 0.5, rcs_joint_electrode_supplier_pack_kg: 2.5,
@@ -156,6 +158,28 @@ describe("road-casing component integration, not full crossing acceptance", () =
     expect(result.rows.some(row => row.row_id === "rcs:contact-tape:ordered")).toBe(false);
     expect(q(result, "rcs:casing:ordered_casing_length_m")).toBe(48);
     expect(q(result, "rcs:joint:crew_person_hours")).toBe(6);
+  });
+  it("adds exactly one selected pit-fill purchase owner without changing crossing/joint geometry or paying reused soil again", async () => {
+    const input: Record<string, unknown> = { ...fixture, rcs_civil_installation_method: methods.pipeJacking,
+      rcs_pit_fill_material_mode: fillModes.sameGranular, rcs_pit_fill_granular_product_designation: "TEST-OWNED pit granular fill",
+      rcs_pit_fill_approved_reused_finished_m3: 20, rcs_pit_fill_gross_supplied_volume_ratio: 1.2,
+      rcs_pit_fill_compatible_loose_stock_m3: 10, rcs_pit_fill_retained_loose_reserve_m3: 2, rcs_pit_fill_supplier_loose_multiple_m3: 5 };
+    const pitFillOwner = "rcs:pit-fill:ordered_loose_m3";
+    const result = await compile(input, { [pitFillOwner]: { unitPrice: "4", provenance } });
+    expect(result.preliminaryNeeds).toHaveLength(0);
+    expect(q(result, pitFillOwner)).toBe(70);
+    expect(q(result, "rcs:casing:ordered_casing_length_m")).toBe(48);
+    expect(q(result, "rcs:joint:site_joint_count")).toBe(2);
+    expect(result.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual([...owners, pitFillOwner]);
+    expect(result.rows.filter(row => row.included_in_procurement).map(row => row.row_id)).toEqual([...owners, pitFillOwner]);
+    // Other owner prices stay honest NULL; only this synthetic priced order is summed.
+    expect(result.totals.amount).toBe("280");
+    delete input.rcs_pit_fill_approved_reused_finished_m3;
+    const unknown = await compile(input, { [pitFillOwner]: { quantity: "999", provenance } });
+    expect(unknown.rows.some(row => row.row_id === pitFillOwner)).toBe(false);
+    expect(unknown.preliminaryNeeds.every(need => need.row_id.startsWith("rcs:pit-fill:") && need.missing_parameter_ids.includes("rcs_pit_fill_approved_reused_finished_m3"))).toBe(true);
+    expect(q(unknown, "rcs:pit-return:total_remaining_space_m3")).toBe(83);
+    expect(unknown.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual(owners);
   });
   it("cannot bypass selected spacer compatibility by manually replacing either its control or paid material", async () => {
     await expect(compile({ ...fixture, rcs_raci_selected_element_height_mm: 180 }, {

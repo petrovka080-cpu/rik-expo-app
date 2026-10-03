@@ -23,6 +23,8 @@
     "beddingMaterialVerification": "tests/estimateNorms/roadCrossingSleevesBeddingMaterialR1.contract.test.ts",
     "pitReturnFillModule": "src/lib/estimate/v4/roadCrossingSleevesPitReturnFillR1.ts",
     "pitReturnFillVerification": "tests/estimateNorms/roadCrossingSleevesPitReturnFillR1.contract.test.ts",
+    "pitFillMaterialModule": "src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1.ts",
+    "pitFillMaterialVerification": "tests/estimateNorms/roadCrossingSleevesPitFillMaterialR1.contract.test.ts",
     "componentIntegrationModule": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",
     "componentIntegrationVerification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
     "evaluator": "Existing canonical FormulaGraph only",
@@ -51,7 +53,9 @@
       "finished bedding geometry times actual gross supplied-loose-volume ratio already including all process/compaction losses; compatible same-state stock, retained reserve, actual supply multiple, new order and free remainder are distinct outputs",
       "only new ordered loose m3 own bedding material cost/procurement; consumption, supply multiples and geometric volume are not second charges or inferred truck trips; manual quantity cannot confirm unknown method/thickness/product",
       "confirmed rectangular thrust/reception excavation minus each pit's actual non-overlapping permanent occupied volume gives remaining geometric space; original volumes stay explicit, missing is not zero, and invalid pits cannot compensate each other or be concealed by manual quantities",
-      "pit-space outputs remain editable informational controls, not soil suitability, compacted consumption, loose supply, annular grout, haul or additional paid excavation/fill owners"
+      "pit-space outputs remain editable informational controls, not soil suitability, compacted consumption, loose supply, annular grout, haul or additional paid excavation/fill owners",
+      "explicit same-granular-fill branch reuses actual net pit geometry minus confirmed reused material in finished-volume equivalent; excavated volume is never presumed reusable and invalid reuse cannot be hidden by manual quantities",
+      "additional finished demand times actual gross supplied-loose ratio plus reserve minus disjoint same-state stock yields rounded new order and surplus; only the new supplied-loose order owns material cost/procurement, not reuse or consumption"
     ],
     "requiredBeforeFullOwnerPublication": [
       "actual load-rated product selection and approved layout; tested geometric compatibility alone is not structural acceptance",
@@ -108,6 +112,18 @@
       "restriction": "Do not treat that percentage as the fraction of total purchased coated-electrode mass recovered, invert it into a generic purchase factor or charge process losses twice."
     },
     {
+      "url": "https://highways.dot.gov/federal-lands/pddm/dpg/earthwork-design",
+      "role": "Distinct excavation, loose and finished-volume states; not a project conversion factor",
+      "basis": "Earthwork design distinguishes in-situ, loose and embankment material states and uses project geotechnical characteristics for volume changes.",
+      "restriction": "No illustrative FHWA factor, density or range is installed as a universal norm. This arithmetic component requires actual gross supplied-volume conversion and explicit finished-volume reuse without claiming project engineering acceptance."
+    },
+    {
+      "url": "https://www.fhwa.dot.gov/publications/research/infrastructure/structures/97148/app4.cfm",
+      "role": "Material suitability boundary, not permission to reuse all excavated soil",
+      "basis": "Fill material must meet applicable quality and compaction requirements; some soil types or contaminated/deleterious materials are unsuitable.",
+      "restriction": "A geometric excavation volume proves neither reusable quantity nor product suitability. Only explicitly confirmed compatible reuse in finished-volume equivalent is deducted; classification, testing and placement approval remain external project facts."
+    },
+    {
       "url": "https://www.pipejacking.org/about_pipe_jacking",
       "role": "Method-specific work boundary and unknown project facts",
       "basis": "Pipe jacking requires method-sized thrust/reception pits and a designed reaction arrangement; groundwater conditions can require additional seals and measures.",
@@ -126,6 +142,7 @@
     "actual selected jacking excavation diameter; it is not inferred from casing OD",
     "actual approved full-width bedding thickness for the open rectangular branch; no hidden bedding or pit size",
     "each selected rectangular jacking pit's actual non-overlapping permanent occupied volume includes retained structures, casing ends and other excluded fill; temporary equipment is not permanent occupation and unknown is never zero",
+    "explicit same-granular product branch for both pits, confirmed compatible reuse in finished-volume equivalent, actual gross supplied-loose conversion and disjoint loose stock/reserve/supply multiple; other/mixed products need their own scope",
     "selected granular bedding, actual gross loose-volume consumption including all compaction/process losses, compatible same-state loose stock/reserve and supplier volume multiple; no universal compaction factor",
     "applicable approved MMA WPS, selected electrode, actual gross kg/joint including process losses, usable compatible stock/reserve and actual net pack mass",
     "aggregate joint crew person-hours excluding separately owned material/equipment cost; actual equipment hours with all personnel excluded and energy included"
