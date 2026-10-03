@@ -2,8 +2,13 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { runEstimateStructuredPipelineUiPdfBindingCloseout } from "../../scripts/audit/runEstimateStructuredPipelineUiPdfBindingCloseout";
+import { flushTransactionalConsumerRepairWrites } from "../../src/lib/platform/consumerRepairTransactionalDurableBridge";
 
 describe("estimate structured pipeline UI/PDF binding closeout", () => {
+  afterEach(async () => {
+    await flushTransactionalConsumerRepairWrites();
+  });
+
   it("keeps request, marketplace, history, foreman AI, and PDF rows on the structured source of truth", async () => {
     const artifactDir = path.resolve(
       process.cwd(),

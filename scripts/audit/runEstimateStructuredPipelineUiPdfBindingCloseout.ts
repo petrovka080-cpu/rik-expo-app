@@ -9,6 +9,7 @@ import {
   __resetConsumerRepairRequestStoreForTests, approveConsumerRepairRequestDraft, attachConsumerRepairMedia, buildConsumerRepairCanonicalDraftPayload, createConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, getConsumerRepairPdfStorageObject, listConsumerRepairRequestHistory, sendConsumerRepairRequestToMarketplace, updateConsumerRepairRequestItemUnitPrice } from "../../src/lib/consumerRequests";
 import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
 import type { ConsumerEstimateMarketplaceTransport } from "../../src/lib/consumerRequests/consumerRequestMarketplace.transport";
+import { flushTransactionalConsumerRepairWrites } from "../../src/lib/platform/consumerRepairTransactionalDurableBridge";
 import type { GlobalEstimateResult } from "../../src/lib/ai/globalEstimate";
 import { extractEstimatePdfText, validateEstimatePdf } from "../../src/lib/estimatePdf";
 import { visibleEstimateLabelViolations } from "../../src/lib/estimatePresentation/visibleEstimateLabelPolicy";
@@ -409,8 +410,11 @@ function catalogModalBindingMatrix(payloads: StructuredEstimatePayload[], failur
 }
 
 async function requestMarketplaceHistoryProof(payloads: StructuredEstimatePayload[], failures: CloseoutFailure[]) {
+  // Reset once before the independent fixture users start. Resetting inside
+  // the parallel cases discards ownership of another case's in-flight write.
+  await flushTransactionalConsumerRepairWrites();
+  __resetConsumerRepairRequestStoreForTests();
   const rows = await Promise.all(payloads.map(async (payload, payloadIndex) => {
-    __resetConsumerRepairRequestStoreForTests();
     const aiDraft = buildConsumerRepairAiDraftFromGlobalEstimate(payload.sourceEstimate);
     const revisionId = `10000000-0000-4000-8000-${String(payloadIndex + 1).padStart(12, "0")}`;
     const releaseId = "20000000-0000-4000-8000-000000000001";
