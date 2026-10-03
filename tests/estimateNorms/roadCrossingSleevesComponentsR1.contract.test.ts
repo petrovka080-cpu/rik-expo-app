@@ -14,6 +14,11 @@ const components = buildRoadCrossingSleevesComponentsR1({ source_title: "Owned i
 const definition = components.definition;
 // Synthetic actual-fact/price fixtures ONLY, never a published default or WPS approval.
 const fixture: Record<string, unknown> = {
+  ...Object.fromEntries(["bedding", "pits", "trench"].flatMap(key => Object.entries({
+    method_reference: "TEST selected placing/compaction method; synthetic rates only",
+    crew_designation: "TEST all placing crew including operators", crew_h_per_finished_m3: 0.6, crew_cost_basis: executionBases.crew,
+    equipment_designation: "TEST selected placing/compaction equipment with energy", equipment_h_per_finished_m3: 0.2, equipment_cost_basis: executionBases.equipment,
+  }).map(([suffix, value]) => [`rcs_fill_${key}_${suffix}`, value]))),
   rcs_crossing_length_m: 35, rcs_casing_outside_diameter_mm: 530, rcs_casing_inside_diameter_mm: 510,
   rcs_carrier_outside_diameter_mm: 160, rcs_planned_physical_section_length_m: 12,
   rcs_compatible_stock_section_count: 0, rcs_retained_spare_section_count: 1, rcs_supplier_bundle_section_count: 2,
@@ -62,7 +67,13 @@ const owners = ["rcs:casing:ordered_casing_length_m", "rcs:raci-elements:ordered
 const beddingOwner = "rcs:bedding:ordered_loose_m3";
 const executionOwners = (method: string) => (method === methods.openCut ? ["open_cut"] : ["jacking_pits", "jacking_advance"])
   .flatMap(key => [`rcs:civil-execution:${key}:crew_hours`, `rcs:civil-execution:${key}:equipment_hours`]);
-const applicableOwners = (method: string) => [...owners, ...(method === methods.openCut ? [beddingOwner] : []), ...executionOwners(method)];
+const fillExecutionOwners = (key: string) => [`rcs:fill-execution:${key}:crew_hours`, `rcs:fill-execution:${key}:equipment_hours`];
+const applicableOwners = (method: string) => [...owners, ...(method === methods.openCut ? [beddingOwner] : []), ...executionOwners(method),
+  ...(method === methods.openCut ? fillExecutionOwners("bedding") : [])];
+const selectedTrench: Record<string, unknown> = { ...fixture, rcs_trench_fill_material_mode: trenchModes.sameGranular,
+  rcs_trench_fill_granular_product_designation: "TEST actual trench product", rcs_trench_fill_other_permanent_occupied_volume_m3: 2,
+  rcs_trench_fill_approved_reused_finished_m3: 20, rcs_trench_fill_gross_supplied_volume_ratio: 1.2,
+  rcs_trench_fill_compatible_loose_stock_m3: 10, rcs_trench_fill_retained_loose_reserve_m3: 2, rcs_trench_fill_supplier_loose_multiple_m3: 5 };
 const provenance = { kind: "manual", reason: "owned integration override" };
 function compile(submittedParameters: Record<string, unknown> = fixture, rowOverrides?: Record<string, Record<string, unknown>>) {
   return compileCanonicalEstimateCore({ operation: rowOverrides ? "recalculate" : "compile", compilerVersion: "rcs-components-test",
@@ -98,12 +109,12 @@ describe("road-casing component integration, not full crossing acceptance", () =
     expect(result.rows.filter(row => row.included_in_estimate).every(row => row.unit_price === null)).toBe(true);
   });
   it("totals exactly the selected new material orders and disjoint joint crew/equipment, not informational controls", async () => {
-    const rates = [10, 2, 30, 3, 10, 20, 30, 4, 2, 3];
+    const rates = [10, 2, 30, 3, 10, 20, 30, 4, 2, 3, 2, 3];
     const paid = applicableOwners(methods.openCut);
     const result = await compile(fixture, Object.fromEntries(paid.map((id, index) => [id, { unitPrice: String(rates[index]), provenance }])));
-    // 1129 existing fixture +52.5 crew-h*2 +21 equipment-h*3; no excavation-volume charge.
-    expect(paid.map(id => q(result, id))).toEqual([48, 70, 2, 5, 5, 6, 8, 6, 52.5, 21]);
-    expect(result.totals.amount).toBe("1297");
+    // 1297 existing owners +3.15 bedding crew-h*2 +1.05 equipment-h*3.
+    expect(paid.map(id => q(result, id))).toEqual([48, 70, 2, 5, 5, 6, 8, 6, 52.5, 21, 3.15, 1.05]);
+    expect(result.totals.amount).toBe("1306.45");
   });
   it.each([methods.openCut, methods.pipeJacking])("a one-section %s crossing does not ask for or pay joint resources", async method => {
     const input: Record<string, unknown> = { ...fixture, rcs_crossing_length_m: 12, rcs_civil_installation_method: method };
@@ -114,6 +125,7 @@ describe("road-casing component integration, not full crossing acceptance", () =
     expect(result.rows.filter(row => row.row_id.startsWith("rcs:joint:")).map(row => row.row_id)).toEqual(["rcs:joint:site_joint_count"]);
     expect(result.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual([
       ...owners.slice(0, 4), ...(method === methods.openCut ? [beddingOwner] : []), ...executionOwners(method),
+      ...(method === methods.openCut ? fillExecutionOwners("bedding") : []),
     ]);
   });
   it("a supplier casing bundle changes only its order/balance, not site joints or spacer/consumable installation", async () => {
@@ -131,11 +143,12 @@ describe("road-casing component integration, not full crossing acceptance", () =
     expect(result.rows.some(row => row.row_id.startsWith("rcs:bedding:"))).toBe(false);
     expect(result.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual([...owners, ...executionOwners(methods.openCut)]);
   });
-  it("unknown bedding product gates only its purchase, never the independently known casing or joint orders", async () => {
+  it("unknown bedding product gates its purchase and execution, never the independently known casing or joint orders", async () => {
     const input = { ...fixture }; delete input.rcs_bedding_granular_product_designation;
     const result = await compile(input, { [beddingOwner]: { quantity: "999", provenance } });
-    expect(result.preliminaryNeeds).toHaveLength(1);
+    expect(result.preliminaryNeeds).toHaveLength(3);
     expect(result.preliminaryNeeds[0]).toMatchObject({ row_id: beddingOwner, missing_parameter_ids: ["rcs_bedding_granular_product_designation"] });
+    expect(result.preliminaryNeeds.map(need => need.row_id)).toEqual([beddingOwner, ...fillExecutionOwners("bedding")]);
     expect(result.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual([...owners, ...executionOwners(methods.openCut)]);
   });
   it("unknown civil method remains one fact at its exact branch needs, not an invented full-length trench", async () => {
@@ -143,7 +156,7 @@ describe("road-casing component integration, not full crossing acceptance", () =
     const result = await compile(input);
     expect(result.rows.some(row => row.row_id.startsWith("rcs:civil:"))).toBe(false);
     expect(result.preliminaryNeeds.length).toBeGreaterThan(0);
-    expect(result.preliminaryNeeds.every(need => /^(?:rcs:civil:|rcs:civil-execution:|rcs:bedding:|rcs:pit-return:)/u.test(need.row_id) && need.need_state === "CONDITION_REQUIRED")).toBe(true);
+    expect(result.preliminaryNeeds.every(need => /^(?:rcs:civil:|rcs:civil-execution:|rcs:fill-execution:|rcs:bedding:|rcs:pit-return:)/u.test(need.row_id) && need.need_state === "CONDITION_REQUIRED")).toBe(true);
     expect([...new Set(result.preliminaryNeeds.flatMap(need => need.missing_parameter_ids))]).toEqual(["rcs_civil_installation_method"]);
     expect(result.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual(owners);
   });
@@ -152,7 +165,7 @@ describe("road-casing component integration, not full crossing acceptance", () =
     const result = await compile(input);
     expect(result.preliminaryNeeds.length).toBeGreaterThan(0);
     expect(result.preliminaryNeeds.every(need => need.row_id.startsWith("rcs:joint:") && need.missing_parameter_ids.includes("rcs_joint_wps_reference"))).toBe(true);
-    expect(result.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual([...owners.slice(0, 4), beddingOwner, ...executionOwners(methods.openCut)]);
+    expect(result.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual([...owners.slice(0, 4), beddingOwner, ...executionOwners(methods.openCut), ...fillExecutionOwners("bedding")]);
   });
   it("reuses actual pit geometry and gates unknown retained volume locally, without an extra paid owner", async () => {
     const input: Record<string, unknown> = { ...fixture, rcs_civil_installation_method: methods.pipeJacking };
@@ -189,8 +202,8 @@ describe("road-casing component integration, not full crossing acceptance", () =
     expect(q(result, pitFillOwner)).toBe(70);
     expect(q(result, "rcs:casing:ordered_casing_length_m")).toBe(48);
     expect(q(result, "rcs:joint:site_joint_count")).toBe(2);
-    expect(result.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual([...owners, pitFillOwner, ...executionOwners(methods.pipeJacking)]);
-    expect(result.rows.filter(row => row.included_in_procurement).map(row => row.row_id)).toEqual([...owners, pitFillOwner, ...executionOwners(methods.pipeJacking)]);
+    expect(result.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual([...owners, pitFillOwner, ...executionOwners(methods.pipeJacking), ...fillExecutionOwners("pits")]);
+    expect(result.rows.filter(row => row.included_in_procurement).map(row => row.row_id)).toEqual([...owners, pitFillOwner, ...executionOwners(methods.pipeJacking), ...fillExecutionOwners("pits")]);
     // Other owner prices stay honest NULL; only this synthetic priced order is summed.
     expect(result.totals.amount).toBe("280");
     delete input.rcs_pit_fill_approved_reused_finished_m3;
@@ -198,7 +211,7 @@ describe("road-casing component integration, not full crossing acceptance", () =
     expect(unknown.rows.some(row => row.row_id === pitFillOwner)).toBe(false);
     expect(unknown.preliminaryNeeds.every(need => need.row_id.startsWith("rcs:pit-fill:") && need.missing_parameter_ids.includes("rcs_pit_fill_approved_reused_finished_m3"))).toBe(true);
     expect(q(unknown, "rcs:pit-return:total_remaining_space_m3")).toBe(83);
-    expect(unknown.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual(applicableOwners(methods.pipeJacking));
+    expect(unknown.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual([...applicableOwners(methods.pipeJacking), ...fillExecutionOwners("pits")]);
   });
   it("cannot bypass selected spacer compatibility by manually replacing either its control or paid material", async () => {
     await expect(compile({ ...fixture, rcs_raci_selected_element_height_mm: 180 }, {
@@ -218,8 +231,8 @@ describe("road-casing component integration, not full crossing acceptance", () =
     expect(q(result, "rcs:internal-fill:net_fill_m3")).toBeCloseTo(independentNet, 6);
     expect(q(result, internalOwner)).toBe(independentOrder);
     expect(q(result, "rcs:internal-fill:mixing_water_m3")).toBeCloseTo(independentNet * 0.1, 6);
-    expect(result.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual([...owners, beddingOwner, internalOwner, ...executionOwners(methods.openCut)]);
-    expect(result.rows.filter(row => row.included_in_procurement).map(row => row.row_id)).toEqual([...owners, beddingOwner, internalOwner, ...executionOwners(methods.openCut)]);
+    expect(result.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual([...owners, beddingOwner, internalOwner, ...executionOwners(methods.openCut), ...fillExecutionOwners("bedding")]);
+    expect(result.rows.filter(row => row.included_in_procurement).map(row => row.row_id)).toEqual([...owners, beddingOwner, internalOwner, ...executionOwners(methods.openCut), ...fillExecutionOwners("bedding")]);
     expect(result.totals.amount).toBe(String(independentOrder * 4));
     const outsideChanged = await compile({ ...input, rcs_civil_installation_method: methods.pipeJacking,
       rcs_jacking_confirmed_excavation_diameter_mm: 800, rcs_jacking_thrust_excavation_width_m: 5 });
@@ -310,24 +323,78 @@ describe("road-casing component integration, not full crossing acceptance", () =
     });
   });
   it("integrates selected trench supply beside bedding/casing/execution, without paying the inactive pit purchase", async () => {
-    const input = { ...fixture, rcs_trench_fill_material_mode: trenchModes.sameGranular,
-      rcs_trench_fill_granular_product_designation: "TEST actual trench product", rcs_trench_fill_other_permanent_occupied_volume_m3: 2,
-      rcs_trench_fill_approved_reused_finished_m3: 20, rcs_trench_fill_gross_supplied_volume_ratio: 1.2,
-      rcs_trench_fill_compatible_loose_stock_m3: 10, rcs_trench_fill_retained_loose_reserve_m3: 2, rcs_trench_fill_supplier_loose_multiple_m3: 5 };
+    const input = selectedTrench;
     const result = await compile(input);
     expect(result.preliminaryNeeds).toEqual([]);
     expect(q(result, "rcs:trench-fill:ordered_loose_m3")).toBe(80);
     expect(q(result, beddingOwner)).toBe(6);
     expect(q(result, "rcs:casing:ordered_casing_length_m")).toBe(48);
     expect(result.rows.filter(row => row.included_in_procurement).map(row => row.row_id)).toEqual([
-      ...owners, beddingOwner, "rcs:trench-fill:ordered_loose_m3", ...executionOwners(methods.openCut),
+      ...owners, beddingOwner, "rcs:trench-fill:ordered_loose_m3", ...executionOwners(methods.openCut), ...fillExecutionOwners("bedding"), ...fillExecutionOwners("trench"),
     ]);
     expect(components.stageMatrix.find(stage => stage.stageId === "backfill")?.ownResourceIds).toContain("rcs:trench-fill:ordered_loose_m3");
     const missingProduct: Record<string, unknown> = { ...input }; delete missingProduct.rcs_trench_fill_granular_product_designation;
     const preliminary = await compile(missingProduct, { "rcs:trench-fill:ordered_loose_m3": { quantity: "999", provenance } });
-    expect(preliminary.preliminaryNeeds).toEqual([expect.objectContaining({ row_id: "rcs:trench-fill:ordered_loose_m3",
-      missing_parameter_ids: ["rcs_trench_fill_granular_product_designation"] })]);
+    expect(preliminary.preliminaryNeeds.map(need => need.row_id)).toEqual(["rcs:trench-fill:ordered_loose_m3", ...fillExecutionOwners("trench")]);
+    expect(preliminary.preliminaryNeeds.every(need => need.missing_parameter_ids.includes("rcs_trench_fill_granular_product_designation"))).toBe(true);
     expect(q(preliminary, beddingOwner)).toBe(6);
     expect(q(preliminary, "rcs:civil-execution:open_cut:crew_hours")).toBe(52.5);
+  });
+  it("places and compacts installed finished geometry, including reuse, instead of ordered or consumed loose material", async () => {
+    const result = await compile(selectedTrench);
+    const net = q(result, "rcs:trench-fill:net_remaining_space_m3");
+    expect(q(result, "rcs:fill-execution:bedding:crew_hours")).toBe(3.15);
+    expect(q(result, "rcs:fill-execution:bedding:equipment_hours")).toBe(1.05);
+    expect(q(result, "rcs:fill-execution:trench:crew_hours")).toBeCloseTo(net * 0.6, 6);
+    expect(q(result, "rcs:fill-execution:trench:equipment_hours")).toBeCloseTo(net * 0.2, 6);
+    for (const patch of [{ rcs_trench_fill_compatible_loose_stock_m3: 1000 }, { rcs_trench_fill_retained_loose_reserve_m3: 40 },
+      { rcs_trench_fill_supplier_loose_multiple_m3: 50 }, { rcs_trench_fill_approved_reused_finished_m3: 0 },
+      { rcs_trench_fill_approved_reused_finished_m3: 40 }, { rcs_trench_fill_gross_supplied_volume_ratio: 2 }]) {
+      const changed = await compile({ ...selectedTrench, ...patch });
+      expect(q(changed, "rcs:fill-execution:trench:crew_hours")).toBe(q(result, "rcs:fill-execution:trench:crew_hours"));
+      expect(q(changed, "rcs:fill-execution:trench:equipment_hours")).toBe(q(result, "rcs:fill-execution:trench:equipment_hours"));
+    }
+    const changedGeometry = await compile({ ...selectedTrench, rcs_open_cut_excavation_depth_m: 2.2 });
+    expect(q(changedGeometry, "rcs:fill-execution:trench:crew_hours")).toBeCloseTo((net + 10.5) * 0.6, 6);
+  });
+  it("full approved reuse removes new consumption but retains placing work; zero actual fill space yields zero work", async () => {
+    const baseline = await compile(selectedTrench);
+    const net = q(baseline, "rcs:trench-fill:net_remaining_space_m3");
+    const fullReuse = await compile({ ...selectedTrench, rcs_trench_fill_approved_reused_finished_m3: net });
+    expect(q(fullReuse, "rcs:trench-fill:consumed_loose_m3")).toBe(0);
+    expect(q(fullReuse, "rcs:fill-execution:trench:crew_hours")).toBeCloseTo(net * 0.6, 6);
+    const remaining = q(baseline, "rcs:civil:open_cut_remaining_fill_space_m3");
+    const empty = await compile({ ...selectedTrench, rcs_trench_fill_other_permanent_occupied_volume_m3: remaining, rcs_trench_fill_approved_reused_finished_m3: 0 });
+    expect(q(empty, "rcs:fill-execution:trench:crew_hours")).toBe(0);
+    expect(q(empty, "rcs:fill-execution:trench:equipment_hours")).toBe(0);
+  });
+  it("unknown supply ratios do not block independently known execution, while unknown actual equipment stays local", async () => {
+    const input = { ...selectedTrench }; delete input.rcs_trench_fill_gross_supplied_volume_ratio;
+    const result = await compile(input);
+    expect(result.preliminaryNeeds.every(need => need.row_id.startsWith("rcs:trench-fill:"))).toBe(true);
+    expect(q(result, "rcs:fill-execution:trench:crew_hours")).toBeGreaterThan(0);
+    const missingEquipment = { ...selectedTrench }; delete missingEquipment.rcs_fill_trench_equipment_designation;
+    const equipmentRow = "rcs:fill-execution:trench:equipment_hours";
+    const equipmentNeed = await compile(missingEquipment, { [equipmentRow]: { quantity: "999", provenance } });
+    expect(equipmentNeed.preliminaryNeeds).toEqual([expect.objectContaining({ row_id: equipmentRow, quantity: "999",
+      missing_parameter_ids: ["rcs_fill_trench_equipment_designation"] })]);
+    expect(q(equipmentNeed, "rcs:trench-fill:ordered_loose_m3")).toBe(80);
+    expect(q(equipmentNeed, "rcs:fill-execution:trench:crew_hours")).toBeGreaterThan(0);
+  });
+  it.each(["rcs_open_cut_excavation_depth_m", "rcs_trench_fill_other_permanent_occupied_volume_m3", "rcs_fill_trench_method_reference"])("manual compaction hours cannot replace actual %s", async missing => {
+    const input = { ...selectedTrench }; delete input[missing];
+    const rowId = "rcs:fill-execution:trench:crew_hours";
+    const result = await compile(input, { [rowId]: { quantity: "999", provenance } });
+    expect(result.rows.some(row => row.row_id === rowId)).toBe(false);
+    expect(result.preliminaryNeeds.find(need => need.row_id === rowId)?.missing_parameter_ids).toContain(missing);
+    expect(q(result, "rcs:fill-execution:bedding:crew_hours")).toBe(3.15);
+  });
+  it("keeps missing and explicit zero compaction rates distinct and rejects an overlapping operator-inclusive equipment price basis", async () => {
+    const input = { ...selectedTrench }; delete input.rcs_fill_trench_crew_h_per_finished_m3;
+    const result = await compile(input);
+    expect(result.preliminaryNeeds).toEqual([expect.objectContaining({ row_id: "rcs:fill-execution:trench:crew_hours",
+      need_state: "QUANTITY_REQUIRED", missing_parameter_ids: ["rcs_fill_trench_crew_h_per_finished_m3"] })]);
+    expect(q(await compile({ ...selectedTrench, rcs_fill_trench_crew_h_per_finished_m3: 0 }), "rcs:fill-execution:trench:crew_hours")).toBe(0);
+    await expect(compile({ ...selectedTrench, rcs_fill_trench_equipment_cost_basis: "All-in with operators" })).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
   });
 });

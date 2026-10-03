@@ -43,6 +43,14 @@
       "manualBoundary": "A direct manual hour exception retains its provenance but cannot replace unknown original geometry, selected technology or equipment compatibility",
       "matrixBoundary": "Every declared resource belongs to exactly one stage. Concrete absent resources remain listed; this is not full-owner or engineering acceptance"
     },
+    "fillExecutionBoundary": {
+      "module": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",
+      "scope": "Selected granular bedding and selected pit OR open-trench fill placement/compaction; method, product and actual disjoint crew/equipment rates required",
+      "basis": "Installed finished geometry including approved reused material, never supplied loose volume, reserve, stock, order packs or surplus. Trench occupation and individual pit occupation stay original authoritative facts even under manual hours",
+      "independence": "Unknown supply ratio or approved reuse allocation gates the dependent purchase/consumption, not already known finished-geometry placement work",
+      "costBoundary": "All personnel including operators are in crew only; equipment excludes all personnel and includes energy. Material/water supply, delivery and soil haul are separate. No universal rates/defaults",
+      "remaining": "Actual layer/material suitability and compaction method approval, separate actual water consumption/supply and logistics, mixed/other materials, engineering acceptance and full-owner publication"
+    },
     "evaluator": "Existing canonical FormulaGraph only",
     "inputPolicy": "The component takes explicitly supplied scalar inputs and does not create a runtime form or baseline. The full owner must classify source-backed replaceable assumptions separately from genuine project facts, and prefer certified pipe mass when available.",
     "completedQuantityBoundaries": [
