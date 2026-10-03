@@ -23,7 +23,8 @@ function runShard(project) {
     const startedAt = Date.now();
     const child = spawn(
       process.execPath,
-      [compiler, "--project", project, "--noEmit", "--pretty", "false"],
+      [compiler, "--project", project, "--noEmit", "--pretty", "false",
+        ...(process.argv.includes("--diagnostics") ? ["--extendedDiagnostics"] : [])],
       {
         cwd: projectRoot,
         env: process.env,
