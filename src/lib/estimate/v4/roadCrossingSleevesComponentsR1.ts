@@ -16,6 +16,7 @@ import { ROAD_CROSSING_SLEEVES_SHORING_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_SHOR
 import { buildRoadCrossingSleevesShoringConsumablesR1 } from "./roadCrossingSleevesShoringConsumablesR1";
 import { ROAD_CROSSING_SLEEVES_REACTION_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_REACTION_ROWS_R1, ROAD_CROSSING_SLEEVES_REACTION_CARGO_R1,
   roadCrossingSleevesReactionParameterId as reactionId } from "./roadCrossingSleevesReactionR1";
+import { buildRoadCrossingSleevesServiceWasteR1 } from "./roadCrossingSleevesServiceWasteR1";
 import { ROAD_CROSSING_SLEEVES_BEDDING_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_BEDDING_ROWS_R1,
   ROAD_CROSSING_SLEEVES_BEDDING_APPLICABILITY_R1 } from "./roadCrossingSleevesBeddingMaterialR1";
 import { ROAD_CROSSING_SLEEVES_PIT_RETURN_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_PIT_RETURN_ROWS_R1,
@@ -36,6 +37,8 @@ export { ROAD_CROSSING_SLEEVES_SHORING_MODES_R1, ROAD_CROSSING_SLEEVES_SHORING_R
   ROAD_CROSSING_SLEEVES_SHORING_WORK_BASES_R1 } from "./roadCrossingSleevesShoringR1";
 export { ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_MODES_R1, ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_BASIS_R1 } from "./roadCrossingSleevesShoringConsumablesR1";
 export { ROAD_CROSSING_SLEEVES_REACTION_MODES_R1, ROAD_CROSSING_SLEEVES_REACTION_RENTAL_BASIS_R1, ROAD_CROSSING_SLEEVES_REACTION_WORK_BASES_R1 } from "./roadCrossingSleevesReactionR1";
+export { ROAD_CROSSING_SLEEVES_SERVICE_WASTE_MODES_R1, ROAD_CROSSING_SLEEVES_SERVICE_WASTE_TRIP_BASIS_R1,
+  ROAD_CROSSING_SLEEVES_SERVICE_WASTE_RECEIVING_MODES_R1, ROAD_CROSSING_SLEEVES_SERVICE_WASTE_RECEIVING_BASIS_R1 } from "./roadCrossingSleevesServiceWasteR1";
 
 /** Execution arithmetic is part of this assembly, not a separate estimator.
  * PJA describes separate pits and an advancing excavation/jacking system:
@@ -1136,6 +1139,16 @@ const shoringConsumables = buildRoadCrossingSleevesShoringConsumablesR1([...ROAD
   facts: ROAD_CROSSING_SLEEVES_REACTION_CARGO_R1.facts, kitCountId: "1", cyclesId: "1", calendarId: reactionId("calendar_hours") }]);
 export const ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_PARAMETERS_R1 = shoringConsumables.parameters;
 export const ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_ROWS_R1 = shoringConsumables.rows;
+const serviceWaste = buildRoadCrossingSleevesServiceWasteR1([...ROAD_CROSSING_SLEEVES_SHORING_CARGOS_R1.map(cargo => ({
+  key: cargo.key.slice("shoring_".length, -"_kits".length), title: cargo.title, selected: cargo.selected, facts: cargo.facts,
+})), { key: "reaction", title: ROAD_CROSSING_SLEEVES_REACTION_CARGO_R1.title, selected: ROAD_CROSSING_SLEEVES_REACTION_CARGO_R1.selected,
+  facts: ROAD_CROSSING_SLEEVES_REACTION_CARGO_R1.facts }].map(scope => {
+  const wipes = shoringConsumables.rows.find(row => row.rowId === `rcs:shoring-material:${scope.key}:wipes:consumed`);
+  if (!wipes) throw new Error(`RCS_ACTUAL_SERVICE_WIPES_MISSING:${scope.key}`);
+  return { ...scope, wipesExpression: wipes.expression, wipesProductId: `rcs_shoring_material_${scope.key}_wipes_product_designation` };
+}));
+export const ROAD_CROSSING_SLEEVES_SERVICE_WASTE_PARAMETERS_R1 = serviceWaste.parameters;
+export const ROAD_CROSSING_SLEEVES_SERVICE_WASTE_ROWS_R1 = serviceWaste.rows;
 type FreightCargo = Readonly<{ key: string; title: string; purchase: AutomaticRowSpec; stockId: string;
   unit: "piece" | "m3" | "kg" | "l"; sectionLengthId?: string; quantum?: string }>;
 function freightCargo(key: string, title: string, rows: readonly AutomaticRowSpec[], rowId: string,
@@ -1446,6 +1459,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_PARAMETERS_R1: readonly AutomaticPa
   ...ROAD_CROSSING_SLEEVES_SHORING_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_REACTION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_PARAMETERS_R1,
+  ...ROAD_CROSSING_SLEEVES_SERVICE_WASTE_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_BEDDING_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_PIT_RETURN_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_PIT_FILL_PARAMETERS_R1,
@@ -1476,6 +1490,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[
   ...ROAD_CROSSING_SLEEVES_SHORING_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_REACTION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_ROWS_R1,
+  ...ROAD_CROSSING_SLEEVES_SERVICE_WASTE_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_BEDDING_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_PIT_RETURN_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_PIT_FILL_ROWS_R1,
@@ -1540,6 +1555,7 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
     ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => /^rcs:fill-execution:(?:pits|trench):/u.test(row.rowId))],
     remaining: ["Подтверждение пригодности и распределения повторно используемого грунта", "Послойные или другие материалы траншеи", "Подтверждение технологии укладки и уплотнения", "Фактические качество и отдельное распределение воды", "Разные партии грунта, пульпа и иные состояния"] },
   { stageId: "completion", titleRu: "Завершение перехода", rows: [...ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1,
+    ...ROAD_CROSSING_SLEEVES_SERVICE_WASTE_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_REACTION_ROWS_R1.filter(row => row.rowId.startsWith("rcs:reaction:removal:")),
     ...ROAD_CROSSING_SLEEVES_SHORING_ROWS_R1.filter(row => /^rcs:shoring:[^:]+:(?:extraction|disassembly):/u.test(row.rowId)),
     ...ROAD_CROSSING_SLEEVES_EQUIPMENT_MOBILIZATION_ROWS_R1,

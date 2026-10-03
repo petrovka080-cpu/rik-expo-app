@@ -35,6 +35,8 @@ import { ROAD_CROSSING_SLEEVES_SHORING_MODES_R1 as shoringModes, ROAD_CROSSING_S
 import { ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_MODES_R1 as shoringMaterialModes, ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_BASIS_R1 as shoringMaterialBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesShoringConsumablesR1";
 import { ROAD_CROSSING_SLEEVES_REACTION_MODES_R1 as reactionModes, ROAD_CROSSING_SLEEVES_REACTION_RENTAL_BASIS_R1 as reactionRentalBasis,
   ROAD_CROSSING_SLEEVES_REACTION_WORK_BASES_R1 as reactionWorkBases } from "../../src/lib/estimate/v4/roadCrossingSleevesReactionR1";
+import { ROAD_CROSSING_SLEEVES_SERVICE_WASTE_MODES_R1 as serviceWasteModes, ROAD_CROSSING_SLEEVES_SERVICE_WASTE_TRIP_BASIS_R1 as serviceWasteTripBasis,
+  ROAD_CROSSING_SLEEVES_SERVICE_WASTE_RECEIVING_MODES_R1 as serviceWasteReceivingModes, ROAD_CROSSING_SLEEVES_SERVICE_WASTE_RECEIVING_BASIS_R1 as serviceWasteReceivingBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesServiceWasteR1";
 import { ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1 as jointParameters, ROAD_CROSSING_SLEEVES_JOINT_COST_BASES_R1 as bases } from "../../src/lib/estimate/v4/roadCrossingSleevesJointResourcesR1";
 import { ROAD_CROSSING_SLEEVES_PIT_FILL_MODES_R1 as fillModes,
   ROAD_CROSSING_SLEEVES_TRENCH_FILL_MODES_R1 as trenchModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
@@ -49,6 +51,10 @@ const components = buildRoadCrossingSleevesComponentsR1({ source_title: "Owned i
 const definition = components.definition;
 // Synthetic actual-fact/price fixtures ONLY, never a published default or WPS approval.
 const fixture: Record<string, unknown> = {
+  ...Object.fromEntries(["trench", "thrust", "reception", "reaction"].flatMap(key => [
+    [`rcs_service_waste_${key}_mode`, serviceWasteModes.otherParty],
+    [`rcs_service_waste_${key}_program_reference`, "TEST actual entire service waste collection/packaging/handling/receiving by other party without executor cost, no hidden zero waste or duplicate service"],
+  ])),
   rcs_reaction_mode: reactionModes.otherParty, rcs_reaction_allocation_reference: "TEST actual entire separate reaction arrangement supplied by another party and excluded from all paid jacking/excavation/fill/other packages",
   ...Object.fromEntries(parameters.filter(parameter => parameter.id.startsWith("rcs_shoring_material_") && /(?:_gross_per_|_program_and_compatibility_reference$)/u.test(parameter.id)).map(parameter => [parameter.id,
     parameter.id.endsWith("_reference") ? "TEST actual complete programme confirms no separate gross consumption of this material in any stage; explicit zeros, not a product default" : 0])),
@@ -302,6 +308,83 @@ describe("actual full temporary shoring kits, disjoint programme resources and m
       vehicle_designation: "TEST compatible carrier", shipping_kg_per_unit: 0.1, payload_kg: 0.8, max_units_per_trip: 8, cost_basis: freightBasis,
     }).map(([key, value]) => [`rcs_freight_shoring_trench_wipes_new_${key}`, value])),
   };
+  const wr = (suffix: string) => `rcs:service-waste:trench:${suffix}`;
+  const wp = (suffix: string) => `rcs_service_waste_trench_${suffix}`;
+  const withWaste: Record<string, unknown> = { ...withConsumables,
+    ...Object.fromEntries(Object.entries({
+      mode: serviceWasteModes.complete, program_reference: "TEST actual all compatible homogeneous service residues/ALL consumed wipes/discarded initial product packaging, complete disjoint full service; all collector places single-use disposed",
+      net_waste_kg: 4, dry_kg_per_original_wipe: 0.1, wipe_mass_reference: "TEST actual original compatible wipe SKU mass and all nine disposable original wipes remain in party",
+      contents_and_compatibility_reference: "TEST actual FULL homogeneous permitted contents, compatibility, classification/packing/closing/placement and each certified max shipping mass, no foreign defaults",
+      container_designation: "TEST complete compatible single-use closed collection container", effective_net_kg_per_container: 2.5,
+      container_tare_kg: 0.2, certified_max_shipping_kg_per_container: 3,
+      vehicle_designation: "TEST full compatible hauling and handling means with all crew/energy",
+      route_and_handling_reference: "TEST actual route/rights/contents/supply of exactly needed containers/all collection and closure after paid cleaning, no duplicate kit service or other freight",
+      route_payload_kg: 5, vehicle_container_places: 3, trip_cost_basis: serviceWasteTripBasis,
+      receiving_mode: serviceWasteReceivingModes.tonnes, receiver_designation: "TEST actual approved whole-party receiver",
+      receiving_reference: "TEST actual admissible receiving/classification of ALL waste and new disposed collection containers, no second receiving/haul",
+      receiving_cost_basis: serviceWasteReceivingBasis,
+    }).map(([key, value]) => [wp(key), value])),
+  };
+  it("owns all actual service-waste packaging/full handling trips and gross receiving mass without pricing original consumables or containers twice", async () => {
+    const result = await compile(withWaste, { [wr("full_service_trip_count")]: { unitPrice: "10", provenance }, [wr("receiving_tonnes")]: { unitPrice: "100", provenance } });
+    expect(result.preliminaryNeeds).toEqual([]); expect(q(result, wr("net_waste_kg"))).toBe(4);
+    expect(q(result, wr("all_original_wipes_count"))).toBe(9); expect(q(result, wr("wipe_mass_margin_kg"))).toBeCloseTo(3.1, 8);
+    expect(q(result, wr("closed_container_count"))).toBe(2); expect(q(result, wr("container_mass_margin_kg"))).toBeCloseTo(0.3, 8);
+    expect(q(result, wr("gross_shipping_kg"))).toBeCloseTo(4.4, 8);
+    expect(q(result, wr("effective_containers_per_trip"))).toBe(1); expect(q(result, wr("full_service_trip_count"))).toBe(2);
+    expect(q(result, wr("receiving_tonnes"))).toBeCloseTo(0.0044, 8); expect(Number(result.totals.amount)).toBeCloseTo(20.44, 8);
+    expect(result.rows.filter(r => r.row_id.startsWith("rcs:service-waste:") && r.included_in_estimate).map(r => r.row_id)).toEqual([wr("full_service_trip_count"), wr("receiving_tonnes")]);
+    expect(q(result, mr("wipes", "ordered"))).toBe(10); expect(q(result, row("disassembly:crew_hours"))).toBe(1);
+    expect(q(result, "rcs:equipment-mobilization:shoring_trench_kits_return:trip_count")).toBe(2);
+    expect(components.stageMatrix.filter(s => s.ownResourceIds.includes(wr("full_service_trip_count"))).map(s => s.stageId)).toEqual(["completion"]);
+  });
+  it("uses actual waste net mass and worst per-container shipment for packing/haul, independent of supplier packs/reserve and kit rental", async () => {
+    const partialLast = await compile({ ...withWaste, [wp("net_waste_kg")]: 2.6 });
+    expect(q(partialLast, wr("closed_container_count"))).toBe(2); expect(q(partialLast, wr("full_service_trip_count"))).toBe(2);
+    expect(q(partialLast, wr("gross_shipping_kg"))).toBe(3); expect(q(partialLast, wr("receiving_tonnes"))).toBe(0.003);
+    const stock = await compile({ ...withWaste, [mp("wipes", "compatible_unused_stock")]: 20,
+      [mp("wipes", "retained_reserve")]: 10, [p("calendar_hours")]: 48 });
+    expect(q(stock, mr("wipes", "ordered"))).toBe(0); expect(q(stock, wr("all_original_wipes_count"))).toBe(9);
+    expect(q(stock, wr("full_service_trip_count"))).toBe(2); expect(q(stock, wr("receiving_tonnes"))).toBeCloseTo(0.0044, 8);
+  });
+  it.each([ ["net_waste_kg", 0], ["net_waste_kg", 0.89], ["certified_max_shipping_kg_per_container", 2.69],
+    ["route_payload_kg", 2.99] ] as const)("rejects impossible actual service-waste %s=%s before manual trips/receiving", async (fact, value) => {
+    await expect(compile({ ...withWaste, [wp(fact)]: value }, { [wr("full_service_trip_count")]: { quantity: "1", provenance },
+      [wr("receiving_tonnes")]: { quantity: "1", provenance } })).rejects.toMatchObject({ code: "FORMULA_OUTPUT_BOUNDS_FAILED" });
+  });
+  it("leaves known packing/receiving and kit work calculable when only a haul payload is unknown", async () => {
+    const input = { ...withWaste }; delete input[wp("route_payload_kg")];
+    const result = await compile(input, { [wr("full_service_trip_count")]: { quantity: "999", provenance } });
+    expect(result.preliminaryNeeds.find(n => n.row_id === wr("full_service_trip_count"))?.missing_parameter_ids).toContain(wp("route_payload_kg"));
+    expect(q(result, wr("closed_container_count"))).toBe(2); expect(q(result, wr("receiving_tonnes"))).toBeCloseTo(0.0044, 8);
+    expect(q(result, row("installation:crew_hours"))).toBe(10); expect(q(result, mr("cleaner", "ordered"))).toBe(1);
+  });
+  it.each(["contents_and_compatibility_reference", "receiver_designation", "receiving_reference", "effective_net_kg_per_container"])("keeps original actual service-waste %s mandatory before manually priced trips", async fact => {
+    const input = { ...withWaste }; delete input[wp(fact)];
+    const result = await compile(input, { [wr("full_service_trip_count")]: { quantity: "999", unitPrice: "1", provenance } });
+    expect(result.preliminaryNeeds.find(n => n.row_id === wr("full_service_trip_count"))?.missing_parameter_ids).toContain(wp(fact));
+    expect(q(result, row("rental_set_hours"))).toBe(48); expect(q(result, mr("wipes", "ordered"))).toBe(10);
+  });
+  it("preserves unknown real net mass instead of assuming zero or converting cleaner litres into a waste density", async () => {
+    const input = { ...withWaste }; delete input[wp("net_waste_kg")];
+    const result = await compile(input, { [wr("receiving_tonnes")]: { quantity: "999", provenance } });
+    expect(result.preliminaryNeeds.find(n => n.row_id === wr("receiving_tonnes"))?.missing_parameter_ids).toContain(wp("net_waste_kg"));
+    expect(q(result, mr("cleaner", "consumed"))).toBeCloseTo(1.14, 8); expect(q(result, row("rental_set_hours"))).toBe(48);
+    const missingMin = { ...withWaste }; delete missingMin[wp("dry_kg_per_original_wipe")];
+    const minResult = await compile(missingMin, { [wr("wipe_mass_margin_kg")]: { quantity: "999", provenance } });
+    expect(minResult.preliminaryNeeds.find(n => n.row_id === wr("wipe_mass_margin_kg"))?.missing_parameter_ids).toContain(wp("dry_kg_per_original_wipe"));
+  });
+  it("disables truly empty service waste and separately supplied receiving/whole waste without reviving old priced quantities", async () => {
+    const zero: Record<string, unknown> = { ...withWaste, [wp("net_waste_kg")]: 0,
+      [mp("wipes", "gross_per_initial_kit")]: 0, [mp("wipes", "gross_per_placement_cycle")]: 0 };
+    for (const field of ["route_payload_kg", "container_designation", "dry_kg_per_original_wipe", "receiver_designation"]) delete zero[wp(field)];
+    const none = await compile(zero); expect(none.preliminaryNeeds).toEqual([]); expect(q(none, wr("net_waste_kg"))).toBe(0);
+    expect(none.rows.some(r => r.row_id === wr("full_service_trip_count") || r.row_id === wr("receiving_tonnes"))).toBe(false);
+    const receiver = await compile({ ...withWaste, [wp("receiving_mode")]: serviceWasteReceivingModes.otherParty }, { [wr("receiving_tonnes")]: { quantity: "999", unitPrice: "5", provenance } });
+    expect(receiver.rows.some(r => r.row_id === wr("receiving_tonnes"))).toBe(false); expect(q(receiver, wr("full_service_trip_count"))).toBe(2);
+    const other = await compile({ ...withWaste, [wp("mode")]: serviceWasteModes.otherParty });
+    expect(other.rows.some(r => r.row_id.startsWith("rcs:service-waste:trench:"))).toBe(false); expect(q(other, mr("wipes", "ordered"))).toBe(10);
+  });
   it("owns actual disjoint consumable contributions, complete new packages and unused balances without second rent/work/material charges", async () => {
     const result = await compile(withConsumables, { [mr("wipes", "ordered")]: { unitPrice: "2", provenance } });
     expect(result.preliminaryNeeds).toEqual([]);

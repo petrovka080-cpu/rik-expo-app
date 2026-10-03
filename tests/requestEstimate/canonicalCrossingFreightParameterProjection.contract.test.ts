@@ -26,6 +26,8 @@ import { ROAD_CROSSING_SLEEVES_SHORING_MODES_R1 as shoringModes, ROAD_CROSSING_S
   ROAD_CROSSING_SLEEVES_SHORING_WORK_BASES_R1 as shoringWorkBases } from "../../src/lib/estimate/v4/roadCrossingSleevesShoringR1";
 import { ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_MODES_R1 as shoringMaterialModes, ROAD_CROSSING_SLEEVES_SHORING_CONSUMABLE_BASIS_R1 as shoringMaterialBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesShoringConsumablesR1";
 import { ROAD_CROSSING_SLEEVES_REACTION_MODES_R1 as reactionModes, ROAD_CROSSING_SLEEVES_REACTION_RENTAL_BASIS_R1 as reactionRentalBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesReactionR1";
+import { ROAD_CROSSING_SLEEVES_SERVICE_WASTE_MODES_R1 as serviceWasteModes, ROAD_CROSSING_SLEEVES_SERVICE_WASTE_TRIP_BASIS_R1 as serviceWasteTripBasis,
+  ROAD_CROSSING_SLEEVES_SERVICE_WASTE_RECEIVING_MODES_R1 as serviceWasteReceivingModes } from "../../src/lib/estimate/v4/roadCrossingSleevesServiceWasteR1";
 import { ROAD_CROSSING_SLEEVES_TRENCH_FILL_MODES_R1 as fillModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
 import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierSupplyModes } from "../../src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1";
 import { buildConsumerCanonicalPrecompileParameterSession } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
@@ -66,6 +68,48 @@ const fixture: Record<string, CanonicalEstimateParameterInputValue> = {
 };
 const session = (parameters = fixture, missingParameterIds: string[] = []) => buildConsumerCanonicalPrecompileParameterSession({
   catalog, draftId: "owned-freight-editor", parameters, missingParameterIds, userExplicitParameterIds: Object.keys(parameters), textExtractedParameterIds: [],
+});
+
+describe("actual complete service-waste programme in common parameter cards", () => {
+  const waste: Record<string, CanonicalEstimateParameterInputValue> = { ...fixture,
+    rcs_civil_installation_method: methods.openCut, rcs_shoring_trench_mode: shoringModes.completeRental,
+    rcs_shoring_trench_complete_kit_count: 2, rcs_shoring_trench_placement_cycle_count: 5, rcs_shoring_trench_calendar_hours: 24,
+    rcs_shoring_material_trench_wipes_gross_per_initial_kit: 2, rcs_shoring_material_trench_wipes_gross_per_placement_cycle: 1,
+    rcs_shoring_material_trench_wipes_gross_per_group_calendar_hour: 0,
+    rcs_service_waste_trench_mode: serviceWasteModes.complete, rcs_service_waste_trench_program_reference: "TEST actual full homogeneous waste inventory including all spent wipes and real discarded product packaging",
+    rcs_service_waste_trench_net_waste_kg: 4, rcs_service_waste_trench_dry_kg_per_original_wipe: 0.1,
+    rcs_service_waste_trench_wipe_mass_reference: "TEST actual same wipe SKU minimum dry mass and all original wipes in party",
+    rcs_service_waste_trench_contents_and_compatibility_reference: "TEST actual classification/full party/handling/whole closed container compatibility",
+    rcs_service_waste_trench_container_designation: "TEST actual full compatible closed collector place",
+    rcs_service_waste_trench_effective_net_kg_per_container: 2.5, rcs_service_waste_trench_container_tare_kg: 0.2,
+    rcs_service_waste_trench_certified_max_shipping_kg_per_container: 3, rcs_service_waste_trench_route_payload_kg: 5,
+    rcs_service_waste_trench_vehicle_container_places: 3, rcs_service_waste_trench_trip_cost_basis: serviceWasteTripBasis,
+    rcs_service_waste_trench_receiving_mode: serviceWasteReceivingModes.tonnes,
+    rcs_service_waste_trench_receiver_designation: "TEST actual compatible receiver", rcs_service_waste_trench_receiving_reference: "TEST actual permitted full party and disposed container receiving",
+  };
+  it("fills editable real mass/contents/source/packing/route/receiver facts with correct dimensions and no derived packaging question", () => {
+    const actualCards = cards(waste);
+    for (const [key, value] of Object.entries(waste).filter(([key]) => key.startsWith("rcs_service_waste_"))) {
+      expect(actualCards.find(c => c.key === key)).toMatchObject({ value, editable: true, missing: false });
+      expect(actualCards.find(c => c.key === key)?.guideShortRu).toBeTruthy();
+    }
+    expect(actualCards.find(c => c.key === "rcs_service_waste_trench_net_waste_kg")?.unitRu).toBe("кг");
+    expect(actualCards.find(c => c.key === "rcs_service_waste_trench_certified_max_shipping_kg_per_container")?.unitRu).toBe("кг/шт.");
+    expect(catalog.parameterSchema.some(p => /service_waste.*(?:closed_container_count|receiving_tonnes|gross_shipping_kg|full_service_trip_count)$/u.test(p.parameterId))).toBe(false);
+  });
+  it("retains missing real net mass and genuine zero/other-party inactive values without substituting consumption or density", () => {
+    const input = { ...waste }; delete input.rcs_service_waste_trench_net_waste_kg;
+    expect(cards(input).find(c => c.key === "rcs_service_waste_trench_net_waste_kg")).toMatchObject({ value: null, missing: true, editable: true });
+    const zero = session({ ...waste, rcs_service_waste_trench_net_waste_kg: 0, rcs_shoring_material_trench_wipes_gross_per_initial_kit: 0,
+      rcs_shoring_material_trench_wipes_gross_per_placement_cycle: 0 });
+    expect(zero.parameters.some(p => p.parameterId === "rcs_service_waste_trench_route_payload_kg")).toBe(false);
+    expect(zero.parameters.some(p => p.parameterId === "rcs_service_waste_trench_dry_kg_per_original_wipe")).toBe(false);
+    expect(zero.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_service_waste_trench_route_payload_kg")).toMatchObject({ value: 5 });
+    const other = session({ ...waste, rcs_service_waste_trench_mode: serviceWasteModes.otherParty });
+    expect(other.parameters.find(p => p.parameterId === "rcs_service_waste_trench_program_reference")).toBeDefined();
+    expect(other.parameters.some(p => p.parameterId === "rcs_service_waste_trench_net_waste_kg")).toBe(false);
+    expect(other.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_service_waste_trench_net_waste_kg")).toMatchObject({ value: 4 });
+  });
 });
 
 describe("actual portable reaction parameters and unchanged common editor", () => {
