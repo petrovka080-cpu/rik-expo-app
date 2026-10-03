@@ -8,7 +8,8 @@ import { ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1, ROAD_CROSSING_SLEEV
 import { ROAD_CROSSING_SLEEVES_CASING_MATERIAL_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_CASING_MATERIAL_ROWS_R1 } from "./roadCrossingSleevesCasingMaterialR1";
 import { ROAD_CROSSING_SLEEVES_BEDDING_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_BEDDING_ROWS_R1 } from "./roadCrossingSleevesBeddingMaterialR1";
 import { ROAD_CROSSING_SLEEVES_PIT_RETURN_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_PIT_RETURN_ROWS_R1 } from "./roadCrossingSleevesPitReturnFillR1";
-import { ROAD_CROSSING_SLEEVES_PIT_FILL_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_PIT_FILL_ROWS_R1 } from "./roadCrossingSleevesPitFillMaterialR1";
+import { ROAD_CROSSING_SLEEVES_PIT_FILL_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_PIT_FILL_ROWS_R1,
+  ROAD_CROSSING_SLEEVES_TRENCH_FILL_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_TRENCH_FILL_ROWS_R1 } from "./roadCrossingSleevesPitFillMaterialR1";
 import { ROAD_CROSSING_SLEEVES_INTERNAL_FILL_PARAMETERS_R1, ROAD_CROSSING_SLEEVES_INTERNAL_FILL_ROWS_R1 } from "./roadCrossingSleevesInternalFillR1";
 
 /** Execution arithmetic is part of this assembly, not a separate estimator.
@@ -97,6 +98,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_PARAMETERS_R1: readonly AutomaticPa
   ...ROAD_CROSSING_SLEEVES_BEDDING_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_PIT_RETURN_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_PIT_FILL_PARAMETERS_R1,
+  ...ROAD_CROSSING_SLEEVES_TRENCH_FILL_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_INTERNAL_FILL_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_PARAMETERS_R1,
 ]);
@@ -106,6 +108,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[
   ...ROAD_CROSSING_SLEEVES_BEDDING_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_PIT_RETURN_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_PIT_FILL_ROWS_R1,
+  ...ROAD_CROSSING_SLEEVES_TRENCH_FILL_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_INTERNAL_FILL_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_ROWS_R1,
 ]);
@@ -131,8 +134,8 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
     remaining: ["Смешивание и размещение выбранной смеси", "Подготовка и выдержка", "Отдельная поставка фактически расходуемой воды", "Другие или частичные способы заполнения"] },
   { stageId: "backfill", titleRu: "Обратная засыпка", rows: [
     ...ROAD_CROSSING_SLEEVES_CIVIL_ROWS_R1.filter(row => row.rowId === "rcs:civil:open_cut_remaining_fill_space_m3"),
-    ...ROAD_CROSSING_SLEEVES_PIT_RETURN_ROWS_R1, ...ROAD_CROSSING_SLEEVES_PIT_FILL_ROWS_R1],
-    remaining: ["Пригодный грунт и новый материал для открытой траншеи", "Послойная укладка и уплотнение", "Состояния грунта и баланс вывоза"] },
+    ...ROAD_CROSSING_SLEEVES_PIT_RETURN_ROWS_R1, ...ROAD_CROSSING_SLEEVES_PIT_FILL_ROWS_R1, ...ROAD_CROSSING_SLEEVES_TRENCH_FILL_ROWS_R1],
+    remaining: ["Подтверждение пригодности и распределения повторно используемого грунта", "Послойные или другие материалы траншеи", "Послойная укладка и уплотнение", "Состояния грунта и баланс вывоза"] },
   { stageId: "completion", titleRu: "Завершение перехода", rows: [],
     remaining: ["Применимое восстановление территории и покрытия", "Доставка и возврат оборудования", "Испытания и завершение без подмены материалов документами"] },
 ].map(({ rows, ...stage }) => Object.freeze({ ...stage, ownResourceIds: Object.freeze(rows.map(row => row.rowId)), remaining: Object.freeze(stage.remaining) })));

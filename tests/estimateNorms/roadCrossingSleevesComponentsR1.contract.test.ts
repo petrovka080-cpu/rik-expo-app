@@ -4,7 +4,8 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_COMPONENT_P
   ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_COST_BASES_R1 as executionBases } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1 as jointParameters, ROAD_CROSSING_SLEEVES_JOINT_COST_BASES_R1 as bases } from "../../src/lib/estimate/v4/roadCrossingSleevesJointResourcesR1";
-import { ROAD_CROSSING_SLEEVES_PIT_FILL_MODES_R1 as fillModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
+import { ROAD_CROSSING_SLEEVES_PIT_FILL_MODES_R1 as fillModes,
+  ROAD_CROSSING_SLEEVES_TRENCH_FILL_MODES_R1 as trenchModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
 import { ROAD_CROSSING_SLEEVES_INTERNAL_FILL_MODES_R1 as internalModes } from "../../src/lib/estimate/v4/roadCrossingSleevesInternalFillR1";
 
 const components = buildRoadCrossingSleevesComponentsR1({ source_title: "Owned integration fixture for source-bounded components, not a full crossing",
@@ -35,6 +36,7 @@ const fixture: Record<string, unknown> = {
   rcs_jacking_confirmed_excavation_diameter_mm: 580,
   rcs_jacking_thrust_permanent_occupied_volume_m3: 12, rcs_jacking_reception_permanent_occupied_volume_m3: 7,
   rcs_pit_fill_material_mode: fillModes.other,
+  rcs_trench_fill_material_mode: trenchModes.other,
   rcs_internal_fill_mode: internalModes.none,
   rcs_joint_wps_reference: "TEST-OWNED applicable MMA WPS", rcs_joint_welding_process: bases.process,
   rcs_joint_electrode_designation: "TEST-OWNED compatible electrode", rcs_joint_gross_electrode_kg_per_joint: 2,
@@ -306,5 +308,26 @@ describe("road-casing component integration, not full crossing acceptance", () =
     await expect(compile({ ...fixture, rcs_civil_open_cut_equipment_cost_basis: "All-in with operator" })).rejects.toMatchObject({
       code: "PARAMETER_VALIDATION_FAILED",
     });
+  });
+  it("integrates selected trench supply beside bedding/casing/execution, without paying the inactive pit purchase", async () => {
+    const input = { ...fixture, rcs_trench_fill_material_mode: trenchModes.sameGranular,
+      rcs_trench_fill_granular_product_designation: "TEST actual trench product", rcs_trench_fill_other_permanent_occupied_volume_m3: 2,
+      rcs_trench_fill_approved_reused_finished_m3: 20, rcs_trench_fill_gross_supplied_volume_ratio: 1.2,
+      rcs_trench_fill_compatible_loose_stock_m3: 10, rcs_trench_fill_retained_loose_reserve_m3: 2, rcs_trench_fill_supplier_loose_multiple_m3: 5 };
+    const result = await compile(input);
+    expect(result.preliminaryNeeds).toEqual([]);
+    expect(q(result, "rcs:trench-fill:ordered_loose_m3")).toBe(80);
+    expect(q(result, beddingOwner)).toBe(6);
+    expect(q(result, "rcs:casing:ordered_casing_length_m")).toBe(48);
+    expect(result.rows.filter(row => row.included_in_procurement).map(row => row.row_id)).toEqual([
+      ...owners, beddingOwner, "rcs:trench-fill:ordered_loose_m3", ...executionOwners(methods.openCut),
+    ]);
+    expect(components.stageMatrix.find(stage => stage.stageId === "backfill")?.ownResourceIds).toContain("rcs:trench-fill:ordered_loose_m3");
+    const missingProduct: Record<string, unknown> = { ...input }; delete missingProduct.rcs_trench_fill_granular_product_designation;
+    const preliminary = await compile(missingProduct, { "rcs:trench-fill:ordered_loose_m3": { quantity: "999", provenance } });
+    expect(preliminary.preliminaryNeeds).toEqual([expect.objectContaining({ row_id: "rcs:trench-fill:ordered_loose_m3",
+      missing_parameter_ids: ["rcs_trench_fill_granular_product_designation"] })]);
+    expect(q(preliminary, beddingOwner)).toBe(6);
+    expect(q(preliminary, "rcs:civil-execution:open_cut:crew_hours")).toBe(52.5);
   });
 });

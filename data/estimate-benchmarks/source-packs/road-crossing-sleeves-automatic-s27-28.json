@@ -5,7 +5,7 @@
   "scope": "One continuous steel casing crossing with explicitly selected installation method. Casing supply and site joints, support rings and elements, contact tape, compatible end-seal kits, applicable civil work, crew labor, mechanisms and logistics are separate quantity/cost owners. This source pack is not itself a published owner or accepted estimate.",
   "engineeringAcceptanceClaimed": false,
   "universalRatesClaimed": false,
-  "implementationStatus": "COMPONENT_ASSEMBLY_WITH_METHOD_SPECIFIC_CIVIL_EXECUTION_AND_FULL_STAGE_GAP_MATRIX_NOT_PUBLISHED_NOT_FULL_OWNER",
+  "implementationStatus": "COMPONENT_ASSEMBLY_WITH_METHOD_SPECIFIC_EXECUTION_AND_PIT_OR_TRENCH_BACKFILL_SUPPLY_NOT_PUBLISHED_NOT_FULL_OWNER",
   "quantityComponent": {
     "module": "src/lib/estimate/v4/roadCrossingSleevesQuantityModelR1.ts",
     "verification": "tests/estimateNorms/roadCrossingSleevesQuantityModelR1.contract.test.ts",
@@ -25,6 +25,9 @@
     "pitReturnFillVerification": "tests/estimateNorms/roadCrossingSleevesPitReturnFillR1.contract.test.ts",
     "pitFillMaterialModule": "src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1.ts",
     "pitFillMaterialVerification": "tests/estimateNorms/roadCrossingSleevesPitFillMaterialR1.contract.test.ts",
+    "trenchFillMaterialModule": "src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1.ts",
+    "trenchFillMaterialVerification": "tests/estimateNorms/roadCrossingSleevesTrenchFillMaterialR1.contract.test.ts",
+    "trenchFillMaterialBoundary": "One explicitly selected granular product for the open trench only. Existing gross trench minus bedding/casing and actual other non-overlapping permanent occupation/restoration layers gives net finished space. Confirmed reuse in finished-volume equivalent is disjoint from compatible loose stock. Actual gross supplied-loose ratio includes all process losses; reserve/stock/supply multiple yield rounded new order and retained/free remainder. Only new supplied-loose order owns material cost. Mixed/layered/other fills, approved suitability, execution and soil haul remain open. Missing original facts are local needs and cannot be replaced by a manual order.",
     "internalFillModule": "src/lib/estimate/v4/roadCrossingSleevesInternalFillR1.ts",
     "internalFillVerification": "tests/estimateNorms/roadCrossingSleevesInternalFillR1.contract.test.ts",
     "internalFillParameterProjectionVerification": "tests/requestEstimate/canonicalInternalFillParameterProjection.contract.test.ts",
