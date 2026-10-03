@@ -117,7 +117,7 @@ export const ROAD_CROSSING_SLEEVES_FILL_EXECUTION_PARAMETERS_R1: readonly Automa
       values: [ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_COST_BASES_R1[owner]], requiredWhen: work.inclusion });
     return [text("method_reference", work.key === "internal"
       ? `${work.title}: согласованная карта смешивания и размещения с фактическими ограничениями давления, плавучести, удержания и выдержки; вода, материалы и доставка отдельно`
-      : `${work.title}: применимая карта укладки, слоёв и уплотнения с выбранной смесью и повторно используемым материалом; поставка, резерв и вывоз отдельно`),
+      : `${work.title}: применимая карта укладки, слоёв, фактического увлажнения и уплотнения с выбранной смесью и повторно используемым материалом; все исполнители и техника применения воды здесь, сама вода, доставка, резерв и вывоз отдельно`),
       text("crew_designation", `${work.title}: все исполнители, включая операторов`), rate("crew"), basis("crew"),
       text("equipment_designation", `${work.title}: выбранный совместимый комплект ${work.key === "internal" ? "смешивания и размещения" : "для укладки и уплотнения"}`), rate("equipment"), basis("equipment")];
   }),
@@ -132,6 +132,76 @@ export const ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1: readonly AutomaticRow
     inputParameterIds: [...(work.key === "internal" ? [] : [METHOD_ID]), ...work.facts, fillExecutionId(work.key, "method_reference"),
       fillExecutionId(work.key, `${owner}_designation`), fillExecutionId(work.key, `${owner}_cost_basis`)],
   }))),
+);
+
+/** FP-24 204/301/302 distinguish moisture conditioning and suitable construction
+ * water. Neither a moisture limit nor a generic added-water rate is a default:
+ * actual gross addition includes initial moisture and process losses, under
+ * the selected project method. Water application personnel/equipment belong
+ * to existing fill execution ONLY; water purchase and dedicated haul exclude
+ * them. Dust control, dewatering and internal grout mixing are other scopes.
+ * https://highways.dot.gov/sites/fhwa.dot.gov/files/FP-24.pdf */
+export const ROAD_CROSSING_SLEEVES_COMPACTION_WATER_MODES_R1 = Object.freeze({
+  separate: "Отдельная закупка совместимой воды для увлажнения этой операции",
+  otherParty: "Подтверждённая совместимая вода другой стороны без закупки исполнителем",
+});
+export const ROAD_CROSSING_SLEEVES_COMPACTION_WATER_COST_BASIS_R1 = "Только новый заказ воды для этой операции; без материала засыпки, всех исполнителей и техники применения воды, энергии, доставки и повторной оплаты той же воды";
+const compactionWaterId = (key: string, suffix: string) => `rcs_compaction_water_${key}_${suffix}`;
+const compactionWaterWorks = fillExecutionWorks.filter(work => work.key !== "internal").map(work => {
+  const id = (suffix: string) => compactionWaterId(work.key, suffix);
+  const consumed = `(${work.expression})*${id("gross_l_per_finished_m3")}/1000`;
+  const positive: AutomaticInclusionCondition = { kind: "and", operands: [work.inclusion,
+    { kind: "formula_greater_than", expression: consumed, unitId: "m3", value: 0 }] };
+  const separate: AutomaticInclusionCondition = { kind: "and", operands: [positive,
+    { kind: "equals", parameterId: id("supply_mode"), value: ROAD_CROSSING_SLEEVES_COMPACTION_WATER_MODES_R1.separate }] };
+  const facts = [METHOD_ID, ...work.facts, fillExecutionId(work.key, "method_reference")];
+  const sourceFacts = [...facts, id("gross_l_per_finished_m3"), id("supply_mode"), id("allocation_reference"), id("product_designation"), id("compatibility_reference")];
+  return { ...work, id, consumed, positive, separate, facts, sourceFacts };
+});
+export const ROAD_CROSSING_SLEEVES_COMPACTION_WATER_PARAMETERS_R1: readonly AutomaticParameterSpec[] = Object.freeze(
+  compactionWaterWorks.flatMap(work => {
+    const text = (suffix: string, title: string): AutomaticParameterSpec => ({ id: work.id(suffix), title: `${work.title}: ${title}`,
+      valueType: "text", unitId: null, kind: "conditional", requiredWhen: work.positive });
+    const amount = (suffix: string, title: string, min = 0): AutomaticParameterSpec => ({ id: work.id(suffix), title: `${work.title}: ${title}`,
+      valueType: "decimal", unitId: "m3", min, kind: "conditional", requiredWhen: work.separate });
+    return [
+      { id: work.id("gross_l_per_finished_m3"), title: `${work.title}: фактическая добавляемая вода на м³ готового объёма с учётом исходной влажности и всех потерь; явный 0 означает отсутствие добавления`,
+        valueType: "decimal", unitId: "l_per_m3", min: 0, kind: "conditional", requiredWhen: work.inclusion } as AutomaticParameterSpec,
+      { id: work.id("supply_mode"), title: `${work.title}: подтверждённый вариант снабжения фактически расходуемой водой`,
+        valueType: "enum", unitId: null, values: Object.values(ROAD_CROSSING_SLEEVES_COMPACTION_WATER_MODES_R1), kind: "conditional", requiredWhen: work.positive } as AutomaticParameterSpec,
+      text("allocation_reference", "документ отдельного распределения воды только этой операции, включая новый заказ, наличие и резерв; не повторять воду другого этапа, пылеподавления или затворения смеси"),
+      text("product_designation", "фактическая подходящая вода для выбранного материала и технологии"),
+      text("compatibility_reference", "подтверждение качества выбранной воды и фактического добавления с учётом исходной влажности; не разрешение переувлажнять материал"),
+      amount("compatible_stock_m3", "пригодная вода в наличии, выделенная исключительно этой операции"),
+      amount("retained_reserve_m3", "сохраняемый резерв той же отдельно выделенной воды"),
+      amount("supplier_multiple_m3", "фактическая кратность нового заказа воды в м³; не число рейсов", 0.000_001),
+      { id: work.id("cost_basis"), title: `${work.title}: отдельная граница стоимости нового заказа воды`, valueType: "enum", unitId: null,
+        values: [ROAD_CROSSING_SLEEVES_COMPACTION_WATER_COST_BASIS_R1], kind: "conditional", requiredWhen: work.separate } as AutomaticParameterSpec,
+    ];
+  }),
+);
+export const ROAD_CROSSING_SLEEVES_COMPACTION_WATER_ROWS_R1: readonly AutomaticRowSpec[] = Object.freeze(
+  compactionWaterWorks.flatMap(work => {
+    const stock = work.id("compatible_stock_m3"), reserve = work.id("retained_reserve_m3"), multiple = work.id("supplier_multiple_m3");
+    const need = `max(0,(${work.consumed})+${reserve}-${stock})`, count = `ceil((${need})/${multiple})`, ordered = `(${count})*${multiple}`;
+    const remaining = `${stock}+(${ordered})-(${work.consumed})`;
+    const row = (key: string, title: string, expression: string, inclusion: AutomaticInclusionCondition, facts: readonly string[], unitId = "m3"): AutomaticRowSpec => ({
+      rowId: `rcs:compaction-water:${work.key}:${key}`, formulaId: `rcs:compaction-water:${work.key}:${key}`,
+      section: `Вода: ${work.title}`, category: "material", title: `${work.title}: ${title}`, unitId, expression, inclusion,
+      inputParameterIds: facts, costTreatment: "INFORMATIONAL_SCOPE",
+    });
+    return [row("consumed_m3", "фактическая добавляемая вода, не заказ, резерв или повторная оплата применения", work.consumed, work.inclusion, work.facts),
+      row("allocated_consumed_m3", "расход в подтверждённом отдельном снабжении водой; без повторной закупки", work.consumed, work.positive, work.sourceFacts),
+      ...([ ["new_need_m3", "дополнительная потребность в воде с резервом после пригодного наличия", need],
+        ["supplier_multiple_count", "число кратностей заказа воды; не рейсы", count], ["ordered_m3", "новый отдельный заказ совместимой воды", ordered],
+        ["remaining_m3", "неиспользованная вода после операции, включая сохраняемый резерв", remaining],
+        ["free_m3_beyond_reserve", "свободная неиспользованная вода сверх сохраняемого резерва", `(${remaining})-${reserve}`] ] as const)
+        .map(([key, title, expression]): AutomaticRowSpec => ({
+          ...row(key, title, expression, work.separate, [...work.sourceFacts, ...(key === "ordered_m3" ? [work.id("cost_basis")] : [])], key === "supplier_multiple_count" ? "package" : "m3"),
+          ...(key === "ordered_m3" ? { costTreatment: "OWN_COST", procurement: true, titleParameterIds: [work.id("product_designation")] } : {}),
+        })),
+    ];
+  }),
 );
 
 /** Mechanical work uses installed geometry/components, never order or reserves.
@@ -436,6 +506,8 @@ const freightCargoGroups: readonly FreightCargo[] = [
     "rcs:preparation:stakes:ordered", "rcs_preparation_stakes_compatible_stock", "piece"),
   freightCargo("preparation_paint", "Краска выбранной разбивки", ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1,
     "rcs:preparation:paint:ordered", "rcs_preparation_paint_compatible_stock", "kg", undefined, "rcs_preparation_paint_supplier_pack_net"),
+  ...compactionWaterWorks.map(work => freightCargo(`compaction_water_${work.key}`, `Вода: ${work.title}`, ROAD_CROSSING_SLEEVES_COMPACTION_WATER_ROWS_R1,
+    `rcs:compaction-water:${work.key}:ordered_m3`, work.id("compatible_stock_m3"), "m3")),
 ];
 const freightId = (key: string, suffix: string) => `rcs_freight_${key}_${suffix}`;
 const freightLanes = freightCargoGroups.flatMap(cargo => (["new", "stock"] as const).map(lane => {
@@ -707,6 +779,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_PARAMETERS_R1: readonly AutomaticPa
   ...ROAD_CROSSING_SLEEVES_INTERNAL_WATER_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_PARAMETERS_R1,
+  ...ROAD_CROSSING_SLEEVES_COMPACTION_WATER_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_MECHANICAL_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_PREPARATION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_INSPECTION_PARAMETERS_R1,
@@ -725,6 +798,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[
   ...ROAD_CROSSING_SLEEVES_INTERNAL_WATER_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1,
+  ...ROAD_CROSSING_SLEEVES_COMPACTION_WATER_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_INSPECTION_ROWS_R1,
@@ -744,8 +818,9 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
     remaining: ["Крепление грунта и реакционные конструкции", "Водоотведение", "Разделение разных партий и дополнительное перемещение грунта", "Применимые смазка и заполнение снаружи футляра"] },
   { stageId: "bedding", titleRu: "Основание", rows: [
     ...ROAD_CROSSING_SLEEVES_CIVIL_ROWS_R1.filter(row => row.rowId === "rcs:civil:open_cut_full_width_bedding_m3"), ...ROAD_CROSSING_SLEEVES_BEDDING_ROWS_R1,
-    ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => row.rowId.startsWith("rcs:fill-execution:bedding:"))],
-    remaining: ["Подтверждение технологии слоёв и уплотнения основания", "Фактически расходуемая вода и её отдельная поставка", "Применимое основание котлованов"] },
+    ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => row.rowId.startsWith("rcs:fill-execution:bedding:")),
+    ...ROAD_CROSSING_SLEEVES_COMPACTION_WATER_ROWS_R1.filter(row => row.rowId.startsWith("rcs:compaction-water:bedding:"))],
+    remaining: ["Подтверждение технологии слоёв и уплотнения основания", "Фактические качество и отдельное распределение воды", "Применимое основание котлованов"] },
   { stageId: "casing", titleRu: "Футляр и стыки", rows: [...ROAD_CROSSING_SLEEVES_CASING_MATERIAL_ROWS_R1, ...ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_INSPECTION_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_MECHANICAL_ROWS_R1.filter(row => /^rcs:mechanical:casing_/u.test(row.rowId))],
@@ -760,8 +835,9 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
     ...ROAD_CROSSING_SLEEVES_CIVIL_ROWS_R1.filter(row => row.rowId === "rcs:civil:open_cut_remaining_fill_space_m3"),
     ...ROAD_CROSSING_SLEEVES_PIT_RETURN_ROWS_R1, ...ROAD_CROSSING_SLEEVES_PIT_FILL_ROWS_R1, ...ROAD_CROSSING_SLEEVES_TRENCH_FILL_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_SOIL_ROWS_R1.filter(row => row.costTreatment !== "OWN_COST"),
+    ...ROAD_CROSSING_SLEEVES_COMPACTION_WATER_ROWS_R1.filter(row => !row.rowId.startsWith("rcs:compaction-water:bedding:")),
     ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => /^rcs:fill-execution:(?:pits|trench):/u.test(row.rowId))],
-    remaining: ["Подтверждение пригодности и распределения повторно используемого грунта", "Послойные или другие материалы траншеи", "Подтверждение технологии укладки и уплотнения", "Фактически расходуемая вода и её отдельная поставка", "Разные партии грунта, пульпа и иные состояния"] },
+    remaining: ["Подтверждение пригодности и распределения повторно используемого грунта", "Послойные или другие материалы траншеи", "Подтверждение технологии укладки и уплотнения", "Фактические качество и отдельное распределение воды", "Разные партии грунта, пульпа и иные состояния"] },
   { stageId: "completion", titleRu: "Завершение перехода", rows: [...ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1.filter(row => row.rowId.startsWith("rcs:preparation:removal:")),
     ...ROAD_CROSSING_SLEEVES_SOIL_ROWS_R1.filter(row => row.costTreatment === "OWN_COST")],

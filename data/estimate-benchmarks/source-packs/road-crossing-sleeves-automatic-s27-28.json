@@ -5,7 +5,7 @@
   "scope": "One continuous steel casing crossing with explicitly selected installation method. Casing supply and site joints, support rings and elements, contact tape, compatible end-seal kits, applicable civil work, crew labor, mechanisms and logistics are separate quantity/cost owners. This source pack is not itself a published owner or accepted estimate.",
   "engineeringAcceptanceClaimed": false,
   "universalRatesClaimed": false,
-  "implementationStatus": "COMPONENT_ASSEMBLY_WITH_ACTUAL_SUPPLY_FREIGHT_SOIL_STATES_HAUL_RECEIVING_INITIAL_INSPECTION_AND_STAKING_RESOURCES_NOT_PUBLISHED_NOT_FULL_OWNER",
+  "implementationStatus": "COMPONENT_ASSEMBLY_WITH_ACTUAL_SUPPLY_FREIGHT_SOIL_STATES_HAUL_RECEIVING_INSPECTION_STAKING_AND_COMPACTION_WATER_NOT_PUBLISHED_NOT_FULL_OWNER",
   "quantityComponent": {
     "module": "src/lib/estimate/v4/roadCrossingSleevesQuantityModelR1.ts",
     "verification": "tests/estimateNorms/roadCrossingSleevesQuantityModelR1.contract.test.ts",
@@ -53,17 +53,17 @@
       "basis": "Installed finished geometry including approved reused material, never supplied loose volume, reserve, stock, order packs or surplus. Trench occupation and individual pit occupation stay original authoritative facts even under manual hours",
       "independence": "Unknown supply ratio or approved reuse allocation gates the dependent purchase/consumption, not already known finished-geometry placement work",
       "costBoundary": "All personnel including operators are in crew only; equipment excludes all personnel and includes energy. Material/water supply, delivery and soil haul are separate. No universal rates/defaults",
-      "remaining": "Actual layer/material suitability and compaction method approval, separate actual water consumption/supply and logistics, mixed/other materials, engineering acceptance and full-owner publication"
+      "remaining": "Actual layer/material/moisture/water-quality suitability and disjoint allocation and compaction method approval, mixed/other materials, engineering acceptance and full-owner publication"
     },
     "freight": {
       "module": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",
       "verification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
-      "scope": "Selected casing/carrier section orders, loose bedding/pit/trench fill, dry internal mix and separately purchased mixing water; each actual off-site stock allocation is a distinct documented delivery lane",
+      "scope": "Selected casing/carrier section orders, loose bedding/pit/trench fill, dry internal mix, separately purchased mixing/compaction water, inspection couplant and stakes/marking paint; each actual off-site stock allocation is a distinct documented delivery lane",
       "quantity": "Use the existing rounded order, including retained reserve and supplier surplus. Do not use installed quantities or call supplier multiples vehicle trips. Site stock creates no stock haul; off-site portion cannot exceed compatible allocated stock",
       "capacity": "Minimum of actual vehicle placement capacity and actual legal payload divided by certified shipping mass including packaging. Whole sections remain indivisible in both lanes; new supplier dry/consumable packs remain whole. Already allocated usable stock in opened containers follows its own documented packaging and actual shipping mass/placement plan. Whole section length fits the vehicle/route. Geometric steel mass never substitutes for shipping mass",
       "cost": "One separately documented full cargo round trip includes vehicle, driver, energy, loading, unloading and return. Material and installation stay separate. Explicit other-party delivery creates no second executor charge. Consolidated loads require a separate manifest; do not price the same shared trip twice",
       "applicability": "The common inclusion resolver uses the bounded canonical FormulaGraph to decide whether shipment is positive. Zero shipment excludes route/truck questions. Missing original inputs remain local needs; manual trips cannot bypass source geometry, mass, route, cost basis or stock compatibility",
-      "remaining": "Actual project transport/route evidence and prices, consolidated manifests, fittings/consumables freight, equipment mobilization/demobilization, excavated soil allocation/haul/disposal, full-owner purchase-exception reconciliation and governed publication"
+      "remaining": "Actual project transport/route evidence and prices, consolidated manifests, remaining fittings/consumables freight, equipment mobilization/demobilization, heterogeneous/slurry allocation and additional soil handling, marker waste, full-owner purchase-exception reconciliation and governed publication"
     },
     "evaluator": "Existing canonical FormulaGraph only",
     "inputPolicy": "The component takes explicitly supplied scalar inputs and does not create a runtime form or baseline. The full owner must classify source-backed replaceable assumptions separately from genuine project facts, and prefer certified pipe mass when available.",
@@ -125,6 +125,16 @@
       "independence": "Known bank/loose excavation remains calculable with unavailable fill/reuse data. Dependent balance/trips/receiving retain original geometry, actual state facts, suitability/allocation and route/receiver/cost boundaries even under manual paid quantities. Explicit zero reuse disables origin/conversion; zero excess disables truck/destination/receiving facts. Negative allocation is rejected rather than clamped",
       "open": "Material/technology/design/classification acceptance, mixed/slurry allocation, extra sorting/site handling, all other stage gaps and governed full-owner publication remain open"
     },
+    "compactionWater": {
+      "module": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",
+      "verification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
+      "editorVerification": "tests/requestEstimate/canonicalCrossingFreightParameterProjection.contract.test.ts",
+      "scope": "Actual gross added water for the selected bedding or same-granular trench/pit fill, including initial moisture and process losses, in litres per installed finished m3; dust control, dewatering and internal grout mixing are other scopes",
+      "resources": "Original finished geometry including reused material determines actual consumed water, never supplied loose order/reserve. All personnel/equipment applying water are in existing selected placement execution once. Explicit suitable other-party supply creates no executor purchase; separate suitable exclusive stock/reserve/supplier multiple yields new ordered m3, remaining and free remainder",
+      "freight": "Shared dedicated transport owns actual new water cargo and separately allocated off-site water stock, with certified shipping mass, legal payload and actual placement capacity. Supplier billing multiple is not a vehicle load or delivery trip",
+      "integrity": "Unknown actual added-water rate is a local need and not zero. Explicit zero disables dependent supply/quality/transport facts while retaining values. Missing packaging does not block known consumption or execution. Manual water purchase preserves original geometry, placement method, actual rate, quality and exclusive allocation/cost gates",
+      "open": "Actual material/moisture/water quality acceptance, exclusive project allocation, actual equipment/application methods and prices, other/layered fills and governed full-owner publication remain open"
+    },
     "stakingResources": {
       "module": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",
       "verification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
@@ -151,9 +161,9 @@
   "primarySources": [
     {
       "url": "https://highways.dot.gov/sites/fhwa.dot.gov/files/FP-24.pdf",
-      "role": "Section 152 distinguishes selected survey/control methods, marking, maintenance/replacement and removal",
-      "basis": "A survey program requires actual control and methods, maintenance of usable markings, replacement when necessary and removal of temporary markings/stakes at completion",
-      "restriction": "No US legal applicability, tolerance, point pitch, productivity, material rate or acceptance is transplanted into the project. All selected resource facts remain explicit; this component does not replace actual project control acceptance"
+      "role": "Section 152 distinguishes survey/control, marking, maintenance/replacement and removal; sections 204/301/302/725 distinguish moisture conditioning and suitable construction water",
+      "basis": "A survey program maintains/replaces usable temporary markings and removes them at completion. Selected placement requires actual moisture conditioning and suitable water without detrimental substances",
+      "restriction": "No US legal applicability, tolerance, point pitch, moisture target, productivity, added-water/material rate or acceptance is transplanted into the project. All selected facts remain explicit; this component does not replace actual project control/material acceptance"
     },
     {
       "url": "https://gbr.sika.com/en/construction/concrete-repair/grouts/cementitious-grouts/sikagrout-212-fluid.html",

@@ -9,7 +9,8 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_COMPONENT_P
   ROAD_CROSSING_SLEEVES_SOIL_DESTINATIONS_R1 as soilDestinations, ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_MODES_R1 as receivingModes,
   ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_COST_BASIS_R1 as receivingBasis,
   ROAD_CROSSING_SLEEVES_INSPECTION_MODES_R1 as inspectionModes, ROAD_CROSSING_SLEEVES_INSPECTION_COUPLANT_COST_BASIS_R1 as couplantBasis,
-  ROAD_CROSSING_SLEEVES_PREPARATION_MODES_R1 as preparationModes, ROAD_CROSSING_SLEEVES_PREPARATION_MATERIAL_COST_BASIS_R1 as preparationBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_PREPARATION_MODES_R1 as preparationModes, ROAD_CROSSING_SLEEVES_PREPARATION_MATERIAL_COST_BASIS_R1 as preparationBasis,
+  ROAD_CROSSING_SLEEVES_COMPACTION_WATER_MODES_R1 as compactionWaterModes, ROAD_CROSSING_SLEEVES_COMPACTION_WATER_COST_BASIS_R1 as compactionWaterBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierModes, ROAD_CROSSING_SLEEVES_CARRIER_COST_BASIS_R1 as carrierBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1 as jointParameters, ROAD_CROSSING_SLEEVES_JOINT_COST_BASES_R1 as bases } from "../../src/lib/estimate/v4/roadCrossingSleevesJointResourcesR1";
@@ -26,6 +27,8 @@ const components = buildRoadCrossingSleevesComponentsR1({ source_title: "Owned i
 const definition = components.definition;
 // Synthetic actual-fact/price fixtures ONLY, never a published default or WPS approval.
 const fixture: Record<string, unknown> = {
+  // Explicit synthetic project evidence of no added compaction water; never a default.
+  rcs_compaction_water_bedding_gross_l_per_finished_m3: 0, rcs_compaction_water_pits_gross_l_per_finished_m3: 0, rcs_compaction_water_trench_gross_l_per_finished_m3: 0,
   rcs_preparation_mode: preparationModes.otherParty, rcs_preparation_program_reference: "TEST actual staking/maintenance/removal provided by other party, no executor charge",
   rcs_inspection_mode: inspectionModes.otherParty, rcs_inspection_program_reference: "TEST actual separate inspector supplies its own resources, no executor charge",
   rcs_soil_trench_scope: soilModes.other, rcs_soil_jacking_scope: soilModes.other,
@@ -116,6 +119,87 @@ function compile(submittedParameters: Record<string, unknown> = fixture, rowOver
   });
 }
 const q = (result: Awaited<ReturnType<typeof compile>>, id: string) => Number(result.rows.find(row => row.row_id === id)?.quantity);
+
+describe("actual compaction water for selected finished geometry, distinct from internal mixing and water application work", () => {
+  const water: Record<string, unknown> = { ...fixture,
+    ...Object.fromEntries(["bedding", "pits", "trench"].flatMap(key => Object.entries({
+      gross_l_per_finished_m3: 80, supply_mode: compactionWaterModes.separate,
+      allocation_reference: "TEST suitable water separately allocated exclusively to this operation, no reuse of another stage's stock",
+      product_designation: "TEST compatible construction water", compatibility_reference: "TEST actual material moisture/quality and gross addition under selected method",
+      compatible_stock_m3: 0.1, retained_reserve_m3: 0.08, supplier_multiple_m3: 0.25, cost_basis: compactionWaterBasis,
+    }).map(([suffix, value]) => [`rcs_compaction_water_${key}_${suffix}`, value]))),
+  };
+  const order = "rcs:compaction-water:bedding:ordered_m3";
+  it("uses installed bedding volume and keeps water consumption/stock/reserve/order/remaining and freight distinct", async () => {
+    const result = await compile(water, { [order]: { unitPrice: "10", provenance } });
+    expect(result.preliminaryNeeds).toEqual([]); expect(q(result, "rcs:compaction-water:bedding:consumed_m3")).toBe(0.42);
+    expect(q(result, order)).toBe(0.5); expect(q(result, "rcs:compaction-water:bedding:remaining_m3")).toBe(0.18);
+    expect(q(result, "rcs:compaction-water:bedding:free_m3_beyond_reserve")).toBe(0.1); expect(result.totals.amount).toBe("5");
+    expect(q(result, "rcs:fill-execution:bedding:crew_hours")).toBe(3.15);
+    expect(result.rows.filter(r => r.row_id.startsWith("rcs:compaction-water:bedding:") && r.included_in_procurement).map(r => r.row_id)).toEqual([order]);
+    expect(components.stageMatrix.find(s => s.stageId === "bedding")?.ownResourceIds).toContain(order);
+    expect(result.rows.some(r => /^rcs:compaction-water:.*(?:crew|equipment)/u.test(r.row_id))).toBe(false);
+  });
+  it("uses finished trench volume including reuse and both actual pits, never new supply order or natural excavation volume", async () => {
+    const trench = await compile({ ...selectedTrench, ...Object.fromEntries(Object.entries(water).filter(([k]) => k.startsWith("rcs_compaction_water_"))) });
+    expect(trench.preliminaryNeeds).toEqual([]);
+    expect(q(trench, "rcs:compaction-water:trench:consumed_m3")).toBeCloseTo(q(trench, "rcs:trench-fill:net_remaining_space_m3") * 0.08, 7);
+    const pits = await compile({ ...water, rcs_civil_installation_method: methods.pipeJacking, rcs_pit_fill_material_mode: fillModes.sameGranular,
+      rcs_pit_fill_granular_product_designation: "TEST actual pit material", rcs_pit_fill_approved_reused_finished_m3: 20,
+      rcs_pit_fill_gross_supplied_volume_ratio: 1.2, rcs_pit_fill_compatible_loose_stock_m3: 10, rcs_pit_fill_retained_loose_reserve_m3: 2,
+      rcs_pit_fill_supplier_loose_multiple_m3: 5 });
+    expect(pits.preliminaryNeeds).toEqual([]); expect(q(pits, "rcs:compaction-water:pits:consumed_m3")).toBe(6.64);
+    expect(pits.rows.some(r => r.row_id.startsWith("rcs:compaction-water:bedding:") || r.row_id.startsWith("rcs:compaction-water:trench:"))).toBe(false);
+  });
+  it("water supply and dry/granular reserve cannot inflate placement work or actual added-water consumption", async () => {
+    const result = await compile({ ...water, rcs_compaction_water_bedding_compatible_stock_m3: 0,
+      rcs_compaction_water_bedding_retained_reserve_m3: 3, rcs_compaction_water_bedding_supplier_multiple_m3: 5,
+      rcs_bedding_compatible_loose_stock_m3: 20, rcs_bedding_retained_loose_reserve_m3: 10 });
+    expect(q(result, order)).toBe(5); expect(q(result, "rcs:compaction-water:bedding:consumed_m3")).toBe(0.42);
+    expect(q(result, "rcs:fill-execution:bedding:crew_hours")).toBe(3.15);
+  });
+  it("unknown gross added-water rate is local and differs from explicit zero; no universal moisture percentage is inferred", async () => {
+    const input = { ...water }; delete input.rcs_compaction_water_bedding_gross_l_per_finished_m3;
+    const result = await compile(input); expect(result.rows.some(r => r.row_id === order)).toBe(false);
+    expect(q(result, beddingOwner)).toBe(6); expect(q(result, "rcs:fill-execution:bedding:crew_hours")).toBe(3.15);
+    expect(result.preliminaryNeeds.every(n => n.row_id.startsWith("rcs:compaction-water:bedding:") || n.row_id.startsWith("rcs:freight:compaction_water_bedding_"))).toBe(true);
+    const zero: Record<string, unknown> = { ...water, rcs_compaction_water_bedding_gross_l_per_finished_m3: 0 };
+    for (const key of Object.keys(zero)) if (key.startsWith("rcs_compaction_water_bedding_") && !key.endsWith("gross_l_per_finished_m3")) delete zero[key];
+    const known = await compile(zero); expect(known.preliminaryNeeds).toEqual([]);
+    expect(q(known, "rcs:compaction-water:bedding:consumed_m3")).toBe(0); expect(known.rows.some(r => r.row_id === order)).toBe(false);
+    await expect(compile({ ...water, rcs_compaction_water_bedding_gross_l_per_finished_m3: -1 })).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+  });
+  it("another-party supply retains consumed water and real compatibility/allocation without executor purchase", async () => {
+    const result = await compile({ ...water, rcs_compaction_water_bedding_supply_mode: compactionWaterModes.otherParty });
+    expect(result.preliminaryNeeds).toEqual([]); expect(q(result, "rcs:compaction-water:bedding:allocated_consumed_m3")).toBe(0.42);
+    expect(result.rows.some(r => r.row_id === order)).toBe(false);
+    expect(result.parameters.rcs_compaction_water_bedding_supplier_multiple_m3).toBe(0.25);
+  });
+  it.each(["rcs_open_cut_excavation_width_m", "rcs_fill_bedding_method_reference", "rcs_compaction_water_bedding_gross_l_per_finished_m3",
+    "rcs_compaction_water_bedding_allocation_reference", "rcs_compaction_water_bedding_compatibility_reference", "rcs_compaction_water_bedding_cost_basis"])(
+    "manual water purchase retains original geometry/method/quality/allocation/cost fact %s", async key => {
+      const input = { ...water }; delete input[key];
+      const result = await compile(input, { [order]: { quantity: "999", provenance } });
+      expect(result.rows.some(r => r.row_id === order)).toBe(false);
+      expect(result.preliminaryNeeds.find(n => n.row_id === order)?.missing_parameter_ids).toContain(key);
+    });
+  it("unknown water supply multiple leaves actual consumption, application work and casing order available", async () => {
+    const input = { ...water }; delete input.rcs_compaction_water_bedding_supplier_multiple_m3;
+    const result = await compile(input); expect(q(result, "rcs:compaction-water:bedding:consumed_m3")).toBe(0.42);
+    expect(q(result, "rcs:fill-execution:bedding:crew_hours")).toBe(3.15); expect(q(result, "rcs:casing:ordered_casing_length_m")).toBe(48);
+    expect(result.rows.some(r => r.row_id === order)).toBe(false);
+  });
+  it("stock covers water consumption/reserve without new freight; separate delivery uses actual legal capacity", async () => {
+    const stock = await compile({ ...water, rcs_compaction_water_bedding_compatible_stock_m3: 1 });
+    expect(q(stock, order)).toBe(0); expect(stock.rows.some(r => r.row_id.startsWith("rcs:freight:compaction_water_bedding_new:"))).toBe(false);
+    const shipped = await compile({ ...water, rcs_freight_compaction_water_bedding_new_mode: freightModes.separate,
+      rcs_freight_compaction_water_bedding_new_vehicle_designation: "TEST actual dedicated compatible water transport",
+      rcs_freight_compaction_water_bedding_new_shipping_kg_per_unit: 1010, rcs_freight_compaction_water_bedding_new_payload_kg: 505,
+      rcs_freight_compaction_water_bedding_new_max_units_per_trip: 0.4, rcs_freight_compaction_water_bedding_new_cost_basis: freightBasis });
+    expect(shipped.preliminaryNeeds).toEqual([]); expect(q(shipped, "rcs:freight:compaction_water_bedding_new:trip_count")).toBe(2);
+    expect(q(shipped, "rcs:freight:compaction_water_bedding_new:shipping_mass_kg")).toBe(505);
+  });
+});
 
 describe("actual staking resources, replacement and removal in the same crossing", () => {
   const preparation: Record<string, unknown> = { ...fixture,
@@ -590,9 +674,9 @@ describe("road-casing component integration, not full crossing acceptance", () =
   it("unknown bedding product gates its purchase and execution, never the independently known casing or joint orders", async () => {
     const input = { ...fixture }; delete input.rcs_bedding_granular_product_designation;
     const result = await compile(input, { [beddingOwner]: { quantity: "999", provenance } });
-    expect(result.preliminaryNeeds).toHaveLength(4);
+    expect(result.preliminaryNeeds).toHaveLength(5);
     expect(result.preliminaryNeeds[0]).toMatchObject({ row_id: beddingOwner, missing_parameter_ids: ["rcs_bedding_granular_product_designation"] });
-    expect(result.preliminaryNeeds.map(need => need.row_id)).toEqual([beddingOwner, ...fillExecutionOwners("bedding"), "rcs:freight:bedding_new:cargo_units"]);
+    expect(result.preliminaryNeeds.map(need => need.row_id)).toEqual([beddingOwner, ...fillExecutionOwners("bedding"), "rcs:compaction-water:bedding:consumed_m3", "rcs:freight:bedding_new:cargo_units"]);
     expect(result.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual([...owners, ...executionOwners(methods.openCut), ...mechanicalOwners(methods.openCut)]);
   });
   it("unknown civil method remains one fact at its exact branch needs, not an invented full-length trench", async () => {
@@ -600,7 +684,7 @@ describe("road-casing component integration, not full crossing acceptance", () =
     const result = await compile(input);
     expect(result.rows.some(row => row.row_id.startsWith("rcs:civil:"))).toBe(false);
     expect(result.preliminaryNeeds.length).toBeGreaterThan(0);
-    expect(result.preliminaryNeeds.every(need => /^(?:rcs:civil:|rcs:civil-execution:|rcs:fill-execution:|rcs:bedding:|rcs:pit-return:|rcs:mechanical:casing_lowering:|rcs:freight:(?:bedding|pits|trench)_new:cargo_units$)/u.test(need.row_id) && need.need_state === "CONDITION_REQUIRED")).toBe(true);
+    expect(result.preliminaryNeeds.every(need => /^(?:rcs:civil:|rcs:civil-execution:|rcs:fill-execution:|rcs:compaction-water:|rcs:bedding:|rcs:pit-return:|rcs:mechanical:casing_lowering:|rcs:freight:(?:bedding|pits|trench)_new:cargo_units$)/u.test(need.row_id) && need.need_state === "CONDITION_REQUIRED")).toBe(true);
     expect([...new Set(result.preliminaryNeeds.flatMap(need => need.missing_parameter_ids))]).toEqual(["rcs_civil_installation_method"]);
     expect(result.rows.filter(row => row.included_in_estimate).map(row => row.row_id)).toEqual([...owners, ...mechanicalOwners()]);
   });
@@ -777,7 +861,7 @@ describe("road-casing component integration, not full crossing acceptance", () =
     expect(components.stageMatrix.find(stage => stage.stageId === "backfill")?.ownResourceIds).toContain("rcs:trench-fill:ordered_loose_m3");
     const missingProduct: Record<string, unknown> = { ...input }; delete missingProduct.rcs_trench_fill_granular_product_designation;
     const preliminary = await compile(missingProduct, { "rcs:trench-fill:ordered_loose_m3": { quantity: "999", provenance } });
-    expect(preliminary.preliminaryNeeds.map(need => need.row_id)).toEqual(["rcs:trench-fill:ordered_loose_m3", ...fillExecutionOwners("trench"), "rcs:freight:trench_new:cargo_units"]);
+    expect(preliminary.preliminaryNeeds.map(need => need.row_id)).toEqual(["rcs:trench-fill:ordered_loose_m3", ...fillExecutionOwners("trench"), "rcs:compaction-water:trench:consumed_m3", "rcs:freight:trench_new:cargo_units"]);
     expect(preliminary.preliminaryNeeds.every(need => need.missing_parameter_ids.includes("rcs_trench_fill_granular_product_designation"))).toBe(true);
     expect(q(preliminary, beddingOwner)).toBe(6);
     expect(q(preliminary, "rcs:civil-execution:open_cut:crew_hours")).toBe(52.5);

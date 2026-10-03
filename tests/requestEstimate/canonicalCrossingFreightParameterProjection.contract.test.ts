@@ -4,7 +4,8 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_FREIGHT_MOD
   ROAD_CROSSING_SLEEVES_SOIL_DESTINATIONS_R1 as destinations, ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_MODES_R1 as receivingModes,
   ROAD_CROSSING_SLEEVES_SOIL_RECEIVING_COST_BASIS_R1 as receivingBasis,
   ROAD_CROSSING_SLEEVES_INSPECTION_MODES_R1 as inspectionModes, ROAD_CROSSING_SLEEVES_INSPECTION_COUPLANT_COST_BASIS_R1 as couplantBasis,
-  ROAD_CROSSING_SLEEVES_PREPARATION_MODES_R1 as preparationModes, ROAD_CROSSING_SLEEVES_PREPARATION_MATERIAL_COST_BASIS_R1 as preparationBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_PREPARATION_MODES_R1 as preparationModes, ROAD_CROSSING_SLEEVES_PREPARATION_MATERIAL_COST_BASIS_R1 as preparationBasis,
+  ROAD_CROSSING_SLEEVES_COMPACTION_WATER_MODES_R1 as compactionWaterModes, ROAD_CROSSING_SLEEVES_COMPACTION_WATER_COST_BASIS_R1 as compactionWaterBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_TRENCH_FILL_MODES_R1 as fillModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
 import { buildConsumerCanonicalPrecompileParameterSession } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
@@ -129,6 +130,38 @@ describe("actual initial inspection through common metadata/editor", () => {
   });
 });
 const cards = (parameters = fixture) => buildCanonicalParameterCards({ session: session(parameters), revision: null });
+
+describe("actual compaction-water facts through the same publisher/editor", () => {
+  const water: Record<string, CanonicalEstimateParameterInputValue> = { ...fixture,
+    rcs_civil_installation_method: methods.openCut, rcs_open_cut_excavation_width_m: 1.5, rcs_open_cut_full_width_bedding_thickness_m: 0.1,
+    rcs_compaction_water_bedding_gross_l_per_finished_m3: 80, rcs_compaction_water_bedding_supply_mode: compactionWaterModes.separate,
+    rcs_compaction_water_bedding_allocation_reference: "TEST actual exclusive allocation", rcs_compaction_water_bedding_product_designation: "TEST compatible water",
+    rcs_compaction_water_bedding_compatibility_reference: "TEST quality and actual gross addition", rcs_compaction_water_bedding_compatible_stock_m3: 0.1,
+    rcs_compaction_water_bedding_retained_reserve_m3: 0.08, rcs_compaction_water_bedding_supplier_multiple_m3: 0.25,
+    rcs_compaction_water_bedding_cost_basis: compactionWaterBasis,
+  };
+  it("shows known gross addition and exclusive water/source/supply facts filled and editable with proper units", () => {
+    for (const [key, value] of Object.entries(water).filter(([key]) => key.startsWith("rcs_compaction_water_"))) {
+      expect(cards(water).find(c => c.key === key)).toMatchObject({ value, editable: true, missing: false });
+      expect(cards(water).find(c => c.key === key)?.guideShortRu).toBeTruthy();
+    }
+    expect(cards(water).find(c => c.key === "rcs_compaction_water_bedding_gross_l_per_finished_m3")?.unitRu).toBe("л/м³");
+    expect(catalog.parameterSchema.some(p => /compaction_water.*(?:consumed_m3|ordered_m3|trip_count)/u.test(p.parameterId))).toBe(false);
+  });
+  it("missing added-water rate is editable and stays missing instead of a hidden zero", () => {
+    const input = { ...water }; delete input.rcs_compaction_water_bedding_gross_l_per_finished_m3;
+    expect(cards(input).find(c => c.key === "rcs_compaction_water_bedding_gross_l_per_finished_m3")).toMatchObject({ value: null, missing: true, editable: true });
+  });
+  it("explicit zero disables all dependent water/supply/freight facts, retaining values for later reactivation", () => {
+    const zero = session({ ...water, rcs_compaction_water_bedding_gross_l_per_finished_m3: 0 });
+    expect(zero.parameters.find(p => p.parameterId === "rcs_compaction_water_bedding_gross_l_per_finished_m3")).toBeDefined();
+    expect(zero.parameters.some(p => p.parameterId === "rcs_compaction_water_bedding_supply_mode")).toBe(false);
+    expect(zero.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_compaction_water_bedding_supplier_multiple_m3")).toMatchObject({ value: 0.25 });
+    const other = session({ ...water, rcs_compaction_water_bedding_supply_mode: compactionWaterModes.otherParty });
+    expect(other.parameters.find(p => p.parameterId === "rcs_compaction_water_bedding_compatibility_reference")).toBeDefined();
+    expect(other.parameters.some(p => p.parameterId === "rcs_compaction_water_bedding_supplier_multiple_m3")).toBe(false);
+  });
+});
 
 describe("actual survey program and resources through the common editor", () => {
   const preparation: Record<string, CanonicalEstimateParameterInputValue> = { ...fixture,
