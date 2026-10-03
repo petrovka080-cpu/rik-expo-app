@@ -390,6 +390,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private canonicalRowAmendmentInFlightKey: string | null = null;
   private canonicalParameterBatchInFlight = false;
   private pendingCanonicalRowOverrides: Record<string, CanonicalEstimateRowOverride> = {};
+  private pendingCanonicalRowQuantityBaselines: Record<string, { manual: boolean; quantity: number | null }> = {};
   private pendingCanonicalRowBaseRevisionId: string | null = null;
   private canonicalRowMutationInFlight = (): boolean => Boolean(
     this.canonicalRowAmendmentInFlightKey
@@ -442,6 +443,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       && this.canonicalRowAmendmentInFlightKey == null
     ) {
       this.pendingCanonicalRowOverrides = {};
+      this.pendingCanonicalRowQuantityBaselines = {};
       this.pendingCanonicalRowBaseRevisionId = null;
       if ((this.state.pendingCanonicalRowEditCount ?? 0) > 0) {
         this.setState({ pendingCanonicalRowEditCount: 0 });
@@ -2265,23 +2267,44 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       && this.pendingCanonicalRowBaseRevisionId !== input.revisionId
     ) {
       this.pendingCanonicalRowOverrides = {};
+      this.pendingCanonicalRowQuantityBaselines = {};
     }
+    const originalItem = input.current.items.find((item) => item.id === input.itemId);
+    if (!originalItem) return;
+    // Capture the saved quantity mode/value before the first pending change,
+    // including a price-only change. Later visible previews are not baselines.
+    const baseline = this.pendingCanonicalRowQuantityBaselines[input.rowId] ?? {
+      manual: consumerRepairRowHasManualQuantity(originalItem), quantity: originalItem.quantity ?? null,
+    };
+    this.pendingCanonicalRowQuantityBaselines[input.rowId] = baseline;
     this.pendingCanonicalRowBaseRevisionId = input.revisionId;
+    const pending: CanonicalEstimateRowOverride = {
+      ...this.pendingCanonicalRowOverrides[input.rowId],
+      ...input.amendment,
+      provenance: { kind: "manual", reason: "consumer_estimate_row_batch_edit" },
+    };
+    if (Object.prototype.hasOwnProperty.call(pending, "quantity") && (
+      (pending.quantity == null && !baseline.manual)
+      || (pending.quantity != null && baseline.manual && baseline.quantity != null && Number(pending.quantity) === baseline.quantity)
+    )) delete pending.quantity;
     this.pendingCanonicalRowOverrides = {
       ...this.pendingCanonicalRowOverrides,
-      [input.rowId]: {
-        ...this.pendingCanonicalRowOverrides[input.rowId],
-        ...input.amendment,
-        provenance: { kind: "manual", reason: "consumer_estimate_row_batch_edit" },
-      },
+      [input.rowId]: pending,
     };
+    if (!Object.prototype.hasOwnProperty.call(pending, "quantity") && !Object.prototype.hasOwnProperty.call(pending, "unitPrice")) {
+      delete this.pendingCanonicalRowOverrides[input.rowId];
+      delete this.pendingCanonicalRowQuantityBaselines[input.rowId];
+    }
     const pendingCount = Object.keys(this.pendingCanonicalRowOverrides).length;
+    if (pendingCount === 0) this.pendingCanonicalRowBaseRevisionId = null;
     this.setState((state) => ({
       bundle: state.bundle?.draft.id === input.current.draft.id
         ? applyVisibleCanonicalRowDraft(state.bundle, input.itemId, input.amendment)
         : state.bundle,
       pendingCanonicalRowEditCount: pendingCount,
-      statusMessage: `Изменения в ${pendingCount} поз. подготовлены. Введите остальные количества и цены, затем нажмите «Применить изменения».`,
+      statusMessage: pendingCount > 0
+        ? `Изменения в ${pendingCount} поз. подготовлены. Введите остальные количества и цены, затем нажмите «Применить изменения».`
+        : "",
       validationErrors: [],
     }));
   };
@@ -2318,6 +2341,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       });
       if (!consumerRepairCanonicalMutationSourceMatchesBundle(mutationSource, this.state.bundle)) return false;
       this.pendingCanonicalRowOverrides = {};
+      this.pendingCanonicalRowQuantityBaselines = {};
       this.pendingCanonicalRowBaseRevisionId = null;
       await new Promise<void>((resolve) => this.setState({
           bundle: result.bundle,

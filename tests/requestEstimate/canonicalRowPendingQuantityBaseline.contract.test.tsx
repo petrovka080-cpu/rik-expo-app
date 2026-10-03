@@ -62,6 +62,65 @@ function expectMode(item: ConsumerRepairRequestItem, expected: string) {
 }
 
 describe("canonical pending row quantity provenance", () => {
+  it("cancels an unsaved manual edit back to the saved automatic mode without queuing a redundant Apply or revision", async () => {
+    const editor = stagedEditor();
+    await editor.mutable.changeItemQuantity("test-owned-row", "16");
+    await editor.mutable.changeItemQuantity("test-owned-row", "");
+    expect(editor.mutable.state.pendingCanonicalRowEditCount).toBe(0);
+    expect(editor.mutable.state.statusMessage).toBe("");
+    expectMode(editor.current(), "Рассчитано автоматически: 14.25 м³. Поле можно изменить.");
+    expect(await editor.mutable.applyPendingCanonicalRowEdits()).toBe(false);
+    expect(editor.recalculate).not.toHaveBeenCalled();
+    expect(editor.original.quantity).toBe(14.25);
+    expect(editor.original.sourceParameters).not.toHaveProperty("manualQuantityOverride");
+  });
+  it("keeps an explicit equal-value manual pin, but cancelling that unsaved pin returns to the original automatic baseline", async () => {
+    const editor = stagedEditor();
+    await editor.mutable.changeItemQuantity("test-owned-row", "14.25");
+    expect(editor.mutable.state.pendingCanonicalRowEditCount).toBe(1);
+    expect(editor.current().sourceParameters?.manualQuantityOverride).toBe(true);
+    await editor.mutable.changeItemQuantity("test-owned-row", "");
+    expect(editor.mutable.state.pendingCanonicalRowEditCount).toBe(0);
+    expect(editor.current().sourceParameters?.manualQuantityOverride).toBe(false);
+  });
+  it("removes only the reverted quantity amendment while applying an independent pending price once", async () => {
+    const editor = stagedEditor();
+    await editor.mutable.changeItemUnitPrice("test-owned-row", "2");
+    await editor.mutable.changeItemQuantity("test-owned-row", "16");
+    await editor.mutable.changeItemQuantity("test-owned-row", "");
+    expect(editor.mutable.state.pendingCanonicalRowEditCount).toBe(1);
+    editor.recalculate.mockRejectedValueOnce(new Error("TEST_KEEP_PENDING_PRICE"));
+    expect(await editor.mutable.applyPendingCanonicalRowEdits()).toBe(false);
+    const override = editor.recalculate.mock.calls[0][0].rowOverrides["test:bedding"];
+    expect(override).toMatchObject({ unitPrice: 2 });
+    expect(override).not.toHaveProperty("quantity");
+    expect(editor.current()).toMatchObject({ quantity: 14.25, unitPrice: 2, totalPrice: 28.5 });
+    expect(editor.recalculate).toHaveBeenCalledTimes(1);
+  });
+  it("retains a reset of a SAVED manual override for backend Apply even when its value equals the calculated result", async () => {
+    const editor = stagedEditor({ quantity: 14.25, sourceParameters: {
+      canonicalBackendRevisionId: "test-parent", canonicalBackendReleaseId: "test-release", rowCode: "test:bedding",
+      manualQuantityOverride: true, calculatedQuantityBeforeOverride: 14.25,
+    } });
+    await editor.mutable.changeItemQuantity("test-owned-row", "");
+    expect(editor.mutable.state.pendingCanonicalRowEditCount).toBe(1);
+    editor.recalculate.mockRejectedValueOnce(new Error("TEST_KEEP_REAL_RESET"));
+    expect(await editor.mutable.applyPendingCanonicalRowEdits()).toBe(false);
+    expect(editor.recalculate.mock.calls[0][0].rowOverrides["test:bedding"]).toMatchObject({ quantity: null });
+    expect(editor.mutable.state.pendingCanonicalRowEditCount).toBe(1);
+  });
+  it("cancels an unsaved edit back to its saved manual pin while retaining the actual distinct formula baseline", async () => {
+    const editor = stagedEditor({ quantity: 18, sourceParameters: {
+      canonicalBackendRevisionId: "test-parent", canonicalBackendReleaseId: "test-release", rowCode: "test:bedding",
+      manualQuantityOverride: true, calculatedQuantityBeforeOverride: 14.25,
+    } });
+    await editor.mutable.changeItemQuantity("test-owned-row", "20");
+    await editor.mutable.changeItemQuantity("test-owned-row", "18");
+    expect(editor.mutable.state.pendingCanonicalRowEditCount).toBe(0);
+    expectMode(editor.current(), "Введено вручную. По формуле: 14.25 м³.");
+    expect(await editor.mutable.applyPendingCanonicalRowEdits()).toBe(false);
+    expect(editor.recalculate).not.toHaveBeenCalled();
+  });
   it("stages stepper quantity and manual provenance together without waiting for a future animation frame", () => {
     const editor = stagedEditor();
     const frame = jest.spyOn(globalThis, "requestAnimationFrame").mockImplementation(() => 1);
