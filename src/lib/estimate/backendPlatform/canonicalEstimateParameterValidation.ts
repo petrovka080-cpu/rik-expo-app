@@ -206,6 +206,12 @@ export function validateCanonicalEstimateParameterInputs(input: {
         const peerValue = peer?.visibilityRole === "INTERNAL_ONLY" || peer?.visibilityRole === "USER_DERIVED_READONLY"
           ? parseValue(peer, input.rawInputs[relatedParameterId])
           : parameters[relatedParameterId];
+        if (peer && (peer.valueType === "decimal" || peer.valueType === "integer")
+          && !isPresent(peerValue)
+          && !isPresent(input.rawInputs[relatedParameterId]) && !isPresent(peer.defaultValue)) {
+          issues.push({ code: "REQUIRED", parameterId: relatedParameterId });
+          continue;
+        }
         if (!peer || (peer.valueType !== "decimal" && peer.valueType !== "integer")
           || !isPresent(peerValue) || !Number.isFinite(Number(peerValue))
           || !compare(Number(value), Number(peerValue))) {

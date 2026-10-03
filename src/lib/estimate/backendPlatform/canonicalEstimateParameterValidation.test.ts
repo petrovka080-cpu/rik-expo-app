@@ -9,6 +9,25 @@ const schema: CanonicalEstimateCatalogItem["parameterSchema"] = [
 ];
 
 describe("canonical estimate parameter validation", () => {
+  const peerSchema: CanonicalEstimateCatalogItem["parameterSchema"] = [
+    { parameterId: "inside_mm", ordinal: 0, valueType: "decimal", unitId: "mm", titleRu: "Внутренний диаметр", required: true,
+      defaultValue: null, constraints: { greaterThanParameter: "outside_mm" } },
+    { parameterId: "outside_mm", ordinal: 1, valueType: "decimal", unitId: "mm", titleRu: "Наружный диаметр", required: false,
+      defaultValue: null, constraints: {} },
+  ];
+
+  it("reports an absent comparison fact as a missing input rather than a numeric conflict", () => {
+    expect(validateCanonicalEstimateParameterInputs({ schema: peerSchema, rawInputs: { inside_mm: 500 } })).toEqual({
+      ok: false, parameters: { inside_mm: "500" }, issues: [{ code: "REQUIRED", parameterId: "outside_mm" }],
+    });
+  });
+
+  it.each([500, "bad"])("still blocks a supplied incompatible or invalid comparison fact %s", outside_mm => {
+    const result = validateCanonicalEstimateParameterInputs({ schema: peerSchema, rawInputs: { inside_mm: 500, outside_mm } });
+    expect(result.issues).toContainEqual({ code: "CROSS_FIELD", parameterId: "inside_mm", relatedParameterId: "outside_mm",
+      constraint: "greaterThanParameter" });
+  });
+
   it("preserves exact decimal text and accepts one mutually-exclusive branch", () => {
     const result = validateCanonicalEstimateParameterInputs({ schema, rawInputs: { area: "2,50", variant: "a", left: "true", right: "false" } });
     expect(result).toEqual({ ok: true, parameters: { area: "2.50", variant: "a", left: true, right: false }, issues: [] });

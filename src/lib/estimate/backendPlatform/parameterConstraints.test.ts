@@ -134,6 +134,29 @@ describe("canonical backend parameter precedence", () => {
     })).toThrow("cross-field rule measured_area_m2.equalToParameter=schedule_area_m2 failed");
   });
 
+  it("keeps a missing declared numeric peer unresolved without substituting a value", () => {
+    const definitions: CanonicalParameterDefinitionRecord[] = [
+      { parameter_id: "inside_mm", value_type: "decimal", constraints_json: { greaterThanParameter: "outside_mm" } },
+      { parameter_id: "outside_mm", value_type: "decimal", required: false },
+    ];
+    expect(validateCanonicalEstimateParameters(definitions, { inside_mm: 500 })).toEqual({ inside_mm: 500 });
+    expect(validateCanonicalEstimateParameters(definitions, { inside_mm: 500 }, {
+      confirmedParameters: { outside_mm: 100 },
+    })).toEqual({ inside_mm: 500, outside_mm: 100 });
+    expect(() => validateCanonicalEstimateParameters(definitions, { inside_mm: 500, outside_mm: 500 }))
+      .toThrow("cross-field rule inside_mm.greaterThanParameter=outside_mm failed");
+    expect(() => validateCanonicalEstimateParameters(definitions, { inside_mm: 500, outside_mm: "bad" }))
+      .toThrow("invalid number outside_mm");
+  });
+
+  it.each([undefined, "text", "boolean"])("rejects an undeclared or nonnumeric peer type %s even before inputs exist", valueType => {
+    const definitions: CanonicalParameterDefinitionRecord[] = [
+      { parameter_id: "inside_mm", value_type: "decimal", constraints_json: { greaterThanParameter: "outside_mm" } },
+      ...(valueType ? [{ parameter_id: "outside_mm", value_type: valueType }] : []),
+    ];
+    expect(() => validateCanonicalEstimateParameters(definitions, {})).toThrow("invalid numeric peer");
+  });
+
   it("evaluates both persisted InclusionGraph and legacy equals conditional shapes", () => {
     const definitions: CanonicalParameterDefinitionRecord[] = [
       {

@@ -78,6 +78,117 @@ function baseInput(): CanonicalEstimateCompileCoreInput {
   };
 }
 
+function numericPeerInput(): CanonicalEstimateCompileCoreInput {
+  const input = baseInput();
+  input.parameterDefinitions.push(
+    { parameter_id: "measured_scope_m2", value_type: "decimal", required: true, default_value: null,
+      constraints_json: { min: 0, equalToParameter: "approved_scope_m2" } },
+    { parameter_id: "approved_scope_m2", value_type: "decimal", required: false, default_value: null, constraints_json: { min: 0 } },
+  );
+  input.formulaDefinitions.push({ formula_id: "scope_quantity", ast: { kind: "parameter", id: "measured_scope_m2" },
+    input_parameter_ids: ["measured_scope_m2"], ast_sha256: "scope-formula-sha" });
+  input.resourceDefinitions.push({ ...input.resourceDefinitions[0]!, id: "resource-spec-scope", row_id: "material:scope",
+    ordinal: 1, formula_id: "scope_quantity" });
+  input.submittedParameters = { area_m2: 10, measured_scope_m2: 60 };
+  return input;
+}
+
+describe("localized unresolved numeric compatibility", () => {
+  it("retains independent paid rows and one visible condition need with its known quantity", async () => {
+    const input = numericPeerInput();
+    const result = await compileCanonicalEstimateCore(input);
+    expect(result.rows.map(row => row.row_id)).toEqual(["material:board"]);
+    expect(result.totals.amount).toBe("1380.5");
+    expect(result.preliminaryNeeds).toHaveLength(1);
+    expect(result.preliminaryNeeds[0]).toMatchObject({ row_id: "material:scope", quantity: "60", selected: true,
+      need_state: "CONDITION_REQUIRED", missing_parameter_ids: ["approved_scope_m2"] });
+    expect(result.parameters).not.toHaveProperty("approved_scope_m2");
+    expect((await compileCanonicalEstimateCore(input)).revisionProjection).toEqual(result.revisionProjection);
+  });
+
+  it("keeps manual quantity, price and procurement selection behind the original compatibility evidence", async () => {
+    const input = numericPeerInput();
+    input.operation = "recalculate";
+    input.rowOverrides = { "material:scope": { quantity: 75, unitPrice: 2, includedInEstimate: true,
+      includedInProcurement: true, provenance: { kind: "manual", reason: "quantity_from_schedule" } } };
+    const unresolved = await compileCanonicalEstimateCore(input);
+    expect(unresolved.rows.map(row => row.row_id)).toEqual(["material:board"]);
+    expect(unresolved.preliminaryNeeds[0]).toMatchObject({ quantity: "75", unit_price: "2", need_state: "CONDITION_REQUIRED",
+      missing_parameter_ids: ["approved_scope_m2"], calculation_trace: { manualQuantityOverride: true } });
+    const resolved = await compileCanonicalEstimateCore({ ...input, submittedParameters: { ...input.submittedParameters, approved_scope_m2: 60 } });
+    expect(resolved.preliminaryNeeds).toEqual([]);
+    expect(resolved.rows.find(row => row.row_id === "material:scope")).toMatchObject({ quantity: "75", unit_price: "2",
+      amount: "150", included_in_procurement: true });
+    await expect(compileCanonicalEstimateCore({ ...input, submittedParameters: { ...input.submittedParameters, approved_scope_m2: 50 } }))
+      .rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+    const reset = await compileCanonicalEstimateCore({ ...input, rowOverrides: {},
+      submittedParameters: { ...input.submittedParameters, approved_scope_m2: 60 } });
+    expect(reset.rows.find(row => row.row_id === "material:scope")?.quantity).toBe("60");
+  });
+
+  it("follows chained constraints and terminates on cycles without gating independent rows", async () => {
+    const input = numericPeerInput();
+    input.parameterDefinitions[2]!.constraints_json = { equalToParameter: "verified_scope_m2" };
+    input.parameterDefinitions.push({ parameter_id: "verified_scope_m2", value_type: "decimal", required: false,
+      default_value: null, constraints_json: { equalToParameter: "measured_scope_m2" } });
+    input.submittedParameters.approved_scope_m2 = 60;
+    const unknown = await compileCanonicalEstimateCore(input);
+    expect(unknown.preliminaryNeeds[0]?.missing_parameter_ids).toEqual(["verified_scope_m2"]);
+    expect(unknown.rows.map(row => row.row_id)).toEqual(["material:board"]);
+    const resolved = await compileCanonicalEstimateCore({ ...input, submittedParameters: { ...input.submittedParameters, verified_scope_m2: 60 } });
+    expect(resolved.preliminaryNeeds).toEqual([]);
+    expect(resolved.rows).toHaveLength(2);
+  });
+
+  it("requires both original operands when a manual quantity replaces the missing constrained operand", async () => {
+    const input = numericPeerInput();
+    delete input.submittedParameters.measured_scope_m2;
+    input.submittedParameters.approved_scope_m2 = 60;
+    input.operation = "recalculate";
+    input.rowOverrides = { "material:scope": { quantity: 75, provenance: { kind: "manual" } } };
+    const result = await compileCanonicalEstimateCore(input);
+    expect(result.preliminaryNeeds[0]).toMatchObject({ quantity: "75", need_state: "CONDITION_REQUIRED",
+      missing_parameter_ids: ["measured_scope_m2"] });
+    expect(result.rows).toHaveLength(1);
+  });
+
+  it.each(["inclusion", "resource"])("checks compatibility evidence consumed by the %s graph even outside quantity formulas", async consumer => {
+    const input = numericPeerInput();
+    input.resourceDefinitions[1]!.formula_id = "material_quantity";
+    if (consumer === "inclusion") input.resourceDefinitions[1]!.inclusion_ast = { kind: "present", parameterId: "measured_scope_m2" };
+    else input.resourceDefinitions[1]!.resource_graph = { inputParameterIds: ["measured_scope_m2"] };
+    const result = await compileCanonicalEstimateCore(input);
+    expect(result.preliminaryNeeds[0]?.missing_parameter_ids).toEqual(["approved_scope_m2"]);
+    expect(result.rows).toHaveLength(1);
+  });
+
+  it("does not revive a disabled branch or demand unused evidence from an OR alternative", async () => {
+    const input = numericPeerInput();
+    input.resourceDefinitions[1]!.inclusion_ast = { kind: "literal", value: false };
+    expect((await compileCanonicalEstimateCore(input)).preliminaryNeeds).toEqual([]);
+    input.resourceDefinitions[1]!.formula_id = "material_quantity";
+    input.resourceDefinitions[1]!.inclusion_ast = { kind: "or", operands: [
+      { kind: "present", parameterId: "measured_scope_m2" }, { kind: "literal", value: true },
+    ] };
+    // A known true alternative needs no measured-scope compatibility evidence.
+    for (const measured of [undefined, 60]) {
+      input.submittedParameters.measured_scope_m2 = measured;
+      const result = await compileCanonicalEstimateCore(input);
+      expect(result.preliminaryNeeds).toEqual([]);
+      expect(result.rows).toHaveLength(2);
+    }
+  });
+
+  it("accepts compatible zero facts without converting them to missing inputs", async () => {
+    const input = numericPeerInput();
+    input.submittedParameters.measured_scope_m2 = 0;
+    input.submittedParameters.approved_scope_m2 = 0;
+    const result = await compileCanonicalEstimateCore(input);
+    expect(result.preliminaryNeeds).toEqual([]);
+    expect(result.rows.find(row => row.row_id === "material:scope")?.quantity).toBe("0");
+  });
+});
+
 describe("canonicalEstimateCompileCore", () => {
   it("accepts an explicit null quantity only as an unresolved row amendment value", () => {
     expect(() => assertCreateRequest({

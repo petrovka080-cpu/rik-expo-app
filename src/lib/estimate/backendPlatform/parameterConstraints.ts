@@ -70,6 +70,49 @@ function definitionAllowsPreliminaryCompilation(
   return true;
 }
 
+/** Numeric compatibility remains a row dependency even when quantity is manual. */
+export function canonicalNumericRelationDependencies(
+  definitions: readonly CanonicalParameterDefinitionRecord[],
+): ReadonlyMap<string, readonly string[]> {
+  const byId = new Map(definitions.map(definition => [String(definition.parameter_id ?? ""), definition]));
+  const dependencies = new Map<string, string[]>();
+  for (const definition of definitions) {
+    if (definition.value_type !== "decimal" && definition.value_type !== "integer") continue;
+    const id = String(definition.parameter_id);
+    const constraints = isRecord(definition.constraints_json) ? definition.constraints_json : {};
+    for (const [rule] of NUMERIC_PARAMETER_RELATIONS) {
+      const peerId = constraints[rule];
+      if (peerId == null) continue;
+      const peer = typeof peerId === "string" ? byId.get(peerId) : undefined;
+      if (!peer || (peer.value_type !== "decimal" && peer.value_type !== "integer")) {
+        return fail(`invalid numeric peer ${id}.${rule}=${String(peerId)}`);
+      }
+      const peers = dependencies.get(id) ?? [];
+      peers.push(String(peerId));
+      dependencies.set(id, peers);
+    }
+  }
+  return dependencies;
+}
+
+export function missingCanonicalNumericRelationParameterIds(
+  dependencies: ReadonlyMap<string, readonly string[]>,
+  consumedParameterIds: readonly string[],
+  parameters: JsonRecord,
+): string[] {
+  const pending = consumedParameterIds.filter(id => dependencies.has(id));
+  const visited = new Set<string>();
+  const missing: string[] = [];
+  while (pending.length) {
+    const id = pending.pop()!;
+    if (visited.has(id)) continue;
+    visited.add(id);
+    if (parameters[id] == null || parameters[id] === "") missing.push(id);
+    pending.push(...dependencies.get(id) ?? []);
+  }
+  return missing.sort();
+}
+
 function acceptedBaselineDefault(
   definition: CanonicalParameterDefinitionRecord,
   parameterId: string,
@@ -170,6 +213,7 @@ export function validateCanonicalEstimateParameters(
 ): JsonRecord {
   if (!input || typeof input !== "object" || Array.isArray(input)) return fail("parameters must be an object");
   const byId = new Map(definitions.map((definition) => [String(definition.parameter_id ?? ""), definition]));
+  canonicalNumericRelationDependencies(definitions);
   const accepted = new Set(byId.keys());
   const confirmed = options.confirmedParameters ?? {};
   if (!isRecord(confirmed)) return fail("confirmed parameters must be an object");
@@ -235,7 +279,8 @@ export function validateCanonicalEstimateParameters(
         const peerId = constraints[rule];
         if (peerId == null) continue;
         const peerValue = values[String(peerId)];
-        if (peerValue == null || !compare(numeric, finiteNumber(peerValue, String(peerId)))) {
+        if (peerValue == null) continue;
+        if (!compare(numeric, finiteNumber(peerValue, String(peerId)))) {
           return fail(`cross-field rule ${id}.${rule}=${String(peerId)} failed`);
         }
       }

@@ -153,3 +153,30 @@ export function resolveInclusionGraph(
 export function evaluateInclusionGraph(ast: InclusionGraphAst, parameters: Record<string, unknown>): boolean {
   return resolveInclusionGraph(ast, parameters).value === true;
 }
+
+/** Original facts used to decide this branch, excluding unused OR alternatives. */
+export function inclusionGraphEvidenceParameterIds(
+  ast: InclusionGraphAst,
+  parameters: Record<string, unknown>,
+  unresolvedEvidenceCount: (ids: readonly string[]) => number = () => 0,
+): string[] {
+  if (ast.kind === "literal") return [];
+  if (ast.kind === "not") {
+    return inclusionGraphEvidenceParameterIds(ast.operand as InclusionGraphAst, parameters, unresolvedEvidenceCount);
+  }
+  if (ast.kind === "and" || ast.kind === "or") {
+    const children = childNodes(ast);
+    const decisive = children.filter(child =>
+      resolveInclusionGraph(child, parameters).value === (ast.kind === "or"));
+    const evidence = (decisive.length ? decisive : children)
+      .map(child => inclusionGraphEvidenceParameterIds(child, parameters, unresolvedEvidenceCount));
+    if (decisive.length) {
+      // Any decisive alternative is sufficient. Prefer independently proven
+      // facts so an unused comparison does not block a known OR branch.
+      return evidence.reduce((best, ids) => unresolvedEvidenceCount(ids) < unresolvedEvidenceCount(best) ? ids : best);
+    }
+    return mergeMissing(...evidence);
+  }
+  return [...new Set([ast.kind === "parameter" ? ast.id : ast.parameterId, ast.valueParameterId]
+    .filter((id): id is string => typeof id === "string" && id.length > 0))].sort();
+}

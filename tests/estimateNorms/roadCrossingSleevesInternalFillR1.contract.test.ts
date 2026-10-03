@@ -59,7 +59,7 @@ describe("optional full internal dry-grout fill with disjoint geometry and suppl
     expect((await compile(fixture, { [order]: { unitPrice: "4", provenance } })).totals.amount).toBe("3400");
     expect(rows.some(row => /cement|sand|crew|equipment|haul/u.test(row.rowId))).toBe(false);
   });
-  it.each([...geometricIds.filter(key => key !== "rcs_carrier_outside_diameter_mm"),
+  it.each([...geometricIds,
     ...parameters.filter(p => p.id !== "rcs_internal_fill_mode" && p.id !== "rcs_internal_fill_mixing_water_l_for_selected_bag").map(p => p.id)])
   ("manual purchases cannot replace unknown original %s", async missing => {
     const input = { ...fixture }; delete input[missing];
@@ -67,9 +67,14 @@ describe("optional full internal dry-grout fill with disjoint geometry and suppl
     expect(result.rows.some(row => row.row_id === order)).toBe(false);
     expect(result.preliminaryNeeds.find(need => need.row_id === order)?.missing_parameter_ids).toContain(missing);
   });
-  it("keeps the existing fail-closed peer constraint when known casing ID has an unknown carrier OD", async () => {
+  it("keeps missing carrier compatibility local to the selected internal-fill needs", async () => {
     const input = { ...fixture }; delete input.rcs_carrier_outside_diameter_mm;
-    await expect(compile(input, overrides)).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+    const result = await compile(input, overrides);
+    expect(result.rows.every(row => !row.included_in_estimate && !row.included_in_procurement)).toBe(true);
+    expect(result.totals.includedRowCount).toBe(0);
+    expect(result.preliminaryNeeds.find(need => need.row_id === order)).toMatchObject({
+      need_state: "CONDITION_REQUIRED", missing_parameter_ids: ["rcs_carrier_outside_diameter_mm"],
+    });
   });
   it("an unknown mode is a localized undecided branch, not silent no-fill or a positive material default", async () => {
     const input = { ...fixture }; delete input.rcs_internal_fill_mode;

@@ -4,8 +4,12 @@ import {
   type FormulaAst,
   type FormulaParameterValue,
 } from "./formulaGraph";
-import { resolveInclusionGraph } from "./inclusionGraph";
-import { validateCanonicalEstimateParameters } from "./parameterConstraints";
+import { inclusionGraphEvidenceParameterIds, resolveInclusionGraph } from "./inclusionGraph";
+import {
+  canonicalNumericRelationDependencies,
+  missingCanonicalNumericRelationParameterIds,
+  validateCanonicalEstimateParameters,
+} from "./parameterConstraints";
 import { canonicalRoundDecimal } from "./canonicalEstimateDeterminism";
 import { parseCanonicalFormulaOutputBoundsV1, validateCanonicalFormulaOutputBoundsV1 } from "./canonicalFormulaOutputBounds";
 import {
@@ -798,6 +802,7 @@ export async function compileCanonicalEstimateCore(
     input.parameterDefinitions.map((parameter) => [parameter.parameter_id, parameter]),
   );
   const definitionParameterIds = new Set(parameterDefinitionsById.keys());
+  const numericRelationDependencies = canonicalNumericRelationDependencies(input.parameterDefinitions);
   const formulas = new Map(input.formulaDefinitions.map((formula) => [formula.formula_id, formula]));
   const prices = new Map<string, CanonicalEstimatePriceItem>();
   for (const item of input.priceItems ?? []) {
@@ -959,6 +964,18 @@ export async function compileCanonicalEstimateCore(
       const normalized = value.trim();
       return normalized ? [normalized] : [];
     });
+    const missingNumericRelationParameterIds = missingCanonicalNumericRelationParameterIds(
+      numericRelationDependencies,
+      [
+        ...formula.input_parameter_ids,
+        ...inclusionGraphEvidenceParameterIds(resource.inclusion_ast, parameters, ids =>
+          missingCanonicalNumericRelationParameterIds(numericRelationDependencies, ids, parameters).length),
+        ...(Array.isArray(rawConsumerParameterIds) ? rawConsumerParameterIds as string[] : []),
+        ...titleSpecification.parameterIds,
+        ...(physicalBindingActive ? physicalApplicabilityParameterIds : []),
+      ],
+      parameters,
+    );
     const formulaQuantity = missingFormulaParameterIds.length === 0
       ? evaluateFormulaGraph(formula.ast, formulaParameters)
       : null;
@@ -972,8 +989,10 @@ export async function compileCanonicalEstimateCore(
       || missingFormulaBlocksQuantity
       || (missingPhysicalNormParameterIds.length > 0 && manualQuantity == null)
       || missingRequiredTitleSpecificationParameterIds.length > 0
-      || missingRequiredConsumerParameterIds.length > 0) {
-      const needState = inclusion.value == null && !inclusionOnlyWaitsForFormulaInputs
+      || missingRequiredConsumerParameterIds.length > 0
+      || missingNumericRelationParameterIds.length > 0) {
+      const needState = missingNumericRelationParameterIds.length > 0
+        || (inclusion.value == null && !inclusionOnlyWaitsForFormulaInputs)
         ? "CONDITION_REQUIRED" as const
         : missingFormulaBlocksQuantity
           || (missingPhysicalNormParameterIds.length > 0 && manualQuantity == null)
@@ -985,6 +1004,7 @@ export async function compileCanonicalEstimateCore(
         ...(manualQuantity == null ? missingPhysicalNormParameterIds : []),
         ...missingRequiredTitleSpecificationParameterIds,
         ...missingRequiredConsumerParameterIds,
+        ...missingNumericRelationParameterIds,
       ])].sort();
       const selected = override?.includedInEstimate !== false;
       const unitPrice = override != null && Object.prototype.hasOwnProperty.call(override, "unitPrice")
