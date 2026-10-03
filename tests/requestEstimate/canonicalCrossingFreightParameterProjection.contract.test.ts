@@ -9,7 +9,8 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_FREIGHT_MOD
   ROAD_CROSSING_SLEEVES_JACKING_LOADING_MODES_R1 as loadingModes,
   ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_MODES_R1 as casingPrepModes, ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_COST_BASIS_R1 as casingPrepBasis,
   ROAD_CROSSING_SLEEVES_COATING_MODES_R1 as coatingModes, ROAD_CROSSING_SLEEVES_COATING_KIT_COST_BASIS_R1 as coatingKitBasis,
-  ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_MODES_R1 as connectionModes } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_MODES_R1 as connectionModes,
+  ROAD_CROSSING_SLEEVES_WATER_CONTROL_MODES_R1 as waterControlModes } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_TRENCH_FILL_MODES_R1 as fillModes } from "../../src/lib/estimate/v4/roadCrossingSleevesPitFillMaterialR1";
 import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierSupplyModes } from "../../src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1";
@@ -229,6 +230,42 @@ describe("actual carrier connection facts through the common publisher/editor", 
     const prejoined = session({ ...input, rcs_carrier_connection_mode: connectionModes.prejoined });
     expect(prejoined.parameters.find(p => p.parameterId === "rcs_carrier_connection_program_reference")).toBeDefined();
     expect(prejoined.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_carrier_connection_internal_joining_crew_h_per_joint")).toMatchObject({ value: 2 });
+  });
+});
+
+describe("actual pump deployment and fuel facts through the common editor", () => {
+  const water: Record<string, CanonicalEstimateParameterInputValue> = { ...fixture,
+    rcs_water_control_mode: waterControlModes.hydraulicRental, rcs_water_control_program_reference: "TEST actual uniform whole hydraulic kit group and discharge programme",
+    rcs_water_control_allocation_reference: "TEST exclusively allocated complete kits and whole period",
+    rcs_water_control_kit_product_reference: "TEST full actual kit BOM and separate component passports",
+    rcs_water_control_working_set_count: 2, rcs_water_control_standby_set_count: 1, rcs_water_control_calendar_hours: 24,
+    rcs_water_control_working_duty_fraction: 0.5, rcs_water_control_actual_system_head_m: 12, rcs_water_control_flow_at_actual_head_m3_h: 5,
+    rcs_water_control_gross_fuel_l_per_deployed_set_hour: 0.2, rcs_water_control_fuel_product_reference: "TEST fuel compatibility and weighted whole group profile",
+    rcs_water_control_kit_discharge_hose_m: 30, rcs_water_control_kit_coupling_count: 6,
+    rcs_water_control_operation_all_crew_h_per_calendar_hour: 0.5,
+  };
+  it("shows known actual water/kit/fuel/whole-group labor facts filled and editable with units and source guides", () => {
+    const visible = cards(water);
+    for (const [key, value] of Object.entries(water).filter(([key]) => key.startsWith("rcs_water_control_"))) {
+      expect(visible.find(c => c.key === key)).toMatchObject({ value, missing: false, editable: true });
+      expect(visible.find(c => c.key === key)?.guideShortRu).toBeTruthy();
+    }
+    expect(visible.find(c => c.key === "rcs_water_control_flow_at_actual_head_m3_h")?.unitRu).toBe("м³/ч");
+    expect(visible.find(c => c.key === "rcs_water_control_gross_fuel_l_per_deployed_set_hour")?.unitRu).toBe("л/ч");
+    expect(catalog.parameterSchema.some(p => /water_control.*(?:pumped_water|operating_pump_hours|rental_set_hours|fuel_ordered)/u.test(p.parameterId))).toBe(false);
+  });
+  it("unknown duty stays an editable actual fact, while deployed kit/source facts remain active", () => {
+    const input = { ...water }; delete input.rcs_water_control_working_duty_fraction;
+    expect(cards(input).find(c => c.key === "rcs_water_control_working_duty_fraction")).toMatchObject({ value: null, missing: true, editable: true });
+    expect(cards(input).find(c => c.key === "rcs_water_control_kit_product_reference")).toMatchObject({ value: water.rcs_water_control_kit_product_reference, editable: true });
+  });
+  it("idle-only zero fuel and explicit no-water-control keep previously supplied inactive facts durable", () => {
+    const zero = session({ ...water, rcs_water_control_working_duty_fraction: 0, rcs_water_control_gross_fuel_l_per_deployed_set_hour: 0 });
+    expect(zero.parameters.some(p => p.parameterId === "rcs_water_control_fuel_product_reference")).toBe(false);
+    expect(zero.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_water_control_fuel_product_reference")).toMatchObject({ value: water.rcs_water_control_fuel_product_reference });
+    const none = session({ ...water, rcs_water_control_mode: waterControlModes.notRequired });
+    expect(none.parameters.find(p => p.parameterId === "rcs_water_control_program_reference")).toBeDefined();
+    expect(none.inactiveConditionalParameters?.find(p => p.parameterId === "rcs_water_control_calendar_hours")).toMatchObject({ value: 24 });
   });
 });
 

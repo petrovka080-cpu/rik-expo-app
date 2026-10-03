@@ -681,6 +681,154 @@ export const ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_ROWS_R1: readonly Automati
   }),
 ]);
 
+/** Source-bound rented hydraulic sump-pump systems, not a groundwater design.
+ * Godwin's handbook covers the pump end and refers other package equipment to
+ * its own documentation. The complete actual kit/BOM, hydraulic operating
+ * point, duty, discharge and all rates below are therefore PROJECT facts:
+ * https://www.xylem.com/siteassets/brand/godwin/resources/manual/hs-series-installation-operation-and-maintenance-manual-.pdf
+ * Pumping volume/time are never inferred from earthwork volume. */
+export const ROAD_CROSSING_SLEEVES_WATER_CONTROL_MODES_R1 = Object.freeze({
+  hydraulicRental: "Однородная группа арендованных полных гидравлических погружных насосных комплектов с топливными силовыми блоками и отдельным топливом; рабочие и резервные комплекты по фактической схеме",
+  otherParty: "Водоотведение и все его ресурсы предоставлены другой стороной без отдельной оплаты исполнителем",
+  notRequired: "Отсутствие водоотведения подтверждено фактической проектной схемой и условиями",
+  other: "Другие насосы, неоднородные режимы, иглофильтры, постоянный водопонизительный контур или иные меры: отдельная программа ресурсов",
+});
+export const ROAD_CROSSING_SLEEVES_WATER_CONTROL_RENTAL_BASIS_R1 = "Наличие одного полного фактического арендованного насосного комплекта за календарный час, включая рабочее/нерабочее время и обычные сервисные жидкости; состав по ведомости, без топлива/энергии, всех исполнителей, монтажной подъёмной техники, доставки/возврата, фильтровальных расходников, приёма воды и отходов";
+export const ROAD_CROSSING_SLEEVES_WATER_CONTROL_FUEL_BASIS_R1 = "Только новый заказ совместимого топлива на весь фактический профиль рабочих и резервных комплектов с потерями и резервом; без повторной энергии в аренде, работы, техники, доставки и отходов";
+const waterControlId = (suffix: string) => `rcs_water_control_${suffix}`;
+const waterControlScope: AutomaticInclusionCondition = { kind: "greater_than", parameterId: "rcs_crossing_length_m", value: 0 };
+const waterControlSelected: AutomaticInclusionCondition = { kind: "and", operands: [waterControlScope,
+  { kind: "equals", parameterId: waterControlId("mode"), value: ROAD_CROSSING_SLEEVES_WATER_CONTROL_MODES_R1.hydraulicRental }] };
+const waterControlFacts = ["rcs_crossing_length_m", "rcs_civil_installation_method", waterControlId("mode"), waterControlId("program_reference"),
+  waterControlId("allocation_reference"), waterControlId("kit_designation"), waterControlId("kit_product_reference")];
+const waterControlSets = `${waterControlId("working_set_count")}+${waterControlId("standby_set_count")}`;
+const waterControlSetHours = `(${waterControlSets})*${waterControlId("calendar_hours")}`;
+const waterControlRunningHours = `${waterControlId("working_set_count")}*${waterControlId("calendar_hours")}*${waterControlId("working_duty_fraction")}`;
+const waterControlVolume = `(${waterControlRunningHours})*${waterControlId("flow_at_actual_head_m3_h")}`;
+const waterControlFuel = `(${waterControlSetHours})*${waterControlId("gross_fuel_l_per_deployed_set_hour")}`;
+const waterControlFuelPositive: AutomaticInclusionCondition = { kind: "and", operands: [waterControlSelected,
+  { kind: "formula_greater_than", expression: waterControlFuel, unitId: "l", value: 0 }] };
+const waterControlKitMembers = [
+  { key: "discharge_hose_m", title: "Фактический напорный рукав в составе арендованного комплекта", unit: "m", min: 0.000_001 },
+  { key: "hydraulic_supply_hose_m", title: "Фактический подающий гидравлический рукав в составе комплекта", unit: "m", min: 0.000_001 },
+  { key: "hydraulic_return_hose_m", title: "Фактический обратный гидравлический рукав в составе комплекта", unit: "m", min: 0.000_001 },
+  { key: "coupling_count", title: "Фактические полные совместимые соединения рукавов в составе комплекта", unit: "piece", min: 1 },
+  { key: "strainer_count", title: "Фактические совместимые входные защитные узлы в составе комплекта", unit: "piece", min: 0 },
+  { key: "valve_count", title: "Фактические совместимые клапаны и запорные узлы в составе комплекта", unit: "piece", min: 0 },
+] as const;
+const waterControlWorks = [
+  { key: "setup", title: "Установка и подключение полных насосных комплектов", quantity: waterControlSets, unit: "piece" },
+  { key: "removal", title: "Отключение, дренирование и снятие полных насосных комплектов", quantity: waterControlSets, unit: "piece" },
+] as const;
+export const ROAD_CROSSING_SLEEVES_WATER_CONTROL_PARAMETERS_R1: readonly AutomaticParameterSpec[] = Object.freeze([
+  { id: waterControlId("mode"), title: "Подтверждённая технология и граница водоотведения перехода", valueType: "enum", unitId: null,
+    values: Object.values(ROAD_CROSSING_SLEEVES_WATER_CONTROL_MODES_R1), kind: "conditional", requiredWhen: waterControlScope },
+  { id: waterControlId("program_reference"), title: "Фактическая схема водоотведения/отсутствия необходимости: вода и грунт, зоны/период, одинаковые рабочие комплекты и режимы, резерв, гидравлика всей линии, сброс/приём и границы ресурсов; не приёмка проекта",
+    valueType: "text", unitId: null, kind: "conditional", requiredWhen: waterControlScope },
+  ...[ ["allocation_reference", "Фактическое исключительное распределение насосных комплектов, всего периода и работ на этот переход; резерв не второй раз работающий насос"],
+    ["kit_designation", "Фактический полный арендованный гидравлический насосный комплект с силовым блоком, двигателем, гидросистемой, рукавами и всеми совместимыми соединениями/защитными узлами"],
+    ["kit_product_reference", "Фактическая полная ведомость состава и аренды плюс отдельные паспорта насоса/силового блока/рукавов/соединений, допустимость воды/частиц/напора/подачи и условий; паспорт одного насосного узла не подтверждает весь комплект"],
+    ["discharge_reference", "Фактические качество и классификация воды, совместимый приёмник/маршрут сброса, требуемая обработка и отдельные границы оплаты; разрешение не выводится из расчёта"],
+    ["operation_method_reference", "Фактическая процедура установки/гидравлических подключений/работы/ожидания/контроля/выключения/дренирования, допустимый режим и все исполнители/операторы, без повторной оплаты других этапов"],
+    ["operation_crew_designation", "Все фактические исполнители и операторы всей насосной группы, включая предусмотренный контроль; не умножать готовую суммарную норму на каждый комплект"],
+  ].map(([suffix, title]): AutomaticParameterSpec => ({ id: waterControlId(suffix), title, valueType: "text", unitId: null, kind: "conditional", requiredWhen: waterControlSelected })),
+  ...[ ["working_set_count", "Рабочие полные одинаковые насосные комплекты по фактической схеме", "piece", 1],
+    ["standby_set_count", "Фактические полные резервные комплекты в аренде; их работа не предполагается, отсутствие — явный 0", "piece", 0],
+    ["calendar_hours", "Фактический календарный период наличия всех комплектов, включая установку/снятие/ожидание; не выводить из выемки", "hour", 0.000_001],
+    ["working_duty_fraction", "Фактическая доля этого периода с работой каждого одинакового рабочего комплекта, от 0 до 1; резервное включение требует своего режима", "ratio", 0],
+    ["actual_system_head_m", "Фактический полный рабочий напор выбранной линии со всеми геометрическими и гидравлическими потерями по схеме", "m", 0.000_001],
+    ["flow_at_actual_head_m3_h", "Подтверждённая фактическая подача одного комплекта при этом напоре, воде/частицах и режиме по паспортам/схеме; не паспортный максимум без напора", "m3_per_hour", 0.000_001],
+    ["required_average_inflow_m3_h", "Фактическая требуемая средняя подача всей однородной группы по проектной схеме воды и периода; явный 0 допустим только с обоснованием исходной воды", "m3_per_hour", 0],
+    ["operation_all_crew_h_per_calendar_hour", "Фактические суммарные человеко-часы всех исполнителей/операторов группы на календарный час, включая режимы контроля/ожидания один раз", "man_hour_per_hour", 0],
+    ["gross_fuel_l_per_deployed_set_hour", "Фактический средневзвешенный полный расход топлива на час общего наличия комплектов по сводке всей группы; разные рабочие/нерабочие/резервные режимы и все потери включены один раз, одинаковый расход всех насосов не предполагается", "l_per_hour", 0],
+  ].map(([suffix, title, unit, min]): AutomaticParameterSpec => ({ id: waterControlId(String(suffix)), title: String(title), valueType: unit === "piece" ? "integer" : "decimal",
+    unitId: String(unit), min: Number(min), ...(suffix === "working_duty_fraction" ? { max: 1 } : {}), kind: "conditional", requiredWhen: waterControlSelected })),
+  ...waterControlKitMembers.map(member => ({ id: waterControlId(`kit_${member.key}`), title: `${member.title}: фактическое количество на один полный комплект по ведомости, не новая отдельная закупка`,
+    valueType: member.unit === "piece" ? "integer" : "decimal", unitId: member.unit, min: member.min, kind: "conditional", requiredWhen: waterControlSelected }) as AutomaticParameterSpec),
+  { id: waterControlId("rental_cost_basis"), title: "Отдельная граница наличия полного арендованного насосного комплекта", valueType: "enum", unitId: null,
+    values: [ROAD_CROSSING_SLEEVES_WATER_CONTROL_RENTAL_BASIS_R1], kind: "conditional", requiredWhen: waterControlSelected },
+  { id: waterControlId("operation_crew_cost_basis"), title: "Отдельная граница всех исполнителей насосной группы", valueType: "enum", unitId: null,
+    values: [ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_COST_BASES_R1.crew], kind: "conditional", requiredWhen: waterControlSelected },
+  ...waterControlWorks.flatMap(work => [
+    { id: waterControlId(`${work.key}_method_reference`), title: `${work.title}: фактическая совместимая процедура и полный подбор подъёма/доступа/гидравлических подключений без пересечения с эксплуатационным трудом`,
+      valueType: "text", unitId: null, kind: "conditional", requiredWhen: waterControlSelected } as AutomaticParameterSpec,
+    ...(["crew", "equipment"] as const).flatMap(owner => [
+      { id: waterControlId(`${work.key}_${owner}_designation`), title: `${work.title}: ${owner === "crew" ? "все исполнители, включая операторов подъёмной техники" : "совместимая монтажная подъёмная техника с энергией, отдельно от арендованного насосного комплекта"}`,
+        valueType: "text", unitId: null, kind: "conditional", requiredWhen: waterControlSelected } as AutomaticParameterSpec,
+      { id: waterControlId(`${work.key}_${owner}_h_per_set`), title: `${work.title}: фактические ${owner === "crew" ? "суммарные человеко-часы" : "часы монтажной техники"} на один полный развёрнутый комплект`,
+        valueType: "decimal", unitId: `${owner === "crew" ? "man" : "machine"}_hour_per_piece`, min: 0, kind: "conditional", requiredWhen: waterControlSelected } as AutomaticParameterSpec,
+      { id: waterControlId(`${work.key}_${owner}_cost_basis`), title: `${work.title}: отдельная граница ${owner === "crew" ? "труда" : "монтажной техники"}`,
+        valueType: "enum", unitId: null, values: [ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_COST_BASES_R1[owner]], kind: "conditional", requiredWhen: waterControlSelected } as AutomaticParameterSpec,
+    ]),
+  ]),
+  ...[ ["fuel_product_designation", "Фактически выбранное совместимое топливо силового блока"],
+    ["fuel_product_reference", "Паспортная совместимость топлива силового блока, пригодность исключительно выделенного наличия и полный однородный расход с режимами/потерями"] ]
+    .map(([suffix, title]): AutomaticParameterSpec => ({ id: waterControlId(suffix), title, valueType: "text", unitId: null, kind: "conditional", requiredWhen: waterControlFuelPositive })),
+  ...[ ["fuel_compatible_stock_l", "Пригодное исключительно выделенное топливо до работы", 0], ["fuel_retained_reserve_l", "Сохраняемый пригодный резерв топлива", 0],
+    ["fuel_supplier_pack_net_l", "Фактические литры без тары в новой поставочной упаковке топлива", 0.000_001] ]
+    .map(([suffix, title, min]): AutomaticParameterSpec => ({ id: waterControlId(String(suffix)), title: String(title), valueType: "decimal", unitId: "l", min: Number(min), kind: "conditional", requiredWhen: waterControlFuelPositive })),
+  { id: waterControlId("fuel_cost_basis"), title: "Отдельная граница нового заказа топлива", valueType: "enum", unitId: null,
+    values: [ROAD_CROSSING_SLEEVES_WATER_CONTROL_FUEL_BASIS_R1], kind: "conditional", requiredWhen: waterControlFuelPositive },
+]);
+export const ROAD_CROSSING_SLEEVES_WATER_CONTROL_ROWS_R1: readonly AutomaticRowSpec[] = Object.freeze([
+  { rowId: "rcs:water-control:scope_length_m", formulaId: "rcs:water-control:scope_length_m", section: "Водоотведение перехода", category: "service",
+    title: "Длина перехода в фактической программе водоотведения; без повторной оплаты выемки", unitId: "m", expression: "rcs_crossing_length_m", inclusion: waterControlScope,
+    costTreatment: "INFORMATIONAL_SCOPE", inputParameterIds: [waterControlId("mode"), waterControlId("program_reference")] },
+  ...[ ["deployed_set_count", "Полные рабочие и резервные насосные комплекты на объекте", waterControlSets, "piece"],
+    ["deployed_set_hours", "Календарное наличие всех полных комплектов; не время работы всех насосов", waterControlSetHours, "set_hour"],
+    ["operating_pump_hours", "Суммарное фактическое время работы только одинаковых рабочих насосов", waterControlRunningHours, "machine_hour"],
+    ["pumped_water_m3", "Расчётная вода по фактическому рабочему режиму и подаче; не объём выемки и не автоматически разрешённый сброс", waterControlVolume, "m3"],
+  ].map(([key, title, expression, unitId]): AutomaticRowSpec => ({ rowId: `rcs:water-control:${key}`, formulaId: `rcs:water-control:${key}`, section: "Водоотведение перехода", category: "equipment",
+    title, expression, unitId, inclusion: waterControlSelected, costTreatment: "INFORMATIONAL_SCOPE", inputParameterIds: waterControlFacts })),
+  { rowId: "rcs:water-control:available_average_flow_m3_h", formulaId: "rcs:water-control:available_average_flow_m3_h", section: "Контроль фактической подачи", category: "service",
+    title: "Средняя подача рабочих насосов сверх фактической требуемой подачи группы; не инженерная приёмка", unitId: "m3_per_hour",
+    expression: `${waterControlId("working_set_count")}*${waterControlId("working_duty_fraction")}*${waterControlId("flow_at_actual_head_m3_h")}-${waterControlId("required_average_inflow_m3_h")}`,
+    inclusion: waterControlSelected, costTreatment: "INFORMATIONAL_SCOPE", inputParameterIds: [...waterControlFacts, waterControlId("actual_system_head_m")],
+    formulaOutputBounds: { schemaVersion: "canonical_formula_output_bounds_v1", unitId: "m3_per_hour", minimum: 0,
+      reasonRu: "Подтверждённая средняя подача рабочих насосов должна покрывать фактическую требуемую подачу этой схемы; резерв не предполагается работающим, ручная аренда не исправляет недостаток." } },
+  ...waterControlKitMembers.map((member): AutomaticRowSpec => ({ rowId: `rcs:water-control:kit:${member.key}`, formulaId: `rcs:water-control:kit:${member.key}`, section: "Фактический состав насосных комплектов",
+    category: "equipment", title: `${member.title}; количество во всех рабочих и резервных комплектах без второй оплаты`, unitId: member.unit,
+    expression: `(${waterControlSets})*${waterControlId(`kit_${member.key}`)}`, inclusion: waterControlSelected, costTreatment: "INFORMATIONAL_SCOPE", inputParameterIds: waterControlFacts })),
+  { rowId: "rcs:water-control:rental_set_hours", formulaId: "rcs:water-control:rental_set_hours", section: "Аренда насосных комплектов", category: "equipment",
+    title: "Календарное наличие полных фактических насосных комплектов, включая резерв и весь состав, отдельно от энергии", unitId: "set_hour", expression: waterControlSetHours,
+    inclusion: waterControlSelected, costTreatment: "OWN_COST", procurement: true, titleParameterIds: [waterControlId("kit_designation")],
+    inputParameterIds: [...waterControlFacts, waterControlId("rental_cost_basis"), waterControlId("actual_system_head_m"), waterControlId("flow_at_actual_head_m3_h"), waterControlId("discharge_reference"), ...waterControlKitMembers.map(member => waterControlId(`kit_${member.key}`))] },
+  { rowId: "rcs:water-control:operation_crew_hours", formulaId: "rcs:water-control:operation_crew_hours", section: "Эксплуатация насосной группы", category: "labor",
+    title: "Все исполнители и операторы всей группы за весь период без повторного умножения на насосы", unitId: "man_hour",
+    expression: `${waterControlId("calendar_hours")}*${waterControlId("operation_all_crew_h_per_calendar_hour")}`, inclusion: waterControlSelected,
+    costTreatment: "OWN_COST", procurement: true, titleParameterIds: [waterControlId("operation_crew_designation")],
+    inputParameterIds: [...waterControlFacts, waterControlId("operation_method_reference"), waterControlId("operation_crew_cost_basis"), waterControlId("discharge_reference")] },
+  ...waterControlWorks.flatMap(work => (["crew", "equipment"] as const).map((owner): AutomaticRowSpec => ({
+    rowId: `rcs:water-control:${work.key}:${owner}_hours`, formulaId: `rcs:water-control:${work.key}:${owner}_hours`, section: work.title,
+    category: owner === "crew" ? "labor" : "equipment", title: `${work.title}: ${owner === "crew" ? "все исполнители" : "совместимая монтажная подъёмная техника с энергией"}`,
+    unitId: owner === "crew" ? "man_hour" : "machine_hour", expression: `(${work.quantity})*${waterControlId(`${work.key}_${owner}_h_per_set`)}`,
+    inclusion: waterControlSelected, costTreatment: "OWN_COST", procurement: true, titleParameterIds: [waterControlId(`${work.key}_${owner}_designation`)],
+    inputParameterIds: [...waterControlFacts, waterControlId(`${work.key}_method_reference`), waterControlId(`${work.key}_${owner}_cost_basis`)],
+  }))),
+  ...((): AutomaticRowSpec[] => {
+    const need = `max(0,(${waterControlFuel})+${waterControlId("fuel_retained_reserve_l")}-${waterControlId("fuel_compatible_stock_l")})`;
+    const packs = `ceil((${need})/${waterControlId("fuel_supplier_pack_net_l")})`, ordered = `(${packs})*${waterControlId("fuel_supplier_pack_net_l")}`;
+    const remaining = `${waterControlId("fuel_compatible_stock_l")}+(${ordered})-(${waterControlFuel})`;
+    return [{ rowId: "rcs:water-control:fuel:operating_energy_l", formulaId: "rcs:water-control:fuel:operating_energy_l", section: "Контроль отдельного топлива", category: "service",
+      title: "При работе топливных силовых блоков полный расход топлива не может быть скрыт явным нулём", unitId: "l", expression: waterControlFuel,
+      inclusion: { kind: "and", operands: [waterControlSelected, { kind: "formula_greater_than", expression: waterControlRunningHours, unitId: "machine_hour", value: 0 }] },
+      costTreatment: "INFORMATIONAL_SCOPE", inputParameterIds: waterControlFacts,
+      formulaOutputBounds: { schemaVersion: "canonical_formula_output_bounds_v1", unitId: "l", exclusiveMinimum: 0,
+        reasonRu: "Работа выбранных топливных силовых блоков требует положительного подтверждённого расхода; энергия другой технологии или другой стороны нуждается в своей схеме, а не нулевом расходе." } },
+      ...([ ["consumed_l", "Фактический полный расход топлива рабочих/нерабочих/резервных режимов с потерями", waterControlFuel, "l"],
+      ["new_need_l", "Дополнительное топливо с резервом после пригодного наличия", need, "l"], ["supplier_pack_count", "Число новых упаковок топлива", packs, "package"],
+      ["ordered_l", "Новый отдельный заказ совместимого топлива", ordered, "l"], ["remaining_l", "Пригодное неиспользованное топливо с резервом", remaining, "l"],
+      ["free_beyond_reserve_l", "Свободное пригодное топливо сверх резерва", `(${remaining})-${waterControlId("fuel_retained_reserve_l")}`, "l"] ] as const)
+      .map(([key, title, expression, unitId]): AutomaticRowSpec => ({ rowId: `rcs:water-control:fuel:${key}`, formulaId: `rcs:water-control:fuel:${key}`, section: "Топливо насосных комплектов", category: "material",
+        title, expression, unitId, inclusion: key === "consumed_l" ? waterControlSelected : waterControlFuelPositive,
+        costTreatment: key === "ordered_l" ? "OWN_COST" : "INFORMATIONAL_SCOPE", procurement: key === "ordered_l",
+        inputParameterIds: [...waterControlFacts, ...(key === "consumed_l" ? [] : [waterControlId("fuel_product_designation"), waterControlId("fuel_product_reference")]),
+          ...(key === "ordered_l" ? [waterControlId("fuel_cost_basis"), waterControlId("operation_method_reference")] : [])],
+        ...(key === "ordered_l" ? { titleParameterIds: [waterControlId("fuel_product_designation")] } : {}) })),
+    ];
+  })(),
+]);
+
 /** Actual initial straight-axis staking has its own physical resources.
  * FHWA FP-24 section 152 identifies selected survey/control methods, marking,
  * maintenance/replacement and final removal; it does not give this project's
@@ -937,6 +1085,8 @@ const freightCargoGroups: readonly FreightCargo[] = [
     `rcs:coating-consumable:${material.zone.key}:${material.key}:ordered`, material.id("compatible_stock"), material.unit, undefined, material.unit === "piece" ? undefined : material.id("supplier_pack_net"))),
   ...carrierConnectionMaterialBranches.map(material => freightCargo(`carrier_connection_${material.group.key}_${material.key}`, `${material.group.title}: ${material.title}`, ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_ROWS_R1,
     `rcs:carrier-connection-material:${material.group.key}:${material.key}:ordered`, material.id("compatible_stock"), material.unit, undefined, material.unit === "piece" ? undefined : material.id("supplier_pack_net"))),
+  freightCargo("water_control_fuel", "Совместимое топливо насосной группы", ROAD_CROSSING_SLEEVES_WATER_CONTROL_ROWS_R1,
+    "rcs:water-control:fuel:ordered_l", waterControlId("fuel_compatible_stock_l"), "l", undefined, waterControlId("fuel_supplier_pack_net_l")),
 ];
 const freightId = (key: string, suffix: string) => `rcs_freight_${key}_${suffix}`;
 const freightLanes = freightCargoGroups.flatMap(cargo => (["new", "stock"] as const).map(lane => {
@@ -1214,6 +1364,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_PARAMETERS_R1: readonly AutomaticPa
   ...ROAD_CROSSING_SLEEVES_COATING_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_COATING_CONSUMABLE_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_PARAMETERS_R1,
+  ...ROAD_CROSSING_SLEEVES_WATER_CONTROL_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_PREPARATION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_INSPECTION_PARAMETERS_R1,
   ...ROAD_CROSSING_SLEEVES_FREIGHT_PARAMETERS_R1,
@@ -1237,6 +1388,7 @@ export const ROAD_CROSSING_SLEEVES_COMPONENT_ROWS_R1: readonly AutomaticRowSpec[
   ...ROAD_CROSSING_SLEEVES_COATING_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_COATING_CONSUMABLE_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_ROWS_R1,
+  ...ROAD_CROSSING_SLEEVES_WATER_CONTROL_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_INSPECTION_ROWS_R1,
   ...ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1,
@@ -1251,8 +1403,8 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
     remaining: ["Доступ, расчистка и подготовка площадки", "Другие схемы разбивки и фактическая приёмка геодезического контроля", "Применимые временные ограждения и организация движения"] },
   { stageId: "installation", titleRu: "Устройство перехода", rows: [
     ...ROAD_CROSSING_SLEEVES_CIVIL_ROWS_R1.filter(row => !["rcs:civil:open_cut_full_width_bedding_m3", "rcs:civil:open_cut_remaining_fill_space_m3"].includes(row.rowId)),
-    ...ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_ROWS_R1],
-    remaining: ["Крепление грунта и реакционные конструкции", "Водоотведение", "Разделение разных партий и дополнительное перемещение грунта", "Применимые смазка и заполнение снаружи футляра"] },
+    ...ROAD_CROSSING_SLEEVES_CIVIL_EXECUTION_ROWS_R1, ...ROAD_CROSSING_SLEEVES_WATER_CONTROL_ROWS_R1.filter(row => !row.rowId.startsWith("rcs:water-control:removal:"))],
+    remaining: ["Крепление грунта и реакционные конструкции", "Подтверждение фактического водоотлива, очистка/фильтры и их отходы, отдельный приём воды и другие способы водопонижения", "Разделение разных партий и дополнительное перемещение грунта", "Применимые смазка и заполнение снаружи футляра"] },
   { stageId: "bedding", titleRu: "Основание", rows: [
     ...ROAD_CROSSING_SLEEVES_CIVIL_ROWS_R1.filter(row => row.rowId === "rcs:civil:open_cut_full_width_bedding_m3"), ...ROAD_CROSSING_SLEEVES_BEDDING_ROWS_R1,
     ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => row.rowId.startsWith("rcs:fill-execution:bedding:")),
@@ -1279,6 +1431,7 @@ export const ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1 = Object.freeze([
     ...ROAD_CROSSING_SLEEVES_FILL_EXECUTION_ROWS_R1.filter(row => /^rcs:fill-execution:(?:pits|trench):/u.test(row.rowId))],
     remaining: ["Подтверждение пригодности и распределения повторно используемого грунта", "Послойные или другие материалы траншеи", "Подтверждение технологии укладки и уплотнения", "Фактические качество и отдельное распределение воды", "Разные партии грунта, пульпа и иные состояния"] },
   { stageId: "completion", titleRu: "Завершение перехода", rows: [...ROAD_CROSSING_SLEEVES_FREIGHT_ROWS_R1,
+    ...ROAD_CROSSING_SLEEVES_WATER_CONTROL_ROWS_R1.filter(row => row.rowId.startsWith("rcs:water-control:removal:")),
     ...ROAD_CROSSING_SLEEVES_PREPARATION_ROWS_R1.filter(row => row.rowId.startsWith("rcs:preparation:removal:")),
     ...ROAD_CROSSING_SLEEVES_SOIL_ROWS_R1.filter(row => row.costTreatment === "OWN_COST")],
     remaining: ["Применимое восстановление территории и покрытия", "Доставка и возврат оборудования; объединённые грузы, комплектующие и расходники", "Фактический возврат пригодных колов и вывоз/приём отходов разбивки", "Испытания и завершение без подмены материалов документами"] },

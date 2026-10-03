@@ -5,7 +5,7 @@
   "scope": "One continuous steel casing crossing with explicitly selected installation method. Casing supply and site joints, support rings and elements, contact tape, compatible end-seal kits, applicable civil work, crew labor, mechanisms and logistics are separate quantity/cost owners. This source pack is not itself a published owner or accepted estimate.",
   "engineeringAcceptanceClaimed": false,
   "universalRatesClaimed": false,
-  "implementationStatus": "COMPONENT_ASSEMBLY_WITH_ACTUAL_SUPPLY_FREIGHT_SOIL_STATES_HAUL_RECEIVING_INSPECTION_STAKING_WATER_JACKING_LOADING_CASING_PREPARATION_COATING_AND_PE_CARRIER_CONNECTION_RESOURCES_NOT_PUBLISHED_NOT_FULL_OWNER",
+  "implementationStatus": "COMPONENT_ASSEMBLY_WITH_ACTUAL_SUPPLY_FREIGHT_SOIL_STATES_HAUL_RECEIVING_INSPECTION_STAKING_COMPACTION_WATER_JACKING_LOADING_CASING_PREPARATION_COATING_PE_CONNECTIONS_AND_HYDRAULIC_PUMPING_RESOURCES_NOT_PUBLISHED_NOT_FULL_OWNER",
   "quantityComponent": {
     "module": "src/lib/estimate/v4/roadCrossingSleevesQuantityModelR1.ts",
     "verification": "tests/estimateNorms/roadCrossingSleevesQuantityModelR1.contract.test.ts",
@@ -124,6 +124,19 @@
       "receiving": "Explicit other-party receiving creates no charge. Separate receiving owns only excess loose m3 OR actual tonnes from moist shipping density, excluding transport and other execution; no invented disposal permission, prices or generic density",
       "independence": "Known bank/loose excavation remains calculable with unavailable fill/reuse data. Dependent balance/trips/receiving retain original geometry, actual state facts, suitability/allocation and route/receiver/cost boundaries even under manual paid quantities. Explicit zero reuse disables origin/conversion; zero excess disables truck/destination/receiving facts. Negative allocation is rejected rather than clamped",
       "open": "Material/technology/design/classification acceptance, mixed/slurry allocation, extra sorting/site handling, all other stage gaps and governed full-owner publication remain open"
+    },
+    "hydraulicSumpPumpingResources": {
+      "module": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",
+      "verification": "tests/estimateNorms/roadCrossingSleevesComponentsR1.contract.test.ts",
+      "editorVerification": "tests/requestEstimate/canonicalCrossingFreightParameterProjection.contract.test.ts",
+      "scope": "Actual homogeneous rented complete hydraulic sump-pump group with fuel-powered powerpacks, actual working and non-operating standby sets, one documented calendar period/working duty and actual flow at full system head; not a groundwater design or arbitrary excavation-volume pumping factor",
+      "kit": "Actual complete rental BOM and each component passport required. Discharge/supply/return hoses, compatible couplings, strainers and valves are shown as real included equipment quantities across all deployed sets without duplicate purchases. Pump/powerpack/hydraulics/support/protection completeness and water/head/particles compatibility are project facts; the cited pump-end handbook cannot by itself confirm the whole package",
+      "quantity": "Deployed sets = actual working + standby sets. Calendar rental set-hours include setup/wait/removal. Running pump-hours = working sets * calendar period * actual working duty; pumped water = running hours * verified flow at actual full system head. Standby never automatically pumps. Known insufficient average flow fails before manual rental overrides. Pumping time/volume are never derived from excavation volume",
+      "execution": "Actual installation and isolation/drainage/removal each own all personnel and compatible separate lifting equipment once per deployed kit; removal is in completion. Whole-group operating/control personnel use actual total person-hours per calendar hour, never multiplied again by the number of pumps",
+      "fuel": "Rental includes complete assets/usual service fluids but excludes fuel and personnel/lifts/logistics. Documented weighted gross fuel per hour of all deployed kit availability includes actual differing working/idle/standby profiles and losses once. Actual fuel stock/reserve/net supply packs/new order/remaining/free balance and certified dedicated new-container or opened-stock freight remain separate. Active fuel-powered work cannot be hidden by zero fuel; zero idle-only fuel disables only dependent product/order/freight facts",
+      "primarySource": "https://www.xylem.com/siteassets/brand/godwin/resources/manual/hs-series-installation-operation-and-maintenance-manual-.pdf",
+      "sourceBoundary": "Manufacturer example distinguishes hydraulic hoses/connections and packaged-system documentation. No pump brand/model, hydraulic performance, time/duty, fuel rate, local rule/permission or project approval is inferred",
+      "open": "Actual groundwater/geotechnical/whole-kit/hydraulic/discharge/receiver acceptance, treatment/filter consumables and their waste, separately paid water receiving, standby operation or heterogeneous regimes, wellpoint/other systems, additional protection materials, equipment mobilization/return, prices, complete crossing publication and user acceptance remain open"
     },
     "carrierConnectionResources": {
       "module": "src/lib/estimate/v4/roadCrossingSleevesComponentsR1.ts",

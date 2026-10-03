@@ -15,7 +15,9 @@ import { buildRoadCrossingSleevesComponentsR1, ROAD_CROSSING_SLEEVES_COMPONENT_P
   ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_MODES_R1 as casingPrepModes, ROAD_CROSSING_SLEEVES_CASING_PREP_MATERIAL_COST_BASIS_R1 as casingPrepBasis,
   ROAD_CROSSING_SLEEVES_COATING_MODES_R1 as coatingModes, ROAD_CROSSING_SLEEVES_COATING_KIT_COST_BASIS_R1 as coatingKitBasis,
   ROAD_CROSSING_SLEEVES_COATING_CONSUMABLE_COST_BASIS_R1 as coatingConsumableBasis,
-  ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_MODES_R1 as connectionModes, ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_MATERIAL_COST_BASIS_R1 as connectionBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
+  ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_MODES_R1 as connectionModes, ROAD_CROSSING_SLEEVES_CARRIER_CONNECTION_MATERIAL_COST_BASIS_R1 as connectionBasis,
+  ROAD_CROSSING_SLEEVES_WATER_CONTROL_MODES_R1 as waterControlModes, ROAD_CROSSING_SLEEVES_WATER_CONTROL_RENTAL_BASIS_R1 as waterControlRentalBasis,
+  ROAD_CROSSING_SLEEVES_WATER_CONTROL_FUEL_BASIS_R1 as waterControlFuelBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesComponentsR1";
 import { ROAD_CROSSING_SLEEVES_CARRIER_SUPPLY_MODES_R1 as carrierModes, ROAD_CROSSING_SLEEVES_CARRIER_COST_BASIS_R1 as carrierBasis } from "../../src/lib/estimate/v4/roadCrossingSleevesCasingMaterialR1";
 import { ROAD_CROSSING_SLEEVES_CIVIL_METHODS_R1 as methods } from "../../src/lib/estimate/v4/roadCrossingSleevesCivilGeometryR1";
 import { ROAD_CROSSING_SLEEVES_JOINT_RESOURCE_PARAMETERS_R1 as jointParameters, ROAD_CROSSING_SLEEVES_JOINT_COST_BASES_R1 as bases } from "../../src/lib/estimate/v4/roadCrossingSleevesJointResourcesR1";
@@ -32,6 +34,7 @@ const components = buildRoadCrossingSleevesComponentsR1({ source_title: "Owned i
 const definition = components.definition;
 // Synthetic actual-fact/price fixtures ONLY, never a published default or WPS approval.
 const fixture: Record<string, unknown> = {
+  rcs_water_control_mode: waterControlModes.otherParty, rcs_water_control_program_reference: "TEST actual separate party supplies all water control resources, no executor charge",
   rcs_carrier_connection_mode: connectionModes.otherParty, rcs_carrier_connection_program_reference: "TEST actual compatible carrier connections by another party, no duplicate executor charge",
   rcs_coating_mode: coatingModes.otherParty, rcs_coating_program_reference: "TEST actual compatible field coating resources provided by other party, no executor charge",
   rcs_casing_prep_material_mode: casingPrepModes.otherParty, rcs_casing_prep_material_program_reference: "TEST actual compatible preparation consumables provided by other party, no executor purchase",
@@ -394,6 +397,125 @@ describe("actual PE carrier electrofusion resources and independent end ties", (
     expect(q(result, "rcs:freight:carrier_connection_internal_cleaner_new:trip_count")).toBe(4);
     expect(q(result, row("internal", "joining:crew_hours"))).toBe(12);
   });
+});
+
+describe("actual rented hydraulic sump pumping and separate group fuel", () => {
+  const water: Record<string, unknown> = { ...fixture, rcs_water_control_mode: waterControlModes.hydraulicRental,
+    rcs_water_control_program_reference: "TEST actual homogeneous hydraulic fuel-powered kit group, original water/head/flow/duty/discharge, no groundwater design approval",
+    rcs_water_control_allocation_reference: "TEST exclusively allocated whole deployment period and actual standby sets, disjoint fuel/labor/lifts",
+    rcs_water_control_kit_designation: "TEST actual full leased hydraulic pump/powerpack/lines/connectors/protection set",
+    rcs_water_control_kit_product_reference: "TEST full actual kit BOM/rental and each pump/powerpack/line/connection passport, compatible water/head/particles, lease excludes fuel",
+    rcs_water_control_discharge_reference: "TEST actual water quality/classification/receiver/route and separately bounded treatment/receiving; no automatic permission",
+    rcs_water_control_working_set_count: 2, rcs_water_control_standby_set_count: 1, rcs_water_control_calendar_hours: 24,
+    rcs_water_control_working_duty_fraction: 0.5, rcs_water_control_actual_system_head_m: 12,
+    rcs_water_control_flow_at_actual_head_m3_h: 5, rcs_water_control_required_average_inflow_m3_h: 4,
+    rcs_water_control_kit_discharge_hose_m: 30, rcs_water_control_kit_hydraulic_supply_hose_m: 10, rcs_water_control_kit_hydraulic_return_hose_m: 10,
+    rcs_water_control_kit_coupling_count: 6, rcs_water_control_kit_strainer_count: 1, rcs_water_control_kit_valve_count: 2,
+    rcs_water_control_operation_method_reference: "TEST complete actual whole-group operation/idle/control shutdown and draining procedure, exclusive labor/fuel boundary",
+    rcs_water_control_operation_crew_designation: "TEST all group operators/inspectors", rcs_water_control_operation_all_crew_h_per_calendar_hour: 0.5,
+    rcs_water_control_operation_crew_cost_basis: executionBases.crew, rcs_water_control_rental_cost_basis: waterControlRentalBasis,
+    ...Object.fromEntries(["setup", "removal"].flatMap(work => Object.entries({ method_reference: "TEST compatible whole kit lift/assembly/connection or isolation/drainage/removal, disjoint operation crew",
+      crew_designation: "TEST all installation/removal personnel", crew_h_per_set: work === "setup" ? 2 : 1, crew_cost_basis: executionBases.crew,
+      equipment_designation: "TEST compatible separate lifting equipment and rigging with energy", equipment_h_per_set: work === "setup" ? 0.5 : 0.25, equipment_cost_basis: executionBases.equipment,
+    }).map(([key, value]) => [`rcs_water_control_${work}_${key}`, value]))),
+    rcs_water_control_gross_fuel_l_per_deployed_set_hour: 0.2, rcs_water_control_fuel_product_designation: "TEST compatible actual powerpack fuel",
+    rcs_water_control_fuel_product_reference: "TEST fuel compatibility/usability and actual weighted full working/idle/standby consumption profile including all losses once",
+    rcs_water_control_fuel_compatible_stock_l: 5, rcs_water_control_fuel_retained_reserve_l: 2, rcs_water_control_fuel_supplier_pack_net_l: 10,
+    rcs_water_control_fuel_cost_basis: waterControlFuelBasis,
+  };
+  const row = (key: string) => `rcs:water-control:${key}`;
+  it("separates deployed rental, actual operating time/water and standby; shows real included hoses/connections without duplicate purchase", async () => {
+    const result = await compile(water);
+    expect(result.preliminaryNeeds).toEqual([]);
+    expect(q(result, row("deployed_set_count"))).toBe(3);
+    expect(q(result, row("rental_set_hours"))).toBe(72);
+    expect(q(result, row("operating_pump_hours"))).toBe(24);
+    expect(q(result, row("pumped_water_m3"))).toBe(120);
+    expect(q(result, row("available_average_flow_m3_h"))).toBe(1);
+    expect(q(result, row("kit:discharge_hose_m"))).toBe(90);
+    expect(q(result, row("kit:coupling_count"))).toBe(18);
+    expect(result.rows.filter(r => r.row_id.startsWith(row("kit:"))).every(r => !r.included_in_procurement)).toBe(true);
+    expect(q(result, row("setup:crew_hours"))).toBe(6);
+    expect(q(result, row("removal:equipment_hours"))).toBe(0.75);
+    expect(q(result, row("operation_crew_hours"))).toBe(12);
+    expect(components.stageMatrix.filter(stage => stage.ownResourceIds.includes(row("removal:crew_hours"))).map(stage => stage.stageId)).toEqual(["completion"]);
+    expect(components.stageMatrix.filter(stage => stage.ownResourceIds.includes(row("rental_set_hours"))).map(stage => stage.stageId)).toEqual(["installation"]);
+  });
+  it("does not derive pumped water or period from excavation; extra standby alters deployed resources without pumping or multiplying whole-group crew", async () => {
+    const longer = await compile({ ...water, rcs_crossing_length_m: 70 });
+    expect(q(longer, row("pumped_water_m3"))).toBe(120);
+    expect(q(longer, row("rental_set_hours"))).toBe(72);
+    const standby = await compile({ ...water, rcs_water_control_standby_set_count: 2 });
+    expect(q(standby, row("rental_set_hours"))).toBe(96);
+    expect(q(standby, row("pumped_water_m3"))).toBe(120);
+    expect(q(standby, row("operation_crew_hours"))).toBe(12);
+  });
+  it("owns only new separately priced fuel, includes the documented entire regime once, and retains stock/reserve/pack surplus", async () => {
+    const result = await compile(water);
+    expect(q(result, row("fuel:consumed_l"))).toBe(14.4);
+    expect(q(result, row("fuel:new_need_l"))).toBe(11.4);
+    expect(q(result, row("fuel:ordered_l"))).toBe(20);
+    expect(q(result, row("fuel:remaining_l"))).toBe(10.6);
+    expect(q(result, row("fuel:free_beyond_reserve_l"))).toBe(8.6);
+    const stock = await compile({ ...water, rcs_water_control_fuel_compatible_stock_l: 20 });
+    expect(q(stock, row("fuel:ordered_l"))).toBe(0);
+    expect(q(stock, row("operating_pump_hours"))).toBe(24);
+    expect(stock.rows.some(r => r.row_id.startsWith("rcs:freight:water_control_fuel_new:"))).toBe(false);
+  });
+  it("unknown duty leaves rental, setup, removal and known fuel/civil quantities calculable while dependent water/average-flow needs remain", async () => {
+    const input = { ...water }; delete input.rcs_water_control_working_duty_fraction;
+    const result = await compile(input);
+    expect(q(result, row("rental_set_hours"))).toBe(72);
+    expect(q(result, row("setup:crew_hours"))).toBe(6);
+    expect(q(result, row("fuel:consumed_l"))).toBe(14.4);
+    expect(q(result, "rcs:civil-execution:open_cut:equipment_hours")).toBe(21);
+    expect(result.preliminaryNeeds.every(need => need.missing_parameter_ids.includes("rcs_water_control_working_duty_fraction"))).toBe(true);
+  });
+  it("missing fuel packaging leaves full consumption, pump water, crew and lease known", async () => {
+    const input = { ...water }; delete input.rcs_water_control_fuel_supplier_pack_net_l;
+    const result = await compile(input);
+    expect(q(result, row("fuel:consumed_l"))).toBe(14.4);
+    expect(q(result, row("pumped_water_m3"))).toBe(120);
+    expect(q(result, row("operation_crew_hours"))).toBe(12);
+    expect(result.preliminaryNeeds.every(need => need.missing_parameter_ids.includes("rcs_water_control_fuel_supplier_pack_net_l"))).toBe(true);
+  });
+  it("uses actual full new fuel containers and separately allocated opened stock in certified freight", async () => {
+    const result = await compile({ ...water,
+      rcs_freight_water_control_fuel_new_mode: freightModes.separate, rcs_freight_water_control_fuel_new_vehicle_designation: "TEST compatible actual fuel route/container load",
+      rcs_freight_water_control_fuel_new_shipping_kg_per_unit: 0.9, rcs_freight_water_control_fuel_new_payload_kg: 100,
+      rcs_freight_water_control_fuel_new_max_units_per_trip: 15, rcs_freight_water_control_fuel_new_cost_basis: freightBasis,
+      rcs_freight_water_control_fuel_offsite_stock_units: 1, rcs_freight_water_control_fuel_stock_mode: freightModes.separate,
+      rcs_freight_water_control_fuel_stock_vehicle_designation: "TEST exclusive compatible opened stock shipment",
+      rcs_freight_water_control_fuel_stock_shipping_kg_per_unit: 1, rcs_freight_water_control_fuel_stock_payload_kg: 100,
+      rcs_freight_water_control_fuel_stock_max_units_per_trip: 1, rcs_freight_water_control_fuel_stock_cost_basis: freightBasis,
+    });
+    expect(q(result, "rcs:freight:water_control_fuel_new:effective_units_per_trip")).toBe(10);
+    expect(q(result, "rcs:freight:water_control_fuel_new:trip_count")).toBe(2);
+    expect(q(result, "rcs:freight:water_control_fuel_stock:trip_count")).toBe(1);
+  });
+  it("rejects inadequate actual average flow or hiding active fuel-powered work with zero fuel before manual leases/orders", async () => {
+    await expect(compile({ ...water, rcs_water_control_required_average_inflow_m3_h: 6 }, { [row("rental_set_hours")]: { quantity: "72", provenance } })).rejects.toMatchObject({ code: "FORMULA_OUTPUT_BOUNDS_FAILED" });
+    await expect(compile({ ...water, rcs_water_control_gross_fuel_l_per_deployed_set_hour: 0 }, { [row("fuel:ordered_l")]: { quantity: "20", provenance } })).rejects.toMatchObject({ code: "FORMULA_OUTPUT_BOUNDS_FAILED" });
+    await expect(compile({ ...water, rcs_water_control_working_duty_fraction: 1.1 })).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+  });
+  it("explicit idle-only zero pumping/fuel disables fuel product/order/freight while retaining a real leased deployment", async () => {
+    const input: Record<string, unknown> = { ...water, rcs_water_control_working_duty_fraction: 0,
+      rcs_water_control_required_average_inflow_m3_h: 0, rcs_water_control_gross_fuel_l_per_deployed_set_hour: 0 };
+    for (const key of Object.keys(input)) if (key.startsWith("rcs_water_control_fuel_")) delete input[key];
+    const result = await compile(input);
+    expect(result.preliminaryNeeds).toEqual([]);
+    expect(q(result, row("pumped_water_m3"))).toBe(0);
+    expect(q(result, row("fuel:consumed_l"))).toBe(0);
+    expect(q(result, row("rental_set_hours"))).toBe(72);
+    expect(result.rows.some(r => r.row_id === row("fuel:ordered_l"))).toBe(false);
+  });
+  it.each(["rcs_water_control_program_reference", "rcs_water_control_kit_product_reference", "rcs_water_control_actual_system_head_m", "rcs_water_control_kit_coupling_count", "rcs_water_control_discharge_reference", "rcs_water_control_rental_cost_basis"])(
+    "manual rental retains original full-kit/hydraulics/discharge/price gate %s", async fact => {
+      const input = { ...water }; delete input[fact];
+      const result = await compile(input, { [row("rental_set_hours")]: { quantity: "72", provenance } });
+      expect(result.rows.some(r => r.row_id === row("rental_set_hours"))).toBe(false);
+      expect(result.preliminaryNeeds.find(need => need.row_id === row("rental_set_hours"))?.missing_parameter_ids).toContain(fact);
+    });
 });
 
 describe("actual casing preparation consumables, distinct from welding and preparation work", () => {
