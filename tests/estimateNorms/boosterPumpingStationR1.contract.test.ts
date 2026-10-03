@@ -8,8 +8,33 @@ import {
   BOOSTER_PUMPING_STATION_SHORT_INPUT,
   compileBoosterPumpingStationR1,
 } from "../../src/lib/estimate/v4/boosterPumpingStationR1";
+import { compileCanonicalEstimateCore } from "../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
+import { estimateDeterministicHash } from "../../src/lib/estimate/estimateDeterministicHash";
 
 describe("S27.25 automatic factory potable-water booster-skid owner", () => {
+  test("retains factory pump amendments without a second payment above the skid owner", async () => {
+    const provenance = { kind: "manual", reason: "factory BOM clarification" };
+    const result = await compileCanonicalEstimateCore({
+      operation: "recalculate", compilerVersion: "booster-owner-amendment-test", catalogId: BOOSTER_PUMPING_STATION_CATALOG_ID,
+      primaryMeasureParameterId: "bps_skid_count", parameterDefinitions: [...BOOSTER_PUMPING_STATION_PARAMETERS],
+      formulaDefinitions: [...BOOSTER_PUMPING_STATION_FORMULAS], resourceDefinitions: [...BOOSTER_PUMPING_STATION_RESOURCES],
+      submittedParameters: { ...BOOSTER_PUMPING_STATION_SHORT_INPUT }, confirmedParameters: { ...BOOSTER_PUMPING_STATION_RUNTIME_INPUT },
+      currencyCode: "KGS", priceItems: [], maximumResourceRows: BOOSTER_PUMPING_STATION_RESOURCES.length,
+      hashJson: estimateDeterministicHash,
+      rowOverrides: {
+        "rc09:bps_pump_units": { quantity: "9", unitPrice: "100", includedInEstimate: true, includedInProcurement: true, provenance },
+        "rc09:bps_skid_package": { unitPrice: "500", provenance },
+      },
+    });
+    expect(result.preliminaryNeeds).toEqual([]);
+    expect(result.rows.find(row => row.row_id === "rc09:bps_pump_units")).toMatchObject({ quantity: "9", unit_price: "100", amount: "900",
+      included_in_estimate: false, included_in_procurement: false,
+      calculation_trace: { inclusionDecision: { costTreatment: "INCLUDED_IN_RESOURCE_ROWS", requestedIncludedInEstimate: true,
+        requestedIncludedInProcurement: true, effectiveIncludedInEstimate: false, effectiveIncludedInProcurement: false } } });
+    expect(result.rows.find(row => row.row_id === "rc09:bps_skid_package")).toMatchObject({ quantity: "1", amount: "500", included_in_estimate: true });
+    expect(result.totals.amount).toBe("500");
+  });
+
   test("asks only seven primary facts and exposes the manufacturer profile", () => {
     expect(BOOSTER_PUMPING_STATION_CATALOG_ID)
       .toBe("canonical-work:expanded:booster_pumping_station");

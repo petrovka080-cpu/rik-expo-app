@@ -121,6 +121,37 @@ export function canonicalEstimateResourceIncludedByDefault(
   return !NON_PAYABLE_COST_TREATMENTS.has(String(raw ?? "").trim());
 }
 
+function resolveCanonicalResourceCostInclusion(
+  resource: CanonicalEstimateResourceDefinition,
+  override: Record<string, unknown> | undefined,
+) {
+  const payable = canonicalEstimateResourceIncludedByDefault(resource);
+  const requestedEstimate = override?.includedInEstimate;
+  const requestedProcurement = override?.includedInProcurement;
+  if ((requestedEstimate != null && typeof requestedEstimate !== "boolean")
+    || (requestedProcurement != null && typeof requestedProcurement !== "boolean")) {
+    throw compilerError(`invalid row inclusion ${resource.row_id}`, "ROW_AMENDMENT_INVALID");
+  }
+  // Definition-owned cost treatment is an invariant, including for preliminary
+  // needs. Keep the requested selection in the trace without losing other edits.
+  const includedInEstimate = payable && requestedEstimate !== false;
+  const includedInProcurement = includedInEstimate
+    && (requestedProcurement == null ? resource.procurement_eligible : requestedProcurement === true);
+  if (includedInProcurement && !resource.procurement_eligible) {
+    throw compilerError(`invalid row inclusion ${resource.row_id}`, "ROW_AMENDMENT_INVALID");
+  }
+  const inclusionDecision = payable ? null : {
+    source: "definition_cost_treatment",
+    costTreatment: String(resource.resource_graph?.costTreatment ?? resource.source_metadata?.costTreatment).trim(),
+    costTreatmentSource: resource.resource_graph?.costTreatment != null ? "resource_graph" : "source_metadata",
+    requestedIncludedInEstimate: requestedEstimate ?? null,
+    requestedIncludedInProcurement: requestedProcurement ?? null,
+    effectiveIncludedInEstimate: includedInEstimate,
+    effectiveIncludedInProcurement: includedInProcurement,
+  };
+  return { includedInEstimate, includedInProcurement, inclusionDecision };
+}
+
 export type CanonicalEstimateCompiledRow = Record<string, unknown> & {
   row_id: string;
   ordinal: number;
@@ -880,6 +911,7 @@ export async function compileCanonicalEstimateCore(
       && inclusion.missingParameterIds.every((parameterId) => formula.input_parameter_ids.includes(parameterId));
     const inclusionResolvedByManualQuantity = formulaOutputBounds == null && manualQuantity != null && inclusionOnlyWaitsForFormulaInputs;
     if (inclusion.value === false) continue;
+    const { includedInEstimate, includedInProcurement, inclusionDecision } = resolveCanonicalResourceCostInclusion(resource, override);
 
     const physicalBinding = resource.resource_graph?.professionalPhysicalNormBindingV1;
     const physicalBindingRecord = physicalBinding != null
@@ -1006,7 +1038,7 @@ export async function compileCanonicalEstimateCore(
         ...missingRequiredConsumerParameterIds,
         ...missingNumericRelationParameterIds,
       ])].sort();
-      const selected = override?.includedInEstimate !== false;
+      const selected = includedInEstimate;
       const unitPrice = override != null && Object.prototype.hasOwnProperty.call(override, "unitPrice")
         ? nonNegativeNumericText(override.unitPrice, `${resource.row_id}.unitPrice`, true)
         : null;
@@ -1037,6 +1069,7 @@ export async function compileCanonicalEstimateCore(
           preliminaryNeed: true,
           needState,
           missingParameterIds,
+          ...(inclusionDecision == null ? {} : { inclusionDecision }),
           ...(formulaOutputBoundsTrace == null ? {} : { formulaOutputBounds: formulaOutputBoundsTrace }),
           ...(provenance == null ? {} : { manualAmendment: provenance }),
           ...(manualQuantity == null ? {} : {
@@ -1113,15 +1146,6 @@ export async function compileCanonicalEstimateCore(
     const unitPrice = override != null && Object.prototype.hasOwnProperty.call(override, "unitPrice")
       ? nonNegativeNumericText(override.unitPrice, `${resource.row_id}.unitPrice`, true)
       : snapshotUnitPrice;
-    const includedInEstimate = override?.includedInEstimate == null
-      ? canonicalEstimateResourceIncludedByDefault(resource)
-      : override.includedInEstimate;
-    const includedInProcurement = includedInEstimate
-      && (override?.includedInProcurement == null ? resource.procurement_eligible : override.includedInProcurement);
-    if (typeof includedInEstimate !== "boolean" || typeof includedInProcurement !== "boolean"
-      || (includedInProcurement && !resource.procurement_eligible)) {
-      throw compilerError(`invalid row inclusion ${resource.row_id}`, "ROW_AMENDMENT_INVALID");
-    }
     const amount = multiply(quantity, unitPrice);
     addToTotal(amount, includedInEstimate);
     const calculationTrace = {
@@ -1130,6 +1154,7 @@ export async function compileCanonicalEstimateCore(
       formulaAstSha256: formula.ast_sha256,
       inputParameterIds: formula.input_parameter_ids,
       resourceGraph: resourceGraphForRevision(resource.resource_graph, parameters, resource.row_id),
+      ...(inclusionDecision == null ? {} : { inclusionDecision }),
       ...(titleSpecification.parameterIds.length === 0 ? {} : {
         titleSpecification: {
           mode: titleSpecification.mode,

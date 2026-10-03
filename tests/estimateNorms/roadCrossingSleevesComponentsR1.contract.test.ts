@@ -574,9 +574,18 @@ describe("actual full temporary shoring kits, disjoint programme resources and m
     expect(q(result, row("included:base_panels"))).toBe(4); expect(q(result, row("included:fastener_sets"))).toBe(16);
     expect(q(result, row("included:top_panels"))).toBe(0);
     expect(result.rows.filter(r => r.row_id.includes(":included:")).every(r => !r.included_in_estimate && !r.included_in_procurement)).toBe(true);
-    const manual = await compile(selected, { [row("included:base_panels")]: { quantity: "999", unitPrice: "100", provenance } });
-    expect(manual.rows.find(r => r.row_id === row("included:base_panels"))).toMatchObject({ included_in_estimate: false, included_in_procurement: false });
-    expect(q(manual, row("rental_set_hours"))).toBe(48); expect(manual.totals.amount).toBe("0");
+    const manual = await compile(selected, {
+      [row("included:base_panels")]: { quantity: "999", unitPrice: "100", includedInEstimate: true, includedInProcurement: true, provenance },
+      [row("rental_set_hours")]: { unitPrice: "3", provenance },
+    });
+    expect(manual.rows.find(r => r.row_id === row("included:base_panels"))).toMatchObject({ quantity: "999", unit_price: "100", amount: "99900",
+      included_in_estimate: false, included_in_procurement: false,
+      calculation_trace: { inclusionDecision: { source: "definition_cost_treatment", costTreatment: "INFORMATIONAL_SCOPE",
+        costTreatmentSource: "resource_graph", requestedIncludedInEstimate: true, requestedIncludedInProcurement: true,
+        effectiveIncludedInEstimate: false, effectiveIncludedInProcurement: false } } });
+    expect(manual.rows.find(r => r.row_id === row("rental_set_hours"))).toMatchObject({ quantity: "48", unit_price: "3", amount: "144",
+      included_in_estimate: true, included_in_procurement: true });
+    expect(manual.totals.amount).toBe("144");
     expect(result.rows.some(r => r.row_id.startsWith("rcs:shoring:thrust:") || r.row_id.startsWith("rcs:shoring:reception:"))).toBe(false);
     const pits = await compile({ ...fixture, rcs_civil_installation_method: methods.pipeJacking,
       ...Object.fromEntries(Object.entries(selected).filter(([key]) => key.startsWith("rcs_shoring_trench_")).map(([key, value]) => [key.replace("_trench_", "_thrust_"), value])),

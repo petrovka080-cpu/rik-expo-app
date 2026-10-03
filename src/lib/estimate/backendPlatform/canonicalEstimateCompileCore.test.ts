@@ -190,6 +190,96 @@ describe("localized unresolved numeric compatibility", () => {
 });
 
 describe("canonicalEstimateCompileCore", () => {
+  const nonPayableTreatments = ["INCLUDED_IN_RESOURCE_ROWS", "INFORMATIONAL_SCOPE", "CONTROL_OR_DOCUMENT"];
+  const costTreatmentCases = nonPayableTreatments.flatMap(costTreatment =>
+    ["resource_graph", "source_metadata"].map(source => ({ costTreatment, source })));
+
+  it.each(costTreatmentCases)("enforces $costTreatment from $source while retaining all manual edits", async ({ costTreatment, source }) => {
+    const input = baseInput();
+    input.operation = "recalculate";
+    input.resourceDefinitions.push({ ...input.resourceDefinitions[0]!, id: "resource-spec-info", row_id: "material:info", ordinal: 1,
+      resource_graph: { costTreatment: source === "resource_graph" ? costTreatment : null },
+      source_metadata: { costTreatment: source === "source_metadata" ? costTreatment : "OWN_COST" } });
+    input.rowOverrides = {
+      "material:board": { quantity: "12", unitPrice: "10", provenance: { kind: "manual" } },
+      "material:info": { titleRu: "Manual informational scope", quantity: "999", unitPrice: "100",
+        includedInEstimate: true, includedInProcurement: true, provenance: { kind: "manual", reason: "explicit_request" } },
+    };
+    const result = await compileCanonicalEstimateCore(input);
+    expect(result.rows[1]).toMatchObject({ title_ru: "Manual informational scope", quantity: "999", unit_price: "100", amount: "99900",
+      included_in_estimate: false, included_in_procurement: false, ownership_status: "OWNED_EXCLUDED",
+      calculation_trace: { manualAmendment: { kind: "manual", reason: "explicit_request" }, manualQuantityOverride: true,
+        inclusionDecision: { source: "definition_cost_treatment", costTreatment, costTreatmentSource: source,
+          requestedIncludedInEstimate: true, requestedIncludedInProcurement: true,
+          effectiveIncludedInEstimate: false, effectiveIncludedInProcurement: false } } });
+    expect(result.rows[0]).toMatchObject({ quantity: "12", unit_price: "10", included_in_estimate: true });
+    expect(result.totals).toMatchObject({ amount: "120", includedRowCount: 1, excludedRowCount: 1 });
+    expect((await compileCanonicalEstimateCore(input)).revisionProjection).toEqual(result.revisionProjection);
+  });
+
+  it.each(costTreatmentCases)("keeps unresolved $costTreatment from $source unselected despite explicit inclusion", async ({ costTreatment, source }) => {
+    const input = numericPeerInput();
+    input.operation = "recalculate";
+    input.resourceDefinitions[1]!.resource_graph = { costTreatment: source === "resource_graph" ? costTreatment : null };
+    input.resourceDefinitions[1]!.source_metadata = { costTreatment: source === "source_metadata" ? costTreatment : "OWN_COST" };
+    const defaultNeed = await compileCanonicalEstimateCore(input);
+    expect(defaultNeed.preliminaryNeeds[0]).toMatchObject({ selected: false,
+      calculation_trace: { inclusionDecision: { requestedIncludedInEstimate: null, requestedIncludedInProcurement: null } } });
+    input.rowOverrides = { "material:scope": { quantity: "75", unitPrice: "2", includedInEstimate: true,
+      includedInProcurement: true, provenance: { kind: "manual" } } };
+    const unresolved = await compileCanonicalEstimateCore(input);
+    expect(unresolved.preliminaryNeeds[0]).toMatchObject({ quantity: "75", unit_price: "2", selected: false,
+      need_state: "CONDITION_REQUIRED", missing_parameter_ids: ["approved_scope_m2"],
+      calculation_trace: { inclusionDecision: { costTreatment, costTreatmentSource: source,
+        requestedIncludedInEstimate: true, requestedIncludedInProcurement: true,
+        effectiveIncludedInEstimate: false, effectiveIncludedInProcurement: false } } });
+    const resolved = await compileCanonicalEstimateCore({ ...input,
+      submittedParameters: { ...input.submittedParameters, approved_scope_m2: 60 } });
+    expect(resolved.preliminaryNeeds).toEqual([]);
+    expect(resolved.rows[1]).toMatchObject({ quantity: "75", unit_price: "2", amount: "150",
+      included_in_estimate: false, included_in_procurement: false });
+    expect(resolved.totals.amount).toBe(unresolved.totals.amount);
+  });
+
+  it("retains non-payable quantity and price amendments without an inclusion request", async () => {
+    const input = baseInput();
+    input.operation = "recalculate";
+    input.resourceDefinitions[0]!.resource_graph = { costTreatment: "INFORMATIONAL_SCOPE" };
+    input.rowOverrides = { "material:board": { quantity: "12", unitPrice: "10", provenance: { kind: "manual" } } };
+    const result = await compileCanonicalEstimateCore(input);
+    expect(result.rows[0]).toMatchObject({ quantity: "12", unit_price: "10", amount: "120",
+      included_in_estimate: false, included_in_procurement: false,
+      calculation_trace: { inclusionDecision: { requestedIncludedInEstimate: null, requestedIncludedInProcurement: null } } });
+    expect(result.totals.amount).toBe("0");
+  });
+
+  it.each(["includedInEstimate", "includedInProcurement"])("rejects malformed %s even for a non-payable resource", async field => {
+    const input = baseInput();
+    input.operation = "recalculate";
+    input.resourceDefinitions[0]!.resource_graph = { costTreatment: "CONTROL_OR_DOCUMENT" };
+    input.rowOverrides = { "material:board": { [field]: "true", provenance: { kind: "manual" } } };
+    await expect(compileCanonicalEstimateCore(input)).rejects.toMatchObject({ code: "ROW_AMENDMENT_INVALID" });
+  });
+
+  it.each(["OWN_COST", undefined])("preserves inclusion and optional material exclusion for payable treatment %s", async costTreatment => {
+    const input = baseInput();
+    input.operation = "recalculate";
+    input.resourceDefinitions[0]!.resource_graph = { costTreatment };
+    const provenance = { kind: "manual" };
+    const included = await compileCanonicalEstimateCore({ ...input, rowOverrides: {
+      "material:board": { quantity: "12", unitPrice: "10", includedInEstimate: true, includedInProcurement: true, provenance },
+    } });
+    expect(included.rows[0]).toMatchObject({ included_in_estimate: true, included_in_procurement: true });
+    expect(included.totals.amount).toBe("120");
+    expect(included.rows[0]!.calculation_trace).not.toHaveProperty("inclusionDecision");
+    const excluded = await compileCanonicalEstimateCore({ ...input, rowOverrides: {
+      "material:board": { quantity: "12", unitPrice: "10", includedInEstimate: false, includedInProcurement: false, provenance },
+    } });
+    expect(excluded.rows[0]).toMatchObject({ quantity: "12", unit_price: "10", amount: "120",
+      included_in_estimate: false, included_in_procurement: false });
+    expect(excluded.totals.amount).toBe("0");
+  });
+
   it("accepts an explicit null quantity only as an unresolved row amendment value", () => {
     expect(() => assertCreateRequest({
       idempotencyKey: "manual-row-clear",
