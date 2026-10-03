@@ -1,4 +1,5 @@
 import {
+  PROFESSIONAL_UNIT_REGISTRY,
   getProfessionalUnitDefinition,
   resolveProfessionalUnitDefinition,
 } from "../../estimate/professionalUnitRegistry";
@@ -97,6 +98,19 @@ const currentUnitLabels = new Map<string, string>();
 const MAX_UNIT_LABEL_CACHE_SIZE = 128;
 const MAX_CACHED_UNIT_LABEL_LENGTH = 128;
 
+// Static display metadata only. Exact registered aliases and already-rendered
+// labels do not need the lazy normalized-alias index (and its cold Unicode
+// initialization). Unknown/case/compatibility variants retain the old resolver.
+// Conversion factors, quantity validation and registry ownership are untouched.
+const exactRegisteredUnitLabels = new Map<string, string>();
+const registeredDisplayUnitLabels = new Set<string>();
+for (const definition of PROFESSIONAL_UNIT_REGISTRY) {
+  for (const alias of [definition.code, ...definition.aliases]) {
+    exactRegisteredUnitLabels.set(alias, definition.displayRu);
+  }
+  registeredDisplayUnitLabels.add(definition.displayRu);
+}
+
 export function formatEstimateUnitLabel(unit?: string | null): string {
   const normalized = String(unit ?? "").trim();
   if (!normalized) return "";
@@ -106,6 +120,9 @@ export function formatEstimateUnitLabel(unit?: string | null): string {
   // the existing normalized resolution path and therefore the same semantics.
   const canonical = getProfessionalUnitDefinition(normalized);
   if (canonical) return canonical.displayRu;
+  const exactLabel = exactRegisteredUnitLabels.get(normalized);
+  if (exactLabel !== undefined) return exactLabel;
+  if (registeredDisplayUnitLabels.has(normalized)) return normalized;
   const current = currentUnitLabels.get(normalized);
   if (current !== undefined) return current;
   const label = resolveProfessionalUnitDefinition(normalized)?.displayRu ??
