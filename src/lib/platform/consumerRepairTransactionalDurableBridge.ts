@@ -1,4 +1,5 @@
 import type { ConsumerRepairDraftBundle } from "../consumerRequests/consumerRequestTypes";
+import { logger } from "../logger";
 import { createEstimateRevisionDurableStore } from "./estimateRevisionDurableStore.factory";
 import {
   estimateRevisionUtf8ByteLength,
@@ -56,6 +57,14 @@ type TransactionalConsumerRepairWriteInput = {
 };
 const writeQueues = new Map<string, Promise<DurableWriteResult>>();
 const pendingWrites = new Map<string, TransactionalConsumerRepairWriteInput>();
+
+function durableEvidence(stage: string, detail: Record<string, unknown>): void {
+  try {
+    logger.releaseEvidence("RikEstimateDurable", stage, detail);
+  } catch {
+    // A diagnostic sink must never change a write or its authoritative read-back.
+  }
+}
 
 export function hasPendingTransactionalConsumerRepairBundleWrite(
   requestDraftId: string,
@@ -201,9 +210,16 @@ async function commitTransactionalConsumerRepairBundleWrite(
   input: TransactionalConsumerRepairWriteInput,
 ): Promise<DurableWriteResult> {
   const key = input.bundle.draft.id;
+  const evidence = (stage: string, detail: Record<string, unknown> = {}) => durableEvidence(stage, {
+    requestDraftId: key,
+    revisionId: input.bundle.estimateDraftRevisionState?.currentRevisionId ?? null,
+    ...detail,
+  });
   try {
     const store = activeStore();
+    evidence("TARGET_READ_STARTED");
     const current = await store.readBundle(key);
+    evidence("TARGET_READ_COMPLETED", { previousCommitPresent: current != null });
     const expectedVersion = current
       ? serializeRevisionBundle(current).version
       : null;
@@ -211,10 +227,18 @@ async function commitTransactionalConsumerRepairBundleWrite(
     // same immutable estimate. Persist only the canonical compact projection;
     // writing the in-memory shape directly exhausts AsyncStorage across the
     // no-data-wipe Android matrix even though each logical revision is valid.
+    evidence("TARGET_COMPACT_STARTED");
     const durableBundle = sanitizeConsumerRepairTransactionalBundle(
       compactConsumerRepairBundleForDurableStorage(input.bundle),
     );
+    evidence("TARGET_COMPACT_COMPLETED");
+    evidence("TARGET_WRITE_STARTED", { rowCount: input.bundle.items.length });
     const result = await store.writeBundleAtomically(key, expectedVersion, durableBundle);
+    const sizeFailure = result.status === "FAILED" && result.error.code === "PAYLOAD_TOO_LARGE"
+      ? /^REVISION_BUNDLE_SERIALIZATION_TOO_LARGE: revision payload is (\d+) bytes; adapter capacity is (\d+) bytes\.$/u.exec(result.error.message)
+      : null;
+    evidence("TARGET_WRITE_COMPLETED", { status: result.status, errorCode: result.status === "FAILED" ? result.error.code : null,
+      ...(sizeFailure ? { actualBytes: Number(sizeFailure[1]), capacityBytes: Number(sizeFailure[2]) } : {}) });
     if (result.status === "FAILED") {
       input.onFailed?.(result);
       return result;
@@ -229,6 +253,7 @@ async function commitTransactionalConsumerRepairBundleWrite(
     input.onCommitted?.(result);
     return result;
   } catch (error: unknown) {
+    evidence("TARGET_WRITE_THROWN");
     const result: Extract<DurableWriteResult, { status: "FAILED" }> = {
       status: "FAILED",
       version: null,
@@ -302,8 +327,15 @@ export async function awaitTransactionalConsumerRepairBundleCommit(input: {
   expectedStatus: ConsumerRepairDraftBundle["draft"]["status"];
   expectedRevisionId: string | null;
 }): Promise<void> {
-  await flushTransactionalConsumerRepairWrites();
+  // A revision commit belongs to this draft. An unrelated draft's pending
+  // write must not hold its exact read-back (global draining remains explicit).
+  while (writeQueues.has(input.requestDraftId)) {
+    await writeQueues.get(input.requestDraftId);
+  }
+  durableEvidence("TARGET_RECOVERY_STARTED", { requestDraftId: input.requestDraftId, revisionId: input.expectedRevisionId });
   const committed = await activeStore().recoverLastValid(input.requestDraftId);
+  durableEvidence("TARGET_RECOVERY_COMPLETED", { requestDraftId: input.requestDraftId,
+    revisionId: committed?.estimateDraftRevisionState?.currentRevisionId ?? null, commitPresent: committed != null });
   const committedRevisionId = committed?.estimateDraftRevisionState?.currentRevisionId ?? null;
   if (
     !committed

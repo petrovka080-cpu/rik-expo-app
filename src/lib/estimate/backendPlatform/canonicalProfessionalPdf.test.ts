@@ -106,7 +106,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-29-technology-labels");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-31-source-needs-labels");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,
@@ -233,7 +233,7 @@ describe("R4-A6 canonical professional PDF", () => {
 
   it("prints unresolved server-owned needs without inventing quantities or totals", () => {
     const projection = buildCanonicalProfessionalPdfProjection({
-      revision: revision(1),
+      revision: { ...revision(1), source_request_text: "ДЕМО / VALIDATION_FIXTURE: подтверждение проекта отсутствует <script>" },
       rows: rows(1),
       preliminaryNeeds: [{
         row_id: "primer",
@@ -252,6 +252,7 @@ describe("R4-A6 canonical professional PDF", () => {
         missing_parameter_ids: ["primer_consumption_kg_m2"],
       }],
       workTitleRu: "Подготовка потолка из ГКЛ",
+      parameterTitlesRu: { primer_consumption_kg_m2: "Фактический полный расход совместимой грунтовки на квадратный метр" },
     });
 
     expect(projection.preliminaryNeedCount).toBe(1);
@@ -260,6 +261,11 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(projection.html).toContain("Количество нужно уточнить");
     expect(projection.html).toContain("В сумму и закупку позиция не включена");
     expect(projection.html).not.toContain(">0 kg<");
+    expect(projection.html).toContain("ДЕМО / VALIDATION_FIXTURE: подтверждение проекта отсутствует &lt;script&gt;");
+    expect(projection.html).toContain("ДЕМО / VALIDATION_FIXTURE — испытательный документ.");
+    expect(projection.html).toContain("Фактический полный расход совместимой грунтовки на квадратный метр");
+    expect(projection.html).not.toContain("primer_consumption_kg_m2");
+    expect(projection.html).not.toContain("<script>");
   });
 
   it("keeps non-payable canonical composition beside unresolved needs", () => {

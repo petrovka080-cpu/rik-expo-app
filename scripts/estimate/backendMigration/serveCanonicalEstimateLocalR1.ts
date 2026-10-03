@@ -2989,6 +2989,10 @@ async function buildArtifactClaimedJob(
       revision,
       rows,
       preliminaryNeeds: canonicalArtifactPreliminaryNeeds(revision),
+      parameterTitlesRu: Object.fromEntries((await client.query(
+        "select parameter_id,title_ru from public.estimate_parameter_definition where definition_version_id=$1",
+        [definitionVersionId],
+      )).rows.map(parameter => [String(parameter.parameter_id), String(parameter.title_ru ?? "")])),
       expectedProjectedRowCount: selection.professionalPdfRows.length,
       workTitleRu: String(
         revision.display_title_ru

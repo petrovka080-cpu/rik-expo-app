@@ -9,7 +9,7 @@ import {
 } from "./canonicalEstimateArtifactContract";
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-29-technology-labels" as const;
+  "canonical-professional-pdf.r4-a13-s27-31-source-needs-labels" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -169,11 +169,14 @@ function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number): str
   </tr>`;
 }
 
-function renderPreliminaryNeedRow(row: CanonicalArtifactRow, displayOrdinal: number): string {
+function renderPreliminaryNeedRow(row: CanonicalArtifactRow, displayOrdinal: number, parameterTitlesRu: Readonly<Record<string, string>>): string {
   const trace = objectValue(row.calculation_trace);
-  const missing = Array.isArray(trace.missingParameterIds)
-    ? trace.missingParameterIds.map(String).join(", ")
-    : "исходные данные объекта";
+  const missingIds = Array.isArray(trace.missingParameterIds) ? trace.missingParameterIds : row.missing_parameter_ids;
+  const titles = Array.isArray(missingIds) ? [...new Set(missingIds.flatMap(id => {
+    const title = nullableText(parameterTitlesRu[String(id)]);
+    return title ? [title] : [];
+  }))] : [];
+  const missing = titles.length > 0 ? titles.join("; ") : "исходные сведения по этой позиции и условия её применения";
   return `<tr class="preliminary-need">
     <td class="number">${displayOrdinal}</td>
     <td class="name"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row))}</strong><span>Предварительная потребность из определения; требуется уточнение.</span></td>
@@ -182,7 +185,7 @@ function renderPreliminaryNeedRow(row: CanonicalArtifactRow, displayOrdinal: num
     <td class="numeric">Количество нужно уточнить</td>
     <td class="money">—</td>
     <td class="money">—</td>
-  </tr><tr class="preliminary-need-detail"><td></td><td colspan="6">Недостающие параметры: ${escapeCanonicalArtifactHtml(missing)}. В сумму и закупку позиция не включена.</td></tr>`;
+  </tr><tr class="preliminary-need-detail"><td></td><td colspan="6">Требуется уточнить: ${escapeCanonicalArtifactHtml(missing)}. В сумму и закупку позиция не включена.</td></tr>`;
 }
 
 function shortIdentity(value: unknown): string {
@@ -197,6 +200,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
   workTitleRu: string;
   definitionVersionId?: string | null;
   expectedProjectedRowCount?: number;
+  parameterTitlesRu?: Readonly<Record<string, string>>;
 }): CanonicalProfessionalPdfProjection {
   const { revision, rows } = input;
   const preliminaryNeeds = input.preliminaryNeeds ?? [];
@@ -278,6 +282,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     ? "Цены не заполнены"
     : `${grandTotalStatus === "COMPLETE" ? "Оценено" : "Оценено частично"}<br>${canonicalArtifactMoney(pricedSubtotal, currencyCode)}`;
   const documentNumber = Number.isFinite(revisionNumber) ? String(revisionNumber) : shortIdentity(revision.id);
+  const explicitDemo = /^ДЕМО\s*\/\s*VALIDATION_FIXTURE\s*:/iu.test(String(revision.source_request_text ?? "").trim());
   const html = `<!doctype html><html lang="ru"><head><meta charset="utf-8"><style>
     @page{size:A4 portrait;margin:15mm 10mm 17mm}*{box-sizing:border-box}html{font-family:"Arial","DejaVu Sans",sans-serif;color:#172033;font-size:9px;line-height:1.35}
     body{margin:0}header{border-bottom:2px solid #176b45;padding-bottom:8px;margin-bottom:10px}h1{font-size:21px;margin:0 0 5px;color:#10253d}h2{font-size:13px;color:#176b45;margin:14px 0 6px;break-after:avoid}h3{font-size:10px;margin:10px 0 4px}.subtitle{font-size:13px;font-weight:700}.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px 14px;margin-top:8px}.meta-grid div,.identity div{overflow-wrap:anywhere}
@@ -287,11 +292,13 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     .preliminary-need td{background:#fff7ed}.preliminary-need-detail td{color:#7c4a03;font-size:8px}.signatures{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px;break-inside:avoid}.signature{border:1px solid #cbd4df;padding:7px;min-height:84px}.signature strong{display:block;margin-bottom:7px}.signature div{border-bottom:1px solid #758195;margin-top:13px;color:#526174}.organization{margin-top:12px;border-bottom:1px solid #758195;padding-bottom:3px;break-inside:avoid}
   </style></head><body>
     <header><h1>Профессиональная смета</h1><div class="subtitle">${escapeCanonicalArtifactHtml(input.workTitleRu || "Строительно-монтажные работы")}</div>
+      ${explicitDemo ? '<div class="notice"><strong>ДЕМО / VALIDATION_FIXTURE — испытательный документ. Не является утверждённой проектной сметой.</strong></div>' : ""}
+      ${nullableText(revision.source_request_text) ? `<div><strong>Исходный запрос:</strong> ${escapeCanonicalArtifactHtml(String(revision.source_request_text))}</div>` : ""}
       <div class="meta-grid"><div><strong>Номер:</strong> ${escapeCanonicalArtifactHtml(documentNumber)}</div><div><strong>Статус:</strong> ${documentStatusRu}</div><div><strong>Сформировано:</strong> ${escapeCanonicalArtifactHtml(generatedDate)}</div><div><strong>Валюта:</strong> ${escapeCanonicalArtifactHtml(currencyLabel)}</div><div><strong>Объект:</strong> ${escapeCanonicalArtifactHtml(input.workTitleRu)}</div><div><strong>Первичная мера:</strong> ${escapeCanonicalArtifactHtml(`${primaryValue} ${primaryUnit}`)}</div><div><strong>Версия:</strong> ${escapeCanonicalArtifactHtml(String(Number.isFinite(revisionNumber) ? revisionNumber : 1))}</div></div>
     </header>
     <div class="summary"><div><strong>Позиций состава</strong><br>${compositionRows.length}</div><div><strong>Количество известно</strong><br>${rows.length}; ждут источник ${preliminaryNeeds.length}</div><div><strong>${pricedSummary}</strong></div></div>
     <div class="notice">${priceNotice}</div>
-    <table class="client"><thead><tr><th>№</th><th>Наименование и спецификация</th><th>Категория</th><th>Ед.</th><th>Количество</th><th>Цена за единицу</th><th>Сумма</th></tr></thead><tbody>${compositionRows.map((row, index) => preliminaryRowIds.has(String(row.row_id)) ? renderPreliminaryNeedRow(row, index + 1) : renderClientRow(row, index + 1)).join("")}</tbody></table>
+    <table class="client"><thead><tr><th>№</th><th>Наименование и спецификация</th><th>Категория</th><th>Ед.</th><th>Количество</th><th>Цена за единицу</th><th>Сумма</th></tr></thead><tbody>${compositionRows.map((row, index) => preliminaryRowIds.has(String(row.row_id)) ? renderPreliminaryNeedRow(row, index + 1, input.parameterTitlesRu ?? {}) : renderClientRow(row, index + 1)).join("")}</tbody></table>
     <table class="totals"><tbody>${totalRows}<tr><th>Неполные цены</th><td>${missingPriceRowCount}</td></tr><tr class="grand"><th>Итого</th><td>${grandTotal}</td></tr></tbody></table>
     <div class="notice"><strong>Примечание.</strong> Документ отображает сохранённые позиции, объёмы и цены. Отсутствующая цена не подменяется нулём.</div>
     <div class="organization">Организация: __________________________________________</div>

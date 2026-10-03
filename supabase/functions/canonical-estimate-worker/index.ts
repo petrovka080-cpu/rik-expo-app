@@ -614,10 +614,21 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
       throw Object.assign(new Error("professional artifact identity load failed"), { code: "ARTIFACT_IDENTITY_LOAD_FAILED" });
     }
     definitionVersionId = String(revision.definition_version_id);
+    const parameterTitles = [];
+    for (let offset = 0; ; offset += 1000) {
+      const { data: page, error: parameterTitleError } = await admin
+        .from("estimate_parameter_definition").select("parameter_id,title_ru")
+        .eq("definition_version_id", definitionVersionId).order("ordinal")
+        .range(offset, offset + 999);
+      if (parameterTitleError) throw Object.assign(new Error("professional parameter labels load failed"), { code: "ARTIFACT_IDENTITY_LOAD_FAILED" });
+      parameterTitles.push(...(page ?? []));
+      if ((page?.length ?? 0) < 1000) break;
+    }
     const projection = buildCanonicalProfessionalPdfProjection({
       revision,
       rows,
       preliminaryNeeds: canonicalArtifactPreliminaryNeeds(revision),
+      parameterTitlesRu: Object.fromEntries((parameterTitles ?? []).map(parameter => [String(parameter.parameter_id), String(parameter.title_ru ?? "")])),
       expectedProjectedRowCount: selection.professionalPdfRows.length,
       workTitleRu: String(revision.display_title_ru ?? revision.canonical_work_title_ru ?? identity?.title_ru ?? "Строительно-монтажные работы"),
       definitionVersionId,
