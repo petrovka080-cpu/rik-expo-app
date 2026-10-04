@@ -26,11 +26,13 @@ export function buildAnchorGroupWaterCuringResourcesS2733(catalogId: string) {
   const balance = effectivePurchaseBalanceExpressionsR1({ ownerRowId: ANCHOR_WATER_CURING_ROWS.water,
     orderUnitId: "m3", consumed: "curing_water_m3", stock: "0", reserve: "0",
     quantityMode: "canonical_decimal", balanceScope: "new_order_vs_required_consumption" });
+  const waterPurchase = balance.owner.purchaseBalance;
+  if (waterPurchase?.quantityMode !== "canonical_decimal") throw new Error("ANCHOR_WATER_DECIMAL_BALANCE_REQUIRED");
   const rows: AutomaticRowSpec[] = [
       { rowId: ANCHOR_WATER_CURING_ROWS.water, formulaId: "anchor_curing_water_order_v1", expression: "curing_water_m3",
         section: "Уход за бетоном", category: "material", title: "Вода для ухода за бетоном по подтверждённому способу", unitId: "m3", procurement: true, inclusion: water,
         inputParameterIds: ["curing_water_source_reference"], titleParameterIds: ["curing_water_source_reference"],
-        effectiveQuantityOutput: balance.owner.effectiveQuantityOutput, purchaseBalance: { ...balance.owner.purchaseBalance,
+        effectiveQuantityOutput: balance.owner.effectiveQuantityOutput, purchaseBalance: { ...waterPurchase,
           requirementBasis: "selected_supply_order", plannedConsumptionExpression: "curing_water_m3" } },
       { rowId: ANCHOR_WATER_CURING_ROWS.equipment, formulaId: "anchor_curing_water_equipment_v1", expression: "curing_water_equipment_machine_h",
         section: "Уход за бетоном", category: "equipment", title: "Комплект подачи воды и увлажнения без воды и персонала", unitId: "machine_hour", procurement: true, inclusion: equipment,
