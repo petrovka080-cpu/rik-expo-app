@@ -9,6 +9,13 @@ export const S2732_PURCHASE_GROUP_CONTRACT = "rik-expo-app.s27-32.material-purch
 const anchorPrefix = "canonical-work:base:concrete_foundation_interior_anchor_group_pour_";
 const anchors = ["standard", "large_area", "repair", "small_area", "technical_room", "wet_zone"];
 const anchorRows = ["ready-mix", "curing-membrane", "winter-heating-cable", "construction-joint-waterstop"].map(id => `material:concrete:${id}`);
+export const S2733_REINFORCEMENT_PURCHASE_GROUP_CATALOG_IDS = ["anchor_group", "belt", "column_base", "concrete_slab", "pedestal", "pile_cap",
+  "slab_foundation", "reinforcement_frame", "stairs_concrete", "strip_foundation", "formwork", "joint"]
+  .flatMap(family => ["standard", "high_load", "large_area", "repair", "small_area", "technical_room", "wet_zone"]
+    .map(context => `canonical-work:base:concrete_foundation_interior_${family}_reinforce_${context}`));
+const reinforcementRows = ["steel-approved-schedule", "binding-wire", "spacer-chairs", "mechanical-couplers"].map(id => `material:reinforcement:${id}`);
+const reinforcementFrameRows = ["a500c-d12", "a500c-d16", "annealed-tie-wire", "cover-spacer-35", "mechanical-couplers", "welding-electrodes"]
+  .map(id => `material:rebar-cage:${id}`);
 export const S2732_PURCHASE_GROUP_ROWS: Readonly<Record<string, readonly string[]>> = {
   "canonical-work:base:paving_roads_landscape_interior_asphalt_install_large_area": [
     "asphalt:material:hot-dense-fine-mix", "asphalt:material:road-bitumen", "asphalt:material:technical-kerosene", "asphalt:material:hardwood-side-stop-bars"],
@@ -38,12 +45,23 @@ function hash(value: unknown): string { return createHash("sha256").update(strin
 
 /** Exact stable row identities only. The original DB definition supplies the
  * calculation and inclusion boundaries; this migration inserts no norms. */
-export function overlayS2732PurchaseGroup(parent: PurchaseGroupRepresentative, options?: { concretePlacementOwners: true }) {
+export function overlayS2732PurchaseGroup(parent: PurchaseGroupRepresentative, options?: { concretePlacementOwners?: true; reinforcementOwners?: true }) {
   const result: PurchaseGroupRepresentative = structuredClone(parent);
   const catalogId = String(parent.definition.catalog_id);
   const concretePlacement = catalogId.startsWith(anchorPrefix) || options?.concretePlacementOwners === true;
+  invariant(!options?.concretePlacementOwners || !options?.reinforcementOwners, "OWNER_SCOPE_CONFLICT");
   if (options?.concretePlacementOwners) invariant(catalogId.startsWith("canonical-work:base:concrete_foundation_interior_") && catalogId.includes("_pour_"), "CONCRETE_OWNER_SCOPE");
-  const targets = options?.concretePlacementOwners ? anchorRows : S2732_PURCHASE_GROUP_ROWS[catalogId];
+  const reinforcement = options?.reinforcementOwners === true;
+  const frame = catalogId === "canonical-work:base:concrete_foundation_interior_reinforcement_frame_reinforce_standard";
+  if (reinforcement) {
+    invariant(S2733_REINFORCEMENT_PURCHASE_GROUP_CATALOG_IDS.includes(catalogId), "REINFORCEMENT_OWNER_SCOPE");
+    invariant(parent.resources.length === (frame ? 9 : 16) && parent.parameters.length === (frame ? 21 : 37), "REINFORCEMENT_DELIVERED_SCOPE_DRIFT");
+    const expected = frame ? reinforcementFrameRows : reinforcementRows;
+    const actual = parent.resources.filter(r => r.category === "material").map(r => String(r.row_id));
+    invariant(hash(actual) === hash(expected), "REINFORCEMENT_MATERIAL_IDENTITY_DRIFT");
+  }
+  const targets = reinforcement ? (frame ? reinforcementFrameRows : reinforcementRows)
+    : options?.concretePlacementOwners ? anchorRows : S2732_PURCHASE_GROUP_ROWS[catalogId];
   invariant(targets, `UNKNOWN_CATALOG:${catalogId}`);
   invariant(parent.parameters.every(p => p.default_value == null), `NON_NULL_DEFAULT:${catalogId}`);
   const resources = new Map(result.resources.map(r => [String(r.row_id), r]));
@@ -97,6 +115,12 @@ export function overlayS2732PurchaseGroup(parent: PurchaseGroupRepresentative, o
   }
   if (concretePlacement) {
     replaceFormula("delivery:concrete:ready-mix", `${effective("material:concrete:ready-mix")}*concrete_delivery_distance_km`);
+  } else if (reinforcement && !frame) {
+    const delivery = resources.get("delivery:reinforcement:steel");
+    invariant(delivery?.unit_id === "t_km", "REINFORCEMENT_DELIVERY_UNIT_DRIFT");
+    replaceFormula("delivery:reinforcement:steel", `${effective("material:reinforcement:steel-approved-schedule")}/1000*reinforcement_delivery_distance_km`);
+    delivery.resource_graph = { ...delivery.resource_graph,
+      manualTransportQuantityPolicyV1: { unitId: "t_km", minimum: "calculated_quantity", integer: false } };
   } else if (catalogId.endsWith("asphalt_install_large_area")) {
     const order = effective("asphalt:material:hot-dense-fine-mix");
     replaceFormula("asphalt:delivery:truck-trips", `ceil(${order}/truck_capacity_t)`, ["asphalt:delivery:truck-trips", "asphalt:quality:mix-temperature"]);
