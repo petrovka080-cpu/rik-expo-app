@@ -35,7 +35,7 @@ describe("canonical estimate artifact contract", () => {
   it("builds the one canonical procurement projection and artifact provenance", () => {
     const selection = selectCanonicalArtifactRows(rows);
     const projection = buildCanonicalProcurementProjection({ revision, procurementRows: selection.procurementRows });
-    expect(projection.schemaVersion).toBe("canonical_estimate_procurement_r7");
+    expect(projection.schemaVersion).toBe("canonical_estimate_procurement_r8");
     expect(projection.rows).toHaveLength(1);
     expect(projection.rows[0]?.quantity).toBe("12.5");
     expect(buildCanonicalArtifactMetadata({

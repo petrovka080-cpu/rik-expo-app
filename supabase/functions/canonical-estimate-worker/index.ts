@@ -20,6 +20,9 @@ import {
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts";
 import {
   buildCanonicalArtifactMetadata,
+  CANONICAL_PROCUREMENT_GENERATOR_VERSION,
+  assertCanonicalProcurementJobRendererVersion,
+  canonicalArtifactFileIdentity,
   buildCanonicalProcurementProjection,
   canonicalArtifactPreliminaryNeeds,
   escapeCanonicalArtifactHtml as escapeHtml,
@@ -594,6 +597,7 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
   let grandTotalStatus: "COMPLETE" | "PARTIAL_NEEDS_PRICE" | null = null;
   let artifactProjectedRowCount = rows.length;
   if (job.operation === "procurement") {
+    assertCanonicalProcurementJobRendererVersion(job.input_payload ?? {});
     const projection = buildCanonicalProcurementProjection({
       revision,
       procurementRows: selectedProcurementRows,
@@ -602,7 +606,7 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
     bytes = new TextEncoder().encode(canonicalEstimateStableJson(projection));
     contentType = "application/json; charset=utf-8";
     extension = "json";
-    renderer = "canonical-procurement-projection.r2";
+    renderer = CANONICAL_PROCUREMENT_GENERATOR_VERSION;
   } else if (job.operation === "professional_pdf") {
     assertCanonicalProfessionalPdfJobRendererVersion(job.input_payload ?? {});
     const { data: identity, error: identityError } = await admin
@@ -671,7 +675,7 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
   }
   const artifactSha256 = await sha256Bytes(bytes);
   const bucketId = String(Deno.env.get("CANONICAL_ESTIMATE_ARTIFACT_BUCKET") ?? "estimate-artifacts").trim();
-  const fileIdentity = job.operation === "professional_pdf" ? `${revision.checksum_sha256}-${artifactSha256}` : revision.checksum_sha256;
+  const fileIdentity = canonicalArtifactFileIdentity(job.operation, revision.checksum_sha256, artifactSha256);
   const storageKey = `${job.owner_user_id}/${revision.id}/${job.operation}/${fileIdentity}.${extension}`;
   const { error: uploadError } = await admin.storage.from(bucketId).upload(storageKey, bytes, {
     contentType,

@@ -29,6 +29,9 @@ describe("consumer estimate procurement presentation", () => {
 
     expect(procurementFlow).toContain('kind: "procurement"');
     expect(procurementFlow).toContain("assertCanonicalEstimateArtifactIdentity");
+    expect(procurementFlow).toContain("await buildCanonicalEstimateArtifact");
+    expect(procurementFlow).not.toContain("procurementAlreadyCurrent");
+    expect(procurementFlow).not.toContain("await getCanonicalEstimateArtifact");
     expect(procurementFlow).not.toContain("Linking.openURL");
     expect(procurementFlow).not.toContain("window.open");
     expect(procurementFlow).toContain("Список показан ниже в смете");

@@ -2,9 +2,31 @@ import { canonicalMaterialQuantityBasisFromRow } from "./canonicalMaterialQuanti
 import { normalizePublicBoqNameRu } from "../publicBoqNaming";
 import { assertCanonicalPurchaseReadinessV1 } from "./canonicalPurchaseBalanceV1";
 import { formatEstimateUnitLabel } from "../../ai/globalEstimate/formatEstimateUnitLabel";
+import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
+import { canonicalEstimateSha256HexText } from "./canonicalEstimateSha256";
 
-export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r7";
+export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r8";
+export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r3-operation-allocation";
 export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:7";
+
+/** Keep caller idempotency within each renderer; do not collide with legacy jobs. */
+export function canonicalProcurementRequestKey(idempotencyKey: string): string {
+  return `${CANONICAL_PROCUREMENT_GENERATOR_VERSION}:${canonicalEstimateSha256HexText(idempotencyKey.trim())}`;
+}
+
+export function assertCanonicalProcurementJobRendererVersion(input: unknown): void {
+  if (input == null || typeof input !== "object" || Array.isArray(input))
+    throw Object.assign(new Error("procurement job payload must be an object"), { code: "ARTIFACT_RENDERER_VERSION_MISMATCH" });
+  const payload = input as Record<string, unknown>;
+  if (Object.prototype.hasOwnProperty.call(payload, "rendererVersion") && payload.rendererVersion !== CANONICAL_PROCUREMENT_GENERATOR_VERSION)
+    throw Object.assign(new Error("procurement renderer version mismatch"), { code: "ARTIFACT_RENDERER_VERSION_MISMATCH" });
+}
+
+/** Versioned projections keep previous bytes addressable even if commit fails. */
+export function canonicalArtifactFileIdentity(operation: string, revisionChecksum: string, artifactSha256: string): string {
+  return operation === "professional_pdf" || operation === "procurement"
+    ? `${revisionChecksum}-${artifactSha256}` : revisionChecksum;
+}
 
 export type CanonicalArtifactRow = Record<string, unknown> & {
   row_id: unknown;
@@ -106,6 +128,7 @@ function projectProcurementRow(row: CanonicalArtifactRow) {
   const netQuantity = materialQuantity?.netQuantity ?? row.quantity;
   const grossQuantity = materialQuantity?.grossQuantity ?? row.quantity;
   const procurementQuantity = materialQuantity?.procurementQuantity ?? row.quantity;
+  const operation = canonicalEstimateOperationReference(objectValue(calculationTrace.resourceGraph).operationCompositionV1);
   return {
     rowId: String(row.row_id),
     ordinal: Number(row.ordinal),
@@ -133,6 +156,7 @@ function projectProcurementRow(row: CanonicalArtifactRow) {
     manualAmendment: calculationTrace.manualAmendment ?? null,
     normativeTrace: Array.isArray(row.normative_trace) ? row.normative_trace : [],
     legacyDisposition: row.legacy_row_payload == null ? null : nullableText(row.ownership_status),
+    ...(operation ? { operation } : {}),
   };
 }
 
@@ -144,11 +168,18 @@ export function buildCanonicalProcurementProjection(input: {
   assertCanonicalPurchaseReadinessV1(input.sourceRows ?? input.procurementRows);
   const rows = input.procurementRows.map(projectProcurementRow);
   const groups = new Map<string, { section: string; category: string; rowIds: string[] }>();
+  const operationGroups = new Map<string, { operation: NonNullable<ReturnType<typeof canonicalEstimateOperationReference>>; rowIds: string[] }>();
   for (const row of rows) {
     const key = `${row.section}\u0000${row.category}`;
     const group = groups.get(key) ?? { section: row.section, category: row.category, rowIds: [] };
     group.rowIds.push(row.rowId);
     groups.set(key, group);
+    if (row.operation) {
+      const operationKey = JSON.stringify([row.operation.groupId, row.operation.operationId]);
+      const allocation = operationGroups.get(operationKey) ?? { operation: row.operation, rowIds: [] };
+      allocation.rowIds.push(row.rowId);
+      operationGroups.set(operationKey, allocation);
+    }
   }
   const revision = input.revision;
   return {
@@ -172,6 +203,7 @@ export function buildCanonicalProcurementProjection(input: {
     selectedRowCount: rows.length,
     preliminaryNeedsExcludedCount: canonicalArtifactPreliminaryNeeds(revision).length,
     groups: [...groups.values()],
+    operationGroups: [...operationGroups.values()],
     rows,
   };
 }

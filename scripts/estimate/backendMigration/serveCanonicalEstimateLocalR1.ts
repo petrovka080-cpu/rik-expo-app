@@ -45,6 +45,10 @@ import {
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter";
 import {
   buildCanonicalArtifactMetadata,
+  CANONICAL_PROCUREMENT_GENERATOR_VERSION,
+  canonicalProcurementRequestKey,
+  assertCanonicalProcurementJobRendererVersion,
+  canonicalArtifactFileIdentity,
   buildCanonicalProcurementProjection,
   canonicalArtifactPreliminaryNeeds,
   canonicalProfessionalArtifactMetadataIdentityMatches,
@@ -1819,7 +1823,10 @@ async function createArtifactJob(
           "select * from public.estimate_create_professional_pdf_job_v2($1,$2,$3)",
           [idempotencyKey, revisionId, CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION],
         )
-        : await client.query(
+        : kind === "procurement" ? await client.query(
+          "select * from public.estimate_create_versioned_artifact_job_v2($1,$2,$3,$4)",
+          [canonicalProcurementRequestKey(idempotencyKey), revisionId, kind, CANONICAL_PROCUREMENT_GENERATOR_VERSION],
+        ) : await client.query(
           "select * from public.estimate_create_artifact_job_v1($1,$2,$3)",
           [idempotencyKey, revisionId, kind],
         );
@@ -2958,6 +2965,7 @@ async function buildArtifactClaimedJob(
   let grandTotalStatus: "COMPLETE" | "PARTIAL_NEEDS_PRICE" | null = null;
   let artifactProjectedRowCount = rows.length;
   if (job.operation === "procurement") {
+    assertCanonicalProcurementJobRendererVersion(job.input_payload ?? {});
     bytes = Buffer.from(
       canonicalEstimateStableJson(
         buildCanonicalProcurementProjection({
@@ -2970,7 +2978,7 @@ async function buildArtifactClaimedJob(
     );
     contentType = "application/json; charset=utf-8";
     extension = "json";
-    renderer = "canonical-procurement-local.r2";
+    renderer = CANONICAL_PROCUREMENT_GENERATOR_VERSION;
   } else if (job.operation === "professional_pdf") {
     assertCanonicalProfessionalPdfJobRendererVersion(job.input_payload ?? {});
     const identity = (
@@ -3056,8 +3064,8 @@ async function buildArtifactClaimedJob(
     renderer = "playwright-local.r2";
   }
   const artifactSha256 = createHash("sha256").update(bytes).digest("hex");
-  // Keep previous derived file bytes when a professional renderer changes.
-  const fileIdentity = job.operation === "professional_pdf" ? `${revision.checksum_sha256}-${artifactSha256}` : revision.checksum_sha256;
+  // Keep previous versioned procurement and professional PDF bytes addressable.
+  const fileIdentity = canonicalArtifactFileIdentity(job.operation, revision.checksum_sha256, artifactSha256);
   const storageKey = `${job.owner_user_id}/${revisionId}/${job.operation}/${fileIdentity}.${extension}`;
   const path = artifactFilePath(storageKey);
   mkdirSync(dirname(path), { recursive: true });

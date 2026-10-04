@@ -18,7 +18,7 @@ import {
   buildCanonicalEstimateRegistryEntry,
   CanonicalEstimateDefinitionRegistry,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDefinitionRegistry.ts";
-import { canonicalProfessionalArtifactMetadataIdentityMatches } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts";
+import { CANONICAL_PROCUREMENT_GENERATOR_VERSION, canonicalProcurementRequestKey, canonicalProfessionalArtifactMetadataIdentityMatches } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts";
 import { CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION } from "../../../src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts";
 import { canonicalDefinitionTitleRu } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts";
 import {
@@ -579,7 +579,12 @@ async function createArtifactJob(
       p_revision_id: revisionId,
       p_renderer_version: CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION,
     })
-    : await requester.rpc("estimate_create_artifact_job_v1", {
+    : kind === "procurement" ? await requester.rpc("estimate_create_versioned_artifact_job_v2", {
+      p_idempotency_key: canonicalProcurementRequestKey(idempotencyKey),
+      p_revision_id: revisionId,
+      p_artifact_kind: kind,
+      p_renderer_version: CANONICAL_PROCUREMENT_GENERATOR_VERSION,
+    }) : await requester.rpc("estimate_create_artifact_job_v1", {
       p_idempotency_key: idempotencyKey,
       p_revision_id: revisionId,
       p_artifact_kind: kind,

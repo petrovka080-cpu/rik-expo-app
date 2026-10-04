@@ -2716,26 +2716,16 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
             "Закупка не открыта: backend вернул другую версию или другую работу.",
           );
         }
-        const currentRevision = current.estimateDraftRevisionState?.revisions.find(
-          (candidate) => candidate.revisionId === context.revisionId,
-        );
         const rows = await getAllCanonicalEstimateRevisionRows({ revisionId: context.revisionId });
         const shortage = canonicalPurchaseShortageMessageV1(rows);
         if (shortage) throw new ConsumerEstimateActionContextError(shortage);
-        const procurementAlreadyCurrent = Boolean(
-          currentRevision?.artifacts.procurementArtifactId
-          && currentRevision.artifacts.procurementValidForRevisionId === context.revisionId,
-        );
-        const artifact = procurementAlreadyCurrent
-          ? await getCanonicalEstimateArtifact({
-            revisionId: context.revisionId,
-            kind: "procurement",
-          })
-          : await buildCanonicalEstimateArtifact({
-            revisionId: context.revisionId,
-            kind: "procurement",
-            idempotencyKey: `consumer-procurement-${context.revisionId}`,
-          });
+        // Ensure the current renderer even for a restored ready artifact. The
+        // server reuses a matching ready version without queuing another job.
+        const artifact = await buildCanonicalEstimateArtifact({
+          revisionId: context.revisionId,
+          kind: "procurement",
+          idempotencyKey: `consumer-procurement-${context.revisionId}`,
+        });
         assertCanonicalEstimateArtifactIdentity({
           artifact,
           revision,
