@@ -1,13 +1,13 @@
 {
   "schemaVersion": "r568-local-developer-canonical-release.v1",
   "status": "ACTIVE_LOCAL_DEVELOPER_CANONICAL_RELEASE",
-  "definitionReleaseId": "f2e98d42-3f31-5717-b149-7b76b2f66b47",
-  "searchReleaseId": "c0b36338-b938-5203-9074-8adac5cd254a",
+  "definitionReleaseId": "cd89f2d8-c12b-55c4-b49e-fbf12fd59ca4",
+  "searchReleaseId": "413431df-6388-5c80-9d6e-43c2b7f93289",
   "definitionReleaseStatus": "prepared",
   "searchReleaseStatus": "draft",
-  "definitionSnapshotSha256": "2129e6b3584ede44cee3fa29a8d2260c5a03cfdfbaa4311873947135ffbbc454",
-  "manifestHashChainSha256": "2129e6b3584ede44cee3fa29a8d2260c5a03cfdfbaa4311873947135ffbbc454",
-  "searchHashChainSha256": "cc5ee5cda80e1109e47503a199e426985b80cc397b20e2a9aedd1529153a9a93",
+  "definitionSnapshotSha256": "43e8151b0530adacdac87011d307ac8a672cca01190440cbd28a6a9c030551b3",
+  "manifestHashChainSha256": "43e8151b0530adacdac87011d307ac8a672cca01190440cbd28a6a9c030551b3",
+  "searchHashChainSha256": "2ba6c0fd123ad60dc193a426055be7929e53b62fcc7c02526835081e89af6495",
   "identities": 11610,
   "visibleCanonicalDefinitions": 10322,
   "aliasesRedirects": 1288,
@@ -15,7 +15,7 @@
   "runtimeAdditionalAdmissions": 9,
   "currentInventoryRowsIncludingAliases": 11619,
   "denominatorNote": "11610 is the immutable historical source-identity reconciliation (10322 canonical owners plus 1288 redirects); the current cumulative runtime also preserves 9 separately identified inherited admissions.",
-  "owner": "S27_23_WATER_VALTEC_PPR20_STANDARD_SUCCESSOR",
+  "owner": "S27_BRIDGE_ASPHALT_COMPLETE_SUCCESSOR",
   "productionAccessed": false,
   "fakeGreenClaimed": false
 }
