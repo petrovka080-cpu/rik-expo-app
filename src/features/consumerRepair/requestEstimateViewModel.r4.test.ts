@@ -76,6 +76,26 @@ function serverBoundBundle(items: ConsumerRepairRequestItem[]): ConsumerRepairDr
 }
 
 describe("R4 canonical estimate title parity", () => {
+  it("presents scoped discrete supply counts without describing installed volume or reusable stock", () => {
+    const item = canonicalItem("p113:pp", "Профиль ПП", "a".repeat(64), 0);
+    item.unit = "item";
+    item.unitLabel = "шт.";
+    item.sourceParameters = { ...item.sourceParameters, smartEstimateProjectionV2: {}, canonicalPurchaseBalance: {
+      quantityMode: "supply_quantum", balanceScope: "new_order_vs_required_consumption", unitId: "item",
+      requirementBasis: "selected_order_including_contingency", plannedConsumption: "484", requiredSelectedOrder: "508",
+      effectiveOrder: "500", consumptionShortage: "8", excessOrderAboveRequiredConsumption: "0" } };
+    const reopened = JSON.parse(JSON.stringify(item)) as ConsumerRepairRequestItem;
+    const evidence = buildRequestEstimateProfessionalRowEvidence(reopened)!;
+    expect(evidence.formulaLabel).toContain("Расчётное количество единиц поставки без планового запаса: 484 шт.");
+    expect(evidence.formulaLabel).toContain("Расчётный заказ с выбранным резервом: 508 шт.");
+    expect(evidence.formulaLabel).toContain("не покрыт на 8 шт.");
+    expect(evidence.formulaLabel).not.toContain("объём укладки");
+    reopened.sourceParameters!.canonicalPurchaseBalance = { ...reopened.sourceParameters!.canonicalPurchaseBalance as object,
+      effectiveOrder: "510", consumptionShortage: "0", excessOrderAboveRequiredConsumption: "2" };
+    const surplus = buildRequestEstimateProfessionalRowEvidence(reopened)!;
+    expect(surplus.formulaLabel).toContain("Превышение расчётного заказа с выбранным резервом: 2 шт.");
+    expect(surplus.formulaLabel).toContain("Пригодность излишка для дальнейшего использования не подтверждена");
+  });
   it("distinguishes installed volume from selected concrete order and its deficit after reopening", () => {
     const item = canonicalItem("material:order", "Бетон", "a".repeat(64), 0);
     item.unit = "m3";

@@ -3,6 +3,7 @@ import sourcePack from "../../../../data/estimate-benchmarks/source-packs/drywal
 import {
   compileCanonicalEstimateCore,
   type CanonicalEstimateCompileCoreResult,
+  type CanonicalEstimateCompileCoreInput,
   type CanonicalEstimateFormulaDefinition,
   type CanonicalEstimateParameterDefinition,
   type CanonicalEstimateResourceDefinition,
@@ -29,6 +30,28 @@ export const DRYWALL_CEILING_P113_FULL_CYCLE_S2723_SOURCE_PACK_SHA256 =
 const PROFILE = sourcePack.selectedPreliminaryProfile;
 const KNAUF = "KNAUF_P11_TECHNICAL_SHEET_2025_02";
 const PRELIMINARY = "VISIBLE_REPLACEABLE_P113_PROCUREMENT_PROFILE_S2723";
+
+/** Whole selected units of supply. These balances give no warehouse credit and
+ * do not establish that forecast dimensional excess can be reused. */
+export const P113_SELECTED_SUPPLIES = Object.freeze([
+  { rowId: "02:material:pp-profile-pieces", formula: "pp_pieces", base: "ceil(area_m2*pp_profile_m_per_m2/profile_piece_length_m)", effective: "p113_effective_pp_items" },
+  { rowId: "02:component:extensions", formula: "extensions", base: "ceil(area_m2*profile_extension_item_per_m2)" },
+  { rowId: "02:component:connectors", formula: "connectors", base: "ceil(area_m2*connector_item_per_m2)" },
+  { rowId: "02:component:hangers", formula: "hangers", base: "ceil(area_m2*hanger_item_per_m2)" },
+  { rowId: "02:fastener:hanger-anchors", formula: "hanger_anchors", base: "ceil(area_m2*hanger_anchor_item_per_m2)" },
+  { rowId: "02:fastener:ln-packages", formula: "ln_packages", base: "ceil(area_m2*ln_screw_item_per_m2/ln_package_item)" },
+  { rowId: "02:material:pn-profile-pieces", formula: "pn_pieces", base: "ceil(2*(room_length_m+room_width_m)/profile_piece_length_m)" },
+  { rowId: "02:fastener:perimeter-packages", formula: "perimeter_fastener_packages", base: "ceil(2*(room_length_m+room_width_m)*perimeter_fastener_item_per_m/perimeter_fastener_package_item)" },
+  { rowId: "02:consumable:sealing-tape-rolls", formula: "sealing_tape_rolls", base: "ceil(2*(room_length_m+room_width_m)/sealing_tape_roll_m)" },
+  { rowId: "03:material:gsp-sheets", formula: "board_sheets", base: "ceil(area_m2*board_m2_per_m2/board_sheet_area_m2)", effective: "p113_effective_board_items" },
+  { rowId: "03:fastener:tn25-packages", formula: "tn25_packages", base: "ceil(area_m2*tn25_screw_item_per_m2/tn25_package_item)" },
+  { rowId: "04:material:joint-compound-bags", formula: "joint_compound_bags", base: "ceil(area_m2*joint_compound_kg_per_m2/joint_compound_bag_kg)", effective: "p113_effective_compound_items" },
+  { rowId: "04:material:joint-tape-rolls", formula: "joint_tape_rolls", base: "ceil(area_m2*joint_tape_m_per_m2/joint_tape_roll_m)", effective: "p113_effective_joint_tape_items" },
+  { rowId: "04:material:separation-tape-rolls", formula: "separation_tape_rolls", base: "ceil(2*(room_length_m+room_width_m)/separation_tape_roll_m)" },
+  { rowId: "05:material:primer-cans", formula: "primer_cans", base: "ceil(area_m2*primer_l_per_m2/primer_can_l)", effective: "p113_effective_primer_items" },
+  { rowId: "05:consumable:abrasive", formula: "abrasive", base: "ceil(area_m2/abrasive_productivity_m2_item)" },
+  { rowId: "06:material:control-joint-pieces", formula: "control_joint_pieces", base: "ceil(control_joint_length_m/profile_piece_length_m)" },
+] as const);
 
 export const DRYWALL_CEILING_P113_FULL_CYCLE_S2723_RUNTIME_INPUT = Object.freeze({
   board_m2_per_m2: 1,
@@ -184,7 +207,7 @@ const PARAMETERS: readonly ParameterDescriptor[] = [
 
 export const DRYWALL_CEILING_P113_FULL_CYCLE_S2723_PARAMETERS:
 readonly CanonicalEstimateParameterDefinition[] = Object.freeze(
-  PARAMETERS.map((descriptor, ordinal) => ({
+  [...PARAMETERS.map((descriptor, ordinal) => ({
     parameter_id: descriptor.id,
     ordinal,
     value_type: descriptor.type ?? "decimal",
@@ -233,7 +256,14 @@ readonly CanonicalEstimateParameterDefinition[] = Object.freeze(
         guide_validation_policy: "FIRST_ESTIMATE_NOW_THEN_REPLACE_VISIBLE_ASSUMPTIONS",
       },
     },
-  })),
+  })), ...P113_SELECTED_SUPPLIES.filter(supply => "effective" in supply).map((supply, index) => ({
+    parameter_id: "effective" in supply ? supply.effective : "", ordinal: PARAMETERS.length + index,
+    value_type: "decimal", unit_id: "item", title_ru: "Принятое целое количество единиц поставки",
+    required: false, default_value: null, constraints_json: { min: 0 },
+    truth_metadata: { visibility_role: "INTERNAL_ONLY", value_source_role: "BACKEND_DERIVED",
+      preliminary_compilation_allowed: true, hidden_default_forbidden: true,
+      effective_resource_quantity_v1: { sourceRowId: `ceiling-p113-full:${supply.rowId}`, unitId: "item" } },
+  }))],
 );
 
 function formula(id: string, unit: string, expression: string): CanonicalEstimateFormulaDefinition {
@@ -260,8 +290,8 @@ readonly CanonicalEstimateFormulaDefinition[] = Object.freeze([
   F("perimeter", "m", PERIMETER),
   F("pp_net", "m", "area_m2*pp_profile_m_per_m2"),
   F("pp_pieces", "item", "ceil(area_m2*pp_profile_m_per_m2*(1+material_reserve_percent/100)/profile_piece_length_m)"),
-  F("pp_order", "m", "ceil(area_m2*pp_profile_m_per_m2*(1+material_reserve_percent/100)/profile_piece_length_m)*profile_piece_length_m"),
-  F("pp_remainder", "m", "ceil(area_m2*pp_profile_m_per_m2*(1+material_reserve_percent/100)/profile_piece_length_m)*profile_piece_length_m-area_m2*pp_profile_m_per_m2"),
+  F("pp_order", "m", "p113_effective_pp_items*profile_piece_length_m"),
+  F("pp_remainder", "m", "max(0,p113_effective_pp_items*profile_piece_length_m-area_m2*pp_profile_m_per_m2)"),
   F("extensions", "item", "ceil(area_m2*profile_extension_item_per_m2*(1+hardware_reserve_percent/100))"),
   F("connectors", "item", "ceil(area_m2*connector_item_per_m2*(1+hardware_reserve_percent/100))"),
   F("hangers", "item", "ceil(area_m2*hanger_item_per_m2*(1+hardware_reserve_percent/100))"),
@@ -273,18 +303,18 @@ readonly CanonicalEstimateFormulaDefinition[] = Object.freeze([
   F("separation_tape_rolls", "item", `ceil(${PERIMETER}*(1+material_reserve_percent/100)/separation_tape_roll_m)`),
   F("board_net", "m2", "area_m2*board_m2_per_m2"),
   F("board_sheets", "item", "ceil(area_m2*board_m2_per_m2*(1+material_reserve_percent/100)/board_sheet_area_m2)"),
-  F("board_order", "m2", "ceil(area_m2*board_m2_per_m2*(1+material_reserve_percent/100)/board_sheet_area_m2)*board_sheet_area_m2"),
-  F("board_remainder", "m2", "ceil(area_m2*board_m2_per_m2*(1+material_reserve_percent/100)/board_sheet_area_m2)*board_sheet_area_m2-area_m2*board_m2_per_m2"),
+  F("board_order", "m2", "p113_effective_board_items*board_sheet_area_m2"),
+  F("board_remainder", "m2", "max(0,p113_effective_board_items*board_sheet_area_m2-area_m2*board_m2_per_m2)"),
   F("tn25_packages", "item", "ceil(area_m2*tn25_screw_item_per_m2*(1+hardware_reserve_percent/100)/tn25_package_item)"),
   F("joint_compound_net", "kg", "area_m2*joint_compound_kg_per_m2"),
   F("joint_compound_bags", "item", "ceil(area_m2*joint_compound_kg_per_m2*(1+material_reserve_percent/100)/joint_compound_bag_kg)"),
-  F("joint_compound_remainder", "kg", "ceil(area_m2*joint_compound_kg_per_m2*(1+material_reserve_percent/100)/joint_compound_bag_kg)*joint_compound_bag_kg-area_m2*joint_compound_kg_per_m2"),
+  F("joint_compound_remainder", "kg", "max(0,p113_effective_compound_items*joint_compound_bag_kg-area_m2*joint_compound_kg_per_m2)"),
   F("joint_tape_net", "m", "area_m2*joint_tape_m_per_m2"),
   F("joint_tape_rolls", "item", "ceil(area_m2*joint_tape_m_per_m2*(1+material_reserve_percent/100)/joint_tape_roll_m)"),
-  F("joint_tape_remainder", "m", "ceil(area_m2*joint_tape_m_per_m2*(1+material_reserve_percent/100)/joint_tape_roll_m)*joint_tape_roll_m-area_m2*joint_tape_m_per_m2"),
+  F("joint_tape_remainder", "m", "max(0,p113_effective_joint_tape_items*joint_tape_roll_m-area_m2*joint_tape_m_per_m2)"),
   F("primer_net", "l", "area_m2*primer_l_per_m2"),
   F("primer_cans", "item", "ceil(area_m2*primer_l_per_m2*(1+material_reserve_percent/100)/primer_can_l)"),
-  F("primer_remainder", "l", "ceil(area_m2*primer_l_per_m2*(1+material_reserve_percent/100)/primer_can_l)*primer_can_l-area_m2*primer_l_per_m2"),
+  F("primer_remainder", "l", "max(0,p113_effective_primer_items*primer_can_l-area_m2*primer_l_per_m2)"),
   F("abrasive", "item", "ceil(area_m2/abrasive_productivity_m2_item)"),
   F("control_joint_pieces", "item", "ceil(control_joint_length_m/profile_piece_length_m)"),
   F("control_joint_length", "m", "control_joint_length_m"),
@@ -325,7 +355,7 @@ const RESOURCE_SPECS: readonly ResourceSpec[] = [
   R("02 · Каркас П 113", "ceiling-p113-full:02:material:pp-profile-pieces", "material", "Профиль КНАУФ ПП 60×27 выбранной длины", "item", "pp_pieces"),
   R("02 · Каркас П 113", "ceiling-p113-full:02:control:pp-profile-net", "control", "Расчётная потребность профиля ПП 60×27 без резерва", "m", "pp_net", { informational: true }),
   R("02 · Каркас П 113", "ceiling-p113-full:02:control:pp-profile-order", "control", "Длина профиля ПП 60×27 в заказе", "m", "pp_order", { informational: true }),
-  R("02 · Каркас П 113", "ceiling-p113-full:02:control:pp-profile-remainder", "control", "Резерв и остаток профиля ПП после округления поставки", "m", "pp_remainder", { informational: true }),
+  R("02 · Каркас П 113", "ceiling-p113-full:02:control:pp-profile-remainder", "control", "Прогнозное превышение поставленной длины ПП над расчётной потребностью; пригодность для повторного использования не подтверждена", "m", "pp_remainder", { informational: true }),
   R("02 · Каркас П 113", "ceiling-p113-full:02:component:extensions", "component", "Удлинитель профиля ПП 60×27", "item", "extensions"),
   R("02 · Каркас П 113", "ceiling-p113-full:02:component:connectors", "component", "Соединитель одноуровневый профилей ПП 60×27", "item", "connectors"),
   R("02 · Каркас П 113", "ceiling-p113-full:02:component:hangers", "component", "Подвес выбранного типа для профиля ПП 60×27", "item", "hangers"),
@@ -341,7 +371,7 @@ const RESOURCE_SPECS: readonly ResourceSpec[] = [
   R("03 · Обшивка ГСП", "ceiling-p113-full:03:material:gsp-sheets", "material", "Гипсовая строительная плита 12,5 мм выбранного формата", "item", "board_sheets"),
   R("03 · Обшивка ГСП", "ceiling-p113-full:03:control:gsp-net", "control", "Расчётная площадь ГСП без резерва", "m2", "board_net", { informational: true }),
   R("03 · Обшивка ГСП", "ceiling-p113-full:03:control:gsp-order", "control", "Площадь ГСП в заказанном числе листов", "m2", "board_order", { informational: true }),
-  R("03 · Обшивка ГСП", "ceiling-p113-full:03:control:gsp-remainder", "control", "Резерв и остаток ГСП после округления до листов", "m2", "board_remainder", { informational: true }),
+  R("03 · Обшивка ГСП", "ceiling-p113-full:03:control:gsp-remainder", "control", "Прогнозное превышение поставленной площади ГСП над расчётной потребностью; пригодность для повторного использования не подтверждена", "m2", "board_remainder", { informational: true }),
   R("03 · Обшивка ГСП", "ceiling-p113-full:03:fastener:tn25-packages", "fastener", "Шурупы TN 3,5×25 для однослойной обшивки, упаковка", "item", "tn25_packages"),
   R("03 · Обшивка ГСП", "ceiling-p113-full:03:operation:board-cutting", "operation", "Раскрой листов, обработка торцевых кромок и разбежка стыков", "m2", "area"),
   R("03 · Обшивка ГСП", "ceiling-p113-full:03:operation:board-installation", "operation", "Подъём, установка и крепление листов к каркасу", "m2", "area"),
@@ -349,16 +379,16 @@ const RESOURCE_SPECS: readonly ResourceSpec[] = [
 
   R("04 · Стыки и примыкания", "ceiling-p113-full:04:material:joint-compound-bags", "material", "Гипсовая шпаклёвка КНАУФ для стыков, мешок", "item", "joint_compound_bags"),
   R("04 · Стыки и примыкания", "ceiling-p113-full:04:control:joint-compound-net", "control", "Расчётная масса шпаклёвки без резерва", "kg", "joint_compound_net", { informational: true }),
-  R("04 · Стыки и примыкания", "ceiling-p113-full:04:control:joint-compound-remainder", "control", "Резерв и остаток шпаклёвки после округления", "kg", "joint_compound_remainder", { informational: true }),
+  R("04 · Стыки и примыкания", "ceiling-p113-full:04:control:joint-compound-remainder", "control", "Прогнозное превышение поставленной массы шпаклёвки; пригодность для повторного использования не подтверждена", "kg", "joint_compound_remainder", { informational: true }),
   R("04 · Стыки и примыкания", "ceiling-p113-full:04:material:joint-tape-rolls", "material", "Бумажная армирующая лента стыков, рулон", "item", "joint_tape_rolls"),
   R("04 · Стыки и примыкания", "ceiling-p113-full:04:control:joint-tape-net", "control", "Расчётная длина армирующей ленты без резерва", "m", "joint_tape_net", { informational: true }),
-  R("04 · Стыки и примыкания", "ceiling-p113-full:04:control:joint-tape-remainder", "control", "Резерв и остаток армирующей ленты", "m", "joint_tape_remainder", { informational: true }),
+  R("04 · Стыки и примыкания", "ceiling-p113-full:04:control:joint-tape-remainder", "control", "Прогнозное превышение поставленной длины армирующей ленты; пригодность для повторного использования не подтверждена", "m", "joint_tape_remainder", { informational: true }),
   R("04 · Стыки и примыкания", "ceiling-p113-full:04:material:separation-tape-rolls", "material", "Разделительная лента КНАУФ-Треннфикс по примыканию, рулон", "item", "separation_tape_rolls"),
   R("04 · Стыки и примыкания", "ceiling-p113-full:04:operation:joint-filling", "operation", "Заделка стыков с армирующей лентой и углублений от шурупов", "m2", "area"),
 
   R("05 · Подготовка поверхности", "ceiling-p113-full:05:material:primer-cans", "material", "Грунтовка КНАУФ-Тифенгрунд, канистра", "item", "primer_cans"),
   R("05 · Подготовка поверхности", "ceiling-p113-full:05:control:primer-net", "control", "Расчётная потребность грунтовки без резерва", "l", "primer_net", { informational: true }),
-  R("05 · Подготовка поверхности", "ceiling-p113-full:05:control:primer-remainder", "control", "Резерв и остаток грунтовки после округления", "l", "primer_remainder", { informational: true }),
+  R("05 · Подготовка поверхности", "ceiling-p113-full:05:control:primer-remainder", "control", "Прогнозное превышение поставленного объёма грунтовки; пригодность для повторного использования не подтверждена", "l", "primer_remainder", { informational: true }),
   R("05 · Подготовка поверхности", "ceiling-p113-full:05:consumable:abrasive", "consumable", "Абразив для шлифования заделанных стыков", "item", "abrasive"),
   R("05 · Подготовка поверхности", "ceiling-p113-full:05:operation:sanding", "operation", "Шлифование высохшей заделки стыков и мест крепления", "m2", "area"),
   R("05 · Подготовка поверхности", "ceiling-p113-full:05:operation:priming", "operation", "Обеспыливание и грунтование поверхности под последующую отделку", "m2", "area"),
@@ -395,6 +425,8 @@ function resource(spec: ResourceSpec, ordinal: number): CanonicalEstimateResourc
   const source = SOURCE_BY_ID.get(sourceId);
   const procurementEligible = spec.procurement
     ?? ["material", "component", "fastener", "consumable"].includes(spec.kind);
+  const supply = P113_SELECTED_SUPPLIES.find(value => `ceiling-p113-full:${value.rowId}` === spec.rowId);
+  const requiredOrder = DRYWALL_CEILING_P113_FULL_CYCLE_S2723_FORMULAS.find(value => value.formula_id === spec.formula);
   const resourceGraph = {
     formulaId: spec.formula,
     normalizedUom: spec.unit,
@@ -405,6 +437,12 @@ function resource(spec: ResourceSpec, ordinal: number): CanonicalEstimateResourc
     costTreatment: spec.informational ? "INFORMATIONAL_SCOPE" : "OWN_COST",
     payable: !spec.informational,
     noDoubleCount: true,
+    ...(supply ? {
+      purchaseBalanceV1: { quantityMode: "supply_quantum", balanceScope: "new_order_vs_required_consumption",
+        requirementBasis: "selected_order_including_contingency", unitId: "item", stockExpression: "0", reserveExpression: "0",
+        orderQuantumExpression: "1", consumedExpression: requiredOrder!.expression_source, plannedConsumptionExpression: supply.base },
+      ...("effective" in supply ? { effectiveQuantityOutputV1: { parameterId: supply.effective, unitId: "item" } } : {}),
+    } : {}),
     primaryMeasureParameterId: "area_m2",
     preliminaryProfileId: DRYWALL_CEILING_P113_FULL_CYCLE_S2723_NORM_ID,
     visibleAssumptionPolicy: PROFILE.assumptionPolicy,
@@ -479,9 +517,10 @@ export function drywallCeilingP113FullCycleMissingRows(rowIds: ReadonlySet<strin
 
 export async function compileDrywallCeilingP113FullCycleS2723(
   submittedParameters: Record<string, unknown>,
+  rowOverrides: CanonicalEstimateCompileCoreInput["rowOverrides"] = {},
 ): Promise<CanonicalEstimateCompileCoreResult> {
   return compileCanonicalEstimateCore({
-    operation: "compile",
+    operation: Object.keys(rowOverrides).length > 0 ? "recalculate" : "compile",
     compilerVersion: "canonical-estimate-compiler.drywall-ceiling-p113-full-cycle-s27-23.v1",
     catalogId: DRYWALL_CEILING_P113_FULL_CYCLE_S2723_CATALOG_ID,
     primaryMeasureParameterId: "area_m2",
@@ -489,6 +528,7 @@ export async function compileDrywallCeilingP113FullCycleS2723(
     formulaDefinitions: [...DRYWALL_CEILING_P113_FULL_CYCLE_S2723_FORMULAS],
     resourceDefinitions: [...DRYWALL_CEILING_P113_FULL_CYCLE_S2723_RESOURCES],
     submittedParameters,
+    rowOverrides,
     confirmedParameters: { ...DRYWALL_CEILING_P113_FULL_CYCLE_S2723_RUNTIME_INPUT },
     currencyCode: "KGS",
     priceItems: [],

@@ -249,14 +249,15 @@ export function buildRequestEstimateProfessionalRowEvidence(
     ? ` Ручное значение: ${quantity}.`
     : "";
   const balance = asRecord(item.sourceParameters?.canonicalPurchaseBalance);
-  const bulkOrderScope = balance?.quantityMode === "canonical_decimal"
+  const bulkOrderScope = (balance?.quantityMode === "canonical_decimal" || balance?.quantityMode === "supply_quantum")
     && balance.balanceScope === "new_order_vs_required_consumption";
+  const discreteOrderScope = bulkOrderScope && balance?.quantityMode === "supply_quantum";
   const balanceUnit = formatEstimateUnitLabel(String(balance?.unitId ?? item.unit));
   const exactPositive = (value: unknown): value is string => typeof value === "string"
     && isFormulaGraphExactDecimal(value) && compareFormulaGraphDecimals(value, "0") > 0;
   const selectedOrderBasis = bulkOrderScope && balance?.requirementBasis === "selected_order_including_contingency";
   const orderBasisSuffix = selectedOrderBasis
-    ? ` Проектный объём укладки: ${balance.plannedConsumption} ${balanceUnit}. Расчётный заказ с выбранным резервом: ${balance.requiredSelectedOrder} ${balanceUnit}. Принятый заказ: ${balance.effectiveOrder} ${balanceUnit}.`
+    ? ` ${discreteOrderScope ? "Расчётное количество единиц поставки без планового запаса" : "Проектный объём укладки"}: ${balance.plannedConsumption} ${balanceUnit}. Расчётный заказ с выбранным резервом: ${balance.requiredSelectedOrder} ${balanceUnit}. Принятый заказ: ${balance.effectiveOrder} ${balanceUnit}.`
     : "";
   const bulkBalanceSuffix = bulkOrderScope && exactPositive(balance?.consumptionShortage)
     ? selectedOrderBasis

@@ -17,6 +17,7 @@ import {
   DRYWALL_CEILING_P113_FULL_CYCLE_S2723_SOURCE_ID,
   DRYWALL_CEILING_P113_FULL_CYCLE_S2723_SOURCE_METADATA,
   DRYWALL_CEILING_P113_FULL_CYCLE_S2723_SOURCE_PACK_SHA256,
+  P113_SELECTED_SUPPLIES,
   compileDrywallCeilingP113FullCycleS2723,
   drywallCeilingP113FullCycleMissingRows,
 } from "../../../src/lib/estimate/v4/drywallCeilingP113FullCycleS2723";
@@ -26,6 +27,7 @@ import {
   runMasterSingleDefinitionSuccessorR1,
   validateIndependentCompletenessMapReferences,
 } from "./prepareMasterSingleDefinitionSuccessorR1";
+import { assertCanonicalPurchaseReadinessV1 } from "../../../src/lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
 
 type Json = Record<string, any>;
 
@@ -95,6 +97,16 @@ async function verifyCore(): Promise<Json> {
     ...DRYWALL_CEILING_P113_FULL_CYCLE_S2723_ACCEPTANCE_INPUT,
     area_m2: 600,
   });
+  const accepted = await compileDrywallCeilingP113FullCycleS2723({ ...DRYWALL_CEILING_P113_FULL_CYCLE_S2723_ACCEPTANCE_INPUT }, {
+    "ceiling-p113-full:02:material:pp-profile-pieces": { quantity: "510", provenance: { kind: "manual", reason: "VALIDATION_FIXTURE whole selected supply" } },
+    "ceiling-p113-full:03:material:gsp-sheets": { quantity: "220", provenance: { kind: "manual", reason: "VALIDATION_FIXTURE whole selected supply" } },
+  });
+  const deficit = await compileDrywallCeilingP113FullCycleS2723({ ...DRYWALL_CEILING_P113_FULL_CYCLE_S2723_ACCEPTANCE_INPUT }, {
+    "ceiling-p113-full:02:material:pp-profile-pieces": { quantity: "500", includedInProcurement: true, provenance: { kind: "manual", reason: "VALIDATION_FIXTURE negative selected supply" } },
+    "ceiling-p113-full:03:material:gsp-sheets": { quantity: "210", includedInProcurement: true, provenance: { kind: "manual", reason: "VALIDATION_FIXTURE negative selected supply" } },
+  });
+  let shortageCode: unknown;
+  try { assertCanonicalPurchaseReadinessV1(deficit.rows); } catch (error) { shortageCode = (error as { code?: unknown }).code; }
   const rowIds = new Set(complete.rows.map((row) => row.row_id));
   const completenessErrors = validateIndependentCompletenessMapReferences({
     completenessMap: publisherCompletenessMap,
@@ -130,6 +142,15 @@ async function verifyCore(): Promise<Json> {
     areaChangeRecalculates:
       quantity(changed.rows, "ceiling-p113-full:02:material:pp-profile-pieces") === 609
       && quantity(changed.rows, "ceiling-p113-full:03:material:gsp-sheets") === 263,
+    acceptedOrderControls: quantity(accepted.rows, "ceiling-p113-full:02:control:pp-profile-order") === 1530
+      && quantity(accepted.rows, "ceiling-p113-full:02:control:pp-profile-remainder") === 80
+      && quantity(accepted.rows, "ceiling-p113-full:03:control:gsp-order") === 528
+      && quantity(accepted.rows, "ceiling-p113-full:03:control:gsp-remainder") === 28,
+    shortageDespitePhysicalExcess: shortageCode === "PROCUREMENT_MATERIAL_SHORTAGE"
+      && quantity(deficit.rows, "ceiling-p113-full:02:control:pp-profile-remainder") === 50
+      && quantity(deficit.rows, "ceiling-p113-full:03:control:gsp-remainder") === 4,
+    exactWholeSupplies: P113_SELECTED_SUPPLIES.length === 17
+      && DRYWALL_CEILING_P113_FULL_CYCLE_S2723_PARAMETERS.filter(parameter => parameter.truth_metadata?.visibility_role === "INTERNAL_ONLY").length === 5,
   };
   const failed = Object.entries(assertions).filter(([, value]) => !value).map(([key]) => key);
   if (failed.length > 0) {
@@ -171,16 +192,16 @@ void runMasterSingleDefinitionSuccessorR1({
   applicationName: "s27-23-drywall-ceiling-p113-full-cycle-successor",
   expectedBranch: "codex/r4-a5-clean-08b18902",
   masterPath: resolve(process.env.R4A13_MASTER_PATH
-    ?? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (63).md"),
+    ?? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (71).md"),
   masterSha256: process.env.R4A13_MASTER_SHA256
-    ?? "e1c70828ba30bb4dae395c2766f8ff7e13467ec51592198f4722a64edf8126ca",
+    ?? "783d0425e1f0f0f0ea8a262be454e39d13e94e1a2ad5d1c6cc4b1e1314e624f1",
   parentReleaseId: process.env.R4A13_PARENT_DEFINITION_RELEASE_ID
     ?? currentRelease.definitionReleaseId,
   parentSearchReleaseId: process.env.R4A13_PARENT_SEARCH_RELEASE_ID
     ?? currentRelease.searchReleaseId,
   currentReleasePath,
   outputRoot: resolve(process.env.R4A13_OUTPUT_ROOT
-    ?? ".release-runtime/r568/s27-23/drywall-ceiling-p113-full-cycle-successor"),
+    ?? ".release-runtime/r568/s27-31/p113-accepted-order-current"),
   sourcePaths: [
     "data/estimate-benchmarks/source-packs/drywall-ceiling-p113-full-cycle-s27-23.json",
     "src/lib/estimate/v4/drywallCeilingP113FullCycleS2723.ts",
@@ -188,6 +209,10 @@ void runMasterSingleDefinitionSuccessorR1({
     "scripts/estimate/r4a13/catalogFirstEstimateMinimumInputAudit.shared.ts",
     "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts",
     "scripts/estimate/r4a13/prepareS2723DrywallCeilingP113FullCycleSuccessor.ts",
+    "scripts/estimate/r4a13/readbackS2731P113AcceptedOrderIndependent.ts",
+    "src/lib/estimate/backendPlatform/canonicalPurchaseBalanceV1.ts",
+    "src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1.ts",
+    "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
   ],
   catalogId: DRYWALL_CEILING_P113_FULL_CYCLE_S2723_CATALOG_ID,
   sourceId: DRYWALL_CEILING_P113_FULL_CYCLE_S2723_SOURCE_ID,
@@ -202,7 +227,7 @@ void runMasterSingleDefinitionSuccessorR1({
   runtimeProfileClassification: DRYWALL_CEILING_P113_FULL_CYCLE_S2723_RUNTIME_CLASSIFICATION,
   runtimeProfileSourceIds: DRYWALL_CEILING_P113_FULL_CYCLE_S2723_RUNTIME_SOURCE_IDS,
   verifyCore,
-  expectedParentShape: [23, 12, 12],
+  expectedParentShape: [38, 38, 54],
   benchmarkOrdinal: 10,
   validationScenario: "S27_23_DRYWALL_CEILING_P113_FULL_CYCLE_500_M2",
   passport: {
@@ -214,7 +239,7 @@ void runMasterSingleDefinitionSuccessorR1({
       "проверка фронта, разметка, каркас П 113 с отдельными профилями, подвесами, анкерами, соединителями и крепежом",
       "однослойная обшивка ГСП 12,5 мм, раскрой, подъём, крепление и контроль каркаса перед закрытием",
       "шпаклёвка стыков и крепежа, бумажная армирующая и разделительная ленты, шлифование, обеспыливание и грунтование",
-      "видимые потребность, резерв, число упаковок, заказ и остаток для применимых закупочных материалов",
+      "видимая расчётная потребность, выбранный плановый запас, целые единицы поставки и принятый заказ; прогнозное превышение длины, площади, массы или объёма не объявляется пригодным складским остатком",
       "трудовые операции, механизмы, средство доступа, доставка, возврат, вывоз отходов и итоговый контроль",
       "периметральные материалы и деформационный шов остаются видимыми уточнениями, пока геометрия неизвестна",
     ],
@@ -236,6 +261,10 @@ void runMasterSingleDefinitionSuccessorR1({
     unknownGeometryCreatesVisibleDependentNeeds: true,
     profileAssumptionsVisibleAndEditable: true,
     noArtificialRowQuotaOrCap: true,
+    acceptedOrderBalanceScope: "new_order_vs_required_consumption",
+    requirementBasis: "selected_order_including_contingency",
+    wholeSelectedSupplyOwners: 17,
+    warehouseStockCredited: false,
   },
   binding: {
     rowId: "ceiling-p113-full:03:material:gsp-sheets",
@@ -249,13 +278,20 @@ void runMasterSingleDefinitionSuccessorR1({
     },
   },
   locator: {
-    key: "drywall-ceiling-p113-full-cycle-s27-23",
+    key: "drywall-ceiling-p113-accepted-order-s27-31",
     payload: {
       kind: "MANUFACTURER_SYSTEM_TECHNOLOGY_MAP",
       sourcePackSha256: DRYWALL_CEILING_P113_FULL_CYCLE_S2723_SOURCE_PACK_SHA256,
       officialTechnicalSheet: DRYWALL_CEILING_P113_FULL_CYCLE_S2723_SOURCE_METADATA.official_url,
       independentCompletenessMap: true,
-      replacesReducedTwelveRowAggregate: true,
+      expectedResourceIds: DRYWALL_CEILING_P113_FULL_CYCLE_S2723_RESOURCES.map(row => row.row_id),
+      expectedFormulaIds: DRYWALL_CEILING_P113_FULL_CYCLE_S2723_FORMULAS.map(row => row.formula_id),
+      selectedSupplyOwnerIds: P113_SELECTED_SUPPLIES.map(supply => `ceiling-p113-full:${supply.rowId}`),
+      effectiveOutputBindings: P113_SELECTED_SUPPLIES.filter(supply => "effective" in supply).map(supply => ({
+        ownerRowId: `ceiling-p113-full:${supply.rowId}`, parameterId: "effective" in supply ? supply.effective : "", unitId: "item" })),
+      effectiveControlRowIds: ["02:control:pp-profile-order", "02:control:pp-profile-remainder", "03:control:gsp-order", "03:control:gsp-remainder",
+        "04:control:joint-compound-remainder", "04:control:joint-tape-remainder", "05:control:primer-remainder"].map(id => `ceiling-p113-full:${id}`),
+      balanceBoundary: "Selected whole units of supply versus unchanged planned order; no warehouse credit, no retained reserve or reusable-cut claim. Delivery remains the explicit project/profile fact.",
     },
   },
   search: {
@@ -267,7 +303,7 @@ void runMasterSingleDefinitionSuccessorR1({
       "одноуровневый гипсокартонный потолок под отделку",
     ],
     shortScopeRu:
-      "Полный маршрут П 113: каркас, ГСП, крепёж, стыки, шлифование, грунтование, механизмы, логистика, упаковки и остатки; неизвестный периметр остаётся уточнением.",
+      "Полный маршрут П 113: каркас, ГСП, крепёж, стыки, шлифование, грунтование, механизмы, логистика и целые единицы принятого заказа; неизвестный периметр остаётся уточнением, пригодность прогнозного превышения не подтверждена.",
     keyDistinguishingParameters: [
       "area_m2",
       "room_length_m",
@@ -279,7 +315,7 @@ void runMasterSingleDefinitionSuccessorR1({
     includedBoundaries: [
       "54 строки полного применимого состава после ввода геометрии",
       "47 рассчитанных строк и 7 видимых уточнений при известной только площади",
-      "потребность, резерв, упаковки, заказ и остаток материалов",
+      "расчётная потребность, выбранный плановый запас, целый принятый заказ, видимый дефицит и прогнозное превышение поставки",
     ],
     excludedBoundaries: ["декоративная окраска", "специальные варианты вне выбранной системы"],
     extraSearchTermsRu:

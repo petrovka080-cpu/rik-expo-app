@@ -47,6 +47,23 @@ function testInput(): CanonicalEstimateCompileCoreInput {
 const row = (result: Awaited<ReturnType<typeof compileCanonicalEstimateCore>>, rowId: string) => result.rows.find(value => value.row_id === rowId)!;
 
 describe("authoritative effective resource quantities", () => {
+  it("keeps a scoped whole-supply quantum distinct from the planned count and enforces submitted precision", () => {
+    const policy = { unitId: "item", consumedExpression: "508", stockExpression: "0", reserveExpression: "0",
+      quantityMode: "supply_quantum", orderQuantumExpression: "1", balanceScope: "new_order_vs_required_consumption",
+      requirementBasis: "selected_order_including_contingency", plannedConsumptionExpression: "484" };
+    const resolve = (quantity: string, raw: unknown = policy) => resolveCanonicalPurchaseBalanceV1(raw, "profile", "item", quantity, {}, new Set());
+    expect(resolve("500")).toMatchObject({ quantum: "1", plannedConsumption: "484", requiredSelectedOrder: "508",
+      effectiveOrder: "500", consumptionShortage: "8", procurementReady: false });
+    for (const quantity of ["510", "510.0000"]) expect(resolve(quantity)).toMatchObject({ excessOrderAboveRequiredConsumption: "2", procurementReady: true });
+    expect(resolve("0")).toMatchObject({ consumptionShortage: "508", remaining: "0", procurementReady: false });
+    for (const quantity of ["510.5", "510.0000000001", "510.0000000000", "-1"]) expect(() => resolve(quantity)).toThrow();
+    for (const raw of [{ ...policy, stockExpression: "1" }, { ...policy, reserveExpression: "1" },
+      { ...policy, requirementBasis: null }, { ...policy, plannedConsumptionExpression: undefined },
+      { ...policy, plannedConsumptionExpression: "509" }, { ...policy, balanceScope: "warehouse" }]) expect(() => resolve("510", raw)).toThrow();
+    expect(resolveCanonicalPurchaseBalanceV1({ unitId: "item", consumedExpression: "105", stockExpression: "5",
+      reserveExpression: "20", orderQuantumExpression: "20" }, "legacy", "item", "120", {}, new Set()))
+      .toMatchObject({ consumptionShortage: "0", reserveDeficit: "0", remaining: "20", quantum: "20", procurementReady: true });
+  });
   it("keeps the selected contingency requirement distinct from planned consumption and rejects undeclared basis inputs", () => {
     const policy = { unitId: "m3", consumedExpression: "259.2", stockExpression: "0", reserveExpression: "0",
       quantityMode: "canonical_decimal", balanceScope: "new_order_vs_required_consumption",

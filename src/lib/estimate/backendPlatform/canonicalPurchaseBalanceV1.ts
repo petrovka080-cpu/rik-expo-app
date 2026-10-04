@@ -8,8 +8,18 @@ type PurchaseBalanceSources = Readonly<{
   stockExpression: string;
   reserveExpression: string;
 }>;
+type SelectedOrderBasis = Readonly<{
+  balanceScope: "new_order_vs_required_consumption";
+  stockExpression: "0";
+  reserveExpression: "0";
+  requirementBasis: "selected_order_including_contingency";
+  plannedConsumptionExpression: string;
+}>;
 export type CanonicalPurchaseBalanceV1 = PurchaseBalanceSources & (
-  | Readonly<{ quantityMode?: "supply_quantum"; orderQuantumExpression: string }>
+  | Readonly<{ quantityMode?: "supply_quantum"; orderQuantumExpression: string }> & (
+    | Readonly<{ balanceScope?: never; requirementBasis?: never; plannedConsumptionExpression?: never }>
+    | SelectedOrderBasis
+  )
   | Readonly<{ quantityMode: "canonical_decimal"; balanceScope: "new_order_vs_required_consumption";
     stockExpression: "0"; reserveExpression: "0"; orderQuantumExpression?: never }> & (
       | Readonly<{ requirementBasis?: never; plannedConsumptionExpression?: never }>
@@ -34,14 +44,16 @@ export function resolveCanonicalPurchaseBalanceV1(
   const quantityMode = policy.quantityMode === undefined ? "supply_quantum" : policy.quantityMode;
   if (quantityMode !== "supply_quantum" && quantityMode !== "canonical_decimal") fail("DEFINITION_INTEGRITY_FAILED", "purchase quantity mode invalid");
   const decimal = quantityMode === "canonical_decimal";
-  const selectedOrder = decimal && policy.requirementBasis === "selected_order_including_contingency";
+  const scoped = policy.balanceScope === "new_order_vs_required_consumption";
+  const selectedOrder = scoped && policy.requirementBasis === "selected_order_including_contingency";
   if ((Object.hasOwn(policy, "requirementBasis") && !selectedOrder) || (Object.hasOwn(policy, "plannedConsumptionExpression") && !selectedOrder)) {
     fail("DEFINITION_INTEGRITY_FAILED", "purchase requirement basis invalid");
   }
   const fields = ["consumedExpression", "stockExpression", "reserveExpression", ...(decimal ? [] : ["orderQuantumExpression"]),
     ...(selectedOrder ? ["plannedConsumptionExpression"] : [])];
-  if (policy.unitId !== unitId || Object.keys(policy).some(key => !["unitId", "quantityMode", ...(decimal ? ["balanceScope", "requirementBasis"] : []), ...fields].includes(key))
-    || (decimal && (policy.balanceScope !== "new_order_vs_required_consumption" || policy.stockExpression !== "0" || policy.reserveExpression !== "0"))) {
+  if (policy.unitId !== unitId || Object.keys(policy).some(key => !["unitId", "quantityMode", ...((decimal || scoped) ? ["balanceScope", "requirementBasis"] : []), ...fields].includes(key))
+    || (decimal && !scoped) || (scoped && (policy.stockExpression !== "0" || policy.reserveExpression !== "0"))
+    || (!decimal && scoped && !selectedOrder)) {
     fail("DEFINITION_INTEGRITY_FAILED", "purchase balance unit/keys invalid");
   }
   const sources = fields.map(field => {
@@ -59,13 +71,16 @@ export function resolveCanonicalPurchaseBalanceV1(
     if (compareFormulaGraphDecimals(value, "0") < 0) fail("DEFINITION_INTEGRITY_FAILED", "purchase balance source negative");
     return value;
   });
-  const [consumed, stock, reserve] = values;
-  const quantum = decimal ? null : values[3];
-  const plannedConsumption = selectedOrder ? values[3] : null;
+  const evaluated = Object.fromEntries(fields.map((field, index) => [field, values[index]]));
+  const consumed = evaluated.consumedExpression;
+  const stock = evaluated.stockExpression;
+  const reserve = evaluated.reserveExpression;
+  const quantum = decimal ? null : evaluated.orderQuantumExpression;
+  const plannedConsumption = selectedOrder ? evaluated.plannedConsumptionExpression : null;
   if (plannedConsumption != null && compareFormulaGraphDecimals(plannedConsumption, consumed) > 0) {
     fail("DEFINITION_INTEGRITY_FAILED", "selected order requirement below planned consumption");
   }
-  if (decimal && (!isFormulaGraphExactDecimal(quantity) || compareFormulaGraphDecimals(quantity, "0") < 0)) {
+  if ((decimal || scoped) && (!isFormulaGraphExactDecimal(quantity) || compareFormulaGraphDecimals(quantity, "0") < 0)) {
     fail("ROW_AMENDMENT_INVALID", "purchase quantity is outside the exact canonical decimal domain");
   }
   if (quantum != null && compareFormulaGraphDecimals(quantum, "0") <= 0) fail("DEFINITION_INTEGRITY_FAILED", "purchase quantum must be positive");
@@ -79,7 +94,7 @@ export function resolveCanonicalPurchaseBalanceV1(
   const reserveDeficit = evaluate(`max(0,${reserve}-(${remaining}))`);
   const freeBeyondReserve = evaluate(`max(0,${remaining}-${reserve})`);
   return { ownerRowId: rowId, unitId, consumed, stock, reserve, quantum, quantityMode,
-    ...(decimal ? { balanceScope: policy.balanceScope, excessOrderAboveRequiredConsumption: remaining } : {}),
+    ...(scoped ? { balanceScope: policy.balanceScope, excessOrderAboveRequiredConsumption: remaining } : {}),
     ...(selectedOrder ? { requirementBasis: policy.requirementBasis, plannedConsumption, requiredSelectedOrder: consumed } : {}), effectiveOrder: quantity,
     remaining, freeBeyondReserve, consumptionShortage, reserveDeficit,
     procurementReady: consumptionShortage === "0" && reserveDeficit === "0" };
