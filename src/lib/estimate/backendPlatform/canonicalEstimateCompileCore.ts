@@ -1038,7 +1038,7 @@ export async function compileCanonicalEstimateCore(
     const missingEffectiveParameterIds = missingFormulaParameterIds.filter(id => effectiveQuantityPlan.owners.has(id));
     const missingFormulaBlocksQuantity = missingFormulaParameterIds.length > 0
       && (effectiveOutput != null || manualQuantity == null || formulaOutputBounds != null || missingEffectiveParameterIds.length > 0
-        || resource.resource_graph?.purchaseBalanceV1 != null);
+        || resource.resource_graph?.purchaseBalanceV1 != null || resource.resource_graph?.manualTransportQuantityPolicyV1 != null);
 
     if ((inclusion.value == null && !inclusionResolvedByManualQuantity)
       || missingFormulaBlocksQuantity
