@@ -62,7 +62,8 @@ async function main() {
   invariant(current.productionAccessed === false, "PRODUCTION_FLAG");
   if (current.definitionReleaseId !== frozen.current.definitionReleaseId) {
     const previous = existsSync(`${OUTPUT}/acceptance.json`) ? JSON.parse(readFileSync(`${OUTPUT}/acceptance.json`, "utf8")) as Json : null;
-    invariant(previous?.successor.releaseId === current.definitionReleaseId && previous?.successor.searchReleaseId === current.searchReleaseId
+    invariant(previous, "EXISTING_SUCCESSOR_RECEIPT_MISSING");
+    invariant(previous.successor.releaseId === current.definitionReleaseId && previous.successor.searchReleaseId === current.searchReleaseId
       && hash(previous.sourceHashes) === hash(sourceHashes), "PREDECESSOR_POINTER_DRIFT");
     process.stdout.write(JSON.stringify({ status: "EXISTING_GROUP_PREPARED_NO_REAPPLY", successor: previous.successor, mutationPerformed: false }) + "\n");
     return;
