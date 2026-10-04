@@ -21,7 +21,7 @@ const OUTPUT = ".release-runtime/r568/s27-32/foundation-curing-existing-profile-
 const SOURCES = ["scripts/estimate/r4a13/prepareS2733FoundationCuringProfileSuccessor.ts", "scripts/estimate/r4a13/s2733FoundationCuringProfileOverlay.ts",
   "scripts/estimate/r4a13/canonicalPreparedSearchCloneR1.ts", "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts", "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts", "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts", "scripts/estimate/r4a13/s2733StandaloneCuringCompletionOverlay.ts",
-  "src/lib/estimate/v4/concreteSlabCuringR1.ts", "scripts/estimate/r4a13/s2732PurchaseGroupOverlay.ts", "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts", "src/lib/estimate/v4/automaticConstructionOwnerR1.ts"];
+  "src/lib/estimate/v4/concreteSlabCuringR1.ts", "src/lib/estimate/v4/curingMaterialAccessoriesS2733.ts", "scripts/estimate/r4a13/s2732PurchaseGroupOverlay.ts", "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts", "src/lib/estimate/v4/automaticConstructionOwnerR1.ts"];
 const APPLY = process.argv.includes("--apply");
 const hash = (value: unknown) => createHash("sha256").update(typeof value === "string" || Buffer.isBuffer(value) ? value : stringifyCanonicalEstimateJson(value)).digest("hex");
 function invariant(value: unknown, code: string): asserts value { if (!value) throw new Error(`S2733_FOUNDATION_CURING_PROFILE_SUCCESSOR:${code}`); }
@@ -94,7 +94,7 @@ async function main() {
       const parent = await load(client, manifest.definition_version_id, manifest.approved_template_baseline_id);
       const frozenParent = frozen.reps.find((r: Json) => r.target.catalog_id === catalogId);
       invariant(frozenParent && hash(parent) === hash(Object.fromEntries(Object.keys(parent).map(key => [key, frozenParent[key]]))), `PARENT_SNAPSHOT_DRIFT:${catalogId}`);
-      const overlay = overlayS2733FoundationCuringProfile(parent, frozen.sourceRepresentative as PurchaseGroupRepresentative), r = overlay.representative;
+      const overlay = overlayS2733FoundationCuringProfile(parent, frozen.sourceRepresentative as PurchaseGroupRepresentative, frozen.curingNormativeLocator.id), r = overlay.representative;
       const definitionId = uuid(`${fingerprint}:definition:${catalogId}`), baselineId = uuid(`${fingerprint}:baseline:${catalogId}`);
       const definitionSha256 = hash({ contract: CONTRACT, predecessorHash: parent.definition.definition_sha256,
         parameters: r.parameters, formulas: r.formulas, resources: r.resources });

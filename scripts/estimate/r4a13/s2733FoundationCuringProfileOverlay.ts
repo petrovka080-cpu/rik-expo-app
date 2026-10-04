@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { stringifyCanonicalEstimateJson } from "../../../src/lib/estimate/estimateDeterministicHash";
 import { concreteSlabCuringAcceptanceInputR1, type ConcreteSlabCuringContextKey, CONCRETE_SLAB_CURING_SOURCE_ID } from "../../../src/lib/estimate/v4/concreteSlabCuringR1";
 import { overlayS2732PurchaseGroup, S2733_CURING_MATERIAL_PURCHASE_CATALOG_IDS, type PurchaseGroupRepresentative } from "./s2732PurchaseGroupOverlay";
+import { buildCuringMaterialAccessoriesS2733, CURING_MATERIAL_ACCESSORIES_S2733_CONTRACT } from "../../../src/lib/estimate/v4/curingMaterialAccessoriesS2733";
 
 export const FOUNDATION_CURING_PROFILE_S2733_CONTRACT = "foundation-curing-existing-profile:s27-33.v1";
 const contexts = { standard: "в стандартной зоне", high_load: "в зоне высокой нагрузки", large_area: "на большом участке",
@@ -13,16 +14,52 @@ export const FOUNDATION_CURING_PROFILE_TARGETS_S2733 = S2733_CURING_MATERIAL_PUR
 const hash = (v: unknown) => createHash("sha256").update(stringifyCanonicalEstimateJson(v)).digest("hex");
 function invariant(v: unknown, code: string): asserts v { if (!v) throw Error(`S2733_FOUNDATION_CURING_PROFILE:${code}`); }
 
+function addMaterialAccessories(r: PurchaseGroupRepresentative, locatorId: string) {
+  invariant(/^[0-9a-f-]{36}$/u.test(locatorId), "METHOD_LOCATOR_REQUIRED");
+  const catalogId = String(r.definition.catalog_id), addition = buildCuringMaterialAccessoriesS2733(catalogId);
+  const oldIds = new Set(r.parameters.map(p => p.parameter_id));
+  const parameters = addition.parameters.filter(p => !oldIds.has(p.parameter_id));
+  invariant(parameters.length === 3 && addition.resources.every(row => !r.resources.some(old => old.row_id === row.row_id)), "ACCESSORY_SCOPE_DRIFT");
+  invariant(addition.formulas.every(f => !r.formulas.some(old => old.formula_id === f.formula_id)), "ACCESSORY_FORMULA_COLLISION");
+  r.parameters.push(...parameters.map((p, i) => ({ ...p, ordinal: r.parameters.length + i })));
+  r.formulas.push(...addition.formulas.map(f => ({ ...f, ast_sha256: hash(f.ast) })));
+  const operation = r.resources.find(row => row.row_id === "material:concrete:impervious-curing-sheet")?.resource_graph.operationCompositionV1;
+  invariant(operation?.operationId === "curing", "MATERIAL_OPERATION_REFERENCE_REQUIRED");
+  r.resources.push(...addition.resources.map((row, i) => ({ ...row, ordinal: r.resources.length + i, row_type: "material",
+    semantic_owner: `${catalogId}:${row.row_id}`, resource_graph: { ...row.resource_graph, operationCompositionV1: { ...operation } } })));
+  r.bindings.push(...addition.resources.map(row => ({ row_id: row.row_id, locator_id: locatorId,
+    applicability: { contract: CURING_MATERIAL_ACCESSORIES_S2733_CONTRACT, quantity_basis: "APPROVED_PROJECT_CURING_METHOD_AND_COUNTED_MATERIAL_BOM",
+      universal_consumption_claimed: false, universal_productivity_claimed: false } })));
+  for (const id of [...parameters.map(p => p.parameter_id), "approved_external_curing_method"]) {
+    const p = r.parameters.find(value => value.parameter_id === id)!;
+    const formulas = [...new Set([...(r.baseline.formula_consumer_ids[id] ?? []), ...addition.formulas.filter(f => f.input_parameter_ids.includes(id)).map(f => f.formula_id)])];
+    const rows = [...new Set([...(r.baseline.resource_consumer_row_ids[id] ?? []), ...addition.resources.filter(row =>
+      JSON.stringify([row.resource_graph, row.inclusion_ast]).includes(`"${id}"`) || formulas.includes(row.formula_id)).map(row => row.row_id)])];
+    p.truth_metadata = { ...p.truth_metadata, formula_consumers: formulas, resource_branch_consumers: rows };
+    r.baseline.formula_consumer_ids[id] = formulas; r.baseline.resource_consumer_row_ids[id] = rows;
+    if (!oldIds.has(id)) {
+      r.baseline.uom_by_parameter[id] = p.unit_id; r.baseline.normative_source_ids[id] = [CONCRETE_SLAB_CURING_SOURCE_ID];
+      r.baseline.guide_provenance_ru[id] = p.truth_metadata.guide.guide_short_ru;
+    }
+  }
+  r.baseline.parameter_schema_sha256 = hash(r.parameters.map(p => ({ parameterId: p.parameter_id, unitId: p.unit_id, valueType: p.value_type, constraints: p.constraints_json, truth: p.truth_metadata })));
+  return { representative: r, addedParameterIds: parameters.map(p => p.parameter_id), addedFormulaIds: addition.formulas.map(f => f.formula_id),
+    targetRowIds: addition.resources.map(row => row.row_id) };
+}
+
 /** Forward replacement of the exact obsolete all-concrete 59-row recipe.
  * Reuse the already delivered ACI project-method owner and its equipment/water
  * completion. No existing estimate/revision is rewritten. Control baseline
  * values are fixtures, never defaults or a kg/m3/area/productivity norm. */
-export function overlayS2733FoundationCuringProfile(parent: PurchaseGroupRepresentative, source: PurchaseGroupRepresentative) {
+export function overlayS2733FoundationCuringProfile(parent: PurchaseGroupRepresentative, source: PurchaseGroupRepresentative, locatorId: string) {
   const catalogId = String(parent.definition.catalog_id);
   invariant(FOUNDATION_CURING_PROFILE_TARGETS_S2733.includes(catalogId), "FINITE_SCOPE");
   if (!FOUNDATION_CURING_NEW_PROFILE_TARGETS_S2733.includes(catalogId)) {
     const balance = overlayS2732PurchaseGroup(parent, { curingMaterialOwners: true });
-    return { ...balance, addedFormulaIds: [], retiredLegacyResourceRowIds: [], contract: FOUNDATION_CURING_PROFILE_S2733_CONTRACT };
+    const completed = addMaterialAccessories(balance.representative, locatorId);
+    return { ...balance, representative: completed.representative, targetRowIds: [...balance.targetRowIds, ...completed.targetRowIds],
+      addedParameterIds: [...balance.addedParameterIds, ...completed.addedParameterIds], addedFormulaIds: completed.addedFormulaIds,
+      retiredLegacyResourceRowIds: [], contract: FOUNDATION_CURING_PROFILE_S2733_CONTRACT };
   }
   invariant(parent.resources.length === 59 && parent.parameters.length === 1 && parent.parameters[0]?.parameter_id === "q"
     && parent.parameters[0]?.default_value === 100, "OBSOLETE_RECIPE_SCOPE_DRIFT");
@@ -68,7 +105,8 @@ export function overlayS2733FoundationCuringProfile(parent: PurchaseGroupReprese
     reusedDefinitionId: source.definition.id, reusedCatalogId: source.definition.catalog_id, reusedDefinitionSha256: source.definition.definition_sha256,
     sourceId: CONCRETE_SLAB_CURING_SOURCE_ID, controlValuesAreValidationFixtures: true, legacyRecipeReplacedForInapplicableScope: true }];
   const balance = overlayS2732PurchaseGroup(r, { curingMaterialOwners: true });
-  return { representative: balance.representative, targetRowIds: r.resources.map(row => row.row_id), addedParameterIds: balance.representative.parameters.map(p => p.parameter_id),
-    addedFormulaIds: r.formulas.map(f => f.formula_id), changedFormulaIds: [], retiredLegacyResourceRowIds: parent.resources.map(row => row.row_id),
+  const completed = addMaterialAccessories(balance.representative, locatorId);
+  return { representative: completed.representative, targetRowIds: completed.representative.resources.map(row => row.row_id), addedParameterIds: completed.representative.parameters.map(p => p.parameter_id),
+    addedFormulaIds: completed.representative.formulas.map(f => f.formula_id), changedFormulaIds: [], retiredLegacyResourceRowIds: parent.resources.map(row => row.row_id),
     contract: FOUNDATION_CURING_PROFILE_S2733_CONTRACT };
 }
