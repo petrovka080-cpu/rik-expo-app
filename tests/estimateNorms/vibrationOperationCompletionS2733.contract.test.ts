@@ -21,6 +21,11 @@ function compile(parameters: Record<string, unknown>, rowOverrides: CanonicalEst
     submittedParameters: parameters, confirmedParameters: {}, currencyCode: "KGS", maximumResourceRows: 7, rowOverrides, hashJson: estimateDeterministicHash });
 }
 describe("S27.33 vibration equipment and labor disclosure", () => {
+  it("does not replace missing actual included-kit count with a manual supplier quantity", async () => {
+    const result = await compile({ ...facts, vibration_equipment_accessories_set_count: null }, { [ids.includedKit]: amendment("2") });
+    expect(result.preliminaryNeeds.find(r => r.row_id === ids.includedKit)?.missing_parameter_ids).toContain("vibration_equipment_accessories_set_count");
+    expect(result.rows.find(r => r.row_id === ids.equipment)?.quantity).toBe("9");
+  });
   it("preserves project labor/equipment and counts included compatible accessories once", async () => {
     const result = await compile(facts, { [ids.equipment]: { unitPrice: 10, provenance: { kind: "manual", reason: "DEMO equipment quote includes accessories" } } });
     expect(result.preliminaryNeeds).toEqual([]);

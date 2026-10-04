@@ -32,7 +32,7 @@ export function buildVibrationOperationCompletionS2733(catalogId: string, volume
       section: "Виброуплотнение бетона", category: "material",
       title: `Принадлежности и расходники вибратора, ${separate ? "отдельная поставка" : "включены в цену оборудования"}`,
       unitId: "set", procurement: separate, costTreatment: separate ? "OWN_COST" : "INCLUDED_IN_RESOURCE_ROWS",
-      inclusion: selected(mode), inputParameterIds: [specificationId], titleParameterIds: [specificationId],
+      inclusion: selected(mode), inputParameterIds: separate ? [specificationId] : [specificationId, countId], titleParameterIds: [specificationId],
       ...(separate ? { purchaseBalance: balance.owner.purchaseBalance } : {}) };
   });
   // The delivered pile-cap work is paid per m3 and had no labor takeoff.

@@ -48,7 +48,9 @@ export function buildCuringOperationCompletionS2733(catalogId: string) {
       unitId: "set", procurement: mode === "SEPARATE_SUPPLY", inclusion: kit(mode),
       costTreatment: mode === "SEPARATE_SUPPLY" ? "OWN_COST" : "INCLUDED_IN_RESOURCE_ROWS",
       ...(mode === "SEPARATE_SUPPLY" ? { purchaseBalance: kitBalance.owner.purchaseBalance } : {}),
-      inputParameterIds: ["application_equipment_accessories_specification"], titleParameterIds: ["application_equipment_accessories_specification"],
+      inputParameterIds: mode === "SEPARATE_SUPPLY" ? ["application_equipment_accessories_specification"]
+        : ["application_equipment_accessories_specification", "application_equipment_accessories_set_count"],
+      titleParameterIds: ["application_equipment_accessories_specification"],
     })),
     { rowId: CURING_COMPLETION_ROWS.delivery, formulaId: "curing_completion_water_delivery_v1",
       expression: `ceil(${balance.effective}/curing_water_delivery_capacity_m3)`, section: "Обеспечение ухода водой", category: "delivery",

@@ -31,6 +31,14 @@ function compile(parameters: Record<string, unknown>, rowOverrides: CanonicalEst
     maximumResourceRows: 9, rowOverrides, hashJson: estimateDeterministicHash });
 }
 describe("S27.33 leveling operation component completion", () => {
+  it.each([
+    [ids.includedGuideKit, "leveling_guide_accessories_set_count"],
+    [ids.includedEquipmentKit, "leveling_equipment_accessories_set_count"],
+  ])("keeps %s actual count required despite a manual supplier quantity", async (rowId, parameterId) => {
+    const result = await compile({ ...facts, [parameterId]: null }, { [rowId]: amendment("2") });
+    expect(result.preliminaryNeeds.find(r => r.row_id === rowId)?.missing_parameter_ids).toContain(parameterId);
+    expect(result.rows.find(r => r.row_id === equipmentId)?.quantity).toBe("9");
+  });
   it("preserves direct guide, labor, equipment and mobilization takeoff and discloses included component BOMs once", async () => {
     const result = await compile(facts, { [equipmentId]: { unitPrice: 10, provenance: { kind: "manual", reason: "DEMO equipment quote includes accessories" } } });
     expect(result.preliminaryNeeds).toEqual([]);

@@ -59,7 +59,7 @@ export function buildLevelingOperationCompletionS2733(catalogId: string, equipme
         expression: countId, section: "Выравнивание бетона", category: "material",
         title: `${p.subject}, ${separate ? "отдельная поставка" : "включены в цену основного ресурса"}`,
         unitId: "set", procurement: separate, costTreatment: separate ? "OWN_COST" : "INCLUDED_IN_RESOURCE_ROWS",
-        inclusion: and(p.condition, equals(pricingId, mode)), inputParameterIds: [specificationId], titleParameterIds: [specificationId],
+        inclusion: and(p.condition, equals(pricingId, mode)), inputParameterIds: separate ? [specificationId] : [specificationId, countId], titleParameterIds: [specificationId],
         ...(separate ? { purchaseBalance: balance.owner.purchaseBalance } : {}) });
     }
   }

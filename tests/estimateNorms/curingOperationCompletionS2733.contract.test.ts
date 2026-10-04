@@ -30,6 +30,11 @@ function compile(parameters: Record<string, unknown>, rowOverrides: CanonicalEst
     maximumResourceRows: 11, rowOverrides, hashJson: estimateDeterministicHash });
 }
 describe("S27.33 standalone curing resource completion", () => {
+  it("keeps actual included application-kit count required despite a manual supplier quantity", async () => {
+    const result = await compile({ ...facts, application_equipment_accessories_set_count: null }, { [ids.includedKit]: amendment("2") });
+    expect(result.preliminaryNeeds.find(r => r.row_id === ids.includedKit)?.missing_parameter_ids).toContain("application_equipment_accessories_set_count");
+    expect(result.rows.find(r => r.row_id === ids.equipment)?.quantity).toBe("8");
+  });
   it("retains original labor/equipment takeoff and discloses included actual accessories without duplicate procurement", async () => {
     const result = await compile(facts);
     expect(result.preliminaryNeeds).toEqual([]);
