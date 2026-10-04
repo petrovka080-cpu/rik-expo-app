@@ -58,8 +58,9 @@ describe("conditional peer applicability survives backend-session and card proje
 
   it("keeps an unknown peer an undecided selected need, not a false zero-joint branch", () => {
     const result = session({ [L]: 12 }, [SECTION, TARGET]);
-    expect(result.blockingMissingParameterIds).toContain(TARGET);
-    expect(buildCanonicalParameterCards({ session: result, revision: null }).some(c => c.key === TARGET)).toBe(true);
+    expect(result.blockingMissingParameterIds).toContain(SECTION);
+    expect(result.blockingMissingParameterIds).not.toContain(TARGET);
+    expect(result.inactiveConditionalParameters?.some(p => p.parameterId === TARGET)).toBe(true);
   });
 
   it("shares tri-state condition evaluation with the canonical parameter core", () => {
@@ -111,6 +112,6 @@ describe("mixed method/positive-thickness condition in the shared editable panel
   it("unknown thickness remains undecided rather than falsely zero, using the same tri-state graph", () => {
     const result = beddingSession({ [methodId]: methods.openCut }, [thicknessId, target]);
     expect(result.blockingMissingParameterIds).toContain(thicknessId);
-    expect(result.blockingMissingParameterIds).toContain(target);
+    expect(result.blockingMissingParameterIds).not.toContain(target);
   });
 });

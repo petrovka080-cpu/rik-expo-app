@@ -1,11 +1,11 @@
 import {
   ESTIMATE_PLATFORM_API_VERSION,
-  canonicalEstimatePreliminaryNeedsFromAmendmentContract,
   type CanonicalEstimateRevisionRowPriceSource,
   type CanonicalEstimateRevisionRowView,
   type CanonicalEstimateRevisionView,
 } from "./contracts";
 import type { AdmissionDecision } from "./estimateAdmissionR3";
+import { projectCanonicalEstimatePreliminaryNeedTransport } from "./canonicalEstimatePreliminaryNeedTransport";
 
 type StorageRecord = Record<string, unknown>;
 
@@ -51,7 +51,7 @@ export function canonicalEstimateRevisionDetailFromStorage(
     principalOrganizationId?: string | null;
   } = {},
 ): CanonicalEstimateRevisionView {
-  const amendmentContract = record(row.amendment_contract);
+  const needTransport = projectCanonicalEstimatePreliminaryNeedTransport(row);
   return {
     apiVersion: ESTIMATE_PLATFORM_API_VERSION,
     revisionId: String(row.id ?? ""),
@@ -84,8 +84,8 @@ export function canonicalEstimateRevisionDetailFromStorage(
     assumptionSnapshot: row.assumption_snapshot == null ? null : record(row.assumption_snapshot),
     formulaGraphVersion: nullableText(row.formula_graph_version),
     revisionContractVersion: nullableText(row.revision_contract_version),
-    amendmentContract: amendmentContract as CanonicalEstimateRevisionView["amendmentContract"],
-    preliminaryNeeds: canonicalEstimatePreliminaryNeedsFromAmendmentContract(amendmentContract),
+    amendmentContract: needTransport.amendmentContract as CanonicalEstimateRevisionView["amendmentContract"],
+    preliminaryNeeds: needTransport.preliminaryNeeds,
     totals: record(row.totals),
     rowCount: Number(row.row_count),
     checksumSha256: String(row.checksum_sha256 ?? ""),

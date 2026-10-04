@@ -8,7 +8,6 @@ import {
   assertCreateRequest,
   assertUuid,
   canonicalEstimateEffectivePriceSnapshotIds,
-  canonicalEstimatePreliminaryNeedsFromAmendmentContract,
 } from "../../../src/lib/estimate/backendPlatform/contracts.ts";
 import {
   evaluateEstimateAdmission,
@@ -26,6 +25,8 @@ import {
   canonicalEstimateRevisionDetailFromStorage,
   canonicalEstimateRevisionRowFromStorage,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper.ts";
+import { canonicalPreliminaryNeedEvidenceFromStorage, decodeCanonicalPreliminaryNeedRowSegment } from "../../../src/lib/estimate/backendPlatform/canonicalEstimatePreliminaryNeedTransport.ts";
+import { canonicalEstimateStableJson } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism.ts";
 
 const FUNCTION_NAME = "canonical-estimate";
 const MAX_ROWS_PAGE = 500;
@@ -1033,33 +1034,26 @@ async function readRevision(requester: ReturnType<typeof createClient>, revision
   });
 }
 
+async function readPreliminaryNeedEvidence(requester: ReturnType<typeof createClient>, revisionId: string, rowId: string) {
+  assertUuid(revisionId, "revisionId");
+  // requester preserves the same RLS scope as revision detail. A reference grants no access.
+  const { data, error } = await requester.from("estimate_revision")
+    .select("id,release_id,catalog_id,definition_version_id,checksum_sha256,amendment_contract")
+    .eq("id", revisionId).single();
+  if (error) normalizeDbError(error);
+  legacyReadAdmission(data, "revision_read");
+  return canonicalPreliminaryNeedEvidenceFromStorage(data, rowId, async value => {
+    const bytes = new TextEncoder().encode(canonicalEstimateStableJson(value));
+    const digest = await crypto.subtle.digest("SHA-256", bytes);
+    return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+  });
+}
+
 function revisionView(data: Record<string, unknown>) {
-  return {
-    apiVersion: ESTIMATE_PLATFORM_API_VERSION,
-    revisionId: data.id,
-    parentRevisionId: data.parent_revision_id,
-    organizationId: data.organization_id,
-    releaseId: data.release_id,
-    catalogId: data.catalog_id,
-    revisionNumber: data.revision_number,
-    status: data.status,
-    parameters: data.input_parameters,
-    amendmentContract: data.amendment_contract,
-    preliminaryNeeds: canonicalEstimatePreliminaryNeedsFromAmendmentContract(data.amendment_contract),
-    currencyCode: data.currency_code,
-    totals: data.totals,
-    rowCount: data.row_count,
-    checksumSha256: data.checksum_sha256,
-    compilerVersion: data.compiler_version,
-    definitionVersion: data.definition_version,
-    compilerOwner: data.compiler_owner,
-    parameterSchemaHash: data.parameter_schema_hash,
-    inputHash: data.input_hash,
-    outputHash: data.output_hash,
+  return canonicalEstimateRevisionDetailFromStorage(data, {
     contentAdmission: legacyReadAdmission(data, "revision_read"),
     legacyWarningRu: "Старая версия создана прежней моделью расчёта; для нового расчёта сформируйте исправленную версию.",
-    createdAt: data.created_at,
-  };
+  });
 }
 
 async function readRevisionHistory(request: Request, requester: ReturnType<typeof createClient>) {
@@ -1075,7 +1069,7 @@ async function readRevisionHistory(request: Request, requester: ReturnType<typeo
   }
   let query = requester
     .from("estimate_revision")
-    .select("id,parent_revision_id,organization_id,release_id,catalog_id,definition_version_id,revision_number,status,input_parameters,amendment_contract,currency_code,totals,row_count,checksum_sha256,compiler_version,definition_version,compiler_owner,parameter_schema_hash,input_hash,output_hash,created_at")
+    .select("id,parent_revision_id,organization_id,release_id,catalog_id,definition_version_id,revision_number,status,input_parameters,price_snapshot_ids,amendment_contract,currency_code,totals,row_count,checksum_sha256,compiler_version,definition_version,compiler_owner,parameter_schema_hash,input_hash,output_hash,source_request_text,source_request_hash,canonical_work_title_ru,display_title_ru,primary_measure_parameter_id,primary_measure_value,primary_measure_unit_id,normalized_intent,group_id,search_release_id,user_input_snapshot,accepted_baseline_snapshot,assumption_snapshot,formula_graph_version,revision_contract_version,created_at")
     .eq("catalog_id", catalogId)
     .order("revision_number", { ascending: false })
     .limit(limit + 1);
@@ -1704,6 +1698,10 @@ export async function handleCanonicalEstimateRequest(request: Request): Promise<
     }
     if (request.method === "GET" && path.length === 2 && path[0] === "revisions") {
       return json(200, await readRevision(requester, path[1]), requestId, request);
+    }
+    if (request.method === "GET" && path.length === 5 && path[0] === "revisions"
+      && path[2] === "preliminary-needs" && path[4] === "evidence") {
+      return json(200, await readPreliminaryNeedEvidence(requester, path[1], decodeCanonicalPreliminaryNeedRowSegment(path[3])), requestId, request);
     }
     if (request.method === "GET" && path.length === 1 && path[0] === "revisions") {
       return json(200, await readRevisionHistory(request, requester), requestId, request);

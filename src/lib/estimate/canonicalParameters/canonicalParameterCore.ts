@@ -193,6 +193,18 @@ export function resolveCanonicalParameterVisibility(
   return states.every(state => state === false) ? false : null;
 }
 
+/** Pending branch selectors, before asking for the branch's own source facts. */
+export function canonicalParameterVisibilityMissingParameterIds(
+  condition: CanonicalParameterVisibilityCondition,
+  values: ReadonlyMap<string, CanonicalParameterValue>,
+): string[] {
+  if (resolveCanonicalParameterVisibility(condition, values) !== null) return [];
+  if (condition.kind === "INCLUSION_GRAPH") return resolveInclusionGraph(condition.ast, Object.fromEntries(values)).missingParameterIds;
+  if (condition.kind === "PARAMETER_EQUALS") return [condition.parameterId];
+  if (condition.kind === "ALWAYS") return [];
+  return [...new Set(condition.conditions.filter(candidate => !values.has(candidate.parameterId)).map(candidate => candidate.parameterId))];
+}
+
 function isVisible(
   definition: CanonicalParameterDefinition,
   values: ReadonlyMap<string, CanonicalParameterValue>,

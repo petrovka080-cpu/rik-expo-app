@@ -72,12 +72,12 @@ import { normalizePublicBoqNameRu } from "../../../src/lib/estimate/publicBoqNam
 import {
   type CanonicalEstimateCatalogItem,
   canonicalEstimateEffectivePriceSnapshotIds,
-  canonicalEstimatePreliminaryNeedsFromAmendmentContract,
 } from "../../../src/lib/estimate/backendPlatform/contracts";
 import {
   canonicalEstimateRevisionDetailFromStorage,
   canonicalEstimateRevisionRowFromStorage,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper";
+import { canonicalPreliminaryNeedEvidenceFromStorage, decodeCanonicalPreliminaryNeedRowSegment } from "../../../src/lib/estimate/backendPlatform/canonicalEstimatePreliminaryNeedTransport";
 import {
   normalizeCanonicalCatalogSearchQuery as normalizeSearchQuery,
   parseCanonicalCatalogSearchIntent as parseSearchIntent,
@@ -4984,51 +4984,9 @@ async function route(
     const page = revisions.slice(0, limit);
     return send(response, 200, {
       apiVersion: API_VERSION,
-      revisions: page.map((revision) => ({
-        revisionId: revision.id,
-        parentRevisionId: revision.parent_revision_id,
-        releaseId: revision.release_id,
-        catalogId: revision.catalog_id,
-        revisionNumber: revision.revision_number,
-        status: revision.status,
-        currencyCode: revision.currency_code,
-        parameters: revision.input_parameters,
-        amendmentContract: revision.amendment_contract,
-        preliminaryNeeds: canonicalEstimatePreliminaryNeedsFromAmendmentContract(revision.amendment_contract),
-        totals: revision.totals,
-        sourceRequestText: revision.source_request_text ?? null,
-        sourceRequestHash: revision.source_request_hash ?? null,
-        canonicalWorkTitleRu: revision.canonical_work_title_ru ?? null,
-        displayTitleRu: revision.display_title_ru ?? null,
-        primaryMeasureParameterId:
-          revision.primary_measure_parameter_id ?? null,
-        primaryMeasureValue:
-          revision.primary_measure_value == null
-            ? null
-            : String(revision.primary_measure_value),
-        primaryMeasureUnitId: revision.primary_measure_unit_id ?? null,
-        normalizedIntent: revision.normalized_intent ?? null,
-        definitionVersionId: revision.definition_version_id ?? null,
-        groupId: revision.group_id ?? null,
-        searchReleaseId: revision.search_release_id ?? null,
-        userInputSnapshot: revision.user_input_snapshot ?? null,
-        acceptedBaselineSnapshot: revision.accepted_baseline_snapshot ?? null,
-        assumptionSnapshot: revision.assumption_snapshot ?? null,
-        formulaGraphVersion: revision.formula_graph_version ?? null,
-        revisionContractVersion: revision.revision_contract_version ?? null,
-        rowCount: revision.row_count,
-        checksumSha256: revision.checksum_sha256,
-        compilerVersion: revision.compiler_version,
-        definitionVersion: revision.definition_version ?? null,
-        compilerOwner: revision.compiler_owner ?? "backend",
-        parameterSchemaHash: revision.parameter_schema_hash ?? null,
-        inputHash: revision.input_hash ?? null,
-        outputHash: revision.output_hash ?? revision.checksum_sha256,
-        contentAdmission: legacyReadContentAdmission(revision, "revision_read")
-          .decision,
-        legacyWarningRu:
-          "Старая версия создана прежней моделью расчёта; для нового расчёта сформируйте исправленную версию.",
-        createdAt: revision.created_at,
+      revisions: page.map(revision => localRevisionView(revision, {
+        contentAdmission: legacyReadContentAdmission(revision, "revision_read").decision,
+        legacyWarningRu: "Старая версия создана прежней моделью расчёта; для нового расчёта сформируйте исправленную версию.",
       })),
       nextCursor:
         revisions.length > limit
@@ -5064,6 +5022,16 @@ async function route(
       legacyWarningRu:
         "Старая версия создана прежней моделью расчёта; для нового расчёта сформируйте исправленную версию.",
     }));
+  }
+  if (request.method === "GET" && path.length === 5 && path[0] === "revisions"
+    && path[2] === "preliminary-needs" && path[4] === "evidence") {
+    const revision = await findAcrossModelDatabases(async client => (
+      await client.query("select * from public.estimate_revision where id=$1 and (owner_user_id=$2 or organization_id=$3)",
+        [path[1], currentOwnerId(), currentTenantId()])
+    ).rows[0]);
+    if (!revision) throw Object.assign(new Error("revision not found"), { code: "NOT_FOUND", httpStatus: 404 });
+    legacyReadContentAdmission(revision, "revision_read");
+    return send(response, 200, await canonicalPreliminaryNeedEvidenceFromStorage(revision, decodeCanonicalPreliminaryNeedRowSegment(path[3]), sha256));
   }
   if (
     request.method === "GET" &&

@@ -295,7 +295,9 @@ export function buildRequestEstimateProfessionalRowEvidence(
   return {
     formulaLabel: `${"\u0420\u0430\u0441\u0447\u0451\u0442 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0430"}: ${formula}. ${"\u0420\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442 \u0444\u043e\u0440\u043c\u0443\u043b\u044b"}: ${formulaResult}.${manualQuantitySuffix}${orderBasisSuffix}${bulkBalanceSuffix}`,
     parameterLabel,
-    normativeLabel: `${"\u041d\u043e\u0440\u043c\u0430"}: ${normSource}${locator ? `; ${"\u0442\u043e\u0447\u043d\u0430\u044f \u043f\u0440\u0438\u0432\u044f\u0437\u043a\u0430"}: ${locator}` : ""}.`,
+    normativeLabel: item.sourceParameters?.canonicalNeedEvidenceStatus === "referenced"
+      ? "Нормативные доказательства доступны при раскрытии сохранённой строки."
+      : `${"\u041d\u043e\u0440\u043c\u0430"}: ${normSource}${locator ? `; ${"\u0442\u043e\u0447\u043d\u0430\u044f \u043f\u0440\u0438\u0432\u044f\u0437\u043a\u0430"}: ${locator}` : ""}.`,
     priceLabel,
   };
 }

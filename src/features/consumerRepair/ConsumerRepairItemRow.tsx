@@ -29,6 +29,7 @@ import {
   consumerRepairRowMissingRequirementLabels,
 } from "./consumerRepairRowMetadata";
 import { useConsumerRepairItemRowEditing } from "./useConsumerRepairItemRowEditing";
+import { useCanonicalPreliminaryNeedEvidence } from "./useCanonicalPreliminaryNeedEvidence";
 
 type Props = {
   item: ConsumerRepairRequestItem;
@@ -96,10 +97,6 @@ function ConsumerRepairItemRowComponent({
     () => consumerRepairCanonicalRowNativeId(item),
     [item],
   );
-  const professionalEvidence = React.useMemo(
-    () => buildRequestEstimateProfessionalRowEvidence(item),
-    [item],
-  );
   const itemOptional = !consumerRepairRowIncludedInEstimate(item);
   const sourceManagedNeed = consumerRepairRowHasSourceManagedQuantity(item);
   const nonPayableRow = consumerRepairRowIsNonPayable(item);
@@ -140,6 +137,14 @@ function ConsumerRepairItemRowComponent({
     onUnitPriceChange,
     onSpecificationChange,
   });
+  const needEvidence = useCanonicalPreliminaryNeedEvidence(item.sourceParameters?.canonicalNeedEvidenceReference, professionalEvidenceOpen);
+  const professionalEvidence = React.useMemo(() => buildRequestEstimateProfessionalRowEvidence(needEvidence.evidence == null ? item : {
+    ...item,
+    sourceParameters: { ...item.sourceParameters,
+      normativeRowTraceV3: needEvidence.evidence.rawNeed.normative_trace,
+      canonicalNeedEvidenceStatus: "loaded",
+    },
+  }), [item, needEvidence.evidence]);
   return (
     <View
       style={[styles.row, preliminaryNeed ? styles.unresolvedRow : null]}
@@ -391,6 +396,21 @@ function ConsumerRepairItemRowComponent({
                 ) : null}
                 <Text style={styles.traceLine}>{professionalEvidence.normativeLabel}</Text>
                 <Text style={styles.traceLine}>{professionalEvidence.priceLabel}</Text>
+                {needEvidence.referenced && needEvidence.status !== "ready" ? (
+                  <Text accessibilityLiveRegion="polite" style={styles.traceLine}>
+                    {needEvidence.status === "loading" ? "Загружаются доказательства сохранённой строки…"
+                      : needEvidence.errorCode === "NETWORK_UNAVAILABLE" || needEvidence.errorCode?.includes("TIMEOUT")
+                        ? "Доказательства ещё не загружены. Проверьте соединение с сервером."
+                        : needEvidence.errorCode === "AUTH_REQUIRED" || needEvidence.errorCode === "FORBIDDEN"
+                          ? "Нет доступа к доказательствам. Проверьте вход в свой аккаунт."
+                          : "Доказательства этой версии не удалось подтвердить. Повторите загрузку."}
+                  </Text>
+                ) : null}
+                {needEvidence.referenced && needEvidence.status === "unavailable" ? (
+                  <Pressable accessibilityRole="button" onPress={needEvidence.retry} testID={`consumer-repair-item-evidence-retry-${item.id}`}>
+                    <Text style={styles.traceButtonText}>Повторить загрузку</Text>
+                  </Pressable>
+                ) : null}
               </View>
             ) : null}
           </View>

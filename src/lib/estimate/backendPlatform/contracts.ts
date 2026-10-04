@@ -266,9 +266,28 @@ export type CanonicalEstimatePreliminaryNeedView = {
   selected: boolean;
   procurementEligible: boolean;
   formulaId: string;
-  calculationTrace: Record<string, unknown>;
-  normativeTrace: unknown[];
+  /** Legacy/full evidence carries traces. Compact v1 transports reference them explicitly. */
+  calculationTrace?: Record<string, unknown>;
+  normativeTrace?: unknown[];
+  evidenceStatus?: "referenced";
+  evidenceReference?: CanonicalEstimatePreliminaryNeedEvidenceReference;
   needSha256: string;
+};
+
+export type CanonicalEstimatePreliminaryNeedEvidenceReference = {
+  contractVersion: "canonical-preliminary-need-evidence/v1";
+  revisionId: string;
+  releaseId: string;
+  definitionVersionId: string | null;
+  checksumSha256: string;
+  rowId: string;
+  needSha256: string;
+};
+
+export type CanonicalEstimatePreliminaryNeedEvidence = {
+  reference: CanonicalEstimatePreliminaryNeedEvidenceReference;
+  /** Original immutable snake_case hash basis, including both full traces. */
+  rawNeed: Record<string, unknown>;
 };
 
 export function canonicalEstimatePreliminaryNeedsFromAmendmentContract(

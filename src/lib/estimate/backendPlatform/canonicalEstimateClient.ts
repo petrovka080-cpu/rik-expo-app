@@ -17,12 +17,16 @@ import {
   type CanonicalEstimateRevisionRowsPage,
   type CanonicalEstimateRevisionHistoryPage,
   type CanonicalEstimateRevisionView,
+  type CanonicalEstimatePreliminaryNeedEvidence,
+  type CanonicalEstimatePreliminaryNeedEvidenceReference,
   type CanonicalEstimateResourceSearchPage,
   type CanonicalEstimateSearchGroupPage,
   type CanonicalEstimateSearchPage,
   type CanonicalEstimateTypedRelation,
 } from "./contracts";
 import { canonicalProfessionalArtifactMetadataIdentityMatches } from "./canonicalEstimateArtifactContract";
+import { canonicalPreliminaryNeedEvidenceIdentityMatches, isCanonicalPreliminaryNeedEvidence, isCanonicalPreliminaryNeedEvidenceReference } from "./canonicalEstimatePreliminaryNeedTransport";
+import { cacheCanonicalPreliminaryNeedEvidence, readCachedCanonicalPreliminaryNeedEvidence } from "./canonicalEstimatePreliminaryNeedEvidenceCache";
 import {
   readCanonicalEstimateSession,
   refreshCanonicalEstimateSession,
@@ -602,6 +606,35 @@ export function getCanonicalEstimateRevision(revisionId: string, signal?: AbortS
     signal,
     requestClass: "ui_scope_load",
   });
+}
+
+export async function getCanonicalEstimatePreliminaryNeedEvidence(
+  reference: CanonicalEstimatePreliminaryNeedEvidenceReference,
+  signal?: AbortSignal | null,
+): Promise<CanonicalEstimatePreliminaryNeedEvidence> {
+  if (!isCanonicalPreliminaryNeedEvidenceReference(reference)) throw new CanonicalEstimateApiError("Некорректная ссылка на доказательства строки.", {
+    code: "PRELIMINARY_NEED_EVIDENCE_IDENTITY_MISMATCH", httpStatus: 409,
+  });
+  const { data } = await readCanonicalEstimateSession();
+  const ownerUserId = data.session?.user?.id;
+  if (!ownerUserId) throw new CanonicalEstimateApiError("Для чтения доказательств требуется авторизация.", {
+    code: "AUTH_REQUIRED", httpStatus: 401,
+  });
+  const cached = await readCachedCanonicalPreliminaryNeedEvidence(ownerUserId, reference);
+  if (cached) return cached;
+  const evidence = await invoke<CanonicalEstimatePreliminaryNeedEvidence>(
+    `revisions/${encodeURIComponent(reference.revisionId)}/preliminary-needs/${encodeURIComponent(reference.rowId)}/evidence`,
+    { signal, requestClass: "ui_scope_load" },
+  );
+  if (!isCanonicalPreliminaryNeedEvidence(evidence) || !canonicalPreliminaryNeedEvidenceIdentityMatches(reference, evidence.reference)) {
+    throw new CanonicalEstimateApiError("Доказательства не относятся к выбранной версии строки.", {
+      code: "PRELIMINARY_NEED_EVIDENCE_IDENTITY_MISMATCH", httpStatus: 409,
+    });
+  }
+  // Cache failure cannot prevent an authorized evidence read. Offline access is
+  // available only for entries actually retained by the separate bounded cache.
+  await cacheCanonicalPreliminaryNeedEvidence(ownerUserId, evidence).catch(() => undefined);
+  return evidence;
 }
 
 export function getCanonicalEstimateParameterSessionSnapshot(

@@ -228,12 +228,17 @@ export function buildStructuredEstimateRequestDraft(
           sourceLabel: "Предварительная потребность из утверждённого определения",
           formulaId: need.formulaId,
           quantityFormula: null,
-          calculationTrace: JSON.stringify(need.calculationTrace),
+          calculationTrace: need.calculationTrace == null ? null : JSON.stringify(need.calculationTrace),
           sourceParameters: {
             rowCode: need.rowId,
             rowSha256: need.needSha256,
-            normativeTrace: need.normativeTrace,
-            normativeRowTraceV3: need.normativeTrace,
+            ...(need.evidenceStatus === "referenced" ? {
+              canonicalNeedEvidenceStatus: "referenced",
+              canonicalNeedEvidenceReference: need.evidenceReference,
+            } : {
+              normativeTrace: need.normativeTrace,
+              normativeRowTraceV3: need.normativeTrace,
+            }),
             canonicalBackendRevisionId: payload.canonicalBackend?.revisionId,
             canonicalBackendReleaseId: payload.canonicalBackend?.releaseId,
             canonicalBackendCatalogId: payload.canonicalBackend?.catalogId,

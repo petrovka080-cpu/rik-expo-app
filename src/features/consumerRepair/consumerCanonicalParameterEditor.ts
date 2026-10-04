@@ -32,6 +32,7 @@ import {
 import {
   CANONICAL_PARAMETER_CORE_SCHEMA_VERSION,
   resolveCanonicalParameterVisibility,
+  canonicalParameterVisibilityMissingParameterIds,
   type CanonicalParameter,
   type CanonicalParameterSession,
   type CanonicalParameterValue,
@@ -474,14 +475,37 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
     // reviving a branch the user's known inputs disabled.
     return resolveCanonicalParameterVisibility(parameter.visibilityCondition, values);
   };
+  const parameterById = new Map(allParameters.map(parameter => [parameter.parameterId, parameter]));
+  const activeQuestionIds = new Set<string>();
+  const visitQuestion = (id: string, path: ReadonlySet<string>): void => {
+    const parameter = parameterById.get(id);
+    if (!parameter || conditionState(parameter) === false) return;
+    const selectors = canonicalParameterVisibilityMissingParameterIds(parameter.visibilityCondition, values);
+    const editableSelectors = selectors.filter(selector => parameterById.has(selector));
+    // Preserve a question on malformed/cyclic or unsupported dependency graphs;
+    // never turn an unresolved backend need into a complete editor session.
+    if (path.has(id) || editableSelectors.length === 0) {
+      activeQuestionIds.add(id);
+      return;
+    }
+    const nextPath = new Set([...path, id]);
+    // A technology/supply choice decides which numerical branch can apply.
+    // Ask that choice before quantities for all competing undecided variants.
+    const branchChoices = editableSelectors.filter(selector => {
+      const candidate = parameterById.get(selector);
+      return candidate?.value == null && (candidate?.valueType === "boolean" || Boolean(candidate?.allowedValues?.length));
+    });
+    (branchChoices.length > 0 ? branchChoices : editableSelectors).forEach(selector => visitQuestion(selector, nextPath));
+  };
+  input.activeNeedParameterIds.forEach(id => visitQuestion(id, new Set()));
   const rawVisibleParameters = allParameters.filter((parameter) => {
     const state = conditionState(parameter);
-    return input.activeNeedParameterIds.has(parameter.parameterId)
+    return activeQuestionIds.has(parameter.parameterId)
       ? state !== false
       : state === true;
   });
   const visibleParameters = rawVisibleParameters.map((parameter): CanonicalParameter =>
-    parameter.value == null && input.activeNeedParameterIds.has(parameter.parameterId)
+    parameter.value == null && activeQuestionIds.has(parameter.parameterId)
       ? {
         ...parameter,
         requiredLevel: "BLOCKING_REQUIRED",

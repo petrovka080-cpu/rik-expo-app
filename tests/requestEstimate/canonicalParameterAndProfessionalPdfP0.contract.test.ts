@@ -112,7 +112,7 @@ describe("P0 canonical parameter editor and professional PDF", () => {
     expect(snapshot.catalog).toBe(asphaltCatalog);
     expect(snapshot.revision.preliminaryNeeds).toHaveLength(3);
     expect(JSON.stringify(snapshot)).not.toContain("largeUnusedTrace");
-    expect(child.preliminaryNeeds?.[0].calculationTrace.largeUnusedTrace).toHaveLength(100000);
+    expect(child.preliminaryNeeds?.[0].calculationTrace?.largeUnusedTrace).toHaveLength(100000);
   });
 
   it("keeps generated per-output and per-unit formula inputs out of the consumer form", () => {
