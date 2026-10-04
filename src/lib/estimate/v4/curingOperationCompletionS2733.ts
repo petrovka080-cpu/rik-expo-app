@@ -77,7 +77,7 @@ export function buildCuringOperationCompletionS2733(catalogId: string) {
   });
   return { ...addition, formulas: addition.formulas.map((f, index) => ({ ...f, expression_source: rows[index]!.expression, output_unit_id: rows[index]!.unitId })),
     resources: addition.resources.map(r => ({ ...r, resource_graph: { ...r.resource_graph,
-      ...(r.row_id === CURING_COMPLETION_ROWS.includedKit ? { includedInResourceOwnerRowId: CURING_COMPLETION_ROWS.equipment } : {}) },
+      ...(r.row_id === CURING_COMPLETION_ROWS.includedKit ? { includedInResourceOwnerRowId: CURING_COMPLETION_ROWS.equipment } : {}) } as Record<string, unknown>,
       source_metadata: { ...r.source_metadata, universal_consumption_claimed: false, universal_productivity_claimed: false,
         quantity_basis: "APPROVED_PROJECT_CURING_METHOD_AND_DIRECT_PROJECT_SCHEDULE" } })) };
 }
