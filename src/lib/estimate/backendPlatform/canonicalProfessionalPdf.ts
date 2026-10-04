@@ -10,7 +10,7 @@ import {
 import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-33-operation-material-categories" as const;
+  "canonical-professional-pdf.r4-a13-s27-33-operation-cost-owners" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -135,15 +135,33 @@ function assertSingleCurrency(
   return [...currencies][0] ?? nullableText(revision.currency_code) ?? "KGS";
 }
 
-function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number): string {
+function includedCostOwnerTitle(row: CanonicalArtifactRow, rowsById: ReadonlyMap<string, CanonicalArtifactRow>): string | null {
+  const visited = new Set([String(row.row_id)]);
+  let current = row;
+  while (true) {
+    const graph = objectValue(objectValue(current.calculation_trace).resourceGraph);
+    if (graph.costTreatment !== "INCLUDED_IN_RESOURCE_ROWS") return null;
+    const ownerId = nullableText(graph.includedInResourceOwnerRowId);
+    if (!ownerId || visited.has(ownerId)) return null;
+    visited.add(ownerId);
+    const owner = rowsById.get(ownerId);
+    if (!owner) return null;
+    if (owner.included_in_estimate === true) return canonicalArtifactVisibleRowTitle(owner);
+    current = owner;
+  }
+}
+
+function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, rowsById: ReadonlyMap<string, CanonicalArtifactRow>): string {
   const category = canonicalProfessionalPdfCategory(row);
   const includedInEstimate = row.included_in_estimate === true;
   const resourceGraph = objectValue(objectValue(row.calculation_trace).resourceGraph);
   const costTreatment = nullableText(resourceGraph.costTreatment);
+  const ownerTitle = costTreatment === "INCLUDED_IN_RESOURCE_ROWS" ? includedCostOwnerTitle(row, rowsById) : null;
   const dispositionRu = includedInEstimate
     ? null
     : costTreatment === "INCLUDED_IN_RESOURCE_ROWS"
-      ? "Отдельно не оплачивается: стоимость учитывается в труде и механизмах."
+      ? ownerTitle ? `Отдельно не оплачивается: стоимость включена в позицию «${ownerTitle}».`
+        : "Отдельно не оплачивается: стоимость учитывается в труде и механизмах."
       : costTreatment === "CONTROL_OR_DOCUMENT"
         ? "Контрольная или исполнительная позиция; отдельно не суммируется."
         : costTreatment === "INFORMATIONAL_SCOPE"
@@ -236,6 +254,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     });
   }
   const preliminaryRowIds = new Set(preliminaryNeeds.map((row) => String(row.row_id)));
+  const rowsById = new Map(rows.map(row => [String(row.row_id), row]));
   const operation = (row: CanonicalArtifactRow) => {
     return canonicalEstimateOperationReference(objectValue(objectValue(row.calculation_trace).resourceGraph).operationCompositionV1);
   };
@@ -267,7 +286,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
       : hasOperations && key !== previousOperationKey ? `<tr class="operation"><td colspan="7"><strong>Работы и ресурсы сметы</strong></td></tr>` : "";
     previousOperationKey = key;
     return heading + (preliminaryRowIds.has(String(row.row_id))
-      ? renderPreliminaryNeedRow(row, index + 1, input.parameterTitlesRu ?? {}, questionNumbers) : renderClientRow(row, index + 1));
+      ? renderPreliminaryNeedRow(row, index + 1, input.parameterTitlesRu ?? {}, questionNumbers) : renderClientRow(row, index + 1, rowsById));
   }).join("");
   const questionAppendix = questionNumbers?.size
     ? `<h2>Исходные сведения для уточнения состава</h2><div class="notice">Сведения связаны с позициями по номерам. Применимость и количество пока не подтверждены; неизвестные значения не заменены нулями.</div><table><tbody>${[...questionNumbers].map(([id, number]) => `<tr><td style="width:8%">${number}</td><td>${escapeCanonicalArtifactHtml(String(input.parameterTitlesRu?.[id]))}</td></tr>`).join("")}</tbody></table>` : "";

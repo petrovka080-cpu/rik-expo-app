@@ -125,7 +125,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-33-operation-material-categories");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-33-operation-cost-owners");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,
@@ -373,6 +373,67 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(projection.html.indexOf("PLACEMENT_PUMP")).toBeLessThan(projection.html.indexOf("Уход за бетоном</strong>"));
     expect(projection.html.indexOf("CURING_LABOUR")).toBeLessThan(projection.html.indexOf("CURING_WATER"));
     for (const title of ["CONCRETE_SUPPLY", "CURING_LABOUR", "PLACEMENT_PUMP", "CURING_WATER"]) expect(projection.html.match(new RegExp(title, "gu"))).toHaveLength(1);
+  });
+
+  it("names the current paid cost owner across operation boundaries without changing quantities or totals", () => {
+    const source = rows(3);
+    source[0]!.title_ru = 'Сварочный труд <img src=x> & оператор';
+    source[0]!.category = "labor";
+    source[0]!.section = "labor";
+    source[0]!.calculation_trace = { resourceGraph: { operationCompositionV1: {
+      contractVersion: "canonical-operation-resource/v1", groupId: "embedded", groupTitleRu: "Закладные",
+      operationId: "labor", operationTitleRu: "Труд", completionCriterionRu: "Работы завершены.",
+    } } };
+    for (const [index, category] of [[1, "equipment"], [2, "material"]] as const) {
+      source[index] = { ...source[index]!, category, included_in_estimate: false, included_in_procurement: false,
+        unit_price: null, amount: null, calculation_trace: { specificationRu: "Проектная комплектация", resourceGraph: {
+          costTreatment: "INCLUDED_IN_RESOURCE_ROWS", includedInResourceOwnerRowId: "row-1",
+        } } };
+    }
+    const before = JSON.stringify(source);
+    const projection = buildCanonicalProfessionalPdfProjection({ revision: revision(3), rows: source, workTitleRu: "Закладные" });
+    expect(projection.html.match(/стоимость включена в позицию «Сварочный труд &lt;img src=x&gt; &amp; оператор»/gu)).toHaveLength(2);
+    expect(projection.html).not.toContain("стоимость учитывается в труде и механизмах");
+    expect(projection.html).not.toContain("<img");
+    expect(projection.html).toContain("Проектная комплектация");
+    expect(projection).toMatchObject({ pricedRowCount: 1, missingPriceRowCount: 0, nonPayableRowCount: 2,
+      categoryTotals: { material: 0, equipment: 0, work: 200 } });
+    expect(JSON.stringify(source)).toBe(before);
+  });
+
+  it("resolves an included owner chain and leaves missing, excluded, cyclic and preliminary owners unclaimed", () => {
+    const source = rows(3);
+    for (const index of [1, 2]) source[index] = { ...source[index]!, included_in_estimate: false,
+      included_in_procurement: false, unit_price: null, amount: null, calculation_trace: { resourceGraph: {
+        costTreatment: "INCLUDED_IN_RESOURCE_ROWS", includedInResourceOwnerRowId: `row-${index}`,
+      } } };
+    const project = () => buildCanonicalProfessionalPdfProjection({ revision: revision(3), rows: source, workTitleRu: "Цепочка включения" });
+    expect(project().html.match(/стоимость включена в позицию «Профессиональная позиция 1»/gu)).toHaveLength(2);
+    for (const ownerId of ["missing", "row-3", "preliminary"]) {
+      source[1]!.calculation_trace = { resourceGraph: { costTreatment: "INCLUDED_IN_RESOURCE_ROWS", includedInResourceOwnerRowId: ownerId } };
+      const projection = buildCanonicalProfessionalPdfProjection({ revision: revision(3), rows: source,
+        preliminaryNeeds: [{ ...rows(1)[0]!, row_id: "preliminary", ordinal: 3, included_in_estimate: false,
+          quantity: null, unit_price: null, amount: null, ownership_status: "PRELIMINARY_NEED" }], workTitleRu: "Без владельца" });
+      expect(projection.html).not.toContain("стоимость включена в позицию");
+      expect(projection.html.match(/стоимость учитывается в труде и механизмах/gu)).toHaveLength(2);
+    }
+    source[1]!.calculation_trace = { resourceGraph: { costTreatment: "INCLUDED_IN_RESOURCE_ROWS", includedInResourceOwnerRowId: "row-1" } };
+    source[0]!.included_in_estimate = false;
+    expect(project().html).not.toContain("стоимость включена в позицию");
+  });
+
+  it("retains control, informational and excluded captions despite unrelated owner metadata", () => {
+    const source = rows(4);
+    for (const [index, costTreatment] of [[1, "CONTROL_OR_DOCUMENT"], [2, "INFORMATIONAL_SCOPE"], [3, "SEPARATE_RESOURCE"]] as const) {
+      source[index] = { ...source[index]!, included_in_estimate: false, calculation_trace: { resourceGraph: {
+        costTreatment, includedInResourceOwnerRowId: "row-1",
+      } } };
+    }
+    const projection = buildCanonicalProfessionalPdfProjection({ revision: revision(4), rows: source, workTitleRu: "Состав" });
+    expect(projection.html).toContain("Контрольная или исполнительная позиция; отдельно не суммируется.");
+    expect(projection.html).toContain("Условие выполнения работ; отдельно не суммируется.");
+    expect(projection.html).toContain("Позиция исключена из итога сохранённой версии.");
+    expect(projection.html).not.toContain("стоимость включена в позицию");
   });
 
   it("escapes title and specification markup without creating embedded links", () => {

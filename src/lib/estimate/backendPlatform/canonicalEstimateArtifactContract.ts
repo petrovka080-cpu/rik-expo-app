@@ -8,7 +8,7 @@ import { localizeKnownTechnologyVariantSuffixRu } from "./russianTechnologyTitle
 
 export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r8";
 export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r4-operation-allocation-specifications";
-export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:9";
+export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:10";
 
 /** Keep caller idempotency within each renderer; do not collide with legacy jobs. */
 export function canonicalProcurementRequestKey(idempotencyKey: string): string {
