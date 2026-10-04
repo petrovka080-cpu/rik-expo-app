@@ -7,7 +7,7 @@ import { buildRequestEstimateViewModel, type RequestEstimateViewModel } from "..
 import * as cards from "../../src/lib/estimatePresentation/buildCanonicalParameterCards";
 import type { CanonicalParameterSession } from "../../src/lib/estimate/canonicalParameters";
 import type { EstimateDraftRevision } from "../../src/lib/estimate/estimateDraftRevisionContract";
-import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
+import type { CanonicalEstimateCatalogItem, CanonicalEstimateRevisionView } from "../../src/lib/estimate/backendPlatform/contracts";
 import { ESTIMATE_PLATFORM_API_VERSION } from "../../src/lib/estimate/backendPlatform/contracts";
 import { PRESSURE_SEWER_PIPELINE_CATALOG_ID, PRESSURE_SEWER_PIPELINE_FORMULAS, PRESSURE_SEWER_PIPELINE_PARAMETERS, PRESSURE_SEWER_PIPELINE_RESOURCES, PRESSURE_SEWER_PIPELINE_RUNTIME_CLASSIFICATION, PRESSURE_SEWER_PIPELINE_RUNTIME_INPUT } from "../../src/lib/estimate/v4/pressureSewerPipelineR1";
 
@@ -44,7 +44,7 @@ function pressureSession(): CanonicalParameterSession {
   };
   const facts = { psp_route_length_m: 100, psp_pipe_designation: "ПНД PE100 SDR17 PN10 DN110", psp_pipe_outside_diameter_mm: 110,
     psp_average_trench_depth_m: 1.8, psp_fitting_quantity_piece: 4, psp_isolation_valve_quantity_piece: 2, psp_air_valve_quantity_piece: 1, psp_washout_quantity_piece: 1 };
-  return buildConsumerCanonicalParameterSession({ catalog, draftId: "parameter-render-owned-fixture", revision: {
+  const fullRevision: CanonicalEstimateRevisionView = {
     apiVersion: ESTIMATE_PLATFORM_API_VERSION, revisionId: "559595a7-61a0-458a-97e3-cc527cd5bfa4",
     parentRevisionId: null, releaseId: catalog.releaseId, catalogId: catalog.catalogId, revisionNumber: 1,
     status: "ready", currencyCode: "KGS", parameters: { ...facts, ...PRESSURE_SEWER_PIPELINE_RUNTIME_INPUT },
@@ -53,7 +53,8 @@ function pressureSession(): CanonicalParameterSession {
     amendmentContract: { rowOverrides: {}, customRows: [], releaseMigration: null }, totals: { amount: null }, rowCount: 47,
     checksumSha256: "e".repeat(64), compilerVersion: "canonical-backend.s27-27", parameterSchemaHash: "pressure-sewer-s27-27",
     createdAt: "2026-10-02T00:00:00.000+06:00",
-  } });
+  };
+  return buildConsumerCanonicalParameterSession({ catalog, draftId: "parameter-render-owned-fixture", revision: fullRevision });
 }
 
 function viewModel(): RequestEstimateViewModel {
