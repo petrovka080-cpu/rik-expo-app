@@ -1,13 +1,13 @@
 {
   "schemaVersion": "r568-local-developer-canonical-release.v1",
   "status": "ACTIVE_LOCAL_DEVELOPER_CANONICAL_RELEASE",
-  "definitionReleaseId": "cb5c04e7-0565-5b2f-8fed-c7a0c53e2b9e",
-  "searchReleaseId": "d843081a-2643-5eab-842b-e505ac371ed2",
+  "definitionReleaseId": "c3487630-ef23-5593-88f2-b51bbe0cfb54",
+  "searchReleaseId": "0fe2bdcf-6c93-5c4b-87b2-d3d0c944e939",
   "definitionReleaseStatus": "prepared",
   "searchReleaseStatus": "draft",
-  "definitionSnapshotSha256": "a54a9870e0bfc8615fbee73cfc285238be4e6d249077d87b17bf84e00583523c",
-  "manifestHashChainSha256": "a54a9870e0bfc8615fbee73cfc285238be4e6d249077d87b17bf84e00583523c",
-  "searchHashChainSha256": "d4720650897f7769e3e5f10161f7b55885d7814dbc93babd002722afc6a4d01a",
+  "definitionSnapshotSha256": "f8e53424859dc913306de548ddd345784303ad353e59e23542f05cb75ff85140",
+  "manifestHashChainSha256": "f8e53424859dc913306de548ddd345784303ad353e59e23542f05cb75ff85140",
+  "searchHashChainSha256": "1961f156d9301eb5673b2371bf2b1c0c93907d3cfa24436aa0a98c18d27be9b6",
   "identities": 11610,
   "visibleCanonicalDefinitions": 10322,
   "aliasesRedirects": 1288,
@@ -15,7 +15,7 @@
   "runtimeAdditionalAdmissions": 9,
   "currentInventoryRowsIncludingAliases": 11619,
   "denominatorNote": "11610 is the immutable historical source-identity reconciliation (10322 canonical owners plus 1288 redirects); the current cumulative runtime also preserves 9 separately identified inherited admissions.",
-  "owner": "S27_23_HVAC_WAVIN_HEP2O22_HEATING_STANDARD_SUCCESSOR",
+  "owner": "S27_32_MATERIAL_PURCHASE_GROUP_SUCCESSOR",
   "productionAccessed": false,
   "fakeGreenClaimed": false
 }
