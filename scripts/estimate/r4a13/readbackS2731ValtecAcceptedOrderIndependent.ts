@@ -17,6 +17,10 @@ const OWNERS = ["02:material:pipe-sections", "02:consumable:cutter-wheels", "03:
   "04:component:straight-couplings", "04:consumable:cleaning-wipes", "05:component:elbows", "05:component:tees",
   "05:component:threaded-transitions", "05:component:terminal-caps", "05:consumable:cleaning-wipes", "05:consumable:thread-seal",
   "08:consumable:waste-bags"].map(id => PREFIX + id);
+const FLUID_BINDINGS = [
+  { row: "07:material:test-water", formula: "water_valtec_ppr20_test_water_s2723", consumed: "0.0137" },
+  { row: "07:material:flushing-water", formula: "water_valtec_ppr20_flush_water_s2723", consumed: "0.0411" },
+] as const;
 const CONTROLS = ["02:control:pipe-order", "02:control:pipe-remainder", "02:control:pipe-mass", "03:control:support-order", "03:control:support-remainder"].map(id => PREFIX + id);
 const BINDINGS = [{ owner: "02:material:pipe-sections", alias: "valtec_effective_pipe_sections" },
   { owner: "03:fastener:support-packages", alias: "valtec_effective_support_packages" }] as const;
@@ -52,7 +56,7 @@ async function main() {
       from public.estimate_cumulative_manifest_entry m join public.estimate_definition_version d on d.id=m.definition_version_id
       join public.estimate_content_passport_r3 p on p.definition_version_id=m.definition_version_id where m.release_id=$1 and m.catalog_id=$2`, [current.definitionReleaseId, CATALOG])).rows[0] as Json;
     invariant(target?.runtime_publication_state === "CANDIDATE" && target.content_status === "CANDIDATE_READY" && target.content_gate_status === "GREEN"
-      && target.applicability.wholeSelectedSupplyOwners === 13, "STOP_VALTEC_TARGET_GATE");
+      && target.applicability.wholeSelectedSupplyOwners === 13 && target.applicability.continuousFluidSupplyOwners === 2, "STOP_VALTEC_TARGET_GATE");
     invariant([target.parameter_count, target.formula_count, target.resource_count].map(Number).join(":") === "37:38:52", "STOP_VALTEC_SHAPE");
     const parameters = (await db.query("select * from public.estimate_parameter_definition where definition_version_id=$1 order by ordinal", [target.definition_version_id])).rows as CanonicalEstimateParameterDefinition[];
     const formulas = (await db.query("select formula_id,output_unit_id,expression_source,ast,input_parameter_ids,ast_sha256 from public.estimate_formula_graph where definition_version_id=$1 order by formula_id", [target.definition_version_id])).rows as CanonicalEstimateFormulaDefinition[];
@@ -65,7 +69,8 @@ async function main() {
       where b.definition_version_id=$1 and l.locator_key=$2`, [target.definition_version_id, "water-valtec-ppr20-accepted-order-s27-31"])).rows[0]?.locator as Json;
     invariant(locator?.sourcePackSha256 === sha(readFileSync(SOURCE)) && parameters.length === 37 && formulas.length === 38 && resources.length === 52
       && sameIds(resources.map(row => row.row_id), locator.expectedResourceIds) && sameIds(formulas.map(row => row.formula_id), locator.expectedFormulaIds)
-      && sameIds(OWNERS, locator.selectedSupplyOwnerIds) && sameIds(CONTROLS, locator.effectiveControlRowIds), "STOP_VALTEC_EXACT_MATRIX_SOURCE_JOIN");
+      && sameIds(OWNERS, locator.selectedSupplyOwnerIds) && sameIds(CONTROLS, locator.effectiveControlRowIds)
+      && sameIds(FLUID_BINDINGS.map(binding => PREFIX + binding.row), locator.continuousFluidSupplyOwnerIds), "STOP_VALTEC_EXACT_MATRIX_SOURCE_JOIN");
     invariant(validateMasterFormulaGraphConsistency(formulas).length === 0, "STOP_VALTEC_FORMULA_DRIFT");
     const ids = new Set(parameters.map(parameter => parameter.parameter_id));
     const byFormula = new Map(formulas.map(formula => [formula.formula_id, formula]));
@@ -74,7 +79,16 @@ async function main() {
       invariant(formula && resource.formula_id === graph.formulaId && formula.output_unit_id === graph.normalizedUom
         && formula.input_parameter_ids?.every(id => ids.has(id)), "STOP_VALTEC_RESOURCE_BINDING");
     }
-    invariant(sameIds(resources.filter(row => row.resource_graph.purchaseBalanceV1).map(row => row.row_id), OWNERS), "STOP_VALTEC_13_OWNERS");
+    invariant(sameIds(resources.filter(row => row.resource_graph.purchaseBalanceV1).map(row => row.row_id),
+      [...OWNERS, ...FLUID_BINDINGS.map(binding => PREFIX + binding.row)]), "STOP_VALTEC_15_OWNERS");
+    for (const binding of FLUID_BINDINGS) {
+      const owner = resources.find(row => row.row_id === PREFIX + binding.row)!, policy = (owner.resource_graph as Json).purchaseBalanceV1;
+      invariant(owner.unit_id === "m3" && owner.formula_id === binding.formula && policy.unitId === "m3" && policy.quantityMode === "canonical_decimal"
+        && policy.balanceScope === "new_order_vs_required_consumption" && policy.stockExpression === "0" && policy.reserveExpression === "0"
+        && policy.consumedExpression === byFormula.get(binding.formula)!.expression_source
+        && !["orderQuantumExpression", "requirementBasis", "plannedConsumptionExpression"].some(key => Object.prototype.hasOwnProperty.call(policy, key)),
+      "STOP_VALTEC_CONTINUOUS_WATER_POLICY");
+    }
     for (const ownerId of OWNERS) {
       const owner = resources.find(row => row.row_id === ownerId)!, policy = (owner.resource_graph as Json).purchaseBalanceV1;
       invariant(owner.unit_id === "item" && policy.unitId === "item" && policy.quantityMode === "supply_quantum" && policy.orderQuantumExpression === "1"
@@ -142,6 +156,32 @@ async function main() {
         invariant(code === "PROCUREMENT_MATERIAL_SHORTAGE", "STOP_VALTEC_SHORTAGE_READINESS"); }
       controls.push({ acceptedPipe: pipe ?? "27", acceptedSupport: support ?? "3", length, excess, mass, supportOrder, supportExcess, deficit });
     }
+    const fluidControls = [];
+    for (const [test, flush, testGap, flushGap, testExcess, flushExcess] of [
+      ["0", "0.0411", "0.0137", "0", "0", "0"], ["0.0137", "0", "0", "0.0411", "0", "0"],
+      ["0.01", "0.04", "0.0037", "0.0011", "0", "0"], ["0.02", "0.05", "0", "0", "0.0063", "0.0089"],
+    ]) {
+      const result = await compileCanonicalEstimateCore({ operation: "recalculate", compilerVersion: "s27-31-valtec-independent-db-continuous-water", catalogId: CATALOG,
+        primaryMeasureParameterId: "route_length_m", parameterDefinitions: parameters, formulaDefinitions: formulas, resourceDefinitions: resources,
+        submittedParameters: fixture, confirmedParameters: canonicalApprovedBaselineRuntimeParameters(baseline), rowOverrides: Object.fromEntries([
+          ["07:material:test-water", test], ["07:material:flushing-water", flush],
+        ].map(([id, quantity]) => [PREFIX + id, { quantity, includedInProcurement: true, provenance: { kind: "manual", reason: "VALIDATION_FIXTURE continuous supply" } }])),
+        priceItems: [], currencyCode: "KGS", maximumResourceRows: 52, hashJson: async value => sha(JSON.stringify(value)) });
+      invariant(result.rows.length === 52 && result.preliminaryNeeds.length === 0, "STOP_VALTEC_WATER_COMPOSITION");
+      for (const [binding, q, gap, excess] of [[FLUID_BINDINGS[0], test, testGap, testExcess], [FLUID_BINDINGS[1], flush, flushGap, flushExcess]] as const) {
+        const row = result.rows.find(value => value.row_id === PREFIX + binding.row)!, trace = row.calculation_trace as Json;
+        invariant(row.quantity === q && trace.calculatedQuantityBeforeOverride === binding.consumed
+          && trace.purchaseBalance.quantityMode === "canonical_decimal" && trace.purchaseBalance.quantum === null
+          && trace.purchaseBalance.consumed === binding.consumed && trace.purchaseBalance.consumptionShortage === gap
+          && trace.purchaseBalance.excessOrderAboveRequiredConsumption === excess && row.included_in_procurement === (gap === "0"), "STOP_VALTEC_WATER_SHORTAGE");
+      }
+      invariant(result.rows.find(row => row.row_id === PREFIX + "07:service:controlled-discharge")?.quantity === "0.0411"
+        && result.rows.find(row => row.row_id === PREFIX + "07:operation:flushing")?.quantity === "100"
+        && result.rows.find(row => row.row_id === PREFIX + "07:operation:pressure-test")?.quantity === "1", "STOP_VALTEC_PHYSICAL_WATER_FLOW");
+      let code: unknown; try { assertCanonicalPurchaseReadinessV1(result.rows); } catch (error) { code = (error as { code?: unknown }).code; }
+      invariant(code === (testGap === "0" && flushGap === "0" ? undefined : "PROCUREMENT_MATERIAL_SHORTAGE"), "STOP_VALTEC_WATER_PROCUREMENT_GUARD");
+      fluidControls.push({ test, flush, testGap, flushGap, testExcess, flushExcess });
+    }
     const repacked = await compileCanonicalEstimateCore({ operation: "compile", compilerVersion: "s27-31-valtec-independent-db-manufacturer-two-metre", catalogId: CATALOG,
       primaryMeasureParameterId: "route_length_m", parameterDefinitions: parameters, formulaDefinitions: formulas, resourceDefinitions: resources,
       submittedParameters: { ...fixture, pipe_section_length_m: 2, support_package_item: 125 },
@@ -160,7 +200,7 @@ async function main() {
       invariant(repacked.rows.find(row => row.row_id === PREFIX + id)?.quantity === expected, "STOP_VALTEC_REPACKED_QUANTITY:" + id);
     }
     const receipt = { contract: "s27-31-valtec-accepted-order-independent-readback/v1", status: "GREEN_LOCAL_DB_DEFINITION_CONTROLS", capturedAt: new Date().toISOString(),
-      identity, release, currentSearchReleaseId: current.searchReleaseId, target, matrixSha256: sha(JSON.stringify(locator)), controls, changedTitles, dbWrites: false,
+      identity, release, currentSearchReleaseId: current.searchReleaseId, target, matrixSha256: sha(JSON.stringify(locator)), controls, fluidControls, changedTitles, dbWrites: false,
       actualWriter: false, nativeAcceptance: false, ordinaryActorAcceptance: false };
     mkdirSync(dirname(OUTPUT), { recursive: true }); writeFileSync(OUTPUT, `${JSON.stringify(receipt, null, 2)}\n`, "utf8");
     process.stdout.write(`${JSON.stringify({ status: receipt.status, outputPath: OUTPUT, target: target.definition_version_id })}\n`);

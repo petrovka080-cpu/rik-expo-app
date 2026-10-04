@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 import {
   WATER_VALTEC_PPR20_STANDARD_S2723_ACCEPTANCE_INPUT,
   VALTEC_SELECTED_SUPPLIES,
+  VALTEC_FLUID_SUPPLIES,
   WATER_VALTEC_PPR20_STANDARD_S2723_FORMULAS,
   WATER_VALTEC_PPR20_STANDARD_S2723_PARAMETERS,
   WATER_VALTEC_PPR20_STANDARD_S2723_RESOURCES,
@@ -24,6 +25,49 @@ function sha256File(path: string): string {
 }
 
 describe("S27.23 VALTEC PP-R 20 standard internal water route", () => {
+  test("guards both continuous water orders without changing test, flushing or controlled-discharge consumption", async () => {
+    expect(VALTEC_FLUID_SUPPLIES).toHaveLength(2);
+    const baseline = await compileWaterValtecPpr20StandardS2723({ ...WATER_VALTEC_PPR20_STANDARD_S2723_ACCEPTANCE_INPUT });
+    for (const [test, flush, testGap, flushGap, testExcess, flushExcess] of [
+      ["0", "0", "0.0137", "0.0411", "0", "0"],
+      ["0", "0.0411", "0.0137", "0", "0", "0"],
+      ["0.0137", "0", "0", "0.0411", "0", "0"],
+      ["0.01", "0.04", "0.0037", "0.0011", "0", "0"],
+      ["0.02", "0.05", "0", "0", "0.0063", "0.0089"],
+    ]) {
+      const result = await compileWaterValtecPpr20StandardS2723({ ...WATER_VALTEC_PPR20_STANDARD_S2723_ACCEPTANCE_INPUT }, Object.fromEntries([
+        ["water-ppr20:07:material:test-water", test], ["water-ppr20:07:material:flushing-water", flush],
+      ].map(([id, q]) => [id, { quantity: q, includedInProcurement: true, provenance: { kind: "manual", reason: "VALIDATION_FIXTURE continuous supply; physical consumption unchanged" } }])));
+      const stored = (JSON.parse(JSON.stringify(result.rows)) as typeof result.rows).map(row => { delete row.procurement_readiness; return row; });
+      const reopened = stored.map(row => canonicalEstimateRevisionRowFromStorage(row, null));
+      for (const [id, q, consumed, gap, excess] of [["test-water", test, "0.0137", testGap, testExcess], ["flushing-water", flush, "0.0411", flushGap, flushExcess]]) {
+        const baselineBalance = (baseline.rows.find(row => row.row_id === `water-ppr20:07:material:${id}`)?.calculation_trace as Record<string, unknown>).purchaseBalance;
+        expect(baselineBalance).toMatchObject({ quantityMode: "canonical_decimal", quantum: null, consumed, consumptionShortage: "0", procurementReady: true });
+        expect(reopened.find(row => row.rowId === `water-ppr20:07:material:${id}`)).toMatchObject({ quantity: q, includedInProcurement: gap === "0",
+          calculationTrace: { manualQuantityOverride: true, calculatedQuantityBeforeOverride: consumed,
+            purchaseBalance: { quantityMode: "canonical_decimal", quantum: null, consumed, consumptionShortage: gap,
+              excessOrderAboveRequiredConsumption: excess, procurementReady: gap === "0" } } });
+        const policy = WATER_VALTEC_PPR20_STANDARD_S2723_RESOURCES.find(row => row.row_id === `water-ppr20:07:material:${id}`)?.resource_graph.purchaseBalanceV1;
+        expect(policy).not.toHaveProperty("orderQuantumExpression");
+        expect(policy).not.toHaveProperty("requirementBasis");
+        expect(policy).not.toHaveProperty("plannedConsumptionExpression");
+      }
+      for (const row of baseline.rows.filter(row => !VALTEC_FLUID_SUPPLIES.some(value => row.row_id === `water-ppr20:${value.rowId}`)))
+        expect(result.rows.find(value => value.row_id === row.row_id)?.quantity).toBe(row.quantity);
+      const selection = selectCanonicalArtifactRows(stored);
+      const build = () => buildCanonicalProcurementProjection({ revision: { id: "TEST", release_id: "TEST", catalog_id: "TEST", checksum_sha256: "TEST", row_count: stored.length },
+        sourceRows: selection.sourceRows, procurementRows: selection.procurementRows });
+      if (testGap !== "0" || flushGap !== "0") {
+        let failure: unknown;
+        try { build(); } catch (error) { failure = error; }
+        expect(failure).toMatchObject({ code: "PROCUREMENT_MATERIAL_SHORTAGE",
+          shortages: [["test-water", testGap], ["flushing-water", flushGap]]
+            .filter(([, gap]) => gap !== "0")
+            .map(([id, gap]) => expect.objectContaining({ rowId: `water-ppr20:07:material:${id}`,
+              unitId: "m3", consumptionShortage: gap, reserveDeficit: "0" })) });
+      } else expect(build).not.toThrow();
+    }
+  });
   test("reconciles accepted pipe and support supplies while installation, fusion, water and independent delivery retain their physical basis", async () => {
     const baseline = await compileWaterValtecPpr20StandardS2723({ ...WATER_VALTEC_PPR20_STANDARD_S2723_ACCEPTANCE_INPUT });
     const manual = { kind: "manual", reason: "VALIDATION_FIXTURE: whole supplied units, no inventory claim" };

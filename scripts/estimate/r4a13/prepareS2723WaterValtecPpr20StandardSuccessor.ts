@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 
 import {
   VALTEC_SELECTED_SUPPLIES,
+  VALTEC_FLUID_SUPPLIES,
   WATER_VALTEC_PPR20_STANDARD_S2723_ACCEPTANCE_INPUT,
   WATER_VALTEC_PPR20_STANDARD_S2723_CATALOG_ID,
   WATER_VALTEC_PPR20_STANDARD_S2723_FORMULAS,
@@ -119,6 +120,8 @@ async function verifyCore(): Promise<Json> {
   });
   const assertions = {
     allWholeSupplyOwners: VALTEC_SELECTED_SUPPLIES.length === 13 && WATER_VALTEC_PPR20_STANDARD_S2723_PARAMETERS.length === 37,
+    allContinuousWaterOwners: VALTEC_FLUID_SUPPLIES.length === 2 && WATER_VALTEC_PPR20_STANDARD_S2723_RESOURCES
+      .filter(row => (row.resource_graph.purchaseBalanceV1 as Json)?.quantityMode === "canonical_decimal").length === 2,
     acceptedFiveControls: [["02:control:pipe-order", 112], ["02:control:pipe-remainder", 7], ["02:control:pipe-mass", 18.592],
       ["03:control:support-order", 400], ["03:control:support-remainder", 199]].every(([id, q]) => quantity(accepted.rows, `water-ppr20:${id}`) === q),
     acceptedPhysicalWorkUnchanged: ["02:operation:cutting", "04:operation:socket-fusion", "05:control:total-fusion-sockets",
@@ -276,6 +279,7 @@ void runMasterSingleDefinitionSuccessorR1({
     profileAssumptionsVisibleAndEditable: true,
     hydraulicDesignAndAdjacentSystemsExcluded: true,
     wholeSelectedSupplyOwners: 13,
+    continuousFluidSupplyOwners: 2,
     effectiveOrderOutputs: 2,
     effectivePhysicalControls: 5,
     inventoryCreditDeclared: false,
@@ -300,6 +304,7 @@ void runMasterSingleDefinitionSuccessorR1({
       expectedResourceIds: WATER_VALTEC_PPR20_STANDARD_S2723_RESOURCES.map(row => row.row_id),
       expectedFormulaIds: WATER_VALTEC_PPR20_STANDARD_S2723_FORMULAS.map(formula => formula.formula_id),
       selectedSupplyOwnerIds: VALTEC_SELECTED_SUPPLIES.map(supply => `water-ppr20:${supply.rowId}`),
+      continuousFluidSupplyOwnerIds: VALTEC_FLUID_SUPPLIES.map(supply => `water-ppr20:${supply.rowId}`),
       effectiveOutputBindings: VALTEC_SELECTED_SUPPLIES.flatMap(supply => "effective" in supply
         ? [{ ownerRowId: `water-ppr20:${supply.rowId}`, parameterId: supply.effective, unitId: "item" }] : []),
       effectiveControlRowIds: ["02:control:pipe-order", "02:control:pipe-remainder", "02:control:pipe-mass", "03:control:support-order", "03:control:support-remainder"]

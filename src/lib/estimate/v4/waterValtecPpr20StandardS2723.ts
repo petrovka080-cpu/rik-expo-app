@@ -191,6 +191,11 @@ export const VALTEC_SELECTED_SUPPLIES = [
   { rowId: "08:consumable:waste-bags", formula: "waste_bags" },
 ] as const;
 
+export const VALTEC_FLUID_SUPPLIES = [
+  { rowId: "07:material:test-water", formula: "test_water" },
+  { rowId: "07:material:flushing-water", formula: "flush_water" },
+] as const;
+
 export const WATER_VALTEC_PPR20_STANDARD_S2723_PARAMETERS:
 readonly CanonicalEstimateParameterDefinition[] = Object.freeze([...PARAMETERS.map(
   (descriptor, ordinal) => ({
@@ -419,6 +424,7 @@ function resource(spec: ResourceSpec, ordinal: number): CanonicalEstimateResourc
   const procurementEligible = spec.procurement
     ?? (["material", "component", "fastener", "consumable"].includes(spec.kind) && !informational);
   const supply = VALTEC_SELECTED_SUPPLIES.find(value => `water-ppr20:${value.rowId}` === spec.rowId);
+  const fluidSupply = VALTEC_FLUID_SUPPLIES.find(value => `water-ppr20:${value.rowId}` === spec.rowId);
   const selectedOrder = WATER_VALTEC_PPR20_STANDARD_S2723_FORMULAS.find(value => value.formula_id === spec.formula);
   const resourceGraph = {
     formulaId: spec.formula,
@@ -438,6 +444,8 @@ function resource(spec: ResourceSpec, ordinal: number): CanonicalEstimateResourc
         plannedConsumptionExpression: "base" in supply ? supply.base : selectedOrder!.expression_source },
       ...("effective" in supply ? { effectiveQuantityOutputV1: { parameterId: supply.effective, unitId: "item" } } : {}),
     } : {}),
+    ...(fluidSupply ? { purchaseBalanceV1: { quantityMode: "canonical_decimal", balanceScope: "new_order_vs_required_consumption",
+      unitId: "m3", consumedExpression: selectedOrder!.expression_source, stockExpression: "0", reserveExpression: "0" } } : {}),
     primaryMeasureParameterId: "route_length_m",
     preliminaryProfileId: WATER_VALTEC_PPR20_STANDARD_S2723_NORM_ID,
     visibleAssumptionPolicy: PROFILE.assumptionPolicy,
