@@ -96,3 +96,17 @@ export function planCanonicalEffectiveResourceQuantitiesV1(
     ? values : Object.fromEntries(Object.entries(values).filter(([id]) => !owners.has(id)));
   return { outputs, owners, ordered, stripIncoming };
 }
+
+/** Persist only this compile's authoritative effective outputs. An inherited
+ * output may disappear when its physical input is cleared or its branch closes;
+ * it must not survive in user provenance after the compiler removed it. */
+export function mergeCanonicalEffectiveResourceQuantityProvenanceV1(input: {
+  parameterDefinitions: readonly CanonicalEstimateParameterDefinition[];
+  resourceDefinitions: readonly CanonicalEstimateResourceDefinition[];
+  formulaDefinitions: readonly CanonicalEstimateFormulaDefinition[];
+  userParameters: Record<string, unknown>;
+  derivedParameters: Record<string, unknown>;
+}): Record<string, unknown> {
+  const plan = planCanonicalEffectiveResourceQuantitiesV1(input.parameterDefinitions, input.resourceDefinitions, input.formulaDefinitions);
+  return { ...plan.stripIncoming(input.userParameters), ...input.derivedParameters };
+}

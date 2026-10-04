@@ -6,6 +6,7 @@ import { compileCanonicalEstimateCore, type CanonicalEstimateCompileCoreInput } 
 import { estimateDeterministicHash } from "../../src/lib/estimate/estimateDeterministicHash";
 import { buildCanonicalProcurementProjection, selectCanonicalArtifactRows } from "../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract";
 import { CURING_MATERIAL_ACCESSORIES_ROWS as kits } from "../../src/lib/estimate/v4/curingMaterialAccessoriesS2733";
+import { mergeCanonicalEffectiveResourceQuantityProvenanceV1 } from "../../src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1";
 
 const addition = buildCuringOperationCompletionS2733("existing-curing-test");
 const added = addition.resources.filter(r => r.row_id !== ids.water), addedFormulaIds = new Set(added.map(r => r.formula_id));
@@ -102,5 +103,23 @@ describe("S27.33 existing curing profile and all method material orders", () => 
   it("keeps legacy default scope closed and rejects combined owner options", () => {
     expect(() => overlayS2732PurchaseGroup(source)).toThrow("UNKNOWN_CATALOG");
     expect(() => overlayS2732PurchaseGroup(source, { curingMaterialOwners: true, reinforcementOwners: true })).toThrow("OWNER_SCOPE_CONFLICT");
+  });
+  it("removes inherited effective order provenance when physical takeoff is cleared and refreshes a changed order", async () => {
+    const facts = withoutAdditionalKit("small_area"), parent = await compile(next, facts);
+    const sourceParameters = { ...facts, ...parent.derivedParameters }, changedFacts = { ...facts, impervious_sheet_area_m2: null };
+    const pending = await compile(next, changedFacts, { "material:concrete:impervious-curing-sheet": amendment("25.25") });
+    const merge = (userParameters: Record<string, unknown>, derivedParameters: Record<string, unknown>) => mergeCanonicalEffectiveResourceQuantityProvenanceV1({
+      parameterDefinitions: next.parameters as unknown as CanonicalEstimateCompileCoreInput["parameterDefinitions"],
+      resourceDefinitions: next.resources as unknown as CanonicalEstimateCompileCoreInput["resourceDefinitions"],
+      formulaDefinitions: next.formulas as unknown as CanonicalEstimateCompileCoreInput["formulaDefinitions"], userParameters, derivedParameters });
+    const merged = merge({ ...sourceParameters, ...changedFacts }, pending.derivedParameters);
+    expect(merged).toEqual(pending.parameters);
+    expect(merged).toMatchObject({ impervious_sheet_area_m2: null, curing_worker_h: 7 });
+    const changed = await compile(next, facts, { "material:concrete:impervious-curing-sheet": amendment("25.25") });
+    expect(merge(sourceParameters, changed.derivedParameters)).toEqual(changed.parameters);
+    const closedFacts = { ...facts, approved_external_curing_method: "WATER_CURING", impervious_sheet_area_m2: null,
+      impervious_sheet_designation: null, curing_material_accessories_pricing_mode: null, curing_water_m3: 1, curing_water_source_reference: "DEMO on-site water", curing_water_delivery_mode: "ON_SITE_SUPPLY" };
+    const closed = await compile(next, closedFacts);
+    expect(merge({ ...sourceParameters, ...closedFacts }, closed.derivedParameters)).toEqual(closed.parameters);
   });
 });

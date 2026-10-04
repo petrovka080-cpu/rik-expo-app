@@ -11,6 +11,7 @@ import {
   compileCanonicalEstimateCore,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts";
 import { canonicalEstimateStableJson } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism.ts";
+import { mergeCanonicalEffectiveResourceQuantityProvenanceV1 } from "../../../src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1.ts";
 import { canonicalApprovedBaselineRuntimeParameters } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline.ts";
 import {
   CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION,
@@ -334,7 +335,10 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
   });
   const { rows, totals } = compiled;
   const parameters = compiled.parameters;
-  effectiveUserParameters = { ...effectiveUserParameters, ...compiled.derivedParameters };
+  effectiveUserParameters = mergeCanonicalEffectiveResourceQuantityProvenanceV1({
+    parameterDefinitions: parameterResult.data ?? [], resourceDefinitions: resources, formulaDefinitions: formulaResult.data ?? [],
+    userParameters: effectiveUserParameters, derivedParameters: compiled.derivedParameters,
+  });
   const currencyCode = compiled.totals.currencyCode;
   const baselineAssumptions = Object.fromEntries(Object.entries(baselineParameters)
     .filter(([parameterId, value]) => !(parameterId in effectiveUserParameters)

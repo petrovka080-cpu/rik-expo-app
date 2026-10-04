@@ -31,6 +31,7 @@ import {
   compileCanonicalEstimateCore,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
 import { canonicalEstimateStableJson } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism";
+import { mergeCanonicalEffectiveResourceQuantityProvenanceV1 } from "../../../src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1";
 import {
   canonicalApprovedBaselineParameterIsRuntimeEligible,
   canonicalApprovedBaselineRuntimeDefaultValue,
@@ -2204,10 +2205,10 @@ async function compileClaimedJob(
     hashJson: sha256,
   });
   const { parameters, rows, totals } = compiled;
-  effectiveUserParameters = {
-    ...effectiveUserParameters,
-    ...compiled.derivedParameters,
-  };
+  effectiveUserParameters = mergeCanonicalEffectiveResourceQuantityProvenanceV1({
+    parameterDefinitions, resourceDefinitions: resources, formulaDefinitions: formulas,
+    userParameters: effectiveUserParameters, derivedParameters: compiled.derivedParameters,
+  });
   const baselineAssumptions = Object.fromEntries(
     Object.entries(baselineParameters).filter(
       ([parameterId, value]) =>
