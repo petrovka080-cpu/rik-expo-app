@@ -3065,7 +3065,7 @@ async function buildArtifactClaimedJob(
   }
   const artifactSha256 = createHash("sha256").update(bytes).digest("hex");
   // Keep previous versioned procurement and professional PDF bytes addressable.
-  const fileIdentity = canonicalArtifactFileIdentity(job.operation, String(revision.checksum_sha256), artifactSha256);
+  const fileIdentity = canonicalArtifactFileIdentity(String(job.operation), String(revision.checksum_sha256), artifactSha256);
   const storageKey = `${job.owner_user_id}/${revisionId}/${job.operation}/${fileIdentity}.${extension}`;
   const path = artifactFilePath(storageKey);
   mkdirSync(dirname(path), { recursive: true });
