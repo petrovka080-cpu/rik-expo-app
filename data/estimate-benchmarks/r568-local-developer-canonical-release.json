@@ -1,13 +1,13 @@
 {
   "schemaVersion": "r568-local-developer-canonical-release.v1",
   "status": "ACTIVE_LOCAL_DEVELOPER_CANONICAL_RELEASE",
-  "definitionReleaseId": "d25ff728-9ce8-5c4e-8f54-58dbd92d5291",
-  "searchReleaseId": "8408d0d4-928e-531c-8c19-ad0951e5aa13",
+  "definitionReleaseId": "51592e10-cf8c-5907-8f0b-a52db3bcfd19",
+  "searchReleaseId": "c1e46be2-3024-5efc-8d6d-d1c546492499",
   "definitionReleaseStatus": "prepared",
   "searchReleaseStatus": "draft",
-  "definitionSnapshotSha256": "1c5dbc2ccd83acacd29753f46d82f05dfe94fb5560ec55f84e421a97a488cc4d",
-  "manifestHashChainSha256": "1c5dbc2ccd83acacd29753f46d82f05dfe94fb5560ec55f84e421a97a488cc4d",
-  "searchHashChainSha256": "4456df6975ccde5111c58897c2135262a4a47abcd6ef647ef2fe1e32f472825e",
+  "definitionSnapshotSha256": "be22b0eaec78bf933ccffeb8b1f6585baedf829012b697e8490eef377d6e7ae3",
+  "manifestHashChainSha256": "be22b0eaec78bf933ccffeb8b1f6585baedf829012b697e8490eef377d6e7ae3",
+  "searchHashChainSha256": "4cd74a58c8a9defed666360a2120730e6452a33dc75d67bbc5e8c9664e1def9e",
   "identities": 11610,
   "visibleCanonicalDefinitions": 10322,
   "aliasesRedirects": 1288,
@@ -15,7 +15,7 @@
   "runtimeAdditionalAdmissions": 9,
   "currentInventoryRowsIncludingAliases": 11619,
   "denominatorNote": "11610 is the immutable historical source-identity reconciliation (10322 canonical owners plus 1288 redirects); the current cumulative runtime also preserves 9 separately identified inherited admissions.",
-  "owner": "S27_33_WINTER_HEATING_COMPLETION_SUCCESSOR",
+  "owner": "S27_33_REINFORCEMENT_EQUIPMENT_COMPLETION_SUCCESSOR",
   "productionAccessed": false,
   "fakeGreenClaimed": false
 }
