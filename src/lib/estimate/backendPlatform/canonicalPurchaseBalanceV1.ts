@@ -11,7 +11,10 @@ type PurchaseBalanceSources = Readonly<{
 export type CanonicalPurchaseBalanceV1 = PurchaseBalanceSources & (
   | Readonly<{ quantityMode?: "supply_quantum"; orderQuantumExpression: string }>
   | Readonly<{ quantityMode: "canonical_decimal"; balanceScope: "new_order_vs_required_consumption";
-    stockExpression: "0"; reserveExpression: "0"; orderQuantumExpression?: never }>
+    stockExpression: "0"; reserveExpression: "0"; orderQuantumExpression?: never }> & (
+      | Readonly<{ requirementBasis?: never; plannedConsumptionExpression?: never }>
+      | Readonly<{ requirementBasis: "selected_order_including_contingency"; plannedConsumptionExpression: string }>
+    )
 );
 
 export function resolveCanonicalPurchaseBalanceV1(
@@ -31,8 +34,13 @@ export function resolveCanonicalPurchaseBalanceV1(
   const quantityMode = policy.quantityMode === undefined ? "supply_quantum" : policy.quantityMode;
   if (quantityMode !== "supply_quantum" && quantityMode !== "canonical_decimal") fail("DEFINITION_INTEGRITY_FAILED", "purchase quantity mode invalid");
   const decimal = quantityMode === "canonical_decimal";
-  const fields = ["consumedExpression", "stockExpression", "reserveExpression", ...(decimal ? [] : ["orderQuantumExpression"])];
-  if (policy.unitId !== unitId || Object.keys(policy).some(key => !["unitId", "quantityMode", ...(decimal ? ["balanceScope"] : []), ...fields].includes(key))
+  const selectedOrder = decimal && policy.requirementBasis === "selected_order_including_contingency";
+  if ((Object.hasOwn(policy, "requirementBasis") && !selectedOrder) || (Object.hasOwn(policy, "plannedConsumptionExpression") && !selectedOrder)) {
+    fail("DEFINITION_INTEGRITY_FAILED", "purchase requirement basis invalid");
+  }
+  const fields = ["consumedExpression", "stockExpression", "reserveExpression", ...(decimal ? [] : ["orderQuantumExpression"]),
+    ...(selectedOrder ? ["plannedConsumptionExpression"] : [])];
+  if (policy.unitId !== unitId || Object.keys(policy).some(key => !["unitId", "quantityMode", ...(decimal ? ["balanceScope", "requirementBasis"] : []), ...fields].includes(key))
     || (decimal && (policy.balanceScope !== "new_order_vs_required_consumption" || policy.stockExpression !== "0" || policy.reserveExpression !== "0"))) {
     fail("DEFINITION_INTEGRITY_FAILED", "purchase balance unit/keys invalid");
   }
@@ -53,6 +61,10 @@ export function resolveCanonicalPurchaseBalanceV1(
   });
   const [consumed, stock, reserve] = values;
   const quantum = decimal ? null : values[3];
+  const plannedConsumption = selectedOrder ? values[3] : null;
+  if (plannedConsumption != null && compareFormulaGraphDecimals(plannedConsumption, consumed) > 0) {
+    fail("DEFINITION_INTEGRITY_FAILED", "selected order requirement below planned consumption");
+  }
   if (decimal && (!isFormulaGraphExactDecimal(quantity) || compareFormulaGraphDecimals(quantity, "0") < 0)) {
     fail("ROW_AMENDMENT_INVALID", "purchase quantity is outside the exact canonical decimal domain");
   }
@@ -67,7 +79,8 @@ export function resolveCanonicalPurchaseBalanceV1(
   const reserveDeficit = evaluate(`max(0,${reserve}-(${remaining}))`);
   const freeBeyondReserve = evaluate(`max(0,${remaining}-${reserve})`);
   return { ownerRowId: rowId, unitId, consumed, stock, reserve, quantum, quantityMode,
-    ...(decimal ? { balanceScope: policy.balanceScope, excessOrderAboveRequiredConsumption: remaining } : {}), effectiveOrder: quantity,
+    ...(decimal ? { balanceScope: policy.balanceScope, excessOrderAboveRequiredConsumption: remaining } : {}),
+    ...(selectedOrder ? { requirementBasis: policy.requirementBasis, plannedConsumption, requiredSelectedOrder: consumed } : {}), effectiveOrder: quantity,
     remaining, freeBeyondReserve, consumptionShortage, reserveDeficit,
     procurementReady: consumptionShortage === "0" && reserveDeficit === "0" };
 }
@@ -105,6 +118,7 @@ export function canonicalPurchaseShortagesV1(rows: readonly PurchaseTraceRow[]) 
     if (!balance || (balance.procurementReady !== false && !(Number(balance.consumptionShortage) > 0) && !(Number(balance.reserveDeficit) > 0))) return [];
     return [{ rowId: String(row.row_id ?? row.rowId ?? ""), titleRu: String(row.title_ru ?? row.titleRu ?? "Материал"),
       unitId: String(balance.unitId ?? row.unit_id ?? row.unitId ?? ""),
+      requirementBasis: balance.requirementBasis,
       consumptionShortage: String(balance.consumptionShortage ?? "0"), reserveDeficit: String(balance.reserveDeficit ?? "0") }];
   });
 }
@@ -112,7 +126,9 @@ export function canonicalPurchaseShortagesV1(rows: readonly PurchaseTraceRow[]) 
 export function canonicalPurchaseShortageMessageV1(rows: readonly PurchaseTraceRow[]): string | null {
   const shortages = canonicalPurchaseShortagesV1(rows);
   if (shortages.length) {
-    const reasons = shortages.map(row => `${row.titleRu}: не хватает для расхода ${row.consumptionShortage} ${row.unitId}; резерв не покрыт на ${row.reserveDeficit} ${row.unitId}`).join("; ");
+    const reasons = shortages.map(row => row.requirementBasis === "selected_order_including_contingency"
+      ? `${row.titleRu}: заказ с выбранным резервом не покрыт на ${row.consumptionShortage} ${row.unitId}`
+      : `${row.titleRu}: не хватает для расхода ${row.consumptionShortage} ${row.unitId}; резерв не покрыт на ${row.reserveDeficit} ${row.unitId}`).join("; ");
     return `Закупка не готова: ${reasons}. Уточните заказ или подтверждённое снабжение.`;
   }
   return null;

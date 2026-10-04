@@ -254,10 +254,16 @@ export function buildRequestEstimateProfessionalRowEvidence(
   const balanceUnit = formatEstimateUnitLabel(String(balance?.unitId ?? item.unit));
   const exactPositive = (value: unknown): value is string => typeof value === "string"
     && isFormulaGraphExactDecimal(value) && compareFormulaGraphDecimals(value, "0") > 0;
+  const selectedOrderBasis = bulkOrderScope && balance?.requirementBasis === "selected_order_including_contingency";
+  const orderBasisSuffix = selectedOrderBasis
+    ? ` Проектный объём укладки: ${balance.plannedConsumption} ${balanceUnit}. Расчётный заказ с выбранным резервом: ${balance.requiredSelectedOrder} ${balanceUnit}. Принятый заказ: ${balance.effectiveOrder} ${balanceUnit}.`
+    : "";
   const bulkBalanceSuffix = bulkOrderScope && exactPositive(balance?.consumptionShortage)
-    ? ` Заказ не покрывает расчётную потребность: не хватает ${balance.consumptionShortage} ${balanceUnit}.`
+    ? selectedOrderBasis
+      ? ` Заказ с выбранным резервом не покрыт на ${balance.consumptionShortage} ${balanceUnit}.`
+      : ` Заказ не покрывает расчётную потребность: не хватает ${balance.consumptionShortage} ${balanceUnit}.`
     : bulkOrderScope && exactPositive(balance?.excessOrderAboveRequiredConsumption)
-      ? ` Заказ сверх расчётной потребности: ${balance.excessOrderAboveRequiredConsumption} ${balanceUnit}. Пригодность излишка для дальнейшего использования не подтверждена.`
+      ? ` ${selectedOrderBasis ? "Превышение расчётного заказа с выбранным резервом" : "Заказ сверх расчётной потребности"}: ${balance.excessOrderAboveRequiredConsumption} ${balanceUnit}. Пригодность излишка для дальнейшего использования не подтверждена.`
       : "";
   const dependencies = Array.isArray(projection.parameterDependencies)
     ? projection.parameterDependencies.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
@@ -284,7 +290,7 @@ export function buildRequestEstimateProfessionalRowEvidence(
       : `${"\u0426\u0435\u043d\u0430 \u0437\u0430 \u0435\u0434\u0438\u043d\u0438\u0446\u0443"}: ${formatEstimateMoney(item.unitPrice, item.currency)}${sourceLabel ? `. ${"\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a"}: ${sourceLabel}` : ""}.`;
 
   return {
-    formulaLabel: `${"\u0420\u0430\u0441\u0447\u0451\u0442 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0430"}: ${formula}. ${"\u0420\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442 \u0444\u043e\u0440\u043c\u0443\u043b\u044b"}: ${formulaResult}.${manualQuantitySuffix}${bulkBalanceSuffix}`,
+    formulaLabel: `${"\u0420\u0430\u0441\u0447\u0451\u0442 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0430"}: ${formula}. ${"\u0420\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442 \u0444\u043e\u0440\u043c\u0443\u043b\u044b"}: ${formulaResult}.${manualQuantitySuffix}${orderBasisSuffix}${bulkBalanceSuffix}`,
     parameterLabel,
     normativeLabel: `${"\u041d\u043e\u0440\u043c\u0430"}: ${normSource}${locator ? `; ${"\u0442\u043e\u0447\u043d\u0430\u044f \u043f\u0440\u0438\u0432\u044f\u0437\u043a\u0430"}: ${locator}` : ""}.`,
     priceLabel,

@@ -76,6 +76,21 @@ function serverBoundBundle(items: ConsumerRepairRequestItem[]): ConsumerRepairDr
 }
 
 describe("R4 canonical estimate title parity", () => {
+  it("distinguishes installed volume from selected concrete order and its deficit after reopening", () => {
+    const item = canonicalItem("material:order", "Бетон", "a".repeat(64), 0);
+    item.unit = "m3";
+    item.unitLabel = "м³";
+    item.sourceParameters = { ...item.sourceParameters, smartEstimateProjectionV2: {}, canonicalPurchaseBalance: {
+      quantityMode: "canonical_decimal", balanceScope: "new_order_vs_required_consumption", unitId: "m3",
+      requirementBasis: "selected_order_including_contingency", plannedConsumption: "240", requiredSelectedOrder: "259.2",
+      effectiveOrder: "250", consumptionShortage: "9.2", excessOrderAboveRequiredConsumption: "0" } };
+    const label = buildRequestEstimateProfessionalRowEvidence(JSON.parse(JSON.stringify(item)))!.formulaLabel;
+    expect(label).toContain("Проектный объём укладки: 240 м³");
+    expect(label).toContain("Расчётный заказ с выбранным резервом: 259.2 м³");
+    expect(label).toContain("Принятый заказ: 250 м³");
+    expect(label).toContain("Заказ с выбранным резервом не покрыт на 9.2 м³");
+    expect(label).not.toContain("не хватает для расхода");
+  });
   it("shows exact reopened bulk surplus or shortage without claiming reusable stock", () => {
     const item = canonicalItem("material:order", "Смесь", "a".repeat(64), 0);
     item.unit = "t";

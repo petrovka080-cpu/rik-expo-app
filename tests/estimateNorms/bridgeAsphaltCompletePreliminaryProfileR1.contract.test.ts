@@ -18,6 +18,22 @@ function quantity(rows: readonly { row_id: string; quantity: string }[], rowId: 
 }
 
 describe("complete bridge asphalt preliminary profile S27", () => {
+  it("reconciles imported screed accepted order with screed geometry and its selected contingency only", async () => {
+    const result = await compileCanonicalEstimateCore({ operation: "recalculate", compilerVersion: "bridge-concrete-order-contract",
+      catalogId: BRIDGE_ASPHALT_COMPLETE_CATALOG_ID, primaryMeasureParameterId: "area_m2",
+      parameterDefinitions: [...BRIDGE_ASPHALT_COMPLETE_PARAMETERS], formulaDefinitions: [...BRIDGE_ASPHALT_COMPLETE_FORMULAS],
+      resourceDefinitions: [...BRIDGE_ASPHALT_COMPLETE_RESOURCES], submittedParameters: { ...BRIDGE_ASPHALT_COMPLETE_SHORT_INPUT },
+      confirmedParameters: BRIDGE_ASPHALT_COMPLETE_RUNTIME_INPUT, currencyCode: "KGS", priceItems: [],
+      rowOverrides: { "bridge:screed:material:ready-mix": { quantity: "225.125", provenance: { kind: "manual", reason: "VALIDATION_FIXTURE independent screed order" } } },
+      maximumResourceRows: BRIDGE_ASPHALT_COMPLETE_RESOURCES.length, hashJson: async value => estimateDeterministicHash(value) });
+    expect(result.preliminaryNeeds).toEqual([]);
+    expect(result.rows.find(value => value.row_id === "bridge:screed:material:ready-mix")).toMatchObject({ quantity: "225.125", calculation_trace: {
+      purchaseBalance: { plannedConsumption: "192", requiredSelectedOrder: "207.36", excessOrderAboveRequiredConsumption: "17.765" } } });
+    for (const id of ["delivery:mixer-trips", "quality:delivery-acceptance", "document:delivery-tickets"])
+      expect(result.rows.find(value => value.row_id === `bridge:screed:${id}`)?.quantity).toBe("29");
+    expect(result.rows.find(value => value.row_id === "bridge:screed:work:place")?.quantity).toBe("192");
+    expect(result.rows.find(value => value.row_id === "bridge:binder:asphalt:material:hot-dense-fine-mix")?.quantity).toBe("579.84");
+  });
   it("binds each existing asphalt course to its own accepted order without changing installed consumption", async () => {
     const result = await compileCanonicalEstimateCore({ operation: "recalculate", compilerVersion: "bridge-order-contract",
       catalogId: BRIDGE_ASPHALT_COMPLETE_CATALOG_ID, primaryMeasureParameterId: "area_m2",
@@ -39,11 +55,12 @@ describe("complete bridge asphalt preliminary profile S27", () => {
     expect(find("binder:asphalt:quality:mix-temperature").quantity).toBe("31");
     expect(find("binder:asphalt:operation:mix-receiving-feed").quantity).toBe("579.84");
     const aliases = BRIDGE_ASPHALT_COMPLETE_PARAMETERS.filter(value => value.truth_metadata?.effective_resource_quantity_v1);
-    expect(aliases).toHaveLength(2);
-    expect(new Set(aliases.map(value => value.parameter_id)).size).toBe(2);
+    expect(aliases).toHaveLength(3);
+    expect(new Set(aliases.map(value => value.parameter_id)).size).toBe(3);
     expect(aliases.map(value => value.truth_metadata?.effective_resource_quantity_v1)).toEqual([
       { sourceRowId: "bridge:binder:asphalt:material:hot-dense-fine-mix", unitId: "t" },
-      { sourceRowId: "bridge:wearing:asphalt:material:hot-dense-fine-mix", unitId: "t" }]);
+      { sourceRowId: "bridge:wearing:asphalt:material:hot-dense-fine-mix", unitId: "t" },
+      { sourceRowId: "bridge:screed:material:ready-mix", unitId: "m3" }]);
   });
   it("calculates the 150 by 32 m first estimate without a short-row ceiling", async () => {
     const compiled = await compileBridgeAsphaltCompletePreliminaryProfileR1({

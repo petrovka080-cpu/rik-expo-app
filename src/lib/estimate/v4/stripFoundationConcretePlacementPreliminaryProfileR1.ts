@@ -223,8 +223,9 @@ export type StripPourProfileParameter = CanonicalEstimateParameterDefinition & {
 
 const SOURCE_RECORDS = new Map(sourcePack.sources.map((source) => [source.sourceId, source]));
 
+export const STRIP_POUR_EFFECTIVE_ORDER_PARAMETER_ID = "strip_pour_effective_ready_mix_order_m3";
 export const STRIP_POUR_PROFILE_PARAMETERS:
-readonly StripPourProfileParameter[] = Object.freeze(PARAMETER_SPECS.map((spec, ordinal) => {
+readonly StripPourProfileParameter[] = Object.freeze([...PARAMETER_SPECS.map((spec, ordinal) => {
   const guide = parameterGuide(spec.parameterId, spec.titleRu);
   const sourceId = SOURCE_ID_BY_PARAMETER[spec.parameterId]
     ?? "selected_preliminary_strip_pour_profile_r1";
@@ -277,7 +278,14 @@ readonly StripPourProfileParameter[] = Object.freeze(PARAMETER_SPECS.map((spec, 
       synthetic: false,
     },
   };
-}));
+}), {
+  parameter_id: STRIP_POUR_EFFECTIVE_ORDER_PARAMETER_ID, ordinal: PARAMETER_SPECS.length,
+  value_type: "decimal", unit_id: "m3", title_ru: "Принятый заказ товарного бетона для доставки",
+  required: false, default_value: null, constraints_json: { min: 0 },
+  truth_metadata: { visibility_role: "INTERNAL_ONLY", value_source_role: "BACKEND_DERIVED",
+    preliminary_compilation_allowed: true, hidden_default_forbidden: true,
+    effective_resource_quantity_v1: { sourceRowId: "strip-pour:material:ready-mix", unitId: "m3" } },
+}]);
 
 function formula(formulaId: string, outputUnitId: string, expression: string) {
   const compiled = compileFormulaGraph(expression);
@@ -293,7 +301,7 @@ function formula(formulaId: string, outputUnitId: string, expression: string) {
 
 const ORDER_EXPRESSION =
   "plan_dimension_concrete_volume_m3*(1+selected_contingency_percent/100)";
-const MIXER_TRIPS_EXPRESSION = `ceil(${ORDER_EXPRESSION}/mixer_capacity_m3)`;
+const MIXER_TRIPS_EXPRESSION = `ceil(${STRIP_POUR_EFFECTIVE_ORDER_PARAMETER_ID}/mixer_capacity_m3)`;
 const QA_LOTS_EXPRESSION = "ceil(plan_dimension_concrete_volume_m3/qa_lot_volume_m3)";
 
 export const STRIP_POUR_PROFILE_FORMULAS:
@@ -368,12 +376,24 @@ function resource(input: RowSpec & Readonly<{ ordinal: number }>): CanonicalEsti
       titleSpecificationSeparator: " ",
     } : {}),
     ...(input.inputParameterIds ? { inputParameterIds: [...input.inputParameterIds] } : {}),
+    ...(input.rowId === "strip-pour:material:ready-mix" ? {
+      effectiveQuantityOutputV1: { parameterId: STRIP_POUR_EFFECTIVE_ORDER_PARAMETER_ID, unitId: "m3" },
+      purchaseBalanceV1: { quantityMode: "canonical_decimal", balanceScope: "new_order_vs_required_consumption",
+        unitId: "m3", consumedExpression: ORDER_EXPRESSION, stockExpression: "0", reserveExpression: "0",
+        requirementBasis: "selected_order_including_contingency", plannedConsumptionExpression: "plan_dimension_concrete_volume_m3" },
+    } : {}),
+    ...(input.rowId === "strip-pour:delivery:mixer-trips" ? {
+      manualTransportQuantityPolicyV1: { unitId: input.unitId, minimum: "calculated_quantity", integer: true },
+    } : {}),
   };
   const sourceMetadata = {
     truth_contract_version: "R3",
     synthetic: false,
     sourceRole: "TECHNOLOGY_QUANTITY_AND_QA_CROSSCHECK",
     sourcePackSha256: STRIP_POUR_SOURCE_PACK_SHA256,
+    ...(input.rowId === "strip-pour:material:ready-mix" ? {
+      purchaseBalanceScopeRu: "Принятый заказ относительно расчётного заказа с отдельно выбранным резервом. Проектный объём укладки сохраняется. Складское наличие не вычитается; превышение заказа не подтверждает пригодный остаток свежего бетона.",
+    } : {}),
     normativeTrace: [{
       sourceId,
       source_id: sourceId,

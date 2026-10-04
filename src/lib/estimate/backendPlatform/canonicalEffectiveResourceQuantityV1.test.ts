@@ -47,6 +47,16 @@ function testInput(): CanonicalEstimateCompileCoreInput {
 const row = (result: Awaited<ReturnType<typeof compileCanonicalEstimateCore>>, rowId: string) => result.rows.find(value => value.row_id === rowId)!;
 
 describe("authoritative effective resource quantities", () => {
+  it("keeps the selected contingency requirement distinct from planned consumption and rejects undeclared basis inputs", () => {
+    const policy = { unitId: "m3", consumedExpression: "259.2", stockExpression: "0", reserveExpression: "0",
+      quantityMode: "canonical_decimal", balanceScope: "new_order_vs_required_consumption",
+      requirementBasis: "selected_order_including_contingency", plannedConsumptionExpression: "240" };
+    const resolve = (raw: unknown = policy) => resolveCanonicalPurchaseBalanceV1(raw, "concrete", "m3", "250", {}, new Set());
+    expect(resolve()).toMatchObject({ plannedConsumption: "240", requiredSelectedOrder: "259.2", consumptionShortage: "9.2", procurementReady: false });
+    for (const raw of [{ ...policy, requirementBasis: null }, { ...policy, requirementBasis: "actual_stock" },
+      { ...policy, plannedConsumptionExpression: "unknown" }, { ...policy, plannedConsumptionExpression: "260" },
+      { ...policy, plannedConsumptionExpression: undefined }]) expect(() => resolve(raw)).toThrow();
+  });
   it("accepts exact bulk decimals without fabricating a supplier quantum or available stock", () => {
     const policy = { unitId: "t", consumedExpression: "604", stockExpression: "0", reserveExpression: "0",
       quantityMode: "canonical_decimal", balanceScope: "new_order_vs_required_consumption" };

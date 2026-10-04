@@ -13,6 +13,7 @@ import {
   STRIP_POUR_PROFILE_SOURCE_ID,
   STRIP_POUR_PROFILE_SOURCE_METADATA,
   compileConcretePlacementPreliminaryProfileForCatalogR1,
+  type StripPourProfileParameter,
 } from "./stripFoundationConcretePlacementPreliminaryProfileR1";
 
 export const ANCHOR_GROUP_CONCRETE_PLACEMENT_TARGETS = Object.freeze([
@@ -92,7 +93,7 @@ function anchorRowId(value: string): string {
   return value.replace(/^strip-pour:/u, "anchor-group-pour:");
 }
 
-export const ANCHOR_GROUP_CONCRETE_PLACEMENT_PARAMETERS = Object.freeze(
+export const ANCHOR_GROUP_CONCRETE_PLACEMENT_PARAMETERS: readonly StripPourProfileParameter[] = Object.freeze(
   STRIP_POUR_PROFILE_PARAMETERS.map((parameter) => ({
     ...parameter,
     truth_metadata: {
@@ -100,7 +101,12 @@ export const ANCHOR_GROUP_CONCRETE_PLACEMENT_PARAMETERS = Object.freeze(
       contract: "rik-expo-app.anchor-group-concrete-placement-preliminary-profile-r2",
       semantic_parameter_key:
         `anchor-group-concrete-placement-profile:${parameter.parameter_id}`,
-      guide: {
+      ...(parameter.truth_metadata.effective_resource_quantity_v1 ? {
+        effective_resource_quantity_v1: {
+          ...(parameter.truth_metadata.effective_resource_quantity_v1 as Record<string, unknown>),
+          sourceRowId: anchorRowId(String((parameter.truth_metadata.effective_resource_quantity_v1 as Record<string, unknown>).sourceRowId)),
+        },
+      } : { guide: {
         ...(parameter.truth_metadata.guide as Record<string, unknown>),
         guide_version: "anchor-group-concrete-placement-preliminary-profile-r2",
         applicability:
@@ -116,7 +122,7 @@ export const ANCHOR_GROUP_CONCRETE_PLACEMENT_PARAMETERS = Object.freeze(
                 "Введите объём основания анкерной группы по проектной геометрии или ведомости объёмов. Пример единицы — м³; пример не является нормой.",
             }
           : {}),
-      },
+      } }),
     },
   })),
 );

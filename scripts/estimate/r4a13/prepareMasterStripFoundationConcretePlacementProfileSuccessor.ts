@@ -1,5 +1,9 @@
 import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { compileCanonicalEstimateCore } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
+import { assertCanonicalPurchaseReadinessV1 } from "../../../src/lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
+import { estimateDeterministicHash } from "../../../src/lib/estimate/estimateDeterministicHash";
 
 import {
   STRIP_POUR_DEFAULT_REQUIRED_ROW_IDS,
@@ -23,6 +27,8 @@ import {
 import { runMasterSingleDefinitionSuccessorR1 } from "./prepareMasterSingleDefinitionSuccessorR1";
 
 type Json = Record<string, any>;
+const currentReleasePath = resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json");
+const currentRelease = JSON.parse(readFileSync(currentReleasePath, "utf8")) as Json;
 
 async function verifyCore(): Promise<Json> {
   const firstEstimate = await compileStripFoundationConcretePlacementPreliminaryProfileR1({
@@ -88,7 +94,33 @@ async function verifyCore(): Promise<Json> {
   const serialized = JSON.stringify({ firstEstimate, historicalDraft, refined });
   const payableRowIds = firstEstimate.rows.filter((row) =>
     row.included_in_estimate).map((row) => row.row_id);
+  const orderCases = [];
+  for (const [acceptedOrder, loads, excess, deficit] of [["280.125", "36", "20.925", "0"], ["250", "32", "0", "9.2"]]) {
+    const result = await compileCanonicalEstimateCore({ operation: "recalculate", compilerVersion: "s27-31-concrete-order-publication-control",
+      catalogId: STRIP_POUR_PROFILE_CATALOG_ID, primaryMeasureParameterId: "plan_dimension_concrete_volume_m3",
+      parameterDefinitions: [...STRIP_POUR_PROFILE_PARAMETERS], formulaDefinitions: [...STRIP_POUR_PROFILE_FORMULAS],
+      resourceDefinitions: [...STRIP_POUR_PROFILE_RESOURCES], submittedParameters: { ...STRIP_POUR_PROFILE_SHORT_INPUT },
+      confirmedParameters: STRIP_POUR_PROFILE_RUNTIME_INPUT, priceItems: [], currencyCode: "KGS",
+      rowOverrides: { "strip-pour:material:ready-mix": { quantity: acceptedOrder, includedInProcurement: true,
+        provenance: { kind: "manual", reason: "VALIDATION_FIXTURE selected order; no engineering approval" } } },
+      maximumResourceRows: STRIP_POUR_PROFILE_RESOURCES.length, hashJson: async value => estimateDeterministicHash(value) });
+    const row = (id: string) => result.rows.find(value => value.row_id === `strip-pour:${id}`)!;
+    const balance = (row("material:ready-mix").calculation_trace as Json).purchaseBalance as Json;
+    if (result.preliminaryNeeds.length || row("material:ready-mix").quantity !== acceptedOrder
+      || row("material:ready-mix").included_in_procurement !== (deficit === "0")
+      || balance.plannedConsumption !== "240" || balance.requiredSelectedOrder !== "259.2"
+      || balance.consumptionShortage !== deficit || balance.excessOrderAboveRequiredConsumption !== excess
+      || ["delivery:mixer-trips", "quality:delivery-acceptance", "document:delivery-tickets"].some(id => row(id).quantity !== loads)
+      || row("work:place").quantity !== "240" || row("quality:slump").quantity !== "5") throw new Error("STOP_S2731_CONCRETE_ORDER_CONTROL");
+    if (deficit !== "0") {
+      let code: unknown;
+      try { assertCanonicalPurchaseReadinessV1(result.rows); } catch(error) { code = (error as {code?: unknown}).code; }
+      if (code !== "PROCUREMENT_MATERIAL_SHORTAGE") throw new Error("STOP_S2731_CONCRETE_SHORTAGE_READINESS");
+    }
+    orderCases.push({ acceptedOrder, loads, balance });
+  }
   return {
+    orderCases,
     status: "GREEN_MASTER_STRIP_FOUNDATION_CONCRETE_PLACEMENT_PROFILE_CORE",
     firstEstimate: {
       input: STRIP_POUR_PROFILE_SHORT_INPUT,
@@ -124,24 +156,28 @@ async function verifyCore(): Promise<Json> {
 }
 
 void runMasterSingleDefinitionSuccessorR1({
-  contract: "rik-expo-app.s26-4.master-strip-foundation-concrete-placement-complete-successor.v1",
+  contract: "rik-expo-app.s27-31.strip-foundation-concrete-accepted-order-successor.v1",
   stopCode: "MASTER_STRIP_POUR_PROFILE",
-  applicationName: "s26-4-master-strip-foundation-concrete-placement-successor",
+  applicationName: "s27-31-strip-foundation-concrete-accepted-order-successor",
   expectedBranch: "codex/r4-a5-clean-08b18902",
   masterPath: resolve(process.env.R4A13_MASTER_PATH
-    ?? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (33).md"),
+    ?? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (71).md"),
   masterSha256: process.env.R4A13_MASTER_SHA256
-    ?? "d858e45dd17a11169dd2dda7f941094081ba4a72250b64fcb801747997730af6",
+    ?? "783d0425e1f0f0f0ea8a262be454e39d13e94e1a2ad5d1c6cc4b1e1314e624f1",
   parentReleaseId: process.env.R4A13_PARENT_DEFINITION_RELEASE_ID
-    ?? "f407fe57-ba96-5edc-9d2c-37ab3863fe27",
+    ?? currentRelease.definitionReleaseId,
   parentSearchReleaseId: process.env.R4A13_PARENT_SEARCH_RELEASE_ID
-    ?? "94c94362-ce47-52bc-a378-7a919d6c3a6c",
-  currentReleasePath: resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json"),
+    ?? currentRelease.searchReleaseId,
+  currentReleasePath,
   outputRoot: resolve(process.env.R4A13_OUTPUT_ROOT
-    ?? ".release-runtime/r4a13-6/s26-4/master-strip-foundation-concrete-placement-successor-v1"),
+    ?? ".release-runtime/r568/s27-31/strip-foundation-concrete-accepted-order-successor-v1"),
   sourcePaths: [
     "data/estimate-benchmarks/source-packs/strip-foundation-concrete-placement-preliminary-profile-r1.json",
     "src/lib/estimate/v4/stripFoundationConcretePlacementPreliminaryProfileR1.ts",
+    "src/lib/estimate/backendPlatform/canonicalPurchaseBalanceV1.ts",
+    "src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1.ts",
+    "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+    "scripts/estimate/r4a13/readbackS2731ConcreteAcceptedOrderIndependent.ts",
     "tests/estimateNorms/stripFoundationConcretePlacementPreliminaryProfileR1.contract.test.ts",
     "scripts/estimate/r4a13/catalogFirstEstimateMinimumInputAudit.shared.ts",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
@@ -161,7 +197,7 @@ void runMasterSingleDefinitionSuccessorR1({
   runtimeProfileClassification: STRIP_POUR_PROFILE_RUNTIME_CLASSIFICATION,
   runtimeProfileSourceIds: STRIP_POUR_PROFILE_RUNTIME_SOURCE_IDS,
   verifyCore,
-  expectedParentShape: [36, 15, 15],
+  expectedParentShape: [25, 16, 38],
   benchmarkOrdinal: 0,
   validationScenario: "S26_4_SEPARATE_STRIP_FOUNDATION_CONCRETE_PLACEMENT_150_M_COMPLETE_FIRST_ESTIMATE",
   passport: {
@@ -199,6 +235,9 @@ void runMasterSingleDefinitionSuccessorR1({
     projectDataReplacesAssumptionsWhenAvailable: true,
     noUniversalLaborProductivityClaim: true,
     adjacentFoundationScopeExcluded: true,
+    acceptedOrderBalanceScope: "new_order_vs_required_consumption",
+    requirementBasis: "selected_order_including_contingency",
+    freshConcreteInventoryCredited: false,
   },
   binding: {
     rowId: "strip-pour:material:ready-mix",
@@ -215,10 +254,15 @@ void runMasterSingleDefinitionSuccessorR1({
     },
   },
   locator: {
-    key: "strip-foundation-concrete-placement-large-area-preliminary-profile-r1",
+    key: "strip-foundation-concrete-accepted-order-s27-31",
     payload: {
       kind: "COMPOSITE_TECHNOLOGY_PROFILE",
       sourcePackSha256: STRIP_POUR_SOURCE_PACK_SHA256,
+      expectedResourceIds: STRIP_POUR_PROFILE_RESOURCES.map(row => row.row_id),
+      expectedFormulaIds: STRIP_POUR_PROFILE_FORMULAS.map(row => row.formula_id),
+      primaryOrderingSource: { officialUrl: "https://www.nrmca.org/wp-content/uploads/2021/01/31pr.pdf",
+        locator: "CIP 31 (2023), page 2: Quantity of concrete; Scheduling delivery; delivery-ticket responsibilities",
+        useRestriction: "Ordering/delivery boundary only; selected contingency remains explicit and replaceable. No supplier quantum, stock suitability, new rates, project or engineering approval is inferred." },
       exactLocator: STRIP_POUR_PROFILE_SOURCE_METADATA.exact_locator,
       formula: "project volume -> concrete order, curing area, pump/vibrator hours, mixer trips and QA lots",
       normativeInputs: [

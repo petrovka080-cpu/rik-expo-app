@@ -9,12 +9,30 @@ import {
   STRIP_POUR_INDEPENDENT_COMPLETENESS_MAP,
   STRIP_POUR_PROFILE_ACCEPTANCE_INPUT,
   STRIP_POUR_PROFILE_PARAMETERS,
+  STRIP_POUR_PROFILE_FORMULAS,
+  STRIP_POUR_PROFILE_CATALOG_ID,
+  STRIP_POUR_PROFILE_RUNTIME_INPUT,
   STRIP_POUR_PROFILE_RESOURCES,
   STRIP_POUR_PROFILE_SHORT_INPUT,
   STRIP_POUR_SOURCE_PACK_SHA256,
   compileStripFoundationConcretePlacementPreliminaryProfileR1,
   stripPourMissingRequiredRows,
 } from "../../src/lib/estimate/v4/stripFoundationConcretePlacementPreliminaryProfileR1";
+import { compileCanonicalEstimateCore, type CanonicalEstimateCompileCoreInput } from "../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
+import { estimateDeterministicHash } from "../../src/lib/estimate/estimateDeterministicHash";
+import { canonicalEstimateRevisionRowFromStorage } from "../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper";
+import { assertCanonicalPurchaseReadinessV1 } from "../../src/lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
+import { buildCanonicalProcurementProjection, selectCanonicalArtifactRows } from "../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract";
+
+const ownerId = "strip-pour:material:ready-mix";
+const manual = { kind: "manual", reason: "VALIDATION_FIXTURE selected concrete order; no engineering approval" };
+const acceptedCompile = (rowOverrides: CanonicalEstimateCompileCoreInput["rowOverrides"] = {}, submitted = {}) =>
+  compileCanonicalEstimateCore({ operation: "recalculate", compilerVersion: "concrete-order-contract", catalogId: STRIP_POUR_PROFILE_CATALOG_ID,
+    primaryMeasureParameterId: "plan_dimension_concrete_volume_m3", parameterDefinitions: [...STRIP_POUR_PROFILE_PARAMETERS],
+    formulaDefinitions: [...STRIP_POUR_PROFILE_FORMULAS], resourceDefinitions: [...STRIP_POUR_PROFILE_RESOURCES],
+    submittedParameters: { ...STRIP_POUR_PROFILE_SHORT_INPUT, ...submitted }, confirmedParameters: STRIP_POUR_PROFILE_RUNTIME_INPUT,
+    rowOverrides, priceItems: [], currencyCode: "KGS", maximumResourceRows: STRIP_POUR_PROFILE_RESOURCES.length,
+    hashJson: async value => estimateDeterministicHash(value) });
 
 const historicalLargeAreaInput = Object.freeze({
   placement_method: "pump",
@@ -32,6 +50,51 @@ const historicalLargeAreaInput = Object.freeze({
 });
 
 describe("S26.4 separate strip-foundation concrete placement preliminary profile", () => {
+  it.each([["280.125", "36", "20.925", "0"], ["250", "32", "0", "9.2"]])(
+    "reconciles accepted order %s against selected contingency without changing installation or laboratory lots", async (quantity, trips, excess, deficit) => {
+      const base = await acceptedCompile();
+      const result = await acceptedCompile({ [ownerId]: { quantity, includedInProcurement: true, provenance: manual } });
+      const row = (id: string) => result.rows.find(value => value.row_id === id)!;
+      expect(result.preliminaryNeeds).toEqual([]);
+      expect(row(ownerId)).toMatchObject({ quantity, included_in_procurement: deficit === "0", calculation_trace: {
+        purchaseBalance: { quantityMode: "canonical_decimal", quantum: null, requirementBasis: "selected_order_including_contingency",
+          plannedConsumption: "240", requiredSelectedOrder: "259.2", effectiveOrder: quantity,
+          consumptionShortage: deficit, excessOrderAboveRequiredConsumption: excess, procurementReady: deficit === "0" } } });
+      for (const id of ["strip-pour:delivery:mixer-trips", "strip-pour:quality:delivery-acceptance", "strip-pour:document:delivery-tickets"])
+        expect(row(id).quantity).toBe(trips);
+      for (const id of ["strip-pour:work:place", "strip-pour:equipment:pump", "strip-pour:equipment:vibrator",
+        "strip-pour:material:curing-sheet", "strip-pour:quality:slump", "strip-pour:quality:temperature", "strip-pour:quality:specimens"])
+        expect(row(id).quantity).toBe(base.rows.find(value => value.row_id === id)!.quantity);
+      const stored = JSON.parse(JSON.stringify(result.rows)) as typeof result.rows;
+      stored.forEach(value => { delete value.procurement_readiness; });
+      const reopened = stored.map(value => canonicalEstimateRevisionRowFromStorage(value, null));
+      expect(reopened.find(value => value.rowId === ownerId)).toMatchObject({ quantity,
+        calculationTrace: { manualAmendment: manual, purchaseBalance: { requiredSelectedOrder: "259.2", plannedConsumption: "240" } } });
+      if (deficit !== "0") {
+        expect(() => assertCanonicalPurchaseReadinessV1(reopened)).toThrow("заказ с выбранным резервом не покрыт на 9.2");
+        const selection = selectCanonicalArtifactRows(stored);
+        expect(() => buildCanonicalProcurementProjection({ revision: { id: "concrete-shortage", release_id: "test", catalog_id: STRIP_POUR_PROFILE_CATALOG_ID,
+          checksum_sha256: "test", row_count: stored.length }, sourceRows: selection.sourceRows, procurementRows: selection.procurementRows })).toThrow("Закупка не готова");
+      }
+      expect((await acceptedCompile()).rows).toEqual(base.rows);
+    });
+  it("keeps included delivery absent despite manual inclusion while retaining physical acceptance and tickets", async () => {
+    const override = { quantity: "99", unitPrice: "10", includedInEstimate: true, includedInProcurement: true, provenance: manual };
+    const result = await acceptedCompile({ [ownerId]: { quantity: "280.125", provenance: manual },
+      "strip-pour:delivery:mixer-trips": override }, { delivery_pricing_mode: "INCLUDED_IN_SUPPLY" });
+    expect(result.rows.some(value => value.row_id === "strip-pour:delivery:mixer-trips")).toBe(false);
+    for (const id of ["strip-pour:quality:delivery-acceptance", "strip-pour:document:delivery-tickets"])
+      expect(result.rows.find(value => value.row_id === id)).toMatchObject({ quantity: "36", included_in_estimate: false });
+    const separate = await acceptedCompile({ "strip-pour:delivery:mixer-trips": override });
+    expect(separate.rows.find(value => value.row_id === "strip-pour:delivery:mixer-trips")).toMatchObject({ quantity: "99", included_in_estimate: true });
+  });
+  it("enforces minimum whole current mixer loads and changes selected contingency independently", async () => {
+    for (const quantity of ["35", "36.5"]) await expect(acceptedCompile({ [ownerId]: { quantity: "280.125", provenance: manual },
+      "strip-pour:delivery:mixer-trips": { quantity, provenance: manual } })).rejects.toMatchObject({ code: "ROW_AMENDMENT_INVALID" });
+    const result = await acceptedCompile({ [ownerId]: { quantity: "250", provenance: manual } }, { selected_contingency_percent: 4 });
+    expect(result.rows.find(value => value.row_id === ownerId)).toMatchObject({ included_in_procurement: true,
+      calculation_trace: { purchaseBalance: { plannedConsumption: "240", requiredSelectedOrder: "249.6", excessOrderAboveRequiredConsumption: "0.4" } } });
+  });
   it("shows the profile units as compact Russian labels beside editable values", () => {
     const expected = new Map([
       ["m3_per_hour", "м³/ч"],

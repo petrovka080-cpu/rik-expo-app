@@ -2,6 +2,7 @@ import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backen
 import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
 import {
   ANCHOR_GROUP_CONCRETE_PLACEMENT_PARAMETERS,
+  ANCHOR_GROUP_CONCRETE_PLACEMENT_FORMULAS,
   ANCHOR_GROUP_CONCRETE_PLACEMENT_RESOURCES,
   ANCHOR_GROUP_CONCRETE_PLACEMENT_SOURCE_METADATA,
   ANCHOR_GROUP_CONCRETE_PLACEMENT_TARGETS,
@@ -10,8 +11,31 @@ import {
   anchorGroupConcretePlacementMissingRequiredRowsR2,
   compileAnchorGroupConcretePlacementR1,
 } from "../../src/lib/estimate/v4/anchorGroupConcretePlacementR1";
+import { compileCanonicalEstimateCore } from "../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
+import { estimateDeterministicHash } from "../../src/lib/estimate/estimateDeterministicHash";
 
 describe("anchor group concrete placement professional profile", () => {
+  it("keeps the imported owner's source binding and reconciles its own accepted concrete order", async () => {
+    const target = ANCHOR_GROUP_CONCRETE_PLACEMENT_TARGETS[1];
+    const result = await compileCanonicalEstimateCore({ operation: "recalculate", compilerVersion: "anchor-order-contract", catalogId: target.catalogId,
+      primaryMeasureParameterId: "plan_dimension_concrete_volume_m3", parameterDefinitions: [...ANCHOR_GROUP_CONCRETE_PLACEMENT_PARAMETERS],
+      formulaDefinitions: [...ANCHOR_GROUP_CONCRETE_PLACEMENT_FORMULAS], resourceDefinitions: [...ANCHOR_GROUP_CONCRETE_PLACEMENT_RESOURCES],
+      submittedParameters: { ...anchorGroupConcretePlacementAcceptanceInputR1(target.contextKey) },
+      confirmedParameters: {},
+      rowOverrides: { "anchor-group-pour:material:ready-mix": { quantity: "25.125", provenance: { kind: "manual", reason: "VALIDATION_FIXTURE anchor order" } } },
+      priceItems: [], currencyCode: "KGS", maximumResourceRows: ANCHOR_GROUP_CONCRETE_PLACEMENT_RESOURCES.length,
+      hashJson: async value => estimateDeterministicHash(value) });
+    expect(result.preliminaryNeeds).toEqual([]);
+    expect(result.rows.find(value => value.row_id === "anchor-group-pour:material:ready-mix")).toMatchObject({ quantity: "25.125",
+      calculation_trace: { purchaseBalance: { plannedConsumption: "18", requiredSelectedOrder: "19.8", excessOrderAboveRequiredConsumption: "5.325" } } });
+    for (const id of ["delivery:mixer-trips", "quality:delivery-acceptance", "document:delivery-tickets"])
+      expect(result.rows.find(value => value.row_id === `anchor-group-pour:${id}`)?.quantity).toBe("4");
+    expect(result.rows.find(value => value.row_id === "anchor-group-pour:work:place")?.quantity).toBe("18");
+    const derived = ANCHOR_GROUP_CONCRETE_PLACEMENT_PARAMETERS.find(value => value.truth_metadata.effective_resource_quantity_v1)!;
+    expect(derived.truth_metadata).toMatchObject({ visibility_role: "INTERNAL_ONLY", effective_resource_quantity_v1: {
+      sourceRowId: "anchor-group-pour:material:ready-mix", unitId: "m3" } });
+    expect(derived.truth_metadata).not.toHaveProperty("guide");
+  });
   it("compiles all seven contexts as complete, calculated concrete-placement estimates", async () => {
     const fixtures = new Set<string>();
     for (const target of ANCHOR_GROUP_CONCRETE_PLACEMENT_TARGETS) {
@@ -77,7 +101,7 @@ describe("anchor group concrete placement professional profile", () => {
     expect(serialized).toContain("VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE");
     expect(serialized).not.toContain("src_professional_norm_pack_reinforcement_rebar_kg_m3_concrete_element_v1");
     expect(serialized).not.toContain("src_professional_norm_pack_formwork_contact_area_m2_m3_concrete_element_v1");
-    expect(ANCHOR_GROUP_CONCRETE_PLACEMENT_PARAMETERS).toHaveLength(25);
+    expect(ANCHOR_GROUP_CONCRETE_PLACEMENT_PARAMETERS).toHaveLength(26);
     expect(ANCHOR_GROUP_CONCRETE_PLACEMENT_RESOURCES).toHaveLength(38);
   });
 

@@ -280,11 +280,15 @@ const screedParameters = STRIP_POUR_PROFILE_PARAMETERS
       visibility_role: "INTERNAL_ONLY",
       input_origin_class: "SELECTED_VISIBLE_PRELIMINARY_PROFILE",
       preliminary_compilation_allowed: true,
-      guide: {
+      ...((parameter.truth_metadata as Json).effective_resource_quantity_v1 ? {
+        effective_resource_quantity_v1: {
+          sourceRowId: "bridge:screed:material:ready-mix", unitId: "m3",
+        },
+      } : { guide: {
         ...((parameter.truth_metadata as Json).guide ?? {}),
         guide_short_ru: `${parameter.title_ru}: применено предварительное значение; при необходимости изменяется в расширенных параметрах сметы.`,
         applicability: "Защитная армированная бетонная стяжка мостовой гидроизоляции.",
-      },
+      } }),
     },
   }));
 
@@ -567,6 +571,14 @@ function prefixedScreedResource(
     ...(parent ? { parentCostOwnerId: `bridge:screed:${parent.replace(/^strip-pour:/u, "")}` } : {}),
     completeBridgePavementSystem: true,
   }, screedReplacements) as Json;
+  if ((source.resource_graph as Json).purchaseBalanceV1) {
+    const balance = (source.resource_graph as Json).purchaseBalanceV1 as Json;
+    resourceGraph.purchaseBalanceV1 = {
+      ...balance,
+      consumedExpression: replaceWords(String(balance.consumedExpression), screedFormulaReplacements),
+      plannedConsumptionExpression: replaceWords(String(balance.plannedConsumptionExpression), screedFormulaReplacements),
+    };
+  }
   for (const key of ["titleSpecificationParameterIds", "inputParameterIds"] as const) {
     const ids = (source.resource_graph as Json)?.[key];
     if (Array.isArray(ids)) {

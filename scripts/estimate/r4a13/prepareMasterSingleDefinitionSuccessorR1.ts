@@ -1218,7 +1218,11 @@ export async function runMasterSingleDefinitionSuccessorR1(
       ])),
       guide_provenance_ru: Object.fromEntries(parameterRows.map((parameter) => [
         parameter.parameter_id,
-        String((parameter.truth_metadata.guide as Json).guide_short_ru),
+        parameter.truth_metadata.visibility_role === "INTERNAL_ONLY"
+          && parameter.truth_metadata.effective_resource_quantity_v1 != null
+          && parameter.truth_metadata.guide == null
+          ? "Внутренний расчётный выход принятого количества строки; первичный ввод и нормативный источник не подставляются."
+          : String((parameter.truth_metadata.guide as Json).guide_short_ru),
       ])),
       proposal_source_refs: [{
         contract: config.contract,
