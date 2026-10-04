@@ -8,7 +8,7 @@ import { localizeKnownTechnologyVariantSuffixRu } from "./russianTechnologyTitle
 
 export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r8";
 export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r4-operation-allocation-specifications";
-export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:8";
+export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:9";
 
 /** Keep caller idempotency within each renderer; do not collide with legacy jobs. */
 export function canonicalProcurementRequestKey(idempotencyKey: string): string {
@@ -335,6 +335,9 @@ export function canonicalArtifactUnit(row: Record<string, unknown>): string {
 }
 
 export function canonicalArtifactSection(row: Record<string, unknown>): string {
+  // An operation section can contain both equipment and its material kits.
+  // Keep the declared material type before interpreting the section label.
+  if (String(row.category ?? "").trim().toLowerCase() === "material") return "Материалы";
   const identity = `${String(row.section ?? "")} ${String(row.category ?? "")}`.toLowerCase();
   if (/delivery|transport|logistic|достав|логист/u.test(identity)) return "Доставка";
   if (/equipment|machine|machinery|mechanism|механ|техник|оборуд/u.test(identity)) return "Механизмы";

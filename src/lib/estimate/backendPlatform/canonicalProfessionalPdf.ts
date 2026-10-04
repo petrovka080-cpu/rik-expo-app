@@ -10,7 +10,7 @@ import {
 import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-33-operation-specifications" as const;
+  "canonical-professional-pdf.r4-a13-s27-33-operation-material-categories" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -89,6 +89,7 @@ export function canonicalProfessionalPdfCategory(
     resourceGraph.costTreatment === "CONTROL_OR_DOCUMENT"
     || resourceGraph.costTreatment === "INFORMATIONAL_SCOPE"
   ) return "service";
+  if (String(row.category ?? "").trim().toLowerCase() === "material") return "material";
   if (/delivery|transport|logistic|достав|логист/u.test(identity)) return "transport";
   if (/equipment|machine|machinery|mechanism|механ|техник|оборуд/u.test(identity)) return "equipment";
   if (/material|product|waste|материал|издел/u.test(identity)) return "material";

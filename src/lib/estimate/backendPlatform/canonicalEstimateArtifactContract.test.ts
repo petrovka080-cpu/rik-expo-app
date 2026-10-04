@@ -3,6 +3,7 @@ import {
   buildCanonicalProcurementProjection,
   canonicalArtifactPreliminaryNeeds,
   canonicalArtifactQuantity,
+  canonicalArtifactSection,
   canonicalArtifactVisibleRowTitle,
   canonicalProfessionalArtifactMetadataIdentityMatches,
   selectCanonicalArtifactRows,
@@ -25,6 +26,13 @@ const rows = [
 ];
 
 describe("canonical estimate artifact contract", () => {
+  it("keeps material kits within an equipment operation as materials without changing procurement data", () => {
+    const kit = { ...rows[0], section: "Оборудование армирования", title_ru: "Полный комплект оснастки станка", unit_id: "set", quantity: "3" };
+    expect(canonicalArtifactSection(kit)).toBe("Материалы");
+    const projection = buildCanonicalProcurementProjection({ revision, procurementRows: [kit] });
+    expect(projection.rows[0]).toMatchObject({ category: "material", section: "Оборудование армирования", unitId: "set", quantity: "3" });
+    expect(canonicalArtifactSection({ category: "equipment", section: "Оборудование армирования" })).toBe("Механизмы");
+  });
   it.each([
     { titleSpecificationParameterIds: ["selected_vibrator"], titleSpecificationMode: "APPEND" },
     { titleSpecificationParameterId: "selected_vibrator" },
@@ -126,7 +134,7 @@ describe("canonical estimate artifact contract", () => {
       grandTotalStatus: "PARTIAL_NEEDS_PRICE",
       pageCount: 4,
       generatorVersion: "canonical-professional-pdf.r4-a6",
-      templateVersion: "professional-estimate-pdf:8",
+      templateVersion: "professional-estimate-pdf:9",
     });
     expect(canonicalProfessionalArtifactMetadataIdentityMatches({
       metadata,

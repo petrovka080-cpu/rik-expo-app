@@ -125,7 +125,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-33-operation-specifications");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-33-operation-material-categories");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,
@@ -406,5 +406,14 @@ describe("R4-A6 canonical professional PDF", () => {
       calculation_trace: { resourceGraph: { costTreatment: "INFORMATIONAL_SCOPE" } },
     })).toBe("service");
     expect(canonicalProfessionalPdfCategory({ category: "delivery" })).toBe("transport");
+  });
+  it("keeps paid material kit amounts out of equipment totals inside an equipment operation", () => {
+    const material = { ...rows(1)[0]!, section: "Оборудование армирования", category: "material", title_ru: "Полный комплект оснастки станка", unit_id: "set", quantity: "3", amount: "300" };
+    const machine = { ...rows(1)[0]!, row_id: "machine", ordinal: 1, section: "Оборудование армирования", category: "equipment", unit_id: "machine_hour", amount: "500" };
+    const projection = buildCanonicalProfessionalPdfProjection({ revision: revision(2), rows: [material, machine], workTitleRu: "Армирование" });
+    expect(canonicalProfessionalPdfCategory(material)).toBe("material");
+    expect(projection.categoryTotals).toMatchObject({ material: 300, equipment: 500 });
+    expect(projection.html).toContain("<td>Материалы</td>");
+    expect(projection.html).toContain("<td>Механизмы</td>");
   });
 });
