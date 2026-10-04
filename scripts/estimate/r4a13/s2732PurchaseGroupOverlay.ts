@@ -38,10 +38,12 @@ function hash(value: unknown): string { return createHash("sha256").update(strin
 
 /** Exact stable row identities only. The original DB definition supplies the
  * calculation and inclusion boundaries; this migration inserts no norms. */
-export function overlayS2732PurchaseGroup(parent: PurchaseGroupRepresentative) {
+export function overlayS2732PurchaseGroup(parent: PurchaseGroupRepresentative, options?: { concretePlacementOwners: true }) {
   const result: PurchaseGroupRepresentative = structuredClone(parent);
   const catalogId = String(parent.definition.catalog_id);
-  const targets = S2732_PURCHASE_GROUP_ROWS[catalogId];
+  const concretePlacement = catalogId.startsWith(anchorPrefix) || options?.concretePlacementOwners === true;
+  if (options?.concretePlacementOwners) invariant(catalogId.startsWith("canonical-work:base:concrete_foundation_interior_") && catalogId.includes("_pour_"), "CONCRETE_OWNER_SCOPE");
+  const targets = options?.concretePlacementOwners ? anchorRows : S2732_PURCHASE_GROUP_ROWS[catalogId];
   invariant(targets, `UNKNOWN_CATALOG:${catalogId}`);
   invariant(parent.parameters.every(p => p.default_value == null), `NON_NULL_DEFAULT:${catalogId}`);
   const resources = new Map(result.resources.map(r => [String(r.row_id), r]));
@@ -73,7 +75,7 @@ export function overlayS2732PurchaseGroup(parent: PurchaseGroupRepresentative) {
     const unit = String(row.unit_id);
     const cable = rowId === "rc09:wps_power_cable" ? "wps" : rowId === "rc09:bps_power_cable" ? "bps" : null;
     const quantum = ["pcs", "piece", "set", "roll", "package"].includes(unit);
-    const selectedContingency = catalogId.startsWith(anchorPrefix) && rowId === "material:concrete:ready-mix";
+    const selectedContingency = concretePlacement && rowId === "material:concrete:ready-mix";
     const balance = cable
       ? effectivePurchaseBalanceExpressionsR1({ ownerRowId: rowId, orderUnitId: unit,
         consumed: `${cable}_power_cable_route_length_m*(1+${cable}_cable_expected_loss_fraction)`,
@@ -93,7 +95,7 @@ export function overlayS2732PurchaseGroup(parent: PurchaseGroupRepresentative) {
       replaceFormula(`rc09:${cable}-cable-balance:surplus-beyond-spare`, balance.free);
     }
   }
-  if (catalogId.startsWith(anchorPrefix)) {
+  if (concretePlacement) {
     replaceFormula("delivery:concrete:ready-mix", `${effective("material:concrete:ready-mix")}*concrete_delivery_distance_km`);
   } else if (catalogId.endsWith("asphalt_install_large_area")) {
     const order = effective("asphalt:material:hot-dense-fine-mix");

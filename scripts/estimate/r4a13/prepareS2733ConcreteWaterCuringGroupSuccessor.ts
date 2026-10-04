@@ -19,6 +19,7 @@ const CURRENT = "data/estimate-benchmarks/r568-local-developer-canonical-release
 const SNAPSHOT = ".release-runtime/r568/s27-32/p4-concrete-sixty-six-parent-snapshot.json";
 const OUTPUT = ".release-runtime/r568/s27-32/concrete-water-curing-group-successor";
 const SOURCES = ["scripts/estimate/r4a13/prepareS2733ConcreteWaterCuringGroupSuccessor.ts", "scripts/estimate/r4a13/s2733AnchorWaterCuringOverlay.ts", "scripts/estimate/r4a13/s2733ConcreteWaterCuringGroupOverlay.ts",
+  "scripts/estimate/r4a13/s2732PurchaseGroupOverlay.ts",
   "scripts/estimate/r4a13/canonicalPreparedSearchCloneR1.ts", "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts", "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts", "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts", "src/lib/estimate/v4/anchorGroupWaterCuringResourcesS2733.ts",
   "src/lib/estimate/v4/concreteSlabCuringR1.ts", "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts", "src/lib/estimate/v4/automaticConstructionOwnerR1.ts"];
@@ -115,7 +116,7 @@ async function main() {
       plans.push(plan);
       transitions.push({ catalogId, predecessorDefinitionId: parent.definition.id, successorDefinitionId: definitionId,
         predecessorBaselineId: parent.baseline.id, successorBaselineId: baselineId, ownerRowIds: overlay.targetRowIds,
-        addedParameterIds: overlay.addedParameterIds, addedFormulaIds: overlay.addedFormulaIds,
+        addedParameterIds: overlay.addedParameterIds, addedFormulaIds: overlay.addedFormulaIds, changedFormulaIds: overlay.changedFormulaIds,
         parameterDelta: r.parameters.length - parent.parameters.length, formulaDelta: r.formulas.length - parent.formulas.length,
         resourceDelta: r.resources.length - parent.resources.length, quantityScope: parent.passport.decision.quantityScope });
     }

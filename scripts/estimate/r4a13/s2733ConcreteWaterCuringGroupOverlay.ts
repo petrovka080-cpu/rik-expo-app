@@ -1,6 +1,6 @@
 import { appendS2733WaterCuringResources, ANCHOR_WATER_CURING_TARGETS_S2733 } from "./s2733AnchorWaterCuringOverlay";
 import { ANCHOR_WATER_CURING_ROWS } from "../../../src/lib/estimate/v4/anchorGroupWaterCuringResourcesS2733";
-import type { PurchaseGroupRepresentative } from "./s2732PurchaseGroupOverlay";
+import { overlayS2732PurchaseGroup, type PurchaseGroupRepresentative } from "./s2732PurchaseGroupOverlay";
 import type { CanonicalEstimateOperationReference } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition";
 export const CONCRETE_WATER_CURING_NEW_TARGETS_S2733 = [
   "canonical-work:base:concrete_foundation_interior_belt_pour_high_load",
@@ -93,8 +93,9 @@ export function overlayS2733ConcreteWaterCuringGroup(parent: PurchaseGroupRepres
   const existing = ANCHOR_WATER_CURING_TARGETS_S2733.includes(catalogId);
   if (existing && (parent.resources.length !== 19 || Object.values(ANCHOR_WATER_CURING_ROWS).some(id => !parent.resources.some(r => r.row_id === id))))
     throw new Error("S2733_CONCRETE_WATER_DELIVERED_ANCHOR_DRIFT");
+  const purchase = existing ? null : overlayS2732PurchaseGroup(parent, { concretePlacementOwners: true });
   const overlay = existing ? { representative: structuredClone(parent), targetRowIds: [], addedParameterIds: [], addedFormulaIds: [] }
-    : appendS2733WaterCuringResources(parent, waterNormativeLocatorId, { catalogIds: CONCRETE_WATER_CURING_NEW_TARGETS_S2733,
+    : appendS2733WaterCuringResources(purchase!.representative, waterNormativeLocatorId, { catalogIds: CONCRETE_WATER_CURING_NEW_TARGETS_S2733,
       groupId: catalogId, groupTitleRu, applicabilityRu: `Уход водой по утверждённому проектному способу. Участок работ: ${groupTitleRu}. Объём воды и применимость комплекта и доставки не выводятся только из м³ бетона.` });
   const representative = overlay.representative;
   representative.resources = representative.resources.map(row => {
@@ -104,5 +105,7 @@ export function overlayS2733ConcreteWaterCuringGroup(parent: PurchaseGroupRepres
       operationId, operationTitleRu: operations[operationId][0], completionCriterionRu: operations[operationId][1] };
     return { ...row, resource_graph: { ...row.resource_graph, operationCompositionV1: operation } };
   });
-  return { ...overlay, representative, targetRowIds: representative.resources.map(row => String(row.row_id)), newWaterBranch: !existing };
+  return { ...overlay, representative, targetRowIds: representative.resources.map(row => String(row.row_id)),
+    addedParameterIds: [...(purchase?.addedParameterIds ?? []), ...overlay.addedParameterIds],
+    changedFormulaIds: purchase?.changedFormulaIds ?? [], newWaterBranch: !existing };
 }
