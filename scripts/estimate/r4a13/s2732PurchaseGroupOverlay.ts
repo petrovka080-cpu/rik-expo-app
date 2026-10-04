@@ -16,6 +16,10 @@ export const S2733_REINFORCEMENT_PURCHASE_GROUP_CATALOG_IDS = ["anchor_group", "
 const reinforcementRows = ["steel-approved-schedule", "binding-wire", "spacer-chairs", "mechanical-couplers"].map(id => `material:reinforcement:${id}`);
 const reinforcementFrameRows = ["a500c-d12", "a500c-d16", "annealed-tie-wire", "cover-spacer-35", "mechanical-couplers", "welding-electrodes"]
   .map(id => `material:rebar-cage:${id}`);
+export const S2733_CURING_MATERIAL_PURCHASE_CATALOG_IDS = ["anchor_group", "belt", "column_base", "concrete_slab", "pedestal", "pile_cap", "slab_foundation", "stairs_concrete", "strip_foundation"]
+  .flatMap(family => ["standard", "high_load", "large_area", "small_area", "technical_room", "wet_zone"]
+    .map(context => `canonical-work:base:concrete_foundation_interior_${family}_cure_${context}`));
+const curingMaterialRows = ["wet-curing-covering", "impervious-curing-sheet", "membrane-curing-compound"].map(id => `material:concrete:${id}`);
 export const S2732_PURCHASE_GROUP_ROWS: Readonly<Record<string, readonly string[]>> = {
   "canonical-work:base:paving_roads_landscape_interior_asphalt_install_large_area": [
     "asphalt:material:hot-dense-fine-mix", "asphalt:material:road-bitumen", "asphalt:material:technical-kerosene", "asphalt:material:hardwood-side-stop-bars"],
@@ -45,13 +49,14 @@ function hash(value: unknown): string { return createHash("sha256").update(strin
 
 /** Exact stable row identities only. The original DB definition supplies the
  * calculation and inclusion boundaries; this migration inserts no norms. */
-export function overlayS2732PurchaseGroup(parent: PurchaseGroupRepresentative, options?: { concretePlacementOwners?: true; reinforcementOwners?: true }) {
+export function overlayS2732PurchaseGroup(parent: PurchaseGroupRepresentative, options?: { concretePlacementOwners?: true; reinforcementOwners?: true; curingMaterialOwners?: true }) {
   const result: PurchaseGroupRepresentative = structuredClone(parent);
   const catalogId = String(parent.definition.catalog_id);
   const concretePlacement = catalogId.startsWith(anchorPrefix) || options?.concretePlacementOwners === true;
-  invariant(!options?.concretePlacementOwners || !options?.reinforcementOwners, "OWNER_SCOPE_CONFLICT");
+  invariant([options?.concretePlacementOwners, options?.reinforcementOwners, options?.curingMaterialOwners].filter(Boolean).length <= 1, "OWNER_SCOPE_CONFLICT");
   if (options?.concretePlacementOwners) invariant(catalogId.startsWith("canonical-work:base:concrete_foundation_interior_") && catalogId.includes("_pour_"), "CONCRETE_OWNER_SCOPE");
   const reinforcement = options?.reinforcementOwners === true;
+  const curingMaterials = options?.curingMaterialOwners === true;
   const frame = catalogId === "canonical-work:base:concrete_foundation_interior_reinforcement_frame_reinforce_standard";
   if (reinforcement) {
     invariant(S2733_REINFORCEMENT_PURCHASE_GROUP_CATALOG_IDS.includes(catalogId), "REINFORCEMENT_OWNER_SCOPE");
@@ -60,7 +65,12 @@ export function overlayS2732PurchaseGroup(parent: PurchaseGroupRepresentative, o
     const actual = parent.resources.filter(r => r.category === "material").map(r => String(r.row_id));
     invariant(hash(actual) === hash(expected), "REINFORCEMENT_MATERIAL_IDENTITY_DRIFT");
   }
-  const targets = reinforcement ? (frame ? reinforcementFrameRows : reinforcementRows)
+  if (curingMaterials) {
+    invariant(S2733_CURING_MATERIAL_PURCHASE_CATALOG_IDS.includes(catalogId), "CURING_MATERIAL_OWNER_SCOPE");
+    invariant(parent.resources.length === 11 && parent.parameters.length === 31, "CURING_DELIVERED_SCOPE_DRIFT");
+    invariant(curingMaterialRows.every(id => parent.resources.some(r => r.row_id === id && r.category === "material")), "CURING_MATERIAL_IDENTITY_DRIFT");
+  }
+  const targets = curingMaterials ? curingMaterialRows : reinforcement ? (frame ? reinforcementFrameRows : reinforcementRows)
     : options?.concretePlacementOwners ? anchorRows : S2732_PURCHASE_GROUP_ROWS[catalogId];
   invariant(targets, `UNKNOWN_CATALOG:${catalogId}`);
   invariant(parent.parameters.every(p => p.default_value == null), `NON_NULL_DEFAULT:${catalogId}`);
