@@ -255,17 +255,18 @@ export function buildRequestEstimateProfessionalRowEvidence(
   const balanceUnit = formatEstimateUnitLabel(String(balance?.unitId ?? item.unit));
   const exactPositive = (value: unknown): value is string => typeof value === "string"
     && isFormulaGraphExactDecimal(value) && compareFormulaGraphDecimals(value, "0") > 0;
-  const supplyOrderBasis = discreteOrderScope && balance?.requirementBasis === "selected_supply_order";
+  const supplyOrderBasis = bulkOrderScope && balance?.requirementBasis === "selected_supply_order";
+  const originalSupplyOrderBasis = supplyOrderBasis && balance?.plannedConsumption === balance?.requiredSelectedOrder;
   const selectedOrderBasis = bulkOrderScope && (balance?.requirementBasis === "selected_order_including_contingency" || supplyOrderBasis);
   const orderBasisSuffix = selectedOrderBasis
-    ? ` ${supplyOrderBasis ? "Плановая потребность в единицах поставки без сохраняемого резерва" : discreteOrderScope ? "Расчётное количество единиц поставки без планового запаса" : "Проектный объём укладки"}: ${balance.plannedConsumption} ${balanceUnit}. ${discreteOrderScope ? "Расчётный заказ" : "Расчётный заказ с выбранным резервом"}: ${balance.requiredSelectedOrder} ${balanceUnit}. Принятый заказ: ${balance.effectiveOrder} ${balanceUnit}.`
+    ? ` ${supplyOrderBasis ? discreteOrderScope && !originalSupplyOrderBasis ? "Плановая потребность в единицах поставки без сохраняемого резерва" : "Исходная потребность к заказу" : discreteOrderScope ? "Расчётное количество единиц поставки без планового запаса" : "Проектный объём укладки"}: ${balance.plannedConsumption} ${balanceUnit}. ${supplyOrderBasis || discreteOrderScope ? "Расчётный заказ" : "Расчётный заказ с выбранным резервом"}: ${balance.requiredSelectedOrder} ${balanceUnit}. Принятый заказ: ${balance.effectiveOrder} ${balanceUnit}.`
     : "";
   const bulkBalanceSuffix = bulkOrderScope && exactPositive(balance?.consumptionShortage)
     ? selectedOrderBasis
-      ? ` ${discreteOrderScope ? "Не хватает до расчётного заказа" : "Заказ с выбранным резервом не покрыт на"} ${balance.consumptionShortage} ${balanceUnit}.`
+      ? ` ${supplyOrderBasis || discreteOrderScope ? "Не хватает до расчётного заказа" : "Заказ с выбранным резервом не покрыт на"} ${balance.consumptionShortage} ${balanceUnit}.`
       : ` Заказ не покрывает расчётную потребность: не хватает ${balance.consumptionShortage} ${balanceUnit}.`
     : bulkOrderScope && exactPositive(balance?.excessOrderAboveRequiredConsumption)
-      ? ` ${selectedOrderBasis ? discreteOrderScope ? "Превышение расчётного заказа" : "Превышение расчётного заказа с выбранным резервом" : "Заказ сверх расчётной потребности"}: ${balance.excessOrderAboveRequiredConsumption} ${balanceUnit}. Пригодность излишка для дальнейшего использования не подтверждена.`
+      ? ` ${selectedOrderBasis ? supplyOrderBasis || discreteOrderScope ? "Превышение расчётного заказа" : "Превышение расчётного заказа с выбранным резервом" : "Заказ сверх расчётной потребности"}: ${balance.excessOrderAboveRequiredConsumption} ${balanceUnit}. Пригодность излишка для дальнейшего использования не подтверждена.`
       : "";
   const dependencies = Array.isArray(projection.parameterDependencies)
     ? projection.parameterDependencies.filter((value): value is string => typeof value === "string" && value.trim().length > 0)

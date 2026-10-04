@@ -60,6 +60,24 @@ function testInput(): CanonicalEstimateCompileCoreInput {
 const row = (result: Awaited<ReturnType<typeof compileCanonicalEstimateCore>>, rowId: string) => result.rows.find(value => value.row_id === rowId)!;
 
 describe("authoritative effective resource quantities", () => {
+  it("enforces a decimal supplier order without claiming physical consumption or a retained reserve", () => {
+    const policy = { unitId: "kg", consumedExpression: "12.75", stockExpression: "0", reserveExpression: "0",
+      quantityMode: "canonical_decimal", balanceScope: "new_order_vs_required_consumption",
+      requirementBasis: "selected_supply_order", plannedConsumptionExpression: "12.75" };
+    const resolve = (quantity: string, raw: unknown = policy) => resolveCanonicalPurchaseBalanceV1(raw, "supplier-order", "kg", quantity, {}, new Set());
+    const reopened = JSON.parse(JSON.stringify(resolve("12.5")));
+    expect(reopened).toMatchObject({ quantum: null, plannedConsumption: "12.75", requiredSelectedOrder: "12.75",
+      effectiveOrder: "12.5", consumptionShortage: "0.25", reserveDeficit: "0", procurementReady: false });
+    const rows = [{ titleRu: "Исходный заказ", calculationTrace: { purchaseBalance: reopened } }];
+    expect(() => assertCanonicalPurchaseReadinessV1(rows)).toThrow(expect.objectContaining({ code: "PROCUREMENT_MATERIAL_SHORTAGE" }));
+    expect(canonicalPurchaseShortageMessageV1(rows)).toContain("не хватает до расчётного заказа 0.25 kg");
+    expect(canonicalPurchaseShortageMessageV1(rows)).not.toContain("с выбранным резервом");
+    expect(resolve("0")).toMatchObject({ consumptionShortage: "12.75", procurementReady: false });
+    expect(resolve("13.125")).toMatchObject({ excessOrderAboveRequiredConsumption: "0.375", procurementReady: true });
+    for (const quantity of ["13.1250000001", "-1"]) expect(() => resolve(quantity)).toThrow();
+    for (const raw of [{ ...policy, stockExpression: "5" }, { ...policy, reserveExpression: "1" },
+      { ...policy, plannedConsumptionExpression: "13" }, { ...policy, orderQuantumExpression: "1" }]) expect(() => resolve("13.125", raw)).toThrow();
+  });
   it("keeps a neutral whole-supply order basis distinct from physically retained reserve and legacy contingency", () => {
     const policy = { unitId: "item", consumedExpression: "2", stockExpression: "0", reserveExpression: "0",
       quantityMode: "supply_quantum", orderQuantumExpression: "1", balanceScope: "new_order_vs_required_consumption",

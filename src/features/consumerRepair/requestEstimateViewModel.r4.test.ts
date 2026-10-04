@@ -76,6 +76,24 @@ function serverBoundBundle(items: ConsumerRepairRequestItem[]): ConsumerRepairDr
 }
 
 describe("R4 canonical estimate title parity", () => {
+  it("keeps a reopened decimal supplier order separate from installed quantity and retained reserve", () => {
+    const item = canonicalItem("material:supplier-order", "Расходный материал", "a".repeat(64), 0);
+    item.unit = "kg"; item.unitLabel = "кг";
+    item.sourceParameters = { ...item.sourceParameters, smartEstimateProjectionV2: {}, canonicalPurchaseBalance: {
+      quantityMode: "canonical_decimal", balanceScope: "new_order_vs_required_consumption", unitId: "kg",
+      requirementBasis: "selected_supply_order", plannedConsumption: "12.75", requiredSelectedOrder: "12.75",
+      effectiveOrder: "12.5", consumptionShortage: "0.25", excessOrderAboveRequiredConsumption: "0" } };
+    const reopened = JSON.parse(JSON.stringify(item)) as ConsumerRepairRequestItem;
+    const label = buildRequestEstimateProfessionalRowEvidence(reopened)!.formulaLabel;
+    expect(label).toContain("Исходная потребность к заказу: 12.75 кг");
+    expect(label).toContain("Расчётный заказ: 12.75 кг");
+    expect(label).toContain("Не хватает до расчётного заказа 0.25 кг");
+    expect(label).not.toContain("объём укладки");
+    expect(label).not.toContain("с выбранным резервом");
+    reopened.sourceParameters!.canonicalPurchaseBalance = { ...reopened.sourceParameters!.canonicalPurchaseBalance as object,
+      effectiveOrder: "13.125", consumptionShortage: "0", excessOrderAboveRequiredConsumption: "0.375" };
+    expect(buildRequestEstimateProfessionalRowEvidence(reopened)!.formulaLabel).toContain("Превышение расчётного заказа: 0.375 кг");
+  });
   it("presents retained-reserve supply planning without treating it as consumed material or usable stock", () => {
     const item = canonicalItem("wavin:pipe", "Пачки трубы", "a".repeat(64), 0);
     item.unit = "item"; item.unitLabel = "шт.";
@@ -89,6 +107,11 @@ describe("R4 canonical estimate title parity", () => {
     expect(evidence.formulaLabel).toContain("Не хватает до расчётного заказа 1 шт.");
     expect(evidence.formulaLabel).not.toContain("объём укладки");
     expect(evidence.formulaLabel).not.toContain("пригодный склад");
+    item.sourceParameters!.canonicalPurchaseBalance = { ...item.sourceParameters!.canonicalPurchaseBalance as object,
+      plannedConsumption: "2", requiredSelectedOrder: "2" };
+    const originalOrder = buildRequestEstimateProfessionalRowEvidence(JSON.parse(JSON.stringify(item)))!.formulaLabel;
+    expect(originalOrder).toContain("Исходная потребность к заказу: 2 шт.");
+    expect(originalOrder).not.toContain("без сохраняемого резерва");
   });
   it("presents scoped discrete supply counts without describing installed volume or reusable stock", () => {
     const item = canonicalItem("p113:pp", "Профиль ПП", "a".repeat(64), 0);

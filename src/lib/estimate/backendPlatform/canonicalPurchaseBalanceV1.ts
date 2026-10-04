@@ -23,7 +23,7 @@ export type CanonicalPurchaseBalanceV1 = PurchaseBalanceSources & (
   | Readonly<{ quantityMode: "canonical_decimal"; balanceScope: "new_order_vs_required_consumption";
     stockExpression: "0"; reserveExpression: "0"; orderQuantumExpression?: never }> & (
       | Readonly<{ requirementBasis?: never; plannedConsumptionExpression?: never }>
-      | Readonly<{ requirementBasis: "selected_order_including_contingency"; plannedConsumptionExpression: string }>
+      | SelectedOrderBasis
     )
 );
 
@@ -46,7 +46,7 @@ export function resolveCanonicalPurchaseBalanceV1(
   const decimal = quantityMode === "canonical_decimal";
   const scoped = policy.balanceScope === "new_order_vs_required_consumption";
   const selectedOrder = scoped && (policy.requirementBasis === "selected_order_including_contingency"
-    || (!decimal && policy.requirementBasis === "selected_supply_order"));
+    || policy.requirementBasis === "selected_supply_order");
   if ((Object.hasOwn(policy, "requirementBasis") && !selectedOrder) || (Object.hasOwn(policy, "plannedConsumptionExpression") && !selectedOrder)) {
     fail("DEFINITION_INTEGRITY_FAILED", "purchase requirement basis invalid");
   }
@@ -145,7 +145,7 @@ export function canonicalPurchaseShortageMessageV1(rows: readonly PurchaseTraceR
   const shortages = canonicalPurchaseShortagesV1(rows);
   if (shortages.length) {
     const reasons = shortages.map(row => row.requirementBasis === "selected_order_including_contingency" || row.requirementBasis === "selected_supply_order"
-      ? row.discreteOrderScope
+      ? row.requirementBasis === "selected_supply_order" || row.discreteOrderScope
         ? `${row.titleRu}: не хватает до расчётного заказа ${row.consumptionShortage} ${row.unitId}`
         : `${row.titleRu}: заказ с выбранным резервом не покрыт на ${row.consumptionShortage} ${row.unitId}`
       : `${row.titleRu}: не хватает для расхода ${row.consumptionShortage} ${row.unitId}; резерв не покрыт на ${row.reserveDeficit} ${row.unitId}`).join("; ");
