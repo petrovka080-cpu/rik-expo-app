@@ -55,15 +55,15 @@ describe("S27.33 standalone curing resource completion", () => {
     expect(included.rows.find(r => r.row_id === ids.includedKit)?.amount).toBeNull();
     const separateFacts = { ...facts, application_equipment_accessories_pricing_mode: "SEPARATE_SUPPLY" };
     const zero = await compile(separateFacts, { [ids.separateKit]: amendment("0") });
-    expect(zero.rows.find(r => r.row_id === ids.separateKit)?.calculation_trace.purchaseBalance)
-      .toMatchObject({ consumptionShortage: "2", procurementReady: false });
+    expect(zero.rows.find(r => r.row_id === ids.separateKit)?.calculation_trace)
+      .toMatchObject({ purchaseBalance: { consumptionShortage: "2", procurementReady: false } });
     await expect(compile(separateFacts, { [ids.separateKit]: amendment("1.5") })).rejects.toMatchObject({ code: "ROW_AMENDMENT_INVALID" });
   });
   it("reconciles water freight after manual ordering and blocks a real shortage", async () => {
     const result = await compile(facts, { [ids.water]: amendment("10.1") });
     expect(result.rows.find(r => r.row_id === ids.delivery)?.quantity).toBe("4");
-    expect(result.rows.find(r => r.row_id === ids.water)?.calculation_trace.purchaseBalance)
-      .toMatchObject({ consumed: "8.5", remaining: "1.6", procurementReady: true });
+    expect(result.rows.find(r => r.row_id === ids.water)?.calculation_trace)
+      .toMatchObject({ purchaseBalance: { consumed: "8.5", remaining: "1.6", procurementReady: true } });
     const zero = await compile(facts, { [ids.water]: amendment("0") });
     expect(zero.rows.find(r => r.row_id === ids.delivery)?.quantity).toBe("0");
     expect(() => buildCanonicalProcurementProjection({ revision: { id: "fixture", release_id: "fixture", catalog_id: "fixture", checksum_sha256: "fixture", row_count: zero.rows.length }, ...selectCanonicalArtifactRows(zero.rows) })).toThrow();
