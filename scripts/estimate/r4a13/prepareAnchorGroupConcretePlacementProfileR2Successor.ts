@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import {
@@ -27,6 +28,13 @@ const TARGET = ANCHOR_GROUP_CONCRETE_PLACEMENT_TARGETS.find(
   (candidate) => candidate.contextKey === "high_load",
 )!;
 const ACCEPTANCE_INPUT = anchorGroupConcretePlacementAcceptanceInputR1("high_load");
+
+const currentReleasePath = resolve(process.env.R4A13_CURRENT_RELEASE_PATH
+  ?? "data/estimate-benchmarks/r568-local-developer-canonical-release.json");
+const currentRelease = JSON.parse(readFileSync(currentReleasePath, "utf8")) as {
+  definitionReleaseId: string;
+  searchReleaseId: string;
+};
 
 async function verifyCore(): Promise<Json> {
   const compiled = await compileAnchorGroupConcretePlacementR1({
@@ -82,17 +90,20 @@ void runMasterSingleDefinitionSuccessorR1({
   applicationName: "s27-14-anchor-group-concrete-placement-profile-r2-successor",
   expectedBranch: "codex/r4-a5-clean-08b18902",
   masterPath: resolve(process.env.R4A13_MASTER_PATH
-    ?? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (54).md"),
+    ?? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (71).md"),
   masterSha256: process.env.R4A13_MASTER_SHA256
-    ?? "bcf902aeff445391e4661df1dfb92aab19d522d4619318136154340b1bbbacbc",
+    ?? "783d0425e1f0f0f0ea8a262be454e39d13e94e1a2ad5d1c6cc4b1e1314e624f1",
   parentReleaseId: process.env.R4A13_PARENT_DEFINITION_RELEASE_ID
-    ?? "0ffde15b-2f99-5cf4-8aea-e456e2e9a13a",
+    ?? currentRelease.definitionReleaseId,
   parentSearchReleaseId: process.env.R4A13_PARENT_SEARCH_RELEASE_ID
-    ?? "dea68103-b6eb-58dc-8107-3f852ea3f2ea",
-  currentReleasePath: resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json"),
+    ?? currentRelease.searchReleaseId,
+  currentReleasePath,
   outputRoot: resolve(process.env.R4A13_OUTPUT_ROOT
-    ?? ".release-runtime/r568/s27-14/anchor-group-concrete-placement-profile-r2-successor"),
+    ?? ".release-runtime/r568/s27-31/AnchorGroupConcretePlacementProfileR2Successor-ancillary-orders"),
   sourcePaths: [
+    "scripts/estimate/r4a13/readbackS2731AncillaryMaterialOrdersIndependent.ts",
+    "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+    "src/lib/estimate/v4/asphaltInstallLargeAreaKrer27ProfileR1.ts",
     "data/estimate-benchmarks/source-packs/strip-foundation-concrete-placement-preliminary-profile-r1.json",
     "src/features/consumerRepair/consumerCanonicalBaselineCompile.ts",
     "src/lib/estimate/v4/stripFoundationConcretePlacementPreliminaryProfileR1.ts",
@@ -116,7 +127,7 @@ void runMasterSingleDefinitionSuccessorR1({
   runtimeProfileClassification: ANCHOR_GROUP_HIGH_LOAD_PROFILE_RUNTIME_CLASSIFICATION,
   runtimeProfileSourceIds: ANCHOR_GROUP_HIGH_LOAD_PROFILE_RUNTIME_SOURCE_IDS,
   verifyCore,
-  expectedParentShape: [36, 15, 15],
+  expectedParentShape: [25, 16, 38],
   benchmarkOrdinal: 0,
   validationScenario: "S27_14_ANCHOR_GROUP_HIGH_LOAD_20_M3_COMPLETE_FIRST_ESTIMATE",
   passport: {
@@ -170,8 +181,12 @@ void runMasterSingleDefinitionSuccessorR1({
     },
   },
   locator: {
-    key: "anchor-group-concrete-placement-high-load-preliminary-profile-r2",
+    key: "anchor-group-concrete-placement-high-load-preliminary-profile-r2-ancillary-orders-s27-31",
     payload: {
+      ancillaryOrderRowIds: ["anchor-group-pour:material:curing-sheet", "anchor-group-pour:joint:waterstop"],
+      expectedResourceIds: ANCHOR_GROUP_CONCRETE_PLACEMENT_RESOURCES.map(row => row.row_id),
+      expectedFormulaIds: ANCHOR_GROUP_CONCRETE_PLACEMENT_FORMULAS.map(row => row.formula_id),
+      sourcePackSha256: ANCHOR_GROUP_CONCRETE_PLACEMENT_SOURCE_METADATA.definition_hash,
       kind: "COMPOSITE_TECHNOLOGY_PROFILE",
       exactLocator: ANCHOR_GROUP_CONCRETE_PLACEMENT_SOURCE_METADATA.exact_locator,
       formula:

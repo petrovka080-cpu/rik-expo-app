@@ -13,8 +13,13 @@ import {
   ASPHALT_INSTALL_KRER27_RESOURCES,
   ASPHALT_INSTALL_KRER27_SHORT_INPUT,
   ASPHALT_INSTALL_KRER27_SOURCE_PACK_SHA256,
+  ASPHALT_INSTALL_KRER27_RUNTIME_INPUT,
   compileAsphaltInstallLargeAreaKrer27ProfileR1,
 } from "../../src/lib/estimate/v4/asphaltInstallLargeAreaKrer27ProfileR1";
+import { compileCanonicalEstimateCore } from "../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
+import { canonicalEstimateRevisionRowFromStorage } from "../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper";
+import { buildCanonicalProcurementProjection, selectCanonicalArtifactRows } from "../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract";
+import { estimateDeterministicHash } from "../../src/lib/estimate/estimateDeterministicHash";
 
 type Json = Record<string, any>;
 
@@ -29,6 +34,46 @@ function row(result: Awaited<ReturnType<typeof compileAsphaltInstallLargeAreaKre
 }
 
 describe("S27.19 hot-asphalt installation from KRER 27-06-020-01 and 27-06-021-01", () => {
+  test("guards all three auxiliary supply orders on persisted reopen without changing physical asphalt work", async () => {
+    const ids = ["asphalt:material:road-bitumen", "asphalt:material:technical-kerosene", "asphalt:material:hardwood-side-stop-bars"];
+    const run = (quantities?: string[]) => compileCanonicalEstimateCore({ operation: quantities ? "recalculate" : "compile",
+      compilerVersion: "auxiliary-asphalt-order-contract", catalogId: ASPHALT_INSTALL_KRER27_CATALOG_ID, primaryMeasureParameterId: "area_m2",
+      parameterDefinitions: [...ASPHALT_INSTALL_KRER27_PARAMETERS], formulaDefinitions: [...ASPHALT_INSTALL_KRER27_FORMULAS],
+      resourceDefinitions: [...ASPHALT_INSTALL_KRER27_RESOURCES], submittedParameters: { area_m2: 5000, layer_thickness_mm: 50 },
+      confirmedParameters: ASPHALT_INSTALL_KRER27_RUNTIME_INPUT, currencyCode: "KGS", priceItems: [],
+      rowOverrides: quantities ? Object.fromEntries(ids.map((id, index) => [id, { quantity: quantities[index], includedInProcurement: true,
+        provenance: { kind: "manual", reason: "VALIDATION_FIXTURE auxiliary supplies; no stock or engineering claim" } }])) : {},
+      maximumResourceRows: ASPHALT_INSTALL_KRER27_RESOURCES.length, hashJson: async value => estimateDeterministicHash(value) });
+    const baseline = await run();
+    for (const [quantities, gaps, excess] of [
+      [["0", "0", "0"], ["0.068", "0.026", "0.75"], ["0", "0", "0"]],
+      [["0.05", "0.01", "0.5"], ["0.018", "0.016", "0.25"], ["0", "0", "0"]],
+      [["0.1", "0.04", "1"], ["0", "0", "0"], ["0.032", "0.014", "0.25"]],
+    ]) {
+      const result = await run(quantities);
+      expect(result.preliminaryNeeds).toEqual([]);
+      const stored = (JSON.parse(JSON.stringify(result.rows)) as typeof result.rows).map(value => { delete value.procurement_readiness; return value; });
+      const reopened = stored.map(value => canonicalEstimateRevisionRowFromStorage(value, null));
+      for (const [index, id] of ids.entries()) {
+        expect(reopened.find(value => value.rowId === id)).toMatchObject({ quantity: quantities[index], includedInProcurement: gaps[index] === "0",
+          calculationTrace: { manualQuantityOverride: true, calculatedQuantityBeforeOverride: ["0.068", "0.026", "0.75"][index],
+            purchaseBalance: { quantityMode: "canonical_decimal", quantum: null, consumed: ["0.068", "0.026", "0.75"][index],
+              consumptionShortage: gaps[index], excessOrderAboveRequiredConsumption: excess[index], procurementReady: gaps[index] === "0" } } });
+        const policy = ASPHALT_INSTALL_KRER27_RESOURCES.find(value => value.row_id === id)!.resource_graph.purchaseBalanceV1;
+        expect(policy).not.toHaveProperty("plannedConsumptionExpression");
+        expect(policy).not.toHaveProperty("orderQuantumExpression");
+      }
+      for (const before of baseline.rows.filter(value => !ids.includes(value.row_id)))
+        expect(result.rows.find(value => value.row_id === before.row_id)?.quantity).toBe(before.quantity);
+      const selection = selectCanonicalArtifactRows(stored);
+      const build = () => buildCanonicalProcurementProjection({ revision: { id: "TEST", release_id: "TEST", catalog_id: ASPHALT_INSTALL_KRER27_CATALOG_ID,
+        checksum_sha256: "TEST", row_count: stored.length }, sourceRows: selection.sourceRows, procurementRows: selection.procurementRows });
+      if (gaps.some(value => value !== "0")) {
+        let failure: unknown; try { build(); } catch (error) { failure = error; }
+        expect(failure).toMatchObject({ code: "PROCUREMENT_MATERIAL_SHORTAGE", shortages: ids.map((id, index) => expect.objectContaining({ rowId: id, consumptionShortage: gaps[index] })) });
+      } else expect(build).not.toThrow();
+    }
+  });
   test("binds the independently authored technology/BOM source pack by exact bytes", () => {
     const bytes = readFileSync(SOURCE_PACK_PATH);
     const sourcePack = JSON.parse(bytes.toString("utf8")) as Json;

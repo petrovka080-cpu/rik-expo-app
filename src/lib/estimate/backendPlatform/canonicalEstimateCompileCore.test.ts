@@ -93,6 +93,33 @@ function numericPeerInput(): CanonicalEstimateCompileCoreInput {
   return input;
 }
 
+describe("purchase consumption requires its original quantity facts", () => {
+  it("retains a known manual supply as a local need while legacy manual rows and independent resources continue", async () => {
+    const input = baseInput();
+    input.parameterDefinitions.push({ parameter_id: "required_m2", value_type: "decimal", required: false, default_value: null, constraints_json: { min: 0.001 } });
+    const graph = compileFormulaGraph("required_m2");
+    input.formulaDefinitions.push({ formula_id: "required_quantity", ast: graph.ast, input_parameter_ids: graph.inputParameterIds, ast_sha256: hash(graph.ast) });
+    const ordinary = { ...input.resourceDefinitions[0]!, id: "ordinary-spec", row_id: "material:ordinary-manual", ordinal: 1, formula_id: "required_quantity" };
+    input.resourceDefinitions.push(ordinary, { ...ordinary, id: "balanced-spec", row_id: "material:balanced-manual", ordinal: 2,
+      resource_graph: { purchaseBalanceV1: { quantityMode: "canonical_decimal", balanceScope: "new_order_vs_required_consumption", unitId: "m2",
+        consumedExpression: "required_m2", stockExpression: "0", reserveExpression: "0" } } });
+    const amendment = { quantity: "18", unitPrice: "2", includedInProcurement: true, provenance: { kind: "manual", reason: "VALIDATION_FIXTURE accepted supply" } };
+    input.operation = "recalculate";
+    input.rowOverrides = { "material:ordinary-manual": amendment, "material:balanced-manual": amendment };
+    const missing = await compileCanonicalEstimateCore(input);
+    expect(missing.rows.map(value => value.row_id)).toEqual(["material:board", "material:ordinary-manual"]);
+    expect(missing.preliminaryNeeds).toHaveLength(1);
+    expect(missing.preliminaryNeeds[0]).toMatchObject({ row_id: "material:balanced-manual", quantity: "18", unit_price: "2",
+      need_state: "QUANTITY_REQUIRED", missing_parameter_ids: ["required_m2"], calculation_trace: {
+        manualQuantityOverride: true, calculatedQuantityBeforeOverride: null, manualAmendment: amendment.provenance } });
+    const resolved = await compileCanonicalEstimateCore({ ...input, submittedParameters: { area_m2: 10, required_m2: 20 } });
+    expect(resolved.preliminaryNeeds).toEqual([]);
+    expect(resolved.rows.find(value => value.row_id === "material:balanced-manual")).toMatchObject({ quantity: "18", included_in_procurement: false,
+      calculation_trace: { purchaseBalance: { consumed: "20", consumptionShortage: "2", procurementReady: false } } });
+    await expect(compileCanonicalEstimateCore({ ...input, submittedParameters: { area_m2: 10, required_m2: 0 } })).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
+  });
+});
+
 describe("localized unresolved numeric compatibility", () => {
   it("retains independent paid rows and one visible condition need with its known quantity", async () => {
     const input = numericPeerInput();

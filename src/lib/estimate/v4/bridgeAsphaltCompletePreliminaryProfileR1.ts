@@ -525,10 +525,12 @@ function prefixedAsphaltResource(
       fullAreaTackCoatOwnerId: "bridge:asphalt:continuous-tack-emulsion",
     } : {}),
     completeBridgePavementSystem: true,
+    ...(sourceBalance ? {
+      purchaseBalanceV1: { ...sourceBalance,
+        consumedExpression: BRIDGE_ASPHALT_COMPLETE_FORMULAS.find(value => value.formula_id === `bridge_${course}_${source.formula_id}`)!.expression_source },
+    } : {}),
     ...(isHotMix && source.resource_graph?.effectiveQuantityOutputV1 ? {
       effectiveQuantityOutputV1: { parameterId: courseEffectiveMixOrderId(course), unitId: "t" },
-      purchaseBalanceV1: { ...sourceBalance, consumedExpression: replaceWords(String(sourceBalance?.consumedExpression), {
-        layer_thickness_mm: `${course}_layer_thickness_mm` }) },
     } : {}),
   };
   const next = {
@@ -575,8 +577,10 @@ function prefixedScreedResource(
     const balance = (source.resource_graph as Json).purchaseBalanceV1 as Json;
     resourceGraph.purchaseBalanceV1 = {
       ...balance,
-      consumedExpression: replaceWords(String(balance.consumedExpression), screedFormulaReplacements),
-      plannedConsumptionExpression: replaceWords(String(balance.plannedConsumptionExpression), screedFormulaReplacements),
+      consumedExpression: BRIDGE_ASPHALT_COMPLETE_FORMULAS.find(value => value.formula_id === `bridge_screed_${source.formula_id}`)!.expression_source,
+      ...(typeof balance.plannedConsumptionExpression === "string" ? {
+        plannedConsumptionExpression: replaceWords(balance.plannedConsumptionExpression, screedFormulaReplacements),
+      } : {}),
     };
   }
   for (const key of ["titleSpecificationParameterIds", "inputParameterIds"] as const) {

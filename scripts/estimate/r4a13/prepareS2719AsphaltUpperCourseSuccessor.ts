@@ -147,6 +147,9 @@ void runMasterSingleDefinitionSuccessorR1({
   outputRoot: resolve(process.env.R4A13_OUTPUT_ROOT
     ?? ".release-runtime/r568/s27-31/asphalt-upper-course-accepted-order-successor-v1"),
   sourcePaths: [
+    "scripts/estimate/r4a13/readbackS2731AncillaryMaterialOrdersIndependent.ts",
+    "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+    "src/lib/estimate/v4/stripFoundationConcretePlacementPreliminaryProfileR1.ts",
     "data/estimate-benchmarks/source-packs/asphalt-install-large-area-krer27-profile-r1.json",
     "src/lib/estimate/v4/asphaltInstallLargeAreaKrer27ProfileR1.ts",
     "src/lib/estimate/v4/asphaltUpperCourseR1.ts",
@@ -170,7 +173,7 @@ void runMasterSingleDefinitionSuccessorR1({
   runtimeProfileClassification: ASPHALT_INSTALL_KRER27_RUNTIME_CLASSIFICATION,
   runtimeProfileSourceIds: ASPHALT_INSTALL_KRER27_RUNTIME_SOURCE_IDS,
   verifyCore,
-  expectedParentShape: [30, 23, 57],
+  expectedParentShape: [31, 23, 57],
   benchmarkOrdinal: 0,
   validationScenario: "S2719_ASPHALT_900_M2_50_MM_ORDINARY_FIRST_INPUT",
   passport: {
@@ -212,8 +215,9 @@ void runMasterSingleDefinitionSuccessorR1({
     },
   },
   locator: {
-    key: "asphalt-upper-course-krer-27-06-020-01-021-01-s27-31-accepted-order",
+    key: "asphalt-upper-course-krer-27-06-020-01-021-01-s27-31-accepted-order-ancillary-orders-s27-31",
     payload: {
+      ancillaryOrderRowIds: ["asphalt:material:road-bitumen", "asphalt:material:technical-kerosene", "asphalt:material:hardwood-side-stop-bars"],
       kind: "NORMATIVE_OPERATION_AND_RESOURCE_MAP",
       exactLocator: ASPHALT_UPPER_COURSE_SOURCE_METADATA.exact_locator,
       baseMeasure: "1000 m2 at 40 mm",

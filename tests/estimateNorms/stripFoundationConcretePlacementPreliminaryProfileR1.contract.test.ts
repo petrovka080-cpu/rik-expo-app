@@ -34,6 +34,42 @@ const acceptedCompile = (rowOverrides: CanonicalEstimateCompileCoreInput["rowOve
     rowOverrides, priceItems: [], currencyCode: "KGS", maximumResourceRows: STRIP_POUR_PROFILE_RESOURCES.length,
     hashJson: async value => estimateDeterministicHash(value) });
 
+describe("concrete ancillary purchase readiness", () => {
+  const joint = { construction_joint_mode: "WATERSTOP", construction_joint_waterstop_specification: "VALIDATION_FIXTURE: ПВХ по узлу КЖ-17", construction_joint_waterstop_length_m: 18 };
+  const ids = ["strip-pour:material:curing-sheet", "strip-pour:joint:waterstop"];
+  test("preserves curing and joint installation while persisted manual supplies expose shortage and excess", async () => {
+    const baseline = await acceptedCompile({}, joint);
+    for (const [amounts, gaps, excess] of [
+      [["0", "0"], ["314.600000088", "18"], ["0", "0"]],
+      [["300", "10"], ["14.600000088", "8"], ["0", "0"]],
+      [["400", "20"], ["0", "0"], ["85.399999912", "2"]],
+    ]) {
+      const result = await acceptedCompile(Object.fromEntries(ids.map((id, index) => [id, { quantity: amounts[index], includedInProcurement: true, provenance: manual }])), joint);
+      expect(result.preliminaryNeeds).toEqual([]);
+      const stored = (JSON.parse(JSON.stringify(result.rows)) as typeof result.rows).map(value => { delete value.procurement_readiness; return value; });
+      const reopened = stored.map(value => canonicalEstimateRevisionRowFromStorage(value, null));
+      for (const [index, id] of ids.entries()) expect(reopened.find(value => value.rowId === id)).toMatchObject({ quantity: amounts[index], includedInProcurement: gaps[index] === "0",
+        calculationTrace: { manualQuantityOverride: true, calculatedQuantityBeforeOverride: ["314.600000088", "18"][index],
+          purchaseBalance: { quantityMode: "canonical_decimal", quantum: null, consumed: ["314.600000088", "18"][index],
+            consumptionShortage: gaps[index], excessOrderAboveRequiredConsumption: excess[index], procurementReady: gaps[index] === "0" } } });
+      for (const before of baseline.rows.filter(value => !ids.includes(value.row_id)))
+        expect(result.rows.find(value => value.row_id === before.row_id)?.quantity).toBe(before.quantity);
+      const selection = selectCanonicalArtifactRows(stored);
+      const build = () => buildCanonicalProcurementProjection({ revision: { id: "TEST", release_id: "TEST", catalog_id: STRIP_POUR_PROFILE_CATALOG_ID,
+        checksum_sha256: "TEST", row_count: stored.length }, sourceRows: selection.sourceRows, procurementRows: selection.procurementRows });
+      if (gaps.some(value => value !== "0")) expect(build).toThrow("не хватает для расхода"); else expect(build).not.toThrow();
+    }
+  });
+  test("keeps the conditional waterstop absent or locally unresolved despite a manual purchase request", async () => {
+    const override = { "strip-pour:joint:waterstop": { quantity: "18", includedInProcurement: true, provenance: manual } };
+    const none = await acceptedCompile(override);
+    expect(none.rows.some(value => value.row_id === "strip-pour:joint:waterstop")).toBe(false);
+    const missing = await acceptedCompile(override, { construction_joint_mode: "WATERSTOP", construction_joint_waterstop_specification: joint.construction_joint_waterstop_specification });
+    expect(missing.preliminaryNeeds).toEqual(expect.arrayContaining([expect.objectContaining({ row_id: "strip-pour:joint:waterstop", quantity: "18",
+      need_state: "QUANTITY_REQUIRED", missing_parameter_ids: expect.arrayContaining(["construction_joint_waterstop_length_m"]) })]));
+  });
+});
+
 const historicalLargeAreaInput = Object.freeze({
   placement_method: "pump",
   placement_location: "Ленточный фундамент; большой участок; захватка SF-POUR-LARGE-AREA",

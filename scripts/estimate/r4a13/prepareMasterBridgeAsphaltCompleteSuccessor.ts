@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import {
@@ -28,6 +29,10 @@ type Json = Record<string, any>;
 function quantity(rows: readonly Json[], rowId: string): number {
   return Number(rows.find((row) => row.row_id === rowId)?.quantity);
 }
+
+const currentReleasePath = resolve(process.env.R4A13_CURRENT_RELEASE_PATH
+  ?? "data/estimate-benchmarks/r568-local-developer-canonical-release.json");
+const currentRelease = JSON.parse(readFileSync(currentReleasePath, "utf8")) as Json;
 
 async function verifyCore(): Promise<Json> {
   const firstEstimate = await compileBridgeAsphaltCompletePreliminaryProfileR1({
@@ -231,18 +236,21 @@ void runMasterSingleDefinitionSuccessorR1({
   applicationName: "s27-master-bridge-asphalt-complete-successor-v6",
   expectedBranch: "codex/r4-a5-clean-08b18902",
   masterPath: resolve(process.env.R4A13_MASTER_PATH
-    ?? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (59).md"),
+    ?? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (71).md"),
   masterSha256: process.env.R4A13_MASTER_SHA256
-    ?? "8a3e6f8b2d56278f738245f1cd38e0f2b48552211740e85c21ace66511bbd2a7",
+    ?? "783d0425e1f0f0f0ea8a262be454e39d13e94e1a2ad5d1c6cc4b1e1314e624f1",
   parentReleaseId: process.env.R4A13_PARENT_DEFINITION_RELEASE_ID
-    ?? "fe5171f9-7e47-512f-a5cd-6a5b3e42441d",
+    ?? currentRelease.definitionReleaseId,
   parentSearchReleaseId: process.env.R4A13_PARENT_SEARCH_RELEASE_ID
-    ?? "47af4cd1-d37a-5e47-bed8-631bf45929c1",
-  currentReleasePath: resolve(process.env.R4A13_CURRENT_RELEASE_PATH
-    ?? "data/estimate-benchmarks/r568-local-developer-canonical-release.json"),
+    ?? currentRelease.searchReleaseId,
+  currentReleasePath,
   outputRoot: resolve(process.env.R4A13_OUTPUT_ROOT
-    ?? ".release-runtime/r4a13-6/s27-19/master-bridge-asphalt-complete-successor-v4"),
+    ?? ".release-runtime/r568/s27-31/MasterBridgeAsphaltCompleteSuccessor-ancillary-orders"),
   sourcePaths: [
+    "scripts/estimate/r4a13/readbackS2731AncillaryMaterialOrdersIndependent.ts",
+    "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+    "src/lib/estimate/v4/asphaltInstallLargeAreaKrer27ProfileR1.ts",
+    "src/lib/estimate/v4/stripFoundationConcretePlacementPreliminaryProfileR1.ts",
     "data/estimate-benchmarks/source-packs/bridge-asphalt-complete-preliminary-profile-r1.json",
     "src/lib/estimate/v4/bridgeAsphaltCompletePreliminaryProfileR1.ts",
     "tests/estimateNorms/bridgeAsphaltCompletePreliminaryProfileR1.contract.test.ts",
@@ -316,8 +324,11 @@ void runMasterSingleDefinitionSuccessorR1({
     },
   },
   locator: {
-    key: "bridge-asphalt-complete-preliminary-profile-r5",
+    key: "bridge-asphalt-complete-preliminary-profile-r5-ancillary-orders-s27-31",
     payload: {
+      ancillaryOrderRowIds: ["bridge:binder:asphalt:material:road-bitumen", "bridge:binder:asphalt:material:technical-kerosene", "bridge:binder:asphalt:material:hardwood-side-stop-bars", "bridge:wearing:asphalt:material:road-bitumen", "bridge:wearing:asphalt:material:technical-kerosene", "bridge:wearing:asphalt:material:hardwood-side-stop-bars", "bridge:screed:material:curing-sheet", "bridge:screed:joint:waterstop"],
+      expectedResourceIds: BRIDGE_ASPHALT_COMPLETE_RESOURCES.map(row => row.row_id),
+      expectedFormulaIds: BRIDGE_ASPHALT_COMPLETE_FORMULAS.map(row => row.formula_id),
       kind: "COMPOSED_NORMATIVE_TECHNOLOGY_MAP",
       sourcePackSha256: BRIDGE_ASPHALT_COMPLETE_SOURCE_PACK_SHA256,
       exactLocator: BRIDGE_ASPHALT_COMPLETE_SOURCE_METADATA.exact_locator,

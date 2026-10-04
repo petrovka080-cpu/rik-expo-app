@@ -172,6 +172,9 @@ void runMasterSingleDefinitionSuccessorR1({
   outputRoot: resolve(process.env.R4A13_OUTPUT_ROOT
     ?? ".release-runtime/r568/s27-31/strip-foundation-concrete-accepted-order-successor-v1"),
   sourcePaths: [
+    "scripts/estimate/r4a13/readbackS2731AncillaryMaterialOrdersIndependent.ts",
+    "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+    "src/lib/estimate/v4/asphaltInstallLargeAreaKrer27ProfileR1.ts",
     "data/estimate-benchmarks/source-packs/strip-foundation-concrete-placement-preliminary-profile-r1.json",
     "src/lib/estimate/v4/stripFoundationConcretePlacementPreliminaryProfileR1.ts",
     "src/lib/estimate/backendPlatform/canonicalPurchaseBalanceV1.ts",
@@ -197,7 +200,7 @@ void runMasterSingleDefinitionSuccessorR1({
   runtimeProfileClassification: STRIP_POUR_PROFILE_RUNTIME_CLASSIFICATION,
   runtimeProfileSourceIds: STRIP_POUR_PROFILE_RUNTIME_SOURCE_IDS,
   verifyCore,
-  expectedParentShape: [25, 16, 38],
+  expectedParentShape: [26, 16, 38],
   benchmarkOrdinal: 0,
   validationScenario: "S26_4_SEPARATE_STRIP_FOUNDATION_CONCRETE_PLACEMENT_150_M_COMPLETE_FIRST_ESTIMATE",
   passport: {
@@ -254,8 +257,9 @@ void runMasterSingleDefinitionSuccessorR1({
     },
   },
   locator: {
-    key: "strip-foundation-concrete-accepted-order-s27-31",
+    key: "strip-foundation-concrete-accepted-order-s27-31-ancillary-orders-s27-31",
     payload: {
+      ancillaryOrderRowIds: ["strip-pour:material:curing-sheet", "strip-pour:joint:waterstop"],
       kind: "COMPOSITE_TECHNOLOGY_PROFILE",
       sourcePackSha256: STRIP_POUR_SOURCE_PACK_SHA256,
       expectedResourceIds: STRIP_POUR_PROFILE_RESOURCES.map(row => row.row_id),

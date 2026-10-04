@@ -12,12 +12,46 @@ import {
 import { validateIndependentCompletenessMapReferences } from "../../scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1";
 import { compileCanonicalEstimateCore } from "../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
 import { estimateDeterministicHash } from "../../src/lib/estimate/estimateDeterministicHash";
+import { assertCanonicalPurchaseReadinessV1 } from "../../src/lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
 
 function quantity(rows: readonly { row_id: string; quantity: string }[], rowId: string): number {
   return Number(rows.find((row) => row.row_id === rowId)?.quantity);
 }
 
 describe("complete bridge asphalt preliminary profile S27", () => {
+  it("guards eight imported ancillary orders against each mapped formula, including area-based curing independent of screed thickness", async () => {
+    const ids = [...["binder", "wearing"].flatMap(course => ["road-bitumen", "technical-kerosene", "hardwood-side-stop-bars"].map(id => `bridge:${course}:asphalt:material:${id}`)),
+      "bridge:screed:material:curing-sheet", "bridge:screed:joint:waterstop"];
+    const run = (amount?: string, thickness = 40) => compileCanonicalEstimateCore({ operation: amount ? "recalculate" : "compile", compilerVersion: "bridge-ancillary-order-contract",
+      catalogId: BRIDGE_ASPHALT_COMPLETE_CATALOG_ID, primaryMeasureParameterId: "area_m2", parameterDefinitions: [...BRIDGE_ASPHALT_COMPLETE_PARAMETERS],
+      formulaDefinitions: [...BRIDGE_ASPHALT_COMPLETE_FORMULAS], resourceDefinitions: [...BRIDGE_ASPHALT_COMPLETE_RESOURCES],
+      submittedParameters: { ...BRIDGE_ASPHALT_COMPLETE_SHORT_INPUT, protective_screed_thickness_mm: thickness, bridge_screed_construction_joint_mode: "WATERSTOP",
+        bridge_screed_construction_joint_waterstop_specification: "VALIDATION_FIXTURE: ПВХ по испытательному узлу", bridge_screed_construction_joint_waterstop_length_m: 18 },
+      confirmedParameters: BRIDGE_ASPHALT_COMPLETE_RUNTIME_INPUT, rowOverrides: amount ? Object.fromEntries(ids.map(id => [id, { quantity: amount, includedInProcurement: true,
+        provenance: { kind: "manual", reason: "VALIDATION_FIXTURE imported ancillary supply" } }])) : {},
+      priceItems: [], currencyCode: "KGS", maximumResourceRows: BRIDGE_ASPHALT_COMPLETE_RESOURCES.length, hashJson: async value => estimateDeterministicHash(value) });
+    const baseline = await run();
+    for (const amount of ["0", "0.01", "10000"]) {
+      const result = await run(amount);
+      expect(result.preliminaryNeeds).toEqual([]);
+      for (const id of ids) {
+        const definition = BRIDGE_ASPHALT_COMPLETE_RESOURCES.find(value => value.row_id === id)!;
+        const originalFormula = BRIDGE_ASPHALT_COMPLETE_FORMULAS.find(value => value.formula_id === definition.formula_id)!;
+        expect(definition.resource_graph.purchaseBalanceV1).toMatchObject({ quantityMode: "canonical_decimal", unitId: definition.unit_id, consumedExpression: originalFormula.expression_source });
+        expect(definition.resource_graph.purchaseBalanceV1).not.toHaveProperty("plannedConsumptionExpression");
+        expect(result.rows.find(value => value.row_id === id)).toMatchObject({ quantity: amount, included_in_procurement: amount === "10000",
+          calculation_trace: { purchaseBalance: { quantum: null, consumed: baseline.rows.find(value => value.row_id === id)!.quantity, procurementReady: amount === "10000" } } });
+      }
+      for (const before of baseline.rows.filter(value => !ids.includes(value.row_id)))
+        expect(result.rows.find(value => value.row_id === before.row_id)?.quantity).toBe(before.quantity);
+      if (amount === "10000") expect(() => assertCanonicalPurchaseReadinessV1(result.rows)).not.toThrow();
+      else expect(() => assertCanonicalPurchaseReadinessV1(result.rows)).toThrow("не хватает для расхода");
+    }
+    const thicker = await run(undefined, 65);
+    expect(thicker.rows.find(value => value.row_id === "bridge:screed:material:curing-sheet")?.quantity).toBe("5280");
+    expect((thicker.rows.find(value => value.row_id === "bridge:screed:material:curing-sheet")?.calculation_trace as any).purchaseBalance.consumed).toBe("5280");
+    expect(thicker.rows.find(value => value.row_id === "bridge:screed:work:place")?.quantity).toBe("312");
+  });
   it("reconciles imported screed accepted order with screed geometry and its selected contingency only", async () => {
     const result = await compileCanonicalEstimateCore({ operation: "recalculate", compilerVersion: "bridge-concrete-order-contract",
       catalogId: BRIDGE_ASPHALT_COMPLETE_CATALOG_ID, primaryMeasureParameterId: "area_m2",

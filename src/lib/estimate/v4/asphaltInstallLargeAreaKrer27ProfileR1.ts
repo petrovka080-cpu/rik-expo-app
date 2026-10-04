@@ -285,6 +285,10 @@ const SOURCE_ID_BY_ROW_ID = new Map(INDEPENDENT_REQUIRED_COMPONENTS.map((compone
   component.sourceId,
 ]));
 
+export const ASPHALT_AUXILIARY_ORDER_ROW_IDS: readonly string[] = Object.freeze([
+  "asphalt:material:road-bitumen", "asphalt:material:technical-kerosene", "asphalt:material:hardwood-side-stop-bars",
+]);
+
 function resource(input: Readonly<{
   rowId: string;
   ordinal: number;
@@ -301,6 +305,13 @@ function resource(input: Readonly<{
   purchaseBalance?: CanonicalPurchaseBalanceV1;
   manualTransportQuantityPolicy?: { unitId: string; minimum: "calculated_quantity"; integer: boolean };
 }>): CanonicalEstimateResourceDefinition {
+  const auxiliaryOrder = ASPHALT_AUXILIARY_ORDER_ROW_IDS.includes(input.rowId);
+  const purchaseBalance = input.purchaseBalance ?? (auxiliaryOrder ? {
+    quantityMode: "canonical_decimal" as const, balanceScope: "new_order_vs_required_consumption" as const,
+    unitId: input.unitId,
+    consumedExpression: ASPHALT_INSTALL_KRER27_FORMULAS.find(value => value.formula_id === input.formulaId)!.expression_source,
+    stockExpression: "0", reserveExpression: "0",
+  } : undefined);
   const resourceGraph = {
     formulaId: input.formulaId,
     normalizedUom: input.unitId,
@@ -314,7 +325,7 @@ function resource(input: Readonly<{
     ...(input.parentRowId ? { parentCostOwnerId: input.parentRowId } : {}),
     visibleAssumptionPolicy: PROFILE.assumptionPolicy,
     ...(input.effectiveQuantityOutput ? { effectiveQuantityOutputV1: input.effectiveQuantityOutput } : {}),
-    ...(input.purchaseBalance ? { purchaseBalanceV1: input.purchaseBalance } : {}),
+    ...(purchaseBalance ? { purchaseBalanceV1: purchaseBalance } : {}),
     ...(input.manualTransportQuantityPolicy ? { manualTransportQuantityPolicyV1: input.manualTransportQuantityPolicy } : {}),
   };
   const rawSourceId = input.sourceId
@@ -349,7 +360,9 @@ function resource(input: Readonly<{
       source_definition_hash: ASPHALT_INSTALL_KRER27_SOURCE_PACK_SHA256,
     }],
     excludedAdjacentScope: [...sourcePack.explicitExclusions],
-    ...(input.purchaseBalance ? { purchaseBalanceScopeRu: "Заказ относительно нормативного расхода; превышение заказа не подтверждает пригодный складской остаток горячей смеси. Склад и сохраняемый резерв не вычитаются и не объявляются нулевыми проектными фактами." } : {}),
+    ...(purchaseBalance ? { purchaseBalanceScopeRu: auxiliaryOrder
+      ? "Заказ относительно исходного расчётного расхода материала. Склад и сохраняемый резерв не вычитаются; превышение заказа не подтверждает пригодность остатка. Физическая технологическая потребность сохраняется."
+      : "Заказ относительно нормативного расхода; превышение заказа не подтверждает пригодный складской остаток горячей смеси. Склад и сохраняемый резерв не вычитаются и не объявляются нулевыми проектными фактами." } : {}),
   };
   return {
     id: `resource-${input.rowId.replace(/:/gu, "-")}`,

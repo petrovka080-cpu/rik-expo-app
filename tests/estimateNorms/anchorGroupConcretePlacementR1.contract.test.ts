@@ -13,8 +13,35 @@ import {
 } from "../../src/lib/estimate/v4/anchorGroupConcretePlacementR1";
 import { compileCanonicalEstimateCore } from "../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
 import { estimateDeterministicHash } from "../../src/lib/estimate/estimateDeterministicHash";
+import { assertCanonicalPurchaseReadinessV1 } from "../../src/lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
 
 describe("anchor group concrete placement professional profile", () => {
+  it("inherits the two ancillary order guards without moving installation or curing consumption", async () => {
+    const target = ANCHOR_GROUP_CONCRETE_PLACEMENT_TARGETS[1];
+    const ids = ["anchor-group-pour:material:curing-sheet", "anchor-group-pour:joint:waterstop"];
+    const run = (amounts?: string[]) => compileCanonicalEstimateCore({ operation: amounts ? "recalculate" : "compile", compilerVersion: "anchor-ancillary-order-contract",
+      catalogId: target.catalogId, primaryMeasureParameterId: "plan_dimension_concrete_volume_m3", parameterDefinitions: [...ANCHOR_GROUP_CONCRETE_PLACEMENT_PARAMETERS],
+      formulaDefinitions: [...ANCHOR_GROUP_CONCRETE_PLACEMENT_FORMULAS], resourceDefinitions: [...ANCHOR_GROUP_CONCRETE_PLACEMENT_RESOURCES],
+      submittedParameters: { ...anchorGroupConcretePlacementAcceptanceInputR1(target.contextKey), construction_joint_mode: "WATERSTOP",
+        construction_joint_waterstop_specification: "VALIDATION_FIXTURE: ПВХ по испытательному узлу", construction_joint_waterstop_length_m: 18 },
+      confirmedParameters: {}, rowOverrides: amounts ? Object.fromEntries(ids.map((id, index) => [id, { quantity: amounts[index], includedInProcurement: true,
+        provenance: { kind: "manual", reason: "VALIDATION_FIXTURE ancillary supply" } }])) : {},
+      priceItems: [], currencyCode: "KGS", maximumResourceRows: ANCHOR_GROUP_CONCRETE_PLACEMENT_RESOURCES.length, hashJson: async value => estimateDeterministicHash(value) });
+    const baseline = await run();
+    for (const amounts of [["0", "0"], ["100", "20"]]) {
+      const result = await run(amounts);
+      expect(result.preliminaryNeeds).toEqual([]);
+      for (const [index, id] of ids.entries()) {
+        const before = baseline.rows.find(value => value.row_id === id)!;
+        expect(result.rows.find(value => value.row_id === id)).toMatchObject({ quantity: amounts[index], included_in_procurement: amounts[index] !== "0",
+          calculation_trace: { purchaseBalance: { quantityMode: "canonical_decimal", quantum: null, consumed: before.quantity, procurementReady: amounts[index] !== "0" } } });
+      }
+      for (const before of baseline.rows.filter(value => !ids.includes(value.row_id)))
+        expect(result.rows.find(value => value.row_id === before.row_id)?.quantity).toBe(before.quantity);
+      if (amounts[0] === "0") expect(() => assertCanonicalPurchaseReadinessV1(result.rows)).toThrow("не хватает для расхода");
+      else expect(() => assertCanonicalPurchaseReadinessV1(result.rows)).not.toThrow();
+    }
+  });
   it("keeps the imported owner's source binding and reconciles its own accepted concrete order", async () => {
     const target = ANCHOR_GROUP_CONCRETE_PLACEMENT_TARGETS[1];
     const result = await compileCanonicalEstimateCore({ operation: "recalculate", compilerVersion: "anchor-order-contract", catalogId: target.catalogId,

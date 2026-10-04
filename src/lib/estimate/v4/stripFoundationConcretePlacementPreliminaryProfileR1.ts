@@ -354,6 +354,10 @@ type RowSpec = Readonly<{
   inputParameterIds?: readonly string[];
 }>;
 
+export const STRIP_POUR_AUXILIARY_ORDER_ROW_IDS: readonly string[] = Object.freeze([
+  "strip-pour:material:curing-sheet", "strip-pour:joint:waterstop",
+]);
+
 function resource(input: RowSpec & Readonly<{ ordinal: number }>): CanonicalEstimateResourceDefinition {
   const sourceId = SOURCE_ID_BY_ROW_ID.get(input.rowId)
     ?? "selected_preliminary_strip_pour_profile_r1";
@@ -382,6 +386,11 @@ function resource(input: RowSpec & Readonly<{ ordinal: number }>): CanonicalEsti
         unitId: "m3", consumedExpression: ORDER_EXPRESSION, stockExpression: "0", reserveExpression: "0",
         requirementBasis: "selected_order_including_contingency", plannedConsumptionExpression: "plan_dimension_concrete_volume_m3" },
     } : {}),
+    ...(STRIP_POUR_AUXILIARY_ORDER_ROW_IDS.includes(input.rowId) ? {
+      purchaseBalanceV1: { quantityMode: "canonical_decimal", balanceScope: "new_order_vs_required_consumption",
+        unitId: input.unitId, stockExpression: "0", reserveExpression: "0",
+        consumedExpression: STRIP_POUR_PROFILE_FORMULAS.find(value => value.formula_id === input.formulaId)!.expression_source },
+    } : {}),
     ...(input.rowId === "strip-pour:delivery:mixer-trips" ? {
       manualTransportQuantityPolicyV1: { unitId: input.unitId, minimum: "calculated_quantity", integer: true },
     } : {}),
@@ -393,6 +402,9 @@ function resource(input: RowSpec & Readonly<{ ordinal: number }>): CanonicalEsti
     sourcePackSha256: STRIP_POUR_SOURCE_PACK_SHA256,
     ...(input.rowId === "strip-pour:material:ready-mix" ? {
       purchaseBalanceScopeRu: "Принятый заказ относительно расчётного заказа с отдельно выбранным резервом. Проектный объём укладки сохраняется. Складское наличие не вычитается; превышение заказа не подтверждает пригодный остаток свежего бетона.",
+    } : {}),
+    ...(STRIP_POUR_AUXILIARY_ORDER_ROW_IDS.includes(input.rowId) ? {
+      purchaseBalanceScopeRu: "Заказ относительно исходного расчётного расхода материала. Склад и сохраняемый резерв не вычитаются; превышение заказа не подтверждает пригодность остатка. Уход за бетоном и длина монтажа гидрошпонки сохраняют исходную проектную границу.",
     } : {}),
     normativeTrace: [{
       sourceId,
