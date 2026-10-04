@@ -4,8 +4,8 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname, resolve } from "node:path";
 import { Client } from "pg";
 import { stringifyCanonicalEstimateJson } from "../../../src/lib/estimate/estimateDeterministicHash";
-import { createCanonicalDefinitionClonePlan, preflightCanonicalDefinitionPublisherSchema,
-  preflightCanonicalDefinitionPublishPlans, publishCanonicalDefinitionDraft, auditPersistedCanonicalDefinition,
+import { createCanonicalDefinitionClonePlan,
+  preflightCanonicalDefinitionPublishPlans, publishCanonicalDefinitionDraft,
   type CanonicalPublisherJson as Json } from "./canonicalDefinitionPublisherR1";
 import { cloneCanonicalPreparedSearchR1 } from "./canonicalPreparedSearchCloneR1";
 import { overlayS2732PurchaseGroup, S2732_PURCHASE_GROUP_CONTRACT as CONTRACT,
@@ -31,16 +31,17 @@ const uuid = (seed: string) => { const chars = hash(seed).slice(0, 32).split("")
 function atomic(path: string, value: unknown) { mkdirSync(dirname(resolve(path)), { recursive: true });
   const tmp = `${resolve(path)}.${process.pid}.tmp`; writeFileSync(tmp, JSON.stringify(value, null, 2) + "\n"); renameSync(tmp, resolve(path)); }
 async function load(client: Client, definitionId: string, baselineId: string): Promise<PurchaseGroupRepresentative> {
-  const queries = await Promise.all([
-    client.query("select * from public.estimate_definition_version where id=$1", [definitionId]),
-    client.query("select * from public.estimate_parameter_definition where definition_version_id=$1 order by ordinal", [definitionId]),
-    client.query("select * from public.estimate_formula_graph where definition_version_id=$1 order by formula_id", [definitionId]),
-    client.query("select * from public.estimate_resource_spec where definition_version_id=$1 order by ordinal", [definitionId]),
-    client.query(`select r.row_id,b.locator_id::text,b.applicability from public.estimate_work_normative_binding b
-      join public.estimate_resource_spec r on r.id=b.resource_spec_id where b.definition_version_id=$1 order by r.row_id,b.locator_id`, [definitionId]),
-    client.query("select * from public.estimate_approved_template_baseline where id=$1", [baselineId]),
-    client.query("select * from public.estimate_content_passport_r3 where definition_version_id=$1", [definitionId]),
-  ]);
+  const queries = [];
+  for (const [sql, id] of [
+    ["select * from public.estimate_definition_version where id=$1", definitionId],
+    ["select * from public.estimate_parameter_definition where definition_version_id=$1 order by ordinal", definitionId],
+    ["select * from public.estimate_formula_graph where definition_version_id=$1 order by formula_id", definitionId],
+    ["select * from public.estimate_resource_spec where definition_version_id=$1 order by ordinal", definitionId],
+    [`select r.row_id,b.locator_id::text,b.applicability from public.estimate_work_normative_binding b
+      join public.estimate_resource_spec r on r.id=b.resource_spec_id where b.definition_version_id=$1 order by r.row_id,b.locator_id`, definitionId],
+    ["select * from public.estimate_approved_template_baseline where id=$1", baselineId],
+    ["select * from public.estimate_content_passport_r3 where definition_version_id=$1", definitionId],
+  ] as const) queries.push(await client.query(sql, [id]));
   return JSON.parse(JSON.stringify({ definition: queries[0]!.rows[0], parameters: queries[1]!.rows, formulas: queries[2]!.rows,
     resources: queries[3]!.rows, bindings: queries[4]!.rows, baseline: queries[5]!.rows[0], passport: queries[6]!.rows[0] }));
 }
@@ -106,7 +107,8 @@ async function main() {
           validationScenarioRefs: [...(parent.baseline.validation_scenario_refs ?? []), { scenario: "S2732_EXPLICIT_PURCHASE_GROUP", acceptanceEvidenceSha256: evidenceSha256 }],
           acceptanceEvidenceSha256: evidenceSha256, acceptedReleaseId: releaseId, supersedesBaselineId: parent.baseline.id },
         passport: { physicalResultRu: String(parent.passport.physical_result_ru), excludedScopeRu: parent.passport.excluded_scope_ru,
-          decision: { ...parent.passport.decision, purchaseGroupContract: CONTRACT, activationAllowed: false, productionEligible: false },
+          decision: { ...parent.passport.decision, waveContract: CONTRACT, predecessorWaveContract: parent.passport.decision.waveContract,
+            purchaseGroupContract: CONTRACT, activationAllowed: false, productionEligible: false },
           payloadSha256: hash({ predecessor: parent.passport.payload_sha256, definitionSha256, evidenceSha256 }), sourceHead: head, sourceTree: tree },
         bindingApplicability: b => ({ ...b.applicability, clonedByContract: CONTRACT }), expectedNormativeBindingCount: parent.bindings.length });
       plans.push(plan);
@@ -116,7 +118,6 @@ async function main() {
         parameterDelta: r.parameters.length - parent.parameters.length, formulaDelta: r.formulas.length - parent.formulas.length,
         resourceDelta: r.resources.length - parent.resources.length, quantityScope: parent.passport.decision.quantityScope });
     }
-    const schema = await preflightCanonicalDefinitionPublisherSchema(client);
     const preflight = await preflightCanonicalDefinitionPublishPlans(client, plans);
     await client.query(`insert into public.estimate_definition_release(
       id,release_key,schema_version,status,source_commit,source_tree,source_manifest_sha256,definition_count,resource_row_count,
@@ -136,7 +137,6 @@ async function main() {
     const persisted = [];
     for (const plan of plans) {
       persisted.push(await publishCanonicalDefinitionDraft(client, plan));
-      await auditPersistedCanonicalDefinition(client, plan);
       const updated = await client.query(`update public.estimate_cumulative_manifest_entry set definition_version_id=$3,source_batch=$4,
         source_release_id=$1,publication_state='CANONICAL_SUCCESSOR',approved_template_baseline_id=$5,definition_hash=$6,
         entry_sha256=$7,runtime_publication_state='CANDIDATE' where release_id=$1 and catalog_id=$2`, [
@@ -161,7 +161,7 @@ async function main() {
       JSON.stringify({ lifecycle: "PREPARED_NOT_ACTIVE", searchReleaseId, searchSnapshotSha256: search.snapshot_sha256, transitions })]);
     const receipt = { contract: CONTRACT, status: APPLY ? "GREEN_GROUP_PREPARED_NOT_ACTIVE" : "DRY_RUN_GROUP_VALIDATED", capturedAt: new Date().toISOString(),
       predecessor: { releaseId: predecessorReleaseId, searchReleaseId: predecessorSearchReleaseId }, successor: { releaseId, searchReleaseId, releaseKey },
-      sourceHead: head, sourceTree: tree, sourceHashes, masterSha256, fingerprint, transitions, schema, preflight, persisted,
+      sourceHead: head, sourceTree: tree, sourceHashes, masterSha256, fingerprint, transitions, preflight, persisted,
       audit: { manifest, search, unrelatedManifestChanges: unrelated }, mutationPerformed: APPLY, productionAccessed: false,
       activationPerformed: false, uiAccepted: false, engineeringAccepted: false, fullGateAccepted: false };
     if (APPLY) await client.query("commit"); else await client.query("rollback");
