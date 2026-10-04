@@ -175,8 +175,24 @@ const PROJECT_IDS = new Set([
   "threaded_transition_count", "terminal_cap_count",
 ]);
 
+export const VALTEC_SELECTED_SUPPLIES = [
+  { rowId: "02:material:pipe-sections", formula: "pipe_sections", effective: "valtec_effective_pipe_sections", base: "ceil(route_length_m/pipe_section_length_m)" },
+  { rowId: "02:consumable:cutter-wheels", formula: "cutter_wheels" },
+  { rowId: "03:fastener:support-packages", formula: "support_packages", effective: "valtec_effective_support_packages" },
+  { rowId: "03:consumable:drill-bits", formula: "drill_bits" },
+  { rowId: "04:component:straight-couplings", formula: "straight_couplings" },
+  { rowId: "04:consumable:cleaning-wipes", formula: "straight_wipes" },
+  { rowId: "05:component:elbows", formula: "elbows" },
+  { rowId: "05:component:tees", formula: "tees" },
+  { rowId: "05:component:threaded-transitions", formula: "transitions" },
+  { rowId: "05:component:terminal-caps", formula: "caps" },
+  { rowId: "05:consumable:cleaning-wipes", formula: "node_wipes" },
+  { rowId: "05:consumable:thread-seal", formula: "thread_seal_rolls" },
+  { rowId: "08:consumable:waste-bags", formula: "waste_bags" },
+] as const;
+
 export const WATER_VALTEC_PPR20_STANDARD_S2723_PARAMETERS:
-readonly CanonicalEstimateParameterDefinition[] = Object.freeze(PARAMETERS.map(
+readonly CanonicalEstimateParameterDefinition[] = Object.freeze([...PARAMETERS.map(
   (descriptor, ordinal) => ({
     parameter_id: descriptor.id,
     ordinal,
@@ -224,7 +240,14 @@ readonly CanonicalEstimateParameterDefinition[] = Object.freeze(PARAMETERS.map(
         guide_validation_policy: "FIRST_ESTIMATE_NOW_THEN_REPLACE_VISIBLE_ASSUMPTIONS_AND_ROUTE_COUNTS",
       },
     },
+  })), ...VALTEC_SELECTED_SUPPLIES.filter(supply => "effective" in supply).map((supply, index) => ({
+    parameter_id: "effective" in supply ? supply.effective : "", ordinal: PARAMETERS.length + index,
+    value_type: "decimal", unit_id: "item", title_ru: "Действительное количество выбранных единиц поставки",
+    required: false, default_value: null, constraints_json: { min: 0 },
+    truth_metadata: { visibility_role: "INTERNAL_ONLY", value_source_role: "BACKEND_DERIVED",
+      effective_resource_quantity_v1: { sourceRowId: `water-ppr20:${supply.rowId}`, unitId: "item" } },
   })),
+],
 );
 
 function formula(id: string, unit: string, expression: string): CanonicalEstimateFormulaDefinition {
@@ -242,7 +265,7 @@ function formula(id: string, unit: string, expression: string): CanonicalEstimat
 const F = (id: string, unit: string, expression: string) => formula(id, unit, expression);
 const GROSS = "route_length_m*(1+pipe_reserve_percent/100)";
 const SECTIONS = `ceil((${GROSS})/pipe_section_length_m)`;
-const ORDER = `(${SECTIONS})*pipe_section_length_m`;
+const ORDER = "valtec_effective_pipe_sections*pipe_section_length_m";
 const SUPPORTS = "ceil(route_length_m/support_spacing_m)+1";
 const STRAIGHT_SOCKETS = "straight_coupling_count*2";
 const NODE_ITEMS = "elbow_count+tee_count+threaded_transition_count+terminal_cap_count";
@@ -258,14 +281,14 @@ readonly CanonicalEstimateFormulaDefinition[] = Object.freeze([
   F("pipe_reserve", "m", "route_length_m*pipe_reserve_percent/100"),
   F("pipe_sections", "item", SECTIONS),
   F("pipe_order", "m", ORDER),
-  F("pipe_remainder", "m", `${ORDER}-${GROSS}`),
+  F("pipe_remainder", "m", `max(0,${ORDER}-${GROSS})`),
   F("pipe_mass", "kg", `${ORDER}*pipe_mass_kg_per_m`),
   F("cutting_shifts", "shift", "ceil(route_length_m/cutting_productivity_m_per_shift)"),
   F("cutter_wheels", "item", `ceil((${SECTIONS})/cutter_wheel_capacity_cut)`),
   F("support_points", "item", SUPPORTS),
   F("support_packages", "item", `ceil((${SUPPORTS})/support_package_item)`),
-  F("support_order", "item", `ceil((${SUPPORTS})/support_package_item)*support_package_item`),
-  F("support_remainder", "item", `ceil((${SUPPORTS})/support_package_item)*support_package_item-(${SUPPORTS})`),
+  F("support_order", "item", "valtec_effective_support_packages*support_package_item"),
+  F("support_remainder", "item", `max(0,valtec_effective_support_packages*support_package_item-(${SUPPORTS}))`),
   F("support_hours", "machine_hour", `(${SUPPORTS})/drill_productivity_point_per_machine_hour`),
   F("drill_bits", "item", `ceil((${SUPPORTS})/drill_bit_capacity_point)`),
   F("straight_couplings", "item", "straight_coupling_count"),
@@ -302,6 +325,7 @@ type ResourceSpec = Readonly<{
   source: string;
   procurement?: boolean;
   informational?: boolean;
+  titleParameterIds?: readonly string[];
 }>;
 
 const id = (short: string) => `water_valtec_ppr20_${short}_s2723`;
@@ -313,7 +337,7 @@ const R = (
   unit: string,
   shortFormula: string,
   source: string,
-  options: Pick<ResourceSpec, "procurement" | "informational"> = {},
+  options: Pick<ResourceSpec, "procurement" | "informational" | "titleParameterIds"> = {},
 ): ResourceSpec => ({ stage, rowId, kind, title, unit, formula: id(shortFormula), source, ...options });
 
 const RESOURCE_SPECS: readonly ResourceSpec[] = [
@@ -323,18 +347,18 @@ const RESOURCE_SPECS: readonly ResourceSpec[] = [
 
   R("02 · Труба и раскрой", "water-ppr20:02:material:pipe-net", "material", "Труба VALTEC VTp.700.0020 PP-R PN25 20x3,4 — чистая длина", "m", "route", VALTEC_PIPE, { informational: true }),
   R("02 · Труба и раскрой", "water-ppr20:02:material:pipe-reserve", "material", "Резерв трубы на раскрой", "m", "pipe_reserve", PRELIMINARY, { informational: true }),
-  R("02 · Труба и раскрой", "water-ppr20:02:material:pipe-sections", "material", "Четырёхметровые отрезки трубы VALTEC VTp.700.0020.20", "item", "pipe_sections", VALTEC_PIPE, { procurement: true }),
+  R("02 · Труба и раскрой", "water-ppr20:02:material:pipe-sections", "material", "Отрезки трубы VALTEC VTp.700.0020.20; выбранная длина, м", "item", "pipe_sections", VALTEC_PIPE, { procurement: true, titleParameterIds: ["pipe_section_length_m"] }),
   R("02 · Труба и раскрой", "water-ppr20:02:control:pipe-order", "control", "Заказанная длина трубы после округления отрезков", "m", "pipe_order", VALTEC_PIPE, { informational: true }),
-  R("02 · Труба и раскрой", "water-ppr20:02:control:pipe-remainder", "control", "Расчётный остаток трубы сверх потребности с резервом", "m", "pipe_remainder", VALTEC_PIPE, { informational: true }),
+  R("02 · Труба и раскрой", "water-ppr20:02:control:pipe-remainder", "control", "Прогноз превышения поставленной длины над расчётной потребностью; пригодность остатка не подтверждена", "m", "pipe_remainder", VALTEC_PIPE, { informational: true }),
   R("02 · Труба и раскрой", "water-ppr20:02:control:pipe-mass", "control", "Расчётная масса заказа трубы", "kg", "pipe_mass", VALTEC_PIPE, { informational: true }),
   R("02 · Труба и раскрой", "water-ppr20:02:operation:cutting", "operation", "Разметка, перпендикулярный рез и подготовка торцов трубы", "item", "pipe_sections", VALTEC_FITTINGS),
   R("02 · Труба и раскрой", "water-ppr20:02:equipment:pipe-cutter", "equipment", "Труборез для полипропиленовой трубы", "shift", "cutting_shifts", PRELIMINARY, { procurement: true }),
   R("02 · Труба и раскрой", "water-ppr20:02:consumable:cutter-wheels", "consumable", "Сменные режущие колёса трубореза", "item", "cutter_wheels", PRELIMINARY, { procurement: true }),
 
   R("03 · Опоры", "water-ppr20:03:fastener:support-points", "fastener", "Точки крепления и опоры трубопровода", "item", "support_points", PRELIMINARY, { informational: true }),
-  R("03 · Опоры", "water-ppr20:03:fastener:support-packages", "fastener", "Упаковки совместимых опор и крепежа по фактическому основанию", "item", "support_packages", PRELIMINARY, { procurement: true }),
+  R("03 · Опоры", "water-ppr20:03:fastener:support-packages", "fastener", "Упаковки совместимых опор и крепежа по фактическому основанию; комплектов в упаковке, шт.", "item", "support_packages", PRELIMINARY, { procurement: true, titleParameterIds: ["support_package_item"] }),
   R("03 · Опоры", "water-ppr20:03:control:support-order", "control", "Заказанное количество опорных комплектов", "item", "support_order", PRELIMINARY, { informational: true }),
-  R("03 · Опоры", "water-ppr20:03:control:support-remainder", "control", "Расчётный остаток опорных комплектов", "item", "support_remainder", PRELIMINARY, { informational: true }),
+  R("03 · Опоры", "water-ppr20:03:control:support-remainder", "control", "Прогноз превышения поставленных опорных комплектов над расчётной потребностью; пригодность остатка не подтверждена", "item", "support_remainder", PRELIMINARY, { informational: true }),
   R("03 · Опоры", "water-ppr20:03:operation:drill-and-fix", "operation", "Сверление основания и монтаж опор", "item", "support_points", KG_KRER16),
   R("03 · Опоры", "water-ppr20:03:equipment:rotary-hammer", "equipment", "Перфоратор или дрель по фактическому основанию", "machine_hour", "support_hours", PRELIMINARY, { procurement: true }),
   R("03 · Опоры", "water-ppr20:03:consumable:drill-bits", "consumable", "Комплекты буров или свёрл для основания", "item", "drill_bits", PRELIMINARY, { procurement: true }),
@@ -394,6 +418,8 @@ function resource(spec: ResourceSpec, ordinal: number): CanonicalEstimateResourc
   const informational = spec.informational === true;
   const procurementEligible = spec.procurement
     ?? (["material", "component", "fastener", "consumable"].includes(spec.kind) && !informational);
+  const supply = VALTEC_SELECTED_SUPPLIES.find(value => `water-ppr20:${value.rowId}` === spec.rowId);
+  const selectedOrder = WATER_VALTEC_PPR20_STANDARD_S2723_FORMULAS.find(value => value.formula_id === spec.formula);
   const resourceGraph = {
     formulaId: spec.formula,
     normalizedUom: spec.unit,
@@ -404,6 +430,14 @@ function resource(spec: ResourceSpec, ordinal: number): CanonicalEstimateResourc
     costTreatment: informational ? "INFORMATIONAL_SCOPE" : "OWN_COST",
     payable: !informational,
     noDoubleCount: true,
+    ...(spec.titleParameterIds ? { titleSpecificationParameterIds: [...spec.titleParameterIds], titleSpecificationMode: "APPEND" } : {}),
+    ...(supply ? {
+      purchaseBalanceV1: { quantityMode: "supply_quantum", balanceScope: "new_order_vs_required_consumption",
+        requirementBasis: "selected_order_including_contingency", unitId: "item", stockExpression: "0", reserveExpression: "0",
+        orderQuantumExpression: "1", consumedExpression: selectedOrder!.expression_source,
+        plannedConsumptionExpression: "base" in supply ? supply.base : selectedOrder!.expression_source },
+      ...("effective" in supply ? { effectiveQuantityOutputV1: { parameterId: supply.effective, unitId: "item" } } : {}),
+    } : {}),
     primaryMeasureParameterId: "route_length_m",
     preliminaryProfileId: WATER_VALTEC_PPR20_STANDARD_S2723_NORM_ID,
     visibleAssumptionPolicy: PROFILE.assumptionPolicy,
@@ -475,9 +509,10 @@ export function waterValtecPpr20StandardMissingRows(rowIds: ReadonlySet<string>)
 
 export async function compileWaterValtecPpr20StandardS2723(
   submittedParameters: Record<string, unknown>,
+  rowOverrides?: Parameters<typeof compileCanonicalEstimateCore>[0]["rowOverrides"],
 ): Promise<CanonicalEstimateCompileCoreResult> {
   return compileCanonicalEstimateCore({
-    operation: "compile",
+    operation: rowOverrides ? "recalculate" : "compile",
     compilerVersion: "canonical-estimate-compiler.water-valtec-ppr20-standard-s27-23.v1",
     catalogId: WATER_VALTEC_PPR20_STANDARD_S2723_CATALOG_ID,
     primaryMeasureParameterId: "route_length_m",
@@ -485,6 +520,7 @@ export async function compileWaterValtecPpr20StandardS2723(
     formulaDefinitions: [...WATER_VALTEC_PPR20_STANDARD_S2723_FORMULAS],
     resourceDefinitions: [...WATER_VALTEC_PPR20_STANDARD_S2723_RESOURCES],
     submittedParameters,
+    rowOverrides,
     confirmedParameters: { ...WATER_VALTEC_PPR20_STANDARD_S2723_RUNTIME_INPUT },
     currencyCode: "KGS",
     priceItems: [],

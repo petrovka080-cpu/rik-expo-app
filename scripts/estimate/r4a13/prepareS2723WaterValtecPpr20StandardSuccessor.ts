@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import {
+  VALTEC_SELECTED_SUPPLIES,
   WATER_VALTEC_PPR20_STANDARD_S2723_ACCEPTANCE_INPUT,
   WATER_VALTEC_PPR20_STANDARD_S2723_CATALOG_ID,
   WATER_VALTEC_PPR20_STANDARD_S2723_FORMULAS,
@@ -20,6 +21,7 @@ import {
   compileWaterValtecPpr20StandardS2723,
   waterValtecPpr20StandardMissingRows,
 } from "../../../src/lib/estimate/v4/waterValtecPpr20StandardS2723";
+import { assertCanonicalPurchaseReadinessV1 } from "../../../src/lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
 import { CATALOG_INDEPENDENT_COMPLETENESS_MAP_CONTRACT } from
   "./catalogFirstEstimateMinimumInputAudit.shared";
 import {
@@ -94,6 +96,21 @@ async function verifyCore(): Promise<Json> {
     ...WATER_VALTEC_PPR20_STANDARD_S2723_ACCEPTANCE_INPUT,
     elbow_count: 10,
   });
+  const manual = { kind: "manual", reason: "VALIDATION_FIXTURE: whole selected supplies; no warehouse credit" };
+  const accepted = await compileWaterValtecPpr20StandardS2723({ ...WATER_VALTEC_PPR20_STANDARD_S2723_ACCEPTANCE_INPUT }, {
+    "water-ppr20:02:material:pipe-sections": { quantity: "28", provenance: manual },
+    "water-ppr20:03:fastener:support-packages": { quantity: "4", provenance: manual },
+  });
+  const shortage = await compileWaterValtecPpr20StandardS2723({ ...WATER_VALTEC_PPR20_STANDARD_S2723_ACCEPTANCE_INPUT }, {
+    "water-ppr20:02:material:pipe-sections": { quantity: "26", includedInProcurement: true, provenance: manual },
+    "water-ppr20:03:fastener:support-packages": { quantity: "2", includedInProcurement: true, provenance: manual },
+  });
+  const repacked = await compileWaterValtecPpr20StandardS2723({ ...WATER_VALTEC_PPR20_STANDARD_S2723_ACCEPTANCE_INPUT,
+    pipe_section_length_m: 2, support_package_item: 125 });
+  let shortageBlocked = false;
+  try { assertCanonicalPurchaseReadinessV1(shortage.rows); } catch (error) {
+    shortageBlocked = (error as { code?: unknown }).code === "PROCUREMENT_MATERIAL_SHORTAGE";
+  }
   const rowIds = new Set(complete.rows.map((row) => row.row_id));
   const completenessErrors = validateIndependentCompletenessMapReferences({
     completenessMap: publisherCompletenessMap,
@@ -101,6 +118,19 @@ async function verifyCore(): Promise<Json> {
     resourceDefinitions: WATER_VALTEC_PPR20_STANDARD_S2723_RESOURCES,
   });
   const assertions = {
+    allWholeSupplyOwners: VALTEC_SELECTED_SUPPLIES.length === 13 && WATER_VALTEC_PPR20_STANDARD_S2723_PARAMETERS.length === 37,
+    acceptedFiveControls: [["02:control:pipe-order", 112], ["02:control:pipe-remainder", 7], ["02:control:pipe-mass", 18.592],
+      ["03:control:support-order", 400], ["03:control:support-remainder", 199]].every(([id, q]) => quantity(accepted.rows, `water-ppr20:${id}`) === q),
+    acceptedPhysicalWorkUnchanged: ["02:operation:cutting", "04:operation:socket-fusion", "05:control:total-fusion-sockets",
+      "06:operation:pipe-installation", "07:material:test-water", "07:material:flushing-water", "08:delivery:materials"]
+      .every(id => quantity(accepted.rows, `water-ppr20:${id}`) === quantity(complete.rows, `water-ppr20:${id}`)),
+    shortageAndProcurementGuard: shortageBlocked && quantity(shortage.rows, "water-ppr20:02:control:pipe-order") === 104
+      && quantity(shortage.rows, "water-ppr20:02:control:pipe-remainder") === 0 && quantity(shortage.rows, "water-ppr20:03:control:support-remainder") === 0,
+    declaredManufacturerTwoMetreVariant: quantity(repacked.rows, "water-ppr20:02:material:pipe-sections") === 53
+      && quantity(repacked.rows, "water-ppr20:02:control:pipe-order") === 106 && quantity(repacked.rows, "water-ppr20:02:control:pipe-mass") === 17.596
+      && quantity(repacked.rows, "water-ppr20:03:control:support-order") === 250
+      && String(repacked.rows.find(row => row.row_id === "water-ppr20:02:material:pipe-sections")?.title_ru).endsWith(" — 2")
+      && String(repacked.rows.find(row => row.row_id === "water-ppr20:03:fastener:support-packages")?.title_ru).endsWith(" — 125"),
     firstEstimateAppearsImmediately:
       first.rows.length === 34 && first.preliminaryNeeds.length === 18,
     firstEstimateHasProcurement:
@@ -171,21 +201,21 @@ async function verifyCore(): Promise<Json> {
 }
 
 void runMasterSingleDefinitionSuccessorR1({
-  contract: "rik-expo-app.s27-23.water-valtec-ppr20-standard-successor.v1",
+  contract: "rik-expo-app.s27-31.water-valtec-ppr20-accepted-order-successor.v1",
   stopCode: "S27_23_WATER_VALTEC_PPR20_STANDARD",
-  applicationName: "s27-23-water-valtec-ppr20-standard-successor",
+  applicationName: "s27-31-water-valtec-ppr20-accepted-order-successor",
   expectedBranch: "codex/r4-a5-clean-08b18902",
   masterPath: resolve(process.env.R4A13_MASTER_PATH
-    ?? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (63).md"),
+    ?? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (71).md"),
   masterSha256: process.env.R4A13_MASTER_SHA256
-    ?? "e1c70828ba30bb4dae395c2766f8ff7e13467ec51592198f4722a64edf8126ca",
+    ?? "783d0425e1f0f0f0ea8a262be454e39d13e94e1a2ad5d1c6cc4b1e1314e624f1",
   parentReleaseId: process.env.R4A13_PARENT_DEFINITION_RELEASE_ID
     ?? currentRelease.definitionReleaseId,
   parentSearchReleaseId: process.env.R4A13_PARENT_SEARCH_RELEASE_ID
     ?? currentRelease.searchReleaseId,
   currentReleasePath,
   outputRoot: resolve(process.env.R4A13_OUTPUT_ROOT
-    ?? ".release-runtime/r568/s27-23/water-valtec-ppr20-standard-successor"),
+    ?? ".release-runtime/r568/s27-31/valtec-accepted-order-current"),
   sourcePaths: [
     "data/estimate-benchmarks/source-packs/water-valtec-ppr20-standard-s27-23.json",
     "src/lib/estimate/v4/waterValtecPpr20StandardS2723.ts",
@@ -194,6 +224,9 @@ void runMasterSingleDefinitionSuccessorR1({
     "scripts/estimate/r4a13/catalogFirstEstimateMinimumInputAudit.shared.ts",
     "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts",
     "scripts/estimate/r4a13/prepareS2723WaterValtecPpr20StandardSuccessor.ts",
+    "scripts/estimate/r4a13/readbackS2731ValtecAcceptedOrderIndependent.ts",
+    "src/lib/estimate/backendPlatform/canonicalPurchaseBalanceV1.ts",
+    "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
   ],
   catalogId: WATER_VALTEC_PPR20_STANDARD_S2723_CATALOG_ID,
   sourceId: WATER_VALTEC_PPR20_STANDARD_S2723_SOURCE_ID,
@@ -208,7 +241,7 @@ void runMasterSingleDefinitionSuccessorR1({
   runtimeProfileClassification: WATER_VALTEC_PPR20_STANDARD_S2723_RUNTIME_CLASSIFICATION,
   runtimeProfileSourceIds: WATER_VALTEC_PPR20_STANDARD_S2723_RUNTIME_SOURCE_IDS,
   verifyCore,
-  expectedParentShape: [35, 37, 51],
+  expectedParentShape: [35, 38, 52],
   benchmarkOrdinal: 0,
   validationScenario: "S27_23_WATER_VALTEC_PPR20_STANDARD_100_M",
   passport: {
@@ -218,7 +251,7 @@ void runMasterSingleDefinitionSuccessorR1({
       "Смонтированная открытая внутренняя трасса ХВС из трубы VALTEC PP-R PN25 20x3,4 мм с проектными фитингами и опорами, испытанная и промытая.",
     includedScopeRu: [
       "обмер и разметка трассы, проверка применимости выбранной системы",
-      "труба, резерв, четырёхметровые отрезки, заказ, остаток, масса и раскрой",
+      "труба, плановый запас, отрезки выбранной длины, заказ, прогноз превышения, масса и раскрой",
       "опоры, крепёж, сверление, расходная оснастка, труд и механизмы",
       "прямые муфты, повороты, ответвления, переходы и окончания по фактической раскладке",
       "полифузионная сварка, гидравлическое испытание, промывка и контролируемый слив",
@@ -242,6 +275,11 @@ void runMasterSingleDefinitionSuccessorR1({
     unknownRouteNodesCreateVisibleDependentNeeds: true,
     profileAssumptionsVisibleAndEditable: true,
     hydraulicDesignAndAdjacentSystemsExcluded: true,
+    wholeSelectedSupplyOwners: 13,
+    effectiveOrderOutputs: 2,
+    effectivePhysicalControls: 5,
+    inventoryCreditDeclared: false,
+    deliveryRemainsIndependentProjectFact: true,
   },
   binding: {
     rowId: "water-ppr20:02:material:pipe-sections",
@@ -250,15 +288,22 @@ void runMasterSingleDefinitionSuccessorR1({
       source_id: WATER_VALTEC_PPR20_STANDARD_S2723_SOURCE_ID,
       norm_id: WATER_VALTEC_PPR20_STANDARD_S2723_NORM_ID,
       exact_locator: WATER_VALTEC_PPR20_STANDARD_S2723_SOURCE_METADATA.exact_locator,
-      quantity_basis: "ROUTE_LENGTH_X_VISIBLE_RESERVE_ROUNDED_TO_4_M_MANUFACTURER_SECTIONS",
+      quantity_basis: "ROUTE_LENGTH_X_VISIBLE_PLANNING_ALLOWANCE_ROUNDED_TO_SELECTED_MANUFACTURER_SECTION_LENGTH",
       assumption_policy: "VISIBLE_EDITABLE_AND_REPLACEABLE_BY_PROJECT_ROUTE_SUBSTRATE_AND_METHOD",
     },
   },
   locator: {
-    key: "water-valtec-ppr20-standard-s27-23-balance-r2",
+    key: "water-valtec-ppr20-accepted-order-s27-31",
     payload: {
       kind: "MANUFACTURER_SYSTEM_TECHNOLOGY_MAP",
       sourcePackSha256: WATER_VALTEC_PPR20_STANDARD_S2723_SOURCE_PACK_SHA256,
+      expectedResourceIds: WATER_VALTEC_PPR20_STANDARD_S2723_RESOURCES.map(row => row.row_id),
+      expectedFormulaIds: WATER_VALTEC_PPR20_STANDARD_S2723_FORMULAS.map(formula => formula.formula_id),
+      selectedSupplyOwnerIds: VALTEC_SELECTED_SUPPLIES.map(supply => `water-ppr20:${supply.rowId}`),
+      effectiveOutputBindings: VALTEC_SELECTED_SUPPLIES.flatMap(supply => "effective" in supply
+        ? [{ ownerRowId: `water-ppr20:${supply.rowId}`, parameterId: supply.effective, unitId: "item" }] : []),
+      effectiveControlRowIds: ["02:control:pipe-order", "02:control:pipe-remainder", "02:control:pipe-mass", "03:control:support-order", "03:control:support-remainder"]
+        .map(id => `water-ppr20:${id}`),
       officialManufacturerPassport: WATER_VALTEC_PPR20_STANDARD_S2723_SOURCE_METADATA.official_url,
       restoredOfficialSnapshotManifest:
         ".release-runtime/r568/s27-23/q5-valtec-ppr-official-sources/manifest.json",
