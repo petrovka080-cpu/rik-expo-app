@@ -4,6 +4,7 @@ import { buildAutomaticConstructionOwnerR1 } from "../../../src/lib/estimate/v4/
 import { effectivePurchaseBalanceExpressionsR1, effectiveResourceQuantityParameterId } from "../../../src/lib/estimate/v4/effectivePurchaseBalanceR1";
 import { stringifyCanonicalEstimateJson } from "../../../src/lib/estimate/estimateDeterministicHash";
 import type { CanonicalPublisherJson as Json } from "./canonicalDefinitionPublisherR1";
+import { formworkMaterialPurchaseScopeS2733 } from "./s2733FormworkMaterialPurchaseScope";
 
 export const S2732_PURCHASE_GROUP_CONTRACT = "rik-expo-app.s27-32.material-purchase-group.v1";
 const anchorPrefix = "canonical-work:base:concrete_foundation_interior_anchor_group_pour_";
@@ -49,14 +50,15 @@ function hash(value: unknown): string { return createHash("sha256").update(strin
 
 /** Exact stable row identities only. The original DB definition supplies the
  * calculation and inclusion boundaries; this migration inserts no norms. */
-export function overlayS2732PurchaseGroup(parent: PurchaseGroupRepresentative, options?: { concretePlacementOwners?: true; reinforcementOwners?: true; curingMaterialOwners?: true }) {
+export function overlayS2732PurchaseGroup(parent: PurchaseGroupRepresentative, options?: { concretePlacementOwners?: true; reinforcementOwners?: true; curingMaterialOwners?: true; formworkMaterialOwners?: true }) {
   const result: PurchaseGroupRepresentative = structuredClone(parent);
   const catalogId = String(parent.definition.catalog_id);
   const concretePlacement = catalogId.startsWith(anchorPrefix) || options?.concretePlacementOwners === true;
-  invariant([options?.concretePlacementOwners, options?.reinforcementOwners, options?.curingMaterialOwners].filter(Boolean).length <= 1, "OWNER_SCOPE_CONFLICT");
+  invariant([options?.concretePlacementOwners, options?.reinforcementOwners, options?.curingMaterialOwners, options?.formworkMaterialOwners].filter(Boolean).length <= 1, "OWNER_SCOPE_CONFLICT");
   if (options?.concretePlacementOwners) invariant(catalogId.startsWith("canonical-work:base:concrete_foundation_interior_") && catalogId.includes("_pour_"), "CONCRETE_OWNER_SCOPE");
   const reinforcement = options?.reinforcementOwners === true;
   const curingMaterials = options?.curingMaterialOwners === true;
+  const formwork = options?.formworkMaterialOwners ? formworkMaterialPurchaseScopeS2733(parent) : null;
   const frame = catalogId === "canonical-work:base:concrete_foundation_interior_reinforcement_frame_reinforce_standard";
   if (reinforcement) {
     invariant(S2733_REINFORCEMENT_PURCHASE_GROUP_CATALOG_IDS.includes(catalogId), "REINFORCEMENT_OWNER_SCOPE");
@@ -70,7 +72,7 @@ export function overlayS2732PurchaseGroup(parent: PurchaseGroupRepresentative, o
     invariant(parent.resources.length === 11 && parent.parameters.length === 31, "CURING_DELIVERED_SCOPE_DRIFT");
     invariant(curingMaterialRows.every(id => parent.resources.some(r => r.row_id === id && r.category === "material")), "CURING_MATERIAL_IDENTITY_DRIFT");
   }
-  const targets = curingMaterials ? curingMaterialRows : reinforcement ? (frame ? reinforcementFrameRows : reinforcementRows)
+  const targets = formwork ? formwork.targetRowIds : curingMaterials ? curingMaterialRows : reinforcement ? (frame ? reinforcementFrameRows : reinforcementRows)
     : options?.concretePlacementOwners ? anchorRows : S2732_PURCHASE_GROUP_ROWS[catalogId];
   invariant(targets, `UNKNOWN_CATALOG:${catalogId}`);
   invariant(parent.parameters.every(p => p.default_value == null), `NON_NULL_DEFAULT:${catalogId}`);
@@ -99,11 +101,11 @@ export function overlayS2732PurchaseGroup(parent: PurchaseGroupRepresentative, o
     invariant(row && row.procurement_eligible && row.row_type === "material"
       && (!row.resource_graph.costTreatment || row.resource_graph.costTreatment === "OWN_COST")
       && !row.resource_graph.purchaseBalanceV1 && !row.resource_graph.purchaseBalanceOwnerRowId, `TARGET_OWNER_DRIFT:${rowId}`);
-    const expression = originalExpression(rowId);
+    const expression = formwork ? formwork.expressions[rowId] : originalExpression(rowId);
     const unit = String(row.unit_id);
     const cable = rowId === "rc09:wps_power_cable" ? "wps" : rowId === "rc09:bps_power_cable" ? "bps" : null;
-    const quantum = ["pcs", "piece", "set", "roll", "package"].includes(unit);
-    const selectedContingency = concretePlacement && rowId === "material:concrete:ready-mix";
+    const quantum = ["pcs", "piece", "set", "roll", "package"].includes(unit) || (formwork != null && unit === "item");
+    const selectedContingency = (concretePlacement || formwork?.volumeParameterId != null) && rowId === "material:concrete:ready-mix";
     const balance = cable
       ? effectivePurchaseBalanceExpressionsR1({ ownerRowId: rowId, orderUnitId: unit,
         consumed: `${cable}_power_cable_route_length_m*(1+${cable}_cable_expected_loss_fraction)`,
@@ -115,7 +117,7 @@ export function overlayS2732PurchaseGroup(parent: PurchaseGroupRepresentative, o
     row.resource_graph = { ...row.resource_graph, effectiveQuantityOutputV1: balance.owner.effectiveQuantityOutput,
       purchaseBalanceV1: { ...balance.owner.purchaseBalance, ...(!cable ? {
         balanceScope: "new_order_vs_required_consumption", requirementBasis: selectedContingency ? "selected_order_including_contingency" : "selected_supply_order",
-        plannedConsumptionExpression: selectedContingency ? "plan_dimension_concrete_volume_m3" : expression,
+        plannedConsumptionExpression: selectedContingency ? (formwork?.volumeParameterId ?? "plan_dimension_concrete_volume_m3") : expression,
       } : {}) } };
     if (cable) {
       replaceFormula(`rc09:${cable}-cable-balance:drum-count`, balance.packages!);
@@ -123,7 +125,14 @@ export function overlayS2732PurchaseGroup(parent: PurchaseGroupRepresentative, o
       replaceFormula(`rc09:${cable}-cable-balance:surplus-beyond-spare`, balance.free);
     }
   }
-  if (concretePlacement) {
+  if (formwork) {
+    for (const linked of formwork.deliveries) {
+      replaceFormula(linked.rowId, `${effective(linked.ownerRowId)}/${linked.unitFactor}*${linked.distanceParameterId}`);
+      const delivery = resources.get(linked.rowId)!;
+      delivery.resource_graph = { ...delivery.resource_graph,
+        manualTransportQuantityPolicyV1: { unitId: linked.unitId, minimum: "calculated_quantity", integer: false } };
+    }
+  } else if (concretePlacement) {
     replaceFormula("delivery:concrete:ready-mix", `${effective("material:concrete:ready-mix")}*concrete_delivery_distance_km`);
   } else if (reinforcement && !frame) {
     const delivery = resources.get("delivery:reinforcement:steel");
