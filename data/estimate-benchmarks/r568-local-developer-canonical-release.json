@@ -1,13 +1,13 @@
 {
   "schemaVersion": "r568-local-developer-canonical-release.v1",
   "status": "ACTIVE_LOCAL_DEVELOPER_CANONICAL_RELEASE",
-  "definitionReleaseId": "cd89f2d8-c12b-55c4-b49e-fbf12fd59ca4",
-  "searchReleaseId": "413431df-6388-5c80-9d6e-43c2b7f93289",
+  "definitionReleaseId": "cb5c04e7-0565-5b2f-8fed-c7a0c53e2b9e",
+  "searchReleaseId": "d843081a-2643-5eab-842b-e505ac371ed2",
   "definitionReleaseStatus": "prepared",
   "searchReleaseStatus": "draft",
-  "definitionSnapshotSha256": "43e8151b0530adacdac87011d307ac8a672cca01190440cbd28a6a9c030551b3",
-  "manifestHashChainSha256": "43e8151b0530adacdac87011d307ac8a672cca01190440cbd28a6a9c030551b3",
-  "searchHashChainSha256": "2ba6c0fd123ad60dc193a426055be7929e53b62fcc7c02526835081e89af6495",
+  "definitionSnapshotSha256": "a54a9870e0bfc8615fbee73cfc285238be4e6d249077d87b17bf84e00583523c",
+  "manifestHashChainSha256": "a54a9870e0bfc8615fbee73cfc285238be4e6d249077d87b17bf84e00583523c",
+  "searchHashChainSha256": "d4720650897f7769e3e5f10161f7b55885d7814dbc93babd002722afc6a4d01a",
   "identities": 11610,
   "visibleCanonicalDefinitions": 10322,
   "aliasesRedirects": 1288,
@@ -15,7 +15,7 @@
   "runtimeAdditionalAdmissions": 9,
   "currentInventoryRowsIncludingAliases": 11619,
   "denominatorNote": "11610 is the immutable historical source-identity reconciliation (10322 canonical owners plus 1288 redirects); the current cumulative runtime also preserves 9 separately identified inherited admissions.",
-  "owner": "S27_BRIDGE_ASPHALT_COMPLETE_SUCCESSOR",
+  "owner": "S27_23_HVAC_WAVIN_HEP2O22_HEATING_STANDARD_SUCCESSOR",
   "productionAccessed": false,
   "fakeGreenClaimed": false
 }
