@@ -143,6 +143,7 @@ function assertSha256(value: unknown, code: string): asserts value is string {
 
 export function createCanonicalDefinitionClonePlan(input: CanonicalDefinitionClonePlanInput) {
   const resourceIds = new Map<string, string>();
+  const resourceOrdinals = new Map(input.representative.resources.map(resource => [String(resource.row_id), Number(resource.ordinal)]));
   const resources = input.representative.resources.map((resource) => {
     const id = input.resourceId(resource);
     resourceIds.set(String(resource.row_id), id);
@@ -247,7 +248,12 @@ export function createCanonicalDefinitionClonePlan(input: CanonicalDefinitionClo
       source_head: input.passport.sourceHead,
       source_tree: input.passport.sourceTree,
     },
-    bindings: input.representative.bindings.map((binding) => ({
+    // The persisted self-audit reads bindings in physical resource order.
+    // A parent's readback may instead use row identity order; normalize the
+    // cloned copy without changing the normative binding or its applicability.
+    bindings: [...input.representative.bindings].sort((left, right) =>
+      (resourceOrdinals.get(String(left.row_id)) ?? Infinity) - (resourceOrdinals.get(String(right.row_id)) ?? Infinity))
+      .map((binding) => ({
       definition_version_id: input.definition.id,
       resource_spec_id: resourceIds.get(String(binding.row_id)),
       locator_id: binding.locator_id,
