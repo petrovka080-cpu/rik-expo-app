@@ -1760,7 +1760,7 @@ async function createArtifactJob(
   kind: "pdf" | "professional_pdf" | "procurement",
 ) {
   const idempotencyKey = String(body.idempotencyKey ?? "").trim();
-  if (!idempotencyKey)
+  if (!idempotencyKey || idempotencyKey.length > 200)
     throw Object.assign(new Error("idempotencyKey is required"), {
       code: "INVALID_ARGUMENT",
       httpStatus: 400,
