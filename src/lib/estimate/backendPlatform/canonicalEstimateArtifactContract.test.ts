@@ -3,6 +3,7 @@ import {
   buildCanonicalProcurementProjection,
   canonicalArtifactPreliminaryNeeds,
   canonicalArtifactQuantity,
+  canonicalArtifactVisibleRowTitle,
   canonicalProfessionalArtifactMetadataIdentityMatches,
   selectCanonicalArtifactRows,
 } from "./canonicalEstimateArtifactContract";
@@ -24,6 +25,23 @@ const rows = [
 ];
 
 describe("canonical estimate artifact contract", () => {
+  it.each([
+    { titleSpecificationParameterIds: ["selected_vibrator"], titleSpecificationMode: "APPEND" },
+    { titleSpecificationParameterId: "selected_vibrator" },
+    { titleSpecificationParameterIds: ["selected_vibrator"], titleSpecificationMode: "REPLACE" },
+  ])("retains an explicitly selected specification in public documents: %p", resourceGraph => {
+    const title = "Глубинный вибратор для уплотнения бетонной смеси — DEMO: compatible head45, shaft2m and actual kit";
+    const row = { ...rows[0], title_ru: title, calculation_trace: { resourceGraph } };
+    expect(canonicalArtifactVisibleRowTitle(row)).toBe(title);
+    const projection = buildCanonicalProcurementProjection({ revision, procurementRows: [row] });
+    expect(projection.rows[0]?.titleRu).toBe(title);
+    expect(row.title_ru).toBe(title);
+    expect(row.quantity).toBe("12.5");
+  });
+  it("keeps established public aliases on rows without declared specification parameters", () => {
+    expect(canonicalArtifactVisibleRowTitle({ title_ru: "Глубинный вибратор для уплотнения бетонной смеси" })).toBe("Глубинный вибратор");
+    expect(canonicalArtifactVisibleRowTitle({ title_ru: "Глубинный вибратор для уплотнения бетонной смеси", calculation_trace: { resourceGraph: { titleSpecificationParameterIds: [] } } })).toBe("Глубинный вибратор");
+  });
   it("selects immutable revision rows once for PDF and procurement", () => {
     const selection = selectCanonicalArtifactRows(rows);
     expect(selection.estimateRows.map((row) => row.row_id)).toEqual(["material", "labor"]);
@@ -108,7 +126,7 @@ describe("canonical estimate artifact contract", () => {
       grandTotalStatus: "PARTIAL_NEEDS_PRICE",
       pageCount: 4,
       generatorVersion: "canonical-professional-pdf.r4-a6",
-      templateVersion: "professional-estimate-pdf:7",
+      templateVersion: "professional-estimate-pdf:8",
     });
     expect(canonicalProfessionalArtifactMetadataIdentityMatches({
       metadata,

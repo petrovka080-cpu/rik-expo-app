@@ -4,10 +4,11 @@ import { assertCanonicalPurchaseReadinessV1 } from "./canonicalPurchaseBalanceV1
 import { formatEstimateUnitLabel } from "../../ai/globalEstimate/formatEstimateUnitLabel";
 import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
 import { canonicalEstimateSha256HexText } from "./canonicalEstimateSha256";
+import { localizeKnownTechnologyVariantSuffixRu } from "./russianTechnologyTitleR542";
 
 export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r8";
-export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r3-operation-allocation";
-export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:7";
+export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r4-operation-allocation-specifications";
+export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:8";
 
 /** Keep caller idempotency within each renderer; do not collide with legacy jobs. */
 export function canonicalProcurementRequestKey(idempotencyKey: string): string {
@@ -306,7 +307,15 @@ export function canonicalArtifactMoney(value: unknown, currencyCode: unknown): s
 }
 
 export function canonicalArtifactVisibleRowTitle(row: Record<string, unknown>): string {
-  return normalizePublicBoqNameRu({ sourceNameRu: String(row.title_ru ?? "") });
+  const sourceNameRu = String(row.title_ru ?? "").trim();
+  const graph = objectValue(objectValue(row.calculation_trace).resourceGraph);
+  // The compiler has already appended or replaced this title using declared
+  // project specification parameters. Public generic-name aliases must not
+  // remove the selected model, compatibility or contents from the saved row.
+  const specificationIds = graph.titleSpecificationParameterIds;
+  if (nullableText(graph.titleSpecificationParameterId)
+    || (Array.isArray(specificationIds) && specificationIds.some(id => typeof id === "string" && id.trim()))) return localizeKnownTechnologyVariantSuffixRu(sourceNameRu);
+  return normalizePublicBoqNameRu({ sourceNameRu });
 }
 
 export function canonicalArtifactUnit(row: Record<string, unknown>): string {
