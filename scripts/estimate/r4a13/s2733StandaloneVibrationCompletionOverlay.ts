@@ -30,7 +30,11 @@ export function overlayS2733StandaloneVibrationCompletion(parent: PurchaseGroupR
   const addedFormulas = addition.formulas.filter(f => addedFormulaIds.has(f.formula_id));
   invariant(addedResources.every(r => !parent.resources.some(old => old.row_id === r.row_id)), "RESOURCE_COLLISION");
   invariant(addedFormulas.every(f => !parent.formulas.some(old => old.formula_id === f.formula_id)), "FORMULA_COLLISION");
-  result.parameters.push(...addedParameters.map((p, i) => ({ ...p, ordinal: parent.parameters.length + i })));
+  // Pile-cap's delivered schema retains a gap after removing the old labor
+  // input. Preserve its ordinals and append after the highest existing one.
+  const nextParameterOrdinal = Math.max(...parent.parameters.map(p => Number(p.ordinal))) + 1;
+  result.parameters.push(...addedParameters.map((p, i) => ({ ...p, ordinal: nextParameterOrdinal + i })));
+  invariant(new Set(result.parameters.map(p => p.ordinal)).size === result.parameters.length, "PARAMETER_ORDINAL_COLLISION");
   result.formulas.push(...addedFormulas.map(f => ({ ...f, ast_sha256: hash(f.ast) })));
   result.resources.push(...addedResources.map((r, i) => ({ ...r, ordinal: parent.resources.length + i,
     row_type: r.category === "delivery" ? "service" : r.category === "construction_work" ? "labor" : r.category,
