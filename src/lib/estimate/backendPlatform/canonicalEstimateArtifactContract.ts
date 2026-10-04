@@ -4,7 +4,7 @@ import { assertCanonicalPurchaseReadinessV1 } from "./canonicalPurchaseBalanceV1
 import { formatEstimateUnitLabel } from "../../ai/globalEstimate/formatEstimateUnitLabel";
 
 export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r7";
-export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:6";
+export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:7";
 
 export type CanonicalArtifactRow = Record<string, unknown> & {
   row_id: unknown;

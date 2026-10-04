@@ -22,7 +22,7 @@ const parameter = (id: string, title: string, valueType: AutomaticParameterSpec[
  * had no water resource. Reuse the established direct project takeoff contract;
  * ACI is a method/specification source, never a universal m3-per-m3 coefficient.
  * No sample concrete-slab quantities or high-load profile values are borrowed. */
-export function buildAnchorGroupWaterCuringResourcesS2733(catalogId: string) {
+export function buildAnchorGroupWaterCuringResourcesS2733(catalogId: string, applicabilityRu = "Уход водой за забетонированной анкерной группой по подтверждённому проектному способу; объём воды, комплект и источник не выводятся только из м³ бетона.") {
   const balance = effectivePurchaseBalanceExpressionsR1({ ownerRowId: ANCHOR_WATER_CURING_ROWS.water,
     orderUnitId: "m3", consumed: "curing_water_m3", stock: "0", reserve: "0",
     quantityMode: "canonical_decimal", balanceScope: "new_order_vs_required_consumption" });
@@ -49,7 +49,7 @@ export function buildAnchorGroupWaterCuringResourcesS2733(catalogId: string) {
   const definition = buildAutomaticConstructionOwnerR1({ contract: ANCHOR_WATER_CURING_S2733_CONTRACT, semanticOwner: catalogId,
     sourceId: CONCRETE_SLAB_CURING_SOURCE_ID, normId: "approved-project-water-curing-takeoff",
     sourceMetadata: { ...CONCRETE_SLAB_CURING_SOURCE_METADATA, artifact_sha256: CONCRETE_SLAB_CURING_SOURCE_METADATA.definition_hash },
-    applicabilityRu: "Уход водой за забетонированной анкерной группой по подтверждённому проектному способу; объём воды, комплект и источник не выводятся только из м³ бетона.",
+    applicabilityRu,
     ordinary: [{ id: "curing_method", title: "Способ ухода за бетоном", valueType: "enum", unitId: null,
       kind: "ordinary", values: ["membrane", "water"] }],
     profile: [], deferMissingProjectFactsToRows: true, excludedUnownedAssumptions: [],

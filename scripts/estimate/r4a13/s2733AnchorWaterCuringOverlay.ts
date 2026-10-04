@@ -12,14 +12,22 @@ function invariant(value: unknown, code: string): asserts value { if (!value) th
 /** Add the absent selected-water branch. Never replace the fifteen delivered
  * resources, their formulas or the previous group purchase policies. */
 export function overlayS2733AnchorWaterCuring(parent: PurchaseGroupRepresentative, waterNormativeLocatorId: string) {
+  return appendS2733WaterCuringResources(parent, waterNormativeLocatorId, {
+    catalogIds: ANCHOR_WATER_CURING_TARGETS_S2733,
+    groupId: "anchor-group-concrete-placement", groupTitleRu: "Бетонирование основания анкерной группы",
+  });
+}
+
+export function appendS2733WaterCuringResources(parent: PurchaseGroupRepresentative, waterNormativeLocatorId: string,
+  scope: { catalogIds: readonly string[]; groupId: string; groupTitleRu: string; applicabilityRu?: string }) {
   const catalogId = String(parent.definition.catalog_id);
-  invariant(ANCHOR_WATER_CURING_TARGETS_S2733.includes(catalogId), "FINITE_SCOPE");
+  invariant(scope.catalogIds.includes(catalogId), "FINITE_SCOPE");
   invariant(parent.resources.length === 15, "EXPECTED_DELIVERED_SCOPE");
   invariant(/^[0-9a-f-]{36}$/u.test(waterNormativeLocatorId), "CURING_METHOD_LOCATOR_REQUIRED");
   const selector = parent.parameters.find(p => p.parameter_id === "curing_method");
   invariant(selector && JSON.stringify(selector.constraints_json.values) === JSON.stringify(["membrane", "water"]), "EXISTING_WATER_CHOICE_DRIFT");
   const result: PurchaseGroupRepresentative = structuredClone(parent);
-  const addition = buildAnchorGroupWaterCuringResourcesS2733(catalogId);
+  const addition = buildAnchorGroupWaterCuringResourcesS2733(catalogId, scope.applicabilityRu);
   const oldParameterIds = new Set(parent.parameters.map(p => String(p.parameter_id)));
   const oldFormulaIds = new Set(parent.formulas.map(f => String(f.formula_id)));
   const oldRowIds = new Set(parent.resources.map(r => String(r.row_id)));
@@ -30,8 +38,8 @@ export function overlayS2733AnchorWaterCuring(parent: PurchaseGroupRepresentativ
   result.parameters.push(...newParameters.map((p, index) => ({ ...p, ordinal: parameterOffset + index })));
   result.formulas.push(...addition.formulas.map(formula => ({ ...formula, ast_sha256: hash(formula.ast) })));
   const resourceOffset = Math.max(...parent.resources.map(r => Number(r.ordinal))) + 1;
-  const operation = { contractVersion: "canonical-operation-resource/v1", groupId: "anchor-group-concrete-placement",
-    groupTitleRu: "Бетонирование основания анкерной группы", operationId: "curing", operationTitleRu: "Уход за бетоном",
+  const operation = { contractVersion: "canonical-operation-resource/v1", groupId: scope.groupId,
+    groupTitleRu: scope.groupTitleRu, operationId: "curing", operationTitleRu: "Уход за бетоном",
     completionCriterionRu: "Выбранный способ ухода обеспечен материалами, трудом и применимым оборудованием; условия и завершение подтверждены по проекту." };
   result.resources.push(...addition.resources.map((r, index) => ({ ...r, ordinal: resourceOffset + index,
     row_type: r.category === "delivery" ? "service" : r.category, semantic_owner: `${catalogId}:${r.row_id}`,

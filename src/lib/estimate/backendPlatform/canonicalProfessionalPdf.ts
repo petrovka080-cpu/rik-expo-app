@@ -10,7 +10,7 @@ import {
 import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-33-operation-resources" as const;
+  "canonical-professional-pdf.r4-a13-s27-33-contiguous-operations" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -239,6 +239,17 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     return canonicalEstimateOperationReference(objectValue(objectValue(row.calculation_trace).resourceGraph).operationCompositionV1);
   };
   const hasOperations = compositionRows.some(row => operation(row) != null);
+  // A resource from a different operation must never appear beneath the
+  // preceding operation's completion criterion. Preserve source order within
+  // each group and the order in which its first resource appears.
+  const operationGroups = new Map<string, CanonicalArtifactRow[]>();
+  if (hasOperations) for (const row of compositionRows) {
+    const reference = operation(row);
+    const key = reference ? JSON.stringify([reference.groupId, reference.operationId]) : "general";
+    const group = operationGroups.get(key);
+    if (group) group.push(row); else operationGroups.set(key, [row]);
+  }
+  const documentRows = hasOperations ? [...operationGroups.values()].flat() : compositionRows;
   const questionNumbers = hasOperations ? new Map<string, number>() : undefined;
   if (questionNumbers) for (const row of preliminaryNeeds) {
     const missing = objectValue(row.calculation_trace).missingParameterIds ?? row.missing_parameter_ids;
@@ -247,11 +258,12 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     }
   }
   let previousOperationKey = "";
-  const renderedComposition = compositionRows.map((row, index) => {
+  const renderedComposition = documentRows.map((row, index) => {
     const reference = operation(row);
-    const key = reference ? `${reference.groupId}:${reference.operationId}` : "";
+    const key = reference ? JSON.stringify([reference.groupId, reference.operationId]) : "general";
     const heading = reference && key !== previousOperationKey
-      ? `<tr class="operation"><td colspan="7"><strong>${escapeCanonicalArtifactHtml(String(reference.groupTitleRu))} — ${escapeCanonicalArtifactHtml(String(reference.operationTitleRu))}</strong><span>Для завершения: ${escapeCanonicalArtifactHtml(String(reference.completionCriterionRu))}</span></td></tr>` : "";
+      ? `<tr class="operation"><td colspan="7"><strong>${escapeCanonicalArtifactHtml(String(reference.groupTitleRu))} — ${escapeCanonicalArtifactHtml(String(reference.operationTitleRu))}</strong><span>Для завершения: ${escapeCanonicalArtifactHtml(String(reference.completionCriterionRu))}</span></td></tr>`
+      : hasOperations && key !== previousOperationKey ? `<tr class="operation"><td colspan="7"><strong>Работы и ресурсы сметы</strong></td></tr>` : "";
     previousOperationKey = key;
     return heading + (preliminaryRowIds.has(String(row.row_id))
       ? renderPreliminaryNeedRow(row, index + 1, input.parameterTitlesRu ?? {}, questionNumbers) : renderClientRow(row, index + 1));
