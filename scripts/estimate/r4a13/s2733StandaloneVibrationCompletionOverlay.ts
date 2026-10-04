@@ -33,7 +33,8 @@ export function overlayS2733StandaloneVibrationCompletion(parent: PurchaseGroupR
   result.parameters.push(...addedParameters.map((p, i) => ({ ...p, ordinal: parent.parameters.length + i })));
   result.formulas.push(...addedFormulas.map(f => ({ ...f, ast_sha256: hash(f.ast) })));
   result.resources.push(...addedResources.map((r, i) => ({ ...r, ordinal: parent.resources.length + i,
-    row_type: r.category === "delivery" ? "service" : r.category, semantic_owner: `${catalogId}:${r.row_id}` })));
+    row_type: r.category === "delivery" ? "service" : r.category === "construction_work" ? "labor" : r.category,
+    semantic_owner: `${catalogId}:${r.row_id}` })));
   result.bindings.push(...addedResources.map(r => ({ row_id: r.row_id, locator_id: locatorId,
     applicability: { contract: VIBRATION_COMPLETION_S2733_CONTRACT, quantity_basis: "APPROVED_PROJECT_METHOD_STATEMENT_AND_EQUIPMENT_SCHEDULE",
       universal_consumption_claimed: false, universal_productivity_claimed: false } })));
