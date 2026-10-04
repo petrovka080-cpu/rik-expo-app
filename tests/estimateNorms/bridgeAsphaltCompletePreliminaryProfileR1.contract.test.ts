@@ -5,15 +5,46 @@ import {
   BRIDGE_ASPHALT_COMPLETE_PROFILE_SUMMARY,
   BRIDGE_ASPHALT_COMPLETE_RESOURCES,
   BRIDGE_ASPHALT_COMPLETE_SHORT_INPUT,
+  BRIDGE_ASPHALT_COMPLETE_RUNTIME_INPUT,
+  BRIDGE_ASPHALT_COMPLETE_CATALOG_ID,
   compileBridgeAsphaltCompletePreliminaryProfileR1,
 } from "../../src/lib/estimate/v4/bridgeAsphaltCompletePreliminaryProfileR1";
 import { validateIndependentCompletenessMapReferences } from "../../scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1";
+import { compileCanonicalEstimateCore } from "../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
+import { estimateDeterministicHash } from "../../src/lib/estimate/estimateDeterministicHash";
 
 function quantity(rows: readonly { row_id: string; quantity: string }[], rowId: string): number {
   return Number(rows.find((row) => row.row_id === rowId)?.quantity);
 }
 
 describe("complete bridge asphalt preliminary profile S27", () => {
+  it("binds each existing asphalt course to its own accepted order without changing installed consumption", async () => {
+    const result = await compileCanonicalEstimateCore({ operation: "recalculate", compilerVersion: "bridge-order-contract",
+      catalogId: BRIDGE_ASPHALT_COMPLETE_CATALOG_ID, primaryMeasureParameterId: "area_m2",
+      parameterDefinitions: [...BRIDGE_ASPHALT_COMPLETE_PARAMETERS], formulaDefinitions: [...BRIDGE_ASPHALT_COMPLETE_FORMULAS],
+      resourceDefinitions: [...BRIDGE_ASPHALT_COMPLETE_RESOURCES], submittedParameters: { ...BRIDGE_ASPHALT_COMPLETE_SHORT_INPUT },
+      confirmedParameters: BRIDGE_ASPHALT_COMPLETE_RUNTIME_INPUT, currencyCode: "KGS", priceItems: [],
+      rowOverrides: { "bridge:binder:asphalt:material:hot-dense-fine-mix": { quantity: "600.125",
+        provenance: { kind: "manual", reason: "VALIDATION_FIXTURE independent course order" } } },
+      maximumResourceRows: BRIDGE_ASPHALT_COMPLETE_RESOURCES.length, hashJson: async value => estimateDeterministicHash(value) });
+    expect(result.preliminaryNeeds).toEqual([]);
+    const find = (id: string) => result.rows.find(value => value.row_id === `bridge:${id}`)!;
+    expect(find("binder:asphalt:material:hot-dense-fine-mix")).toMatchObject({ quantity: "600.125",
+      calculation_trace: { purchaseBalance: { consumed: "579.84", excessOrderAboveRequiredConsumption: "20.285" } } });
+    expect(find("wearing:asphalt:material:hot-dense-fine-mix").quantity).toBe("579.84");
+    expect(find("binder:asphalt:delivery:truck-trips").quantity).toBe("31");
+    expect(find("wearing:asphalt:delivery:truck-trips").quantity).toBe("29");
+    expect(find("binder:asphalt:delivery:ton-km").quantity).toBe("12002.5");
+    expect(find("binder:asphalt:delivery:truck-machine-hours").quantity).toBe("46.5");
+    expect(find("binder:asphalt:quality:mix-temperature").quantity).toBe("31");
+    expect(find("binder:asphalt:operation:mix-receiving-feed").quantity).toBe("579.84");
+    const aliases = BRIDGE_ASPHALT_COMPLETE_PARAMETERS.filter(value => value.truth_metadata?.effective_resource_quantity_v1);
+    expect(aliases).toHaveLength(2);
+    expect(new Set(aliases.map(value => value.parameter_id)).size).toBe(2);
+    expect(aliases.map(value => value.truth_metadata?.effective_resource_quantity_v1)).toEqual([
+      { sourceRowId: "bridge:binder:asphalt:material:hot-dense-fine-mix", unitId: "t" },
+      { sourceRowId: "bridge:wearing:asphalt:material:hot-dense-fine-mix", unitId: "t" }]);
+  });
   it("calculates the 150 by 32 m first estimate without a short-row ceiling", async () => {
     const compiled = await compileBridgeAsphaltCompletePreliminaryProfileR1({
       ...BRIDGE_ASPHALT_COMPLETE_SHORT_INPUT,

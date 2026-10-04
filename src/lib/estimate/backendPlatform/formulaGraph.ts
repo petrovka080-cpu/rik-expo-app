@@ -363,6 +363,12 @@ export type FormulaParameterValue = string | number | bigint | boolean;
 export function compareFormulaGraphDecimals(left: string | number, right: string | number): number {
   return FixedDecimal.parse(left).compare(FixedDecimal.parse(right));
 }
+/** Validate the existing fixed-decimal domain without rounding submitted
+ * precision into a different physical quantity. This is no supply quantum. */
+export function isFormulaGraphExactDecimal(value: string | number): boolean {
+  if ((String(value).trim().split(".")[1] ?? "").length > FORMULA_DECIMAL_SCALE) return false;
+  try { FixedDecimal.parse(value); return true; } catch { return false; }
+}
 /** Whole supply must be exact in the storage/evaluator domain. Never round
  * excess precision into a multiple that the submitted quantity did not have. */
 export function isFormulaGraphDecimalMultiple(value: string | number, quantum: string | number): boolean {

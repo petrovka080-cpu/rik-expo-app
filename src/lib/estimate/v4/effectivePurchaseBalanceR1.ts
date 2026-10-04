@@ -6,9 +6,15 @@ export function effectiveResourceQuantityParameterId(rowId: string): string {
 
 /** Explicit descriptors describe a single compatible homogeneous supply.
  * Source-specific geometry/consumption expressions remain with their owner. */
-export function effectivePurchaseBalanceExpressionsR1(input: Readonly<{
-  ownerRowId: string; orderUnitId: string; consumed: string; stock: string; reserve: string; quantum: string;
-}>) {
+type BalanceExpressionSources = Readonly<{ ownerRowId: string; orderUnitId: string; consumed: string; stock: string; reserve: string }>;
+type SupplyQuantumInput = BalanceExpressionSources & Readonly<{ quantityMode?: "supply_quantum"; quantum: string }>;
+type DecimalOrderInput = BalanceExpressionSources & Readonly<{ quantityMode: "canonical_decimal";
+  balanceScope: "new_order_vs_required_consumption"; stock: "0"; reserve: "0"; quantum?: never }>;
+type BalanceExpressions = { effective: string; remaining: string; free: string; consumptionShortage: string; reserveDeficit: string;
+  owner: Pick<AutomaticRowSpec, "effectiveQuantityOutput" | "purchaseBalance"> };
+export function effectivePurchaseBalanceExpressionsR1(input: SupplyQuantumInput): BalanceExpressions & { packages: string };
+export function effectivePurchaseBalanceExpressionsR1(input: DecimalOrderInput): BalanceExpressions & { packages: null };
+export function effectivePurchaseBalanceExpressionsR1(input: SupplyQuantumInput | DecimalOrderInput): BalanceExpressions & { packages: string | null } {
   const effective = effectiveResourceQuantityParameterId(input.ownerRowId);
   const remaining = `max(0,(${input.stock})+${effective}-(${input.consumed}))`;
   return {
@@ -16,11 +22,15 @@ export function effectivePurchaseBalanceExpressionsR1(input: Readonly<{
     free: `max(0,(${remaining})-(${input.reserve}))`,
     consumptionShortage: `max(0,(${input.consumed})-(${input.stock})-${effective})`,
     reserveDeficit: `max(0,(${input.reserve})-(${remaining}))`,
-    packages: `${effective}/(${input.quantum})`,
+    packages: input.quantityMode === "canonical_decimal" ? null : `${effective}/(${input.quantum})`,
     owner: {
       effectiveQuantityOutput: { parameterId: effective, unitId: input.orderUnitId },
-      purchaseBalance: { unitId: input.orderUnitId, consumedExpression: input.consumed, stockExpression: input.stock,
-        reserveExpression: input.reserve, orderQuantumExpression: input.quantum },
+      purchaseBalance: input.quantityMode === "canonical_decimal"
+        ? { unitId: input.orderUnitId, consumedExpression: input.consumed, stockExpression: input.stock,
+          reserveExpression: input.reserve, quantityMode: input.quantityMode, balanceScope: input.balanceScope }
+        : { unitId: input.orderUnitId, consumedExpression: input.consumed, stockExpression: input.stock,
+          reserveExpression: input.reserve, orderQuantumExpression: input.quantum,
+          ...(input.quantityMode ? { quantityMode: input.quantityMode } : {}) },
     } satisfies Pick<AutomaticRowSpec, "effectiveQuantityOutput" | "purchaseBalance">,
   };
 }

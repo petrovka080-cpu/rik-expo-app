@@ -199,7 +199,7 @@ describe("S27.19 hot-asphalt installation from KRER 27-06-020-01 and 27-06-021-0
   test("does not invent adjacent base, drainage, kerb, marking or milling scopes", () => {
     const rowIds = ASPHALT_INSTALL_KRER27_RESOURCES.map((item) => item.row_id).join("\n");
     expect(rowIds).not.toMatch(/(?:subbase|drainage|kerb|marking|milling|demolition)/iu);
-    expect(ASPHALT_INSTALL_KRER27_PARAMETERS).toHaveLength(30);
+    expect(ASPHALT_INSTALL_KRER27_PARAMETERS).toHaveLength(31);
     expect(ASPHALT_INSTALL_KRER27_FORMULAS).toHaveLength(22);
     expect(JSON.stringify({
       resources: ASPHALT_INSTALL_KRER27_RESOURCES,

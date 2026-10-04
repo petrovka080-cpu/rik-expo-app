@@ -1,5 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { compileCanonicalEstimateCore } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
+import { estimateDeterministicHash } from "../../../src/lib/estimate/estimateDeterministicHash";
 
 import {
   ASPHALT_INSTALL_KRER27_RUNTIME_CLASSIFICATION,
@@ -82,8 +84,36 @@ async function verifyCore(): Promise<Json> {
   if (/27-06-019-02|холодн/iu.test(serialized)) {
     throw new Error("STOP_S2719_ASPHALT_UPPER_COLD_MIX_REFERENCE");
   }
+  const orderCases = [];
+  for (const [acceptedOrder, trips, tonKm, machineHours, shortage] of [
+    ["650.125", "33", "13002.5", "49.5", "0"], ["600", "30", "12000", "45", "4"],
+  ]) {
+    const result = await compileCanonicalEstimateCore({ operation: "recalculate",
+      compilerVersion: "s27-31-asphalt-accepted-order-publication-control", catalogId: ASPHALT_UPPER_COURSE_CATALOG_ID,
+      primaryMeasureParameterId: "area_m2", parameterDefinitions: [...ASPHALT_UPPER_COURSE_PARAMETERS],
+      formulaDefinitions: [...ASPHALT_UPPER_COURSE_FORMULAS], resourceDefinitions: [...ASPHALT_UPPER_COURSE_RESOURCES],
+      submittedParameters: { area_m2: 5000, layer_thickness_mm: 50 }, confirmedParameters: ASPHALT_INSTALL_KRER27_RUNTIME_INPUT,
+      rowOverrides: { "asphalt:material:hot-dense-fine-mix": { quantity: acceptedOrder, includedInProcurement: true,
+        provenance: { kind: "manual", reason: "VALIDATION_FIXTURE accepted bulk order; no engineering approval" } } },
+      currencyCode: "KGS", priceItems: [], maximumResourceRows: 57, hashJson: async value => estimateDeterministicHash(value) });
+    const owner = result.rows.find(row => row.row_id === "asphalt:material:hot-dense-fine-mix");
+    const balance = (owner?.calculation_trace as Json | undefined)?.purchaseBalance as Json | undefined;
+    if (result.preliminaryNeeds.length || result.rows.length !== 57 || owner?.quantity !== acceptedOrder
+      || balance?.quantityMode !== "canonical_decimal" || balance.quantum !== null
+      || balance.consumed !== "604" || balance.consumptionShortage !== shortage
+      || owner.included_in_procurement !== (shortage === "0")
+      || quantity(result.rows, "asphalt:delivery:truck-trips") !== trips
+      || quantity(result.rows, "asphalt:delivery:ton-km") !== tonKm
+      || quantity(result.rows, "asphalt:delivery:truck-machine-hours") !== machineHours
+      || quantity(result.rows, "asphalt:quality:mix-temperature") !== trips
+      || quantity(result.rows, "asphalt:operation:mix-receiving-feed") !== "604"
+      || quantity(result.rows, "asphalt:control:geometric-compacted-volume") !== "250")
+      throw new Error("STOP_S2731_ASPHALT_ACCEPTED_ORDER_CONTROL");
+    orderCases.push({ acceptedOrder, trips, tonKm, machineHours, balance });
+  }
   return {
-    status: "GREEN_S2719_ASPHALT_UPPER_CORE",
+    status: "GREEN_S2731_ASPHALT_ACCEPTED_ORDER_CORE",
+    orderCases,
     first: {
       areaM2: 900,
       thicknessMm: 50,
@@ -101,27 +131,31 @@ async function verifyCore(): Promise<Json> {
 }
 
 void runMasterSingleDefinitionSuccessorR1({
-  contract: "rik-expo-app.s27-21.asphalt-upper-course-short-name-successor.v2",
+  contract: "rik-expo-app.s27-31.asphalt-upper-course-accepted-order-successor.v1",
   stopCode: "S2719_ASPHALT_UPPER_COURSE",
-  applicationName: "s27-21-asphalt-upper-course-short-name-successor-v2",
+  applicationName: "s27-31-asphalt-upper-course-accepted-order-successor-v1",
   expectedBranch: "codex/r4-a5-clean-08b18902",
   masterPath: resolve(process.env.R4A13_MASTER_PATH
-    ?? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (61).md"),
+    ?? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (71).md"),
   masterSha256: process.env.R4A13_MASTER_SHA256
-    ?? "e271f6f1e82a5677dcde752295f9118b6bdcb17ffb60a974f3b21a44b34a4589",
+    ?? "783d0425e1f0f0f0ea8a262be454e39d13e94e1a2ad5d1c6cc4b1e1314e624f1",
   parentReleaseId: process.env.R4A13_PARENT_DEFINITION_RELEASE_ID
     ?? currentRelease.definitionReleaseId,
   parentSearchReleaseId: process.env.R4A13_PARENT_SEARCH_RELEASE_ID
     ?? currentRelease.searchReleaseId,
   currentReleasePath,
   outputRoot: resolve(process.env.R4A13_OUTPUT_ROOT
-    ?? ".release-runtime/r568/s27-21/asphalt-upper-course-short-name-successor-v2"),
+    ?? ".release-runtime/r568/s27-31/asphalt-upper-course-accepted-order-successor-v1"),
   sourcePaths: [
     "data/estimate-benchmarks/source-packs/asphalt-install-large-area-krer27-profile-r1.json",
     "src/lib/estimate/v4/asphaltInstallLargeAreaKrer27ProfileR1.ts",
     "src/lib/estimate/v4/asphaltUpperCourseR1.ts",
+    "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
+    "src/lib/estimate/backendPlatform/formulaGraph.ts",
+    "src/lib/estimate/backendPlatform/canonicalPurchaseBalanceV1.ts",
     "tests/estimateNorms/asphaltUpperCourseR1.contract.test.ts",
     "scripts/estimate/r4a13/prepareS2719AsphaltUpperCourseSuccessor.ts",
+    "scripts/estimate/r4a13/readbackS2731AsphaltAcceptedOrderIndependent.ts",
   ],
   catalogId: ASPHALT_UPPER_COURSE_CATALOG_ID,
   sourceId: ASPHALT_UPPER_COURSE_SOURCE_ID,
@@ -148,6 +182,7 @@ void runMasterSingleDefinitionSuccessorR1({
       "горячая смесь, битум, керосин и боковые упоры по КРЕР 27-06-020-01 и 27-06-021-01",
       "труд, механизмы, доставка, мобилизация, контроль и исполнительные записи",
       "масса смеси и машино-часы рассчитываются системой до уточнений",
+      "доставка и температурный контроль следуют принятому заказу смеси; дефицит относительно расчётного расхода блокирует готовность закупки",
     ],
     excludedScopeRu: [
       "основание, дренаж, бордюры, разметка и демонтаж без отдельного выбора",
@@ -164,6 +199,7 @@ void runMasterSingleDefinitionSuccessorR1({
     selectedPreliminaryProfile: ASPHALT_UPPER_COURSE_NORM_ID,
     firstEstimateBeforeOptionalClarification: true,
     profileAssumptionsVisibleAndEditable: true,
+    acceptedOrderBalanceScope: "new_order_vs_required_consumption",
   },
   binding: {
     rowId: "asphalt:material:hot-dense-fine-mix",
@@ -176,12 +212,19 @@ void runMasterSingleDefinitionSuccessorR1({
     },
   },
   locator: {
-    key: "asphalt-upper-course-krer-27-06-020-01-021-01-s27-21-short-public-name",
+    key: "asphalt-upper-course-krer-27-06-020-01-021-01-s27-31-accepted-order",
     payload: {
       kind: "NORMATIVE_OPERATION_AND_RESOURCE_MAP",
       exactLocator: ASPHALT_UPPER_COURSE_SOURCE_METADATA.exact_locator,
       baseMeasure: "1000 m2 at 40 mm",
       selectedProfile: "900 m2 at 50 mm",
+      expectedResourceIds: ASPHALT_UPPER_COURSE_RESOURCES.map(row => row.row_id),
+      expectedFormulaIds: ASPHALT_UPPER_COURSE_FORMULAS.map(row => row.formula_id),
+      sourcePackSha256: ASPHALT_UPPER_COURSE_SOURCE_METADATA.definition_hash,
+      acceptedOrderScope: "new_order_vs_required_consumption",
+      transportPrimaryReference: { url: "https://handbook.asphaltpavement.org/chapter/mixture-delivery/",
+        locator: "NAPA Asphalt Paving Handbook 2025, 6.2, 6.5.2, 6.7",
+        useRestriction: "Actual delivery/temperature/ticket relationship only; no new quantities, temperatures, supplier packaging or engineering approval. No inventory credit; surplus does not prove reusable hot mix." },
     },
   },
   search: {
@@ -195,7 +238,7 @@ void runMasterSingleDefinitionSuccessorR1({
     excludedBoundaries: ["новое основание", "дренаж, бордюры, разметка и демонтаж"],
     extraSearchTermsRu: "асфальтирование горячая смесь верхний слой асфальтоукладчик каток",
     sourceProvenance: {
-      masterEdition: "S27.19",
+      masterEdition: "S27.31",
       firstEstimateFromAreaAndThickness: true,
       independentRequiredComposition: true,
     },
@@ -204,8 +247,8 @@ void runMasterSingleDefinitionSuccessorR1({
     /(?:subbase|drainage|kerb|marking|milling|demolition|lower-course)/iu,
     /(?:подстилающ|дренаж|бордюр|разметк|фрезерован|демонтаж)/iu,
   ],
-  owner: "S2721_ASPHALT_UPPER_COURSE_SHORT_NAME_SUCCESSOR",
-  receiptFileStem: "S2721_ASPHALT_UPPER_COURSE_SHORT_NAME",
+  owner: "S2731_ASPHALT_UPPER_COURSE_ACCEPTED_ORDER_SUCCESSOR",
+  receiptFileStem: "S2731_ASPHALT_UPPER_COURSE_ACCEPTED_ORDER",
 }).catch((error: unknown) => {
   process.stderr.write(`${error instanceof Error ? error.stack ?? error.message : String(error)}\n`);
   process.exitCode = 1;

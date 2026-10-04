@@ -9,6 +9,11 @@ import {
 } from "../backendPlatform/canonicalEstimateCompileCore";
 import { compileFormulaGraph } from "../backendPlatform/formulaGraph";
 import { estimateDeterministicHash } from "../estimateDeterministicHash";
+import type { CanonicalPurchaseBalanceV1 } from "../backendPlatform/canonicalPurchaseBalanceV1";
+import { effectivePurchaseBalanceExpressionsR1, effectiveResourceQuantityParameterId } from "./effectivePurchaseBalanceR1";
+
+export const ASPHALT_MIX_ORDER_ROW_ID = "asphalt:material:hot-dense-fine-mix";
+export const ASPHALT_EFFECTIVE_MIX_ORDER_PARAMETER_ID = effectiveResourceQuantityParameterId(ASPHALT_MIX_ORDER_ROW_ID);
 
 export const ASPHALT_INSTALL_KRER27_CATALOG_ID =
   "canonical-work:base:paving_roads_landscape_interior_asphalt_install_large_area";
@@ -148,7 +153,7 @@ const PARAMETER_SPECS: readonly ParameterSpec[] = Object.freeze([
 ]);
 
 export const ASPHALT_INSTALL_KRER27_PARAMETERS:
-readonly CanonicalEstimateParameterDefinition[] = Object.freeze(PARAMETER_SPECS.map(
+readonly CanonicalEstimateParameterDefinition[] = Object.freeze([...PARAMETER_SPECS.map(
   ([parameterId, titleRu, valueType, unitId, minimum, maximum], ordinal) => ({
     parameter_id: parameterId,
     ordinal,
@@ -196,8 +201,14 @@ readonly CanonicalEstimateParameterDefinition[] = Object.freeze(PARAMETER_SPECS.
       runtime_profile_classification: ASPHALT_INSTALL_KRER27_RUNTIME_CLASSIFICATION[parameterId] ?? null,
       synthetic: false,
     },
-  })),
-);
+  })), {
+    parameter_id: ASPHALT_EFFECTIVE_MIX_ORDER_PARAMETER_ID, ordinal: PARAMETER_SPECS.length,
+    value_type: "decimal", unit_id: "t", title_ru: "Принятый заказ горячей смеси для доставки",
+    required: false, default_value: null, constraints_json: { min: 0 },
+    truth_metadata: { visibility_role: "INTERNAL_ONLY", value_source_role: "BACKEND_DERIVED",
+      preliminary_compilation_allowed: true, hidden_default_forbidden: true,
+      effective_resource_quantity_v1: { sourceRowId: ASPHALT_MIX_ORDER_ROW_ID, unitId: "t" } },
+  }]);
 
 function formula(formulaId: string, outputUnitId: string, expression: string) {
   const compiled = compileFormulaGraph(expression);
@@ -214,6 +225,9 @@ function formula(formulaId: string, outputUnitId: string, expression: string) {
 const SCALE = "area_m2/1000";
 const STEPS = "((layer_thickness_mm-krer_base_thickness_mm)/krer_increment_thickness_mm)";
 const MIX = `${SCALE}*(asphalt_mix_base_t_per_1000m2+${STEPS}*asphalt_mix_increment_t_per_1000m2)`;
+const mixOrderBalance = effectivePurchaseBalanceExpressionsR1({ ownerRowId: ASPHALT_MIX_ORDER_ROW_ID,
+  orderUnitId: "t", consumed: MIX, stock: "0", reserve: "0", quantityMode: "canonical_decimal",
+  balanceScope: "new_order_vs_required_consumption" });
 
 export const ASPHALT_INSTALL_KRER27_FORMULAS:
 readonly CanonicalEstimateFormulaDefinition[] = Object.freeze([
@@ -230,9 +244,9 @@ readonly CanonicalEstimateFormulaDefinition[] = Object.freeze([
   formula("asphalt_install_technical_kerosene_v1", "t", `${SCALE}*technical_kerosene_t_per_1000m2`),
   formula("asphalt_install_hardwood_bars_v1", "m3", `${SCALE}*hardwood_bars_m3_per_1000m2`),
   formula("asphalt_install_mix_v1", "t", MIX),
-  formula("asphalt_install_truck_trips_v1", "trip", `ceil(${MIX}/truck_capacity_t)`),
-  formula("asphalt_install_ton_km_v1", "t_km", `${MIX}*haul_distance_km`),
-  formula("asphalt_install_truck_machine_h_v1", "machine_hour", `ceil(${MIX}/truck_capacity_t)*(2*haul_distance_km/truck_average_speed_km_h+truck_turnaround_h)`),
+  formula("asphalt_install_truck_trips_v1", "trip", `ceil(${mixOrderBalance.effective}/truck_capacity_t)`),
+  formula("asphalt_install_ton_km_v1", "t_km", `${mixOrderBalance.effective}*haul_distance_km`),
+  formula("asphalt_install_truck_machine_h_v1", "machine_hour", `ceil(${mixOrderBalance.effective}/truck_capacity_t)*(2*haul_distance_km/truck_average_speed_km_h+truck_turnaround_h)`),
   formula("asphalt_install_acceptance_lots_v1", "pcs", "ceil(area_m2/acceptance_lot_m2)"),
   formula("asphalt_install_work_journal_v1", "document", "work_journal_count"),
   formula("asphalt_install_execution_docs_v1", "document", "execution_documentation_count"),
@@ -283,6 +297,9 @@ function resource(input: Readonly<{
   procurementEligible?: boolean;
   sourceId?: string;
   parentRowId?: string;
+  effectiveQuantityOutput?: { parameterId: string; unitId: string };
+  purchaseBalance?: CanonicalPurchaseBalanceV1;
+  manualTransportQuantityPolicy?: { unitId: string; minimum: "calculated_quantity"; integer: boolean };
 }>): CanonicalEstimateResourceDefinition {
   const resourceGraph = {
     formulaId: input.formulaId,
@@ -296,6 +313,9 @@ function resource(input: Readonly<{
     preliminaryProfileId: ASPHALT_INSTALL_KRER27_NORM_ID,
     ...(input.parentRowId ? { parentCostOwnerId: input.parentRowId } : {}),
     visibleAssumptionPolicy: PROFILE.assumptionPolicy,
+    ...(input.effectiveQuantityOutput ? { effectiveQuantityOutputV1: input.effectiveQuantityOutput } : {}),
+    ...(input.purchaseBalance ? { purchaseBalanceV1: input.purchaseBalance } : {}),
+    ...(input.manualTransportQuantityPolicy ? { manualTransportQuantityPolicyV1: input.manualTransportQuantityPolicy } : {}),
   };
   const rawSourceId = input.sourceId
     ?? SOURCE_ID_BY_ROW_ID.get(input.rowId)
@@ -329,6 +349,7 @@ function resource(input: Readonly<{
       source_definition_hash: ASPHALT_INSTALL_KRER27_SOURCE_PACK_SHA256,
     }],
     excludedAdjacentScope: [...sourcePack.explicitExclusions],
+    ...(input.purchaseBalance ? { purchaseBalanceScopeRu: "Заказ относительно нормативного расхода; превышение заказа не подтверждает пригодный складской остаток горячей смеси. Склад и сохраняемый резерв не вычитаются и не объявляются нулевыми проектными фактами." } : {}),
   };
   return {
     id: `resource-${input.rowId.replace(/:/gu, "-")}`,
@@ -358,7 +379,7 @@ const rows: Omit<Parameters<typeof resource>[0], "ordinal">[] = [
   { rowId: "asphalt:operation:edge-joint-finishing", section: "Технологические операции", category: "service", titleRu: "Отделка кромок, сопряжений и поверхности", unitId: "m2", formulaId: "asphalt_install_area_v1", costTreatment: "INFORMATIONAL_SCOPE" },
   { rowId: "asphalt:operation:final-clean-handover", section: "Технологические операции", category: "service", titleRu: "Финальная очистка и передача покрытия на контроль", unitId: "m2", formulaId: "asphalt_install_area_v1", costTreatment: "INFORMATIONAL_SCOPE" },
 
-  { rowId: "asphalt:material:hot-dense-fine-mix", section: "Материалы", category: "material", titleRu: "Горячая асфальтобетонная смесь, тип и марка по проекту", unitId: "t", formulaId: "asphalt_install_mix_v1", costTreatment: "OWN_COST", procurementEligible: true },
+  { rowId: ASPHALT_MIX_ORDER_ROW_ID, section: "Материалы", category: "material", titleRu: "Горячая асфальтобетонная смесь, тип и марка по проекту", unitId: "t", formulaId: "asphalt_install_mix_v1", costTreatment: "OWN_COST", procurementEligible: true, ...mixOrderBalance.owner },
   { rowId: "asphalt:material:road-bitumen", section: "Материалы", category: "material", titleRu: "Битум нефтяной дорожный жидкий", unitId: "t", formulaId: "asphalt_install_road_bitumen_v1", costTreatment: "OWN_COST", procurementEligible: true },
   { rowId: "asphalt:material:technical-kerosene", section: "Материалы", category: "material", titleRu: "Керосин технический для технологических целей", unitId: "t", formulaId: "asphalt_install_technical_kerosene_v1", costTreatment: "OWN_COST", procurementEligible: true },
   { rowId: "asphalt:material:hardwood-side-stop-bars", section: "Материалы", category: "material", titleRu: "Брусья обрезные из твёрдых пород для боковых упоров", unitId: "m3", formulaId: "asphalt_install_hardwood_bars_v1", costTreatment: "OWN_COST", procurementEligible: true },
@@ -392,9 +413,9 @@ rows.push(
   { rowId: "asphalt:included:roller-water-scrapers", section: "Состав машино-часа", category: "service", titleRu: "Система смачивания вальцов и скребки катка", unitId: "machine_hour", formulaId: "asphalt_install_roller_v1", costTreatment: "INCLUDED_IN_RESOURCE_ROWS", parentRowId: "asphalt:equipment:smooth-roller-8t" },
   { rowId: "asphalt:included:paver-screed-grade-control", section: "Состав машино-часа", category: "service", titleRu: "Подогрев выглаживающей плиты и система контроля профиля асфальтоукладчика", unitId: "machine_hour", formulaId: "asphalt_install_paver_v1", costTreatment: "INCLUDED_IN_RESOURCE_ROWS", parentRowId: "asphalt:equipment:asphalt-paver" },
 
-  { rowId: "asphalt:delivery:truck-trips", section: "Доставка смеси", category: "service", titleRu: "Рейсы самосвалов с горячей асфальтобетонной смесью", unitId: "trip", formulaId: "asphalt_install_truck_trips_v1", costTreatment: "INFORMATIONAL_SCOPE" },
-  { rowId: "asphalt:delivery:ton-km", section: "Доставка смеси", category: "service", titleRu: "Транспортная работа по доставке горячей смеси", unitId: "t_km", formulaId: "asphalt_install_ton_km_v1", costTreatment: "INFORMATIONAL_SCOPE" },
-  { rowId: "asphalt:delivery:truck-machine-hours", section: "Доставка смеси", category: "equipment", titleRu: "Автосамосвалы: движение, погрузка, ожидание и разгрузка", unitId: "machine_hour", formulaId: "asphalt_install_truck_machine_h_v1", costTreatment: "OWN_COST" },
+  { rowId: "asphalt:delivery:truck-trips", section: "Доставка смеси", category: "service", titleRu: "Рейсы самосвалов с горячей асфальтобетонной смесью", unitId: "trip", formulaId: "asphalt_install_truck_trips_v1", costTreatment: "INFORMATIONAL_SCOPE", manualTransportQuantityPolicy: { unitId: "trip", minimum: "calculated_quantity", integer: true } },
+  { rowId: "asphalt:delivery:ton-km", section: "Доставка смеси", category: "service", titleRu: "Транспортная работа по доставке горячей смеси", unitId: "t_km", formulaId: "asphalt_install_ton_km_v1", costTreatment: "INFORMATIONAL_SCOPE", manualTransportQuantityPolicy: { unitId: "t_km", minimum: "calculated_quantity", integer: false } },
+  { rowId: "asphalt:delivery:truck-machine-hours", section: "Доставка смеси", category: "equipment", titleRu: "Автосамосвалы: движение, погрузка, ожидание и разгрузка", unitId: "machine_hour", formulaId: "asphalt_install_truck_machine_h_v1", costTreatment: "OWN_COST", manualTransportQuantityPolicy: { unitId: "machine_hour", minimum: "calculated_quantity", integer: false } },
 
   { rowId: "asphalt:mobilization:paver", section: "Мобилизация техники", category: "service", titleRu: "Доставка на объект и возврат асфальтоукладчика", unitId: "service", formulaId: "asphalt_install_mobilization_v1", costTreatment: "OWN_COST" },
   { rowId: "asphalt:mobilization:roller", section: "Мобилизация техники", category: "service", titleRu: "Доставка на объект и возврат катка 8 т", unitId: "service", formulaId: "asphalt_install_mobilization_v1", costTreatment: "OWN_COST" },

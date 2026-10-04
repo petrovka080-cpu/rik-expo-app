@@ -17,6 +17,7 @@ import {
   ASPHALT_INSTALL_KRER27_RUNTIME_CLASSIFICATION,
   ASPHALT_INSTALL_KRER27_RUNTIME_INPUT,
   ASPHALT_INSTALL_KRER27_SOURCE_ID,
+  ASPHALT_EFFECTIVE_MIX_ORDER_PARAMETER_ID,
 } from "./asphaltInstallLargeAreaKrer27ProfileR1";
 import {
   STRIP_POUR_INDEPENDENT_COMPLETENESS_MAP,
@@ -250,8 +251,16 @@ function visibleParameter(input: Readonly<{
 }
 
 const asphaltSharedParameters = ASPHALT_INSTALL_KRER27_PARAMETERS
-  .filter((parameter) => !["area_m2", "layer_thickness_mm"].includes(parameter.parameter_id))
+  .filter((parameter) => !["area_m2", "layer_thickness_mm", ASPHALT_EFFECTIVE_MIX_ORDER_PARAMETER_ID].includes(parameter.parameter_id))
   .map((parameter) => ({ ...parameter, ordinal: 0 }));
+const courseEffectiveMixOrderId = (course: CourseKey) => `bridge_${course}_${ASPHALT_EFFECTIVE_MIX_ORDER_PARAMETER_ID}`;
+const asphaltCourseOutputs = (["binder", "wearing"] as const).map(course => {
+  const parameter = ASPHALT_INSTALL_KRER27_PARAMETERS.find(value => value.parameter_id === ASPHALT_EFFECTIVE_MIX_ORDER_PARAMETER_ID)!;
+  return { ...parameter, parameter_id: courseEffectiveMixOrderId(course), ordinal: 0,
+    title_ru: `${course === "binder" ? "Нижний" : "Верхний"} слой: принятый заказ смеси для доставки`,
+    truth_metadata: { ...parameter.truth_metadata, effective_resource_quantity_v1: {
+      sourceRowId: `bridge:${course}:asphalt:material:hot-dense-fine-mix`, unitId: "t" } } };
+});
 
 const screedReplacements = Object.fromEntries(STRIP_POUR_PROFILE_PARAMETERS
   .filter((parameter) => !EXCLUDED_SCREEED_PARAMETER_IDS.has(parameter.parameter_id))
@@ -368,6 +377,7 @@ const primaryParameters: CanonicalEstimateParameterDefinition[] = [
 export const BRIDGE_ASPHALT_COMPLETE_PARAMETERS: readonly CanonicalEstimateParameterDefinition[] = Object.freeze([
   ...primaryParameters,
   ...asphaltSharedParameters,
+  ...asphaltCourseOutputs,
   ...screedParameters,
   ...localParameters,
 ].map((parameter, ordinal) => ({ ...parameter, ordinal })));
@@ -388,7 +398,8 @@ function asphaltFormula(course: CourseKey, source: CanonicalEstimateFormulaDefin
   return formula(
     `bridge_${course}_${source.formula_id}`,
     presentation.output_unit_id,
-    replaceWords(presentation.expression_source, { layer_thickness_mm: thickness }),
+    replaceWords(presentation.expression_source, { layer_thickness_mm: thickness,
+      [ASPHALT_EFFECTIVE_MIX_ORDER_PARAMETER_ID]: courseEffectiveMixOrderId(course) }),
   );
 }
 
@@ -483,6 +494,7 @@ function prefixedAsphaltResource(
     : "wearing_asphalt_mix_designation";
   const isHotMix = source.row_id === "asphalt:material:hot-dense-fine-mix";
   const isIncidentalKrerBitumen = source.row_id === "asphalt:material:road-bitumen";
+  const sourceBalance = source.resource_graph?.purchaseBalanceV1 as Json | undefined;
   const resourceGraph = {
     ...(source.resource_graph as Json),
     formulaId: `bridge_${course}_${source.formula_id}`,
@@ -509,6 +521,11 @@ function prefixedAsphaltResource(
       fullAreaTackCoatOwnerId: "bridge:asphalt:continuous-tack-emulsion",
     } : {}),
     completeBridgePavementSystem: true,
+    ...(isHotMix && source.resource_graph?.effectiveQuantityOutputV1 ? {
+      effectiveQuantityOutputV1: { parameterId: courseEffectiveMixOrderId(course), unitId: "t" },
+      purchaseBalanceV1: { ...sourceBalance, consumedExpression: replaceWords(String(sourceBalance?.consumedExpression), {
+        layer_thickness_mm: `${course}_layer_thickness_mm` }) },
+    } : {}),
   };
   const next = {
     ...source,

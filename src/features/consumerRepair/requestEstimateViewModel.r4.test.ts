@@ -1,5 +1,6 @@
 import {
   buildRequestEstimateViewModel,
+  buildRequestEstimateProfessionalRowEvidence,
   requestEstimatePublicItemTitle,
   sanitizeRequestEstimatePublicText,
 } from "./requestEstimateViewModel";
@@ -75,6 +76,26 @@ function serverBoundBundle(items: ConsumerRepairRequestItem[]): ConsumerRepairDr
 }
 
 describe("R4 canonical estimate title parity", () => {
+  it("shows exact reopened bulk surplus or shortage without claiming reusable stock", () => {
+    const item = canonicalItem("material:order", "Смесь", "a".repeat(64), 0);
+    item.unit = "t";
+    item.unitLabel = "т";
+    for (const [excess, shortage] of [["46.125", "0"], ["9007199254740992.125", "0"], ["0", "4"]]) {
+      item.sourceParameters = { ...item.sourceParameters, smartEstimateProjectionV2: {}, canonicalPurchaseBalance: {
+        unitId: "t", quantityMode: "canonical_decimal", balanceScope: "new_order_vs_required_consumption",
+        excessOrderAboveRequiredConsumption: excess, consumptionShortage: shortage } };
+      const reopened = JSON.parse(JSON.stringify(item)) as ConsumerRepairRequestItem;
+      const label = buildRequestEstimateProfessionalRowEvidence(reopened)!.formulaLabel;
+      if (shortage !== "0") expect(label).toContain("не хватает 4 т");
+      else {
+        expect(label).toContain(`Заказ сверх расчётной потребности: ${excess} т`);
+        expect(label).toContain("Пригодность излишка для дальнейшего использования не подтверждена");
+      }
+    }
+    item.sourceParameters = { ...item.sourceParameters, canonicalPurchaseBalance: {
+      unitId: "t", quantityMode: "supply_quantum", remaining: "46.125", consumptionShortage: "0" } };
+    expect(buildRequestEstimateProfessionalRowEvidence(item)!.formulaLabel).not.toContain("Заказ сверх");
+  });
   it("shows persisted purchase shortage instead of a generic calculated label after reopening", () => {
     const item = canonicalItem("material:order", "Материал", "a".repeat(64), 0);
     item.sourceParameters = { ...item.sourceParameters, canonicalPurchaseBalance: { unitId: "kg",

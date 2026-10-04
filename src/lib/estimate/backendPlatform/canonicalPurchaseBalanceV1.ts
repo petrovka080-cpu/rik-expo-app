@@ -1,14 +1,18 @@
-import { compileFormulaGraph, evaluateFormulaGraph, compareFormulaGraphDecimals, isFormulaGraphDecimalMultiple,
+import { compileFormulaGraph, evaluateFormulaGraph, compareFormulaGraphDecimals, isFormulaGraphDecimalMultiple, isFormulaGraphExactDecimal,
   type FormulaParameterValue, type CompiledFormulaGraph } from "./formulaGraph";
 const purchaseBalanceGraphs = new WeakMap<object, { sources: string[]; graphs: CompiledFormulaGraph[] }>();
 
-export type CanonicalPurchaseBalanceV1 = Readonly<{
+type PurchaseBalanceSources = Readonly<{
   unitId: string;
   consumedExpression: string;
   stockExpression: string;
   reserveExpression: string;
-  orderQuantumExpression: string;
 }>;
+export type CanonicalPurchaseBalanceV1 = PurchaseBalanceSources & (
+  | Readonly<{ quantityMode?: "supply_quantum"; orderQuantumExpression: string }>
+  | Readonly<{ quantityMode: "canonical_decimal"; balanceScope: "new_order_vs_required_consumption";
+    stockExpression: "0"; reserveExpression: "0"; orderQuantumExpression?: never }>
+);
 
 export function resolveCanonicalPurchaseBalanceV1(
   raw: unknown,
@@ -24,8 +28,12 @@ export function resolveCanonicalPurchaseBalanceV1(
   };
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) fail("DEFINITION_INTEGRITY_FAILED", "purchase balance invalid");
   const policy = raw as Record<string, unknown>;
-  const fields = ["consumedExpression", "stockExpression", "reserveExpression", "orderQuantumExpression"];
-  if (policy.unitId !== unitId || Object.keys(policy).some(key => !["unitId", ...fields].includes(key))) {
+  const quantityMode = policy.quantityMode === undefined ? "supply_quantum" : policy.quantityMode;
+  if (quantityMode !== "supply_quantum" && quantityMode !== "canonical_decimal") fail("DEFINITION_INTEGRITY_FAILED", "purchase quantity mode invalid");
+  const decimal = quantityMode === "canonical_decimal";
+  const fields = ["consumedExpression", "stockExpression", "reserveExpression", ...(decimal ? [] : ["orderQuantumExpression"])];
+  if (policy.unitId !== unitId || Object.keys(policy).some(key => !["unitId", "quantityMode", ...(decimal ? ["balanceScope"] : []), ...fields].includes(key))
+    || (decimal && (policy.balanceScope !== "new_order_vs_required_consumption" || policy.stockExpression !== "0" || policy.reserveExpression !== "0"))) {
     fail("DEFINITION_INTEGRITY_FAILED", "purchase balance unit/keys invalid");
   }
   const sources = fields.map(field => {
@@ -33,19 +41,23 @@ export function resolveCanonicalPurchaseBalanceV1(
     return policy[field] as string;
   });
   let cached = purchaseBalanceGraphs.get(policy);
-  if (!cached || sources.some((source, index) => cached!.sources[index] !== source)) {
+  if (!cached || cached.sources.length !== sources.length || sources.some((source, index) => cached!.sources[index] !== source)) {
     cached = { sources, graphs: sources.map(source => compileFormulaGraph(source)) };
     purchaseBalanceGraphs.set(policy, cached);
   }
   const values = cached.graphs.map(compiled => {
     if (compiled.inputParameterIds.some(id => !declaredParameters.has(id))) fail("DEFINITION_INTEGRITY_FAILED", "purchase balance parameter undeclared");
     const value = evaluateFormulaGraph(compiled.ast, parameters);
-    if (Number(value) < 0) fail("DEFINITION_INTEGRITY_FAILED", "purchase balance source negative");
+    if (compareFormulaGraphDecimals(value, "0") < 0) fail("DEFINITION_INTEGRITY_FAILED", "purchase balance source negative");
     return value;
   });
-  const [consumed, stock, reserve, quantum] = values as [string, string, string, string];
-  if (Number(quantum) <= 0) fail("DEFINITION_INTEGRITY_FAILED", "purchase quantum must be positive");
-  if (!isFormulaGraphDecimalMultiple(quantity, quantum)) {
+  const [consumed, stock, reserve] = values;
+  const quantum = decimal ? null : values[3];
+  if (decimal && (!isFormulaGraphExactDecimal(quantity) || compareFormulaGraphDecimals(quantity, "0") < 0)) {
+    fail("ROW_AMENDMENT_INVALID", "purchase quantity is outside the exact canonical decimal domain");
+  }
+  if (quantum != null && compareFormulaGraphDecimals(quantum, "0") <= 0) fail("DEFINITION_INTEGRITY_FAILED", "purchase quantum must be positive");
+  if (quantum != null && !isFormulaGraphDecimalMultiple(quantity, quantum)) {
     fail("ROW_AMENDMENT_INVALID", "purchase quantity violates declared whole supply quantum");
   }
   const evaluate = (expression: string) => evaluateFormulaGraph(compileFormulaGraph(expression).ast, {});
@@ -54,7 +66,8 @@ export function resolveCanonicalPurchaseBalanceV1(
   const consumptionShortage = evaluate(`max(0,-(${available}))`);
   const reserveDeficit = evaluate(`max(0,${reserve}-(${remaining}))`);
   const freeBeyondReserve = evaluate(`max(0,${remaining}-${reserve})`);
-  return { ownerRowId: rowId, unitId, consumed, stock, reserve, quantum, effectiveOrder: quantity,
+  return { ownerRowId: rowId, unitId, consumed, stock, reserve, quantum, quantityMode,
+    ...(decimal ? { balanceScope: policy.balanceScope, excessOrderAboveRequiredConsumption: remaining } : {}), effectiveOrder: quantity,
     remaining, freeBeyondReserve, consumptionShortage, reserveDeficit,
     procurementReady: consumptionShortage === "0" && reserveDeficit === "0" };
 }
@@ -73,7 +86,7 @@ export function validateCanonicalManualTransportQuantityV1(
     || Object.keys(raw).some(key => !["unitId", "minimum", "integer"].includes(key))) {
     throw Object.assign(new Error(`manual transport policy invalid ${rowId}`), { code: "DEFINITION_INTEGRITY_FAILED" });
   }
-  if (manualQuantity != null && (compareFormulaGraphDecimals(manualQuantity, formulaQuantity) < 0
+  if (manualQuantity != null && (!isFormulaGraphExactDecimal(manualQuantity) || compareFormulaGraphDecimals(manualQuantity, formulaQuantity) < 0
     || ((raw as Record<string, unknown>).integer === true && !isFormulaGraphDecimalMultiple(manualQuantity, "1")))) {
     throw Object.assign(new Error(`manual transport below physical minimum ${rowId}`), { code: "ROW_AMENDMENT_INVALID" });
   }

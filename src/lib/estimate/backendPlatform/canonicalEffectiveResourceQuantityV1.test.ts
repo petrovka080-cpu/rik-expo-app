@@ -5,7 +5,7 @@ import { estimateDeterministicHash } from "../estimateDeterministicHash";
 import { canonicalEstimateRevisionRowFromStorage } from "./canonicalEstimateRevisionReadMapper";
 import { buildCanonicalProcurementProjection, selectCanonicalArtifactRows } from "./canonicalEstimateArtifactContract";
 import { assertCanonicalPurchaseReadinessV1, canonicalPurchaseShortageMessageV1,
-  validateCanonicalManualTransportQuantityV1 } from "./canonicalPurchaseBalanceV1";
+  validateCanonicalManualTransportQuantityV1, resolveCanonicalPurchaseBalanceV1 } from "./canonicalPurchaseBalanceV1";
 
 const provenance = { kind: "manual", reason: "synthetic MASTER arithmetic control; not a construction norm" };
 const balance = effectivePurchaseBalanceExpressionsR1({ ownerRowId: "material:order", orderUnitId: "kg", consumed: "consumed",
@@ -47,6 +47,24 @@ function testInput(): CanonicalEstimateCompileCoreInput {
 const row = (result: Awaited<ReturnType<typeof compileCanonicalEstimateCore>>, rowId: string) => result.rows.find(value => value.row_id === rowId)!;
 
 describe("authoritative effective resource quantities", () => {
+  it("accepts exact bulk decimals without fabricating a supplier quantum or available stock", () => {
+    const policy = { unitId: "t", consumedExpression: "604", stockExpression: "0", reserveExpression: "0",
+      quantityMode: "canonical_decimal", balanceScope: "new_order_vs_required_consumption" };
+    const resolve = (quantity: string, raw: unknown = policy) => resolveCanonicalPurchaseBalanceV1(raw, "bulk", "t", quantity, {}, new Set());
+    expect(resolve("650.125")).toMatchObject({ quantum: null, quantityMode: "canonical_decimal",
+      effectiveOrder: "650.125", excessOrderAboveRequiredConsumption: "46.125", consumptionShortage: "0", procurementReady: true });
+    expect(resolve("600")).toMatchObject({ consumptionShortage: "4", remaining: "0", procurementReady: false });
+    for (const quantity of ["-1", "Infinity", "650.1250000001", "650.1250000000"]) expect(() => resolve(quantity)).toThrow("exact canonical decimal domain");
+    for (const raw of [{ ...policy, quantityMode: "unknown" }, { ...policy, quantityMode: null },
+      { ...policy, orderQuantumExpression: "1" }, { ...policy, stockExpression: "5" }, { ...policy, unitId: "kg" },
+      { ...policy, balanceScope: "usable_hot_mix_inventory" }]) expect(() => resolve("650.125", raw)).toThrow(/purchase (?:quantity mode|balance unit\/keys) invalid/u);
+    const declared = effectivePurchaseBalanceExpressionsR1({ ownerRowId: "bulk", orderUnitId: "t", consumed: "604",
+      stock: "0", reserve: "0", quantityMode: "canonical_decimal", balanceScope: "new_order_vs_required_consumption" });
+    expect(declared.packages).toBeNull();
+    expect(declared.owner.purchaseBalance).not.toHaveProperty("orderQuantumExpression");
+    expect(() => resolve("100.5", { unitId: "t", consumedExpression: "100", stockExpression: "0", reserveExpression: "0", orderQuantumExpression: "20" }))
+      .toThrow("whole supply quantum");
+  });
   it("enforces physical haul minimum and whole trips beyond binary integer precision", () => {
     const policy = { unitId: "trip", minimum: "calculated_quantity", integer: true };
     expect(() => validateCanonicalManualTransportQuantityV1(policy, "haul", "trip", "9007199254740992", "9007199254740993"))

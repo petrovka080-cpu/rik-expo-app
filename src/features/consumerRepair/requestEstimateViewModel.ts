@@ -1,5 +1,6 @@
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
 import { canonicalPurchaseShortageMessageV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
+import { compareFormulaGraphDecimals, isFormulaGraphExactDecimal } from "../../lib/estimate/backendPlatform/formulaGraph";
 import type {
   ConsumerRepairDraftBundle,
   ConsumerRepairRequestItem,
@@ -247,6 +248,17 @@ export function buildRequestEstimateProfessionalRowEvidence(
   const manualQuantitySuffix = item.sourceParameters?.manualQuantityOverride === true
     ? ` Ручное значение: ${quantity}.`
     : "";
+  const balance = asRecord(item.sourceParameters?.canonicalPurchaseBalance);
+  const bulkOrderScope = balance?.quantityMode === "canonical_decimal"
+    && balance.balanceScope === "new_order_vs_required_consumption";
+  const balanceUnit = formatEstimateUnitLabel(String(balance?.unitId ?? item.unit));
+  const exactPositive = (value: unknown): value is string => typeof value === "string"
+    && isFormulaGraphExactDecimal(value) && compareFormulaGraphDecimals(value, "0") > 0;
+  const bulkBalanceSuffix = bulkOrderScope && exactPositive(balance?.consumptionShortage)
+    ? ` Заказ не покрывает расчётную потребность: не хватает ${balance.consumptionShortage} ${balanceUnit}.`
+    : bulkOrderScope && exactPositive(balance?.excessOrderAboveRequiredConsumption)
+      ? ` Заказ сверх расчётной потребности: ${balance.excessOrderAboveRequiredConsumption} ${balanceUnit}. Пригодность излишка для дальнейшего использования не подтверждена.`
+      : "";
   const dependencies = Array.isArray(projection.parameterDependencies)
     ? projection.parameterDependencies.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     : [];
@@ -272,7 +284,7 @@ export function buildRequestEstimateProfessionalRowEvidence(
       : `${"\u0426\u0435\u043d\u0430 \u0437\u0430 \u0435\u0434\u0438\u043d\u0438\u0446\u0443"}: ${formatEstimateMoney(item.unitPrice, item.currency)}${sourceLabel ? `. ${"\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a"}: ${sourceLabel}` : ""}.`;
 
   return {
-    formulaLabel: `${"\u0420\u0430\u0441\u0447\u0451\u0442 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0430"}: ${formula}. ${"\u0420\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442 \u0444\u043e\u0440\u043c\u0443\u043b\u044b"}: ${formulaResult}.${manualQuantitySuffix}`,
+    formulaLabel: `${"\u0420\u0430\u0441\u0447\u0451\u0442 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0430"}: ${formula}. ${"\u0420\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442 \u0444\u043e\u0440\u043c\u0443\u043b\u044b"}: ${formulaResult}.${manualQuantitySuffix}${bulkBalanceSuffix}`,
     parameterLabel,
     normativeLabel: `${"\u041d\u043e\u0440\u043c\u0430"}: ${normSource}${locator ? `; ${"\u0442\u043e\u0447\u043d\u0430\u044f \u043f\u0440\u0438\u0432\u044f\u0437\u043a\u0430"}: ${locator}` : ""}.`,
     priceLabel,
