@@ -255,9 +255,10 @@ export function buildRequestEstimateProfessionalRowEvidence(
   const balanceUnit = formatEstimateUnitLabel(String(balance?.unitId ?? item.unit));
   const exactPositive = (value: unknown): value is string => typeof value === "string"
     && isFormulaGraphExactDecimal(value) && compareFormulaGraphDecimals(value, "0") > 0;
-  const selectedOrderBasis = bulkOrderScope && balance?.requirementBasis === "selected_order_including_contingency";
+  const supplyOrderBasis = discreteOrderScope && balance?.requirementBasis === "selected_supply_order";
+  const selectedOrderBasis = bulkOrderScope && (balance?.requirementBasis === "selected_order_including_contingency" || supplyOrderBasis);
   const orderBasisSuffix = selectedOrderBasis
-    ? ` ${discreteOrderScope ? "Расчётное количество единиц поставки без планового запаса" : "Проектный объём укладки"}: ${balance.plannedConsumption} ${balanceUnit}. ${discreteOrderScope ? "Расчётный заказ" : "Расчётный заказ с выбранным резервом"}: ${balance.requiredSelectedOrder} ${balanceUnit}. Принятый заказ: ${balance.effectiveOrder} ${balanceUnit}.`
+    ? ` ${supplyOrderBasis ? "Плановая потребность в единицах поставки без сохраняемого резерва" : discreteOrderScope ? "Расчётное количество единиц поставки без планового запаса" : "Проектный объём укладки"}: ${balance.plannedConsumption} ${balanceUnit}. ${discreteOrderScope ? "Расчётный заказ" : "Расчётный заказ с выбранным резервом"}: ${balance.requiredSelectedOrder} ${balanceUnit}. Принятый заказ: ${balance.effectiveOrder} ${balanceUnit}.`
     : "";
   const bulkBalanceSuffix = bulkOrderScope && exactPositive(balance?.consumptionShortage)
     ? selectedOrderBasis

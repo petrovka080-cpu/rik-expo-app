@@ -193,8 +193,22 @@ const PROJECT_IDS = new Set([
   "elbow_count", "tee_count", "threaded_adapter_count", "stop_end_count",
 ]);
 
+export const WAVIN_SELECTED_SUPPLIES = [
+  { rowId: "02:material:pipe-bundles", effective: "wavin_effective_pipe_bundles",
+    base: "ceil(ceil((route_length_m+route_length_m*pipe_expected_waste_percent/100)/pipe_section_length_m)/pipe_bundle_item)" },
+  { rowId: "02:consumable:cutter-blades" },
+  { rowId: "03:fastener:support-packages", effective: "wavin_effective_support_packages" },
+  { rowId: "03:fastener:anchor-packages" }, { rowId: "03:fastener:screw-packages" },
+  { rowId: "03:consumable:drill-bits" }, { rowId: "04:component:smartsleeves" },
+  { rowId: "04:consumable:wipe-packages" }, { rowId: "05:component:straight-connectors" },
+  { rowId: "05:component:elbows" }, { rowId: "05:component:tees" },
+  { rowId: "05:component:threaded-adapters" }, { rowId: "05:component:stop-ends" },
+  { rowId: "05:consumable:ptfe" }, { rowId: "08:consumable:waste-bags" },
+] as const;
+export const WAVIN_FLUID_SUPPLIES = ["07:material:test-water", "07:material:fill-water", "07:material:inhibitor"] as const;
+
 export const HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_PARAMETERS:
-readonly CanonicalEstimateParameterDefinition[] = Object.freeze(PARAMETERS.map(
+readonly CanonicalEstimateParameterDefinition[] = Object.freeze([...PARAMETERS.map(
   (descriptor, ordinal) => ({
     parameter_id: descriptor.id,
     ordinal,
@@ -243,7 +257,13 @@ readonly CanonicalEstimateParameterDefinition[] = Object.freeze(PARAMETERS.map(
         guide_validation_policy: "FIRST_ESTIMATE_NOW_THEN_REPLACE_VISIBLE_ASSUMPTIONS_AND_ROUTE_COUNTS",
       },
     },
-  })),
+  })), ...WAVIN_SELECTED_SUPPLIES.filter(supply => "effective" in supply).map((supply, index) => ({
+    parameter_id: "effective" in supply ? supply.effective : "", ordinal: PARAMETERS.length + index,
+    value_type: "decimal", unit_id: "item", title_ru: "Действительное количество выбранных единиц поставки",
+    required: false, default_value: null, constraints_json: { min: 0 },
+    truth_metadata: { visibility_role: "INTERNAL_ONLY", value_source_role: "BACKEND_DERIVED",
+      effective_resource_quantity_v1: { sourceRowId: `hvac-hep2o22:${supply.rowId}`, unitId: "item" } },
+  })), ],
 );
 
 function formula(id: string, unit: string, expression: string): CanonicalEstimateFormulaDefinition {
@@ -264,7 +284,7 @@ const RESERVE = "route_length_m*pipe_reserve_percent/100";
 const GROSS = `route_length_m+(${EXPECTED_WASTE})+(${RESERVE})`;
 const SECTIONS = `ceil((${GROSS})/pipe_section_length_m)`;
 const BUNDLES = `ceil((${SECTIONS})/pipe_bundle_item)`;
-const ORDERED_SECTIONS = `(${BUNDLES})*pipe_bundle_item`;
+const ORDERED_SECTIONS = "wavin_effective_pipe_bundles*pipe_bundle_item";
 const ORDERED_LENGTH = `(${ORDERED_SECTIONS})*pipe_section_length_m`;
 const INTERNAL_DIAMETER = "pipe_outer_diameter_mm-2*pipe_wall_thickness_mm";
 const INTERNAL_L_PER_M = `((${INTERNAL_DIAMETER})*(${INTERNAL_DIAMETER})*3.141592653589793/4)/1000`;
@@ -281,8 +301,9 @@ readonly CanonicalEstimateFormulaDefinition[] = Object.freeze([
   F("pipe_bundles", "item", BUNDLES),
   F("ordered_sections", "item", ORDERED_SECTIONS),
   F("ordered_length", "m", ORDERED_LENGTH),
-  F("available_before_losses", "m", `${ORDERED_LENGTH}-route_length_m`),
-  F("pipe_remainder", "m", `${ORDERED_LENGTH}-route_length_m-(${EXPECTED_WASTE})`),
+  F("available_before_losses", "m", `max(0,${ORDERED_LENGTH}-route_length_m)`),
+  F("pipe_remainder", "m", `max(0,${ORDERED_LENGTH}-route_length_m-(${EXPECTED_WASTE}))`),
+  F("pipe_inside_diameter", "mm", INTERNAL_DIAMETER),
   F("system_volume", "m3", SYSTEM_VOLUME),
   F("cutting_shifts", "shift", "ceil(route_length_m/cutting_productivity_m_per_shift)"),
   F("cutter_blades", "item", `ceil((${SECTIONS})/cutter_blade_capacity_cut)`),
@@ -291,8 +312,8 @@ readonly CanonicalEstimateFormulaDefinition[] = Object.freeze([
   F("support_packages", "item", "ceil(support_count/support_package_item)"),
   F("anchor_packages", "item", "ceil(support_count/anchor_package_item)"),
   F("screw_packages", "item", "ceil(support_count/screw_package_item)"),
-  F("support_order", "item", "ceil(support_count/support_package_item)*support_package_item"),
-  F("support_remainder", "item", "ceil(support_count/support_package_item)*support_package_item-support_count"),
+  F("support_order", "item", "wavin_effective_support_packages*support_package_item"),
+  F("support_remainder", "item", "max(0,wavin_effective_support_packages*support_package_item-support_count)"),
   F("support_machine_hours", "machine_hour", "support_count/drill_productivity_point_per_machine_hour"),
   F("drill_bits", "item", "ceil(support_count/drill_bit_capacity_point)"),
   F("prepared_ends", "item", "prepared_pipe_end_count"),
@@ -333,6 +354,7 @@ type ResourceSpec = Readonly<{
   source: string;
   procurement?: boolean;
   informational?: boolean;
+  titleParameterIds?: readonly string[];
 }>;
 
 const id = (short: string) => `hvac_wavin_hep2o22_${short}_s2723`;
@@ -344,7 +366,7 @@ const R = (
   unit: string,
   shortFormula: string,
   source: string,
-  options: Pick<ResourceSpec, "procurement" | "informational"> = {},
+  options: Pick<ResourceSpec, "procurement" | "informational" | "titleParameterIds"> = {},
 ): ResourceSpec => ({ stage, rowId, kind, title, unit, formula: id(shortFormula), source, ...options });
 
 const RESOURCE_SPECS: readonly ResourceSpec[] = [
@@ -352,27 +374,28 @@ const RESOURCE_SPECS: readonly ResourceSpec[] = [
   R("01 · Трасса", "hvac-hep2o22:01:operation:route-layout", "operation", "Разметка оси, опор, фитингов и границ подключения", "m", "route", KG_KRER18),
   R("01 · Трасса", "hvac-hep2o22:01:control:system-applicability", "control", "Проверка Hep2O 22 мм по температуре, давлению, тепловому источнику и способу прокладки", "service", "single", WAVIN_GUIDE, { informational: true }),
 
+  R("02 · Труба и раскрой", "hvac-hep2o22:02:control:pipe-inside-diameter", "control", "Проверка положительного внутреннего диаметра: наружный диаметр минус две стенки", "mm", "pipe_inside_diameter", WAVIN_PIPE, { informational: true }),
   R("02 · Труба и раскрой", "hvac-hep2o22:02:material:pipe-net", "material", "Труба Wavin Hep2O Barrier HXX06/22W — чистая длина", "m", "route", WAVIN_PIPE, { informational: true }),
   R("02 · Труба и раскрой", "hvac-hep2o22:02:material:pipe-expected-waste", "material", "Ожидаемые безвозвратные потери трубы при раскрое", "m", "pipe_expected_waste", PRELIMINARY, { informational: true }),
-  R("02 · Труба и раскрой", "hvac-hep2o22:02:material:pipe-reserve", "material", "Резерв трубы на раскрой", "m", "pipe_reserve", PRELIMINARY, { informational: true }),
-  R("02 · Труба и раскрой", "hvac-hep2o22:02:control:required-sections", "control", "Требуемые шестиметровые отрезки с резервом", "item", "required_sections", WAVIN_PIPE, { informational: true }),
-  R("02 · Труба и раскрой", "hvac-hep2o22:02:material:pipe-bundles", "material", "Заводские пачки HXX06/22W по 20 отрезков", "item", "pipe_bundles", WAVIN_PIPE, { procurement: true }),
+  R("02 · Труба и раскрой", "hvac-hep2o22:02:material:pipe-reserve", "material", "Требуемый сохраняемый резерв трубы после монтажа", "m", "pipe_reserve", PRELIMINARY, { informational: true }),
+  R("02 · Труба и раскрой", "hvac-hep2o22:02:control:required-sections", "control", "Требуемые отрезки с потерями и сохраняемым резервом; выбранная длина, м", "item", "required_sections", WAVIN_PIPE, { informational: true, titleParameterIds: ["pipe_section_length_m"] }),
+  R("02 · Труба и раскрой", "hvac-hep2o22:02:material:pipe-bundles", "material", "Заводские пачки HXX06/22W; отрезков в пачке", "item", "pipe_bundles", WAVIN_PIPE, { procurement: true, titleParameterIds: ["pipe_bundle_item"] }),
   R("02 · Труба и раскрой", "hvac-hep2o22:02:control:ordered-sections", "control", "Количество отрезков в заказанных пачках", "item", "ordered_sections", WAVIN_PIPE, { informational: true }),
   R("02 · Труба и раскрой", "hvac-hep2o22:02:control:ordered-length", "control", "Заказанная длина трубы", "m", "ordered_length", WAVIN_PIPE, { informational: true }),
-  R("02 · Труба и раскрой", "hvac-hep2o22:02:control:available-before-losses", "control", "Доступный остаток заказа до фактического списания потерь", "m", "available_before_losses", WAVIN_PIPE, { informational: true }),
-  R("02 · Труба и раскрой", "hvac-hep2o22:02:control:pipe-remainder", "control", "Прогнозируемый пригодный остаток после ожидаемых потерь", "m", "pipe_remainder", WAVIN_PIPE, { informational: true }),
+  R("02 · Труба и раскрой", "hvac-hep2o22:02:control:available-before-losses", "control", "Прогноз превышения поставленной длины над монтажом до ожидаемых потерь; пригодность не подтверждена", "m", "available_before_losses", WAVIN_PIPE, { informational: true }),
+  R("02 · Труба и раскрой", "hvac-hep2o22:02:control:pipe-remainder", "control", "Прогноз остатка после монтажа и ожидаемых потерь, включая сохраняемый резерв; пригодность не подтверждена", "m", "pipe_remainder", WAVIN_PIPE, { informational: true }),
   R("02 · Труба и раскрой", "hvac-hep2o22:02:control:system-volume", "control", "Расчётный внутренний объём выбранной трубы", "m3", "system_volume", WAVIN_PIPE, { informational: true }),
   R("02 · Труба и раскрой", "hvac-hep2o22:02:operation:cutting", "operation", "Разметка, прямоугольный рез и удаление заусенцев", "item", "required_sections", WAVIN_GUIDE),
   R("02 · Труба и раскрой", "hvac-hep2o22:02:equipment:pipe-cutter", "equipment", "Труборез Wavin или совместимый", "shift", "cutting_shifts", WAVIN_GUIDE, { procurement: true }),
   R("02 · Труба и раскрой", "hvac-hep2o22:02:consumable:cutter-blades", "consumable", "Сменные лезвия трубореза", "item", "cutter_blades", PRELIMINARY, { procurement: true }),
 
   R("03 · Опоры", "hvac-hep2o22:03:fastener:supports", "fastener", "Винтовые клипсы Wavin HX85/22W по проверенной раскладке", "item", "supports", WAVIN_GUIDE, { informational: true }),
-  R("03 · Опоры", "hvac-hep2o22:03:fastener:support-packages", "fastener", "Упаковки клипс Wavin HX85/22W", "item", "support_packages", PRELIMINARY, { procurement: true }),
+  R("03 · Опоры", "hvac-hep2o22:03:fastener:support-packages", "fastener", "Упаковки клипс Wavin HX85/22W; клипс в упаковке", "item", "support_packages", PRELIMINARY, { procurement: true, titleParameterIds: ["support_package_item"] }),
   R("03 · Опоры", "hvac-hep2o22:03:fastener:anchor-packages", "fastener", "Упаковки анкеров по фактическому основанию", "item", "anchor_packages", PRELIMINARY, { procurement: true }),
   R("03 · Опоры", "hvac-hep2o22:03:fastener:screw-packages", "fastener", "Упаковки совместимых винтов для клипс", "item", "screw_packages", PRELIMINARY, { procurement: true }),
   R("03 · Опоры", "hvac-hep2o22:03:control:support-max-span", "control", "Максимальный шаг общей горизонтальной раскладки 22 мм", "m", "support_max_span", WAVIN_GUIDE, { informational: true }),
   R("03 · Опоры", "hvac-hep2o22:03:control:support-order", "control", "Заказанное количество клипс после округления упаковки", "item", "support_order", PRELIMINARY, { informational: true }),
-  R("03 · Опоры", "hvac-hep2o22:03:control:support-remainder", "control", "Расчётный остаток клипс", "item", "support_remainder", PRELIMINARY, { informational: true }),
+  R("03 · Опоры", "hvac-hep2o22:03:control:support-remainder", "control", "Прогноз превышения поставленных клипс над раскладкой; пригодность не подтверждена", "item", "support_remainder", PRELIMINARY, { informational: true }),
   R("03 · Опоры", "hvac-hep2o22:03:operation:drill-and-fix", "operation", "Сверление основания и монтаж опор", "item", "supports", KG_KRER18),
   R("03 · Опоры", "hvac-hep2o22:03:equipment:rotary-hammer", "equipment", "Перфоратор или дрель по фактическому основанию", "machine_hour", "support_machine_hours", PRELIMINARY, { procurement: true }),
   R("03 · Опоры", "hvac-hep2o22:03:consumable:drill-bits", "consumable", "Комплекты буров или свёрл", "item", "drill_bits", PRELIMINARY, { procurement: true }),
@@ -441,6 +464,9 @@ function resource(spec: ResourceSpec, ordinal: number): CanonicalEstimateResourc
   const informational = spec.informational === true;
   const procurementEligible = spec.procurement
     ?? (["material", "component", "fastener", "consumable"].includes(spec.kind) && !informational);
+  const supply = WAVIN_SELECTED_SUPPLIES.find(value => `hvac-hep2o22:${value.rowId}` === spec.rowId);
+  const fluidSupply = WAVIN_FLUID_SUPPLIES.some(value => `hvac-hep2o22:${value}` === spec.rowId);
+  const selectedOrder = HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_FORMULAS.find(value => value.formula_id === spec.formula);
   const resourceGraph = {
     formulaId: spec.formula,
     normalizedUom: spec.unit,
@@ -451,6 +477,19 @@ function resource(spec: ResourceSpec, ordinal: number): CanonicalEstimateResourc
     costTreatment: informational ? "INFORMATIONAL_SCOPE" : "OWN_COST",
     payable: !informational,
     noDoubleCount: true,
+    ...(spec.rowId === "hvac-hep2o22:02:control:pipe-inside-diameter" ? {
+      formulaOutputBoundsV1: { schemaVersion: "canonical_formula_output_bounds_v1", unitId: "mm", exclusiveMinimum: 0,
+        reasonRu: "Две стенки трубы должны быть меньше её наружного диаметра; ручной заказ не исправляет невозможное сечение." },
+    } : {}),
+    ...(spec.titleParameterIds ? { titleSpecificationParameterIds: [...spec.titleParameterIds], titleSpecificationMode: "APPEND" } : {}),
+    ...(supply ? {
+      purchaseBalanceV1: { quantityMode: "supply_quantum", balanceScope: "new_order_vs_required_consumption",
+        requirementBasis: "selected_supply_order", unitId: "item", stockExpression: "0", reserveExpression: "0", orderQuantumExpression: "1",
+        consumedExpression: selectedOrder!.expression_source, plannedConsumptionExpression: "base" in supply ? supply.base : selectedOrder!.expression_source },
+      ...("effective" in supply ? { effectiveQuantityOutputV1: { parameterId: supply.effective, unitId: "item" } } : {}),
+    } : {}),
+    ...(fluidSupply ? { purchaseBalanceV1: { quantityMode: "canonical_decimal", balanceScope: "new_order_vs_required_consumption",
+      unitId: spec.unit, consumedExpression: selectedOrder!.expression_source, stockExpression: "0", reserveExpression: "0" } } : {}),
     primaryMeasureParameterId: "route_length_m",
     preliminaryProfileId: HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_NORM_ID,
     visibleAssumptionPolicy: PROFILE.assumptionPolicy,
@@ -463,6 +502,9 @@ function resource(spec: ResourceSpec, ordinal: number): CanonicalEstimateResourc
     synthetic: false,
     sourceRole: source?.role ?? "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE",
     sourcePackSha256: HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_SOURCE_PACK_SHA256,
+    ...(supply || fluidSupply ? { purchaseBalanceScopeRu: supply?.rowId === "02:material:pipe-bundles"
+      ? "Расчётный заказ пачек включает монтаж, ожидаемые безвозвратные потери и отдельно сохраняемый плановый резерв. Плановая поставка без сохраняемого резерва всё равно включает ожидаемые потери. Нулевые склад и резерв в заказном балансе означают отсутствие отдельного зачёта: физический резерв остаётся отдельной потребностью в метрах. Пригодность прогнозного остатка не подтверждена."
+      : "Заказ относительно исходной расчётной потребности. Склад не засчитывается; превышение поставки не подтверждает пригодность остатка. Физическая технологическая потребность и самостоятельные факты доставки сохраняются." } : {}),
     normativeTrace: [{
       sourceId: spec.source,
       source_id: spec.source,
@@ -508,7 +550,9 @@ export const HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_INDEPENDENT_COMPLETENESS_
     evidenceSha256: HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_SOURCE_PACK_SHA256,
     sourcePackPath:
       "data/estimate-benchmarks/source-packs/hvac-wavin-hep2o22-heating-standard-s27-23.json",
-    entries: sourcePack.independentRequiredComponents.map((component) => ({
+    entries: [...sourcePack.independentRequiredComponents, {
+      semanticKey: "derived-pipe-geometry-safety-check", requiredRowIds: ["hvac-hep2o22:02:control:pipe-inside-diameter"],
+    }].map((component) => ({
       ...component,
       expectedResourceIds: [...component.requiredRowIds],
     })),
@@ -522,9 +566,10 @@ export function hvacWavinHep2o22HeatingStandardMissingRows(rowIds: ReadonlySet<s
 
 export async function compileHvacWavinHep2o22HeatingStandardS2723(
   submittedParameters: Record<string, unknown>,
+  rowOverrides?: Parameters<typeof compileCanonicalEstimateCore>[0]["rowOverrides"],
 ): Promise<CanonicalEstimateCompileCoreResult> {
   return compileCanonicalEstimateCore({
-    operation: "compile",
+    operation: rowOverrides ? "recalculate" : "compile",
     compilerVersion: "canonical-estimate-compiler.hvac-wavin-hep2o22-heating-standard-s27-23.v1",
     catalogId: HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_CATALOG_ID,
     primaryMeasureParameterId: "route_length_m",
@@ -532,6 +577,7 @@ export async function compileHvacWavinHep2o22HeatingStandardS2723(
     formulaDefinitions: [...HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_FORMULAS],
     resourceDefinitions: [...HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_RESOURCES],
     submittedParameters,
+    rowOverrides,
     confirmedParameters: { ...HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_RUNTIME_INPUT },
     currencyCode: "KGS",
     priceItems: [],

@@ -4,6 +4,8 @@ import { resolve } from "node:path";
 
 import {
   HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_ACCEPTANCE_INPUT,
+  WAVIN_SELECTED_SUPPLIES,
+  WAVIN_FLUID_SUPPLIES,
   HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_CATALOG_ID,
   HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_FORMULAS,
   HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_INDEPENDENT_COMPLETENESS_MAP,
@@ -97,6 +99,13 @@ async function verifyCore(): Promise<Json> {
     route_length_m: 130,
     support_count: 261,
   });
+  const accepted = await compileHvacWavinHep2o22HeatingStandardS2723({ ...HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_ACCEPTANCE_INPUT }, {
+    "hvac-hep2o22:02:material:pipe-bundles": { quantity: "2", provenance: { kind: "manual", reason: "VALIDATION_FIXTURE accepted bundles" } },
+    "hvac-hep2o22:03:fastener:support-packages": { quantity: "4", provenance: { kind: "manual", reason: "VALIDATION_FIXTURE accepted supports" } },
+  });
+  const retained = await compileHvacWavinHep2o22HeatingStandardS2723({ ...HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_ACCEPTANCE_INPUT, route_length_m: 110 }, {
+    "hvac-hep2o22:02:material:pipe-bundles": { quantity: "1", includedInProcurement: true, provenance: { kind: "manual", reason: "VALIDATION_FIXTURE retained reserve deficit" } },
+  });
   const rowIds = new Set(complete.rows.map((row) => row.row_id));
   const completenessErrors = validateIndependentCompletenessMapReferences({
     completenessMap: publisherCompletenessMap,
@@ -105,12 +114,12 @@ async function verifyCore(): Promise<Json> {
   });
   const assertions = {
     firstEstimateAppearsImmediately:
-      first.rows.length === 40 && first.preliminaryNeeds.length === 28,
+      first.rows.length === 41 && first.preliminaryNeeds.length === 28,
     firstEstimateHasProcurement:
       first.rows.filter((row) => row.included_in_procurement).length === 10,
     unknownLayoutResourcesRemainVisible: first.preliminaryNeeds.every((need) =>
       /hvac-hep2o22:(?:03|04|05|06:labor:support)/u.test(need.row_id)),
-    completeInputHasAllRows: complete.rows.length === 68 && complete.preliminaryNeeds.length === 0,
+    completeInputHasAllRows: complete.rows.length === 69 && complete.preliminaryNeeds.length === 0,
     eightVisibleStages: new Set(complete.rows.map((row) => row.section)).size === 8,
     procurementSubset: complete.rows.filter((row) => row.included_in_procurement).length === 23,
     unknownPricesRemainNull: complete.rows.every((row) => row.unit_price == null && row.amount == null),
@@ -143,6 +152,18 @@ async function verifyCore(): Promise<Json> {
       && quantity(changed.rows, "hvac-hep2o22:03:fastener:supports") === 261
       && quantity(changed.rows, "hvac-hep2o22:06:labor:route-installation") === 32.5
       && quantity(changed.rows, "hvac-hep2o22:07:operation:high-pressure-test") === 2,
+    acceptedOrderFeedsOnlyDeclaredControls: quantity(accepted.rows, "hvac-hep2o22:02:control:ordered-sections") === 40
+      && quantity(accepted.rows, "hvac-hep2o22:02:control:ordered-length") === 240
+      && quantity(accepted.rows, "hvac-hep2o22:02:control:available-before-losses") === 140
+      && quantity(accepted.rows, "hvac-hep2o22:02:control:pipe-remainder") === 135
+      && quantity(accepted.rows, "hvac-hep2o22:03:control:support-order") === 400
+      && quantity(accepted.rows, "hvac-hep2o22:03:control:support-remainder") === 199
+      && quantity(accepted.rows, "hvac-hep2o22:02:operation:cutting") === 19
+      && quantity(accepted.rows, "hvac-hep2o22:08:delivery:materials") === quantity(complete.rows, "hvac-hep2o22:08:delivery:materials"),
+    retainedReserveIsNotConsumedOrDropped: quantity(retained.rows, "hvac-hep2o22:02:material:pipe-reserve") === 5.5
+      && quantity(retained.rows, "hvac-hep2o22:02:control:pipe-remainder") === 4.5
+      && retained.rows.find(row => row.row_id === "hvac-hep2o22:02:material:pipe-bundles")?.included_in_procurement === false,
+    boundedSupplyOwners: HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_RESOURCES.filter(row => row.resource_graph.purchaseBalanceV1).length === 18,
   };
   const failed = Object.entries(assertions).filter(([, value]) => !value).map(([key]) => key);
   if (failed.length > 0) {
@@ -179,16 +200,16 @@ void runMasterSingleDefinitionSuccessorR1({
   applicationName: "s27-23-hvac-wavin-hep2o22-heating-successor",
   expectedBranch: "codex/r4-a5-clean-08b18902",
   masterPath: resolve(process.env.R4A13_MASTER_PATH
-    ?? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (63).md"),
+    ?? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (71).md"),
   masterSha256: process.env.R4A13_MASTER_SHA256
-    ?? "e1c70828ba30bb4dae395c2766f8ff7e13467ec51592198f4722a64edf8126ca",
+    ?? "783d0425e1f0f0f0ea8a262be454e39d13e94e1a2ad5d1c6cc4b1e1314e624f1",
   parentReleaseId: process.env.R4A13_PARENT_DEFINITION_RELEASE_ID
     ?? currentRelease.definitionReleaseId,
   parentSearchReleaseId: process.env.R4A13_PARENT_SEARCH_RELEASE_ID
     ?? currentRelease.searchReleaseId,
   currentReleasePath,
   outputRoot: resolve(process.env.R4A13_OUTPUT_ROOT
-    ?? ".release-runtime/r568/s27-23/hvac-wavin-hep2o22-heating-successor"),
+    ?? ".release-runtime/r568/s27-31/wavin-accepted-order-current"),
   sourcePaths: [
     "data/estimate-benchmarks/source-packs/hvac-wavin-hep2o22-heating-standard-s27-23.json",
     "src/lib/estimate/v4/hvacWavinHep2o22HeatingStandardS2723.ts",
@@ -197,6 +218,11 @@ void runMasterSingleDefinitionSuccessorR1({
     "scripts/estimate/r4a13/catalogFirstEstimateMinimumInputAudit.shared.ts",
     "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts",
     "scripts/estimate/r4a13/prepareS2723HvacWavinHep2o22HeatingStandardSuccessor.ts",
+    "scripts/estimate/r4a13/readbackS2731WavinAcceptedOrderIndependent.ts",
+    "src/lib/estimate/backendPlatform/canonicalPurchaseBalanceV1.ts",
+    "src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1.test.ts",
+    "src/features/consumerRepair/requestEstimateViewModel.ts",
+    "src/features/consumerRepair/requestEstimateViewModel.r4.test.ts",
   ],
   catalogId: HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_CATALOG_ID,
   sourceId: HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_SOURCE_ID,
@@ -211,7 +237,7 @@ void runMasterSingleDefinitionSuccessorR1({
   runtimeProfileClassification: HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_RUNTIME_CLASSIFICATION,
   runtimeProfileSourceIds: HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_RUNTIME_SOURCE_IDS,
   verifyCore,
-  expectedParentShape: [40, 43, 62],
+  expectedParentShape: [43, 48, 68],
   benchmarkOrdinal: 0,
   validationScenario: "S27_23_HVAC_WAVIN_HEP2O22_HEATING_100_M",
   passport: {
@@ -253,15 +279,21 @@ void runMasterSingleDefinitionSuccessorR1({
       source_id: HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_SOURCE_ID,
       norm_id: HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_NORM_ID,
       exact_locator: HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_SOURCE_METADATA.exact_locator,
-      quantity_basis: "ROUTE_LENGTH_X_VISIBLE_RESERVE_ROUNDED_TO_6_M_SECTIONS_AND_20_SECTION_BUNDLES",
+      quantity_basis: "ORIGINAL_ROUTE_PLUS_EXPECTED_WASTE_PLUS_SEPARATE_RETAINED_RESERVE_WHOLE_BUNDLES_WITH_ACCEPTED_ORDER_CONTROLS",
       assumption_policy: "VISIBLE_EDITABLE_AND_REPLACEABLE_BY_PROJECT_HYDRAULICS_LAYOUT_SUBSTRATE_AND_METHOD",
     },
   },
   locator: {
-    key: "hvac-wavin-hep2o22-heating-standard-s27-23-balance-r2",
+    key: "hvac-wavin-hep2o22-accepted-order-s27-31",
     payload: {
       kind: "MANUFACTURER_SYSTEM_TECHNOLOGY_MAP",
       sourcePackSha256: HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_SOURCE_PACK_SHA256,
+      expectedResourceIds: HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_RESOURCES.map(row => row.row_id),
+      expectedFormulaIds: HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_FORMULAS.map(formula => formula.formula_id),
+      selectedSupplyOwnerIds: WAVIN_SELECTED_SUPPLIES.map(supply => `hvac-hep2o22:${supply.rowId}`),
+      continuousFluidSupplyOwnerIds: WAVIN_FLUID_SUPPLIES.map(rowId => `hvac-hep2o22:${rowId}`),
+      effectiveControlRowIds: ["02:control:ordered-sections", "02:control:ordered-length", "02:control:available-before-losses", "02:control:pipe-remainder",
+        "03:control:support-order", "03:control:support-remainder"].map(id => `hvac-hep2o22:${id}`),
       officialManufacturerGuide: HVAC_WAVIN_HEP2O22_HEATING_STANDARD_S2723_SOURCE_METADATA.official_url,
       restoredOfficialSnapshotManifest:
         ".release-runtime/r568/s27-23/q6-wavin-hep2o-official-sources/manifest.json",

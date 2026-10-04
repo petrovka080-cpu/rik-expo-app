@@ -76,6 +76,20 @@ function serverBoundBundle(items: ConsumerRepairRequestItem[]): ConsumerRepairDr
 }
 
 describe("R4 canonical estimate title parity", () => {
+  it("presents retained-reserve supply planning without treating it as consumed material or usable stock", () => {
+    const item = canonicalItem("wavin:pipe", "Пачки трубы", "a".repeat(64), 0);
+    item.unit = "item"; item.unitLabel = "шт.";
+    item.sourceParameters = { ...item.sourceParameters, smartEstimateProjectionV2: {}, canonicalPurchaseBalance: {
+      quantityMode: "supply_quantum", balanceScope: "new_order_vs_required_consumption", unitId: "item",
+      requirementBasis: "selected_supply_order", plannedConsumption: "1", requiredSelectedOrder: "2", effectiveOrder: "1",
+      consumptionShortage: "1", excessOrderAboveRequiredConsumption: "0" } };
+    const evidence = buildRequestEstimateProfessionalRowEvidence(JSON.parse(JSON.stringify(item)))!;
+    expect(evidence.formulaLabel).toContain("Плановая потребность в единицах поставки без сохраняемого резерва: 1 шт.");
+    expect(evidence.formulaLabel).toContain("Расчётный заказ: 2 шт.");
+    expect(evidence.formulaLabel).toContain("Не хватает до расчётного заказа 1 шт.");
+    expect(evidence.formulaLabel).not.toContain("объём укладки");
+    expect(evidence.formulaLabel).not.toContain("пригодный склад");
+  });
   it("presents scoped discrete supply counts without describing installed volume or reusable stock", () => {
     const item = canonicalItem("p113:pp", "Профиль ПП", "a".repeat(64), 0);
     item.unit = "item";

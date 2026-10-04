@@ -12,7 +12,7 @@ type SelectedOrderBasis = Readonly<{
   balanceScope: "new_order_vs_required_consumption";
   stockExpression: "0";
   reserveExpression: "0";
-  requirementBasis: "selected_order_including_contingency";
+  requirementBasis: "selected_order_including_contingency" | "selected_supply_order";
   plannedConsumptionExpression: string;
 }>;
 export type CanonicalPurchaseBalanceV1 = PurchaseBalanceSources & (
@@ -45,7 +45,8 @@ export function resolveCanonicalPurchaseBalanceV1(
   if (quantityMode !== "supply_quantum" && quantityMode !== "canonical_decimal") fail("DEFINITION_INTEGRITY_FAILED", "purchase quantity mode invalid");
   const decimal = quantityMode === "canonical_decimal";
   const scoped = policy.balanceScope === "new_order_vs_required_consumption";
-  const selectedOrder = scoped && policy.requirementBasis === "selected_order_including_contingency";
+  const selectedOrder = scoped && (policy.requirementBasis === "selected_order_including_contingency"
+    || (!decimal && policy.requirementBasis === "selected_supply_order"));
   if ((Object.hasOwn(policy, "requirementBasis") && !selectedOrder) || (Object.hasOwn(policy, "plannedConsumptionExpression") && !selectedOrder)) {
     fail("DEFINITION_INTEGRITY_FAILED", "purchase requirement basis invalid");
   }
@@ -143,7 +144,7 @@ export function canonicalPurchaseShortagesV1(rows: readonly PurchaseTraceRow[]) 
 export function canonicalPurchaseShortageMessageV1(rows: readonly PurchaseTraceRow[]): string | null {
   const shortages = canonicalPurchaseShortagesV1(rows);
   if (shortages.length) {
-    const reasons = shortages.map(row => row.requirementBasis === "selected_order_including_contingency"
+    const reasons = shortages.map(row => row.requirementBasis === "selected_order_including_contingency" || row.requirementBasis === "selected_supply_order"
       ? row.discreteOrderScope
         ? `${row.titleRu}: не хватает до расчётного заказа ${row.consumptionShortage} ${row.unitId}`
         : `${row.titleRu}: заказ с выбранным резервом не покрыт на ${row.consumptionShortage} ${row.unitId}`

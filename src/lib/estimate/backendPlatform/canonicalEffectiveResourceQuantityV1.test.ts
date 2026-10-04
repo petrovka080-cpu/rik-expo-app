@@ -60,6 +60,22 @@ function testInput(): CanonicalEstimateCompileCoreInput {
 const row = (result: Awaited<ReturnType<typeof compileCanonicalEstimateCore>>, rowId: string) => result.rows.find(value => value.row_id === rowId)!;
 
 describe("authoritative effective resource quantities", () => {
+  it("keeps a neutral whole-supply order basis distinct from physically retained reserve and legacy contingency", () => {
+    const policy = { unitId: "item", consumedExpression: "2", stockExpression: "0", reserveExpression: "0",
+      quantityMode: "supply_quantum", orderQuantumExpression: "1", balanceScope: "new_order_vs_required_consumption",
+      requirementBasis: "selected_supply_order", plannedConsumptionExpression: "1" };
+    const resolve = (quantity: string, raw: unknown = policy) => resolveCanonicalPurchaseBalanceV1(raw, "pipe", "item", quantity, {}, new Set());
+    expect(resolve("1")).toMatchObject({ plannedConsumption: "1", requiredSelectedOrder: "2", consumed: "2", reserve: "0",
+      requirementBasis: "selected_supply_order", consumptionShortage: "1", procurementReady: false });
+    expect(resolve("2.0000")).toMatchObject({ quantum: "1", consumptionShortage: "0", procurementReady: true });
+    expect(resolve("0")).toMatchObject({ consumptionShortage: "2", remaining: "0", procurementReady: false });
+    for (const quantity of ["1.5", "2.0000000001"]) expect(() => resolve(quantity)).toThrow();
+    for (const raw of [{ ...policy, quantityMode: "canonical_decimal", orderQuantumExpression: undefined },
+      { ...policy, balanceScope: undefined }, { ...policy, stockExpression: "1" }, { ...policy, reserveExpression: "1" },
+      { ...policy, plannedConsumptionExpression: undefined }]) expect(() => resolve("2", raw)).toThrow();
+    expect(canonicalPurchaseShortageMessageV1([{ titleRu: "Пачки трубы", calculationTrace: { purchaseBalance: resolve("1") } }]))
+      .toContain("не хватает до расчётного заказа 1 item");
+  });
   it("keeps a scoped whole-supply quantum distinct from the planned count and enforces submitted precision", () => {
     const policy = { unitId: "item", consumedExpression: "508", stockExpression: "0", reserveExpression: "0",
       quantityMode: "supply_quantum", orderQuantumExpression: "1", balanceScope: "new_order_vs_required_consumption",
