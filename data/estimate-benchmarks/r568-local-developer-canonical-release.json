@@ -1,13 +1,13 @@
 {
   "schemaVersion": "r568-local-developer-canonical-release.v1",
   "status": "ACTIVE_LOCAL_DEVELOPER_CANONICAL_RELEASE",
-  "definitionReleaseId": "ab4f37ed-6956-5631-bddf-d8e37a7de20b",
-  "searchReleaseId": "0a250006-5aa1-5671-82b5-b3f397c477a4",
+  "definitionReleaseId": "f2e98d42-3f31-5717-b149-7b76b2f66b47",
+  "searchReleaseId": "c0b36338-b938-5203-9074-8adac5cd254a",
   "definitionReleaseStatus": "prepared",
   "searchReleaseStatus": "draft",
-  "definitionSnapshotSha256": "6b0c7417c81e1602233b47909657271e09726708eda51e38f05912ddc50be443",
-  "manifestHashChainSha256": "6b0c7417c81e1602233b47909657271e09726708eda51e38f05912ddc50be443",
-  "searchHashChainSha256": "6d2ae32d0fcdf3e37069f2a0bfb95b4a4bb36f81db9b989cb2d72910a3c602da",
+  "definitionSnapshotSha256": "2129e6b3584ede44cee3fa29a8d2260c5a03cfdfbaa4311873947135ffbbc454",
+  "manifestHashChainSha256": "2129e6b3584ede44cee3fa29a8d2260c5a03cfdfbaa4311873947135ffbbc454",
+  "searchHashChainSha256": "cc5ee5cda80e1109e47503a199e426985b80cc397b20e2a9aedd1529153a9a93",
   "identities": 11610,
   "visibleCanonicalDefinitions": 10322,
   "aliasesRedirects": 1288,
@@ -15,7 +15,7 @@
   "runtimeAdditionalAdmissions": 9,
   "currentInventoryRowsIncludingAliases": 11619,
   "denominatorNote": "11610 is the immutable historical source-identity reconciliation (10322 canonical owners plus 1288 redirects); the current cumulative runtime also preserves 9 separately identified inherited admissions.",
-  "owner": "S27_23_ELECTRICAL_ELECOR_CABLE_CHANNEL_STANDARD_SUCCESSOR",
+  "owner": "S27_23_WATER_VALTEC_PPR20_STANDARD_SUCCESSOR",
   "productionAccessed": false,
   "fakeGreenClaimed": false
 }
