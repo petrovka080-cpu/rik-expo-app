@@ -9,11 +9,6 @@ export const ANCHOR_WATER_CURING_ROWS = {
   accessories: "material:concrete:curing-water-application-kit",
   delivery: "delivery:concrete:curing-water",
 } as const;
-const water: AutomaticInclusionCondition = { kind: "equals", parameterId: "curing_method", value: "water" };
-const equipment: AutomaticInclusionCondition = { kind: "and", operands: [water,
-  { kind: "equals", parameterId: "curing_water_equipment_required", value: "REQUIRED" }] };
-const delivery: AutomaticInclusionCondition = { kind: "and", operands: [water,
-  { kind: "equals", parameterId: "curing_water_delivery_mode", value: "SEPARATE_DELIVERY" }] };
 const parameter = (id: string, title: string, valueType: AutomaticParameterSpec["valueType"], unitId: string | null,
   requiredWhen: AutomaticInclusionCondition, extra: Partial<AutomaticParameterSpec> = {}): AutomaticParameterSpec =>
   ({ id, title, valueType, unitId, kind: "conditional", requiredWhen, ...extra });
@@ -22,7 +17,13 @@ const parameter = (id: string, title: string, valueType: AutomaticParameterSpec[
  * had no water resource. Reuse the established direct project takeoff contract;
  * ACI is a method/specification source, never a universal m3-per-m3 coefficient.
  * No sample concrete-slab quantities or high-load profile values are borrowed. */
-export function buildAnchorGroupWaterCuringResourcesS2733(catalogId: string, applicabilityRu = "Уход водой за забетонированной анкерной группой по подтверждённому проектному способу; объём воды, комплект и источник не выводятся только из м³ бетона.") {
+export function buildAnchorGroupWaterCuringResourcesS2733(catalogId: string, applicabilityRu = "Уход водой за забетонированной анкерной группой по подтверждённому проектному способу; объём воды, комплект и источник не выводятся только из м³ бетона.",
+  curingMethodParameterId: "curing_method" | "placement_curing_method" = "curing_method") {
+  const water: AutomaticInclusionCondition = { kind: "equals", parameterId: curingMethodParameterId, value: "water" };
+  const equipment: AutomaticInclusionCondition = { kind: "and", operands: [water,
+    { kind: "equals", parameterId: "curing_water_equipment_required", value: "REQUIRED" }] };
+  const delivery: AutomaticInclusionCondition = { kind: "and", operands: [water,
+    { kind: "equals", parameterId: "curing_water_delivery_mode", value: "SEPARATE_DELIVERY" }] };
   const balance = effectivePurchaseBalanceExpressionsR1({ ownerRowId: ANCHOR_WATER_CURING_ROWS.water,
     orderUnitId: "m3", consumed: "curing_water_m3", stock: "0", reserve: "0",
     quantityMode: "canonical_decimal", balanceScope: "new_order_vs_required_consumption" });
@@ -39,7 +40,7 @@ export function buildAnchorGroupWaterCuringResourcesS2733(catalogId: string, app
         inputParameterIds: ["curing_water_equipment_designation", "curing_water_equipment_kit_specification", "curing_water_equipment_set_count"], titleParameterIds: ["curing_water_equipment_designation"] },
       { rowId: ANCHOR_WATER_CURING_ROWS.accessories, formulaId: "anchor_curing_water_kit_v1", expression: "curing_water_equipment_set_count",
         section: "Уход за бетоном", category: "material", title: "Принадлежности выбранного комплекта, включённые в стоимость оборудования", unitId: "set", inclusion: equipment,
-        costTreatment: "INCLUDED_IN_RESOURCE_ROWS", inputParameterIds: ["curing_water_equipment_kit_specification"], titleParameterIds: ["curing_water_equipment_kit_specification"] },
+        costTreatment: "INCLUDED_IN_RESOURCE_ROWS", inputParameterIds: ["curing_water_equipment_kit_specification", "curing_water_equipment_set_count"], titleParameterIds: ["curing_water_equipment_kit_specification"] },
       { rowId: ANCHOR_WATER_CURING_ROWS.delivery, formulaId: "anchor_curing_water_delivery_v1",
         expression: `ceil(${balance.effective}/curing_water_delivery_capacity_m3)`,
         section: "Уход за бетоном", category: "delivery", title: "Отдельная доставка воды для ухода за бетоном", unitId: "trip", procurement: true, inclusion: delivery,
@@ -50,7 +51,7 @@ export function buildAnchorGroupWaterCuringResourcesS2733(catalogId: string, app
     sourceId: CONCRETE_SLAB_CURING_SOURCE_ID, normId: "approved-project-water-curing-takeoff",
     sourceMetadata: { ...CONCRETE_SLAB_CURING_SOURCE_METADATA, artifact_sha256: CONCRETE_SLAB_CURING_SOURCE_METADATA.definition_hash },
     applicabilityRu,
-    ordinary: [{ id: "curing_method", title: "Способ ухода за бетоном", valueType: "enum", unitId: null,
+    ordinary: [{ id: curingMethodParameterId, title: "Способ ухода за бетоном", valueType: "enum", unitId: null,
       kind: "ordinary", values: ["membrane", "water"] }],
     profile: [], deferMissingProjectFactsToRows: true, excludedUnownedAssumptions: [],
     conditional: [

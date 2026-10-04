@@ -59,6 +59,28 @@ describe("S27.33 missing water-curing branch through the existing core", () => {
     expect(result.preliminaryNeeds).toEqual([]);
     expect(result.rows.map(r => r.row_id)).toEqual([ids.water]);
   });
+  it("keeps actual included-kit count unknown under a manual quantity", async () => {
+    const result = await compile({ ...facts, curing_water_equipment_set_count: null }, { [ids.accessories]: amendment("2") });
+    expect(result.rows.some(row => row.row_id === ids.accessories)).toBe(false);
+    expect(result.preliminaryNeeds.find(row => row.row_id === ids.accessories)).toMatchObject({ quantity: "2",
+      missing_parameter_ids: ["curing_water_equipment_set_count"] });
+    expect(result.rows.find(row => row.row_id === ids.water)?.quantity).toBe("3.2");
+  });
+  it("binds a composite branch to its existing placement selector", async () => {
+    const composite = buildAnchorGroupWaterCuringResourcesS2733("composite-water", "DEMO project water takeoff", "placement_curing_method");
+    const { curing_method: _originalSelector, ...waterFacts } = facts;
+    const run = (method: string) => compileCanonicalEstimateCore({ operation: "compile", compilerVersion: "s2733-composite-water-test", catalogId: "composite-water",
+      parameterDefinitions: [...composite.parameters], formulaDefinitions: [...composite.formulas], resourceDefinitions: [...composite.resources],
+      submittedParameters: { ...waterFacts, placement_curing_method: method }, confirmedParameters: {}, currencyCode: "KGS",
+      maximumResourceRows: 4, hashJson: estimateDeterministicHash });
+    const active = await run("water");
+    expect(active.preliminaryNeeds).toEqual([]);
+    expect(active.rows.find(row => row.row_id === ids.water)?.quantity).toBe("3.2");
+    const inactive = await run("membrane");
+    expect(inactive.rows).toEqual([]);
+    expect(inactive.preliminaryNeeds).toEqual([]);
+    expect(composite.parameters.some(parameter => parameter.parameter_id === "curing_method")).toBe(false);
+  });
   it("rejects fractional or insufficient freight and retains inactive facts without activating their resources", async () => {
     for (const quantity of ["1.5", "2"]) await expect(compile(facts, { [ids.delivery]: amendment(quantity) })).rejects.toMatchObject({ code: "ROW_AMENDMENT_INVALID" });
     await expect(compile({ ...facts, curing_water_equipment_set_count: 1.5 })).rejects.toMatchObject({ code: "PARAMETER_VALIDATION_FAILED" });
