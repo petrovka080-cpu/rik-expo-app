@@ -15,7 +15,7 @@ import type {
 import {
   consumerRepairRowCategorySignals,
   consumerRepairRowIsCanonicalPreliminaryNeed,
-  consumerRepairRowIsNonPayable,
+  consumerRepairRowIsTechnicalDetail,
 } from "./consumerRepairRowMetadata";
 
 export type RequestEstimateCategoryFilterId =
@@ -81,6 +81,7 @@ type State = {
   collapsedCategoryIds: Partial<Record<Exclude<RequestEstimateCategoryFilterId, "all">, true>>;
   showOnlyUnresolved: boolean;
   showTechnicalDetails: boolean;
+  expandedOperationIds: Record<string, boolean>;
   visibleRowLimit: number;
 };
 
@@ -264,6 +265,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
     collapsedCategoryIds: {},
     showOnlyUnresolved: false,
     showTechnicalDetails: false,
+    expandedOperationIds: {},
     visibleRowLimit: ANDROID_INITIAL_ROW_LIMIT,
   };
 
@@ -281,6 +283,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
           collapsedCategoryIds: {},
           showOnlyUnresolved: false,
           showTechnicalDetails: false,
+          expandedOperationIds: {},
           visibleRowLimit: ANDROID_INITIAL_ROW_LIMIT,
         };
   }
@@ -463,21 +466,40 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
       }),
       {},
     );
+    const operationBySectionId = new Map(filteredSections.filter(section => section.operation != null).map(section => [section.id, section]));
+    const operationExpanded = (section: RequestEstimateSectionViewModel): boolean => Boolean(normalizedQuery || this.state.showOnlyUnresolved
+      || (this.state.expandedOperationIds[section.id] ?? section.items.some(item => !consumerRepairRowIsCanonicalPreliminaryNeed(item)
+        && !consumerRepairRowIsTechnicalDetail(item))));
+    const sectionIdByItemId = new Map(filteredSections.flatMap(section => section.items.map(item => [item.id, section.id] as const)));
     const visibleItems = filteredEntries
       .filter((entry) => !this.state.collapsedCategoryIds[entry.categoryFilterId])
-      .filter((entry) => this.state.showTechnicalDetails || !consumerRepairRowIsNonPayable(entry.item))
+      .filter((entry) => this.state.showTechnicalDetails || !consumerRepairRowIsTechnicalDetail(entry.item))
+      .filter(entry => {
+        const operationSection = operationBySectionId.get(sectionIdByItemId.get(entry.item.id)!);
+        return operationSection == null || operationExpanded(operationSection);
+      })
       .map((entry) => entry.item);
     const renderedItems = Platform.OS === "android"
       ? visibleItems.slice(0, this.state.visibleRowLimit)
       : visibleItems;
     const technicalDetailCount = filteredEntries.filter((entry) =>
-      consumerRepairRowIsNonPayable(entry.item)).length;
+      consumerRepairRowIsTechnicalDetail(entry.item)).length;
     const existingMatches: ExistingEstimateSearchMatch[] = measureConsumerRepairQuantityRenderWork("EXISTING_ROW_SEARCH", () => filteredEntries
       .map(({ item, categoryFilterId }) => ({
         itemId: item.id,
         titleRu: item.titleRu,
         categoryFilterId,
       })));
+    const renderItem = (item: RequestEstimateSectionViewModel["items"][number], index: number) => (
+      <View focusable key={`${item.id}-${index}`} testID={`request-estimate-item-anchor-${item.id}`}>
+        <ConsumerRepairItemRow item={item} parameterRequirementTables={viewModel.parameterRequirementTables} onDecrease={onDecrease} onIncrease={onIncrease} onQuantityChange={onQuantityChange}
+          onUnitPriceChange={onUnitPriceChange} onSpecificationChange={onSpecificationChange} onOptionalChange={onOptionalChange}
+          onRemove={onRemove} onOpenCatalog={onOpenCatalog} onOpenPhoto={onOpenPhoto} showPhotoButton={showPhotoButtons === true}
+          photoThumbnailUri={this.props.rowPhotoThumbnails?.[item.id] ?? null}
+          hasPhotoAttachment={this.props.rowPhotoAttachmentItemIds?.has(item.id) === true} />
+      </View>
+    );
+    const renderedItemIds = new Set(renderedItems.map(item => item.id));
 
     return (
       <View style={styles.wrap} testID="request-estimate-items-editor-content">
@@ -599,29 +621,28 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
           </Text>
         ) : null}
         <View style={styles.section} testID="request-estimate-flat-row-list">
-          {renderedItems.map((item, index) => (
-            <View
-              focusable
-              key={`${item.id}-${index}`}
-              testID={`request-estimate-item-anchor-${item.id}`}
-            >
-              <ConsumerRepairItemRow
-                item={item}
-                onDecrease={onDecrease}
-                onIncrease={onIncrease}
-                onQuantityChange={onQuantityChange}
-                onUnitPriceChange={onUnitPriceChange}
-                onSpecificationChange={onSpecificationChange}
-                onOptionalChange={onOptionalChange}
-                onRemove={onRemove}
-                onOpenCatalog={onOpenCatalog}
-                onOpenPhoto={onOpenPhoto}
-                showPhotoButton={showPhotoButtons === true}
-                photoThumbnailUri={this.props.rowPhotoThumbnails?.[item.id] ?? null}
-                hasPhotoAttachment={this.props.rowPhotoAttachmentItemIds?.has(item.id) === true}
-              />
-            </View>
-          ))}
+          {operationBySectionId.size === 0 ? renderedItems.map(renderItem) : filteredSections.map((section, sectionIndex) => {
+            const operation = section.operation;
+            if (!operation) return section.items.filter(item => renderedItemIds.has(item.id)).map(renderItem);
+            const resources = section.items.filter(item => !consumerRepairRowIsTechnicalDetail(item));
+            const unresolved = resources.filter(consumerRepairRowIsCanonicalPreliminaryNeed).length;
+            const expanded = operationExpanded(section);
+            return (
+              <View key={section.id} style={styles.operation} testID={`request-estimate-operation-${operation.operationId}`}>
+                {filteredSections.slice(0, sectionIndex).every(previous => previous.operation?.groupId !== operation.groupId) ? (
+                  <Text style={styles.operationGroupTitle}>{operation.groupTitleRu}</Text>
+                ) : null}
+                <Pressable accessibilityRole="button" accessibilityState={{ expanded }}
+                  onPress={() => this.setState(state => ({ expandedOperationIds: { ...state.expandedOperationIds, [section.id]: !expanded },
+                    visibleRowLimit: ANDROID_INITIAL_ROW_LIMIT }))} testID={`request-estimate-operation-toggle-${operation.operationId}`}>
+                  <Text style={styles.operationTitle}>{`${expanded ? "▾" : "▸"} ${operation.operationTitleRu}`}</Text>
+                  <Text style={styles.operationSummary}>{`${resources.length - unresolved} рассчитано · ${unresolved} требуют уточнения · материалы, труд, техника и услуги`}</Text>
+                </Pressable>
+                {expanded ? <Text style={styles.operationSummary}>{`Для завершения: ${operation.completionCriterionRu}`}</Text> : null}
+                {section.items.filter(item => renderedItemIds.has(item.id)).map(renderItem)}
+              </View>
+            );
+          })}
         </View>
         {Platform.OS === "android" && renderedItems.length < visibleItems.length ? (
           <Pressable
@@ -917,4 +938,8 @@ const styles = StyleSheet.create({
   section: {
     gap: 2,
   },
+  operation: { gap: 6, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#CBD5E1" },
+  operationGroupTitle: { fontSize: 17, fontWeight: "800", color: "#0F172A", marginBottom: 8 },
+  operationTitle: { fontSize: 15, fontWeight: "700", color: "#0F172A" },
+  operationSummary: { fontSize: 12, lineHeight: 18, color: "#475569" },
 });

@@ -1,4 +1,6 @@
+import { canonicalEstimateOperationReference, type CanonicalEstimateOperationReference } from "../../lib/estimate/backendPlatform/canonicalEstimateOperationComposition";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
+import { consumerCanonicalMissingRequirements, type CanonicalParameterRequirementTables } from "../../lib/consumerRequests/consumerCanonicalParameterRequirements";
 import { canonicalPurchaseShortageMessageV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
 import { compareFormulaGraphDecimals, isFormulaGraphExactDecimal } from "../../lib/estimate/backendPlatform/formulaGraph";
 import type {
@@ -63,6 +65,7 @@ export type RequestEstimateSectionViewModel = {
   id: RequestEstimateSectionId;
   title: string;
   items: ConsumerRepairRequestItem[];
+  operation?: CanonicalEstimateOperationReference | null;
 };
 
 export type RequestEstimatePreviewRow = {
@@ -105,6 +108,7 @@ export type RequestEstimateSourceGate = {
 };
 
 export type RequestEstimateViewModel = {
+  parameterRequirementTables?: CanonicalParameterRequirementTables | null;
   title: string;
   summary: string;
   totalLabel: string;
@@ -268,8 +272,10 @@ export function buildRequestEstimateProfessionalRowEvidence(
     : bulkOrderScope && exactPositive(balance?.excessOrderAboveRequiredConsumption)
       ? ` ${selectedOrderBasis ? supplyOrderBasis || discreteOrderScope ? "Превышение расчётного заказа" : "Превышение расчётного заказа с выбранным резервом" : "Заказ сверх расчётной потребности"}: ${balance.excessOrderAboveRequiredConsumption} ${balanceUnit}. Пригодность излишка для дальнейшего использования не подтверждена.`
       : "";
-  const dependencies = Array.isArray(projection.parameterDependencies)
-    ? projection.parameterDependencies.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+  const dependencySource = Array.isArray(projection.parameterDependencies)
+    ? projection.parameterDependencies : item.sourceParameters?.missingParameterIds;
+  const dependencies = Array.isArray(dependencySource)
+    ? dependencySource.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     : [];
   const parameterLabel = dependencies.length > 0
     ? `${"\u0412\u043b\u0438\u044f\u044e\u0442 \u043f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b"}: ${dependencies.map(professionalParameterTitle).join(", ")}.`
@@ -320,6 +326,8 @@ function capitalRenovationGroupId(item: ConsumerRepairRequestItem): CapitalRenov
 }
 
 function itemSection(item: ConsumerRepairRequestItem): RequestEstimateSectionViewModel["id"] {
+  const operation = canonicalEstimateOperationReference(item.sourceParameters?.canonicalOperationComposition);
+  if (operation) return `professional_${encodeURIComponent(`${operation.groupId}/${operation.operationId}`)}`;
   const smartProjection = item.sourceParameters?.smartEstimateProjectionV2;
   if (smartProjection && typeof smartProjection === "object") {
     const stage = (smartProjection as { stage?: unknown }).stage;
@@ -895,11 +903,11 @@ function publicSourceGateRequirement(
 
 export function buildRequestEstimateSourceGates(
   items: readonly ConsumerRepairRequestItem[],
+  tables?: CanonicalParameterRequirementTables | null,
 ): RequestEstimateSourceGate[] {
   const gates = new Map<string, RequestEstimateSourceGate>();
   for (const item of items) {
-    const rawRequirements = item.sourceParameters?.missingParameterRequirements;
-    if (!Array.isArray(rawRequirements)) continue;
+    const rawRequirements = consumerCanonicalMissingRequirements(item, tables);
     for (const raw of rawRequirements) {
       if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
       const requirement = raw as Record<string, unknown>;
@@ -1164,7 +1172,7 @@ export function buildRequestEstimateViewModel(
   const calculatedItemCount = viewBundle.items.filter((item) =>
     item.sourceParameters?.canonicalPreliminaryNeed !== true || item.quantity != null
   ).length;
-  const sourceGates = buildRequestEstimateSourceGates(viewBundle.items);
+  const sourceGates = buildRequestEstimateSourceGates(viewBundle.items, bundle.canonicalParameterRequirementTables);
   const hasProcurementItems = viewBundle.items.some((item) =>
     item.sourceParameters?.includedInProcurement
       ?? (item.sourceParameters?.canonicalPreliminaryNeed === true
@@ -1208,7 +1216,11 @@ export function buildRequestEstimateViewModel(
           return itemWithPublicTitle(item, titleRu);
         }),
     }))
-    .filter((section) => section.items.length > 0));
+    .filter((section) => section.items.length > 0)
+    .map(section => {
+      const operation = canonicalEstimateOperationReference(section.items[0]?.sourceParameters?.canonicalOperationComposition);
+      return operation == null ? section : { ...section, title: operation.operationTitleRu, operation };
+    }));
   const sourceLabels = uniqueSourceLabels(viewBundle);
   const professionalPreview = Boolean(bundle.structuredEstimatePayload) || hasExpandedComplexCalculator || hasAsphaltProfessionalSections || viewBundle.items.length > 20;
   const productionTrust = buildConsumerRepairProductionTrust({
@@ -1300,6 +1312,7 @@ export function buildRequestEstimateViewModel(
     calculatedItemCount,
     preliminaryNeedCount,
     sourceGates,
+    parameterRequirementTables: bundle.canonicalParameterRequirementTables,
     procurementApplicabilityLabel: hasProcurementItems
       ? null
       : "Материалы и закупка: для выбранной операции не предусмотрены.",

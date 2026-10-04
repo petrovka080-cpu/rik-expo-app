@@ -143,6 +143,9 @@ export function buildStructuredEstimateRequestDraft(
   payload: StructuredEstimatePayload,
   catalogBinding?: EstimateCatalogBindingResult,
 ): ConsumerRepairAiDraft {
+  if (payload.canonicalBackend?.parameterRequirementsStorage === "shared_draft_table_v1") {
+    throw new Error("CANONICAL_PARAMETER_REQUIREMENT_REBIND_REQUIRES_ORIGINAL_SCHEMA");
+  }
   const dangerous = isDangerousEstimate(payload);
   const bindingByRowId = new Map((catalogBinding?.rows ?? []).map((row) => [row.rowId, row]));
   const parameterRequirementById = new Map(
@@ -151,11 +154,29 @@ export function buildStructuredEstimateRequestDraft(
       requirement,
     ] as const),
   );
+  const requirementTable = payload.canonicalBackend ? {
+    contractVersion: "canonical-parameter-requirements/v1" as const,
+    revisionId: payload.canonicalBackend.revisionId,
+    releaseId: payload.canonicalBackend.releaseId,
+    parameterSchemaHash: payload.canonicalBackend.parameterSchemaHash ?? null,
+    requirementsById: Object.fromEntries(parameterRequirementById),
+  } : null;
+  const requirementReference = requirementTable ? {
+    contractVersion: requirementTable.contractVersion,
+    revisionId: requirementTable.revisionId,
+    releaseId: requirementTable.releaseId,
+    parameterSchemaHash: requirementTable.parameterSchemaHash,
+  } : null;
   return {
     titleRu: payload.workTitle,
     summaryRu: formatRequestEstimateSummary(payload.sourceEstimate),
     repairType: payload.workCategory,
-    structuredEstimatePayload: payload,
+    structuredEstimatePayload: payload.canonicalBackend ? {
+      ...payload,
+      canonicalBackend: { ...payload.canonicalBackend, parameterRequirements: undefined,
+        parameterRequirementsStorage: "shared_draft_table_v1" },
+    } : payload,
+    ...(requirementTable ? { canonicalParameterRequirementTables: { [requirementTable.revisionId]: requirementTable } } : {}),
     selectedWork: selectedWorkForRequest(payload),
     estimatePresentation: payload.presentation,
     dangerousDiyBlocked: dangerous,
@@ -232,6 +253,7 @@ export function buildStructuredEstimateRequestDraft(
           sourceParameters: {
             rowCode: need.rowId,
             rowSha256: need.needSha256,
+            canonicalOperationComposition: need.operation ?? null,
             ...(need.evidenceStatus === "referenced" ? {
               canonicalNeedEvidenceStatus: "referenced",
               canonicalNeedEvidenceReference: need.evidenceReference,
@@ -244,12 +266,14 @@ export function buildStructuredEstimateRequestDraft(
             canonicalBackendCatalogId: payload.canonicalBackend?.catalogId,
             canonicalBackendOwnershipStatus: "PRELIMINARY_NEED",
             canonicalPreliminaryNeed: true,
+            canonicalCostTreatment: need.costTreatment ?? (need.calculationTrace?.resourceGraph as Record<string, unknown> | undefined)?.costTreatment ?? null,
+            manualQuantityOverride: need.manualQuantityOverride ?? need.calculationTrace?.manualQuantityOverride === true,
+            calculatedQuantityBeforeOverride: need.calculatedQuantityBeforeOverride ?? need.calculationTrace?.calculatedQuantityBeforeOverride ?? null,
             canonicalPreliminaryNeedState: need.needState,
             missingParameterIds: need.missingParameterIds,
-            missingParameterRequirements: need.missingParameterIds.flatMap((parameterId) => {
-              const requirement = parameterRequirementById.get(parameterId);
-              return requirement ? [requirement] : [];
-            }),
+            canonicalParameterRequirementReference: requirementReference,
+            sourceManagedMissingParameterIds: need.missingParameterIds.filter((parameterId) =>
+              parameterRequirementById.get(parameterId)?.sourceConfirmationRequired === true),
             includedInEstimate: need.selected,
             // A material does not stop being a procurement need merely because
             // its quantity or specification is still preliminary.  The final
@@ -266,7 +290,6 @@ export function buildStructuredEstimateRequestDraft(
               initiallyCollapsed: false,
               rowReachable: false,
               preliminaryNeed: true,
-              parameterDependencies: need.missingParameterIds,
             },
           },
           priceStatus: "PRICE_MISSING" as const,

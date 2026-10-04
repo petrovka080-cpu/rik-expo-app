@@ -18,6 +18,8 @@ import { ROAD_CROSSING_SLEEVES_EQUIPMENT_MOBILIZATION_MODES_R1 } from "./roadCro
 import { ROAD_CROSSING_SLEEVES_RESTORATION_CONSTRUCTIONS_R1, ROAD_CROSSING_SLEEVES_EXTERNAL_FILL_GEOMETRIES_R1 } from "./roadCrossingSleevesSelectedCompletionR1";
 import { ROAD_CROSSING_SLEEVES_SELECTED_JACKING_CATALOG_ID_R1 } from "./roadCrossingSleevesSelectedJackingPromptR1";
 import { resolveInclusionGraph } from "../backendPlatform/inclusionGraph";
+import { ROAD_CROSSING_SLEEVES_OPERATION_BY_ROW_R1 } from "./roadCrossingSleevesOperationCompositionR1";
+import { estimateDeterministicHash } from "../estimateDeterministicHash";
 
 /** Exact declared unsupported branches, not a text/ID heuristic. The broad
  * component owner retains them; this finite full definition offers only the
@@ -64,7 +66,7 @@ export function buildRoadCrossingSleevesSelectedJackingR1(
   if (ROAD_CROSSING_SLEEVES_SELECTED_JACKING_PARAMETERS_R1.some(p => p.values?.length === 0)) throw new Error("RCS_SELECTED_EMPTY_SUPPORTED_BRANCH");
   const owned = new Set(ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1.flatMap(stage => stage.ownResourceIds));
   if (ROAD_CROSSING_SLEEVES_SELECTED_JACKING_ROWS_R1.some(row => !owned.has(row.rowId))) throw new Error("RCS_SELECTED_STAGE_RESOURCE_UNOWNED");
-  const definition = buildAutomaticConstructionOwnerR1({
+  const baseDefinition = buildAutomaticConstructionOwnerR1({
     contract: "rik-expo-app.s27-31.road-crossing-sleeves-selected-jacking.v1", semanticOwner: "road_crossing_sleeves_selected_jacking",
     sourceId: "road-crossing-sleeves-selected-jacking-s27-31", normId: "actual-selected-project-facts-no-engineering-defaults",
     sourceMetadata, applicabilityRu: ROAD_CROSSING_SLEEVES_SELECTED_JACKING_SCOPE_R1.boundaryRu,
@@ -73,6 +75,12 @@ export function buildRoadCrossingSleevesSelectedJackingR1(
     rows: ROAD_CROSSING_SLEEVES_SELECTED_JACKING_ROWS_R1, excludedUnownedAssumptions: [], deferMissingProjectFactsToRows: true,
     unconditionalProjectFactParameterIds: ["rcs_steel_density_kg_m3", "rcs_raci_selected_elements_per_ring"],
   });
+  const definition = { ...baseDefinition, resources: baseDefinition.resources.map(resource => {
+    const operation = ROAD_CROSSING_SLEEVES_OPERATION_BY_ROW_R1.get(resource.row_id);
+    if (!operation) throw new Error(`RCS_OPERATION_RESOURCE_UNOWNED:${resource.row_id}`);
+    const mapped = { ...resource, resource_graph: { ...resource.resource_graph, operationCompositionV1: operation }, row_sha256: "" };
+    return { ...mapped, row_sha256: estimateDeterministicHash(mapped) };
+  }) };
   const selectedRowIds = new Set(ROAD_CROSSING_SLEEVES_SELECTED_JACKING_ROWS_R1.map(row => row.rowId));
   return Object.freeze({ scope: ROAD_CROSSING_SLEEVES_SELECTED_JACKING_SCOPE_R1, definition,
     stageMatrix: Object.freeze(ROAD_CROSSING_SLEEVES_STAGE_MATRIX_R1.map(({ remaining: _remaining, ...stage }) => ({ ...stage,

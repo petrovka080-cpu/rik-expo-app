@@ -177,6 +177,7 @@ export type StructuredEstimatePayload = {
     parameterSchemaHash?: string | null;
     parameters: Record<string, unknown>;
     parameterRequirements?: StructuredEstimateParameterRequirement[];
+    parameterRequirementsStorage?: "shared_draft_table_v1";
     preliminaryNeeds?: import("../estimate/backendPlatform/contracts").CanonicalEstimatePreliminaryNeedView[];
   };
   visiblePolicy: StructuredEstimateVisiblePolicy;

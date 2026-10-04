@@ -90,11 +90,14 @@ describe("canonical estimate consumer professional proof", () => {
     expect(legacy.canonicalBackend?.sourceRequestText).toBeNull();
     const draft = buildStructuredEstimateRequestDraft(payload);
 
-    expect(draft.items[0]?.sourceParameters?.missingParameterRequirements).toEqual([expect.objectContaining({
+    expect(draft.items[0]?.sourceParameters?.missingParameterRequirements).toBeUndefined();
+    expect(() => buildStructuredEstimateRequestDraft(draft.structuredEstimatePayload!))
+      .toThrow("CANONICAL_PARAMETER_REQUIREMENT_REBIND_REQUIRES_ORIGINAL_SCHEMA");
+    expect(draft.canonicalParameterRequirementTables?.[revision.revisionId]?.requirementsById.machine_roller_productivity_m2_per_machine_hour).toEqual(expect.objectContaining({
       parameterId: "machine_roller_productivity_m2_per_machine_hour",
       sourceConfirmationRequired: true,
       visibilityRole: "INTERNAL_ONLY",
-    })]);
+    }));
   });
 
   it("projects an unresolved manual catalog row into the editable draft but not payable PDF rows", () => {

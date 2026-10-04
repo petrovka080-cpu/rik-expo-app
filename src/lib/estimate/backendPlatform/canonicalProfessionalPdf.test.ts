@@ -125,7 +125,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-31-russian-shift-units");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-33-operation-resources");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,
@@ -336,6 +336,29 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(() => buildCanonicalProfessionalPdfProjection({
       revision: revision(2), rows: rows(1), workTitleRu: "Несовпадение",
     })).toThrow("row count differs");
+  });
+
+  it("prints every operation resource with one shared question list and retains an entered preliminary value", () => {
+    const operation = { contractVersion: "canonical-operation-resource/v1", groupId: "crossing", groupTitleRu: "Переход",
+      operationId: "casing", operationTitleRu: "Сборка футляра", completionCriterionRu: "Стыки выполнены и проверены." };
+    const needs = ["Электроды", "Монтажный механизм"].map((title, index) => ({ ...rows(1)[0]!,
+      row_id: `need-${index}`, ordinal: index, title_ru: title, quantity: index === 0 ? "2" : null,
+      included_in_estimate: false, included_in_procurement: false, unit_price: null, amount: null,
+      ownership_status: "PRELIMINARY_NEED", missing_parameter_ids: ["source-one", "source-two"],
+      calculation_trace: { resourceGraph: { operationCompositionV1: operation } },
+    }));
+    const projection = buildCanonicalProfessionalPdfProjection({ revision: revision(0), rows: [], preliminaryNeeds: needs,
+      workTitleRu: "Переход", parameterTitlesRu: { "source-one": "Подтверждённая норма", "source-two": "Подтверждённая норма" } });
+    expect(projection.rowCount).toBe(2);
+    expect(projection.preliminaryNeedCount).toBe(2);
+    expect(projection.html).toContain("Электроды");
+    expect(projection.html).toContain("Монтажный механизм");
+    expect(projection.html).toContain("Введено 2; требуется подтверждение исходных сведений");
+    expect(projection.html).toContain("исходные сведения № 1, 2");
+    expect(projection.html.match(/Подтверждённая норма/gu)).toHaveLength(2);
+    expect(projection.html.match(/Для завершения:/gu)).toHaveLength(1);
+    expect(projection.html).not.toContain("source-one");
+    expect(projection.grandTotalStatus).toBe("PARTIAL_NEEDS_PRICE");
   });
 
   it("escapes title and specification markup without creating embedded links", () => {

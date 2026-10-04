@@ -593,6 +593,7 @@ export function createConsumerRepairRequestDraft(input: {
     canonicalParameterSession: null,
     electricalCircuitSchedule: input.aiDraft?.electricalCircuitSchedule ?? null,
     structuredEstimatePayload: input.aiDraft?.structuredEstimatePayload ?? null,
+    canonicalParameterRequirementTables: input.aiDraft?.canonicalParameterRequirementTables ?? null,
     projectExecutionDrafts: [],
     marketplaceLink: createConsumerMarketplaceLink(draft.id),
     events: [
@@ -775,6 +776,10 @@ export function upsertConsumerRepairCanonicalBackendDraft(input: {
     estimateDraftSession: retainedDraftSession,
     canonicalParameterSession: null,
     structuredEstimatePayload: input.aiDraft.structuredEstimatePayload ?? null,
+    canonicalParameterRequirementTables: {
+      ...(input.replaceCanonicalRevisionHistory ? {} : existing.canonicalParameterRequirementTables),
+      ...input.aiDraft.canonicalParameterRequirementTables,
+    },
     electricalCircuitSchedule: input.aiDraft.electricalCircuitSchedule ?? null,
     projectExecutionDrafts: canonicalBackendProjectExecutionDrafts({
       aiDraft: input.aiDraft,
@@ -1768,6 +1773,7 @@ export function createConsumerRepairDraftFromHistorySnapshot(input: {
     media,
     pdfs: [],
     structuredEstimatePayload: source.structuredEstimatePayload,
+    canonicalParameterRequirementTables: source.canonicalParameterRequirementTables,
     projectExecutionDrafts: [],
     marketplaceLink: createConsumerMarketplaceLink(draft.id),
     events: [

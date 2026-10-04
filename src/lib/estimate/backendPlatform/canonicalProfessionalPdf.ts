@@ -7,9 +7,10 @@ import {
   type CanonicalArtifactRevision,
   type CanonicalArtifactRow,
 } from "./canonicalEstimateArtifactContract";
+import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-31-russian-shift-units" as const;
+  "canonical-professional-pdf.r4-a13-s27-33-operation-resources" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -169,20 +170,25 @@ function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number): str
   </tr>`;
 }
 
-function renderPreliminaryNeedRow(row: CanonicalArtifactRow, displayOrdinal: number, parameterTitlesRu: Readonly<Record<string, string>>): string {
+function renderPreliminaryNeedRow(row: CanonicalArtifactRow, displayOrdinal: number, parameterTitlesRu: Readonly<Record<string, string>>, questionNumbers?: ReadonlyMap<string, number>): string {
   const trace = objectValue(row.calculation_trace);
   const missingIds = Array.isArray(trace.missingParameterIds) ? trace.missingParameterIds : row.missing_parameter_ids;
   const titles = Array.isArray(missingIds) ? [...new Set(missingIds.flatMap(id => {
     const title = nullableText(parameterTitlesRu[String(id)]);
     return title ? [title] : [];
   }))] : [];
-  const missing = titles.length > 0 ? titles.join("; ") : "исходные сведения по этой позиции и условия её применения";
+  const numbers = questionNumbers && Array.isArray(missingIds)
+    ? [...new Set(missingIds.flatMap(id => questionNumbers.has(String(id)) ? [questionNumbers.get(String(id))!] : []))] : [];
+  const missing = numbers.length > 0 ? `исходные сведения № ${numbers.join(", ")} из перечня ниже`
+    : titles.length > 0 ? titles.join("; ") : "исходные сведения по этой позиции и условия её применения";
+  const quantityLabel = row.quantity == null ? "Количество нужно уточнить"
+    : `Введено ${canonicalArtifactQuantity(row.quantity)}; требуется подтверждение исходных сведений`;
   return `<tr class="preliminary-need">
     <td class="number">${displayOrdinal}</td>
     <td class="name"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row))}</strong><span>Предварительная потребность из определения; требуется уточнение.</span></td>
     <td>${escapeCanonicalArtifactHtml(CATEGORY_TITLES[canonicalProfessionalPdfCategory(row)])}</td>
     <td class="unit">${escapeCanonicalArtifactHtml(canonicalArtifactUnit(row))}</td>
-    <td class="numeric">Количество нужно уточнить</td>
+    <td class="numeric">${escapeCanonicalArtifactHtml(quantityLabel)}</td>
     <td class="money">—</td>
     <td class="money">—</td>
   </tr><tr class="preliminary-need-detail"><td></td><td colspan="6">Требуется уточнить: ${escapeCanonicalArtifactHtml(missing)}. В сумму и закупку позиция не включена.</td></tr>`;
@@ -229,6 +235,29 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     });
   }
   const preliminaryRowIds = new Set(preliminaryNeeds.map((row) => String(row.row_id)));
+  const operation = (row: CanonicalArtifactRow) => {
+    return canonicalEstimateOperationReference(objectValue(objectValue(row.calculation_trace).resourceGraph).operationCompositionV1);
+  };
+  const hasOperations = compositionRows.some(row => operation(row) != null);
+  const questionNumbers = hasOperations ? new Map<string, number>() : undefined;
+  if (questionNumbers) for (const row of preliminaryNeeds) {
+    const missing = objectValue(row.calculation_trace).missingParameterIds ?? row.missing_parameter_ids;
+    if (Array.isArray(missing)) for (const id of missing) {
+      if (typeof id === "string" && nullableText(input.parameterTitlesRu?.[id]) && !questionNumbers.has(id)) questionNumbers.set(id, questionNumbers.size + 1);
+    }
+  }
+  let previousOperationKey = "";
+  const renderedComposition = compositionRows.map((row, index) => {
+    const reference = operation(row);
+    const key = reference ? `${reference.groupId}:${reference.operationId}` : "";
+    const heading = reference && key !== previousOperationKey
+      ? `<tr class="operation"><td colspan="7"><strong>${escapeCanonicalArtifactHtml(String(reference.groupTitleRu))} — ${escapeCanonicalArtifactHtml(String(reference.operationTitleRu))}</strong><span>Для завершения: ${escapeCanonicalArtifactHtml(String(reference.completionCriterionRu))}</span></td></tr>` : "";
+    previousOperationKey = key;
+    return heading + (preliminaryRowIds.has(String(row.row_id))
+      ? renderPreliminaryNeedRow(row, index + 1, input.parameterTitlesRu ?? {}, questionNumbers) : renderClientRow(row, index + 1));
+  }).join("");
+  const questionAppendix = questionNumbers?.size
+    ? `<h2>Исходные сведения для уточнения состава</h2><div class="notice">Сведения связаны с позициями по номерам. Применимость и количество пока не подтверждены; неизвестные значения не заменены нулями.</div><table><tbody>${[...questionNumbers].map(([id, number]) => `<tr><td style="width:8%">${number}</td><td>${escapeCanonicalArtifactHtml(String(input.parameterTitlesRu?.[id]))}</td></tr>`).join("")}</tbody></table>` : "";
   const currencyCode = assertSingleCurrency(revision, rows);
   const payableRows = rows.filter((row) => row.included_in_estimate === true);
   const nonPayableRowCount = rows.length - payableRows.length;
@@ -289,7 +318,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}.summary div{background:#eef7f2;border-radius:4px;padding:7px}.notice{margin:8px 0 12px;padding:8px;border:1px solid #d5dde6;border-radius:4px;color:#39485b;break-inside:avoid}
     table{width:100%;border-collapse:collapse;table-layout:fixed}thead{display:table-header-group}tfoot{display:table-footer-group}tr{break-inside:avoid;page-break-inside:avoid}td,th{border:1px solid #cbd4df;padding:4px;vertical-align:top;overflow-wrap:anywhere;word-break:normal;hyphens:none}th{background:#e7edf4;text-align:left}.client th:nth-child(1){width:5%}.client th:nth-child(2){width:34%}.client th:nth-child(3){width:12%}.client th:nth-child(4){width:8%}.client th:nth-child(5){width:11%}.client th:nth-child(6),.client th:nth-child(7){width:15%}.name span{display:block;color:#526174;font-size:8px;margin-top:2px}.number,.unit{text-align:center}.number{white-space:nowrap;overflow-wrap:normal;font-variant-numeric:tabular-nums}.numeric,.money{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
     .totals{width:62%;margin:12px 0 0 auto}.totals th{width:55%}.totals td{text-align:right;font-variant-numeric:tabular-nums}.grand th,.grand td{background:#e5f2ea}
-    .preliminary-need td{background:#fff7ed}.preliminary-need-detail td{color:#7c4a03;font-size:8px}.signatures{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px;break-inside:avoid}.signature{border:1px solid #cbd4df;padding:7px;min-height:84px}.signature strong{display:block;margin-bottom:7px}.signature div{border-bottom:1px solid #758195;margin-top:13px;color:#526174}.organization{margin-top:12px;border-bottom:1px solid #758195;padding-bottom:3px;break-inside:avoid}
+    .operation td{background:#eef7f2}.operation span{display:block;color:#526174;margin-top:3px}.preliminary-need td{background:#fff7ed}.preliminary-need .numeric{white-space:normal}.preliminary-need-detail td{color:#7c4a03;font-size:8px}.signatures{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px;break-inside:avoid}.signature{border:1px solid #cbd4df;padding:7px;min-height:84px}.signature strong{display:block;margin-bottom:7px}.signature div{border-bottom:1px solid #758195;margin-top:13px;color:#526174}.organization{margin-top:12px;border-bottom:1px solid #758195;padding-bottom:3px;break-inside:avoid}
   </style></head><body>
     <header><h1>Профессиональная смета</h1><div class="subtitle">${escapeCanonicalArtifactHtml(input.workTitleRu || "Строительно-монтажные работы")}</div>
       ${explicitDemo ? '<div class="notice"><strong>ДЕМО / VALIDATION_FIXTURE — испытательный документ. Не является утверждённой проектной сметой.</strong></div>' : ""}
@@ -298,9 +327,10 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     </header>
     <div class="summary"><div><strong>Позиций состава</strong><br>${compositionRows.length}</div><div><strong>Количество известно</strong><br>${rows.length}; ждут источник ${preliminaryNeeds.length}</div><div><strong>${pricedSummary}</strong></div></div>
     <div class="notice">${priceNotice}</div>
-    <table class="client"><thead><tr><th>№</th><th>Наименование и спецификация</th><th>Категория</th><th>Ед.</th><th>Количество</th><th>Цена за единицу</th><th>Сумма</th></tr></thead><tbody>${compositionRows.map((row, index) => preliminaryRowIds.has(String(row.row_id)) ? renderPreliminaryNeedRow(row, index + 1, input.parameterTitlesRu ?? {}) : renderClientRow(row, index + 1)).join("")}</tbody></table>
+    <table class="client"><thead><tr><th>№</th><th>Наименование и спецификация</th><th>Категория</th><th>Ед.</th><th>Количество</th><th>Цена за единицу</th><th>Сумма</th></tr></thead><tbody>${renderedComposition}</tbody></table>
     <table class="totals"><tbody>${totalRows}<tr><th>Неполные цены</th><td>${missingPriceRowCount}</td></tr><tr class="grand"><th>Итого</th><td>${grandTotal}</td></tr></tbody></table>
     <div class="notice"><strong>Примечание.</strong> Документ отображает сохранённые позиции, объёмы и цены. Отсутствующая цена не подменяется нулём.</div>
+    ${questionAppendix}
     <div class="organization">Организация: __________________________________________</div>
     <div class="signatures"><div class="signature"><strong>Составил</strong><div>ФИО / должность</div><div>Дата / подпись</div></div><div class="signature"><strong>Проверил</strong><div>ФИО / должность</div><div>Дата / подпись</div></div><div class="signature"><strong>Утвердил</strong><div>ФИО / должность</div><div>Дата / подпись</div></div></div>
   </body></html>`;

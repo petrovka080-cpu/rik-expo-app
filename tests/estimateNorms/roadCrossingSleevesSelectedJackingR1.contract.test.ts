@@ -25,6 +25,25 @@ const catalog: CanonicalEstimateCatalogItem = { catalogId: selected.scope.catalo
 const prompt = "переход продавливанием, длина футляра 24 м, наружный диаметр 720 мм, внутренний 700 мм, рабочая труба 110 мм";
 const compile = (submittedParameters: Record<string, unknown>) => compileAutomaticConstructionOwnerR1({ compilerVersion: "selected-contract", catalogId: selected.scope.catalogId, primaryMeasureParameterId: "rcs_crossing_length_m", definition, submittedParameters });
 describe("selected full jacking ordinary ingress and immutable ownership", () => {
+  it("binds every existing resource to one operation and completion criterion without changing formula, unit or cost owner", () => {
+    const base = buildRoadCrossingSleevesComponentsR1(metadata).definition;
+    const originals = new Map(base.resources.map(row => [row.row_id, row]));
+    const byOperation = new Map<string, string[]>();
+    for (const row of definition.resources) {
+      const operation = row.resource_graph.operationCompositionV1 as Record<string, string>;
+      expect(operation).toMatchObject({ contractVersion: "canonical-operation-resource/v1", groupId: "road-crossing-sleeves" });
+      expect(operation.operationTitleRu).toMatch(/[А-Яа-я]/u);
+      expect(operation.completionCriterionRu).toMatch(/[А-Яа-я]/u);
+      const original = originals.get(row.row_id)!;
+      const { operationCompositionV1: _operation, ...graph } = row.resource_graph;
+      expect(graph).toEqual({ ...original.resource_graph, semanticOwnerId: `road_crossing_sleeves_selected_jacking:${row.row_id}` });
+      expect([row.formula_id, row.unit_id, row.cost_owner_id, row.inclusion_ast, row.procurement_eligible])
+        .toEqual([original.formula_id, original.unit_id, original.cost_owner_id, original.inclusion_ast, original.procurement_eligible]);
+      byOperation.set(operation.operationId, [...(byOperation.get(operation.operationId) ?? []), row.row_id]);
+    }
+    expect(byOperation.size).toBe(8);
+    expect([...byOperation.values()].flat()).toHaveLength(definition.resources.length);
+  });
   it("satisfies the governed publisher consumer contract without unsupported-only project questions", () => {
     const { resourceConsumers } = buildMasterParameterCalculationConsumers({ parameters: definition.parameters, formulas: definition.formulas, resources: definition.resources });
     expect(definition.parameters.filter(parameter => !resourceConsumers[parameter.parameter_id]?.length).map(parameter => parameter.parameter_id)).toEqual([]);

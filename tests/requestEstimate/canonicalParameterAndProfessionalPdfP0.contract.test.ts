@@ -686,7 +686,7 @@ describe("P0 canonical parameter editor and professional PDF", () => {
       ...artifact,
       metadata: {
         ...artifact.metadata,
-        templateVersion: "professional-estimate-pdf:5",
+        templateVersion: "professional-estimate-pdf:6",
         artifactKind: "professional_pdf",
         revisionId: PIPELINE_REVISION_ID,
         definitionVersionId: "definition-version-r4-a6",
@@ -733,7 +733,7 @@ describe("P0 canonical parameter editor and professional PDF", () => {
     expect(screen).toContain("historyRecord?.title");
     expect(screen).not.toContain("локальный контекст исторической версии отсутствует");
     expect(runtime).toContain("buildCanonicalArtifactMetadata");
-    expect(artifactContract).toContain('CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:5"');
+    expect(artifactContract).toContain('CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:6"');
     expect(runtime).toContain("buildCanonicalProfessionalPdfProjection");
     expect(worker).toContain("buildCanonicalProfessionalPdfProjection");
     expect(runtime).toContain("CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION");

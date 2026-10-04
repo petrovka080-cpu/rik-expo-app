@@ -1,3 +1,4 @@
+import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
 import { stableStructuredEstimateHash } from "../../estimateStructuredPipeline/buildStructuredEstimatePayload";
 import type {
   StructuredEstimatePayload,
@@ -167,6 +168,7 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
       calculationTrace: JSON.stringify(row.calculationTrace),
       sourceParameters: {
         rowCode: row.rowId,
+        canonicalOperationComposition: canonicalEstimateOperationReference(resourceGraph?.operationCompositionV1),
         canonicalPurchaseBalance: row.calculationTrace.purchaseBalance,
         normativeTrace: row.normativeTrace,
         normativeRowTraceV3: normativeTrace,

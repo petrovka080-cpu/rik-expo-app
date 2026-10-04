@@ -1,3 +1,4 @@
+import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
 import type { AdmissionDecision } from "./estimateAdmissionR3";
 
 export const ESTIMATE_PLATFORM_API_VERSION = "2026-08-14.r2" as const;
@@ -266,6 +267,10 @@ export type CanonicalEstimatePreliminaryNeedView = {
   selected: boolean;
   procurementEligible: boolean;
   formulaId: string;
+  costTreatment?: string | null;
+  manualQuantityOverride?: boolean;
+  calculatedQuantityBeforeOverride?: string | null;
+  operation?: import("./canonicalEstimateOperationComposition").CanonicalEstimateOperationReference | null;
   /** Legacy/full evidence carries traces. Compact v1 transports reference them explicitly. */
   calculationTrace?: Record<string, unknown>;
   normativeTrace?: unknown[];
@@ -322,6 +327,12 @@ export function canonicalEstimatePreliminaryNeedsFromAmendmentContract(
       selected: need.selected !== false,
       procurementEligible: need.procurement_eligible === true,
       formulaId: String(need.formula_id ?? ""),
+      operation: canonicalEstimateOperationReference(((need.calculation_trace as Record<string, unknown> | undefined)?.resourceGraph as Record<string, unknown> | undefined)?.operationCompositionV1),
+      costTreatment: need.calculation_trace && typeof need.calculation_trace === "object"
+        ? String(((need.calculation_trace as Record<string, unknown>).resourceGraph as Record<string, unknown> | undefined)?.costTreatment ?? "") || null : null,
+      manualQuantityOverride: (need.calculation_trace as Record<string, unknown> | undefined)?.manualQuantityOverride === true,
+      calculatedQuantityBeforeOverride: (need.calculation_trace as Record<string, unknown> | undefined)?.calculatedQuantityBeforeOverride == null
+        ? null : String((need.calculation_trace as Record<string, unknown>).calculatedQuantityBeforeOverride),
       calculationTrace: need.calculation_trace && typeof need.calculation_trace === "object" && !Array.isArray(need.calculation_trace)
         ? need.calculation_trace as Record<string, unknown>
         : {},

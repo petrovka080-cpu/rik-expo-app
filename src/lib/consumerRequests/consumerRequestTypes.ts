@@ -1,4 +1,5 @@
 import type { EstimatePresentationViewModel } from "../ai/estimatePresentation";
+import type { CanonicalParameterRequirementTables } from "./consumerCanonicalParameterRequirements";
 import type {
   EditableEstimatePriceSource,
   EditableEstimatePriceStatus,
@@ -284,6 +285,7 @@ export type ConsumerMarketplaceLink = {
 };
 
 export type ConsumerRepairDraftBundle = {
+  canonicalParameterRequirementTables?: CanonicalParameterRequirementTables | null;
   draft: ConsumerRepairRequestDraft;
   items: ConsumerRepairRequestItem[];
   media: ConsumerRepairRequestMedia[];
@@ -355,6 +357,7 @@ export type ApprovedEstimateHistoryRecord = {
 };
 
 export type ConsumerRepairAiDraft = {
+  canonicalParameterRequirementTables?: CanonicalParameterRequirementTables;
   titleRu: string;
   summaryRu: string;
   repairType: string;

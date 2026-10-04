@@ -70,13 +70,13 @@ function viewModel45(): RequestEstimateViewModel {
   };
 }
 
-function renderEditor(): ReactTestRenderer {
+function renderEditor(viewModel: RequestEstimateViewModel = viewModel45()): ReactTestRenderer {
   const noop = jest.fn();
   let renderer!: ReactTestRenderer;
   act(() => {
     renderer = TestRenderer.create(
       <RequestEstimateItemsEditor
-        viewModel={viewModel45()}
+        viewModel={viewModel}
         onDecrease={noop}
         onIncrease={noop}
         onQuantityChange={noop}
@@ -98,6 +98,25 @@ function visibleRowCount(renderer: ReactTestRenderer): number {
 }
 
 describe("durable request estimate category filters", () => {
+  it("discloses an operation's unresolved physical materials, labor and equipment while keeping control details separate", () => {
+    const operation = { contractVersion: "canonical-operation-resource/v1" as const, groupId: "crossing", groupTitleRu: "Переход",
+      operationId: "casing", operationTitleRu: "Сборка футляра", completionCriterionRu: "Стыки проверены, футляр установлен." };
+    const resources = (["material", "labor", "equipment"] as const).map((kind, index) => ({ ...item(index, kind), quantity: null,
+      sourceParameters: { canonicalCostTreatment: "OWN_COST", canonicalPreliminaryNeed: true, payable: false, canonicalOperationComposition: operation } }));
+    const control = { ...item(4, "material"), sourceParameters: { canonicalCostTreatment: "INFORMATIONAL_SCOPE", payable: false,
+      canonicalOperationComposition: operation } };
+    const model = { ...viewModel45(), rawItemCount: 4, calculatedItemCount: 0, preliminaryNeedCount: 3,
+      sections: [{ id: "professional_crossing_casing" as const, title: operation.operationTitleRu, operation, items: [...resources, control] }] };
+    const renderer = renderEditor(model);
+    expect(visibleRowCount(renderer)).toBe(0);
+    expect(renderer.root.findByProps({ testID: "request-estimate-operation-casing" })).toBeTruthy();
+    act(() => renderer.root.findByProps({ testID: "request-estimate-operation-toggle-casing" }).props.onPress());
+    expect(visibleRowCount(renderer)).toBe(3);
+    expect(renderer.root.findAllByProps({ testID: `consumer-repair-item-${control.id}` })).toHaveLength(0);
+    act(() => renderer.root.findByProps({ testID: "request-estimate-technical-details-toggle" }).props.onPress());
+    expect(visibleRowCount(renderer)).toBe(4);
+    act(() => renderer.unmount());
+  });
   it("keeps focused quantity rows in place when queued changes appear, with the notice and sole Apply below rows", () => {
     const noop = jest.fn();
     const apply = jest.fn();

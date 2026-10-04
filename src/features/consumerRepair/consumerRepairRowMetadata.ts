@@ -1,3 +1,5 @@
+import { consumerCanonicalMissingRequirements, type CanonicalParameterRequirementTables } from "../../lib/consumerRequests/consumerCanonicalParameterRequirements";
+
 type ConsumerRepairRowMetadataCarrier = {
   id?: string;
   itemType?: string;
@@ -59,9 +61,9 @@ export function consumerRepairRowIsCanonicalPreliminaryNeed(
 
 export function consumerRepairRowMissingRequirementLabels(
   item: ConsumerRepairRowMetadataCarrier | null | undefined,
+  tables?: CanonicalParameterRequirementTables | null,
 ): string[] {
-  const requirements = metadata(item).missingParameterRequirements;
-  if (!Array.isArray(requirements)) return [];
+  const requirements = consumerCanonicalMissingRequirements(item ?? {}, tables);
   return [...new Set(requirements.flatMap((requirement) => {
     if (!requirement || typeof requirement !== "object" || Array.isArray(requirement)) return [];
     const source = requirement as Record<string, unknown>;
@@ -76,13 +78,13 @@ export function consumerRepairRowHasSourceManagedQuantity(
   const source = metadata(item);
   const requirements = source.missingParameterRequirements;
   return source.canonicalPreliminaryNeed === true
-    && Array.isArray(requirements)
-    && requirements.some((requirement) =>
+    && ((Array.isArray(source.sourceManagedMissingParameterIds) && source.sourceManagedMissingParameterIds.length > 0)
+      || (Array.isArray(requirements) && requirements.some((requirement) =>
       requirement != null
       && typeof requirement === "object"
       && !Array.isArray(requirement)
       && (requirement as Record<string, unknown>).sourceConfirmationRequired === true
-    );
+    )));
 }
 
 export function consumerRepairRowIsNonPayable(
@@ -91,6 +93,13 @@ export function consumerRepairRowIsNonPayable(
   const source = metadata(item);
   return source.payable === false
     || VISIBLE_NON_PAYABLE_COST_TREATMENTS.has(text(source.canonicalCostTreatment));
+}
+
+/** An unresolved physical need is visible even though it cannot yet be paid. */
+export function consumerRepairRowIsTechnicalDetail(
+  item: ConsumerRepairRowMetadataCarrier | null | undefined,
+): boolean {
+  return VISIBLE_NON_PAYABLE_COST_TREATMENTS.has(text(metadata(item).canonicalCostTreatment));
 }
 
 export function consumerRepairRowCostTreatment(

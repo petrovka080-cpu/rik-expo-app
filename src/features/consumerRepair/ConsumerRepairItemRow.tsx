@@ -32,6 +32,7 @@ import { useConsumerRepairItemRowEditing } from "./useConsumerRepairItemRowEditi
 import { useCanonicalPreliminaryNeedEvidence } from "./useCanonicalPreliminaryNeedEvidence";
 
 type Props = {
+  parameterRequirementTables?: import("../../lib/consumerRequests/consumerCanonicalParameterRequirements").CanonicalParameterRequirementTables | null;
   item: ConsumerRepairRequestItem;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
@@ -69,6 +70,7 @@ function priceStatusLabel(item: ConsumerRepairRequestItem): string {
 
 function ConsumerRepairItemRowComponent({
   item,
+  parameterRequirementTables,
   onQuantityChange,
   onUnitPriceChange,
   onSpecificationChange,
@@ -105,7 +107,7 @@ function ConsumerRepairItemRowComponent({
   const preliminaryNeed = consumerRepairRowIsCanonicalPreliminaryNeed(item);
   const purchaseShortage = canonicalPurchaseShortageMessageV1([{ rowId: item.id, titleRu: item.titleRu,
     calculationTrace: { purchaseBalance: item.sourceParameters?.canonicalPurchaseBalance } }]);
-  const missingRequirementLabels = consumerRepairRowMissingRequirementLabels(item);
+  const missingRequirementLabels = consumerRepairRowMissingRequirementLabels(item, parameterRequirementTables);
   const {
     quantityInputRef,
     quantityText,
