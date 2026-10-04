@@ -102,7 +102,7 @@ async function main() {
       const manifest = (await client.query("select * from public.estimate_cumulative_manifest_entry where release_id=$1 and catalog_id=$2", [predecessorReleaseId, catalogId])).rows[0];
       invariant(manifest, `TARGET_MISSING:${catalogId}`);
       const parent = await load(client, manifest.definition_version_id, manifest.approved_template_baseline_id);
-      const frozenParent = frozen.reps.find((r: Json) => r.target.catalogId === catalogId);
+      const frozenParent = frozen.reps.find((r: Json) => r.target.catalog_id === catalogId);
       invariant(frozenParent && hash(parent) === hash(Object.fromEntries(Object.keys(parent).map(key => [key, frozenParent[key]]))), `PARENT_SNAPSHOT_DRIFT:${catalogId}`);
       const overlay = overlayOperations(parent), r = overlay.representative;
       const definitionId = uuid(`${fingerprint}:definition:${catalogId}`), baselineId = uuid(`${fingerprint}:baseline:${catalogId}`);
