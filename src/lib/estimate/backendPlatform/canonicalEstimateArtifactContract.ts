@@ -1,6 +1,7 @@
 import { canonicalMaterialQuantityBasisFromRow } from "./canonicalMaterialQuantityProjection";
 import { normalizePublicBoqNameRu } from "../publicBoqNaming";
 import { assertCanonicalPurchaseReadinessV1 } from "./canonicalPurchaseBalanceV1";
+import { formatEstimateUnitLabel } from "../../ai/globalEstimate/formatEstimateUnitLabel";
 
 export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r7";
 export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:5";
@@ -286,7 +287,7 @@ export function canonicalArtifactUnit(row: Record<string, unknown>): string {
     t_km: "т·км", m3_km: "м³·км", kg: "кг", t: "т", l: "л", m: "м", m2: "м²", m3: "м³",
     trip: "рейс", document: "док.", ratio: "коэф.", service: "услуга",
   };
-  if (unit !== "test") return localized[unit] ?? unit;
+  if (unit !== "test") return localized[unit] ?? formatEstimateUnitLabel(unit);
   const semanticOwner = `${String(row.category ?? "")} ${String(row.title_ru ?? "")}`.toLocaleLowerCase("ru-RU");
   if (/при[её]м|контрол|провер/u.test(semanticOwner)) return "проверка";
   return "испыт.";

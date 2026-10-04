@@ -6,6 +6,7 @@ import {
   assertCanonicalProfessionalPdfJobRendererVersion,
 } from "./canonicalProfessionalPdf";
 import type { CanonicalArtifactRow } from "./canonicalEstimateArtifactContract";
+import { canonicalArtifactUnit } from "./canonicalEstimateArtifactContract";
 import { canonicalEstimateParameterChoiceLabelRu } from "./canonicalEstimateParameterSemantics";
 import { publicBoqDisplayNameRu } from "../publicBoqNaming";
 import { compilePressureSewerPipelineR1, PRESSURE_SEWER_PIPELINE_SHORT_INPUT } from "../v4/pressureSewerPipelineR1";
@@ -74,6 +75,24 @@ function rows(
 }
 
 describe("R4-A6 canonical professional PDF", () => {
+  it("labels equipment and access shifts in Russian without changing immutable source quantities or units", () => {
+    const sourceRows = rows(2);
+    sourceRows[0] = { ...sourceRows[0]!, category: "equipment", title_ru: "Подмости", unit_id: "shift", quantity: "1.250000000" };
+    sourceRows[1] = { ...sourceRows[1]!, category: "work", title_ru: "Организация доступа", unit_id: "shift", quantity: "0.125000000" };
+    const unresolved = { ...rows(1)[0]!, row_id: "access-need", ordinal: 2, unit_id: "shift", quantity: null,
+      unit_price: null, amount: null, included_in_estimate: false, included_in_procurement: false,
+      procurement_eligible: false, ownership_status: "PRELIMINARY_NEED" };
+    const before = JSON.stringify({ sourceRows, unresolved });
+    const projection = buildCanonicalProfessionalPdfProjection({
+      revision: revision(2), rows: sourceRows, preliminaryNeeds: [unresolved], workTitleRu: "Подвесной потолок",
+    });
+    expect(projection.html.match(/<td class="unit">смена<\/td>/g)).toHaveLength(3);
+    expect(projection.html).not.toContain('<td class="unit">shift</td>');
+    expect(JSON.stringify({ sourceRows, unresolved })).toBe(before);
+    expect(canonicalArtifactUnit({ unit_id: "shift", calculation_trace: { displayUnitRu: "чел.-смена" } })).toBe("чел.-смена");
+    expect(["m", "item", "machine_hour", "unknown_custom_unit"].map(unit_id => canonicalArtifactUnit({ unit_id })))
+      .toEqual(["м", "шт.", "маш.-ч", "unknown_custom_unit"]);
+  });
   it("projects the real pressure-sewer technology in Russian across UI, choices and PDF without changing revision rows", async () => {
     const compiled = await compilePressureSewerPipelineR1({ ...PRESSURE_SEWER_PIPELINE_SHORT_INPUT });
     const snapshot = JSON.stringify(compiled);
@@ -106,7 +125,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-31-readable-ordinals");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-31-russian-shift-units");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,

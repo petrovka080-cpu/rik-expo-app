@@ -9,7 +9,7 @@ import {
 } from "./canonicalEstimateArtifactContract";
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-31-readable-ordinals" as const;
+  "canonical-professional-pdf.r4-a13-s27-31-russian-shift-units" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
