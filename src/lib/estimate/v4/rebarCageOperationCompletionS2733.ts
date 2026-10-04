@@ -1,6 +1,5 @@
 import { buildAutomaticConstructionOwnerR1, type AutomaticInclusionCondition, type AutomaticParameterSpec, type AutomaticRowSpec } from "./automaticConstructionOwnerR1";
-import { MONOLITHIC_REBAR_CAGE_SOURCE_ID, MONOLITHIC_REBAR_CAGE_SOURCE_METADATA, MONOLITHIC_REBAR_CAGE_NORM_ID } from "./monolithicRebarCageR1";
-import { estimateDeterministicHash } from "../estimateDeterministicHash";
+import { MONOLITHIC_REBAR_CAGE_SOURCE_ID, MONOLITHIC_REBAR_CAGE_SOURCE_METADATA, MONOLITHIC_REBAR_CAGE_NORM_ID, MONOLITHIC_REBAR_CAGE_PARAMETERS } from "./monolithicRebarCageR1";
 
 export const REBAR_CAGE_COMPLETION_S2733_CONTRACT = "rebar-cage-operation-completion:s27-33.v1";
 export const REBAR_CAGE_COMPLETION_ROWS = {
@@ -22,6 +21,9 @@ const parameter = (id: string, title: string, valueType: AutomaticParameterSpec[
  * selected only by the existing project branch, with actual approved procedure
  * and a complete equipment BOM; no productivity or safety approval is inferred. */
 export function buildRebarCageOperationCompletionS2733(catalogId: string) {
+  // The approved project source is unchanged. Reuse its accepted SHA-256
+  // identity; the platform's short calculation hash is not a source digest.
+  const projectGuide = MONOLITHIC_REBAR_CAGE_PARAMETERS.find(p => p.parameter_id === "bbs_reference")!.truth_metadata.guide as { source_snapshot_hash: string };
   const rows: AutomaticRowSpec[] = [{ rowId: REBAR_CAGE_COMPLETION_ROWS.assemblyLabor, formulaId: "cage_assembly_labor_composition_v1",
     expression: "cage_assembly_worker_h", section: "Арматурный каркас", category: "construction_work",
     title: "Фактический труд резки, гибки, сборки и установки без сварки, включённый в работу в кг",
@@ -42,7 +44,7 @@ export function buildRebarCageOperationCompletionS2733(catalogId: string) {
   }
   const addition = buildAutomaticConstructionOwnerR1({ contract: REBAR_CAGE_COMPLETION_S2733_CONTRACT, semanticOwner: catalogId,
     sourceId: MONOLITHIC_REBAR_CAGE_SOURCE_ID, normId: MONOLITHIC_REBAR_CAGE_NORM_ID,
-    sourceMetadata: { ...MONOLITHIC_REBAR_CAGE_SOURCE_METADATA, artifact_sha256: estimateDeterministicHash(MONOLITHIC_REBAR_CAGE_SOURCE_METADATA) },
+    sourceMetadata: { ...MONOLITHIC_REBAR_CAGE_SOURCE_METADATA, artifact_sha256: projectGuide.source_snapshot_hash },
     applicabilityRu: "Фактический состав труда по производственной ведомости и, только при проектной сварке, утверждённая технология и полностью укомплектованный пост по спецификации. Цена поста включает указанные комплектующие; электроды остаются отдельным существующим расходным материалом.",
     ordinary: [], profile: [], deferMissingProjectFactsToRows: true, excludedUnownedAssumptions: ["automatic labor productivity", "automatic welding approval", "automatic equipment consumption"],
     conditional: [
