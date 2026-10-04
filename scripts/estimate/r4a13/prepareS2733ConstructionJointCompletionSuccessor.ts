@@ -59,7 +59,6 @@ async function main() {
   const sourceHashes = SOURCES.map(path => ({ path, sha256: hash(readFileSync(path)) }));
   const catalogIds = [...CONSTRUCTION_JOINT_COMPLETION_TARGETS_S2733].sort();
   invariant(catalogIds.length === 80 && new Set(catalogIds).size === 80, "FINITE_SCOPE_DRIFT");
-  invariant(catalogIds.length === 84, "FINITE_SCOPE_DRIFT");
   invariant(current.productionAccessed === false, "PRODUCTION_FLAG");
   if (current.definitionReleaseId !== frozen.current.definitionReleaseId) {
     const previous = existsSync(`${OUTPUT}/acceptance.json`) ? JSON.parse(readFileSync(`${OUTPUT}/acceptance.json`, "utf8")) as Json : null;

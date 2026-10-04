@@ -48,9 +48,10 @@ export function overlayS2733ConstructionJointCompletion(parent: PurchaseGroupRep
     if (next.parameters.some(p => p.parameter_id === parameter.parameter_id)) { invariant(parameter.parameter_id === mode, "NEW_PARAMETER_COLLISION");continue; }
     next.parameters.push({ ...parameter, ordinal: next.parameters.length });addedParameterIds.push(parameter.parameter_id);
   }
-  for (const f of addition.formulas) { invariant(!next.formulas.some(old => old.formula_id === f.formula_id), "NEW_FORMULA_COLLISION");next.formulas.push(f);addedFormulaIds.push(f.formula_id); }
+  for (const f of addition.formulas) { invariant(!next.formulas.some(old => old.formula_id === f.formula_id), "NEW_FORMULA_COLLISION");next.formulas.push({ ...f, ast_sha256: hash(f.ast) });addedFormulaIds.push(f.formula_id); }
   for (const row of addition.resources) { invariant(!next.resources.some(old => old.row_id === row.row_id), "NEW_ROW_COLLISION");next.resources.push({ ...row,
-    ordinal: next.resources.length, row_type: row.category === "delivery" ? "service" : row.category });addedResourceRowIds.push(row.row_id); }
+    ordinal: next.resources.length, row_type: row.category === "delivery" ? "service" : row.category,
+    semantic_owner: `${catalogId}:${row.row_id}`, cost_owner_id: `${catalogId}:${row.row_id}` });addedResourceRowIds.push(row.row_id); }
   const operation = { contractVersion: "canonical-operation-resource/v1", groupId: catalogId, groupTitleRu: parent.passport.physical_result_ru,
     operationId: "joint", operationTitleRu: "Герметизация рабочего шва бетонирования", completionCriterionRu: "Проектный рабочий шов обеспечен гидрошпонкой, полным комплектом крепления и соединения, расходниками, трудом, применимым инструментом, программой контроля и подтверждённой поставкой; включённые компоненты не оплачиваются повторно." };
   for (const row of next.resources.filter(row => [materialId, workId, ...Object.values(ids)].includes(row.row_id))) {
