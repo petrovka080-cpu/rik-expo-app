@@ -973,7 +973,15 @@ export async function compileCanonicalEstimateCore(
     }
 
     const titleSpecification = canonicalTitleSpecification(resource, definitionParameterIds);
-    const titleSpecificationValues = titleSpecification.parameterIds.map((parameterId) => parameters[parameterId]);
+    const titleSpecificationValues = titleSpecification.parameterIds.map((parameterId) => {
+      const value = parameters[parameterId];
+      const declaredType = parameterDefinitionsById.get(parameterId)?.value_type;
+      if (typeof value === "number" && Number.isFinite(value)
+        && (declaredType === "decimal" || (declaredType === "integer" && Number.isInteger(value)))) {
+        return String(value);
+      }
+      return value;
+    });
     if (titleSpecificationValues.some((value) => value != null && typeof value !== "string")) {
       throw compilerError(`title specification parameter invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
     }

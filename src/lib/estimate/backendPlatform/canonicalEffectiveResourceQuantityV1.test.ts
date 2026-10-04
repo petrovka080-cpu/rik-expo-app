@@ -8,6 +8,19 @@ import { assertCanonicalPurchaseReadinessV1, canonicalPurchaseShortageMessageV1,
   validateCanonicalManualTransportQuantityV1, resolveCanonicalPurchaseBalanceV1 } from "./canonicalPurchaseBalanceV1";
 
 const provenance = { kind: "manual", reason: "synthetic MASTER arithmetic control; not a construction norm" };
+test("persisted scoped discrete shortage labels do not invent a reserve and leave bulk and legacy labels intact", () => {
+  const trace = { unitId: "item", quantityMode: "supply_quantum", balanceScope: "new_order_vs_required_consumption",
+    requirementBasis: "selected_order_including_contingency", plannedConsumption: "13", requiredSelectedOrder: "13",
+    consumptionShortage: "1", reserveDeficit: "0", procurementReady: false };
+  const message = (balance: Record<string, unknown>) => canonicalPurchaseShortageMessageV1(JSON.parse(JSON.stringify([
+    { title_ru: "Комплект", calculation_trace: { purchaseBalance: balance } },
+  ])));
+  expect(message(trace)).toContain("не хватает до расчётного заказа 1 item");
+  expect(message(trace)).not.toContain("с выбранным резервом");
+  expect(message({ ...trace, quantityMode: "canonical_decimal", unitId: "m3" })).toContain("заказ с выбранным резервом не покрыт на 1 m3");
+  expect(message({ ...trace, requirementBasis: undefined, balanceScope: undefined, unitId: "kg" }))
+    .toContain("не хватает для расхода 1 kg; резерв не покрыт на 0 kg");
+});
 const balance = effectivePurchaseBalanceExpressionsR1({ ownerRowId: "material:order", orderUnitId: "kg", consumed: "consumed",
   stock: "stock", reserve: "reserve", quantum: "quantum" });
 function testInput(): CanonicalEstimateCompileCoreInput {

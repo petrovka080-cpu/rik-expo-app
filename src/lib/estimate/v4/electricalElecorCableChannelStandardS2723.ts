@@ -32,6 +32,21 @@ const IEK_PRODUCTS = "IEK_ELECOR_40X25_PRODUCT_PAGES_2026_10_01";
 const KG_KRERM = "KG_KRERM_08_2015_ELECTRICAL_OFFICIAL";
 const PRELIMINARY = "S27_23_VISIBLE_CABLE_CHANNEL_PLANNING_PROFILE";
 
+/** Selected whole packages and kits, without warehouse credit or a reuse claim. */
+export const ELECOR_SELECTED_SUPPLIES = Object.freeze([
+  { rowId: "02:material:channel-packs", formula: "channel_packs", effective: "elecor_effective_channel_packs", base: "ceil(route_length_m/channel_transport_pack_m)" },
+  { rowId: "02:consumable:cutting-blades", formula: "cutting_shifts" },
+  { rowId: "03:fastener:packages", formula: "fastener_packages", effective: "elecor_effective_fastener_packages" },
+  { rowId: "03:consumable:drill-bits", formula: "drill_bits" },
+  { rowId: "04:component:straight-connector-sets", formula: "straight_connector_sets", effective: "elecor_effective_connector_sets" },
+  { rowId: "05:component:inner-corner-sets", formula: "inner_corner_sets" },
+  { rowId: "05:component:outer-corner-sets", formula: "outer_corner_sets" },
+  { rowId: "05:component:flat-angle-sets", formula: "flat_angle_sets" },
+  { rowId: "05:component:tee-sets", formula: "tee_sets" },
+  { rowId: "05:component:end-cap-sets", formula: "end_cap_sets" },
+  { rowId: "07:consumable:waste-bags", formula: "waste_bags" },
+] as const);
+
 export const ELECTRICAL_ELECOR_CABLE_CHANNEL_STANDARD_S2723_RUNTIME_INPUT = Object.freeze({
   channel_section_length_m: PROFILE.channelSectionLengthM,
   channel_transport_pack_m: PROFILE.channelTransportPackM,
@@ -153,7 +168,7 @@ const PROJECT_IDS = new Set([
 ]);
 
 export const ELECTRICAL_ELECOR_CABLE_CHANNEL_STANDARD_S2723_PARAMETERS:
-readonly CanonicalEstimateParameterDefinition[] = Object.freeze(PARAMETERS.map(
+readonly CanonicalEstimateParameterDefinition[] = Object.freeze([...PARAMETERS.map(
   (descriptor, ordinal) => ({
     parameter_id: descriptor.id,
     ordinal,
@@ -202,7 +217,14 @@ readonly CanonicalEstimateParameterDefinition[] = Object.freeze(PARAMETERS.map(
       },
     },
   }),
-));
+), ...ELECOR_SELECTED_SUPPLIES.filter(supply => "effective" in supply).map((supply, index) => ({
+  parameter_id: "effective" in supply ? supply.effective : "", ordinal: PARAMETERS.length + index,
+  value_type: "decimal", unit_id: "item", title_ru: "Принятое целое количество упаковок или комплектов",
+  required: false, default_value: null, constraints_json: { min: 0 },
+  truth_metadata: { visibility_role: "INTERNAL_ONLY", value_source_role: "BACKEND_DERIVED",
+    preliminary_compilation_allowed: true, hidden_default_forbidden: true,
+    effective_resource_quantity_v1: { sourceRowId: `electrical-elecor:${supply.rowId}`, unitId: "item" } },
+}))]);
 
 function formula(id: string, unit: string, expression: string): CanonicalEstimateFormulaDefinition {
   const compiled = compileFormulaGraph(expression);
@@ -219,7 +241,6 @@ function formula(id: string, unit: string, expression: string): CanonicalEstimat
 const F = (id: string, unit: string, expression: string) => formula(id, unit, expression);
 const GROSS = "route_length_m*(1+channel_reserve_percent/100)";
 const PACKS = `ceil(${GROSS}/channel_transport_pack_m)`;
-const ORDER = `${PACKS}*channel_transport_pack_m`;
 const PIECES = "ceil(route_length_m/channel_section_length_m)";
 const FASTENER_POINTS = "ceil(route_length_m/fastener_spacing_m)+continuous_route_count";
 const CONNECTORS = `max(0,${PIECES}-continuous_route_count)`;
@@ -231,20 +252,20 @@ readonly CanonicalEstimateFormulaDefinition[] = Object.freeze([
   F("channel_gross", "m", GROSS),
   F("channel_reserve", "m", "route_length_m*channel_reserve_percent/100"),
   F("channel_packs", "item", PACKS),
-  F("channel_order", "m", ORDER),
-  F("channel_remainder", "m", `${ORDER}-${GROSS}`),
+  F("channel_order", "m", "elecor_effective_channel_packs*channel_transport_pack_m"),
+  F("channel_remainder", "m", `max(0,elecor_effective_channel_packs*channel_transport_pack_m-(${GROSS}))`),
   F("channel_pieces", "item", PIECES),
   F("cutting_shifts", "shift", "ceil(route_length_m/cutting_productivity_m_per_shift)"),
   F("fastener_points", "item", FASTENER_POINTS),
   F("fastener_packages", "item", `ceil((${FASTENER_POINTS})/fastener_package_item)`),
-  F("fastener_order", "item", `ceil((${FASTENER_POINTS})/fastener_package_item)*fastener_package_item`),
-  F("fastener_remainder", "item", `ceil((${FASTENER_POINTS})/fastener_package_item)*fastener_package_item-(${FASTENER_POINTS})`),
+  F("fastener_order", "item", "elecor_effective_fastener_packages*fastener_package_item"),
+  F("fastener_remainder", "item", `max(0,elecor_effective_fastener_packages*fastener_package_item-(${FASTENER_POINTS}))`),
   F("drill_hours", "machine_hour", `(${FASTENER_POINTS})/drill_productivity_point_per_machine_hour`),
   F("drill_bits", "item", `ceil((${FASTENER_POINTS})/drill_bit_capacity_point)`),
   F("straight_connectors", "item", CONNECTORS),
   F("straight_connector_sets", "item", `ceil((${CONNECTORS})/accessory_items_per_set)`),
-  F("straight_connector_order", "item", `ceil((${CONNECTORS})/accessory_items_per_set)*accessory_items_per_set`),
-  F("straight_connector_remainder", "item", `ceil((${CONNECTORS})/accessory_items_per_set)*accessory_items_per_set-(${CONNECTORS})`),
+  F("straight_connector_order", "item", "elecor_effective_connector_sets*accessory_items_per_set"),
+  F("straight_connector_remainder", "item", `max(0,elecor_effective_connector_sets*accessory_items_per_set-(${CONNECTORS}))`),
   F("inner_corner_sets", "item", "ceil(inner_corner_count/accessory_items_per_set)"),
   F("outer_corner_sets", "item", "ceil(outer_corner_count/accessory_items_per_set)"),
   F("flat_angle_sets", "item", "ceil(flat_angle_count/accessory_items_per_set)"),
@@ -271,6 +292,7 @@ type ResourceSpec = Readonly<{
   source: string;
   procurement?: boolean;
   informational?: boolean;
+  titleParameterIds?: readonly string[];
 }>;
 
 const id = (short: string) => `electrical_elecor_${short}_s2723`;
@@ -282,7 +304,7 @@ const R = (
   unit: string,
   shortFormula: string,
   source: string,
-  options: Pick<ResourceSpec, "procurement" | "informational"> = {},
+  options: Pick<ResourceSpec, "procurement" | "informational" | "titleParameterIds"> = {},
 ): ResourceSpec => ({ stage, rowId, kind, title, unit, formula: id(shortFormula), source, ...options });
 
 const RESOURCE_SPECS: readonly ResourceSpec[] = [
@@ -292,32 +314,32 @@ const RESOURCE_SPECS: readonly ResourceSpec[] = [
 
   R("02 · Канал и раскрой", "electrical-elecor:02:material:channel-net", "material", "Кабель-канал IEK ELECOR 40×25 CKK10-040-025-1-K01 — чистая длина", "m", "route", IEK_CATALOG, { informational: true }),
   R("02 · Канал и раскрой", "electrical-elecor:02:material:channel-reserve", "material", "Резерв кабель-канала на раскрой", "m", "channel_reserve", PRELIMINARY, { informational: true }),
-  R("02 · Канал и раскрой", "electrical-elecor:02:material:channel-packs", "material", "Транспортные упаковки кабель-канала IEK ELECOR 40×25 по 24 м", "item", "channel_packs", IEK_CATALOG, { procurement: true }),
+  R("02 · Канал и раскрой", "electrical-elecor:02:material:channel-packs", "material", "Транспортные упаковки кабель-канала IEK ELECOR 40×25; выбранная длина упаковки, м", "item", "channel_packs", IEK_CATALOG, { procurement: true, titleParameterIds: ["channel_transport_pack_m"] }),
   R("02 · Канал и раскрой", "electrical-elecor:02:control:channel-order", "control", "Заказанная длина кабель-канала после округления упаковок", "m", "channel_order", IEK_CATALOG, { informational: true }),
-  R("02 · Канал и раскрой", "electrical-elecor:02:control:channel-remainder", "control", "Расчётный остаток кабель-канала сверх потребности с резервом", "m", "channel_remainder", IEK_CATALOG, { informational: true }),
-  R("02 · Канал и раскрой", "electrical-elecor:02:operation:cutting", "operation", "Раскрой устанавливаемых секций кабель-канала длиной 2 м", "item", "channel_pieces", IEK_CATALOG),
+  R("02 · Канал и раскрой", "electrical-elecor:02:control:channel-remainder", "control", "Прогноз превышения длины поставки над потребностью с резервом; пригодность обрезков не подтверждена", "m", "channel_remainder", IEK_CATALOG, { informational: true }),
+  R("02 · Канал и раскрой", "electrical-elecor:02:operation:cutting", "operation", "Раскрой устанавливаемых секций кабель-канала; выбранная длина секции, м", "item", "channel_pieces", IEK_CATALOG, { titleParameterIds: ["channel_section_length_m"] }),
   R("02 · Канал и раскрой", "electrical-elecor:02:equipment:cutting-tool", "equipment", "Режущий инструмент с пылеудалением для ровного раскроя", "shift", "cutting_shifts", PRELIMINARY, { procurement: true }),
   R("02 · Канал и раскрой", "electrical-elecor:02:consumable:cutting-blades", "consumable", "Комплект оснастки для резки ПВХ кабель-канала", "item", "cutting_shifts", PRELIMINARY, { procurement: true }),
 
   R("03 · Крепление", "electrical-elecor:03:fastener:points", "fastener", "Точки крепления основания кабель-канала к фактическому основанию", "item", "fastener_points", PRELIMINARY, { informational: true }),
-  R("03 · Крепление", "electrical-elecor:03:fastener:packages", "fastener", "Упаковки совместимого крепежа для выбранного основания", "item", "fastener_packages", PRELIMINARY, { procurement: true }),
+  R("03 · Крепление", "electrical-elecor:03:fastener:packages", "fastener", "Упаковки совместимого крепежа для выбранного основания; количество в упаковке, шт.", "item", "fastener_packages", PRELIMINARY, { procurement: true, titleParameterIds: ["fastener_package_item"] }),
   R("03 · Крепление", "electrical-elecor:03:control:fastener-order", "control", "Заказанное количество креплений", "item", "fastener_order", PRELIMINARY, { informational: true }),
-  R("03 · Крепление", "electrical-elecor:03:control:fastener-remainder", "control", "Расчётный остаток креплений", "item", "fastener_remainder", PRELIMINARY, { informational: true }),
+  R("03 · Крепление", "electrical-elecor:03:control:fastener-remainder", "control", "Прогноз превышения количества поставленных креплений над потребностью; пригодность не подтверждена", "item", "fastener_remainder", PRELIMINARY, { informational: true }),
   R("03 · Крепление", "electrical-elecor:03:operation:drill-and-fix", "operation", "Сверление и крепление основания кабель-канала", "item", "fastener_points", KG_KRERM),
   R("03 · Крепление", "electrical-elecor:03:equipment:rotary-hammer", "equipment", "Перфоратор или дрель по фактическому основанию", "machine_hour", "drill_hours", PRELIMINARY, { procurement: true }),
   R("03 · Крепление", "electrical-elecor:03:consumable:drill-bits", "consumable", "Комплекты буров/свёрл для основания", "item", "drill_bits", PRELIMINARY, { procurement: true }),
 
   R("04 · Прямые стыки", "electrical-elecor:04:component:straight-connectors-net", "component", "Соединители КМС 40×25 — потребность", "item", "straight_connectors", IEK_PRODUCTS, { informational: true }),
-  R("04 · Прямые стыки", "electrical-elecor:04:component:straight-connector-sets", "component", "Комплекты соединителей КМС 40×25 по 4 шт.", "item", "straight_connector_sets", IEK_PRODUCTS, { procurement: true }),
+  R("04 · Прямые стыки", "electrical-elecor:04:component:straight-connector-sets", "component", "Комплекты соединителей КМС 40×25; количество в комплекте, шт.", "item", "straight_connector_sets", IEK_PRODUCTS, { procurement: true, titleParameterIds: ["accessory_items_per_set"] }),
   R("04 · Прямые стыки", "electrical-elecor:04:control:straight-connector-order", "control", "Заказанные соединители КМС", "item", "straight_connector_order", IEK_PRODUCTS, { informational: true }),
-  R("04 · Прямые стыки", "electrical-elecor:04:control:straight-connector-remainder", "control", "Расчётный остаток соединителей КМС", "item", "straight_connector_remainder", IEK_PRODUCTS, { informational: true }),
+  R("04 · Прямые стыки", "electrical-elecor:04:control:straight-connector-remainder", "control", "Прогноз превышения количества поставленных соединителей над потребностью; пригодность не подтверждена", "item", "straight_connector_remainder", IEK_PRODUCTS, { informational: true }),
   R("04 · Прямые стыки", "electrical-elecor:04:operation:straight-joints", "operation", "Стыковка прямых секций и установка соединителей КМС", "item", "straight_connectors", IEK_PRODUCTS),
 
-  R("05 · Узлы трассы", "electrical-elecor:05:component:inner-corner-sets", "component", "Комплекты внутренних углов КМВ 40×25 по 4 шт.", "item", "inner_corner_sets", IEK_PRODUCTS, { procurement: true }),
-  R("05 · Узлы трассы", "electrical-elecor:05:component:outer-corner-sets", "component", "Комплекты внешних углов КМН 40×25 по 4 шт.", "item", "outer_corner_sets", IEK_PRODUCTS, { procurement: true }),
-  R("05 · Узлы трассы", "electrical-elecor:05:component:flat-angle-sets", "component", "Комплекты плоских поворотов КМП 40×25 по 4 шт.", "item", "flat_angle_sets", IEK_CATALOG, { procurement: true }),
-  R("05 · Узлы трассы", "electrical-elecor:05:component:tee-sets", "component", "Комплекты Т-углов КМТ 40×25 по 4 шт.", "item", "tee_sets", IEK_CATALOG, { procurement: true }),
-  R("05 · Узлы трассы", "electrical-elecor:05:component:end-cap-sets", "component", "Комплекты заглушек КМЗ 40×25 по 4 шт.", "item", "end_cap_sets", IEK_PRODUCTS, { procurement: true }),
+  R("05 · Узлы трассы", "electrical-elecor:05:component:inner-corner-sets", "component", "Комплекты внутренних углов КМВ 40×25; количество в комплекте, шт.", "item", "inner_corner_sets", IEK_PRODUCTS, { procurement: true, titleParameterIds: ["accessory_items_per_set"] }),
+  R("05 · Узлы трассы", "electrical-elecor:05:component:outer-corner-sets", "component", "Комплекты внешних углов КМН 40×25; количество в комплекте, шт.", "item", "outer_corner_sets", IEK_PRODUCTS, { procurement: true, titleParameterIds: ["accessory_items_per_set"] }),
+  R("05 · Узлы трассы", "electrical-elecor:05:component:flat-angle-sets", "component", "Комплекты плоских поворотов КМП 40×25; количество в комплекте, шт.", "item", "flat_angle_sets", IEK_CATALOG, { procurement: true, titleParameterIds: ["accessory_items_per_set"] }),
+  R("05 · Узлы трассы", "electrical-elecor:05:component:tee-sets", "component", "Комплекты Т-углов КМТ 40×25; количество в комплекте, шт.", "item", "tee_sets", IEK_CATALOG, { procurement: true, titleParameterIds: ["accessory_items_per_set"] }),
+  R("05 · Узлы трассы", "electrical-elecor:05:component:end-cap-sets", "component", "Комплекты заглушек КМЗ 40×25; количество в комплекте, шт.", "item", "end_cap_sets", IEK_PRODUCTS, { procurement: true, titleParameterIds: ["accessory_items_per_set"] }),
   R("05 · Узлы трассы", "electrical-elecor:05:operation:inner-corners", "operation", "Монтаж внутренних углов трассы", "item", "inner_corners", IEK_PRODUCTS),
   R("05 · Узлы трассы", "electrical-elecor:05:operation:outer-corners", "operation", "Монтаж внешних углов трассы", "item", "outer_corners", IEK_PRODUCTS),
   R("05 · Узлы трассы", "electrical-elecor:05:operation:flat-angles", "operation", "Монтаж плоских поворотов трассы", "item", "flat_angles", IEK_CATALOG),
@@ -351,6 +373,8 @@ function resource(spec: ResourceSpec, ordinal: number): CanonicalEstimateResourc
   const informational = spec.informational === true;
   const procurementEligible = spec.procurement
     ?? (["material", "component", "fastener", "consumable"].includes(spec.kind) && !informational);
+  const supply = ELECOR_SELECTED_SUPPLIES.find(value => `electrical-elecor:${value.rowId}` === spec.rowId);
+  const selectedOrder = ELECTRICAL_ELECOR_CABLE_CHANNEL_STANDARD_S2723_FORMULAS.find(value => value.formula_id === spec.formula);
   const resourceGraph = {
     formulaId: spec.formula,
     normalizedUom: spec.unit,
@@ -361,6 +385,14 @@ function resource(spec: ResourceSpec, ordinal: number): CanonicalEstimateResourc
     costTreatment: informational ? "INFORMATIONAL_SCOPE" : "OWN_COST",
     payable: !informational,
     noDoubleCount: true,
+    ...(spec.titleParameterIds ? { titleSpecificationParameterIds: [...spec.titleParameterIds], titleSpecificationMode: "APPEND" } : {}),
+    ...(supply ? {
+      purchaseBalanceV1: { quantityMode: "supply_quantum", balanceScope: "new_order_vs_required_consumption",
+        requirementBasis: "selected_order_including_contingency", unitId: "item", stockExpression: "0", reserveExpression: "0",
+        orderQuantumExpression: "1", consumedExpression: selectedOrder!.expression_source,
+        plannedConsumptionExpression: "base" in supply ? supply.base : selectedOrder!.expression_source },
+      ...("effective" in supply ? { effectiveQuantityOutputV1: { parameterId: supply.effective, unitId: "item" } } : {}),
+    } : {}),
     primaryMeasureParameterId: "route_length_m",
     preliminaryProfileId: ELECTRICAL_ELECOR_CABLE_CHANNEL_STANDARD_S2723_NORM_ID,
     visibleAssumptionPolicy: PROFILE.assumptionPolicy,
@@ -434,9 +466,11 @@ export function electricalElecorCableChannelStandardMissingRows(
 
 export async function compileElectricalElecorCableChannelStandardS2723(
   submittedParameters: Record<string, unknown>,
+  rowOverrides?: Parameters<typeof compileCanonicalEstimateCore>[0]["rowOverrides"],
 ): Promise<CanonicalEstimateCompileCoreResult> {
   return compileCanonicalEstimateCore({
-    operation: "compile",
+    operation: rowOverrides ? "recalculate" : "compile",
+    rowOverrides,
     compilerVersion: "canonical-estimate-compiler.electrical-elecor-cable-channel-standard-s27-23.v1",
     catalogId: ELECTRICAL_ELECOR_CABLE_CHANNEL_STANDARD_S2723_CATALOG_ID,
     primaryMeasureParameterId: "route_length_m",

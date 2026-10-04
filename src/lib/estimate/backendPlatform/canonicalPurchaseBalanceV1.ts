@@ -134,6 +134,8 @@ export function canonicalPurchaseShortagesV1(rows: readonly PurchaseTraceRow[]) 
     return [{ rowId: String(row.row_id ?? row.rowId ?? ""), titleRu: String(row.title_ru ?? row.titleRu ?? "Материал"),
       unitId: String(balance.unitId ?? row.unit_id ?? row.unitId ?? ""),
       requirementBasis: balance.requirementBasis,
+      ...(balance.quantityMode === "supply_quantum" && balance.balanceScope === "new_order_vs_required_consumption"
+        ? { discreteOrderScope: true } : {}),
       consumptionShortage: String(balance.consumptionShortage ?? "0"), reserveDeficit: String(balance.reserveDeficit ?? "0") }];
   });
 }
@@ -142,7 +144,9 @@ export function canonicalPurchaseShortageMessageV1(rows: readonly PurchaseTraceR
   const shortages = canonicalPurchaseShortagesV1(rows);
   if (shortages.length) {
     const reasons = shortages.map(row => row.requirementBasis === "selected_order_including_contingency"
-      ? `${row.titleRu}: заказ с выбранным резервом не покрыт на ${row.consumptionShortage} ${row.unitId}`
+      ? row.discreteOrderScope
+        ? `${row.titleRu}: не хватает до расчётного заказа ${row.consumptionShortage} ${row.unitId}`
+        : `${row.titleRu}: заказ с выбранным резервом не покрыт на ${row.consumptionShortage} ${row.unitId}`
       : `${row.titleRu}: не хватает для расхода ${row.consumptionShortage} ${row.unitId}; резерв не покрыт на ${row.reserveDeficit} ${row.unitId}`).join("; ");
     return `Закупка не готова: ${reasons}. Уточните заказ или подтверждённое снабжение.`;
   }

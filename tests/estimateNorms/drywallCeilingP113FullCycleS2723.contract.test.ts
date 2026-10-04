@@ -117,7 +117,7 @@ describe("S27.23 complete KNAUF P113 ceiling", () => {
     expect(result.rows.find(row => row.row_id === "ceiling-p113-full:02:control:pp-profile-remainder")?.included_in_estimate).toBe(false);
     const selection = selectCanonicalArtifactRows(stored);
     expect(selection.procurementRows.some(row => row.row_id === ppId || row.row_id === boardId)).toBe(false);
-    expect(() => assertCanonicalPurchaseReadinessV1(reopened)).toThrow("заказ с выбранным резервом");
+    expect(() => assertCanonicalPurchaseReadinessV1(reopened)).toThrow("не хватает до расчётного заказа");
     expect(() => buildCanonicalProcurementProjection({ revision: { id: "P113-saved", release_id: "TEST", catalog_id: "TEST", checksum_sha256: "TEST", row_count: stored.length },
       sourceRows: selection.sourceRows, procurementRows: selection.procurementRows })).toThrow("Закупка не готова");
     const unmodifiedControls = await compileDrywallCeilingP113FullCycleS2723({ ...DRYWALL_CEILING_P113_FULL_CYCLE_S2723_ACCEPTANCE_INPUT }, {

@@ -865,6 +865,58 @@ describe("canonicalEstimateCompileCore", () => {
     const result = await compileCanonicalEstimateCore(input);
     expect(result.rows[0]!.title_ru).toBe("Бетонная смесь B25, W6, F150, P4");
   });
+  it("appends finite typed packaging dimensions and whole counts without changing quantity inputs", async () => {
+    const input = baseInput();
+    input.parameterDefinitions.push(
+      { parameter_id: "package_length", value_type: "decimal", required: true, default_value: null, constraints_json: { min: 0.1 } },
+      { parameter_id: "kit_count", value_type: "integer", required: true, default_value: null, constraints_json: { min: 1 } },
+      { parameter_id: "section_length", value_type: "decimal", required: true, default_value: null, constraints_json: { min: 0.1 } },
+    );
+    Object.assign(input.submittedParameters, { package_length: 25, kit_count: 5, section_length: 2 });
+    input.resourceDefinitions[0]!.title_ru = "Выбранная упаковка/комплект/секция";
+    input.resourceDefinitions[0]!.resource_graph = { titleSpecificationParameterIds: ["package_length", "kit_count", "section_length"], titleSpecificationMode: "APPEND" };
+    const result = await compileCanonicalEstimateCore(input);
+    expect(result.rows[0]!.title_ru).toBe("Выбранная упаковка/комплект/секция — 25, 5, 2");
+    expect(result.rows[0]!.quantity).toBe("11");
+    expect(result.parameters.package_length).toBe(25);
+    expect(result.parameters.kit_count).toBe(5);
+    input.submittedParameters.package_length = 24;
+    expect((await compileCanonicalEstimateCore(input)).rows[0]!.title_ru).toContain(" — 24, 5, 2");
+  });
+  it("rejects boolean title values instead of coercing arbitrary non-string values", async () => {
+    const input = baseInput();
+    input.parameterDefinitions.push({ parameter_id: "boolean_title", value_type: "boolean", required: true, default_value: null, constraints_json: {} });
+    input.submittedParameters.boolean_title = true;
+    input.resourceDefinitions[0]!.resource_graph = { titleSpecificationParameterIds: ["boolean_title"], titleSpecificationMode: "APPEND" };
+    await expect(compileCanonicalEstimateCore(input)).rejects.toMatchObject({ code: "DEFINITION_INTEGRITY_FAILED" });
+  });
+  it.each([true, false])("preserves local missing numeric title semantics, required=%s", async required => {
+    const input = baseInput();
+    input.parameterDefinitions.push({ parameter_id: "package_length", value_type: "decimal", required, default_value: null, constraints_json: {} });
+    input.resourceDefinitions[0]!.resource_graph = { titleSpecificationParameterIds: ["package_length"], titleSpecificationMode: "APPEND" };
+    const result = await compileCanonicalEstimateCore(input);
+    if (required) {
+      expect(result.rows).toHaveLength(0);
+      expect(result.preliminaryNeeds[0]).toMatchObject({ row_id: "material:board", quantity: "11", missing_parameter_ids: ["package_length"] });
+    } else {
+      expect(result.preliminaryNeeds).toEqual([]);
+      expect(result.rows[0]!.title_ru).toBe("Листовой материал");
+    }
+  });
+  it("keeps the existing whole-integer validation ahead of numeric title rendering", async () => {
+    const input = baseInput();
+    input.parameterDefinitions.push({ parameter_id: "kit_count", value_type: "integer", required: true, default_value: null, constraints_json: {} });
+    input.submittedParameters.kit_count = 4.5;
+    input.resourceDefinitions[0]!.resource_graph = { titleSpecificationParameterIds: ["kit_count"], titleSpecificationMode: "APPEND" };
+    await expect(compileCanonicalEstimateCore(input)).rejects.toThrow();
+  });
+  it.each([Infinity, NaN, { size: 25 }])("rejects invalid numeric title input %s before it becomes public text", async value => {
+    const input = baseInput();
+    input.parameterDefinitions.push({ parameter_id: "numeric_title", value_type: "decimal", required: true, default_value: null, constraints_json: {} });
+    input.submittedParameters.numeric_title = value;
+    input.resourceDefinitions[0]!.resource_graph = { titleSpecificationParameterIds: ["numeric_title"], titleSpecificationMode: "APPEND" };
+    await expect(compileCanonicalEstimateCore(input)).rejects.toThrow();
+  });
 
   it("keeps a calculable resource in the estimate when an optional title specification is absent", async () => {
     const input = baseInput();

@@ -87,14 +87,27 @@ describe("R4 canonical estimate title parity", () => {
     const reopened = JSON.parse(JSON.stringify(item)) as ConsumerRepairRequestItem;
     const evidence = buildRequestEstimateProfessionalRowEvidence(reopened)!;
     expect(evidence.formulaLabel).toContain("Расчётное количество единиц поставки без планового запаса: 484 шт.");
-    expect(evidence.formulaLabel).toContain("Расчётный заказ с выбранным резервом: 508 шт.");
-    expect(evidence.formulaLabel).toContain("не покрыт на 8 шт.");
+    expect(evidence.formulaLabel).toContain("Расчётный заказ: 508 шт.");
+    expect(evidence.formulaLabel).toContain("Не хватает до расчётного заказа 8 шт.");
+    expect(evidence.formulaLabel).not.toContain("с выбранным резервом");
     expect(evidence.formulaLabel).not.toContain("объём укладки");
     reopened.sourceParameters!.canonicalPurchaseBalance = { ...reopened.sourceParameters!.canonicalPurchaseBalance as object,
       effectiveOrder: "510", consumptionShortage: "0", excessOrderAboveRequiredConsumption: "2" };
     const surplus = buildRequestEstimateProfessionalRowEvidence(reopened)!;
-    expect(surplus.formulaLabel).toContain("Превышение расчётного заказа с выбранным резервом: 2 шт.");
+    expect(surplus.formulaLabel).toContain("Превышение расчётного заказа: 2 шт.");
     expect(surplus.formulaLabel).toContain("Пригодность излишка для дальнейшего использования не подтверждена");
+  });
+  it("does not invent a reserve for scoped kits whose planned and required counts coincide", () => {
+    const item = canonicalItem("elecor:kit", "Комплект соединителей", "a".repeat(64), 0);
+    item.unit = "item";
+    item.sourceParameters = { ...item.sourceParameters, smartEstimateProjectionV2: {}, canonicalPurchaseBalance: {
+      quantityMode: "supply_quantum", balanceScope: "new_order_vs_required_consumption", unitId: "item",
+      requirementBasis: "selected_order_including_contingency", plannedConsumption: "13", requiredSelectedOrder: "13",
+      effectiveOrder: "12", consumptionShortage: "1", excessOrderAboveRequiredConsumption: "0" } };
+    const label = buildRequestEstimateProfessionalRowEvidence(JSON.parse(JSON.stringify(item)))!.formulaLabel;
+    expect(label).toContain("Расчётный заказ: 13 шт.");
+    expect(label).toContain("Не хватает до расчётного заказа 1 шт.");
+    expect(label).not.toContain("с выбранным резервом");
   });
   it("distinguishes installed volume from selected concrete order and its deficit after reopening", () => {
     const item = canonicalItem("material:order", "Бетон", "a".repeat(64), 0);

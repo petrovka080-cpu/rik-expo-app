@@ -257,14 +257,14 @@ export function buildRequestEstimateProfessionalRowEvidence(
     && isFormulaGraphExactDecimal(value) && compareFormulaGraphDecimals(value, "0") > 0;
   const selectedOrderBasis = bulkOrderScope && balance?.requirementBasis === "selected_order_including_contingency";
   const orderBasisSuffix = selectedOrderBasis
-    ? ` ${discreteOrderScope ? "Расчётное количество единиц поставки без планового запаса" : "Проектный объём укладки"}: ${balance.plannedConsumption} ${balanceUnit}. Расчётный заказ с выбранным резервом: ${balance.requiredSelectedOrder} ${balanceUnit}. Принятый заказ: ${balance.effectiveOrder} ${balanceUnit}.`
+    ? ` ${discreteOrderScope ? "Расчётное количество единиц поставки без планового запаса" : "Проектный объём укладки"}: ${balance.plannedConsumption} ${balanceUnit}. ${discreteOrderScope ? "Расчётный заказ" : "Расчётный заказ с выбранным резервом"}: ${balance.requiredSelectedOrder} ${balanceUnit}. Принятый заказ: ${balance.effectiveOrder} ${balanceUnit}.`
     : "";
   const bulkBalanceSuffix = bulkOrderScope && exactPositive(balance?.consumptionShortage)
     ? selectedOrderBasis
-      ? ` Заказ с выбранным резервом не покрыт на ${balance.consumptionShortage} ${balanceUnit}.`
+      ? ` ${discreteOrderScope ? "Не хватает до расчётного заказа" : "Заказ с выбранным резервом не покрыт на"} ${balance.consumptionShortage} ${balanceUnit}.`
       : ` Заказ не покрывает расчётную потребность: не хватает ${balance.consumptionShortage} ${balanceUnit}.`
     : bulkOrderScope && exactPositive(balance?.excessOrderAboveRequiredConsumption)
-      ? ` ${selectedOrderBasis ? "Превышение расчётного заказа с выбранным резервом" : "Заказ сверх расчётной потребности"}: ${balance.excessOrderAboveRequiredConsumption} ${balanceUnit}. Пригодность излишка для дальнейшего использования не подтверждена.`
+      ? ` ${selectedOrderBasis ? discreteOrderScope ? "Превышение расчётного заказа" : "Превышение расчётного заказа с выбранным резервом" : "Заказ сверх расчётной потребности"}: ${balance.excessOrderAboveRequiredConsumption} ${balanceUnit}. Пригодность излишка для дальнейшего использования не подтверждена.`
       : "";
   const dependencies = Array.isArray(projection.parameterDependencies)
     ? projection.parameterDependencies.filter((value): value is string => typeof value === "string" && value.trim().length > 0)

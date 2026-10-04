@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import {
+  ELECOR_SELECTED_SUPPLIES,
   ELECTRICAL_ELECOR_CABLE_CHANNEL_STANDARD_S2723_ACCEPTANCE_INPUT,
   ELECTRICAL_ELECOR_CABLE_CHANNEL_STANDARD_S2723_CATALOG_ID,
   ELECTRICAL_ELECOR_CABLE_CHANNEL_STANDARD_S2723_FORMULAS,
@@ -20,6 +21,7 @@ import {
   compileElectricalElecorCableChannelStandardS2723,
   electricalElecorCableChannelStandardMissingRows,
 } from "../../../src/lib/estimate/v4/electricalElecorCableChannelStandardS2723";
+import { assertCanonicalPurchaseReadinessV1 } from "../../../src/lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
 import { CATALOG_INDEPENDENT_COMPLETENESS_MAP_CONTRACT } from
   "./catalogFirstEstimateMinimumInputAudit.shared";
 import {
@@ -98,6 +100,16 @@ async function verifyCore(): Promise<Json> {
     ...ELECTRICAL_ELECOR_CABLE_CHANNEL_STANDARD_S2723_ACCEPTANCE_INPUT,
     channel_transport_pack_m: 25,
   });
+  const accepted = await compileElectricalElecorCableChannelStandardS2723({ ...ELECTRICAL_ELECOR_CABLE_CHANNEL_STANDARD_S2723_ACCEPTANCE_INPUT }, {
+    "electrical-elecor:02:material:channel-packs": { quantity: "6", provenance: { kind: "manual", reason: "VALIDATION_FIXTURE accepted whole packages" } },
+    "electrical-elecor:03:fastener:packages": { quantity: "4", provenance: { kind: "manual", reason: "VALIDATION_FIXTURE accepted whole packages" } },
+    "electrical-elecor:04:component:straight-connector-sets": { quantity: "14", provenance: { kind: "manual", reason: "VALIDATION_FIXTURE accepted whole kits" } },
+  });
+  const shortage = await compileElectricalElecorCableChannelStandardS2723({ ...ELECTRICAL_ELECOR_CABLE_CHANNEL_STANDARD_S2723_ACCEPTANCE_INPUT }, {
+    "electrical-elecor:02:material:channel-packs": { quantity: "4", includedInProcurement: true, provenance: { kind: "manual", reason: "VALIDATION_FIXTURE shortage" } },
+  });
+  let shortageCode: unknown;
+  try { assertCanonicalPurchaseReadinessV1(shortage.rows); } catch (error) { shortageCode = (error as { code?: unknown }).code; }
   const rowIds = new Set(complete.rows.map((row) => row.row_id));
   const completenessErrors = validateIndependentCompletenessMapReferences({
     completenessMap: publisherCompletenessMap,
@@ -117,6 +129,23 @@ async function verifyCore(): Promise<Json> {
     "electrical-elecor:05:operation:end-caps",
   ].sort();
   const assertions = {
+    selectedWholeSupplies: ELECOR_SELECTED_SUPPLIES.length === 11
+      && ELECTRICAL_ELECOR_CABLE_CHANNEL_STANDARD_S2723_RESOURCES.filter(row => row.resource_graph.purchaseBalanceV1).length === 11,
+    acceptedOrderControls: quantity(accepted.rows, "electrical-elecor:02:control:channel-order") === 144
+      && quantity(accepted.rows, "electrical-elecor:02:control:channel-remainder") === 39
+      && quantity(accepted.rows, "electrical-elecor:03:control:fastener-order") === 400
+      && quantity(accepted.rows, "electrical-elecor:03:control:fastener-remainder") === 199
+      && quantity(accepted.rows, "electrical-elecor:04:control:straight-connector-order") === 56
+      && quantity(accepted.rows, "electrical-elecor:04:control:straight-connector-remainder") === 7,
+    acceptedKeepsInstallationAndDelivery: quantity(accepted.rows, "electrical-elecor:02:operation:cutting") === 50
+      && quantity(accepted.rows, "electrical-elecor:03:fastener:points") === 201
+      && quantity(accepted.rows, "electrical-elecor:04:component:straight-connectors-net") === 49
+      && quantity(accepted.rows, "electrical-elecor:06:operation:channel-installation") === 100
+      && quantity(accepted.rows, "electrical-elecor:07:delivery:materials") === 1,
+    shortageCannotBeProcurementReady: shortageCode === "PROCUREMENT_MATERIAL_SHORTAGE"
+      && quantity(shortage.rows, "electrical-elecor:02:control:channel-order") === 96
+      && quantity(shortage.rows, "electrical-elecor:02:control:channel-remainder") === 0
+      && shortage.rows.find(row => row.row_id === "electrical-elecor:02:material:channel-packs")?.included_in_procurement === false,
     firstEstimateAppearsImmediately: first.rows.length === 31,
     unknownNodesRemainVisible:
       JSON.stringify(first.preliminaryNeeds.map((need) => need.row_id).sort())
@@ -185,21 +214,21 @@ async function verifyCore(): Promise<Json> {
 }
 
 void runMasterSingleDefinitionSuccessorR1({
-  contract: "rik-expo-app.s27-23.electrical-elecor-cable-channel-standard-successor.v1",
+  contract: "rik-expo-app.s27-31.electrical-elecor-accepted-order-successor.v1",
   stopCode: "S27_23_ELECTRICAL_ELECOR_CABLE_CHANNEL_STANDARD",
-  applicationName: "s27-23-electrical-elecor-cable-channel-standard-successor",
+  applicationName: "s27-31-electrical-elecor-accepted-order-successor",
   expectedBranch: "codex/r4-a5-clean-08b18902",
   masterPath: resolve(process.env.R4A13_MASTER_PATH
-    ?? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (63).md"),
+    ?? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (71).md"),
   masterSha256: process.env.R4A13_MASTER_SHA256
-    ?? "e1c70828ba30bb4dae395c2766f8ff7e13467ec51592198f4722a64edf8126ca",
+    ?? "783d0425e1f0f0f0ea8a262be454e39d13e94e1a2ad5d1c6cc4b1e1314e624f1",
   parentReleaseId: process.env.R4A13_PARENT_DEFINITION_RELEASE_ID
     ?? currentRelease.definitionReleaseId,
   parentSearchReleaseId: process.env.R4A13_PARENT_SEARCH_RELEASE_ID
     ?? currentRelease.searchReleaseId,
   currentReleasePath,
   outputRoot: resolve(process.env.R4A13_OUTPUT_ROOT
-    ?? ".release-runtime/r568/s27-23/electrical-elecor-cable-channel-standard-successor"),
+    ?? ".release-runtime/r568/s27-31/elecor-accepted-order-current"),
   sourcePaths: [
     "data/estimate-benchmarks/source-packs/electrical-elecor-cable-channel-standard-s27-23.json",
     "src/lib/estimate/v4/electricalElecorCableChannelStandardS2723.ts",
@@ -208,6 +237,9 @@ void runMasterSingleDefinitionSuccessorR1({
     "scripts/estimate/r4a13/catalogFirstEstimateMinimumInputAudit.shared.ts",
     "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts",
     "scripts/estimate/r4a13/prepareS2723ElectricalElecorCableChannelStandardSuccessor.ts",
+    "scripts/estimate/r4a13/readbackS2731ElecorAcceptedOrderIndependent.ts",
+    "src/lib/estimate/backendPlatform/canonicalPurchaseBalanceV1.ts",
+    "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
   ],
   catalogId: ELECTRICAL_ELECOR_CABLE_CHANNEL_STANDARD_S2723_CATALOG_ID,
   sourceId: ELECTRICAL_ELECOR_CABLE_CHANNEL_STANDARD_S2723_SOURCE_ID,
@@ -258,6 +290,11 @@ void runMasterSingleDefinitionSuccessorR1({
     unknownRouteNodesCreateVisibleDependentNeeds: true,
     profileAssumptionsVisibleAndEditable: true,
     cableAndDevicesExcluded: true,
+    wholeSelectedSupplyOwners: 11,
+    effectiveOrderOutputs: 3,
+    effectivePhysicalControls: 6,
+    inventoryCreditDeclared: false,
+    deliveryRemainsIndependentProjectFact: true,
   },
   binding: {
     rowId: "electrical-elecor:02:material:channel-packs",
@@ -271,10 +308,17 @@ void runMasterSingleDefinitionSuccessorR1({
     },
   },
   locator: {
-    key: "electrical-elecor-cable-channel-standard-s27-23-balance-r2",
+    key: "electrical-elecor-accepted-order-s27-31",
     payload: {
       kind: "MANUFACTURER_SYSTEM_TECHNOLOGY_MAP",
       sourcePackSha256: ELECTRICAL_ELECOR_CABLE_CHANNEL_STANDARD_S2723_SOURCE_PACK_SHA256,
+      expectedResourceIds: ELECTRICAL_ELECOR_CABLE_CHANNEL_STANDARD_S2723_RESOURCES.map(row => row.row_id),
+      expectedFormulaIds: ELECTRICAL_ELECOR_CABLE_CHANNEL_STANDARD_S2723_FORMULAS.map(formula => formula.formula_id),
+      selectedSupplyOwnerIds: ELECOR_SELECTED_SUPPLIES.map(supply => `electrical-elecor:${supply.rowId}`),
+      effectiveOutputBindings: ELECOR_SELECTED_SUPPLIES.flatMap(supply => "effective" in supply
+        ? [{ ownerRowId: `electrical-elecor:${supply.rowId}`, parameterId: supply.effective, unitId: "item" }] : []),
+      effectiveControlRowIds: ["02:control:channel-order", "02:control:channel-remainder", "03:control:fastener-order", "03:control:fastener-remainder",
+        "04:control:straight-connector-order", "04:control:straight-connector-remainder"].map(id => `electrical-elecor:${id}`),
       officialManufacturerCatalog:
         ELECTRICAL_ELECOR_CABLE_CHANNEL_STANDARD_S2723_SOURCE_METADATA.official_url,
       restoredOfficialSnapshotManifest:
