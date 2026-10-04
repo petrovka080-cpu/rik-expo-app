@@ -4,6 +4,8 @@ import { PILE_CAP_VIBRATION_FORMULAS, PILE_CAP_VIBRATION_PARAMETERS, PILE_CAP_VI
 import { compileCanonicalEstimateCore, type CanonicalEstimateCompileCoreInput } from "../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
 import { estimateDeterministicHash } from "../../src/lib/estimate/estimateDeterministicHash";
 import { buildCanonicalProcurementProjection, selectCanonicalArtifactRows } from "../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract";
+import { CONCRETE_SLAB_CONCRETE_PLACEMENT_PARAMETERS, CONCRETE_SLAB_CONCRETE_PLACEMENT_FORMULAS,
+  CONCRETE_SLAB_CONCRETE_PLACEMENT_RESOURCES, concreteSlabConcretePlacementAcceptanceInputR1 } from "../../src/lib/estimate/v4/concreteSlabConcretePlacementR1";
 
 const kitFacts = { vibration_equipment_accessories_pricing_mode: "INCLUDED_IN_EQUIPMENT_RATE",
   vibration_equipment_accessories_specification: "DEMO: 1 compatible head, 1 flexible shaft and 2 coupling pins per set; actual selected cleaning consumables included",
@@ -21,6 +23,31 @@ function compile(parameters: Record<string, unknown>, rowOverrides: CanonicalEst
     submittedParameters: parameters, confirmedParameters: {}, currencyCode: "KGS", maximumResourceRows: 7, rowOverrides, hashJson: estimateDeterministicHash });
 }
 describe("S27.33 vibration equipment and labor disclosure", () => {
+  it("completes the existing placement vibrator without replacing equipment or operator hours", async () => {
+    const addition = buildVibrationOperationCompletionS2733("placement-vibration-test", undefined,
+      { machineHoursParameterId: "deep_vibrator_machine_h", equipmentOwnerRowId: "equipment:concrete:deep-vibrator" });
+    const parameters = { ...concreteSlabConcretePlacementAcceptanceInputR1("standard"), ...kitFacts,
+      vibration_equipment_specification: "DEMO selected compatible vibrator under the stated consolidation method",
+      vibration_equipment_price_scope_reference: "DEMO energy in equipment rate, operator in existing placement labor; accessories separately identified",
+      vibration_equipment_delivery_mode: "SEPARATE_CONFIRMED_TRIPS", vibration_equipment_delivery_reference: "DEMO two confirmed trips equipment and complete kits, driver and return included",
+      vibration_equipment_delivery_trip_count: 2 };
+    const run = (submittedParameters: Record<string, unknown>, rowOverrides: CanonicalEstimateCompileCoreInput["rowOverrides"] = {}) => compileCanonicalEstimateCore({
+      operation: "recalculate", compilerVersion: "s2733-placement-vibration-test", catalogId: "placement-vibration-test",
+      parameterDefinitions: [...CONCRETE_SLAB_CONCRETE_PLACEMENT_PARAMETERS, ...addition.parameters.filter(p => !CONCRETE_SLAB_CONCRETE_PLACEMENT_PARAMETERS.some(old => old.parameter_id === p.parameter_id))],
+      formulaDefinitions: [...CONCRETE_SLAB_CONCRETE_PLACEMENT_FORMULAS, ...addition.formulas], resourceDefinitions: [...CONCRETE_SLAB_CONCRETE_PLACEMENT_RESOURCES, ...addition.resources],
+      submittedParameters, confirmedParameters: {}, currencyCode: "KGS", maximumResourceRows: 18, rowOverrides, hashJson: estimateDeterministicHash });
+    const included = await run(parameters);
+    expect(included.preliminaryNeeds).toEqual([]);
+    expect(included.rows.find(row => row.row_id === "equipment:concrete:deep-vibrator")?.quantity).toBe("4");
+    expect(included.rows.find(row => row.row_id === "work:concrete:place-and-compact")?.quantity).toBe("30");
+    expect(included.rows.find(row => row.row_id === ids.includedKit)).toMatchObject({ quantity: "2", amount: null, included_in_procurement: false,
+      calculation_trace: { resourceGraph: { includedInResourceOwnerRowId: "equipment:concrete:deep-vibrator" } } });
+    expect(included.rows.find(row => row.row_id === ids.placementDelivery)?.quantity).toBe("2");
+    const separate = await run({ ...parameters, vibration_equipment_accessories_pricing_mode: "SEPARATE_SUPPLY" }, { [ids.separateKit]: amendment("3") });
+    expect(separate.rows.find(row => row.row_id === ids.separateKit)?.calculation_trace).toMatchObject({ purchaseBalance: { remaining: "1" } });
+    const unknown = await run({ ...parameters, vibration_equipment_accessories_set_count: null }, { [ids.includedKit]: amendment("2") });
+    expect(unknown.preliminaryNeeds.find(row => row.row_id === ids.includedKit)?.missing_parameter_ids).toContain("vibration_equipment_accessories_set_count");
+  });
   it("does not replace missing actual included-kit count with a manual supplier quantity", async () => {
     const result = await compile({ ...facts, vibration_equipment_accessories_set_count: null }, { [ids.includedKit]: amendment("2") });
     expect(result.preliminaryNeeds.find(r => r.row_id === ids.includedKit)?.missing_parameter_ids).toContain("vibration_equipment_accessories_set_count");
