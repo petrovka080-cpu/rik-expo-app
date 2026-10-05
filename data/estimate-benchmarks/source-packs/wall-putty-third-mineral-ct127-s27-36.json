@@ -1,0 +1,46 @@
+{
+  "contract": "wall-putty-third-mineral:s27-36.v1",
+  "verified_at": "2026-10-05",
+  "scope": "Only third putty application and sanding on prepared plaster/precast mineral walls for high-quality painting, not complete wall levelling or all coats",
+  "krer": {
+    "official_url": "https://minstroy.gov.kg/ru/kyzmat/431/show",
+    "pdf_url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no15otdelocnyeraboty_compressed-1690836cdcb7429.33503474.pdf",
+    "sha256": "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc",
+    "printed_pages": [191, 192],
+    "rate_code": "15-04-027-05",
+    "measurement_basis_m2": 100,
+    "rates": {"worker_man_hour": 11.99, "operator_man_hour": 0.01, "lift_machine_hour": 0.01, "truck_machine_hour": 0.03, "abrasive_m2": 0.00044, "rags_kg": 0.15},
+    "abrasive_unit": "Literal m2 in scan; no inferred thousand multiplier or sheets conversion",
+    "original_putty_resource": "Oil-glue putty 0.029t/100m2 is replaced, not added as a second paid resource",
+    "replacement_approval_required": true,
+    "operator_in_full_machine_rate": true
+  },
+  "ct127": {
+    "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-127-en_GL.pdf",
+    "tds": "C_CT127_TDS_1_0120",
+    "consumption_range_kg_m2": [0.4, 1.2],
+    "range_not_per_mm": true,
+    "bag_kg": 20,
+    "mix_water_l_per_20kg": 8,
+    "maximum_separate_layer_mm": 2,
+    "only_dry_interior": true,
+    "selected_mix_method": "Visible preliminary whole-bag batches; mixing water uses powder actually mixed, never new order or dry reserve. Wet surplus is separate and may only be reused within manufacturer storage conditions",
+    "compatible_substrate_and_delivered_product_must_be_confirmed": true
+  },
+  "ct17_optional": {
+    "source_id": "src_professional_norm_pack_paint_ceresit_ct17_primer_l_m2_before_paint_v1",
+    "norm_id": "paint_ceresit_ct17_primer_l_m2_before_paint_v1",
+    "tds_identifier": "TDS No CT17 Profi 03.24",
+    "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-17-en_GL.pdf",
+    "exact_locator": "TDS No CT17 Profi 03.24, pages 1-2: painting scope, dilution and drying rules; page 2: 0.1-0.5 l/m2 range, conditions and 1/2/5/10 l packaging",
+    "definition_hash": "eh_a54248367d4c85a8",
+    "version": "2026.09-ceresit-ct54-ct17-primary-review-r2",
+    "ct127_compatibility_required": true
+  },
+  "additional_resources": "Individually disclosed mixing/application/sanding tools, water, protection and waste bags are visible preliminary site planning inputs, not invented published norms",
+  "prior_preparation": "Assumed already prepared and primed for this third-coat scope; optional new CT17 operation is explicit and has separate materials and project labour requirement",
+  "engineering_accepted": false,
+  "ordinary_ui_accepted": false,
+  "prices_invented": false,
+  "hidden_demo_facts": false
+}

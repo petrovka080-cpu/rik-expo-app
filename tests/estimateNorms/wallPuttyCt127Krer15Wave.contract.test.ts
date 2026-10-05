@@ -42,12 +42,22 @@ function exactOverrides() {
   };
 }
 
-describe("CT 127 + KRER 15-04-027-01 normative wall-putty wave", () => {
+describe("CT 127 + KRER 15-04-027-05 normative wall-putty wave", () => {
+  test.each(["wood", "gypsum_plaster", "painted_wall"])("does not accept the mineral prepared-wall norm for %s", substrate => {
+    const result = buildInteriorFinishesFromInlineInputV1({
+      rawInput: "Третья финишная шпаклёвка стен 100 м²",
+      selectedWorkKey: WALL_PUTTY_CT127_KRER15_WORK_KEY,
+      city: "Bishkek", currency: "KGS",
+      paramOverrides: { ...exactOverrides(), substrate_type: explicit(substrate) },
+    });
+    expect(result.production).toBeNull();
+    expect(result.missing_parameter_ids).toContain("PROJECT_VALUE_REQUIRED_EXPLICIT:krer_15_04_027_05_prepared_mineral_wall_substrate");
+  });
   test("registers one exact official KG resource source instead of the generic guidance route", () => {
     expect(constructionNormativeRegistryV1.get(WALL_PUTTY_CT127_KRER15_SOURCE_ID)).toMatchObject({
       source_type: "RESOURCE_ESTIMATE_NORM",
       jurisdiction: "KG",
-      document_code: "КРЕР-2015 №15, 15-04-027-01",
+      document_code: "КРЕР-2015 №15, 15-04-027-05",
       clause_table_rate_code: WALL_PUTTY_CT127_KRER15_RATE_CODE,
       unit_basis: "100 m2 of painted wall surface",
       official_reference: WALL_PUTTY_CT127_KRER15_OFFICIAL_PDF,
@@ -68,7 +78,7 @@ describe("CT 127 + KRER 15-04-027-01 normative wall-putty wave", () => {
     const assembly = technology && interiorFinishesDomainFactory.assembly_profile_by_id.get(
       technology.assembly_profile_id,
     );
-    expect(technology?.method).toBe("KRER15:15-04-027-01:CERESIT_CT127");
+    expect(technology?.method).toBe("KRER15:15-04-027-05:CERESIT_CT127");
     expect(profile?.requested_source_ids).toEqual([WALL_PUTTY_CT127_KRER15_SOURCE_ID]);
     expect(profile?.requested_source_ids).not.toContain("kg_krer_2015_application_guidance");
     expect(assembly?.child_assemblies).toHaveLength(1);
@@ -108,16 +118,16 @@ describe("CT 127 + KRER 15-04-027-01 normative wall-putty wave", () => {
     const technologyId = result.inventory?.canonical_technology_id;
     expect(quantities.get(`${technologyId}:row:primary_material`)).toBe(70);
     expect(quantities.get(`${technologyId}:row:construction_worker_labor`))
-      .toBe(WALL_PUTTY_CT127_KRER15_RATES.construction_worker_man_hours);
+      .toBe(11.99);
     expect(quantities.get(`${technologyId}:row:machine_operator_labor`))
       .toBe(WALL_PUTTY_CT127_KRER15_RATES.machine_operator_man_hours);
     expect(quantities.get(`${technologyId}:row:cargo_lift`))
       .toBe(WALL_PUTTY_CT127_KRER15_RATES.cargo_lift_machine_hours);
     expect(quantities.get(`${technologyId}:row:flatbed_truck`))
-      .toBe(WALL_PUTTY_CT127_KRER15_RATES.flatbed_truck_machine_hours);
+      .toBe(0.03);
     expect(quantities.get(`${technologyId}:row:sanding_sheet`))
-      .toBe(WALL_PUTTY_CT127_KRER15_RATES.sanding_sheet_m2);
-    expect(quantities.get(`${technologyId}:row:rags`)).toBe(WALL_PUTTY_CT127_KRER15_RATES.rags_kg);
+      .toBe(0.00044);
+    expect(quantities.get(`${technologyId}:row:rags`)).toBe(0.15);
     expect(items.every((item) => item.unitPrice === null && item.priceStatus === "PRICE_MISSING")).toBe(true);
 
     const material = items.find((item) => item.sourceParameters?.rowCode === `${technologyId}:row:primary_material`);
@@ -133,5 +143,7 @@ describe("CT 127 + KRER 15-04-027-01 normative wall-putty wave", () => {
     expect(items.filter((item) => item.sourceParameters?.rowCode !== `${technologyId}:row:primary_material`)
       .every((item) => (item.sourceParameters?.normativeSourceIds as readonly string[])
         .includes(WALL_PUTTY_CT127_KRER15_SOURCE_ID))).toBe(true);
+    expect(items.find(item => item.sourceParameters?.rowCode === `${technologyId}:row:machine_operator_labor`)
+      ?.sourceParameters?.costOwnership).toBe("informational_output");
   });
 });

@@ -24,10 +24,10 @@ import type { InteriorFinishesDomainInventoryRow } from "./inventory";
 export const WALL_PUTTY_CT127_KRER15_WORK_KEY =
   "plaster_paint_interior_wall_putty_apply_standard" as const;
 export const WALL_PUTTY_CT127_KRER15_SOURCE_ID =
-  "kg_krer_15_04_027_01_wall_third_putty" as const;
-export const WALL_PUTTY_CT127_KRER15_RATE_CODE = "15-04-027-01" as const;
+  "kg_krer_15_04_027_05_mineral_wall_third_putty" as const;
+export const WALL_PUTTY_CT127_KRER15_RATE_CODE = "15-04-027-05" as const;
 export const WALL_PUTTY_CT127_KRER15_APPLICABILITY_PARAMETER_ID =
-  "krer_15_04_027_01_wall_third_putty_confirmed" as const;
+  "krer_15_04_027_05_mineral_wall_third_putty_confirmed" as const;
 export const WALL_PUTTY_CT127_KRER15_SOURCE_PDF_SHA256 =
   "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc" as const;
 export const WALL_PUTTY_CT127_KRER15_OFFICIAL_PAGE =
@@ -37,15 +37,16 @@ export const WALL_PUTTY_CT127_KRER15_OFFICIAL_PDF =
 
 export const WALL_PUTTY_CT127_KRER15_RATES = Object.freeze({
   measurement_basis_m2: 100,
-  construction_worker_man_hours: 12.1,
+  construction_worker_man_hours: 11.99,
   machine_operator_man_hours: 0.01,
   cargo_lift_machine_hours: 0.01,
-  flatbed_truck_machine_hours: 0.02,
-  sanding_sheet_m2: 0.0003,
-  rags_kg: 0.1,
+  flatbed_truck_machine_hours: 0.03,
+  // Literal resource unit/value of the official scan, not a guessed conversion.
+  sanding_sheet_m2: 0.00044,
+  rags_kg: 0.15,
 });
 
-const SOURCE_CAPTURED_AT = "2026-09-14T00:00:00.000Z";
+const SOURCE_CAPTURED_AT = "2026-10-05T00:00:00.000Z";
 const BOTH_SCOPES = ["MINIMAL_EXPLICIT_SCOPE", "FULL_APPLICABLE_SCOPE"] as const;
 const KEEP_PARAMETER_IDS = new Set([
   "work_included",
@@ -134,15 +135,15 @@ function krerRow(
     category,
     title_ru: titleRu,
     formula: formula(
-      `${technologyId}:krer-15-04-027-01:${rowId}:v1`,
+      `${technologyId}:krer-15-04-027-05:${rowId}:v1`,
       `area_m2 × ${rate} ÷ ${WALL_PUTTY_CT127_KRER15_RATES.measurement_basis_m2}`,
       ["area_m2"],
       outputUnitId,
       (values) => values.area_m2 * rate / WALL_PUTTY_CT127_KRER15_RATES.measurement_basis_m2,
     ),
     cost_ownership: "priced_resource",
-    cost_owner_id: `${technologyId}:krer-15-04-027-01:cost-owner:${rowId}`,
-    semantic_owner: `${technologyId}:krer-15-04-027-01:semantic-owner:${rowId}`,
+    cost_owner_id: `${technologyId}:krer-15-04-027-05:cost-owner:${rowId}`,
+    semantic_owner: `${technologyId}:krer-15-04-027-05:semantic-owner:${rowId}`,
     normative_source_ids: [WALL_PUTTY_CT127_KRER15_SOURCE_ID],
     inclusion_condition: "work_included=true",
     procurement_eligible: procurementEligible,
@@ -152,7 +153,7 @@ function krerRow(
       edition: "2015",
       exact_locator: `таблица 15-04-027, строка ${WALL_PUTTY_CT127_KRER15_RATE_CODE}, стр. 191–192, измеритель 100 м²`,
       source_role: "QUANTITY_NORM",
-      applicability: "Третья шпаклёвка стен при высококачественной окраске; нанесение и шлифование.",
+      applicability: "Только третья шпаклёвка стен по штукатурке/сборным конструкциям, подготовленным под окраску; нанесение и шлифование. Замена масляно-клеевой шпаклёвки на CT127 требует подтверждения применимости.",
       foreign_mandatory_for_kg: false,
     }],
   };
@@ -211,7 +212,7 @@ function exactSchema(
     });
   const applicability: ProfessionalDomainParameterDefinitionV1 = {
     parameter_id: WALL_PUTTY_CT127_KRER15_APPLICABILITY_PARAMETER_ID,
-    label_ru: "Подтверждена строка КРЕР 15-04-027-01: третья шпаклёвка стен под высококачественную окраску",
+    label_ru: "Подтверждена строка КРЕР 15-04-027-05: третья шпаклёвка подготовленных минеральных стен; замена материала на CT127 согласована",
     unit_id: null,
     priority: "P0",
     input_type: "boolean",
@@ -222,7 +223,7 @@ function exactSchema(
   };
   return {
     ...baseSchema,
-    schema_version: "2.0.0",
+    schema_version: "3.0.0",
     parameters: [...retained, applicability],
   };
 }
@@ -244,18 +245,21 @@ export function buildWallPuttyCt127Krer15ProfessionalPackagePartsV1(input: {
   const rows = [
     materialRow(technologyId),
     krerRow(technologyId, "construction_worker_labor", "Затраты труда", "labor", "Рабочие-строители, средний разряд 3,9", WALL_PUTTY_CT127_KRER15_RATES.construction_worker_man_hours, "man_hour"),
-    krerRow(technologyId, "machine_operator_labor", "Затраты труда", "labor", "Затраты труда машинистов", WALL_PUTTY_CT127_KRER15_RATES.machine_operator_man_hours, "man_hour"),
+    {
+      ...krerRow(technologyId, "machine_operator_labor", "Затраты труда", "labor", "Машинист: входит в полную стоимость эксплуатации машин; отдельно не оплачивается", WALL_PUTTY_CT127_KRER15_RATES.machine_operator_man_hours, "man_hour"),
+      cost_ownership: "informational_output" as const,
+    },
     krerRow(technologyId, "cargo_lift", "Машины и механизмы", "equipment", "Подъёмник грузоподъёмностью до 500 кг, высота подъёма 45 м", WALL_PUTTY_CT127_KRER15_RATES.cargo_lift_machine_hours, "machine_hour"),
     krerRow(technologyId, "flatbed_truck", "Машины и механизмы", "equipment", "Автомобиль бортовой грузоподъёмностью до 5 т", WALL_PUTTY_CT127_KRER15_RATES.flatbed_truck_machine_hours, "machine_hour"),
     krerRow(technologyId, "sanding_sheet", "Материалы", "material", "Шкурка шлифовальная двуслойная с зернистостью 40/25", WALL_PUTTY_CT127_KRER15_RATES.sanding_sheet_m2, "m2", true),
     krerRow(technologyId, "rags", "Материалы", "material", "Ветошь", WALL_PUTTY_CT127_KRER15_RATES.rags_kg, "kg", true),
   ];
   const childAssembly: ProfessionalChildAssemblyV4 = {
-    child_passport_id: `${technologyId}:krer-15-04-027-01-passport:v1`,
+    child_passport_id: `${technologyId}:krer-15-04-027-05-passport:v1`,
     child_passport_version: "1.0.0",
     domain_owner: "interior_finishes",
-    assembly_id: `${technologyId}:krer-15-04-027-01-assembly:v1`,
-    title_ru: "Третья шпаклёвка стен под высококачественную окраску, CT 127",
+    assembly_id: `${technologyId}:krer-15-04-027-05-assembly:v1`,
+    title_ru: "Третья шпаклёвка подготовленных минеральных стен под высококачественную окраску, CT 127",
     scope_trigger_parameter: "work_included",
     scope_trigger_values: [true],
     supported_scope_modes: BOTH_SCOPES,
@@ -287,7 +291,7 @@ export function buildWallPuttyCt127Krer15ProfessionalPackagePartsV1(input: {
     schema,
     normative_profile: {
       profile_id: input.baseTechnology.normative_profile_ids[0],
-      profile_version: "2.0.0",
+      profile_version: "3.0.0",
       technology_id: technologyId,
       jurisdiction: "KG",
       requested_source_ids: [WALL_PUTTY_CT127_KRER15_SOURCE_ID],
@@ -296,7 +300,7 @@ export function buildWallPuttyCt127Krer15ProfessionalPackagePartsV1(input: {
     },
     formula_pack: {
       formula_pack_id: input.baseTechnology.formula_pack_id,
-      formula_pack_version: "2.0.0",
+      formula_pack_version: "3.0.0",
       technology_id: technologyId,
       formula_ids: rows.map((row) => row.formula.formula_id),
       unit_trace_contract: [
@@ -309,7 +313,7 @@ export function buildWallPuttyCt127Krer15ProfessionalPackagePartsV1(input: {
     },
     assembly_profile: {
       assembly_profile_id: input.baseTechnology.assembly_profile_id,
-      assembly_profile_version: "2.0.0",
+      assembly_profile_version: "3.0.0",
       technology_id: technologyId,
       child_assemblies: [childAssembly],
     },
@@ -361,7 +365,7 @@ export function applyWallPuttyCt127Krer15SourceManagedValuesV1(input: {
       null,
       "APPLICABLE_NORM",
       WALL_PUTTY_CT127_KRER15_SOURCE_ID,
-      "Exact KG KRER 15-04-027-01 rate selected by the canonical work owner.",
+      "Exact KG KRER 15-04-027-05 rate selected by the canonical work owner.",
     );
   }
   const bag = values.selected_bag_size_kg;
@@ -390,6 +394,15 @@ export function validateWallPuttyCt127Krer15InputsV1(input: {
     return [];
   }
   const blockers: string[] = [];
+  const substrate = values.substrate_type;
+  if (!substrate || substrate.source_type === "VISIBLE_BASELINE_ASSUMPTION" ||
+      !["cement_plaster", "cement_lime_plaster", "concrete", "precast_concrete"].includes(String(substrate.value))) {
+    blockers.push("PROJECT_VALUE_REQUIRED_EXPLICIT:krer_15_04_027_05_prepared_mineral_wall_substrate");
+  }
+  const prepared = values.substrate_load_bearing_dry_clean_confirmed;
+  if (prepared?.value !== true || prepared.source_type === "VISIBLE_BASELINE_ASSUMPTION") {
+    blockers.push("PROJECT_VALUE_REQUIRED_EXPLICIT:substrate_load_bearing_dry_clean_confirmed=true");
+  }
   if (
     values.product_profile_id?.value !== CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_PRODUCT_PROFILE_ID ||
     values.product_profile_id?.source_type === "VISIBLE_BASELINE_ASSUMPTION"
