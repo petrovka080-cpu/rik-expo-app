@@ -43,6 +43,9 @@ export type DocumentSession = {
   errorMessage?: string;
   createdAt: string;
   lastAccessAt?: string;
+  preparationToken?: string;
+  preparationState?: "pending" | "complete" | "failed";
+  preparationStartedAt?: string;
 };
 
 type RegistrySnapshot = {
@@ -415,6 +418,9 @@ export function createPreparingDocumentPreviewSession(
     sessionId: makeId("session"),
     assetId: pendingAssetId,
     status: "preparing",
+    preparationToken: pendingAssetId,
+    preparationState: "pending",
+    preparationStartedAt: now,
     createdAt: now,
     lastAccessAt: now,
   };
@@ -432,31 +438,68 @@ export function createPreparingDocumentPreviewSession(
 export function completeDocumentPreviewSessionAsset(
   sessionId: string,
   asset: DocumentAsset,
-): void {
+  preparationToken?: string,
+): boolean {
   const key = String(sessionId || "").trim();
   const session = sessions.get(key);
-  if (!session) return;
+  if (!session || session.preparationToken !== preparationToken) return false;
   assets.set(asset.assetId, asset);
   session.assetId = asset.assetId;
-  session.status = "ready";
-  session.errorMessage = undefined;
+  session.preparationState = "complete";
+  // Retain a timed-out attempt's result for explicit retry, without reopening it.
+  if (session.status !== "error") {
+    session.status = "ready";
+    session.errorMessage = undefined;
+  }
   session.lastAccessAt = nowIso();
   sessions.set(key, session);
+  return true;
+}
+
+export function failDocumentPreparationSession(sessionId: string, preparationToken: string, message: string): boolean {
+  const session = sessions.get(String(sessionId || "").trim());
+  if (!session || session.preparationToken !== preparationToken) return false;
+  if (session.preparationState === "pending") session.preparationState = "failed";
+  // A late failure must not replace the timeout already presented to the user.
+  if (session.status !== "error") failDocumentSession(sessionId, message);
+  return true;
+}
+
+export function resumeDocumentPreviewSession(sessionId: string): boolean {
+  const session = sessions.get(String(sessionId || "").trim());
+  if (!session) return false;
+  if (assets.has(session.assetId)) session.status = "ready";
+  else if (session.preparationState === "pending") {
+    session.status = "preparing";
+    session.preparationStartedAt = nowIso();
+  } else return false;
+  session.errorMessage = undefined;
+  session.lastAccessAt = nowIso();
+  return true;
 }
 
 export async function materializeDocumentPreviewSessionAsset(
   sessionId: string,
   doc: DocumentDescriptor,
+  expectedPreparationToken?: string,
 ): Promise<DocumentAsset> {
+  const token = expectedPreparationToken ?? getDocumentSession(sessionId)?.preparationToken;
   try {
+    if (!getDocumentSession(sessionId) || getDocumentSession(sessionId)?.preparationToken !== token) {
+      const stale = new Error("PDF preparation attempt is no longer active");
+      stale.name = "AbortError";
+      throw stale;
+    }
     const asset = await materializePdfAsset(doc);
-    completeDocumentPreviewSessionAsset(sessionId, asset);
+    if (!completeDocumentPreviewSessionAsset(sessionId, asset, token)) {
+      const stale = new Error("PDF preparation attempt is no longer active");
+      stale.name = "AbortError";
+      throw stale;
+    }
     return asset;
   } catch (error) {
-    failDocumentSession(
-      sessionId,
-      error instanceof Error ? error.message : String(error),
-    );
+    if (token) failDocumentPreparationSession(sessionId, token, error instanceof Error ? error.message : String(error));
+    else failDocumentSession(sessionId, error instanceof Error ? error.message : String(error));
     throw error;
   }
 }

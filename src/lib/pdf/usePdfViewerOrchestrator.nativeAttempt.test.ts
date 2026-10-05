@@ -25,6 +25,15 @@ describe("mounted PDF viewer native attempts", () => {
     expect(viewer.errorText).toBe("");
   });
 
+  it("keeps the initial open terminal settled across a retry, then resets for a new session", () => {
+    viewer.openSignalSettledRef.current = true;
+    act(() => { viewer.retry(); viewer.resetOpenAttemptGuards(false); });
+    expect(viewer.loadAttempt).toBe(1);
+    expect(viewer.openSignalSettledRef.current).toBe(true);
+    act(() => viewer.resetOpenAttemptGuards());
+    expect(viewer.openSignalSettledRef.current).toBe(false);
+  });
+
   it("starts the next bootstrap while rejecting a late same-document completion", () => {
     const guard = viewer.nativeHandoffGuardRef.current;
     expect(beginPdfNativeHandoff(guard, "same-document")).toBe("start");

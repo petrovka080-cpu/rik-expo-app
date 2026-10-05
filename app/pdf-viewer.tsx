@@ -15,6 +15,7 @@ import {
   type DocumentAsset,
 } from "../src/lib/documents/pdfDocumentSessions";
 import { restoreWebPdfPreviewSession } from "../src/lib/documents/pdfWebPreviewCache";
+import { retryPdfDocumentViewerSession } from "../src/lib/documents/pdfDocumentPreviewAction";
 import { FALLBACK_ROUTE } from "../src/lib/pdf/pdfViewer.constants";
 import { getReadAccessParentUri } from "../src/lib/pdf/pdfViewerContract";
 import { normalizePdfViewerError } from "../src/lib/pdf/pdfViewer.error";
@@ -35,6 +36,8 @@ import {
   armPdfViewerLoadingTimeout,
   cancelPdfViewerLoadingTimeout,
   shouldCommitPdfViewerLoadingTimeout,
+  planPdfViewerPhaseTimeout,
+  isPdfViewerPhaseTimeoutCurrent,
 } from "../src/lib/pdf/pdfViewerLoadingTimeoutGuard";
 import {
   resolvePdfViewerManualHandoffPlan,
@@ -395,8 +398,11 @@ function PdfViewerScreen() {
     }
   }, []);
 
+  const previousOpenSignalIdentityRef = React.useRef("");
   React.useEffect(() => {
-    resetOpenAttemptGuards();
+    const identity = `${sessionId}|${openToken}`;
+    resetOpenAttemptGuards(previousOpenSignalIdentityRef.current !== identity);
+    previousOpenSignalIdentityRef.current = identity;
     clearWebIframeReadyFallback();
   }, [
     clearWebIframeReadyFallback,
@@ -520,7 +526,11 @@ function PdfViewerScreen() {
     setSession((prev) =>
       prev?.sessionId === next.session?.sessionId &&
       prev?.status === next.session?.status &&
-      prev?.errorMessage === next.session?.errorMessage
+      prev?.errorMessage === next.session?.errorMessage &&
+      prev?.assetId === next.session?.assetId &&
+      prev?.preparationState === next.session?.preparationState &&
+      prev?.preparationToken === next.session?.preparationToken &&
+      prev?.preparationStartedAt === next.session?.preparationStartedAt
         ? prev
         : next.session,
     );
@@ -549,7 +559,7 @@ function PdfViewerScreen() {
   ]);
 
   React.useEffect(() => {
-    if (!sessionId || session?.status !== "preparing") return;
+    if (!sessionId || (session?.status !== "preparing" && session?.preparationState !== "pending")) return;
     let cancelled = false;
     let promotedReady = false;
 
@@ -572,7 +582,7 @@ function PdfViewerScreen() {
       cancelled = true;
       clearInterval(intervalId);
     };
-  }, [session?.status, sessionId, setLoadAttempt, syncSnapshot]);
+  }, [session?.status, session?.preparationState, sessionId, setLoadAttempt, syncSnapshot]);
 
   const clearLoadingTimeout = React.useCallback(() => {
     if (loadingTimeoutRef.current) {
@@ -755,6 +765,7 @@ function PdfViewerScreen() {
     }
     touchDocumentSession(activeSession.sessionId);
     commitLoadingState();
+    const phaseTimeout = planPdfViewerPhaseTimeout(activeSession, next.asset);
     const timeoutCycle = armPdfViewerLoadingTimeout(
       loadingTimeoutGuardRef.current,
     );
@@ -765,11 +776,14 @@ function PdfViewerScreen() {
           timeoutCycle,
         ),
       });
-      if (timeoutPlan.action === "skip_timeout") {
+      const latest = resolveSnapshot();
+      if (timeoutPlan.action === "skip_timeout" || !isMountedRef.current || backDispatchedRef.current
+        || navigationRef.getCurrentRoute()?.key !== viewerRouteKey
+        || !isPdfViewerPhaseTimeoutCurrent(phaseTimeout, latest.session, latest.asset)) {
         return;
       }
-      markError("Document loading timed out.", "timeout");
-    }, 15000);
+      markError(phaseTimeout.message, "timeout");
+    }, phaseTimeout.timeoutMs);
   }, [
     clearLoadingTimeout,
     commitEmptyState,
@@ -777,6 +791,10 @@ function PdfViewerScreen() {
     loadingTimeoutGuardRef,
     markError,
     syncSnapshot,
+    resolveSnapshot,
+    isMountedRef,
+    navigationRef,
+    viewerRouteKey,
   ]);
 
   const markReady = React.useCallback(() => {
@@ -1401,16 +1419,6 @@ function PdfViewerScreen() {
     openExternal: viewerPlatform === "android" ? onGuardedNativeOpenExternal : undefined,
   });
 
-  const onRetry = React.useCallback(() => {
-    const next = syncSnapshot();
-    if (!next.session) {
-      commitEmptyState();
-      return;
-    }
-    clearWebRenderUri();
-    retryViewerOrchestrator();
-  }, [clearWebRenderUri, commitEmptyState, retryViewerOrchestrator, syncSnapshot]);
-
   const onBack = React.useCallback(() => {
     if (backDispatchedRef.current) return;
     const plan = resolvePdfViewerReturnPlan(
@@ -1440,6 +1448,18 @@ function PdfViewerScreen() {
       FALLBACK_ROUTE,
     );
   }, [navigationRef, params.callerRouteKey, viewerRouteKey, returnTo]);
+
+  const onRetry = React.useCallback(() => {
+    const next = resolveSnapshot();
+    if (!next.session) { commitEmptyState(); return; }
+    const decision = retryPdfDocumentViewerSession(next.session.sessionId, route.hasUri ? next.asset : undefined);
+    if (decision === "recreate_required") { onBack(); return; }
+    if (decision === "blocked") return;
+    recordViewerBreadcrumb("viewer_retry_started", { extra: { retryAttempt: loadAttempt + 1 } });
+    clearWebRenderUri();
+    syncSnapshot();
+    retryViewerOrchestrator();
+  }, [clearWebRenderUri, commitEmptyState, loadAttempt, onBack, recordViewerBreadcrumb, resolveSnapshot, retryViewerOrchestrator, route.hasUri, syncSnapshot]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -1500,6 +1520,7 @@ function PdfViewerScreen() {
             resolvedSource,
             isReadyToRender,
             hasRenderableSource,
+            retryRequiresRecreation: !asset && session?.preparationState === "failed",
           }),
     [
       asset,
@@ -1509,6 +1530,7 @@ function PdfViewerScreen() {
       resolvedSource,
       state,
       webSessionRecoveryPending,
+      session?.preparationState,
     ],
   );
   const chromeModel = React.useMemo(

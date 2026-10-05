@@ -45,6 +45,7 @@ jest.mock("./pdfDocumentSessions", () => ({
   materializeDocumentPreviewSessionAsset: (...args: unknown[]) =>
     mockMaterializeDocumentPreviewSessionAsset(...args),
   failDocumentSession: (...args: unknown[]) => mockFailDocumentSession(...args),
+  failDocumentPreparationSession: (sessionId: string, token: string, message: string) => mockFailDocumentSession(sessionId, message, token),
 }));
 
 jest.mock("./pdfDocumentViewerEntry", () => ({
@@ -799,6 +800,7 @@ describe("pdfDocumentActions", () => {
     expect(mockFailDocumentSession).toHaveBeenCalledWith(
       "session-preparing-root-1",
       expect.stringContaining("forbidden"),
+      "asset-preparing-root-1",
     );
     expect(
       getPlatformObservabilityEvents().some(
@@ -841,6 +843,7 @@ describe("pdfDocumentActions", () => {
       expect.objectContaining({
         uri: "https://example.com/ready.pdf",
       }),
+      "asset-preparing-root-1",
     );
     const pushedHref = String(mockPushPdfDocumentViewerRouteSafely.mock.calls[0]?.[1] || "");
     const openToken = new URL(pushedHref, "https://example.test").searchParams.get("openToken") || "";
@@ -851,6 +854,26 @@ describe("pdfDocumentActions", () => {
     await expect(promise).resolves.toMatchObject({
       uri: "https://example.com/ready.pdf",
     });
+  });
+
+  it("keeps a viewer timeout terminal while the same producer finishes later", async () => {
+    Object.defineProperty(Platform, "OS", { configurable: true, value: "android" });
+    const prepare = createDeferred<{ kind: "remote-url"; uri: string }>();
+    mockPreparePdfExecutionSource.mockReturnValueOnce(prepare.promise);
+    const work = prepareAndPreviewPdfDocument({
+      supabase: {}, key: "pdf:late-preparation:own", label: "Opening PDF...",
+      descriptor: baseDocument, getRemoteUrl: () => baseDocument.uri, router: { push: jest.fn() },
+    });
+    const rejected = expect(work).rejects.toBeInstanceOf(Error);
+    await flushPromises();
+    const href = String(mockPushPdfDocumentViewerRouteSafely.mock.calls[0]?.[1]);
+    const token = new URL(href, "https://example.test").searchParams.get("openToken")!;
+    expect(failPdfOpenVisible(token, new Error("Preparation timeout"))).toBe(true);
+    await flushPromises();
+    prepare.resolve({ kind: "remote-url", uri: baseDocument.uri });
+    await rejected;
+    expect(mockMaterializeDocumentPreviewSessionAsset).toHaveBeenCalledTimes(1);
+    expect(markPdfOpenVisible(token, { sourceKind: "remote-url" })).toBe(false);
   });
 
   it("allows a clean retry after retryable PDF access failure", async () => {

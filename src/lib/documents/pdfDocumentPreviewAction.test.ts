@@ -15,6 +15,8 @@ const mockPushPdfDocumentViewerRouteSafely = jest.fn();
 const mockCheckPdfMobilePreviewEligibility = jest.fn();
 const mockRecordPdfPreviewOversizeBlocked = jest.fn();
 const mockRecordPdfActionBoundaryEvent = jest.fn();
+const mockGetDocumentSessionSnapshot = jest.fn();
+const mockResumeDocumentPreviewSession = jest.fn();
 
 jest.mock("./pdfDocumentSessions", () => ({
   createDocumentPreviewSession: (...args: unknown[]) => mockCreateDocumentPreviewSession(...args),
@@ -22,6 +24,8 @@ jest.mock("./pdfDocumentSessions", () => ({
     mockCreateInstantDocumentPreviewSession(...args),
   createInMemoryDocumentPreviewSession: (...args: unknown[]) =>
     mockCreateInMemoryDocumentPreviewSession(...args),
+  getDocumentSessionSnapshot: (...args: unknown[]) => mockGetDocumentSessionSnapshot(...args),
+  resumeDocumentPreviewSession: (...args: unknown[]) => mockResumeDocumentPreviewSession(...args),
 }));
 
 jest.mock("../pdfRunner", () => ({
@@ -45,7 +49,8 @@ jest.mock("../pdf/pdfActionBoundary", () => ({
   recordPdfActionBoundaryEvent: (...args: unknown[]) => mockRecordPdfActionBoundaryEvent(...args),
 }));
 
-const { executePreviewPdfDocument } = require("./pdfDocumentPreviewAction") as typeof import("./pdfDocumentPreviewAction");
+const { executePreviewPdfDocument, retryPdfDocumentViewerSession } = require("./pdfDocumentPreviewAction") as typeof import("./pdfDocumentPreviewAction");
+import { resolvePdfViewerDirectSnapshot } from "../pdf/pdfViewerContract";
 
 const baseDocument: DocumentDescriptor = {
   uri: "https://example.com/payment.pdf",
@@ -63,6 +68,25 @@ const baseDocument: DocumentDescriptor = {
 
 describe("pdfDocumentPreviewAction", () => {
   const originalPlatformOs = Platform.OS;
+
+  it("keeps the mobile size guard before recovery of an existing failed asset", () => {
+    mockGetDocumentSessionSnapshot.mockReturnValue({ session: { sessionId: "own" }, asset: { sizeBytes: 20_000_000 } });
+    mockCheckPdfMobilePreviewEligibility.mockReturnValue({ eligible: false });
+    mockResumeDocumentPreviewSession.mockReset();
+    expect(retryPdfDocumentViewerSession("own")).toBe("blocked");
+    expect(mockResumeDocumentPreviewSession).not.toHaveBeenCalled();
+  });
+
+  it("retries the same supported direct URI without requiring a registered session or returning to the caller", () => {
+    const direct = resolvePdfViewerDirectSnapshot({ uri: "https://example.test/own.pdf", fileName: "own.pdf" })!;
+    mockGetDocumentSessionSnapshot.mockReturnValue({ session: null, asset: null });
+    mockCheckPdfMobilePreviewEligibility.mockReturnValue({ eligible: true });
+    mockResumeDocumentPreviewSession.mockReset();
+    expect(retryPdfDocumentViewerSession(direct.session.sessionId, direct.asset)).toBe("resume");
+    expect(mockResumeDocumentPreviewSession).not.toHaveBeenCalled();
+    expect(direct.asset.uri).toBe("https://example.test/own.pdf");
+    expect(retryPdfDocumentViewerSession("missing-registry-session")).toBe("recreate_required");
+  });
 
   beforeEach(() => {
     Object.defineProperty(Platform, "OS", {

@@ -29,6 +29,7 @@ export type PdfViewerContentModel =
       subtitle: string;
       allowOpenExternal: boolean;
       allowRetry: boolean;
+      retryLabel?: string;
     }
   | { kind: "missing-asset"; title: string; subtitle: string }
   | {
@@ -98,6 +99,7 @@ export function resolvePdfViewerContentModel(args: {
   resolvedSource: PdfViewerResolution;
   isReadyToRender: boolean;
   hasRenderableSource: boolean;
+  retryRequiresRecreation?: boolean;
 }): PdfViewerContentModel {
   const fallback = resolvePdfViewerFallbackEligibility({
     asset: args.asset,
@@ -119,6 +121,7 @@ export function resolvePdfViewerContentModel(args: {
       subtitle: args.errorText || "Preview failed to load.",
       allowOpenExternal: fallback.canOpenExternally,
       allowRetry: fallback.canRetry,
+      retryLabel: args.retryRequiresRecreation ? "Вернуться к смете" : "Повторить",
     };
   }
 

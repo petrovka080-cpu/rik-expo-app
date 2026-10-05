@@ -6,7 +6,11 @@ import {
   createInMemoryDocumentPreviewSession,
   createPreparingDocumentPreviewSession,
   failDocumentSession,
+  failDocumentPreparationSession,
+  getDocumentSessionSnapshot,
   materializeDocumentPreviewSessionAsset,
+  resumeDocumentPreviewSession,
+  type DocumentAsset,
 } from "./pdfDocumentSessions";
 import { openPdfPreview } from "../pdfRunner";
 import { beginPdfLifecycleObservation } from "../pdf/pdfLifecycle";
@@ -78,15 +82,33 @@ export function getPdfViewerSessionErrorMessage(
 export function failPreparingPdfDocumentViewerSession(
   sessionId: string,
   message: string,
+  preparationToken?: string,
 ): void {
-  failDocumentSession(sessionId, message);
+  if (preparationToken) failDocumentPreparationSession(sessionId, preparationToken, message);
+  else failDocumentSession(sessionId, message);
+}
+
+// Retries the registered result or its still-running preparation; never generates a second PDF.
+export function retryPdfDocumentViewerSession(sessionId: string, directAsset?: DocumentAsset | null): "resume" | "recreate_required" | "blocked" {
+  const snapshot = getDocumentSessionSnapshot(sessionId);
+  const asset = snapshot.session ? snapshot.asset : directAsset;
+  if (!snapshot.session && !asset) return "recreate_required";
+  if (asset && !checkPdfMobilePreviewEligibility({
+    platform: Platform.OS, sizeBytes: asset.sizeBytes,
+    documentType: asset.documentType, originModule: asset.originModule,
+    fileName: asset.fileName,
+  }).eligible) return "blocked";
+  // Valid direct URI snapshots intentionally have no registered session.
+  if (!snapshot.session) return "resume";
+  return resumeDocumentPreviewSession(sessionId) ? "resume" : "recreate_required";
 }
 
 export async function materializePreparingPdfDocumentViewerSession(args: {
   sessionId: string;
   doc: DocumentDescriptor;
+  preparationToken?: string;
 }) {
-  const asset = await materializeDocumentPreviewSessionAsset(args.sessionId, args.doc);
+  const asset = await materializeDocumentPreviewSessionAsset(args.sessionId, args.doc, args.preparationToken);
   const sizeEligibility = checkPdfMobilePreviewEligibility({
     platform: Platform.OS,
     sizeBytes: asset.sizeBytes,
@@ -107,7 +129,7 @@ export async function materializePreparingPdfDocumentViewerSession(args: {
       originModule: asset.originModule,
       fileName: asset.fileName,
     });
-    failDocumentSession(args.sessionId, error.message);
+    failPreparingPdfDocumentViewerSession(args.sessionId, error.message, args.preparationToken);
     throw error;
   }
   return asset;

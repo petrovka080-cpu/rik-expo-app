@@ -116,8 +116,8 @@ export function usePdfViewerOrchestrator({
     };
   }, []);
 
-  const resetOpenAttemptGuards = React.useCallback(() => {
-    openSignalSettledRef.current = false;
+  const resetOpenAttemptGuards = React.useCallback((resetOpenSignal = true) => {
+    if (resetOpenSignal) openSignalSettledRef.current = false;
     readyCommittedRef.current = false;
     webIframeRenderLoggedKeyRef.current = "";
     resetPdfNativeHandoffGuard(nativeHandoffGuardRef.current);

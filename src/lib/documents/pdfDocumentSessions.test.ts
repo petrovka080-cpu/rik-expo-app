@@ -38,12 +38,36 @@ import {
   failDocumentSession,
   getDocumentSessionSnapshot,
   recoverDocumentSessionAfterNativeOpen,
+  createPreparingDocumentPreviewSession,
+  materializeDocumentPreviewSessionAsset,
+  restoreInMemoryDocumentPreviewSession,
+  failDocumentPreparationSession,
+  resumeDocumentPreviewSession,
   type DocumentAsset,
 } from "./pdfDocumentSessions";
 import { clearPdfInstantCacheStateForTests } from "../pdf/pdfInstantCache";
 import { buildPdfInstantCacheKey } from "../pdf/pdfInstantCache";
+import type { DocumentDescriptor } from "./pdfDocument";
 
 describe("pdfDocumentSessions materialization", () => {
+  const preparingDoc: DocumentDescriptor = {
+    uri: "https://example.test/own-preparation.pdf",
+    fileSource: { kind: "remote-url", uri: "https://example.test/own-preparation.pdf" },
+    fileName: "own-preparation.pdf", title: "Own estimate", mimeType: "application/pdf",
+    documentType: "request", originModule: "reports", source: "generated",
+  };
+  function deferredDownload() {
+    let written = false;
+    let finish!: () => void;
+    let fail!: (error: Error) => void;
+    mockGetInfoAsync.mockImplementation(async () => ({ exists: written, size: 1234 }));
+    mockDownloadAsync.mockImplementation((_uri: string, target: string) => new Promise((resolve, reject) => {
+      finish = () => { written = true; resolve({ uri: target }); };
+      fail = reject;
+    }));
+    return { finish: () => finish(), fail: (error: Error) => fail(error) };
+  }
+  async function flushPreparation() { for (let i = 0; i < 20; i += 1) await Promise.resolve(); }
   beforeEach(() => {
     Object.defineProperty(Platform, "OS", {
       configurable: true,
@@ -59,6 +83,56 @@ describe("pdfDocumentSessions materialization", () => {
     mockDownloadAsync.mockImplementation(async (_uri: string, target: string) => ({
       uri: target,
     }));
+  });
+
+  it("retains a late valid file after timeout without reopening until explicit retry", async () => {
+    const download = deferredDownload();
+    const { session } = createPreparingDocumentPreviewSession(preparingDoc);
+    const work = materializeDocumentPreviewSessionAsset(session.sessionId, preparingDoc, session.preparationToken);
+    await flushPreparation();
+    expect(mockDownloadAsync).toHaveBeenCalledTimes(1);
+    failDocumentSession(session.sessionId, "Preparation timeout");
+    download.finish();
+    const asset = await work;
+    expect(getDocumentSessionSnapshot(session.sessionId)).toMatchObject({ session: { status: "error", errorMessage: "Preparation timeout" }, asset: { assetId: asset.assetId } });
+    expect(resumeDocumentPreviewSession(session.sessionId)).toBe(true);
+    expect(getDocumentSessionSnapshot(session.sessionId)).toMatchObject({ session: { status: "ready", assetId: asset.assetId } });
+    expect(mockDownloadAsync).toHaveBeenCalledTimes(1);
+  });
+
+  it("continues the same pending preparation on explicit retry without a second download", async () => {
+    const download = deferredDownload();
+    const { session } = createPreparingDocumentPreviewSession(preparingDoc);
+    const work = materializeDocumentPreviewSessionAsset(session.sessionId, preparingDoc, session.preparationToken);
+    await flushPreparation();
+    failDocumentSession(session.sessionId, "Preparation timeout");
+    expect(resumeDocumentPreviewSession(session.sessionId)).toBe(true);
+    expect(getDocumentSessionSnapshot(session.sessionId).session?.status).toBe("preparing");
+    download.finish();
+    await work;
+    expect(getDocumentSessionSnapshot(session.sessionId).session?.status).toBe("ready");
+    expect(mockDownloadAsync).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(["success", "failure"])("rejects old preparation %s after replacing the session", async (result) => {
+    const download = deferredDownload();
+    const { session } = createPreparingDocumentPreviewSession(preparingDoc);
+    const work = materializeDocumentPreviewSessionAsset(session.sessionId, preparingDoc, session.preparationToken);
+    const rejected = expect(work).rejects.toBeInstanceOf(Error);
+    await flushPreparation();
+    const replacement = restoreInMemoryDocumentPreviewSession({ sessionId: session.sessionId, doc: { ...preparingDoc, uri: "file:///cache/new.pdf", fileSource: { kind: "local-file", uri: "file:///cache/new.pdf" } } });
+    if (result === "success") download.finish();
+    else download.fail(new Error("Old download failure"));
+    await rejected;
+    expect(getDocumentSessionSnapshot(session.sessionId)).toMatchObject({ session: { status: "ready", assetId: replacement.asset.assetId }, asset: { uri: "file:///cache/new.pdf" } });
+    expect(failDocumentPreparationSession(session.sessionId, session.preparationToken!, "Old producer failure")).toBe(false);
+  });
+
+  it("requires a new caller action after failed preparation with no file", () => {
+    const { session } = createPreparingDocumentPreviewSession(preparingDoc);
+    expect(failDocumentPreparationSession(session.sessionId, session.preparationToken!, "Generation failed")).toBe(true);
+    expect(resumeDocumentPreviewSession(session.sessionId)).toBe(false);
+    expect(getDocumentSessionSnapshot(session.sessionId).session).toMatchObject({ status: "error", preparationState: "failed" });
   });
 
   it("recovers a failed native preview only for the same registered ready asset", () => {

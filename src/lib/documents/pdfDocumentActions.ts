@@ -352,6 +352,7 @@ export async function prepareAndPreviewPdfDocument(
           failPreparingPdfDocumentViewerSession(
             earlyViewerSession.session.sessionId,
             sessionErrorMessage,
+            earlyViewerSession.session.preparationToken ?? earlyViewerSession.session.assetId,
           );
         }
         throw boundaryError;
@@ -363,6 +364,7 @@ export async function prepareAndPreviewPdfDocument(
           await materializePreparingPdfDocumentViewerSession({
             sessionId: earlyViewerSession.session.sessionId,
             doc: document,
+            preparationToken: earlyViewerSession.session.preparationToken ?? earlyViewerSession.session.assetId,
           });
         } else {
           await previewPdfDocument(document, {

@@ -311,6 +311,9 @@ export function beginPdfOpenVisibilityWait(context: PdfOpenFlowContext) {
       reject,
     });
   });
+  // Preparation may still be awaited when the viewer reports a timeout.
+  // Keep the original rejected promise for its eventual consumer.
+  void promise.catch(() => undefined);
   return { token, promise };
 }
 

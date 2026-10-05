@@ -115,7 +115,7 @@ function renderViewerBody(props: PdfViewerScreenContentProps) {
         <CenteredPanel
           title={contentModel.title}
           subtitle={contentModel.subtitle}
-          actionLabel={contentModel.allowRetry ? "Retry" : undefined}
+          actionLabel={contentModel.allowRetry ? contentModel.retryLabel || "Retry" : undefined}
           onAction={contentModel.allowRetry ? onRetry : undefined}
           secondaryLabel={
             contentModel.allowOpenExternal ? "Open externally" : undefined
