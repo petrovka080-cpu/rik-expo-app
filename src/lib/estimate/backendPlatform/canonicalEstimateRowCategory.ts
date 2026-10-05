@@ -35,6 +35,14 @@ export function normalizeCanonicalEstimateRowCategory(
   section: string | null | undefined,
   category: string | null | undefined,
 ): CanonicalEstimateNormalizedRowCategory {
+  // A mixed operation section can contain labor and machinery together.
+  // The persisted row category determines its resource type.
+  const explicit = (category ?? "").trim().toLocaleLowerCase("ru-RU");
+  const canonical: Readonly<Record<string, CanonicalEstimateNormalizedRowCategory>> = {
+    material: "material", labor: "work", work: "work", equipment: "equipment",
+    machinery: "equipment", service: "service", delivery: "delivery",
+  };
+  if (Object.hasOwn(canonical, explicit)) return canonical[explicit];
   const value = `${section ?? ""} ${category ?? ""}`.toLocaleLowerCase("ru-RU");
   return CATEGORY_MARKERS.find(({ markers }) => markers.some((marker) => value.includes(marker)))?.category
     ?? "work";

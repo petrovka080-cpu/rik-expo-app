@@ -405,6 +405,10 @@ export function canonicalEstimateParameterChoiceLabelRu(
   fallback?: string,
 ): string {
   const normalized = String(value);
+  if (parameterId === "c111_insulation_mode") {
+    if (normalized === "AKUSTIKNAUF_50") return "АкустиКНАУФ 50 мм, упаковка 12 м²";
+    if (normalized === "NONE") return "Без изоляции, если допустимо по проекту";
+  }
   if (parameterId === "ct54_first_coat_water_ratio") {
     if (normalized === "0") return "Без разбавления";
     if (normalized === "0.1") return "10% воды только в первом слое";

@@ -175,6 +175,7 @@ const UNIT_LABELS: Record<string, string> = {
   kg_per_kg: "кг/кг",
   kg_per_l: "кг/л",
   l_per_piece: "л/шт.",
+  l_per_kg: "л/кг",
   l_per_m2: "л/м²",
   kg_per_m2: "кг/м²",
   piece_per_m2: "шт./м²",

@@ -98,6 +98,13 @@ function visibleRowCount(renderer: ReactTestRenderer): number {
 }
 
 describe("durable request estimate category filters", () => {
+  it("keeps the explicit projected row category inside mixed labor and machinery sections", () => {
+    for (const [category, expected] of [["work", "labor"], ["equipment", "machinery"], ["material", "materials"]] as const) {
+      const row = item(1, "service");
+      row.sourceParameters = { section: "Труд и механизмы C111", smartEstimateProjectionV2: { category } };
+      expect(requestEstimateCategoryFilterForItem(row, "professional_machinery")).toBe(expected);
+    }
+  });
   it("discloses an operation's unresolved physical materials, labor and equipment while keeping control details separate", () => {
     const operation = { contractVersion: "canonical-operation-resource/v1" as const, groupId: "crossing", groupTitleRu: "Переход",
       operationId: "casing", operationTitleRu: "Сборка футляра", completionCriterionRu: "Стыки проверены, футляр установлен." };

@@ -117,6 +117,10 @@ describe("canonical estimate parameter choice labels", () => {
   });
 
   it("never exposes the internal bridge and asphalt enum codes", () => {
+    expect(canonicalEstimateParameterChoiceLabelRu("c111_insulation_mode", "AKUSTIKNAUF_50"))
+      .toBe("АкустиКНАУФ 50 мм, упаковка 12 м²");
+    expect(canonicalEstimateParameterChoiceLabelRu("c111_insulation_mode", "NONE"))
+      .toBe("Без изоляции, если допустимо по проекту");
     expect(canonicalEstimateParameterChoiceLabelRu("waterproofing_condition", "ACCEPTED"))
       .toBe("Принято, ремонт не требуется");
     expect(canonicalEstimateParameterChoiceLabelRu("traffic_class", "VERY_HEAVY"))

@@ -232,6 +232,14 @@ export function requestEstimateCategoryFilterForItem(
   sectionId: string,
 ): Exclude<RequestEstimateCategoryFilterId, "all"> {
   const signals = consumerRepairRowCategorySignals(item);
+  const projection = item.sourceParameters?.smartEstimateProjectionV2;
+  const category = projection && typeof projection === "object"
+    ? String((projection as { category?: unknown }).category ?? "").trim().toLocaleLowerCase("ru-RU") : "";
+  const canonicalFilters: Readonly<Record<string, Exclude<RequestEstimateCategoryFilterId, "all">>> = {
+    material: "materials", labor: "labor", work: "labor", equipment: "machinery",
+    machinery: "machinery", service: "services", delivery: "delivery",
+  };
+  if (Object.hasOwn(canonicalFilters, category)) return canonicalFilters[category];
   const hasIn = (candidates: string[], ...values: string[]) => candidates.some((signal) =>
     values.some((value) => signal === value || signal.includes(value)));
 
