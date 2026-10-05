@@ -132,8 +132,9 @@ async function ensureLocalDeveloperRuntimeCompatibility(token: string): Promise<
       manifest?.runtimeRole === "FULL_CANONICAL_ESTIMATE_BACKEND" &&
       manifest?.authMode === "STRICT_SESSION_INTROSPECTION" &&
       manifest?.capability?.status === "ACTIVE" &&
-      Number(manifest.capability.ttlSeconds ?? 0) >= 60 * 60 &&
-      Number(manifest.activeCompileJobCount ?? -1) === 0;
+      Number(manifest.capability.ttlSeconds ?? 0) >= 60 * 60;
+    // Active compile jobs do not change this runtime's identity or authority.
+    // Requiring global idleness here can block a job's own polling/cancellation.
     if (!manifestHealthy || mismatch) {
       throw new CanonicalEstimateApiError("Версии приложения и расчётного backend не совпадают. Перезапустите локальный контур.", {
         code: mismatch ? `RUNTIME_COMPATIBILITY_MISMATCH_${mismatch[0]}` : "RUNTIME_MANIFEST_NOT_READY",

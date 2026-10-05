@@ -1,5 +1,9 @@
 import {
   getCanonicalEstimateRevision,
+  createCanonicalEstimateArtifact,
+  getCanonicalEstimateArtifact,
+  getCanonicalEstimateJob,
+  cancelCanonicalEstimateJob,
   getCanonicalEstimateParameterSessionSnapshot,
   resetCanonicalEstimateRuntimeCompatibilityForTests,
 } from "./canonicalEstimateClient";
@@ -29,6 +33,31 @@ const successfulResponse = () => new Response(
   JSON.stringify({ revisionId }),
   { status: 200, headers: { "Content-Type": "application/json" } },
 );
+
+const runtimeTuple = {
+  definitionReleaseId: "definition-release", searchReleaseId: "search-release",
+  sourceHead: "source-head", sourceTree: "source-tree", frontendSourceTreeHash: "source-tree",
+  frontendProductSourceHash: "product-tree", frontendJsBundleFingerprint: "bundle-fingerprint", capabilityId: "capability-id",
+};
+function configureCompatibleRuntime() {
+  Object.assign(process.env, {
+    EXPO_PUBLIC_CANONICAL_ESTIMATE_REQUIRE_RUNTIME_COMPATIBILITY: "true",
+    EXPO_PUBLIC_CANONICAL_ESTIMATE_DEFINITION_RELEASE_ID: runtimeTuple.definitionReleaseId,
+    EXPO_PUBLIC_CANONICAL_ESTIMATE_SEARCH_RELEASE_ID: runtimeTuple.searchReleaseId,
+    EXPO_PUBLIC_BUILD_COMMIT: runtimeTuple.sourceHead,
+    EXPO_PUBLIC_RELEASE_SOURCE_TREE_HASH: runtimeTuple.sourceTree,
+    EXPO_PUBLIC_RELEASE_PRODUCT_SOURCE_HASH: runtimeTuple.frontendProductSourceHash,
+    EXPO_PUBLIC_RELEASE_JS_BUNDLE_FINGERPRINT: runtimeTuple.frontendJsBundleFingerprint,
+    EXPO_PUBLIC_CANONICAL_ESTIMATE_CAPABILITY_ID: runtimeTuple.capabilityId,
+  });
+  mockGetSession.mockResolvedValue({
+    data: { session: { access_token: "token", expires_at: Math.floor(Date.now() / 1000) + 7200 } }, error: null,
+  });
+}
+function busyCompatibleManifest() {
+  return { runtimeRole: "FULL_CANONICAL_ESTIMATE_BACKEND", authMode: "STRICT_SESSION_INTROSPECTION",
+    activeCompileJobCount: 1, capability: { status: "ACTIVE", ttlSeconds: 7200 }, compatibilityTuple: { ...runtimeTuple } };
+}
 
 describe("canonicalEstimateClient access-token refresh", () => {
   beforeEach(() => {
@@ -253,6 +282,65 @@ describe("canonicalEstimateClient access-token refresh", () => {
     });
     expect(mockFetchWithRequestTimeout).not.toHaveBeenCalled();
     expect(mockRefreshSession).not.toHaveBeenCalled();
+  });
+
+  it("keeps PDF, own-job polling and cancellation available on a compatible busy runtime after cache expiry", async () => {
+    let now = 1_800_000_000_000;
+    const clock = jest.spyOn(Date, "now").mockImplementation(() => now);
+    try {
+      configureCompatibleRuntime();
+      mockFetchWithRequestTimeout.mockImplementation(async (url: string) => {
+        const payload = url.endsWith("/runtime-manifest") ? busyCompatibleManifest()
+          : url.endsWith("/jobs/own-job/cancel") ? { jobId: "own-job", status: "cancelled" }
+          : url.endsWith("/jobs/own-job") ? { jobId: "own-job", status: "running" }
+          : url.includes("/artifacts/pdf") ? { revisionId, jobId: "own-job", artifactId: "own-artifact" }
+          : { revisionId };
+        return new Response(JSON.stringify(payload), { status: 200 });
+      });
+      await expect(getCanonicalEstimateRevision(revisionId)).resolves.toMatchObject({ revisionId });
+      now += 31_000;
+      await expect(createCanonicalEstimateArtifact({ revisionId, kind: "pdf", documentProfile: "professional_v1", idempotencyKey: "same-pdf" }))
+        .resolves.toMatchObject({ jobId: "own-job" });
+      now += 31_000;
+      const signal = new AbortController().signal;
+      await expect(getCanonicalEstimateJob("own-job", signal)).resolves.toMatchObject({ status: "running" });
+      now += 31_000;
+      await expect(cancelCanonicalEstimateJob("own-job", signal)).resolves.toMatchObject({ status: "cancelled" });
+      await expect(getCanonicalEstimateArtifact({ revisionId, kind: "pdf", documentProfile: "professional_v1" }))
+        .resolves.toMatchObject({ artifactId: "own-artifact" });
+      const calls = mockFetchWithRequestTimeout.mock.calls;
+      expect(calls.filter(([url]) => String(url).endsWith("/runtime-manifest"))).toHaveLength(4);
+      const targets = calls.filter(([url]) => !String(url).endsWith("/runtime-manifest"));
+      expect(targets.map(([url]) => String(url).replace("https://example.supabase.co/functions/v1/canonical-estimate/", ""))).toEqual([
+        `revisions/${revisionId}`, `revisions/${revisionId}/artifacts/pdf`, "jobs/own-job", "jobs/own-job/cancel",
+        `revisions/${revisionId}/artifacts/pdf?documentProfile=professional_v1`,
+      ]);
+      expect(targets[1]?.[1]).toMatchObject({ method: "POST", body: JSON.stringify({ idempotencyKey: "same-pdf", documentProfile: "professional_v1" }) });
+      expect(targets[2]?.[1]).toMatchObject({ method: "GET", signal });
+      expect(targets[3]?.[1]).toMatchObject({ method: "POST", signal });
+      expect(mockRefreshSession).not.toHaveBeenCalled();
+    } finally { clock.mockRestore(); }
+  });
+
+  it.each(Object.keys(runtimeTuple) as Array<keyof typeof runtimeTuple>)("still rejects a busy runtime with mismatched %s before the PDF request", async key => {
+    configureCompatibleRuntime();
+    const manifest = busyCompatibleManifest();
+    manifest.compatibilityTuple[key] = "stale-value";
+    mockFetchWithRequestTimeout.mockResolvedValue(new Response(JSON.stringify(manifest), { status: 200 }));
+    await expect(getCanonicalEstimateArtifact({ revisionId, kind: "pdf" })).rejects.toMatchObject({ code: `RUNTIME_COMPATIBILITY_MISMATCH_${key}` });
+    expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(["role", "auth", "inactive-capability", "short-ttl", "http-error"])("still rejects a busy runtime with %s before job transport", async invalid => {
+    configureCompatibleRuntime();
+    const manifest = busyCompatibleManifest();
+    if (invalid === "role") manifest.runtimeRole = "OTHER_BACKEND";
+    if (invalid === "auth") manifest.authMode = "UNVERIFIED";
+    if (invalid === "inactive-capability") manifest.capability.status = "REVOKED";
+    if (invalid === "short-ttl") manifest.capability.ttlSeconds = 3599;
+    mockFetchWithRequestTimeout.mockResolvedValue(new Response(JSON.stringify(manifest), { status: invalid === "http-error" ? 503 : 200 }));
+    await expect(getCanonicalEstimateJob("own-job")).rejects.toMatchObject({ code: "RUNTIME_MANIFEST_NOT_READY" });
+    expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(1);
   });
 
   it("separates snapshot auth, exact runtime compatibility, HTTP and decoding without recording contents", async () => {
