@@ -1,4 +1,8 @@
 import { CONSUMER_REPAIR_CONTEXT, assertConsumerRepairScope } from "./consumerRequestAccessPolicy";
+import {
+  assertConsumerRepairCanonicalDraftWriteSource,
+  type ConsumerRepairCanonicalDraftWriteSource,
+} from "./consumerCanonicalParameterCollection";
 import { logger } from "../logger";
 import { createConsumerRepairEvent } from "./consumerRequestAuditTrail";
 import { consumerRepairSourceRequestDraftId } from "./consumerRequestHistoryLineage";
@@ -618,8 +622,8 @@ export function createConsumerRepairRequestDraft(input: {
 }
 
 /**
- * Persists the shared canonical parameter form before the first BOQ revision
- * exists. This is request input state, not a client-side estimate.
+ * Persists input for the next canonical BOQ revision. An existing projection
+ * and its immutable history stay available until the backend replacement is ready.
  */
 export function saveConsumerRepairCanonicalParameterCollection(input: {
   requestDraftId: string;
@@ -635,11 +639,14 @@ export function saveConsumerRepairCanonicalParameterCollection(input: {
       field: "consumerUserId",
     }]);
   }
-  if (bundle.items.length > 0 || bundle.estimateDraftRevisionState != null) {
-    throw new Error("CANONICAL_PARAMETER_COLLECTION_REQUIRES_EMPTY_DRAFT");
+  if (bundle.draft.status !== "draft") {
+    throw new Error("CANONICAL_PARAMETER_COLLECTION_REQUIRES_DRAFT");
   }
   if (input.session.draftId !== bundle.draft.id) {
     throw new Error("CANONICAL_PARAMETER_COLLECTION_DRAFT_MISMATCH");
+  }
+  if (!input.session.revisionId.startsWith("precompile:")) {
+    throw new Error("CANONICAL_PARAMETER_COLLECTION_REQUIRES_PRECOMPILE_SESSION");
   }
   const next = withEvent({
     ...bundle,
@@ -649,10 +656,6 @@ export function saveConsumerRepairCanonicalParameterCollection(input: {
         `Требуется параметр: ${parameterId}`),
     }),
     canonicalParameterSession: input.session,
-    structuredEstimatePayload: null,
-    editableEstimateSnapshot: null,
-    estimateRevisionState: undefined,
-    estimateDraftRevisionState: null,
   }, createConsumerRepairEvent({
     requestDraftId: bundle.draft.id,
     eventType: "canonical_parameter_collection_saved",
@@ -684,10 +687,18 @@ export function upsertConsumerRepairCanonicalBackendDraft(input: {
    * keep the normal append-only draft revision lineage.
    */
   replaceCanonicalRevisionHistory?: boolean;
+  expectedDraftWriteSource?: ConsumerRepairCanonicalDraftWriteSource;
 }): ConsumerRepairDraftBundle {
   const existing = input.requestDraftId
     ? findConsumerRepairBundle(input.requestDraftId)
     : null;
+  if (input.expectedDraftWriteSource) {
+    if (input.requestDraftId !== input.expectedDraftWriteSource.draftId
+      || input.consumerUserId !== input.expectedDraftWriteSource.ownerUserId) {
+      throw new Error("CANONICAL_WORKSPACE_REPLACED");
+    }
+    assertConsumerRepairCanonicalDraftWriteSource(input.expectedDraftWriteSource, existing);
+  }
   if (!existing || existing.draft.status !== "draft") {
     const created = createConsumerRepairRequestDraft({
       consumerUserId: input.consumerUserId,

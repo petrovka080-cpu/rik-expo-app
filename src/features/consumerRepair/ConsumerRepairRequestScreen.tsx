@@ -98,6 +98,7 @@ import {
   consumerRepairCanonicalMissingParameterCount,
   consumerRepairCanonicalParameterSessionMatchesBundle,
   consumerRepairCanonicalUnresolvedRowCount,
+  consumerRepairPendingCanonicalParameterCollection,
 } from "./consumerRepairCanonicalEstimateReadiness";
 import { consumerCanonicalPrecompileParameterOverrides } from "./consumerCanonicalParameterEditor";
 import {
@@ -1036,6 +1037,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private loadCanonicalParameterSessionForBundle = async (
     bundle: ConsumerRepairDraftBundle,
   ): Promise<CanonicalParameterSession | null> => {
+    const collection = consumerRepairPendingCanonicalParameterCollection(bundle);
+    if (collection) return collection;
     const binding = consumerRepairCanonicalBackendBinding(bundle);
     if (!binding) return null;
     const retained = this.state.canonicalBackendParameterSession;
@@ -1055,6 +1058,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     if (
       !bundle ||
       !binding ||
+      consumerRepairPendingCanonicalParameterCollection(bundle) ||
       consumerRepairCanonicalParameterSessionMatchesBundle(this.state.canonicalBackendParameterSession, bundle) ||
       this.canonicalParameterSessionLoadInFlightRevisionId === binding.revisionId ||
       this.canonicalParameterSessionLoadFailedRevisionId === binding.revisionId
@@ -1406,6 +1410,12 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       this.props.initialProblemText?.trim() ||
       "";
     const requestedWork = this.state.selectedWork ?? selectedWorkFromBundle(pendingBundle);
+    const collection = consumerRepairPendingCanonicalParameterCollection(pendingBundle);
+    if (collection
+      && requestedProblemText === pendingBundle.draft.problemText?.trim()
+      && (!requestedWork || requestedWork.selectedWorkKey === collection.workPassportId)) {
+      return { status: "PENDING_DRAFT_ACTION", bundle: pendingBundle };
+    }
     const existingBinding = consumerRepairCanonicalBackendBinding(pendingBundle);
     let requiresCanonicalSuccessor = false;
     if (existingBinding) {
@@ -1573,7 +1583,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         selectedRoadScope,
       );
       const binding = consumerRepairCanonicalBackendBinding(recovered);
-      if (recovered?.canonicalParameterSession?.status === "BLOCKING_REQUIRED" && !binding) {
+      if (recovered && consumerRepairPendingCanonicalParameterCollection(recovered)) {
         return {
           status: "PENDING_DRAFT_ACTION",
           bundle: recovered,
@@ -1816,6 +1826,17 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       const ensured = await this.ensureInitialCanonicalRevision();
       if (ensured.status === "RETRYABLE_ERROR" || ensured.status === "BLOCKED_WITH_REASON") {
         this.setState({ statusMessage: ensured.message });
+        return;
+      }
+      if (ensured.status === "PENDING_DRAFT_ACTION") {
+        const collection = consumerRepairPendingCanonicalParameterCollection(ensured.bundle);
+        this.updateCurrentBundle(
+          ensured.bundle,
+          collection
+            ? `Заполните ${consumerRepairCanonicalMissingParameterCount(collection)} обязательных параметров и нажмите «Применить и сформировать смету». Предыдущие строки и история сохранены.`
+            : "Сначала завершите исходные данные расчёта. Черновик сохранён.",
+          collection,
+        );
         return;
       }
       const current = ensured.bundle;
@@ -2567,13 +2588,35 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       return false;
     }
     const binding = consumerRepairCanonicalBackendBinding(current);
-    if (!binding) {
-      const collection = current.canonicalParameterSession;
+    const pendingCollection = consumerRepairPendingCanonicalParameterCollection(current);
+    if (!binding || pendingCollection) {
+      const collection = pendingCollection ?? current.canonicalParameterSession;
       const catalogId = collection?.workPassportId?.trim();
       if (!collection || !catalogId) {
         this.setState({ statusMessage: "Параметры не сохранены: у сметы нет точной версии или схемы исходных данных." });
         return false;
       }
+      if (current.draft.consumerUserId !== this.props.consumerUserId) {
+        this.setState({ statusMessage: "Изменить исходные данные может только владелец заявки." });
+        return false;
+      }
+      const collectionStillCurrent = (published?: ConsumerRepairDraftBundle | null) => {
+        const active = this.state.bundle;
+        const activeCollection = consumerRepairPendingCanonicalParameterCollection(active);
+        if (active?.draft.id !== current.draft.id
+          || active.draft.consumerUserId !== this.props.consumerUserId) return false;
+        if (activeCollection?.sessionId === collection.sessionId
+          && activeCollection.revisionId === collection.revisionId) return true;
+        // The container can publish this exact successful backend replacement
+        // before resolving the callback. Accept it without accepting another edit.
+        const publishedBinding = consumerRepairCanonicalBackendBinding(published ?? null);
+        const activeBinding = consumerRepairCanonicalBackendBinding(active);
+        return !activeCollection && published?.draft.id === current.draft.id
+          && published.draft.consumerUserId === this.props.consumerUserId
+          && publishedBinding != null && publishedBinding.revisionId !== binding?.revisionId
+          && activeBinding?.revisionId === publishedBinding.revisionId
+          && activeBinding.releaseId === publishedBinding.releaseId;
+      };
       if (this.approvalCommitInFlight || this.canonicalRowMutationInFlight()) {
         this.reportCanonicalRowMutationInFlight();
         return false;
@@ -2597,9 +2640,14 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
             : null,
           parameterOverrides,
         );
+        if (!collectionStillCurrent(recovered)) return false;
         if (!recovered) throw new Error("Backend не вернул сохранённое состояние расчёта.");
+        if (recovered.draft.id !== current.draft.id
+          || recovered.draft.consumerUserId !== this.props.consumerUserId) {
+          throw new Error("CANONICAL_PARAMETER_COLLECTION_RESULT_MISMATCH");
+        }
         const nextBinding = consumerRepairCanonicalBackendBinding(recovered);
-        if (!nextBinding) {
+        if (!nextBinding || consumerRepairPendingCanonicalParameterCollection(recovered)) {
           const nextSession = recovered.canonicalParameterSession;
           if (!nextSession) throw new Error("Backend не вернул схему оставшихся исходных данных.");
           this.updateCurrentBundle(
@@ -2610,6 +2658,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           return true;
         }
         const parameterSession = await this.loadCanonicalParameterSessionForBundle(recovered);
+        if (!collectionStillCurrent(recovered)) return false;
         this.updateCurrentBundle(
           recovered,
           "Исходные данные сохранены. Смета рассчитана — проверьте позиции и параметры.",
@@ -2617,6 +2666,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         );
         return true;
       } catch (error) {
+        if (!collectionStillCurrent()) return false;
         this.setState({
           statusMessage: error instanceof Error
             ? error.message
@@ -3212,9 +3262,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     }
     this.cachedScreenViewState = state;
     const binding = consumerRepairCanonicalBackendBinding(state.bundle);
-    const parameterSession = state.canonicalBackendParameterSession?.revisionId === binding?.revisionId
+    const parameterSession = consumerRepairPendingCanonicalParameterCollection(state.bundle)
+      ?? (state.canonicalBackendParameterSession?.revisionId === binding?.revisionId
       ? state.canonicalBackendParameterSession
-      : null;
+      : null);
     const viewState = parameterSession && state.bundle
       ? { ...state, bundle: { ...state.bundle, canonicalParameterSession: parameterSession } }
       : state;

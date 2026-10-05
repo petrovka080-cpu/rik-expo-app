@@ -30,6 +30,7 @@ import {
   consumerRepairCanonicalEstimateBlocksApproval,
   consumerRepairCanonicalUnpricedPayableRowCount,
   consumerRepairCanonicalUnresolvedRowCount,
+  consumerRepairPendingCanonicalParameterCollection,
 } from "./consumerRepairCanonicalEstimateReadiness";
 
 type ConsumerRepairRequestRenderModel = ReturnType<typeof buildConsumerRepairRequestRenderModel>;
@@ -315,10 +316,7 @@ export function ConsumerRepairRequestScreenView({
           hasBundle={Boolean(renderModel.bundle)}
           hasPendingPrompt={state.problemText.trim().length > 0}
           estimateRequiresRebuild={legacyEstimateRequiresRebuild || canonicalRevisionMissing}
-          parameterCollectionRequired={Boolean(
-            renderModel.bundle?.canonicalParameterSession?.status === "BLOCKING_REQUIRED"
-            && !consumerRepairCanonicalBackendBinding(renderModel.bundle)
-          )}
+          parameterCollectionRequired={Boolean(consumerRepairPendingCanonicalParameterCollection(renderModel.bundle))}
           hasSnapshot={consumerRepairBundleHasPdfEligibleSnapshot(renderModel.bundle)}
           approvalBlockedByEstimate={approvalBlockedByEstimate}
           approvalBlockedByParameters={approvalBlockedByParameters}

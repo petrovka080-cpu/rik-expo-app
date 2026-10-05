@@ -1,5 +1,6 @@
 import type { ConsumerRepairDraftBundle, ConsumerRepairStatus } from "./consumerRequestTypes";
 import { canonicalBackendRevisionProjectionForSave } from "./consumerCanonicalBackendRevisionProjection";
+import { consumerRepairPendingCanonicalParameterCollection } from "./consumerCanonicalParameterCollection";
 import { safeJsonParseValue, safeJsonStringify } from "../format";
 import {
   bindConsumerRepairEstimateRevisionHistory,
@@ -922,7 +923,7 @@ export function saveConsumerRepairBundle(bundle: ConsumerRepairDraftBundle): Con
         // Canonical ownership replaces calculation rows, not the request
         // session that carries explicit measurements and scope provenance.
         estimateDraftSession: bundle.estimateDraftSession ?? null,
-        canonicalParameterSession: null,
+        canonicalParameterSession: consumerRepairPendingCanonicalParameterCollection(bundle),
         pendingRoadScopeSelection: null,
       }
       : parameterCollectionOnly

@@ -7,6 +7,8 @@ import {
   consumerEstimateUnresolvedQuantityItems,
 } from "../../lib/consumerRequests/consumerEstimateReadiness";
 
+export { consumerRepairPendingCanonicalParameterCollection } from "../../lib/consumerRequests/consumerCanonicalParameterCollection";
+
 /** Revision sessions are immutable, but their editor projection belongs to one draft. */
 export function consumerRepairCanonicalParameterSessionMatchesBundle(
   session: CanonicalParameterSession | null | undefined,

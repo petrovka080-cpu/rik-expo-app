@@ -1,4 +1,5 @@
 import { getConsumerRepairBundle } from "./consumerRequestRepository";
+import { consumerRepairPendingCanonicalParameterCollection } from "./consumerCanonicalParameterCollection";
 import { consumerRepairSourceRequestDraftId } from "./consumerRequestHistoryLineage";
 import { consumerRepairPdfStorageObjectExists } from "./consumerRequestPdfStorage";
 import type {
@@ -154,6 +155,7 @@ export function validateConsumerRepairRequestForApprove(
   ) ?? false;
 
   if (
+    consumerRepairPendingCanonicalParameterCollection(bundle) ||
     bundle.canonicalParameterSession?.status === "BLOCKING_REQUIRED" ||
     currentRevision?.status === "blocking_required" ||
     contractInputsMissing

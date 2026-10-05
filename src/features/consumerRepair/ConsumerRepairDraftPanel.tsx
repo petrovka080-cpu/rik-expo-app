@@ -24,6 +24,7 @@ import {
   consumerRepairRevisionUsesGenericFallback,
   primaryConsumerRepairCanonicalBackendBinding,
 } from "./consumerRepairBackendOwnership";
+import { consumerRepairPendingCanonicalParameterCollection } from "./consumerRepairCanonicalEstimateReadiness";
 import {
   consumerRepairRowCanonicalRevisionId,
   consumerRepairRowCode,
@@ -192,9 +193,7 @@ export function ConsumerRepairDraftPanel({
   const canonical = trace && bundle
     ? trace.measureSync("PRESENTATION_BACKEND_BINDING", () => primaryConsumerRepairCanonicalBackendBinding(bundle))
     : bundle ? primaryConsumerRepairCanonicalBackendBinding(bundle) : null;
-  const parameterCollection = !canonical && bundle?.canonicalParameterSession?.status === "BLOCKING_REQUIRED"
-    ? bundle.canonicalParameterSession
-    : null;
+  const parameterCollection = consumerRepairPendingCanonicalParameterCollection(bundle);
   const pendingCanonicalRevision = Boolean(bundle && !canonical && !parameterCollection);
   return (
     <View style={styles.card} testID="consumer-repair-draft">

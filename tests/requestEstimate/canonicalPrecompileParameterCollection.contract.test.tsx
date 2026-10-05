@@ -12,7 +12,13 @@ import {
   createConsumerRepairRequestDraft,
   getConsumerRepairRequest,
 } from "../../src/lib/consumerRequests";
-import { saveConsumerRepairCanonicalParameterCollection } from "../../src/lib/consumerRequests/consumerRequestService";
+import { approveConsumerRepairRequestDraft, saveConsumerRepairCanonicalParameterCollection, upsertConsumerRepairCanonicalBackendDraft } from "../../src/lib/consumerRequests/consumerRequestService";
+import { saveConsumerRepairBundle } from "../../src/lib/consumerRequests/consumerRequestRepository";
+import { buildCanonicalConsumerRepairRevisionFixture } from "../consumerRepair/canonicalConsumerRepairRevisionFixture";
+import { ConsumerRepairRequestScreenController } from "../../src/features/consumerRepair/ConsumerRepairRequestScreen";
+import { consumerRepairPendingCanonicalParameterCollection } from "../../src/features/consumerRepair/consumerRepairCanonicalEstimateReadiness";
+import { captureConsumerRepairCanonicalDraftWriteSource } from "../../src/lib/consumerRequests/consumerCanonicalParameterCollection";
+import { validateConsumerRepairRequestForApprove } from "../../src/lib/consumerRequests/consumerRequestValidationService";
 
 jest.mock("@expo/vector-icons", () => {
   const mockReact = jest.requireActual("react") as typeof import("react");
@@ -85,6 +91,192 @@ describe("canonical precompile parameter collection", () => {
     __resetConsumerRepairRequestStoreForTests();
     cleanupLocalStorage?.();
     cleanupLocalStorage = null;
+  });
+
+  function populatedDraft() {
+    const draft = createConsumerRepairRequestDraft({
+      consumerUserId: "existing-draft-owner", problemText: "Фундамент 150 метров",
+      aiDraft: buildCanonicalConsumerRepairRevisionFixture("Фундамент 150 метров"),
+    });
+    return saveConsumerRepairBundle({ ...draft, pdfs: [{
+      id: "previous-pdf", requestDraftId: draft.draft.id,
+      revisionId: "previous-revision", pdfStatus: "archived",
+    } as never] });
+  }
+
+  function pendingSession(draftId: string) {
+    return buildConsumerCanonicalPrecompileParameterSession({
+      catalog: stripFoundationCatalog(), draftId,
+      parameters: { total_axis_length_m: "150" },
+      missingParameterIds: ["strip_width_m", "strip_height_m", "approved_reinforcement_schedule_weight_kg"],
+    });
+  }
+
+  it("persists successor inputs in a populated draft without losing rows, prices, PDF or revision history after reload", () => {
+    const initial = populatedDraft();
+    __simulateConsumerRepairRequestStoreReloadForTests();
+    const before = getConsumerRepairRequest(initial.draft.id);
+    expect(before.items.length).toBeGreaterThan(0);
+    const session = pendingSession(before.draft.id);
+    saveConsumerRepairCanonicalParameterCollection({ requestDraftId: before.draft.id,
+      consumerUserId: before.draft.consumerUserId, problemText: before.draft.problemText!, session });
+    __simulateConsumerRepairRequestStoreReloadForTests();
+    const after = getConsumerRepairRequest(before.draft.id);
+    for (const field of ["items", "pdfs", "estimateRevisionState", "estimateDraftRevisionState", "structuredEstimatePayload", "editableEstimateSnapshot"] as const) {
+      expect(after[field]).toEqual(before[field]);
+    }
+    expect(after.events).toEqual([...before.events, expect.objectContaining({ eventType: "canonical_parameter_collection_saved" })]);
+    expect(consumerRepairPendingCanonicalParameterCollection(after)).toEqual(session);
+  });
+
+  it("rejects a foreign owner, draft/session mismatch, ordinary revision and finalized draft without mutation", () => {
+    const before = populatedDraft(), session = pendingSession(before.draft.id);
+    const input = { requestDraftId: before.draft.id, consumerUserId: before.draft.consumerUserId,
+      problemText: before.draft.problemText!, session };
+    expect(() => saveConsumerRepairCanonicalParameterCollection({ ...input, consumerUserId: "other-owner" })).toThrow();
+    expect(() => saveConsumerRepairCanonicalParameterCollection({ ...input, session: { ...session, draftId: "other-draft" } })).toThrow("DRAFT_MISMATCH");
+    expect(() => saveConsumerRepairCanonicalParameterCollection({ ...input, session: { ...session, revisionId: "ordinary-revision" } })).toThrow("REQUIRES_PRECOMPILE_SESSION");
+    expect(getConsumerRepairRequest(before.draft.id)).toEqual(before);
+    const approved = saveConsumerRepairBundle({ ...before, draft: { ...before.draft, status: "consumer_approved" } });
+    expect(() => saveConsumerRepairCanonicalParameterCollection(input)).toThrow("REQUIRES_DRAFT");
+    expect(getConsumerRepairRequest(before.draft.id)).toEqual(approved);
+  });
+
+  it("renders missing parameter cards while retaining the previous canonical binding", () => {
+    const before = populatedDraft();
+    const bundle = saveConsumerRepairCanonicalParameterCollection({ requestDraftId: before.draft.id,
+      consumerUserId: before.draft.consumerUserId, problemText: before.draft.problemText!, session: pendingSession(before.draft.id) });
+    const noop = jest.fn();let renderer!: TestRenderer.ReactTestRenderer;
+    act(() => { renderer = TestRenderer.create(<ConsumerRepairDraftPanel bundle={bundle} aiAnswerRu={null}
+      onDecrease={noop} onIncrease={noop} onQuantityChange={noop} onUnitPriceChange={noop}
+      onRemove={noop} onAddManual={noop} onAddCustom={noop} onApplyParamBatch={noop} />); });
+    expect(renderer.root.findByProps({ testID: "consumer-estimate-parameter-collection" })).toBeTruthy();
+    expect(renderer.root.findByProps({ testID: "editable-param-chip-strip_width_m" })).toBeTruthy();
+    expect(bundle.items).toEqual(before.items);
+    act(() => renderer.unmount());
+  });
+
+  it("approval opens successor cards without compiling repeatedly, loading old parameters or exporting the old PDF", async () => {
+    const before = populatedDraft();
+    const bundle = saveConsumerRepairCanonicalParameterCollection({ requestDraftId: before.draft.id,
+      consumerUserId: before.draft.consumerUserId, problemText: before.draft.problemText!, session: pendingSession(before.draft.id) });
+    const prepare = jest.fn(), load = jest.fn();
+    const controller = new ConsumerRepairRequestScreenController({ consumerUserId: before.draft.consumerUserId,
+      onPrepareCanonicalEstimate: prepare, onLoadCanonicalRevisionDraft: jest.fn(),
+      onLoadCanonicalParameterSession: load, onRecalculateCanonicalEstimate: jest.fn(),
+      onSelectCanonicalCatalogItem: jest.fn(), onAddCanonicalCatalogItem: jest.fn(), onOpenPhotoForMaterialRecognition: jest.fn() });
+    const action = controller as unknown as { state: typeof controller.state; setState: (patch: Partial<typeof controller.state>) => void;
+      approveDraft: () => Promise<void>; hydrateCurrentCanonicalParameterSession: () => Promise<void>; refreshHistory: () => void };
+    action.state = { ...action.state, bundle, problemText: bundle.draft.problemText!, selectedWork: null };
+    action.setState = patch => { action.state = { ...action.state, ...patch }; };action.refreshHistory = jest.fn();
+    // This scenario keeps the selected work that generated the successor schema.
+    action.state.bundle = { ...bundle, draft: { ...bundle.draft, selectedWorkKey: stripFoundationCatalog().catalogId } };
+    await action.hydrateCurrentCanonicalParameterSession();await action.approveDraft();await action.approveDraft();
+    expect(prepare).not.toHaveBeenCalled();expect(load).not.toHaveBeenCalled();
+    expect(action.state.statusMessage).toContain("3 обязательных параметров");
+    expect(action.state.bundle?.draft.status).toBe("draft");expect(action.state.bundle?.items).toEqual(before.items);
+  });
+
+  it("applies pending successor inputs through compile even when the old revision is still bound", async () => {
+    const before = populatedDraft(), session = pendingSession(before.draft.id);
+    const bundle = saveConsumerRepairCanonicalParameterCollection({ requestDraftId: before.draft.id,
+      consumerUserId: before.draft.consumerUserId, problemText: before.draft.problemText!, session });
+    const prepare = jest.fn(async () => bundle), recalculate = jest.fn();
+    const controller = new ConsumerRepairRequestScreenController({ consumerUserId: before.draft.consumerUserId,
+      onPrepareCanonicalEstimate: prepare, onLoadCanonicalRevisionDraft: jest.fn(), onLoadCanonicalParameterSession: jest.fn(),
+      onRecalculateCanonicalEstimate: recalculate, onSelectCanonicalCatalogItem: jest.fn(),
+      onAddCanonicalCatalogItem: jest.fn(), onOpenPhotoForMaterialRecognition: jest.fn() });
+    const action = controller as unknown as { state: typeof controller.state; setState: (patch: Partial<typeof controller.state>) => void;
+      applyParamBatch: (patches: {operation:"add_param";paramKey:string;rawValue:string}[]) => Promise<boolean>; refreshHistory: () => void };
+    action.state = { ...action.state, bundle };action.setState = patch => { action.state = { ...action.state, ...patch }; };action.refreshHistory = jest.fn();
+    expect(await action.applyParamBatch([{ operation: "add_param", paramKey: "strip_width_m", rawValue: "0,6" }])).toBe(true);
+    expect(prepare).toHaveBeenCalledWith(bundle.draft.problemText, session.workPassportId, bundle.draft.id, null,
+      { total_axis_length_m: 150, strip_width_m: "0,6" });
+    expect(recalculate).not.toHaveBeenCalled();expect(action.state.bundle?.items).toEqual(before.items);
+  });
+
+  it.each(["another draft", "new session in the same draft"])("does not publish a delayed collection response after opening %s", async (scenario) => {
+    const before = populatedDraft();
+    const bundle = saveConsumerRepairCanonicalParameterCollection({ requestDraftId: before.draft.id,
+      consumerUserId: before.draft.consumerUserId, problemText: before.draft.problemText!, session: pendingSession(before.draft.id) });
+    let resolve!: (value: typeof bundle) => void;
+    const prepare = jest.fn(() => new Promise<typeof bundle>(done => { resolve = done; }));
+    const controller = new ConsumerRepairRequestScreenController({ consumerUserId: before.draft.consumerUserId,
+      onPrepareCanonicalEstimate: prepare, onLoadCanonicalRevisionDraft: jest.fn(), onLoadCanonicalParameterSession: jest.fn(),
+      onRecalculateCanonicalEstimate: jest.fn(), onSelectCanonicalCatalogItem: jest.fn(),
+      onAddCanonicalCatalogItem: jest.fn(), onOpenPhotoForMaterialRecognition: jest.fn() });
+    const action = controller as unknown as { state: typeof controller.state; setState: (patch: Partial<typeof controller.state>) => void;
+      applyParamBatch: (patches: {operation:"add_param";paramKey:string;rawValue:string}[]) => Promise<boolean>; refreshHistory: () => void };
+    action.state = { ...action.state, bundle };action.setState = patch => { action.state = { ...action.state, ...patch }; };action.refreshHistory = jest.fn();
+    const applying = action.applyParamBatch([{ operation: "add_param", paramKey: "strip_width_m", rawValue: "0,6" }]);
+    const next = scenario === "another draft"
+      ? { ...bundle, draft: { ...bundle.draft, id: "another-draft" } }
+      : { ...bundle, canonicalParameterSession: { ...bundle.canonicalParameterSession!, sessionId: "new-session", revisionId: "precompile:new-inputs" } };
+    action.state = { ...action.state, bundle: next, statusMessage: "Другой ввод" };resolve(bundle);
+    expect(await applying).toBe(false);expect(action.state.bundle).toBe(next);expect(action.state.statusMessage).toBe("Другой ввод");
+  });
+
+  it("rejects a callback for another owner without replacing the active draft", async () => {
+    const before = populatedDraft();
+    const bundle = saveConsumerRepairCanonicalParameterCollection({ requestDraftId: before.draft.id,
+      consumerUserId: before.draft.consumerUserId, problemText: before.draft.problemText!, session: pendingSession(before.draft.id) });
+    const controller = new ConsumerRepairRequestScreenController({ consumerUserId: before.draft.consumerUserId,
+      onPrepareCanonicalEstimate: jest.fn(async () => ({ ...bundle, draft: { ...bundle.draft, consumerUserId: "foreign-owner" } })),
+      onLoadCanonicalRevisionDraft: jest.fn(), onLoadCanonicalParameterSession: jest.fn(), onRecalculateCanonicalEstimate: jest.fn(),
+      onSelectCanonicalCatalogItem: jest.fn(), onAddCanonicalCatalogItem: jest.fn(), onOpenPhotoForMaterialRecognition: jest.fn() });
+    const action = controller as unknown as { state: typeof controller.state; setState: (patch: Partial<typeof controller.state>) => void;
+      applyParamBatch: (patches: {operation:"add_param";paramKey:string;rawValue:string}[]) => Promise<boolean> };
+    action.state = { ...action.state, bundle };action.setState = patch => { action.state = { ...action.state, ...patch }; };
+    expect(await action.applyParamBatch([{ operation: "add_param", paramKey: "strip_width_m", rawValue: "0,6" }])).toBe(false);
+    expect(action.state.bundle).toBe(bundle);expect(action.state.statusMessage).toBe("CANONICAL_PARAMETER_COLLECTION_RESULT_MISMATCH");
+  });
+
+  it("rejects a successful delayed replacement when newer inputs were saved, preserving store and history", async () => {
+    const initial = populatedDraft(), firstSession = pendingSession(initial.draft.id);
+    const first = saveConsumerRepairCanonicalParameterCollection({ requestDraftId: initial.draft.id,
+      consumerUserId: initial.draft.consumerUserId, problemText: initial.draft.problemText!, session: firstSession });
+    const expectedDraftWriteSource = captureConsumerRepairCanonicalDraftWriteSource(first);
+    let resolve!: () => void;const calculated = new Promise<void>(done => { resolve = done; });
+    const applying = (async () => {
+      await calculated;return upsertConsumerRepairCanonicalBackendDraft({ requestDraftId: first.draft.id,
+        consumerUserId: first.draft.consumerUserId, problemText: first.draft.problemText,
+        aiDraft: buildCanonicalConsumerRepairRevisionFixture("Фундамент 150 метров"), expectedDraftWriteSource });
+    })();
+    const nextSession = buildConsumerCanonicalPrecompileParameterSession({ catalog: stripFoundationCatalog(), draftId: first.draft.id,
+      parameters: { total_axis_length_m: "150", strip_width_m: "0.8" },
+      missingParameterIds: ["strip_height_m", "approved_reinforcement_schedule_weight_kg"] });
+    const next = saveConsumerRepairCanonicalParameterCollection({ requestDraftId: first.draft.id,
+      consumerUserId: first.draft.consumerUserId, problemText: first.draft.problemText!, session: nextSession });
+    const rejected = expect(applying).rejects.toThrow("CANONICAL_WORKSPACE_REPLACED");resolve();await rejected;
+    expect(getConsumerRepairRequest(first.draft.id)).toEqual(next);
+    expect(getConsumerRepairRequest(first.draft.id).items).toEqual(initial.items);
+  });
+
+  it("accepts a successful replacement from the exact saved input and clears the completed collection", () => {
+    const before = populatedDraft();
+    const pending = saveConsumerRepairCanonicalParameterCollection({ requestDraftId: before.draft.id,
+      consumerUserId: before.draft.consumerUserId, problemText: before.draft.problemText!, session: pendingSession(before.draft.id) });
+    const updated = upsertConsumerRepairCanonicalBackendDraft({ requestDraftId: pending.draft.id,
+      consumerUserId: pending.draft.consumerUserId, problemText: pending.draft.problemText,
+      aiDraft: buildCanonicalConsumerRepairRevisionFixture("Фундамент 150 метров"),
+      expectedDraftWriteSource: captureConsumerRepairCanonicalDraftWriteSource(pending) });
+    expect(updated.draft.id).toBe(before.draft.id);expect(updated.canonicalParameterSession).toBeNull();
+    expect(updated.events.slice(0, pending.events.length)).toEqual(pending.events);
+    expect(updated.items[0].sourceParameters?.canonicalBackendRevisionId).not.toBe(before.items[0].sourceParameters?.canonicalBackendRevisionId);
+  });
+
+  it.each(["INVALID", "COMPLETE", "PRELIMINARY_WITH_ASSUMPTIONS"] as const)("cannot approve the previous BOQ while a %s precompile session awaits a replacement", (status) => {
+    const before = populatedDraft(), session = { ...pendingSession(before.draft.id), status,
+      blockingMissingParameterIds: [], invalidParameterIds: [], contractMissingParameterIds: [] };
+    saveConsumerRepairCanonicalParameterCollection({ requestDraftId: before.draft.id,
+      consumerUserId: before.draft.consumerUserId, problemText: before.draft.problemText!, session });
+    expect(validateConsumerRepairRequestForApprove(before.draft.id, before.draft.consumerUserId).errors)
+      .toEqual(expect.arrayContaining([expect.objectContaining({ code: "ESTIMATE_PARAMETERS_REQUIRED" })]));
+    expect(() => approveConsumerRepairRequestDraft({ requestDraftId: before.draft.id,
+      userId: before.draft.consumerUserId, canonicalArtifact: { artifactId: "old-pdf",
+        revisionId: String(before.items[0].sourceParameters?.canonicalBackendRevisionId),
+        releaseId: String(before.items[0].sourceParameters?.canonicalBackendReleaseId), status: "ready", sha256: "a".repeat(64) } })).toThrow();
+    expect(getConsumerRepairRequest(before.draft.id).draft.status).toBe("draft");
   });
 
   it("keeps catalog defaults as assumptions while exposing their active conditional inputs", () => {
@@ -369,15 +561,15 @@ describe("canonical precompile parameter collection", () => {
 
     const noop = jest.fn();
     let renderer!: TestRenderer.ReactTestRenderer;
+    const draft = createConsumerRepairRequestDraft({
+      consumerUserId: "generic-asphalt-user", problemText: "Уплотнение асфальта 15000 м2",
+    });
     act(() => {
       renderer = TestRenderer.create(
         <ConsumerRepairDraftPanel
           bundle={{
-            ...createConsumerRepairRequestDraft({
-              consumerUserId: "generic-asphalt-user",
-              problemText: "Уплотнение асфальта 15000 м2",
-            }),
-            canonicalParameterSession: session,
+            ...draft,
+            canonicalParameterSession: { ...session, draftId: draft.draft.id },
           }}
           aiAnswerRu={null}
           onDecrease={noop}
@@ -446,15 +638,15 @@ describe("canonical precompile parameter collection", () => {
     const onApplyParamBatch = jest.fn();
     const noop = jest.fn();
     let renderer!: TestRenderer.ReactTestRenderer;
+    const draft = createConsumerRepairRequestDraft({
+      consumerUserId: "legacy-document-only-user", problemText: "Ленточный фундамент 150 м",
+    });
     act(() => {
       renderer = TestRenderer.create(
         <ConsumerRepairDraftPanel
           bundle={{
-            ...createConsumerRepairRequestDraft({
-              consumerUserId: "legacy-document-only-user",
-              problemText: "Ленточный фундамент 150 м",
-            }),
-            canonicalParameterSession: legacySession,
+            ...draft,
+            canonicalParameterSession: { ...legacySession, draftId: draft.draft.id },
           }}
           aiAnswerRu={null}
           onDecrease={noop}

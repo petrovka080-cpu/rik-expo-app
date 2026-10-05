@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
   awaitConsumerRepairBundleDurableCommit,
+  findConsumerRepairBundle,
   hydrateTransactionalConsumerRepairRequestStore,
 } from "../../lib/consumerRequests/consumerRequestRepository";
 import {
@@ -21,6 +22,11 @@ import {
   upsertConsumerRepairCanonicalBackendDraft,
 } from "../../lib/consumerRequests/consumerRequestService";
 import type { ForemanAiEstimateDraftMapping } from "../../lib/foremanAiEstimate";
+import {
+  assertConsumerRepairCanonicalDraftWriteSource,
+  captureConsumerRepairCanonicalDraftWriteSource,
+  type ConsumerRepairCanonicalDraftWriteSource,
+} from "../../lib/consumerRequests/consumerCanonicalParameterCollection";
 import { currentUserId } from "../../lib/supabaseClient";
 import {
   compileConsumerCanonicalBaseline,
@@ -335,6 +341,7 @@ type PersistConsumerCanonicalDraftOptions = {
   replaceCanonicalRevisionHistory?: boolean;
   evidenceBuildStartedAt?: number;
   expectedWorkspaceGeneration?: number;
+  expectedDraftWriteSource?: ConsumerRepairCanonicalDraftWriteSource;
   showInitialPreview?: boolean;
 };
 
@@ -383,6 +390,16 @@ function useConsumerCanonicalDraftPersistence(input: {
       }
     };
     assertCurrentWorkspace();
+    const assertDraftSource = () => {
+      if (options.expectedDraftWriteSource) {
+        if (!targetDraftId || targetDraftId !== options.expectedDraftWriteSource.draftId
+          || consumerUserId !== options.expectedDraftWriteSource.ownerUserId) {
+          throw new Error("CANONICAL_WORKSPACE_REPLACED");
+        }
+        assertConsumerRepairCanonicalDraftWriteSource(options.expectedDraftWriteSource, findConsumerRepairBundle(targetDraftId));
+      }
+    };
+    assertDraftSource();
     const evidenceBuildStartedAt = options.evidenceBuildStartedAt ?? Date.now();
     const canonicalBackend = mapping.payload.canonicalBackend;
     if (!canonicalBackend) {
@@ -441,6 +458,7 @@ function useConsumerCanonicalDraftPersistence(input: {
     }
     try {
       assertCurrentWorkspace();
+      assertDraftSource();
       const bundle = upsertConsumerRepairCanonicalBackendDraft({
         requestDraftId: targetDraftId,
         consumerUserId,
@@ -451,6 +469,7 @@ function useConsumerCanonicalDraftPersistence(input: {
         // revision report different row counts in UI, history, PDF and backend.
         aiDraft: buildStructuredEstimateRequestDraft(mapping.payload),
         replaceCanonicalRevisionHistory: options.replaceCanonicalRevisionHistory === true,
+        expectedDraftWriteSource: options.expectedDraftWriteSource,
       });
       logger.releaseEvidence("RikEstimatePersist", "BUNDLE_LOCAL_PROJECTION_READY", {
         stage: "BUNDLE_LOCAL_PROJECTION_READY",
@@ -747,6 +766,11 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
             const draftId = requestDraftId?.trim();
             if (!draftId) throw new Error("INITIAL_CANONICAL_DRAFT_ID_REQUIRED");
             const expectedWorkspaceGeneration = workspaceGenerationRef.current;
+            const expectedDraft = findConsumerRepairBundle(draftId);
+            if (!expectedDraft || expectedDraft.draft.consumerUserId !== resolvedConsumerUserId) {
+              throw new Error("CANONICAL_WORKSPACE_REPLACED");
+            }
+            const expectedDraftWriteSource = captureConsumerRepairCanonicalDraftWriteSource(expectedDraft);
             const buildStartedAt = Date.now();
             let mapping: ForemanAiEstimateDraftMapping;
             try {
@@ -759,6 +783,10 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
               });
             } catch (error) {
               if (!(error instanceof ConsumerCanonicalBaselineNeedsParametersError)) throw error;
+              if (workspaceGenerationRef.current !== expectedWorkspaceGeneration) {
+                throw new Error("CANONICAL_WORKSPACE_REPLACED");
+              }
+              assertConsumerRepairCanonicalDraftWriteSource(expectedDraftWriteSource, findConsumerRepairBundle(draftId));
               return saveConsumerRepairCanonicalParameterCollection({
                 requestDraftId: draftId,
                 consumerUserId: resolvedConsumerUserId!,
@@ -777,6 +805,7 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
               {
                 evidenceBuildStartedAt: buildStartedAt,
                 expectedWorkspaceGeneration,
+                expectedDraftWriteSource,
                 showInitialPreview: true,
               },
             ) ?? null;
