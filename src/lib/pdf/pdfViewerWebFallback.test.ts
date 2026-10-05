@@ -1,5 +1,6 @@
 /** @jest-environment jsdom */
 import fs from "node:fs";
+import { createHash } from "node:crypto";
 import { buildPdfViewerWebFallbackHtml, needsPdfJsWebFallback } from "./pdfViewerWebFallback";
 import type { DocumentAsset } from "../documents/pdfDocumentSessions";
 
@@ -10,6 +11,7 @@ describe("PDF display without the browser PDF plugin", () => {
   it("keeps a supported browser and existing HTML preview on their normal paths", () => {
     Object.defineProperty(navigator, "pdfViewerEnabled", { configurable: true, value: true });
     expect(needsPdfJsWebFallback(asset, "blob:existing-pdf")).toBe(false);
+    expect(needsPdfJsWebFallback({ ...asset, documentType: "request", source: "generated" }, "blob:estimate-pdf")).toBe(true);
     Object.defineProperty(navigator, "pdfViewerEnabled", { configurable: true, value: false });
     expect(needsPdfJsWebFallback(asset, "blob:existing-pdf")).toBe(true);
     expect(needsPdfJsWebFallback(asset, "data:text/html,<table>estimate</table>")).toBe(false);
@@ -26,13 +28,14 @@ describe("PDF display without the browser PDF plugin", () => {
   });
 
   it("serves matching pinned library and worker bytes locally with their license", () => {
+    const digest = (file: string) => createHash("sha256").update(fs.readFileSync(file)).digest("hex");
     for (const file of ["pdf.mjs", "pdf.worker.mjs"]) {
-      expect(fs.readFileSync(`public/pdfjs/${file}`)).toEqual(fs.readFileSync(`node_modules/pdfjs-dist/build/${file}`));
+      expect(digest(`public/pdfjs/${file}`)).toBe(digest(`node_modules/pdfjs-dist/build/${file}`));
     }
     expect(fs.readFileSync("public/pdfjs/LICENSE")).toEqual(fs.readFileSync("node_modules/pdfjs-dist/LICENSE"));
     for (const directory of ["wasm", "cmaps", "standard_fonts"]) {
       for (const file of fs.readdirSync(`node_modules/pdfjs-dist/${directory}`)) {
-        expect(fs.readFileSync(`public/pdfjs/${directory}/${file}`)).toEqual(fs.readFileSync(`node_modules/pdfjs-dist/${directory}/${file}`));
+        expect(digest(`public/pdfjs/${directory}/${file}`)).toBe(digest(`node_modules/pdfjs-dist/${directory}/${file}`));
       }
     }
   });

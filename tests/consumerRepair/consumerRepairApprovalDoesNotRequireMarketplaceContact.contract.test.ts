@@ -12,6 +12,7 @@ import { appendCanonicalBackendRevisionProjection } from "../../src/lib/consumer
 import { saveConsumerRepairBundle } from "../../src/lib/consumerRequests/consumerRequestRepository";
 import { validateConsumerRepairRequestForApprove } from "../../src/lib/consumerRequests/consumerRequestValidationService";
 import type { StructuredEstimatePayload } from "../../src/lib/estimateStructuredPipeline/structuredEstimateTypes";
+import { flushTransactionalConsumerRepairWrites } from "../../src/lib/platform/consumerRepairTransactionalDurableBridge";
 import {
   buildCanonicalConsumerRepairRevisionFixture,
   canonicalArtifactForConsumerRepairRevisionFixture,
@@ -19,6 +20,7 @@ import {
 
 describe("consumer estimate approval boundary", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
+  afterEach(async () => { await flushTransactionalConsumerRepairWrites(); });
 
   function shortCatalogDraft(mismatch = "none") {
     const prompt = "Окраска стен 50 м²";

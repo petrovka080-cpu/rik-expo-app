@@ -6,7 +6,10 @@ export function webBrowserHasPdfViewer(): boolean {
 
 export function needsPdfJsWebFallback(asset: DocumentAsset, uri: string): boolean {
   if (/^data:text\/html[;,]/i.test(uri)) return false;
-  return !webBrowserHasPdfViewer() && (
+  // Generated estimate PDFs need a positive page-render receipt. Some browser
+  // hosts advertise their PDF plugin while displaying only an empty frame.
+  const generatedEstimate = typeof window !== "undefined" && asset.documentType === "request" && asset.source === "generated";
+  return (generatedEstimate || !webBrowserHasPdfViewer()) && (
     asset.mimeType === "application/pdf" ||
     String(asset.fileName ?? "").toLowerCase().endsWith(".pdf") ||
     /^data:application\/pdf[;,]/i.test(uri)
