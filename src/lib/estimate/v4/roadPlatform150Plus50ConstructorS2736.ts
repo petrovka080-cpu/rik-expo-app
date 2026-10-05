@@ -3,7 +3,7 @@ import {buildAutomaticConstructionOwnerR1,type AutomaticParameterSpec,type Autom
 import {compileCanonicalEstimateCore} from '../backendPlatform/canonicalEstimateCompileCore';
 import {effectivePurchaseBalanceExpressionsR1} from './effectivePurchaseBalanceR1';
 import {GRAVEL_BASE_DEFINITION_S2735} from './gravelBaseOperationS2735';
-import {ASPHALT_INSTALL_KRER27_PARAMETERS,ASPHALT_INSTALL_KRER27_FORMULAS,ASPHALT_INSTALL_KRER27_RESOURCES,ASPHALT_INSTALL_KRER27_RUNTIME_INPUT,ASPHALT_INSTALL_KRER27_RUNTIME_CLASSIFICATION,ASPHALT_INSTALL_KRER27_RUNTIME_SOURCE_IDS,ASPHALT_INSTALL_KRER27_SOURCE_PACK_SHA256} from './asphaltInstallLargeAreaKrer27ProfileR1';
+import {ASPHALT_INSTALL_KRER27_PARAMETERS,ASPHALT_INSTALL_KRER27_FORMULAS,ASPHALT_INSTALL_KRER27_RESOURCES,ASPHALT_INSTALL_KRER27_RUNTIME_INPUT,ASPHALT_INSTALL_KRER27_RUNTIME_CLASSIFICATION,ASPHALT_INSTALL_KRER27_RUNTIME_SOURCE_IDS,ASPHALT_INSTALL_KRER27_SOURCE_PACK_SHA256,ASPHALT_INSTALL_KRER27_SOURCE_ID,ASPHALT_INSTALL_KRER27_SOURCE_METADATA} from './asphaltInstallLargeAreaKrer27ProfileR1';
 import {estimateDeterministicHash} from '../estimateDeterministicHash';
 
 export const ROAD_PLATFORM_CONTRACT_S2736=pack.contract;
@@ -15,11 +15,12 @@ export const ROAD_PLATFORM_SOURCE_METADATA_S2736={
   source_title:'КРЕР27: однослойное щебёночное основание15см и готовая операция горячего асфальта50мм',
   source_authority:pack.source.authority,source_document_version:ROAD_PLATFORM_CONTRACT_S2736,
   official_url:pack.source.url,artifact_sha256:pack.source.sha256,
-  definition_hash:'de0390ec84c656fc1f96383162e8de1315cfc59c0a4555a468f7439aafb2c856',
-  exact_locator:pack.source.locator,
+  definition_hash:'2587a9a994ad504ac29c25b56f93b045948de41600a879cdfb49d70ae3ac3ae1',
+  exact_locator:pack.source.locator+'; '+ASPHALT_INSTALL_KRER27_SOURCE_METADATA.exact_locator,
   use_restriction:'Выбранный предварительный конструктив: однослойное основание15см из щебняМ1200 40–70мм с расклинцовкой10–20мм, на принятом земляном полотне; поверх один слой50мм горячей плотной мелкозернистой смеси. Не проект для любого объекта. Другие толщины, прочность, слои, грунт и водоотвод требуют своего решения.',
 };
 if(pack.reusedOperations[0].sourcePackSha256!==ASPHALT_INSTALL_KRER27_SOURCE_PACK_SHA256)throw Error('ROAD_PLATFORM_READY_ASPHALT_VERSION_MISMATCH');
+if(pack.source.sha256!==ASPHALT_INSTALL_KRER27_SOURCE_METADATA.artifact_sha256||pack.source.url!==ASPHALT_INSTALL_KRER27_SOURCE_METADATA.official_url)throw Error('ROAD_PLATFORM_DIFFERENT_NORMATIVE_DOCUMENTS_REQUIRE_SEPARATE_BINDINGS');
 
 const confirmed={kind:'equals' as const,parameterId:'road_applicability_mode',value:'CONFIRMED_PROJECT_FACTS'};
 const profile=(id:string,title:string,valueType:AutomaticParameterSpec['valueType'],unitId:string|null,defaultValue:string|number,rest:Partial<AutomaticParameterSpec>={}):AutomaticParameterSpec=>({id,title,valueType,unitId,kind:'profile',defaultValue,...rest});
@@ -108,13 +109,20 @@ const asphaltParameters=ASPHALT_INSTALL_KRER27_PARAMETERS.filter(p=>p.parameter_
     constraints_json:p.parameter_id==='layer_thickness_mm'?{...p.constraints_json,min:50,max:50}:p.constraints_json};
 });
 type RoadCompositeDefinition=Omit<AutomaticOwnerDefinition,'runtimeClassification'>&{runtimeClassification:Readonly<Record<string,'ASSUMPTION'|'NORMATIVE'|'DERIVED'>>};
+// Two sets of norms belong to the same verified physical KRER PDF. The
+// published baseline binds that combined document; original parameter guides
+// and per-row normative traces remain untouched. Unknown documents fail closed.
+const combinedRuntimeSourceIds=Object.fromEntries(Object.entries({...base.runtimeSourceIds,...ASPHALT_INSTALL_KRER27_RUNTIME_SOURCE_IDS}).map(([id,sources])=>{
+  if(sources.some(source=>source!==ROAD_PLATFORM_SOURCE_ID_S2736&&source!==ASPHALT_INSTALL_KRER27_SOURCE_ID))throw Error('ROAD_PLATFORM_UNKNOWN_NORMATIVE_DOCUMENT:'+id);
+  return [id,sources.length?[ROAD_PLATFORM_SOURCE_ID_S2736]:[]];
+}));
 export const ROAD_PLATFORM_DEFINITION_S2736:RoadCompositeDefinition=Object.freeze({
   parameters:[...base.parameters,...asphaltParameters].map((p,ordinal)=>({...p,ordinal})),
   formulas:[...base.formulas,...ASPHALT_INSTALL_KRER27_FORMULAS],
   resources:[...withComposition(base.resources,'base'),...withComposition(ASPHALT_INSTALL_KRER27_RESOURCES,'asphalt')].map((r,ordinal)=>({...r,ordinal})),
   runtimeInput:{...base.runtimeInput,...ASPHALT_INSTALL_KRER27_RUNTIME_INPUT},
   runtimeClassification:{...base.runtimeClassification,...ASPHALT_INSTALL_KRER27_RUNTIME_CLASSIFICATION},
-  runtimeSourceIds:{...base.runtimeSourceIds,...ASPHALT_INSTALL_KRER27_RUNTIME_SOURCE_IDS},ordinaryParameterIds:['area_m2'],
+  runtimeSourceIds:combinedRuntimeSourceIds,ordinaryParameterIds:['area_m2'],
 });
 for(const [kind,key] of [['parameters','parameter_id'],['formulas','formula_id'],['resources','row_id']] as const){const ids=ROAD_PLATFORM_DEFINITION_S2736[kind].map(x=>(x as unknown as Record<string,unknown>)[key]);if(new Set(ids).size!==ids.length)throw Error('ROAD_PLATFORM_IDENTIFIER_COLLISION:'+kind);}
 export function compileRoadPlatform150Plus50S2736(submittedParameters:Record<string,unknown>){return compileCanonicalEstimateCore({operation:'compile',compilerVersion:ROAD_PLATFORM_CONTRACT_S2736,catalogId:ROAD_PLATFORM_CATALOG_S2736,primaryMeasureParameterId:'area_m2',parameterDefinitions:definitionCopy(ROAD_PLATFORM_DEFINITION_S2736.parameters),formulaDefinitions:definitionCopy(ROAD_PLATFORM_DEFINITION_S2736.formulas),resourceDefinitions:definitionCopy(ROAD_PLATFORM_DEFINITION_S2736.resources),submittedParameters,confirmedParameters:{...ROAD_PLATFORM_DEFINITION_S2736.runtimeInput},currencyCode:'KGS',priceItems:[],maximumResourceRows:ROAD_PLATFORM_DEFINITION_S2736.resources.length,hashJson:async value=>estimateDeterministicHash(value)});}
