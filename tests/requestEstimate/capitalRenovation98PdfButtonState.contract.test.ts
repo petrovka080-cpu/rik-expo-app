@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { buildApprovedEstimateHistoryRecord } from "../../src/lib/consumerRequests";
+import { awaitConsumerRepairBundleDurableCommit } from "../../src/lib/consumerRequests/consumerRequestRepository";
 import { approveCanonicalConsumerRepairAuditDraft } from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import {
   buildApprovedConsumerRepairWorkspaceClearedState,
@@ -13,7 +14,7 @@ import { capitalRenovationBundle, CAPITAL_RENOVATION_98_PROMPT } from "../estima
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
 
 describe("capital renovation 98 PDF button state", () => {
-  it("clears the active workspace after approval and keeps PDF/market actions in history", () => {
+  it("clears the active workspace after approval and keeps PDF/market actions in history", async () => {
     const chromeSource = fs.readFileSync(
       path.join(PROJECT_ROOT, "src/features/consumerRepair/ConsumerRepairRequestChrome.tsx"),
       "utf8",
@@ -26,6 +27,12 @@ describe("capital renovation 98 PDF button state", () => {
     const approved = approveCanonicalConsumerRepairAuditDraft({
       bundle: draft,
       generatedAt: "2026-07-04T00:00:00.000Z",
+    });
+    await awaitConsumerRepairBundleDurableCommit({
+      requestDraftId: approved.draft.id,
+      expectedStatus: approved.draft.status,
+      expectedRevisionId: approved.estimateDraftRevisionState?.currentRevisionId ?? null,
+      rollbackBundle: draft,
     });
     const approvedHistoryPage = {
       items: [approved],
