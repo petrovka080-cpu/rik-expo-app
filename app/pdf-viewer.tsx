@@ -66,6 +66,7 @@ import {
   usePdfViewerOrchestrator,
 } from "../src/lib/pdf/usePdfViewerOrchestrator";
 import { resolvePdfViewerWebIframeReadyFallbackPlan } from "../src/lib/pdf/pdfViewerWebIframeReadyFallback";
+import { needsPdfJsWebFallback } from "../src/lib/pdf/pdfViewerWebFallback";
 import { resolvePdfViewerWebRenderUriCleanup } from "../src/lib/pdf/pdfViewerWebRenderUriCleanup";
 import { usePdfViewerActions } from "../src/lib/pdf/usePdfViewerActions";
 import {
@@ -863,6 +864,7 @@ function PdfViewerScreen() {
         platform: viewerPlatform,
         sourceKind: args.sourceKind,
         renderUri: args.renderUri,
+        requiresRenderEvent: viewerPlatform === "web" && needsPdfJsWebFallback(args.resolvedAsset, args.renderUri),
       });
       if (fallbackPlan.action !== "schedule_ready_fallback") return;
 

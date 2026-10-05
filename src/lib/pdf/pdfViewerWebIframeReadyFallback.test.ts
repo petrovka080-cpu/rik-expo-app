@@ -4,6 +4,11 @@ import {
 } from "./pdfViewerWebIframeReadyFallback";
 
 describe("pdfViewerWebIframeReadyFallback", () => {
+  it("waits for a visible canvas render instead of a timer for the PDF.js renderer", () => {
+    expect(resolvePdfViewerWebIframeReadyFallbackPlan({
+      platform: "web", sourceKind: "remote-url", renderUri: "https://example.com/document.pdf", requiresRenderEvent: true,
+    })).toEqual({ action: "skip_ready_fallback", reason: "requires_render_event" });
+  });
   it("keeps the remote web fallback inside the repeat-open budget", () => {
     expect(PDF_VIEWER_WEB_IFRAME_READY_FALLBACK_MS).toBeGreaterThan(0);
     expect(PDF_VIEWER_WEB_IFRAME_READY_FALLBACK_MS).toBeLessThanOrEqual(200);

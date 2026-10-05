@@ -10,16 +10,20 @@ export type PdfViewerWebIframeReadyFallbackPlan =
     }
   | {
       action: "skip_ready_fallback";
-      reason: "non_web_platform" | "non_remote_source" | "missing_render_uri";
+      reason: "non_web_platform" | "non_remote_source" | "missing_render_uri" | "requires_render_event";
     };
 
 export function resolvePdfViewerWebIframeReadyFallbackPlan(args: {
   platform: PdfViewerPlatform;
   sourceKind?: string | null;
   renderUri?: string | null;
+  requiresRenderEvent?: boolean;
 }): PdfViewerWebIframeReadyFallbackPlan {
   if (args.platform !== "web") {
     return { action: "skip_ready_fallback", reason: "non_web_platform" };
+  }
+  if (args.requiresRenderEvent) {
+    return { action: "skip_ready_fallback", reason: "requires_render_event" };
   }
   if (args.sourceKind !== "remote-url" && args.sourceKind !== "blob") {
     return { action: "skip_ready_fallback", reason: "non_remote_source" };

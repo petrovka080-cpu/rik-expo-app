@@ -20,6 +20,7 @@ import {
 } from "./PdfViewerNativeShell";
 import { styles } from "./pdfViewer.styles";
 import { PdfViewerWebShell } from "./PdfViewerWebShell";
+import { needsPdfJsWebFallback } from "./pdfViewerWebFallback";
 
 type PdfViewerScreenContentProps = {
   title: string;
@@ -283,7 +284,7 @@ export function PdfViewerScreenContent(props: PdfViewerScreenContentProps) {
 
       <View style={styles.documentStage}>{renderViewerBody(props)}</View>
 
-      {props.showPageIndicator ? (
+      {props.showPageIndicator && !(Platform.OS === "web" && props.asset && needsPdfJsWebFallback(props.asset, props.webEmbeddedUri)) ? (
         <View
           style={[
             styles.pageIndicatorWrap,

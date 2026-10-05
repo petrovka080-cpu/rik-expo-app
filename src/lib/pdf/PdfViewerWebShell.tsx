@@ -4,6 +4,7 @@ import { View } from "react-native";
 import type { DocumentAsset } from "../documents/pdfDocumentSessions";
 import { VIEWER_BG } from "./pdfViewer.constants";
 import { styles } from "./pdfViewer.styles";
+import { buildPdfViewerWebFallbackHtml, needsPdfJsWebFallback } from "./pdfViewerWebFallback";
 import {
   canPoolWebPdfFrame,
   mountPooledWebPdfFrame,
@@ -49,11 +50,28 @@ export function PdfViewerWebShell({
   onError,
 }: PdfViewerWebShellProps) {
   const pooledContainerRef = React.useRef<HTMLDivElement | null>(null);
+  const fallbackFrameRef = React.useRef<HTMLIFrameElement | null>(null);
+  const usesPdfJsFallback = needsPdfJsWebFallback(asset, webEmbeddedUri);
   const htmlSrcDoc = React.useMemo(
-    () => decodeHtmlDataUri(webEmbeddedUri),
-    [webEmbeddedUri],
+    () => usesPdfJsFallback
+      ? buildPdfViewerWebFallbackHtml(webEmbeddedUri, renderInstanceKey, window.location.origin)
+      : decodeHtmlDataUri(webEmbeddedUri),
+    [webEmbeddedUri, renderInstanceKey, usesPdfJsFallback],
   );
-  const usesPooledFrame = canPoolWebPdfFrame(webEmbeddedUri);
+  const usesPooledFrame = !usesPdfJsFallback && canPoolWebPdfFrame(webEmbeddedUri);
+
+  React.useEffect(() => {
+    if (!usesPdfJsFallback) return;
+    const receiveRender = (event: MessageEvent) => {
+      if (event.source !== fallbackFrameRef.current?.contentWindow || event.origin !== window.location.origin) return;
+      const message = event.data;
+      if (message?.type !== "pdf-viewer-render" || message.renderInstanceKey !== renderInstanceKey) return;
+      if (message.kind === "ready") onLoad();
+      else if (message.kind === "error") onError();
+    };
+    window.addEventListener("message", receiveRender);
+    return () => window.removeEventListener("message", receiveRender);
+  }, [usesPdfJsFallback, renderInstanceKey, onLoad, onError]);
 
   React.useEffect(() => {
     const container = pooledContainerRef.current;
@@ -96,14 +114,16 @@ export function PdfViewerWebShell({
           />
         ) : (
           <iframe
+            ref={fallbackFrameRef}
             key={renderInstanceKey}
             data-render-key={renderInstanceKey}
             data-testid="pdf-viewer-web-iframe"
+            data-pdf-renderer={usesPdfJsFallback ? "pdfjs" : "browser"}
             aria-busy={!isReady}
             title={asset.title || "PDF"}
             src={htmlSrcDoc ? undefined : webEmbeddedUri || undefined}
             srcDoc={htmlSrcDoc || undefined}
-            onLoad={onLoad}
+            onLoad={usesPdfJsFallback ? undefined : onLoad}
             onError={onError}
             style={{
               width: "100%",
