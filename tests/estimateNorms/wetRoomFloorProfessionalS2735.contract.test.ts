@@ -3,7 +3,7 @@ import { WET_ZONE_COMPLETION_DEFINITION_S2735 as waterproofing, WET_ZONE_COMPLET
 import { compileCanonicalEstimateCore } from "../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
 import { estimateDeterministicHash } from "../../src/lib/estimate/estimateDeterministicHash";
 import { buildCanonicalProcurementProjection, selectCanonicalArtifactRows } from "../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract";
-const trace = (row: { calculation_trace: unknown }) => row.calculation_trace as Record<string,any>;
+const trace = (row: Record<string,unknown>) => row.calculation_trace as Record<string,any>;
 describe("professional wet-room material constructor from ordinary measured area", ()=>{
   test("reuses the canonical waterproofing ASTs once and fills material orders without a DEMO fixture",async()=>{
     const result=await compile({area_m2:30});
@@ -27,7 +27,7 @@ describe("professional wet-room material constructor from ordinary measured area
     expect(allocations.every(r=>trace(r).resourceGraph.includedInResourceOwnerRowId===owners[0].row_id)).toBe(true);
     expect(Number(trace(owners[0]).purchaseBalance.consumed)).toBeCloseTo(allocations.reduce((sum,r)=>sum+Number(r.quantity),0),8);
     expect(result.rows.some(r=>r.row_id==="material:wet-zone:method_water_l")).toBe(false);
-    const projection=buildCanonicalProcurementProjection({revision:{id:"wet-room",release_id:"release",catalog_id:"catalog",checksum_sha256:"a".repeat(64)},
+    const projection=buildCanonicalProcurementProjection({revision:{id:"wet-room",release_id:"release",catalog_id:"catalog",checksum_sha256:"a".repeat(64),row_count:result.rows.length},
       procurementRows:selectCanonicalArtifactRows(result.rows).procurementRows,sourceRows:result.rows});
     expect(projection.rows.find(r=>r.rowId===owners[0].row_id)?.consumptionAllocations).toEqual(expect.arrayContaining([
       expect.objectContaining({consumed:"6",separatelyPayable:false}),expect.objectContaining({consumed:"56.792403101",separatelyPayable:false}),
