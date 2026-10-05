@@ -1,8 +1,10 @@
 package com.azisbek_dzhantaev.rikexpoapp
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
@@ -26,6 +28,26 @@ class MainActivity : ReactActivity() {
    * rendering of the component.
    */
   override fun getMainComponentName(): String = "main"
+
+  override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    // Expo IntentLauncher uses request 12 for ACTION_VIEW. If Android killed
+    // the dev client while a PDF was open, the restored Activity can receive
+    // its canceled result before Expo has installed a live React delegate.
+    // Those NOP delegates have no ReactDelegate and their inherited callback
+    // throws. The old process also owned the now-lost result promise.
+    // Keep normal results and production behavior on the original path.
+    val delegateName = reactActivityDelegate.javaClass.name
+    if (
+      BuildConfig.DEBUG && requestCode == 12 &&
+      resultCode == Activity.RESULT_CANCELED && data == null &&
+      (delegateName == "expo.modules.devlauncher.react.activitydelegates.DevLauncherReactActivityNOPDelegate" ||
+        delegateName == "expo.modules.devlauncher.react.activitydelegates.DevLauncherReactActivityRedirectDelegate")
+    ) {
+      Log.i("RikIntent", "discard_stale_canceled_intent_launcher_result_during_dev_client_restore")
+      return
+    }
+    super.onActivityResult(requestCode, resultCode, data)
+  }
 
   override fun onNewIntent(intent: Intent) {
     setIntent(intent)
