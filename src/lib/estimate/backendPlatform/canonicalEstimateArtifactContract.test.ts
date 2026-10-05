@@ -153,4 +153,37 @@ describe("canonical estimate artifact contract", () => {
       revision,
     })).toBe(true);
   });
+
+  it.each([6, 7, 8, 9, 10])("keeps the bound metadata checks for historical PDF template %s", (version) => {
+    const historicalRevision = { ...revision, definition_version_id: "definition-version-1" };
+    const metadata = {
+      templateVersion: `professional-estimate-pdf:${version}`,
+      artifactKind: "professional_pdf",
+      revisionId: "revision-1",
+      definitionVersionId: "definition-version-1",
+      pageCount: 4,
+      grandTotalStatus: "PARTIAL_NEEDS_PRICE",
+    };
+    const matches = (candidate: Record<string, unknown>) => canonicalProfessionalArtifactMetadataIdentityMatches({
+      metadata: candidate,
+      revision: historicalRevision,
+    });
+    expect(matches(metadata)).toBe(true);
+    expect(matches({ ...metadata, revisionId: "other-revision" })).toBe(false);
+    expect(matches({ ...metadata, definitionVersionId: "other-definition" })).toBe(false);
+    expect(matches({ ...metadata, pageCount: null })).toBe(false);
+    expect(matches({ ...metadata, pageCount: 1.5 })).toBe(false);
+    expect(matches({ ...metadata, artifactKind: "procurement" })).toBe(false);
+    expect(matches({ ...metadata, grandTotalStatus: null })).toBe(false);
+  });
+
+  it.each([
+    "professional-estimate-pdf:11",
+    "professional-estimate-pdf:0",
+    "professional-estimate-pdf:06",
+    "professional-estimate-pdf:6-extra",
+    "professional-estimate-pdf:",
+  ])("rejects an unsupported or malformed PDF template identity %s", (templateVersion) => {
+    expect(canonicalProfessionalArtifactMetadataIdentityMatches({ metadata: { templateVersion }, revision })).toBe(false);
+  });
 });

@@ -733,7 +733,7 @@ describe("P0 canonical parameter editor and professional PDF", () => {
     expect(screen).toContain("historyRecord?.title");
     expect(screen).not.toContain("локальный контекст исторической версии отсутствует");
     expect(runtime).toContain("buildCanonicalArtifactMetadata");
-    expect(artifactContract).toContain('CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:6"');
+    expect(artifactContract).toContain('templateVersion: CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION');
     expect(runtime).toContain("buildCanonicalProfessionalPdfProjection");
     expect(worker).toContain("buildCanonicalProfessionalPdfProjection");
     expect(runtime).toContain("CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION");

@@ -255,8 +255,14 @@ export function canonicalProfessionalArtifactMetadataIdentityMatches(input: {
 }): boolean {
   const metadata = objectValue(input.metadata);
   const templateVersion = nullableText(metadata.templateVersion);
-  if (!templateVersion?.startsWith("professional-estimate-pdf:")) return false;
-  if (templateVersion !== CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION) return true;
+  const versionMatch = templateVersion?.match(/^professional-estimate-pdf:([1-9]\d*)$/);
+  const version = Number(versionMatch?.[1]);
+  const currentVersion = Number(CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION.split(":")[1]);
+  if (!versionMatch || !Number.isSafeInteger(version) || version > currentVersion) return false;
+  // Version 6 introduced the bound revision/definition/page metadata contract.
+  // Later renderer changes must keep validating it for historical documents.
+  // Versions 1–5 still use the outer artifact revision/checksum identity guard.
+  if (version < 6) return true;
   const definitionVersionId = nullableText(metadata.definitionVersionId);
   const expectedDefinitionVersionId = nullableText(
     input.revision.definition_version_id ?? input.revision.definitionVersionId,
