@@ -282,7 +282,10 @@ export function PdfViewerScreenContent(props: PdfViewerScreenContentProps) {
         </View>
       </View>
 
-      <View style={styles.documentStage}>{renderViewerBody(props)}</View>
+      <View style={[
+        styles.documentStage,
+        Platform.OS === "web" ? { top: props.headerHeight } : null,
+      ]}>{renderViewerBody(props)}</View>
 
       {props.showPageIndicator && !(Platform.OS === "web" && props.asset && needsPdfJsWebFallback(props.asset, props.webEmbeddedUri)) ? (
         <View
