@@ -29,6 +29,9 @@ const PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_DICTIONARY = Object.fromEntries(
 ) as Record<string, AiEstimateRuParameterDictionaryEntry>;
 
 const PARAMETER_DICTIONARY: Record<string, AiEstimateRuParameterDictionaryEntry> = {
+  ct54_delivered_version: entry("ct54_delivered_version", "Поставляемая версия краски CT 54", null, [], "версия краски", "Конкретный продукт и технический лист выбранной краски."),
+  ct17_delivered_version: entry("ct17_delivered_version", "Поставляемая версия грунтовки CT 17", null, [], "версия грунтовки", "Конкретный продукт и технический лист выбранной грунтовки."),
+  ct17_container_l: entry("ct17_container_l", "Фасовка грунтовки CT 17", "l", [], "фасовка грунтовки", "Объём одной упаковки выбранной совместимой грунтовки."),
   ...PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_DICTIONARY,
   q: entry("q", "Объем работ", null, ["количество работ", "объем", "объём"], "объем работ", "Базовый объем из выбранного шаблона."),
   work_package: entry("work_package", "Комплекс работ", "pcs", ["комплекс работ", "пакет работ"], "комплекс работ", "Количество типовых комплексов или узлов в расчете."),

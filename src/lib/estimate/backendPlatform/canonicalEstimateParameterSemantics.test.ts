@@ -5,6 +5,7 @@ import {
   canonicalEstimateParameterChoiceLabelRu,
   canonicalEstimateParameterRequiresManagedProfessionalSource,
   isCanonicalEstimateConsumerSuppliedParameter,
+  isCanonicalEstimateOptionalProjectNumericResourceFact,
   isCanonicalEstimateParameterRequiredForValues,
   isCanonicalEstimateSourceManagedParameter,
   isCanonicalEstimateUserEditableParameter,
@@ -93,6 +94,20 @@ describe("canonical preliminary-stage validation", () => {
 });
 
 describe("canonical estimate parameter choice labels", () => {
+  it("distinguishes preliminary facts, repair and application branches in the wall editor", () => {
+    const choices = [
+      ["applicability_mode", "PRELIMINARY_PROFILE", "CONFIRMED_PROJECT_FACTS"],
+      ["mineral_repair_mode", "SURVEY_PENDING", "CT29_REQUIRED"],
+      ["paint_application_mode", "MANUAL_ROLLER_BRUSH", "PAID_SPRAY_EQUIPMENT"],
+      ["paint_priming_mode", "CT17_UNDILUTED", "CT17_DILUTED_1_TO_1"],
+    ];
+    for (const [parameterId, first, second] of choices) {
+      const labels = [first, second].map(value => canonicalEstimateParameterChoiceLabelRu(parameterId, value));
+      expect(labels[0]).not.toEqual(labels[1]);
+      expect(labels).not.toContain("Вариант по проектной документации");
+    }
+  });
+
   it("never exposes the internal bridge and asphalt enum codes", () => {
     expect(canonicalEstimateParameterChoiceLabelRu("waterproofing_condition", "ACCEPTED"))
       .toBe("Принято, ремонт не требуется");
@@ -169,6 +184,34 @@ describe("canonical estimate parameter choice labels", () => {
     expect(isCanonicalEstimateUserEditableParameter(documentReference as never)).toBe(false);
     expect(isCanonicalEstimateUserEditableParameter(width as never)).toBe(true);
     expect(isCanonicalEstimateUserEditableParameter(optionalProfile as never)).toBe(false);
+  });
+});
+
+describe("optional actual project numeric resource facts", () => {
+  const projectPlan = {
+    parameterId: "qa_interval_m2_per_test", titleRu: "План контроля; не норма по варианту зоны",
+    valueType: "decimal", required: false, visibilityRole: "USER_INPUT", valueSourceRole: "CONDITIONAL_PROJECT_FACT",
+    constraints: { min: 0.000001 }, formulaConsumers: ["qa-formula"], resourceBranchConsumers: ["qa-row"],
+    guide: { guideKind: "PROJECT_DEFINED", guideValidationPolicy: "MANDATORY_BLOCK", sourceRole: "PROJECT_DOCUMENTATION",
+      sourceDocument: "approved-method", sourceLocator: "QA plan", sourceSnapshotHash: "a".repeat(64) },
+  };
+  it("admits a checked project plan without treating its title as a published norm", () => {
+    expect(isCanonicalEstimateOptionalProjectNumericResourceFact(projectPlan as never)).toBe(true);
+    expect(isCanonicalEstimateConsumerSuppliedParameter(projectPlan as never)).toBe(true);
+  });
+  it.each([
+    { guide: { ...projectPlan.guide, sourceSnapshotHash: "" } },
+    { guide: { ...projectPlan.guide, sourceDocument: "" } },
+    { guide: { ...projectPlan.guide, sourceLocator: "" } },
+    { guide: { ...projectPlan.guide, sourceRole: "USER_INPUT" } },
+    { formulaConsumers: [] }, { resourceBranchConsumers: [] },
+    { valueSourceRole: "MANUFACTURER_CONFIRMED" },
+    { valueSourceRole: "MANDATORY_NORM_VALUE" },
+    { visibilityRole: "INTERNAL_ONLY" }, { parameterId: "quantity_qa_checks" },
+  ])("keeps incomplete, protected and derived passports outside scalar user admission (%p)", patch => {
+    const schema = { ...projectPlan, ...patch } as never;
+    expect(isCanonicalEstimateOptionalProjectNumericResourceFact(schema)).toBe(false);
+    expect(isCanonicalEstimateConsumerSuppliedParameter(schema)).toBe(false);
   });
 });
 

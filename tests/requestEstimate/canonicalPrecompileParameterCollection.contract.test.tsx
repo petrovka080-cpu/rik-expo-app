@@ -5,7 +5,7 @@ import { router } from "expo-router";
 import * as canonicalClient from "../../src/lib/estimate/backendPlatform/canonicalEstimateClient";
 
 import { ConsumerRepairDraftPanel } from "../../src/features/consumerRepair/ConsumerRepairDraftPanel";
-import { buildConsumerCanonicalPrecompileParameterSession } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
+import { buildConsumerCanonicalPrecompileParameterSession, buildConsumerCanonicalParameterSession } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
 import { buildCanonicalParameterCards } from "../../src/lib/estimatePresentation/buildCanonicalParameterCards";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import {
@@ -84,6 +84,39 @@ function stripFoundationCatalog(): CanonicalEstimateCatalogItem {
 }
 
 describe("canonical precompile parameter collection", () => {
+  it("keeps the optional informational QA plan visible and editable before input and after revision reload", () => {
+    const catalog = stripFoundationCatalog();
+    catalog.parameterSchema = [{
+      parameterId: "qa_interval_m2_per_test", ordinal: 102, valueType: "decimal", unitId: "m2",
+      titleRu: "Фактический план контроля покрытия; не норма по варианту зоны",
+      required: false, defaultValue: null, constraints: { min: 0.000001 },
+      visibilityRole: "USER_INPUT", valueSourceRole: "CONDITIONAL_PROJECT_FACT",
+      formulaConsumers: ["wall_paint_ready_quality_tests_v1"], resourceBranchConsumers: ["wall-paint:ready:quality_tests"],
+      guide: { guideKind: "PROJECT_DEFINED", guideValidationPolicy: "MANDATORY_BLOCK",
+        sourceRole: "PROJECT_DOCUMENTATION", sourceDocument: "approved-method", sourceLocator: "QA plan",
+        guideShortRu: "План контроля по технологической карте", guideVersion: "qa-plan-v1",
+        applicability: "Выбранное покрытие", verifiedAt: "2026-10-05T10:00:00Z",
+        sourceSnapshotHash: "a".repeat(64) },
+    } as CanonicalEstimateCatalogItem["parameterSchema"][number]];
+    for (const value of [null, 50, null]) {
+      const session = buildConsumerCanonicalParameterSession({ catalog, draftId: "qa-draft", revision: {
+        revisionId: "qa-revision", parentRevisionId: null, releaseId: catalog.releaseId, catalogId: catalog.catalogId,
+        definitionVersionId: "qa-definition", definitionVersion: 1, status: "ready",
+        parameters: value == null ? {} : { qa_interval_m2_per_test: value },
+        userInputSnapshot: value == null ? {} : { qa_interval_m2_per_test: value },
+        acceptedBaselineSnapshot: {}, assumptionSnapshot: {}, parameterSchemaHash: "qa-schema",
+        compilerVersion: "qa-compiler", checksumSha256: "b".repeat(64), createdAt: "2026-10-05T10:00:00Z",
+        preliminaryNeeds: value == null ? [{ rowId: "wall-paint:ready:quality_tests", selected: false,
+          quantity: null, needState: "QUANTITY_REQUIRED", missingParameterIds: ["qa_interval_m2_per_test"] }] : [],
+      } });
+      const card = buildCanonicalParameterCards({ session, revision: null }).find(card => card.key === "qa_interval_m2_per_test");
+      expect(card?.editable).toBe(true);
+      expect(card?.value).toBe(value);
+      expect(session.parameters[0]?.requiredLevel).toBe("OPTIONAL");
+      expect(session.blockingMissingParameterIds).toEqual([]);
+    }
+  });
+
   let cleanupLocalStorage: (() => void) | null = null;
 
   beforeEach(() => {

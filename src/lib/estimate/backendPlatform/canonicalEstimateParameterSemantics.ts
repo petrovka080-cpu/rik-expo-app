@@ -67,6 +67,20 @@ const CANONICAL_CHOICE_LABELS_RU: Readonly<Record<string, string>> = Object.free
 });
 
 const CONSTRUCTION_CHOICE_LABELS_RU: Readonly<Record<string, string>> = Object.freeze({
+  PRELIMINARY_PROFILE: "Предварительные допущения, обследование не выполнено",
+  CONFIRMED_PROJECT_FACTS: "Условия подтверждены обследованием и проектом",
+  CEMENT_LIME_MINERAL_PLASTER: "Минеральная цементно-известковая штукатурка",
+  CT54_EN_GL_0819: "Ceresit CT 54 Silicate Aero, технический лист en GL 08.19",
+  CT17_PROFI_EN_GL_03_24: "Ceresit CT 17 PROFI, технический лист en GL 03.24",
+  CT17_UNDILUTED: "CT 17 без разбавления",
+  CT17_DILUTED_1_TO_1: "CT 17 с водой в соотношении 1:1",
+  ALREADY_PRIMED: "Основание уже загрунтовано",
+  MANUAL_ROLLER_BRUSH: "Вручную валиком и кистью",
+  PAID_SPRAY_EQUIPMENT: "Распыление с отдельной оплатой аппарата",
+  SURVEY_PENDING: "Обследование ещё не выполнено",
+  CT29_REQUIRED: "Требуется минеральный ремонт CT 29",
+  MOISTEN_ONLY: "Увлажнение основания без грунтовки",
+  YES: "Подтверждено",
   full_reinforced_structure: "Полное устройство железобетонной конструкции",
   placement_only: "Только укладка и уход за бетонной смесью",
   ready_cages: "Готовые арматурные каркасы",
@@ -170,6 +184,26 @@ function isMandatoryProjectNumericResourceFact(schema: ParameterSchema): boolean
     && schema.guide.guideValidationPolicy === "MANDATORY_BLOCK"
     && (hasDeclaredConditionalRequirement(schema) || (schema.valueSourceRole === "PROJECT_SPECIFIC_INPUT" && schema.required === true))
     && canonicalEstimateParameterHasCalculationConsumer(schema);
+}
+
+/** An optional actual project plan can still be needed by an informational
+ * resource (for example, the area covered by each QA check). Its immutable
+ * project guide admits editing; a missing value does not become a mandatory
+ * preliminary input merely because the resource is shown in the estimate. */
+export function isCanonicalEstimateOptionalProjectNumericResourceFact(schema: ParameterSchema): boolean {
+  return schema.visibilityRole === "USER_INPUT"
+    && ["decimal", "integer"].includes(schema.valueType)
+    && schema.required !== true
+    && (schema.requiredWhen ?? schema.constraints.requiredWhen) == null
+    && ["CONDITIONAL_PROJECT_FACT", "PROJECT_SPECIFIC_INPUT"].includes(String(schema.valueSourceRole))
+    && schema.guide?.guideKind === "PROJECT_DEFINED"
+    && schema.guide.guideValidationPolicy === "MANDATORY_BLOCK"
+    && schema.guide.sourceRole === "PROJECT_DOCUMENTATION"
+    && Boolean(schema.guide.sourceDocument?.trim() && schema.guide.sourceLocator?.trim())
+    && /^[a-f0-9]{64}$/iu.test(schema.guide.sourceSnapshotHash ?? "")
+    && (schema.formulaConsumers?.length ?? 0) > 0
+    && (schema.resourceBranchConsumers?.length ?? 0) > 0
+    && isCanonicalEstimateUserEditableParameter(schema);
 }
 
 /** A bounded reference to actual project documentation can mention a rate or
@@ -309,7 +343,8 @@ export function isCanonicalEstimateSourceManagedParameter(schema: ParameterSchem
   // A mandatory actual project fact may contain words such as "mass per unit"
   // or "capacity". Its immutable role/guide and consumers establish ownership;
   // the technical-looking name alone cannot turn it into a hidden norm.
-  if (isMandatoryProjectNumericResourceFact(schema) || isMandatoryProjectReferenceResourceFact(schema)) return false;
+  if (isMandatoryProjectNumericResourceFact(schema) || isMandatoryProjectReferenceResourceFact(schema)
+    || isCanonicalEstimateOptionalProjectNumericResourceFact(schema)) return false;
   return canonicalEstimateParameterRequiresManagedProfessionalSource(schema);
 }
 
@@ -368,6 +403,10 @@ export function canonicalEstimateParameterChoiceLabelRu(
   fallback?: string,
 ): string {
   const normalized = String(value);
+  if (parameterId === "ct54_first_coat_water_ratio") {
+    if (normalized === "0") return "Без разбавления";
+    if (normalized === "0.1") return "10% воды только в первом слое";
+  }
   // Decision values describe opposite branch choices. Do not fall back to the
   // parameter's generic guide/title for both options.
   if (normalized === "NOT_REQUIRED") return "Не требуется";
