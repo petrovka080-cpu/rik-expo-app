@@ -572,10 +572,20 @@ export function waterMaterialVariantLabelRuR542(value: string): string {
   return match ? `${WATER_DYNAMIC_SYSTEM_RU[match[1]!]} — ${WATER_DYNAMIC_DUTY_RU[match[2]!]}` : value;
 }
 
-/** Change only an exact known terminal variant. Other public titles, including
- * user punctuation/spacing and actual product designations, remain untouched. */
+/** Known source-pack product designations have readable equivalents. Unknown
+ * identifiers are deliberately left intact for the caller's technical guard. */
+export function localizeKnownConstructionProductDesignationRu(input: string): string {
+  return input
+    .replace(/\bCT127_EN_GL_0120\b/gu, "Ceresit CT 127, технический лист en GL 01.2020")
+    .replace(/\bC_CT127_TDS_1_0120\b/gu, "технический лист 01.2020")
+    .replace(/\bCT127en_GL\b/gu, "Ceresit CT 127, версия en GL")
+    .replace(/\bCT17PROFIen_GL03\.24\b/gu, "Ceresit CT 17 PROFI, версия en GL 03.24");
+}
+
+/** Localize known product source codes and an exact known terminal variant.
+ * Preserve other punctuation, spacing and actual product specifications. */
 export function localizeKnownTechnologyVariantSuffixRu(input: string): string {
-  return input.replace(/( — |: )([A-Z][A-Z0-9_]+)$/u, (whole, separator: string, machineValue: string) => {
+  return localizeKnownConstructionProductDesignationRu(input).replace(/( — |: )([A-Z][A-Z0-9_]+)$/u, (whole, separator: string, machineValue: string) => {
     const label = waterMaterialVariantLabelRuR542(machineValue);
     return label === machineValue ? whole : `${separator}${label}`;
   });

@@ -94,6 +94,14 @@ describe("canonical preliminary-stage validation", () => {
 });
 
 describe("canonical estimate parameter choice labels", () => {
+  it("identifies the actual third-coat scope and selected CT127 source version", () => {
+    expect(canonicalEstimateParameterChoiceLabelRu("putty_scope", "THIRD_COAT_PREPARED_MINERAL_WALL"))
+      .toBe("Третье финишное нанесение по подготовленной минеральной стене");
+    expect(canonicalEstimateParameterChoiceLabelRu("ct127_delivered_version", "CT127_EN_GL_0120"))
+      .toBe("Ceresit CT 127, технический лист en GL 01.2020");
+    expect(canonicalEstimateParameterChoiceLabelRu("ct127_delivered_version", "CT127_UNKNOWN_VERSION"))
+      .toBe("Вариант по проектной документации");
+  });
   it("distinguishes preliminary facts, repair and application branches in the wall editor", () => {
     const choices = [
       ["applicability_mode", "PRELIMINARY_PROFILE", "CONFIRMED_PROJECT_FACTS"],

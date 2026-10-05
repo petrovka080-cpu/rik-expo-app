@@ -3,6 +3,7 @@ import type {
   EstimateDraftRevisionSource,
 } from "./estimateDraftRevisionContract";
 import { PROFESSIONAL_NORM_PACK_BASIS_QUESTIONS_RU } from "./professionalNormPackBasisQuestionsRu";
+import { localizeKnownConstructionProductDesignationRu } from "./backendPlatform/russianTechnologyTitleR542";
 
 export type AiEstimateRuParameterDictionaryEntry = {
   key: string;
@@ -355,7 +356,11 @@ export function hasHumanReadableAiEstimateParameterPassport(key: string, fallbac
 export function aiEstimateRuLabelForParameter(key: string, fallback?: string | null): string {
   const dictionary = PARAMETER_DICTIONARY[key];
   if (dictionary) return dictionary.labelRu;
-  const cleanFallback = String(fallback ?? "").replace(/\s+/g, " ").trim();
+  // Display known manufacturer designations without losing the rest of the
+  // published label (including stock vs reserve). Admission/ownership checks
+  // still use the original passport and reject unknown technical identifiers.
+  const cleanFallback = localizeKnownConstructionProductDesignationRu(String(fallback ?? ""))
+    .replace(/\s+/g, " ").trim();
   if (hasHumanReadableAiEstimateParameterPassport(key, cleanFallback)) return cleanFallback;
   return fallbackLabelFromKey(key);
 }

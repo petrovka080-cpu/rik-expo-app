@@ -26,6 +26,13 @@ const rows = [
 ];
 
 describe("canonical estimate artifact contract", () => {
+  it("presents a known product version in saved resources without rewriting quantities or source rows", () => {
+    const row = { ...rows[0], title_ru: "CT127en_GL: сухой порошок — CT127_EN_GL_0120", calculation_trace: { resourceGraph: { titleSpecificationParameterIds: ["ct127_delivered_version"] } } };
+    const before = JSON.stringify(row);
+    expect(canonicalArtifactVisibleRowTitle(row)).toBe("Ceresit CT 127, версия en GL: сухой порошок — Ceresit CT 127, технический лист en GL 01.2020");
+    expect(JSON.stringify(row)).toBe(before);
+    expect(canonicalArtifactVisibleRowTitle({ ...row, title_ru: "Фактический продукт — CUSTOM_MODEL_127" })).toBe("Фактический продукт — CUSTOM_MODEL_127");
+  });
   it("keeps material kits within an equipment operation as materials without changing procurement data", () => {
     const kit = { ...rows[0], section: "Оборудование армирования", title_ru: "Полный комплект оснастки станка", unit_id: "set", quantity: "3" };
     expect(canonicalArtifactSection(kit)).toBe("Материалы");

@@ -75,6 +75,8 @@ const CONSTRUCTION_CHOICE_LABELS_RU: Readonly<Record<string, string>> = Object.f
   CT17_UNDILUTED: "CT 17 без разбавления",
   CT17_DILUTED_1_TO_1: "CT 17 с водой в соотношении 1:1",
   ALREADY_PRIMED: "Основание уже загрунтовано",
+  THIRD_COAT_PREPARED_MINERAL_WALL: "Третье финишное нанесение по подготовленной минеральной стене",
+  CT127_EN_GL_0120: "Ceresit CT 127, технический лист en GL 01.2020",
   MANUAL_ROLLER_BRUSH: "Вручную валиком и кистью",
   PAID_SPRAY_EQUIPMENT: "Распыление с отдельной оплатой аппарата",
   SURVEY_PENDING: "Обследование ещё не выполнено",
