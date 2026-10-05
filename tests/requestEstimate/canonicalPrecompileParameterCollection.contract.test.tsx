@@ -3,11 +3,12 @@ import { Platform } from "react-native";
 import TestRenderer, { act } from "react-test-renderer";
 import { router } from "expo-router";
 import * as canonicalClient from "../../src/lib/estimate/backendPlatform/canonicalEstimateClient";
+import * as documentActions from "../../src/lib/documents/pdfDocumentActions";
 
 import { ConsumerRepairDraftPanel } from "../../src/features/consumerRepair/ConsumerRepairDraftPanel";
 import { buildConsumerCanonicalPrecompileParameterSession, buildConsumerCanonicalParameterSession } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
 import { buildCanonicalParameterCards } from "../../src/lib/estimatePresentation/buildCanonicalParameterCards";
-import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
+import { CanonicalEstimateApiError, type CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import {
   __resetConsumerRepairRequestStoreForTests,
   __simulateConsumerRepairRequestStoreReloadForTests,
@@ -149,6 +150,54 @@ describe("canonical precompile parameter collection", () => {
       missingParameterIds: ["strip_width_m", "strip_height_m", "approved_reinforcement_schedule_weight_kg"],
     });
   }
+
+  function historicalPdfAction() {
+    const bundle = populatedDraft();
+    const revisionId = String(bundle.items[0].sourceParameters?.canonicalBackendRevisionId);
+    const releaseId = String(bundle.items[0].sourceParameters?.canonicalBackendReleaseId);
+    const catalogId = String(bundle.items[0].sourceParameters?.canonicalBackendCatalogId);
+    const revision = { revisionId, releaseId, catalogId, checksumSha256: "a".repeat(64), rowCount: bundle.items.length };
+    const artifact = { artifactId: "stored-historical-pdf", revisionId, releaseId, kind: "pdf", status: "ready",
+      signedUrl: "https://example.invalid/stored-pdf", metadata: { sourceCatalogId: catalogId,
+        sourceRowCount: revision.rowCount, sourceRevisionChecksumSha256: revision.checksumSha256,
+        sourceOwnerUserId: bundle.draft.consumerUserId, documentProfile: "professional_v1",
+        templateVersion: "professional-estimate-pdf:3" } };
+    jest.spyOn(canonicalClient, "getCanonicalEstimateRevision").mockResolvedValue(revision as never);
+    const stored = jest.spyOn(canonicalClient, "getCanonicalEstimateArtifact").mockResolvedValue(artifact as never);
+    const build = jest.spyOn(canonicalClient, "buildCanonicalEstimateArtifact");
+    const catalog = jest.spyOn(canonicalClient, "getCanonicalEstimateCatalogItem").mockResolvedValue({ releaseId: "newer-release" } as never);
+    const preview = jest.spyOn(documentActions, "previewPdfDocument").mockResolvedValue(undefined);
+    const controller = new ConsumerRepairRequestScreenController({ consumerUserId: bundle.draft.consumerUserId,
+      onPrepareCanonicalEstimate: jest.fn(), onLoadCanonicalRevisionDraft: jest.fn(), onLoadCanonicalParameterSession: jest.fn(),
+      onRecalculateCanonicalEstimate: jest.fn(), onSelectCanonicalCatalogItem: jest.fn(), onAddCanonicalCatalogItem: jest.fn(),
+      onOpenPhotoForMaterialRecognition: jest.fn() });
+    const action = controller as unknown as { state: typeof controller.state;
+      setState: (patch: Partial<typeof controller.state>) => void;
+      completeHistoryPdfOpen: (draftId: string) => Promise<void> };
+    action.state = { ...action.state, bundle: null, history: [bundle], problemText: "" };
+    action.setState = patch => { action.state = { ...action.state, ...patch }; };
+    return { action, bundle, revision, artifact, stored, build, catalog, preview };
+  }
+
+  it("opens the exact stored historical professional PDF without rebuilding it or restoring its workspace", async () => {
+    const test = historicalPdfAction();
+    await test.action.completeHistoryPdfOpen(test.bundle.draft.id);
+    expect(test.stored).toHaveBeenCalledWith({ revisionId: test.revision.revisionId, kind: "pdf", documentProfile: "professional_v1" });
+    expect(test.build).not.toHaveBeenCalled();expect(test.catalog).not.toHaveBeenCalled();
+    expect(test.preview).toHaveBeenCalledTimes(1);expect(test.action.state.bundle).toBeNull();
+    expect(test.action.state.problemText).toBe("");
+  });
+
+  it.each(["identity", "missing-old", "access"])("preserves the empty current workspace and refuses unsafe historical PDF fallback on %s", async reason => {
+    const test = historicalPdfAction();
+    if (reason === "identity") test.stored.mockResolvedValue({ ...test.artifact, revisionId: "foreign-revision" } as never);
+    else test.stored.mockRejectedValue(new CanonicalEstimateApiError("test", {
+      code: reason === "missing-old" ? "NOT_FOUND" : "FORBIDDEN", httpStatus: reason === "missing-old" ? 404 : 403,
+    }));
+    await expect(test.action.completeHistoryPdfOpen(test.bundle.draft.id)).rejects.toThrow();
+    expect(test.build).not.toHaveBeenCalled();expect(test.preview).not.toHaveBeenCalled();
+    expect(test.action.state.bundle).toBeNull();expect(test.action.state.problemText).toBe("");
+  });
 
   it("persists successor inputs in a populated draft without losing rows, prices, PDF or revision history after reload", () => {
     const initial = populatedDraft();

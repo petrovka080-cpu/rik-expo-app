@@ -2108,12 +2108,29 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       ) {
         throw new ConsumerEstimateActionContextError("PDF не открыт: историческая версия не совпала.");
       }
-      const artifact = await buildCanonicalEstimateArtifact({
-        revisionId: canonical.revisionId,
-        kind: "pdf",
-        documentProfile: "professional_v1",
-        idempotencyKey: `consumer-history-professional-pdf-${CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION}-${canonical.revisionId}`,
-      });
+      let artifact;
+      try {
+        artifact = await getCanonicalEstimateArtifact({
+          revisionId: canonical.revisionId,
+          kind: "pdf",
+          documentProfile: "professional_v1",
+        });
+      } catch (error) {
+        if (!(error instanceof CanonicalEstimateApiError) || error.code !== "NOT_FOUND") throw error;
+        const currentCatalog = await getCanonicalEstimateCatalogItem(revision.catalogId);
+        if (currentCatalog.releaseId !== revision.releaseId) {
+          throw new CanonicalEstimateApiError(
+            "Для выбранной исторической сметы сохранённый PDF не найден. Сформируйте исправленную смету для нового документа.",
+            { code: "REVISION_CONTENT_QUARANTINED", httpStatus: 409 },
+          );
+        }
+        artifact = await buildCanonicalEstimateArtifact({
+          revisionId: canonical.revisionId,
+          kind: "pdf",
+          documentProfile: "professional_v1",
+          idempotencyKey: `consumer-history-professional-pdf-${CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION}-${canonical.revisionId}`,
+        });
+      }
       assertCanonicalEstimateArtifactIdentity({
         artifact,
         revision,

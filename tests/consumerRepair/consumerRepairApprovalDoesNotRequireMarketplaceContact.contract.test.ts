@@ -8,6 +8,10 @@ import {
   sendConsumerRepairRequestToMarketplace,
 } from "../../src/lib/consumerRequests";
 import { approveCanonicalConsumerRepairAuditRequest } from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
+import { appendCanonicalBackendRevisionProjection } from "../../src/lib/consumerRequests/consumerCanonicalBackendRevisionProjection";
+import { saveConsumerRepairBundle } from "../../src/lib/consumerRequests/consumerRequestRepository";
+import { validateConsumerRepairRequestForApprove } from "../../src/lib/consumerRequests/consumerRequestValidationService";
+import type { StructuredEstimatePayload } from "../../src/lib/estimateStructuredPipeline/structuredEstimateTypes";
 import {
   buildCanonicalConsumerRepairRevisionFixture,
   canonicalArtifactForConsumerRepairRevisionFixture,
@@ -15,6 +19,50 @@ import {
 
 describe("consumer estimate approval boundary", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
+
+  function shortCatalogDraft(mismatch = "none") {
+    const prompt = "Окраска стен 50 м²";
+    const catalogId = "canonical-work:test:consumer-history-fixture";
+    const aiDraft = buildCanonicalConsumerRepairRevisionFixture(prompt, { selectedWork: {
+      selectedCatalogWorkId: catalogId, selectedWorkKey: catalogId,
+      selectedWorkTitleRu: "Окраска стен", selectedWorkCategoryKey: "finishes",
+      selectedWorkCategoryTitleRu: "Отделка", selectedWorkRawInput: prompt,
+      selectedWorkSource: "user_selected", selectedWorkResolverReGuessed: false,
+    } });
+    const before = createConsumerRepairRequestDraft({
+      consumerUserId: "short-catalog-approval-user", problemText: prompt, aiDraft,
+    });
+    const revisionId = String(before.items[0].sourceParameters?.canonicalBackendRevisionId);
+    const releaseId = String(before.items[0].sourceParameters?.canonicalBackendReleaseId);
+    if (mismatch === "no-choice") before.draft.selectedWorkSource = undefined;
+    if (mismatch === "mixed-rows") before.items[0].sourceParameters = {
+      ...before.items[0].sourceParameters, canonicalBackendCatalogId: "another-catalog",
+    };
+    const projected = appendCanonicalBackendRevisionProjection({ previousBundle: null, nextBundle: before,
+      payload: { inputText: prompt, workKey: "wall_paint_standard",
+        canonicalBackend: { compilerOwner: "backend", revisionId: mismatch === "stale-revision" ? "other-revision" : revisionId,
+          parentRevisionId: null, revisionNumber: 1, releaseId: mismatch === "other-release" ? "other-release" : releaseId,
+          catalogId: mismatch === "other-catalog" ? "another-catalog" : catalogId,
+          checksumSha256: "a".repeat(64), createdAt: "2026-10-05T10:00:00Z",
+          parameters: { area_m2: 50 }, preliminaryNeeds: [] } } as unknown as StructuredEstimatePayload,
+    });
+    return saveConsumerRepairBundle(projected);
+  }
+
+  it("accepts a short explicit catalog request with the exact current canonical projection and null prices", () => {
+    const bundle = shortCatalogDraft();
+    expect(bundle.draft.problemText!.length).toBeLessThan(20);
+    expect(validateConsumerRepairRequestForApprove(bundle.draft.id, bundle.draft.consumerUserId)).toEqual({ ok: true, errors: [] });
+    expect(bundle.items.every(item => item.unitPrice == null)).toBe(true);
+  });
+
+  it.each(["other-catalog", "stale-revision", "mixed-rows", "other-release", "no-choice"])(
+    "does not waive the description requirement for %s", (mismatch) => {
+      const bundle = shortCatalogDraft(mismatch);
+      expect(validateConsumerRepairRequestForApprove(bundle.draft.id, bundle.draft.consumerUserId).errors)
+        .toEqual(expect.arrayContaining([expect.objectContaining({ code: "DESCRIPTION_REQUIRED" })]));
+    },
+  );
 
   it("approves a complete estimate without delivery contact but keeps marketplace validation strict", async () => {
     let bundle = createConsumerRepairRequestDraft({

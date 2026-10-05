@@ -24,11 +24,27 @@ function hasApprovalDescriptionOrExactCalculatedWork(
   const currentRevision = revisionState?.revisions.find(
     (revision) => revision.revisionId === revisionState.currentRevisionId,
   );
+  const selectedCatalogId = bundle.draft.selectedCatalogWorkId?.trim();
+  const identity = currentRevision?.resolvedIdentity;
+  const exactCatalogProjection = Boolean(
+    selectedCatalogId &&
+    selectedWorkKey === selectedCatalogId &&
+    currentRevision?.selectedTemplateId === selectedCatalogId &&
+    identity?.requestedCatalogWorkId === selectedCatalogId &&
+    identity.canonicalModelId === "canonical-estimate-backend" &&
+    identity.canonicalModelVersion &&
+    bundle.items.length > 0 &&
+    bundle.items.every((item) =>
+      item.sourceParameters?.canonicalBackendCatalogId === selectedCatalogId &&
+      item.sourceParameters?.canonicalBackendRevisionId === currentRevision?.revisionId &&
+      item.sourceParameters?.canonicalBackendReleaseId === identity.canonicalModelVersion
+    ),
+  );
   return Boolean(
     bundle.draft.selectedWorkSource === "user_selected" &&
     selectedWorkKey &&
-    currentRevision?.professionalWorkId === selectedWorkKey &&
-    currentRevision.boq.rows.length > 0 &&
+    (currentRevision?.professionalWorkId === selectedWorkKey || exactCatalogProjection) &&
+    currentRevision?.boq.rows.length &&
     bundle.items.length > 0 &&
     revisionState?.currentRevisionId,
   );
