@@ -3,6 +3,7 @@ import {compileSkirtingConstructorS2735 as compile, SKIRTING_TARGETS_S2735 as ta
   SKIRTING_READY_ADHESIVE_CONSUMPTION_EXPRESSION_S2735 as boundExpression} from '../../src/lib/estimate/v4/skirtingConstructorS2735';
 import {compileFormulaGraph} from '../../src/lib/estimate/backendPlatform/formulaGraph';
 import {buildCanonicalProcurementProjection,selectCanonicalArtifactRows} from '../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract';
+import {buildMasterParameterCalculationConsumers} from '../../scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1';
 const trace=(row:Record<string,unknown>)=>row.calculation_trace as Record<string,any>;
 const adhesive='material:skirting:adhesive';
 const shared='material:skirting:shared-sealant';
@@ -10,6 +11,13 @@ const both={length_m:30,end_cap_count:2,junction_sealing_mode:'REQUIRED',end_cap
 const sharedFacts={...both,sealant_supply_grouping:'SHARED_COMPATIBLE_BATCH',shared_sealant_designation:'EXPLICIT_TEST_COMPATIBLE_BATCH',shared_sealant_cartridge_ml:310,shared_sealant_compatibility_confirmed:'YES'};
 
 describe('skirting constructor reuses ready operations and rounds compatible purchases once',()=>{
+  test('all actual/profile inputs have a real consumer; provided-board scope has no supply-order inputs',()=>{
+    for(const definition of Object.values(definitions)){
+      const {resourceConsumers}=buildMasterParameterCalculationConsumers({parameters:definition.parameters,formulas:definition.formulas,resources:definition.resources});
+      expect(definition.parameters.filter(p=>!resourceConsumers[p.parameter_id]?.length)).toEqual([]);
+    }
+    expect(definitions.glue.parameters.some(p=>['cut_extra_m','board_order_pieces'].includes(p.parameter_id))).toBe(false);
+  });
   test.each(targets)('$catalogId starts from ordinary measured length with explicit preliminary profiles',async target=>{
     const result=await compile({length_m:30},target.catalogId);
     expect(result.rows).toHaveLength(target.operation==='install'?21:19);expect(result.preliminaryNeeds).toHaveLength(5);

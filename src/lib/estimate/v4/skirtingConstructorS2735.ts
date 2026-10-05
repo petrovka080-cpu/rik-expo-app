@@ -73,8 +73,10 @@ export function buildSkirtingDefinitionS2735(operation:'install'|'glue'):Automat
     profile('applicability_mode','Предварительный выбранный профиль либо подтверждённые факты объекта','enum',null,'PRELIMINARY_PROFILE',{values:['PRELIMINARY_PROFILE','CONFIRMED_PROJECT_FACTS']}),
     profile('skirting_product_code','Предварительно Gerflor Design Skirting6086; другие изделия требуют совместимого профиля','enum',null,'6086',{values:['6086']}),
     profile('skirting_colour_batch','Цвет, артикул декора и партия Gerflor6086 требуют выбора','text',null,'Gerflor6086, ПВХ60×10мм; цвет/декор и партия ещё не подтверждены'),
-    profile('cut_extra_m','Дополнительная длина раскроя: предварительно0м до обмера углов; это не норма и не подтверждённый раскрой','decimal','m',0,{min:0}),
-    profile('board_order_pieces','Кратность заказа в планках2м: предварительно6 (коробка12м); изменить по фактической поставке','integer','piece',6,{min:1,max:6}),
+    ...(operation==='install'?[
+      profile('cut_extra_m','Дополнительная длина закупки на раскрой: предварительно0м до обмера углов; это не норма и не подтверждённый раскрой','decimal','m',0,{min:0}),
+      profile('board_order_pieces','Кратность заказа в планках2м: предварительно6 (коробка12м); изменить по фактической поставке','integer','piece',6,{min:1,max:6}),
+    ]:[]),
     profile('end_cap_count','Торцевые вставки Gerflor6087: предварительно0шт, реальные окончания линии требуют обмера','integer','piece',0,{min:0}),
     profile('adhesive_product','Предварительно Forbo Eurocol232 Eurosol Montage; расход не переносится на другой клей','enum',null,'FORBO_232',{values:['FORBO_232']}),
     profile('adhesive_rate_ml_m','Forbo232: предварительно40мл/м, верхняя граница опубликованных20–40; проверить нанесением','decimal','ml_per_m',40,{min:20,max:40}),
@@ -114,7 +116,7 @@ export function buildSkirtingDefinitionS2735(operation:'install'|'glue'):Automat
       fact(id,({system_compatibility_confirmed:'Совместимость конкретных Gerflor6086/Forbo232 и основания подтверждена',prepared_plane_dry_substrate_confirmed:'Ровное сухое прочное чистое бетонное основание подтверждено',corner_layout_confirmed:'Раскрой, дополнительная длина и окончания линии обмерены',forbo_processing_ventilation_controls_confirmed:'Условия нанесения Forbo232, вентиляция и работа с растворителем подтверждены'})[id]!,null,'enum',{kind:'conditional',requiredWhen:confirmed,values:['YES']})),
   ];
   const confirmations=['applicability_mode','system_compatibility_confirmed','prepared_plane_dry_substrate_confirmed','corner_layout_confirmed','forbo_processing_ventilation_controls_confirmed'];
-  const rows:AutomaticRowSpec[]=[{rowId:'scope:skirting:installed',formulaId:'skirting_installed_scope_v1',section:'Объём и границы',category:'service',title:'Чистовая длина линии; монтаж оплачивается единственным ресурсом труда',unitId:'m',expression:'length_m',costTreatment:'INFORMATIONAL_SCOPE'},
+  const rows:AutomaticRowSpec[]=[{rowId:'scope:skirting:installed',formulaId:'skirting_installed_scope_v1',section:'Объём и границы',category:'service',title:'Чистовая длина линии выбранного профиля; монтаж оплачивается единственным ресурсом труда',unitId:'m',expression:'length_m',costTreatment:'INFORMATIONAL_SCOPE',titleParameterIds:['skirting_product_code','skirting_colour_batch']},
     {rowId:'scope:skirting:adhesive-consumption',formulaId:'skirting_ready_adhesive_consumption_v1',section:'Потребление клея',category:'service',title:'Расход клея по готовой операции, до заказа картриджей; отдельно не оплачивается',unitId:'ml',expression:SKIRTING_READY_ADHESIVE_CONSUMPTION_EXPRESSION_S2735,costTreatment:'INFORMATIONAL_SCOPE',effectiveQuantityOutput:{parameterId:'skirting_adhesive_net_ml',unitId:'ml'}}];
   const provenance=new Map<string,string>();
   function supply(rowId:string,title:string,unitId:string,consumed:string,quantum:string,extra:Partial<AutomaticRowSpec>={}){
@@ -127,7 +129,7 @@ export function buildSkirtingDefinitionS2735(operation:'install'|'glue'):Automat
     supply('material:skirting:board','Gerflor Design Skirting6086, ПВХ60×10мм, планка2м; выбранная кратность поставки','m','length_m+cut_extra_m','2*board_order_pieces',{titleParameterIds:['skirting_colour_batch','board_order_pieces']});
     supply('material:skirting:end-cap','Торцевая вставка Gerflor6087; количество по окончаниям линии','piece','end_cap_count','1');
   }
-  supply('material:skirting:adhesive','Forbo Eurocol232 Eurosol Montage, картридж310мл; расход20–40мл/м по выбранному способу','ml','skirting_adhesive_net_ml','310');
+  supply('material:skirting:adhesive','Forbo Eurocol232 Eurosol Montage, картридж310мл; расход20–40мл/м по выбранному способу','ml','skirting_adhesive_net_ml','310',{titleParameterIds:['adhesive_product','adhesive_rate_ml_m']});
   provenance.set('material:skirting:adhesive',readyAdhesiveSourceId);
   supply('material:skirting:end-cap-sealant','Отдельный совместимый клей-герметик торцевых вставок6087','ml','end_cap_sealant_consumption_ml','end_cap_sealant_cartridge_ml',{
     inclusion:separateCaps,titleParameterIds:['end_cap_sealant_designation'],inputParameterIds:[...confirmations,'end_cap_sealant_designation']});
