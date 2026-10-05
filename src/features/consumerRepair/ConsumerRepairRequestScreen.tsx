@@ -2155,8 +2155,11 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         },
       }), {
         router,
-        returnTo: context?.returnRoute
-          ?? `/request?canonicalRevisionId=${encodeURIComponent(canonical.revisionId)}`,
+        // A history PDF must return to the current workspace, not attempt to
+        // restore the archived estimate as an active draft on reload.
+        returnTo: this.state.bundle?.draft.status === "draft"
+          ? `/request?draftId=${encodeURIComponent(this.state.bundle.draft.id)}`
+          : "/request",
       });
       this.setState({ statusMessage: "Профессиональный PDF выбранной версии открыт из истории." });
       return;

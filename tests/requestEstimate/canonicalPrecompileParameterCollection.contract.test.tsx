@@ -186,6 +186,17 @@ describe("canonical precompile parameter collection", () => {
     expect(test.build).not.toHaveBeenCalled();expect(test.catalog).not.toHaveBeenCalled();
     expect(test.preview).toHaveBeenCalledTimes(1);expect(test.action.state.bundle).toBeNull();
     expect(test.action.state.problemText).toBe("");
+    expect(test.preview.mock.calls[0]?.[1]).toEqual(expect.objectContaining({ returnTo: "/request" }));
+  });
+
+  it("returns from a history PDF to the independently active draft without replacing it", async () => {
+    const test = historicalPdfAction();
+    const active = populatedDraft();
+    test.action.state = { ...test.action.state, bundle: active, problemText: "Current independent request" };
+    await test.action.completeHistoryPdfOpen(test.bundle.draft.id);
+    expect(test.preview.mock.calls[0]?.[1]).toEqual(expect.objectContaining({ returnTo: `/request?draftId=${encodeURIComponent(active.draft.id)}` }));
+    expect(test.action.state.bundle).toBe(active);
+    expect(test.action.state.problemText).toBe("Current independent request");
   });
 
   it.each(["identity", "missing-old", "access"])("preserves the empty current workspace and refuses unsafe historical PDF fallback on %s", async reason => {
