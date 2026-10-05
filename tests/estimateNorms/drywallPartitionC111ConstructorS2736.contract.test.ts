@@ -35,6 +35,7 @@ describe('C111 partition from reusable operations and primary product profiles',
     expect(quantity('work:c111:perforator')).toBe('0.18');
     expect(quantity('work:c111:driver')).toBe('0.87');
     expect(r.rows.filter(x => x.included_in_procurement)).toHaveLength(12);
+    expect(r.rows.find(x => x.row_id === 'material:c111:insulation')?.title_ru).not.toContain('AKUSTIKNAUF_50');
     expect(r.rows.filter(x => x.category === 'labor' && x.included_in_estimate)).toHaveLength(1);
     expect(r.rows.filter(x => x.included_in_estimate).every(x => x.unit_price === null)).toBe(true);
   });

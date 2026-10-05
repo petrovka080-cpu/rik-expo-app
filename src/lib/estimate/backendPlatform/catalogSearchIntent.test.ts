@@ -4,6 +4,10 @@ import {
 } from "./catalogSearchIntent";
 
 describe("canonical catalog search intent", () => {
+  it.each(['13 m2', '13 m²', '13M2', '13м2'])('recognizes Latin/Cyrillic area %s without losing product identity', measure => {
+    const intent = parseCanonicalCatalogSearchIntent('Шпаклевка CT127 ' + measure, null, []);
+    expect(intent.quantity).toBe(13);expect(intent.unit).toBe('м²');expect(intent.searchText).toBe('шпаклевка ct127');
+  });
   it.each(["x", "х", "×", "*"])("removes %s bridge dimensions from ranking and keeps their area", (separator) => {
     const intent = parseCanonicalCatalogSearchIntent(
       `асфальтирование моста 200 ${separator} 32 м`,

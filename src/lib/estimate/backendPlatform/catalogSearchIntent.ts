@@ -64,7 +64,7 @@ export function parseCanonicalCatalogSearchIntent(
     ? `${rawQuery.slice(0, dimensionMatch.index)} ${rawQuery.slice(dimensionMatch.index + dimensionMatch[0].length)}`
     : rawQuery;
   const quantityPattern =
-    /(?:^|\s)(\d{1,3}(?:[\s\u00a0]\d{3})+|\d+)(?:[,.](\d+))?\s*(кв\.?\s*м(?:етр(?:ов|а)?)?|квадратн(?:ых|ого|ые)?\s+метр(?:ов|а)?|м[²2]|шт(?:ук|ука|уки)?|штук(?:а|и)?|метр(?:ов|а|ы)?|тонн?(?:а|ы)?|кг|м|т)(?=\s|[.,;:!?)]|$)/iu;
+    /(?:^|\s)(\d{1,3}(?:[\s\u00a0]\d{3})+|\d+)(?:[,.](\d+))?\s*(кв\.?\s*м(?:етр(?:ов|а)?)?|квадратн(?:ых|ого|ые)?\s+метр(?:ов|а)?|[мm][²2]|шт(?:ук|ука|уки)?|штук(?:а|и)?|метр(?:ов|а|ы)?|тонн?(?:а|ы)?|кг|м|т)(?=\s|[.,;:!?)]|$)/iu;
   const quantityMatch = dimensionMatch ? null : quantityPattern.exec(normalizedRaw);
   const quantity = dimensions?.areaM2 ?? (quantityMatch
     ? decimal(quantityMatch[1]!, quantityMatch[2])
@@ -74,7 +74,7 @@ export function parseCanonicalCatalogSearchIntent(
     ? "м²" as const
     : !quantityMatch
       ? null
-      : /^(?:кв|квадрат|м[²2])/u.test(rawUnit)
+      : /^(?:кв|квадрат|[мm][²2])/u.test(rawUnit)
         ? "м²" as const
         : /^(?:шт|штук)/u.test(rawUnit)
           ? "шт" as const

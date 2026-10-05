@@ -20,6 +20,7 @@ const config: MasterSingleDefinitionSuccessorConfig = {
   outputRoot: resolve('.release-runtime/r568/s27-35/drywall-partition-c111'),
   sourcePaths: [
     'src/lib/estimate/v4/drywallPartitionC111ConstructorS2736.ts',
+    'src/lib/estimate/backendPlatform/canonicalEstimateSearchInput.ts', 'src/lib/estimate/backendPlatform/catalogSearchIntent.ts',
     'src/lib/estimate/v4/domains/interiorFinishesComplete/domainPackage.ts',
     'src/lib/estimate/v4/domains/interiorFinishesComplete/drywallDomainCompletionSuccessorR56.ts',
     'src/lib/estimate/v4/automaticConstructionOwnerR1.ts', 'src/lib/estimate/v4/effectivePurchaseBalanceR1.ts',

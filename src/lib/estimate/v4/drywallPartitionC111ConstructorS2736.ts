@@ -116,7 +116,7 @@ supply('dowel', 'FRAME', 'КНАУФ дюбель К6/35, минеральное
 supply('sealing-tape', 'FRAME', 'КНАУФ Дихтунгсбанд50мм под направляющие и концевые стойки', 'm', `2*(${length}+c111_height_m)`, '30');
 supply('board', 'CLAD', 'КНАУФ-лист ГСП-А ПЛУК3000×1200×12.5мм; один слой каждой стороны, стыки смещены600мм', 'piece', sheetCount, '1', ready('CLAD', 'system_board'));
 supply('tn25', 'CLAD', 'КНАУФ шуруп TN25,3.5×25мм, пачка1000шт; целые штуки, C11 и проверка шага250мм по раскрою', 'piece', `max(ceil(area_m2*29),(2*(${studCount})+(${jointsCount}))*(ceil(c111_height_m/0.25)+1))`, '1000', ready('CLAD', 'board_fasteners'));
-supply('insulation', 'INSULATE', 'АкустиКНАУФ50×610×1230мм,16 плит; заявленная упаковка12м², характеристики системы подтвердить', 'm2', 'area_m2', '12', ready('INSULATE', 'system_insulation'), {inclusion: insulated, titleParameterIds: ['c111_insulation_mode']});
+supply('insulation', 'INSULATE', 'АкустиКНАУФ50×610×1230мм,16 плит; заявленная упаковка12м², характеристики системы подтвердить', 'm2', 'area_m2', '12', ready('INSULATE', 'system_insulation'), {inclusion: insulated});
 supply('fugen', 'FINISH_JOINT', 'КНАУФ-Фуген, мешок5кг: Q1 по0.25кг/м² обшивки каждой стороны, без сплошного финиша', 'kg', '2*area_m2*0.25', 'c111_fugen_pack_kg', ready('FINISH_JOINT', 'joint_compound'));
 supply('joint-tape', 'FINISH_JOINT', 'КНАУФ бумажная перфорированная лента52мм, рулон50м, Фуген/Q1: стыки обеих сторон по раскрою', 'm', `(${jointsCount})*c111_height_m`, '50', ready('FINISH_JOINT', 'joint_tape'));
 supply('separation-tape', 'FINISH_JOINT', 'КНАУФ разделительная лента Треннфикс65мм на примыкания обеих обшивок к несущим конструкциям', 'm', `4*(${length}+c111_height_m)`, '50');
