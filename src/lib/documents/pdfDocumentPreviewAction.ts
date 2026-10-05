@@ -200,6 +200,7 @@ async function executeDirectRemoteViewerSessionPath(args: {
     session.sessionId,
     opts?.openFlow?.openToken,
     opts?.returnTo,
+    opts?.callerRouteKey,
   );
   recordPdfOpenStage({
     context: opts?.openFlow,
@@ -516,6 +517,7 @@ async function executeStoredPreviewSessionPath(args: {
       session.sessionId,
       opts.openFlow?.openToken,
       opts.returnTo,
+      opts.callerRouteKey,
     );
     const navDocumentType = asset?.documentType ?? doc.documentType;
     const navOriginModule = asset?.originModule ?? doc.originModule;

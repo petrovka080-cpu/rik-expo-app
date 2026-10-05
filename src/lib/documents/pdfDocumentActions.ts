@@ -132,8 +132,9 @@ export async function prepareAndPreviewPdfDocument(
     openFlowStartedAt?: number | null;
     /** Called before router.push to dismiss native Modals that sit above the navigation Stack. */
     onBeforeNavigate?: (() => void | Promise<void>) | null;
-    /** Internal route restored when the Android viewer replaces its caller. */
+    /** Internal recovery route when the viewer no longer has its live caller. */
     returnTo?: string | null;
+    callerRouteKey?: string | null;
   },
 ): Promise<DocumentDescriptor> {
   const descriptorUri =
@@ -289,6 +290,7 @@ export async function prepareAndPreviewPdfDocument(
           earlyViewerSession.session.sessionId,
           visibilityWait?.token,
           args.returnTo,
+          args.callerRouteKey,
         );
         recordPdfOpenStage({
           context: baseContext,
@@ -366,6 +368,7 @@ export async function prepareAndPreviewPdfDocument(
           await previewPdfDocument(document, {
             router: args.router,
             returnTo: args.returnTo,
+            callerRouteKey: args.callerRouteKey,
             onBeforeNavigate: args.onBeforeNavigate,
             boundaryRun,
             assertCurrentRun,

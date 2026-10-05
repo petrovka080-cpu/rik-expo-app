@@ -220,6 +220,7 @@ export type EnsureConsumerRepairDraftBundleResult =
   | { status: "BLOCKED_WITH_REASON"; bundle: ConsumerRepairDraftBundle | null; message: string };
 
 export type ConsumerRepairRequestScreenProps = {
+  pdfCallerRouteKey?: string;
   consumerUserId?: string;
   initialProblemText?: string;
   initialDraftId?: string;
@@ -2064,6 +2065,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           // prevents PDF back from replacing unsaved state with a new canonical
           // projection after Android activity/process recreation.
           returnTo: context.returnRoute,
+          callerRouteKey: this.props.pdfCallerRouteKey,
         });
         this.setState({ statusMessage: "Профессиональный PDF выбранной версии открыт." });
         return;
@@ -2166,6 +2168,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         returnTo: this.state.bundle?.draft.status === "draft"
           ? `/request?draftId=${encodeURIComponent(this.state.bundle.draft.id)}`
           : "/request",
+        callerRouteKey: this.props.pdfCallerRouteKey,
       });
       this.setState({ statusMessage: "Профессиональный PDF выбранной версии открыт из истории." });
       return;

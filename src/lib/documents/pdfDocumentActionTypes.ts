@@ -33,6 +33,8 @@ export type PreviewPdfDocumentOpts = {
   router?: PdfViewerRouterLike;
   /** Exact internal route restored by the viewer's explicit Back action. */
   returnTo?: string | null;
+  /** Navigation key of the actual live screen opening this document. */
+  callerRouteKey?: string | null;
   openFlow?: PdfOpenFlowContext & {
     openToken?: string;
   };

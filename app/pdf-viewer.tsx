@@ -1,6 +1,7 @@
 import React from "react";
 import { BackHandler, Platform, useWindowDimensions } from "react-native";
-import { router, useFocusEffect, useLocalSearchParams, type Href } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams, useNavigationContainerRef, type Href } from "expo-router";
+import { useRoute } from "@react-navigation/native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -96,6 +97,7 @@ import {
 import { openPdfPreview } from "../src/lib/pdfRunner";
 import { recordCatchDiscipline } from "../src/lib/observability/catchDiscipline";
 import { safeBack } from "../src/lib/navigation/safeBack";
+import { resolvePdfViewerReturnPlan } from "../src/lib/pdf/pdfViewerReturnNavigation";
 import { normalizePostAuthReturnTo } from "../src/lib/authRouting";
 import { redactSensitiveRecord, redactSensitiveText } from "../src/lib/security/redaction";
 import { withScreenErrorBoundary } from "../src/shared/ui/ScreenErrorBoundary";
@@ -153,8 +155,12 @@ function PdfViewerScreen() {
     source?: string;
     entityId?: string;
     returnTo?: string | string[];
+    callerRouteKey?: string;
   }>();
   const { width } = useWindowDimensions();
+  const navigationRef = useNavigationContainerRef();
+  const viewerRouteKey = useRoute().key;
+  const backDispatchedRef = React.useRef(false);
   const insets = useSafeAreaInsets();
   const viewerPlatform = getCurrentViewerPlatform();
   const nativePdfWebView = resolvePdfViewerNativeWebView();
@@ -1361,15 +1367,25 @@ function PdfViewerScreen() {
   }, [clearWebRenderUri, commitEmptyState, retryViewerOrchestrator, syncSnapshot]);
 
   const onBack = React.useCallback(() => {
-    if (returnTo) {
-      router.replace(returnTo as Href);
+    if (backDispatchedRef.current) return;
+    const plan = resolvePdfViewerReturnPlan(
+      navigationRef.getRootState(), returnTo, params.callerRouteKey, viewerRouteKey,
+    );
+    if (plan.kind === "ignore-stale") return;
+    backDispatchedRef.current = true;
+    if (plan.kind === "preserve-caller") {
+      router.back();
+      return;
+    }
+    if (plan.kind === "restore-route") {
+      router.dismissTo(plan.href as Href);
       return;
     }
     safeBack(
       router as typeof router & { canGoBack?: () => boolean },
       FALLBACK_ROUTE,
     );
-  }, [returnTo]);
+  }, [navigationRef, params.callerRouteKey, viewerRouteKey, returnTo]);
 
   useFocusEffect(
     React.useCallback(() => {

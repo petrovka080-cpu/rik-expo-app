@@ -1,4 +1,5 @@
 import { useLocalSearchParams } from "expo-router";
+import { useRoute } from "@react-navigation/native";
 import { useSyncExternalStore } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
@@ -22,6 +23,7 @@ function getParam(value: string | string[] | undefined): string {
 }
 
 function RequestRoute() {
+  const pdfCallerRouteKey = useRoute().key;
   const params = useLocalSearchParams<{
     autoPdf?: string | string[];
     autoPrepare?: string | string[];
@@ -113,6 +115,7 @@ function RequestRoute() {
           />
         ) : null}
         <ConsumerRepairRequestScreen
+          pdfCallerRouteKey={pdfCallerRouteKey}
           initialProblemText={canonicalRevisionId ? undefined : prompt || undefined}
           initialDraftId={canonicalRevisionId ? undefined : draftId || undefined}
           initialSelectedCatalogWorkId={canonicalRevisionId ? undefined : catalogWorkId || undefined}

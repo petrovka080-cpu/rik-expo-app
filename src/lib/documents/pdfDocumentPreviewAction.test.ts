@@ -164,6 +164,7 @@ describe("pdfDocumentPreviewAction", () => {
       {
         router: { push: jest.fn() },
         returnTo: "/request?canonicalRevisionId=07918480-b10a-4de8-9525-7366d3c9202f",
+        callerRouteKey: "request/index-own-caller",
       },
       { persistCriticalPdfBreadcrumb: jest.fn() },
     );
@@ -172,6 +173,7 @@ describe("pdfDocumentPreviewAction", () => {
       "session-return-1",
       undefined,
       "/request?canonicalRevisionId=07918480-b10a-4de8-9525-7366d3c9202f",
+      "request/index-own-caller",
     );
     expect(String(mockPushPdfDocumentViewerRouteSafely.mock.calls[0]?.[1])).toContain(
       "returnTo=%2Frequest%3FcanonicalRevisionId%3D07918480-b10a-4de8-9525-7366d3c9202f",

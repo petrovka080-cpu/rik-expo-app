@@ -28,6 +28,7 @@ export function createPdfDocumentViewerHref(
   sessionId: unknown,
   openToken: unknown,
   returnTo?: unknown,
+  callerRouteKey?: unknown,
 ) {
   const safeSessionId = toSafeRouteParam(sessionId);
   const safeOpenToken = toSafeRouteParam(openToken);
@@ -38,11 +39,15 @@ export function createPdfDocumentViewerHref(
   const returnToQuery = safeReturnTo
     ? `&returnTo=${encodeURIComponent(safeReturnTo)}`
     : "";
+  const safeCallerRouteKey = toSafeRouteParam(callerRouteKey);
+  const callerQuery = safeCallerRouteKey
+    ? `&callerRouteKey=${encodeURIComponent(safeCallerRouteKey)}`
+    : "";
   return {
     safeSessionId,
     safeOpenToken,
     safeReturnTo,
-    href: `/pdf-viewer?sessionId=${encodeURIComponent(safeSessionId)}&openToken=${encodeURIComponent(safeOpenToken)}${returnToQuery}` as Href,
+    href: `/pdf-viewer?sessionId=${encodeURIComponent(safeSessionId)}&openToken=${encodeURIComponent(safeOpenToken)}${returnToQuery}${callerQuery}` as Href,
   };
 }
 
