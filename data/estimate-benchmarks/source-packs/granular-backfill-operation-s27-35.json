@@ -1,0 +1,19 @@
+{
+  "contract": "granular-backfill-operation:s27-35.v1",
+  "sourceKind": "ACTUAL_INSTALLED_VOLUME_AND_PROJECT_SUPPLIER_FACTS_REQUIRED",
+  "reusedOperation": {
+    "module": "src/lib/estimate/v4/singlePipeTrenchConstructorS2735.ts",
+    "version": "single-pipe-trench-constructor:s27-35.v1",
+    "sourceCommit": "829f9e534774706f9f6f24c319a303e597006702",
+    "resources": ["upper-backfill supply", "placing/compaction/survey/QA labour", "loader/compactor/water/testing equipment", "actual logistics", "water", "individual tooling"],
+    "fixtureAsRuntimeDefaults": false
+  },
+  "primaryMeasure": "actual installed granular backfill volume m3",
+  "supplyConsumption": "installed volume * actual loose supply volume per installed m3",
+  "quantityAndPaymentOwnership": "Existing accepted core formula ASTs, purchase balances and resource ownership reused. Installed volume is informational. Paid resources require actual project/supplier/payment scope facts.",
+  "variants": ["standard", "small_area", "large_area", "high_load", "technical_room", "wet_zone"],
+  "applicability": "Placement and compaction of separately measured granular backfill. Variant names do not assign engineering norms. Material grade, required compaction and construction/placement access must come from the project.",
+  "excluded": ["excavation", "pipe supply and placement", "bedding/surround duplicated with previous operations", "automatic geotextile/drainage material", "unknown geometry derived from installed volume", "universal density/loose factor/lift thickness/productivity/prices", "generic FHWA208 structural backfill norm"],
+  "runtimeProfiles": ["visible zero available stock and reserve", "visible supplier order quantum"],
+  "engineeringApprovalClaimed": false
+}
