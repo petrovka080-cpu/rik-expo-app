@@ -6,6 +6,7 @@ import {
   __simulateConsumerRepairRequestStoreReloadForTests,
   initializeConsumerRepairTransactionalDurableStorage,
   listConsumerRepairApprovedHistory,
+  type ConsumerRepairDraftBundle,
 } from "../../src/lib/consumerRequests";
 import {
   getConsumerRepairBundle,
@@ -13,12 +14,14 @@ import {
   hydrateNextTransactionalConsumerRepairHistoryPage,
   hydrateTransactionalConsumerRepairRequestStore,
   setConsumerRepairTransactionalDurableStoreForTests,
+  saveConsumerRepairBundle,
 } from "../../src/lib/consumerRequests/consumerRequestRepository";
 import {
   InMemoryEstimateRevisionDurableStore,
   type EstimateRevisionDurableStore,
   type RevisionBundle,
 } from "../../src/lib/platform/estimateRevisionDurableStore";
+import { flushTransactionalConsumerRepairWrites } from "../../src/lib/platform/consumerRepairTransactionalDurableBridge";
 
 function nativeBundle(
   id: string,
@@ -307,6 +310,94 @@ describe("consumer repair native durable storage platform boundary", () => {
     expect(secondPage.items).toHaveLength(5);
     expect(new Set(recoveryOrder)).toEqual(new Set(bundles.keys()));
     expect(hasUnhydratedTransactionalConsumerRepairBundles()).toBe(false);
+  });
+
+  it("projects one recovered record before starting another and deduplicates queued one-record pages", async () => {
+    Object.defineProperty(Platform, "OS", { configurable: true, get: () => "android" });
+    Object.defineProperty(globalThis, "navigator", { configurable: true, value: { product: "ReactNative" } });
+    const durableStore = new InMemoryEstimateRevisionDurableStore();
+    const first = nativeBundle("consumer_draft_m0000002_first", { approved: true });
+    const second = nativeBundle("consumer_draft_m0000001_second", { approved: true });
+    expect((await durableStore.writeBundleAtomically(first.draft.id, null, first)).status).toBe("WRITTEN");
+    expect((await durableStore.writeBundleAtomically(second.draft.id, null, second)).status).toBe("WRITTEN");
+    const originalRecover = durableStore.recoverLastValid.bind(durableStore);
+    let releaseFirst!: (value: RevisionBundle) => void;
+    let startedFirst!: () => void;
+    const firstStarted = new Promise<void>(resolve => { startedFirst = resolve; });
+    const recoveryOrder: string[] = [];
+    jest.spyOn(durableStore, "recoverLastValid").mockImplementation(async key => {
+      recoveryOrder.push(key);
+      if (key === first.draft.id) {
+        startedFirst();
+        return new Promise<RevisionBundle>(resolve => { releaseFirst = resolve; });
+      }
+      expect(getConsumerRepairBundle(first.draft.id).draft.title).toBe(first.draft.title);
+      return originalRecover(key);
+    });
+    setConsumerRepairTransactionalDurableStoreForTests(durableStore);
+    __simulateConsumerRepairRequestStoreReloadForTests();
+    const page = hydrateNextTransactionalConsumerRepairHistoryPage(2);
+    const queued = hydrateNextTransactionalConsumerRepairHistoryPage(1);
+    await firstStarted;
+    expect(recoveryOrder).toEqual([first.draft.id]);
+    releaseFirst(first);
+    await expect(page).resolves.toBe(2);
+    await expect(queued).resolves.toBe(0);
+    expect(recoveryOrder).toEqual([first.draft.id, second.draft.id]);
+    expect(hasUnhydratedTransactionalConsumerRepairBundles()).toBe(false);
+  });
+
+  it.each([false, true])("keeps a newer local save when older recovery resumes (write committed: %s)", async committed => {
+    Object.defineProperty(Platform, "OS", { configurable: true, get: () => "android" });
+    Object.defineProperty(globalThis, "navigator", { configurable: true, value: { product: "ReactNative" } });
+    const durableStore = new InMemoryEstimateRevisionDurableStore();
+    const old = nativeBundle("consumer_draft_m0000003_racing");
+    expect((await durableStore.writeBundleAtomically(old.draft.id, null, old)).status).toBe("WRITTEN");
+    const originalRecover = durableStore.recoverLastValid.bind(durableStore);
+    let releaseOld!: (value: RevisionBundle) => void;
+    let started!: () => void;
+    const recoveryStarted = new Promise<void>(resolve => { started = resolve; });
+    jest.spyOn(durableStore, "recoverLastValid").mockImplementationOnce(() => {
+      started();
+      return new Promise<RevisionBundle>(resolve => { releaseOld = resolve; });
+    });
+    setConsumerRepairTransactionalDurableStoreForTests(durableStore);
+    __simulateConsumerRepairRequestStoreReloadForTests();
+    const hydration = hydrateNextTransactionalConsumerRepairHistoryPage(1);
+    await recoveryStarted;
+    saveConsumerRepairBundle({ ...old, draft: { ...old.draft, title: "new local title", dangerousDiyBlocked: false } } as ConsumerRepairDraftBundle);
+    if (committed) await flushTransactionalConsumerRepairWrites();
+    releaseOld(old);
+    await hydration;
+    expect(getConsumerRepairBundle(old.draft.id).draft.title).toBe("new local title");
+    await flushTransactionalConsumerRepairWrites();
+    expect((await originalRecover(old.draft.id))?.draft.title).toBe("new local title");
+  });
+
+  it("does not recover an older envelope over a local write already pending before history starts", async () => {
+    Object.defineProperty(Platform, "OS", { configurable: true, get: () => "android" });
+    Object.defineProperty(globalThis, "navigator", { configurable: true, value: { product: "ReactNative" } });
+    const durableStore = new InMemoryEstimateRevisionDurableStore();
+    const old = nativeBundle("consumer_draft_m0000004_pending");
+    expect((await durableStore.writeBundleAtomically(old.draft.id, null, old)).status).toBe("WRITTEN");
+    setConsumerRepairTransactionalDurableStoreForTests(durableStore);
+    __simulateConsumerRepairRequestStoreReloadForTests();
+    await hydrateTransactionalConsumerRepairRequestStore();
+    const originalWrite = durableStore.writeBundleAtomically.bind(durableStore);
+    let releaseWrite!: () => void;
+    const delayedWrite = new Promise<void>(resolve => { releaseWrite = resolve; });
+    jest.spyOn(durableStore, "writeBundleAtomically").mockImplementation(async (key, value, version) => {
+      await delayedWrite;
+      return originalWrite(key, value, version);
+    });
+    const recover = jest.spyOn(durableStore, "recoverLastValid");
+    saveConsumerRepairBundle({ ...old, draft: { ...old.draft, title: "pending local title", dangerousDiyBlocked: false } } as ConsumerRepairDraftBundle);
+    await hydrateNextTransactionalConsumerRepairHistoryPage(1);
+    expect(recover).not.toHaveBeenCalled();
+    releaseWrite();
+    await flushTransactionalConsumerRepairWrites();
+    expect(getConsumerRepairBundle(old.draft.id).draft.title).toBe("pending local title");
+    expect((await durableStore.recoverLastValid(old.draft.id))?.draft.title).toBe("pending local title");
   });
 
   it("keeps the observed 437-record / 94 MiB archive off the exact-open critical path", async () => {

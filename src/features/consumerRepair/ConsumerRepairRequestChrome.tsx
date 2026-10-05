@@ -337,6 +337,7 @@ type ContentProps = {
   statusMessage: string | null;
   revisionHistory: ConsumerRepairDraftBundle[];
   approvedHistoryPage: ConsumerRepairApprovedHistoryPage;
+  historyLoading?: boolean;
   selectedHistoryId: string | null;
   showPdfAction: boolean;
   pdfOpenBusy?: boolean;
@@ -413,6 +414,7 @@ export function ConsumerRepairRequestContent({
   statusMessage,
   revisionHistory,
   approvedHistoryPage,
+  historyLoading,
   selectedHistoryId,
   showPdfAction,
   pdfOpenBusy = false,
@@ -589,6 +591,7 @@ export function ConsumerRepairRequestContent({
       <ConsumerRepairHistory
         revisionHistory={revisionHistory}
         approvedHistoryPage={approvedHistoryPage}
+        historyLoading={historyLoading}
         selectedHistoryId={selectedHistoryId}
         onOpenPdf={onOpenPdf}
         onOpenDraft={onOpenDraft}

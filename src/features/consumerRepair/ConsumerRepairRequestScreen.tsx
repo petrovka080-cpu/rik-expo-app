@@ -1,7 +1,7 @@
 import React from "react";
 import { canonicalPurchaseShortageMessageV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
 import { router } from "expo-router";
-import { Text, TextInput, View } from "react-native";
+import { Platform, Text, TextInput, View } from "react-native";
 import {
   approveConsumerRepairRequestDraft,
   attachConsumerRepairEstimateRowPhoto,
@@ -67,7 +67,7 @@ import { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequestSc
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
 import { ConsumerRepairRequestScreenView } from "./ConsumerRepairRequestScreenView";
 import {
-  appendNextApprovedHistoryPage,
+  refreshLoadedApprovedHistoryPage,
   addConsumerRepairCustomNoteItem, addConsumerRepairPhotoMaterialPlaceholder, applyConsumerRepairCatalogItemSelection,
   buildApprovedConsumerRepairWorkspaceClearedState,
   canonicalBaselineContractMissingStatusMessage,
@@ -776,9 +776,14 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     // Explicit history access must still recover a bounded archive page.
     if (this.historyLoaded && !hasUnhydratedTransactionalConsumerRepairBundles()) return;
     this.durableHistoryLoadInFlight = true;
-    void hydrateNextTransactionalConsumerRepairHistoryPage().then(() => {
+    this.setState({ historyLoading: true });
+    void hydrateNextTransactionalConsumerRepairHistoryPage(Platform.OS === "web" ? undefined : 1).then(() => {
       const history = listConsumerRepairWorkspaceHistory(this.props.consumerUserId);
-      const approvedHistoryPage = listConsumerRepairApprovedHistory(this.props.consumerUserId);
+      const approvedHistoryPage = refreshLoadedApprovedHistoryPage(
+        this.state.approvedHistoryPage,
+        (cursorCreatedAt, limit) => listConsumerRepairApprovedHistory(this.props.consumerUserId, { cursorCreatedAt, limit }),
+        Platform.OS === "web" ? 5 : 1,
+      );
       this.historyLoaded = true;
       this.setState({ history, approvedHistoryPage });
     }).catch(() => {
@@ -789,6 +794,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       });
     }).finally(() => {
       this.durableHistoryLoadInFlight = false;
+      this.setState({ historyLoading: false });
     });
   };
   private findKnownHistoryBundle(requestDraftId: string): ConsumerRepairDraftBundle | null {
@@ -3256,35 +3262,23 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       return;
     }
     this.durableHistoryLoadInFlight = true;
+    this.setState({ historyLoading: true });
     try {
       await hydrateNextTransactionalConsumerRepairHistoryPage(
-        this.state.approvedHistoryPage.pageSize,
+        Platform.OS === "web" ? this.state.approvedHistoryPage.pageSize : 1,
       );
+      const history = listConsumerRepairWorkspaceHistory(this.props.consumerUserId);
       const currentPage = this.state.approvedHistoryPage;
-      if (currentPage.items.length === 0) {
-        this.setState({
-          approvedHistoryPage: listConsumerRepairApprovedHistory(this.props.consumerUserId, {
-            limit: currentPage.pageSize,
-          }),
-        });
-        return;
-      }
-      const cursorCreatedAt = currentPage.nextCursorCreatedAt
-        ?? currentPage.items.at(-1)?.draft.createdAt
-        ?? null;
-      if (!cursorCreatedAt) return;
-      const approvedHistoryPage = appendNextApprovedHistoryPage(
-        { ...currentPage, nextCursorCreatedAt: cursorCreatedAt },
-        (cursor, limit) => listConsumerRepairApprovedHistory(this.props.consumerUserId, {
-          limit,
-          cursorCreatedAt: cursor,
-        }),
+      const approvedHistoryPage = refreshLoadedApprovedHistoryPage(
+        currentPage,
+        (cursorCreatedAt, limit) => listConsumerRepairApprovedHistory(this.props.consumerUserId, { limit, cursorCreatedAt }),
       );
-      if (approvedHistoryPage !== currentPage) {
-        this.setState({ approvedHistoryPage });
-      }
+      this.setState({ history, approvedHistoryPage });
+    } catch {
+      this.setState({ statusMessage: "Историю смет не удалось загрузить. Повторите загрузку сохранённых смет." });
     } finally {
       this.durableHistoryLoadInFlight = false;
+      this.setState({ historyLoading: false });
     }
   };
   private renderScreenView(state: State): React.ReactElement {

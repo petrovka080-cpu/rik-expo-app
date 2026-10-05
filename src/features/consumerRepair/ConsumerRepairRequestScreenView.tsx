@@ -258,6 +258,7 @@ export function ConsumerRepairRequestScreenView({
           statusMessage={state.statusMessage}
           revisionHistory={state.history}
           approvedHistoryPage={state.approvedHistoryPage}
+          historyLoading={state.historyLoading}
           selectedHistoryId={state.selectedHistoryId}
           showPdfAction={Boolean(renderModel.bundle)}
           pdfOpenBusy={state.pdfOpenBusy === true}

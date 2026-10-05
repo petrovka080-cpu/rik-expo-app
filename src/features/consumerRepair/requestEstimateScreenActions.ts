@@ -83,6 +83,7 @@ export type ConsumerRepairRequestScreenState = {
   contactPhone: string;
   roadScopeSelectionBusy?: boolean;
   pdfOpenBusy?: boolean;
+  historyLoading?: boolean;
   approvalCommitBusy?: boolean;
   deleteCommitBusy?: boolean;
   canonicalEstimateMutationBusy?: boolean;
@@ -177,6 +178,26 @@ export function appendNextApprovedHistoryPage(
       ...(nextPage.unresolvedRecords ?? []).filter((record) => !existingUnresolvedIds.has(record.approvedEstimateId)),
     ],
   };
+}
+
+export function refreshLoadedApprovedHistoryPage(
+  page: ConsumerRepairApprovedHistoryPage,
+  loadPage: (cursorCreatedAt: string | null, limit: number) => ConsumerRepairApprovedHistoryPage,
+  additionalCount = page.pageSize,
+): ConsumerRepairApprovedHistoryPage {
+  // Durable keys use draft creation time, whereas approval history uses approval
+  // time. Re-read the displayed prefix so a newly recovered old draft approved
+  // recently is included above the previous cursor. Keep the previously loaded
+  // depth, plus room for every bundle recovered in this bounded step.
+  const targetCount = Math.max(page.pageSize, page.records.length + additionalCount);
+  let refreshed = loadPage(null, page.pageSize);
+  while (refreshed.nextCursorCreatedAt && refreshed.records.length < targetCount) {
+    const previousCursor = refreshed.nextCursorCreatedAt;
+    const previousCount = refreshed.records.length;
+    refreshed = appendNextApprovedHistoryPage(refreshed, loadPage);
+    if (refreshed.records.length === previousCount || refreshed.nextCursorCreatedAt === previousCursor) break;
+  }
+  return refreshed;
 }
 
 export function buildConsumerRepairApprovedHistoryPageFromLoadedHistory(

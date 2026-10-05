@@ -1,6 +1,6 @@
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { FlatList, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Modal, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import type {
@@ -16,6 +16,7 @@ import { primaryConsumerRepairCanonicalBackendBinding } from "./consumerRepairBa
 type Props = {
   revisionHistory: ConsumerRepairDraftBundle[];
   approvedHistoryPage: ConsumerRepairApprovedHistoryPage;
+  historyLoading?: boolean;
   selectedHistoryId: string | null;
   onOpenPdf: (requestDraftId: string) => void;
   onOpenDraft: (requestDraftId: string) => void;
@@ -40,6 +41,7 @@ function historyRowCount(bundle: ConsumerRepairDraftBundle): number {
 export function ConsumerRepairHistory({
   revisionHistory,
   approvedHistoryPage,
+  historyLoading = false,
   selectedHistoryId,
   onOpenPdf,
   onOpenDraft,
@@ -81,6 +83,11 @@ export function ConsumerRepairHistory({
   const hasPendingDurableBundles = hasUnhydratedTransactionalConsumerRepairBundles();
   const hasMore = hasPendingDurableBundles
     || (Boolean(approvedHistoryPage.nextCursorCreatedAt) && loadedCount < approvedCount);
+  const historyCountLabel = historyLoading
+    ? "Загружаем историю…"
+    : hasPendingDurableBundles
+      ? `Показано ${loadedCount} · доступны ещё сохранённые сметы`
+      : `Готовые сметы · показано ${loadedCount} из ${approvedCount}`;
   const selectedApprovedBundle = selectedHistoryId
     ? approvedHistory.find((bundle) => bundle.draft.id === selectedHistoryId) ?? null
     : null;
@@ -106,11 +113,11 @@ export function ConsumerRepairHistory({
         <View style={styles.entryText}>
           <Text style={styles.entryTitle}>История</Text>
           <Text style={styles.entryMeta} testID="consumer-repair-history-loaded-count">
-            Готовые сметы · показано {loadedCount} из {approvedCount}
+            {historyCountLabel}
           </Text>
         </View>
         <View style={styles.badge} testID="consumer-repair-history-approved-count">
-          <Text style={styles.badgeText}>{approvedCount}</Text>
+          <Text style={styles.badgeText}>{historyLoading ? "…" : hasPendingDurableBundles ? `${loadedCount}+` : approvedCount}</Text>
         </View>
       </Pressable>
       {selectedApprovedBundle ? (
@@ -137,9 +144,7 @@ export function ConsumerRepairHistory({
               <View style={styles.sheetHeader}>
                 <View>
                   <Text style={styles.title}>История смет</Text>
-                  <Text style={styles.subtitle}>
-                    Готовые: {approvedCount} · показано: {loadedCount}
-                  </Text>
+                  <Text style={styles.subtitle}>{historyCountLabel}</Text>
                 </View>
                 <Pressable
                   accessibilityRole="button"
@@ -188,27 +193,31 @@ export function ConsumerRepairHistory({
                 )}
                 ListEmptyComponent={
                   approvedCount === 0 ? (
-                    <Text style={styles.empty}>Утверждённых смет пока нет.</Text>
+                    <Text style={styles.empty}>
+                      {historyLoading ? "Загружаем историю…" : hasPendingDurableBundles
+                        ? "Сохранённые сметы ещё не загружены." : "Утверждённых смет пока нет."}
+                    </Text>
                   ) : null
                 }
                 ListFooterComponent={
                   hasMore ? (
                     <Pressable
                       accessibilityRole="button"
+                      disabled={historyLoading}
                       onPress={onLoadMoreHistory}
                       style={styles.loadMoreButton}
                       testID="consumer-repair-history-load-more"
                     >
                       <Text style={styles.loadMoreText}>
-                        Показать ещё {Math.min(
+                        {historyLoading ? "Загружаем…" : Platform.OS !== "web" ? "Загрузить ещё" : `Показать ещё ${Math.min(
                           approvedHistoryPage.pageSize,
                           remainingCount || approvedHistoryPage.pageSize,
-                        )}
+                        )}`}
                       </Text>
                     </Pressable>
                   ) : null
                 }
-                onEndReached={hasMore ? onLoadMoreHistory : undefined}
+                onEndReached={Platform.OS === "web" && hasMore && !historyLoading ? onLoadMoreHistory : undefined}
                 onEndReachedThreshold={0.35}
                 nestedScrollEnabled
                 removeClippedSubviews

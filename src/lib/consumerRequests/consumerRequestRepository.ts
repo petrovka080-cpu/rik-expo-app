@@ -810,23 +810,33 @@ async function hydrateTransactionalDurableBundleIds(
     !hydratedTransactionalDurableBundleIds.has(requestDraftId)
   );
   if (ids.length === 0) return 0;
-  const recover = () => Promise.all(ids.map(async (requestDraftId) => ({
-    requestDraftId,
-    bundle: await readTransactionalConsumerRepairBundle(requestDraftId)
-      .catch(() => null),
-  })));
-  const recovered = trace ? await trace.measureAsync("DURABLE_BUNDLE_RECOVERY", recover) : await recover();
-  const project = () => {
-    for (const { requestDraftId, bundle } of recovered) {
+  for (const requestDraftId of ids) {
+    const memoryBeforeRead = store.bundles.get(requestDraftId);
+    const writePendingBeforeRead = hasPendingTransactionalConsumerRepairBundleWrite(requestDraftId);
+    if (memoryBeforeRead && writePendingBeforeRead) {
       hydratedTransactionalDurableBundleIds.add(requestDraftId);
-      if (!bundle) continue;
+      continue;
+    }
+    const recover = () => readTransactionalConsumerRepairBundle(requestDraftId).catch(() => null);
+    const bundle = trace ? await trace.measureAsync("DURABLE_BUNDLE_RECOVERY", recover) : await recover();
+    const project = () => {
+      // A save can finish while durable recovery is awaiting storage. Publish
+      // only if the workspace has not changed and has no newer queued write.
+      const currentMemory = store.bundles.get(requestDraftId);
+      if (writePendingBeforeRead || currentMemory !== memoryBeforeRead || hasPendingTransactionalConsumerRepairBundleWrite(requestDraftId)) {
+        if (currentMemory) hydratedTransactionalDurableBundleIds.add(requestDraftId);
+        return;
+      }
+      hydratedTransactionalDurableBundleIds.add(requestDraftId);
+      if (!bundle) return;
       const normalized = normalizeEstimateDraftSessionCompatibilityView(bundle);
       store.bundles.set(requestDraftId, cloneConsumerRepairValue(normalized));
       syncConsumerRepairBundleToAiEstimateLedger(normalized);
-    }
-  };
-  if (trace) trace.measureSync("DURABLE_LOCAL_PROJECTION", project);
-  else project();
+    };
+    // Release each recovered envelope before reading another large record.
+    if (trace) trace.measureSync("DURABLE_LOCAL_PROJECTION", project);
+    else project();
+  }
   return ids.length;
 }
 
