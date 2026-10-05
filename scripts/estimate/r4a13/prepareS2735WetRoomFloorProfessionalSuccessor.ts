@@ -7,10 +7,9 @@ import {compileWetRoomFloorProfessionalS2735 as compile,WET_ROOM_PROFESSIONAL_DE
   WET_ROOM_PROFESSIONAL_CATALOG_ID_S2735 as catalogId,WET_ROOM_PROFESSIONAL_SOURCE_ID_S2735 as sourceId,
   WET_ROOM_PROFESSIONAL_NORM_ID_S2735 as normId,WET_ROOM_PROFESSIONAL_SOURCE_METADATA_S2735 as sourceMetadata}
   from "../../../src/lib/estimate/v4/wetRoomFloorProfessionalS2735";
-const parent=JSON.parse(readFileSync(resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json"),"utf8"));
 const wpReceipt=JSON.parse(readFileSync(resolve(".release-runtime/r568/s27-35/wet-zone-product-accessory-successor/acceptance.json"),"utf8"));
-const receiptText=JSON.stringify(wpReceipt);
-assert(receiptText.includes(parent.definitionReleaseId)&&receiptText.includes(parent.searchReleaseId),"VERIFIED_WATERPROOFING_PARENT_REQUIRED");
+assert.equal(wpReceipt.status,"GREEN_S2735_WET_ZONE_COMPLETION_PREPARED_NOT_ACTIVE","VERIFIED_WATERPROOFING_PARENT_REQUIRED");
+const parent=wpReceipt.successor;
 async function verifyCore(){
   const first=await compile({area_m2:30}),changed=await compile({area_m2:60});
   assert.equal(first.rows.find(r=>r.row_id==="rc09:porcelain_tile_600x600")?.quantity,"33.12");
@@ -27,7 +26,7 @@ async function verifyCore(){
 void runMasterSingleDefinitionSuccessorR1({
   contract:"rik-expo-app.s27-35.wet-room-floor-professional.v1",stopCode:"S2735_WET_ROOM_PROFESSIONAL",applicationName:"s2735-wet-room-professional",
   expectedBranch:"codex/r4-a5-clean-08b18902",masterPath:"C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (75).md",
-  masterSha256:"bd9241644e6fd958e77a775f24ae7043ad33a1e67e72f0b4b0983da0fd57b230",parentReleaseId:parent.definitionReleaseId,parentSearchReleaseId:parent.searchReleaseId,
+  masterSha256:"bd9241644e6fd958e77a775f24ae7043ad33a1e67e72f0b4b0983da0fd57b230",parentReleaseId:parent.releaseId,parentSearchReleaseId:parent.searchReleaseId,
   currentReleasePath:resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json"),outputRoot:resolve(".release-runtime/r568/s27-35/wet-room-professional-successor"),
   sourcePaths:["src/lib/estimate/v4/wetRoomFloorProfessionalS2735.ts","src/lib/estimate/v4/wetZoneWaterproofingCompletionS2735.ts",
     "src/lib/estimate/v4/porcelainFloorTileInstallationR1.ts","src/lib/estimate/v4/concreteSlabRepairR1.ts",
