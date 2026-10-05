@@ -74,6 +74,7 @@ export {
   listApprovedEstimateHistoryRecords,
   listConsumerRepairApprovedHistory,
   listConsumerRepairRequestHistory,
+  listConsumerRepairWorkspaceHistory,
   prepareConsumerRepairRequestItemQuantityUpdate,
   removeConsumerRepairRequestItem,
   saveConsumerRepairCanonicalParameterCollection,

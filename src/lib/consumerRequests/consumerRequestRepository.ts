@@ -1119,7 +1119,7 @@ export function deleteConsumerRepairBundle(requestDraftId: string): ConsumerRepa
   return cloneConsumerRepairValue(deleted);
 }
 
-export function listConsumerRepairBundlesForUser(
+function selectConsumerRepairBundlesForUser(
   consumerUserId: string,
   options: ConsumerRepairHistoryPageOptions = {},
 ): ConsumerRepairDraftBundle[] {
@@ -1132,11 +1132,39 @@ export function listConsumerRepairBundlesForUser(
     .filter((bundle) => !allowedStatuses || allowedStatuses.has(bundle.draft.status))
     .filter((bundle) => !options.cursorCreatedAt || bundle.draft.createdAt < options.cursorCreatedAt)
     .sort((a, b) => b.draft.createdAt.localeCompare(a.draft.createdAt))
-    .slice(0, limit)
+    .slice(0, limit);
+}
+
+export function listConsumerRepairBundlesForUser(
+  consumerUserId: string,
+  options: ConsumerRepairHistoryPageOptions = {},
+): ConsumerRepairDraftBundle[] {
+  return selectConsumerRepairBundlesForUser(consumerUserId, options)
     .map((bundle) => cloneConsumerRepairValue(bindConsumerRepairEstimateRevisionHistory({
       bundle,
       history_entry_id: `consumer_repair_history:${bundle.draft.id}`,
     })));
+}
+
+/**
+ * Screen read projection, not a revision-integrity admission. Return complete
+ * isolated bundles without building a second compatibility revision merely to
+ * list history. Mutations and artifact opens retain their authoritative guards.
+ * An exact active workspace can be outside the archive's first page.
+ */
+export function listConsumerRepairWorkspaceBundlesForUser(
+  consumerUserId: string,
+  options: ConsumerRepairHistoryPageOptions & { exactDraftId?: string } = {},
+): ConsumerRepairDraftBundle[] {
+  const selected = selectConsumerRepairBundlesForUser(consumerUserId, options);
+  const exactDraftId = options.exactDraftId?.trim();
+  const exact = exactDraftId ? store.bundles.get(exactDraftId) : null;
+  if (
+    exact && exact.draft.consumerUserId === consumerUserId &&
+    exact.draft.status === "draft" && !exact.draft.deletedAt &&
+    !selected.some((bundle) => bundle.draft.id === exactDraftId)
+  ) selected.push(exact);
+  return selected.map((bundle) => cloneConsumerRepairValue(bundle));
 }
 
 /**

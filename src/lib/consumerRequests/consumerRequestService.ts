@@ -29,6 +29,7 @@ import {
   hydrateConsumerRepairRequestStoreForLedger,
   hydrateTransactionalConsumerRepairRequestStore,
   listConsumerRepairBundlesForUser,
+  listConsumerRepairWorkspaceBundlesForUser,
   resetConsumerRepairRequestStoreForTests,
   saveConsumerRepairBundle,
   savePreparedConsumerRepairBundle,
@@ -1813,6 +1814,16 @@ export function listConsumerRepairRequestHistory(
   options: ConsumerRepairHistoryPageOptions = {},
 ): ConsumerRepairDraftBundle[] {
   return listConsumerRepairBundlesForUser(consumerUserId, {
+    ...options,
+    limit: options.limit ?? 20,
+  });
+}
+
+export function listConsumerRepairWorkspaceHistory(
+  consumerUserId: string,
+  options: ConsumerRepairHistoryPageOptions & { exactDraftId?: string } = {},
+): ConsumerRepairDraftBundle[] {
+  return listConsumerRepairWorkspaceBundlesForUser(consumerUserId, {
     ...options,
     limit: options.limit ?? 20,
   });

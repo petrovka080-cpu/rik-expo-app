@@ -11,7 +11,7 @@ import {
   createConsumerRepairDraftFromHistorySnapshot,
   createConsumerRepairRequestDraft,
   deleteConsumerRepairRequestDraft,
-  listConsumerRepairApprovedHistory, listConsumerRepairRequestHistory, removeConsumerRepairRequestItem,
+  listConsumerRepairApprovedHistory, listConsumerRepairWorkspaceHistory, removeConsumerRepairRequestItem,
   prepareConsumerRepairRequestItemQuantityUpdate, updateConsumerRepairRequestItemUnitPrice,
   type ConsumerRepairDraftRevisionParamBatchPatch,
 } from "../../lib/consumerRequests/consumerRequestService";
@@ -301,7 +301,7 @@ function buildInitialControllerState(props: ConsumerRepairRequestScreenControlle
     return buildInitialConsumerRepairRequestState({
       initialProblemText: props.initialProblemText,
       initialDraftId: props.initialDraftId,
-      history: listConsumerRepairRequestHistory(props.consumerUserId),
+      history: listConsumerRepairWorkspaceHistory(props.consumerUserId, { exactDraftId: props.initialDraftId }),
       approvedHistoryPage: listConsumerRepairApprovedHistory(props.consumerUserId),
     });
   });
@@ -529,7 +529,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const hydrated = buildInitialConsumerRepairRequestState({
       initialProblemText: this.props.initialProblemText,
       initialDraftId: this.props.initialDraftId,
-      history: listConsumerRepairRequestHistory(this.props.consumerUserId),
+      history: listConsumerRepairWorkspaceHistory(this.props.consumerUserId, { exactDraftId: this.props.initialDraftId }),
       approvedHistoryPage: listConsumerRepairApprovedHistory(this.props.consumerUserId),
     });
     const freshLaunchWorkspace =
@@ -591,7 +591,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     this.historyLoaded = true;
     this.setState({
       bundle,
-      history: listConsumerRepairRequestHistory(this.props.consumerUserId),
+      history: listConsumerRepairWorkspaceHistory(this.props.consumerUserId),
       approvedHistoryPage: listConsumerRepairApprovedHistory(this.props.consumerUserId),
       problemText: "",
       selectedWork: null,
@@ -725,7 +725,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       this.initialDeepLinkApplied = true;
       const requestDraftId = reconciledLaunch.requestDraftId;
       if (requestDraftId && this.state.bundle?.draft.id !== requestDraftId) {
-        const history = listConsumerRepairRequestHistory(this.props.consumerUserId);
+        const history = listConsumerRepairWorkspaceHistory(this.props.consumerUserId, { exactDraftId: requestDraftId });
         const approvedHistoryPage =
           listConsumerRepairApprovedHistory(this.props.consumerUserId);
         const restored = buildInitialConsumerRepairRequestState({
@@ -760,7 +760,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
   }
   private refreshHistory(nextBundle?: ConsumerRepairDraftBundle | null) {
-    const history = listConsumerRepairRequestHistory(this.props.consumerUserId);
+    const history = listConsumerRepairWorkspaceHistory(this.props.consumerUserId);
     const approvedHistoryPage = listConsumerRepairApprovedHistory(this.props.consumerUserId);
     this.historyLoaded = true;
     this.setState({
@@ -777,7 +777,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     if (this.historyLoaded && !hasUnhydratedTransactionalConsumerRepairBundles()) return;
     this.durableHistoryLoadInFlight = true;
     void hydrateNextTransactionalConsumerRepairHistoryPage().then(() => {
-      const history = listConsumerRepairRequestHistory(this.props.consumerUserId);
+      const history = listConsumerRepairWorkspaceHistory(this.props.consumerUserId);
       const approvedHistoryPage = listConsumerRepairApprovedHistory(this.props.consumerUserId);
       this.historyLoaded = true;
       this.setState({ history, approvedHistoryPage });
@@ -890,7 +890,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       this.historyLoaded = true;
       this.setState({
         bundle,
-        history: listConsumerRepairRequestHistory(this.props.consumerUserId),
+        history: listConsumerRepairWorkspaceHistory(this.props.consumerUserId),
         approvedHistoryPage: listConsumerRepairApprovedHistory(this.props.consumerUserId),
         selectedHistoryId: null,
         validationErrors: [],
@@ -1373,7 +1373,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       this.historyLoaded = true;
       this.setState({
         bundle,
-        history: listConsumerRepairRequestHistory(this.props.consumerUserId),
+        history: listConsumerRepairWorkspaceHistory(this.props.consumerUserId),
         approvedHistoryPage: listConsumerRepairApprovedHistory(this.props.consumerUserId),
         problemText: "",
         city: bundle.draft.city ?? "",
@@ -1774,7 +1774,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         expectedRevisionId: deleted.estimateDraftRevisionState?.currentRevisionId ?? null,
         rollbackBundle: current,
       });
-      const history = listConsumerRepairRequestHistory(this.props.consumerUserId);
+      const history = listConsumerRepairWorkspaceHistory(this.props.consumerUserId);
       const approvedHistoryPage = listConsumerRepairApprovedHistory(this.props.consumerUserId);
       if (this.state.bundle?.draft.id !== requestDraftId) {
         this.setState({ history, approvedHistoryPage });
@@ -1920,7 +1920,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         expectedRevisionId: bundle.estimateDraftRevisionState?.currentRevisionId ?? null,
         rollbackBundle: synced,
       });
-      const history = listConsumerRepairRequestHistory(this.props.consumerUserId);
+      const history = listConsumerRepairWorkspaceHistory(this.props.consumerUserId);
       const durableApprovedHistoryPage = listConsumerRepairApprovedHistory(this.props.consumerUserId);
       const approvedHistoryPage = durableApprovedHistoryPage.items.some(
         (candidate) => candidate.draft.id === bundle.draft.id,

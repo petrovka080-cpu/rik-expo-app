@@ -16,7 +16,7 @@ import { useConsumerRepairPhotoCaptureController } from "./useConsumerRepairPhot
 import { buildStructuredEstimateRequestDraft } from "../../lib/estimateStructuredPipeline/structuredEstimateRequestBinding";
 import {
   bindConsumerRepairCanonicalArtifactReady,
-  listConsumerRepairRequestHistory,
+  listConsumerRepairWorkspaceHistory,
   saveConsumerRepairCanonicalParameterCollection,
   synchronizeConsumerRepairAuthoritativePhotoAttachments,
   upsertConsumerRepairCanonicalBackendDraft,
@@ -780,8 +780,8 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
   React.useEffect(() => {
     const draftId = props.initialDraftId?.trim();
     if (durableStatus !== "ready" || !resolvedConsumerUserId || !draftId) return;
-    const existing = listConsumerRepairRequestHistory(resolvedConsumerUserId)
-      .find((candidate) => candidate.draft.id === draftId);
+    const existing = findConsumerRepairBundle(draftId);
+    if (existing?.draft.consumerUserId !== resolvedConsumerUserId || existing.draft.deletedAt) return;
     const binding = consumerRepairCanonicalBackendBinding(existing ?? null);
     if (!existing || !binding) return;
     let active = true;
@@ -887,7 +887,7 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
               problemText,
             });
             const parentRevisionId = mapping.payload.canonicalBackend?.parentRevisionId?.trim() || null;
-            const requestHistory = listConsumerRepairRequestHistory(resolvedConsumerUserId!);
+            const requestHistory = listConsumerRepairWorkspaceHistory(resolvedConsumerUserId!, { exactDraftId: requestDraftId ?? undefined });
             const matchingRevisionBundles = requestHistory.filter((candidate) =>
               consumerRepairCanonicalBackendBinding(candidate)?.revisionId === revisionId);
             const matchingRevisionBundle = matchingRevisionBundles.find((candidate) =>

@@ -5,7 +5,7 @@ import {
   addConsumerRepairRequestCatalogItem,
   addConsumerRepairRequestItem,
   listConsumerRepairApprovedHistory,
-  listConsumerRepairRequestHistory,
+  listConsumerRepairWorkspaceHistory,
   selectConsumerRepairRequestItemCatalogItem,
   updateConsumerRepairRequestDraft,
   type ConsumerRepairApprovedHistoryPage,
@@ -143,7 +143,7 @@ export async function sendConsumerRepairHistoryToMarketplaceFromScreen(input: {
     canonicalArtifact: input.canonicalArtifact,
   });
   return {
-    history: listConsumerRepairRequestHistory(input.userId),
+    history: listConsumerRepairWorkspaceHistory(input.userId),
     approvedHistoryPage: listConsumerRepairApprovedHistory(input.userId),
     selectedHistoryId: input.requestDraftId,
     validationErrors: [],
