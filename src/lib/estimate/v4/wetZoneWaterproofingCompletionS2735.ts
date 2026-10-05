@@ -181,6 +181,7 @@ export const WET_ZONE_COMPLETION_DEFINITION_S2735 = Object.freeze({ ...built,
         ? { ...parameter, value_type: "enum", constraints_json: { values: ["5", "10", "30"], requiredWhen: prime } }
         : parameter.parameter_id === "ct17_application_count"
           ? { ...parameter, constraints_json: { ...parameter.constraints_json, forbiddenWhen: { kind: "and", operands: [
+            { kind: "equals", parameterId: "primer_mode", value: "CT17" },
             { kind: "equals", parameterId: "ct17_first_pass_water_ratio", value: "1" },
             { kind: "less_than_or_equal", parameterId: "ct17_application_count", value: 1 },
           ] } } }

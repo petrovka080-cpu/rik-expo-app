@@ -69,6 +69,13 @@ describe("S27.35 reusable wet-zone waterproofing completion", () => {
     expect(result.preliminaryNeeds.find(row => row.row_id === ids.primer)?.missing_parameter_ids).toContain("ct17_selected_total_consumption_l_m2");
     await expect(compile({ ...fixture, ct17_selected_total_consumption_l_m2: 0.6 })).rejects.toThrow();
   });
+  test("links PROFI diluted first pass to the documented repeat coat and measures only its water", async()=>{
+    await expect(compile({...fixture,ct17_first_pass_water_ratio:"1",ct17_application_count:1})).rejects.toThrow();
+    const result=await compile({...fixture,ct17_first_pass_water_ratio:"1",ct17_application_count:2});
+    expect(result.rows.find(r=>r.row_id===ids.primer)?.quantity).toBe("10");
+    expect(result.rows.find(r=>r.row_id==="material:wet-zone:primer-dilution-water")?.quantity).toBe("5");
+    await expect(compile({...fixture,ct17_container_l:"1"})).rejects.toThrow();
+  });
   test("included delivery still needs confirmed supply boundaries and cannot disappear as an unknown fact", async () => {
     const facts: Record<string, unknown> = { ...fixture, delivery_mode: "INCLUDED_IN_SUPPLY" };
     delete facts.delivery_trip_count; delete facts.delivery_reference;
