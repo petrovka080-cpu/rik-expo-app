@@ -617,3 +617,14 @@ export function failDocumentSession(sessionId: string, errorMessage: string): vo
   session.lastAccessAt = nowIso();
   sessions.set(key, session);
 }
+
+// Called only after an explicit retry has validated and opened this exact asset.
+// A pending preparation or a replaced asset must not be promoted by an old retry.
+export function recoverDocumentSessionAfterNativeOpen(sessionId: string, assetId: string): boolean {
+  const session = sessions.get(String(sessionId || "").trim());
+  if (!session || session.status === "preparing" || session.assetId !== assetId || !assets.has(assetId)) return false;
+  session.status = "ready";
+  session.errorMessage = undefined;
+  session.lastAccessAt = nowIso();
+  return true;
+}

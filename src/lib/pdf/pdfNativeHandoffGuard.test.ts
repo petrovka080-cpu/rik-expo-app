@@ -3,6 +3,7 @@ import {
   completePdfNativeHandoff,
   createPdfNativeHandoffGuardState,
   createPdfNativeHandoffKey,
+  isPdfNativeHandoffCurrent,
   resetPdfNativeHandoffGuard,
 } from "./pdfNativeHandoffGuard";
 
@@ -61,5 +62,27 @@ describe("pdfNativeHandoffGuard", () => {
 
     expect(completePdfNativeHandoff(state, key, "success")).toBe(false);
     expect(beginPdfNativeHandoff(state, key)).toBe("start");
+  });
+
+  it("rejects an old completion when the same document has a new attempt", () => {
+    const state = createPdfNativeHandoffGuardState();
+    beginPdfNativeHandoff(state, "same-document");
+    const oldGeneration = state.generation;
+    resetPdfNativeHandoffGuard(state);
+    beginPdfNativeHandoff(state, "same-document");
+    expect(isPdfNativeHandoffCurrent(state, "same-document", oldGeneration)).toBe(false);
+    expect(completePdfNativeHandoff(state, "same-document", "success", oldGeneration)).toBe(false);
+    expect(isPdfNativeHandoffCurrent(state, "same-document", state.generation)).toBe(true);
+  });
+
+  it("allows manual reopen after settlement but blocks it during an active open", () => {
+    const state = createPdfNativeHandoffGuardState();
+    beginPdfNativeHandoff(state, "document");
+    expect(beginPdfNativeHandoff(state, "document", true)).toBe("skip_in_flight");
+    completePdfNativeHandoff(state, "document", "success", state.generation);
+    expect(beginPdfNativeHandoff(state, "document")).toBe("skip_settled");
+    expect(beginPdfNativeHandoff(state, "document", true)).toBe("start");
+    expect(beginPdfNativeHandoff(state, "document", true)).toBe("skip_in_flight");
+    expect(beginPdfNativeHandoff(state, "document")).toBe("skip_in_flight");
   });
 });

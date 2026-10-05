@@ -216,8 +216,20 @@ async function ensureNativePdfHandoffUri(uri: string, fileName?: string): Promis
   return normalizedLocalUri;
 }
 
-async function openAndroidPdfContentUri(localUri: string, fileName?: string): Promise<string> {
+export type PdfPreviewAttemptOptions = { isCurrent?: () => boolean };
+
+function assertCurrentPdfPreviewAttempt(options?: PdfPreviewAttemptOptions): void {
+  if (options?.isCurrent && !options.isCurrent()) {
+    const error = new Error("PDF preview attempt is no longer active");
+    error.name = "AbortError";
+    throw error;
+  }
+}
+
+async function openAndroidPdfContentUri(localUri: string, fileName?: string, options?: PdfPreviewAttemptOptions): Promise<string> {
+  assertCurrentPdfPreviewAttempt(options);
   const handoffUri = await ensureNativePdfHandoffUri(localUri, fileName);
+  assertCurrentPdfPreviewAttempt(options);
   if (!FileSystemCompat.getContentUriAsync) {
     throw new Error("Android local PDF handoff requires getContentUriAsync support");
   }
@@ -227,6 +239,9 @@ async function openAndroidPdfContentUri(localUri: string, fileName?: string): Pr
     sourceKind: "local-file",
     fileName,
   });
+  // The viewer can be left while FileSystem creates the content URI.
+  // Check the current attempt at the final native side-effect boundary.
+  assertCurrentPdfPreviewAttempt(options);
   await openAndroidViewIntent(contentUri, "application/pdf", {
     owner: "pdf-runner",
     fileName: fileName ?? null,
@@ -469,7 +484,8 @@ export async function preparePdfLocalUri(args: {
   return (await preparePdfExecutionSource(args)).uri;
 }
 
-export async function openPdfPreview(localUri: string, fileName?: string) {
+export async function openPdfPreview(localUri: string, fileName?: string, options?: PdfPreviewAttemptOptions) {
+  assertCurrentPdfPreviewAttempt(options);
   if (Platform.OS === "web") {
     const win = window.open(localUri, "_blank");
     if (!win) {
@@ -487,7 +503,7 @@ export async function openPdfPreview(localUri: string, fileName?: string) {
       });
       return;
     }
-    await openAndroidPdfContentUri(localUri, fileName);
+    await openAndroidPdfContentUri(localUri, fileName, options);
     return;
   }
 

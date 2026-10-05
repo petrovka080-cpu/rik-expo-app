@@ -125,6 +125,7 @@ export function usePdfViewerOrchestrator({
 
   const beginBootstrapCycle = React.useCallback(() => {
     viewerCycleRef.current += 1;
+    resetPdfNativeHandoffGuard(nativeHandoffGuardRef.current, { preserveSettled: true });
     openedAtRef.current = Date.now();
     renderFailedRef.current = false;
     readyCommittedRef.current = false;
@@ -164,6 +165,8 @@ export function usePdfViewerOrchestrator({
   }, []);
 
   const resetForNativeHandoffStart = React.useCallback(() => {
+    renderFailedRef.current = false;
+    readyCommittedRef.current = false;
     setErrorText("");
     setState("loading");
     setIsReadyToRender(true);
@@ -227,4 +230,3 @@ export function usePdfViewerOrchestrator({
     planRenderEventCommit,
   };
 }
-

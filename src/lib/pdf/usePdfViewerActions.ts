@@ -24,8 +24,9 @@ export function usePdfViewerActions(params: {
   asset: DocumentAsset | null;
   markError: (message: string) => void;
   setMenuOpen: (open: boolean) => void;
+  openExternal?: (asset: DocumentAsset) => Promise<void>;
 }) {
-  const { asset, markError, setMenuOpen } = params;
+  const { asset, markError, setMenuOpen, openExternal } = params;
 
   const onShare = React.useCallback(async () => {
     if (!asset) return;
@@ -47,7 +48,7 @@ export function usePdfViewerActions(params: {
   const onOpenExternal = React.useCallback(async () => {
     if (!asset) return;
     try {
-      await openPdfDocumentExternal(asset);
+      await (openExternal ?? openPdfDocumentExternal)(asset);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       markError(message);
@@ -59,7 +60,7 @@ export function usePdfViewerActions(params: {
     } finally {
       setMenuOpen(false);
     }
-  }, [asset, markError, setMenuOpen]);
+  }, [asset, markError, setMenuOpen, openExternal]);
 
   const onDownload = React.useCallback(async () => {
     if (!asset) return;

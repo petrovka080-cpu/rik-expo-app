@@ -10,6 +10,7 @@ import {
 import {
   failDocumentSession,
   getDocumentSessionSnapshot,
+  recoverDocumentSessionAfterNativeOpen,
   touchDocumentSession,
   type DocumentAsset,
 } from "../src/lib/documents/pdfDocumentSessions";
@@ -79,6 +80,7 @@ import {
   beginPdfNativeHandoff,
   completePdfNativeHandoff,
   createPdfNativeHandoffKey,
+  isPdfNativeHandoffCurrent,
 } from "../src/lib/pdf/pdfNativeHandoffGuard";
 import {
   planPdfNativeHandoffErrorCompletion,
@@ -938,14 +940,30 @@ function PdfViewerScreen() {
         sessionId,
         uri: resolvedAsset.uri,
       });
+      const guardDecision = beginPdfNativeHandoff(
+        nativeHandoffGuardRef.current, handoffKey, trigger === "manual",
+      );
+      if (trigger === "manual" && guardDecision === "skip_in_flight") return;
+      const handoffGeneration = nativeHandoffGuardRef.current.generation;
+      const bootstrapCycle = viewerCycleRef.current;
+      const sessionAtStart = resolveSnapshot().session;
+      const retryingExistingError = trigger === "manual" && sessionAtStart?.status === "error";
+      const previousSessionError = sessionAtStart?.errorMessage;
+      const isCurrentAttempt = () => {
+        const latest = resolveSnapshot();
+        return isMountedRef.current && !backDispatchedRef.current
+          && navigationRef.getCurrentRoute()?.key === viewerRouteKey
+          && viewerCycleRef.current === bootstrapCycle
+          && isPdfNativeHandoffCurrent(nativeHandoffGuardRef.current, handoffKey, handoffGeneration)
+          && (latest.session?.status !== "error" || (retryingExistingError && latest.session.errorMessage === previousSessionError))
+          && latest.asset?.assetId === resolvedAsset.assetId
+          && latest.asset.uri === resolvedAsset.uri;
+      };
       const startPlan =
         trigger === "primary"
           ? planPdfNativeHandoffStart({
               trigger,
-              guardDecision: beginPdfNativeHandoff(
-                nativeHandoffGuardRef.current,
-                handoffKey,
-              ),
+              guardDecision,
             })
           : planPdfNativeHandoffStart({ trigger });
       if (startPlan.action === "mark_ready") {
@@ -987,7 +1005,12 @@ function PdfViewerScreen() {
         await openPdfPreview(
           startCommandPlan.openPreview.uri,
           startCommandPlan.openPreview.fileName,
+          { isCurrent: isCurrentAttempt },
         );
+        if (!isCurrentAttempt()) {
+          completePdfNativeHandoff(nativeHandoffGuardRef.current, handoffKey, "failure", handoffGeneration);
+          return;
+        }
         const successTelemetryPlan = resolvePdfNativeHandoffSuccessTelemetryPlan({
           asset: resolvedAsset,
           context: handoffContext,
@@ -1010,6 +1033,7 @@ function PdfViewerScreen() {
             nativeHandoffGuardRef.current,
             handoffKey,
             "success",
+            handoffGeneration,
           );
           successPlan = planPdfNativeHandoffSuccessCompletion({
             trigger,
@@ -1017,10 +1041,18 @@ function PdfViewerScreen() {
             primaryGuardCompleted: completed,
           });
         }
+        if (trigger === "manual" && !completePdfNativeHandoff(
+          nativeHandoffGuardRef.current, handoffKey, "success", handoffGeneration,
+        )) return;
+        if (trigger === "manual") recoverDocumentSessionAfterNativeOpen(sessionId, resolvedAsset.assetId);
         if (successPlan.action !== "commit_ready") return;
         commitNativeHandoffCompleted();
         markReady();
       } catch (error) {
+        if (!isCurrentAttempt()) {
+          completePdfNativeHandoff(nativeHandoffGuardRef.current, handoffKey, "failure", handoffGeneration);
+          return;
+        }
         let errorPlan = planPdfNativeHandoffErrorCompletion({
           trigger,
           isMounted: isMountedRef.current,
@@ -1031,6 +1063,7 @@ function PdfViewerScreen() {
             nativeHandoffGuardRef.current,
             handoffKey,
             "failure",
+            handoffGeneration,
           );
           errorPlan = planPdfNativeHandoffErrorCompletion({
             trigger,
@@ -1039,6 +1072,9 @@ function PdfViewerScreen() {
             error,
           });
         }
+        if (trigger === "manual" && !completePdfNativeHandoff(
+          nativeHandoffGuardRef.current, handoffKey, "failure", handoffGeneration,
+        )) return;
         if (errorPlan.action !== "commit_error") return;
         const errorCommandPlan = resolvePdfNativeHandoffErrorCommandPlan({
           errorPlan,
@@ -1067,10 +1103,14 @@ function PdfViewerScreen() {
       markError,
       markReady,
       nativeHandoffGuardRef,
+      navigationRef,
+      resolveSnapshot,
       openToken,
       recordViewerBreadcrumb,
       resetForNativeHandoffStart,
       sessionId,
+      viewerCycleRef,
+      viewerRouteKey,
     ],
   );
 
@@ -1350,10 +1390,15 @@ function PdfViewerScreen() {
     loadAttempt,
   ]);
 
+  const onGuardedNativeOpenExternal = React.useCallback(
+    (currentAsset: DocumentAsset) => handoffPdfPreview(currentAsset, "manual"),
+    [handoffPdfPreview],
+  );
   const { onShare, onOpenExternal, onDownload, onPrint } = usePdfViewerActions({
     asset,
     markError,
     setMenuOpen,
+    openExternal: viewerPlatform === "android" ? onGuardedNativeOpenExternal : undefined,
   });
 
   const onRetry = React.useCallback(() => {

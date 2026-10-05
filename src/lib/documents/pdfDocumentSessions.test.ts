@@ -33,6 +33,12 @@ import { Platform } from "react-native";
 import {
   clearDocumentSessions,
   materializePdfAsset,
+  createDocumentSession,
+  completeDocumentPreviewSessionAsset,
+  failDocumentSession,
+  getDocumentSessionSnapshot,
+  recoverDocumentSessionAfterNativeOpen,
+  type DocumentAsset,
 } from "./pdfDocumentSessions";
 import { clearPdfInstantCacheStateForTests } from "../pdf/pdfInstantCache";
 import { buildPdfInstantCacheKey } from "../pdf/pdfInstantCache";
@@ -53,6 +59,26 @@ describe("pdfDocumentSessions materialization", () => {
     mockDownloadAsync.mockImplementation(async (_uri: string, target: string) => ({
       uri: target,
     }));
+  });
+
+  it("recovers a failed native preview only for the same registered ready asset", () => {
+    const asset: DocumentAsset = {
+      assetId: "own-native-retry", uri: "file:///cache/valid.pdf",
+      fileSource: { kind: "local-file", uri: "file:///cache/valid.pdf" },
+      sourceKind: "local-file", fileName: "valid.pdf", title: "Own estimate",
+      mimeType: "application/pdf", documentType: "request", originModule: "reports",
+      source: "generated", createdAt: "2026-10-05T00:00:00.000Z",
+    };
+    const session = createDocumentSession(asset);
+    completeDocumentPreviewSessionAsset(session.sessionId, asset);
+    failDocumentSession(session.sessionId, "Previous native viewer failure");
+    expect(recoverDocumentSessionAfterNativeOpen(session.sessionId, "replaced-asset")).toBe(false);
+    expect(getDocumentSessionSnapshot(session.sessionId).session?.status).toBe("error");
+    expect(recoverDocumentSessionAfterNativeOpen(session.sessionId, asset.assetId)).toBe(true);
+    expect(getDocumentSessionSnapshot(session.sessionId).session).toMatchObject({ status: "ready", errorMessage: undefined });
+    const preparing = createDocumentSession(asset, "preparing");
+    expect(recoverDocumentSessionAfterNativeOpen(preparing.sessionId, asset.assetId)).toBe(false);
+    expect(getDocumentSessionSnapshot(preparing.sessionId).session?.status).toBe("preparing");
   });
 
   it("changes the instant-cache identity with revision, renderer, title, or status", () => {

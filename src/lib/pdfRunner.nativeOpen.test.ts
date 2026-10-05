@@ -117,6 +117,46 @@ describe("pdfRunner native open", () => {
     expect(mockOpenUrl).not.toHaveBeenCalled();
   });
 
+  it("does not launch a native viewer if Back occurs while the content URI is pending", async () => {
+    let current = true;
+    let resolveContentUri!: (value: string) => void;
+    let contentUriRequested!: () => void;
+    const requested = new Promise<void>((resolve) => { contentUriRequested = resolve; });
+    mockGetContentUriAsync.mockImplementation(() => {
+      contentUriRequested();
+      return new Promise<string>((resolve) => { resolveContentUri = resolve; });
+    });
+    const opening = openPdfPreview("file:///cache/document.pdf", "document.pdf", { isCurrent: () => current });
+    await requested;
+    current = false;
+    resolveContentUri("content://old-attempt");
+    await expect(opening).rejects.toMatchObject({ name: "AbortError" });
+    expect(mockStartActivityAsync).not.toHaveBeenCalled();
+  });
+
+  it("keeps a current delayed content URI eligible for native opening", async () => {
+    let resolveContentUri!: (value: string) => void;
+    let contentUriRequested!: () => void;
+    const requested = new Promise<void>((resolve) => { contentUriRequested = resolve; });
+    mockGetContentUriAsync.mockImplementation(() => {
+      contentUriRequested();
+      return new Promise<string>((resolve) => { resolveContentUri = resolve; });
+    });
+    const opening = openPdfPreview("file:///cache/document.pdf", "document.pdf", { isCurrent: () => true });
+    await requested;
+    resolveContentUri("content://current-attempt");
+    await opening;
+    expect(mockStartActivityAsync).toHaveBeenCalledTimes(1);
+    expect(mockStartActivityAsync).toHaveBeenCalledWith("android.intent.action.VIEW", expect.objectContaining({ data: "content://current-attempt" }));
+  });
+
+  it("rejects a cancelled remote attempt before launching its URL", async () => {
+    await expect(openPdfPreview("https://example.com/document.pdf", "document.pdf", { isCurrent: () => false }))
+      .rejects.toMatchObject({ name: "AbortError" });
+    expect(mockStartActivityAsync).not.toHaveBeenCalled();
+    expect(mockGetInfoAsync).not.toHaveBeenCalled();
+  });
+
   it("keeps backend remote PDF URLs intact for mobile preview preparation", async () => {
     const supabase = {
       auth: {
