@@ -6,7 +6,7 @@ import {
   assertCanonicalProfessionalPdfJobRendererVersion,
 } from "./canonicalProfessionalPdf";
 import type { CanonicalArtifactRow } from "./canonicalEstimateArtifactContract";
-import { canonicalArtifactUnit } from "./canonicalEstimateArtifactContract";
+import { canonicalArtifactUnit, buildCanonicalProcurementProjection } from "./canonicalEstimateArtifactContract";
 import { canonicalEstimateParameterChoiceLabelRu } from "./canonicalEstimateParameterSemantics";
 import { publicBoqDisplayNameRu } from "../publicBoqNaming";
 import { compilePressureSewerPipelineR1, PRESSURE_SEWER_PIPELINE_SHORT_INPUT } from "../v4/pressureSewerPipelineR1";
@@ -75,7 +75,7 @@ function rows(
 }
 
 describe("R4-A6 canonical professional PDF", () => {
-  it("prints saved demand/order/remainder and physical rental without changing billed rows", () => {
+  it("keeps procurement balances outside the PDF while retaining saved quantities and physical rental", () => {
     const sourceRows = rows(2);
     sourceRows[0] = { ...sourceRows[0]!, row_id: "water", title_ru: "Вода для ухода", unit_id: "m3", quantity: "5.1",
       calculation_trace: { purchaseBalance: { ownerRowId: "water", unitId: "m3", consumed: "3.2", plannedConsumption: "3.2",
@@ -87,8 +87,15 @@ describe("R4-A6 canonical professional PDF", () => {
     const savedRevision = { ...revision(2), input_parameters: { sheets: 58, days: 28 } };
     const before = JSON.stringify({ sourceRows, savedRevision });
     const projection = buildCanonicalProfessionalPdfProjection({ revision: savedRevision, rows: sourceRows, workTitleRu: "Сохранённая смета" });
-    expect(projection.html).toContain("Потребность: 3,2 м³");
-    expect(projection.html).toContain("Заказ: 5,1 м³. Остаток: 1,9 м³");
+    for (const note of ["Потребность:", "Расчётная потребность к поставке:", "Пригодное наличие:", "Сохраняемый резерв:", "Заказ:", "Остаток:", "свободно сверх сохраняемого резерва:", "Кратность поставки:"]) {
+      expect(projection.html).not.toContain(note);
+    }
+    expect(projection.html).toContain('<td class="numeric">5,1</td>');
+    const procurement = buildCanonicalProcurementProjection({ revision: savedRevision,
+      procurementRows: sourceRows.filter(row => row.included_in_procurement), sourceRows });
+    expect(procurement.rows[0]?.purchaseBalance).toMatchObject({
+      netQuantity: "3.2", effectiveOrder: "5.1", remaining: "1.9", stock: "0", reserve: "0", freeBeyondReserve: "1.9",
+    });
     expect(projection.html).toContain("Аренда: 58 шт. на 28 сут.; расчёт оплаты 1 624 шт.·сут");
     expect(projection.categoryTotals).toMatchObject({ material: 200, equipment: 200 });
     expect(JSON.stringify({ sourceRows, savedRevision })).toBe(before);
@@ -155,7 +162,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-34-supplier-balances");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-35-compact-materials");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,

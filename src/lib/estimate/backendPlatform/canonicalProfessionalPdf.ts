@@ -3,7 +3,6 @@ import {
   canonicalArtifactQuantity,
   canonicalArtifactUnit,
   canonicalArtifactVisibleRowTitle,
-  canonicalArtifactPurchaseBalance,
   canonicalArtifactRentalBasis,
   canonicalArtifactSpecificationParts,
   canonicalArtifactWorkMeasure,
@@ -15,7 +14,7 @@ import {
 import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-34-supplier-balances" as const;
+  "canonical-professional-pdf.r4-a13-s27-35-compact-materials" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -174,15 +173,10 @@ function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, rows
           : "Позиция исключена из итога сохранённой версии.";
   const specification = [specificationRu(row), dispositionRu].filter(Boolean).join(" ") || null;
   const specifications = canonicalArtifactSpecificationParts(row, parameters);
-  const balance = canonicalArtifactPurchaseBalance(row);
   const rental = canonicalArtifactRentalBasis(row, parameters);
   const quantityLabel = (value: unknown, unit = row.unit_id) => `${canonicalArtifactQuantity(value)} ${canonicalArtifactUnit({ unit_id: unit })}`;
-  const balanceText = balance ? [
-    `Потребность: ${quantityLabel(balance.netQuantity)}. Расчётная потребность к поставке: ${quantityLabel(balance.grossQuantity)}.`,
-    `Пригодное наличие: ${quantityLabel(balance.stock)}. Сохраняемый резерв: ${quantityLabel(balance.reserve)}.`,
-    `Заказ: ${quantityLabel(balance.effectiveOrder)}. ${balance.requirementBasis === "selected_order_including_contingency" ? "Избыток над потребностью с выбранным резервом" : "Остаток"}: ${quantityLabel(balance.remaining)}; свободно сверх сохраняемого резерва: ${quantityLabel(balance.freeBeyondReserve)}.`,
-    ...(balance.quantum == null ? [] : [`Кратность поставки: ${quantityLabel(balance.quantum)}.`]),
-  ].join(" ") : null;
+  // Detailed stock, reserve and remainder balances belong to procurement;
+  // the estimate keeps its saved quantity and product specification.
   const rentalText = rental ? `Аренда: ${canonicalArtifactQuantity(rental.physicalQuantity)} шт. на ${canonicalArtifactQuantity(rental.durationDays)} сут.; расчёт оплаты ${quantityLabel(rental.billingQuantity)}.` : null;
   const details = specifications.flatMap(spec => spec.parts).filter(part => part !== canonicalArtifactVisibleRowTitle(row, parameters));
   const unitPrice = !includedInEstimate
@@ -197,7 +191,7 @@ function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, rows
     : canonicalArtifactMoney(row.amount, row.currency_code);
   return `<tr>
     <td class="number">${displayOrdinal}</td>
-    <td class="name"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row, parameters))}</strong>${details.length ? `<ul>${details.map(part => `<li>${escapeCanonicalArtifactHtml(part)}</li>`).join("")}</ul>` : ""}${[balanceText, rentalText, specification].filter(Boolean).map(text => `<span>${escapeCanonicalArtifactHtml(text)}</span>`).join("")}</td>
+    <td class="name"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row, parameters))}</strong>${details.length ? `<ul>${details.map(part => `<li>${escapeCanonicalArtifactHtml(part)}</li>`).join("")}</ul>` : ""}${[rentalText, specification].filter(Boolean).map(text => `<span>${escapeCanonicalArtifactHtml(text)}</span>`).join("")}</td>
     <td>${escapeCanonicalArtifactHtml(CATEGORY_TITLES[category])}</td>
     <td class="unit">${escapeCanonicalArtifactHtml(canonicalArtifactUnit(row))}</td>
     <td class="numeric">${escapeCanonicalArtifactHtml(canonicalArtifactQuantity(row.quantity))}</td>
