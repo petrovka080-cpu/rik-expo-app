@@ -15,7 +15,7 @@ export const ROAD_PLATFORM_SOURCE_METADATA_S2736={
   source_title:'КРЕР27: однослойное щебёночное основание15см и готовая операция горячего асфальта50мм',
   source_authority:pack.source.authority,source_document_version:ROAD_PLATFORM_CONTRACT_S2736,
   official_url:pack.source.url,artifact_sha256:pack.source.sha256,
-  definition_hash:'2587a9a994ad504ac29c25b56f93b045948de41600a879cdfb49d70ae3ac3ae1',
+  definition_hash:'eacb46e40565cade13ea79389e4855ff4852be5f5922433ce2b013bb083b52bb',
   exact_locator:pack.source.locator+'; '+ASPHALT_INSTALL_KRER27_SOURCE_METADATA.exact_locator,
   use_restriction:'Выбранный предварительный конструктив: однослойное основание15см из щебняМ1200 40–70мм с расклинцовкой10–20мм, на принятом земляном полотне; поверх один слой50мм горячей плотной мелкозернистой смеси. Не проект для любого объекта. Другие толщины, прочность, слои, грунт и водоотвод требуют своего решения.',
 };
@@ -25,15 +25,16 @@ if(pack.source.sha256!==ASPHALT_INSTALL_KRER27_SOURCE_METADATA.artifact_sha256||
 const confirmed={kind:'equals' as const,parameterId:'road_applicability_mode',value:'CONFIRMED_PROJECT_FACTS'};
 const profile=(id:string,title:string,valueType:AutomaticParameterSpec['valueType'],unitId:string|null,defaultValue:string|number,rest:Partial<AutomaticParameterSpec>={}):AutomaticParameterSpec=>({id,title,valueType,unitId,kind:'profile',defaultValue,...rest});
 const facts=['formation_accepted','base_150mm_m1200_approved','asphalt_50mm_approved','layer_interface_approved'];
+const baseSupplyLabels={stone40:'щебень40–70ммМ1200',stone10:'щебень10–20ммМ1200',water:'вода для поливки основания'} as const;
 const parameters:AutomaticParameterSpec[]=[
   profile('road_applicability_mode','Применимость: выбранный предварительный15+5см профиль либо четыре подтверждённых проектных факта','enum',null,'PRELIMINARY_PROFILE',{values:['PRELIMINARY_PROFILE','CONFIRMED_PROJECT_FACTS']}),
   profile('base_thickness_mm','Выбранное однослойное основание15см; эта операция применяет только150мм','integer','mm',150,{min:150,max:150}),
   profile('base_stone_quantum_m3','Предварительная кратность поставки каждого вида щебня1м³; заменить условиями поставщика','decimal','m3',1,{min:0.000001}),
   profile('base_water_quantum_l','Предварительная кратность поставки воды1000л; заменить условиями источника','decimal','l',1000,{min:0.000001}),
   profile('base_toolkits','Предварительно один комплект оснастки подрядчика; состав раскрыт и включён в труд, количество звеньев уточнить','integer','set',1,{min:1}),
-  ...['stone40','stone10','water'].flatMap(key=>[
-    profile('base_'+key+'_stock',`Предварительно0 пригодного наличия: ${key}; заменить обследованным наличием`,'decimal',key==='water'?'l':'m3',0,{min:0}),
-    profile('base_'+key+'_reserve',`Предварительно0 сохраняемого резерва: ${key}`,'decimal',key==='water'?'l':'m3',0,{min:0}),
+  ...(['stone40','stone10','water'] as const).flatMap(key=>[
+    profile('base_'+key+'_stock',`Предварительно0 пригодного наличия: ${baseSupplyLabels[key]}; заменить обследованным наличием`,'decimal',key==='water'?'l':'m3',0,{min:0}),
+    profile('base_'+key+'_reserve',`Предварительно0 сохраняемого резерва: ${baseSupplyLabels[key]}`,'decimal',key==='water'?'l':'m3',0,{min:0}),
   ]),
   ...facts.map((id):AutomaticParameterSpec=>({id:'road_'+id,title:{formation_accepted:'Принято подготовленное земляное полотно; его разработка и укрепление вне этой сметы',base_150mm_m1200_approved:'Проектом приняты однослойные150мм, щебеньМ1200 40–70мм и расклинцовка10–20мм',asphalt_50mm_approved:'Проектом принят один горячий плотный мелкозернистый слой50мм и паспорт смеси',layer_interface_approved:'Приняты отметки, уклоны, несущая способность, интерфейс слоёв и водоотвод'}[id]!,valueType:'enum',unitId:null,kind:'conditional',values:['YES'],requiredWhen:confirmed})),
 ];
@@ -105,7 +106,8 @@ const asphaltParameters=ASPHALT_INSTALL_KRER27_PARAMETERS.filter(p=>p.parameter_
   const metadata=p as typeof p&{unit_id?:unknown;title_ru?:unknown};
   const unit=metadata.unit_id,title=metadata.title_ru,truth=p.truth_metadata;
   if((unit!==null&&typeof unit!=='string')||typeof title!=='string'||!truth)throw Error('ROAD_PLATFORM_READY_PARAMETER_METADATA_MISSING:'+p.parameter_id);
-  return {...p,unit_id:unit,title_ru:p.parameter_id==='layer_thickness_mm'?'Выбранный слой горячего асфальта50мм; другой слой требует другого профиля':title,truth_metadata:truth,
+  return {...p,unit_id:unit,title_ru:p.parameter_id==='layer_thickness_mm'?'Выбранный слой горячего асфальта50мм; другой слой требует другого профиля':title,
+    truth_metadata:ASPHALT_INSTALL_KRER27_RUNTIME_CLASSIFICATION[p.parameter_id]==='ASSUMPTION'?{...truth,visibility_role:'USER_INPUT'}:truth,
     constraints_json:p.parameter_id==='layer_thickness_mm'?{...p.constraints_json,min:50,max:50}:p.constraints_json};
 });
 type RoadCompositeDefinition=Omit<AutomaticOwnerDefinition,'runtimeClassification'>&{runtimeClassification:Readonly<Record<string,'ASSUMPTION'|'NORMATIVE'|'DERIVED'>>};
