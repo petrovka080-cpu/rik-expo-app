@@ -405,6 +405,10 @@ export function canonicalEstimateParameterChoiceLabelRu(
   fallback?: string,
 ): string {
   const normalized = String(value);
+  if (["base_delivery_cost_mode", "base_extra_mobilization_cost_mode", "base_qa_cost_mode"].includes(parameterId)) {
+    if (normalized === "SEPARATE") return "Оплачивается отдельно";
+    if (normalized === "INCLUDED") return "Включено в подтверждённую стоимость";
+  }
   if (parameterId === "c111_insulation_mode") {
     if (normalized === "AKUSTIKNAUF_50") return "АкустиКНАУФ 50 мм, упаковка 12 м²";
     if (normalized === "NONE") return "Без изоляции, если допустимо по проекту";

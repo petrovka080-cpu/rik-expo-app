@@ -1,0 +1,37 @@
+{
+  "contract": "road-platform-150-plus-50:s27-36.v1",
+  "scope": "Selected preliminary two-stage road platform on an already accepted earth formation: single 150mm crushed stone M1200 base plus one 50mm hot dense fine asphalt layer. This is not a universal pavement design.",
+  "source": {
+    "authority": "Ministry of Construction of the Kyrgyz Republic",
+    "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no27avtomobilnyedorogi_compressed-43769083f584ff787.06841542.pdf",
+    "sha256": "cd3d6735d1bbdda5957945b7682f032785c76624b54a435edfe5d2ef5e107161",
+    "locator": "KRER27-04-005-01, printed/PDF page48, first norm column, not base price or the second upper-layer column; single 15cm base with crushed stone40-70mm and stone strength above98.1MPa. Rates visually checked from original PDF at higher resolution on2026-10-06.",
+    "ratesPer1000M2": {
+      "workerManH": 33.29,
+      "machinistManHIncludedInMachines": 49.92,
+      "loader5tMachineH": 3.98,
+      "bulldozer79kwMachineH": 2.59,
+      "grader99kwMachineH": 0.41,
+      "roller8tMachineH": 12.08,
+      "roller13tMachineH": 27.25,
+      "waterBowser6000lMachineH": 2.96,
+      "stoneSpreaderMachineH": 0.65,
+      "waterM3": 30,
+      "stone10to20M1200M3": 15,
+      "stone40to70M1200M3": 189
+    }
+  },
+  "reusedOperations": [
+    {"module": "src/lib/estimate/v4/asphaltInstallLargeAreaKrer27ProfileR1.ts", "sourcePackSha256": "4d861329b43bb096533f97d9d75d3a745acc161b009a92dee31ee046d3fdbcd0", "scope": "The entire accepted 50mm hot asphalt installation definition, including its physical quantities, labor, fleet, delivery and included compaction. No copied formulas or extra standalone asphalt compaction owner."},
+    {"module": "src/lib/estimate/v4/gravelBaseOperationS2735.ts", "scope": "Ready applicable shovel, rake, gloves and goggles specifications only. New KRER-specific base fills the missing normative labor/fleet/material breakdown; the generic backfill volume coefficient is not reused as a normative road coefficient."},
+    {"module": "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts", "scope": "Unchanged consumed/stock/reserve/rounded-order/remainder mechanism for the three separately compatible base supply owners."},
+    {"module": "src/lib/estimate/v4/automaticConstructionOwnerR1.ts", "scope": "Unchanged canonical formula/inclusion compiler and deferred original resource needs."}
+  ],
+  "preliminarySupply": {"stoneOrderQuantumM3": 1, "waterOrderQuantumL": 1000, "stockAndReserve": 0, "contractorToolkits": 1, "projectApproved": false},
+  "costOwnership": "Base and asphalt machine-hours belong to distinct sequential layers. Shared roller8t, roller13t and water-bowser mobilization is retained once from the asphalt owner; extra mobilization for the base-only fleet requires the actual project. All operators and operating fuel are included in their machine rows. Individual contractor tooling is included in base labor. Asphalt rolling remains in the accepted paving operation.",
+  "requiredUnknowns": ["Actual separate/included cost mode for base stone delivery", "Actual separate/included cost mode for extra mobilization of the base-only fleet", "Actual separate/included cost mode for base-specific project quality control"],
+  "costBoundaryEvidence": "Each included branch requires a nonempty actual contract/specification and paid-owner reference retained in an unpaid control row; each separate branch requires a positive actual count. No default mode, fabricated reference or zero-count bypass.",
+  "runtimeTruth": "The imported asphalt NORMATIVE/DERIVED/ASSUMPTION classifications are preserved exactly, not relabeled as assumptions by composition.",
+  "exclusions": ["earthworks or an unaccepted formation", "geotextile, sand, drainage, curbs, openings or retaining works without a project", "another layer thickness/strength/mix automatically treated as this profile", "duplicated standalone asphalt compaction", "invented lab-control lot size, actual stock, delivery distance or prices"],
+  "engineeringAcceptanceClaimed": false
+}
