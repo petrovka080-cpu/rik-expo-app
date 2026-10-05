@@ -337,6 +337,32 @@ type ConsumerRepairCanonicalBundle = ReturnType<
   typeof upsertConsumerRepairCanonicalBackendDraft
 >;
 
+type DurablySavedCanonicalPreviewWorkspace = {
+  draftId: string;
+  ownerUserId: string;
+  revisionId: string;
+  workspaceGeneration: number;
+};
+
+function requestEstimateDurablySavedPreviewMatchesWorkspace(input: {
+  savedWorkspace: DurablySavedCanonicalPreviewWorkspace | null;
+  requestedDraftId?: string;
+  consumerUserId: string | null;
+  workspaceGeneration: number;
+}): boolean {
+  const saved = input.savedWorkspace;
+  if (!saved || saved.workspaceGeneration !== input.workspaceGeneration
+    || saved.ownerUserId !== input.consumerUserId
+    || saved.draftId !== input.requestedDraftId?.trim()) return false;
+  const bundle = findConsumerRepairBundle(saved.draftId);
+  // The exact draft was already transactionally committed by this workspace.
+  // Hydrating unrelated history must not unmount its preview's editor. A cold
+  // or changed workspace still uses the ordinary durable hydration gate.
+  return bundle?.draft.status === "draft"
+    && bundle.draft.consumerUserId === saved.ownerUserId
+    && consumerRepairCanonicalBackendBinding(bundle)?.revisionId === saved.revisionId;
+}
+
 type PersistConsumerCanonicalDraftOptions = {
   replaceCanonicalRevisionHistory?: boolean;
   evidenceBuildStartedAt?: number;
@@ -358,6 +384,8 @@ function useConsumerCanonicalDraftPersistence(input: {
   screenRef: React.RefObject<ConsumerRepairRequestScreenController | null>;
   workspaceGenerationRef: React.MutableRefObject<number>;
   pendingBundleRef: React.MutableRefObject<ConsumerRepairCanonicalBundle | null>;
+  savedPreviewWorkspaceRef: React.MutableRefObject<DurablySavedCanonicalPreviewWorkspace | null>;
+  currentRouteDraftIdRef: React.MutableRefObject<string | null>;
   pendingPreviewPublishedRef: React.MutableRefObject<(() => void) | null>;
   setPreview: React.Dispatch<React.SetStateAction<CanonicalEstimateMeaningfulPreview | null>>;
 }): (
@@ -371,6 +399,8 @@ function useConsumerCanonicalDraftPersistence(input: {
     screenRef,
     workspaceGenerationRef,
     pendingBundleRef,
+    savedPreviewWorkspaceRef,
+    currentRouteDraftIdRef,
     pendingPreviewPublishedRef,
     setPreview,
   } = input;
@@ -401,6 +431,7 @@ function useConsumerCanonicalDraftPersistence(input: {
     };
     assertDraftSource();
     const evidenceBuildStartedAt = options.evidenceBuildStartedAt ?? Date.now();
+    const previewWorkspaceGeneration = workspaceGenerationRef.current;
     const canonicalBackend = mapping.payload.canonicalBackend;
     if (!canonicalBackend) {
       throw new Error("CANONICAL_COMPILE_HISTORY_IDENTITY_MISSING");
@@ -411,6 +442,7 @@ function useConsumerCanonicalDraftPersistence(input: {
     );
     const preliminaryNeedCount = canonicalBackend.preliminaryNeeds?.length ?? 0;
     if (shouldPublishInitialConsumerCanonicalPreview(options)) {
+      let fullEstimateOpenRequested = false;
       await new Promise<void>((resolvePublished) => {
         const settlePublished = () => {
           if (pendingPreviewPublishedRef.current === settlePublished) {
@@ -434,12 +466,18 @@ function useConsumerCanonicalDraftPersistence(input: {
           saved: false,
           onPublished: settlePublished,
           onOpenFullEstimate: () => {
+            if (fullEstimateOpenRequested) return;
             const pending = pendingBundleRef.current;
-            if (!pending || !screenRef.current) return;
+            if (!pending || !screenRef.current
+              || workspaceGenerationRef.current !== previewWorkspaceGeneration
+              || pending.draft.consumerUserId !== consumerUserId
+              || (currentRouteDraftIdRef.current != null && currentRouteDraftIdRef.current !== pending.draft.id)
+              || consumerRepairCanonicalBackendBinding(pending)?.revisionId !== canonicalBackend.revisionId) return;
+            fullEstimateOpenRequested = true;
             screenRef.current.acceptCanonicalBackendDraft(pending, {
               persistenceStatus: "saved",
               onPublished: () => {
-                pendingBundleRef.current = null;
+                if (pendingBundleRef.current === pending) pendingBundleRef.current = null;
                 setPreview((current) =>
                   current?.revisionId === canonicalBackend.revisionId ? null : current
                 );
@@ -521,7 +559,15 @@ function useConsumerCanonicalDraftPersistence(input: {
           elapsedMs: Date.now() - evidenceBuildStartedAt,
         });
       }
-      if (shouldPublishInitialConsumerCanonicalPreview(options)) pendingBundleRef.current = bundle;
+      if (shouldPublishInitialConsumerCanonicalPreview(options)) {
+        pendingBundleRef.current = bundle;
+        savedPreviewWorkspaceRef.current = {
+          draftId: bundle.draft.id,
+          ownerUserId: consumerUserId,
+          revisionId: binding.revisionId,
+          workspaceGeneration: previewWorkspaceGeneration,
+        };
+      }
       setPreview((current) =>
         current?.revisionId === binding.revisionId ? { ...current, saved: true } : current
       );
@@ -542,6 +588,8 @@ function useConsumerCanonicalDraftPersistence(input: {
     consumerUserId,
     pendingBundleRef,
     pendingPreviewPublishedRef,
+    savedPreviewWorkspaceRef,
+    currentRouteDraftIdRef,
     screenRef,
     setPreview,
     workspaceGenerationRef,
@@ -559,6 +607,9 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
     ReturnType<typeof upsertConsumerRepairCanonicalBackendDraft> | null
   >(null);
   const pendingPreviewPublishedRef = React.useRef<(() => void) | null>(null);
+  const savedPreviewWorkspaceRef = React.useRef<DurablySavedCanonicalPreviewWorkspace | null>(null);
+  const currentRouteDraftIdRef = React.useRef<string | null>(null);
+  currentRouteDraftIdRef.current = props.initialDraftId?.trim() || null;
   const canonicalDeepLinkWorkspaceDraftIdRef = React.useRef<string | null>(null);
   const controllerWorkspaceKey = requestEstimateControllerWorkspaceKey(props);
   const canonicalRouteRevisionId = canonicalEstimateRevisionIdFromRoute(
@@ -594,12 +645,22 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
     pendingPreviewPublishedRef.current?.();
     pendingPreviewPublishedRef.current = null;
     pendingCanonicalEstimateBundleRef.current = null;
+    savedPreviewWorkspaceRef.current = null;
     setCanonicalEstimatePreview(null);
     return () => {
       pendingPreviewPublishedRef.current?.();
       pendingPreviewPublishedRef.current = null;
     };
   }, [routeWorkspaceIdentity]);
+  React.useEffect(() => {
+    const requestedDraftId = props.initialDraftId?.trim();
+    const saved = savedPreviewWorkspaceRef.current;
+    if (saved && requestedDraftId && saved.draftId !== requestedDraftId) {
+      savedPreviewWorkspaceRef.current = null;
+      pendingCanonicalEstimateBundleRef.current = null;
+      setCanonicalEstimatePreview(null);
+    }
+  }, [props.initialDraftId]);
   React.useEffect(() => {
     if (!canonicalRouteRevisionId && !props.initialDraftId?.trim()) {
       canonicalDeepLinkWorkspaceDraftIdRef.current = null;
@@ -667,12 +728,20 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
     !freshBuildKey &&
     freshBuildWorkspaceRef.current !== routeWorkspaceIdentity &&
     settledFreshBuildWorkspaceRef.current !== routeWorkspaceIdentity &&
-    !shouldDeferInitialHistoryLoad(props);
+    !shouldDeferInitialHistoryLoad(props) &&
+    !requestEstimateDurablySavedPreviewMatchesWorkspace({
+      savedWorkspace: savedPreviewWorkspaceRef.current,
+      requestedDraftId: props.initialDraftId,
+      consumerUserId: resolvedConsumerUserId,
+      workspaceGeneration: workspaceGenerationRef.current,
+    });
   const persistCanonicalDraft = useConsumerCanonicalDraftPersistence({
     consumerUserId: resolvedConsumerUserId,
     screenRef,
     workspaceGenerationRef,
     pendingBundleRef: pendingCanonicalEstimateBundleRef,
+    savedPreviewWorkspaceRef,
+    currentRouteDraftIdRef,
     pendingPreviewPublishedRef,
     setPreview: setCanonicalEstimatePreview,
   });

@@ -1,10 +1,18 @@
 import React from "react";
 import TestRenderer, { act } from "react-test-renderer";
+import * as baselineCompile from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import * as canonicalClient from "../../src/lib/estimate/backendPlatform/canonicalEstimateClient";
+import * as requestBinding from "../../src/lib/estimateStructuredPipeline/structuredEstimateRequestBinding";
+import * as consumerService from "../../src/lib/consumerRequests/consumerRequestService";
+import { __resetConsumerRepairRequestStoreForTests } from "../../src/lib/consumerRequests";
+import { buildCanonicalConsumerRepairRevisionFixture } from "./canonicalConsumerRepairRevisionFixture";
 
 const mockInitializeDurableStorage = jest.fn<Promise<void>, []>();
 const mockRefreshAfterDurableHydration = jest.fn();
 let settleInitialLaunchBuild: (() => void) | null = null;
 let controllerMountCount = 0;
+let mockPrepareCanonicalEstimate: ((prompt: string, catalogId: string, draftId: string) => Promise<unknown>) | null = null;
+const mockAcceptCanonicalBackendDraft = jest.fn((_bundle: unknown, options?: { onPublished?: () => void }) => options?.onPublished?.());
 
 jest.mock("../../src/lib/consumerRequests/consumerRequestRepository", () => ({
   ...jest.requireActual("../../src/lib/consumerRequests/consumerRequestRepository"),
@@ -49,11 +57,13 @@ jest.mock(
           refreshAfterDurableHydration: () => void;
           setPhotoCaptureStatusMessage: () => void;
           openMaterialCatalogFromCapturedPhoto: () => void;
+          acceptCanonicalBackendDraft: typeof mockAcceptCanonicalBackendDraft;
         },
-        { onInitialLaunchBuildSettled?: () => void }
+        { onInitialLaunchBuildSettled?: () => void; onPrepareCanonicalEstimate: NonNullable<typeof mockPrepareCanonicalEstimate> }
       >(
         function MockConsumerRepairRequestScreenController(props, ref) {
           settleInitialLaunchBuild = props.onInitialLaunchBuildSettled ?? null;
+          mockPrepareCanonicalEstimate = props.onPrepareCanonicalEstimate;
           ReactRuntime.useEffect(() => {
             controllerMountCount += 1;
           }, []);
@@ -61,6 +71,7 @@ jest.mock(
             refreshAfterDurableHydration: mockRefreshAfterDurableHydration,
             setPhotoCaptureStatusMessage: jest.fn(),
             openMaterialCatalogFromCapturedPhoto: jest.fn(),
+            acceptCanonicalBackendDraft: mockAcceptCanonicalBackendDraft,
           }));
           return <View testID="consumer-repair-screen" />;
         },
@@ -170,10 +181,70 @@ describe("consumer repair durable storage startup UI", () => {
     mockRefreshAfterDurableHydration.mockReset();
     settleInitialLaunchBuild = null;
     controllerMountCount = 0;
+    mockPrepareCanonicalEstimate = null;
+    mockAcceptCanonicalBackendDraft.mockClear();
   });
 
   afterEach(() => {
+    jest.restoreAllMocks();
+    __resetConsumerRepairRequestStoreForTests();
     jest.useRealTimers();
+  });
+
+  it.each(["open", "draft", "owner", "fingerprint"] as const)("preserves the saved manual preview's exact workspace through pending hydration: %s", async (scenario) => {
+    const prompt = "Окраска стен 50 м²";
+    const owner = "manual-preview-owner";
+    const aiDraft = buildCanonicalConsumerRepairRevisionFixture(prompt);
+    const bundle = consumerService.createConsumerRepairRequestDraft({ consumerUserId: owner, problemText: prompt, aiDraft });
+    const revisionId = String(bundle.items[0].sourceParameters?.canonicalBackendRevisionId);
+    const releaseId = String(bundle.items[0].sourceParameters?.canonicalBackendReleaseId);
+    jest.spyOn(baselineCompile, "compileConsumerCanonicalBaseline").mockResolvedValue({
+      payload: { workTitle: prompt, canonicalBackend: { revisionId, releaseId } }, rows: [],
+    } as never);
+    jest.spyOn(requestBinding, "buildStructuredEstimateRequestDraft").mockReturnValue(aiDraft);
+    const upsert = jest.spyOn(consumerService, "upsertConsumerRepairCanonicalBackendDraft").mockReturnValue(bundle);
+    jest.spyOn(canonicalClient, "getCanonicalEstimateRevision").mockResolvedValue({ revisionId, releaseId } as never);
+    mockInitializeDurableStorage.mockResolvedValueOnce();
+    const props = { consumerUserId: owner, initialProblemText: prompt, launchId: "manual-preview-launch", launchFingerprint: "manual-preview-fingerprint", autoPrepare: false };
+    let renderer!: TestRenderer.ReactTestRenderer;
+    await act(async () => { renderer = TestRenderer.create(<ConsumerRepairRequestScreen {...props} />); });
+    let persistence!: Promise<unknown>;
+    await act(async () => {
+      if (!mockPrepareCanonicalEstimate) throw new Error("prepare_callback_missing");
+      persistence = mockPrepareCanonicalEstimate(prompt, "canonical-work:test:consumer-history-fixture", bundle.draft.id);
+      await Promise.resolve();
+    });
+    await act(async () => { await persistence; });
+    expect(renderer.root.findByProps({ testID: "consumer-estimate-open-full-estimate" }).props.disabled).toBe(false);
+    mockInitializeDurableStorage.mockImplementation(() => new Promise<void>(() => undefined));
+    await act(async () => { renderer.update(<ConsumerRepairRequestScreen {...props} initialDraftId={bundle.draft.id} />); });
+    expect(mockInitializeDurableStorage).toHaveBeenCalledTimes(2);
+    expect(controllerMountCount).toBe(1);
+    expect(renderer.root.findAllByProps({ testID: "consumer-repair-exact-draft-hydration-gate" })).toHaveLength(0);
+    expect(renderer.root.findByProps({ testID: "consumer-repair-screen" })).toBeTruthy();
+    const open = renderer.root.findByProps({ testID: "consumer-estimate-open-full-estimate" }).props.onPress;
+    if (scenario === "open") {
+      let publish: (() => void) | undefined;
+      mockAcceptCanonicalBackendDraft.mockImplementationOnce((_bundle, options) => { publish = options?.onPublished; });
+      await act(async () => { open(); open(); });
+      expect(mockAcceptCanonicalBackendDraft).toHaveBeenCalledTimes(1);
+      expect(mockAcceptCanonicalBackendDraft.mock.calls[0]?.[0]).toBe(bundle);
+      expect(renderer.root.findByProps({ testID: "consumer-estimate-meaningful-preview" })).toBeTruthy();
+      await act(async () => { if (!publish) throw new Error("publication_callback_missing"); publish(); });
+      expect(controllerMountCount).toBe(1);
+      expect(renderer.root.findByProps({ testID: "consumer-repair-screen" })).toBeTruthy();
+    } else {
+      const nextProps = { ...props, initialDraftId: scenario === "draft" ? "another-cold-draft" : bundle.draft.id,
+        consumerUserId: scenario === "owner" ? "another-owner" : owner,
+        launchFingerprint: scenario === "fingerprint" ? "another-fingerprint" : props.launchFingerprint };
+      await act(async () => { renderer.update(<ConsumerRepairRequestScreen {...nextProps} />); });
+      await act(async () => { open(); });
+      expect(mockAcceptCanonicalBackendDraft).not.toHaveBeenCalled();
+      expect(renderer.root.findByProps({ testID: "consumer-repair-exact-draft-hydration-gate" })).toBeTruthy();
+    }
+    expect(upsert).toHaveBeenCalledTimes(1);
+    expect(renderer.root.findAllByProps({ testID: "consumer-estimate-meaningful-preview" })).toHaveLength(0);
+    await act(async () => { renderer.unmount(); });
   });
 
   it("gates history-backed startup and offers retry after the 3 second hydration bound", async () => {
