@@ -8,7 +8,7 @@
       "url": "https://datasheets.tdx.henkel.com/CERESIT-CL-51-en_GL.pdf",
       "version": "TDS 03/2024",
       "sha256": "6cb5211c5fb99781c70fd8ef22747ed77f4021886e13157dcdc2440937bbd784",
-      "locator": "Pages 1-2: substrate, indoor wet zones, preparation and exclusions; page 3: minimum 1.3 kg/m2 for two coats and minimum dry film 0.5 mm",
+      "locator": "Page 1: substrate and indoor wet zones; page 2: application, exclusions, technical-data minimum 1.3 kg/m2 for two coats and minimum dry film 0.5 mm; page 3: CE declaration",
       "minimum_two_coat_consumption_kg_m2": 1.3,
       "coats": 2,
       "minimum_dry_film_mm": 0.5,

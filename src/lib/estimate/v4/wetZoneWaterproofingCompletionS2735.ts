@@ -15,8 +15,8 @@ export const WET_ZONE_COMPLETION_SOURCE_METADATA_S2735 = Object.freeze({
   source_authority: "Henkel: только свойства и расход материалов; исходные проектные факты подтверждает пользователь",
   source_document_version: WET_ZONE_COMPLETION_CONTRACT_S2735,
   definition_hash: "wet-zone-cl51-completion-s27-35-v1",
-  artifact_sha256: "bdcf6f9b86e225367585eef6fe6f0425a5c7a9e137b253dce5e40a2f265a22fa",
-  exact_locator: "CL 51: стр. 1–2 — применимость, стр. 3 — минимум 1,3 кг/м² на два слоя; CT 17: стр. 2 — 0,1–0,5 л/м² по основанию и фасовки 1/2/5/10 л. Выработка, расходники, запасы и доставка — по выбранной ведомости проекта.",
+  artifact_sha256: "3a56230731f0cf6ecbc5e5bb44588703597ac19a0357bac382c6036aa87d8a79",
+  exact_locator: "CL 51: стр. 1–2 — применимость, стр. 2 — минимум 1,3 кг/м² на два слоя; CT 17: стр. 2 — 0,1–0,5 л/м² по основанию и фасовки 1/2/5/10 л. Выработка, расходники, запасы и доставка — по выбранной ведомости проекта.",
   use_restriction: "Бытовая мокрая зона внутри помещения под плитку; проектные условия и оплаты нельзя выводить из площади. CL 51 — готовая эмульсия без воды затворения. Нормы труда и техники не заявляются.",
   official_url: "https://datasheets.tdx.henkel.com/CERESIT-CL-51-en_GL.pdf",
 });
