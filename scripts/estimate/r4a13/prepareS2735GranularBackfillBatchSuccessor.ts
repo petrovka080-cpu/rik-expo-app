@@ -47,7 +47,7 @@ for(const [index,variant]of variants.entries()){
       extraSearchTermsRu:'обратная засыпка траншея грунт песок пгс материал уплотнение объём закупка остаток',sourceProvenance:{acceptedOperationReused:true,variantDoesNotChooseEngineeringNorm:true,hiddenDemoFixtureInputs:false,engineeringApprovalClaimed:false}},
     forbiddenAdjacentMatchers:[/drainage_pipe/iu,/materials_0[1-6]/iu,/professional_.*_set/iu],owner:'S2735_GRANULAR_BACKFILL_BATCH',receiptFileStem:'granular_backfill_'+variant};
   await runMasterSingleDefinitionSuccessorR1(config);
-  const receipt=JSON.parse(readFileSync(resolve(variantRoot,'acceptance.json'),'utf8'));
+  const receipt=process.argv.includes('--apply')?JSON.parse(readFileSync(resolve(variantRoot,'acceptance.json'),'utf8')):{status:'DRY_RUN_COMPLETED_WITHOUT_DATABASE_MUTATION',parent:{releaseId:parent.definitionReleaseId,searchReleaseId:parent.searchReleaseId},successor:null,productionAccessed:false,source:null};
   receipts.push({variant,status:receipt.status,parent:receipt.parent,successor:receipt.successor,productionAccessed:receipt.productionAccessed,source:receipt.source});
   mkdirSync(outputRoot,{recursive:true});writeFileSync(resolve(outputRoot,process.argv.includes('--apply')?'batch-apply-summary.json':'batch-dry-run-summary.json'),JSON.stringify({variants:receipts,current:JSON.parse(readFileSync(currentReleasePath,'utf8')),productionAccessed:false},null,2));
 }
