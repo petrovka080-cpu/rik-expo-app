@@ -10,7 +10,7 @@ describe("S27.35 reusable wet-zone waterproofing completion", () => {
   test("saves the known area and preserves local unknown facts without hidden fixture quantities", async () => {
     const result = await compile({ area_m2: 25 });
     expect(result.rows.map(row => [row.row_id, row.quantity])).toEqual([[ids.scope, "25"]]);
-    expect(result.preliminaryNeeds).toHaveLength(21);
+    expect(result.preliminaryNeeds).toHaveLength(25);
     expect(result.preliminaryNeeds.every(need => need.quantity === null)).toBe(true);
     expect(Object.keys(definition.runtimeInput)).not.toContain("waterproofing_productivity_m2_per_man_hour");
     expect(Object.keys(definition.runtimeInput)).not.toContain("junction_tape_length_m");
@@ -18,7 +18,7 @@ describe("S27.35 reusable wet-zone waterproofing completion", () => {
   test("combines two-coat consumption before bucket rounding and discloses separate physical accessories", async () => {
     const result = await compile({ ...fixture });
     expect(result.preliminaryNeeds).toEqual([]);
-    expect(result.rows).toHaveLength(22);
+    expect(result.rows).toHaveLength(26);
     const membrane = result.rows.find(row => row.row_id === ids.membrane)!;
     expect(membrane.quantity).toBe("35");
     expect(trace(membrane).purchaseBalance).toEqual(expect.objectContaining({
@@ -52,7 +52,7 @@ describe("S27.35 reusable wet-zone waterproofing completion", () => {
   });
   test("keeps prior priming and manual preparation free of a second supply/equipment charge", async () => {
     const facts: Record<string, unknown> = { ...fixture, primer_mode: "ALREADY_PRIMED", equipment_mode: "MANUAL", delivery_mode: "INCLUDED_IN_SUPPLY" };
-    for (const id of ["ct17_selected_total_consumption_l_m2", "ct17_container_l", "primer_worker_h", "equipment_designation", "equipment_machine_h", "delivery_trip_count"]) delete facts[id];
+    for (const id of ["ct17_selected_total_consumption_l_m2", "ct17_container_l", "ct17_application_count", "ct17_first_pass_water_ratio", "primer_worker_h", "equipment_designation", "equipment_machine_h", "delivery_trip_count"]) delete facts[id];
     const result = await compile(facts);
     expect(result.preliminaryNeeds).toEqual([]);
     expect(result.rows.some(row => row.row_id === ids.primer || row.row_id === ids.equipment || row.category === "delivery")).toBe(false);
@@ -81,7 +81,7 @@ describe("S27.35 reusable wet-zone waterproofing completion", () => {
       catalogId: "canonical-work:base:tile_stone_interior_ceramic_tile_waterproof_wet_zone", primaryMeasureParameterId: "area_m2",
       parameterDefinitions: [...definition.parameters], formulaDefinitions: [...definition.formulas], resourceDefinitions: [...definition.resources],
       submittedParameters: { ...fixture }, confirmedParameters: { ...definition.runtimeInput }, currencyCode: "KGS", priceItems: [],
-      maximumResourceRows: 22, hashJson: async value => estimateDeterministicHash(value),
+      maximumResourceRows: 26, hashJson: async value => estimateDeterministicHash(value),
       rowOverrides: { [ids.membrane]: { quantity: "30", provenance: { kind: "manual", reason: "DEMO supplier reduced order" } } },
     });
     expect(trace(result.rows.find(row => row.row_id === ids.membrane)!).purchaseBalance)
@@ -92,7 +92,7 @@ describe("S27.35 reusable wet-zone waterproofing completion", () => {
       catalogId: "canonical-work:base:tile_stone_interior_ceramic_tile_waterproof_wet_zone", primaryMeasureParameterId: "area_m2",
       parameterDefinitions: [...definition.parameters], formulaDefinitions: [...definition.formulas], resourceDefinitions: [...definition.resources],
       submittedParameters: { ...fixture }, confirmedParameters: { ...definition.runtimeInput }, currencyCode: "KGS", priceItems: [],
-      maximumResourceRows: 22, hashJson: async value => estimateDeterministicHash(value),
+      maximumResourceRows: 26, hashJson: async value => estimateDeterministicHash(value),
       rowOverrides: { [ids.quality]: { unitPrice: "10", includedInEstimate: true, includedInProcurement: true,
         provenance: { kind: "manual", reason: "DEMO attempted duplicate control price" } } },
     });

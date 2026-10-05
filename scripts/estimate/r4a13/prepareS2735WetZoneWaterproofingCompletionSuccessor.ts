@@ -13,7 +13,7 @@ import { runMasterSingleDefinitionSuccessorR1 } from "./prepareMasterSingleDefin
 
 async function verifyCore() {
   const first = await compile({ area_m2: 25 }), full = await compile({ ...fixture });
-  assert.equal(first.rows.length, 1); assert.equal(first.preliminaryNeeds.length, 21);
+  assert.equal(first.rows.length, 1); assert.equal(first.preliminaryNeeds.length, 25);
   assert.equal(first.rows[0]!.quantity, "25"); assert.equal(full.preliminaryNeeds.length, 0);
   const membrane = full.rows.find(row => row.row_id === ids.membrane)!;
   assert.equal(membrane.quantity, "35");
@@ -28,7 +28,7 @@ async function verifyCore() {
     const input: Record<string, unknown> = { ...fixture }; delete input[id];
     assert((await compile(input)).preliminaryNeeds.some(need => need.row_id === ids.membrane && need.missing_parameter_ids.includes(id)));
   }
-  return { status: "GREEN_S2735_WET_ZONE_CORE", firstKnownRows: 1, firstNeeds: 21, fixtureRows: full.rows.length,
+  return { status: "GREEN_S2735_WET_ZONE_CORE", firstKnownRows: 1, firstNeeds: 25, fixtureRows: full.rows.length,
     fixtureConsumptionKg: "32.5", fixtureOrderKg: "35", fixtureRemainingKg: "2.5", changedOrderKg: "60",
     fixtureIsNotRuntimeProfile: true, ordinaryUiAccepted: false, engineeringAccepted: false,
     reusedRowIds: Object.values(ids).filter(id => id.includes(":ceresit-cl51-v1:")),
@@ -40,11 +40,11 @@ void runMasterSingleDefinitionSuccessorR1({
   applicationName: "s2735-wet-zone-completion", expectedBranch: "codex/r4-a5-clean-08b18902",
   masterPath: "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (75).md",
   masterSha256: "bd9241644e6fd958e77a775f24ae7043ad33a1e67e72f0b4b0983da0fd57b230",
-  parentReleaseId: "8d77a819-3a98-56be-a717-309ab85b3599", parentSearchReleaseId: "ab602ecf-a269-5e7e-987c-cb280041d916",
+  parentReleaseId: "a41fc791-67fc-5597-8470-0d79ab4c0960", parentSearchReleaseId: "19103ab2-676b-541e-a9d6-3c00ce8815ba",
   currentReleasePath: resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json"),
-  outputRoot: resolve(".release-runtime/r568/s27-35/wet-zone-source-reference-successor"),
+  outputRoot: resolve(".release-runtime/r568/s27-35/wet-zone-product-accessory-successor"),
   sourcePaths: ["src/lib/estimate/v4/wetZoneWaterproofingCompletionS2735.ts",
-    "data/estimate-benchmarks/source-packs/wet-zone-cl51-completion-s27-35.json",
+    "data/estimate-benchmarks/source-packs/wet-room-professional-s27-35.json",
     "tests/estimateNorms/wetZoneWaterproofingCompletionS2735.contract.test.ts",
     "scripts/estimate/r4a13/prepareS2735WetZoneWaterproofingCompletionSuccessor.ts",
     "src/lib/estimate/v4/domains/interiorFinishesComplete/waterproofingCeresitCl51ProfessionalV1.ts",
@@ -72,7 +72,7 @@ void runMasterSingleDefinitionSuccessorR1({
     operation_class: "WATERPROOFING_UNDER_CERAMIC_COVERING", source_id: sourceId, norm_id: normId,
     exact_locator: sourceMetadata.exact_locator, quantity_basis: "CL51_MANUFACTURER_MINIMUM_PLUS_EXPLICIT_PROJECT_FACTS",
     universal_productivity_claimed: false, universal_priming_consumption_claimed: false } },
-  locator: { key: "wet-zone-cl51-completion-s27-35-v2-page2", payload: { kind: "MANUFACTURER_TDS_WITH_EXPLICIT_PROJECT_FACTS",
+  locator: { key: "wet-zone-cl51-completion-s27-35-v3-product-accessories", payload: { kind: "MANUFACTURER_TDS_WITH_EXPLICIT_PROJECT_FACTS",
     sourcePackSha256: sourceMetadata.artifact_sha256, exactLocator: sourceMetadata.exact_locator,
     ordinaryKnownInputs: ["area_m2"], visibleProfileInputs: Object.keys(definition.runtimeInput),
     fixtureValuesNeverRuntimeDefaults: true, operationReuse: true } },

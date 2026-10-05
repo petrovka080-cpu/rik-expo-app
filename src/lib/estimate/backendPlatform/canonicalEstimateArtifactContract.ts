@@ -7,8 +7,8 @@ import { canonicalEstimateSha256HexText } from "./canonicalEstimateSha256";
 import { localizeKnownTechnologyVariantSuffixRu } from "./russianTechnologyTitleR542";
 import { compareFormulaGraphDecimals, isFormulaGraphExactDecimal } from "./formulaGraph";
 
-export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r9";
-export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r5-saved-purchase-and-rental-basis";
+export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r10";
+export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r6-saved-consumption-allocations";
 export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:11";
 
 /** Keep caller idempotency within each renderer; do not collide with legacy jobs. */
@@ -246,7 +246,27 @@ export function buildCanonicalProcurementProjection(input: {
   if (technologyChecks.length) throw Object.assign(new Error(technologyChecks[0]!.messageRu), {
     code: "PROCUREMENT_TECHNOLOGY_COMPATIBILITY_REQUIRED", technologyChecks,
   });
-  const rows = input.procurementRows.map(row => projectProcurementRow(row, parameters));
+  const rows = input.procurementRows.map(row => {
+    const projected = projectProcurementRow(row, parameters);
+    const consumptionAllocations = (input.sourceRows ?? []).flatMap(member => {
+      const trace = objectValue(member.calculation_trace), graph = objectValue(trace.resourceGraph);
+      const descriptor = objectValue(graph.purchaseConsumptionAllocationV1);
+      if (descriptor.contractVersion !== "canonical-purchase-consumption-allocation/v1" || descriptor.ownerRowId !== projected.rowId) return [];
+      if (graph.costTreatment !== "INCLUDED_IN_RESOURCE_ROWS" || member.included_in_estimate !== false
+        || member.included_in_procurement !== false || graph.includedInResourceOwnerRowId !== projected.rowId
+        || member.unit_id !== projected.unitId || !projected.purchaseBalance
+        || typeof member.quantity !== "string" || !isFormulaGraphExactDecimal(member.quantity)
+        || (trace.calculatedQuantityBeforeOverride != null && (typeof trace.calculatedQuantityBeforeOverride !== "string"
+          || compareFormulaGraphDecimals(member.quantity, trace.calculatedQuantityBeforeOverride) !== 0))) {
+        throw Object.assign(new Error("Распределение расхода общей поставки не соответствует сохранённой расчётной строке"), { code: "PROCUREMENT_CONSUMPTION_ALLOCATION_INVALID" });
+      }
+      return [{ rowId: String(member.row_id), ownerRowId: projected.rowId, unitId: projected.unitId,
+        consumed: member.quantity, titleRu: canonicalArtifactVisibleRowTitle(member, parameters),
+        operation: canonicalEstimateOperationReference(graph.operationCompositionV1), separatelyPayable: false,
+        rowSha256: nullableText(member.row_sha256) }];
+    });
+    return { ...projected, ...(consumptionAllocations.length ? { consumptionAllocations } : {}) };
+  });
   const workMeasure = canonicalArtifactWorkMeasure(input.sourceRows ?? input.procurementRows);
   const groups = new Map<string, { section: string; category: string; rowIds: string[] }>();
   const operationGroups = new Map<string, { operation: NonNullable<ReturnType<typeof canonicalEstimateOperationReference>>; rowIds: string[] }>();
