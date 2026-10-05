@@ -8,8 +8,8 @@ import { localizeKnownTechnologyVariantSuffixRu } from "./russianTechnologyTitle
 import { compareFormulaGraphDecimals, isFormulaGraphExactDecimal } from "./formulaGraph";
 
 export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r10";
-export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r6-saved-consumption-allocations";
-export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:11";
+export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r7-readable-source-products";
+export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:12";
 
 /** Keep caller idempotency within each renderer; do not collide with legacy jobs. */
 export function canonicalProcurementRequestKey(idempotencyKey: string): string {
