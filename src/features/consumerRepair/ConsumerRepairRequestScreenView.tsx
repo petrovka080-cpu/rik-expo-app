@@ -24,7 +24,7 @@ import {
 import type { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequestScreenRenderModel";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
 import type { ConsumerRepairRequestScreenState } from "./requestEstimateScreenActions";
-import { consumerRepairExactAsphaltApprovalErrors } from "../../lib/consumerRequests/consumerRequestValidationService";
+import { consumerRepairEstimateApprovalParameterErrors, consumerRepairExactAsphaltApprovalErrors } from "../../lib/consumerRequests/consumerRequestValidationService";
 import { consumerRepairCanonicalBackendBinding } from "./consumerRepairBackendOwnership";
 import {
   consumerRepairCanonicalEstimateBlocksApproval,
@@ -198,6 +198,7 @@ export function ConsumerRepairRequestScreenView({
     consumerRepairCanonicalEstimateBlocksApproval(
       renderModel.bundle?.canonicalParameterSession,
     ) || canonicalParameterReadinessMissing
+    || consumerRepairEstimateApprovalParameterErrors(renderModel.bundle).length > 0
   );
   const approvalUnresolvedRowCount = consumerRepairCanonicalUnresolvedRowCount(
     renderModel.bundle,
@@ -230,6 +231,7 @@ export function ConsumerRepairRequestScreenView({
         right={<ConsumerRepairRequestHeaderMarketButton onPress={onGoToMarket} />}
       />
       <AppScreenScroll
+        key={renderModel.bundle?.draft.id ?? "new-estimate"}
         contentStyle={styles.content}
         onScroll={(event) => onScrollPositionChange(event.nativeEvent.contentOffset.y)}
         scrollEventThrottle={16}

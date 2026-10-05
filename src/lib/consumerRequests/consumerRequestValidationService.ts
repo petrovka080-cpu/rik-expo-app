@@ -139,14 +139,10 @@ export function consumerRepairExactAsphaltApprovalErrors(
   return [];
 }
 
-export function validateConsumerRepairRequestForApprove(
-  requestId: string,
-  userId: string,
-): ConsumerRequestValidationResult {
-  const bundle = getConsumerRepairBundle(requestId);
-  const errors: ConsumerRequestValidationErrorItem[] = [];
-  const ownerMismatch = ownerError(bundle, userId);
-  if (ownerMismatch) errors.push(ownerMismatch);
+export function consumerRepairEstimateApprovalParameterErrors(
+  bundle: ConsumerRepairDraftBundle | null | undefined,
+): ConsumerRequestValidationErrorItem[] {
+  if (!bundle) return [];
   const currentRevision = bundle.estimateDraftRevisionState?.revisions.find(
     (revision) => revision.revisionId === bundle.estimateDraftRevisionState?.currentRevisionId,
   );
@@ -160,12 +156,24 @@ export function validateConsumerRepairRequestForApprove(
     currentRevision?.status === "blocking_required" ||
     contractInputsMissing
   ) {
-    errors.push({
+    return [{
       code: "ESTIMATE_PARAMETERS_REQUIRED",
       messageRu: "Заполните обязательные параметры и рассчитайте смету перед подтверждением.",
       field: "canonicalParameters",
-    });
+    }];
   }
+  return [];
+}
+
+export function validateConsumerRepairRequestForApprove(
+  requestId: string,
+  userId: string,
+): ConsumerRequestValidationResult {
+  const bundle = getConsumerRepairBundle(requestId);
+  const errors: ConsumerRequestValidationErrorItem[] = [];
+  const ownerMismatch = ownerError(bundle, userId);
+  if (ownerMismatch) errors.push(ownerMismatch);
+  errors.push(...consumerRepairEstimateApprovalParameterErrors(bundle));
 
   errors.push(...consumerRepairExactAsphaltApprovalErrors(bundle));
 

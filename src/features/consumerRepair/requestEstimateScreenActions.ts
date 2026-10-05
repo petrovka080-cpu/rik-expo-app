@@ -349,6 +349,7 @@ export function buildApprovedConsumerRepairWorkspaceClearedState(params: {
 }): Pick<
   ConsumerRepairRequestScreenState,
   | "bundle"
+  | "problemText"
   | "history"
   | "approvedHistoryPage"
   | "aiAnswerRu"
@@ -364,6 +365,7 @@ export function buildApprovedConsumerRepairWorkspaceClearedState(params: {
 > {
   return {
     bundle: null,
+    problemText: "",
     history: params.history,
     approvedHistoryPage: params.approvedHistoryPage ?? buildConsumerRepairApprovedHistoryPageFromLoadedHistory(params.history),
     aiAnswerRu: null,

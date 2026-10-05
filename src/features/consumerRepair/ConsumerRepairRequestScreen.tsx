@@ -16,6 +16,7 @@ import {
   type ConsumerRepairDraftRevisionParamBatchPatch,
 } from "../../lib/consumerRequests/consumerRequestService";
 import { ConsumerRepairValidationError } from "../../lib/consumerRequests/consumerRequestMarketplaceService";
+import { consumerRepairEstimateApprovalParameterErrors } from "../../lib/consumerRequests/consumerRequestValidationService";
 import { consumerRepairSourceRequestDraftId } from "../../lib/consumerRequests/consumerRequestHistoryLineage";
 import { logger } from "../../lib/logger";
 import { createConsumerEstimateHydrationTrace, createConsumerEstimatePresentationTrace } from "../../lib/consumerRequests/consumerEstimateHydrationTrace";
@@ -1871,6 +1872,16 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           bundle: synced,
           canonicalBackendParameterSession: parameterSession,
           statusMessage: `Смету нельзя подтвердить: у ${unresolvedRowCount} применимых позиций не завершены обязательные уточнения — количество, условие применимости или источник расчёта. Проблемные позиции подсвечены в списке.`,
+        });
+        return;
+      }
+      const parameterErrors = consumerRepairEstimateApprovalParameterErrors(synced);
+      if (parameterErrors.length > 0) {
+        this.setState({
+          bundle: synced,
+          canonicalBackendParameterSession: parameterSession,
+          validationErrors: parameterErrors,
+          statusMessage: parameterErrors[0].messageRu,
         });
         return;
       }

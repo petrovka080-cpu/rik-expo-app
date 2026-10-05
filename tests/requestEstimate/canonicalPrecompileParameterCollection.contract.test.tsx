@@ -1,6 +1,8 @@
 import React from "react";
 import { Platform } from "react-native";
 import TestRenderer, { act } from "react-test-renderer";
+import { router } from "expo-router";
+import * as canonicalClient from "../../src/lib/estimate/backendPlatform/canonicalEstimateClient";
 
 import { ConsumerRepairDraftPanel } from "../../src/features/consumerRepair/ConsumerRepairDraftPanel";
 import { buildConsumerCanonicalPrecompileParameterSession } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
@@ -19,6 +21,8 @@ import { ConsumerRepairRequestScreenController } from "../../src/features/consum
 import { consumerRepairPendingCanonicalParameterCollection } from "../../src/features/consumerRepair/consumerRepairCanonicalEstimateReadiness";
 import { captureConsumerRepairCanonicalDraftWriteSource } from "../../src/lib/consumerRequests/consumerCanonicalParameterCollection";
 import { validateConsumerRepairRequestForApprove } from "../../src/lib/consumerRequests/consumerRequestValidationService";
+import { appendCanonicalBackendRevisionProjection } from "../../src/lib/consumerRequests/consumerCanonicalBackendRevisionProjection";
+import type { StructuredEstimatePayload } from "../../src/lib/estimateStructuredPipeline/structuredEstimateTypes";
 
 jest.mock("@expo/vector-icons", () => {
   const mockReact = jest.requireActual("react") as typeof import("react");
@@ -88,6 +92,7 @@ describe("canonical precompile parameter collection", () => {
   });
 
   afterEach(() => {
+    jest.restoreAllMocks();
     __resetConsumerRepairRequestStoreForTests();
     cleanupLocalStorage?.();
     cleanupLocalStorage = null;
@@ -277,6 +282,76 @@ describe("canonical precompile parameter collection", () => {
         revisionId: String(before.items[0].sourceParameters?.canonicalBackendRevisionId),
         releaseId: String(before.items[0].sourceParameters?.canonicalBackendReleaseId), status: "ready", sha256: "a".repeat(64) } })).toThrow();
     expect(getConsumerRepairRequest(before.draft.id).draft.status).toBe("draft");
+  });
+
+  it("returns to the initial estimate screen only after a successful durable approval", async () => {
+    const bundle = populatedDraft();
+    const revisionId = String(bundle.items[0].sourceParameters?.canonicalBackendRevisionId);
+    const releaseId = String(bundle.items[0].sourceParameters?.canonicalBackendReleaseId);
+    const session = { ...pendingSession(bundle.draft.id), revisionId, status: "COMPLETE" as const,
+      blockingMissingParameterIds: [], invalidParameterIds: [], contractMissingParameterIds: [] };
+    jest.spyOn(canonicalClient, "buildCanonicalEstimateArtifact").mockResolvedValue({ status: "ready", kind: "pdf",
+      artifactId: "ready-current-pdf", revisionId, releaseId, sha256: "a".repeat(64) } as never);
+    const replace = jest.spyOn(router, "replace").mockImplementation(() => undefined);
+    const controller = new ConsumerRepairRequestScreenController({ consumerUserId: bundle.draft.consumerUserId,
+      onPrepareCanonicalEstimate: jest.fn(), onLoadCanonicalRevisionDraft: jest.fn(),
+      onLoadCanonicalParameterSession: jest.fn(async () => session), onRecalculateCanonicalEstimate: jest.fn(),
+      onSelectCanonicalCatalogItem: jest.fn(), onAddCanonicalCatalogItem: jest.fn(), onOpenPhotoForMaterialRecognition: jest.fn() });
+    const action = controller as unknown as { state: typeof controller.state;
+      setState: (patch: Partial<typeof controller.state>, callback?: () => void) => void;
+      ensureInitialCanonicalRevision: () => Promise<{status:"READY";bundle:typeof bundle}>; approveDraft: () => Promise<void> };
+    action.state = { ...action.state, bundle, problemText: bundle.draft.problemText! };
+    action.ensureInitialCanonicalRevision = async () => ({ status: "READY", bundle });
+    action.setState = (patch, callback) => { action.state = { ...action.state, ...patch };callback?.(); };
+    await action.approveDraft();
+    expect(getConsumerRepairRequest(bundle.draft.id).draft.status).toBe("consumer_approved");
+    expect(action.state.bundle).toBeNull();expect(action.state.problemText).toBe("");
+    expect(action.state.selectedWork).toBeNull();expect(action.state.approvedHistoryPage.items.map(x=>x.draft.id)).toContain(bundle.draft.id);
+    expect(replace).toHaveBeenCalledWith("/request");
+  });
+
+  it.each(["contract_ready", "safety_review"] as const)("keeps the draft and blocks the visible approval button when %s data is missing despite a complete parameter session", async (requiredFor) => {
+    const before = populatedDraft();
+    const revisionId = String(before.items[0].sourceParameters?.canonicalBackendRevisionId);
+    const session = { ...pendingSession(before.draft.id), revisionId, status: "COMPLETE" as const,
+      blockingMissingParameterIds: [], invalidParameterIds: [], contractMissingParameterIds: [] };
+    const projected = appendCanonicalBackendRevisionProjection({ previousBundle: null, nextBundle: before,
+      payload: { workKey: "foundation", inputText: before.draft.problemText,
+        canonicalBackend: { compilerOwner: "backend", revisionId, parentRevisionId: null, revisionNumber: 1,
+          releaseId: String(before.items[0].sourceParameters?.canonicalBackendReleaseId),
+          catalogId: "canonical-work:test:consumer-history-fixture", createdAt: before.draft.createdAt,
+          checksumSha256: "a".repeat(64), formulaGraphVersion: "test", parameterSchemaHash: "b".repeat(64),
+          parameters: { total_axis_length_m: 150 } } } as unknown as StructuredEstimatePayload });
+    const revisionState = projected.estimateDraftRevisionState!;
+    const bundle = saveConsumerRepairBundle({ ...before, canonicalParameterSession: session,
+      estimateDraftRevisionState: { ...revisionState, revisions: revisionState.revisions.map(revision =>
+        revision.revisionId === revisionState.currentRevisionId ? { ...revision, status: "needs_more_params_but_preliminary_available" as const,
+          missingInputs: [{ key: "object_acceptance", label: "Подтверждение основания", blocksPreliminaryEstimate: false, requiredFor }] } : revision) } });
+    const artifact = jest.spyOn(canonicalClient, "buildCanonicalEstimateArtifact");
+    const replace = jest.spyOn(router, "replace").mockImplementation(() => undefined);
+    const controller = new ConsumerRepairRequestScreenController({ consumerUserId: bundle.draft.consumerUserId,
+      onPrepareCanonicalEstimate: jest.fn(), onLoadCanonicalRevisionDraft: jest.fn(),
+      onLoadCanonicalParameterSession: jest.fn(async () => session), onRecalculateCanonicalEstimate: jest.fn(),
+      onSelectCanonicalCatalogItem: jest.fn(), onAddCanonicalCatalogItem: jest.fn(), onOpenPhotoForMaterialRecognition: jest.fn() });
+    const action = controller as unknown as { state: typeof controller.state;
+      setState: (patch: Partial<typeof controller.state>) => void;
+      renderScreenView: (state: typeof controller.state) => React.ReactElement;
+      ensureInitialCanonicalRevision: () => Promise<{status:"READY";bundle:typeof bundle}>; approveDraft: () => Promise<void> };
+    action.state = { ...action.state, bundle, canonicalBackendParameterSession: session, problemText: "" };
+    action.ensureInitialCanonicalRevision = async () => ({ status: "READY", bundle });
+    action.setState = patch => { action.state = { ...action.state, ...patch }; };
+    let renderer!: TestRenderer.ReactTestRenderer;
+    act(() => { renderer = TestRenderer.create(action.renderScreenView(action.state)); });
+    expect(renderer.root.findAllByProps({ testID: "consumer-repair-approve" })[0].props.disabled).toBe(true);
+    act(() => renderer.unmount());
+    await action.approveDraft();
+    expect(artifact).not.toHaveBeenCalled();expect(replace).not.toHaveBeenCalled();
+    expect(action.state.bundle?.draft.id).toBe(bundle.draft.id);
+    expect(action.state.problemText).toBe("");
+    expect(action.state.statusMessage).toContain("Заполните обязательные параметры");
+    expect(getConsumerRepairRequest(bundle.draft.id).draft.status).toBe("draft");
+    expect(getConsumerRepairRequest(bundle.draft.id).items).toEqual(before.items);
+    expect(getConsumerRepairRequest(bundle.draft.id).pdfs).toEqual(before.pdfs);
   });
 
   it("keeps catalog defaults as assumptions while exposing their active conditional inputs", () => {

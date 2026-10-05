@@ -37,6 +37,7 @@ describe("approved estimate lifecycle clears active workspace", () => {
     expect(history.find((bundle) => bundle.draft.id === approved.draft.id)?.pdfs[0]?.revisionId).toBeTruthy();
 
     expect(state.bundle).toBeNull();
+    expect(state.problemText).toBe("");
     expect(state.aiAnswerRu).toBeNull();
     expect(state.selectedWork).toBeNull();
     expect(state.selectedHistoryId).toBeNull();

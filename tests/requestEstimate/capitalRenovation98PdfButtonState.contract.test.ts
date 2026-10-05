@@ -43,7 +43,6 @@ describe("capital renovation 98 PDF button state", () => {
       statusMessage: "Заявка утверждена.",
     });
     const renderModel = buildConsumerRepairRequestRenderModel({
-      problemText: "",
       repairType: approved.draft.repairType,
       city: approved.draft.city ?? "",
       addressText: approved.draft.addressText ?? "",
@@ -55,6 +54,7 @@ describe("capital renovation 98 PDF button state", () => {
 
     expect(renderModel.approved).toBe(false);
     expect(renderModel.bundle).toBeNull();
+    expect(cleared.problemText).toBe("");
     expect(cleared.selectedHistoryId).toBe(approved.draft.id);
     expect(approved.pdfs.some((pdf) => pdf.revisionId)).toBe(true);
     expect(chromeSource).toContain("consumer-repair-open-pdf");
