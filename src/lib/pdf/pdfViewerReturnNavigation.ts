@@ -48,13 +48,23 @@ export function resolvePdfViewerReturnPlan(
   callerRouteKey?: string | null,
   viewerRouteKey?: string,
 ): PdfViewerReturnPlan {
-  const current = state && Number.isInteger(state.index) ? state.routes[state.index!] : undefined;
-  if (current && viewerRouteKey && current.key !== viewerRouteKey) return { kind: "ignore-stale" };
+  // The container ref can include Expo's generated root navigator above the
+  // layout Stack. Find the viewer along the active branch, not only at depth 0.
+  let viewerStack = state;
+  while (viewerStack && Number.isInteger(viewerStack.index)) {
+    const active = viewerStack.routes[viewerStack.index!];
+    if (!active) break;
+    if (viewerRouteKey ? active.key === viewerRouteKey : active.name === "pdf-viewer") break;
+    viewerStack = active.state;
+  }
+  const current = viewerStack && Number.isInteger(viewerStack.index)
+    ? viewerStack.routes[viewerStack.index!] : undefined;
+  if (state && viewerRouteKey && current?.key !== viewerRouteKey) return { kind: "ignore-stale" };
   const href = normalizePostAuthReturnTo(returnTo);
   if (!href) return { kind: "safe-back" };
   const targetPath = staticPath([href.split(/[?#]/u, 1)[0]!]);
-  if (state?.type === "stack" && Number.isInteger(state.index) && state.index! > 0) {
-    const caller = state.routes[state.index! - 1];
+  if (viewerStack?.type === "stack" && Number.isInteger(viewerStack.index) && viewerStack.index! > 0) {
+    const caller = viewerStack.routes[viewerStack.index! - 1];
     const identity = caller && activeRouteIdentity(caller);
     const query = new URLSearchParams(href.split("?", 2)[1]?.split("#", 1)[0] ?? "");
     const exactCaller = Boolean(callerRouteKey && identity?.route.key === callerRouteKey);

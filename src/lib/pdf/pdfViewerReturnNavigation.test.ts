@@ -69,6 +69,21 @@ describe("PDF return preserves the installed nested navigator", () => {
       .toEqual({ kind: "preserve-caller" });
   });
 
+  it("finds the viewer below Expo's generated root navigator", () => {
+    const { rootRouter, viewing, request, caller } = nestedCaller({ draftId: "consumer_draft_own" });
+    const viewerKey = viewing.routes[viewing.index]!.key;
+    const containerState = { type: "stack", index: 0, routes: [
+      { name: "__root", key: "generated-root-key", state: viewing },
+    ] };
+    expect(resolvePdfViewerReturnPlan(containerState, "/request?draftId=consumer_draft_own", request.key, viewerKey))
+      .toEqual({ kind: "preserve-caller" });
+    const returned = rootRouter.getStateForAction(viewing, { type: "GO_BACK" }, rootOptions)!;
+    expect(returned.routes[0]).toBe(caller);
+    expect(resolvePdfViewerReturnPlan({ ...containerState, routes: [
+      { ...containerState.routes[0]!, state: returned },
+    ] }, "/request", request.key, viewerKey)).toEqual({ kind: "ignore-stale" });
+  });
+
   it("does not preserve a different canonical revision as the requested workspace", () => {
     const { viewing, request } = nestedCaller({ canonicalRevisionId: "revision_B" });
     expect(resolvePdfViewerReturnPlan(viewing, "/request?canonicalRevisionId=revision_A", request.key))

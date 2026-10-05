@@ -1371,6 +1371,15 @@ function PdfViewerScreen() {
     const plan = resolvePdfViewerReturnPlan(
       navigationRef.getRootState(), returnTo, params.callerRouteKey, viewerRouteKey,
     );
+    if (__DEV__) {
+      logPdfViewerInfo("[pdf-viewer] back_navigation_plan", {
+        planKind: plan.kind,
+        viewerRouteKey,
+        rootActiveRouteName: navigationRef.getRootState()?.routes[
+          navigationRef.getRootState().index
+        ]?.name,
+      });
+    }
     if (plan.kind === "ignore-stale") return;
     backDispatchedRef.current = true;
     if (plan.kind === "preserve-caller") {
