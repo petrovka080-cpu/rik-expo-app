@@ -1,13 +1,13 @@
 {
   "schemaVersion": "r568-local-developer-canonical-release.v1",
   "status": "ACTIVE_LOCAL_DEVELOPER_CANONICAL_RELEASE",
-  "definitionReleaseId": "d9306e5b-cb07-5161-9127-40bf0dc13182",
-  "searchReleaseId": "a36c6da3-66dc-5566-b83f-fb71c5abe3fe",
+  "definitionReleaseId": "eceb2a2b-d5bb-516e-be8c-82c5f66e2240",
+  "searchReleaseId": "a7508155-7680-5473-bc85-db6f020acadb",
   "definitionReleaseStatus": "prepared",
   "searchReleaseStatus": "draft",
-  "definitionSnapshotSha256": "7a3b9c1da01eba54f229ae7e453ffcf7dce5773dd00789fc5b77b53d61fba128",
-  "manifestHashChainSha256": "7a3b9c1da01eba54f229ae7e453ffcf7dce5773dd00789fc5b77b53d61fba128",
-  "searchHashChainSha256": "cc25a1b31e831ff78d89542212ddc5032a40f801db188160402739f5aa8c3b9c",
+  "definitionSnapshotSha256": "e1aa98a45b4b3a798330050037528d2a7c8000b3ded8ec8fb3e0f53d88ee0f3d",
+  "manifestHashChainSha256": "e1aa98a45b4b3a798330050037528d2a7c8000b3ded8ec8fb3e0f53d88ee0f3d",
+  "searchHashChainSha256": "3a6bb7702a38106090327f89b0442f4e54c26a19162c32e010829da15ded3478",
   "identities": 11610,
   "visibleCanonicalDefinitions": 10322,
   "aliasesRedirects": 1288,
@@ -15,7 +15,7 @@
   "runtimeAdditionalAdmissions": 9,
   "currentInventoryRowsIncludingAliases": 11619,
   "denominatorNote": "11610 is the immutable historical source-identity reconciliation (10322 canonical owners plus 1288 redirects); the current cumulative runtime also preserves 9 separately identified inherited admissions.",
-  "owner": "S2735_WET_ROOM_FLOOR_PROFESSIONAL",
+  "owner": "S2735_SINGLE_PIPE_TRENCH_CONSTRUCTOR",
   "productionAccessed": false,
   "fakeGreenClaimed": false
 }
