@@ -1,0 +1,16 @@
+{
+  "contract": "gravel-base-operation:s27-35.v1",
+  "sourceKind": "ACTUAL_LAYER_VOLUME_AND_PROJECT_SUPPLIER_FACTS_REQUIRED",
+  "reusedOperations": [
+    {"module": "src/lib/estimate/v4/granularBackfillOperationS2735.ts", "version": "granular-backfill-operation:s27-35.v1", "sourceCommit": "bf5a841e2", "scope": "granular supply, placing, compaction, actual equipment and logistics"},
+    {"module": "src/lib/estimate/v4/singlePipeTrenchConstructorS2735.ts", "version": "single-pipe-trench-constructor:s27-35.v1", "sourceCommit": "829f9e534", "scope": "conditional geotextile by actual specification and layout area"}
+  ],
+  "primaryMeasure": "actual installed gravel-base layer volume m3",
+  "supplierConsumption": "actual installed layer volume * actual loose supply volume per installed m3",
+  "operationInstances": "Material, labour, equipment, internal effective quantities, stock and cost owners receive explicit gravel-base instance namespaces. Accepted AST arithmetic is retained; only bound parameter/row identifiers change.",
+  "geotextile": "Pending survey by default. Required branch consumes actual material specification and laid-out area including actual laps; quantity is not inferred from layer volume.",
+  "excluded": ["excavation", "pipe/bedding/surround", "automatic sand or drainage layer", "density/compaction/lift thickness/productivity assigned by variant name", "invented project approval or prices"],
+  "variants": ["standard", "small_area", "large_area", "high_load", "technical_room", "wet_zone"],
+  "engineeringApprovalClaimed": false,
+  "validationFixtureAsRuntimeDefaults": false
+}
