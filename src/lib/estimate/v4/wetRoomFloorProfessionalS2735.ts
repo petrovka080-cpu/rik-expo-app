@@ -196,7 +196,7 @@ const repairMap = new Map(repairParameters.map(p=>[p.parameter_id,`preparation_r
 const remap = (value:unknown):unknown => typeof value==="string" ? repairMap.get(value)??value : Array.isArray(value) ? value.map(remap)
   : value && typeof value==="object" ? Object.fromEntries(Object.entries(value).map(([k,v])=>[k,remap(v)])) : value;
 const repairBranch={kind:"equals",parameterId:"substrate_repair_mode",value:"REQUIRED"};
-const conditionalRepairParameters=repairParameters.map(p=>({...p,parameter_id:repairMap.get(p.parameter_id)!,required:false,
+const conditionalRepairParameters=repairParameters.filter(p=>p.parameter_id!=="material_delivery_trip_count").map(p=>({...p,parameter_id:repairMap.get(p.parameter_id)!,required:false,
   constraints_json:{...(remap(p.constraints_json) as Record<string,unknown>),
     ...(p.required || p.constraints_json?.requiredWhen ? {requiredWhen:p.constraints_json?.requiredWhen ? {kind:"and",operands:[repairBranch,remap(p.constraints_json.requiredWhen)]}:repairBranch}: {})},
   truth_metadata:{...p.truth_metadata,preliminary_compilation_allowed:true}}));
@@ -209,6 +209,7 @@ const conditionalRepairFormulas=repairFormulas.filter(f=>repairFormulaIds.has(f.
 const resources = [...retainedWpResources, ...extra.resources,...conditionalRepairResources].map((row, ordinal)=> {
   const stage = ordinal < retainedWpResources.length ? "waterproofing" : row.row_id.startsWith(sharedWater) ? "shared-supply" : row.row_id.endsWith(":grout") || row.section==="Затирка швов" ? "grout" : row.section==="Герметизация примыканий" ? "seal" : row.row_id.includes("water:waterproofing") ? "waterproofing" : "tile";
   const completed = { ...row, ordinal, resource_graph: { ...row.resource_graph,
+    ...(ordinal<retainedWpResources.length ? {inputParameterIds:[...((row.resource_graph as Record<string,unknown>)?.inputParameterIds as string[]??[]),"applicability_mode"]}:{}),
     operationCompositionV1: { contractVersion: "canonical-operation-resource/v1", groupId: "wet-room-floor", groupTitleRu: "Пол санузла: подготовка, гидроизоляция, плитка, швы и завершение",
       operationId: stage, operationTitleRu: ({waterproofing:"Гидроизоляция и грунтование",tile:"Плитка, оснащение и завершение",grout:"Затирка швов",seal:"Герметизация примыканий","shared-supply":"Совместимая общая поставка"})[stage],
       completionCriterionRu: "Количество предварительного профиля проверить по обследованию, фактической раскладке и поставляемому продукту" },
