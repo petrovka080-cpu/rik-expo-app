@@ -5,10 +5,11 @@ import { formatEstimateUnitLabel } from "../../ai/globalEstimate/formatEstimateU
 import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
 import { canonicalEstimateSha256HexText } from "./canonicalEstimateSha256";
 import { localizeKnownTechnologyVariantSuffixRu } from "./russianTechnologyTitleR542";
+import { compareFormulaGraphDecimals, isFormulaGraphExactDecimal } from "./formulaGraph";
 
-export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r8";
-export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r4-operation-allocation-specifications";
-export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:10";
+export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r9";
+export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r5-saved-purchase-and-rental-basis";
+export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:11";
 
 /** Keep caller idempotency within each renderer; do not collide with legacy jobs. */
 export function canonicalProcurementRequestKey(idempotencyKey: string): string {
@@ -113,9 +114,81 @@ export function canonicalArtifactPreliminaryNeeds(
   });
 }
 
-function projectProcurementRow(row: CanonicalArtifactRow) {
+/** Export the exact persisted balance; never reconstruct physical demand from
+ * an amended order or apply supplier rounding again in a document. */
+export function canonicalArtifactPurchaseBalance(row: CanonicalArtifactRow) {
+  const trace = objectValue(row.calculation_trace);
+  const balance = objectValue(trace.purchaseBalance);
+  if (!Object.keys(balance).length) return null;
+  const fields = ["consumed", "stock", "reserve", "effectiveOrder", "remaining", "freeBeyondReserve", "consumptionShortage", "reserveDeficit"] as const;
+  if (balance.ownerRowId !== String(row.row_id) || balance.unitId !== String(row.unit_id)
+    || fields.some(key => typeof balance[key] !== "string" || !isFormulaGraphExactDecimal(balance[key] as string))
+    || (balance.plannedConsumption !== undefined && (typeof balance.plannedConsumption !== "string"
+      || !isFormulaGraphExactDecimal(balance.plannedConsumption) || compareFormulaGraphDecimals(balance.plannedConsumption, "0") < 0))
+    || (balance.quantum != null && (typeof balance.quantum !== "string"
+      || !isFormulaGraphExactDecimal(balance.quantum) || compareFormulaGraphDecimals(balance.quantum, "0") <= 0))) {
+    throw Object.assign(new Error(`saved purchase balance invalid: ${row.row_id}`), { code: "ARTIFACT_PURCHASE_BALANCE_INVALID" });
+  }
+  const exact = balance as Record<typeof fields[number], string> & { unitId: string; quantum: string | null;
+    plannedConsumption?: string; requirementBasis?: string; balanceScope?: string };
+  return { ...balance, ...exact, version: "canonical-persisted-purchase-balance/v1" as const,
+    netQuantity: exact.plannedConsumption ?? exact.consumed,
+    grossQuantity: exact.consumed, procurementQuantity: exact.effectiveOrder,
+    // Older traces do not identify losses separately. Unknown is not zero.
+    lossQuantity: null, lossPercent: null, wastePercent: null,
+    procurementPackageSize: exact.quantum ?? null };
+}
+
+export function canonicalArtifactRentalBasis(row: CanonicalArtifactRow, parameters: Record<string, unknown>) {
+  const graph = objectValue(objectValue(row.calculation_trace).resourceGraph);
+  if (graph.supplyMode !== "RENTAL_RETURNABLE" || graph.returnable !== true) return null;
+  const ids = graph.sourceScheduleParameterIds;
+  const countId = Array.isArray(ids) && typeof ids[0] === "string" ? ids[0] : null;
+  const durationId = nullableText(graph.rentalDurationParameterId);
+  const count = countId ? parameters[countId] : null;
+  const days = durationId ? parameters[durationId] : null;
+  if (!countId || !durationId || !Number.isSafeInteger(Number(count)) || Number(count) <= 0
+    || !Number.isSafeInteger(Number(days)) || Number(days) <= 0) {
+    throw Object.assign(new Error(`saved rental schedule invalid: ${row.row_id}`), { code: "ARTIFACT_RENTAL_BASIS_INVALID" });
+  }
+  return { physicalQuantity: String(count), physicalUnit: "piece", durationDays: String(days),
+    billingQuantity: String(row.quantity), billingUnit: String(row.unit_id), countParameterId: countId, durationParameterId: durationId,
+    stageCount: graph.projectStageCountParameterId ? parameters[String(graph.projectStageCountParameterId)] ?? null : null };
+}
+
+export function canonicalArtifactSpecificationParts(row: CanonicalArtifactRow, parameters: Record<string, unknown>) {
+  const graph = objectValue(objectValue(row.calculation_trace).resourceGraph);
+  const ids = Array.isArray(graph.titleSpecificationParameterIds) ? graph.titleSpecificationParameterIds
+    : graph.titleSpecificationParameterId ? [graph.titleSpecificationParameterId] : [];
+  return ids.flatMap(id => typeof id === "string" && nullableText(parameters[id])
+    ? [{ parameterId: id, value: String(parameters[id]), parts: String(parameters[id]).split(/\s*;\s*/u).filter(Boolean) }] : []);
+}
+
+export function canonicalArtifactTechnologyChecks(parameters: Record<string, unknown>) {
+  // Explicit accepted standalone and composite placement input contracts.
+  const waterInWinter = (parameters.winter_mode === true && parameters.curing_method === "water")
+    || (parameters.placement_winter_mode === true && parameters.placement_curing_method === "water");
+  return waterInWinter ? [{ code: "WATER_CURING_FREEZING_CONDITIONS_REQUIRED", status: "CONDITION_REQUIRED",
+    messageRu: "Зимний режим и водный уход: температурные условия во время увлажнения и после снятия защиты, защита от замерзания и выбранная проектная технология не подтверждены. Наличие прогрева само по себе не подтверждает совместимость.",
+    sourceUrl: "https://www.nrmca.org/wp-content/uploads/2021/01/27pr.pdf" }] : [];
+}
+
+/** The accepted cage assembly resource already owns the total BBS mass. */
+export function canonicalArtifactWorkMeasure(rows: readonly CanonicalArtifactRow[]) {
+  const row = rows.find(candidate => candidate.row_id === "work:rebar-cage:assemble-install"
+    && objectValue(candidate.calculation_trace).formulaId === "rebar_cage_assembly_weight_v1" && candidate.unit_id === "kg");
+  if (!row) return null;
+  const trace = objectValue(row.calculation_trace);
+  const value = trace.calculatedQuantityBeforeOverride ?? row.quantity;
+  if (typeof value !== "string" || !isFormulaGraphExactDecimal(value)) return null;
+  const operation = canonicalEstimateOperationReference(objectValue(trace.resourceGraph).operationCompositionV1);
+  return { rowId: String(row.row_id), value, unitId: "kg", titleRu: operation?.groupTitleRu ?? null };
+}
+
+function projectProcurementRow(row: CanonicalArtifactRow, parameters: Record<string, unknown>) {
   const calculationTrace = objectValue(row.calculation_trace);
-  const materialQuantity = canonicalMaterialQuantityBasisFromRow({
+  const purchaseBalance = canonicalArtifactPurchaseBalance(row);
+  const materialQuantity = purchaseBalance ? null : canonicalMaterialQuantityBasisFromRow({
     rowId: String(row.row_id),
     quantity: Number(row.quantity),
     sourceParameters: {
@@ -126,26 +199,27 @@ function projectProcurementRow(row: CanonicalArtifactRow) {
       },
     },
   });
-  const netQuantity = materialQuantity?.netQuantity ?? row.quantity;
-  const grossQuantity = materialQuantity?.grossQuantity ?? row.quantity;
-  const procurementQuantity = materialQuantity?.procurementQuantity ?? row.quantity;
+  const netQuantity = purchaseBalance?.netQuantity ?? materialQuantity?.netQuantity ?? row.quantity;
+  const grossQuantity = purchaseBalance?.grossQuantity ?? materialQuantity?.grossQuantity ?? row.quantity;
+  const procurementQuantity = purchaseBalance?.procurementQuantity ?? materialQuantity?.procurementQuantity ?? row.quantity;
   const operation = canonicalEstimateOperationReference(objectValue(calculationTrace.resourceGraph).operationCompositionV1);
   return {
     rowId: String(row.row_id),
     ordinal: Number(row.ordinal),
     section: String(row.section ?? ""),
     category: String(row.category ?? ""),
-    titleRu: canonicalArtifactVisibleRowTitle(row),
-    unitId: materialQuantity?.procurementUnit ?? String(row.unit_id ?? ""),
+    titleRu: canonicalArtifactVisibleRowTitle(row, parameters),
+    unitId: purchaseBalance?.unitId ?? materialQuantity?.procurementUnit ?? String(row.unit_id ?? ""),
     quantity: decimalText(procurementQuantity),
     netQuantity: decimalText(netQuantity),
     grossQuantity: decimalText(grossQuantity),
     procurementQuantity: decimalText(procurementQuantity),
-    procurementUnit: materialQuantity?.procurementUnit ?? String(row.unit_id ?? ""),
-    procurementPackageSize: materialQuantity == null
-      ? null
-      : decimalText(materialQuantity.procurementPackageSize),
-    materialQuantityBasis: materialQuantity,
+    procurementUnit: purchaseBalance?.unitId ?? materialQuantity?.procurementUnit ?? String(row.unit_id ?? ""),
+    procurementPackageSize: decimalText(purchaseBalance?.procurementPackageSize ?? materialQuantity?.procurementPackageSize),
+    materialQuantityBasis: purchaseBalance ?? materialQuantity,
+    purchaseBalance,
+    rentalBasis: canonicalArtifactRentalBasis(row, parameters),
+    specifications: canonicalArtifactSpecificationParts(row, parameters),
     unitPrice: decimalText(row.unit_price),
     amount: decimalText(row.amount),
     currencyCode: nullableText(row.currency_code),
@@ -167,7 +241,13 @@ export function buildCanonicalProcurementProjection(input: {
   sourceRows?: CanonicalArtifactRow[];
 }) {
   assertCanonicalPurchaseReadinessV1(input.sourceRows ?? input.procurementRows);
-  const rows = input.procurementRows.map(projectProcurementRow);
+  const parameters = objectValue(input.revision.input_parameters);
+  const technologyChecks = canonicalArtifactTechnologyChecks(parameters);
+  if (technologyChecks.length) throw Object.assign(new Error(technologyChecks[0]!.messageRu), {
+    code: "PROCUREMENT_TECHNOLOGY_COMPATIBILITY_REQUIRED", technologyChecks,
+  });
+  const rows = input.procurementRows.map(row => projectProcurementRow(row, parameters));
+  const workMeasure = canonicalArtifactWorkMeasure(input.sourceRows ?? input.procurementRows);
   const groups = new Map<string, { section: string; category: string; rowIds: string[] }>();
   const operationGroups = new Map<string, { operation: NonNullable<ReturnType<typeof canonicalEstimateOperationReference>>; rowIds: string[] }>();
   for (const row of rows) {
@@ -195,10 +275,17 @@ export function buildCanonicalProcurementProjection(input: {
     amendmentContract: revision.amendment_contract ?? null,
     sourceRequestText: nullableText(revision.source_request_text),
     sourceRequestHash: nullableText(revision.source_request_hash),
-    displayTitleRu: nullableText(revision.display_title_ru),
+    displayTitleRu: workMeasure?.titleRu ? `${workMeasure.titleRu} — ${canonicalArtifactQuantity(workMeasure.value)} кг` : nullableText(revision.display_title_ru),
+    sourceDisplayTitleRu: nullableText(revision.display_title_ru),
+    workMeasure,
     primaryMeasure: {
-      parameterId: nullableText(revision.primary_measure_parameter_id),
-      value: decimalText(revision.primary_measure_value),
+      parameterId: workMeasure ? null : nullableText(revision.primary_measure_parameter_id),
+      value: workMeasure?.value ?? decimalText(revision.primary_measure_value),
+      unitId: workMeasure?.unitId ?? nullableText(revision.primary_measure_unit_id),
+      sourceRowId: workMeasure?.rowId ?? null,
+    },
+    sourcePrimaryMeasure: {
+      parameterId: nullableText(revision.primary_measure_parameter_id), value: decimalText(revision.primary_measure_value),
       unitId: nullableText(revision.primary_measure_unit_id),
     },
     selectedRowCount: rows.length,
@@ -312,9 +399,19 @@ export function canonicalArtifactMoney(value: unknown, currencyCode: unknown): s
   }).format(numeric)} ${currency}`.trim();
 }
 
-export function canonicalArtifactVisibleRowTitle(row: Record<string, unknown>): string {
+export function canonicalArtifactVisibleRowTitle(row: Record<string, unknown>, parameters?: Record<string, unknown>): string {
   const sourceNameRu = String(row.title_ru ?? "").trim();
   const graph = objectValue(objectValue(row.calculation_trace).resourceGraph);
+  if (parameters && graph.titleSpecificationMode === "APPEND") {
+    const ids = Array.isArray(graph.titleSpecificationParameterIds) ? graph.titleSpecificationParameterIds
+      : graph.titleSpecificationParameterId ? [graph.titleSpecificationParameterId] : [];
+    const separator = typeof graph.titleSpecificationSeparator === "string" ? graph.titleSpecificationSeparator : " ";
+    const spec = ids.map(id => nullableText(parameters[String(id)])).filter(Boolean).join(separator);
+    if (spec && sourceNameRu.endsWith(separator + spec)) {
+      const base = sourceNameRu.slice(0, -(separator + spec).length).trim();
+      if (base) return localizeKnownTechnologyVariantSuffixRu(base);
+    }
+  }
   // The compiler has already appended or replaced this title using declared
   // project specification parameters. Public generic-name aliases must not
   // remove the selected model, compatibility or contents from the saved row.

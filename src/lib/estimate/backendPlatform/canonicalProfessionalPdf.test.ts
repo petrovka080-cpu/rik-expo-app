@@ -75,6 +75,36 @@ function rows(
 }
 
 describe("R4-A6 canonical professional PDF", () => {
+  it("prints saved demand/order/remainder and physical rental without changing billed rows", () => {
+    const sourceRows = rows(2);
+    sourceRows[0] = { ...sourceRows[0]!, row_id: "water", title_ru: "Вода для ухода", unit_id: "m3", quantity: "5.1",
+      calculation_trace: { purchaseBalance: { ownerRowId: "water", unitId: "m3", consumed: "3.2", plannedConsumption: "3.2",
+        stock: "0", reserve: "0", effectiveOrder: "5.1", remaining: "1.9", freeBeyondReserve: "1.9",
+        consumptionShortage: "0", reserveDeficit: "0", quantum: null } } };
+    sourceRows[1] = { ...sourceRows[1]!, title_ru: "Листы опалубки", category: "equipment", unit_id: "piece_day", quantity: "1624",
+      calculation_trace: { resourceGraph: { supplyMode: "RENTAL_RETURNABLE", returnable: true,
+        sourceScheduleParameterIds: ["sheets", "days"], rentalDurationParameterId: "days" } } };
+    const savedRevision = { ...revision(2), input_parameters: { sheets: 58, days: 28 } };
+    const before = JSON.stringify({ sourceRows, savedRevision });
+    const projection = buildCanonicalProfessionalPdfProjection({ revision: savedRevision, rows: sourceRows, workTitleRu: "Сохранённая смета" });
+    expect(projection.html).toContain("Потребность: 3,2 м³");
+    expect(projection.html).toContain("Заказ: 5,1 м³. Остаток: 1,9 м³");
+    expect(projection.html).toContain("Аренда: 58 шт. на 28 сут.; расчёт оплаты 1 624 шт.·сут");
+    expect(projection.categoryTotals).toMatchObject({ material: 200, equipment: 200 });
+    expect(JSON.stringify({ sourceRows, savedRevision })).toBe(before);
+  });
+
+  it("marks an otherwise priced winter/water estimate preliminary when freeze-protection conditions are missing", () => {
+    const projection = buildCanonicalProfessionalPdfProjection({
+      revision: { ...revision(1), input_parameters: { placement_winter_mode: true, placement_curing_method: "water" } },
+      rows: rows(1), workTitleRu: "Зимний уход",
+    });
+    expect(projection.html).toContain("<strong>Статус:</strong> Предварительная");
+    expect(projection.html).toContain("температурные условия");
+    expect(projection.grandTotalStatus).toBe("COMPLETE");
+    expect(projection.html).not.toContain("<strong>Статус:</strong> Полная");
+  });
+
   it("labels equipment and access shifts in Russian without changing immutable source quantities or units", () => {
     const sourceRows = rows(2);
     sourceRows[0] = { ...sourceRows[0]!, category: "equipment", title_ru: "Подмости", unit_id: "shift", quantity: "1.250000000" };
@@ -125,7 +155,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-33-operation-cost-owners");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-34-supplier-balances");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,

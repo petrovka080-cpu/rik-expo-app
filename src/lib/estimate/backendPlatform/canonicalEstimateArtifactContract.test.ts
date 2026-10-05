@@ -61,7 +61,7 @@ describe("canonical estimate artifact contract", () => {
   it("builds the one canonical procurement projection and artifact provenance", () => {
     const selection = selectCanonicalArtifactRows(rows);
     const projection = buildCanonicalProcurementProjection({ revision, procurementRows: selection.procurementRows });
-    expect(projection.schemaVersion).toBe("canonical_estimate_procurement_r8");
+    expect(projection.schemaVersion).toBe("canonical_estimate_procurement_r9");
     expect(projection.rows).toHaveLength(1);
     expect(projection.rows[0]?.quantity).toBe("12.5");
     expect(buildCanonicalArtifactMetadata({
@@ -134,7 +134,7 @@ describe("canonical estimate artifact contract", () => {
       grandTotalStatus: "PARTIAL_NEEDS_PRICE",
       pageCount: 4,
       generatorVersion: "canonical-professional-pdf.r4-a6",
-      templateVersion: "professional-estimate-pdf:10",
+      templateVersion: "professional-estimate-pdf:11",
     });
     expect(canonicalProfessionalArtifactMetadataIdentityMatches({
       metadata,
@@ -154,7 +154,7 @@ describe("canonical estimate artifact contract", () => {
     })).toBe(true);
   });
 
-  it.each([6, 7, 8, 9, 10])("keeps the bound metadata checks for historical PDF template %s", (version) => {
+  it.each([6, 7, 8, 9, 10, 11])("keeps the bound metadata checks for historical PDF template %s", (version) => {
     const historicalRevision = { ...revision, definition_version_id: "definition-version-1" };
     const metadata = {
       templateVersion: `professional-estimate-pdf:${version}`,
@@ -178,7 +178,7 @@ describe("canonical estimate artifact contract", () => {
   });
 
   it.each([
-    "professional-estimate-pdf:11",
+    "professional-estimate-pdf:12",
     "professional-estimate-pdf:0",
     "professional-estimate-pdf:06",
     "professional-estimate-pdf:6-extra",

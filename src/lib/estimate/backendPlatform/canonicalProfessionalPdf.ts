@@ -3,6 +3,11 @@ import {
   canonicalArtifactQuantity,
   canonicalArtifactUnit,
   canonicalArtifactVisibleRowTitle,
+  canonicalArtifactPurchaseBalance,
+  canonicalArtifactRentalBasis,
+  canonicalArtifactSpecificationParts,
+  canonicalArtifactWorkMeasure,
+  canonicalArtifactTechnologyChecks,
   escapeCanonicalArtifactHtml,
   type CanonicalArtifactRevision,
   type CanonicalArtifactRow,
@@ -10,7 +15,7 @@ import {
 import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-33-operation-cost-owners" as const;
+  "canonical-professional-pdf.r4-a13-s27-34-supplier-balances" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -151,7 +156,7 @@ function includedCostOwnerTitle(row: CanonicalArtifactRow, rowsById: ReadonlyMap
   }
 }
 
-function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, rowsById: ReadonlyMap<string, CanonicalArtifactRow>): string {
+function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, rowsById: ReadonlyMap<string, CanonicalArtifactRow>, parameters: Record<string, unknown>): string {
   const category = canonicalProfessionalPdfCategory(row);
   const includedInEstimate = row.included_in_estimate === true;
   const resourceGraph = objectValue(objectValue(row.calculation_trace).resourceGraph);
@@ -168,6 +173,18 @@ function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, rows
           ? "Условие выполнения работ; отдельно не суммируется."
           : "Позиция исключена из итога сохранённой версии.";
   const specification = [specificationRu(row), dispositionRu].filter(Boolean).join(" ") || null;
+  const specifications = canonicalArtifactSpecificationParts(row, parameters);
+  const balance = canonicalArtifactPurchaseBalance(row);
+  const rental = canonicalArtifactRentalBasis(row, parameters);
+  const quantityLabel = (value: unknown, unit = row.unit_id) => `${canonicalArtifactQuantity(value)} ${canonicalArtifactUnit({ unit_id: unit })}`;
+  const balanceText = balance ? [
+    `Потребность: ${quantityLabel(balance.netQuantity)}. Расчётная потребность к поставке: ${quantityLabel(balance.grossQuantity)}.`,
+    `Пригодное наличие: ${quantityLabel(balance.stock)}. Сохраняемый резерв: ${quantityLabel(balance.reserve)}.`,
+    `Заказ: ${quantityLabel(balance.effectiveOrder)}. ${balance.requirementBasis === "selected_order_including_contingency" ? "Избыток над потребностью с выбранным резервом" : "Остаток"}: ${quantityLabel(balance.remaining)}; свободно сверх сохраняемого резерва: ${quantityLabel(balance.freeBeyondReserve)}.`,
+    ...(balance.quantum == null ? [] : [`Кратность поставки: ${quantityLabel(balance.quantum)}.`]),
+  ].join(" ") : null;
+  const rentalText = rental ? `Аренда: ${canonicalArtifactQuantity(rental.physicalQuantity)} шт. на ${canonicalArtifactQuantity(rental.durationDays)} сут.; расчёт оплаты ${quantityLabel(rental.billingQuantity)}.` : null;
+  const details = specifications.flatMap(spec => spec.parts).filter(part => part !== canonicalArtifactVisibleRowTitle(row, parameters));
   const unitPrice = !includedInEstimate
     ? "Не применяется"
     : row.unit_price == null
@@ -180,7 +197,7 @@ function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, rows
     : canonicalArtifactMoney(row.amount, row.currency_code);
   return `<tr>
     <td class="number">${displayOrdinal}</td>
-    <td class="name"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row))}</strong>${specification ? `<span>${escapeCanonicalArtifactHtml(specification)}</span>` : ""}</td>
+    <td class="name"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row, parameters))}</strong>${details.length ? `<ul>${details.map(part => `<li>${escapeCanonicalArtifactHtml(part)}</li>`).join("")}</ul>` : ""}${[balanceText, rentalText, specification].filter(Boolean).map(text => `<span>${escapeCanonicalArtifactHtml(text)}</span>`).join("")}</td>
     <td>${escapeCanonicalArtifactHtml(CATEGORY_TITLES[category])}</td>
     <td class="unit">${escapeCanonicalArtifactHtml(canonicalArtifactUnit(row))}</td>
     <td class="numeric">${escapeCanonicalArtifactHtml(canonicalArtifactQuantity(row.quantity))}</td>
@@ -255,6 +272,10 @@ export function buildCanonicalProfessionalPdfProjection(input: {
   }
   const preliminaryRowIds = new Set(preliminaryNeeds.map((row) => String(row.row_id)));
   const rowsById = new Map(rows.map(row => [String(row.row_id), row]));
+  const parameters = objectValue(revision.input_parameters);
+  const technologyChecks = canonicalArtifactTechnologyChecks(parameters);
+  const workMeasure = canonicalArtifactWorkMeasure(rows);
+  const workTitleRu = workMeasure?.titleRu ? `${workMeasure.titleRu} — ${canonicalArtifactQuantity(workMeasure.value)} кг` : input.workTitleRu;
   const operation = (row: CanonicalArtifactRow) => {
     return canonicalEstimateOperationReference(objectValue(objectValue(row.calculation_trace).resourceGraph).operationCompositionV1);
   };
@@ -286,7 +307,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
       : hasOperations && key !== previousOperationKey ? `<tr class="operation"><td colspan="7"><strong>Работы и ресурсы сметы</strong></td></tr>` : "";
     previousOperationKey = key;
     return heading + (preliminaryRowIds.has(String(row.row_id))
-      ? renderPreliminaryNeedRow(row, index + 1, input.parameterTitlesRu ?? {}, questionNumbers) : renderClientRow(row, index + 1, rowsById));
+      ? renderPreliminaryNeedRow(row, index + 1, input.parameterTitlesRu ?? {}, questionNumbers) : renderClientRow(row, index + 1, rowsById, parameters));
   }).join("");
   const questionAppendix = questionNumbers?.size
     ? `<h2>Исходные сведения для уточнения состава</h2><div class="notice">Сведения связаны с позициями по номерам. Применимость и количество пока не подтверждены; неизвестные значения не заменены нулями.</div><table><tbody>${[...questionNumbers].map(([id, number]) => `<tr><td style="width:8%">${number}</td><td>${escapeCanonicalArtifactHtml(String(input.parameterTitlesRu?.[id]))}</td></tr>`).join("")}</tbody></table>` : "";
@@ -298,7 +319,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
   const grandTotalStatus: CanonicalProfessionalPdfGrandTotalStatus = missingPriceRowCount === 0 && preliminaryNeeds.length === 0
     ? "COMPLETE"
     : "PARTIAL_NEEDS_PRICE";
-  const documentStatusRu = grandTotalStatus === "COMPLETE"
+  const documentStatusRu = grandTotalStatus === "COMPLETE" && technologyChecks.length === 0
     ? "Полная"
     : "Предварительная";
   const categoryTotals = Object.fromEntries(
@@ -317,8 +338,8 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     timeStyle: "short",
     timeZone: "UTC",
   }).format(new Date(generatedAt));
-  const primaryValue = canonicalArtifactQuantity(revision.primary_measure_value);
-  const primaryUnit = canonicalArtifactUnit({ unit_id: revision.primary_measure_unit_id });
+  const primaryValue = canonicalArtifactQuantity(workMeasure?.value ?? revision.primary_measure_value);
+  const primaryUnit = canonicalArtifactUnit({ unit_id: workMeasure?.unitId ?? revision.primary_measure_unit_id });
   const currencyLabel = currencyCode === "KGS" ? "сом" : currencyCode;
   const totalRows = CANONICAL_PROFESSIONAL_PDF_CATEGORY_ORDER.map((category) => {
     const categoryPricedRowCount = pricedRows.filter(
@@ -350,15 +371,16 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}.summary div{background:#eef7f2;border-radius:4px;padding:7px}.notice{margin:8px 0 12px;padding:8px;border:1px solid #d5dde6;border-radius:4px;color:#39485b;break-inside:avoid}
     table{width:100%;border-collapse:collapse;table-layout:fixed}thead{display:table-header-group}tfoot{display:table-footer-group}tr{break-inside:avoid;page-break-inside:avoid}td,th{border:1px solid #cbd4df;padding:4px;vertical-align:top;overflow-wrap:anywhere;word-break:normal;hyphens:none}th{background:#e7edf4;text-align:left}.client th:nth-child(1){width:5%}.client th:nth-child(2){width:34%}.client th:nth-child(3){width:12%}.client th:nth-child(4){width:8%}.client th:nth-child(5){width:11%}.client th:nth-child(6),.client th:nth-child(7){width:15%}.name span{display:block;color:#526174;font-size:8px;margin-top:2px}.number,.unit{text-align:center}.number{white-space:nowrap;overflow-wrap:normal;font-variant-numeric:tabular-nums}.numeric,.money{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
     .totals{width:62%;margin:12px 0 0 auto}.totals th{width:55%}.totals td{text-align:right;font-variant-numeric:tabular-nums}.grand th,.grand td{background:#e5f2ea}
-    .operation td{background:#eef7f2}.operation span{display:block;color:#526174;margin-top:3px}.preliminary-need td{background:#fff7ed}.preliminary-need .numeric{white-space:normal}.preliminary-need-detail td{color:#7c4a03;font-size:8px}.signatures{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px;break-inside:avoid}.signature{border:1px solid #cbd4df;padding:7px;min-height:84px}.signature strong{display:block;margin-bottom:7px}.signature div{border-bottom:1px solid #758195;margin-top:13px;color:#526174}.organization{margin-top:12px;border-bottom:1px solid #758195;padding-bottom:3px;break-inside:avoid}
+    .name ul{padding-left:12px;margin:3px 0;font-size:8px;color:#526174}.operation td{background:#eef7f2}.operation span{display:block;color:#526174;margin-top:3px}.preliminary-need td{background:#fff7ed}.preliminary-need .numeric{white-space:normal}.preliminary-need-detail td{color:#7c4a03;font-size:8px}.signatures{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px;break-inside:avoid}.signature{border:1px solid #cbd4df;padding:7px;min-height:84px}.signature strong{display:block;margin-bottom:7px}.signature div{border-bottom:1px solid #758195;margin-top:13px;color:#526174}.organization{margin-top:12px;border-bottom:1px solid #758195;padding-bottom:3px;break-inside:avoid}
   </style></head><body>
-    <header><h1>Профессиональная смета</h1><div class="subtitle">${escapeCanonicalArtifactHtml(input.workTitleRu || "Строительно-монтажные работы")}</div>
+    <header><h1>Профессиональная смета</h1><div class="subtitle">${escapeCanonicalArtifactHtml(workTitleRu || "Строительно-монтажные работы")}</div>
       ${explicitDemo ? '<div class="notice"><strong>ДЕМО / VALIDATION_FIXTURE — испытательный документ. Не является утверждённой проектной сметой.</strong></div>' : ""}
       ${nullableText(revision.source_request_text) ? `<div><strong>Исходный запрос:</strong> ${escapeCanonicalArtifactHtml(String(revision.source_request_text))}</div>` : ""}
-      <div class="meta-grid"><div><strong>Номер:</strong> ${escapeCanonicalArtifactHtml(documentNumber)}</div><div><strong>Статус:</strong> ${documentStatusRu}</div><div><strong>Сформировано:</strong> ${escapeCanonicalArtifactHtml(generatedDate)}</div><div><strong>Валюта:</strong> ${escapeCanonicalArtifactHtml(currencyLabel)}</div><div><strong>Объект:</strong> ${escapeCanonicalArtifactHtml(input.workTitleRu)}</div><div><strong>Первичная мера:</strong> ${escapeCanonicalArtifactHtml(`${primaryValue} ${primaryUnit}`)}</div><div><strong>Версия:</strong> ${escapeCanonicalArtifactHtml(String(Number.isFinite(revisionNumber) ? revisionNumber : 1))}</div></div>
+      <div class="meta-grid"><div><strong>Номер:</strong> ${escapeCanonicalArtifactHtml(documentNumber)}</div><div><strong>Статус:</strong> ${documentStatusRu}</div><div><strong>Сформировано:</strong> ${escapeCanonicalArtifactHtml(generatedDate)}</div><div><strong>Валюта:</strong> ${escapeCanonicalArtifactHtml(currencyLabel)}</div><div><strong>Объект:</strong> ${escapeCanonicalArtifactHtml(workTitleRu)}</div><div><strong>${workMeasure ? "Объём работы" : "Первичная мера"}:</strong> ${escapeCanonicalArtifactHtml(`${primaryValue} ${primaryUnit}`)}</div><div><strong>Версия:</strong> ${escapeCanonicalArtifactHtml(String(Number.isFinite(revisionNumber) ? revisionNumber : 1))}</div></div>
     </header>
     <div class="summary"><div><strong>Позиций состава</strong><br>${compositionRows.length}</div><div><strong>Количество известно</strong><br>${rows.length}; ждут источник ${preliminaryNeeds.length}</div><div><strong>${pricedSummary}</strong></div></div>
     <div class="notice">${priceNotice}</div>
+    ${technologyChecks.map(check => `<div class="notice"><strong>Технология требует уточнения.</strong> ${escapeCanonicalArtifactHtml(check.messageRu)} Закупочная ведомость пока не готова.</div>`).join("")}
     <table class="client"><thead><tr><th>№</th><th>Наименование и спецификация</th><th>Категория</th><th>Ед.</th><th>Количество</th><th>Цена за единицу</th><th>Сумма</th></tr></thead><tbody>${renderedComposition}</tbody></table>
     <table class="totals"><tbody>${totalRows}<tr><th>Неполные цены</th><td>${missingPriceRowCount}</td></tr><tr class="grand"><th>Итого</th><td>${grandTotal}</td></tr></tbody></table>
     <div class="notice"><strong>Примечание.</strong> Документ отображает сохранённые позиции, объёмы и цены. Отсутствующая цена не подменяется нулём.</div>

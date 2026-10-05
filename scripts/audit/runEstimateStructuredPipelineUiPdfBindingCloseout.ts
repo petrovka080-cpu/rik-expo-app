@@ -806,6 +806,9 @@ export async function runEstimateStructuredPipelineUiPdfBindingCloseout() {
     fake_green_claimed: false,
   };
 
+  // Fixture requests enqueue durable writes. The terminal proof must wait for
+  // those writes rather than leave work running after the caller/test returns.
+  await flushTransactionalConsumerRepairWrites();
   writeJson("matrix.json", matrix);
   writeJson("failures.json", failures);
   writeJson("proof.json", proof);
