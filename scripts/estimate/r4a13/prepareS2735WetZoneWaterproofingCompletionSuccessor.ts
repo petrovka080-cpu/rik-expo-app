@@ -72,7 +72,7 @@ void runMasterSingleDefinitionSuccessorR1({
     operation_class: "WATERPROOFING_UNDER_CERAMIC_COVERING", source_id: sourceId, norm_id: normId,
     exact_locator: sourceMetadata.exact_locator, quantity_basis: "CL51_MANUFACTURER_MINIMUM_PLUS_EXPLICIT_PROJECT_FACTS",
     universal_productivity_claimed: false, universal_priming_consumption_claimed: false } },
-  locator: { key: "wet-zone-cl51-completion-s27-35-v1", payload: { kind: "MANUFACTURER_TDS_WITH_EXPLICIT_PROJECT_FACTS",
+  locator: { key: "wet-zone-cl51-completion-s27-35-v2-page2", payload: { kind: "MANUFACTURER_TDS_WITH_EXPLICIT_PROJECT_FACTS",
     sourcePackSha256: sourceMetadata.artifact_sha256, exactLocator: sourceMetadata.exact_locator,
     ordinaryKnownInputs: ["area_m2"], visibleProfileInputs: Object.keys(definition.runtimeInput),
     fixtureValuesNeverRuntimeDefaults: true, operationReuse: true } },
