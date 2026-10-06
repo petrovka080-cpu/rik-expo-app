@@ -287,7 +287,7 @@ function ProductDetailsScreen() {
   return (
     <View style={styles.root}>
       <View style={styles.header}>
-        <Pressable style={styles.backBtn} onPress={() => safeBack(router, MARKET_TAB_ROUTE)}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Назад в маркет" testID="market-product-back" style={styles.backBtn} onPress={() => safeBack(router, MARKET_TAB_ROUTE)}>
           <Text style={styles.backIcon}>‹</Text>
         </Pressable>
         <View style={styles.headerCopy}>

@@ -1,4 +1,3 @@
-import { Platform } from "react-native";
 import type { Href } from "expo-router";
 
 export type SafeBackRouterLike = {
@@ -14,17 +13,10 @@ type SafeBackOptions = {
 
 export function hasSafeBackHistory(
   router: Pick<SafeBackRouterLike, "canGoBack">,
-  options?: SafeBackOptions,
+  _options?: SafeBackOptions,
 ) {
-  const platform = options?.platform ?? Platform.OS;
-
-  if (platform === "web") {
-    if (typeof options?.webHistoryLength === "number") {
-      return options.webHistoryLength > 1;
-    }
-    return typeof window !== "undefined" && window.history.length > 1;
-  }
-
+  // Browser history also contains reloads and pages outside this navigator.
+  // router.back dispatches GO_BACK, so only the router can admit that action.
   return typeof router.canGoBack === "function" && Boolean(router.canGoBack());
 }
 

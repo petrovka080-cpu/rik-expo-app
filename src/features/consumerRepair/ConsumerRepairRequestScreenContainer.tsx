@@ -50,6 +50,10 @@ import { consumerRepairRowCode } from "./consumerRepairRowMetadata";
 import { isConsumerEstimateCompositionVisibleItem } from "../../lib/consumerRequests/consumerEstimateReadiness";
 import { logger } from "../../lib/logger";
 import { loadConsumerCanonicalReadyArtifacts } from "./consumerCanonicalArtifactHydration";
+import {
+  ConsumerCanonicalReleaseMigrationConfirmation,
+  useConsumerCanonicalReleaseMigrationConfirmation,
+} from "./ConsumerCanonicalReleaseMigrationConfirmation";
 
 const DURABLE_HYDRATION_TIMEOUT_MS = 3_000;
 const canonicalDeepLinkWorkspaceDraftIdsByConsumer = new Map<string, string>();
@@ -626,6 +630,24 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
     routeWorkspaceIdentityRef.current = routeWorkspaceIdentity;
     workspaceGenerationRef.current += 1;
   }
+  const releaseMigrationConfirmation = useConsumerCanonicalReleaseMigrationConfirmation(routeWorkspaceIdentity);
+  const captureRecalculationSource = (draftId: string, revisionId: string) => {
+    const current = findConsumerRepairBundle(draftId);
+    if (!current || current.draft.consumerUserId !== resolvedConsumerUserId
+      || consumerRepairCanonicalBackendBinding(current)?.revisionId !== revisionId) {
+      throw new Error("CANONICAL_WORKSPACE_REPLACED");
+    }
+    const expectedDraftWriteSource = captureConsumerRepairCanonicalDraftWriteSource(current);
+    const expectedWorkspaceGeneration = workspaceGenerationRef.current;
+    return {
+      expectedDraftWriteSource,
+      expectedWorkspaceGeneration,
+      assertMutationSource: () => {
+        if (workspaceGenerationRef.current !== expectedWorkspaceGeneration) throw new Error("CANONICAL_WORKSPACE_REPLACED");
+        assertConsumerRepairCanonicalDraftWriteSource(expectedDraftWriteSource, findConsumerRepairBundle(draftId));
+      },
+    };
+  };
   const freshBuildKey = requestEstimateFreshBuildKey(props);
   const [settledFreshBuildKey, setSettledFreshBuildKey] = React.useState<string | null>(null);
   const freshBuildKeyRef = React.useRef<string | null>(freshBuildKey);
@@ -991,32 +1013,38 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
           onLoadCanonicalParameterSession={(revisionId, requestDraftId) =>
             loadConsumerCanonicalParameterSession({ revisionId, draftId: requestDraftId })}
           onRecalculateCanonicalEstimate={async ({ revisionId, requestDraftId, problemText, patches, rowOverrides }) => {
-            const expectedWorkspaceGeneration = workspaceGenerationRef.current;
+            const source = captureRecalculationSource(requestDraftId, revisionId);
             return await recalculateAndPersistConsumerCanonicalEstimate({
               revisionId,
               draftId: requestDraftId,
               problemText,
               patches,
               rowOverrides,
+              confirmReleaseMigration: releaseMigrationConfirmation.confirmReleaseMigration,
+              assertMutationSource: source.assertMutationSource,
               persist: (mapping, nextProblemText, targetDraftId) =>
                 persistCanonicalDraft(mapping, nextProblemText, targetDraftId, {
-                  expectedWorkspaceGeneration,
+                  expectedWorkspaceGeneration: source.expectedWorkspaceGeneration,
+                  expectedDraftWriteSource: source.expectedDraftWriteSource,
                 }),
             });
           }}
           onSelectCanonicalCatalogItem={async ({ context, problemText, catalogItem }) => {
-            const expectedWorkspaceGeneration = workspaceGenerationRef.current;
+            const source = captureRecalculationSource(context.draftId, context.revisionId);
             const mapping = await recalculateConsumerCanonicalCatalogSelection({
               revisionId: context.revisionId,
               problemText,
               rowId: context.lineId!,
               catalogItem,
+              confirmReleaseMigration: releaseMigrationConfirmation.confirmReleaseMigration,
+              assertMutationSource: source.assertMutationSource,
             });
+            source.assertMutationSource();
             const childBundle = await persistCanonicalDraft(
               mapping,
               problemText,
               context.draftId,
-              { expectedWorkspaceGeneration },
+              { expectedWorkspaceGeneration: source.expectedWorkspaceGeneration, expectedDraftWriteSource: source.expectedDraftWriteSource },
             );
             if (!childBundle) throw new Error("CATALOG_CHILD_DRAFT_NOT_PERSISTED");
             const childItem = childBundle.items.find((item) =>
@@ -1031,17 +1059,20 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
             screenRef.current?.acceptCanonicalBackendDraft(selected.bundle);
           }}
           onAddCanonicalCatalogItem={async ({ context, problemText, catalogItem }) => {
-            const expectedWorkspaceGeneration = workspaceGenerationRef.current;
+            const source = captureRecalculationSource(context.draftId, context.revisionId);
             const result = await recalculateConsumerCanonicalCatalogAddition({
               revisionId: context.revisionId,
               problemText,
               catalogItem,
+              confirmReleaseMigration: releaseMigrationConfirmation.confirmReleaseMigration,
+              assertMutationSource: source.assertMutationSource,
             });
+            source.assertMutationSource();
             const childBundle = await persistCanonicalDraft(
               result.mapping,
               problemText,
               context.draftId,
-              { expectedWorkspaceGeneration },
+              { expectedWorkspaceGeneration: source.expectedWorkspaceGeneration, expectedDraftWriteSource: source.expectedDraftWriteSource },
             );
             if (!childBundle) throw new Error("CATALOG_ADDITION_CHILD_DRAFT_NOT_PERSISTED");
             const childItem = childBundle.items.find((item) =>
@@ -1067,6 +1098,11 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
       {canonicalEstimatePreview ? (
         <CanonicalEstimateMeaningfulPreviewCard preview={canonicalEstimatePreview} />
       ) : null}
+      <ConsumerCanonicalReleaseMigrationConfirmation
+        prompt={releaseMigrationConfirmation.prompt}
+        onConfirm={releaseMigrationConfirmation.confirm}
+        onCancel={releaseMigrationConfirmation.cancel}
+      />
       <ConsumerRepairStorageStatus
         authResolved={authResolved}
         consumerUserId={resolvedConsumerUserId}

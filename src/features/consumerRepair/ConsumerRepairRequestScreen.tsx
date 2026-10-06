@@ -258,7 +258,7 @@ export type ConsumerRepairRequestScreenControllerProps = ConsumerRepairRequestSc
     problemText: string;
     patches: ConsumerRepairDraftRevisionParamBatchPatch[];
     rowOverrides?: Record<string, CanonicalEstimateRowOverride>;
-  }) => Promise<{ session: CanonicalParameterSession; bundle: ConsumerRepairDraftBundle }>;
+  }) => Promise<{ session: CanonicalParameterSession; bundle: ConsumerRepairDraftBundle; recovered?: boolean }>;
   onSelectCanonicalCatalogItem: (input: {
     context: ConsumerEstimateActionContext;
     problemText: string;
@@ -2756,10 +2756,12 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         bundle: result.bundle,
         canonicalBackendParameterSession: result.session,
         selectedHistoryId: null,
-        statusMessage: "Изменения сохранены. Зависимые позиции пересчитаны.",
+        statusMessage: result.recovered
+          ? "Открыт ранее сохранённый пересчёт. Новые введённые значения ещё не применены — проверьте их и нажмите «Применить»."
+          : "Изменения сохранены. Зависимые позиции пересчитаны.",
       });
       this.refreshHistory(result.bundle);
-      return true;
+      return result.recovered ? false : true;
     } catch (error) {
       if (!consumerRepairCanonicalMutationSourceMatchesBundle(mutationSource, this.state.bundle)) return false;
       this.setState({

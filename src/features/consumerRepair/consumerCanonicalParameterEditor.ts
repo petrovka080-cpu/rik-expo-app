@@ -52,6 +52,13 @@ import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerT
 import { logger } from "../../lib/logger";
 import { createConsumerEstimateHydrationTrace } from "../../lib/consumerRequests/consumerEstimateHydrationTrace";
 import {
+  assertConsumerCanonicalChildRevision,
+  consumerCanonicalInheritedRecalculationInputs,
+  consumerCanonicalExplicitMigrationParameters,
+  resolveConsumerCanonicalRecalculationCatalog,
+  type ConsumerCanonicalRecalculationConsent,
+} from "./consumerCanonicalReleaseMigration";
+import {
   canonicalEstimateBlockingParameterIssues,
   canonicalEstimateParameterChoiceLabelRu,
   isCanonicalEstimateConsumerSuppliedParameter,
@@ -763,16 +770,10 @@ export async function recalculateConsumerCanonicalEstimate(input: {
   problemText: string;
   patches: ConsumerRepairDraftRevisionParamBatchPatch[];
   rowOverrides?: Record<string, CanonicalEstimateRowOverride>;
-}): Promise<{ mapping: ForemanAiEstimateDraftMapping; session: CanonicalParameterSession }> {
+} & ConsumerCanonicalRecalculationConsent): Promise<{ mapping: ForemanAiEstimateDraftMapping; session: CanonicalParameterSession; recovered?: boolean }> {
   const revision = await getCanonicalEstimateRevision(input.revisionId);
-  const catalog = await getCanonicalEstimateCatalogItem(revision.catalogId, null, revision.releaseId);
-  if (catalog.releaseId !== revision.releaseId) {
-    throw new CanonicalEstimateApiError("Пересчёт остановлен: версия каталога не совпадает с родительской сметой.", {
-      code: "REVISION_RELEASE_MISMATCH",
-      httpStatus: 409,
-    });
-  }
-  const rawInputs: Record<string, unknown> = { ...revision.parameters };
+  const { catalog, releaseMigration, recoveredRevision } = await resolveConsumerCanonicalRecalculationCatalog({ ...input, revision, hasNewRowAmendments: Object.keys(input.rowOverrides ?? {}).length > 0, parameterPatchKeys: input.patches.map(patch => patch.paramKey) });
+  const rawInputs: Record<string, unknown> = consumerCanonicalInheritedRecalculationInputs(revision, catalog);
   for (const patch of input.patches) rawInputs[patch.paramKey] = patch.rawValue;
   const validation = validateCanonicalEstimateParameterInputs({ schema: catalog.parameterSchema, rawInputs });
   const blockingIssues = parameterIssuesBlockingConsumerCanonicalRecalculation({
@@ -791,7 +792,9 @@ export async function recalculateConsumerCanonicalEstimate(input: {
       { code: "INVALID_PARAMETER_INPUT", httpStatus: 400 },
     );
   }
-  const parameters = validation.parameters as Record<string, CanonicalEstimateParameterInputValue>;
+  const parameters = (releaseMigration
+    ? consumerCanonicalExplicitMigrationParameters(catalog, validation.parameters, rawInputs)
+    : validation.parameters) as Record<string, CanonicalEstimateParameterInputValue>;
   const requestIdentity = requestIdentityForRecalculation({
     revision,
     catalog,
@@ -802,13 +805,18 @@ export async function recalculateConsumerCanonicalEstimate(input: {
     rowOverrides[rowId] = { ...rowOverrides[rowId], ...override };
   }
   const customRows = revision.amendmentContract.customRows;
-  const result = await recalculateCanonicalEstimateAndLoad({
+  input.assertMutationSource?.();
+  const result = recoveredRevision ? {
+    revision: await getCanonicalEstimateRevision(recoveredRevision.revisionId),
+    rows: await getAllCanonicalEstimateRevisionRows({ revisionId: recoveredRevision.revisionId }),
+  } : await recalculateCanonicalEstimateAndLoad({
     request: {
       idempotencyKey: canonicalEstimateRecalculateIdempotencyKey({
         parentRevisionId: revision.revisionId,
         parameters,
         rowOverrides,
         customRows,
+        releaseMigration,
       }),
       catalogId: revision.catalogId,
       parentRevisionId: revision.revisionId,
@@ -818,13 +826,12 @@ export async function recalculateConsumerCanonicalEstimate(input: {
       currencyCode: revision.currencyCode,
       rowOverrides,
       customRows,
+      ...(releaseMigration ? { releaseMigration } : {}),
     },
   });
-  if (result.revision.parentRevisionId !== revision.revisionId) {
-    throw new CanonicalEstimateApiError("Пересчёт остановлен: backend вернул несогласованный результат.", {
-      code: "CHILD_REVISION_IDENTITY_MISMATCH",
-      httpStatus: 409,
-    });
+  assertConsumerCanonicalChildRevision({ parent: revision, catalog, child: result.revision });
+  if (result.revision.status !== "ready" || result.rows.length !== result.revision.rowCount) {
+    throw new CanonicalEstimateApiError("Изменения не сохранены: не подтверждён полный состав новой версии.", { code: "REVISION_ROW_PARITY_MISMATCH", httpStatus: 409 });
   }
   const estimate = adaptCanonicalRevisionToStructuredEstimate({
     catalog,
@@ -853,6 +860,7 @@ export async function recalculateConsumerCanonicalEstimate(input: {
   }
   return {
     mapping,
+    ...(recoveredRevision ? { recovered: true } : {}),
     session: buildConsumerCanonicalParameterSession({
       catalog,
       revision: result.revision,
@@ -874,7 +882,7 @@ export async function recalculateAndPersistConsumerCanonicalEstimate(input: {
     draftId: string,
   ) => Promise<ConsumerRepairDraftBundle | null | undefined>;
   recalculate?: typeof recalculateConsumerCanonicalEstimate;
-}): Promise<{ session: CanonicalParameterSession; bundle: ConsumerRepairDraftBundle }> {
+} & ConsumerCanonicalRecalculationConsent): Promise<{ session: CanonicalParameterSession; bundle: ConsumerRepairDraftBundle; recovered?: boolean }> {
   const recalculate = input.recalculate ?? recalculateConsumerCanonicalEstimate;
   const result = await recalculate({
     revisionId: input.revisionId,
@@ -882,10 +890,13 @@ export async function recalculateAndPersistConsumerCanonicalEstimate(input: {
     problemText: input.problemText,
     patches: input.patches,
     rowOverrides: input.rowOverrides,
+    confirmReleaseMigration: input.confirmReleaseMigration,
+    assertMutationSource: input.assertMutationSource,
   });
+  input.assertMutationSource?.();
   const bundle = await input.persist(result.mapping, input.problemText, input.draftId);
   if (!bundle) throw new Error("CANONICAL_CONSUMER_CHILD_DRAFT_PERSIST_FAILED");
-  return { session: result.session, bundle };
+  return { session: result.session, bundle, ...(result.recovered ? { recovered: true } : {}) };
 }
 
 export async function recalculateConsumerCanonicalCatalogSelection(input: {
@@ -893,18 +904,12 @@ export async function recalculateConsumerCanonicalCatalogSelection(input: {
   problemText: string;
   rowId: string;
   catalogItem: CatalogItemPickerItem;
-}): Promise<ForemanAiEstimateDraftMapping> {
+} & ConsumerCanonicalRecalculationConsent): Promise<ForemanAiEstimateDraftMapping> {
   const revision = await getCanonicalEstimateRevision(input.revisionId);
-  const [catalog, rows] = await Promise.all([
-    getCanonicalEstimateCatalogItem(revision.catalogId, null, revision.releaseId),
+  const [{ catalog, releaseMigration }, rows] = await Promise.all([
+    resolveConsumerCanonicalRecalculationCatalog({ ...input, revision, hasNewRowAmendments: true }),
     getAllCanonicalEstimateRevisionRows({ revisionId: revision.revisionId }),
   ]);
-  if (catalog.releaseId !== revision.releaseId) {
-    throw new CanonicalEstimateApiError("Товар не выбран: версия каталога не совпадает со сметой.", {
-      code: "REVISION_RELEASE_MISMATCH",
-      httpStatus: 409,
-    });
-  }
   const sourceRow = rows.find((row) => row.rowId === input.rowId);
   if (!sourceRow) {
     throw new CanonicalEstimateApiError("Товар не выбран: строка отсутствует в выбранной версии.", {
@@ -940,7 +945,7 @@ export async function recalculateConsumerCanonicalCatalogSelection(input: {
   };
   const parameterValidation = validateCanonicalEstimateParameterInputs({
     schema: catalog.parameterSchema,
-    rawInputs: revision.parameters,
+    rawInputs: consumerCanonicalInheritedRecalculationInputs(revision, catalog),
   });
   if (blockingCanonicalParameterIssues(catalog, parameterValidation.issues).length > 0) {
     throw new CanonicalEstimateApiError("Товар не выбран: параметры родительской версии не прошли проверку.", {
@@ -948,6 +953,7 @@ export async function recalculateConsumerCanonicalCatalogSelection(input: {
       httpStatus: 409,
     });
   }
+  input.assertMutationSource?.();
   const result = await recalculateCanonicalEstimateAndLoad({
     request: {
       idempotencyKey: `consumer-line-catalog-${estimateDeterministicHash({
@@ -956,6 +962,7 @@ export async function recalculateConsumerCanonicalCatalogSelection(input: {
         catalogItemId: input.catalogItem.catalogItemId,
         sourceId: input.catalogItem.sourceId,
         unitPrice,
+        releaseMigration,
       })}`,
       catalogId: revision.catalogId,
       parentRevisionId: revision.revisionId,
@@ -965,18 +972,14 @@ export async function recalculateConsumerCanonicalCatalogSelection(input: {
         catalog,
         problemText: input.problemText,
       }),
-      parameters: parameterValidation.parameters,
+      parameters: (releaseMigration ? consumerCanonicalExplicitMigrationParameters(catalog, parameterValidation.parameters, consumerCanonicalInheritedRecalculationInputs(revision, catalog)) : parameterValidation.parameters) as Record<string, CanonicalEstimateParameterInputValue>,
       currencyCode: revision.currencyCode,
       rowOverrides,
       customRows: revision.amendmentContract.customRows,
+      ...(releaseMigration ? { releaseMigration } : {}),
     },
   });
-  if (result.revision.parentRevisionId !== revision.revisionId) {
-    throw new CanonicalEstimateApiError("Товар не выбран: backend вернул несогласованный результат.", {
-      code: "CHILD_REVISION_IDENTITY_MISMATCH",
-      httpStatus: 409,
-    });
-  }
+  assertConsumerCanonicalChildRevision({ parent: revision, catalog, child: result.revision });
   const estimate = adaptCanonicalRevisionToStructuredEstimate({
     catalog,
     revision: result.revision,
@@ -1009,19 +1012,9 @@ export async function recalculateConsumerCanonicalCatalogAddition(input: {
   revisionId: string;
   problemText: string;
   catalogItem: CatalogItemPickerItem;
-}): Promise<{ mapping: ForemanAiEstimateDraftMapping; rowId: string }> {
+} & ConsumerCanonicalRecalculationConsent): Promise<{ mapping: ForemanAiEstimateDraftMapping; rowId: string }> {
   const revision = await getCanonicalEstimateRevision(input.revisionId);
-  const catalog = await getCanonicalEstimateCatalogItem(
-    revision.catalogId,
-    null,
-    revision.releaseId,
-  );
-  if (catalog.releaseId !== revision.releaseId) {
-    throw new CanonicalEstimateApiError(
-      "\u041f\u043e\u0437\u0438\u0446\u0438\u044f \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0430: \u0432\u0435\u0440\u0441\u0438\u044f \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430 \u043d\u0435 \u0441\u043e\u0432\u043f\u0430\u0434\u0430\u0435\u0442 \u0441\u043e \u0441\u043c\u0435\u0442\u043e\u0439.",
-      { code: "REVISION_RELEASE_MISMATCH", httpStatus: 409 },
-    );
-  }
+  const { catalog, releaseMigration } = await resolveConsumerCanonicalRecalculationCatalog({ ...input, revision, hasNewRowAmendments: true });
   const titleRu = input.catalogItem.name.trim();
   const unitId = input.catalogItem.unit.trim();
   if (!titleRu || !unitId) {
@@ -1041,7 +1034,7 @@ export async function recalculateConsumerCanonicalCatalogAddition(input: {
   }
   const parameterValidation = validateCanonicalEstimateParameterInputs({
     schema: catalog.parameterSchema,
-    rawInputs: revision.parameters,
+    rawInputs: consumerCanonicalInheritedRecalculationInputs(revision, catalog),
   });
   if (blockingCanonicalParameterIssues(catalog, parameterValidation.issues).length > 0) {
     throw new CanonicalEstimateApiError(
@@ -1071,22 +1064,26 @@ export async function recalculateConsumerCanonicalCatalogAddition(input: {
       reason: `catalog_add:${input.catalogItem.catalogItemId}:${input.catalogItem.sourceId}`.slice(0, 500),
     },
   };
+  input.assertMutationSource?.();
   const result = await recalculateCanonicalEstimateAndLoad({
     request: {
       idempotencyKey: `consumer-catalog-add-${estimateDeterministicHash({
         parentRevisionId: revision.revisionId,
         clientRowId,
+        releaseMigration,
       })}`,
       catalogId: revision.catalogId,
       parentRevisionId: revision.revisionId,
       organizationId: revision.organizationId ?? null,
       ...requestIdentityForRecalculation({ revision, catalog, problemText: input.problemText }),
-      parameters: parameterValidation.parameters,
+      parameters: (releaseMigration ? consumerCanonicalExplicitMigrationParameters(catalog, parameterValidation.parameters, consumerCanonicalInheritedRecalculationInputs(revision, catalog)) : parameterValidation.parameters) as Record<string, CanonicalEstimateParameterInputValue>,
       currencyCode: revision.currencyCode,
       rowOverrides: revision.amendmentContract.rowOverrides,
       customRows: [...revision.amendmentContract.customRows, customRow],
+      ...(releaseMigration ? { releaseMigration } : {}),
     },
   });
+  assertConsumerCanonicalChildRevision({ parent: revision, catalog, child: result.revision });
   const rowId = `manual:${clientRowId}`;
   const preliminaryRow = result.revision.preliminaryNeeds?.find((need) =>
     need.rowId === rowId && need.titleRu === titleRu

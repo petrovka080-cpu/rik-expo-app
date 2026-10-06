@@ -34,10 +34,19 @@ describe("safeBack", () => {
     expect(router.replace).toHaveBeenCalledWith("/office");
   });
 
-  it("uses browser history on web", () => {
+  it("returns a directly opened product to market even after browser reloads", () => {
     const router = createRouter();
-
-    expect(hasSafeBackHistory(router, { platform: "web", webHistoryLength: 2 })).toBe(true);
+    const result = safeBack(router, "/(tabs)/market", { platform: "web", webHistoryLength: 9 });
+    expect(result).toBe("fallback");
+    expect(router.back).not.toHaveBeenCalled();
+    expect(router.replace).toHaveBeenCalledWith("/(tabs)/market");
     expect(hasSafeBackHistory(router, { platform: "web", webHistoryLength: 1 })).toBe(false);
+  });
+
+  it("retains the real previous market screen when the navigator has history", () => {
+    const router = createRouter({ canGoBack: () => true });
+    expect(safeBack(router, "/(tabs)/market", { platform: "web", webHistoryLength: 1 })).toBe("back");
+    expect(router.back).toHaveBeenCalledTimes(1);
+    expect(router.replace).not.toHaveBeenCalled();
   });
 });

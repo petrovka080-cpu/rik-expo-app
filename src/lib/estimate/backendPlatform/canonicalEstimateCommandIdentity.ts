@@ -3,6 +3,7 @@ import type {
   CanonicalEstimateCustomRow,
   CanonicalEstimateParameterInputValue,
   CanonicalEstimateRowOverride,
+  CanonicalEstimateRecalculateRequest,
 } from "./contracts";
 
 export type CanonicalEstimateRecalculateCommandIdentity = {
@@ -10,6 +11,7 @@ export type CanonicalEstimateRecalculateCommandIdentity = {
   parameters: Record<string, CanonicalEstimateParameterInputValue>;
   rowOverrides: Record<string, CanonicalEstimateRowOverride>;
   customRows: CanonicalEstimateCustomRow[];
+  releaseMigration?: CanonicalEstimateRecalculateRequest["releaseMigration"];
 };
 
 export function canonicalEstimateRecalculateIdempotencyKey(
@@ -20,6 +22,7 @@ export function canonicalEstimateRecalculateIdempotencyKey(
     parameters: input.parameters,
     rowOverrides: input.rowOverrides,
     customRows: input.customRows,
+    ...(input.releaseMigration ? { releaseMigration: input.releaseMigration } : {}),
   })}`;
 }
 

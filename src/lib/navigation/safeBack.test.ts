@@ -40,11 +40,10 @@ describe("hasSafeBackHistory", () => {
     expect(hasSafeBackHistory(r, { platform: "ios" })).toBe(false);
   });
 
-  it("checks web history length on web platform", () => {
-    const r = createRouter();
-    expect(hasSafeBackHistory(r, { platform: "web", webHistoryLength: 3 })).toBe(true);
-    expect(hasSafeBackHistory(r, { platform: "web", webHistoryLength: 1 })).toBe(false);
-    expect(hasSafeBackHistory(r, { platform: "web", webHistoryLength: 0 })).toBe(false);
+  it("uses navigator history on web regardless of browser history length", () => {
+    expect(hasSafeBackHistory(createRouter(), { platform: "web", webHistoryLength: 1 })).toBe(true);
+    expect(hasSafeBackHistory(createRouter({ canGoBack: () => false }), { platform: "web", webHistoryLength: 3 })).toBe(false);
+    expect(hasSafeBackHistory(createRouter({ canGoBack: undefined }), { platform: "web", webHistoryLength: 3 })).toBe(false);
   });
 });
 

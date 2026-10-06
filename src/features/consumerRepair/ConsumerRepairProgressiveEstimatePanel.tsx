@@ -1072,6 +1072,7 @@ export class InlineParamEditor extends React.PureComponent<InlineParamEditorProp
 
 export class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePanelProps, ParameterDisclosurePanelState> {
   private submittedDraftValues: Record<string, string> | null = null;
+  private submittedDirtyKeys: string[] | null = null;
   private submittedParentRevisionId: string | null = null;
   // Only the current baseline/preview; never retain revision history or cache
   // compiler/admission results. New immutable inputs invalidate immediately.
@@ -1119,7 +1120,17 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       );
       const preserveKeys = acceptedSubmittedChild && this.submittedDraftValues
         ? Object.keys(this.state.draftValues).filter(
-            (key) => (this.state.draftValues[key] ?? "") !== (this.submittedDraftValues?.[key] ?? ""),
+            (key) => {
+              const submitted = this.submittedDraftValues?.[key] ?? "";
+              if ((this.state.draftValues[key] ?? "") !== submitted) return true;
+              if (!this.submittedDirtyKeys?.includes(key)) return false;
+              const card = this.buildBaselineCards().find(candidate => candidate.key === key);
+              const saved = card ? this.valueForCard(card) : "";
+              const numeric = this.props.canonicalParameterSession?.parameters.find(parameter => parameter.parameterId === key)?.valueType === "number";
+              return numeric && saved.trim() && submitted.trim()
+                ? Number(saved.replace(",", ".")) !== Number(submitted.replace(",", "."))
+                : saved !== submitted;
+            },
           )
         : this.dirtyKeys();
       this.rebaseDraftOnCurrentRevision(preserveKeys);
@@ -1215,6 +1226,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
         .map((key) => [key, this.state.draftValues[key] ?? ""]),
     );
     this.submittedDraftValues = null;
+    this.submittedDirtyKeys = null;
     this.submittedParentRevisionId = null;
     this.setState({
       draftValues: { ...baselineValues, ...preservedValues },
@@ -1288,6 +1300,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
 
   private cancelDraftChanges = (): void => {
     this.submittedDraftValues = null;
+    this.submittedDirtyKeys = null;
     this.submittedParentRevisionId = null;
     this.setState({
       draftValues: { ...this.state.baselineValues },
@@ -1361,6 +1374,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       parameterIds: patches.map((patch) => patch.paramKey),
     }));
     this.submittedDraftValues = { ...this.state.draftValues };
+    this.submittedDirtyKeys = [...dirtyKeys];
     this.submittedParentRevisionId = this.props.revision?.revisionId ?? this.state.draftRevisionId;
     this.setState({ applyState: "pending" });
     try {
@@ -1712,7 +1726,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
           </Pressable>
         </View>
       ) : null}
-      {latestDiff ? (
+      {latestDiff && dirtyCount === 0 && !applyPending && this.state.applyState !== "error" ? (
         <Text style={styles.successStatus} testID="request-estimate-parameter-apply-status">
           Параметры применены. Смета пересчитана. Документ и пакет закупки нужно пересоздать.
         </Text>

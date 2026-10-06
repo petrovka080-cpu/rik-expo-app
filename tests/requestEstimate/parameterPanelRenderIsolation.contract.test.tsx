@@ -89,6 +89,20 @@ describe("canonical parameter presentation isolation, not calculation caching", 
   let renderer: ReactTestRenderer | undefined;
   afterEach(() => { act(() => renderer?.unmount()); renderer = undefined; jest.restoreAllMocks(); });
 
+  it("hides old success after a failed Apply and retains the newly entered value", async () => {
+    const session = pressureSession();
+    const latestDiff = { fromRevisionId: "old", toRevisionId: session.revisionId, changedParams: [], changedRows: [], changedRowsCount: 0,
+      staleArtifactsAfterEdit: { snapshotInvalidated: true, pdfInvalidated: true, buyerHandoffInvalidated: true } };
+    act(() => { renderer = TestRenderer.create(<ParameterDisclosurePanel viewModel={viewModel()} revision={revision(session)} canonicalParameterSession={session} latestDiff={latestDiff} paramEditorEnabled onApplyParamBatch={async () => false} />); });
+    expect(renderer!.root.findAllByProps({ testID: "request-estimate-parameter-apply-status" }).length).toBeGreaterThan(0);
+    act(() => field(renderer!).props.onChangeText("101"));
+    await act(async () => { renderer!.root.findByProps({ testID: "editable-param-batch-apply" }).props.onPress(); });
+    expect(field(renderer!).props.value).toBe("101");
+    expect(renderer!.root.findAllByProps({ testID: "request-estimate-parameter-apply-error" }).length).toBeGreaterThan(0);
+    expect(renderer!.root.findAllByProps({ testID: "request-estimate-parameter-apply-status" })).toHaveLength(0);
+    expect(renderer!.root.findAllByProps({ testID: "request-estimate-parameter-apply-success" })).toHaveLength(0);
+  });
+
   it("builds at most the baseline and current cards when mounting the actual 54-input profile", () => {
     const build = jest.spyOn(cards, "buildCanonicalParameterCards");
     act(() => { renderer = TestRenderer.create(<ParameterDisclosurePanel viewModel={viewModel()} revision={null} canonicalParameterSession={pressureSession()} latestDiff={null} paramEditorEnabled onApplyParamBatch={jest.fn()} />); });
@@ -166,6 +180,36 @@ describe("canonical parameter presentation isolation, not calculation caching", 
     act(() => renderer!.root.findByProps({ testID: "editable-param-batch-cancel" }).props.onPress());
     expect(field(renderer!).props.value).toBe("150");
     expect(apply).toHaveBeenCalledTimes(1);
+  });
+
+  it("retains 102 when recovery opens an earlier child saved for 101", async () => {
+    const session = pressureSession();
+    const firstRevision = revision(session);
+    const props = { viewModel: viewModel(), latestDiff: null, paramEditorEnabled: true, onApplyParamBatch: async () => false };
+    act(() => { renderer = TestRenderer.create(<ParameterDisclosurePanel {...props} revision={firstRevision} canonicalParameterSession={session} />); });
+    act(() => field(renderer!).props.onChangeText("102"));
+    await act(async () => renderer!.root.findByProps({ testID: "editable-param-batch-apply" }).props.onPress());
+    const recovered = { ...session, revisionId: "saved-child", parameters: session.parameters.map(parameter => parameter.parameterId === "psp_route_length_m" ? { ...parameter, value: 101 } : parameter) };
+    act(() => renderer!.update(<ParameterDisclosurePanel {...props} revision={revision(recovered, firstRevision.revisionId)} canonicalParameterSession={recovered} />));
+    expect(field(renderer!).props.value).toBe("102");
+    expect(renderer!.root.findAllByProps({ testID: "editable-param-batch-apply" }).length).toBeGreaterThan(0);
+    act(() => renderer!.root.findByProps({ testID: "editable-param-batch-cancel" }).props.onPress());
+    expect(field(renderer!).props.value).toBe("101");
+  });
+
+  it("accepts a new untouched baseline without turning the old assumption into a dirty override", async () => {
+    const session = pressureSession();
+    const firstRevision = revision(session);
+    const props = { viewModel: viewModel(), latestDiff: null, paramEditorEnabled: true, onApplyParamBatch: async () => true };
+    act(() => { renderer = TestRenderer.create(<ParameterDisclosurePanel {...props} revision={firstRevision} canonicalParameterSession={session} />); });
+    const profileKey = "psp_excavator_productivity_m3_h";
+    expect(field(renderer!, profileKey).props.value).toBe("35");
+    act(() => field(renderer!).props.onChangeText("101"));
+    await act(async () => renderer!.root.findByProps({ testID: "editable-param-batch-apply" }).props.onPress());
+    const next = { ...session, revisionId: "new-baseline-child", parameters: session.parameters.map(parameter => parameter.parameterId === "psp_route_length_m" ? { ...parameter, value: 101 } : parameter.parameterId === profileKey ? { ...parameter, value: 40 } : parameter) };
+    act(() => renderer!.update(<ParameterDisclosurePanel {...props} revision={revision(next, firstRevision.revisionId)} canonicalParameterSession={next} />));
+    expect(field(renderer!, profileKey).props.value).toBe("40");
+    expect(renderer!.root.findAllByProps({ testID: "editable-param-batch-dirty-count" })).toHaveLength(0);
   });
 
   it("reuses at most two display formatters without rounding input values or changing numeric gray rules", () => {
