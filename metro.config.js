@@ -45,6 +45,7 @@ function localDeveloperMetroConfig() {
 }
 
 const config = localDeveloperMetroConfig();
+require("./scripts/dev/metroAndroidBundleTransport.cjs").withLocalAndroidBundleTransport(config);
 
 config.transformer = {
   ...config.transformer,
