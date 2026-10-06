@@ -115,10 +115,10 @@ function renderViewerBody(props: PdfViewerScreenContentProps) {
         <CenteredPanel
           title={contentModel.title}
           subtitle={contentModel.subtitle}
-          actionLabel={contentModel.allowRetry ? contentModel.retryLabel || "Retry" : undefined}
+          actionLabel={contentModel.allowRetry ? contentModel.retryLabel || "Повторить" : undefined}
           onAction={contentModel.allowRetry ? onRetry : undefined}
           secondaryLabel={
-            contentModel.allowOpenExternal ? "Open externally" : undefined
+            contentModel.allowOpenExternal ? "Открыть в другом приложении" : undefined
           }
           onSecondaryAction={
             contentModel.allowOpenExternal ? onOpenExternal : undefined
@@ -137,10 +137,10 @@ function renderViewerBody(props: PdfViewerScreenContentProps) {
         <CenteredPanel
           title={contentModel.title}
           subtitle={contentModel.subtitle}
-          actionLabel={contentModel.allowRetry ? "Retry" : undefined}
+          actionLabel={contentModel.allowRetry ? "Повторить" : undefined}
           onAction={contentModel.allowRetry ? onRetry : undefined}
           secondaryLabel={
-            contentModel.allowOpenExternal ? "Open externally" : undefined
+            contentModel.allowOpenExternal ? "Открыть в другом приложении" : undefined
           }
           onSecondaryAction={
             contentModel.allowOpenExternal ? onOpenExternal : undefined
@@ -231,7 +231,8 @@ export function PdfViewerScreenContent(props: PdfViewerScreenContentProps) {
           testID="pdf-viewer-back"
           onPress={props.onBack}
           style={styles.iconButton}
-          accessibilityLabel="Back"
+          accessibilityRole="button"
+          accessibilityLabel="Назад"
         >
           <Ionicons name="chevron-back" size={20} color={VIEWER_TEXT} />
         </Pressable>
@@ -247,7 +248,8 @@ export function PdfViewerScreenContent(props: PdfViewerScreenContentProps) {
             onPress={props.onToggleMenu}
             style={styles.iconButton}
             disabled={!props.asset}
-            accessibilityLabel="Document actions"
+            accessibilityRole="button"
+            accessibilityLabel="Действия с документом"
           >
             <Ionicons
               name="ellipsis-horizontal"
@@ -259,22 +261,22 @@ export function PdfViewerScreenContent(props: PdfViewerScreenContentProps) {
             <View style={styles.menu}>
               <MenuAction
                 icon="share-outline"
-                label="Share"
+                label="Поделиться"
                 onPress={props.onShare}
               />
               <MenuAction
                 icon="download-outline"
-                label="Download"
+                label="Скачать"
                 onPress={props.onDownload}
               />
               <MenuAction
                 icon="open-outline"
-                label="Open externally"
+                label="Открыть в другом приложении"
                 onPress={props.onOpenExternal}
               />
               <MenuAction
                 icon="print-outline"
-                label="Print"
+                label="Печать"
                 onPress={props.onPrint}
               />
             </View>

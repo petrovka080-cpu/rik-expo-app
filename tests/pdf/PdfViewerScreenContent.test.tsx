@@ -2,7 +2,7 @@ import React from "react";
 import TestRenderer, { act } from "react-test-renderer";
 
 import type { DocumentAsset } from "../../src/lib/documents/pdfDocumentSessions";
-import { CenteredPanel } from "../../src/lib/pdf/pdfViewer.components";
+import { CenteredPanel, MenuAction } from "../../src/lib/pdf/pdfViewer.components";
 import type { PdfViewerResolution } from "../../src/lib/pdf/pdfViewerContract";
 import { PdfViewerNativeShell } from "../../src/lib/pdf/PdfViewerNativeShell";
 import { PdfViewerScreenContent } from "../../src/lib/pdf/PdfViewerScreenContent";
@@ -101,6 +101,26 @@ function renderContent(
 }
 
 describe("PdfViewerScreenContent", () => {
+  it("keeps Russian document actions accessible and delegated to the same callbacks", () => {
+    const props = createProps({ menuOpen: true });
+    const renderer = renderContent(props);
+    expect(renderer.root.findByProps({ testID: "pdf-viewer-back" }).props.accessibilityLabel).toBe("Назад");
+    const actions = renderer.root.findAllByType(MenuAction);
+    expect(actions.map(action => action.props.label)).toEqual([
+      "Поделиться", "Скачать", "Открыть в другом приложении", "Печать",
+    ]);
+    const callbacks = [props.onShare, props.onDownload, props.onOpenExternal, props.onPrint];
+    actions.forEach((action, index) => {
+      expect(action.props.onPress).toBe(callbacks[index]);
+      act(() => action.props.onPress());
+      expect(callbacks[index]).toHaveBeenCalledTimes(1);
+      const accessible = action.findAll(node => node.props.accessibilityRole === "button"
+        && node.props.accessibilityLabel === action.props.label);
+      expect(accessible.length).toBeGreaterThan(0);
+    });
+    act(() => renderer.unmount());
+  });
+
   it("renders the error branch through the extracted presenter contract", () => {
     const onRetry = jest.fn();
     const onOpenExternal = jest.fn();

@@ -27,7 +27,7 @@ export function MenuAction({
   onPress: () => void;
 }) {
   return (
-    <Pressable onPress={onPress} style={styles.menuAction}>
+    <Pressable onPress={onPress} style={styles.menuAction} accessibilityRole="button" accessibilityLabel={label}>
       <Ionicons name={icon} size={18} color={VIEWER_TEXT} />
       <Text style={styles.menuActionText}>{label}</Text>
     </Pressable>

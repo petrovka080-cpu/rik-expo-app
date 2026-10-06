@@ -76,6 +76,20 @@ function serverBoundBundle(items: ConsumerRepairRequestItem[]): ConsumerRepairDr
 }
 
 describe("R4 canonical estimate title parity", () => {
+  it("formats a summed quantity without exposing floating point noise or changing saved row quantities", () => {
+    const items = [0.1, 0.2].map((quantity, index) => ({
+      ...canonicalItem(`material:fraction-${index}`, "Материал", "a".repeat(64), index),
+      quantity, unit: "m2", unitLabel: "м²", itemType: "material" as const, category: "materials",
+    }));
+    const saved = JSON.stringify(items);
+    const viewModel = buildRequestEstimateViewModel(serverBoundBundle(items))!;
+    expect(viewModel.previewSections.flatMap(section => section.rows)
+      .some(row => row.quantityLabel === "0,3 м²")).toBe(true);
+    expect(JSON.stringify(viewModel)).not.toContain("0,30000000000000004");
+    expect(viewModel.visibleLines[0].text).toContain("0,1 м²");
+    expect(JSON.stringify(items)).toBe(saved);
+  });
+
   it("keeps a reopened decimal supplier order separate from installed quantity and retained reserve", () => {
     const item = canonicalItem("material:supplier-order", "Расходный материал", "a".repeat(64), 0);
     item.unit = "kg"; item.unitLabel = "кг";

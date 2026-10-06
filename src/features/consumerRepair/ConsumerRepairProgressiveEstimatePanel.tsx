@@ -35,6 +35,8 @@ import type {
   EstimateDraftRevisionState,
 } from "../../lib/estimate/estimateDraftRevisionContract";
 import { canonicalMaterialQuantityBasisFromRow } from "../../lib/estimate/backendPlatform/canonicalMaterialQuantityProjection";
+import { canonicalArtifactPurchaseBalance } from "../../lib/estimate/backendPlatform/canonicalPersistedPurchaseBalance";
+import { formatEstimateQuantityRu } from "../../lib/estimatePresentation/formatEstimateQuantityRu";
 import { publicBoqDisplayNameRu } from "../../lib/estimate/publicBoqNaming";
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
@@ -131,10 +133,11 @@ function shouldOpenPositionsByDefault(props: Props): boolean {
 export type CanonicalProcurementPreviewRow = {
   rowId: string;
   titleRu: string;
-  quantity: number;
+  quantity: number | string;
   unit: string;
   unitPrice: number | null;
   currency: string;
+  quantityDetails: string[];
 };
 
 export function buildCanonicalProcurementPreviewRows(
@@ -144,19 +147,36 @@ export function buildCanonicalProcurementPreviewRows(
   return revision.boq.rows
     .filter((row) => row.includedInProcurement)
     .map((row) => {
-      const quantityBasis = row.materialQuantity ?? canonicalMaterialQuantityBasisFromRow(row);
+      const balance = canonicalArtifactPurchaseBalance({
+        row_id: row.rowId, unit_id: row.unit,
+        calculation_trace: { purchaseBalance: row.sourceParameters?.canonicalPurchaseBalance },
+      });
+      const quantityBasis = balance ? null : row.materialQuantity ?? canonicalMaterialQuantityBasisFromRow(row);
+      const unit = formatEstimateUnitLabel(balance?.unitId ?? quantityBasis?.procurementUnit ?? row.unitLabel ?? row.unit);
+      const orderScope = balance?.balanceScope === "new_order_vs_required_consumption";
+      const quantityDetails = balance ? [
+        `${orderScope ? balance.requirementBasis === "selected_supply_order" ? "Исходная потребность к заказу" : "Плановая потребность" : "Расход"}: ${formatEstimateQuantityRu(balance.netQuantity)} ${unit}`,
+        ...(!orderScope ? [
+          `В наличии: ${formatEstimateQuantityRu(balance.stock)} ${unit}`,
+          `Сохраняемый резерв: ${formatEstimateQuantityRu(balance.reserve)} ${unit}`,
+          `Остаток после расхода: ${formatEstimateQuantityRu(balance.remaining)} ${unit}`,
+        ] : []),
+        ...(balance.quantum ? [`Шаг поставки: ${formatEstimateQuantityRu(balance.quantum)} ${unit}`] : []),
+      ] : quantityBasis ? [
+        `Расход с учётом потерь: ${formatEstimateQuantityRu(quantityBasis.grossQuantity)} ${formatEstimateUnitLabel(quantityBasis.unit)}`,
+        `Шаг поставки: ${formatEstimateQuantityRu(quantityBasis.procurementPackageSize)} ${unit}`,
+      ] : [];
       return {
         rowId: row.rowId,
         titleRu: publicBoqDisplayNameRu({
           sourceNameRu: row.titleRu,
           rowType: row.rowType,
         }),
-        quantity: quantityBasis?.procurementQuantity ?? row.quantity,
-        unit: formatEstimateUnitLabel(
-          quantityBasis?.procurementUnit ?? row.unitLabel ?? row.unit,
-        ),
+        quantity: balance?.effectiveOrder ?? quantityBasis?.procurementQuantity ?? row.quantity,
+        unit,
         unitPrice: row.unitPrice ?? null,
         currency: row.currency,
+        quantityDetails,
       };
     });
 }
@@ -669,8 +689,11 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
             >
               <Text style={styles.procurementTitle}>{row.titleRu}</Text>
               <Text style={styles.procurementQuantity}>
-                {`${compactRuNumber(row.quantity)} ${row.unit}`}
+                {`К закупке: ${formatEstimateQuantityRu(row.quantity)} ${row.unit}`}
               </Text>
+              {row.quantityDetails.map((detail, index) => (
+                <Text key={index} style={styles.procurementPrice}>{detail}</Text>
+              ))}
               <Text style={styles.procurementPrice}>
                 {row.unitPrice == null
                   ? "Цена не заполнена"

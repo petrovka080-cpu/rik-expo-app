@@ -2,6 +2,7 @@ import { canonicalEstimateOperationReference, canonicalEstimateWorkProcess, type
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
 import { consumerCanonicalMissingRequirements, type CanonicalParameterRequirementTables } from "../../lib/consumerRequests/consumerCanonicalParameterRequirements";
 import { canonicalPurchaseShortageMessageV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
+import { formatEstimateQuantityRu } from "../../lib/estimatePresentation/formatEstimateQuantityRu";
 import { compareFormulaGraphDecimals, isFormulaGraphExactDecimal } from "../../lib/estimate/backendPlatform/formulaGraph";
 import type {
   ConsumerRepairDraftBundle,
@@ -576,13 +577,8 @@ function isGenericHelperItem(item: ConsumerRepairRequestItem): boolean {
   return isProfessionalEstimateHelperRow(rowDisplayInput(item));
 }
 
-let quantityDisplayFormatter: Intl.NumberFormat | undefined;
-
 function formatQuantityDisplayNumber(value: number): string {
-  // Display only: keep the same locale and precision without constructing an
-  // ICU formatter for each row on every quantity interaction in Hermes.
-  quantityDisplayFormatter ??= new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 3 });
-  return quantityDisplayFormatter.format(value);
+  return formatEstimateQuantityRu(value);
 }
 
 function formatQuantityForItems(items: ConsumerRepairRequestItem[]): string {
@@ -1033,7 +1029,7 @@ function visibleLineForItem(item: ConsumerRepairRequestItem): RequestEstimateVis
   const parts = [
       item.titleRu,
       selectedProduct,
-      item.quantity == null ? "количество нужно уточнить" : `${item.quantity} ${unitLabel}`,
+      item.quantity == null ? "количество нужно уточнить" : `${formatQuantityDisplayNumber(item.quantity)} ${unitLabel}`,
       priceText,
       totalText,
     ].filter((part): part is string => Boolean(part && part.trim()));
