@@ -7,6 +7,7 @@ import { estimateDeterministicHash } from '../estimateDeterministicHash';
 import sourcePack from '../../../../data/estimate-benchmarks/source-packs/gypsum-pgp-c411-s27-36.json';
 
 export const PGP_C411_WORK_KEY_S2736 = 'masonry_interior_gypsum_pgp_c411_100mm_mount_standard';
+export const PGP_C411_DISPLAY_NAME_RU = 'Монтаж перегородки из гипсовых пазогребневых плит КНАУФ C411';
 export const PGP_C411_CATALOG_S2736 = 'canonical-work:master:' + PGP_C411_WORK_KEY_S2736;
 export const PGP_C411_CONTRACT_S2736 = 'gypsum-pgp-c411:s27-36.v1';
 export const PGP_C411_SOURCE_ID_S2736 = 'src_gypsum_pgp_c411_s27_36';
@@ -116,6 +117,7 @@ const built = buildAutomaticConstructionOwnerR1({contract:PGP_C411_CONTRACT_S273
   ordinary:parameters.filter(p=>p.kind==='ordinary'),profile:parameters.filter(p=>p.kind==='profile'),conditional:parameters.filter(p=>p.kind==='conditional'),rows,deferMissingProjectFactsToRows:true,
   excludedUnownedAssumptions:['Проёмы, перемычки, штрабы и свободные торцы','Гидрофобная/двойная/80мм ПГП','Выравнивающий раствор на негоризонтальном основании','Сплошная шпаклёвка, окраска и финишное грунтование','Инженерное утверждение акустики/огнестойкости/высоты','Историческая норма материала и цена вместо выбранного продукта','Неподтверждённая паллета и целые плиты из обрезков','Доставка на объект и внешний вывоз']});
 const operationTitles:Record<string,string>={PREPARE:'Геометрия, готовность и очистка',MOUNT:'Монтаж ПГП и местные стыки',JUNCTION:'Эластичные примыкания и крепления'};
+const processOrdinals:Record<string,number>={PREPARE:0,MOUNT:1,JUNCTION:2};
 export const PGP_C411_DEFINITION_S2736 = Object.freeze({...built,resources:built.resources.map(row=>{
   const includedOwner = row.row_id.startsWith('allocation:pgp:fugen:')?'material:pgp:fugen':row.row_id.startsWith('allocation:pgp:water:')?'material:pgp:water':row.row_id==='allocation:pgp:machinist'?'work:pgp:crane':row.row_id.startsWith('tool:')?'work:pgp:worker':null;
   const primary = row.row_id.startsWith('work:')||row.row_id==='allocation:pgp:machinist'?sourcePack.krer:
@@ -125,7 +127,8 @@ export const PGP_C411_DEFINITION_S2736 = Object.freeze({...built,resources:built
     normativeTrace:[{source_id:PGP_C411_SOURCE_ID_S2736,norm_id:PGP_C411_NORM_ID_S2736,source_title:PGP_C411_SOURCE_METADATA_S2736.source_title,source_definition_hash:sourceHash,exact_locator:primary.locator,source_url:primary.url}],
     physicalQuantityBasis:row.row_id.startsWith('tool:')?'VISIBLE_CONTRACTOR_PLAN_INCLUDED_IN_LABOR':'VISIBLE_GEOMETRY_AND_PRELIMINARY_PGP_PROFILE',
     historicMaterialRatesNotImported:true,wholeSurfacePrimerNotAssigned:true},resource_graph:{...row.resource_graph,
-      operationCompositionV1:{contractVersion:'canonical-operation-resource/v1',groupId:'gypsum-pgp-c411',groupTitleRu:'Одинарная ПГП100мм, монтаж из совместимых операций',operationId:(stage.get(row.row_id)||'MOUNT').toLowerCase(),operationTitleRu:operationTitles[stage.get(row.row_id)||'MOUNT'],completionCriterionRu:'Подтвердить раскладку, примыкания, основание, поставку и применимость труда; декоративная отделка отдельным этапом'},
+      operationCompositionV1:{contractVersion:'canonical-operation-resource/v1',groupId:'gypsum-pgp-c411',groupTitleRu:PGP_C411_DISPLAY_NAME_RU,operationId:(stage.get(row.row_id)||'MOUNT').toLowerCase(),operationTitleRu:operationTitles[stage.get(row.row_id)||'MOUNT'],completionCriterionRu:'Подтвердить раскладку, примыкания, основание, поставку и применимость труда; декоративная отделка отдельным этапом',
+        ...(row.row_id==='work:pgp:worker'?{processRole:'COST_SUMMARY'}:{processOrdinal:processOrdinals[stage.get(row.row_id)||'MOUNT']})},
       ...(includedOwner?{includedInResourceOwnerRowId:includedOwner}:{}),
       ...(row.row_id.startsWith('allocation:pgp:fugen:')||row.row_id.startsWith('allocation:pgp:water:')?{purchaseConsumptionAllocationV1:{contractVersion:'canonical-purchase-consumption-allocation/v1',ownerRowId:includedOwner}}:{})}};
   return {...resource,row_sha256:estimateDeterministicHash({...resource,row_sha256:''})};

@@ -3,9 +3,21 @@ import {buildMasterParameterCalculationConsumers} from '../../scripts/estimate/r
 import {buildCanonicalProcurementProjection, selectCanonicalArtifactRows} from '../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
+import {canonicalEstimateWorkProcess} from '../../src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition';
 const balance=(row:Record<string,unknown>)=>(row.calculation_trace as Record<string,any>).purchaseBalance;
 
 describe('standard100mm PGP C411, current product profile and common purchase owner',()=>{
+  test('included works disclose their resources while the complete labor remains payable once',async()=>{
+    const r=await compile({area_m2:30});
+    const process=canonicalEstimateWorkProcess(r.rows.map(row=>({rowId:row.row_id,
+      operation:(row.calculation_trace as {resourceGraph?:{operationCompositionV1?:unknown}})?.resourceGraph?.operationCompositionV1})));
+    expect(process).toHaveLength(1);
+    expect(process[0]?.operations.map(step=>step.operationId)).toEqual(['prepare','mount','junction']);
+    expect(process[0]?.sequenceUnspecified).toBe(true);
+    expect(process[0]?.operations.flatMap(step=>step.resourceIds)).not.toContain('work:pgp:worker');
+    expect(r.rows.find(row=>row.row_id==='work:pgp:worker')).toMatchObject({quantity:'33.213',included_in_estimate:true});
+    expect(r.rows.filter(row=>row.category==='labor'&&row.included_in_estimate)).toHaveLength(1);
+  });
   test('source identity and every input consumer are retained, confirmations are not defaults',()=>{
     const {resourceConsumers}=buildMasterParameterCalculationConsumers({parameters:definition.parameters,formulas:definition.formulas,resources:definition.resources});
     expect(definition.parameters.filter(p=>!resourceConsumers[p.parameter_id]?.length)).toEqual([]);

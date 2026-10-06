@@ -13,7 +13,7 @@ import {
 const parent={definitionReleaseId:'271fe94c-35d0-500b-ab69-abcdd9fd8a74',searchReleaseId:'7190d68d-95cb-5a0e-a5e0-1e0a4c5d4535'};
 const title='Одинарная перегородка КНАУФ C411 из стандартных ПГП100мм: монтаж, эластичные примыкания и местные швы';
 const groupId='wg:master:gypsum_pgp_c411_100mm',groupNameRu='Перегородки из стандартных гипсовых пазогребневых плит100мм';
-const config:MasterSingleDefinitionSuccessorConfig={
+export const gypsumPgpC411S2736PublishConfig:MasterSingleDefinitionSuccessorConfig={
   contract:'rik-expo-app.s27-36.gypsum-pgp-c411.v1',stopCode:'S2736_GYPSUM_PGP_C411',applicationName:'s2736-gypsum-pgp-c411',
   expectedBranch:'codex/r4-a5-clean-08b18902',
   masterPath:'C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (76).md',
@@ -76,4 +76,6 @@ const config:MasterSingleDefinitionSuccessorConfig={
   forbiddenAdjacentMatchers:[/bia_tn10|fired_clay|ceramic_block|gas_block/iu,/hydrophobic|double_partition|pgp_80mm/iu,/professional_.*_set|materials_0[1-6]/iu],
   owner:'S2736_GYPSUM_PGP_C411',receiptFileStem:'gypsum_pgp_c411',
 };
-void runMasterSingleDefinitionSuccessorR1(config).catch(error=>{process.stderr.write(String(error.stack??error)+'\n');process.exitCode=1;});
+if (process.argv[1]?.replaceAll('\\', '/').endsWith('/prepareS2736GypsumPgpC411Successor.ts')) {
+  void runMasterSingleDefinitionSuccessorR1(gypsumPgpC411S2736PublishConfig).catch(error=>{process.stderr.write(String(error.stack??error)+'\n');process.exitCode=1;});
+}
