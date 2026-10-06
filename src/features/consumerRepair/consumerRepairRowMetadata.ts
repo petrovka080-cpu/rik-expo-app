@@ -1,13 +1,16 @@
 import { consumerCanonicalMissingRequirements, type CanonicalParameterRequirementTables } from "../../lib/consumerRequests/consumerCanonicalParameterRequirements";
+import type { CanonicalPublicResourcePresentationV1 } from '../../lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1';
 
 type ConsumerRepairRowMetadataCarrier = {
   id?: string;
+  titleRu?: string;
   itemType?: string;
   unit?: string | null;
   category?: string | null;
   quantity?: number | null;
   formulaId?: string | null;
   quantityFormula?: string | null;
+  normSourceTitle?: string | null;
   sourceParameters?: Readonly<Record<string, unknown>> | null;
 };
 
@@ -17,6 +20,28 @@ function metadata(item: ConsumerRepairRowMetadataCarrier | null | undefined): Re
 
 function text(value: unknown): string {
   return String(value ?? "").trim();
+}
+
+const verifiedDisplayPresentations = new WeakMap<object, CanonicalPublicResourcePresentationV1>();
+
+/** View-only admission: never persisted in an item or trusted from raw metadata. */
+export function registerConsumerRepairRowVerifiedPresentation(item: object, presentation: CanonicalPublicResourcePresentationV1 | null): void {
+  if (presentation) verifiedDisplayPresentations.set(item, presentation);
+  else verifiedDisplayPresentations.delete(item);
+}
+
+export function consumerRepairRowPublicResourcePresentation(item: ConsumerRepairRowMetadataCarrier) {
+  const descriptor = verifiedDisplayPresentations.get(item);
+  return descriptor && (item.titleRu === descriptor.sourceTitleRu || item.titleRu === descriptor.nameRu) ? descriptor : null;
+}
+
+export function consumerRepairRowMatchesSearch(item: ConsumerRepairRowMetadataCarrier, query: string): boolean {
+  const normalized = query.trim().toLocaleLowerCase('ru-RU');
+  if (!normalized) return true;
+  const presentation = consumerRepairRowPublicResourcePresentation(item);
+  return [item.titleRu, item.category, item.quantityFormula, item.normSourceTitle,
+    presentation?.brandAndModelRu, presentation?.specificationRu, ...(presentation?.detailsRu ?? [])]
+    .some(value => String(value ?? '').toLocaleLowerCase('ru-RU').includes(normalized));
 }
 
 const VISIBLE_NON_PAYABLE_COST_TREATMENTS = new Set([
@@ -106,6 +131,23 @@ export function consumerRepairRowCostTreatment(
   item: ConsumerRepairRowMetadataCarrier | null | undefined,
 ): string {
   return text(metadata(item).canonicalCostTreatment);
+}
+
+export function consumerRepairRowCostCoverageLabel(item: ConsumerRepairRowMetadataCarrier): string | null {
+  const source = metadata(item);
+  const raw = source.canonicalCommercialCostCoverageDecisionV1;
+  const decision = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw as Record<string, unknown> : null;
+  const title = text(source.canonicalIncludedCostOwnerTitleRu) || text(decision?.ownerTitleRu);
+  if (!title || consumerRepairRowCostTreatment(item) !== 'INCLUDED_IN_RESOURCE_ROWS') return null;
+  return `Включено в стоимость «${title}».${decision?.supplyParty === 'RATE_PROVIDER' ? ' Ресурс предоставляет исполнитель этой расценки.' : ''}`;
+}
+
+export function consumerRepairRowCommercialScopeLabel(item: ConsumerRepairRowMetadataCarrier): string | null {
+  const raw = metadata(item).canonicalCommercialRateCoverageV1;
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const coverage = raw as Record<string, unknown>;
+  return coverage.contractVersion === 'canonical-commercial-cost-coverage/v1' && coverage.active === true && text(coverage.scopeRu)
+    ? `Состав расценки: ${text(coverage.scopeRu)}` : null;
 }
 
 export function consumerRepairRowHasManualQuantity(

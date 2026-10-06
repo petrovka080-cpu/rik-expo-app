@@ -1,5 +1,6 @@
 import { canonicalMaterialQuantityBasisFromRow } from "./canonicalMaterialQuantityProjection";
 import { normalizePublicBoqNameRu } from "../publicBoqNaming";
+import { canonicalPublicResourcePresentationV1 } from './canonicalPublicResourcePresentationV1';
 import { assertCanonicalPurchaseReadinessV1 } from "./canonicalPurchaseBalanceV1";
 import { formatEstimateUnitLabel } from "../../ai/globalEstimate/formatEstimateUnitLabel";
 import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
@@ -10,7 +11,7 @@ import { canonicalArtifactPurchaseBalance } from "./canonicalPersistedPurchaseBa
 export { canonicalArtifactPurchaseBalance } from "./canonicalPersistedPurchaseBalance";
 
 export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r10";
-export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r7-readable-source-products";
+export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r8-russian-resource-presentations";
 export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:13";
 
 /** Keep caller idempotency within each renderer; do not collide with legacy jobs. */
@@ -137,8 +138,18 @@ export function canonicalArtifactSpecificationParts(row: CanonicalArtifactRow, p
   const graph = objectValue(objectValue(row.calculation_trace).resourceGraph);
   const ids = Array.isArray(graph.titleSpecificationParameterIds) ? graph.titleSpecificationParameterIds
     : graph.titleSpecificationParameterId ? [graph.titleSpecificationParameterId] : [];
-  return ids.flatMap(id => typeof id === "string" && nullableText(parameters[id])
+  const selected = ids.flatMap(id => typeof id === "string" && nullableText(parameters[id])
     ? [{ parameterId: id, value: String(parameters[id]), parts: String(parameters[id]).split(/\s*;\s*/u).filter(Boolean) }] : []);
+  const presentation = canonicalArtifactPublicResourcePresentationV1(row);
+  const details = presentation ? [presentation.brandAndModelRu, presentation.specificationRu, ...presentation.detailsRu]
+    .filter((part): part is string => typeof part === 'string' && !selected.some(spec => spec.parts.includes(part))) : [];
+  return [...selected, ...(details.length ? [{ parameterId: 'resource_presentation_v1', value: details.join('; '), parts: [...new Set(details)] }] : [])];
+}
+
+export function canonicalArtifactPublicResourcePresentationV1(row: Record<string, unknown>) {
+  const trace = objectValue(row.calculation_trace), graph = objectValue(trace.resourceGraph);
+  return canonicalPublicResourcePresentationV1({ titleRu: String(row.title_ru ?? '').trim(),
+    descriptor: graph.publicResourcePresentationV1, manualTitleOverride: trace.manualTitleOverride === true });
 }
 
 export function canonicalArtifactTechnologyChecks(parameters: Record<string, unknown>) {
@@ -398,6 +409,9 @@ export function canonicalArtifactMoney(value: unknown, currencyCode: unknown): s
 
 export function canonicalArtifactVisibleRowTitle(row: Record<string, unknown>, parameters?: Record<string, unknown>): string {
   const sourceNameRu = String(row.title_ru ?? "").trim();
+  if (objectValue(row.calculation_trace).manualTitleOverride === true) return sourceNameRu;
+  const presentation = canonicalArtifactPublicResourcePresentationV1(row);
+  if (presentation) return presentation.nameRu;
   const graph = objectValue(objectValue(row.calculation_trace).resourceGraph);
   if (parameters && graph.titleSpecificationMode === "APPEND") {
     const ids = Array.isArray(graph.titleSpecificationParameterIds) ? graph.titleSpecificationParameterIds

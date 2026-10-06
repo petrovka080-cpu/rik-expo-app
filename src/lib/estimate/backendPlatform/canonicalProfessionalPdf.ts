@@ -14,7 +14,7 @@ import {
 import { canonicalEstimateOperationReference, canonicalEstimateWorkProcess } from "./canonicalEstimateOperationComposition";
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-39-operation-headings" as const;
+  "canonical-professional-pdf.r4-a13-s27-41-resource-presentations" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -150,7 +150,8 @@ function includedCostOwnerTitle(row: CanonicalArtifactRow, rowsById: ReadonlyMap
     visited.add(ownerId);
     const owner = rowsById.get(ownerId);
     if (!owner) return null;
-    if (owner.included_in_estimate === true) return canonicalArtifactVisibleRowTitle(owner);
+    const ownerDecision = objectValue(objectValue(objectValue(owner.calculation_trace).resourceGraph).commercialCostCoverageOwnerDecisionV1);
+    if (owner.included_in_estimate === true || (owner.selected === true && ownerDecision.active === true)) return canonicalArtifactVisibleRowTitle(owner);
     current = owner;
   }
 }
@@ -171,7 +172,12 @@ function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, rows
         : costTreatment === "INFORMATIONAL_SCOPE"
           ? "Условие выполнения работ; отдельно не суммируется."
           : "Позиция исключена из итога сохранённой версии.";
-  const specification = [specificationRu(row), dispositionRu].filter(Boolean).join(" ") || null;
+  const rateCoverage = objectValue(resourceGraph.commercialCostCoverageOwnerDecisionV1);
+  const costDecision = objectValue(resourceGraph.commercialCostCoverageDecisionV1);
+  const scopeRu = rateCoverage.contractVersion === 'canonical-commercial-cost-coverage/v1' && rateCoverage.active === true
+    ? nullableText(rateCoverage.scopeRu) : null;
+  const supplyRu = costDecision.supplyParty === 'RATE_PROVIDER' ? 'Ресурс предоставляет исполнитель этой расценки.' : null;
+  const specification = [specificationRu(row), dispositionRu, scopeRu ? `Состав расценки: ${scopeRu}` : null, supplyRu].filter(Boolean).join(" ") || null;
   const specifications = canonicalArtifactSpecificationParts(row, parameters);
   const rental = canonicalArtifactRentalBasis(row, parameters);
   const quantityLabel = (value: unknown, unit = row.unit_id) => `${canonicalArtifactQuantity(value)} ${canonicalArtifactUnit({ unit_id: unit })}`;
@@ -200,7 +206,7 @@ function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, rows
   </tr>`;
 }
 
-function renderPreliminaryNeedRow(row: CanonicalArtifactRow, displayOrdinal: number, parameterTitlesRu: Readonly<Record<string, string>>, questionNumbers?: ReadonlyMap<string, number>): string {
+function renderPreliminaryNeedRow(row: CanonicalArtifactRow, displayOrdinal: number, parameterTitlesRu: Readonly<Record<string, string>>, questionNumbers?: ReadonlyMap<string, number>, rowsById: ReadonlyMap<string, CanonicalArtifactRow> = new Map()): string {
   const trace = objectValue(row.calculation_trace);
   const missingIds = Array.isArray(trace.missingParameterIds) ? trace.missingParameterIds : row.missing_parameter_ids;
   const titles = Array.isArray(missingIds) ? [...new Set(missingIds.flatMap(id => {
@@ -213,9 +219,16 @@ function renderPreliminaryNeedRow(row: CanonicalArtifactRow, displayOrdinal: num
     : titles.length > 0 ? titles.join("; ") : "исходные сведения по этой позиции и условия её применения";
   const quantityLabel = row.quantity == null ? "Количество нужно уточнить"
     : `Введено ${canonicalArtifactQuantity(row.quantity)}; требуется подтверждение исходных сведений`;
+  const graph = objectValue(trace.resourceGraph), decision = objectValue(graph.commercialCostCoverageDecisionV1);
+  const rate = objectValue(graph.commercialCostCoverageOwnerDecisionV1);
+  const ownerTitle = includedCostOwnerTitle(row, rowsById) ?? nullableText(decision.ownerTitleRu);
+  const coverageText = [ownerTitle ? `Включено в стоимость «${ownerTitle}».` : null,
+    decision.supplyParty === 'RATE_PROVIDER' ? 'Ресурс предоставляет исполнитель этой расценки.' : null,
+    rate.active === true && nullableText(rate.scopeRu) ? `Состав расценки: ${String(rate.scopeRu)}` : null].filter(Boolean).join(' ');
+  const resourceDetails = canonicalArtifactSpecificationParts(row, {}).flatMap(spec => spec.parts);
   return `<tr class="preliminary-need">
     <td class="number">${displayOrdinal}</td>
-    <td class="name"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row))}</strong><span>Предварительная потребность из определения; требуется уточнение.</span></td>
+    <td class="name"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row))}</strong>${resourceDetails.map(part => `<span>${escapeCanonicalArtifactHtml(part)}</span>`).join('')}<span>Предварительная потребность из определения; требуется уточнение.</span>${coverageText ? `<span>${escapeCanonicalArtifactHtml(coverageText)}</span>` : ''}</td>
     <td>${escapeCanonicalArtifactHtml(CATEGORY_TITLES[canonicalProfessionalPdfCategory(row)])}</td>
     <td class="unit">${escapeCanonicalArtifactHtml(canonicalArtifactUnit(row))}</td>
     <td class="numeric">${escapeCanonicalArtifactHtml(quantityLabel)}</td>
@@ -265,7 +278,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     });
   }
   const preliminaryRowIds = new Set(preliminaryNeeds.map((row) => String(row.row_id)));
-  const rowsById = new Map(rows.map(row => [String(row.row_id), row]));
+  const rowsById = new Map(compositionRows.map(row => [String(row.row_id), row]));
   const parameters = objectValue(revision.input_parameters);
   const technologyChecks = canonicalArtifactTechnologyChecks(parameters);
   const workMeasure = canonicalArtifactWorkMeasure(rows);
@@ -312,7 +325,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
       : hasOperations && key !== previousOperationKey ? `<tr class="operation"><td colspan="7"><strong>Работы и ресурсы сметы</strong></td></tr>` : "";
     previousOperationKey = key;
     return heading + (preliminaryRowIds.has(String(row.row_id))
-      ? renderPreliminaryNeedRow(row, index + 1, input.parameterTitlesRu ?? {}, questionNumbers) : renderClientRow(row, index + 1, rowsById, parameters));
+      ? renderPreliminaryNeedRow(row, index + 1, input.parameterTitlesRu ?? {}, questionNumbers, rowsById) : renderClientRow(row, index + 1, rowsById, parameters));
   }).join("");
   const questionAppendix = questionNumbers?.size
     ? `<h2>Исходные сведения для уточнения состава</h2><div class="notice">Сведения связаны с позициями по номерам. Применимость и количество пока не подтверждены; неизвестные значения не заменены нулями.</div><table><tbody>${[...questionNumbers].map(([id, number]) => `<tr><td style="width:8%">${number}</td><td>${escapeCanonicalArtifactHtml(String(input.parameterTitlesRu?.[id]))}</td></tr>`).join("")}</tbody></table>` : "";
@@ -362,12 +375,12 @@ export function buildCanonicalProfessionalPdfProjection(input: {
       : "<strong>требуется уточнение цен</strong>";
   const priceNotice = grandTotalStatus === "COMPLETE"
     ? "Все строки имеют подтверждённую цену."
-    : `<strong>${pricedRows.length === 0 ? "Цены не заполнены." : "Оценено частично."}</strong> Строк без подтверждённой цены: ${missingPriceRowCount}. ${preliminaryNeeds.length > 0
+    : `<strong>${pricedRows.length === 0 ? "Стоимость не рассчитана. Цены не заполнены." : "Стоимость рассчитана частично."}</strong> Строк без подтверждённой цены: ${missingPriceRowCount}. ${preliminaryNeeds.length > 0
       ? `Потребностей с неуточнённым количеством или условием: ${preliminaryNeeds.length}. Полный итог не рассчитан.`
       : "Полный итог: требуется уточнение цен."}`;
   const pricedSummary = pricedRows.length === 0
-    ? "Цены не заполнены"
-    : `${grandTotalStatus === "COMPLETE" ? "Оценено" : "Оценено частично"}<br>${canonicalArtifactMoney(pricedSubtotal, currencyCode)}`;
+    ? "Стоимость не рассчитана"
+    : `${grandTotalStatus === "COMPLETE" ? "Стоимость" : "Стоимость рассчитана частично"}<br>${canonicalArtifactMoney(pricedSubtotal, currencyCode)}`;
   const documentNumber = Number.isFinite(revisionNumber) ? String(revisionNumber) : shortIdentity(revision.id);
   const explicitDemo = /^ДЕМО\s*\/\s*VALIDATION_FIXTURE\s*:/iu.test(String(revision.source_request_text ?? "").trim());
   const html = `<!doctype html><html lang="ru"><head><meta charset="utf-8"><style>

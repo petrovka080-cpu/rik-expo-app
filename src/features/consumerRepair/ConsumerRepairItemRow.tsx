@@ -21,12 +21,15 @@ import {
   consumerRepairRowCalculatedQuantity,
   consumerRepairRowCode,
   consumerRepairRowCostTreatment,
+  consumerRepairRowCostCoverageLabel,
+  consumerRepairRowCommercialScopeLabel,
   consumerRepairRowHasManualQuantity,
   consumerRepairRowHasSourceManagedQuantity,
   consumerRepairRowIncludedInEstimate,
   consumerRepairRowIsCanonicalPreliminaryNeed,
   consumerRepairRowIsNonPayable,
   consumerRepairRowMissingRequirementLabels,
+  consumerRepairRowPublicResourcePresentation,
 } from "./consumerRepairRowMetadata";
 import { useConsumerRepairItemRowEditing } from "./useConsumerRepairItemRowEditing";
 import { useCanonicalPreliminaryNeedEvidence } from "./useCanonicalPreliminaryNeedEvidence";
@@ -108,6 +111,7 @@ function ConsumerRepairItemRowComponent({
   const purchaseShortage = canonicalPurchaseShortageMessageV1([{ rowId: item.id, titleRu: item.titleRu,
     calculationTrace: { purchaseBalance: item.sourceParameters?.canonicalPurchaseBalance } }]);
   const missingRequirementLabels = consumerRepairRowMissingRequirementLabels(item, parameterRequirementTables);
+  const publicResourcePresentation = React.useMemo(() => consumerRepairRowPublicResourcePresentation(item), [item]);
   const {
     quantityInputRef,
     quantityText,
@@ -216,6 +220,12 @@ function ConsumerRepairItemRowComponent({
             ) : null}
           </View>
         )}
+        {publicResourcePresentation?.brandAndModelRu ? (
+          <Text style={styles.traceLine} testID={`consumer-repair-item-brand-${item.id}`}>{publicResourcePresentation.brandAndModelRu}</Text>
+        ) : null}
+        {publicResourcePresentation?.specificationRu ? (
+          <Text style={styles.traceLine} testID={`consumer-repair-item-selected-specification-${item.id}`}>{publicResourcePresentation.specificationRu}</Text>
+        ) : null}
         <View style={styles.fields}>
           <View style={styles.field}>
             <Text style={styles.label}>Количество</Text>
@@ -354,21 +364,24 @@ function ConsumerRepairItemRowComponent({
           </Text>
         </Pressable> : (
           <Text style={styles.nonPayableNotice} testID={`consumer-repair-item-cost-treatment-${item.id}`}>
-            {consumerRepairRowCostTreatment(item) === "INCLUDED_IN_RESOURCE_ROWS"
+            {consumerRepairRowCostCoverageLabel(item) ?? (consumerRepairRowCostTreatment(item) === "INCLUDED_IN_RESOURCE_ROWS"
                 ? "Не суммируется повторно: стоимость включена в отдельные строки материалов, работ и механизмов этой сметы."
                 : consumerRepairRowCostTreatment(item) === "INFORMATIONAL_SCOPE"
                   ? "Организация потока показана как условие выполнения и отдельно не суммируется."
                   : consumerRepairRowCostTreatment(item) === "CONTROL_OR_DOCUMENT"
                     ? "Контрольная или документальная позиция отдельно не суммируется."
-                    : "Строка не включена в итог; введённые количество и цена сохраняются справочно."}
+                    : "Строка не включена в итог; введённые количество и цена сохраняются справочно.")}
           </Text>
         )}
+        {consumerRepairRowCommercialScopeLabel(item) ? (
+          <Text style={styles.nonPayableNotice}>{consumerRepairRowCommercialScopeLabel(item)}</Text>
+        ) : null}
         {item.selectedProductBinding ? (
           <Text style={styles.selectedProduct} testID={`consumer-repair-item-selected-product-${item.id}`}>
             {`${"\u0412\u044b\u0431\u0440\u0430\u043d \u0442\u043e\u0432\u0430\u0440"}: ${item.selectedProductBinding.visibleName}${item.selectedProductBinding.packageLabel ? `, ${item.selectedProductBinding.packageLabel}` : ""}`}
           </Text>
         ) : null}
-        {professionalEvidence ? (
+        {professionalEvidence || publicResourcePresentation ? (
           <View style={styles.traceWrap}>
             <Pressable
               accessibilityLabel="\u041e\u0431\u044a\u044f\u0441\u043d\u0435\u043d\u0438\u0435 \u0444\u043e\u0440\u043c\u0443\u043b\u044b, \u043d\u043e\u0440\u043c\u044b \u0438 \u0446\u0435\u043d\u044b"
@@ -392,12 +405,13 @@ function ConsumerRepairItemRowComponent({
                 style={styles.traceBox}
                 testID={`consumer-repair-item-professional-proof-detail-${item.id}`}
               >
-                <Text style={styles.traceLine}>{professionalEvidence.formulaLabel}</Text>
-                {professionalEvidence.parameterLabel ? (
+                {publicResourcePresentation?.detailsRu.map((detail, index) => <Text key={index} style={styles.traceLine}>{detail}</Text>)}
+                {professionalEvidence ? <Text style={styles.traceLine}>{professionalEvidence.formulaLabel}</Text> : null}
+                {professionalEvidence?.parameterLabel ? (
                   <Text style={styles.traceLine}>{professionalEvidence.parameterLabel}</Text>
                 ) : null}
-                <Text style={styles.traceLine}>{professionalEvidence.normativeLabel}</Text>
-                <Text style={styles.traceLine}>{professionalEvidence.priceLabel}</Text>
+                {professionalEvidence ? <Text style={styles.traceLine}>{professionalEvidence.normativeLabel}</Text> : null}
+                {professionalEvidence ? <Text style={styles.traceLine}>{professionalEvidence.priceLabel}</Text> : null}
                 {needEvidence.referenced && needEvidence.status !== "ready" ? (
                   <Text accessibilityLiveRegion="polite" style={styles.traceLine}>
                     {needEvidence.status === "loading" ? "Загружаются доказательства сохранённой строки…"

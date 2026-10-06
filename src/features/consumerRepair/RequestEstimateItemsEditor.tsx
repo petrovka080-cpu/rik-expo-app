@@ -16,6 +16,7 @@ import {
   consumerRepairRowCategorySignals,
   consumerRepairRowIsCanonicalPreliminaryNeed,
   consumerRepairRowIsTechnicalDetail,
+  consumerRepairRowMatchesSearch,
 } from "./consumerRepairRowMetadata";
 
 export type RequestEstimateCategoryFilterId =
@@ -452,12 +453,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
       return {
         ...section,
         items: (normalizedQuery
-          ? section.items.filter((item) => [
-              item.titleRu,
-              item.category,
-              item.quantityFormula,
-              item.normSourceTitle,
-            ].some((value) => String(value ?? "").toLocaleLowerCase("ru-RU").includes(normalizedQuery)))
+          ? section.items.filter((item) => consumerRepairRowMatchesSearch(item, normalizedQuery))
           : section.items).filter((item) =>
             !this.state.showOnlyUnresolved || consumerRepairRowIsCanonicalPreliminaryNeed(item)),
       };

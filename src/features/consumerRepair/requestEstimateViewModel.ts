@@ -31,8 +31,9 @@ import {
   isConsumerEstimatePayableItem,
 } from "../../lib/consumerRequests/consumerEstimateReadiness";
 import { consumerRepairCanonicalEstimateBlocksApproval } from "./consumerRepairCanonicalEstimateReadiness";
-import { consumerRepairRowIsNonPayable } from "./consumerRepairRowMetadata";
+import { consumerRepairRowIsNonPayable, registerConsumerRepairRowVerifiedPresentation, consumerRepairRowPublicResourcePresentation } from "./consumerRepairRowMetadata";
 import { publicBoqDisplayNameRu } from "../../lib/estimate/publicBoqNaming";
+import { canonicalPublicResourcePresentationV1, canonicalPublicResourcePresentationMatchesV1, type CanonicalPublicResourcePresentationV1 } from '../../lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1';
 import { localizeKnownTechnologyVariantSuffixRu } from "../../lib/estimate/backendPlatform/russianTechnologyTitleR542";
 import { measureConsumerRepairQuantityRenderWork } from "./consumerRepairQuantityEditTrace";
 import type { ConsumerEstimatePresentationTrace } from "../../lib/consumerRequests/consumerEstimateHydrationTrace";
@@ -498,6 +499,8 @@ function admissionVerifiedCanonicalTitleItems(
         || need.titleRu !== item.titleRu
         || (need.quantity == null ? item.quantity != null : Number(need.quantity) !== item.quantity)
         || need.unitId !== String(item.unit ?? "")
+        || !canonicalPublicResourcePresentationMatchesV1(source.canonicalPublicResourcePresentationV1, need.publicResourcePresentation)
+        || (source.canonicalManualTitleOverride === true) !== (need.manualTitleOverride === true)
       ) return rejected;
       accepted.add(item);
       continue;
@@ -517,6 +520,9 @@ function admissionVerifiedCanonicalTitleItems(
       || String(projection.sourceParameters?.canonicalBackendRevisionId ?? "").trim() !== revisionId
       || String(projection.sourceParameters?.canonicalBackendReleaseId ?? "").trim() !== releaseId
       || String(projection.sourceParameters?.canonicalBackendCatalogId ?? "").trim() !== catalogId
+      || !canonicalPublicResourcePresentationMatchesV1(source.canonicalPublicResourcePresentationV1,
+        projection.sourceParameters?.canonicalPublicResourcePresentationV1)
+      || (source.canonicalManualTitleOverride === true) !== (projection.sourceParameters?.canonicalManualTitleOverride === true)
     ) return rejected;
     accepted.add(item);
   }
@@ -525,6 +531,11 @@ function admissionVerifiedCanonicalTitleItems(
 
 function publicItemTitle(item: ConsumerRepairRequestItem, canonicalTitleVerified = false): string {
   if (canonicalTitleVerified) {
+    const descriptor = item.sourceParameters?.canonicalPublicResourcePresentationV1;
+    const manualTitleOverride = item.sourceParameters?.canonicalManualTitleOverride === true;
+    const presentation = canonicalPublicResourcePresentationV1({ titleRu: item.titleRu, descriptor, manualTitleOverride });
+    if (presentation) return presentation.nameRu;
+    if (descriptor != null || manualTitleOverride) return item.titleRu;
     // Keep the immutable canonical title in the bundle, while applying the
     // shared public naming projection only to material rows. Work, service and
     // control-row titles are specification-bearing and must remain byte-stable.
@@ -552,15 +563,17 @@ function publicItemTitle(item: ConsumerRepairRequestItem, canonicalTitleVerified
 // or caching admission. Re-evaluate the current title before every lookup.
 const publicTitleProjections = new WeakMap<ConsumerRepairRequestItem, ConsumerRepairRequestItem>();
 
-function itemWithPublicTitle(item: ConsumerRepairRequestItem, titleRu: string): ConsumerRepairRequestItem {
-  if (titleRu === item.titleRu) return item;
+function itemWithPublicTitle(item: ConsumerRepairRequestItem, titleRu: string, presentation: CanonicalPublicResourcePresentationV1 | null): ConsumerRepairRequestItem {
+  if (titleRu === item.titleRu && item.sourceParameters?.canonicalPublicResourcePresentationV1 == null && presentation == null) return item;
   const previous = publicTitleProjections.get(item);
   const keys = Object.keys(item) as (keyof ConsumerRepairRequestItem)[];
   // Also guard legacy shallow in-place edits: quantity, price, provenance
   // reference and added/removed fields must never be copied from an old view.
   if (previous?.titleRu === titleRu && keys.length === Object.keys(previous).length
-    && keys.every(key => key === "titleRu" || Object.is(previous[key], item[key]))) return previous;
+    && keys.every(key => key === "titleRu" || Object.is(previous[key], item[key]))
+    && canonicalPublicResourcePresentationMatchesV1(consumerRepairRowPublicResourcePresentation(previous), presentation)) return previous;
   const projected = { ...item, titleRu };
+  registerConsumerRepairRowVerifiedPresentation(projected, presentation);
   publicTitleProjections.set(item, projected);
   return projected;
 }
@@ -1217,7 +1230,10 @@ export function buildRequestEstimateViewModel(
           // Admission and public naming still run against the current bundle.
           // Preserve unchanged row props so editing one quantity does not
           // defeat the row's React.memo and rerender every neighbouring input.
-          return itemWithPublicTitle(item, titleRu);
+          const presentation = canonicalTitleItems.has(item) ? canonicalPublicResourcePresentationV1({ titleRu: item.titleRu,
+            descriptor: item.sourceParameters?.canonicalPublicResourcePresentationV1,
+            manualTitleOverride: item.sourceParameters?.canonicalManualTitleOverride === true }) : null;
+          return itemWithPublicTitle(item, titleRu, presentation);
         }),
     }))
     .filter((section) => section.items.length > 0)
@@ -1274,11 +1290,13 @@ export function buildRequestEstimateViewModel(
     summary: preliminaryNeedCount > 0
       ? "Расчёт неполный: часть позиций ждёт подтверждённых исходных данных и не входит в стоимость."
       : cleanSummary(viewBundle),
-    totalLabel: canonicalBlocking
-      ? "Итого: не рассчитано"
-      : missingPrices > 0
-      ? "\u041f\u043e\u043b\u043d\u044b\u0439 \u0438\u0442\u043e\u0433 \u043d\u0435 \u0440\u0430\u0441\u0441\u0447\u0438\u0442\u0430\u043d"
-      : total > 0
+    totalLabel: bundle.items.length === 0 && summaryTotal != null && summaryTotal > 0
+      ? formatEstimateMoney(summaryTotal, currency)
+      : priced.length === 0
+      ? "Стоимость не рассчитана"
+      : canonicalBlocking || missingPrices > 0 || preliminaryNeedCount > 0
+        ? `Стоимость рассчитана частично: ${formatEstimateMoney(total, currency)}`
+      : priced.length > 0
         ? formatEstimateMoney(total, currency)
         : summaryTotal != null && summaryTotal > 0
           ? formatEstimateMoney(summaryTotal, currency)

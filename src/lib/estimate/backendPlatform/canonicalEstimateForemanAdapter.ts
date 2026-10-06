@@ -23,6 +23,7 @@ import {
   isCanonicalEstimateSourceManagedParameter,
 } from "./canonicalEstimateParameterSemantics";
 import { projectCanonicalEstimatePhysicalNormApplicabilityV1 } from "./canonicalEstimatePhysicalNormProjection";
+import { canonicalPublicResourcePresentationV1 } from './canonicalPublicResourcePresentationV1';
 
 function sectionType(section: string, category: string): GlobalEstimateSectionType {
   const normalized = normalizeCanonicalEstimateRowCategory(section, category);
@@ -119,6 +120,31 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
   const sectionOrder: GlobalEstimateSectionType[] = ["materials", "labor", "equipment", "delivery"];
   const currency = input.revision.currencyCode;
   const projectMeasure = canonicalProjectMeasure(input.revision, input.rows);
+  const rowsById = new Map(input.rows.map(row => [row.rowId, row]));
+  const needsById = new Map((input.revision.preliminaryNeeds ?? []).map(need => [need.rowId, need]));
+  const includedCostOwnerTitle = (row: CanonicalEstimateRevisionRowView): string | null => {
+    const visited = new Set([row.rowId]);
+    let current = row;
+    while (true) {
+      const graph = record(current.calculationTrace?.resourceGraph);
+      const ownerId = graph?.costTreatment === 'INCLUDED_IN_RESOURCE_ROWS' ? graph.includedInResourceOwnerRowId : null;
+      if (typeof ownerId !== 'string' || visited.has(ownerId)) return null;
+      visited.add(ownerId);
+      const owner = rowsById.get(ownerId);
+      if (!owner) {
+        const need = needsById.get(ownerId);
+        if (need?.selected === true && (need.costTreatment === 'OWN_COST' || need.commercialRateCoverage?.active === true)) {
+          return canonicalPublicResourcePresentationV1({ titleRu: need.titleRu, descriptor: need.publicResourcePresentation,
+            manualTitleOverride: need.manualTitleOverride })?.nameRu ?? need.titleRu;
+        }
+        return null;
+      }
+      if (owner.includedInEstimate) return canonicalPublicResourcePresentationV1({ titleRu: owner.titleRu,
+        descriptor: record(owner.calculationTrace?.resourceGraph)?.publicResourcePresentationV1,
+        manualTitleOverride: owner.calculationTrace?.manualTitleOverride === true })?.nameRu ?? owner.titleRu;
+      current = owner;
+    }
+  };
   const rows: StructuredEstimateRow[] = input.rows.map((row, index) => {
     const normalizedCategory = normalizeCanonicalEstimateRowCategory(row.section, row.category);
     const type = sectionType(row.section, row.category);
@@ -130,6 +156,7 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
       ? row.calculationTrace.inputParameterIds.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
       : [];
     const resourceGraph = record(row.calculationTrace?.resourceGraph);
+    const commercialRate = record(resourceGraph?.commercialCostCoverageOwnerDecisionV1);
     const costTreatment = String(resourceGraph?.costTreatment ?? "").trim() || null;
     const nonPayableComposition = [
       "INCLUDED_IN_RESOURCE_ROWS",
@@ -161,13 +188,16 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
       displayTotal: total == null ? "Итог после уточнения цены" : String(row.amount),
       currency,
       confidence: "high",
-      visibleSourceLabel: "Утверждённая технологическая карта",
-      sourceId: "canonical-approved-baseline",
+      visibleSourceLabel: commercialRate?.active === true ? 'Явно выбранный состав расценки' : "Утверждённая технологическая карта",
+      sourceId: commercialRate?.active === true ? 'canonical-commercial-payment-scope' : "canonical-approved-baseline",
       formulaId: String(row.calculationTrace?.formulaId ?? "") || null,
       quantityFormula: null,
       calculationTrace: JSON.stringify(row.calculationTrace),
       sourceParameters: {
         rowCode: row.rowId,
+        canonicalSourceTitleRu: row.titleRu,
+        canonicalPublicResourcePresentationV1: resourceGraph?.publicResourcePresentationV1 ?? null,
+        canonicalManualTitleOverride: row.calculationTrace?.manualTitleOverride === true,
         canonicalOperationComposition: canonicalEstimateOperationReference(resourceGraph?.operationCompositionV1),
         canonicalPurchaseBalance: row.calculationTrace.purchaseBalance,
         normativeTrace: row.normativeTrace,
@@ -197,6 +227,9 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
         canonicalBackendCatalogId: input.revision.catalogId,
         canonicalBackendOwnershipStatus: row.ownershipStatus,
         canonicalCostTreatment: costTreatment,
+        canonicalIncludedCostOwnerTitleRu: includedCostOwnerTitle(row),
+        canonicalCommercialCostCoverageDecisionV1: resourceGraph?.commercialCostCoverageDecisionV1 ?? null,
+        canonicalCommercialRateCoverageV1: resourceGraph?.commercialCostCoverageOwnerDecisionV1 ?? null,
         payable: costTreatment == null
           ? row.includedInEstimate
           : !nonPayableComposition,

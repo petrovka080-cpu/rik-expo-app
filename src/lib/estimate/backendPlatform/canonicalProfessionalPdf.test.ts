@@ -168,7 +168,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-39-operation-headings");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-41-resource-presentations");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,
@@ -187,7 +187,7 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(projection.html).toContain("Доставка");
     expect(projection.html).toContain("Требуется цена");
     expect(projection.html).toContain("<strong>Статус:</strong> Предварительная");
-    expect(projection.html).toContain("Оценено частично");
+    expect(projection.html).toContain("Стоимость рассчитана частично");
     expect(projection.html).toContain("Полный итог: требуется уточнение цен");
     expect(projection.html).not.toContain("Техническое приложение");
     expect(projection.html).not.toContain("roof_area_m2");
@@ -274,7 +274,7 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(projection.html).not.toContain('<td class="number">18</td>');
     expect(projection.html).not.toContain('<td class="number">43</td>');
     expect(projection.html).not.toContain("Оценено<br>0,00 сом");
-    expect(projection.html).not.toContain("Оценено частично<br>0,00 сом");
+    expect(projection.html).not.toContain("Стоимость рассчитана частично<br>0,00 сом");
   });
 
   it("uses the concise public asphalt name in the PDF without mutating canonical rows", () => {

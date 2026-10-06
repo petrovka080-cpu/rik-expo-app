@@ -1,11 +1,38 @@
 import { buildRequestEstimateViewModel } from "../../src/features/consumerRepair/requestEstimateViewModel";
 import { createConsumerEstimatePresentationTrace, type ConsumerEstimateHydrationPhaseEvent } from "../../src/lib/consumerRequests/consumerEstimateHydrationTrace";
+import { compactConsumerRepairApprovedHistorySummaryBundleForDurableStorage } from '../../src/lib/platform/compactConsumerRepairDurableState';
 import {
   foundationDraftWithManualCatalogItem,
   foundationViewModel,
 } from "./requestEstimateBoqCatalogTestHelpers";
 
 describe("request estimate view model", () => {
+  it('preserves a compact historical sum without treating unloaded rows as missing prices', () => {
+    const source = foundationDraftWithManualCatalogItem();
+    const vm = buildRequestEstimateViewModel({ ...source, items: [], durableHistorySummary: {
+      schemaVersion: 'consumer_repair_durable_history_summary_v1', rowCount: 12, materialRowsCount: 8, workRowsCount: 4,
+      totalPrice: 17000, currency: 'KGS', sourceRevisionId: 'saved-revision', sourceSnapshotId: 'saved-snapshot',
+      rowsHash: null, totalsHash: null, fullSnapshotHash: null, pdfArtifactId: null, buyerHandoffId: null,
+      compactedAt: '2026-10-06T00:00:00Z', fullSnapshotAvailable: true,
+    } });
+    expect(vm?.totalLabel).toMatch(/17\s?000/u);
+    expect(vm?.totalLabel).not.toContain('не рассчитана');
+    const compactedUnpriced = compactConsumerRepairApprovedHistorySummaryBundleForDurableStorage({ ...source,
+      items: source.items.map(item => ({ ...item, unitPrice: null, totalPrice: null })) });
+    expect(compactedUnpriced.items).toHaveLength(0);
+    expect(compactedUnpriced.durableHistorySummary?.totalPrice).toBe(0);
+    const unknown = buildRequestEstimateViewModel(compactedUnpriced);
+    expect(unknown?.totalLabel).toBe('Стоимость не рассчитана');
+  });
+  it('shows known amounts as partial and distinguishes unpriced rows from explicit zero', () => {
+    const source = foundationDraftWithManualCatalogItem();
+    const items = source.items.map((item, index) => ({ ...item, unitPrice: index === 0 ? 0 : null,
+      totalPrice: index === 0 ? 0 : null, sourceParameters: { ...item.sourceParameters, includedInEstimate: true } }));
+    const vm = buildRequestEstimateViewModel({ ...source, items });
+    expect(vm?.totalLabel).toContain('Стоимость рассчитана частично');
+    const unpriced = buildRequestEstimateViewModel({ ...source, items: items.map(item => ({ ...item, unitPrice: null, totalPrice: null })) });
+    expect(unpriced?.totalLabel).toBe('Стоимость не рассчитана');
+  });
   it("groups request draft positions into localized professional sections", () => {
     const vm = foundationViewModel();
     expect(vm?.title).toBe("ленточный фундамент");

@@ -1,4 +1,5 @@
 import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
+import { parseCanonicalPublicResourcePresentationV1 } from './canonicalPublicResourcePresentationV1';
 import type { AdmissionDecision } from "./estimateAdmissionR3";
 
 export const ESTIMATE_PLATFORM_API_VERSION = "2026-08-14.r2" as const;
@@ -253,6 +254,23 @@ export type CanonicalEstimateRevisionView = {
   createdAt: string;
 };
 
+export type CanonicalCommercialCostCoverageDecisionView = {
+  contractVersion: 'canonical-commercial-cost-coverage/v1';
+  scopeId: string;
+  scopeRu: string;
+  ownerRowId: string;
+  ownerTitleRu: string;
+  priceScope: 'LABOR_ONLY' | 'LABOR_AND_LISTED_RESOURCES';
+  supplyParty: 'RATE_PROVIDER' | null;
+};
+export type CanonicalCommercialRateCoverageView = {
+  contractVersion: 'canonical-commercial-cost-coverage/v1';
+  active: true;
+  scopeId: string;
+  scopeRu: string;
+  priceScope: 'LABOR_ONLY' | 'LABOR_AND_LISTED_RESOURCES';
+};
+
 export type CanonicalEstimatePreliminaryNeedView = {
   rowId: string;
   ordinal: number;
@@ -268,6 +286,10 @@ export type CanonicalEstimatePreliminaryNeedView = {
   procurementEligible: boolean;
   formulaId: string;
   costTreatment?: string | null;
+  commercialCostCoverageDecision?: CanonicalCommercialCostCoverageDecisionView;
+  commercialRateCoverage?: CanonicalCommercialRateCoverageView;
+  publicResourcePresentation?: import('./canonicalPublicResourcePresentationV1').CanonicalPublicResourcePresentationV1;
+  manualTitleOverride?: boolean;
   manualQuantityOverride?: boolean;
   calculatedQuantityBeforeOverride?: string | null;
   operation?: import("./canonicalEstimateOperationComposition").CanonicalEstimateOperationReference | null;
@@ -311,6 +333,22 @@ export function canonicalEstimatePreliminaryNeedsFromAmendmentContract(
     const needSha256 = String(need.need_sha256 ?? "").trim();
     if (!rowId || !/^[0-9a-f]{64}$/u.test(needSha256)
       || (state !== "QUANTITY_REQUIRED" && state !== "CONDITION_REQUIRED")) return [];
+    const graph = (need.calculation_trace as Record<string, unknown> | undefined)?.resourceGraph as Record<string, unknown> | undefined;
+    const publicResourcePresentation = parseCanonicalPublicResourcePresentationV1(graph?.publicResourcePresentationV1);
+    const decision = graph?.commercialCostCoverageDecisionV1 as Record<string, unknown> | undefined;
+    const rate = graph?.commercialCostCoverageOwnerDecisionV1 as Record<string, unknown> | undefined;
+    const coverageIdentityValid = (value: Record<string, unknown> | undefined) => value?.contractVersion === 'canonical-commercial-cost-coverage/v1'
+      && typeof value.scopeId === 'string' && typeof value.scopeRu === 'string'
+      && (value.priceScope === 'LABOR_ONLY' || value.priceScope === 'LABOR_AND_LISTED_RESOURCES');
+    const commercialCostCoverageDecision: CanonicalCommercialCostCoverageDecisionView | undefined = coverageIdentityValid(decision)
+      && typeof decision?.ownerRowId === 'string' && typeof decision?.ownerTitleRu === 'string'
+      ? { contractVersion: 'canonical-commercial-cost-coverage/v1', scopeId: String(decision.scopeId), scopeRu: String(decision.scopeRu),
+        ownerRowId: decision.ownerRowId, ownerTitleRu: decision.ownerTitleRu,
+        priceScope: decision.priceScope as CanonicalCommercialCostCoverageDecisionView['priceScope'],
+        supplyParty: decision.supplyParty === 'RATE_PROVIDER' ? 'RATE_PROVIDER' : null } : undefined;
+    const commercialRateCoverage: CanonicalCommercialRateCoverageView | undefined = coverageIdentityValid(rate) && rate?.active === true
+      ? { contractVersion: 'canonical-commercial-cost-coverage/v1', active: true, scopeId: String(rate.scopeId), scopeRu: String(rate.scopeRu),
+        priceScope: rate.priceScope as CanonicalCommercialRateCoverageView['priceScope'] } : undefined;
     return [{
       rowId,
       ordinal: Number(need.ordinal),
@@ -330,6 +368,10 @@ export function canonicalEstimatePreliminaryNeedsFromAmendmentContract(
       operation: canonicalEstimateOperationReference(((need.calculation_trace as Record<string, unknown> | undefined)?.resourceGraph as Record<string, unknown> | undefined)?.operationCompositionV1),
       costTreatment: need.calculation_trace && typeof need.calculation_trace === "object"
         ? String(((need.calculation_trace as Record<string, unknown>).resourceGraph as Record<string, unknown> | undefined)?.costTreatment ?? "") || null : null,
+      ...(commercialCostCoverageDecision ? { commercialCostCoverageDecision } : {}),
+      ...(commercialRateCoverage ? { commercialRateCoverage } : {}),
+      ...(publicResourcePresentation ? { publicResourcePresentation } : {}),
+      ...((need.calculation_trace as Record<string, unknown> | undefined)?.manualTitleOverride === true ? { manualTitleOverride: true } : {}),
       manualQuantityOverride: (need.calculation_trace as Record<string, unknown> | undefined)?.manualQuantityOverride === true,
       calculatedQuantityBeforeOverride: (need.calculation_trace as Record<string, unknown> | undefined)?.calculatedQuantityBeforeOverride == null
         ? null : String((need.calculation_trace as Record<string, unknown>).calculatedQuantityBeforeOverride),

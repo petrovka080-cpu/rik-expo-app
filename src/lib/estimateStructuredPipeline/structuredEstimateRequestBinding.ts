@@ -11,6 +11,7 @@ import type {
 import type { StructuredEstimatePayload } from "./structuredEstimateTypes";
 import { professionalEstimateRowVisibleName } from "./professionalEstimateRowDisplay";
 import { normalizeCanonicalEstimateRowCategory } from "../estimate/backendPlatform/canonicalEstimateRowCategory";
+import { canonicalPublicResourcePresentationV1 } from '../estimate/backendPlatform/canonicalPublicResourcePresentationV1';
 
 const DANGEROUS_CATEGORIES = new Set(["electrical", "roofing", "demolition", "foundation", "concrete"]);
 
@@ -148,6 +149,16 @@ export function buildStructuredEstimateRequestDraft(
   }
   const dangerous = isDangerousEstimate(payload);
   const bindingByRowId = new Map((catalogBinding?.rows ?? []).map((row) => [row.rowId, row]));
+  const paidOwnerTitles = new Map(payload.rows.filter(row => row.includedInEstimate)
+    .map(row => [row.rowId, canonicalPublicResourcePresentationV1({ titleRu: row.visibleName,
+      descriptor: row.sourceParameters?.canonicalPublicResourcePresentationV1,
+      manualTitleOverride: row.sourceParameters?.canonicalManualTitleOverride === true })?.nameRu ?? row.visibleName]));
+  for (const need of payload.canonicalBackend?.preliminaryNeeds ?? []) {
+    if (need.selected && (need.costTreatment === 'OWN_COST' || need.commercialRateCoverage?.active === true)) {
+      paidOwnerTitles.set(need.rowId, canonicalPublicResourcePresentationV1({ titleRu: need.titleRu,
+        descriptor: need.publicResourcePresentation, manualTitleOverride: need.manualTitleOverride })?.nameRu ?? need.titleRu);
+    }
+  }
   const parameterRequirementById = new Map(
     (payload.canonicalBackend?.parameterRequirements ?? []).map((requirement) => [
       requirement.parameterId,
@@ -229,6 +240,10 @@ export function buildStructuredEstimateRequestDraft(
         };
       }),
       ...(payload.canonicalBackend?.preliminaryNeeds ?? []).map((need) => {
+        const coverageDecision = need.commercialCostCoverageDecision
+          ?? (need.calculationTrace?.resourceGraph as Record<string, unknown> | undefined)?.commercialCostCoverageDecisionV1;
+        const ownerId = coverageDecision && typeof coverageDecision === 'object'
+          ? (coverageDecision as Record<string, unknown>).ownerRowId : null;
         const normalizedCategory = normalizeCanonicalEstimateRowCategory(need.section, need.category);
         const itemType: ConsumerRepairItemType = normalizedCategory === "material"
           ? "material"
@@ -252,6 +267,10 @@ export function buildStructuredEstimateRequestDraft(
           calculationTrace: need.calculationTrace == null ? null : JSON.stringify(need.calculationTrace),
           sourceParameters: {
             rowCode: need.rowId,
+            canonicalSourceTitleRu: need.titleRu,
+            canonicalPublicResourcePresentationV1: need.publicResourcePresentation
+              ?? (need.calculationTrace?.resourceGraph as Record<string, unknown> | undefined)?.publicResourcePresentationV1 ?? null,
+            canonicalManualTitleOverride: need.manualTitleOverride === true || need.calculationTrace?.manualTitleOverride === true,
             rowSha256: need.needSha256,
             canonicalOperationComposition: need.operation ?? null,
             ...(need.evidenceStatus === "referenced" ? {
@@ -267,6 +286,10 @@ export function buildStructuredEstimateRequestDraft(
             canonicalBackendOwnershipStatus: "PRELIMINARY_NEED",
             canonicalPreliminaryNeed: true,
             canonicalCostTreatment: need.costTreatment ?? (need.calculationTrace?.resourceGraph as Record<string, unknown> | undefined)?.costTreatment ?? null,
+            canonicalIncludedCostOwnerTitleRu: typeof ownerId === 'string' ? paidOwnerTitles.get(ownerId) ?? null : null,
+            canonicalCommercialCostCoverageDecisionV1: coverageDecision ?? null,
+            canonicalCommercialRateCoverageV1: need.commercialRateCoverage
+              ?? (need.calculationTrace?.resourceGraph as Record<string, unknown> | undefined)?.commercialCostCoverageOwnerDecisionV1 ?? null,
             manualQuantityOverride: need.manualQuantityOverride ?? need.calculationTrace?.manualQuantityOverride === true,
             calculatedQuantityBeforeOverride: need.calculatedQuantityBeforeOverride ?? need.calculationTrace?.calculatedQuantityBeforeOverride ?? null,
             canonicalPreliminaryNeedState: need.needState,
@@ -279,7 +302,9 @@ export function buildStructuredEstimateRequestDraft(
             // its quantity or specification is still preliminary.  The final
             // Marketplace send remains gated by canonicalPreliminaryNeed, but
             // the draft procurement scope must stay visible to the user.
-            includedInProcurement: need.selected && need.procurementEligible,
+            includedInProcurement: need.selected && need.procurementEligible
+              && need.commercialCostCoverageDecision == null
+              && (need.calculationTrace?.resourceGraph as Record<string, unknown> | undefined)?.commercialCostCoverageDecisionV1 == null,
             procurementEligible: need.procurementEligible,
             payable: false,
             smartEstimateProjectionV2: {
