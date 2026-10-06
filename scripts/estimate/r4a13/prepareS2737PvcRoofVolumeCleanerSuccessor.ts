@@ -17,30 +17,33 @@ import { PVC_ROOF_FIELD_DISPLAY_NAME_RU } from '../../../src/lib/estimate/backen
 type Parent = { releaseId: string; searchReleaseId: string };
 const title = PVC_ROOF_FIELD_DISPLAY_NAME_RU + '; очиститель ЕКН 472219 по объёмной листовке';
 const packPath = 'data/estimate-benchmarks/source-packs/pvc-roof-cleaner-472219-volume-s27-37.json';
-const prerequisitePath = resolve(russian.outputRoot, 'acceptance.json');
 const hash = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
 
 /** The first dry-run can use the immutable current parent. An apply requires
  * the separately sealed Russian/process publication; retries retain that same
  * prerequisite rather than following the pointer written by this publisher. */
 export function resolvePvcRoofVolumeCleanerParentS2737(requirePrerequisite: boolean): Parent {
+  return resolveS2737SealedSuccessorParent(russian, requirePrerequisite);
+}
+export function resolveS2737SealedSuccessorParent(prerequisite: MasterSingleDefinitionSuccessorConfig, requirePrerequisite: boolean): Parent {
+  const prerequisitePath = resolve(prerequisite.outputRoot, 'acceptance.json');
   if (!existsSync(prerequisitePath)) {
     assert(!requirePrerequisite, 'S2737_VOLUME_REQUIRES_COMPLETED_RUSSIAN_PROCESS_PUBLICATION');
-    return { releaseId: russian.parentReleaseId, searchReleaseId: russian.parentSearchReleaseId };
+    return { releaseId: prerequisite.parentReleaseId, searchReleaseId: prerequisite.parentSearchReleaseId };
   }
   const sealed = JSON.parse(readFileSync(prerequisitePath, 'utf8'));
   const { receiptSha256, ...body } = sealed;
   assert.equal(hashMasterSingleDefinitionSuccessorReceiptR1(body), receiptSha256, 'S2737_PREREQUISITE_RECEIPT_HASH');
-  assert.equal(body.schemaVersion, russian.contract + '.receipt.v1');
-  assert.equal(body.status, 'GREEN_S2737_PVC_ROOF_RUSSIAN_PRESENTATION_PREPARED_NOT_ACTIVE');
+  assert.equal(body.schemaVersion, prerequisite.contract + '.receipt.v1');
+  assert.equal(body.status, `GREEN_${prerequisite.stopCode}_PREPARED_NOT_ACTIVE`);
   assert.equal(body.mutationPerformed, true);
-  assert.equal(body.master.sha256, russian.masterSha256);
-  assert.equal(body.source.branch, russian.expectedBranch);
+  assert.equal(body.master.sha256, prerequisite.masterSha256);
+  assert.equal(body.source.branch, prerequisite.expectedBranch);
   assert.equal(body.source.hashedDirtySourceAccepted, false);
   assert.equal(body.audit.unrelatedManifestChanges, 0);
   assert(/^[a-f0-9]{40}$/.test(body.source.head));
   execFileSync('git', ['merge-base', '--is-ancestor', body.source.head, 'HEAD'], { windowsHide: true, stdio: 'pipe' });
-  const expectedPaths = new Set([...russian.sourcePaths,
+  const expectedPaths = new Set([...prerequisite.sourcePaths,
     'scripts/estimate/r4a13/projectSourcePackageBindingR1.ts', 'scripts/estimate/r4a13/projectSourcePackagePreflightR1.ts']);
   assert.equal(body.source.sourceHashes.length, expectedPaths.size);
   for (const source of body.source.sourceHashes) {

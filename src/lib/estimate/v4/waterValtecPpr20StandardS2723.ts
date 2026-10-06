@@ -409,6 +409,37 @@ const RESOURCE_SPECS: readonly ResourceSpec[] = [
 
 const SOURCE_BY_ID = new Map(sourcePack.sources.map((source) => [source.sourceId, source]));
 
+const WORK_PROCESS = {
+  route: 'Обмер, проверка применимости и разметка трассы',
+  cutting: 'Раскрой трубы и подготовка торцов',
+  supports: 'Сверление основания и монтаж опор с крепежом',
+  straight: 'Подготовка и полифузионная сварка прямых муфтовых соединений',
+  nodes: 'Монтаж поворотов, ответвлений, резьбовых переходов и окончаний',
+  assembly: 'Укладка и фиксация трубы; проверка температурных перемещений',
+  testing: 'Гидравлическое испытание с заполнением водой и контролем давления',
+  flushing: 'Промывка трубопровода и организованный отвод воды',
+  completion: 'Сбор обрезков, уборка, вывоз отходов и приёмочный контроль',
+} as const;
+function workProcessReference(spec: ResourceSpec) {
+  const phase = spec.stage.slice(0, 2);
+  const operationId = spec.rowId === 'water-ppr20:08:delivery:materials' ? 'route'
+    : spec.rowId === 'water-ppr20:06:labor:straight-fusion' ? 'straight'
+    : phase === '01' ? 'route' : phase === '02' ? 'cutting' : phase === '03' ? 'supports'
+    : phase === '04' ? 'straight' : phase === '05' ? 'nodes' : phase === '06' ? 'assembly'
+    : phase === '07' ? /:(flushing|flushing-water|controlled-discharge)$/.test(spec.rowId) ? 'flushing' : 'testing'
+    : 'completion';
+  return {
+    contractVersion: 'canonical-operation-resource/v1' as const,
+    groupId: 'valtec-ppr20-internal-cold-water',
+    groupTitleRu: 'Монтаж открытого внутреннего водопровода из труб VALTEC PP-R PN25, 20 × 3,4 мм',
+    operationId, operationTitleRu: WORK_PROCESS[operationId],
+    processOrdinal: Object.keys(WORK_PROCESS).indexOf(operationId),
+    // These references disclose the existing scope. The site-specific order
+    // is not supplied by the product passport and is not invented here.
+    completionCriterionRu: 'Состав выбранного профиля раскрыт; последовательность уточняется по проекту и ППР',
+  };
+}
+
 function category(kind: ResourceKind): string {
   if (["material", "component", "fastener", "consumable"].includes(kind)) return "material";
   if (kind === "labor") return "labor";
@@ -436,6 +467,7 @@ function resource(spec: ResourceSpec, ordinal: number): CanonicalEstimateResourc
     costTreatment: informational ? "INFORMATIONAL_SCOPE" : "OWN_COST",
     payable: !informational,
     noDoubleCount: true,
+    operationCompositionV1: workProcessReference(spec),
     ...(spec.titleParameterIds ? { titleSpecificationParameterIds: [...spec.titleParameterIds], titleSpecificationMode: "APPEND" } : {}),
     ...(supply ? {
       purchaseBalanceV1: { quantityMode: "supply_quantum", balanceScope: "new_order_vs_required_consumption",

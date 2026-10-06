@@ -28,6 +28,7 @@ import { CATALOG_INDEPENDENT_COMPLETENESS_MAP_CONTRACT } from
 import {
   runMasterSingleDefinitionSuccessorR1,
   validateIndependentCompletenessMapReferences,
+  type MasterSingleDefinitionSuccessorConfig,
 } from "./prepareMasterSingleDefinitionSuccessorR1";
 
 type Json = Record<string, any>;
@@ -203,7 +204,7 @@ async function verifyCore(): Promise<Json> {
   };
 }
 
-void runMasterSingleDefinitionSuccessorR1({
+export const waterValtecPpr20StandardPublishConfig: MasterSingleDefinitionSuccessorConfig = {
   contract: "rik-expo-app.s27-31.water-valtec-ppr20-accepted-order-successor.v1",
   stopCode: "S27_23_WATER_VALTEC_PPR20_STANDARD",
   applicationName: "s27-31-water-valtec-ppr20-accepted-order-successor",
@@ -355,7 +356,10 @@ void runMasterSingleDefinitionSuccessorR1({
   ],
   owner: "S27_23_WATER_VALTEC_PPR20_STANDARD_SUCCESSOR",
   receiptFileStem: "S27_23_WATER_VALTEC_PPR20_STANDARD",
-}).catch((error: unknown) => {
-  process.stderr.write(`${error instanceof Error ? error.stack ?? error.message : String(error)}\n`);
-  process.exitCode = 1;
-});
+};
+if (process.argv[1]?.replaceAll('\\', '/').endsWith('/prepareS2723WaterValtecPpr20StandardSuccessor.ts')) {
+  void runMasterSingleDefinitionSuccessorR1(waterValtecPpr20StandardPublishConfig).catch((error: unknown) => {
+    process.stderr.write(`${error instanceof Error ? error.stack ?? error.message : String(error)}\n`);
+    process.exitCode = 1;
+  });
+}

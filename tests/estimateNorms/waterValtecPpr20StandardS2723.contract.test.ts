@@ -15,6 +15,7 @@ import {
 } from "../../src/lib/estimate/v4/waterValtecPpr20StandardS2723";
 import { canonicalEstimateRevisionRowFromStorage } from "../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper";
 import { selectCanonicalArtifactRows, buildCanonicalProcurementProjection } from "../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract";
+import { canonicalEstimateWorkProcess } from '../../src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition';
 
 const SOURCE_PACK_PATH = resolve(
   "data/estimate-benchmarks/source-packs/water-valtec-ppr20-standard-s27-23.json",
@@ -25,6 +26,30 @@ function sha256File(path: string): string {
 }
 
 describe("S27.23 VALTEC PP-R 20 standard internal water route", () => {
+  test('discloses included works and all their existing resources without inventing sequence or route fittings', async () => {
+    const result = await compileWaterValtecPpr20StandardS2723({ route_length_m: 100 });
+    const sourceRows = [...result.rows, ...result.preliminaryNeeds];
+    const groups = canonicalEstimateWorkProcess(sourceRows.map(row => ({ rowId: row.row_id,
+      operation: (row.calculation_trace as { resourceGraph?: { operationCompositionV1?: unknown } })?.resourceGraph?.operationCompositionV1,
+    })));
+    expect(groups).toHaveLength(1);
+    expect(groups[0]?.sequenceUnspecified).toBe(true);
+    expect(groups[0]?.operations.map(step => step.operationId)).toEqual([
+      'route', 'cutting', 'supports', 'straight', 'nodes', 'assembly', 'testing', 'flushing', 'completion',
+    ]);
+    expect(new Set(groups[0]?.operations.flatMap(step => step.resourceIds))).toEqual(new Set(sourceRows.map(row => row.row_id)));
+    expect(groups[0]?.operations.find(step => step.operationId === 'straight')?.resourceIds)
+      .toContain('water-ppr20:06:labor:straight-fusion');
+    expect(groups[0]?.operations.find(step => step.operationId === 'route')?.resourceIds)
+      .toContain('water-ppr20:08:delivery:materials');
+    expect(groups[0]?.operations.find(step => step.operationId === 'flushing')?.resourceIds)
+      .toEqual(expect.arrayContaining(['water-ppr20:07:material:flushing-water', 'water-ppr20:07:service:controlled-discharge']));
+    expect(result.preliminaryNeeds.flatMap(need => need.missing_parameter_ids))
+      .toEqual(expect.arrayContaining(['straight_coupling_count', 'elbow_count', 'tee_count', 'threaded_transition_count', 'terminal_cap_count']));
+    expect(WATER_VALTEC_PPR20_STANDARD_S2723_RESOURCES.filter(row => row.resource_graph.costTreatment === 'OWN_COST'))
+      .toEqual(expect.arrayContaining(WATER_VALTEC_PPR20_STANDARD_S2723_RESOURCES.filter(row => row.category === 'labor')));
+    expect(sourceRows).toHaveLength(WATER_VALTEC_PPR20_STANDARD_S2723_RESOURCES.length);
+  });
   test("guards both continuous water orders without changing test, flushing or controlled-discharge consumption", async () => {
     expect(VALTEC_FLUID_SUPPLIES).toHaveLength(2);
     const baseline = await compileWaterValtecPpr20StandardS2723({ ...WATER_VALTEC_PPR20_STANDARD_S2723_ACCEPTANCE_INPUT });
