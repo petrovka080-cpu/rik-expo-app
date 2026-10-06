@@ -1,9 +1,11 @@
 import React from "react";
-import { Text } from "react-native";
+import { Platform, Text } from "react-native";
 import TestRenderer, { act } from "react-test-renderer";
 
 import { ConsumerRepairHistory } from "../../src/features/consumerRepair/ConsumerRepairHistory";
 import { primaryConsumerRepairCanonicalBackendBinding } from "../../src/features/consumerRepair/consumerRepairBackendOwnership";
+import { buildEmptyConsumerRepairApprovedHistoryPage } from "../../src/features/consumerRepair/requestEstimateScreenActions";
+import { flushTransactionalConsumerRepairWrites } from "../../src/lib/platform/consumerRepairTransactionalDurableBridge";
 import {
   __resetConsumerRepairRequestStoreForTests,
   listConsumerRepairApprovedHistory,
@@ -22,7 +24,44 @@ jest.mock("@expo/vector-icons", () => {
 
 describe("history click expands read-only snapshot only", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
-  afterEach(() => jest.useRealTimers());
+  afterEach(async () => {
+    jest.useRealTimers();
+    await flushTransactionalConsumerRepairWrites();
+  });
+
+  it.each(["web", "android"])("dismisses history when opening a saved draft on %s without changing the snapshot", (os) => {
+    const originalPlatform = Object.getOwnPropertyDescriptor(Platform, "OS")!;
+    Object.defineProperty(Platform, "OS", { configurable: true, get: () => os });
+    let renderer: TestRenderer.ReactTestRenderer | undefined;
+    try {
+      const approved = createApprovedConsumerRepairRequest();
+      const draft = { ...approved, draft: { ...approved.draft, status: "draft" as const } };
+      const snapshot = JSON.stringify(draft);
+      const onOpenDraft = jest.fn();
+      const onOpenPdf = jest.fn();
+      const onToggleHistorySnapshot = jest.fn();
+      act(() => {
+        renderer = TestRenderer.create(<ConsumerRepairHistory
+          revisionHistory={[draft]} approvedHistoryPage={buildEmptyConsumerRepairApprovedHistoryPage()}
+          selectedHistoryId={null} onOpenDraft={onOpenDraft} onOpenPdf={onOpenPdf}
+          onToggleHistorySnapshot={onToggleHistorySnapshot} onEditHistoryDraft={jest.fn()}
+          onSendHistoryToMarket={jest.fn()} onLoadMoreHistory={jest.fn()}
+        />);
+      });
+      act(() => renderer!.root.findByProps({ testID: "consumer-repair-history-button" }).props.onPress());
+      expect(renderer!.root.findAllByProps({ testID: "consumer-repair-history-modal" }).length).toBeGreaterThan(0);
+      act(() => renderer!.root.findByProps({ testID: "consumer-repair-history-main" }).props.onPress());
+      expect(renderer!.root.findAllByProps({ testID: "consumer-repair-history-modal" })).toHaveLength(0);
+      expect(onOpenDraft).toHaveBeenCalledTimes(1);
+      expect(onOpenDraft).toHaveBeenCalledWith(draft.draft.id);
+      expect(onOpenPdf).not.toHaveBeenCalled();
+      expect(onToggleHistorySnapshot).not.toHaveBeenCalled();
+      expect(JSON.stringify(draft)).toBe(snapshot);
+    } finally {
+      act(() => renderer?.unmount());
+      Object.defineProperty(Platform, "OS", originalPlatform);
+    }
+  });
 
   it("does not restore an approved history item into the active draft editor", () => {
     const approved = createApprovedConsumerRepairRequest();

@@ -59,6 +59,10 @@ export function ConsumerRepairHistory({
     setVisible(false);
     onOpenPdf(requestDraftId);
   }, [onOpenPdf]);
+  const openDraftFromModal = React.useCallback((requestDraftId: string) => {
+    setVisible(false);
+    onOpenDraft(requestDraftId);
+  }, [onOpenDraft]);
   const approvedIds = new Set(
     approvedHistoryPage.records.map((record) => record.approvedEstimateId),
   );
@@ -87,7 +91,7 @@ export function ConsumerRepairHistory({
     ? "Загружаем историю…"
     : hasPendingDurableBundles
       ? `Показано ${loadedCount} · доступны ещё сохранённые сметы`
-      : `Готовые сметы · показано ${loadedCount} из ${approvedCount}`;
+      : `Сохранённые сметы · показано ${loadedCount} из ${approvedCount}`;
   const selectedApprovedBundle = selectedHistoryId
     ? approvedHistory.find((bundle) => bundle.draft.id === selectedHistoryId) ?? null
     : null;
@@ -99,7 +103,7 @@ export function ConsumerRepairHistory({
     <View style={styles.entry} testID="consumer-repair-history">
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Открыть историю утверждённых смет"
+        accessibilityLabel="Открыть историю смет"
         onPress={() => {
           onOpenHistory?.();
           setVisible(true);
@@ -170,7 +174,7 @@ export function ConsumerRepairHistory({
                       bundle={item.bundle}
                       selected={selectedHistoryId === item.bundle.draft.id}
                       onOpenPdf={openPdfFromModal}
-                      onOpenDraft={onOpenDraft}
+                      onOpenDraft={openDraftFromModal}
                       onToggleHistorySnapshot={onToggleHistorySnapshot}
                     />
                     {selectedHistoryId === item.bundle.draft.id ? (
