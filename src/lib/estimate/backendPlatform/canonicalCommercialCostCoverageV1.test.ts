@@ -257,3 +257,37 @@ describe('canonical server commercial coverage', () => {
     expect(result.totals.amount).toBe('17000');
   });
 });
+
+test.each([
+  ['APPEND', false, false, 'Плитка — Керамогранит 600×600 мм'],
+  ['REPLACE', false, false, 'Керамогранит 600×600 мм'],
+  ['REPLACE', true, false, 'Плитка'],
+  ['APPEND', false, true, 'Моя сохранённая плитка'],
+] as const)('preserves entered specification and identity on a quantity need: %s, incomplete=%s, manual=%s', async (mode, incomplete, manual, expectedTitle) => {
+  const input = fixture();
+  input.parameterDefinitions.push(
+    { parameter_id: 'material_measure', value_type: 'decimal', required: false, default_value: null, constraints_json: null },
+    { parameter_id: 'material_spec', value_type: 'text', required: true, default_value: null, constraints_json: { maxLength: 500 } },
+    { parameter_id: 'material_finish', value_type: 'text', required: true, default_value: null, constraints_json: { maxLength: 500 } },
+  );
+  input.submittedParameters.material_spec = 'Керамогранит 600×600 мм';
+  input.formulaDefinitions.push({ formula_id: 'material', ast: { kind: 'parameter', id: 'material_measure' },
+    input_parameter_ids: ['material_measure'], ast_sha256: 'quantity-need-material' });
+  const resource = input.resourceDefinitions.find(r => r.row_id === 'tile')!;
+  resource.formula_id = 'material';
+  resource.resource_graph = { ...resource.resource_graph, titleSpecificationMode: mode,
+    titleSpecificationParameterIds: incomplete ? ['material_spec', 'material_finish'] : ['material_spec'],
+    publicResourcePresentationV1: { contractVersion: 'canonical-public-resource-presentation/v1', sourceTitleRu: 'Плитка',
+      nameRu: 'Плитка', brandAndModelRu: null, specificationRu: null, detailsRu: [] } };
+  if (manual) input.rowOverrides!.tile = { titleRu: expectedTitle, provenance: { kind: 'manual' } };
+  const result = await compileCanonicalEstimateCore(input);
+  const need = result.preliminaryNeeds.find(n => n.row_id === 'tile')!;
+  expect(need).toMatchObject({ title_ru: expectedTitle, quantity: null, unit_price: null, selected: true });
+  expect(need.missing_parameter_ids).toContain('material_measure');
+  expect(result.parameters.material_spec).toBe('Керамогранит 600×600 мм');
+  expect(result.totals).toMatchObject({ amount: '17000', pricedRowCount: 3 });
+  if (incomplete) expect(need.missing_parameter_ids).toContain('material_finish');
+  if (manual) expect(need.calculation_trace.manualTitleOverride).toBe(true);
+  if (mode === 'APPEND' && !manual) expect(need.calculation_trace.resourceGraph).toMatchObject({
+    publicResourcePresentationV1: { nameRu: 'Плитка', specificationRu: 'Керамогранит 600×600 мм' } });
+});

@@ -1064,6 +1064,16 @@ export async function compileCanonicalEstimateCore(
       && (effectiveOutput != null || manualQuantity == null || formulaOutputBounds != null || missingEffectiveParameterIds.length > 0
         || resource.resource_graph?.purchaseBalanceV1 != null || resource.resource_graph?.manualTransportQuantityPolicyV1 != null);
 
+    const joinedTitleSpecification = normalizedTitleSpecificationValues.join(", ");
+    const boundedTitleSpecification = joinedTitleSpecification
+      ? boundedText(joinedTitleSpecification, `${resource.row_id}.titleSpecification`, 500)
+      : null;
+    const canonicalTitleRu = boundedTitleSpecification == null
+      ? resource.title_ru
+      : titleSpecification.mode === "REPLACE"
+        ? boundedTitleSpecification
+        : `${resource.title_ru}${titleSpecification.separator}${boundedTitleSpecification}`;
+
     if ((inclusion.value == null && !inclusionResolvedByManualQuantity)
       || missingFormulaBlocksQuantity
       || (missingPhysicalNormParameterIds.length > 0 && (manualQuantity == null || effectiveOutput != null))
@@ -1095,15 +1105,24 @@ export async function compileCanonicalEstimateCore(
         ? nonNegativeNumericText(override.unitPrice, `${resource.row_id}.unitPrice`, true)
         : null;
       const knownQuantity = manualQuantity ?? formulaQuantity;
+      // Known specifications remain part of the same saved need even while
+      // its quantity or other conditions are unresolved. An incomplete
+      // REPLACE selection retains the original identity until it is complete.
+      const preliminaryTitleRu = override?.titleRu != null
+        ? boundedText(override.titleRu, `${resource.row_id}.titleRu`, 2_000)
+        : titleSpecification.mode === 'REPLACE' && missingRequiredTitleSpecificationParameterIds.length > 0
+          ? resource.title_ru : canonicalTitleRu;
+      const preliminaryResourceGraph = bindCanonicalPublicResourceSavedTitleV1({ graph: effectiveResourceGraph,
+        sourceTitleRu: resource.title_ru, savedTitleRu: preliminaryTitleRu,
+        appendedSpecificationRu: titleSpecification.mode === 'APPEND' ? boundedTitleSpecification : null,
+        manualTitleOverride: override?.titleRu != null });
       const needWithoutHash = {
         row_id: resource.row_id,
         ordinal: resource.ordinal,
         resource_spec_id: resource.id,
         section: resource.section,
         category: resource.category,
-        title_ru: override?.titleRu == null
-          ? resource.title_ru
-          : boundedText(override.titleRu, `${resource.row_id}.titleRu`, 2_000),
+        title_ru: preliminaryTitleRu,
         unit_id: resource.unit_id,
         quantity: knownQuantity,
         unit_price: unitPrice,
@@ -1117,7 +1136,12 @@ export async function compileCanonicalEstimateCore(
           formulaId: resource.formula_id,
           formulaAstSha256: formula.ast_sha256,
           inputParameterIds: formula.input_parameter_ids,
-          resourceGraph: effectiveResourceGraph,
+          resourceGraph: preliminaryResourceGraph,
+          ...(titleSpecification.parameterIds.length === 0 ? {} : { titleSpecification: {
+            mode: titleSpecification.mode, parameterIds: titleSpecification.parameterIds,
+            resolvedParameterIds: titleSpecification.parameterIds.filter(id => !missingTitleSpecificationParameterIds.includes(id)),
+            missingParameterIds: missingTitleSpecificationParameterIds,
+          } }),
           preliminaryNeed: true,
           ...(override?.titleRu == null ? {} : { manualTitleOverride: true }),
           needState,
@@ -1245,15 +1269,7 @@ export async function compileCanonicalEstimateCore(
     const normativeTrace = Array.isArray(resource.source_metadata?.normativeTrace)
       ? resource.source_metadata.normativeTrace
       : [];
-    const joinedTitleSpecification = normalizedTitleSpecificationValues.join(", ");
-    const boundedTitleSpecification = joinedTitleSpecification
-      ? boundedText(joinedTitleSpecification, `${resource.row_id}.titleSpecification`, 500)
-      : null;
-    const canonicalTitleRu = boundedTitleSpecification == null
-      ? resource.title_ru
-      : titleSpecification.mode === "REPLACE"
-        ? boundedTitleSpecification
-        : `${resource.title_ru}${titleSpecification.separator}${boundedTitleSpecification}`;
+
     const manuallyPriced = provenance != null && Object.prototype.hasOwnProperty.call(override!, "unitPrice");
     calculationTrace.resourceGraph = bindCanonicalPublicResourceSavedTitleV1({ graph: calculationTrace.resourceGraph,
       sourceTitleRu: resource.title_ru, savedTitleRu: canonicalTitleRu,
