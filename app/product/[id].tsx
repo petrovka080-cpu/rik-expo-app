@@ -16,6 +16,7 @@ import { getMarketListingForInstantOpen } from "../../src/features/market/market
 import type { MarketHomeListingCard } from "../../src/features/market/marketHome.types";
 import { waitForProductDetailBackgroundSlot } from "../../src/features/market/productDetailBackgroundSlot";
 import { safeBack } from "../../src/lib/navigation/safeBack";
+import { useAndroidSafeBackFallback } from "../../src/lib/navigation/useAndroidSafeBackFallback";
 
 type ProductBoundaryObservationInput =
   Parameters<typeof import("../../src/lib/observability/platformObservability").recordPlatformObservability>[0];
@@ -195,11 +196,14 @@ function withScreenErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
   options: { screen: "product"; route: string; title: string },
 ) {
-  const WrappedProductRoute = (props: P) => (
-    <ProductRouteErrorBoundary>
-      <Component {...props} />
-    </ProductRouteErrorBoundary>
-  );
+  const WrappedProductRoute = (props: P) => {
+    useAndroidSafeBackFallback(MARKET_TAB_ROUTE);
+    return (
+      <ProductRouteErrorBoundary>
+        <Component {...props} />
+      </ProductRouteErrorBoundary>
+    );
+  };
   WrappedProductRoute.displayName =
     `withScreenErrorBoundary(${Component.displayName || Component.name || "ProductDetailsScreen"}:${options.route})`;
   return WrappedProductRoute;

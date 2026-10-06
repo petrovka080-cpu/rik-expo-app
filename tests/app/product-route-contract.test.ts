@@ -46,4 +46,12 @@ describe("product/[id] deep-link contract", () => {
     // The default export must be the wrapped version
     expect(source).not.toContain("export default function ProductDetailsScreen");
   });
+
+  it("owns Android system Back outside the child error boundary", () => {
+    const wrapper = source.slice(source.indexOf("const WrappedProductRoute"), source.indexOf("function ProductDetailsScreen"));
+    const handler = wrapper.indexOf("useAndroidSafeBackFallback(MARKET_TAB_ROUTE)");
+    expect(handler).toBeGreaterThan(0);
+    expect(wrapper.indexOf("<ProductRouteErrorBoundary>")).toBeGreaterThan(handler);
+    expect(source.slice(source.indexOf("function ProductDetailsScreen"))).not.toContain("useAndroidSafeBackFallback");
+  });
 });
