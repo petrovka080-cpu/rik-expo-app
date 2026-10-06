@@ -1,5 +1,6 @@
 import React from "react";
 import { canonicalPurchaseShortageMessageV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
+import { publishMountedAndroidPdfCaller } from "../../lib/pdf/androidPdfCallerReadiness";
 import { router } from "expo-router";
 import { Platform, Text, TextInput, View } from "react-native";
 import {
@@ -418,7 +419,20 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private problemInputRef = React.createRef<TextInput>();
   private readonly firstPresentationTrace = createConsumerEstimatePresentationTrace();
   state: State = buildInitialControllerState(this.props);
+  private clearPdfCallerReadiness: (() => void) | null = null;
+  private publishPdfCallerReadiness(): void {
+    this.clearPdfCallerReadiness?.();
+    this.clearPdfCallerReadiness = null;
+    if (Platform.OS !== "android" || !this.props.consumerUserId) return;
+    const draft = this.state.bundle?.draft;
+    if (draft?.status === "draft" && draft.consumerUserId === this.props.consumerUserId) {
+      this.clearPdfCallerReadiness = publishMountedAndroidPdfCaller(this.props.consumerUserId, draft.id);
+    } else if (!draft && !this.props.initialDraftId && !this.props.initialCanonicalRevisionId) {
+      this.clearPdfCallerReadiness = publishMountedAndroidPdfCaller(this.props.consumerUserId, null);
+    }
+  }
   componentDidMount(): void {
+    this.publishPdfCallerReadiness();
     this.syncRuntimeIngressProjection();
     this.unsubscribeRuntimeLaunch =
       requestEstimateIntentLifecycle.subscribe(
@@ -432,6 +446,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
   }
   componentWillUnmount(): void {
+    this.clearPdfCallerReadiness?.();
     this.cancelCanonicalWorkSearch();
     this.unsubscribeRuntimeLaunch?.();
     this.unsubscribeRuntimeLaunch = null;
@@ -440,6 +455,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     prevProps: ConsumerRepairRequestScreenControllerProps,
     prevState: State,
   ): void {
+    this.publishPdfCallerReadiness();
     const previousBinding = consumerRepairCanonicalBackendBinding(prevState.bundle);
     const currentBinding = consumerRepairCanonicalBackendBinding(this.state.bundle);
     if (

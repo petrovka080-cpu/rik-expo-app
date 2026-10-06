@@ -10,6 +10,7 @@ import {
 } from "../../src/lib/consumerRequests";
 import {
   getConsumerRepairBundle,
+  findConsumerRepairBundle,
   hasUnhydratedTransactionalConsumerRepairBundles,
   hydrateNextTransactionalConsumerRepairHistoryPage,
   hydrateTransactionalConsumerRepairRequestStore,
@@ -345,6 +346,59 @@ describe("consumer repair native durable storage platform boundary", () => {
     await expect(queued).resolves.toBe(0);
     expect(recoveryOrder).toEqual([first.draft.id, second.draft.id]);
     expect(hasUnhydratedTransactionalConsumerRepairBundles()).toBe(false);
+  });
+
+  it.each(["reject", "null"])("retries only the exact cold caller after a %s storage read", async failure => {
+    Object.defineProperty(Platform, "OS", { configurable: true, get: () => "android" });
+    Object.defineProperty(globalThis, "navigator", { configurable: true, value: { product: "ReactNative" } });
+    const durableStore = new InMemoryEstimateRevisionDurableStore();
+    const caller = nativeBundle("consumer_draft_cold_retry");
+    const unrelated = nativeBundle("consumer_draft_unrelated_history", { approved: true });
+    for (const bundle of [caller, unrelated]) {
+      expect((await durableStore.writeBundleAtomically(bundle.draft.id, null, bundle)).status).toBe("WRITTEN");
+    }
+    const recover = jest.spyOn(durableStore, "recoverLastValid");
+    if (failure === "reject") recover.mockRejectedValueOnce(new Error("EXPECTED_TRANSIENT_READ"));
+    else recover.mockResolvedValueOnce(null);
+    setConsumerRepairTransactionalDurableStoreForTests(durableStore);
+    __simulateConsumerRepairRequestStoreReloadForTests();
+    await hydrateTransactionalConsumerRepairRequestStore(caller.draft.id);
+    expect(findConsumerRepairBundle(caller.draft.id)).toBeNull();
+    await hydrateTransactionalConsumerRepairRequestStore(caller.draft.id);
+    expect(recover).toHaveBeenCalledTimes(1);
+    await hydrateTransactionalConsumerRepairRequestStore(caller.draft.id, { retryUnrecoveredExact: true });
+    expect(findConsumerRepairBundle(caller.draft.id)?.draft.id).toBe(caller.draft.id);
+    expect(recover.mock.calls.map(([id]) => id)).toEqual([caller.draft.id, caller.draft.id]);
+    expect(findConsumerRepairBundle(unrelated.draft.id)).toBeNull();
+    await hydrateTransactionalConsumerRepairRequestStore(caller.draft.id, { retryUnrecoveredExact: true });
+    expect(recover).toHaveBeenCalledTimes(2);
+  });
+
+  it("preserves a newer pending save during exact cold-caller retry", async () => {
+    Object.defineProperty(Platform, "OS", { configurable: true, get: () => "android" });
+    Object.defineProperty(globalThis, "navigator", { configurable: true, value: { product: "ReactNative" } });
+    const durableStore = new InMemoryEstimateRevisionDurableStore();
+    const old = nativeBundle("consumer_draft_cold_retry_save");
+    expect((await durableStore.writeBundleAtomically(old.draft.id, null, old)).status).toBe("WRITTEN");
+    const recover = jest.spyOn(durableStore, "recoverLastValid").mockRejectedValueOnce(new Error("EXPECTED_TRANSIENT_READ"));
+    setConsumerRepairTransactionalDurableStoreForTests(durableStore);
+    __simulateConsumerRepairRequestStoreReloadForTests();
+    await hydrateTransactionalConsumerRepairRequestStore(old.draft.id);
+    const originalWrite = durableStore.writeBundleAtomically.bind(durableStore);
+    let releaseWrite!: () => void;
+    const delayedWrite = new Promise<void>(resolve => { releaseWrite = resolve; });
+    jest.spyOn(durableStore, "writeBundleAtomically").mockImplementation(async (key, version, bundle) => {
+      await delayedWrite;
+      return originalWrite(key, version, bundle);
+    });
+    saveConsumerRepairBundle({ ...old, draft: { ...old.draft, title: "newer pending caller", dangerousDiyBlocked: false } } as ConsumerRepairDraftBundle);
+    await hydrateTransactionalConsumerRepairRequestStore(old.draft.id, { retryUnrecoveredExact: true });
+    expect(recover).toHaveBeenCalledTimes(1);
+    expect(getConsumerRepairBundle(old.draft.id).draft.title).toBe("newer pending caller");
+    releaseWrite();
+    await flushTransactionalConsumerRepairWrites();
+    await hydrateTransactionalConsumerRepairRequestStore(old.draft.id, { retryUnrecoveredExact: true });
+    expect(getConsumerRepairBundle(old.draft.id).draft.title).toBe("newer pending caller");
   });
 
   it.each([false, true])("keeps a newer local save when older recovery resumes (write committed: %s)", async committed => {

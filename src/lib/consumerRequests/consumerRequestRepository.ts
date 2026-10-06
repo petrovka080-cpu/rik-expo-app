@@ -842,6 +842,7 @@ async function hydrateTransactionalDurableBundleIds(
 
 export async function hydrateTransactionalConsumerRepairRequestStore(
   requestedDraftId?: string,
+  options?: { retryUnrecoveredExact?: boolean },
 ): Promise<void> {
   const trace = createConsumerEstimateHydrationTrace();
   trace.measureSync("DURABLE_LEGACY_COMPATIBILITY", hydrateConsumerRepairRequestStore);
@@ -862,6 +863,15 @@ export async function hydrateTransactionalConsumerRepairRequestStore(
       return;
     }
     const exactRequestedDraftId = requestedDraftId?.trim();
+    // Cold PDF return may retry a transient native storage failure. Reopen only
+    // that indexed, absent record inside the existing serialized read queue;
+    // never replace a local projection or race an outstanding local write.
+    if (options?.retryUnrecoveredExact && exactRequestedDraftId
+      && transactionalDurableBundleIds.includes(exactRequestedDraftId)
+      && !store.bundles.has(exactRequestedDraftId)
+      && !hasPendingTransactionalConsumerRepairBundleWrite(exactRequestedDraftId)) {
+      hydratedTransactionalDurableBundleIds.delete(exactRequestedDraftId);
+    }
     // Startup owns only the compact key index. An exact estimate route reads
     // exactly that bundle; the history surface explicitly requests bounded
     // pages through hydrateNextTransactionalConsumerRepairHistoryPage(). The

@@ -27,6 +27,7 @@ import { applyRootLayoutWebContainerStyle } from "../src/lib/entry/rootLayoutWeb
 import { AppQueryProvider } from "../src/lib/query/queryClient";
 import { useAuthLifecycle } from "../src/lib/auth/useAuthLifecycle";
 import { useAuthGuard } from "../src/lib/auth/useAuthGuard";
+import { useAndroidPdfReturnRecovery } from "../src/lib/pdf/useAndroidPdfReturnRecovery";
 import { buildCurrentRouteReturnTo } from "../src/lib/authRouting";
 import { getSessionSafe, supabaseClientAvailability } from "../src/lib/supabaseClient";
 import {
@@ -262,6 +263,15 @@ function RootLayout() {
     pathname,
     currentReturnTo: buildCurrentRouteReturnTo(pathname, globalRouteParams),
     authReturnTo: globalRouteParams.returnTo,
+  });
+  useAndroidPdfReturnRecovery({
+    ready: rootNavigationReady && authState.sessionLoaded && authState.authSessionState.status === "authenticated"
+      && pathname !== "/" && pathname !== "/index" && !pathname.startsWith("/auth"),
+    ownerUserId: authState.authenticatedUserId,
+    terminalSignOut: authState.authSessionState.status === "unauthenticated"
+      && authState.authSessionState.reason === "terminal_sign_out",
+    pathname,
+    draftId: typeof globalRouteParams.draftId === "string" ? globalRouteParams.draftId : null,
   });
 
   const recoverReadableSessionForPendingIntent = useCallback(

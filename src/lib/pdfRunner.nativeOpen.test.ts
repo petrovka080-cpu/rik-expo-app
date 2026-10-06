@@ -15,6 +15,7 @@ const mockDownloadAsync = jest.fn();
 const mockCopyAsync = jest.fn();
 const mockGetContentUriAsync = jest.fn();
 const mockStartActivityAsync = jest.fn();
+const mockOpenPdfWithReturn = jest.fn();
 const mockSharingShareAsync = jest.fn();
 const mockSharingIsAvailableAsync = jest.fn();
 
@@ -32,6 +33,7 @@ jest.mock("react-native", () => ({
   Platform: {
     OS: "android",
   },
+  NativeModules: { RikIntent: { openPdfWithReturn: (...args: unknown[]) => mockOpenPdfWithReturn(...args) } },
 }));
 
 jest.mock("expo-intent-launcher", () => ({
@@ -75,6 +77,8 @@ describe("pdfRunner native open", () => {
     mockCopyAsync.mockReset();
     mockGetContentUriAsync.mockReset();
     mockStartActivityAsync.mockReset();
+    mockOpenPdfWithReturn.mockReset();
+    mockOpenPdfWithReturn.mockResolvedValue(undefined);
     mockSharingShareAsync.mockReset();
     mockSharingIsAvailableAsync.mockReset();
     mockGetInfoAsync.mockResolvedValue({ exists: true, size: 128 });
@@ -115,6 +119,23 @@ describe("pdfRunner native open", () => {
     expect(mockDownloadAsync).not.toHaveBeenCalled();
     expect(mockGetContentUriAsync).not.toHaveBeenCalled();
     expect(mockOpenUrl).not.toHaveBeenCalled();
+  });
+
+  it("uses the durable native boundary only for an explicit estimate caller", async () => {
+    const nativeCaller = { ownerUserId: "9adc5ab1-31fa-41be-8a00-17eadbb37c39",
+      sessionId: "session_owned_pdf", returnTo: "/request?draftId=consumer_draft_owned" };
+    await openPdfPreview("file:///cache/document.pdf", "document.pdf", { nativeCaller, isCurrent: () => true });
+    expect(mockOpenPdfWithReturn).toHaveBeenCalledWith("content://file%3A%2F%2F%2Fcache%2Fdocument.pdf",
+      nativeCaller.ownerUserId, nativeCaller.sessionId, nativeCaller.returnTo);
+    expect(mockStartActivityAsync).not.toHaveBeenCalled();
+  });
+
+  it("does not fall through to a second external viewer after native preparation fails", async () => {
+    mockOpenPdfWithReturn.mockRejectedValue(new Error("PDF_CALLER_COMMIT_FAILED"));
+    await expect(openPdfPreview("file:///cache/document.pdf", "document.pdf", {
+      nativeCaller: { ownerUserId: "9adc5ab1-31fa-41be-8a00-17eadbb37c39", sessionId: "session_owned_pdf", returnTo: "/request" },
+    })).rejects.toThrow("PDF_CALLER_COMMIT_FAILED");
+    expect(mockStartActivityAsync).not.toHaveBeenCalled();
   });
 
   it("does not launch a native viewer if Back occurs while the content URI is pending", async () => {

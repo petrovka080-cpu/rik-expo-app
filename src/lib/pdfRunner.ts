@@ -26,6 +26,7 @@ import {
 } from "./pdfFileContract";
 import { assertValidLocalPdfFile } from "./pdf/pdfSourceValidation";
 import { SUPABASE_ANON_KEY } from "./supabaseClient";
+import { openAndroidPdfWithCaller, type AndroidPdfCaller } from "./pdf/androidPdfHandoff";
 import { redactSensitiveText } from "./security/redaction";
 import {
   readPdfRunnerAuthSession,
@@ -216,7 +217,7 @@ async function ensureNativePdfHandoffUri(uri: string, fileName?: string): Promis
   return normalizedLocalUri;
 }
 
-export type PdfPreviewAttemptOptions = { isCurrent?: () => boolean };
+export type PdfPreviewAttemptOptions = { isCurrent?: () => boolean; nativeCaller?: AndroidPdfCaller };
 
 function assertCurrentPdfPreviewAttempt(options?: PdfPreviewAttemptOptions): void {
   if (options?.isCurrent && !options.isCurrent()) {
@@ -242,6 +243,7 @@ async function openAndroidPdfContentUri(localUri: string, fileName?: string, opt
   // The viewer can be left while FileSystem creates the content URI.
   // Check the current attempt at the final native side-effect boundary.
   assertCurrentPdfPreviewAttempt(options);
+  if (options?.nativeCaller && await openAndroidPdfWithCaller(contentUri, options.nativeCaller)) return contentUri;
   await openAndroidViewIntent(contentUri, "application/pdf", {
     owner: "pdf-runner",
     fileName: fileName ?? null,

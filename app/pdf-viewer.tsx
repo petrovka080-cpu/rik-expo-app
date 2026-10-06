@@ -1,5 +1,7 @@
 import React from "react";
 import { BackHandler, Platform, useWindowDimensions } from "react-native";
+import { getSessionSafe } from "../src/lib/supabaseClient";
+import { parseEstimatePdfReturnRoute } from "../src/lib/pdf/androidPdfReturnRecovery";
 import { router, useFocusEffect, useLocalSearchParams, useNavigationContainerRef, type Href } from "expo-router";
 import { useRoute } from "@react-navigation/native";
 import {
@@ -1020,10 +1022,15 @@ function PdfViewerScreen() {
           startCommandPlan.breadcrumb.payload,
         );
         recordPdfCriticalPathEvent(startCommandPlan.criticalPath);
+        const callerRoute = Platform.OS === "android" ? parseEstimatePdfReturnRoute(returnTo) : null;
+        const callerSession = callerRoute ? await getSessionSafe({ caller: "pdf_native_caller_checkpoint" }) : null;
+        if (!isCurrentAttempt()) return;
+        const nativeCaller = callerRoute && !callerSession?.degraded && callerSession?.session?.user.id
+          ? { ownerUserId: callerSession.session.user.id, sessionId, returnTo: callerRoute.href } : undefined;
         await openPdfPreview(
           startCommandPlan.openPreview.uri,
           startCommandPlan.openPreview.fileName,
-          { isCurrent: isCurrentAttempt },
+          { isCurrent: isCurrentAttempt, ...(nativeCaller ? { nativeCaller } : {}) },
         );
         if (!isCurrentAttempt()) {
           completePdfNativeHandoff(nativeHandoffGuardRef.current, handoffKey, "failure", handoffGeneration);
@@ -1117,6 +1124,7 @@ function PdfViewerScreen() {
       clearLoadingTimeout,
       commitNativeHandoffCompleted,
       diagnosticsScreen,
+      returnTo,
       isMountedRef,
       markError,
       markReady,
