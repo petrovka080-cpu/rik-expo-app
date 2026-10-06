@@ -144,6 +144,10 @@ describe("R4-A6 canonical professional PDF", () => {
     });
     expect(projection.html).toContain(label);
     expect(projection.html).not.toContain("HDPE_BUTT_FUSION_OPEN_TRENCH");
+    expect(projection.html).toContain('<h2>Процесс работ</h2>');
+    expect(projection.html).toContain('<li>Монтаж трубы, фасонных частей, арматуры и камер</li>');
+    expect(projection.html).toContain('Сохранённые подработы; последовательность выполнения ещё не задана.');
+    expect(projection.html).not.toContain('Подработы этой сметы ещё не раскрыты');
     expect(typeof source.title_ru).toBe("string");
     expect(publicBoqDisplayNameRu({ sourceNameRu: String(source.title_ru), rowType: "work" }))
       .toBe(`Строительство и приёмка напорного канализационного трубопровода — ${label}`);
@@ -162,7 +166,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-36-readable-source-products");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-37-work-process");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,
@@ -365,8 +369,9 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(projection.html).toContain("Отдельно не оплачивается");
     expect(projection.html).toContain("Не применяется");
     expect(projection.html).toContain("Не суммируется");
-    expect(projection.html.indexOf("Профессиональная позиция 1"))
-      .toBeLessThan(projection.html.indexOf("Профессиональная позиция 2"));
+    const resourceTable = projection.html.slice(projection.html.indexOf('<table class="client">'));
+    expect(resourceTable.indexOf("Профессиональная позиция 1"))
+      .toBeLessThan(resourceTable.indexOf("Профессиональная позиция 2"));
   });
 
   it("fails closed when projected rows differ from revision truth", () => {
@@ -410,6 +415,27 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(projection.html.indexOf("PLACEMENT_PUMP")).toBeLessThan(projection.html.indexOf("Уход за бетоном</strong>"));
     expect(projection.html.indexOf("CURING_LABOUR")).toBeLessThan(projection.html.indexOf("CURING_WATER"));
     for (const title of ["CONCRETE_SUPPLY", "CURING_LABOUR", "PLACEMENT_PUMP", "CURING_WATER"]) expect(projection.html.match(new RegExp(title, "gu"))).toHaveLength(1);
+  });
+
+  it("shows the saved work process before the resources for any group without adding costs or changing saved rows", () => {
+    const source = rows(3);
+    const before = buildCanonicalProfessionalPdfProjection({ revision: revision(3), rows: source, workTitleRu: 'Монтаж трубопровода' });
+    for (const [index, title] of ['Прокладка труб', 'Сборка соединений', 'Испытания'].entries()) {
+      source[index]!.calculation_trace = { resourceGraph: { operationCompositionV1: {
+        contractVersion: 'canonical-operation-resource/v1', groupId: 'pipeline', groupTitleRu: 'Монтаж трубопровода',
+        operationId: `step-${index}`, operationTitleRu: title, completionCriterionRu: 'По проекту',
+        processRole: 'PROCESS', processOrdinal: index,
+      } } };
+    }
+    const snapshot = JSON.stringify(source);
+    const result = buildCanonicalProfessionalPdfProjection({ revision: revision(3), rows: source, workTitleRu: 'Монтаж трубопровода' });
+    expect(result.html).toContain('<h2>Процесс работ</h2>');
+    expect(result.html).toContain('<ol><li>Прокладка труб</li><li>Сборка соединений</li><li>Испытания</li></ol>');
+    expect(result.html.indexOf('<h2>Процесс работ</h2>')).toBeLessThan(result.html.indexOf('<table class="client">'));
+    expect(result.categoryTotals).toEqual(before.categoryTotals);
+    expect(result.rowCount).toBe(before.rowCount);
+    expect(result.pricedRowCount).toBe(before.pricedRowCount);
+    expect(JSON.stringify(source)).toBe(snapshot);
   });
 
   it("names the current paid cost owner across operation boundaries without changing quantities or totals", () => {

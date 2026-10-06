@@ -27,6 +27,7 @@ import {
 } from "./requestEstimateScreenActions";
 import {
   sanitizeRequestEstimatePublicText,
+  requestEstimateResolvedWorkTitle,
   type RequestEstimateViewModel,
 } from "./requestEstimateViewModel";
 
@@ -469,7 +470,9 @@ export function ConsumerRepairRequestContent({
   onSelectRoadScope,
   roadScopeSelectionBusy,
 }: ContentProps) {
+  const [originalRequestVisible, setOriginalRequestVisible] = React.useState(false);
   const publicProblemText = sanitizeRequestEstimatePublicText(bundle?.draft.problemText?.trim());
+  const resolvedWorkTitle = requestEstimateResolvedWorkTitle(bundle);
   const showWorkSelection = shouldShowConsumerRepairWorkSelection({
     bundle,
     selectedWork,
@@ -529,17 +532,32 @@ export function ConsumerRepairRequestContent({
     <>
       {publicProblemText ? (
         <View
-          accessibilityLabel={`Текущий запрос: ${publicProblemText}`}
+          accessibilityLabel={resolvedWorkTitle ? `Выбранная работа: ${resolvedWorkTitle}` : `Текущий запрос: ${publicProblemText}`}
           style={styles.launchPrompt}
           testID="request-estimate-current-launch-prompt"
         >
-          <Text style={styles.launchPromptLabel}>Текущий запрос</Text>
+          <Text style={styles.launchPromptLabel}>{resolvedWorkTitle ? "Выбранная работа" : "Текущий запрос"}</Text>
           <Text
             style={styles.launchPromptText}
             testID="request-estimate-current-launch-prompt-text"
           >
-            {publicProblemText}
+            {resolvedWorkTitle || publicProblemText}
           </Text>
+          {resolvedWorkTitle ? (
+            <>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ expanded: originalRequestVisible }}
+                testID="request-estimate-original-request-toggle"
+                onPress={() => setOriginalRequestVisible(value => !value)}
+              >
+                <Text style={styles.launchPromptLabel}>{originalRequestVisible ? "Скрыть исходный запрос" : "Исходный запрос"}</Text>
+              </Pressable>
+              {originalRequestVisible ? (
+                <Text style={styles.launchPromptText} testID="request-estimate-original-request-text">{bundle?.draft.problemText}</Text>
+              ) : null}
+            </>
+          ) : null}
         </View>
       ) : null}
       {prioritizeDraftDecision ? draftPanel : null}

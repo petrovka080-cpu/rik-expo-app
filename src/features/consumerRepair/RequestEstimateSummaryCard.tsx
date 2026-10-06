@@ -29,6 +29,21 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
         </Text>
         <Text style={styles.title} testID="request-estimate-selected-work-title">{viewModel.title}</Text>
         <Text style={styles.summary} numberOfLines={2}>{viewModel.summary}</Text>
+        <View style={styles.workProcess} testID="request-estimate-work-process">
+          <Text style={styles.meta}>Процесс работ</Text>
+          {viewModel.workProcessGroups?.length ? viewModel.workProcessGroups.map(group => (
+            <View key={group.groupId} style={styles.visibleLines}>
+              <Text style={styles.visibleLine}>{group.groupTitleRu}</Text>
+              {group.sequenceUnspecified ? <Text style={styles.legal}>Сохранённые подработы; последовательность выполнения ещё не задана.</Text> : null}
+              {group.operations.map((operation, index) => (
+                <Text key={operation.operationId} style={styles.visibleLine}
+                  testID={`request-estimate-process-${group.groupId}-${operation.operationId}`}>
+                  {`${group.sequenceUnspecified ? '•' : `${index + 1}.`} ${operation.operationTitleRu}`}
+                </Text>
+              ))}
+            </View>
+          )) : <Text style={styles.legal}>Подработы этой сметы ещё не раскрыты в сохранённом составе.</Text>}
+        </View>
         {viewModel.visibleLines.length > 0 ? (
           <View style={styles.visibleLines} testID="request-estimate-visible-lines">
             <Text style={styles.meta}>Ключевые рассчитанные позиции:</Text>
@@ -90,6 +105,7 @@ function pluralizeRu(count: number, one: string, few: string, many: string): str
 }
 
 const styles = StyleSheet.create({
+  workProcess: { gap: 6, borderLeftWidth: 2, borderLeftColor: "#0F766E", paddingLeft: 10 },
   card: {
     gap: 8,
   },

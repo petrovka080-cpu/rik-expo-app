@@ -5,11 +5,28 @@ import { PVC_ROOF_MEMBRANE_INSTALLATION_FORMULAS, PVC_ROOF_MEMBRANE_INSTALLATION
 import { canonicalEstimateRevisionRowFromStorage } from '../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper';
 import { buildMasterParameterCalculationConsumers } from '../../scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1';
 import { aiEstimateRuLabelForParameter } from '../../src/lib/estimate/aiEstimateRuParameterDictionary';
+import { canonicalEstimateWorkProcess } from '../../src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition';
 const q = (r: Awaited<ReturnType<typeof compile>>, id: string) => r.rows.find(x => x.row_id === id)?.quantity;
 const purchaseBalance = (row: Awaited<ReturnType<typeof compile>>['rows'][number] | undefined) =>
   (row?.calculation_trace as { purchaseBalance?: Record<string, unknown> } | undefined)?.purchaseBalance;
 
 describe('bounded concrete-base PVC1.2mm KRER12 field operation', () => {
+  test('saved composition reveals the work sequence and retains one labor owner and the existing material balances', async () => {
+    const result = await compile({ area_m2: 100 });
+    const process = canonicalEstimateWorkProcess([...result.rows, ...result.preliminaryNeeds].map(row => ({
+      rowId: row.row_id,
+      operation: (row.calculation_trace as { resourceGraph?: { operationCompositionV1?: unknown } })?.resourceGraph?.operationCompositionV1,
+    })));
+    expect(process[0]?.operations.map(step => step.operationId))
+      .toEqual(['preparation', 'separation', 'laying', 'fastening', 'cleaning', 'welding', 'control']);
+    expect(process[0]?.operations.find(step => step.operationId === 'fastening')?.resourceIds)
+      .toContain('pvc-roof:material:screw');
+    expect(process[0]?.operations.find(step => step.operationId === 'cleaning')?.resourceIds)
+      .toContain('pvc-roof:material:cleaner');
+    expect(result.rows.filter(row => row.category === 'construction_work' && row.included_in_estimate)).toHaveLength(1);
+    expect(result.rows.filter(row => row.included_in_procurement)).toHaveLength(6);
+    expect(q(result, 'pvc-roof:labor:workers')).toBe('5.33');
+  });
   test('published titles survive the actual UI label filter and distinguish fastener stock from reserve', () => {
     const labels = Object.fromEntries(definition.parameters.map(p => [p.parameter_id, aiEstimateRuLabelForParameter(p.parameter_id, p.title_ru)]));
     expect(Object.values(labels).every(label => label.trim().length > 0)).toBe(true);

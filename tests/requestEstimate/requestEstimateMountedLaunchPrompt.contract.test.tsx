@@ -138,6 +138,27 @@ function renderContent(currentBundle: ConsumerRepairDraftBundle) {
 }
 
 describe("mounted request launch prompt", () => {
+  it("shows the compiled Russian work and keeps the unmodified original request available separately", () => {
+    const current = bundle("LOGICROOF 100 m2\nмои условия", "draft-roof");
+    current.draft.selectedWorkTitleRu = "Ошибочно сохранённое старое название — 90 м²";
+    current.structuredEstimatePayload = {
+      workTitle: "Поле ПВХ-кровли1.2мм по готовому утеплителю и бетонному основанию: крепление и сварка — 100 м²",
+    } as NonNullable<ConsumerRepairDraftBundle["structuredEstimatePayload"]>;
+    let renderer!: TestRenderer.ReactTestRenderer;
+    act(() => { renderer = TestRenderer.create(renderContent(current)); });
+    expect(renderer.root.findByProps({ testID: "request-estimate-current-launch-prompt-text" }).props.children)
+      .toBe("Укладка и крепление ПВХ-мембраны толщиной 1,2 мм — 100 м²");
+    expect(renderer.root.findAllByProps({ testID: "request-estimate-original-request-text" })).toHaveLength(0);
+    act(() => renderer.root.findByProps({ testID: "request-estimate-original-request-toggle" }).props.onPress());
+    expect(renderer.root.findByProps({ testID: "request-estimate-original-request-text" }).props.children)
+      .toBe("LOGICROOF 100 m2\nмои условия");
+    current.structuredEstimatePayload.workTitle = "Укладка и крепление ПВХ-мембраны толщиной 1,2 мм — 101 м²";
+    act(() => renderer.update(renderContent(current)));
+    expect(renderer.root.findByProps({ testID: "request-estimate-current-launch-prompt-text" }).props.children)
+      .toBe("Укладка и крепление ПВХ-мембраны толщиной 1,2 мм — 101 м²");
+    expect(current.draft.problemText).toBe("LOGICROOF 100 m2\nмои условия");
+    act(() => renderer.unmount());
+  });
   it.each([false, true])("keeps an existing status below the mounted draft before and after the first queued edit (priority %s)", prioritized => {
     const current = bundle("TEST prompt", "draft-status");
     if (prioritized) current.structuredEstimatePayload = {} as never;

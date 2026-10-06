@@ -30,7 +30,7 @@ describe("selected full jacking ordinary ingress and immutable ownership", () =>
     const originals = new Map(base.resources.map(row => [row.row_id, row]));
     const byOperation = new Map<string, string[]>();
     for (const row of definition.resources) {
-      const operation = row.resource_graph.operationCompositionV1 as Record<string, string>;
+      const operation = row.resource_graph.operationCompositionV1;
       expect(operation).toMatchObject({ contractVersion: "canonical-operation-resource/v1", groupId: "road-crossing-sleeves" });
       expect(operation.operationTitleRu).toMatch(/[А-Яа-я]/u);
       expect(operation.completionCriterionRu).toMatch(/[А-Яа-я]/u);

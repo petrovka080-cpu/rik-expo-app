@@ -584,8 +584,12 @@ export function localizeKnownConstructionProductDesignationRu(input: string): st
 
 /** Localize known product source codes and an exact known terminal variant.
  * Preserve other punctuation, spacing and actual product specifications. */
+export const PVC_ROOF_FIELD_DISPLAY_NAME_RU = "Укладка и крепление ПВХ-мембраны толщиной 1,2 мм";
+
 export function localizeKnownTechnologyVariantSuffixRu(input: string): string {
-  return localizeKnownConstructionProductDesignationRu(input).replace(/( — |: )([A-Z][A-Z0-9_]+)$/u, (whole, separator: string, machineValue: string) => {
+  return localizeKnownConstructionProductDesignationRu(input)
+    .replace(/^Поле ПВХ-кровли1\.2мм по готовому утеплителю и бетонному основанию: крепление и сварка(?= — |$)/u, PVC_ROOF_FIELD_DISPLAY_NAME_RU)
+    .replace(/( — |: )([A-Z][A-Z0-9_]+)$/u, (whole, separator: string, machineValue: string) => {
     const label = waterMaterialVariantLabelRuR542(machineValue);
     return label === machineValue ? whole : `${separator}${label}`;
   });

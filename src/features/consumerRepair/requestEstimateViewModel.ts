@@ -1,4 +1,4 @@
-import { canonicalEstimateOperationReference, type CanonicalEstimateOperationReference } from "../../lib/estimate/backendPlatform/canonicalEstimateOperationComposition";
+import { canonicalEstimateOperationReference, canonicalEstimateWorkProcess, type CanonicalEstimateOperationReference, type CanonicalEstimateWorkProcessGroup } from "../../lib/estimate/backendPlatform/canonicalEstimateOperationComposition";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
 import { consumerCanonicalMissingRequirements, type CanonicalParameterRequirementTables } from "../../lib/consumerRequests/consumerCanonicalParameterRequirements";
 import { canonicalPurchaseShortageMessageV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
@@ -32,6 +32,7 @@ import {
 import { consumerRepairCanonicalEstimateBlocksApproval } from "./consumerRepairCanonicalEstimateReadiness";
 import { consumerRepairRowIsNonPayable } from "./consumerRepairRowMetadata";
 import { publicBoqDisplayNameRu } from "../../lib/estimate/publicBoqNaming";
+import { localizeKnownTechnologyVariantSuffixRu } from "../../lib/estimate/backendPlatform/russianTechnologyTitleR542";
 import { measureConsumerRepairQuantityRenderWork } from "./consumerRepairQuantityEditTrace";
 import type { ConsumerEstimatePresentationTrace } from "../../lib/consumerRequests/consumerEstimateHydrationTrace";
 
@@ -108,6 +109,7 @@ export type RequestEstimateSourceGate = {
 };
 
 export type RequestEstimateViewModel = {
+  workProcessGroups?: CanonicalEstimateWorkProcessGroup[];
   parameterRequirementTables?: CanonicalParameterRequirementTables | null;
   title: string;
   summary: string;
@@ -309,13 +311,19 @@ export function buildRequestEstimateProfessionalRowEvidence(
 }
 
 function publicRequestEstimateTitle(value: string | null | undefined): string {
-  const normalized = sanitizeRequestEstimatePublicText(value, "\u0421\u043c\u0435\u0442\u0430");
+  const normalized = sanitizeRequestEstimatePublicText(localizeKnownTechnologyVariantSuffixRu(value ?? ""), "\u0421\u043c\u0435\u0442\u0430");
   const cleaned = normalized
     .replace(/^\s*\u041f\u0440\u043e\u0444\u0435\u0441\u0441\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u0430\u044f\s+\u043f\u0440\u0435\u0434\u0432\u0430\u0440\u0438\u0442\u0435\u043b\u044c\u043d\u0430\u044f\s+\u0441\u043c\u0435\u0442\u0430\s*:?\s*/iu, "")
     .replace(/^\s*\u041f\u0440\u043e\u0444\u0435\u0441\u0441\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u0430\u044f\s+\u0441\u043c\u0435\u0442\u0430\s*(?:\u043d\u0430|:)?\s*/iu, "")
     .replace(/\b(?:piece|pieces|pcs|pc)\b/giu, "шт.")
     .trim();
   return cleaned || normalized || "\u0421\u043c\u0435\u0442\u0430";
+}
+
+export function requestEstimateResolvedWorkTitle(bundle: ConsumerRepairDraftBundle | null): string | null {
+  const title = bundle?.structuredEstimatePayload?.workTitle?.trim()
+    || bundle?.draft.selectedWorkTitleRu?.trim();
+  return title ? publicRequestEstimateTitle(title) : null;
 }
 
 function capitalRenovationGroupId(item: ConsumerRepairRequestItem): CapitalRenovationGroupId | null {
@@ -1255,6 +1263,12 @@ export function buildRequestEstimateViewModel(
     ?? null;
 
   return {
+    workProcessGroups: canonicalEstimateWorkProcess(viewBundle.items.map(item => ({
+      rowId: item.id, operation: item.sourceParameters?.canonicalOperationComposition,
+      titleRu: sanitizeRequestEstimatePublicText(localizeKnownTechnologyVariantSuffixRu(item.titleRu)), category: item.category ?? item.itemType,
+      costTreatment: typeof item.sourceParameters?.canonicalCostTreatment === 'string'
+        ? item.sourceParameters.canonicalCostTreatment : undefined,
+    })), publicRequestEstimateTitle(bundle.structuredEstimatePayload?.workTitle || bundle.draft.selectedWorkTitleRu || bundle.draft.title)),
     title: publicRequestEstimateTitle(
       bundle.structuredEstimatePayload?.workTitle
         || bundle.draft.selectedWorkTitleRu
