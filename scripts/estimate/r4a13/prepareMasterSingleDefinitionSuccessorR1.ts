@@ -270,6 +270,11 @@ function sha256(value: unknown): string {
     .digest("hex");
 }
 
+/** Receipt readers must use the same canonical byte order as the publisher. */
+export function hashMasterSingleDefinitionSuccessorReceiptR1(value: unknown): string {
+  return sha256(value);
+}
+
 function uuid(seed: string): string {
   const bytes = Buffer.from(sha256(seed).slice(0, 32), "hex");
   bytes[6] = (bytes[6]! & 0x0f) | 0x50;

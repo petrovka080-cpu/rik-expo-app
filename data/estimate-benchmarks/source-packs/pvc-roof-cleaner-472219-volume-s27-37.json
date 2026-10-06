@@ -1,0 +1,51 @@
+{
+  "contract": "roof-pvc-krer12-cleaner-472219-volume:s27-37.v1",
+  "scopeRu": "Отдельный предварительный вариант однослойной ПВХ-мембраны 1,2 мм по готовому утеплителю на бетонном несущем основании. Состав поля, нормативный труд и машины наследуются из принятого профиля; только очиститель выбран по объёмной листовке ЕКН 472219.",
+  "reusedField": {
+    "module": "pvcRoofConcreteKrer12ConstructorS2736",
+    "sourcePackPath": "data/estimate-benchmarks/source-packs/pvc-roof-concrete-1_2mm-krer12-s27-36.json",
+    "sourcePackSha256": "c0e35c82ec7f5f533fcdb3598022c37b8a6d3562205d73bb58f40f5f4898f8f6",
+    "normId": "KRER12-01-028-02",
+    "originalSourceId": "kg_krer12_01_028_02_pvc_concrete_s2736",
+    "primaryDocument": {
+      "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no12krovli_compressed-2526908358eebcf23.66556657.pdf",
+      "artifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "versionRu": "КРЕР12-2015",
+      "exactLocatorRu": "Печатная/PDF стр. 37, колонка 12-01-028-02; техническая часть стр. 4–5",
+      "sourceRole": "INHERITED_FIELD_RESOURCE_BUDGET_NOT_CLEANER_VOLUME_RATE"
+    },
+    "sourceQuantitiesAndUnitsUnchanged": true,
+    "sourceApprovalNotInferred": true
+  },
+  "cleaner": {
+    "nameRu": "Очиститель для ПВХ-мембран ТЕХНОНИКОЛЬ",
+    "productEkn": "472219",
+    "url": "https://pim.tn.ru/4/b/1/1/4b118683046ee4fccb8822c424eaa56d870fcd31_Listovka_Ochistitel_dlya_PVKH_membran_TEKHNONIKOL.pdf",
+    "artifactSha256": "2c18f654cd628cc204bc657af83897e5e3d84146572c8664151e07e345ee8654",
+    "publicationDate": null,
+    "documentVersionRu": "Официальная листовка; дата и номер редакции не указаны",
+    "checkedAt": "2026-10-06",
+    "exactLocatorRu": "Страница 1: таблица «Основные характеристики», абзац «Низкий расход», сведения об упаковке и таблица ЕКН",
+    "rateLPerCleanedM2": 0.25,
+    "packL": 3,
+    "quantityUnitId": "l",
+    "grossCanisterMassKg": 3,
+    "grossMassMustNotBeUsedToInferDensity": true,
+    "sourceRole": "PINNED_MANUFACTURER_VOLUME_LEAFLET_NOT_MASS_CONVERSION"
+  },
+  "distinctMassSource": {
+    "url": "https://technonicol.com/ru-kz/product/ochistitel-dlya-pvkh-membran-tekhnonikol/",
+    "rateKgPerCleanedM2": 0.25,
+    "editionRu": "Региональная карточка ЛР36/2017; не присваивать её редакцию объёмной листовке",
+    "preserveExistingDefinition": true,
+    "ratesMustNotBeTreatedAsEquivalent": true
+  },
+  "restrictionsRu": [
+    "Фактическую площадь загрязнённой поверхности и подготовки сварных зон не выводить из всей площади кровли.",
+    "Выбор объёмной листовки видим; соответствие поставленного продукта ЕКН 472219 и его версии требуется подтвердить.",
+    "Старые килограммовые наличие, резерв, цена и ручное количество не переносить в литровую строку.",
+    "Новые литровые наличие, резерв и строка имеют отдельные идентификаторы.",
+    "Примыкания, парапеты, проходки, воронки, утепление и пароизоляция остаются отдельными этапами.",
+    "Инженерная применимость замены материалов и ветровой схемы не утверждается данным профилем."
+  ]
+}
