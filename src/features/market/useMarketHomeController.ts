@@ -7,6 +7,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import { useMarketFeedReturnPosition } from "./useMarketFeedReturnPosition";
 
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import { getCategoryLabel, MARKET_HOME_BANNERS } from "./marketHome.config";
@@ -111,6 +112,12 @@ export function useMarketHomeController() {
     [activeCategory, kind, query, side],
   );
   const feedLoadKey = `${side}:${kind}:${activeCategory}`;
+  const {
+    recordFeedScrollOffset,
+    restoreFeedScrollOffset,
+    saveListingReturnOffset,
+    cancelFeedScrollRestore,
+  } = useMarketFeedReturnPosition(listRef, `${feedLoadKey}:${query}`);
 
   const numColumns = 1;
   const horizontalPadding = 0;
@@ -348,6 +355,7 @@ export function useMarketHomeController() {
   const handleBannerPress = useCallback(
     (action: "scroll_feed" | "open_map" | "open_offer_map") => {
       if (action === "scroll_feed") {
+        cancelFeedScrollRestore();
         listRef.current?.scrollToOffset({ offset: feedAnchorOffset, animated: true });
         return;
       }
@@ -357,7 +365,7 @@ export function useMarketHomeController() {
       }
       pushSupplierMap();
     },
-    [feedAnchorOffset, pushSupplierMap],
+    [cancelFeedScrollRestore, feedAnchorOffset, pushSupplierMap],
   );
 
   const handleBannerItemPress = useCallback(
@@ -395,8 +403,9 @@ export function useMarketHomeController() {
         source: listing.source,
       },
     });
+    saveListingReturnOffset();
     router.push(buildMarketProductRoute(listing.id));
-  }, []);
+  }, [saveListingReturnOffset]);
 
   const handleResetFeedFilters = useCallback(() => {
     setActiveCategory("all");
@@ -480,6 +489,9 @@ export function useMarketHomeController() {
     pushSupplierMap,
     query,
     refreshing,
+    recordFeedScrollOffset,
+    restoreFeedScrollOffset,
+    cancelFeedScrollRestore,
     side,
     kind,
     setKind,

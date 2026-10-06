@@ -100,6 +100,9 @@ export default function MarketHomeScreen() {
     pushSupplierMap,
     query,
     refreshing,
+    recordFeedScrollOffset,
+    restoreFeedScrollOffset,
+    cancelFeedScrollRestore,
     setQuery,
     setSide,
     side,
@@ -141,11 +144,13 @@ export default function MarketHomeScreen() {
   const showScrollTopControl = feedData.length > 0 && canScrollUp;
 
   const handleFeedScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    recordFeedScrollOffset(event.nativeEvent.contentOffset.y);
     const nextOffset = Math.max(0, Math.min(maxFeedScrollOffset, event.nativeEvent.contentOffset.y));
     setScreenState((current) => ({ ...current, feedScrollOffset: nextOffset }));
   };
 
   const handleFeedLayout = (event: LayoutChangeEvent) => {
+    restoreFeedScrollOffset();
     const nextViewportHeight = Math.max(0, Math.round(event.nativeEvent.layout.height));
     setScreenState((current) => ({
       ...current,
@@ -155,6 +160,7 @@ export default function MarketHomeScreen() {
   };
 
   const handleFeedContentSizeChange = (_width: number, height: number) => {
+    restoreFeedScrollOffset();
     const nextContentHeight = Math.max(0, Math.round(height));
     setScreenState((current) => ({
       ...current,
@@ -164,6 +170,7 @@ export default function MarketHomeScreen() {
   };
 
   const scrollMarketFeedToTop = () => {
+    cancelFeedScrollRestore();
     listRef.current?.scrollToOffset({ offset: 0, animated: true });
     setScreenState((current) => ({ ...current, feedScrollOffset: 0 }));
     handleRefreshFeed();
@@ -267,9 +274,14 @@ export default function MarketHomeScreen() {
     <View style={styles.bottomLimit} testID="market_scroll_bottom_limit" />
   );
 
+  const webScrollIntentProps = Platform.OS === "web"
+    ? { onWheel: cancelFeedScrollRestore, onTouchStart: cancelFeedScrollRestore, onKeyDown: cancelFeedScrollRestore }
+    : {};
+
   return (
     <View style={styles.root}>
       <FlashList
+        {...webScrollIntentProps}
         ref={listRef}
         data={feedData}
         key="market-single-column-feed"
@@ -293,6 +305,7 @@ export default function MarketHomeScreen() {
         onLayout={handleFeedLayout}
         onContentSizeChange={handleFeedContentSizeChange}
         onScroll={handleFeedScroll}
+        onScrollBeginDrag={cancelFeedScrollRestore}
         scrollEventThrottle={16}
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.35}
