@@ -1,0 +1,77 @@
+{
+  "contract": "pvc-bitumen-transition-reinforced-guide2024:s27-37.v1",
+  "scopeRu": "Один непрерывный прямой участок перехода между ПВХ-мембраной и битумным покрытием с армированной LOGICROOF Tape PVC-B, соответствующей инструкции февраля 2024. Без стыков двух переходных лент, углов и повреждённого геотекстиля. Не весь кровельный комплекс.",
+  "primaryDocument": {
+    "titleRu": "LOGICROOF Tape PVC-B. Инструкция по монтажу",
+    "version": "02.2024",
+    "url": "https://pim.tn.ru/9/9/c/e/99ce26104fb8f9d8bc8e7372c0200542b61b9e18_Instruktsiya_po_montazhu_lenty_LOGICROOF_Tape_PVC_110x200mm_sayt.pdf",
+    "artifactSha256": "30968e98a51c3a874119ceae540a32b66df99aa12900579647a4fb0173b32199",
+    "checkedAt": "2026-10-06",
+    "versionLocatorRu": "PDF страница 16: версия февраль 2024",
+    "reinforcementLocatorRu": "PDF страница 3 / печатная страница 4: армированная битумостойкая лента ПВХ со слоем геотекстиля"
+  },
+  "adhesive": {
+    "lowerRateKgM2": 1,
+    "lowerLocatorRu": "PDF страница 7 / печатная страница 9: действие 4",
+    "upperRateKgM2": 1,
+    "upperLocatorRu": "PDF страница 8 / печатная страница 10: действие 8, расход в соответствии с действием 4",
+    "temporaryAlternatives": ["ТЕХНОНИКОЛЬ №22", "ТЕХНОНИКОЛЬ №23"],
+    "permanentAlternatives": ["Битумная горячая мастика ТЕХНОНИКОЛЬ", "Горячий битум БН 90-10"],
+    "selectionLocatorRu": "PDF страница 7 / печатная страница 9: действие 4",
+    "areasMustBeMeasuredSeparately": true,
+    "approximateLayerThicknessMm": 1,
+    "densityConversionAllowed": false,
+    "hotTechnologySupportedProjectBoundaryRu": "Для горячих вариантов текущий профиль требует подтверждённую поставку при температуре применения и план обеспечения этой температуры с оборудованием/энергией, включёнными в цену выбранного материала. Это факт договора/плана объекта, а не норма изготовителя.",
+    "onsiteHeatingSeparatelyBilledSupported": false
+  },
+  "separation": {
+    "treatment": "THERMALLY_TREATED",
+    "minimumMassGm2": 300,
+    "locatorRu": "PDF страница 9 / печатная страница 11: действие 11",
+    "areaAndSupplyUnknown": true
+  },
+  "fixing": {
+    "guideSpacingMm": [200, 250],
+    "locatorRu": "PDF страница 8 / печатная страница 10: действие 10",
+    "quantityFromSpacingAllowed": false,
+    "alternativesNotAdditive": true,
+    "projectWindLayoutAndBaseRequired": true
+  },
+  "welding": {
+    "minimumSeamWidthMm": 30,
+    "locatorRu": "PDF страница 9 / печатная страница 11: действие 12",
+    "probeControlLocatorRu": "PDF страница 9 / печатная страница 11: действие 13",
+    "liquidPvcSelection": "RECOMMENDED_OPTIONAL",
+    "liquidPvcRateAndPackageUnknown": true
+  },
+  "completion": {
+    "dryingLocatorRu": "PDF страница 10 / печатная страница 12: действие 14",
+    "dryingDurationUnknown": true,
+    "uvAlternatives": ["Посыпка", "Бандажная полоса битумного или битумно-полимерного материала"],
+    "uvLocatorRu": "PDF страница 10 / печатная страница 12: действие 15",
+    "uvRatesUnknown": true
+  },
+  "distinctProfileNotImported": {
+    "region": "KZ",
+    "version": "08.2026",
+    "reinforcement": "UNREINFORCED",
+    "artifactSha256": "3811c692bb396cb75641edf73ecfef04b7369a94590767e5340ab0d242b63a0c",
+    "nominalRollLengthM": 15,
+    "cardPackagingLengthM": 19,
+    "compatibilityConfirmed": false,
+    "runtimeDefault": false
+  },
+  "exclusionsRu": [
+    "Перенос инструкции на неармированное исполнение KZ 08.2026 без подтверждённой совместимости",
+    "Угловые и прямые стыки отдельных переходных лент, заплатки и восстановление повреждённого геотекстиля: требуют другого выбранного профиля и материального состава",
+    "Нормативы труда или машинного времени поля кровли КРЕР вместо переходного узла",
+    "Количество крепежа из одного лишь шага 200–250 мм без проектной ветровой схемы",
+    "Размеры, длина рулона, упаковки, плотность, марка или SKU из догадки",
+    "Сложение альтернативных мастик, держателей и вариантов защиты от УФ",
+    "Автоматическая нулевая площадь верхнего слоя или неизвестной защиты",
+    "Новый заказ ручного инструмента подрядчика в каждом узле без фактической потребности",
+    "Внешняя доставка, ремонт основания и вывоз отходов; соседние кровельные слои",
+    "Нагрев и поддержание температуры горячей мастики/битума на объекте за отдельную плату: нужны применимые оборудование, энергия, труд и отдельный выбранный профиль"
+  ],
+  "engineeringAccepted": false
+}
