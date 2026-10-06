@@ -14,6 +14,11 @@ export const pvcRoofVisibleLabelsS2736PublishConfig: MasterSingleDefinitionSucce
   // Includes seven internal derived purchase-balance parameters in addition
   // to the 31 public/conditional fields; verified from the immutable parent.
   expectedParentShape: [38, 27, 27], catalogAppend: undefined, benchmarkOrdinal: 158,
+  // A new publication contract has a new locator identity. Keep the parent
+  // locator immutable and retain its exact source facts in this successor.
+  locator: { key: 'pvc-roof-concrete-krer12-visible-labels-s27-36-v1', payload: {
+    ...base.locator.payload, visibleLabelFilterVerified: true, normativeQuantitiesUnchanged: true,
+  } },
   verifyCore: async () => {
     const proof = await base.verifyCore();
     const labels: Record<string, string> = Object.fromEntries(base.parameterDefinitions.map((p): [string, string] =>
