@@ -6,9 +6,27 @@ import { buildMasterParameterCalculationConsumers } from '../../scripts/estimate
 import { buildCanonicalProcurementProjection, selectCanonicalArtifactRows } from '../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { canonicalEstimateWorkProcess } from '../../src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition';
 const balance = (row: Record<string, unknown>) => (row.calculation_trace as Record<string, any>).purchaseBalance;
 
 describe('C111 partition from reusable operations and primary product profiles', () => {
+  test('the single complex labor remains payable once and is not a fifth process operation', async () => {
+    for (const mode of ['AKUSTIKNAUF_50', 'NONE']) {
+      const result = await compile({area_m2: 30, c111_insulation_mode: mode});
+      const process = canonicalEstimateWorkProcess(result.rows.map(row => ({rowId: row.row_id,
+        operation: (row.calculation_trace as {resourceGraph?: {operationCompositionV1?: unknown}})?.resourceGraph?.operationCompositionV1})));
+      expect(process).toHaveLength(1);
+      expect(process[0]?.sequenceUnspecified).toBe(true);
+      expect(process[0]?.operations.map(step => step.operationId))
+        .toEqual(mode === 'NONE' ? ['frame', 'clad', 'finish_joint'] : ['frame', 'clad', 'insulate', 'finish_joint']);
+      expect(process[0]?.operations.flatMap(step => step.resourceIds)).not.toContain('work:c111:worker');
+      expect(result.rows.find(row => row.row_id === 'work:c111:worker'))
+        .toMatchObject({quantity: '29.4', included_in_estimate: true});
+      expect(result.rows.filter(row => row.category === 'labor' && row.included_in_estimate)).toHaveLength(1);
+      expect(definition.resources.find(row => row.row_id === 'work:c111:worker')?.resource_graph.operationCompositionV1)
+        .toMatchObject({processRole: 'COST_SUMMARY'});
+    }
+  });
   test('all inputs have consumers; ready stage boundaries reused without unresolved or ceiling norms', () => {
     const {resourceConsumers} = buildMasterParameterCalculationConsumers({parameters: definition.parameters, formulas: definition.formulas, resources: definition.resources});
     expect(definition.parameters.filter(p => !resourceConsumers[p.parameter_id]?.length)).toEqual([]);

@@ -9,6 +9,7 @@ import { estimateDeterministicHash } from '../estimateDeterministicHash';
 import sourcePack from '../../../../data/estimate-benchmarks/source-packs/drywall-partition-c111-s27-36.json';
 
 export const C111_WORK_KEY_S2736 = 'drywall_ceiling_interior_drywall_partition_install_standard';
+export const C111_DISPLAY_NAME_RU = 'Монтаж перегородки из гипсокартона КНАУФ C111';
 export const C111_CATALOG_S2736 = 'canonical-work:base:' + C111_WORK_KEY_S2736;
 export const C111_CONTRACT_S2736 = 'drywall-partition-c111:s27-36.v1';
 export const C111_SOURCE_ID_S2736 = 'src_drywall_partition_c111_s27_36';
@@ -181,7 +182,9 @@ export const C111_DEFINITION_S2736 = Object.freeze({...built, parameters: built.
     partitionNormCode: '10-05-001-01', normReplacementApprovalRequired: true, manufacturerSourcePackSha256: sourceHash,
     physicalQuantityBasis: row.row_id.startsWith('tool:') ? 'VISIBLE_CONTRACTOR_PROJECT_PLAN_COST_INCLUDED' : 'VISIBLE_C111_GEOMETRY_AND_SELECTED_MANUFACTURER_PROFILE',
     reusedOperation: source ? {sourceRowId: source.row_id, sourceFormulaId: source.formula.formula_id, reusedBoundaryOnly: true, oldUnresolvedQuantityAndCeilingNormNotImported: true} : null},
-    resource_graph: {...row.resource_graph, operationCompositionV1: {contractVersion: 'canonical-operation-resource/v1', groupId: 'drywall-partition-c111', groupTitleRu: 'Прямая перегородка C111 из готовых операций', operationId: operation.toLowerCase(), operationTitleRu: titles[operation], completionCriterionRu: 'Проверить геометрию, крепления, поставку и применимость труда по проекту; проёмы и финиш отдельными операциями'},
+    resource_graph: {...row.resource_graph, operationCompositionV1: {contractVersion: 'canonical-operation-resource/v1', groupId: 'drywall-partition-c111', groupTitleRu: C111_DISPLAY_NAME_RU, operationId: operation.toLowerCase(), operationTitleRu: titles[operation], completionCriterionRu: 'Проверить геометрию, крепления, поставку и применимость труда по проекту; проёмы и финиш отдельными операциями',
+      ...(operation === 'INSTALL' ? {processRole: row.row_id === 'work:c111:worker' ? 'COST_SUMMARY' : 'REFERENCE_ONLY'}
+        : {processOrdinal: readyAssemblies.findIndex(item => item.operation === operation)})},
       ...(includedOwner ? {includedInResourceOwnerRowId: includedOwner} : {}),
       ...(row.row_id.startsWith('allocation:') ? {purchaseConsumptionAllocationV1: {contractVersion: 'canonical-purchase-consumption-allocation/v1', ownerRowId: 'material:c111:water'}} : {})}};
   return {...resource, row_sha256: estimateDeterministicHash({...resource, row_sha256: ''})};

@@ -11,7 +11,7 @@ const currentReleasePath = resolve('data/estimate-benchmarks/r568-local-develope
 // turn a same-candidate replay into a new, incompatible successor request.
 const parent = {definitionReleaseId: 'c0190c9e-003d-551b-8116-67dac777d02c', searchReleaseId: 'fd800a08-3955-56ad-94aa-2942631adc09'};
 const title = 'Прямая перегородка C111 из ГКЛ: каркас, обшивка двух сторон, изоляция и швы Q1';
-const config: MasterSingleDefinitionSuccessorConfig = {
+export const drywallPartitionC111S2736PublishConfig: MasterSingleDefinitionSuccessorConfig = {
   contract: 'rik-expo-app.s27-36.drywall-partition-c111.v1', stopCode: 'S2736_DRYWALL_C111', applicationName: 's2736-drywall-partition-c111',
   expectedBranch: 'codex/r4-a5-clean-08b18902',
   masterPath: 'C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (76).md',
@@ -82,4 +82,6 @@ const config: MasterSingleDefinitionSuccessorConfig = {
   forbiddenAdjacentMatchers: [/materials_0[1-6]/iu, /professional_.*_set/iu, /facade_scaffold/iu, /ceiling_norm/iu],
   owner: 'S2736_DRYWALL_C111', receiptFileStem: 'drywall_partition_c111',
 };
-void runMasterSingleDefinitionSuccessorR1(config).catch(error => {process.stderr.write(String(error.stack ?? error) + '\n');process.exitCode = 1;});
+if (process.argv[1]?.replaceAll('\\', '/').endsWith('/prepareS2736DrywallPartitionC111Successor.ts')) {
+  void runMasterSingleDefinitionSuccessorR1(drywallPartitionC111S2736PublishConfig).catch(error => {process.stderr.write(String(error.stack ?? error) + '\n');process.exitCode = 1;});
+}
