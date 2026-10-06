@@ -11,7 +11,9 @@ export const pvcRoofVisibleLabelsS2736PublishConfig: MasterSingleDefinitionSucce
   outputRoot: resolve('.release-runtime/r568/s27-35/pvc-roof-visible-labels'),
   sourcePaths: [...base.sourcePaths, 'scripts/estimate/r4a13/prepareS2736PvcRoofVisibleLabelsSuccessor.ts',
     'src/lib/estimate/aiEstimateRuParameterDictionary.ts'],
-  expectedParentShape: [31, 27, 27], catalogAppend: undefined, benchmarkOrdinal: 158,
+  // Includes seven internal derived purchase-balance parameters in addition
+  // to the 31 public/conditional fields; verified from the immutable parent.
+  expectedParentShape: [38, 27, 27], catalogAppend: undefined, benchmarkOrdinal: 158,
   verifyCore: async () => {
     const proof = await base.verifyCore();
     const labels: Record<string, string> = Object.fromEntries(base.parameterDefinitions.map((p): [string, string] =>
