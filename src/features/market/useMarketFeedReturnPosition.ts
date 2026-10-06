@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, type RefObject } from "react";
 import { useFocusEffect } from "expo-router";
+import { useMarketUiStore } from "./marketUi.store";
 
 type ScrollableFeed = {
   scrollToOffset: (input: { offset: number; animated: boolean }) => void;
@@ -17,6 +18,7 @@ export function useMarketFeedReturnPosition(
     awaitingReturn: false,
     frame: null as number | null,
   });
+  const previousFilter = useRef(filterIdentity);
   const cancelFrame = useCallback(() => {
     if (state.current.frame != null) cancelAnimationFrame(state.current.frame);
     state.current.frame = null;
@@ -35,6 +37,13 @@ export function useMarketFeedReturnPosition(
   }, [cancelFrame, listRef]);
 
   useFocusEffect(useCallback(() => {
+    const saved = useMarketUiStore.getState().listingReturnPosition;
+    if (saved?.filterIdentity === filterIdentity) {
+      state.current.pending = saved.offset;
+      // A reattached list can already be at this position and emit no scroll
+      // event. Keep it as the last known position for another immediate open.
+      state.current.offset = saved.offset;
+    } else if (saved) useMarketUiStore.getState().setListingReturnPosition(null);
     state.current.focused = true;
     state.current.awaitingReturn = false;
     restoreFeedScrollOffset();
@@ -42,12 +51,17 @@ export function useMarketFeedReturnPosition(
       state.current.focused = false;
       cancelFrame();
     };
-  }, [cancelFrame, restoreFeedScrollOffset]));
+  }, [cancelFrame, filterIdentity, restoreFeedScrollOffset]));
 
   useEffect(() => {
+    // The first mount may be the return from a product screen. Only a real
+    // filter change invalidates that saved navigation position.
+    if (previousFilter.current === filterIdentity) return;
+    previousFilter.current = filterIdentity;
     cancelFrame();
     state.current.pending = null;
     state.current.awaitingReturn = false;
+    useMarketUiStore.getState().setListingReturnPosition(null);
   }, [cancelFrame, filterIdentity]);
 
   const recordFeedScrollOffset = useCallback((offset: number) => {
@@ -59,15 +73,20 @@ export function useMarketFeedReturnPosition(
     // list reports it, and retry when its viewport/content finishes measuring.
     if (current.pending != null && Math.abs(next - current.pending) > 1) return;
     current.pending = null;
+    if (useMarketUiStore.getState().listingReturnPosition) {
+      useMarketUiStore.getState().setListingReturnPosition(null);
+    }
   }, []);
   const saveListingReturnOffset = useCallback(() => {
     state.current.pending = state.current.offset;
     state.current.awaitingReturn = true;
-  }, []);
+    useMarketUiStore.getState().setListingReturnPosition({ filterIdentity, offset: state.current.offset });
+  }, [filterIdentity]);
   const cancelFeedScrollRestore = useCallback(() => {
     cancelFrame();
     state.current.pending = null;
     state.current.awaitingReturn = false;
+    useMarketUiStore.getState().setListingReturnPosition(null);
   }, [cancelFrame]);
 
   return { recordFeedScrollOffset, restoreFeedScrollOffset, saveListingReturnOffset, cancelFeedScrollRestore };

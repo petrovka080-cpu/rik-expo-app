@@ -10,6 +10,8 @@ export type MarketUiStore = {
   side: "all" | MarketSide;
   kind: "all" | MarketKind;
   loadingMore: boolean;
+  listingReturnPosition: { filterIdentity: string; offset: number } | null;
+  setListingReturnPosition: (value: { filterIdentity: string; offset: number } | null) => void;
   setActiveCategory: (value: SetStateAction<"all" | MarketHomeCategoryKey>) => void;
   setQuery: (value: SetStateAction<string>) => void;
   setSide: (value: SetStateAction<"all" | MarketSide>) => void;
@@ -28,6 +30,8 @@ export const useMarketUiStore = create<MarketUiStore>((set, get) => ({
   side: "all",
   kind: "all",
   loadingMore: false,
+  listingReturnPosition: null,
+  setListingReturnPosition: (listingReturnPosition) => set({ listingReturnPosition }),
   setActiveCategory: (value) => set((state) => ({ activeCategory: resolveUpdate(value, state.activeCategory) })),
   setQuery: (value) => set((state) => ({ query: resolveUpdate(value, state.query) })),
   setSide: (value) => set((state) => ({ side: resolveUpdate(value, state.side) })),
@@ -39,6 +43,7 @@ export const useMarketUiStore = create<MarketUiStore>((set, get) => ({
       query: "",
       side: "all",
       kind: "all",
+      listingReturnPosition: null,
     }),
   getFilters: () => {
     const state = get();

@@ -1,6 +1,7 @@
 import React from "react";
 import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
 import { useMarketFeedReturnPosition } from "./useMarketFeedReturnPosition";
+import { useMarketUiStore } from "./marketUi.store";
 
 let mockFocus: () => void;
 let mockBlur: () => void;
@@ -38,6 +39,7 @@ describe("market feed position across product navigation", () => {
     mockFocus();
   });
   beforeEach(() => {
+    useMarketUiStore.getState().resetFilters();
     frames = new Map(); frameId = 0; scrollToOffset.mockReset();
     requestFrame = jest.spyOn(global, "requestAnimationFrame").mockImplementation(callback => {
       frames.set(++frameId, callback); return frameId;
@@ -55,6 +57,45 @@ describe("market feed position across product navigation", () => {
     act(() => { port.recordFeedScrollOffset(1307); port.recordFeedScrollOffset(1411); });
     returnFromListing(); flushFrame();
     expect(scrollToOffset).toHaveBeenLastCalledWith({ offset: 1411, animated: false });
+  });
+
+  it("restores after the feed unmounts and preserves a clamped target until layout settles", () => {
+    act(() => { port.recordFeedScrollOffset(828); port.saveListingReturnOffset(); renderer.unmount(); });
+    act(() => { renderer = TestRenderer.create(<Harness />); });
+    flushFrame();
+    expect(scrollToOffset).toHaveBeenLastCalledWith({ offset: 828, animated: false });
+    // A browser/native navigator may reattach the list at the target without
+    // emitting another scroll event before the user opens the next card.
+    returnFromListing(); flushFrame();
+    expect(scrollToOffset).toHaveBeenLastCalledWith({ offset: 828, animated: false });
+    act(() => { port.recordFeedScrollOffset(684); port.restoreFeedScrollOffset(); });
+    flushFrame();
+    expect(scrollToOffset).toHaveBeenLastCalledWith({ offset: 828, animated: false });
+    act(() => port.recordFeedScrollOffset(828));
+    expect(useMarketUiStore.getState().listingReturnPosition).toBeNull();
+    act(() => { port.recordFeedScrollOffset(1029); port.saveListingReturnOffset(); renderer.unmount(); });
+    act(() => { renderer = TestRenderer.create(<Harness />); });
+    flushFrame();
+    expect(scrollToOffset).toHaveBeenLastCalledWith({ offset: 1029, animated: false });
+  });
+
+  it("does not restore a saved position into another filtered feed", () => {
+    act(() => { port.recordFeedScrollOffset(828); port.saveListingReturnOffset(); renderer.unmount(); });
+    act(() => { renderer = TestRenderer.create(<Harness filter="all:other" />); });
+    flushFrame();
+    expect(scrollToOffset).not.toHaveBeenCalled();
+    expect(useMarketUiStore.getState().listingReturnPosition).toBeNull();
+  });
+
+  it("cancels an unconsumed remount target when the user starts scrolling", () => {
+    act(() => { port.recordFeedScrollOffset(828); port.saveListingReturnOffset(); renderer.unmount(); });
+    act(() => { renderer = TestRenderer.create(<Harness />); });
+    act(() => { port.cancelFeedScrollRestore(); port.recordFeedScrollOffset(540); });
+    flushFrame();
+    expect(scrollToOffset).not.toHaveBeenCalled();
+    expect(useMarketUiStore.getState().listingReturnPosition).toBeNull();
+    returnFromListing(); flushFrame();
+    expect(scrollToOffset).toHaveBeenLastCalledWith({ offset: 540, animated: false });
   });
 
   it("retries a temporarily clamped restore when layout finishes measuring", () => {
