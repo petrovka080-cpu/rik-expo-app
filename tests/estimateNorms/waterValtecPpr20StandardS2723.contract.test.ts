@@ -31,6 +31,7 @@ describe("S27.23 VALTEC PP-R 20 standard internal water route", () => {
     const sourceRows = [...result.rows, ...result.preliminaryNeeds];
     const groups = canonicalEstimateWorkProcess(sourceRows.map(row => ({ rowId: row.row_id,
       operation: (row.calculation_trace as { resourceGraph?: { operationCompositionV1?: unknown } })?.resourceGraph?.operationCompositionV1,
+      titleRu: typeof row.title_ru === 'string' ? row.title_ru : undefined,
     })));
     expect(groups).toHaveLength(1);
     expect(groups[0]?.sequenceUnspecified).toBe(true);
@@ -49,6 +50,17 @@ describe("S27.23 VALTEC PP-R 20 standard internal water route", () => {
     expect(WATER_VALTEC_PPR20_STANDARD_S2723_RESOURCES.filter(row => row.resource_graph.costTreatment === 'OWN_COST'))
       .toEqual(expect.arrayContaining(WATER_VALTEC_PPR20_STANDARD_S2723_RESOURCES.filter(row => row.category === 'labor')));
     expect(sourceRows).toHaveLength(WATER_VALTEC_PPR20_STANDARD_S2723_RESOURCES.length);
+    for (const id of ['straight', 'nodes']) {
+      expect(groups[0]?.operations.find(step => step.operationId === id)?.sharedResources)
+        .toEqual([expect.objectContaining({ rowId: 'water-ppr20:04:equipment:fusion-machine' })]);
+    }
+    const complete = await compileWaterValtecPpr20StandardS2723({ ...WATER_VALTEC_PPR20_STANDARD_S2723_ACCEPTANCE_INPUT });
+    const machines = complete.rows.filter(row => row.row_id === 'water-ppr20:04:equipment:fusion-machine');
+    expect(machines).toHaveLength(1);
+    // 48 straight sockets + 16 elbows + 6 tees + 4 transitions + 2 caps;
+    // 129 seconds per socket + 0.5 hour setup. One total covers both subworks.
+    expect(machines[0]?.quantity).toBe('3.223333333');
+    expect(complete.rows).toHaveLength(WATER_VALTEC_PPR20_STANDARD_S2723_RESOURCES.length);
   });
   test("guards both continuous water orders without changing test, flushing or controlled-discharge consumption", async () => {
     expect(VALTEC_FLUID_SUPPLIES).toHaveLength(2);

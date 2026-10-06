@@ -1,4 +1,4 @@
-import { canonicalEstimateWorkProcess } from './canonicalEstimateOperationComposition';
+import { canonicalEstimateWorkProcess, canonicalEstimateOperationReferences } from './canonicalEstimateOperationComposition';
 
 const operation = (groupId: string, operationId: string, title: string, ordinal?: number) => ({
   contractVersion: 'canonical-operation-resource/v1', groupId,
@@ -49,4 +49,26 @@ test('legacy resource buckets expose actual saved work titles and do not pretend
 test('an older operation reference without an explicit process order is not presented as a numbered sequence', () => {
   expect(canonicalEstimateWorkProcess([{ rowId: 'work', operation: operation('partition', 'mount', 'Монтаж') }])[0]?.sequenceUnspecified)
     .toBe(true);
+});
+
+test('one resource can serve several subworks while malformed, repeated and foreign-instance references are ignored', () => {
+  const shared = { ...operation('pipeline', 'straight', 'Прямые соединения'), additionalOperations: [
+    null, {}, { operationId: '', operationTitleRu: 'Пустой', completionCriterionRu: 'Нет' },
+    { operationId: 'nodes', operationTitleRu: 'Монтаж фитингов', completionCriterionRu: 'Соединения проверены' },
+    { operationId: 'nodes', operationTitleRu: 'Дублирующий узел', completionCriterionRu: 'Нет' },
+    { groupId: 'foreign', operationId: 'other', operationTitleRu: 'Чужая работа', completionCriterionRu: 'Нет' },
+  ] };
+  const resources = [{ rowId: 'fusion-machine', titleRu: 'Сварочный аппарат PP-R', operation: shared }];
+  const snapshot = JSON.stringify(resources);
+  const references = canonicalEstimateOperationReferences(shared);
+  expect(references.map(reference => [reference.groupId, reference.operationId])).toEqual([['pipeline', 'straight'], ['pipeline', 'nodes']]);
+  const groups = canonicalEstimateWorkProcess(resources);
+  expect(groups).toHaveLength(1);
+  expect(groups[0]?.sequenceUnspecified).toBe(true);
+  for (const step of groups[0]!.operations) {
+    expect(step.resourceIds).toEqual(['fusion-machine']);
+    expect(step.sharedResources).toEqual([{ rowId: 'fusion-machine', titleRu: 'Сварочный аппарат PP-R' }]);
+  }
+  expect(JSON.stringify(resources)).toBe(snapshot);
+  expect(canonicalEstimateOperationReferences({ additionalOperations: shared.additionalOperations })).toEqual([]);
 });

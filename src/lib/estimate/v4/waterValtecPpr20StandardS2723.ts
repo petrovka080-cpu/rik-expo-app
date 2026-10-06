@@ -437,6 +437,11 @@ function workProcessReference(spec: ResourceSpec) {
     // These references disclose the existing scope. The site-specific order
     // is not supplied by the product passport and is not invented here.
     completionCriterionRu: 'Состав выбранного профиля раскрыт; последовательность уточняется по проекту и ППР',
+    ...(spec.rowId === 'water-ppr20:04:equipment:fusion-machine' ? { additionalOperations: [{
+      operationId: 'nodes', operationTitleRu: WORK_PROCESS.nodes,
+      processOrdinal: Object.keys(WORK_PROCESS).indexOf('nodes'),
+      completionCriterionRu: 'Один аппарат обслуживает прямые и узловые сварные раструбы; время и стоимость учтены одной строкой',
+    }] } : {}),
   };
 }
 

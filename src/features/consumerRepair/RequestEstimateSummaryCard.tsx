@@ -36,10 +36,17 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
               <Text style={styles.visibleLine}>{group.groupTitleRu}</Text>
               {group.sequenceUnspecified ? <Text style={styles.legal}>Сохранённые подработы; последовательность выполнения ещё не задана.</Text> : null}
               {group.operations.map((operation, index) => (
-                <Text key={operation.operationId} style={styles.visibleLine}
-                  testID={`request-estimate-process-${group.groupId}-${operation.operationId}`}>
-                  {`${group.sequenceUnspecified ? '•' : `${index + 1}.`} ${operation.operationTitleRu}`}
-                </Text>
+                <View key={operation.operationId}>
+                  <Text style={styles.visibleLine}
+                    testID={`request-estimate-process-${group.groupId}-${operation.operationId}`}>
+                    {`${group.sequenceUnspecified ? '•' : `${index + 1}.`} ${operation.operationTitleRu}`}
+                  </Text>
+                  {operation.sharedResources?.map(resource => (
+                    <Text key={resource.rowId} style={styles.legal}>
+                      {`${resource.titleRu} — одна строка ресурса для нескольких подработ`}
+                    </Text>
+                  ))}
+                </View>
               ))}
             </View>
           )) : <Text style={styles.legal}>Подработы этой сметы ещё не раскрыты в сохранённом составе.</Text>}

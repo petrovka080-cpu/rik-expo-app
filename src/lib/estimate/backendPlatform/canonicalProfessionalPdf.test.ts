@@ -16,6 +16,8 @@ test("versioned professional PDF jobs reject an obsolete worker and retain legac
   expect(() => assertCanonicalProfessionalPdfJobRendererVersion({})).not.toThrow();
   expect(() => assertCanonicalProfessionalPdfJobRendererVersion({ rendererVersion: "canonical-professional-pdf.old" }))
     .toThrow(expect.objectContaining({ code: "ARTIFACT_RENDERER_VERSION_MISMATCH" }));
+  expect(() => assertCanonicalProfessionalPdfJobRendererVersion({ rendererVersion: "canonical-professional-pdf.r4-a13-s27-37-work-process" }))
+    .toThrow(expect.objectContaining({ code: "ARTIFACT_RENDERER_VERSION_MISMATCH" }));
   for (const invalid of [null, [], { rendererVersion: null }]) {
     expect(() => assertCanonicalProfessionalPdfJobRendererVersion(invalid))
       .toThrow(expect.objectContaining({ code: "ARTIFACT_RENDERER_VERSION_MISMATCH" }));
@@ -166,7 +168,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-37-work-process");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-37-shared-work-resources");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,
@@ -435,6 +437,29 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(result.categoryTotals).toEqual(before.categoryTotals);
     expect(result.rowCount).toBe(before.rowCount);
     expect(result.pricedRowCount).toBe(before.pricedRowCount);
+    expect(JSON.stringify(source)).toBe(snapshot);
+  });
+
+  it('references a shared machine in both subworks while retaining one priced resource and escaping its title', () => {
+    const source = rows(1);
+    source[0]!.title_ru = 'Сварочный аппарат <PP-R>';
+    source[0]!.category = 'equipment';
+    source[0]!.calculation_trace = { resourceGraph: { operationCompositionV1: {
+      contractVersion: 'canonical-operation-resource/v1', groupId: 'pipe', groupTitleRu: 'Монтаж трубы',
+      operationId: 'straight', operationTitleRu: 'Прямые стыки', completionCriterionRu: 'Сварены',
+      additionalOperations: [{ operationId: 'nodes', operationTitleRu: 'Фитинги узлов', completionCriterionRu: 'Сварены' }],
+    } } };
+    const snapshot = JSON.stringify(source);
+    const projection = buildCanonicalProfessionalPdfProjection({ revision: revision(1), rows: source, workTitleRu: 'Монтаж трубы' });
+    const baseline = buildCanonicalProfessionalPdfProjection({ revision: revision(1), rows: [{ ...source[0]!, calculation_trace: {} }], workTitleRu: 'Монтаж трубы' });
+    expect(projection.html).toContain('<li>Прямые стыки<div class="muted">');
+    expect(projection.html).toContain('<li>Фитинги узлов<div class="muted">');
+    expect(projection.html.match(/одна строка ресурса для нескольких подработ/gu)).toHaveLength(2);
+    expect(projection.html).toContain('Сварочный аппарат &lt;PP-R&gt;');
+    expect(projection.html).not.toContain('<PP-R>');
+    expect(projection.rowCount).toBe(1);
+    expect(projection.pricedRowCount).toBe(baseline.pricedRowCount);
+    expect(projection.categoryTotals).toEqual(baseline.categoryTotals);
     expect(JSON.stringify(source)).toBe(snapshot);
   });
 

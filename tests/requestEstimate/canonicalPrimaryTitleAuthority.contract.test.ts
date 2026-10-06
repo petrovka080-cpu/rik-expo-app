@@ -2,6 +2,24 @@ import { buildRequestEstimateViewModel } from "../../src/features/consumerRepair
 import { foundationDraftWithManualCatalogItem } from "./requestEstimateBoqCatalogTestHelpers";
 
 describe("canonical primary title authority", () => {
+  it('retains shared-resource references in the ordinary request view without duplicating items or cost', () => {
+    const source = foundationDraftWithManualCatalogItem();
+    const baseline = buildRequestEstimateViewModel(source);
+    const item = source.items[0]!;
+    item.sourceParameters = { ...item.sourceParameters, canonicalOperationComposition: {
+      contractVersion: 'canonical-operation-resource/v1', groupId: 'pipe', groupTitleRu: 'Монтаж трубы',
+      operationId: 'straight', operationTitleRu: 'Прямые стыки', completionCriterionRu: 'Сварены',
+      additionalOperations: [{ operationId: 'nodes', operationTitleRu: 'Фитинги узлов', completionCriterionRu: 'Сварены' }],
+    } };
+    const snapshot = JSON.stringify(source);
+    const result = buildRequestEstimateViewModel(source);
+    const group = result?.workProcessGroups?.find(value => value.groupId === 'pipe');
+    expect(group?.operations.map(step => step.operationId)).toEqual(['straight', 'nodes']);
+    expect(group?.operations[0]?.sharedResources?.map(resource => resource.rowId)).toEqual([item.id]);
+    expect(result?.totalLabel).toBe(baseline?.totalLabel);
+    expect(result?.rawItemCount).toBe(baseline?.rawItemCount);
+    expect(JSON.stringify(source)).toBe(snapshot);
+  });
   it("projects the known legacy PVC field name while preserving the persisted revision title and input", () => {
     const source = foundationDraftWithManualCatalogItem();
     if (!source.structuredEstimatePayload) throw new Error("structured estimate fixture is missing");
