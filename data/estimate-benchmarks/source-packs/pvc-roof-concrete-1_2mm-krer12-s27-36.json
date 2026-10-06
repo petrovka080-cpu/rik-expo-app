@@ -1,0 +1,30 @@
+{
+  "contract": "roof-pvc-concrete-1_2mm-krer12:s27-36.v1",
+  "scope": "Однослойное поле ПВХ1.2мм по готовому совместимому утеплителю, бетонное несущее основание, механическое крепление и сварка горячим воздухом; примыкания и соседние слои отдельно",
+  "krer": {
+    "authority": "Минстрой Кыргызской Республики",
+    "version": "КРЕР12-2015",
+    "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no12krovli_compressed-2526908358eebcf23.66556657.pdf",
+    "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+    "norm": "12-01-028-02",
+    "locator": "Печатная/PDF стр.37, колонка12-01-028-02; техническая часть стр.4–5",
+    "denominatorM2": 100,
+    "workerGrade": 3.3,
+    "workerManH": 5.33,
+    "includedMachineOperatorManH": 0.03,
+    "machineH": { "tower8t": 0.01, "truckCrane10t": 0.02, "screwdriver": 0.39, "variant4_6kw": 0.45, "hammer": 1.2, "triac1_6kw": 0.32, "lorry5t": 0.02 },
+    "materials": { "screw4_8x70_piece": 400, "dornit300_m2": 110, "polypropyleneRoofDowel50x15x150_piece": 400, "polyethyleneAnchor6x40_piece": 4, "originalSolvent646_kg": 0.9, "reinforcedPvc1_2_m2": 115, "unreinforcedPvc1_5_m2": 0.6 },
+    "heightRule": { "baseHeightM": 15, "workerIncrementPerExtraM": 0.005 },
+    "extractedBasePricesNotUsed": true,
+    "screwAndRoofDowelOriginalUnit": "100шт, значение4; пересчёт в400шт",
+    "polyethyleneAnchorOriginalUnit": "10шт, коэффициент0.4; пересчёт в4шт",
+    "originalSolventUnit": "т, коэффициент0.0009; пересчёт в0.9кг"
+  },
+  "products": {
+    "field": { "name": "LOGICROOF V-RP 1.2мм", "version": "Технический лист2.01,03.2026,регионРФ", "url": "https://pim.tn.ru/9/b/a/4/9ba4be8ba53dc360032dd9f207b7d59de5121b02________________2.01______________________________________________LOGICROOF___V_RP_RU_ru__8_.pdf", "sha256": "f5b62383b0fa6cdab6387a361d0af03f6c01c1ca94089d07456023f01242ade1", "selectedRollWidthM": 2.1, "selectedRollLengthM": 25, "selectedRollAreaM2": 52.5, "rollMappingSource": "https://www.tn.ru/upload/iblock/f89/1615xpbhke7plcudq0jy22unatwrd7m4/Katalog-membran-L_E_sayt.pdf", "rollMappingLocator": "Логистические параметры:LOGICROOF V-RP1.2=52.5м²/рулон", "deliveryVersionConfirmationRequired": true },
+    "detail": { "name": "LOGICROOF V-SR 1.5мм", "version": "Технический лист2.33,03.2026,регионРФ", "url": "https://pim.tn.ru/9/e/a/4/9ea434c8c1bd1bdecb066d195b505200a1c8eb17________________2.33______________________________________________LOGICROOF___V_SR_RU_ru__3_.pdf", "sha256": "90ebea2daea6ce027f390863bc6c64c1d9f1302a1d3ec85b9ab499c41f588b6d", "selectedRollAreaM2": 10, "selectedPackRolls": 2, "selectedPackAreaM2": 20, "locator": "Стр.1:упаковка2рулона1×10м; стр.2:толщина1.5мм", "fullPackPreliminaryChoiceNotUniversalRetailMinimum": true },
+    "cleaner": { "name": "Очиститель для ПВХ-мембран ТЕХНОНИКОЛЬ", "url": "https://technonicol.com/ru-kz/product/ochistitel-dlya-pvkh-membran-tekhnonikol/", "checkedAt": "2026-10-06", "rateKgPerCleanedM2": 0.25, "packL": 3, "densityKgL": null, "locator": "Область применения:250г/м² загрязнённой ПВХ поверхности LOGICROOF/ECOPLAST; Упаковка:канистра3л", "unknownCleanedAreaAndDensityMustNotBeInvented": true, "original646NotApprovedForLogicroof": true }
+  },
+  "reused": [ { "module": "pvcRoofMembraneInstallationR1", "resource": "rc09:pvc_membrane_weld_probe_test", "scope": "Только явно выбранные отдельные проектные испытания, не механизмы/материалы ПВХ1.5мм" }, { "module": "effectivePurchaseBalanceR1", "scope": "Потребность, пригодное наличие, сохраняемый резерв, заказ и остаток одного совместимого ресурса" } ],
+  "exclusions": [ "Пароизоляция, утепление, уклоны и ремонт основания", "Примыкания к парапетам/трубам/воронкам и защитные покрытия", "Подстановка норм1.2мм в существующие PVC1.5/FPO1.8", "Нормативные400креплений как утверждённая ветровая схема", "Нормативные115м² как окончательная раскладка рулонов", "Растворитель646 как автоматически совместимый очиститель", "Расход очистителя на всю кровлю без обмера обработки", "Выдуманная плотность и цены", "Повторная оплата машинистов и ручной оснастки" ]
+}
