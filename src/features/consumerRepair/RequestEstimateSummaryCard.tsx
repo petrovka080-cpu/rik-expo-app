@@ -33,7 +33,7 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
           <Text style={styles.meta}>Процесс работ</Text>
           {viewModel.workProcessGroups?.length ? viewModel.workProcessGroups.map(group => (
             <View key={group.groupId} style={styles.visibleLines}>
-              <Text style={styles.visibleLine}>{group.groupTitleRu}</Text>
+              {(viewModel.workProcessGroups?.length ?? 0) > 1 ? <Text style={styles.visibleLine}>{group.groupTitleRu}</Text> : null}
               {group.sequenceUnspecified ? <Text style={styles.legal}>Сохранённые подработы; последовательность выполнения ещё не задана.</Text> : null}
               {group.operations.map((operation, index) => (
                 <View key={operation.operationId}>

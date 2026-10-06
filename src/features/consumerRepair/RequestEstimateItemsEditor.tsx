@@ -475,6 +475,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
       {},
     );
     const operationBySectionId = new Map(filteredSections.filter(section => section.operation != null).map(section => [section.id, section]));
+    const multipleOperationGroups = new Set(viewModel.sections.flatMap(section => section.operation ? [section.operation.groupId] : [])).size > 1;
     const operationExpanded = (section: RequestEstimateSectionViewModel): boolean => Boolean(normalizedQuery || this.state.showOnlyUnresolved
       || (this.state.expandedOperationIds[section.id] ?? section.items.some(item => !consumerRepairRowIsCanonicalPreliminaryNeed(item)
         && !consumerRepairRowIsTechnicalDetail(item))));
@@ -637,7 +638,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
             const expanded = operationExpanded(section);
             return (
               <View key={section.id} style={styles.operation} testID={`request-estimate-operation-${operation.operationId}`}>
-                {filteredSections.slice(0, sectionIndex).every(previous => previous.operation?.groupId !== operation.groupId) ? (
+                {multipleOperationGroups && filteredSections.slice(0, sectionIndex).every(previous => previous.operation?.groupId !== operation.groupId) ? (
                   <Text style={styles.operationGroupTitle}>{operation.groupTitleRu}</Text>
                 ) : null}
                 <Pressable accessibilityRole="button" accessibilityState={{ expanded }}

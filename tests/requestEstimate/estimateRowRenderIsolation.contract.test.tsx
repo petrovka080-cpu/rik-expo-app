@@ -186,11 +186,13 @@ describe("estimate row render isolation without cached admission or quantities",
     expect(original.quantity).toBe(14.25);
   });
 
-  it.each([0, -0, -12.34567, 0.00001, 26.30625, 1234567.89123])(
-    "retains Intl's established display precision and locale for %s without rounding source quantities",
-    quantity => {
+  it.each([
+    [0, "0"], [-0, "-0"], [-12.34567, "-12,34567"],
+    [0.00001, "0,00001"], [26.30625, "26,30625"], [1234567.89123, "1 234 567,89123"],
+  ] as const)(
+    "retains precise Russian display for %s without rounding source quantities",
+    (quantity, expected) => {
       const item = { ...fixture().items[0]!, quantity };
-      const expected = new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 3 }).format(quantity);
       expect(viewModels.buildRequestEstimateProfessionalRowEvidence(item)!.formulaLabel).toContain(`${expected} м³`);
       expect(Object.is(item.quantity, quantity)).toBe(true);
     },

@@ -168,7 +168,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-37-shared-work-resources");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-39-operation-headings");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,
@@ -433,6 +433,9 @@ describe("R4-A6 canonical professional PDF", () => {
     const result = buildCanonicalProfessionalPdfProjection({ revision: revision(3), rows: source, workTitleRu: 'Монтаж трубопровода' });
     expect(result.html).toContain('<h2>Процесс работ</h2>');
     expect(result.html).toContain('<ol><li>Прокладка труб</li><li>Сборка соединений</li><li>Испытания</li></ol>');
+    expect(result.html).not.toContain('<h3>Монтаж трубопровода</h3>');
+    expect(result.html).not.toContain('<strong>Монтаж трубопровода — ');
+    expect(result.html).toContain('<strong>Сборка соединений</strong>');
     expect(result.html.indexOf('<h2>Процесс работ</h2>')).toBeLessThan(result.html.indexOf('<table class="client">'));
     expect(result.categoryTotals).toEqual(before.categoryTotals);
     expect(result.rowCount).toBe(before.rowCount);

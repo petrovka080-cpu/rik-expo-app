@@ -14,7 +14,7 @@ import {
 import { canonicalEstimateOperationReference, canonicalEstimateWorkProcess } from "./canonicalEstimateOperationComposition";
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-37-shared-work-resources" as const;
+  "canonical-professional-pdf.r4-a13-s27-39-operation-headings" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -274,12 +274,16 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     return canonicalEstimateOperationReference(objectValue(objectValue(row.calculation_trace).resourceGraph).operationCompositionV1);
   };
   const hasOperations = compositionRows.some(row => operation(row) != null);
+  const multipleOperationGroups = new Set(compositionRows.flatMap(row => {
+    const reference = operation(row);
+    return reference ? [reference.groupId] : [];
+  })).size > 1;
   const workProcess = canonicalEstimateWorkProcess(compositionRows.map(row => ({ rowId: String(row.row_id), operation: operation(row),
     titleRu: canonicalArtifactVisibleRowTitle(row, parameters), category: String(row.category),
     costTreatment: nullableText(objectValue(objectValue(row.calculation_trace).resourceGraph).costTreatment) ?? undefined,
   })), workTitleRu);
   const workProcessHtml = `<section class="work-process"><h2>Процесс работ</h2>${workProcess.length
-    ? workProcess.map(group => `<h3>${escapeCanonicalArtifactHtml(group.groupTitleRu)}</h3>${group.sequenceUnspecified ? '<p>Сохранённые подработы; последовательность выполнения ещё не задана.</p>' : ''}<${group.sequenceUnspecified ? 'ul' : 'ol'}>${group.operations.map(step => `<li>${escapeCanonicalArtifactHtml(step.operationTitleRu)}${step.sharedResources?.map(resource => `<div class="muted">${escapeCanonicalArtifactHtml(resource.titleRu)} — одна строка ресурса для нескольких подработ</div>`).join('') ?? ''}</li>`).join("")}</${group.sequenceUnspecified ? 'ul' : 'ol'}>`).join("")
+    ? workProcess.map(group => `${workProcess.length > 1 ? `<h3>${escapeCanonicalArtifactHtml(group.groupTitleRu)}</h3>` : ''}${group.sequenceUnspecified ? '<p>Сохранённые подработы; последовательность выполнения ещё не задана.</p>' : ''}<${group.sequenceUnspecified ? 'ul' : 'ol'}>${group.operations.map(step => `<li>${escapeCanonicalArtifactHtml(step.operationTitleRu)}${step.sharedResources?.map(resource => `<div class="muted">${escapeCanonicalArtifactHtml(resource.titleRu)} — одна строка ресурса для нескольких подработ</div>`).join('') ?? ''}</li>`).join("")}</${group.sequenceUnspecified ? 'ul' : 'ol'}>`).join("")
     : "<p>Подработы этой сметы ещё не раскрыты в сохранённом составе.</p>"}</section>`;
   // A resource from a different operation must never appear beneath the
   // preceding operation's completion criterion. Preserve source order within
@@ -304,7 +308,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     const reference = operation(row);
     const key = reference ? JSON.stringify([reference.groupId, reference.operationId]) : "general";
     const heading = reference && key !== previousOperationKey
-      ? `<tr class="operation"><td colspan="7"><strong>${escapeCanonicalArtifactHtml(String(reference.groupTitleRu))} — ${escapeCanonicalArtifactHtml(String(reference.operationTitleRu))}</strong><span>Для завершения: ${escapeCanonicalArtifactHtml(String(reference.completionCriterionRu))}</span></td></tr>`
+      ? `<tr class="operation"><td colspan="7"><strong>${multipleOperationGroups ? `${escapeCanonicalArtifactHtml(String(reference.groupTitleRu))} — ` : ''}${escapeCanonicalArtifactHtml(String(reference.operationTitleRu))}</strong><span>Для завершения: ${escapeCanonicalArtifactHtml(String(reference.completionCriterionRu))}</span></td></tr>`
       : hasOperations && key !== previousOperationKey ? `<tr class="operation"><td colspan="7"><strong>Работы и ресурсы сметы</strong></td></tr>` : "";
     previousOperationKey = key;
     return heading + (preliminaryRowIds.has(String(row.row_id))
