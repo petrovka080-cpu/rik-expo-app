@@ -9,6 +9,7 @@ import { withG6PvcResourcePresentationS2741 } from './g6PvcResourcePresentationS
 export const G6_COMMERCIAL_LABOR_MODE_PARAMETER_S2741 = 'commercial_labor_price_mode';
 export const G6_RESOURCE_LABOR_MODE_S2741 = 'По трудозатратам существующей строки';
 export const G6_COMPOSITE_LABOR_MODE_S2741 = 'Комплексная расценка труда и включённой оснастки';
+export const G6_COMMERCIAL_MASTER_SHA256_S2741 = '67c5314eaf60ef88b887c3de0a4d2d39c38e406b2b58160415ccde3e8764648c';
 const sourceId = 'master_s2741_explicit_commercial_labor_scope';
 const contract = 'g6-pvc-commercial-labor-profile.s27-41/v1';
 const locator = 'MASTER S27.41 §20.43.2–20.43.7; явный выбор состава расценки. Не источник нормы труда или рыночной цены.';
@@ -23,7 +24,7 @@ function withLaborRate(base: AutomaticOwnerDefinition, config: {
   const extension = buildAutomaticConstructionOwnerR1({ contract, semanticOwner: 'G6-commercial-labor', sourceId,
     normId: 'COMMERCIAL_SCOPE_NOT_A_TECHNICAL_NORM',
     sourceMetadata: { source_title: 'Явный состав самостоятельной расценки труда', source_document_version: 'S27.41',
-      definition_hash: estimateDeterministicHash({ contract, config }), artifact_sha256: estimateDeterministicHash({ locator, config }), exact_locator: locator },
+      definition_hash: G6_COMMERCIAL_MASTER_SHA256_S2741, artifact_sha256: G6_COMMERCIAL_MASTER_SHA256_S2741, exact_locator: locator },
     applicabilityRu: 'Труд и штатное оснащение, уже включённое в существующую строку труда. Материалы, отдельно оплачиваемая техника и услуги сохраняют прежнюю оплату и обеспечение.',
     ordinary: [{ id: config.measureId, title: 'Объём выбранной работы', valueType: 'decimal', unitId: config.unitId, kind: 'ordinary', min: 0 }],
     profile: [{ id: G6_COMMERCIAL_LABOR_MODE_PARAMETER_S2741, title: 'Способ оплаты труда', valueType: 'enum', unitId: null, kind: 'profile',
@@ -59,6 +60,7 @@ function withLaborRate(base: AutomaticOwnerDefinition, config: {
   return Object.freeze({ ...base,
     parameters: [...base.parameters, { ...parameter, ordinal: base.parameters.length,
       truth_metadata: { ...parameter.truth_metadata, guide: { ...(parameter.truth_metadata.guide as Record<string, unknown>),
+        guide_kind: 'ENUM_DECISION_RULE', source_role: 'OWNER_AUTHORISED_COMMERCIAL_SCOPE_NOT_ENGINEERING_NORM', verified_at: '2026-10-07',
         guide_short_ru: 'По умолчанию сохраняются трудозатраты действующей строки: норма либо проектный план согласно её источнику. Комплексная ставка заменяет её оплату и включает штатную оснастку, уже покрытую этой строкой; цену укажите по соответствующему предложению исполнителя.' } } }],
     formulas: [...base.formulas, ...extension.formulas], resources: [...base.resources, rate],
     runtimeInput: { ...base.runtimeInput, ...extension.runtimeInput },

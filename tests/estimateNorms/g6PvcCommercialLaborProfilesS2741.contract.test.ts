@@ -1,5 +1,6 @@
 import { G6_PVC_COMMERCIAL_LABOR_SERIES_S2741 as series, G6_COMMERCIAL_LABOR_MODE_PARAMETER_S2741 as modeId,
   G6_COMPOSITE_LABOR_MODE_S2741 as rateMode } from '../../src/lib/estimate/v4/g6PvcCommercialLaborProfilesS2741';
+import { G6_COMMERCIAL_MASTER_SHA256_S2741 as masterHash } from '../../src/lib/estimate/v4/g6PvcCommercialLaborProfilesS2741';
 import { compileAutomaticConstructionOwnerR1 } from '../../src/lib/estimate/v4/automaticConstructionOwnerR1';
 import { PVC_TRANSITION_GUIDE2024_CONTROL_INPUT as transitionFixture } from '../../scripts/estimate/r4a13/pvcBitumenTransitionGuide2024ControlInput';
 import { canonicalEstimateWorkProcess } from '../../src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition';
@@ -42,4 +43,6 @@ test.each(series.map(profile => [profile.catalogId, profile] as const))('G6 seri
   expect(quote.title_ru).toContain('включённая оснастка');
   expect(profile.definition.parameters.find(p => p.parameter_id === modeId)?.constraints_json?.values)
     .not.toContain('По норме трудозатрат');
+  expect(profile.definition.parameters.find(p => p.parameter_id === modeId)?.truth_metadata.guide).toMatchObject({
+    guide_kind: 'ENUM_DECISION_RULE', source_role: 'OWNER_AUTHORISED_COMMERCIAL_SCOPE_NOT_ENGINEERING_NORM', source_snapshot_hash: masterHash });
 });

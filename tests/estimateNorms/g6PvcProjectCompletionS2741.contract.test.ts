@@ -21,6 +21,8 @@ test.each(series)('prepared G6 completion $catalogId does not default applicabil
   const submitted = profile.measureId === 'area_m2' ? { area_m2: 100 } : transitionFixture;
   const prepared = prepare(profile);
   expect(prepared.runtimeInput).toEqual(profile.definition.runtimeInput);
+  expect(prepared.parameters.filter(p => p.parameter_id.startsWith('g6_')).filter(p => p.truth_metadata.guide)
+    .every(p => /^[0-9a-f]{64}$/u.test(String((p.truth_metadata.guide as Record<string, unknown>).source_snapshot_hash)))).toBe(true);
   expect(prepared.resources.slice(0, profile.definition.resources.length)).toEqual(profile.definition.resources);
   const unresolved = await compile(profile, submitted);
   expect(unresolved.preliminaryNeeds.filter(n => n.row_id.startsWith('g6:completion:'))).toHaveLength(5);

@@ -6,6 +6,7 @@ export const G6_COMPLETION_REQUIRED_S2741 = 'Требуется в границ�
 export const G6_COMPLETION_NOT_REQUIRED_S2741 = 'Не требуется по подтверждённой границе участка';
 export const G6_WASTE_SERVICE_PRICE_SCOPE_S2741 = 'Погрузка, перевозка и приём подготовленной партии; транспорт, водитель и топливо включены; уборка и мешки не включены';
 const sourceId = 'master_s2741_g6_project_completion_programme';
+const masterSha256 = '67c5314eaf60ef88b887c3de0a4d2d39c38e406b2b58160415ccde3e8764648c';
 const locator = 'MASTER S27.40 §20.42.7 и S27.41 §20.43: применимое завершение с фактическими ресурсами и отдельной границей оплаты. Не норма расхода или цена.';
 
 /** Prepared next step of the same three-binding family. Nothing here is a
@@ -51,7 +52,7 @@ export function withG6PvcProjectCompletionS2741(base: AutomaticOwnerDefinition, 
   const extension = buildAutomaticConstructionOwnerR1({ contract: 'g6-pvc-project-completion.s27-41/v1',
     semanticOwner: scope.catalogId, sourceId, normId: 'PROJECT_PROGRAMME_NOT_A_CONSUMPTION_NORM',
     sourceMetadata: { source_title: 'Фактическая программа завершения выбранного участка', source_document_version: 'S27.41',
-      definition_hash: estimateDeterministicHash({ scope, locator }), artifact_sha256: estimateDeterministicHash(locator), exact_locator: locator },
+      definition_hash: masterSha256, artifact_sha256: masterSha256, exact_locator: locator },
     applicabilityRu: 'Уборка и обращение с отходами назначаются независимо по фактической границе. Услуга обращения с подготовленной партией имеет одну полную расценку за кг, включает погрузку, перевозку и приём с транспортом, водителем и топливом. Уборка и мешки по другим строкам; другое покрытие требует совместимого предложения.',
     ordinary: [{ id: scope.measureId, title: 'Объём исходной работы', kind: 'ordinary', valueType: 'decimal', unitId: scope.unitId, min: 0 }],
     profile: [], conditional, deferMissingProjectFactsToRows: true,
@@ -87,6 +88,8 @@ export function withG6PvcProjectCompletionS2741(base: AutomaticOwnerDefinition, 
     resource.row_sha256 = estimateDeterministicHash(resource); return resource;
   });
   return Object.freeze({ ...base, parameters: [...base.parameters, ...extension.parameters.filter(p => p.parameter_id !== scope.measureId)
-    .map((p, index) => ({ ...p, ordinal: base.parameters.length + index }))], formulas: [...base.formulas, ...extension.formulas],
+    .map((p, index) => ({ ...p, ordinal: base.parameters.length + index, truth_metadata: { ...p.truth_metadata,
+      ...(p.truth_metadata.guide ? { guide: { ...(p.truth_metadata.guide as Record<string, unknown>),
+        source_role: 'PROJECT_COMPLETION_SCOPE_NOT_A_CONSUMPTION_NORM', verified_at: '2026-10-07' } } : {}) } }))], formulas: [...base.formulas, ...extension.formulas],
     resources: [...base.resources, ...added] });
 }
