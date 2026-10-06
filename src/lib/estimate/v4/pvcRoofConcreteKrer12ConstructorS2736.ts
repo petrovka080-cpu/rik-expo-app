@@ -28,8 +28,8 @@ const parameters: AutomaticParameterSpec[] = [
   { id: 'area_m2', title: 'Чистая площадь поля кровли; примыкания и соседние слои считаются отдельно', kind: 'ordinary', valueType: 'decimal', unitId: 'm2', min: 0.001 },
   profile('roof_applicability_mode', 'Предварительный нормативный бюджет либо подтверждённая применимость выбранной системы', 'enum', null, 'PRELIMINARY_PROFILE', { values: ['PRELIMINARY_PROFILE', 'CONFIRMED_PROJECT_FACTS'] }),
   profile('roof_height_m', 'Предварительно высота15м; выше15м добавляется0.5% труда за каждый метр по КРЕР', 'decimal', 'm', 15, { min: 0, max: 1000 }),
-  profile('field_roll_m2', 'Выбран рулон LOGICROOF V-RP1.2мм2.1×25м=52.5м²; подтвердить поставку', 'decimal', 'm2', 52.5, { min: 52.5, max: 52.5 }),
-  profile('detail_pack_m2', 'Предварительно полная упаковка V-SR1.5мм:2рулона1×10м=20м²; при продаже по рулону выбрать10', 'enum', 'm2', '20', { values: ['10', '20'] }),
+  profile('field_roll_m2', 'Площадь рулона LOGICROOF V-RP 1.2мм: 52.5м² при размере 2.1×25м; подтвердить поставку', 'decimal', 'm2', 52.5, { min: 52.5, max: 52.5 }),
+  profile('detail_pack_m2', 'Площадь упаковки V-SR 1.5мм: предварительно 20м², два рулона 1×10м; при продаже по рулону выбрать 10м²', 'enum', 'm2', '20', { values: ['10', '20'] }),
   profile('dornit_quantum_m2', 'Предварительно поставка Дорнит300г/м² с кратностью1м²; фактическую ширину/рулон уточнить', 'decimal', 'm2', 1, { min: 0.000001 }),
   profile('fastener_quantum_piece', 'Предварительная кратность поставки каждого отдельного вида крепежа1шт; заменить упаковкой поставщика', 'integer', 'piece', 1, { min: 1 }),
   profile('roof_crew_tool_sets', 'Предварительно одно звено; ручная оснастка раскрыта и включена в труд подрядчика, не новый заказ', 'integer', 'set', 1, { min: 1 }),
@@ -59,7 +59,7 @@ const materials = [
   ['dornit', 'Геотекстиль нетканый Дорнит300г/м² для выбранного разделительного слоя; совместимость основания проверить', 'm2', pack.krer.materials.dornit300_m2, 'dornit_quantum_m2'],
   ['screw', 'Винт самонарезающий остроконечный4.8×70мм:нормативный бюджет, не утверждённая ветровая схема', 'piece', pack.krer.materials.screw4_8x70_piece, 'fastener_quantum_piece'],
   ['roof-dowel', 'Дюбель полипропиленовый кровельный50×15×150мм:отдельно от винта; применимость длины проверить', 'piece', pack.krer.materials.polypropyleneRoofDowel50x15x150_piece, 'fastener_quantum_piece'],
-  ['anchor', 'Дюбель распорный полиэтиленовый6×40мм:0.4десятка=4шт/100м² исходной нормы', 'piece', pack.krer.materials.polyethyleneAnchor6x40_piece, 'fastener_quantum_piece'],
+  ['anchor', 'Дюбель распорный полиэтиленовый 6×40мм: 0.4 десятка, то есть 4шт/100м² исходной нормы', 'piece', pack.krer.materials.polyethyleneAnchor6x40_piece, 'fastener_quantum_piece'],
 ] as const;
 function supply(key: string, title: string, unit: string, rawConsumed: string, quantum: string) {
   // A normative budget may be fractional; a physical screw/dowel cannot be.

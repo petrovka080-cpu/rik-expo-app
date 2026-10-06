@@ -4,11 +4,21 @@ import { compilePvcRoofConcreteKrer12S2736 as compile, PVC_ROOF_CONCRETE_DEFINIT
 import { PVC_ROOF_MEMBRANE_INSTALLATION_FORMULAS, PVC_ROOF_MEMBRANE_INSTALLATION_RESOURCES } from '../../src/lib/estimate/v4/pvcRoofMembraneInstallationR1';
 import { canonicalEstimateRevisionRowFromStorage } from '../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper';
 import { buildMasterParameterCalculationConsumers } from '../../scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1';
+import { aiEstimateRuLabelForParameter } from '../../src/lib/estimate/aiEstimateRuParameterDictionary';
 const q = (r: Awaited<ReturnType<typeof compile>>, id: string) => r.rows.find(x => x.row_id === id)?.quantity;
 const purchaseBalance = (row: Awaited<ReturnType<typeof compile>>['rows'][number] | undefined) =>
   (row?.calculation_trace as { purchaseBalance?: Record<string, unknown> } | undefined)?.purchaseBalance;
 
 describe('bounded concrete-base PVC1.2mm KRER12 field operation', () => {
+  test('published titles survive the actual UI label filter and distinguish fastener stock from reserve', () => {
+    const labels = Object.fromEntries(definition.parameters.map(p => [p.parameter_id, aiEstimateRuLabelForParameter(p.parameter_id, p.title_ru)]));
+    expect(Object.values(labels).every(label => label.trim().length > 0)).toBe(true);
+    expect(labels.field_roll_m2).toContain('Площадь рулона');
+    expect(labels.detail_pack_m2).toContain('Площадь упаковки');
+    expect(labels.roof_anchor_stock).toContain('пригодного наличия');
+    expect(labels.roof_anchor_reserve).toContain('сохраняемого резерва');
+    expect(labels.roof_anchor_stock).not.toBe(labels.roof_anchor_reserve);
+  });
   test('the selected source pack is bound to its actual bytes; manufacturer variants remain distinct', () => {
     expect(createHash('sha256').update(readFileSync('data/estimate-benchmarks/source-packs/pvc-roof-concrete-1_2mm-krer12-s27-36.json')).digest('hex'))
       .toBe(PVC_ROOF_CONCRETE_SOURCE_PACK_SHA256_S2736);
