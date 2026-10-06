@@ -45,4 +45,5 @@ test.each(series.map(profile => [profile.catalogId, profile] as const))('G6 seri
     .not.toContain('По норме трудозатрат');
   expect(profile.definition.parameters.find(p => p.parameter_id === modeId)?.truth_metadata.guide).toMatchObject({
     guide_kind: 'ENUM_DECISION_RULE', source_role: 'OWNER_AUTHORISED_COMMERCIAL_SCOPE_NOT_ENGINEERING_NORM', source_snapshot_hash: masterHash });
+  expect(profile.definition.runtimeSourceIds[modeId]).toEqual([]);
 });

@@ -65,7 +65,9 @@ function withLaborRate(base: AutomaticOwnerDefinition, config: {
     formulas: [...base.formulas, ...extension.formulas], resources: [...base.resources, rate],
     runtimeInput: { ...base.runtimeInput, ...extension.runtimeInput },
     runtimeClassification: { ...base.runtimeClassification, ...extension.runtimeClassification },
-    runtimeSourceIds: { ...base.runtimeSourceIds, ...extension.runtimeSourceIds },
+    // The commercial method is a structural choice. Its MASTER provenance is
+    // in the guide/coverage descriptor, never in the engineering norm closure.
+    runtimeSourceIds: { ...base.runtimeSourceIds, ...extension.runtimeSourceIds, [G6_COMMERCIAL_LABOR_MODE_PARAMETER_S2741]: [] },
   });
 }
 
