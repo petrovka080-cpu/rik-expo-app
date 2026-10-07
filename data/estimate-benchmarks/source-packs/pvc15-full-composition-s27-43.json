@@ -1,0 +1,60 @@
+{
+  "contract": "pvc15-existing-family-primary-source-bindings.s27-43/v1",
+  "catalogId": "canonical-work:base:roofing_interior_flat_roof_install_standard",
+  "acceptedNewTypeDelta": 0,
+  "selectedTechnology": "Mechanically fastened reinforced PVC roof field, 1.5 mm; exact project layout and quantities",
+  "sources": [
+    {
+      "document": "LOGICROOF V-RP, technical sheet 2.01, Russia, March 2026",
+      "url": "https://pim.tn.ru/9/b/a/4/9ba4be8ba53dc360032dd9f207b7d59de5121b02________________2.01______________________________________________LOGICROOF___V_RP_RU_ru__8_.pdf",
+      "sha256": "f5b62383b0fa6cdab6387a361d0af03f6c01c1ca94089d07456023f01242ade1",
+      "visuallyVerifiedPdfPages": [1, 2, 3],
+      "facts": ["Reinforced V-RP is available at thickness1.5mm", "Direct contact with bitumen, solvents, EPS and XPS is prohibited", "Multiple roll dimensions exist; no universal roll size or waste factor inferred"]
+    },
+    {
+      "document": "Manufacturer polymer membrane installation instruction, exact downloaded edition",
+      "url": "https://storage.yandexcloud.net/pim/1/5/7/7/1577408cd3ebc61e4b33f29335ef37bab7da4710________________________________________________________.pdf",
+      "sha256": "b235b9e3c0b50514bccfd4a0405988210dbc348dcb7cf9647082477760280728",
+      "visuallyVerifiedPdfPages": [15, 18, 19, 20, 26, 28, 34, 41],
+      "separationLocator": { "pdfPage": 34, "printedPage": 38 },
+      "separationMatrix": [
+        { "base": "EPS_XPS", "material": "glass fibre separator", "minimumSurfaceDensityGramM2": 100 },
+        { "base": "MINERAL_WOOL", "material": "thermally treated geotextile", "minimumSurfaceDensityGramM2": 100 },
+        { "base": "BITUMEN", "material": "thermally treated geotextile", "minimumSurfaceDensityGramM2": 300 }
+      ],
+      "minimumSeparationOverlapMm": 100,
+      "quantityPolicy": "Actual layout and allocated stock, reserve and supply quantum; minimum physical specification is not an area/labour consumption rate",
+      "applicabilityPolicy": "Matrix applies only after explicit selection of the verified LOGICROOF V-RP1.5 system. A different membrane system or unlisted base requires its own confirmed compatibility decision; no borrowed universal layer.",
+      "fasteningLocator": { "pdfPage": 19, "printedPage": 22, "basis": "Project wind-zone fastening plan, no area-derived fastener count" },
+      "toolsLocator": { "pdfPage": 20, "printedPage": 23 },
+      "seamControlLocator": { "pdfPage": 41, "printedPage": 46 }
+    },
+    {
+      "document": "Manufacturer logistics catalogue, exact downloaded document; date not inferred",
+      "url": "https://pim.tn.ru/a/d/3/7/ad3711b00dceb4af750ebf01de8b13c073c6c555_______________________________L_E___________1_.pdf",
+      "sha256": "bcb3c534574905542a4bc2f879c8f1ee877d169013536fe10ec4028ea560da6b",
+      "visuallyVerifiedPdfPages": [15],
+      "printedPage": 14,
+      "selectedSupply": { "product": "LOGICROOF V-RP 1.5 mm", "rollAreaM2": 42, "rollMassKg": 81.9, "rollsPerPallet": 18 },
+      "restrictions": ["42m2 applies to this listed supply only; supplier/cut quantum must be confirmed", "81.9kg is not waste mass or membrane consumption density", "18 rolls per pallet is not a minimum consumer order"]
+    }
+  ],
+  "seriesBoundaries": {
+    "compatibleExistingCatalogIds": ["canonical-work:base:roofing_interior_flat_roof_install_standard"],
+    "genericHighLoadLargeAreaSmallAreaTechnicalRoomWetZoneIncluded": false,
+    "genericVariantsReason": "Stored q=100 and generic59-row roof composition do not establish PVC1.5 compatibility or independent accepted types",
+    "adjacentRoofLayersIncluded": false,
+    "compatibleBitumenTransition": "Existing separately accepted reinforced PVC-bitumen transition; individual needs and allocated stock must remain scoped, never auto-merged by a Russian name"
+  },
+  "costAndProvision": {
+    "usageMachineHours": "Exact project fact; never apparatus count, rental days or price",
+    "states": ["contractor-owned", "rented with explicit rate basis and period", "provided in confirmed main rate", "separate apparatus purchase count", "unresolved provision"],
+    "mainRate": "Original area-based installation owner; allocated installation labour and provided tools disclosed as included",
+    "additionalOwnCosts": ["preparation", "protection when applicable", "own machine usage and actual maintenance", "confirmed rental period", "energy when separately payable", "separate delivery when applicable", "defect correction and repeat control", "cleanup, bags and complete actual waste service", "handover documentation"],
+    "noDefaultPrice": true
+  },
+  "controlFixture": { "path": "tests/fixtures/pvc15FullCompositionS2743.ts", "classification": "VALIDATION_FIXTURE_ONLY_NOT_RUNTIME_DEFAULT", "legacyMembraneOrderM2": 535, "independentTestConsumptionM2": 525, "selectedTestCutQuantumM2": 5, "testQuantumIsNotTheManufacturerRoll": true },
+  "ordinaryUiAccepted": false,
+  "seriesAccepted": false,
+  "production": false
+}
