@@ -23,6 +23,7 @@ import type {
   GlobalSelectedWorkBinding,
   GlobalWorkSmartSearchSuggestion,
 } from "../../lib/ai/globalEstimate/globalWorkSmartSearch";
+import { visibleGlobalWorkCategoryTitleRu } from "../../lib/ai/globalEstimate/globalWorkSmartSearch";
 import type { GlobalWorkCategory } from "../../lib/ai/globalEstimate/globalEstimateTypes";
 import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
 import { mapPickerItemToCatalogItemForEstimate } from "../../lib/catalog/catalogItemsService";
@@ -679,6 +680,7 @@ const CANONICAL_DOMAIN_CATEGORY: Readonly<Record<string, GlobalWorkCategory>> = 
   asphalt: "roadworks",
   roadworks: "roadworks",
   concrete: "concrete",
+  roofing: "roofing",
   drywall: "drywall",
   electrical: "electrical",
   water_supply_sewerage: "plumbing",
@@ -707,11 +709,12 @@ export function canonicalSearchItemToConsumerRepairSuggestion(
   item: CanonicalEstimateSearchItem,
 ): GlobalWorkSmartSearchSuggestion {
   const categoryKey = CANONICAL_DOMAIN_CATEGORY[item.domainId] ?? "other";
+  const categoryTitleRu = visibleGlobalWorkCategoryTitleRu(categoryKey);
   return {
     workKey: item.catalogId,
     titleRu: item.canonicalNameRu,
     categoryKey,
-    categoryTitleRu: item.groupNameRu,
+    categoryTitleRu,
     defaultMeasureUnit: canonicalPrimaryUomToGlobalUnit(item.primaryUom),
     score: Math.max(0, 1 - ((item.matchTier - 1) * 0.1)),
     matchKind: item.matchTier === 1
@@ -726,7 +729,7 @@ export function canonicalSearchItemToConsumerRepairSuggestion(
       && item.contentAdmission?.allowed === true
       && item.contentAdmission.contractVersion === "estimate-admission-r3",
     nonselectableReasonRu: item.nonselectableReasonRu,
-    visibleText: `${item.canonicalNameRu} · ${item.groupNameRu}`,
+    visibleText: `${item.canonicalNameRu} · ${categoryTitleRu}`,
   };
 }
 

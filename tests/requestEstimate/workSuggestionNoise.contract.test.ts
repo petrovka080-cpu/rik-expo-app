@@ -1,5 +1,6 @@
 import {
   emptyConsumerRepairCanonicalWorkSearchState,
+  canonicalSearchItemToConsumerRepairSuggestion,
   mergeConsumerRepairCanonicalWorkSearchPage,
   searchConsumerRepairWorkSuggestions,
   shouldShowConsumerRepairWorkSuggestions,
@@ -81,6 +82,13 @@ function page(items: CanonicalEstimateSearchItem[], nextCursor: string | null): 
 }
 
 describe("request estimate work suggestion visibility", () => {
+  it("shows the actual category instead of presenting a legacy first-variant group as the selected work scope", () => {
+    const title = "Монтаж поля кровельной ПВХ-мембраны 1,5 мм на малом участке по проекту";
+    const result = canonicalSearchItemToConsumerRepairSuggestion({...item("canonical-work:base:roofing_interior_flat_roof_install_small_area",title),domainId:"roofing",groupNameRu:"монтаж плоской кровли для высокой нагрузки"});
+    expect(result.categoryKey).toBe("roofing");expect(result.categoryTitleRu).toBe("Кровля");
+    expect(result.visibleText).toBe(title+" · Кровля");expect(result.visibleText).not.toContain("высокой нагрузки");
+    expect(result.titleRu).toBe(title);expect(result.workKey).toBe("canonical-work:base:roofing_interior_flat_roof_install_small_area");
+  });
   it("routes a full estimate prompt through canonical work-intent search", () => {
     const prompt = "водоснабжение села 5 км труба ПЭ100 d110 траншея колодцы";
 

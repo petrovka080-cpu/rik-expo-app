@@ -30,6 +30,7 @@ describe('two existing area bindings, one accepted PVC15 owner without size norm
   expect((row('rc09:reinforced_pvc_roof_membrane_1_5mm').calculation_trace as {purchaseBalance:{consumed:string;remaining:string}}).purchaseBalance).toMatchObject({consumed:variant==='small_area'?'80.5':'5150',remaining:variant==='small_area'?'4.5':'10'});
   expect(row('rc09:pvc_membrane_telescopic_fastener').quantity).toBe(variant==='small_area'?'400':'10100');
   expect(row('rc09:pvc_membrane_weld_probe_test').quantity).toBe(variant==='small_area'?'7':'38');
+  expect(row('pvc15:separation:mineral').quantity).toBe(variant==='small_area'?'80':'5110');
   expect(row('pvc15:equipment:own-use').quantity).toBe('9');expect(row('pvc15:labor:preparation').quantity).toBe('2.5');
   expect(result.rows.some(r=>r.included_in_procurement&&r.unit_id==='machine_hour')).toBe(false);
  });
