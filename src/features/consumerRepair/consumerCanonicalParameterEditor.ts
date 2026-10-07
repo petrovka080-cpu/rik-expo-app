@@ -18,6 +18,7 @@ import { canonicalEstimateRecalculateIdempotencyKey } from "../../lib/estimate/b
 import { adaptCanonicalRevisionToStructuredEstimate } from "../../lib/estimate/backendPlatform/canonicalEstimateForemanAdapter";
 import {
   canonicalNumericPeerConstraintMessageRu,
+  canonicalParameterValidationIssueMessageRu,
   validateCanonicalEstimateParameterInputs,
   type CanonicalParameterValidationIssue,
 } from "../../lib/estimate/backendPlatform/canonicalEstimateParameterValidation";
@@ -788,7 +789,7 @@ export async function recalculateConsumerCanonicalEstimate(input: {
     throw new CanonicalEstimateApiError(
       geometryConflict
         ? "Параметры не сохранены: площадь не совпадает с длиной × шириной. Исправьте площадь либо размеры объекта."
-        : peerMessage ?? `Параметры не сохранены: ${blockingIssues.map((issue) => `${issue.parameterId}:${issue.code}`).join(", ")}.`,
+        : peerMessage ?? `Параметры не сохранены: ${blockingIssues.map((issue) => canonicalParameterValidationIssueMessageRu(catalog.parameterSchema, issue)).join(" ")}`,
       { code: "INVALID_PARAMETER_INPUT", httpStatus: 400 },
     );
   }

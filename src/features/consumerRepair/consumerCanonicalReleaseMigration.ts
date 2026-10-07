@@ -127,7 +127,12 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
   for (const parameterId of new Set([...Object.keys(transferable), ...(input.parameterPatchKeys ?? [])])) {
     const source = parentCatalog.parameterSchema.find(schema => schema.parameterId === parameterId);
     const destination = catalog.parameterSchema.find(schema => schema.parameterId === parameterId);
-    if (!source || !destination || source.unitId !== destination.unitId || source.valueType !== destination.valueType
+    // Tightening a numeric fact to an integer keeps its meaning and unit.
+    // The target's shared validator still rejects fractions after consent;
+    // this guard never converts or rounds an inherited or edited value.
+    const compatibleValueType = source && destination && (source.valueType === destination.valueType
+      || (source.valueType === "decimal" && destination.valueType === "integer"));
+    if (!source || !destination || source.unitId !== destination.unitId || !compatibleValueType
       || (source.semanticParameterKey ?? source.parameterId) !== (destination.semanticParameterKey ?? destination.parameterId)) {
       throw new CanonicalEstimateApiError(`Переход остановлен: изменились единица или назначение поля «${source?.titleRu ?? parameterId}». Исходные данные нужно проверить; смета сохранена.`, {
         code: "RELEASE_MIGRATION_PARAMETER_BINDING_REVIEW_REQUIRED", httpStatus: 409,

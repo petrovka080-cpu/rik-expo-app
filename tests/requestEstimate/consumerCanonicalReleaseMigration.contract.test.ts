@@ -70,6 +70,50 @@ describe("consumer exact release migration", () => {
     expect(confirm).not.toHaveBeenCalled();
   });
 
+  const counterCatalogs = () => {
+    const counter = { ...target.parameterSchema[0], parameterId: "fastener_count", titleRu: "Количество креплений", unitId: "piece", semanticParameterKey: "roof:fastener-count", constraints: { min: 1 } };
+    return {
+      source: { ...oldCatalog, parameterSchema: [...oldCatalog.parameterSchema, counter] },
+      destination: { ...target, parameterSchema: [...target.parameterSchema, { ...counter, valueType: "integer" as const }] },
+    };
+  };
+
+  it("allows same-meaning decimal-to-integer tightening after exact consent and submits the integer unchanged", async () => {
+    const { source, destination } = counterCatalogs();
+    getCatalog.mockImplementation(async (_id, _signal, releaseId) => releaseId ? source : destination);
+    jest.mocked(recalculateCanonicalEstimateAndLoad).mockRejectedValue(new Error("backend reached"));
+    const persist = jest.fn();
+    const before = JSON.stringify(revision);
+    await expect(recalculateAndPersistConsumerCanonicalEstimate({ revisionId: revision.revisionId, draftId: "draft", problemText: revision.sourceRequestText!,
+      patches: [{ operation: "update_param", paramKey: "fastener_count", rawValue: "12" }], confirmReleaseMigration: async () => true, persist })).rejects.toThrow("backend reached");
+    expect(jest.mocked(recalculateCanonicalEstimateAndLoad).mock.calls[0][0].request).toMatchObject({ releaseMigration: migration, parameters: { fastener_count: "12" } });
+    expect(JSON.stringify(revision)).toBe(before);
+    expect(persist).not.toHaveBeenCalled();
+  });
+
+  it("rejects a fractional tightened fact with its Russian title and keeps the input and parent without a job", async () => {
+    const { source, destination } = counterCatalogs();
+    getCatalog.mockImplementation(async (_id, _signal, releaseId) => releaseId ? source : destination);
+    const persist = jest.fn();
+    const patches = [{ operation: "update_param" as const, paramKey: "fastener_count", rawValue: "12.5" }];
+    const before = JSON.stringify(revision), entered = JSON.stringify(patches);
+    const attempt = recalculateAndPersistConsumerCanonicalEstimate({ revisionId: revision.revisionId, draftId: "draft", problemText: revision.sourceRequestText!,patches,confirmReleaseMigration: async () => true,persist });
+    await expect(attempt).rejects.toMatchObject({ code: "INVALID_PARAMETER_INPUT", message: "Параметры не сохранены: «Количество креплений»: введите целое число без дробной части." });
+    expect(recalculateCanonicalEstimateAndLoad).not.toHaveBeenCalled();expect(persist).not.toHaveBeenCalled();
+    expect(JSON.stringify(patches)).toBe(entered);expect(JSON.stringify(revision)).toBe(before);
+  });
+
+  it.each(["unit", "meaning", "loosening"])("does not treat %s changes as integer tightening", async change => {
+    const { source, destination } = counterCatalogs();
+    if (change === "unit") destination.parameterSchema[2].unitId = "m2";
+    if (change === "meaning") destination.parameterSchema[2].semanticParameterKey = "other-count";
+    if (change === "loosening") { source.parameterSchema[2].valueType = "integer"; destination.parameterSchema[2] = { ...destination.parameterSchema[2], valueType: "decimal" }; }
+    getCatalog.mockImplementation(async (_id, _signal, releaseId) => releaseId ? source : destination);
+    const confirm = jest.fn().mockResolvedValue(true);
+    await expect(resolveConsumerCanonicalRecalculationCatalog({ revision,parameterPatchKeys:["fastener_count"],confirmReleaseMigration:confirm })).rejects.toMatchObject({ code: "RELEASE_MIGRATION_PARAMETER_BINDING_REVIEW_REQUIRED" });
+    expect(confirm).not.toHaveBeenCalled();expect(recalculateCanonicalEstimateAndLoad).not.toHaveBeenCalled();
+  });
+
   it.each([false, undefined])("does not submit or persist without consent (%s)", async (consent) => {
     const persist = jest.fn();
     await expect(recalculateAndPersistConsumerCanonicalEstimate({ revisionId: revision.revisionId, draftId: "draft", problemText: revision.sourceRequestText!, patches: [{ operation: "update_param", paramKey: "area_m2", rawValue: "101" }], persist, confirmReleaseMigration: consent === undefined ? undefined : async () => consent })).rejects.toMatchObject({ code: "RELEASE_MIGRATION_NOT_ACKNOWLEDGED" });

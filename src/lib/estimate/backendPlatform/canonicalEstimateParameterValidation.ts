@@ -36,6 +36,24 @@ export type CanonicalParameterValidationResult = {
   issues: CanonicalParameterValidationIssue[];
 };
 
+/** Human wording for the same typed validation issue used by both clients.
+ * Parameter identifiers and validator codes remain in diagnostic data. */
+export function canonicalParameterValidationIssueMessageRu(
+  schema: ParameterSchema[], issue: CanonicalParameterValidationIssue,
+): string {
+  const definition = schema.find(parameter => parameter.parameterId === issue.parameterId);
+  const title = definition?.titleRu?.trim() || "Параметр расчёта";
+  if (issue.code === "TYPE") return definition?.valueType === "integer"
+    ? `«${title}»: введите целое число без дробной части.`
+    : `«${title}»: проверьте формат введённого значения.`;
+  if (issue.code === "REQUIRED" || issue.code === "REQUIRED_WHEN") return `«${title}»: заполните обязательное значение.`;
+  if (issue.code === "ENUM") return `«${title}»: выберите допустимый вариант.`;
+  if (issue.code === "MIN") return `«${title}»: значение меньше допустимого минимума.`;
+  if (issue.code === "MAX") return `«${title}»: значение больше допустимого максимума.`;
+  if (issue.code === "FORBIDDEN_WHEN") return `«${title}»: значение не применяется при выбранных условиях.`;
+  return `«${title}»: проверьте значение и связанные условия.`;
+}
+
 export function canonicalNumericPeerConstraintMessageRu(
   schema: ParameterSchema[],
   issue: CanonicalParameterValidationIssue,
