@@ -8,10 +8,40 @@ import type { CanonicalEstimateCatalogItem } from '../../src/lib/estimate/backen
 import type { CanonicalEstimateParameterSessionRevision } from '../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSessionSnapshot';
 import { consumerCanonicalInheritedRecalculationInputs, consumerCanonicalExplicitAutomaticParameters } from '../../src/features/consumerRepair/consumerCanonicalReleaseMigration';
 import { pvc15MinimalCustomerInputPublishConfigS2744 } from '../../scripts/estimate/r4a13/prepareS2744Pvc15MinimalCustomerInput';
+import { pvc15OrdinaryQueryAliasesS2745 } from '../../scripts/estimate/r4a13/prepareS2745Pvc15SearchAliases';
+import { buildCanonicalRevisionCommitPayload } from '../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter';
+import { mergeCanonicalEffectiveResourceQuantityProvenanceV1 } from '../../src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1';
 
 const compile = (input: Record<string, unknown>) => compileAutomaticConstructionOwnerR1({ definition,
   catalogId: 'canonical-work:base:roofing_interior_flat_roof_install_standard', primaryMeasureParameterId: 'area_m2', compilerVersion: 'minimal-input-control', submittedParameters: input });
 describe('PVC15 size and object facts instead of a technical questionnaire', () => {
+  test('stores automatic quantities separately from facts and recomputes them after an area change', async () => {
+    const facts = { area_m2: 75, pvc15_system_profile: PVC15_SYSTEM.verified };
+    const compiled = await compile(facts);
+    const userParameters = mergeCanonicalEffectiveResourceQuantityProvenanceV1({ parameterDefinitions: definition.parameters,
+      resourceDefinitions: definition.resources, formulaDefinitions: definition.formulas,
+      userParameters: facts, derivedParameters: compiled.derivedParameters, separateDerivedProvenance: true });
+    const payload = buildCanonicalRevisionCommitPayload({ rowCount: compiled.rows.length, currencyCode: 'KGS', totals: compiled.totals,
+      checksumSha256: 'test', compilerVersion: 'test', parameters: compiled.parameters, baselineAssumptions: {},
+      effectiveUserParameters: userParameters, derivedParameters: compiled.derivedParameters,
+      parentRevisionId: 'existing', approvedTemplateBaselineId: null, identityContract: {} });
+    expect(payload.parameterSources).toMatchObject({ userParameters: facts,
+      derivedParameters: { pvc15_membrane_consumption_m2: '86.25', telescopic_fastener_quantity_piece: '300' } });
+    expect(userParameters).not.toHaveProperty('pvc15_membrane_consumption_m2');
+    const changed = await compile({ ...userParameters, area_m2: 154 });
+    expect(changed.parameters.pvc15_membrane_consumption_m2).toBe('177.1');
+    expect(changed.parameters.telescopic_fastener_quantity_piece).toBe('616');
+    expect((await compile({ ...userParameters, pvc15_membrane_consumption_m2: 80.5 })).derivedParameters)
+      .not.toHaveProperty('pvc15_membrane_consumption_m2');
+  });
+  test('retains existing search terms while adding ordinary roof queries only to existing PVC15 members', () => {
+    const patch = pvc15OrdinaryQueryAliasesS2745({ catalog_id: 'canonical-work:base:roofing_interior_flat_roof_install_small_area',
+      aliases: ['existing alias'], normalized_search_terms: ['existing alias'] });
+    expect(patch.aliases).toContain('existing alias');
+    expect(patch.searchTerms).toEqual(expect.arrayContaining(['existing alias', 'пвх кровля', 'пвх мембрана 1 5 мм']));
+    expect(() => pvc15OrdinaryQueryAliasesS2745({ catalog_id: 'unrelated', aliases: [], normalized_search_terms: [] }))
+      .toThrow('PVC15_SEARCH_TARGET_SCOPE');
+  });
   test.each([75, 154, 5000])('automatically calculates the primary-source preliminary membrane and whole fastener demand for %s m²', async area => {
     const result = await compile({ area_m2: area, pvc15_system_profile: PVC15_SYSTEM.verified });
     expect(Number(result.parameters.pvc15_membrane_consumption_m2)).toBeCloseTo(area * 1.15, 9);

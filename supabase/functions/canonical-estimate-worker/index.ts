@@ -355,8 +355,8 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
   const parameters = compiled.parameters;
   effectiveUserParameters = mergeCanonicalEffectiveResourceQuantityProvenanceV1({
     parameterDefinitions: parameterResult.data ?? [], resourceDefinitions: resources, formulaDefinitions: formulaResult.data ?? [],
-    userParameters: effectiveUserParameters,
-    derivedParameters: stripCanonicalAutomaticPreliminaryInputsV1(parameterResult.data ?? [], compiled.derivedParameters, effectiveUserParameters),
+    userParameters: effectiveUserParameters, derivedParameters: compiled.derivedParameters,
+    separateDerivedProvenance: true,
   });
   const currencyCode = compiled.totals.currencyCode;
   const baselineAssumptions = Object.fromEntries(Object.entries(baselineParameters)
@@ -395,6 +395,7 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
     baselineAssumptions,
     effectiveUserParameters,
     parentRevisionId: job.parent_revision_id,
+    derivedParameters: compiled.derivedParameters,
     identityContract,
     preliminaryNeeds: compiled.preliminaryNeeds,
   });

@@ -182,6 +182,7 @@ export function buildCanonicalRevisionCommitPayload(input: {
   baselineAssumptions: Record<string, unknown>;
   effectiveUserParameters: Record<string, unknown>;
   parentRevisionId: string | null;
+  derivedParameters?: Record<string, unknown>;
   identityContract: Record<string, unknown>;
   preliminaryNeeds?: Record<string, unknown>[];
 }): Record<string, unknown> {
@@ -197,6 +198,7 @@ export function buildCanonicalRevisionCommitPayload(input: {
       approvedTemplateBaselineId: input.approvedTemplateBaselineId,
       baselineAssumptions: input.baselineAssumptions,
       userParameters: input.effectiveUserParameters,
+      ...(input.derivedParameters == null ? {} : { derivedParameters: input.derivedParameters }),
       parentRevisionId: input.parentRevisionId,
       identityContract: input.identityContract,
       preliminaryNeeds: input.preliminaryNeeds ?? [],

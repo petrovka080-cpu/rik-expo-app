@@ -2229,8 +2229,8 @@ async function compileClaimedJob(
   const { parameters, rows, totals } = compiled;
   effectiveUserParameters = mergeCanonicalEffectiveResourceQuantityProvenanceV1({
     parameterDefinitions, resourceDefinitions: resources, formulaDefinitions: formulas,
-    userParameters: effectiveUserParameters,
-    derivedParameters: stripCanonicalAutomaticPreliminaryInputsV1(parameterDefinitions, compiled.derivedParameters, effectiveUserParameters),
+    userParameters: effectiveUserParameters, derivedParameters: compiled.derivedParameters,
+    separateDerivedProvenance: true,
   });
   const baselineAssumptions = Object.fromEntries(
     Object.entries(baselineParameters).filter(
@@ -2274,6 +2274,7 @@ async function compileClaimedJob(
     effectiveUserParameters,
     parentRevisionId:
       job.parent_revision_id == null ? null : String(job.parent_revision_id),
+    derivedParameters: compiled.derivedParameters,
     identityContract,
     preliminaryNeeds: compiled.preliminaryNeeds,
   });

@@ -106,7 +106,8 @@ export function mergeCanonicalEffectiveResourceQuantityProvenanceV1(input: {
   formulaDefinitions: readonly CanonicalEstimateFormulaDefinition[];
   userParameters: Record<string, unknown>;
   derivedParameters: Record<string, unknown>;
+  separateDerivedProvenance?: boolean;
 }): Record<string, unknown> {
   const plan = planCanonicalEffectiveResourceQuantitiesV1(input.parameterDefinitions, input.resourceDefinitions, input.formulaDefinitions);
-  return { ...plan.stripIncoming(input.userParameters), ...input.derivedParameters };
+  return { ...plan.stripIncoming(input.userParameters), ...(input.separateDerivedProvenance ? {} : input.derivedParameters) };
 }
