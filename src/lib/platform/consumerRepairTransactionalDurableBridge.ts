@@ -79,6 +79,10 @@ function activeStore(): EstimateRevisionDurableStore {
   return runtimeStore;
 }
 
+export function isConsumerRepairWebTransactionalStoreAvailable(): boolean {
+  return storeOverride != null || typeof globalThis.indexedDB !== "undefined";
+}
+
 function pointerKey(requestDraftId: string): string {
   return `${CONSUMER_REPAIR_TRANSACTIONAL_POINTER_KEY_PREFIX}${encodeURIComponent(requestDraftId)}`;
 }
@@ -244,13 +248,19 @@ async function commitTransactionalConsumerRepairBundleWrite(
       input.onFailed?.(result);
       return result;
     }
-    input.storage?.setItem(pointerKey(key), JSON.stringify({
-      schemaVersion: "consumer_repair_transactional_pointer_v1",
-      migrationState: "complete",
-      currentVersion: result.version,
-      recoveryVersion: result.previousVersion,
-      checksum: result.checksum,
-    }));
+    try {
+      input.storage?.setItem(pointerKey(key), JSON.stringify({
+        schemaVersion: "consumer_repair_transactional_pointer_v1",
+        migrationState: "complete",
+        currentVersion: result.version,
+        recoveryVersion: result.previousVersion,
+        checksum: result.checksum,
+      }));
+    } catch {
+      // The atomic store owns payload, pointer and key enumeration. Web
+      // Storage is only a discovery hint and can be full during migration.
+      evidence("TARGET_DISCOVERY_HINT_UNAVAILABLE");
+    }
     input.onCommitted?.(result);
     return result;
   } catch (error: unknown) {

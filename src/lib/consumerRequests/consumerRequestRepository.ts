@@ -29,6 +29,7 @@ import {
   awaitTransactionalConsumerRepairBundleCommit,
   hasPendingTransactionalConsumerRepairBundleWrite,
   isLargeConsumerRepairRevisionBundle,
+  isConsumerRepairWebTransactionalStoreAvailable,
   listTransactionalConsumerRepairBundleIds,
   listTransactionalConsumerRepairDurableBundleIds,
   queueTransactionalConsumerRepairBundleWrite,
@@ -663,28 +664,43 @@ function migrateLegacyConsumerRepairDurableStore(storage: Storage): void {
   legacyMigrationPending = true;
 }
 
-function persistConsumerRepairBundleRecord(bundle: ConsumerRepairDraftBundle): boolean {
-  const storage = getWebDurableStorage();
-  if (
-    isReactNativeRuntime() ||
-    isLargeConsumerRepairRevisionBundle(bundle) ||
-    isConsumerRepairApprovedHistoryStatus(bundle.draft.status)
-  ) {
-    const preserveApprovedSummary =
-      isConsumerRepairApprovedHistoryStatus(bundle.draft.status);
-    if (storage && preserveApprovedSummary) {
-      migrateLegacyConsumerRepairDurableStore(storage);
-      compactOlderApprovedHistoryRecordsForStorage(storage, bundle);
-      persistConsumerRepairDurableApprovedSummaryRecord(storage, bundle, {
-        updateMemoryStore: false,
-      });
-      persistConsumerRepairDurableManifest(storage);
-    }
-    void queueTransactionalConsumerRepairBundleWrite({
-      bundle,
-      storage,
-      onCommitted: () => {
-        if (storage) {
+function usesTransactionalConsumerRepairStorage(
+  bundle: ConsumerRepairDraftBundle,
+  storage: Storage | null,
+): boolean {
+  return isReactNativeRuntime()
+    || isLargeConsumerRepairRevisionBundle(bundle)
+    || isConsumerRepairApprovedHistoryStatus(bundle.draft.status)
+    || transactionalDurableBundleIds.includes(bundle.draft.id)
+    || hasPendingTransactionalConsumerRepairBundleWrite(bundle.draft.id)
+    || Boolean(storage && listTransactionalConsumerRepairBundleIds(storage).includes(bundle.draft.id));
+}
+
+function persistConsumerRepairBundleTransactionally(
+  bundle: ConsumerRepairDraftBundle,
+  storage: Storage | null,
+): boolean {
+  // Keep the selected owner for subsequent smaller saves and exact read-back.
+  // On cold start the atomic store's own index recovers the same decision.
+  if (!transactionalDurableBundleIds.includes(bundle.draft.id)) {
+    transactionalDurableBundleIds.push(bundle.draft.id);
+  }
+  const preserveApprovedSummary =
+    isConsumerRepairApprovedHistoryStatus(bundle.draft.status);
+  if (storage && preserveApprovedSummary) {
+    migrateLegacyConsumerRepairDurableStore(storage);
+    compactOlderApprovedHistoryRecordsForStorage(storage, bundle);
+    persistConsumerRepairDurableApprovedSummaryRecord(storage, bundle, {
+      updateMemoryStore: false,
+    });
+    persistConsumerRepairDurableManifest(storage);
+  }
+  void queueTransactionalConsumerRepairBundleWrite({
+    bundle,
+    storage,
+    onCommitted: () => {
+      if (storage) {
+        try {
           const latestBundle = store.bundles.get(bundle.draft.id) ?? bundle;
           const preserveLatestApprovedSummary =
             preserveApprovedSummary ||
@@ -701,28 +717,44 @@ function persistConsumerRepairBundleRecord(bundle: ConsumerRepairDraftBundle): b
             bundle.draft.id,
             preserveLatestApprovedSummary,
           );
+        } catch {
+          // Redundant local data may remain; atomic recovery stays authoritative.
         }
-      },
-      onFailed: () => {
-        const latest = store.bundles.get(bundle.draft.id);
-        if (!latest) return;
-        const diagnostic = appendConsumerRepairDurableSaveDiagnosticEvent({
-          bundle: latest,
-          reason: "transactional_durable_persist_failed_previous_commit_remains_active",
-        });
-        store.bundles.set(bundle.draft.id, cloneConsumerRepairValue(diagnostic));
-        syncConsumerRepairBundleToAiEstimateLedger(diagnostic);
-      },
-    });
-    return true;
+      }
+    },
+    onFailed: () => {
+      const latest = store.bundles.get(bundle.draft.id);
+      if (!latest) return;
+      const diagnostic = appendConsumerRepairDurableSaveDiagnosticEvent({
+        bundle: latest,
+        reason: "transactional_durable_persist_failed_previous_commit_remains_active",
+      });
+      store.bundles.set(bundle.draft.id, cloneConsumerRepairValue(diagnostic));
+      syncConsumerRepairBundleToAiEstimateLedger(diagnostic);
+    },
+  });
+  return true;
+}
+
+function persistConsumerRepairBundleRecord(bundle: ConsumerRepairDraftBundle): boolean {
+  const storage = getWebDurableStorage();
+  if (usesTransactionalConsumerRepairStorage(bundle, storage)) {
+    return persistConsumerRepairBundleTransactionally(bundle, storage);
   }
   if (!storage) return true;
   migrateLegacyConsumerRepairDurableStore(storage);
   compactOlderApprovedHistoryRecordsForStorage(storage, bundle);
-  const recordPersisted =
+  const normalRecordPersisted =
     persistConsumerRepairDurableRecord(storage, bundle) ||
     (compactOlderApprovedHistoryRecordsForStorage(storage, bundle) &&
-      persistConsumerRepairDurableRecord(storage, bundle)) ||
+      persistConsumerRepairDurableRecord(storage, bundle));
+  // A small record can still exceed the remaining origin quota. Preserve its
+  // complete history through the existing atomic adapter before considering
+  // emergency compaction or eviction of unrelated drafts.
+  if (!normalRecordPersisted && isConsumerRepairWebTransactionalStoreAvailable()) {
+    return persistConsumerRepairBundleTransactionally(bundle, storage);
+  }
+  const recordPersisted = normalRecordPersisted ||
     persistConsumerRepairDurableRecord(storage, bundle, { emergency: true }) ||
     pruneDurableDraftRecordsForBundle(storage, bundle);
   persistConsumerRepairDurableManifest(storage);
@@ -1025,10 +1057,7 @@ export async function awaitConsumerRepairBundleDurableCommit(input: {
     syncConsumerRepairBundleToAiEstimateLedger(normalized);
   };
   const storage = getWebDurableStorage();
-  const usesTransactionalStorage =
-    isReactNativeRuntime() ||
-    isLargeConsumerRepairRevisionBundle(current) ||
-    isConsumerRepairApprovedHistoryStatus(current.draft.status);
+  const usesTransactionalStorage = usesTransactionalConsumerRepairStorage(current, storage);
   if (usesTransactionalStorage) {
     try {
       await awaitTransactionalConsumerRepairBundleCommit(input);

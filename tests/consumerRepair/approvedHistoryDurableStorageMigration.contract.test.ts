@@ -501,7 +501,8 @@ describe("approved history durable storage migration", () => {
     expect(storage?.values.has(CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY)).toBe(true);
   });
 
-  it("persists the current draft through emergency compaction when browser storage is fragmented", () => {
+  it("persists the current draft through emergency compaction when transactional storage is unavailable", () => {
+    setConsumerRepairTransactionalDurableStoreForTests(null);
     const userId = "durable-quota-emergency-compact";
     storage?.seedBypassQuota("external.browser.cache", "x".repeat(12_000));
     const aiDraft = buildConsumerRepairAiDraft(
@@ -567,7 +568,8 @@ describe("approved history durable storage migration", () => {
     expect(storage?.values.has(CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY)).toBe(true);
   });
 
-  it("keeps the edited revision durable through emergency compaction under quota pressure", () => {
+  it("keeps the edited revision durable through emergency compaction when transactional storage is unavailable", () => {
+    setConsumerRepairTransactionalDurableStoreForTests(null);
     const userId = "durable-quota-edit-revision-chain";
     const aiDraft = buildConsumerRepairAiDraft(
       "РІРµРЅС‚С„Р°СЃР°Рґ РїРѕРґ РєР»СЋС‡ 1500 РєРІ РјРµС‚СЂРѕРІ РІС‹СЃРѕС‚Р° 40 Рј СѓС‚РµРїР»РµРЅРёРµ 100 РјРј",
