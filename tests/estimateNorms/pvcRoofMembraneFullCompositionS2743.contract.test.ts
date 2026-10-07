@@ -61,7 +61,7 @@ test('a different membrane system receives no borrowed LOGICROOF separation rule
 });
 
 test.each(Object.values(PVC15_MACHINE))('machine mode %s retains 9 usage hours and never orders apparatus in machine-hours',async mode=>{
-  const input={...pvc15ControlInputS2743(),pvc15_machine_provision:mode,pvc15_machine_purchase_count:2,pvc15_rental_basis:'За сутки',pvc15_rental_billable_days:'2.5',
+  const input: Record<string,unknown>={...pvc15ControlInputS2743(),pvc15_machine_provision:mode,pvc15_machine_purchase_count:2,pvc15_rental_basis:'За сутки',pvc15_rental_billable_days:'2.5',
     pvc15_machine_delivery_mode:PVC15_NOT_REQUIRED,pvc15_machine_delivery_reference:'VALIDATION_FIXTURE: доставка в подтверждённом тарифе, отдельно не начисляется'};
   if(mode===PVC15_MACHINE.unknown) delete input.pvc15_machine_reference;
   const result=await compile(input);expect(find(result,'rc09:automatic_hot_air_roof_welder')).toMatchObject({quantity:'9',included_in_estimate:false,included_in_procurement:false});
