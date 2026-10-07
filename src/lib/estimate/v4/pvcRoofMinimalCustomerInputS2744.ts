@@ -14,11 +14,22 @@ export const PVC15_MINIMAL_SOURCE_S2744 = Object.freeze({
 /** Facts about the actual object; technical norms, labour/equipment, product
  * passports and source references belong to the catalogue, never this form. */
 export const PVC15_CUSTOMER_FACT_IDS_S2744 = Object.freeze([
-  'area_m2', 'pvc15_base', 'edge_rail_length_m', 'detail_membrane_mode',
+  'area_m2', 'pvc15_base', 'pvc15_system_profile', 'edge_rail_length_m', 'detail_membrane_mode',
   'detail_membrane_area_m2', 'pvc15_joint_transition_scope',
   'pvc15_transition_transition_length_m',
 ]);
 const customer = new Set<string>(PVC15_CUSTOMER_FACT_IDS_S2744);
+function parameterOrigin(id: string): string {
+  if (id === 'pvc15_system_profile') return 'EXPLICIT_TECHNICAL_SOLUTION';
+  if (customer.has(id)) return 'ACTUAL_OBJECT_FACT';
+  if (id.includes('effective_resource_quantity_')) return 'COMPILER_DERIVED_SERVICE_FIELD';
+  if (id.endsWith('_quantum')) return 'CONFIRMED_SUPPLY_PARAMETER';
+  if (id.endsWith('_stock') || id.endsWith('_reserve') || /rental|maintenance|delivery/.test(id)) return 'COMMERCIAL_OR_LOGISTICS_FACT';
+  if (id.endsWith('_reference')) return 'SOURCE_DOCUMENT_REFERENCE';
+  if (id in selections) return 'VERSIONED_PRODUCT_CHARACTERISTIC';
+  if (id in formulas) return 'DERIVED_PRELIMINARY_SOURCE_QUANTITY';
+  return 'PROJECT_TECHNICAL_VALUE_OR_SOURCE_GAP';
+}
 const verified = { kind: 'equals', parameterId: 'pvc15_system_profile', value: PVC15_SYSTEM.verified };
 const formulas: Readonly<Record<string, { expression: string; when: Record<string, unknown>; explanation: string }>> = {
   pvc15_membrane_consumption_m2: { expression: 'area_m2*1.15', when: verified,
@@ -45,16 +56,27 @@ const replacedHourIds = new Set(['pvc15_preparation_worker_hours', 'pvc15_layout
 export const PVC15_MINIMAL_INPUT_DEFINITION_S2744: AutomaticOwnerDefinition = Object.freeze({
   ...parent,
   parameters: parent.parameters.filter(parameter => !replacedHourIds.has(parameter.parameter_id)).map((parameter, ordinal) => {
-    if (parameter.truth_metadata.visibility_role === 'INTERNAL_ONLY') return { ...parameter, ordinal };
+    if (parameter.truth_metadata.visibility_role === 'INTERNAL_ONLY') return { ...parameter, ordinal,
+      truth_metadata: { ...parameter.truth_metadata, input_origin_class: 'COMPILER_DERIVED_SERVICE_FIELD' } };
     const id = parameter.parameter_id;
     const formula = formulas[id];
     const selection = selections[id];
-    const applicationValue = formula || selection || id === 'pvc15_system_profile';
+    const applicationValue = formula || selection;
     const guide = parameter.truth_metadata.guide as Record<string, unknown>;
-    return { ...parameter, ordinal, truth_metadata: {
+    const when = formula?.when ?? (id === 'reinforced_membrane_designation' ? verified : null);
+    const unknownOptions = ['pvc15_base', 'pvc15_system_profile', 'detail_membrane_mode', 'pvc15_joint_transition_scope'].includes(id)
+      ? [...(parameter.constraints_json?.values as string[] ?? []), 'Не знаю — требуется уточнение по объекту'] : null;
+    return { ...parameter, ordinal,
+      constraints_json: { ...parameter.constraints_json, ...(when ? { requiredWhen: when } : {}), ...(unknownOptions ? { values: unknownOptions } : {}) },
+      truth_metadata: {
       ...parameter.truth_metadata,
+      input_origin_class: parameterOrigin(id),
+      ...(unknownOptions ? { unknown_enum_values: ['Не знаю — требуется уточнение по объекту'] } : {}),
+      ...(formula ? { derived_from: ['area_m2', 'pvc15_system_profile', ...(id === 'pvc15_separation_area_m2' ? ['pvc15_base'] : [])] } : {}),
+      ...(selection ? { derived_from: selection.inputs } : {}),
+      ...(selection ? { visibility_role: 'USER_DERIVED_READONLY', catalogue_owned_lookup_v1: true } : {}),
       value_source_role: customer.has(id) ? parameter.truth_metadata.value_source_role
-        : applicationValue ? 'VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE' : 'NORM_REQUIRED_BUT_PROJECT_SELECTED',
+        : selection ? 'BACKEND_DERIVED' : applicationValue ? 'VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE' : 'NORM_REQUIRED_BUT_PROJECT_SELECTED',
       ...(applicationValue ? { runtime_profile_classification: formula ? PRELIMINARY_SOURCE_FORMULA : CATALOGUE_SOURCE_SELECTION } : {}),
       ...(formula ? { preliminary_value_formula_v1: { version: 'canonical-preliminary-parameter-formula:v1', expression: formula.expression, when: formula.when } } : {}),
       ...(selection ? { derived_exact_lookup_v1: { version: 'canonical-derived-exact-lookup:v1', inputParameterIds: selection.inputs, rows: selection.rows, interpolation: 'FORBIDDEN' } } : {}),
@@ -82,7 +104,7 @@ export const PVC15_MINIMAL_INPUT_DEFINITION_S2744: AutomaticOwnerDefinition = Ob
         labourTimeNormClaimed: false }, row_sha256: '' };
     return { ...result, row_sha256: estimateDeterministicHash(result) };
   }),
-  runtimeInput: Object.freeze({ ...parent.runtimeInput, pvc15_system_profile: PVC15_SYSTEM.verified }),
-  runtimeClassification: Object.freeze({ ...parent.runtimeClassification, pvc15_system_profile: 'ASSUMPTION' as const }),
-  runtimeSourceIds: Object.freeze({ ...parent.runtimeSourceIds, pvc15_system_profile: [PVC15_MINIMAL_SOURCE_S2744.sourceId] }),
+  runtimeInput: parent.runtimeInput,
+  runtimeClassification: parent.runtimeClassification,
+  runtimeSourceIds: parent.runtimeSourceIds,
 });

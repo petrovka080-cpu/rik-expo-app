@@ -14,14 +14,14 @@ export function pvc15MinimalCustomerInputPublishConfigS2744(parent: { definition
   const member = pack.members.find(value => value.variant === variant);
   assert(member, 'EXISTING_PVC15_MEMBER_REQUIRED');
   const prior = pvc15FieldTransitionPublishConfigS2743(parent);
-  const knownIds = new Set(definition.parameters.map(parameter => parameter.parameter_id));
+  const knownIds = new Set(definition.parameters.filter(parameter => parameter.truth_metadata.catalogue_owned_lookup_v1 !== true).map(parameter => parameter.parameter_id));
   const acceptanceInput = Object.fromEntries(Object.entries(pvc15AreaVariantControlInputS2743(variant === 'large_area' ? 'large_area' : 'small_area')).filter(([id]) => knownIds.has(id)));
   const sourcePackHash = createHash('sha256').update(readFileSync(packPath)).digest('hex');
   const contract = `${pack.contract}:${variant}`;
   return { ...prior, contract, stopCode: 'S2744_PVC15_MINIMAL', applicationName: `s2744-pvc15-minimal-${variant}`,
     owner: 'S2744_PVC15_MINIMAL_SINGLE_WRITER', outputRoot: resolve(`.release-runtime/r568/s27-44/pvc15-minimal-${variant}`), receiptFileStem: 'pvc15_minimal',
-    masterPath: 'C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (84).md',
-    masterSha256: '8f6c334bbb79df8227cbfd94b4a8433a39bc8b5ac1e2b7a9ff3a9aefb75473a4',
+    masterPath: 'C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (85).md',
+    masterSha256: '41bf6f20bda2fab5112b6d1f7d3b8d574e8b82ef7e6e5669fcf324aa7ba44e7f',
     catalogId: member.catalogId, sourceId: PVC15_MINIMAL_SOURCE_S2744.sourceId, normId: 'MANUFACTURER_PRELIMINARY_DEMAND_NOT_FINAL_PROJECT_NORM',
     expectedParentShape: [297, 113, 113], parameterDefinitions: definition.parameters, formulaDefinitions: definition.formulas, resourceDefinitions: definition.resources,
     shortInput: { area_m2: acceptanceInput.area_m2 }, acceptanceInput,
@@ -49,7 +49,7 @@ export function pvc15MinimalCustomerInputPublishConfigS2744(parent: { definition
       assert.equal(pack.primarySource.sha256, PVC15_MINIMAL_SOURCE_S2744.sha256);
       const compile = (submittedParameters: Record<string, unknown>) => compileAutomaticConstructionOwnerR1({ definition,
         catalogId: member.catalogId, primaryMeasureParameterId: 'area_m2', compilerVersion: contract, submittedParameters });
-      const short = await compile({ area_m2: acceptanceInput.area_m2 }), complete = await compile(acceptanceInput);
+      const short = await compile({ area_m2: acceptanceInput.area_m2, pvc15_system_profile: acceptanceInput.pvc15_system_profile }), complete = await compile(acceptanceInput);
       assert.equal(Number(short.parameters.pvc15_membrane_consumption_m2), Number(acceptanceInput.area_m2) * 1.15);
       assert.equal(Number(short.parameters.telescopic_fastener_quantity_piece), Math.ceil(Number(acceptanceInput.area_m2) * 4));
       assert(short.preliminaryNeeds.length > 0); assert(!short.rows.some(row => row.included_in_procurement));

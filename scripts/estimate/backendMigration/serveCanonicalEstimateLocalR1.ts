@@ -43,6 +43,7 @@ async function localManualPriceMigrationBindings(client: PoolClient, definitionI
 }
 import { mergeCanonicalEffectiveResourceQuantityProvenanceV1 } from "../../../src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1";
 import { stripCanonicalAutomaticPreliminaryInputsV1, canonicalAutomaticPreliminaryClassificationV1 } from '../../../src/lib/estimate/backendPlatform/canonicalPreliminaryParameterFormulaV1';
+import { readCanonicalUserCommandReplayV1 } from '../../../src/lib/estimate/backendPlatform/canonicalUserCommandIntentV1';
 import {
   canonicalApprovedBaselineParameterIsRuntimeEligible,
   canonicalApprovedBaselineRuntimeDefaultValue,
@@ -1538,6 +1539,7 @@ async function createJob(
         compatibleDefaults: compatibleDefaultPriceSnapshotIds,
       });
       const inputPayload = {
+        ...(body.commandIntentV1 == null ? {} : { commandIntentV1: body.commandIntentV1 }),
         parameters,
         currencyCode,
         priceSnapshotIds,
@@ -1586,6 +1588,19 @@ async function createJob(
           isolatedCandidateTest:
             compilationAdmission.decision.mode === "isolated_candidate_test",
         });
+      const commandTargetReleaseId = compilationAdmission.decision.releaseId;
+      if (!commandTargetReleaseId) throw Object.assign(new Error('Command target release is not admitted.'), { code: 'DEFINITION_CONTENT_NOT_ADMITTED' });
+      const commandOrganizationId = TARGET_RELEASE_ID && compilationAdmission.targetReleaseStatus === 'prepared'
+        ? currentTenantId() : organizationId;
+      const replay = await readCanonicalUserCommandReplayV1(client, {
+        ownerUserId: currentOwnerId(), organizationId: commandOrganizationId, targetReleaseId: commandTargetReleaseId,
+        operation, catalogId, parentRevisionId: parentRevisionId || null,
+        clientIdempotencyKey: idempotencyKey, persistenceIdempotencyKey, payload: inputPayload,
+      });
+      if (replay) {
+        await client.query('commit');
+        return replay;
+      }
       let created;
       if (
         TARGET_RELEASE_ID &&

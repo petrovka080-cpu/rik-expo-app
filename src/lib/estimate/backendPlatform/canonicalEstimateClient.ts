@@ -831,10 +831,12 @@ export async function getAllCanonicalEstimateRevisionRows(input: {
 
 export async function compileCanonicalEstimateAndLoad(input: {
   request: CanonicalEstimateCreateRequest;
+  consumerIntent?: boolean;
   signal?: AbortSignal | null;
   onProgress?: (job: CanonicalEstimateJobView) => void;
 }) {
-  const accepted = await createCanonicalEstimate(input.request, input.signal);
+  const accepted = await createCanonicalEstimate(input.consumerIntent ? { ...input.request,
+    commandIntentV1: { contractVersion: 'canonical-user-command-intent:v1', key: input.request.idempotencyKey } } : input.request, input.signal);
   const job = await waitForCanonicalEstimateJob({ jobId: accepted.jobId, signal: input.signal, onProgress: input.onProgress });
   const revisionId = job.resultRevisionId!;
   const [revision, rows] = await Promise.all([
@@ -846,10 +848,12 @@ export async function compileCanonicalEstimateAndLoad(input: {
 
 export async function recalculateCanonicalEstimateAndLoad(input: {
   request: CanonicalEstimateRecalculateRequest;
+  consumerIntent?: boolean;
   signal?: AbortSignal | null;
   onProgress?: (job: CanonicalEstimateJobView) => void;
 }) {
-  const accepted = await recalculateCanonicalEstimate(input.request, input.signal);
+  const accepted = await recalculateCanonicalEstimate(input.consumerIntent ? { ...input.request,
+    commandIntentV1: { contractVersion: 'canonical-user-command-intent:v1', key: input.request.idempotencyKey } } : input.request, input.signal);
   const job = await waitForCanonicalEstimateJob({ jobId: accepted.jobId, signal: input.signal, onProgress: input.onProgress });
   const revisionId = job.resultRevisionId!;
   const [revision, rows] = await Promise.all([

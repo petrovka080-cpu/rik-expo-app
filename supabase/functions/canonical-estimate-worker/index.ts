@@ -13,6 +13,7 @@ import {
 import { canonicalEstimateStableJson } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism.ts";
 import { canonicalManualPriceMigrationBindings, assertCanonicalStoredManualPriceReleaseMigration } from "../../../src/lib/estimate/backendPlatform/canonicalManualPriceReleaseMigration.ts";
 import { mergeCanonicalEffectiveResourceQuantityProvenanceV1 } from "../../../src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1.ts";
+import { stripCanonicalAutomaticPreliminaryInputsV1 } from '../../../src/lib/estimate/backendPlatform/canonicalPreliminaryParameterFormulaV1.ts';
 import { canonicalApprovedBaselineRuntimeParameters } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline.ts";
 import {
   CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION,
@@ -327,6 +328,7 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
   }
   const snapshotIds = Array.isArray(job.input_payload?.priceSnapshotIds) ? job.input_payload.priceSnapshotIds : [];
   const prices = await loadPriceItems(admin, definition.id, snapshotIds);
+  confirmedParameters = { ...baselineParameters, ...stripCanonicalAutomaticPreliminaryInputsV1(parameterResult.data ?? [], confirmedParameters, effectiveUserParameters) };
   const compiled = await compileCanonicalEstimateCore({
     operation: job.operation as "compile" | "recalculate",
     compilerVersion: WORKER_VERSION,
@@ -353,7 +355,8 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
   const parameters = compiled.parameters;
   effectiveUserParameters = mergeCanonicalEffectiveResourceQuantityProvenanceV1({
     parameterDefinitions: parameterResult.data ?? [], resourceDefinitions: resources, formulaDefinitions: formulaResult.data ?? [],
-    userParameters: effectiveUserParameters, derivedParameters: compiled.derivedParameters,
+    userParameters: effectiveUserParameters,
+    derivedParameters: stripCanonicalAutomaticPreliminaryInputsV1(parameterResult.data ?? [], compiled.derivedParameters, effectiveUserParameters),
   });
   const currencyCode = compiled.totals.currencyCode;
   const baselineAssumptions = Object.fromEntries(Object.entries(baselineParameters)

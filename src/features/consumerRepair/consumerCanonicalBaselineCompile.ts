@@ -2495,6 +2495,7 @@ export async function compileConsumerCanonicalBaseline(input: {
   }
   const parameters = baseline.parameters;
   const compileInput = {
+    consumerIntent: true,
     request: {
       idempotencyKey: `consumer-baseline-${stableId(`${input.draftId}|${catalog.releaseId}|${catalog.catalogId}|${input.prompt}|${JSON.stringify(parameters)}`)}`,
       catalogId: catalog.catalogId,

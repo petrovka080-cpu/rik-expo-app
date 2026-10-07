@@ -29,6 +29,7 @@ export type CanonicalEstimateParameterInputValue =
 
 export type CanonicalEstimateCreateRequest = {
   idempotencyKey: string;
+  commandIntentV1?: { contractVersion: 'canonical-user-command-intent:v1'; key: string };
   catalogId: string;
   organizationId?: string | null;
   /** Exact user-authored request. Required by the R6 consumer compile path. */

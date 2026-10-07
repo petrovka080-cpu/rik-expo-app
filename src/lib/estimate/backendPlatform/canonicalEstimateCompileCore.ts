@@ -338,13 +338,25 @@ function resolveCanonicalDerivedExactLookups(
     }
 
     const currentValue = parameters[definition.parameter_id];
-    if (currentValue != null && currentValue !== "") continue;
+    const catalogueOwned = definition.truth_metadata?.catalogue_owned_lookup_v1 === true;
+    if (catalogueOwned && definition.truth_metadata?.visibility_role !== 'USER_DERIVED_READONLY') {
+      throw compilerError(`catalogue lookup ownership invalid ${definition.parameter_id}`, 'DEFINITION_INTEGRITY_FAILED');
+    }
+    if (!catalogueOwned && currentValue != null && currentValue !== "") continue;
     const actualInputs = inputParameterIds.map((parameterId) => parameters[parameterId]);
-    if (actualInputs.some((value) => value == null || value === "")) continue;
+    if (actualInputs.some((value) => value == null || value === "")) {
+      if (catalogueOwned && currentValue != null) throw compilerError(`Характеристика ${definition.parameter_id} требует выбранной системы.`, 'SOURCE_MANAGED_PARAMETER_OVERRIDE_NOT_ALLOWED');
+      continue;
+    }
     const actualKey = JSON.stringify(actualInputs.map((value, index) =>
       normalizedExactLookupValue(value, definitionsById.get(inputParameterIds[index]!))));
     if (normalizedRows.has(actualKey)) {
+      if (catalogueOwned && currentValue != null && currentValue !== normalizedRows.get(actualKey)) {
+        throw compilerError(`Характеристику ${definition.parameter_id} задаёт паспорт выбранного изделия.`, 'SOURCE_MANAGED_PARAMETER_OVERRIDE_NOT_ALLOWED');
+      }
       parameters[definition.parameter_id] = normalizedRows.get(actualKey);
+    } else if (catalogueOwned && currentValue != null) {
+      throw compilerError(`Для характеристики ${definition.parameter_id} не подтверждён совместимый паспорт.`, 'SOURCE_MANAGED_PARAMETER_OVERRIDE_NOT_ALLOWED');
     }
   }
   return parameters;
@@ -833,10 +845,24 @@ export async function compileCanonicalEstimateCore(
       baselineContext: { catalogId: input.catalogId },
     },
   );
+  const explicitUnknownValues: Record<string, unknown> = {};
+  const calculationInputs = { ...initiallyValidatedParameters };
+  for (const definition of input.parameterDefinitions) {
+    const unknownValues = definition.truth_metadata?.unknown_enum_values;
+    if (unknownValues == null) continue;
+    if (definition.value_type !== 'enum' || !Array.isArray(unknownValues) || unknownValues.length > 8
+      || unknownValues.some(value => typeof value !== 'string' || !(definition.constraints_json?.values as unknown[] | undefined)?.includes(value))) {
+      throw compilerError(`unknown choice policy invalid ${definition.parameter_id}`, 'DEFINITION_INTEGRITY_FAILED');
+    }
+    if (unknownValues.includes(calculationInputs[definition.parameter_id])) {
+      explicitUnknownValues[definition.parameter_id] = calculationInputs[definition.parameter_id];
+      delete calculationInputs[definition.parameter_id];
+    }
+  }
   const parameters = validateCanonicalEstimateParameters(
     input.parameterDefinitions,
     resolveCanonicalPreliminaryParameterFormulasV1(input.parameterDefinitions,
-      resolveCanonicalDerivedExactLookups(input.parameterDefinitions, initiallyValidatedParameters)),
+      resolveCanonicalDerivedExactLookups(input.parameterDefinitions, calculationInputs)),
     {
       confirmedParameters: {},
       baselineContext: { catalogId: input.catalogId },
@@ -1475,6 +1501,9 @@ export async function compileCanonicalEstimateCore(
     currencyCode: input.currencyCode,
   };
   const priceSnapshotIds = input.priceSnapshotIds ?? [];
+  // Keep the user's explicit "I don't know" in the immutable snapshot. All
+  // branch/quantity evaluation above treated it as unknown, never false/zero.
+  Object.assign(parameters, explicitUnknownValues);
   return {
     parameters,
     derivedParameters,

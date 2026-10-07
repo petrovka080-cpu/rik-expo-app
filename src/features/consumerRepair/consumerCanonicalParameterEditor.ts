@@ -814,6 +814,7 @@ export async function recalculateConsumerCanonicalEstimate(input: {
     revision: await getCanonicalEstimateRevision(recoveredRevision.revisionId),
     rows: await getAllCanonicalEstimateRevisionRows({ revisionId: recoveredRevision.revisionId }),
   } : await recalculateCanonicalEstimateAndLoad({
+    consumerIntent: true,
     request: {
       idempotencyKey: canonicalEstimateRecalculateIdempotencyKey({
         parentRevisionId: revision.revisionId,
@@ -959,6 +960,7 @@ export async function recalculateConsumerCanonicalCatalogSelection(input: {
   }
   input.assertMutationSource?.();
   const result = await recalculateCanonicalEstimateAndLoad({
+    consumerIntent: true,
     request: {
       idempotencyKey: `consumer-line-catalog-${estimateDeterministicHash({
         parent: revision.revisionId,
@@ -1070,6 +1072,7 @@ export async function recalculateConsumerCanonicalCatalogAddition(input: {
   };
   input.assertMutationSource?.();
   const result = await recalculateCanonicalEstimateAndLoad({
+    consumerIntent: true,
     request: {
       idempotencyKey: `consumer-catalog-add-${estimateDeterministicHash({
         parentRevisionId: revision.revisionId,
