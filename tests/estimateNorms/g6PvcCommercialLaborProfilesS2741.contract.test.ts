@@ -9,7 +9,17 @@ const withoutPresentation = (rows: readonly Record<string, unknown>[]) => rows.m
   const { row_sha256: _rowHash, need_sha256: _needHash, ...rest } = row;
   const trace = rest.calculation_trace as Record<string, unknown> | undefined;
   const graph = (trace?.resourceGraph ?? rest.resource_graph) as Record<string, unknown>;
-  const { publicResourcePresentationV1: _display, ...sourceGraph } = graph;
+  const { publicResourcePresentationV1: _display, titleSpecificationParameterLabelsRu: labels, ...sourceGraph } = graph;
+  if (labels != null) {
+    expect(rest.row_id).toBe('transition:material:tape');
+    expect(labels).toEqual({ tape_width_mm: 'Ширина (мм)', tape_thickness_mm: 'Толщина (мм)', tape_roll_length_m: 'Длина рулона (м)' });
+    const labelledSuffix = / — Ширина \(мм\): ([^,]+), Толщина \(мм\): ([^,]+), Длина рулона \(м\): ([^,]+)$/u;
+    expect(rest.title_ru).toMatch(labelledSuffix);
+    // Remove only the exact approved annotations. The complete comparison
+    // below still detects changes to specification values, quantities,
+    // physical supply, engineering traces and payment ownership.
+    rest.title_ru = String(rest.title_ru).replace(labelledSuffix, ' — $1, $2, $3');
+  }
   return trace ? { ...rest, calculation_trace: { ...trace, resourceGraph: sourceGraph } } : { ...rest, resource_graph: sourceGraph };
 });
 
