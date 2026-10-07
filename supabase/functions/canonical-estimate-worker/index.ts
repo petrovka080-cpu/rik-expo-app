@@ -11,6 +11,7 @@ import {
   compileCanonicalEstimateCore,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts";
 import { canonicalEstimateStableJson } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism.ts";
+import { canonicalManualPriceMigrationBindings, assertCanonicalStoredManualPriceReleaseMigration } from "../../../src/lib/estimate/backendPlatform/canonicalManualPriceReleaseMigration.ts";
 import { mergeCanonicalEffectiveResourceQuantityProvenanceV1 } from "../../../src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1.ts";
 import { canonicalApprovedBaselineRuntimeParameters } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline.ts";
 import {
@@ -296,7 +297,7 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
   if (job.operation === "recalculate") {
     const { data: parent, error: parentError } = await admin
       .from("estimate_revision")
-      .select("release_id,catalog_id,input_parameters,amendment_contract,source_request_text,source_request_hash,primary_measure_parameter_id,revision_contract_version")
+      .select("release_id,catalog_id,input_parameters,amendment_contract,source_request_text,source_request_hash,primary_measure_parameter_id,revision_contract_version,definition_version_id,currency_code")
       .eq("id", job.parent_revision_id)
       .single();
     if (parentError || parent.catalog_id !== job.catalog_id) {
@@ -309,6 +310,21 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
     parentRevision = parent;
   }
   let effectiveUserParameters = { ...inheritedUserParameters, ...submittedParameters };
+  if (parentRevision && parentRevision.release_id !== release.id) {
+    const [oldResources, oldFormulas, oldParameters] = await Promise.all([
+      admin.from("estimate_resource_spec").select("*").eq("definition_version_id", parentRevision.definition_version_id),
+      admin.from("estimate_formula_graph").select("*").eq("definition_version_id", parentRevision.definition_version_id),
+      admin.from("estimate_parameter_definition").select("*").eq("definition_version_id", parentRevision.definition_version_id),
+    ]);
+    if (oldResources.error || oldFormulas.error || oldParameters.error) throw Object.assign(new Error("parent price binding load failed"), {code: "DEFINITION_LOAD_FAILED"});
+    assertCanonicalStoredManualPriceReleaseMigration({
+      parentOverrides: parentRevision.amendment_contract?.rowOverrides ?? {}, parentCustomRows: parentRevision.amendment_contract?.customRows ?? [],
+      requestedOverrides: job.input_payload?.rowOverrides ?? {}, requestedCustomRows: job.input_payload?.customRows ?? [],
+      parentCurrency: parentRevision.currency_code, requestedCurrency: String(job.input_payload?.currencyCode ?? ""),
+      fromBindings: canonicalManualPriceMigrationBindings({resources: oldResources.data ?? [], formulas: oldFormulas.data ?? [], parameters: oldParameters.data ?? []}),
+      toBindings: canonicalManualPriceMigrationBindings({resources: resourceResult.data ?? [], formulas: formulaResult.data ?? [], parameters: parameterResult.data ?? []}),
+    });
+  }
   const snapshotIds = Array.isArray(job.input_payload?.priceSnapshotIds) ? job.input_payload.priceSnapshotIds : [];
   const prices = await loadPriceItems(admin, definition.id, snapshotIds);
   const compiled = await compileCanonicalEstimateCore({

@@ -54,6 +54,27 @@ beforeEach(() => {
 });
 
 describe("consumer exact release migration", () => {
+  it("carries only proved unchanged stored prices through parameter migration after exact consent", async () => {
+    const rowOverrides = { membrane: { unitPrice: 75, provenance: { kind: "manual" as const, reason: "approved" } } };
+    const priced = { ...revision, amendmentContract: { ...revision.amendmentContract, rowOverrides } };
+    const manualPriceMigrationBindings = { membrane: "b".repeat(64) };
+    getCatalog.mockImplementation(async (_id, _signal, releaseId) => ({ ...(releaseId ? oldCatalog : target), manualPriceMigrationBindings }));
+    jest.mocked(getCanonicalEstimateRevision).mockResolvedValue(priced);
+    jest.mocked(recalculateCanonicalEstimateAndLoad).mockRejectedValue(new Error("backend reached"));
+    const confirm = jest.fn().mockResolvedValue(true), persist = jest.fn(), before = JSON.stringify(priced);
+    await expect(recalculateAndPersistConsumerCanonicalEstimate({revisionId:priced.revisionId,draftId:"draft",problemText:priced.sourceRequestText!,patches:[{operation:"update_param",paramKey:"area_m2",rawValue:"101"}],confirmReleaseMigration:confirm,persist})).rejects.toThrow("backend reached");
+    expect(confirm).toHaveBeenCalled();
+    expect(jest.mocked(recalculateCanonicalEstimateAndLoad).mock.calls[0][0].request).toMatchObject({rowOverrides,releaseMigration:migration});
+    expect(JSON.stringify(priced)).toBe(before);expect(persist).not.toHaveBeenCalled();
+  });
+
+  it.each([undefined, "c".repeat(64)])("blocks a stored price without matching source proof (%s)", async token => {
+    const priced = {...revision,amendmentContract:{...revision.amendmentContract,rowOverrides:{membrane:{unitPrice:75,provenance:{kind:"manual" as const}}}}};
+    getCatalog.mockImplementation(async (_id,_signal,releaseId)=>({... (releaseId ? oldCatalog : target),manualPriceMigrationBindings:releaseId?{membrane:"b".repeat(64)}:token?{membrane:token}:undefined}));
+    const confirm=jest.fn().mockResolvedValue(true);
+    await expect(resolveConsumerCanonicalRecalculationCatalog({revision:priced,confirmReleaseMigration:confirm})).rejects.toMatchObject({code:"RELEASE_MIGRATION_ROW_BINDING_REVIEW_REQUIRED"});
+    expect(confirm).not.toHaveBeenCalled();expect(recalculateCanonicalEstimateAndLoad).not.toHaveBeenCalled();
+  });
   it("uses the current schema after explicit exact consent and leaves the parent unchanged", async () => {
     const before = JSON.stringify(revision);
     const confirm = jest.fn().mockResolvedValue(true);

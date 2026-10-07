@@ -1,4 +1,5 @@
 import { getCanonicalEstimateCatalogItem, getCanonicalEstimateRevisionHistory } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
+import {canonicalStoredManualPricesCanMigrate} from '../../lib/estimate/backendPlatform/canonicalManualPriceReleaseMigration';
 import {
   CanonicalEstimateApiError,
   type CanonicalEstimateCatalogItem,
@@ -112,8 +113,8 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
     });
   }
   if (input.hasNewRowAmendments
-    || Object.keys(input.revision.amendmentContract.rowOverrides).length > 0
-    || input.revision.amendmentContract.customRows.length > 0) {
+    || !canonicalStoredManualPricesCanMigrate({rowOverrides:input.revision.amendmentContract.rowOverrides,
+      customRows:input.revision.amendmentContract.customRows,fromBindings:parentCatalog.manualPriceMigrationBindings,toBindings:catalog.manualPriceMigrationBindings})) {
     throw new CanonicalEstimateApiError("Переход к новой версии остановлен: совместимость ручных количеств, цен и строк ещё не подтверждена. Исходная смета и все правки сохранены. Новую правку строки можно выполнить после отдельного перехода через параметры.", {
       code: "RELEASE_MIGRATION_ROW_BINDING_REVIEW_REQUIRED", httpStatus: 409,
     });

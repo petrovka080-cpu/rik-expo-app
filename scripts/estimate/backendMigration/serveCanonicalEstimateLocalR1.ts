@@ -31,6 +31,16 @@ import {
   compileCanonicalEstimateCore,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
 import { canonicalEstimateStableJson } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism";
+import { canonicalManualPriceMigrationBindings, assertCanonicalStoredManualPriceReleaseMigration } from "../../../src/lib/estimate/backendPlatform/canonicalManualPriceReleaseMigration";
+
+async function localManualPriceMigrationBindings(client: PoolClient, definitionId: string): Promise<Record<string, string>> {
+  const [resources, formulas, parameters] = await Promise.all([
+    client.query("select * from public.estimate_resource_spec where definition_version_id=$1", [definitionId]),
+    client.query("select * from public.estimate_formula_graph where definition_version_id=$1", [definitionId]),
+    client.query("select * from public.estimate_parameter_definition where definition_version_id=$1", [definitionId]),
+  ]);
+  return canonicalManualPriceMigrationBindings({resources: resources.rows, formulas: formulas.rows, parameters: parameters.rows});
+}
 import { mergeCanonicalEffectiveResourceQuantityProvenanceV1 } from "../../../src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1";
 import {
   canonicalApprovedBaselineParameterIsRuntimeEligible,
@@ -2079,7 +2089,7 @@ async function compileClaimedJob(
       await client.query(
         `select release_id,catalog_id,input_parameters,amendment_contract,
         source_request_text,source_request_hash,primary_measure_parameter_id,
-        revision_contract_version
+        revision_contract_version,definition_version_id,currency_code
        from public.estimate_revision where id=$1`,
         [job.parent_revision_id],
       )
@@ -2140,6 +2150,21 @@ async function compileClaimedJob(
     }))),
   );
   const currencyCode = String(payload.currencyCode ?? "");
+  if (parentRevision && parentRevision.release_id !== job.target_release_id) {
+    const [parentResources, parentFormulas, parentParameters] = await Promise.all([
+      client.query("select * from public.estimate_resource_spec where definition_version_id=$1", [parentRevision.definition_version_id]),
+      client.query("select * from public.estimate_formula_graph where definition_version_id=$1", [parentRevision.definition_version_id]),
+      client.query("select * from public.estimate_parameter_definition where definition_version_id=$1", [parentRevision.definition_version_id]),
+    ]);
+    assertCanonicalStoredManualPriceReleaseMigration({
+      parentOverrides: parentRevision.amendment_contract?.rowOverrides ?? {},
+      parentCustomRows: parentRevision.amendment_contract?.customRows ?? [],
+      requestedOverrides: payload.rowOverrides ?? {}, requestedCustomRows: payload.customRows ?? [],
+      parentCurrency: parentRevision.currency_code, requestedCurrency: currencyCode,
+      fromBindings: canonicalManualPriceMigrationBindings({resources: parentResources.rows, formulas: parentFormulas.rows, parameters: parentParameters.rows}),
+      toBindings: canonicalManualPriceMigrationBindings({resources: resourceRows, formulas, parameters: parameterDefinitions}),
+    });
+  }
   const priceSnapshotIds = Array.isArray(payload.priceSnapshotIds)
     ? payload.priceSnapshotIds.filter(
         (value): value is string => typeof value === "string",
@@ -3767,6 +3792,7 @@ async function localParameterSessionSnapshot(revisionId: string) {
         definitionVersion: definition.definition_version,
         applicability: definition.applicability,
         professionalMetadata: definition.source_metadata,
+        manualPriceMigrationBindings: await localManualPriceMigrationBindings(client, String(definition.id)),
         parameterSchema: localParameterSessionSchema(
           String(identity.catalog_id),
           parameters,
@@ -5452,6 +5478,7 @@ async function route(
         definitionVersion: definition.definition_version,
         applicability: definition.applicability,
         professionalMetadata: definition.source_metadata,
+        manualPriceMigrationBindings: await localManualPriceMigrationBindings(client, String(definition.id)),
         contentAdmission,
         parameterSchema: parameters.map((parameter) => {
           const truth =

@@ -27,6 +27,7 @@ import {
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper.ts";
 import { canonicalPreliminaryNeedEvidenceFromStorage, decodeCanonicalPreliminaryNeedRowSegment } from "../../../src/lib/estimate/backendPlatform/canonicalEstimatePreliminaryNeedTransport.ts";
 import { canonicalEstimateStableJson } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism.ts";
+import { canonicalManualPriceMigrationBindings } from "../../../src/lib/estimate/backendPlatform/canonicalManualPriceReleaseMigration.ts";
 
 const FUNCTION_NAME = "canonical-estimate";
 const MAX_ROWS_PAGE = 500;
@@ -1601,6 +1602,12 @@ async function readCatalogItem(requester: ReturnType<typeof createClient>, rawCa
     .eq("definition_version_id", definition.id)
     .order("ordinal", { ascending: true });
   if (parameterError) normalizeDbError(parameterError);
+  const [resources, formulas] = await Promise.all([
+    requester.from("estimate_resource_spec").select("*").eq("definition_version_id", definition.id),
+    requester.from("estimate_formula_graph").select("*").eq("definition_version_id", definition.id),
+  ]);
+  if (resources.error) normalizeDbError(resources.error);
+  if (formulas.error) normalizeDbError(formulas.error);
   return {
     apiVersion: ESTIMATE_PLATFORM_API_VERSION,
     item: {
@@ -1613,6 +1620,7 @@ async function readCatalogItem(requester: ReturnType<typeof createClient>, rawCa
       definitionVersion: definition.definition_version,
       applicability: definition.applicability,
       professionalMetadata: definition.source_metadata,
+      manualPriceMigrationBindings: canonicalManualPriceMigrationBindings({resources: resources.data ?? [], formulas: formulas.data ?? [], parameters}),
       contentAdmission,
       parameterSchema: parameters.map((parameter) => {
         const truth = parameter.truth_metadata && typeof parameter.truth_metadata === "object"

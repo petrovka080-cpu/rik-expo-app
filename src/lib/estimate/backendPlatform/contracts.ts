@@ -701,6 +701,8 @@ export type CanonicalEstimateCatalogItem = {
   definitionVersion: number;
   applicability: Record<string, unknown>;
   professionalMetadata: Record<string, unknown>;
+  /** Read-only source hashes; a matching price owner never authorizes new row edits. */
+  manualPriceMigrationBindings?: Record<string,string>;
   contentAdmission?: AdmissionDecision;
   parameterSchema: Array<{
     parameterId: string;
