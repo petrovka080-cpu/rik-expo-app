@@ -29,28 +29,6 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
         </Text>
         <Text style={styles.title} testID="request-estimate-selected-work-title">{viewModel.title}</Text>
         <Text style={styles.summary} numberOfLines={2}>{viewModel.summary}</Text>
-        <View style={styles.workProcess} testID="request-estimate-work-process">
-          <Text style={styles.meta}>Процесс работ</Text>
-          {viewModel.workProcessGroups?.length ? viewModel.workProcessGroups.map(group => (
-            <View key={group.groupId} style={styles.visibleLines}>
-              {(viewModel.workProcessGroups?.length ?? 0) > 1 ? <Text style={styles.visibleLine}>{group.groupTitleRu}</Text> : null}
-              {group.sequenceUnspecified ? <Text style={styles.legal}>Сохранённые подработы; последовательность выполнения ещё не задана.</Text> : null}
-              {group.operations.map((operation, index) => (
-                <View key={operation.operationId}>
-                  <Text style={styles.visibleLine}
-                    testID={`request-estimate-process-${group.groupId}-${operation.operationId}`}>
-                    {`${group.sequenceUnspecified ? '•' : `${index + 1}.`} ${operation.operationTitleRu}`}
-                  </Text>
-                  {operation.sharedResources?.map(resource => (
-                    <Text key={resource.rowId} style={styles.legal}>
-                      {`${resource.titleRu} — одна строка ресурса для нескольких подработ`}
-                    </Text>
-                  ))}
-                </View>
-              ))}
-            </View>
-          )) : <Text style={styles.legal}>Подработы этой сметы ещё не раскрыты в сохранённом составе.</Text>}
-        </View>
         {viewModel.visibleLines.length > 0 ? (
           <View style={styles.visibleLines} testID="request-estimate-visible-lines">
             <Text style={styles.meta}>Ключевые рассчитанные позиции:</Text>
@@ -112,7 +90,6 @@ function pluralizeRu(count: number, one: string, few: string, many: string): str
 }
 
 const styles = StyleSheet.create({
-  workProcess: { gap: 6, borderLeftWidth: 2, borderLeftColor: "#0F766E", paddingLeft: 10 },
   card: {
     gap: 8,
   },

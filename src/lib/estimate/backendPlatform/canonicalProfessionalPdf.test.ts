@@ -146,9 +146,9 @@ describe("R4-A6 canonical professional PDF", () => {
     });
     expect(projection.html).toContain(label);
     expect(projection.html).not.toContain("HDPE_BUTT_FUSION_OPEN_TRENCH");
-    expect(projection.html).toContain('<h2>Процесс работ</h2>');
-    expect(projection.html).toContain('<li>Монтаж трубы, фасонных частей, арматуры и камер</li>');
-    expect(projection.html).toContain('Сохранённые подработы; последовательность выполнения ещё не задана.');
+    expect(projection.html).not.toContain('<h2>Процесс работ</h2>');
+    expect(projection.html).not.toContain('<li>Монтаж трубы, фасонных частей, арматуры и камер</li>');
+    expect(projection.html).not.toContain('Сохранённые подработы; последовательность выполнения ещё не задана.');
     expect(projection.html).not.toContain('Подработы этой сметы ещё не раскрыты');
     expect(typeof source.title_ru).toBe("string");
     expect(publicBoqDisplayNameRu({ sourceNameRu: String(source.title_ru), rowType: "work" }))
@@ -168,7 +168,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-43-unique-specifications-template15");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-44-without-process-block-template16");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,
@@ -419,7 +419,7 @@ describe("R4-A6 canonical professional PDF", () => {
     for (const title of ["CONCRETE_SUPPLY", "CURING_LABOUR", "PLACEMENT_PUMP", "CURING_WATER"]) expect(projection.html.match(new RegExp(title, "gu"))).toHaveLength(1);
   });
 
-  it("shows the saved work process before the resources for any group without adding costs or changing saved rows", () => {
+  it("omits the work process block while preserving subwork sections, costs and saved rows", () => {
     const source = rows(3);
     const before = buildCanonicalProfessionalPdfProjection({ revision: revision(3), rows: source, workTitleRu: 'Монтаж трубопровода' });
     for (const [index, title] of ['Прокладка труб', 'Сборка соединений', 'Испытания'].entries()) {
@@ -431,19 +431,19 @@ describe("R4-A6 canonical professional PDF", () => {
     }
     const snapshot = JSON.stringify(source);
     const result = buildCanonicalProfessionalPdfProjection({ revision: revision(3), rows: source, workTitleRu: 'Монтаж трубопровода' });
-    expect(result.html).toContain('<h2>Процесс работ</h2>');
-    expect(result.html).toContain('<ol><li>Прокладка труб</li><li>Сборка соединений</li><li>Испытания</li></ol>');
+    expect(result.html).not.toContain('<h2>Процесс работ</h2>');
+    expect(result.html).not.toContain('<ol><li>Прокладка труб</li><li>Сборка соединений</li><li>Испытания</li></ol>');
     expect(result.html).not.toContain('<h3>Монтаж трубопровода</h3>');
     expect(result.html).not.toContain('<strong>Монтаж трубопровода — ');
     expect(result.html).toContain('<strong>Сборка соединений</strong>');
-    expect(result.html.indexOf('<h2>Процесс работ</h2>')).toBeLessThan(result.html.indexOf('<table class="client">'));
+    expect(result.html).toContain('<table class="client">');
     expect(result.categoryTotals).toEqual(before.categoryTotals);
     expect(result.rowCount).toBe(before.rowCount);
     expect(result.pricedRowCount).toBe(before.pricedRowCount);
     expect(JSON.stringify(source)).toBe(snapshot);
   });
 
-  it('references a shared machine in both subworks while retaining one priced resource and escaping its title', () => {
+  it('shows a shared machine once without repeated process references, preserving its price and escaping its title', () => {
     const source = rows(1);
     source[0]!.title_ru = 'Сварочный аппарат <PP-R>';
     source[0]!.category = 'equipment';
@@ -455,9 +455,10 @@ describe("R4-A6 canonical professional PDF", () => {
     const snapshot = JSON.stringify(source);
     const projection = buildCanonicalProfessionalPdfProjection({ revision: revision(1), rows: source, workTitleRu: 'Монтаж трубы' });
     const baseline = buildCanonicalProfessionalPdfProjection({ revision: revision(1), rows: [{ ...source[0]!, calculation_trace: {} }], workTitleRu: 'Монтаж трубы' });
-    expect(projection.html).toContain('<li>Прямые стыки<div class="muted">');
-    expect(projection.html).toContain('<li>Фитинги узлов<div class="muted">');
-    expect(projection.html.match(/одна строка ресурса для нескольких подработ/gu)).toHaveLength(2);
+    expect(projection.html).not.toContain('<li>Прямые стыки<div class="muted">');
+    expect(projection.html).not.toContain('<li>Фитинги узлов<div class="muted">');
+    expect(projection.html).not.toContain('одна строка ресурса для нескольких подработ');
+    expect(projection.html.match(/Сварочный аппарат &lt;PP-R&gt;/gu)).toHaveLength(1);
     expect(projection.html).toContain('Сварочный аппарат &lt;PP-R&gt;');
     expect(projection.html).not.toContain('<PP-R>');
     expect(projection.rowCount).toBe(1);

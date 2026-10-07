@@ -11,10 +11,10 @@ import {
   type CanonicalArtifactRevision,
   type CanonicalArtifactRow,
 } from "./canonicalEstimateArtifactContract";
-import { canonicalEstimateOperationReference, canonicalEstimateWorkProcess } from "./canonicalEstimateOperationComposition";
+import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-43-unique-specifications-template15" as const;
+  "canonical-professional-pdf.r4-a13-s27-44-without-process-block-template16" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -291,13 +291,6 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     const reference = operation(row);
     return reference ? [reference.groupId] : [];
   })).size > 1;
-  const workProcess = canonicalEstimateWorkProcess(compositionRows.map(row => ({ rowId: String(row.row_id), operation: operation(row),
-    titleRu: canonicalArtifactVisibleRowTitle(row, parameters), category: String(row.category),
-    costTreatment: nullableText(objectValue(objectValue(row.calculation_trace).resourceGraph).costTreatment) ?? undefined,
-  })), workTitleRu);
-  const workProcessHtml = `<section class="work-process"><h2>Процесс работ</h2>${workProcess.length
-    ? workProcess.map(group => `${workProcess.length > 1 ? `<h3>${escapeCanonicalArtifactHtml(group.groupTitleRu)}</h3>` : ''}${group.sequenceUnspecified ? '<p>Сохранённые подработы; последовательность выполнения ещё не задана.</p>' : ''}<${group.sequenceUnspecified ? 'ul' : 'ol'}>${group.operations.map(step => `<li>${escapeCanonicalArtifactHtml(step.operationTitleRu)}${step.sharedResources?.map(resource => `<div class="muted">${escapeCanonicalArtifactHtml(resource.titleRu)} — одна строка ресурса для нескольких подработ</div>`).join('') ?? ''}</li>`).join("")}</${group.sequenceUnspecified ? 'ul' : 'ol'}>`).join("")
-    : "<p>Подработы этой сметы ещё не раскрыты в сохранённом составе.</p>"}</section>`;
   // A resource from a different operation must never appear beneath the
   // preceding operation's completion criterion. Preserve source order within
   // each group and the order in which its first resource appears.
@@ -399,7 +392,6 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     <div class="summary"><div><strong>Позиций состава</strong><br>${compositionRows.length}</div><div><strong>Количество известно</strong><br>${rows.length}; ждут источник ${preliminaryNeeds.length}</div><div><strong>${pricedSummary}</strong></div></div>
     <div class="notice">${priceNotice}</div>
     ${technologyChecks.map(check => `<div class="notice"><strong>Технология требует уточнения.</strong> ${escapeCanonicalArtifactHtml(check.messageRu)} Закупочная ведомость пока не готова.</div>`).join("")}
-    ${workProcessHtml}
     <table class="client"><thead><tr><th>№</th><th>Наименование и спецификация</th><th>Категория</th><th>Ед.</th><th>Количество</th><th>Цена за единицу</th><th>Сумма</th></tr></thead><tbody>${renderedComposition}</tbody></table>
     <table class="totals"><tbody>${totalRows}<tr><th>Неполные цены</th><td>${missingPriceRowCount}</td></tr><tr class="grand"><th>Итого</th><td>${grandTotal}</td></tr></tbody></table>
     <div class="notice"><strong>Примечание.</strong> Документ отображает сохранённые позиции, объёмы и цены. Отсутствующая цена не подменяется нулём.</div>
