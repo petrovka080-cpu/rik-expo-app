@@ -76,7 +76,7 @@ export type CanonicalEstimatePriceItem = {
   unit_price: string | number;
   snapshot_id: string;
   /** Required for an automatic price of an explicitly covered commercial package. */
-  cost_scope_id?: string;
+  cost_scope_id?: string | null;
   estimate_price_snapshot?: { route_id?: string | null } | null;
 };
 
@@ -849,9 +849,14 @@ export async function compileCanonicalEstimateCore(
   const numericRelationDependencies = canonicalNumericRelationDependencies(input.parameterDefinitions);
   const formulas = new Map(input.formulaDefinitions.map((formula) => [formula.formula_id, formula]));
   const prices = new Map<string, CanonicalEstimatePriceItem>();
+  const scopedPrices = new Map<string, CanonicalEstimatePriceItem>();
   for (const item of input.priceItems ?? []) {
     const key = `${item.price_key}:${item.unit_id}`;
     if (!prices.has(key)) prices.set(key, item);
+    if (typeof item.cost_scope_id === 'string' && item.cost_scope_id.trim()) {
+      const scopedKey = JSON.stringify([key, item.cost_scope_id]);
+      if (!scopedPrices.has(scopedKey)) scopedPrices.set(scopedKey, item);
+    }
   }
   if (!/^[A-Z]{3}$/u.test(input.currencyCode)) {
     throw compilerError("invalid currency", "PARAMETER_VALIDATION_FAILED");
@@ -873,7 +878,7 @@ export async function compileCanonicalEstimateCore(
   const overrides = new Map(Object.entries(rawOverrides));
   const commercialCoverage = planCanonicalCommercialCostCoverageV1(
     input.resourceDefinitions, parameters, new Map(input.parameterDefinitions.map(p => [p.parameter_id, p.unit_id])),
-    rawOverrides, input.formulaDefinitions,
+    rawOverrides, input.formulaDefinitions, new Map(input.parameterDefinitions.map(p => [p.parameter_id, p.value_type])),
   );
   const rows: CanonicalEstimateCompiledRow[] = [];
   const preliminaryNeeds: CanonicalEstimateCompiledPreliminaryNeed[] = [];
@@ -1167,7 +1172,10 @@ export async function compileCanonicalEstimateCore(
 
     const calculatedQuantity = manualQuantity ?? formulaQuantity!;
     const priceKey = resource.cost_owner_id || resource.row_id;
-    const price = commercialOwner ? undefined : prices.get(`${priceKey}:${resource.unit_id}`);
+    const priceItemKey = `${priceKey}:${resource.unit_id}`;
+    const price = commercialOwner ? undefined : commercialRate
+      ? scopedPrices.get(JSON.stringify([priceItemKey, commercialRate.scopeId])) ?? prices.get(priceItemKey)
+      : prices.get(priceItemKey);
     if (price && commercialRate && price.cost_scope_id !== commercialRate.scopeId
       && !Object.prototype.hasOwnProperty.call(override ?? {}, 'unitPrice')) {
       throw compilerError('Цена комплекса не соответствует подтверждённому составу расценки.', 'PRICE_SCOPE_MISMATCH');
@@ -1301,7 +1309,9 @@ export async function compileCanonicalEstimateCore(
       price_route_id: manuallyPriced ? null : price?.estimate_price_snapshot?.route_id ?? null,
       price_resolution_trace: manuallyPriced
         ? { kind: "manual_override", provenance, resolved: unitPrice != null }
-        : price ? { priceKey, resolved: true } : { priceKey, resolved: false },
+        : price ? { priceKey, resolved: true,
+          ...(commercialRate ? { costScopeId: price.cost_scope_id, costScopeMatched: true } : {})
+        } : { priceKey, resolved: false },
     };
     const row = {
       ...rowWithoutHash,

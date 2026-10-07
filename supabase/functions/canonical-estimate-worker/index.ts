@@ -184,13 +184,13 @@ async function loadPriceItems(
 ) {
   const prices = new Map<string, Record<string, unknown>>();
   if (snapshotIds.length === 0) return prices;
-  const { data, error } = await admin.rpc("estimate_resolve_compile_price_items_v1", {
+  const { data, error } = await admin.rpc("estimate_resolve_compile_price_items_v2", {
     p_definition_version_id: definitionVersionId,
     p_snapshot_ids: snapshotIds,
   });
   if (error) throw Object.assign(new Error("price snapshot load failed"), { code: "PRICE_LOAD_FAILED" });
   for (const item of data ?? []) {
-    const key = `${item.price_key}:${item.unit_id}`;
+    const key = JSON.stringify([item.price_key, item.unit_id, item.cost_scope_id ?? null]);
     if (!prices.has(key)) {
       prices.set(key, {
         ...item,

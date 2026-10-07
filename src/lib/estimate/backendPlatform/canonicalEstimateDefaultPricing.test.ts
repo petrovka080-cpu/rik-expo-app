@@ -55,6 +55,10 @@ describe("canonical estimate automatic compatible price selection", () => {
       path.resolve(process.cwd(), "scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts"),
       "utf8",
     );
+    const scopedMigration = fs.readFileSync(
+      path.resolve(process.cwd(), "supabase/migrations/20261007010000_estimate_commercial_cost_scope_price_v2.sql"),
+      "utf8",
+    );
 
     expect(migration).toContain("estimate_resolve_compile_price_items_v1");
     expect(migration).toContain("resource.definition_version_id=p_definition_version_id");
@@ -63,11 +67,15 @@ describe("canonical estimate automatic compatible price selection", () => {
     expect(migration).toContain("release.status in ('active','prepared')");
     expect(migration).not.toContain("release.status='active'");
     expect(migration).not.toContain("release.status in ('draft'");
-    expect(ingress).toContain('requester.rpc(\n      "estimate_resolve_default_price_snapshot_ids_v1"');
+    expect(ingress).toMatch(/requester\.rpc\(\s*"estimate_resolve_default_price_snapshot_ids_v1"/u);
     expect(ingress).toContain("compatibleDefaults: compatibleDefaultPriceSnapshotIds");
-    expect(worker).toContain('admin.rpc("estimate_resolve_compile_price_items_v1"');
+    expect(worker).toContain('admin.rpc("estimate_resolve_compile_price_items_v2"');
     expect(worker).not.toContain('.limit(20_000)');
-    expect(local).toContain("snapshot.captured_at<=now()");
+    expect(local).toContain("public.estimate_resolve_compile_price_items_v2($2::uuid,$1::uuid[])");
+    expect(scopedMigration).toContain("snapshot.captured_at<=now()");
+    expect(scopedMigration).toContain("resource.definition_version_id=p_definition_version_id");
+    expect(scopedMigration).not.toContain("resource.category");
+    expect(scopedMigration).not.toMatch(/\blimit\s+\d+/iu);
     expect(local).not.toContain("limit 20000");
   });
 

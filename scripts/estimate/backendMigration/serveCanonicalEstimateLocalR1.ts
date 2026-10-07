@@ -2149,30 +2149,9 @@ async function compileClaimedJob(
     ? []
     : (
         await client.query(
-          `select distinct on (
-             coalesce(nullif(trim(resource.cost_owner_id),''),binding.price_key),
-             resource.unit_id
-           )
-             item.snapshot_id::text,
-             coalesce(nullif(trim(resource.cost_owner_id),''),binding.price_key) price_key,
-             item.unit_id,item.unit_price::text,item.currency_code,
-             jsonb_build_object('route_id',snapshot.route_id::text) estimate_price_snapshot
-           from public.estimate_resource_spec resource
-           join public.estimate_resource_price_route_binding binding
-             on binding.resource_spec_id=resource.id
-           join public.estimate_price_snapshot snapshot
-             on snapshot.id=any($1::uuid[])
-             and snapshot.route_id=binding.route_id
-           join public.estimate_price_snapshot_item item
-             on item.snapshot_id=snapshot.id
-             and item.price_key=coalesce(nullif(trim(resource.cost_owner_id),''),binding.price_key)
-             and item.unit_id=resource.unit_id
-           join public.estimate_price_route route on route.id=snapshot.route_id
-           where resource.definition_version_id=$2
-           order by
-             coalesce(nullif(trim(resource.cost_owner_id),''),binding.price_key),
-             resource.unit_id,binding.priority,route.priority,
-             snapshot.captured_at desc,snapshot.id`,
+          `select snapshot_id::text,price_key,unit_id,unit_price::text,currency_code,cost_scope_id,
+             jsonb_build_object('route_id',route_id::text) estimate_price_snapshot
+           from public.estimate_resolve_compile_price_items_v2($2::uuid,$1::uuid[])`,
           [priceSnapshotIds, definition.id],
         )
       ).rows;

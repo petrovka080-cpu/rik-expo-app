@@ -294,3 +294,39 @@ test.each([
   if (mode === 'APPEND' && !manual) expect(need.calculation_trace).toMatchObject({ resourceGraph: {
     publicResourcePresentationV1: { nameRu: 'Плитка', specificationRu: 'Керамогранит 600×600 мм' } } });
 });
+
+
+test('uses a compatible quoted package after higher-priority candidates with other cost scopes', async () => {
+  const input = fixture('COMPLEX'); input.rowOverrides = {};
+  input.priceItems = [
+    { price_key: 'price:lay', unit_id: 'm2', currency_code: 'KGS', unit_price: '500', snapshot_id: 'fixture-ordinary', cost_scope_id: null },
+    { price_key: 'price:lay', unit_id: 'm2', currency_code: 'KGS', unit_price: '900', snapshot_id: 'fixture-other', cost_scope_id: 'other-scope' },
+    { price_key: 'price:lay', unit_id: 'm2', currency_code: 'KGS', unit_price: '850', snapshot_id: 'fixture-matching', cost_scope_id: coverage(input).scopeId },
+    { price_key: 'price:lay', unit_id: 'm2', currency_code: 'KGS', unit_price: '840', snapshot_id: 'fixture-later', cost_scope_id: coverage(input).scopeId },
+  ];
+  const result = await compileCanonicalEstimateCore(input);
+  expect(result.totals).toMatchObject({ amount: '17000', unpricedRowCount: 1 });
+  expect(row(result, 'lay')).toMatchObject({ unit_price: '850', price_snapshot_id: 'fixture-matching',
+    price_resolution_trace: { costScopeId: coverage(input).scopeId, costScopeMatched: true } });
+});
+
+test('keeps ordinary resource price priority when a commercial descriptor is inactive', async () => {
+  const input = fixture(); input.rowOverrides = {};
+  coverage(input).when = { kind: 'equals', parameterId: 'mode', value: 'COMPLEX' };
+  input.priceItems = [
+    { price_key: 'price:lay', unit_id: 'm2', currency_code: 'KGS', unit_price: '500', snapshot_id: 'fixture-first' },
+    { price_key: 'price:lay', unit_id: 'm2', currency_code: 'KGS', unit_price: '850', snapshot_id: 'fixture-package', cost_scope_id: coverage(input).scopeId },
+  ];
+  const result = await compileCanonicalEstimateCore(input);
+  expect(row(result, 'lay')).toMatchObject({ unit_price: '500', price_snapshot_id: 'fixture-first' });
+  expect(row(result, 'cut').included_in_estimate).toBe(true);
+  expect(result.totals.amount).toBe('10000');
+  expect(row(result, 'lay').price_resolution_trace).not.toHaveProperty('costScopeMatched');
+});
+
+test('a matching commercial scope still requires the selected currency', async () => {
+  const input = fixture('COMPLEX'); input.rowOverrides = {};
+  input.priceItems = [{ price_key: 'price:lay', unit_id: 'm2', currency_code: 'USD', unit_price: '850',
+    snapshot_id: 'fixture-wrong-currency', cost_scope_id: coverage(input).scopeId }];
+  await expect(compileCanonicalEstimateCore(input)).rejects.toMatchObject({ code: 'PRICE_CURRENCY_MISMATCH' });
+});

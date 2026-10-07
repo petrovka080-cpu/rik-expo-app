@@ -1,6 +1,8 @@
-import { compareFormulaGraphDecimals, type FormulaAst } from './formulaGraph';
+import { compareFormulaGraphDecimals, formulaAstInputParameterIds, type FormulaAst } from './formulaGraph';
 import { resolveInclusionGraph } from './inclusionGraph';
 import { resolveProfessionalUnitDefinition, convertProfessionalUnitQuantity } from '../professionalUnitRegistry';
+
+import { canonicalEstimateStableJson } from './canonicalEstimateDeterminism';
 
 type Resource = { row_id: string; title_ru: string; unit_id: string; category: string;
   formula_id: string; inclusion_ast: Record<string, unknown>; resource_graph: Record<string, unknown>; procurement_eligible: boolean };
@@ -34,14 +36,30 @@ function keys(value: Record<string, unknown>, allowed: readonly string[]): void 
   if (Object.keys(value).some(key => !allowed.includes(key))) fail('Частичное или неизвестное покрытие не подтверждено контрактом расценки.');
 }
 
+
+/** A necessary applicability guard must occur directly or inside an AND.
+ * An OR, an unrelated unknown condition, or a numeric/manual-quantity branch
+ * is not proof that the component waits for the service's applicability. */
+function carriesApplicabilityGuard(ast: Record<string, unknown>, guard: Record<string, unknown>): boolean {
+  if (canonicalEstimateStableJson(ast) === canonicalEstimateStableJson(guard)) return true;
+  const operands = Array.isArray(ast.operands) ? ast.operands : ast.conditions;
+  return ast.kind === 'and' && Array.isArray(operands) && operands.some(operand =>
+    operand != null && typeof operand === 'object' && !Array.isArray(operand)
+      && carriesApplicabilityGuard(operand as Record<string, unknown>, guard));
+}
+
 /** Definition-owned full-row coverage. It changes payment, never formulas or
  * physical quantities. Partial/proportional allocation is deliberately not inferred. */
 export function planCanonicalCommercialCostCoverageV1(
   resources: readonly Resource[], parameters: Record<string, unknown>, parameterUnits: ReadonlyMap<string, string | null | undefined>,
   overrides: Readonly<Record<string, Record<string, unknown>>>,
   formulas: readonly { formula_id: string; ast: FormulaAst }[],
+  parameterValueTypes: ReadonlyMap<string, string>,
 ): CanonicalCommercialCostCoveragePlanV1 {
   const byId = new Map(resources.map(row => [row.row_id, row]));
+  // Keep the first occurrence, matching the previous Array.find lookup.
+  const byFormulaId = new Map<string, typeof formulas[number]>();
+  for (const formula of formulas) if (!byFormulaId.has(formula.formula_id)) byFormulaId.set(formula.formula_id, formula);
   const owners = new Map<string, CanonicalCommercialCostOwnerV1>();
   const members = new Map<string, CanonicalCommercialCostOwnerV1>();
   const scopeIds = new Set<string>();
@@ -61,7 +79,7 @@ export function planCanonicalCommercialCostCoverageV1(
       || row.resource_graph.costTreatment !== 'OWN_COST') {
       fail(`Состав расценки «${row.title_ru}» не подтверждён определением.`);
     }
-    const ast = formulas.find(formula => formula.formula_id === row.formula_id)?.ast;
+    const ast = byFormulaId.get(row.formula_id)?.ast;
     if (basis.kind === 'PER_MEASURE'
       ? !resolveProfessionalUnitDefinition(String(basis.unitId))
         || convertProfessionalUnitQuantity(1, String(parameterUnits.get(String(scopeParameter))), String(basis.unitId)) !== 1
@@ -91,7 +109,26 @@ export function planCanonicalCommercialCostCoverageV1(
       if (member.supplyParty != null && member.supplyParty !== 'RATE_PROVIDER') fail('Неизвестная сторона обеспечения.');
     }
     const condition = resolveInclusionGraph(record(descriptor.when), parameters);
-    if (condition.value == null) fail('Состав цены не уточнён: выберите совместимую модель оплаты.', 'COMMERCIAL_COST_COVERAGE_REQUIRED');
+    if (condition.value == null) {
+      const trigger = record(descriptor.when);
+      // Only an unresolved non-numeric applicability equality shared by the
+      // service and every physical component may defer the commercial plan.
+      // All those rows remain unresolved technical needs in the same core.
+      const deferredApplicability = trigger.kind === 'equals' && text(trigger.parameterId)
+        && parameterUnits.has(trigger.parameterId) && parameterUnits.get(trigger.parameterId) == null
+        && parameterValueTypes.get(trigger.parameterId) === 'enum'
+        && !formulaAstInputParameterIds(ast!).includes(trigger.parameterId)
+        && canonicalEstimateStableJson(trigger) === canonicalEstimateStableJson(row.inclusion_ast)
+        && resolveInclusionGraph(row.inclusion_ast, parameters).value == null
+        && (descriptor.members as { rowId: string }[]).every(member => {
+          const child = byId.get(member.rowId)!;
+          const childFormula = byFormulaId.get(child.formula_id);
+          return childFormula != null && !formulaAstInputParameterIds(childFormula.ast).includes(trigger.parameterId as string)
+            && carriesApplicabilityGuard(child.inclusion_ast, trigger);
+        });
+      if (deferredApplicability) continue;
+      fail('Состав цены не уточнён: выберите совместимую модель оплаты.', 'COMMERCIAL_COST_COVERAGE_REQUIRED');
+    }
     if (!condition.value) continue;
     if (scopeIds.has(descriptor.scopeId as string)) fail('Две действующие расценки имеют одну область покрытия.');
     scopeIds.add(descriptor.scopeId as string);
@@ -162,10 +199,11 @@ export function assertCanonicalCommercialCostOwnersV1(
   needs: readonly { row_id: string; selected: boolean }[],
 ): void {
   const compiled = new Map(rows.map(row => [row.row_id, row]));
+  const selectedNeedIds = new Set(needs.filter(need => need.selected).map(need => need.row_id));
   for (const owner of plan.owners.values()) {
     const row = compiled.get(owner.ownerRowId);
     if (!row) {
-      if (!needs.some(need => need.row_id === owner.ownerRowId && need.selected)) fail('Покрывающая расценка отсутствует в сохранённом составе.');
+      if (!selectedNeedIds.has(owner.ownerRowId)) fail('Покрывающая расценка отсутствует в сохранённом составе.');
       continue; // Its unresolved quantity remains a technical requirement.
     }
     const expected = owner.rateBasis.kind === 'PER_MEASURE' ? parameters[owner.rateBasis.parameterId] : '1';
