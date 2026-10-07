@@ -61,6 +61,30 @@ const coverage = (input: CanonicalEstimateCompileCoreInput) => input.resourceDef
   .resource_graph.commercialCostCoverageV1 as CanonicalCommercialCostCoverageV1;
 
 describe('canonical server commercial coverage', () => {
+  test('an optional package defers only a necessary enum decision also required by every covered physical row',async()=>{
+    const input=fixture();input.rowOverrides={};
+    input.parameterDefinitions.find(p=>p.parameter_id==='mode')!.truth_metadata={preliminary_compilation_allowed:true};
+    input.parameterDefinitions.push({parameter_id:'optional_scope',value_type:'enum',unit_id:null,required:false,default_value:null,
+      constraints_json:{values:['REQUIRED','NOT_REQUIRED']},truth_metadata:{preliminary_compilation_allowed:true}});
+    const scope={kind:'equals',parameterId:'optional_scope',value:'REQUIRED'},method={kind:'equals',parameterId:'mode',value:'COMPLEX'};
+    coverage(input).when={kind:'and',operands:[scope,method]};
+    input.resourceDefinitions.find(r=>r.row_id==='lay')!.inclusion_ast={kind:'and',operands:[scope,method]};
+    for(const id of ['cut','cleanup'])input.resourceDefinitions.find(r=>r.row_id===id)!.inclusion_ast=scope;
+    delete input.submittedParameters.mode;
+    const unknownScope=await compileCanonicalEstimateCore(input);
+    expect(unknownScope.preliminaryNeeds.map(r=>r.row_id)).toEqual(expect.arrayContaining(['lay','cut','cleanup']));
+    input.submittedParameters.optional_scope='NOT_REQUIRED';
+    const excluded=await compileCanonicalEstimateCore(input);expect(excluded.preliminaryNeeds).toEqual([]);
+    expect(excluded.rows.some(r=>['lay','cut','cleanup'].includes(r.row_id))).toBe(false);
+    input.submittedParameters.optional_scope='REQUIRED';
+    await expect(compileCanonicalEstimateCore(input)).rejects.toMatchObject({code:'COMMERCIAL_COST_COVERAGE_REQUIRED'});
+    for(const id of ['cut','cleanup'])input.resourceDefinitions.find(r=>r.row_id===id)!.resource_graph.inputParameterIds=['mode'];
+    const missingMethod=await compileCanonicalEstimateCore(input);
+    expect(missingMethod.preliminaryNeeds.find(n=>n.row_id==='cut')?.missing_parameter_ids).toContain('mode');
+    expect(missingMethod.rows.some(r=>['lay','cut','cleanup'].includes(r.row_id))).toBe(false);
+    coverage(input).when={kind:'or',operands:[scope,method]};delete input.submittedParameters.optional_scope;
+    await expect(compileCanonicalEstimateCore(input)).rejects.toMatchObject({code:'COMMERCIAL_COST_COVERAGE_REQUIRED'});
+  });
   test('main and required subworks sum their own prices once; included steps and unknown materials remain visible', async () => {
     const result = await compileCanonicalEstimateCore(fixture());
     expect(result.totals).toMatchObject({ amount: '17000', pricedRowCount: 3, unpricedRowCount: 1 });

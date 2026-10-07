@@ -384,7 +384,7 @@ function ConsumerRepairItemRowComponent({
         {professionalEvidence || publicResourcePresentation ? (
           <View style={styles.traceWrap}>
             <Pressable
-              accessibilityLabel="\u041e\u0431\u044a\u044f\u0441\u043d\u0435\u043d\u0438\u0435 \u0444\u043e\u0440\u043c\u0443\u043b\u044b, \u043d\u043e\u0440\u043c\u044b \u0438 \u0446\u0435\u043d\u044b"
+              accessibilityLabel="Объяснение формулы, нормы и цены"
               accessibilityRole="button"
               accessibilityState={{ expanded: professionalEvidenceOpen }}
               onPress={() => setProfessionalEvidenceOpen((value) => !value)}

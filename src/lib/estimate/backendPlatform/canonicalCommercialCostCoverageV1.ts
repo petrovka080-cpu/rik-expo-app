@@ -48,6 +48,15 @@ function carriesApplicabilityGuard(ast: Record<string, unknown>, guard: Record<s
       && carriesApplicabilityGuard(operand as Record<string, unknown>, guard));
 }
 
+/** Only necessary equality decisions inside AND may defer an optional scope.
+ * An unrelated OR or numeric/manual quantity cannot supply this evidence. */
+function necessaryEnumEqualityDecisions(ast: Record<string,unknown>): Record<string,unknown>[] {
+  if(ast.kind==='equals')return [ast];
+  const operands=Array.isArray(ast.operands)?ast.operands:ast.conditions;
+  return ast.kind==='and'&&Array.isArray(operands)?operands.flatMap(child=>child&&typeof child==='object'&&!Array.isArray(child)
+    ?necessaryEnumEqualityDecisions(child as Record<string,unknown>):[]):[];
+}
+
 /** Definition-owned full-row coverage. It changes payment, never formulas or
  * physical quantities. Partial/proportional allocation is deliberately not inferred. */
 export function planCanonicalCommercialCostCoverageV1(
@@ -126,7 +135,23 @@ export function planCanonicalCommercialCostCoverageV1(
           return childFormula != null && !formulaAstInputParameterIds(childFormula.ast).includes(trigger.parameterId as string)
             && carriesApplicabilityGuard(child.inclusion_ast, trigger);
         });
-      if (deferredApplicability) continue;
+      // Optional composed owners also carry a parent applicability guard.
+      // For a missing price-method decision, each covered physical row must
+      // explicitly require that same enum as non-arithmetic input evidence;
+      // the core then keeps it as a need rather than charging the default owner.
+      const deferredComposedDecision=necessaryEnumEqualityDecisions(trigger).some(guard=>{
+        const id=guard.parameterId;
+        if(!text(id)||!parameterUnits.has(id)||parameterUnits.get(id)!=null||parameterValueTypes.get(id)!=='enum'
+          ||parameters[id]!=null||formulaAstInputParameterIds(ast!).includes(id)
+          ||!carriesApplicabilityGuard(row.inclusion_ast,guard)||resolveInclusionGraph(row.inclusion_ast,parameters).value!==null)return false;
+        return (descriptor.members as {rowId:string}[]).every(member=>{
+          const child=byId.get(member.rowId)!;const formula=byFormulaId.get(child.formula_id);
+          const explicitInputs=child.resource_graph.inputParameterIds;
+          return formula!=null&&!formulaAstInputParameterIds(formula.ast).includes(id)
+            &&(carriesApplicabilityGuard(child.inclusion_ast,guard)||(Array.isArray(explicitInputs)&&explicitInputs.includes(id)));
+        });
+      });
+      if (deferredApplicability||deferredComposedDecision) continue;
       fail('Состав цены не уточнён: выберите совместимую модель оплаты.', 'COMMERCIAL_COST_COVERAGE_REQUIRED');
     }
     if (!condition.value) continue;
