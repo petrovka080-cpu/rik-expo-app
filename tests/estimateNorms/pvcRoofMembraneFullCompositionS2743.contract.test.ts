@@ -32,7 +32,7 @@ test('preserves 535 m2 as the project order and keeps independent consumption, b
 });
 
 test.each(['telescopic_fastener_quantity_piece','weld_probe_control_count_test'])('%s rejects fractional and zero facts without rounding',async id=>{
-  for(const value of ['10.5',0]) await expect(compile({...pvc15ControlInputS2743(),[id]:value})).rejects.toMatchObject({code:'PARAMETER_VALIDATION_FAILED'});
+  for(const value of ['10.5','2700.0000000000000000001',0]) await expect(compile({...pvc15ControlInputS2743(),[id]:value})).rejects.toMatchObject({code:'PARAMETER_VALIDATION_FAILED'});
 });
 
 test('allowed fractional area, usage, energy and manual supplier quantity remain exact',async()=>{

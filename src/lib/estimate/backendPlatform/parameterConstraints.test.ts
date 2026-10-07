@@ -4,6 +4,20 @@ import {
   type CanonicalParameterDefinitionRecord,
 } from "./parameterConstraints";
 
+test("integer facts reject fractional text hidden by floating-point precision while decimal facts remain allowed", () => {
+  const definitions: CanonicalParameterDefinitionRecord[] = [
+    { parameter_id: "actual_piece_count", value_type: "integer", required: true, default_value: null, constraints_json: { min: 1 } },
+    { parameter_id: "measured_area_m2", value_type: "decimal", required: true, default_value: null, constraints_json: { min: 0 } },
+  ];
+  const input = { actual_piece_count: "2700", measured_area_m2: "0.125" };
+  expect(validateCanonicalEstimateParameters(definitions, input)).toEqual(input);
+  for (const actual_piece_count of ["2700.5", "2700.0000000000000000001"]) {
+    expect(() => validateCanonicalEstimateParameters(definitions, { ...input, actual_piece_count }))
+      .toThrow("invalid integer actual_piece_count");
+  }
+  expect(input).toEqual({ actual_piece_count: "2700", measured_area_m2: "0.125" });
+});
+
 const catalogId = "drywall_ceiling_interior_bulkhead_clad_small_area";
 const approvedBaselineId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const acceptanceEvidenceSha256 = "b".repeat(64);

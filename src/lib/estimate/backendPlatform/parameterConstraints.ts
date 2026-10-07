@@ -263,7 +263,12 @@ export function validateCanonicalEstimateParameters(
     }
     if (valueType === "decimal" || valueType === "integer") {
       const numeric = finiteNumber(value, id);
-      if (valueType === "integer" && !Number.isInteger(numeric)) return fail(`invalid integer ${id}`);
+      // Inspect the supplied decimal text before floating-point conversion:
+      // a non-zero fractional tail can otherwise disappear in Number(value).
+      // This is the same whole-number syntax accepted by the shared client.
+      if (valueType === "integer" && (!/^[+-]?\d+$/.test(String(value)) || !Number.isInteger(numeric))) {
+        return fail(`invalid integer ${id}`);
+      }
       if (constraints.min != null && numeric < Number(constraints.min)) return fail(`parameter below minimum ${id}`);
       if (constraints.max != null && numeric > Number(constraints.max)) return fail(`parameter above maximum ${id}`);
       if (constraints.multipleOf != null) {
