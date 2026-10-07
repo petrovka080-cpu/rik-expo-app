@@ -49,7 +49,8 @@ export function namespaceAutomaticOwnerDefinitionR1(input: {
       const object=value as Json;
       return Object.fromEntries(Object.entries(object).map(([field,child])=>[
         key==='titleSpecificationParameterLabelsRu'?(parameterIds.get(field)??field):field,
-        object.kind==='parameter'&&field==='id'&&typeof child==='string'?(parameterIds.get(child)??child):bind(child,field),
+        key==='commercialCostCoverageV1'&&field==='scopeId'&&typeof child==='string'?input.prefix+child
+          :object.kind==='parameter'&&field==='id'&&typeof child==='string'?(parameterIds.get(child)??child):bind(child,field),
       ]));
     }
     return value;
@@ -67,7 +68,7 @@ export function namespaceAutomaticOwnerDefinitionR1(input: {
   });
   const resources=input.definition.resources.map(r=>{
     const result={...r,id:input.prefix+r.id,row_id:rowIds.get(r.row_id)!,formula_id:formulaIds.get(r.formula_id)!,
-      cost_owner_id:r.cost_owner_id==null?null:rowIds.get(r.cost_owner_id)??r.cost_owner_id,
+      cost_owner_id:r.cost_owner_id==null?null:rowIds.get(r.cost_owner_id)??input.prefix+r.cost_owner_id,
       inclusion_ast:bind(r.inclusion_ast) as Json,resource_graph:{...bind(r.resource_graph) as Json,
         semanticOwnerId:input.prefix+String(r.resource_graph.semanticOwnerId)},
       source_metadata:{...r.source_metadata,originalComponentRowId:r.row_id},row_sha256:''};

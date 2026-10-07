@@ -25,7 +25,7 @@ describe('optional authored scopes use the same canonical core',()=>{
   expect(internal.truth_metadata.effective_resource_quantity_v1).toMatchObject({sourceRowId:tape.row_id});
   expect(bound.parameters.find(p=>p.parameter_id==='joint_tape_required_length_m')!.constraints_json)
     .toMatchObject({greaterThanOrEqualParameter:'joint_transition_length_m',lessThanOrEqualParameter:'joint_tape_roll_length_m'});
-  expect(tape.source_metadata?.normativeTrace).toEqual(transition.resources.find(r=>r.row_id==='transition:material:tape')!.source_metadata?.normativeTrace);
+  expect(tape.source_metadata?.normativeTrace).toEqual((transition.resources.find(r=>r.row_id==='transition:material:tape')!.source_metadata as Record<string,unknown>|null)?.normativeTrace);
  });
  test('an explicitly excluded child leaves all original field rows and no child needs',async()=>{
   const input={...pvc15ControlInputS2743(),include_transition:'Не требуется'};

@@ -63,6 +63,23 @@ describe('PVC15 field and accepted reinforced bitumen transition through one cor
   expect(missing.preliminaryNeeds.find(n=>n.row_id==='pvc15_transition_transition:labor:worker')?.missing_parameter_ids).toContain('pvc15_transition_commercial_labor_price_mode');
   expect(row(missing,'rc09:reinforced_pvc_roof_membrane_1_5mm')?.quantity).toBe('535');
  });
+ test('a standalone transition quote cannot pay the changed composed scope with shared apparatus excluded',async()=>{
+  const owner=definition.resources.find(r=>r.row_id==='pvc15_transition_transition:work:labor-rate')!;
+  const coverage=owner.resource_graph.commercialCostCoverageV1 as {scopeId:string};
+  const oldScope='labor-with-included-contractor-resources:canonical-work:master:roof_pvc_bitumen_transition_reinforced_tape_guide2024_single_strip';
+  expect(coverage.scopeId).not.toBe(oldScope);expect(owner.cost_owner_id).toContain('pvc15_transition_');
+  const input={operation:'compile' as const,compilerVersion:'PVC15_SCOPED_PRICE_CONTROL',
+   catalogId:'canonical-work:base:roofing_interior_flat_roof_install_standard',primaryMeasureParameterId:'area_m2',
+   parameterDefinitions:[...definition.parameters],formulaDefinitions:[...definition.formulas],resourceDefinitions:[...definition.resources],
+   submittedParameters:{...pvc15FieldTransitionControlInputS2743(),pvc15_transition_commercial_labor_price_mode:G6_COMPOSITE_LABOR_MODE_S2741},
+   confirmedParameters:{},currencyCode:'KGS',priceItems:[{price_key:owner.cost_owner_id!.replace(/^pvc15_transition_/u,''),unit_id:'linear_m',currency_code:'KGS',
+    unit_price:'99',snapshot_id:'QA_STANDALONE_QUOTE',cost_scope_id:oldScope}],maximumResourceRows:definition.resources.length,hashJson:async (value:unknown)=>estimateDeterministicHash(value)};
+  const result=await compileCanonicalEstimateCore(input);
+  expect(row(result,owner.row_id)?.unit_price).toBeNull();expect(result.priceSnapshotIds).not.toContain('QA_STANDALONE_QUOTE');
+  await expect(compileCanonicalEstimateCore({...input,priceItems:[{...input.priceItems[0]!,price_key:owner.cost_owner_id!}]})).rejects.toMatchObject({code:'PRICE_SCOPE_MISMATCH'});
+  const matched=await compileCanonicalEstimateCore({...input,priceItems:[{...input.priceItems[0]!,price_key:owner.cost_owner_id!,cost_scope_id:coverage.scopeId,snapshot_id:'QA_COMPOSED_QUOTE'}]});
+  expect(row(matched,owner.row_id)).toMatchObject({unit_price:'99',amount:'990'});
+ });
  test('different compatible consumptions are summed before one supply rounding and one stock allocation',async()=>{
   const r=await compile({...pvc15FieldTransitionControlInputS2743(),pvc15_joint_liquid_stock:1,pvc15_joint_liquid_reserve:1});
   expect(balance(r,'pvc15:joint:liquid-pvc')).toMatchObject({consumed:'7',stock:'1',reserve:'1',effectiveOrder:'7',remaining:'1'});
