@@ -2151,14 +2151,15 @@ async function compileClaimedJob(
   );
   const currencyCode = String(payload.currencyCode ?? "");
   if (parentRevision && parentRevision.release_id !== job.target_release_id) {
+    const parentAmendments = (parentRevision.amendment_contract ?? {}) as JsonRecord;
     const [parentResources, parentFormulas, parentParameters] = await Promise.all([
       client.query("select * from public.estimate_resource_spec where definition_version_id=$1", [parentRevision.definition_version_id]),
       client.query("select * from public.estimate_formula_graph where definition_version_id=$1", [parentRevision.definition_version_id]),
       client.query("select * from public.estimate_parameter_definition where definition_version_id=$1", [parentRevision.definition_version_id]),
     ]);
     assertCanonicalStoredManualPriceReleaseMigration({
-      parentOverrides: parentRevision.amendment_contract?.rowOverrides ?? {},
-      parentCustomRows: parentRevision.amendment_contract?.customRows ?? [],
+      parentOverrides: parentAmendments.rowOverrides ?? {},
+      parentCustomRows: parentAmendments.customRows ?? [],
       requestedOverrides: payload.rowOverrides ?? {}, requestedCustomRows: payload.customRows ?? [],
       parentCurrency: parentRevision.currency_code, requestedCurrency: currencyCode,
       fromBindings: canonicalManualPriceMigrationBindings({resources: parentResources.rows, formulas: parentFormulas.rows, parameters: parentParameters.rows}),
