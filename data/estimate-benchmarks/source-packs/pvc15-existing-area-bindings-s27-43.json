@@ -1,0 +1,29 @@
+{
+  "contract": "rik-expo-app.s27-43.pvc15-existing-area-bindings.v1",
+  "purposeRu": "Уточнение двух существующих размерных вариантов до явно названного профиля поля ПВХ-мембраны 1,5 мм по подтверждённой проектной системе. Размер площади не создаёт новую норму или самостоятельный строительный тип.",
+  "acceptedOwnerPath": "src/lib/estimate/v4/pvcRoofFieldTransitionCompositionS2743.ts",
+  "components": [
+    {"path": "data/estimate-benchmarks/source-packs/pvc15-full-composition-s27-43.json", "sha256": "4a90266ca782da4359c9974298a6bbd6d99ac4e8f40cb7f906b761dfe2236af2"},
+    {"path": "data/estimate-benchmarks/source-packs/pvc15-field-transition-composition-s27-43.json", "sha256": "3fc9432b5833728ab2484d51838d4b455566204362565ca60d6e1cc8d27eb65b"}
+  ],
+  "members": [
+    {"variant": "small_area", "catalogId": "canonical-work:base:roofing_interior_flat_roof_install_small_area", "workKey": "roofing_interior_flat_roof_install_small_area", "titleRu": "Монтаж поля кровельной ПВХ-мембраны 1,5 мм на малом участке по проекту", "parentDefinitionId": "527110bb-5c7f-549e-a5ec-512a8b05e7a1", "parentDefinitionVersion": 3, "parentShape": [1, 59, 59]},
+    {"variant": "large_area", "catalogId": "canonical-work:base:roofing_interior_flat_roof_install_large_area", "workKey": "roofing_interior_flat_roof_install_large_area", "titleRu": "Монтаж поля кровельной ПВХ-мембраны 1,5 мм на большой площади по проекту", "parentDefinitionId": "0a7f9d3d-aeef-5975-aff8-59c1a5f6fc4d", "parentDefinitionVersion": 3, "parentShape": [1, 59, 59]}
+  ],
+  "rulesRu": [
+    "Вариант площади — описание выбранной проектной границы; пороги малой/большой площади и поправки к расходу, производительности или оплате не изобретаются.",
+    "Применяется тот же принятый владелец данных и общий compiler: новые формулы, копии калькулятора и frontend/PDF вычисления не вводятся.",
+    "Явный профиль ограничен ПВХ-мембраной 1,5 мм с механическим креплением и подтверждённой системой; generic название плоской кровли не доказывает выбранный материал.",
+    "Все количества, крепёж по ветровому проекту, время аппарата, его обеспечение, совместимость слоя, труд, расход, поставка и завершение подтверждаются отдельно.",
+    "Прежний default q=100 не становится измеренным фактом или площадью новой сметы. Старые версии и правки сохраняются; неоднозначная миграция блокируется общим контрактом.",
+    "Legacy нормы, обрешётка и общие строки59 не переносятся в новый профиль; прежние цены не копируются по названиям или порядку строк.",
+    "Необязательный армированный переход используется только по принятому ограниченному источнику и явному выбору; общие ресурсы учитываются единственным владельцем.",
+    "Высокая нагрузка, влажная зона и техническое помещение остаются вне этого пакета до подтверждения специальных условий.",
+    "Два существующих bindings являются размерными вариантами одного физического профиля; прирост новых самостоятельных типов равен нулю."
+  ],
+  "runtimeDefaults": {},
+  "fixtureIsEngineeringSource": false,
+  "newTypeDelta": 0,
+  "unrelatedBindingsMayChange": false,
+  "productionAcceptanceClaimed": false
+}
