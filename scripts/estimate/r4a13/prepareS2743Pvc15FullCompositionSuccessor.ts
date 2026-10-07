@@ -51,6 +51,7 @@ export function pvc15FullCompositionPublishConfigS2743(parent: { definition: str
     parameterDefinitions:definition.parameters,formulaDefinitions:definition.formulas,resourceDefinitions:definition.resources,
     shortInput:{area_m2:500},acceptanceInput:pvc15ControlInputS2743(),runtimeProfileInput:{},runtimeProfileClassification:{},runtimeProfileSourceIds:{},
     expectedParentShape:[19,9,9],benchmarkOrdinal:1,validationScenario:'S2743_PVC15_EXISTING_FAMILY_PROJECT_FACTS_NO_DEFAULTS',
+    forbiddenAdjacentMatchers:[/pvc-roof:material:|transition:material:|sarnafil|rc09:roof_vapour_barrier|rc09:roof_insulation|metal_tile_lathing/i],
     passport:{canonicalRuName:title,workKey:'roofing_interior_flat_roof_install_standard',physicalResultRu:'Смонтированное и проверенное выбранное поле ПВХ1,5 мм с применимыми деталями и завершением; соседние слои отдельно',includedScopeRu,excludedScopeRu},
     applicability:{country:'KG',primaryMeasureParameterId:'area_m2',knownScopeParameters:['area_m2'],ordinaryUserInputCount:1,scope:'EXISTING_MECHANICALLY_FIXED_PVC15_PROJECT_LAYOUT_FULL_FIELD',
       hiddenDemoFixtureInputs:false,ordinaryUiAccepted:false,engineeringAccepted:false,seriesAccepted:false,acceptedNewTypeDelta:0,sourceCompatibilityRequired:true},

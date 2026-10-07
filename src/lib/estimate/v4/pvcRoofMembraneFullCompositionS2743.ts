@@ -23,9 +23,9 @@ const and = (...operands: AutomaticInclusionCondition[]): AutomaticInclusionCond
 
 const facts: AutomaticParameterSpec[] = PVC_ROOF_MEMBRANE_INSTALLATION_PARAMETERS.filter(p => p.parameter_id !== 'area_m2').map(p => ({
   id: p.parameter_id, title: p.title_ru, valueType: p.parameter_id === 'telescopic_fastener_quantity_piece' || p.parameter_id === 'weld_probe_control_count_test' ? 'integer' : p.value_type as AutomaticParameterSpec['valueType'],
-  unitId: p.unit_id, kind: 'conditional', min: p.parameter_id === 'telescopic_fastener_quantity_piece' || p.parameter_id === 'weld_probe_control_count_test' ? 1 : typeof p.constraints_json.min === 'number' ? p.constraints_json.min : undefined,
-  values: p.constraints_json.values as readonly string[] | undefined,
-  requiredWhen: p.constraints_json.requiredWhen as AutomaticInclusionCondition | undefined ?? positive,
+  unitId: p.unit_id, kind: 'conditional', min: p.parameter_id === 'telescopic_fastener_quantity_piece' || p.parameter_id === 'weld_probe_control_count_test' ? 1 : typeof p.constraints_json?.min === 'number' ? p.constraints_json.min : undefined,
+  values: p.constraints_json?.values as readonly string[] | undefined,
+  requiredWhen: p.constraints_json?.requiredWhen as AutomaticInclusionCondition | undefined ?? positive,
 }));
 function fact(id: string, title: string, valueType: AutomaticParameterSpec['valueType'], unitId: string | null, condition: AutomaticInclusionCondition = positive, extra: Partial<AutomaticParameterSpec> = {}) {
   facts.push({ id, title, valueType, unitId, kind: 'conditional', requiredWhen: condition,
@@ -58,11 +58,18 @@ const otherLayer = and(otherBaseOrSystem, selected('pvc15_other_layer_mode'));
 fact('pvc15_other_layer_mode', 'Нужен ли разделительный слой для другого основания или системы по согласованному решению', 'enum', null, otherBaseOrSystem, { values: [PVC15_REQUIRED,PVC15_NOT_REQUIRED] });
 fact('pvc15_other_layer_reference', 'Подтверждённый источник совместимости другого основания или системы и решения о слое', 'text', null, otherBaseOrSystem);
 fact('pvc15_other_layer_specification', 'Разделительный материал для другого основания по согласованной системе', 'text', null, otherLayer);
-quantity('pvc15_separation_area_m2', 'Фактическая площадь разделительного слоя по раскладке; для проверенной системы нахлёсты не менее 100 мм', 'm2', { kind:'or', operands:[verifiedBase(PVC15_BASE.eps), verifiedBase(PVC15_BASE.mineral), verifiedBase(PVC15_BASE.bitumen), otherLayer] });
+const separationNeeded: AutomaticInclusionCondition = { kind:'or', operands:[verifiedBase(PVC15_BASE.eps), verifiedBase(PVC15_BASE.mineral), verifiedBase(PVC15_BASE.bitumen), otherLayer] };
+quantity('pvc15_separation_area_m2', 'Фактическая площадь разделительного слоя по раскладке; для проверенной системы нахлёсты не менее 100 мм', 'm2', separationNeeded);
+quantity('pvc15_separation_worker_hours','Фактический труд укладки совместимого разделительного слоя; отдельная операция без нормы по площади','man_hour',separationNeeded);
 fact('pvc15_separation_product', 'Выбранный материал разделения: подтверждённые паспорт, плотность и совместимость с основанием', 'text', null, {kind:'or',operands:[verifiedBase(PVC15_BASE.eps),verifiedBase(PVC15_BASE.mineral),verifiedBase(PVC15_BASE.bitumen),otherLayer]});
 
+function inheritedExpression(formulaId:string):string {
+  const expression=PVC_ROOF_MEMBRANE_INSTALLATION_FORMULAS.find(f=>f.formula_id===formulaId)?.expression_source;
+  if(typeof expression!=='string')throw new Error('PVC15_ORIGINAL_FORMULA_SOURCE_MISSING:'+formulaId);
+  return expression;
+}
 const rows: AutomaticRowSpec[] = PVC_ROOF_MEMBRANE_INSTALLATION_RESOURCES.map(r => ({ rowId:r.row_id, title:r.title_ru, section:r.section, category:r.category, unitId:r.unit_id,
-  formulaId:r.formula_id, expression:PVC_ROOF_MEMBRANE_INSTALLATION_FORMULAS.find(f=>f.formula_id===r.formula_id)!.expression_source,
+  formulaId:r.formula_id, expression:inheritedExpression(r.formula_id),
   procurement:r.procurement_eligible, titleParameterIds:r.resource_graph.titleSpecificationParameterIds as string[] | undefined,
   ...(r.row_id==='rc09:unreinforced_pvc_detail_membrane' ? {inclusion:eq('detail_membrane_mode','REQUIRED')} : {}),
   ...(r.row_id==='rc09:pvc_contact_adhesive' ? {inclusion:eq('contact_adhesive_mode','REQUIRED')} : {}),
@@ -80,12 +87,11 @@ function balance(rowId: string, consumed: string, unit: string, condition: Autom
   fact(prefix+'_stock', 'Выделенное пригодное наличие: '+rows.find(r=>r.rowId===rowId)!.title, unit==='piece'?'integer':'decimal',unit,condition,{min:0});
   fact(prefix+'_reserve', 'Сохраняемый резерв: '+rows.find(r=>r.rowId===rowId)!.title, unit==='piece'?'integer':'decimal',unit,condition,{min:0});
   quantity(prefix+'_quantum','Фактический шаг поставки: '+rows.find(r=>r.rowId===rowId)!.title,unit,condition,unit==='piece');
-  const current=rows.find(r=>r.rowId===rowId)!;
+  const rowIndex=rows.findIndex(r=>r.rowId===rowId);const current=rows[rowIndex]!;
   const policy=effectivePurchaseBalanceExpressionsR1({ownerRowId:rowId,orderUnitId:unit,consumed,stock:prefix+'_stock',reserve:prefix+'_reserve',quantum:prefix+'_quantum'});
-  current.expression=fixedOrder??`ceil(max(0,(${consumed})+${prefix}_reserve-${prefix}_stock)/${prefix}_quantum)*${prefix}_quantum`;
-  current.effectiveQuantityOutput=policy.owner.effectiveQuantityOutput;
-  current.purchaseBalance=policy.owner.purchaseBalance;
-  current.inputParameterIds=[...(current.inputParameterIds??[]),prefix+'_stock',prefix+'_reserve',prefix+'_quantum',consumed];
+  rows[rowIndex]={...current,
+    expression:fixedOrder??`ceil(max(0,(${consumed})+${prefix}_reserve-${prefix}_stock)/${prefix}_quantum)*${prefix}_quantum`,
+    ...policy.owner,inputParameterIds:[...(current.inputParameterIds??[]),prefix+'_stock',prefix+'_reserve',prefix+'_quantum',consumed]};
 }
 balance('rc09:reinforced_pvc_roof_membrane_1_5mm','pvc15_membrane_consumption_m2','m2',positive,'reinforced_membrane_quantity_m2');
 balance('rc09:pvc_membrane_telescopic_fastener','telescopic_fastener_quantity_piece','piece',positive);
@@ -93,6 +99,7 @@ balance('rc09:pvc_membrane_edge_rail','edge_rail_length_m','m',positive);
 balance('rc09:liquid_pvc_joint_sealant','liquid_pvc_volume_l','l',positive);
 balance('rc09:unreinforced_pvc_detail_membrane','detail_membrane_area_m2','m2',eq('detail_membrane_mode','REQUIRED'));
 balance('rc09:pvc_contact_adhesive','contact_adhesive_mass_kg','kg',eq('contact_adhesive_mode','REQUIRED'));
+row('pvc15:labor:separation','Укладка совместимого разделительного слоя','man_hour','pvc15_separation_worker_hours','separation','Устройство совместимого разделительного слоя',2,{inclusion:separationNeeded});
 for (const [suffix,base,title] of [ ['glass',PVC15_BASE.eps,'Стеклохолст разделительный не менее 100 г/м² для EPS/XPS'], ['mineral',PVC15_BASE.mineral,'Геотекстиль термообработанный не менее 100 г/м² по минеральной вате'], ['bitumen',PVC15_BASE.bitumen,'Геотекстиль термообработанный не менее 300 г/м² по битумному основанию'] ] as const) {
   row('pvc15:separation:'+suffix,title,'m2','pvc15_separation_area_m2','separation','Устройство совместимого разделительного слоя',2,{category:'material',procurement:true,inclusion:verifiedBase(base),titleParameterIds:['pvc15_separation_product'],inputParameterIds:['pvc15_system_reference','pvc15_separation_product']},'Материал соответствует основанию и инструкции PDF34/38; нахлёсты не менее100 мм, количество по раскладке');
   balance('pvc15:separation:'+suffix,'pvc15_separation_area_m2','m2',verifiedBase(base));
@@ -112,7 +119,7 @@ row('pvc15:material:protection','Защитный материал соседн�
 balance('pvc15:material:protection','pvc15_protection_quantity','m2',selected('pvc15_protection_mode'));
 
 for (const [id,title,ordinal] of [['layout','Раскладка и раскрой армированных полотен',3],['fastening','Механическое крепление по проекту ветровых зон',4],['welding','Сварка горячим воздухом и соединения',5],['details','Устройство подтверждённых примыканий и деталей',6]] as const) {
-  const condition=id==='details'?eq('detail_membrane_mode','REQUIRED'):positive;
+  const condition=id==='details'?{kind:'or' as const,operands:[{kind:'greater_than' as const,parameterId:'edge_rail_length_m',value:0},eq('detail_membrane_mode','REQUIRED')]}:positive;
   quantity('pvc15_'+id+'_worker_hours','Труд: '+title+'; входит в основную монтажную расценку, без новой нормы','man_hour',condition);
   const rowId='pvc15:labor:'+id;
   row(rowId,title+' — труд включён в основную работу','man_hour','pvc15_'+id+'_worker_hours',id,title,ordinal,{inclusion:condition,costTreatment:'INCLUDED_IN_RESOURCE_ROWS'});
@@ -176,7 +183,7 @@ const baseOperations: Record<string,[string,string,number]> = {
  'rc09:pvc_membrane_weld_probe_test':['control','Контроль сварных швов по плану',7], 'rc09:unreinforced_pvc_detail_membrane':['details','Устройство подтверждённых примыканий и деталей',6], 'rc09:pvc_contact_adhesive':['details','Устройство подтверждённых примыканий и деталей',6],
 };
 definition={...definition,parameters:definition.parameters.map(p=>({...p,
- constraints_json:{...p.constraints_json,...(PVC_ROOF_MEMBRANE_INSTALLATION_PARAMETERS.find(old=>old.parameter_id===p.parameter_id)?.constraints_json.forbiddenWhen?{forbiddenWhen:PVC_ROOF_MEMBRANE_INSTALLATION_PARAMETERS.find(old=>old.parameter_id===p.parameter_id)!.constraints_json.forbiddenWhen}:{}),
+ constraints_json:{...p.constraints_json,...(PVC_ROOF_MEMBRANE_INSTALLATION_PARAMETERS.find(old=>old.parameter_id===p.parameter_id)?.constraints_json?.forbiddenWhen?{forbiddenWhen:PVC_ROOF_MEMBRANE_INSTALLATION_PARAMETERS.find(old=>old.parameter_id===p.parameter_id)!.constraints_json!.forbiddenWhen}:{}),
   ...(p.parameter_id==='pvc15_machine_reference'?{forbiddenWhen:eq('pvc15_machine_provision',PVC15_MACHINE.unknown)}:{})},
  truth_metadata:{...p.truth_metadata,guide:{...(p.truth_metadata.guide as Record<string,unknown>),verified_at:'2026-10-07',
  ...(p.parameter_id.endsWith('_quantum')&&p.parameter_id.includes('reinforced_pvc_roof_membrane')?{guide_short_ru:'Для указанной каталожной поставки LOGICROOF V-RP1,5 указан рулон42 м² (PDF15/14). Подтвердите фактическую поставку: другой раскрой или шаг вводится явно; число рулонов на палете не минимум заказа.'}:{}),

@@ -50,7 +50,7 @@
     "usageMachineHours": "Exact project fact; never apparatus count, rental days or price",
     "states": ["contractor-owned", "rented with explicit rate basis and period", "provided in confirmed main rate", "separate apparatus purchase count", "unresolved provision"],
     "mainRate": "Original area-based installation owner; allocated installation labour and provided tools disclosed as included",
-    "additionalOwnCosts": ["preparation", "protection when applicable", "own machine usage and actual maintenance", "confirmed rental period", "energy when separately payable", "separate delivery when applicable", "defect correction and repeat control", "cleanup, bags and complete actual waste service", "handover documentation"],
+    "additionalOwnCosts": ["preparation", "separation layer labour", "protection when applicable", "own machine usage and actual maintenance", "confirmed rental period", "energy when separately payable", "separate delivery when applicable", "defect correction and repeat control", "cleanup, bags and complete actual waste service", "handover documentation"],
     "noDefaultPrice": true
   },
   "controlFixture": { "path": "tests/fixtures/pvc15FullCompositionS2743.ts", "classification": "VALIDATION_FIXTURE_ONLY_NOT_RUNTIME_DEFAULT", "legacyMembraneOrderM2": 535, "independentTestConsumptionM2": 525, "selectedTestCutQuantumM2": 5, "testQuantumIsNotTheManufacturerRoll": true },

@@ -77,9 +77,11 @@ test('main installation, preparation and own machine costs are independent while
     'rc09:pvc_membrane_hot_air_install':{unitPrice:'10',provenance:{kind:'manual'}},
     'pvc15:labor:preparation':{unitPrice:'100',provenance:{kind:'manual'}},
     'pvc15:equipment:own-use':{unitPrice:'20',provenance:{kind:'manual'}},
-  });expect(result.totals.amount).toBe('5430');expect(result.totals.pricedRowCount).toBe(3);expect(result.totals.unpricedRowCount).toBeGreaterThan(0);
+    'pvc15:labor:separation':{unitPrice:'75',provenance:{kind:'manual'}},
+  });expect(result.totals.amount).toBe('5580');expect(result.totals.pricedRowCount).toBe(4);expect(result.totals.unpricedRowCount).toBeGreaterThan(0);
   expect(find(result,'pvc15:labor:welding')).toMatchObject({quantity:'6',included_in_estimate:false,unit_price:null});
   expect(find(result,'pvc15:tools:welding')).toMatchObject({included_in_estimate:false,included_in_procurement:false,calculation_trace:{resourceGraph:{includedInResourceOwnerRowId:'rc09:pvc_membrane_hot_air_install'}}});
+  expect(find(result,'pvc15:labor:details')).toMatchObject({quantity:'2',included_in_estimate:false});
 });
 
 test('missing supply facts preserve known usage and scope while material order remains an explicit unresolved need',async()=>{
