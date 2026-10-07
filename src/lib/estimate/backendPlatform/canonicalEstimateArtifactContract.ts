@@ -12,7 +12,7 @@ export { canonicalArtifactPurchaseBalance } from "./canonicalPersistedPurchaseBa
 
 export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r10";
 export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r8-russian-resource-presentations";
-export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:13";
+export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:14";
 
 /** Keep caller idempotency within each renderer; do not collide with legacy jobs. */
 export function canonicalProcurementRequestKey(idempotencyKey: string): string {
@@ -138,11 +138,21 @@ export function canonicalArtifactSpecificationParts(row: CanonicalArtifactRow, p
   const graph = objectValue(objectValue(row.calculation_trace).resourceGraph);
   const ids = Array.isArray(graph.titleSpecificationParameterIds) ? graph.titleSpecificationParameterIds
     : graph.titleSpecificationParameterId ? [graph.titleSpecificationParameterId] : [];
-  const selected = ids.flatMap(id => typeof id === "string" && nullableText(parameters[id])
-    ? [{ parameterId: id, value: String(parameters[id]), parts: String(parameters[id]).split(/\s*;\s*/u).filter(Boolean) }] : []);
+  const labels = objectValue(graph.titleSpecificationParameterLabelsRu);
+  const selected = ids.flatMap(id => {
+    if (typeof id !== "string" || !nullableText(parameters[id])) return [];
+    const rawLabel = labels[id];
+    const label = Object.prototype.hasOwnProperty.call(labels, id) && typeof rawLabel === "string"
+      && rawLabel.trim().length > 0 && rawLabel.length <= 100 && /[А-Яа-яЁё]/u.test(rawLabel)
+      ? rawLabel.trim() : null;
+    return [{ parameterId: id, value: String(parameters[id]),
+      parts: String(parameters[id]).split(/\s*;\s*/u).filter(Boolean).map(part => label ? `${label}: ${part}` : part) }];
+  });
+  const selectedParts = selected.flatMap(spec => spec.parts);
+  const selectedSpecification = selectedParts.join(", ");
   const presentation = canonicalArtifactPublicResourcePresentationV1(row);
   const details = presentation ? [presentation.brandAndModelRu, presentation.specificationRu, ...presentation.detailsRu]
-    .filter((part): part is string => typeof part === 'string' && !selected.some(spec => spec.parts.includes(part))) : [];
+    .filter((part): part is string => typeof part === 'string' && !selectedParts.includes(part) && part !== selectedSpecification) : [];
   return [...selected, ...(details.length ? [{ parameterId: 'resource_presentation_v1', value: details.join('; '), parts: [...new Set(details)] }] : [])];
 }
 

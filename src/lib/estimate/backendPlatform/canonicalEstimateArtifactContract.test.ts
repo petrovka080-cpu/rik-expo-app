@@ -4,6 +4,7 @@ import {
   canonicalArtifactPreliminaryNeeds,
   canonicalArtifactQuantity,
   canonicalArtifactSection,
+  canonicalArtifactSpecificationParts,
   canonicalArtifactVisibleRowTitle,
   canonicalProfessionalArtifactMetadataIdentityMatches,
   selectCanonicalArtifactRows,
@@ -26,6 +27,34 @@ const rows = [
 ];
 
 describe("canonical estimate artifact contract", () => {
+  it("uses authored dimension labels once in PDF and procurement specifications without changing saved facts", () => {
+    const title = "Лента переходная — Ширина (мм): 300, Толщина (мм): 1.5, Длина рулона (м): 15";
+    const parameters = { width: 300, thickness: 1.5, roll: 15 };
+    const tape = { ...rows[0]!, title_ru: title, quantity: "15", unit_id: "m", calculation_trace: { resourceGraph: {
+      titleSpecificationParameterIds: ["width", "thickness", "roll"],
+      titleSpecificationParameterLabelsRu: { width: "Ширина (мм)", thickness: "Толщина (мм)", roll: "Длина рулона (м)" },
+      publicResourcePresentationV1: { contractVersion: "canonical-public-resource-presentation/v1", sourceTitleRu: title,
+        nameRu: "Лента переходная", brandAndModelRu: "LOGICROOF Tape PVC-B", specificationRu: "Ширина (мм): 300, Толщина (мм): 1.5, Длина рулона (м): 15", detailsRu: [] },
+    } } };
+    const before = JSON.stringify({ tape, parameters });
+    const specifications = canonicalArtifactSpecificationParts(tape, parameters);
+    expect(specifications.flatMap(spec => spec.parts)).toEqual([
+      "Ширина (мм): 300", "Толщина (мм): 1.5", "Длина рулона (м): 15", "LOGICROOF Tape PVC-B",
+    ]);
+    expect(specifications[0]).toMatchObject({ parameterId: "width", value: "300" });
+    expect(buildCanonicalProcurementProjection({ revision: { ...revision, input_parameters: parameters }, procurementRows: [tape] }).rows[0])
+      .toMatchObject({ quantity: "15", unitId: "m", specifications });
+    expect(JSON.stringify({ tape, parameters })).toBe(before);
+  });
+
+  it("preserves known dimensions and legacy specifications without inheriting a label", () => {
+    const partial = { ...rows[0]!, calculation_trace: { resourceGraph: { titleSpecificationParameterIds: ["width", "thickness"],
+      titleSpecificationParameterLabelsRu: { width: "Ширина (мм)", thickness: "Толщина (мм)" } } } };
+    expect(canonicalArtifactSpecificationParts(partial, { width: 300 }).flatMap(spec => spec.parts)).toEqual(["Ширина (мм): 300"]);
+    const legacy = { ...rows[0]!, calculation_trace: { resourceGraph: { titleSpecificationParameterIds: ["constructor"],
+      titleSpecificationParameterLabelsRu: Object.create({ constructor: "Чужая подпись" }) } } };
+    expect(canonicalArtifactSpecificationParts(legacy, { constructor: 7 }).flatMap(spec => spec.parts)).toEqual(["7"]);
+  });
   it("presents a known product version in saved resources without rewriting quantities or source rows", () => {
     const row = { ...rows[0], title_ru: "CT127en_GL: сухой порошок — CT127_EN_GL_0120", calculation_trace: { resourceGraph: { titleSpecificationParameterIds: ["ct127_delivered_version"] } } };
     const before = JSON.stringify(row);
@@ -141,7 +170,7 @@ describe("canonical estimate artifact contract", () => {
       grandTotalStatus: "PARTIAL_NEEDS_PRICE",
       pageCount: 4,
       generatorVersion: "canonical-professional-pdf.r4-a6",
-      templateVersion: "professional-estimate-pdf:13",
+      templateVersion: "professional-estimate-pdf:14",
     });
     expect(canonicalProfessionalArtifactMetadataIdentityMatches({
       metadata,
