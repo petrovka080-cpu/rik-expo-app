@@ -49,8 +49,8 @@ test('actual cleanup and waste service retain independent units, pack balance an
     calculation_trace: { purchaseBalance: { consumed: '5', remaining: '4' } } });
   expect(result.rows.find(r => r.row_id === 'g6:completion:waste-service')).toMatchObject({ quantity: '12', unit_id: 'kg', unit_price: null });
   expect(result.rows.find(r => r.row_id === profile.workerRowId)?.quantity).toBe('5.33');
-  expect(result.rows.find(r => r.row_id === 'pvc-roof:material:field')?.calculation_trace.purchaseBalance)
-    .toMatchObject({ remaining: '42.5' });
+  expect(result.rows.find(r => r.row_id === 'pvc-roof:material:field')?.calculation_trace)
+    .toMatchObject({ purchaseBalance: { remaining: '42.5' } });
   expect(result.preliminaryNeeds.some(n => n.row_id.startsWith('g6:completion:'))).toBe(false);
   expect(result.totals.amount).toBe('0');
   expect(result.totals.unpricedRowCount).toBeGreaterThan(0);

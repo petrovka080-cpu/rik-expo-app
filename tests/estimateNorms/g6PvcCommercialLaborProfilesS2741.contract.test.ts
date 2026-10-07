@@ -15,7 +15,7 @@ const withoutPresentation = (rows: readonly Record<string, unknown>[]) => rows.m
 
 test.each(series.map(profile => [profile.catalogId, profile] as const))('G6 series %s preserves original quantities/physical supply and gives the full labour norm one explicit rate owner', async (_id, profile) => {
   const submitted = profile.measureId === 'area_m2' ? { area_m2: 100 } : { ...transitionFixture };
-  const compile = (definition: typeof profile.definition, input = submitted) => compileAutomaticConstructionOwnerR1({
+  const compile = (definition: typeof profile.definition, input: Record<string, unknown> = submitted) => compileAutomaticConstructionOwnerR1({
     catalogId: profile.catalogId, compilerVersion: 'S2741-G6-commercial-fixture', primaryMeasureParameterId: profile.measureId,
     definition, submittedParameters: input });
   const original = await compile(profile.originalDefinition);
