@@ -8,7 +8,7 @@ import { adaptCanonicalRevisionToStructuredEstimate } from './canonicalEstimateF
 import { ESTIMATE_PLATFORM_API_VERSION, type CanonicalEstimateCatalogItem, type CanonicalEstimateRevisionView } from './contracts';
 import { buildStructuredEstimateRequestDraft } from '../../estimateStructuredPipeline/structuredEstimateRequestBinding';
 import { consumerRepairRowPublicResourcePresentation, consumerRepairRowMatchesSearch } from '../../../features/consumerRepair/consumerRepairRowMetadata';
-import { canonicalArtifactSpecificationParts, canonicalArtifactVisibleRowTitle, buildCanonicalProcurementProjection } from './canonicalEstimateArtifactContract';
+import { canonicalArtifactPreliminaryNeeds, canonicalArtifactSpecificationParts, canonicalArtifactVisibleRowTitle, buildCanonicalProcurementProjection } from './canonicalEstimateArtifactContract';
 import { buildCanonicalProfessionalPdfProjection } from './canonicalProfessionalPdf';
 import type { CanonicalArtifactRow } from './canonicalEstimateArtifactContract';
 import { createHash } from 'node:crypto';
@@ -62,7 +62,7 @@ test('saved G6 rows and compact unknown needs carry the same Russian names, bran
     currencyCode: 'KGS', maximumResourceRows: profile.definition.resources.length,
     hashJson: value => createHash('sha256').update(canonicalEstimateStableJson(value)).digest('hex') });
   const stored = { id: '11111111-1111-4111-8111-111111111111', release_id: '22222222-2222-4222-8222-222222222222',
-    definition_version_id: '33333333-3333-4333-8333-333333333333', checksum_sha256: 'a'.repeat(64), row_count: compiled.rows.length,
+    catalog_id: profile.catalogId, definition_version_id: '33333333-3333-4333-8333-333333333333', checksum_sha256: 'a'.repeat(64), row_count: compiled.rows.length,
     input_parameters: compiled.parameters, totals: compiled.totals, currency_code: 'KGS',
     amendment_contract: { parameterSources: { preliminaryNeeds: compiled.preliminaryNeeds } } };
   const transport = projectCanonicalEstimatePreliminaryNeedTransport(stored);
@@ -71,7 +71,9 @@ test('saved G6 rows and compact unknown needs carry the same Russian names, bran
   const revision: CanonicalEstimateRevisionView = { apiVersion: ESTIMATE_PLATFORM_API_VERSION, revisionId: stored.id, parentRevisionId: null,
     releaseId: stored.release_id, catalogId: profile.catalogId, revisionNumber: 1, status: 'ready', currencyCode: 'KGS', parameters: compiled.parameters,
     totals: compiled.totals, rowCount: compiled.rows.length, checksumSha256: stored.checksum_sha256, compilerVersion: 'G6-label-fixture',
-    createdAt: '2026-10-06T00:00:00Z', amendmentContract: transport.amendmentContract, preliminaryNeeds: transport.preliminaryNeeds };
+    createdAt: '2026-10-06T00:00:00Z',
+    amendmentContract: { rowOverrides: {}, customRows: [], releaseMigration: null, ...transport.amendmentContract },
+    preliminaryNeeds: transport.preliminaryNeeds };
   const payload = adaptCanonicalRevisionToStructuredEstimate({ catalog, revision,
     rows: compiled.rows.map(row => canonicalEstimateRevisionRowFromStorage(row, null)) });
   const draft = buildStructuredEstimateRequestDraft(payload);
@@ -107,7 +109,7 @@ test('saved G6 rows and compact unknown needs carry the same Russian names, bran
   expect(canonicalArtifactVisibleRowTitle(fieldRow)).toBe(source.nameRu);
   expect(canonicalArtifactSpecificationParts(fieldRow, compiled.parameters).flatMap(s => s.parts)).toContain('LOGICROOF V-RP');
   const pdf = buildCanonicalProfessionalPdfProjection({ revision: stored, rows: sourceRows,
-    preliminaryNeeds: compiled.preliminaryNeeds as CanonicalArtifactRow[], expectedProjectedRowCount: sourceRows.length, workTitleRu: catalog.titleRu });
+    preliminaryNeeds: canonicalArtifactPreliminaryNeeds(stored), expectedProjectedRowCount: sourceRows.length, workTitleRu: catalog.titleRu });
   expect(pdf.html).toContain('<strong>'+source.nameRu+'</strong>');
   expect(pdf.html).toContain('LOGICROOF V-RP');
   expect(pdf.html).toContain('<strong>Очиститель для ПВХ-мембран</strong>');
@@ -121,10 +123,10 @@ test('saved G6 rows and compact unknown needs carry the same Russian names, bran
 test('existing dynamic material policy remains saved when a row has no public naming descriptor', async () => {
   const facts = { ...MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT };
   const result = await compileMasonryBrickWallBiaTn10R1(facts);
-  const brick = result.rows.find(row => (row.calculation_trace.resourceGraph as Record<string, unknown>)
+  const brick = result.rows.find(row => ((row.calculation_trace as Record<string, unknown>).resourceGraph as Record<string, unknown>)
     .professionalMaterialQuantityPolicyV1 != null)!;
-  expect(brick.calculation_trace.resourceGraph).toMatchObject({ professionalMaterialQuantityPolicyV1: {
+  expect(brick.calculation_trace).toMatchObject({ resourceGraph: { professionalMaterialQuantityPolicyV1: {
     wastePercent: 3, procurementPackageSize: 500,
     formulaInputs: expect.objectContaining({ brick_breakage_percent: result.parameters.brick_breakage_percent,
-      brick_supplier_package_pieces: result.parameters.brick_supplier_package_pieces }) } });
+      brick_supplier_package_pieces: result.parameters.brick_supplier_package_pieces }) } } });
 });

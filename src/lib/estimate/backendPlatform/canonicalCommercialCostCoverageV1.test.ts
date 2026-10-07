@@ -10,7 +10,7 @@ import { buildStructuredEstimateRequestDraft } from '../../estimateStructuredPip
 import { ESTIMATE_PLATFORM_API_VERSION, type CanonicalEstimateRevisionView, type CanonicalEstimateCatalogItem } from './contracts';
 import { consumerRepairRowCostCoverageLabel, consumerRepairRowCommercialScopeLabel } from '../../../features/consumerRepair/consumerRepairRowMetadata';
 import { buildCanonicalProfessionalPdfProjection } from './canonicalProfessionalPdf';
-import type { CanonicalArtifactRow } from './canonicalEstimateArtifactContract';
+import { canonicalArtifactPreliminaryNeeds, type CanonicalArtifactRow } from './canonicalEstimateArtifactContract';
 
 // MASTER §20.43.6 arithmetic fixture only. These are not catalogue norms or prices.
 function fixture(mode = 'OPERATIONS'): CanonicalEstimateCompileCoreInput {
@@ -151,7 +151,8 @@ describe('canonical server commercial coverage', () => {
     expect(result.totals.unpricedRowCount).toBe(3);
     expect((row(result, 'lay').calculation_trace as { resourceGraph: Record<string, unknown> }).resourceGraph)
       .not.toHaveProperty('commercialCostCoverageOwnerDecisionV1');
-    const html = buildCanonicalProfessionalPdfProjection({ revision: { row_count: result.rows.length, totals: result.totals, currency_code: 'KGS' },
+    const html = buildCanonicalProfessionalPdfProjection({ revision: { id: 'coverage-fixture', release_id: 'fixture-release',
+      catalog_id: input.catalogId, checksum_sha256: 'a'.repeat(64), row_count: result.rows.length, totals: result.totals, currency_code: 'KGS' },
       rows: result.rows as CanonicalArtifactRow[], expectedProjectedRowCount: result.rows.length, workTitleRu: 'Контрольная смета' }).html;
     expect(html).not.toContain(coverage(input).scopeRu);
   });
@@ -187,7 +188,7 @@ describe('canonical server commercial coverage', () => {
     input.resourceDefinitions.find(r => r.row_id === 'tile')!.formula_id = 'tile';
     const result = await compileCanonicalEstimateCore(input);
     const stored = { id: '11111111-1111-4111-8111-111111111111', release_id: '22222222-2222-4222-8222-222222222222',
-      definition_version_id: '33333333-3333-4333-8333-333333333333', checksum_sha256: 'a'.repeat(64),
+      catalog_id: input.catalogId, definition_version_id: '33333333-3333-4333-8333-333333333333', checksum_sha256: 'a'.repeat(64),
       row_count: result.rows.length, input_parameters: result.parameters, totals: result.totals,
       amendment_contract: { parameterSources: { preliminaryNeeds: result.preliminaryNeeds } } };
     const transport = projectCanonicalEstimatePreliminaryNeedTransport(stored);
@@ -201,7 +202,8 @@ describe('canonical server commercial coverage', () => {
       releaseId: stored.release_id, catalogId: input.catalogId, revisionNumber: 1, status: 'ready', currencyCode: 'KGS',
       parameters: result.parameters, totals: result.totals, rowCount: result.rows.length, checksumSha256: stored.checksum_sha256,
       compilerVersion: input.compilerVersion, createdAt: '2026-10-06T00:00:00Z',
-      amendmentContract: transport.amendmentContract, preliminaryNeeds: transport.preliminaryNeeds };
+      amendmentContract: { rowOverrides: {}, customRows: [], releaseMigration: null, ...transport.amendmentContract },
+      preliminaryNeeds: transport.preliminaryNeeds };
     const payload = adaptCanonicalRevisionToStructuredEstimate({ catalog, revision,
       rows: result.rows.map(r => canonicalEstimateRevisionRowFromStorage(r, null)) });
     const draft = buildStructuredEstimateRequestDraft(payload);
@@ -210,7 +212,7 @@ describe('canonical server commercial coverage', () => {
     expect(consumerRepairRowCostCoverageLabel(tile)).toContain('Труд по предложению №7');
     expect(consumerRepairRowCostCoverageLabel(tile)).toContain('исполнитель');
     const html = buildCanonicalProfessionalPdfProjection({ revision: stored, rows: result.rows as CanonicalArtifactRow[],
-      preliminaryNeeds: result.preliminaryNeeds as CanonicalArtifactRow[], expectedProjectedRowCount: result.rows.length, workTitleRu: catalog.titleRu }).html;
+      preliminaryNeeds: canonicalArtifactPreliminaryNeeds(stored), expectedProjectedRowCount: result.rows.length, workTitleRu: catalog.titleRu }).html;
     expect(html).toContain('Включено в стоимость «Труд по предложению №7»');
     expect(html).toContain('Ресурс предоставляет исполнитель этой расценки.');
     expect(html).toContain('Количество нужно уточнить');
@@ -222,9 +224,9 @@ describe('canonical server commercial coverage', () => {
     const owner = row(result, 'lay');
     const sourceRows = result.rows.filter(r => r.row_id !== 'lay') as CanonicalArtifactRow[];
     const need = { ...owner, title_ru: 'Комплекс исполнителя', quantity: null, selected: true, need_state: 'QUANTITY_REQUIRED',
-      missing_parameter_ids: ['scope_measure'], need_sha256: 'b'.repeat(64) } as unknown as CanonicalArtifactRow;
+      missing_parameter_ids: ['scope_measure'], need_sha256: 'b'.repeat(64) };
     const stored = { id: '11111111-1111-4111-8111-111111111111', release_id: '22222222-2222-4222-8222-222222222222',
-      definition_version_id: '33333333-3333-4333-8333-333333333333', checksum_sha256: 'a'.repeat(64),
+      catalog_id: 'coverage-fixture', definition_version_id: '33333333-3333-4333-8333-333333333333', checksum_sha256: 'a'.repeat(64),
       row_count: sourceRows.length, totals: { amount: '0' }, currency_code: 'KGS', input_parameters: result.parameters,
       amendment_contract: { parameterSources: { preliminaryNeeds: [need] } } };
     const transport = projectCanonicalEstimatePreliminaryNeedTransport(stored);
@@ -234,14 +236,15 @@ describe('canonical server commercial coverage', () => {
     const revision: CanonicalEstimateRevisionView = { apiVersion: ESTIMATE_PLATFORM_API_VERSION, revisionId: stored.id, parentRevisionId: null,
       releaseId: stored.release_id, catalogId: catalog.catalogId, revisionNumber: 1, status: 'ready', currencyCode: 'KGS',
       parameters: result.parameters, totals: stored.totals, rowCount: sourceRows.length, checksumSha256: stored.checksum_sha256,
-      compilerVersion: 'coverage-test', createdAt: '2026-10-06T00:00:00Z', amendmentContract: transport.amendmentContract,
+      compilerVersion: 'coverage-test', createdAt: '2026-10-06T00:00:00Z',
+      amendmentContract: { rowOverrides: {}, customRows: [], releaseMigration: null, ...transport.amendmentContract },
       preliminaryNeeds: transport.preliminaryNeeds };
     const draft = buildStructuredEstimateRequestDraft(adaptCanonicalRevisionToStructuredEstimate({ catalog, revision,
       rows: sourceRows.map(r => canonicalEstimateRevisionRowFromStorage(r, null)) }));
     const included = draft.items.find(item => item.sourceParameters?.rowCode === 'prepare')!;
     expect(consumerRepairRowCostCoverageLabel(included)).toContain('Комплекс исполнителя');
     const projection = buildCanonicalProfessionalPdfProjection({ revision: stored,
-      rows: sourceRows, preliminaryNeeds: [need], expectedProjectedRowCount: sourceRows.length, workTitleRu: 'Контрольная смета' });
+      rows: sourceRows, preliminaryNeeds: canonicalArtifactPreliminaryNeeds(stored), expectedProjectedRowCount: sourceRows.length, workTitleRu: 'Контрольная смета' });
     expect(projection.html).toContain('стоимость включена в позицию «Комплекс исполнителя»');
     expect(projection.html).toContain('Состав расценки: Труд подготовки');
     expect(projection.html).toContain('Количество нужно уточнить');
@@ -287,7 +290,7 @@ test.each([
   expect(result.parameters.material_spec).toBe('Керамогранит 600×600 мм');
   expect(result.totals).toMatchObject({ amount: '17000', pricedRowCount: 3 });
   if (incomplete) expect(need.missing_parameter_ids).toContain('material_finish');
-  if (manual) expect(need.calculation_trace.manualTitleOverride).toBe(true);
-  if (mode === 'APPEND' && !manual) expect(need.calculation_trace.resourceGraph).toMatchObject({
-    publicResourcePresentationV1: { nameRu: 'Плитка', specificationRu: 'Керамогранит 600×600 мм' } });
+  if (manual) expect(need.calculation_trace).toHaveProperty('manualTitleOverride', true);
+  if (mode === 'APPEND' && !manual) expect(need.calculation_trace).toMatchObject({ resourceGraph: {
+    publicResourcePresentationV1: { nameRu: 'Плитка', specificationRu: 'Керамогранит 600×600 мм' } } });
 });
