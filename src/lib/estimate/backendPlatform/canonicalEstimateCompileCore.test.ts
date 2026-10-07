@@ -1192,3 +1192,41 @@ describe("canonicalEstimateCompileCore", () => {
     });
   });
 });
+
+describe("authored title specification labels", () => {
+  it("does not inherit a label for a declared parameter whose name exists on Object.prototype", async () => {
+    const input = baseInput();
+    input.parameterDefinitions.push({ parameter_id: "constructor", value_type: "decimal", required: true, default_value: null, constraints_json: {} });
+    Object.assign(input.submittedParameters, { constructor: 300 });
+    input.resourceDefinitions[0]!.resource_graph = { titleSpecificationParameterIds: ["constructor"], titleSpecificationParameterLabelsRu: {} };
+    const result = await compileCanonicalEstimateCore(input);
+    expect(result.rows[0]!.title_ru).toBe("Листовой материал — 300");
+  });
+  it("keeps typed dimensions identifiable without changing their values or quantity", async () => {
+    const input = baseInput();
+    input.parameterDefinitions.push(
+      { parameter_id: "width", value_type: "decimal", required: true, default_value: null, constraints_json: {} },
+      { parameter_id: "thickness", value_type: "decimal", required: true, default_value: null, constraints_json: {} },
+    );
+    Object.assign(input.submittedParameters, { width: 300, thickness: 1.5 });
+    input.resourceDefinitions[0]!.resource_graph = { titleSpecificationParameterIds: ["width", "thickness"],
+      titleSpecificationParameterLabelsRu: { width: "Ширина (мм)", thickness: "Толщина (мм)" } };
+    const result = await compileCanonicalEstimateCore(input);
+    expect(result.rows[0]!.title_ru).toBe("Листовой материал — Ширина (мм): 300, Толщина (мм): 1.5");
+    expect(result.rows[0]!.quantity).toBe("11");
+    expect(result.parameters.width).toBe(300);
+    expect(result.parameters.thickness).toBe(1.5);
+    delete input.submittedParameters.thickness;
+    const missing = await compileCanonicalEstimateCore(input);
+    expect(missing.rows).toHaveLength(0);
+    expect(missing.preliminaryNeeds[0]!.title_ru).toContain("Ширина (мм): 300");
+    expect(missing.preliminaryNeeds[0]!.missing_parameter_ids).toContain("thickness");
+  });
+  it.each([{ unknown: "Размер" }, { width: "" }, { width: 300 }, ["Ширина"]])("rejects unbound or malformed labels %p", async labels => {
+    const input = baseInput();
+    input.parameterDefinitions.push({ parameter_id: "width", value_type: "decimal", required: true, default_value: null, constraints_json: {} });
+    input.submittedParameters.width = 300;
+    input.resourceDefinitions[0]!.resource_graph = { titleSpecificationParameterIds: ["width"], titleSpecificationParameterLabelsRu: labels };
+    await expect(compileCanonicalEstimateCore(input)).rejects.toMatchObject({ code: "DEFINITION_INTEGRITY_FAILED" });
+  });
+});

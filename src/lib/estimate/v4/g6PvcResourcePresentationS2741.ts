@@ -54,7 +54,10 @@ export function withG6PvcResourcePresentationS2741(base: AutomaticOwnerDefinitio
     // sources, inclusions, tooling assumptions and source-version restrictions.
     const descriptor: CanonicalPublicResourcePresentationV1 = { contractVersion: 'canonical-public-resource-presentation/v1',
       sourceTitleRu: row.title_ru, nameRu: label[0], brandAndModelRu: label[1], specificationRu: null, detailsRu: label[2] ?? [row.title_ru] };
-    const presented = { ...row, resource_graph: { ...row.resource_graph, publicResourcePresentationV1: descriptor }, row_sha256: '' };
+    const parameterLabels = row.row_id === 'transition:material:tape'
+      ? { titleSpecificationParameterLabelsRu: { tape_width_mm: 'Ширина (мм)', tape_thickness_mm: 'Толщина (мм)', tape_roll_length_m: 'Длина рулона (м)' } }
+      : {};
+    const presented = { ...row, resource_graph: { ...row.resource_graph, ...parameterLabels, publicResourcePresentationV1: descriptor }, row_sha256: '' };
     presented.row_sha256 = estimateDeterministicHash(presented); return presented;
   }) });
 }

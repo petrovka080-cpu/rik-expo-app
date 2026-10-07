@@ -1,4 +1,6 @@
 import React from "react";
+import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
+import { canonicalPublicResourcePresentationV1 } from "../../lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
@@ -459,12 +461,13 @@ function useConsumerCanonicalDraftPersistence(input: {
           revisionId: canonicalBackend.revisionId,
           titleRu: mapping.payload.workTitle?.trim() || "Предварительная смета",
           explicitValidationFixture: canonicalEstimatePreviewIsExplicitValidationFixture(canonicalBackend.sourceRequestText),
-          calculatedRows: calculatedRows.slice(0, 4).map((row) => ({
-            id: row.rowId,
-            titleRu: row.visibleName,
-            quantity: row.quantity,
-            unit: row.unit?.trim() || "ед.",
-          })),
+          calculatedRows: calculatedRows.slice(0, 4).map((row) => {
+            const presentation = canonicalPublicResourcePresentationV1({ titleRu: row.visibleName,
+              descriptor: row.sourceParameters?.canonicalPublicResourcePresentationV1,
+              manualTitleOverride: row.sourceParameters?.canonicalManualTitleOverride === true });
+            return { id: row.rowId, titleRu: presentation?.nameRu ?? row.visibleName,
+              quantity: row.quantity, unit: formatEstimateUnitLabel(row.unit?.trim() || "ед.") };
+          }),
           calculatedRowCount: calculatedRows.length,
           preliminaryNeedCount,
           saved: false,

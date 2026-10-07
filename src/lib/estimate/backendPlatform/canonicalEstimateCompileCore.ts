@@ -435,6 +435,7 @@ function multiply(quantity: string, unitPrice: string | null): string | null {
 
 type CanonicalTitleSpecification = {
   parameterIds: string[];
+  parameterLabelsRu: Record<string, string>;
   mode: "APPEND" | "REPLACE";
   separator: " — " | " ";
 };
@@ -507,8 +508,16 @@ function canonicalTitleSpecification(
       "DEFINITION_INTEGRITY_FAILED",
     );
   }
+  const rawLabels = resource.resource_graph?.titleSpecificationParameterLabelsRu;
+  if (rawLabels != null && (!rawLabels || typeof rawLabels !== "object" || Array.isArray(rawLabels)
+    || Object.entries(rawLabels).some(([id, label]) => !parameterIds.includes(id)
+      || typeof label !== "string" || label.trim().length === 0 || label.length > 100 || !/[А-Яа-яЁё]/u.test(label)))) {
+    throw compilerError(`title specification labels invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
+  }
+  const parameterLabelsRu = Object.fromEntries(Object.entries(rawLabels ?? {}).map(([id,label]) => [id,String(label).trim()]));
   return {
     parameterIds,
+    parameterLabelsRu,
     mode: mode as CanonicalTitleSpecification["mode"],
     separator: separator as CanonicalTitleSpecification["separator"],
   };
@@ -1004,11 +1013,13 @@ export async function compileCanonicalEstimateCore(
     const titleSpecificationValues = titleSpecification.parameterIds.map((parameterId) => {
       const value = parameters[parameterId];
       const declaredType = parameterDefinitionsById.get(parameterId)?.value_type;
-      if (typeof value === "number" && Number.isFinite(value)
-        && (declaredType === "decimal" || (declaredType === "integer" && Number.isInteger(value)))) {
-        return String(value);
-      }
-      return value;
+      const typedValue = typeof value === "number" && Number.isFinite(value)
+        && (declaredType === "decimal" || (declaredType === "integer" && Number.isInteger(value)))
+        ? String(value) : value;
+      const label = Object.prototype.hasOwnProperty.call(titleSpecification.parameterLabelsRu, parameterId)
+        ? titleSpecification.parameterLabelsRu[parameterId] : undefined;
+      return label && typeof typedValue === "string" && typedValue.trim()
+        ? `${label}: ${typedValue.trim()}` : typedValue;
     });
     if (titleSpecificationValues.some((value) => value != null && typeof value !== "string")) {
       throw compilerError(`title specification parameter invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
