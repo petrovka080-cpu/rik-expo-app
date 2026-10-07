@@ -1,7 +1,7 @@
 import { canonicalNumericPeerConstraintMessageRu, validateCanonicalEstimateParameterInputs } from "./canonicalEstimateParameterValidation";
 import type { CanonicalEstimateCatalogItem } from "./contracts";
 import { NUMERIC_PARAMETER_RELATIONS } from "./numericParameterRelations";
-import { validateCanonicalEstimateParameters } from "./parameterConstraints";
+import { canonicalNumericRelationDependencies, missingCanonicalNumericRelationParameterIds, validateCanonicalEstimateParameters } from "./parameterConstraints";
 
 type Schema = CanonicalEstimateCatalogItem["parameterSchema"];
 function schema(rule: string): Schema {
@@ -10,11 +10,14 @@ function schema(rule: string): Schema {
     { parameterId: "right", ordinal: 1, valueType: "decimal", unitId: "mm", titleRu: "Диаметр сборки", required: false, defaultValue: null, constraints: {} },
   ];
 }
-function backend(definitions: Schema, parameters: Record<string, unknown>) {
-  return validateCanonicalEstimateParameters(definitions.map(d => ({
+function backendDefinitions(definitions: Schema) {
+  return definitions.map(d => ({
     parameter_id: d.parameterId, value_type: d.valueType, required: d.required,
     default_value: d.defaultValue, constraints_json: d.constraints,
-  })), parameters);
+  }));
+}
+function backend(definitions: Schema, parameters: Record<string, unknown>) {
+  return validateCanonicalEstimateParameters(backendDefinitions(definitions), parameters);
 }
 
 describe("existing numeric peer constraints: client/backend parity", () => {
@@ -38,13 +41,26 @@ describe("existing numeric peer constraints: client/backend parity", () => {
     }
   });
 
-  it.each([undefined, null, "", "not-a-number", "Infinity", "NaN"])("does not treat missing/invalid peer %s as zero", right => {
+  it.each([undefined, null, ""])("retains missing peer %s as an unresolved dependency, never zero or a numeric conflict", right => {
     for (const [rule] of NUMERIC_PARAMETER_RELATIONS) {
       const definitions = schema(rule);
       const result = validateCanonicalEstimateParameterInputs({ schema: definitions, rawInputs: { left: 0, right } });
       expect(result.ok).toBe(false);
+      expect(result.issues).toEqual([{ code: "REQUIRED", parameterId: "right" }]);
+      const resolved = backend(definitions, result.parameters);
+      expect(resolved).toEqual({ left: "0" });
+      expect(missingCanonicalNumericRelationParameterIds(canonicalNumericRelationDependencies(backendDefinitions(definitions)), ["left"], resolved)).toEqual(["right"]);
+    }
+  });
+
+  it.each(["not-a-number", "Infinity", "NaN"])("rejects supplied invalid peer %s through client and raw server input", right => {
+    for (const [rule] of NUMERIC_PARAMETER_RELATIONS) {
+      const definitions = schema(rule);
+      const result = validateCanonicalEstimateParameterInputs({ schema: definitions, rawInputs: { left: 0, right } });
+      expect(result.ok).toBe(false);
+      expect(result.issues).toContainEqual({ code: "TYPE", parameterId: "right" });
       expect(result.issues).toContainEqual({ code: "CROSS_FIELD", parameterId: "left", relatedParameterId: "right", constraint: rule });
-      expect(() => backend(definitions, result.parameters)).toThrow("cross-field rule");
+      expect(() => backend(definitions, { left: 0, right })).toThrow("invalid number right");
     }
   });
 
