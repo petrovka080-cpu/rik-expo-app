@@ -1598,16 +1598,25 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
           clarificationRank[right.clarificationTier ?? "optional"],
       );
     const missingCardIds = new Set(missingCards.map((card) => card.key));
+    const baselineSources = new Map(this.buildBaselineCards().map(card => [card.key, card.source] as const));
+    // Editing an automatic value changes its preview provenance immediately.
+    // Keep the input in its baseline group until Apply/Cancel so React does
+    // not remount it and drop the keyboard after the first typed character.
+    const groupSource = (card: AiEstimateParameterCard) => isConsumerRepairParameterExplicitlyDirty({
+      baselineValue: this.state.baselineValues[card.key] ?? "",
+      draftValue: this.initialEditValue(card),
+      explicitlyConfirmedMissingValue: this.state.explicitlyConfirmedMissingValues[card.key] === true,
+    }) ? baselineSources.get(card.key) ?? card.source : card.source;
     const assumptionCards = canonicalSession
-      ? cards.filter((card) => !missingCardIds.has(card.key) && card.source === "catalog_default")
+      ? cards.filter((card) => !missingCardIds.has(card.key) && groupSource(card) === "catalog_default")
       : [];
     const filledCards = cards.filter((card) =>
       !missingCardIds.has(card.key) &&
-      card.source !== "formula_derived" &&
+      groupSource(card) !== "formula_derived" &&
       !assumptionCards.includes(card)
     );
     const derivedCards = cards.filter((card) =>
-      card.source === "formula_derived" && !missingCardIds.has(card.key));
+      groupSource(card) === "formula_derived" && !missingCardIds.has(card.key));
     const criticalMissingCards = missingCards.filter(
       (card) => card.clarificationTier === "critical",
     );

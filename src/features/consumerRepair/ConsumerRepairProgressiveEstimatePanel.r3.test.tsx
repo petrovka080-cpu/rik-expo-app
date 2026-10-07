@@ -349,6 +349,7 @@ describe("InlineParamEditor R3 parameter guide", () => {
     expect(onRefineCanonicalParameters).toHaveBeenCalledTimes(1);
     expect(dismissKeyboard).not.toHaveBeenCalled();
     expect(renderer.root.findByProps({ testID: "request-estimate-parameter-panel" })).toBeTruthy();
+    act(() => renderer.root.findByProps({ testID: "request-estimate-automatic-parameters-toggle" }).props.onPress());
     expect(renderer.root.findByProps({ testID: "editable-param-popover-input" }).props.value).toBe("35");
     expect(renderer.root.findByProps({
       testID: "editable-param-inline-guide-excavator_productivity_m3_h",
@@ -363,10 +364,14 @@ describe("InlineParamEditor R3 parameter guide", () => {
     expect(renderer.root.findByProps({ testID: "request-estimate-assumed-parameters" })
       .findAllByType("Text" as never)
       .map((node) => String(node.props.children ?? ""))
-      .join(" ")).toContain("Рассчитано или подставлено приложением — можно изменить");
+      .join(" ")).toContain("Предварительные значения можно проверить и заменить проектными");
 
     const editorInstance = renderer.root.findByType(ParameterDisclosurePanel).instance;
+    const automaticInput = renderer.root.findByProps({ testID: "editable-param-popover-input" });
+    act(() => automaticInput.props.onChangeText("4"));
+    expect(renderer.root.findByProps({ testID: "editable-param-popover-input" })).toBe(automaticInput);
     act(() => renderer.root.findByProps({ testID: "editable-param-popover-input" }).props.onChangeText("40"));
+    expect(renderer.root.findByProps({ testID: "editable-param-popover-input" })).toBe(automaticInput);
     expect(renderer.root.findByProps({ testID: "editable-param-popover-input" }).props.value).toBe("40");
     expect(renderer.root.findByProps({ testID: "editable-param-batch-dirty-count" })).toBeTruthy();
     act(() => renderer.root.findByProps({ testID: "request-estimate-parameters-toggle" }).props.onPress());
