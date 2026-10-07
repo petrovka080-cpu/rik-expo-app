@@ -23,6 +23,7 @@ import {
 } from "./canonicalEstimatePhysicalNormProjection";
 import { planCanonicalEffectiveResourceQuantitiesV1 } from "./canonicalEffectiveResourceQuantityV1";
 import { resolveCanonicalPurchaseBalanceV1, validateCanonicalManualTransportQuantityV1 } from "./canonicalPurchaseBalanceV1";
+import { resolveCanonicalPreliminaryParameterFormulasV1 } from './canonicalPreliminaryParameterFormulaV1';
 import {
   planCanonicalCommercialCostCoverageV1, canonicalCommercialCoveredResourceGraphV1,
   assertCanonicalCommercialCoveredQuantityV1, assertCanonicalCommercialCostOwnersV1,
@@ -834,10 +835,8 @@ export async function compileCanonicalEstimateCore(
   );
   const parameters = validateCanonicalEstimateParameters(
     input.parameterDefinitions,
-    resolveCanonicalDerivedExactLookups(
-      input.parameterDefinitions,
-      initiallyValidatedParameters,
-    ),
+    resolveCanonicalPreliminaryParameterFormulasV1(input.parameterDefinitions,
+      resolveCanonicalDerivedExactLookups(input.parameterDefinitions, initiallyValidatedParameters)),
     {
       confirmedParameters: {},
       baselineContext: { catalogId: input.catalogId },

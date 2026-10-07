@@ -56,6 +56,7 @@ import {
   assertConsumerCanonicalChildRevision,
   consumerCanonicalInheritedRecalculationInputs,
   consumerCanonicalExplicitMigrationParameters,
+  consumerCanonicalExplicitAutomaticParameters,
   resolveConsumerCanonicalRecalculationCatalog,
   type ConsumerCanonicalRecalculationConsent,
 } from "./consumerCanonicalReleaseMigration";
@@ -237,6 +238,7 @@ function runtimeProfileParameterSource(
     .trim()
     .toUpperCase();
   if (classification === "ASSUMPTION"
+    || classification === "PRELIMINARY_SOURCE_FORMULA"
     || classification === "VISIBLE_PRELIMINARY_SCENARIO"
     || classification === "RUNTIME_STRUCTURAL_DEFAULT"
     || schema.valueSourceRole === "VISIBLE_PRELIMINARY_SCENARIO"
@@ -445,9 +447,9 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
       || (input.parameters[schema.parameterId] != null
         && isCanonicalEstimateUserEditableParameter(schema))
       || (input.activeNeedParameterIds.has(schema.parameterId)
+        && !isCanonicalEstimateSourceManagedParameter(schema)
         && (schema.visibilityRole === "USER_INPUT"
-          || isCanonicalEstimateUserEditableParameter(schema)
-          || isCanonicalEstimateSourceManagedParameter(schema))))
+          || isCanonicalEstimateUserEditableParameter(schema))))
     .map((schema) => buildParameter({
       schema,
       parameters: input.parameters,
@@ -468,7 +470,8 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
             && String(input.parentParameters[schema.parameterId])
               !== String(input.parameters[schema.parameterId])
               ? "USER_EXPLICIT"
-              : isCanonicalEstimateSourceManagedParameter(schema)
+              : ['PRELIMINARY_SOURCE_FORMULA', 'CATALOGUE_SOURCE_SELECTION'].includes(String(schema.runtimeProfileClassification))
+                || isCanonicalEstimateSourceManagedParameter(schema)
                 ? runtimeProfileParameterSource(schema)
                 : undefined),
     }));
@@ -795,7 +798,7 @@ export async function recalculateConsumerCanonicalEstimate(input: {
   }
   const parameters = (releaseMigration
     ? consumerCanonicalExplicitMigrationParameters(catalog, validation.parameters, rawInputs)
-    : validation.parameters) as Record<string, CanonicalEstimateParameterInputValue>;
+    : consumerCanonicalExplicitAutomaticParameters(catalog, validation.parameters, rawInputs)) as Record<string, CanonicalEstimateParameterInputValue>;
   const requestIdentity = requestIdentityForRecalculation({
     revision,
     catalog,
@@ -973,7 +976,7 @@ export async function recalculateConsumerCanonicalCatalogSelection(input: {
         catalog,
         problemText: input.problemText,
       }),
-      parameters: (releaseMigration ? consumerCanonicalExplicitMigrationParameters(catalog, parameterValidation.parameters, consumerCanonicalInheritedRecalculationInputs(revision, catalog)) : parameterValidation.parameters) as Record<string, CanonicalEstimateParameterInputValue>,
+      parameters: (releaseMigration ? consumerCanonicalExplicitMigrationParameters(catalog, parameterValidation.parameters, consumerCanonicalInheritedRecalculationInputs(revision, catalog)) : consumerCanonicalExplicitAutomaticParameters(catalog, parameterValidation.parameters, consumerCanonicalInheritedRecalculationInputs(revision, catalog))) as Record<string, CanonicalEstimateParameterInputValue>,
       currencyCode: revision.currencyCode,
       rowOverrides,
       customRows: revision.amendmentContract.customRows,
@@ -1077,7 +1080,7 @@ export async function recalculateConsumerCanonicalCatalogAddition(input: {
       parentRevisionId: revision.revisionId,
       organizationId: revision.organizationId ?? null,
       ...requestIdentityForRecalculation({ revision, catalog, problemText: input.problemText }),
-      parameters: (releaseMigration ? consumerCanonicalExplicitMigrationParameters(catalog, parameterValidation.parameters, consumerCanonicalInheritedRecalculationInputs(revision, catalog)) : parameterValidation.parameters) as Record<string, CanonicalEstimateParameterInputValue>,
+      parameters: (releaseMigration ? consumerCanonicalExplicitMigrationParameters(catalog, parameterValidation.parameters, consumerCanonicalInheritedRecalculationInputs(revision, catalog)) : consumerCanonicalExplicitAutomaticParameters(catalog, parameterValidation.parameters, consumerCanonicalInheritedRecalculationInputs(revision, catalog))) as Record<string, CanonicalEstimateParameterInputValue>,
       currencyCode: revision.currencyCode,
       rowOverrides: revision.amendmentContract.rowOverrides,
       customRows: [...revision.amendmentContract.customRows, customRow],

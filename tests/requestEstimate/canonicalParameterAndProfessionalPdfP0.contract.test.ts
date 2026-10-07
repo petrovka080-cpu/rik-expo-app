@@ -304,7 +304,7 @@ describe("P0 canonical parameter editor and professional PDF", () => {
     const catalog: CanonicalEstimateCatalogItem = {
       ...asphaltCatalog,
       parameterSchema: [
-        optional("incoming_control_interval_m2_per_test", 20, "Площадь на одно испытание входного контроля"),
+        optional("incoming_control_actual_count", 20, "Фактическое число проверок входного контроля"),
         optional("unrelated_optional_input", 21, "Дополнительное проектное значение"),
       ],
     };
@@ -322,7 +322,7 @@ describe("P0 canonical parameter editor and professional PDF", () => {
         quantity: null,
         unitPrice: null,
         needState: "QUANTITY_REQUIRED",
-        missingParameterIds: ["incoming_control_interval_m2_per_test"],
+        missingParameterIds: ["incoming_control_actual_count"],
         selected: true,
         procurementEligible: false,
         formulaId: "formula:incoming_control",
@@ -334,7 +334,7 @@ describe("P0 canonical parameter editor and professional PDF", () => {
 
     const session = buildConsumerCanonicalParameterSession({ catalog, revision: current, draftId: "active-needs" });
     expect(session.parameters.map((parameter) => parameter.parameterId))
-      .toEqual(["incoming_control_interval_m2_per_test", "unrelated_optional_input"]);
+      .toEqual(["incoming_control_actual_count", "unrelated_optional_input"]);
     expect(session.parameters[0]).toMatchObject({
       requiredLevel: "BLOCKING_REQUIRED",
       state: "BLOCKING_REQUIRED",
@@ -342,9 +342,25 @@ describe("P0 canonical parameter editor and professional PDF", () => {
       validationIssues: ["VALUE_REQUIRED"],
     });
     expect(session.parameters[1]).toMatchObject({ state: "NOT_APPLICABLE", valid: true });
-    expect(session.blockingMissingParameterIds).toEqual(["incoming_control_interval_m2_per_test"]);
+    expect(session.blockingMissingParameterIds).toEqual(["incoming_control_actual_count"]);
     expect(session.contractMissingParameterIds).toEqual([]);
     expect(session.status).toBe("BLOCKING_REQUIRED");
+  });
+
+  it('keeps an unresolved technical norm in backend needs without making it a customer question', () => {
+    const schema = { ...asphaltCatalog.parameterSchema[0], parameterId: 'manufacturer_consumption_rate',
+      titleRu: 'Норма расхода по паспорту изготовителя', required: false, defaultValue: null,
+      valueSourceRole: 'MANUFACTURER_CONFIRMED' as const, formulaConsumers: ['material-consumption'] };
+    const current = revision({ parameters: {}, preliminaryNeeds: [{ rowId: 'material', ordinal: 0,
+      section: 'Материалы', category: 'material', titleRu: 'Материал по выбранной системе', unitId: 'kg', quantity: null,
+      unitPrice: null, needState: 'QUANTITY_REQUIRED', missingParameterIds: [schema.parameterId], selected: true,
+      procurementEligible: true, formulaId: 'material-consumption', calculationTrace: {}, normativeTrace: [], needSha256: 'b'.repeat(64) }] });
+    const before = JSON.stringify(current);
+    const session = buildConsumerCanonicalParameterSession({ catalog: { ...asphaltCatalog, parameterSchema: [schema] }, revision: current, draftId: 'source-owned-norm' });
+    expect(session.parameters).toEqual([]);
+    expect(session.blockingMissingParameterIds).toEqual([]);
+    expect(current.preliminaryNeeds![0]).toMatchObject({ selected: true, quantity: null, missingParameterIds: ['manufacturer_consumption_rate'] });
+    expect(JSON.stringify(current)).toBe(before);
   });
 
   it("shows an active project-specific text requirement even when it only selects a resource branch", () => {

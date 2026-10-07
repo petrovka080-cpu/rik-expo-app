@@ -49,7 +49,11 @@ export function consumerCanonicalInheritedRecalculationInputs(
   catalog: CanonicalEstimateCatalogItem,
 ): Record<string, unknown> {
   return catalog.releaseId === revision.releaseId
-    ? { ...revision.parameters }
+    ? Object.fromEntries(Object.entries(revision.parameters).filter(([id]) => {
+      const schema = catalog.parameterSchema.find(parameter => parameter.parameterId === id);
+      return !['PRELIMINARY_SOURCE_FORMULA', 'CATALOGUE_SOURCE_SELECTION'].includes(String(schema?.runtimeProfileClassification))
+        || Object.prototype.hasOwnProperty.call(revision.userInputSnapshot ?? {}, id);
+    }))
     : consumerCanonicalMigrationUserParameters(catalog, revision.userInputSnapshot ?? {});
 }
 
@@ -61,6 +65,16 @@ export function consumerCanonicalExplicitMigrationParameters(
   return consumerCanonicalMigrationUserParameters(catalog, Object.fromEntries(
     Object.entries(validated).filter(([id]) => Object.prototype.hasOwnProperty.call(supplied, id)),
   ));
+}
+
+export function consumerCanonicalExplicitAutomaticParameters(
+  catalog: CanonicalEstimateCatalogItem,
+  validated: Readonly<Record<string, unknown>>,
+  supplied: Readonly<Record<string, unknown>>,
+): Record<string, unknown> {
+  const automatic = new Set(catalog.parameterSchema.filter(schema =>
+    ['PRELIMINARY_SOURCE_FORMULA', 'CATALOGUE_SOURCE_SELECTION'].includes(String(schema.runtimeProfileClassification))).map(schema => schema.parameterId));
+  return Object.fromEntries(Object.entries(validated).filter(([id]) => !automatic.has(id) || Object.prototype.hasOwnProperty.call(supplied, id)));
 }
 
 async function existingMigrationChild(parent: CanonicalEstimateRevisionView, catalog: CanonicalEstimateCatalogItem) {

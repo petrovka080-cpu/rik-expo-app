@@ -42,6 +42,7 @@ async function localManualPriceMigrationBindings(client: PoolClient, definitionI
   return canonicalManualPriceMigrationBindings({resources: resources.rows, formulas: formulas.rows, parameters: parameters.rows});
 }
 import { mergeCanonicalEffectiveResourceQuantityProvenanceV1 } from "../../../src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1";
+import { stripCanonicalAutomaticPreliminaryInputsV1, canonicalAutomaticPreliminaryClassificationV1 } from '../../../src/lib/estimate/backendPlatform/canonicalPreliminaryParameterFormulaV1';
 import {
   canonicalApprovedBaselineParameterIsRuntimeEligible,
   canonicalApprovedBaselineRuntimeDefaultValue,
@@ -2181,6 +2182,7 @@ async function compileClaimedJob(
           [priceSnapshotIds, definition.id],
         )
       ).rows;
+  confirmedParameters = { ...baselineParameters, ...stripCanonicalAutomaticPreliminaryInputsV1(parameterDefinitions, confirmedParameters, effectiveUserParameters) };
   const compiled = await compileCanonicalEstimateCore({
     operation: String(job.operation) as "compile" | "recalculate",
     compilerVersion: COMPILER_VERSION,
@@ -2212,7 +2214,8 @@ async function compileClaimedJob(
   const { parameters, rows, totals } = compiled;
   effectiveUserParameters = mergeCanonicalEffectiveResourceQuantityProvenanceV1({
     parameterDefinitions, resourceDefinitions: resources, formulaDefinitions: formulas,
-    userParameters: effectiveUserParameters, derivedParameters: compiled.derivedParameters,
+    userParameters: effectiveUserParameters,
+    derivedParameters: stripCanonicalAutomaticPreliminaryInputsV1(parameterDefinitions, compiled.derivedParameters, effectiveUserParameters),
   });
   const baselineAssumptions = Object.fromEntries(
     Object.entries(baselineParameters).filter(
@@ -3664,11 +3667,7 @@ function localParameterSessionSchema(
             ? "PROJECT_DOCUMENTATION"
             : "BACKEND_DERIVED"
           : undefined),
-      runtimeProfileClassification: String(
-        baseline?.input_classification?.[parameterId]
-          ?? truth.runtime_profile_classification
-          ?? "",
-      ).trim() || undefined,
+      runtimeProfileClassification: canonicalAutomaticPreliminaryClassificationV1(truth, baseline?.input_classification?.[parameterId]),
       guide: localParameterGuideView(effectiveGuide),
       compositeItemSchema: composite
         ? {
@@ -5595,11 +5594,7 @@ async function route(
                   ? "PROJECT_DOCUMENTATION"
                   : "BACKEND_DERIVED"
                 : undefined),
-            runtimeProfileClassification: String(
-              baseline?.input_classification?.[parameterId]
-                ?? truth.runtime_profile_classification
-                ?? "",
-            ).trim() || undefined,
+            runtimeProfileClassification: canonicalAutomaticPreliminaryClassificationV1(truth, baseline?.input_classification?.[parameterId]),
             guide: localParameterGuideView(effectiveGuide),
             compositeItemSchema: composite
               ? {

@@ -596,10 +596,10 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
       : 0;
     const sourceGateCount = viewModel.sourceGates?.length ?? 0;
     const count: number | undefined = canonicalParameterSession
-      ? editableMissingCount + sourceGateCount
+      ? editableMissingCount
       : canonicalParameterReadinessPending
-        ? sourceGateCount > 0 ? sourceGateCount : undefined
-        : missingParameterCount(currentRevision, viewModel.assumptionRows.length) + sourceGateCount;
+        ? undefined
+        : missingParameterCount(currentRevision, viewModel.assumptionRows.length);
     const paramEditorEnabled = Boolean(onApplyParamBatch || (onApplyParamPatch && onOpenParamEditor && onSaveParamEdit && onCancelParamEdit));
 
     return (
@@ -622,7 +622,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
             {parametersOpen
               ? "Скрыть параметры"
               : sourceGateCount > 0 && editableMissingCount === 0
-                ? `Источники норм (${sourceGateCount})`
+                ? 'Данные расчёта'
                 : count != null && count > 0
                 ? `Уточнить параметры (${count})`
                 : "Уточнить параметры"}
@@ -809,6 +809,8 @@ type ParameterCardProjection = {
 
 type ParameterDisclosurePanelState = {
   showAllMissing: boolean;
+  sourceDetailsOpen: boolean;
+  automaticDetailsOpen: boolean;
   filledOpen: boolean;
   derivedOpen: boolean;
   draftValues: Record<string, string>;
@@ -1109,8 +1111,10 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
 
   state: ParameterDisclosurePanelState = {
     showAllMissing: false,
-    filledOpen: true,
-    derivedOpen: true,
+    sourceDetailsOpen: false,
+    automaticDetailsOpen: false,
+    filledOpen: false,
+    derivedOpen: false,
     draftValues: {},
     baselineValues: {},
     draftRevisionId: null,
@@ -1649,7 +1653,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
             : contractMissingCount > 0
               ? `До полного состава и подтверждения: ${contractMissingCount} обязательных ${pluralizeRu(contractMissingCount, "параметр", "параметра", "параметров")}.`
               : sourceGateCount > 0
-                ? `Данные заказчика заполнены; для ${sourceGateCount} ${pluralizeRu(sourceGateCount, "нормы", "норм", "норм")} нужен подтверждённый источник.`
+                ? 'Данные объекта заполнены. Часть технических данных расчёта ещё требует подтверждения.'
                 : "Все обязательные параметры заполнены"}
         </Text>
         {canonicalSession && assumptionCards.length > 0 ? (
@@ -1665,16 +1669,19 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       </View>
       {visibleSourceGates.length > 0 ? (
         <View style={styles.parameterGroup} testID="request-estimate-source-gates">
-          <Text style={styles.groupTitle}>Нужен подтверждённый источник</Text>
+          <Pressable accessibilityRole="button" onPress={() => this.setState(state => ({ sourceDetailsOpen: !state.sourceDetailsOpen }))}
+            style={styles.inlineToggle} testID="request-estimate-source-gates-toggle">
+            <Text style={styles.groupTitle}>{this.state.sourceDetailsOpen ? 'Скрыть технические данные' : 'Технические данные расчёта'}</Text>
+          </Pressable>
           <Text style={styles.parameterMeta}>
-            Эти значения должен предоставить расчётный каталог или специалист. Поля для угадывания заказчиком отключены.
+            Приложение берёт нормы и характеристики из каталога. Неподтверждённые позиции пока не входят в итог и закупку.
           </Text>
-          {visibleSourceGates.map((gate) => (
+          {this.state.sourceDetailsOpen ? visibleSourceGates.map((gate) => (
             <View key={gate.parameterId} style={styles.sourceGateRow} testID={`request-estimate-source-gate-${gate.parameterId}`}>
               <Text style={styles.parameterLabel}>{gate.title}</Text>
               <Text style={styles.parameterMeta}>{gate.sourceRequirement}</Text>
             </View>
-          ))}
+          )) : null}
         </View>
       ) : null}
       {clarification ? (
@@ -1812,11 +1819,14 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       ) : null}
       {assumptionCards.length > 0 ? (
         <View style={styles.parameterGroup} testID="request-estimate-assumed-parameters">
-          <Text style={styles.groupTitle}>Рассчитано или подставлено приложением — можно изменить</Text>
+          <Pressable accessibilityRole="button" onPress={() => this.setState(state => ({ automaticDetailsOpen: !state.automaticDetailsOpen }))}
+            style={styles.inlineToggle} testID="request-estimate-automatic-parameters-toggle">
+            <Text style={styles.groupTitle}>{this.state.automaticDetailsOpen ? 'Скрыть автоматические значения' : `Рассчитано или подставлено приложением (${assumptionCards.length})`}</Text>
+          </Pressable>
           <Text style={styles.parameterMeta}>
-            Значения уже заполнены. Их можно заменить вручную; серым показаны подсказки для незаполненных полей.
+            Предварительные значения можно проверить и заменить проектными.
           </Text>
-          {assumptionCards.map((card) => renderParameter(card, "Допущение"))}
+          {this.state.automaticDetailsOpen ? assumptionCards.map((card) => renderParameter(card, "Допущение")) : null}
         </View>
       ) : null}
       {derivedCards.length > 0 ? (
