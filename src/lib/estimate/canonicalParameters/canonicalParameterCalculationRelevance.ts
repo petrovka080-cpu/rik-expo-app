@@ -19,6 +19,10 @@ export function canonicalParameterAffectsEstimateCalculation(
   // accepted reference distinguishes it from an unrelated document field.
   if (parameter.referenceValue != null && parameter.value != null) return true;
   if (parameter.requiredLevel === "OPTIONAL") return false;
+  // A required numeric resource input can own physical consumption or a
+  // compatibility limit without multiplying the order/price formula. The
+  // immutable session has already admitted its source and row dependency.
+  if (parameter.valueType === "number") return true;
   // A backend-selected preliminary need or required user designation can
   // choose a concrete BOQ resource without entering a numeric formula. A
   // document-only field still has no row consumer and was returned above.

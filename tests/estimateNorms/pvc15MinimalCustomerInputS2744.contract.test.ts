@@ -11,6 +11,7 @@ import { pvc15MinimalCustomerInputPublishConfigS2744 } from '../../scripts/estim
 import { pvc15OrdinaryQueryAliasesS2745 } from '../../scripts/estimate/r4a13/prepareS2745Pvc15SearchAliases';
 import { buildCanonicalRevisionCommitPayload } from '../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter';
 import { mergeCanonicalEffectiveResourceQuantityProvenanceV1 } from '../../src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1';
+import { buildCanonicalParameterCards } from '../../src/lib/estimatePresentation/buildCanonicalParameterCards';
 
 const compile = (input: Record<string, unknown>) => compileAutomaticConstructionOwnerR1({ definition,
   catalogId: 'canonical-work:base:roofing_interior_flat_roof_install_standard', primaryMeasureParameterId: 'area_m2', compilerVersion: 'minimal-input-control', submittedParameters: input });
@@ -121,6 +122,17 @@ describe('PVC15 size and object facts instead of a technical questionnaire', () 
     expect([...initialSession.blockingMissingParameterIds].sort()).toEqual(['detail_membrane_mode', 'edge_rail_length_m', 'pvc15_base', 'pvc15_system_profile', 'pvc15_joint_transition_scope'].sort());
     expect([...session.blockingMissingParameterIds].sort()).toEqual(['detail_membrane_mode', 'edge_rail_length_m', 'pvc15_base', 'pvc15_joint_transition_scope'].sort());
     expect(session.parameters.find(p => p.parameterId === 'pvc15_membrane_consumption_m2')).toMatchObject({ value: 86.25, source: 'ASSUMED' });
+    expect(buildCanonicalParameterCards({ session, revision: null }).find(card => card.key === 'pvc15_membrane_consumption_m2'))
+      .toMatchObject({ value: 86.25, source: 'catalog_default', editable: true });
+    const changed = await compile({ area_m2: 154, pvc15_system_profile: PVC15_SYSTEM.verified });
+    const changedSession = buildConsumerCanonicalParameterSession({ catalog, revision: { ...current, parameters: changed.parameters,
+      userInputSnapshot: { area_m2: 154, pvc15_system_profile: PVC15_SYSTEM.verified }, parentRevisionId: current.revisionId },
+      parent: { revisionId: current.revisionId, releaseId: current.releaseId, catalogId: current.catalogId, parameters: result.parameters }, draftId: 'size-only-request' });
+    expect(changedSession.parameters.find(p => p.parameterId === 'telescopic_fastener_quantity_piece')).toMatchObject({ value: 616, source: 'ASSUMED' });
+    expect(changedSession.parameters.find(p => p.parameterId === 'pvc15_membrane_consumption_m2')).toMatchObject({ value: 177.1, source: 'ASSUMED' });
+    const projectOverride = buildConsumerCanonicalParameterSession({ catalog, revision: { ...current, parameters: { ...changed.parameters, pvc15_membrane_consumption_m2: 180 },
+      userInputSnapshot: { area_m2: 154, pvc15_membrane_consumption_m2: 180 } }, draftId: 'project-override' });
+    expect(projectOverride.parameters.find(p => p.parameterId === 'pvc15_membrane_consumption_m2')).toMatchObject({ value: 180, source: 'USER_EXPLICIT' });
     expect(session.parameters).not.toEqual(expect.arrayContaining([expect.objectContaining({ parameterId: 'hot_air_welder_machine_h', value: null })]));
     const inherited = consumerCanonicalInheritedRecalculationInputs(current, catalog);
     expect(inherited).not.toHaveProperty('pvc15_membrane_consumption_m2');

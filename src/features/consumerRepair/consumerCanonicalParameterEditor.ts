@@ -466,12 +466,13 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
             schema.parameterId,
           )
             ? "USER_EXPLICIT"
-            : input.parentParameters?.[schema.parameterId] !== undefined
+            : ['PRELIMINARY_SOURCE_FORMULA', 'CATALOGUE_SOURCE_SELECTION'].includes(String(schema.runtimeProfileClassification))
+              ? runtimeProfileParameterSource(schema)
+              : input.parentParameters?.[schema.parameterId] !== undefined
             && String(input.parentParameters[schema.parameterId])
               !== String(input.parameters[schema.parameterId])
               ? "USER_EXPLICIT"
-              : ['PRELIMINARY_SOURCE_FORMULA', 'CATALOGUE_SOURCE_SELECTION'].includes(String(schema.runtimeProfileClassification))
-                || isCanonicalEstimateSourceManagedParameter(schema)
+              : isCanonicalEstimateSourceManagedParameter(schema)
                 ? runtimeProfileParameterSource(schema)
                 : undefined),
     }));

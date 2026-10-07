@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 import type { EstimateDraftRevisionDiff } from "../../../lib/estimate/estimateDraftRevisionContract";
 import { formatEstimateUnitLabel } from "../../../lib/ai/globalEstimate/formatEstimateUnitLabel";
+import { canonicalEstimateParameterChoiceLabelRu } from "../../../lib/estimate/backendPlatform/canonicalEstimateParameterSemantics";
 import {
   aiEstimateRuLabelForParameter,
   aiEstimateRuUnitForParameter,
@@ -31,7 +32,7 @@ export function EstimateRevisionDiff({
         const presentation = parameterPresentation.get(param.key);
         return (
           <Text key={param.key} style={styles.line} testID={`estimate-revision-diff-param-${param.key}`}>
-            {aiEstimateRuLabelForParameter(param.key, presentation?.label)}: {String(param.before ?? "нет")} {"->"} {String(param.after ?? "нет")} {aiEstimateRuUnitForParameter(param.key, presentation?.unit)}
+            {aiEstimateRuLabelForParameter(param.key, presentation?.label)}: {param.before == null ? "нет" : canonicalEstimateParameterChoiceLabelRu(param.key, param.before)} {"->"} {param.after == null ? "нет" : canonicalEstimateParameterChoiceLabelRu(param.key, param.after)} {aiEstimateRuUnitForParameter(param.key, presentation?.unit)}
           </Text>
         );
       })}

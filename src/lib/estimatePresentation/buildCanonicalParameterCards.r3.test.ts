@@ -63,6 +63,15 @@ function session(parameters: readonly CanonicalParameter[]): CanonicalParameterS
 }
 
 describe("buildCanonicalParameterCards R3 truth presenter", () => {
+  it("keeps required physical numeric resource inputs visible while optional document numbers stay outside the calculation form", () => {
+    const cards = buildCanonicalParameterCards({ revision: null, session: session([
+      parameter('pvc15_membrane_consumption_m2', { label: 'Расход мембраны', value: 86.25, source: 'ASSUMED', state: 'ASSUMED',
+        affectsFormula: [], affectsRows: ['material:membrane'], requiredLevel: 'CONDITIONAL' }),
+      parameter('document_number', { label: 'Номер документа', value: 18, source: 'PROJECT_SPECIFIC', state: 'PROVIDED',
+        affectsFormula: [], affectsRows: ['handover'], requiredLevel: 'OPTIONAL' }),
+    ]) });
+    expect(cards.map(card => card.key)).toEqual(['pvc15_membrane_consumption_m2']);
+  });
   it("keeps a historical revision readable from persisted DTO data only", () => {
     const revision = {
       params: {

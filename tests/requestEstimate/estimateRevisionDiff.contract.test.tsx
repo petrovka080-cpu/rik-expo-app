@@ -43,6 +43,14 @@ function visibleText(tree: JsonTree): string {
 }
 
 describe("estimate revision diff UI", () => {
+  it("uses the shared Russian choice label for changed object conditions", () => {
+    let renderer!: TestRenderer.ReactTestRenderer;
+    act(() => { renderer = TestRenderer.create(<EstimateRevisionDiff diff={{ fromRevisionId: 'before', toRevisionId: 'after',
+      changedParams: [{ key: 'detail_membrane_mode', before: null, after: 'NOT_REQUIRED' }], changedRows: [], changedRowsCount: 0,
+      staleArtifactsAfterEdit: { snapshotInvalidated: true, pdfInvalidated: true, buyerHandoffInvalidated: true } }} />); });
+    expect(visibleText(renderer.toJSON())).toContain('нет -> Не требуется');
+    expect(visibleText(renderer.toJSON())).not.toContain('NOT_REQUIRED');
+  });
   it("distinguishes not-created, partial, current and stale artifacts", () => {
     const base = createEstimateDraftRevision({
       estimateDraftId: "artifact-state-ui",
