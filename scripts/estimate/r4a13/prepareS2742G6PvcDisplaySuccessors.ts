@@ -12,6 +12,8 @@ async function run() {
   assert(typeof current.definitionReleaseId==='string'&&typeof current.searchReleaseId==='string','S2742_CURRENT_PARENT_REQUIRED');
   const config = g6CompletionSeriesConfigS2741(index, {releaseId:current.definitionReleaseId,searchReleaseId:current.searchReleaseId});
   await runMasterSingleDefinitionSuccessorR1({...config,
+    masterPath:'C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (83).md',
+    masterSha256:'fd66f75f6cf92709662216fb407c9659113fe7f93903ccaad898f0ebf036afbe',
     contract:'rik-expo-app.s27-42.g6-display-successor-'+index+'.v1',
     stopCode:'S2742_G6_DISPLAY_'+index,applicationName:'s2742-g6-display-'+index,
     owner:'S2742_G6_01_SINGLE_WRITER',receiptFileStem:'g6_display_'+index,

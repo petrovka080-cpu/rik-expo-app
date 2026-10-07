@@ -14,11 +14,13 @@ const withoutPresentation = (rows: readonly Record<string, unknown>[]) => rows.m
     expect(rest.row_id).toBe('transition:material:tape');
     expect(labels).toEqual({ tape_width_mm: 'Ширина (мм)', tape_thickness_mm: 'Толщина (мм)', tape_roll_length_m: 'Длина рулона (м)' });
     const labelledSuffix = / — Ширина \(мм\): ([^,]+), Толщина \(мм\): ([^,]+), Длина рулона \(м\): ([^,]+)$/u;
-    expect(rest.title_ru).toMatch(labelledSuffix);
-    // Remove only the exact approved annotations. The complete comparison
-    // below still detects changes to specification values, quantities,
-    // physical supply, engineering traces and payment ownership.
-    rest.title_ru = String(rest.title_ru).replace(labelledSuffix, ' — $1, $2, $3');
+    if (trace) {
+      expect(rest.title_ru).toMatch(labelledSuffix);
+      // The source definition has no appended values yet. Remove only
+      // these exact annotations from compiled titles; the full comparison
+      // still detects changed specification values and physical/payment data.
+      rest.title_ru = String(rest.title_ru).replace(labelledSuffix, ' — $1, $2, $3');
+    }
   }
   return trace ? { ...rest, calculation_trace: { ...trace, resourceGraph: sourceGraph } } : { ...rest, resource_graph: sourceGraph };
 });
