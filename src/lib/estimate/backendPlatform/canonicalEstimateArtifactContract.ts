@@ -11,8 +11,8 @@ import { canonicalArtifactPurchaseBalance } from "./canonicalPersistedPurchaseBa
 export { canonicalArtifactPurchaseBalance } from "./canonicalPersistedPurchaseBalance";
 
 export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r10";
-export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r8-russian-resource-presentations";
-export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:14";
+export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r9-unique-resource-specifications";
+export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:15";
 
 /** Keep caller idempotency within each renderer; do not collide with legacy jobs. */
 export function canonicalProcurementRequestKey(idempotencyKey: string): string {
@@ -150,9 +150,11 @@ export function canonicalArtifactSpecificationParts(row: CanonicalArtifactRow, p
   });
   const selectedParts = selected.flatMap(spec => spec.parts);
   const selectedSpecification = selectedParts.join(", ");
+  const selectedValues = new Set(selected.map(spec => spec.value.trim()));
   const presentation = canonicalArtifactPublicResourcePresentationV1(row);
   const details = presentation ? [presentation.brandAndModelRu, presentation.specificationRu, ...presentation.detailsRu]
-    .filter((part): part is string => typeof part === 'string' && !selectedParts.includes(part) && part !== selectedSpecification) : [];
+    .filter((part): part is string => typeof part === 'string' && !selectedParts.includes(part)
+      && part !== selectedSpecification && !selectedValues.has(part.trim())) : [];
   return [...selected, ...(details.length ? [{ parameterId: 'resource_presentation_v1', value: details.join('; '), parts: [...new Set(details)] }] : [])];
 }
 

@@ -5,6 +5,7 @@ import {
 } from "../../estimate/professionalUnitRegistry";
 
 const UNIT_LABELS_RU: Record<string, string> = {
+  kwh: "кВт·ч",
   linear_m: "\u043f\u043e\u0433. \u043c",
   m: "\u043f\u043e\u0433. \u043c",
   sq_m: "\u043c\u00b2",

@@ -27,6 +27,19 @@ const rows = [
 ];
 
 describe("canonical estimate artifact contract", () => {
+  it("renders a saved semicolon specification once while preserving other supplied details", () => {
+    const value = "LOGICROOF V-RP 1,5 мм; контрольная спецификация, ТЛ 2.01 03.2026";
+    const membrane = { ...rows[0]!, title_ru: "Мембрана", calculation_trace: { resourceGraph: {
+      titleSpecificationParameterIds: ["product"],
+      publicResourcePresentationV1: { contractVersion: "canonical-public-resource-presentation/v1",
+        sourceTitleRu: "Мембрана", nameRu: "Мембрана", brandAndModelRu: null,
+        specificationRu: value, detailsRu: ["Расход и заказ подтверждены отдельно."] },
+    } } };
+    const before = JSON.stringify(membrane);
+    expect(canonicalArtifactSpecificationParts(membrane, { product: value }).flatMap(spec => spec.parts))
+      .toEqual(["LOGICROOF V-RP 1,5 мм", "контрольная спецификация, ТЛ 2.01 03.2026", "Расход и заказ подтверждены отдельно."]);
+    expect(JSON.stringify(membrane)).toBe(before);
+  });
   it("uses authored dimension labels once in PDF and procurement specifications without changing saved facts", () => {
     const title = "Лента переходная — Ширина (мм): 300, Толщина (мм): 1.5, Длина рулона (м): 15";
     const parameters = { width: 300, thickness: 1.5, roll: 15 };
@@ -170,7 +183,7 @@ describe("canonical estimate artifact contract", () => {
       grandTotalStatus: "PARTIAL_NEEDS_PRICE",
       pageCount: 4,
       generatorVersion: "canonical-professional-pdf.r4-a6",
-      templateVersion: "professional-estimate-pdf:14",
+      templateVersion: "professional-estimate-pdf:15",
     });
     expect(canonicalProfessionalArtifactMetadataIdentityMatches({
       metadata,

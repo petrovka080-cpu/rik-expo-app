@@ -14,7 +14,7 @@ import {
 import { canonicalEstimateOperationReference, canonicalEstimateWorkProcess } from "./canonicalEstimateOperationComposition";
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-43-dimension-specifications-template14" as const;
+  "canonical-professional-pdf.r4-a13-s27-43-unique-specifications-template15" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
