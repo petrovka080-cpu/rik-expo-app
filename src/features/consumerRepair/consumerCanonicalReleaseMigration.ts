@@ -45,7 +45,7 @@ export function consumerCanonicalMigrationUserParameters(
 }
 
 export function consumerCanonicalInheritedRecalculationInputs(
-  revision: CanonicalEstimateRevisionView,
+  revision: Pick<CanonicalEstimateRevisionView, 'releaseId' | 'parameters' | 'userInputSnapshot'>,
   catalog: CanonicalEstimateCatalogItem,
 ): Record<string, unknown> {
   return catalog.releaseId === revision.releaseId

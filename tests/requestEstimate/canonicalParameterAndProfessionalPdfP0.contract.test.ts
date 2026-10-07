@@ -351,7 +351,7 @@ describe("P0 canonical parameter editor and professional PDF", () => {
     const schema = { ...asphaltCatalog.parameterSchema[0], parameterId: 'manufacturer_consumption_rate',
       titleRu: 'Норма расхода по паспорту изготовителя', required: false, defaultValue: null,
       valueSourceRole: 'MANUFACTURER_CONFIRMED' as const, formulaConsumers: ['material-consumption'] };
-    const current = revision({ parameters: {}, preliminaryNeeds: [{ rowId: 'material', ordinal: 0,
+    const current = revision({ revisionId: ASPHALT_REVISION_ID, catalogId: ASPHALT_CATALOG_ID, parameters: {}, preliminaryNeeds: [{ rowId: 'material', ordinal: 0,
       section: 'Материалы', category: 'material', titleRu: 'Материал по выбранной системе', unitId: 'kg', quantity: null,
       unitPrice: null, needState: 'QUANTITY_REQUIRED', missingParameterIds: [schema.parameterId], selected: true,
       procurementEligible: true, formulaId: 'material-consumption', calculationTrace: {}, normativeTrace: [], needSha256: 'b'.repeat(64) }] });

@@ -6,7 +6,7 @@ import { buildConsumerCanonicalParameterSession } from '../../src/features/consu
 import { buildMasterParameterCalculationConsumers } from '../../scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1';
 import type { CanonicalEstimateCatalogItem } from '../../src/lib/estimate/backendPlatform/contracts';
 import type { CanonicalEstimateParameterSessionRevision } from '../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSessionSnapshot';
-import { consumerCanonicalInheritedRecalculationInputs } from '../../src/features/consumerRepair/consumerCanonicalReleaseMigration';
+import { consumerCanonicalInheritedRecalculationInputs, consumerCanonicalExplicitAutomaticParameters } from '../../src/features/consumerRepair/consumerCanonicalReleaseMigration';
 import { pvc15MinimalCustomerInputPublishConfigS2744 } from '../../scripts/estimate/r4a13/prepareS2744Pvc15MinimalCustomerInput';
 
 const compile = (input: Record<string, unknown>) => compileAutomaticConstructionOwnerR1({ definition,
@@ -65,19 +65,24 @@ describe('PVC15 size and object facts instead of a technical questionnaire', () 
             guideValidationPolicy: guide.guide_validation_policy, sourceRole: guide.source_role, sourceDocument: guide.source_document,
             sourceLocator: guide.source_locator, sourceSnapshotHash: guide.source_snapshot_hash, guideShortRu: guide.guide_short_ru } };
       }) } as unknown as CanonicalEstimateCatalogItem;
-    const current = { revisionId: 'preview', releaseId: 'current', catalogId: catalog.catalogId, parameters: result.parameters,
+    const current: CanonicalEstimateParameterSessionRevision = { revisionId: 'preview', releaseId: 'current', catalogId: catalog.catalogId, parameters: result.parameters,
       userInputSnapshot: { area_m2: 75 }, createdAt: '2026-10-07T00:00:00Z',
+      parentRevisionId: null, definitionVersionId: 'definition', definitionVersion: 5, status: 'ready',
+      acceptedBaselineSnapshot: { pvc15_system_profile: PVC15_SYSTEM.verified }, assumptionSnapshot: { pvc15_system_profile: PVC15_SYSTEM.verified },
+      parameterSchemaHash: 's2744-schema', compilerVersion: 'minimal-input-control', checksumSha256: 'a'.repeat(64),
       preliminaryNeeds: result.preliminaryNeeds.map(n => ({ rowId: n.row_id, selected: n.selected, missingParameterIds: n.missing_parameter_ids,
-        quantity: n.quantity, needState: n.need_state })) } as CanonicalEstimateParameterSessionRevision;
+        quantity: n.quantity, needState: n.need_state })) };
     const session = buildConsumerCanonicalParameterSession({ catalog, revision: current, draftId: 'short-normal-request' });
     expect([...session.blockingMissingParameterIds].sort()).toEqual(['detail_membrane_mode', 'edge_rail_length_m', 'pvc15_base', 'pvc15_joint_transition_scope'].sort());
     expect(session.parameters.find(p => p.parameterId === 'pvc15_membrane_consumption_m2')).toMatchObject({ value: 86.25, source: 'ASSUMED' });
     expect(session.parameters).not.toEqual(expect.arrayContaining([expect.objectContaining({ parameterId: 'hot_air_welder_machine_h', value: null })]));
-    const inherited = consumerCanonicalInheritedRecalculationInputs(current as Parameters<typeof consumerCanonicalInheritedRecalculationInputs>[0], catalog);
+    const inherited = consumerCanonicalInheritedRecalculationInputs(current, catalog);
     expect(inherited).not.toHaveProperty('pvc15_membrane_consumption_m2');
     expect(inherited.area_m2).toBe(75);
-    expect(consumerCanonicalInheritedRecalculationInputs({ ...current, userInputSnapshot: { area_m2: 75, pvc15_membrane_consumption_m2: 86.25 } } as Parameters<typeof consumerCanonicalInheritedRecalculationInputs>[0], catalog))
+    expect(consumerCanonicalInheritedRecalculationInputs({ ...current, userInputSnapshot: { area_m2: 75, pvc15_membrane_consumption_m2: 86.25 } }, catalog))
       .toHaveProperty('pvc15_membrane_consumption_m2', '86.25');
+    expect(consumerCanonicalExplicitAutomaticParameters(catalog, { ...inherited, pvc15_system_profile: PVC15_SYSTEM.verified }, inherited))
+      .not.toHaveProperty('pvc15_system_profile');
   });
   test.each(['standard', 'small_area', 'large_area'])('preflights the shared %s binding without publishing or treating the fixture as a default', async variant => {
     const config = pvc15MinimalCustomerInputPublishConfigS2744({ definition: 'current', search: 'current-search' }, variant);
