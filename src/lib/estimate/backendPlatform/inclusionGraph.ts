@@ -1,4 +1,4 @@
-import { compileFormulaGraph, evaluateFormulaGraph, compareFormulaGraphDecimals, type CompiledFormulaGraph } from "./formulaGraph";
+import { compileFormulaGraph, evaluateFormulaGraph, compareFormulaGraphDecimals, isFormulaGraphExactDecimal, type CompiledFormulaGraph } from "./formulaGraph";
 
 export type InclusionGraphAst = Record<string, unknown>;
 const conditionFormulas = new WeakMap<InclusionGraphAst, CompiledFormulaGraph>();
@@ -40,6 +40,17 @@ function finiteNumber(value: unknown, label: string): number {
   const number = Number(value);
   if (!Number.isFinite(number)) throw new InclusionGraphEvaluationError(`invalid numeric operand ${label}`);
   return number;
+}
+
+function literalEquals(actual: unknown, expected: unknown): boolean {
+  if (actual === expected) return true;
+  if (typeof expected !== "number" || !Number.isFinite(expected)) return false;
+  if (typeof actual !== "number" && typeof actual !== "string") return false;
+  if (!isFormulaGraphExactDecimal(actual) || !isFormulaGraphExactDecimal(expected)) return false;
+  // Numeric inputs use decimal strings in transport and validation. A numeric
+  // source literal compares their exact values; text and boolean literals
+  // retain their original strict semantics.
+  return compareFormulaGraphDecimals(actual, expected) === 0;
 }
 
 function childNodes(ast: InclusionGraphAst): InclusionGraphAst[] {
@@ -168,7 +179,8 @@ export function resolveInclusionGraph(
   }
   const actual = parameters[parameterId];
   if (kind === "equals" || kind === "not_equals") {
-    return { value: kind === "equals" ? actual === ast.value : actual !== ast.value, missingParameterIds: [] };
+    const equal = literalEquals(actual, ast.value);
+    return { value: kind === "equals" ? equal : !equal, missingParameterIds: [] };
   }
   if (kind === "in") {
     return { value: (ast.values as unknown[]).includes(actual), missingParameterIds: [] };

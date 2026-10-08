@@ -8,6 +8,10 @@ import { buildConsumerCanonicalPrecompileParameterSession } from '../../src/feat
 import { buildConsumerRepairCanonicalSessionPreview } from '../../src/features/consumerRepair/consumerRepairCanonicalSessionPreview';
 import type { CanonicalEstimateCatalogItem, CanonicalEstimateParameterInputValue } from '../../src/lib/estimate/backendPlatform/contracts';
 import type { AutomaticOwnerDefinition } from '../../src/lib/estimate/v4/automaticConstructionOwnerR1';
+import { validateCanonicalEstimateParameterInputs } from '../../src/lib/estimate/backendPlatform/canonicalEstimateParameterValidation';
+import { canonicalEstimateBlockingParameterIssues } from '../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics';
+import { consumerCanonicalExplicitAutomaticParameters } from '../../src/features/consumerRepair/consumerCanonicalReleaseMigration';
+import { waterValtecSingleStraightRouteS2747Config } from '../../scripts/estimate/r4a13/prepareS2747WaterValtecSingleStraightRoute';
 const simple = { route_length_m: 100, route_geometry_mode: pack.geometry.straight, route_end_connections: pack.ends.caps, substrate_profile: 'Сухой бетон, крепление напрямую без отделки' };
 const facts = { route_length_m: 100, straight_coupling_count: 24, elbow_count: 8, tee_count: 2, threaded_transition_count: 4, terminal_cap_count: 2,
     ...Object.fromEntries(fittings.projectSelections.map(s => [s.parameterId, s.values[0]])), substrate_profile: simple.substrate_profile };
@@ -18,6 +22,7 @@ const catalog: CanonicalEstimateCatalogItem = { catalogId: 'canonical-work:base:
         return {
             parameterId: p.parameter_id, ordinal: p.ordinal, valueType: p.value_type as CanonicalEstimateCatalogItem['parameterSchema'][number]['valueType'], unitId: p.unit_id ?? null, titleRu: p.title_ru ?? p.parameter_id, required: p.required, defaultValue: p.default_value, constraints: p.constraints_json ?? {},
             visibilityRole: truth.visibility_role as CanonicalEstimateCatalogItem['parameterSchema'][number]['visibilityRole'], valueSourceRole: truth.value_source_role as CanonicalEstimateCatalogItem['parameterSchema'][number]['valueSourceRole'],
+            preliminaryCompilationAllowed: truth.preliminary_compilation_allowed === true,
             runtimeProfileClassification: truth.runtime_profile_classification as string | undefined, visibleWhen: truth.visible_when as Record<string, unknown> | undefined, requiredWhen: truth.required_when as Record<string, unknown> | undefined,
             derivedFrom: truth.derived_from as string[] | undefined, provenance: truth.provenance as Record<string, unknown>,
             formulaConsumers: formulas.filter(f => f.input_parameter_ids.includes(p.parameter_id)).map(f => f.formula_id), resourceBranchConsumers: (truth.resource_branch_consumers as string[] | undefined) ?? resources.filter(r => formulas.find(f => f.formula_id === r.formula_id)?.input_parameter_ids.includes(p.parameter_id)).map(r => r.row_id),
@@ -42,6 +47,21 @@ test('four actual facts produce the full preliminary composition without copied 
     expect(r.rows.find(row => row.row_id === 'water-ppr20:02:material:pipe-sections')?.quantity).toBe('27');
     expect(r.rows.find(row => row.row_id === 'water-ppr20:03:fastener:sts-sets')?.quantity).toBe('51');
     expect(r.rows.every(row => row.unit_price === null)).toBe(true);
+});
+
+test('normal client validation accepts four facts without sending technical defaults and still rejects2m in the4m method', () => {
+    const publication = waterValtecSingleStraightRouteS2747Config({ releaseId: catalog.releaseId, searchReleaseId: 'local-search-v11' });
+    const clientCatalog = { ...catalog, parameterSchema: catalog.parameterSchema.map(p => ({ ...p,
+        defaultValue: p.defaultValue ?? Object.entries(runtime).find(([id]) => id === p.parameterId)?.[1] ?? null,
+        runtimeProfileClassification: p.runtimeProfileClassification ?? publication.runtimeProfileClassification?.[p.parameterId],
+    })) };
+    const validated = validateCanonicalEstimateParameterInputs({ schema: clientCatalog.parameterSchema, rawInputs: simple });
+    expect(validated.parameters.pipe_section_length_m).toBe('4');
+    expect(canonicalEstimateBlockingParameterIssues(clientCatalog.parameterSchema, validated.issues)).toEqual([]);
+    const submitted = consumerCanonicalExplicitAutomaticParameters(clientCatalog, validated.parameters, simple);
+    expect(Object.keys(submitted).sort()).toEqual(Object.keys(simple).sort());
+    const wrong = validateCanonicalEstimateParameterInputs({ schema: clientCatalog.parameterSchema, rawInputs: { ...simple, pipe_section_length_m: '2' } });
+    expect(canonicalEstimateBlockingParameterIssues(clientCatalog.parameterSchema, wrong.issues)).toContainEqual({ code: 'FORBIDDEN_WHEN', parameterId: 'route_geometry_mode', relatedParameterId: '' });
 });
 test('the declared4m planning method cannot silently use a different pipe section length', async () => {
     await expect(compile({ ...simple, pipe_section_length_m: 2 })).rejects.toMatchObject({ code: 'PARAMETER_VALIDATION_FAILED' });

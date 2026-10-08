@@ -85,3 +85,21 @@ describe("inclusionGraph numeric peer input", () => {
     expect(resolveInclusionGraph({ kind: "greater_than", parameterId: "length_m", value: 0 }, { length_m: 12 })).toEqual({ value: true, missingParameterIds: [] });
   });
 });
+
+describe("inclusionGraph numeric literals in normalized parameter transport", () => {
+  it.each([4, "4", "4.0", "04.000"])("compares numeric literal4 to %s by exact value", value => {
+    expect(evaluateInclusionGraph({ kind: "equals", parameterId: "length", value: 4 }, { length: value })).toBe(true);
+    expect(evaluateInclusionGraph({ kind: "not_equals", parameterId: "length", value: 4 }, { length: value })).toBe(false);
+  });
+  it("keeps unequal decimals, absent values, text choices and booleans distinct", () => {
+    expect(evaluateInclusionGraph({ kind: "equals", parameterId: "length", value: 1000000000 }, { length: "1000000000.000000001" })).toBe(false);
+    expect(evaluateInclusionGraph({ kind: "equals", parameterId: "length", value: 0 }, { length: "0.000" })).toBe(true);
+    expect(resolveInclusionGraph({ kind: "not_equals", parameterId: "length", value: 4 }, {})).toEqual({ value: null, missingParameterIds: ["length"] });
+    expect(evaluateInclusionGraph({ kind: "equals", parameterId: "choice", value: "04" }, { choice: "4" })).toBe(false);
+    expect(evaluateInclusionGraph({ kind: "equals", parameterId: "choice", value: "4" }, { choice: 4 })).toBe(false);
+    expect(evaluateInclusionGraph({ kind: "equals", parameterId: "choice", value: 0 }, { choice: false })).toBe(false);
+    expect(evaluateInclusionGraph({ kind: "equals", parameterId: "choice", value: 4 }, { choice: "4m" })).toBe(false);
+    expect(evaluateInclusionGraph({ kind: "equals", parameterId: "choice", value: 4 }, { choice: "4e0" })).toBe(false);
+    expect(evaluateInclusionGraph({ kind: "equals", parameterId: "choice", value: 4 }, { choice: "4.0000000001" })).toBe(false);
+  });
+});
