@@ -3,6 +3,7 @@ import {
   consumerCanonicalMigrationUserParameters,
   consumerCanonicalInheritedRecalculationInputs,
   consumerCanonicalExplicitMigrationParameters,
+  consumerCanonicalExplicitAutomaticParameters,
   resolveConsumerCanonicalRecalculationCatalog,
 } from "../../src/features/consumerRepair/consumerCanonicalReleaseMigration";
 import {
@@ -202,6 +203,23 @@ describe("consumer exact release migration", () => {
     expect(supplied).toEqual({ area_m2: "100" });
     expect(consumerCanonicalExplicitMigrationParameters(catalog, { area_m2: "101", joint_count: 3, adhesive_kg_m2: 1 }, { ...supplied, area_m2: "101" })).toEqual({ area_m2: "101" });
     expect(consumerCanonicalInheritedRecalculationInputs({ ...parent, userInputSnapshot: { area_m2: "100", joint_count: 12 } }, catalog).joint_count).toBe(12);
+  });
+
+  it.each(['ASSUMPTION', 'VISIBLE_PRELIMINARY_SCENARIO', 'RUNTIME_STRUCTURAL_DEFAULT'])("keeps inherited %s values automatic during same-release Apply while retaining an explicit override", runtimeProfileClassification => {
+    const automatic = { ...target.parameterSchema[0], parameterId: 'stock_m2', titleRu: 'Материал в наличии', required: false,
+      defaultValue: 0, visibilityRole: 'USER_INPUT' as const, valueSourceRole: 'VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE' as const,
+      formulaConsumers: ['purchase_balance'], runtimeProfileClassification };
+    const catalog = { ...target, releaseId: parentRelease, parameterSchema: [target.parameterSchema[0], automatic] };
+    const parent = { ...revision, parameters: { area_m2: '100', stock_m2: 0 }, userInputSnapshot: { area_m2: '100' } };
+    const before = JSON.stringify(parent);
+    const inherited = consumerCanonicalInheritedRecalculationInputs(parent, catalog);
+    expect(inherited).toEqual({ area_m2: '100' });
+    expect(consumerCanonicalExplicitAutomaticParameters(catalog, { ...inherited, stock_m2: 0 }, inherited)).toEqual(inherited);
+    const explicit = consumerCanonicalInheritedRecalculationInputs({ ...parent, userInputSnapshot: { area_m2: '100', stock_m2: 0 } }, catalog);
+    expect(explicit).toEqual({ area_m2: '100', stock_m2: 0 });
+    expect(consumerCanonicalExplicitAutomaticParameters(catalog, explicit, explicit)).toEqual(explicit);
+    expect(consumerCanonicalExplicitAutomaticParameters(catalog, { ...inherited, stock_m2: 40 }, { ...inherited, stock_m2: 40 })).toHaveProperty('stock_m2', 40);
+    expect(JSON.stringify(parent)).toBe(before);
   });
 
   it.each(["unit", "meaning", "legacy", "overrides", "custom"])("stops ambiguous migration (%s) before a job is sent", async (kind) => {

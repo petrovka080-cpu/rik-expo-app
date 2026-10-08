@@ -29,6 +29,11 @@ export type ConsumerCanonicalRecalculationConsent = {
   assertMutationSource?: () => void;
 };
 
+const APPLICATION_SUPPLIED_CLASSIFICATIONS = new Set([
+  'PRELIMINARY_SOURCE_FORMULA', 'CATALOGUE_SOURCE_SELECTION',
+  'ASSUMPTION', 'VISIBLE_PRELIMINARY_SCENARIO', 'RUNTIME_STRUCTURAL_DEFAULT',
+]);
+
 /** Old norm/passport/derived values cannot become overrides of a new source.
  * Target defaults remain available to validation and to the backend baseline. */
 export function consumerCanonicalMigrationUserParameters(
@@ -58,7 +63,7 @@ export function consumerCanonicalInheritedRecalculationInputs(
   return catalog.releaseId === revision.releaseId
     ? Object.fromEntries(Object.entries(revision.parameters).filter(([id]) => {
       const schema = catalog.parameterSchema.find(parameter => parameter.parameterId === id);
-      return !['PRELIMINARY_SOURCE_FORMULA', 'CATALOGUE_SOURCE_SELECTION'].includes(String(schema?.runtimeProfileClassification))
+      return !APPLICATION_SUPPLIED_CLASSIFICATIONS.has(String(schema?.runtimeProfileClassification))
         || Object.prototype.hasOwnProperty.call(revision.userInputSnapshot ?? {}, id);
     }))
     : consumerCanonicalMigrationUserParameters(catalog, revision.userInputSnapshot ?? {});
@@ -80,7 +85,7 @@ export function consumerCanonicalExplicitAutomaticParameters(
   supplied: Readonly<Record<string, unknown>>,
 ): Record<string, unknown> {
   const automatic = new Set(catalog.parameterSchema.filter(schema =>
-    ['PRELIMINARY_SOURCE_FORMULA', 'CATALOGUE_SOURCE_SELECTION'].includes(String(schema.runtimeProfileClassification))).map(schema => schema.parameterId));
+    APPLICATION_SUPPLIED_CLASSIFICATIONS.has(String(schema.runtimeProfileClassification))).map(schema => schema.parameterId));
   return Object.fromEntries(Object.entries(validated).filter(([id]) => !automatic.has(id) || Object.prototype.hasOwnProperty.call(supplied, id)));
 }
 
