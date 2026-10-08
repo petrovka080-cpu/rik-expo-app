@@ -432,6 +432,7 @@ const PROMPT_PARAMETER_RULES: readonly PromptParameterRule[] = [
 const DERIVED_QUANTITY_PARAMETER = /(?:^quantity_|^unit_price_|(?:^|_)(?:compacted_volume|coverage_area|work_quantity|factor|coefficient|calculated|derived|consumption_total|material_m3|labor_man_hours|machine_hours|trip_count|service_count|test_count|test_frequency|test_interval|inspection_interval|control_interval|protocol_count|documentation_count|productivity)(?:_|$))/iu;
 const DIRECT_USER_QUANTITY_SOURCE = new Set([
   "USER_MEASURED",
+  "USER_OR_PROJECT_MEASURED",
   "USER_DECLARED",
   "USER_INPUT",
   "PROJECT_SPECIFIC_INPUT",

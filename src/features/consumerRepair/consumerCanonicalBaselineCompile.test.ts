@@ -83,6 +83,30 @@ function pumpCatalog(): CanonicalEstimateCatalogItem {
 }
 
 describe("consumer canonical W5 baseline", () => {
+  it("binds the route's measured quantity while ignoring the product diameter and technical section length", () => {
+    const catalog: CanonicalEstimateCatalogItem = {
+      ...pumpCatalog(), catalogId: "canonical-work:base:plumbing_interior_ppr_pipe_install_standard",
+      workKey: "plumbing_interior_ppr_pipe_install_standard",
+      parameterSchema: [
+        { parameterId: "route_length_m", ordinal: 0, valueType: "decimal", unitId: "m",
+          titleRu: "Длина трассы трубопровода", required: true, defaultValue: null, constraints: { min: 0.001 },
+          visibilityRole: "USER_INPUT", valueSourceRole: "USER_OR_PROJECT_MEASURED" },
+        { parameterId: "pipe_section_length_m", ordinal: 1, valueType: "decimal", unitId: "m",
+          titleRu: "Длина закупочного отрезка трубы", required: true, defaultValue: null, constraints: { min: 0.001 },
+          visibilityRole: "USER_INPUT", valueSourceRole: "VISIBLE_NORMATIVE_OR_REPLACEABLE_PROFILE" },
+      ],
+    };
+    const prompt = "Водопровод VALTEC PP-R 20 мм 100 м";
+    expect(extractUserQuantity(prompt)).toEqual({ value: "100", unit: "m" });
+    expect(buildCanonicalBaselinePlan({ catalog, prompt })).toMatchObject({
+      parameters: { route_length_m: "100" }, primaryMeasureParameterId: "route_length_m",
+    });
+    expect(buildCanonicalBaselinePlan({ catalog, prompt }).parameters).not.toHaveProperty("pipe_section_length_m");
+    const protectedCatalog = { ...catalog, parameterSchema: catalog.parameterSchema.map(p => ({ ...p,
+      valueSourceRole: "MANDATORY_NORM_VALUE" })), };
+    expect(buildCanonicalBaselinePlan({ catalog: protectedCatalog, prompt }).parameters).not.toHaveProperty("route_length_m");
+  });
+
   it.each(["floors", "floor_count", "layer_count", "shift_count"])(
     "does not bind a product count to the secondary parameter %s",
     (secondaryId) => {
