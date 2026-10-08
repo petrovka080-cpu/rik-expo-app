@@ -120,4 +120,12 @@ describe("consumer repair canonical session preview", () => {
     expect(preview?.invalidParameterIds).toEqual(["rated_voltage_v"]);
     expect(preview?.parameters[0].validationIssues).toContain("NUMBER_ABOVE_MAX");
   });
+
+  it('keeps an unresolved manual-row quantity blocking when an unrelated field changes', () => {
+    const session = canonicalSession();
+    session.blockingMissingParameterIds.push('manual-row:quantity');
+    const preview = buildConsumerRepairCanonicalSessionPreview({ session, draftValues: { rated_voltage_v: '10000' } });
+    expect(preview?.blockingMissingParameterIds).toEqual(['manual-row:quantity']);
+    expect(preview?.status).toBe('BLOCKING_REQUIRED');
+  });
 });

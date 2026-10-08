@@ -23,7 +23,7 @@ import {
 } from "./canonicalEstimatePhysicalNormProjection";
 import { planCanonicalEffectiveResourceQuantitiesV1 } from "./canonicalEffectiveResourceQuantityV1";
 import { resolveCanonicalPurchaseBalanceV1, resolveCanonicalKnownPurchaseRequirementV1, validateCanonicalManualTransportQuantityV1 } from "./canonicalPurchaseBalanceV1";
-import { resolveCanonicalPreliminaryParameterFormulasV1, PRELIMINARY_SOURCE_FORMULA } from './canonicalPreliminaryParameterFormulaV1';
+import { resolveCanonicalPreliminaryParameterFormulasV1, canonicalMissingAutomaticParameterSourcesV1, PRELIMINARY_SOURCE_FORMULA } from './canonicalPreliminaryParameterFormulaV1';
 import {
   planCanonicalCommercialCostCoverageV1, canonicalCommercialCoveredResourceGraphV1,
   assertCanonicalCommercialCoveredQuantityV1, assertCanonicalCommercialCostOwnersV1,
@@ -933,9 +933,10 @@ export async function compileCanonicalEstimateCore(
   };
 
   const unresolvedEffectiveOutputs = new Map<string, string[]>();
-  const originalMissingIds = (ids: readonly string[]): string[] => [...new Set(ids.flatMap(id =>
+  const missingAutomaticSources = canonicalMissingAutomaticParameterSourcesV1(input.parameterDefinitions, parameters);
+  const originalMissingIds = (ids: readonly string[]): string[] => missingAutomaticSources([...new Set(ids.flatMap(id =>
     effectiveQuantityPlan.owners.has(id) ? unresolvedEffectiveOutputs.get(id) ?? [] : [id],
-  ))].sort();
+  ))]);
   for (const resource of effectiveQuantityPlan.ordered) {
     const formula = formulas.get(resource.formula_id);
     if (!formula) throw compilerError("formula graph reference missing", "DEFINITION_INTEGRITY_FAILED");

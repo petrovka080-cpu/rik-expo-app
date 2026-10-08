@@ -1,5 +1,5 @@
 import type { CanonicalEstimateParameterDefinition } from './canonicalEstimateCompileCore';
-import { compileFormulaGraph, evaluateFormulaGraph, type FormulaParameterValue } from './formulaGraph';
+import { compileFormulaGraph, evaluateFormulaGraph, compareFormulaGraphDecimals, type FormulaParameterValue } from './formulaGraph';
 import { canonicalConditionParameterIds } from './canonicalEffectiveResourceQuantityV1';
 import { resolveInclusionGraph } from './inclusionGraph';
 
@@ -24,7 +24,7 @@ export function resolveCanonicalPreliminaryParameterFormulasV1(
   input: Readonly<Record<string, unknown>>,
 ): Record<string, unknown> {
   const byId = new Map(definitions.map(p => [p.parameter_id, p]));
-  const policies = new Map<string, { formula: ReturnType<typeof compileFormulaGraph>; when: Record<string, unknown>; dependencies: string[] }>();
+  const policies = new Map<string, { formula: ReturnType<typeof compileFormulaGraph>; when: Record<string, unknown>; dependencies: string[]; requireMatch: boolean }>();
   for (const definition of definitions) {
     const raw = definition.truth_metadata?.preliminary_value_formula_v1;
     if (raw == null) continue;
@@ -32,8 +32,9 @@ export function resolveCanonicalPreliminaryParameterFormulasV1(
     const policy = raw as Record<string, unknown>;
     const truth = definition.truth_metadata!;
     const guide = truth.guide as Record<string, unknown> | undefined;
-    if (Object.keys(policy).some(key => !['version', 'expression', 'when'].includes(key))
+    if (Object.keys(policy).some(key => !['version', 'expression', 'when', 'explicitValuePolicy'].includes(key))
       || policy.version !== 'canonical-preliminary-parameter-formula:v1'
+      || (policy.explicitValuePolicy != null && policy.explicitValuePolicy !== 'REQUIRE_MATCH')
       || typeof policy.expression !== 'string'
       || !['decimal', 'integer'].includes(definition.value_type)
       || definition.default_value != null
@@ -48,7 +49,7 @@ export function resolveCanonicalPreliminaryParameterFormulasV1(
     const dependencies = [...new Set([...formula.inputParameterIds, ...canonicalConditionParameterIds(when)])];
     if (dependencies.includes(definition.parameter_id) || dependencies.some(id => !byId.has(id))
       || formula.inputParameterIds.some(id => !['decimal', 'integer'].includes(byId.get(id)!.value_type))) invalid(definition.parameter_id);
-    policies.set(definition.parameter_id, { formula, when, dependencies });
+    policies.set(definition.parameter_id, { formula, when, dependencies, requireMatch: policy.explicitValuePolicy === 'REQUIRE_MATCH' });
   }
   const parameters = { ...input };
   const states = new Map<string, 'visiting' | 'done'>();
@@ -58,14 +59,52 @@ export function resolveCanonicalPreliminaryParameterFormulasV1(
     const policy = policies.get(id)!;
     states.set(id, 'visiting');
     policy.dependencies.filter(dependency => policies.has(dependency)).forEach(visit);
-    if (parameters[id] == null && resolveInclusionGraph(policy.when, parameters).value === true
+    if ((parameters[id] == null || policy.requireMatch) && resolveInclusionGraph(policy.when, parameters).value === true
       && policy.formula.inputParameterIds.every(dependency => parameters[dependency] != null)) {
-      parameters[id] = evaluateFormulaGraph(policy.formula.ast, parameters as Record<string, FormulaParameterValue>);
+      const calculated = evaluateFormulaGraph(policy.formula.ast, parameters as Record<string, FormulaParameterValue>);
+      if (parameters[id] != null && compareFormulaGraphDecimals(parameters[id] as number | string, calculated) !== 0) {
+        throw Object.assign(new Error('Выбранная схема трассы противоречит введённым количествам. Выберите проектную раскладку или уточните количества фитингов.'), {
+          code: 'PROJECT_GEOMETRY_PARAMETER_CONFLICT', parameterId: id,
+        });
+      }
+      parameters[id] ??= calculated;
     }
     states.set(id, 'done');
   };
   policies.forEach((_, id) => visit(id));
   return parameters;
+}
+
+/** An unresolved calculated count asks for its missing object facts. A disabled
+ * derivation keeps the original project quantity question; an unavailable exact
+ * lookup with known inputs remains a source gap instead of false completeness. */
+export function canonicalMissingAutomaticParameterSourcesV1(
+  definitions: readonly CanonicalEstimateParameterDefinition[],
+  parameters: Readonly<Record<string, unknown>>,
+): (ids: readonly string[]) => string[] {
+  const byId = new Map(definitions.map(p => [p.parameter_id, p]));
+  const missing = (id: string) => parameters[id] == null || parameters[id] === '';
+  const visit = (id: string, path: ReadonlySet<string>): string[] => {
+    if (!missing(id)) return [];
+    if (path.has(id)) return [id];
+    const truth = byId.get(id)?.truth_metadata;
+    const formula = truth?.preliminary_value_formula_v1 as Record<string, unknown> | undefined;
+    const lookup = truth?.derived_exact_lookup_v1 as { inputParameterIds?: string[] } | undefined;
+    let dependencies: string[];
+    if (formula) {
+      const when = resolveInclusionGraph(formula.when as Record<string, unknown>, { ...parameters });
+      if (when.value === false) return [id];
+      dependencies = when.value == null ? when.missingParameterIds
+        : compileFormulaGraph(String(formula.expression)).inputParameterIds;
+    } else if (lookup) {
+      dependencies = lookup.inputParameterIds ?? [];
+    } else return [id];
+    const unresolved = dependencies.filter(missing);
+    if (!unresolved.length) return [id];
+    const next = new Set([...path, id]);
+    return unresolved.flatMap(dependency => visit(dependency, next));
+  };
+  return ids => [...new Set(ids.flatMap(id => visit(id, new Set())))].sort();
 }
 
 export function canonicalAutomaticPreliminaryParameterIdsV1(

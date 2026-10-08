@@ -1,4 +1,5 @@
 import React from "react";
+import { canonicalPreviewQuantityCounts } from './consumerCanonicalPreviewQuantityCounts';
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import { canonicalPublicResourcePresentationV1 } from "../../lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -79,6 +80,7 @@ type CanonicalEstimateMeaningfulPreview = {
   }[];
   calculatedRowCount: number;
   preliminaryNeedCount: number;
+  missingQuantityCount: number;
   saved: boolean;
   onPublished: () => void;
   onOpenFullEstimate: () => void;
@@ -128,7 +130,7 @@ function CanonicalEstimateMeaningfulPreviewCard({
         {`С количеством: ${preview.calculatedRowCount}`}
       </Text>
       <Text style={styles.meaningfulPreviewMeta} testID="request-estimate-preliminary-need-count">
-        {`Без количества: ${preview.preliminaryNeedCount}`}
+        {`Требуют уточнения: ${preview.preliminaryNeedCount} · без количества: ${preview.missingQuantityCount}`}
       </Text>
       <View style={styles.meaningfulPreviewRows} testID="request-estimate-visible-lines">
         <Text style={styles.meaningfulPreviewSection}>Ключевые рассчитанные позиции:</Text>
@@ -448,6 +450,8 @@ function useConsumerCanonicalDraftPersistence(input: {
       && Number.isFinite(row.quantity)
     );
     const preliminaryNeedCount = canonicalBackend.preliminaryNeeds?.length ?? 0;
+    const quantityCounts = canonicalPreviewQuantityCounts({ calculatedRowIds: calculatedRows.map(row => row.rowId),
+      preliminaryNeeds: canonicalBackend.preliminaryNeeds ?? [] });
     const publishInitialPreview = shouldPublishInitialConsumerCanonicalPreview(options, canonicalBackend.contentWithdrawalReasonRu);
     if (publishInitialPreview) {
       let fullEstimateOpenRequested = false;
@@ -470,8 +474,9 @@ function useConsumerCanonicalDraftPersistence(input: {
             return { id: row.rowId, titleRu: presentation?.nameRu ?? row.visibleName,
               quantity: row.quantity, unit: formatEstimateUnitLabel(row.unit?.trim() || "ед.") };
           }),
-          calculatedRowCount: calculatedRows.length,
+          calculatedRowCount: quantityCounts.knownQuantityCount,
           preliminaryNeedCount,
+          missingQuantityCount: quantityCounts.missingQuantityCount,
           saved: false,
           onPublished: settlePublished,
           onOpenFullEstimate: () => {

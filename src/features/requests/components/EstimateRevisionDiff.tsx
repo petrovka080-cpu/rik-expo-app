@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from "react-native";
 import type { EstimateDraftRevisionDiff } from "../../../lib/estimate/estimateDraftRevisionContract";
 import { formatEstimateUnitLabel } from "../../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import { canonicalEstimateParameterChoiceLabelRu } from "../../../lib/estimate/backendPlatform/canonicalEstimateParameterSemantics";
+import { compareFormulaGraphDecimals } from "../../../lib/estimate/backendPlatform/formulaGraph";
 import {
   aiEstimateRuLabelForParameter,
   aiEstimateRuUnitForParameter,
@@ -21,17 +22,29 @@ export function EstimateRevisionDiff({
     parameterId: string;
     label: string;
     unit: string | null;
+    valueType?: string;
   }[];
 }): React.ReactElement | null {
   if (!diff) return null;
   const parameterPresentation = new Map(
     (parameters ?? []).map((parameter) => [parameter.parameterId, parameter] as const),
   );
+  const visibleChanges = diff.changedParams.filter(param => {
+    const presentation = parameterPresentation.get(param.key);
+    if (parameters != null && !presentation) return false;
+    if (!aiEstimateRuLabelForParameter(param.key, presentation?.label).trim()) return false;
+    if (String(param.before) === String(param.after)) return false;
+    if (presentation?.valueType === 'number' && param.before != null && param.after != null) {
+      try { return compareFormulaGraphDecimals(String(param.before), String(param.after)) !== 0; }
+      catch { return true; }
+    }
+    return true;
+  });
   return (
     <View style={styles.panel} testID="estimate-revision-diff">
       <Text style={styles.title}>Изменения после пересчета</Text>
       <Text style={styles.meta}>Изменились строки: {diff.changedRowsCount}</Text>
-      {diff.changedParams.slice(0, 6).map((param) => {
+      {visibleChanges.slice(0, 6).map((param) => {
         const presentation = parameterPresentation.get(param.key);
         return (
           <Text key={param.key} style={styles.line} testID={`estimate-revision-diff-param-${param.key}`}>

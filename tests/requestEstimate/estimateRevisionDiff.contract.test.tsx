@@ -43,6 +43,24 @@ function visibleText(tree: JsonTree): string {
 }
 
 describe("estimate revision diff UI", () => {
+  it('hides internal changes and equivalent numeric input without deleting the audit diff', () => {
+    const diff = { fromRevisionId: 'before', toRevisionId: 'after', changedParams: [
+      { key: 'fischer_effective_sets', before: null, after: 51 },
+      { key: 'route_length_m', before: 100, after: '100.0' },
+      { key: 'route_geometry_mode', before: null, after: 'Прямая трасса' },
+    ], changedRows: [], changedRowsCount: 0,
+      staleArtifactsAfterEdit: { snapshotInvalidated: true, pdfInvalidated: true, buyerHandoffInvalidated: true } };
+    let renderer!: TestRenderer.ReactTestRenderer;
+    act(() => { renderer = TestRenderer.create(<EstimateRevisionDiff diff={diff} parameters={[
+      { parameterId: 'route_length_m', label: 'Длина трассы', unit: 'm', valueType: 'number' },
+      { parameterId: 'route_geometry_mode', label: 'Схема трассы', unit: null, valueType: 'string' },
+    ]} />); });
+    const text = visibleText(renderer.toJSON());
+    expect(text).toContain('Схема трассы');
+    expect(text).not.toContain('51');
+    expect(text).not.toContain('100 ->');
+    expect(diff.changedParams).toHaveLength(3);
+  });
   it("keeps the known quantity visible and names the clarification transition", () => {
     let renderer!: TestRenderer.ReactTestRenderer;
     act(() => { renderer = TestRenderer.create(<EstimateRevisionDiff diff={{ fromRevisionId: "before", toRevisionId: "after",

@@ -451,7 +451,10 @@ export async function waitForCanonicalEstimateJob(input: {
     input.onProgress?.(job);
     if (TERMINAL_JOB_STATES.has(job.status)) {
       if (job.status !== "succeeded" || (input.requireRevisionResult !== false && !job.resultRevisionId)) {
-        throw new CanonicalEstimateApiError(`Расчёт не завершён: ${job.errorCode ?? job.status}`, {
+        const message = job.errorCode === 'PROJECT_GEOMETRY_PARAMETER_CONFLICT'
+          ? 'Выбранная схема трассы противоречит введённым количествам. Выберите проектную раскладку или уточните количества фитингов. Ввод сохранён.'
+          : `Расчёт не завершён: ${job.errorCode ?? job.status}`;
+        throw new CanonicalEstimateApiError(message, {
           code: job.errorCode ?? `JOB_${job.status.toUpperCase()}`,
           httpStatus: job.status === "failed" ? 422 : 409,
           retryable: false,

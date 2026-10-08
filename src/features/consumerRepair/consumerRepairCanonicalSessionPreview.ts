@@ -3,6 +3,7 @@ import type {
   CanonicalParameterSession,
   CanonicalParameterValue,
 } from "../../lib/estimate/canonicalParameters/canonicalParameterCore";
+import { resolveCanonicalParameterVisibility } from "../../lib/estimate/canonicalParameters/canonicalParameterCore";
 
 function validationIssues(input: {
   parameter: CanonicalParameter;
@@ -82,7 +83,8 @@ export function buildConsumerRepairCanonicalSessionPreview(input: {
 }): CanonicalParameterSession | null {
   if (!input.session) return null;
   let changed = false;
-  const parameters = input.session.parameters.map((parameter): CanonicalParameter => {
+  const allParameters = [...input.session.parameters, ...(input.session.inactiveConditionalParameters ?? [])];
+  const updatedParameters = allParameters.map((parameter): CanonicalParameter => {
     if (!Object.prototype.hasOwnProperty.call(input.draftValues, parameter.parameterId)) {
       return parameter;
     }
@@ -114,13 +116,22 @@ export function buildConsumerRepairCanonicalSessionPreview(input: {
   });
   if (!changed) return input.session;
 
-  const blockingMissingParameterIds = parameters
+  const values = new Map(updatedParameters.filter(p => p.value != null).map(p => [p.parameterId, p.value!] as const));
+  const backendBlocking = new Set(input.session.blockingMissingParameterIds);
+  const parameters = updatedParameters.filter(parameter => {
+    const visible = resolveCanonicalParameterVisibility(parameter.visibilityCondition, values);
+    return backendBlocking.has(parameter.parameterId) ? visible !== false : visible === true;
+  });
+  const visibleIds = new Set(parameters.map(p => p.parameterId));
+  const knownIds = new Set(allParameters.map(p => p.parameterId));
+
+  const blockingMissingParameterIds = [...input.session.blockingMissingParameterIds.filter(id => !knownIds.has(id)), ...parameters
     .filter((parameter) =>
       parameter.requiredLevel === "BLOCKING_REQUIRED" &&
       parameter.value == null &&
       parameter.state !== "NOT_APPLICABLE"
     )
-    .map((parameter) => parameter.parameterId);
+    .map((parameter) => parameter.parameterId)];
   const contractMissingParameterIds = parameters
     .filter((parameter) =>
       parameter.value == null &&
@@ -135,7 +146,7 @@ export function buildConsumerRepairCanonicalSessionPreview(input: {
     .filter((parameter) => parameter.source === "ASSUMED")
     .map((parameter) => parameter.parameterId);
   const invalidParameterIds = parameters
-    .filter((parameter) => !parameter.valid)
+    .filter((parameter) => parameter.value != null && !parameter.valid)
     .map((parameter) => parameter.parameterId);
   const status = invalidParameterIds.length > 0
     ? "INVALID" as const
@@ -148,6 +159,7 @@ export function buildConsumerRepairCanonicalSessionPreview(input: {
     ...input.session,
     status,
     parameters,
+    inactiveConditionalParameters: updatedParameters.filter(p => !visibleIds.has(p.parameterId)),
     blockingMissingParameterIds,
     contractMissingParameterIds,
     assumptionParameterIds,

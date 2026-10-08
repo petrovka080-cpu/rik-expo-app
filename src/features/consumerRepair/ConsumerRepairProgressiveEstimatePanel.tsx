@@ -1576,15 +1576,15 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     } = this.props;
     const { showAllMissing, filledOpen, derivedOpen } = this.state;
     const cards = this.buildCards();
-    const parameterOrdinalByKey = new Map(
-      cards.map((card, index) => [card.key, index + 1] as const),
-    );
-    const renderParameter = (card: AiEstimateParameterCard, actionLabel: string) =>
-      this.renderEditableParameterRow(
+    const parameterOrdinalByKey = new Map<string, number>();
+    const renderParameter = (card: AiEstimateParameterCard, actionLabel: string) => {
+      if (!parameterOrdinalByKey.has(card.key)) parameterOrdinalByKey.set(card.key, parameterOrdinalByKey.size + 1);
+      return this.renderEditableParameterRow(
         card,
         actionLabel,
         parameterOrdinalByKey.get(card.key) ?? 1,
       );
+    };
     const clarificationRank = {
       critical: 0,
       recommended: 1,
