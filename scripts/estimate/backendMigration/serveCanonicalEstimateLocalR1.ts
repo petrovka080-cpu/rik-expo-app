@@ -1115,7 +1115,8 @@ async function readContentAdmissions(
       const baselineReady = row.baseline_ready === true;
       const scenarioReady = row.scenario_ready === true;
       const decision = evaluateEstimateAdmission({
-        definitionWithdrawalReason: row.definition_withdrawal_reason ?? null,
+        definitionWithdrawalReason: typeof row.definition_withdrawal_reason === "string"
+          ? row.definition_withdrawal_reason : null,
         mode,
         ingress,
         releaseId:

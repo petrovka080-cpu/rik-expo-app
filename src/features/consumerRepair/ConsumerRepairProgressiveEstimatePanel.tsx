@@ -190,7 +190,7 @@ export function buildCanonicalProcurementPreviewRows(
     if (includedIds.has(rowId)) continue;
     const requirement = canonicalArtifactPurchaseRequirement({ row_id: rowId, unit_id: item.unit,
       calculation_trace: { purchaseRequirementV1: source.canonicalPurchaseRequirement } });
-    rows.push({ rowId, titleRu: item.titleRu, quantity: item.quantity, preliminary: true,
+    rows.push({ rowId, titleRu: item.titleRu, quantity: item.quantity ?? null, preliminary: true,
       unit: formatEstimateUnitLabel(item.unit), unitPrice: item.unitPrice ?? null, currency: item.currency,
       quantityDetails: requirement ? [`${requirement.labelRu}: ${formatEstimateQuantityRu(requirement.quantity)} ${formatEstimateUnitLabel(requirement.unitId)}`] : [],
     });
