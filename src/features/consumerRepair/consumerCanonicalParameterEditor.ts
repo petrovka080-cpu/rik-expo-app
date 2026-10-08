@@ -294,7 +294,10 @@ function objectVisibilityCondition(raw: unknown): CanonicalParameter["visibility
 }
 
 function parameterVisibilityCondition(schema: EditableSchema): CanonicalParameter["visibilityCondition"] {
-  const raw = schema.visibleWhen ?? schema.requiredWhen ?? schema.constraints.requiredWhen;
+  return parameterCondition(schema.visibleWhen ?? schema.requiredWhen ?? schema.constraints.requiredWhen);
+}
+
+function parameterCondition(raw: unknown): CanonicalParameter["visibilityCondition"] {
   const structured = objectVisibilityCondition(raw);
   if (structured) return structured;
   const expression = typeof raw === "string" ? raw.trim() : "";
@@ -387,10 +390,9 @@ function buildParameter(input: {
     unit: input.schema.unitId,
     requiredLevel,
     visibilityCondition: parameterVisibilityCondition(input.schema),
-    ...(conditional ? { requiredCondition: parameterVisibilityCondition({
-      ...input.schema,
-      visibleWhen: input.schema.requiredWhen ?? input.schema.constraints.requiredWhen,
-    }) } : {}),
+    ...(conditional ? { requiredCondition: parameterCondition(
+      input.schema.requiredWhen ?? input.schema.constraints.requiredWhen,
+    ) } : {}),
     validation: {
       ...numericValidation,
       ...(["text", "enum", "array_object"].includes(input.schema.valueType) && input.schema.required
