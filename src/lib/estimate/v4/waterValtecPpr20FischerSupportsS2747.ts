@@ -21,7 +21,7 @@ const planningPoints = 'ceil(route_length_m/support_spacing_m)+1';
 const supportedBase = { kind: 'or', operands: [pack.baseChoices.concrete, pack.baseChoices.solidMasonry]
         .map(value => ({ kind: 'equals', parameterId: 'substrate_profile', value })) };
 const system = String(runtime.selected_system_reference);
-function productQuantityParameter(id: string, title: string, value: number, sourceId: string, ordinal: number): CanonicalEstimateParameterDefinition {
+function productQuantityParameter(id: string, title: string, value: number, sourceId: string, ordinal: number): CanonicalEstimateParameterDefinition & { ordinal: number } {
     const source = sourceFor(sourceId);
     return { parameter_id: id, ordinal, value_type: 'integer', unit_id: 'item', title_ru: title, required: true, default_value: null,
         constraints_json: { min: 1 }, truth_metadata: { semantic_parameter_key: `fischer-support:${id}`, visibility_role: 'USER_DERIVED_READONLY',
@@ -71,7 +71,7 @@ export const VALTEC_FISCHER_SUPPORTS_S2747_FORMULAS: readonly CanonicalEstimateF
     formula('fischer_assembled_supports_s2747', 'item', assembled),
     formula('fischer_support_remainder_s2747', 'item', `max(0,(${assembled})-(${planningPoints}))`),
 ];
-const template = VALTEC_EXACT_FITTINGS_S2747_RESOURCES.find(r => r.row_id === 'water-ppr20:03:fastener:support-packages')!;
+const template: CanonicalEstimateResourceDefinition = VALTEC_EXACT_FITTINGS_S2747_RESOURCES.find(r => r.row_id === 'water-ppr20:03:fastener:support-packages')!;
 function supply(rowId: string, title: string, unit: string, formulaId: string, sourceId: string, graph: Record<string, unknown>, included = false): CanonicalEstimateResourceDefinition {
     const source = sourceFor(sourceId);
     const { purchaseBalanceV1: _oldBalance, effectiveQuantityOutputV1: _oldOutput, ...templateGraph } = template.resource_graph;

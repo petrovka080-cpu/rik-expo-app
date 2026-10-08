@@ -36,7 +36,7 @@ test('rounds the two different supplies once and keeps all included physical req
     expect(rowQuantity(result, 'water-ppr20:03:control:support-remainder')).toBe('3');
     const buyers = selectCanonicalArtifactRows(result.rows).procurementRows;
     expect(buyers.filter(r => r.row_id === ids.clamps || r.row_id === ids.sets)).toHaveLength(2);
-    expect(buyers.some(r => includedPartIds.includes(r.row_id))).toBe(false);
+    expect(buyers.some(r => typeof r.row_id === 'string' && includedPartIds.includes(r.row_id))).toBe(false);
     expect(buyers.some(r => r.row_id === 'water-ppr20:03:fastener:support-packages')).toBe(false);
     const old = await previousCompile(facts);
     for (const row of old.rows.filter(r => !r.row_id.startsWith('water-ppr20:03:')))
