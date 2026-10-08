@@ -387,6 +387,10 @@ function buildParameter(input: {
     unit: input.schema.unitId,
     requiredLevel,
     visibilityCondition: parameterVisibilityCondition(input.schema),
+    ...(conditional ? { requiredCondition: parameterVisibilityCondition({
+      ...input.schema,
+      visibleWhen: input.schema.requiredWhen ?? input.schema.constraints.requiredWhen,
+    }) } : {}),
     validation: {
       ...numericValidation,
       ...(["text", "enum", "array_object"].includes(input.schema.valueType) && input.schema.required

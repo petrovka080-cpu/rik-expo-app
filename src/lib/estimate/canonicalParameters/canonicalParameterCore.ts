@@ -107,6 +107,8 @@ export type CanonicalParameter = {
   unit: string | null;
   requiredLevel: CanonicalParameterRequiredLevel;
   visibilityCondition: CanonicalParameterVisibilityCondition;
+  /** Kept separately because a visible field may be required only in one branch. */
+  requiredCondition?: CanonicalParameterVisibilityCondition;
   validation: CanonicalParameterValidation;
   allowedValues: readonly CanonicalParameterAllowedValue[];
   source: CanonicalParameterSource;

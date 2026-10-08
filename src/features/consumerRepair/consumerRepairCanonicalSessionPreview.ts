@@ -121,6 +121,19 @@ export function buildConsumerRepairCanonicalSessionPreview(input: {
   const parameters = updatedParameters.filter(parameter => {
     const visible = resolveCanonicalParameterVisibility(parameter.visibilityCondition, values);
     return backendBlocking.has(parameter.parameterId) ? visible !== false : visible === true;
+  }).map((parameter): CanonicalParameter => {
+    if (parameter.requiredLevel !== "CONDITIONAL" || !parameter.requiredCondition) return parameter;
+    const required = resolveCanonicalParameterVisibility(parameter.requiredCondition, values);
+    if (required == null) return parameter;
+    const requiredLevel = required ? "BLOCKING_REQUIRED" as const : "OPTIONAL" as const;
+    if (parameter.value != null) return { ...parameter, requiredLevel };
+    return {
+      ...parameter,
+      requiredLevel,
+      state: required ? "BLOCKING_REQUIRED" : "NOT_APPLICABLE",
+      valid: !required,
+      validationIssues: required ? ["VALUE_REQUIRED"] : [],
+    };
   });
   const visibleIds = new Set(parameters.map(p => p.parameterId));
   const knownIds = new Set(allParameters.map(p => p.parameterId));

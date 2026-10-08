@@ -86,8 +86,11 @@ test('asks only object facts and reveals endings immediately when the user choos
     expect([...session.blockingMissingParameterIds].sort()).toEqual(['route_geometry_mode', 'substrate_profile']);
     const preview = buildConsumerRepairCanonicalSessionPreview({ session, draftValues: { route_geometry_mode: pack.geometry.straight } })!;
     expect(preview.parameters.some(p => p.parameterId === 'route_end_connections')).toBe(true);
+    expect(preview.blockingMissingParameterIds).toEqual(['substrate_profile', 'route_end_connections']);
+    expect(preview.parameters.find(p => p.parameterId === 'route_end_connections')).toMatchObject({ requiredLevel: 'BLOCKING_REQUIRED', state: 'BLOCKING_REQUIRED', valid: false });
     expect(preview.parameters.some(p => p.parameterId === 'straight_coupling_count')).toBe(false);
     const manual = buildConsumerRepairCanonicalSessionPreview({ session, draftValues: { route_geometry_mode: pack.geometry.project } })!;
     expect(manual.parameters.some(p => p.parameterId === 'straight_coupling_count')).toBe(true);
     expect(manual.parameters.some(p => p.parameterId === 'route_end_connections')).toBe(false);
+    expect(manual.blockingMissingParameterIds).not.toContain('route_end_connections');
 });

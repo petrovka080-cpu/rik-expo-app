@@ -128,4 +128,20 @@ describe("consumer repair canonical session preview", () => {
     expect(preview?.blockingMissingParameterIds).toEqual(['manual-row:quantity']);
     expect(preview?.status).toBe('BLOCKING_REQUIRED');
   });
+
+  it('uses the requirement condition separately from visibility and preserves the durable session', () => {
+    const original = canonicalSession();
+    const session: CanonicalParameterSession = { ...original, parameters: [
+      original.parameters[1],
+      { ...original.parameters[0], requiredLevel: 'CONDITIONAL', requiredCondition: { kind: 'PARAMETER_EQUALS', parameterId: 'optional_note', value: 'required' } },
+    ], blockingMissingParameterIds: [] };
+    const needed = buildConsumerRepairCanonicalSessionPreview({ session, draftValues: { optional_note: 'required' } });
+    expect(needed?.blockingMissingParameterIds).toEqual(['rated_voltage_v']);
+    expect(needed?.parameters[1]).toMatchObject({ requiredLevel: 'BLOCKING_REQUIRED', state: 'BLOCKING_REQUIRED', valid: false });
+    const optional = buildConsumerRepairCanonicalSessionPreview({ session, draftValues: { optional_note: 'other' } });
+    expect(optional?.parameters[1]).toMatchObject({ requiredLevel: 'OPTIONAL', state: 'NOT_APPLICABLE', valid: true });
+    expect(optional?.blockingMissingParameterIds).toEqual([]);
+    expect(optional?.contractMissingParameterIds).toEqual([]);
+    expect(session.parameters[1].requiredLevel).toBe('CONDITIONAL');
+  });
 });
