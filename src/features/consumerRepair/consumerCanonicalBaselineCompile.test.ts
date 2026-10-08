@@ -87,6 +87,7 @@ describe("consumer canonical W5 baseline", () => {
     const catalog: CanonicalEstimateCatalogItem = {
       ...pumpCatalog(), catalogId: "canonical-work:base:plumbing_interior_ppr_pipe_install_standard",
       workKey: "plumbing_interior_ppr_pipe_install_standard",
+      applicability: { primaryMeasureParameterId: "route_length_m" },
       parameterSchema: [
         { parameterId: "route_length_m", ordinal: 0, valueType: "decimal", unitId: "m",
           titleRu: "Длина трассы трубопровода", required: true, defaultValue: null, constraints: { min: 0.001 },
@@ -94,6 +95,9 @@ describe("consumer canonical W5 baseline", () => {
         { parameterId: "pipe_section_length_m", ordinal: 1, valueType: "decimal", unitId: "m",
           titleRu: "Длина закупочного отрезка трубы", required: true, defaultValue: null, constraints: { min: 0.001 },
           visibilityRole: "USER_INPUT", valueSourceRole: "VISIBLE_NORMATIVE_OR_REPLACEABLE_PROFILE" },
+        { parameterId: "straight_coupling_count", ordinal: 2, valueType: "integer", unitId: "pcs",
+          titleRu: "Прямые муфты", required: true, defaultValue: null, constraints: { min: 0 },
+          visibilityRole: "USER_INPUT", valueSourceRole: "USER_OR_PROJECT_MEASURED" },
       ],
     };
     const prompt = "Водопровод VALTEC PP-R 20 мм 100 м";
@@ -102,6 +106,10 @@ describe("consumer canonical W5 baseline", () => {
       parameters: { route_length_m: "100" }, primaryMeasureParameterId: "route_length_m",
     });
     expect(buildCanonicalBaselinePlan({ catalog, prompt }).parameters).not.toHaveProperty("pipe_section_length_m");
+    expect(buildCanonicalBaselinePlan({ catalog, prompt: "Водопровод VALTEC PP-R 20 мм 10 шт." }).parameters)
+      .not.toHaveProperty("straight_coupling_count");
+    expect(buildCanonicalBaselinePlan({ catalog, prompt: "Доставка 2 т; водопровод VALTEC PP-R 20 мм 100 м" }).parameters)
+      .toMatchObject({ route_length_m: "100" });
     const protectedCatalog: CanonicalEstimateCatalogItem = { ...catalog, parameterSchema: catalog.parameterSchema.map(p => ({ ...p,
       valueSourceRole: "MANDATORY_NORM_VALUE" })), };
     expect(buildCanonicalBaselinePlan({ catalog: protectedCatalog, prompt }).parameters).not.toHaveProperty("route_length_m");

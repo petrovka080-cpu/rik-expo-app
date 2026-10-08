@@ -445,7 +445,7 @@ const DIRECT_USER_QUANTITY_SOURCE = new Set([
   "VISIBLE_BASELINE_ASSUMPTION",
 ]);
 
-export function extractUserQuantity(prompt: string): UserQuantity | null {
+export function extractUserQuantity(prompt: string, accepts?: (quantity: UserQuantity) => boolean): UserQuantity | null {
   const normalizedPrompt = prompt
     .replace(/m²/giu, "m2")
     .replace(/m³/giu, "m3")
@@ -453,21 +453,23 @@ export function extractUserQuantity(prompt: string): UserQuantity | null {
     .replace(/м³/giu, "м3")
     .replace(/(?:кв(?:адратн[\p{L}]*)?\.?\s*м(?:етр[\p{L}]*)?)/giu, "м2")
     .replace(/(?:куб(?:ическ[\p{L}]*)?\.?\s*м(?:етр[\p{L}]*)?)/giu, "м3");
-  const match = /(?<![\p{L}\p{N}])(\d{1,3}(?:[ \u00a0\u202f]\d{3})+(?:[,.]\d+)?|\d+(?:[,.]\d+)?)\s*(штук(?:а|и)?|шт\.?|m2|m3|м2|м3|м|кг|тонн(?:а|ы)?|т)(?![\p{L}\p{N}])/iu.exec(normalizedPrompt);
-  if (!match) return null;
-  const rawUnit = match[2]
-    .toLocaleLowerCase("ru-RU")
-    .replace("²", "2")
-    .replace("³", "3")
-    .replace(/[.\s]+/gu, "");
-  const unit = /^шт|^штук/u.test(rawUnit) ? "pcs"
-    : rawUnit === "m2" || rawUnit === "м2" || rawUnit.startsWith("кв") || rawUnit.startsWith("квадратн") ? "m2"
-      : rawUnit === "m3" || rawUnit === "м3" || rawUnit.startsWith("куб") || rawUnit.startsWith("кубическ") ? "m3"
-        : rawUnit === "м" ? "m"
-          : rawUnit === "кг" ? "kg"
-            : rawUnit === "т" || rawUnit.startsWith("тонн") ? "t"
-              : null;
-  return { value: match[1].replace(/[ \u00a0\u202f]/gu, "").replace(",", "."), unit };
+  for (const match of normalizedPrompt.matchAll(/(?<![\p{L}\p{N}])(\d{1,3}(?:[ \u00a0\u202f]\d{3})+(?:[,.]\d+)?|\d+(?:[,.]\d+)?)\s*(штук(?:а|и)?|шт\.?|m2|m3|м2|м3|м|кг|тонн(?:а|ы)?|т)(?![\p{L}\p{N}])/giu)) {
+    const rawUnit = match[2]
+      .toLocaleLowerCase("ru-RU")
+      .replace("²", "2")
+      .replace("³", "3")
+      .replace(/[.\s]+/gu, "");
+    const unit = /^шт|^штук/u.test(rawUnit) ? "pcs"
+      : rawUnit === "m2" || rawUnit === "м2" || rawUnit.startsWith("кв") || rawUnit.startsWith("квадратн") ? "m2"
+        : rawUnit === "m3" || rawUnit === "м3" || rawUnit.startsWith("куб") || rawUnit.startsWith("кубическ") ? "m3"
+          : rawUnit === "м" ? "m"
+            : rawUnit === "кг" ? "kg"
+              : rawUnit === "т" || rawUnit.startsWith("тонн") ? "t"
+                : null;
+    const quantity: UserQuantity = { value: match[1].replace(/[ \u00a0\u202f]/gu, "").replace(",", "."), unit };
+    if (!accepts || accepts(quantity)) return quantity;
+  }
+  return null;
 }
 
 function parameterAcceptsQuantity(
@@ -2230,6 +2232,9 @@ export function buildCanonicalBaselinePlan(input: {
     : null;
   const selectedJackingInput = input.catalog.catalogId === ROAD_CROSSING_SLEEVES_SELECTED_JACKING_CATALOG_ID_R1
     ? parseRoadCrossingSleevesSelectedJackingPromptR1(input.prompt) : null;
+  const declaredPrimaryMeasureId = typeof input.catalog.applicability?.primaryMeasureParameterId === "string"
+    ? input.catalog.applicability.primaryMeasureParameterId.trim() || null : null;
+  const declaredPrimaryMeasure = input.catalog.parameterSchema.find(p => p.parameterId === declaredPrimaryMeasureId);
   const userQuantity = pumpStationInput == null && stripFoundationInput == null
     && asphaltDrainageInput == null && asphaltRoadInput == null
     && formworkFramiXlifeInput == null && ricsNrm2FormworkInput == null
@@ -2244,11 +2249,15 @@ export function buildCanonicalBaselinePlan(input: {
     && pressureSewerPipelineInput == null
     && reservoirCleanWaterInput == null
     && selectedJackingInput == null
-    ? extractUserQuantity(input.prompt)
+    ? extractUserQuantity(input.prompt, declaredPrimaryMeasureId
+      ? quantity => Boolean(declaredPrimaryMeasure && parameterAcceptsQuantity(declaredPrimaryMeasure, quantity))
+      : undefined)
     : null;
   let userQuantityParameterId: string | null = null;
   if (userQuantity) {
     const candidates = input.catalog.parameterSchema
+      // A bare work quantity belongs to the passport's main measure, not a fitting or another component.
+      .filter(parameter => !declaredPrimaryMeasureId || parameter.parameterId === declaredPrimaryMeasureId)
       .map((parameter) => ({ parameter, score: quantityParameterScore(parameter, userQuantity) }))
       .filter((candidate): candidate is { parameter: CanonicalEstimateCatalogItem["parameterSchema"][number]; score: number } => candidate.score != null)
       .sort((left, right) => right.score - left.score || left.parameter.ordinal - right.parameter.ordinal);
