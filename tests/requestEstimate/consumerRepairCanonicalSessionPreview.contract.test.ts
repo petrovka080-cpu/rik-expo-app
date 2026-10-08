@@ -122,8 +122,8 @@ describe("consumer repair canonical session preview", () => {
   });
 
   it('keeps an unresolved manual-row quantity blocking when an unrelated field changes', () => {
-    const session = canonicalSession();
-    session.blockingMissingParameterIds.push('manual-row:quantity');
+    const original = canonicalSession();
+    const session = { ...original, blockingMissingParameterIds: [...original.blockingMissingParameterIds, 'manual-row:quantity'] };
     const preview = buildConsumerRepairCanonicalSessionPreview({ session, draftValues: { rated_voltage_v: '10000' } });
     expect(preview?.blockingMissingParameterIds).toEqual(['manual-row:quantity']);
     expect(preview?.status).toBe('BLOCKING_REQUIRED');

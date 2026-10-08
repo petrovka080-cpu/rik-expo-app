@@ -16,7 +16,7 @@ const catalog: CanonicalEstimateCatalogItem = { catalogId: 'canonical-work:base:
         const p = parameter as AutomaticOwnerDefinition['parameters'][number];
         const truth = p.truth_metadata;
         return {
-            parameterId: p.parameter_id, ordinal: p.ordinal, valueType: p.value_type as CanonicalEstimateCatalogItem['parameterSchema'][number]['valueType'], unitId: p.unit_id ?? null, titleRu: p.title_ru ?? p.parameter_id, required: p.required, defaultValue: p.default_value, constraints: p.constraints_json,
+            parameterId: p.parameter_id, ordinal: p.ordinal, valueType: p.value_type as CanonicalEstimateCatalogItem['parameterSchema'][number]['valueType'], unitId: p.unit_id ?? null, titleRu: p.title_ru ?? p.parameter_id, required: p.required, defaultValue: p.default_value, constraints: p.constraints_json ?? {},
             visibilityRole: truth.visibility_role as CanonicalEstimateCatalogItem['parameterSchema'][number]['visibilityRole'], valueSourceRole: truth.value_source_role as CanonicalEstimateCatalogItem['parameterSchema'][number]['valueSourceRole'],
             runtimeProfileClassification: truth.runtime_profile_classification as string | undefined, visibleWhen: truth.visible_when as Record<string, unknown> | undefined, requiredWhen: truth.required_when as Record<string, unknown> | undefined,
             derivedFrom: truth.derived_from as string[] | undefined, provenance: truth.provenance as Record<string, unknown>,
@@ -83,7 +83,7 @@ test('asks only object facts and reveals endings immediately when the user choos
     const result = await compile({ route_length_m: 100 });
     const session = buildConsumerCanonicalPrecompileParameterSession({ catalog, draftId: 'fixture', parameters: result.parameters as Record<string, CanonicalEstimateParameterInputValue>,
         missingParameterIds: result.preliminaryNeeds.flatMap(n => n.missing_parameter_ids), userExplicitParameterIds: ['route_length_m'], textExtractedParameterIds: ['route_length_m'], createdAt: '2026-10-09T00:00:00Z' });
-    expect(session.blockingMissingParameterIds.sort()).toEqual(['route_geometry_mode', 'substrate_profile']);
+    expect([...session.blockingMissingParameterIds].sort()).toEqual(['route_geometry_mode', 'substrate_profile']);
     const preview = buildConsumerRepairCanonicalSessionPreview({ session, draftValues: { route_geometry_mode: pack.geometry.straight } })!;
     expect(preview.parameters.some(p => p.parameterId === 'route_end_connections')).toBe(true);
     expect(preview.parameters.some(p => p.parameterId === 'straight_coupling_count')).toBe(false);
