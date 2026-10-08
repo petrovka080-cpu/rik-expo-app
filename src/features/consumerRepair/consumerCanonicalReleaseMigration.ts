@@ -135,7 +135,8 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
   }
   if (input.hasNewRowAmendments
     || !canonicalStoredManualPricesCanMigrate({rowOverrides:input.revision.amendmentContract.rowOverrides,
-      customRows:input.revision.amendmentContract.customRows,fromBindings:parentCatalog.manualPriceMigrationBindings,toBindings:catalog.manualPriceMigrationBindings})) {
+      customRows:input.revision.amendmentContract.customRows,fromBindings:parentCatalog.manualPriceMigrationBindings,toBindings:catalog.manualPriceMigrationBindings,
+      fromExclusionBindings:parentCatalog.manualExclusionMigrationBindings,toExclusionBindings:catalog.manualExclusionMigrationBindings})) {
     throw new CanonicalEstimateApiError("Переход к новой версии остановлен: совместимость ручных количеств, цен и строк ещё не подтверждена. Исходная смета и все правки сохранены. Новую правку строки можно выполнить после отдельного перехода через параметры.", {
       code: "RELEASE_MIGRATION_ROW_BINDING_REVIEW_REQUIRED", httpStatus: 409,
     });

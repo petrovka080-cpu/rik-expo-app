@@ -30,28 +30,51 @@ export function canonicalManualPriceMigrationBindings(input:{resources:readonly 
  }));
 }
 
-/** Only unchanged stored manual unit prices are eligible. Quantities, custom
- * rows, inclusions, new edits and absent price-binding evidence stay blocked. */
+/** Exclusions require stricter evidence than prices: applicability, procurement
+ * eligibility and parameter meaning must also remain the same. */
+export function canonicalManualExclusionMigrationBindings(input:{resources:readonly Row[];formulas:readonly Row[];parameters:readonly Row[]}):Record<string,string>{
+ const prices=canonicalManualPriceMigrationBindings(input);
+ const parameters=input.parameters.map(p=>({id:p.parameter_id,type:p.value_type,unit:p.unit_id,
+  meaning:object(p.truth_metadata).semantic_parameter_key??null})).sort((a,b)=>String(a.id).localeCompare(String(b.id),'en'));
+ return Object.fromEntries(input.resources.flatMap(r=>{
+  const id=String(r.row_id);if(!prices[id]||!isObject(r.inclusion_ast)||typeof r.procurement_eligible!=='boolean')return [];
+  return [[id,canonicalEstimateSha256HexText(canonicalEstimateStableJson({version:'canonical-manual-exclusion-binding/v1',
+   priceBinding:prices[id],inclusionAst:r.inclusion_ast,procurementEligible:r.procurement_eligible,
+   rowType:r.row_type??null,semanticOwner:r.semantic_owner??null,parameters}))]];
+ }));
+}
+
+/** Stored unit prices and exact stored exclusions can migrate with matching
+ * source evidence. Quantities, additions, new inclusions and custom rows cannot. */
 export function canonicalStoredManualPricesCanMigrate(input:{
  rowOverrides:unknown;customRows:unknown;fromBindings:unknown;toBindings:unknown;
+ fromExclusionBindings?:unknown;toExclusionBindings?:unknown;
 }):boolean{
  const overrides=object(input.rowOverrides),from=object(input.fromBindings),to=object(input.toBindings);
+ const fromExclusions=object(input.fromExclusionBindings),toExclusions=object(input.toExclusionBindings);
  if(!isObject(input.rowOverrides)||!Array.isArray(input.customRows)||input.customRows.length)return false;
  return Object.entries(overrides).every(([id,value])=>{
   const override=object(value),provenance=object(override.provenance),price=override.unitPrice;
-  return Object.hasOwn(override,'unitPrice')&&Object.keys(override).every(key=>key==='unitPrice'||key==='provenance')
-   &&provenance.kind==='manual'&&(price===null||((typeof price==='string'||typeof price==='number')&&String(price).trim()!==''&&Number.isFinite(Number(price))&&Number(price)>=0))
-   &&typeof from[id]==='string'&&/^[a-f0-9]{64}$/u.test(from[id] as string)&&from[id]===to[id];
+  const hasPrice=Object.hasOwn(override,'unitPrice');
+  const hasExclusion=Object.hasOwn(override,'includedInEstimate')||Object.hasOwn(override,'includedInProcurement');
+  return (hasPrice||hasExclusion)&&Object.keys(override).every(key=>['unitPrice','provenance','includedInEstimate','includedInProcurement'].includes(key))
+   &&provenance.kind==='manual'
+   &&(!hasPrice||((price===null||((typeof price==='string'||typeof price==='number')&&String(price).trim()!==''&&Number.isFinite(Number(price))&&Number(price)>=0))
+    &&typeof from[id]==='string'&&/^[a-f0-9]{64}$/u.test(from[id] as string)&&from[id]===to[id]))
+   &&(!hasExclusion||(override.includedInEstimate===false&&override.includedInProcurement===false
+    &&typeof fromExclusions[id]==='string'&&/^[a-f0-9]{64}$/u.test(fromExclusions[id] as string)&&fromExclusions[id]===toExclusions[id]));
  });
 }
 
 export function assertCanonicalStoredManualPriceReleaseMigration(input:{
  parentOverrides:unknown;parentCustomRows:unknown;requestedOverrides:unknown;requestedCustomRows:unknown;
  fromBindings:unknown;toBindings:unknown;parentCurrency:unknown;requestedCurrency:unknown;
+ fromExclusionBindings?:unknown;toExclusionBindings?:unknown;
 }):void{
  if(input.parentCurrency!==input.requestedCurrency
   ||canonicalEstimateStableJson(input.parentOverrides??{})!==canonicalEstimateStableJson(input.requestedOverrides??{})
   ||canonicalEstimateStableJson(input.parentCustomRows??[])!==canonicalEstimateStableJson(input.requestedCustomRows??[])
-  ||!canonicalStoredManualPricesCanMigrate({rowOverrides:input.parentOverrides,customRows:input.parentCustomRows??[],fromBindings:input.fromBindings,toBindings:input.toBindings}))
+  ||!canonicalStoredManualPricesCanMigrate({rowOverrides:input.parentOverrides,customRows:input.parentCustomRows??[],fromBindings:input.fromBindings,toBindings:input.toBindings,
+   fromExclusionBindings:input.fromExclusionBindings,toExclusionBindings:input.toExclusionBindings}))
   throw Object.assign(new Error('Переход остановлен: совместимость сохранённых ручных цен или строк не подтверждена. Исходная смета и введённые значения сохранены.'),{code:'RELEASE_MIGRATION_ROW_BINDING_REVIEW_REQUIRED'});
 }

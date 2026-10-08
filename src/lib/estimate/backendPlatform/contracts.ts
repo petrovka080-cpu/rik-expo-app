@@ -707,6 +707,8 @@ export type CanonicalEstimateCatalogItem = {
   professionalMetadata: Record<string, unknown>;
   /** Read-only source hashes; a matching price owner never authorizes new row edits. */
   manualPriceMigrationBindings?: Record<string,string>;
+  /** Exact resource/application evidence for retaining stored manual exclusions. */
+  manualExclusionMigrationBindings?: Record<string,string>;
   contentAdmission?: AdmissionDecision;
   parameterSchema: Array<{
     parameterId: string;

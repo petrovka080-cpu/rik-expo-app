@@ -1,4 +1,4 @@
-import {canonicalManualPriceMigrationBindings as bindings,canonicalStoredManualPricesCanMigrate as eligible,assertCanonicalStoredManualPriceReleaseMigration as assertMigration} from '../../src/lib/estimate/backendPlatform/canonicalManualPriceReleaseMigration';
+import {canonicalManualPriceMigrationBindings as bindings,canonicalManualExclusionMigrationBindings as exclusionBindings,canonicalStoredManualPricesCanMigrate as eligible,assertCanonicalStoredManualPriceReleaseMigration as assertMigration} from '../../src/lib/estimate/backendPlatform/canonicalManualPriceReleaseMigration';
 import {PVC15_FULL_DEFINITION_S2743 as oldField} from '../../src/lib/estimate/v4/pvcRoofMembraneFullCompositionS2743';
 import {PVC15_FIELD_TRANSITION_DEFINITION_S2743 as composedField} from '../../src/lib/estimate/v4/pvcRoofFieldTransitionCompositionS2743';
 
@@ -6,6 +6,7 @@ const graph=()=>({resources:[{row_id:'labor',unit_id:'man_hour',category:'labor'
  formulas:[{formula_id:'hours',ast:{type:'parameter',parameterId:'hours'},input_parameter_ids:['hours'],output_unit_id:'man_hour'}],parameters:[{parameter_id:'hours',value_type:'decimal',unit_id:'man_hour',truth_metadata:{semantic_parameter_key:'work-hours'}},{parameter_id:'area',value_type:'decimal',unit_id:'m2',truth_metadata:{semantic_parameter_key:'area'}}]});
 const overrides={labor:{unitPrice:100,provenance:{kind:'manual',reason:'approved'}}};
 const proof=()=>bindings(graph());
+const exclusionGraph=()=>{const g=graph();return {...g,resources:g.resources.map(r=>({...r,inclusion_ast:{kind:'literal',value:true},procurement_eligible:false,row_type:'equipment'}))};};
 describe('source-authoritative stored manual price release migration',()=>{
  test('the accepted field keeps its four manual rate owners when the optional transition is added',()=>{
   const fromBindings=bindings(oldField),toBindings=bindings(composedField);
@@ -41,5 +42,20 @@ describe('source-authoritative stored manual price release migration',()=>{
   const request={parentOverrides:overrides,parentCustomRows:[],requestedOverrides:overrides,requestedCustomRows:[],fromBindings:proof(),toBindings:proof(),parentCurrency:'KGS',requestedCurrency:'KGS'};
   expect(()=>assertMigration(request)).not.toThrow();
   for(const patch of [{requestedCurrency:'USD'},{requestedOverrides:{labor:{...overrides.labor,unitPrice:101}}},{requestedCustomRows:[{clientRowId:'new'}]},{toBindings:{}}])expect(()=>assertMigration({...request,...patch})).toThrow('Переход остановлен');
+ });
+ test('retains an existing exclusion only with exact resource and applicability evidence on both sides',()=>{
+  const g=exclusionGraph(),e=exclusionBindings(g),rowOverrides={labor:{includedInEstimate:false,includedInProcurement:false,provenance:{kind:'manual'}}};
+  const args={rowOverrides,customRows:[],fromBindings:bindings(g),toBindings:bindings(g),fromExclusionBindings:e,toExclusionBindings:e};
+  expect(eligible(args)).toBe(true);
+  const server={...args,parentOverrides:rowOverrides,requestedOverrides:rowOverrides,parentCustomRows:[],requestedCustomRows:[],parentCurrency:'KGS',requestedCurrency:'KGS'};
+  expect(()=>assertMigration(server)).not.toThrow();
+  for(const patch of [{toExclusionBindings:{}},{toExclusionBindings:exclusionBindings({...g,resources:g.resources.map(r=>({...r,inclusion_ast:{kind:'literal',value:false}}))})},
+   {toExclusionBindings:exclusionBindings({...g,resources:g.resources.map(r=>({...r,procurement_eligible:true}))})}]){
+   expect(eligible({...args,...patch})).toBe(false);expect(()=>assertMigration({...server,...patch})).toThrow();
+  }
+  for(const patch of [{includedInEstimate:true},{includedInProcurement:true},{includedInProcurement:undefined},{quantity:9},{provenance:{kind:'catalog'}}])
+   expect(eligible({...args,rowOverrides:{labor:{...rowOverrides.labor,...patch}}})).toBe(false);
+  expect(()=>assertMigration({...server,requestedOverrides:{labor:{...rowOverrides.labor,includedInEstimate:true}}})).toThrow();
+  expect(exclusionBindings(graph())).toEqual({});
  });
 });

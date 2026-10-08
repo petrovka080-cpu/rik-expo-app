@@ -54,6 +54,19 @@ beforeEach(() => {
 });
 
 describe("consumer exact release migration", () => {
+  it("carries the unchanged stored excluded machine through parameter migration with exact exclusion proof", async () => {
+    const rowOverrides = { membrane: { includedInEstimate: false, includedInProcurement: false, provenance: { kind: "manual" as const } } };
+    const excluded = { ...revision, amendmentContract: { ...revision.amendmentContract, rowOverrides } };
+    getCatalog.mockImplementation(async (_id, _signal, releaseId) => ({ ...(releaseId ? oldCatalog : target), manualExclusionMigrationBindings: { membrane: "d".repeat(64) } }));
+    jest.mocked(getCanonicalEstimateRevision).mockResolvedValue(excluded);
+    jest.mocked(recalculateCanonicalEstimateAndLoad).mockRejectedValue(new Error("backend reached"));
+    const before = JSON.stringify(excluded), confirm = jest.fn().mockResolvedValue(true);
+    await expect(recalculateAndPersistConsumerCanonicalEstimate({ revisionId: excluded.revisionId, draftId: "draft", problemText: excluded.sourceRequestText!,
+      patches: [{ operation: "update_param", paramKey: "area_m2", rawValue: "100.0" }], confirmReleaseMigration: confirm, persist: jest.fn() })).rejects.toThrow("backend reached");
+    expect(confirm).toHaveBeenCalled();
+    expect(jest.mocked(recalculateCanonicalEstimateAndLoad).mock.calls[0][0].request).toMatchObject({ rowOverrides, releaseMigration: migration });
+    expect(JSON.stringify(excluded)).toBe(before);
+  });
   it("carries only proved unchanged stored prices through parameter migration after exact consent", async () => {
     const rowOverrides = { membrane: { unitPrice: 75, provenance: { kind: "manual" as const, reason: "approved" } } };
     const priced = { ...revision, amendmentContract: { ...revision.amendmentContract, rowOverrides } };
