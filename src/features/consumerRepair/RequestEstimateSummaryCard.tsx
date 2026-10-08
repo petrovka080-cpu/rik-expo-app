@@ -6,11 +6,20 @@ import type { RequestEstimateViewModel } from "./requestEstimateViewModel";
 type Props = {
   viewModel: RequestEstimateViewModel;
   missingParameterCount?: number;
+  contentWithdrawalReasonRu?: string | null;
 };
 
 export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
   render(): React.ReactElement {
     const { viewModel, missingParameterCount } = this.props;
+    if (this.props.contentWithdrawalReasonRu) {
+      return <View style={styles.card} testID="request-estimate-summary-card">
+        <Text style={styles.eyebrow}>Сохранённый расчёт требует исправления</Text>
+        <Text style={styles.title} testID="request-estimate-selected-work-title">{viewModel.title}</Text>
+        <Text style={styles.legal} testID="request-estimate-content-withdrawal">{this.props.contentWithdrawalReasonRu}</Text>
+        <Text style={styles.meta}>Исходные позиции сохранены для просмотра. Их количества и стоимость не подтверждены.</Text>
+      </View>;
+    }
     const sourceGateCount = viewModel.sourceGates?.length ?? 0;
     const consumerInputCount = typeof missingParameterCount === "number"
       ? Math.max(0, missingParameterCount - sourceGateCount)

@@ -10,7 +10,7 @@ export type CanonicalEstimateParameterSessionRevision = Pick<CanonicalEstimateRe
   "revisionId" | "parentRevisionId" | "releaseId" | "catalogId" | "definitionVersionId"
   | "definitionVersion" | "status" | "parameters" | "userInputSnapshot"
   | "acceptedBaselineSnapshot" | "assumptionSnapshot" | "parameterSchemaHash"
-  | "compilerVersion" | "checksumSha256" | "createdAt"
+  | "compilerVersion" | "checksumSha256" | "createdAt" | "contentWithdrawalReasonRu"
 > & {
   preliminaryNeeds?: Pick<CanonicalEstimatePreliminaryNeedView,
     "rowId" | "selected" | "missingParameterIds" | "quantity" | "needState">[];
@@ -67,6 +67,7 @@ export function projectCanonicalEstimateParameterSessionSnapshot(input: {
       acceptedBaselineSnapshot: revision.acceptedBaselineSnapshot, assumptionSnapshot: revision.assumptionSnapshot,
       parameterSchemaHash: revision.parameterSchemaHash, compilerVersion: revision.compilerVersion,
       checksumSha256: revision.checksumSha256, createdAt: revision.createdAt,
+      ...(revision.contentWithdrawalReasonRu == null ? {} : { contentWithdrawalReasonRu: revision.contentWithdrawalReasonRu }),
       preliminaryNeeds: revision.preliminaryNeeds?.map((need) => ({
         rowId: need.rowId, selected: need.selected, missingParameterIds: need.missingParameterIds,
         quantity: need.quantity, needState: need.needState,

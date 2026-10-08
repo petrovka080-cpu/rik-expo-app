@@ -478,8 +478,15 @@ function parameterAcceptsQuantity(
   if (parameter.valueSourceRole != null && !DIRECT_USER_QUANTITY_SOURCE.has(String(parameter.valueSourceRole))) return false;
   const identity = `${parameter.parameterId} ${parameter.semanticParameterKey ?? ""} ${parameter.titleRu}`.toLocaleLowerCase("ru-RU");
   if (DERIVED_QUANTITY_PARAMETER.test(identity)) return false;
-  const isCount = /количеств|число|count|quantity|qty/u.test(identity);
-  if (quantity.unit === "pcs") return isCount || /шт|сва|тумб/u.test(identity);
+  // A label such as «Количество этажей» is not a count of the selected
+  // products. A bare «10 шт.» may bind only to an object-count parameter;
+  // units alone must not turn products into floors, layers or working days.
+  if (quantity.unit === "pcs") {
+    const key = `${parameter.parameterId} ${parameter.semanticParameterKey ?? ""}`
+      .toLocaleLowerCase("en-US");
+    return /(?:^|[_:\s])(?:count|quantity|qty)(?:$|[_:\s])/u.test(key)
+      && !/(?:^|[_:\s])(?:floor|floors|storey|storeys|story|stories|layer|layers|day|days|shift|shifts|pass|passes)(?:$|[_:\s])/u.test(key);
+  }
   const rawUnit = String(parameter.unitId ?? "")
     .toLocaleLowerCase("ru-RU")
     .replace("²", "2")

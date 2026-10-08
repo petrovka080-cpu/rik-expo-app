@@ -8,9 +8,12 @@ export function canonicalArtifactPurchaseRequirement(row: { row_id: unknown; uni
   const saved = objectValue(raw);
   const fields = [saved.consumed, saved.plannedConsumption];
   const selectedOrder = saved.requirementBasis === "selected_order_including_contingency" || saved.requirementBasis === "selected_supply_order";
+  const preliminaryInputs = saved.preliminaryParameterIds ?? [];
   if (saved.version !== "canonical-purchase-requirement:v1" || saved.ownerRowId !== String(row.row_id)
     || saved.unitId !== String(row.unit_id) || typeof saved.conditional !== "boolean"
-    || Object.keys(saved).some(key => !["version", "ownerRowId", "unitId", "consumed", "plannedConsumption", "conditional", "requirementBasis"].includes(key))
+    || Object.keys(saved).some(key => !["version", "ownerRowId", "unitId", "consumed", "plannedConsumption", "conditional", "requirementBasis", "preliminaryParameterIds"].includes(key))
+    || !Array.isArray(preliminaryInputs) || preliminaryInputs.some(id => typeof id !== "string" || !id.trim())
+    || new Set(preliminaryInputs).size !== preliminaryInputs.length
     || (saved.requirementBasis !== undefined && !selectedOrder)
     || (saved.plannedConsumption != null && !selectedOrder)
     || fields.every(value => value == null)
@@ -21,7 +24,9 @@ export function canonicalArtifactPurchaseRequirement(row: { row_id: unknown; uni
     throw Object.assign(new Error(`saved purchase requirement invalid: ${row.row_id}`), { code: "ARTIFACT_PURCHASE_REQUIREMENT_INVALID" });
   }
   return { ...saved, quantity: (saved.plannedConsumption ?? saved.consumed) as string, unitId: String(saved.unitId), conditional: saved.conditional,
-    labelRu: saved.conditional ? "Условная потребность" : selectedOrder ? "Расчётная потребность" : "Расход по расчёту" };
+    labelRu: saved.conditional ? (preliminaryInputs.length ? "Условная предварительная потребность" : "Условная потребность")
+      : preliminaryInputs.length ? (selectedOrder ? "Предварительная потребность" : "Предварительный расход")
+        : selectedOrder ? "Расчётная потребность" : "Расход по расчёту" };
 }
 
 function objectValue(value: unknown): Record<string, unknown> {

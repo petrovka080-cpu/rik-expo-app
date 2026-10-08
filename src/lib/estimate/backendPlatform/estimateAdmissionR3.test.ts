@@ -30,6 +30,23 @@ function productionFacts(overrides: Partial<EstimateAdmissionFacts> = {}): Estim
 }
 
 describe("evaluateEstimateAdmission R3", () => {
+  it.each(["search_selectable", "direct_catalog_compile", "parameter_recalculation", "confirm", "pdf_artifact_create", "procurement_artifact_create"] as const)(
+    "rejects a withdrawn exact definition at %s even when the old seal is green", (ingress) => {
+      const decision = evaluateEstimateAdmission(productionFacts({ ingress, definitionWithdrawalReason: "Неверная технология" }), NOW);
+      expect(decision.allowed).toBe(false);
+      expect(decision.reasons).toEqual([expect.objectContaining({ code: "DEFINITION_CONTENT_WITHDRAWN" })]);
+      expect(evaluateEstimateAdmission(productionFacts({ ingress }), NOW).allowed).toBe(true);
+    },
+  );
+
+  it("keeps a withdrawn revision and its existing exact artifact readable", () => {
+    const facts = productionFacts({ mode: "legacy_read_only", ingress: "revision_read",
+      legacyRevisionImmutable: true, definitionWithdrawalReason: "Неверная технология" });
+    expect(evaluateEstimateAdmission(facts, NOW).allowed).toBe(true);
+    expect(evaluateEstimateAdmission({ ...facts, ingress: "artifact_read", existingExactArtifact: true }, NOW).allowed).toBe(true);
+    expect(evaluateEstimateAdmission({ ...facts, ingress: "confirm" }, NOW).allowed).toBe(false);
+  });
+
   it("admits only the exact production graph", () => {
     expect(evaluateEstimateAdmission(productionFacts(), NOW)).toEqual({
       allowed: true,

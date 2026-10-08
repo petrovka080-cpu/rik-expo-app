@@ -614,7 +614,7 @@ export function buildConsumerCanonicalParameterSession(input: {
     .filter((need) => need.selected && need.quantity == null
       && need.needState === "QUANTITY_REQUIRED" && need.missingParameterIds.length === 0)
     .map((need) => `${need.rowId}:quantity`);
-  return buildConsumerCanonicalParameterSessionFromValues({
+  const session = buildConsumerCanonicalParameterSessionFromValues({
     catalog: input.catalog,
     draftId: input.draftId,
     revisionId: input.revision.revisionId,
@@ -634,6 +634,9 @@ export function buildConsumerCanonicalParameterSession(input: {
     checksum: input.revision.checksumSha256,
     createdAt: input.revision.createdAt,
   });
+  return input.revision.contentWithdrawalReasonRu
+    ? { ...session, status: "BLOCKING_REQUIRED", contentWithdrawalReasonRu: input.revision.contentWithdrawalReasonRu }
+    : session;
 }
 
 export function buildConsumerCanonicalPrecompileParameterSession(input: {
@@ -725,10 +728,12 @@ export async function loadConsumerCanonicalRevisionDraftMapping(input: {
   problemText?: string | null;
 }): Promise<ForemanAiEstimateDraftMapping> {
   const revision = await getCanonicalEstimateRevision(input.revisionId);
-  const [catalog, rows] = await Promise.all([
-    getCanonicalEstimateCatalogItem(revision.catalogId, null, revision.releaseId),
+  const [snapshot, rows] = await Promise.all([
+    getCanonicalEstimateParameterSessionSnapshot(input.revisionId),
     getAllCanonicalEstimateRevisionRows({ revisionId: revision.revisionId }),
   ]);
+  assertCanonicalEstimateParameterSessionSnapshotIdentity(snapshot, input.revisionId);
+  const catalog = snapshot.catalog;
   if (catalog.releaseId !== revision.releaseId) {
     throw new CanonicalEstimateApiError("Смета не открыта: версия каталога не совпадает с выбранной версией сметы.", {
       code: "REVISION_RELEASE_MISMATCH",

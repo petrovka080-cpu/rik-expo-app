@@ -7,6 +7,8 @@ import {
   type CanonicalEstimateCatalogItem,
   type CanonicalEstimateRevisionView,
 } from "../../src/lib/estimate/backendPlatform/contracts";
+import { buildConsumerCanonicalParameterSession } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
+import { consumerRepairCanonicalEstimateBlocksApproval, consumerRepairCanonicalMissingParameterCount } from "../../src/features/consumerRepair/consumerRepairCanonicalEstimateReadiness";
 
 const catalog: CanonicalEstimateCatalogItem = {
   catalogId: "catalog", releaseId: "release", namespace: "global", domain: "test", workKey: "test",
@@ -29,6 +31,18 @@ const child: CanonicalEstimateRevisionView = {
 const input = () => ({ requestedRevisionId: "child", definitionVersionId: "definition", revision: child, parent, catalog });
 
 describe("parameter session transport projection", () => {
+  it("carries withdrawal into the editor without inventing another required parameter", () => {
+    const reason = "Паспорт не соответствует выбранной технологии.";
+    const snapshot = projectCanonicalEstimateParameterSessionSnapshot({ ...input(), revision: { ...child, contentWithdrawalReasonRu: reason } });
+    const session = buildConsumerCanonicalParameterSession({ ...snapshot, draftId: "draft" });
+    expect(snapshot.revision.contentWithdrawalReasonRu).toBe(reason);
+    expect(session.contentWithdrawalReasonRu).toBe(reason);
+    expect(consumerRepairCanonicalMissingParameterCount(session)).toBe(0);
+    expect(consumerRepairCanonicalEstimateBlocksApproval(session)).toBe(true);
+    expect(session.parameters.map(p => p.parameterId)).toEqual(["actual"]);
+    expect(child).not.toHaveProperty("contentWithdrawalReasonRu");
+  });
+
   it("preserves all schema ownership/constraints and parent inputs across a legitimate release migration", () => {
     const snapshot = projectCanonicalEstimateParameterSessionSnapshot(input());
     expect(snapshot.catalog).toBe(catalog);

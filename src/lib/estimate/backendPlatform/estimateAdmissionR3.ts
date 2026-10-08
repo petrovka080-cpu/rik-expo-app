@@ -18,6 +18,7 @@ export type EstimateAdmissionIngress =
   | "artifact_read";
 
 export type AdmissionReasonCode =
+  | "DEFINITION_CONTENT_WITHDRAWN"
   | "AUTHORIZATION_INVALID"
   | "ADMISSION_IDENTITY_MISSING"
   | "RELEASE_NOT_ACTIVE"
@@ -65,6 +66,8 @@ export type IsolatedCandidateCapability = {
 };
 
 export type EstimateAdmissionFacts = {
+  /** External immutable defect annotation; never modifies the sealed payload. */
+  definitionWithdrawalReason?: string | null;
   mode: EstimateAdmissionMode;
   ingress: EstimateAdmissionIngress;
   releaseId: string | null;
@@ -169,6 +172,9 @@ export function evaluateEstimateAdmission(
       add("LEGACY_ARTIFACT_NOT_EXISTING_EXACT", "existingExactArtifact", true, Boolean(facts.existingExactArtifact));
     }
   } else {
+    if (normalized(facts.definitionWithdrawalReason)) {
+      add("DEFINITION_CONTENT_WITHDRAWN", "definition.defectLedger", null, normalized(facts.definitionWithdrawalReason));
+    }
     if (!facts.baselineReady) add("BASELINE_NOT_READY", "manifest.baseline_ready", true, false);
     if (!facts.scenarioReady) add("SCENARIO_NOT_READY", "manifest.scenario_ready", true, false);
     if (upper(facts.contentGateStatus) !== "GREEN") {

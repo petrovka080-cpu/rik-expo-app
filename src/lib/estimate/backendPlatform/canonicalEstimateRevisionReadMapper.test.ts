@@ -54,6 +54,17 @@ const rowStorage = (overrides: Record<string, unknown> = {}): Record<string, unk
 });
 
 describe("canonical revision read mapping", () => {
+  it("exposes an external withdrawal without altering the saved numbers or checksum", () => {
+    const row = revisionStorage({ definition_withdrawal_reason: "Неверная технология" });
+    const before = JSON.stringify(row);
+    const view = canonicalEstimateRevisionDetailFromStorage(row);
+    expect(view.contentWithdrawalReasonRu).toBe("Неверная технология");
+    expect(view.totals).toEqual({ amount: "441000.00" });
+    expect(view.checksumSha256).toBe("a".repeat(64));
+    expect(JSON.stringify(row)).toBe(before);
+    expect(canonicalEstimateRevisionDetailFromStorage(revisionStorage())).not.toHaveProperty("contentWithdrawalReasonRu");
+  });
+
   it("preserves selected snapshot candidates in the full revision DTO", () => {
     const view = canonicalEstimateRevisionDetailFromStorage(revisionStorage());
 

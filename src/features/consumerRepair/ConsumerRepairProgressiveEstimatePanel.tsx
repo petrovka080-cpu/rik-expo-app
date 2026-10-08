@@ -19,7 +19,7 @@ import {
   containsForbiddenAiEstimateVisibleToken,
   hasHumanReadableAiEstimateParameterPassport,
 } from "../../lib/estimate/aiEstimateRuParameterDictionary";
-import type { ConsumerRepairDraftRevisionParamBatchPatch } from "../../lib/consumerRequests";
+import type { ConsumerRepairDraftRevisionParamBatchPatch, ConsumerRepairRequestItem } from "../../lib/consumerRequests";
 import type { AiEstimateParameterCard } from "../../lib/estimate/aiEstimateParameterCardContract";
 import type {
   CanonicalParameter,
@@ -35,7 +35,7 @@ import type {
   EstimateDraftRevisionState,
 } from "../../lib/estimate/estimateDraftRevisionContract";
 import { canonicalMaterialQuantityBasisFromRow } from "../../lib/estimate/backendPlatform/canonicalMaterialQuantityProjection";
-import { canonicalArtifactPurchaseBalance } from "../../lib/estimate/backendPlatform/canonicalPersistedPurchaseBalance";
+import { canonicalArtifactPurchaseBalance, canonicalArtifactPurchaseRequirement } from "../../lib/estimate/backendPlatform/canonicalPersistedPurchaseBalance";
 import { formatEstimateQuantityRu } from "../../lib/estimatePresentation/formatEstimateQuantityRu";
 import { publicBoqDisplayNameRu } from "../../lib/estimate/publicBoqNaming";
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
@@ -133,7 +133,8 @@ function shouldOpenPositionsByDefault(props: Props): boolean {
 export type CanonicalProcurementPreviewRow = {
   rowId: string;
   titleRu: string;
-  quantity: number | string;
+  quantity: number | string | null;
+  preliminary?: boolean;
   unit: string;
   unitPrice: number | null;
   currency: string;
@@ -142,9 +143,10 @@ export type CanonicalProcurementPreviewRow = {
 
 export function buildCanonicalProcurementPreviewRows(
   revision: EstimateDraftRevision | null,
+  items: readonly ConsumerRepairRequestItem[] = [],
 ): CanonicalProcurementPreviewRow[] {
   if (!revision) return [];
-  return revision.boq.rows
+  const rows: CanonicalProcurementPreviewRow[] = revision.boq.rows
     .filter((row) => row.includedInProcurement)
     .map((row) => {
       const balance = canonicalArtifactPurchaseBalance({
@@ -179,6 +181,22 @@ export function buildCanonicalProcurementPreviewRows(
         quantityDetails,
       };
     });
+  const includedIds = new Set(rows.map(row => row.rowId));
+  for (const item of items) {
+    const source = item.sourceParameters;
+    if (source?.canonicalPreliminaryNeed !== true || source.includedInProcurement !== true
+      || source.canonicalBackendRevisionId !== revision.revisionId) continue;
+    const rowId = String(source.rowCode ?? item.id);
+    if (includedIds.has(rowId)) continue;
+    const requirement = canonicalArtifactPurchaseRequirement({ row_id: rowId, unit_id: item.unit,
+      calculation_trace: { purchaseRequirementV1: source.canonicalPurchaseRequirement } });
+    rows.push({ rowId, titleRu: item.titleRu, quantity: item.quantity, preliminary: true,
+      unit: formatEstimateUnitLabel(item.unit), unitPrice: item.unitPrice ?? null, currency: item.currency,
+      quantityDetails: requirement ? [`${requirement.labelRu}: ${formatEstimateQuantityRu(requirement.quantity)} ${formatEstimateUnitLabel(requirement.unitId)}`] : [],
+    });
+    includedIds.add(rowId);
+  }
+  return rows;
 }
 
 function pluralizeRu(count: number, one: string, few: string, many: string): string {
@@ -590,7 +608,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
       onApplyParamBatch,
     } = this.props;
     const { parametersOpen, positionsOpen, procurementOpen } = this.state;
-    const procurementRows = buildCanonicalProcurementPreviewRows(currentRevision);
+    const procurementRows = buildCanonicalProcurementPreviewRows(currentRevision, viewModel.sections.flatMap(section => section.items));
     const editableMissingCount = canonicalParameterSession
       ? consumerRepairCanonicalMissingParameterCount(canonicalParameterSession)
       : 0;
@@ -604,7 +622,8 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
 
     return (
     <View style={styles.wrap}>
-      <RequestEstimateSummaryCard viewModel={viewModel} missingParameterCount={count} />
+      <RequestEstimateSummaryCard viewModel={viewModel} missingParameterCount={count}
+        contentWithdrawalReasonRu={canonicalParameterSession?.contentWithdrawalReasonRu} />
       <EstimateRevisionTimeline state={this.props.revisionState} />
       <EstimateRevisionDiff
         diff={latestDiff}
@@ -659,7 +678,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
             </Text>
           </Pressable>
         ) : null}
-        {currentRevision?.boq.rows.some((row) => row.includedInProcurement) && onOpenProcurement ? (
+        {procurementRows.length > 0 && onOpenProcurement ? (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Открыть список закупки"
@@ -689,7 +708,8 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
             >
               <Text style={styles.procurementTitle}>{row.titleRu}</Text>
               <Text style={styles.procurementQuantity}>
-                {`К закупке: ${formatEstimateQuantityRu(row.quantity)} ${row.unit}`}
+                {row.quantity == null ? "Точный заказ требует уточнения"
+                  : `${row.preliminary ? "Заказ требует подтверждения" : "К закупке"}: ${formatEstimateQuantityRu(row.quantity)} ${row.unit}`}
               </Text>
               {row.quantityDetails.map((detail, index) => (
                 <Text key={index} style={styles.procurementPrice}>{detail}</Text>

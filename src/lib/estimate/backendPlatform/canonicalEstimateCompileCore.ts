@@ -23,7 +23,7 @@ import {
 } from "./canonicalEstimatePhysicalNormProjection";
 import { planCanonicalEffectiveResourceQuantitiesV1 } from "./canonicalEffectiveResourceQuantityV1";
 import { resolveCanonicalPurchaseBalanceV1, resolveCanonicalKnownPurchaseRequirementV1, validateCanonicalManualTransportQuantityV1 } from "./canonicalPurchaseBalanceV1";
-import { resolveCanonicalPreliminaryParameterFormulasV1 } from './canonicalPreliminaryParameterFormulaV1';
+import { resolveCanonicalPreliminaryParameterFormulasV1, PRELIMINARY_SOURCE_FORMULA } from './canonicalPreliminaryParameterFormulaV1';
 import {
   planCanonicalCommercialCostCoverageV1, canonicalCommercialCoveredResourceGraphV1,
   assertCanonicalCommercialCoveredQuantityV1, assertCanonicalCommercialCostOwnersV1,
@@ -872,6 +872,9 @@ export async function compileCanonicalEstimateCore(
     ([parameterId, value]) =>
       JSON.stringify(initiallyValidatedParameters[parameterId]) !== JSON.stringify(value),
   ));
+  const preliminaryParameterIds = new Set(input.parameterDefinitions.filter(definition =>
+    definition.truth_metadata?.runtime_profile_classification === PRELIMINARY_SOURCE_FORMULA
+    && Object.hasOwn(derivedParameters, definition.parameter_id)).map(definition => definition.parameter_id));
   const formulaParameters = Object.fromEntries(
     Object.entries(parameters).filter(([, value]) =>
       typeof value === "number" || typeof value === "string" || typeof value === "boolean"),
@@ -1158,7 +1161,7 @@ export async function compileCanonicalEstimateCore(
         appendedSpecificationRu: titleSpecification.mode === 'APPEND' ? boundedTitleSpecification : null,
         manualTitleOverride: override?.titleRu != null });
       const purchaseRequirement = resolveCanonicalKnownPurchaseRequirementV1(resource.resource_graph?.purchaseBalanceV1,
-        resource.row_id, resource.unit_id, formulaParameters, definitionParameterIds, inclusion.value == null);
+        resource.row_id, resource.unit_id, formulaParameters, definitionParameterIds, inclusion.value == null, preliminaryParameterIds);
       const needWithoutHash = {
         row_id: resource.row_id,
         ordinal: resource.ordinal,

@@ -83,6 +83,42 @@ function pumpCatalog(): CanonicalEstimateCatalogItem {
 }
 
 describe("consumer canonical W5 baseline", () => {
+  it.each(["floors", "floor_count", "layer_count", "shift_count"])(
+    "does not bind a product count to the secondary parameter %s",
+    (secondaryId) => {
+      const catalog: CanonicalEstimateCatalogItem = {
+        ...pumpCatalog(), catalogId: "canonical-work:expanded:roof_lanterns",
+        workKey: "roof_lanterns", domain: "facade_glazing", titleRu: "Кровельные световые фонари",
+        parameterSchema: [
+          { parameterId: "glazing_area_m2", ordinal: 0, valueType: "decimal", unitId: "m2",
+            titleRu: "Площадь остекления", required: false, defaultValue: 5000, constraints: {} },
+          { parameterId: secondaryId, ordinal: 1, valueType: "integer", unitId: "pcs",
+            titleRu: "Количество этажей", required: false, defaultValue: 15, constraints: {} },
+        ],
+      };
+      const plan = buildCanonicalBaselinePlan({ catalog, prompt: "кровельные световые фонари 10 штук" });
+      expect(extractUserQuantity("кровельные световые фонари 10 штук")).toEqual({ value: "10", unit: "pcs" });
+      expect(plan.parameters).not.toHaveProperty(secondaryId);
+      expect(plan.parameters).not.toHaveProperty("glazing_area_m2");
+      expect(plan.primaryMeasureParameterId).not.toBe(secondaryId);
+    },
+  );
+
+  it.each([1, 10, 20])("keeps %i products in the authored product-count field", (count) => {
+    const catalog: CanonicalEstimateCatalogItem = {
+      ...pumpCatalog(), catalogId: "test:roof-lantern-count", workKey: "test_roof_lantern_count",
+      parameterSchema: [
+        { parameterId: "lantern_count", ordinal: 0, valueType: "integer", unitId: "pcs",
+          titleRu: "Количество фонарей", required: true, defaultValue: null, constraints: { min: 1 } },
+        { parameterId: "floors", ordinal: 1, valueType: "integer", unitId: "pcs",
+          titleRu: "Количество этажей", required: false, defaultValue: null, constraints: {} },
+      ],
+    };
+    const plan = buildCanonicalBaselinePlan({ catalog, prompt: `кровельные световые фонари ${count} штук` });
+    expect(plan.parameters).toEqual({ lantern_count: String(count) });
+    expect(plan.primaryMeasureParameterId).toBe("lantern_count");
+  });
+
   it.each([
     ["Бетонирование основания — 20 m3", "20"],
     ["Бетонирование основания — 20 m³", "20"],

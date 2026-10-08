@@ -2,6 +2,8 @@ import React from "react";
 import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
 
 import { ConsumerRepairProgressiveEstimatePanel, buildCanonicalProcurementPreviewRows } from "./ConsumerRepairProgressiveEstimatePanel";
+import type { ConsumerRepairRequestItem } from "../../lib/consumerRequests/consumerRequestTypes";
+import { RequestEstimateSummaryCard } from "./RequestEstimateSummaryCard";
 
 type ProgressiveEstimateViewModel = React.ComponentProps<
   typeof ConsumerRepairProgressiveEstimatePanel
@@ -91,6 +93,48 @@ function panel(
 }
 
 describe("canonical procurement preview remount", () => {
+  it("shows saved preliminary consumption even when no order or priced row is ready", () => {
+    const current = revision(false) as unknown as NonNullable<Parameters<typeof buildCanonicalProcurementPreviewRows>[0]>;
+    current.boq.rows = [];
+    const item: ConsumerRepairRequestItem = {
+      id: "need:membrane", requestDraftId: "draft", itemType: "material", titleRu: "Мембрана ПВХ 1,5 мм",
+      quantity: null, unit: "m2", unitLabel: "м²", unitPrice: null, totalPrice: null, currency: "KGS",
+      source: "ai_suggested", editableByConsumer: true, createdAt: "2026-10-08T00:00:00.000Z",
+      sourceParameters: { rowCode: "membrane", canonicalBackendRevisionId: current.revisionId,
+        canonicalPreliminaryNeed: true, includedInProcurement: true,
+        canonicalPurchaseRequirement: { version: "canonical-purchase-requirement:v1", ownerRowId: "membrane", unitId: "m2",
+          consumed: "86.25", plannedConsumption: null, conditional: false, preliminaryParameterIds: ["membrane_consumption"] } },
+    };
+    const saved = JSON.stringify({ current, item });
+    const preview = buildCanonicalProcurementPreviewRows(current, [item, item]);
+    expect(preview).toHaveLength(1);
+    expect(preview[0]).toMatchObject({ quantity: null, unitPrice: null, preliminary: true,
+      quantityDetails: ["Предварительный расход: 86,25 м²"] });
+    expect(buildCanonicalProcurementPreviewRows(current, [{ ...item, sourceParameters: { ...item.sourceParameters, canonicalBackendRevisionId: "other" } }])).toEqual([]);
+    let renderer!: ReactTestRenderer;
+    act(() => { renderer = TestRenderer.create(panel(current as never, { ...viewModel,
+      sections: [{ id: "materials", title: "Материалы", items: [item] }], rawItemCount: 1,
+    })); });
+    act(() => renderer.root.findByProps({ testID: "consumer-estimate-open-procurement" }).props.onPress());
+    const rendered = JSON.stringify(renderer.toJSON());
+    expect(rendered).toContain("Предварительный расход: 86,25 м²");
+    expect(rendered).toContain("Точный заказ требует уточнения");
+    expect(rendered).not.toContain("К закупке: 0");
+    expect(JSON.stringify({ current, item })).toBe(saved);
+    act(() => renderer.unmount());
+  });
+
+  it("does not present a withdrawn saved estimate as technically or commercially ready", () => {
+    let renderer!: ReactTestRenderer;
+    act(() => { renderer = TestRenderer.create(<RequestEstimateSummaryCard viewModel={viewModel}
+      missingParameterCount={0} contentWithdrawalReasonRu="Паспорт фонарей ошибочно содержал фасадное остекление." />); });
+    const rendered = JSON.stringify(renderer.toJSON());
+    expect(rendered).toContain("Сохранённый расчёт требует исправления");
+    expect(rendered).not.toContain("Обязательные параметры заполнены");
+    expect(renderer.root.findAllByProps({ testID: "request-estimate-trust-level" })).toHaveLength(0);
+    act(() => renderer.unmount());
+  });
+
   it("shows the persisted order and physical balance without recomputing an amended order", () => {
     const current = revision(true) as unknown as Parameters<typeof buildCanonicalProcurementPreviewRows>[0];
     const row = current!.boq.rows[0];

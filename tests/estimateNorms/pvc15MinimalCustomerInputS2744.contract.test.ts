@@ -28,7 +28,7 @@ describe('PVC15 size and object facts instead of a technical questionnaire', () 
       const saved = demand(id);
       expect(saved.quantity).toBeNull();
       const requirement = canonicalArtifactPurchaseRequirement(saved);
-      expect(requirement).toMatchObject({ quantity, conditional: false });
+      expect(requirement).toMatchObject({ quantity, conditional: false, labelRu: 'Предварительный расход' });
       expect(requirement).not.toHaveProperty('stock');
       expect(requirement).not.toHaveProperty('effectiveOrder');
     }
@@ -37,9 +37,9 @@ describe('PVC15 size and object facts instead of a technical questionnaire', () 
       amendment_contract: { parameterSources: { preliminaryNeeds: result.preliminaryNeeds } } };
     const pdf = buildCanonicalProfessionalPdfProjection({ revision, expectedProjectedRowCount: result.rows.length,
       rows: result.rows, preliminaryNeeds: canonicalArtifactPreliminaryNeeds(revision), workTitleRu: 'ПВХ-мембрана 75 м²' });
-    expect(pdf.html).toContain('Расход по расчёту: 86,25 м²');
-    expect(pdf.html).toContain('Расход по расчёту: 300 шт.');
-    expect(pdf.html).toContain('Расход по расчёту: 88,5 м²');
+    expect(pdf.html).toContain('Предварительный расход: 86,25 м²');
+    expect(pdf.html).toContain('Предварительный расход: 300 шт.');
+    expect(pdf.html).toContain('Предварительный расход: 88,5 м²');
     expect(pdf.html).toContain('Точный заказ ещё не подтверждён');
     expect(result.rows.some(row => row.included_in_procurement)).toBe(false);
   });
@@ -89,6 +89,9 @@ describe('PVC15 size and object facts instead of a technical questionnaire', () 
     const custom = await compile({ area_m2: 75, pvc15_system_profile: PVC15_SYSTEM.verified, pvc15_membrane_consumption_m2: 80.5, telescopic_fastener_quantity_piece: 324 });
     expect(custom.parameters.pvc15_membrane_consumption_m2).toBe(80.5);
     expect(custom.parameters.telescopic_fastener_quantity_piece).toBe(324);
+    const manual = custom.preliminaryNeeds.find(need => need.row_id === 'rc09:reinforced_pvc_roof_membrane_1_5mm')!;
+    expect(canonicalArtifactPurchaseRequirement(manual)).toMatchObject({ quantity: '80.5', labelRu: 'Расход по расчёту' });
+    expect(canonicalArtifactPurchaseRequirement(manual)).not.toHaveProperty('preliminaryParameterIds');
     expect((await compile({ area_m2: 75, pvc15_system_profile: PVC15_SYSTEM.other })).parameters).not.toHaveProperty('pvc15_membrane_consumption_m2');
   });
   test('keeps only actual dimensions and scope choices customer-owned; no hours, product passports, stocks or norm inputs', () => {

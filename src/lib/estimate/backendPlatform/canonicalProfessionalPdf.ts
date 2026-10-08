@@ -15,7 +15,7 @@ import { canonicalEstimateOperationReference } from "./canonicalEstimateOperatio
 import { canonicalArtifactPurchaseRequirement } from "./canonicalPersistedPurchaseBalance";
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-45-known-consumption-template17" as const;
+  "canonical-professional-pdf.r4-a13-s27-46-known-consumption-template18" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */

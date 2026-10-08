@@ -99,6 +99,9 @@ export function canonicalEstimateRevisionDetailFromStorage(
     outputHash: nullableText(row.output_hash ?? row.checksum_sha256),
     ...(environment.contentAdmission == null ? {} : { contentAdmission: environment.contentAdmission }),
     ...(environment.legacyWarningRu === undefined ? {} : { legacyWarningRu: environment.legacyWarningRu }),
+    ...(row.definition_withdrawal_reason == null ? {} : {
+      contentWithdrawalReasonRu: String(row.definition_withdrawal_reason),
+    }),
     createdAt: String(row.created_at ?? ""),
   };
 }

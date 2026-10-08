@@ -117,6 +117,7 @@ export function resolveCanonicalPurchaseBalanceV1(
 export function resolveCanonicalKnownPurchaseRequirementV1(
   raw: unknown, rowId: string, unitId: string,
   parameters: Record<string, FormulaParameterValue>, declaredParameters: ReadonlySet<string>, conditional: boolean,
+  preliminaryParameterIds?: ReadonlySet<string>,
 ) {
   const plan = canonicalPurchaseBalancePlanV1(raw, rowId, unitId, declaredParameters);
   if (!plan) return null;
@@ -133,8 +134,11 @@ export function resolveCanonicalKnownPurchaseRequirementV1(
   if (plannedConsumption != null && consumed != null && compareFormulaGraphDecimals(plannedConsumption, consumed) > 0) {
     plan.fail("DEFINITION_INTEGRITY_FAILED", "selected order requirement below planned consumption");
   }
+  const displayedGraph = plan.cached.graphs[plan.fields.indexOf(plannedConsumption == null ? "consumedExpression" : "plannedConsumptionExpression")];
+  const preliminaryInputs = displayedGraph.inputParameterIds.filter(id => preliminaryParameterIds?.has(id));
   return { version: "canonical-purchase-requirement:v1" as const, ownerRowId: rowId, unitId, consumed, plannedConsumption,
-    ...(plan.selectedOrder ? { requirementBasis: plan.policy.requirementBasis } : {}), conditional };
+    ...(plan.selectedOrder ? { requirementBasis: plan.policy.requirementBasis } : {}), conditional,
+    ...(preliminaryInputs.length ? { preliminaryParameterIds: preliminaryInputs } : {}) };
 }
 
 export function validateCanonicalManualTransportQuantityV1(

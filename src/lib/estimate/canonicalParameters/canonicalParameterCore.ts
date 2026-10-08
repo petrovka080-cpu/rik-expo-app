@@ -149,6 +149,8 @@ export type CanonicalParameterSeed = {
 };
 
 export type CanonicalParameterSession = {
+  /** Admission issue, not an additional user-input question. */
+  contentWithdrawalReasonRu?: string | null;
   coreSchemaVersion: typeof CANONICAL_PARAMETER_CORE_SCHEMA_VERSION;
   sessionId: string;
   draftId: string;

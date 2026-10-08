@@ -25,6 +25,13 @@ function visibleText(renderer: ReactTestRenderer): string {
 }
 
 describe("incomplete canonical estimate readiness", () => {
+  it("keeps external withdrawal blocking even after a local parameter preview", () => {
+    const session = { status: "READY", contentWithdrawalReasonRu: "Несовместимый паспорт",
+      blockingMissingParameterIds: [], contractMissingParameterIds: [], invalidParameterIds: [], parameters: [] } as never;
+    expect(consumerRepairCanonicalMissingParameterCount(session)).toBe(0);
+    expect(consumerRepairCanonicalEstimateBlocksApproval(session)).toBe(true);
+  });
+
   it("keeps a quantity-only preliminary estimate confirmable when only contract inputs are missing", () => {
     const session = {
       status: "PRELIMINARY_WITH_ASSUMPTIONS",

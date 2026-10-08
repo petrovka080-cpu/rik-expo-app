@@ -1029,6 +1029,7 @@ async function readContentAdmissions(
         else definition.release_id::text end effective_definition_release_id,
       definition.release_id::text source_definition_release_id,
       definition.source_metadata,definition.content_status,definition.content_gate_status,
+      public.estimate_definition_withdrawal_reason_v1(definition.id) definition_withdrawal_reason,
       exists(select 1 from public.estimate_definition_version direct
         where direct.release_id=selected_release.id and direct.catalog_id=requested.catalog_id) direct_definition
     from requested left join selected_release on true
@@ -1114,6 +1115,7 @@ async function readContentAdmissions(
       const baselineReady = row.baseline_ready === true;
       const scenarioReady = row.scenario_ready === true;
       const decision = evaluateEstimateAdmission({
+        definitionWithdrawalReason: row.definition_withdrawal_reason ?? null,
         mode,
         ingress,
         releaseId:
@@ -3740,7 +3742,7 @@ async function localParameterSessionSnapshot(revisionId: string) {
   return withDatabaseClient(modelDatabaseUrl, async (client) => {
     const revision = (
       await client.query(
-        "select * from public.estimate_revision where id=$1 and (owner_user_id=$2 or organization_id=$3)",
+        "select r.*,public.estimate_definition_withdrawal_reason_v1(r.definition_version_id) definition_withdrawal_reason from public.estimate_revision r where id=$1 and (owner_user_id=$2 or organization_id=$3)",
         [revisionId, currentOwnerId(), currentTenantId()],
       )
     ).rows[0];
@@ -4997,7 +4999,7 @@ async function route(
         (
           await client.query(
             `
-      select * from public.estimate_revision
+      select r.*,public.estimate_definition_withdrawal_reason_v1(r.definition_version_id) definition_withdrawal_reason from public.estimate_revision r
         where (owner_user_id=$1 or organization_id=$2) and catalog_id=$3
         and ($4::integer is null or revision_number<$4) order by revision_number desc limit $5
     `,
@@ -5033,7 +5035,7 @@ async function route(
       async (client) =>
         (
           await client.query(
-            "select * from public.estimate_revision where id=$1 and (owner_user_id=$2 or organization_id=$3)",
+            "select r.*,public.estimate_definition_withdrawal_reason_v1(r.definition_version_id) definition_withdrawal_reason from public.estimate_revision r where id=$1 and (owner_user_id=$2 or organization_id=$3)",
             [path[1], currentOwnerId(), currentTenantId()],
           )
         ).rows[0],

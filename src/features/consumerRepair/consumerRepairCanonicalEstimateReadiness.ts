@@ -58,6 +58,7 @@ export function consumerRepairCanonicalEstimateBlocksApproval(
   session: CanonicalParameterSession | null | undefined,
 ): boolean {
   if (!session) return false;
+  if (session.contentWithdrawalReasonRu) return true;
   const requirementIds = consumerRepairCanonicalCalculationRequirementIds(session);
   if (
     requirementIds.blockingMissingParameterIds.length > 0

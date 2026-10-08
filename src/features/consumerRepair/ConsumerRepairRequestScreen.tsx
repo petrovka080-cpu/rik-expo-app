@@ -1885,7 +1885,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         this.setState({
           bundle: synced,
           canonicalBackendParameterSession: parameterSession,
-          statusMessage: `Смета ещё не готова к подтверждению: заполните ${missingCount} обязательных параметров расчёта.`,
+          statusMessage: parameterSession?.contentWithdrawalReasonRu
+            ?? `Смета ещё не готова к подтверждению: заполните ${missingCount} обязательных параметров расчёта.`,
         });
         return;
       }

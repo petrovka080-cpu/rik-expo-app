@@ -252,6 +252,8 @@ export type CanonicalEstimateRevisionView = {
   outputHash?: string | null;
   contentAdmission?: AdmissionDecision;
   legacyWarningRu?: string | null;
+  /** Current external admission annotation; the saved revision is unchanged. */
+  contentWithdrawalReasonRu?: string | null;
   createdAt: string;
 };
 
