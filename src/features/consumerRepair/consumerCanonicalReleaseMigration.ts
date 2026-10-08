@@ -7,6 +7,7 @@ import {
   type CanonicalEstimateRevisionView,
 } from "../../lib/estimate/backendPlatform/contracts";
 import {
+  canonicalEstimateConsumerInputRole,
   isCanonicalEstimateSourceManagedParameter,
   isCanonicalEstimateVisibleReplaceableProfile,
   isCanonicalEstimateVisibleUserResourceSelectionParameter,
@@ -34,14 +35,20 @@ export function consumerCanonicalMigrationUserParameters(
   catalog: CanonicalEstimateCatalogItem,
   parameters: Readonly<Record<string, unknown>>,
 ): Record<string, unknown> {
-  return Object.fromEntries(catalog.parameterSchema.flatMap((schema) =>
-    Object.prototype.hasOwnProperty.call(parameters, schema.parameterId)
-    && (!isCanonicalEstimateSourceManagedParameter(schema)
-      || isCanonicalEstimateVisibleReplaceableProfile(schema)
-      || isCanonicalEstimateVisibleUserResourceSelectionParameter(schema))
+  return Object.fromEntries(catalog.parameterSchema.flatMap((schema) => {
+    // Short-form ownership controls which questions we ask, not whether an
+    // explicitly supplied project value survives a release transition. Keep
+    // the underlying norm/derived ownership checks for all transferred data.
+    const ownership = canonicalEstimateConsumerInputRole(schema) === "APPLICATION_TECHNICAL"
+      ? { ...schema, provenance: { ...schema.provenance, consumer_input_role_v1: undefined } }
+      : schema;
+    return Object.prototype.hasOwnProperty.call(parameters, schema.parameterId)
+    && (!isCanonicalEstimateSourceManagedParameter(ownership)
+      || isCanonicalEstimateVisibleReplaceableProfile(ownership)
+      || isCanonicalEstimateVisibleUserResourceSelectionParameter(ownership))
       ? [[schema.parameterId, parameters[schema.parameterId]]]
-      : [],
-  ));
+      : [];
+  }));
 }
 
 export function consumerCanonicalInheritedRecalculationInputs(

@@ -160,6 +160,27 @@ describe("consumer exact release migration", () => {
     expect(consumerCanonicalMigrationUserParameters(target, { ...revision.parameters, deleted_field: 99 })).toEqual({ area_m2: "100" });
   });
 
+  it("preserves explicit project service quantities when the short form stops asking for them", () => {
+    const crew = { ...target.parameterSchema[0], parameterId: "g6_waste_crew_hours", titleRu: "Труд исполнителя, человеко-часы",
+      unitId: "man_h", visibilityRole: "USER_INPUT" as const, valueSourceRole: "CONDITIONAL_PROJECT_FACT" as const,
+      requiredWhen: { parameterId: "waste_required", equals: true }, formulaConsumers: ["waste_crew"],
+      guide: { guideKind: "PROJECT_DEFINED", guideValidationPolicy: "MANDATORY_BLOCK" } as never,
+      provenance: { consumer_input_role_v1: "APPLICATION_TECHNICAL" } };
+    const fuel = { ...crew, parameterId: "g6_waste_fuel_l", titleRu: "Топливо по программе исполнителя", unitId: "l" };
+    const norm = { ...target.parameterSchema[1], provenance: crew.provenance };
+    const derived = { ...crew, parameterId: "calculated_hours", valueSourceRole: "BACKEND_DERIVED" as const };
+    const catalog = { ...target, parameterSchema: [target.parameterSchema[0], crew, fuel, norm, derived] };
+    const parent = { ...revision, parameters: { ...revision.parameters, g6_waste_crew_hours: 9, g6_waste_fuel_l: 99 },
+      userInputSnapshot: { area_m2: "100", g6_waste_crew_hours: 2, g6_waste_fuel_l: 15, adhesive_kg_m2: 8, calculated_hours: 99 } };
+    const before = JSON.stringify(parent);
+    const supplied = consumerCanonicalInheritedRecalculationInputs(parent, catalog);
+    expect(supplied).toEqual({ area_m2: "100", g6_waste_crew_hours: 2, g6_waste_fuel_l: 15 });
+    expect(consumerCanonicalExplicitMigrationParameters(catalog, { ...supplied, adhesive_kg_m2: 1 }, supplied)).toEqual(supplied);
+    expect(consumerCanonicalInheritedRecalculationInputs({ ...parent, userInputSnapshot: { area_m2: "100" } }, catalog))
+      .toEqual({ area_m2: "100" });
+    expect(JSON.stringify(parent)).toBe(before);
+  });
+
   it("does not turn inherited assumptions or validation defaults into user facts", () => {
     const profile = { ...target.parameterSchema[0], parameterId: "joint_count", titleRu: "Число стыков", defaultValue: 3, valueSourceRole: "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE" as const, visibilityRole: "USER_INPUT" as const, formulaConsumers: ["joint-formula"] };
     const catalog = { ...target, parameterSchema: [...target.parameterSchema, profile] };
