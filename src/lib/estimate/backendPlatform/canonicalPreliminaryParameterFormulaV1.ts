@@ -16,6 +16,20 @@ function invalid(id: string): never {
   throw Object.assign(new Error(`preliminary parameter formula invalid: ${id}`), { code: 'DEFINITION_INTEGRITY_FAILED' });
 }
 
+function formulaBranches(id: string, raw: unknown): Record<string, unknown>[] {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) invalid(id);
+  const policy = raw as Record<string, unknown>;
+  if (!Object.hasOwn(policy, 'branches')) return [policy];
+  if (Object.keys(policy).some(key => !['version', 'branches'].includes(key))
+    || policy.version !== 'canonical-preliminary-parameter-formula:v1'
+    || !Array.isArray(policy.branches) || policy.branches.length === 0) invalid(id);
+  return policy.branches.map(branch => {
+    if (!branch || typeof branch !== 'object' || Array.isArray(branch)
+      || Object.keys(branch).some(key => !['expression', 'when', 'explicitValuePolicy'].includes(key))) invalid(id);
+    return { version: policy.version, ...branch as Record<string, unknown> };
+  });
+}
+
 /** Catalogue data uses the same decimal FormulaGraph as resource quantities.
  * A preliminary value is replaceable; it is never proof of an actual project
  * layout, wind calculation, stock allocation, price or equipment passport. */
@@ -24,42 +38,46 @@ export function resolveCanonicalPreliminaryParameterFormulasV1(
   input: Readonly<Record<string, unknown>>,
 ): Record<string, unknown> {
   const byId = new Map(definitions.map(p => [p.parameter_id, p]));
-  const policies = new Map<string, { formula: ReturnType<typeof compileFormulaGraph>; when: Record<string, unknown>; dependencies: string[]; requireMatch: boolean }>();
+  const policies = new Map<string, { formula: ReturnType<typeof compileFormulaGraph>; when: Record<string, unknown>; dependencies: string[]; requireMatch: boolean }[]>();
   for (const definition of definitions) {
     const raw = definition.truth_metadata?.preliminary_value_formula_v1;
     if (raw == null) continue;
-    if (typeof raw !== 'object' || Array.isArray(raw)) invalid(definition.parameter_id);
-    const policy = raw as Record<string, unknown>;
     const truth = definition.truth_metadata!;
     const guide = truth.guide as Record<string, unknown> | undefined;
-    if (Object.keys(policy).some(key => !['version', 'expression', 'when', 'explicitValuePolicy'].includes(key))
-      || policy.version !== 'canonical-preliminary-parameter-formula:v1'
-      || (policy.explicitValuePolicy != null && policy.explicitValuePolicy !== 'REQUIRE_MATCH')
-      || typeof policy.expression !== 'string'
-      || !['decimal', 'integer'].includes(definition.value_type)
-      || definition.default_value != null
-      || truth.value_source_role !== 'VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE'
-      || truth.runtime_profile_classification !== PRELIMINARY_SOURCE_FORMULA
-      || !guide?.source_document || !guide.source_locator
-      || !/^[a-f0-9]{64}$/iu.test(String(guide.source_snapshot_hash ?? ''))
-      || !policy.when || typeof policy.when !== 'object' || Array.isArray(policy.when)) invalid(definition.parameter_id);
-    const formula = compileFormulaGraph(policy.expression);
-    const when = policy.when as Record<string, unknown>;
-    resolveInclusionGraph(when, {});
-    const dependencies = [...new Set([...formula.inputParameterIds, ...canonicalConditionParameterIds(when)])];
-    if (dependencies.includes(definition.parameter_id) || dependencies.some(id => !byId.has(id))
-      || formula.inputParameterIds.some(id => !['decimal', 'integer'].includes(byId.get(id)!.value_type))) invalid(definition.parameter_id);
-    policies.set(definition.parameter_id, { formula, when, dependencies, requireMatch: policy.explicitValuePolicy === 'REQUIRE_MATCH' });
+    const branches = formulaBranches(definition.parameter_id, raw).map(policy => {
+      if (Object.keys(policy).some(key => !['version', 'expression', 'when', 'explicitValuePolicy'].includes(key))
+        || policy.version !== 'canonical-preliminary-parameter-formula:v1'
+        || (policy.explicitValuePolicy != null && policy.explicitValuePolicy !== 'REQUIRE_MATCH')
+        || typeof policy.expression !== 'string'
+        || !['decimal', 'integer'].includes(definition.value_type)
+        || definition.default_value != null
+        || truth.value_source_role !== 'VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE'
+        || truth.runtime_profile_classification !== PRELIMINARY_SOURCE_FORMULA
+        || !guide?.source_document || !guide.source_locator
+        || !/^[a-f0-9]{64}$/iu.test(String(guide.source_snapshot_hash ?? ''))
+        || !policy.when || typeof policy.when !== 'object' || Array.isArray(policy.when)) invalid(definition.parameter_id);
+      const formula = compileFormulaGraph(policy.expression);
+      const when = policy.when as Record<string, unknown>;
+      resolveInclusionGraph(when, {});
+      const dependencies = [...new Set([...formula.inputParameterIds, ...canonicalConditionParameterIds(when)])];
+      if (dependencies.includes(definition.parameter_id) || dependencies.some(id => !byId.has(id))
+        || formula.inputParameterIds.some(id => !['decimal', 'integer'].includes(byId.get(id)!.value_type))) invalid(definition.parameter_id);
+      return { formula, when, dependencies, requireMatch: policy.explicitValuePolicy === 'REQUIRE_MATCH' };
+    });
+    policies.set(definition.parameter_id, branches);
   }
   const parameters = { ...input };
   const states = new Map<string, 'visiting' | 'done'>();
   const visit = (id: string): void => {
     if (states.get(id) === 'done') return;
     if (states.get(id) === 'visiting') invalid(`cycle:${id}`);
-    const policy = policies.get(id)!;
+    const branches = policies.get(id)!;
     states.set(id, 'visiting');
-    policy.dependencies.filter(dependency => policies.has(dependency)).forEach(visit);
-    if ((parameters[id] == null || policy.requireMatch) && resolveInclusionGraph(policy.when, parameters).value === true
+    [...new Set(branches.flatMap(policy => policy.dependencies))].filter(dependency => policies.has(dependency)).forEach(visit);
+    const active = branches.filter(policy => resolveInclusionGraph(policy.when, parameters).value === true);
+    if (active.length > 1) invalid(`ambiguous:${id}`);
+    const policy = active[0];
+    if (policy && (parameters[id] == null || policy.requireMatch)
       && policy.formula.inputParameterIds.every(dependency => parameters[dependency] != null)) {
       const calculated = evaluateFormulaGraph(policy.formula.ast, parameters as Record<string, FormulaParameterValue>);
       if (parameters[id] != null && compareFormulaGraphDecimals(parameters[id] as number | string, calculated) !== 0) {
@@ -88,14 +106,19 @@ export function canonicalMissingAutomaticParameterSourcesV1(
     if (!missing(id)) return [];
     if (path.has(id)) return [id];
     const truth = byId.get(id)?.truth_metadata;
-    const formula = truth?.preliminary_value_formula_v1 as Record<string, unknown> | undefined;
+    const formula = truth?.preliminary_value_formula_v1;
     const lookup = truth?.derived_exact_lookup_v1 as { inputParameterIds?: string[] } | undefined;
     let dependencies: string[];
     if (formula) {
-      const when = resolveInclusionGraph(formula.when as Record<string, unknown>, { ...parameters });
-      if (when.value === false) return [id];
-      dependencies = when.value == null ? when.missingParameterIds
-        : compileFormulaGraph(String(formula.expression)).inputParameterIds;
+      const branches = formulaBranches(id, formula).map(policy => ({
+        policy, when: resolveInclusionGraph(policy.when as Record<string, unknown>, { ...parameters }),
+      }));
+      const active = branches.filter(branch => branch.when.value === true);
+      if (active.length > 1) invalid(`ambiguous:${id}`);
+      const relevant = active.length ? active : branches.filter(branch => branch.when.value == null);
+      if (!relevant.length) return [id];
+      dependencies = relevant.flatMap(({ policy, when }) => when.value == null ? when.missingParameterIds
+        : compileFormulaGraph(String(policy.expression)).inputParameterIds);
     } else if (lookup) {
       dependencies = lookup.inputParameterIds ?? [];
     } else return [id];

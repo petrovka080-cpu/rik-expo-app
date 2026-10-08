@@ -103,3 +103,14 @@ describe("inclusionGraph numeric literals in normalized parameter transport", ()
     expect(evaluateInclusionGraph({ kind: "equals", parameterId: "choice", value: 4 }, { choice: "4.0000000001" })).toBe(false);
   });
 });
+
+describe("inclusionGraph optional scope selection", () => {
+  it("requires an explicit request without guessing an undecided physical condition", () => {
+    const ast = { kind: 'selected', parameterId: 'geometry', value: 'mixed' };
+    expect(resolveInclusionGraph(ast, {})).toEqual({ value: false, missingParameterIds: [] });
+    expect(resolveInclusionGraph(ast, { geometry: 'project' }).value).toBe(false);
+    expect(resolveInclusionGraph(ast, { geometry: 'mixed' }).value).toBe(true);
+    expect(resolveInclusionGraph({ ...ast, kind: 'equals' }, {})).toEqual({ value: null, missingParameterIds: ['geometry'] });
+    expect(() => resolveInclusionGraph({ kind: 'selected', parameterId: 'geometry' }, {})).toThrow();
+  });
+});

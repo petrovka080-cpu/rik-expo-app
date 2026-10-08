@@ -136,6 +136,7 @@ export function resolveInclusionGraph(
   const comparisonKinds = new Set([
     "equals",
     "not_equals",
+    "selected",
     "in",
     "greater_than",
     "greater_than_or_equal",
@@ -147,7 +148,7 @@ export function resolveInclusionGraph(
   }
   const parameterId = String(ast.parameterId ?? "");
   if (!parameterId) throw new InclusionGraphEvaluationError(`${kind || "unknown"} node requires parameterId`);
-  if ((kind === "equals" || kind === "not_equals") && !Object.prototype.hasOwnProperty.call(ast, "value")) {
+  if ((kind === "equals" || kind === "not_equals" || kind === "selected") && !Object.prototype.hasOwnProperty.call(ast, "value")) {
     throw new InclusionGraphEvaluationError(`${kind} node requires value`);
   }
   if (kind === "in" && (!Array.isArray(ast.values) || ast.values.length === 0)) {
@@ -175,12 +176,15 @@ export function resolveInclusionGraph(
     || parameters[parameterId] === undefined
     || parameters[parameterId] === null
     || parameters[parameterId] === "") {
+    // Optional calculation scopes activate only after an explicit choice.
+    // Ordinary equality still preserves an unknown physical condition.
+    if (kind === "selected") return { value: false, missingParameterIds: [] };
     return { value: null, missingParameterIds: [parameterId] };
   }
   const actual = parameters[parameterId];
-  if (kind === "equals" || kind === "not_equals") {
+  if (kind === "equals" || kind === "not_equals" || kind === "selected") {
     const equal = literalEquals(actual, ast.value);
-    return { value: kind === "equals" ? equal : !equal, missingParameterIds: [] };
+    return { value: kind === "not_equals" ? !equal : equal, missingParameterIds: [] };
   }
   if (kind === "in") {
     return { value: (ast.values as unknown[]).includes(actual), missingParameterIds: [] };
