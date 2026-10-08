@@ -323,6 +323,8 @@ export function ConsumerRepairRequestScreenView({
           hasSnapshot={consumerRepairBundleHasPdfEligibleSnapshot(renderModel.bundle)}
           approvalBlockedByEstimate={approvalBlockedByEstimate}
           approvalBlockedByParameters={approvalBlockedByParameters}
+          contentWithdrawalReasonRu={renderModel.bundle?.canonicalParameterSession?.contentWithdrawalReasonRu
+            || renderModel.bundle?.structuredEstimatePayload?.canonicalBackend?.contentWithdrawalReasonRu}
           approvalUnresolvedRowCount={approvalUnresolvedRowCount}
           approvalMissingPriceCount={approvalMissingPriceCount}
           approvalPendingRowEditCount={state.pendingCanonicalRowEditCount ?? 0}

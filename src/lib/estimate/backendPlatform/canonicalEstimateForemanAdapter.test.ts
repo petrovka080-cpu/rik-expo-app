@@ -83,6 +83,10 @@ describe("canonical estimate consumer professional proof", () => {
 
     const payload = adaptCanonicalRevisionToStructuredEstimate({ catalog, revision, rows: [] });
     expect(payload.canonicalBackend?.sourceRequestText).toBe(revision.sourceRequestText);
+    const withdrawn = adaptCanonicalRevisionToStructuredEstimate({ catalog,
+      revision: { ...revision, contentWithdrawalReasonRu: "Ошибочная привязка паспорта" }, rows: [] });
+    expect(withdrawn.canonicalBackend?.contentWithdrawalReasonRu).toBe("Ошибочная привязка паспорта");
+    expect(withdrawn.canonicalBackend?.checksumSha256).toBe(revision.checksumSha256);
     const legacy = adaptCanonicalRevisionToStructuredEstimate({ catalog,
       revision: { ...revision, sourceRequestText: null }, rows: [],
       inputText: "ДЕМО / VALIDATION_FIXTURE: display fallback only" });

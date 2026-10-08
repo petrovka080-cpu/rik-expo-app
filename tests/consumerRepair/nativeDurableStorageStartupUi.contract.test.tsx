@@ -123,6 +123,7 @@ describe("consumer repair durable storage startup UI", () => {
     expect(shouldPublishInitialConsumerCanonicalPreview({})).toBe(false);
     expect(shouldPublishInitialConsumerCanonicalPreview({ showInitialPreview: false })).toBe(false);
     expect(shouldPublishInitialConsumerCanonicalPreview({ showInitialPreview: true })).toBe(true);
+    expect(shouldPublishInitialConsumerCanonicalPreview({ showInitialPreview: true }, "Ошибочная привязка паспорта")).toBe(false);
   });
   it("reuses one bounded transient draft for sequential canonical deep links", () => {
     const firstRevisionId = "4aa65e39-a938-4a98-8309-94aeb60d1ba0";

@@ -79,6 +79,7 @@ type StickyActionsProps = {
   parameterCollectionRequired?: boolean;
   approvalBlockedByEstimate?: boolean;
   approvalBlockedByParameters?: boolean;
+  contentWithdrawalReasonRu?: string | null;
   approvalUnresolvedRowCount?: number;
   approvalMissingPriceCount?: number;
   approvalPendingRowEditCount?: number;
@@ -105,6 +106,7 @@ export function ConsumerRepairRequestStickyActions({
   parameterCollectionRequired = false,
   approvalBlockedByEstimate = false,
   approvalBlockedByParameters = false,
+  contentWithdrawalReasonRu,
   approvalUnresolvedRowCount = 0,
   approvalMissingPriceCount = 0,
   approvalPendingRowEditCount = 0,
@@ -129,7 +131,9 @@ export function ConsumerRepairRequestStickyActions({
   const approvalActionHint = approvalMissingPriceCount > 0
     ? `Без цены остаются позиции: ${approvalMissingPriceCount}. Их можно заполнить позже.`
     : undefined;
-  const approvalBlockedLabel = approvalCommitBusy
+  const approvalBlockedLabel = contentWithdrawalReasonRu
+    ? "Расчёт требует исправления"
+    : approvalCommitBusy
     ? "Подтверждаем смету…"
     : approvalPendingRowEditCount > 0
       ? `Сначала примените изменения: ${approvalPendingRowEditCount}`
@@ -190,22 +194,22 @@ export function ConsumerRepairRequestStickyActions({
         </Pressable>
       ) : hasBundle ? (
         <Pressable
-          accessibilityLabel={approvalPendingRowEditCount > 0
+          accessibilityLabel={contentWithdrawalReasonRu ? approvalBlockedLabel : approvalPendingRowEditCount > 0
             ? "Применить изменения и подтвердить смету"
             : approvalBlockedByEstimate ? approvalBlockedLabel : approvalActionLabel}
-          accessibilityHint={approvalPendingRowEditCount > 0
+          accessibilityHint={contentWithdrawalReasonRu || (approvalPendingRowEditCount > 0
             ? "Все подготовленные количества и цены будут сохранены одним пересчётом; подтверждён будет сохранённый результат."
-            : approvalBlockedByEstimate ? undefined : approvalActionHint}
+            : approvalBlockedByEstimate ? undefined : approvalActionHint)}
           accessibilityRole="button"
-          accessibilityState={{ disabled: approvalCommitBusy || (approvalBlockedByEstimate && approvalPendingRowEditCount === 0) }}
-          disabled={approvalCommitBusy || (approvalBlockedByEstimate && approvalPendingRowEditCount === 0)}
+          accessibilityState={{ disabled: Boolean(contentWithdrawalReasonRu) || approvalCommitBusy || (approvalBlockedByEstimate && approvalPendingRowEditCount === 0) }}
+          disabled={Boolean(contentWithdrawalReasonRu) || approvalCommitBusy || (approvalBlockedByEstimate && approvalPendingRowEditCount === 0)}
           onPress={approvalPendingRowEditCount > 0
             ? (onApplyAndApproveDraft ?? onApproveDraft)
             : onApproveDraft}
           style={[
             styles.bottomActionButton,
             styles.bottomActionPrimary,
-            approvalCommitBusy || (approvalBlockedByEstimate && approvalPendingRowEditCount === 0)
+            contentWithdrawalReasonRu || approvalCommitBusy || (approvalBlockedByEstimate && approvalPendingRowEditCount === 0)
               ? styles.bottomActionDisabled
               : null,
           ]}
@@ -213,7 +217,7 @@ export function ConsumerRepairRequestStickyActions({
         >
           <Ionicons name="checkmark" size={20} color="#FFFFFF" />
           <Text style={styles.bottomActionPrimaryText}>
-            {approvalPendingRowEditCount > 0
+            {contentWithdrawalReasonRu ? approvalBlockedLabel : approvalPendingRowEditCount > 0
               ? approvalCommitBusy ? "Применяем и подтверждаем…" : "Применить и подтвердить"
               : approvalBlockedByEstimate ? approvalBlockedLabel : approvalActionLabel}
           </Text>

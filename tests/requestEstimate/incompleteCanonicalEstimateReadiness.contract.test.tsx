@@ -466,6 +466,26 @@ describe("incomplete canonical estimate readiness", () => {
     expect(approval.props.accessibilityLabel).toBe("Заполните параметры сметы");
   });
 
+  it("does not ask for parameters or allow pending edits to approve a withdrawn calculation", () => {
+    let renderer!: ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(
+        <ConsumerRepairRequestStickyActions
+          approved={false} sent={false} hasBundle hasSnapshot
+          approvalBlockedByEstimate approvalBlockedByParameters
+          approvalPendingRowEditCount={2}
+          contentWithdrawalReasonRu="Ошибочная привязка паспорта"
+          onOpenPdf={noop} onMakePdf={noop} onCreateNew={noop}
+          onDeleteDraft={noop} onApproveDraft={noop} onPrepareDraft={noop}
+        />,
+      );
+    });
+    const approval = renderer.root.findByProps({ testID: "consumer-repair-approve" });
+    expect(approval.props.disabled).toBe(true);
+    expect(approval.props.accessibilityLabel).toBe("Расчёт требует исправления");
+    expect(approval.props.accessibilityHint).toBe("Ошибочная привязка паспорта");
+  });
+
   it("allows confirmation when only payable prices are missing", () => {
     let renderer!: ReactTestRenderer;
     act(() => {

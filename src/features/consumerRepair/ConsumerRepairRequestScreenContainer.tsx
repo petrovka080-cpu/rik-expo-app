@@ -379,10 +379,11 @@ type PersistConsumerCanonicalDraftOptions = {
 
 export function shouldPublishInitialConsumerCanonicalPreview(
   options: Pick<PersistConsumerCanonicalDraftOptions, "showInitialPreview">,
+  contentWithdrawalReasonRu?: string | null,
 ): boolean {
   // A normal editor amendment must stay in the current form. The early,
   // full-screen result belongs only to an explicitly requested initial build.
-  return options.showInitialPreview === true;
+  return options.showInitialPreview === true && !contentWithdrawalReasonRu;
 }
 
 function useConsumerCanonicalDraftPersistence(input: {
@@ -447,7 +448,8 @@ function useConsumerCanonicalDraftPersistence(input: {
       && Number.isFinite(row.quantity)
     );
     const preliminaryNeedCount = canonicalBackend.preliminaryNeeds?.length ?? 0;
-    if (shouldPublishInitialConsumerCanonicalPreview(options)) {
+    const publishInitialPreview = shouldPublishInitialConsumerCanonicalPreview(options, canonicalBackend.contentWithdrawalReasonRu);
+    if (publishInitialPreview) {
       let fullEstimateOpenRequested = false;
       await new Promise<void>((resolvePublished) => {
         const settlePublished = () => {
@@ -566,7 +568,7 @@ function useConsumerCanonicalDraftPersistence(input: {
           elapsedMs: Date.now() - evidenceBuildStartedAt,
         });
       }
-      if (shouldPublishInitialConsumerCanonicalPreview(options)) {
+      if (publishInitialPreview) {
         pendingBundleRef.current = bundle;
         savedPreviewWorkspaceRef.current = {
           draftId: bundle.draft.id,
