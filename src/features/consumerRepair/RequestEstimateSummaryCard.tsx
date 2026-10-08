@@ -53,7 +53,7 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
         </Text>
         {viewModel.preliminaryNeedCount ? (
           <Text style={styles.meta} testID="request-estimate-preliminary-need-count">
-            {`Без количества: ${viewModel.preliminaryNeedCount} ${pluralizeRu(viewModel.preliminaryNeedCount, "позиция", "позиции", "позиций")}`}
+            {`Требуют уточнения: ${viewModel.preliminaryNeedCount} ${pluralizeRu(viewModel.preliminaryNeedCount, "позиция", "позиции", "позиций")}`}
           </Text>
         ) : null}
         <Text style={styles.total}>

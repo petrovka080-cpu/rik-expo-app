@@ -116,6 +116,7 @@ describe("request estimate view model", () => {
 
     expect(vm?.calculatedItemCount).toBe(source.items.length);
     expect(vm?.preliminaryNeedCount).toBe(1);
+    expect(vm?.trustLevelLabel).toBe("Готовность: нужны уточнения");
     expect(vm?.priceStatusLabel).toContain("1 с предварительным количеством");
     expect(vm?.priceStatusLabel).not.toContain("1 без количества");
     expect(vm?.procurementApplicabilityLabel).toBeNull();

@@ -1307,7 +1307,7 @@ export function buildRequestEstimateViewModel(
     taxLabel: bundle.structuredEstimatePayload?.tax.taxLabel ?? "\u041d\u0430\u043b\u043e\u0433: \u0442\u0440\u0435\u0431\u0443\u0435\u0442 \u0443\u0442\u043e\u0447\u043d\u0435\u043d\u0438\u044f",
     taxWarning: bundle.structuredEstimatePayload?.tax.warning,
     trustLevelLabel: preliminaryNeedCount > 0
-      ? "Готовность: не все количества рассчитаны"
+      ? "Готовность: нужны уточнения"
       : canonicalBlocking
       ? "Доверие: исходные данные не заполнены"
       : `\u0414\u043e\u0432\u0435\u0440\u0438\u0435: ${trustLevelPublicLabel(productionTrust.trust_level)}`,
