@@ -30,6 +30,9 @@ export function pvcRoofVolumeMinimalConfigS2747(parent: { releaseId: string; sea
     parameterDefinitions: definition.parameters, formulaDefinitions: definition.formulas, resourceDefinitions: definition.resources,
     runtimeProfileInput: definition.runtimeInput, runtimeProfileClassification: definition.runtimeClassification,
     runtimeProfileSourceIds: definition.runtimeSourceIds,
+    locator: { ...previous.locator, key: previous.locator.key + '-minimal-input-s2747',
+      payload: { ...previous.locator.payload, consumerInputOwnership: 'S2747_VOLUME_PROFILE_ONLY',
+        heightDefaultRemoved: true, serviceDescriptionDerivedFromExplicitLoadingMethod: true } },
     search: { ...previous.search, clarificationFields: ['area_m2', 'roof_height_m', 'cleaned_surface_m2', 'g6_cleanup_applicability', 'g6_waste_applicability'],
       sourceProvenance: { ...previous.search.sourceProvenance, consumerInputOwnership: 'S2747_VOLUME_PROFILE_ONLY', heightDefaultRemoved: true } },
     verifyCore: async () => {
