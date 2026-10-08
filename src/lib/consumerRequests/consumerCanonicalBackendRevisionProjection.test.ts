@@ -87,6 +87,48 @@ function bundle(revisionId: string, quantity: number): ConsumerRepairDraftBundle
 }
 
 describe("canonical backend revision projection", () => {
+  test.each([false, true])("compares a known preliminary quantity with the resolved model, including older projections (%s)", (legacy) => {
+    const source = bundle(PARENT_ID, 8);
+    source.items[0]!.titleRu = "Угольники PP-R 20 мм";
+    source.items[0]!.sourceParameters!.canonicalPreliminaryNeed = true;
+    const parentPayload = source.structuredEstimatePayload!;
+    parentPayload.canonicalBackend!.preliminaryNeeds = [{ rowId: "asphalt-mixture", ordinal: 0,
+      section: "materials", category: "material", titleRu: "Угольники PP-R 20 мм", unitId: "item",
+      quantity: "8.000000000", unitPrice: null, needState: "CONDITION_REQUIRED", missingParameterIds: ["elbow_model"],
+      selected: true, procurementEligible: true, formulaId: "elbow_count", calculationTrace: {},
+      normativeTrace: [], needSha256: "d".repeat(64) }];
+    const parent = appendCanonicalBackendRevisionProjection({ previousBundle: null, nextBundle: source, payload: parentPayload });
+    const storedParent = parent.estimateDraftRevisionState!.revisions[0]!;
+    expect(storedParent.boq.rows).toEqual([]);
+    expect(storedParent.preliminaryRows).toEqual([expect.objectContaining({ quantity: 8, unitPrice: null })]);
+    if (legacy) delete storedParent.preliminaryRows;
+    const before = JSON.stringify(parent);
+    const target = bundle(CHILD_ID, 8);
+    target.items[0]!.titleRu = "VALTEC VTp.759, PP-R, 45°, 20 мм";
+    target.items[0]!.unit = "item";
+    const child = appendCanonicalBackendRevisionProjection({ previousBundle: parent, nextBundle: target,
+      payload: target.structuredEstimatePayload });
+    expect(child.estimateDraftRevisionState!.diffs[0]!.changedRows).toEqual([expect.objectContaining({
+      beforeQuantity: 8, afterQuantity: 8, beforeState: "NEEDS_CLARIFICATION", afterState: "CALCULATED",
+      beforeTitleRu: "Угольники PP-R 20 мм", titleRu: "VALTEC VTp.759, PP-R, 45°, 20 мм" })]);
+    expect(JSON.stringify(parent)).toBe(before);
+    expect(child.estimateDraftRevisionState!.revisions[1]!.boq.rows).toHaveLength(1);
+    expect(child.estimateDraftRevisionState!.revisions[1]!.preliminaryRows).toEqual([]);
+  });
+
+  test("does not recover preliminary quantities from another revision's payload", () => {
+    const source = bundle(PARENT_ID, 8);
+    source.items[0]!.sourceParameters!.canonicalPreliminaryNeed = true;
+    const parent = appendCanonicalBackendRevisionProjection({ previousBundle: null, nextBundle: source,
+      payload: source.structuredEstimatePayload });
+    delete parent.estimateDraftRevisionState!.revisions[0]!.preliminaryRows;
+    parent.structuredEstimatePayload!.canonicalBackend!.revisionId = "other-revision";
+    const target = bundle(CHILD_ID, 8);
+    const child = appendCanonicalBackendRevisionProjection({ previousBundle: parent, nextBundle: target,
+      payload: target.structuredEstimatePayload });
+    expect(child.estimateDraftRevisionState!.diffs[0]!.changedRows[0]!.beforeQuantity).toBeNull();
+  });
+
   test("preserves the exact parent-child chain and exposes a parameter diff", () => {
     const parent = appendCanonicalBackendRevisionProjection({
       previousBundle: null,

@@ -263,6 +263,16 @@ export type EstimateDraftRevision = {
     sections: ProfessionalBoqSection[];
     rows: ProfessionalBoqRow[];
   };
+  /** Display-only evidence for revision comparison. Unresolved resources stay
+   * outside the calculated BOQ, totals and purchasable rows. */
+  preliminaryRows?: {
+    rowId: string;
+    titleRu: string;
+    quantity: number | null;
+    unit: string;
+    unitPrice: number | null;
+    currency?: string;
+  }[];
   /**
    * All definition-applicable rows for this immutable backend revision.
    * This can be greater than `boq.rows.length` while unresolved preliminary
@@ -288,6 +298,9 @@ export type EstimateDraftRevisionDiff = {
     beforeQuantity: number | null;
     afterQuantity: number | null;
     unit: string;
+    beforeTitleRu?: string;
+    beforeState?: "CALCULATED" | "NEEDS_CLARIFICATION" | "ABSENT";
+    afterState?: "CALCULATED" | "NEEDS_CLARIFICATION" | "ABSENT";
     beforeUnitPrice?: number | null;
     afterUnitPrice?: number | null;
     currency?: string;

@@ -43,6 +43,20 @@ function visibleText(tree: JsonTree): string {
 }
 
 describe("estimate revision diff UI", () => {
+  it("keeps the known quantity visible and names the clarification transition", () => {
+    let renderer!: TestRenderer.ReactTestRenderer;
+    act(() => { renderer = TestRenderer.create(<EstimateRevisionDiff diff={{ fromRevisionId: "before", toRevisionId: "after",
+      changedParams: [], changedRowsCount: 1, changedRows: [{ rowId: "elbows", titleRu: "VALTEC VTp.759, 45°, 20 мм",
+        beforeTitleRu: "Угольники 20 мм", beforeQuantity: 8, afterQuantity: 8, unit: "item",
+        beforeState: "NEEDS_CLARIFICATION", afterState: "CALCULATED" }],
+      staleArtifactsAfterEdit: { snapshotInvalidated: false, pdfInvalidated: false, buyerHandoffInvalidated: false } }} />); });
+    const text = visibleText(renderer.toJSON());
+    expect(text).toContain("8 -> 8 шт.");
+    expect(text).toContain("требует уточнения → рассчитано");
+    expect(text).toContain("Угольники 20 мм → VALTEC VTp.759");
+    expect(text).not.toContain("8 -> нет");
+  });
+
   it("uses the shared Russian choice label for changed object conditions", () => {
     let renderer!: TestRenderer.ReactTestRenderer;
     act(() => { renderer = TestRenderer.create(<EstimateRevisionDiff diff={{ fromRevisionId: 'before', toRevisionId: 'after',

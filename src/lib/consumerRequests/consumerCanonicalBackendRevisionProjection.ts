@@ -109,6 +109,15 @@ function parameterProjection(
   }));
 }
 
+function preliminaryRowProjection(payload: StructuredEstimatePayload): NonNullable<EstimateDraftRevision["preliminaryRows"]> {
+  const finite = (value: string | null): number | null => value == null || !value.trim()
+    || !Number.isFinite(Number(value)) ? null : Number(value);
+  return (payload.canonicalBackend?.preliminaryNeeds ?? []).map(need => ({
+    rowId: need.rowId, titleRu: need.titleRu, quantity: finite(need.quantity),
+    unit: need.unitId, unitPrice: finite(need.unitPrice),
+  }));
+}
+
 export function appendCanonicalBackendRevisionProjection(input: {
   previousBundle: ConsumerRepairDraftBundle | null;
   nextBundle: ConsumerRepairDraftBundle;
@@ -233,6 +242,7 @@ export function appendCanonicalBackendRevisionProjection(input: {
       })),
       rows,
     },
+    preliminaryRows: preliminaryRowProjection(payload),
     // Keep manually excluded rows in the durable bundle so a later parameter
     // change can restore them. Structural non-payable rows remain applicable:
     // they are the technology/completeness ledger even though they are not
@@ -271,7 +281,14 @@ export function appendCanonicalBackendRevisionProjection(input: {
       artifactsValidForRevisionId: null,
     },
   };
-  const diff = previousRevision ? compareEstimateDraftRevisions(previousRevision, revision) : null;
+  // Older local projections omitted the preliminary ledger. Recover it only
+  // from the matching parent payload; never borrow a different revision's needs.
+  const parentPayload = input.previousBundle?.structuredEstimatePayload;
+  const previousForComparison = previousRevision && previousRevision.preliminaryRows == null
+    && parentPayload?.canonicalBackend?.compilerOwner === "backend"
+    && parentPayload.canonicalBackend.revisionId === previousRevision.revisionId
+    ? { ...previousRevision, preliminaryRows: preliminaryRowProjection(parentPayload) } : previousRevision;
+  const diff = previousForComparison ? compareEstimateDraftRevisions(previousForComparison, revision) : null;
   if (diff && diff.changedParams.length === 0) revision.source = "template_change";
   return {
     ...input.nextBundle,

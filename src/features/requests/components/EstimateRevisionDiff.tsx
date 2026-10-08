@@ -9,6 +9,9 @@ import {
   aiEstimateRuUnitForParameter,
 } from "../../../lib/estimate/aiEstimateRuParameterDictionary";
 
+const rowStateLabel = (state: NonNullable<EstimateDraftRevisionDiff["changedRows"][number]["beforeState"]>): string =>
+  state === "NEEDS_CLARIFICATION" ? "требует уточнения" : state === "CALCULATED" ? "рассчитано" : "нет позиции";
+
 export function EstimateRevisionDiff({
   diff,
   parameters,
@@ -38,7 +41,8 @@ export function EstimateRevisionDiff({
       })}
       {diff.changedRows.slice(0, 6).map((row) => (
         <Text key={row.rowId} style={styles.line} testID={`estimate-revision-diff-row-${row.rowId}`}>
-          {row.titleRu}: {row.beforeQuantity ?? "нет"} {"->"} {row.afterQuantity ?? "нет"} {formatEstimateUnitLabel(row.unit)}
+          {row.beforeTitleRu ? `${row.beforeTitleRu} → ${row.titleRu}` : row.titleRu}: {row.beforeQuantity ?? (row.beforeState === "NEEDS_CLARIFICATION" ? "не рассчитано" : "нет")} {"->"} {row.afterQuantity ?? (row.afterState === "NEEDS_CLARIFICATION" ? "не рассчитано" : "нет")} {formatEstimateUnitLabel(row.unit)}
+          {row.beforeState && row.afterState ? ` (${rowStateLabel(row.beforeState)} → ${rowStateLabel(row.afterState)})` : ""}
         </Text>
       ))}
       {diff.changedRows.filter((row) =>

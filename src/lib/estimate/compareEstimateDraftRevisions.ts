@@ -2,7 +2,6 @@ import type {
   EstimateDraftRevision,
   EstimateDraftRevisionDiff,
   EstimateDraftRevisionParamValue,
-  ProfessionalBoqRow,
 } from "./estimateDraftRevisionContract";
 
 function valuesEqual(a: EstimateDraftRevisionParamValue | null, b: EstimateDraftRevisionParamValue | null): boolean {
@@ -10,11 +9,23 @@ function valuesEqual(a: EstimateDraftRevisionParamValue | null, b: EstimateDraft
   return a === b;
 }
 
-function rowQuantity(row: ProfessionalBoqRow | undefined): number | null {
-  return row && Number.isFinite(row.quantity) ? row.quantity : null;
+type ComparedRow = NonNullable<EstimateDraftRevision["preliminaryRows"]>[number] & {
+  state: "CALCULATED" | "NEEDS_CLARIFICATION";
+};
+
+function comparableRows(revision: EstimateDraftRevision): Map<string, ComparedRow> {
+  const rows = new Map<string, ComparedRow>((revision.preliminaryRows ?? []).map(row =>
+    [row.rowId, { ...row, state: "NEEDS_CLARIFICATION" }]));
+  for (const row of revision.boq.rows) rows.set(row.rowId, { ...row,
+    unitPrice: row.unitPrice ?? null, state: "CALCULATED" });
+  return rows;
 }
 
-function rowUnitPrice(row: ProfessionalBoqRow | undefined): number | null {
+function rowQuantity(row: ComparedRow | undefined): number | null {
+  return row?.quantity != null && Number.isFinite(row.quantity) ? row.quantity : null;
+}
+
+function rowUnitPrice(row: ComparedRow | undefined): number | null {
   return row && row.unitPrice != null && Number.isFinite(row.unitPrice) ? row.unitPrice : null;
 }
 
@@ -30,8 +41,8 @@ export function compareEstimateDraftRevisions(
     if (!valuesEqual(before, after)) changedParams.push({ key, before, after });
   }
 
-  const previousRows = new Map(previous.boq.rows.map((row) => [row.rowId, row]));
-  const nextRows = new Map(next.boq.rows.map((row) => [row.rowId, row]));
+  const previousRows = comparableRows(previous);
+  const nextRows = comparableRows(next);
   const rowIds = [...new Set([...previousRows.keys(), ...nextRows.keys()])].sort();
   const changedRows = rowIds
     .map((rowId) => {
@@ -43,13 +54,18 @@ export function compareEstimateDraftRevisions(
       const afterUnitPrice = rowUnitPrice(after);
       const quantityChanged = !valuesEqual(beforeQuantity, afterQuantity);
       const unitPriceChanged = !valuesEqual(beforeUnitPrice, afterUnitPrice);
-      if (!quantityChanged && !unitPriceChanged) return null;
+      const beforeState = before?.state ?? "ABSENT";
+      const afterState = after?.state ?? "ABSENT";
+      const titleChanged = before?.titleRu !== after?.titleRu;
+      if (!quantityChanged && !unitPriceChanged && beforeState === afterState && !titleChanged) return null;
       return {
         rowId,
         titleRu: after?.titleRu ?? before?.titleRu ?? rowId,
         beforeQuantity,
         afterQuantity,
         unit: after?.unit ?? before?.unit ?? "",
+        ...(titleChanged && before && after ? { beforeTitleRu: before.titleRu } : {}),
+        ...(beforeState !== afterState ? { beforeState, afterState } : {}),
         ...(unitPriceChanged ? {
           beforeUnitPrice,
           afterUnitPrice,
