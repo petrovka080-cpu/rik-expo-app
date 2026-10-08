@@ -27,9 +27,10 @@ describe('PVC15 size and object facts instead of a technical questionnaire', () 
       ['rc09:pvc_membrane_telescopic_fastener', '300'], ['pvc15:separation:glass', '88.5']] as const) {
       const saved = demand(id);
       expect(saved.quantity).toBeNull();
-      expect(canonicalArtifactPurchaseRequirement(saved)).toMatchObject({ quantity, conditional: false });
-      expect(saved.calculation_trace.purchaseRequirementV1).not.toHaveProperty('stock');
-      expect(saved.calculation_trace.purchaseRequirementV1).not.toHaveProperty('effectiveOrder');
+      const requirement = canonicalArtifactPurchaseRequirement(saved);
+      expect(requirement).toMatchObject({ quantity, conditional: false });
+      expect(requirement).not.toHaveProperty('stock');
+      expect(requirement).not.toHaveProperty('effectiveOrder');
     }
     const revision = { id: 'saved', release_id: 'current', catalog_id: 'PVC15',
       checksum_sha256: 'a'.repeat(64), row_count: result.rows.length, totals: result.totals, currency_code: 'KGS', input_parameters: result.parameters,

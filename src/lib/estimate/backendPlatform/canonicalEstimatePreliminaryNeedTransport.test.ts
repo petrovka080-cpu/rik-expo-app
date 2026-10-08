@@ -25,7 +25,8 @@ describe("immutable preliminary evidence transport", () => {
     const basis = need();
     const requirement = { version: 'canonical-purchase-requirement:v1', ownerRowId: basis.row_id, unitId: basis.unit_id,
       consumed: '86.25', plannedConsumption: null, conditional: false };
-    const revision = storage([{ ...basis, calculation_trace: { ...basis.calculation_trace, purchaseRequirementV1: requirement } }]);
+    const saved = { ...basis, calculation_trace: { ...basis.calculation_trace, purchaseRequirementV1: requirement } };
+    const revision = storage([saved]);
     const projected = projectCanonicalEstimatePreliminaryNeedTransport(revision);
     expect(projected.preliminaryNeeds[0]?.purchaseRequirement).toEqual(requirement);
     expect(projected.preliminaryNeeds[0]?.purchaseRequirement).not.toHaveProperty('stock');
