@@ -98,6 +98,18 @@ describe("canonical estimate consumer professional proof", () => {
       sourceConfirmationRequired: true,
       visibilityRole: "INTERNAL_ONLY",
     }));
+    const requirement = { version: "canonical-purchase-requirement:v1", ownerRowId: "membrane", unitId: "m2",
+      consumed: "86.25", plannedConsumption: null, conditional: false };
+    for (const evidence of [{ purchaseRequirement: requirement }, { calculationTrace: { purchaseRequirementV1: requirement } }]) {
+      const withMaterial = { ...revision, preliminaryNeeds: [{ ...revision.preliminaryNeeds![0]!,
+        rowId: "membrane", unitId: "m2", section: "Материалы", category: "material", titleRu: "Мембрана",
+        procurementEligible: true, ...evidence }] };
+      const mapped = buildStructuredEstimateRequestDraft(adaptCanonicalRevisionToStructuredEstimate({ catalog, revision: withMaterial, rows: [] }));
+      const reopened = JSON.parse(JSON.stringify(mapped.items[0]));
+      expect(reopened).toMatchObject({ quantity: null, unitPrice: null, sourceParameters: {
+        canonicalPreliminaryNeed: true, canonicalPurchaseRequirement: requirement, payable: false,
+      } });
+    }
   });
 
   it("projects an unresolved manual catalog row into the editable draft but not payable PDF rows", () => {

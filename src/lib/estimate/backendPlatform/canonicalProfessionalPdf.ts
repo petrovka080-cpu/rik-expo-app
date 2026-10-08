@@ -12,9 +12,10 @@ import {
   type CanonicalArtifactRow,
 } from "./canonicalEstimateArtifactContract";
 import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
+import { canonicalArtifactPurchaseRequirement } from "./canonicalPersistedPurchaseBalance";
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-44-without-process-block-template16" as const;
+  "canonical-professional-pdf.r4-a13-s27-45-known-consumption-template17" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -226,9 +227,13 @@ function renderPreliminaryNeedRow(row: CanonicalArtifactRow, displayOrdinal: num
     decision.supplyParty === 'RATE_PROVIDER' ? 'Ресурс предоставляет исполнитель этой расценки.' : null,
     rate.active === true && nullableText(rate.scopeRu) ? `Состав расценки: ${String(rate.scopeRu)}` : null].filter(Boolean).join(' ');
   const resourceDetails = canonicalArtifactSpecificationParts(row, {}).flatMap(spec => spec.parts);
+  const requirement = canonicalArtifactPurchaseRequirement(row);
+  const requirementText = requirement
+    ? `${requirement.labelRu}: ${canonicalArtifactQuantity(requirement.quantity)} ${canonicalArtifactUnit({ unit_id: requirement.unitId })}. Точный заказ ещё не подтверждён.`
+    : null;
   return `<tr class="preliminary-need">
     <td class="number">${displayOrdinal}</td>
-    <td class="name"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row))}</strong>${resourceDetails.map(part => `<span>${escapeCanonicalArtifactHtml(part)}</span>`).join('')}<span>Предварительная потребность из определения; требуется уточнение.</span>${coverageText ? `<span>${escapeCanonicalArtifactHtml(coverageText)}</span>` : ''}</td>
+    <td class="name"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row))}</strong>${resourceDetails.map(part => `<span>${escapeCanonicalArtifactHtml(part)}</span>`).join('')}${requirementText ? `<span>${escapeCanonicalArtifactHtml(requirementText)}</span>` : ''}<span>Предварительная потребность из определения; требуется уточнение.</span>${coverageText ? `<span>${escapeCanonicalArtifactHtml(coverageText)}</span>` : ''}</td>
     <td>${escapeCanonicalArtifactHtml(CATEGORY_TITLES[canonicalProfessionalPdfCategory(row)])}</td>
     <td class="unit">${escapeCanonicalArtifactHtml(canonicalArtifactUnit(row))}</td>
     <td class="numeric">${escapeCanonicalArtifactHtml(quantityLabel)}</td>

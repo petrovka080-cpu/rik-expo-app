@@ -62,6 +62,22 @@ function expectMode(item: ConsumerRepairRequestItem, expected: string) {
 }
 
 describe("canonical pending row quantity provenance", () => {
+  it("shows a saved known consumption while retaining an empty order and no payable cost", () => {
+    const item = stagedEditor({ quantity: null, totalPrice: null, unit: "m2", unitLabel: "м²", sourceParameters: {
+      canonicalBackendRevisionId: "test-parent", rowCode: "test:bedding", canonicalPreliminaryNeed: true,
+      canonicalPurchaseRequirement: { version: "canonical-purchase-requirement:v1", ownerRowId: "test:bedding", unitId: "m2",
+        consumed: "86.25", plannedConsumption: null, conditional: false },
+    } }).current();
+    let renderer!: ReactTestRenderer;
+    act(() => { renderer = TestRenderer.create(<ConsumerRepairItemRow item={item}
+      onDecrease={jest.fn()} onIncrease={jest.fn()} onQuantityChange={jest.fn()}
+      onUnitPriceChange={jest.fn()} onRemove={jest.fn()} />); });
+    expect(renderer.root.findByProps({ testID: `consumer-repair-item-known-consumption-${item.id}` }).props.children.join(""))
+      .toBe("Расход по расчёту: 86,25 м². Точный заказ ещё не подтверждён.");
+    expect(renderer.root.findByProps({ testID: `consumer-repair-item-quantity-input-${item.id}` }).props.value).toBe("");
+    expect(item).toMatchObject({ quantity: null, unitPrice: null, totalPrice: null });
+    act(() => renderer.unmount());
+  });
   it("cancels an unsaved manual edit back to the saved automatic mode without queuing a redundant Apply or revision", async () => {
     const editor = stagedEditor();
     await editor.mutable.changeItemQuantity("test-owned-row", "16");

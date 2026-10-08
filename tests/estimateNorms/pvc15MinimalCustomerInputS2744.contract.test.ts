@@ -12,10 +12,36 @@ import { pvc15OrdinaryQueryAliasesS2745 } from '../../scripts/estimate/r4a13/pre
 import { buildCanonicalRevisionCommitPayload } from '../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter';
 import { mergeCanonicalEffectiveResourceQuantityProvenanceV1 } from '../../src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1';
 import { buildCanonicalParameterCards } from '../../src/lib/estimatePresentation/buildCanonicalParameterCards';
+import { canonicalArtifactPurchaseRequirement } from '../../src/lib/estimate/backendPlatform/canonicalPersistedPurchaseBalance';
+import { buildCanonicalProfessionalPdfProjection } from '../../src/lib/estimate/backendPlatform/canonicalProfessionalPdf';
+import { canonicalArtifactPreliminaryNeeds } from '../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract';
 
 const compile = (input: Record<string, unknown>) => compileAutomaticConstructionOwnerR1({ definition,
   catalogId: 'canonical-work:base:roofing_interior_flat_roof_install_standard', primaryMeasureParameterId: 'area_m2', compilerVersion: 'minimal-input-control', submittedParameters: input });
 describe('PVC15 size and object facts instead of a technical questionnaire', () => {
+  test('preserves known consumption in the same saved need and PDF while leaving stock, packaging, order and cost unresolved', async () => {
+    const result = await compile({ area_m2: 75, pvc15_system_profile: PVC15_SYSTEM.verified, pvc15_base: PVC15_BASE.eps,
+      edge_rail_length_m: 36, detail_membrane_mode: 'NOT_REQUIRED', pvc15_joint_transition_scope: 'Переход ПВХ–битум вне выбранного участка' });
+    const demand = (id: string) => result.preliminaryNeeds.find(need => need.row_id === id)!;
+    for (const [id, quantity] of [['rc09:reinforced_pvc_roof_membrane_1_5mm', '86.25'],
+      ['rc09:pvc_membrane_telescopic_fastener', '300'], ['pvc15:separation:glass', '88.5']] as const) {
+      const saved = demand(id);
+      expect(saved.quantity).toBeNull();
+      expect(canonicalArtifactPurchaseRequirement(saved)).toMatchObject({ quantity, conditional: false });
+      expect(saved.calculation_trace.purchaseRequirementV1).not.toHaveProperty('stock');
+      expect(saved.calculation_trace.purchaseRequirementV1).not.toHaveProperty('effectiveOrder');
+    }
+    const revision = { id: 'saved', release_id: 'current', catalog_id: 'PVC15',
+      checksum_sha256: 'a'.repeat(64), row_count: result.rows.length, totals: result.totals, currency_code: 'KGS', input_parameters: result.parameters,
+      amendment_contract: { parameterSources: { preliminaryNeeds: result.preliminaryNeeds } } };
+    const pdf = buildCanonicalProfessionalPdfProjection({ revision, expectedProjectedRowCount: result.rows.length,
+      rows: result.rows, preliminaryNeeds: canonicalArtifactPreliminaryNeeds(revision), workTitleRu: 'ПВХ-мембрана 75 м²' });
+    expect(pdf.html).toContain('Расход по расчёту: 86,25 м²');
+    expect(pdf.html).toContain('Расход по расчёту: 300 шт.');
+    expect(pdf.html).toContain('Расход по расчёту: 88,5 м²');
+    expect(pdf.html).toContain('Точный заказ ещё не подтверждён');
+    expect(result.rows.some(row => row.included_in_procurement)).toBe(false);
+  });
   test('stores automatic quantities separately from facts and recomputes them after an area change', async () => {
     const facts = { area_m2: 75, pvc15_system_profile: PVC15_SYSTEM.verified };
     const compiled = await compile(facts);

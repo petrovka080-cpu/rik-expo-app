@@ -273,6 +273,7 @@ export type CanonicalCommercialRateCoverageView = {
 };
 
 export type CanonicalEstimatePreliminaryNeedView = {
+  purchaseRequirement?: Record<string, unknown>;
   rowId: string;
   ordinal: number;
   section: string;

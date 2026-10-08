@@ -21,6 +21,16 @@ const storage = (needs = [need()]) => ({ id: "11111111-1111-4111-8111-1111111111
     parameterSources: { userParameters: { length_m: "35" }, identityContract: { sourceRequestHash: "b".repeat(64) }, preliminaryNeeds: needs } } });
 
 describe("immutable preliminary evidence transport", () => {
+  it("retains a saved consumption in the compact need without transporting supply assumptions or full evidence", () => {
+    const basis = need();
+    const requirement = { version: 'canonical-purchase-requirement:v1', ownerRowId: basis.row_id, unitId: basis.unit_id,
+      consumed: '86.25', plannedConsumption: null, conditional: false };
+    const revision = storage([{ ...basis, calculation_trace: { ...basis.calculation_trace, purchaseRequirementV1: requirement } }]);
+    const projected = projectCanonicalEstimatePreliminaryNeedTransport(revision);
+    expect(projected.preliminaryNeeds[0]?.purchaseRequirement).toEqual(requirement);
+    expect(projected.preliminaryNeeds[0]?.purchaseRequirement).not.toHaveProperty('stock');
+    expect(projected.preliminaryNeeds[0]).not.toHaveProperty('calculationTrace');
+  });
   it("preserves every compact need and amendment provenance while removing both trace amplification and raw duplication", () => {
     const revision = storage(Array.from({ length: 1909 }, (_, index) => ({ ...need(`need:${index}`), selected: index < 458 })));
     const before = JSON.stringify(revision);

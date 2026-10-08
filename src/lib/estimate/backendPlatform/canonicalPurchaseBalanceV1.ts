@@ -27,12 +27,10 @@ export type CanonicalPurchaseBalanceV1 = PurchaseBalanceSources & (
     )
 );
 
-export function resolveCanonicalPurchaseBalanceV1(
+function canonicalPurchaseBalancePlanV1(
   raw: unknown,
   rowId: string,
   unitId: string,
-  quantity: string,
-  parameters: Record<string, FormulaParameterValue>,
   declaredParameters: ReadonlySet<string>,
 ) {
   if (raw == null) return null;
@@ -66,8 +64,20 @@ export function resolveCanonicalPurchaseBalanceV1(
     cached = { sources, graphs: sources.map(source => compileFormulaGraph(source)) };
     purchaseBalanceGraphs.set(policy, cached);
   }
-  const values = cached.graphs.map(compiled => {
+  for (const compiled of cached.graphs) {
     if (compiled.inputParameterIds.some(id => !declaredParameters.has(id))) fail("DEFINITION_INTEGRITY_FAILED", "purchase balance parameter undeclared");
+  }
+  return { fail, policy, quantityMode, decimal, scoped, selectedOrder, fields, cached };
+}
+
+export function resolveCanonicalPurchaseBalanceV1(
+  raw: unknown, rowId: string, unitId: string, quantity: string,
+  parameters: Record<string, FormulaParameterValue>, declaredParameters: ReadonlySet<string>,
+) {
+  const plan = canonicalPurchaseBalancePlanV1(raw, rowId, unitId, declaredParameters);
+  if (!plan) return null;
+  const { fail, policy, quantityMode, decimal, scoped, selectedOrder, fields, cached } = plan;
+  const values = cached.graphs.map(compiled => {
     const value = evaluateFormulaGraph(compiled.ast, parameters);
     if (compareFormulaGraphDecimals(value, "0") < 0) fail("DEFINITION_INTEGRITY_FAILED", "purchase balance source negative");
     return value;
@@ -99,6 +109,32 @@ export function resolveCanonicalPurchaseBalanceV1(
     ...(selectedOrder ? { requirementBasis: policy.requirementBasis, plannedConsumption, requiredSelectedOrder: consumed } : {}), effectiveOrder: quantity,
     remaining, freeBeyondReserve, consumptionShortage, reserveDeficit,
     procurementReady: consumptionShortage === "0" && reserveDeficit === "0" };
+}
+
+/** A known requirement survives unknown stock, reserve, packaging or order.
+ * This uses the same validated policy and decimal FormulaGraph as the full
+ * balance. It never supplies a missing commercial/site value or a ready order. */
+export function resolveCanonicalKnownPurchaseRequirementV1(
+  raw: unknown, rowId: string, unitId: string,
+  parameters: Record<string, FormulaParameterValue>, declaredParameters: ReadonlySet<string>, conditional: boolean,
+) {
+  const plan = canonicalPurchaseBalancePlanV1(raw, rowId, unitId, declaredParameters);
+  if (!plan) return null;
+  const known = (field: string): string | null => {
+    const graph = plan.cached.graphs[plan.fields.indexOf(field)];
+    if (!graph || graph.inputParameterIds.some(id => parameters[id] == null || parameters[id] === "")) return null;
+    const value = evaluateFormulaGraph(graph.ast, parameters);
+    if (compareFormulaGraphDecimals(value, "0") < 0) plan.fail("DEFINITION_INTEGRITY_FAILED", "purchase balance source negative");
+    return value;
+  };
+  const consumed = known("consumedExpression");
+  const plannedConsumption = plan.selectedOrder ? known("plannedConsumptionExpression") : null;
+  if (consumed == null && plannedConsumption == null) return null;
+  if (plannedConsumption != null && consumed != null && compareFormulaGraphDecimals(plannedConsumption, consumed) > 0) {
+    plan.fail("DEFINITION_INTEGRITY_FAILED", "selected order requirement below planned consumption");
+  }
+  return { version: "canonical-purchase-requirement:v1" as const, ownerRowId: rowId, unitId, consumed, plannedConsumption,
+    ...(plan.selectedOrder ? { requirementBasis: plan.policy.requirementBasis } : {}), conditional };
 }
 
 export function validateCanonicalManualTransportQuantityV1(

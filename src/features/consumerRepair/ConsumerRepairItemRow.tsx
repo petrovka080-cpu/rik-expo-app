@@ -12,6 +12,8 @@ import {
 
 import { formatEstimateMoney } from "../../lib/ai/globalEstimate/formatEstimateMoney";
 import { canonicalPurchaseShortageMessageV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
+import { canonicalArtifactPurchaseRequirement } from "../../lib/estimate/backendPlatform/canonicalPersistedPurchaseBalance";
+import { formatEstimateQuantityRu } from "../../lib/estimatePresentation/formatEstimateQuantityRu";
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import type { ConsumerRepairRequestItem } from "../../lib/consumerRequests/consumerRequestTypes";
 import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
@@ -108,6 +110,8 @@ function ConsumerRepairItemRowComponent({
   const manualQuantityOverride = consumerRepairRowHasManualQuantity(item);
   const calculatedQuantity = consumerRepairRowCalculatedQuantity(item);
   const preliminaryNeed = consumerRepairRowIsCanonicalPreliminaryNeed(item);
+  const purchaseRequirement = canonicalArtifactPurchaseRequirement({ row_id: item.sourceParameters?.rowCode ?? item.id, unit_id: item.unit,
+    calculation_trace: { purchaseRequirementV1: item.sourceParameters?.canonicalPurchaseRequirement } });
   const purchaseShortage = canonicalPurchaseShortageMessageV1([{ rowId: item.id, titleRu: item.titleRu,
     calculationTrace: { purchaseBalance: item.sourceParameters?.canonicalPurchaseBalance } }]);
   const missingRequirementLabels = consumerRepairRowMissingRequirementLabels(item, parameterRequirementTables);
@@ -279,11 +283,14 @@ function ConsumerRepairItemRowComponent({
                 {unitLabel}
               </Text>
             </View>
-            {sourceManagedNeed && item.quantity == null ? (
+            {sourceManagedNeed && item.quantity == null && !purchaseRequirement ? (
               <Text style={styles.inlineSourceHint} testID={`consumer-repair-item-source-gated-quantity-${item.id}`}>
                 Норма не задана — введите подтверждённое количество
               </Text>
             ) : null}
+            {purchaseRequirement ? <Text style={styles.calculatedQuantityHint} testID={`consumer-repair-item-known-consumption-${item.id}`}>
+              {purchaseRequirement.labelRu}: {formatEstimateQuantityRu(purchaseRequirement.quantity)} {formatEstimateUnitLabel(purchaseRequirement.unitId)}. Точный заказ ещё не подтверждён.
+            </Text> : null}
             {calculatedQuantity != null || manualQuantityOverride ? (
               <Text
                 style={manualQuantityOverride ? styles.manualQuantityHint : styles.calculatedQuantityHint}

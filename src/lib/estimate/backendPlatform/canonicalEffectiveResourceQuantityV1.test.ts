@@ -5,7 +5,8 @@ import { estimateDeterministicHash } from "../estimateDeterministicHash";
 import { canonicalEstimateRevisionRowFromStorage } from "./canonicalEstimateRevisionReadMapper";
 import { buildCanonicalProcurementProjection, selectCanonicalArtifactRows } from "./canonicalEstimateArtifactContract";
 import { assertCanonicalPurchaseReadinessV1, canonicalPurchaseShortageMessageV1,
-  validateCanonicalManualTransportQuantityV1, resolveCanonicalPurchaseBalanceV1 } from "./canonicalPurchaseBalanceV1";
+  validateCanonicalManualTransportQuantityV1, resolveCanonicalPurchaseBalanceV1, resolveCanonicalKnownPurchaseRequirementV1 } from "./canonicalPurchaseBalanceV1";
+import { canonicalArtifactPurchaseRequirement } from "./canonicalPersistedPurchaseBalance";
 
 const provenance = { kind: "manual", reason: "synthetic MASTER arithmetic control; not a construction norm" };
 test("persisted scoped discrete shortage labels do not invent a reserve and leave bulk and legacy labels intact", () => {
@@ -60,6 +61,39 @@ function testInput(): CanonicalEstimateCompileCoreInput {
 const row = (result: Awaited<ReturnType<typeof compileCanonicalEstimateCore>>, rowId: string) => result.rows.find(value => value.row_id === rowId)!;
 
 describe("authoritative effective resource quantities", () => {
+  it("saves exact known consumption without stock, reserve or packaging and keeps a zero distinct from unknown", () => {
+    const policy = { unitId: "kg", consumedExpression: "area*1.15", stockExpression: "stock", reserveExpression: "reserve", orderQuantumExpression: "pack" };
+    const declared = new Set(["area", "stock", "reserve", "pack"]);
+    const resolve = (parameters: Record<string, number>) => resolveCanonicalKnownPurchaseRequirementV1(policy, "material", "kg", parameters, declared, false);
+    expect(resolve({})).toBeNull();
+    for (const [area, expected] of [[75, "86.25"], [0, "0"]] as const) {
+      const saved = JSON.parse(JSON.stringify(resolve({ area })));
+      expect(canonicalArtifactPurchaseRequirement({ row_id: "material", unit_id: "kg", calculation_trace: { purchaseRequirementV1: saved } }))
+        .toMatchObject({ quantity: expected, labelRu: "Расход по расчёту" });
+      for (const field of ["stock", "reserve", "quantum", "effectiveOrder", "procurementReady"]) expect(saved).not.toHaveProperty(field);
+    }
+    expect(() => resolveCanonicalPurchaseBalanceV1(policy, "material", "kg", "100", { area: 75 }, declared)).toThrow();
+    for (const raw of [{ ...policy, unitId: "m2" }, { ...policy, stockExpression: "undeclared" }, { ...policy, consumedExpression: "-1" }]) {
+      expect(() => resolveCanonicalKnownPurchaseRequirementV1(raw, "material", "kg", {}, declared, false)).toThrow();
+    }
+  });
+  it("preserves a conditional or selected-order basis without labelling it as confirmed physical consumption", () => {
+    const policy = { unitId: "kg", consumedExpression: "required", plannedConsumptionExpression: "planned", stockExpression: "0", reserveExpression: "0",
+      quantityMode: "canonical_decimal", balanceScope: "new_order_vs_required_consumption", requirementBasis: "selected_supply_order" };
+    const declared = new Set(["required", "planned"]);
+    const resolve = (parameters: Record<string, number>, conditional = false) => resolveCanonicalKnownPurchaseRequirementV1(policy, "material", "kg", parameters, declared, conditional);
+    const display = (saved: unknown) => canonicalArtifactPurchaseRequirement({ row_id: "material", unit_id: "kg", calculation_trace: { purchaseRequirementV1: saved } });
+    expect(display(resolve({ planned: 12.5 }))).toMatchObject({ quantity: "12.5", consumed: null, labelRu: "Расчётная потребность" });
+    expect(display(resolve({ required: 13 }, true))).toMatchObject({ quantity: "13", plannedConsumption: null, conditional: true, labelRu: "Условная потребность" });
+    expect(() => resolve({ planned: 14, required: 13 })).toThrow();
+    const saved = resolve({ planned: 12.5, required: 13 })!;
+    for (const invalid of [{}, { ...saved, ownerRowId: "another" }, { ...saved, unitId: "m2" }, { ...saved, consumed: "-1" },
+      { ...saved, consumed: "12.0000000001" }, { ...saved, plannedConsumption: "14" }, { ...saved, requirementBasis: "unknown" },
+      { ...saved, consumed: null, plannedConsumption: null }, { ...saved, stock: "0" }]) {
+      expect(() => display(invalid)).toThrow(expect.objectContaining({ code: "ARTIFACT_PURCHASE_REQUIREMENT_INVALID" }));
+    }
+    expect(canonicalArtifactPurchaseRequirement({ row_id: "historical", unit_id: "kg", calculation_trace: {} })).toBeNull();
+  });
   it("enforces a decimal supplier order without claiming physical consumption or a retained reserve", () => {
     const policy = { unitId: "kg", consumedExpression: "12.75", stockExpression: "0", reserveExpression: "0",
       quantityMode: "canonical_decimal", balanceScope: "new_order_vs_required_consumption",

@@ -22,7 +22,7 @@ import {
   resolveCanonicalEstimatePhysicalNormApplicabilityV1,
 } from "./canonicalEstimatePhysicalNormProjection";
 import { planCanonicalEffectiveResourceQuantitiesV1 } from "./canonicalEffectiveResourceQuantityV1";
-import { resolveCanonicalPurchaseBalanceV1, validateCanonicalManualTransportQuantityV1 } from "./canonicalPurchaseBalanceV1";
+import { resolveCanonicalPurchaseBalanceV1, resolveCanonicalKnownPurchaseRequirementV1, validateCanonicalManualTransportQuantityV1 } from "./canonicalPurchaseBalanceV1";
 import { resolveCanonicalPreliminaryParameterFormulasV1 } from './canonicalPreliminaryParameterFormulaV1';
 import {
   planCanonicalCommercialCostCoverageV1, canonicalCommercialCoveredResourceGraphV1,
@@ -1157,6 +1157,8 @@ export async function compileCanonicalEstimateCore(
         sourceTitleRu: resource.title_ru, savedTitleRu: preliminaryTitleRu,
         appendedSpecificationRu: titleSpecification.mode === 'APPEND' ? boundedTitleSpecification : null,
         manualTitleOverride: override?.titleRu != null });
+      const purchaseRequirement = resolveCanonicalKnownPurchaseRequirementV1(resource.resource_graph?.purchaseBalanceV1,
+        resource.row_id, resource.unit_id, formulaParameters, definitionParameterIds, inclusion.value == null);
       const needWithoutHash = {
         row_id: resource.row_id,
         ordinal: resource.ordinal,
@@ -1184,6 +1186,7 @@ export async function compileCanonicalEstimateCore(
             missingParameterIds: missingTitleSpecificationParameterIds,
           } }),
           preliminaryNeed: true,
+          ...(purchaseRequirement == null ? {} : { purchaseRequirementV1: purchaseRequirement }),
           ...(override?.titleRu == null ? {} : { manualTitleOverride: true }),
           needState,
           missingParameterIds,

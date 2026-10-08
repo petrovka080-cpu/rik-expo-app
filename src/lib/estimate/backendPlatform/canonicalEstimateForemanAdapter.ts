@@ -200,6 +200,7 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
         canonicalManualTitleOverride: row.calculationTrace?.manualTitleOverride === true,
         canonicalOperationComposition: canonicalEstimateOperationReference(resourceGraph?.operationCompositionV1),
         canonicalPurchaseBalance: row.calculationTrace.purchaseBalance,
+        canonicalPurchaseRequirement: row.calculationTrace.purchaseRequirementV1,
         normativeTrace: row.normativeTrace,
         normativeRowTraceV3: normativeTrace,
         priceRouteV3: {

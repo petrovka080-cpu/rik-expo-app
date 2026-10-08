@@ -6,6 +6,7 @@ import {
 } from "./contracts";
 import { canonicalEstimateSha256HexText } from "./canonicalEstimateSha256";
 import { canonicalEstimateStableJson } from "./canonicalEstimateDeterminism";
+import { canonicalArtifactPurchaseRequirement } from "./canonicalPersistedPurchaseBalance";
 
 type StorageRecord = Record<string, unknown>;
 const record = (value: unknown): StorageRecord => value != null && typeof value === "object" && !Array.isArray(value)
@@ -41,8 +42,9 @@ export function projectCanonicalEstimatePreliminaryNeedTransport(revision: Stora
       ...(amendmentContract.parameterSources == null ? {} : { parameterSources: remainingSources }),
     },
     preliminaryNeeds: canonicalEstimatePreliminaryNeedsFromAmendmentContract(amendmentContract).map((need) => {
+      const requirement = canonicalArtifactPurchaseRequirement({ row_id: need.rowId, unit_id: need.unitId, calculation_trace: need.calculationTrace });
       const { calculationTrace: _calculationTrace, normativeTrace: _normativeTrace, ...compact } = need;
-      return { ...compact, evidenceStatus: "referenced" as const,
+      return { ...compact, ...(requirement ? { purchaseRequirement: record(need.calculationTrace?.purchaseRequirementV1) } : {}), evidenceStatus: "referenced" as const,
         evidenceReference: reference(revision, need.rowId, need.needSha256) };
     }),
   };
