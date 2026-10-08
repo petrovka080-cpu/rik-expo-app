@@ -19,6 +19,7 @@ import {
   CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION,
   CANONICAL_ESTIMATE_REVISION_COMMIT_FUNCTION,
   buildCanonicalRevisionCommitPayload,
+  canonicalInheritedConfirmedParameters,
   buildCanonicalRevisionIdentity,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts";
 import {
@@ -305,7 +306,10 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
       throw Object.assign(new Error("parent revision parameter source unavailable"), { code: "PARENT_REVISION_INVALID" });
     }
     if (parent.release_id === release.id) {
-      confirmedParameters = { ...baselineParameters, ...(parent.input_parameters ?? {}) };
+      confirmedParameters = { ...baselineParameters, ...canonicalInheritedConfirmedParameters(
+        parent.input_parameters ?? {},
+        parent.amendment_contract?.parameterSources?.derivedParameters ?? {},
+      ) };
       inheritedUserParameters = parent.amendment_contract?.parameterSources?.userParameters ?? {};
     }
     parentRevision = parent;

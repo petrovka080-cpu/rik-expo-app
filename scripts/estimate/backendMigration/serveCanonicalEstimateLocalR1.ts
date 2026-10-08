@@ -56,6 +56,7 @@ import {
 import {
   CANONICAL_ESTIMATE_REVISION_COMMIT_FUNCTION,
   buildCanonicalRevisionCommitPayload,
+  canonicalInheritedConfirmedParameters,
   buildCanonicalRevisionIdentity,
   canonicalDefinitionTitleRu,
   isCanonicalEstimateRevisionContractVersion,
@@ -2126,7 +2127,10 @@ async function compileClaimedJob(
     if (parent.release_id === job.target_release_id) {
       confirmedParameters = {
         ...baselineParameters,
-        ...(parent.input_parameters ?? {}),
+        ...canonicalInheritedConfirmedParameters(
+          parent.input_parameters ?? {},
+          parent.amendment_contract?.parameterSources?.derivedParameters ?? {},
+        ),
       };
       inheritedUserParameters =
         parent.amendment_contract?.parameterSources?.userParameters ?? {};

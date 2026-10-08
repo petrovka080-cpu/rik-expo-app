@@ -171,6 +171,18 @@ export async function buildCanonicalRevisionIdentity(
 export const CANONICAL_ESTIMATE_REVISION_COMMIT_FUNCTION =
   "estimate_commit_compile_job_v1" as const;
 
+/** Inherit confirmed facts, but recompute outputs owned by the previous compile.
+ * Keeping an output as a confirmed input loses its derived provenance and can
+ * also reuse a stale lookup after the user changes the selected system. */
+export function canonicalInheritedConfirmedParameters(
+  resolvedParameters: Readonly<Record<string, unknown>>,
+  derivedParameters: Readonly<Record<string, unknown>>,
+): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(resolvedParameters).filter(
+    ([parameterId]) => !Object.hasOwn(derivedParameters, parameterId),
+  ));
+}
+
 export function buildCanonicalRevisionCommitPayload(input: {
   rowCount: number;
   currencyCode: string;

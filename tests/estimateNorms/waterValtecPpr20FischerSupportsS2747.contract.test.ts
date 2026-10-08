@@ -4,12 +4,45 @@ import { VALTEC_FISCHER_SUPPORTS_S2747 as pack, VALTEC_FISCHER_SUPPORT_ROW_IDS_S
 import { compileWaterValtecPpr20ExactFittingsS2747 as previousCompile, VALTEC_EXACT_FITTINGS_S2747 as fittings } from '../../src/lib/estimate/v4/waterValtecPpr20ExactFittingsS2747';
 import { assertCanonicalPurchaseReadinessV1 } from '../../src/lib/estimate/backendPlatform/canonicalPurchaseBalanceV1';
 import { selectCanonicalArtifactRows } from '../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract';
+import { compileCanonicalEstimateCore } from '../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore';
+import { canonicalInheritedConfirmedParameters } from '../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter';
+import { VALTEC_FISCHER_SUPPORTS_S2747_RUNTIME_INPUT as runtime } from '../../src/lib/estimate/v4/waterValtecPpr20FischerSupportsS2747';
 const facts = { route_length_m: 100, straight_coupling_count: 24, elbow_count: 8, tee_count: 2, threaded_transition_count: 4, terminal_cap_count: 2,
     ...Object.fromEntries(fittings.projectSelections.map(s => [s.parameterId, s.values[0]])) };
 const concrete = { ...facts, substrate_profile: pack.baseChoices.concrete };
 const rowQuantity = (result: Awaited<ReturnType<typeof compile>>, id: string) => result.rows.find(r => r.row_id === id)?.quantity;
 const manual = { kind: 'manual' as const, reason: 'DEMO / VALIDATION_FIXTURE' };
 const includedPartIds: readonly string[] = [ids.stud, ids.plug, ids.nut];
+
+test('recalculates a saved size-only revision without losing source-owned provenance or retaining obsolete lookups', async () => {
+    const parent = await compile({ route_length_m: 100 });
+    const inherited = canonicalInheritedConfirmedParameters(parent.parameters, parent.derivedParameters);
+    expect(inherited.route_length_m).toBe(100);
+    expect(inherited.fischer_fks_package_pcs).toBeUndefined();
+    expect(inherited.fischer_sts_points_per_package).toBeUndefined();
+    const recalculate = (submittedParameters: Record<string, unknown>) => compileCanonicalEstimateCore({
+        operation: 'recalculate', compilerVersion: 's2747-inherited-provenance-regression',
+        catalogId: 'canonical-work:base:plumbing_interior_ppr_pipe_install_standard', primaryMeasureParameterId: 'route_length_m',
+        parameterDefinitions: [...parameters], formulaDefinitions: [...formulas], resourceDefinitions: [...resources],
+        confirmedParameters: { ...runtime, ...inherited }, submittedParameters,
+        currencyCode: 'KGS', priceItems: [], maximumResourceRows: 100,
+        hashJson: value => createHash('sha256').update(JSON.stringify(value)).digest('hex'),
+    });
+    const submitted = { route_length_m: 100, straight_coupling_count: 24, elbow_count: 0,
+        tee_count: 0, threaded_transition_count: 0, terminal_cap_count: 2, substrate_profile: pack.baseChoices.concrete };
+    const child = await recalculate(submitted);
+    expect(child.preliminaryNeeds).toEqual([]);
+    expect(child.derivedParameters).toMatchObject({ fischer_fks_package_pcs: 100, fischer_sts_points_per_package: 4 });
+    const assumptions = Object.fromEntries(Object.entries(runtime).filter(([id]) => !Object.hasOwn(submitted, id)));
+    expect(child.parameters).toEqual({ ...assumptions, ...submitted, ...child.derivedParameters });
+    expect(rowQuantity(child, ids.clamps)).toBe('300');
+    expect(rowQuantity(child, ids.sets)).toBe('51');
+    const unknownSystem = await recalculate({ ...submitted, selected_system_reference: 'Неподтверждённая другая трубная система' });
+    expect(unknownSystem.parameters.fischer_fks_package_pcs).toBeUndefined();
+    expect(unknownSystem.derivedParameters.fischer_fks_package_pcs).toBeUndefined();
+    expect(unknownSystem.preliminaryNeeds.some(n => n.row_id === ids.clamps)).toBe(true);
+    expect(parent.parameters.fischer_fks_package_pcs).toBe(100);
+});
 test('pins the independent manufacturer parts and bundled content; package sizes cannot be customer norms', () => {
     expect(createHash('sha256').update(readFileSync('data/estimate-benchmarks/source-packs/water-valtec-ppr20-fischer-supports-s27-47.json')).digest('hex'))
         .toBe(VALTEC_FISCHER_SUPPORTS_S2747_SOURCE_PACK_SHA256);
