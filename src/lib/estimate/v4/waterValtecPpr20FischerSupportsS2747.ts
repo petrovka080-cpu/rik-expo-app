@@ -2,6 +2,7 @@ import pack from '../../../../data/estimate-benchmarks/source-packs/water-valtec
 import { compileCanonicalEstimateCore, type CanonicalEstimateParameterDefinition, type CanonicalEstimateResourceDefinition, type CanonicalEstimateFormulaDefinition } from '../backendPlatform/canonicalEstimateCompileCore';
 import { compileFormulaGraph } from '../backendPlatform/formulaGraph';
 import { estimateDeterministicHash } from '../estimateDeterministicHash';
+import type { AutomaticOwnerDefinition } from './automaticConstructionOwnerR1';
 import { VALTEC_EXACT_FITTINGS_S2747_PARAMETERS, VALTEC_EXACT_FITTINGS_S2747_RESOURCES } from './waterValtecPpr20ExactFittingsS2747';
 import { WATER_VALTEC_PPR20_STANDARD_S2723_FORMULAS, WATER_VALTEC_PPR20_STANDARD_S2723_RUNTIME_INPUT, WATER_VALTEC_PPR20_STANDARD_S2723_CATALOG_ID } from './waterValtecPpr20StandardS2723';
 export const VALTEC_FISCHER_SUPPORTS_S2747 = pack;
@@ -21,7 +22,7 @@ const planningPoints = 'ceil(route_length_m/support_spacing_m)+1';
 const supportedBase = { kind: 'or', operands: [pack.baseChoices.concrete, pack.baseChoices.solidMasonry]
         .map(value => ({ kind: 'equals', parameterId: 'substrate_profile', value })) };
 const system = String(runtime.selected_system_reference);
-function productQuantityParameter(id: string, title: string, value: number, sourceId: string, ordinal: number): CanonicalEstimateParameterDefinition & { ordinal: number } {
+function productQuantityParameter(id: string, title: string, value: number, sourceId: string, ordinal: number): AutomaticOwnerDefinition['parameters'][number] {
     const source = sourceFor(sourceId);
     return { parameter_id: id, ordinal, value_type: 'integer', unit_id: 'item', title_ru: title, required: true, default_value: null,
         constraints_json: { min: 1 }, truth_metadata: { semantic_parameter_key: `fischer-support:${id}`, visibility_role: 'USER_DERIVED_READONLY',
