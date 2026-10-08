@@ -227,6 +227,9 @@ readonly CanonicalEstimateParameterDefinition[] = Object.freeze([...PARAMETERS.m
         WATER_VALTEC_PPR20_STANDARD_S2723_RUNTIME_INPUT,
         descriptor.id,
       ),
+      provenance: {
+        consumer_input_role_v1: PROJECT_IDS.has(descriptor.id) ? "OBJECT_FACT" : "ADVANCED_OPTION",
+      },
       synthetic: false,
       guide: {
         guide_kind: descriptor.id === "route_length_m" ? "MEASUREMENT_RULE" : "PRACTICE_REFERENCE",
