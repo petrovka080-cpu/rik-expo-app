@@ -625,7 +625,7 @@ describe("canonical precompile parameter collection", () => {
     ]);
   });
 
-  it("exposes every applicable backend blocker without transferring managed norms to the customer", () => {
+  it("asks for object facts without transferring equipment passport values to the customer", () => {
     const catalog: CanonicalEstimateCatalogItem = {
       ...stripFoundationCatalog(),
       catalogId: "canonical-work:base:paving_roads_landscape_exterior_asphalt_compact_standard",
@@ -688,7 +688,6 @@ describe("canonical precompile parameter collection", () => {
 
     expect(session.status).toBe("BLOCKING_REQUIRED");
     expect(session.blockingMissingParameterIds).toEqual([
-      "selected_roller_productivity_m2_per_machine_hour",
       "traffic_class",
     ]);
     expect(session.parameters).toEqual(expect.arrayContaining([
@@ -697,13 +696,12 @@ describe("canonical precompile parameter collection", () => {
         value: 15000,
         source: "TEXT_EXTRACTED",
       }),
-      expect.objectContaining({
-        parameterId: "selected_roller_productivity_m2_per_machine_hour",
-        value: null,
-        source: "NORMATIVE_DERIVED",
-        state: "BLOCKING_REQUIRED",
-      }),
     ]));
+    expect(session.parameters.some(parameter =>
+      parameter.parameterId === "selected_roller_productivity_m2_per_machine_hour"
+    )).toBe(false);
+    expect(catalog.parameterSchema[1].valueSourceRole).toBe("SELECTED_EQUIPMENT_PASSPORT");
+    expect(catalog.parameterSchema[1].defaultValue).toBeNull();
     expect(session.parameters).toEqual(expect.arrayContaining([
       expect.objectContaining({
         parameterId: "traffic_class",
@@ -713,12 +711,6 @@ describe("canonical precompile parameter collection", () => {
     ]));
     expect(buildCanonicalParameterCards({ session, revision: null })).toEqual(expect.arrayContaining([
       expect.objectContaining({ key: "paving_area_m2", editable: true, missing: false }),
-      expect.objectContaining({
-        key: "selected_roller_productivity_m2_per_machine_hour",
-        editable: true,
-        missing: true,
-        clickAction: "open_parameter_editor",
-      }),
       expect.objectContaining({
         key: "traffic_class",
         editable: true,
@@ -751,13 +743,9 @@ describe("canonical precompile parameter collection", () => {
         />,
       );
     });
-    const sourceGate = renderer.root.findByProps({
+    expect(renderer.root.findAllByProps({
       testID: "editable-param-chip-selected_roller_productivity_m2_per_machine_hour",
-    });
-    expect(sourceGate.findAllByProps({ testID: "editable-param-popover-input" }).length).toBeGreaterThan(0);
-    expect(sourceGate.findAll((node) =>
-      node.props.children === "Нужен подтверждённый источник; вручную не вводится."
-    )).toHaveLength(0);
+    })).toHaveLength(0);
     const trafficClass = renderer.root.findByProps({ testID: "editable-param-chip-traffic_class" });
     expect(trafficClass.findAllByProps({ testID: "editable-param-popover-input" }).length).toBeGreaterThan(0);
   });
