@@ -168,7 +168,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-46-known-consumption-template18");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-47-quiet-operation-groups-template19");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,
@@ -400,7 +400,8 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(projection.html).toContain("Введено 2; требуется подтверждение исходных сведений");
     expect(projection.html).toContain("исходные сведения № 1, 2");
     expect(projection.html.match(/Подтверждённая норма/gu)).toHaveLength(2);
-    expect(projection.html.match(/Для завершения:/gu)).toHaveLength(1);
+    expect(projection.html).not.toContain('Для завершения:');
+    expect(projection.html).not.toContain('Стыки выполнены и проверены.');
     expect(projection.html).not.toContain("source-one");
     expect(projection.grandTotalStatus).toBe("PARTIAL_NEEDS_PRICE");
   });
@@ -413,7 +414,8 @@ describe("R4-A6 canonical professional PDF", () => {
     for (const index of [1, 3]) source[index]!.calculation_trace = { resourceGraph: { operationCompositionV1: operation } };
     const projection = buildCanonicalProfessionalPdfProjection({ revision: revision(4), rows: source, workTitleRu: "Бетонирование" });
     expect(projection.rowCount).toBe(4);
-    expect(projection.html.match(/Для завершения:/gu)).toHaveLength(1);
+    expect(projection.html).not.toContain('Для завершения:');
+    expect(projection.html).not.toContain('Уход выполнен по проекту.');
     expect(projection.html.indexOf("PLACEMENT_PUMP")).toBeLessThan(projection.html.indexOf("Уход за бетоном</strong>"));
     expect(projection.html.indexOf("CURING_LABOUR")).toBeLessThan(projection.html.indexOf("CURING_WATER"));
     for (const title of ["CONCRETE_SUPPLY", "CURING_LABOUR", "PLACEMENT_PUMP", "CURING_WATER"]) expect(projection.html.match(new RegExp(title, "gu"))).toHaveLength(1);

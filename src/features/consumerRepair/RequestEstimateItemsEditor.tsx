@@ -643,7 +643,6 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
                   <Text style={styles.operationTitle}>{`${expanded ? "▾" : "▸"} ${operation.operationTitleRu}`}</Text>
                   <Text style={styles.operationSummary}>{`${resources.length - unresolved} рассчитано · ${unresolved} требуют уточнения · материалы, труд, техника и услуги`}</Text>
                 </Pressable>
-                {expanded ? <Text style={styles.operationSummary}>{`Для завершения: ${operation.completionCriterionRu}`}</Text> : null}
                 {section.items.filter(item => renderedItemIds.has(item.id)).map(renderItem)}
               </View>
             );

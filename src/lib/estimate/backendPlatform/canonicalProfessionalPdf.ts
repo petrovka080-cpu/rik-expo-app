@@ -15,7 +15,7 @@ import { canonicalEstimateOperationReference } from "./canonicalEstimateOperatio
 import { canonicalArtifactPurchaseRequirement } from "./canonicalPersistedPurchaseBalance";
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-46-known-consumption-template18" as const;
+  "canonical-professional-pdf.r4-a13-s27-47-quiet-operation-groups-template19" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -297,7 +297,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     return reference ? [reference.groupId] : [];
   })).size > 1;
   // A resource from a different operation must never appear beneath the
-  // preceding operation's completion criterion. Preserve source order within
+  // preceding operation's heading. Preserve source order within
   // each group and the order in which its first resource appears.
   const operationGroups = new Map<string, CanonicalArtifactRow[]>();
   if (hasOperations) for (const row of compositionRows) {
@@ -319,7 +319,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     const reference = operation(row);
     const key = reference ? JSON.stringify([reference.groupId, reference.operationId]) : "general";
     const heading = reference && key !== previousOperationKey
-      ? `<tr class="operation"><td colspan="7"><strong>${multipleOperationGroups ? `${escapeCanonicalArtifactHtml(String(reference.groupTitleRu))} — ` : ''}${escapeCanonicalArtifactHtml(String(reference.operationTitleRu))}</strong><span>Для завершения: ${escapeCanonicalArtifactHtml(String(reference.completionCriterionRu))}</span></td></tr>`
+      ? `<tr class="operation"><td colspan="7"><strong>${multipleOperationGroups ? `${escapeCanonicalArtifactHtml(String(reference.groupTitleRu))} — ` : ''}${escapeCanonicalArtifactHtml(String(reference.operationTitleRu))}</strong></td></tr>`
       : hasOperations && key !== previousOperationKey ? `<tr class="operation"><td colspan="7"><strong>Работы и ресурсы сметы</strong></td></tr>` : "";
     previousOperationKey = key;
     return heading + (preliminaryRowIds.has(String(row.row_id))
