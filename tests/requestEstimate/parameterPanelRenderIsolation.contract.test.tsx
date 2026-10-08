@@ -106,11 +106,52 @@ describe("canonical parameter presentation isolation, not calculation caching", 
   it("builds at most the baseline and current cards when mounting the actual 54-input profile", () => {
     const build = jest.spyOn(cards, "buildCanonicalParameterCards");
     act(() => { renderer = TestRenderer.create(<ParameterDisclosurePanel viewModel={viewModel()} revision={null} canonicalParameterSession={pressureSession()} latestDiff={null} paramEditorEnabled onApplyParamBatch={jest.fn()} />); });
+    const initiallyVisible = new Set(renderer!.root.findAll(node => typeof node.props.testID === "string" && node.props.testID.startsWith("editable-param-chip-")).map(node => node.props.testID));
+    expect(initiallyVisible.size).toBe(6);
+    for (const testID of ['request-estimate-filled-parameters-toggle', 'request-estimate-automatic-parameters-toggle']) {
+      const toggle = renderer!.root.findAllByProps({ testID })[0];
+      if (toggle) act(() => toggle.props.onPress());
+    }
     const visibleKeys = new Set(renderer!.root.findAll(node => typeof node.props.testID === "string" && node.props.testID.startsWith("editable-param-chip-")).map(node => node.props.testID));
     expect(visibleKeys.size).toBe(54);
     expect(field(renderer!).props.value).toBe("100");
     expect(field(renderer!, "psp_excavator_productivity_m3_h").props.value).toBe("35");
     expect(build.mock.calls.length).toBeLessThanOrEqual(2);
+  });
+
+  it("keeps saved manual supplier options out of the short form and preserves them through edit/cancel", () => {
+    const previous = pressureSession();
+    const primary = previous.parameters.find(parameter => parameter.parameterId === 'psp_route_length_m')!;
+    const option = previous.parameters.find(parameter => parameter.parameterId === 'psp_pipe_outside_diameter_mm')!;
+    const session: CanonicalParameterSession = { ...previous, parameters: [
+      { ...primary, consumerInputRole: 'OBJECT_FACT' },
+      { ...option, consumerInputRole: 'ADVANCED_OPTION', source: 'USER_EXPLICIT' },
+    ] };
+    act(() => { renderer = TestRenderer.create(<ParameterDisclosurePanel viewModel={viewModel()} revision={null}
+      canonicalParameterSession={session} latestDiff={null} paramEditorEnabled onApplyParamBatch={jest.fn()} />); });
+    expect(field(renderer!).props.value).toBe('100');
+    expect(renderer!.root.findAllByProps({ testID: 'editable-param-chip-psp_pipe_outside_diameter_mm' })).toHaveLength(0);
+    act(() => renderer!.root.findByProps({ testID: 'request-estimate-advanced-parameters-toggle' }).props.onPress());
+    const input = field(renderer!, option.parameterId);
+    expect(input.props.value).toBe('110');
+    act(() => input.props.onChangeText('120'));
+    expect(field(renderer!, option.parameterId)).toBe(input);
+    expect(input.props.value).toBe('120');
+    act(() => renderer!.root.findByProps({ testID: 'editable-param-batch-cancel' }).props.onPress());
+    expect(field(renderer!, option.parameterId).props.value).toBe('110');
+  });
+
+  it("marks a genuinely missing measurement with text and colour", () => {
+    const previous = pressureSession();
+    const primary = previous.parameters.find(parameter => parameter.parameterId === 'psp_route_length_m')!;
+    const session: CanonicalParameterSession = { ...previous, parameters: [{ ...primary,
+      value: null, state: 'BLOCKING_REQUIRED', valid: false, requiredLevel: 'BLOCKING_REQUIRED', validationIssues: ['VALUE_REQUIRED'],
+    }] };
+    act(() => { renderer = TestRenderer.create(<ParameterDisclosurePanel viewModel={viewModel()} revision={null}
+      canonicalParameterSession={session} latestDiff={null} paramEditorEnabled onApplyParamBatch={jest.fn()} />); });
+    const chip = renderer!.root.findByProps({ testID: 'editable-param-chip-psp_route_length_m' });
+    expect(chip.props.style).toEqual(expect.arrayContaining([expect.objectContaining({ backgroundColor: '#FFF7ED' })]));
+    expect(JSON.stringify(renderer!.toJSON())).toContain('Нужно заполнить');
   });
 
   it("does not rebuild the retained form for BOQ-only changes, but keeps dirty fields and current source gates", () => {
@@ -131,6 +172,7 @@ describe("canonical parameter presentation isolation, not calculation caching", 
     expect(field(renderer!).props.value).toBe("150.250001");
     const gate = { parameterId: "supplier_norm", title: "Норма изготовителя", sourceRequirement: "Паспорт изготовителя", affectedPositionCount: 2 };
     act(() => renderer!.update(render({ ...first, sourceGates: [gate] })));
+    act(() => renderer!.root.findByProps({ testID: 'request-estimate-source-gates-toggle' }).props.onPress());
     const text = JSON.stringify(renderer!.toJSON());
     expect(text).toContain("Паспорт изготовителя");
     expect(field(renderer!).props.value).toBe("150.250001");
@@ -203,6 +245,7 @@ describe("canonical parameter presentation isolation, not calculation caching", 
     const props = { viewModel: viewModel(), latestDiff: null, paramEditorEnabled: true, onApplyParamBatch: async () => true };
     act(() => { renderer = TestRenderer.create(<ParameterDisclosurePanel {...props} revision={firstRevision} canonicalParameterSession={session} />); });
     const profileKey = "psp_excavator_productivity_m3_h";
+    act(() => renderer!.root.findByProps({ testID: 'request-estimate-automatic-parameters-toggle' }).props.onPress());
     expect(field(renderer!, profileKey).props.value).toBe("35");
     act(() => field(renderer!).props.onChangeText("101"));
     await act(async () => renderer!.root.findByProps({ testID: "editable-param-batch-apply" }).props.onPress());
@@ -230,9 +273,10 @@ describe("canonical parameter presentation isolation, not calculation caching", 
       onDecrease: noop, onIncrease: noop, onQuantityChange: noop, onUnitPriceChange: noop, onRemove: noop, onAddManual: noop, onAddCustom: noop };
     act(() => { renderer = TestRenderer.create(<ConsumerRepairProgressiveEstimatePanel {...props} viewModel={first} />); });
     act(() => renderer!.root.findByProps({ testID: "request-estimate-parameters-toggle" }).props.onPress());
-    expect(JSON.stringify(renderer!.toJSON())).toContain("10 м²");
+    act(() => renderer!.root.findByProps({ testID: 'request-estimate-derived-parameters-toggle' }).props.onPress());
+    expect(JSON.stringify(renderer!.toJSON())).toContain('10 м²');
     act(() => renderer!.update(<ConsumerRepairProgressiveEstimatePanel {...props} viewModel={{ ...first, assumptionRows: [{ id: "area", label: "Площадь", value: "20 м²" }] }} />));
-    expect(JSON.stringify(renderer!.toJSON())).toContain("20 м²");
+    expect(JSON.stringify(renderer!.toJSON())).toContain('20 м²');
   });
 
   it("does not hide replacement apply callbacks or validation while retaining the form", () => {

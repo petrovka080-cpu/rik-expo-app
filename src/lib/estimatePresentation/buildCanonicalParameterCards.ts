@@ -309,6 +309,7 @@ export function buildCanonicalParameterCards(input: {
       : parameter.allowedValues.map((choice) => ({ value: String(choice.value), labelRu: choice.label }));
     return {
       key: parameter.parameterId,
+      consumerInputRole: parameter.consumerInputRole,
       labelRu: publicParameterText(parameter.label),
       value: parameter.value,
       displayValueRu: displayValue(parameter),

@@ -74,8 +74,27 @@ export function withG6NextServiceComponents(base: AutomaticOwnerDefinition, scop
   const ids = new Set(current.parameters.map(parameter => parameter.parameter_id));
   const parameters = extension.parameters.filter(parameter => !ids.has(parameter.parameter_id)).map((parameter, index) => ({ ...parameter,
     ordinal: current.parameters.length + index, truth_metadata: { ...parameter.truth_metadata,
+      ...(parameter.parameter_id === 'g6_waste_crew_scope' ? {
+        visibility_role: 'USER_DERIVED_READONLY', value_source_role: 'BACKEND_DERIVED',
+        derived_from: ['g6_waste_applicability', 'g6_waste_loading_method'],
+        // This is the description of the already selected service, not a
+        // labour norm. Existing explicit project descriptions remain intact.
+        derived_exact_lookup_v1: { version: 'canonical-derived-exact-lookup:v1',
+          inputParameterIds: ['g6_waste_applicability', 'g6_waste_loading_method'],
+          rows: [
+            { inputValues: [G6_COMPLETION_REQUIRED_S2741, G6_NEXT_MANUAL_LOADING],
+              outputValue: 'Ручная погрузка подготовленной партии и труд водителя; входят в полную услугу, уборка отдельно' },
+            { inputValues: [G6_COMPLETION_REQUIRED_S2741, G6_NEXT_MACHINE_LOADING],
+              outputValue: 'Погрузка подготовленной партии машиной и труд водителя; входят в полную услугу, уборка отдельно' },
+          ], interpolation: 'FORBIDDEN' },
+      } : {}),
       guide: { ...(parameter.truth_metadata.guide as Record<string, unknown>),
-        source_role: 'PROJECT_COMPLETION_SCOPE_NOT_A_CONSUMPTION_NORM', verified_at: '2026-10-07' } } }));
+        source_role: 'PROJECT_COMPLETION_SCOPE_NOT_A_CONSUMPTION_NORM', verified_at: '2026-10-07',
+        ...(parameter.parameter_id === 'g6_waste_crew_scope' ? {
+          guide_kind: 'DERIVED_VALUE_RULE',
+          guide_short_ru: 'Состав труда определяется выбранным способом погрузки и границей полной услуги. Часы, число работников и цены из этого описания не выводятся.',
+        } : {}),
+      } } }));
   const components = extension.resources.map((row, index) => ({ ...row, ordinal: current.resources.length + index,
     source_metadata: { ...row.source_metadata, normativeTrace: [], sourceRole: 'EXPLICIT_PROJECT_COMPONENT_NOT_ENGINEERING_NORM' },
     resource_graph: { ...row.resource_graph,

@@ -62,6 +62,7 @@ import {
 } from "./consumerCanonicalReleaseMigration";
 import {
   canonicalEstimateBlockingParameterIssues,
+  canonicalEstimateConsumerInputRole,
   canonicalEstimateParameterChoiceLabelRu,
   isCanonicalEstimateConsumerSuppliedParameter,
   isCanonicalEstimateSourceManagedParameter,
@@ -373,6 +374,7 @@ function buildParameter(input: {
   return {
     parameterId: input.schema.parameterId,
     label: labelRu,
+    consumerInputRole: canonicalEstimateConsumerInputRole(input.schema),
     description: input.schema.descriptionRu || guide?.guideShortRu || labelRu,
     value,
     referenceValue,

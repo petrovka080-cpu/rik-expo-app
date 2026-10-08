@@ -96,6 +96,7 @@ export type CanonicalParameterDefinition = {
 
 export type CanonicalParameter = {
   parameterId: string;
+  consumerInputRole?: "OBJECT_FACT" | "ADVANCED_OPTION" | "APPLICATION_TECHNICAL";
   label: string;
   description: string;
   value: CanonicalParameterValue | null;

@@ -416,4 +416,19 @@ describe("canonical professional norm ownership", () => {
     expect(isCanonicalEstimateSourceManagedParameter(schema)).toBe(false);
     expect(isCanonicalEstimateConsumerSuppliedParameter(schema)).toBe(true);
   });
+
+  it("honours application ownership before the legacy numeric project-fact exception", () => {
+    const schema = {
+      parameterId: 'g6_waste_crew_hours', titleRu: 'Труд погрузки и водителя', valueType: 'decimal',
+      visibilityRole: 'USER_INPUT', valueSourceRole: 'CONDITIONAL_PROJECT_FACT',
+      formulaConsumers: ['crew'], resourceBranchConsumers: ['waste-crew'],
+      constraints: { requiredWhen: { kind: 'equals', parameterId: 'waste', value: 'required' } },
+      guide: { guideKind: 'PROJECT_DEFINED', guideValidationPolicy: 'MANDATORY_BLOCK' },
+      provenance: { consumer_input_role_v1: 'APPLICATION_TECHNICAL' },
+    } as never;
+    expect(isCanonicalEstimateSourceManagedParameter(schema)).toBe(true);
+    expect(isCanonicalEstimateConsumerSuppliedParameter(schema)).toBe(false);
+    expect(isCanonicalEstimateVisibleReplaceableProfile(schema)).toBe(false);
+    expect(isCanonicalEstimateVisibleUserResourceSelectionParameter(schema)).toBe(false);
+  });
 });

@@ -831,6 +831,7 @@ type ParameterDisclosurePanelState = {
   showAllMissing: boolean;
   sourceDetailsOpen: boolean;
   automaticDetailsOpen: boolean;
+  advancedDetailsOpen: boolean;
   filledOpen: boolean;
   derivedOpen: boolean;
   draftValues: Record<string, string>;
@@ -1133,6 +1134,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     showAllMissing: false,
     sourceDetailsOpen: false,
     automaticDetailsOpen: false,
+    advancedDetailsOpen: false,
     filledOpen: false,
     derivedOpen: false,
     draftValues: {},
@@ -1500,7 +1502,10 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
           : null;
 
     return (
-      <View key={card.key} style={styles.parameterRow} testID={`editable-param-chip-${card.key}`}>
+      <View key={card.key} style={[styles.parameterRow, card.missing ? styles.requiredParameterRow : null]} testID={`editable-param-chip-${card.key}`}>
+        {card.missing ? <Text style={styles.requiredParameterHint}>
+          {rawValue.trim() ? 'Проверьте значение и нажмите «Применить»' : 'Нужно заполнить'}
+        </Text> : null}
         <View style={styles.compactParameterLine}>
           <Text
             style={styles.parameterLabel}
@@ -1628,15 +1633,18 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       explicitlyConfirmedMissingValue: this.state.explicitlyConfirmedMissingValues[card.key] === true,
     }) ? baselineSources.get(card.key) ?? card.source : card.source;
     const assumptionCards = canonicalSession
-      ? cards.filter((card) => !missingCardIds.has(card.key) && groupSource(card) === "catalog_default")
+      ? cards.filter((card) => !missingCardIds.has(card.key) && groupSource(card) === "catalog_default"
+        && card.consumerInputRole == null)
       : [];
+    const advancedCards = cards.filter(card => !missingCardIds.has(card.key)
+      && (card.consumerInputRole === "ADVANCED_OPTION" || card.consumerInputRole === "APPLICATION_TECHNICAL"));
     const filledCards = cards.filter((card) =>
       !missingCardIds.has(card.key) &&
       groupSource(card) !== "formula_derived" &&
-      !assumptionCards.includes(card)
+      !assumptionCards.includes(card) && !advancedCards.includes(card)
     );
     const derivedCards = cards.filter((card) =>
-      groupSource(card) === "formula_derived" && !missingCardIds.has(card.key));
+      groupSource(card) === "formula_derived" && !missingCardIds.has(card.key) && !advancedCards.includes(card));
     const criticalMissingCards = missingCards.filter(
       (card) => card.clarificationTier === "critical",
     );
@@ -1682,7 +1690,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
             : contractMissingCount > 0
               ? `До полного состава и подтверждения: ${contractMissingCount} обязательных ${pluralizeRu(contractMissingCount, "параметр", "параметра", "параметров")}.`
               : sourceGateCount > 0
-                ? 'Данные объекта заполнены. Часть технических данных расчёта ещё требует подтверждения.'
+                ? 'Данные объекта заполнены. Приложению не хватает технических данных для завершения расчёта.'
                 : "Все обязательные параметры заполнены"}
         </Text>
         {canonicalSession && assumptionCards.length > 0 ? (
@@ -1703,7 +1711,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
             <Text style={styles.groupTitle}>{this.state.sourceDetailsOpen ? 'Скрыть технические данные' : 'Технические данные расчёта'}</Text>
           </Pressable>
           <Text style={styles.parameterMeta}>
-            Приложение берёт нормы и характеристики из каталога. Неподтверждённые позиции пока не входят в итог и закупку.
+            Эти данные должно определить приложение по нормам и паспортам. Вам не нужно искать скрытое поле или вводить нормы вручную. Известный расход сохранён; полный расчёт пока не завершён.
           </Text>
           {this.state.sourceDetailsOpen ? visibleSourceGates.map((gate) => (
             <View key={gate.parameterId} style={styles.sourceGateRow} testID={`request-estimate-source-gate-${gate.parameterId}`}>
@@ -1844,6 +1852,16 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
               {filledCards.slice(6).map((card) => renderParameter(card, ""))}
             </View>
           ) : null}
+        </View>
+      ) : null}
+      {advancedCards.length > 0 ? (
+        <View style={styles.parameterGroup} testID="request-estimate-advanced-parameters">
+          <Pressable accessibilityRole="button" onPress={() => this.setState(state => ({ advancedDetailsOpen: !state.advancedDetailsOpen }))}
+            style={styles.inlineToggle} testID="request-estimate-advanced-parameters-toggle">
+            <Text style={styles.groupTitle}>{this.state.advancedDetailsOpen ? 'Скрыть дополнительные настройки' : 'Наличие материалов, упаковки и дополнительные настройки'}</Text>
+          </Pressable>
+          <Text style={styles.parameterMeta}>Сохранённые значения учтены. Меняйте их, если условия поставки или проекта отличаются.</Text>
+          {this.state.advancedDetailsOpen ? advancedCards.map(card => renderParameter(card, '')) : null}
         </View>
       ) : null}
       {assumptionCards.length > 0 ? (
@@ -2183,6 +2201,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
     paddingVertical: 3,
   },
+  requiredParameterRow: {
+    backgroundColor: "#FFF7ED",
+    borderLeftWidth: 3,
+    borderLeftColor: "#C2410C",
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+  },
+  requiredParameterHint: { color: "#9A3412", fontWeight: "700", fontSize: 12 },
   compactParameterLine: {
     minHeight: 32,
     flexDirection: "row",

@@ -5,6 +5,13 @@ import { evaluateInclusionGraph } from "./inclusionGraph";
 
 type ParameterSchema = CanonicalEstimateCatalogItem["parameterSchema"][number];
 
+/** The immutable passport owns the short form; labels never assign ownership. */
+export function canonicalEstimateConsumerInputRole(schema: Pick<ParameterSchema, "provenance">):
+  "OBJECT_FACT" | "ADVANCED_OPTION" | "APPLICATION_TECHNICAL" | undefined {
+  const role = schema.provenance?.consumer_input_role_v1;
+  return role === "OBJECT_FACT" || role === "ADVANCED_OPTION" || role === "APPLICATION_TECHNICAL" ? role : undefined;
+}
+
 const SOURCE_MANAGED_CONSUMER_ROLES = new Set<ParameterSchema["valueSourceRole"]>([
   "MANDATORY_NORM_VALUE",
   "NORM_REQUIRED_BUT_PROJECT_SELECTED",
@@ -147,6 +154,7 @@ export function canonicalEstimateParameterHasCalculationConsumer(
 export function isCanonicalEstimateVisibleReplaceableProfile(
   schema: ParameterSchema,
 ): boolean {
+  if (canonicalEstimateConsumerInputRole(schema) === "APPLICATION_TECHNICAL") return false;
   if (schema.visibilityRole !== "USER_INPUT") return false;
   if (!canonicalEstimateParameterHasCalculationConsumer(schema)) return false;
   const classification = String(schema.runtimeProfileClassification ?? "")
@@ -234,6 +242,7 @@ function isMandatoryProjectReferenceResourceFact(schema: ParameterSchema): boole
 export function isCanonicalEstimateVisibleUserResourceSelectionParameter(
   schema: ParameterSchema,
 ): boolean {
+  if (canonicalEstimateConsumerInputRole(schema) === "APPLICATION_TECHNICAL") return false;
   if (schema.visibilityRole !== "USER_INPUT") return false;
   if (["decimal", "integer"].includes(schema.valueType)) {
     return isMandatoryProjectNumericResourceFact(schema) && isCanonicalEstimateUserEditableParameter(schema);
@@ -341,6 +350,7 @@ export function isCanonicalEstimateConsumerSuppliedParameter(schema: ParameterSc
  * that source.
  */
 export function isCanonicalEstimateSourceManagedParameter(schema: ParameterSchema): boolean {
+  if (canonicalEstimateConsumerInputRole(schema) === "APPLICATION_TECHNICAL") return true;
   if (SOURCE_MANAGED_CONSUMER_ROLES.has(schema.valueSourceRole)) return true;
   // A mandatory actual project fact may contain words such as "mass per unit"
   // or "capacity". Its immutable role/guide and consumers establish ownership;

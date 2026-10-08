@@ -13,6 +13,7 @@ export type AiEstimateParameterCardSource =
 
 export type AiEstimateParameterCard = {
   key: string;
+  consumerInputRole?: "OBJECT_FACT" | "ADVANCED_OPTION" | "APPLICATION_TECHNICAL";
   labelRu: string;
   value: EstimateDraftRevisionParam["value"] | null;
   displayValueRu: string;

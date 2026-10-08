@@ -117,6 +117,22 @@ function compileService(profile: typeof series[number], facts: Record<string, un
     hashJson: value => createHash('sha256').update(canonicalEstimateStableJson(value)).digest('hex') });
 }
 
+test.each(series)('service composition $catalogId derives its missing description without asking for a labour norm', async profile => {
+  const { g6_waste_crew_scope: _description, ...facts } = serviceFacts;
+  for (const loading of [manualLoading, machineLoading]) {
+    const result = await compileService(profile, { ...facts, g6_waste_loading_method: loading }, {});
+    expect(result.preliminaryNeeds.some(need => need.missing_parameter_ids.includes('g6_waste_crew_scope'))).toBe(false);
+    expect(result.rows.find(row => row.row_id === 'g6:completion:waste-crew')).toMatchObject({
+      quantity: '3.25', unit_price: null, included_in_estimate: false,
+    });
+    expect(result.rows.find(row => row.row_id === 'g6:completion:waste-service')).toMatchObject({ quantity: '12', unit_price: null });
+  }
+  const { g6_waste_crew_hours: _hours, g6_waste_loading_method: _loading, ...unknownFacts } = facts;
+  const unknown = await compileService(profile, unknownFacts, {});
+  expect(unknown.preliminaryNeeds.find(need => need.row_id === 'g6:completion:waste-crew')?.missing_parameter_ids)
+    .toEqual(expect.arrayContaining(['g6_waste_crew_scope', 'g6_waste_crew_hours']));
+});
+
 test.each(series)('whole waste quote $catalogId covers actual components once and preserves independent cleanup', async profile => {
   const result = await compileService(profile, serviceFacts);
   // 3 h ×100 +8 ordered bags ×10 +12 kg ×20 =620; no component charge is added.
