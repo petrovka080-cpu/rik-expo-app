@@ -391,6 +391,10 @@ export function canonicalEstimatePreliminaryNeedsFromAmendmentContract(
 export type CanonicalEstimateParameterValueSourceRole =
   | "USER_INPUT"
   | "USER_MEASURED"
+  // Persisted S27.23 passports use these legacy wire values. They retain
+  // their measured-fact/profile ownership, including the existing norm guards.
+  | "USER_OR_PROJECT_MEASURED"
+  | "VISIBLE_NORMATIVE_OR_REPLACEABLE_PROFILE"
   | "PROJECT_SPECIFIC_INPUT"
   | "CONDITIONAL_PROJECT_FACT"
   | "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE"

@@ -102,7 +102,7 @@ describe("consumer canonical W5 baseline", () => {
       parameters: { route_length_m: "100" }, primaryMeasureParameterId: "route_length_m",
     });
     expect(buildCanonicalBaselinePlan({ catalog, prompt }).parameters).not.toHaveProperty("pipe_section_length_m");
-    const protectedCatalog = { ...catalog, parameterSchema: catalog.parameterSchema.map(p => ({ ...p,
+    const protectedCatalog: CanonicalEstimateCatalogItem = { ...catalog, parameterSchema: catalog.parameterSchema.map(p => ({ ...p,
       valueSourceRole: "MANDATORY_NORM_VALUE" })), };
     expect(buildCanonicalBaselinePlan({ catalog: protectedCatalog, prompt }).parameters).not.toHaveProperty("route_length_m");
   });
