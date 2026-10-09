@@ -49,6 +49,8 @@ describe("whole-app developer review runtime", () => {
     expect(launcher).toContain('$env:EXPO_PUBLIC_BFF_READONLY_STAGING_ENABLED = "false"');
     expect(launcher).toContain("whole-app-developer-current");
     expect(launcher).toContain("packager-status:running");
+    expect(launcher).toContain("warmWholeAppDeveloperRuntime.cjs");
+    expect(launcher.indexOf('WHOLE_APP_ANDROID_PDF_START_RED')).toBeLessThan(launcher.indexOf('schema_version = "rik-expo-app.whole-app-developer-runtime.v1"'));
     expect(launcher).toContain("[System.Text.Encoding]::UTF8.GetString($status.Content)");
     expect(launcher).not.toMatch(/Write-Host[^\n]*(WholeAppKey|ANON_KEY|READONLY_KEY)/u);
   });

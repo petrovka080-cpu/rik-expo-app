@@ -410,6 +410,19 @@ if (-not $ready -or -not (Test-WebBundleReady -Port $Port -TimeoutSec 180)) {
   Fail-Review "WHOLE_APP_METRO_START_RED" "проверьте metro stdout/stderr в $RuntimeRoot"
 }
 
+# Web readiness alone leaves the first Android graph compiling while the user
+# opens a PDF. That cold build can delay even static renderer files past the
+# unchanged viewer deadline. Warm the manifest-selected bundle sequentially.
+$WholeAppWarmup = Start-Process -FilePath $Node -ArgumentList @(
+  (Join-Path $Root "scripts/dev/warmWholeAppDeveloperRuntime.cjs"), "$Port", $Root,
+  (Join-Path $RuntimeRoot "web-android-pdf-readiness.json")
+) -WorkingDirectory $Root -WindowStyle Hidden -Wait -PassThru `
+  -RedirectStandardOutput (Join-Path $RuntimeRoot "web-android-pdf-readiness.log") `
+  -RedirectStandardError (Join-Path $RuntimeRoot "web-android-pdf-readiness.error.log")
+if ($WholeAppWarmup.ExitCode -ne 0) {
+  Fail-Review "WHOLE_APP_ANDROID_PDF_START_RED" "проверьте web-android-pdf-readiness.error.log в $RuntimeRoot; текущий контур сохранён"
+}
+
 @{
   schema_version = "rik-expo-app.whole-app-developer-runtime.v1"
   generated_utc = (Get-Date).ToUniversalTime().ToString("o")
