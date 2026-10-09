@@ -626,7 +626,8 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
     <View style={styles.wrap}>
       <RequestEstimateSummaryCard viewModel={viewModel} missingParameterCount={count}
         contentWithdrawalReasonRu={canonicalParameterSession?.contentWithdrawalReasonRu} />
-      <EstimateRevisionTimeline state={this.props.revisionState} />
+      <EstimateRevisionTimeline state={this.props.revisionState}
+        procurementPending={(viewModel.preliminaryProcurementNeedCount ?? 0) > 0} />
       <EstimateRevisionDiff
         diff={requestEstimatePublicRevisionDiff(this.props.revisionState,latestDiff)}
         parameters={canonicalParameterSession?.parameters}

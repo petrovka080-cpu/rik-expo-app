@@ -142,6 +142,8 @@ export type RequestEstimateViewModel = {
   calculatedItemCount?: number;
   preliminaryNeedCount?: number;
   sourceGates?: RequestEstimateSourceGate[];
+  consumerQuestionCount?: number;
+  preliminaryProcurementNeedCount?: number;
   procurementApplicabilityLabel?: string | null;
   manualCatalogItems: RequestEstimateManualCatalogItem[];
   snapshotHash?: string | null;
@@ -1281,11 +1283,21 @@ export function buildRequestEstimateViewModel(
     item.sourceParameters?.canonicalPreliminaryNeed !== true || item.quantity != null
   ).length;
   const sourceGates = buildRequestEstimateSourceGates(viewBundle.items, bundle.canonicalParameterRequirementTables);
+  const sourceGateIds = new Set(sourceGates.map(gate => gate.parameterId));
+  const missingRequirements = viewBundle.items.flatMap(item => consumerCanonicalMissingRequirements(item,
+    bundle.canonicalParameterRequirementTables));
+  const consumerQuestionCount = missingRequirements.length ? new Set(missingRequirements.flatMap(requirement => {
+      const id = String(requirement.parameterId ?? '').trim();
+      return id && !sourceGateIds.has(id) ? [id] : [];
+    })).size : undefined;
+  const preliminaryProcurementNeedCount = viewBundle.items.filter(item =>
+    item.sourceParameters?.canonicalPreliminaryNeed === true && item.sourceParameters?.procurementEligible === true).length;
   const hasProcurementItems = viewBundle.items.some((item) =>
-    item.sourceParameters?.includedInProcurement
+    item.sourceParameters?.includedInProcurement === true || (item.sourceParameters?.canonicalPreliminaryNeed === true
+      && item.sourceParameters?.procurementEligible === true) || (item.sourceParameters?.includedInProcurement
       ?? (item.sourceParameters?.canonicalPreliminaryNeed === true
         ? item.sourceParameters?.procurementEligible === true
-        : item.itemType !== "work" && item.itemType !== "document")
+        : item.itemType !== "work" && item.itemType !== "document"))
   );
   const payableItems = viewBundle.items.filter((item) =>
     item.sourceParameters?.canonicalPreliminaryNeed !== true
@@ -1447,6 +1459,8 @@ export function buildRequestEstimateViewModel(
     calculatedItemCount,
     preliminaryNeedCount,
     sourceGates,
+    consumerQuestionCount,
+    preliminaryProcurementNeedCount,
     parameterRequirementTables: bundle.canonicalParameterRequirementTables,
     procurementApplicabilityLabel: hasProcurementItems
       ? null

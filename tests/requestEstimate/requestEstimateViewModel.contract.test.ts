@@ -8,6 +8,24 @@ import {
 import { resourceDefinitions as roofResources } from '../../src/lib/estimate/v4/roofWindowOperationResourcesS2750';
 
 describe("request estimate view model", () => {
+  it('retains procurement applicability for a material need with a saved quantity and separates object questions from source gaps', () => {
+    const source=foundationDraftWithManualCatalogItem();
+    const item={...source.items[0]!,titleRu:'Основание окна',quantity:15,sourceParameters:{
+      canonicalPreliminaryNeed:true,includedInEstimate:false,includedInProcurement:false,procurementEligible:true,
+      missingParameterRequirements:[
+        {parameterId:'lantern_model',titleRu:'Исполнение окна',sourceConfirmationRequired:false},
+        {parameterId:'fixing_norm',titleRu:'Норма крепления',sourceConfirmationRequired:true,valueSourceRole:'UNRESOLVED_APPLICATION_NORM'},
+      ],
+    }};
+    const bundle={...source,items:[item]};
+    const snapshot=JSON.stringify(bundle);
+    const vm=buildRequestEstimateViewModel(bundle)!;
+    expect(vm.procurementApplicabilityLabel).toBeNull();
+    expect(vm.preliminaryProcurementNeedCount).toBe(1);
+    expect(vm.consumerQuestionCount).toBe(1); expect(vm.sourceGates).toHaveLength(1);
+    expect(vm.calculatedItemCount).toBe(1); expect(vm.preliminaryNeedCount).toBe(1);
+    expect(JSON.stringify(bundle)).toBe(snapshot);
+  });
   it('shows saved roof operations in the common order without duplicating a shared item or treating characteristics as work', () => {
     const source=foundationDraftWithManualCatalogItem();
     const items=roofResources.slice().reverse().map(row=>({...source.items[0]!,id:row.row_id,titleRu:row.title_ru,

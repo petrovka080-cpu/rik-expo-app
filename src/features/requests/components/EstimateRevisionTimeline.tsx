@@ -5,7 +5,7 @@ import type { EstimateDraftRevisionState } from "../../../lib/estimate/estimateD
 
 type Revision = EstimateDraftRevisionState["revisions"][number];
 
-export function estimateRevisionArtifactsStatusRu(revision: Revision): string {
+export function estimateRevisionArtifactsStatusRu(revision: Revision, procurementPending = false): string {
   const artifacts = revision.artifacts;
   const procurementApplicable = revision.boq.rows.some((row) => row.includedInProcurement);
   const hasPdf = Boolean(artifacts.pdfArtifactId);
@@ -14,6 +14,10 @@ export function estimateRevisionArtifactsStatusRu(revision: Revision): string {
   const procurementCurrent = hasProcurement
     && artifacts.procurementValidForRevisionId === revision.revisionId;
   if (!procurementApplicable) {
+    if (procurementPending) {
+      const pdfStatus = !hasPdf ? 'PDF ещё не создан' : pdfCurrent ? 'PDF актуален' : 'PDF относится к предыдущей версии';
+      return `${pdfStatus}; закупочные потребности есть, состав заказа требует подтверждения`;
+    }
     if (!hasPdf) return "PDF ещё не создан; закупка для этой операции не требуется";
     if (pdfCurrent) return "PDF актуален; закупка для этой операции не требуется";
     return "PDF относится к предыдущей версии — его нужно пересоздать; закупка не требуется";
@@ -27,8 +31,10 @@ export function estimateRevisionArtifactsStatusRu(revision: Revision): string {
 
 export function EstimateRevisionTimeline({
   state,
+  procurementPending = false,
 }: {
   state: EstimateDraftRevisionState | null;
+  procurementPending?: boolean;
 }): React.ReactElement | null {
   if (!state) return null;
   const currentIndex = state.revisions.findIndex((revision) => revision.revisionId === state.currentRevisionId);
@@ -51,7 +57,7 @@ export function EstimateRevisionTimeline({
     `rows-${applicableRowCount}`,
     `status-${current.status}`,
   ].join("--");
-  const artifactStatus = estimateRevisionArtifactsStatusRu(current);
+  const artifactStatus = estimateRevisionArtifactsStatusRu(current, procurementPending);
   const timelineAccessibilityLabel = [
     "estimate-revision-timeline",
     `${state.revisions.length}-revisions`,

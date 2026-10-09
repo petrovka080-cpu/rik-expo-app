@@ -90,6 +90,7 @@ describe("estimate revision diff UI", () => {
       createdAt: "2026-09-11T00:00:00.000Z",
     });
     expect(estimateRevisionArtifactsStatusRu(base)).toBe("PDF ещё не создан; закупка для этой операции не требуется");
+    expect(estimateRevisionArtifactsStatusRu(base, true)).toBe('PDF ещё не создан; закупочные потребности есть, состав заказа требует подтверждения');
     expect(estimateRevisionArtifactsStatusRu({
       ...base,
       artifacts: { ...base.artifacts, pdfArtifactId: "pdf-1", pdfValidForRevisionId: base.revisionId },

@@ -21,11 +21,11 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
       </View>;
     }
     const sourceGateCount = viewModel.sourceGates?.length ?? 0;
-    const consumerInputCount = typeof missingParameterCount === "number"
+    const consumerInputCount = viewModel.consumerQuestionCount ?? (typeof missingParameterCount === "number"
       ? Math.max(0, missingParameterCount - sourceGateCount)
-      : null;
-    const parameterLabel = sourceGateCount > 0 && consumerInputCount === 0
-      ? `Требуют подтверждённого источника: ${sourceGateCount}`
+      : null);
+    const parameterLabel = sourceGateCount > 0
+      ? `Данные объекта: ${consumerInputCount ?? missingParameterCount ?? 'уточнить'}; требуют подтверждённого источника: ${sourceGateCount}`
       : missingParameterCount === 0
         ? "Обязательные параметры заполнены"
       : typeof missingParameterCount === "number"
@@ -56,6 +56,9 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
             {`Пока не рассчитано: ${viewModel.preliminaryNeedCount} ${pluralizeRu(viewModel.preliminaryNeedCount, "позиция", "позиции", "позиций")}`}
           </Text>
         ) : null}
+        {viewModel.preliminaryNeedCount ? <Text style={styles.meta}>
+          Количество может быть сохранено, пока материал или условие ещё не подтверждены. Такие позиции также входят в число требующих уточнения.
+        </Text> : null}
         <Text style={styles.total}>
           Стоимость: {viewModel.totalLabel}
         </Text>
@@ -77,7 +80,9 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
           {parameterLabel}
         </Text>
         <Text style={styles.legal} testID="request-estimate-readiness-notice">
-          {typeof missingParameterCount === "number" && missingParameterCount > 0
+          {sourceGateCount > 0 && (consumerInputCount ?? 0) > 0
+            ? `Нужно заполнить данные объекта (${consumerInputCount}) и подтвердить технические источники (${sourceGateCount}). Выбор модели не закрывает отсутствующие нормы. Эти потребности пока не включены в итог.`
+            : typeof missingParameterCount === "number" && missingParameterCount > 0
             ? sourceGateCount > 0 && consumerInputCount === 0
               ? "Неполный расчёт: технические нормы должен подтвердить каталог или специалист. Эти позиции не входят в стоимость и закупку до появления источника."
               : `Неполный расчёт: нужны ещё ${missingParameterCount} ${pluralizeRu(missingParameterCount, "параметр", "параметра", "параметров")}. Подтверждение договорной версии пока недоступно.`
