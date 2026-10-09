@@ -1230,7 +1230,7 @@ export function buildRequestEstimateViewModel(
     : hasCapitalRenovationCalculator
     ? CAPITAL_RENOVATION_SECTION_IDS
     : ["materials", "labor", "equipment", "logistics", "other"];
-  const baseSections = measure("PUBLIC_ROW_SECTIONS", () => sectionIds
+  const baseSections: RequestEstimateSectionViewModel[] = measure("PUBLIC_ROW_SECTIONS", () => sectionIds
     .map((id) => ({
       id,
       title: sectionTitle(id),

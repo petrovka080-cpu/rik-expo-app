@@ -81,7 +81,7 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
             ? sourceGateCount > 0 && consumerInputCount === 0
               ? "Неполный расчёт: технические нормы должен подтвердить каталог или специалист. Эти позиции не входят в стоимость и закупку до появления источника."
               : `Неполный расчёт: нужны ещё ${missingParameterCount} ${pluralizeRu(missingParameterCount, "параметр", "параметра", "параметров")}. Подтверждение договорной версии пока недоступно.`
-            : viewModel.preliminaryNeedCount > 0
+            : (viewModel.preliminaryNeedCount ?? 0) > 0
               ? "Для части материалов и работ пока нет расчёта. Их должен проверить специалист; они не включены в общую стоимость."
               : "Это черновик сметы. Проверьте материалы, работы и цены перед заказом."}
         </Text>

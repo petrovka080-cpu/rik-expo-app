@@ -1,11 +1,16 @@
 import pack from '../../../../data/estimate-benchmarks/source-packs/roof-window-operation-resources-s27-50.json';
-import { sourcePack as parentPack, parameterDefinitions, formulaDefinitions, resourceDefinitions as parentResources } from './roofLanternCfp100100LimitedS2748';
+import { sourcePack as parentPack, parameterDefinitions as parentParameters, formulaDefinitions, resourceDefinitions as parentResources } from './roofLanternCfp100100LimitedS2748';
 import { compileCanonicalEstimateCore, type CanonicalEstimateCompileCoreInput } from '../backendPlatform/canonicalEstimateCompileCore';
 import { canonicalPublicEstimateRowNameRu } from '../backendPlatform/canonicalPublicEstimateLanguageRu';
 import { estimateDeterministicHash } from '../estimateDeterministicHash';
 
 export const sourcePack = { ...parentPack, ...pack };
-export { parameterDefinitions, formulaDefinitions };
+export { formulaDefinitions };
+export const parameterDefinitions = parentParameters.map(parameter => {
+  const title = (parameter as typeof parameter & { title_ru?: unknown }).title_ru;
+  if (typeof title !== 'string' || !title.trim()) throw new Error(`ROOF_WINDOW_PARAMETER_TITLE_MISSING:${parameter.parameter_id}`);
+  return { ...parameter, title_ru: title };
+});
 export const resourceDefinitions = parentResources.map(resource => {
   const binding = pack.resourceOperations[resource.row_id as keyof typeof pack.resourceOperations];
   if (!binding) throw new Error(`ROOF_WINDOW_OPERATION_BINDING_MISSING:${resource.row_id}`);

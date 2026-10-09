@@ -2,7 +2,7 @@ import { compileCandidate, parameterDefinitions, formulaDefinitions, resourceDef
 import { compileCandidate as compileParent, resourceDefinitions as oldResources } from '../../src/lib/estimate/v4/roofLanternCfp100100LimitedS2748';
 import { canonicalEstimateResourceOperationSections, canonicalEstimateWorkProcess } from '../../src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition';
 import { buildCanonicalProfessionalPdfProjection } from '../../src/lib/estimate/backendPlatform/canonicalProfessionalPdf';
-import { buildCanonicalProcurementProjection, type CanonicalArtifactRow } from '../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract';
+import { buildCanonicalProcurementProjection, canonicalArtifactPreliminaryNeeds, type CanonicalArtifactRow } from '../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract';
 import { roofWindowOperationResourcesS2750Config } from '../../scripts/estimate/r4a13/prepareS2750RoofWindowOperationResources';
 
 const input = { lantern_count:14, lantern_model:sourcePack.model, base_stock_units:0, base_reserve_units:0,
@@ -55,8 +55,9 @@ test('saved composition gives PDF work headings even for unknown quantities; pro
   const result=await compileCandidate(input);
   const revision={id:'S2750_VALIDATION_FIXTURE',release_id:'fixture',catalog_id:sourcePack.catalogId,
     checksum_sha256:'f'.repeat(64),row_count:8,revision_number:1,currency_code:'KGS',totals:{amount:'0'},
-    input_parameters:input,primary_measure_value:'14',primary_measure_unit_id:'item',created_at:'2026-10-09T10:00:00.000Z'};
-  const rows=result.rows as CanonicalArtifactRow[], needs=result.preliminaryNeeds as CanonicalArtifactRow[];
+    input_parameters:input,primary_measure_value:'14',primary_measure_unit_id:'item',created_at:'2026-10-09T10:00:00.000Z',
+    amendment_contract:{parameterSources:{preliminaryNeeds:result.preliminaryNeeds}}};
+  const rows=result.rows as CanonicalArtifactRow[], needs=canonicalArtifactPreliminaryNeeds(revision);
   const before=JSON.stringify({revision,rows,needs});
   const projection=buildCanonicalProfessionalPdfProjection({revision,rows,preliminaryNeeds:needs,
     workTitleRu:'Установка окон в крыше',parameterTitlesRu:Object.fromEntries(parameterDefinitions.map(p=>[p.parameter_id,p.title_ru]))});
@@ -65,7 +66,7 @@ test('saved composition gives PDF work headings even for unknown quantities; pro
   expect(projection.html).toContain('общий ресурс, учтён в разделе «Установка основания окна»');
   expect(projection.html).toContain('Справочные характеристики. Не оплачиваются и не закупаются.');
   expect(projection.html).not.toMatch(/VELUX|CFP Q|ISD 100100/u);
-  const procurement=buildCanonicalProcurementProjection({revision,procurementRows:rows.filter(row=>row.included_in_procurement),sourceRows:rows,preliminaryNeeds:needs});
+  const procurement=buildCanonicalProcurementProjection({revision,procurementRows:rows.filter(row=>row.included_in_procurement),sourceRows:rows});
   expect(procurement.rows.filter(row=>/roof-cfp100100:(base|dome)$/.test(row.rowId))).toHaveLength(2);
   expect(procurement.rows.some(row=>/included|daylight|net-mass|opening-|installation/.test(row.rowId))).toBe(false);
   expect(JSON.stringify({revision,rows,needs})).toBe(before);
