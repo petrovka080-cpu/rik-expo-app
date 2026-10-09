@@ -20,6 +20,8 @@ const unresolved = Object.keys(pack.unresolvedApplicationParameters);
 test('pins the applicability audit and gives the publisher an explicit partial boundary', async () => {
     expect(createHash('sha256').update(readFileSync('data/estimate-benchmarks/source-packs/water-valtec-ppr20-source-applicability-s27-48.json')).digest('hex')).toBe(hash);
     expect([parameters.length, formulas.length, resources.length]).toEqual([54, 45, 62]);
+    expect(parameters.find(p => p.parameter_id === 'waste_bag_count')).toMatchObject({ ordinal: 53, title_ru: 'Мешки для обрезков и упаковки' });
+    expect(parameters.map(p => Reflect.get(p, 'ordinal'))).toEqual(Array.from({ length: 54 }, (_, index) => index));
     const config = waterValtecSourceApplicabilityS2748Config({ releaseId: 'TEST', searchReleaseId: 'TEST' });
     expect(config.passport.unresolvedApplicableResourceRowIds).toEqual(pack.unresolvedResourceRowIds);
     expect(await config.verifyCore()).toMatchObject({ knownRows: 39, unresolvedRows: 18, fullTechnicalAcceptance: false, acceptedNewTypes: 0 });
