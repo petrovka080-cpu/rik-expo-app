@@ -6,6 +6,7 @@ import {
   type CanonicalEstimateResourceDefinition,
 } from "../backendPlatform/canonicalEstimateCompileCore";
 import { compileFormulaGraph } from "../backendPlatform/formulaGraph";
+import { unresolvedApplicationNormTruthR1 } from "./automaticConstructionOwnerR1";
 import { estimateDeterministicHash } from "../estimateDeterministicHash";
 
 type Json = Record<string, unknown>;
@@ -16,22 +17,22 @@ export const STONE_TILE_FLOOR_DEMOLITION_KRER46_VARIANTS = Object.freeze({
   standard: Object.freeze({
     catalogId: STONE_TILE_FLOOR_DEMOLITION_KRER46_CATALOG_ID,
     catalogVariant: "STANDARD_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
-    canonicalNameRu: "Разборка покрытия пола из каменной плитки",
+    canonicalNameRu: "Разборка покрытия пола из каменной шашки",
   }),
   large_area: Object.freeze({
     catalogId: "canonical-work:base:demolition_interior_flooring_remove_large_area",
     catalogVariant: "LARGE_AREA_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
-    canonicalNameRu: "Разборка покрытия пола из каменной плитки — большая площадь",
+    canonicalNameRu: "Разборка покрытия пола из каменной шашки — большая площадь",
   }),
   small_area: Object.freeze({
     catalogId: "canonical-work:base:demolition_interior_flooring_remove_small_area",
     catalogVariant: "SMALL_AREA_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
-    canonicalNameRu: "Разборка покрытия пола из каменной плитки — малая площадь",
+    canonicalNameRu: "Разборка покрытия пола из каменной шашки — малая площадь",
   }),
   wet_zone: Object.freeze({
     catalogId: "canonical-work:base:demolition_interior_flooring_remove_wet_zone",
     catalogVariant: "WET_ZONE_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
-    canonicalNameRu: "Разборка покрытия пола из каменной плитки — влажная зона",
+    canonicalNameRu: "Разборка покрытия пола из каменной шашки — влажная зона",
   }),
 } as const);
 export type StoneTileFloorDemolitionKrer46VariantKey =
@@ -57,7 +58,7 @@ export const STONE_TILE_FLOOR_DEMOLITION_KRER46_NORM_ID =
 export const STONE_TILE_FLOOR_DEMOLITION_KRER46_ARTIFACT_SHA256 =
   "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471" as const;
 export const STONE_TILE_FLOOR_DEMOLITION_KRER46_PROFILE_ID =
-  "KRER_46_04_010_05_STONE_TILE" as const;
+  "KRER_46_04_010_05_STONE_CUBES" as const;
 
 export const STONE_TILE_FLOOR_DEMOLITION_KRER46_SOURCE_METADATA = Object.freeze({
   source_title:
@@ -69,17 +70,25 @@ export const STONE_TILE_FLOOR_DEMOLITION_KRER46_SOURCE_METADATA = Object.freeze(
   exact_locator:
     "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-010, состав работ и измеритель на PDF/печатной стр. 57, колонка 46-04-010-05 и норма труда на PDF/печатной стр. 58",
   use_restriction:
-    "Только разборка существующего покрытия пола из каменной плитки по подтверждённой площади; 39,18 чел.-ч на 100 м². Новое покрытие, основание пола, внеобъектовый вывоз и размещение отходов не включены.",
+    "Только разборка существующего покрытия пола из каменной шашки по подтверждённой площади; 39,18 чел.-ч на 100 м². Новое покрытие, основание пола, внеобъектовый вывоз и размещение отходов не включены.",
   source_kind: "OFFICIAL_KG_UNIT_RATE",
   official_url: "https://minstroy.gov.kg/ru/kyzmat/459/show",
   artifact_sha256: STONE_TILE_FLOOR_DEMOLITION_KRER46_ARTIFACT_SHA256,
   effective_from: "2016-01-01",
 });
 
+export const STONE_CUBES_SOURCE_SCOPE_VALUE = "Каменная шашка по КРЕР 46-04-010-05; обследование подтверждает материал и границы нормы";
+export const STONE_CUBES_SOURCE_GAPS = Object.freeze([
+  {id:"packaging", parameter:"open_qty_packaging", title:"Упаковка отходов: вид тары и количество по отдельному заданию", category:"material", unit:"pcs", reason:"Колонка 05 не задаёт тару, её вместимость и количество; необходимость упаковки определяют по принятой схеме обращения с отходами."},
+  {id:"other-descent", parameter:"open_qty_other_descent", title:"Спуск отходов в мешках или на носилках: отдельная применимость и труд", category:"construction_work", unit:"man_hour", reason:"Норма включает спуск через окно в лотках. Для иного способа нужны отдельные схема и норма без повторной оплаты включённого труда."},
+  {id:"offsite-haul", parameter:"open_qty_offsite_haul", title:"Внеобъектовый вывоз отходов: масса, маршрут и отдельная услуга", category:"service", unit:"t_km", reason:"Внешний вывоз не включён. Источник не задаёт массу отходов, расстояние, автомобиль и число рейсов; площадь не заменяет эти данные."},
+  {id:"disposal", parameter:"open_qty_disposal", title:"Приём и размещение отходов на согласованном объекте: отдельная услуга", category:"service", unit:"t", reason:"Нужны подтверждённые состав и масса отходов, объект приёма и условия услуги; отсутствие этой нормы не означает неприменимость."},
+] as const);
 const PARAMETER_SPECS = Object.freeze([
-  ["floor_covering_area_m2", "Площадь покрытия пола из каменной плитки", "decimal", "m2"],
+  ["floor_covering_area_m2", "Площадь покрытия пола из каменной шашки", "decimal", "m2"],
   ["existing_covering_profile", "Выбранная колонка КРЕР для существующего покрытия", "enum", null],
-  ["existing_stone_tile_covering_confirmed", "Подтверждено существующее покрытие из каменной плитки", "boolean", null],
+  ["existing_stone_tile_covering_confirmed", "Подтверждено существующее покрытие из каменной шашки", "boolean", null],
+  ["stone_cubes_source_scope_confirmed", "Повторное подтверждение обследования: именно каменная шашка и границы КРЕР", "enum", null],
 ] as const);
 
 export type StoneTileFloorDemolitionParameter =
@@ -92,7 +101,7 @@ export type StoneTileFloorDemolitionParameter =
 
 export const STONE_TILE_FLOOR_DEMOLITION_KRER46_PARAMETERS:
 readonly StoneTileFloorDemolitionParameter[] = Object.freeze(
-  PARAMETER_SPECS.map(([parameterId, titleRu, valueType, unitId], ordinal) => ({
+  [...PARAMETER_SPECS.map(([parameterId, titleRu, valueType, unitId], ordinal) => ({
     parameter_id: parameterId,
     ordinal,
     value_type: valueType,
@@ -104,7 +113,8 @@ readonly StoneTileFloorDemolitionParameter[] = Object.freeze(
       ? { min: 0.000_001 }
       : parameterId === "existing_covering_profile"
         ? { values: [STONE_TILE_FLOOR_DEMOLITION_KRER46_PROFILE_ID] }
-        : {},
+        : parameterId === "stone_cubes_source_scope_confirmed"
+          ? { values: [STONE_CUBES_SOURCE_SCOPE_VALUE] } : {},
     truth_metadata: {
       contract: "rik-expo-app.stone-tile-floor-demolition-krer46-r1",
       semantic_parameter_key: `stone-tile-floor-demolition:${parameterId}`,
@@ -123,15 +133,15 @@ readonly StoneTileFloorDemolitionParameter[] = Object.freeze(
             : "PROJECT_DEFINED",
         guide_short_ru: parameterId === "floor_covering_area_m2"
           ? "Укажите чистую фактическую площадь снимаемого покрытия без автоматически добавленного запаса."
-          : "Подтвердите по обследованию именно существующее покрытие из каменной плитки; для другого материала выберите другую колонку нормы.",
+          : "Подтвердите по обследованию именно существующее покрытие из каменной шашки; для другого материала выберите другую колонку нормы.",
         source_role: "OFFICIAL_KG_UNIT_RATE_AND_EXISTING_CONDITION_SURVEY",
         source_document: STONE_TILE_FLOOR_DEMOLITION_KRER46_SOURCE_ID,
         source_locator: STONE_TILE_FLOOR_DEMOLITION_KRER46_SOURCE_METADATA.exact_locator,
         guide_version: "stone-tile-floor-demolition-krer46-r1",
         source_snapshot_hash: STONE_TILE_FLOOR_DEMOLITION_KRER46_ARTIFACT_SHA256,
         applicability:
-          "Только таблица 46-04-010, колонка 05: разборка покрытия пола из каменной плитки.",
-        verified_at: "2026-09-24T05:40:00+06:00",
+          "Только таблица 46-04-010, колонка 05: разборка покрытия пола из каменной шашки.",
+        verified_at: "2026-10-10T12:00:00+06:00",
         guide_validation_policy:
           "DEFER_MISSING_APPLICABILITY_REJECT_WRONG_MATERIAL_OR_PROFILE",
       },
@@ -139,6 +149,9 @@ readonly StoneTileFloorDemolitionParameter[] = Object.freeze(
       synthetic: false,
     },
   })),
+  ...STONE_CUBES_SOURCE_GAPS.map((gap, index) => ({parameter_id:gap.parameter,ordinal:PARAMETER_SPECS.length+index,
+    value_type:"decimal" as const,unit_id:gap.unit,title_ru:gap.title,required:false,default_value:null,constraints_json:{min:0},
+    truth_metadata:unresolvedApplicationNormTruthR1({},gap.reason)}))],
 );
 
 function formula(formulaId: string, outputUnitId: string, expression: string) {
@@ -161,11 +174,13 @@ readonly CanonicalEstimateFormulaDefinition[] = Object.freeze([
     "man_hour",
     "floor_covering_area_m2 * 39.18 / 100",
   ),
+  ...STONE_CUBES_SOURCE_GAPS.map(gap=>formula(`stone_cubes_gap_${gap.id}`,gap.unit,gap.parameter)),
 ]);
 
 const applicable = {
   kind: "and",
   operands: [
+    {kind:"equals",parameterId:"stone_cubes_source_scope_confirmed",value:STONE_CUBES_SOURCE_SCOPE_VALUE},
     {
       kind: "equals",
       parameterId: "existing_covering_profile",
@@ -198,12 +213,13 @@ function resource(input: Readonly<{
     noDoubleCount: true,
     primaryMeasureParameterId: "floor_covering_area_m2",
     quantityBasis: input.rowId.endsWith(":operation")
-      ? "CONFIRMED_EXISTING_STONE_TILE_COVERING_AREA"
+      ? "CONFIRMED_EXISTING_STONE_CUBES_COVERING_AREA"
       : "AREA_MULTIPLIED_BY_39_18_MAN_HOURS_PER_100_M2",
     scopeContextParameterIds: [
       "floor_covering_area_m2",
       "existing_covering_profile",
       "existing_stone_tile_covering_confirmed",
+      "stone_cubes_source_scope_confirmed",
     ],
     ...(input.parentRowId ? { parentCostOwnerId: input.parentRowId } : {}),
   };
@@ -225,9 +241,10 @@ function resource(input: Readonly<{
       source_definition_hash: STONE_TILE_FLOOR_DEMOLITION_KRER46_ARTIFACT_SHA256,
     }],
     includedInRate: [
-      "разборка существующего покрытия пола из каменной плитки",
+      "разборка существующего покрытия пола из каменной шашки",
       "уборка материалов и отходов от разборки",
-      "вертикальное перемещение и горизонтальная переноска до 50 м в пределах объекта",
+      "сортировка и штабелирование пригодных материалов",
+      "спуск через окно в лотках; горизонтальное перемещение до 130 м суммарно, включая до 50 м от объекта",
     ],
     excludedAdjacentScope: [
       "демонтаж бетонного основания или стяжки под покрытием",
@@ -262,7 +279,7 @@ readonly CanonicalEstimateResourceDefinition[] = Object.freeze([
   resource({
     rowId: "f09:stone_tile_floor_demolition:operation",
     ordinal: 0,
-    titleRu: "Разборка существующего покрытия пола из каменной плитки",
+    titleRu: "Разборка существующего покрытия пола из каменной шашки",
     unitId: "m2",
     formulaId: "stone_tile_floor_demolition_area_v1",
     costTreatment: "INCLUDED_IN_RESOURCE_ROWS",
@@ -275,6 +292,17 @@ readonly CanonicalEstimateResourceDefinition[] = Object.freeze([
     unitId: "man_hour",
     formulaId: "stone_tile_floor_demolition_labor_krer_46_04_010_05_v1",
     costTreatment: "OWN_COST",
+  }),
+  ...STONE_CUBES_SOURCE_GAPS.map((gap,index)=>{
+    const base=resource({rowId:`f09:stone_tile_floor_demolition:${gap.id}`,ordinal:index+2,titleRu:gap.title,unitId:gap.unit,
+      formulaId:`stone_cubes_gap_${gap.id}`,costTreatment:"OWN_COST"});
+    const {row_sha256:_old,...content}=base;
+    const corrected={...content,category:gap.category,section:"Дополнительное обращение с отходами — требуется отдельное обоснование",
+      resource_graph:{...base.resource_graph,quantityBasis:"UNRESOLVED_SEPARATE_APPLICABILITY_AND_QUANTITY",normativeLaborNotDuplicated:true,
+        operationCompositionV1:{contractVersion:"canonical-operation-resource/v1",groupId:"stone-cubes-waste-plan",groupTitleRu:"Дополнительное обращение с отходами",operationId:gap.id,operationTitleRu:gap.title,operationOrdinal:index+1},
+        additionalDetailsRu:[gap.reason]},source_metadata:{...base.source_metadata,normativeTrace:[],krerResourceCode:null,normativeRatePer100M2:null,
+          sourceRole:"UNRESOLVED_SEPARATE_WASTE_SCOPE",includedInRate:[],reasonRu:gap.reason,full_technical_acceptance:false}};
+    return {...corrected,row_sha256:estimateDeterministicHash(corrected)};
   }),
 ]);
 
@@ -294,7 +322,7 @@ export const STONE_TILE_FLOOR_DEMOLITION_KRER46_INDEPENDENT_COMPLETENESS_MAP =
         operationId: "stone_tile_floor_covering_demolition",
         expectedResourceId: "required-operation:stone-tile-floor-demolition",
         category: "construction_work",
-        specification: "Разборка покрытия пола из каменной плитки",
+        specification: "Разборка покрытия пола из каменной шашки",
         condition: "confirmed_krer_46_04_010_05",
         sourceId: STONE_TILE_FLOOR_DEMOLITION_KRER46_SOURCE_ID,
         unitId: "m2",
@@ -326,7 +354,7 @@ export const STONE_TILE_FLOOR_DEMOLITION_KRER46_INDEPENDENT_COMPLETENESS_MAP =
         operationId: "internal_debris_handling_within_object",
         expectedResourceId: "required-operation:internal-debris-handling-within-object",
         category: "construction_work",
-        specification: "Уборка, вертикальное перемещение и переноска до 50 м",
+        specification: "Уборка, сортировка, штабелирование; спуск через окно в лотках; горизонтальное перемещение до 130 м суммарно, включая до 50 м от объекта",
         condition: "selected_krer_46_reconstruction_rate",
         sourceId: STONE_TILE_FLOOR_DEMOLITION_KRER46_SOURCE_ID,
         unitId: "man_hour",
@@ -336,22 +364,10 @@ export const STONE_TILE_FLOOR_DEMOLITION_KRER46_INDEPENDENT_COMPLETENESS_MAP =
         formulaId: "stone_tile_floor_demolition_labor_krer_46_04_010_05_v1",
         resolution: { kind: "INCLUDED_IN_PARENT", parentRowId: LABOR_ROW_ID },
       },
-      {
-        operationId: "offsite_waste_haul",
-        expectedResourceId: "adjacent-operation:offsite-waste-haul",
-        category: "service",
-        specification: "Внеобъектовый вывоз отходов",
-        condition: "not_in_krer_46_04_010_05",
-        sourceId: STONE_TILE_FLOOR_DEMOLITION_KRER46_SOURCE_ID,
-        unitId: "t_km",
-        quantityRule: "PROJECT_WASTE_PLAN_REQUIRED",
-        detailPrinciple: "EXCLUDED_FROM_RATE",
-        priceRelation: "SEPARATE_IF_APPLICABLE",
-        resolution: {
-          kind: "NOT_APPLICABLE",
-          reasonRu: "КРЕР 46, п. 1.1 прямо исключает вывоз строительного мусора.",
-        },
-      },
+      ...STONE_CUBES_SOURCE_GAPS.map(gap=>({operationId:gap.id,expectedResourceId:`separate-waste:${gap.id}`,
+        category:gap.category,specification:gap.title,condition:"SEPARATE_APPLICABILITY_AND_SOURCE_REQUIRED",sourceId:STONE_TILE_FLOOR_DEMOLITION_KRER46_SOURCE_ID,
+        unitId:gap.unit,quantityRule:"OPEN_NO_ASSUMED_QUANTITY",detailPrinciple:"EXCLUDED_FROM_NORM_IS_NOT_NOT_APPLICABLE",priceRelation:"SEPARATE_IF_APPLICABLE",
+        formulaId:`stone_cubes_gap_${gap.id}`,resolution:{kind:"ROW",rowId:`f09:stone_tile_floor_demolition:${gap.id}`}})),
     ],
   });
 
@@ -363,12 +379,13 @@ export function validateStoneTileFloorDemolitionKrer46Completeness(
   for (const rowId of [
     "f09:stone_tile_floor_demolition:operation",
     LABOR_ROW_ID,
+    ...STONE_CUBES_SOURCE_GAPS.map(gap=>`f09:stone_tile_floor_demolition:${gap.id}`),
   ]) {
     if (!actual.has(rowId)) {
       throw new Error(`STONE_TILE_FLOOR_DEMOLITION_KRER46_ROW_MISSING:${rowId}`);
     }
   }
-  if (actual.size !== 2) {
+  if (actual.size !== 6) {
     throw new Error("STONE_TILE_FLOOR_DEMOLITION_KRER46_ROW_COUNT_MISMATCH");
   }
   return true;
@@ -378,12 +395,14 @@ export const STONE_TILE_FLOOR_DEMOLITION_KRER46_SHORT_INPUT = Object.freeze({
   floor_covering_area_m2: 100,
   existing_covering_profile: STONE_TILE_FLOOR_DEMOLITION_KRER46_PROFILE_ID,
   existing_stone_tile_covering_confirmed: true,
+  stone_cubes_source_scope_confirmed: STONE_CUBES_SOURCE_SCOPE_VALUE,
 });
 
 export const STONE_TILE_FLOOR_DEMOLITION_KRER46_ACCEPTANCE_INPUT = Object.freeze({
   floor_covering_area_m2: 35.5,
   existing_covering_profile: STONE_TILE_FLOOR_DEMOLITION_KRER46_PROFILE_ID,
   existing_stone_tile_covering_confirmed: true,
+  stone_cubes_source_scope_confirmed: STONE_CUBES_SOURCE_SCOPE_VALUE,
 });
 
 export async function compileStoneTileFloorDemolitionKrer46R1(
@@ -416,7 +435,7 @@ export async function compileStoneTileFloorDemolitionKrer46R1(
     confirmedParameters: {},
     currencyCode: "KGS",
     priceItems: [],
-    maximumResourceRows: 4,
+    maximumResourceRows: 8,
     hashJson: async (value) => JSON.stringify(value),
   });
 }

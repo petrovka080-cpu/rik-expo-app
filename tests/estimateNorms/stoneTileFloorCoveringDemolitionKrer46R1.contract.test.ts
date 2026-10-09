@@ -13,26 +13,26 @@ import {
   validateStoneTileFloorDemolitionKrer46Completeness,
 } from "../../src/lib/estimate/v4/stoneTileFloorCoveringDemolitionKrer46R1";
 
-describe("KRER 46 stone-tile floor covering demolition", () => {
-  test("binds the exact official rate and complete narrow operation boundary", () => {
+describe("KRER 46 stone-cubes floor covering demolition", () => {
+  test("binds the exact official rate and limited normative operation boundary", () => {
     expect(STONE_TILE_FLOOR_DEMOLITION_KRER46_CATALOG_ID)
       .toBe("canonical-work:base:demolition_interior_flooring_remove_standard");
     expect(STONE_TILE_FLOOR_DEMOLITION_KRER46_CATALOG_IDS).toHaveLength(4);
     expect(STONE_TILE_FLOOR_DEMOLITION_KRER46_ARTIFACT_SHA256)
       .toMatch(/^[0-9a-f]{64}$/u);
-    expect(STONE_TILE_FLOOR_DEMOLITION_KRER46_PARAMETERS).toHaveLength(3);
-    expect(STONE_TILE_FLOOR_DEMOLITION_KRER46_FORMULAS).toHaveLength(2);
-    expect(STONE_TILE_FLOOR_DEMOLITION_KRER46_RESOURCES).toHaveLength(2);
+    expect(STONE_TILE_FLOOR_DEMOLITION_KRER46_PARAMETERS).toHaveLength(8);
+    expect(STONE_TILE_FLOOR_DEMOLITION_KRER46_FORMULAS).toHaveLength(6);
+    expect(STONE_TILE_FLOOR_DEMOLITION_KRER46_RESOURCES).toHaveLength(6);
     expect(validateStoneTileFloorDemolitionKrer46Completeness()).toBe(true);
     expect(STONE_TILE_FLOOR_DEMOLITION_KRER46_INDEPENDENT_COMPLETENESS_MAP.entries)
-      .toHaveLength(4);
+      .toHaveLength(7);
   });
 
   test("turns 100 m2 into 39.18 man-hours without machines or materials", async () => {
     const compiled = await compileStoneTileFloorDemolitionKrer46R1({
       ...STONE_TILE_FLOOR_DEMOLITION_KRER46_SHORT_INPUT,
     });
-    expect(compiled.preliminaryNeeds).toEqual([]);
+    expect(compiled.preliminaryNeeds).toHaveLength(4);
     expect(compiled.rows).toEqual([
       expect.objectContaining({
         row_id: "f09:stone_tile_floor_demolition:operation",
@@ -55,7 +55,7 @@ describe("KRER 46 stone-tile floor covering demolition", () => {
     const compiled = await compileStoneTileFloorDemolitionKrer46R1({
       ...STONE_TILE_FLOOR_DEMOLITION_KRER46_ACCEPTANCE_INPUT,
     });
-    expect(compiled.preliminaryNeeds).toEqual([]);
+    expect(compiled.preliminaryNeeds).toHaveLength(4);
     expect(compiled.rows).toContainEqual(expect.objectContaining({
       row_id: "f09:stone_tile_floor_demolition:operation",
       quantity: "35.5",
@@ -78,7 +78,7 @@ describe("KRER 46 stone-tile floor covering demolition", () => {
         expect.objectContaining({ quantity: "100", unit_id: "m2" }),
         expect.objectContaining({ quantity: "39.18", unit_id: "man_hour" }),
       ]);
-      expect(compiled.preliminaryNeeds).toEqual([]);
+      expect(compiled.preliminaryNeeds).toHaveLength(4);
     },
   );
 
@@ -87,7 +87,7 @@ describe("KRER 46 stone-tile floor covering demolition", () => {
       floor_covering_area_m2: 100,
     });
     expect(incomplete.rows).toEqual([]);
-    expect(incomplete.preliminaryNeeds).toHaveLength(2);
+    expect(incomplete.preliminaryNeeds).toHaveLength(6);
     await expect(compileStoneTileFloorDemolitionKrer46R1({
       ...STONE_TILE_FLOOR_DEMOLITION_KRER46_SHORT_INPUT,
       existing_stone_tile_covering_confirmed: false,
@@ -102,11 +102,21 @@ describe("KRER 46 stone-tile floor covering demolition", () => {
     )).rejects.toThrow("STONE_TILE_FLOOR_DEMOLITION_KRER46_CATALOG_UNSUPPORTED");
   });
 
+  test("requires fresh physical scope and refuses invented waste quantities", async () => {
+    const input={...STONE_TILE_FLOOR_DEMOLITION_KRER46_ACCEPTANCE_INPUT};
+    const legacy=await compileStoneTileFloorDemolitionKrer46R1({...input,stone_cubes_source_scope_confirmed:undefined});
+    expect(legacy.rows).toEqual([]);
+    expect(legacy.preliminaryNeeds.every(need=>need.missing_parameter_ids.includes('stone_cubes_source_scope_confirmed'))).toBe(true);
+    for(const id of ['open_qty_packaging','open_qty_other_descent','open_qty_offsite_haul','open_qty_disposal'])
+      await expect(compileStoneTileFloorDemolitionKrer46R1({...input,[id]:1})).rejects.toThrow();
+    expect(STONE_TILE_FLOOR_DEMOLITION_KRER46_PARAMETERS.every(p=>p.default_value==null)).toBe(true);
+  });
+
   test("does not smuggle adjacent construction or waste-export scope", () => {
     const serialized = JSON.stringify({
       formulas: STONE_TILE_FLOOR_DEMOLITION_KRER46_FORMULAS,
       resources: STONE_TILE_FLOOR_DEMOLITION_KRER46_RESOURCES,
     });
-    expect(serialized).not.toMatch(/new_floor|adhesive|screed_install|landfill|truck|area_factor/iu);
+    expect(serialized).not.toMatch(/new_floor|adhesive|screed_install|area_factor/iu);
   });
 });
