@@ -1021,7 +1021,7 @@ export function buildRequestEstimateSourceGates(
     for (const raw of rawRequirements) {
       if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
       const requirement = raw as Record<string, unknown>;
-      if (requirement.sourceConfirmationRequired !== true) continue;
+      if (requirement.sourceConfirmationRequired !== true && requirement.valueSourceRole !== 'UNRESOLVED_APPLICATION_NORM') continue;
       const parameterId = String(requirement.parameterId ?? "").trim();
       if (!parameterId) continue;
       const previous = gates.get(parameterId);

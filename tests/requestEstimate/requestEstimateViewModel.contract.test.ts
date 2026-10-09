@@ -14,7 +14,7 @@ describe("request estimate view model", () => {
       canonicalPreliminaryNeed:true,includedInEstimate:false,includedInProcurement:false,procurementEligible:true,
       missingParameterRequirements:[
         {parameterId:'lantern_model',titleRu:'Исполнение окна',sourceConfirmationRequired:false},
-        {parameterId:'fixing_norm',titleRu:'Норма крепления',sourceConfirmationRequired:true,valueSourceRole:'UNRESOLVED_APPLICATION_NORM'},
+        {parameterId:'fixing_norm',titleRu:'Норма крепления',sourceConfirmationRequired:false,valueSourceRole:'UNRESOLVED_APPLICATION_NORM'},
       ],
     }};
     const bundle={...source,items:[item]};
