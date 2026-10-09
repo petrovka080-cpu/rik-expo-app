@@ -66,7 +66,7 @@ export type CanonicalRevisionIdentityInput = {
 function publicUnitRu(unitId: unknown): string {
   const unit = String(unitId ?? "").trim();
   const units: Record<string, string> = {
-    m2: "м²", m3: "м³", m: "м", mm: "мм", cm: "см", km: "км",
+    m2: "м²", m3: "м³", m: "м", linear_m: "пог. м", mm: "мм", cm: "см", km: "км",
     pcs: "шт.", piece: "шт.", pieces: "шт.", item: "шт.", kg: "кг", t: "т", l: "л",
     man_hour: "чел.-ч", machine_hour: "маш.-ч", person_shift: "чел.-смена",
     service: "усл.", test: "исп.", document: "док.", trip: "рейс", t_km: "т·км",
