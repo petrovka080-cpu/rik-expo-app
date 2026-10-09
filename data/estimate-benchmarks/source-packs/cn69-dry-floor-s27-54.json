@@ -1,0 +1,32 @@
+{
+ "contract":"rik-expo-app.s27-54.cn69-dry-floor.v1",
+ "catalogId":"canonical-work:master:cn69_global_25kg_manual_dry_indoor_cement_floor_2_10mm_standard",
+ "workKey":"cn69_global_25kg_manual_dry_indoor_cement_floor_2_10mm_standard",
+ "titleRu":"Выравнивание сухого внутреннего пола Ceresit CN69 global 25 кг, слой 2–10 мм, с CT17",
+ "sourceId":"ceresit_cn69_global_ct17_dry_floor_s2754",
+ "normId":"flooring_ceresit_cn69_self_leveling_scope_2_10mm_v1",
+ "acceptedPhysicalProfileId":"manufacturer-profile:ceresit-cn69:global-25kg:C_CN69_TDS_1_0420:v1",
+ "acceptedPhysicalSourcePack":"data/estimate-norms/professional/flooring.json",
+ "acceptedPhysicalSourceVersion":"2026.09-ceresit-cn69-ct17-global-primary-review-r2",
+ "sources":{"cn69":{"officialUrl":"https://datasheets.tdx.henkel.com/CERESIT-CN-69-en_GL.pdf","localArtifact":".release-runtime/r568/s27-54/cn69-dry-floor/CN-69.pdf","sha256":"5c91e910c56e620d2c1f0d3637082373cc23aa52281d7bb9cdd7e9a490e5aac5","edition":"C_CN69_TDS_1_0420","locatorRu":"Стр.1: готовое основание, влага и ручное нанесение; стр.2: мешок25кг,1,3кг/м²/мм, вода5,5–6л/25кг,40мин, строгие климатические условия и коллизияC25/C35"},"ct17":{"officialUrl":"https://datasheets.tdx.henkel.com/CERESIT-CT-17-en_GL.pdf","localArtifact":".release-runtime/r568/s27-35/wet-zone-sources/CT-17.pdf","sha256":"7e3f72f83a9b75a5f90bd44dbac1c88a30da15e0a8d4e0b6e9f9af677fff2847","edition":"CT17 Profi03.24","locatorRu":"Стр.1–2: впитывающие полы перед заливкой, полное высыхание, повтор при сохраняющейся впитываемости;0,1–0,5л/м²; фасовки1/2/5/10л"}},
+ "scopeRu":"Ручное выравнивание готовой впитывающей цементной стяжки в сухом помещении, средние нагрузки, без подогрева. Только CN69global25кг слоем2–10мм и неразбавленный CT17global03.24. Основание принято отдельно; поступление влаги предотвращено. Нет автоматического допуска любого последующего покрытия.",
+ "baseValue":"Готовая прочная сухая очищенная цементная стяжка без трещин и цементного молочка; остаточная влажность не выше2CM-%; применимые требования основания подтверждены",
+ "moistureValue":"Поступление влаги в конструкцию пола предотвращено принятыми мерами; новый влагозащитный слой в этот пакет не назначен",
+ "conditionsValue":"При нанесении CN69 температура пола выше15°C, воздуха выше18°C, RH ниже75%; при CT17 +5…+25°C и RH ниже80%",
+ "primerValue":"Неразбавленный CT17 Profi global03.24 полностью высох; все необходимые повторные проходы выполнены; после последнего полного высыхания основание проверено и дальнейшее грунтование по TDS не требуется",
+ "productValue":"Подтверждён CN69global C_CN69_TDS_1_0420 в мешке25кг для сухого внутреннего пола без подогрева; другие смеси и региональные варианты не подставлены",
+ "primerContainerSizesL":[1,2,5,10],
+ "excludedRu":["Поступление влаги, наружные работы и мокрые зоны","Тёплый пол и другой режим влажности основания","Слой вне2–10мм, высокая нагрузка и автоматически назначенный прочностной класс C25 или C35","Региональная CN69 с иной фасовкой/расходом","Гидроизоляция и ремонт уже принятого основания","Автоматические наличие, резерв, расходCT17, число проходов, средняя дозировка воды и дополнительный процент отходов","Готовое финишное покрытие, ламинат, плинтусы и клей для него"],
+ "sourceNeeds":[
+  {"id":"labor","operation":"placing","category":"labor","nameRu":"Труд по грунтованию, затворению, распределению и деаэрации CN69","unitId":"man_hour","reasonRu":"Технология опубликована, монтажные часы не опубликованы;2мин перемешивания не превращаются автоматически в норму труда на мешок."},
+  {"id":"mixer","operation":"mixing","category":"equipment","nameRu":"Электрическая дрель-миксер с насадкой, около600об/мин, для CN69","unitId":"machine_hour","reasonRu":"Тип и примерная скорость опубликованы; часы, модель и обеспечение исполнителем требуют подтверждения. Жизнеспособность смеси максимум40мин; партии наносят мокрым по мокрому."},
+  {"id":"spreader","operation":"placing","category":"equipment","nameRu":"Гладкий шпатель или ракля для распределения слоя CN69","unitId":"item","reasonRu":"Допустимый инструмент назван; выбранное исполнение, количество и обеспечение исполнителем не нормированы."},
+  {"id":"spiked-roller","operation":"deaeration","category":"equipment","nameRu":"Игольчатый валик для выпуска захваченного воздуха из CN69","unitId":"item","reasonRu":"Назначение опубликовано; размер игл/ширина, количество и обеспечение исполнителем требуют подтверждения."},
+  {"id":"primer-tools","operation":"priming","category":"equipment","nameRu":"Кисть или валик для неразбавленного CT17 Profi","unitId":"item","reasonRu":"Способ нанесения опубликован; количество инструмента и включение в цену не установлены."},
+  {"id":"water-cleaning","operation":"completion","category":"material","nameRu":"Чистая вода для очистки инструмента и применимой уборки после CN69","unitId":"l","reasonRu":"Вода затворения CN69 раскрыта отдельно; расход очистки не опубликован и не определяется рецептом смеси."},
+  {"id":"moisture-acceptance","operation":"acceptance","category":"service","nameRu":"Измерение остаточной влажности и приёмка CN69 перед следующим покрытием","unitId":"item","reasonRu":"Нужно полное высыхание.48ч до5мм и72ч при5–10мм — ориентиры при нормальном климате; срок на границе5мм не выбирается автоматически. Число измерений и прочностной класс требуют подтверждения; TDS содержитC25/C35."},
+  {"id":"protection","operation":"protection","category":"service","nameRu":"Защита кожи, глаз и свежего слоя CN69 от солнца и сквозняков","unitId":"item","reasonRu":"Применимость известна; состав, количество и обеспечение исполнителем не опубликованы."},
+  {"id":"logistics-cleanup","operation":"completion","category":"service","nameRu":"Доставка CN69 и CT17, разгрузка, уборка и передача фактической упаковки и остатков","unitId":"item","reasonRu":"Нужны границы услуги и один владелец цены; масса отходов, мешки и рейсы из площади не выводятся."}
+ ],
+ "fullTechnicalAcceptance":false,"acceptedNewCompleteTypes":0
+}
