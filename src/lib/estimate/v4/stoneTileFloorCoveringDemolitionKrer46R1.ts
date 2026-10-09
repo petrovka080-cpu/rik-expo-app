@@ -151,7 +151,13 @@ readonly StoneTileFloorDemolitionParameter[] = Object.freeze(
   })),
   ...STONE_CUBES_SOURCE_GAPS.map((gap, index) => ({parameter_id:gap.parameter,ordinal:PARAMETER_SPECS.length+index,
     value_type:"decimal" as const,unit_id:gap.unit,title_ru:gap.title,required:false,default_value:null,constraints_json:{min:0},
-    truth_metadata:unresolvedApplicationNormTruthR1({},gap.reason)}))],
+    truth_metadata:unresolvedApplicationNormTruthR1({synthetic:false,hidden_default_forbidden:true,
+      guide:{guide_kind:"PROJECT_DEFINED",guide_short_ru:gap.reason,source_role:"SEPARATE_APPLICATION_SOURCE_REQUIRED",
+        source_document:STONE_TILE_FLOOR_DEMOLITION_KRER46_SOURCE_ID,
+        source_locator:STONE_TILE_FLOOR_DEMOLITION_KRER46_SOURCE_METADATA.exact_locator,
+        source_snapshot_hash:STONE_TILE_FLOOR_DEMOLITION_KRER46_ARTIFACT_SHA256,
+        applicability:"Отдельная применимость, ресурсы и количества по принятой схеме обращения с отходами; не норма колонки 05.",
+        guide_version:"s2754-stone-cubes-separate-waste-scope",verified_at:"2026-10-10T12:00:00+06:00"}},gap.reason)}))],
 );
 
 function formula(formulaId: string, outputUnitId: string, expression: string) {

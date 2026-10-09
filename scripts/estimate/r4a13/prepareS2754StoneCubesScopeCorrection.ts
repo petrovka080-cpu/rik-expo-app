@@ -60,6 +60,7 @@ export function stoneCubesConfigS2754(key:stone.StoneTileFloorDemolitionKrer46Va
       const missing=await stone.compileStoneTileFloorDemolitionKrer46R1({...input,stone_cubes_source_scope_confirmed:undefined});assert.equal(missing.rows.length,0);
       for(const gap of stone.STONE_CUBES_SOURCE_GAPS)await assert.rejects(()=>stone.compileStoneTileFloorDemolitionKrer46R1({...input,[gap.parameter]:1}));
       assert(stone.STONE_TILE_FLOOR_DEMOLITION_KRER46_PARAMETERS.every(p=>p.default_value==null));
+      assert(stone.STONE_TILE_FLOOR_DEMOLITION_KRER46_PARAMETERS.every(p=>typeof (p.truth_metadata.guide as {guide_short_ru?:unknown})?.guide_short_ru==='string'));
       return {status:'GREEN_LIMITED_SOURCE_SCOPE_CORRECTION',knownRows:2,sourceNeeds:4,freshConfirmationGatesBothLegacyRows:true,
         sourceMaterial:'STONE_CUBES',normativeLabor:13.9089,fullTechnicalAcceptance:false,acceptedNewCompleteTypes:0,newCatalogIdentities:0};
     }};
