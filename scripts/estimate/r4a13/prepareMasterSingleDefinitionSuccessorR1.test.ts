@@ -6,6 +6,7 @@ import {
 import {
   buildMasterParameterCalculationConsumers,
   buildMasterCapabilityMatrix,
+  buildMasterScopeReadiness,
   resolveMasterSingleDefinitionNextCounts,
   validateIndependentCompletenessMapReferences,
 } from "./prepareMasterSingleDefinitionSuccessorR1";
@@ -18,6 +19,10 @@ describe('preliminary publisher capability boundary', () => {
     });
     expect(matrix.find(entry => entry.capability === 'PRICE')?.status).toBe('GREEN_UNKNOWN_IS_NULL');
     expect(buildMasterCapabilityMatrix(undefined, [])[2]).toEqual({ capability: 'FULL_APPLICABLE_SCOPE', status: 'GREEN' });
+    expect(buildMasterScopeReadiness(['installation'], [{ row_id: 'installation' }])).toEqual({
+      quantityScope: 'PARTIAL', technicalScopeStatus: 'NEEDS_SOURCE', preliminaryCompositionOnly: true, unresolvedResourceRowIds: ['installation'],
+    });
+    expect(buildMasterScopeReadiness(undefined, [])).toEqual({ quantityScope: 'FULL' });
   });
   it('rejects an empty, missing or duplicate unresolved row claim', () => {
     for (const rows of [[], ['absent'], ['installation', 'installation']]) {

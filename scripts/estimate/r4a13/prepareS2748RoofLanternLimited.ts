@@ -81,7 +81,7 @@ export function roofLanternLimitedS2748Config(parent: { releaseId: string; searc
       for (const suffix of ['base', 'dome']) {
         const need = selected.preliminaryNeeds.find(row => row.row_id === `roof-cfp100100:${suffix}`)!;
         assert.equal(need.quantity, null);
-        assert.equal((need.calculation_trace.purchaseRequirementV1 as { consumed: string }).consumed, '10');
+        assert.equal((need.calculation_trace as { purchaseRequirementV1: { consumed: string } }).purchaseRequirementV1.consumed, '10');
       }
       const result = await compileCandidate(acceptanceInput);
       assert.equal(result.rows.length, 8); assert.equal(result.preliminaryNeeds.length, 13);

@@ -856,6 +856,14 @@ export function buildMasterCapabilityMatrix(unresolvedRows: readonly string[] | 
   ];
 }
 
+export function buildMasterScopeReadiness(unresolvedRows: readonly string[] | undefined, resources: readonly Json[]): Json {
+  const scope = buildMasterCapabilityMatrix(unresolvedRows, resources)[2]!;
+  return scope.status === 'GREEN' ? { quantityScope: 'FULL' } : {
+    quantityScope: 'PARTIAL', technicalScopeStatus: 'NEEDS_SOURCE',
+    preliminaryCompositionOnly: true, unresolvedResourceRowIds: scope.unresolvedResourceRowIds,
+  };
+}
+
 export async function runMasterSingleDefinitionSuccessorR1(
   config: MasterSingleDefinitionSuccessorConfig,
 ): Promise<void> {
@@ -1345,7 +1353,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
           status: "GREEN",
           allowed: true,
           waveContract: config.contract,
-          quantityScope: "FULL",
+          ...buildMasterScopeReadiness(config.passport.unresolvedApplicableResourceRowIds, resourceRows),
           priceState: "PARTIAL_NEEDS_PRICE",
           activationAllowed: false,
           productionEligible: false,

@@ -20,7 +20,7 @@ describe('exact lantern composition through the common compiler', () => {
     for (const id of ['base', 'dome']) {
       const need = result.preliminaryNeeds.find(r => r.row_id === row(id))!;
       expect(need.quantity).toBeNull();
-      expect((need.calculation_trace.purchaseRequirementV1 as { consumed: string }).consumed).toBe('10');
+      expect((need.calculation_trace as { purchaseRequirementV1: { consumed: string } }).purchaseRequirementV1.consumed).toBe('10');
     }
     expect(result.rows.find(r => r.row_id === row('daylight'))?.quantity).toBe('7');
     expect(result.rows.find(r => r.row_id === row('product-net-mass'))?.quantity).toBe('532.54');
@@ -45,7 +45,7 @@ describe('exact lantern composition through the common compiler', () => {
       });
       const base = result.rows.find(r => r.row_id === row('base'))!;
       expect(base.quantity).toBe(quantity);
-      const balance = base.calculation_trace.purchaseBalance as Record<string, unknown>;
+      const balance = (base.calculation_trace as { purchaseBalance: Record<string, unknown> }).purchaseBalance;
       if (quantity === '11') { expect(balance.remaining).toBe('3'); expect(balance.freeBeyondReserve).toBe('2'); }
       else { expect(balance.consumptionShortage).toBe('1'); expect(balance.procurementReady).toBe(false); }
     }

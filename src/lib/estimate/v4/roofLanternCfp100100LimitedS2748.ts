@@ -40,7 +40,7 @@ const productRow = (key: string, title: string): Omit<AutomaticRowSpec, 'section
   procurement: true, category: 'material',
   ...effectivePurchaseBalanceExpressionsR1({ownerRowId:`${prefix}:${key}`,orderUnitId:'item',consumed:countId,stock:`${key}_stock_units`,reserve:`${key}_reserve_units`,quantum:'1'}).owner,
 });
-const specs: AutomaticRowSpec[] = [
+const rawSpecs: Omit<AutomaticRowSpec, 'section' | 'formulaId'>[] = [
   productRow('base', 'Основание VELUX CFP Q 73FQV 100100 со стеклопакетом'),
   productRow('dome', 'Прозрачный купол VELUX ISD 100100 0010'),
   { rowId: `${prefix}:included-glazing`, title: 'Стеклопакет в составе основания CFP — включён', unitId: 'item', expression: countId, procurement: false, costTreatment: 'INCLUDED_IN_RESOURCE_ROWS', purchaseBalanceOwnerRowId: `${prefix}:base`, category: 'material' },
@@ -62,7 +62,8 @@ const specs: AutomaticRowSpec[] = [
   { rowId: prefix + ':protective-film', title: 'Снятие защитной плёнки — включение в монтаж и труд не подтверждены', unitId: 'man_hour', expression: 'protective_film_removal_hours', procurement: false, category: 'labor' },
   { rowId: prefix + ':final-cleanup', title: 'Финальная уборка и сбор упаковки — граница и труд не подтверждены', unitId: 'man_hour', expression: 'final_cleanup_hours', procurement: false, category: 'labor' },
   { rowId: prefix + ':packaging-waste', title: 'Упаковка: сбор, погрузка, вывоз и приём — партия и состав услуги не подтверждены', unitId: 'kg', expression: 'packaging_waste_service_kg', procurement: false, category: 'service' },
-].map((row, ordinal) => ({ ...row, section: row.category === 'material' ? 'Материалы и состав фонаря' : 'Монтаж и необходимые услуги', formulaId: `${prefix}:formula:${ordinal}`, inputParameterIds: [productId],
+];
+const specs: AutomaticRowSpec[] = rawSpecs.map((row, ordinal) => ({ ...row, section: row.category === 'material' ? 'Материалы и состав фонаря' : 'Монтаж и необходимые услуги', formulaId: `${prefix}:formula:${ordinal}`, inputParameterIds: [productId],
   inclusion: { kind: 'equals' as const, parameterId: productId, value: pack.model } }));
 const built = buildAutomaticConstructionOwnerR1({
   contract: pack.contract, semanticOwner: prefix, sourceId: pack.sourceId, normId: 'PRODUCT_SELECTION_ONLY_NO_INSTALLATION_NORM',
@@ -102,7 +103,7 @@ export const parameterDefinitions: CanonicalEstimateParameterDefinition[] = buil
 export const formulaDefinitions = built.formulas;
 export const resourceDefinitions = built.resources.map(r => ({ ...r, source_metadata: { ...r.source_metadata,
   limited_product_composition: true, technical_acceptance: 'NOT_ACCEPTED',
-  normativeTrace: Object.keys(pack.unresolvedApplicationParameters).some(id => formulaDefinitions.find(f => f.formula_id === r.formula_id)?.input_parameter_ids.includes(id)) ? [] : r.source_metadata.normativeTrace,
+  normativeTrace: Object.keys(pack.unresolvedApplicationParameters).some(id => formulaDefinitions.find(f => f.formula_id === r.formula_id)?.input_parameter_ids.includes(id)) ? [] : r.source_metadata?.normativeTrace,
   sourceRole: Object.keys(pack.unresolvedApplicationParameters).some(id => formulaDefinitions.find(f => f.formula_id === r.formula_id)?.input_parameter_ids.includes(id))
     ? 'UNRESOLVED_INSTALLATION_SOURCE' : 'PRIMARY_MANUFACTURER_PRODUCT_FACT',
 } }));
