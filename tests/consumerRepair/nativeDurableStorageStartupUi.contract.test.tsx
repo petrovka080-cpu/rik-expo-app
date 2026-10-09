@@ -4,6 +4,10 @@ import * as baselineCompile from "../../src/features/consumerRepair/consumerCano
 import * as canonicalClient from "../../src/lib/estimate/backendPlatform/canonicalEstimateClient";
 import * as requestBinding from "../../src/lib/estimateStructuredPipeline/structuredEstimateRequestBinding";
 import * as consumerService from "../../src/lib/consumerRequests/consumerRequestService";
+import * as parameterEditor from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
+import * as artifactHydration from "../../src/features/consumerRepair/consumerCanonicalArtifactHydration";
+import {appendCanonicalBackendRevisionProjection} from "../../src/lib/consumerRequests/consumerCanonicalBackendRevisionProjection";
+import {saveConsumerRepairBundle} from "../../src/lib/consumerRequests/consumerRequestRepository";
 import { __resetConsumerRepairRequestStoreForTests } from "../../src/lib/consumerRequests";
 import { buildCanonicalConsumerRepairRevisionFixture } from "./canonicalConsumerRepairRevisionFixture";
 
@@ -12,6 +16,7 @@ const mockRefreshAfterDurableHydration = jest.fn();
 let settleInitialLaunchBuild: (() => void) | null = null;
 let controllerMountCount = 0;
 let mockPrepareCanonicalEstimate: ((prompt: string, catalogId: string, draftId: string) => Promise<unknown>) | null = null;
+let mockLoadCanonicalRevision: ((input: {revisionId: string; requestDraftId: string; problemText: string}) => Promise<unknown>) | null = null;
 const mockAcceptCanonicalBackendDraft = jest.fn((_bundle: unknown, options?: { onPublished?: () => void }) => options?.onPublished?.());
 
 jest.mock("../../src/lib/consumerRequests/consumerRequestRepository", () => ({
@@ -59,11 +64,12 @@ jest.mock(
           openMaterialCatalogFromCapturedPhoto: () => void;
           acceptCanonicalBackendDraft: typeof mockAcceptCanonicalBackendDraft;
         },
-        { onInitialLaunchBuildSettled?: () => void; onPrepareCanonicalEstimate: NonNullable<typeof mockPrepareCanonicalEstimate> }
+        { onInitialLaunchBuildSettled?: () => void; onPrepareCanonicalEstimate: NonNullable<typeof mockPrepareCanonicalEstimate>; onLoadCanonicalRevisionDraft: NonNullable<typeof mockLoadCanonicalRevision> }
       >(
         function MockConsumerRepairRequestScreenController(props, ref) {
           settleInitialLaunchBuild = props.onInitialLaunchBuildSettled ?? null;
           mockPrepareCanonicalEstimate = props.onPrepareCanonicalEstimate;
+          mockLoadCanonicalRevision = props.onLoadCanonicalRevisionDraft;
           ReactRuntime.useEffect(() => {
             controllerMountCount += 1;
           }, []);
@@ -183,6 +189,7 @@ describe("consumer repair durable storage startup UI", () => {
     settleInitialLaunchBuild = null;
     controllerMountCount = 0;
     mockPrepareCanonicalEstimate = null;
+    mockLoadCanonicalRevision = null;
     mockAcceptCanonicalBackendDraft.mockClear();
   });
 
@@ -190,6 +197,37 @@ describe("consumer repair durable storage startup UI", () => {
     jest.restoreAllMocks();
     __resetConsumerRepairRequestStoreForTests();
     jest.useRealTimers();
+  });
+
+  it('restores immutable artifact metadata before returning one authoritative bundle, without a fresh-build preview', async()=>{
+    const prompt='Монтаж трубы',owner='immutable-reopen-owner';
+    const aiDraft=buildCanonicalConsumerRepairRevisionFixture(prompt);
+    const seed=consumerService.createConsumerRepairRequestDraft({consumerUserId:owner,problemText:prompt,aiDraft});
+    const revisionId=String(seed.items[0].sourceParameters?.canonicalBackendRevisionId);
+    const releaseId=String(seed.items[0].sourceParameters?.canonicalBackendReleaseId);
+    const bundle=saveConsumerRepairBundle(appendCanonicalBackendRevisionProjection({previousBundle:null,nextBundle:seed,
+      payload:{workKey:'immutable-reopen-fixture',workTitle:prompt,canonicalBackend:{revisionId,releaseId,
+        compilerOwner:'backend',catalogId:'canonical-work:test:consumer-history-fixture',checksumSha256:'a'.repeat(64),preliminaryNeeds:[]}} as never}));
+    jest.spyOn(parameterEditor,'loadConsumerCanonicalRevisionDraftMapping').mockResolvedValue({payload:{workTitle:prompt,canonicalBackend:{revisionId,releaseId}},rows:[]} as never);
+    jest.spyOn(requestBinding,'buildStructuredEstimateRequestDraft').mockReturnValue(aiDraft);
+    jest.spyOn(consumerService,'upsertConsumerRepairCanonicalBackendDraft').mockReturnValue(bundle);
+    jest.spyOn(canonicalClient,'getCanonicalEstimateRevision').mockResolvedValue({revisionId,releaseId} as never);
+    jest.spyOn(canonicalClient,'listCanonicalEstimatePhotoAttachments').mockResolvedValue({attachments:[]} as never);
+    let finishArtifacts!: (value: Awaited<ReturnType<typeof artifactHydration.loadConsumerCanonicalReadyArtifacts>>) => void;
+    const loadArtifacts=jest.spyOn(artifactHydration,'loadConsumerCanonicalReadyArtifacts').mockImplementation(()=>new Promise(resolve=>{finishArtifacts=resolve;}));
+    let renderer!:TestRenderer.ReactTestRenderer;
+    await act(async()=>{renderer=TestRenderer.create(<ConsumerRepairRequestScreen consumerUserId={owner} initialCanonicalRevisionId={revisionId}/>);});
+    let restoring!:Promise<unknown>;
+    await act(async()=>{if(!mockLoadCanonicalRevision)throw Error('load_callback_missing');restoring=mockLoadCanonicalRevision({revisionId,requestDraftId:bundle.draft.id,problemText:prompt});await Promise.resolve();});
+    expect(loadArtifacts).toHaveBeenCalledTimes(1);
+    expect(renderer.root.findAllByProps({testID:'consumer-estimate-meaningful-preview'})).toHaveLength(0);
+    expect(mockAcceptCanonicalBackendDraft).not.toHaveBeenCalled();
+    let restored!:typeof bundle;
+    await act(async()=>{finishArtifacts([{artifactId:'pdf-ready',kind:'pdf',revisionId,releaseId},{artifactId:'buyer-ready',kind:'procurement',revisionId,releaseId}]);restored=await restoring as typeof bundle;});
+    const revision=restored.estimateDraftRevisionState?.revisions.find(r=>r.revisionId===revisionId);
+    expect(revision?.artifacts.pdfArtifactId).toBe('pdf-ready');expect(revision?.artifacts.procurementArtifactId).toBe('buyer-ready');
+    expect(renderer.root.findAllByProps({testID:'consumer-estimate-meaningful-preview'})).toHaveLength(0);
+    await act(async()=>renderer.unmount());
   });
 
   it.each(["open", "draft", "owner", "fingerprint"] as const)("preserves the saved manual preview's exact workspace through pending hydration: %s", async (scenario) => {

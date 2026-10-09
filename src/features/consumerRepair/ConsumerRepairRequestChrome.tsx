@@ -13,6 +13,7 @@ import type { GlobalSelectedWorkBinding, GlobalWorkSmartSearchSuggestion } from 
 import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import { ConsumerRepairDraftPanel } from "./ConsumerRepairDraftPanel";
+import { consumerRepairCanonicalBackendBinding } from "./consumerRepairBackendOwnership";
 import { ConsumerRepairHistory } from "./ConsumerRepairHistory";
 import { ConsumerRepairMarketplaceSend } from "./ConsumerRepairMarketplaceSend";
 import {
@@ -489,12 +490,14 @@ export function ConsumerRepairRequestContent({
     draftDecisionStatus === "SCOPE_REQUIRED" ||
     draftDecisionStatus === "PARAMETERS_REQUIRED" ||
     draftDecisionStatus === "LEGACY_REVIEW_REQUIRED" ||
-    Boolean(bundle?.structuredEstimatePayload);
+    Boolean(bundle?.structuredEstimatePayload) ||
+    Boolean(consumerRepairCanonicalBackendBinding(bundle));
   const statusNode = statusMessage
     ? <Text style={styles.status} testID="consumer-repair-status">{sanitizeRequestEstimatePublicText(statusMessage)}</Text>
     : null;
   const draftPanel = (
     <ConsumerRepairDraftPanel
+      key={`draft-panel:${bundle?.draft.id ?? "empty"}`}
       bundle={bundle}
       aiAnswerRu={aiAnswerRu}
       hasSelectedApprovedHistory={hasSelectedApprovedHistory}

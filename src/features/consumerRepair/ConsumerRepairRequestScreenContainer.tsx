@@ -1009,7 +1009,10 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
               {
                 replaceCanonicalRevisionHistory,
                 expectedWorkspaceGeneration,
-                showInitialPreview: props.initialCanonicalRevisionId?.trim() === revisionId,
+                // Reopening an immutable revision is one authoritative restore.
+                // A fresh-build preview would retain the pre-artifact bundle and
+                // publish it again when the user opens the full estimate.
+                showInitialPreview: false,
               },
             );
             if (bundle && workspacePlan.replaceCanonicalRevisionHistory) {

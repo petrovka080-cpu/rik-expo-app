@@ -27,6 +27,7 @@ import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairReq
 import type { ConsumerRepairRequestScreenState } from "./requestEstimateScreenActions";
 import { consumerRepairEstimateApprovalParameterErrors, consumerRepairExactAsphaltApprovalErrors } from "../../lib/consumerRequests/consumerRequestValidationService";
 import { consumerRepairCanonicalBackendBinding } from "./consumerRepairBackendOwnership";
+import { canonicalEstimateRevisionIdFromRoute } from "../../lib/navigation/canonicalEstimateRevisionDeepLink";
 import {
   consumerRepairCanonicalEstimateBlocksApproval,
   consumerRepairCanonicalUnpricedPayableRowCount,
@@ -76,6 +77,8 @@ export function consumerRepairBundleHasPdfEligibleSnapshot(
 type ConsumerRepairRequestScreenViewProps = {
   state: ConsumerRepairRequestScreenState;
   renderModel: ConsumerRepairRequestRenderModel;
+  expectedCanonicalRevisionId?: string | null;
+  openedCanonicalRouteRevisionId?: string | null;
   problemInputRef: React.RefObject<TextInput | null>;
   onGoToMarket: () => void;
   onProblemTextChange: (value: string) => void;
@@ -129,6 +132,8 @@ type ConsumerRepairRequestScreenViewProps = {
 export function ConsumerRepairRequestScreenView({
   state,
   renderModel,
+  expectedCanonicalRevisionId,
+  openedCanonicalRouteRevisionId,
   problemInputRef,
   onGoToMarket,
   onProblemTextChange,
@@ -178,6 +183,7 @@ export function ConsumerRepairRequestScreenView({
   onSelectRoadScope,
   onScrollPositionChange,
 }: ConsumerRepairRequestScreenViewProps) {
+  const canonicalReopenPending = consumerRepairCanonicalReopenPending(renderModel.bundle, expectedCanonicalRevisionId, openedCanonicalRouteRevisionId);
   const currentDraftRevisionState =
     getConsumerRepairCalculationStateForReadOnlyDisplay(renderModel.bundle);
   const currentDraftRevision =
@@ -238,6 +244,14 @@ export function ConsumerRepairRequestScreenView({
         scrollEventThrottle={16}
         testID="consumer-repair-screen"
       >
+        {canonicalReopenPending ? (
+          <View testID="consumer-canonical-revision-opening" style={{ padding: 16 }}>
+            <Text accessibilityLiveRegion="polite" style={styles.status}>
+              {/^(Не удалось открыть|Выбранная версия сметы недоступна)/u.test(state.statusMessage ?? "")
+                ? state.statusMessage : "Открываем сохранённую смету…"}
+            </Text>
+          </View>
+        ) : <>
         {!state.selectedWork && !state.bundle?.items.length && canonicalLanternIntent(state.problemText).ambiguous ? (
           <View style={{ gap: 10, padding: 16 }} testID="request-lantern-kind-choice">
             <Text style={{ fontSize: 17, fontWeight: '700' }}>Что вы называете фонарём?</Text>
@@ -353,8 +367,19 @@ export function ConsumerRepairRequestScreenView({
           onApplyAndApproveDraft={onApplyAndApproveDraft}
           onPrepareDraft={onPrepareDraft}
         />
+        </>}
       </AppScreenScroll>
     </AppScreen>
     </KeyboardAvoidingView>
   );
+}
+
+export function consumerRepairCanonicalReopenPending(
+  bundle: ConsumerRepairDraftBundle | null,
+  expectedRevisionId?: string | null,
+  openedRouteRevisionId?: string | null,
+): boolean {
+  const requested = canonicalEstimateRevisionIdFromRoute(expectedRevisionId);
+  const opened = canonicalEstimateRevisionIdFromRoute(openedRouteRevisionId);
+  return Boolean(requested && (opened !== requested || !consumerRepairCanonicalBackendBinding(bundle)));
 }

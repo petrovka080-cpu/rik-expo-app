@@ -385,6 +385,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private initialDeepLinkApplied = false;
   private launchIntentAcknowledged = false;
   private cachedScreenViewState: State | null = null;
+  private cachedScreenViewCanonicalRevisionId: string | null = null;
+  private cachedScreenViewOpenedCanonicalRevisionId: string | null = null;
+  private openedCanonicalRouteRevisionId: string | null = null;
+  private canonicalRevisionOpenGeneration = 0;
   private cachedScreenView: React.ReactElement | null = null;
   private historyLoaded = !shouldDeferInitialHistoryLoad(this.props);
   private workSuggestionsEnabled =
@@ -455,6 +459,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
   }
   componentWillUnmount(): void {
+    this.canonicalRevisionOpenGeneration += 1;
     this.canonicalNamingEvidenceDisposed = true;
     this.canonicalNamingEvidenceGeneration += 1;
     this.clearPdfCallerReadiness?.();
@@ -499,6 +504,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const canonicalRevisionChanged =
       prevProps.initialCanonicalRevisionId?.trim() !==
       this.props.initialCanonicalRevisionId?.trim();
+    if (canonicalRevisionChanged) {
+      this.openedCanonicalRouteRevisionId = null;
+      this.canonicalRevisionOpenGeneration += 1;
+    }
     if (
       launchChanged &&
       isFreshRequestEstimateLaunchWorkspace(this.props)
@@ -1403,6 +1412,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     problemText?: string | null;
     successMessage: string;
   }): Promise<void> => {
+    const openGeneration = ++this.canonicalRevisionOpenGeneration;
     try {
       const revision = await getCanonicalEstimateRevision(input.revisionId);
       if (
@@ -1432,6 +1442,12 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       if (session.revisionId !== revision.revisionId) {
         throw new Error("HISTORY_PARAMETER_SESSION_IDENTITY_MISMATCH");
       }
+      if (openGeneration !== this.canonicalRevisionOpenGeneration || this.canonicalNamingEvidenceDisposed) return;
+      // The route names the initial immutable revision. Accepted edits may
+      // publish children while retaining this URL; they must remain visible.
+      if (this.props.initialCanonicalRevisionId?.trim() === revision.revisionId) {
+        this.openedCanonicalRouteRevisionId = revision.revisionId;
+      }
       this.historyLoaded = true;
       this.setState({
         bundle,
@@ -1448,6 +1464,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         statusMessage: input.successMessage,
         validationErrors: [],
       }, () => {
+        if (openGeneration !== this.canonicalRevisionOpenGeneration || this.canonicalNamingEvidenceDisposed) return;
         if (this.props.initialCanonicalRevisionId?.trim() === revision.revisionId) {
           this.acknowledgeLaunchIntent(bundle);
         } else {
@@ -1455,6 +1472,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         }
       });
     } catch (error) {
+      if (openGeneration !== this.canonicalRevisionOpenGeneration || this.canonicalNamingEvidenceDisposed) return;
       const forbidden = error instanceof CanonicalEstimateApiError && ["ACCESS_DENIED", "NOT_FOUND"].includes(error.code);
       this.setState({
         statusMessage: forbidden
@@ -3365,10 +3383,15 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     }
   };
   private renderScreenView(state: State): React.ReactElement {
-    if (this.cachedScreenView && this.cachedScreenViewState === state) {
+    const expectedCanonicalRevisionId = this.props.initialCanonicalRevisionId?.trim() || null;
+    if (this.cachedScreenView && this.cachedScreenViewState === state
+      && this.cachedScreenViewCanonicalRevisionId === expectedCanonicalRevisionId
+      && this.cachedScreenViewOpenedCanonicalRevisionId === this.openedCanonicalRouteRevisionId) {
       return this.cachedScreenView;
     }
     this.cachedScreenViewState = state;
+    this.cachedScreenViewCanonicalRevisionId = expectedCanonicalRevisionId;
+    this.cachedScreenViewOpenedCanonicalRevisionId = this.openedCanonicalRouteRevisionId;
     const binding = consumerRepairCanonicalBackendBinding(state.bundle);
     const parameterSession = consumerRepairPendingCanonicalParameterCollection(state.bundle)
       ?? (state.canonicalBackendParameterSession?.revisionId === binding?.revisionId
@@ -3380,6 +3403,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     this.cachedScreenView = (
       <ConsumerRepairRequestScreenView
         state={viewState}
+        expectedCanonicalRevisionId={expectedCanonicalRevisionId}
+        openedCanonicalRouteRevisionId={this.openedCanonicalRouteRevisionId}
         renderModel={measureConsumerRepairQuantityRenderWork("SCREEN_RENDER_MODEL", () => {
           const build = () => buildConsumerRepairRequestRenderModel(viewState, { includeWorkSuggestions: this.workSuggestionsEnabled });
           return viewState.bundle ? this.firstPresentationTrace.measureSync("PRESENTATION_SCREEN_MODEL", build) : build();
