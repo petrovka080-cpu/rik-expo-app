@@ -1,0 +1,29 @@
+{
+  "contract": "rik-expo-app.s27-47.valtec-ppr20-mixed-endpoints.v1",
+  "sourceId": "VALTEC_PPR20_CONFIRMED_ENDPOINT_INTERFACES_S2747",
+  "scope": "Preliminary component selection for two explicitly declared cylindrical G threaded interfaces of one straight accessible PP-R20 cold-water segment assembled from4m pipe sections. The selected adapter has the complementary thread gender. This does not prove equipment compatibility, sealing design or a full distribution system.",
+  "endMode": "Два резьбовых подключения — каждое отдельно",
+  "primarySource": {
+    "sourceId": "VALTEC_VTP_700_FITTINGS_PASSPORT_2024",
+    "officialUrl": "https://valtec.ru/document/technical/VTp.700-fitingi-1224.pdf",
+    "localArtifact": ".release-runtime/r568/s27-23/q5-valtec-ppr-official-sources/VALTEC_VTp.700_FITTINGS_PASSPORT.pdf",
+    "artifactSha256": "94466bd325f95caaa3bd55767f4721fd9532c4e677c455d2bf21b34adaff5c9f",
+    "exactLocator": "PDF page2 section4: VTp.701 male and VTp.702 female, PP-R20 with1/2 or3/4inch thread; section3 cylindrical thread GOST6357-81. Each adapter has one PP-R fusion socket."
+  },
+  "previousFittingsPackSha256": "20e6ac5d7529f93d24425a7a10d7b8e2ab588825adbaa5c0095e1d2f0c95e067",
+  "endpointQuestions": [
+    { "parameterId": "route_start_thread_interface", "titleRu": "Резьба узла в начале участка" },
+    { "parameterId": "route_finish_thread_interface", "titleRu": "Резьба узла в конце участка" }
+  ],
+  "variants": [
+    { "interfaceRu": "Внутренняя резьба G 1/2″", "countParameterId": "route_derived_vtp701_half_count", "rowId": "water-ppr20:05:component:thread-vtp701-half", "titleRu": "VALTEC VTp.701, PP-R 20 мм × 1/2″, наружная резьба" },
+    { "interfaceRu": "Внутренняя резьба G 3/4″", "countParameterId": "route_derived_vtp701_threequarter_count", "rowId": "water-ppr20:05:component:thread-vtp701-threequarter", "titleRu": "VALTEC VTp.701, PP-R 20 мм × 3/4″, наружная резьба" },
+    { "interfaceRu": "Наружная резьба G 1/2″", "countParameterId": "route_derived_vtp702_half_count", "rowId": "water-ppr20:05:component:thread-vtp702-half", "titleRu": "VALTEC VTp.702, PP-R 20 мм × 1/2″, внутренняя резьба" },
+    { "interfaceRu": "Наружная резьба G 3/4″", "countParameterId": "route_derived_vtp702_threequarter_count", "rowId": "water-ppr20:05:component:thread-vtp702-threequarter", "titleRu": "VALTEC VTp.702, PP-R 20 мм × 3/4″, внутренняя резьба" }
+  ],
+  "limitations": [
+    "Unknown actual endpoint interfaces are not defaulted. Other diameters, thread standards, sealing arrangements and equipment compatibility need their applicable specifications.",
+    "Different endpoints are enabled only within the declared straight4m route; existing project schedules and homogeneous endpoint selections retain their owners.",
+    "Counts and welding sockets use the canonical core; prices are supplied separately for each exact model without copying the old homogeneous price."
+  ]
+}
