@@ -70,6 +70,9 @@ export type MasterSingleDefinitionSuccessorConfig = Readonly<{
     includedScopeRu: readonly string[];
     excludedScopeRu: readonly string[];
     independentCompletenessMap?: Readonly<Json>;
+    /** Explicitly admitted preliminary composition; never mark its unresolved
+     * applicable resources as a complete technical scope. */
+    unresolvedApplicableResourceRowIds?: readonly string[];
   }>;
   applicability: Json;
   binding: Readonly<{
@@ -838,6 +841,21 @@ async function auditState(
   };
 }
 
+export function buildMasterCapabilityMatrix(unresolvedRows: readonly string[] | undefined, resources: readonly Json[]): Json[] {
+  if (unresolvedRows != null && (unresolvedRows.length === 0
+    || new Set(unresolvedRows).size !== unresolvedRows.length
+    || unresolvedRows.some(id => !resources.some(resource => resource.row_id === id)))) {
+    throw new Error('MASTER_LIMITED_SCOPE_REQUIRES_EXISTING_UNRESOLVED_RESOURCES');
+  }
+  return [
+    { capability: 'PARAMETERS', status: 'GREEN' },
+    { capability: 'FORMULAS_AND_PHYSICAL_PARITY', status: 'GREEN' },
+    { capability: 'FULL_APPLICABLE_SCOPE', status: unresolvedRows == null ? 'GREEN' : 'NEEDS_SOURCE',
+      ...(unresolvedRows == null ? {} : { unresolvedResourceRowIds: [...unresolvedRows], preliminaryCompositionOnly: true }) },
+    { capability: 'PRICE', status: 'GREEN_UNKNOWN_IS_NULL' },
+  ];
+}
+
 export async function runMasterSingleDefinitionSuccessorR1(
   config: MasterSingleDefinitionSuccessorConfig,
 ): Promise<void> {
@@ -1282,12 +1300,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
         passport: {
           contract_version: CONTENT_PASSPORT_CONTRACT,
           included_scope_ru: config.passport.includedScopeRu,
-          capability_matrix: [
-            { capability: "PARAMETERS", status: "GREEN" },
-            { capability: "FORMULAS_AND_PHYSICAL_PARITY", status: "GREEN" },
-            { capability: "FULL_APPLICABLE_SCOPE", status: "GREEN" },
-            { capability: "PRICE", status: "GREEN_UNKNOWN_IS_NULL" },
-          ],
+          capability_matrix: buildMasterCapabilityMatrix(config.passport.unresolvedApplicableResourceRowIds, resourceRows),
         },
       },
       parameterTruthMetadata: (parameter) => ({

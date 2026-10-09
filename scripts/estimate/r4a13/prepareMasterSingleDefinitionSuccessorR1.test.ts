@@ -5,9 +5,26 @@ import {
 } from "./canonicalDefinitionPublisherR1";
 import {
   buildMasterParameterCalculationConsumers,
+  buildMasterCapabilityMatrix,
   resolveMasterSingleDefinitionNextCounts,
   validateIndependentCompletenessMapReferences,
 } from "./prepareMasterSingleDefinitionSuccessorR1";
+
+describe('preliminary publisher capability boundary', () => {
+  it('persists named unresolved resources without declaring the applicable scope complete', () => {
+    const matrix = buildMasterCapabilityMatrix(['installation'], [{ row_id: 'base' }, { row_id: 'installation' }]);
+    expect(matrix.find(entry => entry.capability === 'FULL_APPLICABLE_SCOPE')).toEqual({
+      capability: 'FULL_APPLICABLE_SCOPE', status: 'NEEDS_SOURCE', unresolvedResourceRowIds: ['installation'], preliminaryCompositionOnly: true,
+    });
+    expect(matrix.find(entry => entry.capability === 'PRICE')?.status).toBe('GREEN_UNKNOWN_IS_NULL');
+    expect(buildMasterCapabilityMatrix(undefined, [])[2]).toEqual({ capability: 'FULL_APPLICABLE_SCOPE', status: 'GREEN' });
+  });
+  it('rejects an empty, missing or duplicate unresolved row claim', () => {
+    for (const rows of [[], ['absent'], ['installation', 'installation']]) {
+      expect(() => buildMasterCapabilityMatrix(rows, [{ row_id: 'installation' }])).toThrow('MASTER_LIMITED_SCOPE');
+    }
+  });
+});
 
 describe("master publisher calculation consumers without DB publication", () => {
   it("uses formula, resource fact/title gates and inclusion controls, not invented consumers", () => {

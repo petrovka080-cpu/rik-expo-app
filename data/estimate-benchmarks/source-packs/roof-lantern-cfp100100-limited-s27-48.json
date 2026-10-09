@@ -1,0 +1,118 @@
+{
+  "contract": "rik-expo-app.s27-48.velux-cfp100100-limited-composition.v1",
+  "sourceId": "VELUX_CFP_Q_73FQV_ISD_0010_100100_S2747",
+  "catalogId": "canonical-work:expanded:roof_lanterns",
+  "status": "LIMITED_PRODUCT_COMPOSITION_CANDIDATE_NOT_FULL_TECHNOLOGY",
+  "model": "VELUX CFP Q 73FQV 100100 + ISD 100100 0010",
+  "scopeRu": "Предварительная потребность в одинаковых глухих фонарях указанной модели. Количества монтажных ресурсов требуют отдельного подтверждения. Проём, световая площадь и поверхность остекления имеют разный смысл.",
+  "sources": [
+    {
+      "sourceId": "VELUX_CFP_Q_73FQV_DATASHEET_20260929",
+      "officialUrl": "https://contenthub.velux.com/api/public/content/5f17f-108e5-014ed_downloadOriginal",
+      "localArtifact": ".release-runtime/r568/s27-47/lantern-cfp100100-resume-20261009/cfp73qv-datasheet.pdf",
+      "artifactSha256": "6be4bdcecc4b81f9beccc2a5eaf11caa245234c369aa6dbb76134390d9b8c922",
+      "exactLocator": "PDF pages 1-3; CFP Q glazing 73FQV; size 100100; effective daylight area 0.7m2; base net mass 46.743kg; top and base supplied separately",
+      "visuallyVerifiedPages": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "sourceId": "VELUX_ISD_0010_DATASHEET_20260929",
+      "officialUrl": "https://contenthub.velux.com/api/public/content/2bb35-eb99b-404eb_downloadOriginal?v=5f26324a",
+      "localArtifact": ".release-runtime/r568/s27-47/lantern-cfp100100-resume-20261009/isd0010-datasheet.pdf",
+      "artifactSha256": "b61db746eecaf05434b10dc8e14741a53a5606dc467ee79ae830764c002ea338",
+      "exactLocator": "PDF pages 2-3; size 100100; effective daylight area 0.70m2; top net mass 6.511kg; compatibility CFP and pitch 0-15deg",
+      "visuallyVerifiedPages": [
+        2,
+        3
+      ],
+      "sourceAmbiguity": "Page 3 repeats heading 090120. Only the unambiguous column 100100 is used; other sizes are not admitted by this pack."
+    },
+    {
+      "sourceId": "VELUX_CFP_INSTALLATION_451997_202609",
+      "officialUrl": "https://contenthub.velux.com/api/public/content/product-guide_451997",
+      "localArtifact": ".release-runtime/r568/s27-47/lantern-cfp100100-resume-20261009/cfp-isd-installation.pdf",
+      "artifactSha256": "535c7b9758683c7ab414d9f856d1b06b5826082fb2763aa53d590250f8af6928",
+      "exactLocator": "VAS451997-2026-09; pages 3-9, no ZCE extension; page4 actual roof opening 1000-1010mm each side; page5 spacing maximum300mm and minimum100mm from illustrated edge; pages7-9 flashing sequence",
+      "visuallyVerifiedPages": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "restriction": "Illustrated screws do not establish one universal supplied screw count. The flashing sequence does not establish a universal membrane consumption or labour time. ZZZ210 is not assumed to be a structural fixing kit."
+    },
+    {
+      "sourceId": "VELUX_ISD_100100_INSTALLATION_454625_202512",
+      "officialUrl": "https://contenthub.velux.com/api/public/content/product-guide_454625",
+      "localArtifact": ".release-runtime/r568/s27-47/lantern-cfp100100-resume-20261009/isd100100-installation.pdf",
+      "artifactSha256": "5c3e71a76823525b711213e2671dc088510db1af1899f851d41fdf36c74a8c2b",
+      "exactLocator": "VAS454625-2025-12; PDF1 exact ISD100100; PDF2 printed2-3 protective film removal, lowering the dome, integrated fastening alternatives A/B and retention of supplied key",
+      "visuallyVerifiedPages": [
+        1,
+        2,
+        3
+      ],
+      "restriction": "Treat integrated fastenings as one included assembly per dome, not an extra purchase. Do not infer a universal loose fastener count or roof-substrate anchor specification from this illustration."
+    }
+  ],
+  "productFacts": {
+    "roofOpeningNominalWidthMm": 1000,
+    "roofOpeningNominalHeightMm": 1000,
+    "permittedOpeningMinMm": 1000,
+    "permittedOpeningMaxMm": 1010,
+    "effectiveDaylightAreaM2": 0.7,
+    "baseNetMassKg": 46.743,
+    "domeNetMassKg": 6.511,
+    "roofPitchMinDeg": 0,
+    "roofPitchMaxDeg": 15,
+    "baseUnitsPerSolution": 1,
+    "domeUnitsPerSolution": 1,
+    "includedBaseGlazingAssemblies": 1,
+    "includedDomeFasteningAssemblies": 1
+  },
+  "ordinaryInputParameterIds": [
+    "lantern_count",
+    "lantern_model"
+  ],
+  "unresolvedApplicationParameters": {
+    "mounting_fixings_per_unit": "Applicable substrate, fixing specification and approved layout; source does not prove exact count.",
+    "flashing_consumption_m2_per_unit": "Compatible roof membrane and measured detail including overlaps; roof opening area is not consumption.",
+    "installation_hours_per_unit": "Applicable labour norm or approved installation method; no guessed hours.",
+    "lifting_shifts": "Approved access/lifting arrangement and capacity; mass alone does not determine shifts.",
+    "delivery_trips": "Supplier shipment and transport capacity; net product mass excludes packing.",
+    "inspection_hours_per_unit": "Applicable inspection scope and time norm.",
+    "vapour_connection_sets_per_unit": "Applicable continuous vapour-barrier connection. BBX family shown in CFP guide; exact current-generation accessory and roof vapour layer need confirmation; do not duplicate a barrier included in LSF lining.",
+    "thermal_connection_m3_per_unit": "Actual roof build-up, compatible insulation and measured kerb junction. Manufacturer guide pages6/15 shows continuity; no universal volume is stated.",
+    "extension_frames_per_unit": "Actual roof height/build-up and specified upstand. Guide pages10-11 has different one/two ZCE arrangements; no automatic zero or universal extension count.",
+    "membrane_termination_sets_per_unit": "Compatible covering system and termination detail. ZZZ210 in CFP guide pages9/19 is a membrane securing kit, not roof anchors; exact applicability is not inferred from the opening size.",
+    "protective_film_removal_hours": "Manufacturer ISD454625 PDF2 requires protective-film removal. Applicable time and inclusion in installation labour are unconfirmed; no separate double payment.",
+    "final_cleanup_hours": "Required final cleaning boundary, packaging collection and applicable labour norm remain unconfirmed; no default hours.",
+    "packaging_waste_service_kg": "Actual packaging/film waste, suitable collection containers, loading, transport, fuel and authorised reception must be scoped together. Net product mass is not packaging waste; no transport quantity is inferred."
+  },
+  "acceptanceRestrictions": [
+    "Product quantities are known only after this exact model is explicitly selected.",
+    "Effective daylight area is informational; it is neither bought glazing nor dome surface area.",
+    "The included glazing assembly has no second payment or procurement owner.",
+    "Full technical estimate, supplier prices and Web/Android acceptance remain open.",
+    "Only the explicit limited product composition can be admitted; all installation/completion needs stay unresolved. The 18 withdrawn old definitions remain restricted."
+  ],
+  "acceptedNewTypes": 0
+}
