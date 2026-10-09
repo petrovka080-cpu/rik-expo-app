@@ -15,7 +15,7 @@ import { canonicalEstimateOperationReference } from "./canonicalEstimateOperatio
 import { canonicalArtifactPurchaseRequirement } from "./canonicalPersistedPurchaseBalance";
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-47-quiet-operation-groups-template19" as const;
+  "canonical-professional-pdf.r4-a13-s27-48-included-cost-caption-template20" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -167,7 +167,7 @@ function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, rows
     ? null
     : costTreatment === "INCLUDED_IN_RESOURCE_ROWS"
       ? ownerTitle ? `Отдельно не оплачивается: стоимость включена в позицию «${ownerTitle}».`
-        : "Отдельно не оплачивается: стоимость учитывается в труде и механизмах."
+        : "Отдельно не оплачивается; включено в стоимость других позиций."
       : costTreatment === "CONTROL_OR_DOCUMENT"
         ? "Контрольная или исполнительная позиция; отдельно не суммируется."
         : costTreatment === "INFORMATIONAL_SCOPE"

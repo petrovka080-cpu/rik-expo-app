@@ -168,7 +168,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-47-quiet-operation-groups-template19");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-48-included-cost-caption-template20");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,
@@ -509,7 +509,8 @@ describe("R4-A6 canonical professional PDF", () => {
         preliminaryNeeds: [{ ...rows(1)[0]!, row_id: "preliminary", ordinal: 3, included_in_estimate: false,
           quantity: null, unit_price: null, amount: null, ownership_status: "PRELIMINARY_NEED" }], workTitleRu: "Без владельца" });
       expect(projection.html).not.toContain("стоимость включена в позицию");
-      expect(projection.html.match(/стоимость учитывается в труде и механизмах/gu)).toHaveLength(2);
+      expect(projection.html.match(/Отдельно не оплачивается; включено в стоимость других позиций/gu)).toHaveLength(2);
+      expect(projection.html).not.toContain("стоимость учитывается в труде и механизмах");
     }
     source[1]!.calculation_trace = { resourceGraph: { costTreatment: "INCLUDED_IN_RESOURCE_ROWS", includedInResourceOwnerRowId: "row-1" } };
     source[0]!.included_in_estimate = false;
