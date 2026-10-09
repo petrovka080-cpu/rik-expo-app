@@ -23,11 +23,15 @@ function text(value: unknown): string {
 }
 
 const verifiedDisplayPresentations = new WeakMap<object, CanonicalPublicResourcePresentationV1>();
+const verifiedSearchPresentations = new WeakMap<object, CanonicalPublicResourcePresentationV1>();
 
 /** View-only admission: never persisted in an item or trusted from raw metadata. */
-export function registerConsumerRepairRowVerifiedPresentation(item: object, presentation: CanonicalPublicResourcePresentationV1 | null): void {
+export function registerConsumerRepairRowVerifiedPresentation(item: object, presentation: CanonicalPublicResourcePresentationV1 | null,
+  sourcePresentation?: CanonicalPublicResourcePresentationV1 | null): void {
   if (presentation) verifiedDisplayPresentations.set(item, presentation);
   else verifiedDisplayPresentations.delete(item);
+  if (presentation && sourcePresentation?.sourceTitleRu === presentation.sourceTitleRu) verifiedSearchPresentations.set(item, sourcePresentation);
+  else verifiedSearchPresentations.delete(item);
 }
 
 export function consumerRepairRowPublicResourcePresentation(item: ConsumerRepairRowMetadataCarrier) {
@@ -39,7 +43,9 @@ export function consumerRepairRowMatchesSearch(item: ConsumerRepairRowMetadataCa
   const normalized = query.trim().toLocaleLowerCase('ru-RU');
   if (!normalized) return true;
   const presentation = consumerRepairRowPublicResourcePresentation(item);
+  const source = presentation ? verifiedSearchPresentations.get(item) : null;
   return [item.titleRu, item.category, item.quantityFormula, item.normSourceTitle,
+    source?.sourceTitleRu, source?.brandAndModelRu, source?.specificationRu, ...(source?.detailsRu ?? []),
     presentation?.brandAndModelRu, presentation?.specificationRu, ...(presentation?.detailsRu ?? [])]
     .some(value => String(value ?? '').toLocaleLowerCase('ru-RU').includes(normalized));
 }

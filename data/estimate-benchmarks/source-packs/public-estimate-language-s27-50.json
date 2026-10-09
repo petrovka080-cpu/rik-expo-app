@@ -1,0 +1,135 @@
+{
+  "contract": "canonical-public-estimate-language/s27-50",
+  "identityRule": "Exact saved source title AND stable row ID. Manual names and replacement specifications are preserved.",
+  "inheritedSources": [
+    "roof-lantern-cfp100100-limited-s27-48.json",
+    "water-valtec-ppr20-mixed-endpoints-s27-47.json"
+  ],
+  "bindings": [
+    {
+      "rowId": "roof-cfp100100:base",
+      "sourceTitleRu": "Основание VELUX CFP Q 73FQV 100100 со стеклопакетом",
+      "nameRu": "Основание окна со стеклопакетом — проём 100 × 100 см"
+    },
+    {
+      "rowId": "roof-cfp100100:dome",
+      "sourceTitleRu": "Прозрачный купол VELUX ISD 100100 0010",
+      "nameRu": "Прозрачный купол для окна с проёмом 100 × 100 см"
+    },
+    {
+      "rowId": "roof-cfp100100:included-glazing",
+      "sourceTitleRu": "Стеклопакет в составе основания CFP — включён",
+      "nameRu": "Стеклопакет — входит в основание окна"
+    },
+    {
+      "rowId": "roof-cfp100100:included-dome-fastening",
+      "sourceTitleRu": "Встроенные узлы крепления купола ISD — включены в купол",
+      "nameRu": "Крепёж купола — входит в комплект"
+    },
+    {
+      "rowId": "roof-cfp100100:daylight",
+      "sourceTitleRu": "Эффективная световая площадь — справочно",
+      "nameRu": "Площадь, через которую проходит дневной свет"
+    },
+    {
+      "rowId": "roof-cfp100100:product-net-mass",
+      "sourceTitleRu": "Масса оснований и куполов без упаковки — справочно",
+      "nameRu": "Вес окон без упаковки"
+    },
+    {
+      "rowId": "roof-cfp100100:fixings",
+      "sourceTitleRu": "Крепление основания к несущему основанию — норма не подтверждена",
+      "nameRu": "Крепёж окна к крыше"
+    },
+    {
+      "rowId": "roof-cfp100100:flashing",
+      "sourceTitleRu": "Гидроизоляция примыкания — расход не подтверждён",
+      "nameRu": "Защита от протечек вокруг окна"
+    },
+    {
+      "rowId": "roof-cfp100100:vapour-connection",
+      "sourceTitleRu": "Пароизоляционное примыкание — комплект и включение в отделку не подтверждены",
+      "nameRu": "Защита утеплителя от влаги со стороны помещения"
+    },
+    {
+      "rowId": "roof-cfp100100:thermal-connection",
+      "sourceTitleRu": "Непрерывность утепления примыкания — материал и объём не подтверждены",
+      "nameRu": "Утепление вокруг окна"
+    },
+    {
+      "rowId": "roof-cfp100100:extension",
+      "sourceTitleRu": "Доборное основание — необходимость и исполнение не подтверждены",
+      "nameRu": "Дополнительное основание окна"
+    },
+    {
+      "rowId": "roof-cfp100100:membrane-termination",
+      "sourceTitleRu": "Завершение мембранного примыкания — применимый комплект не подтверждён",
+      "nameRu": "Соединение окна с кровельным покрытием"
+    },
+    {
+      "rowId": "roof-cfp100100:installation",
+      "sourceTitleRu": "Монтаж основания и купола — трудозатраты не подтверждены",
+      "nameRu": "Установка основания и купола окна"
+    },
+    {
+      "rowId": "roof-cfp100100:lifting",
+      "sourceTitleRu": "Подъём и доступ — схема не подтверждена",
+      "nameRu": "Подъём окна на крышу"
+    },
+    {
+      "rowId": "roof-cfp100100:delivery",
+      "sourceTitleRu": "Доставка фонарей — условия не подтверждены",
+      "nameRu": "Доставка окон"
+    },
+    {
+      "rowId": "roof-cfp100100:inspection",
+      "sourceTitleRu": "Проверка монтажа — трудозатраты не подтверждены",
+      "nameRu": "Проверка установленных окон"
+    },
+    {
+      "rowId": "roof-cfp100100:opening-width",
+      "sourceTitleRu": "Номинальная ширина проёма для одного фонаря — справочно",
+      "nameRu": "Ширина проёма для одного окна"
+    },
+    {
+      "rowId": "roof-cfp100100:opening-height",
+      "sourceTitleRu": "Номинальная длина проёма для одного фонаря — справочно",
+      "nameRu": "Длина проёма для одного окна"
+    },
+    {
+      "rowId": "roof-cfp100100:protective-film",
+      "sourceTitleRu": "Снятие защитной плёнки — включение в монтаж и труд не подтверждены",
+      "nameRu": "Снятие защитной плёнки"
+    },
+    {
+      "rowId": "roof-cfp100100:final-cleanup",
+      "sourceTitleRu": "Финальная уборка и сбор упаковки — граница и труд не подтверждены",
+      "nameRu": "Уборка после установки окон"
+    },
+    {
+      "rowId": "roof-cfp100100:packaging-waste",
+      "sourceTitleRu": "Упаковка: сбор, погрузка, вывоз и приём — партия и состав услуги не подтверждены",
+      "nameRu": "Сбор и вывоз упаковки"
+    },
+    {
+      "rowId": "water-ppr20:05:component:thread-vtp701-half",
+      "sourceTitleRu": "VALTEC VTp.701, PP-R 20 мм × 1/2″, наружная резьба",
+      "nameRu": "Переходник PP-R 20 мм × 1/2″, наружная резьба"
+    },
+    {
+      "rowId": "water-ppr20:05:component:thread-vtp701-threequarter",
+      "sourceTitleRu": "VALTEC VTp.701, PP-R 20 мм × 3/4″, наружная резьба",
+      "nameRu": "Переходник PP-R 20 мм × 3/4″, наружная резьба"
+    },
+    {
+      "rowId": "water-ppr20:05:component:thread-vtp702-half",
+      "sourceTitleRu": "VALTEC VTp.702, PP-R 20 мм × 1/2″, внутренняя резьба",
+      "nameRu": "Переходник PP-R 20 мм × 1/2″, внутренняя резьба"
+    },
+    {
+      "rowId": "water-ppr20:05:component:thread-vtp702-threequarter",
+      "sourceTitleRu": "VALTEC VTp.702, PP-R 20 мм × 3/4″, внутренняя резьба",
+      "nameRu": "Переходник PP-R 20 мм × 3/4″, внутренняя резьба"
+    }
+  ]
+}

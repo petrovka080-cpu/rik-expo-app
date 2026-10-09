@@ -70,6 +70,35 @@ function canonicalPurchaseBalancePlanV1(
   return { fail, policy, quantityMode, decimal, scoped, selectedOrder, fields, cached };
 }
 
+function assertCanonicalPurchaseOrderQuantityV1(
+  plan: NonNullable<ReturnType<typeof canonicalPurchaseBalancePlanV1>>,
+  quantity: string,
+  quantum: string | null,
+) {
+  if ((plan.decimal || plan.scoped) && (!isFormulaGraphExactDecimal(quantity) || compareFormulaGraphDecimals(quantity, "0") < 0)) {
+    plan.fail("ROW_AMENDMENT_INVALID", "purchase quantity is outside the exact canonical decimal domain");
+  }
+  if (quantum != null && compareFormulaGraphDecimals(quantum, "0") <= 0) plan.fail("DEFINITION_INTEGRITY_FAILED", "purchase quantum must be positive");
+  if (quantum != null && !isFormulaGraphDecimalMultiple(quantity, quantum)) {
+    plan.fail("ROW_AMENDMENT_INVALID", "purchase quantity violates declared whole supply quantum");
+  }
+}
+
+/** A known supply step still constrains a manual order when consumption is
+ * unknown. This validates the order only; it never supplies a missing norm,
+ * creates a consumption balance or marks procurement ready. */
+export function validateCanonicalPurchaseOrderQuantityV1(
+  raw: unknown, rowId: string, unitId: string, quantity: string,
+  parameters: Record<string, FormulaParameterValue>, declaredParameters: ReadonlySet<string>,
+): void {
+  const plan = canonicalPurchaseBalancePlanV1(raw, rowId, unitId, declaredParameters);
+  if (!plan) return;
+  const graph = plan.decimal ? null : plan.cached.graphs[plan.fields.indexOf("orderQuantumExpression")];
+  const quantum = graph && graph.inputParameterIds.every(id => parameters[id] != null && parameters[id] !== "")
+    ? evaluateFormulaGraph(graph.ast, parameters) : null;
+  assertCanonicalPurchaseOrderQuantityV1(plan, quantity, quantum);
+}
+
 export function resolveCanonicalPurchaseBalanceV1(
   raw: unknown, rowId: string, unitId: string, quantity: string,
   parameters: Record<string, FormulaParameterValue>, declaredParameters: ReadonlySet<string>,
@@ -91,13 +120,7 @@ export function resolveCanonicalPurchaseBalanceV1(
   if (plannedConsumption != null && compareFormulaGraphDecimals(plannedConsumption, consumed) > 0) {
     fail("DEFINITION_INTEGRITY_FAILED", "selected order requirement below planned consumption");
   }
-  if ((decimal || scoped) && (!isFormulaGraphExactDecimal(quantity) || compareFormulaGraphDecimals(quantity, "0") < 0)) {
-    fail("ROW_AMENDMENT_INVALID", "purchase quantity is outside the exact canonical decimal domain");
-  }
-  if (quantum != null && compareFormulaGraphDecimals(quantum, "0") <= 0) fail("DEFINITION_INTEGRITY_FAILED", "purchase quantum must be positive");
-  if (quantum != null && !isFormulaGraphDecimalMultiple(quantity, quantum)) {
-    fail("ROW_AMENDMENT_INVALID", "purchase quantity violates declared whole supply quantum");
-  }
+  assertCanonicalPurchaseOrderQuantityV1(plan, quantity, quantum);
   const evaluate = (expression: string) => evaluateFormulaGraph(compileFormulaGraph(expression).ast, {});
   const available = `${stock}+${quantity}-${consumed}`;
   const remaining = evaluate(`max(0,${available})`);

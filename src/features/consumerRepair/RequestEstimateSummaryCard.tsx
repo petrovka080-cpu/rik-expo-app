@@ -40,7 +40,7 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
         <Text style={styles.summary} numberOfLines={2}>{viewModel.summary}</Text>
         {viewModel.visibleLines.length > 0 ? (
           <View style={styles.visibleLines} testID="request-estimate-visible-lines">
-            <Text style={styles.meta}>Ключевые рассчитанные позиции:</Text>
+            <Text style={styles.meta}>Основные материалы и работы:</Text>
             {viewModel.visibleLines.slice(0, 4).map((line) => (
               <Text key={line.id} style={styles.visibleLine}>{line.text}</Text>
             ))}
@@ -53,7 +53,7 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
         </Text>
         {viewModel.preliminaryNeedCount ? (
           <Text style={styles.meta} testID="request-estimate-preliminary-need-count">
-            {`Требуют уточнения: ${viewModel.preliminaryNeedCount} ${pluralizeRu(viewModel.preliminaryNeedCount, "позиция", "позиции", "позиций")}`}
+            {`Пока не рассчитано: ${viewModel.preliminaryNeedCount} ${pluralizeRu(viewModel.preliminaryNeedCount, "позиция", "позиции", "позиций")}`}
           </Text>
         ) : null}
         <Text style={styles.total}>
@@ -81,7 +81,9 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
             ? sourceGateCount > 0 && consumerInputCount === 0
               ? "Неполный расчёт: технические нормы должен подтвердить каталог или специалист. Эти позиции не входят в стоимость и закупку до появления источника."
               : `Неполный расчёт: нужны ещё ${missingParameterCount} ${pluralizeRu(missingParameterCount, "параметр", "параметра", "параметров")}. Подтверждение договорной версии пока недоступно.`
-            : "Предварительный расчёт. Для договорной сметы требуется проверка специалиста и цен."}
+            : viewModel.preliminaryNeedCount > 0
+              ? "Для части материалов и работ пока нет расчёта. Их должен проверить специалист; они не включены в общую стоимость."
+              : "Это черновик сметы. Проверьте материалы, работы и цены перед заказом."}
         </Text>
       </View>
     );

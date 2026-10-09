@@ -5,8 +5,24 @@ import {
   foundationDraftWithManualCatalogItem,
   foundationViewModel,
 } from "./requestEstimateBoqCatalogTestHelpers";
+import { resourceDefinitions as roofResources } from '../../src/lib/estimate/v4/roofWindowOperationResourcesS2750';
 
 describe("request estimate view model", () => {
+  it('shows saved roof operations in the common order without duplicating a shared item or treating characteristics as work', () => {
+    const source=foundationDraftWithManualCatalogItem();
+    const items=roofResources.slice().reverse().map(row=>({...source.items[0]!,id:row.row_id,titleRu:row.title_ru,
+      quantity:null,unit:row.unit_id,unitPrice:null,totalPrice:null,sourceParameters:{
+        smartEstimateProjectionV2:{stage:row.section},canonicalOperationComposition:row.resource_graph.operationCompositionV1,
+        includedInEstimate:true,canonicalPreliminaryNeed:true,
+      }}));
+    const snapshot=JSON.stringify(items);
+    const vm=buildRequestEstimateViewModel({...source,items})!;
+    expect(vm.sections.map(section=>section.operation?.processOrdinal)).toEqual([10,20,30,40,50,60,90]);
+    expect(vm.sections.flatMap(section=>section.items)).toHaveLength(21);
+    expect(vm.sections.flatMap(section=>section.sharedResources ?? [])).toHaveLength(1);
+    expect(vm.sections.at(-1)!.operation?.processRole).toBe('REFERENCE_ONLY');
+    expect(JSON.stringify(items)).toBe(snapshot);
+  });
   it('preserves a compact historical sum without treating unloaded rows as missing prices', () => {
     const source = foundationDraftWithManualCatalogItem();
     const vm = buildRequestEstimateViewModel({ ...source, items: [], durableHistorySummary: {

@@ -52,6 +52,7 @@ import {
 } from "../../lib/foremanAiEstimate";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
 import { logger } from "../../lib/logger";
+import { canonicalPublicEstimateParameterTitleRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
 import { createConsumerEstimateHydrationTrace } from "../../lib/consumerRequests/consumerEstimateHydrationTrace";
 import {
   assertConsumerCanonicalChildRevision,
@@ -377,7 +378,7 @@ function buildParameter(input: {
       : "OPTIONAL" as const;
   return {
     parameterId: input.schema.parameterId,
-    label: labelRu,
+    label: canonicalPublicEstimateParameterTitleRu(input.schema.parameterId, labelRu),
     consumerInputRole: canonicalEstimateConsumerInputRole(input.schema),
     description: input.schema.descriptionRu || guide?.guideShortRu || labelRu,
     value,

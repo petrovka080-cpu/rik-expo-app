@@ -1,0 +1,39 @@
+{
+  "contract": "rik-expo-app.s27-50.roof-window-operation-resources.v1",
+  "inheritedSourcePack": "roof-lantern-cfp100100-limited-s27-48.json",
+  "inheritedSourcePackSha256": "388befbd55651203efe9bfbc205fcc272c1d84c1d82b41f45e8a416bff5e362b",
+  "scopeRu": "Состав затрат для одного подтверждённого исполнения неоткрывающегося окна с куполом и проёмом 100 × 100 см. Связи операций и ресурсов уточнены по закреплённому составу и инструкции. Порядок разделов не является полной технологической инструкцией. Нормы, количества, комплектность и владельцы затрат унаследованы без изменений; 13 потребностей остаются неподтверждёнными.",
+  "operations": {
+    "delivery": { "titleRu": "Доставка и подъём на крышу", "criterionRu": "Изделия доставлены и подняты по подтверждённой схеме; условия и объём услуг требуют уточнения.", "ordinal": 10 },
+    "base": { "titleRu": "Установка основания окна", "criterionRu": "Основание закреплено по совместимому проектному решению. Общий труд установки основания и купола учтён здесь одной позицией.", "ordinal": 20 },
+    "thermal": { "titleRu": "Утепление и защита от пара", "criterionRu": "Утепление и пароизоляция соединены с выбранной конструкцией крыши; состав и последовательность узла требуют подтверждения.", "ordinal": 30 },
+    "waterproof": { "titleRu": "Защита стыков от протечек", "criterionRu": "Примыкание соединено с выбранным кровельным покрытием по совместимому решению.", "ordinal": 40 },
+    "dome": { "titleRu": "Подготовка и установка купола", "criterionRu": "Защитная плёнка снята до установки купола; купол соединён с основанием включёнными узлами. Общий труд монтажа не начисляется повторно.", "ordinal": 50 },
+    "finish": { "titleRu": "Проверка, уборка и вывоз упаковки", "criterionRu": "Монтаж проверен, рабочее место убрано; партия и полный состав услуги вывоза требуют подтверждения.", "ordinal": 60 },
+    "reference": { "titleRu": "Характеристики окна", "criterionRu": "Справочные паспортные величины выбранного исполнения; не являются услугами или закупкой.", "ordinal": 90 }
+  },
+  "resourceOperations": {
+    "roof-cfp100100:base": { "operation": "base", "locators": ["CFP 73FQV datasheet pp.1–3; CFP+ISD installation pp.3–5"] },
+    "roof-cfp100100:dome": { "operation": "dome", "locators": ["ISD 0010 datasheet pp.2–3; ISD dome installation PDF p.2 steps1–2"] },
+    "roof-cfp100100:included-glazing": { "operation": "base", "locators": ["CFP 73FQV datasheet pp.1–3: supplied glazing"] },
+    "roof-cfp100100:included-dome-fastening": { "operation": "dome", "locators": ["ISD 0010 datasheet pp.2–3: supplied fastening"] },
+    "roof-cfp100100:daylight": { "operation": "reference", "locators": ["CFP 73FQV datasheet:100100"] },
+    "roof-cfp100100:product-net-mass": { "operation": "reference", "locators": ["CFP 73FQV and ISD 0010 datasheets:100100"] },
+    "roof-cfp100100:fixings": { "operation": "base", "locators": ["CFP+ISD installation p.5: anchoring; full compatible quantity unresolved"] },
+    "roof-cfp100100:flashing": { "operation": "waterproof", "locators": ["CFP+ISD installation pp.7–9: roof flashing; consumption unresolved"] },
+    "roof-cfp100100:vapour-connection": { "operation": "thermal", "locators": ["S27.48 unresolvedApplicationParameters.vapour_connection_sets_per_unit; project interface unresolved"] },
+    "roof-cfp100100:thermal-connection": { "operation": "thermal", "locators": ["S27.48 unresolvedApplicationParameters.thermal_connection_m3_per_unit; extension branch p.15 is not a universal rule; quantity unresolved"] },
+    "roof-cfp100100:extension": { "operation": "base", "locators": ["CFP+ISD installation: extension branch; necessity and product unresolved"] },
+    "roof-cfp100100:membrane-termination": { "operation": "waterproof", "locators": ["CFP+ISD installation pp.7–9; compatible interface quantity unresolved"] },
+    "roof-cfp100100:installation": { "operation": "base", "locators": ["S27.48 combined installation owner; labor norm unresolved; related dome operation is reference only"] },
+    "roof-cfp100100:lifting": { "operation": "delivery", "locators": ["S27.48 unresolvedApplicationParameters.lifting_shifts"] },
+    "roof-cfp100100:delivery": { "operation": "delivery", "locators": ["S27.48 unresolvedApplicationParameters.delivery_trips"] },
+    "roof-cfp100100:inspection": { "operation": "finish", "locators": ["S27.48 unresolvedApplicationParameters.inspection_hours_per_unit"] },
+    "roof-cfp100100:opening-width": { "operation": "reference", "locators": ["CFP+ISD installation p.4; nominal1000mm; actual permitted1000–1010mm"] },
+    "roof-cfp100100:opening-height": { "operation": "reference", "locators": ["CFP+ISD installation p.4; nominal1000mm; actual permitted1000–1010mm"] },
+    "roof-cfp100100:protective-film": { "operation": "dome", "locators": ["ISD dome installation PDF p.2: step1 before step2; separate/included labor unresolved"] },
+    "roof-cfp100100:final-cleanup": { "operation": "finish", "locators": ["S27.48 unresolvedApplicationParameters.final_cleanup_hours"] },
+    "roof-cfp100100:packaging-waste": { "operation": "finish", "locators": ["S27.48 unresolvedApplicationParameters.packaging_waste_service_kg"] }
+  },
+  "acceptance": { "parentDefinitionVersion": 6, "targetDefinitionVersion": 7, "shape": [26,21,21], "knownRows": 8, "unresolvedNeeds": 13, "fullTechnicalAcceptance": false, "acceptedNewTypes": 0, "historicalStructureEnrichment": false }
+}

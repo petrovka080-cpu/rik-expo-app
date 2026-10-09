@@ -57,6 +57,8 @@ import {
 import { createPdfDocumentDescriptor } from "../../lib/documents/pdfDocument";
 import { previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import { canonicalWorkSearchQueryFromPrompt } from "../../lib/estimate/backendPlatform/canonicalEstimateSearchInput";
+import { canonicalLanternIntent } from '../../lib/estimate/backendPlatform/canonicalLanternIntent';
+import { canonicalPublicEstimateWorkTitleRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
 import { CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION } from "../../lib/estimate/backendPlatform/canonicalProfessionalPdf";
 import {
   createConsumerRepairQuantityEditOperationId,
@@ -1434,6 +1436,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       this.props.initialProblemText?.trim() ||
       "";
     const requestedWork = this.state.selectedWork ?? selectedWorkFromBundle(pendingBundle);
+    if (!requestedWork && !this.props.initialSelectedCatalogWorkId?.trim() && canonicalLanternIntent(requestedProblemText).ambiguous) {
+      return { status: 'BLOCKED_WITH_REASON', bundle: pendingBundle,
+        message: 'Выберите, что вам нужно: светильники с лампами или окна в крыше.' };
+    }
     const collection = consumerRepairPendingCanonicalParameterCollection(pendingBundle);
     if (collection
       && requestedProblemText === pendingBundle.draft.problemText?.trim()
@@ -2073,7 +2079,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         stage = "viewer_open";
         await previewPdfDocument(createPdfDocumentDescriptor({
           uri: artifact.signedUrl,
-          title: revision.displayTitleRu || current.draft.title || current.draft.selectedWorkTitleRu || "Смета",
+          title: canonicalPublicEstimateWorkTitleRu(revision.displayTitleRu || current.draft.title || current.draft.selectedWorkTitleRu || "Смета"),
           documentType: "request",
           source: "generated",
           originModule: "reports",
@@ -2081,7 +2087,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           contentIdentity: {
             revisionId: revision.revisionId,
             rendererVersion: String(artifact.metadata?.generatorVersion ?? artifact.metadata?.renderer ?? CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION),
-            displayTitle: revision.displayTitleRu || current.draft.title || "",
+            displayTitle: canonicalPublicEstimateWorkTitleRu(revision.displayTitleRu || current.draft.title || ""),
             documentStatus: String(artifact.metadata?.grandTotalStatus ?? revision.status ?? ""),
           },
         }), {
@@ -2181,7 +2187,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       if (!artifact.signedUrl) throw new Error("CANONICAL_PDF_SIGNED_URL_MISSING");
       await previewPdfDocument(createPdfDocumentDescriptor({
         uri: artifact.signedUrl,
-        title: revision.displayTitleRu || requestedBundle?.draft.title || requestedBundle?.draft.selectedWorkTitleRu || historyRecord?.title || "Смета",
+        title: canonicalPublicEstimateWorkTitleRu(revision.displayTitleRu || requestedBundle?.draft.title || requestedBundle?.draft.selectedWorkTitleRu || historyRecord?.title || "Смета"),
         documentType: "request",
         source: "generated",
         originModule: "reports",
@@ -2189,7 +2195,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         contentIdentity: {
           revisionId: revision.revisionId,
           rendererVersion: String(artifact.metadata?.generatorVersion ?? artifact.metadata?.renderer ?? CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION),
-          displayTitle: revision.displayTitleRu || requestedBundle?.draft.title || historyRecord?.title || "",
+          displayTitle: canonicalPublicEstimateWorkTitleRu(revision.displayTitleRu || requestedBundle?.draft.title || historyRecord?.title || ""),
           documentStatus: String(artifact.metadata?.grandTotalStatus ?? revision.status ?? ""),
         },
       }), {
@@ -3208,6 +3214,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   };
   private scheduleCanonicalWorkSearch = (query: string) => {
     this.cancelCanonicalWorkSearch();
+    if (canonicalLanternIntent(query).ambiguous) {
+      this.setState({ canonicalWorkSearch: emptyConsumerRepairCanonicalWorkSearchState() });
+      return;
+    }
     const searchQuery = consumerRepairCanonicalWorkSearchQuery(query);
     if (!shouldShowConsumerRepairWorkSuggestions(searchQuery)) {
       this.setState({ canonicalWorkSearch: emptyConsumerRepairCanonicalWorkSearchState() });

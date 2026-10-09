@@ -1,4 +1,5 @@
 import type React from "react";
+import { canonicalPublicEstimateWorkTitleRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
 import type { TextInput } from "react-native";
 
 import {
@@ -497,7 +498,7 @@ export function buildSelectedWorkFromSuggestion(
 ): GlobalSelectedWorkBinding {
   return {
     selectedWorkKey: suggestion.workKey,
-    selectedTitleRu: suggestion.titleRu,
+    selectedTitleRu: canonicalPublicEstimateWorkTitleRu(suggestion.titleRu),
     selectedCategoryKey: suggestion.categoryKey,
     selectedCategoryTitleRu: suggestion.categoryTitleRu,
     rawInput,
@@ -712,7 +713,7 @@ export function canonicalSearchItemToConsumerRepairSuggestion(
   const categoryTitleRu = visibleGlobalWorkCategoryTitleRu(categoryKey);
   return {
     workKey: item.catalogId,
-    titleRu: item.canonicalNameRu,
+    titleRu: canonicalPublicEstimateWorkTitleRu(item.canonicalNameRu),
     categoryKey,
     categoryTitleRu,
     defaultMeasureUnit: canonicalPrimaryUomToGlobalUnit(item.primaryUom),
@@ -729,7 +730,7 @@ export function canonicalSearchItemToConsumerRepairSuggestion(
       && item.contentAdmission?.allowed === true
       && item.contentAdmission.contractVersion === "estimate-admission-r3",
     nonselectableReasonRu: item.nonselectableReasonRu,
-    visibleText: `${item.canonicalNameRu} · ${categoryTitleRu}`,
+    visibleText: `${canonicalPublicEstimateWorkTitleRu(item.canonicalNameRu)} · ${categoryTitleRu}`,
   };
 }
 

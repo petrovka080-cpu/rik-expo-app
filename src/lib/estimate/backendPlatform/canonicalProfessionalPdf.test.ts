@@ -168,7 +168,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-48-included-cost-caption-template20");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-50-operation-resources-template22");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,
@@ -445,7 +445,7 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(JSON.stringify(source)).toBe(snapshot);
   });
 
-  it('shows a shared machine once without repeated process references, preserving its price and escaping its title', () => {
+  it('shows a shared machine with one priced row and a reference in the related operation, preserving price and escaping its title', () => {
     const source = rows(1);
     source[0]!.title_ru = 'Сварочный аппарат <PP-R>';
     source[0]!.category = 'equipment';
@@ -460,7 +460,8 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(projection.html).not.toContain('<li>Прямые стыки<div class="muted">');
     expect(projection.html).not.toContain('<li>Фитинги узлов<div class="muted">');
     expect(projection.html).not.toContain('одна строка ресурса для нескольких подработ');
-    expect(projection.html.match(/Сварочный аппарат &lt;PP-R&gt;/gu)).toHaveLength(1);
+    expect(projection.html.match(/Сварочный аппарат &lt;PP-R&gt;/gu)).toHaveLength(2);
+    expect(projection.html).toContain('общий ресурс, учтён в разделе «Прямые стыки»');
     expect(projection.html).toContain('Сварочный аппарат &lt;PP-R&gt;');
     expect(projection.html).not.toContain('<PP-R>');
     expect(projection.rowCount).toBe(1);

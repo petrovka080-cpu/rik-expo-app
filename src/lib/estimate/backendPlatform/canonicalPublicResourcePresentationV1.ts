@@ -1,3 +1,5 @@
+import { canonicalPublicEstimateTextRu, canonicalPublicEstimateChoiceLabelRu } from './canonicalPublicEstimateLanguageRu';
+
 /** An authored display projection of a saved resource. It changes no identity,
  * specification, quantity, price or owner and never guesses a generic name. */
 export type CanonicalPublicResourcePresentationV1 = Readonly<{
@@ -32,6 +34,16 @@ export function canonicalPublicResourcePresentationV1(input: {
   // Exact source identity protects manual names, replaced products and selected
   // specifications. A stale mapping remains a full source title, never an alias.
   return presentation?.sourceTitleRu === input.titleRu ? presentation : null;
+}
+
+/** Brand-free display is separate from authored identity validation and saved
+ * title binding, so public wording never rewrites the source descriptor. */
+export function canonicalPublicResourceDisplayPresentationV1(input: Parameters<typeof canonicalPublicResourcePresentationV1>[0]): CanonicalPublicResourcePresentationV1 | null {
+  const presentation = canonicalPublicResourcePresentationV1(input);
+  if (!presentation) return null;
+  return { ...presentation, nameRu: canonicalPublicEstimateTextRu(presentation.nameRu), brandAndModelRu: null,
+    specificationRu: presentation.specificationRu == null ? null : canonicalPublicEstimateChoiceLabelRu(presentation.specificationRu),
+    detailsRu: presentation.detailsRu.map(canonicalPublicEstimateChoiceLabelRu).filter(Boolean) };
 }
 
 export function canonicalPublicResourcePresentationMatchesV1(actual: unknown, expected: unknown): boolean {

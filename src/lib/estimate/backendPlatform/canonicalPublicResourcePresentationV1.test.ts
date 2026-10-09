@@ -54,7 +54,7 @@ test('the G6 authoring matrix leaves changed or unknown source titles untouched'
     .not.toHaveProperty('publicResourcePresentationV1');
 });
 
-test('saved G6 rows and compact unknown needs carry the same Russian names, brands and quantities to draft, PDF and procurement', async () => {
+test('saved G6 rows keep source identity and carry brand-free Russian display names and unchanged quantities to PDF and procurement', async () => {
   const profile = series[0]!;
   const compiled = await compileCanonicalEstimateCore({ catalogId: profile.catalogId, compilerVersion: 'G6-label-fixture', operation: 'compile',
     primaryMeasureParameterId: 'area_m2', submittedParameters: { area_m2: 100 }, confirmedParameters: { ...profile.definition.runtimeInput },
@@ -86,9 +86,9 @@ test('saved G6 rows and compact unknown needs carry the same Russian names, bran
     nextBundle: { draft: { id: 'fixture' }, items, structuredEstimatePayload: draft.structuredEstimatePayload } as ConsumerRepairDraftBundle, payload });
   const visible = buildRequestEstimateViewModel(bundle)!.sections.flatMap(s => s.items);
   expect(consumerRepairRowPublicResourcePresentation(visible.find(i => i.sourceParameters?.rowCode === 'pvc-roof:material:field')!))
-    .toMatchObject({ nameRu: source.nameRu, brandAndModelRu: 'LOGICROOF V-RP' });
+    .toMatchObject({ nameRu: source.nameRu, brandAndModelRu: null });
   expect(consumerRepairRowPublicResourcePresentation(visible.find(i => i.sourceParameters?.rowCode === 'pvc-roof:material:cleaner')!))
-    .toMatchObject({ nameRu: 'Очиститель для ПВХ-мембран', brandAndModelRu: 'ТЕХНОНИКОЛЬ' });
+    .toMatchObject({ nameRu: 'Очиститель для ПВХ-мембран', brandAndModelRu: null });
   const repeated = buildRequestEstimateViewModel(bundle)!.sections.flatMap(s => s.items);
   expect(repeated.every((item, index) => item === visible[index])).toBe(true);
   const welder = visible.find(i => i.sourceParameters?.rowCode === 'pvc-roof:machine:variant4_6kw')!;
@@ -107,11 +107,13 @@ test('saved G6 rows and compact unknown needs carry the same Russian names, bran
   const sourceRows = compiled.rows as CanonicalArtifactRow[];
   const fieldRow = sourceRows.find(r => r.row_id === 'pvc-roof:material:field')!;
   expect(canonicalArtifactVisibleRowTitle(fieldRow)).toBe(source.nameRu);
-  expect(canonicalArtifactSpecificationParts(fieldRow, compiled.parameters).flatMap(s => s.parts)).toContain('LOGICROOF V-RP');
+  expect(canonicalArtifactSpecificationParts(fieldRow, compiled.parameters).flatMap(s => s.parts)).not.toContain('LOGICROOF V-RP');
   const pdf = buildCanonicalProfessionalPdfProjection({ revision: stored, rows: sourceRows,
     preliminaryNeeds: canonicalArtifactPreliminaryNeeds(stored), expectedProjectedRowCount: sourceRows.length, workTitleRu: catalog.titleRu });
   expect(pdf.html).toContain('<strong>'+source.nameRu+'</strong>');
-  expect(pdf.html).toContain('LOGICROOF V-RP');
+  expect(pdf.html).not.toContain('LOGICROOF');
+  expect(pdf.html).not.toContain('ТЕХНОНИКОЛЬ');
+  expect(fieldRow.title_ru).toContain('LOGICROOF');
   expect(pdf.html).toContain('<strong>Очиститель для ПВХ-мембран</strong>');
   expect(pdf.html).toContain('Количество нужно уточнить');
   const procurement = buildCanonicalProcurementProjection({ revision: stored,

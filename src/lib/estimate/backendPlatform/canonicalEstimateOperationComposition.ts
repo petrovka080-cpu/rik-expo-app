@@ -49,6 +49,56 @@ export function canonicalEstimateOperationReferences(value: unknown): CanonicalE
   return references;
 }
 
+export type CanonicalEstimateResourceOperationSection = {
+  key: string;
+  operation: CanonicalEstimateOperationReference | null;
+  resourceIds: string[];
+  sharedResources: { rowId: string; titleRu: string; ownerOperationTitleRu: string }[];
+};
+
+/** UI and documents use only the immutable revision's declared relationships.
+ * Related operations get a reference to the primary owner, never a second row. */
+export function canonicalEstimateResourceOperationSections(
+  resources: readonly { rowId: string; operation: unknown; titleRu: string }[],
+): CanonicalEstimateResourceOperationSection[] {
+  const sections = new Map<string, CanonicalEstimateResourceOperationSection>();
+  const keyOf = (reference: CanonicalEstimateOperationReference | null) => reference
+    ? JSON.stringify([reference.groupId, reference.operationId]) : 'general';
+  const obtain = (operation: CanonicalEstimateOperationReference | null) => {
+    const key = keyOf(operation);
+    let section = sections.get(key);
+    if (!section) {
+      section = { key, operation, resourceIds: [], sharedResources: [] };
+      sections.set(key, section);
+    }
+    return section;
+  };
+  for (const resource of resources) {
+    const [primary, ...related] = canonicalEstimateOperationReferences(resource.operation);
+    const owner = obtain(primary ?? null);
+    if (!owner.resourceIds.includes(resource.rowId)) owner.resourceIds.push(resource.rowId);
+    for (const reference of related) {
+      const section = obtain(reference);
+      if (!section.sharedResources.some(shared => shared.rowId === resource.rowId)) {
+        section.sharedResources.push({ rowId: resource.rowId, titleRu: resource.titleRu,
+          ownerOperationTitleRu: primary.operationTitleRu });
+      }
+    }
+  }
+  const groupOrder = new Map<string, number>();
+  for (const section of sections.values()) {
+    const groupId = section.operation?.groupId ?? 'general';
+    if (!groupOrder.has(groupId)) groupOrder.set(groupId, groupOrder.size);
+  }
+  return [...sections.values()].map((section, index) => ({ section, index }))
+    .sort((a, b) => {
+      const ordinal = (entry: typeof a) => typeof entry.section.operation?.processOrdinal === 'number'
+        && Number.isFinite(entry.section.operation.processOrdinal) ? entry.section.operation.processOrdinal : entry.index;
+      return groupOrder.get(a.section.operation?.groupId ?? 'general')! - groupOrder.get(b.section.operation?.groupId ?? 'general')!
+        || ordinal(a) - ordinal(b) || a.index - b.index;
+    }).map(entry => entry.section);
+}
+
 export type CanonicalEstimateWorkProcessGroup = {
   groupId: string;
   groupTitleRu: string;

@@ -1,4 +1,4 @@
-import { canonicalEstimateOperationReference, canonicalEstimateWorkProcess, type CanonicalEstimateOperationReference, type CanonicalEstimateWorkProcessGroup } from "../../lib/estimate/backendPlatform/canonicalEstimateOperationComposition";
+import { canonicalEstimateOperationReference, canonicalEstimateResourceOperationSections, canonicalEstimateWorkProcess, type CanonicalEstimateOperationReference, type CanonicalEstimateWorkProcessGroup } from "../../lib/estimate/backendPlatform/canonicalEstimateOperationComposition";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
 import { consumerCanonicalMissingRequirements, type CanonicalParameterRequirementTables } from "../../lib/consumerRequests/consumerCanonicalParameterRequirements";
 import { canonicalPurchaseShortageMessageV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
@@ -33,7 +33,8 @@ import {
 import { consumerRepairCanonicalEstimateBlocksApproval } from "./consumerRepairCanonicalEstimateReadiness";
 import { consumerRepairRowIsNonPayable, registerConsumerRepairRowVerifiedPresentation, consumerRepairRowPublicResourcePresentation } from "./consumerRepairRowMetadata";
 import { publicBoqDisplayNameRu } from "../../lib/estimate/publicBoqNaming";
-import { canonicalPublicResourcePresentationV1, canonicalPublicResourcePresentationMatchesV1, type CanonicalPublicResourcePresentationV1 } from '../../lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1';
+import { canonicalPublicResourceDisplayPresentationV1 as canonicalPublicResourcePresentationV1, canonicalPublicResourcePresentationV1 as canonicalSourceResourcePresentationV1, canonicalPublicResourcePresentationMatchesV1, type CanonicalPublicResourcePresentationV1 } from '../../lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1';
+import { canonicalPublicEstimateWorkTitleRu, canonicalPublicEstimateRowNameRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
 import { localizeKnownTechnologyVariantSuffixRu } from "../../lib/estimate/backendPlatform/russianTechnologyTitleR542";
 import { measureConsumerRepairQuantityRenderWork } from "./consumerRepairQuantityEditTrace";
 import type { ConsumerEstimatePresentationTrace } from "../../lib/consumerRequests/consumerEstimateHydrationTrace";
@@ -69,6 +70,7 @@ export type RequestEstimateSectionViewModel = {
   title: string;
   items: ConsumerRepairRequestItem[];
   operation?: CanonicalEstimateOperationReference | null;
+  sharedResources?: { rowId: string; titleRu: string; ownerOperationTitleRu: string }[];
 };
 
 export type RequestEstimatePreviewRow = {
@@ -319,7 +321,7 @@ function publicRequestEstimateTitle(value: string | null | undefined): string {
     .replace(/^\s*\u041f\u0440\u043e\u0444\u0435\u0441\u0441\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u0430\u044f\s+\u0441\u043c\u0435\u0442\u0430\s*(?:\u043d\u0430|:)?\s*/iu, "")
     .replace(/\b(?:piece|pieces|pcs|pc)\b/giu, "шт.")
     .trim();
-  return cleaned || normalized || "\u0421\u043c\u0435\u0442\u0430";
+  return canonicalPublicEstimateWorkTitleRu(cleaned || normalized || "\u0421\u043c\u0435\u0442\u0430");
 }
 
 export function requestEstimateResolvedWorkTitle(bundle: ConsumerRepairDraftBundle | null): string | null {
@@ -530,6 +532,14 @@ function admissionVerifiedCanonicalTitleItems(
 }
 
 function publicItemTitle(item: ConsumerRepairRequestItem, canonicalTitleVerified = false): string {
+  const titleRu = sourcePublicItemTitle(item, canonicalTitleVerified);
+  if (!canonicalTitleVerified) return titleRu;
+  return canonicalPublicEstimateRowNameRu({ rowId: String(item.sourceParameters?.canonicalBackendRowId
+    ?? item.sourceParameters?.rowCode ?? ''), titleRu, sourceTitleRu: item.titleRu,
+    manualTitleOverride: item.sourceParameters?.canonicalManualTitleOverride === true });
+}
+
+function sourcePublicItemTitle(item: ConsumerRepairRequestItem, canonicalTitleVerified = false): string {
   if (canonicalTitleVerified) {
     const descriptor = item.sourceParameters?.canonicalPublicResourcePresentationV1;
     const manualTitleOverride = item.sourceParameters?.canonicalManualTitleOverride === true;
@@ -573,7 +583,9 @@ function itemWithPublicTitle(item: ConsumerRepairRequestItem, titleRu: string, p
     && keys.every(key => key === "titleRu" || Object.is(previous[key], item[key]))
     && canonicalPublicResourcePresentationMatchesV1(consumerRepairRowPublicResourcePresentation(previous), presentation)) return previous;
   const projected = { ...item, titleRu };
-  registerConsumerRepairRowVerifiedPresentation(projected, presentation);
+  registerConsumerRepairRowVerifiedPresentation(projected, presentation, presentation == null ? null : canonicalSourceResourcePresentationV1({
+    titleRu:item.titleRu, descriptor:item.sourceParameters?.canonicalPublicResourcePresentationV1,
+    manualTitleOverride:item.sourceParameters?.canonicalManualTitleOverride === true }));
   publicTitleProjections.set(item, projected);
   return projected;
 }
@@ -1218,7 +1230,7 @@ export function buildRequestEstimateViewModel(
     : hasCapitalRenovationCalculator
     ? CAPITAL_RENOVATION_SECTION_IDS
     : ["materials", "labor", "equipment", "logistics", "other"];
-  const sections = measure("PUBLIC_ROW_SECTIONS", () => sectionIds
+  const baseSections = measure("PUBLIC_ROW_SECTIONS", () => sectionIds
     .map((id) => ({
       id,
       title: sectionTitle(id),
@@ -1239,8 +1251,24 @@ export function buildRequestEstimateViewModel(
     .filter((section) => section.items.length > 0)
     .map(section => {
       const operation = canonicalEstimateOperationReference(section.items[0]?.sourceParameters?.canonicalOperationComposition);
-      return operation == null ? section : { ...section, title: operation.operationTitleRu, operation };
+      return operation == null ? section : { ...section, title: canonicalPublicEstimateWorkTitleRu(operation.operationTitleRu), operation };
     }));
+  const operationSections = canonicalEstimateResourceOperationSections(viewBundle.items.map(item => ({
+    rowId: item.id, operation: item.sourceParameters?.canonicalOperationComposition,
+    titleRu: publicItemTitle(item, canonicalTitleItems.has(item)),
+  })));
+  const publicItemsById = new Map(baseSections.flatMap(section => section.items).map(item => [item.id, item]));
+  const sections: RequestEstimateSectionViewModel[] = operationSections.some(section => section.operation != null)
+    ? operationSections.flatMap(section => section.operation == null
+      ? baseSections.filter(base => base.operation == null)
+      : [{ id: `professional_${encodeURIComponent(`${section.operation.groupId}/${section.operation.operationId}`)}` as const,
+        title: canonicalPublicEstimateWorkTitleRu(section.operation.operationTitleRu), operation: { ...section.operation,
+          groupTitleRu: canonicalPublicEstimateWorkTitleRu(section.operation.groupTitleRu),
+          operationTitleRu: canonicalPublicEstimateWorkTitleRu(section.operation.operationTitleRu) },
+        items: section.resourceIds.flatMap(id => publicItemsById.has(id) ? [publicItemsById.get(id)!] : []),
+        sharedResources: section.sharedResources.map(shared => ({ ...shared,
+          ownerOperationTitleRu: canonicalPublicEstimateWorkTitleRu(shared.ownerOperationTitleRu) })),
+      }]) : baseSections;
   const sourceLabels = uniqueSourceLabels(viewBundle);
   const professionalPreview = Boolean(bundle.structuredEstimatePayload) || hasExpandedComplexCalculator || hasAsphaltProfessionalSections || viewBundle.items.length > 20;
   const productionTrust = buildConsumerRepairProductionTrust({
@@ -1288,7 +1316,7 @@ export function buildRequestEstimateViewModel(
         || "",
     ),
     summary: preliminaryNeedCount > 0
-      ? "Расчёт неполный: часть позиций ждёт подтверждённых исходных данных и не входит в стоимость."
+      ? "Часть материалов и работ пока не рассчитана. Они не включены в общую стоимость."
       : cleanSummary(viewBundle),
     totalLabel: bundle.items.length === 0 && summaryTotal != null && summaryTotal > 0
       ? formatEstimateMoney(summaryTotal, currency)

@@ -23,7 +23,7 @@ import {
   resolveCanonicalEstimatePhysicalNormApplicabilityV1,
 } from "./canonicalEstimatePhysicalNormProjection";
 import { planCanonicalEffectiveResourceQuantitiesV1 } from "./canonicalEffectiveResourceQuantityV1";
-import { resolveCanonicalPurchaseBalanceV1, resolveCanonicalKnownPurchaseRequirementV1, validateCanonicalManualTransportQuantityV1 } from "./canonicalPurchaseBalanceV1";
+import { resolveCanonicalPurchaseBalanceV1, resolveCanonicalKnownPurchaseRequirementV1, validateCanonicalManualTransportQuantityV1, validateCanonicalPurchaseOrderQuantityV1 } from "./canonicalPurchaseBalanceV1";
 import { resolveCanonicalPreliminaryParameterFormulasV1, canonicalMissingAutomaticParameterSourcesV1, PRELIMINARY_SOURCE_FORMULA } from './canonicalPreliminaryParameterFormulaV1';
 import {
   planCanonicalCommercialCostCoverageV1, canonicalCommercialCoveredResourceGraphV1,
@@ -1160,6 +1160,10 @@ export async function compileCanonicalEstimateCore(
         ? nonNegativeNumericText(override.unitPrice, `${resource.row_id}.unitPrice`, true)
         : null;
       const knownQuantity = manualQuantity ?? formulaQuantity;
+      if (manualQuantity != null) {
+        validateCanonicalPurchaseOrderQuantityV1(resource.resource_graph?.purchaseBalanceV1,
+          resource.row_id, resource.unit_id, manualQuantity, formulaParameters, definitionParameterIds);
+      }
       // Known specifications remain part of the same saved need even while
       // its quantity or other conditions are unresolved. An incomplete
       // REPLACE selection retains the original identity until it is complete.

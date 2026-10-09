@@ -457,7 +457,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
           : section.items).filter((item) =>
             !this.state.showOnlyUnresolved || consumerRepairRowIsCanonicalPreliminaryNeed(item)),
       };
-    }).filter((section) => section.items.length > 0);
+    }).filter((section) => section.items.length > 0 || (!normalizedQuery && !this.state.showOnlyUnresolved && section.sharedResources?.length));
     const filteredEntries = measureConsumerRepairQuantityRenderWork("CATEGORY_FILTERS", () => filteredSections.flatMap((section) => section.items.map((item) => ({
       item,
       categoryFilterId: requestEstimateCategoryFilterForItem(item, section.id),
@@ -510,7 +510,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
       <View style={styles.wrap} testID="request-estimate-items-editor-content">
         <View style={styles.headingRow}>
           <Text style={styles.heading} testID="request-estimate-composition-heading">
-            {compositionIncomplete ? "Предварительный состав" : "Позиции сметы"}
+            {compositionIncomplete ? "Материалы и работы — расчёт не завершён" : "Материалы и работы"}
           </Text>
           <Text style={styles.rowCount} testID="request-estimate-items-total-count">
             {viewModel.preliminaryNeedCount
@@ -521,11 +521,11 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
         {compositionIncomplete ? (
           <View style={styles.incompleteNotice} testID="request-estimate-incomplete-composition-notice">
             <Text style={styles.incompleteNoticeText}>
-              Смета ещё не готова: рассчитаны {viewModel.calculatedItemCount ?? 0} строк, у {viewModel.preliminaryNeedCount ?? 0} применимых позиций не завершены обязательные уточнения. До уточнения они не входят в сумму и закупку.
+              Для {viewModel.preliminaryNeedCount ?? 0} позиций пока нет полного расчёта. Они не включены в общую стоимость и список к покупке. Указанные вами количества сохранены.
             </Text>
             {unresolvedItems.length > 0 ? (
               <View style={styles.blockingRowsList} testID="request-estimate-unresolved-row-list">
-                <Text style={styles.blockingRowsTitle}>Требуют уточнения:</Text>
+                <Text style={styles.blockingRowsTitle}>Пока не рассчитаны:</Text>
                 {unresolvedItems.slice(0, 5).map((item) => (
                   <Text key={item.id} style={styles.blockingRowText}>• {item.titleRu}</Text>
                 ))}
@@ -641,9 +641,17 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
                   onPress={() => this.setState(state => ({ expandedOperationIds: { ...state.expandedOperationIds, [section.id]: !expanded },
                     visibleRowLimit: ANDROID_INITIAL_ROW_LIMIT }))} testID={`request-estimate-operation-toggle-${operation.operationId}`}>
                   <Text style={styles.operationTitle}>{`${expanded ? "▾" : "▸"} ${operation.operationTitleRu}`}</Text>
-                  <Text style={styles.operationSummary}>{`${resources.length - unresolved} рассчитано · ${unresolved} требуют уточнения · материалы, труд, техника и услуги`}</Text>
+                  <Text style={styles.operationSummary}>{operation.processRole === 'REFERENCE_ONLY'
+                    ? 'Справочные характеристики. Не оплачиваются и не закупаются.'
+                    : operation.processRole === 'COST_SUMMARY' ? 'Сводные данные. Ресурсы учтены в соответствующих разделах.'
+                    : `${resources.length - unresolved} рассчитано · ${unresolved} требуют уточнения`}</Text>
                 </Pressable>
                 {section.items.filter(item => renderedItemIds.has(item.id)).map(renderItem)}
+                {expanded ? section.sharedResources?.map(shared => (
+                  <Text key={shared.rowId} style={styles.operationSummary} testID={`request-estimate-shared-resource-${shared.rowId}`}>
+                    {`${shared.titleRu} — общий ресурс, учтён в разделе «${shared.ownerOperationTitleRu}».`}
+                  </Text>
+                )) : null}
               </View>
             );
           })}

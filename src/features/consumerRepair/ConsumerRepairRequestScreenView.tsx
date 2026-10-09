@@ -1,5 +1,6 @@
 import React from "react";
-import { KeyboardAvoidingView, Platform } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, Text, View } from "react-native";
+import { canonicalLanternIntent, CANONICAL_LANTERN_KIND_CHOICES, selectCanonicalLanternKindText } from '../../lib/estimate/backendPlatform/canonicalLanternIntent';
 import type { TextInput } from "react-native";
 
 import { AppScreen } from "../../components/layout/AppScreen";
@@ -237,6 +238,18 @@ export function ConsumerRepairRequestScreenView({
         scrollEventThrottle={16}
         testID="consumer-repair-screen"
       >
+        {!state.selectedWork && !state.bundle?.items.length && canonicalLanternIntent(state.problemText).ambiguous ? (
+          <View style={{ gap: 10, padding: 16 }} testID="request-lantern-kind-choice">
+            <Text style={{ fontSize: 17, fontWeight: '700' }}>Что вы называете фонарём?</Text>
+            {CANONICAL_LANTERN_KIND_CHOICES.map(choice => (
+              <Pressable key={choice.kind} accessibilityRole="button" accessibilityLabel={choice.labelRu}
+                onPress={() => onProblemTextChange(selectCanonicalLanternKindText(state.problemText, choice.kind))}
+                style={{ padding: 14, borderWidth: 1, borderColor: '#0F766E', borderRadius: 10 }}>
+                <Text style={{ fontSize: 16, color: '#0F766E' }}>{choice.labelRu}</Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
         <ConsumerRepairRequestContent
           problemText={state.problemText}
           city={state.city}

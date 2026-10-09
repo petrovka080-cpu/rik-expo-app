@@ -1,6 +1,7 @@
 import { canonicalMaterialQuantityBasisFromRow } from "./canonicalMaterialQuantityProjection";
 import { normalizePublicBoqNameRu } from "../publicBoqNaming";
-import { canonicalPublicResourcePresentationV1 } from './canonicalPublicResourcePresentationV1';
+import { canonicalPublicResourceDisplayPresentationV1 as canonicalPublicResourcePresentationV1 } from './canonicalPublicResourcePresentationV1';
+import { canonicalPublicEstimateRowNameRu, canonicalPublicEstimateChoiceLabelRu, canonicalPublicEstimateWorkTitleRu } from './canonicalPublicEstimateLanguageRu';
 import { assertCanonicalPurchaseReadinessV1 } from "./canonicalPurchaseBalanceV1";
 import { formatEstimateUnitLabel } from "../../ai/globalEstimate/formatEstimateUnitLabel";
 import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
@@ -11,7 +12,7 @@ import { canonicalArtifactPurchaseBalance } from "./canonicalPersistedPurchaseBa
 export { canonicalArtifactPurchaseBalance } from "./canonicalPersistedPurchaseBalance";
 
 export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r10";
-export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r9-unique-resource-specifications";
+export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r10-plain-public-names";
 export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:15";
 
 /** Keep caller idempotency within each renderer; do not collide with legacy jobs. */
@@ -146,7 +147,7 @@ export function canonicalArtifactSpecificationParts(row: CanonicalArtifactRow, p
       && rawLabel.trim().length > 0 && rawLabel.length <= 100 && /[А-Яа-яЁё]/u.test(rawLabel)
       ? rawLabel.trim() : null;
     return [{ parameterId: id, value: String(parameters[id]),
-      parts: String(parameters[id]).split(/\s*;\s*/u).filter(Boolean).map(part => label ? `${label}: ${part}` : part) }];
+      parts: String(parameters[id]).split(/\s*;\s*/u).filter(Boolean).map(part => canonicalPublicEstimateChoiceLabelRu(label ? `${label}: ${part}` : part)) }];
   });
   const selectedParts = selected.flatMap(spec => spec.parts);
   const selectedSpecification = selectedParts.join(", ");
@@ -295,7 +296,7 @@ export function buildCanonicalProcurementProjection(input: {
     amendmentContract: revision.amendment_contract ?? null,
     sourceRequestText: nullableText(revision.source_request_text),
     sourceRequestHash: nullableText(revision.source_request_hash),
-    displayTitleRu: workMeasure?.titleRu ? `${workMeasure.titleRu} — ${canonicalArtifactQuantity(workMeasure.value)} кг` : nullableText(revision.display_title_ru),
+    displayTitleRu: canonicalPublicEstimateWorkTitleRu(workMeasure?.titleRu ? `${workMeasure.titleRu} — ${canonicalArtifactQuantity(workMeasure.value)} кг` : nullableText(revision.display_title_ru) ?? ''),
     sourceDisplayTitleRu: nullableText(revision.display_title_ru),
     workMeasure,
     primaryMeasure: {
@@ -420,6 +421,13 @@ export function canonicalArtifactMoney(value: unknown, currencyCode: unknown): s
 }
 
 export function canonicalArtifactVisibleRowTitle(row: Record<string, unknown>, parameters?: Record<string, unknown>): string {
+  return canonicalPublicEstimateRowNameRu({ rowId: String(row.row_id ?? ''),
+    titleRu: canonicalArtifactSourceRowTitle(row, parameters),
+    sourceTitleRu: String(row.title_ru ?? '').trim(),
+    manualTitleOverride: objectValue(row.calculation_trace).manualTitleOverride === true });
+}
+
+function canonicalArtifactSourceRowTitle(row: Record<string, unknown>, parameters?: Record<string, unknown>): string {
   const sourceNameRu = String(row.title_ru ?? "").trim();
   if (objectValue(row.calculation_trace).manualTitleOverride === true) return sourceNameRu;
   const presentation = canonicalArtifactPublicResourcePresentationV1(row);

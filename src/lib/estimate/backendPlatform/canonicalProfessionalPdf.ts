@@ -11,11 +11,12 @@ import {
   type CanonicalArtifactRevision,
   type CanonicalArtifactRow,
 } from "./canonicalEstimateArtifactContract";
-import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
+import { canonicalEstimateResourceOperationSections } from "./canonicalEstimateOperationComposition";
 import { canonicalArtifactPurchaseRequirement } from "./canonicalPersistedPurchaseBalance";
+import { canonicalPublicEstimateWorkTitleRu, canonicalPublicEstimateRequestTextRu } from './canonicalPublicEstimateLanguageRu';
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-48-included-cost-caption-template20" as const;
+  "canonical-professional-pdf.r4-a13-s27-50-operation-resources-template22" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -287,26 +288,13 @@ export function buildCanonicalProfessionalPdfProjection(input: {
   const parameters = objectValue(revision.input_parameters);
   const technologyChecks = canonicalArtifactTechnologyChecks(parameters);
   const workMeasure = canonicalArtifactWorkMeasure(rows);
-  const workTitleRu = workMeasure?.titleRu ? `${workMeasure.titleRu} — ${canonicalArtifactQuantity(workMeasure.value)} кг` : input.workTitleRu;
-  const operation = (row: CanonicalArtifactRow) => {
-    return canonicalEstimateOperationReference(objectValue(objectValue(row.calculation_trace).resourceGraph).operationCompositionV1);
-  };
-  const hasOperations = compositionRows.some(row => operation(row) != null);
-  const multipleOperationGroups = new Set(compositionRows.flatMap(row => {
-    const reference = operation(row);
-    return reference ? [reference.groupId] : [];
-  })).size > 1;
-  // A resource from a different operation must never appear beneath the
-  // preceding operation's heading. Preserve source order within
-  // each group and the order in which its first resource appears.
-  const operationGroups = new Map<string, CanonicalArtifactRow[]>();
-  if (hasOperations) for (const row of compositionRows) {
-    const reference = operation(row);
-    const key = reference ? JSON.stringify([reference.groupId, reference.operationId]) : "general";
-    const group = operationGroups.get(key);
-    if (group) group.push(row); else operationGroups.set(key, [row]);
-  }
-  const documentRows = hasOperations ? [...operationGroups.values()].flat() : compositionRows;
+  const workTitleRu = canonicalPublicEstimateWorkTitleRu(workMeasure?.titleRu ? `${workMeasure.titleRu} — ${canonicalArtifactQuantity(workMeasure.value)} кг` : input.workTitleRu);
+  const operationSections = canonicalEstimateResourceOperationSections(compositionRows.map(row => ({
+    rowId: String(row.row_id), titleRu: canonicalArtifactVisibleRowTitle(row, parameters),
+    operation: objectValue(objectValue(row.calculation_trace).resourceGraph).operationCompositionV1,
+  })));
+  const hasOperations = operationSections.some(section => section.operation != null);
+  const multipleOperationGroups = new Set(operationSections.flatMap(section => section.operation ? [section.operation.groupId] : [])).size > 1;
   const questionNumbers = hasOperations ? new Map<string, number>() : undefined;
   if (questionNumbers) for (const row of preliminaryNeeds) {
     const missing = objectValue(row.calculation_trace).missingParameterIds ?? row.missing_parameter_ids;
@@ -314,17 +302,21 @@ export function buildCanonicalProfessionalPdfProjection(input: {
       if (typeof id === "string" && nullableText(input.parameterTitlesRu?.[id]) && !questionNumbers.has(id)) questionNumbers.set(id, questionNumbers.size + 1);
     }
   }
-  let previousOperationKey = "";
-  const renderedComposition = documentRows.map((row, index) => {
-    const reference = operation(row);
-    const key = reference ? JSON.stringify([reference.groupId, reference.operationId]) : "general";
-    const heading = reference && key !== previousOperationKey
-      ? `<tr class="operation"><td colspan="7"><strong>${multipleOperationGroups ? `${escapeCanonicalArtifactHtml(String(reference.groupTitleRu))} — ` : ''}${escapeCanonicalArtifactHtml(String(reference.operationTitleRu))}</strong></td></tr>`
-      : hasOperations && key !== previousOperationKey ? `<tr class="operation"><td colspan="7"><strong>Работы и ресурсы сметы</strong></td></tr>` : "";
-    previousOperationKey = key;
-    return heading + (preliminaryRowIds.has(String(row.row_id))
-      ? renderPreliminaryNeedRow(row, index + 1, input.parameterTitlesRu ?? {}, questionNumbers, rowsById) : renderClientRow(row, index + 1, rowsById, parameters));
-  }).join("");
+  let rowNumber = 0;
+  const renderedComposition = operationSections.map(section => {
+    const reference = section.operation;
+    const heading = reference
+      ? `<tr class="operation"><td colspan="7"><strong>${multipleOperationGroups ? `${escapeCanonicalArtifactHtml(canonicalPublicEstimateWorkTitleRu(reference.groupTitleRu))} — ` : ''}${escapeCanonicalArtifactHtml(canonicalPublicEstimateWorkTitleRu(reference.operationTitleRu))}</strong>${reference.processRole === 'REFERENCE_ONLY' ? '<div>Справочные характеристики. Не оплачиваются и не закупаются.</div>' : reference.processRole === 'COST_SUMMARY' ? '<div>Сводные данные. Стоимость учтена в ресурсных строках.</div>' : ''}</td></tr>`
+      : hasOperations ? `<tr class="operation"><td colspan="7"><strong>Работы и ресурсы сметы</strong></td></tr>` : '';
+    const ownRows = section.resourceIds.map(id => {
+      const row = rowsById.get(id)!;
+      return preliminaryRowIds.has(id)
+        ? renderPreliminaryNeedRow(row, ++rowNumber, input.parameterTitlesRu ?? {}, questionNumbers, rowsById)
+        : renderClientRow(row, ++rowNumber, rowsById, parameters);
+    }).join('');
+    const shared = section.sharedResources.map(resource => `<tr class="shared-resource"><td colspan="7">${escapeCanonicalArtifactHtml(resource.titleRu)} — общий ресурс, учтён в разделе «${escapeCanonicalArtifactHtml(canonicalPublicEstimateWorkTitleRu(resource.ownerOperationTitleRu))}».</td></tr>`).join('');
+    return heading + ownRows + shared;
+  }).join('');
   const questionAppendix = questionNumbers?.size
     ? `<section class="question-appendix"><h2>Исходные сведения для уточнения состава</h2><div class="notice">Сведения связаны с позициями по номерам. Применимость и количество пока не подтверждены; неизвестные значения не заменены нулями.</div><table><tbody>${[...questionNumbers].map(([id, number]) => `<tr><td style="width:8%">${number}</td><td>${escapeCanonicalArtifactHtml(String(input.parameterTitlesRu?.[id]))}</td></tr>`).join("")}</tbody></table></section>` : "";
   const currencyCode = assertSingleCurrency(revision, rows);
@@ -391,7 +383,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
   </style></head><body>
     <header><h1>Профессиональная смета</h1><div class="subtitle">${escapeCanonicalArtifactHtml(workTitleRu || "Строительно-монтажные работы")}</div>
       ${explicitDemo ? '<div class="notice"><strong>ДЕМО / VALIDATION_FIXTURE — испытательный документ. Не является утверждённой проектной сметой.</strong></div>' : ""}
-      ${nullableText(revision.source_request_text) ? `<div><strong>Исходный запрос:</strong> ${escapeCanonicalArtifactHtml(String(revision.source_request_text))}</div>` : ""}
+      ${nullableText(revision.source_request_text) ? `<div><strong>Исходный запрос:</strong> ${escapeCanonicalArtifactHtml(canonicalPublicEstimateRequestTextRu(String(revision.source_request_text)))}</div>` : ""}
       <div class="meta-grid"><div><strong>Номер:</strong> ${escapeCanonicalArtifactHtml(documentNumber)}</div><div><strong>Статус:</strong> ${documentStatusRu}</div><div><strong>Сформировано:</strong> ${escapeCanonicalArtifactHtml(generatedDate)}</div><div><strong>Валюта:</strong> ${escapeCanonicalArtifactHtml(currencyLabel)}</div><div><strong>Объект:</strong> ${escapeCanonicalArtifactHtml(workTitleRu)}</div><div><strong>${workMeasure ? "Объём работы" : "Первичная мера"}:</strong> ${escapeCanonicalArtifactHtml(`${primaryValue} ${primaryUnit}`)}</div><div><strong>Версия:</strong> ${escapeCanonicalArtifactHtml(String(Number.isFinite(revisionNumber) ? revisionNumber : 1))}</div></div>
     </header>
     <div class="summary"><div><strong>Позиций состава</strong><br>${compositionRows.length}</div><div><strong>Количество известно</strong><br>${rows.length}; ждут источник ${preliminaryNeeds.length}</div><div><strong>${pricedSummary}</strong></div></div>

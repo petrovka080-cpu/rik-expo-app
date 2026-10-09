@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { canonicalPublicEstimateRowNameRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
 import React from "react";
 import {
   Keyboard,
@@ -170,10 +171,9 @@ export function buildCanonicalProcurementPreviewRows(
       ] : [];
       return {
         rowId: row.rowId,
-        titleRu: publicBoqDisplayNameRu({
-          sourceNameRu: row.titleRu,
-          rowType: row.rowType,
-        }),
+        titleRu: canonicalPublicEstimateRowNameRu({ rowId: row.rowId,
+          titleRu: publicBoqDisplayNameRu({ sourceNameRu: row.titleRu, rowType: row.rowType }),
+          manualTitleOverride: row.sourceParameters?.canonicalManualTitleOverride === true }),
         quantity: balance?.effectiveOrder ?? quantityBasis?.procurementQuantity ?? row.quantity,
         unit,
         unitPrice: row.unitPrice ?? null,
@@ -190,7 +190,8 @@ export function buildCanonicalProcurementPreviewRows(
     if (includedIds.has(rowId)) continue;
     const requirement = canonicalArtifactPurchaseRequirement({ row_id: rowId, unit_id: item.unit,
       calculation_trace: { purchaseRequirementV1: source.canonicalPurchaseRequirement } });
-    rows.push({ rowId, titleRu: item.titleRu, quantity: item.quantity ?? null, preliminary: true,
+    rows.push({ rowId, titleRu: canonicalPublicEstimateRowNameRu({ rowId, titleRu: item.titleRu,
+      manualTitleOverride: source.canonicalManualTitleOverride === true }), quantity: item.quantity ?? null, preliminary: true,
       unit: formatEstimateUnitLabel(item.unit), unitPrice: item.unitPrice ?? null, currency: item.currency,
       quantityDetails: requirement ? [`${requirement.labelRu}: ${formatEstimateQuantityRu(requirement.quantity)} ${formatEstimateUnitLabel(requirement.unitId)}`] : [],
     });

@@ -2,6 +2,7 @@ import type { CanonicalEstimateCatalogItem } from "./contracts";
 import { hasHumanReadableAiEstimateParameterPassport } from "../aiEstimateRuParameterDictionary";
 import { waterMaterialVariantLabelRuR542 } from "./russianTechnologyTitleR542";
 import { evaluateInclusionGraph } from "./inclusionGraph";
+import { canonicalPublicEstimateChoiceLabelRu } from './canonicalPublicEstimateLanguageRu';
 
 type ParameterSchema = CanonicalEstimateCatalogItem["parameterSchema"][number];
 
@@ -410,6 +411,14 @@ export function isCanonicalEstimateParameterRequiredForValues(
 }
 
 export function canonicalEstimateParameterChoiceLabelRu(
+  parameterId: string,
+  value: unknown,
+  fallback?: string,
+): string {
+  return canonicalPublicEstimateChoiceLabelRu(canonicalEstimateSourceParameterChoiceLabelRu(parameterId, value, fallback));
+}
+
+function canonicalEstimateSourceParameterChoiceLabelRu(
   parameterId: string,
   value: unknown,
   fallback?: string,
