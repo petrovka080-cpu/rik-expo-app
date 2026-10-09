@@ -1,0 +1,39 @@
+{
+ "contract":"rik-expo-app.s27-54.cm11-small-ceramic.v1",
+ "catalogId":"canonical-work:master:ceramic_tile_up_to_10cm_cm11_ct17_indoor_cement_floor_standard",
+ "workKey":"ceramic_tile_up_to_10cm_cm11_ct17_indoor_cement_floor_standard",
+ "titleRu":"Керамическая плитка до 10 см на CM11 PLUS, зуб 4 мм, по впитывающей цементной стяжке внутри помещения",
+ "sourceId":"ceresit_cm11_ct17_small_ceramic_s2754",
+ "normId":"tile_ceresit_cm11_plus_adhesive_kg_m2_notch_4_12_v1",
+ "acceptedPhysicalProfileId":"manufacturer-profile:ceresit-cm11-plus:global-04-2026:ceramic-up-to-10cm-4mm-indoor-horizontal:25kg:v1",
+ "acceptedPhysicalSourcePack":"data/estimate-norms/professional/tile.json",
+ "acceptedPhysicalSourceVersion":"2026.09-ceresit-cm11-plus-ct17-global-primary-review-r2",
+ "sources":{
+  "cm11":{"officialUrl":"https://datasheets.tdx.henkel.com/CERESIT-CM-11-PLUS-en_GL.pdf","localArtifact":".release-runtime/r568/s27-54/cm11-small-ceramic/CM-11-PLUS.pdf","sha256":"e52146d1aa0a0b94099658f3e1d2f93cfb509de3e543e20b2366acd44658f1ad","edition":"CERESIT_CM11_TDS_04_2026","locatorRu":"Стр.1: подготовка, CT17 и контакт; стр.2: рецептура воды, таблица ≤10см/4мм, CE40/CS25; стр.3: DoP00012"},
+  "ct17":{"officialUrl":"https://datasheets.tdx.henkel.com/CERESIT-CT-17-en_GL.pdf","localArtifact":".release-runtime/r568/s27-35/wet-zone-sources/CT-17.pdf","sha256":"7e3f72f83a9b75a5f90bd44dbac1c88a30da15e0a8d4e0b6e9f9af677fff2847","edition":"CT17 Profi 03.24","locatorRu":"Стр.1: нанесение и основания; стр.2: 0,1–0,5л/м², температура, влажность <80%, фасовки1/2/5/10л"},
+  "ce40":{"officialUrl":"https://datasheets.tdx.henkel.com/CERESIT-CE-40-ru_KZ.pdf","localArtifact":".release-runtime/r568/s27-35/professional-wet-room-sources/CE-40-ru_KZ.pdf","sha256":"1bb1140499e41734d8ce91f36a1f826d8ecb875bc1b501be21dedad716c676ae","edition":"CE40 Aquastatic ru_KZ","locatorRu":"Стр.1–2: цементная затирка швов до10мм, ведро2кг; расход зависит от точной геометрии плитки и шва"}
+ },
+ "scopeRu":"Керамическая плитка с максимальной стороной до10см, шпатель4мм; внутренний горизонтальный пол по ровной прочной сухой очищенной впитывающей цементной стяжке, без подогрева и системной гидроизоляции. CM11 PLUS global04/2026 затворяется только водой без CC83; грунтовка CT17 Profi global03.24 не разбавляется. Точный артикул плитки и её потребность определяются раскладкой.",
+ "geometryValue":"Керамическая плитка до10см, шпатель4мм; внутренний горизонтальный пол; контакт клея с обратной стороной не менее65%; без подогрева",
+ "baseValue":"Впитывающая цементная стяжка не моложе28суток, остаточная влажность по требованию2CM-%; ровная, прочная, сухая, очищенная",
+ "conditionsValue":"Сухие условия; воздух и основание +5…+25°C; влажность воздуха ниже80%",
+ "dryingValue":"CT17 высохла полностью; выдержка перед CM11 не менее2часов по карте CM11, сокращённые15мин не применяются",
+ "suppliedProductValue":"Подтверждена поставленная версия CM11 PLUS global04/2026 и реальная упаковка25кг; рецепт только с водой, без CC83",
+ "primerSchemeValue":"Подтверждён неразбавленный CT17 Profi global03.24; расход и число проходов выбраны по впитываемости основания",
+ "waterMinLPer25Kg":5.5,"waterMaxLPer25Kg":6,
+ "primerContainerSizesL":[1,2,5,10],
+ "excludedRu":["Керамогранит600×600 и уже выпущенные мокрые системы","Размеры и основания вне выбранной пары до10см/4мм","CC83, разбавление CT17 и автоматически назначенный нижний расход грунтовки","Свежая CN87 как автоматически пригодное28-дневное основание","Гидроизоляция, тёплый пол, механические и химические воздействия, требующие другой системы","Автоматический запас7%, универсальная затирка по площади, назначение длины силиконовых швов из площади","25кг как доказанная изготовителем фасовка CM11: TDS задаёт массу замеса, реальная фасовка подтверждается поставкой","Перенос нормы CE40 для другой геометрии или CS16 вместо CS25"],
+ "sourceNeeds":[
+  {"id":"grout-ce40","operation":"grouting","category":"material","nameRu":"Затирка Ceresit CE40 Aquastatic ru_KZ, ведро 2 кг — кандидат для обычных швов","unitId":"kg","reasonRu":"Конкретная цементная затирка для швов до10мм; цвет, геометрия плитки/шва, совместимость поставленной версии и расход должны быть подтверждены. Норма0,4кг/м² для10×10см/2мм не назначается всему диапазону размеров."},
+  {"id":"sealant-cs25","operation":"movement-joints","category":"material","nameRu":"Силикон Ceresit CS25 MicroProtect — кандидат для деформационных и примыкающих швов","unitId":"l","reasonRu":"Название и применение прямо указаны в CM11. Собственный паспорт CS25, фасовка, цвет, совместимость контактных материалов и геометрический расход не подтверждены; CS16 не подставляется."},
+  {"id":"labor","operation":"laying","category":"labor","nameRu":"Труд плиточника: грунтование, затворение, укладка, швы и завершение выбранного пола","unitId":"man_hour","reasonRu":"Технологии описаны, часы и производительность не опубликованы; нужен применимый состав с одним владельцем оплаты этапов. Время выдержки перед повторным перемешиванием расходится: APPLICATION2мин, TECHNICAL DATAоколо5мин; этот нормативный пробел требует инструкции поставленной партии и не заменяется пользовательским значением."},
+  {"id":"mixer","operation":"mixing","category":"equipment","nameRu":"Дрель-миксер для однородного затворения CM11 PLUS","unitId":"machine_hour","reasonRu":"Тип инструмента указан, модель, часы и обеспечение исполнителем не опубликованы."},
+  {"id":"trowel","operation":"laying","category":"equipment","nameRu":"Зубчатый шпатель 4 мм для CM11 PLUS и выбранной плитки до10см","unitId":"item","reasonRu":"Зуб4мм установлен точной парой таблицы; количество инструментов, износ и покупка новой оснастки не нормированы."},
+  {"id":"primer-tools","operation":"priming","category":"equipment","nameRu":"Кисть или валик для неразбавленного CT17 Profi","unitId":"item","reasonRu":"Способ нанесения опубликован; совместимый инструмент и обеспечение исполнителем подтверждаются отдельно."},
+  {"id":"spacing-cutting","operation":"laying","category":"service","nameRu":"Формирование межплиточных швов и применимая резка по фактической раскладке","unitId":"item","reasonRu":"Укладка встык запрещена; крестики, дистанционные элементы, резка и оснастка определяются реальной раскладкой без автоматического расхода из площади."},
+  {"id":"water-cleaning-grout","operation":"completion","category":"material","nameRu":"Дополнительная чистая вода для выбранной затирки и очистки инструмента и поверхности","unitId":"l","reasonRu":"Вода затворения CM11 учтена отдельно. Вода затирки требует её выбранного рецепта и массы; расход очистки не опубликован."},
+  {"id":"acceptance-protection","operation":"acceptance","category":"service","nameRu":"Контроль контакта клея, защита кожи и глаз, защита пола и приёмка облицовки","unitId":"item","reasonRu":"Необходимость известна; объём отдельной услуги и включение в цену требуют подтверждения. Проход и затирка пола по CM11 — после16ч при условиях TDS."},
+  {"id":"logistics-cleanup","operation":"completion","category":"service","nameRu":"Доставка материалов, разгрузка, уборка и передача фактической упаковки и обрезков плитки","unitId":"item","reasonRu":"Нужны границы услуги и один владелец цены; мешки, масса и рейсы из площади не выводятся."}
+ ],
+ "fullTechnicalAcceptance":false,"acceptedNewCompleteTypes":0
+}
