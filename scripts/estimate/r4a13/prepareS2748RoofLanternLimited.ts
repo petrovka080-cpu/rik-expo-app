@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import { strict as assert } from 'node:assert';
-import { runMasterSingleDefinitionSuccessorR1, type MasterSingleDefinitionSuccessorConfig } from './prepareMasterSingleDefinitionSuccessorR1';
+import { runMasterSingleDefinitionSuccessorR1, buildMasterCapabilityMatrix, buildMasterScopeReadiness, type MasterSingleDefinitionSuccessorConfig } from './prepareMasterSingleDefinitionSuccessorR1';
+import { canonicalPublisherQuantityScopeIsConsistent } from './canonicalDefinitionPublisherR1';
 import { compileCandidate, parameterDefinitions, formulaDefinitions, resourceDefinitions, sourcePack } from '../../../src/lib/estimate/v4/roofLanternCfp100100LimitedS2748';
 
 const title = 'Кровельные фонари VELUX CFP 100100 — предварительный состав';
@@ -87,6 +88,12 @@ export function roofLanternLimitedS2748Config(parent: { releaseId: string; searc
       assert.equal(result.rows.length, 8); assert.equal(result.preliminaryNeeds.length, 13);
       for (const suffix of ['base', 'dome']) assert.equal(result.rows.find(row => row.row_id === `roof-cfp100100:${suffix}`)?.quantity, '10');
       assert(parameterDefinitions.every(parameter => parameter.default_value === null));
+      const unresolvedRows = resourceDefinitions.filter(row => row.source_metadata.sourceRole === 'UNRESOLVED_INSTALLATION_SOURCE').map(row => row.row_id);
+      assert.deepEqual(result.preliminaryNeeds.map(row => row.row_id).sort(), unresolvedRows.slice().sort());
+      assert(canonicalPublisherQuantityScopeIsConsistent({ passport: {
+        decision: buildMasterScopeReadiness(unresolvedRows, resourceDefinitions),
+        capability_matrix: buildMasterCapabilityMatrix(unresolvedRows, resourceDefinitions),
+      }, parameters: parameterDefinitions, formulas: formulaDefinitions, resources: resourceDefinitions, baseline: { input_values: acceptanceInput } }));
       return { status: 'GREEN_LIMITED_PRODUCT_COMPOSITION_ONLY', knownRows: 8, unresolvedRequirements: 13,
         knownProductNeedWithoutInventory: 10, stockReserveDefaults: false, sourceArtifactsVerified: 4,
         fullTechnicalAcceptance: false, ordinaryUiAccepted: false, acceptedNewTypes: 0 };

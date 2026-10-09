@@ -97,6 +97,40 @@ export function canonicalPublisherPriceBindingIsCompatible(input: Readonly<{
     ) === canonicalPublisherEffectivePriceKey(input.targetResource);
 }
 
+/** A limited composition is a distinct, explicitly incomplete local contract.
+ * Both passport declarations must name exactly the resources whose formula
+ * still depends on an unset application-owned norm. A changed label alone
+ * must not admit a fabricated complete baseline. */
+export function canonicalPublisherQuantityScopeIsConsistent(input: Readonly<{
+  passport: CanonicalPublisherJson;
+  parameters: readonly CanonicalPublisherJson[];
+  formulas: readonly CanonicalPublisherJson[];
+  resources: readonly CanonicalPublisherJson[];
+  baseline: CanonicalPublisherJson;
+}>): boolean {
+  const decision = input.passport.decision;
+  const capability = input.passport.capability_matrix?.find((entry: CanonicalPublisherJson) => entry.capability === 'FULL_APPLICABLE_SCOPE');
+  const pending = input.parameters.filter(parameter => parameter.truth_metadata?.value_source_role === 'UNRESOLVED_APPLICATION_NORM');
+  if (!decision || !capability) return false;
+  if (decision.quantityScope === 'FULL') return pending.length === 0 && capability.status === 'GREEN'
+    && decision.preliminaryCompositionOnly !== true && decision.technicalScopeStatus !== 'NEEDS_SOURCE';
+  if (decision.quantityScope !== 'PARTIAL' || decision.preliminaryCompositionOnly !== true
+    || decision.technicalScopeStatus !== 'NEEDS_SOURCE' || capability.status !== 'NEEDS_SOURCE'
+    || capability.preliminaryCompositionOnly !== true) return false;
+  const ids = decision.unresolvedResourceRowIds;
+  if (!Array.isArray(ids) || ids.length === 0 || new Set(ids).size !== ids.length
+    || !Array.isArray(capability.unresolvedResourceRowIds)
+    || JSON.stringify([...ids].sort()) !== JSON.stringify([...capability.unresolvedResourceRowIds].sort())) return false;
+  if (pending.length === 0 || pending.some(parameter => parameter.default_value != null
+    || parameter.truth_metadata.visibility_role !== 'INTERNAL_ONLY'
+    || parameter.truth_metadata.provenance?.consumer_input_role_v1 !== 'APPLICATION_TECHNICAL'
+    || Object.hasOwn(input.baseline.input_values ?? {}, parameter.parameter_id))) return false;
+  const pendingIds = new Set(pending.map(parameter => parameter.parameter_id));
+  const expected = input.resources.filter(resource => input.formulas.some(formula => formula.formula_id === resource.formula_id
+    && formula.input_parameter_ids?.some((id: string) => pendingIds.has(id)))).map(resource => resource.row_id);
+  return JSON.stringify([...ids].sort()) === JSON.stringify(expected.sort());
+}
+
 function invariant(value: unknown, code: string): asserts value {
   if (!value) throw new Error(code);
 }
@@ -543,6 +577,7 @@ export async function preflightCanonicalDefinitionPublishPlans(
       `${prefix}:PASSPORT_DECISION_CONTRACT`);
     invariant(plan.passport.decision.allowed === true && plan.passport.decision.status === "GREEN",
       `${prefix}:PASSPORT_DECISION_STATE`);
+    invariant(canonicalPublisherQuantityScopeIsConsistent(plan), `${prefix}:PASSPORT_QUANTITY_SCOPE`);
     invariant(plan.passport.decision.activationAllowed === false
       && plan.passport.decision.productionEligible === false,
     `${prefix}:PASSPORT_DECISION_RELEASE_SAFETY`);
@@ -831,11 +866,12 @@ export async function auditPersistedCanonicalDefinition(
   const decision = selected(passport.decision, [
     "contract", "status", "allowed", "quantityScope", "priceState",
     "activationAllowed", "productionEligible", "waveContract",
+    "technicalScopeStatus", "preliminaryCompositionOnly", "unresolvedResourceRowIds",
   ]);
   invariant(decision.contract === CONTENT_PASSPORT_CONTRACT
     && decision.status === "GREEN"
     && decision.allowed === true
-    && decision.quantityScope === "FULL"
+    && canonicalPublisherQuantityScopeIsConsistent(persistedPayload)
     && decision.priceState === "PARTIAL_NEEDS_PRICE"
     && decision.activationAllowed === false
     && decision.productionEligible === false

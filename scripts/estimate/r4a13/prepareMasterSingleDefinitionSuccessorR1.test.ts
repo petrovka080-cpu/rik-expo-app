@@ -2,6 +2,7 @@ import { CATALOG_INDEPENDENT_COMPLETENESS_MAP_CONTRACT } from "./catalogFirstEst
 import {
   canonicalPublisherEffectivePriceKey,
   canonicalPublisherPriceBindingIsCompatible,
+  canonicalPublisherQuantityScopeIsConsistent,
 } from "./canonicalDefinitionPublisherR1";
 import {
   buildMasterParameterCalculationConsumers,
@@ -28,6 +29,39 @@ describe('preliminary publisher capability boundary', () => {
     for (const rows of [[], ['absent'], ['installation', 'installation']]) {
       expect(() => buildMasterCapabilityMatrix(rows, [{ row_id: 'installation' }])).toThrow('MASTER_LIMITED_SCOPE');
     }
+  });
+});
+
+describe('persisted preliminary scope cannot masquerade as complete', () => {
+  const payload = () => ({
+    passport: {
+      decision: { quantityScope: 'PARTIAL', technicalScopeStatus: 'NEEDS_SOURCE', preliminaryCompositionOnly: true, unresolvedResourceRowIds: ['installation'] },
+      capability_matrix: buildMasterCapabilityMatrix(['installation'], [{ row_id: 'installation' }]),
+    },
+    parameters: [{ parameter_id: 'hours', default_value: null, truth_metadata: { value_source_role: 'UNRESOLVED_APPLICATION_NORM',
+      visibility_role: 'INTERNAL_ONLY', provenance: { consumer_input_role_v1: 'APPLICATION_TECHNICAL' } } }],
+    formulas: [{ formula_id: 'labour', input_parameter_ids: ['hours'] }],
+    resources: [{ row_id: 'installation', formula_id: 'labour' }], baseline: { input_values: {} },
+  });
+  it('admits a consistent explicit unknown norm and preserves the separate full-scope contract', () => {
+    expect(canonicalPublisherQuantityScopeIsConsistent(payload())).toBe(true);
+    const full = payload(); full.passport.decision = { quantityScope: 'FULL' } as never;
+    full.passport.capability_matrix = buildMasterCapabilityMatrix(undefined, []);
+    expect(canonicalPublisherQuantityScopeIsConsistent(full)).toBe(false);
+    full.parameters[0]!.truth_metadata.value_source_role = 'BACKEND_DERIVED';
+    expect(canonicalPublisherQuantityScopeIsConsistent(full)).toBe(true);
+  });
+  it.each(['false-full', 'no-blockers', 'unknown-row', 'capability-mismatch', 'default', 'fixture', 'customer-norm', 'hidden-extra-row'])('rejects %s claims', mutation => {
+    const input = payload();
+    if (mutation === 'false-full') input.passport.decision.quantityScope = 'FULL';
+    if (mutation === 'no-blockers') input.passport.decision.unresolvedResourceRowIds = [];
+    if (mutation === 'unknown-row') input.passport.decision.unresolvedResourceRowIds = ['absent'];
+    if (mutation === 'capability-mismatch') input.passport.capability_matrix[2]!.status = 'GREEN';
+    if (mutation === 'default') input.parameters[0]!.default_value = 2 as never;
+    if (mutation === 'fixture') input.baseline.input_values = { hours: 2 };
+    if (mutation === 'customer-norm') input.parameters[0]!.truth_metadata.visibility_role = 'USER_INPUT';
+    if (mutation === 'hidden-extra-row') input.resources.push({ row_id: 'another-installation', formula_id: 'labour' });
+    expect(canonicalPublisherQuantityScopeIsConsistent(input)).toBe(false);
   });
 });
 
