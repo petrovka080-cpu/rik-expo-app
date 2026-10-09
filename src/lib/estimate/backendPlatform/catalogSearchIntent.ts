@@ -51,7 +51,7 @@ export function parseCanonicalCatalogSearchIntent(
   const normalizedRaw = rawQuery.normalize("NFC");
   const number = String.raw`(\d{1,3}(?:[\s\u00a0]\d{3})+|\d+)(?:[,.](\d+))?`;
   const dimensionPattern = new RegExp(
-    String.raw`(?:^|\s)${number}\s*(?:м(?:етр(?:ов|а|ы)?)?\s*)?[xх×*]\s*${number}\s*(?:м(?:етр(?:ов|а|ы)?)?)?(?=\s|$)`,
+    String.raw`(?:^|[\s(\[«])${number}(?!\d|[,.]\d)\s*(?:м(?:етр(?:ов|а|ы)?)?\s*)?[xх×*]\s*${number}(?!\d|[,.]\d)(?!\s*(?:мм|см|дм|км|м[²³23]|м\s*[/·⁄-]))\s*(?:м(?:етр(?:ов|а|ы)?)?)?(?=[\s.,;:!?)\]»]|$)`,
     "iu",
   );
   const dimensionMatch = dimensionPattern.exec(normalizedRaw);
@@ -63,8 +63,10 @@ export function parseCanonicalCatalogSearchIntent(
   const queryWithoutDimensions = dimensionMatch
     ? `${rawQuery.slice(0, dimensionMatch.index)} ${rawQuery.slice(dimensionMatch.index + dimensionMatch[0].length)}`
     : rawQuery;
+  // Sentence punctuation is a quantity boundary; unit suffixes and rates are not.
+  // Keep this explicit so m3, mm and m/s cannot be read as linear metres.
   const quantityPattern =
-    /(?:^|\s)(\d{1,3}(?:[\s\u00a0]\d{3})+|\d+)(?:[,.](\d+))?\s*(кв\.?\s*м(?:етр(?:ов|а)?)?|квадратн(?:ых|ого|ые)?\s+метр(?:ов|а)?|м[²2]|шт(?:ук|ука|уки)?|штук(?:а|и)?|метр(?:ов|а|ы)?|тонн?(?:а|ы)?|кг|м|т)(?=\s|$)/iu;
+    /(?:^|[\s(\[«])(\d{1,3}(?:[\s\u00a0]\d{3})+|\d+)(?:[,.](\d+))?\s*(кв\.?\s*м(?:етр(?:ов|а)?)?|квадратн(?:ых|ого|ые)?\s+метр(?:ов|а)?|м[²2]|шт(?:ук|ука|уки)?|штук(?:а|и)?|метр(?:ов|а|ы)?|тонн?(?:а|ы)?|кг|м|т)(?=[\s.,;:!?)\]»]|$)/iu;
   const quantityMatch = dimensionMatch ? null : quantityPattern.exec(normalizedRaw);
   const quantity = dimensions?.areaM2 ?? (quantityMatch
     ? decimal(quantityMatch[1]!, quantityMatch[2])
