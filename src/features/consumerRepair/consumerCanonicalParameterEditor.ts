@@ -442,6 +442,7 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
   parentParameters?: Record<string, unknown> | null;
   userInputSnapshot?: Record<string, unknown> | null;
   activeNeedParameterIds: ReadonlySet<string>;
+  orderedSpecificationParameterIds?: ReadonlySet<string>;
   additionalBlockingIds?: readonly string[];
   sourceByParameterId?: ReadonlyMap<string, CanonicalParameter["source"]>;
   schemaId: string;
@@ -483,7 +484,9 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
               : isCanonicalEstimateSourceManagedParameter(schema)
                 ? runtimeProfileParameterSource(schema)
                 : undefined),
-    }));
+    })).map((parameter): CanonicalParameter => input.orderedSpecificationParameterIds?.has(parameter.parameterId)
+      ? { ...parameter, visibilityCondition: { kind: 'ALWAYS' }, requiredCondition: { kind: 'ALWAYS' } }
+      : parameter);
   const values = new Map(allParameters
     .filter((parameter) => parameter.value != null)
     .map((parameter) => [parameter.parameterId, parameter.value!] as const));
@@ -608,6 +611,11 @@ export function buildConsumerCanonicalParameterSession(input: {
   const activeNeedParameterIds = new Set((input.revision.preliminaryNeeds ?? [])
     .filter((need) => need.selected)
     .flatMap((need) => need.missingParameterIds));
+  // A spare fitting has a real order even when the installed-count branch is zero.
+  // Only server-projected exact specification questions receive this exception.
+  const orderedSpecificationParameterIds = new Set((input.revision.preliminaryNeeds ?? [])
+    .filter(need => need.selected && Number(need.quantity) > 0)
+    .flatMap(need => (need.orderedSpecificationParameterIds ?? []).filter(id => need.missingParameterIds.includes(id))));
   // The compiled revision is the authoritative description of which source
   // inputs still prevent selected resource rows from receiving quantities.
   // Some cumulative definitions intentionally keep engineering/norm inputs
@@ -636,6 +644,7 @@ export function buildConsumerCanonicalParameterSession(input: {
       ...activeNeedParameterIds,
     ]),
     additionalBlockingIds: unresolvedManualQuantityIds,
+    orderedSpecificationParameterIds,
     schemaId: input.revision.parameterSchemaHash || `backend-schema:${input.catalog.catalogId}`,
     schemaVersion: `definition:${input.catalog.definitionVersion}`,
     calculationVersion: input.revision.compilerVersion,

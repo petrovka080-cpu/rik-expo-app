@@ -13,7 +13,7 @@ export type CanonicalEstimateParameterSessionRevision = Pick<CanonicalEstimateRe
   | "compilerVersion" | "checksumSha256" | "createdAt" | "contentWithdrawalReasonRu"
 > & {
   preliminaryNeeds?: Pick<CanonicalEstimatePreliminaryNeedView,
-    "rowId" | "selected" | "missingParameterIds" | "quantity" | "needState">[];
+    "rowId" | "selected" | "missingParameterIds" | "quantity" | "needState" | "orderedSpecificationParameterIds">[];
 };
 
 export type CanonicalEstimateParameterSessionParent = Pick<CanonicalEstimateRevisionView,
@@ -71,6 +71,7 @@ export function projectCanonicalEstimateParameterSessionSnapshot(input: {
       preliminaryNeeds: revision.preliminaryNeeds?.map((need) => ({
         rowId: need.rowId, selected: need.selected, missingParameterIds: need.missingParameterIds,
         quantity: need.quantity, needState: need.needState,
+        ...(need.orderedSpecificationParameterIds?.length ? { orderedSpecificationParameterIds: need.orderedSpecificationParameterIds } : {}),
       })),
     },
     parent: parent == null ? null : {

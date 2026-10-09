@@ -275,6 +275,8 @@ export type CanonicalCommercialRateCoverageView = {
 };
 
 export type CanonicalEstimatePreliminaryNeedView = {
+  /** Exact specification questions for a positive explicit order, independent of installed consumption. */
+  orderedSpecificationParameterIds?: string[];
   purchaseRequirement?: Record<string, unknown>;
   rowId: string;
   ordinal: number;
@@ -338,6 +340,12 @@ export function canonicalEstimatePreliminaryNeedsFromAmendmentContract(
     if (!rowId || !/^[0-9a-f]{64}$/u.test(needSha256)
       || (state !== "QUANTITY_REQUIRED" && state !== "CONDITION_REQUIRED")) return [];
     const graph = (need.calculation_trace as Record<string, unknown> | undefined)?.resourceGraph as Record<string, unknown> | undefined;
+    const explicitPositiveOrder = need.selected !== false && Number(need.quantity) > 0
+      && (need.calculation_trace as Record<string, unknown> | undefined)?.manualQuantityOverride === true
+      && graph?.excludeKnownZeroQuantityV1 === true;
+    const orderedSpecificationParameterIds = explicitPositiveOrder && Array.isArray(graph?.titleSpecificationParameterIds)
+      && Array.isArray(need.missing_parameter_ids)
+      ? graph.titleSpecificationParameterIds.filter((id): id is string => typeof id === 'string' && (need.missing_parameter_ids as unknown[]).includes(id)) : [];
     const publicResourcePresentation = parseCanonicalPublicResourcePresentationV1(graph?.publicResourcePresentationV1);
     const decision = graph?.commercialCostCoverageDecisionV1 as Record<string, unknown> | undefined;
     const rate = graph?.commercialCostCoverageOwnerDecisionV1 as Record<string, unknown> | undefined;
@@ -366,6 +374,7 @@ export function canonicalEstimatePreliminaryNeedsFromAmendmentContract(
       missingParameterIds: Array.isArray(need.missing_parameter_ids)
         ? need.missing_parameter_ids.filter((value): value is string => typeof value === "string" && value.length > 0)
         : [],
+      ...(orderedSpecificationParameterIds.length ? { orderedSpecificationParameterIds } : {}),
       selected: need.selected !== false,
       procurementEligible: need.procurement_eligible === true,
       formulaId: String(need.formula_id ?? ""),
