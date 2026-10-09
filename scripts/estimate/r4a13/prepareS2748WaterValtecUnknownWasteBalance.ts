@@ -28,7 +28,9 @@ export function waterValtecUnknownWasteBalanceS2748Config(parent: { releaseId: s
             const result = await compile(previous.acceptanceInput);
             assert.equal(result.rows.length, 39); assert.equal(result.preliminaryNeeds.length, 18);
             const bags = result.preliminaryNeeds.find(row => row.row_id === pack.affectedRowId)!;
-            assert(bags); assert.equal(bags.quantity, null); assert.equal(bags.calculation_trace.purchaseRequirementV1, undefined);
+            assert(bags); assert.equal(bags.quantity, null);
+            assert(bags.calculation_trace != null && typeof bags.calculation_trace === 'object');
+            assert.equal(Object.hasOwn(bags.calculation_trace, 'purchaseRequirementV1'), false);
             return { status: 'GREEN_LIMITED_UNKNOWN_WASTE_BALANCE', knownRows: 39, unresolvedRows: 18,
                 unknownBagConsumptionPreserved: true, ordinaryUiAccepted: false, fullTechnicalAcceptance: false, acceptedNewTypes: 0 };
         } };

@@ -9,8 +9,11 @@ export const VALTEC_UNKNOWN_WASTE_BALANCE_S2748_SHA256 = '24f274dfb26f642844bc9a
 export const VALTEC_UNKNOWN_WASTE_BALANCE_S2748_RESOURCES = previousResources.map(resource => {
     if (resource.row_id !== pack.affectedRowId) return resource;
     const { row_sha256: _oldHash, ...definition } = resource;
-    const graph = definition.resource_graph;
-    const balance = graph.purchaseBalanceV1 as Record<string, unknown>;
+    const graph: Record<string, unknown> = definition.resource_graph;
+    const balance = graph.purchaseBalanceV1;
+    if (balance == null || typeof balance !== 'object' || Array.isArray(balance)) {
+        throw new Error('VALTEC_WASTE_PURCHASE_BALANCE_REQUIRED');
+    }
     const updated = { ...definition, resource_graph: { ...graph, purchaseBalanceV1: { ...balance,
         consumedExpression: pack.unresolvedParameterId, plannedConsumptionExpression: pack.unresolvedParameterId } },
         source_metadata: { ...definition.source_metadata, unknownWasteBalanceSha256: VALTEC_UNKNOWN_WASTE_BALANCE_S2748_SHA256 } };

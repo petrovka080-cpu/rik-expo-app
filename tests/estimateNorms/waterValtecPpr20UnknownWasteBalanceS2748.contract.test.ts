@@ -9,14 +9,14 @@ const input = { route_length_m: 100, substrate_profile: 'Сухой бетон, 
 
 test('removes the observed false bag consumption without losing the unknown procurement need', async () => {
     const old = await previous(input);
-    expect(old.preliminaryNeeds.find(r => r.row_id === pack.affectedRowId)?.calculation_trace.purchaseRequirementV1)
-        .toMatchObject({ consumed: '2', plannedConsumption: '2' });
+    expect(old.preliminaryNeeds.find(r => r.row_id === pack.affectedRowId)?.calculation_trace)
+        .toMatchObject({ purchaseRequirementV1: { consumed: '2', plannedConsumption: '2' } });
     for (const route_length_m of [4, 100, 458]) {
         const result = await compile({ ...input, route_length_m });
         const bags = result.preliminaryNeeds.find(r => r.row_id === pack.affectedRowId)!;
         expect(bags).toMatchObject({ quantity: null, missing_parameter_ids: ['waste_bag_count'], selected: true, procurement_eligible: true });
-        expect(bags.calculation_trace.purchaseRequirementV1).toBeUndefined();
-        expect(bags.calculation_trace.purchaseBalance).toBeUndefined();
+        expect(bags.calculation_trace).not.toHaveProperty('purchaseRequirementV1');
+        expect(bags.calculation_trace).not.toHaveProperty('purchaseBalance');
     }
 });
 
@@ -26,7 +26,7 @@ test('changes only the waste resource and preserves exact physical quantities an
     expect(result.rows.map(r => [r.row_id, r.quantity, r.included_in_estimate, r.included_in_procurement]))
         .toEqual(old.rows.map(r => [r.row_id, r.quantity, r.included_in_estimate, r.included_in_procurement]));
     expect(result.rows).toHaveLength(39); expect(result.preliminaryNeeds).toHaveLength(18);
-    for (const need of result.preliminaryNeeds) expect(need.calculation_trace.purchaseRequirementV1).toBeUndefined();
+    for (const need of result.preliminaryNeeds) expect(need.calculation_trace).not.toHaveProperty('purchaseRequirementV1');
     await expect(compile({ ...input, waste_bag_count: 0 })).rejects.toThrow('unresolved application norm cannot be supplied');
 });
 
