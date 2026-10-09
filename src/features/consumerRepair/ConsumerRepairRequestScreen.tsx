@@ -2003,11 +2003,13 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     }
   };
   private completePdfOpen = async () => {
+    let stage = "action_context";
     try {
       const current = this.resolvedDraftBundle(this.ensureDraftBundle());
       if (!current) return;
       const context = this.actionContext("openProfessionalPdf", current);
       {
+        stage = "revision_read";
         const revision = await getCanonicalEstimateRevision(context.revisionId);
         if (
           revision.releaseId !== context.releaseId ||
@@ -2017,9 +2019,11 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
             "PDF не открыт: backend вернул другую версию или другую работу.",
           );
         }
+        stage = "catalog_read";
         const currentCatalog = await getCanonicalEstimateCatalogItem(revision.catalogId);
         let artifact;
         if (currentCatalog.releaseId !== revision.releaseId) {
+          stage = "saved_artifact_read";
           try {
             artifact = await getCanonicalEstimateArtifact({
               revisionId: context.revisionId,
@@ -2034,6 +2038,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
             );
           }
         } else {
+          stage = "artifact_build";
           artifact = await buildCanonicalEstimateArtifact({
             revisionId: context.revisionId,
             kind: "pdf",
@@ -2041,6 +2046,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
             idempotencyKey: `consumer-professional-pdf-${CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION}-${context.revisionId}`,
           });
         }
+        stage = "artifact_identity";
         assertCanonicalEstimateArtifactIdentity({
           artifact,
           revision,
@@ -2050,6 +2056,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           expectedRowCount: revision.rowCount,
         });
         if (!artifact.signedUrl) throw new Error("CANONICAL_PDF_SIGNED_URL_MISSING");
+        stage = "artifact_bind";
         const artifactBoundBundle = bindConsumerRepairCanonicalArtifactReady({
           requestDraftId: current.draft.id,
           artifact: {
@@ -2063,6 +2070,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           artifactBoundBundle,
           "Профессиональный PDF готов для текущей версии сметы.",
         );
+        stage = "viewer_open";
         await previewPdfDocument(createPdfDocumentDescriptor({
           uri: artifact.signedUrl,
           title: revision.displayTitleRu || current.draft.title || current.draft.selectedWorkTitleRu || "Смета",
@@ -2088,6 +2096,12 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         return;
       }
     } catch (error) {
+      logger.error("ConsumerRepairPdfOpen", "canonical PDF open failed", {
+        stage,
+        errorName: error instanceof Error ? error.name : "unknown",
+        errorCode: error instanceof CanonicalEstimateApiError || error instanceof ConsumerEstimateActionContextError
+          ? error.code : null,
+      });
       this.handleCanonicalArtifactOpenError(error);
     } finally {
       this.setState({ pdfOpenBusy: false });
