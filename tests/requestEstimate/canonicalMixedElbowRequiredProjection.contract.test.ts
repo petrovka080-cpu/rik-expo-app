@@ -9,11 +9,14 @@ const catalog: CanonicalEstimateCatalogItem = { catalogId: 'canonical-work:base:
     releaseId: 'owned-UI-projection-not-published', namespace: 'global', domain: 'plumbing', workKey: 'plumbing_interior_ppr_pipe_install_standard',
     titleRu: 'Водопровод', definitionVersion: 13, applicability: {}, professionalMetadata: {},
     parameterSchema: parameters.map(parameter => {
+        const metadata = parameter as typeof parameter & { ordinal?: unknown; title_ru?: unknown };
+        if (typeof metadata.ordinal !== 'number' || !Number.isInteger(metadata.ordinal)
+            || typeof metadata.title_ru !== 'string') throw new Error('ACTUAL_PUBLISHER_LABEL_AND_ORDINAL_REQUIRED');
         const truth = parameter.truth_metadata ?? {};
         const guide = truth.guide as Record<string, unknown> | undefined;
-        return { parameterId: parameter.parameter_id, ordinal: parameter.ordinal,
-            valueType: parameter.value_type as CanonicalEstimateCatalogItem['parameterSchema'][number]['valueType'], unitId: parameter.unit_id,
-            titleRu: parameter.title_ru, required: parameter.required, defaultValue: parameter.default_value, constraints: parameter.constraints_json ?? {},
+        return { parameterId: parameter.parameter_id, ordinal: metadata.ordinal,
+            valueType: parameter.value_type as CanonicalEstimateCatalogItem['parameterSchema'][number]['valueType'], unitId: parameter.unit_id ?? null,
+            titleRu: metadata.title_ru, required: parameter.required, defaultValue: parameter.default_value, constraints: parameter.constraints_json ?? {},
             visibilityRole: truth.visibility_role as 'USER_INPUT',
             valueSourceRole: truth.value_source_role as CanonicalEstimateCatalogItem['parameterSchema'][number]['valueSourceRole'],
             preliminaryCompilationAllowed: truth.preliminary_compilation_allowed === true,
