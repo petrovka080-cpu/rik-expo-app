@@ -14,7 +14,7 @@ import { waterValtecSourceApplicabilityS2748Config } from '../../scripts/estimat
 
 const input = { route_length_m: 100, route_geometry_mode: route.geometry.straight, route_end_connections: route.ends.caps,
     substrate_profile: 'Сухой бетон, крепление напрямую без отделки' };
-const objectIds = (list: typeof parameters) => list.filter(p => canonicalEstimateConsumerInputRole({ provenance: p.truth_metadata.provenance as Record<string, unknown> }) === 'OBJECT_FACT').map(p => p.parameter_id);
+const objectIds = (list: typeof parameters) => list.filter(p => canonicalEstimateConsumerInputRole({ provenance: p.truth_metadata?.provenance as Record<string, unknown> }) === 'OBJECT_FACT').map(p => p.parameter_id);
 const unresolved = Object.keys(pack.unresolvedApplicationParameters);
 
 test('pins the applicability audit and gives the publisher an explicit partial boundary', async () => {
@@ -35,7 +35,7 @@ test('retains physical quantities and exact specifications while unconfirmed wor
     expect(result.preliminaryNeeds.every(r => r.quantity === null && r.selected)).toBe(true);
     expect(result.rows.find(r => r.row_id === 'water-ppr20:05:control:total-fusion-sockets')?.quantity).toBe('50');
     expect(result.rows.find(r => r.row_id === 'water-ppr20:02:material:pipe-net')?.quantity).toBe('100');
-    for (const resource of resources.filter(r => pack.unresolvedResourceRowIds.includes(r.row_id))) expect(resource.source_metadata.normativeTrace).toEqual([]);
+    for (const resource of resources.filter(r => pack.unresolvedResourceRowIds.includes(r.row_id))) expect(resource.source_metadata).toMatchObject({ normativeTrace: [] });
 });
 
 test('keeps the same object questions and never asks the customer to invent a numerical norm', () => {
