@@ -30,9 +30,11 @@ export function canonicalOrderedSpecificationParameterIds(
 ): string[] {
   return [...new Set((bindings ?? []).flatMap(binding => {
     const override = rowOverrides?.[binding.rowId];
+    const quantity = override?.quantity;
     if (override?.provenance?.kind !== 'manual' || override.includedInEstimate === false
-      || !isFormulaGraphExactDecimal(override.quantity)
-      || compareFormulaGraphDecimals(override.quantity, '0') <= 0) return [];
+      || (typeof quantity !== 'string' && typeof quantity !== 'number')
+      || !isFormulaGraphExactDecimal(quantity)
+      || compareFormulaGraphDecimals(quantity, '0') <= 0) return [];
     try {
       return resolveInclusionGraph(binding.inclusionAst, parameters).value === true ? binding.parameterIds : [];
     } catch {
