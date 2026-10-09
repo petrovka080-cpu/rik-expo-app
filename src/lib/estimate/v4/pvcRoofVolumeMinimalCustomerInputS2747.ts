@@ -1,8 +1,8 @@
 import type { AutomaticOwnerDefinition } from './automaticConstructionOwnerR1';
 import { G6_COMPLETION_REQUIRED_S2741, G6_COMPLETION_NOT_REQUIRED_S2741 } from './g6PvcProjectCompletionS2741';
 
-/** Presentation ownership for the existing volume-cleaner profile. Quantities
- * still come from the same source-backed definition and canonical compiler. */
+/** Shared input ownership for the compatible area-based PVC roof profiles.
+ * Each profile retains its own source rates, material units and formulas. */
 export const PVC12_CUSTOMER_FACT_IDS_S2747 = Object.freeze([
   'area_m2', 'roof_height_m', 'cleaned_surface_m2',
   'g6_cleanup_applicability', 'g6_waste_applicability',
@@ -10,7 +10,7 @@ export const PVC12_CUSTOMER_FACT_IDS_S2747 = Object.freeze([
 ]);
 const objectFacts = new Set<string>(PVC12_CUSTOMER_FACT_IDS_S2747);
 
-export function withPvcRoofVolumeMinimalCustomerInputS2747(base: AutomaticOwnerDefinition): AutomaticOwnerDefinition {
+export function withPvcRoofMinimalCustomerInputS2747(base: AutomaticOwnerDefinition): AutomaticOwnerDefinition {
   const runtimeInput = { ...base.runtimeInput };
   const runtimeClassification = { ...base.runtimeClassification };
   const runtimeSourceIds = { ...base.runtimeSourceIds };
@@ -61,3 +61,5 @@ export function withPvcRoofVolumeMinimalCustomerInputS2747(base: AutomaticOwnerD
     }),
   });
 }
+
+export const withPvcRoofVolumeMinimalCustomerInputS2747 = withPvcRoofMinimalCustomerInputS2747;
