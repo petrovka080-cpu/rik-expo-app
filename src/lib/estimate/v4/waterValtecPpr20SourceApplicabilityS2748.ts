@@ -24,7 +24,7 @@ function applicationRequirement(parameter: CanonicalEstimateParameterDefinition)
                 source_snapshot_hash: VALTEC_SOURCE_APPLICABILITY_S2748_SHA256, verified_at: '2026-10-09T06:33:13Z',
                 guide_short_ru: 'Потребность сохранена. ' + reason + ' Применимый источник или программу работ уточняет приложение.' } } };
 }
-const wasteBagRequirement: CanonicalEstimateParameterDefinition = {
+const wasteBagRequirement: CanonicalEstimateParameterDefinition & { title_ru: string } = {
     parameter_id: 'waste_bag_count', value_type: 'integer', unit_id: 'item',
     title_ru: 'Мешки для обрезков и упаковки', required: false, default_value: null, constraints_json: { min: 0 }, truth_metadata: {},
 };
