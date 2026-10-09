@@ -1,4 +1,5 @@
 import type { ProfessionalMaterialQuantityLine } from "./professionalMaterialQuantityContract";
+import type { CanonicalPublicResourcePresentationV1 } from './backendPlatform/canonicalPublicResourcePresentationV1';
 import type { RawInputFact, RawInputFactExtractionMetrics } from "./rawInputFactExtraction";
 import type { AsphaltClarificationExperienceV4, RoadScopeRevisionBindingV4 } from "./v4/asphalt";
 import type {
@@ -272,6 +273,16 @@ export type EstimateDraftRevision = {
     unit: string;
     unitPrice: number | null;
     currency?: string;
+    /** Source-bound naming evidence of this exact saved backend need.
+     * Kept when the large structured payload is discarded for durable replay. */
+    canonicalNeedAdmissionV1?: {
+      contractVersion: 'canonical-preliminary-row-admission/v1';
+      needSha256: string;
+      publicResourcePresentation: CanonicalPublicResourcePresentationV1 | null;
+      manualTitleOverride: boolean;
+      manualQuantityOverride: boolean;
+      calculatedQuantityBeforeOverride: number | null;
+    };
   }[];
   /**
    * All definition-applicable rows for this immutable backend revision.

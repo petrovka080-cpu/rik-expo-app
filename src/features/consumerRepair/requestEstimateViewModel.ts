@@ -31,10 +31,11 @@ import {
   isConsumerEstimatePayableItem,
 } from "../../lib/consumerRequests/consumerEstimateReadiness";
 import { consumerRepairCanonicalEstimateBlocksApproval } from "./consumerRepairCanonicalEstimateReadiness";
-import { consumerRepairRowIsNonPayable, registerConsumerRepairRowVerifiedPresentation, consumerRepairRowPublicResourcePresentation } from "./consumerRepairRowMetadata";
+import { consumerRepairRowIsNonPayable, registerConsumerRepairRowVerifiedPresentation, consumerRepairRowPublicResourcePresentation, consumerRepairRowCalculatedQuantity } from "./consumerRepairRowMetadata";
 import { publicBoqDisplayNameRu } from "../../lib/estimate/publicBoqNaming";
 import { canonicalPublicResourceDisplayPresentationV1 as canonicalPublicResourcePresentationV1, canonicalPublicResourcePresentationV1 as canonicalSourceResourcePresentationV1, canonicalPublicResourcePresentationMatchesV1, type CanonicalPublicResourcePresentationV1 } from '../../lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1';
 import { canonicalPublicEstimateWorkTitleRu, canonicalPublicEstimateRowNameRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
+import type { EstimateDraftRevision, EstimateDraftRevisionState, EstimateDraftRevisionDiff } from '../../lib/estimate/estimateDraftRevisionContract';
 import { localizeKnownTechnologyVariantSuffixRu } from "../../lib/estimate/backendPlatform/russianTechnologyTitleR542";
 import { measureConsumerRepairQuantityRenderWork } from "./consumerRepairQuantityEditTrace";
 import type { ConsumerEstimatePresentationTrace } from "../../lib/consumerRequests/consumerEstimateHydrationTrace";
@@ -455,6 +456,17 @@ const CANONICAL_OWNERSHIP = new Set([
   "PRELIMINARY_NEED",
 ]);
 
+// Naming only: a pending quantity edit retains the saved row's verified name.
+// This does not admit the edited quantity for sending or artifact generation.
+function canonicalTitleQuantityMatches(item: ConsumerRepairRequestItem, savedQuantity: number | null,
+  savedFormulaQuantity: number | null): boolean {
+  if (item.quantity === savedQuantity) return true;
+  const source = item.sourceParameters;
+  return item.quantityEditedByConsumer === true && source?.manualQuantityOverride === true
+    && Object.prototype.hasOwnProperty.call(source, 'calculatedQuantityBeforeOverride')
+    && source.calculatedQuantityBeforeOverride === savedFormulaQuantity;
+}
+
 function admissionVerifiedCanonicalTitleItems(
   bundle: ConsumerRepairDraftBundle,
 ): ReadonlySet<ConsumerRepairRequestItem> {
@@ -490,7 +502,20 @@ function admissionVerifiedCanonicalTitleItems(
     const projection = rowsById.get(rowId);
     if (source.canonicalPreliminaryNeed === true) {
       const needs = bundle.structuredEstimatePayload?.canonicalBackend?.preliminaryNeeds ?? [];
-      const need = needs.find((candidate) => candidate.rowId === rowId);
+      const payloadOwner = bundle.structuredEstimatePayload?.canonicalBackend;
+      const boundPayload = payloadOwner?.compilerOwner === 'backend'
+        && payloadOwner.revisionId === revisionId && payloadOwner.releaseId === releaseId
+        && payloadOwner.catalogId === catalogId && payloadOwner.checksumSha256 === current.applicableBoqSignature;
+      const saved = current.preliminaryRows?.find(candidate => candidate.rowId === rowId);
+      const admission = saved?.canonicalNeedAdmissionV1;
+      const need = boundPayload ? needs.find(candidate => candidate.rowId === rowId)
+        : saved && admission?.contractVersion === 'canonical-preliminary-row-admission/v1'
+          ? { rowId:saved.rowId, titleRu:saved.titleRu, quantity:saved.quantity, unitId:saved.unit,
+            needSha256:admission.needSha256, publicResourcePresentation:admission.publicResourcePresentation,
+            manualTitleOverride:admission.manualTitleOverride,
+            manualQuantityOverride:admission.manualQuantityOverride,
+            calculatedQuantityBeforeOverride:admission.calculatedQuantityBeforeOverride }
+          : null;
       if (
         String(source.canonicalBackendRevisionId ?? "").trim() !== revisionId
         || String(source.canonicalBackendReleaseId ?? "").trim() !== releaseId
@@ -499,7 +524,9 @@ function admissionVerifiedCanonicalTitleItems(
         || !need
         || need.needSha256 !== rowSha256
         || need.titleRu !== item.titleRu
-        || (need.quantity == null ? item.quantity != null : Number(need.quantity) !== item.quantity)
+        || !canonicalTitleQuantityMatches(item, need.quantity == null ? null : Number(need.quantity),
+          need.manualQuantityOverride === true && need.calculatedQuantityBeforeOverride != null
+            ? Number(need.calculatedQuantityBeforeOverride) : null)
         || need.unitId !== String(item.unit ?? "")
         || !canonicalPublicResourcePresentationMatchesV1(source.canonicalPublicResourcePresentationV1, need.publicResourcePresentation)
         || (source.canonicalManualTitleOverride === true) !== (need.manualTitleOverride === true)
@@ -516,7 +543,7 @@ function admissionVerifiedCanonicalTitleItems(
       || !CANONICAL_OWNERSHIP.has(ownership)
       || !projection
       || projection.titleRu !== item.titleRu
-      || Number(projection.quantity) !== Number(item.quantity)
+      || !canonicalTitleQuantityMatches(item, Number(projection.quantity), consumerRepairRowCalculatedQuantity(projection))
       || String(projection.unit ?? "") !== String(item.unit ?? "")
       || String(projection.sourceParameters?.rowSha256 ?? "").trim() !== rowSha256
       || String(projection.sourceParameters?.canonicalBackendRevisionId ?? "").trim() !== revisionId
@@ -529,6 +556,58 @@ function admissionVerifiedCanonicalTitleItems(
     accepted.add(item);
   }
   return accepted;
+}
+
+/** Each comparison side uses only its own saved row and naming evidence.
+ * Quantities, prices and the immutable comparison stay unchanged. */
+export function requestEstimatePublicRevisionDiff(
+  state: EstimateDraftRevisionState | null | undefined,
+  diff: EstimateDraftRevisionDiff | null,
+): EstimateDraftRevisionDiff | null {
+  if (!state || !diff) return diff;
+  const owner = (revision: EstimateDraftRevision | undefined) => {
+    const identity = revision?.resolvedIdentity;
+    if (!revision || !identity) return null;
+    const { checksum, ...withoutChecksum } = identity;
+    const releaseId = String(identity.canonicalModelVersion ?? ''), catalogId = revision.selectedTemplateId;
+    if (identity.compilerVersion !== CANONICAL_BACKEND_REVISION_PROJECTION_VERSION
+      || identity.canonicalModelId !== 'canonical-estimate-backend'
+      || checksum !== resolvedEstimateIdentityChecksum(withoutChecksum)
+      || !CANONICAL_ID_RE.test(revision.revisionId) || !CANONICAL_ID_RE.test(releaseId) || !catalogId) return null;
+    return {revision,releaseId,catalogId,knownRows:new Map(revision.boq.rows.map(row=>[row.rowId,row])),
+      needs:new Map((revision.preliminaryRows ?? []).map(row=>[row.rowId,row]))};
+  };
+  const before = owner(state.revisions.find(revision => revision.revisionId === diff.fromRevisionId));
+  const after = owner(state.revisions.find(revision => revision.revisionId === diff.toRevisionId));
+  const title = (context: ReturnType<typeof owner>, rowId: string, sourceTitleRu: string): string => {
+    if (!context) return sourceTitleRu;
+    const {revision,releaseId,catalogId} = context;
+    const knownCandidate = context.knownRows.get(rowId), needCandidate = context.needs.get(rowId);
+    const known = knownCandidate?.titleRu === sourceTitleRu ? knownCandidate : null;
+    const need = needCandidate?.titleRu === sourceTitleRu ? needCandidate : null;
+    const source = known?.sourceParameters;
+    const admission = need?.canonicalNeedAdmissionV1;
+    const knownOwner = known && source
+      && source.canonicalBackendRevisionId === revision.revisionId
+      && source.canonicalBackendReleaseId === releaseId
+      && source.canonicalBackendCatalogId === catalogId
+      && CANONICAL_ROW_SHA_RE.test(String(source.rowSha256 ?? ''));
+    const needOwner = need && admission?.contractVersion === 'canonical-preliminary-row-admission/v1'
+      && CANONICAL_ROW_SHA_RE.test(admission.needSha256);
+    if (!knownOwner && !needOwner) return sourceTitleRu;
+    const manual = knownOwner ? source!.canonicalManualTitleOverride === true : admission!.manualTitleOverride;
+    if (manual) return sourceTitleRu;
+    const descriptor = knownOwner ? source!.canonicalPublicResourcePresentationV1 : admission!.publicResourcePresentation;
+    const presentation = canonicalPublicResourcePresentationV1({ titleRu:sourceTitleRu, descriptor });
+    if (descriptor != null && !presentation) return sourceTitleRu;
+    return canonicalPublicEstimateRowNameRu({rowId,sourceTitleRu,titleRu:presentation?.nameRu ?? sourceTitleRu});
+  };
+  const changedRows = diff.changedRows.map(row => ({
+    ...row, titleRu:title(after && row.afterState === 'ABSENT'
+      && !after.knownRows.has(row.rowId) && !after.needs.has(row.rowId) ? before : after,row.rowId,row.titleRu),
+    ...(row.beforeTitleRu == null ? {} : { beforeTitleRu:title(before,row.rowId,row.beforeTitleRu) }),
+  }));
+  return { ...diff, changedRows };
 }
 
 function publicItemTitle(item: ConsumerRepairRequestItem, canonicalTitleVerified = false): string {

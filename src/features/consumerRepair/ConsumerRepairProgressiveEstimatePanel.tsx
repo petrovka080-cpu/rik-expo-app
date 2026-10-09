@@ -52,6 +52,7 @@ import type { ConsumerRepairParamEditState } from "./requestEstimateScreenAction
 import { RequestEstimateItemsEditor } from "./RequestEstimateItemsEditor";
 import { RequestEstimateSummaryCard } from "./RequestEstimateSummaryCard";
 import type { RequestEstimateViewModel } from "./requestEstimateViewModel";
+import { requestEstimatePublicRevisionDiff } from './requestEstimateViewModel';
 import { EstimateRevisionTimeline } from "../requests/components/EstimateRevisionTimeline";
 import { EstimateRevisionDiff } from "../requests/components/EstimateRevisionDiff";
 import { pickFileAny } from "../../lib/filePick";
@@ -627,7 +628,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
         contentWithdrawalReasonRu={canonicalParameterSession?.contentWithdrawalReasonRu} />
       <EstimateRevisionTimeline state={this.props.revisionState} />
       <EstimateRevisionDiff
-        diff={latestDiff}
+        diff={requestEstimatePublicRevisionDiff(this.props.revisionState,latestDiff)}
         parameters={canonicalParameterSession?.parameters}
       />
       <View style={styles.primaryActions} testID="request-estimate-progressive-actions">
