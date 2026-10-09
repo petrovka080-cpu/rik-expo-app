@@ -16,6 +16,7 @@ import tileNormPack from "../../../../../data/estimate-norms/professional/tile.j
 import ventilationNormPack from "../../../../../data/estimate-norms/professional/ventilation.json";
 import waterproofingNormPack from "../../../../../data/estimate-norms/professional/waterproofing.json";
 import { estimateDeterministicHash } from "../../estimateDeterministicHash";
+import { compileFormulaGraph, evaluateFormulaGraph } from "../../backendPlatform/formulaGraph";
 import {
   resolveSarnafilAt18Field80MmPhysicalNormV1,
   SARNAFIL_AT18_FIELD_80MM_PRODUCT_PROFILE_ID,
@@ -8099,9 +8100,12 @@ function parsePositiveLengthSchedule(value: string | null): readonly number[] | 
   return lengths.every((length) => Number.isFinite(length) && length > 0) ? lengths : null;
 }
 
+const WAVIN_HEP2O_INTERMEDIATE_SUPPORT_FORMULA = compileFormulaGraph("max(0,ceil(span_m/spacing_m)-1)");
+
 function resolveWavinHep2OProfile(
   productProfileId: typeof WAVIN_HEP2O_PUSH_FIT_PRODUCT_PROFILE_ID,
   parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
+  selectedProjectSpacing?: Readonly<{ maximumM: number; reference: string }>,
 ): ProfessionalPhysicalNormApplicabilityResolutionV1 {
   const explicit = Object.fromEntries(WAVIN_HEP2O_REQUIRED_EXPLICIT_PARAMETER_IDS.map((parameterId) => [
     parameterId,
@@ -8164,6 +8168,13 @@ function resolveWavinHep2OProfile(
 
   const clipSourceMetadata = WAVIN_HEP2O_CLIP_SOURCE_METADATA.find((metadata) =>
     metadata.pipe_nominal_diameter_mm === nominalDiameterMm && metadata.orientation === supportOrientation);
+  if (selectedProjectSpacing && (!Number.isFinite(selectedProjectSpacing.maximumM)
+    || selectedProjectSpacing.maximumM <= 0 || !selectedProjectSpacing.reference.trim()
+    || !clipSourceMetadata || selectedProjectSpacing.maximumM > clipSourceMetadata.maximum_clip_spacing_m)) {
+    return nonApplied("BLOCKED_NOT_APPLICABLE", productProfileId, parameterValuesInput,
+      ["PROJECT_SUPPORT_SPACING_INVALID_OR_EXCEEDS_MANUFACTURER_MAXIMUM"],
+      WAVIN_HEP2O_REQUIRED_EXPLICIT_PARAMETER_IDS, WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA);
+  }
   const supportSpanLengthSumM = supportSpanLengths!.reduce((sum, length) => sum + length, 0);
   const routeLengthToleranceM = Math.max(1e-9, routeLengthM! * 1e-9);
 
@@ -8207,10 +8218,10 @@ function resolveWavinHep2OProfile(
   const calculatedSmartSleeveQuantityPiece =
     preparedPipeEndCount! * WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA.rate_value;
   const calculatedSupportQuantityPiece = supportAnchorNodeCount! + supportSpanLengths!.reduce(
-    (sum, spanLengthM) => sum + Math.max(
-      0,
-      Math.ceil(spanLengthM / clipSourceMetadata!.maximum_clip_spacing_m) - 1,
-    ),
+    (sum, spanLengthM) => sum + Number(evaluateFormulaGraph(WAVIN_HEP2O_INTERMEDIATE_SUPPORT_FORMULA, {
+      span_m: spanLengthM,
+      spacing_m: selectedProjectSpacing?.maximumM ?? clipSourceMetadata!.maximum_clip_spacing_m,
+    })),
     0,
   );
   const explicitQuantity = finiteNumber(explicitValue(parameterValuesInput, "smart_sleeve_quantity_piece"));
@@ -8269,6 +8280,10 @@ function resolveWavinHep2OProfile(
         `nominal_diameter_mm=${nominalDiameterMm}`,
         `orientation=${supportOrientation}`,
         `maximum_clip_spacing_m=${clipSourceMetadata!.maximum_clip_spacing_m}`,
+        ...(selectedProjectSpacing ? [
+          `selected_project_maximum_spacing_m=${selectedProjectSpacing.maximumM}`,
+          `selected_project_spacing_reference=${selectedProjectSpacing.reference}`,
+        ] : []),
         `support_span_lengths_m=${supportSpanLengths!.join(",")}`,
         `support_anchor_node_count=${supportAnchorNodeCount}`,
         `support_layout_reference=${primitiveString(explicit.hep2o_support_layout_reference!)}`,
@@ -8614,6 +8629,17 @@ function resolveNrmcaCip31ReadyMixOrder(
     blockers: [] as const,
   };
   return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
+}
+
+/** Reuse the verified Hep2O layout rules across plumbing and heating owners.
+ * A stricter project spacing needs its own reference; the existing dispatch
+ * retains its work-technology gates and its unchanged manufacturer spacing. */
+export function resolveWavinHep2OPushFitLayoutV1(input: {
+  parameterValues: Readonly<Record<string, ProfessionalParameterValueV4>>;
+  selectedProjectSpacing?: Readonly<{ maximumM: number; reference: string }>;
+}): ProfessionalPhysicalNormApplicabilityResolutionV1 {
+  return resolveWavinHep2OProfile(WAVIN_HEP2O_PUSH_FIT_PRODUCT_PROFILE_ID,
+    input.parameterValues, input.selectedProjectSpacing);
 }
 
 export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
