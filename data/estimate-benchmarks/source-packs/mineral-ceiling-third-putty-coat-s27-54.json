@@ -1,0 +1,35 @@
+{
+ "contract":"rik-expo-app.s27-54.mineral-ceiling-third-putty-coat.v1",
+ "catalogId":"canonical-work:master:prepared_mineral_ceiling_third_oil_glue_putty_coat_sanding_standard",
+ "workKey":"prepared_mineral_ceiling_third_oil_glue_putty_coat_sanding_standard",
+ "sourceId":"kg_krer15_mineral_ceiling_third_putty_150402706_s2754",
+ "titleRu":"Третий слой масляно-клеевой шпаклёвки со шлифованием минерального потолка",
+ "normId":"15-04-027-06",
+ "source":{"officialUrl":"https://minstroy.gov.kg/ru/kyzmat/431/show","pdfUrl":"https://minstroy.gov.kg/ru/state_program/download-pdf/no15otdelocnyeraboty_compressed-1690836cdcb7429.33503474.pdf","localArtifact":".release-runtime/r568/s27-35/wall-putty-sources/KRER-15.pdf","sha256":"58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc","edition":"КРЕР15-2015","pages":[8,9,11,191,192]},
+ "basisM2":100,
+ "scopeRu":"Только назначенный проектом третий слой и его шлифование по подготовленной штукатурной или сборной минеральной поверхности потолка; высота помещения до3,5м. Это не подготовка всего потолка и не окраска.",
+ "substrateValue":"Подготовленная штукатурная или сборная минеральная поверхность потолка",
+ "justificationValue":"Необходимость третьего слоя обоснована проектом по КРЕР15, п.1.1(г)",
+ "excludedRu":["ГКЛ, дерево и влажные помещения без отдельного подтверждения","Первый и второй слои, прежняя подготовка и последующая окраска","Замена оригинальной масляно-клеевой шпаклёвки CT127 или другой системой","Рецептура воды, фасовка, число листов абразива, рейсы и масса отходов из площади","Исторические табличные цены как текущие"],
+ "resourceTable":[
+  {"id":"labor","operation":"coat-and-sand","category":"labor","nameRu":"Рабочие-строители, средний разряд3,9","resourceCode":"000-1003-9","unitId":"man_hour","ratePer100M2":"16.50","quantityStatus":"OFFICIAL_RATE","priceStatus":"UNKNOWN_NULL"},
+  {"id":"lift","operation":"supply-access","category":"equipment","nameRu":"Одномачтовый грузовой подъёмник до500кг, высота подъёма45м","resourceCode":"03-0327","unitId":"machine_hour","ratePer100M2":"0.01","quantityStatus":"OFFICIAL_RATE","priceStatus":"UNKNOWN_NULL"},
+  {"id":"operator","operation":"supply-access","category":"labor","nameRu":"Машинист подъёмника — включён в стоимость подъёмника","resourceCode":null,"unitId":"man_hour","ratePer100M2":"0.01","quantityStatus":"OFFICIAL_RATE_REFERENCE","includedOwner":"lift","priceStatus":"INCLUDED_NO_SECOND_PRICE"},
+  {"id":"truck","operation":"supply-access","category":"equipment","nameRu":"Бортовой автомобиль грузоподъёмностью до5т","resourceCode":"40-0001","unitId":"machine_hour","ratePer100M2":"0.04","quantityStatus":"OFFICIAL_RATE","priceStatus":"UNKNOWN_NULL"},
+  {"id":"putty","operation":"coat-and-sand","category":"material","nameRu":"Масляно-клеевая шпаклёвка — готовый состав","resourceCode":"01-8906-0062","unitId":"kg","sourceUnitId":"t","sourceRatePer100M2":"0.032","ratePer100M2":"32","characteristicsRu":"Оригинальный масляно-клеевой состав нормы; марка и фасовка не установлены.","applicationRu":"Проектно обоснованный третий слой на подготовленном минеральном потолке. Другая шпаклёвочная система этой нормой не подтверждается.","quantityStatus":"OFFICIAL_CONSUMPTION_ORDER_REQUIRES_STOCK_RESERVE_AND_SUPPLY_QUANTUM","priceStatus":"UNKNOWN_NULL"},
+  {"id":"abrasive","operation":"coat-and-sand","category":"material","nameRu":"Двухслойная шлифовальная шкурка, зернистость40/25","resourceCode":"01-6109-0001","unitId":"m2","ratePer100M2":"0.00044","characteristicsRu":"Двухслойный абразив40/25 по исходной таблице; лист/рулон и размер не установлены.","applicationRu":"Шлифование третьего слоя. Расход0,00044м² на100м² сохранён буквально; необычно малая норма требует проверки перед закупкой, количество листов не выводится.","quantityStatus":"LITERAL_UNUSUALLY_SMALL_SOURCE_CONSUMPTION_ORDER_UNCONFIRMED","priceStatus":"UNKNOWN_NULL"},
+  {"id":"rags","operation":"coat-and-sand","category":"material","nameRu":"Ветошь для шпаклёвочных работ","resourceCode":"01-7204-0001","unitId":"kg","ratePer100M2":"0.15","characteristicsRu":"Ресурс01-7204-0001; состав ткани и размер куска источник не устанавливает.","applicationRu":"Расходник операции нанесения и шлифования по КРЕР15-04-027-06; не доказательство включения полной уборки помещения.","quantityStatus":"OFFICIAL_CONSUMPTION_ORDER_REQUIRES_STOCK_RESERVE_AND_SUPPLY_QUANTUM","priceStatus":"UNKNOWN_NULL"}
+ ],
+ "openAdditionalScope":[
+  {"id":"protection-film","operation":"protection","category":"material","nameRu":"Защитная плёнка для укрытия прилегающих поверхностей — исполнение не подобрано","unitId":"m2","quantityGap":"Толщина, площадь и совместимый способ защиты не подтверждены."},
+  {"id":"protection-tape","operation":"protection","category":"material","nameRu":"Малярная клейкая лента — ширина и длина не подобраны","unitId":"m","quantityGap":"Совместимость с защищаемыми поверхностями, ширина и расход не подтверждены."},
+  {"id":"hand-tools","operation":"equipment","category":"service","nameRu":"Обеспечение ручным инструментом для нанесения и шлифования — состав и включение в цену не подтверждены","unitId":"item","quantityGap":"Нельзя автоматически покупать новый инструмент на каждую площадь или повторять его оплату в комплексной цене."},
+  {"id":"ppe","operation":"equipment","category":"service","nameRu":"Обеспечение средствами индивидуальной защиты для шпаклевания и шлифования — состав и включение не подтверждены","unitId":"item","quantityGap":"Класс и количество СИЗ не назначать из площади; требуется применимое решение и проверка включения в цену исполнителя."},
+  {"id":"qa","operation":"completion","category":"labor","nameRu":"Контроль качества третьего слоя и шлифования — отдельные трудозатраты не подтверждены","unitId":"man_hour","quantityGap":"Применимый состав контроля, объём и включение в договорную цену требуют подтверждения."},
+  {"id":"cleanup","operation":"completion","category":"labor","nameRu":"Уборка после шпаклевания и шлифования — состав и включение не подтверждены","unitId":"man_hour","quantityGap":"КРЕР15-04-027-06 не доказывает включение полной уборки; повторная оплата сверх комплексной цены запрещена."},
+  {"id":"waste","operation":"completion","category":"service","nameRu":"Сбор, погрузка, вывоз и приём отходов шпаклёвочных работ — партия и услуга не подтверждены","unitId":"kg","quantityGap":"Нет подтверждённой партии и состава услуги; массу, тару, расстояние и рейсы из площади не получать."}
+ ],
+ "fullTechnicalAcceptance":false,
+ "acceptedNewCompleteTypes":0,
+ "originalNormMaterialResources":3
+}

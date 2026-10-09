@@ -151,7 +151,7 @@ export function canonicalArtifactSpecificationParts(row: CanonicalArtifactRow, p
   });
   const selectedParts = selected.flatMap(spec => spec.parts);
   const selectedSpecification = selectedParts.join(", ");
-  const selectedValues = new Set(selected.map(spec => spec.value.trim()));
+  const selectedValues = new Set(selected.map(spec => canonicalPublicEstimateChoiceLabelRu(spec.value).trim()));
   const presentation = canonicalArtifactPublicResourcePresentationV1(row);
   const details = presentation ? [presentation.brandAndModelRu, presentation.specificationRu, ...presentation.detailsRu]
     .filter((part): part is string => typeof part === 'string' && !selectedParts.includes(part)
@@ -398,7 +398,9 @@ export function canonicalArtifactQuantity(value: unknown): string {
   if (value == null || value === "") return "—";
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return "—";
-  return new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 3 }).format(numeric);
+  // A positive canonical quantity must not disappear as displayed zero.
+  const maximumFractionDigits = numeric !== 0 && Math.abs(numeric) < 0.001 ? 9 : 3;
+  return new Intl.NumberFormat("ru-RU", { maximumFractionDigits }).format(numeric);
 }
 
 export function canonicalArtifactParameterValue(value: unknown): string {

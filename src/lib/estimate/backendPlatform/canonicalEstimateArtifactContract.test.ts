@@ -27,6 +27,13 @@ const rows = [
 ];
 
 describe("canonical estimate artifact contract", () => {
+  it("keeps small positive source quantities visible instead of displaying zero", () => {
+    expect(canonicalArtifactQuantity("0.0001562")).toBe("0,0001562");
+    expect(canonicalArtifactQuantity("0.000000001")).toBe("0,000000001");
+    expect(canonicalArtifactQuantity("0")).toBe("0");
+    expect(canonicalArtifactQuantity(null)).toBe("—");
+    expect(canonicalArtifactQuantity("12.5")).toBe("12,5");
+  });
   it("renders a saved semicolon specification once while preserving other supplied details", () => {
     const value = "LOGICROOF V-RP 1,5 мм; контрольная спецификация, ТЛ 2.01 03.2026";
     const membrane = { ...rows[0]!, title_ru: "Мембрана", calculation_trace: { resourceGraph: {
@@ -37,7 +44,7 @@ describe("canonical estimate artifact contract", () => {
     } } };
     const before = JSON.stringify(membrane);
     expect(canonicalArtifactSpecificationParts(membrane, { product: value }).flatMap(spec => spec.parts))
-      .toEqual(["LOGICROOF V-RP 1,5 мм", "контрольная спецификация, ТЛ 2.01 03.2026", "Расход и заказ подтверждены отдельно."]);
+      .toEqual(["V-RP 1,5 мм", "контрольная спецификация, ТЛ 2.01 03.2026", "Расход и заказ подтверждены отдельно."]);
     expect(JSON.stringify(membrane)).toBe(before);
   });
   it("uses authored dimension labels once in PDF and procurement specifications without changing saved facts", () => {
@@ -52,7 +59,7 @@ describe("canonical estimate artifact contract", () => {
     const before = JSON.stringify({ tape, parameters });
     const specifications = canonicalArtifactSpecificationParts(tape, parameters);
     expect(specifications.flatMap(spec => spec.parts)).toEqual([
-      "Ширина (мм): 300", "Толщина (мм): 1.5", "Длина рулона (м): 15", "LOGICROOF Tape PVC-B",
+      "Ширина (мм): 300", "Толщина (мм): 1.5", "Длина рулона (м): 15",
     ]);
     expect(specifications[0]).toMatchObject({ parameterId: "width", value: "300" });
     expect(buildCanonicalProcurementProjection({ revision: { ...revision, input_parameters: parameters }, procurementRows: [tape] }).rows[0])
