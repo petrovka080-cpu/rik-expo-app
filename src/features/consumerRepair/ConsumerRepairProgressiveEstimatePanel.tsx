@@ -1452,6 +1452,22 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     this.props.onApplyParamBatch?.([]);
   };
 
+  private refreshingSavedComposition = false;
+  private refreshSavedComposition = async (): Promise<void> => {
+    if (this.refreshingSavedComposition || this.state.applyState === "pending"
+      || this.dirtyKeys().length > 0 || !this.props.revision || !this.props.onApplyParamBatch) return;
+    this.refreshingSavedComposition = true;
+    this.setState({ applyState: "pending" });
+    try {
+      const applied = await this.props.onApplyParamBatch([]);
+      this.setState({ applyState: applied === false ? "error" : "success" });
+    } catch {
+      this.setState({ applyState: "error" });
+    } finally {
+      this.refreshingSavedComposition = false;
+    }
+  };
+
   private renderEditableParameterRow(
     card: AiEstimateParameterCard,
     actionLabel: string,
@@ -1793,6 +1809,19 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
             testID="editable-param-preliminary-continue"
           >
             <Text style={styles.inlineParamPrimaryText}>Продолжить расчёт</Text>
+          </Pressable>
+        </View>
+      ) : null}
+      {dirtyCount === 0 && canonicalSession && this.props.revision && this.props.onApplyParamBatch ? (
+        <View style={styles.batchBar} testID="saved-estimate-composition-refresh-bar">
+          <Text style={styles.batchBarText}>
+            Обновите состав по актуальной версии работы. Исходные данные сохранятся; прежняя смета останется в истории.
+          </Text>
+          <Pressable accessibilityRole="button" disabled={applyPending}
+            onPress={this.refreshSavedComposition}
+            style={[styles.inlineParamButton, styles.inlineParamPrimaryButton]}
+            testID="saved-estimate-composition-refresh">
+            <Text style={styles.inlineParamPrimaryText}>{applyPending ? "Обновляем…" : "Обновить состав сметы"}</Text>
           </Pressable>
         </View>
       ) : null}
