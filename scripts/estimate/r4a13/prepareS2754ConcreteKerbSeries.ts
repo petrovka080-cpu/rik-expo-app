@@ -13,7 +13,7 @@ export function concreteKerbControlInputS2754(index:number) {
     prepared_installation_line:pack.preparedLineValue,mechanism_fulfillment:ownKerbMachinesS2754};
 }
 
-export function concreteKerbConfigS2754(index:number,parent:{releaseId:string;searchReleaseId:string}):MasterSingleDefinitionSuccessorConfig {
+export function concreteKerbConfigS2754(index:number,parent:{releaseId:string;searchReleaseId:string},successor=false):MasterSingleDefinitionSuccessorConfig {
   const type=pack.types[index];
   if(!type)throw new Error('S2754_CONCRETE_KERB_EXACT_TWO_COLUMNS_ONLY');
   const base=floorDemolitionSeriesS2754Config(0,parent),definition=concreteKerbDefinitionS2754(index),prefix='concrete-kerb:'+type.key;
@@ -22,7 +22,8 @@ export function concreteKerbConfigS2754(index:number,parent:{releaseId:string;se
     'Нормативный расход бетонных камней; точное исполнение для заказа требует спецификации объекта',
     'Собственные механизмы либо аренда с машинистами; каждый ресурс и ставка учитываются один раз'];
   return {...base,contract:pack.contract,stopCode:'S2754_KERB_'+index,applicationName:'s2754-concrete-kerb-'+type.key,
-    outputRoot:resolve('.release-runtime/r568/s27-54/concrete-kerb-series/publication/'+type.key),
+    outputRoot:resolve('.release-runtime/r568/s27-54/concrete-kerb-series/'+(successor?'specification-guard/publication/':'publication/')+type.key),
+    expectedParentShape:successor?[34,27,27]:[0,0,0],
     catalogId:type.catalogId,sourceId:pack.sourceId,normId:type.column,
     sourcePaths:['scripts/estimate/r4a13/prepareS2754ConcreteKerbSeries.ts','scripts/estimate/r4a13/prepareS2754FloorDemolitionSeries.ts',
       'src/lib/estimate/v4/concreteKerbInstallationS2754.ts','data/estimate-benchmarks/source-packs/concrete-kerb-installation-s27-54.json',
@@ -49,7 +50,7 @@ export function concreteKerbConfigS2754(index:number,parent:{releaseId:string;se
       clarificationFields:definition.parameters.filter(p=>p.truth_metadata.visibility_role==='USER_INPUT').map(p=>p.parameter_id),
       includedBoundaries:included,excludedBoundaries:pack.excludedRu,extraSearchTermsRu:'бордюр борт камень бетон основание опалубка швы раствор М100 бетон В15',
       sourceProvenance:{sourcePack:'concrete-kerb-installation-s27-54.json',primaryMeasureParameterId:'kerb_length_m',exactRateColumn:type.column,fullTechnicalAcceptance:false}},
-    catalogAppend:{identity:{namespace:'global',domain:'transport',sourceIdentity:'krer27-2015:concrete-kerb:'+type.column,
+    catalogAppend:successor?undefined:{identity:{namespace:'global',domain:'transport',sourceIdentity:'krer27-2015:concrete-kerb:'+type.column,
       workKey:type.workKey,titleRu:type.titleRu,denominatorEligible:true},searchPlacement:{...base.catalogAppend!.searchPlacement,
       groupMode:'join',groupId:'wg:expanded:curbs',groupNameRu:'Дороги, транспорт и площадки: установка бортового камня',
       domainId:'transport',systemId:'transport',subsystemId:'wg:expanded:curbs',assemblyId:'wg:expanded:curbs',workFamilyId:'wg:expanded:curbs',
@@ -76,6 +77,14 @@ export function concreteKerbConfigS2754(index:number,parent:{releaseId:string;se
       const order=await compileConcreteKerbS2754(index,{...input,mortar_stock:0,mortar_reserve:0,mortar_quantum:0.001});
       assert.equal(order.rows.find(row=>row.row_id===prefix+':mortar')?.quantity,'0.022');
       assert.equal(order.rows.filter(row=>row.included_in_procurement).length,1);
+      const unspecifiedStone=await compileConcreteKerbS2754(index,{...input,stone_stock:0,stone_reserve:0,stone_quantum:1});
+      assert(!unspecifiedStone.rows.some(row=>row.row_id===prefix+':stone'));
+      assert(unspecifiedStone.preliminaryNeeds.find(row=>row.row_id===prefix+':stone')?.missing_parameter_ids.includes('kerb_stone_specification'));
+      const specifiedStone=await compileConcreteKerbS2754(index,{...input,stone_stock:0,stone_reserve:0,stone_quantum:1,
+        kerb_stone_specification:'КОНТРОЛЬНЫЙ ВВОД СПЕЦИФИКАЦИИ; не изделие и не проект объекта'});
+      assert.equal(specifiedStone.rows.find(row=>row.row_id===prefix+':stone')?.quantity,'36');
+      const unconfirmedLine=await compileConcreteKerbS2754(index,{...input,prepared_installation_line:undefined});
+      assert.equal(unconfirmedLine.rows.length,0);
       await assert.rejects(()=>compileConcreteKerbS2754(index,{...input,covering_kind:pack.types[1-index].coveringValue}));
       return {status:'GREEN_LIMITED_EXACT_CONCRETE_KERB_COLUMN',column:type.column,knownRows:13,needs:11,
         materialConsumptions:5,mutuallyExclusiveMachines:true,operatorsNotDuplicated:true,fullTechnicalAcceptance:false,acceptedNewCompleteTypes:0};
@@ -86,6 +95,6 @@ export function concreteKerbConfigS2754(index:number,parent:{releaseId:string;se
 if(process.argv[1]?.replaceAll('\\','/').endsWith('/prepareS2754ConcreteKerbSeries.ts')) {
   const index=Number(process.argv.find(a=>a.startsWith('--index='))?.split('=')[1]);
   const current=JSON.parse(readFileSync(resolve('data/estimate-benchmarks/r568-local-developer-canonical-release.json'),'utf8'));
-  void runMasterSingleDefinitionSuccessorR1(concreteKerbConfigS2754(index,{releaseId:current.definitionReleaseId,searchReleaseId:current.searchReleaseId}))
+  void runMasterSingleDefinitionSuccessorR1(concreteKerbConfigS2754(index,{releaseId:current.definitionReleaseId,searchReleaseId:current.searchReleaseId},process.argv.includes('--successor')))
     .catch(error=>{process.stderr.write(String(error.stack??error)+'\n');process.exitCode=1;});
 }

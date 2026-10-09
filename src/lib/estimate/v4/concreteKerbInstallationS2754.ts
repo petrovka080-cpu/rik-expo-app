@@ -77,7 +77,9 @@ export function concreteKerbDefinitionS2754(index: number): AutomaticOwnerDefini
     ordinary:[{id:area,title:'Длина устанавливаемой линии бетонных бортов',valueType:'decimal',unitId:'m',kind:'ordinary',min:0.000001}],
     profile:[],conditional,rows,deferMissingProjectFactsToRows:true,excludedUnownedAssumptions:pack.excludedRu});
   return {...built,
-    parameters:built.parameters.map(parameter=>({...parameter,truth_metadata:parameter.parameter_id.startsWith('open_scope_qty_')?
+    parameters:built.parameters.map(parameter=>({...parameter,
+      required:parameter.required || facts.includes(parameter.parameter_id) || Object.values(materialSpecs).some(spec=>spec.id===parameter.parameter_id),
+      truth_metadata:parameter.parameter_id.startsWith('open_scope_qty_')?
       {...parameter.truth_metadata,visibility_role:'INTERNAL_ONLY',value_source_role:'UNRESOLVED_APPLICATION_NORM',
         provenance:{consumer_input_role_v1:'APPLICATION_TECHNICAL'},unresolved_norm_reason:'Норма не устанавливает дополнительный состав, количество и включение в цену.'}:
       {...parameter.truth_metadata,source_confirmation_required:false}})),
