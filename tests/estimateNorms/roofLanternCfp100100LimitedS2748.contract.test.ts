@@ -69,4 +69,13 @@ describe('exact lantern composition through the common compiler', () => {
     for (const lantern_count of [0, 10.5]) await expect(compileCandidate({ ...selected, lantern_count })).rejects.toThrow();
     await expect(compileCandidate({ ...selected, ...inventory, base_stock_units: 0.5 })).rejects.toThrow();
   });
+  it('rejects forged application norms while preserving the known product composition', async () => {
+    for (const installation_hours_per_unit of [0, 1]) {
+      await expect(compileCandidate({ ...selected, ...inventory, installation_hours_per_unit }))
+        .rejects.toThrow('unresolved application norm cannot be supplied');
+    }
+    const result = await compileCandidate({ ...selected, ...inventory });
+    expect(result.preliminaryNeeds.find(need => need.row_id === row('installation'))?.quantity).toBeNull();
+    expect(result.rows.find(resource => resource.row_id === row('base'))?.quantity).toBe('9');
+  });
 });

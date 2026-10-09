@@ -223,6 +223,17 @@ export function validateCanonicalEstimateParameters(
   const unknown = Object.keys(input).filter((key) => !accepted.has(key));
   if (unknown.length) return fail(`unknown estimate parameters: ${unknown.slice(0, 10).join(",")}`);
 
+  // A missing application norm is not an editable project fact. Neither a
+  // submitted number, a carried confirmation nor a hidden default can turn it
+  // into a sourced norm; confirmation requires an immutable definition successor.
+  for (const definition of definitions) {
+    const metadata = isRecord(definition.truth_metadata) ? definition.truth_metadata : {};
+    if (metadata.value_source_role !== 'UNRESOLVED_APPLICATION_NORM') continue;
+    const id = String(definition.parameter_id);
+    if (definition.default_value != null) return fail(`unresolved application norm cannot have a default ${id}`);
+    if (input[id] != null || confirmed[id] != null) return fail(`unresolved application norm cannot be supplied ${id}`);
+  }
+
   // Declared defaults are resolved before conditional rules. Numeric project
   // quantities in canonical content intentionally have no hidden defaults.
   for (const definition of definitions) {

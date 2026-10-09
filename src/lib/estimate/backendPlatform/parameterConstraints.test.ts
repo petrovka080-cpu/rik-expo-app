@@ -4,6 +4,26 @@ import {
   type CanonicalParameterDefinitionRecord,
 } from "./parameterConstraints";
 
+describe('unresolved application norms remain unknown at the common server boundary', () => {
+  const definition: CanonicalParameterDefinitionRecord = { parameter_id: 'pending_norm', value_type: 'decimal',
+    required: false, default_value: null, constraints_json: { min: 0 }, truth_metadata: {
+      value_source_role: 'UNRESOLVED_APPLICATION_NORM', visibility_role: 'INTERNAL_ONLY', preliminary_compilation_allowed: true,
+    } };
+  it('keeps absent and explicit unknown values available for preliminary needs', () => {
+    expect(validateCanonicalEstimateParameters([definition], {})).toEqual({});
+    expect(validateCanonicalEstimateParameters([definition], { pending_norm: null })).toEqual({ pending_norm: null });
+  });
+  it.each([0, 1, '0', '0.25'])('rejects supplied or carried %s without a confirmed source', value => {
+    expect(() => validateCanonicalEstimateParameters([definition], { pending_norm: value })).toThrow('unresolved application norm cannot be supplied');
+    expect(() => validateCanonicalEstimateParameters([definition], {}, { confirmedParameters: { pending_norm: value } })).toThrow('unresolved application norm cannot be supplied');
+  });
+  it('rejects defaults and retains ordinary explicitly supplied facts', () => {
+    expect(() => validateCanonicalEstimateParameters([{ ...definition, default_value: 0 }], {})).toThrow('unresolved application norm cannot have a default');
+    const fact = { ...definition, truth_metadata: { value_source_role: 'PROJECT_SPECIFIC_INPUT' } };
+    expect(validateCanonicalEstimateParameters([fact], { pending_norm: 0 })).toEqual({ pending_norm: 0 });
+  });
+});
+
 test("integer facts reject fractional text hidden by floating-point precision while decimal facts remain allowed", () => {
   const definitions: CanonicalParameterDefinitionRecord[] = [
     { parameter_id: "actual_piece_count", value_type: "integer", required: true, default_value: null, constraints_json: { min: 1 } },

@@ -39,6 +39,8 @@ export function roofLanternLimitedS2748Config(parent: { releaseId: string; searc
       'src/lib/estimate/v4/automaticConstructionOwnerR1.ts',
       'src/lib/estimate/v4/effectivePurchaseBalanceR1.ts',
       'src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts',
+      'src/lib/estimate/backendPlatform/parameterConstraints.ts',
+      'src/lib/estimate/backendPlatform/parameterConstraints.test.ts',
       'tests/estimateNorms/roofLanternCfp100100LimitedS2748.contract.test.ts',
       'data/estimate-benchmarks/source-packs/roof-lantern-cfp100100-limited-s27-48.json',
       ...sourcePack.sources.map(source => source.localArtifact)],
@@ -88,6 +90,8 @@ export function roofLanternLimitedS2748Config(parent: { releaseId: string; searc
       assert.equal(result.rows.length, 8); assert.equal(result.preliminaryNeeds.length, 13);
       for (const suffix of ['base', 'dome']) assert.equal(result.rows.find(row => row.row_id === `roof-cfp100100:${suffix}`)?.quantity, '10');
       assert(parameterDefinitions.every(parameter => parameter.default_value === null));
+      await assert.rejects(() => compileCandidate({ ...acceptanceInput, installation_hours_per_unit: 0 }), /unresolved application norm cannot be supplied/);
+      await assert.rejects(() => compileCandidate({ ...acceptanceInput, installation_hours_per_unit: 1 }), /unresolved application norm cannot be supplied/);
       const unresolvedRows = resourceDefinitions.filter(row => row.source_metadata.sourceRole === 'UNRESOLVED_INSTALLATION_SOURCE').map(row => row.row_id);
       assert.deepEqual(result.preliminaryNeeds.map(row => row.row_id).sort(), unresolvedRows.slice().sort());
       assert(canonicalPublisherQuantityScopeIsConsistent({ passport: {
