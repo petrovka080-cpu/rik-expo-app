@@ -97,6 +97,32 @@ export function consumerRepairRowMissingRequirementLabels(
   }))];
 }
 
+/** A missing application norm is not a customer input, even when both block one row. */
+export function consumerRepairRowRequirementNotice(
+  item: ConsumerRepairRowMetadataCarrier,
+  tables?: CanonicalParameterRequirementTables | null,
+): string {
+  const inputs: string[] = [];
+  const sources: string[] = [];
+  for (const requirement of consumerCanonicalMissingRequirements(item, tables)) {
+    const label = text(requirement.titleRu || requirement.labelRu || requirement.parameterTitleRu || requirement.parameterId);
+    if (!label) continue;
+    const sourceManaged = requirement.valueSourceRole === "UNRESOLVED_APPLICATION_NORM"
+      || requirement.sourceConfirmationRequired === true;
+    const labels = sourceManaged ? sources : inputs;
+    if (!labels.includes(label)) labels.push(label);
+  }
+  const messages = [
+    item.quantity != null ? `Количество ${item.quantity} сохранено, но позиция ещё не подтверждена.` : null,
+    inputs.length ? `Заполните в исходных данных: ${inputs.join(", ")}.` : null,
+    sources.length ? `Для расчёта нужен подтверждённый источник: ${sources.join(", ")}.` : null,
+  ].filter(Boolean);
+  if (inputs.length || sources.length) return messages.join(" ");
+  return item.quantity == null
+    ? "Для расчёта количества нужны подтверждённые исходные данные."
+    : "Количество сохранено; для подтверждения позиции нужны дополнительные исходные данные.";
+}
+
 export function consumerRepairRowHasSourceManagedQuantity(
   item: ConsumerRepairRowMetadataCarrier | null | undefined,
 ): boolean {

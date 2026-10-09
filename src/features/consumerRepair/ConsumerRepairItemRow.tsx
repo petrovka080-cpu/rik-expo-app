@@ -30,7 +30,7 @@ import {
   consumerRepairRowIncludedInEstimate,
   consumerRepairRowIsCanonicalPreliminaryNeed,
   consumerRepairRowIsNonPayable,
-  consumerRepairRowMissingRequirementLabels,
+  consumerRepairRowRequirementNotice,
   consumerRepairRowPublicResourcePresentation,
 } from "./consumerRepairRowMetadata";
 import { useConsumerRepairItemRowEditing } from "./useConsumerRepairItemRowEditing";
@@ -114,7 +114,7 @@ function ConsumerRepairItemRowComponent({
     calculation_trace: { purchaseRequirementV1: item.sourceParameters?.canonicalPurchaseRequirement } });
   const purchaseShortage = canonicalPurchaseShortageMessageV1([{ rowId: item.id, titleRu: item.titleRu,
     calculationTrace: { purchaseBalance: item.sourceParameters?.canonicalPurchaseBalance } }]);
-  const missingRequirementLabels = consumerRepairRowMissingRequirementLabels(item, parameterRequirementTables);
+  const requirementNotice = consumerRepairRowRequirementNotice(item, parameterRequirementTables);
   const publicResourcePresentation = React.useMemo(() => consumerRepairRowPublicResourcePresentation(item), [item]);
   const {
     quantityInputRef,
@@ -176,11 +176,7 @@ function ConsumerRepairItemRowComponent({
           >
             <Text style={styles.unresolvedNoticeTitle}>Требуется уточнение для подтверждения</Text>
             <Text style={styles.unresolvedNoticeText}>
-              {missingRequirementLabels.length > 0
-                ? `${item.quantity != null ? `Количество ${item.quantity} сохранено, но позиция ещё не подтверждена. ` : ""}Заполните в исходных данных: ${missingRequirementLabels.join(", ")}.`
-                : item.quantity == null
-                  ? "Введите подтверждённое количество или заполните указанный источник расчёта."
-                  : "Количество сохранено, но backend ещё ожидает обязательное уточнение по этой позиции."}
+              {requirementNotice}
             </Text>
           </View>
         ) : null}
