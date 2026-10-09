@@ -1,4 +1,5 @@
 import {
+  compareFormulaGraphDecimals,
   evaluateFormulaGraph,
   formulaAstInputParameterIds,
   type FormulaAst,
@@ -952,6 +953,12 @@ export async function compileCanonicalEstimateCore(
     ], `row override ${resource.row_id}`);
     const provenance = override == null ? null : manualProvenance(override.provenance, resource.row_id);
     const effectiveOutput = effectiveQuantityPlan.outputs.get(resource.row_id);
+    const excludeKnownZero = resource.resource_graph?.excludeKnownZeroQuantityV1;
+    if (excludeKnownZero != null && (typeof excludeKnownZero !== 'boolean'
+      || (excludeKnownZero && (commercialCoverage.members.has(resource.row_id)
+        || commercialCoverage.owners.has(resource.row_id))))) {
+      throw compilerError(`known zero exclusion policy invalid ${resource.row_id}`, 'DEFINITION_INTEGRITY_FAILED');
+    }
     overrides.delete(resource.row_id);
     const inclusion = resolveInclusionGraph(resource.inclusion_ast, parameters);
     validateConditionalPositiveQuantityPolicy(resource, formula, parameters, definitionParameterIds);
@@ -989,7 +996,8 @@ export async function compileCanonicalEstimateCore(
     const costInclusion = resolveCanonicalResourceCostInclusion(
       commercialOwner ? { ...resource, resource_graph: effectiveResourceGraph } : resource, override,
     );
-    const { includedInEstimate, inclusionDecision } = costInclusion;
+    const { inclusionDecision } = costInclusion;
+    let { includedInEstimate } = costInclusion;
     let { includedInProcurement } = costInclusion;
 
     const physicalBinding = resource.resource_graph?.professionalPhysicalNormBindingV1;
@@ -1058,7 +1066,9 @@ export async function compileCanonicalEstimateCore(
       return value == null || (typeof value === "string" && value.trim() === "");
     });
     const missingRequiredTitleSpecificationParameterIds = missingTitleSpecificationParameterIds.filter(
-      (parameterId) => canonicalParameterRequiredNow(parameterDefinitionsById.get(parameterId), parameters),
+      (parameterId) => canonicalParameterRequiredNow(parameterDefinitionsById.get(parameterId), parameters)
+        // An explicit spare order still needs an exact product even if installed consumption is zero.
+        || (excludeKnownZero === true && manualQuantity != null && compareFormulaGraphDecimals(manualQuantity, '0') > 0),
     );
     const rawConsumerParameterIds = resource.resource_graph?.inputParameterIds;
     if (rawConsumerParameterIds != null && (
@@ -1283,6 +1293,17 @@ export async function compileCanonicalEstimateCore(
     const unitPrice = override != null && Object.prototype.hasOwnProperty.call(override, "unitPrice")
       ? nonNegativeNumericText(override.unitPrice, `${resource.row_id}.unitPrice`, true)
       : snapshotUnitPrice;
+    // Retain the canonical physical row and its trace, but require no price or purchase
+    // for a proved zero. A manual spare order or a shortage must remain visible.
+    const knownZeroExcluded = excludeKnownZero === true && formulaQuantity != null
+      && compareFormulaGraphDecimals(formulaQuantity, '0') === 0
+      && compareFormulaGraphDecimals(quantity, '0') === 0
+      && (purchaseBalance == null || (compareFormulaGraphDecimals(purchaseBalance.consumed, '0') === 0
+        && compareFormulaGraphDecimals(purchaseBalance.reserve, '0') === 0 && purchaseBalance.procurementReady));
+    if (knownZeroExcluded) {
+      includedInEstimate = false;
+      includedInProcurement = false;
+    }
     const amount = multiply(quantity, unitPrice);
     addToTotal(amount, includedInEstimate);
     const calculationTrace = {
@@ -1292,6 +1313,7 @@ export async function compileCanonicalEstimateCore(
       inputParameterIds: formula.input_parameter_ids,
       resourceGraph: resourceGraphForRevision(effectiveResourceGraph, parameters, resource.row_id),
       ...(inclusionDecision == null ? {} : { inclusionDecision }),
+      ...(knownZeroExcluded ? { knownZeroExclusionV1: { calculatedQuantity: formulaQuantity, orderedQuantity: quantity } } : {}),
       ...(purchaseBalance == null ? {} : { purchaseBalance }),
       ...(transportQuantity == null ? {} : { transportQuantity }),
       ...(effectiveOutput == null ? {} : { effectiveQuantityOutput: {
