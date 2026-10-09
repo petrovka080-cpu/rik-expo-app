@@ -14,6 +14,15 @@ import type { CanonicalPurchaseBalanceV1 } from "../backendPlatform/canonicalPur
 
 type Json = Record<string, unknown>;
 
+/** Source gaps are owned by the application and cannot be supplied as user
+ * quantities. Keep the compiler's exact authority fields in one place. */
+export function unresolvedApplicationNormTruthR1(existing:Json,reasonRu:string):Json {
+  if(!reasonRu.trim())throw Error('UNRESOLVED_APPLICATION_NORM_REASON_REQUIRED');
+  const provenance=existing.provenance&&typeof existing.provenance==='object'&&!Array.isArray(existing.provenance)?existing.provenance as Json:{};
+  return {...existing,visibility_role:'INTERNAL_ONLY',value_source_role:'UNRESOLVED_APPLICATION_NORM',
+    provenance:{...provenance,consumer_input_role_v1:'APPLICATION_TECHNICAL'},unresolved_norm_reason:reasonRu};
+}
+
 export type AutomaticParameterKind = "ordinary" | "profile" | "conditional" | "internal";
 type AutomaticPeerCondition = Readonly<{
   kind: "greater_than";
