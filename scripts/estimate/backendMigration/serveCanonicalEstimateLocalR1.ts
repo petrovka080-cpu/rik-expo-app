@@ -1,4 +1,5 @@
 import { projectCanonicalEstimateParameterSessionSnapshot } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSessionSnapshot";
+import { canonicalOrderedSpecificationBindings, type CanonicalOrderedSpecificationBinding } from '../../../src/lib/estimate/backendPlatform/canonicalOrderedSpecificationBindings';
 import {
   createHash,
   createHmac,
@@ -35,6 +36,7 @@ import { canonicalManualPriceMigrationBindings, canonicalManualExclusionMigratio
 
 async function localManualAmendmentMigrationBindings(client: PoolClient, definitionId: string): Promise<{
   manualPriceMigrationBindings: Record<string, string>; manualExclusionMigrationBindings: Record<string, string>;
+  orderedSpecificationBindings: CanonicalOrderedSpecificationBinding[];
 }> {
   const [resources, formulas, parameters] = await Promise.all([
     client.query("select * from public.estimate_resource_spec where definition_version_id=$1", [definitionId]),
@@ -43,6 +45,7 @@ async function localManualAmendmentMigrationBindings(client: PoolClient, definit
   ]);
   const input = {resources: resources.rows, formulas: formulas.rows, parameters: parameters.rows};
   return {manualPriceMigrationBindings: canonicalManualPriceMigrationBindings(input),
+    orderedSpecificationBindings: canonicalOrderedSpecificationBindings(resources.rows),
     manualExclusionMigrationBindings: canonicalManualExclusionMigrationBindings(input)};
 }
 import { mergeCanonicalEffectiveResourceQuantityProvenanceV1 } from "../../../src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1";

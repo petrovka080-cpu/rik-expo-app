@@ -5,6 +5,7 @@ import {
   type CanonicalEstimatePreliminaryNeedView,
   type CanonicalEstimateRevisionView,
 } from "./contracts";
+import { canonicalOrderedSpecificationParameterIds } from './canonicalOrderedSpecificationBindings';
 
 export type CanonicalEstimateParameterSessionRevision = Pick<CanonicalEstimateRevisionView,
   "revisionId" | "parentRevisionId" | "releaseId" | "catalogId" | "definitionVersionId"
@@ -12,6 +13,9 @@ export type CanonicalEstimateParameterSessionRevision = Pick<CanonicalEstimateRe
   | "acceptedBaselineSnapshot" | "assumptionSnapshot" | "parameterSchemaHash"
   | "compilerVersion" | "checksumSha256" | "createdAt" | "contentWithdrawalReasonRu"
 > & {
+  orderedSpecificationParameterIds?: string[];
+  /** Present on the full-revision fallback only; compact transport projects IDs instead. */
+  amendmentContract?: Pick<NonNullable<CanonicalEstimateRevisionView['amendmentContract']>, 'rowOverrides'>;
   preliminaryNeeds?: Pick<CanonicalEstimatePreliminaryNeedView,
     "rowId" | "selected" | "missingParameterIds" | "quantity" | "needState" | "orderedSpecificationParameterIds">[];
 };
@@ -67,6 +71,8 @@ export function projectCanonicalEstimateParameterSessionSnapshot(input: {
       acceptedBaselineSnapshot: revision.acceptedBaselineSnapshot, assumptionSnapshot: revision.assumptionSnapshot,
       parameterSchemaHash: revision.parameterSchemaHash, compilerVersion: revision.compilerVersion,
       checksumSha256: revision.checksumSha256, createdAt: revision.createdAt,
+      orderedSpecificationParameterIds: canonicalOrderedSpecificationParameterIds(
+        input.catalog.orderedSpecificationBindings, revision.amendmentContract?.rowOverrides, revision.parameters),
       ...(revision.contentWithdrawalReasonRu == null ? {} : { contentWithdrawalReasonRu: revision.contentWithdrawalReasonRu }),
       preliminaryNeeds: revision.preliminaryNeeds?.map((need) => ({
         rowId: need.rowId, selected: need.selected, missingParameterIds: need.missingParameterIds,

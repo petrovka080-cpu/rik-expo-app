@@ -28,6 +28,7 @@ import {
 import { canonicalPreliminaryNeedEvidenceFromStorage, decodeCanonicalPreliminaryNeedRowSegment } from "../../../src/lib/estimate/backendPlatform/canonicalEstimatePreliminaryNeedTransport.ts";
 import { canonicalEstimateStableJson } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism.ts";
 import { canonicalManualPriceMigrationBindings } from "../../../src/lib/estimate/backendPlatform/canonicalManualPriceReleaseMigration.ts";
+import { canonicalOrderedSpecificationBindings } from '../../../src/lib/estimate/backendPlatform/canonicalOrderedSpecificationBindings.ts';
 
 const FUNCTION_NAME = "canonical-estimate";
 const MAX_ROWS_PAGE = 500;
@@ -1621,6 +1622,7 @@ async function readCatalogItem(requester: ReturnType<typeof createClient>, rawCa
       applicability: definition.applicability,
       professionalMetadata: definition.source_metadata,
       manualPriceMigrationBindings: canonicalManualPriceMigrationBindings({resources: resources.data ?? [], formulas: formulas.data ?? [], parameters}),
+      orderedSpecificationBindings: canonicalOrderedSpecificationBindings(resources.data ?? []),
       contentAdmission,
       parameterSchema: parameters.map((parameter) => {
         const truth = parameter.truth_metadata && typeof parameter.truth_metadata === "object"

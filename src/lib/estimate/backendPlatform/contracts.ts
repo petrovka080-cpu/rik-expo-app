@@ -1,4 +1,5 @@
 import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
+import type { CanonicalOrderedSpecificationBinding } from './canonicalOrderedSpecificationBindings';
 import { parseCanonicalPublicResourcePresentationV1 } from './canonicalPublicResourcePresentationV1';
 import type { AdmissionDecision } from "./estimateAdmissionR3";
 
@@ -722,6 +723,8 @@ export type CanonicalEstimateCatalogItem = {
   manualPriceMigrationBindings?: Record<string,string>;
   /** Exact resource/application evidence for retaining stored manual exclusions. */
   manualExclusionMigrationBindings?: Record<string,string>;
+  /** Exact specification questions belonging to opted-in manual order rows. */
+  orderedSpecificationBindings?: CanonicalOrderedSpecificationBinding[];
   contentAdmission?: AdmissionDecision;
   parameterSchema: Array<{
     parameterId: string;

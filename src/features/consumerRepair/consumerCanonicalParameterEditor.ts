@@ -39,6 +39,7 @@ import {
   type CanonicalParameterValue,
 } from "../../lib/estimate/canonicalParameters/canonicalParameterCore";
 import { resolveInclusionGraph } from "../../lib/estimate/backendPlatform/inclusionGraph";
+import { canonicalOrderedSpecificationParameterIds } from '../../lib/estimate/backendPlatform/canonicalOrderedSpecificationBindings';
 import { canonicalParameterAffectsEstimateCalculation } from "../../lib/estimate/canonicalParameters/canonicalParameterCalculationRelevance";
 import { estimateDeterministicHash } from "../../lib/estimate/estimateDeterministicHash";
 import {
@@ -613,9 +614,14 @@ export function buildConsumerCanonicalParameterSession(input: {
     .flatMap((need) => need.missingParameterIds));
   // A spare fitting has a real order even when the installed-count branch is zero.
   // Only server-projected exact specification questions receive this exception.
-  const orderedSpecificationParameterIds = new Set((input.revision.preliminaryNeeds ?? [])
+  const orderedSpecificationParameterIds = new Set([
+    ...(input.revision.orderedSpecificationParameterIds ?? []),
+    ...canonicalOrderedSpecificationParameterIds(input.catalog.orderedSpecificationBindings,
+      input.revision.amendmentContract?.rowOverrides, input.revision.parameters),
+    ...(input.revision.preliminaryNeeds ?? [])
     .filter(need => need.selected && Number(need.quantity) > 0)
-    .flatMap(need => (need.orderedSpecificationParameterIds ?? []).filter(id => need.missingParameterIds.includes(id))));
+    .flatMap(need => (need.orderedSpecificationParameterIds ?? []).filter(id => need.missingParameterIds.includes(id))),
+  ]);
   // The compiled revision is the authoritative description of which source
   // inputs still prevent selected resource rows from receiving quantities.
   // Some cumulative definitions intentionally keep engineering/norm inputs
