@@ -96,7 +96,7 @@ test('malformed definition policy fails closed before inclusion can hide it', as
     await expect(compileCanonicalEstimateCore({ operation: 'compile', compilerVersion: 'TEST', catalogId: 'TEST', primaryMeasureParameterId: 'route_length_m',
         parameterDefinitions: [...parameters], formulaDefinitions: [...formulas], resourceDefinitions: resources.map(r => r.row_id === elbow
             ? { ...r, inclusion_ast: { kind: 'literal', value: false }, resource_graph: { ...r.resource_graph, excludeKnownZeroQuantityV1: 'yes' } } : r),
-        confirmedParameters: runtime, submittedParameters: input, currencyCode: 'KGS', priceItems: [], hashJson: value => estimateDeterministicHash(value) }))
+        confirmedParameters: runtime, submittedParameters: input, currencyCode: 'KGS', priceItems: [], maximumResourceRows: resources.length, hashJson: value => estimateDeterministicHash(value) }))
         .rejects.toMatchObject({ code: 'DEFINITION_INTEGRITY_FAILED' });
 });
 test('a separate positive purchase requirement cannot disappear behind a zero order formula', async () => {
@@ -104,7 +104,7 @@ test('a separate positive purchase requirement cannot disappear behind a zero or
     const result = await compileCanonicalEstimateCore({ operation: 'compile', compilerVersion: 'TEST', catalogId: 'TEST', primaryMeasureParameterId: 'route_length_m',
         parameterDefinitions: [...parameters], formulaDefinitions: [...formulas], resourceDefinitions: resources.map(r => r.row_id === coupling
             ? { ...r, formula_id: zeroFormula.formula_id } : r), confirmedParameters: runtime, submittedParameters: input,
-        currencyCode: 'KGS', priceItems: [], hashJson: value => estimateDeterministicHash(value) });
+        currencyCode: 'KGS', priceItems: [], maximumResourceRows: resources.length, hashJson: value => estimateDeterministicHash(value) });
     expect(result.rows.find(r => r.row_id === coupling)).toMatchObject({ quantity: '0', included_in_estimate: true, included_in_procurement: false,
         calculation_trace: { purchaseBalance: { consumed: '24', consumptionShortage: '24', procurementReady: false } } });
 });
