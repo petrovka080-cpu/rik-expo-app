@@ -17,9 +17,17 @@ if (accepted.source_pack_version !== pack.acceptedPhysicalSourceVersion || sleev
 // Both orientations use the existing compiler and supply balance. The selected
 // visible installation has the stricter 300 mm recommendation for both types.
 export function hep2o15VisibleLineDefinitionS2754(index: number): AutomaticOwnerDefinition {
+  return hep2oVisibleLineDefinitionS2754({index, pack, prefix: hep2o15VisibleLinePrefixS2754(index), nominalInsertionMm: 32, maxRouteM: 24.936});
+}
+
+// One resource/ordering factory serves the independently sourced diameters.
+// The diameter-specific guide geometry is supplied by each accepted passport.
+export function hep2oVisibleLineDefinitionS2754(input: {
+  index: number; pack: typeof pack; prefix: string; nominalInsertionMm: 32 | 33; maxRouteM: 24.936 | 24.934;
+}): AutomaticOwnerDefinition {
+  const {index, pack, prefix, nominalInsertionMm, maxRouteM} = input;
   const type = pack.types[index];
-  if (!type || !accepted.norm_items.some(n => n.norm_id === type.normId)) throw Error('EXACT_HEP2O15_ORIENTATION_REQUIRED');
-  const prefix = hep2o15VisibleLinePrefixS2754(index);
+  if (accepted.source_pack_version !== pack.acceptedPhysicalSourceVersion || !type || !accepted.norm_items.some(n => n.norm_id === type.normId)) throw Error('EXACT_HEP2O_ORIENTATION_REQUIRED');
   const facts = ['system_confirmed', 'supports_confirmed', 'joints_confirmed', 'cut_plan_confirmed', 'project_reference', 'test_program_reference'];
   const conditional: AutomaticParameterSpec[] = [
     {id: facts[0], title: 'Совместимые изделия Hep2O и режим холодного водоснабжения', valueType: 'enum', unitId: null, kind: 'conditional', values: [pack.systemValue]},
@@ -39,10 +47,10 @@ export function hep2o15VisibleLineDefinitionS2754(index: number): AutomaticOwner
   };
   const info = {costTreatment: 'INFORMATIONAL_SCOPE' as const};
   // The route is measured between the entry faces of the two new connectors.
-  // Only the two ends of the new pipe add 32 mm each; existing ends add no new pipe.
-  const cutLength = 'pipe_route_length_m+0.064';
+  // Only the two new pipe ends add their nominal insertion, including sleeves.
+  const cutLength = `pipe_route_length_m+${(2 * nominalInsertionMm / 1000).toFixed(3)}`;
   const supportCount = 'ceil(support_span_m/selected_support_max_gap_m)+1';
-  add('support-count', 'Клипсы HX85/15W по принятой равномерной раскладке между двумя опорами', 'supports', 'material', 'pcs', supportCount, info);
+  add('support-count', `Клипсы ${pack.products.clip.sku} по принятой равномерной раскладке между двумя опорами`, 'supports', 'material', 'pcs', supportCount, info);
   add('actual-support-gap', 'Фактический шаг принятой равномерной раскладки — без отдельной цены', 'supports', 'material', 'linear_m', `support_span_m/((${supportCount})-1)`, info);
   add('sleeves-total', 'SmartSleeve для четырёх обслуживаемых трубных концов — включая установленное пригодное наличие', 'jointing', 'material', 'pcs', '4', info);
   add('sleeves-installed', 'Пригодные SmartSleeve в существующих концах — повторно не закупаются', 'jointing', 'material', 'pcs', 'reusable_installed_sleeves', info);
@@ -67,20 +75,20 @@ export function hep2o15VisibleLineDefinitionS2754(index: number): AutomaticOwner
     for (const suffix of ['consumed', 'order', 'remaining']) productByRow.set(`${key}-${suffix}`, key);
   }
   for (const [id, title, min] of [
-    ['pipe_stock_coils', 'Пригодные целые бухты HXX25/15W по 25 м в наличии', 0],
-    ['pipe_reserve_coils', 'Сохраняемый резерв целых бухт HXX25/15W', 0],
-    ['pipe_supplier_coil_multiple', 'Фактическая кратность поставщика в бухтах HXX25/15W', 1],
+    ['pipe_stock_coils', `Пригодные целые бухты ${pack.products.pipe.sku} по 25 м в наличии`, 0],
+    ['pipe_reserve_coils', `Сохраняемый резерв целых бухт ${pack.products.pipe.sku}`, 0],
+    ['pipe_supplier_coil_multiple', `Фактическая кратность поставщика в бухтах ${pack.products.pipe.sku}`, 1],
   ] as const) conditional.push({id, title, valueType: 'integer', unitId: 'pcs', kind: 'conditional', min});
   const pipeOwner = `${prefix}:pipe-order`;
   const pipeBalance = effectivePurchaseBalanceExpressionsR1({ownerRowId: pipeOwner, orderUnitId: 'linear_m', consumed: cutLength,
     stock: 'pipe_stock_coils*25', reserve: 'pipe_reserve_coils*25', quantum: 'pipe_supplier_coil_multiple*25'});
-  add('pipe-consumed', 'HXX25/15W — новая заготовка с двумя номинальными заходами по 32 мм', 'cutting', 'material', 'linear_m', cutLength, {...info, purchaseBalanceOwnerRowId: pipeOwner});
+  add('pipe-consumed', `${pack.products.pipe.sku} — новая заготовка с двумя номинальными заходами по ${nominalInsertionMm} мм`, 'cutting', 'material', 'linear_m', cutLength, {...info, purchaseBalanceOwnerRowId: pipeOwner});
   add('pipe-order', pack.products.pipe.nameRu, 'cutting', 'material', 'linear_m', 'ceil(max(0,1+pipe_reserve_coils-pipe_stock_coils)/pipe_supplier_coil_multiple)*pipe_supplier_coil_multiple*25', {procurement: true, ...pipeBalance.owner});
-  add('pipe-ordered-coils', 'Целые бухты HXX25/15W по 25 м в заказе — без второй цены', 'cutting', 'material', 'pcs', `${pipeBalance.effective}/25`, {...info, purchaseBalanceOwnerRowId: pipeOwner});
+  add('pipe-ordered-coils', `Целые бухты ${pack.products.pipe.sku} по 25 м в заказе — без второй цены`, 'cutting', 'material', 'pcs', `${pipeBalance.effective}/25`, {...info, purchaseBalanceOwnerRowId: pipeOwner});
   add('pipe-plan-coverage', 'Контроль обеспечения непрерывной заготовки и резерва бухт', 'cutting', 'material', 'pcs', `pipe_stock_coils+${pipeBalance.effective}/25-pipe_reserve_coils-1`, {
     ...info, purchaseBalanceOwnerRowId: pipeOwner, formulaOutputBounds: {schemaVersion: 'canonical_formula_output_bounds_v1', unitId: 'pcs', minimum: 0, reasonRu: 'Нет целой бухты для принятой непрерывной заготовки или не обеспечен резерв'},
   });
-  add('pipe-remaining', 'HXX25/15W — пригодный остаток трубы после новой заготовки, не отходы', 'cutting', 'material', 'linear_m', pipeBalance.remaining, {...info, purchaseBalanceOwnerRowId: pipeOwner});
+  add('pipe-remaining', `${pack.products.pipe.sku} — пригодный остаток трубы после новой заготовки, не отходы`, 'cutting', 'material', 'linear_m', pipeBalance.remaining, {...info, purchaseBalanceOwnerRowId: pipeOwner});
   for (const suffix of ['consumed', 'order', 'ordered-coils', 'plan-coverage', 'remaining']) productByRow.set(`pipe-${suffix}`, 'pipe');
   for (const gap of pack.sourceNeeds) {
     const id = `open_qty_${gap.id.replaceAll('-', '_')}`;
@@ -90,7 +98,7 @@ export function hep2o15VisibleLineDefinitionS2754(index: number): AutomaticOwner
   const built = buildAutomaticConstructionOwnerR1({contract: pack.contract, semanticOwner: prefix, sourceId: pack.sourceId, normId: type.normId,
     sourceMetadata: {source_title: 'Wavin Hep2O: конкретные изделия и подтверждённая схема прямого видимого участка', source_document_version: pack.source.edition,
       definition_hash: pack.source.sha256, artifact_sha256: pack.source.sha256, exact_locator: pack.source.locatorRu}, applicabilityRu: pack.scopeRu,
-    ordinary: [{id: 'pipe_route_length_m', title: 'Расстояние вдоль оси нового участка между входными торцами двух муфт, без заходов внутрь', valueType: 'decimal', unitId: 'linear_m', kind: 'ordinary', min: 0.001, max: 24.936}],
+    ordinary: [{id: 'pipe_route_length_m', title: 'Расстояние вдоль оси нового участка между входными торцами двух муфт, без заходов внутрь', valueType: 'decimal', unitId: 'linear_m', kind: 'ordinary', min: 0.001, max: maxRouteM}],
     profile: [], conditional, rows, deferMissingProjectFactsToRows: true, excludedUnownedAssumptions: pack.excludedRu});
   const required = new Set(facts);
   const operations: Record<string, [string, number]> = {
@@ -106,7 +114,7 @@ export function hep2o15VisibleLineDefinitionS2754(index: number): AutomaticOwner
     const productKey = productByRow.get(key), product = productKey ? pack.products[productKey] : undefined;
     const operation = gap?.operation ?? (key.startsWith('pipe-') ? 'cutting' : /support|clip/.test(key) ? 'supports' : 'jointing');
     const details = gap ? [gap.reasonRu] : product ? [
-      productKey === 'pipe' ? 'Применение: расстояние между входными торцами двух муфт плюс два номинальных захода новой трубы по 32 мм, включая втулки. Заходы существующих концов не увеличивают закупку новой трубы. Заготовка не более 25 м; пригодный остаток сохраняется.'
+      productKey === 'pipe' ? `Применение: расстояние между входными торцами двух муфт плюс два номинальных захода новой трубы по ${nominalInsertionMm} мм, включая втулки. Заходы существующих концов не увеличивают закупку новой трубы. Заготовка не более 25 м; пригодный остаток сохраняется.`
         : productKey === 'clip' ? 'Применение: подтверждённые концевые опоры и равномерные промежуточные опоры видимого прямого участка. Длина между опорами отдельно от заготовки; шаг не более 0,3 м.'
         : productKey === 'sleeve' ? 'Применение: четыре обслуживаемых конца именно трубы Hep2O. Пригодные уже установленные втулки уменьшают новую потребность; новое наличие и резерв учитываются отдельно.'
         : 'Применение: две новые прямые муфты выбранной схемы, по одному соединению на каждом конце нового участка. Штатная смазка не закупается второй раз.',
@@ -134,7 +142,10 @@ export function compileHep2o15VisibleLineS2754(index: number, input: Record<stri
 }
 
 export function hep2o15VisibleLineCompletenessMapS2754(index: number) {
-  const prefix = hep2o15VisibleLinePrefixS2754(index);
+  return hep2oVisibleLineCompletenessMapS2754(pack, hep2o15VisibleLinePrefixS2754(index));
+}
+export function hep2oVisibleLineCompletenessMapS2754(sourcePack: typeof pack, prefix: string) {
+  const pack = sourcePack;
   return {contract: 'rik-expo-app.s26-3.independent-completeness-map.v1', sourceKind: 'PRODUCT_SYSTEM_TDS', generatedFromCurrentRows: false,
     evidenceSha256: pack.source.sha256, evidenceReferences: [pack.source.officialUrl, pack.source.locatorRu, pack.acceptedPhysicalSourcePack], entries: [
       ...(['pipe', 'clip', 'sleeve', 'connector'] as const).map(key => ({expectedResourceId: key, operationId: key === 'pipe' ? 'cutting' : key === 'clip' ? 'supports' : 'jointing',

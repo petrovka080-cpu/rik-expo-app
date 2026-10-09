@@ -1415,6 +1415,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const openGeneration = ++this.canonicalRevisionOpenGeneration;
     try {
       const revision = await getCanonicalEstimateRevision(input.revisionId);
+      if (openGeneration !== this.canonicalRevisionOpenGeneration || this.canonicalNamingEvidenceDisposed) return;
       if (
         revision.revisionId !== input.revisionId ||
         revision.status === "failed" ||
