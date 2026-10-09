@@ -9,13 +9,14 @@ export function cm11ControlInputS2754(){return {tile_area_m2:35.5,geometry_confi
 export function cm11ExplicitMaterialControlS2754(){return {...cm11ControlInputS2754(),
  cm11_stock:0,cm11_reserve:0,cm11_supplier_bag_multiple:1,ct17_rate_l_m2:0.2,ct17_coat_count:1,
  ct17_stock:0,ct17_reserve:0,ct17_5l_supplier_multiple:1,cm11_water_l_per_25kg:5.8,water_stock:0,water_reserve:0,water_quantum_l:1};}
-export function cm11SmallCeramicConfigS2754(parent:{releaseId:string;searchReleaseId:string}):MasterSingleDefinitionSuccessorConfig{
+export function cm11SmallCeramicConfigS2754(parent:{releaseId:string;searchReleaseId:string},successor=false):MasterSingleDefinitionSuccessorConfig{
  const base=cn87SeparationConfigS2754(parent),included=[pack.scopeRu,'Принятый профиль CM11: точная пара керамика≤10см/шпатель4мм, приблизительно2кг/м²',
   'CT17global: явный расход0,1–0,5л/м² и число проходов; одна выбранная фасовка1/2/5/10л',
   'Вода5,5–6л/25кг смешиваемого клея; явная дозировка, отдельно от округлённой закупки',
   'Конкретные CE40 Aquastatic и CS25 MicroProtect — кандидаты с применением и открытой геометрией/количеством'];
  return {...base,contract:pack.contract,stopCode:'S2754_CM11_SMALL_CERAMIC',applicationName:'s2754-cm11-small-ceramic',
-  outputRoot:resolve('.release-runtime/r568/s27-54/cm11-small-ceramic/publication'),catalogId:pack.catalogId,sourceId:pack.sourceId,normId:pack.normId,
+  outputRoot:resolve('.release-runtime/r568/s27-54/cm11-small-ceramic/'+(successor?'water-scope/publication':'publication')),
+  expectedParentShape:successor?[46,28,28]:[0,0,0],catalogId:pack.catalogId,sourceId:pack.sourceId,normId:pack.normId,
   sourcePaths:['scripts/estimate/r4a13/prepareS2754Cm11SmallCeramic.ts','scripts/estimate/r4a13/prepareS2754Cn87SeparationScreed.ts','scripts/estimate/r4a13/prepareS2754FloorDemolitionSeries.ts',
    'src/lib/estimate/v4/cm11SmallCeramicS2754.ts','data/estimate-benchmarks/source-packs/cm11-small-ceramic-s27-54.json',pack.acceptedPhysicalSourcePack,
    'scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts','scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts',
@@ -40,7 +41,7 @@ export function cm11SmallCeramicConfigS2754(parent:{releaseId:string;searchRelea
    clarificationFields:definition.parameters.filter(p=>p.truth_metadata.visibility_role==='USER_INPUT').map(p=>p.parameter_id),
    includedBoundaries:included,excludedBoundaries:pack.excludedRu,extraSearchTermsRu:'плитка керамика10см клей CM11 PLUS грунтовка CT17 Profi затирка CE40 Aquastatic силикон CS25 MicroProtect вода шпатель4мм',
    sourceProvenance:{sourcePack:'cm11-small-ceramic-s27-54.json',acceptedPhysicalProfileId:pack.acceptedPhysicalProfileId,primaryMeasureParameterId:'tile_area_m2',fullTechnicalAcceptance:false}},
-  catalogAppend:{identity:{namespace:'global',domain:'tile_stone',sourceIdentity:'ceresit-cm11-global042026:ceramic-up-to10cm-4mm:absorbent-cement-indoor',workKey:pack.workKey,titleRu:pack.titleRu,denominatorEligible:true},
+  catalogAppend:successor?undefined:{identity:{namespace:'global',domain:'tile_stone',sourceIdentity:'ceresit-cm11-global042026:ceramic-up-to10cm-4mm:absorbent-cement-indoor',workKey:pack.workKey,titleRu:pack.titleRu,denominatorEligible:true},
    searchPlacement:{...base.catalogAppend!.searchPlacement,groupMode:'join',groupId:'wg:base:tile_stone_interior_ceramic_tile_lay',groupNameRu:'укладка керамической плитки для высокой нагрузки',
     domainId:'tile_stone',systemId:'tile_stone',subsystemId:'wg:base:tile_stone_interior_ceramic_tile_lay',assemblyId:'wg:base:tile_stone_interior_ceramic_tile_lay',
     workFamilyId:'wg:base:tile_stone_interior_ceramic_tile_lay',breadcrumb:['укладка керамической плитки для высокой нагрузки'],membershipOrdinal:6,
@@ -74,6 +75,9 @@ export function cm11SmallCeramicConfigS2754(parent:{releaseId:string;searchRelea
    await assert.rejects(()=>compileCm11SmallCeramicS2754({...explicit,cm11_water_l_per_25kg:6.1}));
    assert(definition.parameters.filter(p=>p.parameter_id.includes('stock')||p.parameter_id.includes('reserve')||p.parameter_id==='ct17_rate_l_m2').every(p=>p.default_value==null));
    assert.equal(definition.resources.find(row=>row.row_id===prefix+':sealant-cs25')?.source_metadata?.ownProductPassportSha256,null);
+   const cleanupWater=definition.resources.find(row=>row.row_id===prefix+':water-cleaning-grout');
+   assert.equal((cleanupWater?.resource_graph.publicResourcePresentationV1 as {specificationRu:string|null}).specificationRu,null);
+   assert.deepEqual(cleanupWater?.source_metadata?.normativeTrace,[]);
    return {status:'GREEN_LIMITED_CM11_CT17_MATERIAL_LINKAGE',knownRows:3,explicitMaterialKnownRows:10,needs:12,procurementRows:3,
     actualTileSkuAndLayoutStillRequired:true,ct17OneContainerOnly:true,waterNotBasedOnRoundedBags:true,sourceMaturingConflictNotHidden:true,
     primerDrying2hNot15min:true,cm11PackageIsSupplyFactNotPublishedPackaging:true,sourceNeeds:10,fullTechnicalAcceptance:false,acceptedNewCompleteTypes:0};
@@ -81,6 +85,6 @@ export function cm11SmallCeramicConfigS2754(parent:{releaseId:string;searchRelea
 }
 if(process.argv[1]?.replaceAll('\\','/').endsWith('/prepareS2754Cm11SmallCeramic.ts')){
  const current=JSON.parse(readFileSync(resolve('data/estimate-benchmarks/r568-local-developer-canonical-release.json'),'utf8'));
- void runMasterSingleDefinitionSuccessorR1(cm11SmallCeramicConfigS2754({releaseId:current.definitionReleaseId,searchReleaseId:current.searchReleaseId}))
+ void runMasterSingleDefinitionSuccessorR1(cm11SmallCeramicConfigS2754({releaseId:current.definitionReleaseId,searchReleaseId:current.searchReleaseId},process.argv.includes('--successor')))
  .catch(error=>{process.stderr.write(String(error.stack??error)+'\n');process.exitCode=1;});
 }

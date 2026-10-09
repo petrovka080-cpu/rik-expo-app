@@ -73,7 +73,7 @@ export const cm11SmallCeramicDefinitionS2754:AutomaticOwnerDefinition={...built,
   operationCompositionV1:{contractVersion:'canonical-operation-resource/v1',groupId:prefix,groupTitleRu:pack.titleRu,operationId:prefix+':'+operation,operationTitleRu:titles[operation],processOrdinal:isPrimer?10:20,
    completionCriterionRu:'Подтверждены конкретное изделие, применимые расход и реальный заказ; один владелец цены.'},
   publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:resource.title_ru,nameRu:resource.title_ru,brandAndModelRu:null,
-   specificationRu:isPrimer?'Ceresit CT17 Profi global03.24; неразбавленный; расход0,1–0,5л/м² на подтверждённый проход; фасовки1/2/5/10л, одна выбранная.':
+   specificationRu:gap?null:isPrimer?'Ceresit CT17 Profi global03.24; неразбавленный; расход0,1–0,5л/м² на подтверждённый проход; фасовки1/2/5/10л, одна выбранная.':
     key.startsWith('cm11-')?'Ceresit CM11 PLUS global04/2026; C1T; точная пара керамика≤10см/зуб4мм: приблизительно2кг/м². Реальная упаковка25кг подтверждается поставкой.':
      isWater?'Вода чистая:5,5–6л на25кг фактически смешиваемой CM11 без CC83; дозировка явная, не среднее по умолчанию.':null,
    detailsRu:gap?[gap.reasonRu]:isPrimer?['Применение: грунтование принятой впитывающей цементной стяжки перед CM11; CT17global и ru_KZ не смешиваются.',
