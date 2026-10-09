@@ -3,13 +3,15 @@ import accepted from '../../../../data/estimate-norms/professional/plaster.json'
 import {buildAutomaticConstructionOwnerR1,compileAutomaticConstructionOwnerR1,type AutomaticOwnerDefinition,type AutomaticParameterSpec,type AutomaticRowSpec} from './automaticConstructionOwnerR1';
 import {effectivePurchaseBalanceExpressionsR1} from './effectivePurchaseBalanceR1';import {estimateDeterministicHash} from '../estimateDeterministicHash';
 export const ct29IndoorPlasterPackS2754=pack;export const ct29IndoorPlasterPrefixS2754='plaster:ct29-indoor-manual';
+export type Ct29PlasterSourcePackS2754=typeof pack & {weatherProtectionValue?:string;sourceTitleRu?:string;applicationPresentationRu?:string;completenessCondition?:string};
+export function buildCt29PlasterDefinitionS2754(pack:Ct29PlasterSourcePackS2754,prefix:string):AutomaticOwnerDefinition {
 const norm=accepted.norm_items.find(item=>item.norm_id===pack.normId);
 if(!norm||norm.rate.value!==1.8||accepted.source_pack_version!==pack.acceptedPhysicalSourceVersion||norm.applicability.documented_bag_sizes_kg.join(',')!=='5,25')throw Error('ACCEPTED_CT29_AREA_THICKNESS_PROFILE_REQUIRED');
-const prefix=ct29IndoorPlasterPrefixS2754,area='plaster_area_m2',thickness='layer_thickness_mm',net=`${area}*${thickness}*${norm.rate.value}`,
- facts=['base_confirmed','conditions_confirmed','layer_applicability_confirmed','project_detail_reference'];
+const area='plaster_area_m2',thickness='layer_thickness_mm',net=`${area}*${thickness}*${norm.rate.value}`,
+ facts=['base_confirmed','conditions_confirmed','layer_applicability_confirmed','project_detail_reference',...(pack.weatherProtectionValue?['weather_protection_confirmed','weather_protection_reference']:[])];
 const conditional:AutomaticParameterSpec[]=[
  {id:facts[0],title:'Подготовленное низко-впитывающее бетонное основание',valueType:'enum',unitId:null,kind:'conditional',values:[pack.baseValue]},
- {id:facts[1],title:'Температура, влажность основания и условия твердения внутри помещения',valueType:'enum',unitId:null,kind:'conditional',values:[pack.conditionsValue]},
+ {id:facts[1],title:pack.weatherProtectionValue?'Температура, солнце и сухие условия наружного нанесения':'Температура, влажность основания и условия твердения внутри помещения',valueType:'enum',unitId:null,kind:'conditional',values:[pack.conditionsValue]},
  {id:facts[2],title:'Принятый узел и применимость назначенной толщины CT29',valueType:'enum',unitId:null,kind:'conditional',values:[pack.layerValue]},
  {id:facts[3],title:'Конкретная ссылка или номер узла/инструкции, обосновывающих назначенную толщину CT29',valueType:'text',unitId:null,kind:'conditional'},
  {id:'selected_ct29_bag',title:'Одна выбранная фасовка CT29 и соответствующая рецептура замеса',valueType:'enum',unitId:null,kind:'conditional',values:pack.products.map(p=>String(p.bagKg)+' кг')},
@@ -17,6 +19,9 @@ const conditional:AutomaticParameterSpec[]=[
  {id:'water_reserve_l',title:'Сохраняемый резерв воды в л',valueType:'decimal',unitId:'l',kind:'conditional',min:0},
  {id:'water_quantum_l',title:'Фактическая кратность подачи или поставки воды в л',valueType:'decimal',unitId:'l',kind:'conditional',min:0.001},
 ];
+if(pack.weatherProtectionValue)conditional.push(
+ {id:'weather_protection_confirmed',title:'Защита наружного слоя от дождя и быстрого высыхания минимум24ч',valueType:'enum',unitId:null,kind:'conditional',values:[pack.weatherProtectionValue]},
+ {id:'weather_protection_reference',title:'Ссылка на принятое задание: способ защиты, установка и обеспечение минимум24ч',valueType:'text',unitId:null,kind:'conditional'});
 const rows:AutomaticRowSpec[]=[];
 const add=(id:string,title:string,operation:string,category:string,unitId:string,expression:string,extra:Partial<AutomaticRowSpec>={})=>rows.push({
  rowId:prefix+':'+id,formulaId:prefix+':formula:'+id,section:operation,category,title,unitId,expression,procurement:false,inputParameterIds:facts,...extra});
@@ -52,13 +57,13 @@ for(const p of pack.products){
 }
 for(const gap of pack.sourceNeeds){const id='open_qty_'+gap.id.replaceAll('-','_');conditional.push({id,title:gap.nameRu,valueType:'decimal',unitId:gap.unitId,kind:'conditional',min:0});add(gap.id,gap.nameRu,gap.operation,gap.category,gap.unitId,id);}
 const built=buildAutomaticConstructionOwnerR1({contract:pack.contract,semanticOwner:prefix,sourceId:pack.sourceId,normId:pack.normId,
- sourceMetadata:{source_title:'Ceresit CT29: принятое приблизительное потребление и ручная технология внутренней штукатурки',source_document_version:pack.source.edition,
+ sourceMetadata:{source_title:pack.sourceTitleRu??'Ceresit CT29: принятое приблизительное потребление и ручная технология внутренней штукатурки',source_document_version:pack.source.edition,
   definition_hash:pack.source.sha256,artifact_sha256:pack.source.sha256,exact_locator:pack.source.locatorRu},applicabilityRu:pack.scopeRu,
  ordinary:[{id:area,title:'Площадь штукатурного нанесения CT29',valueType:'decimal',unitId:'m2',kind:'ordinary',min:0.001},
   {id:thickness,title:'Назначенная проектом толщина слоя CT29; применимость подтверждается отдельным узлом',valueType:'decimal',unitId:'mm',kind:'ordinary',min:0.001}],
  profile:[],conditional,rows,deferMissingProjectFactsToRows:true,excludedUnownedAssumptions:pack.excludedRu});
 const required=new Set([...facts,'selected_ct29_bag']);
-export const ct29IndoorPlasterDefinitionS2754:AutomaticOwnerDefinition={...built,parameters:built.parameters.map(parameter=>({...parameter,
+return {...built,parameters:built.parameters.map(parameter=>({...parameter,
  required:parameter.required||required.has(parameter.parameter_id),truth_metadata:parameter.parameter_id.startsWith('open_qty_')?
  {...parameter.truth_metadata,visibility_role:'INTERNAL_ONLY',value_source_role:'UNRESOLVED_APPLICATION_NORM',provenance:{consumer_input_role_v1:'APPLICATION_TECHNICAL'},
   unresolved_norm_reason:'Технология известна, применимые часы, количества и границы оплаты требуют источника или принятого проекта.'}:
@@ -73,7 +78,7 @@ export const ct29IndoorPlasterDefinitionS2754:AutomaticOwnerDefinition={...built
     'Ceresit CT29; минеральная цементная смесь с микроволокнами, CS IV, W1, A1; приблизительно1,8кг/м²/мм для штукатурного нанесения.',
    detailsRu:gap?[gap.reasonRu]:waterRow?['Применение: только подтверждённый последовательный план целых замесов выбранной фасовки; жизнеспособность до2часов.',
     'Вода не рассчитывается по закупленному запасу или другой фасовке. Диапазоны5кг и25кг различны; границы не два заказа. Вода ухода раскрыта отдельно.']:
-    ['Применение: ручное нанесение и разглаживание на готовой влажной, без мокрой поверхности, низко-впитывающей бетонной стене внутри помещения.',
+    [pack.applicationPresentationRu??'Применение: ручное нанесение и разглаживание на готовой влажной, без мокрой поверхности, низко-впитывающей бетонной стене внутри помещения.',
      'Приблизительное потребление по площади/толщине отдельно от подтверждённого плана целых замесов и заказа с фактическими целыми мешками, резервом и кратностью.',
      'Расчётный минимум не назначает фактический план автоматически. Расчётное превышение приготовления не доказывает фактические отходы или массу вывоза.',
      'Числовые пределы допустимой толщины в TDS не установлены; положительное число не заменяет принятый узел/инструкцию.']}},
@@ -84,10 +89,14 @@ export const ct29IndoorPlasterDefinitionS2754:AutomaticOwnerDefinition={...built
    layerNumericalRangeNotPublished:true,projectLayerReferenceRequired:true,openBagsExcluded:true,full_technical_acceptance:false,oldGypsumPassportNotReplaced:true}};
  return {...result,row_sha256:estimateDeterministicHash(result)};
 })};
+}
+export const ct29IndoorPlasterDefinitionS2754=buildCt29PlasterDefinitionS2754(pack,ct29IndoorPlasterPrefixS2754);
 export function compileCt29IndoorPlasterS2754(input:Record<string,unknown>){return compileAutomaticConstructionOwnerR1({catalogId:pack.catalogId,compilerVersion:pack.contract,
- primaryMeasureParameterId:area,definition:ct29IndoorPlasterDefinitionS2754,submittedParameters:input});}
-export function ct29IndoorPlasterCompletenessMapS2754(){return {contract:'rik-expo-app.s26-3.independent-completeness-map.v1',sourceKind:'PRODUCT_SYSTEM_TDS',generatedFromCurrentRows:false,
+ primaryMeasureParameterId:'plaster_area_m2',definition:ct29IndoorPlasterDefinitionS2754,submittedParameters:input});}
+export function buildCt29PlasterCompletenessMapS2754(pack:Ct29PlasterSourcePackS2754,prefix:string){return {contract:'rik-expo-app.s26-3.independent-completeness-map.v1',sourceKind:'PRODUCT_SYSTEM_TDS',generatedFromCurrentRows:false,
  evidenceSha256:pack.source.sha256,evidenceReferences:[pack.source.officialUrl,pack.source.locatorRu,pack.acceptedPhysicalSourcePack],entries:[
- {expectedResourceId:'net-ct29',operationId:'mixing',category:'material',specification:'CT29: штукатурное нанесение по площади и назначенной толщине',condition:'PREPARED_INDOOR_LOW_ABSORPTION_CONCRETE_APPROVED_LAYER',sourceId:pack.sourceId,unitId:'kg',quantityRule:'APPROXIMATE_AREA_THICKNESS_1_8',formulaId:prefix+':formula:net-mixture',resolution:{kind:'ROW',rowId:prefix+':net-mixture'}},
+ {expectedResourceId:'net-ct29',operationId:'mixing',category:'material',specification:'CT29: штукатурное нанесение по площади и назначенной толщине',condition:pack.completenessCondition??'PREPARED_INDOOR_LOW_ABSORPTION_CONCRETE_APPROVED_LAYER',sourceId:pack.sourceId,unitId:'kg',quantityRule:'APPROXIMATE_AREA_THICKNESS_1_8',formulaId:prefix+':formula:net-mixture',resolution:{kind:'ROW',rowId:prefix+':net-mixture'}},
  ...pack.products.map(p=>({expectedResourceId:'mixing-water-'+p.key,operationId:'mixing',category:'material',specification:`Чистая холодная вода ${p.waterMinLPerBag}–${p.waterMaxLPerBag}л/${p.bagKg}кг`,condition:'ONLY_SELECTED_BAG_AND_CONFIRMED_WHOLE_BATCH_PLAN',sourceId:pack.sourceId,unitId:'l',quantityRule:'CONFIRMED_BATCH_COUNT_X_ACTUAL_SELECTED_DOSE_NOT_PURCHASE',formulaId:prefix+':formula:'+p.key+'-mix-water-consumed',resolution:{kind:'ROW',rowId:prefix+':'+p.key+'-mix-water-consumed'}})),
  ...pack.sourceNeeds.map(gap=>({expectedResourceId:gap.id,operationId:gap.operation,category:gap.category,specification:gap.nameRu,condition:'OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE',sourceId:pack.sourceId,unitId:gap.unitId,quantityRule:'OPEN_NO_ASSUMED_QUANTITY',formulaId:prefix+':formula:'+gap.id,resolution:{kind:'ROW',rowId:prefix+':'+gap.id}}))]};}
+
+export function ct29IndoorPlasterCompletenessMapS2754(){return buildCt29PlasterCompletenessMapS2754(pack,ct29IndoorPlasterPrefixS2754);}
