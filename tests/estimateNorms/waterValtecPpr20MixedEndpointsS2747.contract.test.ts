@@ -5,6 +5,7 @@ import { VALTEC_SINGLE_ROUTE_S2747 as route } from '../../src/lib/estimate/v4/wa
 import { VALTEC_EXACT_FITTINGS_S2747 as fitting } from '../../src/lib/estimate/v4/waterValtecPpr20ExactFittingsS2747';
 import { VALTEC_MIXED_ELBOWS_S2747 as elbows, compileWaterValtecPpr20MixedElbowsS2747 as previous } from '../../src/lib/estimate/v4/waterValtecPpr20MixedElbowsS2747';
 import { canonicalInheritedConfirmedParameters } from '../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter';
+import { waterValtecMixedEndpointsS2747Config } from '../../scripts/estimate/r4a13/prepareS2747WaterValtecMixedEndpoints';
 const simple = { route_length_m: 100, route_geometry_mode: route.geometry.straight, route_end_connections: route.ends.caps,
     substrate_profile: 'Сухой бетон, крепление напрямую без отделки' };
 const input = { ...simple, route_end_connections: pack.endMode, route_start_thread_interface: pack.variants[0].interfaceRu,
@@ -18,6 +19,15 @@ test('pins source-backed variants and one canonical component table', () => {
     expect(createHash('sha256').update(readFileSync(pack.primarySource.localArtifact)).digest('hex')).toBe(pack.primarySource.artifactSha256);
     expect(pack.variants.map(v => v.titleRu)).toEqual(fitting.projectSelections[2].values);
     expect([parameters.length, formulas.length, resources.length]).toEqual([53, 45, 62]);
+});
+test('publisher acceptance control retains each inherited normative runtime value', () => {
+    const config = waterValtecMixedEndpointsS2747Config({ releaseId: 'owned-parent-not-published', searchReleaseId: 'owned-search-not-published' });
+    for (const [id, value] of Object.entries(config.runtimeProfileInput ?? {})) {
+        expect(config.acceptanceInput[id]).toEqual(value);
+        expect(config.runtimeProfileClassification?.[id]).toBeDefined();
+        expect(config.runtimeProfileSourceIds?.[id]).toBeInstanceOf(Array);
+    }
+    expect(config.acceptanceInput.route_start_thread_interface).toBe(pack.variants[0].interfaceRu);
 });
 test('preserves caps, homogeneous threads, explicit project schedules and mixed elbow records', async () => {
     const project = { route_length_m: 100, route_geometry_mode: elbows.geometryMode, straight_coupling_count: 24, valtec_elbows45_count: 3,

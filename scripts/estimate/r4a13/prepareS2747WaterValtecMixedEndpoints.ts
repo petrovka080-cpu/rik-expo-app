@@ -15,7 +15,7 @@ export function waterValtecMixedEndpointsS2747Config(parent: { releaseId: string
     const genericId = 'water-ppr20:05:component:threaded-transitions';
     const oldMap = previous.passport.independentCompletenessMap!;
     const entries = oldMap.entries as { expectedResourceId: string; [key: string]: unknown }[];
-    const acceptanceInput = { route_length_m: 100, route_geometry_mode: route.geometry.straight, route_end_connections: pack.endMode,
+    const acceptanceInput = { ...runtime, route_length_m: 100, route_geometry_mode: route.geometry.straight, route_end_connections: pack.endMode,
         substrate_profile: 'Сухой бетон, крепление напрямую без отделки',
         route_start_thread_interface: pack.variants[0].interfaceRu, route_finish_thread_interface: pack.variants[3].interfaceRu };
     return { ...previous, contract: pack.contract, stopCode: 'S2747_WATER_VALTEC_MIXED_ENDPOINTS',
