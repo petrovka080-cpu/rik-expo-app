@@ -9,7 +9,8 @@ const geometryId = 'route_geometry_mode';
 const mixed = { kind: 'equals', parameterId: geometryId, value: pack.geometryMode };
 const selectedMixed = { kind: 'selected', parameterId: geometryId, value: pack.geometryMode };
 const notMixed = { kind: 'not', operand: selectedMixed };
-const project = { kind: 'or', operands: [{ kind: 'equals', parameterId: geometryId, value: route.geometry.project }, mixed] };
+const homogeneousProject = { kind: 'equals', parameterId: geometryId, value: route.geometry.project };
+const project = { kind: 'or', operands: [homogeneousProject, mixed] };
 const aggregateId = 'elbow_count';
 const guide = { guide_kind: 'PROJECT_DEFINED', source_role: 'CONFIRMED_PROJECT_QUANTITIES_PLUS_PRIMARY_PRODUCT',
     source_document: pack.sourceId, source_locator: 'Actual counts of45/90degree turns; ' + pack.variants.map(v => v.exactLocator).join('; '),
@@ -22,7 +23,8 @@ export const VALTEC_MIXED_ELBOWS_S2747_PARAMETERS: readonly CanonicalEstimatePar
                     values: [...Object.values(route.geometry), pack.geometryMode] } };
         if (p.parameter_id === aggregateId) {
             const old = p.truth_metadata!.preliminary_value_formula_v1 as Record<string, unknown>;
-            return { ...p, truth_metadata: { ...p.truth_metadata,
+            return { ...p, required: false, constraints_json: { ...p.constraints_json, requiredWhen: homogeneousProject },
+                truth_metadata: { ...p.truth_metadata, required_when: homogeneousProject,
                     derived_from: [geometryId, ...pack.variants.map(v => v.parameterId)],
                     preliminary_value_formula_v1: { version: 'canonical-preliminary-parameter-formula:v1', branches: [
                             { expression: old.expression, when: old.when, explicitValuePolicy: old.explicitValuePolicy },
@@ -31,7 +33,8 @@ export const VALTEC_MIXED_ELBOWS_S2747_PARAMETERS: readonly CanonicalEstimatePar
                 } };
         }
         if (['straight_coupling_count', 'tee_count', 'threaded_transition_count', 'terminal_cap_count'].includes(p.parameter_id))
-            return { ...p, truth_metadata: { ...p.truth_metadata, visible_when: project } };
+            return { ...p, required: false, constraints_json: { ...p.constraints_json, requiredWhen: project },
+                truth_metadata: { ...p.truth_metadata, visible_when: project, required_when: project } };
         if (p.parameter_id === 'valtec_elbow_selection') {
             const applicable = { kind: 'and', operands: [notMixed, p.constraints_json!.requiredWhen] };
             return { ...p, constraints_json: { ...p.constraints_json, requiredWhen: applicable },
