@@ -1,4 +1,6 @@
 import React from "react";
+import { enrichCanonicalPreliminaryNamingEvidence,
+  type CanonicalPreliminaryNamingEvidence } from '../../lib/consumerRequests/consumerCanonicalBackendRevisionProjection';
 import { canonicalPreviewQuantityCounts } from './consumerCanonicalPreviewQuantityCounts';
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import { canonicalPublicResourcePresentationV1 } from "../../lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1";
@@ -7,6 +9,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import {
   awaitConsumerRepairBundleDurableCommit,
   findConsumerRepairBundle,
+  saveConsumerRepairBundle,
   hydrateTransactionalConsumerRepairRequestStore,
 } from "../../lib/consumerRequests/consumerRequestRepository";
 import {
@@ -85,6 +88,32 @@ type CanonicalEstimateMeaningfulPreview = {
   onPublished: () => void;
   onOpenFullEstimate: () => void;
 };
+
+export async function loadConsumerRepairCanonicalNamingEvidence(input: {
+  revisionId: string; requestDraftId: string; consumerUserId: string | null;
+  workspaceGenerationRef: {current: number};
+}): Promise<CanonicalPreliminaryNamingEvidence | null> {
+  const {revisionId, requestDraftId, consumerUserId, workspaceGenerationRef} = input;
+  const generation = workspaceGenerationRef.current;
+  const existing = findConsumerRepairBundle(requestDraftId);
+  if (!existing || existing.draft.consumerUserId !== consumerUserId
+    || consumerRepairCanonicalBackendBinding(existing)?.revisionId !== revisionId) return null;
+  // The caller's live copy may still be legacy even if another opening has
+  // already enriched the repository. Return the original owner evidence to it.
+  const revision = await getCanonicalEstimateRevision(revisionId);
+  const latest = findConsumerRepairBundle(requestDraftId);
+  if (workspaceGenerationRef.current !== generation || !latest
+    || latest.draft.consumerUserId !== consumerUserId
+    || latest.estimateDraftRevisionState?.currentRevisionId !== revisionId
+    || consumerRepairCanonicalBackendBinding(latest)?.revisionId !== revisionId) return null;
+  const evidence: CanonicalPreliminaryNamingEvidence = {compilerOwner: 'backend',
+    revisionId: revision.revisionId, releaseId: revision.releaseId, catalogId: revision.catalogId,
+    checksumSha256: revision.checksumSha256, preliminaryNeeds: revision.preliminaryNeeds};
+  if (evidence.revisionId !== revisionId) return null;
+  const enriched = enrichCanonicalPreliminaryNamingEvidence(latest, evidence);
+  if (enriched !== latest) saveConsumerRepairBundle(enriched);
+  return evidence;
+}
 
 export function canonicalEstimatePreviewIsExplicitValidationFixture(sourceRequestText?: string | null): boolean {
   return /^ДЕМО\s*\/\s*VALIDATION_FIXTURE\s*:/iu.test(String(sourceRequestText ?? "").trim());
@@ -1022,6 +1051,8 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
           }}
           onLoadCanonicalParameterSession={(revisionId, requestDraftId) =>
             loadConsumerCanonicalParameterSession({ revisionId, draftId: requestDraftId })}
+          onLoadCanonicalNamingEvidence={(revisionId, requestDraftId) => loadConsumerRepairCanonicalNamingEvidence({
+            revisionId, requestDraftId, consumerUserId: resolvedConsumerUserId, workspaceGenerationRef})}
           onRecalculateCanonicalEstimate={async ({ revisionId, requestDraftId, problemText, patches, rowOverrides }) => {
             const source = captureRecalculationSource(requestDraftId, revisionId);
             return await recalculateAndPersistConsumerCanonicalEstimate({

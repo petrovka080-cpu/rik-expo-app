@@ -7,13 +7,19 @@ import {canonicalEstimateRevisionRowFromStorage} from '../../src/lib/estimate/ba
 import {adaptCanonicalRevisionToStructuredEstimate} from '../../src/lib/estimate/backendPlatform/canonicalEstimateForemanAdapter';
 import {ESTIMATE_PLATFORM_API_VERSION,type CanonicalEstimateCatalogItem,type CanonicalEstimateRevisionView} from '../../src/lib/estimate/backendPlatform/contracts';
 import {buildStructuredEstimateRequestDraft} from '../../src/lib/estimateStructuredPipeline/structuredEstimateRequestBinding';
-import {appendCanonicalBackendRevisionProjection} from '../../src/lib/consumerRequests/consumerCanonicalBackendRevisionProjection';
+import {appendCanonicalBackendRevisionProjection,type CanonicalPreliminaryNamingEvidence} from '../../src/lib/consumerRequests/consumerCanonicalBackendRevisionProjection';
 import {compactConsumerRepairBundleForDurableStorage} from '../../src/lib/platform/compactConsumerRepairDurableState';
 import {buildRequestEstimateViewModel,requestEstimatePublicRevisionDiff} from '../../src/features/consumerRepair/requestEstimateViewModel';
 import {consumerRepairRowPublicResourcePresentation,consumerRepairRowCalculatedQuantity} from '../../src/features/consumerRepair/consumerRepairRowMetadata';
 import {compareEstimateDraftRevisions} from '../../src/lib/estimate/compareEstimateDraftRevisions';
 import type {ConsumerRepairRequestItem,ConsumerRepairDraftBundle} from '../../src/lib/consumerRequests/consumerRequestTypes';
 import {foundationDraftWithManualCatalogItem} from '../requestEstimate/requestEstimateBoqCatalogTestHelpers';
+import {ConsumerRepairRequestScreenController} from '../../src/features/consumerRepair/ConsumerRepairRequestScreen';
+import {loadConsumerRepairCanonicalNamingEvidence} from '../../src/features/consumerRepair/ConsumerRepairRequestScreenContainer';
+import * as requestRepository from '../../src/lib/consumerRequests/consumerRequestRepository';
+import * as backendClient from '../../src/lib/estimate/backendPlatform/canonicalEstimateClient';
+
+jest.mock('@expo/vector-icons',()=>({Ionicons:()=>null}));
 
 const releaseId='aaaaaaaa-1111-4111-8111-111111111111';
 const rootId='aaaaaaaa-2222-4222-8222-222222222222',childId='aaaaaaaa-3333-4333-8333-333333333333';
@@ -48,7 +54,7 @@ async function fixture(input:Record<string,unknown>, options:{
   const next:ConsumerRepairDraftBundle={...seed,draft:{...seed.draft,id:'durable-name-fixture',selectedWorkTitleRu:'Установка окон в крыше'},
     items:draft.items.map((item,index)=>({...item,id:'fixture-'+index,requestDraftId:'durable-name-fixture'})) as ConsumerRepairRequestItem[],
     structuredEstimatePayload:draft.structuredEstimatePayload};
-  return {bundle:appendCanonicalBackendRevisionProjection({previousBundle:options.previous ?? null,nextBundle:next,payload}),payload,result};
+  return {bundle:appendCanonicalBackendRevisionProjection({previousBundle:options.previous ?? null,nextBundle:next,payload}),payload,result,revision,catalog};
 }
 function replay(bundle:ConsumerRepairDraftBundle):ConsumerRepairDraftBundle {
   return JSON.parse(JSON.stringify(compactConsumerRepairBundleForDurableStorage(bundle)));
@@ -56,6 +62,110 @@ function replay(bundle:ConsumerRepairDraftBundle):ConsumerRepairDraftBundle {
 function publicRow(bundle:ConsumerRepairDraftBundle,rowId=baseRow) {
   return buildRequestEstimateViewModel(bundle)!.sections.flatMap(section=>section.items).find(item=>item.sourceParameters?.rowCode===rowId)!;
 }
+
+function namingController(bundle:ConsumerRepairDraftBundle,load:(revisionId:string,draftId:string)=>Promise<CanonicalPreliminaryNamingEvidence|null>) {
+  const controller=new ConsumerRepairRequestScreenController({consumerUserId:bundle.draft.consumerUserId!,
+    onPrepareCanonicalEstimate:jest.fn(),onLoadCanonicalRevisionDraft:jest.fn(),onLoadCanonicalParameterSession:jest.fn(),
+    onLoadCanonicalNamingEvidence:load,onRecalculateCanonicalEstimate:jest.fn(),onSelectCanonicalCatalogItem:jest.fn(),
+    onAddCanonicalCatalogItem:jest.fn(),onOpenPhotoForMaterialRecognition:jest.fn()});
+  const mutable=controller as unknown as {state:typeof controller.state;setState:(update:unknown,callback?:()=>void)=>void;
+    hydrateCurrentCanonicalNamingEvidence:()=>Promise<void>;hydrateCurrentCanonicalParameterSession:()=>Promise<void>};
+  mutable.state={...mutable.state,bundle,pendingCanonicalRowEditCount:5,statusMessage:'Пять несохранённых правок'};
+  mutable.setState=(update,callback)=>{
+    const next=typeof update==='function'?(update as (state:typeof mutable.state)=>Partial<typeof mutable.state>|null)(mutable.state)
+      :update as Partial<typeof mutable.state>;
+    if(next)mutable.state={...mutable.state,...next};callback?.();
+  };
+  mutable.hydrateCurrentCanonicalParameterSession=jest.fn().mockResolvedValue(undefined);
+  return {controller,mutable};
+}
+
+test.each([{lantern_count:14},complete])('legacy cold-open evidence hydration preserves five pending edits and does not recalculate: %p',async input=>{
+  const {bundle,payload}=await fixture(input),legacy=replay(bundle);
+  for(const row of legacy.estimateDraftRevisionState!.revisions[0]!.preliminaryRows!)delete row.canonicalNeedAdmissionV1;
+  const load=jest.fn().mockResolvedValue(payload.canonicalBackend!),{controller,mutable}=namingController(legacy,load);
+  let release!:()=>void;
+  load.mockImplementation(()=>new Promise(resolve=>{release=()=>resolve(payload.canonicalBackend!);}));
+  const pending=mutable.hydrateCurrentCanonicalNamingEvidence();
+  // Simulate edits made after GET started; the callback must use the latest UI.
+  const edited={...legacy,items:legacy.items.map((row,index)=>index>=5?row:{...row,quantity:100+index,
+    quantityEditedByConsumer:true,sourceParameters:{...row.sourceParameters,manualQuantityOverride:true,
+      calculatedQuantityBeforeOverride:consumerRepairRowCalculatedQuantity(row)}})};
+  mutable.state={...mutable.state,bundle:edited};const itemSnapshot=JSON.stringify(edited.items);
+  await mutable.hydrateCurrentCanonicalNamingEvidence();expect(load).toHaveBeenCalledTimes(1);
+  release();await pending;
+  expect(mutable.state.bundle!.items).toBe(edited.items);expect(JSON.stringify(mutable.state.bundle!.items)).toBe(itemSnapshot);
+  expect(mutable.state.pendingCanonicalRowEditCount).toBe(5);expect(mutable.state.statusMessage).toBe('Пять несохранённых правок');
+  expect(mutable.state.bundle!.estimateDraftRevisionState!.revisions).toHaveLength(1);
+  expect(mutable.state.bundle!.estimateDraftRevisionState!.diffs).toHaveLength(0);
+  expect(publicRow(replay(mutable.state.bundle!)).titleRu).toBe(baseName);
+  expect(controller.props.onRecalculateCanonicalEstimate).not.toHaveBeenCalled();
+});
+
+test.each(['switch','switch-back','unmount'])('a late naming GET is ignored after leaving the source workspace: %s',async kind=>{
+  const {bundle,payload}=await fixture(complete),legacy=replay(bundle);
+  for(const row of legacy.estimateDraftRevisionState!.revisions[0]!.preliminaryRows!)delete row.canonicalNeedAdmissionV1;
+  let release!:()=>void;
+  const load=jest.fn().mockImplementationOnce(()=>new Promise<CanonicalPreliminaryNamingEvidence|null>(resolve=>{release=()=>resolve(payload.canonicalBackend!);}))
+    .mockResolvedValue(null);
+  const {controller,mutable}=namingController(legacy,load),pending=mutable.hydrateCurrentCanonicalNamingEvidence();
+  if(kind==='unmount')controller.componentWillUnmount();
+  else {
+    const previous=mutable.state;
+    mutable.state={...mutable.state,bundle:{...legacy,draft:{...legacy.draft,id:'other-workspace'}}};
+    controller.componentDidUpdate(controller.props,previous);
+    if(kind==='switch-back'){
+      const other=mutable.state;mutable.state={...mutable.state,bundle:legacy};controller.componentDidUpdate(controller.props,other);
+    }
+  }
+  release();await pending;
+  expect(mutable.state.bundle!.estimateDraftRevisionState).toBe(legacy.estimateDraftRevisionState);
+  expect(mutable.state.pendingCanonicalRowEditCount).toBe(5);
+});
+
+test('naming recovery failure leaves the bundle, parameter state and readiness fields intact',async()=>{
+  const {bundle}=await fixture(complete),legacy=replay(bundle);
+  for(const row of legacy.estimateDraftRevisionState!.revisions[0]!.preliminaryRows!)delete row.canonicalNeedAdmissionV1;
+  const {mutable}=namingController(legacy,jest.fn().mockRejectedValue(new Error('temporary read failure')));
+  const before=mutable.state;
+  await mutable.hydrateCurrentCanonicalNamingEvidence();expect(mutable.state).toBe(before);
+});
+
+test('repository already enriched still returns original evidence to a legacy screen without resaving or rebuilding rows',async()=>{
+  const {bundle,revision}=await fixture(complete),legacy=replay(bundle);
+  for(const row of legacy.estimateDraftRevisionState!.revisions[0]!.preliminaryRows!)delete row.canonicalNeedAdmissionV1;
+  const read=jest.spyOn(requestRepository,'findConsumerRepairBundle').mockReturnValue(bundle);
+  const save=jest.spyOn(requestRepository,'saveConsumerRepairBundle');
+  const get=jest.spyOn(backendClient,'getCanonicalEstimateRevision').mockResolvedValue(revision);
+  try {
+    const load=jest.fn((revisionId:string,requestDraftId:string)=>loadConsumerRepairCanonicalNamingEvidence({
+      revisionId,requestDraftId,consumerUserId:bundle.draft.consumerUserId!,workspaceGenerationRef:{current:1}}));
+    const {mutable}=namingController(legacy,load);await mutable.hydrateCurrentCanonicalNamingEvidence();
+    expect(publicRow(replay(mutable.state.bundle!)).titleRu).toBe(baseName);
+    expect(mutable.state.bundle!.items).toBe(legacy.items);expect(get).toHaveBeenCalledTimes(1);
+    expect(save).not.toHaveBeenCalled();expect(read).toHaveBeenCalledTimes(2);
+  }finally{read.mockRestore();save.mockRestore();get.mockRestore();}
+});
+
+test('repository hydration preserves an edit made during GET and refuses writes after a workspace change',async()=>{
+  const {bundle,revision}=await fixture(complete),legacy=replay(bundle);
+  for(const row of legacy.estimateDraftRevisionState!.revisions[0]!.preliminaryRows!)delete row.canonicalNeedAdmissionV1;
+  let stored=legacy,release!:(value:CanonicalEstimateRevisionView)=>void;
+  const read=jest.spyOn(requestRepository,'findConsumerRepairBundle').mockImplementation(()=>stored);
+  const save=jest.spyOn(requestRepository,'saveConsumerRepairBundle').mockImplementation(next=>{stored=next;return next;});
+  const get=jest.spyOn(backendClient,'getCanonicalEstimateRevision').mockImplementation(()=>new Promise(resolve=>{release=resolve;}));
+  const generation={current:1},input={revisionId:rootId,requestDraftId:legacy.draft.id,consumerUserId:legacy.draft.consumerUserId!,workspaceGenerationRef:generation};
+  try {
+    const pending=loadConsumerRepairCanonicalNamingEvidence(input);
+    stored={...legacy,items:legacy.items.map((row,index)=>index===0?{...row,quantity:99}:row)};
+    const latestItems=stored.items;release(revision);await pending;
+    expect(save).toHaveBeenCalledTimes(1);expect(stored.items).toBe(latestItems);expect(stored.items[0]!.quantity).toBe(99);
+    expect(stored.estimateDraftRevisionState!.revisions).toHaveLength(1);expect(stored.estimateDraftRevisionState!.diffs).toHaveLength(0);
+    save.mockClear();stored=legacy;
+    const stale=loadConsumerRepairCanonicalNamingEvidence(input);generation.current+=1;release(revision);
+    expect(await stale).toBeNull();expect(save).not.toHaveBeenCalled();expect(stored).toBe(legacy);
+  }finally{read.mockRestore();save.mockRestore();get.mockRestore();}
+});
 
 test.each([{lantern_count:14},complete])('durable replay keeps source-bound names and unknown quantities without storing the large payload: %p',async input=>{
   const {bundle}=await fixture(input),before=JSON.stringify(bundle);

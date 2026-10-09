@@ -109,10 +109,13 @@ function parameterProjection(
   }));
 }
 
-function preliminaryRowProjection(payload: StructuredEstimatePayload): NonNullable<EstimateDraftRevision["preliminaryRows"]> {
+export type CanonicalPreliminaryNamingEvidence = Pick<NonNullable<StructuredEstimatePayload['canonicalBackend']>,
+  'compilerOwner' | 'revisionId' | 'releaseId' | 'catalogId' | 'checksumSha256' | 'preliminaryNeeds'>;
+
+function preliminaryRowProjection(needs: CanonicalPreliminaryNamingEvidence['preliminaryNeeds']): NonNullable<EstimateDraftRevision["preliminaryRows"]> {
   const finite = (value: string | null): number | null => value == null || !value.trim()
     || !Number.isFinite(Number(value)) ? null : Number(value);
-  return (payload.canonicalBackend?.preliminaryNeeds ?? []).map(need => ({
+  return (needs ?? []).map(need => ({
     rowId: need.rowId, titleRu: need.titleRu, quantity: finite(need.quantity),
     unit: need.unitId, unitPrice: finite(need.unitPrice),
     canonicalNeedAdmissionV1: {
@@ -124,6 +127,41 @@ function preliminaryRowProjection(payload: StructuredEstimatePayload): NonNullab
       calculatedQuantityBeforeOverride: finite(need.calculatedQuantityBeforeOverride ?? null),
     },
   }));
+}
+
+export function missingCanonicalPreliminaryNamingEvidence(bundle: ConsumerRepairDraftBundle | null | undefined): boolean {
+  const state = bundle?.estimateDraftRevisionState;
+  const current = state?.revisions.find(row => row.revisionId === state.currentRevisionId);
+  return current?.resolvedIdentity?.compilerVersion === CANONICAL_BACKEND_REVISION_PROJECTION_VERSION
+    && current.preliminaryRows?.some(row => row.canonicalNeedAdmissionV1 == null) === true;
+}
+
+/** Add naming evidence only; never replace items, facts, prices or history. */
+export function enrichCanonicalPreliminaryNamingEvidence(bundle: ConsumerRepairDraftBundle,
+  metadata: CanonicalPreliminaryNamingEvidence): ConsumerRepairDraftBundle {
+  const state = bundle.estimateDraftRevisionState;
+  const existing = state?.revisions.find(row => row.revisionId === metadata.revisionId);
+  const identity = existing?.resolvedIdentity;
+  if (!state || !existing || !identity || metadata.compilerOwner !== 'backend') return bundle;
+  const {checksum, ...withoutChecksum} = identity;
+  if (identity.compilerVersion !== CANONICAL_BACKEND_REVISION_PROJECTION_VERSION
+    || identity.canonicalModelId !== 'canonical-estimate-backend'
+    || identity.canonicalModelVersion !== metadata.releaseId || existing.selectedTemplateId !== metadata.catalogId
+    || existing.applicableBoqSignature !== metadata.checksumSha256
+    || checksum !== resolvedEstimateIdentityChecksum(withoutChecksum)) return bundle;
+  const savedRows = existing.preliminaryRows;
+  const candidates = Array.isArray(metadata.preliminaryNeeds) ? preliminaryRowProjection(metadata.preliminaryNeeds) : null;
+  const candidatesById = new Map(candidates?.map(row => [row.rowId, row]));
+  if (savedRows == null || candidates == null || savedRows.length !== candidates.length
+    || candidatesById.size !== candidates.length || new Set(savedRows.map(row => row.rowId)).size !== savedRows.length
+    || !savedRows.every(row => {
+      const candidate = candidatesById.get(row.rowId);
+      return candidate != null && candidate.titleRu === row.titleRu && candidate.quantity === row.quantity
+        && candidate.unit === row.unit && candidate.unitPrice === row.unitPrice;
+    }) || !savedRows.some(row => row.canonicalNeedAdmissionV1 == null)) return bundle;
+  return {...bundle, estimateDraftRevisionState: {...state, revisions: state.revisions.map(row => row !== existing ? row
+    : {...row, preliminaryRows: savedRows.map(saved => saved.canonicalNeedAdmissionV1 != null ? saved
+      : {...saved, canonicalNeedAdmissionV1: candidatesById.get(saved.rowId)!.canonicalNeedAdmissionV1})})}};
 }
 
 export function appendCanonicalBackendRevisionProjection(input: {
@@ -139,37 +177,7 @@ export function appendCanonicalBackendRevisionProjection(input: {
   const previousState = input.previousBundle?.estimateDraftRevisionState ?? null;
   const existing = previousState?.revisions.find(revision => revision.revisionId === metadata.revisionId);
   if (previousState && existing) {
-    // Enrich an older local projection only from its own immutable backend
-    // payload. Never create a revision/diff or borrow the current catalogue.
-    const identity = existing.resolvedIdentity;
-    let exactOwner = false;
-    if (identity) {
-      const { checksum, ...withoutChecksum } = identity;
-      exactOwner = identity.compilerVersion === CANONICAL_BACKEND_REVISION_PROJECTION_VERSION
-        && identity.canonicalModelId === 'canonical-estimate-backend'
-        && identity.canonicalModelVersion === metadata.releaseId
-        && existing.selectedTemplateId === metadata.catalogId
-        && existing.applicableBoqSignature === metadata.checksumSha256
-        && checksum === resolvedEstimateIdentityChecksum(withoutChecksum);
-    }
-    const savedRows = existing.preliminaryRows;
-    const candidates = Array.isArray(metadata.preliminaryNeeds) ? preliminaryRowProjection(payload) : null;
-    const candidatesById = new Map(candidates?.map(row => [row.rowId, row]));
-    const exactRows = savedRows != null && candidates != null
-      && savedRows.length === candidates.length && candidatesById.size === candidates.length
-      && new Set(savedRows.map(row => row.rowId)).size === savedRows.length
-      && savedRows.every(row => {
-        const candidate = candidatesById.get(row.rowId);
-        return candidate != null && candidate.titleRu === row.titleRu
-          && candidate.quantity === row.quantity && candidate.unit === row.unit
-          && candidate.unitPrice === row.unitPrice;
-      });
-    const missingAdmission = savedRows?.some(row => row.canonicalNeedAdmissionV1 == null) === true;
-    return { ...input.nextBundle, estimateDraftRevisionState: exactOwner && exactRows && missingAdmission
-      ? { ...previousState, revisions: previousState.revisions.map(revision => revision === existing
-        ? { ...revision, preliminaryRows: savedRows!.map(row => row.canonicalNeedAdmissionV1 != null ? row
-          : { ...row, canonicalNeedAdmissionV1: candidatesById.get(row.rowId)!.canonicalNeedAdmissionV1 }) } : revision) }
-      : previousState };
+    return enrichCanonicalPreliminaryNamingEvidence({...input.nextBundle, estimateDraftRevisionState: previousState}, metadata);
   }
   const previousRevision = previousState?.revisions.find(
     (revision) => revision.revisionId === metadata.parentRevisionId,
@@ -281,7 +289,7 @@ export function appendCanonicalBackendRevisionProjection(input: {
       })),
       rows,
     },
-    preliminaryRows: preliminaryRowProjection(payload),
+    preliminaryRows: preliminaryRowProjection(metadata.preliminaryNeeds),
     // Keep manually excluded rows in the durable bundle so a later parameter
     // change can restore them. Structural non-payable rows remain applicable:
     // they are the technology/completeness ledger even though they are not
@@ -326,7 +334,7 @@ export function appendCanonicalBackendRevisionProjection(input: {
   const previousForComparison = previousRevision && previousRevision.preliminaryRows == null
     && parentPayload?.canonicalBackend?.compilerOwner === "backend"
     && parentPayload.canonicalBackend.revisionId === previousRevision.revisionId
-    ? { ...previousRevision, preliminaryRows: preliminaryRowProjection(parentPayload) } : previousRevision;
+    ? { ...previousRevision, preliminaryRows: preliminaryRowProjection(parentPayload.canonicalBackend?.preliminaryNeeds) } : previousRevision;
   const diff = previousForComparison ? compareEstimateDraftRevisions(previousForComparison, revision) : null;
   if (diff && diff.changedParams.length === 0) revision.source = "template_change";
   return {
