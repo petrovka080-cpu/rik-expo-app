@@ -60,7 +60,8 @@ export function pvcRoofMinimalConfigS2747(index: 0 | 1, parent: { releaseId: str
         assert(cleaner);
         assert.deepEqual(cleaner.missing_parameter_ids, ['cleaner_density_kg_l']);
         assert.equal(cleaner.quantity, null);
-        assert.equal((cleaner.calculation_trace.purchaseRequirementV1 as { consumed: string }).consumed, '5');
+        const trace = cleaner.calculation_trace as { purchaseRequirementV1: { consumed: string } };
+        assert.equal(trace.purchaseRequirementV1.consumed, '5');
         assert.equal(definition.runtimeInput.cleaner_density_kg_l, undefined);
       } else {
         assert.equal(result.rows.find(row => row.row_id === 'pvc-roof:material:cleaner-volume-472219')?.quantity, '6');

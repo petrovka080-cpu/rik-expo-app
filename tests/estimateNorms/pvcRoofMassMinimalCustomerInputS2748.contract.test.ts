@@ -42,7 +42,7 @@ test('saved nonzero stock and reserve survive missing density; unknown cleaned a
   const cleaner = unknown.preliminaryNeeds.find(r => r.row_id === 'pvc-roof:material:cleaner');
   expect(cleaner?.missing_parameter_ids).toContain('cleaned_surface_m2');
   expect(cleaner?.quantity).toBeNull();
-  expect(cleaner?.calculation_trace.purchaseRequirementV1).toBeUndefined();
+  expect(cleaner?.calculation_trace).not.toHaveProperty('purchaseRequirementV1');
 });
 
 test('selecting completion keeps its missing programme visible without inferred service norms', async () => {
@@ -50,6 +50,6 @@ test('selecting completion keeps its missing programme visible without inferred 
   const serviceNeeds = result.preliminaryNeeds.filter(r => r.row_id.startsWith('g6:completion:'));
   expect(serviceNeeds.length).toBeGreaterThan(0);
   expect(serviceNeeds.every(r => r.quantity === null)).toBe(true);
-  expect(result.preliminaryNeeds.find(r => r.row_id === 'pvc-roof:material:cleaner')?.calculation_trace.purchaseRequirementV1)
-    .toMatchObject({ consumed: '5', unitId: 'kg' });
+  expect(result.preliminaryNeeds.find(r => r.row_id === 'pvc-roof:material:cleaner')?.calculation_trace)
+    .toMatchObject({ purchaseRequirementV1: { consumed: '5', unitId: 'kg' } });
 });
