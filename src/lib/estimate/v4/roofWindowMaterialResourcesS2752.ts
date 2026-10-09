@@ -37,7 +37,7 @@ const built=buildAutomaticConstructionOwnerR1({contract:pack.contract,semanticOw
   normId:'MATERIAL_SPECIFICATION_CANDIDATES_NO_CONFIRMED_NODE_CONSUMPTION',
   sourceMetadata:{source_title:'Материалы кровельных примыканий и крепления: первичные паспорта изделий',
     source_document_version:'S27.52 source-bound material candidates',definition_hash:estimateDeterministicHash(pack),
-    artifact_sha256:estimateDeterministicHash(pack),exact_locator:Object.entries(pack.sources).map(([id,source])=>`${id}: ${source.url}; ${source.locator}`).join(' | ')},
+    artifact_sha256:pack.sourceManifestSha256,exact_locator:Object.entries(pack.sources).map(([id,source])=>`${id}: ${source.url}; ${source.locator}`).join(' | ')},
   applicabilityRu:pack.sourceRestrictionRu,ordinary:[{id:'lantern_count',title:'Количество одинаковых окон',
     valueType:'integer',unitId:'item',kind:'ordinary',min:1}],profile:[],conditional:[
       {id:'lantern_model',title:'Исполнение окна',valueType:'enum',unitId:null,kind:'conditional',values:[parentPack.model]},
