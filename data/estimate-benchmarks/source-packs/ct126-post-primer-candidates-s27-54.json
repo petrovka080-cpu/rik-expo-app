@@ -1,0 +1,45 @@
+{
+  "contract": "gox.ct126-post-primer-candidate-identity.v1",
+  "catalogId": "canonical-work:master:ct126_manual_dry_interior_ct7_ready_cement_lime_wall_2_10mm_standard",
+  "change": "One existing partial owner; only the identity/presentation/evidence of two unresolved resources. No new scenario or quantitative acceptance.",
+  "candidates": [
+    {
+      "rowSuffix": "post-primer",
+      "nameRu": "Грунтовка Ceresit CT17 Profi 03.24 поверх CT126 перед внутренней окраской CT54 — кандидат, система и расход не приняты",
+      "unitId": "l",
+      "sourceNormQuantityAccepted": false,
+      "procurement": false
+    },
+    {
+      "rowSuffix": "post-primer-tools",
+      "nameRu": "Кисть или валик для грунтовки CT17 поверх CT126 — кандидаты, одно исполнение по принятой системе",
+      "unitId": "item",
+      "sourceNormQuantityAccepted": false,
+      "procurement": false
+    }
+  ],
+  "scope": "CT126 полностью высохла, прошлифована и обеспылена. Для предлагаемой цепочки CT54 выбран внутри сухого помещения и гипсовый слой имеет влажность ниже1%; CT17 соответствует собственной TDS03.24, воздух/основание+5…+25°C, относительная влажность<80%, перед окраской грунт полностью высох. При неизвестном финише CT17 остаётся кандидатом. Другой грунт/финиш требует отдельной совместимости. Не смешивать с предшествующим CT7 готового основания.",
+  "quantityGap": "0,1–0,5л/м² зависит от впитываемости/ровности; точного расхода для CT126 нет. Число проходов и режим разбавления не выбираются автоматически. Кисть ИЛИ валик без произвольного1шт; обеспечение и границы оплаты неизвестны.",
+  "sources": {
+    "ct17": {
+      "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-17-en_GL.pdf",
+      "localArtifact": ".release-runtime/r568/s27-35/wet-zone-sources/CT-17.pdf",
+      "sha256": "7e3f72f83a9b75a5f90bd44dbac1c88a30da15e0a8d4e0b6e9f9af677fff2847",
+      "edition": "CT17 Profi03.24",
+      "locator": "Стр.1: гипсовые основания, перед окраской; кисть/валик и высыхание. Стр.2: расход0,1–0,5л/м² и условия"
+    },
+    "ct54": {
+      "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-54-en_GR.pdf",
+      "localArtifact": ".release-runtime/r568/s27-54/ct54-ready-mineral/review/CERESIT-CT-54-en_GR.pdf",
+      "sha256": "7b59b19fc92d73d1e1fcdef8c233e52265242da8504e4780ac346bfdea8bc305",
+      "edition": "C_CT54_TDS_1_0819",
+      "locator": "Стр.1: гипсовые основания только внутри, влажность<1%, предварительноCT17; финиш не включается в сметуCT126"
+    }
+  },
+  "completeness": "PARTIAL",
+  "closedQuantityGaps": 0,
+  "newCompleteTypes": 0,
+  "deliveryStatus": "SOURCE_IDENTITIES_ONLY_QUANTITIES_UNRESOLVED",
+  "fullTechnicalAcceptance": false,
+  "acceptedNewCompleteTypes": 0
+}
