@@ -91,7 +91,13 @@ const enrichedOriginal=original.resources.map(r=>{
     specificationRu:id==='installation-set'?'EGGER1430635:1подбивочныйбрусокизбука,1стальнаяскобасвойлоком,20клиньевPP. Числонаборов/обеспечениеисполнителем требуютзадания.':'СемействоEGGER3-in-1Alu:1860×37×5мм,диапазонтолщиныпокрытия4–22мм;PU12шт/22,32м. Для1819082узел,составкрепежа и фактическая поставка пока не приняты.'}},
     source_metadata:{...r.source_metadata,ownProductPassportSha256:source.sha256,official_url:source.officialUrl,source_artifact_sha256:source.sha256,exact_locator:source.locatorRu}};return {...result,row_sha256:estimateDeterministicHash(result)};
 });
-export const eggerAccessoriesDefinitionS2754:AutomaticOwnerDefinition={...original,parameters:[...original.parameters,...additions].map((p,i)=>({...p,ordinal:i})),
+// Keep retired internal keys for old-revision schema compatibility. Their owning
+// resource now uses an explicit layout balance; they never become input facts.
+const retiredQuantityOwners:Record<string,string>={open_qty_alu_tape:'alu-tape',open_qty_skirting:'skirting',open_qty_skirting_clips:'skirting-clips'};
+const retainedParameters=original.parameters.map(p=>retiredQuantityOwners[p.parameter_id]?{...p,truth_metadata:{...p.truth_metadata,
+  resource_branch_consumers:[prefix+':'+retiredQuantityOwners[p.parameter_id]],supersededByExplicitAccessoryBalance:true,
+  unresolved_norm_reason:'Прежнее внутреннее поле сохранено для совместимости. Количество владельца задаёт новая принятая ведомость; ввод старого поля запрещён.'}}:p);
+export const eggerAccessoriesDefinitionS2754:AutomaticOwnerDefinition={...original,parameters:[...retainedParameters,...additions].map((p,i)=>({...p,ordinal:i})),
   formulas:[...original.formulas.filter(f=>!replaceIds.has(f.formula_id.slice((prefix+':formula:').length))),...built.formulas],
   resources:[...enrichedOriginal,...resourceContent.filter(r=>!replaceIds.has(r.row_id.slice(prefix.length+1)))].map((r,i)=>{const {row_sha256:_hash,...content}=r,result={...content,ordinal:i};return {...result,row_sha256:estimateDeterministicHash(result)};})};
 export function compileEggerAccessoriesS2754(input:Record<string,unknown>){return compileAutomaticConstructionOwnerR1({catalogId:originalPack.catalogId,compilerVersion:pack.contract,primaryMeasureParameterId:'net_floor_area_m2',definition:eggerAccessoriesDefinitionS2754,submittedParameters:input});}

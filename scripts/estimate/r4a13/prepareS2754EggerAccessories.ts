@@ -1,5 +1,5 @@
 import {readFileSync} from 'node:fs';import {resolve} from 'node:path';import {createHash} from 'node:crypto';import {strict as assert} from 'node:assert';
-import {runMasterSingleDefinitionSuccessorR1,type MasterSingleDefinitionSuccessorConfig,validateIndependentCompletenessMapReferences} from './prepareMasterSingleDefinitionSuccessorR1';
+import {runMasterSingleDefinitionSuccessorR1,type MasterSingleDefinitionSuccessorConfig,validateIndependentCompletenessMapReferences,buildMasterParameterCalculationConsumers} from './prepareMasterSingleDefinitionSuccessorR1';
 import {eggerEl2240ConfigS2754,eggerEl2240ExplicitControlS2754} from './prepareS2754EggerEl2240';
 import {eggerEl2240PackS2754 as originalPack,eggerEl2240PrefixS2754 as prefix,eggerEl2240DefinitionS2754 as original,compileEggerEl2240S2754} from '../../../src/lib/estimate/v4/eggerEl2240S2754';
 import {eggerAccessoriesPackS2754 as pack,eggerAccessoriesDefinitionS2754 as definition,eggerAccessoriesCompletenessMapS2754,compileEggerAccessoriesS2754} from '../../../src/lib/estimate/v4/eggerAccessoriesS2754';
@@ -44,6 +44,8 @@ export function eggerAccessoriesConfigS2754(parent:{releaseId:string;searchRelea
 export async function verifyEggerAccessoriesS2754(){
   for(const source of Object.values(pack.sources))assert.equal(createHash('sha256').update(readFileSync(source.localArtifact)).digest('hex'),source.sha256);
   assert.deepEqual(validateIndependentCompletenessMapReferences({completenessMap:eggerAccessoriesCompletenessMapS2754(),formulaDefinitions:definition.formulas,resourceDefinitions:definition.resources}),[]);
+  const consumers=buildMasterParameterCalculationConsumers({parameters:definition.parameters,formulas:definition.formulas,resources:definition.resources});
+  assert.deepEqual(definition.parameters.filter(p=>!consumers.resourceConsumers[p.parameter_id]?.length).map(p=>p.parameter_id),[],'Publication parameter-consumer coverage');
   const oldInput=eggerEl2240ExplicitControlS2754(),old=await compileEggerEl2240S2754(oldInput),legacy=await compileEggerAccessoriesS2754(oldInput);
   assert.equal(legacy.rows.length,11);assert.equal(legacy.rows.filter(r=>r.included_in_procurement).length,2);
   for(const row of old.rows){const same=legacy.rows.find(r=>r.row_id===row.row_id);assert(same);assert.equal(same.quantity,row.quantity);assert.equal(same.unit_id,row.unit_id);assert.equal(same.included_in_procurement,row.included_in_procurement);}
