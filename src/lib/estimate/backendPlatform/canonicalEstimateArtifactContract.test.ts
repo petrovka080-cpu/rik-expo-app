@@ -34,6 +34,11 @@ describe("canonical estimate artifact contract", () => {
     expect(canonicalArtifactQuantity(null)).toBe("—");
     expect(canonicalArtifactQuantity("12.5")).toBe("12,5");
   });
+  it("preserves saved physical decimal precision above the small-quantity threshold without binary conversion", () => {
+    for (const [value,expected] of [["0.007300000","0,0073"],["0.002400000","0,0024"],["12.345600000","12,3456"],["10000000.123456789","10\u00a0000\u00a0000,123456789"],["0.001000001","0,001000001"],["-0.000000000","0"]])
+      expect(canonicalArtifactQuantity(value)).toBe(expected);
+    expect(canonicalArtifactQuantity(0.0073)).toBe("0,0073");
+  });
   it("renders a saved semicolon specification once while preserving other supplied details", () => {
     const value = "LOGICROOF V-RP 1,5 мм; контрольная спецификация, ТЛ 2.01 03.2026";
     const membrane = { ...rows[0]!, title_ru: "Мембрана", calculation_trace: { resourceGraph: {

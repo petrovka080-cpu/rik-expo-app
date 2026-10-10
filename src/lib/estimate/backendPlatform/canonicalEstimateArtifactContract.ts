@@ -396,11 +396,18 @@ export function escapeCanonicalArtifactHtml(value: unknown): string {
 
 export function canonicalArtifactQuantity(value: unknown): string {
   if (value == null || value === "") return "—";
+  // Stored canonical decimals are already exact. Localize them without a
+  // Number conversion or rounding a physical quantity into another quantity.
+  const decimal = typeof value === "string" ? value.trim().match(/^([+-]?)(\d+)(?:\.(\d+))?$/u) : null;
+  if (decimal) {
+    const integer = decimal[2]!.replace(/^0+(?=\d)/u, "");
+    const fraction = (decimal[3] ?? "").replace(/0+$/u, "");
+    const sign = decimal[1] === "-" && (integer !== "0" || /[1-9]/u.test(fraction)) ? "-" : "";
+    return sign + integer.replace(/\B(?=(\d{3})+(?!\d))/gu, "\u00a0") + (fraction ? "," + fraction : "");
+  }
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return "—";
-  // A positive canonical quantity must not disappear as displayed zero.
-  const maximumFractionDigits = numeric !== 0 && Math.abs(numeric) < 0.001 ? 9 : 3;
-  return new Intl.NumberFormat("ru-RU", { maximumFractionDigits }).format(numeric);
+  return new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 9 }).format(numeric);
 }
 
 export function canonicalArtifactParameterValue(value: unknown): string {

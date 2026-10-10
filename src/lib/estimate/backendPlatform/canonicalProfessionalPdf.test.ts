@@ -184,7 +184,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-54-compact-resource-template24");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-58-exact-physical-resource-template25");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,
@@ -583,8 +583,23 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(canonicalProfessionalPdfCategory({
       category: "labor",
       calculation_trace: { resourceGraph: { costTreatment: "INFORMATIONAL_SCOPE" } },
-    })).toBe("service");
+    })).toBe("work");
     expect(canonicalProfessionalPdfCategory({ category: "delivery" })).toBe("transport");
+  });
+  it("prints physical material and machine categories and exact saved quantities without charging informational consumption", () => {
+    const source=rows(3);
+    source[0]={...source[0]!,category:'material',section:'Монтаж',unit_id:'t',quantity:'0.007300000',included_in_estimate:false,included_in_procurement:false,unit_price:null,amount:null,
+      calculation_trace:{resourceGraph:{costTreatment:'INFORMATIONAL_SCOPE'}}};
+    source[1]={...source[1]!,category:'material',section:'Монтаж',unit_id:'t',quantity:'0.002400000',included_in_estimate:false,included_in_procurement:false,unit_price:null,amount:null,
+      calculation_trace:{resourceGraph:{costTreatment:'INFORMATIONAL_SCOPE'}}};
+    source[2]={...source[2]!,category:'equipment',section:'Монтаж',unit_id:'machine_hour',quantity:'0.660000000',included_in_estimate:false,included_in_procurement:false,unit_price:null,amount:null,
+      calculation_trace:{resourceGraph:{costTreatment:'INFORMATIONAL_SCOPE'}}};
+    const before=JSON.stringify(source),projection=buildCanonicalProfessionalPdfProjection({revision:revision(3),rows:source,workTitleRu:'Монтаж'});
+    expect(projection.html).toContain('<td class="numeric">0,0073</td>');expect(projection.html).toContain('<td class="numeric">0,0024</td>');
+    expect(projection.html.match(/<td>Материалы<\/td>/gu)).toHaveLength(2);expect(projection.html.match(/<td>Механизмы<\/td>/gu)).toHaveLength(1);
+    expect(projection.html.match(/Не суммируется/gu)).toHaveLength(3);expect(projection).toMatchObject({pricedRowCount:0,missingPriceRowCount:0,nonPayableRowCount:3,categoryTotals:{material:0,equipment:0}});
+    expect(canonicalProfessionalPdfCategory({category:'material',calculation_trace:{resourceGraph:{costTreatment:'CONTROL_OR_DOCUMENT'}}})).toBe('service');
+    expect(JSON.stringify(source)).toBe(before);
   });
   it("keeps paid material kit amounts out of equipment totals inside an equipment operation", () => {
     const material = { ...rows(1)[0]!, section: "Оборудование армирования", category: "material", title_ru: "Полный комплект оснастки станка", unit_id: "set", quantity: "3", amount: "300" };
