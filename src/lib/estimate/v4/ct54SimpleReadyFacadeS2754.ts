@@ -24,7 +24,7 @@ const conditional:AutomaticParameterSpec[]=[
  fact(gross,'Площадь фасада без вычета проёмов для нормы труда и машин; без отдельной площади откосов и деталей','decimal','m2',{min:0.001,numericPeerConstraints:{greaterThanOrEqualParameter:area}}),
  fact('facade_measurement_reference','Обмер нормативной площади фасада без вычета проёмов; границы того же участка стены'),
  fact('selected_paint_can_l','Одна выбранная фасовка CT54','enum','l',{values:['3.5','15']}),
- fact('mechanism_fulfillment','Обеспечение нормативной лебёдки и автомобиля; оператор и водитель включены в стоимость машины','enum',null,{values:['Собственные машины исполнителя','Наёмные машины с включённым оператором и водителем']})
+ fact('mechanism_fulfillment','Способ обеспечения лебёдки и автомобиля для этой работы; оператор и водитель включены в стоимость машины','enum',null,{values:['Собственные машины исполнителя','Наёмные машины с включённым оператором и водителем']})
 ];
 const rows:AutomaticRowSpec[]=[];
 const add=(id:string,title:string,operation:string,category:string,unitId:string,expression:string,extra:Partial<AutomaticRowSpec>={})=>rows.push({rowId:prefix+':'+id,formulaId:prefix+':formula:'+id,title,section:operation,category,unitId,expression,procurement:false,...extra});
