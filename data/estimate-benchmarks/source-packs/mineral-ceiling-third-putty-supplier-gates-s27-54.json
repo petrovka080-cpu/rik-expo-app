@@ -1,0 +1,30 @@
+{
+  "contract": "gox.s27-54.mineral-ceiling-third-putty-supplier-gates.v1",
+  "catalogId": "canonical-work:master:prepared_mineral_ceiling_third_oil_glue_putty_coat_sanding_standard",
+  "workKey": "prepared_mineral_ceiling_third_oil_glue_putty_coat_sanding_standard",
+  "sourcePack": "mineral-ceiling-third-putty-coat-s27-54.json",
+  "scopeParameterId": "construction_scope_conditions",
+  "scopeValue": "Новое строительство в нормальных условиях при положительной температуре; высота местности ниже 1500 м; реконструкция и усложнённые условия отсутствуют",
+  "scopeRu": "Существующий проектно назначенный третий слой готовой масляно-клеевой шпаклёвки со шлифованием подготовленного минерального потолка до 3,5 м; новое строительство, нормальные условия при положительной температуре, местность ниже 1500 м. Исходные нормы, формулы и единицы сохраняются.",
+  "guidance": {
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/stroitelnyeispecialnyestroitelnyeraboty-7866900598a0aab89.90712367.pdf",
+    "localArtifact": ".release-runtime/r568/s27-48/g7-next-source-extracts/KRER_GENERAL_APPLICATION_GUIDANCE.pdf",
+    "sha256": "5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9",
+    "locatorRu": "Общие указания КРЕР: пп.1.3–1.4 PDF2; п.3.5 PDF8; приложение3 PDF13, пп.9–9.2 PDF15. Реконструкция и горные коэффициенты вне этого узкого сценария."
+  },
+  "supplierFacts": [
+    {"key": "putty", "materialRu": "готовая масляно-клеевая шпаклёвка", "supplyTitleRu": "Фактическая готовая масляно-клеевая шпаклёвка поставщика, совместимость с проектом и документ поставки в кг", "stockTitleRu": "Пригодность наличия готовой масляно-клеевой шпаклёвки и соответствие выбранному товару", "quantityTitleRu": "Допустимый шаг заказа готовой масляно-клеевой шпаклёвки в кг с учётом фасовки и кратности поставщика"},
+    {"key": "rags", "materialRu": "ветошь для этой шпаклёвочной операции", "supplyTitleRu": "Фактическая позиция ветоши поставщика для этой операции и документ поставки в кг", "stockTitleRu": "Пригодность наличия ветоши и соответствие выбранной позиции поставщика", "quantityTitleRu": "Допустимый шаг заказа ветоши в кг с учётом фасовки и кратности поставщика"}
+  ],
+  "supplierIdentityRuleRu": "Фактическое наименование или артикул, либо однозначное описание позиции и документа поставки. Марка, ГОСТ, состав ткани и фасовка источником не установлены и автоматически не назначаются. Все stock/reserve/quantum — факты в кг; число упаковок без подтверждённой структуры не выводится. Цена за кг остаётся неизвестной до отдельного ввода.",
+  "abrasive": {
+    "parameterId": "abrasive_source_quantity_resolution",
+    "literalRatePer100M2": "0.00044",
+    "sourceRole": "LITERAL_UNUSUALLY_SMALL_SOURCE_CONSUMPTION_ORDER_UNCONFIRMED",
+    "reasonRu": "Литеральный исходный расход 0,00044 м²/100 м² сохранён, но основание закупочного количества требует отдельной источниковой проверки. Листы, рулоны, размеры и новая норма не выводятся; пользователь не разрешает этот пробел."
+  },
+  "newTypes": 0,
+  "newQuantityNorms": 0,
+  "fullTechnicalAcceptance": false,
+  "acceptedCompleteTypes": 0
+}

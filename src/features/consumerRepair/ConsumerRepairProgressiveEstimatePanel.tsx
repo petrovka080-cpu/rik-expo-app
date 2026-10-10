@@ -1012,7 +1012,7 @@ export class InlineParamEditor extends React.PureComponent<InlineParamEditorProp
                     const fieldValue = item.values[field.key] ?? "";
                     return <View key={field.key} style={styles.typedCompositeField}>
                       <Text style={styles.inlineParamEditorTitle}>{field.labelRu}{field.required ? " *" : ""}</Text>
-                      {field.choices.length > 0 ? <View style={styles.batchActions}>{field.choices.map((choice) => <Pressable key={choice.value} onPress={() => this.updateCompositeField(item.itemId, field.key, choice.value)} style={[styles.inlineParamButton, fieldValue === choice.value ? styles.inlineParamPrimaryButton : null]}><Text style={fieldValue === choice.value ? styles.inlineParamPrimaryText : styles.inlineParamButtonText}>{choice.labelRu}</Text></Pressable>)}</View> : <TextInput
+                      {field.choices.length > 0 ? <View style={styles.batchActions}>{field.choices.map((choice) => <Pressable key={choice.value} onPress={() => this.updateCompositeField(item.itemId, field.key, choice.value)} style={[styles.inlineParamButton, styles.inlineParamChoiceButton, fieldValue === choice.value ? styles.inlineParamPrimaryButton : null]}><Text style={[fieldValue === choice.value ? styles.inlineParamPrimaryText : styles.inlineParamButtonText, styles.inlineParamChoiceText]}>{choice.labelRu}</Text></Pressable>)}</View> : <TextInput
                         value={fieldValue}
                         importantForAutofill="no"
                         onChangeText={(nextValue) => this.updateCompositeField(item.itemId, field.key, nextValue)}
@@ -1058,10 +1058,10 @@ export class InlineParamEditor extends React.PureComponent<InlineParamEditorProp
                   accessibilityRole="button"
                   key={choice.value}
                   onPress={() => onChange(paramKey, choice.value)}
-                  style={[styles.inlineParamButton, value === choice.value ? styles.inlineParamPrimaryButton : null]}
+                  style={[styles.inlineParamButton, styles.inlineParamChoiceButton, value === choice.value ? styles.inlineParamPrimaryButton : null]}
                   testID={`editable-param-option-${paramKey}-${choice.value}`}
                 >
-                  <Text style={value === choice.value ? styles.inlineParamPrimaryText : styles.inlineParamButtonText}>
+                  <Text style={[value === choice.value ? styles.inlineParamPrimaryText : styles.inlineParamButtonText, styles.inlineParamChoiceText]}>
                     {choice.labelRu}
                   </Text>
                 </Pressable>
@@ -2431,6 +2431,16 @@ const styles = StyleSheet.create({
   },
   inlineParamButtonDisabled: {
     opacity: 0.55,
+  },
+  inlineParamChoiceButton: {
+    maxWidth: "100%",
+    minWidth: 0,
+    flexShrink: 1,
+  },
+  inlineParamChoiceText: {
+    maxWidth: "100%",
+    minWidth: 0,
+    flexShrink: 1,
   },
   inlineParamPrimaryButton: {
     borderColor: "#0F766E",
