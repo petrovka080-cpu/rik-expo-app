@@ -1,0 +1,28 @@
+{
+  "contract": "gox-build.s27-54.existing-other-pavement-kerb-object-scope.v1",
+  "catalogId": "canonical-work:master:concrete_kerb_install_other_pavement_standard",
+  "exactColumn": "27-02-010-02",
+  "sourceIndex": 1,
+  "scopeParameterId": "construction_scope_conditions",
+  "scopeValue": "Новое строительство; нормальные неосложнённые условия при положительной температуре; местность ниже 1500 м; движение по другой половине проезжей части отсутствует",
+  "scopeRu": "Исходные нормы применены только к новому строительству в нормальных неосложнённых условиях при положительной температуре, ниже 1500 м, без движения на другой половине проезжей части. Реконструкция, горные и усложнённые условия требуют отдельного подтверждённого сценария.",
+  "scopeTitleRu": "Вид строительства, условия участка, движение транспорта и высота местности",
+  "supplierFactIds": ["kerb_stone_specification", "concrete_mix_specification", "formwork_timber_specification", "formwork_nails_specification"],
+  "mechanismTitleRu": "Способ обеспечения автокрана и бортового автомобиля; машинисты включены в стоимость машин",
+  "mechanismGuideRu": "Выберите фактическое обеспечение: собственные механизмы либо аренда с машинистами. Часы определяются приложением по выбранной работе; вручную их вводить не требуется.",
+  "guidance": {
+    "localArtifact": ".release-runtime/r568/s27-48/g7-next-source-extracts/KRER_GENERAL_APPLICATION_GUIDANCE.pdf",
+    "sha256": "5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9",
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/stroitelnyeispecialnyestroitelnyeraboty-7866900598a0aab89.90712367.pdf",
+    "locatorRu": "Общие указания КРЕР: 1.3–1.4 (PDF2), 3.5 (PDF8), приложение3 и 9–9.2 (PDF13,15)"
+  },
+  "trafficRule": {
+    "locatorRu": "КРЕР27, техническая часть 3.1 (PDF14); исключения не включают 27-02-010",
+    "restrictionRu": "Производство работ на одной половине проезжей части при движении на другой требует коэффициентов 1.2 к труду и машинам и исключено из этого сценария. Коэффициент не подставляется автоматически."
+  },
+  "preservedRu": "Все 27 формул, ставки, ресурсы, единицы, владельцы цены и существующие балансы сохранены. Четыре поля описывают фактические товары объекта; марка, размеры и документы не подставляются. Включённые перемещения и машинисты не оплачиваются повторно. Шесть открытых дополнительных потребностей остаются открытыми.",
+  "newTypes": 0,
+  "newNorms": 0,
+  "newBalances": 0,
+  "acceptedCompleteTypes": 0
+}
