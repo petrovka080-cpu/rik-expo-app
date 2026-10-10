@@ -289,6 +289,9 @@ export function isCanonicalEstimateVisibleUserResourceSelectionParameter(
   schema: ParameterSchema,
 ): boolean {
   if (hasProtectedParameterOwnership(schema)) return false;
+  if (["enum", "boolean", "array_object"].includes(schema.valueType)
+    && (schema.resourceBranchConsumers?.length ?? 0) > 0
+    && hasSchemaOwnedUserFact(schema)) return true;
   if (["decimal", "integer"].includes(schema.valueType)) {
     return isMandatoryProjectNumericResourceFact(schema) && isCanonicalEstimateUserEditableParameter(schema);
   }

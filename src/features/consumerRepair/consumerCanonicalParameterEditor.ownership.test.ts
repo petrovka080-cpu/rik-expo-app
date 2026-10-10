@@ -1,6 +1,7 @@
 import type { CanonicalEstimateCatalogItem } from "../../lib/estimate/backendPlatform/contracts";
 import { buildConsumerCanonicalPrecompileParameterSession, consumerCanonicalPrecompileParameterOverrides } from "./consumerCanonicalParameterEditor";
 import { consumerCanonicalMigrationUserParameters } from "./consumerCanonicalReleaseMigration";
+import { buildCanonicalParameterCards } from "../../lib/estimatePresentation/buildCanonicalParameterCards";
 
 type Schema = CanonicalEstimateCatalogItem["parameterSchema"][number];
 const guide: NonNullable<Schema["guide"]> = { guideKind: "PROJECT_DEFINED", guideValidationPolicy: "MANDATORY_BLOCK", sourceRole: "PROJECT_DOCUMENTATION",
@@ -39,4 +40,18 @@ it("does not expose protected sources through active needs or a benign label and
   expect(build([stock, reference, norm], { stock: 1 }, [norm.parameterId]).parameters.some(p => p.parameterId === norm.parameterId)).toBe(false);
   expect(consumerCanonicalMigrationUserParameters(catalog([stock, reference, norm]), { stock: 1, stock_reference: "Паспорт партии 17", labor_rate: 8 }))
     .toEqual({ stock: 1, stock_reference: "Паспорт партии 17" });
+});
+
+it("retains a supplied optional project branch in actual cards and pending Apply without making it required", () => {
+  const choice = { ...stock, parameterId: "mechanism_fulfillment", semanticParameterKey: "work:mechanism_fulfillment",
+    titleRu: "Нормальные условия = свой или арендованный механизм", valueType: "enum", unitId: null, required: false,
+    valueSourceRole: "CONDITIONAL_PROJECT_FACT", constraints: { values: ["own", "hired"] }, formulaConsumers: [] } as Schema;
+  const saved = build([choice], { mechanism_fulfillment: "own" });
+  expect(saved.parameters[0].requiredLevel).toBe("OPTIONAL");
+  expect(buildCanonicalParameterCards({ session: saved, revision: null })).toEqual([expect.objectContaining({ key: choice.parameterId, value: "own" })]);
+  expect(consumerCanonicalPrecompileParameterOverrides({ session: saved, patches: [] })).toEqual({ mechanism_fulfillment: "own" });
+  expect(consumerCanonicalPrecompileParameterOverrides({ session: saved, patches: [{ operation: "set_param", paramKey: choice.parameterId, rawValue: "hired" }] as never }))
+    .toEqual({ mechanism_fulfillment: "hired" });
+  const legacyDocument = { ...choice, parameterId: "product_profile_id", semanticParameterKey: undefined, valueSourceRole: "PROJECT_SPECIFIC_INPUT", guide: undefined } as Schema;
+  expect(build([legacyDocument]).parameters).toEqual([]);
 });

@@ -14,6 +14,9 @@ export function canonicalParameterAffectsEstimateCalculation(
 ): boolean {
   if (parameter.affectsFormula.length > 0) return true;
   if (parameter.affectsRows.length === 0) return false;
+  // The schema owner has admitted a concrete resource choice. Optionality
+  // controls requiredness; it must not erase the choice after save or Apply.
+  if (parameter.resourceSelectionInput === true) return true;
   // A replaceable runtime profile can own a text designation used directly
   // by resource rows without appearing in a numeric formula. Its immutable
   // accepted reference distinguishes it from an unrelated document field.
@@ -27,7 +30,6 @@ export function canonicalParameterAffectsEstimateCalculation(
   // choose a concrete BOQ resource without entering a numeric formula. A
   // document-only field still has no row consumer and was returned above.
   if (parameter.requiredLevel === "BLOCKING_REQUIRED") return true;
-  return parameter.resourceSelectionInput === true
-    || parameter.valueType === "boolean"
+  return parameter.valueType === "boolean"
     || parameter.allowedValues.length > 0;
 }
