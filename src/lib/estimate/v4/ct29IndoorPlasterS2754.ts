@@ -3,14 +3,16 @@ import accepted from '../../../../data/estimate-norms/professional/plaster.json'
 import {buildAutomaticConstructionOwnerR1,compileAutomaticConstructionOwnerR1,type AutomaticOwnerDefinition,type AutomaticParameterSpec,type AutomaticRowSpec} from './automaticConstructionOwnerR1';
 import {effectivePurchaseBalanceExpressionsR1} from './effectivePurchaseBalanceR1';import {estimateDeterministicHash} from '../estimateDeterministicHash';
 export const ct29IndoorPlasterPackS2754=pack;export const ct29IndoorPlasterPrefixS2754='plaster:ct29-indoor-manual';
-export type Ct29PlasterSourcePackS2754=typeof pack & {weatherProtectionValue?:string;sourceTitleRu?:string;applicationPresentationRu?:string;completenessCondition?:string};
+export type Ct29PlasterSourcePackS2754=typeof pack & {weatherProtectionValue?:string;sourceTitleRu?:string;applicationPresentationRu?:string;completenessCondition?:string;
+  applicationModeValue?:string;baseParameterTitleRu?:string};
 export function buildCt29PlasterDefinitionS2754(pack:Ct29PlasterSourcePackS2754,prefix:string):AutomaticOwnerDefinition {
 const norm=accepted.norm_items.find(item=>item.norm_id===pack.normId);
 if(!norm||norm.rate.value!==1.8||accepted.source_pack_version!==pack.acceptedPhysicalSourceVersion||norm.applicability.documented_bag_sizes_kg.join(',')!=='5,25')throw Error('ACCEPTED_CT29_AREA_THICKNESS_PROFILE_REQUIRED');
 const area='plaster_area_m2',thickness='layer_thickness_mm',net=`${area}*${thickness}*${norm.rate.value}`,
- facts=['base_confirmed','conditions_confirmed','layer_applicability_confirmed','project_detail_reference',...(pack.weatherProtectionValue?['weather_protection_confirmed','weather_protection_reference']:[])];
+ facts=['base_confirmed','conditions_confirmed','layer_applicability_confirmed','project_detail_reference',...(pack.weatherProtectionValue?['weather_protection_confirmed','weather_protection_reference']:[]),
+  ...(pack.applicationModeValue?['application_mode_confirmed']:[])];
 const conditional:AutomaticParameterSpec[]=[
- {id:facts[0],title:'Подготовленное низко-впитывающее бетонное основание',valueType:'enum',unitId:null,kind:'conditional',values:[pack.baseValue]},
+ {id:facts[0],title:pack.baseParameterTitleRu??'Подготовленное низко-впитывающее бетонное основание',valueType:'enum',unitId:null,kind:'conditional',values:[pack.baseValue]},
  {id:facts[1],title:pack.weatherProtectionValue?'Температура, солнце и сухие условия наружного нанесения':'Температура, влажность основания и условия твердения внутри помещения',valueType:'enum',unitId:null,kind:'conditional',values:[pack.conditionsValue]},
  {id:facts[2],title:'Принятый узел и применимость назначенной толщины CT29',valueType:'enum',unitId:null,kind:'conditional',values:[pack.layerValue]},
  {id:facts[3],title:'Конкретная ссылка или номер узла/инструкции, обосновывающих назначенную толщину CT29',valueType:'text',unitId:null,kind:'conditional'},
@@ -22,6 +24,8 @@ const conditional:AutomaticParameterSpec[]=[
 if(pack.weatherProtectionValue)conditional.push(
  {id:'weather_protection_confirmed',title:'Защита наружного слоя от дождя и быстрого высыхания минимум24ч',valueType:'enum',unitId:null,kind:'conditional',values:[pack.weatherProtectionValue]},
  {id:'weather_protection_reference',title:'Ссылка на принятое задание: способ защиты, установка и обеспечение минимум24ч',valueType:'text',unitId:null,kind:'conditional'});
+if(pack.applicationModeValue)conditional.push({id:'application_mode_confirmed',title:'Подтверждён штукатурный слой CT29 по площади и толщине, без тонкой шпаклёвки и глубоких выбоин',
+ valueType:'enum',unitId:null,kind:'conditional',values:[pack.applicationModeValue]});
 const rows:AutomaticRowSpec[]=[];
 const add=(id:string,title:string,operation:string,category:string,unitId:string,expression:string,extra:Partial<AutomaticRowSpec>={})=>rows.push({
  rowId:prefix+':'+id,formulaId:prefix+':formula:'+id,section:operation,category,title,unitId,expression,procurement:false,inputParameterIds:facts,...extra});
