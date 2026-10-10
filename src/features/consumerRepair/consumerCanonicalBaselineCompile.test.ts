@@ -274,6 +274,31 @@ describe("consumer canonical W12 preliminary handoff", () => {
   });
 
   it.each([
+    ["высота помещения 3 м", "3"],
+    ["высотой помещения: 300 см", "3"],
+    ["высота комнаты = 2500 мм", "2.5"],
+    ["высота помещения 3 м, повторный обмер: высота 300 см", "3"],
+  ])("retains an explicit room height through the selected user geometry schema: %s", (description, expected) => {
+    expect(extractPromptOwnedProfessionalParameters([geometryParameter("room_height_m", 0)], description))
+      .toEqual({room_height_m:expected});
+  });
+
+  it.each(["высота помещения 3 м, высота комнаты 4 м", "высота помещения до 3 м", "высота помещения 3 м²", "высота помещения 3 см2"])(
+    "leaves conflicting heights, upper bounds and area units unresolved: %s", description => {
+      expect(extractPromptOwnedProfessionalParameters([geometryParameter("room_height_m", 0)], description)).toEqual({});
+    },
+  );
+
+  it("does not assign room height to a hidden, application-owned or ambiguous field", () => {
+    const field=geometryParameter("room_height_m",0);
+    for(const guarded of [{...field,visibilityRole:"INTERNAL_ONLY" as const},
+      {...field,valueSourceRole:"MANUFACTURER_CONFIRMED" as const},
+      {...field,provenance:{consumer_input_role_v1:"APPLICATION_TECHNICAL"}}])
+      expect(extractPromptOwnedProfessionalParameters([guarded],"высота помещения 3 м")).toEqual({});
+    expect(extractPromptOwnedProfessionalParameters([field,geometryParameter("working_height_m",1)],"высота помещения 3 м")).toEqual({});
+  });
+
+  it.each([
     ["слой 5 мм", "5"],
     ["слоем 5 мм", "5"],
     ["толщиной 5 мм", "5"],

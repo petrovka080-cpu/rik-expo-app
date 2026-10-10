@@ -599,10 +599,20 @@ function schemaDrivenExplicitGeometry(
   const number = (pattern: RegExp): string | undefined =>
     pattern.exec(normalized)?.[1]?.replace(",", ".");
   const linearValue = (labelStem: string): string | undefined => {
-    const match = new RegExp(
-      String.raw`${labelStem}\p{L}*\s*(\d+(?:[,.]\d+)?)\s*(мм|см|м(?![\p{L}\p{N}²³])|метр\p{L}*)`,
-      "iu",
-    ).exec(normalized);
+    const heightPattern = String.raw`высот\p{L}*(?:\s+(?:помещен\p{L}*|комнат\p{L}*))?\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*(мм|см|м|метр\p{L}*)(?![\p{L}\p{N}²³])`;
+    const pattern = labelStem === "высот" ? heightPattern
+      : String.raw`${labelStem}\p{L}*\s*(\d+(?:[,.]\d+)?)\s*(мм|см|м(?![\p{L}\p{N}²³])|метр\p{L}*)`;
+    const matches = [...normalized.matchAll(new RegExp(pattern, "giu"))];
+    if (labelStem === "высот") {
+      const heights = matches.map(match => {
+        const value = Number(match[1].replace(",", "."));
+        const unit = match[2].toLocaleLowerCase("ru-RU");
+        return unit === "мм" ? value / 1_000 : unit === "см" ? value / 100 : value;
+      }).filter(Number.isFinite);
+      const distinct = [...new Set(heights)];
+      return distinct.length === 1 ? String(distinct[0]) : undefined;
+    }
+    const match = matches[0];
     if (!match) return undefined;
     const raw = Number(match[1].replace(",", "."));
     if (!Number.isFinite(raw)) return undefined;
@@ -666,7 +676,7 @@ function schemaDrivenExplicitGeometry(
     if (fact.value == null) continue;
     const candidates = schema.filter((parameter) => {
       if (parameter.valueType !== "decimal" && parameter.valueType !== "integer") return false;
-      if (fact.unitId === "mm" && canonicalEstimateConsumerInputRole(parameter) === "APPLICATION_TECHNICAL") return false;
+      if (canonicalEstimateConsumerInputRole(parameter) === "APPLICATION_TECHNICAL") return false;
       if (String(parameter.unitId ?? "").toLocaleLowerCase("en-US") !== fact.unitId) return false;
       if (parameter.visibilityRole != null && parameter.visibilityRole !== "USER_INPUT") return false;
       if (parameter.valueSourceRole != null
