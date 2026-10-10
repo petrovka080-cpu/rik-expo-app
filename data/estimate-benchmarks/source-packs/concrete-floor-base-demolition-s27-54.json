@@ -1,0 +1,19 @@
+{
+  "contract":"rik-expo-app.s27-54.concrete-floor-base-demolition.v1",
+  "sourceId":"kg_krer46_concrete_floor_base_4604009_s2754",
+  "source":{"officialUrl":"https://minstroy.gov.kg/ru/kyzmat/459/show","localArtifact":".release-runtime/r568/s27-3/f09-next-current-lineage/official-snapshots/krer_46_2015.pdf","sha256":"21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471","edition":"КРЕР46-2015; введён с01.01.2016","printedPages":[5,6,7,57],"table":"46-04-009","basisM3":1},
+  "conditionsValue":"Принята разборка бетонного основания в отдельных местах ручными пневматическими механизмами по п.1.15 КРЕР46; объём подтверждён обследованием; включённые перемещения соответствуют п.1.1",
+  "scopeRu":"Только соответствующее бетонное основание под полом, в отдельных местах ручными пневматическими механизмами. Объём1м³ по обследованию/проекту. Это не отдельная сыпучая подушка, не любая цементно-песчаная стяжка, не железобетонная плита и не разборка другим способом. Уборка, сортировка и штабелирование пригодных материалов, спуск через окно в лотках и горизонтальное перемещение суммарно до130м, включая до50м от объекта, включены. Затаривание, иной спуск и внешний вывоз отдельно по фактической применимости. Защитные ограждения прилегающих частей по п.1.20 и обеспыливание по п.1.27 не включены: проектное решение и отдельная норма пока открыты.",
+  "types":[
+    {"key":"gravel","catalogId":"canonical-work:master:demolition_concrete_floor_base_gravel_460400901_standard","workKey":"demolition_concrete_floor_base_gravel_460400901_standard","titleRu":"Разборка бетонного основания под полом на гравии","materialRu":"Бетонное основание под полом на гравии по46-04-009-01","column":"46-04-009-01","workerHoursM3":"8.93","operatorHoursM3":"2.26","compressorHoursM3":"2.26","hammerHoursM3":"4.52"},
+    {"key":"brick-rubble","catalogId":"canonical-work:master:demolition_concrete_floor_base_brick_rubble_460400902_standard","workKey":"demolition_concrete_floor_base_brick_rubble_460400902_standard","titleRu":"Разборка бетонного основания под полом на кирпичном щебне","materialRu":"Бетонное основание под полом на кирпичном щебне по46-04-009-02","column":"46-04-009-02","workerHoursM3":"7.80","operatorHoursM3":"1.86","compressorHoursM3":"1.86","hammerHoursM3":"3.72"}
+  ],
+  "compressor":{"resourceCode":"05-0005","nameRu":"Компрессор передвижной с ДВС, давление до686кПа (7ат), подача5м³/мин"},
+  "hammers":{"resourceCode":"33-0384","nameRu":"Молотки отбойные пневматические от передвижной компрессорной станции"},
+  "workers":{"resourceCode":"000-1003-5","grade":"3.5"},
+  "sourceNeeds":[
+    {"id":"adjacent-protection","category":"construction_work","unitId":"item","nameRu":"Устройство и разборка временных защитных ограждений прилегающих частей — проектный состав по п.1.20 КРЕР46","reasonRu":"Применимость, материал ограждения, конструкция, площадь и отдельная норма определяются проектом. В разборке не учтены. Универсальные щиты, плёнка и число комплектов не назначены."},
+    {"id":"dust-control","category":"construction_work","unitId":"item","nameRu":"Обеспыливание при разборке — выбранный способ и отдельная норма по п.1.27 КРЕР46","reasonRu":"П.1.27 относит обеспыливание к дополнительному расчёту по соответствующим КРЕР13. Способ, конкретное оборудование/ресурсы, вода и объём не подтверждены; часы компрессора не закрывают эту потребность."}
+  ],
+  "controls":{"machineOperatorIncludedOnce":true,"noMaterialConsumptionInTable":true,"historicalPricesNotCurrent":true,"massBagsTripsNotDerivedFromVolume":true,"otherRemovalMethodsNeedProjectCalculation":true,"fullTechnicalAcceptance":false,"acceptedNewCompleteTypes":0}
+}
