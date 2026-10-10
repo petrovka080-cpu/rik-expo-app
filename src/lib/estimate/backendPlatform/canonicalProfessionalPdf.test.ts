@@ -77,6 +77,22 @@ function rows(
 }
 
 describe("R4-A6 canonical professional PDF", () => {
+  it("prints compact resource cells without the Silenzio application bullet lists while preserving estimate and buyer data", () => {
+    const source=rows(1);
+    source[0]={...source[0]!,title_ru:'Упаковка EGGER Silenzio Duo 1222949, 10 м²',unit_id:'pcs',quantity:'4',unit_price:'2500',amount:'10000',
+      calculation_trace:{specificationRu:'Длинная спецификация, которую пользователь убрал из строк PDF',resourceGraph:{
+        publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',nameRu:'Упаковка EGGER Silenzio Duo 1222949, 10 м²',
+          specificationRu:'XPS HD и встроенная пароизоляция',detailsRu:['Применение: минеральное основание и плавающая укладка','Наличие, резерв и кратность поставщика задаются явно']}}}};
+    const saved={...revision(1),totals:{amount:'10000'}},before=JSON.stringify({source,saved});
+    const pdf=buildCanonicalProfessionalPdfProjection({revision:saved,rows:source,workTitleRu:'Ламинат'});
+    const buyer=buildCanonicalProcurementProjection({revision:saved,procurementRows:source,sourceRows:source});
+    expect(pdf.html).toContain('<strong>Упаковка EGGER Silenzio Duo 1222949, 10 м²</strong></td>');
+    for(const removed of ['Длинная спецификация','XPS HD','Применение: минеральное','Наличие, резерв'])expect(pdf.html).not.toContain(removed);
+    expect(pdf.html).toContain('<td class="numeric">4</td>');
+    expect(pdf.categoryTotals.material).toBe(10000);expect(pdf).toMatchObject({rowCount:1,pricedRowCount:1,missingPriceRowCount:0,grandTotalStatus:'COMPLETE'});
+    expect(buyer.rows[0]).toMatchObject({rowId:'row-1',titleRu:'Упаковка EGGER Silenzio Duo 1222949, 10 м²',quantity:'4',unitPrice:'2500',amount:'10000'});
+    expect(JSON.stringify({source,saved})).toBe(before);
+  });
   it("keeps procurement balances outside the PDF while retaining saved quantities and physical rental", () => {
     const sourceRows = rows(2);
     sourceRows[0] = { ...sourceRows[0]!, row_id: "water", title_ru: "Вода для ухода", unit_id: "m3", quantity: "5.1",
@@ -168,7 +184,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-54-small-quantity-template23");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-54-compact-resource-template24");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,
@@ -177,7 +193,7 @@ describe("R4-A6 canonical professional PDF", () => {
       currencyCode: "KGS",
     });
     expect(Object.keys(projection.categoryTotals)).toEqual(CANONICAL_PROFESSIONAL_PDF_CATEGORY_ORDER);
-    expect(projection.html).toContain("Наименование и спецификация");
+    expect(projection.html).toContain("Наименование");
     expect(projection.html).toContain("Категория");
     expect(projection.html).toContain("Цена за единицу");
     expect(projection.html).toContain("Материалы");
@@ -368,7 +384,7 @@ describe("R4-A6 canonical professional PDF", () => {
       nonPayableRowCount: 1,
       preliminaryNeedCount: 1,
     });
-    expect(projection.html).toContain("Отдельно не оплачивается");
+    expect(projection.html).not.toContain("Отдельно не оплачивается");
     expect(projection.html).toContain("Не применяется");
     expect(projection.html).toContain("Не суммируется");
     const resourceTable = projection.html.slice(projection.html.indexOf('<table class="client">'));
@@ -470,7 +486,7 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(JSON.stringify(source)).toBe(snapshot);
   });
 
-  it("names the current paid cost owner across operation boundaries without changing quantities or totals", () => {
+  it("keeps paid and included resources without inline owner explanations or changes to quantities and totals", () => {
     const source = rows(3);
     source[0]!.title_ru = 'Сварочный труд <img src=x> & оператор';
     source[0]!.category = "labor";
@@ -487,10 +503,11 @@ describe("R4-A6 canonical professional PDF", () => {
     }
     const before = JSON.stringify(source);
     const projection = buildCanonicalProfessionalPdfProjection({ revision: revision(3), rows: source, workTitleRu: "Закладные" });
-    expect(projection.html.match(/стоимость включена в позицию «Сварочный труд &lt;img src=x&gt; &amp; оператор»/gu)).toHaveLength(2);
+    expect(projection.html.match(/Сварочный труд &lt;img src=x&gt; &amp; оператор/gu)).toHaveLength(1);
+    expect(projection.html.match(/<td class="money">Не суммируется<\/td>/gu)).toHaveLength(2);
     expect(projection.html).not.toContain("стоимость учитывается в труде и механизмах");
     expect(projection.html).not.toContain("<img");
-    expect(projection.html).toContain("Проектная комплектация");
+    expect(projection.html).not.toContain("Проектная комплектация");
     expect(projection).toMatchObject({ pricedRowCount: 1, missingPriceRowCount: 0, nonPayableRowCount: 2,
       categoryTotals: { material: 0, equipment: 0, work: 200 } });
     expect(JSON.stringify(source)).toBe(before);
@@ -503,14 +520,16 @@ describe("R4-A6 canonical professional PDF", () => {
         costTreatment: "INCLUDED_IN_RESOURCE_ROWS", includedInResourceOwnerRowId: `row-${index}`,
       } } };
     const project = () => buildCanonicalProfessionalPdfProjection({ revision: revision(3), rows: source, workTitleRu: "Цепочка включения" });
-    expect(project().html.match(/стоимость включена в позицию «Профессиональная позиция 1»/gu)).toHaveLength(2);
+    expect(project().html).not.toContain("стоимость включена в позицию");
+    expect(project().nonPayableRowCount).toBe(2);
     for (const ownerId of ["missing", "row-3", "preliminary"]) {
       source[1]!.calculation_trace = { resourceGraph: { costTreatment: "INCLUDED_IN_RESOURCE_ROWS", includedInResourceOwnerRowId: ownerId } };
       const projection = buildCanonicalProfessionalPdfProjection({ revision: revision(3), rows: source,
         preliminaryNeeds: [{ ...rows(1)[0]!, row_id: "preliminary", ordinal: 3, included_in_estimate: false,
           quantity: null, unit_price: null, amount: null, ownership_status: "PRELIMINARY_NEED" }], workTitleRu: "Без владельца" });
       expect(projection.html).not.toContain("стоимость включена в позицию");
-      expect(projection.html.match(/Отдельно не оплачивается; включено в стоимость других позиций/gu)).toHaveLength(2);
+      expect(projection.html.match(/<td class="money">Не суммируется<\/td>/gu)).toHaveLength(2);
+      expect(projection.categoryTotals.material).toBe(200);
       expect(projection.html).not.toContain("стоимость учитывается в труде и механизмах");
     }
     source[1]!.calculation_trace = { resourceGraph: { costTreatment: "INCLUDED_IN_RESOURCE_ROWS", includedInResourceOwnerRowId: "row-1" } };
@@ -518,7 +537,7 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(project().html).not.toContain("стоимость включена в позицию");
   });
 
-  it("retains control, informational and excluded captions despite unrelated owner metadata", () => {
+  it("keeps non-payable money columns without repeating control or exclusion explanations", () => {
     const source = rows(4);
     for (const [index, costTreatment] of [[1, "CONTROL_OR_DOCUMENT"], [2, "INFORMATIONAL_SCOPE"], [3, "SEPARATE_RESOURCE"]] as const) {
       source[index] = { ...source[index]!, included_in_estimate: false, calculation_trace: { resourceGraph: {
@@ -526,13 +545,16 @@ describe("R4-A6 canonical professional PDF", () => {
       } } };
     }
     const projection = buildCanonicalProfessionalPdfProjection({ revision: revision(4), rows: source, workTitleRu: "Состав" });
-    expect(projection.html).toContain("Контрольная или исполнительная позиция; отдельно не суммируется.");
-    expect(projection.html).toContain("Условие выполнения работ; отдельно не суммируется.");
-    expect(projection.html).toContain("Позиция исключена из итога сохранённой версии.");
+    expect(projection.html).not.toContain("Контрольная или исполнительная позиция; отдельно не суммируется.");
+    expect(projection.html).not.toContain("Условие выполнения работ; отдельно не суммируется.");
+    expect(projection.html).not.toContain("Позиция исключена из итога сохранённой версии.");
+    expect(projection.html.match(/<td class="money">Не применяется<\/td>/gu)).toHaveLength(3);
+    expect(projection.html.match(/<td class="money">Не суммируется<\/td>/gu)).toHaveLength(3);
+    expect(projection).toMatchObject({pricedRowCount:1,nonPayableRowCount:3,categoryTotals:{material:200}});
     expect(projection.html).not.toContain("стоимость включена в позицию");
   });
 
-  it("escapes title and specification markup without creating embedded links", () => {
+  it("escapes titles and omits specification markup without creating embedded links", () => {
     const maliciousRows = rows(1);
     maliciousRows[0]!.title_ru = '<script>alert("row")</script><a href="javascript:alert(1)">link</a>';
     maliciousRows[0]!.calculation_trace = {
@@ -546,7 +568,7 @@ describe("R4-A6 canonical professional PDF", () => {
     });
 
     expect(projection.html).toContain("&lt;script&gt;");
-    expect(projection.html).toContain("&lt;img src=x onerror=&quot;alert(2)&quot;&gt;");
+    expect(projection.html).not.toContain("onerror");
     expect(projection.html).toContain("&lt;iframe src=&quot;https://attacker.invalid&quot;&gt;");
     expect(projection.html).not.toMatch(/<script|<iframe|<img\s|<a\s+href/iu);
     expect(projection.html).not.toMatch(/href=["']javascript:/iu);

@@ -4,7 +4,6 @@ import {
   canonicalArtifactUnit,
   canonicalArtifactVisibleRowTitle,
   canonicalArtifactRentalBasis,
-  canonicalArtifactSpecificationParts,
   canonicalArtifactWorkMeasure,
   canonicalArtifactTechnologyChecks,
   escapeCanonicalArtifactHtml,
@@ -16,7 +15,7 @@ import { canonicalArtifactPurchaseRequirement } from "./canonicalPersistedPurcha
 import { canonicalPublicEstimateWorkTitleRu, canonicalPublicEstimateRequestTextRu } from './canonicalPublicEstimateLanguageRu';
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-54-small-quantity-template23" as const;
+  "canonical-professional-pdf.r4-a13-s27-54-compact-resource-template24" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -114,17 +113,6 @@ function numericAmount(value: unknown): number {
   return Number.isFinite(numeric) ? numeric : 0;
 }
 
-function specificationRu(row: Record<string, unknown>): string | null {
-  const trace = objectValue(row.calculation_trace);
-  const legacy = objectValue(row.legacy_row_payload);
-  return nullableText(
-    trace.specificationRu
-      ?? trace.specification_ru
-      ?? legacy.specificationRu
-      ?? legacy.specification_ru,
-  );
-}
-
 function assertSingleCurrency(
   revision: CanonicalArtifactRevision,
   rows: CanonicalArtifactRow[],
@@ -158,35 +146,14 @@ function includedCostOwnerTitle(row: CanonicalArtifactRow, rowsById: ReadonlyMap
   }
 }
 
-function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, rowsById: ReadonlyMap<string, CanonicalArtifactRow>, parameters: Record<string, unknown>): string {
+function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, parameters: Record<string, unknown>): string {
   const category = canonicalProfessionalPdfCategory(row);
   const includedInEstimate = row.included_in_estimate === true;
-  const resourceGraph = objectValue(objectValue(row.calculation_trace).resourceGraph);
-  const costTreatment = nullableText(resourceGraph.costTreatment);
-  const ownerTitle = costTreatment === "INCLUDED_IN_RESOURCE_ROWS" ? includedCostOwnerTitle(row, rowsById) : null;
-  const dispositionRu = includedInEstimate
-    ? null
-    : costTreatment === "INCLUDED_IN_RESOURCE_ROWS"
-      ? ownerTitle ? `Отдельно не оплачивается: стоимость включена в позицию «${ownerTitle}».`
-        : "Отдельно не оплачивается; включено в стоимость других позиций."
-      : costTreatment === "CONTROL_OR_DOCUMENT"
-        ? "Контрольная или исполнительная позиция; отдельно не суммируется."
-        : costTreatment === "INFORMATIONAL_SCOPE"
-          ? "Условие выполнения работ; отдельно не суммируется."
-          : "Позиция исключена из итога сохранённой версии.";
-  const rateCoverage = objectValue(resourceGraph.commercialCostCoverageOwnerDecisionV1);
-  const costDecision = objectValue(resourceGraph.commercialCostCoverageDecisionV1);
-  const scopeRu = rateCoverage.contractVersion === 'canonical-commercial-cost-coverage/v1' && rateCoverage.active === true
-    ? nullableText(rateCoverage.scopeRu) : null;
-  const supplyRu = costDecision.supplyParty === 'RATE_PROVIDER' ? 'Ресурс предоставляет исполнитель этой расценки.' : null;
-  const specification = [specificationRu(row), dispositionRu, scopeRu ? `Состав расценки: ${scopeRu}` : null, supplyRu].filter(Boolean).join(" ") || null;
-  const specifications = canonicalArtifactSpecificationParts(row, parameters);
   const rental = canonicalArtifactRentalBasis(row, parameters);
   const quantityLabel = (value: unknown, unit = row.unit_id) => `${canonicalArtifactQuantity(value)} ${canonicalArtifactUnit({ unit_id: unit })}`;
   // Detailed stock, reserve and remainder balances belong to procurement;
-  // the estimate keeps its saved quantity and product specification.
+  // the estimate keeps its saved quantity and exact resource name.
   const rentalText = rental ? `Аренда: ${canonicalArtifactQuantity(rental.physicalQuantity)} шт. на ${canonicalArtifactQuantity(rental.durationDays)} сут.; расчёт оплаты ${quantityLabel(rental.billingQuantity)}.` : null;
-  const details = specifications.flatMap(spec => spec.parts).filter(part => part !== canonicalArtifactVisibleRowTitle(row, parameters));
   const unitPrice = !includedInEstimate
     ? "Не применяется"
     : row.unit_price == null
@@ -199,7 +166,7 @@ function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, rows
     : canonicalArtifactMoney(row.amount, row.currency_code);
   return `<tr>
     <td class="number">${displayOrdinal}</td>
-    <td class="name"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row, parameters))}</strong>${details.length ? `<ul>${details.map(part => `<li>${escapeCanonicalArtifactHtml(part)}</li>`).join("")}</ul>` : ""}${[rentalText, specification].filter(Boolean).map(text => `<span>${escapeCanonicalArtifactHtml(text)}</span>`).join("")}</td>
+    <td class="name"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row, parameters))}</strong>${rentalText ? `<span>${escapeCanonicalArtifactHtml(rentalText)}</span>` : ""}</td>
     <td>${escapeCanonicalArtifactHtml(CATEGORY_TITLES[category])}</td>
     <td class="unit">${escapeCanonicalArtifactHtml(canonicalArtifactUnit(row))}</td>
     <td class="numeric">${escapeCanonicalArtifactHtml(canonicalArtifactQuantity(row.quantity))}</td>
@@ -227,14 +194,13 @@ function renderPreliminaryNeedRow(row: CanonicalArtifactRow, displayOrdinal: num
   const coverageText = [ownerTitle ? `Включено в стоимость «${ownerTitle}».` : null,
     decision.supplyParty === 'RATE_PROVIDER' ? 'Ресурс предоставляет исполнитель этой расценки.' : null,
     rate.active === true && nullableText(rate.scopeRu) ? `Состав расценки: ${String(rate.scopeRu)}` : null].filter(Boolean).join(' ');
-  const resourceDetails = canonicalArtifactSpecificationParts(row, {}).flatMap(spec => spec.parts);
   const requirement = canonicalArtifactPurchaseRequirement(row);
   const requirementText = requirement
     ? `${requirement.labelRu}: ${canonicalArtifactQuantity(requirement.quantity)} ${canonicalArtifactUnit({ unit_id: requirement.unitId })}. Точный заказ ещё не подтверждён.`
     : null;
   return `<tr class="preliminary-need">
     <td class="number">${displayOrdinal}</td>
-    <td class="name"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row))}</strong>${resourceDetails.map(part => `<span>${escapeCanonicalArtifactHtml(part)}</span>`).join('')}${requirementText ? `<span>${escapeCanonicalArtifactHtml(requirementText)}</span>` : ''}<span>Предварительная потребность из определения; требуется уточнение.</span>${coverageText ? `<span>${escapeCanonicalArtifactHtml(coverageText)}</span>` : ''}</td>
+    <td class="name"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row))}</strong>${requirementText ? `<span>${escapeCanonicalArtifactHtml(requirementText)}</span>` : ''}<span>Предварительная потребность из определения; требуется уточнение.</span>${coverageText ? `<span>${escapeCanonicalArtifactHtml(coverageText)}</span>` : ''}</td>
     <td>${escapeCanonicalArtifactHtml(CATEGORY_TITLES[canonicalProfessionalPdfCategory(row)])}</td>
     <td class="unit">${escapeCanonicalArtifactHtml(canonicalArtifactUnit(row))}</td>
     <td class="numeric">${escapeCanonicalArtifactHtml(quantityLabel)}</td>
@@ -312,7 +278,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
       const row = rowsById.get(id)!;
       return preliminaryRowIds.has(id)
         ? renderPreliminaryNeedRow(row, ++rowNumber, input.parameterTitlesRu ?? {}, questionNumbers, rowsById)
-        : renderClientRow(row, ++rowNumber, rowsById, parameters);
+        : renderClientRow(row, ++rowNumber, parameters);
     }).join('');
     const shared = section.sharedResources.map(resource => `<tr class="shared-resource"><td colspan="7">${escapeCanonicalArtifactHtml(resource.titleRu)} — общий ресурс, учтён в разделе «${escapeCanonicalArtifactHtml(canonicalPublicEstimateWorkTitleRu(resource.ownerOperationTitleRu))}».</td></tr>`).join('');
     return heading + ownRows + shared;
@@ -389,7 +355,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     <div class="summary"><div><strong>Позиций состава</strong><br>${compositionRows.length}</div><div><strong>Количество известно</strong><br>${rows.length}; ждут источник ${preliminaryNeeds.length}</div><div><strong>${pricedSummary}</strong></div></div>
     <div class="notice">${priceNotice}</div>
     ${technologyChecks.map(check => `<div class="notice"><strong>Технология требует уточнения.</strong> ${escapeCanonicalArtifactHtml(check.messageRu)} Закупочная ведомость пока не готова.</div>`).join("")}
-    <table class="client"><thead><tr><th>№</th><th>Наименование и спецификация</th><th>Категория</th><th>Ед.</th><th>Количество</th><th>Цена за единицу</th><th>Сумма</th></tr></thead><tbody>${renderedComposition}</tbody></table>
+    <table class="client"><thead><tr><th>№</th><th>Наименование</th><th>Категория</th><th>Ед.</th><th>Количество</th><th>Цена за единицу</th><th>Сумма</th></tr></thead><tbody>${renderedComposition}</tbody></table>
     <table class="totals"><tbody>${totalRows}<tr><th>Неполные цены</th><td>${missingPriceRowCount}</td></tr><tr class="grand"><th>Итого</th><td>${grandTotal}</td></tr></tbody></table>
     <div class="notice"><strong>Примечание.</strong> Документ отображает сохранённые позиции, объёмы и цены. Отсутствующая цена не подменяется нулём.</div>
     ${questionAppendix}
