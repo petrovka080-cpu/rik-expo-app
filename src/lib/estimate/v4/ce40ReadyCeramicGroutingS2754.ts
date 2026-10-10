@@ -5,14 +5,15 @@ import {estimateDeterministicHash} from '../estimateDeterministicHash';
 
 export const ce40ReadyCeramicPackS2754=pack;
 export const ce40ReadyCeramicPrefixS2754=(index:number)=>`ceramic:ce40-ready:${pack.types[index]?.key??'INVALID'}`;
-export function ce40ReadyCeramicDefinitionS2754(index:number):AutomaticOwnerDefinition {
+export type Ce40ReadyCeramicSourcePackS2754=typeof pack & {applicationPresentationRu?:string;completenessCondition?:string;readyParameterTitleRu?:string};
+export function buildCe40ReadyCeramicDefinitionS2754(pack:Ce40ReadyCeramicSourcePackS2754,index:number,prefix:string):AutomaticOwnerDefinition {
   const type=pack.types[index];if(!type)throw Error('EXACT_SIX_CE40_TABLE_ROWS_ONLY');
-  const prefix=ce40ReadyCeramicPrefixS2754(index),net=`grout_area_m2*${type.rateKgM2}`,mixed='planned_mixed_dry_kg',water=`${mixed}/2*water_l_per_2kg`;
+  const net=`grout_area_m2*${type.rateKgM2}`,mixed='planned_mixed_dry_kg',water=`${mixed}/2*water_l_per_2kg`;
   const facts=['supplied_product_confirmed','ready_joints_confirmed','conditions_confirmed','mixing_method_confirmed','protection_method_confirmed',
     'geometry_acceptance_reference','mixing_plan_reference','measured_joint_depth_mm','geometry_confirmed'];
   const conditional:AutomaticParameterSpec[]=[
     ...[pack.productValue,pack.readyValue,pack.conditionsValue,pack.mixingValue,pack.protectionValue].map((value,i)=>({id:facts[i],
-      title:['Поставленный CE 40, белый цвет 1 и пригодное сухое наличие','Готовые обычные швы, глазурованная керамика и отсутствие подогрева','Условия воздуха и основания','Рецептура, перемешивание и использование каждого замеса','Очистка и защита свежих швов'][i],
+      title:['Поставленный CE 40, белый цвет 1 и пригодное сухое наличие',pack.readyParameterTitleRu??'Готовые обычные швы, глазурованная керамика и отсутствие подогрева','Условия воздуха и основания','Рецептура, перемешивание и использование каждого замеса','Очистка и защита свежих швов'][i],
       valueType:'enum' as const,unitId:null,kind:'conditional' as const,values:[value]})),
     {id:facts[5],title:`Ссылка на принятые фактическую геометрию и применимость ориентировочной строки ${type.tileCm} см / ${type.jointMm} мм, около ${type.rateKgM2} кг/м²`,valueType:'text',unitId:null,kind:'conditional'},
     {id:facts[6],title:'Ссылка на план замесов, партию и принятую смешиваемую массу; сравнение с таблицей не является гарантией расхода',valueType:'text',unitId:null,kind:'conditional'},
@@ -69,7 +70,7 @@ export function ce40ReadyCeramicDefinitionS2754(index:number):AutomaticOwnerDefi
         'Вода для губки и смачивания кромок имеет отдельный открытый расход. Заказ CE 40 и сухой резерв не увеличивают воду замесов.'
       ]:[
         'Ориентировочный расход относится к выбранному формату обычных швов. Фактическая одинаковая глубина и применимость строки приняты отдельно; таблица не гарантирует расход.',
-        'Применение: готовый глазурованный керамический пол без подогрева. CE 40 не заменяет силикон для угловых, деформационных и примыкающих швов.',
+        pack.applicationPresentationRu??'Применение: готовый глазурованный керамический пол без подогрева. CE 40 не заменяет силикон для угловых, деформационных и примыкающих швов.',
         'План замесов задан явно; полное ведро не объявлено обязательным замесом. Смешанный излишек не возвращается в пригодный сухой остаток; одно изделие имеет одного владельца стоимости.'
       ];
       const {row_sha256:_old,...content}=resource,result={...content,resource_graph:{...resource.resource_graph,
@@ -84,14 +85,16 @@ export function ce40ReadyCeramicDefinitionS2754(index:number):AutomaticOwnerDefi
       return {...result,row_sha256:estimateDeterministicHash(result)};
     })};
 }
+export function ce40ReadyCeramicDefinitionS2754(index:number){return buildCe40ReadyCeramicDefinitionS2754(pack,index,ce40ReadyCeramicPrefixS2754(index));}
 export function compileCe40ReadyCeramicS2754(index:number,input:Record<string,unknown>){return compileAutomaticConstructionOwnerR1({catalogId:pack.types[index].catalogId,
   compilerVersion:pack.contract,primaryMeasureParameterId:'grout_area_m2',definition:ce40ReadyCeramicDefinitionS2754(index),submittedParameters:input});}
-export function ce40ReadyCeramicCompletenessMapS2754(index:number){const prefix=ce40ReadyCeramicPrefixS2754(index);return {
+export function buildCe40ReadyCeramicCompletenessMapS2754(pack:Ce40ReadyCeramicSourcePackS2754,prefix:string){return {
   contract:'rik-expo-app.s26-3.independent-completeness-map.v1',sourceKind:'PRODUCT_SYSTEM_TDS',generatedFromCurrentRows:false,evidenceSha256:pack.source.sha256,
   evidenceReferences:[pack.source.officialUrl,pack.source.locatorRu],entries:[
     ...[ ['ce40', 'material','kg','ce40-mixed-plan',pack.product.nameRu],['mixing-water','material','l','water-mixing','Чистая вода для затворения CE 40'] ].map(([id,category,unitId,row,name])=>({
-      expectedResourceId:id,operationId:'mixing',category,specification:name,condition:'CONFIRMED_READY_GLAZED_FLOOR_AND_PROJECT_MIX_PLAN',sourceId:pack.sourceId,unitId,
+      expectedResourceId:id,operationId:'mixing',category,specification:name,condition:pack.completenessCondition??'CONFIRMED_READY_GLAZED_FLOOR_AND_PROJECT_MIX_PLAN',sourceId:pack.sourceId,unitId,
       quantityRule:'EXPLICIT_PROJECT_MIX_PLAN_WITH_APPROXIMATE_TABLE_REFERENCE',formulaId:`${prefix}:formula:${row}`,resolution:{kind:'ROW',rowId:`${prefix}:${row}`}})),
     ...pack.sourceNeeds.map(gap=>({expectedResourceId:gap.id,operationId:gap.operation,category:gap.category,specification:gap.nameRu,condition:'OPEN_APPLICABLE_SOURCE_OR_TASK_SCOPE',
       sourceId:pack.sourceId,unitId:gap.unitId,quantityRule:'OPEN_NO_ASSUMED_QUANTITY',formulaId:`${prefix}:formula:${gap.id}`,resolution:{kind:'ROW',rowId:`${prefix}:${gap.id}`}}))
   ]};}
+export function ce40ReadyCeramicCompletenessMapS2754(index:number){return buildCe40ReadyCeramicCompletenessMapS2754(pack,ce40ReadyCeramicPrefixS2754(index));}
