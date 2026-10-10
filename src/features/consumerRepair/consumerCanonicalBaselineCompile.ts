@@ -446,8 +446,14 @@ const DIRECT_USER_QUANTITY_SOURCE = new Set([
   "VISIBLE_BASELINE_ASSUMPTION",
 ]);
 
+function normalizeJoinedAreaWords(prompt: string): string {
+  // Only explicit area words may supply a missing space; identifiers and SKUs
+  // must not turn a numeric suffix into a user quantity.
+  return prompt.replace(/(?<![\p{L}\p{N}_-])(потол(?:ок|ка|ку|ке|ком|ки|ков|кам|ками|ках)|стен(?:а|ы|е|у|ой|ою|ам|ами|ах)?|пол(?:а|у|е|ом|ы|ов|ам|ами|ах)?|фасад(?:а|у|е|ом|ы|ов|ам|ами|ах)?|площад(?:ь|и|ью|ей|ям|ями|ях))(?=\d+(?:[ \u00a0\u202f]\d{3})*(?:[,.]\d+)?\s*(?:м[²2]|m[²2]|кв(?:адратн[\p{L}]*)?\.?\s*м(?:етр[\p{L}]*)?)(?![\p{L}\p{N}]))/giu, '$1 ');
+}
+
 function extractUserQuantities(prompt: string): UserQuantity[] {
-  const normalizedPrompt = prompt
+  const normalizedPrompt = normalizeJoinedAreaWords(prompt)
     .replace(/m²/giu, "m2")
     .replace(/m³/giu, "m3")
     .replace(/м²/giu, "м2")
@@ -455,7 +461,7 @@ function extractUserQuantities(prompt: string): UserQuantity[] {
     .replace(/(?:кв(?:адратн[\p{L}]*)?\.?\s*м(?:етр[\p{L}]*)?)/giu, "м2")
     .replace(/(?:куб(?:ическ[\p{L}]*)?\.?\s*м(?:етр[\p{L}]*)?)/giu, "м3");
   const quantities: UserQuantity[] = [];
-  for (const match of normalizedPrompt.matchAll(/(?<![\p{L}\p{N}])(\d{1,3}(?:[ \u00a0\u202f]\d{3})+(?:[,.]\d+)?|\d+(?:[,.]\d+)?)\s*(штук(?:а|и)?|шт\.?|m2|m3|м2|м3|м|кг|тонн(?:а|ы)?|т)(?![\p{L}\p{N}])/giu)) {
+  for (const match of normalizedPrompt.matchAll(/(?<![\p{L}\p{N}.,])(\d{1,3}(?:[ \u00a0\u202f]\d{3})+(?:[,.]\d+)?|\d+(?:[,.]\d+)?)\s*(штук(?:а|и)?|шт\.?|m2|m3|м2|м3|м|кг|тонн(?:а|ы)?|т)(?![\p{L}\p{N}])/giu)) {
     const rawUnit = match[2]
       .toLocaleLowerCase("ru-RU")
       .replace("²", "2")

@@ -1,5 +1,6 @@
 import fixture from "../../../data/estimate-benchmarks/r568-r4-a8-pump-station-acceptance.json";
 import type { CanonicalEstimateCatalogItem } from "../../lib/estimate/backendPlatform/contracts";
+import { ceilingThirdPuttySupplierDefinitionS2754 } from "../../lib/estimate/v4/mineralCeilingThirdPuttySupplierGatesS2754";
 import {
   R4_A6_PUMP_STATION_PARAMETERS,
   R4_A6_PUMP_STATION_PRIMARY_MEASURE_PARAMETER_ID,
@@ -167,6 +168,35 @@ describe("consumer canonical W5 baseline", () => {
     },
   );
 
+  it.each([
+    ["Третий слой шпаклёвки потолка35,5м², высота помещения 3 м", { value: "35.5", unit: "m2" }],
+    ["Окраска стены35.5м2", { value: "35.5", unit: "m2" }],
+    ["площадь35,5м²", { value: "35.5", unit: "m2" }],
+    ["фасада1\u202f234,50 м²", { value: "1234.50", unit: "m2" }],
+    ["артикул CT12635,5м²", null],
+    ["артикул Xпотолка35.5m2", null],
+    [".35 м²", null],
+    ["15 000 м²", { value: "15000", unit: "m2" }],
+    ["фонари 10 штук", { value: "10", unit: "pcs" }],
+    ["высота помещения 3 м, площадь35,5м²", { value: "3", unit: "m" }],
+    ["потолка35,5м², фасада40м²", { value: "35.5", unit: "m2" }],
+    ["потолка35,5м², обмер 035.500 m2", { value: "35.5", unit: "m2" }],
+  ])("keeps complete numeric tokens and explicit joined area words in %s", (prompt, expected) => {
+    expect(extractUserQuantity(prompt)).toEqual(expected);
+  });
+
+  it("keeps the accepts predicate after a preceding linear dimension", () => {
+    const prompt = "высота помещения 3 м, площадь35,5м²";
+    expect(extractUserQuantity(prompt, quantity => quantity.unit === "m2"))
+      .toEqual({ value: "35.5", unit: "m2" });
+  });
+
+  it.each(["Окраска,35,5м²", "артикул X_потолка35,5м²", "артикул X-потолка35,5м²"])(
+    "leaves punctuation-adjacent numbers and embedded object identifiers unresolved: %s", prompt => {
+      expect(extractUserQuantity(prompt)).toBeNull();
+    },
+  );
+
   it("keeps the bare pump request free of invented project facts for preliminary composition", () => {
     expect(buildCanonicalBaselinePlan({ catalog: pumpCatalog(), prompt: fixture.barePromptRu }))
       .toMatchObject({
@@ -232,13 +262,14 @@ describe("consumer canonical W12 preliminary handoff", () => {
     "Окраска: площадь фасада без вычета проёмов 40 м2, площадь окраски 35,5 м2",
     "Окраска: площадь окраски 35,5 м², площадь фасада без вычета проёмов 40 м²",
     "Окраска: площадь 40 м2, площадь 35,5 м2",
+    "Окраска потолка35,5м², фасада40м²",
   ])("leaves distinct generic areas unresolved rather than choosing the first in %s", prompt => {
     const plan = buildCanonicalBaselinePlan({ catalog: twoAreaCatalog(), prompt });
     expect(plan.parameters).toEqual({});
     expect(plan.primaryMeasureParameterId).toBe("paint_area_m2");
   });
 
-  it.each(["Окраска 35,5 м2", "Окраска 35,5 м², обмер 035.500 m2"])(
+  it.each(["Окраска 35,5 м2", "Окраска 35,5 м², обмер 035.500 m2", "Окраска потолка35,5м², обмер 035.500 m2"])(
     "keeps one distinct area only in the declared primary field: %s", prompt => {
       expect(buildCanonicalBaselinePlan({ catalog: twoAreaCatalog(), prompt }).parameters)
         .toEqual({ paint_area_m2: "35.5" });
@@ -253,6 +284,37 @@ describe("consumer canonical W12 preliminary handoff", () => {
     expect(buildCanonicalBaselinePlan({ catalog, prompt,
       parameterOverrides: { paint_area_m2: "35.5", facade_norm_area_m2: "40" } }).parameters)
       .toEqual({ work_height_m: "3", paint_area_m2: "35.5", facade_norm_area_m2: "40" });
+  });
+
+  it("keeps editor net and gross areas after joined conflicting areas", () => {
+    expect(buildCanonicalBaselinePlan({ catalog: twoAreaCatalog(),
+      prompt: "Окраска потолка35,5м², фасада40м²",
+      parameterOverrides: { paint_area_m2: "34", facade_norm_area_m2: "41" } }).parameters)
+      .toEqual({ paint_area_m2: "34", facade_norm_area_m2: "41" });
+  });
+
+  it("transfers joined decimal area and room height through the authored ceiling supplier schema", () => {
+    const definition = ceilingThirdPuttySupplierDefinitionS2754;
+    const catalog: CanonicalEstimateCatalogItem = {
+      ...pumpCatalog(),
+      catalogId: "canonical-work:master:prepared_mineral_ceiling_third_oil_glue_putty_coat_sanding_standard",
+      workKey: "prepared_mineral_ceiling_third_oil_glue_putty_coat_sanding_standard",
+      domain: "plaster_paint", titleRu: "Третий слой шпаклёвки потолка",
+      applicability: { primaryMeasureParameterId: "ceiling_area_m2" },
+      parameterSchema: definition.parameters.map(parameter => ({
+        parameterId: parameter.parameter_id, ordinal: parameter.ordinal,
+        titleRu: parameter.title_ru, valueType: parameter.value_type,
+        unitId: parameter.unit_id, required: parameter.required,
+        defaultValue: parameter.default_value, constraints: parameter.constraints_json,
+        visibilityRole: parameter.truth_metadata.visibility_role,
+        valueSourceRole: parameter.truth_metadata.value_source_role,
+        semanticParameterKey: parameter.truth_metadata.semantic_parameter_key,
+        provenance: parameter.truth_metadata.provenance,
+      } as CanonicalEstimateCatalogItem["parameterSchema"][number])),
+    };
+    expect(buildCanonicalBaselinePlan({ catalog,
+      prompt: "Третий слой шпаклёвки потолка35,5м², высота помещения 3 м" }).parameters)
+      .toEqual({ ceiling_area_m2: "35.5", room_height_m: "3" });
   });
 
   it("leaves an explicitly labelled dimension unresolved when the schema target is ambiguous", () => {
