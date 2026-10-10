@@ -51,6 +51,36 @@ describe('persisted preliminary scope cannot masquerade as complete', () => {
     full.parameters[0]!.truth_metadata.value_source_role = 'BACKEND_DERIVED';
     expect(canonicalPublisherQuantityScopeIsConsistent(full)).toBe(true);
   });
+  it('admits an unresolved source gate without changing the existing arithmetic formula', () => {
+    const input = {...payload(), parameters:payload().parameters.map(p=>({...p,required:true})), formulas:[{formula_id:'balance',input_parameter_ids:['area','stock']}],
+      resources:[{row_id:'installation',formula_id:'balance',resource_graph:{inputParameterIds:['hours']}}]};
+    expect(canonicalPublisherQuantityScopeIsConsistent(input)).toBe(true);
+    input.baseline.input_values={hours:'customer approval'};
+    expect(canonicalPublisherQuantityScopeIsConsistent(input)).toBe(false);
+  });
+  it('requires the exact union of arithmetic and declared resource norm consumers', () => {
+    const input={...payload(),parameters:payload().parameters.map(p=>({...p,required:true})),formulas:[...payload().formulas,{formula_id:'balance',input_parameter_ids:['area']}],
+      resources:[...payload().resources,{row_id:'order',formula_id:'balance',resource_graph:{inputParameterIds:['hours']}}]};
+    expect(canonicalPublisherQuantityScopeIsConsistent(input)).toBe(false);
+    input.passport.decision.unresolvedResourceRowIds=['installation','order'];
+    input.passport.capability_matrix=buildMasterCapabilityMatrix(['installation','order'],input.resources);
+    expect(canonicalPublisherQuantityScopeIsConsistent(input)).toBe(true);
+    input.passport.decision.unresolvedResourceRowIds.push('unrelated');
+    input.passport.capability_matrix=buildMasterCapabilityMatrix(['installation','order','unrelated'],[...input.resources,{row_id:'unrelated'}]);
+    expect(canonicalPublisherQuantityScopeIsConsistent(input)).toBe(false);
+  });
+  it('does not treat descriptive or malformed resource metadata as a source gate', () => {
+    for(const graph of [{details:{inputParameterIds:['hours']}},{inputParameterIds:'hours'},{inputParameterIds:['unknown']}]){
+      expect(canonicalPublisherQuantityScopeIsConsistent({...payload(),parameters:payload().parameters.map(p=>({...p,required:true})),formulas:[{formula_id:'area',input_parameter_ids:['area']}],
+        resources:[{row_id:'installation',formula_id:'area',resource_graph:graph}]})).toBe(false);
+    }
+  });
+  it('does not claim an optional resource-only mention as an unresolved quantity gate', () => {
+    const input={...payload(),parameters:payload().parameters.map(p=>({...p,required:false})),
+      formulas:[{formula_id:'area',input_parameter_ids:['area']}],resources:[{row_id:'installation',formula_id:'area',resource_graph:{inputParameterIds:['hours']}}]};
+    expect(canonicalPublisherQuantityScopeIsConsistent(input)).toBe(false);
+    expect(canonicalPublisherQuantityScopeIsConsistent({...input,parameters:input.parameters.map(p=>({...p,required:true}))})).toBe(true);
+  });
   it.each(['false-full', 'no-blockers', 'unknown-row', 'capability-mismatch', 'default', 'fixture', 'customer-norm', 'hidden-extra-row'])('rejects %s claims', mutation => {
     const input = payload();
     if (mutation === 'false-full') input.passport.decision.quantityScope = 'FULL';

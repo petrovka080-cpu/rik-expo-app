@@ -99,7 +99,7 @@ export function canonicalPublisherPriceBindingIsCompatible(input: Readonly<{
 
 /** A limited composition is a distinct, explicitly incomplete local contract.
  * Both passport declarations must name exactly the resources whose formula
- * still depends on an unset application-owned norm. A changed label alone
+ * or declared resource gate depends on an unset application-owned norm. A changed label alone
  * must not admit a fabricated complete baseline. */
 export function canonicalPublisherQuantityScopeIsConsistent(input: Readonly<{
   passport: CanonicalPublisherJson;
@@ -126,8 +126,12 @@ export function canonicalPublisherQuantityScopeIsConsistent(input: Readonly<{
     || parameter.truth_metadata.provenance?.consumer_input_role_v1 !== 'APPLICATION_TECHNICAL'
     || Object.hasOwn(input.baseline.input_values ?? {}, parameter.parameter_id))) return false;
   const pendingIds = new Set(pending.map(parameter => parameter.parameter_id));
+  const requiredResourceGateIds = new Set(pending.filter(parameter => parameter.required === true)
+    .map(parameter => parameter.parameter_id));
   const expected = input.resources.filter(resource => input.formulas.some(formula => formula.formula_id === resource.formula_id
-    && formula.input_parameter_ids?.some((id: string) => pendingIds.has(id)))).map(resource => resource.row_id);
+    && formula.input_parameter_ids?.some((id: string) => pendingIds.has(id)))
+    || (Array.isArray(resource.resource_graph?.inputParameterIds)
+      && resource.resource_graph.inputParameterIds.some((id: string) => requiredResourceGateIds.has(id)))).map(resource => resource.row_id);
   return JSON.stringify([...ids].sort()) === JSON.stringify(expected.sort());
 }
 
