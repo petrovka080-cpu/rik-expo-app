@@ -446,7 +446,7 @@ const DIRECT_USER_QUANTITY_SOURCE = new Set([
   "VISIBLE_BASELINE_ASSUMPTION",
 ]);
 
-export function extractUserQuantity(prompt: string, accepts?: (quantity: UserQuantity) => boolean): UserQuantity | null {
+function extractUserQuantities(prompt: string): UserQuantity[] {
   const normalizedPrompt = prompt
     .replace(/m²/giu, "m2")
     .replace(/m³/giu, "m3")
@@ -454,6 +454,7 @@ export function extractUserQuantity(prompt: string, accepts?: (quantity: UserQua
     .replace(/м³/giu, "м3")
     .replace(/(?:кв(?:адратн[\p{L}]*)?\.?\s*м(?:етр[\p{L}]*)?)/giu, "м2")
     .replace(/(?:куб(?:ическ[\p{L}]*)?\.?\s*м(?:етр[\p{L}]*)?)/giu, "м3");
+  const quantities: UserQuantity[] = [];
   for (const match of normalizedPrompt.matchAll(/(?<![\p{L}\p{N}])(\d{1,3}(?:[ \u00a0\u202f]\d{3})+(?:[,.]\d+)?|\d+(?:[,.]\d+)?)\s*(штук(?:а|и)?|шт\.?|m2|m3|м2|м3|м|кг|тонн(?:а|ы)?|т)(?![\p{L}\p{N}])/giu)) {
     const rawUnit = match[2]
       .toLocaleLowerCase("ru-RU")
@@ -468,9 +469,13 @@ export function extractUserQuantity(prompt: string, accepts?: (quantity: UserQua
               : rawUnit === "т" || rawUnit.startsWith("тонн") ? "t"
                 : null;
     const quantity: UserQuantity = { value: match[1].replace(/[ \u00a0\u202f]/gu, "").replace(",", "."), unit };
-    if (!accepts || accepts(quantity)) return quantity;
+    quantities.push(quantity);
   }
-  return null;
+  return quantities;
+}
+
+export function extractUserQuantity(prompt: string, accepts?: (quantity: UserQuantity) => boolean): UserQuantity | null {
+  return extractUserQuantities(prompt).find(quantity => !accepts || accepts(quantity)) ?? null;
 }
 
 function parameterAcceptsQuantity(
@@ -536,6 +541,19 @@ function quantityParameterScore(
   return 20;
 }
 
+function hasAmbiguousGenericArea(
+  schema: CanonicalEstimateCatalogItem["parameterSchema"], prompt: string,
+): boolean {
+  const values = extractUserQuantities(prompt).filter(q => q.unit === "m2").map(q => {
+    const [whole, fraction = ""] = q.value.split(".");
+    const integer = whole.replace(/^0+(?=\d)/u, "");
+    const decimal = fraction.replace(/0+$/u, "");
+    return decimal ? `${integer}.${decimal}` : integer;
+  });
+  return new Set(values).size > 1
+    && schema.filter(p => parameterAcceptsQuantity(p, { value: "1", unit: "m2" })).length > 1;
+}
+
 function baselineValue(
   parameter: CanonicalEstimateCatalogItem["parameterSchema"][number],
 ): CanonicalEstimateParameterInputValue | undefined {
@@ -575,6 +593,7 @@ type ExplicitGeometryFact = {
 function schemaDrivenExplicitGeometry(
   schema: CanonicalEstimateCatalogItem["parameterSchema"],
   prompt: string,
+  skipGenericArea = false,
 ): Record<string, CanonicalEstimateParameterInputValue> {
   const normalized = prompt.normalize("NFKC").replace(/\u00a0/gu, " ");
   const number = (pattern: RegExp): string | undefined =>
@@ -643,6 +662,7 @@ function schemaDrivenExplicitGeometry(
   ];
   const result: Record<string, CanonicalEstimateParameterInputValue> = {};
   for (const fact of facts) {
+    if (skipGenericArea && fact.unitId === "m2") continue;
     if (fact.value == null) continue;
     const candidates = schema.filter((parameter) => {
       if (parameter.valueType !== "decimal" && parameter.valueType !== "integer") return false;
@@ -674,10 +694,11 @@ function schemaDrivenExplicitGeometry(
 export function extractPromptOwnedProfessionalParameters(
   schema: CanonicalEstimateCatalogItem["parameterSchema"],
   prompt: string,
+  skipGenericArea = false,
 ): Record<string, CanonicalEstimateParameterInputValue> {
   const byId = new Map(schema.map((parameter) => [parameter.parameterId, parameter]));
   const values = {
-    ...schemaDrivenExplicitGeometry(schema, prompt),
+    ...schemaDrivenExplicitGeometry(schema, prompt, skipGenericArea),
     ...promptOwnedNamedParameters(schema, prompt),
   };
   const normalized = prompt.normalize("NFKC").replace(/\u00a0/gu, " ");
@@ -2251,7 +2272,8 @@ export function buildCanonicalBaselinePlan(input: {
   const declaredPrimaryMeasureId = typeof input.catalog.applicability?.primaryMeasureParameterId === "string"
     ? input.catalog.applicability.primaryMeasureParameterId.trim() || null : null;
   const declaredPrimaryMeasure = input.catalog.parameterSchema.find(p => p.parameterId === declaredPrimaryMeasureId);
-  const userQuantity = pumpStationInput == null && stripFoundationInput == null
+  const ambiguousGenericArea = hasAmbiguousGenericArea(input.catalog.parameterSchema, input.prompt);
+  const extractedUserQuantity = pumpStationInput == null && stripFoundationInput == null
     && asphaltDrainageInput == null && asphaltRoadInput == null
     && formworkFramiXlifeInput == null && ricsNrm2FormworkInput == null
     && biaTn10MasonryInput == null && concretePlacementInput == null
@@ -2269,6 +2291,11 @@ export function buildCanonicalBaselinePlan(input: {
       ? quantity => Boolean(declaredPrimaryMeasure && parameterAcceptsQuantity(declaredPrimaryMeasure, quantity))
       : undefined)
     : null;
+  // A declared main measure does not identify which of two different stated
+  // areas is its value. Exact domain parsers and explicit editor values below
+  // retain their own meanings; the generic first-number shortcut must wait.
+  const userQuantity = ambiguousGenericArea && extractedUserQuantity?.unit === "m2"
+    ? null : extractedUserQuantity;
   let userQuantityParameterId: string | null = null;
   if (userQuantity) {
     const candidates = input.catalog.parameterSchema
@@ -2286,7 +2313,7 @@ export function buildCanonicalBaselinePlan(input: {
   }
   Object.assign(
     submittedInputs,
-    extractPromptOwnedProfessionalParameters(input.catalog.parameterSchema, input.prompt),
+    extractPromptOwnedProfessionalParameters(input.catalog.parameterSchema, input.prompt, ambiguousGenericArea),
     pumpStationInput ?? stripFoundationInput ?? asphaltDrainageInput ?? asphaltRoadInput
       ?? formworkFramiXlifeInput ?? ricsNrm2FormworkInput ?? biaTn10MasonryInput
       ?? concretePlacementInput ?? stripFoundationReinforcementInput

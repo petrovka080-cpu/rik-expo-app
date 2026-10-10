@@ -218,6 +218,43 @@ describe("consumer canonical W12 preliminary handoff", () => {
       });
   });
 
+  const twoAreaCatalog = (): CanonicalEstimateCatalogItem => ({
+    ...pumpCatalog(), catalogId: "test:two-distinct-work-areas", workKey: "two_work_areas",
+    applicability: { primaryMeasureParameterId: "paint_area_m2" },
+    parameterSchema: [
+      { ...geometryParameter("paint_area_m2", 0, false), preliminaryCompilationAllowed: true },
+      { ...geometryParameter("facade_norm_area_m2", 1, false), preliminaryCompilationAllowed: true,
+        valueSourceRole: "PROJECT_SPECIFIC_INPUT", provenance: { consumer_input_role_v1: "OBJECT_GEOMETRY" } },
+    ],
+  });
+
+  it.each([
+    "Окраска: площадь фасада без вычета проёмов 40 м2, площадь окраски 35,5 м2",
+    "Окраска: площадь окраски 35,5 м², площадь фасада без вычета проёмов 40 м²",
+    "Окраска: площадь 40 м2, площадь 35,5 м2",
+  ])("leaves distinct generic areas unresolved rather than choosing the first in %s", prompt => {
+    const plan = buildCanonicalBaselinePlan({ catalog: twoAreaCatalog(), prompt });
+    expect(plan.parameters).toEqual({});
+    expect(plan.primaryMeasureParameterId).toBe("paint_area_m2");
+  });
+
+  it.each(["Окраска 35,5 м2", "Окраска 35,5 м², обмер 035.500 m2"])(
+    "keeps one distinct area only in the declared primary field: %s", prompt => {
+      expect(buildCanonicalBaselinePlan({ catalog: twoAreaCatalog(), prompt }).parameters)
+        .toEqual({ paint_area_m2: "35.5" });
+    },
+  );
+
+  it("keeps explicit editor areas after ambiguous text and preserves another measured dimension", () => {
+    const base = twoAreaCatalog();
+    const catalog = { ...base, parameterSchema: [...base.parameterSchema, geometryParameter("work_height_m", 2, false)] };
+    const prompt = "Окраска: площадь 40 м2, площадь 35,5 м2, высота 3 м";
+    expect(buildCanonicalBaselinePlan({ catalog, prompt }).parameters).toEqual({ work_height_m: "3" });
+    expect(buildCanonicalBaselinePlan({ catalog, prompt,
+      parameterOverrides: { paint_area_m2: "35.5", facade_norm_area_m2: "40" } }).parameters)
+      .toEqual({ work_height_m: "3", paint_area_m2: "35.5", facade_norm_area_m2: "40" });
+  });
+
   it("leaves an explicitly labelled dimension unresolved when the schema target is ambiguous", () => {
     expect(extractPromptOwnedProfessionalParameters([
       geometryParameter("route_length_m", 0),
