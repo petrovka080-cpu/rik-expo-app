@@ -225,7 +225,10 @@ export function normalizePublicBoqNameRu(input: {
     : source;
   return withoutAppendedWorkTitle
     .replace(/\s*,?\s*(?:без\s+(?:принятой\s+)?цены(?:\s+до(?:\s|$).*)?|цена не определена.*|PRICE_MISSING.*)$/iu, "")
-    .replace(/[：:]+/gu, " — ")
+    .replace(/[：:]+/gu, (separator: string, offset: number, text: string) =>
+      separator.length === 1 && /\d\s*$/u.test(text.slice(0, offset))
+        && /^\s*\d/u.test(text.slice(offset + separator.length))
+        ? ":" : " — ")
     .replace(/\s+/gu, " ")
     .replace(/\s+([,.;])/gu, "$1")
     .trim();

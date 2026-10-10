@@ -3,6 +3,7 @@ import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
 
 import { ConsumerRepairProgressiveEstimatePanel, buildCanonicalProcurementPreviewRows } from "./ConsumerRepairProgressiveEstimatePanel";
 import type { ConsumerRepairRequestItem } from "../../lib/consumerRequests/consumerRequestTypes";
+import type { EstimateDraftRevision } from "../../lib/estimate/estimateDraftRevisionContract";
 import { RequestEstimateSummaryCard } from "./RequestEstimateSummaryCard";
 
 type ProgressiveEstimateViewModel = React.ComponentProps<
@@ -91,6 +92,40 @@ function panel(
     />
   );
 }
+
+it("preserves the actual tray mortar ratio in Buyer projection and rendered rows without rewriting the saved revision", () => {
+  const current = revision(true) as unknown as EstimateDraftRevision;
+  const row = current.boq.rows[0];
+  const rowId = "precast-rc-embankment-runoff-tray:mortar";
+  Object.assign(row, {
+    rowId, rowType: "material", quantity: 0.017, unit: "m3", unitLabel: "м³",
+    titleRu: "Раствор готовый отделочный тяжёлый, цементный 1:3 — CONTROL_ONLY: Раствор готовый отделочный тяжёлый, цементный 1:3 по проекту и фактической поставке в м³; не данные объекта",
+    sourceParameters: { canonicalPurchaseBalance: {
+      ownerRowId: rowId, unitId: "m3", consumed: "0.01633", stock: "0", reserve: "0",
+      effectiveOrder: "0.017", remaining: "0.00067", freeBeyondReserve: "0.00067",
+      consumptionShortage: "0", reserveDeficit: "0", quantum: "0.001", quantityMode: "supply_quantum",
+    } },
+  });
+  const before = JSON.stringify(current);
+  const projected = buildCanonicalProcurementPreviewRows(current);
+  expect(projected).toHaveLength(1);
+  expect(projected[0].titleRu.match(/1:3/gu)).toHaveLength(2);
+  expect(projected[0].titleRu).not.toContain("1 — 3");
+  expect(projected[0].quantity).toBe("0.017");
+  expect(projected[0].quantityDetails).toEqual([
+    "Расход: 0,01633 м³", "В наличии: 0 м³", "Сохраняемый резерв: 0 м³",
+    "Остаток после расхода: 0,00067 м³", "Шаг поставки: 0,001 м³",
+  ]);
+  let renderer!: ReactTestRenderer;
+  act(() => { renderer = TestRenderer.create(panel(current as never)); });
+  act(() => renderer.root.findByProps({ testID: "consumer-estimate-open-procurement" }).props.onPress());
+  const rendered = JSON.stringify(renderer.toJSON());
+  expect(rendered).toContain("цементный 1:3");
+  expect(rendered).not.toContain("1 — 3");
+  expect(rendered).toContain("К закупке: 0,017 м³");
+  expect(JSON.stringify(current)).toBe(before);
+  act(() => renderer.unmount());
+});
 
 describe("canonical procurement preview remount", () => {
   it("shows saved preliminary consumption even when no order or priced row is ready", () => {
