@@ -1,0 +1,223 @@
+{
+  "contract": "gox-build.s27-58.precast-rc-embankment-runoff-tray.v1",
+  "catalogId": "canonical-work:master:precast_rc_embankment_runoff_tray_standard",
+  "workKey": "precast_rc_embankment_runoff_tray_standard",
+  "titleRu": "Устройство сборного железобетонного водосбросного лотка на откосе насыпи",
+  "normId": "27-02-004-01",
+  "sourceId": "KRER27_2015_EMBANKMENT_RUNOFF_TRAY_270200401",
+  "source": {
+    "path": ".release-runtime/r4a13-6/s19-first-estimate/primary-source-review/kg-krer27-roadworks-2015.pdf",
+    "sha256": "cd3d6735d1bbdda5957945b7682f032785c76624b54a435edfe5d2ef5e107161",
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no27avtomobilnyedorogi_compressed-43769083f584ff787.06841542.pdf",
+    "locators": [
+      "PDF page23/table27-02-004/column01/composition and all resource cells",
+      "PDF pages9–10/technical part1.0,1.3,1.7,1.11",
+      "PDF page14/technical part3.1, explicit exception27-02-004"
+    ],
+    "localArtifact": ".release-runtime/r4a13-6/s19-first-estimate/primary-source-review/kg-krer27-roadworks-2015.pdf",
+    "edition": "КРЕР27-2015",
+    "locatorRu": "PDF, стр.23, таблица27-02-004, колонка01: состав работ и ресурсы"
+  },
+  "guidance": {
+    "path": ".release-runtime/r568/s27-48/g7-next-source-extracts/KRER_GENERAL_APPLICATION_GUIDANCE.pdf",
+    "sha256": "5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9",
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/stroitelnyeispecialnyestroitelnyeraboty-7866900598a0aab89.90712367.pdf",
+    "locators": [
+      "PDF pages5–6/2.7 project specification for starred materials",
+      "PDF page6/2.8 minor associated operations and2.10 driver ownership",
+      "PDF page8/3.5 reconstruction coefficients",
+      "PDF pages9–11/4.2,4.4,4.6,4.12–4.14 logistics and resource price limits",
+      "Appendix3: altitude1500m and above not inside bounded normal branch"
+    ],
+    "localArtifact": ".release-runtime/r568/s27-48/g7-next-source-extracts/KRER_GENERAL_APPLICATION_GUIDANCE.pdf",
+    "locatorRu": "Общие указания: §2.7,2.8,2.10,3.5,4.6,4.13; КРЕР27: §1.11,3.1"
+  },
+  "sourceAdmission": {
+    "planSha256": "9d899b91ee452b20792debe77d4438bb079db3aa067e91534717cc86cbf555b8",
+    "amendmentSha256": "c993e14ff102486ef877e6e1a18296b581a97e0e009fb173e1f8ea331648eecb",
+    "gradeCorrectedTo400": true
+  },
+  "scopeValue": "Новое строительство, обычные условия, положительная температура, высота местности ниже 1500 м",
+  "scopeRu": "Сборный железобетонный водосбросный лоток на откосе насыпи при новом строительстве, в обычных условиях, при положительной температуре и на высоте ниже 1500 м. В составе нормы: ручная траншея, щебёночная подготовка и установка сборных ЖБ элементов. Длина измеряется вдоль проектной линии лотка. Исполнение элементов определяется проектом и фактической поставкой.",
+  "includedTransportRu": "КРЕР27 §1.11: перемещение у рабочего места до 10 м, внутриплощадочный транспорт в среднем до 1 км, инертных материалов — до 50 м. Дополнительная доставка учитывается отдельно только за пределами этих перемещений.",
+  "trafficExceptionRu": "КРЕР27 §3.1 прямо исключает таблицу27-02-004 из коэффициента1,2 при движении по другой половине дороги. Защита зоны работ и дополнительные сигнальщики определяются по проекту отдельно.",
+  "unitValue": "Поставка в м³ по спецификации поставщика",
+  "resources": [
+    {
+      "id": "labor",
+      "nameRu": "Рабочие-строители, средний разряд 2,8",
+      "unitId": "man_hour",
+      "ratePer100M": "169.9",
+      "costOwnership": "WHOLE_OPERATION_SINGLE_PAID_OWNER",
+      "sourceColumn": "27-02-004-01",
+      "sourcePage": 23,
+      "category": "labor",
+      "resourceCode": null,
+      "sourceLocator": "КРЕР27-2015, PDF стр.23, таблица27-02-004, колонка01, ресурс labor"
+    },
+    {
+      "id": "operator",
+      "nameRu": "Машинисты — включены в стоимость механизмов",
+      "unitId": "man_hour",
+      "ratePer100M": "43.3",
+      "costOwnership": "INCLUDED_IN_MACHINE_PRICES_NO_SECOND_PAY",
+      "sourceColumn": "27-02-004-01",
+      "sourcePage": 23,
+      "category": "labor",
+      "resourceCode": null,
+      "sourceLocator": "КРЕР27-2015, PDF стр.23, таблица27-02-004, колонка01, ресурс operator"
+    },
+    {
+      "id": "crane",
+      "nameRu": "Кран на автомобильном ходу 10 т",
+      "unitId": "machine_hour",
+      "ratePer100M": "41.67",
+      "costOwnership": "ONE_MACHINE_PRICE_WITH_OPERATOR",
+      "sourceColumn": "27-02-004-01",
+      "sourcePage": 23,
+      "category": "equipment",
+      "resourceCode": null,
+      "sourceLocator": "КРЕР27-2015, PDF стр.23, таблица27-02-004, колонка01, ресурс crane"
+    },
+    {
+      "id": "forklift",
+      "nameRu": "Автопогрузчик 5 т",
+      "unitId": "machine_hour",
+      "ratePer100M": "0.5",
+      "costOwnership": "ONE_MACHINE_PRICE_WITH_OPERATOR",
+      "sourceColumn": "27-02-004-01",
+      "sourcePage": 23,
+      "category": "equipment",
+      "resourceCode": null,
+      "sourceLocator": "КРЕР27-2015, PDF стр.23, таблица27-02-004, колонка01, ресурс forklift"
+    },
+    {
+      "id": "compressor",
+      "nameRu": "Компрессор передвижной с ДВС, до 686 кПа (7 ат), 5 м³/мин",
+      "unitId": "machine_hour",
+      "ratePer100M": "1.13",
+      "costOwnership": "ONE_MACHINE_PRICE_WITH_OPERATOR",
+      "sourceColumn": "27-02-004-01",
+      "sourcePage": 23,
+      "category": "equipment",
+      "resourceCode": null,
+      "sourceLocator": "КРЕР27-2015, PDF стр.23, таблица27-02-004, колонка01, ресурс compressor"
+    },
+    {
+      "id": "pneumatic_tamper",
+      "nameRu": "Трамбовка пневматическая от стационарного компрессора",
+      "unitId": "machine_hour",
+      "ratePer100M": "2.26",
+      "costOwnership": "ONE_MACHINE_PRICE",
+      "sourceColumn": "27-02-004-01",
+      "sourcePage": 23,
+      "category": "equipment",
+      "resourceCode": null,
+      "sourceLocator": "КРЕР27-2015, PDF стр.23, таблица27-02-004, колонка01, ресурс pneumatic_tamper"
+    },
+    {
+      "id": "truck",
+      "nameRu": "Автомобиль бортовой грузоподъёмностью до 5 т",
+      "unitId": "machine_hour",
+      "ratePer100M": "0.62",
+      "costOwnership": "ONE_MACHINE_PRICE_WITH_DRIVER",
+      "sourceColumn": "27-02-004-01",
+      "sourcePage": 23,
+      "category": "equipment",
+      "resourceCode": null,
+      "sourceLocator": "КРЕР27-2015, PDF стр.23, таблица27-02-004, колонка01, ресурс truck"
+    },
+    {
+      "id": "crushed_stone",
+      "nameRu": "Щебень из природного камня, фракция 20–40 мм, марка 400",
+      "unitId": "m3",
+      "ratePer100M": "7.6",
+      "costOwnership": "MATERIAL_CONSUMPTION_AND_ONE_DERIVED_PURCHASE_OWNER",
+      "sourceColumn": "27-02-004-01",
+      "sourcePage": 23,
+      "category": "material",
+      "resourceCode": null,
+      "sourceLocator": "КРЕР27-2015, PDF стр.23, таблица27-02-004, колонка01, ресурс crushed_stone"
+    },
+    {
+      "id": "mortar",
+      "nameRu": "Раствор готовый отделочный тяжёлый, цементный 1:3",
+      "unitId": "m3",
+      "ratePer100M": "0.046",
+      "costOwnership": "MATERIAL_CONSUMPTION_AND_ONE_DERIVED_PURCHASE_OWNER",
+      "sourceColumn": "27-02-004-01",
+      "sourcePage": 23,
+      "category": "material",
+      "resourceCode": null,
+      "sourceLocator": "КРЕР27-2015, PDF стр.23, таблица27-02-004, колонка01, ресурс mortar"
+    },
+    {
+      "id": "precast_rc",
+      "nameRu": "Конструкции сборные железобетонные; разновидность и марка по проекту",
+      "unitId": "m3",
+      "ratePer100M": "4.62",
+      "costOwnership": "MATERIAL_CONSUMPTION_AND_ONE_DERIVED_PURCHASE_OWNER",
+      "sourceColumn": "27-02-004-01",
+      "sourcePage": 23,
+      "category": "material",
+      "resourceCode": null,
+      "sourceLocator": "КРЕР27-2015, PDF стр.23, таблица27-02-004, колонка01, ресурс precast_rc"
+    }
+  ],
+  "operations": [
+    {
+      "id": "trench",
+      "nameRu": "Копание траншеи вручную — в общем нормативном труде"
+    },
+    {
+      "id": "bedding",
+      "nameRu": "Устройство щебёночной подготовки — в общем нормативном труде"
+    },
+    {
+      "id": "setting",
+      "nameRu": "Установка сборных железобетонных элементов лотка — в общем нормативном труде"
+    }
+  ],
+  "gaps": [
+    {
+      "id": "protection",
+      "nameRu": "Защита зоны работ и дополнительные сигнальщики по проекту",
+      "reasonRu": "Защита от транспорта и пешеходов определяется проектом организации работ; §4.6 предусматривает дополнительную оплату требуемых сигнальщиков."
+    },
+    {
+      "id": "acceptance",
+      "nameRu": "Контроль и приёмка лотка сверх включённых действий рабочих",
+      "reasonRu": "Количество контроля и приёмки сверх обычных действий рабочих определяется проектом; отдельная норма в таблице не дана."
+    },
+    {
+      "id": "waste",
+      "nameRu": "Обращение с избыточным грунтом и отходами",
+      "reasonRu": "Нужны фактические объём избыточного грунта, состав отходов и условия обращения; из длины линии они не выводятся."
+    },
+    {
+      "id": "logistics",
+      "nameRu": "Дополнительная доставка за пределами включённых перемещений",
+      "reasonRu": "Дополнительные внешние и промежуточные перевозки за пределами §1.11 подтверждаются отдельно по §4.13; включённые перемещения не повторяются."
+    },
+    {
+      "id": "tools",
+      "nameRu": "Малый инструмент и СИЗ для устройства сборного лотка",
+      "reasonRu": "Пневмотрамбовка и компрессор имеют собственные нормы. Состав, потребность и владелец цены прочего малого инструмента и СИЗ в таблице не установлены."
+    },
+    {
+      "id": "curing",
+      "nameRu": "Уход и защита раствора стыков сборного лотка",
+      "reasonRu": "Таблица27-02-004 не устанавливает дополнительный численный состав ухода и защиты раствора стыков."
+    }
+  ],
+  "excludedRu": [
+    "Городской линейный лоток с решёткой и полная ливневая система",
+    "Подготовка насыпи, перенос коммуникаций и другие дорожные работы",
+    "Автоматический объём выемки грунта, вывоз, водоотлив и крепление траншеи",
+    "Придуманные длина элемента, марка ЖБ изделия, уклон и поставочная упаковка",
+    "Текущие цены из издания2015, наличие и кратность поставки по умолчанию",
+    "Повторная оплата включённых машинистов, водителя и перемещений",
+    "Ожидание набора прочности как активный труд"
+  ],
+  "fullTechnicalAcceptance": false
+}
