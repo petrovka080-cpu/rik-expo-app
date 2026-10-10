@@ -26,9 +26,10 @@ export function incandescentVlDefinitionS2758():AutomaticOwnerDefinition{
     rowId:prefix+':'+id,formulaId:prefix+':formula:'+id,section:pack.titleRu,category,title,unitId,expression,procurement:false,inputParameterIds:facts,...extra});
   const positive=(unitId:string)=>({schemaVersion:'canonical_formula_output_bounds_v1' as const,unitId,exclusiveMinimum:0,reasonRu:'Применимый ресурс требует положительного подтверждённого количества.'});
   add('whole-labor','Труд рабочих-строителей, средний разряд4,0; вся операция установки','labor','man_hour','luminaire_count*1.29',{formulaOutputBounds:positive('man_hour')});
-  add('truck-consumed','Нормативная работа бортового автомобиля грузоподъёмностью до5т','equipment','machine_hour','luminaire_count*0.06',{costTreatment:'INFORMATIONAL_SCOPE',formulaOutputBounds:positive('machine_hour')});
+  const effectiveTruck=effectiveResourceQuantityParameterId(prefix+':truck-consumed');
+  add('truck-consumed','Нормативная работа бортового автомобиля грузоподъёмностью до5т','equipment','machine_hour','luminaire_count*0.06',{costTreatment:'INFORMATIONAL_SCOPE',formulaOutputBounds:positive('machine_hour'),effectiveQuantityOutput:{parameterId:effectiveTruck,unitId:'machine_hour'}});
   for(const [mode,value] of [['own',ownLuminaireTruckS2758],['hired',hiredLuminaireTruckS2758]] as const)
-    add('truck-'+mode,'Бортовой автомобиль грузоподъёмностью до5т'+(mode==='hired'?' — аренда с водителем':' — собственный, эксплуатация'),'equipment','machine_hour','luminaire_count*0.06',
+    add('truck-'+mode,'Бортовой автомобиль грузоподъёмностью до5т'+(mode==='hired'?' — аренда с водителем':' — собственный, эксплуатация'),'equipment','machine_hour',effectiveTruck,
       {procurement:mode==='hired',inclusion:{kind:'equals',parameterId:'truck_fulfillment',value},formulaOutputBounds:positive('machine_hour')});
   for(const m of pack.materials){
     const quantityId=m.id+'_project_total',projectSpecId=m.id+'_project_specification';

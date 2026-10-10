@@ -21,7 +21,7 @@ export async function verifyIncandescentVlS2758(){
   assert.equal(createHash('sha256').update(readFileSync(pack.guidance.path)).digest('hex'),pack.guidance.sha256);
   for(const [path,sha] of [['source-plan.json',pack.sourceAdmission.sourcePlanSha256],['primary-cell-clarification.json',pack.sourceAdmission.primaryCellClarificationSha256],['project-bom-contract-admission.json',pack.sourceAdmission.projectBomContractAdmissionSha256]])
     assert.equal(createHash('sha256').update(readFileSync('.release-runtime/r568/s27-58/review/outdoor-lighting/'+path)).digest('hex'),sha);
-  const d=incandescentVlDefinitionS2758();assert.deepEqual([d.parameters.length,d.formulas.length,d.resources.length],[72,29,29]);
+  const d=incandescentVlDefinitionS2758();assert.deepEqual([d.parameters.length,d.formulas.length,d.resources.length],[73,29,29]);
   assert.deepEqual(validateIndependentCompletenessMapReferences({completenessMap:incandescentVlCompletenessMapS2758(),formulaDefinitions:d.formulas,resourceDefinitions:d.resources}),[]);
   for(const [n,labor,truck,gas,grease] of [[1,'1.29','0.06','0.00006','0.01'],[11,'14.19','0.66','0.00066','0.11']] as const){
     const r=await compileIncandescentVlS2758(incandescentVlControlS2758(n)),byId=new Map(r.rows.map(row=>[row.row_id,row]));
@@ -35,6 +35,6 @@ export async function verifyIncandescentVlS2758(){
   assert(!held.rows.some(row=>pack.materials.some(m=>m.projectDefined&&row.row_id===prefix+':'+m.id+'-consumed')));
   const hired=await compileIncandescentVlS2758({...incandescentVlControlS2758(),truck_fulfillment:hiredLuminaireTruckS2758});assert.equal(hired.rows.filter(row=>row.included_in_procurement).length,8);
   for(const bad of [{luminaire_count:0},{luminaire_count:1.5},{construction_scope_conditions:'LED'},{incandescent_luminaires_project_total:10},{open_scope_qty_additional_access:1},{labour_per_luminaire:2},{project_material_supply_scope:'COMPONENTS_INCLUDED_IN_OTHER_PRICE'}])await assert.rejects(()=>compileIncandescentVlS2758({...incandescentVlControlS2758(),...bad}));
-  return {status:'GREEN_EXACT_KRER33_04_014_01_PARTIAL',shape:[72,29,29],own:[22,6,7],hired:[22,6,8],projectCellsWithoutInventedNorms:5,fullTechnicalAcceptance:false,acceptedCompleteTypes:0};
+  return {status:'GREEN_EXACT_KRER33_04_014_01_PARTIAL',shape:[73,29,29],own:[22,6,7],hired:[22,6,8],projectCellsWithoutInventedNorms:5,fullTechnicalAcceptance:false,acceptedCompleteTypes:0};
 }
 if(process.argv[1]?.replaceAll('\\','/').endsWith('/preflightS2758IncandescentVl.ts'))void verifyIncandescentVlS2758().then(r=>process.stdout.write(JSON.stringify(r)+'\n')).catch(e=>{process.stderr.write(String(e.stack??e)+'\n');process.exitCode=1;});

@@ -16,9 +16,9 @@ function catalog():CanonicalEstimateCatalogItem{
       formulaConsumers:c.formulaConsumers[p.parameter_id],resourceBranchConsumers:c.resourceConsumers[p.parameter_id],guide:{guideKind:g.guide_kind,guideShortRu:g.guide_short_ru,guideValidationPolicy:g.guide_validation_policy,sourceRole:g.source_role,sourceDocument:g.source_document,sourceLocator:g.source_locator,sourceSnapshotHash:g.source_snapshot_hash,guideVersion:g.guide_version,applicability:g.applicability,verifiedAt:g.verified_at}} as CanonicalEstimateCatalogItem['parameterSchema'][number];})};
 }
 function session(parameters:Record<string,unknown>){return buildConsumerCanonicalPrecompileParameterSession({catalog:catalog(),draftId:'lighting-prepublication',parameters:parameters as Record<string,string|number>,userExplicitParameterIds:Object.keys(parameters),missingParameterIds:[]});}
-async function amended(input:Record<string,unknown>,rowId:string,quantity:number){const d=incandescentVlDefinitionS2758();return compileCanonicalEstimateCore({operation:'recalculate',compilerVersion:pack.contract,catalogId:pack.catalogId,primaryMeasureParameterId:'luminaire_count',parameterDefinitions:[...d.parameters],formulaDefinitions:[...d.formulas],resourceDefinitions:[...d.resources],submittedParameters:input,confirmedParameters:{},currencyCode:'KGS',priceItems:[],maximumResourceRows:29,hashJson:async v=>estimateDeterministicHash(v),rowOverrides:{[prefix+':'+rowId]:{quantity,provenance:{kind:'manual',reason:'CONTROL_ONLY bypass negative'}}}});}
+async function amended(input:Record<string,unknown>,rowId:string,quantity:number|null){const d=incandescentVlDefinitionS2758();return compileCanonicalEstimateCore({operation:'recalculate',compilerVersion:pack.contract,catalogId:pack.catalogId,primaryMeasureParameterId:'luminaire_count',parameterDefinitions:[...d.parameters],formulaDefinitions:[...d.formulas],resourceDefinitions:[...d.resources],submittedParameters:input,confirmedParameters:{},currencyCode:'KGS',priceItems:[],maximumResourceRows:29,hashJson:async v=>estimateDeterministicHash(v),rowOverrides:{[prefix+':'+rowId]:{quantity,provenance:{kind:'manual',reason:'CONTROL_ONLY bypass negative'}}}});}
 
-it('matches primary column01 rates, project units and finite partial composition',async()=>{expect(await verifyIncandescentVlS2758()).toMatchObject({shape:[72,29,29],own:[22,6,7],hired:[22,6,8],acceptedCompleteTypes:0});});
+it('matches primary column01 rates, project units and finite partial composition',async()=>{expect(await verifyIncandescentVlS2758()).toMatchObject({shape:[73,29,29],own:[22,6,7],hired:[22,6,8],acceptedCompleteTypes:0});});
 it.each([[1,'1.29','0.06','0.00006','0.01'],[11,'14.19','0.66','0.00066','0.11']] as const)('uses four frozen source cells at N%s, independent of project material masses',async(n,labor,truck,gas,grease)=>{
   const r=await compileIncandescentVlS2758(incandescentVlControlS2758(n)),byId=new Map(r.rows.map(x=>[x.row_id,x]));
   for(const [id,q] of [['whole-labor',labor],['truck-consumed',truck],['solvent_gasoline-consumed',gas],['zes_grease-consumed',grease],['construction_bolts-consumed','0.0073'],['brackets-consumed','27'],['steel_clamps-consumed','8.5'],['rubber_insulated_wire-consumed','0.0024']])expect(byId.get(prefix+':'+id)?.quantity).toBe(q);
@@ -49,6 +49,19 @@ it.each(['solvent_gasoline_supply_specification','construction_bolts_supply_spec
   expect(r.rows.find(x=>x.row_id===prefix+':construction_bolts-consumed')?.quantity).toBe('0.0073');expect(r.rows.find(x=>x.row_id===prefix+':solvent_gasoline-consumed')?.quantity).toBe('0.00066');
   if(missing==='project_material_supply_scope')expect(r.rows.filter(x=>x.included_in_procurement)).toHaveLength(2);
   else expect(r.rows.some(x=>x.row_id===prefix+':'+missing.replace('_supply_specification',''))).toBe(false);
+});
+it.each([[ownLuminaireTruckS2758,'own'],[hiredLuminaireTruckS2758,'hired']] as const)('uses accepted physical truck quantity for the selected %s cost and restores the norm on clear',async(mode,id)=>{
+  const input={...incandescentVlControlS2758(),truck_fulfillment:mode};
+  for(const [quantity,expected] of [[2,'2'],[null,'0.66']] as const){
+    const r=await amended(input,'truck-consumed',quantity),physical=r.rows.find(x=>x.row_id===prefix+':truck-consumed')!,selected=r.rows.find(x=>x.row_id===prefix+':truck-'+id)!;
+    expect(physical.quantity).toBe(expected);expect(selected.quantity).toBe(expected);expect(selected.included_in_estimate).toBe(true);expect(selected.included_in_procurement).toBe(id==='hired');
+    expect(physical.included_in_estimate).toBe(false);expect(physical.included_in_procurement).toBe(false);expect(r.rows.filter(x=>/truck-(own|hired)$/.test(x.row_id))).toHaveLength(1);expect(r.preliminaryNeeds).toHaveLength(6);
+    expect(selected.calculation_trace).toMatchObject({resourceGraph:{operatorCostOwnership:'DRIVER_INCLUDED_IN_MACHINE_PRICE_NO_SECOND_OWNER'}});
+    expect(r.rows.find(x=>x.row_id===prefix+':whole-labor')?.quantity).toBe('14.19');
+  }
+  for(const missing of ['construction_scope_conditions','ready_support_connection_reference','pole_attachment_height_m','access_method_reference']){
+    const held=await amended({...input,[missing]:undefined},'truck-consumed',2);expect(held.rows.some(x=>/truck-(consumed|own|hired)$/.test(x.row_id))).toBe(false);
+  }
 });
 it.each(['construction_bolts','brackets','steel_clamps','incandescent_luminaires','rubber_insulated_wire'])('cannot bypass missing documented project total/specification for %s with manual quantity',async id=>{
   for(const suffix of ['project_total','project_specification']){const input={...incandescentVlControlS2758(),[id+'_'+suffix]:undefined};const r=await amended(input,id+'-consumed',1);expect(r.rows.some(x=>x.row_id===prefix+':'+id+'-consumed')).toBe(false);expect(r.preliminaryNeeds.some(x=>x.row_id===prefix+':'+id+'-consumed')).toBe(true);}
