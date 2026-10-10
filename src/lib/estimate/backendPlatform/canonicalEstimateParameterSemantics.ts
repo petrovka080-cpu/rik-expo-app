@@ -1,5 +1,5 @@
 import type { CanonicalEstimateCatalogItem } from "./contracts";
-import { hasHumanReadableAiEstimateParameterPassport } from "../aiEstimateRuParameterDictionary";
+import { hasHumanReadableAiEstimateParameterPassport, isAiEstimateTechnicalHiddenParam } from "../aiEstimateRuParameterDictionary";
 import { waterMaterialVariantLabelRuR542 } from "./russianTechnologyTitleR542";
 import { evaluateInclusionGraph } from "./inclusionGraph";
 import { canonicalPublicEstimateChoiceLabelRu } from './canonicalPublicEstimateLanguageRu';
@@ -15,6 +15,7 @@ export function canonicalEstimateConsumerInputRole(schema: Pick<ParameterSchema,
 
 const SOURCE_MANAGED_CONSUMER_ROLES = new Set<ParameterSchema["valueSourceRole"]>([
   "MANDATORY_NORM_VALUE",
+  "UNRESOLVED_APPLICATION_NORM",
   "NORM_REQUIRED_BUT_PROJECT_SELECTED",
   "MANUFACTURER_CONFIRMED",
   "SELECTED_EQUIPMENT_PASSPORT",
@@ -124,12 +125,11 @@ const CONSTRUCTION_CHOICE_LABELS_RU: Readonly<Record<string, string>> = Object.f
  * user/project input measured in machine-hours.
  */
 export function isCanonicalEstimateUserEditableParameter(schema: ParameterSchema): boolean {
-  if (schema.visibilityRole !== "USER_INPUT") return false;
-  if (!hasHumanReadableAiEstimateParameterPassport(schema.parameterId, schema.titleRu)) return false;
-  if (DERIVED_OR_INTERNAL_PARAMETER_ID.test(schema.parameterId)) return false;
-  if (PER_OUTPUT_OR_UNIT_INTERNAL_PARAMETER_ID.test(schema.parameterId)) return false;
-  if (DERIVED_OR_INTERNAL_TITLE.test(schema.titleRu)) return false;
-  if (schema.guide?.guideKind === "DERIVED_VALUE_RULE") return false;
+  if (hasProtectedParameterOwnership(schema)) return false;
+  if (!hasSchemaOwnedUserFact(schema) && !hasOptionalProjectNumericOwnership(schema)) {
+    if (!hasHumanReadableAiEstimateParameterPassport(schema.parameterId, schema.titleRu)) return false;
+    if (DERIVED_OR_INTERNAL_TITLE.test(schema.titleRu)) return false;
+  }
   return canonicalEstimateParameterChangesPreliminaryEstimate(schema);
 }
 
@@ -188,6 +188,48 @@ function hasDeclaredConditionalRequirement(schema: ParameterSchema): boolean {
     && Object.prototype.hasOwnProperty.call(condition, "equals");
 }
 
+/** Explicit source/derived ownership always wins, including conflicting tags. */
+function hasProtectedParameterOwnership(schema: ParameterSchema): boolean {
+  return schema.visibilityRole !== "USER_INPUT"
+    || canonicalEstimateConsumerInputRole(schema) === "APPLICATION_TECHNICAL"
+    || isAiEstimateTechnicalHiddenParam(schema.parameterId)
+    || DERIVED_OR_INTERNAL_PARAMETER_ID.test(schema.parameterId)
+    || PER_OUTPUT_OR_UNIT_INTERNAL_PARAMETER_ID.test(schema.parameterId)
+    || SOURCE_MANAGED_CONSUMER_ROLES.has(schema.valueSourceRole)
+    || ["DERIVED_VALUE_RULE", "MANDATORY_NORM_VALUE", "NORMATIVE_RANGE", "MANUFACTURER_RANGE"].includes(String(schema.guide?.guideKind))
+    || ["PRIMARY_SOURCE_NORM", ...SOURCE_MANAGED_CONSUMER_ROLES].includes(String(schema.guide?.sourceRole));
+}
+
+/**
+ * A bound project/measurement guide and real consumers establish user ownership.
+ * OBJECT_FACT alone cannot confer it. This also admits compatible passports
+ * published before that tag existed, without changing their immutable schema.
+ * Source-like rate IDs keep the narrower numeric/reference exceptions below.
+ */
+function hasSchemaOwnedUserFact(schema: ParameterSchema): boolean {
+  if (hasProtectedParameterOwnership(schema) || !canonicalEstimateParameterHasCalculationConsumer(schema)) return false;
+  if (!schema.parameterId.trim() || !schema.semanticParameterKey?.trim()) return false;
+  const condition = schema.requiredWhen ?? schema.constraints.requiredWhen;
+  if (condition != null && !hasDeclaredConditionalRequirement(schema)) return false;
+  if (schema.visibleWhen != null && !hasDeclaredConditionalRequirement({ ...schema, requiredWhen: schema.visibleWhen })) return false;
+  const guide = schema.guide;
+  if (!guide || guide.guideValidationPolicy !== "MANDATORY_BLOCK"
+    || !guide.sourceDocument?.trim() || !guide.sourceLocator?.trim()
+    || !/^[a-f0-9]{64}$/iu.test(guide.sourceSnapshotHash ?? "")) return false;
+  const projectFact = ["PROJECT_SPECIFIC_INPUT", "CONDITIONAL_PROJECT_FACT"].includes(String(schema.valueSourceRole))
+    && guide.guideKind === "PROJECT_DEFINED" && guide.sourceRole === "PROJECT_DOCUMENTATION";
+  const measuredFact = ["USER_INPUT", "USER_MEASURED", "USER_OR_PROJECT_MEASURED"].includes(String(schema.valueSourceRole))
+    && guide.guideKind === "MEASUREMENT_RULE"
+    && ["USER_SUPPLIED_PRIMARY_FACT", "USER_INPUT", "USER_MEASURED", "USER_OR_PROJECT_MEASURED"].includes(String(guide.sourceRole));
+  if (!projectFact && !measuredFact) return false;
+  if (SOURCE_LIKE_PARAMETER_ID.test(schema.parameterId)
+    && !(projectFact && (isMandatoryProjectNumericResourceFact(schema) || isMandatoryProjectReferenceResourceFact(schema)))) return false;
+  if (schema.valueType === "enum") return Array.isArray(schema.constraints.values) && schema.constraints.values.length > 0;
+  if (schema.valueType === "text") return schema.constraints.minLength === 1
+    && typeof schema.constraints.maxLength === "number" && schema.constraints.maxLength > 0 && schema.constraints.maxLength <= 1000;
+  return ["decimal", "integer", "boolean", "array_object"].includes(schema.valueType);
+}
+
 function isMandatoryProjectNumericResourceFact(schema: ParameterSchema): boolean {
   return ["decimal", "integer"].includes(schema.valueType)
     && ["CONDITIONAL_PROJECT_FACT", "PROJECT_SPECIFIC_INPUT"].includes(String(schema.valueSourceRole))
@@ -201,8 +243,8 @@ function isMandatoryProjectNumericResourceFact(schema: ParameterSchema): boolean
  * resource (for example, the area covered by each QA check). Its immutable
  * project guide admits editing; a missing value does not become a mandatory
  * preliminary input merely because the resource is shown in the estimate. */
-export function isCanonicalEstimateOptionalProjectNumericResourceFact(schema: ParameterSchema): boolean {
-  return schema.visibilityRole === "USER_INPUT"
+function hasOptionalProjectNumericOwnership(schema: ParameterSchema): boolean {
+  return !hasProtectedParameterOwnership(schema)
     && ["decimal", "integer"].includes(schema.valueType)
     && schema.required !== true
     && (schema.requiredWhen ?? schema.constraints.requiredWhen) == null
@@ -213,8 +255,11 @@ export function isCanonicalEstimateOptionalProjectNumericResourceFact(schema: Pa
     && Boolean(schema.guide.sourceDocument?.trim() && schema.guide.sourceLocator?.trim())
     && /^[a-f0-9]{64}$/iu.test(schema.guide.sourceSnapshotHash ?? "")
     && (schema.formulaConsumers?.length ?? 0) > 0
-    && (schema.resourceBranchConsumers?.length ?? 0) > 0
-    && isCanonicalEstimateUserEditableParameter(schema);
+    && (schema.resourceBranchConsumers?.length ?? 0) > 0;
+}
+
+export function isCanonicalEstimateOptionalProjectNumericResourceFact(schema: ParameterSchema): boolean {
+  return hasOptionalProjectNumericOwnership(schema) && isCanonicalEstimateUserEditableParameter(schema);
 }
 
 /** A bounded reference to actual project documentation can mention a rate or
@@ -243,8 +288,7 @@ function isMandatoryProjectReferenceResourceFact(schema: ParameterSchema): boole
 export function isCanonicalEstimateVisibleUserResourceSelectionParameter(
   schema: ParameterSchema,
 ): boolean {
-  if (canonicalEstimateConsumerInputRole(schema) === "APPLICATION_TECHNICAL") return false;
-  if (schema.visibilityRole !== "USER_INPUT") return false;
+  if (hasProtectedParameterOwnership(schema)) return false;
   if (["decimal", "integer"].includes(schema.valueType)) {
     return isMandatoryProjectNumericResourceFact(schema) && isCanonicalEstimateUserEditableParameter(schema);
   }
@@ -284,7 +328,8 @@ export function canonicalEstimateParameterChangesPreliminaryEstimate(
     && schema.required !== true
     && schema.defaultValue == null
     && conditional == null
-    && PRELIMINARY_DOCUMENT_SOURCE_ROLES.has(String(schema.valueSourceRole ?? ""));
+    && PRELIMINARY_DOCUMENT_SOURCE_ROLES.has(String(schema.valueSourceRole ?? ""))
+    && !hasSchemaOwnedUserFact(schema);
   if (optionalDocumentProfile) return false;
   return schema.valueType === "boolean"
     || schema.valueType === "enum"
@@ -351,8 +396,8 @@ export function isCanonicalEstimateConsumerSuppliedParameter(schema: ParameterSc
  * that source.
  */
 export function isCanonicalEstimateSourceManagedParameter(schema: ParameterSchema): boolean {
-  if (canonicalEstimateConsumerInputRole(schema) === "APPLICATION_TECHNICAL") return true;
-  if (SOURCE_MANAGED_CONSUMER_ROLES.has(schema.valueSourceRole)) return true;
+  if (hasProtectedParameterOwnership(schema)) return true;
+  if (hasSchemaOwnedUserFact(schema)) return false;
   // A mandatory actual project fact may contain words such as "mass per unit"
   // or "capacity". Its immutable role/guide and consumers establish ownership;
   // the technical-looking name alone cannot turn it into a hidden norm.

@@ -317,6 +317,18 @@ describe("consumer canonical W12 preliminary handoff", () => {
       .toEqual({ ceiling_area_m2: "35.5", room_height_m: "3" });
   });
 
+  it("keeps geometry ingress title-neutral without changing stable derived-ID guards or manual priority", () => {
+    const schema = [geometryParameter("area_m2", 0), geometryParameter("room_height_m", 1)];
+    const renamed = schema.map(parameter => ({ ...parameter, titleRu: "Количество: productivity = площадь и высота" }));
+    expect(extractPromptOwnedProfessionalParameters(renamed, "площадь35,5м², высота помещения 3 м"))
+      .toEqual({ area_m2: "35.5", room_height_m: "3" });
+    expect(extractPromptOwnedProfessionalParameters([{ ...renamed[0], parameterId: "quantity_area_m2", semanticParameterKey: "quantity_area_m2" }], "35,5м²"))
+      .toEqual({});
+    const catalog = { ...pumpCatalog(), parameterSchema: renamed, applicability: { primaryMeasureParameterId: "area_m2" } };
+    expect(buildCanonicalBaselinePlan({ catalog, prompt: "площадь35,5м², высота помещения 3 м", parameterOverrides: { area_m2: "40", room_height_m: "4" } }).parameters)
+      .toEqual({ area_m2: "40", room_height_m: "4" });
+  });
+
   it("leaves an explicitly labelled dimension unresolved when the schema target is ambiguous", () => {
     expect(extractPromptOwnedProfessionalParameters([
       geometryParameter("route_length_m", 0),

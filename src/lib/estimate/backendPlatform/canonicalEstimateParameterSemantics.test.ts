@@ -13,6 +13,56 @@ import {
   isCanonicalEstimateVisibleUserResourceSelectionParameter,
 } from "./canonicalEstimateParameterSemantics";
 
+describe("schema-owned facts are independent of presentation", () => {
+  const fact = {
+    parameterId: "construction_scope_conditions", semanticParameterKey: "work:construction_scope_conditions",
+    titleRu: "Условия участка", ordinal: 1, valueType: "enum", unitId: null,
+    visibilityRole: "USER_INPUT", valueSourceRole: "PROJECT_SPECIFIC_INPUT", required: false,
+    defaultValue: null, constraints: { values: ["own", "hired"] }, formulaConsumers: [], resourceBranchConsumers: ["machine"],
+    provenance: { consumer_input_role_v1: "OBJECT_FACT" },
+    guide: { guideKind: "PROJECT_DEFINED", guideValidationPolicy: "MANDATORY_BLOCK", sourceRole: "PROJECT_DOCUMENTATION",
+      sourceDocument: "bound-project", sourceLocator: "Actual object conditions", sourceSnapshotHash: "a".repeat(64) },
+  };
+  it.each(["Нормальные условия строительства", "Расход времени выбранного механизма", "Количество: условия участка", "Выбор = собственные механизмы"])(
+    "keeps optional resource choice ownership and requiredness after renaming to %s", titleRu => {
+      const schema = { ...fact, titleRu } as never;
+      expect(isCanonicalEstimateConsumerSuppliedParameter(schema)).toBe(true);
+      expect(isCanonicalEstimateSourceManagedParameter(schema)).toBe(false);
+      expect(canonicalEstimateParameterChangesPreliminaryEstimate(schema)).toBe(true);
+      expect(isCanonicalEstimateParameterRequiredForValues(schema, {})).toBe(false);
+    },
+  );
+  it("uses the same bound project guide for passports predating the role tag", () => {
+    expect(isCanonicalEstimateConsumerSuppliedParameter({ ...fact, provenance: undefined, titleRu: "Нормальные условия" } as never)).toBe(true);
+  });
+  it.each(["MANDATORY_NORM_VALUE", "UNRESOLVED_APPLICATION_NORM", "MANUFACTURER_CONFIRMED", "SELECTED_EQUIPMENT_PASSPORT", "BACKEND_DERIVED"])(
+    "a conflicting OBJECT_FACT tag cannot expose %s", valueSourceRole => {
+      const schema = { ...fact, valueSourceRole, titleRu: "Площадь объекта" } as never;
+      expect(isCanonicalEstimateConsumerSuppliedParameter(schema)).toBe(false);
+      expect(isCanonicalEstimateVisibleUserResourceSelectionParameter(schema)).toBe(false);
+      expect(isCanonicalEstimateSourceManagedParameter(schema)).toBe(true);
+    },
+  );
+  it.each([
+    { visibilityRole: "USER_DERIVED_READONLY" }, { visibilityRole: "INTERNAL_ONLY" },
+    { provenance: { consumer_input_role_v1: "APPLICATION_TECHNICAL" } },
+    { parameterId: "quantity_material" }, { parameterId: "unit_price_material" }, { parameterId: "qty_material_per_output" },
+    { guide: { ...fact.guide, guideKind: "DERIVED_VALUE_RULE" } },
+    { guide: { ...fact.guide, sourceRole: "MANUFACTURER_CONFIRMED" } },
+  ])("preserves protected schema/ID/guide ownership (%p)", patch => {
+    const schema = { ...fact, ...patch } as never;
+    expect(isCanonicalEstimateConsumerSuppliedParameter(schema)).toBe(false);
+    expect(isCanonicalEstimateSourceManagedParameter(schema)).toBe(true);
+  });
+  it.each([
+    { guide: undefined }, { guide: { ...fact.guide, sourceSnapshotHash: "missing" } },
+    { semanticParameterKey: undefined }, { formulaConsumers: [], resourceBranchConsumers: [] },
+    { parameterId: "labor_productivity_m2_per_man_hour" },
+  ])("does not use an OBJECT_FACT tag alone to override the legacy norm guard (%p)", patch => {
+    expect(isCanonicalEstimateConsumerSuppliedParameter({ ...fact, ...patch, titleRu: "Норма расхода" } as never)).toBe(false);
+  });
+});
+
 describe("canonical preliminary-stage validation", () => {
   it("matches compiler semantics for empty and legacy conditional objects", () => {
     const base = {
@@ -211,6 +261,14 @@ describe("optional actual project numeric resource facts", () => {
     expect(isCanonicalEstimateOptionalProjectNumericResourceFact(projectPlan as never)).toBe(true);
     expect(isCanonicalEstimateConsumerSuppliedParameter(projectPlan as never)).toBe(true);
   });
+  it.each(["Количество: площадь на один контроль", "План контроля = заданный проектом"])(
+    "keeps the existing bounded optional actual-rate exception title-neutral: %s", titleRu => {
+      const schema = { ...projectPlan, titleRu } as never;
+      expect(isCanonicalEstimateOptionalProjectNumericResourceFact(schema)).toBe(true);
+      expect(isCanonicalEstimateConsumerSuppliedParameter(schema)).toBe(true);
+      expect(isCanonicalEstimateSourceManagedParameter(schema)).toBe(false);
+    },
+  );
   it.each([
     { guide: { ...projectPlan.guide, sourceSnapshotHash: "" } },
     { guide: { ...projectPlan.guide, sourceDocument: "" } },

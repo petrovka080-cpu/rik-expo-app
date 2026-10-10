@@ -102,6 +102,15 @@ describe("canonical estimate consumer professional proof", () => {
       sourceConfirmationRequired: true,
       visibilityRole: "INTERNAL_ONLY",
     }));
+    const project = { ...catalog.parameterSchema[0], parameterId: "site_conditions", semanticParameterKey: "work:site_conditions",
+      titleRu: "Нормальные условия объекта", valueType: "enum", unitId: null,
+      visibilityRole: "USER_INPUT", valueSourceRole: "PROJECT_SPECIFIC_INPUT", required: true,
+      constraints: { values: ["ready"] }, formulaConsumers: [], resourceBranchConsumers: ["roller"],
+      guide: { guideKind: "PROJECT_DEFINED", guideValidationPolicy: "MANDATORY_BLOCK", sourceRole: "PROJECT_DOCUMENTATION",
+        guideShortRu: "Укажите условия объекта", guideVersion: "test-v1", applicability: "Actual project facts", verifiedAt: "2026-10-10",
+        sourceDocument: "approved-project", sourceLocator: "Site conditions", sourceSnapshotHash: "a".repeat(64) } } as CanonicalEstimateCatalogItem["parameterSchema"][number];
+    const projectProjection = adaptCanonicalRevisionToStructuredEstimate({ catalog: { ...catalog, parameterSchema: [project] }, revision, rows: [] });
+    expect(projectProjection.canonicalBackend?.parameterRequirements).toEqual([expect.objectContaining({ parameterId: "site_conditions", sourceConfirmationRequired: false })]);
     const requirement = { version: "canonical-purchase-requirement:v1", ownerRowId: "membrane", unitId: "m2",
       consumed: "86.25", plannedConsumption: null, conditional: false };
     for (const evidence of [{ purchaseRequirement: requirement }, { calculationTrace: { purchaseRequirementV1: requirement } }]) {

@@ -338,7 +338,11 @@ function buildParameter(input: {
 }): CanonicalParameter {
   const labelRu = aiEstimateRuLabelForParameter(
     input.schema.parameterId,
-    input.schema.titleRu,
+    // In an admitted canonical question, equality is prose punctuation. Keep
+    // the dictionary's technical-ID/code guards; normalize only presentation.
+    isConsumerMeaningfulCanonicalParameter(input.schema)
+      ? input.schema.titleRu.replace(/\s*=\s*/gu, " — ")
+      : input.schema.titleRu,
   );
   const value = scalarValue(input.schema, input.parameters[input.schema.parameterId]);
   const hasRuntimeReference = Object.prototype.hasOwnProperty.call(

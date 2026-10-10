@@ -491,7 +491,7 @@ function parameterAcceptsQuantity(
   if (parameter.valueType !== "decimal" && parameter.valueType !== "integer") return false;
   if (parameter.visibilityRole != null && parameter.visibilityRole !== "USER_INPUT") return false;
   if (parameter.valueSourceRole != null && !DIRECT_USER_QUANTITY_SOURCE.has(String(parameter.valueSourceRole))) return false;
-  const identity = `${parameter.parameterId} ${parameter.semanticParameterKey ?? ""} ${parameter.titleRu}`.toLocaleLowerCase("ru-RU");
+  const identity = `${parameter.parameterId} ${parameter.semanticParameterKey ?? ""}`.toLocaleLowerCase("en-US");
   if (DERIVED_QUANTITY_PARAMETER.test(identity)) return false;
   // A label such as «Количество этажей» is not a count of the selected
   // products. A bare «10 шт.» may bind only to an object-count parameter;
@@ -688,7 +688,7 @@ function schemaDrivenExplicitGeometry(
       if (parameter.valueSourceRole != null
         && !DIRECT_USER_QUANTITY_SOURCE.has(String(parameter.valueSourceRole))) return false;
       if (DERIVED_QUANTITY_PARAMETER.test(
-        `${parameter.parameterId} ${parameter.semanticParameterKey ?? ""} ${parameter.titleRu}`,
+        `${parameter.parameterId} ${parameter.semanticParameterKey ?? ""}`,
       )) return false;
       const identity = `${parameter.parameterId} ${parameter.semanticParameterKey ?? ""}`
         .toLocaleLowerCase("en-US");
@@ -2360,7 +2360,7 @@ export function buildCanonicalBaselinePlan(input: {
     .filter((parameter) => parameter.formulaConsumers == null
       || parameter.formulaConsumers.length > 0)
     .filter((parameter) => !DERIVED_QUANTITY_PARAMETER.test(
-      `${parameter.parameterId} ${parameter.semanticParameterKey ?? ""} ${parameter.titleRu}`,
+      `${parameter.parameterId} ${parameter.semanticParameterKey ?? ""}`,
     ))
     .sort((left, right) => {
       const score = (parameter: typeof left) => /^(?:area_m2|volume_m3|length_m|count|quantity|qty)$/u.test(
@@ -2488,7 +2488,7 @@ export function buildCanonicalBaselinePlan(input: {
   const assumptions = input.catalog.parameterSchema
     .filter((parameter) => parameter.visibilityRole === "USER_INPUT")
     .filter((parameter) => parameter.valueSourceRole == null || DIRECT_USER_QUANTITY_SOURCE.has(String(parameter.valueSourceRole)))
-    .filter((parameter) => !DERIVED_QUANTITY_PARAMETER.test(`${parameter.parameterId} ${parameter.semanticParameterKey ?? ""} ${parameter.titleRu}`))
+    .filter((parameter) => !DERIVED_QUANTITY_PARAMETER.test(`${parameter.parameterId} ${parameter.semanticParameterKey ?? ""}`))
     .filter((parameter) => parameter.guide?.guideKind !== "DERIVED_VALUE_RULE")
     .filter((parameter) => parameter.parameterId !== userQuantityParameterId)
     .filter((parameter) => validation.parameters[parameter.parameterId] != null)

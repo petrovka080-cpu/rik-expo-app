@@ -14,8 +14,9 @@ import {
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
 import { canonicalApprovedBaselineRuntimeParameters } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline";
 import {
-  canonicalEstimateParameterRequiresManagedProfessionalSource,
   isCanonicalEstimateConsumerSuppliedParameter,
+  isCanonicalEstimateSourceManagedParameter,
+  isCanonicalEstimateVisibleUserResourceSelectionParameter,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics";
 import {
   evaluateCatalogIndependentContentEvidence,
@@ -65,6 +66,23 @@ function isExpertParameter(parameter: Json): boolean {
   const parameterId = String(parameter.parameter_id ?? "");
   const titleRu = String(parameter.title_ru ?? "");
   return EXPERT_INPUT.test(parameterId) || PROFESSIONAL_TITLE.test(titleRu);
+}
+
+function parameterSchemaForAudit(parameter: Json) {
+  const truth = parameter.truth_metadata ?? {};
+  const guide = truth.guide;
+  return {
+    parameterId: String(parameter.parameter_id), titleRu: String(parameter.title_ru ?? ""),
+    ordinal: parameter.ordinal, valueType: parameter.value_type, unitId: parameter.unit_id,
+    required: parameter.required, defaultValue: parameter.default_value,
+    constraints: parameter.constraints_json ?? {}, semanticParameterKey: truth.semantic_parameter_key,
+    visibilityRole: truth.visibility_role, valueSourceRole: truth.value_source_role,
+    requiredWhen: truth.required_when, visibleWhen: truth.visible_when, provenance: truth.provenance,
+    formulaConsumers: truth.formula_consumers ?? [], resourceBranchConsumers: truth.resource_branch_consumers ?? [],
+    guide: guide ? { guideKind: guide.guide_kind, guideValidationPolicy: guide.guide_validation_policy,
+      sourceRole: guide.source_role, sourceDocument: guide.source_document, sourceLocator: guide.source_locator,
+      sourceSnapshotHash: guide.source_snapshot_hash } : undefined,
+  } as Parameters<typeof isCanonicalEstimateSourceManagedParameter>[0];
 }
 
 function errorCode(error: unknown): string {
@@ -231,30 +249,17 @@ async function main(): Promise<void> {
           });
           const professionalSourceMissingIds = missingIds.filter((parameterId) => {
             const parameter = parametersById.get(parameterId);
-            return parameter != null
-              && !sourceBackedPhysicalNormOutputIds.has(parameterId)
-              && !isCatalogFirstEstimateProjectSpecificRefinementParameter(parameter)
-              && (isExpertParameter(parameter)
-                || canonicalEstimateParameterRequiresManagedProfessionalSource({
-                  parameterId,
-                  titleRu: String(parameter.title_ru ?? ""),
-                } as never));
+            if (parameter == null || sourceBackedPhysicalNormOutputIds.has(parameterId)
+              || isCatalogFirstEstimateProjectSpecificRefinementParameter(parameter)) return false;
+            const schema = parameterSchemaForAudit(parameter);
+            return isCanonicalEstimateSourceManagedParameter(schema)
+              || (isExpertParameter(parameter) && !isCanonicalEstimateConsumerSuppliedParameter(schema)
+                && !isCanonicalEstimateVisibleUserResourceSelectionParameter(schema));
           });
           const expertUserInputIds = professionalSourceMissingIds.filter((parameterId) => {
             const parameter = parametersById.get(parameterId);
             if (parameter == null) return false;
-            const truth = parameter.truth_metadata ?? {};
-            return isCanonicalEstimateConsumerSuppliedParameter({
-              parameterId,
-              titleRu: String(parameter.title_ru ?? ""),
-              valueType: parameter.value_type,
-              visibilityRole: truth.visibility_role,
-              valueSourceRole: truth.value_source_role,
-              formulaConsumers: truth.formula_consumers ?? [],
-              resourceBranchConsumers: truth.resource_branch_consumers ?? [],
-              constraints: parameter.constraints_json ?? {},
-              guide: truth.guide,
-            } as never);
+            return isCanonicalEstimateConsumerSuppliedParameter(parameterSchemaForAudit(parameter));
           });
           minimum = {
             status: compiled.rows.length + compiled.preliminaryNeeds.length > 0 ? "COMPILED" : "EMPTY",
