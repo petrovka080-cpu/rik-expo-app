@@ -739,6 +739,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
           viewModel={viewModel}
           revision={currentRevision}
           canonicalParameterSession={canonicalParameterSession}
+          canonicalParameterReadinessPending={canonicalParameterReadinessPending}
           latestDiff={latestDiff}
           paramEditorEnabled={paramEditorEnabled}
           editingParam={editingParam}
@@ -791,6 +792,7 @@ type ParameterDisclosurePanelProps = {
   viewModel: RequestEstimateViewModel | null;
   revision: EstimateDraftRevision | null;
   canonicalParameterSession?: CanonicalParameterSession | null;
+  canonicalParameterReadinessPending?: boolean;
   latestDiff: EstimateDraftRevisionDiff | null;
   paramEditorEnabled: boolean;
   editingParam?: ConsumerRepairParamEditState;
@@ -1151,13 +1153,19 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
   };
 
   componentDidMount(): void {
+    if (this.props.canonicalParameterReadinessPending) return;
     this.syncDraftFromProps();
   }
 
   componentDidUpdate(prevProps: ParameterDisclosurePanelProps): void {
+    // Metadata can arrive after the saved BOQ. Wait for the actual schema before
+    // creating a baseline or rebasing retained user input onto a new revision.
+    if (this.props.canonicalParameterReadinessPending) return;
     const nextDraftSignature = this.draftSignature(this.buildBaselineCards());
     const revisionChanged =
-      prevProps.revision?.revisionId !== this.props.revision?.revisionId;
+      prevProps.revision?.revisionId !== this.props.revision?.revisionId
+      || (prevProps.canonicalParameterReadinessPending === true
+        && this.state.draftRevisionId !== (this.props.revision?.revisionId ?? null));
     const canonicalSessionChanged =
       prevProps.canonicalParameterSession !== this.props.canonicalParameterSession;
     const hasUnsavedUserInput = this.dirtyKeys().length > 0;
@@ -1316,6 +1324,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
   }
 
   private changeDraftValue = (paramKey: string, rawValue: string): void => {
+    if (this.props.canonicalParameterReadinessPending) return;
     const card = this.buildCards().find((candidate) => candidate.key === paramKey);
     let derivedCount: number | null = null;
     if (card?.derivedCountParameterKey && card.structuredGroup) {
@@ -1363,6 +1372,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
   };
 
   private applyDraftChanges = (): void => {
+    if (this.props.canonicalParameterReadinessPending) return;
     const cardsByKey = new Map(this.buildCards().map((card) => [card.key, card]));
     const dirtyKeys = this.dirtyKeys();
     const validationErrors: Record<string, string> = {};
@@ -1445,6 +1455,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
   }
 
   private continuePreliminaryCompilation = (): void => {
+    if (this.props.canonicalParameterReadinessPending) return;
     logger.info("ConsumerRepairParameterApplyClick", JSON.stringify({
       result: "submitted_without_document_only_fields",
       patchCount: 0,
@@ -1454,7 +1465,8 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
 
   private refreshingSavedComposition = false;
   private refreshSavedComposition = async (): Promise<void> => {
-    if (this.refreshingSavedComposition || this.state.applyState === "pending"
+    if (this.props.canonicalParameterReadinessPending
+      || this.refreshingSavedComposition || this.state.applyState === "pending"
       || this.dirtyKeys().length > 0 || !this.props.revision || !this.props.onApplyParamBatch) return;
     this.refreshingSavedComposition = true;
     this.setState({ applyState: "pending" });
@@ -1590,6 +1602,13 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
   }
 
   render(): React.ReactElement {
+    if (this.props.canonicalParameterReadinessPending) {
+      return (
+        <View style={styles.parameterPanel} testID="request-estimate-parameter-readiness-pending">
+          <Text style={styles.parameterMeta}>Параметры расчёта загружаются. Редактирование станет доступно после загрузки.</Text>
+        </View>
+      );
+    }
     const {
       latestDiff,
     } = this.props;

@@ -19,6 +19,7 @@ type EditableTextSelection = { start: number; end: number };
 
 type Input = {
   item: ConsumerRepairRequestItem;
+  quantityEditable?: boolean;
   onQuantityChange: (
     itemId: string,
     value: string,
@@ -120,10 +121,14 @@ export function runAfterQuantityInputPaint(
 
 export function useConsumerRepairItemRowEditing({
   item,
+  quantityEditable = true,
   onQuantityChange,
   onUnitPriceChange,
   onSpecificationChange,
 }: Input) {
+  // Deferred and retained handlers must obey the current source ownership.
+  const quantityEditableRef = React.useRef(quantityEditable);
+  quantityEditableRef.current = quantityEditable;
   const itemQuantityText = formatInputNumber(item.quantity);
   const itemPriceText = formatInputNumber(item.unitPrice);
   const itemSpecificationText = item.titleRu;
@@ -155,6 +160,15 @@ export function useConsumerRepairItemRowEditing({
   const [specificationText, setSpecificationText] = React.useState(itemSpecificationText);
   const [specificationEditing, setSpecificationEditing] = React.useState(false);
   const [professionalEvidenceOpen, setProfessionalEvidenceOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (quantityEditable) return;
+    quantityEditingRef.current = false;
+    quantityCommittedValueRef.current = null;
+    pendingQuantityActionRef.current = null;
+    setQuantityEditing(false);
+    setQuantityText(itemQuantityText);
+  }, [quantityEditable, itemQuantityText]);
 
   React.useLayoutEffect(() => {
     const pending = pendingQuantityActionRef.current;
@@ -228,6 +242,7 @@ export function useConsumerRepairItemRowEditing({
     nextValue: string,
     source: ConsumerRepairQuantityEditSource = "direct_input",
   ) => {
+    if (!quantityEditableRef.current) return;
     const previousQuantity = item.quantity ?? null;
     const nextQuantity = parseInputNumber(nextValue, item.quantity ?? 0);
     const operationId = createConsumerRepairQuantityEditOperationId({
@@ -276,23 +291,27 @@ export function useConsumerRepairItemRowEditing({
       return;
     }
     runAfterQuantityInputPaint(() => {
+      if (!quantityEditableRef.current) return;
       recordConsumerRepairQuantityEditStage({
         ...meta,
         stage: "VISIBLE_INPUT_UPDATED",
         itemId: item.id,
       });
     }, () => {
+      if (!quantityEditableRef.current) return;
       onQuantityChange(item.id, nextValue, meta);
     }, nativeVisible);
   }, [item, onQuantityChange]);
 
   const beginQuantityEdit = React.useCallback(() => {
+    if (!quantityEditableRef.current) return;
     quantityEditingRef.current = true;
     quantityCommittedValueRef.current = null;
     setQuantityEditing(true);
   }, []);
 
   const finishQuantityEdit = React.useCallback(() => {
+    if (!quantityEditableRef.current) return;
     quantityEditingRef.current = false;
     setQuantityEditing(false);
     const nextValue = quantityText.trim();
@@ -323,6 +342,7 @@ export function useConsumerRepairItemRowEditing({
   }, [item.id, itemPriceText, onUnitPriceChange, priceText]);
 
   const stepQuantity = React.useCallback((delta: number) => {
+    if (!quantityEditableRef.current) return;
     quantityEditingRef.current = false;
     setQuantityEditing(false);
     quantityCommittedValueRef.current = null;
@@ -331,6 +351,12 @@ export function useConsumerRepairItemRowEditing({
   }, [commitQuantityText, item.quantity, quantityText]);
 
   const restoreCalculatedQuantity = React.useCallback((calculatedQuantity: number) => {
+    if (!quantityEditableRef.current) {
+      // Clearing a saved override is allowed while the source quantity waits;
+      // do not display a new locally calculated norm or stage another number.
+      onQuantityChange(item.id, "");
+      return;
+    }
     quantityEditingRef.current = false;
     setQuantityEditing(false);
     const nextValue = formatInputNumber(calculatedQuantity);
@@ -371,7 +397,7 @@ export function useConsumerRepairItemRowEditing({
   return {
     quantityInputRef,
     quantityText,
-    setQuantityText,
+    setQuantityText: (value: string) => { if (quantityEditableRef.current) setQuantityText(value); },
     priceText,
     setPriceText,
     quantityEditing,

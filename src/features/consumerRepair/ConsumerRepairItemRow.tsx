@@ -105,7 +105,7 @@ function ConsumerRepairItemRowComponent({
     [item],
   );
   const itemOptional = !consumerRepairRowIncludedInEstimate(item);
-  const sourceManagedNeed = consumerRepairRowHasSourceManagedQuantity(item);
+  const sourceManagedNeed = consumerRepairRowHasSourceManagedQuantity(item, parameterRequirementTables);
   const nonPayableRow = consumerRepairRowIsNonPayable(item);
   const manualQuantityOverride = consumerRepairRowHasManualQuantity(item);
   const calculatedQuantity = consumerRepairRowCalculatedQuantity(item);
@@ -143,6 +143,7 @@ function ConsumerRepairItemRowComponent({
     rememberPriceSelection,
   } = useConsumerRepairItemRowEditing({
     item,
+    quantityEditable: !sourceManagedNeed,
     onQuantityChange,
     onUnitPriceChange,
     onSpecificationChange,
@@ -232,6 +233,7 @@ function ConsumerRepairItemRowComponent({
             <View style={styles.quantityLine}>
               <Pressable
                 testID={`consumer-repair-item-minus-${item.id}`}
+                disabled={sourceManagedNeed}
                 accessibilityRole="button"
                 accessibilityLabel={`${"\u0423\u043c\u0435\u043d\u044c\u0448\u0438\u0442\u044c"} ${item.titleRu}`}
                 onPress={() => stepQuantity(-1)}
@@ -241,6 +243,7 @@ function ConsumerRepairItemRowComponent({
               </Pressable>
               <TextInput
                 ref={quantityInputRef}
+                editable={!sourceManagedNeed}
                 value={quantityText}
                 importantForAutofill="no"
                 onBlur={finishQuantityEdit}
@@ -260,6 +263,7 @@ function ConsumerRepairItemRowComponent({
               />
               <Pressable
                 testID={`consumer-repair-item-plus-${item.id}`}
+                disabled={sourceManagedNeed}
                 accessibilityRole="button"
                 accessibilityLabel={`${"\u0423\u0432\u0435\u043b\u0438\u0447\u0438\u0442\u044c"} ${item.titleRu}`}
                 onPress={() => stepQuantity(1)}
@@ -281,7 +285,7 @@ function ConsumerRepairItemRowComponent({
             </View>
             {sourceManagedNeed && item.quantity == null && !purchaseRequirement ? (
               <Text style={styles.inlineSourceHint} testID={`consumer-repair-item-source-gated-quantity-${item.id}`}>
-                Норма не задана — введите подтверждённое количество
+                Количество определит расчёт после подтверждения технического источника.
               </Text>
             ) : null}
             {purchaseRequirement ? <Text style={styles.calculatedQuantityHint} testID={`consumer-repair-item-known-consumption-${item.id}`}>
@@ -292,7 +296,9 @@ function ConsumerRepairItemRowComponent({
                 style={manualQuantityOverride ? styles.manualQuantityHint : styles.calculatedQuantityHint}
                 testID={`consumer-repair-item-quantity-mode-${item.id}`}
               >
-                {manualQuantityOverride
+                {sourceManagedNeed
+                  ? "Сохранённое количество ожидает подтверждения технического источника."
+                  : manualQuantityOverride
                   ? calculatedQuantity != null
                     ? `Введено вручную. По формуле: ${calculatedQuantity} ${unitLabel}.`
                     : "Введено вручную. Расчётное количество пока неизвестно."

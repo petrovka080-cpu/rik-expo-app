@@ -131,11 +131,17 @@ export function consumerRepairRowRequirementNotice(
 
 export function consumerRepairRowHasSourceManagedQuantity(
   item: ConsumerRepairRowMetadataCarrier | null | undefined,
+  tables?: CanonicalParameterRequirementTables | null,
 ): boolean {
   const source = metadata(item);
   const requirements = source.missingParameterRequirements;
   return source.canonicalPreliminaryNeed === true
-    && ((Array.isArray(source.sourceManagedMissingParameterIds) && source.sourceManagedMissingParameterIds.length > 0)
+    && ((item != null && consumerCanonicalMissingRequirements(item, tables).some(requirement =>
+      requirement.valueSourceRole === "UNRESOLVED_APPLICATION_NORM"
+      // A shared requirement reference must be resolved for this exact
+      // revision before an unknown need can become a manual quantity input.
+      || (source.canonicalParameterRequirementReference != null && requirement.valueSourceRole == null)))
+      || (Array.isArray(source.sourceManagedMissingParameterIds) && source.sourceManagedMissingParameterIds.length > 0)
       || (Array.isArray(requirements) && requirements.some((requirement) =>
       requirement != null
       && typeof requirement === "object"

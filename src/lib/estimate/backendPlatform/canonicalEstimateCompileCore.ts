@@ -984,6 +984,11 @@ export async function compileCanonicalEstimateCore(
     const inclusionResolvedByManualQuantity = effectiveOutput == null && formulaOutputBounds == null && manualQuantity != null
       && inclusionOnlyWaitsForFormulaInputs && !inclusion.missingParameterIds.some(id => effectiveQuantityPlan.owners.has(id));
     if (inclusion.value === false) continue;
+    if (manualQuantity != null && originalMissingIds(missingFormulaParameterIds).some(id =>
+      parameterDefinitionsById.get(id)?.truth_metadata?.value_source_role === 'UNRESOLVED_APPLICATION_NORM')) {
+      throw compilerError(`source-owned norm quantity cannot be replaced by a manual row quantity ${resource.row_id}`,
+        'ROW_AMENDMENT_INVALID');
+    }
     const commercialOwner = commercialCoverage.members.get(resource.row_id);
     const commercialRate = commercialCoverage.owners.get(resource.row_id);
     const commercialScopeParameterId = commercialRate == null ? null : commercialRate.rateBasis.kind === 'PER_MEASURE'

@@ -1,0 +1,425 @@
+{
+  "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+  "catalogId": "canonical-work:master:glasdon_fusion_bench_prepared_concrete_standard",
+  "workKey": "glasdon_fusion_bench_prepared_concrete_standard",
+  "titleRu": "Установка готовой скамьи на подготовленное бетонное основание",
+  "sourceId": "glasdon:fusion-bench:c000-0096:concrete",
+  "normId": "C000-0096-CONCRETE-FUSION",
+  "technicalProductIdentity": {
+    "manufacturer": "Glasdon",
+    "model": "Fusion Bench",
+    "sourceSpecificOnly": true,
+    "shownIn": "Technical specification, source passport, selected-item detail; never silently broaden to all benches.",
+    "lengthMm": 1800,
+    "widthMm": 310,
+    "heightMm": 425,
+    "massKg": 19,
+    "materials": "Aluminium slats with Vandalex finish; steel frame with Armortec finish; actual supplied finish specified by supplier"
+  },
+  "sources": [
+    {
+      "role": "MANUFACTURER_CURRENT_PRODUCT_IDENTITY_AND_MANUAL_LINK",
+      "url": "https://www.glasdon.com/intl/fusion-tm-bench",
+      "path": ".release-runtime/r568/s27-58/review/benches-bins/fusion-bench-product.html",
+      "sha256": "2403104b12962e9380e3e15337e72bfbbab74d6bf410a80a0be718e2b859925e",
+      "facts": "Exact assembled product dimensions/mass/materials and direct association to C000/0096 installation instructions."
+    },
+    {
+      "role": "MANUFACTURER_INSTALLATION",
+      "url": "https://www.glasdon.com/intl/downloads/instructions/C000-0096%20Seating%20Base%20Fix_A4.pdf",
+      "mirrorUrl": "https://gil.glasdon.com/downloads/instructions/C000-0096%20Seating%20Base%20Fix_A4.pdf",
+      "path": ".release-runtime/r568/s27-58/review/benches-bins/Glasdon-Seating-Base-Fix-current-linked.pdf",
+      "sha256": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+      "edition": "C000/0096 Issue1 June2006",
+      "currentProductLinkBytesEqualMirror": true,
+      "locators": [
+        "page2 upper concrete-fixing section, steps1–6 and diagram",
+        "page3 alternate soft-ground/tamper-resistant sections inspected only to exclude them",
+        "pages1 and4 edition/document identity"
+      ],
+      "oldDateLimitation": "Age alone is not a current product-match blocker: current manufacturer product page links these exact bytes. Supplier must identify the actual supplied product and compatible fixing option; specification changes cannot be assumed away."
+    }
+  ],
+  "scope": {
+    "preparedContinuousConcrete": true,
+    "minimumConcreteDepthMm": 200,
+    "minimumEdgeDistanceToFixingAxisMm": 110,
+    "fourFixingsPerBench": 4,
+    "holeDiameterMm": 10,
+    "holeDepthMm": 140,
+    "socketMm": 17,
+    "nutDesignation": "M10",
+    "maximumRecommendedTorqueNm": 27,
+    "deliveredAssembled": true
+  },
+  "excludedRu": [
+    "Paving-slab branch",
+    "Grass/soft-ground concrete-in anchors",
+    "Foundation construction, excavation, concrete volume or curing in this prepared-base scenario",
+    "Tamper-resistant covers unless a separately confirmed project/supply option is explicitly added",
+    "Jubilee-bin anchor dimensions or concrete strength limits",
+    "Unrelated UK legislation treated as Kyrgyz normative approval",
+    "No source-backed labour => no KRER newconstruction/altitude coefficient claim"
+  ],
+  "supplyChoices": [
+    "Четыре штатных крепления включены в поставку каждой скамьи",
+    "Совместимые штатные крепления закупаются отдельно"
+  ],
+  "materials": [
+    {
+      "id": "bench",
+      "unitId": "pcs",
+      "consumed": "bench_count",
+      "nameRu": "Готовая собранная скамья",
+      "specificationRu": "Glasdon Fusion Bench, фактически выбранное исполнение; поставляется собранной.",
+      "possiblePurchaseOwner": "bench-order"
+    },
+    {
+      "id": "ground-fixing-assembly",
+      "unitId": "pcs",
+      "consumed": "4*bench_count",
+      "nameRu": "Штатный узел крепления скамьи к бетону",
+      "specificationRu": "Совместимый бетонный крепёж для Fusion Bench и C000/0096; узел с болтом, гайкой M10, малой шайбой, большой шайбой ИЛИ пластиной и пластиковой шайбой.",
+      "possiblePurchaseOwner": "fixing-order-only-when-separate",
+      "componentPurchases": 0,
+      "boltLength": null,
+      "boltGrade": null,
+      "supplierSKU": null
+    }
+  ],
+  "components": {
+    "countPerFixingAssembly": 1,
+    "names": [
+      "Анкерный болт",
+      "Гайка M10",
+      "Малая шайба",
+      "Большая шайба ИЛИ пластина",
+      "Пластиковая шайба"
+    ],
+    "separateResourceRows": false,
+    "separatePurchaseOwners": false,
+    "noLargeWasherAndPlateDoubleCount": true
+  },
+  "physicalOperation": {
+    "holes": "4*bench_count",
+    "unitId": "pcs",
+    "resourceRowRequired": false,
+    "payable": false,
+    "quantifiedIn": "Technical source facts/completeness details; not drill hours, consumable wear or a separate paid operation."
+  },
+  "userInputs": [
+    {
+      "id": "bench_count",
+      "titleRu": "Количество устанавливаемых скамей",
+      "consumerInputRole": "OBJECT_GEOMETRY",
+      "unitId": "pcs",
+      "required": true,
+      "default": null,
+      "valueSourceRole": "PROJECT_SPECIFIC_INPUT",
+      "requiredWhen": null,
+      "gate": "object",
+      "integer": true,
+      "minimum": 1
+    },
+    {
+      "id": "prepared_foundation_acceptance_reference",
+      "titleRu": "Готовое бетонное основание: фактические замеры и подтверждение пригодности",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": null,
+      "required": true,
+      "default": null,
+      "valueSourceRole": "PROJECT_SPECIFIC_INPUT",
+      "requiredWhen": null,
+      "gate": "installation",
+      "guide": "Укажите реальный чертёж, замер или акт для сплошного подготовленного бетонного основания и мест крепления. Учитываются коммуникации в зоне сверления. Это сведения об объекте, не подтверждение чтения инструкции."
+    },
+    {
+      "id": "available_concrete_depth_mm",
+      "titleRu": "Фактическая толщина готового бетонного основания",
+      "consumerInputRole": "OBJECT_GEOMETRY",
+      "unitId": "mm",
+      "required": true,
+      "default": null,
+      "valueSourceRole": "PROJECT_SPECIFIC_INPUT",
+      "requiredWhen": null,
+      "gate": "installation",
+      "minimum": 200
+    },
+    {
+      "id": "minimum_anchor_edge_distance_mm",
+      "titleRu": "Наименьшее фактическое расстояние от оси крепления до края основания",
+      "consumerInputRole": "OBJECT_GEOMETRY",
+      "unitId": "mm",
+      "required": true,
+      "default": null,
+      "valueSourceRole": "PROJECT_SPECIFIC_INPUT",
+      "requiredWhen": null,
+      "gate": "installation",
+      "minimum": 110
+    },
+    {
+      "id": "actual_bench_supply_specification",
+      "titleRu": "Исполнение и состав фактической поставки скамьи",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": null,
+      "required": true,
+      "default": null,
+      "valueSourceRole": "PROJECT_SPECIFIC_INPUT",
+      "requiredWhen": null,
+      "gate": "bench-purchase",
+      "guide": "Точная Fusion Bench, выбранное исполнение и состав поставки. Для включённого крепежа документ подтверждает четыре совместимых узла на каждую скамью."
+    },
+    {
+      "id": "anchor_supply_scope",
+      "titleRu": "Входит ли штатный крепёж в поставку скамьи",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": null,
+      "required": true,
+      "default": null,
+      "valueSourceRole": "PROJECT_SPECIFIC_INPUT",
+      "requiredWhen": null,
+      "gate": "fixing-price-ownership",
+      "choices": [
+        "Четыре штатных крепления включены в поставку каждой скамьи",
+        "Совместимые штатные крепления закупаются отдельно"
+      ]
+    },
+    {
+      "id": "bench_stock",
+      "titleRu": "Пригодные скамьи в наличии",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": "pcs",
+      "required": true,
+      "default": null,
+      "valueSourceRole": "PROJECT_SPECIFIC_INPUT",
+      "requiredWhen": null,
+      "gate": "bench-purchase",
+      "integer": true,
+      "minimum": 0
+    },
+    {
+      "id": "bench_reserve",
+      "titleRu": "Сохраняемый резерв скамей",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": "pcs",
+      "required": true,
+      "default": null,
+      "valueSourceRole": "PROJECT_SPECIFIC_INPUT",
+      "requiredWhen": null,
+      "gate": "bench-purchase",
+      "integer": true,
+      "minimum": 0
+    },
+    {
+      "id": "bench_quantum",
+      "titleRu": "Кратность фактической поставки скамей, шт.",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": "pcs",
+      "required": true,
+      "default": null,
+      "valueSourceRole": "PROJECT_SPECIFIC_INPUT",
+      "requiredWhen": null,
+      "gate": "bench-purchase",
+      "integer": true,
+      "minimum": 1
+    },
+    {
+      "id": "bench_stock_compatibility_reference",
+      "titleRu": "Пригодность и комплектность скамей в наличии",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": null,
+      "required": false,
+      "default": null,
+      "valueSourceRole": "CONDITIONAL_PROJECT_FACT",
+      "requiredWhen": {
+        "kind": "greater_than",
+        "parameterId": "bench_stock",
+        "value": 0
+      },
+      "gate": "bench-purchase",
+      "guide": "Подтвердите точное изделие, состояние и выбранный состав. При включённом крепеже остаток учитывается как полный совместимый комплект из скамьи и четырёх креплений; неполный остаток не вычитается как комплект.",
+      "conditionallyRequired": true,
+      "semantics": "Optional at top level; required only when canonical requiredWhen evaluates true. Retain actual conditional resource consumer."
+    },
+    {
+      "id": "fixing_supply_specification",
+      "titleRu": "Спецификация отдельно поставляемого бетонного крепежа",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": null,
+      "required": false,
+      "default": null,
+      "valueSourceRole": "CONDITIONAL_PROJECT_FACT",
+      "requiredWhen": {
+        "kind": "equals",
+        "parameterId": "anchor_supply_scope",
+        "value": "Совместимые штатные крепления закупаются отдельно"
+      },
+      "gate": "fixing-purchase",
+      "guide": "Укажите фактически выбранный совместимый штатный узел для Fusion/C000-0096 целиком. Длина, марка и артикул болта не выводятся из глубины отверстия.",
+      "conditionallyRequired": true,
+      "semantics": "Optional at top level; required only when canonical requiredWhen evaluates true. Retain actual conditional resource consumer."
+    },
+    {
+      "id": "fixing_stock",
+      "titleRu": "Пригодные узлы крепления в наличии",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": "pcs",
+      "required": false,
+      "default": null,
+      "valueSourceRole": "CONDITIONAL_PROJECT_FACT",
+      "requiredWhen": {
+        "kind": "equals",
+        "parameterId": "anchor_supply_scope",
+        "value": "Совместимые штатные крепления закупаются отдельно"
+      },
+      "gate": "fixing-purchase",
+      "integer": true,
+      "minimum": 0,
+      "conditionallyRequired": true,
+      "semantics": "Optional at top level; required only when canonical requiredWhen evaluates true. Retain actual conditional resource consumer."
+    },
+    {
+      "id": "fixing_reserve",
+      "titleRu": "Сохраняемый резерв узлов крепления",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": "pcs",
+      "required": false,
+      "default": null,
+      "valueSourceRole": "CONDITIONAL_PROJECT_FACT",
+      "requiredWhen": {
+        "kind": "equals",
+        "parameterId": "anchor_supply_scope",
+        "value": "Совместимые штатные крепления закупаются отдельно"
+      },
+      "gate": "fixing-purchase",
+      "integer": true,
+      "minimum": 0,
+      "conditionallyRequired": true,
+      "semantics": "Optional at top level; required only when canonical requiredWhen evaluates true. Retain actual conditional resource consumer."
+    },
+    {
+      "id": "fixing_quantum",
+      "titleRu": "Кратность поставки целых узлов крепления, шт.",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": "pcs",
+      "required": false,
+      "default": null,
+      "valueSourceRole": "CONDITIONAL_PROJECT_FACT",
+      "requiredWhen": {
+        "kind": "equals",
+        "parameterId": "anchor_supply_scope",
+        "value": "Совместимые штатные крепления закупаются отдельно"
+      },
+      "gate": "fixing-purchase",
+      "integer": true,
+      "minimum": 1,
+      "conditionallyRequired": true,
+      "semantics": "Optional at top level; required only when canonical requiredWhen evaluates true. Retain actual conditional resource consumer."
+    },
+    {
+      "id": "fixing_stock_compatibility_reference",
+      "titleRu": "Пригодность имеющихся узлов крепления",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": null,
+      "required": false,
+      "default": null,
+      "valueSourceRole": "CONDITIONAL_PROJECT_FACT",
+      "requiredWhen": {
+        "kind": "and",
+        "operands": [
+          {
+            "kind": "equals",
+            "parameterId": "anchor_supply_scope",
+            "value": "Совместимые штатные крепления закупаются отдельно"
+          },
+          {
+            "kind": "greater_than",
+            "parameterId": "fixing_stock",
+            "value": 0
+          }
+        ]
+      },
+      "gate": "fixing-purchase",
+      "conditionallyRequired": true,
+      "semantics": "Optional at top level; required only when canonical requiredWhen evaluates true. Retain actual conditional resource consumer."
+    }
+  ],
+  "gaps": [
+    {
+      "id": "position-mark-reposition",
+      "category": "labor",
+      "specificationRu": "Переместить, выставить, разметить, отставить и вернуть готовую скамью",
+      "unitId": "man_hour",
+      "quantityRule": null,
+      "status": "SOURCE_QUANTITY_GAP",
+      "note": "The19kg product mass is not a crew-size, productivity or lifting-machine norm."
+    },
+    {
+      "id": "drill-clear-seat-tighten",
+      "category": "labor",
+      "specificationRu": "Сверление и очистка отверстий, установка крепежа, затяжка и проверка",
+      "unitId": "man_hour",
+      "quantityRule": null,
+      "status": "SOURCE_QUANTITY_GAP",
+      "note": "Whole operation may become one labour owner if an applicable primary norm is found; never invent times or split an unknown total."
+    },
+    {
+      "id": "drill-and-bit",
+      "category": "equipment",
+      "specificationRu": "Дрель/перфоратор со сверлом по бетону10мм достаточной рабочей длины",
+      "unitId": "machine_hour",
+      "quantityRule": null,
+      "status": "SOURCE_QUANTITY_AND_PRICE_OWNERSHIP_GAP"
+    },
+    {
+      "id": "setting-and-tightening-tools",
+      "category": "tool",
+      "specificationRu": "Инструмент для посадки крепежа; головка17мм и средство контроля затяжки",
+      "unitId": null,
+      "quantityRule": null,
+      "status": "SOURCE_QUANTITY_AND_PRICE_OWNERSHIP_GAP",
+      "note": "No arbitrary one kit, one hammer purchase, one torque wrench purchase or hourly rental."
+    },
+    {
+      "id": "hole-cleaning",
+      "category": "tool_consumable",
+      "specificationRu": "Средство удаления остатков сверления из отверстий",
+      "unitId": null,
+      "quantityRule": null,
+      "status": "METHOD_AND_RESOURCE_QUANTITY_GAP",
+      "note": "Source requires clear holes but does not specify a universal blow/vacuum/brush consumable rate."
+    },
+    {
+      "id": "site-protection-ppe",
+      "category": "safety",
+      "specificationRu": "Применимые защита рабочей зоны и СИЗ по фактическим условиям",
+      "unitId": null,
+      "quantityRule": null,
+      "status": "PROJECT_APPLICABILITY_AND_SOURCE_QUANTITY_GAP"
+    },
+    {
+      "id": "delivery-unload-handling",
+      "category": "logistics",
+      "specificationRu": "Доставка и разгрузка готовых скамей/крепежа с проверкой включения в поставку",
+      "unitId": null,
+      "quantityRule": null,
+      "status": "PROJECT_QUANTITY_AND_PRICE_OWNERSHIP_GAP"
+    },
+    {
+      "id": "final-inspection-cleanup",
+      "category": "completion",
+      "specificationRu": "Проверка устойчивости/затяжки, удаление упаковки и пыли, сдача установленного изделия",
+      "unitId": null,
+      "quantityRule": null,
+      "status": "COMPLETION_QUANTITY_AND_PRICE_OWNERSHIP_GAP",
+      "note": "Normal installer action cannot be charged again if later included by a whole-operation norm; no such quantitative norm is admitted now."
+    }
+  ],
+  "sourceAdmission": {
+    "sourcePlanSha256": "325096dec26d068e8d605d886dc49b76c1362fc0bb57a632e140da06ffd50c93",
+    "outlineSha256": "a40fa964de62393bb44b1a5343d06990e0ac6e77cdabd9dae88df932eb19cbc1",
+    "scenarioSha256": "7e3f4a57812973fdacb8de4beaeb2c6c35546fe2a3f0313cb3e67e0dd6e7ae34"
+  },
+  "fullTechnicalAcceptance": false,
+  "acceptedCompleteTypes": 0
+}

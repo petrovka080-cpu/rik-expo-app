@@ -6,6 +6,7 @@ import * as canonicalClient from "../../src/lib/estimate/backendPlatform/canonic
 import * as documentActions from "../../src/lib/documents/pdfDocumentActions";
 
 import { ConsumerRepairDraftPanel } from "../../src/features/consumerRepair/ConsumerRepairDraftPanel";
+import { ParameterDisclosurePanel } from "../../src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel";
 import { buildConsumerCanonicalPrecompileParameterSession, buildConsumerCanonicalParameterSession } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
 import { buildCanonicalParameterCards } from "../../src/lib/estimatePresentation/buildCanonicalParameterCards";
 import { CanonicalEstimateApiError, type CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
@@ -150,6 +151,126 @@ describe("canonical precompile parameter collection", () => {
       missingParameterIds: ["strip_width_m", "strip_height_m", "approved_reinforcement_schedule_weight_kg"],
     });
   }
+
+  function hydrationFixture() {
+    const before = populatedDraft();
+    const revisionId = String(before.items[0].sourceParameters?.canonicalBackendRevisionId);
+    const releaseId = String(before.items[0].sourceParameters?.canonicalBackendReleaseId);
+    const catalog = { ...stripFoundationCatalog(), releaseId,
+      catalogId: String(before.items[0].sourceParameters?.canonicalBackendCatalogId) };
+    const parameters = { total_axis_length_m: 35.5, strip_width_m: 0.6,
+      strip_height_m: 1.2, approved_reinforcement_schedule_weight_kg: 4200 };
+    const bundle = appendCanonicalBackendRevisionProjection({ previousBundle: null, nextBundle: before,
+      payload: { workKey: "foundation", inputText: before.draft.problemText,
+        canonicalBackend: { compilerOwner: "backend", revisionId, parentRevisionId: null, revisionNumber: 1,
+          releaseId, catalogId: catalog.catalogId, createdAt: before.draft.createdAt,
+          checksumSha256: "a".repeat(64), formulaGraphVersion: "test", parameterSchemaHash: "b".repeat(64),
+          parameters: { ...parameters, area_m2: 99, waste_percent: 10 } } } as unknown as StructuredEstimatePayload });
+    const session = buildConsumerCanonicalParameterSession({ catalog, draftId: bundle.draft.id, revision: {
+      revisionId, parentRevisionId: null, releaseId, catalogId: catalog.catalogId,
+      definitionVersionId: "test-definition", definitionVersion: 1, status: "ready",
+      parameters, userInputSnapshot: parameters, acceptedBaselineSnapshot: {}, assumptionSnapshot: {},
+      parameterSchemaHash: "b".repeat(64), compilerVersion: "test", checksumSha256: "a".repeat(64),
+      createdAt: before.draft.createdAt, preliminaryNeeds: [],
+    } });
+    return { bundle, session };
+  }
+
+  it.each(["ready", "empty", "rejected", "wrong-revision", "wrong-draft"] as const)(
+    "waits for the real deferred controller schema (%s) without exposing editable legacy fields or losing saved BOQ",
+    async outcome => {
+      const { bundle, session } = hydrationFixture();
+      const snapshot = JSON.stringify(bundle);
+      let resolve!: (value: typeof session) => void;
+      let reject!: (reason: Error) => void;
+      const deferred = new Promise<typeof session>((yes, no) => { resolve = yes; reject = no; });
+      const load = jest.fn(() => deferred), recalculate = jest.fn(), prepare = jest.fn();
+      const controller = new ConsumerRepairRequestScreenController({ consumerUserId: bundle.draft.consumerUserId,
+        onPrepareCanonicalEstimate: prepare, onLoadCanonicalRevisionDraft: jest.fn(),
+        onLoadCanonicalParameterSession: load, onRecalculateCanonicalEstimate: recalculate,
+        onSelectCanonicalCatalogItem: jest.fn(), onAddCanonicalCatalogItem: jest.fn(), onOpenPhotoForMaterialRecognition: jest.fn() });
+      const action = controller as unknown as { state: typeof controller.state;
+        setState: (patch: Partial<typeof controller.state>, callback?: () => void) => void;
+        renderScreenView: (state: typeof controller.state) => React.ReactElement;
+        hydrateCurrentCanonicalParameterSession: () => Promise<void> };
+      action.state = { ...action.state, bundle, canonicalBackendParameterSession: null, problemText: "" };
+      let renderer!: TestRenderer.ReactTestRenderer;
+      action.setState = (patch, callback) => { action.state = { ...action.state, ...patch };
+        renderer?.update(action.renderScreenView(action.state)); callback?.(); };
+      act(() => { renderer = TestRenderer.create(action.renderScreenView(action.state)); });
+      act(() => renderer.root.findByProps({ testID: "request-estimate-parameters-toggle" }).props.onPress());
+      const editor = renderer.root.findByType(ParameterDisclosurePanel).instance as ParameterDisclosurePanel;
+      expect(renderer.root.findAllByProps({ testID: "request-estimate-parameter-readiness-pending" }).length).toBeGreaterThan(0);
+      expect(renderer.root.findAllByProps({ testID: "editable-param-popover-input" })).toHaveLength(0);
+      expect(renderer.root.findAllByProps({ testID: "editable-param-batch-apply" })).toHaveLength(0);
+      expect(renderer.root.findAllByProps({ testID: "request-estimate-refresh-saved-composition" })).toHaveLength(0);
+      expect(editor.state.baselineValues).toEqual({});
+      expect(JSON.stringify(renderer.toJSON())).toContain(bundle.items[0].titleRu);
+      let hydration!: Promise<void>;
+      act(() => { hydration = action.hydrateCurrentCanonicalParameterSession(); });
+      await act(async () => {
+        if (outcome === "rejected") reject(new Error("controlled metadata failure"));
+        else resolve({ ...session,
+          ...(outcome === "empty" ? { parameters: [], blockingMissingParameterIds: [], contractMissingParameterIds: [], invalidParameterIds: [] } : {}),
+          ...(outcome === "wrong-revision" ? { revisionId: "other-revision" } : {}),
+          ...(outcome === "wrong-draft" ? { draftId: "other-draft" } : {}),
+        });
+        await hydration;
+      });
+      expect(load).toHaveBeenCalledWith(session.revisionId, bundle.draft.id);
+      expect(prepare).not.toHaveBeenCalled(); expect(recalculate).not.toHaveBeenCalled();
+      expect(JSON.stringify(action.state.bundle)).toBe(snapshot);
+      expect(renderer.root.findByType(ParameterDisclosurePanel).instance).toBe(editor);
+      for (const key of ["area_m2", "waste_percent"]) {
+        expect(renderer.root.findAllByProps({ testID: `editable-param-chip-${key}` })).toHaveLength(0);
+      }
+      if (outcome === "ready" || outcome === "empty") {
+        expect(renderer.root.findAllByProps({ testID: "request-estimate-parameter-readiness-pending" })).toHaveLength(0);
+        expect(Object.keys(editor.state.baselineValues)).toHaveLength(outcome === "empty" ? 0 : 4);
+      } else {
+        expect(action.state.statusMessage).toContain("Параметры сметы не загружены");
+        expect(renderer.root.findAllByProps({ testID: "request-estimate-parameter-readiness-pending" }).length).toBeGreaterThan(0);
+        expect(editor.state.baselineValues).toEqual({});
+      }
+      act(() => renderer.unmount());
+    },
+  );
+
+  it.each([false, true])("retains dirty input across pending schema and defers a changed-revision rebase (%s)", async changedRevision => {
+    const { bundle, session } = hydrationFixture();
+    const state = bundle.estimateDraftRevisionState!;
+    const revision = state.revisions.find(r => r.revisionId === state.currentRevisionId)!;
+    const onApply = jest.fn();
+    const element = (pending: boolean, nextRevision = revision, nextSession: typeof session | null = session) => (
+      <ParameterDisclosurePanel viewModel={null} revision={nextRevision} canonicalParameterSession={nextSession}
+        canonicalParameterReadinessPending={pending} latestDiff={null} paramEditorEnabled onApplyParamBatch={onApply} />
+    );
+    let renderer!: TestRenderer.ReactTestRenderer;
+    act(() => { renderer = TestRenderer.create(element(false)); });
+    const input = renderer.root.findByProps({ testID: "editable-param-inline-editor-total_axis_length_m" })
+      .findByProps({ testID: "editable-param-popover-input" });
+    const staleChange = input.props.onChangeText;
+    act(() => staleChange("36"));
+    const staleApply = renderer.root.findByProps({ testID: "editable-param-batch-apply" }).props.onPress;
+    const editor = renderer.root.findByType(ParameterDisclosurePanel).instance as ParameterDisclosurePanel;
+    const nextRevision = changedRevision ? { ...revision, revisionId: "next-revision", previousRevisionId: revision.revisionId } : revision;
+    const nextSession = changedRevision ? { ...session, revisionId: nextRevision.revisionId } : session;
+    act(() => renderer.update(element(true, nextRevision, null)));
+    act(() => { staleChange("999"); staleApply(); });
+    expect(editor.state.draftValues.total_axis_length_m).toBe("36");
+    expect(editor.state.baselineValues.total_axis_length_m).toBe("35.5");
+    expect(editor.state.draftRevisionId).toBe(revision.revisionId);
+    expect(onApply).not.toHaveBeenCalled();
+    act(() => renderer.update(element(false, nextRevision, nextSession)));
+    expect(renderer.root.findByType(ParameterDisclosurePanel).instance).toBe(editor);
+    expect(editor.state.draftValues.total_axis_length_m).toBe("36");
+    expect(editor.state.baselineValues.total_axis_length_m).toBe("35.5");
+    expect(editor.state.draftRevisionId).toBe(nextRevision.revisionId);
+    act(() => renderer.root.findByProps({ testID: "editable-param-batch-cancel" }).props.onPress());
+    expect(editor.state.draftValues.total_axis_length_m).toBe("35.5");
+    expect(onApply).not.toHaveBeenCalled();
+    act(() => renderer.unmount());
+  });
 
   function historicalPdfAction() {
     const bundle = populatedDraft();

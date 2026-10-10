@@ -62,6 +62,58 @@ function expectMode(item: ConsumerRepairRequestItem, expected: string) {
 }
 
 describe("canonical pending row quantity provenance", () => {
+  it.each([null,2])("keeps source-owned quantity %s visible but blocks input and steppers until a norm is admitted", quantity => {
+    const item=stagedEditor({quantity,unit:'',unitLabel:'',sourceParameters:{canonicalPreliminaryNeed:true,
+      missingParameterRequirements:[{parameterId:'norm_qty',titleRu:'Норма инструмента',valueSourceRole:'UNRESOLVED_APPLICATION_NORM',sourceConfirmationRequired:false}]}}).current();
+    const onQuantityChange=jest.fn();let renderer!:ReactTestRenderer;
+    act(()=>{renderer=TestRenderer.create(<ConsumerRepairItemRow item={item} onDecrease={jest.fn()} onIncrease={jest.fn()}
+      onQuantityChange={onQuantityChange} onUnitPriceChange={jest.fn()} onRemove={jest.fn()}/>);});
+    expect(renderer.root.findByProps({testID:`consumer-repair-item-quantity-input-${item.id}`}).props.editable).toBe(false);
+    expect(renderer.root.findByProps({testID:`consumer-repair-item-quantity-input-${item.id}`}).props.value).toBe(String(quantity??''));
+    for(const step of ['minus','plus'])expect(renderer.root.findByProps({testID:`consumer-repair-item-${step}-${item.id}`}).props.disabled).toBe(true);
+    act(()=>renderer.root.findByProps({testID:`consumer-repair-item-plus-${item.id}`}).props.onPress());
+    expect(onQuantityChange).not.toHaveBeenCalled();
+    expect(renderer.root.findByProps({testID:`consumer-repair-item-quantity-input-${item.id}`}).props.value).toBe(String(quantity??''));
+    expect(renderer.root.findByProps({testID:`consumer-repair-item-unit-${item.id}`}).props.children).toBe('');
+    if(quantity===null)expect(renderer.root.findByProps({testID:`consumer-repair-item-source-gated-quantity-${item.id}`}).props.children)
+      .toContain('подтверждения технического источника');
+    act(()=>renderer.unmount());
+  });
+  it.each(['exact','missing','wrong-release'])('blocks retained handlers and unresolved shared requirements with %s table',mode=>{
+    const item=stagedEditor().current(),onQuantityChange=jest.fn();
+    const view=(current:ConsumerRepairRequestItem,tables?:React.ComponentProps<typeof ConsumerRepairItemRow>['parameterRequirementTables'])=>(
+      <ConsumerRepairItemRow item={current} parameterRequirementTables={tables} onDecrease={jest.fn()} onIncrease={jest.fn()}
+        onQuantityChange={onQuantityChange} onUnitPriceChange={jest.fn()} onRemove={jest.fn()}/>);
+    let renderer!:ReactTestRenderer;act(()=>{renderer=TestRenderer.create(view(item));});
+    const input=renderer.root.findByProps({testID:`consumer-repair-item-quantity-input-${item.id}`});
+    const change=input.props.onChangeText,blur=input.props.onBlur,focus=input.props.onFocus;
+    const plus=renderer.root.findByProps({testID:`consumer-repair-item-plus-${item.id}`}).props.onPress;
+    act(()=>{focus();change('1');});
+    const reference={contractVersion:'canonical-parameter-requirements/v1' as const,revisionId:'test-parent',releaseId:'test-release',parameterSchemaHash:'schema'};
+    const blocked={...item,quantity:null,sourceParameters:{...item.sourceParameters,canonicalPreliminaryNeed:true,missingParameterIds:['tool_norm'],
+      sourceManagedMissingParameterIds:[],canonicalParameterRequirementReference:reference}};
+    const tables=mode==='missing'?undefined:{'test-parent':{...reference,releaseId:mode==='exact'?'test-release':'foreign-release',
+      requirementsById:{tool_norm:{parameterId:'tool_norm',titleRu:'Норма инструмента',unitId:null,guideShortRu:null,
+        sourceConfirmationRequired:false,valueSourceRole:'UNRESOLVED_APPLICATION_NORM' as const}}}};
+    act(()=>renderer.update(view(blocked,tables)));
+    act(()=>{focus();change('999');blur();plus();});
+    expect(onQuantityChange).not.toHaveBeenCalled();
+    expect(renderer.root.findByProps({testID:`consumer-repair-item-quantity-input-${item.id}`}).props.value).toBe('');
+    expect(renderer.root.findByProps({testID:`consumer-repair-item-quantity-input-${item.id}`}).props.editable).toBe(false);
+    act(()=>renderer.unmount());
+  });
+  it('allows explicitly clearing a saved manual override while leaving source-owned quantity unconfirmed',()=>{
+    const item=stagedEditor({quantity:2,sourceParameters:{canonicalPreliminaryNeed:true,manualQuantityOverride:true,calculatedQuantityBeforeOverride:1,
+      missingParameterRequirements:[{parameterId:'norm_qty',titleRu:'Норма',valueSourceRole:'UNRESOLVED_APPLICATION_NORM'}]}}).current();
+    const onQuantityChange=jest.fn();let renderer!:ReactTestRenderer;
+    act(()=>{renderer=TestRenderer.create(<ConsumerRepairItemRow item={item} onDecrease={jest.fn()} onIncrease={jest.fn()}
+      onQuantityChange={onQuantityChange} onUnitPriceChange={jest.fn()} onRemove={jest.fn()}/>);});
+    act(()=>renderer.root.findByProps({testID:`consumer-repair-item-restore-calculated-${item.id}`}).props.onPress());
+    expect(onQuantityChange).toHaveBeenCalledWith(item.id,'');
+    expect(renderer.root.findByProps({testID:`consumer-repair-item-quantity-input-${item.id}`}).props.value).toBe('2');
+    expect(item.quantity).toBe(2);
+    act(()=>renderer.unmount());
+  });
   it("shows a saved known consumption while retaining an empty order and no payable cost", () => {
     const item = stagedEditor({ quantity: null, totalPrice: null, unit: "m2", unitLabel: "м²", sourceParameters: {
       canonicalBackendRevisionId: "test-parent", rowCode: "test:bedding", canonicalPreliminaryNeed: true,
