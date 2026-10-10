@@ -1,5 +1,6 @@
 import pack from '../../../../data/estimate-benchmarks/source-packs/hep2o15-visible-line-s27-54.json';
 import accepted from '../../../../data/estimate-norms/professional/plumbing.json';
+import additionalVisible from '../../../../data/estimate-benchmarks/source-packs/hep2o-visible-additional-s27-54.json';
 import {
   buildAutomaticConstructionOwnerR1, compileAutomaticConstructionOwnerR1,
   type AutomaticOwnerDefinition, type AutomaticParameterSpec, type AutomaticRowSpec,
@@ -23,11 +24,17 @@ export function hep2o15VisibleLineDefinitionS2754(index: number): AutomaticOwner
 // One resource/ordering factory serves the independently sourced diameters.
 // The diameter-specific guide geometry is supplied by each accepted passport.
 export function hep2oVisibleLineDefinitionS2754(input: {
-  index: number; pack: typeof pack; prefix: string; nominalInsertionMm: 32 | 33; maxRouteM: 24.936 | 24.934;
+  index: number; pack: typeof pack; prefix: string; nominalInsertionMm: 32 | 33 | 36; maxRouteM: 24.936 | 24.934 | 24.928;
 }): AutomaticOwnerDefinition {
   const {index, pack, prefix, nominalInsertionMm, maxRouteM} = input;
   const type = pack.types[index];
-  if (accepted.source_pack_version !== pack.acceptedPhysicalSourceVersion || !type || !accepted.norm_items.some(n => n.norm_id === type.normId)) throw Error('EXACT_HEP2O_ORIENTATION_REQUIRED');
+  const additional = additionalVisible.variants.find(v => v.pack.types[0].normId === type?.normId);
+  const additionalAdmitted = additional != null && additional.orientation === type?.key
+    && additional.pack.source.sha256 === pack.source.sha256
+    && additional.nominalInsertionMm === nominalInsertionMm && additional.routeMaximumM === maxRouteM
+    && (['pipe', 'clip', 'sleeve', 'connector'] as const).every(key => additional.pack.products[key].sku === pack.products[key].sku);
+  if (accepted.source_pack_version !== pack.acceptedPhysicalSourceVersion || !type
+    || (!accepted.norm_items.some(n => n.norm_id === type.normId) && !additionalAdmitted)) throw Error('EXACT_HEP2O_ORIENTATION_REQUIRED');
   const facts = ['system_confirmed', 'supports_confirmed', 'joints_confirmed', 'cut_plan_confirmed', 'project_reference', 'test_program_reference'];
   const conditional: AutomaticParameterSpec[] = [
     {id: facts[0], title: 'Совместимые изделия Hep2O и режим холодного водоснабжения', valueType: 'enum', unitId: null, kind: 'conditional', values: [pack.systemValue]},
