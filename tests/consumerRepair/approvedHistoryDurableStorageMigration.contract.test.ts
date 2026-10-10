@@ -63,6 +63,16 @@ const LOCAL_STORAGE_HISTORY_ROW_COUNT =
   CONSUMER_REPAIR_TRANSACTIONAL_ROW_THRESHOLD - 1;
 const LOCAL_STORAGE_EDIT_HISTORY_ROW_COUNT = 200;
 
+// Storage-pressure fixtures need distinct evidence. Repeating one character
+// no longer exercises the quota once the compatible lossless codec is active.
+function storagePressureText(length: number, seed: number): string {
+  let state = seed || 1;
+  return Array.from({ length }, () => {
+    state ^= state << 13; state ^= state >>> 17; state ^= state << 5;
+    return String.fromCharCode(32 + (state >>> 0) % 95);
+  }).join("");
+}
+
 // This suite owns the localStorage summary/compaction boundary. Full
 // transactional payload integrity, rollback, crash recovery and adapters are
 // covered by the dedicated 22-case durable-store suites; avoid serializing 80
@@ -302,7 +312,7 @@ describe("approved history durable storage migration", () => {
     expect(decoded?.estimateDraftSession).toBeNull();
   });
 
-  it("updates a 1.7 MiB draft atomically without requiring three full localStorage copies", () => {
+  it("updates an incompressible medium draft atomically without requiring three full localStorage copies", () => {
     const userId = "durable-v3-large-update-two-generation-budget";
     const problemText = "large canonical draft must retain one recovery generation";
     const created = createConsumerRepairRequestDraft({
@@ -312,9 +322,9 @@ describe("approved history durable storage migration", () => {
     });
     const heavy = saveConsumerRepairBundle({
       ...inflateBundleItems(created, 213),
-      items: inflateBundleItems(created, 213).items.map((item) => ({
+      items: inflateBundleItems(created, 213).items.map((item, index) => ({
         ...item,
-        calculationTrace: `${item.calculationTrace ?? ""}:${"trace".repeat(1_400)}`,
+        calculationTrace: `${item.calculationTrace ?? ""}:${storagePressureText(4_000, index + 331)}`,
       })),
     });
     const recordKey =
@@ -326,9 +336,9 @@ describe("approved history durable storage migration", () => {
     const currentRaw = storage?.values.get(recordKey) ?? "";
     const edited = {
       ...heavy,
-      items: heavy.items.map((item, index) => index === 0
-        ? { ...item, quantity: (item.quantity ?? 0) + 1 }
-        : item),
+      // Request metadata is an ordinary mutable field. Quantity edits belong
+      // to their own accepted revision and are covered by the edit contracts.
+      draft: { ...heavy.draft, preferredTimeText: "CONTROL_ONLY: after 14:00" },
     };
     const editedRaw = safeJsonStringify(
       encodeConsumerRepairBundleForDurableStorage(
@@ -365,7 +375,8 @@ describe("approved history durable storage migration", () => {
     const rehydrated = getConsumerRepairRequest(heavy.draft.id);
 
     expect(rehydrated.items).toHaveLength(213);
-    expect(rehydrated.items[0]?.quantity).toBe(edited.items[0]?.quantity);
+    expect(rehydrated.draft.preferredTimeText).toBe(edited.draft.preferredTimeText);
+    expect(rehydrated.items[0]?.quantity).toBe(heavy.items[0]?.quantity);
   });
 
   it("routes a compact record above the two-generation Web Storage budget transactionally", () => {
@@ -388,9 +399,9 @@ describe("approved history durable storage migration", () => {
     );
     const pressureBundle = {
       ...base,
-      items: base.items.map((item) => ({
+      items: base.items.map((item, index) => ({
         ...item,
-        calculationTrace: `${item.calculationTrace ?? ""}:${"x".repeat(paddingPerRow)}`,
+        calculationTrace: `${item.calculationTrace ?? ""}:${storagePressureText(paddingPerRow, index + 17)}`,
       })),
     };
     const serializedLength = safeJsonStringify(
@@ -516,7 +527,7 @@ describe("approved history durable storage migration", () => {
           ...(item.sourceParameters ?? {}),
           oversizedRuntimeTrace: "z".repeat(index === 0 ? 80_000 : 10_000),
         },
-        calculationTrace: `${item.calculationTrace ?? ""} ${"trace".repeat(1200)}`,
+        calculationTrace: `${item.calculationTrace ?? ""} ${storagePressureText(20_000, index + 119)}`,
       })),
     };
 

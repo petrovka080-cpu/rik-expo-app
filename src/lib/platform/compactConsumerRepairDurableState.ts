@@ -29,7 +29,6 @@ import {
 import { safeJsonParseValue } from "../format";
 import {
   ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES,
-  MAX_ESTIMATE_REVISION_DURABLE_ENVELOPE_BYTES,
   estimateRevisionUtf8ByteLength,
   stableEstimateRevisionChecksum,
 } from "./estimateRevisionDurableSerialization";
@@ -42,6 +41,9 @@ const CONSUMER_REPAIR_DURABLE_HISTORY_SUMMARY_SCHEMA =
 const CONSUMER_REPAIR_DURABLE_COMPRESSED_REVISION_STATE_SCHEMA =
   "consumer_repair_estimate_revision_state_zlib_v1" as const;
 const CONSUMER_REPAIR_DURABLE_COMPRESSED_BUNDLE_SCHEMA = "consumer_repair_bundle_zlib_v1" as const;
+// Compress medium canonical histories before they accumulate against the
+// native database quota. The existing codec retains every revision and field.
+export const CONSUMER_REPAIR_DURABLE_BUNDLE_COMPRESSION_MIN_BYTES = 256 * 1024;
 // The observed complete crossing generation is 32,277,797 UTF-8 bytes. This
 // decoded-resource budget accommodates four such history generations without
 // raising any adapter's stored-byte capacity or discarding their hash basis.
@@ -1026,7 +1028,7 @@ export function encodeConsumerRepairBundleForDurableStorage(bundle: ConsumerRepa
   };
   const raw = JSON.stringify(encoded);
   const rawByteLength = estimateRevisionUtf8ByteLength(raw);
-  if (rawByteLength <= MAX_ESTIMATE_REVISION_DURABLE_ENVELOPE_BYTES) return encoded;
+  if (rawByteLength < CONSUMER_REPAIR_DURABLE_BUNDLE_COMPRESSION_MIN_BYTES) return encoded;
   if (rawByteLength > CONSUMER_REPAIR_DURABLE_MAX_DECODED_BUNDLE_BYTES) {
     throw new Error("CONSUMER_REPAIR_DURABLE_DECODED_SIZE_BUDGET_EXCEEDED");
   }
