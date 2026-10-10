@@ -126,6 +126,9 @@ export function resolvePdfViewerContentModel(args: {
   }
 
   if (args.resolvedSource.kind === "missing-asset") {
+    if (args.state === "loading" && !args.isReadyToRender) {
+      return { kind: "loading" };
+    }
     return {
       kind: "missing-asset",
       title: "Document not found",

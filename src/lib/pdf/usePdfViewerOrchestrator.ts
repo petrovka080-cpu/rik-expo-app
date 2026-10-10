@@ -84,8 +84,29 @@ export function usePdfViewerOrchestrator({
   initialState,
   initialErrorText,
 }: UsePdfViewerOrchestratorArgs) {
-  const [session, setSession] = React.useState<DocumentSession | null>(initialSession);
-  const [asset, setAsset] = React.useState<DocumentAsset | null>(initialAsset);
+  const [documentSnapshot, setDocumentSnapshot] = React.useState({
+    session: initialSession, asset: initialAsset,
+  });
+  const { session, asset } = documentSnapshot;
+  const setSession = React.useCallback((action: React.SetStateAction<DocumentSession | null>) => {
+    setDocumentSnapshot(prev => {const next=typeof action === 'function' ? action(prev.session) : action;return next===prev.session?prev:{...prev,session:next};});
+  }, []);
+  const setAsset = React.useCallback((action: React.SetStateAction<DocumentAsset | null>) => {
+    setDocumentSnapshot(prev => {const next=typeof action === 'function' ? action(prev.asset) : action;return next===prev.asset?prev:{...prev,asset:next};});
+  }, []);
+  const commitDocumentSnapshot = React.useCallback((nextSession: DocumentSession | null, nextAsset: DocumentAsset | null) => {
+    setDocumentSnapshot(prev => {
+      const sameSession = prev.session?.sessionId === nextSession?.sessionId
+        && prev.session?.status === nextSession?.status
+        && prev.session?.errorMessage === nextSession?.errorMessage
+        && prev.session?.assetId === nextSession?.assetId
+        && prev.session?.preparationState === nextSession?.preparationState
+        && prev.session?.preparationToken === nextSession?.preparationToken
+        && prev.session?.preparationStartedAt === nextSession?.preparationStartedAt;
+      const sameAsset = prev.asset?.assetId === nextAsset?.assetId && prev.asset?.uri === nextAsset?.uri;
+      return sameSession && sameAsset ? prev : {session: sameSession ? prev.session : nextSession, asset: sameAsset ? prev.asset : nextAsset};
+    });
+  }, []);
   const [state, setState] = React.useState<PdfViewerState>(initialState);
   const [errorText, setErrorText] = React.useState(initialErrorText);
   const [isReadyToRender, setIsReadyToRender] = React.useState(false);
@@ -99,6 +120,7 @@ export function usePdfViewerOrchestrator({
   const readyCommittedRef = React.useRef(false);
   const webRenderUriRef = React.useRef<string | null>(null);
   const viewerCycleRef = React.useRef(0);
+  const [viewerCycleGeneration, setViewerCycleGeneration] = React.useState(0);
   const openSignalSettledRef = React.useRef(false);
   const webIframeRenderLoggedKeyRef = React.useRef("");
   const activeRenderInstanceKeyRef = React.useRef("");
@@ -125,6 +147,7 @@ export function usePdfViewerOrchestrator({
 
   const beginBootstrapCycle = React.useCallback(() => {
     viewerCycleRef.current += 1;
+    setViewerCycleGeneration(viewerCycleRef.current);
     resetPdfNativeHandoffGuard(nativeHandoffGuardRef.current, { preserveSettled: true });
     openedAtRef.current = Date.now();
     renderFailedRef.current = false;
@@ -194,6 +217,7 @@ export function usePdfViewerOrchestrator({
     setSession,
     asset,
     setAsset,
+    commitDocumentSnapshot,
     state,
     setState,
     errorText,
@@ -212,6 +236,7 @@ export function usePdfViewerOrchestrator({
     readyCommittedRef,
     webRenderUriRef,
     viewerCycleRef,
+    viewerCycleGeneration,
     openSignalSettledRef,
     webIframeRenderLoggedKeyRef,
     activeRenderInstanceKeyRef,

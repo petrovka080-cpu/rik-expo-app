@@ -461,7 +461,7 @@ function extractUserQuantities(prompt: string): UserQuantity[] {
     .replace(/(?:кв(?:адратн[\p{L}]*)?\.?\s*м(?:етр[\p{L}]*)?)/giu, "м2")
     .replace(/(?:куб(?:ическ[\p{L}]*)?\.?\s*м(?:етр[\p{L}]*)?)/giu, "м3");
   const quantities: UserQuantity[] = [];
-  for (const match of normalizedPrompt.matchAll(/(?<![\p{L}\p{N}.,])(\d{1,3}(?:[ \u00a0\u202f]\d{3})+(?:[,.]\d+)?|\d+(?:[,.]\d+)?)\s*(штук(?:а|и)?|шт\.?|m2|m3|м2|м3|м|кг|тонн(?:а|ы)?|т)(?![\p{L}\p{N}])/giu)) {
+  for (const match of normalizedPrompt.matchAll(/(?<![\p{L}\p{N}.,])(\d{1,3}(?:[ \u00a0\u202f]\d{3})+(?:[,.]\d+)?|\d+(?:[,.]\d+)?)\s*(штук(?:а|и)?|шт\.?|m2|m3|м2|м3|метр(?:а|ов)?|м|кг|тонн(?:а|ы)?|т)(?![\p{L}\p{N}])/giu)) {
     const rawUnit = match[2]
       .toLocaleLowerCase("ru-RU")
       .replace("²", "2")
@@ -470,7 +470,7 @@ function extractUserQuantities(prompt: string): UserQuantity[] {
     const unit = /^шт|^штук/u.test(rawUnit) ? "pcs"
       : rawUnit === "m2" || rawUnit === "м2" || rawUnit.startsWith("кв") || rawUnit.startsWith("квадратн") ? "m2"
         : rawUnit === "m3" || rawUnit === "м3" || rawUnit.startsWith("куб") || rawUnit.startsWith("кубическ") ? "m3"
-          : rawUnit === "м" ? "m"
+          : rawUnit === "м" || /^метр(?:а|ов)?$/u.test(rawUnit) ? "m"
             : rawUnit === "кг" ? "kg"
               : rawUnit === "т" || rawUnit.startsWith("тонн") ? "t"
                 : null;

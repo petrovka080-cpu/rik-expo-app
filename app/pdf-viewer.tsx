@@ -76,6 +76,7 @@ import { resolvePdfViewerWebIframeReadyFallbackPlan } from "../src/lib/pdf/pdfVi
 import { needsPdfJsWebFallback } from "../src/lib/pdf/pdfViewerWebFallback";
 import { resolvePdfViewerWebRenderUriCleanup } from "../src/lib/pdf/pdfViewerWebRenderUriCleanup";
 import { usePdfViewerActions } from "../src/lib/pdf/usePdfViewerActions";
+import { usePdfViewerDiagnostics } from "../src/lib/pdf/usePdfViewerDiagnostics";
 import {
   recordPdfCrashBreadcrumbAsync,
   shouldRecordPdfCrashBreadcrumbs,
@@ -278,6 +279,7 @@ function PdfViewerScreen() {
     setSession,
     asset,
     setAsset,
+    commitDocumentSnapshot,
     state,
     setState,
     errorText,
@@ -295,6 +297,7 @@ function PdfViewerScreen() {
     readyCommittedRef,
     webRenderUriRef,
     viewerCycleRef,
+    viewerCycleGeneration,
     openSignalSettledRef,
     webIframeRenderLoggedKeyRef,
     activeRenderInstanceKeyRef,
@@ -525,22 +528,7 @@ function PdfViewerScreen() {
 
   const syncSnapshot = React.useCallback(() => {
     const next = resolveSnapshot();
-    setSession((prev) =>
-      prev?.sessionId === next.session?.sessionId &&
-      prev?.status === next.session?.status &&
-      prev?.errorMessage === next.session?.errorMessage &&
-      prev?.assetId === next.session?.assetId &&
-      prev?.preparationState === next.session?.preparationState &&
-      prev?.preparationToken === next.session?.preparationToken &&
-      prev?.preparationStartedAt === next.session?.preparationStartedAt
-        ? prev
-        : next.session,
-    );
-    setAsset((prev) =>
-      prev?.assetId === next.asset?.assetId && prev?.uri === next.asset?.uri
-        ? prev
-        : next.asset,
-    );
+    commitDocumentSnapshot(next.session, next.asset);
     setErrorText(next.session?.errorMessage || "");
     setState((prev) => {
       const nextState = resolvePdfViewerReadinessModel({
@@ -553,9 +541,8 @@ function PdfViewerScreen() {
     return next;
   }, [
     resolveSnapshot,
-    setAsset,
+    commitDocumentSnapshot,
     setErrorText,
-    setSession,
     setState,
     viewerPlatform,
   ]);
@@ -1959,33 +1946,13 @@ function PdfViewerScreen() {
     ],
   );
 
-  React.useEffect(() => {
-    if (contentModel.kind === "empty") {
-      logPdfViewerError("[pdf-viewer] viewer_missing_session", {
-        platform: Platform.OS,
-        sessionId,
-      });
-      return;
-    }
-    if (contentModel.kind === "error") {
-      logPdfViewerError("[pdf-viewer] viewer_error_state", {
-        platform: Platform.OS,
-        sessionId,
-        errorText: redactSensitiveText(contentModel.subtitle),
-        uri: asset?.uri ?? null,
-        scheme: getUriScheme(asset?.uri),
-      });
-      return;
-    }
-    if (contentModel.kind === "missing-asset") {
-      logPdfViewerError("[pdf-viewer] viewer_invalid_asset", {
-        platform: Platform.OS,
-        sessionId,
-        hasAsset: Boolean(asset),
-        uri: asset?.uri ?? null,
-      });
-    }
-  }, [asset, contentModel, sessionId]);
+  usePdfViewerDiagnostics({
+    contentModel, asset, sessionId, platform: viewerPlatform,
+    isMountedRef, backDispatchedRef, viewerCycleRef, viewerRouteKey,
+    attemptGeneration: viewerCycleGeneration,
+    getCurrentRouteKey: () => navigationRef.getCurrentRoute()?.key,
+    resolveSnapshot, logError: logPdfViewerError,
+  });
 
   return (
     <SafeAreaView style={styles.screen} edges={["left", "right", "bottom"]}>

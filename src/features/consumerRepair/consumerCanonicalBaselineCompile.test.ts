@@ -169,6 +169,20 @@ describe("consumer canonical W5 baseline", () => {
   );
 
   it.each([
+    ["Борт1ГП — 1 метр", { value: "1", unit: "m" }],
+    ["Борт1ГП — 3 метра", { value: "3", unit: "m" }],
+    ["Борт1ГП — 35,5 метров", { value: "35.5", unit: "m" }],
+    ["Борт1ГП — 1\u202f234,5 метров", { value: "1234.5", unit: "m" }],
+    ["35 метровый элемент", null],
+    ["артикул X35метров", null],
+    ["35 метров2", null],
+    ["35 квадратных метров", { value: "35", unit: "m2" }],
+    ["35 кубических метров", { value: "35", unit: "m3" }],
+  ])("extracts exact linear-metre words without confusing dimensions or identifiers: %s", (prompt, expected) => {
+    expect(extractUserQuantity(prompt)).toEqual(expected);
+  });
+
+  it.each([
     ["Третий слой шпаклёвки потолка35,5м², высота помещения 3 м", { value: "35.5", unit: "m2" }],
     ["Окраска стены35.5м2", { value: "35.5", unit: "m2" }],
     ["площадь35,5м²", { value: "35.5", unit: "m2" }],
