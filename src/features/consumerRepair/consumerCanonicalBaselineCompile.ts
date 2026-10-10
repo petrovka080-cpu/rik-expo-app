@@ -4,6 +4,7 @@ import {
 } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
 import {
   canonicalEstimateBlockingParameterIssues,
+  canonicalEstimateConsumerInputRole,
 } from "../../lib/estimate/backendPlatform/canonicalEstimateParameterSemantics";
 import { adaptCanonicalRevisionToStructuredEstimate } from "../../lib/estimate/backendPlatform/canonicalEstimateForemanAdapter";
 import { validateCanonicalEstimateParameterInputs } from "../../lib/estimate/backendPlatform/canonicalEstimateParameterValidation";
@@ -566,8 +567,8 @@ function promptOwnedNamedParameters(
 }
 
 type ExplicitGeometryFact = {
-  semanticSuffix: "length_m" | "width_m" | "height_m" | "depth_m" | "area_m2" | "volume_m3";
-  unitId: "m" | "m2" | "m3";
+  semanticSuffix: "length_m" | "width_m" | "height_m" | "depth_m" | "area_m2" | "volume_m3" | "thickness_mm";
+  unitId: "m" | "m2" | "m3" | "mm";
   value: string | undefined;
 };
 
@@ -590,7 +591,25 @@ function schemaDrivenExplicitGeometry(
     const metres = unit === "мм" ? raw / 1_000 : unit === "см" ? raw / 100 : raw;
     return String(metres);
   };
+  const thicknessValues = [...normalized.matchAll(
+    /(?:^|[^\p{L}])(?:толщин\p{L}*(?:\s+сло\p{L}*)?|сло(?:й|ем|я|ев|ёв))\s*[:=]?\s*(\d+(?:[,.]\d+)?)\s*(мм|см|м)(?![\p{L}\p{N}²³])/giu,
+  )].map(match => {
+    const [whole, fraction = ""] = match[1].replace(",", ".").split(".");
+    const unit = match[2].toLocaleLowerCase("ru-RU");
+    const shift = unit === "см" ? 1 : unit === "м" ? 3 : 0;
+    const digits = whole + fraction.padEnd(shift, "0");
+    const point = whole.length + shift;
+    const integer = digits.slice(0, point).replace(/^0+(?=\d)/u, "");
+    const decimal = digits.slice(point).replace(/0+$/u, "");
+    return decimal ? `${integer}.${decimal}` : integer;
+  });
+  const distinctThicknesses = [...new Set(thicknessValues)];
   const facts: readonly ExplicitGeometryFact[] = [
+    {
+      semanticSuffix: "thickness_mm",
+      unitId: "mm",
+      value: distinctThicknesses.length === 1 ? distinctThicknesses[0] : undefined,
+    },
     {
       semanticSuffix: "length_m",
       unitId: "m",
@@ -627,6 +646,7 @@ function schemaDrivenExplicitGeometry(
     if (fact.value == null) continue;
     const candidates = schema.filter((parameter) => {
       if (parameter.valueType !== "decimal" && parameter.valueType !== "integer") return false;
+      if (fact.unitId === "mm" && canonicalEstimateConsumerInputRole(parameter) === "APPLICATION_TECHNICAL") return false;
       if (String(parameter.unitId ?? "").toLocaleLowerCase("en-US") !== fact.unitId) return false;
       if (parameter.visibilityRole != null && parameter.visibilityRole !== "USER_INPUT") return false;
       if (parameter.valueSourceRole != null
@@ -809,10 +829,6 @@ export function extractPromptOwnedProfessionalParameters(
   if (/BBS\s+подтвержден\p{L}*/iu.test(normalized)) {
     assign(["bbs_confirmation_state"], "CONFIRMED_SUMMARY_NOT_ATTACHED");
   }
-  assign(
-    ["average_thickness_mm", "existing_screed_thickness_mm", "layer_thickness_mm", "steel_thickness_mm"],
-    number(/толщин\p{L}*\s*(\d+(?:[,.]\d+)?)\s*мм/iu),
-  );
   const format = /формат\p{L}*\s*(\d+(?:[,.]\d+)?)\s*[xх×*]\s*(\d+(?:[,.]\d+)?)\s*мм/iu.exec(normalized);
   if (format) {
     assign(["tile_length_mm"], format[1].replace(",", "."));

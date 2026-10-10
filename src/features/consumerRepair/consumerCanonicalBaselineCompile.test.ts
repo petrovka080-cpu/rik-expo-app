@@ -194,7 +194,7 @@ describe("consumer canonical W12 preliminary handoff", () => {
     parameterId,
     ordinal,
     valueType: "decimal",
-    unitId: parameterId.endsWith("_m2") ? "m2" : parameterId.endsWith("_m3") ? "m3" : "m",
+    unitId: parameterId.endsWith("_mm") ? "mm" : parameterId.endsWith("_m2") ? "m2" : parameterId.endsWith("_m3") ? "m3" : "m",
     titleRu: parameterId,
     required,
     defaultValue: null,
@@ -234,6 +234,55 @@ describe("consumer canonical W12 preliminary handoff", () => {
       geometryParameter("strip_width_m", 1),
     ], "высота 120 см, ширина 700 мм"))
       .toEqual({ optional_height_m: "1.2", strip_width_m: "0.7" });
+  });
+
+  it.each([
+    ["слой 5 мм", "5"],
+    ["слоем 5 мм", "5"],
+    ["толщиной 5 мм", "5"],
+    ["толщина слоя: 5 мм", "5"],
+    ["слоем 0,5 см", "5"],
+    ["слоем 0,29 см", "2.9"],
+    ["толщина 0.005 м", "5"],
+  ])("transfers an explicitly named layer thickness: %s", (description, expected) => {
+    expect(extractPromptOwnedProfessionalParameters([
+      geometryParameter("layer_thickness_mm", 0),
+    ], `Шпаклёвка потолка CT126 35,5 м2, ${description}`))
+      .toEqual({ layer_thickness_mm: expected });
+  });
+
+  it("does not assign thickness to a hidden or source-owned field", () => {
+    const field = geometryParameter("layer_thickness_mm", 0);
+    for (const guarded of [
+      { ...field, visibilityRole: "INTERNAL_ONLY" as const },
+      { ...field, valueSourceRole: "MANUFACTURER_CONFIRMED" as const },
+      { ...field, parameterId: "derived_layer_thickness_mm" },
+      { ...field, unitId: "m" },
+      { ...field, provenance: { consumer_input_role_v1: "APPLICATION_TECHNICAL" } },
+    ]) expect(extractPromptOwnedProfessionalParameters([guarded], "толщиной 5 мм"))
+      .toEqual({});
+  });
+
+  it("leaves thickness unresolved for multiple targets or different layer values", () => {
+    expect(extractPromptOwnedProfessionalParameters([
+      geometryParameter("layer_thickness_mm", 0),
+      geometryParameter("existing_screed_thickness_mm", 1),
+    ], "толщина слоя 5 мм")).toEqual({});
+    expect(extractPromptOwnedProfessionalParameters([
+      geometryParameter("layer_thickness_mm", 0),
+    ], "слой 5 мм, другой слой 7 мм")).toEqual({});
+  });
+
+  it("does not infer thickness from a product name or tile dimensions", () => {
+    expect(extractPromptOwnedProfessionalParameters([
+      geometryParameter("layer_thickness_mm", 0),
+    ], "CT126 для потолка, плитка 600×600×5 мм")).toEqual({});
+  });
+
+  it.each(["мм2", "мм²", "ммк", "см2"])("does not treat %s as a linear thickness unit", unit => {
+    expect(extractPromptOwnedProfessionalParameters([
+      geometryParameter("layer_thickness_mm", 0),
+    ], `слой 5 ${unit}`)).toEqual({});
   });
 
   it("submits UI boolean choices with their canonical boolean type", () => {
