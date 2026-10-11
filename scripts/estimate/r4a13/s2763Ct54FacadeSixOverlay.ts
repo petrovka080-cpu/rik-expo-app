@@ -48,7 +48,11 @@ export function overlayS2763Ct54FacadeSix(parent:PurchaseGroupRepresentative,loc
   result.baseline.normative_source_ids[id]??=[];result.baseline.guide_provenance_ru[id]=p.truth_metadata.guide?.guide_short_ru??p.title_ru;
  }
  result.baseline.parameter_schema_sha256=hash(result.parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata})));
- result.passport.decision={...result.passport.decision,materialSourceScopeOnly:true,completeTechnicalEstimateAccepted:false,legacyPreliminarySourcesRemainUnaccepted:true,
+ const unresolvedIds=result.parameters.filter(p=>p.truth_metadata.value_source_role==='UNRESOLVED_APPLICATION_NORM').map(p=>p.parameter_id);
+ const unresolvedRows=newRows.filter(r=>result.formulas.find(f=>f.formula_id===r.formula_id)!.input_parameter_ids.some((id:string)=>unresolvedIds.includes(id))).map(r=>r.row_id);
+ if(unresolvedRows.length!==21)throw Error('CT54_SIX_UNRESOLVED_OWNER_COUNT_DRIFT');
+ result.passport.capability_matrix=(result.passport.capability_matrix??[]).map((c:Record<string,unknown>)=>c.capability==='FULL_APPLICABLE_SCOPE'?{...c,status:'NEEDS_SOURCE',preliminaryCompositionOnly:true,unresolvedResourceRowIds:unresolvedRows}:c);
+ result.passport.decision={...result.passport.decision,quantityScope:'PARTIAL',preliminaryCompositionOnly:true,technicalScopeStatus:'NEEDS_SOURCE',unresolvedResourceRowIds:unresolvedRows,materialSourceScopeOnly:true,completeTechnicalEstimateAccepted:false,legacyPreliminarySourcesRemainUnaccepted:true,
   facadeSeriesContract:pack.contract,wholeFacadeGroupComplete:false,physicalNormClosureCount:3,paintConsumptionWasAlreadyPresent:true,ownerDisposition:dispositions,
   activeUnresolvedDefinitionsWithOneTool:20,newPriceOwnersDoNotInheritLegacySquareMetrePrices:true};
  return{representative:result,legacyRowIds:dispositions.map(d=>d.legacyRowId),addedRowIds:newRows.map(r=>r.row_id),addedParameterIds:result.parameters.filter(p=>p.parameter_id!=='q').map(p=>p.parameter_id),
