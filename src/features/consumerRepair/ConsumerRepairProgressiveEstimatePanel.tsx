@@ -841,6 +841,7 @@ type ParameterDisclosurePanelState = {
   derivedOpen: boolean;
   draftValues: Record<string, string>;
   baselineValues: Record<string, string>;
+  baselinePlacements: Record<string, Pick<AiEstimateParameterCard, "missing" | "source">>;
   draftRevisionId: string | null;
   draftSignature: string;
   validationErrors: Record<string, string>;
@@ -1144,6 +1145,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     derivedOpen: false,
     draftValues: {},
     baselineValues: {},
+    baselinePlacements: {},
     draftRevisionId: null,
     draftSignature: "",
     validationErrors: {},
@@ -1201,7 +1203,9 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       && (canonicalSessionChanged || nextDraftSignature !== this.state.draftSignature)
     ) {
       this.syncDraftFromProps();
+      return;
     }
+    this.registerNewlyVisibleCards();
   }
 
   private showAllMissing = () => {
@@ -1262,9 +1266,13 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     const currentValue = this.props.revision?.params[card.key]?.value;
     const canonicalParameter = this.props.canonicalParameterSession?.parameters.find(
       (parameter) => parameter.parameterId === card.key,
+    ) ?? this.props.canonicalParameterSession?.inactiveConditionalParameters?.find(
+      (parameter) => parameter.parameterId === card.key,
     );
     return canonicalConsumerEditableFieldValue({
-      cardValue: card.value,
+      // A newly activated card may already be part of the edited preview.
+      // Its original value belongs to the saved active/inactive session.
+      cardValue: canonicalParameter ? canonicalParameter.value : card.value,
       revisionValue: currentValue,
       parameter: canonicalParameter,
     });
@@ -1291,6 +1299,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     this.setState({
       draftValues: { ...baselineValues, ...preservedValues },
       baselineValues,
+      baselinePlacements: Object.fromEntries(cards.map(card => [card.key, { missing: card.missing, source: card.source }])),
       draftRevisionId: this.props.revision?.revisionId ?? null,
       draftSignature: this.draftSignature(cards),
       validationErrors: {},
@@ -1304,6 +1313,26 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
 
   private initialEditValue(card: AiEstimateParameterCard): string {
     return this.state.draftValues[card.key] ?? this.valueForCard(card);
+  }
+
+  private baselineValueForCard(card: AiEstimateParameterCard): string {
+    return this.state.baselineValues[card.key] ?? this.valueForCard(card);
+  }
+
+  private registerNewlyVisibleCards(): void {
+    const cards = this.buildCards().filter(card =>
+      !Object.prototype.hasOwnProperty.call(this.state.baselineValues, card.key));
+    if (cards.length === 0) return;
+    // Register the branch's controls before their first input event. Retain
+    // their first visible group as well as the original saved values, including
+    // empty required fields; neither comes from a later edited preview.
+    const values = Object.fromEntries(cards.map(card => [card.key, this.valueForCard(card)]));
+    const placements = Object.fromEntries(cards.map(card => [card.key, { missing: card.missing, source: card.source }]));
+    this.setState(state => ({
+      baselineValues: { ...state.baselineValues, ...values },
+      draftValues: { ...values, ...state.draftValues },
+      baselinePlacements: { ...state.baselinePlacements, ...placements },
+    }));
   }
 
   private dirtyKeys(): string[] {
@@ -1493,7 +1522,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       (parameter) => parameter.parameterId === card.key,
     );
     const baseline = canonicalParameter?.referenceValue == null
-      ? this.state.baselineValues[card.key] ?? ""
+      ? this.baselineValueForCard(card)
       : String(canonicalParameter.referenceValue);
     const isDirty = isConsumerRepairParameterExplicitlyDirty({
       baselineValue: baseline,
@@ -1630,27 +1659,22 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     } as const;
     const canonicalSession = this.editableCanonicalParameterSession();
     const canonicalBlockingParameterIds = new Set(canonicalSession?.blockingMissingParameterIds ?? []);
-    const baselineMissingParameterIds = new Set(
-      this.buildBaselineCards()
-        .filter((card) => card.missing)
-        .map((card) => card.key),
-    );
     const initialCanonicalCalculationBlocked =
       canonicalSession?.status === "BLOCKING_REQUIRED";
     const missingCards = cards
       .filter((card) => {
         const dirty = isConsumerRepairParameterExplicitlyDirty({
-          baselineValue: this.state.baselineValues[card.key] ?? "",
+          baselineValue: this.baselineValueForCard(card),
           draftValue: this.initialEditValue(card),
           explicitlyConfirmedMissingValue: this.state.explicitlyConfirmedMissingValues[card.key] === true,
         });
         return shouldKeepConsumerRepairDirtyMissingParameterInPlace({
-          baselineMissing: baselineMissingParameterIds.has(card.key),
+          baselineMissing: this.state.baselinePlacements[card.key]?.missing ?? card.missing,
           currentMissing: card.missing,
           dirty,
         }) &&
         (
-          !initialCanonicalCalculationBlocked ||
+          dirty || !initialCanonicalCalculationBlocked ||
           canonicalBlockingParameterIds.has(card.key)
         );
       })
@@ -1661,15 +1685,14 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
           clarificationRank[right.clarificationTier ?? "optional"],
       );
     const missingCardIds = new Set(missingCards.map((card) => card.key));
-    const baselineSources = new Map(this.buildBaselineCards().map(card => [card.key, card.source] as const));
     // Editing an automatic value changes its preview provenance immediately.
     // Keep the input in its baseline group until Apply/Cancel so React does
     // not remount it and drop the keyboard after the first typed character.
     const groupSource = (card: AiEstimateParameterCard) => isConsumerRepairParameterExplicitlyDirty({
-      baselineValue: this.state.baselineValues[card.key] ?? "",
+      baselineValue: this.baselineValueForCard(card),
       draftValue: this.initialEditValue(card),
       explicitlyConfirmedMissingValue: this.state.explicitlyConfirmedMissingValues[card.key] === true,
-    }) ? baselineSources.get(card.key) ?? card.source : card.source;
+    }) ? this.state.baselinePlacements[card.key]?.source ?? card.source : card.source;
     const assumptionCards = canonicalSession
       ? cards.filter((card) => !missingCardIds.has(card.key) && groupSource(card) === "catalog_default"
         && card.consumerInputRole == null)
