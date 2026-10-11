@@ -356,12 +356,17 @@ export function hasHumanReadableAiEstimateParameterPassport(key: string, fallbac
 
 export function aiEstimateRuLabelForParameter(key: string, fallback?: string | null): string {
   const dictionary = PARAMETER_DICTIONARY[key];
-  if (dictionary) return dictionary.labelRu;
   // Display known manufacturer designations without losing the rest of the
   // published label (including stock vs reserve). Admission/ownership checks
   // still use the original passport and reject unknown technical identifiers.
   const cleanFallback = localizeKnownConstructionProductDesignationRu(String(fallback ?? ""))
     .replace(/\s+/g, " ").trim();
+  // A shared primary measure may mean net area, gross area, length or count.
+  // Keep its authored measurement instruction; IDs and other technical text
+  // still fall back to the safe dictionary label.
+  if (key === 'q' && hasCyrillic(cleanFallback) && !looksTechnical(cleanFallback)
+    && !isAiEstimateGenericParameterLabel(cleanFallback)) return cleanFallback;
+  if (dictionary) return dictionary.labelRu;
   if (hasHumanReadableAiEstimateParameterPassport(key, cleanFallback)) return cleanFallback;
   return fallbackLabelFromKey(key);
 }

@@ -14,12 +14,61 @@ import {
 } from "./ConsumerRepairProgressiveEstimatePanel";
 import { EstimateMaterialSearchAddControl } from "./RequestEstimateItemsEditor";
 import { ConsumerRepairItemRow } from "./ConsumerRepairItemRow";
+import { buildConsumerCanonicalParameterSession } from './consumerCanonicalParameterEditor';
+import type { CanonicalEstimateCatalogItem } from '../../lib/estimate/backendPlatform/contracts';
+import type { CanonicalEstimateParameterSessionRevision } from '../../lib/estimate/backendPlatform/canonicalEstimateParameterSessionSnapshot';
+
+// Use the public parameter-session contracts for this captured local release.
+const facadeFirstEntry = require('../../../data/estimate-benchmarks/fixtures/ct54-ready-facade-first-entry-s27-63.json') as {
+  catalog: CanonicalEstimateCatalogItem; revision: CanonicalEstimateParameterSessionRevision;
+};
 
 jest.mock("@expo/vector-icons", () => ({
   Ionicons: () => null,
 }));
 
 describe("InlineParamEditor R3 parameter guide", () => {
+  it('keeps the published facade facts available in one pending batch and after saving all eight', () => {
+    const session = buildConsumerCanonicalParameterSession({ catalog: facadeFirstEntry.catalog,
+      revision: facadeFirstEntry.revision, draftId: 'CONTROL_FIRST_ENTRY' });
+    const values = Object.fromEntries(facadeFirstEntry.catalog.parameterSchema.map(p => [p.parameterId,
+      (p.constraints as { values?: string[] }).values ?? []]));
+    const main = ['q','facade_technology_choice','ready_simple_facade_fact','facade_conditions',
+      'light_colour_scope','facade_norm_area_m2','application_tool','mechanism_fulfillment'];
+    let renderer!: ReactTestRenderer;
+    act(() => { renderer = TestRenderer.create(<ParameterDisclosurePanel viewModel={null} revision={null}
+      latestDiff={null} paramEditorEnabled canonicalParameterSession={session} />); });
+    const setNumber = (id: string, value: string) => act(() => renderer.root
+      .findByProps({testID:'editable-param-chip-'+id}).findByType(TextInput).props.onChangeText(value));
+    const choose = (id: string, value: string) => act(() => renderer.root
+      .findByProps({testID:'editable-param-option-'+id+'-'+value}).props.onPress());
+    setNumber('q','35.5'); choose('facade_technology_choice',String(values.facade_technology_choice[1]));
+    choose('ready_simple_facade_fact',String(values.ready_simple_facade_fact[0]));
+    choose('facade_conditions',String(values.facade_conditions[0]));
+    choose('light_colour_scope',String(values.light_colour_scope[0]));
+    setNumber('facade_norm_area_m2','40');
+    expect(renderer.root.findByProps({testID:'editable-param-chip-application_tool'})).toBeTruthy();
+    expect(renderer.root.findByProps({testID:'editable-param-chip-mechanism_fulfillment'})).toBeTruthy();
+    choose('application_tool','Валик'); choose('mechanism_fulfillment','Собственные машины исполнителя');
+    expect(renderer.root.findByProps({testID:'editable-param-batch-dirty-count'}).props.children).toEqual(['Изменено параметров: ',8]);
+    main.forEach(id => expect(renderer.root.findByProps({testID:'editable-param-chip-'+id})).toBeTruthy());
+    expect(renderer.root.findAllByProps({testID:'request-estimate-filled-parameters-toggle'})).toHaveLength(0);
+    expect(renderer.root.findAllByProps({testID:'editable-param-chip-open_qty_roller'})).toHaveLength(0);
+    choose('facade_technology_choice',String(values.facade_technology_choice[0]));
+    expect(renderer.root.findAllByProps({testID:'editable-param-chip-application_tool'})).toHaveLength(0);
+    choose('facade_technology_choice',String(values.facade_technology_choice[1]));
+    expect(renderer.root.findByProps({testID:'editable-param-chip-application_tool'})).toBeTruthy();
+    const facts = {q:'35.5',facade_norm_area_m2:'40',facade_technology_choice:values.facade_technology_choice[1],
+      ready_simple_facade_fact:values.ready_simple_facade_fact[0],facade_conditions:values.facade_conditions[0],
+      light_colour_scope:values.light_colour_scope[0],application_tool:'Валик',mechanism_fulfillment:'Собственные машины исполнителя'};
+    const saved = buildConsumerCanonicalParameterSession({catalog:facadeFirstEntry.catalog,draftId:'CONTROL_FIRST_ENTRY',
+      revision:{...facadeFirstEntry.revision,revisionId:'CONTROL_SAVED_FACADE',parameters:facts,userInputSnapshot:facts,preliminaryNeeds:[]}});
+    act(() => renderer.update(<ParameterDisclosurePanel viewModel={null} revision={null} latestDiff={null}
+      paramEditorEnabled canonicalParameterSession={saved} />));
+    main.forEach(id => expect(renderer.root.findByProps({testID:'editable-param-chip-'+id})).toBeTruthy());
+    expect(renderer.root.findAllByProps({testID:'request-estimate-filled-parameters-toggle'})).toHaveLength(0);
+    act(() => renderer.unmount());
+  });
   it('keeps missing advanced facts available without crowding the main questions or inventing zero', () => {
     const parameter = (parameterId: string, role: string) => ({
       parameterId, label: parameterId === 'area' ? 'Площадь поверхности' : 'Пригодный остаток материала',

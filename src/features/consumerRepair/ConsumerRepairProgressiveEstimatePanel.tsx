@@ -1824,7 +1824,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
         }) &&
         (
           dirty || !initialCanonicalCalculationBlocked ||
-          canonicalBlockingParameterIds.has(card.key)
+          canonicalBlockingParameterIds.has(card.key) || card.consumerInputRole === 'OBJECT_FACT'
         );
       })
       .map((card) => card.missing ? card : { ...card, missing: true })
@@ -1857,13 +1857,19 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     );
     const derivedCards = cards.filter((card) =>
       groupSource(card) === "formula_derived" && !missingCardIds.has(card.key) && !advancedCards.includes(card));
+    // A short published set of object facts should remain visible together,
+    // including its technology and scope choices after the first save.
+    const filledVisibleCount = filledCards.length <= 10 && filledCards.every(card => card.consumerInputRole === 'OBJECT_FACT')
+      ? filledCards.length : 6;
     const criticalMissingCards = mainMissingCards.filter(
       (card) => card.clarificationTier === "critical",
     );
     const nonCriticalMissingCards = mainMissingCards.filter(
       (card) => card.clarificationTier !== "critical",
     );
-    const visibleMissingCards = showAllMissing
+    const shortObjectFactQuestions = mainMissingCards.length <= 10
+      && mainMissingCards.every(card => card.consumerInputRole === 'OBJECT_FACT');
+    const visibleMissingCards = showAllMissing || shortObjectFactQuestions
       ? mainMissingCards
       : [
         ...criticalMissingCards,
@@ -2097,20 +2103,20 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       {!jubileeGroups && filledCards.length > 0 ? (
         <View style={styles.parameterGroup} testID="request-estimate-filled-parameters">
           <Text style={styles.groupTitle}>Заполнено</Text>
-          {filledCards.slice(0, 6).map((card) => renderParameter(card, ""))}
-          {filledCards.length > 6 ? (
+          {filledCards.slice(0, filledVisibleCount).map((card) => renderParameter(card, ""))}
+          {filledCards.length > filledVisibleCount ? (
             <Pressable
               accessibilityRole="button"
               onPress={this.toggleFilled}
               style={styles.inlineToggle}
               testID="request-estimate-filled-parameters-toggle"
             >
-              <Text style={styles.inlineToggleText}>{filledOpen ? "Скрыть остальные" : `Показать ещё ${filledCards.length - 6}`}</Text>
+              <Text style={styles.inlineToggleText}>{filledOpen ? "Скрыть остальные" : `Показать ещё ${filledCards.length - filledVisibleCount}`}</Text>
             </Pressable>
           ) : null}
-          {filledOpen ? (
+          {filledOpen && filledCards.length > filledVisibleCount ? (
             <View style={styles.parameterGroup} testID="request-estimate-filled-parameters-extra">
-              {filledCards.slice(6).map((card) => renderParameter(card, ""))}
+              {filledCards.slice(filledVisibleCount).map((card) => renderParameter(card, ""))}
             </View>
           ) : null}
         </View>

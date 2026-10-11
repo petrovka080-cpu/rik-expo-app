@@ -55,3 +55,15 @@ it("retains a supplied optional project branch in actual cards and pending Apply
   const legacyDocument = { ...choice, parameterId: "product_profile_id", semanticParameterKey: undefined, valueSourceRole: "PROJECT_SPECIFIC_INPUT", guide: undefined } as Schema;
   expect(build([legacyDocument]).parameters).toEqual([]);
 });
+
+it("distinguishes the two measured facade areas and retains safe generic wording for an internal title", () => {
+  const area = { ...stock, parameterId: 'q', semanticParameterKey: 'work:q', valueType: 'decimal',
+    unitId: 'm2', valueSourceRole: 'USER_MEASURED', titleRu: 'Площадь окраски за вычетом проёмов, м²' } as Schema;
+  const gross = { ...area, parameterId: 'facade_norm_area_m2', semanticParameterKey: 'work:gross',
+    titleRu: 'Площадь фасада вместе с проёмами, м²' } as Schema;
+  const cards = buildCanonicalParameterCards({ session: build([area, gross]), revision: null });
+  expect(cards.map(c => c.labelRu)).toEqual([area.titleRu, gross.titleRu]);
+  expect(build([{ ...area, titleRu: 'q_m2' }]).parameters[0].label).toBe('Объем работ');
+  const protectedArea = { ...area, valueSourceRole: 'UNRESOLVED_APPLICATION_NORM' } as Schema;
+  expect(build([protectedArea], {}, ['q']).parameters).toEqual([]);
+});
