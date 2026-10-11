@@ -4,6 +4,33 @@ import {pvc15CleanerDefinitionS2763,pvc15CleanerPackS2763 as pack,pvc15CleanerOw
 import type {PurchaseGroupRepresentative} from './s2732PurchaseGroupOverlay';
 const hash=(v:unknown)=>createHash('sha256').update(stringifyCanonicalEstimateJson(v)).digest('hex');
 export const S2763_PVC15_CLEANER_TARGETS=Object.fromEntries(pack.targets.map(t=>[t.catalogId,[pack.ownershipContract.legacyOwner]]));
+export const S2763_PVC15_CLEANER_CONSUMER_MODE_CONTRACT=`${pack.contract}.consumer-mode-r2`;
+/** The project chooses whether this operation is needed. Its enum is not a
+ * manufacturer consumption norm. Preserve the immutable guide and all numeric
+ * owners; repair only a forward successor of the published material cohort. */
+export function repairS2763Pvc15CleanerConsumerMode(parent:PurchaseGroupRepresentative){
+ const catalogId=String(parent.definition.catalog_id),target=pack.targets.find(t=>t.catalogId===catalogId);
+ if(!target||parent.definition.definition_version!==target.predecessorVersion+1
+   ||parent.definition.source_metadata?.materialSeriesContract!==pack.contract)throw Error('PVC15_CLEANER_MODE_REPAIR_PARENT_DRIFT');
+ const result=structuredClone(parent),newOwner=result.resources.find(r=>r.row_id===owner);
+ if(!newOwner||newOwner.unit_id!=='l'||newOwner.cost_owner_id!==owner
+   ||!result.resources.some(r=>r.row_id===pack.ownershipContract.legacyOwner))throw Error('PVC15_CLEANER_MODE_REPAIR_OWNER_DRIFT');
+ const mode=result.parameters.find(p=>p.parameter_id==='pvc15_cleaner_mode');
+ const expected=pvc15CleanerDefinitionS2763().parameters.find(p=>p.parameter_id==='pvc15_cleaner_mode')!;
+ const truth=mode?.truth_metadata,guide=truth?.guide;
+ if(!mode||mode.default_value!=null||mode.value_type!=='enum'||mode.unit_id!==null
+   ||JSON.stringify(mode.constraints_json?.values)!==JSON.stringify(expected.constraints_json?.values)
+   ||truth?.value_source_role!=='NORM_REQUIRED_BUT_PROJECT_SELECTED'||truth.visibility_role!=='USER_INPUT'
+   ||truth.provenance?.consumer_input_role_v1!=='OBJECT_FACT'||truth.source_confirmation_required!==false
+   ||truth.semantic_parameter_key!==`${catalogId}:pvc15_cleaner_mode`
+   ||!truth.resource_branch_consumers?.length||guide?.guide_kind!=='PROJECT_DEFINED'
+   ||guide.source_role!=='PROJECT_DOCUMENTATION'||guide.guide_validation_policy!=='MANDATORY_BLOCK'
+   ||!guide.source_document||!guide.source_locator||!/^[a-f0-9]{64}$/i.test(guide.source_snapshot_hash??''))throw Error('PVC15_CLEANER_MODE_REPAIR_OWNERSHIP_DRIFT');
+ mode.truth_metadata={...truth,value_source_role:'PROJECT_SPECIFIC_INPUT'};
+ for(const p of result.parameters)p.truth_metadata={...p.truth_metadata,contract:S2763_PVC15_CLEANER_CONSUMER_MODE_CONTRACT};
+ result.baseline.parameter_schema_sha256=hash(result.parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata})));
+ return{representative:result,changedRoleIds:['pvc15_cleaner_mode'],legacyRowIds:[],addedRowIds:[],addedParameterIds:[],changedFormulaIds:[],newPayableOwnerRowId:owner};
+}
 export function overlayS2763Pvc15Cleaner(parent:PurchaseGroupRepresentative,locatorId:string){
  const catalogId=String(parent.definition.catalog_id),target=pack.targets.find(t=>t.catalogId===catalogId);
  if(!target||parent.definition.id!==target.predecessorDefinitionId||parent.definition.definition_version!==target.predecessorVersion)throw Error('PVC15_CLEANER_PARENT_IDENTITY_DRIFT');

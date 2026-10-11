@@ -1,11 +1,32 @@
 import {compileAutomaticConstructionOwnerR1} from './automaticConstructionOwnerR1';
 import {compileCanonicalEstimateCore} from '../backendPlatform/canonicalEstimateCompileCore';
 import {estimateDeterministicHash} from '../estimateDeterministicHash';
+import {isCanonicalEstimateSourceManagedParameter,isCanonicalEstimateUserEditableParameter} from '../backendPlatform/canonicalEstimateParameterSemantics';
+import {repairS2763Pvc15CleanerConsumerMode} from '../../../../scripts/estimate/r4a13/s2763Pvc15CleanerOverlay';
+import {buildConsumerCanonicalPrecompileParameterSession} from '../../../features/consumerRepair/consumerCanonicalParameterEditor';
 import {pvc15CleanerDefinitionS2763,pvc15CleanerPackS2763 as pack,pvc15CleanerOwnerS2763 as owner,pvc15CleanerPrefixS2763 as prefix} from './pvc15Cleaner472219MaterialS2763';
 const facts={pvc15_cleaner_mode:'Требуется по подтверждённой границе',pvc15_cleaner_product_choice:pack.selectedProductRu,pvc15_cleaner_472219_dirty_area_m2:'40'};
 const compile=(submittedParameters:Record<string,unknown>)=>compileAutomaticConstructionOwnerR1({catalogId:'control:pvc15-cleaner',compilerVersion:pack.contract,primaryMeasureParameterId:'pvc15_cleaner_472219_dirty_area_m2',definition:pvc15CleanerDefinitionS2763(),submittedParameters});
 const value=(r:Awaited<ReturnType<typeof compile>>,id:string)=>r.rows.find(row=>row.row_id===(id==='order'?owner:prefix+':'+id))?.quantity;
 describe('shared exact PVC dirty-surface cleaner within three existing types',()=>{
+ test('the actual project-operation enum survives the protected norm guard after forward repair',()=>{
+  const d=pvc15CleanerDefinitionS2763(),target=pack.targets[0],mode=d.parameters.find(p=>p.parameter_id==='pvc15_cleaner_mode')!;
+  const guide={guide_kind:'PROJECT_DEFINED',source_role:'PROJECT_DOCUMENTATION',guide_validation_policy:'MANDATORY_BLOCK',source_document:'CONTROL_ONLY_PROJECT_DOCUMENT',source_locator:'CONTROL_ONLY_OPERATION_SCOPE',source_snapshot_hash:'a'.repeat(64)};
+  mode.truth_metadata={...mode.truth_metadata,value_source_role:'NORM_REQUIRED_BUT_PROJECT_SELECTED',visibility_role:'USER_INPUT',source_confirmation_required:false,semantic_parameter_key:`${target.catalogId}:pvc15_cleaner_mode`,provenance:{consumer_input_role_v1:'OBJECT_FACT'},resource_branch_consumers:[owner],guide};
+  const parent={definition:{catalog_id:target.catalogId,definition_version:target.predecessorVersion+1,source_metadata:{materialSeriesContract:pack.contract}},parameters:d.parameters,formulas:d.formulas,resources:[...d.resources,{row_id:pack.ownershipContract.legacyOwner}],bindings:[],baseline:{},passport:{}};
+  const project=(p:typeof mode)=>({parameterId:p.parameter_id,titleRu:p.title_ru,valueType:p.value_type,unitId:p.unit_id,required:p.required,defaultValue:p.default_value,constraints:p.constraints_json,visibilityRole:p.truth_metadata.visibility_role,valueSourceRole:p.truth_metadata.value_source_role,semanticParameterKey:p.truth_metadata.semantic_parameter_key,provenance:p.truth_metadata.provenance,resourceBranchConsumers:p.truth_metadata.resource_branch_consumers,guide:{guideKind:guide.guide_kind,sourceRole:guide.source_role,guideValidationPolicy:guide.guide_validation_policy,sourceDocument:guide.source_document,sourceLocator:guide.source_locator,sourceSnapshotHash:guide.source_snapshot_hash}});
+  expect(isCanonicalEstimateSourceManagedParameter(project(mode) as never)).toBe(true);
+  const repaired=repairS2763Pvc15CleanerConsumerMode(parent as never).representative,next=repaired.parameters.find(p=>p.parameter_id===mode.parameter_id)!;
+  const schema=project(next as typeof mode);
+  expect(isCanonicalEstimateUserEditableParameter(schema as never)).toBe(true);
+  expect(isCanonicalEstimateSourceManagedParameter(schema as never)).toBe(false);
+  expect(isCanonicalEstimateSourceManagedParameter({...schema,valueSourceRole:'MANUFACTURER_CONFIRMED'} as never)).toBe(true);
+  const session=buildConsumerCanonicalPrecompileParameterSession({catalog:{catalogId:target.catalogId,releaseId:'CONTROL_ONLY',definitionVersion:target.predecessorVersion+2,parameterSchema:[schema]} as never,draftId:'CONTROL_ONLY',parameters:{pvc15_cleaner_mode:facts.pvc15_cleaner_mode},missingParameterIds:[],userExplicitParameterIds:['pvc15_cleaner_mode'],textExtractedParameterIds:[]});
+  expect(session.parameters.find(p=>p.parameterId==='pvc15_cleaner_mode')).toMatchObject({resourceSelectionInput:true,value:facts.pvc15_cleaner_mode});
+  expect(next.truth_metadata.guide).toEqual(guide);expect(next.constraints_json).toEqual(mode.constraints_json);expect(next.default_value).toBeNull();
+  expect(repaired.resources).toEqual(parent.resources);expect(repaired.formulas).toEqual(parent.formulas);
+  expect(mode.truth_metadata.value_source_role).toBe('NORM_REQUIRED_BUT_PROJECT_SELECTED');
+ });
  test('known consumption is independent of unknown stock/reserve and price',async()=>{const r=await compile(facts);expect(value(r,'consumed')).toBe('10');expect(value(r,'order')).toBeUndefined();expect(r.preliminaryNeeds.some(n=>n.row_id===owner&&n.missing_parameter_ids.includes('pvc15_cleaner_472219_usable_stock_l'))).toBe(true);});
  test('inventory1L/reserve2L orders four3L cans with3L remaining and1L free',async()=>{const r=await compile({...facts,pvc15_cleaner_472219_usable_stock_l:'1',pvc15_cleaner_472219_retained_reserve_l:'2'});expect(value(r,'consumed')).toBe('10');expect(value(r,'order')).toBe('12');expect(value(r,'packages')).toBe('4');expect(value(r,'remaining')).toBe('3');expect(value(r,'free')).toBe('1');expect(r.rows.filter(row=>row.included_in_estimate)).toHaveLength(1);});
  test('exact package boundary uses one can; just above uses two',async()=>{for(const[area,order]of[['12','3'],['12.01','6']]){const r=await compile({...facts,pvc15_cleaner_472219_dirty_area_m2:area,pvc15_cleaner_472219_usable_stock_l:'0',pvc15_cleaner_472219_retained_reserve_l:'0'});expect(value(r,'order')).toBe(order);}});

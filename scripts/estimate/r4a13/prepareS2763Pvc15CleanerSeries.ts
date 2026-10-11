@@ -9,16 +9,18 @@ import { createCanonicalDefinitionClonePlan,
   type CanonicalPublisherJson as Json } from "./canonicalDefinitionPublisherR1";
 import { cloneCanonicalPreparedSearchR1 } from "./canonicalPreparedSearchCloneR1";
 import { type PurchaseGroupRepresentative } from "./s2732PurchaseGroupOverlay";
-import { overlayS2763Pvc15Cleaner, S2763_PVC15_CLEANER_TARGETS } from "./s2763Pvc15CleanerOverlay";
+import { overlayS2763Pvc15Cleaner, repairS2763Pvc15CleanerConsumerMode,
+  S2763_PVC15_CLEANER_CONSUMER_MODE_CONTRACT, S2763_PVC15_CLEANER_TARGETS } from "./s2763Pvc15CleanerOverlay";
 import { pvc15CleanerPackS2763 as pack } from "../../../src/lib/estimate/v4/pvc15Cleaner472219MaterialS2763";
-const CONTRACT = pack.contract;
+const REPAIR_CONSUMER_MODE = process.argv.includes("--repair-consumer-mode");
+const CONTRACT = REPAIR_CONSUMER_MODE ? S2763_PVC15_CLEANER_CONSUMER_MODE_CONTRACT : pack.contract;
 
 const ROOT = "C:/dev/rik-expo-app-r4a5-dc4f0ce7";
 const BRANCH = "codex/r4-a5-clean-08b18902";
 const MASTER = "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (100).md";
 const CURRENT = "data/estimate-benchmarks/r568-local-developer-canonical-release.json";
-const SNAPSHOT = ".release-runtime/r568/s27-63/roof-cleaner-parent-snapshot.json";
-const OUTPUT = ".release-runtime/r568/s27-63/pvc15-cleaner472219-material-series";
+const SNAPSHOT = REPAIR_CONSUMER_MODE ? ".release-runtime/r568/s27-63/pvc15-cleaner-material-parent-snapshot.json" : ".release-runtime/r568/s27-63/roof-cleaner-parent-snapshot.json";
+const OUTPUT = REPAIR_CONSUMER_MODE ? ".release-runtime/r568/s27-63/pvc15-cleaner-consumer-mode" : ".release-runtime/r568/s27-63/pvc15-cleaner472219-material-series";
 const SOURCES = ["scripts/estimate/r4a13/prepareS2763Pvc15CleanerSeries.ts", "scripts/estimate/r4a13/s2763Pvc15CleanerOverlay.ts",
   "src/lib/estimate/v4/pvc15Cleaner472219MaterialS2763.ts", "src/lib/estimate/v4/pvc15Cleaner472219MaterialS2763.test.ts",
   "data/estimate-benchmarks/source-packs/tn-pvc15-cleaner472219-series-s27-63.json", pack.source.localArtifact,
@@ -30,6 +32,7 @@ const SOURCES = ["scripts/estimate/r4a13/prepareS2763Pvc15CleanerSeries.ts", "sc
   "src/lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics.test.ts",
+  "src/features/consumerRepair/consumerCanonicalParameterEditor.ts",
   "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.tsx",
   "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.r3.test.tsx"];
 const APPLY = process.argv.includes("--apply");
@@ -118,7 +121,7 @@ async function main() {
       const parent = await load(client, manifest.definition_version_id, manifest.approved_template_baseline_id);
       const frozenParent = frozen.reps.find((r: Json) => r.target.catalogId === catalogId);
       invariant(frozenParent && hash(parent) === hash(Object.fromEntries(Object.keys(parent).map(key => [key, frozenParent[key]]))), `PARENT_SNAPSHOT_DRIFT:${catalogId}`);
-      const overlay = overlayS2763Pvc15Cleaner(parent, locatorId), r = overlay.representative;
+      const overlay = REPAIR_CONSUMER_MODE ? repairS2763Pvc15CleanerConsumerMode(parent) : overlayS2763Pvc15Cleaner(parent, locatorId), r = overlay.representative;
       const definitionId = uuid(`${fingerprint}:definition:${catalogId}`), baselineId = uuid(`${fingerprint}:baseline:${catalogId}`);
       const definitionSha256 = hash({ contract: CONTRACT, predecessorHash: parent.definition.definition_sha256,
         parameters: r.parameters, formulas: r.formulas, resources: r.resources });
@@ -148,8 +151,12 @@ async function main() {
       transitions.push({ catalogId, predecessorDefinitionId: parent.definition.id, successorDefinitionId: definitionId,
         predecessorBaselineId: parent.baseline.id, successorBaselineId: baselineId, ownerRowIds: [overlay.newPayableOwnerRowId], legacyRowIds: overlay.legacyRowIds, addedRowIds: overlay.addedRowIds,
         addedParameterIds: overlay.addedParameterIds, changedFormulaIds: overlay.changedFormulaIds,
+        changedRoleIds: 'changedRoleIds' in overlay ? overlay.changedRoleIds : [],
         parameterDelta: r.parameters.length - parent.parameters.length, formulaDelta: r.formulas.length - parent.formulas.length,
         resourceDelta: r.resources.length - parent.resources.length, quantityScope: parent.passport.decision.quantityScope, completeTechnicalEstimateAccepted: false });
+      if (REPAIR_CONSUMER_MODE) invariant(r.parameters.length===parent.parameters.length && r.formulas.length===parent.formulas.length
+        && r.resources.length===parent.resources.length && hash(r.formulas)===hash(parent.formulas)
+        && hash(r.resources)===hash(parent.resources) && hash(r.bindings)===hash(parent.bindings), "CONSUMER_MODE_QUANTITY_GRAPH_DRIFT");
     }
 
     const existing = (await client.query("select * from public.estimate_definition_release where id=$1", [releaseId])).rows[0];
@@ -247,6 +254,8 @@ async function main() {
       predecessor: { releaseId: predecessorReleaseId, searchReleaseId: predecessorSearchReleaseId }, successor: { releaseId, searchReleaseId, releaseKey },
       sourceHead: head, sourceTree: tree, sourceHashes, masterSha256, fingerprint, transitions, preflight, persisted,
       audit: { manifest, search, unrelatedManifestChanges: unrelated }, mutationPerformed: APPLY, productionAccessed: false,
+      consumerModeRepair: REPAIR_CONSUMER_MODE, newMaterialConsumerCount: REPAIR_CONSUMER_MODE ? 0 : 3,
+      repairedConsumerModeCount: REPAIR_CONSUMER_MODE ? 3 : 0, newCompleteTechnicalTypeCount: 0,
       activationPerformed: false, uiAccepted: false, engineeringAccepted: false, fullGateAccepted: false };
     await client.query(`update public.estimate_definition_release set source_manifest_sha256=$2,status='prepared',sealed_at=clock_timestamp(),
       metadata=metadata||$3::jsonb where id=$1 and status='draft'`, [releaseId, manifest.snapshot,
@@ -258,7 +267,9 @@ async function main() {
       definitionSnapshotSha256: manifest.snapshot, manifestHashChainSha256: manifest.snapshot, searchHashChainSha256: search.snapshot_sha256,
       owner: "S27_63_PVC15_CLEANER472219_MATERIAL_SERIES", productionAccessed: false, fakeGreenClaimed: false });
     else invariant(Number((await client.query("select count(*)::int count from public.estimate_definition_release where id=$1", [releaseId])).rows[0].count) === 0, "DRY_RUN_RESIDUE");
-    process.stdout.write(JSON.stringify({ status: receipt.status, successor: receipt.successor, targets: catalogIds.length, materialConsumers: 3, completeTypes: 0, unrelatedManifestChanges: unrelated, mutationPerformed: APPLY }) + "\n");
+    process.stdout.write(JSON.stringify({ status: receipt.status, successor: receipt.successor, targets: catalogIds.length,
+      newMaterialConsumers: receipt.newMaterialConsumerCount, repairedConsumerModes: receipt.repairedConsumerModeCount,
+      completeTypes: 0, unrelatedManifestChanges: unrelated, mutationPerformed: APPLY }) + "\n");
   } catch (error) { await client.query("rollback"); throw error; } finally { await client.end(); }
 }
 void main().catch(error => { process.stderr.write(String(error.stack ?? error) + "\n"); process.exitCode = 1; });
