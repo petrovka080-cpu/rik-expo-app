@@ -5,6 +5,7 @@ import {concreteCuringAntisolDefinitionS2763,concreteCuringAntisolPackS2763 as p
 import type {PurchaseGroupRepresentative} from './s2732PurchaseGroupOverlay';
 const hash=(v:unknown)=>createHash('sha256').update(stringifyCanonicalEstimateJson(v)).digest('hex');
 export const S2763_CURING_ANTISOL_TARGETS=Object.fromEntries(pack.targets.map(t=>[t.catalogId,[pack.ownershipContract.legacyOwner]]));
+export const S2763_CURING_CONSUMER_FACTS_CONTRACT=`${pack.contract}.consumer-facts-r2`;
 /** Forward-only successor: validation evidence stays intact, but project
  * fixtures cannot become facts for a new customer object. Presentation roles
  * do not change source ownership, guides or calculation/approval requirements. */
@@ -32,6 +33,9 @@ export function repairS2763ConcreteCuringConsumerFacts(parent:PurchaseGroupRepre
     result.baseline.input_classification[id]='VALIDATION_FIXTURE';changedFixtureIds.push(id);
   }
   for(const p of result.parameters){
+    // The governed publisher requires the successor contract on every cloned
+    // parameter. Stamp it before computing the final schema identity.
+    p.truth_metadata={...p.truth_metadata,contract:S2763_CURING_CONSUMER_FACTS_CONTRACT};
     const id=String(p.parameter_id);
     if(p.truth_metadata.visibility_role!=='USER_INPUT'||p.truth_metadata.provenance?.consumer_input_role_v1==='APPLICATION_TECHNICAL')continue;
     const antisol=id.startsWith('antisol_');

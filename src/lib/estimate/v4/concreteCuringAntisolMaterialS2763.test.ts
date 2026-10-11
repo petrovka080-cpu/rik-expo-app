@@ -18,7 +18,9 @@ describe('source-owned Antisol nominal consumption and existing effective supply
    expect(canonicalApprovedBaselineRuntimeParameters(result.representative.baseline)).toEqual({});
    expect(parent).toEqual(before);
    for(const p of result.representative.parameters){const original=before.parameters.find((v:any)=>v.parameter_id===p.parameter_id);
-     expect({...p.truth_metadata,provenance:original.truth_metadata.provenance}).toEqual(original.truth_metadata);
+     const {contract:successorContract,...authority}=p.truth_metadata;
+     expect(successorContract).toBe(`${pack.contract}.consumer-facts-r2`);
+     expect({...authority,provenance:original.truth_metadata.provenance}).toEqual(original.truth_metadata);
      expect(p.constraints_json).toEqual(original.constraints_json);expect(p.default_value).toBeNull();}
    const unsafe=structuredClone(before);unsafe.parameters[0].default_value='UNSAFE_SITE_DEFAULT';
    expect(()=>repairS2763ConcreteCuringConsumerFacts(unsafe)).toThrow('DEFAULT_OR_OWNERSHIP_DRIFT');

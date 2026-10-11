@@ -9,10 +9,10 @@ import { createCanonicalDefinitionClonePlan,
   type CanonicalPublisherJson as Json } from "./canonicalDefinitionPublisherR1";
 import { cloneCanonicalPreparedSearchR1 } from "./canonicalPreparedSearchCloneR1";
 import { type PurchaseGroupRepresentative } from "./s2732PurchaseGroupOverlay";
-import { overlayS2763ConcreteCuringAntisol, repairS2763ConcreteCuringConsumerFacts, S2763_CURING_ANTISOL_TARGETS } from "./s2763ConcreteCuringAntisolOverlay";
+import { overlayS2763ConcreteCuringAntisol, repairS2763ConcreteCuringConsumerFacts, S2763_CURING_ANTISOL_TARGETS, S2763_CURING_CONSUMER_FACTS_CONTRACT } from "./s2763ConcreteCuringAntisolOverlay";
 import { concreteCuringAntisolPackS2763 as pack } from "../../../src/lib/estimate/v4/concreteCuringAntisolMaterialS2763";
 const REPAIR_PROJECT_FIXTURES = process.argv.includes('--repair-project-fixtures');
-const CONTRACT = REPAIR_PROJECT_FIXTURES ? `${pack.contract}.consumer-facts-r2` : pack.contract;
+const CONTRACT = REPAIR_PROJECT_FIXTURES ? S2763_CURING_CONSUMER_FACTS_CONTRACT : pack.contract;
 
 const ROOT = "C:/dev/rik-expo-app-r4a5-dc4f0ce7";
 const BRANCH = "codex/r4-a5-clean-08b18902";
