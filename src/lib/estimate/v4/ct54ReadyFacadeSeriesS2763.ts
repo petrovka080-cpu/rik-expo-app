@@ -37,7 +37,7 @@ export function ct54ReadyFacadeDefinitionS2763():AutomaticOwnerDefinition {
   const document=documents.has(next.parameter_id),constraints={...next.constraints_json};
   if(document)delete constraints.requiredWhen;
   const truth={...next.truth_metadata,contract:pack.contract,source_confirmation_required:false,
-   ...(internal?{}:{value_source_role:next.parameter_id==='q'?'USER_MEASURED':'PROJECT_SPECIFIC_INPUT',visible_when:next.parameter_id==='q'?{kind:'literal',value:true}:constraints.requiredWhen?{kind:'and',operands:[ct54ReadyFacadeExactS2763,constraints.requiredWhen]}:ct54ReadyFacadeExactS2763,
+   ...(internal?{}:{value_source_role:next.parameter_id==='q'?'USER_MEASURED':constraints.requiredWhen?'CONDITIONAL_PROJECT_FACT':'PROJECT_SPECIFIC_INPUT',visible_when:next.parameter_id==='q'?{kind:'literal',value:true}:constraints.requiredWhen?{kind:'and',operands:[ct54ReadyFacadeExactS2763,constraints.requiredWhen]}:ct54ReadyFacadeExactS2763,
     provenance:{consumer_input_role_v1:advanced?'ADVANCED_OPTION':'OBJECT_FACT'}})};
   return {...next,title_ru:titles[next.parameter_id]??next.title_ru,ordinal:0,required:document?false:next.required,default_value:null,constraints_json:constraints,truth_metadata:truth};
  }),...extra.parameters.map(p=>({...p,truth_metadata:p.parameter_id.startsWith('ct54_inherited_open_')?unresolvedApplicationNormTruthR1(p.truth_metadata,pack.inheritedNeeds.find(g=>'ct54_inherited_open_'+g.suffix===p.parameter_id)!.reasonRu):{...p.truth_metadata,source_confirmation_required:false,value_source_role:'PROJECT_SPECIFIC_INPUT',visible_when:p.parameter_id===ct54ReadyFacadeChoiceIdS2763?{kind:'literal',value:true}:ct54ReadyFacadeExactS2763,provenance:{consumer_input_role_v1:'OBJECT_FACT'}}}))].map((p,ordinal)=>({...p,ordinal}));

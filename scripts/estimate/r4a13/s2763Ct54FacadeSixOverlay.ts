@@ -59,7 +59,7 @@ export function overlayS2763Ct54FacadeSix(parent:PurchaseGroupRepresentative,loc
   {capability:'FULL_APPLICABLE_SCOPE',status:'NEEDS_SOURCE',preliminaryCompositionOnly:true,unresolvedResourceRowIds:unresolvedRows},{capability:'PRICE',status:'GREEN_UNKNOWN_IS_NULL'}];
  result.passport.decision={...result.passport.decision,quantityScope:'PARTIAL',priceState:'PARTIAL_NEEDS_PRICE',preliminaryCompositionOnly:true,technicalScopeStatus:'NEEDS_SOURCE',unresolvedResourceRowIds:unresolvedRows,materialSourceScopeOnly:true,completeTechnicalEstimateAccepted:false,legacyPreliminarySourcesRemainUnaccepted:true,
   facadeSeriesContract:pack.contract,wholeFacadeGroupComplete:false,physicalNormClosureCount:3,paintConsumptionWasAlreadyPresent:true,ownerDisposition:dispositions,
-  activeUnresolvedDefinitionsWithOneTool:20,newPriceOwnersDoNotInheritLegacySquareMetrePrices:true};
+  activeUnresolvedDefinitionsWithOneTool:20,newPriceOwnersDoNotInheritLegacySquareMetrePrices:true,documentReferencesOptionalAndNotAskedInQuantityForm:true};
  return{representative:result,legacyRowIds:dispositions.map(d=>d.legacyRowId),addedRowIds:newRows.map(r=>r.row_id),addedParameterIds:result.parameters.filter(p=>p.parameter_id!=='q').map(p=>p.parameter_id),
   changedFormulaIds:[],newPayableOwnerRowId:prefix+':labor',physicalNormOwnerRowIds:['labor','winch','truck'].map(id=>prefix+':'+id),ownerDisposition:dispositions};
 }
