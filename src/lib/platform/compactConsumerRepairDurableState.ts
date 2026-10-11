@@ -213,7 +213,7 @@ function flatDurableStringChunk(chunk: string): string {
   return String.fromCharCode(...units);
 }
 
-function durableUtf8BytesToString(bytes: Uint8Array): string {
+export function durableUtf8BytesToString(bytes: Uint8Array): string {
   const chunks: string[] = [];
   let decodedByteOffset = 0;
   const decoder = new DecodeUTF8(chunk => {
@@ -235,7 +235,7 @@ function durableUtf8BytesToString(bytes: Uint8Array): string {
   return chunks.join("");
 }
 
-function durableBytesToBase64(bytes: Uint8Array): string {
+export function durableBytesToBase64(bytes: Uint8Array): string {
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
   const chunks: string[] = [];
   const inputChunkSize = 12_288;
@@ -257,7 +257,7 @@ function durableBytesToBase64(bytes: Uint8Array): string {
   return chunks.join("");
 }
 
-function durableBase64ToBytes(value: string): Uint8Array {
+export function durableBase64ToBytes(value: string): Uint8Array {
   const clean = value.replace(/\s+/g, "");
   if (clean.length % 4 !== 0 || /[^A-Za-z0-9+/=]/.test(clean)) {
     throw new Error("CONSUMER_REPAIR_DURABLE_COMPRESSED_STATE_INVALID_BASE64");

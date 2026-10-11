@@ -18,6 +18,7 @@ import {
   type RevisionBundle,
 } from "./estimateRevisionDurableStore.contract";
 import { safeJsonParse } from "../format";
+import { decodeEstimateRevisionAsyncStorageRecord, encodeEstimateRevisionAsyncStorageRecord } from "./estimateRevisionAsyncStorageRecordCodec";
 
 export type AsyncKeyValueStorage = {
   getItem(key: string): Promise<string | null>;
@@ -40,6 +41,8 @@ function storageKey(recordKey: string): string {
 
 const LOGICAL_KEY_INDEX_STORAGE_KEY = storageKey("__logical_key_index__");
 const REVISION_INDEX_STORAGE_KEY_PREFIX = storageKey("__revision_index__:");
+const PHYSICAL_COMPACTION_CURSOR_KEY = storageKey("__physical_record_compaction_cursor__");
+type PhysicalCompactionCursor = { key: string; version: string; recordIndex: number };
 
 /**
  * Android AsyncStorage reads SQLite values through a bounded CursorWindow.
@@ -118,6 +121,12 @@ function parseRecord<T>(value: string | null): T | null {
     : null;
 }
 
+function isEncodedPhysicalRecord(value: unknown): boolean {
+  return Boolean(value && typeof value === "object" && "schemaVersion" in value
+    && typeof value.schemaVersion === "string"
+    && value.schemaVersion.startsWith("estimate_revision_async_storage_record_zlib_"));
+}
+
 /**
  * Crash-safe native fallback for binaries that predate ExpoSQLite.
  *
@@ -130,6 +139,8 @@ export class AsyncStorageEstimateRevisionDurableStore
 implements EstimateRevisionDurableStore {
   private readonly queues = new Map<string, Promise<void>>();
   private logicalKeyIndexQueue: Promise<void> = Promise.resolve();
+  private storageMutationQueue: Promise<void> = Promise.resolve();
+  private physicalCompactionCursor: PhysicalCompactionCursor | null = null;
   private failureInjector: DurableFailureInjector | null;
 
   constructor(
@@ -147,6 +158,81 @@ implements EstimateRevisionDurableStore {
 
   private inject(point: DurableFailurePoint): void {
     this.failureInjector?.(point);
+  }
+
+  private async mutateStorage<T>(task: () => Promise<T>): Promise<T> {
+    const previous = this.storageMutationQueue;
+    let release!: () => void;
+    const gate = new Promise<void>(resolve => { release = resolve; });
+    this.storageMutationQueue = previous.then(() => gate);
+    await previous;
+    try {
+      try { return await task(); }
+      catch (error) {
+        if (!/(?:SQLITE_FULL|database or disk is full)/iu.test(messageFromDurableError(error))) throw error;
+        // Reclaim representation overhead, never revisions. Every replacement
+        // is a single native atomic write with an exact text round trip.
+        if (!await this.compactRetainedPhysicalRecords()) throw error;
+        return await task(); // One retry after a bounded change in capacity.
+      }
+    } finally { release(); }
+  }
+
+  private async compactRetainedPhysicalRecords(): Promise<number> {
+    let compacted = 0;
+    const saved = this.physicalCompactionCursor ?? parseRecord<PhysicalCompactionCursor>(await this.storage.getItem(PHYSICAL_COMPACTION_CURSOR_KEY));
+    const cursor = saved && typeof saved.key === "string" && typeof saved.version === "string"
+      && Number.isSafeInteger(saved.recordIndex) && saved.recordIndex >= 0 ? saved : null;
+    const keys = await this.readLogicalKeyIndex(), start = Math.max(0, cursor ? keys.indexOf(cursor.key) : 0);
+    const orderedKeys = [...keys.slice(start), ...keys.slice(0, start)];
+    // One finite indexed pass. A compressed prefix must never hide later RAW
+    // values after process death. Chunk manifests already bound each version;
+    // decode only one record at a time and replace at most eight per pass.
+    const finish = async (next: PhysicalCompactionCursor): Promise<number> => {
+      this.physicalCompactionCursor = next;
+      // Progress survives process death. This metadata never changes a draft's
+      // pointer or envelope; publish it only after a replacement freed space.
+      if (compacted) await this.storage.setItem(PHYSICAL_COMPACTION_CURSOR_KEY, JSON.stringify(next));
+      return compacted;
+    };
+    for (const [keyIndex, key] of orderedKeys.entries()) {
+      const pointer = await this.readPointer(key);
+      const versions = [pointer?.currentVersion, pointer?.previousVersion].filter((v): v is string => Boolean(v));
+      const versionStart = keyIndex === 0 && cursor?.key === key ? Math.max(0, versions.indexOf(cursor.version)) : 0;
+      for (const version of [...versions.slice(versionStart), ...versions.slice(0, versionStart)]) {
+        if (!version) continue;
+        const revisionKey = storageKey(durableRevisionRecordKey(key, version));
+        let physical: string | null;
+        try { physical = await this.storage.getItem(revisionKey); } catch { continue; }
+        if (!physical) continue;
+        const physicalMetadata = parseRecord<unknown>(physical);
+        // Our small manifests are never encoded. A wrapped envelope/chunk is
+        // already compact: classify its header without expanding its history.
+        if (isEncodedPhysicalRecord(physicalMetadata)) continue;
+        const manifest = parseChunkManifest(physicalMetadata, key, version);
+        const records = manifest
+          ? Array.from({ length: manifest.chunkCount }, (_, i) => chunkStorageKey(revisionKey, manifest.serializedChecksum, i))
+          : [revisionKey];
+        const recordStart = keyIndex === 0 && cursor?.key === key && cursor.version === version ? cursor.recordIndex : 0;
+        const startIndex = Math.min(recordStart, records.length);
+        const indices = Array.from({ length: records.length }, (_, i) => (i + startIndex) % records.length);
+        for (const recordIndex of indices) {
+          if (compacted >= 8) return finish({ key, version, recordIndex });
+          const recordKey = records[recordIndex];
+          const original = recordKey === revisionKey ? physical : await this.storage.getItem(recordKey);
+          if (!original || isEncodedPhysicalRecord(parseRecord<unknown>(original))) continue;
+          const encoded = encodeEstimateRevisionAsyncStorageRecord(original);
+          if (encoded === original) continue;
+          if (decodeEstimateRevisionAsyncStorageRecord(encoded) !== original) throw new Error("ASYNC_STORAGE_RECORD_COMPACTION_NOT_EXACT");
+          await this.storage.setItem(recordKey, encoded);
+          const readBack = await this.storage.getItem(recordKey);
+          if (!readBack || decodeEstimateRevisionAsyncStorageRecord(readBack) !== original) throw new Error("ASYNC_STORAGE_RECORD_COMPACTION_READ_BACK_FAILED");
+          compacted++;
+          if (compacted >= 8) return finish({ key, version, recordIndex: recordIndex + 1 });
+        }
+      }
+    }
+    return finish({ key: keys[0] ?? "", version: "", recordIndex: 0 });
   }
 
   private async withKeyQueue<T>(key: string, task: () => Promise<T>): Promise<T> {
@@ -200,13 +286,13 @@ implements EstimateRevisionDurableStore {
     await this.withLogicalKeyIndexQueue(async () => {
       const keys = await this.readLogicalKeyIndex();
       if (keys.includes(key)) return;
-      await this.storage.setItem(
+      await this.mutateStorage(() => this.storage.setItem(
         LOGICAL_KEY_INDEX_STORAGE_KEY,
         JSON.stringify({
           schemaVersion: "estimate_revision_durable_logical_key_index_v1",
           keys: [...keys, key].sort(),
         } satisfies DurableLogicalKeyIndex),
-      );
+      ));
     });
   }
 
@@ -229,13 +315,13 @@ implements EstimateRevisionDurableStore {
     key: string,
     versions: readonly string[],
   ): Promise<void> {
-    await this.storage.setItem(
+    await this.mutateStorage(() => this.storage.setItem(
       revisionIndexStorageKey(key),
       JSON.stringify({
         schemaVersion: "estimate_revision_durable_revision_index_v1",
         versions: [...new Set(versions)],
       } satisfies DurableRevisionIndex),
-    );
+    ));
   }
 
   private async stageRevisionIndex(key: string, version: string): Promise<void> {
@@ -258,8 +344,9 @@ implements EstimateRevisionDurableStore {
     version: string,
   ): Promise<DurableEnvelope | null> {
     const revisionKey = storageKey(durableRevisionRecordKey(key, version));
+    const physicalRecord = await this.storage.getItem(revisionKey);
     const record = parseRecord<DurableEnvelope | AsyncStorageDurableChunkManifestV1>(
-      await this.storage.getItem(revisionKey),
+      physicalRecord === null ? null : decodeEstimateRevisionAsyncStorageRecord(physicalRecord),
     );
     if (record?.schemaVersion === "estimate_revision_durable_envelope_v1") {
       return record as DurableEnvelope;
@@ -274,9 +361,10 @@ implements EstimateRevisionDurableStore {
       : null;
     const chunks: string[] = [];
     for (const chunkKey of chunkKeys) {
-      const chunk = batchedChunks
+      const physicalChunk = batchedChunks
         ? batchedChunks.get(chunkKey) ?? null
         : await this.storage.getItem(chunkKey);
+      const chunk = physicalChunk === null ? null : decodeEstimateRevisionAsyncStorageRecord(physicalChunk);
       if (
         chunk === null ||
         chunk.length < 1 ||
@@ -306,7 +394,7 @@ implements EstimateRevisionDurableStore {
     const revisionKey = storageKey(durableRevisionRecordKey(key, version));
     const serializedEnvelope = JSON.stringify(envelope);
     if (serializedEnvelope.length <= ASYNC_STORAGE_DURABLE_CHUNK_MAX_CHARS) {
-      await this.storage.setItem(revisionKey, serializedEnvelope);
+      await this.mutateStorage(() => this.storage.setItem(revisionKey, encodeEstimateRevisionAsyncStorageRecord(serializedEnvelope)));
       return;
     }
     const serializedChecksum = stableEstimateRevisionChecksum(serializedEnvelope);
@@ -333,18 +421,18 @@ implements EstimateRevisionDurableStore {
     }
     const chunkEntries = chunks.map((chunk, index) => [
       chunkStorageKey(revisionKey, serializedChecksum, index),
-      chunk,
+      encodeEstimateRevisionAsyncStorageRecord(chunk),
     ] as const);
     if (this.storage.multiSet) {
-      await this.storage.multiSet(chunkEntries);
+      await this.mutateStorage(() => this.storage.multiSet!(chunkEntries));
     } else {
       for (const [chunkKey, chunk] of chunkEntries) {
-        await this.storage.setItem(chunkKey, chunk);
+        await this.mutateStorage(() => this.storage.setItem(chunkKey, chunk));
       }
     }
     // The compact manifest is the revision commit point. A process death while
     // staging chunks leaves them unreachable and cannot expose a partial row.
-    await this.storage.setItem(
+    await this.mutateStorage(() => this.storage.setItem(
       revisionKey,
       JSON.stringify({
         schemaVersion: "estimate_revision_durable_chunk_manifest_v1",
@@ -354,7 +442,7 @@ implements EstimateRevisionDurableStore {
         serializedLength: serializedEnvelope.length,
         serializedChecksum,
       } satisfies AsyncStorageDurableChunkManifestV1),
-    );
+    ));
   }
 
   private async removeEnvelopeRecord(
@@ -364,7 +452,8 @@ implements EstimateRevisionDurableStore {
     const revisionKey = storageKey(durableRevisionRecordKey(key, version));
     let chunkKeys: string[] = [];
     try {
-      const record = parseRecord<unknown>(await this.storage.getItem(revisionKey));
+      const physical = await this.storage.getItem(revisionKey);
+      const record = parseRecord<unknown>(physical === null ? null : decodeEstimateRevisionAsyncStorageRecord(physical));
       const manifest = parseChunkManifest(record, key, version);
       if (manifest) {
         chunkKeys = Array.from({ length: manifest.chunkCount }, (_, index) =>
@@ -377,10 +466,10 @@ implements EstimateRevisionDurableStore {
     }
     const keysToRemove = [...chunkKeys, revisionKey];
     if (this.storage.multiRemove) {
-      await this.storage.multiRemove(keysToRemove);
+      await this.mutateStorage(() => this.storage.multiRemove!(keysToRemove));
     } else {
       for (const storageRecordKey of keysToRemove) {
-        await this.storage.removeItem(storageRecordKey);
+        await this.mutateStorage(() => this.storage.removeItem(storageRecordKey));
       }
     }
   }
@@ -500,14 +589,12 @@ implements EstimateRevisionDurableStore {
             pointerBeforeCommit?.currentVersion ?? null,
           );
         }
-        await this.storage.setItem(
-          storageKey(durablePointerRecordKey(key)),
-          JSON.stringify({
+        const committedPointer = JSON.stringify({
             schemaVersion: "estimate_revision_durable_pointer_v1",
             currentVersion: serialized.version,
             previousVersion: currentVersion,
-          } satisfies DurablePointer),
-        );
+          } satisfies DurablePointer);
+        await this.mutateStorage(() => this.storage.setItem(storageKey(durablePointerRecordKey(key)), committedPointer));
         pointerSwitched = true;
         this.inject("after_pointer_switch");
         this.inject("before_read_back");
@@ -578,14 +665,12 @@ implements EstimateRevisionDurableStore {
           ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.asyncStorage,
         );
         if (!previous) return null;
-        await this.storage.setItem(
-          storageKey(durablePointerRecordKey(key)),
-          JSON.stringify({
+        const recoveredPointer = JSON.stringify({
             schemaVersion: "estimate_revision_durable_pointer_v1",
             currentVersion: pointer.previousVersion,
             previousVersion: null,
-          } satisfies DurablePointer),
-        );
+          } satisfies DurablePointer);
+        await this.mutateStorage(() => this.storage.setItem(storageKey(durablePointerRecordKey(key)), recoveredPointer));
         await this.deleteOrphansUnlocked(key);
         return previous;
       } catch {
