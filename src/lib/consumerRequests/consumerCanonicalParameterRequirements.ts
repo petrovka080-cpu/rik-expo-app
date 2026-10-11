@@ -12,6 +12,19 @@ export type CanonicalParameterRequirementTables = Record<string, CanonicalParame
 
 type Carrier = { sourceParameters?: Readonly<Record<string, unknown>> | null };
 
+/** The protected unknown quantity stays unresolved. Only this authored scope
+ * question has a fact-checking instruction rather than a missing norm. */
+export function consumerCanonicalApplicationScopeRequirementNotice(
+  requirement: Readonly<Record<string, unknown>>,
+): string | null {
+  return requirement.parameterId === 'betogrund_undetermined_need_kg'
+    && requirement.visibilityRole === 'INTERNAL_ONLY'
+    && requirement.valueSourceRole === 'UNRESOLVED_APPLICATION_NORM'
+    && requirement.sourceConfirmationRequired === true
+    && typeof requirement.guideShortRu === 'string' && requirement.guideShortRu.trim()
+    ? requirement.guideShortRu.trim() : null;
+}
+
 /** Display labels use the immutable revision's shared schema, including known
  * quantities. This does not change missing-input or editing authority. */
 export function consumerCanonicalParameterTitle(

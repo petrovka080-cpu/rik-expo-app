@@ -1,4 +1,4 @@
-import { consumerCanonicalMissingRequirements, type CanonicalParameterRequirementTables } from "../../lib/consumerRequests/consumerCanonicalParameterRequirements";
+import { consumerCanonicalApplicationScopeRequirementNotice, consumerCanonicalMissingRequirements, type CanonicalParameterRequirementTables } from "../../lib/consumerRequests/consumerCanonicalParameterRequirements";
 import type { CanonicalPublicResourcePresentationV1 } from '../../lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1';
 import { canonicalDerivedQuantityEditPolicyV1 } from '../../lib/estimate/backendPlatform/canonicalDerivedQuantityEditPolicyV1';
 
@@ -111,7 +111,10 @@ export function consumerRepairRowRequirementNotice(
 ): string {
   const inputs: string[] = [];
   const sources: string[] = [];
+  const scopes: string[] = [];
   for (const requirement of consumerCanonicalMissingRequirements(item, tables)) {
+    const scope = consumerCanonicalApplicationScopeRequirementNotice(requirement);
+    if (scope) { if (!scopes.includes(scope)) scopes.push(scope); continue; }
     const label = text(requirement.titleRu || requirement.labelRu || requirement.parameterTitleRu || requirement.parameterId);
     if (!label) continue;
     const sourceManaged = requirement.valueSourceRole === "UNRESOLVED_APPLICATION_NORM"
@@ -123,8 +126,9 @@ export function consumerRepairRowRequirementNotice(
     item.quantity != null ? `Количество ${item.quantity} сохранено, но позиция ещё не подтверждена.` : null,
     inputs.length ? `Заполните в исходных данных: ${inputs.join(", ")}.` : null,
     sources.length ? `Для расчёта нужен подтверждённый источник: ${sources.join(", ")}.` : null,
+    ...scopes,
   ].filter(Boolean);
-  if (inputs.length || sources.length) return messages.join(" ");
+  if (inputs.length || sources.length || scopes.length) return messages.join(" ");
   return item.quantity == null
     ? "Для расчёта количества нужны подтверждённые исходные данные."
     : "Количество сохранено; для подтверждения позиции нужны дополнительные исходные данные.";

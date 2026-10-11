@@ -1,6 +1,6 @@
 import { canonicalEstimateOperationReference, canonicalEstimateResourceOperationSections, canonicalEstimateWorkProcess, type CanonicalEstimateOperationReference, type CanonicalEstimateWorkProcessGroup } from "../../lib/estimate/backendPlatform/canonicalEstimateOperationComposition";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
-import { consumerCanonicalMissingRequirements, consumerCanonicalParameterTitle, type CanonicalParameterRequirementTables } from "../../lib/consumerRequests/consumerCanonicalParameterRequirements";
+import { consumerCanonicalApplicationScopeRequirementNotice, consumerCanonicalMissingRequirements, consumerCanonicalParameterTitle, type CanonicalParameterRequirementTables } from "../../lib/consumerRequests/consumerCanonicalParameterRequirements";
 import { canonicalPurchaseShortageMessageV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
 import { formatEstimateQuantityRu } from "../../lib/estimatePresentation/formatEstimateQuantityRu";
 import { compareFormulaGraphDecimals, isFormulaGraphExactDecimal } from "../../lib/estimate/backendPlatform/formulaGraph";
@@ -1022,6 +1022,7 @@ export function buildRequestEstimateSourceGates(
     for (const raw of rawRequirements) {
       if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
       const requirement = raw as Record<string, unknown>;
+      if (consumerCanonicalApplicationScopeRequirementNotice(requirement)) continue;
       if (requirement.sourceConfirmationRequired !== true && requirement.valueSourceRole !== 'UNRESOLVED_APPLICATION_NORM') continue;
       const parameterId = String(requirement.parameterId ?? "").trim();
       if (!parameterId) continue;
