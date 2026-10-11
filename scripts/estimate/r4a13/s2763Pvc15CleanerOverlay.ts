@@ -7,7 +7,9 @@ export const S2763_PVC15_CLEANER_TARGETS=Object.fromEntries(pack.targets.map(t=>
 export const S2763_PVC15_CLEANER_CONSUMER_MODE_CONTRACT=`${pack.contract}.consumer-mode-r2`;
 /** The project chooses whether this operation is needed. Its enum is not a
  * manufacturer consumption norm. Preserve the immutable guide and all numeric
- * owners; repair only a forward successor of the published material cohort. */
+ * owners; repair only a forward successor of the published material cohort.
+ * Dirty-surface facts do not require the general roof area. Keep the operation
+ * choice reachable after save when that unrelated area is still unknown. */
 export function repairS2763Pvc15CleanerConsumerMode(parent:PurchaseGroupRepresentative){
  const catalogId=String(parent.definition.catalog_id),target=pack.targets.find(t=>t.catalogId===catalogId);
  if(!target||parent.definition.definition_version!==target.predecessorVersion+1
@@ -26,7 +28,7 @@ export function repairS2763Pvc15CleanerConsumerMode(parent:PurchaseGroupRepresen
    ||!truth.resource_branch_consumers?.length||guide?.guide_kind!=='PROJECT_DEFINED'
    ||guide.source_role!=='PROJECT_DOCUMENTATION'||guide.guide_validation_policy!=='MANDATORY_BLOCK'
    ||!guide.source_document||!guide.source_locator||!/^[a-f0-9]{64}$/i.test(guide.source_snapshot_hash??''))throw Error('PVC15_CLEANER_MODE_REPAIR_OWNERSHIP_DRIFT');
- mode.truth_metadata={...truth,value_source_role:'PROJECT_SPECIFIC_INPUT'};
+ mode.truth_metadata={...truth,value_source_role:'PROJECT_SPECIFIC_INPUT',visible_when:{kind:'literal',value:true}};
  for(const p of result.parameters)p.truth_metadata={...p.truth_metadata,contract:S2763_PVC15_CLEANER_CONSUMER_MODE_CONTRACT};
  result.baseline.parameter_schema_sha256=hash(result.parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata})));
  return{representative:result,changedRoleIds:['pvc15_cleaner_mode'],legacyRowIds:[],addedRowIds:[],addedParameterIds:[],changedFormulaIds:[],newPayableOwnerRowId:owner};

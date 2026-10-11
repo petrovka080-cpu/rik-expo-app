@@ -3,7 +3,7 @@ import {compileCanonicalEstimateCore} from '../backendPlatform/canonicalEstimate
 import {estimateDeterministicHash} from '../estimateDeterministicHash';
 import {isCanonicalEstimateSourceManagedParameter,isCanonicalEstimateUserEditableParameter} from '../backendPlatform/canonicalEstimateParameterSemantics';
 import {repairS2763Pvc15CleanerConsumerMode} from '../../../../scripts/estimate/r4a13/s2763Pvc15CleanerOverlay';
-import {buildConsumerCanonicalPrecompileParameterSession} from '../../../features/consumerRepair/consumerCanonicalParameterEditor';
+import {buildConsumerCanonicalParameterSession} from '../../../features/consumerRepair/consumerCanonicalParameterEditor';
 import type {PurchaseGroupRepresentative} from '../../../../scripts/estimate/r4a13/s2732PurchaseGroupOverlay';
 import {pvc15CleanerDefinitionS2763,pvc15CleanerPackS2763 as pack,pvc15CleanerOwnerS2763 as owner,pvc15CleanerPrefixS2763 as prefix} from './pvc15Cleaner472219MaterialS2763';
 const facts={pvc15_cleaner_mode:'Требуется по подтверждённой границе',pvc15_cleaner_product_choice:pack.selectedProductRu,pvc15_cleaner_472219_dirty_area_m2:'40'};
@@ -13,17 +13,21 @@ describe('shared exact PVC dirty-surface cleaner within three existing types',()
  test('the actual project-operation enum survives the protected norm guard after forward repair',()=>{
   const d=pvc15CleanerDefinitionS2763(),target=pack.targets[0],mode=d.parameters.find(p=>p.parameter_id==='pvc15_cleaner_mode')! as PurchaseGroupRepresentative['parameters'][number];
   const guide={guide_kind:'PROJECT_DEFINED',source_role:'PROJECT_DOCUMENTATION',guide_validation_policy:'MANDATORY_BLOCK',source_document:'CONTROL_ONLY_PROJECT_DOCUMENT',source_locator:'CONTROL_ONLY_OPERATION_SCOPE',source_snapshot_hash:'a'.repeat(64)};
+  mode.required=false;mode.constraints_json={...mode.constraints_json,requiredWhen:{kind:'greater_than',parameterId:'area_m2',value:0}};
   mode.truth_metadata={...mode.truth_metadata,value_source_role:'NORM_REQUIRED_BUT_PROJECT_SELECTED',visibility_role:'USER_INPUT',source_confirmation_required:false,semantic_parameter_key:`${target.catalogId}:pvc15_cleaner_mode`,provenance:{consumer_input_role_v1:'OBJECT_FACT'},resource_branch_consumers:[owner],guide};
   const parent={definition:{catalog_id:target.catalogId,definition_version:target.predecessorVersion+1,source_metadata:{materialSeriesContract:pack.contract}},parameters:d.parameters,formulas:d.formulas,resources:[...d.resources,{row_id:pack.ownershipContract.legacyOwner}],bindings:[],baseline:{},passport:{}};
-  const project=(p:typeof mode)=>({parameterId:p.parameter_id,titleRu:p.title_ru,valueType:p.value_type,unitId:p.unit_id,required:p.required,defaultValue:p.default_value,constraints:p.constraints_json,visibilityRole:p.truth_metadata.visibility_role,valueSourceRole:p.truth_metadata.value_source_role,semanticParameterKey:p.truth_metadata.semantic_parameter_key,provenance:p.truth_metadata.provenance,resourceBranchConsumers:p.truth_metadata.resource_branch_consumers,guide:{guideKind:guide.guide_kind,sourceRole:guide.source_role,guideValidationPolicy:guide.guide_validation_policy,sourceDocument:guide.source_document,sourceLocator:guide.source_locator,sourceSnapshotHash:guide.source_snapshot_hash}});
+  const project=(p:typeof mode)=>({parameterId:p.parameter_id,titleRu:p.title_ru,valueType:p.value_type,unitId:p.unit_id,required:p.required,defaultValue:p.default_value,constraints:p.constraints_json,visibilityRole:p.truth_metadata.visibility_role,valueSourceRole:p.truth_metadata.value_source_role,visibleWhen:p.truth_metadata.visible_when,semanticParameterKey:p.truth_metadata.semantic_parameter_key,provenance:p.truth_metadata.provenance,resourceBranchConsumers:p.truth_metadata.resource_branch_consumers,guide:{guideKind:guide.guide_kind,sourceRole:guide.source_role,guideValidationPolicy:guide.guide_validation_policy,sourceDocument:guide.source_document,sourceLocator:guide.source_locator,sourceSnapshotHash:guide.source_snapshot_hash}});
   expect(isCanonicalEstimateSourceManagedParameter(project(mode) as never)).toBe(true);
   const repaired=repairS2763Pvc15CleanerConsumerMode(parent as never).representative,next=repaired.parameters.find(p=>p.parameter_id===mode.parameter_id)!;
   const schema=project(next as typeof mode);
   expect(isCanonicalEstimateUserEditableParameter(schema as never)).toBe(true);
   expect(isCanonicalEstimateSourceManagedParameter(schema as never)).toBe(false);
   expect(isCanonicalEstimateSourceManagedParameter({...schema,valueSourceRole:'MANUFACTURER_CONFIRMED'} as never)).toBe(true);
-  const session=buildConsumerCanonicalPrecompileParameterSession({catalog:{catalogId:target.catalogId,releaseId:'CONTROL_ONLY',definitionVersion:target.predecessorVersion+2,parameterSchema:[schema]} as never,draftId:'CONTROL_ONLY',parameters:{pvc15_cleaner_mode:facts.pvc15_cleaner_mode},missingParameterIds:[],userExplicitParameterIds:['pvc15_cleaner_mode'],textExtractedParameterIds:[]});
-  expect(session.parameters.find(p=>p.parameterId==='pvc15_cleaner_mode')).toMatchObject({resourceSelectionInput:true,value:facts.pvc15_cleaner_mode});
+  const build=(s:typeof schema,parameters:Record<string,string>)=>buildConsumerCanonicalParameterSession({catalog:{catalogId:target.catalogId,releaseId:'CONTROL_ONLY',definitionVersion:target.predecessorVersion+2,parameterSchema:[s]} as never,draftId:'CONTROL_ONLY',revision:{revisionId:'CONTROL_ONLY_NOT_SAVED',parentRevisionId:null,releaseId:'CONTROL_ONLY',catalogId:target.catalogId,definitionVersionId:'CONTROL_ONLY',definitionVersion:target.predecessorVersion+2,status:'ready',parameters,userInputSnapshot:parameters,acceptedBaselineSnapshot:{},assumptionSnapshot:{},parameterSchemaHash:'CONTROL_ONLY',preliminaryNeeds:[],compilerVersion:pack.contract,checksumSha256:'CONTROL_ONLY',createdAt:'2026-10-11T00:00:00Z'}});
+  for(const parameters of [facts,{...facts,pvc15_cleaner_472219_usable_stock_l:'1',pvc15_cleaner_472219_retained_reserve_l:'2'}]){
+   expect(build({...schema,visibleWhen:undefined},parameters).parameters.some(p=>p.parameterId==='pvc15_cleaner_mode')).toBe(false);
+   expect(build(schema,parameters).parameters.find(p=>p.parameterId==='pvc15_cleaner_mode')).toMatchObject({resourceSelectionInput:true,value:facts.pvc15_cleaner_mode});
+  }
   expect(next.truth_metadata.guide).toEqual(guide);expect(next.constraints_json).toEqual(mode.constraints_json);expect(next.default_value).toBeNull();
   expect(repaired.resources).toEqual(parent.resources);expect(repaired.formulas).toEqual(parent.formulas);
   expect(mode.truth_metadata.value_source_role).toBe('NORM_REQUIRED_BUT_PROJECT_SELECTED');
