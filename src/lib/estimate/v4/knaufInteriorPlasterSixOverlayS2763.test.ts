@@ -135,7 +135,8 @@ test('new public passports describe partial Knauf scope and retain old Ceresit/f
     expect(r.passport.included_scope_ru.join(' ')).not.toContain('нормативный пакет и закупочная ведомость включены');
     expect(r.definition.passport.workDescription.scopeSummary).toContain('незакрытые потребности');
     expect(r.definition.passport.sourcePack.sourceQuality).toBe('PARTIAL_MANUFACTURER_MATERIAL_ONLY');
-    expect(r.baseline.provenance.legacyAlternativeNormativeSourceIds).toEqual(before.baseline.normative_source_ids);
+    expect(r.definition.passport.legacyAlternativeBaselineNormativeSourceIds).toEqual(before.baseline.normative_source_ids);
+    expect(r.passport.decision.priceState).toBe('PARTIAL_NEEDS_PRICE');
     expect(Object.values(r.baseline.normative_source_ids).flat()).toContain(pack.contract+':betogrund');
     if(before.resources.length===59)expect([...new Set(Object.values(r.baseline.normative_source_ids).flat())].sort())
       .toEqual([pack.contract+':betogrund',pack.contract+':rotband'].sort());

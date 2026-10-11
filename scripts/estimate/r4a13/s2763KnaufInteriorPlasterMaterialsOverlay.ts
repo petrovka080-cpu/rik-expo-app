@@ -115,8 +115,6 @@ export function overlayS2763KnaufInteriorPlasterMaterials(parent:PurchaseGroupRe
   }
   result.baseline.input_values=target.primerOnly?{...result.baseline.input_values,[choiceId]:pack.legacyChoiceRu}:{q:100,[choiceId]:pack.legacyChoiceRu};
   result.baseline.input_classification=target.primerOnly?{...result.baseline.input_classification,[choiceId]:'VALIDATION_FIXTURE'}:{q:'VALIDATION_FIXTURE',[choiceId]:'VALIDATION_FIXTURE'};
-  result.baseline.provenance={...result.baseline.provenance,legacyAlternativeNormativeSourceIds:parent.baseline.normative_source_ids,
-    legacyQuantityNormsUnacceptedForSelectedKnaufBranch:true};
   result.baseline.normative_source_ids=target.primerOnly?{...parent.baseline.normative_source_ids,betogrund_actual_area_m2:[pack.contract+':betogrund']}
     :{q:[pack.contract+':rotband'],betogrund_actual_area_m2:[pack.contract+':betogrund']};
   const consumers=buildMasterParameterCalculationConsumers(result);
@@ -129,7 +127,8 @@ export function overlayS2763KnaufInteriorPlasterMaterials(parent:PurchaseGroupRe
     ||Array.isArray(r.source_metadata.requiredParameterIds)&&(r.source_metadata.requiredParameterIds as string[]).some(id=>unresolvedIds.has(id))).map(r=>r.row_id);
   result.passport.capability_matrix=[{capability:'PARAMETERS',status:'GREEN'},{capability:'FORMULAS_AND_PHYSICAL_PARITY',status:'GREEN',scope:'CONDITIONAL_MANUFACTURER_MATERIAL_ONLY'},
     {capability:'FULL_APPLICABLE_SCOPE',status:'NEEDS_SOURCE',preliminaryCompositionOnly:true,unresolvedResourceRowIds:unresolvedRows},{capability:'PRICE',status:'GREEN_UNKNOWN_IS_NULL'}];
-  result.passport.decision={...result.passport.decision,quantityScope:'PARTIAL',preliminaryCompositionOnly:true,technicalScopeStatus:'NEEDS_SOURCE',completeTechnicalEstimateAccepted:false,
+  result.passport.decision={...result.passport.decision,quantityScope:'PARTIAL',priceState:'PARTIAL_NEEDS_PRICE',activationAllowed:false,productionEligible:false,
+    preliminaryCompositionOnly:true,technicalScopeStatus:'NEEDS_SOURCE',completeTechnicalEstimateAccepted:false,
     unresolvedResourceRowIds:unresolvedRows,
     physicalMaterialNormClosureCount:target.primerOnly?1:2,labourHourNormClosureCount:0,wholePlasterGroupComplete:false,sourceRateApproximate:true,legacyQuantityNormsUnaccepted:true,ownerDisposition:dispositions};
   const branchScope={contract:pack.contract,legacyChoiceRu:pack.legacyChoiceRu,selectedChoiceRu:target.primerOnly?pack.mechanizedChoiceRu:pack.manualChoiceRu,
@@ -137,6 +136,7 @@ export function overlayS2763KnaufInteriorPlasterMaterials(parent:PurchaseGroupRe
     completeTechnicalEstimateAccepted:false,quantityScope:'PARTIAL',sourceIds:target.primerOnly?[pack.sources[0].id,pack.sources[2].id]:[pack.sources[0].id,pack.sources[1].id]};
   const scopeSummary='Выбранная технология КНАУФ: подтверждены только указанные приблизительные расходы материалов. Подготовка, инструмент, труд и завершение сохраняют незакрытые потребности; полная техническая смета и точная закупка без условий поставки не подтверждены.';
   result.definition.passport={...result.definition.passport,rowCount:result.resources.length,
+    legacyAlternativeBaselineNormativeSourceIds:parent.baseline.normative_source_ids,
     legacyAlternativePassport:parent.definition.passport,sourcePack:{contract:pack.contract,sourceQuality:'PARTIAL_MANUFACTURER_MATERIAL_ONLY',sourceIds:branchScope.sourceIds,legacySourcePack:parent.definition.passport?.sourcePack},
     workDescription:{...result.definition.passport.workDescription,scopeSummary},branchScope};
   result.definition.applicability={...result.definition.applicability,legacyAlternativeApplicability:parent.definition.applicability,
