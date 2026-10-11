@@ -31,7 +31,7 @@ export function overlayS2763Ct54FacadeSix(parent:PurchaseGroupRepresentative,loc
   const inherited=pack.inheritedNeeds.find(g=>r.row_id===prefix+':inherited-'+g.suffix),lineage=inherited?.legacyOwners.find(o=>o.catalogId===catalogId);
   const related=pack.oldDispositionMap.filter(d=>d.reusedOwnerRows.includes(r.row_id)).map(d=>({titleRu:d.titleRu,unitId:d.legacyUnit,legacyExpression:d.legacyExpression,disposition:d.disposition,ruleRu:d.ruleRu,...d.actualLegacyRows.find(o=>o.catalogId===catalogId)!}));
   const publicPresentation=r.resource_graph.publicResourcePresentationV1 as Record<string,unknown>|undefined;
-  const residualDetails=r.source_metadata.sourceNormQuantityAccepted===false?related.map(d=>'Осталось подтвердить: '+d.titleRu+'. Требуются состав, обоснованное количество и граница оплаты этой подработы; исходное шаблонное количество не перенесено.'):[];
+  const residualDetails=r.source_metadata?.sourceNormQuantityAccepted===false?related.map(d=>'Осталось подтвердить: '+d.titleRu+'. Требуются состав, обоснованное количество и граница оплаты этой подработы; исходное шаблонное количество не перенесено.'):[];
   const {row_sha256:_sha,...body}=r,final={...body,ordinal:rowOrdinal++,row_type:r.category,semantic_owner:catalogId+':'+r.row_id,
    resource_graph:{...r.resource_graph,...(publicPresentation?{publicResourcePresentationV1:{...publicPresentation,detailsRu:[...(publicPresentation.detailsRu as string[]??[]),...residualDetails]}}:{})},
    ...(inherited?{category:parent.resources.find(old=>old.row_id===lineage!.rowId)!.category,row_type:parent.resources.find(old=>old.row_id===lineage!.rowId)!.row_type}:{}),
