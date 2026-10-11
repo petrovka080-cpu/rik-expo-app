@@ -1,6 +1,6 @@
 import { canonicalEstimateOperationReference, canonicalEstimateResourceOperationSections, canonicalEstimateWorkProcess, type CanonicalEstimateOperationReference, type CanonicalEstimateWorkProcessGroup } from "../../lib/estimate/backendPlatform/canonicalEstimateOperationComposition";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
-import { consumerCanonicalMissingRequirements, type CanonicalParameterRequirementTables } from "../../lib/consumerRequests/consumerCanonicalParameterRequirements";
+import { consumerCanonicalMissingRequirements, consumerCanonicalParameterTitle, type CanonicalParameterRequirementTables } from "../../lib/consumerRequests/consumerCanonicalParameterRequirements";
 import { canonicalPurchaseShortageMessageV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
 import { formatEstimateQuantityRu } from "../../lib/estimatePresentation/formatEstimateQuantityRu";
 import { compareFormulaGraphDecimals, isFormulaGraphExactDecimal } from "../../lib/estimate/backendPlatform/formulaGraph";
@@ -242,6 +242,7 @@ function professionalParameterTitle(parameterId: string): string {
 
 export function buildRequestEstimateProfessionalRowEvidence(
   item: ConsumerRepairRequestItem,
+  parameterRequirementTables?: CanonicalParameterRequirementTables | null,
 ): RequestEstimateProfessionalRowEvidence | null {
   const projection = asRecord(item.sourceParameters?.smartEstimateProjectionV2);
   if (!projection) return null;
@@ -287,7 +288,7 @@ export function buildRequestEstimateProfessionalRowEvidence(
     ? dependencySource.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     : [];
   const parameterLabel = dependencies.length > 0
-    ? `${"\u0412\u043b\u0438\u044f\u044e\u0442 \u043f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b"}: ${dependencies.map(professionalParameterTitle).join(", ")}.`
+    ? `${"\u0412\u043b\u0438\u044f\u044e\u0442 \u043f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b"}: ${dependencies.map(id => consumerCanonicalParameterTitle(item, id, parameterRequirementTables) ?? professionalParameterTitle(id)).join(", ")}.`
     : null;
 
   const normativeTrace = Array.isArray(item.sourceParameters?.normativeRowTraceV3)

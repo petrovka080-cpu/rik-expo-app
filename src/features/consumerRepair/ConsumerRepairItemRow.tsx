@@ -160,7 +160,7 @@ function ConsumerRepairItemRowComponent({
       normativeRowTraceV3: needEvidence.evidence.rawNeed.normative_trace,
       canonicalNeedEvidenceStatus: "loaded",
     },
-  }), [item, needEvidence.evidence]);
+  }, parameterRequirementTables), [item, needEvidence.evidence, parameterRequirementTables]);
   return (
     <View
       style={[styles.row, preliminaryNeed ? styles.unresolvedRow : null]}

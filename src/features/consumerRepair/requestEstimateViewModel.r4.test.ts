@@ -76,6 +76,30 @@ function serverBoundBundle(items: ConsumerRepairRequestItem[]): ConsumerRepairDr
 }
 
 describe("R4 canonical estimate title parity", () => {
+  it('uses immutable canonical schema titles for new quantity inputs and rejects a different release table', () => {
+    const item = canonicalItem('material:shared-control', 'Материальный контроль', 'c'.repeat(64), 0);
+    item.sourceParameters = { ...item.sourceParameters, smartEstimateProjectionV2: {
+      parameterDependencies: ['new_usable_stock_l', 'new_retained_reserve_l'],
+    } };
+    const tables = { [REVISION_ID]: {
+      contractVersion: 'canonical-parameter-requirements/v1' as const,
+      revisionId: REVISION_ID, releaseId: RELEASE_ID, parameterSchemaHash: 'a'.repeat(64),
+      requirementsById: {
+        new_usable_stock_l: { parameterId: 'new_usable_stock_l', titleRu: 'Пригодный материал в наличии', unitId: 'l', sourceConfirmationRequired: false, guideShortRu: null },
+        new_retained_reserve_l: { parameterId: 'new_retained_reserve_l', titleRu: 'Запас после выполнения работы', unitId: 'l', sourceConfirmationRequired: false, guideShortRu: null },
+      },
+    } };
+    const evidence = buildRequestEstimateProfessionalRowEvidence(item, tables);
+    expect(evidence?.parameterLabel).toContain('Пригодный материал в наличии');
+    expect(evidence?.parameterLabel).toContain('Запас после выполнения работы');
+    expect(evidence?.parameterLabel).not.toMatch(/new usable|new retained/);
+    const mismatched = { [REVISION_ID]: { ...tables[REVISION_ID], releaseId: 'different-release' } };
+    expect(buildRequestEstimateProfessionalRowEvidence(item, mismatched)?.parameterLabel).not.toContain('Пригодный материал в наличии');
+    const mismatchedReference = { ...item, sourceParameters: { ...item.sourceParameters,
+      canonicalParameterRequirementReference: { ...tables[REVISION_ID], parameterSchemaHash: 'b'.repeat(64) },
+    } };
+    expect(buildRequestEstimateProfessionalRowEvidence(mismatchedReference, tables)?.parameterLabel).not.toContain('Пригодный материал в наличии');
+  });
   it("formats a summed quantity without exposing floating point noise or changing saved row quantities", () => {
     const items = [0.1, 0.2].map((quantity, index) => ({
       ...canonicalItem(`material:fraction-${index}`, "Материал", "a".repeat(64), index),

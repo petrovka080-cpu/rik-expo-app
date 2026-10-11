@@ -12,6 +12,27 @@ export type CanonicalParameterRequirementTables = Record<string, CanonicalParame
 
 type Carrier = { sourceParameters?: Readonly<Record<string, unknown>> | null };
 
+/** Display labels use the immutable revision's shared schema, including known
+ * quantities. This does not change missing-input or editing authority. */
+export function consumerCanonicalParameterTitle(
+  item: Carrier,
+  parameterId: string,
+  tables?: CanonicalParameterRequirementTables | null,
+): string | null {
+  const source = item.sourceParameters ?? {};
+  const revisionId = String(source.canonicalBackendRevisionId ?? '');
+  const releaseId = String(source.canonicalBackendReleaseId ?? '');
+  const table = tables?.[revisionId];
+  if (!revisionId || !releaseId || table?.contractVersion !== 'canonical-parameter-requirements/v1'
+    || table.revisionId !== revisionId || table.releaseId !== releaseId) return null;
+  const reference = source.canonicalParameterRequirementReference as Partial<CanonicalParameterRequirementTable> | undefined;
+  if (reference && (reference.contractVersion !== table.contractVersion || reference.revisionId !== revisionId
+    || reference.releaseId !== releaseId || reference.parameterSchemaHash !== table.parameterSchemaHash)) return null;
+  const parameter = table.requirementsById[parameterId];
+  return parameter?.parameterId === parameterId && typeof parameter.titleRu === 'string' && parameter.titleRu.trim()
+    ? parameter.titleRu.trim() : null;
+}
+
 /** Legacy inline requirements remain readable. New rows resolve the shared table only for their exact revision. */
 export function consumerCanonicalMissingRequirements(
   item: Carrier,

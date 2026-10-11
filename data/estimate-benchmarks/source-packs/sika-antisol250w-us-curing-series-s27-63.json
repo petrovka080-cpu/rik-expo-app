@@ -1,0 +1,378 @@
+{
+  "contract": "rik-expo-app.s27-63.concrete-curing-antisol-material-series.v1",
+  "sourceId": "manufacturer_sika_antisol250w_us_202006_v0103",
+  "normId": "manufacturer:sika-antisol250w:us:202006:v0103:approx-broom-finish-coverage",
+  "selectedProductRu": "Sika Antisol-250 W (США): новый бетон после обработки щёткой",
+  "legacyProductRu": "Другой состав по действующей проектной смете",
+  "source": {
+    "titleRu": "Sika Antisol-250 W: паспорт производителя США",
+    "edition": "June 2020, Version 01.03",
+    "officialUrl": "https://usa.sika.com/dam/dms/us01/3/sika_antisol_-250w.pdf",
+    "localArtifact": ".release-runtime/r568/s27-63/sources/sika-antisol-250w-us-2020-06-v01-03.pdf",
+    "sha256": "b2f03cae00c6edf37228a1836104b5beba33a56dbb19b559caa8cc435a8b14b3",
+    "coverageM2PerL": 4.9,
+    "packageL": 19,
+    "minimumExclusiveTemperatureC": 7,
+    "temperatureForecastHours": 12,
+    "locatorRu": "Стр. 1: приблизительный расход 4,9 м²/л только для бетона с отделкой щёткой; упаковка 19 л; срок/хранение и запрет замороженного материала. Стр. 2: свежий бетон, окно нанесения, равномерная плёнка без разбавления, температура выше 7 °C и отсутствие ожидаемого снижения до 7 °C в следующие 12 ч, отсутствие конденсата.",
+    "quantityQuality": "APPROXIMATE_MANUFACTURER_NOMINAL"
+  },
+  "scopeRu": "Только фактически выбранный Sika Antisol-250 W исполнения США по указанному паспорту, свежий бетон и вся измеренная однородная поверхность после обработки щёткой. На этом этапе только участки без последующих приклеиваемых покрытий, гидроизоляции и контакта с питьевой водой; готовность поверхности и условия нанесения подтверждаются отдельно. Известная приблизительная потребность не зависит от наличия, резерва и цены.",
+  "exclusionsRu": [
+    "Гладкие, смешанные, старые и ранее обработанные поверхности не получают норму 4,9 м²/л.",
+    "Не переносить площадь плёнки или объём бетона в обрабатываемую площадь.",
+    "Не задавать автоматически длительность ухода, число слоёв, потери, трудозатраты, расход воды, оснастку или аренду.",
+    "Старая цена другого состава не является ценой Antisol; новый альтернативный материал имеет свой ценовой owner.",
+    "Первичный паспорт не доказывает наличие комплекта или его включение в цену.",
+    "Полные работы ухода и бетонирования этим материальным правилом не приняты."
+  ],
+  "targets": [
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_anchor_group_cure_high_load",
+      "predecessorDefinitionId": "01eb6f44-aff4-5fa5-8bcd-870f9dcc16b2",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_anchor_group_cure_large_area",
+      "predecessorDefinitionId": "3cb0b113-a8ed-59e9-81c6-365fd30e4f22",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_anchor_group_cure_small_area",
+      "predecessorDefinitionId": "1f28b0e5-9f0d-50db-821e-8dd6bd84fa40",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_anchor_group_cure_standard",
+      "predecessorDefinitionId": "25f6e4b5-07ac-589f-851d-57ff24f1c0f6",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_anchor_group_cure_technical_room",
+      "predecessorDefinitionId": "1edd2324-0ed4-59a2-8e1e-acf86a8e031a",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_anchor_group_cure_wet_zone",
+      "predecessorDefinitionId": "a7ffd591-ecf6-5e26-8e38-36f16c46b8e2",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_belt_cure_high_load",
+      "predecessorDefinitionId": "ab105ca2-aac2-59fc-800f-d12d708808c3",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_belt_cure_large_area",
+      "predecessorDefinitionId": "05d9f36f-c7de-5904-886a-d1b083ed314f",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_belt_cure_small_area",
+      "predecessorDefinitionId": "120df028-a234-5b1a-803f-094eac6ab15d",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_belt_cure_standard",
+      "predecessorDefinitionId": "1d36ae6e-5325-508b-837b-b1b625fa55b7",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_belt_cure_technical_room",
+      "predecessorDefinitionId": "844df591-549d-53c1-84ad-cecf9022cb14",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_belt_cure_wet_zone",
+      "predecessorDefinitionId": "d782ee53-b771-5475-8491-37db18c5ba51",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_column_base_cure_high_load",
+      "predecessorDefinitionId": "61ac3fef-e64d-52d7-8e95-cdc7db53bbc1",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_column_base_cure_large_area",
+      "predecessorDefinitionId": "0daddc33-f264-5d5a-876d-4e0b65a7bc77",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_column_base_cure_small_area",
+      "predecessorDefinitionId": "a938ed21-2398-5a02-82a4-7d5a259b9d27",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_column_base_cure_standard",
+      "predecessorDefinitionId": "f49a1363-81a3-54fd-8eea-b638b52e2be9",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_column_base_cure_technical_room",
+      "predecessorDefinitionId": "5981a70b-542d-5ee6-86a3-4761ea018071",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_column_base_cure_wet_zone",
+      "predecessorDefinitionId": "6c276f95-e8d5-55f4-881d-249afae484f5",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_cure_high_load",
+      "predecessorDefinitionId": "d07e2886-76e2-5bc0-89d7-db79ac2e33bc",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_cure_large_area",
+      "predecessorDefinitionId": "5d1fad2f-aa84-50cd-8ba5-baba7ce8b4f5",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_cure_small_area",
+      "predecessorDefinitionId": "9be7f120-545e-51fd-86cc-977aaea2864b",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_cure_standard",
+      "predecessorDefinitionId": "5c0d9d54-ef5e-52a2-8f4d-a4e08859818b",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_cure_technical_room",
+      "predecessorDefinitionId": "2bc0e7ae-30ff-5101-85dc-b42ce755b6eb",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_cure_wet_zone",
+      "predecessorDefinitionId": "30e5e15e-2be4-5d9e-8689-31fc5b126026",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_pedestal_cure_high_load",
+      "predecessorDefinitionId": "c69527b5-cce7-5198-8460-431862dfec81",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_pedestal_cure_large_area",
+      "predecessorDefinitionId": "4484c8af-e8d4-5155-83a9-9de041481fac",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_pedestal_cure_small_area",
+      "predecessorDefinitionId": "e7a1a4e7-2e3c-5fe0-8539-a69f1ebc9d7f",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_pedestal_cure_standard",
+      "predecessorDefinitionId": "8df0e151-67a6-58c3-86f8-dd294bdb4fd0",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_pedestal_cure_technical_room",
+      "predecessorDefinitionId": "8451a0b8-a4bf-5dea-8e9e-44aa940ddfd7",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_pedestal_cure_wet_zone",
+      "predecessorDefinitionId": "727fc6c6-0ae6-5ddb-838e-16e28bf51b8b",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_pile_cap_cure_high_load",
+      "predecessorDefinitionId": "4cb1a408-8890-5209-82ce-a633b710f587",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_pile_cap_cure_large_area",
+      "predecessorDefinitionId": "18e9b355-64ad-528f-8d9b-1b9e37a7b80d",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_pile_cap_cure_small_area",
+      "predecessorDefinitionId": "dceb73ec-a3f7-561d-8651-7e20ca9ab501",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_pile_cap_cure_standard",
+      "predecessorDefinitionId": "bb6b6568-da67-535e-80e8-7190a5292888",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_pile_cap_cure_technical_room",
+      "predecessorDefinitionId": "4731f462-3c13-59c0-85c1-5533c0358e14",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_pile_cap_cure_wet_zone",
+      "predecessorDefinitionId": "3a8ec0c2-e64d-5ab5-8ef0-2be16b6ddfe6",
+      "predecessorVersion": 7,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_cure_high_load",
+      "predecessorDefinitionId": "f6d18ae1-5385-5c9d-8039-19f8aa10925a",
+      "predecessorVersion": 5,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_cure_large_area",
+      "predecessorDefinitionId": "578774e4-b4d2-50e5-8f77-854c55be0f3a",
+      "predecessorVersion": 5,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_cure_small_area",
+      "predecessorDefinitionId": "00a19546-81d6-5921-87fa-ba092c0e6eef",
+      "predecessorVersion": 5,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_cure_standard",
+      "predecessorDefinitionId": "2d937ab1-a9e1-5479-8ce0-f68719d603c2",
+      "predecessorVersion": 5,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_cure_technical_room",
+      "predecessorDefinitionId": "263784ef-9c3b-58c5-8af7-6d39b7be259c",
+      "predecessorVersion": 5,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_cure_wet_zone",
+      "predecessorDefinitionId": "7f97f15e-ebc2-5de8-81c8-76e669746284",
+      "predecessorVersion": 5,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_cure_high_load",
+      "predecessorDefinitionId": "72d44821-2b2e-5be0-87e4-542bc20a5560",
+      "predecessorVersion": 5,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_cure_large_area",
+      "predecessorDefinitionId": "b78b2b7d-745c-59a1-8a9a-598da4797cbb",
+      "predecessorVersion": 5,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_cure_small_area",
+      "predecessorDefinitionId": "565856f6-110f-5932-88c7-f5e6142b9e61",
+      "predecessorVersion": 5,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_cure_standard",
+      "predecessorDefinitionId": "4c48514a-76f0-5f1e-876b-8b3fda0229be",
+      "predecessorVersion": 5,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_cure_technical_room",
+      "predecessorDefinitionId": "fde8c480-4670-56b2-8588-dc3590e6d6f4",
+      "predecessorVersion": 5,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_cure_wet_zone",
+      "predecessorDefinitionId": "7909e0ae-c406-5ae1-8a49-4506ea4d4196",
+      "predecessorVersion": 5,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_form_standard",
+      "predecessorDefinitionId": "66622370-3dd1-555c-8d9e-62ba866e06b5",
+      "predecessorVersion": 10,
+      "areaParameterId": "external_curing_exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_cure_high_load",
+      "predecessorDefinitionId": "5ca266f4-ca28-512b-8614-42dd6a2d4d29",
+      "predecessorVersion": 5,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_cure_large_area",
+      "predecessorDefinitionId": "660bc522-96ce-5a27-8c9c-d278288197d9",
+      "predecessorVersion": 5,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_cure_small_area",
+      "predecessorDefinitionId": "679c81db-61d2-5173-8249-aa4bf399a6e1",
+      "predecessorVersion": 5,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_cure_standard",
+      "predecessorDefinitionId": "30ca7abb-7cd9-5fe2-870f-fac2106a3876",
+      "predecessorVersion": 5,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_cure_technical_room",
+      "predecessorDefinitionId": "9f8c9211-34db-5426-8485-66162a3733f6",
+      "predecessorVersion": 5,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_cure_wet_zone",
+      "predecessorDefinitionId": "3fb1eafc-8c54-5ec0-8530-eb92d28e8253",
+      "predecessorVersion": 5,
+      "areaParameterId": "exposed_curing_surface_area_m2"
+    }
+  ],
+  "excluded": {
+    "legacyCureTypes": 18,
+    "sheetMaterialConsumers": 80,
+    "alreadyPublishedOtherProductTypes": 2,
+    "reservoirProductUnitAndWaterInterfaceNotAdmitted": true
+  },
+  "ownershipContract": {
+    "legacyOwner": "material:concrete:membrane-curing-compound",
+    "newAlternateProductOwner": "material:concrete:membrane-curing-compound:antisol250w-us",
+    "atMostOneActivePaidMaterialOwner": true,
+    "packageAndBalanceRowsPayable": false,
+    "historicalPricesPreservedWithoutTransfer": true,
+    "independentAstraMaxDesignAdmission": true
+  },
+  "sourceAdmissionSha256": "c1594c021861e25523d38595116a4359468f4a04bcbec72d34a01012b7dd6dee",
+  "wholeConcreteFamilyTypes": 650,
+  "wholeTypesAccepted": 0
+}
