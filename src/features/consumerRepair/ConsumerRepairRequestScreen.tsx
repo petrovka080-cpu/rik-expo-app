@@ -107,6 +107,7 @@ import {
   consumerRepairPendingCanonicalParameterCollection,
 } from "./consumerRepairCanonicalEstimateReadiness";
 import { consumerCanonicalPrecompileParameterOverrides } from "./consumerCanonicalParameterEditor";
+import type { ConsumerRepairParameterApplyResult } from "./ConsumerRepairProgressiveEstimatePanel";
 import {
   beginConsumerCanonicalScopeSelection,
   bindConsumerCanonicalScopeChoice,
@@ -2713,7 +2714,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     if (!current) return;
     await this.applyParamBatch([{ operation, paramKey, rawValue }]);
   };
-  private applyParamBatch = async (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => {
+  private applyParamBatch = async (patches: ConsumerRepairDraftRevisionParamBatchPatch[]): Promise<ConsumerRepairParameterApplyResult> => {
     const current = this.state.bundle;
     if (!current) return;
     if ((this.state.pendingCanonicalRowEditCount ?? 0) > 0) {
@@ -2834,13 +2835,14 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         canonicalBackendParameterSession: result.session,
         selectedHistoryId: null,
         statusMessage: result.quantityPolicyTransition
-          ? 'Правила количества обновлены. Ручные цены и остальные правки сохранены. Новые значения параметров ещё не применены — проверьте их и нажмите «Применить».'
+          ? 'Правила количества обновлены. Ручные цены и остальные правки сохранены.' + (patches.length > 0 ? ' Новые значения параметров ещё не применены — проверьте их и нажмите «Применить».' : '')
           : result.recovered
-          ? "Открыт ранее сохранённый пересчёт. Новые введённые значения ещё не применены — проверьте их и нажмите «Применить»."
+          ? "Открыт ранее сохранённый пересчёт." + (patches.length > 0 ? " Новые введённые значения ещё не применены — проверьте их и нажмите «Применить»." : "")
           : "Изменения сохранены. Зависимые позиции пересчитаны.",
       });
       this.refreshHistory(result.bundle);
-      return result.recovered || result.quantityPolicyTransition ? false : true;
+      return { status: result.recovered || result.quantityPolicyTransition ? "revision_opened" : "applied",
+        revisionId: result.session.revisionId };
     } catch (error) {
       if (!consumerRepairCanonicalMutationSourceMatchesBundle(mutationSource, this.state.bundle)) return false;
       this.setState({

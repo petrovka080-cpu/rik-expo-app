@@ -85,6 +85,8 @@ type ItemEditorHandlers = {
   onSelectCatalogItem?: (item: CatalogItemPickerItem) => void;
 };
 
+export type ConsumerRepairParameterApplyResult = boolean | void | { status: "revision_opened" | "applied"; revisionId: string };
+
 type ParameterHandlers = {
   editingParam?: ConsumerRepairParamEditState;
   onOpenParamEditor?: (operation: UserParamPatchOperation, paramKey: string) => void;
@@ -93,7 +95,7 @@ type ParameterHandlers = {
   onApplyParamPatch?: (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => void;
   onApplyParamBatch?: (
     patches: ConsumerRepairDraftRevisionParamBatchPatch[],
-  ) => boolean | void | Promise<boolean | void>;
+  ) => ConsumerRepairParameterApplyResult | Promise<ConsumerRepairParameterApplyResult>;
 };
 
 type Props = ItemEditorHandlers & ParameterHandlers & {
@@ -802,7 +804,7 @@ type ParameterDisclosurePanelProps = {
   onCancelParamEdit?: () => void;
   onApplyParamBatch?: (
     patches: ConsumerRepairDraftRevisionParamBatchPatch[],
-  ) => boolean | void | Promise<boolean | void>;
+  ) => ConsumerRepairParameterApplyResult | Promise<ConsumerRepairParameterApplyResult>;
 };
 
 // Canonical cards are driven by the immutable session/revision, not BOQ row
@@ -849,7 +851,7 @@ type ParameterDisclosurePanelState = {
   validationErrors: Record<string, string>;
   explicitlyConfirmedMissingValues: Record<string, true>;
   expandedGuideDetails: Record<string, true>;
-  applyState: "idle" | "pending" | "success" | "error";
+  applyState: "idle" | "pending" | "success" | "error" | "revision_opened";
 };
 
 export function isConsumerRepairParameterExplicitlyDirty(input: {
@@ -1130,6 +1132,8 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
   private submittedDraftValues: Record<string, string> | null = null;
   private submittedDirtyKeys: string[] | null = null;
   private submittedParentRevisionId: string | null = null;
+  private applyingDraftParameters: symbol | null = null;
+  private draftInteractionGeneration = 0;
   // Only the current baseline/preview; never retain revision history or cache
   // compiler/admission results. New immutable inputs invalidate immediately.
   private baselineCardProjection: ParameterCardProjection | null = null;
@@ -1228,7 +1232,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     const revisionId = this.props.revision?.revisionId;
     const catalogId = this.props.canonicalParameterSession?.workPassportId;
     const generation = ++this.compositionRefreshGeneration;
-    if (this.refreshingSavedComposition) {
+    if (this.refreshingSavedComposition || (this.applyingDraftParameters && this.state.applyState === "pending")) {
       this.refreshingSavedComposition = null;
       this.setState({ applyState: "idle" });
     }
@@ -1419,6 +1423,8 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
   private changeDraftValue = (paramKey: string, rawValue: string): void => {
     if (this.props.canonicalParameterReadinessPending) return;
     this.refreshingSavedComposition = null;
+    this.applyingDraftParameters = null;
+    this.draftInteractionGeneration += 1;
     const card = this.buildCards().find((candidate) => candidate.key === paramKey);
     let derivedCount: number | null = null;
     if (card?.derivedCountParameterKey && card.structuredGroup) {
@@ -1455,6 +1461,8 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
 
   private cancelDraftChanges = (): void => {
     this.refreshingSavedComposition = null;
+    this.applyingDraftParameters = null;
+    this.draftInteractionGeneration += 1;
     this.submittedDraftValues = null;
     this.submittedDirtyKeys = null;
     this.submittedParentRevisionId = null;
@@ -1533,20 +1541,44 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     this.submittedDraftValues = { ...this.state.draftValues };
     this.submittedDirtyKeys = [...dirtyKeys];
     this.submittedParentRevisionId = this.props.revision?.revisionId ?? this.state.draftRevisionId;
+    const parentRevisionId = this.props.revision?.revisionId;
+    const catalogId = this.props.canonicalParameterSession?.workPassportId;
+    const apply = this.props.onApplyParamBatch;
+    const generation = this.compositionRefreshGeneration;
+    const operation = Symbol("parameter-apply");
+    this.draftInteractionGeneration += 1;
+    this.applyingDraftParameters = operation;
+    const complete = (result: ConsumerRepairParameterApplyResult) => {
+      if (this.compositionRefreshDisposed || this.applyingDraftParameters !== operation
+        || this.props.canonicalParameterReadinessPending || this.props.onApplyParamBatch !== apply
+        || this.props.canonicalParameterSession?.workPassportId !== catalogId) return;
+      const exactChild = result && typeof result === "object" && result.revisionId === this.props.revision?.revisionId
+        && generation + 1 === this.compositionRefreshGeneration
+        && parentRevisionId != null && this.props.revision?.previousRevisionId === parentRevisionId;
+      const sameParent = this.props.revision?.revisionId === parentRevisionId && generation === this.compositionRefreshGeneration;
+      if (!sameParent && !exactChild) return;
+      this.setState({ applyState: this.parameterApplyState(result) });
+    };
     this.setState({ applyState: "pending" });
     try {
-      const result = this.props.onApplyParamBatch?.(patches);
-      if (result && typeof (result as Promise<boolean | void>).then === "function") {
-        void (result as Promise<boolean | void>).then(
-          (applied) => this.setState({ applyState: applied === false ? "error" : "success" }),
-          () => this.setState({ applyState: "error" }),
-        );
+      const result = apply?.(patches);
+      if (result && typeof (result as Promise<ConsumerRepairParameterApplyResult>).then === "function") {
+        void (result as Promise<ConsumerRepairParameterApplyResult>).then(
+          complete,
+          () => complete(false),
+        ).finally(() => { if (this.applyingDraftParameters === operation) this.applyingDraftParameters = null; });
       } else {
-        this.setState({ applyState: result === false ? "error" : "success" });
+        complete(result as ConsumerRepairParameterApplyResult);
+        if (this.applyingDraftParameters === operation) this.applyingDraftParameters = null;
       }
     } catch {
-      this.setState({ applyState: "error" });
+      complete(false);
+      if (this.applyingDraftParameters === operation) this.applyingDraftParameters = null;
     }
+  }
+
+  private parameterApplyState(result: ConsumerRepairParameterApplyResult): ParameterDisclosurePanelState["applyState"] {
+    return result === false ? "error" : result && typeof result === "object" && result.status === "revision_opened" ? "revision_opened" : "success";
   }
 
   private continuePreliminaryCompilation = (): void => {
@@ -1566,6 +1598,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       || !this.hasCompositionRefresh()) return;
     const checked = this.state.compositionRefresh!;
     const generation = this.compositionRefreshGeneration;
+    const interactionGeneration = this.draftInteractionGeneration;
     const apply = this.props.onApplyParamBatch;
     const operation = Symbol("saved-composition-refresh");
     const sameSource = () => !this.compositionRefreshDisposed
@@ -1588,7 +1621,19 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
         return;
       }
       const applied = await apply([]);
-      if (sameSource()) this.setState({ applyState: applied === false ? "error" : "success" });
+      // A successful screen replacement changes the source and clears the old
+      // refresh token. Admit only the exact named child from this one transition.
+      const exactOpenedChild = applied && typeof applied === "object"
+        && !this.compositionRefreshDisposed && !this.props.canonicalParameterReadinessPending
+        && generation + 1 === this.compositionRefreshGeneration
+        && interactionGeneration === this.draftInteractionGeneration
+        && this.refreshingSavedComposition === null && this.applyingDraftParameters === null
+        && this.state.applyState === "idle" && this.dirtyKeys().length === 0
+        && this.props.onApplyParamBatch === apply
+        && this.props.canonicalParameterSession?.workPassportId === checked.catalogId
+        && this.props.revision?.revisionId === applied.revisionId
+        && this.props.revision?.previousRevisionId === checked.revisionId;
+      if (sameSource() || exactOpenedChild) this.setState({ applyState: this.parameterApplyState(applied) });
     } catch {
       if (sameSource()) this.setState({ applyState: "error" });
     } finally {
@@ -1926,6 +1971,13 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
           Не применено. Введённые значения сохранены на экране — исправьте указанную ошибку и повторите.
         </Text>
       ) : null}
+      {this.state.applyState === "revision_opened" ? (
+        <Text style={styles.successStatus} testID="request-estimate-saved-revision-opened">
+          {dirtyCount > 0
+            ? "Сохранённая смета открыта. Введённые изменения ещё не применены — проверьте их и нажмите «Применить»."
+            : "Сохранённая смета открыта."}
+        </Text>
+      ) : null}
       {dirtyCount === 0 && canContinueWithoutDocumentOnlyFields ? (
         <View style={styles.batchBar} testID="editable-param-preliminary-continue-bar">
           <Text style={styles.batchBarText}>
@@ -1954,7 +2006,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
           </Pressable>
         </View>
       ) : null}
-      {latestDiff && dirtyCount === 0 && !applyPending && this.state.applyState !== "error" ? (
+      {latestDiff && dirtyCount === 0 && !applyPending && this.state.applyState !== "error" && this.state.applyState !== "revision_opened" ? (
         <Text style={styles.successStatus} testID="request-estimate-parameter-apply-status">
           Параметры применены. Смета пересчитана. Документ и пакет закупки нужно пересоздать.
         </Text>
