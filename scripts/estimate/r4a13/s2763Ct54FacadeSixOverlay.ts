@@ -31,7 +31,7 @@ export function overlayS2763Ct54FacadeSix(parent:PurchaseGroupRepresentative,loc
   const inherited=pack.inheritedNeeds.find(g=>r.row_id===prefix+':inherited-'+g.suffix),lineage=inherited?.legacyOwners.find(o=>o.catalogId===catalogId);
   const related=pack.oldDispositionMap.filter(d=>d.reusedOwnerRows.includes(r.row_id)).map(d=>({titleRu:d.titleRu,unitId:d.legacyUnit,legacyExpression:d.legacyExpression,disposition:d.disposition,ruleRu:d.ruleRu,...d.actualLegacyRows.find(o=>o.catalogId===catalogId)!}));
   const publicPresentation=r.resource_graph.publicResourcePresentationV1 as Record<string,unknown>|undefined;
-  const residualDetails=r.source_metadata.sourceNormQuantityAccepted===false?related.map(d=>'Осталось подтвердить: '+d.titleRu+'. '+d.ruleRu):[];
+  const residualDetails=r.source_metadata.sourceNormQuantityAccepted===false?related.map(d=>'Осталось подтвердить: '+d.titleRu+'. Требуются состав, обоснованное количество и граница оплаты этой подработы; исходное шаблонное количество не перенесено.'):[];
   const {row_sha256:_sha,...body}=r,final={...body,ordinal:rowOrdinal++,row_type:r.category,semantic_owner:catalogId+':'+r.row_id,
    resource_graph:{...r.resource_graph,...(publicPresentation?{publicResourcePresentationV1:{...publicPresentation,detailsRu:[...(publicPresentation.detailsRu as string[]??[]),...residualDetails]}}:{})},
    ...(inherited?{category:parent.resources.find(old=>old.row_id===lineage!.rowId)!.category,row_type:parent.resources.find(old=>old.row_id===lineage!.rowId)!.row_type}:{}),
@@ -57,7 +57,7 @@ export function overlayS2763Ct54FacadeSix(parent:PurchaseGroupRepresentative,loc
  if(unresolvedRows.length!==21)throw Error('CT54_SIX_UNRESOLVED_OWNER_COUNT_DRIFT');
  result.passport.capability_matrix=[{capability:'PARAMETERS',status:'GREEN'},{capability:'FORMULAS_AND_PHYSICAL_PARITY',status:'GREEN',scope:'EXACT_READY_CT54_COHORT_ONLY'},
   {capability:'FULL_APPLICABLE_SCOPE',status:'NEEDS_SOURCE',preliminaryCompositionOnly:true,unresolvedResourceRowIds:unresolvedRows},{capability:'PRICE',status:'GREEN_UNKNOWN_IS_NULL'}];
- result.passport.decision={...result.passport.decision,quantityScope:'PARTIAL',preliminaryCompositionOnly:true,technicalScopeStatus:'NEEDS_SOURCE',unresolvedResourceRowIds:unresolvedRows,materialSourceScopeOnly:true,completeTechnicalEstimateAccepted:false,legacyPreliminarySourcesRemainUnaccepted:true,
+ result.passport.decision={...result.passport.decision,quantityScope:'PARTIAL',priceState:'PARTIAL_NEEDS_PRICE',preliminaryCompositionOnly:true,technicalScopeStatus:'NEEDS_SOURCE',unresolvedResourceRowIds:unresolvedRows,materialSourceScopeOnly:true,completeTechnicalEstimateAccepted:false,legacyPreliminarySourcesRemainUnaccepted:true,
   facadeSeriesContract:pack.contract,wholeFacadeGroupComplete:false,physicalNormClosureCount:3,paintConsumptionWasAlreadyPresent:true,ownerDisposition:dispositions,
   activeUnresolvedDefinitionsWithOneTool:20,newPriceOwnersDoNotInheritLegacySquareMetrePrices:true};
  return{representative:result,legacyRowIds:dispositions.map(d=>d.legacyRowId),addedRowIds:newRows.map(r=>r.row_id),addedParameterIds:result.parameters.filter(p=>p.parameter_id!=='q').map(p=>p.parameter_id),
