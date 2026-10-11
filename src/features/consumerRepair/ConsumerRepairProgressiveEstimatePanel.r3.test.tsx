@@ -63,9 +63,12 @@ describe("InlineParamEditor R3 parameter guide", () => {
       light_colour_scope:values.light_colour_scope[0],application_tool:'Валик',mechanism_fulfillment:'Собственные машины исполнителя'};
     const saved = buildConsumerCanonicalParameterSession({catalog:facadeFirstEntry.catalog,draftId:'CONTROL_FIRST_ENTRY',
       revision:{...facadeFirstEntry.revision,revisionId:'CONTROL_SAVED_FACADE',parameters:facts,userInputSnapshot:facts,preliminaryNeeds:[]}});
-    act(() => renderer.update(<ParameterDisclosurePanel viewModel={null} revision={null} latestDiff={null}
-      paramEditorEnabled canonicalParameterSession={saved} />));
-    main.forEach(id => expect(renderer.root.findByProps({testID:'editable-param-chip-'+id})).toBeTruthy());
+    act(() => renderer.unmount());
+    act(() => { renderer = TestRenderer.create(<ParameterDisclosurePanel viewModel={null} revision={null}
+      latestDiff={null} paramEditorEnabled canonicalParameterSession={saved} />); });
+    const filled = renderer.root.findByProps({testID:'request-estimate-filled-parameters'});
+    main.forEach(id => expect(filled.findByProps({testID:'editable-param-chip-'+id})).toBeTruthy());
+    expect(renderer.root.findAllByProps({testID:'editable-param-batch-dirty-count'})).toHaveLength(0);
     expect(renderer.root.findAllByProps({testID:'request-estimate-filled-parameters-toggle'})).toHaveLength(0);
     act(() => renderer.unmount());
   });
