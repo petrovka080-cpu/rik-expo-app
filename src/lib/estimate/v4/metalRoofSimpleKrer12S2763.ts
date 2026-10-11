@@ -7,8 +7,11 @@ export const metalRoofSimplePrefixS2763='roof:metal-tile:krer12-023-01';
 export const metalRoofSimpleSystemYesS2763='Металлочерепица с покрытием по готовым прогонам и указанному крепежу';
 export const metalRoofSimpleConditionsYesS2763='Простая кровля; условия описания подтверждены';
 export const metalRoofSimpleAreaYesS2763='Площадь измерена по этим правилам';
+export const metalRoofSimpleLegacyChoiceS2763='Прежний общий состав — количественные нормы требуют проверки';
+export const metalRoofSimpleUnknownChoiceS2763='Система или состав кровли ещё не проверены';
 const eq=(parameterId:string,value:string):AutomaticInclusionCondition=>({kind:'equals',parameterId,value});
 export const metalRoofSimpleSelectedGuardS2763=eq('metal_roof_system',metalRoofSimpleSystemYesS2763);
+export const metalRoofSimpleLegacyGuardS2763=eq('metal_roof_system',metalRoofSimpleLegacyChoiceS2763);
 export const metalRoofSimpleAdmittedGuardS2763:AutomaticInclusionCondition={kind:'and',operands:[metalRoofSimpleSelectedGuardS2763,
  eq('metal_roof_conditions',metalRoofSimpleConditionsYesS2763),eq('metal_roof_area_scope',metalRoofSimpleAreaYesS2763)]};
 
@@ -23,7 +26,7 @@ export function metalRoofSimpleKrer12DefinitionS2763():AutomaticOwnerDefinition 
  const definition=buildAutomaticConstructionOwnerR1({contract:pack.contract,semanticOwner:prefix,sourceId:source.id,normId:pack.contract+':roof',
   sourceMetadata:{source_title:source.titleRu,source_document_version:source.printedEdition,definition_hash:source.sha256,artifact_sha256:source.sha256,exact_locator:source.locators},
   applicabilityRu:pack.scopeRu,ordinary:[{id:'q',title:'Площадь покрываемой кровли по обмеру, м²',valueType:'decimal',unitId:'m2',kind:'ordinary',min:0},
-   {id:'metal_roof_system',title:'Какое покрытие и основание предусмотрены',valueType:'enum',unitId:null,kind:'ordinary',values:[metalRoofSimpleSystemYesS2763,'Другая система или состав ещё не проверен']}],profile:[],
+   {id:'metal_roof_system',title:'Какое покрытие и основание предусмотрены',valueType:'enum',unitId:null,kind:'ordinary',values:[metalRoofSimpleSystemYesS2763,metalRoofSimpleUnknownChoiceS2763,metalRoofSimpleLegacyChoiceS2763]}],profile:[],
   conditional:[
    {id:'metal_roof_conditions',title:'Этот участок подходит под условия расчёта',valueType:'enum',unitId:null,kind:'conditional',values:[metalRoofSimpleConditionsYesS2763,'Условия ещё не проверены','Нужен другой расчёт'],requiredWhen:metalRoofSimpleSelectedGuardS2763},
    {id:'metal_roof_area_scope',title:'Как проверена указанная площадь кровли',valueType:'enum',unitId:null,kind:'conditional',values:[metalRoofSimpleAreaYesS2763,'Площадь ещё нужно проверить'],requiredWhen:metalRoofSimpleSelectedGuardS2763},
@@ -44,7 +47,8 @@ export function metalRoofSimpleKrer12DefinitionS2763():AutomaticOwnerDefinition 
    machinePriceCoverageRequired:machine?(rate.role==='electric_drill'?'EQUIPMENT_OPERATION_BUILDER_ALREADY_IN_LABOUR':'FULL_OPERATED_MACHINE_HOUR'):null,
    normativeTrace:[{sourceId:source.id,normId:pack.contract+':roof',sourceDocument:source.titleRu,sourceLocator:'12-01-023-01; PDF33; техническая часть PDF4–6',sourceSnapshotHash:source.sha256},
     {sourceId:guidance.id,normId:pack.contract+':guidance',sourceDocument:guidance.titleRu,sourceLocator:guidance.locators,sourceSnapshotHash:guidance.sha256}]},
-   resource_graph:{...row.resource_graph,operationCompositionV1:{contractVersion:'canonical-operation-resource/v1',groupId:prefix,groupTitleRu:'Металлочерепица по готовым прогонам',operationId:prefix+':installation',operationTitleRu:'Укладка, крепление и нормативная обделка кровли',processOrdinal:20,
+   resource_graph:{...row.resource_graph,derivedQuantityEditPolicyV1:{contractVersion:'canonical-derived-quantity-edit-policy/v1',mode:'PARAMETERS_ONLY',unitId:row.unit_id,parameterIds:['q'],
+    reasonRu:'Количество ресурса рассчитывается по подтверждённой норме КРЕР и измеренной площади кровли. Изменяйте площадь в исходных данных.'},operationCompositionV1:{contractVersion:'canonical-operation-resource/v1',groupId:prefix,groupTitleRu:'Металлочерепица по готовым прогонам',operationId:prefix+':installation',operationTitleRu:'Укладка, крепление и нормативная обделка кровли',processOrdinal:20,
     completionCriterionRu:'Выполнена нормативная укладка, постановка креплений и обделка. Раскрой, проектные доборы и остальные непокрытые потребности проверяются отдельно.'},
     publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',nameRu:row.title_ru,sourceTitleRu:row.title_ru,detailsRu:[pack.scopeRu,
      operator?'0,79 чел.-ч машинистов относятся к двум кранам и входят в полную стоимость их эксплуатации. Второй цены нет. Водитель автомобиля входит в цену автомобиля и не добавляется к этой строке.':rate.role==='electric_drill'?'Нормативное время эксплуатации электрической дрели. Рабочие, выполняющие монтаж, оплачиваются общим владельцем строительного труда; второй оплаты их работы в цене инструмента нет. Это не покупка отдельной дрели на каждую смету.':machine?'Это нормативные машиночасы, а не фактический договор аренды, число машин или округлённая смена. Цена должна покрывать полную эксплуатацию.':rate.costTreatment==='PAID_MATERIAL'?'Нормативный расход не заменяет проект крепления, выбор изделия и упаковки. Дробные нормы не округляются до покупаемых пачек, листов или полос.':'Один владелец труда включает укладку листов, постановку креплений и обделку коньков, труб, шахт и примыканий к стенам. Раскрой не включён.',
