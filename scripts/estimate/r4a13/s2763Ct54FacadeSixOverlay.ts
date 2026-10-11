@@ -39,7 +39,7 @@ export function overlayS2763Ct54FacadeSix(parent:PurchaseGroupRepresentative,loc
   applicability:{contract:pack.contract,exactBranch:exact,scopeRu:pack.scopeRu,grossAreaIsNotNetArea:true,fullTechnicalAcceptance:false}});
  result.baseline.input_values={q:100,facade_technology_choice:pack.legacyChoiceRu};
  result.baseline.input_classification={q:'VALIDATION_FIXTURE',facade_technology_choice:'VALIDATION_FIXTURE'};
- result.baseline.normative_source_ids={q:[],facade_technology_choice:[]};
+ result.baseline.normative_source_ids={q:[pack.contract+':manufacturer'],facade_norm_area_m2:[pack.contract+':krer'],facade_technology_choice:[]};
  result.baseline.provenance={...result.baseline.provenance,cohortContract:pack.contract,historicalQValueIsFixtureOnly:true,noAutomaticTechnologySelection:true};
  const consumers=buildMasterParameterCalculationConsumers(result);
  for(const p of result.parameters){const id=p.parameter_id;

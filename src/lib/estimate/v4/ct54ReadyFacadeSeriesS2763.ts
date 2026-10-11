@@ -37,7 +37,7 @@ export function ct54ReadyFacadeDefinitionS2763():AutomaticOwnerDefinition {
   const document=documents.has(next.parameter_id),constraints={...next.constraints_json};
   if(document)delete constraints.requiredWhen;
   const truth={...next.truth_metadata,contract:pack.contract,source_confirmation_required:false,
-   ...(internal?{}:{value_source_role:next.parameter_id==='q'?'USER_MEASURED':'PROJECT_SPECIFIC_INPUT',visible_when:next.parameter_id==='q'?{kind:'literal',value:true}:ct54ReadyFacadeExactS2763,
+   ...(internal?{}:{value_source_role:next.parameter_id==='q'?'USER_MEASURED':'PROJECT_SPECIFIC_INPUT',visible_when:next.parameter_id==='q'?{kind:'literal',value:true}:constraints.requiredWhen?{kind:'and',operands:[ct54ReadyFacadeExactS2763,constraints.requiredWhen]}:ct54ReadyFacadeExactS2763,
     provenance:{consumer_input_role_v1:advanced?'ADVANCED_OPTION':'OBJECT_FACT'}})};
   return {...next,title_ru:titles[next.parameter_id]??next.title_ru,ordinal:0,required:document?false:next.required,default_value:null,constraints_json:constraints,truth_metadata:truth};
  }),...extra.parameters.map(p=>({...p,truth_metadata:p.parameter_id.startsWith('ct54_inherited_open_')?unresolvedApplicationNormTruthR1(p.truth_metadata,pack.inheritedNeeds.find(g=>'ct54_inherited_open_'+g.suffix===p.parameter_id)!.reasonRu):{...p.truth_metadata,source_confirmation_required:false,value_source_role:'PROJECT_SPECIFIC_INPUT',visible_when:p.parameter_id===ct54ReadyFacadeChoiceIdS2763?{kind:'literal',value:true}:ct54ReadyFacadeExactS2763,provenance:{consumer_input_role_v1:'OBJECT_FACT'}}}))].map((p,ordinal)=>({...p,ordinal}));
@@ -49,8 +49,8 @@ export function ct54ReadyFacadeDefinitionS2763():AutomaticOwnerDefinition {
  const resources=[...shared.resources.map(r=>{
   const next=mapped(r),inputs=[...new Set((next.resource_graph.inputParameterIds as string[]??[]).filter(p=>!documents.has(p)))];
   const {row_sha256:_sha,...body}=next;
-  const content={...body,inclusion_ast:{kind:'and',operands:[ct54ReadyFacadeExactS2763,next.inclusion_ast]},resource_graph:{...next.resource_graph,inputParameterIds:inputs,scopeContextParameterIds:['q','facade_norm_area_m2'],
-   titleSpecificationParameterIds:[],fullTechnicalAcceptance:false},source_metadata:{...next.source_metadata,cohortContract:pack.contract,predecessorReferenceCatalogId:pack.referenceCatalogId}};
+  const content={...body,inclusion_ast:{kind:'and',operands:[ct54ReadyFacadeExactS2763,next.inclusion_ast]},resource_graph:{...next.resource_graph,inputParameterIds:inputs,scopeContextParameterIds:['q','facade_norm_area_m2',...documents],
+   fullTechnicalAcceptance:false},source_metadata:{...next.source_metadata,cohortContract:pack.contract,predecessorReferenceCatalogId:pack.referenceCatalogId}};
   return {...content,row_sha256:estimateDeterministicHash(content)};
  }),...extra.resources.map(r=>{
   const gap=pack.inheritedNeeds.find(g=>r.row_id===prefix+':inherited-'+g.suffix)!;
