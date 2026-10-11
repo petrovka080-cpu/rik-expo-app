@@ -30,6 +30,7 @@ const SOURCES = [
   ...pack.sources.map(source=>source.localArtifact),
   "scripts/estimate/r4a13/canonicalPreparedSearchCloneR1.ts", "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts", "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
+  "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts",
   "src/lib/estimate/v4/automaticConstructionOwnerR1.ts", "src/lib/estimate/backendPlatform/canonicalDefinitionParameterConsumersR1.ts",
   "src/lib/consumerRequests/consumerCanonicalParameterRequirements.ts", "src/features/consumerRepair/consumerRepairRowMetadata.ts",
   "src/features/consumerRepair/requestEstimateViewModel.ts", "src/features/consumerRepair/consumerRepairRowRequirements.test.ts",
