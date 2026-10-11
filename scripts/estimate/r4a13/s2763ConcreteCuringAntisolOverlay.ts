@@ -5,6 +5,50 @@ import {concreteCuringAntisolDefinitionS2763,concreteCuringAntisolPackS2763 as p
 import type {PurchaseGroupRepresentative} from './s2732PurchaseGroupOverlay';
 const hash=(v:unknown)=>createHash('sha256').update(stringifyCanonicalEstimateJson(v)).digest('hex');
 export const S2763_CURING_ANTISOL_TARGETS=Object.fromEntries(pack.targets.map(t=>[t.catalogId,[pack.ownershipContract.legacyOwner]]));
+/** Forward-only successor: validation evidence stays intact, but project
+ * fixtures cannot become facts for a new customer object. Presentation roles
+ * do not change source ownership, guides or calculation/approval requirements. */
+export function repairS2763ConcreteCuringConsumerFacts(parent:PurchaseGroupRepresentative) {
+  const catalogId=String(parent.definition.catalog_id),target=pack.targets.find(t=>t.catalogId===catalogId);
+  if(!target||!parent.resources.some(r=>r.row_id===owner))throw Error('CURING_FACTS_MATERIAL_PARENT_REQUIRED');
+  const result=structuredClone(parent),prefix=target.areaParameterId.startsWith('external_curing_')?'external_curing_':'';
+  const fixtureSuffixes=['cured_concrete_volume_m3','exposed_curing_surface_area_m2','concrete_mix_reference','curing_location',
+    'approved_external_curing_method','curing_method_statement_reference','curing_duration_day'];
+  const curingSuffixes=new Set([...fixtureSuffixes,'application_equipment_accessories_pricing_mode','application_equipment_accessories_set_count',
+    'application_equipment_accessories_specification','application_equipment_designation','application_equipment_machine_h','application_equipment_required',
+    'curing_compound_product_designation','curing_compound_quantity_l','curing_material_accessories_pricing_mode','curing_material_accessories_set_count',
+    'curing_material_accessories_specification','curing_water_delivery_capacity_m3','curing_water_delivery_mode','curing_water_delivery_vehicle_specification',
+    'curing_water_m3','curing_water_source_reference','curing_worker_h','equipment_mobilization_pricing_mode','equipment_mobilization_trip_count',
+    'impervious_sheet_area_m2','impervious_sheet_designation','mobilization_scope_reference','quality_control_document_count','quality_plan_reference',
+    'wet_covering_area_m2','wet_covering_material_designation']);
+  const changedFixtureIds:string[]=[],changedRoleIds:string[]=[];
+  for(const suffix of fixtureSuffixes){const id=prefix+suffix;
+    if(!Object.hasOwn(result.baseline.input_values,id))continue;
+    const p=result.parameters.find(p=>p.parameter_id===id);
+    if(!p||p.default_value!=null||p.truth_metadata.value_source_role!=='PROJECT_SPECIFIC_INPUT')throw Error('CURING_FACTS_DEFAULT_OR_OWNERSHIP_DRIFT:'+id);
+    const classification=result.baseline.input_classification[id];
+    if(classification==='VALIDATION_FIXTURE')continue;
+    if(classification!=='NORMATIVE')throw Error('CURING_FACTS_CLASSIFICATION_DRIFT:'+id);
+    result.baseline.input_classification[id]='VALIDATION_FIXTURE';changedFixtureIds.push(id);
+  }
+  for(const p of result.parameters){
+    const id=String(p.parameter_id);
+    if(p.truth_metadata.visibility_role!=='USER_INPUT'||p.truth_metadata.provenance?.consumer_input_role_v1==='APPLICATION_TECHNICAL')continue;
+    const antisol=id.startsWith('antisol_');
+    // A composite staircase owns unrelated vibration/finishing profiles.
+    if(prefix&&!id.startsWith(prefix)&&!antisol)continue;
+    const suffix=prefix&&id.startsWith(prefix)?id.slice(prefix.length):id;
+    if(!curingSuffixes.has(suffix)&&!antisol)continue;
+    const role=id===target.areaParameterId||id===prefix+'approved_external_curing_method'
+      ||(antisol&&!['antisol_usable_stock_l','antisol_retained_reserve_l','antisol_exact_material_included_kit_quote_reference'].includes(id))
+      ?'OBJECT_FACT':'ADVANCED_OPTION';
+    if(p.truth_metadata.provenance?.consumer_input_role_v1!==role){
+      p.truth_metadata={...p.truth_metadata,provenance:{...p.truth_metadata.provenance,consumer_input_role_v1:role}};changedRoleIds.push(id);
+    }
+  }
+  result.baseline.parameter_schema_sha256=hash(result.parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata})));
+  return{representative:result,changedFixtureIds,changedRoleIds,legacyRowIds:[],addedRowIds:[],addedParameterIds:[],changedFormulaIds:[],newPayableOwnerRowId:owner};
+}
 export function overlayS2763ConcreteCuringAntisol(parent:PurchaseGroupRepresentative,locatorId:string) {
   const catalogId=String(parent.definition.catalog_id),target=pack.targets.find(t=>t.catalogId===catalogId);
   if(!target||parent.definition.id!==target.predecessorDefinitionId||parent.definition.definition_version!==target.predecessorVersion)throw Error('CURING_ANTISOL_PARENT_IDENTITY_DRIFT:'+catalogId);

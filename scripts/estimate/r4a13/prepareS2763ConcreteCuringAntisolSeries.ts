@@ -9,16 +9,17 @@ import { createCanonicalDefinitionClonePlan,
   type CanonicalPublisherJson as Json } from "./canonicalDefinitionPublisherR1";
 import { cloneCanonicalPreparedSearchR1 } from "./canonicalPreparedSearchCloneR1";
 import { type PurchaseGroupRepresentative } from "./s2732PurchaseGroupOverlay";
-import { overlayS2763ConcreteCuringAntisol, S2763_CURING_ANTISOL_TARGETS } from "./s2763ConcreteCuringAntisolOverlay";
+import { overlayS2763ConcreteCuringAntisol, repairS2763ConcreteCuringConsumerFacts, S2763_CURING_ANTISOL_TARGETS } from "./s2763ConcreteCuringAntisolOverlay";
 import { concreteCuringAntisolPackS2763 as pack } from "../../../src/lib/estimate/v4/concreteCuringAntisolMaterialS2763";
-const CONTRACT = pack.contract;
+const REPAIR_PROJECT_FIXTURES = process.argv.includes('--repair-project-fixtures');
+const CONTRACT = REPAIR_PROJECT_FIXTURES ? `${pack.contract}.consumer-facts-r2` : pack.contract;
 
 const ROOT = "C:/dev/rik-expo-app-r4a5-dc4f0ce7";
 const BRANCH = "codex/r4-a5-clean-08b18902";
 const MASTER = "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (100).md";
 const CURRENT = "data/estimate-benchmarks/r568-local-developer-canonical-release.json";
-const SNAPSHOT = ".release-runtime/r568/s27-63/concrete-curing-parent-snapshot.json";
-const OUTPUT = ".release-runtime/r568/s27-63/concrete-curing-antisol-material-series";
+const SNAPSHOT = REPAIR_PROJECT_FIXTURES ? ".release-runtime/r568/s27-63/concrete-curing-material-parent-snapshot.json" : ".release-runtime/r568/s27-63/concrete-curing-parent-snapshot.json";
+const OUTPUT = REPAIR_PROJECT_FIXTURES ? ".release-runtime/r568/s27-63/concrete-curing-consumer-facts" : ".release-runtime/r568/s27-63/concrete-curing-antisol-material-series";
 const SOURCES = ["scripts/estimate/r4a13/prepareS2763ConcreteCuringAntisolSeries.ts", "scripts/estimate/r4a13/s2763ConcreteCuringAntisolOverlay.ts",
   "src/lib/estimate/v4/concreteCuringAntisolMaterialS2763.ts", "src/lib/estimate/v4/concreteCuringAntisolMaterialS2763.test.ts",
   "data/estimate-benchmarks/source-packs/sika-antisol250w-us-curing-series-s27-63.json", pack.source.localArtifact,
@@ -27,7 +28,11 @@ const SOURCES = ["scripts/estimate/r4a13/prepareS2763ConcreteCuringAntisolSeries
   "src/lib/estimate/v4/automaticConstructionOwnerR1.ts", "src/lib/estimate/backendPlatform/canonicalDefinitionParameterConsumersR1.ts",
   "src/lib/consumerRequests/consumerCanonicalParameterRequirements.ts", "src/features/consumerRepair/requestEstimateViewModel.ts",
   "src/features/consumerRepair/ConsumerRepairItemRow.tsx", "src/features/consumerRepair/requestEstimateViewModel.r4.test.ts",
-  "src/lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu.ts"];
+  "src/lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu.ts",
+  "src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics.ts",
+  "src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics.test.ts",
+  "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.tsx",
+  "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.r3.test.tsx"];
 const APPLY = process.argv.includes("--apply");
 const hash = (value: unknown) => createHash("sha256").update(typeof value === "string" || Buffer.isBuffer(value) ? value : stringifyCanonicalEstimateJson(value)).digest("hex");
 function invariant(value: unknown, code: string): asserts value { if (!value) throw new Error(`S2763_CONCRETE_CURING_ANTISOL_SERIES:${code}`); }
@@ -114,27 +119,27 @@ async function main() {
       const parent = await load(client, manifest.definition_version_id, manifest.approved_template_baseline_id);
       const frozenParent = frozen.reps.find((r: Json) => r.target.catalogId === catalogId);
       invariant(frozenParent && hash(parent) === hash(Object.fromEntries(Object.keys(parent).map(key => [key, frozenParent[key]]))), `PARENT_SNAPSHOT_DRIFT:${catalogId}`);
-      const overlay = overlayS2763ConcreteCuringAntisol(parent, locatorId), r = overlay.representative;
+      const overlay = REPAIR_PROJECT_FIXTURES ? repairS2763ConcreteCuringConsumerFacts(parent) : overlayS2763ConcreteCuringAntisol(parent, locatorId), r = overlay.representative;
       const definitionId = uuid(`${fingerprint}:definition:${catalogId}`), baselineId = uuid(`${fingerprint}:baseline:${catalogId}`);
       const definitionSha256 = hash({ contract: CONTRACT, predecessorHash: parent.definition.definition_sha256,
         parameters: r.parameters, formulas: r.formulas, resources: r.resources });
       const evidenceSha256 = hash({ contract: CONTRACT, catalogId, fingerprint, definitionSha256, predecessorEvidence: parent.baseline.acceptance_evidence_sha256 });
       const plan = createCanonicalDefinitionClonePlan({ contract: CONTRACT,
         definition: { id: definitionId, releaseId, catalogId, definitionVersion: Number(parent.definition.definition_version) + 1,
-          passport: { ...parent.definition.passport, materialSeriesContract: CONTRACT }, applicability: parent.definition.applicability,
+          passport: { ...parent.definition.passport, materialSeriesContract: pack.contract, ...(REPAIR_PROJECT_FIXTURES ? {consumerFactsRepairContract:CONTRACT} : {}) }, applicability: parent.definition.applicability,
           definitionSha256, sourceMetadata: { ...parent.definition.source_metadata, contract: CONTRACT, predecessorDefinitionId: parent.definition.id,
-            materialSeriesContract: CONTRACT, sourceHashes, activationAllowed: false, productionEligible: false } },
+            materialSeriesContract: pack.contract, ...(REPAIR_PROJECT_FIXTURES ? {consumerFactsRepairContract:CONTRACT} : {}), sourceHashes, activationAllowed: false, productionEligible: false } },
         representative: r,
         parameterTruthMetadata: p => ({ ...p.truth_metadata, contract: CONTRACT, semantic_parameter_key: `${catalogId}:${p.parameter_id}` }),
         resourceId: row => uuid(`${fingerprint}:resource:${catalogId}:${row.row_id}`), resourceSemanticOwner: row => String(row.semantic_owner),
         resourceSha256: row => hash({ contract: CONTRACT, catalogId, row }),
         baseline: { id: baselineId, key: `${CONTRACT}:${fingerprint.slice(0, 16)}:${catalogId}`, sourceDefinitionVersionId: parent.definition.id,
-          validationScenarioRefs: [...(parent.baseline.validation_scenario_refs ?? []), { scenario: "S2763_CONCRETE_CURING_APPROXIMATE_LITRES_AND_ALTERNATE_PRODUCT_PRICE_ISOLATION", acceptanceEvidenceSha256: evidenceSha256,
+          validationScenarioRefs: [...(parent.baseline.validation_scenario_refs ?? []), { scenario: REPAIR_PROJECT_FIXTURES ? "S2763_CURING_NEW_OBJECT_WITHOUT_PROJECT_FIXTURES_AND_SHORT_FORM" : "S2763_CONCRETE_CURING_APPROXIMATE_LITRES_AND_ALTERNATE_PRODUCT_PRICE_ISOLATION", acceptanceEvidenceSha256: evidenceSha256,
             primarySourceArtifactSha256: pack.source.sha256, quantityQuality: "APPROXIMATE", completeTechnicalEstimateAccepted: false }],
           acceptanceEvidenceSha256: evidenceSha256, acceptedReleaseId: releaseId, supersedesBaselineId: parent.baseline.id },
         passport: { physicalResultRu: String(parent.passport.physical_result_ru), excludedScopeRu: parent.passport.excluded_scope_ru,
           decision: { ...r.passport.decision, waveContract: CONTRACT, predecessorWaveContract: parent.passport.decision.waveContract,
-            materialSeriesContract: CONTRACT, activationAllowed: false, productionEligible: false },
+            materialSeriesContract: pack.contract, ...(REPAIR_PROJECT_FIXTURES ? {consumerFactsRepairContract:CONTRACT} : {}), activationAllowed: false, productionEligible: false },
           payloadSha256: hash({ predecessor: parent.passport.payload_sha256, definitionSha256, evidenceSha256 }), sourceHead: head, sourceTree: tree },
         bindingApplicability: b => ({ ...b.applicability, clonedByContract: CONTRACT }), expectedNormativeBindingCount: r.bindings.length });
       invariant(plan.passport.decision.materialSourceScopeOnly === true && plan.passport.decision.completeTechnicalEstimateAccepted === false
@@ -143,8 +148,13 @@ async function main() {
       transitions.push({ catalogId, predecessorDefinitionId: parent.definition.id, successorDefinitionId: definitionId,
         predecessorBaselineId: parent.baseline.id, successorBaselineId: baselineId, ownerRowIds: [overlay.newPayableOwnerRowId], legacyRowIds: overlay.legacyRowIds, addedRowIds: overlay.addedRowIds,
         addedParameterIds: overlay.addedParameterIds, changedFormulaIds: overlay.changedFormulaIds,
+        ...(REPAIR_PROJECT_FIXTURES ? { changedFixtureIds: 'changedFixtureIds' in overlay ? overlay.changedFixtureIds : [], changedRoleIds: 'changedRoleIds' in overlay ? overlay.changedRoleIds : [] } : {}),
         parameterDelta: r.parameters.length - parent.parameters.length, formulaDelta: r.formulas.length - parent.formulas.length,
         resourceDelta: r.resources.length - parent.resources.length, quantityScope: parent.passport.decision.quantityScope, completeTechnicalEstimateAccepted: false });
+    }
+    if(REPAIR_PROJECT_FIXTURES){
+      invariant(transitions.filter(t=>t.changedFixtureIds.length>0).length===36 && transitions.reduce((n,t)=>n+t.changedFixtureIds.length,0)===252,'FINITE_FIXTURE_REPAIR_SCOPE_DRIFT');
+      invariant(transitions.every(t=>t.changedRoleIds.length>0 && t.parameterDelta===0 && t.formulaDelta===0 && t.resourceDelta===0),'FINITE_SHORT_FORM_SCOPE_DRIFT');
     }
     const existing = (await client.query("select * from public.estimate_definition_release where id=$1", [releaseId])).rows[0];
     if (existing) {

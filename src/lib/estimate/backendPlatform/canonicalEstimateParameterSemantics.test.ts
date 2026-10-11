@@ -144,6 +144,20 @@ describe("canonical preliminary-stage validation", () => {
 });
 
 describe("canonical estimate parameter choice labels", () => {
+  it("distinguishes all concrete curing methods and their supply decisions", () => {
+    const methods = ["WATER_CURING", "WET_COVERING", "IMPERVIOUS_SHEET", "MEMBRANE_CURING_COMPOUND"];
+    const labels = methods.map(value => canonicalEstimateParameterChoiceLabelRu("approved_external_curing_method", value));
+    expect(new Set(labels).size).toBe(methods.length);
+    expect(labels).not.toContain("Вариант по проектной документации");
+    expect(labels).toEqual([
+      "Увлажнение бетона водой", "Укрытие влажным материалом",
+      "Укрытие водонепроницаемой плёнкой", "Нанесение плёнкообразующего состава",
+    ]);
+    expect(canonicalEstimateParameterChoiceLabelRu("curing_water_delivery_mode", "ON_SITE_SUPPLY"))
+      .not.toEqual(canonicalEstimateParameterChoiceLabelRu("curing_water_delivery_mode", "SEPARATE_DELIVERY"));
+    expect(canonicalEstimateParameterChoiceLabelRu("curing_material_accessories_pricing_mode", "INCLUDED_IN_CURING_MATERIAL_RATE"))
+      .not.toEqual(canonicalEstimateParameterChoiceLabelRu("curing_material_accessories_pricing_mode", "SEPARATE_SUPPLY"));
+  });
   it("identifies the actual third-coat scope and selected CT127 source version", () => {
     expect(canonicalEstimateParameterChoiceLabelRu("putty_scope", "THIRD_COAT_PREPARED_MINERAL_WALL"))
       .toBe("Третье финишное нанесение по подготовленной минеральной стене");

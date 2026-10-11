@@ -20,6 +20,32 @@ jest.mock("@expo/vector-icons", () => ({
 }));
 
 describe("InlineParamEditor R3 parameter guide", () => {
+  it('keeps missing advanced facts available without crowding the main questions or inventing zero', () => {
+    const parameter = (parameterId: string, role: string) => ({
+      parameterId, label: parameterId === 'area' ? 'Площадь поверхности' : 'Пригодный остаток материала',
+      description: 'Фактические данные объекта', value: null, valueType: 'number', unit: 'л',
+      consumerInputRole: role, requiredLevel: 'BLOCKING_REQUIRED', visibilityCondition: { kind: 'ALWAYS' },
+      validation: { min: 0 }, allowedValues: [], source: 'PROJECT_SPECIFIC', state: 'BLOCKING_REQUIRED',
+      confidence: 0, affectsRows: ['material'], affectsFormula: ['quantity'], normativeSource: null,
+      displayOrder: 1, valid: false, validationIssues: ['VALUE_REQUIRED'],
+    });
+    const session = { revisionId: 'advanced-control', status: 'PRELIMINARY_WITH_ASSUMPTIONS',
+      parameters: [parameter('area','OBJECT_FACT'), parameter('stock','ADVANCED_OPTION')],
+      blockingMissingParameterIds: ['area','stock'], contractMissingParameterIds: [],
+      assumptionParameterIds: [], invalidParameterIds: [] } as never;
+    let renderer!: ReactTestRenderer;
+    act(() => { renderer = TestRenderer.create(<ParameterDisclosurePanel viewModel={null} revision={null}
+      latestDiff={null} paramEditorEnabled canonicalParameterSession={session} />); });
+    expect(renderer.root.findAllByProps({ testID: 'editable-param-chip-area' })).toHaveLength(1);
+    expect(renderer.root.findAllByProps({ testID: 'editable-param-chip-stock' })).toHaveLength(0);
+    const group=renderer.root.findByProps({testID:'request-estimate-advanced-parameters'});
+    expect(group.findAllByType('Text' as never).map(n=>String(n.props.children ?? '')).join(' ')).toContain('Осталось уточнить 1');
+    act(()=>renderer.root.findByProps({testID:'request-estimate-advanced-parameters-toggle'}).props.onPress());
+    expect(renderer.root.findAllByProps({ testID: 'editable-param-chip-stock' })).toHaveLength(1);
+    expect((session as any).parameters[1].value).toBeNull();
+    expect((session as any).blockingMissingParameterIds).toContain('stock');
+    act(()=>renderer.unmount());
+  });
   it('uses the authored object guidance before a generic document or specification example', () => {
     for (const parameterId of ['prepared_foundation_acceptance_reference', 'actual_bin_supply_specification']) {
       expect(canonicalConsumerParameterPlaceholder({

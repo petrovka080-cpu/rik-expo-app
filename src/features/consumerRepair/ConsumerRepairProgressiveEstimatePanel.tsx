@@ -1846,8 +1846,10 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       ? cards.filter((card) => !missingCardIds.has(card.key) && groupSource(card) === "catalog_default"
         && card.consumerInputRole == null)
       : [];
-    const advancedCards = cards.filter(card => !missingCardIds.has(card.key)
-      && (card.consumerInputRole === "ADVANCED_OPTION" || card.consumerInputRole === "APPLICATION_TECHNICAL"));
+    const advancedCards = cards.filter(card => card.consumerInputRole === "ADVANCED_OPTION" || card.consumerInputRole === "APPLICATION_TECHNICAL");
+    const advancedCardIds = new Set(advancedCards.map(card => card.key));
+    const mainMissingCards = missingCards.filter(card => !advancedCardIds.has(card.key));
+    const advancedMissingCount = missingCards.filter(card => advancedCardIds.has(card.key)).length;
     const filledCards = cards.filter((card) =>
       !missingCardIds.has(card.key) &&
       groupSource(card) !== "formula_derived" &&
@@ -1855,19 +1857,19 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     );
     const derivedCards = cards.filter((card) =>
       groupSource(card) === "formula_derived" && !missingCardIds.has(card.key) && !advancedCards.includes(card));
-    const criticalMissingCards = missingCards.filter(
+    const criticalMissingCards = mainMissingCards.filter(
       (card) => card.clarificationTier === "critical",
     );
-    const nonCriticalMissingCards = missingCards.filter(
+    const nonCriticalMissingCards = mainMissingCards.filter(
       (card) => card.clarificationTier !== "critical",
     );
     const visibleMissingCards = showAllMissing
-      ? missingCards
+      ? mainMissingCards
       : [
         ...criticalMissingCards,
         ...nonCriticalMissingCards.slice(0, Math.max(0, 5 - criticalMissingCards.length)),
       ];
-    const hiddenMissingCount = Math.max(0, missingCards.length - visibleMissingCards.length);
+    const hiddenMissingCount = Math.max(0, mainMissingCards.length - visibleMissingCards.length);
     const dirtyCount = this.dirtyKeys().length;
     const applyPending = this.state.applyState === "pending";
     const clarification = this.props.revision?.professionalClarification;
@@ -1875,7 +1877,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       ? consumerRepairCanonicalCalculationRequirementIds(canonicalSession)
       : null;
     const blockingMissingCount = criticalMissingCards.length;
-    const contractMissingCount = nonCriticalMissingCards.length;
+    const contractMissingCount = nonCriticalMissingCards.length + advancedMissingCount;
     const canContinueWithoutDocumentOnlyFields = Boolean(
       canonicalSession
       && this.props.revision == null
@@ -2119,7 +2121,9 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
             style={styles.inlineToggle} testID="request-estimate-advanced-parameters-toggle">
             <Text style={styles.groupTitle}>{this.state.advancedDetailsOpen ? 'Скрыть дополнительные настройки' : 'Наличие материалов, упаковки и дополнительные настройки'}</Text>
           </Pressable>
-          <Text style={styles.parameterMeta}>Сохранённые значения учтены. Меняйте их, если условия поставки или проекта отличаются.</Text>
+          <Text style={styles.parameterMeta}>{advancedMissingCount
+            ? `Осталось уточнить ${advancedMissingCount}. Пустые поля не считаются подтверждёнными; известный расход можно сохранить. Полный состав и заказ требуют отдельных уточнений.`
+            : 'Сохранённые значения учтены. Меняйте их, если условия поставки или проекта отличаются.'}</Text>
           {this.state.advancedDetailsOpen ? advancedCards.map(card => renderParameter(card, '')) : null}
         </View>
       ) : null}
