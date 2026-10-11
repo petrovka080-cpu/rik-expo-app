@@ -17,7 +17,7 @@ export function overlayS2763Pvc15Cleaner(parent:PurchaseGroupRepresentative,loca
  const shared=pvc15CleanerDefinitionS2763();let ordinal=Math.max(...result.parameters.map(p=>Number(p.ordinal)))+1;
  const sharedMode=shared.parameters.find(p=>p.parameter_id==='pvc15_cleaner_mode')!;
  const existingMode=result.parameters.find(p=>p.parameter_id===sharedMode.parameter_id);
- if(!existingMode||existingMode.default_value!=null||existingMode.unit_id!==sharedMode.unit_id||existingMode.value_type!==sharedMode.value_type||JSON.stringify(existingMode.constraints_json.values)!==JSON.stringify(sharedMode.constraints_json.values))throw Error('PVC15_CLEANER_EXISTING_MODE_DRIFT');
+ if(!existingMode||existingMode.default_value!=null||existingMode.unit_id!==sharedMode.unit_id||existingMode.value_type!==sharedMode.value_type||JSON.stringify(existingMode.constraints_json.values)!==JSON.stringify(sharedMode.constraints_json?.values))throw Error('PVC15_CLEANER_EXISTING_MODE_DRIFT');
  existingMode.title_ru=sharedMode.title_ru;
  existingMode.truth_metadata={...existingMode.truth_metadata,source_confirmation_required:false,provenance:{...existingMode.truth_metadata.provenance,consumer_input_role_v1:'OBJECT_FACT'},guide:{...existingMode.truth_metadata.guide,guide_short_ru:'Выберите фактическую потребность в очистке или отдельной активации ПВХ-мембраны по технологии этой работы. Отдельная активация даже чистого полотна требует ответа «Требуется» и проектной ветви продукта. Ответ «Не требуется» допустим только когда ни очистка, ни отдельная активация не нужны. Нормы расхода приложение получает само.'}};
  const addedParameters=shared.parameters.filter(p=>p.parameter_id!==sharedMode.parameter_id);
