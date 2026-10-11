@@ -14,6 +14,7 @@ import {
 } from "./parameterConstraints";
 import { canonicalRoundDecimal } from "./canonicalEstimateDeterminism";
 import { parseCanonicalFormulaOutputBoundsV1, validateCanonicalFormulaOutputBoundsV1 } from "./canonicalFormulaOutputBounds";
+import { validateCanonicalDerivedQuantityEditPolicyV1, assertCanonicalDerivedQuantityAmendmentV1 } from './canonicalDerivedQuantityEditPolicyV1';
 import {
   canonicalFixedQuantityStatedBySource,
   canonicalNormConstantQuantityBinding,
@@ -944,6 +945,10 @@ export async function compileCanonicalEstimateCore(
     const formulaOutputBounds = parseCanonicalFormulaOutputBoundsV1(
       resource.resource_graph?.formulaOutputBoundsV1, resource.unit_id, formula.output_unit_id, resource.row_id,
     );
+    const derivedQuantityEditPolicy = validateCanonicalDerivedQuantityEditPolicyV1(
+      resource.resource_graph?.derivedQuantityEditPolicyV1, resource.row_id, resource.unit_id,
+      formula.output_unit_id, formula.input_parameter_ids, definitionParameterIds, formulaAstInputParameterIds(formula.ast),
+    );
     const override = overrides.get(resource.row_id);
     if (override != null && (!override || typeof override !== "object" || Array.isArray(override))) {
       throw compilerError(`invalid row override ${resource.row_id}`, "ROW_AMENDMENT_INVALID");
@@ -983,6 +988,7 @@ export async function compileCanonicalEstimateCore(
       && inclusion.missingParameterIds.every((parameterId) => formula.input_parameter_ids.includes(parameterId));
     const inclusionResolvedByManualQuantity = effectiveOutput == null && formulaOutputBounds == null && manualQuantity != null
       && inclusionOnlyWaitsForFormulaInputs && !inclusion.missingParameterIds.some(id => effectiveQuantityPlan.owners.has(id));
+    assertCanonicalDerivedQuantityAmendmentV1(derivedQuantityEditPolicy, manualQuantity);
     if (inclusion.value === false) continue;
     if (manualQuantity != null && originalMissingIds(missingFormulaParameterIds).some(id =>
       parameterDefinitionsById.get(id)?.truth_metadata?.value_source_role === 'UNRESOLVED_APPLICATION_NORM')) {
@@ -1203,6 +1209,7 @@ export async function compileCanonicalEstimateCore(
           formulaAstSha256: formula.ast_sha256,
           inputParameterIds: formula.input_parameter_ids,
           resourceGraph: preliminaryResourceGraph,
+          ...(derivedQuantityEditPolicy == null ? {} : { derivedQuantityEditPolicy }),
           ...(titleSpecification.parameterIds.length === 0 ? {} : { titleSpecification: {
             mode: titleSpecification.mode, parameterIds: titleSpecification.parameterIds,
             resolvedParameterIds: titleSpecification.parameterIds.filter(id => !missingTitleSpecificationParameterIds.includes(id)),
@@ -1321,6 +1328,7 @@ export async function compileCanonicalEstimateCore(
       formulaAstSha256: formula.ast_sha256,
       inputParameterIds: formula.input_parameter_ids,
       resourceGraph: resourceGraphForRevision(effectiveResourceGraph, parameters, resource.row_id),
+      ...(derivedQuantityEditPolicy == null ? {} : { derivedQuantityEditPolicy }),
       ...(inclusionDecision == null ? {} : { inclusionDecision }),
       ...(knownZeroExcluded ? { knownZeroExclusionV1: { calculatedQuantity: formulaQuantity, orderedQuantity: quantity } } : {}),
       ...(purchaseBalance == null ? {} : { purchaseBalance }),

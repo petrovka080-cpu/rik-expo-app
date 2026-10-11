@@ -2,6 +2,7 @@ import { canonicalEstimateOperationReference } from "./canonicalEstimateOperatio
 import type { CanonicalOrderedSpecificationBinding } from './canonicalOrderedSpecificationBindings';
 import { parseCanonicalPublicResourcePresentationV1 } from './canonicalPublicResourcePresentationV1';
 import type { AdmissionDecision } from "./estimateAdmissionR3";
+import { canonicalDerivedQuantityEditPolicyV1, type CanonicalDerivedQuantityEditPolicyV1 } from './canonicalDerivedQuantityEditPolicyV1';
 
 export const ESTIMATE_PLATFORM_API_VERSION = "2026-08-14.r2" as const;
 
@@ -293,6 +294,7 @@ export type CanonicalEstimatePreliminaryNeedView = {
   procurementEligible: boolean;
   formulaId: string;
   costTreatment?: string | null;
+  derivedQuantityEditPolicy?: CanonicalDerivedQuantityEditPolicyV1;
   commercialCostCoverageDecision?: CanonicalCommercialCostCoverageDecisionView;
   commercialRateCoverage?: CanonicalCommercialRateCoverageView;
   publicResourcePresentation?: import('./canonicalPublicResourcePresentationV1').CanonicalPublicResourcePresentationV1;
@@ -348,6 +350,9 @@ export function canonicalEstimatePreliminaryNeedsFromAmendmentContract(
       && Array.isArray(need.missing_parameter_ids)
       ? graph.titleSpecificationParameterIds.filter((id): id is string => typeof id === 'string' && (need.missing_parameter_ids as unknown[]).includes(id)) : [];
     const publicResourcePresentation = parseCanonicalPublicResourcePresentationV1(graph?.publicResourcePresentationV1);
+    const derivedQuantityEditPolicy = canonicalDerivedQuantityEditPolicyV1(
+      (need.calculation_trace as Record<string, unknown> | undefined)?.derivedQuantityEditPolicy,
+    );
     const decision = graph?.commercialCostCoverageDecisionV1 as Record<string, unknown> | undefined;
     const rate = graph?.commercialCostCoverageOwnerDecisionV1 as Record<string, unknown> | undefined;
     const coverageIdentityValid = (value: Record<string, unknown> | undefined) => value?.contractVersion === 'canonical-commercial-cost-coverage/v1'
@@ -385,6 +390,7 @@ export function canonicalEstimatePreliminaryNeedsFromAmendmentContract(
       ...(commercialCostCoverageDecision ? { commercialCostCoverageDecision } : {}),
       ...(commercialRateCoverage ? { commercialRateCoverage } : {}),
       ...(publicResourcePresentation ? { publicResourcePresentation } : {}),
+      ...(derivedQuantityEditPolicy?.unitId === String(need.unit_id ?? '') ? { derivedQuantityEditPolicy } : {}),
       ...((need.calculation_trace as Record<string, unknown> | undefined)?.manualTitleOverride === true ? { manualTitleOverride: true } : {}),
       manualQuantityOverride: (need.calculation_trace as Record<string, unknown> | undefined)?.manualQuantityOverride === true,
       calculatedQuantityBeforeOverride: (need.calculation_trace as Record<string, unknown> | undefined)?.calculatedQuantityBeforeOverride == null

@@ -1,5 +1,6 @@
 import { consumerCanonicalMissingRequirements, type CanonicalParameterRequirementTables } from "../../lib/consumerRequests/consumerCanonicalParameterRequirements";
 import type { CanonicalPublicResourcePresentationV1 } from '../../lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1';
+import { canonicalDerivedQuantityEditPolicyV1 } from '../../lib/estimate/backendPlatform/canonicalDerivedQuantityEditPolicyV1';
 
 type ConsumerRepairRowMetadataCarrier = {
   id?: string;
@@ -129,12 +130,17 @@ export function consumerRepairRowRequirementNotice(
     : "Количество сохранено; для подтверждения позиции нужны дополнительные исходные данные.";
 }
 
+export function consumerRepairRowDerivedQuantityEditReason(item: ConsumerRepairRowMetadataCarrier | null | undefined): string | null {
+  return canonicalDerivedQuantityEditPolicyV1(metadata(item).canonicalDerivedQuantityEditPolicyV1)?.reasonRu ?? null;
+}
+
 export function consumerRepairRowHasSourceManagedQuantity(
   item: ConsumerRepairRowMetadataCarrier | null | undefined,
   tables?: CanonicalParameterRequirementTables | null,
 ): boolean {
   const source = metadata(item);
   const requirements = source.missingParameterRequirements;
+  if (consumerRepairRowDerivedQuantityEditReason(item)) return true;
   return source.canonicalPreliminaryNeed === true
     && ((item != null && consumerCanonicalMissingRequirements(item, tables).some(requirement =>
       requirement.valueSourceRole === "UNRESOLVED_APPLICATION_NORM"

@@ -198,6 +198,9 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
         canonicalSourceTitleRu: row.titleRu,
         canonicalPublicResourcePresentationV1: resourceGraph?.publicResourcePresentationV1 ?? null,
         canonicalManualTitleOverride: row.calculationTrace?.manualTitleOverride === true,
+        ...(row.calculationTrace?.derivedQuantityEditPolicy == null ? {} : {
+          canonicalDerivedQuantityEditPolicyV1: row.calculationTrace.derivedQuantityEditPolicy,
+        }),
         canonicalOperationComposition: canonicalEstimateOperationReference(resourceGraph?.operationCompositionV1),
         canonicalPurchaseBalance: row.calculationTrace.purchaseBalance,
         canonicalPurchaseRequirement: row.calculationTrace.purchaseRequirementV1,

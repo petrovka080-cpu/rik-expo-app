@@ -285,6 +285,9 @@ export function buildStructuredEstimateRequestDraft(
             canonicalBackendCatalogId: payload.canonicalBackend?.catalogId,
             canonicalBackendOwnershipStatus: "PRELIMINARY_NEED",
             canonicalPreliminaryNeed: true,
+            ...((need.derivedQuantityEditPolicy ?? need.calculationTrace?.derivedQuantityEditPolicy) == null ? {} : {
+              canonicalDerivedQuantityEditPolicyV1: need.derivedQuantityEditPolicy ?? need.calculationTrace?.derivedQuantityEditPolicy,
+            }),
             canonicalPurchaseRequirement: need.purchaseRequirement ?? need.calculationTrace?.purchaseRequirementV1,
             canonicalCostTreatment: need.costTreatment ?? (need.calculationTrace?.resourceGraph as Record<string, unknown> | undefined)?.costTreatment ?? null,
             canonicalIncludedCostOwnerTitleRu: typeof ownerId === 'string' ? paidOwnerTitles.get(ownerId) ?? null : null,

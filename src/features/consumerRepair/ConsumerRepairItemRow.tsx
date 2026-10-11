@@ -27,6 +27,7 @@ import {
   consumerRepairRowCommercialScopeLabel,
   consumerRepairRowHasManualQuantity,
   consumerRepairRowHasSourceManagedQuantity,
+  consumerRepairRowDerivedQuantityEditReason,
   consumerRepairRowIncludedInEstimate,
   consumerRepairRowIsCanonicalPreliminaryNeed,
   consumerRepairRowIsNonPayable,
@@ -106,6 +107,7 @@ function ConsumerRepairItemRowComponent({
   );
   const itemOptional = !consumerRepairRowIncludedInEstimate(item);
   const sourceManagedNeed = consumerRepairRowHasSourceManagedQuantity(item, parameterRequirementTables);
+  const derivedQuantityEditReason = consumerRepairRowDerivedQuantityEditReason(item);
   const nonPayableRow = consumerRepairRowIsNonPayable(item);
   const manualQuantityOverride = consumerRepairRowHasManualQuantity(item);
   const calculatedQuantity = consumerRepairRowCalculatedQuantity(item);
@@ -285,18 +287,20 @@ function ConsumerRepairItemRowComponent({
             </View>
             {sourceManagedNeed && item.quantity == null && !purchaseRequirement ? (
               <Text style={styles.inlineSourceHint} testID={`consumer-repair-item-source-gated-quantity-${item.id}`}>
-                Количество определит расчёт после подтверждения технического источника.
+                {derivedQuantityEditReason ?? 'Количество определит расчёт после подтверждения технического источника.'}
               </Text>
             ) : null}
             {purchaseRequirement ? <Text style={styles.calculatedQuantityHint} testID={`consumer-repair-item-known-consumption-${item.id}`}>
               {purchaseRequirement.labelRu}: {formatEstimateQuantityRu(purchaseRequirement.quantity)} {formatEstimateUnitLabel(purchaseRequirement.unitId)}. Точный заказ ещё не подтверждён.
             </Text> : null}
-            {calculatedQuantity != null || manualQuantityOverride ? (
+            {calculatedQuantity != null || manualQuantityOverride || (derivedQuantityEditReason != null && item.quantity != null) ? (
               <Text
                 style={manualQuantityOverride ? styles.manualQuantityHint : styles.calculatedQuantityHint}
                 testID={`consumer-repair-item-quantity-mode-${item.id}`}
               >
-                {sourceManagedNeed
+                {derivedQuantityEditReason
+                  ? derivedQuantityEditReason
+                  : sourceManagedNeed
                   ? "Сохранённое количество ожидает подтверждения технического источника."
                   : manualQuantityOverride
                   ? calculatedQuantity != null
