@@ -1,5 +1,5 @@
 import { buildMasterParameterCalculationConsumers } from '../../../src/lib/estimate/backendPlatform/canonicalDefinitionParameterConsumersR1';
-import { estimateDeterministicHash } from '../../../src/lib/estimate/estimateDeterministicHash';
+import { estimateDeterministicHash, stringifyCanonicalEstimateJson } from '../../../src/lib/estimate/estimateDeterministicHash';
 import { pumpGroutMaterialDefinitionS2763, pumpGroutMaterialPackS2763 as pack, pumpGroutLegacyConditionS2763, pumpGroutMaterialPrefixS2763 } from '../../../src/lib/estimate/v4/pumpGroutMaterialS2763';
 import type { PurchaseGroupRepresentative } from './s2732PurchaseGroupOverlay';
 
@@ -31,7 +31,10 @@ export function overlayS2763PumpGroutMaterial(parent: PurchaseGroupRepresentativ
   }
   const ordinal = Math.max(...parent.parameters.map(p => Number(p.ordinal))) + 1;
   result.parameters.push(...shared.parameters.map((p, index) => ({ ...p, ordinal: ordinal + index })));
-  result.formulas.push(...shared.formulas);
+  // Runtime owners carry a publisher placeholder; persisted formula graphs use
+  // the same SHA-256 contract as all existing canonical formula publishers.
+  result.formulas.push(...shared.formulas.map(f => ({ ...f,
+    ast_sha256: createHash('sha256').update(stringifyCanonicalEstimateJson(f.ast)).digest('hex') })));
   const rowOrdinal = Math.max(...parent.resources.map(r => Number(r.ordinal))) + 1;
   result.resources.push(...shared.resources.map((r, index) => {
     const { row_sha256: _previousHash, ...body } = r;
@@ -66,3 +69,4 @@ export function overlayS2763PumpGroutMaterial(parent: PurchaseGroupRepresentativ
     addedParameterIds: shared.parameters.map(p => p.parameter_id), changedFormulaIds: shared.formulas.map(f => f.formula_id),
     newPayableOwnerRowId: pumpGroutMaterialPrefixS2763 + ':order' };
 }
+import { createHash } from 'node:crypto';
