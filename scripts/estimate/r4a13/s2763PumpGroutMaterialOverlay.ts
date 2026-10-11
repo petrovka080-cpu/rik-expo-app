@@ -1,7 +1,10 @@
+import { createHash } from 'node:crypto';
 import { buildMasterParameterCalculationConsumers } from '../../../src/lib/estimate/backendPlatform/canonicalDefinitionParameterConsumersR1';
-import { estimateDeterministicHash, stringifyCanonicalEstimateJson } from '../../../src/lib/estimate/estimateDeterministicHash';
+import { stringifyCanonicalEstimateJson } from '../../../src/lib/estimate/estimateDeterministicHash';
 import { pumpGroutMaterialDefinitionS2763, pumpGroutMaterialPackS2763 as pack, pumpGroutLegacyConditionS2763, pumpGroutMaterialPrefixS2763 } from '../../../src/lib/estimate/v4/pumpGroutMaterialS2763';
 import type { PurchaseGroupRepresentative } from './s2732PurchaseGroupOverlay';
+
+const hash = (value: unknown) => createHash('sha256').update(stringifyCanonicalEstimateJson(value)).digest('hex');
 
 export const S2763_PUMP_GROUT_TARGETS = {
   'canonical-work:expanded:booster_pumping_station': ['rc09:bps_nonshrink_grout', 'rc09:bps-grout-balance:installed-net'],
@@ -20,7 +23,7 @@ export function overlayS2763PumpGroutMaterial(parent: PurchaseGroupRepresentativ
     row.source_metadata = { ...row.source_metadata, alternateMaterialBranchContract: pack.contract,
       historicalUnitAndPriceOwnerPreserved: true, selectedNewMaterialExcluded: true };
     const { row_sha256: _previousHash, ...body } = row;
-    row.row_sha256 = estimateDeterministicHash(body);
+    row.row_sha256 = hash(body);
   }
   const legacyFormulaIds = new Set(result.resources.filter(r => (legacyRowIds as readonly string[]).includes(r.row_id)).map(r => r.formula_id));
   const exclusiveLegacyInputs = new Set(result.formulas.filter(f => legacyFormulaIds.has(f.formula_id)).flatMap(f => f.input_parameter_ids as string[])
@@ -34,12 +37,12 @@ export function overlayS2763PumpGroutMaterial(parent: PurchaseGroupRepresentativ
   // Runtime owners carry a publisher placeholder; persisted formula graphs use
   // the same SHA-256 contract as all existing canonical formula publishers.
   result.formulas.push(...shared.formulas.map(f => ({ ...f,
-    ast_sha256: createHash('sha256').update(stringifyCanonicalEstimateJson(f.ast)).digest('hex') })));
+    ast_sha256: hash(f.ast) })));
   const rowOrdinal = Math.max(...parent.resources.map(r => Number(r.ordinal))) + 1;
   result.resources.push(...shared.resources.map((r, index) => {
     const { row_sha256: _previousHash, ...body } = r;
     const final = { ...body, ordinal: rowOrdinal + index, row_type: r.category, semantic_owner: catalogId + ':' + r.row_id };
-    return { ...final, row_sha256: estimateDeterministicHash(final) };
+    return { ...final, row_sha256: hash(final) };
   }));
   result.bindings.push(...shared.resources.map(r => ({ row_id: r.row_id, locator_id: locatorId,
     applicability: { contract: pack.contract, selectedCountryProduct: pack.selectedProductRu, quantityQuality: 'APPROXIMATE',
@@ -59,7 +62,7 @@ export function overlayS2763PumpGroutMaterial(parent: PurchaseGroupRepresentativ
     if (!Object.hasOwn(result.baseline.normative_source_ids, id)) result.baseline.normative_source_ids[id] = [];
     if (!Object.hasOwn(result.baseline.guide_provenance_ru, id)) result.baseline.guide_provenance_ru[id] = p.truth_metadata.guide?.guide_short_ru ?? p.title_ru;
   }
-  result.baseline.parameter_schema_sha256 = estimateDeterministicHash(result.parameters.map(p => ({ parameterId: p.parameter_id,
+  result.baseline.parameter_schema_sha256 = hash(result.parameters.map(p => ({ parameterId: p.parameter_id,
     unitId: p.unit_id, valueType: p.value_type, constraints: p.constraints_json, truth: p.truth_metadata })));
   result.passport.included_scope_ru = [...result.passport.included_scope_ru,
     'Отдельная выбранная ветвь: приблизительный расход SikaGrout-212 Казахстан по фактическому объёму, слой 10–75 мм; закупка мешками 25 кг.'];
@@ -69,4 +72,3 @@ export function overlayS2763PumpGroutMaterial(parent: PurchaseGroupRepresentativ
     addedParameterIds: shared.parameters.map(p => p.parameter_id), changedFormulaIds: shared.formulas.map(f => f.formula_id),
     newPayableOwnerRowId: pumpGroutMaterialPrefixS2763 + ':order' };
 }
-import { createHash } from 'node:crypto';
