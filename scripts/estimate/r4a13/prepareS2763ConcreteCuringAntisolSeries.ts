@@ -130,7 +130,7 @@ async function main() {
           definitionSha256, sourceMetadata: { ...parent.definition.source_metadata, contract: CONTRACT, predecessorDefinitionId: parent.definition.id,
             materialSeriesContract: pack.contract, ...(REPAIR_PROJECT_FIXTURES ? {consumerFactsRepairContract:CONTRACT} : {}), sourceHashes, activationAllowed: false, productionEligible: false } },
         representative: r,
-        parameterTruthMetadata: p => ({ ...p.truth_metadata, contract: CONTRACT, semantic_parameter_key: `${catalogId}:${p.parameter_id}` }),
+        parameterTruthMetadata: p => REPAIR_PROJECT_FIXTURES ? p.truth_metadata : ({ ...p.truth_metadata, contract: CONTRACT, semantic_parameter_key: `${catalogId}:${p.parameter_id}` }),
         resourceId: row => uuid(`${fingerprint}:resource:${catalogId}:${row.row_id}`), resourceSemanticOwner: row => String(row.semantic_owner),
         resourceSha256: row => hash({ contract: CONTRACT, catalogId, row }),
         baseline: { id: baselineId, key: `${CONTRACT}:${fingerprint.slice(0, 16)}:${catalogId}`, sourceDefinitionVersionId: parent.definition.id,
@@ -142,6 +142,7 @@ async function main() {
             materialSeriesContract: pack.contract, ...(REPAIR_PROJECT_FIXTURES ? {consumerFactsRepairContract:CONTRACT} : {}), activationAllowed: false, productionEligible: false },
           payloadSha256: hash({ predecessor: parent.passport.payload_sha256, definitionSha256, evidenceSha256 }), sourceHead: head, sourceTree: tree },
         bindingApplicability: b => ({ ...b.applicability, clonedByContract: CONTRACT }), expectedNormativeBindingCount: r.bindings.length });
+      if(REPAIR_PROJECT_FIXTURES)invariant(hash(plan.parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata})))===plan.baseline.parameter_schema_sha256,'FINAL_PARAMETER_SCHEMA_DIGEST_DRIFT');
       invariant(plan.passport.decision.materialSourceScopeOnly === true && plan.passport.decision.completeTechnicalEstimateAccepted === false
         && plan.passport.decision.legacyPreliminarySourcesRemainUnaccepted === true, "LIMITED_MATERIAL_SCOPE_FLAGS_LOST");
       plans.push(plan);

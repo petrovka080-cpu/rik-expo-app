@@ -36,12 +36,12 @@ describe("InlineParamEditor R3 parameter guide", () => {
     let renderer!: ReactTestRenderer;
     act(() => { renderer = TestRenderer.create(<ParameterDisclosurePanel viewModel={null} revision={null}
       latestDiff={null} paramEditorEnabled canonicalParameterSession={session} />); });
-    expect(renderer.root.findAllByProps({ testID: 'editable-param-chip-area' })).toHaveLength(1);
+    expect(renderer.root.findByProps({ testID: 'editable-param-chip-area' })).toBeTruthy();
     expect(renderer.root.findAllByProps({ testID: 'editable-param-chip-stock' })).toHaveLength(0);
     const group=renderer.root.findByProps({testID:'request-estimate-advanced-parameters'});
     expect(group.findAllByType('Text' as never).map(n=>String(n.props.children ?? '')).join(' ')).toContain('Осталось уточнить 1');
     act(()=>renderer.root.findByProps({testID:'request-estimate-advanced-parameters-toggle'}).props.onPress());
-    expect(renderer.root.findAllByProps({ testID: 'editable-param-chip-stock' })).toHaveLength(1);
+    expect(renderer.root.findByProps({ testID: 'editable-param-chip-stock' })).toBeTruthy();
     expect((session as any).parameters[1].value).toBeNull();
     expect((session as any).blockingMissingParameterIds).toContain('stock');
     act(()=>renderer.unmount());
