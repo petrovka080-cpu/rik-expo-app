@@ -1,0 +1,62 @@
+{
+  "contract": "rik-expo-app.s27-63.pvc15-cleaner472219-material-series.v1",
+  "sourceId": "tn_pvc15_cleaner472219_dirty_surface_volume_s2763",
+  "normId": "TN-PVC-CLEANER472219-DIRTY-SURFACE-LITRES-S2763",
+  "source": {
+    "titleRu": "ТЕХНОНИКОЛЬ: очиститель ПВХ-мембран ЕКН472219, объёмная листовка",
+    "officialUrl": "https://pim.tn.ru/4/b/1/1/4b118683046ee4fccb8822c424eaa56d870fcd31_Listovka_Ochistitel_dlya_PVKH_membran_TEKHNONIKOL.pdf",
+    "localArtifact": ".release-runtime/r568/s27-37/cleaner-472219-volume-leaflet.pdf",
+    "sha256": "2c18f654cd628cc204bc657af83897e5e3d84146572c8664151e07e345ee8654",
+    "edition": "Официальная листовка; дата и номер редакции не указаны",
+    "publicationDate": null,
+    "countryEditionNotStated": true,
+    "locatorRu": "Страница 1: таблица «Основные характеристики», абзац «Низкий расход», сведения об упаковке и таблица ЕКН",
+    "rateLPerM2": 0.25,
+    "packageL": 3,
+    "quantityQuality": "PINNED_MANUFACTURER_NOMINAL_DIRTY_PVC_VOLUME_RATE",
+    "reviewedAt": "2026-10-11T12:32:51.855Z"
+  },
+  "scopeRu": "Только измеренная загрязнённая ПВХ-поверхность в существующей работе с выбранным очистителем ТЕХНОНИКОЛЬ ЕКН472219 и поставкой по 3 л. Пользователь явно подтверждает, что во всей границе заменяемой очистки отдельный активатор и другие применения очистителя не требуются. Это факт технологии проекта, а не обещание производителя; при неизвестности или другой обработке сохраняется проектная ветвь. Поле ПВХ1,5, остальные операции и источники остаются прежними.",
+  "selectedProductRu": "Очистка грязной ПВХ: ТЕХНОНИКОЛЬ ЕКН472219, 3 л; отдельный активатор и другие применения в этой работе не нужны",
+  "legacyProductRu": "Другой очиститель или отдельная активация по проекту",
+  "ownershipContract": {
+    "legacyOwner": "pvc15:material:cleaner",
+    "newAlternateProductOwner": "pvc15:material:cleaner:tn-472219-volume",
+    "oldQuantityPriceStockAndEffectiveNeverAutoTransferred": true,
+    "onePaidOwnerForSameCleaning": true
+  },
+  "exclusionsRu": [
+    "Не вся площадь кровли, не площадь закупленной мембраны и не длина шва с выдуманной шириной.",
+    "Не очистка инструмента, основания, битума, неполимерных или не-ПВХ поверхностей.",
+    "Норма не переносится на отдельную активацию чистых зон. Если она нужна или неизвестна — данную ограниченную ветвь не подтверждать.",
+    "Не добавлять потери, повторные проходы, плотность, разбавление или норму труда. Время высыхания10мин не является трудозатратами.",
+    "Остальные необходимые подработы, материалы, инструмент и завершение остаются собственными потребностями.",
+    "Наличие, запас, цена и фактический заказ другого очистителя не становятся данными ЕКН472219."
+  ],
+  "targets": [
+    {
+      "catalogId": "canonical-work:base:roofing_interior_flat_roof_install_large_area",
+      "predecessorDefinitionId": "5cfb6633-4497-5bec-b8e2-87737a62565c",
+      "predecessorVersion": 5,
+      "titleRu": "Монтаж поля кровельной ПВХ-мембраны 1,5 мм на большой площади"
+    },
+    {
+      "catalogId": "canonical-work:base:roofing_interior_flat_roof_install_small_area",
+      "predecessorDefinitionId": "e6fbb439-5e76-5e30-92a6-2f4cb3ad7bde",
+      "predecessorVersion": 5,
+      "titleRu": "Монтаж поля кровельной ПВХ-мембраны 1,5 мм на малом участке"
+    },
+    {
+      "catalogId": "canonical-work:base:roofing_interior_flat_roof_install_standard",
+      "predecessorDefinitionId": "6c786d4a-52d1-58bf-ae22-be8a9aae1fca",
+      "predecessorVersion": 7,
+      "titleRu": "Монтаж кровельной ПВХ-мембраны 1,5 мм с механическим креплением"
+    }
+  ],
+  "groupCoverage": {
+    "roofFamilyTypes": 522,
+    "newMaterialConsumers": 3,
+    "newCompleteTechnicalTypes": 0
+  },
+  "independentSourceReviewSha256": "61e08dc0dc8be9164ac3dd2f9d0ad785772864f112231b14db4284bfa49bf303"
+}
