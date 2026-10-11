@@ -2,7 +2,7 @@ import {createHash} from 'node:crypto';
 import {stringifyCanonicalEstimateJson} from '../../../src/lib/estimate/estimateDeterministicHash';
 import {buildMasterParameterCalculationConsumers} from '../../../src/lib/estimate/backendPlatform/canonicalDefinitionParameterConsumersR1';
 import {buildAutomaticConstructionOwnerR1,type AutomaticRowSpec} from '../../../src/lib/estimate/v4/automaticConstructionOwnerR1';
-import {metalRoofSimpleKrer12PackS2763 as pack,metalRoofSimpleKrer12DefinitionS2763,metalRoofSimpleSelectedGuardS2763,metalRoofSimpleLegacyGuardS2763,metalRoofSimplePrefixS2763 as prefix,metalRoofProtectedResidualTruthS2763} from '../../../src/lib/estimate/v4/metalRoofSimpleKrer12S2763';
+import {metalRoofSimpleKrer12PackS2763 as pack,metalRoofSimpleKrer12DefinitionS2763,metalRoofSimpleSelectedGuardS2763,metalRoofSimpleLegacyGuardS2763,metalRoofSimpleUnknownChoiceS2763,metalRoofSimplePrefixS2763 as prefix,metalRoofProtectedResidualTruthS2763} from '../../../src/lib/estimate/v4/metalRoofSimpleKrer12S2763';
 import type {PurchaseGroupRepresentative} from './s2732PurchaseGroupOverlay';
 const hash=(v:unknown)=>createHash('sha256').update(stringifyCanonicalEstimateJson(v)).digest('hex');
 export const S2763_METAL_ROOF_SIMPLE_TARGETS=Object.fromEntries(pack.targets.map(t=>[t.catalogId,t.preservedOwners.map(r=>r.rowId)]));
@@ -74,6 +74,10 @@ export function overlayS2763MetalRoofSimpleKrer12(parent:PurchaseGroupRepresenta
     resource_graph:{...r.resource_graph,publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',nameRu:r.title_ru,sourceTitleRu:r.title_ru,detailsRu:[reason,'Количество, применимость, единица и самостоятельная цена не подтверждены. Это не дополнительная автоматическая оплата.']}}};})};
  for(const p of guardedResidual.parameters){result.parameters.push({...p,ordinal:po++});addedParameterIds.push(p.parameter_id);}
  addShared(guardedResidual,true);
+ // R54 requires a nonempty validation baseline. This evidence-only unknown
+ // choice is explicitly excluded from all runtime defaults; q stays absent.
+ result.baseline.input_values={metal_roof_system:metalRoofSimpleUnknownChoiceS2763};
+ result.baseline.input_classification={metal_roof_system:'VALIDATION_FIXTURE'};
  const consumers=buildMasterParameterCalculationConsumers(result);
  for(const p of result.parameters){const id=p.parameter_id;p.truth_metadata={...p.truth_metadata,contract:pack.contract,semantic_parameter_key:catalogId+':'+id,formula_consumers:consumers.formulaConsumers[id],resource_branch_consumers:consumers.resourceConsumers[id]};
   result.baseline.formula_consumer_ids[id]=consumers.formulaConsumers[id];result.baseline.resource_consumer_row_ids[id]=consumers.resourceConsumers[id];result.baseline.uom_by_parameter[id]=p.unit_id;
@@ -83,10 +87,11 @@ export function overlayS2763MetalRoofSimpleKrer12(parent:PurchaseGroupRepresenta
  result.passport.decision={...result.passport.decision,quantityScope:'PARTIAL',preliminaryCompositionOnly:true,technicalScopeStatus:'NEEDS_SOURCE',unresolvedResourceRowIds,
   legacyQuantityNormsUnaccepted:true,priceState:'PARTIAL_NEEDS_PRICE',completeTechnicalEstimateAccepted:false,activationAllowed:false,productionEligible:false,
   workerNormConsumers:1,machineNormConsumers:4,materialNormConsumers:4,newPhysicalNormConsumers:9,operatorInformationalConsumers:1,wholeRoofGroupComplete:false,legacyOwnerDisposition:dispositions};
- if(!result.passport.capability_matrix.some((entry:Record<string,unknown>)=>entry.capability==='FULL_APPLICABLE_SCOPE'))result.passport.capability_matrix.push({capability:'FULL_APPLICABLE_SCOPE'});
- result.passport.capability_matrix=result.passport.capability_matrix.map((entry:Record<string,unknown>)=>entry.capability==='FULL_APPLICABLE_SCOPE'
-  ?{...entry,status:'NEEDS_SOURCE',preliminaryCompositionOnly:true,unresolvedResourceRowIds}:entry.capability==='PRICE_AND_PROCUREMENT'
-  ?{...entry,status:'PARTIAL_NEEDS_PRICE',procurementOwnerAccepted:false}:entry);
+ result.passport.decision.legacyAlternativeCapabilityMatrix=parent.passport.capability_matrix;
+ result.passport.capability_matrix=[{capability:'PARAMETERS',status:'GREEN'},
+  {capability:'FORMULAS',status:'GREEN',scope:'CONDITIONAL_KRER_METAL_ROOF_NORMS'},
+  {capability:'FULL_APPLICABLE_SCOPE',status:'NEEDS_SOURCE',preliminaryCompositionOnly:true,unresolvedResourceRowIds},
+  {capability:'PRICE_AND_PROCUREMENT',status:'PARTIAL_NEEDS_PRICE',procurementOwnerAccepted:false}];
  result.passport.included_scope_ru=[pack.scopeRu,'Раскрой, проектные дополнительные элементы и непокрытые остатки не подтверждены этим нормативным составом.'];
  result.passport.physical_result_ru='Условный нормативный состав укладки и крепления металлочерепицы по готовым принятым прогонам. Полная смета, закупка и остальные подработы не завершены.';
  result.definition.passport={...result.definition.passport,rowCount:result.resources.length,metalRoofSimpleContract:pack.contract,fullTechnicalEstimateAccepted:false,

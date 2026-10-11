@@ -18,6 +18,8 @@ test('six exact parents preserve354 owners and old formulas; template100 is remo
   expect(r.resources.slice(0,59).map(x=>[x.id,x.row_id,x.cost_owner_id,x.unit_id,x.formula_id])).toEqual(parent.resources.map(x=>[x.id,x.row_id,x.cost_owner_id,x.unit_id,x.formula_id]));ownerCount+=59;
   expect(r.parameters.find(p=>p.parameter_id==='q')?.default_value).toBeNull();expect(r.baseline.input_values).not.toHaveProperty('q');
   expect(canonicalApprovedBaselineRuntimeParameters(r.baseline)).toEqual({});expect(r.passport.decision.completeTechnicalEstimateAccepted).toBe(false);expect(canonicalPublisherQuantityScopeIsConsistent(r)).toBe(true);
+  expect(r.baseline.input_values).toEqual({metal_roof_system:unknownChoice});expect(r.baseline.input_classification).toEqual({metal_roof_system:'VALIDATION_FIXTURE'});
+  expect(r.passport.capability_matrix).toHaveLength(4);expect(r.passport.decision.legacyAlternativeCapabilityMatrix).toEqual(parent.passport.capability_matrix);
   expect(r.passport.decision.legacyOwnerDisposition).toHaveLength(59);
   for(const disposition of r.passport.decision.legacyOwnerDisposition){if(disposition.residualRowId){
    const original=parent.resources.find(row=>row.row_id===disposition.oldRowId)!,residual=r.resources.find(row=>row.row_id===disposition.residualRowId)!;
