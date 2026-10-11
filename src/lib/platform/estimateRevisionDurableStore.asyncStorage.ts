@@ -19,6 +19,7 @@ import {
 } from "./estimateRevisionDurableStore.contract";
 import { safeJsonParse } from "../format";
 import { decodeEstimateRevisionAsyncStorageRecord, encodeEstimateRevisionAsyncStorageRecord } from "./estimateRevisionAsyncStorageRecordCodec";
+import { estimateRevisionUtf8ByteLength } from "./estimateRevisionDurableSerialization";
 
 export type AsyncKeyValueStorage = {
   getItem(key: string): Promise<string | null>;
@@ -43,6 +44,10 @@ const LOGICAL_KEY_INDEX_STORAGE_KEY = storageKey("__logical_key_index__");
 const REVISION_INDEX_STORAGE_KEY_PREFIX = storageKey("__revision_index__:");
 const PHYSICAL_COMPACTION_CURSOR_KEY = storageKey("__physical_record_compaction_cursor__");
 type PhysicalCompactionCursor = { key: string; version: string; recordIndex: number };
+export const ASYNC_STORAGE_COMPACTION_MAX_INSPECTED_RECORDS = 256;
+export const ASYNC_STORAGE_COMPACTION_MAX_REPLACEMENTS = 64;
+export const ASYNC_STORAGE_COMPACTION_MAX_RAW_BYTES = 32 * 1024 * 1024;
+const PHYSICAL_WRITE_RESERVE_BYTES = 128 * 1024;
 
 /**
  * Android AsyncStorage reads SQLite values through a bounded CursorWindow.
@@ -160,49 +165,78 @@ implements EstimateRevisionDurableStore {
     this.failureInjector?.(point);
   }
 
-  private async mutateStorage<T>(task: () => Promise<T>): Promise<T> {
+  private async mutateStorage<T>(task: () => Promise<T>, incomingBytes = 0, prepareBeforeWrite = true): Promise<T> {
     const previous = this.storageMutationQueue;
     let release!: () => void;
     const gate = new Promise<void>(resolve => { release = resolve; });
     this.storageMutationQueue = previous.then(() => gate);
     await previous;
     try {
+      // Existing binaries have no reliable native free-page API. Reclaim only
+      // redundant representation bytes, bounded by the actual staged write.
+      // This is preparation, not a claim that a native quota test has passed.
+      if (prepareBeforeWrite && incomingBytes > 0) await this.compactRetainedPhysicalRecords(incomingBytes + PHYSICAL_WRITE_RESERVE_BYTES);
       try { return await task(); }
       catch (error) {
         if (!/(?:SQLITE_FULL|database or disk is full)/iu.test(messageFromDurableError(error))) throw error;
         // Reclaim representation overhead, never revisions. Every replacement
         // is a single native atomic write with an exact text round trip.
-        if (!await this.compactRetainedPhysicalRecords()) throw error;
+        if (!await this.compactRetainedPhysicalRecords(Math.max(incomingBytes, PHYSICAL_WRITE_RESERVE_BYTES))) throw error;
         return await task(); // One retry after a bounded change in capacity.
       }
     } finally { release(); }
   }
 
-  private async compactRetainedPhysicalRecords(): Promise<number> {
-    let compacted = 0;
+  private async compactRetainedPhysicalRecords(targetSavingsBytes: number): Promise<number> {
+    let compacted = 0, inspected = 0, rawBytes = 0, savedBytes = 0;
     const saved = this.physicalCompactionCursor ?? parseRecord<PhysicalCompactionCursor>(await this.storage.getItem(PHYSICAL_COMPACTION_CURSOR_KEY));
     const cursor = saved && typeof saved.key === "string" && typeof saved.version === "string"
       && Number.isSafeInteger(saved.recordIndex) && saved.recordIndex >= 0 ? saved : null;
     const keys = await this.readLogicalKeyIndex(), start = Math.max(0, cursor ? keys.indexOf(cursor.key) : 0);
     const orderedKeys = [...keys.slice(start), ...keys.slice(0, start)];
+    const segments = orderedKeys.map((key,index)=>({key,resume:index===0&&cursor?.key===key,prefix:false}));
+    // The first key's unvisited prefix is visited only after every other key,
+    // so a full circular pass can find RAW records before the saved position
+    // without repeatedly wrapping inside a large first key.
+    if(cursor&&cursor.key===orderedKeys[0]&&cursor.version)segments.push({key:cursor.key,resume:false,prefix:true});
     // One finite indexed pass. A compressed prefix must never hide later RAW
-    // values after process death. Chunk manifests already bound each version;
-    // decode only one record at a time and replace at most eight per pass.
+    // values after process death. Decode one record at a time. Bound inspection,
+    // replacements and codec bytes separately; stop when enough bytes were
+    // reclaimed for this write rather than after an arbitrary eight records.
     const finish = async (next: PhysicalCompactionCursor): Promise<number> => {
       this.physicalCompactionCursor = next;
       // Progress survives process death. This metadata never changes a draft's
-      // pointer or envelope; publish it only after a replacement freed space.
-      if (compacted) await this.storage.setItem(PHYSICAL_COMPACTION_CURSOR_KEY, JSON.stringify(next));
+      // pointer or envelope. Save progress even across an already compressed
+      // prefix. Optional cursor metadata must not turn a full disk into a
+      // failed otherwise valid write; in-memory progress remains usable.
+      try { await this.storage.setItem(PHYSICAL_COMPACTION_CURSOR_KEY, JSON.stringify(next)); }
+      catch (error) {
+        if (!/(?:SQLITE_FULL|database or disk is full)/iu.test(messageFromDurableError(error))) throw error;
+      }
       return compacted;
     };
-    for (const [keyIndex, key] of orderedKeys.entries()) {
+    for (const segment of segments) {
+      const {key}=segment;
+      // Orphan logical keys are legal after death before the pointer switch.
+      // Count attempted metadata/envelope reads, including missing records and
+      // native read failures, so these keys cannot escape the finite budget.
+      if (inspected >= ASYNC_STORAGE_COMPACTION_MAX_INSPECTED_RECORDS) return finish({ key, version: "", recordIndex: 0 });
+      inspected++;
       const pointer = await this.readPointer(key);
       const versions = [pointer?.currentVersion, pointer?.previousVersion].filter((v): v is string => Boolean(v));
-      const versionStart = keyIndex === 0 && cursor?.key === key ? Math.max(0, versions.indexOf(cursor.version)) : 0;
-      for (const version of [...versions.slice(versionStart), ...versions.slice(0, versionStart)]) {
+      const cursorVersionIndex = cursor?.key===key ? versions.indexOf(cursor.version) : -1;
+      if(segment.prefix&&cursorVersionIndex<0)continue;
+      const versionStart = segment.resume ? Math.max(0,cursorVersionIndex) : 0;
+      const versionEnd = segment.prefix ? cursorVersionIndex+1 : versions.length;
+      // Resume forward through the remaining versions/chunks of this key.
+      // Wrapping inside the first key can consume every later pass on two
+      // large compressed versions and permanently starve subsequent keys.
+      for (const version of versions.slice(versionStart,versionEnd)) {
         if (!version) continue;
+        if (inspected >= ASYNC_STORAGE_COMPACTION_MAX_INSPECTED_RECORDS) return finish({ key, version, recordIndex: 0 });
         const revisionKey = storageKey(durableRevisionRecordKey(key, version));
         let physical: string | null;
+        inspected++;
         try { physical = await this.storage.getItem(revisionKey); } catch { continue; }
         if (!physical) continue;
         const physicalMetadata = parseRecord<unknown>(physical);
@@ -213,22 +247,32 @@ implements EstimateRevisionDurableStore {
         const records = manifest
           ? Array.from({ length: manifest.chunkCount }, (_, i) => chunkStorageKey(revisionKey, manifest.serializedChecksum, i))
           : [revisionKey];
-        const recordStart = keyIndex === 0 && cursor?.key === key && cursor.version === version ? cursor.recordIndex : 0;
+        const recordStart = segment.resume && cursor?.version === version ? cursor.recordIndex : 0;
         const startIndex = Math.min(recordStart, records.length);
-        const indices = Array.from({ length: records.length }, (_, i) => (i + startIndex) % records.length);
+        const endIndex = segment.prefix&&cursor?.version===version ? Math.min(cursor.recordIndex,records.length) : records.length;
+        const indices = Array.from({ length: Math.max(0,endIndex - startIndex) }, (_, i) => i + startIndex);
         for (const recordIndex of indices) {
-          if (compacted >= 8) return finish({ key, version, recordIndex });
+          if (compacted >= ASYNC_STORAGE_COMPACTION_MAX_REPLACEMENTS || rawBytes >= ASYNC_STORAGE_COMPACTION_MAX_RAW_BYTES
+            || inspected >= ASYNC_STORAGE_COMPACTION_MAX_INSPECTED_RECORDS || savedBytes >= targetSavingsBytes) return finish({ key, version, recordIndex });
           const recordKey = records[recordIndex];
           const original = recordKey === revisionKey ? physical : await this.storage.getItem(recordKey);
+          if (recordKey !== revisionKey) inspected++;
           if (!original || isEncodedPhysicalRecord(parseRecord<unknown>(original))) continue;
+          const originalBytes = estimateRevisionUtf8ByteLength(original);
+          if (inspected >= ASYNC_STORAGE_COMPACTION_MAX_INSPECTED_RECORDS) return finish({ key, version, recordIndex });
+          if (rawBytes + originalBytes > ASYNC_STORAGE_COMPACTION_MAX_RAW_BYTES) return finish({ key, version, recordIndex });
+          rawBytes += originalBytes;
           const encoded = encodeEstimateRevisionAsyncStorageRecord(original);
           if (encoded === original) continue;
           if (decodeEstimateRevisionAsyncStorageRecord(encoded) !== original) throw new Error("ASYNC_STORAGE_RECORD_COMPACTION_NOT_EXACT");
           await this.storage.setItem(recordKey, encoded);
+          inspected++;
           const readBack = await this.storage.getItem(recordKey);
           if (!readBack || decodeEstimateRevisionAsyncStorageRecord(readBack) !== original) throw new Error("ASYNC_STORAGE_RECORD_COMPACTION_READ_BACK_FAILED");
           compacted++;
-          if (compacted >= 8) return finish({ key, version, recordIndex: recordIndex + 1 });
+          savedBytes += originalBytes - estimateRevisionUtf8ByteLength(encoded);
+          if (compacted >= ASYNC_STORAGE_COMPACTION_MAX_REPLACEMENTS || savedBytes >= targetSavingsBytes)
+            return finish({ key, version, recordIndex: recordIndex + 1 });
         }
       }
     }
@@ -394,7 +438,8 @@ implements EstimateRevisionDurableStore {
     const revisionKey = storageKey(durableRevisionRecordKey(key, version));
     const serializedEnvelope = JSON.stringify(envelope);
     if (serializedEnvelope.length <= ASYNC_STORAGE_DURABLE_CHUNK_MAX_CHARS) {
-      await this.mutateStorage(() => this.storage.setItem(revisionKey, encodeEstimateRevisionAsyncStorageRecord(serializedEnvelope)));
+      const encoded = encodeEstimateRevisionAsyncStorageRecord(serializedEnvelope);
+      await this.mutateStorage(() => this.storage.setItem(revisionKey, encoded), estimateRevisionUtf8ByteLength(encoded));
       return;
     }
     const serializedChecksum = stableEstimateRevisionChecksum(serializedEnvelope);
@@ -423,11 +468,16 @@ implements EstimateRevisionDurableStore {
       chunkStorageKey(revisionKey, serializedChecksum, index),
       encodeEstimateRevisionAsyncStorageRecord(chunk),
     ] as const);
+    const stagedBytes = chunkEntries.reduce((total, [chunkKey, chunk]) =>
+      total + estimateRevisionUtf8ByteLength(chunkKey) + estimateRevisionUtf8ByteLength(chunk), 0);
+    // One preparation for the whole staged envelope also covers adapters that
+    // write chunks individually. Do not rescan history before every chunk.
+    await this.mutateStorage(async () => undefined, stagedBytes);
     if (this.storage.multiSet) {
-      await this.mutateStorage(() => this.storage.multiSet!(chunkEntries));
+      await this.mutateStorage(() => this.storage.multiSet!(chunkEntries), stagedBytes, false);
     } else {
       for (const [chunkKey, chunk] of chunkEntries) {
-        await this.mutateStorage(() => this.storage.setItem(chunkKey, chunk));
+        await this.mutateStorage(() => this.storage.setItem(chunkKey, chunk), estimateRevisionUtf8ByteLength(chunk), false);
       }
     }
     // The compact manifest is the revision commit point. A process death while

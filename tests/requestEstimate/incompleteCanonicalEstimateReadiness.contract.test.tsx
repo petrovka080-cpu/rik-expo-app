@@ -159,7 +159,7 @@ describe("incomplete canonical estimate readiness", () => {
       renderer.root.findByProps({ testID: "request-estimate-positions-toggle" }).props.onPress();
     });
     expect(renderer.root.findByProps({ testID: "request-estimate-composition-heading" }).props.children)
-      .toBe("Предварительный состав");
+      .toBe("Материалы и работы — расчёт не завершён");
     expect(renderer.root.findByProps({ testID: "request-estimate-incomplete-composition-notice" })).toBeTruthy();
     expect(visibleText(renderer)).not.toContain("Полная смета");
   });
@@ -304,6 +304,7 @@ describe("incomplete canonical estimate readiness", () => {
           hasSnapshot
           approvalBlockedByEstimate
           approvalPendingRowEditCount={3}
+          approvalBlockedBeyondPendingEdits={false}
           onOpenPdf={noop}
           onMakePdf={noop}
           onCreateNew={noop}
@@ -321,6 +322,22 @@ describe("incomplete canonical estimate readiness", () => {
     expect(approval.props.disabled).toBe(false);
     act(() => approval.props.onPress());
     expect(applyAndApprove).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    { approvalUnresolvedRowCount: 26, approvalBlockedBeyondPendingEdits: true, label: "Нельзя подтвердить: уточните позиции (26)" },
+    { approvalUnresolvedRowCount: 0, approvalBlockedBeyondPendingEdits: undefined, label: "Сначала примените изменения: 1" },
+    { approvalUnresolvedRowCount: 0, approvalBlockedBeyondPendingEdits: true, label: "Сначала примените изменения: 1" },
+  ])("pending price does not enable confirmation of an incomplete or unverified composition: $label", ({label,...blocking}) => {
+    let renderer!: ReactTestRenderer;
+    act(() => { renderer=TestRenderer.create(<ConsumerRepairRequestStickyActions
+      approved={false} sent={false} hasBundle hasSnapshot approvalBlockedByEstimate
+      approvalPendingRowEditCount={1} {...blocking}
+      onOpenPdf={noop} onMakePdf={noop} onCreateNew={noop} onDeleteDraft={noop}
+      onApproveDraft={noop} onApplyAndApproveDraft={noop} onPrepareDraft={noop} />); });
+    const approval=renderer.root.findByProps({testID:"consumer-repair-approve"});
+    expect(approval.props.disabled).toBe(true);expect(approval.props.accessibilityLabel).toBe(label);
+    act(()=>renderer.unmount());
   });
 
   it("recalculates several staged rows once and approves exactly the resulting child revision", async () => {

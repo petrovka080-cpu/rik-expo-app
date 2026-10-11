@@ -219,10 +219,9 @@ export function ConsumerRepairRequestScreenView({
   const approvalMissingPriceCount = consumerRepairCanonicalUnpricedPayableRowCount(
     renderModel.bundle,
   );
-  const approvalBlockedByEstimate = Boolean(
+  const approvalBlockedBeyondPendingEdits = Boolean(
     approvalBlockedByParameters ||
     approvalUnresolvedRowCount > 0 ||
-    (state.pendingCanonicalRowEditCount ?? 0) > 0 ||
     state.approvalCommitBusy ||
     state.deleteCommitBusy ||
     state.canonicalEstimateMutationBusy ||
@@ -231,6 +230,7 @@ export function ConsumerRepairRequestScreenView({
     canonicalRevisionMissing ||
     consumerRepairExactAsphaltApprovalErrors(renderModel.bundle).length > 0
   );
+  const approvalBlockedByEstimate = approvalBlockedBeyondPendingEdits || (state.pendingCanonicalRowEditCount ?? 0) > 0;
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -358,6 +358,7 @@ export function ConsumerRepairRequestScreenView({
           parameterCollectionRequired={Boolean(consumerRepairPendingCanonicalParameterCollection(renderModel.bundle))}
           hasSnapshot={consumerRepairBundleHasPdfEligibleSnapshot(renderModel.bundle)}
           approvalBlockedByEstimate={approvalBlockedByEstimate}
+          approvalBlockedBeyondPendingEdits={approvalBlockedBeyondPendingEdits}
           approvalBlockedByParameters={approvalBlockedByParameters}
           contentWithdrawalReasonRu={renderModel.bundle?.canonicalParameterSession?.contentWithdrawalReasonRu
             || renderModel.bundle?.structuredEstimatePayload?.canonicalBackend?.contentWithdrawalReasonRu}

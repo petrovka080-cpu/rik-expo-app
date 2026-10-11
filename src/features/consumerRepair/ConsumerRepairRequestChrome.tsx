@@ -84,6 +84,7 @@ type StickyActionsProps = {
   approvalUnresolvedRowCount?: number;
   approvalMissingPriceCount?: number;
   approvalPendingRowEditCount?: number;
+  approvalBlockedBeyondPendingEdits?: boolean;
   approvalCommitBusy?: boolean;
   deleteCommitBusy?: boolean;
   pdfOpenBusy?: boolean;
@@ -111,6 +112,7 @@ export function ConsumerRepairRequestStickyActions({
   approvalUnresolvedRowCount = 0,
   approvalMissingPriceCount = 0,
   approvalPendingRowEditCount = 0,
+  approvalBlockedBeyondPendingEdits,
   approvalCommitBusy = false,
   deleteCommitBusy = false,
   pdfOpenBusy = false,
@@ -129,6 +131,11 @@ export function ConsumerRepairRequestStickyActions({
     !parameterCollectionRequired && (hasPendingPrompt || (!finalized && estimateRequiresRebuild));
   const canDeleteDraft = hasBundle && !approved && !sent;
   const approvalActionLabel = "Подтвердить смету";
+  const canApplyAndApprove = approvalPendingRowEditCount > 0
+    && approvalBlockedBeyondPendingEdits === false
+    && approvalUnresolvedRowCount === 0 && !approvalBlockedByParameters;
+  const approvalDisabled = Boolean(contentWithdrawalReasonRu) || approvalCommitBusy || deleteCommitBusy
+    || (approvalPendingRowEditCount > 0 ? !canApplyAndApprove : approvalBlockedByEstimate);
   const approvalActionHint = approvalMissingPriceCount > 0
     ? `Без цены остаются позиции: ${approvalMissingPriceCount}. Их можно заполнить позже.`
     : undefined;
@@ -136,12 +143,12 @@ export function ConsumerRepairRequestStickyActions({
     ? "Расчёт требует исправления"
     : approvalCommitBusy
     ? "Подтверждаем смету…"
-    : approvalPendingRowEditCount > 0
-      ? `Сначала примените изменения: ${approvalPendingRowEditCount}`
-      : approvalUnresolvedRowCount > 0
+    : approvalUnresolvedRowCount > 0
       ? `Нельзя подтвердить: уточните позиции (${approvalUnresolvedRowCount})`
       : approvalBlockedByParameters
         ? "Заполните параметры сметы"
+        : approvalPendingRowEditCount > 0
+          ? `Сначала примените изменения: ${approvalPendingRowEditCount}`
         : "Сначала рассчитайте смету";
   React.useEffect(() => {
     if (!canDeleteDraft) setDeleteConfirmationVisible(false);
@@ -195,22 +202,22 @@ export function ConsumerRepairRequestStickyActions({
         </Pressable>
       ) : hasBundle ? (
         <Pressable
-          accessibilityLabel={contentWithdrawalReasonRu ? approvalBlockedLabel : approvalPendingRowEditCount > 0
+          accessibilityLabel={contentWithdrawalReasonRu ? approvalBlockedLabel : canApplyAndApprove
             ? "Применить изменения и подтвердить смету"
-            : approvalBlockedByEstimate ? approvalBlockedLabel : approvalActionLabel}
-          accessibilityHint={contentWithdrawalReasonRu || (approvalPendingRowEditCount > 0
+            : approvalDisabled ? approvalBlockedLabel : approvalActionLabel}
+          accessibilityHint={contentWithdrawalReasonRu || (canApplyAndApprove
             ? "Все подготовленные количества и цены будут сохранены одним пересчётом; подтверждён будет сохранённый результат."
-            : approvalBlockedByEstimate ? undefined : approvalActionHint)}
+            : approvalDisabled ? undefined : approvalActionHint)}
           accessibilityRole="button"
-          accessibilityState={{ disabled: Boolean(contentWithdrawalReasonRu) || approvalCommitBusy || (approvalBlockedByEstimate && approvalPendingRowEditCount === 0) }}
-          disabled={Boolean(contentWithdrawalReasonRu) || approvalCommitBusy || (approvalBlockedByEstimate && approvalPendingRowEditCount === 0)}
-          onPress={approvalPendingRowEditCount > 0
+          accessibilityState={{ disabled: approvalDisabled }}
+          disabled={approvalDisabled}
+          onPress={canApplyAndApprove
             ? (onApplyAndApproveDraft ?? onApproveDraft)
             : onApproveDraft}
           style={[
             styles.bottomActionButton,
             styles.bottomActionPrimary,
-            contentWithdrawalReasonRu || approvalCommitBusy || (approvalBlockedByEstimate && approvalPendingRowEditCount === 0)
+            approvalDisabled
               ? styles.bottomActionDisabled
               : null,
           ]}
@@ -218,9 +225,9 @@ export function ConsumerRepairRequestStickyActions({
         >
           <Ionicons name="checkmark" size={20} color="#FFFFFF" />
           <Text style={styles.bottomActionPrimaryText}>
-            {contentWithdrawalReasonRu ? approvalBlockedLabel : approvalPendingRowEditCount > 0
+            {contentWithdrawalReasonRu ? approvalBlockedLabel : canApplyAndApprove
               ? approvalCommitBusy ? "Применяем и подтверждаем…" : "Применить и подтвердить"
-              : approvalBlockedByEstimate ? approvalBlockedLabel : approvalActionLabel}
+              : approvalDisabled ? approvalBlockedLabel : approvalActionLabel}
           </Text>
         </Pressable>
       ) : (
