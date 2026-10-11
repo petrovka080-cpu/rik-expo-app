@@ -19,6 +19,10 @@ test('six exact parents preserve354 owners and old formulas; template100 is remo
   expect(r.parameters.find(p=>p.parameter_id==='q')?.default_value).toBeNull();expect(r.baseline.input_values).not.toHaveProperty('q');
   expect(canonicalApprovedBaselineRuntimeParameters(r.baseline)).toEqual({});expect(r.passport.decision.completeTechnicalEstimateAccepted).toBe(false);expect(canonicalPublisherQuantityScopeIsConsistent(r)).toBe(true);
   expect(r.passport.decision.legacyOwnerDisposition).toHaveLength(59);
+  for(const disposition of r.passport.decision.legacyOwnerDisposition){if(disposition.residualRowId){
+   const original=parent.resources.find(row=>row.row_id===disposition.oldRowId)!,residual=r.resources.find(row=>row.row_id===disposition.residualRowId)!;
+   expect(residual.row_type).toBe(original.row_type);expect(residual.category).toBe(original.row_type);
+  }}
   expect(r.definition.passport.legacyAlternativePassport).toEqual(parent.definition.passport);
   expect(r.definition.applicability.legacyAlternativeApplicability).toEqual(parent.definition.applicability);
   expect(r.definition.passport.sourcePack.sourceQuality).toBe('PARTIAL_CONDITIONAL_KRER_METAL_ROOF_NORMS');

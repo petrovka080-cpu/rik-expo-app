@@ -47,7 +47,7 @@ export function overlayS2763MetalRoofSimpleKrer12(parent:PurchaseGroupRepresenta
    disposition.disposition==='PREREQUISITE_NOT_NEW_QUANTITY'?'Дополнительная проверка основания вне уже принятых прогонов — '+old.title_ru:
    'Вне подтверждённого состава: '+old.title_ru;
   residualParameters.push({id:parameterId,title,valueType:'decimal',unitId:old.unit_id,kind:'conditional',min:0});
-  residualSpecs.push({rowId,formulaId:prefix+':formula:remaining:'+suffix,title,unitId:old.unit_id,category:old.category,
+  residualSpecs.push({rowId,formulaId:prefix+':formula:remaining:'+suffix,title,unitId:old.unit_id,category:old.row_type,
    section:'Непокрытые и проектные подработы кровли',expression:parameterId,inclusion:selected,procurement:false,costTreatment:'INFORMATIONAL_SCOPE'});
   dispositions.push({...entry,residualRowId:rowId,residualParameterId:parameterId});
  }
