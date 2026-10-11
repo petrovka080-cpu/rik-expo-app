@@ -132,7 +132,7 @@ async function main() {
       const evidenceSha256 = hash({ contract: CONTRACT, catalogId, fingerprint, definitionSha256, predecessorEvidence: parent.baseline.acceptance_evidence_sha256 });
       const plan = createCanonicalDefinitionClonePlan({ contract: CONTRACT,
         definition: { id: definitionId, releaseId, catalogId, definitionVersion: Number(parent.definition.definition_version) + 1,
-          passport: { ...parent.definition.passport, materialSeriesContract: pack.contract }, applicability: parent.definition.applicability,
+          passport: { ...r.definition.passport, materialSeriesContract: pack.contract }, applicability: r.definition.applicability,
           definitionSha256, sourceMetadata: { ...parent.definition.source_metadata, contract: CONTRACT, predecessorDefinitionId: parent.definition.id,
             materialSeriesContract: pack.contract, sourceHashes, activationAllowed: false, productionEligible: false } },
         representative: r,
@@ -143,7 +143,7 @@ async function main() {
           validationScenarioRefs: [...(parent.baseline.validation_scenario_refs ?? []), { scenario: "S2763_KNAUF_INTERIOR_PLASTER_INDEPENDENT_AREAS_SKU_LEGACY_NO_DUPLICATE_PRICE", acceptanceEvidenceSha256: evidenceSha256,
             primarySourceArtifactSha256: pack.sources.map(source=>source.sha256), quantityQuality: "APPROXIMATE_MANUFACTURER_MATERIAL_RATE_ONLY_LABOUR_REMAINS_UNCONFIRMED", completeTechnicalEstimateAccepted: false }],
           acceptanceEvidenceSha256: evidenceSha256, acceptedReleaseId: releaseId, supersedesBaselineId: parent.baseline.id },
-        passport: { physicalResultRu: String(parent.passport.physical_result_ru), excludedScopeRu: parent.passport.excluded_scope_ru,
+        passport: { physicalResultRu: String(parent.passport.physical_result_ru), excludedScopeRu: r.passport.excluded_scope_ru,
           decision: { ...r.passport.decision, waveContract: CONTRACT, predecessorWaveContract: parent.passport.decision.waveContract,
             materialSeriesContract: pack.contract, activationAllowed: false, productionEligible: false },
           payloadSha256: hash({ predecessor: parent.passport.payload_sha256, definitionSha256, evidenceSha256 }), sourceHead: head, sourceTree: tree },
@@ -158,7 +158,7 @@ async function main() {
         physicalNormOwnerRowIds:overlay.addedRowIds.filter(rowId=>r.resources.find(row=>row.row_id===rowId)?.source_metadata.sourceNormQuantityAccepted===true),
         ownerDisposition:overlay.ownerDisposition,physicalNormClosureCount:overlay.newMaterialNormClosureCount,labourHourNormClosureCount:0,
         parameterDelta: r.parameters.length - parent.parameters.length, formulaDelta: r.formulas.length - parent.formulas.length,
-        resourceDelta: r.resources.length - parent.resources.length, quantityScope: parent.passport.decision.quantityScope, completeTechnicalEstimateAccepted: false });
+        resourceDelta: r.resources.length - parent.resources.length, quantityScope: r.passport.decision.quantityScope, completeTechnicalEstimateAccepted: false });
     }
 
     const existing = (await client.query("select * from public.estimate_definition_release where id=$1", [releaseId])).rows[0];

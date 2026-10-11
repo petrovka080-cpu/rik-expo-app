@@ -3,7 +3,8 @@ import type {PurchaseGroupRepresentative} from '../../../../scripts/estimate/r4a
 import {canonicalPublisherQuantityScopeIsConsistent} from '../../../../scripts/estimate/r4a13/canonicalDefinitionPublisherR1';
 import {compileCanonicalEstimateCore,type CanonicalEstimateParameterDefinition,type CanonicalEstimateFormulaDefinition,type CanonicalEstimateResourceDefinition} from '../backendPlatform/canonicalEstimateCompileCore';
 import {canonicalApprovedBaselineRuntimeParameters} from '../backendPlatform/canonicalEstimateApprovedBaseline';
-import {isCanonicalEstimateSourceManagedParameter,isCanonicalEstimateUserEditableParameter} from '../backendPlatform/canonicalEstimateParameterSemantics';
+import {isCanonicalEstimateSourceManagedParameter,isCanonicalEstimateUserEditableParameter,isCanonicalEstimateParameterRequiredForValues} from '../backendPlatform/canonicalEstimateParameterSemantics';
+import {evaluateInclusionGraph} from '../backendPlatform/inclusionGraph';
 import {estimateDeterministicHash} from '../estimateDeterministicHash';
 import {knaufInteriorPlasterPackS2763 as pack,knaufInteriorPlasterPrefixS2763 as prefix} from './knaufInteriorPlasterMaterialsS2763';
 
@@ -101,5 +102,37 @@ test('actual source-derived guides admit enum facts without admitting hidden app
           applicability:p.truth_metadata.guide.applicability,verifiedAt:p.truth_metadata.guide.verified_at}};
       expect(isCanonicalEstimateUserEditableParameter(projected)).toBe(true);expect(isCanonicalEstimateSourceManagedParameter(projected)).toBe(false);
     }
+  }
+});
+
+test('all unresolved manual needs have the same required condition as their resource and an honest application-owned guide',()=>{
+  const before=fixture.reps.find(r=>r.resources.length===59)!,r=overlayS2763KnaufInteriorPlasterMaterials(before,locators).representative;
+  const pending=r.parameters.filter(p=>p.parameter_id.startsWith('knauf_open_'));
+  expect(pending).toHaveLength(26);
+  for(const p of pending){const row=r.resources.find(row=>row.row_id===prefix+':open-'+p.parameter_id.slice('knauf_open_'.length).replaceAll('_','-'))!;
+    expect(p.constraints_json.requiredWhen).toEqual(row.inclusion_ast);
+    expect(evaluateInclusionGraph(p.constraints_json.requiredWhen,manualFacts)).toBe(true);
+    expect(p.truth_metadata).toMatchObject({visibility_role:'INTERNAL_ONLY',value_source_role:'UNRESOLVED_APPLICATION_NORM',source_confirmation_required:true});
+    expect(p.truth_metadata.guide.verified_at).toBe(p.parameter_id.startsWith('knauf_open_primer_')?pack.sources[0].reviewedAt:pack.sources[1].reviewedAt);
+    expect(p.truth_metadata.guide.guide_short_ru).not.toContain('укажите подтверждённое значение');
+    // Same requiredness predicate used by the actual adapter's source flag.
+    expect(isCanonicalEstimateParameterRequiredForValues({parameterId:p.parameter_id,ordinal:p.ordinal,titleRu:p.title_ru,valueType:p.value_type,unitId:p.unit_id,
+      required:p.required,defaultValue:p.default_value,constraints:p.constraints_json},manualFacts)).toBe(true);
+  }
+  for(const id of ['mixing-container','mixing-tool','water','respirator','eye-protection','gloves']){
+    const row=r.resources.find(x=>x.row_id===prefix+':open-'+id)!;
+    expect(row.source_metadata.sourceNormQuantityAccepted).toBe(false);
+    expect(r.formulas.find(f=>f.formula_id===row.formula_id)!.expression_source).toBe('knauf_open_'+id.replaceAll('-','_'));
+  }
+});
+
+test('new public passports describe partial Knauf scope and retain old Ceresit/full claims only as legacy evidence',()=>{
+  for(const before of fixture.reps){const r=overlayS2763KnaufInteriorPlasterMaterials(before,locators).representative;
+    expect(r.definition.passport.branchScope.quantityScope).toBe('PARTIAL');
+    expect(r.definition.passport.legacyAlternativePassport).toEqual(before.definition.passport);
+    expect(r.definition.applicability.legacyAlternativeApplicability).toEqual(before.definition.applicability);
+    expect(r.passport.included_scope_ru.join(' ')).not.toContain('нормативный пакет и закупочная ведомость включены');
+    expect(r.definition.passport.workDescription.scopeSummary).toContain('незакрытые потребности');
+    expect(r.definition.passport.sourcePack.sourceQuality).toBe('PARTIAL_MANUFACTURER_MATERIAL_ONLY');
   }
 });

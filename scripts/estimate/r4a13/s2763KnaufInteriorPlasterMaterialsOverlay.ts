@@ -12,6 +12,12 @@ const hash=(v:unknown)=>createHash('sha256').update(stringifyCanonicalEstimateJs
 // These groups retain missing quantities and specifications; q*1/ceil(q/100)
 // never become a confirmed rate of the selected gypsum technology.
 const gaps=[
+  ['mixing-container','Ёмкость для затворения Ротбанд, 50–125 л — фактическая ёмкость и обеспечение требуют проверки','pcs','equipment',[]],
+  ['mixing-tool','Миксер строительный, мощность не менее800 Вт — фактический инструмент и обеспечение требуют проверки','pcs','equipment',[]],
+  ['water','Вода для затворения, требуемого увлажнения и очистки — суммарный расход ещё не подтверждён','l','material',[]],
+  ['respirator','Респиратор для защиты дыхания при работе с сухой смесью — исполнение и потребность требуют проверки','pcs','equipment',[]],
+  ['eye-protection','Защита глаз при работе с сухой смесью — исполнение и обеспечение требуют проверки','pcs','equipment',[]],
+  ['gloves','Защитные перчатки для работы со смесью — исполнение и потребность требуют проверки','pair','material',[]],
   ['main-labour','Ручное оштукатуривание Ротбанд: затворение, нанесение, выравнивание, подрезка, затирка и заглаживание — часы труда ещё не подтверждены','person_hour','labor',[]],
   ['primer-labour','Нанесение Бетогрунда на ещё непрогрунтованном бетоне — самостоятельная граница и часы труда ещё не подтверждены','person_hour','labor',[]],
   ['mesh','Сетка штукатурная для требуемого армирования — исполнение и область ещё не определены','m2','material',['materials_03']],
@@ -34,6 +40,8 @@ const gaps=[
   ['commercial','Сметные и исполнительные документы, проверка комплектности и применимые коммерческие условия — не автоматически оплачиваемый комплект','pcs','service',['quality_control_57','quality_control_58','overhead_35','tax_36']],
 ] as const;
 const mainOperationSuffixes=new Set(['labor_20','labor_21','labor_22','labor_23','labor_24']);
+const pendingCondition=(id:string,exact:{kind:'equals';parameterId:string;value:string})=>id==='primer-labour'||id==='primer-tool'
+  ?{kind:'and' as const,operands:[exact,{kind:'equals' as const,parameterId:'betogrund_primer_state',value:pack.primerNeededRu}]}:exact;
 export const S2763_KNAUF_INTERIOR_PLASTER_TARGETS=Object.fromEntries(pack.targets.map(t=>[t.catalogId,t.preservedOwners.map(x=>x.rowId)]));
 
 export function overlayS2763KnaufInteriorPlasterMaterials(parent:PurchaseGroupRepresentative,locators:{betogrund:string;rotband:string;mp75:string}){
@@ -81,12 +89,17 @@ export function overlayS2763KnaufInteriorPlasterMaterials(parent:PurchaseGroupRe
   if(!target.primerOnly){
     const pending=buildAutomaticConstructionOwnerR1({contract:pack.contract,semanticOwner:prefix,sourceId:pack.sources[1].id,normId:pack.contract+':unresolved-full-composition',
       sourceMetadata:{source_title:pack.sources[1].titleRu,source_document_version:pack.sources[1].printedEdition,artifact_sha256:pack.sources[1].sha256,definition_hash:pack.sources[1].sha256,exact_locator:'Непринятые количественные и проектные остатки; нормы из старого шаблона не перенесены'},
-      applicabilityRu:pack.scopeRu,ordinary:[],profile:[],conditional:gaps.map(g=>({id:'knauf_open_'+g[0].replaceAll('-','_'),title:g[1],valueType:'decimal' as const,unitId:g[2],kind:'conditional' as const,min:0})),
+      applicabilityRu:pack.scopeRu,ordinary:[],profile:[],conditional:gaps.map(g=>({id:'knauf_open_'+g[0].replaceAll('-','_'),title:g[1],valueType:'decimal' as const,unitId:g[2],kind:'conditional' as const,min:0,requiredWhen:pendingCondition(g[0],exact)})),
       rows:gaps.map(g=>({rowId:prefix+':open-'+g[0],formulaId:prefix+':formula:open-'+g[0],title:g[1],unitId:g[2],category:g[3],section:'Оставшиеся подготовка, инструмент и завершение',expression:'knauf_open_'+g[0].replaceAll('-','_'),
-        inclusion:g[0]==='primer-labour'||g[0]==='primer-tool'?{kind:'and',operands:[exact,{kind:'equals',parameterId:'betogrund_primer_state',value:pack.primerNeededRu}]}:exact,
+        inclusion:pendingCondition(g[0],exact),
         costTreatment:g[3]==='equipment'?'INFORMATIONAL_SCOPE' as const:'OWN_COST' as const,procurement:false})),deferMissingProjectFactsToRows:true,excludedUnownedAssumptions:pack.exclusionsRu});
-    for(const p of pending.parameters)result.parameters.push({...p,ordinal:nextParameterOrdinal++,truth_metadata:unresolvedApplicationNormTruthR1(p.truth_metadata,
-      'Состав, область исполнения, характеристики или подтверждённое количество этой подработы отсутствуют. Шаблонq*1/ceil(q/100) не является нормой; инструмент не покупается на каждую единицу площади.')});
+    for(const p of pending.parameters){const source=p.parameter_id.startsWith('knauf_open_primer_')?pack.sources[0]:pack.sources[1];
+      result.parameters.push({...p,ordinal:nextParameterOrdinal++,truth_metadata:{...unresolvedApplicationNormTruthR1(p.truth_metadata,
+      'Состав, область исполнения, характеристики или подтверждённое количество этой подработы отсутствуют. Шаблонq*1/ceil(q/100) не является нормой; инструмент не покупается на каждую единицу площади.'),
+      guide:{...p.truth_metadata.guide as object,guide_short_ru:'Приложение ещё не подтвердило исполнение и количество этой подработы. Количество из прежнего шаблона не принято; средство общего пользования не покупается на каждую единицу площади.',
+        source_role:'UNRESOLVED_APPLICATION_NORM',source_document:source.id,source_snapshot_hash:source.sha256,
+        source_locator:p.parameter_id.startsWith('knauf_open_primer_')?'Бетогрунд, p1–2: технология; количественный остаток не принят':'Ротбанд, p2–4: технология, инструмент и защита; количественный остаток не принят',verified_at:source.reviewedAt}}});
+    }
     result.formulas.push(...pending.formulas.map(f=>({...f,ast_sha256:hash(f.ast)})));
     newResources.push(...pending.resources.map(r=>({...r,source_metadata:{...r.source_metadata,normativeTrace:[],sourceRole:'UNRESOLVED_APPLICATION_NORM',sourceNormQuantityAccepted:false,full_technical_acceptance:false}})));
   }
@@ -115,6 +128,16 @@ export function overlayS2763KnaufInteriorPlasterMaterials(parent:PurchaseGroupRe
   result.passport.decision={...result.passport.decision,quantityScope:'PARTIAL',preliminaryCompositionOnly:true,technicalScopeStatus:'NEEDS_SOURCE',completeTechnicalEstimateAccepted:false,
     unresolvedResourceRowIds:unresolvedRows,
     physicalMaterialNormClosureCount:target.primerOnly?1:2,labourHourNormClosureCount:0,wholePlasterGroupComplete:false,sourceRateApproximate:true,legacyQuantityNormsUnaccepted:true,ownerDisposition:dispositions};
+  const branchScope={contract:pack.contract,legacyChoiceRu:pack.legacyChoiceRu,selectedChoiceRu:target.primerOnly?pack.mechanizedChoiceRu:pack.manualChoiceRu,
+    sourceScopeRu:pack.scopeRu,acceptedMaterialRates:target.primerOnly?['Бетогрунд около0,25кг/м²']:['Ротбанд около8,5кг/м², ровно10мм без потерь','Бетогрунд около0,25кг/м²'],
+    completeTechnicalEstimateAccepted:false,quantityScope:'PARTIAL',sourceIds:target.primerOnly?[pack.sources[0].id,pack.sources[2].id]:[pack.sources[0].id,pack.sources[1].id]};
+  const scopeSummary='Выбранная технология КНАУФ: подтверждены только указанные приблизительные расходы материалов. Подготовка, инструмент, труд и завершение сохраняют незакрытые потребности; полная техническая смета и точная закупка без условий поставки не подтверждены.';
+  result.definition.passport={...result.definition.passport,rowCount:result.resources.length,
+    legacyAlternativePassport:parent.definition.passport,sourcePack:{contract:pack.contract,sourceQuality:'PARTIAL_MANUFACTURER_MATERIAL_ONLY',sourceIds:branchScope.sourceIds,legacySourcePack:parent.definition.passport?.sourcePack},
+    workDescription:{...result.definition.passport.workDescription,scopeSummary},branchScope};
+  result.definition.applicability={...result.definition.applicability,legacyAlternativeApplicability:parent.definition.applicability,
+    includedScopeRu:[scopeSummary,pack.scopeRu],excludedScopeRu:pack.exclusionsRu,branchScope};
+  result.passport.included_scope_ru=[scopeSummary,pack.scopeRu];result.passport.excluded_scope_ru=pack.exclusionsRu;
   return{representative:result,ownerDisposition:dispositions,legacyRowIds:dispositions.map(x=>String(x.legacyRowId)),addedRowIds:newResources.map(r=>r.row_id),
     addedParameterIds:result.parameters.filter(p=>!parent.parameters.some(old=>old.parameter_id===p.parameter_id)).map(p=>p.parameter_id),newMaterialNormClosureCount:target.primerOnly?1:2};
 }
