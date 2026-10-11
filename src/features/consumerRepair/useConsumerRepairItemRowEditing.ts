@@ -20,6 +20,7 @@ type EditableTextSelection = { start: number; end: number };
 type Input = {
   item: ConsumerRepairRequestItem;
   quantityEditable?: boolean;
+  numericEditResetKey?: number;
   onQuantityChange: (
     itemId: string,
     value: string,
@@ -122,10 +123,16 @@ export function runAfterQuantityInputPaint(
 export function useConsumerRepairItemRowEditing({
   item,
   quantityEditable = true,
+  numericEditResetKey = 0,
   onQuantityChange,
   onUnitPriceChange,
   onSpecificationChange,
 }: Input) {
+  const editingLifetimeActiveRef = React.useRef(true);
+  React.useLayoutEffect(() => {
+    editingLifetimeActiveRef.current = true;
+    return () => { editingLifetimeActiveRef.current = false; };
+  }, []);
   // Deferred and retained handlers must obey the current source ownership.
   const quantityEditableRef = React.useRef(quantityEditable);
   quantityEditableRef.current = quantityEditable;
@@ -160,6 +167,23 @@ export function useConsumerRepairItemRowEditing({
   const [specificationText, setSpecificationText] = React.useState(itemSpecificationText);
   const [specificationEditing, setSpecificationEditing] = React.useState(false);
   const [professionalEvidenceOpen, setProfessionalEvidenceOpen] = React.useState(false);
+  const numericEditResetKeyRef = React.useRef(numericEditResetKey);
+  React.useLayoutEffect(() => {
+    if (numericEditResetKeyRef.current === numericEditResetKey) return;
+    numericEditResetKeyRef.current = numericEditResetKey;
+    pendingQuantityActionRef.current = null;
+    quantityEditingRef.current = false;
+    priceEditingRef.current = false;
+    quantityCommittedValueRef.current = null;
+    priceCommittedValueRef.current = null;
+    setQuantityEditing(false);
+    setPriceEditing(false);
+    setQuantityText(itemQuantityText);
+    setPriceText(itemPriceText);
+    setQuantitySelection({ start: itemQuantityText.length, end: itemQuantityText.length });
+    setPriceSelection({ start: itemPriceText.length, end: itemPriceText.length });
+    setNativeQuantityInputText(quantityInputRef, itemQuantityText);
+  }, [numericEditResetKey, itemQuantityText, itemPriceText]);
 
   React.useEffect(() => {
     if (quantityEditable) return;
@@ -221,12 +245,14 @@ export function useConsumerRepairItemRowEditing({
   }, [item.id]);
 
   const beginSpecificationEdit = React.useCallback(() => {
+    if (!editingLifetimeActiveRef.current) return;
     specificationEditCommittedRef.current = false;
     setSpecificationText(item.titleRu);
     setSpecificationEditing(true);
   }, [item.titleRu]);
 
   const finishSpecificationEdit = React.useCallback(() => {
+    if (!editingLifetimeActiveRef.current) return;
     if (specificationEditCommittedRef.current) return;
     specificationEditCommittedRef.current = true;
     const nextTitle = specificationText.trim();
@@ -242,7 +268,7 @@ export function useConsumerRepairItemRowEditing({
     nextValue: string,
     source: ConsumerRepairQuantityEditSource = "direct_input",
   ) => {
-    if (!quantityEditableRef.current) return;
+    if (!editingLifetimeActiveRef.current || numericEditResetKeyRef.current !== numericEditResetKey || !quantityEditableRef.current) return;
     const previousQuantity = item.quantity ?? null;
     const nextQuantity = parseInputNumber(nextValue, item.quantity ?? 0);
     const operationId = createConsumerRepairQuantityEditOperationId({
@@ -291,27 +317,27 @@ export function useConsumerRepairItemRowEditing({
       return;
     }
     runAfterQuantityInputPaint(() => {
-      if (!quantityEditableRef.current) return;
+      if (!editingLifetimeActiveRef.current || numericEditResetKeyRef.current !== numericEditResetKey || !quantityEditableRef.current) return;
       recordConsumerRepairQuantityEditStage({
         ...meta,
         stage: "VISIBLE_INPUT_UPDATED",
         itemId: item.id,
       });
     }, () => {
-      if (!quantityEditableRef.current) return;
+      if (!editingLifetimeActiveRef.current || numericEditResetKeyRef.current !== numericEditResetKey || !quantityEditableRef.current) return;
       onQuantityChange(item.id, nextValue, meta);
     }, nativeVisible);
-  }, [item, onQuantityChange]);
+  }, [item, onQuantityChange, numericEditResetKey]);
 
   const beginQuantityEdit = React.useCallback(() => {
-    if (!quantityEditableRef.current) return;
+    if (!editingLifetimeActiveRef.current || numericEditResetKeyRef.current !== numericEditResetKey || !quantityEditableRef.current) return;
     quantityEditingRef.current = true;
     quantityCommittedValueRef.current = null;
     setQuantityEditing(true);
-  }, []);
+  }, [numericEditResetKey]);
 
   const finishQuantityEdit = React.useCallback(() => {
-    if (!quantityEditableRef.current) return;
+    if (!editingLifetimeActiveRef.current || numericEditResetKeyRef.current !== numericEditResetKey || !quantityEditableRef.current) return;
     quantityEditingRef.current = false;
     setQuantityEditing(false);
     const nextValue = quantityText.trim();
@@ -321,15 +347,17 @@ export function useConsumerRepairItemRowEditing({
     ) return;
     quantityCommittedValueRef.current = nextValue;
     commitQuantityText(nextValue, "direct_input");
-  }, [commitQuantityText, itemQuantityText, quantityText]);
+  }, [commitQuantityText, itemQuantityText, quantityText, numericEditResetKey]);
 
   const beginPriceEdit = React.useCallback(() => {
+    if (!editingLifetimeActiveRef.current || numericEditResetKeyRef.current !== numericEditResetKey) return;
     priceEditingRef.current = true;
     priceCommittedValueRef.current = null;
     setPriceEditing(true);
-  }, []);
+  }, [numericEditResetKey]);
 
   const finishPriceEdit = React.useCallback(() => {
+    if (!editingLifetimeActiveRef.current || numericEditResetKeyRef.current !== numericEditResetKey) return;
     priceEditingRef.current = false;
     setPriceEditing(false);
     const nextValue = priceText.trim();
@@ -339,18 +367,19 @@ export function useConsumerRepairItemRowEditing({
     ) return;
     priceCommittedValueRef.current = nextValue;
     onUnitPriceChange(item.id, nextValue);
-  }, [item.id, itemPriceText, onUnitPriceChange, priceText]);
+  }, [item.id, itemPriceText, onUnitPriceChange, priceText, numericEditResetKey]);
 
   const stepQuantity = React.useCallback((delta: number) => {
-    if (!quantityEditableRef.current) return;
+    if (!editingLifetimeActiveRef.current || numericEditResetKeyRef.current !== numericEditResetKey || !quantityEditableRef.current) return;
     quantityEditingRef.current = false;
     setQuantityEditing(false);
     quantityCommittedValueRef.current = null;
     const baseQuantity = parseInputNumber(quantityText, item.quantity ?? 0);
     commitQuantityText(formatInputNumber(Math.max(0, baseQuantity + delta)), "stepper");
-  }, [commitQuantityText, item.quantity, quantityText]);
+  }, [commitQuantityText, item.quantity, quantityText, numericEditResetKey]);
 
   const restoreCalculatedQuantity = React.useCallback((calculatedQuantity: number) => {
+    if (!editingLifetimeActiveRef.current || numericEditResetKeyRef.current !== numericEditResetKey) return;
     if (!quantityEditableRef.current) {
       // Clearing a saved override is allowed while the source quantity waits;
       // do not display a new locally calculated norm or stage another number.
@@ -374,32 +403,34 @@ export function useConsumerRepairItemRowEditing({
     setQuantityText(nextValue);
     if (canonical) onQuantityChange(item.id, "", meta);
     else onQuantityChange(item.id, "");
-  }, [item, onQuantityChange]);
+  }, [item, onQuantityChange, numericEditResetKey]);
 
   const rememberQuantitySelection = React.useCallback((
     event: NativeSyntheticEvent<TextInputSelectionChangeEventData>,
   ) => {
+    if (!editingLifetimeActiveRef.current || numericEditResetKeyRef.current !== numericEditResetKey) return;
     const next = event.nativeEvent.selection;
     setQuantitySelection((current) => current.start === next.start && current.end === next.end
       ? current
       : next);
-  }, []);
+  }, [numericEditResetKey]);
 
   const rememberPriceSelection = React.useCallback((
     event: NativeSyntheticEvent<TextInputSelectionChangeEventData>,
   ) => {
+    if (!editingLifetimeActiveRef.current || numericEditResetKeyRef.current !== numericEditResetKey) return;
     const next = event.nativeEvent.selection;
     setPriceSelection((current) => current.start === next.start && current.end === next.end
       ? current
       : next);
-  }, []);
+  }, [numericEditResetKey]);
 
   return {
     quantityInputRef,
     quantityText,
-    setQuantityText: (value: string) => { if (quantityEditableRef.current) setQuantityText(value); },
+    setQuantityText: (value: string) => { if (editingLifetimeActiveRef.current && numericEditResetKeyRef.current === numericEditResetKey && quantityEditableRef.current) setQuantityText(value); },
     priceText,
-    setPriceText,
+    setPriceText: (value: string) => { if (editingLifetimeActiveRef.current && numericEditResetKeyRef.current === numericEditResetKey) setPriceText(value); },
     quantityEditing,
     priceEditing,
     quantitySelection,

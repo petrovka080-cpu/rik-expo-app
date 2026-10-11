@@ -44,6 +44,7 @@ type Props = {
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
   onUnitPriceChange: (itemId: string, value: string) => void;
+  numericEditResetKey?: number;
   onSpecificationChange?: (itemId: string, value: string) => void;
   onOptionalChange?: (itemId: string, optional: boolean) => void;
   onRemove: (itemId: string) => void;
@@ -79,6 +80,7 @@ function ConsumerRepairItemRowComponent({
   parameterRequirementTables,
   onQuantityChange,
   onUnitPriceChange,
+  numericEditResetKey,
   onSpecificationChange,
   onOptionalChange,
   onRemove,
@@ -145,6 +147,7 @@ function ConsumerRepairItemRowComponent({
     rememberPriceSelection,
   } = useConsumerRepairItemRowEditing({
     item,
+    numericEditResetKey,
     quantityEditable: !sourceManagedNeed,
     onQuantityChange,
     onUnitPriceChange,

@@ -4,7 +4,7 @@ import { enrichCanonicalPreliminaryNamingEvidence, missingCanonicalPreliminaryNa
 import { canonicalPurchaseShortageMessageV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
 import { publishMountedAndroidPdfCaller } from "../../lib/pdf/androidPdfCallerReadiness";
 import { router } from "expo-router";
-import { Platform, Text, TextInput, View } from "react-native";
+import { Alert, Platform, Text, TextInput, View } from "react-native";
 import {
   approveConsumerRepairRequestDraft,
   attachConsumerRepairEstimateRowPhoto,
@@ -25,6 +25,7 @@ import { logger } from "../../lib/logger";
 import { createConsumerEstimateHydrationTrace, createConsumerEstimatePresentationTrace } from "../../lib/consumerRequests/consumerEstimateHydrationTrace";
 import type {
   ConsumerRepairDraftBundle,
+  ConsumerRepairRequestItem,
 } from "../../lib/consumerRequests/consumerRequestTypes";
 import {
   awaitConsumerRepairBundleDurableCommit,
@@ -409,8 +410,11 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private canonicalRowAmendmentInFlightKey: string | null = null;
   private canonicalParameterBatchInFlight = false;
   private pendingCanonicalRowOverrides: Record<string, CanonicalEstimateRowOverride> = {};
-  private pendingCanonicalRowQuantityBaselines: Record<string, { manual: boolean; quantity: number | null }> = {};
+  private pendingCanonicalRowQuantityBaselines: Record<string, {
+    manual: boolean; quantity: number | null; unitPrice: number | null; item: ConsumerRepairRequestItem;
+  }> = {};
   private pendingCanonicalRowBaseRevisionId: string | null = null;
+  private canonicalRowEditorResetKeys: Record<string, number> = {};
   private canonicalRowMutationInFlight = (): boolean => Boolean(
     this.canonicalRowAmendmentInFlightKey
       || this.canonicalParameterBatchInFlight
@@ -2432,6 +2436,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     // including a price-only change. Later visible previews are not baselines.
     const baseline = this.pendingCanonicalRowQuantityBaselines[input.rowId] ?? {
       manual: consumerRepairRowHasManualQuantity(originalItem), quantity: originalItem.quantity ?? null,
+      unitPrice: originalItem.unitPrice ?? null, item: originalItem,
     };
     this.pendingCanonicalRowQuantityBaselines[input.rowId] = baseline;
     this.pendingCanonicalRowBaseRevisionId = input.revisionId;
@@ -2444,6 +2449,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       (pending.quantity == null && !baseline.manual)
       || (pending.quantity != null && baseline.manual && baseline.quantity != null && Number(pending.quantity) === baseline.quantity)
     )) delete pending.quantity;
+    // An originally unpriced row is unchanged after clearing a new price.
+    // Numeric equality alone does not prove the original price mode.
+    if (Object.prototype.hasOwnProperty.call(pending, "unitPrice")
+      && pending.unitPrice == null && baseline.unitPrice == null) delete pending.unitPrice;
     this.pendingCanonicalRowOverrides = {
       ...this.pendingCanonicalRowOverrides,
       [input.rowId]: pending,
@@ -2464,6 +2473,67 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         : "",
       validationErrors: [],
     }));
+  };
+  private cancelPendingCanonicalRowEdits = (): void => {
+    const current = this.state.bundle;
+    const binding = consumerRepairCanonicalBackendBinding(current);
+    const pending = this.pendingCanonicalRowOverrides;
+    if (!current || !binding || !Object.keys(pending).length || this.canonicalRowMutationInFlight()
+      || this.approvalCommitInFlight || binding.revisionId !== this.pendingCanonicalRowBaseRevisionId) return;
+    const token = JSON.stringify(pending);
+    const source = { ...binding, draftId: current.draft.id };
+    const descriptions = Object.entries(pending).map(([rowId, fields]) => {
+      const saved = this.pendingCanonicalRowQuantityBaselines[rowId]?.item;
+      const item = current.items.find(candidate => consumerRepairRowCode(candidate) === rowId);
+      if (!saved || !item) return null;
+      const values = [
+        Object.prototype.hasOwnProperty.call(fields, "quantity") ? `количество ${item.quantity ?? "не задано"} → ${saved.quantity ?? "не задано"}` : null,
+        Object.prototype.hasOwnProperty.call(fields, "unitPrice") ? `цена ${item.unitPrice ?? "не задана"} → ${saved.unitPrice ?? "не задана"}` : null,
+      ].filter(Boolean).join("; ");
+      return `${saved.titleRu}: ${values}`;
+    });
+    if (descriptions.some(value => value == null)) return;
+    const restore = (): void => {
+      if (!consumerRepairCanonicalMutationSourceMatchesBundle(source, this.state.bundle)
+        || this.canonicalRowMutationInFlight() || this.approvalCommitInFlight
+        || token !== JSON.stringify(this.pendingCanonicalRowOverrides)) return;
+      const baselines = this.pendingCanonicalRowQuantityBaselines;
+      this.canonicalRowEditorResetKeys = { ...this.canonicalRowEditorResetKeys };
+      for (const rowId of Object.keys(pending)) {
+        const itemId = baselines[rowId]!.item.id;
+        this.canonicalRowEditorResetKeys[itemId] = (this.canonicalRowEditorResetKeys[itemId] ?? 0) + 1;
+      }
+      this.pendingCanonicalRowOverrides = {};
+      this.pendingCanonicalRowQuantityBaselines = {};
+      this.pendingCanonicalRowBaseRevisionId = null;
+      this.setState(state => ({
+        bundle: state.bundle ? { ...state.bundle, items: state.bundle.items.map(item => {
+          const rowId = consumerRepairRowCode(item);
+          const saved = pending[rowId] ? baselines[rowId]?.item : null;
+          if (!saved) return item;
+          const sourceParameters = { ...item.sourceParameters };
+          for (const key of ["manualQuantityOverride", "calculatedQuantityBeforeOverride"]) {
+            if (Object.prototype.hasOwnProperty.call(saved.sourceParameters ?? {}, key)) sourceParameters[key] = saved.sourceParameters![key];
+            else delete sourceParameters[key];
+          }
+          return { ...item, quantity: saved.quantity, unitPrice: saved.unitPrice,
+            totalPrice: saved.totalPrice,
+            quantityEditedByConsumer: saved.quantityEditedByConsumer, sourceParameters };
+        }) } : state.bundle,
+        pendingCanonicalRowEditCount: 0,
+        statusMessage: "Новые правки строк отменены. Сохранённые количества и цены восстановлены. Состав можно обновить через параметры.",
+      }));
+    };
+    const message = `${descriptions.join("\n\n")}\n\nОтменяются только новые несохранённые количества и цены. Прежняя смета и история сохранятся. После этого обновите состав через параметры.`;
+    if (Platform.OS === "web") {
+      const confirm = (globalThis as { confirm?: (message: string) => boolean }).confirm;
+      if (confirm?.call(globalThis, message)) restore();
+    } else {
+      Alert.alert("Отменить новые правки строк?", message, [
+        { text: "Оставить правки", style: "cancel" },
+        { text: "Отменить новые правки", onPress: restore },
+      ]);
+    }
   };
   private applyPendingCanonicalRowEdits = async (): Promise<boolean> => {
     const current = this.state.bundle;
@@ -2625,7 +2695,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const current = this.state.bundle;
     if (!current) return;
     if ((this.state.pendingCanonicalRowEditCount ?? 0) > 0) {
-      this.setState({ statusMessage: "Сначала примените подготовленные количества и цены одной кнопкой." });
+      this.setState({ statusMessage: "Новые количества и цены ещё не сохранены. Примените их одной кнопкой или отмените новые правки строк перед обновлением состава." });
       return;
     }
     const binding = consumerRepairCanonicalBackendBinding(current);
@@ -2718,7 +2788,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const current = this.state.bundle;
     if (!current) return;
     if ((this.state.pendingCanonicalRowEditCount ?? 0) > 0) {
-      this.setState({ statusMessage: "Сначала примените подготовленные количества и цены одной кнопкой." });
+      this.setState({ statusMessage: "Новые количества и цены ещё не сохранены. Примените их одной кнопкой или отмените новые правки строк перед обновлением состава." });
       return false;
     }
     const binding = consumerRepairCanonicalBackendBinding(current);
@@ -3427,6 +3497,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         onDecrease={this.decreaseItem} onIncrease={this.increaseItem}
         onQuantityChange={this.changeItemQuantity} onUnitPriceChange={this.changeItemUnitPrice}
         onApplyCanonicalRowEdits={this.applyPendingCanonicalRowEdits}
+        onCancelCanonicalRowEdits={this.cancelPendingCanonicalRowEdits}
+        canonicalRowEditorResetKeys={this.canonicalRowEditorResetKeys}
         onSpecificationChange={this.changeItemSpecification} onOptionalChange={this.changeItemOptional}
         onRemove={this.removeItem} onAddManual={this.addManualItem} onAddCustom={this.addCustomItem}
         onAddPhotoMaterialRecognition={this.addPhotoMaterialRecognition}

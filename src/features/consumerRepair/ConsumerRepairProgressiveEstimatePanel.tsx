@@ -70,6 +70,8 @@ type ItemEditorHandlers = {
   pendingCanonicalRowEditCount?: number;
   canonicalRowEditsApplying?: boolean;
   onApplyCanonicalRowEdits?: () => boolean | void | Promise<boolean | void>;
+  onCancelCanonicalRowEdits?: () => void;
+  canonicalRowEditorResetKeys?: Readonly<Record<string, number>>;
   onSpecificationChange?: (itemId: string, value: string) => void;
   onOptionalChange?: (itemId: string, optional: boolean) => void;
   onRemove: (itemId: string) => void;
@@ -592,6 +594,8 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
       pendingCanonicalRowEditCount,
       canonicalRowEditsApplying,
       onApplyCanonicalRowEdits,
+      onCancelCanonicalRowEdits,
+      canonicalRowEditorResetKeys,
       onSpecificationChange,
       onOptionalChange,
       onRemove,
@@ -771,6 +775,8 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
           pendingCanonicalRowEditCount={pendingCanonicalRowEditCount}
           canonicalRowEditsApplying={canonicalRowEditsApplying}
           onApplyCanonicalRowEdits={onApplyCanonicalRowEdits}
+          onCancelCanonicalRowEdits={onCancelCanonicalRowEdits}
+          canonicalRowEditorResetKeys={canonicalRowEditorResetKeys}
           onSpecificationChange={onSpecificationChange}
           onOptionalChange={onOptionalChange}
           onRemove={onRemove}
@@ -2127,6 +2133,8 @@ function EstimatePositionsPanel({
   pendingCanonicalRowEditCount,
   canonicalRowEditsApplying,
   onApplyCanonicalRowEdits,
+  onCancelCanonicalRowEdits,
+  canonicalRowEditorResetKeys,
   onSpecificationChange,
   onOptionalChange,
   onRemove,
@@ -2177,6 +2185,8 @@ function EstimatePositionsPanel({
         pendingCanonicalRowEditCount={pendingCanonicalRowEditCount}
         canonicalRowEditsApplying={canonicalRowEditsApplying}
         onApplyCanonicalRowEdits={onApplyCanonicalRowEdits}
+        onCancelCanonicalRowEdits={onCancelCanonicalRowEdits}
+        canonicalRowEditorResetKeys={canonicalRowEditorResetKeys}
         onSpecificationChange={onSpecificationChange}
         onOptionalChange={onOptionalChange}
         onRemove={onRemove}

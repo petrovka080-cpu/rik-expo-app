@@ -372,6 +372,8 @@ type ContentProps = {
   pendingCanonicalRowEditCount?: number;
   canonicalRowEditsApplying?: boolean;
   onApplyCanonicalRowEdits?: () => boolean | void | Promise<boolean | void>;
+  onCancelCanonicalRowEdits?: () => void;
+  canonicalRowEditorResetKeys?: Readonly<Record<string, number>>;
   onSpecificationChange?: (itemId: string, value: string) => void;
   onOptionalChange?: (itemId: string, optional: boolean) => void;
   onRemove: (itemId: string) => void;
@@ -449,6 +451,8 @@ export function ConsumerRepairRequestContent({
   pendingCanonicalRowEditCount,
   canonicalRowEditsApplying,
   onApplyCanonicalRowEdits,
+  onCancelCanonicalRowEdits,
+  canonicalRowEditorResetKeys,
   onSpecificationChange,
   onOptionalChange,
   onRemove,
@@ -513,6 +517,8 @@ export function ConsumerRepairRequestContent({
       pendingCanonicalRowEditCount={pendingCanonicalRowEditCount}
       canonicalRowEditsApplying={canonicalRowEditsApplying}
       onApplyCanonicalRowEdits={onApplyCanonicalRowEdits}
+      onCancelCanonicalRowEdits={onCancelCanonicalRowEdits}
+      canonicalRowEditorResetKeys={canonicalRowEditorResetKeys}
       onSpecificationChange={onSpecificationChange}
       onOptionalChange={onOptionalChange}
       onRemove={onRemove}

@@ -55,6 +55,12 @@ beforeEach(() => {
 });
 
 describe("consumer exact release migration", () => {
+  it("explains that new row input remains unsaved and requires an explicit cancellation before migration", async () => {
+    await expect(resolveConsumerCanonicalRecalculationCatalog({ revision, hasNewRowAmendments: true }))
+      .rejects.toMatchObject({ code: "RELEASE_MIGRATION_ROW_BINDING_REVIEW_REQUIRED",
+        message: expect.stringContaining("Если в редакторе есть несохранённые количества или цены") });
+    expect(recalculateCanonicalEstimateAndLoad).not.toHaveBeenCalled();
+  });
   it("carries the unchanged stored excluded machine through parameter migration with exact exclusion proof", async () => {
     const rowOverrides = { membrane: { includedInEstimate: false, includedInProcurement: false, provenance: { kind: "manual" as const } } };
     const excluded = { ...revision, amendmentContract: { ...revision.amendmentContract, rowOverrides } };

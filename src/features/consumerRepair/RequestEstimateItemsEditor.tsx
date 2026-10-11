@@ -56,6 +56,8 @@ type Props = {
   pendingCanonicalRowEditCount?: number;
   canonicalRowEditsApplying?: boolean;
   onApplyCanonicalRowEdits?: () => boolean | void | Promise<boolean | void>;
+  onCancelCanonicalRowEdits?: () => void;
+  canonicalRowEditorResetKeys?: Readonly<Record<string, number>>;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
@@ -430,6 +432,8 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
       pendingCanonicalRowEditCount = 0,
       canonicalRowEditsApplying = false,
       onApplyCanonicalRowEdits,
+      onCancelCanonicalRowEdits,
+      canonicalRowEditorResetKeys,
       onDecrease,
       onIncrease,
       onQuantityChange,
@@ -498,6 +502,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
     const renderItem = (item: RequestEstimateSectionViewModel["items"][number], index: number) => (
       <View focusable key={`${item.id}-${index}`} testID={`request-estimate-item-anchor-${item.id}`}>
         <ConsumerRepairItemRow item={item} parameterRequirementTables={viewModel.parameterRequirementTables} onDecrease={onDecrease} onIncrease={onIncrease} onQuantityChange={onQuantityChange}
+          numericEditResetKey={canonicalRowEditorResetKeys?.[item.id] ?? 0}
           onUnitPriceChange={onUnitPriceChange} onSpecificationChange={onSpecificationChange} onOptionalChange={onOptionalChange}
           onRemove={onRemove} onOpenCatalog={onOpenCatalog} onOpenPhoto={onOpenPhoto} showPhotoButton={showPhotoButtons === true}
           photoThumbnailUri={this.props.rowPhotoThumbnails?.[item.id] ?? null}
@@ -687,6 +692,13 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
                 {canonicalRowEditsApplying ? "Применяем…" : `Применить изменения (${pendingCanonicalRowEditCount})`}
               </Text>
             </Pressable>
+            {onCancelCanonicalRowEdits ? (
+              <Pressable accessibilityRole="button" disabled={canonicalRowEditsApplying}
+                onPress={onCancelCanonicalRowEdits} style={styles.unresolvedFilterAction}
+                testID="request-estimate-row-batch-cancel">
+                <Text style={styles.unresolvedFilterActionText}>Отменить новые правки строк</Text>
+              </Pressable>
+            ) : null}
           </View>
         ) : null}
       </View>

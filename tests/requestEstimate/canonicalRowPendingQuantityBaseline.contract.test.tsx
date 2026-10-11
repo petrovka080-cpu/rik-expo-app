@@ -1,8 +1,11 @@
 import React from "react";
 import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
+import { Alert } from "react-native";
 
 import { ConsumerRepairItemRow } from "../../src/features/consumerRepair/ConsumerRepairItemRow";
 import { ConsumerRepairRequestScreenController } from "../../src/features/consumerRepair/ConsumerRepairRequestScreen";
+import { RequestEstimateItemsEditor } from "../../src/features/consumerRepair/RequestEstimateItemsEditor";
+import type { RequestEstimateViewModel } from "../../src/features/consumerRepair/requestEstimateViewModel";
 import { consumerRepairRowCalculatedQuantity } from "../../src/features/consumerRepair/consumerRepairRowMetadata";
 import * as quantityTrace from "../../src/features/consumerRepair/consumerRepairQuantityEditTrace";
 import type { ConsumerRepairDraftBundle, ConsumerRepairRequestItem } from "../../src/lib/consumerRequests/consumerRequestTypes";
@@ -34,6 +37,8 @@ function stagedEditor(patch: Partial<ConsumerRepairRequestItem> = {}) {
     changeItemQuantity: (id: string, value: string) => Promise<void>;
     changeItemUnitPrice: (id: string, value: string) => Promise<void>;
     applyPendingCanonicalRowEdits: () => Promise<boolean>;
+    cancelPendingCanonicalRowEdits: () => void;
+    canonicalRowEditorResetKeys: Readonly<Record<string, number>>;
   };
   mutable.state = {
     ...mutable.state,
@@ -141,6 +146,138 @@ describe("canonical pending row quantity provenance", () => {
     expect(editor.recalculate).not.toHaveBeenCalled();
     expect(editor.original.quantity).toBe(14.25);
     expect(editor.original.sourceParameters).not.toHaveProperty("manualQuantityOverride");
+  });
+
+  it("returns a new price to an originally unpriced row without trapping a composition update or writing a revision", async () => {
+    const editor = stagedEditor();
+    await editor.mutable.changeItemUnitPrice("test-owned-row", "111.11");
+    expect(editor.mutable.state.pendingCanonicalRowEditCount).toBe(1);
+    await editor.mutable.changeItemUnitPrice("test-owned-row", "");
+    expect(editor.mutable.state.pendingCanonicalRowEditCount).toBe(0);
+    expect(editor.current().unitPrice).toBeNull();
+    expect(await editor.mutable.applyPendingCanonicalRowEdits()).toBe(false);
+    expect(editor.recalculate).not.toHaveBeenCalled();
+  });
+
+  it("clears only a new price while retaining a separate pending quantity", async () => {
+    const editor = stagedEditor();
+    await editor.mutable.changeItemUnitPrice("test-owned-row", "111.11");
+    await editor.mutable.changeItemQuantity("test-owned-row", "16");
+    await editor.mutable.changeItemUnitPrice("test-owned-row", "");
+    expect(editor.mutable.state.pendingCanonicalRowEditCount).toBe(1);
+    editor.recalculate.mockRejectedValueOnce(new Error("TEST_STOP"));
+    await editor.mutable.applyPendingCanonicalRowEdits();
+    expect(editor.recalculate.mock.calls[0][0].rowOverrides["test:bedding"]).toMatchObject({ quantity: 16 });
+    expect(editor.recalculate.mock.calls[0][0].rowOverrides["test:bedding"]).not.toHaveProperty("unitPrice");
+  });
+
+  it("keeps an explicit numeric price pin when the original price mode is unknown", async () => {
+    const editor = stagedEditor({ unitPrice: 10, totalPrice: 142.5 });
+    await editor.mutable.changeItemUnitPrice("test-owned-row", "11");
+    await editor.mutable.changeItemUnitPrice("test-owned-row", "10");
+    expect(editor.mutable.state.pendingCanonicalRowEditCount).toBe(1);
+    editor.recalculate.mockRejectedValueOnce(new Error("TEST_STOP"));
+    await editor.mutable.applyPendingCanonicalRowEdits();
+    expect(editor.recalculate.mock.calls[0][0].rowOverrides["test:bedding"].unitPrice).toBe(10);
+  });
+
+  it("requires explicit consent to discard new edits and restores saved values while retaining unrelated row data", async () => {
+    const editor = stagedEditor({ quantity: 20, unitPrice: 10, totalPrice: 200, quantityEditedByConsumer: true,
+      sourceParameters: { canonicalBackendRevisionId: "test-parent", canonicalBackendReleaseId: "test-release",
+        rowCode: "test:bedding", manualQuantityOverride: true, calculatedQuantityBeforeOverride: 14.25 } });
+    const alert = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    try {
+      await editor.mutable.changeItemQuantity("test-owned-row", "25");
+      await editor.mutable.changeItemUnitPrice("test-owned-row", "12");
+      editor.mutable.cancelPendingCanonicalRowEdits();
+      expect(alert).toHaveBeenCalledTimes(1);
+      expect(alert.mock.calls[0][1]).toContain("количество 25 → 20; цена 12 → 10");
+      expect(editor.current()).toMatchObject({ quantity: 25, unitPrice: 12 });
+      const buttons = alert.mock.calls[0][2]!;
+      expect(buttons[0].style).toBe("cancel");
+      editor.mutable.state.bundle.items[0] = { ...editor.current(), titleRu: "Уточнённое название",
+        sourceParameters: { ...editor.current().sourceParameters, unrelatedPhoto: "retained" } };
+      buttons[1].onPress!();
+      expect(editor.current()).toMatchObject({ quantity: 20, unitPrice: 10, totalPrice: 200,
+        quantityEditedByConsumer: true, titleRu: "Уточнённое название", sourceParameters: {
+          manualQuantityOverride: true, calculatedQuantityBeforeOverride: 14.25, unrelatedPhoto: "retained" } });
+      expect(editor.mutable.state.pendingCanonicalRowEditCount).toBe(0);
+      expect(editor.recalculate).not.toHaveBeenCalled();
+      expect(editor.original).toMatchObject({ quantity: 20, unitPrice: 10 });
+    } finally { alert.mockRestore(); }
+  });
+
+  it("does not let an old cancellation confirmation affect a new revision or newer pending input", async () => {
+    const editor = stagedEditor();
+    const alert = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    try {
+      await editor.mutable.changeItemUnitPrice("test-owned-row", "111.11");
+      editor.mutable.cancelPendingCanonicalRowEdits();
+      const confirmOldInput = alert.mock.calls[0][2]![1].onPress!;
+      await editor.mutable.changeItemUnitPrice("test-owned-row", "222.22");
+      confirmOldInput();
+      expect(editor.current().unitPrice).toBe(222.22);
+      expect(editor.mutable.state.pendingCanonicalRowEditCount).toBe(1);
+      editor.mutable.cancelPendingCanonicalRowEdits();
+      const confirmOldRevision = alert.mock.calls[1][2]![1].onPress!;
+      editor.mutable.state.bundle.items[0] = { ...editor.current(),
+        sourceParameters: { ...editor.current().sourceParameters, canonicalBackendRevisionId: "another-revision" } };
+      confirmOldRevision();
+      expect(editor.current().unitPrice).toBe(222.22);
+      expect(editor.mutable.state.pendingCanonicalRowEditCount).toBe(1);
+      expect(editor.recalculate).not.toHaveBeenCalled();
+    } finally { alert.mockRestore(); }
+  });
+
+  it.each(["price", "quantity"] as const)("clears a focused %s buffer after confirmed cancellation and ignores its late events while preserving specification input and another row", async field => {
+    const editor = stagedEditor();
+    const unrelated = { ...editor.original, id: "unrelated-row", titleRu: "Другая позиция",
+      sourceParameters: { ...editor.original.sourceParameters, rowCode: "test:unrelated" } };
+    editor.mutable.state.bundle.items.push(unrelated);
+    if (field === "price") await editor.mutable.changeItemUnitPrice("test-owned-row", "111.11");
+    else await editor.mutable.changeItemQuantity("test-owned-row", "16");
+    const onQuantity = jest.fn(), onPrice = jest.fn(), onSpecification = jest.fn(), noop = jest.fn();
+    const model = (): RequestEstimateViewModel => ({ title: "Смета", summary: "", totalLabel: "", priceStatusLabel: "",
+      sourceConfidenceLabel: "", sourceLabels: [], taxLabel: "", trustLevelLabel: "", commercialEstimateLevelLabel: "",
+      sourceQualityLabel: "", expertReviewStatusLabel: "", fullTotalStatusLabel: "", visibleLines: [], assumptionRows: [],
+      sections: [{ id: "professional_test", title: "Материалы", items: editor.mutable.state.bundle.items }],
+      professionalPreview: true, previewSections: [], calculationPreviewLines: [], normSourcePreviewLines: [],
+      rawItemCount: 2, sourceGates: [], manualCatalogItems: [] });
+    const view = () => <RequestEstimateItemsEditor viewModel={model()}
+      pendingCanonicalRowEditCount={editor.mutable.state.pendingCanonicalRowEditCount}
+      canonicalRowEditorResetKeys={editor.mutable.canonicalRowEditorResetKeys}
+      onApplyCanonicalRowEdits={noop} onCancelCanonicalRowEdits={editor.mutable.cancelPendingCanonicalRowEdits}
+      onDecrease={noop} onIncrease={noop} onQuantityChange={onQuantity} onUnitPriceChange={onPrice}
+      onSpecificationChange={onSpecification}
+      onRemove={noop} onAddManual={noop} />;
+    const alert = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    let renderer!: ReactTestRenderer;
+    try {
+      act(() => { renderer = TestRenderer.create(view()); });
+      const inputId = `consumer-repair-item-${field === "price" ? "unit-price" : "quantity"}-input-test-owned-row`;
+      act(() => renderer.root.findByProps({ testID: "consumer-repair-item-specification-edit-test-owned-row" }).props.onPress());
+      act(() => renderer.root.findByProps({ testID: "consumer-repair-item-specification-input-test-owned-row" }).props.onChangeText("Несохранённое уточнение названия"));
+      const other = renderer.root.findByProps({ testID: "consumer-repair-item-unit-price-input-unrelated-row" });
+      act(() => { other.props.onFocus(); other.props.onChangeText("77"); });
+      const edited = renderer.root.findByProps({ testID: inputId });
+      act(() => { edited.props.onFocus(); edited.props.onChangeText(field === "price" ? "222.22" : "17"); });
+      const oldBlur = renderer.root.findByProps({ testID: inputId }).props.onBlur;
+      const oldChange = renderer.root.findByProps({ testID: inputId }).props.onChangeText;
+      act(() => renderer.root.findByProps({ testID: "request-estimate-row-batch-cancel" }).props.onPress());
+      expect(alert).toHaveBeenCalledTimes(1);
+      act(() => { alert.mock.calls[0][2]![1].onPress!(); renderer.update(view()); });
+      expect(renderer.root.findByProps({ testID: inputId }).props.value).toBe(field === "price" ? "" : "14.25");
+      expect(renderer.root.findByProps({ testID: "consumer-repair-item-unit-price-input-unrelated-row" }).props.value).toBe("77");
+      expect(renderer.root.findByProps({ testID: "consumer-repair-item-specification-input-test-owned-row" }).props.value).toBe("Несохранённое уточнение названия");
+      act(() => { oldChange("999"); oldBlur(); });
+      expect(renderer.root.findByProps({ testID: inputId }).props.value).toBe(field === "price" ? "" : "14.25");
+      expect(onQuantity).not.toHaveBeenCalled();
+      expect(onPrice).not.toHaveBeenCalled();
+      expect(onSpecification).not.toHaveBeenCalled();
+      expect(editor.mutable.state.pendingCanonicalRowEditCount).toBe(0);
+      expect(renderer.root.findAllByProps({ testID: "request-estimate-row-batch-cancel" })).toHaveLength(0);
+      expect(editor.recalculate).not.toHaveBeenCalled();
+    } finally { if (renderer) act(() => renderer.unmount()); alert.mockRestore(); }
   });
   it("keeps an explicit equal-value manual pin, but cancelling that unsaved pin returns to the original automatic baseline", async () => {
     const editor = stagedEditor();
