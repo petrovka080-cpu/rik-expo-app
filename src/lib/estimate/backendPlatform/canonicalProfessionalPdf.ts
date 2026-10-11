@@ -13,9 +13,10 @@ import {
 import { canonicalEstimateResourceOperationSections } from "./canonicalEstimateOperationComposition";
 import { canonicalArtifactPurchaseRequirement } from "./canonicalPersistedPurchaseBalance";
 import { canonicalPublicEstimateWorkTitleRu, canonicalPublicEstimateRequestTextRu } from './canonicalPublicEstimateLanguageRu';
+import { resolveCanonicalEstimateExplicitRowCategory } from './canonicalEstimateRowCategory';
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-58-exact-physical-resource-template25" as const;
+  "canonical-professional-pdf.r4-a13-s27-58-typed-resource-category-template26" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -91,7 +92,8 @@ export function canonicalProfessionalPdfCategory(
   const identity = categoryIdentity(row);
   const resourceGraph = objectValue(objectValue(row.calculation_trace).resourceGraph);
   if (resourceGraph.costTreatment === "CONTROL_OR_DOCUMENT") return "service";
-  if (String(row.category ?? "").trim().toLowerCase() === "material") return "material";
+  const explicit = resolveCanonicalEstimateExplicitRowCategory(String(row.category ?? ""));
+  if (explicit) return explicit === "delivery" ? "transport" : explicit;
   if (/delivery|transport|logistic|достав|логист/u.test(identity)) return "transport";
   if (/equipment|machine|machinery|mechanism|механ|техник|оборуд/u.test(identity)) return "equipment";
   if (/material|product|waste|материал|издел/u.test(identity)) return "material";

@@ -2,6 +2,7 @@ import React from "react";
 import TestRenderer, { act } from "react-test-renderer";
 
 import { ConsumerRepairHistory } from "../../src/features/consumerRepair/ConsumerRepairHistory";
+import { flushTransactionalConsumerRepairWrites } from "../../src/lib/platform/consumerRepairTransactionalDurableBridge";
 import {
   __resetConsumerRepairRequestStoreForTests,
   listConsumerRepairApprovedHistory,
@@ -20,6 +21,7 @@ jest.mock("@expo/vector-icons", () => {
 
 describe("approved history PDF/edit/market actions", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
+  afterEach(async () => { await flushTransactionalConsumerRepairWrites(); });
 
   it("keeps PDF, edit, and market actions attached to the selected approved history record", () => {
     const approved = createApprovedConsumerRepairRequest();
