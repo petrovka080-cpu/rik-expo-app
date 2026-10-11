@@ -115,8 +115,12 @@ export function overlayS2763KnaufInteriorPlasterMaterials(parent:PurchaseGroupRe
   }
   result.baseline.input_values=target.primerOnly?{...result.baseline.input_values,[choiceId]:pack.legacyChoiceRu}:{q:100,[choiceId]:pack.legacyChoiceRu};
   result.baseline.input_classification=target.primerOnly?{...result.baseline.input_classification,[choiceId]:'VALIDATION_FIXTURE'}:{q:'VALIDATION_FIXTURE',[choiceId]:'VALIDATION_FIXTURE'};
+  result.baseline.provenance={...result.baseline.provenance,legacyAlternativeNormativeSourceIds:parent.baseline.normative_source_ids,
+    legacyQuantityNormsUnacceptedForSelectedKnaufBranch:true};
+  result.baseline.normative_source_ids=target.primerOnly?{...parent.baseline.normative_source_ids,betogrund_actual_area_m2:[pack.contract+':betogrund']}
+    :{q:[pack.contract+':rotband'],betogrund_actual_area_m2:[pack.contract+':betogrund']};
   const consumers=buildMasterParameterCalculationConsumers(result);
-  for(const p of result.parameters){const id=p.parameter_id;p.truth_metadata={...p.truth_metadata,contract:target.primerOnly&&parent.parameters.some(old=>old.parameter_id===id)?p.truth_metadata.contract:pack.contract,semantic_parameter_key:catalogId+':'+id,formula_consumers:consumers.formulaConsumers[id],resource_branch_consumers:consumers.resourceConsumers[id]};
+  for(const p of result.parameters){const id=p.parameter_id;p.truth_metadata={...p.truth_metadata,contract:pack.contract,semantic_parameter_key:catalogId+':'+id,formula_consumers:consumers.formulaConsumers[id],resource_branch_consumers:consumers.resourceConsumers[id]};
     result.baseline.formula_consumer_ids[id]=consumers.formulaConsumers[id];result.baseline.resource_consumer_row_ids[id]=consumers.resourceConsumers[id];result.baseline.uom_by_parameter[id]=p.unit_id;
     result.baseline.normative_source_ids[id]??=[];result.baseline.guide_provenance_ru[id]=p.truth_metadata.guide?.guide_short_ru??p.title_ru;}
   result.baseline.parameter_schema_sha256=hash(result.parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata})));

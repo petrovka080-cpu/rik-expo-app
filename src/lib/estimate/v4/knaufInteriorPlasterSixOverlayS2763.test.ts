@@ -37,7 +37,8 @@ test('all six actual parents retain every old formula, row identity, unit and qu
     expect(r.passport.decision.completeTechnicalEstimateAccepted).toBe(false);
     if(target.primerOnly) {
       expect(r.resources.slice(0,8).filter(x=>x.row_id!==target.legacyPrimerOwnerRowId)).toEqual(before.resources.filter(x=>x.row_id!==target.legacyPrimerOwnerRowId));
-      expect(r.parameters.find(p=>p.parameter_id==='area_m2')).toEqual(before.parameters.find(p=>p.parameter_id==='area_m2'));
+      const oldArea=before.parameters.find(p=>p.parameter_id==='area_m2')!;
+      expect(r.parameters.find(p=>p.parameter_id==='area_m2')).toEqual({...oldArea,truth_metadata:{...oldArea.truth_metadata,contract:pack.contract}});
     }else{
       expect(canonicalApprovedBaselineRuntimeParameters(r.baseline)).toEqual({});
       const main=r.resources.find(x=>x.row_id===prefix+':open-main-labour')!;
@@ -134,5 +135,9 @@ test('new public passports describe partial Knauf scope and retain old Ceresit/f
     expect(r.passport.included_scope_ru.join(' ')).not.toContain('нормативный пакет и закупочная ведомость включены');
     expect(r.definition.passport.workDescription.scopeSummary).toContain('незакрытые потребности');
     expect(r.definition.passport.sourcePack.sourceQuality).toBe('PARTIAL_MANUFACTURER_MATERIAL_ONLY');
+    expect(r.baseline.provenance.legacyAlternativeNormativeSourceIds).toEqual(before.baseline.normative_source_ids);
+    expect(Object.values(r.baseline.normative_source_ids).flat()).toContain(pack.contract+':betogrund');
+    if(before.resources.length===59)expect([...new Set(Object.values(r.baseline.normative_source_ids).flat())].sort())
+      .toEqual([pack.contract+':betogrund',pack.contract+':rotband'].sort());
   }
 });
