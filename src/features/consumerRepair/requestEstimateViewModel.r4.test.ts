@@ -5,6 +5,7 @@ import {
   sanitizeRequestEstimatePublicText,
 } from "./requestEstimateViewModel";
 import { appendCanonicalBackendRevisionProjection } from "../../lib/consumerRequests/consumerCanonicalBackendRevisionProjection";
+import { canonicalPublicEstimateTextRu, canonicalPublicEstimateRequestTextRu, canonicalPublicEstimateChoiceLabelRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
 import type {
   ConsumerRepairDraftBundle,
   ConsumerRepairRequestItem,
@@ -76,6 +77,11 @@ function serverBoundBundle(items: ConsumerRepairRequestItem[]): ConsumerRepairDr
 }
 
 describe("R4 canonical estimate title parity", () => {
+  it('cleans whitespace after an actual public wording replacement, including request and choice wrappers', () => {
+    expect(canonicalPublicEstimateTextRu('  Сварка  для LOGICROOF  ; контроль')).toBe('Сварка для выбранной кровельной мембраны; контроль');
+    expect(canonicalPublicEstimateRequestTextRu('  Кровельные световые фонари VELUX CFP 100100 — предварительный состав  ;  2 шт.')).toBe('Окна в крыше; 2 шт.');
+    expect(canonicalPublicEstimateChoiceLabelRu('  VELUX CFP Q 73FQV 100100 + ISD 100100 0010  ;  2 шт.')).toBe('Неоткрывающееся окно с прозрачным куполом, проём 100 × 100 см; 2 шт.');
+  });
   it('uses immutable canonical schema titles for new quantity inputs and rejects a different release table', () => {
     const item = canonicalItem('material:shared-control', 'Материальный контроль', 'c'.repeat(64), 0);
     item.sourceParameters = { ...item.sourceParameters, smartEstimateProjectionV2: {

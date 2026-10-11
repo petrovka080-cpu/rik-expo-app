@@ -26,7 +26,8 @@ const SOURCES = ["scripts/estimate/r4a13/prepareS2763ConcreteCuringAntisolSeries
   "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts", "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
   "src/lib/estimate/v4/automaticConstructionOwnerR1.ts", "src/lib/estimate/backendPlatform/canonicalDefinitionParameterConsumersR1.ts",
   "src/lib/consumerRequests/consumerCanonicalParameterRequirements.ts", "src/features/consumerRepair/requestEstimateViewModel.ts",
-  "src/features/consumerRepair/ConsumerRepairItemRow.tsx", "src/features/consumerRepair/requestEstimateViewModel.r4.test.ts"];
+  "src/features/consumerRepair/ConsumerRepairItemRow.tsx", "src/features/consumerRepair/requestEstimateViewModel.r4.test.ts",
+  "src/lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu.ts"];
 const APPLY = process.argv.includes("--apply");
 const hash = (value: unknown) => createHash("sha256").update(typeof value === "string" || Buffer.isBuffer(value) ? value : stringifyCanonicalEstimateJson(value)).digest("hex");
 function invariant(value: unknown, code: string): asserts value { if (!value) throw new Error(`S2763_CONCRETE_CURING_ANTISOL_SERIES:${code}`); }
