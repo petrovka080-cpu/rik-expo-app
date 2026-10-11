@@ -29,9 +29,13 @@ export function overlayS2763Ct54FacadeSix(parent:PurchaseGroupRepresentative,loc
  const newRows=shared.resources.map(r=>{
   if(result.resources.some(old=>old.row_id===r.row_id))throw Error('CT54_SIX_OWNER_COLLISION');
   const inherited=pack.inheritedNeeds.find(g=>r.row_id===prefix+':inherited-'+g.suffix),lineage=inherited?.legacyOwners.find(o=>o.catalogId===catalogId);
+  const related=pack.oldDispositionMap.filter(d=>d.reusedOwnerRows.includes(r.row_id)).map(d=>({titleRu:d.titleRu,unitId:d.legacyUnit,legacyExpression:d.legacyExpression,disposition:d.disposition,ruleRu:d.ruleRu,...d.actualLegacyRows.find(o=>o.catalogId===catalogId)!}));
+  const publicPresentation=r.resource_graph.publicResourcePresentationV1 as Record<string,unknown>|undefined;
+  const residualDetails=r.source_metadata.sourceNormQuantityAccepted===false?related.map(d=>'Осталось подтвердить: '+d.titleRu+'. '+d.ruleRu):[];
   const {row_sha256:_sha,...body}=r,final={...body,ordinal:rowOrdinal++,row_type:r.category,semantic_owner:catalogId+':'+r.row_id,
+   resource_graph:{...r.resource_graph,...(publicPresentation?{publicResourcePresentationV1:{...publicPresentation,detailsRu:[...(publicPresentation.detailsRu as string[]??[]),...residualDetails]}}:{})},
    ...(inherited?{category:parent.resources.find(old=>old.row_id===lineage!.rowId)!.category,row_type:parent.resources.find(old=>old.row_id===lineage!.rowId)!.row_type}:{}),
-   source_metadata:{...r.source_metadata,...(lineage?{inheritedOwnerLineage:lineage,originalUnitId:inherited!.unitId,originalFormulaNotApplied:inherited!.legacyExpression}:{}),full_technical_acceptance:false} as Record<string,unknown>};
+   source_metadata:{...r.source_metadata,forwardLegacyObligationLineage:related,...(lineage?{inheritedOwnerLineage:lineage,originalUnitId:inherited!.unitId,originalFormulaNotApplied:inherited!.legacyExpression}:{}),full_technical_acceptance:false} as Record<string,unknown>};
   return {...final,row_sha256:hash(final)};
  });
  result.resources.push(...newRows);
@@ -51,7 +55,8 @@ export function overlayS2763Ct54FacadeSix(parent:PurchaseGroupRepresentative,loc
  const unresolvedIds=result.parameters.filter(p=>p.truth_metadata.value_source_role==='UNRESOLVED_APPLICATION_NORM').map(p=>p.parameter_id);
  const unresolvedRows=newRows.filter(r=>result.formulas.find(f=>f.formula_id===r.formula_id)!.input_parameter_ids.some((id:string)=>unresolvedIds.includes(id))).map(r=>r.row_id);
  if(unresolvedRows.length!==21)throw Error('CT54_SIX_UNRESOLVED_OWNER_COUNT_DRIFT');
- result.passport.capability_matrix=(result.passport.capability_matrix??[]).map((c:Record<string,unknown>)=>c.capability==='FULL_APPLICABLE_SCOPE'?{...c,status:'NEEDS_SOURCE',preliminaryCompositionOnly:true,unresolvedResourceRowIds:unresolvedRows}:c);
+ result.passport.capability_matrix=[{capability:'PARAMETERS',status:'GREEN'},{capability:'FORMULAS_AND_PHYSICAL_PARITY',status:'GREEN',scope:'EXACT_READY_CT54_COHORT_ONLY'},
+  {capability:'FULL_APPLICABLE_SCOPE',status:'NEEDS_SOURCE',preliminaryCompositionOnly:true,unresolvedResourceRowIds:unresolvedRows},{capability:'PRICE',status:'GREEN_UNKNOWN_IS_NULL'}];
  result.passport.decision={...result.passport.decision,quantityScope:'PARTIAL',preliminaryCompositionOnly:true,technicalScopeStatus:'NEEDS_SOURCE',unresolvedResourceRowIds:unresolvedRows,materialSourceScopeOnly:true,completeTechnicalEstimateAccepted:false,legacyPreliminarySourcesRemainUnaccepted:true,
   facadeSeriesContract:pack.contract,wholeFacadeGroupComplete:false,physicalNormClosureCount:3,paintConsumptionWasAlreadyPresent:true,ownerDisposition:dispositions,
   activeUnresolvedDefinitionsWithOneTool:20,newPriceOwnersDoNotInheritLegacySquareMetrePrices:true};
