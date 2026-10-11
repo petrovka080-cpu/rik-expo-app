@@ -65,6 +65,7 @@ type Props = {
   onCancelParamEdit?: () => void;
   onApplyParamPatch?: (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => void;
   onApplyParamBatch?: (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => void;
+  onParameterDraftInteraction?: () => void;
   onSelectRoadScope?: (scopePresetId: string) => void;
   roadScopeSelectionBusy?: boolean;
 };
@@ -117,6 +118,7 @@ export function ConsumerRepairDraftPanel({
   onCancelParamEdit,
   onApplyParamPatch,
   onApplyParamBatch,
+  onParameterDraftInteraction,
   onSelectRoadScope,
   roadScopeSelectionBusy = false,
 }: Props): React.ReactElement {
@@ -301,6 +303,7 @@ export function ConsumerRepairDraftPanel({
             onSaveParamEdit={onSaveParamEdit}
             onCancelParamEdit={onCancelParamEdit}
             onApplyParamBatch={onApplyParamBatch}
+            onParameterDraftInteraction={onParameterDraftInteraction}
           />
           <ConsumerRepairDraftQuickActions
             onAddManual={onAddManual}
@@ -385,6 +388,7 @@ export function ConsumerRepairDraftPanel({
           onCancelParamEdit={onCancelParamEdit}
           onApplyParamPatch={onApplyParamPatch}
           onApplyParamBatch={onApplyParamBatch}
+          onParameterDraftInteraction={onParameterDraftInteraction}
         />
         </>
       ) : (

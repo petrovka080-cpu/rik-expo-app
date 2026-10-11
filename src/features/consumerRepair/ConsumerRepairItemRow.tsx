@@ -32,6 +32,7 @@ import {
   consumerRepairRowIsCanonicalPreliminaryNeed,
   consumerRepairRowIsNonPayable,
   consumerRepairRowRequirementNotice,
+  consumerRepairRowSourceManagedQuantityReason,
   consumerRepairRowPublicResourcePresentation,
 } from "./consumerRepairRowMetadata";
 import { useConsumerRepairItemRowEditing } from "./useConsumerRepairItemRowEditing";
@@ -290,7 +291,7 @@ function ConsumerRepairItemRowComponent({
             </View>
             {sourceManagedNeed && item.quantity == null && !purchaseRequirement ? (
               <Text style={styles.inlineSourceHint} testID={`consumer-repair-item-source-gated-quantity-${item.id}`}>
-                {derivedQuantityEditReason ?? 'Количество определит расчёт после подтверждения технического источника.'}
+                {consumerRepairRowSourceManagedQuantityReason(item, parameterRequirementTables)}
               </Text>
             ) : null}
             {purchaseRequirement ? <Text style={styles.calculatedQuantityHint} testID={`consumer-repair-item-known-consumption-${item.id}`}>

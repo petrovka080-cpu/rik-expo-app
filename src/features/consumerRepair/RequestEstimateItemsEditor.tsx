@@ -477,8 +477,8 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
     const operationBySectionId = new Map(filteredSections.filter(section => section.operation != null).map(section => [section.id, section]));
     const multipleOperationGroups = new Set(viewModel.sections.flatMap(section => section.operation ? [section.operation.groupId] : [])).size > 1;
     const operationExpanded = (section: RequestEstimateSectionViewModel): boolean => Boolean(normalizedQuery || this.state.showOnlyUnresolved
-      || (this.state.expandedOperationIds[section.id] ?? section.items.some(item => !consumerRepairRowIsCanonicalPreliminaryNeed(item)
-        && !consumerRepairRowIsTechnicalDetail(item))));
+      || (this.state.expandedOperationIds[section.id] ?? section.items.some(item => consumerRepairRowIsCanonicalPreliminaryNeed(item)
+        || !consumerRepairRowIsTechnicalDetail(item))));
     const sectionIdByItemId = new Map(filteredSections.flatMap(section => section.items.map(item => [item.id, section.id] as const)));
     const visibleItems = filteredEntries
       .filter((entry) => !this.state.collapsedCategoryIds[entry.categoryFilterId])

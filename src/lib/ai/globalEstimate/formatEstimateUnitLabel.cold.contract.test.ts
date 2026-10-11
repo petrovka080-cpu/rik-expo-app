@@ -28,6 +28,7 @@ describe("cold registered-unit display without initializing normalized alias mac
   it.each([
     ["  М³  ", "м³"], ["ＳＱ＿Ｍ", "м²"], ["SQ M", "м²"], ["m3/hour", "м³/ч"],
     ["ratio", "коэф."], ["t*km", "т·км"], ["kwh", "кВт·ч"], ["kWh", "кВт·ч"],
+    ["person_hour", "чел.-ч"], ["pair", "пара"],
     ["custom_unknown_unit", "custom_unknown_unit"], ["", ""],
   ])("preserves normalized/compatibility/custom fallback: %s", (input, label) => {
     expect(formatEstimateUnitLabel(input)).toBe(label);

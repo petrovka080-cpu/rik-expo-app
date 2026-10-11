@@ -1,6 +1,8 @@
-import { consumerRepairRowRequirementNotice, consumerRepairRowHasSourceManagedQuantity } from './consumerRepairRowMetadata';
+import { consumerRepairRowRequirementNotice, consumerRepairRowHasSourceManagedQuantity, consumerRepairRowSourceManagedQuantityReason, consumerRepairRowIsTechnicalDetail, consumerRepairRowIsNonPayable } from './consumerRepairRowMetadata';
 import { buildRequestEstimateSourceGates } from './requestEstimateViewModel';
 import type { ConsumerRepairRequestItem } from '../../lib/consumerRequests/consumerRequestTypes';
+import type { ConsumerRepairDraftBundle } from '../../lib/consumerRequests/consumerRequestTypes';
+import {consumerEstimateUnresolvedQuantityItems,consumerEstimateUnpricedPayableItems} from '../../lib/consumerRequests/consumerEstimateReadiness';
 import type { CanonicalParameterRequirementTables } from '../../lib/consumerRequests/consumerCanonicalParameterRequirements';
 
 const norm = {parameterId:'labor',titleRu:'Норма труда монтажа',sourceConfirmationRequired:true,
@@ -30,14 +32,37 @@ test('unknown primer scope asks for a fact through the exact revision without ad
   const before=JSON.stringify(item);
   expect(consumerRepairRowRequirementNotice(item,tables)).toBe(guide);
   expect(consumerRepairRowHasSourceManagedQuantity(item,tables)).toBe(true);
+  expect(consumerRepairRowSourceManagedQuantityReason(item,tables)).toContain('необходимости грунтования');
   expect(buildRequestEstimateSourceGates([publicItem(item)],tables)).toEqual([]);
   for(const unavailable of [undefined,{r2:{...tables.r2!,parameterSchemaHash:'other'}},
     {r2:{...tables.r2!,requirementsById:{[id]:{...requirement,guideShortRu:null}}}}]) {
     expect(consumerRepairRowRequirementNotice(item,unavailable)).toContain('подтверждённый источник');
     expect(consumerRepairRowHasSourceManagedQuantity(item,unavailable)).toBe(true);
+    expect(consumerRepairRowSourceManagedQuantityReason(item,unavailable)).toContain('технического источника');
     expect(buildRequestEstimateSourceGates([publicItem(item)],unavailable)).toHaveLength(1);
   }
   expect(JSON.stringify(item)).toBe(before);
+});
+
+test('unresolved physical informational needs stay visible without becoming payable; known counters stay folded',()=>{
+  for(const canonicalCostTreatment of ['INFORMATIONAL_SCOPE','INCLUDED_IN_RESOURCE_ROWS','CONTROL_OR_DOCUMENT']){
+    const pending={quantity:null,sourceParameters:{canonicalCostTreatment,canonicalPreliminaryNeed:true,payable:false}};
+    const before=JSON.stringify(pending);
+    expect(consumerRepairRowIsTechnicalDetail(pending)).toBe(false);
+    expect(consumerRepairRowIsNonPayable(pending)).toBe(true);
+    expect(consumerRepairRowIsTechnicalDetail({...pending,sourceParameters:{...pending.sourceParameters,canonicalPreliminaryNeed:false},quantity:1})).toBe(true);
+    expect(JSON.stringify(pending)).toBe(before);
+  }
+});
+
+test('readiness counts unpaid physical and included needs without demanding a second price; excluded paid alternatives stay excluded',()=>{
+  const pending=publicItem({id:'required-tool',quantity:null,sourceParameters:{canonicalPreliminaryNeed:true,includedInEstimate:false,canonicalCostTreatment:'INFORMATIONAL_SCOPE',payable:false}});
+  const included=publicItem({...pending,id:'included-physical-resource',sourceParameters:{...pending.sourceParameters,canonicalCostTreatment:'INCLUDED_IN_RESOURCE_ROWS'}});
+  const excluded=publicItem({...pending,id:'excluded-conditional-paid-alternative',sourceParameters:{...pending.sourceParameters,canonicalCostTreatment:'OWN_COST'}});
+  const known={...pending,id:'known-informational-counter',quantity:1,sourceParameters:{...pending.sourceParameters,canonicalPreliminaryNeed:false}};
+  const bundle={items:[pending,included,excluded,known]} as ConsumerRepairDraftBundle;
+  expect(consumerEstimateUnresolvedQuantityItems(bundle).map(x=>x.id)).toEqual(['required-tool','included-physical-resource']);
+  expect(consumerEstimateUnpricedPayableItems(bundle)).toEqual([]);
 });
 
 test('a different unresolved application norm retains its source gate even with an authored guide', () => {

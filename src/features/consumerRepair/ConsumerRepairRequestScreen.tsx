@@ -2926,6 +2926,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       this.setState({ canonicalEstimateMutationBusy: this.canonicalRowMutationInFlight() });
     }
   };
+  private handleParameterDraftInteraction = () => {
+    if (this.state.statusMessage != null) this.setState({ statusMessage: null });
+  };
+
   private refineCanonicalParameters = async () => {
     const current = this.state.bundle;
     if (!current) return;
@@ -3509,6 +3513,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         onCancelParamEdit={this.cancelParamEdit}
         onApplyParamPatch={this.applyParamPatch}
         onApplyParamBatch={this.applyParamBatch}
+        onParameterDraftInteraction={this.handleParameterDraftInteraction}
         onOpenPdf={this.openPdf}
         onOpenDraft={this.openDraftFromHistory} onToggleHistorySnapshot={this.toggleHistorySnapshot}
         onEditHistoryDraft={this.editHistoryDraft}

@@ -172,7 +172,21 @@ export function consumerRepairRowIsNonPayable(
 export function consumerRepairRowIsTechnicalDetail(
   item: ConsumerRepairRowMetadataCarrier | null | undefined,
 ): boolean {
-  return VISIBLE_NON_PAYABLE_COST_TREATMENTS.has(text(metadata(item).canonicalCostTreatment));
+  return !consumerRepairRowIsCanonicalPreliminaryNeed(item)
+    && VISIBLE_NON_PAYABLE_COST_TREATMENTS.has(text(metadata(item).canonicalCostTreatment));
+}
+
+export function consumerRepairRowSourceManagedQuantityReason(
+  item: ConsumerRepairRowMetadataCarrier,
+  tables?: CanonicalParameterRequirementTables | null,
+): string {
+  const derived = consumerRepairRowDerivedQuantityEditReason(item);
+  if (derived) return derived;
+  const requirements = consumerCanonicalMissingRequirements(item, tables);
+  if (requirements.length > 0 && requirements.every(requirement => consumerCanonicalApplicationScopeRequirementNotice(requirement))) {
+    return 'Количество определит расчёт после проверки необходимости грунтования и оставшейся площади.';
+  }
+  return 'Количество определит расчёт после подтверждения технического источника.';
 }
 
 export function consumerRepairRowCostTreatment(

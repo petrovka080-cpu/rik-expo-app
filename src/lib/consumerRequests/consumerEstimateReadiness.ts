@@ -47,7 +47,8 @@ export function consumerEstimateUnresolvedQuantityItems(
 ): ConsumerRepairRequestItem[] {
   if (!bundle) return [];
   return bundle.items.filter((item) =>
-    isConsumerEstimateIncludedItem(item)
+    (isConsumerEstimateIncludedItem(item)
+      || NON_PAYABLE_COST_TREATMENTS.has(String(item.sourceParameters?.canonicalCostTreatment ?? '')))
       && item.sourceParameters?.canonicalPreliminaryNeed === true
       && item.quantity == null
   );

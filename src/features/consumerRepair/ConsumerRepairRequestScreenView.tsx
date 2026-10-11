@@ -113,6 +113,7 @@ type ConsumerRepairRequestScreenViewProps = {
   onCancelParamEdit: () => void;
   onApplyParamPatch: (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => void;
   onApplyParamBatch: (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => void;
+  onParameterDraftInteraction?: () => void;
   onOpenPdf: (requestDraftId?: string) => void;
   onOpenDraft: (requestDraftId: string) => void;
   onToggleHistorySnapshot: (requestDraftId: string) => void;
@@ -170,6 +171,7 @@ export function ConsumerRepairRequestScreenView({
   onCancelParamEdit,
   onApplyParamPatch,
   onApplyParamBatch,
+  onParameterDraftInteraction,
   onOpenPdf,
   onOpenDraft,
   onToggleHistorySnapshot,
@@ -334,6 +336,7 @@ export function ConsumerRepairRequestScreenView({
           onCancelParamEdit={onCancelParamEdit}
           onApplyParamPatch={onApplyParamPatch}
           onApplyParamBatch={onApplyParamBatch}
+          onParameterDraftInteraction={onParameterDraftInteraction}
           onOpenPdf={onOpenPdf}
           onOpenDraft={onOpenDraft}
           onToggleHistorySnapshot={onToggleHistorySnapshot}

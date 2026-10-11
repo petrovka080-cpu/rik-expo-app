@@ -36,13 +36,15 @@ describe("InlineParamEditor R3 parameter guide", () => {
     const main = ['q','facade_technology_choice','ready_simple_facade_fact','facade_conditions',
       'light_colour_scope','facade_norm_area_m2','application_tool','mechanism_fulfillment'];
     let renderer!: ReactTestRenderer;
+    const draftInteraction = jest.fn();
     act(() => { renderer = TestRenderer.create(<ParameterDisclosurePanel viewModel={null} revision={null}
-      latestDiff={null} paramEditorEnabled canonicalParameterSession={session} />); });
+      latestDiff={null} paramEditorEnabled canonicalParameterSession={session} onParameterDraftInteraction={draftInteraction} />); });
     const setNumber = (id: string, value: string) => act(() => renderer.root
       .findByProps({testID:'editable-param-chip-'+id}).findByType(TextInput).props.onChangeText(value));
     const choose = (id: string, value: string) => act(() => renderer.root
       .findByProps({testID:'editable-param-option-'+id+'-'+value}).props.onPress());
     setNumber('q','35.5'); choose('facade_technology_choice',String(values.facade_technology_choice[1]));
+    expect(draftInteraction).toHaveBeenCalledTimes(2);
     choose('ready_simple_facade_fact',String(values.ready_simple_facade_fact[0]));
     choose('facade_conditions',String(values.facade_conditions[0]));
     choose('light_colour_scope',String(values.light_colour_scope[0]));

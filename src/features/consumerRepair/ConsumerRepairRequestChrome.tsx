@@ -388,6 +388,7 @@ type ContentProps = {
   onCancelParamEdit: () => void;
   onApplyParamPatch: (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => void;
   onApplyParamBatch: (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => void;
+  onParameterDraftInteraction?: () => void;
   onOpenPdf: (requestDraftId?: string) => void;
   onOpenDraft: (requestDraftId: string) => void;
   onToggleHistorySnapshot: (requestDraftId: string) => void;
@@ -467,6 +468,7 @@ export function ConsumerRepairRequestContent({
   onCancelParamEdit,
   onApplyParamPatch,
   onApplyParamBatch,
+  onParameterDraftInteraction,
   onOpenPdf,
   onOpenDraft,
   onToggleHistorySnapshot,
@@ -536,6 +538,7 @@ export function ConsumerRepairRequestContent({
       onCancelParamEdit={onCancelParamEdit}
       onApplyParamPatch={onApplyParamPatch}
       onApplyParamBatch={onApplyParamBatch}
+      onParameterDraftInteraction={onParameterDraftInteraction}
       onSelectRoadScope={onSelectRoadScope}
       roadScopeSelectionBusy={roadScopeSelectionBusy}
     />

@@ -91,6 +91,7 @@ type ItemEditorHandlers = {
 export type ConsumerRepairParameterApplyResult = boolean | void | { status: "revision_opened" | "applied"; revisionId: string };
 
 type ParameterHandlers = {
+  onParameterDraftInteraction?: () => void;
   editingParam?: ConsumerRepairParamEditState;
   onOpenParamEditor?: (operation: UserParamPatchOperation, paramKey: string) => void;
   onSaveParamEdit?: (rawValue: string) => void;
@@ -616,6 +617,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
       onCancelParamEdit,
       onApplyParamPatch,
       onApplyParamBatch,
+      onParameterDraftInteraction,
     } = this.props;
     const { parametersOpen, positionsOpen, procurementOpen } = this.state;
     const procurementRows = buildCanonicalProcurementPreviewRows(currentRevision, viewModel.sections.flatMap(section => section.items));
@@ -755,6 +757,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
           onSaveParamEdit={onSaveParamEdit}
           onCancelParamEdit={onCancelParamEdit}
           onApplyParamBatch={onApplyParamBatch}
+          onParameterDraftInteraction={onParameterDraftInteraction}
         />
         </View>
       ) : null}
@@ -799,6 +802,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
 }
 
 type ParameterDisclosurePanelProps = {
+  onParameterDraftInteraction?: () => void;
   viewModel: RequestEstimateViewModel | null;
   revision: EstimateDraftRevision | null;
   canonicalParameterSession?: CanonicalParameterSession | null;
@@ -1433,6 +1437,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
 
   private changeDraftValue = (paramKey: string, rawValue: string): void => {
     if (this.props.canonicalParameterReadinessPending) return;
+    this.props.onParameterDraftInteraction?.();
     this.refreshingSavedComposition = null;
     this.applyingDraftParameters = null;
     this.draftInteractionGeneration += 1;
