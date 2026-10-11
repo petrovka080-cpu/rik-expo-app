@@ -30,7 +30,7 @@ export function overlayS2763Ct54FacadeSix(parent:PurchaseGroupRepresentative,loc
   if(result.resources.some(old=>old.row_id===r.row_id))throw Error('CT54_SIX_OWNER_COLLISION');
   const inherited=pack.inheritedNeeds.find(g=>r.row_id===prefix+':inherited-'+g.suffix),lineage=inherited?.legacyOwners.find(o=>o.catalogId===catalogId);
   const {row_sha256:_sha,...body}=r,final={...body,ordinal:rowOrdinal++,row_type:r.category,semantic_owner:catalogId+':'+r.row_id,
-   ...(inherited?{category:parent.resources.find(old=>old.row_id===lineage!.rowId)!.category}:{}),
+   ...(inherited?{category:parent.resources.find(old=>old.row_id===lineage!.rowId)!.category,row_type:parent.resources.find(old=>old.row_id===lineage!.rowId)!.row_type}:{}),
    source_metadata:{...r.source_metadata,...(lineage?{inheritedOwnerLineage:lineage,originalUnitId:inherited!.unitId,originalFormulaNotApplied:inherited!.legacyExpression}:{}),full_technical_acceptance:false} as Record<string,unknown>};
   return {...final,row_sha256:hash(final)};
  });
