@@ -164,6 +164,15 @@ function bundle(
   };
 }
 
+// Repeated x/emoji fixtures are now logically compacted to a single small
+// record. Deterministic diverse text exercises actual multi-chunk native I/O.
+function nativeChunkFixtureText(seed:string,length:number):string {
+  const alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+  let state=17431;for(const char of seed)state=Math.imul(state^char.charCodeAt(0),16777619);
+  let result='';for(let i=0;i<length;i++){state^=state<<13;state^=state>>>17;state^=state<<5;result+=alphabet[(state>>>0)&63];}
+  return result;
+}
+
 function largeBundle(
   version: "r1" | "r2" | "r3",
   id = "async-storage-large-estimate",
@@ -178,7 +187,7 @@ function largeBundle(
       id: `row-${version}-${index + 1}`,
       titleRu: index === 0
         ? `${version} unicode row ${"🙂".repeat(140_000)}`
-        : `${version} native complex row ${index + 1} ${"x".repeat(6_000)}`,
+        : `${version} native complex row ${index + 1} ${nativeChunkFixtureText(version+':'+index,6_000)}`,
       quantity: index + 1,
     })),
   };
@@ -199,7 +208,7 @@ describe("native AsyncStorage durable fallback", () => {
       if (first.status === "FAILED") throw new Error(first.error.message);
       const committedRecords = new Map(storage.values);
       const next = bundle("r2");
-      next.items[0]!.titleRu = "test-owned large pending row " + "x".repeat(2 * ASYNC_STORAGE_DURABLE_CHUNK_MAX_CHARS);
+      next.items[0]!.titleRu = "test-owned large pending row " + nativeChunkFixtureText('staged-r2',2 * ASYNC_STORAGE_DURABLE_CHUNK_MAX_CHARS);
       failStaging = true;
       let firstStagedChunkCount = 0;
       for (let retry = 0; retry < 4; retry += 1) {
@@ -212,7 +221,7 @@ describe("native AsyncStorage durable fallback", () => {
         expect(firstStagedChunkCount).toBeGreaterThan(1);
         expect(chunkCount).toBe(firstStagedChunkCount);
         for (const [key, value] of committedRecords) {
-          if (!key.includes("__revision_index__")) expect(storage.values.get(key)).toBe(value);
+          if (!key.includes("__revision_index__") && !key.includes("__physical_record_compaction_cursor__")) expect(storage.values.get(key)).toBe(value);
         }
         expect((await store.readBundle("async-storage-estimate"))?.estimateDraftRevisionState?.currentRevisionId).toBe("r1");
       }

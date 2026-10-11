@@ -28,6 +28,7 @@ const SOURCES = [
   "data/estimate-benchmarks/fixtures/knauf-interior-plaster-conditional-composition-five-parents-s27-63.json",
   "src/lib/platform/estimateRevisionDurableStore.asyncStorage.ts",
   "tests/aiEstimateV4/estimateRevisionAsyncStorageCapacityRecovery.contract.test.ts",
+  "tests/aiEstimateV4/estimateRevisionAsyncStorageFallback.contract.test.ts",
   "src/features/consumerRepair/ConsumerRepairRequestChrome.tsx",
   "src/features/consumerRepair/ConsumerRepairRequestScreenView.tsx",
   "tests/requestEstimate/incompleteCanonicalEstimateReadiness.contract.test.tsx",
