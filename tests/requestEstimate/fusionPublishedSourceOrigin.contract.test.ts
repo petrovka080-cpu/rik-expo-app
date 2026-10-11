@@ -1,5 +1,6 @@
 import envelope from './fixtures/fusionPublishedSourceOriginS2758.json';
 import originalRelease from './fixtures/fusionPublishedSourceReleaseS2758.json';
+import inheritedNodes from './fixtures/fusionPublishedManifestChainS2758.json';
 import { parent, target } from './fixtures/fusionPolicySuccessorFixtureS2758';
 import { fusionBenchDefinitionS2758 } from '../../src/lib/estimate/v4/fusionBenchPreparedConcreteS2758';
 import { canonicalFusionPublishedLegacyOriginSourceBindingS2758 as legacy,
@@ -33,6 +34,31 @@ test('binds the exact real legacy SQL definition, original release and server-ow
   const packet = parent();
   expect(packet.expectedReleaseId).not.toBe(originalRelease.id);
   expect(legacy({ packet, originalSourceRelease: clone(originalRelease) })?.mode).toBe('LEGACY');
+});
+
+test('an older revision pin uses the exact verified inherited publication-parent chain', () => {
+  const input = successor(), publicationParent = { packet: clone(input.from), originalSourceRelease: clone(originalRelease), nodes: clone(inheritedNodes.chain) };
+  const originalNode = inheritedNodes.chain[inheritedNodes.chain.length - 1];
+  input.from = { ...input.from, expectedReleaseId: originalRelease.id, manifest: clone(originalNode.manifest) };
+  expect(adoption(input)).toBeNull();
+  expect(adoption({ ...input, publicationParent })).not.toBeNull();
+  const wrong = clone(publicationParent);
+  wrong.nodes[wrong.nodes.length - 1].manifest.entry_sha256 = 'f'.repeat(64);
+  expect(adoption({ ...input, publicationParent: wrong })).toBeNull();
+  const brokenMiddle = clone(publicationParent);
+  brokenMiddle.nodes[1].aggregate.manifest_sha256 = 'e'.repeat(64);
+  expect(adoption({ ...input, publicationParent: brokenMiddle })).toBeNull();
+  const wrongParent = { ...clone(publicationParent), packet: { ...publicationParent.packet, expectedReleaseId: originalRelease.id } };
+  expect(adoption({ ...input, publicationParent: wrongParent })).toBeNull();
+  input.from.manifest.entry_sha256 = 'e'.repeat(64);
+  expect(adoption({ ...input, publicationParent })).toBeNull();
+});
+
+test('a sibling legacy pin absent from the verified publication-parent chain cannot migrate', () => {
+  const input = successor(), publicationParent = { packet: clone(input.from), originalSourceRelease: clone(originalRelease), nodes: clone(inheritedNodes.chain) };
+  input.from = { ...input.from, expectedReleaseId: '11111111-1111-4111-8111-111111111111' };
+  input.from.manifest.release_id = input.from.expectedReleaseId;
+  expect(adoption({ ...input, publicationParent })).toBeNull();
 });
 
 test('binds a complete test-only successor declaration to its own SQL schemas and original parent', () => {

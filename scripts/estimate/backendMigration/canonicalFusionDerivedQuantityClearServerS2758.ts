@@ -26,8 +26,12 @@ export async function admitCanonicalFusionDerivedQuantityClearServerS2758(client
   const from = await readSource(client, parent.release_id, identity);
   const to = await readSource(client, input.targetReleaseId, identity);
   if (parent.definition_version_id !== from.packet.definition.id) throw failure();
+  const publicationParent = to.originalSourceRelease.parent_release_id === from.packet.expectedReleaseId
+    ? undefined : await readSource(client, to.originalSourceRelease.parent_release_id, identity);
   const sourceBindings = origins({ from: from.packet, fromOriginalSourceRelease: from.originalSourceRelease,
-    to: to.packet, toOriginalSourceRelease: to.originalSourceRelease });
+    to: to.packet, toOriginalSourceRelease: to.originalSourceRelease,
+    publicationParent: publicationParent && { packet: publicationParent.packet, originalSourceRelease: publicationParent.originalSourceRelease,
+      nodes: publicationParent.manifestNodes } });
   const admission = admit({ ...input, parent, sourceBindings,
     parentRouteBindings: from.packet.priceBindings, targetRouteBindings: to.packet.priceBindings });
   if (!admission) throw failure();

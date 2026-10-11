@@ -5,6 +5,8 @@ import { canonicalFusionPublishedSourceProjectionS2758,
   type CanonicalFusionPublishedSourcePacketS2758 as Packet } from './canonicalFusionPublishedSourcePacketS2758';
 import { type CanonicalDerivedQuantitySourceBindingV1 } from './canonicalDerivedQuantityClearEvidenceV1';
 import { canonicalEstimateStableJson } from './canonicalEstimateDeterminism';
+import { canonicalFusionPublishedManifestChainMatchesS2758 as chainMatches,
+  type CanonicalFusionPublishedManifestNodeS2758 as ManifestNode } from './canonicalFusionPublishedManifestChainS2758';
 
 type Row = Readonly<Record<string, any>>;
 const CATALOG = 'canonical-work:master:glasdon_fusion_bench_prepared_concrete_standard';
@@ -91,14 +93,24 @@ export function canonicalFusionPublishedPolicyAdoptionOriginBindingsS2758(input:
   fromOriginalSourceRelease: unknown;
   to: Packet;
   toOriginalSourceRelease: unknown;
+  publicationParent?: Readonly<{ packet: Packet; originalSourceRelease: unknown; nodes: readonly ManifestNode[] }>;
 }): Readonly<{ from: CanonicalDerivedQuantitySourceBindingV1; to: CanonicalDerivedQuantitySourceBindingV1 }> | null {
   try {
     const from = canonicalFusionPublishedLegacyOriginSourceBindingS2758({ packet: input.from,
       originalSourceRelease: input.fromOriginalSourceRelease });
     const p = input.to, r = input.toOriginalSourceRelease;
     if (!from || !sourceReleaseMatches(p, r) || p.expectedReleaseId !== r.id
-      || r.parent_release_id !== input.from.expectedReleaseId
       || !Object.hasOwn(r.metadata, 'masterSingleDefinitionSourceOriginV1')) return null;
+    if (r.parent_release_id !== input.from.expectedReleaseId) {
+      const parent = input.publicationParent;
+      if (!parent || parent.packet.expectedReleaseId !== r.parent_release_id
+        || parent.packet.definition.id !== input.from.definition.id
+        || parent.packet.baseline.id !== input.from.baseline.id
+        || !canonicalFusionPublishedLegacyOriginSourceBindingS2758(parent)
+        || !chainMatches(parent)
+        || !parent.nodes.some(node => node.release.id === input.from.expectedReleaseId
+          && canonicalEstimateStableJson(node.manifest) === canonicalEstimateStableJson(input.from.manifest))) return null;
+    }
     const origin = r.metadata.masterSingleDefinitionSourceOriginV1;
     if (!isRow(origin) || !isRow(origin.envelope) || origin.envelope.contract !== CONTRACT
       || origin.envelope.parentReleaseId !== r.parent_release_id

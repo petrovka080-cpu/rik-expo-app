@@ -25,7 +25,7 @@ export async function assertCanonicalFusionSourceTransactionS2758(client: Pick<P
  * aggregate replaces these DB queries. This reader never grants command rights. */
 export async function readCanonicalFusionPublishedSourceS2758(client: Pick<PoolClient, 'query'>,
   pinnedReleaseId: string, expectedTransaction?: CanonicalFusionSourceTransactionIdentityS2758): Promise<{
-    packet: Packet; originalSourceRelease: Record<string, any>; transactionIdentity: CanonicalFusionSourceTransactionIdentityS2758 }> {
+    packet: Packet; originalSourceRelease: Record<string, any>; transactionIdentity: CanonicalFusionSourceTransactionIdentityS2758; manifestNodes: readonly Node[] }> {
   if (!UUID.test(pinnedReleaseId)) throw failure();
   const isolation = await assertCanonicalFusionSourceTransactionS2758(client, expectedTransaction);
   // An isolation setting alone also occurs in autocommit. Every actual read
@@ -88,5 +88,5 @@ export async function readCanonicalFusionPublishedSourceS2758(client: Pick<PoolC
     releaseId = release.parent_release_id;
   }
   if (!originalSourceRelease || !canonicalFusionPublishedManifestChainMatchesS2758({ packet, originalSourceRelease, nodes })) throw failure();
-  return { packet, originalSourceRelease, transactionIdentity: isolation };
+  return { packet, originalSourceRelease, transactionIdentity: isolation, manifestNodes: nodes };
 }
