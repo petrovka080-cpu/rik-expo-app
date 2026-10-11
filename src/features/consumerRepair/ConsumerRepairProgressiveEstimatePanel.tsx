@@ -59,6 +59,7 @@ import { pickFileAny } from "../../lib/filePick";
 import { logger } from "../../lib/logger";
 import { safeJsonParseValue } from "../../lib/format";
 import { getCanonicalEstimateCatalogItem, getCanonicalEstimateRevision } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
+import { jubileeParameterGroups, jubileeParameterWording } from './consumerJubileeParameterPresentation';
 
 const LEGACY_ASPHALT_WORK_ID = "asphalt_concrete_pavement";
 
@@ -269,7 +270,8 @@ export function canonicalConsumerParameterPlaceholder(input: {
   if (input.parameter?.source === "ASSUMED" && input.baselineDisplay.trim()) {
     return `Предварительно принято: ${input.baselineDisplay.trim()}${validatedRange ? ` · ${validatedRange.toLocaleLowerCase("ru-RU")}` : ""}`;
   }
-  if (validatedRange) return `${validatedRange}. Источник и область применения доступны по «i».`;
+  const guide = String(input.guideShortRu ?? "").trim();
+  if (validatedRange) return `${validatedRange}. ${guide || 'Источник и область применения доступны по «i».'}`;
 
   const parameterId = input.parameter?.parameterId ?? "";
   const valueType = input.parameter?.valueType;
@@ -278,8 +280,9 @@ export function canonicalConsumerParameterPlaceholder(input: {
   if (constructionExample) {
     return `${constructionExample} — укажите значение из проекта или спецификации, не применяйте пример как норму.`;
   }
+  if (guide && !/^по проекту\.?$/iu.test(guide)) return guide;
   if (/(?:reference|drawing|schedule|confirmation|approval|certificate|document)(?:_|$)/iu.test(parameterId)) {
-    return "Введите номер или название документа, например «КЖ-12, лист 4»; если документа нет, поле не должно блокировать предварительный расчёт.";
+    return "Укажите документ или результат проверки, который подтверждает эти данные. Если их нет, оставьте поле для уточнения.";
   }
   if (/(?:location|zone|section|segment|area_name)(?:_|$)/iu.test(parameterId)) {
     return "Укажите конкретный участок, например «оси А–Б, участок 1».";
@@ -290,8 +293,6 @@ export function canonicalConsumerParameterPlaceholder(input: {
   if (valueType === "number") {
     return `Введите подтверждённое число${unit ? `, ${unit}` : ""}. Где взять: обмер, чертёж или ведомость объёмов.`;
   }
-  const guide = String(input.guideShortRu ?? "").trim();
-  if (guide && !/^по проекту\.?$/iu.test(guide)) return guide;
   return "Введите конкретное значение из обмера, чертежа или спецификации; не указывайте наугад.";
 }
 
@@ -325,11 +326,11 @@ function canonicalConsumerParameterSourceHint(
     return "паспорт/ППР";
   }
   if (/(?:price|cost|tariff|quote)/iu.test(parameterId)) return "из КП/прайса";
-  if (/(?:distance|haul|route)/iu.test(parameterId)) return "маршрут/КП";
+  if (/(?:haul|route|delivery_distance|transport_distance)/iu.test(parameterId)) return "маршрут/КП";
   if (/(?:rate|consumption|coverage|yield)/iu.test(parameterId)) {
     return parameter?.normativeSource ? "норма по «i»" : "паспорт/проект";
   }
-  if (/(?:area|volume|length|width|height|depth|thickness|diameter|dimension|perimeter)/iu.test(parameterId)) {
+  if (/(?:area|volume|length|width|height|depth|thickness|diameter|dimension|perimeter|distance)/iu.test(parameterId)) {
     return "чертёж/обмер";
   }
   if (/(?:count|quantity|number|amount)/iu.test(parameterId)) return "проект/ведомость";
@@ -847,6 +848,8 @@ type ParameterDisclosurePanelState = {
   sourceDetailsOpen: boolean;
   automaticDetailsOpen: boolean;
   advancedDetailsOpen: boolean;
+  foundationDetailsOpen: boolean;
+  procurementDetailsOpen: boolean;
   filledOpen: boolean;
   derivedOpen: boolean;
   draftValues: Record<string, string>;
@@ -1156,6 +1159,8 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     sourceDetailsOpen: false,
     automaticDetailsOpen: false,
     advancedDetailsOpen: false,
+    foundationDetailsOpen: false,
+    procurementDetailsOpen: false,
     filledOpen: false,
     derivedOpen: false,
     draftValues: {},
@@ -1683,10 +1688,12 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     const editableInPlace = paramEditorEnabled && card.editable;
     const guideExpanded = this.state.expandedGuideDetails[card.key] === true;
     const editorValue = rawValue;
+    const wording = jubileeParameterWording(this.props.canonicalParameterSession?.workPassportId, card.key);
+    const label = wording?.label ?? card.labelRu;
     const placeholder = canonicalConsumerParameterPlaceholder({
       parameter: canonicalParameter,
       baselineDisplay: meta,
-      guideShortRu: card.guideShortRu,
+      guideShortRu: wording?.guide ?? card.guideShortRu,
       unitLabel: card.unitRu,
     });
     const applicationValueStatus = card.missing
@@ -1709,12 +1716,12 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
             style={styles.parameterLabel}
             testID={card.missing ? `request-estimate-missing-param-${card.key}` : undefined}
           >
-            {`№ ${parameterOrdinal}. ${card.labelRu}`}{card.missing && actionLabel ? " *" : ""}
+            {`${wording ? '' : `№ ${parameterOrdinal}. `}${label}`}{card.missing && actionLabel ? " *" : ""}
           </Text>
           {editableInPlace ? (
             <InlineParamEditor
               paramKey={card.key}
-              label={card.labelRu}
+              label={label}
               inputKind={card.inputKind}
               value={editorValue}
               unitLabel={card.unitRu}
@@ -1723,7 +1730,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
               hint={validationHint}
               choices={card.choices}
               guideShortRu={placeholder}
-              embeddedGuideRu={canonicalConsumerParameterInlineGuide({
+              embeddedGuideRu={wording?.source ?? canonicalConsumerParameterInlineGuide({
                 parameter: canonicalParameter,
                 baselineValue: baseline,
                 guideKind: card.guideKind,
@@ -1735,7 +1742,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
           ) : <Text style={styles.parameterMeta}>{meta}</Text>}
           {card.unitRu ? <Text style={styles.compactParameterUnit}>{card.unitRu}</Text> : null}
           <Pressable
-            accessibilityLabel={`Источник параметра: ${card.labelRu}`}
+            accessibilityLabel={`Источник параметра: ${label}`}
             accessibilityRole="button"
             onPress={() => this.toggleGuideDetails(card.key)}
             style={styles.guideInfoButton}
@@ -1744,6 +1751,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
             <Text style={styles.guideInfoButtonText}>i</Text>
           </Pressable>
         </View>
+        {wording?.source ? <Text style={styles.parameterMeta} testID={`editable-param-explanation-${card.key}`}>{placeholder}</Text> : null}
         {applicationValueStatus ? (
           <Text
             style={styles.parameterMeta}
@@ -1796,6 +1804,9 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       optional: 2,
     } as const;
     const canonicalSession = this.editableCanonicalParameterSession();
+    const jubileeGroups = jubileeParameterGroups(canonicalSession?.workPassportId, cards);
+    const unfilled = (group: AiEstimateParameterCard[]) => group.filter(card =>
+      !this.initialEditValue(card).trim()).length;
     const canonicalBlockingParameterIds = new Set(canonicalSession?.blockingMissingParameterIds ?? []);
     const initialCanonicalCalculationBlocked =
       canonicalSession?.status === "BLOCKING_REQUIRED";
@@ -1884,7 +1895,9 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       <View style={styles.panelHeader}>
         <Text style={styles.panelTitle}>Исходные данные расчёта</Text>
         <Text style={styles.panelMeta}>
-          {blockingMissingCount > 0
+          {jubileeGroups
+            ? 'Можно сохранить известные данные сейчас, а остальные уточнить позже. Пустые поля не считаются подтверждёнными.'
+            : blockingMissingCount > 0
             ? `Нужно уточнить: ${blockingMissingCount} обязательных ${pluralizeRu(blockingMissingCount, "параметр", "параметра", "параметров")}`
             : contractMissingCount > 0
               ? `До полного состава и подтверждения: ${contractMissingCount} обязательных ${pluralizeRu(contractMissingCount, "параметр", "параметра", "параметров")}.`
@@ -2024,7 +2037,34 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
             : "Дополнительные пользовательские параметры для этой работы не требуются."}
         </Text>
       ) : null}
-      {visibleMissingCards.length > 0 ? (
+      {jubileeGroups ? <>
+        <View style={styles.parameterGroup} testID="request-estimate-basic-parameters">
+          <Text style={styles.groupTitle}>Урны и крепёж</Text>
+          <Text style={styles.parameterMeta}>Выбрана урна Jubilee110 со стальным вкладышем 110 л. Исполнение и состав поставки нужно проверить по вашим данным.</Text>
+          {jubileeGroups.basic.map(card => renderParameter(card, card.missing ? 'Уточнить' : ''))}
+        </View>
+        {(['foundation', 'procurement'] as const).map(group => {
+          const groupCards = jubileeGroups[group];
+          const missing = unfilled(groupCards);
+          const open = group === 'foundation' ? this.state.foundationDetailsOpen : this.state.procurementDetailsOpen;
+          const title = group === 'foundation' ? 'Проверка бетонного основания' : 'Уточнить закупку';
+          return groupCards.length ? <View key={group} style={styles.parameterGroup} testID={`request-estimate-${group}-parameters`}>
+            <Pressable accessibilityRole="button" accessibilityState={{ expanded: open }}
+              onPress={() => this.setState(state => ({
+                foundationDetailsOpen: group === 'foundation' ? !state.foundationDetailsOpen : state.foundationDetailsOpen,
+                procurementDetailsOpen: group === 'procurement' ? !state.procurementDetailsOpen : state.procurementDetailsOpen,
+              }))}
+              style={styles.inlineToggle} testID={`request-estimate-${group}-parameters-toggle`}>
+              <Text style={styles.groupTitle}>{open ? 'Скрыть: ' : ''}{title}{missing ? ` — осталось уточнить ${missing}` : ''}</Text>
+            </Pressable>
+            <Text style={styles.parameterMeta}>{group === 'foundation'
+              ? missing ? 'Пригодность основания для этого монтажа ещё не подтверждена. Нужны данные фактического бетона; требования инструкции не заменяют замеры.' : 'Поля основания заполнены. Проверьте значения; новые правки будут учтены после «Применить».'
+              : 'Наличие, запас и упаковка уточняют заказ. Это не количество устанавливаемых урн. Если данных нет, оставьте поля пустыми: количество к покупке пока не подтверждено.'}</Text>
+            {open ? groupCards.map(card => renderParameter(card, card.missing ? 'Уточнить' : '')) : null}
+          </View> : null;
+        })}
+      </> : null}
+      {!jubileeGroups && visibleMissingCards.length > 0 ? (
         <View style={styles.parameterGroup} testID="request-estimate-visible-missing-parameters">
           {visibleMissingCards.some((card) => card.clarificationTier === "critical") ? (
             <Text style={styles.groupTitle}>Критически необходимо уточнить</Text>
@@ -2052,7 +2092,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
           ) : null}
         </View>
       ) : null}
-      {filledCards.length > 0 ? (
+      {!jubileeGroups && filledCards.length > 0 ? (
         <View style={styles.parameterGroup} testID="request-estimate-filled-parameters">
           <Text style={styles.groupTitle}>Заполнено</Text>
           {filledCards.slice(0, 6).map((card) => renderParameter(card, ""))}
@@ -2073,7 +2113,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
           ) : null}
         </View>
       ) : null}
-      {advancedCards.length > 0 ? (
+      {!jubileeGroups && advancedCards.length > 0 ? (
         <View style={styles.parameterGroup} testID="request-estimate-advanced-parameters">
           <Pressable accessibilityRole="button" onPress={() => this.setState(state => ({ advancedDetailsOpen: !state.advancedDetailsOpen }))}
             style={styles.inlineToggle} testID="request-estimate-advanced-parameters-toggle">

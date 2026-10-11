@@ -20,6 +20,22 @@ jest.mock("@expo/vector-icons", () => ({
 }));
 
 describe("InlineParamEditor R3 parameter guide", () => {
+  it('uses the authored object guidance before a generic document or specification example', () => {
+    for (const parameterId of ['prepared_foundation_acceptance_reference', 'actual_bin_supply_specification']) {
+      expect(canonicalConsumerParameterPlaceholder({
+        parameter: { parameterId, valueType: 'string', source: 'USER_EXPLICIT' } as never,
+        baselineDisplay: '', guideShortRu: 'Проверьте фактическое бетонное основание и укажите результат проверки.',
+      })).toBe('Проверьте фактическое бетонное основание и укажите результат проверки.');
+    }
+    expect(canonicalConsumerParameterInlineGuide({
+      parameter: { parameterId: 'minimum_anchor_edge_distance_mm', source: 'PROJECT_SPECIFIC' } as never,
+      baselineValue: '', guideKind: 'MEASUREMENT_RULE',
+    })).toBe('чертёж/обмер');
+    expect(canonicalConsumerParameterInlineGuide({
+      parameter: { parameterId: 'delivery_distance_km', source: 'PROJECT_SPECIFIC' } as never,
+      baselineValue: '', guideKind: 'MEASUREMENT_RULE',
+    })).toBe('маршрут/КП');
+  });
   it("keeps an application profile value filled, editable and visibly sourced", () => {
     expect(canonicalConsumerEditableFieldValue({
       cardValue: 0.12,
