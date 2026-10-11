@@ -4,13 +4,14 @@ import {estimateDeterministicHash} from '../estimateDeterministicHash';
 import {isCanonicalEstimateSourceManagedParameter,isCanonicalEstimateUserEditableParameter} from '../backendPlatform/canonicalEstimateParameterSemantics';
 import {repairS2763Pvc15CleanerConsumerMode} from '../../../../scripts/estimate/r4a13/s2763Pvc15CleanerOverlay';
 import {buildConsumerCanonicalPrecompileParameterSession} from '../../../features/consumerRepair/consumerCanonicalParameterEditor';
+import type {PurchaseGroupRepresentative} from '../../../../scripts/estimate/r4a13/s2732PurchaseGroupOverlay';
 import {pvc15CleanerDefinitionS2763,pvc15CleanerPackS2763 as pack,pvc15CleanerOwnerS2763 as owner,pvc15CleanerPrefixS2763 as prefix} from './pvc15Cleaner472219MaterialS2763';
 const facts={pvc15_cleaner_mode:'Требуется по подтверждённой границе',pvc15_cleaner_product_choice:pack.selectedProductRu,pvc15_cleaner_472219_dirty_area_m2:'40'};
 const compile=(submittedParameters:Record<string,unknown>)=>compileAutomaticConstructionOwnerR1({catalogId:'control:pvc15-cleaner',compilerVersion:pack.contract,primaryMeasureParameterId:'pvc15_cleaner_472219_dirty_area_m2',definition:pvc15CleanerDefinitionS2763(),submittedParameters});
 const value=(r:Awaited<ReturnType<typeof compile>>,id:string)=>r.rows.find(row=>row.row_id===(id==='order'?owner:prefix+':'+id))?.quantity;
 describe('shared exact PVC dirty-surface cleaner within three existing types',()=>{
  test('the actual project-operation enum survives the protected norm guard after forward repair',()=>{
-  const d=pvc15CleanerDefinitionS2763(),target=pack.targets[0],mode=d.parameters.find(p=>p.parameter_id==='pvc15_cleaner_mode')!;
+  const d=pvc15CleanerDefinitionS2763(),target=pack.targets[0],mode=d.parameters.find(p=>p.parameter_id==='pvc15_cleaner_mode')! as PurchaseGroupRepresentative['parameters'][number];
   const guide={guide_kind:'PROJECT_DEFINED',source_role:'PROJECT_DOCUMENTATION',guide_validation_policy:'MANDATORY_BLOCK',source_document:'CONTROL_ONLY_PROJECT_DOCUMENT',source_locator:'CONTROL_ONLY_OPERATION_SCOPE',source_snapshot_hash:'a'.repeat(64)};
   mode.truth_metadata={...mode.truth_metadata,value_source_role:'NORM_REQUIRED_BUT_PROJECT_SELECTED',visibility_role:'USER_INPUT',source_confirmation_required:false,semantic_parameter_key:`${target.catalogId}:pvc15_cleaner_mode`,provenance:{consumer_input_role_v1:'OBJECT_FACT'},resource_branch_consumers:[owner],guide};
   const parent={definition:{catalog_id:target.catalogId,definition_version:target.predecessorVersion+1,source_metadata:{materialSeriesContract:pack.contract}},parameters:d.parameters,formulas:d.formulas,resources:[...d.resources,{row_id:pack.ownershipContract.legacyOwner}],bindings:[],baseline:{},passport:{}};
