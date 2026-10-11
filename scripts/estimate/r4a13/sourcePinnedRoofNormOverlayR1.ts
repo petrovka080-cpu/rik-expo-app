@@ -8,7 +8,8 @@ const hash=(v:unknown)=>createHash('sha256').update(stringifyCanonicalEstimateJs
 export type SourcePinnedRoofNormTargetR1={catalogId:string;predecessorDefinitionId:string;predecessorVersion:number;rowIdPrefix:string;
  preservedOwners:{rowId:string;resourceSpecId:string;costOwnerId:string;unitId:string;formulaId:string}[]};
 export type SourcePinnedRoofNormSeriesR1=SourcePinnedRoofNormPackR1&{targets:SourcePinnedRoofNormTargetR1[];
- legacyDisposition:Record<string,{disposition:string;reasonRu:string;residualTitleRu?:string;includedNormRoles?:string[]}>};
+ legacyDisposition:Record<string,{disposition:string;reasonRu:string;residualTitleRu?:string;includedNormRoles?:string[]}>;
+ protectedAdditionalNeeds?:{key:string;titleRu:string;unitId:string;category:string;reasonRu:string;sourceEvidence:{sha256:string;locator:string;factRu:string}[]}[]};
 
 /** Forward-only source branch over exact parents. Identity preservation and
  * complete legacy obligation mapping are checked independently of prices. */
@@ -36,6 +37,7 @@ export function overlaySourcePinnedRoofNormR1(parent:PurchaseGroupRepresentative
   }};
  add(shared);
  const residualSpecs:AutomaticRowSpec[]=[],residualParameters:{id:string;title:string;valueType:'decimal';unitId:string;kind:'conditional';min:number}[]=[];
+ const sourceGaps=new Map<string,{rowId:string;parameterId:string;key:string;titleRu:string;unitId:string;category:string;reasonRu:string;sourceEvidence:{sha256:string;locator:string;factRu:string}[]}>();
  for(const old of parent.resources){const suffix=old.row_id.slice(target.rowIdPrefix.length),d=pack.legacyDisposition[suffix];if(!d)throw Error('ROOF_NORM_DISPOSITION_MISSING:'+suffix);
   const entry={oldRowId:old.row_id,oldResourceSpecId:old.id,oldCostOwnerId:old.cost_owner_id,oldUnitId:old.unit_id,oldFormulaId:old.formula_id,...d};
   if(d.disposition==='REPLACED_BY_EXACT_NORM'){dispositions.push({...entry,residualRowId:null});continue;}
@@ -44,18 +46,27 @@ export function overlaySourcePinnedRoofNormR1(parent:PurchaseGroupRepresentative
   residualSpecs.push({rowId:id,formulaId:pack.prefix+':formula:remaining:'+suffix,title,unitId:old.unit_id,category:old.row_type,section:'Непокрытые и проектные подработы кровли',expression:parameterId,inclusion:guards.selected,procurement:false,costTreatment:'INFORMATIONAL_SCOPE'});
   dispositions.push({...entry,residualRowId:id,residualParameterId:parameterId});
  }
+ for(const need of pack.protectedAdditionalNeeds??[]){
+  if(!/^[a-z][a-z0-9_]*$/.test(need.key)||!need.titleRu.trim()||!need.reasonRu.trim()||!need.unitId.trim())throw Error('ROOF_SOURCE_GAP_IDENTITY_INVALID');
+  if(!Array.isArray(need.sourceEvidence)||need.sourceEvidence.length===0||need.sourceEvidence.length>8||need.sourceEvidence.some(e=>e.sha256!==source.sha256||!e.locator.trim()||!e.factRu.trim()))throw Error('ROOF_SOURCE_GAP_EVIDENCE_DRIFT');
+  const parameterId='roof_source_gap_'+need.key,rowId=pack.prefix+':source-gap:'+need.key;
+  if(sourceGaps.has(parameterId)||result.parameters.some(p=>p.parameter_id===parameterId)||residualParameters.some(p=>p.id===parameterId))throw Error('ROOF_SOURCE_GAP_PARAMETER_COLLISION');
+  sourceGaps.set(parameterId,{...need,parameterId,rowId});
+  residualParameters.push({id:parameterId,title:need.titleRu,valueType:'decimal',unitId:need.unitId,kind:'conditional',min:0});
+  residualSpecs.push({rowId,formulaId:pack.prefix+':formula:source-gap:'+need.key,title:need.titleRu,unitId:need.unitId,category:need.category,section:'Неподтверждённые ресурсы источника',expression:parameterId,inclusion:guards.selected,procurement:false,costTreatment:'INFORMATIONAL_SCOPE'});
+ }
  const scopeId='roof_open_scope_pending',scopeRowId=pack.prefix+':remaining:scope_pending',scopeReason='Выбор и проверка нормативного состава кровли ещё не завершены. Неизвестная система не включает прежние количества. Прежний общий состав сохраняется только при явном выборе и требует проверки норм.';
  residualParameters.push({id:scopeId,title:'Выбор и проверка состава кровли ещё не завершены',valueType:'decimal',unitId:'set',kind:'conditional',min:0});
  residualSpecs.push({rowId:scopeRowId,formulaId:pack.prefix+':formula:remaining:scope_pending',title:'Выбор и проверка состава кровли ещё не завершены',unitId:'set',category:'service',section:'Проверка выбранного состава',expression:scopeId,procurement:false,costTreatment:'INFORMATIONAL_SCOPE'});
  const residual=buildAutomaticConstructionOwnerR1({contract:pack.contract,semanticOwner:pack.prefix+':remaining',sourceId:source.id,normId:pack.contract+':roof',
   sourceMetadata:{source_title:source.titleRu,source_document_version:source.printedEdition,definition_hash:source.sha256,artifact_sha256:source.sha256,exact_locator:source.locators},applicabilityRu:pack.scopeRu,
   ordinary:[],profile:[],conditional:residualParameters,rows:residualSpecs,deferMissingProjectFactsToRows:true,excludedUnownedAssumptions:pack.remainingScopeRu});
- const guarded={...residual,parameters:residual.parameters.map(p=>{const d=dispositions.find(d=>d.residualParameterId===p.parameter_id),reason=p.parameter_id===scopeId?scopeReason:String(d!.reasonRu),truth=unresolvedApplicationNormTruthR1(p.truth_metadata,reason);
+ const guarded={...residual,parameters:residual.parameters.map(p=>{const d=dispositions.find(d=>d.residualParameterId===p.parameter_id),gap=sourceGaps.get(p.parameter_id),reason=p.parameter_id===scopeId?scopeReason:gap?.reasonRu??String(d!.reasonRu),truth=unresolvedApplicationNormTruthR1(p.truth_metadata,reason);
   return{...p,default_value:null,truth_metadata:{...truth,guide:{...truth.guide as object,guide_short_ru:reason+' Применимость, единицу и количество проверяет приложение по источнику; вводить норму вручную не требуется.',
    verified_at:source.reviewedAt,source_id:source.id,source_title:source.titleRu,source_document_version:source.printedEdition,source_sha256:source.sha256,source_snapshot_hash:source.sha256,source_artifact_sha256:source.sha256,definition_hash:source.sha256,artifact_sha256:source.sha256,source_locator:source.locators,exact_locator:source.locators,
    supporting_sources:pack.sources.filter(s=>s.kind!=='roof').map(s=>({source_id:s.id,source_title:s.titleRu,source_sha256:s.sha256,source_locator:s.locators,verified_at:s.reviewedAt}))}}};}),
-  resources:residual.resources.map(r=>{const d=dispositions.find(d=>d.residualRowId===r.row_id),pending=r.row_id===scopeRowId,reason=pending?scopeReason:String(d!.reasonRu);
-   return{...r,...(pending?{inclusion_ast:{kind:'not',operand:guards.selected}}:{}),source_metadata:{...r.source_metadata,normativeTrace:[],originalObligationLineage:d??{legacyQuantityNormsUnaccepted:true}},
+  resources:residual.resources.map(r=>{const d=dispositions.find(d=>d.residualRowId===r.row_id),gap=[...sourceGaps.values()].find(g=>g.rowId===r.row_id),pending=r.row_id===scopeRowId,reason=pending?scopeReason:gap?.reasonRu??String(d!.reasonRu);
+   return{...r,...(pending?{inclusion_ast:{kind:'not',operand:guards.selected}}:{}),source_metadata:{...r.source_metadata,normativeTrace:[],originalObligationLineage:d??(gap?{protectedPrimarySourceGap:gap,numericQuantityNotAdmitted:true}:{legacyQuantityNormsUnaccepted:true})},
     resource_graph:{...r.resource_graph,publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',nameRu:r.title_ru,sourceTitleRu:r.title_ru,detailsRu:[reason,'Неустановленная потребность не является дополнительной автоматической оплатой.']}}};})};
  for(const p of guarded.parameters){result.parameters.push({...p,ordinal:po++});addedParameterIds.push(p.parameter_id);}add(guarded,true);
  result.baseline.input_values={[pack.systemParameterId]:pack.unknownChoiceRu};result.baseline.input_classification={[pack.systemParameterId]:'VALIDATION_FIXTURE'};
