@@ -7,9 +7,13 @@ import {
   __resetConsumerRepairRequestStoreForTests,
 } from "../../src/lib/consumerRequests";
 import { buildConsumerRepairDraftFromAiEstimateRuntime } from "../../src/lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime";
+import { flushTransactionalConsumerRepairWrites } from "../../src/lib/platform/consumerRepairTransactionalDurableBridge";
 
 describe("platform core v2 consumer repair flow", () => {
-  afterEach(() => __resetConsumerRepairRequestStoreForTests());
+  afterEach(async () => {
+    await flushTransactionalConsumerRepairWrites();
+    __resetConsumerRepairRequestStoreForTests();
+  });
 
   it("rejects legacy mutation and approves an exact canonical-backend revision", () => {
     const legacyAiDraft = buildConsumerRepairDraftFromAiEstimateRuntime({
