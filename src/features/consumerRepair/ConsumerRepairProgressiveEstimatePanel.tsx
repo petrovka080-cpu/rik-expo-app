@@ -58,6 +58,7 @@ import { EstimateRevisionDiff } from "../requests/components/EstimateRevisionDif
 import { pickFileAny } from "../../lib/filePick";
 import { logger } from "../../lib/logger";
 import { safeJsonParseValue } from "../../lib/format";
+import { getCanonicalEstimateCatalogItem, getCanonicalEstimateRevision } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
 
 const LEGACY_ASPHALT_WORK_ID = "asphalt_concrete_pavement";
 
@@ -833,6 +834,7 @@ type ParameterCardProjection = {
 };
 
 type ParameterDisclosurePanelState = {
+  compositionRefresh: { revisionId: string; catalogId: string; sourceReleaseId: string; targetReleaseId: string } | null;
   showAllMissing: boolean;
   sourceDetailsOpen: boolean;
   automaticDetailsOpen: boolean;
@@ -1123,6 +1125,8 @@ export class InlineParamEditor extends React.PureComponent<InlineParamEditorProp
 }
 
 export class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePanelProps, ParameterDisclosurePanelState> {
+  private compositionRefreshGeneration = 0;
+  private compositionRefreshDisposed = false;
   private submittedDraftValues: Record<string, string> | null = null;
   private submittedDirtyKeys: string[] | null = null;
   private submittedParentRevisionId: string | null = null;
@@ -1137,6 +1141,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
   } | null = null;
 
   state: ParameterDisclosurePanelState = {
+    compositionRefresh: null,
     showAllMissing: false,
     sourceDetailsOpen: false,
     automaticDetailsOpen: false,
@@ -1155,11 +1160,17 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
   };
 
   componentDidMount(): void {
+    void this.checkCompositionRefresh();
     if (this.props.canonicalParameterReadinessPending) return;
     this.syncDraftFromProps();
   }
 
   componentDidUpdate(prevProps: ParameterDisclosurePanelProps): void {
+    if (prevProps.revision?.revisionId !== this.props.revision?.revisionId
+      || prevProps.canonicalParameterSession?.workPassportId !== this.props.canonicalParameterSession?.workPassportId
+      || prevProps.canonicalParameterReadinessPending !== this.props.canonicalParameterReadinessPending) {
+      void this.checkCompositionRefresh();
+    }
     // Metadata can arrive after the saved BOQ. Wait for the actual schema before
     // creating a baseline or rebasing retained user input onto a new revision.
     if (this.props.canonicalParameterReadinessPending) return;
@@ -1206,6 +1217,44 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       return;
     }
     this.registerNewlyVisibleCards();
+  }
+
+  componentWillUnmount(): void {
+    this.compositionRefreshDisposed = true;
+    this.compositionRefreshGeneration += 1;
+  }
+
+  private checkCompositionRefresh = async (): Promise<void> => {
+    const revisionId = this.props.revision?.revisionId;
+    const catalogId = this.props.canonicalParameterSession?.workPassportId;
+    const generation = ++this.compositionRefreshGeneration;
+    if (this.refreshingSavedComposition) {
+      this.refreshingSavedComposition = null;
+      this.setState({ applyState: "idle" });
+    }
+    if (this.state.compositionRefresh) this.setState({ compositionRefresh: null });
+    if (this.props.canonicalParameterReadinessPending || !catalogId || !revisionId
+      || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(revisionId)) return;
+    try {
+      const revision = await getCanonicalEstimateRevision(revisionId);
+      if (revision.revisionId !== revisionId || revision.catalogId !== catalogId) return;
+      const catalog = await getCanonicalEstimateCatalogItem(catalogId);
+      if (this.compositionRefreshDisposed || generation !== this.compositionRefreshGeneration
+        || this.props.revision?.revisionId !== revisionId
+        || this.props.canonicalParameterSession?.workPassportId !== catalogId
+        || catalog.catalogId !== catalogId) return;
+      this.setState({ compositionRefresh: { revisionId, catalogId, sourceReleaseId: revision.releaseId, targetReleaseId: catalog.releaseId } });
+    } catch {
+      // An unavailable current release cannot offer a safe composition update.
+      // Reading/editing the immutable saved revision stays independent.
+    }
+  };
+
+  private hasCompositionRefresh(): boolean {
+    const checked = this.state.compositionRefresh;
+    return Boolean(checked && checked.revisionId === this.props.revision?.revisionId
+      && checked.catalogId === this.props.canonicalParameterSession?.workPassportId
+      && checked.sourceReleaseId !== checked.targetReleaseId);
   }
 
   private showAllMissing = () => {
@@ -1369,6 +1418,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
 
   private changeDraftValue = (paramKey: string, rawValue: string): void => {
     if (this.props.canonicalParameterReadinessPending) return;
+    this.refreshingSavedComposition = null;
     const card = this.buildCards().find((candidate) => candidate.key === paramKey);
     let derivedCount: number | null = null;
     if (card?.derivedCountParameterKey && card.structuredGroup) {
@@ -1404,6 +1454,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
   };
 
   private cancelDraftChanges = (): void => {
+    this.refreshingSavedComposition = null;
     this.submittedDraftValues = null;
     this.submittedDirtyKeys = null;
     this.submittedParentRevisionId = null;
@@ -1507,20 +1558,41 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     this.props.onApplyParamBatch?.([]);
   };
 
-  private refreshingSavedComposition = false;
+  private refreshingSavedComposition: symbol | null = null;
   private refreshSavedComposition = async (): Promise<void> => {
     if (this.props.canonicalParameterReadinessPending
       || this.refreshingSavedComposition || this.state.applyState === "pending"
-      || this.dirtyKeys().length > 0 || !this.props.revision || !this.props.onApplyParamBatch) return;
-    this.refreshingSavedComposition = true;
+      || this.dirtyKeys().length > 0 || !this.props.revision || !this.props.onApplyParamBatch
+      || !this.hasCompositionRefresh()) return;
+    const checked = this.state.compositionRefresh!;
+    const generation = this.compositionRefreshGeneration;
+    const apply = this.props.onApplyParamBatch;
+    const operation = Symbol("saved-composition-refresh");
+    const sameSource = () => !this.compositionRefreshDisposed
+      && this.refreshingSavedComposition === operation
+      && !this.props.canonicalParameterReadinessPending
+      && generation === this.compositionRefreshGeneration
+      && this.props.revision?.revisionId === checked.revisionId
+      && this.props.canonicalParameterSession?.workPassportId === checked.catalogId
+      && this.props.onApplyParamBatch === apply;
+    this.refreshingSavedComposition = operation;
     this.setState({ applyState: "pending" });
     try {
-      const applied = await this.props.onApplyParamBatch([]);
-      this.setState({ applyState: applied === false ? "error" : "success" });
+      const catalog = await getCanonicalEstimateCatalogItem(checked.catalogId);
+      if (!sameSource()) return;
+      if (this.dirtyKeys().length > 0 || catalog.catalogId !== checked.catalogId) {
+        this.setState({ applyState: "idle" }); return;
+      }
+      if (catalog.releaseId === checked.sourceReleaseId) {
+        this.setState({ compositionRefresh: { ...checked, targetReleaseId: catalog.releaseId }, applyState: "idle" });
+        return;
+      }
+      const applied = await apply([]);
+      if (sameSource()) this.setState({ applyState: applied === false ? "error" : "success" });
     } catch {
-      this.setState({ applyState: "error" });
+      if (sameSource()) this.setState({ applyState: "error" });
     } finally {
-      this.refreshingSavedComposition = false;
+      if (this.refreshingSavedComposition === operation) this.refreshingSavedComposition = null;
     }
   };
 
@@ -1869,7 +1941,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
           </Pressable>
         </View>
       ) : null}
-      {dirtyCount === 0 && canonicalSession && this.props.revision && this.props.onApplyParamBatch ? (
+      {dirtyCount === 0 && canonicalSession && this.props.revision && this.props.onApplyParamBatch && this.hasCompositionRefresh() ? (
         <View style={styles.batchBar} testID="saved-estimate-composition-refresh-bar">
           <Text style={styles.batchBarText}>
             Обновите состав по актуальной версии работы. Исходные данные сохранятся; прежняя смета останется в истории.
