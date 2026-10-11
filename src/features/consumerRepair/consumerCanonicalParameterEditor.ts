@@ -808,11 +808,12 @@ export async function recalculateConsumerCanonicalEstimate(input: {
   problemText: string;
   patches: ConsumerRepairDraftRevisionParamBatchPatch[];
   rowOverrides?: Record<string, CanonicalEstimateRowOverride>;
-} & ConsumerCanonicalRecalculationConsent): Promise<{ mapping: ForemanAiEstimateDraftMapping; session: CanonicalParameterSession; recovered?: boolean }> {
+} & ConsumerCanonicalRecalculationConsent): Promise<{ mapping: ForemanAiEstimateDraftMapping; session: CanonicalParameterSession; recovered?: boolean; quantityPolicyTransition?: boolean }> {
   const revision = await getCanonicalEstimateRevision(input.revisionId);
-  const { catalog, releaseMigration, recoveredRevision } = await resolveConsumerCanonicalRecalculationCatalog({ ...input, revision, hasNewRowAmendments: Object.keys(input.rowOverrides ?? {}).length > 0, parameterPatchKeys: input.patches.map(patch => patch.paramKey) });
+  const { catalog, releaseMigration, recoveredRevision, quantityClearPreview } = await resolveConsumerCanonicalRecalculationCatalog({ ...input, revision,
+    allowQuantityClearTransition: true, hasNewRowAmendments: Object.keys(input.rowOverrides ?? {}).length > 0, parameterPatchKeys: input.patches.map(patch => patch.paramKey) });
   const rawInputs: Record<string, unknown> = consumerCanonicalInheritedRecalculationInputs(revision, catalog);
-  for (const patch of input.patches) rawInputs[patch.paramKey] = patch.rawValue;
+  if (!quantityClearPreview) for (const patch of input.patches) rawInputs[patch.paramKey] = patch.rawValue;
   const validation = validateCanonicalEstimateParameterInputs({ schema: catalog.parameterSchema, rawInputs });
   const blockingIssues = parameterIssuesBlockingConsumerCanonicalRecalculation({
     issues: blockingCanonicalParameterIssues(catalog, validation.issues),
@@ -830,7 +831,7 @@ export async function recalculateConsumerCanonicalEstimate(input: {
       { code: "INVALID_PARAMETER_INPUT", httpStatus: 400 },
     );
   }
-  const parameters = (releaseMigration
+  const parameters = (quantityClearPreview ? revision.userInputSnapshot : releaseMigration
     ? consumerCanonicalExplicitMigrationParameters(catalog, validation.parameters, rawInputs)
     : consumerCanonicalExplicitAutomaticParameters(catalog, validation.parameters, rawInputs)) as Record<string, CanonicalEstimateParameterInputValue>;
   const requestIdentity = requestIdentityForRecalculation({
@@ -838,11 +839,17 @@ export async function recalculateConsumerCanonicalEstimate(input: {
     catalog,
     problemText: input.problemText,
   });
-  const rowOverrides = { ...revision.amendmentContract.rowOverrides };
+  const rowOverrides: Record<string, CanonicalEstimateRowOverride> = quantityClearPreview
+    ? Object.fromEntries(quantityClearPreview.rows.map(row => [row.rowId, { quantity: null, provenance: { kind: 'manual' } }]))
+    : { ...revision.amendmentContract.rowOverrides };
   for (const [rowId, override] of Object.entries(input.rowOverrides ?? {})) {
     rowOverrides[rowId] = { ...rowOverrides[rowId], ...override };
   }
   const customRows = revision.amendmentContract.customRows;
+  const derivedQuantityClearV1 = quantityClearPreview ? {
+    contractVersion: 'canonical-fusion-derived-quantity-clear/v1' as const, acknowledged: true as const,
+    parentChecksumSha256: quantityClearPreview.parentChecksumSha256, clearedRowIds: quantityClearPreview.rows.map(row => row.rowId),
+  } : undefined;
   input.assertMutationSource?.();
   const result = recoveredRevision ? {
     revision: await getCanonicalEstimateRevision(recoveredRevision.revisionId),
@@ -856,16 +863,18 @@ export async function recalculateConsumerCanonicalEstimate(input: {
         rowOverrides,
         customRows,
         releaseMigration,
+        derivedQuantityClearV1,
       }),
       catalogId: revision.catalogId,
       parentRevisionId: revision.revisionId,
       organizationId: revision.organizationId ?? null,
-      ...requestIdentity,
+      ...(quantityClearPreview ? { sourceRequestText: revision.sourceRequestText!, primaryMeasureParameterId: revision.primaryMeasureParameterId! } : requestIdentity),
       parameters,
       currencyCode: revision.currencyCode,
       rowOverrides,
       customRows,
       ...(releaseMigration ? { releaseMigration } : {}),
+      ...(derivedQuantityClearV1 ? { derivedQuantityClearV1, priceSnapshotIds: revision.priceSnapshotIds } : {}),
     },
   });
   assertConsumerCanonicalChildRevision({ parent: revision, catalog, child: result.revision });
@@ -900,6 +909,7 @@ export async function recalculateConsumerCanonicalEstimate(input: {
   return {
     mapping,
     ...(recoveredRevision ? { recovered: true } : {}),
+    ...(quantityClearPreview ? { quantityPolicyTransition: true } : {}),
     session: buildConsumerCanonicalParameterSession({
       catalog,
       revision: result.revision,
@@ -921,7 +931,7 @@ export async function recalculateAndPersistConsumerCanonicalEstimate(input: {
     draftId: string,
   ) => Promise<ConsumerRepairDraftBundle | null | undefined>;
   recalculate?: typeof recalculateConsumerCanonicalEstimate;
-} & ConsumerCanonicalRecalculationConsent): Promise<{ session: CanonicalParameterSession; bundle: ConsumerRepairDraftBundle; recovered?: boolean }> {
+} & ConsumerCanonicalRecalculationConsent): Promise<{ session: CanonicalParameterSession; bundle: ConsumerRepairDraftBundle; recovered?: boolean; quantityPolicyTransition?: boolean }> {
   const recalculate = input.recalculate ?? recalculateConsumerCanonicalEstimate;
   const result = await recalculate({
     revisionId: input.revisionId,
@@ -935,7 +945,7 @@ export async function recalculateAndPersistConsumerCanonicalEstimate(input: {
   input.assertMutationSource?.();
   const bundle = await input.persist(result.mapping, input.problemText, input.draftId);
   if (!bundle) throw new Error("CANONICAL_CONSUMER_CHILD_DRAFT_PERSIST_FAILED");
-  return { session: result.session, bundle, ...(result.recovered ? { recovered: true } : {}) };
+  return { session: result.session, bundle, ...(result.recovered ? { recovered: true } : {}), ...(result.quantityPolicyTransition ? { quantityPolicyTransition: true } : {}) };
 }
 
 export async function recalculateConsumerCanonicalCatalogSelection(input: {

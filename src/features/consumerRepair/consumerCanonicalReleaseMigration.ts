@@ -1,10 +1,12 @@
-import { getCanonicalEstimateCatalogItem, getCanonicalEstimateRevisionHistory } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
+import { getCanonicalEstimateCatalogItem, getCanonicalEstimateRevisionHistory, getCanonicalFusionQuantityClearPreviewS2758 } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
+import { canonicalEstimateStableJson as stable } from '../../lib/estimate/backendPlatform/canonicalEstimateDeterminism';
 import {canonicalStoredManualPricesCanMigrate} from '../../lib/estimate/backendPlatform/canonicalManualPriceReleaseMigration';
 import {
   CanonicalEstimateApiError,
   type CanonicalEstimateCatalogItem,
   type CanonicalEstimateRecalculateRequest,
   type CanonicalEstimateRevisionView,
+  type CanonicalFusionQuantityClearPreviewS2758,
 } from "../../lib/estimate/backendPlatform/contracts";
 import {
   canonicalEstimateConsumerInputRole,
@@ -22,6 +24,7 @@ export type ConsumerCanonicalReleaseMigrationPrompt = {
   toDefinitionVersion: number;
   recoveredRevisionId?: string;
   recoveredMeasureRu?: string;
+  quantityClearPreview?: CanonicalFusionQuantityClearPreviewS2758;
 };
 
 export type ConsumerCanonicalRecalculationConsent = {
@@ -113,10 +116,12 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
   revision: CanonicalEstimateRevisionView;
   hasNewRowAmendments?: boolean;
   parameterPatchKeys?: readonly string[];
+  allowQuantityClearTransition?: boolean;
 } & ConsumerCanonicalRecalculationConsent): Promise<{
   catalog: CanonicalEstimateCatalogItem;
   releaseMigration: CanonicalEstimateRecalculateRequest["releaseMigration"];
   recoveredRevision?: CanonicalEstimateRevisionView;
+  quantityClearPreview?: CanonicalFusionQuantityClearPreviewS2758;
 }> {
   input.assertMutationSource?.();
   const catalog = await getCanonicalEstimateCatalogItem(input.revision.catalogId);
@@ -138,10 +143,28 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
       code: "REVISION_RELEASE_MISMATCH", httpStatus: 409,
     });
   }
-  if (input.hasNewRowAmendments
+  let quantityClearPreview: CanonicalFusionQuantityClearPreviewS2758 | undefined;
+  const physicalIds = ['bench-consumed', 'fixing-included', 'fixing-consumed-separate'].map(key => 'fusion-bench-prepared-concrete:' + key);
+  const pinnedIds = physicalIds.filter(id => input.revision.amendmentContract.rowOverrides[id]?.quantity != null);
+  if (input.allowQuantityClearTransition && !input.hasNewRowAmendments && pinnedIds.length
+    && catalog.catalogId === 'canonical-work:master:glasdon_fusion_bench_prepared_concrete_standard') {
+    const { preview } = await getCanonicalFusionQuantityClearPreviewS2758(input.revision.revisionId);
+    if (!preview || preview.contractVersion !== 'canonical-fusion-quantity-clear-preview/v1'
+      || preview.parentRevisionId !== input.revision.revisionId || preview.parentChecksumSha256 !== input.revision.checksumSha256
+      || preview.catalogId !== catalog.catalogId || preview.fromReleaseId !== input.revision.releaseId || preview.toReleaseId !== catalog.releaseId
+      || !Array.isArray(preview.rows) || stable(preview.rows.map(row => row.rowId).sort()) !== stable([...pinnedIds].sort())
+      || preview.rows.some(row => row.unitId !== 'pcs' || !row.titleRu || !/^\d+(?:\.\d+)?$/u.test(row.calculatedQuantity)
+        || row.oldQuantity !== String(input.revision.amendmentContract.rowOverrides[row.rowId]?.quantity))) {
+      throw new CanonicalEstimateApiError('Переход остановлен: сервер не подтвердил точный перечень сбросов. Исходная смета сохранена.', {
+        code: 'FUSION_QUANTITY_CLEAR_REVIEW_REQUIRED', httpStatus: 409,
+      });
+    }
+    quantityClearPreview = preview;
+  }
+  if (!quantityClearPreview && (input.hasNewRowAmendments
     || !canonicalStoredManualPricesCanMigrate({rowOverrides:input.revision.amendmentContract.rowOverrides,
       customRows:input.revision.amendmentContract.customRows,fromBindings:parentCatalog.manualPriceMigrationBindings,toBindings:catalog.manualPriceMigrationBindings,
-      fromExclusionBindings:parentCatalog.manualExclusionMigrationBindings,toExclusionBindings:catalog.manualExclusionMigrationBindings})) {
+      fromExclusionBindings:parentCatalog.manualExclusionMigrationBindings,toExclusionBindings:catalog.manualExclusionMigrationBindings}))) {
     throw new CanonicalEstimateApiError("Переход к новой версии остановлен: совместимость ручных количеств, цен и строк ещё не подтверждена. Исходная смета и все правки сохранены. Новую правку строки можно выполнить после отдельного перехода через параметры.", {
       code: "RELEASE_MIGRATION_ROW_BINDING_REVIEW_REQUIRED", httpStatus: 409,
     });
@@ -152,7 +175,7 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
     });
   }
   const transferable = consumerCanonicalMigrationUserParameters(parentCatalog, input.revision.userInputSnapshot);
-  for (const parameterId of new Set([...Object.keys(transferable), ...(input.parameterPatchKeys ?? [])])) {
+  for (const parameterId of new Set([...Object.keys(transferable), ...(quantityClearPreview ? [] : input.parameterPatchKeys ?? [])])) {
     const source = parentCatalog.parameterSchema.find(schema => schema.parameterId === parameterId);
     const destination = catalog.parameterSchema.find(schema => schema.parameterId === parameterId);
     // Tightening a numeric fact to an integer keeps its meaning and unit.
@@ -174,6 +197,22 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
     }
   }
   const recoveredRevision = await existingMigrationChild(input.revision, catalog);
+  if (quantityClearPreview && recoveredRevision) {
+    const merged = JSON.parse(stable(input.revision.amendmentContract.rowOverrides));
+    for (const row of quantityClearPreview.rows) merged[row.rowId].quantity = null;
+    if (stable(recoveredRevision.amendmentContract.rowOverrides) !== stable(merged)
+      || stable(recoveredRevision.amendmentContract.customRows) !== stable(input.revision.amendmentContract.customRows)
+      || stable(recoveredRevision.userInputSnapshot) !== stable(input.revision.userInputSnapshot)
+      || stable(recoveredRevision.priceSnapshotIds) !== stable(input.revision.priceSnapshotIds)
+      || recoveredRevision.currencyCode !== input.revision.currencyCode
+      || recoveredRevision.sourceRequestText !== input.revision.sourceRequestText
+      || recoveredRevision.sourceRequestHash !== input.revision.sourceRequestHash
+      || recoveredRevision.primaryMeasureParameterId !== input.revision.primaryMeasureParameterId) {
+      throw new CanonicalEstimateApiError('Сохранённый пересчёт отличается от выбранного перехода. Повторная запись остановлена; исходная смета сохранена.', {
+        code: 'FUSION_QUANTITY_CLEAR_RECOVERY_MISMATCH', httpStatus: 409,
+      });
+    }
+  }
   input.assertMutationSource?.();
   const acknowledged = await input.confirmReleaseMigration?.({
     revisionId: input.revision.revisionId,
@@ -182,6 +221,7 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
     toReleaseId: catalog.releaseId,
     fromDefinitionVersion: parentCatalog.definitionVersion,
     toDefinitionVersion: catalog.definitionVersion,
+    ...(quantityClearPreview ? { quantityClearPreview } : {}),
     ...(recoveredRevision ? {
       recoveredRevisionId: recoveredRevision.revisionId,
       recoveredMeasureRu: [recoveredRevision.primaryMeasureValue, recoveredRevision.primaryMeasureUnitId].filter(Boolean).join(" "),
@@ -210,6 +250,7 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
       toReleaseId: currentCatalog.releaseId,
     },
     ...(recoveredRevision ? { recoveredRevision } : {}),
+    ...(quantityClearPreview ? { quantityClearPreview } : {}),
   };
 }
 

@@ -1,0 +1,3310 @@
+{
+  "applicability": {
+    "acceptedNewCompleteTypes": 0,
+    "exactManual": "C000/0096",
+    "exactManufacturerProduct": "Glasdon Fusion Bench",
+    "fixingsPerInstalledBench": 4,
+    "fullTechnicalAcceptance": false,
+    "preparedContinuousConcreteOnly": true,
+    "primaryMeasureParameterId": "bench_count"
+  },
+  "binding": {
+    "applicability": {
+      "exactManufacturerProduct": "Glasdon Fusion Bench",
+      "fullTechnicalAcceptance": false,
+      "preparedContinuousConcreteOnly": true
+    },
+    "rowId": "fusion-bench-prepared-concrete:bench-consumed"
+  },
+  "catalogAppend": {
+    "identity": {
+      "denominatorEligible": true,
+      "domain": "landscape",
+      "namespace": "global",
+      "sourceIdentity": "glasdon:fusion-bench:c000-0096:concrete",
+      "titleRu": "Установка готовой скамьи на подготовленное бетонное основание",
+      "workKey": "glasdon_fusion_bench_prepared_concrete_standard"
+    },
+    "searchPlacement": {
+      "adjudicationClass": "EFFECTIVE_WORK",
+      "applicabilityTags": [
+        "FUSION_BENCH",
+        "PREPARED_CONCRETE",
+        "FOUR_FIXINGS"
+      ],
+      "assemblyId": "prepared_concrete_ready_benches_s2758",
+      "breadcrumb": [
+        "Установка готовых скамей на бетонное основание"
+      ],
+      "catalogOrigin": "GLOBAL",
+      "constructionState": "PREPARED_BASE",
+      "domainId": "landscape",
+      "elementType": "WORK",
+      "groupId": "prepared_concrete_ready_benches_s2758",
+      "groupMode": "create",
+      "groupNameRu": "Установка готовых скамей на бетонное основание",
+      "groupOracleDisposition": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "disposition": "EXACT_PHYSICAL_WORK_GROUP"
+      },
+      "independentDisposition": {
+        "classification": "CANONICAL_VISIBLE",
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "exactPhysicalIdentity": true,
+        "manufacturerPhysicalCompositionPartial": true
+      },
+      "membershipOrdinal": 0,
+      "normativeClassifiers": [],
+      "operationKind": "NEW_INSTALLATION",
+      "publicationState": "ADMITTED_BACKEND",
+      "selectable": true,
+      "subsystemId": "prepared_concrete_ready_benches_s2758",
+      "systemId": "landscape",
+      "technologyVariant": "FUSION_PREPARED_CONTINUOUS_CONCRETE",
+      "workFamilyId": "prepared_concrete_ready_benches_s2758"
+    }
+  },
+  "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+  "coreAcceptance": {
+    "acceptedCompleteTypes": 0,
+    "arbitraryComponentPurchases": 0,
+    "fullTechnicalAcceptance": false,
+    "holePriceOwners": 0,
+    "included": [
+      3,
+      8,
+      1
+    ],
+    "separate": [
+      4,
+      8,
+      2
+    ],
+    "shape": [
+      25,
+      13,
+      13
+    ],
+    "status": "GREEN_EXACT_FUSION_COMPOSITION_PARTIAL"
+  },
+  "formulas": [
+    {
+      "ast": {
+        "id": "bench_count",
+        "kind": "parameter"
+      },
+      "ast_sha256": "0f7af6179241af330526ca17cfa7545a587f456c6fc173d957aeb2a33b9c1fad",
+      "expression_source": "bench_count",
+      "formula_id": "fusion-bench-prepared-concrete:formula:bench-consumed",
+      "input_parameter_ids": [
+        "bench_count"
+      ],
+      "output_unit_id": "pcs"
+    },
+    {
+      "ast": {
+        "kind": "binary",
+        "left": {
+          "arguments": [
+            {
+              "kind": "binary",
+              "left": {
+                "arguments": [
+                  {
+                    "kind": "literal",
+                    "value": "0"
+                  },
+                  {
+                    "kind": "binary",
+                    "left": {
+                      "kind": "binary",
+                      "left": {
+                        "id": "bench_count",
+                        "kind": "parameter"
+                      },
+                      "operator": "+",
+                      "right": {
+                        "id": "bench_reserve",
+                        "kind": "parameter"
+                      }
+                    },
+                    "operator": "-",
+                    "right": {
+                      "id": "bench_stock",
+                      "kind": "parameter"
+                    }
+                  }
+                ],
+                "function": "max",
+                "kind": "call"
+              },
+              "operator": "/",
+              "right": {
+                "id": "bench_quantum",
+                "kind": "parameter"
+              }
+            }
+          ],
+          "function": "ceil",
+          "kind": "call"
+        },
+        "operator": "*",
+        "right": {
+          "id": "bench_quantum",
+          "kind": "parameter"
+        }
+      },
+      "ast_sha256": "64377c7278688b92315d26fb8c2fba36b24e675c1a28e0818fa89a623c025fde",
+      "expression_source": "ceil(max(0,bench_count+bench_reserve-bench_stock)/bench_quantum)*bench_quantum",
+      "formula_id": "fusion-bench-prepared-concrete:formula:bench-order",
+      "input_parameter_ids": [
+        "bench_count",
+        "bench_quantum",
+        "bench_reserve",
+        "bench_stock"
+      ],
+      "output_unit_id": "pcs"
+    },
+    {
+      "ast": {
+        "kind": "binary",
+        "left": {
+          "kind": "literal",
+          "value": "4"
+        },
+        "operator": "*",
+        "right": {
+          "id": "bench_count",
+          "kind": "parameter"
+        }
+      },
+      "ast_sha256": "f1c4703238a7ca24688f605dc1a1a8491a88ed739884f63500423daed6716ec5",
+      "expression_source": "4*bench_count",
+      "formula_id": "fusion-bench-prepared-concrete:formula:fixing-included",
+      "input_parameter_ids": [
+        "bench_count"
+      ],
+      "output_unit_id": "pcs"
+    },
+    {
+      "ast": {
+        "kind": "binary",
+        "left": {
+          "kind": "literal",
+          "value": "4"
+        },
+        "operator": "*",
+        "right": {
+          "id": "bench_count",
+          "kind": "parameter"
+        }
+      },
+      "ast_sha256": "f1c4703238a7ca24688f605dc1a1a8491a88ed739884f63500423daed6716ec5",
+      "expression_source": "4*bench_count",
+      "formula_id": "fusion-bench-prepared-concrete:formula:fixing-consumed-separate",
+      "input_parameter_ids": [
+        "bench_count"
+      ],
+      "output_unit_id": "pcs"
+    },
+    {
+      "ast": {
+        "kind": "binary",
+        "left": {
+          "arguments": [
+            {
+              "kind": "binary",
+              "left": {
+                "arguments": [
+                  {
+                    "kind": "literal",
+                    "value": "0"
+                  },
+                  {
+                    "kind": "binary",
+                    "left": {
+                      "kind": "binary",
+                      "left": {
+                        "kind": "binary",
+                        "left": {
+                          "kind": "literal",
+                          "value": "4"
+                        },
+                        "operator": "*",
+                        "right": {
+                          "id": "bench_count",
+                          "kind": "parameter"
+                        }
+                      },
+                      "operator": "+",
+                      "right": {
+                        "id": "fixing_reserve",
+                        "kind": "parameter"
+                      }
+                    },
+                    "operator": "-",
+                    "right": {
+                      "id": "fixing_stock",
+                      "kind": "parameter"
+                    }
+                  }
+                ],
+                "function": "max",
+                "kind": "call"
+              },
+              "operator": "/",
+              "right": {
+                "id": "fixing_quantum",
+                "kind": "parameter"
+              }
+            }
+          ],
+          "function": "ceil",
+          "kind": "call"
+        },
+        "operator": "*",
+        "right": {
+          "id": "fixing_quantum",
+          "kind": "parameter"
+        }
+      },
+      "ast_sha256": "00c584448fda5b71251535894fb1b77f0318e4e1e203904bf221a6fcd408ed9d",
+      "expression_source": "ceil(max(0,4*bench_count+fixing_reserve-fixing_stock)/fixing_quantum)*fixing_quantum",
+      "formula_id": "fusion-bench-prepared-concrete:formula:fixing-order",
+      "input_parameter_ids": [
+        "bench_count",
+        "fixing_quantum",
+        "fixing_reserve",
+        "fixing_stock"
+      ],
+      "output_unit_id": "pcs"
+    },
+    {
+      "ast": {
+        "id": "open_scope_qty_position_mark_reposition",
+        "kind": "parameter"
+      },
+      "ast_sha256": "4701382daaa57a2de9c1517c938c28ab9c26b2b17af9ec354ae3669259cda812",
+      "expression_source": "open_scope_qty_position_mark_reposition",
+      "formula_id": "fusion-bench-prepared-concrete:formula:position-mark-reposition",
+      "input_parameter_ids": [
+        "open_scope_qty_position_mark_reposition"
+      ],
+      "output_unit_id": "man_hour"
+    },
+    {
+      "ast": {
+        "id": "open_scope_qty_drill_clear_seat_tighten",
+        "kind": "parameter"
+      },
+      "ast_sha256": "591f7f7263963bf6fd45549af60e704005d23c426e02d91d80f2c50a0a311d7d",
+      "expression_source": "open_scope_qty_drill_clear_seat_tighten",
+      "formula_id": "fusion-bench-prepared-concrete:formula:drill-clear-seat-tighten",
+      "input_parameter_ids": [
+        "open_scope_qty_drill_clear_seat_tighten"
+      ],
+      "output_unit_id": "man_hour"
+    },
+    {
+      "ast": {
+        "id": "open_scope_qty_drill_and_bit",
+        "kind": "parameter"
+      },
+      "ast_sha256": "5e7b4b8f068346763934b6dcd31cbb42e75bb41baf01f44d03ecfaf92d0f4719",
+      "expression_source": "open_scope_qty_drill_and_bit",
+      "formula_id": "fusion-bench-prepared-concrete:formula:drill-and-bit",
+      "input_parameter_ids": [
+        "open_scope_qty_drill_and_bit"
+      ],
+      "output_unit_id": "machine_hour"
+    },
+    {
+      "ast": {
+        "id": "open_scope_qty_setting_and_tightening_tools",
+        "kind": "parameter"
+      },
+      "ast_sha256": "dca6d9bf3e8fcb3a5c188f6b6c59ff01499902cc0aa253a6dcef8ebcd39fb01d",
+      "expression_source": "open_scope_qty_setting_and_tightening_tools",
+      "formula_id": "fusion-bench-prepared-concrete:formula:setting-and-tightening-tools",
+      "input_parameter_ids": [
+        "open_scope_qty_setting_and_tightening_tools"
+      ],
+      "output_unit_id": ""
+    },
+    {
+      "ast": {
+        "id": "open_scope_qty_hole_cleaning",
+        "kind": "parameter"
+      },
+      "ast_sha256": "16f9271fde9beb40b6e6dfb4c7c6451dd972a761656906d18547e28ce43b78ce",
+      "expression_source": "open_scope_qty_hole_cleaning",
+      "formula_id": "fusion-bench-prepared-concrete:formula:hole-cleaning",
+      "input_parameter_ids": [
+        "open_scope_qty_hole_cleaning"
+      ],
+      "output_unit_id": ""
+    },
+    {
+      "ast": {
+        "id": "open_scope_qty_site_protection_ppe",
+        "kind": "parameter"
+      },
+      "ast_sha256": "53b4946d61167b8df9da105e4b5fa4ad8545ad30e151144fe6eb2a6ac0792715",
+      "expression_source": "open_scope_qty_site_protection_ppe",
+      "formula_id": "fusion-bench-prepared-concrete:formula:site-protection-ppe",
+      "input_parameter_ids": [
+        "open_scope_qty_site_protection_ppe"
+      ],
+      "output_unit_id": ""
+    },
+    {
+      "ast": {
+        "id": "open_scope_qty_delivery_unload_handling",
+        "kind": "parameter"
+      },
+      "ast_sha256": "9267264ab6fd3f0ed2a72e388a8b147c63ebcf6b001b6eb0554d0970100e21eb",
+      "expression_source": "open_scope_qty_delivery_unload_handling",
+      "formula_id": "fusion-bench-prepared-concrete:formula:delivery-unload-handling",
+      "input_parameter_ids": [
+        "open_scope_qty_delivery_unload_handling"
+      ],
+      "output_unit_id": ""
+    },
+    {
+      "ast": {
+        "id": "open_scope_qty_final_inspection_cleanup",
+        "kind": "parameter"
+      },
+      "ast_sha256": "c7739db89c3be16b762cb46d7f6f9a130de8b0bb351a94e6b30e8118c248146f",
+      "expression_source": "open_scope_qty_final_inspection_cleanup",
+      "formula_id": "fusion-bench-prepared-concrete:formula:final-inspection-cleanup",
+      "input_parameter_ids": [
+        "open_scope_qty_final_inspection_cleanup"
+      ],
+      "output_unit_id": ""
+    }
+  ],
+  "head": "471406511d91b4720b907f3ca42d46bac4355283",
+  "locators": [
+    {
+      "excerptSha256": "2e33ce53917955b90af853319322a59449750873cac8632306f92400c8ecabfd",
+      "key": "s2758-fusion-bench-prepared-concrete",
+      "payload": {
+        "controlOnly": {
+          "actual_bench_supply_specification": "CONTROL_ONLY: Glasdon Fusion Bench, 1800×310×425мм, собранная, выбранное исполнение по поставщику; состав подтверждён документом; не данные объекта",
+          "anchor_supply_scope": "Четыре штатных крепления включены в поставку каждой скамьи",
+          "available_concrete_depth_mm": 200,
+          "bench_count": 3,
+          "bench_quantum": 1,
+          "bench_reserve": 0,
+          "bench_stock": 0,
+          "minimum_anchor_edge_distance_mm": 110,
+          "prepared_foundation_acceptance_reference": "CONTROL_ONLY: проект и замеры сплошного готового бетона и расположения коммуникаций; не данные объекта"
+        },
+        "fullTechnicalAcceptance": false,
+        "sourcePack": {
+          "acceptedCompleteTypes": 0,
+          "catalogId": "canonical-work:master:glasdon_fusion_bench_prepared_concrete_standard",
+          "components": {
+            "countPerFixingAssembly": 1,
+            "names": [
+              "Анкерный болт",
+              "Гайка M10",
+              "Малая шайба",
+              "Большая шайба ИЛИ пластина",
+              "Пластиковая шайба"
+            ],
+            "noLargeWasherAndPlateDoubleCount": true,
+            "separatePurchaseOwners": false,
+            "separateResourceRows": false
+          },
+          "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "excludedRu": [
+            "Paving-slab branch",
+            "Grass/soft-ground concrete-in anchors",
+            "Foundation construction, excavation, concrete volume or curing in this prepared-base scenario",
+            "Tamper-resistant covers unless a separately confirmed project/supply option is explicitly added",
+            "Jubilee-bin anchor dimensions or concrete strength limits",
+            "Unrelated UK legislation treated as Kyrgyz normative approval",
+            "No source-backed labour => no KRER newconstruction/altitude coefficient claim"
+          ],
+          "fullTechnicalAcceptance": false,
+          "gaps": [
+            {
+              "category": "labor",
+              "id": "position-mark-reposition",
+              "note": "The19kg product mass is not a crew-size, productivity or lifting-machine norm.",
+              "quantityRule": null,
+              "specificationRu": "Переместить, выставить, разметить, отставить и вернуть готовую скамью",
+              "status": "SOURCE_QUANTITY_GAP",
+              "unitId": "man_hour"
+            },
+            {
+              "category": "labor",
+              "id": "drill-clear-seat-tighten",
+              "note": "Whole operation may become one labour owner if an applicable primary norm is found; never invent times or split an unknown total.",
+              "quantityRule": null,
+              "specificationRu": "Сверление и очистка отверстий, установка крепежа, затяжка и проверка",
+              "status": "SOURCE_QUANTITY_GAP",
+              "unitId": "man_hour"
+            },
+            {
+              "category": "equipment",
+              "id": "drill-and-bit",
+              "quantityRule": null,
+              "specificationRu": "Дрель/перфоратор со сверлом по бетону10мм достаточной рабочей длины",
+              "status": "SOURCE_QUANTITY_AND_PRICE_OWNERSHIP_GAP",
+              "unitId": "machine_hour"
+            },
+            {
+              "category": "tool",
+              "id": "setting-and-tightening-tools",
+              "note": "No arbitrary one kit, one hammer purchase, one torque wrench purchase or hourly rental.",
+              "quantityRule": null,
+              "specificationRu": "Инструмент для посадки крепежа; головка17мм и средство контроля затяжки",
+              "status": "SOURCE_QUANTITY_AND_PRICE_OWNERSHIP_GAP",
+              "unitId": null
+            },
+            {
+              "category": "tool_consumable",
+              "id": "hole-cleaning",
+              "note": "Source requires clear holes but does not specify a universal blow/vacuum/brush consumable rate.",
+              "quantityRule": null,
+              "specificationRu": "Средство удаления остатков сверления из отверстий",
+              "status": "METHOD_AND_RESOURCE_QUANTITY_GAP",
+              "unitId": null
+            },
+            {
+              "category": "safety",
+              "id": "site-protection-ppe",
+              "quantityRule": null,
+              "specificationRu": "Применимые защита рабочей зоны и СИЗ по фактическим условиям",
+              "status": "PROJECT_APPLICABILITY_AND_SOURCE_QUANTITY_GAP",
+              "unitId": null
+            },
+            {
+              "category": "logistics",
+              "id": "delivery-unload-handling",
+              "quantityRule": null,
+              "specificationRu": "Доставка и разгрузка готовых скамей/крепежа с проверкой включения в поставку",
+              "status": "PROJECT_QUANTITY_AND_PRICE_OWNERSHIP_GAP",
+              "unitId": null
+            },
+            {
+              "category": "completion",
+              "id": "final-inspection-cleanup",
+              "note": "Normal installer action cannot be charged again if later included by a whole-operation norm; no such quantitative norm is admitted now.",
+              "quantityRule": null,
+              "specificationRu": "Проверка устойчивости/затяжки, удаление упаковки и пыли, сдача установленного изделия",
+              "status": "COMPLETION_QUANTITY_AND_PRICE_OWNERSHIP_GAP",
+              "unitId": null
+            }
+          ],
+          "materials": [
+            {
+              "consumed": "bench_count",
+              "id": "bench",
+              "nameRu": "Готовая собранная скамья",
+              "possiblePurchaseOwner": "bench-order",
+              "specificationRu": "Glasdon Fusion Bench, фактически выбранное исполнение; поставляется собранной.",
+              "unitId": "pcs"
+            },
+            {
+              "boltGrade": null,
+              "boltLength": null,
+              "componentPurchases": 0,
+              "consumed": "4*bench_count",
+              "id": "ground-fixing-assembly",
+              "nameRu": "Штатный узел крепления скамьи к бетону",
+              "possiblePurchaseOwner": "fixing-order-only-when-separate",
+              "specificationRu": "Совместимый бетонный крепёж для Fusion Bench и C000/0096; узел с болтом, гайкой M10, малой шайбой, большой шайбой ИЛИ пластиной и пластиковой шайбой.",
+              "supplierSKU": null,
+              "unitId": "pcs"
+            }
+          ],
+          "normId": "C000-0096-CONCRETE-FUSION",
+          "physicalOperation": {
+            "holes": "4*bench_count",
+            "payable": false,
+            "quantifiedIn": "Technical source facts/completeness details; not drill hours, consumable wear or a separate paid operation.",
+            "resourceRowRequired": false,
+            "unitId": "pcs"
+          },
+          "scope": {
+            "deliveredAssembled": true,
+            "fourFixingsPerBench": 4,
+            "holeDepthMm": 140,
+            "holeDiameterMm": 10,
+            "maximumRecommendedTorqueNm": 27,
+            "minimumConcreteDepthMm": 200,
+            "minimumEdgeDistanceToFixingAxisMm": 110,
+            "nutDesignation": "M10",
+            "preparedContinuousConcrete": true,
+            "socketMm": 17
+          },
+          "sourceAdmission": {
+            "outlineSha256": "a40fa964de62393bb44b1a5343d06990e0ac6e77cdabd9dae88df932eb19cbc1",
+            "scenarioSha256": "7e3f4a57812973fdacb8de4beaeb2c6c35546fe2a3f0313cb3e67e0dd6e7ae34",
+            "sourcePlanSha256": "325096dec26d068e8d605d886dc49b76c1362fc0bb57a632e140da06ffd50c93"
+          },
+          "sourceId": "glasdon:fusion-bench:c000-0096:concrete",
+          "sources": [
+            {
+              "facts": "Exact assembled product dimensions/mass/materials and direct association to C000/0096 installation instructions.",
+              "path": ".release-runtime/r568/s27-58/review/benches-bins/fusion-bench-product.html",
+              "role": "MANUFACTURER_CURRENT_PRODUCT_IDENTITY_AND_MANUAL_LINK",
+              "sha256": "2403104b12962e9380e3e15337e72bfbbab74d6bf410a80a0be718e2b859925e",
+              "url": "https://www.glasdon.com/intl/fusion-tm-bench"
+            },
+            {
+              "currentProductLinkBytesEqualMirror": true,
+              "edition": "C000/0096 Issue1 June2006",
+              "locators": [
+                "page2 upper concrete-fixing section, steps1–6 and diagram",
+                "page3 alternate soft-ground/tamper-resistant sections inspected only to exclude them",
+                "pages1 and4 edition/document identity"
+              ],
+              "mirrorUrl": "https://gil.glasdon.com/downloads/instructions/C000-0096%20Seating%20Base%20Fix_A4.pdf",
+              "oldDateLimitation": "Age alone is not a current product-match blocker: current manufacturer product page links these exact bytes. Supplier must identify the actual supplied product and compatible fixing option; specification changes cannot be assumed away.",
+              "path": ".release-runtime/r568/s27-58/review/benches-bins/Glasdon-Seating-Base-Fix-current-linked.pdf",
+              "role": "MANUFACTURER_INSTALLATION",
+              "sha256": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+              "url": "https://www.glasdon.com/intl/downloads/instructions/C000-0096%20Seating%20Base%20Fix_A4.pdf"
+            }
+          ],
+          "supplyChoices": [
+            "Четыре штатных крепления включены в поставку каждой скамьи",
+            "Совместимые штатные крепления закупаются отдельно"
+          ],
+          "technicalProductIdentity": {
+            "heightMm": 425,
+            "lengthMm": 1800,
+            "manufacturer": "Glasdon",
+            "massKg": 19,
+            "materials": "Aluminium slats with Vandalex finish; steel frame with Armortec finish; actual supplied finish specified by supplier",
+            "model": "Fusion Bench",
+            "shownIn": "Technical specification, source passport, selected-item detail; never silently broaden to all benches.",
+            "sourceSpecificOnly": true,
+            "widthMm": 310
+          },
+          "titleRu": "Установка готовой скамьи на подготовленное бетонное основание",
+          "userInputs": [
+            {
+              "consumerInputRole": "OBJECT_GEOMETRY",
+              "default": null,
+              "gate": "object",
+              "id": "bench_count",
+              "integer": true,
+              "minimum": 1,
+              "required": true,
+              "requiredWhen": null,
+              "titleRu": "Количество устанавливаемых скамей",
+              "unitId": "pcs",
+              "valueSourceRole": "PROJECT_SPECIFIC_INPUT"
+            },
+            {
+              "consumerInputRole": "OBJECT_FACT",
+              "default": null,
+              "gate": "installation",
+              "guide": "Укажите реальный чертёж, замер или акт для сплошного подготовленного бетонного основания и мест крепления. Учитываются коммуникации в зоне сверления. Это сведения об объекте, не подтверждение чтения инструкции.",
+              "id": "prepared_foundation_acceptance_reference",
+              "required": true,
+              "requiredWhen": null,
+              "titleRu": "Готовое бетонное основание: фактические замеры и подтверждение пригодности",
+              "unitId": null,
+              "valueSourceRole": "PROJECT_SPECIFIC_INPUT"
+            },
+            {
+              "consumerInputRole": "OBJECT_GEOMETRY",
+              "default": null,
+              "gate": "installation",
+              "id": "available_concrete_depth_mm",
+              "minimum": 200,
+              "required": true,
+              "requiredWhen": null,
+              "titleRu": "Фактическая толщина готового бетонного основания",
+              "unitId": "mm",
+              "valueSourceRole": "PROJECT_SPECIFIC_INPUT"
+            },
+            {
+              "consumerInputRole": "OBJECT_GEOMETRY",
+              "default": null,
+              "gate": "installation",
+              "id": "minimum_anchor_edge_distance_mm",
+              "minimum": 110,
+              "required": true,
+              "requiredWhen": null,
+              "titleRu": "Наименьшее фактическое расстояние от оси крепления до края основания",
+              "unitId": "mm",
+              "valueSourceRole": "PROJECT_SPECIFIC_INPUT"
+            },
+            {
+              "consumerInputRole": "OBJECT_FACT",
+              "default": null,
+              "gate": "bench-purchase",
+              "guide": "Точная Fusion Bench, выбранное исполнение и состав поставки. Для включённого крепежа документ подтверждает четыре совместимых узла на каждую скамью.",
+              "id": "actual_bench_supply_specification",
+              "required": true,
+              "requiredWhen": null,
+              "titleRu": "Исполнение и состав фактической поставки скамьи",
+              "unitId": null,
+              "valueSourceRole": "PROJECT_SPECIFIC_INPUT"
+            },
+            {
+              "choices": [
+                "Четыре штатных крепления включены в поставку каждой скамьи",
+                "Совместимые штатные крепления закупаются отдельно"
+              ],
+              "consumerInputRole": "OBJECT_FACT",
+              "default": null,
+              "gate": "fixing-price-ownership",
+              "id": "anchor_supply_scope",
+              "required": true,
+              "requiredWhen": null,
+              "titleRu": "Входит ли штатный крепёж в поставку скамьи",
+              "unitId": null,
+              "valueSourceRole": "PROJECT_SPECIFIC_INPUT"
+            },
+            {
+              "consumerInputRole": "OBJECT_FACT",
+              "default": null,
+              "gate": "bench-purchase",
+              "id": "bench_stock",
+              "integer": true,
+              "minimum": 0,
+              "required": true,
+              "requiredWhen": null,
+              "titleRu": "Пригодные скамьи в наличии",
+              "unitId": "pcs",
+              "valueSourceRole": "PROJECT_SPECIFIC_INPUT"
+            },
+            {
+              "consumerInputRole": "OBJECT_FACT",
+              "default": null,
+              "gate": "bench-purchase",
+              "id": "bench_reserve",
+              "integer": true,
+              "minimum": 0,
+              "required": true,
+              "requiredWhen": null,
+              "titleRu": "Сохраняемый резерв скамей",
+              "unitId": "pcs",
+              "valueSourceRole": "PROJECT_SPECIFIC_INPUT"
+            },
+            {
+              "consumerInputRole": "OBJECT_FACT",
+              "default": null,
+              "gate": "bench-purchase",
+              "id": "bench_quantum",
+              "integer": true,
+              "minimum": 1,
+              "required": true,
+              "requiredWhen": null,
+              "titleRu": "Кратность фактической поставки скамей, шт.",
+              "unitId": "pcs",
+              "valueSourceRole": "PROJECT_SPECIFIC_INPUT"
+            },
+            {
+              "conditionallyRequired": true,
+              "consumerInputRole": "OBJECT_FACT",
+              "default": null,
+              "gate": "bench-purchase",
+              "guide": "Подтвердите точное изделие, состояние и выбранный состав. При включённом крепеже остаток учитывается как полный совместимый комплект из скамьи и четырёх креплений; неполный остаток не вычитается как комплект.",
+              "id": "bench_stock_compatibility_reference",
+              "required": false,
+              "requiredWhen": {
+                "kind": "greater_than",
+                "parameterId": "bench_stock",
+                "value": 0
+              },
+              "semantics": "Optional at top level; required only when canonical requiredWhen evaluates true. Retain actual conditional resource consumer.",
+              "titleRu": "Пригодность и комплектность скамей в наличии",
+              "unitId": null,
+              "valueSourceRole": "CONDITIONAL_PROJECT_FACT"
+            },
+            {
+              "conditionallyRequired": true,
+              "consumerInputRole": "OBJECT_FACT",
+              "default": null,
+              "gate": "fixing-purchase",
+              "guide": "Укажите фактически выбранный совместимый штатный узел для Fusion/C000-0096 целиком. Длина, марка и артикул болта не выводятся из глубины отверстия.",
+              "id": "fixing_supply_specification",
+              "required": false,
+              "requiredWhen": {
+                "kind": "equals",
+                "parameterId": "anchor_supply_scope",
+                "value": "Совместимые штатные крепления закупаются отдельно"
+              },
+              "semantics": "Optional at top level; required only when canonical requiredWhen evaluates true. Retain actual conditional resource consumer.",
+              "titleRu": "Спецификация отдельно поставляемого бетонного крепежа",
+              "unitId": null,
+              "valueSourceRole": "CONDITIONAL_PROJECT_FACT"
+            },
+            {
+              "conditionallyRequired": true,
+              "consumerInputRole": "OBJECT_FACT",
+              "default": null,
+              "gate": "fixing-purchase",
+              "id": "fixing_stock",
+              "integer": true,
+              "minimum": 0,
+              "required": false,
+              "requiredWhen": {
+                "kind": "equals",
+                "parameterId": "anchor_supply_scope",
+                "value": "Совместимые штатные крепления закупаются отдельно"
+              },
+              "semantics": "Optional at top level; required only when canonical requiredWhen evaluates true. Retain actual conditional resource consumer.",
+              "titleRu": "Пригодные узлы крепления в наличии",
+              "unitId": "pcs",
+              "valueSourceRole": "CONDITIONAL_PROJECT_FACT"
+            },
+            {
+              "conditionallyRequired": true,
+              "consumerInputRole": "OBJECT_FACT",
+              "default": null,
+              "gate": "fixing-purchase",
+              "id": "fixing_reserve",
+              "integer": true,
+              "minimum": 0,
+              "required": false,
+              "requiredWhen": {
+                "kind": "equals",
+                "parameterId": "anchor_supply_scope",
+                "value": "Совместимые штатные крепления закупаются отдельно"
+              },
+              "semantics": "Optional at top level; required only when canonical requiredWhen evaluates true. Retain actual conditional resource consumer.",
+              "titleRu": "Сохраняемый резерв узлов крепления",
+              "unitId": "pcs",
+              "valueSourceRole": "CONDITIONAL_PROJECT_FACT"
+            },
+            {
+              "conditionallyRequired": true,
+              "consumerInputRole": "OBJECT_FACT",
+              "default": null,
+              "gate": "fixing-purchase",
+              "id": "fixing_quantum",
+              "integer": true,
+              "minimum": 1,
+              "required": false,
+              "requiredWhen": {
+                "kind": "equals",
+                "parameterId": "anchor_supply_scope",
+                "value": "Совместимые штатные крепления закупаются отдельно"
+              },
+              "semantics": "Optional at top level; required only when canonical requiredWhen evaluates true. Retain actual conditional resource consumer.",
+              "titleRu": "Кратность поставки целых узлов крепления, шт.",
+              "unitId": "pcs",
+              "valueSourceRole": "CONDITIONAL_PROJECT_FACT"
+            },
+            {
+              "conditionallyRequired": true,
+              "consumerInputRole": "OBJECT_FACT",
+              "default": null,
+              "gate": "fixing-purchase",
+              "id": "fixing_stock_compatibility_reference",
+              "required": false,
+              "requiredWhen": {
+                "kind": "and",
+                "operands": [
+                  {
+                    "kind": "equals",
+                    "parameterId": "anchor_supply_scope",
+                    "value": "Совместимые штатные крепления закупаются отдельно"
+                  },
+                  {
+                    "kind": "greater_than",
+                    "parameterId": "fixing_stock",
+                    "value": 0
+                  }
+                ]
+              },
+              "semantics": "Optional at top level; required only when canonical requiredWhen evaluates true. Retain actual conditional resource consumer.",
+              "titleRu": "Пригодность имеющихся узлов крепления",
+              "unitId": null,
+              "valueSourceRole": "CONDITIONAL_PROJECT_FACT"
+            }
+          ],
+          "workKey": "glasdon_fusion_bench_prepared_concrete_standard"
+        }
+      }
+    }
+  ],
+  "masterSha256": "a3de29a5ec2a98a982aec69c7cf091bcd4605c82a1754c3305b6679997281a85",
+  "normId": "C000-0096-CONCRETE-FUSION",
+  "parameters": [
+    {
+      "constraints_json": {
+        "min": 1
+      },
+      "default_value": null,
+      "ordinal": 0,
+      "parameter_id": "bench_count",
+      "required": true,
+      "title_ru": "Количество устанавливаемых скамей",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "MEASUREMENT_RULE",
+          "guide_short_ru": "Количество устанавливаемых скамей: укажите фактическое значение по объекту или поставщику.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "USER_SUPPLIED_PRIMARY_FACT",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-10T14:00:00Z"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "KNOWN_PRIMARY_WORK_SCOPE",
+        "preliminary_compilation_allowed": true,
+        "provenance": {
+          "consumer_input_role_v1": "OBJECT_GEOMETRY"
+        },
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:bench_count",
+        "source_confirmation_required": false,
+        "synthetic": false,
+        "value_source_role": "PROJECT_SPECIFIC_INPUT",
+        "visibility_role": "USER_INPUT"
+      },
+      "unit_id": "pcs",
+      "value_type": "integer"
+    },
+    {
+      "constraints_json": {
+        "maxLength": 1000,
+        "minLength": 1
+      },
+      "default_value": null,
+      "ordinal": 1,
+      "parameter_id": "prepared_foundation_acceptance_reference",
+      "required": true,
+      "title_ru": "Готовое бетонное основание: фактические замеры и подтверждение пригодности",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "PROJECT_DEFINED",
+          "guide_short_ru": "Укажите реальный чертёж, замер или акт для сплошного подготовленного бетонного основания и мест крепления. Учитываются коммуникации в зоне сверления. Это сведения об объекте, не подтверждение чтения инструкции.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-10T14:00:00Z"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "APPROVED_PROJECT_OR_METHOD_STATEMENT",
+        "preliminary_compilation_allowed": true,
+        "provenance": {
+          "consumer_input_role_v1": "OBJECT_FACT"
+        },
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:prepared_foundation_acceptance_reference",
+        "source_confirmation_required": false,
+        "synthetic": false,
+        "value_source_role": "PROJECT_SPECIFIC_INPUT",
+        "visibility_role": "USER_INPUT"
+      },
+      "unit_id": null,
+      "value_type": "text"
+    },
+    {
+      "constraints_json": {
+        "min": 200
+      },
+      "default_value": null,
+      "ordinal": 2,
+      "parameter_id": "available_concrete_depth_mm",
+      "required": true,
+      "title_ru": "Фактическая толщина готового бетонного основания",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "PROJECT_DEFINED",
+          "guide_short_ru": "Фактическая толщина готового бетонного основания: укажите фактическое значение по объекту или поставщику.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-10T14:00:00Z"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "APPROVED_PROJECT_OR_METHOD_STATEMENT",
+        "preliminary_compilation_allowed": true,
+        "provenance": {
+          "consumer_input_role_v1": "OBJECT_GEOMETRY"
+        },
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:available_concrete_depth_mm",
+        "source_confirmation_required": false,
+        "synthetic": false,
+        "value_source_role": "PROJECT_SPECIFIC_INPUT",
+        "visibility_role": "USER_INPUT"
+      },
+      "unit_id": "mm",
+      "value_type": "decimal"
+    },
+    {
+      "constraints_json": {
+        "min": 110
+      },
+      "default_value": null,
+      "ordinal": 3,
+      "parameter_id": "minimum_anchor_edge_distance_mm",
+      "required": true,
+      "title_ru": "Наименьшее фактическое расстояние от оси крепления до края основания",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "PROJECT_DEFINED",
+          "guide_short_ru": "Наименьшее фактическое расстояние от оси крепления до края основания: укажите фактическое значение по объекту или поставщику.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-10T14:00:00Z"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "APPROVED_PROJECT_OR_METHOD_STATEMENT",
+        "preliminary_compilation_allowed": true,
+        "provenance": {
+          "consumer_input_role_v1": "OBJECT_GEOMETRY"
+        },
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:minimum_anchor_edge_distance_mm",
+        "source_confirmation_required": false,
+        "synthetic": false,
+        "value_source_role": "PROJECT_SPECIFIC_INPUT",
+        "visibility_role": "USER_INPUT"
+      },
+      "unit_id": "mm",
+      "value_type": "decimal"
+    },
+    {
+      "constraints_json": {
+        "maxLength": 1000,
+        "minLength": 1
+      },
+      "default_value": null,
+      "ordinal": 4,
+      "parameter_id": "actual_bench_supply_specification",
+      "required": true,
+      "title_ru": "Исполнение и состав фактической поставки скамьи",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "PROJECT_DEFINED",
+          "guide_short_ru": "Точная Fusion Bench, выбранное исполнение и состав поставки. Для включённого крепежа документ подтверждает четыре совместимых узла на каждую скамью.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-10T14:00:00Z"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "APPROVED_PROJECT_OR_METHOD_STATEMENT",
+        "preliminary_compilation_allowed": true,
+        "provenance": {
+          "consumer_input_role_v1": "OBJECT_FACT"
+        },
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:actual_bench_supply_specification",
+        "source_confirmation_required": false,
+        "synthetic": false,
+        "value_source_role": "PROJECT_SPECIFIC_INPUT",
+        "visibility_role": "USER_INPUT"
+      },
+      "unit_id": null,
+      "value_type": "text"
+    },
+    {
+      "constraints_json": {
+        "values": [
+          "Четыре штатных крепления включены в поставку каждой скамьи",
+          "Совместимые штатные крепления закупаются отдельно"
+        ]
+      },
+      "default_value": null,
+      "ordinal": 5,
+      "parameter_id": "anchor_supply_scope",
+      "required": true,
+      "title_ru": "Входит ли штатный крепёж в поставку скамьи",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "PROJECT_DEFINED",
+          "guide_short_ru": "Входит ли штатный крепёж в поставку скамьи: укажите фактическое значение по объекту или поставщику.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-10T14:00:00Z"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "APPROVED_PROJECT_OR_METHOD_STATEMENT",
+        "preliminary_compilation_allowed": true,
+        "provenance": {
+          "consumer_input_role_v1": "OBJECT_FACT"
+        },
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:anchor_supply_scope",
+        "source_confirmation_required": false,
+        "synthetic": false,
+        "value_source_role": "PROJECT_SPECIFIC_INPUT",
+        "visibility_role": "USER_INPUT"
+      },
+      "unit_id": null,
+      "value_type": "enum"
+    },
+    {
+      "constraints_json": {
+        "min": 0
+      },
+      "default_value": null,
+      "ordinal": 6,
+      "parameter_id": "bench_stock",
+      "required": true,
+      "title_ru": "Пригодные скамьи в наличии",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "PROJECT_DEFINED",
+          "guide_short_ru": "Пригодные скамьи в наличии: укажите фактическое значение по объекту или поставщику.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-10T14:00:00Z"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "APPROVED_PROJECT_OR_METHOD_STATEMENT",
+        "preliminary_compilation_allowed": true,
+        "provenance": {
+          "consumer_input_role_v1": "OBJECT_FACT"
+        },
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:bench_stock",
+        "source_confirmation_required": false,
+        "synthetic": false,
+        "value_source_role": "PROJECT_SPECIFIC_INPUT",
+        "visibility_role": "USER_INPUT"
+      },
+      "unit_id": "pcs",
+      "value_type": "integer"
+    },
+    {
+      "constraints_json": {
+        "min": 0
+      },
+      "default_value": null,
+      "ordinal": 7,
+      "parameter_id": "bench_reserve",
+      "required": true,
+      "title_ru": "Сохраняемый резерв скамей",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "PROJECT_DEFINED",
+          "guide_short_ru": "Сохраняемый резерв скамей: укажите фактическое значение по объекту или поставщику.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-10T14:00:00Z"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "APPROVED_PROJECT_OR_METHOD_STATEMENT",
+        "preliminary_compilation_allowed": true,
+        "provenance": {
+          "consumer_input_role_v1": "OBJECT_FACT"
+        },
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:bench_reserve",
+        "source_confirmation_required": false,
+        "synthetic": false,
+        "value_source_role": "PROJECT_SPECIFIC_INPUT",
+        "visibility_role": "USER_INPUT"
+      },
+      "unit_id": "pcs",
+      "value_type": "integer"
+    },
+    {
+      "constraints_json": {
+        "min": 1
+      },
+      "default_value": null,
+      "ordinal": 8,
+      "parameter_id": "bench_quantum",
+      "required": true,
+      "title_ru": "Кратность фактической поставки скамей, шт.",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "PROJECT_DEFINED",
+          "guide_short_ru": "Кратность фактической поставки скамей, шт.: укажите фактическое значение по объекту или поставщику.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-10T14:00:00Z"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "APPROVED_PROJECT_OR_METHOD_STATEMENT",
+        "preliminary_compilation_allowed": true,
+        "provenance": {
+          "consumer_input_role_v1": "OBJECT_FACT"
+        },
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:bench_quantum",
+        "source_confirmation_required": false,
+        "synthetic": false,
+        "value_source_role": "PROJECT_SPECIFIC_INPUT",
+        "visibility_role": "USER_INPUT"
+      },
+      "unit_id": "pcs",
+      "value_type": "integer"
+    },
+    {
+      "constraints_json": {
+        "maxLength": 1000,
+        "minLength": 1,
+        "requiredWhen": {
+          "kind": "greater_than",
+          "parameterId": "bench_stock",
+          "value": 0
+        }
+      },
+      "default_value": null,
+      "ordinal": 9,
+      "parameter_id": "bench_stock_compatibility_reference",
+      "required": false,
+      "title_ru": "Пригодность и комплектность скамей в наличии",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "PROJECT_DEFINED",
+          "guide_short_ru": "Подтвердите точное изделие, состояние и выбранный состав. При включённом крепеже остаток учитывается как полный совместимый комплект из скамьи и четырёх креплений; неполный остаток не вычитается как комплект.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-10T14:00:00Z"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "APPROVED_PROJECT_OR_METHOD_STATEMENT",
+        "preliminary_compilation_allowed": true,
+        "provenance": {
+          "consumer_input_role_v1": "OBJECT_FACT"
+        },
+        "required_when": {
+          "kind": "greater_than",
+          "parameterId": "bench_stock",
+          "value": 0
+        },
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:bench_stock_compatibility_reference",
+        "source_confirmation_required": false,
+        "synthetic": false,
+        "value_source_role": "CONDITIONAL_PROJECT_FACT",
+        "visibility_role": "USER_INPUT"
+      },
+      "unit_id": null,
+      "value_type": "text"
+    },
+    {
+      "constraints_json": {
+        "maxLength": 1000,
+        "minLength": 1,
+        "requiredWhen": {
+          "kind": "equals",
+          "parameterId": "anchor_supply_scope",
+          "value": "Совместимые штатные крепления закупаются отдельно"
+        }
+      },
+      "default_value": null,
+      "ordinal": 10,
+      "parameter_id": "fixing_supply_specification",
+      "required": false,
+      "title_ru": "Спецификация отдельно поставляемого бетонного крепежа",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "PROJECT_DEFINED",
+          "guide_short_ru": "Укажите фактически выбранный совместимый штатный узел для Fusion/C000-0096 целиком. Длина, марка и артикул болта не выводятся из глубины отверстия.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-10T14:00:00Z"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "APPROVED_PROJECT_OR_METHOD_STATEMENT",
+        "preliminary_compilation_allowed": true,
+        "provenance": {
+          "consumer_input_role_v1": "OBJECT_FACT"
+        },
+        "required_when": {
+          "kind": "equals",
+          "parameterId": "anchor_supply_scope",
+          "value": "Совместимые штатные крепления закупаются отдельно"
+        },
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:fixing_supply_specification",
+        "source_confirmation_required": false,
+        "synthetic": false,
+        "value_source_role": "CONDITIONAL_PROJECT_FACT",
+        "visibility_role": "USER_INPUT"
+      },
+      "unit_id": null,
+      "value_type": "text"
+    },
+    {
+      "constraints_json": {
+        "min": 0,
+        "requiredWhen": {
+          "kind": "equals",
+          "parameterId": "anchor_supply_scope",
+          "value": "Совместимые штатные крепления закупаются отдельно"
+        }
+      },
+      "default_value": null,
+      "ordinal": 11,
+      "parameter_id": "fixing_stock",
+      "required": false,
+      "title_ru": "Пригодные узлы крепления в наличии",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "PROJECT_DEFINED",
+          "guide_short_ru": "Пригодные узлы крепления в наличии: укажите фактическое значение по объекту или поставщику.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-10T14:00:00Z"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "APPROVED_PROJECT_OR_METHOD_STATEMENT",
+        "preliminary_compilation_allowed": true,
+        "provenance": {
+          "consumer_input_role_v1": "OBJECT_FACT"
+        },
+        "required_when": {
+          "kind": "equals",
+          "parameterId": "anchor_supply_scope",
+          "value": "Совместимые штатные крепления закупаются отдельно"
+        },
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:fixing_stock",
+        "source_confirmation_required": false,
+        "synthetic": false,
+        "value_source_role": "CONDITIONAL_PROJECT_FACT",
+        "visibility_role": "USER_INPUT"
+      },
+      "unit_id": "pcs",
+      "value_type": "integer"
+    },
+    {
+      "constraints_json": {
+        "min": 0,
+        "requiredWhen": {
+          "kind": "equals",
+          "parameterId": "anchor_supply_scope",
+          "value": "Совместимые штатные крепления закупаются отдельно"
+        }
+      },
+      "default_value": null,
+      "ordinal": 12,
+      "parameter_id": "fixing_reserve",
+      "required": false,
+      "title_ru": "Сохраняемый резерв узлов крепления",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "PROJECT_DEFINED",
+          "guide_short_ru": "Сохраняемый резерв узлов крепления: укажите фактическое значение по объекту или поставщику.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-10T14:00:00Z"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "APPROVED_PROJECT_OR_METHOD_STATEMENT",
+        "preliminary_compilation_allowed": true,
+        "provenance": {
+          "consumer_input_role_v1": "OBJECT_FACT"
+        },
+        "required_when": {
+          "kind": "equals",
+          "parameterId": "anchor_supply_scope",
+          "value": "Совместимые штатные крепления закупаются отдельно"
+        },
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:fixing_reserve",
+        "source_confirmation_required": false,
+        "synthetic": false,
+        "value_source_role": "CONDITIONAL_PROJECT_FACT",
+        "visibility_role": "USER_INPUT"
+      },
+      "unit_id": "pcs",
+      "value_type": "integer"
+    },
+    {
+      "constraints_json": {
+        "min": 1,
+        "requiredWhen": {
+          "kind": "equals",
+          "parameterId": "anchor_supply_scope",
+          "value": "Совместимые штатные крепления закупаются отдельно"
+        }
+      },
+      "default_value": null,
+      "ordinal": 13,
+      "parameter_id": "fixing_quantum",
+      "required": false,
+      "title_ru": "Кратность поставки целых узлов крепления, шт.",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "PROJECT_DEFINED",
+          "guide_short_ru": "Кратность поставки целых узлов крепления, шт.: укажите фактическое значение по объекту или поставщику.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-10T14:00:00Z"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "APPROVED_PROJECT_OR_METHOD_STATEMENT",
+        "preliminary_compilation_allowed": true,
+        "provenance": {
+          "consumer_input_role_v1": "OBJECT_FACT"
+        },
+        "required_when": {
+          "kind": "equals",
+          "parameterId": "anchor_supply_scope",
+          "value": "Совместимые штатные крепления закупаются отдельно"
+        },
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:fixing_quantum",
+        "source_confirmation_required": false,
+        "synthetic": false,
+        "value_source_role": "CONDITIONAL_PROJECT_FACT",
+        "visibility_role": "USER_INPUT"
+      },
+      "unit_id": "pcs",
+      "value_type": "integer"
+    },
+    {
+      "constraints_json": {
+        "maxLength": 1000,
+        "minLength": 1,
+        "requiredWhen": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "equals",
+              "parameterId": "anchor_supply_scope",
+              "value": "Совместимые штатные крепления закупаются отдельно"
+            },
+            {
+              "kind": "greater_than",
+              "parameterId": "fixing_stock",
+              "value": 0
+            }
+          ]
+        }
+      },
+      "default_value": null,
+      "ordinal": 14,
+      "parameter_id": "fixing_stock_compatibility_reference",
+      "required": false,
+      "title_ru": "Пригодность имеющихся узлов крепления",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "PROJECT_DEFINED",
+          "guide_short_ru": "Пригодность имеющихся узлов крепления: укажите фактическое значение по объекту или поставщику.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-10T14:00:00Z"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "APPROVED_PROJECT_OR_METHOD_STATEMENT",
+        "preliminary_compilation_allowed": true,
+        "provenance": {
+          "consumer_input_role_v1": "OBJECT_FACT"
+        },
+        "required_when": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "equals",
+              "parameterId": "anchor_supply_scope",
+              "value": "Совместимые штатные крепления закупаются отдельно"
+            },
+            {
+              "kind": "greater_than",
+              "parameterId": "fixing_stock",
+              "value": 0
+            }
+          ]
+        },
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:fixing_stock_compatibility_reference",
+        "source_confirmation_required": false,
+        "synthetic": false,
+        "value_source_role": "CONDITIONAL_PROJECT_FACT",
+        "visibility_role": "USER_INPUT"
+      },
+      "unit_id": null,
+      "value_type": "text"
+    },
+    {
+      "constraints_json": {
+        "min": 0
+      },
+      "default_value": null,
+      "ordinal": 15,
+      "parameter_id": "open_scope_qty_position_mark_reposition",
+      "required": false,
+      "title_ru": "Переместить, выставить, разметить, отставить и вернуть готовую скамью",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "PROJECT_DEFINED",
+          "guide_short_ru": "Переместить, выставить, разметить, отставить и вернуть готовую скамью: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-02T00:00:00+06:00"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "APPROVED_PROJECT_OR_METHOD_STATEMENT",
+        "preliminary_compilation_allowed": true,
+        "provenance": {
+          "consumer_input_role_v1": "APPLICATION_TECHNICAL"
+        },
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:open_scope_qty_position_mark_reposition",
+        "source_confirmation_required": true,
+        "synthetic": false,
+        "unresolved_norm_reason": "Источник не устанавливает норму ресурса, количество и владельца цены. Это техническая потребность приложения, не поле для ручного ввода нормы.",
+        "value_source_role": "UNRESOLVED_APPLICATION_NORM",
+        "visibility_role": "INTERNAL_ONLY"
+      },
+      "unit_id": "man_hour",
+      "value_type": "decimal"
+    },
+    {
+      "constraints_json": {
+        "min": 0
+      },
+      "default_value": null,
+      "ordinal": 16,
+      "parameter_id": "open_scope_qty_drill_clear_seat_tighten",
+      "required": false,
+      "title_ru": "Сверление и очистка отверстий, установка крепежа, затяжка и проверка",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "PROJECT_DEFINED",
+          "guide_short_ru": "Сверление и очистка отверстий, установка крепежа, затяжка и проверка: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-02T00:00:00+06:00"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "APPROVED_PROJECT_OR_METHOD_STATEMENT",
+        "preliminary_compilation_allowed": true,
+        "provenance": {
+          "consumer_input_role_v1": "APPLICATION_TECHNICAL"
+        },
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:open_scope_qty_drill_clear_seat_tighten",
+        "source_confirmation_required": true,
+        "synthetic": false,
+        "unresolved_norm_reason": "Источник не устанавливает норму ресурса, количество и владельца цены. Это техническая потребность приложения, не поле для ручного ввода нормы.",
+        "value_source_role": "UNRESOLVED_APPLICATION_NORM",
+        "visibility_role": "INTERNAL_ONLY"
+      },
+      "unit_id": "man_hour",
+      "value_type": "decimal"
+    },
+    {
+      "constraints_json": {
+        "min": 0
+      },
+      "default_value": null,
+      "ordinal": 17,
+      "parameter_id": "open_scope_qty_drill_and_bit",
+      "required": false,
+      "title_ru": "Дрель/перфоратор со сверлом по бетону10мм достаточной рабочей длины",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "PROJECT_DEFINED",
+          "guide_short_ru": "Дрель/перфоратор со сверлом по бетону10мм достаточной рабочей длины: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-02T00:00:00+06:00"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "APPROVED_PROJECT_OR_METHOD_STATEMENT",
+        "preliminary_compilation_allowed": true,
+        "provenance": {
+          "consumer_input_role_v1": "APPLICATION_TECHNICAL"
+        },
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:open_scope_qty_drill_and_bit",
+        "source_confirmation_required": true,
+        "synthetic": false,
+        "unresolved_norm_reason": "Источник не устанавливает норму ресурса, количество и владельца цены. Это техническая потребность приложения, не поле для ручного ввода нормы.",
+        "value_source_role": "UNRESOLVED_APPLICATION_NORM",
+        "visibility_role": "INTERNAL_ONLY"
+      },
+      "unit_id": "machine_hour",
+      "value_type": "decimal"
+    },
+    {
+      "constraints_json": {
+        "min": 0
+      },
+      "default_value": null,
+      "ordinal": 18,
+      "parameter_id": "open_scope_qty_setting_and_tightening_tools",
+      "required": false,
+      "title_ru": "Инструмент для посадки крепежа; головка17мм и средство контроля затяжки",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "PROJECT_DEFINED",
+          "guide_short_ru": "Инструмент для посадки крепежа; головка17мм и средство контроля затяжки: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-02T00:00:00+06:00"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "APPROVED_PROJECT_OR_METHOD_STATEMENT",
+        "preliminary_compilation_allowed": true,
+        "provenance": {
+          "consumer_input_role_v1": "APPLICATION_TECHNICAL"
+        },
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:open_scope_qty_setting_and_tightening_tools",
+        "source_confirmation_required": true,
+        "synthetic": false,
+        "unresolved_norm_reason": "Источник не устанавливает норму ресурса, количество и владельца цены. Это техническая потребность приложения, не поле для ручного ввода нормы.",
+        "value_source_role": "UNRESOLVED_APPLICATION_NORM",
+        "visibility_role": "INTERNAL_ONLY"
+      },
+      "unit_id": null,
+      "value_type": "decimal"
+    },
+    {
+      "constraints_json": {
+        "min": 0
+      },
+      "default_value": null,
+      "ordinal": 19,
+      "parameter_id": "open_scope_qty_hole_cleaning",
+      "required": false,
+      "title_ru": "Средство удаления остатков сверления из отверстий",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "PROJECT_DEFINED",
+          "guide_short_ru": "Средство удаления остатков сверления из отверстий: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-02T00:00:00+06:00"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "APPROVED_PROJECT_OR_METHOD_STATEMENT",
+        "preliminary_compilation_allowed": true,
+        "provenance": {
+          "consumer_input_role_v1": "APPLICATION_TECHNICAL"
+        },
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:open_scope_qty_hole_cleaning",
+        "source_confirmation_required": true,
+        "synthetic": false,
+        "unresolved_norm_reason": "Источник не устанавливает норму ресурса, количество и владельца цены. Это техническая потребность приложения, не поле для ручного ввода нормы.",
+        "value_source_role": "UNRESOLVED_APPLICATION_NORM",
+        "visibility_role": "INTERNAL_ONLY"
+      },
+      "unit_id": null,
+      "value_type": "decimal"
+    },
+    {
+      "constraints_json": {
+        "min": 0
+      },
+      "default_value": null,
+      "ordinal": 20,
+      "parameter_id": "open_scope_qty_site_protection_ppe",
+      "required": false,
+      "title_ru": "Применимые защита рабочей зоны и СИЗ по фактическим условиям",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "PROJECT_DEFINED",
+          "guide_short_ru": "Применимые защита рабочей зоны и СИЗ по фактическим условиям: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-02T00:00:00+06:00"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "APPROVED_PROJECT_OR_METHOD_STATEMENT",
+        "preliminary_compilation_allowed": true,
+        "provenance": {
+          "consumer_input_role_v1": "APPLICATION_TECHNICAL"
+        },
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:open_scope_qty_site_protection_ppe",
+        "source_confirmation_required": true,
+        "synthetic": false,
+        "unresolved_norm_reason": "Источник не устанавливает норму ресурса, количество и владельца цены. Это техническая потребность приложения, не поле для ручного ввода нормы.",
+        "value_source_role": "UNRESOLVED_APPLICATION_NORM",
+        "visibility_role": "INTERNAL_ONLY"
+      },
+      "unit_id": null,
+      "value_type": "decimal"
+    },
+    {
+      "constraints_json": {
+        "min": 0
+      },
+      "default_value": null,
+      "ordinal": 21,
+      "parameter_id": "open_scope_qty_delivery_unload_handling",
+      "required": false,
+      "title_ru": "Доставка и разгрузка готовых скамей/крепежа с проверкой включения в поставку",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "PROJECT_DEFINED",
+          "guide_short_ru": "Доставка и разгрузка готовых скамей/крепежа с проверкой включения в поставку: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-02T00:00:00+06:00"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "APPROVED_PROJECT_OR_METHOD_STATEMENT",
+        "preliminary_compilation_allowed": true,
+        "provenance": {
+          "consumer_input_role_v1": "APPLICATION_TECHNICAL"
+        },
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:open_scope_qty_delivery_unload_handling",
+        "source_confirmation_required": true,
+        "synthetic": false,
+        "unresolved_norm_reason": "Источник не устанавливает норму ресурса, количество и владельца цены. Это техническая потребность приложения, не поле для ручного ввода нормы.",
+        "value_source_role": "UNRESOLVED_APPLICATION_NORM",
+        "visibility_role": "INTERNAL_ONLY"
+      },
+      "unit_id": null,
+      "value_type": "decimal"
+    },
+    {
+      "constraints_json": {
+        "min": 0
+      },
+      "default_value": null,
+      "ordinal": 22,
+      "parameter_id": "open_scope_qty_final_inspection_cleanup",
+      "required": false,
+      "title_ru": "Проверка устойчивости/затяжки, удаление упаковки и пыли, сдача установленного изделия",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "PROJECT_DEFINED",
+          "guide_short_ru": "Проверка устойчивости/затяжки, удаление упаковки и пыли, сдача установленного изделия: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-02T00:00:00+06:00"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "APPROVED_PROJECT_OR_METHOD_STATEMENT",
+        "preliminary_compilation_allowed": true,
+        "provenance": {
+          "consumer_input_role_v1": "APPLICATION_TECHNICAL"
+        },
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:open_scope_qty_final_inspection_cleanup",
+        "source_confirmation_required": true,
+        "synthetic": false,
+        "unresolved_norm_reason": "Источник не устанавливает норму ресурса, количество и владельца цены. Это техническая потребность приложения, не поле для ручного ввода нормы.",
+        "value_source_role": "UNRESOLVED_APPLICATION_NORM",
+        "visibility_role": "INTERNAL_ONLY"
+      },
+      "unit_id": null,
+      "value_type": "decimal"
+    },
+    {
+      "constraints_json": {},
+      "default_value": null,
+      "ordinal": 23,
+      "parameter_id": "effective_resource_quantity_fusion_bench_prepared_concrete_bench_order",
+      "required": false,
+      "title_ru": "Принятое количество: Скамья готовая собранная, 1800×310×425 мм",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "effective_resource_quantity_v1": {
+          "sourceRowId": "fusion-bench-prepared-concrete:bench-order",
+          "unitId": "pcs"
+        },
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "PROJECT_DEFINED",
+          "guide_short_ru": "Принятое количество: Скамья готовая собранная, 1800×310×425 мм: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-02T00:00:00+06:00"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "APPROVED_PROJECT_OR_METHOD_STATEMENT",
+        "preliminary_compilation_allowed": false,
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:effective_resource_quantity_fusion_bench_prepared_concrete_bench_order",
+        "source_confirmation_required": true,
+        "synthetic": false,
+        "value_source_role": "COMPILER_DERIVED_RESOURCE_QUANTITY",
+        "visibility_role": "INTERNAL_ONLY"
+      },
+      "unit_id": "pcs",
+      "value_type": "decimal"
+    },
+    {
+      "constraints_json": {},
+      "default_value": null,
+      "ordinal": 24,
+      "parameter_id": "effective_resource_quantity_fusion_bench_prepared_concrete_fixing_order",
+      "required": false,
+      "title_ru": "Принятое количество: Узел крепления скамьи к бетону, гайка M10, шайбы",
+      "truth_metadata": {
+        "contract": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+        "effective_resource_quantity_v1": {
+          "sourceRowId": "fusion-bench-prepared-concrete:fixing-order",
+          "unitId": "pcs"
+        },
+        "guide": {
+          "applicability": "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+          "guide_kind": "PROJECT_DEFINED",
+          "guide_short_ru": "Принятое количество: Узел крепления скамьи к бетону, гайка M10, шайбы: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+          "guide_validation_policy": "MANDATORY_BLOCK",
+          "guide_version": "rik-expo-app.s27-58.fusion-bench-prepared-concrete.v1",
+          "source_document": "glasdon:fusion-bench:c000-0096:concrete",
+          "source_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+          "source_role": "PROJECT_DOCUMENTATION",
+          "source_snapshot_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+          "verified_at": "2026-10-02T00:00:00+06:00"
+        },
+        "hidden_default_forbidden": true,
+        "input_origin_class": "APPROVED_PROJECT_OR_METHOD_STATEMENT",
+        "preliminary_compilation_allowed": false,
+        "runtime_profile_value": false,
+        "semantic_parameter_key": "fusion-bench-prepared-concrete:effective_resource_quantity_fusion_bench_prepared_concrete_fixing_order",
+        "source_confirmation_required": true,
+        "synthetic": false,
+        "value_source_role": "COMPILER_DERIVED_RESOURCE_QUANTITY",
+        "visibility_role": "INTERNAL_ONLY"
+      },
+      "unit_id": "pcs",
+      "value_type": "decimal"
+    }
+  ],
+  "parentReleaseId": "04283371-1e5d-521a-90b2-248f39f0e562",
+  "parentSearchReleaseId": "7d7de415-146b-58f2-9b59-8d1ee383b9c6",
+  "passport": {
+    "canonicalRuName": "Установка готовой скамьи на подготовленное бетонное основание",
+    "excludedScopeRu": [
+      "Paving-slab branch",
+      "Grass/soft-ground concrete-in anchors",
+      "Foundation construction, excavation, concrete volume or curing in this prepared-base scenario",
+      "Tamper-resistant covers unless a separately confirmed project/supply option is explicitly added",
+      "Jubilee-bin anchor dimensions or concrete strength limits",
+      "Unrelated UK legislation treated as Kyrgyz normative approval",
+      "No source-backed labour => no KRER newconstruction/altitude coefficient claim"
+    ],
+    "includedScopeRu": [
+      "Только готовая собранная Glasdon Fusion Bench 1800×310×425мм на сплошном готовом бетоне",
+      "Бетон не менее200мм; ось крепления не ближе110мм к краю; четыре крепления и отверстия на установленную скамью",
+      "Сверло10мм, отверстия140мм, гайкаM10, головка17мм, рекомендуемый максимум27Н·м; это условия операции, не нормы времени",
+      "Штатные болт, гайка и шайбы входят в один совместимый узел; большая шайба ИЛИ пластина, без повторных компонентных закупок",
+      "Заказ скамей и, при раздельной поставке, крепежа по пригодному наличию, резерву и кратности фактического поставщика"
+    ],
+    "independentCompletenessMap": {
+      "contract": "rik-expo-app.s26-3.independent-completeness-map.v1",
+      "entries": [
+        {
+          "category": "material",
+          "condition": "exact assembled Fusion Bench on prepared continuous concrete",
+          "expectedResourceId": "FUSION:ASSEMBLED_BENCH",
+          "formulaId": "fusion-bench-prepared-concrete:formula:bench-consumed",
+          "operationId": "setting",
+          "quantityRule": "N_INSTALLED_BENCHES",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "fusion-bench-prepared-concrete:bench-consumed"
+          },
+          "sourceId": "glasdon:fusion-bench:c000-0096:concrete",
+          "specification": "Glasdon Fusion Bench, фактически выбранное исполнение; поставляется собранной.",
+          "unitId": "pcs"
+        },
+        {
+          "category": "material",
+          "condition": "Четыре штатных крепления включены в поставку каждой скамьи",
+          "expectedResourceId": "FUSION:FOUR_FIXINGS:true",
+          "formulaId": "fusion-bench-prepared-concrete:formula:fixing-included",
+          "operationId": "fixing",
+          "quantityRule": "FOUR_PER_INSTALLED_BENCH",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "fusion-bench-prepared-concrete:fixing-included"
+          },
+          "sourceId": "glasdon:fusion-bench:c000-0096:concrete",
+          "specification": "Совместимый бетонный крепёж для Fusion Bench и C000/0096; узел с болтом, гайкой M10, малой шайбой, большой шайбой ИЛИ пластиной и пластиковой шайбой.",
+          "unitId": "pcs"
+        },
+        {
+          "category": "material",
+          "condition": "Совместимые штатные крепления закупаются отдельно",
+          "expectedResourceId": "FUSION:FOUR_FIXINGS:false",
+          "formulaId": "fusion-bench-prepared-concrete:formula:fixing-consumed-separate",
+          "operationId": "fixing",
+          "quantityRule": "FOUR_PER_INSTALLED_BENCH",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "fusion-bench-prepared-concrete:fixing-consumed-separate"
+          },
+          "sourceId": "glasdon:fusion-bench:c000-0096:concrete",
+          "specification": "Совместимый бетонный крепёж для Fusion Bench и C000/0096; узел с болтом, гайкой M10, малой шайбой, большой шайбой ИЛИ пластиной и пластиковой шайбой.",
+          "unitId": "pcs"
+        }
+      ],
+      "evidenceReferences": [
+        "https://www.glasdon.com/intl/downloads/instructions/C000-0096%20Seating%20Base%20Fix_A4.pdf",
+        "C000/0096 page2 steps1–6"
+      ],
+      "evidenceSha256": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+      "generatedFromCurrentRows": false,
+      "sourceKind": "TECHNOLOGY_MAP"
+    },
+    "physicalResultRu": "Готовая скамья закреплена на пригодном подготовленном бетоне. Восемь дополнительных ресурсных потребностей пока не нормированы.",
+    "unresolvedApplicableResourceRowIds": [
+      "fusion-bench-prepared-concrete:position-mark-reposition",
+      "fusion-bench-prepared-concrete:drill-clear-seat-tighten",
+      "fusion-bench-prepared-concrete:drill-and-bit",
+      "fusion-bench-prepared-concrete:setting-and-tightening-tools",
+      "fusion-bench-prepared-concrete:hole-cleaning",
+      "fusion-bench-prepared-concrete:site-protection-ppe",
+      "fusion-bench-prepared-concrete:delivery-unload-handling",
+      "fusion-bench-prepared-concrete:final-inspection-cleanup"
+    ],
+    "workKey": "glasdon_fusion_bench_prepared_concrete_standard"
+  },
+  "projectSourcePackage": null,
+  "projectSourcePackageSet": null,
+  "resources": [
+    {
+      "category": "material",
+      "cost_owner_id": "fusion-bench-prepared-concrete:bench-consumed",
+      "formula_id": "fusion-bench-prepared-concrete:formula:bench-consumed",
+      "id": "resource-fusion-bench-prepared-concrete-bench-consumed",
+      "inclusion_ast": {
+        "kind": "literal",
+        "value": true
+      },
+      "ordinal": 0,
+      "procurement_eligible": false,
+      "resource_graph": {
+        "costOwner": "resource",
+        "costTreatment": "INFORMATIONAL_SCOPE",
+        "formulaId": "fusion-bench-prepared-concrete:formula:bench-consumed",
+        "inputParameterIds": [
+          "prepared_foundation_acceptance_reference",
+          "available_concrete_depth_mm",
+          "minimum_anchor_edge_distance_mm"
+        ],
+        "normalizedUom": "pcs",
+        "operationCompositionV1": {
+          "completionCriterionRu": "Установлено точное изделие по инструкции; проверены основание и крепления.",
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "fusion-bench-prepared-concrete",
+          "groupTitleRu": "Установка готовой скамьи на подготовленное бетонное основание",
+          "operationId": "fusion-bench-prepared-concrete:operation:installation",
+          "operationTitleRu": "Установка готовой скамьи и крепежа",
+          "processOrdinal": 10
+        },
+        "publicResourcePresentationV1": {
+          "brandAndModelRu": "Glasdon Fusion Bench",
+          "contractVersion": "canonical-public-resource-presentation/v1",
+          "detailsRu": [
+            "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы."
+          ],
+          "nameRu": "Устанавливаемые скамьи — Скамья готовая собранная, 1800×310×425 мм",
+          "sourceTitleRu": "Устанавливаемые скамьи — Скамья готовая собранная, 1800×310×425 мм",
+          "specificationRu": "Glasdon Fusion Bench, фактически выбранное исполнение; поставляется собранной."
+        },
+        "purchaseBalanceOwnerRowId": "fusion-bench-prepared-concrete:bench-order",
+        "scopeContextParameterIds": [
+          "bench_count"
+        ],
+        "semanticOwnerId": "fusion-bench-prepared-concrete:fusion-bench-prepared-concrete:bench-consumed"
+      },
+      "row_id": "fusion-bench-prepared-concrete:bench-consumed",
+      "row_sha256": "eh_9b4d8987ddef97cf",
+      "row_type": "material",
+      "section": "Установка готовой скамьи на подготовленное бетонное основание",
+      "source_metadata": {
+        "exact_locator": "C000/0096 page2 steps1–6; Fusion Bench product page",
+        "exact_product": "Glasdon Fusion Bench",
+        "excludedUnownedAssumptions": [
+          "Paving-slab branch",
+          "Grass/soft-ground concrete-in anchors",
+          "Foundation construction, excavation, concrete volume or curing in this prepared-base scenario",
+          "Tamper-resistant covers unless a separately confirmed project/supply option is explicitly added",
+          "Jubilee-bin anchor dimensions or concrete strength limits",
+          "Unrelated UK legislation treated as Kyrgyz normative approval",
+          "No source-backed labour => no KRER newconstruction/altitude coefficient claim"
+        ],
+        "full_technical_acceptance": false,
+        "holesPerInstalledBench": 4,
+        "normativeTrace": [
+          {
+            "exact_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+            "norm_id": "C000-0096-CONCRETE-FUSION",
+            "normId": "C000-0096-CONCRETE-FUSION",
+            "normVersion": "C000/0096 Issue1 June2006",
+            "source_definition_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+            "source_id": "glasdon:fusion-bench:c000-0096:concrete",
+            "source_title": "Glasdon Fusion Bench: C000/0096, крепление к бетону",
+            "sourceId": "glasdon:fusion-bench:c000-0096:concrete",
+            "sourceRole": "MANUFACTURER_INSTALLATION_COMPOSITION"
+          }
+        ],
+        "official_url": "https://www.glasdon.com/intl/downloads/instructions/C000-0096%20Seating%20Base%20Fix_A4.pdf",
+        "quantityUnitUnconfirmed": false,
+        "source_artifact_sha256": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+        "sourceOutlineSha256": "a40fa964de62393bb44b1a5343d06990e0ac6e77cdabd9dae88df932eb19cbc1",
+        "sourceRole": "MANUFACTURER_INSTALLATION_COMPOSITION",
+        "synthetic": false,
+        "truth_contract_version": "R3"
+      },
+      "title_ru": "Устанавливаемые скамьи — Скамья готовая собранная, 1800×310×425 мм",
+      "unit_id": "pcs"
+    },
+    {
+      "category": "material",
+      "cost_owner_id": "fusion-bench-prepared-concrete:bench-order",
+      "formula_id": "fusion-bench-prepared-concrete:formula:bench-order",
+      "id": "resource-fusion-bench-prepared-concrete-bench-order",
+      "inclusion_ast": {
+        "kind": "literal",
+        "value": true
+      },
+      "ordinal": 1,
+      "procurement_eligible": true,
+      "resource_graph": {
+        "costOwner": "resource",
+        "costTreatment": "OWN_COST",
+        "effectiveQuantityOutputV1": {
+          "parameterId": "effective_resource_quantity_fusion_bench_prepared_concrete_bench_order",
+          "unitId": "pcs"
+        },
+        "formulaId": "fusion-bench-prepared-concrete:formula:bench-order",
+        "inputParameterIds": [
+          "prepared_foundation_acceptance_reference",
+          "available_concrete_depth_mm",
+          "minimum_anchor_edge_distance_mm",
+          "actual_bench_supply_specification",
+          "anchor_supply_scope",
+          "bench_stock_compatibility_reference"
+        ],
+        "normalizedUom": "pcs",
+        "operationCompositionV1": {
+          "completionCriterionRu": "Установлено точное изделие по инструкции; проверены основание и крепления.",
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "fusion-bench-prepared-concrete",
+          "groupTitleRu": "Установка готовой скамьи на подготовленное бетонное основание",
+          "operationId": "fusion-bench-prepared-concrete:operation:installation",
+          "operationTitleRu": "Установка готовой скамьи и крепежа",
+          "processOrdinal": 10
+        },
+        "publicResourcePresentationV1": {
+          "brandAndModelRu": "Glasdon Fusion Bench",
+          "contractVersion": "canonical-public-resource-presentation/v1",
+          "detailsRu": [
+            "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы."
+          ],
+          "nameRu": "Скамья готовая собранная, 1800×310×425 мм",
+          "sourceTitleRu": "Скамья готовая собранная, 1800×310×425 мм",
+          "specificationRu": "Glasdon Fusion Bench, фактически выбранное исполнение; поставляется собранной."
+        },
+        "purchaseBalanceV1": {
+          "consumedExpression": "bench_count",
+          "orderQuantumExpression": "bench_quantum",
+          "reserveExpression": "bench_reserve",
+          "stockExpression": "bench_stock",
+          "unitId": "pcs"
+        },
+        "scopeContextParameterIds": [
+          "bench_count"
+        ],
+        "semanticOwnerId": "fusion-bench-prepared-concrete:fusion-bench-prepared-concrete:bench-order",
+        "titleSpecificationMode": "APPEND",
+        "titleSpecificationParameterIds": [
+          "actual_bench_supply_specification"
+        ],
+        "titleSpecificationSeparator": " — "
+      },
+      "row_id": "fusion-bench-prepared-concrete:bench-order",
+      "row_sha256": "eh_e335671683b69995",
+      "row_type": "material",
+      "section": "Установка готовой скамьи на подготовленное бетонное основание",
+      "source_metadata": {
+        "exact_locator": "C000/0096 page2 steps1–6; Fusion Bench product page",
+        "exact_product": "Glasdon Fusion Bench",
+        "excludedUnownedAssumptions": [
+          "Paving-slab branch",
+          "Grass/soft-ground concrete-in anchors",
+          "Foundation construction, excavation, concrete volume or curing in this prepared-base scenario",
+          "Tamper-resistant covers unless a separately confirmed project/supply option is explicitly added",
+          "Jubilee-bin anchor dimensions or concrete strength limits",
+          "Unrelated UK legislation treated as Kyrgyz normative approval",
+          "No source-backed labour => no KRER newconstruction/altitude coefficient claim"
+        ],
+        "full_technical_acceptance": false,
+        "holesPerInstalledBench": 4,
+        "normativeTrace": [
+          {
+            "exact_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+            "norm_id": "C000-0096-CONCRETE-FUSION",
+            "normId": "C000-0096-CONCRETE-FUSION",
+            "normVersion": "C000/0096 Issue1 June2006",
+            "source_definition_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+            "source_id": "glasdon:fusion-bench:c000-0096:concrete",
+            "source_title": "Glasdon Fusion Bench: C000/0096, крепление к бетону",
+            "sourceId": "glasdon:fusion-bench:c000-0096:concrete",
+            "sourceRole": "MANUFACTURER_INSTALLATION_COMPOSITION"
+          }
+        ],
+        "official_url": "https://www.glasdon.com/intl/downloads/instructions/C000-0096%20Seating%20Base%20Fix_A4.pdf",
+        "quantityUnitUnconfirmed": false,
+        "source_artifact_sha256": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+        "sourceOutlineSha256": "a40fa964de62393bb44b1a5343d06990e0ac6e77cdabd9dae88df932eb19cbc1",
+        "sourceRole": "DERIVED_PURCHASE_BALANCE",
+        "synthetic": false,
+        "truth_contract_version": "R3"
+      },
+      "title_ru": "Скамья готовая собранная, 1800×310×425 мм",
+      "unit_id": "pcs"
+    },
+    {
+      "category": "material",
+      "cost_owner_id": "fusion-bench-prepared-concrete:bench-order",
+      "formula_id": "fusion-bench-prepared-concrete:formula:fixing-included",
+      "id": "resource-fusion-bench-prepared-concrete-fixing-included",
+      "inclusion_ast": {
+        "kind": "equals",
+        "parameterId": "anchor_supply_scope",
+        "value": "Четыре штатных крепления включены в поставку каждой скамьи"
+      },
+      "ordinal": 2,
+      "procurement_eligible": false,
+      "resource_graph": {
+        "costOwner": "resource",
+        "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "formulaId": "fusion-bench-prepared-concrete:formula:fixing-included",
+        "includedInResourceOwnerRowId": "fusion-bench-prepared-concrete:bench-order",
+        "inputParameterIds": [
+          "prepared_foundation_acceptance_reference",
+          "available_concrete_depth_mm",
+          "minimum_anchor_edge_distance_mm",
+          "anchor_supply_scope"
+        ],
+        "normalizedUom": "pcs",
+        "operationCompositionV1": {
+          "completionCriterionRu": "Установлено точное изделие по инструкции; проверены основание и крепления.",
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "fusion-bench-prepared-concrete",
+          "groupTitleRu": "Установка готовой скамьи на подготовленное бетонное основание",
+          "operationId": "fusion-bench-prepared-concrete:operation:installation",
+          "operationTitleRu": "Установка готовой скамьи и крепежа",
+          "processOrdinal": 10
+        },
+        "parentCostOwnerId": "fusion-bench-prepared-concrete:bench-order",
+        "publicResourcePresentationV1": {
+          "brandAndModelRu": "Glasdon Fusion Bench",
+          "contractVersion": "canonical-public-resource-presentation/v1",
+          "detailsRu": [
+            "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+            "Болт, гайкаM10, малая шайба, большая шайба ИЛИ пластина и пластиковая шайба входят в один узел; отдельных повторных закупок нет.",
+            "Четыре крепления на каждую установленную скамью входят в стоимость полного комплекта; отдельного заказа нет."
+          ],
+          "nameRu": "Узел крепления скамьи к бетону, гайка M10, шайбы — входит в комплект скамьи",
+          "sourceTitleRu": "Узел крепления скамьи к бетону, гайка M10, шайбы — входит в комплект скамьи",
+          "specificationRu": "Совместимый бетонный крепёж для Fusion Bench и C000/0096; узел с болтом, гайкой M10, малой шайбой, большой шайбой ИЛИ пластиной и пластиковой шайбой."
+        },
+        "scopeContextParameterIds": [
+          "bench_count"
+        ],
+        "semanticOwnerId": "fusion-bench-prepared-concrete:fusion-bench-prepared-concrete:fixing-included"
+      },
+      "row_id": "fusion-bench-prepared-concrete:fixing-included",
+      "row_sha256": "eh_2c0007ccde23a1da",
+      "row_type": "material",
+      "section": "Установка готовой скамьи на подготовленное бетонное основание",
+      "source_metadata": {
+        "exact_locator": "C000/0096 page2 steps1–6; Fusion Bench product page",
+        "exact_product": "Glasdon Fusion Bench",
+        "excludedUnownedAssumptions": [
+          "Paving-slab branch",
+          "Grass/soft-ground concrete-in anchors",
+          "Foundation construction, excavation, concrete volume or curing in this prepared-base scenario",
+          "Tamper-resistant covers unless a separately confirmed project/supply option is explicitly added",
+          "Jubilee-bin anchor dimensions or concrete strength limits",
+          "Unrelated UK legislation treated as Kyrgyz normative approval",
+          "No source-backed labour => no KRER newconstruction/altitude coefficient claim"
+        ],
+        "full_technical_acceptance": false,
+        "holesPerInstalledBench": 4,
+        "normativeTrace": [
+          {
+            "exact_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+            "norm_id": "C000-0096-CONCRETE-FUSION",
+            "normId": "C000-0096-CONCRETE-FUSION",
+            "normVersion": "C000/0096 Issue1 June2006",
+            "source_definition_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+            "source_id": "glasdon:fusion-bench:c000-0096:concrete",
+            "source_title": "Glasdon Fusion Bench: C000/0096, крепление к бетону",
+            "sourceId": "glasdon:fusion-bench:c000-0096:concrete",
+            "sourceRole": "MANUFACTURER_INSTALLATION_COMPOSITION"
+          }
+        ],
+        "official_url": "https://www.glasdon.com/intl/downloads/instructions/C000-0096%20Seating%20Base%20Fix_A4.pdf",
+        "quantityUnitUnconfirmed": false,
+        "source_artifact_sha256": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+        "sourceOutlineSha256": "a40fa964de62393bb44b1a5343d06990e0ac6e77cdabd9dae88df932eb19cbc1",
+        "sourceRole": "MANUFACTURER_INSTALLATION_COMPOSITION",
+        "synthetic": false,
+        "truth_contract_version": "R3"
+      },
+      "title_ru": "Узел крепления скамьи к бетону, гайка M10, шайбы — входит в комплект скамьи",
+      "unit_id": "pcs"
+    },
+    {
+      "category": "material",
+      "cost_owner_id": "fusion-bench-prepared-concrete:fixing-consumed-separate",
+      "formula_id": "fusion-bench-prepared-concrete:formula:fixing-consumed-separate",
+      "id": "resource-fusion-bench-prepared-concrete-fixing-consumed-separate",
+      "inclusion_ast": {
+        "kind": "equals",
+        "parameterId": "anchor_supply_scope",
+        "value": "Совместимые штатные крепления закупаются отдельно"
+      },
+      "ordinal": 3,
+      "procurement_eligible": false,
+      "resource_graph": {
+        "costOwner": "resource",
+        "costTreatment": "INFORMATIONAL_SCOPE",
+        "formulaId": "fusion-bench-prepared-concrete:formula:fixing-consumed-separate",
+        "inputParameterIds": [
+          "prepared_foundation_acceptance_reference",
+          "available_concrete_depth_mm",
+          "minimum_anchor_edge_distance_mm"
+        ],
+        "normalizedUom": "pcs",
+        "operationCompositionV1": {
+          "completionCriterionRu": "Установлено точное изделие по инструкции; проверены основание и крепления.",
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "fusion-bench-prepared-concrete",
+          "groupTitleRu": "Установка готовой скамьи на подготовленное бетонное основание",
+          "operationId": "fusion-bench-prepared-concrete:operation:installation",
+          "operationTitleRu": "Установка готовой скамьи и крепежа",
+          "processOrdinal": 10
+        },
+        "publicResourcePresentationV1": {
+          "brandAndModelRu": "Glasdon Fusion Bench",
+          "contractVersion": "canonical-public-resource-presentation/v1",
+          "detailsRu": [
+            "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+            "Болт, гайкаM10, малая шайба, большая шайба ИЛИ пластина и пластиковая шайба входят в один узел; отдельных повторных закупок нет."
+          ],
+          "nameRu": "Устанавливаемый крепёж — Узел крепления скамьи к бетону, гайка M10, шайбы",
+          "sourceTitleRu": "Устанавливаемый крепёж — Узел крепления скамьи к бетону, гайка M10, шайбы",
+          "specificationRu": "Совместимый бетонный крепёж для Fusion Bench и C000/0096; узел с болтом, гайкой M10, малой шайбой, большой шайбой ИЛИ пластиной и пластиковой шайбой."
+        },
+        "purchaseBalanceOwnerRowId": "fusion-bench-prepared-concrete:fixing-order",
+        "scopeContextParameterIds": [
+          "bench_count"
+        ],
+        "semanticOwnerId": "fusion-bench-prepared-concrete:fusion-bench-prepared-concrete:fixing-consumed-separate"
+      },
+      "row_id": "fusion-bench-prepared-concrete:fixing-consumed-separate",
+      "row_sha256": "eh_0e446afc86772e03",
+      "row_type": "material",
+      "section": "Установка готовой скамьи на подготовленное бетонное основание",
+      "source_metadata": {
+        "exact_locator": "C000/0096 page2 steps1–6; Fusion Bench product page",
+        "exact_product": "Glasdon Fusion Bench",
+        "excludedUnownedAssumptions": [
+          "Paving-slab branch",
+          "Grass/soft-ground concrete-in anchors",
+          "Foundation construction, excavation, concrete volume or curing in this prepared-base scenario",
+          "Tamper-resistant covers unless a separately confirmed project/supply option is explicitly added",
+          "Jubilee-bin anchor dimensions or concrete strength limits",
+          "Unrelated UK legislation treated as Kyrgyz normative approval",
+          "No source-backed labour => no KRER newconstruction/altitude coefficient claim"
+        ],
+        "full_technical_acceptance": false,
+        "holesPerInstalledBench": 4,
+        "normativeTrace": [
+          {
+            "exact_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+            "norm_id": "C000-0096-CONCRETE-FUSION",
+            "normId": "C000-0096-CONCRETE-FUSION",
+            "normVersion": "C000/0096 Issue1 June2006",
+            "source_definition_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+            "source_id": "glasdon:fusion-bench:c000-0096:concrete",
+            "source_title": "Glasdon Fusion Bench: C000/0096, крепление к бетону",
+            "sourceId": "glasdon:fusion-bench:c000-0096:concrete",
+            "sourceRole": "MANUFACTURER_INSTALLATION_COMPOSITION"
+          }
+        ],
+        "official_url": "https://www.glasdon.com/intl/downloads/instructions/C000-0096%20Seating%20Base%20Fix_A4.pdf",
+        "quantityUnitUnconfirmed": false,
+        "source_artifact_sha256": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+        "sourceOutlineSha256": "a40fa964de62393bb44b1a5343d06990e0ac6e77cdabd9dae88df932eb19cbc1",
+        "sourceRole": "MANUFACTURER_INSTALLATION_COMPOSITION",
+        "synthetic": false,
+        "truth_contract_version": "R3"
+      },
+      "title_ru": "Устанавливаемый крепёж — Узел крепления скамьи к бетону, гайка M10, шайбы",
+      "unit_id": "pcs"
+    },
+    {
+      "category": "material",
+      "cost_owner_id": "fusion-bench-prepared-concrete:fixing-order",
+      "formula_id": "fusion-bench-prepared-concrete:formula:fixing-order",
+      "id": "resource-fusion-bench-prepared-concrete-fixing-order",
+      "inclusion_ast": {
+        "kind": "equals",
+        "parameterId": "anchor_supply_scope",
+        "value": "Совместимые штатные крепления закупаются отдельно"
+      },
+      "ordinal": 4,
+      "procurement_eligible": true,
+      "resource_graph": {
+        "costOwner": "resource",
+        "costTreatment": "OWN_COST",
+        "effectiveQuantityOutputV1": {
+          "parameterId": "effective_resource_quantity_fusion_bench_prepared_concrete_fixing_order",
+          "unitId": "pcs"
+        },
+        "formulaId": "fusion-bench-prepared-concrete:formula:fixing-order",
+        "inputParameterIds": [
+          "prepared_foundation_acceptance_reference",
+          "available_concrete_depth_mm",
+          "minimum_anchor_edge_distance_mm",
+          "fixing_supply_specification",
+          "fixing_stock_compatibility_reference"
+        ],
+        "normalizedUom": "pcs",
+        "operationCompositionV1": {
+          "completionCriterionRu": "Установлено точное изделие по инструкции; проверены основание и крепления.",
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "fusion-bench-prepared-concrete",
+          "groupTitleRu": "Установка готовой скамьи на подготовленное бетонное основание",
+          "operationId": "fusion-bench-prepared-concrete:operation:installation",
+          "operationTitleRu": "Установка готовой скамьи и крепежа",
+          "processOrdinal": 10
+        },
+        "publicResourcePresentationV1": {
+          "brandAndModelRu": "Glasdon Fusion Bench",
+          "contractVersion": "canonical-public-resource-presentation/v1",
+          "detailsRu": [
+            "Только готовая собранная Glasdon Fusion Bench на сплошном подготовленном бетонном основании: толщина не менее200мм, ось крепления не ближе110мм к краю. Четыре штатных узла и отверстия на установленную скамью; сверло10мм, глубина140мм, гайкаM10, головка17мм, рекомендуемый максимум затяжки27Н·м. Труд и дополнительные ресурсы не нормированы.",
+            "Болт, гайкаM10, малая шайба, большая шайба ИЛИ пластина и пластиковая шайба входят в один узел; отдельных повторных закупок нет."
+          ],
+          "nameRu": "Узел крепления скамьи к бетону, гайка M10, шайбы",
+          "sourceTitleRu": "Узел крепления скамьи к бетону, гайка M10, шайбы",
+          "specificationRu": "Совместимый бетонный крепёж для Fusion Bench и C000/0096; узел с болтом, гайкой M10, малой шайбой, большой шайбой ИЛИ пластиной и пластиковой шайбой."
+        },
+        "purchaseBalanceV1": {
+          "consumedExpression": "4*bench_count",
+          "orderQuantumExpression": "fixing_quantum",
+          "reserveExpression": "fixing_reserve",
+          "stockExpression": "fixing_stock",
+          "unitId": "pcs"
+        },
+        "scopeContextParameterIds": [
+          "bench_count"
+        ],
+        "semanticOwnerId": "fusion-bench-prepared-concrete:fusion-bench-prepared-concrete:fixing-order",
+        "titleSpecificationMode": "APPEND",
+        "titleSpecificationParameterIds": [
+          "fixing_supply_specification"
+        ],
+        "titleSpecificationSeparator": " — "
+      },
+      "row_id": "fusion-bench-prepared-concrete:fixing-order",
+      "row_sha256": "eh_1d58b90d8c50fd2c",
+      "row_type": "material",
+      "section": "Установка готовой скамьи на подготовленное бетонное основание",
+      "source_metadata": {
+        "exact_locator": "C000/0096 page2 steps1–6; Fusion Bench product page",
+        "exact_product": "Glasdon Fusion Bench",
+        "excludedUnownedAssumptions": [
+          "Paving-slab branch",
+          "Grass/soft-ground concrete-in anchors",
+          "Foundation construction, excavation, concrete volume or curing in this prepared-base scenario",
+          "Tamper-resistant covers unless a separately confirmed project/supply option is explicitly added",
+          "Jubilee-bin anchor dimensions or concrete strength limits",
+          "Unrelated UK legislation treated as Kyrgyz normative approval",
+          "No source-backed labour => no KRER newconstruction/altitude coefficient claim"
+        ],
+        "full_technical_acceptance": false,
+        "holesPerInstalledBench": 4,
+        "normativeTrace": [
+          {
+            "exact_locator": "C000/0096, page2 concrete fixing steps1–6; current Fusion Bench product page",
+            "norm_id": "C000-0096-CONCRETE-FUSION",
+            "normId": "C000-0096-CONCRETE-FUSION",
+            "normVersion": "C000/0096 Issue1 June2006",
+            "source_definition_hash": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+            "source_id": "glasdon:fusion-bench:c000-0096:concrete",
+            "source_title": "Glasdon Fusion Bench: C000/0096, крепление к бетону",
+            "sourceId": "glasdon:fusion-bench:c000-0096:concrete",
+            "sourceRole": "MANUFACTURER_INSTALLATION_COMPOSITION"
+          }
+        ],
+        "official_url": "https://www.glasdon.com/intl/downloads/instructions/C000-0096%20Seating%20Base%20Fix_A4.pdf",
+        "quantityUnitUnconfirmed": false,
+        "source_artifact_sha256": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+        "sourceOutlineSha256": "a40fa964de62393bb44b1a5343d06990e0ac6e77cdabd9dae88df932eb19cbc1",
+        "sourceRole": "DERIVED_PURCHASE_BALANCE",
+        "synthetic": false,
+        "truth_contract_version": "R3"
+      },
+      "title_ru": "Узел крепления скамьи к бетону, гайка M10, шайбы",
+      "unit_id": "pcs"
+    },
+    {
+      "category": "labor",
+      "cost_owner_id": "fusion-bench-prepared-concrete:position-mark-reposition",
+      "formula_id": "fusion-bench-prepared-concrete:formula:position-mark-reposition",
+      "id": "resource-fusion-bench-prepared-concrete-position-mark-reposition",
+      "inclusion_ast": {
+        "kind": "literal",
+        "value": true
+      },
+      "ordinal": 5,
+      "procurement_eligible": false,
+      "resource_graph": {
+        "costOwner": "resource",
+        "costTreatment": "OWN_COST",
+        "formulaId": "fusion-bench-prepared-concrete:formula:position-mark-reposition",
+        "inputParameterIds": [
+          "prepared_foundation_acceptance_reference",
+          "available_concrete_depth_mm",
+          "minimum_anchor_edge_distance_mm"
+        ],
+        "normalizedUom": "man_hour",
+        "operationCompositionV1": {
+          "completionCriterionRu": "Определены применимость, единица, количество и владелец цены.",
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "fusion-bench-prepared-concrete",
+          "groupTitleRu": "Установка готовой скамьи на подготовленное бетонное основание",
+          "operationId": "fusion-bench-prepared-concrete:operation:position-mark-reposition",
+          "operationTitleRu": "Переместить, выставить, разметить, отставить и вернуть готовую скамью",
+          "processOrdinal": 40
+        },
+        "publicResourcePresentationV1": {
+          "brandAndModelRu": null,
+          "contractVersion": "canonical-public-resource-presentation/v1",
+          "detailsRu": [
+            "Потребность не завершена: количественной нормы в источнике нет."
+          ],
+          "nameRu": "Переместить, выставить, разметить, отставить и вернуть готовую скамью",
+          "sourceTitleRu": "Переместить, выставить, разметить, отставить и вернуть готовую скамью",
+          "specificationRu": "Переместить, выставить, разметить, отставить и вернуть готовую скамью"
+        },
+        "scopeContextParameterIds": [
+          "bench_count"
+        ],
+        "semanticOwnerId": "fusion-bench-prepared-concrete:fusion-bench-prepared-concrete:position-mark-reposition"
+      },
+      "row_id": "fusion-bench-prepared-concrete:position-mark-reposition",
+      "row_sha256": "eh_1f86eab6aeee3c8c",
+      "row_type": "other",
+      "section": "Установка готовой скамьи на подготовленное бетонное основание",
+      "source_metadata": {
+        "exact_locator": "C000/0096 page2 steps1–6; Fusion Bench product page",
+        "exact_product": "Glasdon Fusion Bench",
+        "excludedUnownedAssumptions": [
+          "Paving-slab branch",
+          "Grass/soft-ground concrete-in anchors",
+          "Foundation construction, excavation, concrete volume or curing in this prepared-base scenario",
+          "Tamper-resistant covers unless a separately confirmed project/supply option is explicitly added",
+          "Jubilee-bin anchor dimensions or concrete strength limits",
+          "Unrelated UK legislation treated as Kyrgyz normative approval",
+          "No source-backed labour => no KRER newconstruction/altitude coefficient claim"
+        ],
+        "full_technical_acceptance": false,
+        "holesPerInstalledBench": 4,
+        "normativeTrace": [],
+        "official_url": "https://www.glasdon.com/intl/downloads/instructions/C000-0096%20Seating%20Base%20Fix_A4.pdf",
+        "quantityUnitUnconfirmed": false,
+        "source_artifact_sha256": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+        "sourceOutlineSha256": "a40fa964de62393bb44b1a5343d06990e0ac6e77cdabd9dae88df932eb19cbc1",
+        "sourceRole": "UNRESOLVED_INSTALLATION_SOURCE",
+        "synthetic": false,
+        "truth_contract_version": "R3"
+      },
+      "title_ru": "Переместить, выставить, разметить, отставить и вернуть готовую скамью",
+      "unit_id": "man_hour"
+    },
+    {
+      "category": "labor",
+      "cost_owner_id": "fusion-bench-prepared-concrete:drill-clear-seat-tighten",
+      "formula_id": "fusion-bench-prepared-concrete:formula:drill-clear-seat-tighten",
+      "id": "resource-fusion-bench-prepared-concrete-drill-clear-seat-tighten",
+      "inclusion_ast": {
+        "kind": "literal",
+        "value": true
+      },
+      "ordinal": 6,
+      "procurement_eligible": false,
+      "resource_graph": {
+        "costOwner": "resource",
+        "costTreatment": "OWN_COST",
+        "formulaId": "fusion-bench-prepared-concrete:formula:drill-clear-seat-tighten",
+        "inputParameterIds": [
+          "prepared_foundation_acceptance_reference",
+          "available_concrete_depth_mm",
+          "minimum_anchor_edge_distance_mm"
+        ],
+        "normalizedUom": "man_hour",
+        "operationCompositionV1": {
+          "completionCriterionRu": "Определены применимость, единица, количество и владелец цены.",
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "fusion-bench-prepared-concrete",
+          "groupTitleRu": "Установка готовой скамьи на подготовленное бетонное основание",
+          "operationId": "fusion-bench-prepared-concrete:operation:drill-clear-seat-tighten",
+          "operationTitleRu": "Сверление и очистка отверстий, установка крепежа, затяжка и проверка",
+          "processOrdinal": 40
+        },
+        "publicResourcePresentationV1": {
+          "brandAndModelRu": null,
+          "contractVersion": "canonical-public-resource-presentation/v1",
+          "detailsRu": [
+            "Потребность не завершена: количественной нормы в источнике нет."
+          ],
+          "nameRu": "Сверление и очистка отверстий, установка крепежа, затяжка и проверка",
+          "sourceTitleRu": "Сверление и очистка отверстий, установка крепежа, затяжка и проверка",
+          "specificationRu": "Сверление и очистка отверстий, установка крепежа, затяжка и проверка"
+        },
+        "scopeContextParameterIds": [
+          "bench_count"
+        ],
+        "semanticOwnerId": "fusion-bench-prepared-concrete:fusion-bench-prepared-concrete:drill-clear-seat-tighten"
+      },
+      "row_id": "fusion-bench-prepared-concrete:drill-clear-seat-tighten",
+      "row_sha256": "eh_a52d219033d702bc",
+      "row_type": "other",
+      "section": "Установка готовой скамьи на подготовленное бетонное основание",
+      "source_metadata": {
+        "exact_locator": "C000/0096 page2 steps1–6; Fusion Bench product page",
+        "exact_product": "Glasdon Fusion Bench",
+        "excludedUnownedAssumptions": [
+          "Paving-slab branch",
+          "Grass/soft-ground concrete-in anchors",
+          "Foundation construction, excavation, concrete volume or curing in this prepared-base scenario",
+          "Tamper-resistant covers unless a separately confirmed project/supply option is explicitly added",
+          "Jubilee-bin anchor dimensions or concrete strength limits",
+          "Unrelated UK legislation treated as Kyrgyz normative approval",
+          "No source-backed labour => no KRER newconstruction/altitude coefficient claim"
+        ],
+        "full_technical_acceptance": false,
+        "holesPerInstalledBench": 4,
+        "normativeTrace": [],
+        "official_url": "https://www.glasdon.com/intl/downloads/instructions/C000-0096%20Seating%20Base%20Fix_A4.pdf",
+        "quantityUnitUnconfirmed": false,
+        "source_artifact_sha256": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+        "sourceOutlineSha256": "a40fa964de62393bb44b1a5343d06990e0ac6e77cdabd9dae88df932eb19cbc1",
+        "sourceRole": "UNRESOLVED_INSTALLATION_SOURCE",
+        "synthetic": false,
+        "truth_contract_version": "R3"
+      },
+      "title_ru": "Сверление и очистка отверстий, установка крепежа, затяжка и проверка",
+      "unit_id": "man_hour"
+    },
+    {
+      "category": "equipment",
+      "cost_owner_id": "fusion-bench-prepared-concrete:drill-and-bit",
+      "formula_id": "fusion-bench-prepared-concrete:formula:drill-and-bit",
+      "id": "resource-fusion-bench-prepared-concrete-drill-and-bit",
+      "inclusion_ast": {
+        "kind": "literal",
+        "value": true
+      },
+      "ordinal": 7,
+      "procurement_eligible": false,
+      "resource_graph": {
+        "costOwner": "resource",
+        "costTreatment": "OWN_COST",
+        "formulaId": "fusion-bench-prepared-concrete:formula:drill-and-bit",
+        "inputParameterIds": [
+          "prepared_foundation_acceptance_reference",
+          "available_concrete_depth_mm",
+          "minimum_anchor_edge_distance_mm"
+        ],
+        "normalizedUom": "machine_hour",
+        "operationCompositionV1": {
+          "completionCriterionRu": "Определены применимость, единица, количество и владелец цены.",
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "fusion-bench-prepared-concrete",
+          "groupTitleRu": "Установка готовой скамьи на подготовленное бетонное основание",
+          "operationId": "fusion-bench-prepared-concrete:operation:drill-and-bit",
+          "operationTitleRu": "Дрель/перфоратор со сверлом по бетону10мм достаточной рабочей длины",
+          "processOrdinal": 40
+        },
+        "publicResourcePresentationV1": {
+          "brandAndModelRu": null,
+          "contractVersion": "canonical-public-resource-presentation/v1",
+          "detailsRu": [
+            "Потребность не завершена: количественной нормы в источнике нет."
+          ],
+          "nameRu": "Дрель/перфоратор со сверлом по бетону10мм достаточной рабочей длины",
+          "sourceTitleRu": "Дрель/перфоратор со сверлом по бетону10мм достаточной рабочей длины",
+          "specificationRu": "Дрель/перфоратор со сверлом по бетону10мм достаточной рабочей длины"
+        },
+        "scopeContextParameterIds": [
+          "bench_count"
+        ],
+        "semanticOwnerId": "fusion-bench-prepared-concrete:fusion-bench-prepared-concrete:drill-and-bit"
+      },
+      "row_id": "fusion-bench-prepared-concrete:drill-and-bit",
+      "row_sha256": "eh_c8c744cc4b85af9f",
+      "row_type": "equipment",
+      "section": "Установка готовой скамьи на подготовленное бетонное основание",
+      "source_metadata": {
+        "exact_locator": "C000/0096 page2 steps1–6; Fusion Bench product page",
+        "exact_product": "Glasdon Fusion Bench",
+        "excludedUnownedAssumptions": [
+          "Paving-slab branch",
+          "Grass/soft-ground concrete-in anchors",
+          "Foundation construction, excavation, concrete volume or curing in this prepared-base scenario",
+          "Tamper-resistant covers unless a separately confirmed project/supply option is explicitly added",
+          "Jubilee-bin anchor dimensions or concrete strength limits",
+          "Unrelated UK legislation treated as Kyrgyz normative approval",
+          "No source-backed labour => no KRER newconstruction/altitude coefficient claim"
+        ],
+        "full_technical_acceptance": false,
+        "holesPerInstalledBench": 4,
+        "normativeTrace": [],
+        "official_url": "https://www.glasdon.com/intl/downloads/instructions/C000-0096%20Seating%20Base%20Fix_A4.pdf",
+        "quantityUnitUnconfirmed": false,
+        "source_artifact_sha256": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+        "sourceOutlineSha256": "a40fa964de62393bb44b1a5343d06990e0ac6e77cdabd9dae88df932eb19cbc1",
+        "sourceRole": "UNRESOLVED_INSTALLATION_SOURCE",
+        "synthetic": false,
+        "truth_contract_version": "R3"
+      },
+      "title_ru": "Дрель/перфоратор со сверлом по бетону10мм достаточной рабочей длины",
+      "unit_id": "machine_hour"
+    },
+    {
+      "category": "tool",
+      "cost_owner_id": "fusion-bench-prepared-concrete:setting-and-tightening-tools",
+      "formula_id": "fusion-bench-prepared-concrete:formula:setting-and-tightening-tools",
+      "id": "resource-fusion-bench-prepared-concrete-setting-and-tightening-tools",
+      "inclusion_ast": {
+        "kind": "literal",
+        "value": true
+      },
+      "ordinal": 8,
+      "procurement_eligible": false,
+      "resource_graph": {
+        "costOwner": "resource",
+        "costTreatment": "OWN_COST",
+        "formulaId": "fusion-bench-prepared-concrete:formula:setting-and-tightening-tools",
+        "inputParameterIds": [
+          "prepared_foundation_acceptance_reference",
+          "available_concrete_depth_mm",
+          "minimum_anchor_edge_distance_mm"
+        ],
+        "normalizedUom": "",
+        "operationCompositionV1": {
+          "completionCriterionRu": "Определены применимость, единица, количество и владелец цены.",
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "fusion-bench-prepared-concrete",
+          "groupTitleRu": "Установка готовой скамьи на подготовленное бетонное основание",
+          "operationId": "fusion-bench-prepared-concrete:operation:setting-and-tightening-tools",
+          "operationTitleRu": "Инструмент для посадки крепежа; головка17мм и средство контроля затяжки",
+          "processOrdinal": 40
+        },
+        "publicResourcePresentationV1": {
+          "brandAndModelRu": null,
+          "contractVersion": "canonical-public-resource-presentation/v1",
+          "detailsRu": [
+            "Потребность не завершена: количественной нормы в источнике нет.",
+            "Единица, количество и владелец цены пока не определены."
+          ],
+          "nameRu": "Инструмент для посадки крепежа; головка17мм и средство контроля затяжки",
+          "sourceTitleRu": "Инструмент для посадки крепежа; головка17мм и средство контроля затяжки",
+          "specificationRu": "Инструмент для посадки крепежа; головка17мм и средство контроля затяжки"
+        },
+        "scopeContextParameterIds": [
+          "bench_count"
+        ],
+        "semanticOwnerId": "fusion-bench-prepared-concrete:fusion-bench-prepared-concrete:setting-and-tightening-tools"
+      },
+      "row_id": "fusion-bench-prepared-concrete:setting-and-tightening-tools",
+      "row_sha256": "eh_bb5298f1771fb71f",
+      "row_type": "other",
+      "section": "Установка готовой скамьи на подготовленное бетонное основание",
+      "source_metadata": {
+        "exact_locator": "C000/0096 page2 steps1–6; Fusion Bench product page",
+        "exact_product": "Glasdon Fusion Bench",
+        "excludedUnownedAssumptions": [
+          "Paving-slab branch",
+          "Grass/soft-ground concrete-in anchors",
+          "Foundation construction, excavation, concrete volume or curing in this prepared-base scenario",
+          "Tamper-resistant covers unless a separately confirmed project/supply option is explicitly added",
+          "Jubilee-bin anchor dimensions or concrete strength limits",
+          "Unrelated UK legislation treated as Kyrgyz normative approval",
+          "No source-backed labour => no KRER newconstruction/altitude coefficient claim"
+        ],
+        "full_technical_acceptance": false,
+        "holesPerInstalledBench": 4,
+        "normativeTrace": [],
+        "official_url": "https://www.glasdon.com/intl/downloads/instructions/C000-0096%20Seating%20Base%20Fix_A4.pdf",
+        "quantityUnitUnconfirmed": true,
+        "source_artifact_sha256": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+        "sourceOutlineSha256": "a40fa964de62393bb44b1a5343d06990e0ac6e77cdabd9dae88df932eb19cbc1",
+        "sourceRole": "UNRESOLVED_INSTALLATION_SOURCE",
+        "synthetic": false,
+        "truth_contract_version": "R3"
+      },
+      "title_ru": "Инструмент для посадки крепежа; головка17мм и средство контроля затяжки",
+      "unit_id": ""
+    },
+    {
+      "category": "tool_consumable",
+      "cost_owner_id": "fusion-bench-prepared-concrete:hole-cleaning",
+      "formula_id": "fusion-bench-prepared-concrete:formula:hole-cleaning",
+      "id": "resource-fusion-bench-prepared-concrete-hole-cleaning",
+      "inclusion_ast": {
+        "kind": "literal",
+        "value": true
+      },
+      "ordinal": 9,
+      "procurement_eligible": false,
+      "resource_graph": {
+        "costOwner": "resource",
+        "costTreatment": "OWN_COST",
+        "formulaId": "fusion-bench-prepared-concrete:formula:hole-cleaning",
+        "inputParameterIds": [
+          "prepared_foundation_acceptance_reference",
+          "available_concrete_depth_mm",
+          "minimum_anchor_edge_distance_mm"
+        ],
+        "normalizedUom": "",
+        "operationCompositionV1": {
+          "completionCriterionRu": "Определены применимость, единица, количество и владелец цены.",
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "fusion-bench-prepared-concrete",
+          "groupTitleRu": "Установка готовой скамьи на подготовленное бетонное основание",
+          "operationId": "fusion-bench-prepared-concrete:operation:hole-cleaning",
+          "operationTitleRu": "Средство удаления остатков сверления из отверстий",
+          "processOrdinal": 40
+        },
+        "publicResourcePresentationV1": {
+          "brandAndModelRu": null,
+          "contractVersion": "canonical-public-resource-presentation/v1",
+          "detailsRu": [
+            "Потребность не завершена: количественной нормы в источнике нет.",
+            "Единица, количество и владелец цены пока не определены."
+          ],
+          "nameRu": "Средство удаления остатков сверления из отверстий",
+          "sourceTitleRu": "Средство удаления остатков сверления из отверстий",
+          "specificationRu": "Средство удаления остатков сверления из отверстий"
+        },
+        "scopeContextParameterIds": [
+          "bench_count"
+        ],
+        "semanticOwnerId": "fusion-bench-prepared-concrete:fusion-bench-prepared-concrete:hole-cleaning"
+      },
+      "row_id": "fusion-bench-prepared-concrete:hole-cleaning",
+      "row_sha256": "eh_cb8175f8b2c0a9c5",
+      "row_type": "other",
+      "section": "Установка готовой скамьи на подготовленное бетонное основание",
+      "source_metadata": {
+        "exact_locator": "C000/0096 page2 steps1–6; Fusion Bench product page",
+        "exact_product": "Glasdon Fusion Bench",
+        "excludedUnownedAssumptions": [
+          "Paving-slab branch",
+          "Grass/soft-ground concrete-in anchors",
+          "Foundation construction, excavation, concrete volume or curing in this prepared-base scenario",
+          "Tamper-resistant covers unless a separately confirmed project/supply option is explicitly added",
+          "Jubilee-bin anchor dimensions or concrete strength limits",
+          "Unrelated UK legislation treated as Kyrgyz normative approval",
+          "No source-backed labour => no KRER newconstruction/altitude coefficient claim"
+        ],
+        "full_technical_acceptance": false,
+        "holesPerInstalledBench": 4,
+        "normativeTrace": [],
+        "official_url": "https://www.glasdon.com/intl/downloads/instructions/C000-0096%20Seating%20Base%20Fix_A4.pdf",
+        "quantityUnitUnconfirmed": true,
+        "source_artifact_sha256": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+        "sourceOutlineSha256": "a40fa964de62393bb44b1a5343d06990e0ac6e77cdabd9dae88df932eb19cbc1",
+        "sourceRole": "UNRESOLVED_INSTALLATION_SOURCE",
+        "synthetic": false,
+        "truth_contract_version": "R3"
+      },
+      "title_ru": "Средство удаления остатков сверления из отверстий",
+      "unit_id": ""
+    },
+    {
+      "category": "safety",
+      "cost_owner_id": "fusion-bench-prepared-concrete:site-protection-ppe",
+      "formula_id": "fusion-bench-prepared-concrete:formula:site-protection-ppe",
+      "id": "resource-fusion-bench-prepared-concrete-site-protection-ppe",
+      "inclusion_ast": {
+        "kind": "literal",
+        "value": true
+      },
+      "ordinal": 10,
+      "procurement_eligible": false,
+      "resource_graph": {
+        "costOwner": "resource",
+        "costTreatment": "OWN_COST",
+        "formulaId": "fusion-bench-prepared-concrete:formula:site-protection-ppe",
+        "inputParameterIds": [
+          "prepared_foundation_acceptance_reference",
+          "available_concrete_depth_mm",
+          "minimum_anchor_edge_distance_mm"
+        ],
+        "normalizedUom": "",
+        "operationCompositionV1": {
+          "completionCriterionRu": "Определены применимость, единица, количество и владелец цены.",
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "fusion-bench-prepared-concrete",
+          "groupTitleRu": "Установка готовой скамьи на подготовленное бетонное основание",
+          "operationId": "fusion-bench-prepared-concrete:operation:site-protection-ppe",
+          "operationTitleRu": "Применимые защита рабочей зоны и СИЗ по фактическим условиям",
+          "processOrdinal": 40
+        },
+        "publicResourcePresentationV1": {
+          "brandAndModelRu": null,
+          "contractVersion": "canonical-public-resource-presentation/v1",
+          "detailsRu": [
+            "Потребность не завершена: количественной нормы в источнике нет.",
+            "Единица, количество и владелец цены пока не определены."
+          ],
+          "nameRu": "Применимые защита рабочей зоны и СИЗ по фактическим условиям",
+          "sourceTitleRu": "Применимые защита рабочей зоны и СИЗ по фактическим условиям",
+          "specificationRu": "Применимые защита рабочей зоны и СИЗ по фактическим условиям"
+        },
+        "scopeContextParameterIds": [
+          "bench_count"
+        ],
+        "semanticOwnerId": "fusion-bench-prepared-concrete:fusion-bench-prepared-concrete:site-protection-ppe"
+      },
+      "row_id": "fusion-bench-prepared-concrete:site-protection-ppe",
+      "row_sha256": "eh_63107127973219cd",
+      "row_type": "other",
+      "section": "Установка готовой скамьи на подготовленное бетонное основание",
+      "source_metadata": {
+        "exact_locator": "C000/0096 page2 steps1–6; Fusion Bench product page",
+        "exact_product": "Glasdon Fusion Bench",
+        "excludedUnownedAssumptions": [
+          "Paving-slab branch",
+          "Grass/soft-ground concrete-in anchors",
+          "Foundation construction, excavation, concrete volume or curing in this prepared-base scenario",
+          "Tamper-resistant covers unless a separately confirmed project/supply option is explicitly added",
+          "Jubilee-bin anchor dimensions or concrete strength limits",
+          "Unrelated UK legislation treated as Kyrgyz normative approval",
+          "No source-backed labour => no KRER newconstruction/altitude coefficient claim"
+        ],
+        "full_technical_acceptance": false,
+        "holesPerInstalledBench": 4,
+        "normativeTrace": [],
+        "official_url": "https://www.glasdon.com/intl/downloads/instructions/C000-0096%20Seating%20Base%20Fix_A4.pdf",
+        "quantityUnitUnconfirmed": true,
+        "source_artifact_sha256": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+        "sourceOutlineSha256": "a40fa964de62393bb44b1a5343d06990e0ac6e77cdabd9dae88df932eb19cbc1",
+        "sourceRole": "UNRESOLVED_INSTALLATION_SOURCE",
+        "synthetic": false,
+        "truth_contract_version": "R3"
+      },
+      "title_ru": "Применимые защита рабочей зоны и СИЗ по фактическим условиям",
+      "unit_id": ""
+    },
+    {
+      "category": "logistics",
+      "cost_owner_id": "fusion-bench-prepared-concrete:delivery-unload-handling",
+      "formula_id": "fusion-bench-prepared-concrete:formula:delivery-unload-handling",
+      "id": "resource-fusion-bench-prepared-concrete-delivery-unload-handling",
+      "inclusion_ast": {
+        "kind": "literal",
+        "value": true
+      },
+      "ordinal": 11,
+      "procurement_eligible": false,
+      "resource_graph": {
+        "costOwner": "resource",
+        "costTreatment": "OWN_COST",
+        "formulaId": "fusion-bench-prepared-concrete:formula:delivery-unload-handling",
+        "inputParameterIds": [
+          "prepared_foundation_acceptance_reference",
+          "available_concrete_depth_mm",
+          "minimum_anchor_edge_distance_mm"
+        ],
+        "normalizedUom": "",
+        "operationCompositionV1": {
+          "completionCriterionRu": "Определены применимость, единица, количество и владелец цены.",
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "fusion-bench-prepared-concrete",
+          "groupTitleRu": "Установка готовой скамьи на подготовленное бетонное основание",
+          "operationId": "fusion-bench-prepared-concrete:operation:delivery-unload-handling",
+          "operationTitleRu": "Доставка и разгрузка готовых скамей/крепежа с проверкой включения в поставку",
+          "processOrdinal": 40
+        },
+        "publicResourcePresentationV1": {
+          "brandAndModelRu": null,
+          "contractVersion": "canonical-public-resource-presentation/v1",
+          "detailsRu": [
+            "Потребность не завершена: количественной нормы в источнике нет.",
+            "Единица, количество и владелец цены пока не определены."
+          ],
+          "nameRu": "Доставка и разгрузка готовых скамей/крепежа с проверкой включения в поставку",
+          "sourceTitleRu": "Доставка и разгрузка готовых скамей/крепежа с проверкой включения в поставку",
+          "specificationRu": "Доставка и разгрузка готовых скамей/крепежа с проверкой включения в поставку"
+        },
+        "scopeContextParameterIds": [
+          "bench_count"
+        ],
+        "semanticOwnerId": "fusion-bench-prepared-concrete:fusion-bench-prepared-concrete:delivery-unload-handling"
+      },
+      "row_id": "fusion-bench-prepared-concrete:delivery-unload-handling",
+      "row_sha256": "eh_fa20e7b4e5a39717",
+      "row_type": "other",
+      "section": "Установка готовой скамьи на подготовленное бетонное основание",
+      "source_metadata": {
+        "exact_locator": "C000/0096 page2 steps1–6; Fusion Bench product page",
+        "exact_product": "Glasdon Fusion Bench",
+        "excludedUnownedAssumptions": [
+          "Paving-slab branch",
+          "Grass/soft-ground concrete-in anchors",
+          "Foundation construction, excavation, concrete volume or curing in this prepared-base scenario",
+          "Tamper-resistant covers unless a separately confirmed project/supply option is explicitly added",
+          "Jubilee-bin anchor dimensions or concrete strength limits",
+          "Unrelated UK legislation treated as Kyrgyz normative approval",
+          "No source-backed labour => no KRER newconstruction/altitude coefficient claim"
+        ],
+        "full_technical_acceptance": false,
+        "holesPerInstalledBench": 4,
+        "normativeTrace": [],
+        "official_url": "https://www.glasdon.com/intl/downloads/instructions/C000-0096%20Seating%20Base%20Fix_A4.pdf",
+        "quantityUnitUnconfirmed": true,
+        "source_artifact_sha256": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+        "sourceOutlineSha256": "a40fa964de62393bb44b1a5343d06990e0ac6e77cdabd9dae88df932eb19cbc1",
+        "sourceRole": "UNRESOLVED_INSTALLATION_SOURCE",
+        "synthetic": false,
+        "truth_contract_version": "R3"
+      },
+      "title_ru": "Доставка и разгрузка готовых скамей/крепежа с проверкой включения в поставку",
+      "unit_id": ""
+    },
+    {
+      "category": "completion",
+      "cost_owner_id": "fusion-bench-prepared-concrete:final-inspection-cleanup",
+      "formula_id": "fusion-bench-prepared-concrete:formula:final-inspection-cleanup",
+      "id": "resource-fusion-bench-prepared-concrete-final-inspection-cleanup",
+      "inclusion_ast": {
+        "kind": "literal",
+        "value": true
+      },
+      "ordinal": 12,
+      "procurement_eligible": false,
+      "resource_graph": {
+        "costOwner": "resource",
+        "costTreatment": "OWN_COST",
+        "formulaId": "fusion-bench-prepared-concrete:formula:final-inspection-cleanup",
+        "inputParameterIds": [
+          "prepared_foundation_acceptance_reference",
+          "available_concrete_depth_mm",
+          "minimum_anchor_edge_distance_mm"
+        ],
+        "normalizedUom": "",
+        "operationCompositionV1": {
+          "completionCriterionRu": "Определены применимость, единица, количество и владелец цены.",
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "fusion-bench-prepared-concrete",
+          "groupTitleRu": "Установка готовой скамьи на подготовленное бетонное основание",
+          "operationId": "fusion-bench-prepared-concrete:operation:final-inspection-cleanup",
+          "operationTitleRu": "Проверка устойчивости/затяжки, удаление упаковки и пыли, сдача установленного изделия",
+          "processOrdinal": 40
+        },
+        "publicResourcePresentationV1": {
+          "brandAndModelRu": null,
+          "contractVersion": "canonical-public-resource-presentation/v1",
+          "detailsRu": [
+            "Потребность не завершена: количественной нормы в источнике нет.",
+            "Единица, количество и владелец цены пока не определены."
+          ],
+          "nameRu": "Проверка устойчивости/затяжки, удаление упаковки и пыли, сдача установленного изделия",
+          "sourceTitleRu": "Проверка устойчивости/затяжки, удаление упаковки и пыли, сдача установленного изделия",
+          "specificationRu": "Проверка устойчивости/затяжки, удаление упаковки и пыли, сдача установленного изделия"
+        },
+        "scopeContextParameterIds": [
+          "bench_count"
+        ],
+        "semanticOwnerId": "fusion-bench-prepared-concrete:fusion-bench-prepared-concrete:final-inspection-cleanup"
+      },
+      "row_id": "fusion-bench-prepared-concrete:final-inspection-cleanup",
+      "row_sha256": "eh_e4ae18764f1314e2",
+      "row_type": "other",
+      "section": "Установка готовой скамьи на подготовленное бетонное основание",
+      "source_metadata": {
+        "exact_locator": "C000/0096 page2 steps1–6; Fusion Bench product page",
+        "exact_product": "Glasdon Fusion Bench",
+        "excludedUnownedAssumptions": [
+          "Paving-slab branch",
+          "Grass/soft-ground concrete-in anchors",
+          "Foundation construction, excavation, concrete volume or curing in this prepared-base scenario",
+          "Tamper-resistant covers unless a separately confirmed project/supply option is explicitly added",
+          "Jubilee-bin anchor dimensions or concrete strength limits",
+          "Unrelated UK legislation treated as Kyrgyz normative approval",
+          "No source-backed labour => no KRER newconstruction/altitude coefficient claim"
+        ],
+        "full_technical_acceptance": false,
+        "holesPerInstalledBench": 4,
+        "normativeTrace": [],
+        "official_url": "https://www.glasdon.com/intl/downloads/instructions/C000-0096%20Seating%20Base%20Fix_A4.pdf",
+        "quantityUnitUnconfirmed": true,
+        "source_artifact_sha256": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+        "sourceOutlineSha256": "a40fa964de62393bb44b1a5343d06990e0ac6e77cdabd9dae88df932eb19cbc1",
+        "sourceRole": "UNRESOLVED_INSTALLATION_SOURCE",
+        "synthetic": false,
+        "truth_contract_version": "R3"
+      },
+      "title_ru": "Проверка устойчивости/затяжки, удаление упаковки и пыли, сдача установленного изделия",
+      "unit_id": ""
+    }
+  ],
+  "runtimeProfileClassification": {},
+  "runtimeProfileInput": {},
+  "runtimeProfileSourceIds": {},
+  "search": {
+    "aliases": [
+      "Монтаж готовой скамьи на подготовленный бетон",
+      "Установка Fusion Bench на готовое бетонное основание"
+    ],
+    "canonicalNameRu": "Установка готовой скамьи на подготовленное бетонное основание",
+    "clarificationFields": [
+      "bench_count",
+      "prepared_foundation_acceptance_reference",
+      "available_concrete_depth_mm",
+      "minimum_anchor_edge_distance_mm",
+      "actual_bench_supply_specification",
+      "anchor_supply_scope",
+      "bench_stock",
+      "bench_reserve",
+      "bench_quantum",
+      "bench_stock_compatibility_reference",
+      "fixing_supply_specification",
+      "fixing_stock",
+      "fixing_reserve",
+      "fixing_quantum",
+      "fixing_stock_compatibility_reference"
+    ],
+    "excludedBoundaries": [
+      "Paving-slab branch",
+      "Grass/soft-ground concrete-in anchors",
+      "Foundation construction, excavation, concrete volume or curing in this prepared-base scenario",
+      "Tamper-resistant covers unless a separately confirmed project/supply option is explicitly added",
+      "Jubilee-bin anchor dimensions or concrete strength limits",
+      "Unrelated UK legislation treated as Kyrgyz normative approval",
+      "No source-backed labour => no KRER newconstruction/altitude coefficient claim"
+    ],
+    "extraSearchTermsRu": "скамья готовая бетон основание Fusion Bench Glasdon M10 крепление",
+    "includedBoundaries": [
+      "Только готовая собранная Glasdon Fusion Bench 1800×310×425мм на сплошном готовом бетоне",
+      "Бетон не менее200мм; ось крепления не ближе110мм к краю; четыре крепления и отверстия на установленную скамью",
+      "Сверло10мм, отверстия140мм, гайкаM10, головка17мм, рекомендуемый максимум27Н·м; это условия операции, не нормы времени",
+      "Штатные болт, гайка и шайбы входят в один совместимый узел; большая шайба ИЛИ пластина, без повторных компонентных закупок",
+      "Заказ скамей и, при раздельной поставке, крепежа по пригодному наличию, резерву и кратности фактического поставщика"
+    ],
+    "keyDistinguishingParameters": [
+      "prepared_foundation_acceptance_reference",
+      "actual_bench_supply_specification",
+      "anchor_supply_scope"
+    ],
+    "primaryUom": "pcs",
+    "shortScopeRu": "Точное готовое изделие Fusion Bench на сплошном бетонном основании, четыре крепления; количественные нормы труда, инструмента и завершения открыты.",
+    "sourceProvenance": {
+      "exactManufacturerProduct": "Glasdon Fusion Bench",
+      "fullTechnicalAcceptance": false,
+      "primaryMeasureParameterId": "bench_count",
+      "sourcePack": "fusion-bench-prepared-concrete-s27-58.json"
+    }
+  },
+  "sourceHashes": [
+    {
+      "path": "scripts/estimate/r4a13/prepareS2758TrayKerbSupplyWave.ts",
+      "sha256": "87c1eb43330bfe53c6e02e5cd21152bf6028c9d9c9cd14b6433ea62f048d78e4",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": "scripts/estimate/r4a13/preflightS2758TrayKerbSupplyWave.ts",
+      "sha256": "eff6d97772af0f4931517e72c212a0dababb3703efa90fa3a5e5e577a7a804af",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": "src/lib/estimate/v4/precastRcEmbankmentRunoffTrayS2758.ts",
+      "sha256": "92e3b6435dfa804a58eb70edc241ae746a9be1123878a86b6c0df7c88b0453e1",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": "src/lib/estimate/v4/concreteKerbSupplyIdentityS2758.ts",
+      "sha256": "3c93c14265f743a8616487ebbfd72d938a41338fa37e4e7de3be7d56c61c23a3",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/precast-rc-embankment-runoff-tray-s27-58.json",
+      "sha256": "89b6b3298e639a26c4730d5ace42838214dcd49d5c761748d481f7267f739950",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": "src/lib/estimate/v4/precastRcTrayKerbSupplyS2758.test.ts",
+      "sha256": "0b0838feece4e774bee7d3424ddc439158aa5de26d228a01090adc6150fcd722",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts",
+      "sha256": "d6e260aebeb29d35655b26a6a0227b6bb87d2bf77ca7b30854a52fff96801a07",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+      "sha256": "693862883673928d3b6b1508a880447e447c211aa8256e8b1f3586be531b28f7",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+      "sha256": "d4c2192d1d5c4ef0285668b3c1aeb2994c2b57c3e8b9d8d6a776ee4c3e10d7ae",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
+      "sha256": "b5647461019cb577e395982c2bcf8c1ab3977538f9c473e928ae25c52cd5ed44",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": ".release-runtime/r568/s27-58/review/trays/source-plan.json",
+      "sha256": "9d899b91ee452b20792debe77d4438bb079db3aa067e91534717cc86cbf555b8",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": ".release-runtime/r568/s27-58/review/trays/source-admission-amendment.json",
+      "sha256": "c993e14ff102486ef877e6e1a18296b581a97e0e009fb173e1f8ea331648eecb",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": ".release-runtime/r4a13-6/s19-first-estimate/primary-source-review/kg-krer27-roadworks-2015.pdf",
+      "sha256": "cd3d6735d1bbdda5957945b7682f032785c76624b54a435edfe5d2ef5e107161",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": ".release-runtime/r568/s27-48/g7-next-source-extracts/KRER_GENERAL_APPLICATION_GUIDANCE.pdf",
+      "sha256": "5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": "scripts/estimate/r4a13/prepareS2758FusionBench.ts",
+      "sha256": "2f75f60c6697c0f9777f35d878f6ad769504fc51bb6d76d0421849180356e8e8",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": "scripts/estimate/r4a13/preflightS2758FusionBench.ts",
+      "sha256": "e763137583b69984955faa81488c327e9d26881eed5c38362fcd72c05fe63dbd",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/fusion-bench-prepared-concrete-s27-58.json",
+      "sha256": "93ead7702955ee84296b9f448cf0ae087e4f63f74cee53c9780dc2ab29108fe9",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": "src/lib/estimate/v4/fusionBenchPreparedConcreteS2758.ts",
+      "sha256": "aa0c0ea929db4328fdfbfb51a9950dd3d88198357e9c4a4ae378ff2db4b316df",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": "src/lib/estimate/v4/fusionBenchPreparedConcreteS2758.test.tsx",
+      "sha256": "04ff0211a30bdd08f7bc1bb02f10d88278f6ce89a98647a66ceffa0deab27c22",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+      "sha256": "b64adfbdf36e0ac190d1b3a933607f3c92d598c98508585be0f9a30165423e01",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": "src/features/consumerRepair/ConsumerRepairItemRow.tsx",
+      "sha256": "bd210b45e46998c14206680b4ddc5960cc74d43650641f3ad97da9697a30c158",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": "src/features/consumerRepair/consumerRepairRowMetadata.ts",
+      "sha256": "7f8aa84097f1f37a6ab73467c79c1b0240ca07d4b99820d5effde4d3e8219ed8",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": "src/features/consumerRepair/useConsumerRepairItemRowEditing.ts",
+      "sha256": "883972d2310591fb7f2319f3da7b1934e048a57b6fbc0a0a890b08ec8efb4597",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.tsx",
+      "sha256": "e0ca8369d031acbd13301dbecc16048ce21268360bd2c308fbbd0fb35e178fda",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": "tests/requestEstimate/canonicalPrecompileParameterCollection.contract.test.tsx",
+      "sha256": "49c19c3bab80c6811d197214faf7aa8a206ca6c264358db28f89d4b8830fb510",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": "tests/requestEstimate/canonicalRowPendingQuantityBaseline.contract.test.tsx",
+      "sha256": "0c16c40b12dc61546d2bc70b55e676aa911277f2c89a5290778240afb49f319d",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": ".release-runtime/r568/s27-58/review/benches-bins/fusion-bench-product.html",
+      "sha256": "2403104b12962e9380e3e15337e72bfbbab74d6bf410a80a0be718e2b859925e",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": ".release-runtime/r568/s27-58/review/benches-bins/Glasdon-Seating-Base-Fix-current-linked.pdf",
+      "sha256": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": "scripts/estimate/r4a13/projectSourcePackageBindingR1.ts",
+      "sha256": "5d94c0531fd94374538acc1da163a785f4020555554646d2ffcf3cddb8d0fb63",
+      "trackedState": "CLEAN_AT_HEAD"
+    },
+    {
+      "path": "scripts/estimate/r4a13/projectSourcePackagePreflightR1.ts",
+      "sha256": "83ea7468adce2e240879984f82dbaa4623d874f55fc17937eadae41e7bc1f44e",
+      "trackedState": "CLEAN_AT_HEAD"
+    }
+  ],
+  "sourceId": "glasdon:fusion-bench:c000-0096:concrete",
+  "sourceMetadata": {
+    "artifact_sha256": "b98bcc6e293e6e3691f8ac22d800140c32e87e2f712ccb2aad0be9dc511d1cf2",
+    "exact_locator": "C000/0096 Issue1 June2006 page2 steps1–6; current product page links these exact bytes",
+    "official_url": "https://www.glasdon.com/intl/downloads/instructions/C000-0096%20Seating%20Base%20Fix_A4.pdf",
+    "source_authority": "Glasdon, производитель изделия",
+    "source_kind": "MANUFACTURER_PHYSICAL_COMPOSITION_COMPLETION_UNRESOLVED",
+    "source_title": "Glasdon Fusion Bench; C000/0096 concrete fixing",
+    "use_restriction": "Только готовая собранная Glasdon Fusion Bench 1800×310×425мм на сплошном готовом бетоне; фундамент, мягкий грунт и другие модели не входят. Количественной нормы труда/техники нет."
+  },
+  "tree": "d134bc64ca938ae42e660db3f40905f9407e983a",
+  "validationScenario": "S2758_EXACT_FUSION_BENCH_FOUR_FIXINGS_PREPARED_CONCRETE_TWO_SUPPLY_BRANCHES_EIGHT_OPEN_NEEDS"
+}

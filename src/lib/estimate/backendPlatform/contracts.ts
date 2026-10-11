@@ -3,6 +3,7 @@ import type { CanonicalOrderedSpecificationBinding } from './canonicalOrderedSpe
 import { parseCanonicalPublicResourcePresentationV1 } from './canonicalPublicResourcePresentationV1';
 import type { AdmissionDecision } from "./estimateAdmissionR3";
 import { canonicalDerivedQuantityEditPolicyV1, type CanonicalDerivedQuantityEditPolicyV1 } from './canonicalDerivedQuantityEditPolicyV1';
+import { canonicalFusionDerivedQuantityClearConsentS2758, type CanonicalFusionDerivedQuantityClearConsentS2758 } from './canonicalFusionDerivedQuantityClearAdmissionS2758';
 
 export const ESTIMATE_PLATFORM_API_VERSION = "2026-08-14.r2" as const;
 
@@ -58,6 +59,7 @@ export function canonicalEstimateEffectivePriceSnapshotIds(input: {
 
 export type CanonicalEstimateRecalculateRequest = CanonicalEstimateCreateRequest & {
   parentRevisionId: string;
+  derivedQuantityClearV1?: CanonicalFusionDerivedQuantityClearConsentS2758;
   releaseMigration?: {
     contractVersion: "canonical_revision_release_migration.r2";
     acknowledged: true;
@@ -267,6 +269,16 @@ export type CanonicalCommercialCostCoverageDecisionView = {
   ownerTitleRu: string;
   priceScope: 'LABOR_ONLY' | 'LABOR_AND_LISTED_RESOURCES';
   supplyParty: 'RATE_PROVIDER' | null;
+};
+
+export type CanonicalFusionQuantityClearPreviewS2758 = {
+  contractVersion: 'canonical-fusion-quantity-clear-preview/v1';
+  catalogId: string;
+  parentRevisionId: string;
+  parentChecksumSha256: string;
+  fromReleaseId: string;
+  toReleaseId: string;
+  rows: Array<{ rowId: string; titleRu: string; unitId: string; oldQuantity: string; calculatedQuantity: string; excluded: boolean }>;
 };
 export type CanonicalCommercialRateCoverageView = {
   contractVersion: 'canonical-commercial-cost-coverage/v1';
@@ -878,6 +890,9 @@ function assertManualProvenance(value: unknown, field: string): void {
 }
 
 function validateRowAmendments(request: Partial<CanonicalEstimateRecalculateRequest>): void {
+  if (request.derivedQuantityClearV1 != null && !canonicalFusionDerivedQuantityClearConsentS2758(request.derivedQuantityClearV1)) {
+    throw new CanonicalEstimateApiError("derivedQuantityClearV1 consent is invalid", { code: "INVALID_ARGUMENT", httpStatus: 400 });
+  }
   if (request.releaseMigration != null) {
     const migration = request.releaseMigration;
     if (!migration || typeof migration !== "object" || Array.isArray(migration)

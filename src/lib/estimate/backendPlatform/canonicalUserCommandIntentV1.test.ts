@@ -33,7 +33,7 @@ describe('interactive intent replay without weakening candidate admission', () =
     expect(await replay(database, identity())).toEqual({ job_id: 'existing-child-job', job_status: 'succeeded', created: false });
     expect(database.calls).toBe(2);
   });
-  test.each(['parameters', 'rowOverrides', 'customRows'])('rejects changed %s under the same intent', async key => {
+  test.each(['parameters', 'rowOverrides', 'customRows', 'derivedQuantityClearV1'])('rejects changed %s under the same intent', async key => {
     const input = identity();
     input.payload[key] = key === 'customRows' ? [{ clientRowId: 'different' }] : { changed: 10 };
     await expect(replay(store([job()]), input)).rejects.toMatchObject({ code: 'COMMAND_INTENT_PAYLOAD_MISMATCH', httpStatus: 409 });

@@ -18,7 +18,8 @@ export function canonicalUserCommandSemanticPayloadV1(payload: Json): Json {
   // define the business operation independently of those dispatch envelopes.
   return { parameters: payload.parameters ?? {}, currencyCode: payload.currencyCode,
     priceSnapshotIds: payload.priceSnapshotIds ?? [], requestIdentity: payload.requestIdentity ?? null,
-    rowOverrides: payload.rowOverrides ?? {}, customRows: payload.customRows ?? [], releaseMigration: payload.releaseMigration ?? null };
+    rowOverrides: payload.rowOverrides ?? {}, customRows: payload.customRows ?? [], releaseMigration: payload.releaseMigration ?? null,
+    ...(payload.derivedQuantityClearV1 == null ? {} : { derivedQuantityClearV1: payload.derivedQuantityClearV1 }) };
 }
 function digest(identity: CanonicalUserCommandReplayIdentity, payload = identity.payload): string {
   return createHash('sha256').update(canonicalEstimateStableJson({

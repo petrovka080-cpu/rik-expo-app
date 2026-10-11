@@ -48,4 +48,22 @@ describe("release migration consent UI", () => {
     act(() => renderer.unmount());
     await expect(result).resolves.toBe(false);
   });
+
+  it('requires explicit selection of every visible and hidden physical reset and shows old/new quantities', async () => {
+    let result!: Promise<boolean>;
+    const rows = [{ rowId: 'bench', titleRu: 'Скамья', unitId: 'pcs', oldQuantity: '5', calculatedQuantity: '3', excluded: false },
+      { rowId: 'fixing', titleRu: 'Крепление', unitId: 'pcs', oldQuantity: '17', calculatedQuantity: '12', excluded: true }];
+    act(() => { result = api.confirmReleaseMigration({ ...prompt, quantityClearPreview: { contractVersion: 'canonical-fusion-quantity-clear-preview/v1',
+      catalogId: 'fusion', parentRevisionId: 'parent', parentChecksumSha256: 'a'.repeat(64), fromReleaseId: 'old-release', toReleaseId: 'new-release', rows } }); });
+    const confirm = () => renderer.root.findByProps({ testID: 'consumer-estimate-release-migration-confirm' });
+    expect(confirm().props.disabled).toBe(true);
+    expect(JSON.stringify(renderer.toJSON())).toContain('17');
+    expect(JSON.stringify(renderer.toJSON())).toContain('строка сейчас исключена');
+    act(() => renderer.root.findByProps({ testID: 'consumer-estimate-quantity-clear-bench' }).props.onPress());
+    expect(confirm().props.disabled).toBe(true);
+    act(() => renderer.root.findByProps({ testID: 'consumer-estimate-quantity-clear-fixing' }).props.onPress());
+    expect(confirm().props.disabled).toBe(false);
+    act(() => confirm().props.onPress());
+    await expect(result).resolves.toBe(true);
+  });
 });

@@ -68,6 +68,9 @@ export function fusionBenchDefinitionS2758():AutomaticOwnerDefinition {
     const included=key==='fixing-included',fixing=key.startsWith('fixing-');
     const {row_sha256:_hash,...body}=r;
     const updated={...body,cost_owner_id:included?prefix+':bench-order':r.cost_owner_id,resource_graph:{...r.resource_graph,
+      ...(['bench-consumed','fixing-included','fixing-consumed-separate'].includes(key)?{derivedQuantityEditPolicyV1:{
+        contractVersion:'canonical-derived-quantity-edit-policy/v1',mode:'PARAMETERS_ONLY',unitId:'pcs',parameterIds:['bench_count'],
+        reasonRu:'Количество устанавливаемых скамеек и четырёх креплений на каждую скамью изменяется через поле количества скамеек.'}}:{}),
       ...(included?{parentCostOwnerId:prefix+':bench-order',includedInResourceOwnerRowId:prefix+':bench-order'}:{}),
       operationCompositionV1:{contractVersion:'canonical-operation-resource/v1',groupId:prefix,groupTitleRu:pack.titleRu,
         operationId:prefix+':operation:'+(gap?gap.id:'installation'),operationTitleRu:gap?.specificationRu??'Установка готовой скамьи и крепежа',

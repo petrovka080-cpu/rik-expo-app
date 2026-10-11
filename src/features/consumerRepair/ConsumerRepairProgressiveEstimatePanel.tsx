@@ -1288,6 +1288,21 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     // An old unsaved preview must not become the new revision's baseline.
     const cards = this.buildBaselineCards();
     const baselineValues = Object.fromEntries(cards.map((card) => [card.key, this.valueForCard(card)]));
+    // A consent-only source transition can save the old supply branch while
+    // the user still has edits in a newly activated branch. Keep those inputs
+    // only if the NEW persisted session still owns their editable parameters;
+    // their baseline comes from saved active/inactive values, never the preview.
+    const session = this.props.canonicalParameterSession;
+    const eligible = new Map([...(session?.parameters ?? []), ...(session?.inactiveConditionalParameters ?? [])]
+      .filter(parameter => parameter.source !== 'CALCULATED' && parameter.consumerInputRole !== 'APPLICATION_TECHNICAL')
+      .map(parameter => [parameter.parameterId, parameter]));
+    for (const key of preserveKeys) {
+      const parameter = eligible.get(key);
+      if (parameter && !Object.hasOwn(baselineValues, key)) {
+        baselineValues[key] = canonicalConsumerEditableFieldValue({ cardValue: parameter.value,
+          revisionValue: this.props.revision?.params[key]?.value, parameter });
+      }
+    }
     const preservedValues = Object.fromEntries(
       preserveKeys
         .filter((key) => Object.prototype.hasOwnProperty.call(baselineValues, key))

@@ -12,6 +12,7 @@ export type CanonicalEstimateRecalculateCommandIdentity = {
   rowOverrides: Record<string, CanonicalEstimateRowOverride>;
   customRows: CanonicalEstimateCustomRow[];
   releaseMigration?: CanonicalEstimateRecalculateRequest["releaseMigration"];
+  derivedQuantityClearV1?: CanonicalEstimateRecalculateRequest['derivedQuantityClearV1'];
 };
 
 export function canonicalEstimateRecalculateIdempotencyKey(
@@ -23,6 +24,7 @@ export function canonicalEstimateRecalculateIdempotencyKey(
     rowOverrides: input.rowOverrides,
     customRows: input.customRows,
     ...(input.releaseMigration ? { releaseMigration: input.releaseMigration } : {}),
+    ...(input.derivedQuantityClearV1 ? { derivedQuantityClearV1: input.derivedQuantityClearV1 } : {}),
   })}`;
 }
 

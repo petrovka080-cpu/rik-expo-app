@@ -199,3 +199,32 @@ it("rebases an accepted child to the saved conditional values and clears submitt
   expect(input("fixing_stock").props.value).toBe("0");
   expect(apply).toHaveBeenCalledTimes(1);
 });
+
+it('retains edited inactive-branch fields after a consent-only child saves the unchanged original supply mode', () => {
+  mount(savedParameters(), true);
+  apply.mockReturnValue(false);
+  press('editable-param-option-anchor_supply_scope-' + separateBinFixingsS2758);
+  expand();
+  act(() => input('fixing_supply_specification').props.onChangeText('CONTROL_ONLY: новый полный крепёж M10'));
+  act(() => input('fixing_stock_compatibility_reference').props.onChangeText('CONTROL_ONLY: подтверждение нового запаса'));
+  act(() => input('fixing_stock').props.onChangeText('1'));
+  press('editable-param-batch-apply');
+  expect(apply).toHaveBeenCalledTimes(1);
+  const next = session(savedParameters());
+  act(() => renderer.update(<ParameterDisclosurePanel revision={revision(next, 'R16', 'R15')} viewModel={null}
+    canonicalParameterSession={next} latestDiff={null} paramEditorEnabled onApplyParamBatch={apply} />));
+  expand();
+  expect(input('fixing_supply_specification').props.value).toBe('CONTROL_ONLY: новый полный крепёж M10');
+  expect(input('fixing_stock_compatibility_reference').props.value).toBe('CONTROL_ONLY: подтверждение нового запаса');
+  expect(input('fixing_stock').props.value).toBe('1');
+  expect(dirtyIds()).toEqual(['anchor_supply_scope', 'fixing_stock', 'fixing_stock_compatibility_reference', 'fixing_supply_specification']);
+  press('editable-param-batch-apply');
+  expect(apply).toHaveBeenCalledTimes(2);
+  expect(apply.mock.calls[1][0]).toEqual(expect.arrayContaining([
+    { operation: 'update_param', paramKey: 'fixing_supply_specification', rawValue: 'CONTROL_ONLY: новый полный крепёж M10' },
+    { operation: 'update_param', paramKey: 'fixing_stock', rawValue: '1' },
+  ]));
+  press('editable-param-batch-cancel');
+  expect(editor('fixing_stock')).toBeUndefined();
+  expect(dirtyIds()).toEqual([]);
+});

@@ -37,8 +37,8 @@ const target: CanonicalEstimateCatalogItem = {
   catalogId: revision.catalogId, releaseId: targetRelease, workKey: "roof", namespace: "global", domain: "roof",
   titleRu: "Укладка кровли", definitionVersion: 2, applicability: {}, professionalMetadata: {},
   parameterSchema: [
-    { parameterId: "area_m2", ordinal: 0, titleRu: "Площадь", valueType: "decimal", unitId: "m2", required: true, defaultValue: null, constraints: {}, valueSourceRole: "USER_MEASURED" },
-    { parameterId: "adhesive_kg_m2", ordinal: 1, titleRu: "Расход клея", valueType: "decimal", unitId: "kg/m2", required: true, defaultValue: "1", constraints: {}, valueSourceRole: "MANUFACTURER_CONFIRMED" },
+    { parameterId: "area_m2", ordinal: 0, titleRu: "Площадь", valueType: "decimal", unitId: "m2", required: true, defaultValue: null, constraints: {}, visibilityRole: 'USER_INPUT', valueSourceRole: "USER_MEASURED" },
+    { parameterId: "adhesive_kg_m2", ordinal: 1, titleRu: "Расход клея", valueType: "decimal", unitId: "kg/m2", required: true, defaultValue: "1", constraints: {}, visibilityRole: 'USER_INPUT', valueSourceRole: "MANUFACTURER_CONFIRMED" },
   ],
 };
 const oldCatalog = { ...target, releaseId: parentRelease, definitionVersion: 1 };

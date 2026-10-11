@@ -1,6 +1,8 @@
 import { createHash } from "node:crypto";
 
 import type { Client } from "pg";
+import { canonicalDefinitionPublicationStableValueR1 as stable } from
+  "../../../src/lib/estimate/backendPlatform/canonicalDefinitionPublicationStableValueR1";
 
 export type CanonicalPublisherJson = Record<string, any>;
 
@@ -141,17 +143,6 @@ function invariant(value: unknown, code: string): asserts value {
 
 function isObject(value: unknown): value is CanonicalPublisherJson {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
-}
-
-function stable(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(stable);
-  if (isObject(value)) {
-    return Object.fromEntries(Object.entries(value)
-      .filter(([, child]) => child !== undefined)
-      .sort(([left], [right]) => left.localeCompare(right))
-      .map(([key, child]) => [key, stable(child)]));
-  }
-  return value;
 }
 
 function compareUtf8C(left: unknown, right: unknown): number {

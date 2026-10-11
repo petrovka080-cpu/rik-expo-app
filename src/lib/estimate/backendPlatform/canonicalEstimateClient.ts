@@ -17,6 +17,7 @@ import {
   type CanonicalEstimateRevisionRowsPage,
   type CanonicalEstimateRevisionHistoryPage,
   type CanonicalEstimateRevisionView,
+  type CanonicalFusionQuantityClearPreviewS2758,
   type CanonicalEstimatePreliminaryNeedEvidence,
   type CanonicalEstimatePreliminaryNeedEvidenceReference,
   type CanonicalEstimateResourceSearchPage,
@@ -610,6 +611,11 @@ export function getCanonicalEstimateRevision(revisionId: string, signal?: AbortS
     signal,
     requestClass: "ui_scope_load",
   });
+}
+
+export function getCanonicalFusionQuantityClearPreviewS2758(revisionId: string, signal?: AbortSignal | null) {
+  return invoke<{ apiVersion: string; preview: CanonicalFusionQuantityClearPreviewS2758 | null }>(
+    `revisions/${encodeURIComponent(revisionId)}/fusion-quantity-clear-preview`, { signal, requestClass: 'ui_scope_load' });
 }
 
 export async function getCanonicalEstimatePreliminaryNeedEvidence(

@@ -4,6 +4,12 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname, resolve } from "node:path";
 
 import { Client } from "pg";
+import { buildMasterParameterCalculationConsumers } from
+  "../../../src/lib/estimate/backendPlatform/canonicalDefinitionParameterConsumersR1";
+import { canonicalDefinitionPublicationStableValueR1 as stable } from
+  "../../../src/lib/estimate/backendPlatform/canonicalDefinitionPublicationStableValueR1";
+import { buildCanonicalMasterSingleDefinitionSourceOriginR1, canonicalMasterSingleDefinitionSourceOriginMatchesR1 } from
+  "../../../src/lib/estimate/backendPlatform/canonicalMasterSingleDefinitionSourceOriginR1";
 
 import { compileFormulaGraph } from
   "../../../src/lib/estimate/backendPlatform/formulaGraph";
@@ -202,48 +208,8 @@ export function validateMasterFormulaGraphConsistency(
   return errors;
 }
 
-/** The exact metadata enrichment used by publication, also usable without a DB. */
-export function buildMasterParameterCalculationConsumers(input: Readonly<{
-  parameters: readonly Json[];
-  formulas: readonly Json[];
-  resources: readonly Json[];
-}>): Readonly<{
-  formulaConsumers: Record<string, string[]>;
-  resourceConsumers: Record<string, string[]>;
-}> {
-  const formulaConsumers: Record<string, string[]> = Object.fromEntries(input.parameters.map(
-    (parameter) => [
-      parameter.parameter_id,
-      input.formulas.filter((formula) => formula.input_parameter_ids.includes(parameter.parameter_id))
-        .map((formula) => formula.formula_id),
-    ],
-  ));
-  const resourceRowIds = new Set(input.resources.map((resource) => String(resource.row_id)));
-  // This is local to one immutable-definition read. A large resource graph
-  // used to be stringified again for EVERY parameter (and often every editor
-  // fixture), creating avoidable CPU/temporary-string pressure. Keep the exact
-  // existing quoted-ID/precedence semantics and lazy formula short circuit;
-  // neither definition data nor inferred consumers survive into another call.
-  const resourceIndexes = input.resources.map(resource => ({ resource,
-    graphText: undefined as string | undefined, inclusionText: undefined as string | undefined }));
-  const resourceConsumers: Record<string, string[]> = Object.fromEntries(input.parameters.map(
-    (parameter) => {
-      const quotedId = `"${parameter.parameter_id}"`;
-      const inferred = resourceIndexes.filter(entry =>
-        formulaConsumers[parameter.parameter_id]!.includes(entry.resource.formula_id)
-        || (entry.graphText ??= JSON.stringify(entry.resource.resource_graph)).includes(quotedId)
-        || (entry.inclusionText ??= JSON.stringify(entry.resource.inclusion_ast)).includes(quotedId))
-        .map(entry => entry.resource.row_id);
-      const declared = Array.isArray(parameter.truth_metadata?.resource_branch_consumers)
-        ? parameter.truth_metadata.resource_branch_consumers
-          .map(String)
-          .filter((rowId: string) => resourceRowIds.has(rowId))
-        : [];
-      return [parameter.parameter_id, inferred.length > 0 ? inferred : declared];
-    },
-  ));
-  return { formulaConsumers, resourceConsumers };
-}
+export { buildMasterParameterCalculationConsumers } from
+  "../../../src/lib/estimate/backendPlatform/canonicalDefinitionParameterConsumersR1";
 
 const CONTENT_PASSPORT_CONTRACT = "real-professional-estimates-r3.content-passport.v1";
 const BASELINE_CONTRACT = "APPROVED_TEMPLATE_BASELINE_R54_V1";
@@ -252,17 +218,6 @@ const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
 
 function invariant(value: unknown, code: string): asserts value {
   if (!value) throw new Error(code);
-}
-
-function stable(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(stable);
-  if (value && typeof value === "object") {
-    return Object.fromEntries(Object.entries(value as Json)
-      .filter(([, child]) => child !== undefined)
-      .sort(([left], [right]) => left.localeCompare(right))
-      .map(([key, child]) => [key, stable(child)]));
-  }
-  return value;
 }
 
 function sha256(value: unknown): string {
@@ -1040,7 +995,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
   invariant(parameterRows.every((parameter) => resourceConsumers[parameter.parameter_id]!.length > 0),
     stop(config, "PARAMETER_WITHOUT_RESOURCE_CONSUMER"));
 
-  const fingerprint = sha256({
+  const sourceEnvelope = {
     contract: config.contract,
     head,
     tree,
@@ -1067,7 +1022,10 @@ export async function runMasterSingleDefinitionSuccessorR1(
     catalogAppend: append,
     validationScenario: config.validationScenario,
     coreAcceptance,
-  });
+  };
+  const sourceOrigin = buildCanonicalMasterSingleDefinitionSourceOriginR1({ catalogId: config.catalogId, envelope: sourceEnvelope });
+  invariant(sourceOrigin, stop(config, "SOURCE_ORIGIN_ENVELOPE_INVALID"));
+  const fingerprint = sourceOrigin.fingerprint;
   const releaseId = uuid(`${config.contract}:${fingerprint}:definition-release`);
   const searchReleaseId = uuid(`${config.contract}:${fingerprint}:search-release`);
   const definitionId = uuid(`${config.contract}:${fingerprint}:definition`);
@@ -1507,6 +1465,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
           JSON.stringify({
             contract: config.contract,
             masterSha256: config.masterSha256,
+            masterSingleDefinitionSourceOriginV1: sourceOrigin,
             lifecycle: "DRAFT_FORWARD_ONLY",
             ...(append == null
               ? { replacedDefinitionCount: 1 }
@@ -1521,6 +1480,23 @@ export async function runMasterSingleDefinitionSuccessorR1(
           nextCounts.parameters,
           nextCounts.formulas,
         ]);
+        const persistedSourceOrigin = (await client.query(`select source_commit,source_tree,source_package_sha256,
+            metadata->'masterSingleDefinitionSourceOriginV1' source_origin,
+            metadata->>'contract' source_contract,metadata->>'masterSha256' master_sha256
+          from public.estimate_definition_release where id=$1`, [releaseId])).rows[0] as Json | undefined;
+        invariant(persistedSourceOrigin && canonicalMasterSingleDefinitionSourceOriginMatchesR1({
+          origin: persistedSourceOrigin.source_origin,
+          catalogId: config.catalogId,
+          fingerprint,
+          sourceCommit: persistedSourceOrigin.source_commit,
+          sourceTree: persistedSourceOrigin.source_tree,
+          masterSha256: config.masterSha256,
+          sourcePackageSha256: persistedSourceOrigin.source_package_sha256,
+          parameterSchemaSha256,
+          definitionSchemaSha256,
+        }) && persistedSourceOrigin.source_commit === head && persistedSourceOrigin.source_tree === tree
+          && persistedSourceOrigin.source_contract === config.contract && persistedSourceOrigin.master_sha256 === config.masterSha256,
+        stop(config, "PERSISTED_SOURCE_ORIGIN_MISMATCH"));
         if (append != null) {
           const insertedIdentity = await client.query(`insert into public.estimate_work_identity(
               catalog_id,namespace,domain,source_identity,work_key,title_ru,denominator_eligible,canonical_owner)

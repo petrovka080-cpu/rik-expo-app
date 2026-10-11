@@ -33,6 +33,9 @@ import {
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
 import { canonicalEstimateStableJson } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism";
 import { canonicalManualPriceMigrationBindings, canonicalManualExclusionMigrationBindings, assertCanonicalStoredManualPriceReleaseMigration } from "../../../src/lib/estimate/backendPlatform/canonicalManualPriceReleaseMigration";
+import { admitCanonicalFusionDerivedQuantityClearServerS2758, previewCanonicalFusionDerivedQuantityClearServerS2758 } from './canonicalFusionDerivedQuantityClearServerS2758';
+import { assertCanonicalFusionSourceTransactionS2758, type CanonicalFusionSourceTransactionIdentityS2758 } from './canonicalFusionPublishedSourceReaderS2758';
+import { canonicalFusionQuantityClearRevisionNumberConflictS2758 } from '../../../src/lib/estimate/backendPlatform/canonicalFusionDerivedQuantityClearAdmissionS2758';
 
 async function localManualAmendmentMigrationBindings(client: PoolClient, definitionId: string): Promise<{
   manualPriceMigrationBindings: Record<string, string>; manualExclusionMigrationBindings: Record<string, string>;
@@ -1499,9 +1502,13 @@ async function createJob(
   }
   const parentRevisionId =
     operation === "recalculate" ? String(body.parentRevisionId ?? "") : null;
+  const quantityClearRequested = Object.hasOwn(body, 'derivedQuantityClearV1');
+  if (quantityClearRequested && (operation !== 'recalculate' || body.derivedQuantityClearV1 == null)) {
+    throw Object.assign(new Error('Quantity clear is only available for an acknowledged recalculation.'), { code: 'INVALID_ARGUMENT', httpStatus: 400 });
+  }
   const modelDatabaseUrl = await modelDatabaseUrlForCatalog(catalogId);
   const result = await withDatabaseClient(modelDatabaseUrl, async (client) => {
-    await client.query("begin");
+    await client.query(quantityClearRequested ? 'begin isolation level repeatable read' : 'begin');
     try {
       if (operation === "recalculate") {
         const parentInPrincipalScope = Boolean(
@@ -1537,11 +1544,19 @@ async function createJob(
         compilationAdmission.decision.mode === "isolated_candidate_test"
           ? await resolveCandidateCapabilityId(client)
           : null;
+      const commandTargetReleaseId = compilationAdmission.decision.releaseId;
+      if (!commandTargetReleaseId) throw Object.assign(new Error('Command target release is not admitted.'), { code: 'DEFINITION_CONTENT_NOT_ADMITTED' });
+      const commandOrganizationId = TARGET_RELEASE_ID && compilationAdmission.targetReleaseStatus === 'prepared'
+        ? currentTenantId() : organizationId;
+      const quantityClear = quantityClearRequested ? await admitCanonicalFusionDerivedQuantityClearServerS2758(client, {
+        phase: 'INTAKE', request: body, ownerUserId: currentOwnerId(),
+        organizationId: commandOrganizationId, targetReleaseId: commandTargetReleaseId,
+      }) : null;
       const requestedPriceSnapshotIds = Array.isArray(body.priceSnapshotIds)
         ? body.priceSnapshotIds.filter((value): value is string =>
             typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(value))
         : [];
-      const compatibleDefaultPriceSnapshotIds = requestedPriceSnapshotIds.length > 0
+      const compatibleDefaultPriceSnapshotIds = quantityClear || requestedPriceSnapshotIds.length > 0
         ? []
         : await resolveDefaultPriceSnapshotIds(
             client,
@@ -1549,13 +1564,13 @@ async function createJob(
             catalogId,
             currencyCode,
           );
-      const priceSnapshotIds = canonicalEstimateEffectivePriceSnapshotIds({
+      const priceSnapshotIds = quantityClear ? quantityClear.admission.priceSnapshotIds : canonicalEstimateEffectivePriceSnapshotIds({
         requested: requestedPriceSnapshotIds,
         compatibleDefaults: compatibleDefaultPriceSnapshotIds,
       });
       const inputPayload = {
         ...(body.commandIntentV1 == null ? {} : { commandIntentV1: body.commandIntentV1 }),
-        parameters,
+        parameters: quantityClear ? quantityClear.admission.parameters : parameters,
         currencyCode,
         priceSnapshotIds,
         ...(operation === "compile"
@@ -1573,8 +1588,9 @@ async function createJob(
                     },
                   }
                 : {}),
-              rowOverrides: body.rowOverrides ?? {},
-              customRows: body.customRows ?? [],
+              rowOverrides: quantityClear ? quantityClear.admission.rowOverrides : body.rowOverrides ?? {},
+              customRows: quantityClear ? quantityClear.admission.customRows : body.customRows ?? [],
+              ...(quantityClear ? { derivedQuantityClearV1: quantityClear.admission.consent } : {}),
               ...(body.releaseMigration == null
                 ? {}
                 : { releaseMigration: body.releaseMigration }),
@@ -1603,16 +1619,13 @@ async function createJob(
           isolatedCandidateTest:
             compilationAdmission.decision.mode === "isolated_candidate_test",
         });
-      const commandTargetReleaseId = compilationAdmission.decision.releaseId;
-      if (!commandTargetReleaseId) throw Object.assign(new Error('Command target release is not admitted.'), { code: 'DEFINITION_CONTENT_NOT_ADMITTED' });
-      const commandOrganizationId = TARGET_RELEASE_ID && compilationAdmission.targetReleaseStatus === 'prepared'
-        ? currentTenantId() : organizationId;
       const replay = await readCanonicalUserCommandReplayV1(client, {
         ownerUserId: currentOwnerId(), organizationId: commandOrganizationId, targetReleaseId: commandTargetReleaseId,
         operation, catalogId, parentRevisionId: parentRevisionId || null,
         clientIdempotencyKey: idempotencyKey, persistenceIdempotencyKey, payload: inputPayload,
       });
       if (replay) {
+        if (quantityClear) await assertCanonicalFusionSourceTransactionS2758(client, quantityClear.transactionIdentity);
         await client.query('commit');
         return replay;
       }
@@ -1690,10 +1703,15 @@ async function createJob(
           ],
         );
       }
+      if (quantityClear) await assertCanonicalFusionSourceTransactionS2758(client, quantityClear.transactionIdentity);
       await client.query("commit");
       return created.rows[0];
     } catch (error) {
       await client.query("rollback");
+      if (quantityClearRequested && ['40001', '40P01', '55P03'].includes(String((error as { code?: unknown })?.code))) {
+        throw Object.assign(new Error('Переход выполнялся одновременно с другой записью. Проверьте сохранённый результат и повторите при необходимости.'),
+          { code: 'FUSION_QUANTITY_CLEAR_RETRY_REQUIRED', httpStatus: 409, retryable: true });
+      }
       throw error;
     }
   });
@@ -1952,7 +1970,10 @@ async function drainJobs(connectionString = DATABASE_URL): Promise<void> {
           );
           if (claimed.rows.length === 0) break;
           for (const job of claimed.rows) {
+            const quantityClearJob = Object.hasOwn(job.input_payload ?? {}, 'derivedQuantityClearV1');
             try {
+              if (quantityClearJob) await client.query('begin isolation level repeatable read');
+              if (quantityClearJob && job.operation !== 'recalculate') throw Object.assign(new Error('Fusion clear job operation is invalid.'), { code: 'FUSION_QUANTITY_CLEAR_REVIEW_REQUIRED' });
               if (job.operation === "legacy_revision_migration")
                 await migrateLegacyClaimedJob(
                   client,
@@ -1969,8 +1990,16 @@ async function drainJobs(connectionString = DATABASE_URL): Promise<void> {
                   workerId,
                   job as JsonRecord,
                 );
-              else await compileClaimedJob(client, workerId, job as JsonRecord);
+              else {
+                const transactionIdentity = await compileClaimedJob(client, workerId, job as JsonRecord);
+                if (quantityClearJob) {
+                  if (!transactionIdentity) throw Object.assign(new Error('Fusion clear transaction evidence is missing.'), { code: 'FUSION_QUANTITY_CLEAR_REVIEW_REQUIRED' });
+                  await assertCanonicalFusionSourceTransactionS2758(client, transactionIdentity);
+                  await client.query('commit');
+                }
+              }
             } catch (error) {
+              if (quantityClearJob) await client.query('rollback');
               const code =
                 typeof error === "object" && error && "code" in error
                   ? String((error as { code: unknown }).code)
@@ -1996,6 +2025,7 @@ async function drainJobs(connectionString = DATABASE_URL): Promise<void> {
                 );
               }
               const retryable =
+                (quantityClearJob && canonicalFusionQuantityClearRevisionNumberConflictS2758(error)) ||
                 (code === "40001" && !expectedOptimisticLoser) ||
                 ["40P01", "55P03"].includes(code) ||
                 code.endsWith("_LOAD_FAILED") ||
@@ -2053,7 +2083,7 @@ async function compileClaimedJob(
   client: PoolClient,
   workerId: string,
   job: JsonRecord,
-): Promise<void> {
+): Promise<CanonicalFusionSourceTransactionIdentityS2758 | null> {
   const definition = (
     await client.query(
       `
@@ -2106,6 +2136,8 @@ async function compileClaimedJob(
     )
   ).rows;
   const payload = (job.input_payload ?? {}) as JsonRecord;
+  const quantityClearRequested = Object.hasOwn(payload, 'derivedQuantityClearV1');
+  if (quantityClearRequested && job.operation !== 'recalculate') throw Object.assign(new Error('Fusion clear job operation is invalid.'), { code: 'FUSION_QUANTITY_CLEAR_REVIEW_REQUIRED' });
   const baselineRecord = {
     input_values: definition.baseline_input_values,
     input_classification: definition.baseline_input_classification,
@@ -2118,7 +2150,7 @@ async function compileClaimedJob(
   if (job.operation === "recalculate") {
     const parent = (
       await client.query(
-        `select release_id,catalog_id,input_parameters,amendment_contract,
+        `select id,owner_user_id,organization_id,status,checksum_sha256,price_snapshot_ids,release_id,catalog_id,input_parameters,amendment_contract,
         source_request_text,source_request_hash,primary_measure_parameter_id,
         revision_contract_version,definition_version_id,currency_code
        from public.estimate_revision where id=$1`,
@@ -2184,7 +2216,13 @@ async function compileClaimedJob(
     }))),
   );
   const currencyCode = String(payload.currencyCode ?? "");
-  if (parentRevision && parentRevision.release_id !== job.target_release_id) {
+  const quantityClear = quantityClearRequested ? await admitCanonicalFusionDerivedQuantityClearServerS2758(client, {
+    phase: 'WORKER', request: { ...payload, parentRevisionId: job.parent_revision_id, catalogId: job.catalog_id },
+    ownerUserId: String(job.owner_user_id), organizationId: job.organization_id == null ? null : String(job.organization_id),
+    targetReleaseId: String(job.target_release_id),
+  }) : null;
+  if (quantityClear && definition.id !== quantityClear.targetDefinitionId) throw Object.assign(new Error('Fusion clear target definition changed.'), { code: 'FUSION_QUANTITY_CLEAR_REVIEW_REQUIRED' });
+  if (parentRevision && parentRevision.release_id !== job.target_release_id && !quantityClear) {
     const parentAmendments = (parentRevision.amendment_contract ?? {}) as JsonRecord;
     const [parentResources, parentFormulas, parentParameters] = await Promise.all([
       client.query("select * from public.estimate_resource_spec where definition_version_id=$1", [parentRevision.definition_version_id]),
@@ -2302,6 +2340,8 @@ async function compileClaimedJob(
     `select public.${CANONICAL_ESTIMATE_REVISION_COMMIT_FUNCTION}($1,$2,$3::jsonb,$4::jsonb)`,
     [job.id, workerId, JSON.stringify(commitPayload), JSON.stringify(rows)],
   );
+  if (quantityClear) await assertCanonicalFusionSourceTransactionS2758(client, quantityClear.transactionIdentity);
+  return quantityClear?.transactionIdentity ?? null;
 }
 
 function numericValue(value: unknown, nullable = false): string | null {
@@ -4820,6 +4860,25 @@ async function route(
       202,
       await createJob(await readBody(request), "compile"),
     );
+  if (request.method === 'GET' && path.length === 3 && path[0] === 'revisions' && path[2] === 'fusion-quantity-clear-preview') {
+    const databaseUrl = await modelDatabaseUrlForRevision(path[1]);
+    const preview = await withDatabaseClient(databaseUrl, async client => {
+      await client.query('begin isolation level repeatable read read only');
+      try {
+        const parent = (await client.query('select catalog_id,organization_id from public.estimate_revision where id=$1 and owner_user_id=$2', [path[1], currentOwnerId()])).rows[0];
+        if (!parent || parent.catalog_id !== 'canonical-work:master:glasdon_fusion_bench_prepared_concrete_standard') throw Object.assign(new Error('Fusion revision not found.'), { code: 'NOT_FOUND', httpStatus: 404 });
+        const target = await assertUserCompilationAdmission(client, parent.catalog_id, 'parameter_recalculation');
+        if (!target.decision.releaseId) throw Object.assign(new Error('Fusion target is not admitted.'), { code: 'DEFINITION_CONTENT_NOT_ADMITTED', httpStatus: 409 });
+        const organizationId = TARGET_RELEASE_ID && target.targetReleaseStatus === 'prepared' ? currentTenantId() : parent.organization_id ?? null;
+        const result = await previewCanonicalFusionDerivedQuantityClearServerS2758(client, {
+          parentRevisionId: path[1], ownerUserId: currentOwnerId(), organizationId, targetReleaseId: target.decision.releaseId,
+        });
+        await client.query('rollback');
+        return result;
+      } catch (error) { await client.query('rollback'); throw error; }
+    });
+    return send(response, 200, { apiVersion: API_VERSION, preview });
+  }
   if (request.method === "POST" && path.join("/") === "jobs/recalculate")
     return send(
       response,
@@ -5632,7 +5691,7 @@ const server = createServer((request, response) => {
     });
   }
   void route(request, response).catch(
-    (error: { code?: string; httpStatus?: number; message?: string }) => {
+    (error: { code?: string; httpStatus?: number; message?: string; retryable?: boolean }) => {
       const databaseCode = String(error.code ?? "");
       const conflict = databaseCode === "23505";
       const mappedStatus =
@@ -5659,7 +5718,7 @@ const server = createServer((request, response) => {
         error: {
           code,
           message: String(error.message ?? "local canonical backend failed"),
-          retryable: false,
+          retryable: error.retryable === true,
         },
       });
     },
