@@ -57,8 +57,8 @@ test('unresolved physical informational needs stay visible without becoming paya
 
 test('readiness counts unpaid physical and included needs without demanding a second price; excluded paid alternatives stay excluded',()=>{
   const pending=publicItem({id:'required-tool',quantity:null,sourceParameters:{canonicalPreliminaryNeed:true,includedInEstimate:false,canonicalCostTreatment:'INFORMATIONAL_SCOPE',payable:false}});
-  const included=publicItem({...pending,id:'included-physical-resource',sourceParameters:{...pending.sourceParameters,canonicalCostTreatment:'INCLUDED_IN_RESOURCE_ROWS'}});
-  const excluded=publicItem({...pending,id:'excluded-conditional-paid-alternative',sourceParameters:{...pending.sourceParameters,canonicalCostTreatment:'OWN_COST'}});
+  const included=publicItem({...pending,id:'included-physical-resource',quantity:null,sourceParameters:{...pending.sourceParameters,canonicalCostTreatment:'INCLUDED_IN_RESOURCE_ROWS'}});
+  const excluded=publicItem({...pending,id:'excluded-conditional-paid-alternative',quantity:null,sourceParameters:{...pending.sourceParameters,canonicalCostTreatment:'OWN_COST'}});
   const known={...pending,id:'known-informational-counter',quantity:1,sourceParameters:{...pending.sourceParameters,canonicalPreliminaryNeed:false}};
   const bundle={items:[pending,included,excluded,known]} as ConsumerRepairDraftBundle;
   expect(consumerEstimateUnresolvedQuantityItems(bundle).map(x=>x.id)).toEqual(['required-tool','included-physical-resource']);
