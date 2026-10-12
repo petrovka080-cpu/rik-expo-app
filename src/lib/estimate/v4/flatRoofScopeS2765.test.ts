@@ -18,6 +18,7 @@ import {buildCanonicalProfessionalPdfProjection} from '../backendPlatform/canoni
 import {canonicalArtifactPreliminaryNeeds,type CanonicalArtifactRow} from '../backendPlatform/canonicalEstimateArtifactContract';
 import {foundationDraftWithManualCatalogItem} from '../../../../tests/requestEstimate/requestEstimateBoqCatalogTestHelpers';
 import {consumerEstimateUnresolvedQuantityItems,consumerEstimateOpenScopeGroups} from '../../consumerRequests/consumerEstimateReadiness';
+import {consumerRepairRowHasSourceManagedQuantity} from '../../../features/consumerRepair/consumerRepairRowMetadata';
 const fixture=require('../../../../data/estimate-benchmarks/fixtures/flat-roof-scope-parents-s27-65.json') as {sourceSnapshotSha256:string;reps:PurchaseGroupRepresentative[]};
 const facts={q:'37.5',[pack.systemParameterId]:pack.systemYesRu,[pack.conditionsParameterId]:pack.conditionsYesRu,[pack.areaParameterId]:pack.areaYesRu};
 const locators={roof:'CONTROL_ROOF',guidance:'CONTROL_GUIDANCE'},prefix=pack.prefix;
@@ -106,6 +107,14 @@ test('real40m2 control excludes a physical resource separately from cost and res
   const selected={contractVersion:'canonical-estimate-composition-selection/v1' as const,excludedOperationKeys:[],excludedRowIds:[rowId]};
   const result=await compile(r,inputs,{compositionSelectionV1:selected});
   expect(result.rows.find(row=>row.row_id===rowId)).toMatchObject({quantity:'0',included_in_estimate:false,included_in_procurement:false});
+  // A saved exclusion must not turn a normative quantity into a manual field.
+  const storedRow=canonicalEstimateRevisionRowFromStorage(JSON.parse(JSON.stringify(result.rows.find(row=>row.row_id===rowId))),null);
+  expect(storedRow.calculationTrace.derivedQuantityEditPolicy).toMatchObject({mode:'PARAMETERS_ONLY',parameterIds:['q']});
+  const catalog:CanonicalEstimateCatalogItem={catalogId:String(r.definition.catalog_id),releaseId:'CONTROL',namespace:'global',workKey:'scope-control',titleRu:'Монтаж плоской кровли',domain:'roofing',definitionVersion:1,applicability:{},professionalMetadata:{},parameterSchema:[]};
+  const revision:CanonicalEstimateRevisionView={apiVersion:ESTIMATE_PLATFORM_API_VERSION,revisionId:'CONTROL',parentRevisionId:null,releaseId:'CONTROL',catalogId:catalog.catalogId,revisionNumber:1,status:'ready',currencyCode:'KGS',parameters:result.parameters,totals:result.totals,rowCount:result.rows.length,checksumSha256:'a'.repeat(64),compilerVersion:pack.contract,createdAt:'2026-10-12T00:00:00Z',amendmentContract:{rowOverrides:{},customRows:[],releaseMigration:null}};
+  const reopened=buildStructuredEstimateRequestDraft(adaptCanonicalRevisionToStructuredEstimate({catalog,revision,rows:result.rows.map(row=>canonicalEstimateRevisionRowFromStorage(row,null))}));
+  expect(consumerRepairRowHasSourceManagedQuantity(reopened.items.find(item=>item.sourceParameters?.rowCode===rowId))).toBe(true);
+  await expect(compile(r,inputs,{compositionSelectionV1:selected,rowOverrides:{[rowId]:{quantity:'1',provenance:{kind:'manual'}}}})).rejects.toMatchObject({code:'ROW_AMENDMENT_INVALID'});
   expect(scope(result.preliminaryNeeds.find(need=>need.row_id===prefix+':remaining:materials_37')!).status).toBe('REQUIRED_RESOURCE_EXCLUDED');
   const restored=await compile(r,inputs,{compositionSelectionV1:{...selected,excludedRowIds:[]}});
   expect(restored.rows.find(row=>row.row_id===rowId)?.quantity).toBe('46.4');
@@ -117,7 +126,7 @@ test('priced selected remainder never becomes full original technology after use
   const excludedRowIds=base.preliminaryNeeds.filter(need=>['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','SCOPE_UNVERIFIED'].includes(scope(need).status)).map(need=>need.row_id);
   const result=await compile(r,{...facts,q:'40'},{compositionSelectionV1:{contractVersion:'canonical-estimate-composition-selection/v1',excludedOperationKeys:[],excludedRowIds},
     rowOverrides:Object.fromEntries(base.rows.filter(row=>row.included_in_estimate).map(row=>[row.row_id,{unitPrice:'1',provenance:{kind:'manual'}}]))});
-  const stored={id:'TEST',input_parameters:result.parameters,row_count:result.rows.length,totals:result.totals,amendment_contract:{parameterSources:{preliminaryNeeds:result.preliminaryNeeds}}};
+  const stored={id:'TEST',release_id:'CONTROL',catalog_id:String(r.definition.catalog_id),checksum_sha256:'a'.repeat(64),input_parameters:result.parameters,row_count:result.rows.length,totals:result.totals,amendment_contract:{parameterSources:{preliminaryNeeds:result.preliminaryNeeds}}};
   const pdf=buildCanonicalProfessionalPdfProjection({revision:stored,rows:result.rows as CanonicalArtifactRow[],preliminaryNeeds:canonicalArtifactPreliminaryNeeds(stored),workTitleRu:'CONTROL'});
   expect(pdf.html).toContain('<strong>Статус:</strong> Состав с исключениями пользователя');
   expect(pdf.html).not.toContain('<strong>Статус:</strong> Полная');

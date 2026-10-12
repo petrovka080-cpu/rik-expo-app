@@ -1048,6 +1048,7 @@ export async function compileCanonicalEstimateCore(
         procurement_eligible:resource.procurement_eligible,included_in_estimate:false,included_in_procurement:false,ownership_status:'OWNED_EXCLUDED',
         calculation_trace:{compilerVersion:input.compilerVersion,formulaId:resource.formula_id,formulaAstSha256:formula.ast_sha256,
           inputParameterIds:formula.input_parameter_ids,resourceGraph:effectiveResourceGraph,
+          ...(derivedQuantityEditPolicy == null ? {} : { derivedQuantityEditPolicy }),
           physicalScopeExcludedV1:{reason:'USER_EXCLUDED',previousManualQuantity:manualQuantity},
           ...(provenance?{manualAmendment:provenance}:{}),...(override?.titleRu==null?{}:{manualTitleOverride:true}),
           ...(effectiveOutput?{effectiveQuantityOutput:{...effectiveOutput,sourceRowId:resource.row_id,acceptedQuantity:'0',basis:'USER_EXCLUDED'}}:{})},
