@@ -20,6 +20,7 @@ import {canonicalManualPriceMigrationBindings,canonicalManualExclusionMigrationB
 import {canonicalPublisherQuantityScopeIsConsistent} from '../../../../scripts/estimate/r4a13/canonicalDefinitionPublisherR1';
 import {projectCanonicalEstimateParameterSessionSnapshot} from './canonicalEstimateParameterSessionSnapshot';
 import {buildConsumerCanonicalParameterSession} from '../../../features/consumerRepair/consumerCanonicalParameterEditor';
+import {buildConsumerRepairCanonicalSessionPreview} from '../../../features/consumerRepair/consumerRepairCanonicalSessionPreview';
 import type {CanonicalEstimateCatalogItem,CanonicalEstimateRevisionView} from './contracts';
 import {ESTIMATE_PLATFORM_API_VERSION} from './contracts';
 const hash=(v:unknown)=>canonicalEstimateSha256HexText(canonicalEstimateStableJson(v));
@@ -106,6 +107,7 @@ test('saved exclusions remove only companion questions in compact and full sessi
  expect(snapshot.revision).not.toHaveProperty('roofStageRestorationV4');expect(snapshot.revision).not.toHaveProperty('compositionSelectionV1');expect(snapshot.revision.excludedScopeParameterIdsV1).toHaveLength(6);
  const compact=buildConsumerCanonicalParameterSession({...snapshot,draftId:'CONTROL'}),full=buildConsumerCanonicalParameterSession({catalog,revision,draftId:'CONTROL'});expect(compact).toEqual(full);expect(compact.contractMissingParameterIds).toEqual([]);expect(compact.blockingMissingParameterIds).toEqual([]);expect(compact.parameters.map(p=>p.parameterId)).toEqual(['q','roof_torch_system']);
  expect(compact.inactiveConditionalParameters?.find(p=>p.parameterId===pack.clay.thicknessParameterId)?.value).toBe(100);
+ const preview=buildConsumerRepairCanonicalSessionPreview({session:compact,draftValues:{q:'41'}})!;expect(preview.contractMissingParameterIds).toEqual([]);expect(preview.blockingMissingParameterIds).toEqual([]);expect(preview.parameters.map(p=>p.parameterId)).toEqual(['q','roof_torch_system']);expect(preview.inactiveConditionalParameters?.find(p=>p.parameterId===pack.clay.thicknessParameterId)?.value).toBe(100);
  const restored=buildConsumerCanonicalParameterSession({catalog,revision:{...revision,compositionSelectionV1:selection([],[clayOp])},draftId:'CONTROL'});expect(restored.parameters.some(p=>p.parameterId===pack.vapor.systemParameterId)).toBe(true);expect(restored.parameters.some(p=>p.parameterId===pack.clay.systemParameterId)).toBe(false);expect(restored.parameters.some(p=>p.parameterId===otherId)).toBe(true);
  const bad=buildConsumerCanonicalParameterSession({catalog,revision:{...snapshot.revision,excludedScopeParameterIdsV1:['q','roof_torch_system'],parameters:{}},draftId:'CONTROL'});expect(bad.parameters.some(p=>p.parameterId==='q')).toBe(true);expect(bad.parameters.some(p=>p.parameterId==='roof_torch_system')).toBe(true);
 });

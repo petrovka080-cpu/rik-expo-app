@@ -492,14 +492,15 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
               : isCanonicalEstimateSourceManagedParameter(schema)
                 ? runtimeProfileParameterSource(schema)
                 : undefined),
-    })).map((parameter): CanonicalParameter => input.orderedSpecificationParameterIds?.has(parameter.parameterId)
-      ? { ...parameter, visibilityCondition: { kind: 'ALWAYS' }, requiredCondition: { kind: 'ALWAYS' } }
-      : parameter);
+    })).map((parameter): CanonicalParameter => input.inactiveParameterIds?.has(parameter.parameterId)
+      ? { ...parameter, visibilityCondition: { kind: 'INCLUSION_GRAPH', ast: { kind: 'literal', value: false } } }
+      : input.orderedSpecificationParameterIds?.has(parameter.parameterId)
+        ? { ...parameter, visibilityCondition: { kind: 'ALWAYS' }, requiredCondition: { kind: 'ALWAYS' } }
+        : parameter);
   const values = new Map(allParameters
     .filter((parameter) => parameter.value != null)
     .map((parameter) => [parameter.parameterId, parameter.value!] as const));
   const conditionState = (parameter: CanonicalParameter): boolean | null => {
-    if(input.inactiveParameterIds?.has(parameter.parameterId))return false;
     // A backend need is authoritative only inside its applicable branch. The
     // client parser maps an unsupported/newer expression to ALWAYS. For a
     // supported expression, an absent dependency is unknown while an explicit
