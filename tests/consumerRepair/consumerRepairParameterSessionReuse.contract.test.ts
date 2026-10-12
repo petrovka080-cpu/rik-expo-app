@@ -3,8 +3,14 @@ import { CANONICAL_PARAMETER_CORE_SCHEMA_VERSION, type CanonicalParameterSession
 import { ConsumerRepairRequestScreenController } from "../../src/features/consumerRepair/ConsumerRepairRequestScreen";
 import { consumerRepairCanonicalParameterSessionMatchesBundle } from "../../src/features/consumerRepair/consumerRepairCanonicalEstimateReadiness";
 import { logger } from "../../src/lib/logger";
+import { getCanonicalEstimateRevision } from "../../src/lib/estimate/backendPlatform/canonicalEstimateClient";
+import { compactConsumerRepairBundleForDurableStorage } from "../../src/lib/platform/compactConsumerRepairDurableState";
 
 jest.mock("@expo/vector-icons", () => ({ Ionicons: () => null }));
+jest.mock("../../src/lib/estimate/backendPlatform/canonicalEstimateClient", () => ({
+  ...jest.requireActual("../../src/lib/estimate/backendPlatform/canonicalEstimateClient"),
+  getCanonicalEstimateRevision: jest.fn(),
+}));
 
 function bundle(draftId = "draft-current", revisionId = "revision-current"): ConsumerRepairDraftBundle {
   // Only ownership fields are relevant to this controller action.
@@ -24,22 +30,25 @@ function session(draftId = "draft-current", revisionId = "revision-current"): Ca
     createdAt: "2026-10-02T00:00:00Z", updatedAt: "2026-10-02T00:00:00Z",
   };
 }
-function controller(load: jest.Mock, cached: CanonicalParameterSession | null) {
+function controller(load: jest.Mock, cached: CanonicalParameterSession | null, recalculate = jest.fn()) {
   const instance = new ConsumerRepairRequestScreenController({
     consumerUserId: "consumer-test", onPrepareCanonicalEstimate: jest.fn(),
     onLoadCanonicalRevisionDraft: jest.fn(), onLoadCanonicalParameterSession: load,
-    onRecalculateCanonicalEstimate: jest.fn(), onSelectCanonicalCatalogItem: jest.fn(),
+    onRecalculateCanonicalEstimate: recalculate, onSelectCanonicalCatalogItem: jest.fn(),
     onAddCanonicalCatalogItem: jest.fn(), onOpenPhotoForMaterialRecognition: jest.fn(),
   });
   const action = instance as unknown as {
     state: typeof instance.state;
-    setState: (update: Partial<typeof instance.state>) => void;
+    setState: (update: Partial<typeof instance.state>, done?: () => void) => void;
     actionContext: () => { revisionId: string };
     refineCanonicalParameters: () => Promise<void>;
     loadCanonicalParameterSessionForBundle: (value: ConsumerRepairDraftBundle) => Promise<CanonicalParameterSession | null>;
+    changeCompositionRows: (ids: readonly string[], excluded: boolean, operationKey?: string) => Promise<void>;
+    refreshHistory: jest.Mock;
   };
   action.state = { ...action.state, bundle: bundle(), canonicalBackendParameterSession: cached, statusMessage: "unchanged" };
-  action.setState = jest.fn(update => { action.state = { ...action.state, ...update }; });
+  action.setState = jest.fn((update, done) => { action.state = { ...action.state, ...update }; done?.(); });
+  action.refreshHistory = jest.fn();
   // Admission has its own contracts; this fixture tests the post-admission session load.
   action.actionContext = () => ({ revisionId: "revision-current" });
   return action;
@@ -116,5 +125,54 @@ describe("immutable revision parameter-session reuse", () => {
     await pending;
     expect(action.state.canonicalBackendParameterSession).toBeNull();
     expect(action.state.statusMessage).toBe("new draft");
+  });
+});
+
+describe("composition restoration after durable cold reopen", () => {
+  const readRevision = jest.mocked(getCanonicalEstimateRevision);
+  const selection = {contractVersion:"canonical-estimate-composition-selection/v1" as const,
+    excludedOperationKeys:[JSON.stringify(['roof','primer'])],excludedRowIds:['worker','other-resource']};
+  const saved = {revisionId:'revision-current',releaseId:'release-current',compositionSelectionV1:selection};
+  beforeEach(() => readRevision.mockReset());
+  function coldBundle() {
+    const original={...bundle(),events:[],structuredEstimatePayload:{canonicalBackend:saved}} as unknown as ConsumerRepairDraftBundle;
+    const cold=compactConsumerRepairBundleForDurableStorage(original);
+    expect(cold.structuredEstimatePayload).toBeNull();return cold;
+  }
+  it('restores the selected resource and preserves other saved exclusions after payload compaction',async()=>{
+    readRevision.mockResolvedValue(saved as never);
+    const recalculate=jest.fn(async()=>({bundle:bundle(undefined,'revision-child'),session:session(undefined,'revision-child')}));
+    const action=controller(jest.fn(),null,recalculate);action.state={...action.state,bundle:coldBundle()};
+    await action.changeCompositionRows(['worker'],false);
+    expect(readRevision).toHaveBeenCalledWith('revision-current');
+    expect(recalculate).toHaveBeenCalledWith(expect.objectContaining({compositionSelectionV1:{...selection,excludedRowIds:['other-resource']}}));
+    expect(action.state.bundle?.items[0]?.sourceParameters?.canonicalBackendRevisionId).toBe('revision-child');
+    expect(action.state.canonicalEstimateMutationBusy).toBe(false);
+  });
+  it('restores a subwork without clearing another excluded resource',async()=>{
+    readRevision.mockResolvedValue(saved as never);
+    const recalculate=jest.fn(async()=>({bundle:bundle(undefined,'revision-child'),session:session(undefined,'revision-child')}));
+    const action=controller(jest.fn(),null,recalculate);action.state={...action.state,bundle:coldBundle()};
+    await action.changeCompositionRows(['worker'],false,selection.excludedOperationKeys[0]);
+    expect(recalculate).toHaveBeenCalledWith(expect.objectContaining({compositionSelectionV1:{...selection,excludedOperationKeys:[],excludedRowIds:['other-resource']}}));
+  });
+  it('does not assume an empty selection when the saved revision cannot be read',async()=>{
+    readRevision.mockRejectedValue(new Error('CONTROL_READ_FAILED'));
+    const recalculate=jest.fn(),action=controller(jest.fn(),null,recalculate),cold=coldBundle();action.state={...action.state,bundle:cold};
+    await action.changeCompositionRows(['worker'],false);
+    expect(recalculate).not.toHaveBeenCalled();expect(action.state.bundle).toBe(cold);
+    expect(action.state.statusMessage).toBe('CONTROL_READ_FAILED');expect(action.state.canonicalEstimateMutationBusy).toBe(false);
+  });
+  it('does not mutate a different workspace after an asynchronous saved-revision read',async()=>{
+    let resolveRead!:(value:never)=>void;
+    readRevision.mockImplementation(()=>new Promise(resolve=>{resolveRead=resolve;}));
+    const recalculate=jest.fn(),action=controller(jest.fn(),null,recalculate);action.state={...action.state,bundle:coldBundle()};
+    const pending=action.changeCompositionRows(['worker'],false);const next=bundle('draft-other');action.state={...action.state,bundle:next};
+    resolveRead(saved as never);await pending;expect(recalculate).not.toHaveBeenCalled();expect(action.state.bundle).toBe(next);
+  });
+  it('uses the bound live payload without a second read when it has not been compacted',async()=>{
+    const recalculate=jest.fn(async()=>({bundle:bundle(undefined,'revision-child'),session:session(undefined,'revision-child')}));
+    const action=controller(jest.fn(),null,recalculate);action.state={...action.state,bundle:{...bundle(),structuredEstimatePayload:{canonicalBackend:saved}} as unknown as ConsumerRepairDraftBundle};
+    await action.changeCompositionRows(['worker'],false);expect(readRevision).not.toHaveBeenCalled();expect(recalculate).toHaveBeenCalledTimes(1);
   });
 });

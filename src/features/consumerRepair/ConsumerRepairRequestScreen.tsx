@@ -2962,19 +2962,28 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     if(Object.keys(this.pendingCanonicalRowOverrides).length>0) {
       this.setState({statusMessage:'Сначала примените или отмените правки строк. Они сохранены на экране.'}); return;
     }
-    const previous=current.structuredEstimatePayload?.canonicalBackend?.compositionSelectionV1;
-    const ids=new Set(previous?.excludedRowIds ?? []);
-    const operations=new Set(previous?.excludedOperationKeys ?? []);
-    if(operationKey) excluded ? operations.add(operationKey) : operations.delete(operationKey);
-    rowIds.forEach(id => excluded ? ids.add(id) : ids.delete(id));
-    const selection={contractVersion:'canonical-estimate-composition-selection/v1' as const,
-      excludedOperationKeys:[...operations].sort(),excludedRowIds:[...ids].sort()};
-    if(JSON.stringify(selection.excludedRowIds)===JSON.stringify(previous?.excludedRowIds ?? [])
-      && JSON.stringify(selection.excludedOperationKeys)===JSON.stringify(previous?.excludedOperationKeys ?? [])) return;
     const source={...binding,draftId:current.draft.id},key=binding.revisionId+'\u0000composition';
     this.canonicalRowAmendmentInFlightKey=key;
     this.setState({canonicalEstimateMutationBusy:true,statusMessage:excluded?'Исключаем из состава и пересчитываем зависимости…':'Восстанавливаем состав по текущему объёму…'});
     try {
+      // Durable storage deliberately drops the large structured payload. Its
+      // absence after a cold open does not mean that every resource is active.
+      const cached=current.structuredEstimatePayload?.canonicalBackend;
+      const saved=cached?.revisionId===binding.revisionId ? cached : await getCanonicalEstimateRevision(binding.revisionId);
+      if(!consumerRepairCanonicalMutationSourceMatchesBundle(source,this.state.bundle)) return;
+      if(saved.revisionId!==binding.revisionId || saved.releaseId!==binding.releaseId)
+        throw new CanonicalEstimateApiError('Не удалось проверить сохранённые исключения этой версии сметы.',{code:'COMPOSITION_SELECTION_RESULT_MISMATCH',httpStatus:409});
+      const previous=saved.compositionSelectionV1;
+      const ids=new Set(previous?.excludedRowIds ?? []);
+      const operations=new Set(previous?.excludedOperationKeys ?? []);
+      if(operationKey) excluded ? operations.add(operationKey) : operations.delete(operationKey);
+      rowIds.forEach(id => excluded ? ids.add(id) : ids.delete(id));
+      const selection={contractVersion:'canonical-estimate-composition-selection/v1' as const,
+        excludedOperationKeys:[...operations].sort(),excludedRowIds:[...ids].sort()};
+      if(JSON.stringify(selection.excludedRowIds)===JSON.stringify(previous?.excludedRowIds ?? [])
+        && JSON.stringify(selection.excludedOperationKeys)===JSON.stringify(previous?.excludedOperationKeys ?? [])) {
+        this.setState({statusMessage:excluded?'Этот состав уже исключён.':'Этот состав уже восстановлен.'}); return;
+      }
       const result=await this.props.onRecalculateCanonicalEstimate({revisionId:binding.revisionId,requestDraftId:current.draft.id,
         problemText:current.draft.problemText||current.draft.title||'Смета',patches:[],compositionSelectionV1:selection});
       if(!consumerRepairCanonicalMutationSourceMatchesBundle(source,this.state.bundle)) return;
