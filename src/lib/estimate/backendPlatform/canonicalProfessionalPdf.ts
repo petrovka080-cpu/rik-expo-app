@@ -6,6 +6,7 @@ import {
   canonicalArtifactRentalBasis,
   canonicalArtifactWorkMeasure,
   canonicalArtifactTechnologyChecks,
+  canonicalArtifactPublicResourcePresentationV1,
   escapeCanonicalArtifactHtml,
   type CanonicalArtifactRevision,
   type CanonicalArtifactRow,
@@ -16,7 +17,7 @@ import { canonicalPublicEstimateWorkTitleRu, canonicalPublicEstimateRequestTextR
 import { resolveCanonicalEstimateExplicitRowCategory } from './canonicalEstimateRowCategory';
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-63-need-pagination-template27" as const;
+  "canonical-professional-pdf.r4-a13-s27-63-need-specifications-template28" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -197,6 +198,14 @@ function renderPreliminaryNeedRow(row: CanonicalArtifactRow, displayOrdinal: num
   const requirementText = requirement
     ? `${requirement.labelRu}: ${canonicalArtifactQuantity(requirement.quantity)} ${canonicalArtifactUnit({ unit_id: requirement.unitId })}. Точный заказ ещё не подтверждён.`
     : null;
+  const presentation = canonicalArtifactPublicResourcePresentationV1(row);
+  const specifications = presentation
+    ? [...new Set([presentation.specificationRu, ...presentation.detailsRu]
+      .filter((detail): detail is string => typeof detail === "string" && detail.trim().length > 0))]
+    : [];
+  // Each authored paragraph keeps its resource context and can move to the next
+  // page independently. A long tool profile must not force one oversized row.
+  const specificationRows = specifications.map(detail => `<tr class="preliminary-need-specification"><td></td><td colspan="6"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row))}:</strong> ${escapeCanonicalArtifactHtml(detail)}</td></tr>`).join("");
   return `<tr class="preliminary-need">
     <td class="number">${displayOrdinal}</td>
     <td class="name"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row))}</strong>${requirementText ? `<span>${escapeCanonicalArtifactHtml(requirementText)}</span>` : ''}<span>Предварительная потребность из определения; требуется уточнение.</span>${coverageText ? `<span>${escapeCanonicalArtifactHtml(coverageText)}</span>` : ''}</td>
@@ -205,7 +214,7 @@ function renderPreliminaryNeedRow(row: CanonicalArtifactRow, displayOrdinal: num
     <td class="numeric">${escapeCanonicalArtifactHtml(quantityLabel)}</td>
     <td class="money">—</td>
     <td class="money">—</td>
-  </tr><tr class="preliminary-need-detail"><td></td><td colspan="6">Требуется уточнить: ${escapeCanonicalArtifactHtml(missing)}. В сумму и закупку позиция не включена.</td></tr>`;
+  </tr><tr class="preliminary-need-detail"><td></td><td colspan="6">Требуется уточнить: ${escapeCanonicalArtifactHtml(missing)}. В сумму и закупку позиция не включена.</td></tr>${specificationRows}`;
 }
 
 function shortIdentity(value: unknown): string {
@@ -344,7 +353,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}.summary div{background:#eef7f2;border-radius:4px;padding:7px}.notice{margin:8px 0 12px;padding:8px;border:1px solid #d5dde6;border-radius:4px;color:#39485b;break-inside:avoid}
     table{width:100%;border-collapse:collapse;table-layout:fixed}thead{display:table-header-group}tfoot{display:table-footer-group}tr{break-inside:avoid;page-break-inside:avoid}td,th{border:1px solid #cbd4df;padding:4px;vertical-align:top;overflow-wrap:anywhere;word-break:normal;hyphens:none}th{background:#e7edf4;text-align:left}.client th:nth-child(1){width:5%}.client th:nth-child(2){width:34%}.client th:nth-child(3){width:12%}.client th:nth-child(4){width:8%}.client th:nth-child(5){width:11%}.client th:nth-child(6),.client th:nth-child(7){width:15%}.name span{display:block;color:#526174;font-size:8px;margin-top:2px}.number,.unit{text-align:center}.number{white-space:nowrap;overflow-wrap:normal;font-variant-numeric:tabular-nums}.numeric,.money{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
     .totals{width:62%;margin:12px 0 0 auto;break-inside:avoid;page-break-inside:avoid}.question-appendix{break-inside:avoid;page-break-inside:avoid}.totals th{width:55%}.totals td{text-align:right;font-variant-numeric:tabular-nums}.grand th,.grand td{background:#e5f2ea}
-    .name ul{padding-left:12px;margin:3px 0;font-size:8px;color:#526174}.operation{break-after:avoid;page-break-after:avoid}.operation td{background:#eef7f2}.operation span{display:block;color:#526174;margin-top:3px}.preliminary-need{break-after:avoid;page-break-after:avoid}.preliminary-need-detail{break-before:avoid;page-break-before:avoid}.preliminary-need td{background:#fff7ed}.preliminary-need .numeric{white-space:normal}.preliminary-need-detail td{color:#7c4a03;font-size:8px}.signatures{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px;break-inside:avoid}.signature{border:1px solid #cbd4df;padding:7px;min-height:84px}.signature strong{display:block;margin-bottom:7px}.signature div{border-bottom:1px solid #758195;margin-top:13px;color:#526174}.approval-block{break-inside:avoid;page-break-inside:avoid}.organization{margin-top:12px;border-bottom:1px solid #758195;padding-bottom:3px;break-inside:avoid}
+    .name ul{padding-left:12px;margin:3px 0;font-size:8px;color:#526174}.operation{break-after:avoid;page-break-after:avoid}.operation td{background:#eef7f2}.operation span{display:block;color:#526174;margin-top:3px}.preliminary-need{break-after:avoid;page-break-after:avoid}.preliminary-need-detail{break-before:avoid;page-break-before:avoid}.preliminary-need td{background:#fff7ed}.preliminary-need .numeric{white-space:normal}.preliminary-need-detail td{color:#7c4a03;font-size:8px}.preliminary-need-specification td{color:#526174;font-size:8px}.signatures{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px;break-inside:avoid}.signature{border:1px solid #cbd4df;padding:7px;min-height:84px}.signature strong{display:block;margin-bottom:7px}.signature div{border-bottom:1px solid #758195;margin-top:13px;color:#526174}.approval-block{break-inside:avoid;page-break-inside:avoid}.organization{margin-top:12px;border-bottom:1px solid #758195;padding-bottom:3px;break-inside:avoid}
   </style></head><body>
     <header><h1>Профессиональная смета</h1><div class="subtitle">${escapeCanonicalArtifactHtml(workTitleRu || "Строительно-монтажные работы")}</div>
       ${explicitDemo ? '<div class="notice"><strong>ДЕМО / VALIDATION_FIXTURE — испытательный документ. Не является утверждённой проектной сметой.</strong></div>' : ""}

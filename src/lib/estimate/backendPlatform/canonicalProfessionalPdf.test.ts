@@ -41,6 +41,33 @@ function revision(rowCount: number) {
   };
 }
 
+test('unresolved resource specifications print with their own context while quantity and cost remain unknown',()=>{
+  const sourceTitle='Ручной инструмент штукатурки — обеспечение требует проверки';
+  const need={...rows(1)[0]!,title_ru:sourceTitle,quantity:null,unit_price:null,amount:null,included_in_estimate:false,included_in_procurement:false,
+    ownership_status:'PRELIMINARY_NEED',calculation_trace:{resourceGraph:{publicResourcePresentationV1:{
+      contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:sourceTitle,nameRu:'Штукатурный инструмент по этапам',brandAndModelRu:null,
+      specificationRu:'Для ручной гипсовой штукатурки',detailsRu:['На потолок раствор наносится соколом.','Покупка комплекта на каждый участок не подтверждена <script>.','На потолок раствор наносится соколом.']}}}};
+  const snapshot=JSON.stringify(need),projection=buildCanonicalProfessionalPdfProjection({revision:revision(0),rows:[],preliminaryNeeds:[need],workTitleRu:'Штукатурка'});
+  expect(projection.html.match(/<tr class="preliminary-need-specification">/gu)).toHaveLength(3);
+  expect(projection.html).toContain('<strong>Штукатурный инструмент по этапам:</strong> На потолок раствор наносится соколом.');
+  expect(projection.html).toContain('Покупка комплекта на каждый участок не подтверждена &lt;script&gt;.');
+  expect(projection.html).not.toContain('<script>');expect(projection.html).toContain('Количество нужно уточнить');
+  expect(projection).toMatchObject({rowCount:1,pricedRowCount:0,preliminaryNeedCount:1,grandTotalStatus:'PARTIAL_NEEDS_PRICE'});expect(JSON.stringify(need)).toBe(snapshot);
+  for(const trace of [{...need.calculation_trace,manualTitleOverride:true},{resourceGraph:{publicResourcePresentationV1:{...need.calculation_trace.resourceGraph.publicResourcePresentationV1,sourceTitleRu:'Другое изделие'}}}]){
+    const suppressed=buildCanonicalProfessionalPdfProjection({revision:revision(0),rows:[],preliminaryNeeds:[{...need,calculation_trace:trace}],workTitleRu:'Штукатурка'});
+    expect(suppressed.html).not.toContain('<tr class="preliminary-need-specification">');expect(suppressed.html).not.toContain('На потолок раствор наносится соколом.');
+  }
+});
+
+test('the largest admitted resource profile uses individually pageable paragraphs instead of one oversized cell',()=>{
+  const title='Ручной инструмент',details=Array.from({length:16},(_,i)=>`Этап ${i+1}: ${'Проверить пригодность инструмента. '.repeat(24)}`);
+  const need={...rows(1)[0]!,title_ru:title,quantity:null,unit_price:null,amount:null,included_in_estimate:false,included_in_procurement:false,
+    calculation_trace:{resourceGraph:{publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:title,nameRu:title,brandAndModelRu:null,specificationRu:null,detailsRu:details}}}};
+  const projection=buildCanonicalProfessionalPdfProjection({revision:revision(0),rows:[],preliminaryNeeds:[need],workTitleRu:'Штукатурка'});
+  expect(projection.html.match(/<tr class="preliminary-need-specification">/gu)).toHaveLength(16);
+  for(const detail of details)expect(projection.html).toContain(detail);expect(projection.rowCount).toBe(1);expect(projection.pricedRowCount).toBe(0);
+});
+
 const categories = ["material", "labor", "equipment", "service", "transport"];
 
 function rows(
@@ -184,7 +211,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-63-need-pagination-template27");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-63-need-specifications-template28");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,
