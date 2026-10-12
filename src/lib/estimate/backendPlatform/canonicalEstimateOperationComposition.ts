@@ -124,7 +124,7 @@ export function canonicalEstimateResourceOperationSections(
   // Storage order keeps old immutable row identities; presentation shows the
   // planned primer before torching. Other groups retain their existing slots:
   // ordinals from unrelated work groups are not a global construction sequence.
-  const roofIds=new Set(['roof:cement-screed15:krer12-017-01', 'roof:metal-trim:krer12-010-01','roof:vapor:krer12-015-03','roof:clay-insulation:krer12-014-02','roof:prime-ready-emulsion:krer12-016-02','roof:torch-two:krer12-002-09','roof:valley-torch-two:krer12-005-03']);
+  const roofIds=new Set(['roof:cement-screed15:krer12-017-01', 'roof:metal-trim:krer12-010-01','roof:vapor:krer12-015-03','roof:clay-insulation:krer12-014-02','roof:hanging-gutters:krer12-009-02','roof:prime-ready-emulsion:krer12-016-02','roof:torch-two:krer12-002-09','roof:valley-torch-two:krer12-005-03']);
   const roofSequence=new Map<string,number>();
   for(const id of groupOrder.keys())if(roofIds.has(id)){
     const operations=[...sections.values()].filter(s=>s.operation?.groupId===id).map(s=>s.operation!).concat(

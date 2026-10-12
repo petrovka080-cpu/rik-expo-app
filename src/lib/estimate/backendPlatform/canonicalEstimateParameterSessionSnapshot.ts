@@ -1,3 +1,4 @@
+import {roofGuttersInactiveParameterIdsV1} from './canonicalRoofHangingGuttersMigrationV1';
 import {
   CanonicalEstimateApiError,
   ESTIMATE_PLATFORM_API_VERSION,
@@ -12,7 +13,7 @@ export type CanonicalEstimateParameterSessionRevision = Pick<CanonicalEstimateRe
   "revisionId" | "parentRevisionId" | "releaseId" | "catalogId" | "definitionVersionId"
   | "definitionVersion" | "status" | "parameters" | "userInputSnapshot"
   | "acceptedBaselineSnapshot" | "assumptionSnapshot" | "parameterSchemaHash"
-  | "compilerVersion" | "checksumSha256" | "createdAt" | "contentWithdrawalReasonRu" | "compositionSelectionV1" | "roofStageRestorationV4"
+  | "compilerVersion" | "checksumSha256" | "createdAt" | "contentWithdrawalReasonRu" | "compositionSelectionV1" | "roofStageRestorationV4" | "roofStageRestorationV5"
 > & {
   /** Verified finite companion exclusions, projected without the large receipt. */
   excludedScopeParameterIdsV1?: string[];
@@ -62,7 +63,7 @@ export function projectCanonicalEstimateParameterSessionSnapshot(input: {
   catalog: CanonicalEstimateCatalogItem;
 }): CanonicalEstimateParameterSessionSnapshot {
   const { revision, parent } = input;
-  const excludedScopeParameterIdsV1=roofLowerLayersInactiveParameterIdsV1({receipt:revision.roofStageRestorationV4,definitionId:revision.definitionVersionId,catalogId:revision.catalogId,selection:revision.compositionSelectionV1});
+  const excludedScopeParameterIdsV1=revision.roofStageRestorationV5?roofGuttersInactiveParameterIdsV1({receipt:revision.roofStageRestorationV5,definitionId:revision.definitionVersionId,catalogId:revision.catalogId,selection:revision.compositionSelectionV1}):roofLowerLayersInactiveParameterIdsV1({receipt:revision.roofStageRestorationV4,definitionId:revision.definitionVersionId,catalogId:revision.catalogId,selection:revision.compositionSelectionV1});
   const snapshot: CanonicalEstimateParameterSessionSnapshot = {
     apiVersion: ESTIMATE_PLATFORM_API_VERSION,
     definitionVersionId: input.definitionVersionId,

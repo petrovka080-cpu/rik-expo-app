@@ -1,3 +1,4 @@
+import {admitRoofHangingGuttersMigrationProofV1,migrateRoofHangingGuttersSelectionV1,buildRoofStageRestorationV5,readRoofStageRestorationV5,createRoofLegacyWaterSelectionOriginV1,consumeRoofStageOriginsV5,composeRoofGuttersMigrationModelV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofHangingGuttersMigrationV1';
 import {admitRoofPreparationMigrationProofV1,migrateRoofPreparationSelectionV1,readRoofPreparationMigrationProofV1,assertRoofRetainedSemanticSelectionV1,type RoofPreparationMigrationProofV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofPreparationMigrationV1';
 import {admitRoofValleyMigrationProofV1,migrateRoofValleySelectionV1,buildRoofStageRestorationV1,composeRoofFiveToSevenMigrationV1,type RoofStageRestorationV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofValleyMigrationV1';
 import {admitRoofLowerLayersMigrationProofV1,migrateRoofLowerLayersSelectionV1,buildRoofStageRestorationV4,readRoofStageRestorationV4,createRoofLegacyAssemblySelectionOriginV1,consumeRoofLegacyAssemblySelectionOriginV1,composeRoofLowerLayersMigrationModelV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofLowerLayersMigrationV1';
@@ -59,7 +60,7 @@ async function localManualAmendmentMigrationBindings(client: PoolClient, definit
   const input = {resources: resources.rows, formulas: formulas.rows, parameters: parameters.rows};
   let predecessorBindings:Record<string,unknown>={};
   const definition=(await client.query('select * from public.estimate_definition_version where id=$1',[definitionId])).rows[0];
-  const proof=definition?.source_metadata?.roofLowerLayersMigrationV1??definition?.source_metadata?.roofMetalTrimMigrationV1??definition?.source_metadata?.roofScreedMigrationV1??definition?.source_metadata?.roofValleyMigrationV1??definition?.source_metadata?.roofPreparationMigrationV1;
+  const proof=definition?.source_metadata?.roofHangingGuttersMigrationV1??definition?.source_metadata?.roofLowerLayersMigrationV1??definition?.source_metadata?.roofMetalTrimMigrationV1??definition?.source_metadata?.roofScreedMigrationV1??definition?.source_metadata?.roofValleyMigrationV1??definition?.source_metadata?.roofPreparationMigrationV1;
   if(proof?.fromDefinitionId&&/^[0-9a-f-]{36}$/iu.test(String(proof.fromDefinitionId))) {
     const fromId=String(proof.fromDefinitionId);
     const [oldDef,oldResources,oldFormulas,oldParameters]=await Promise.all([
@@ -73,7 +74,7 @@ async function localManualAmendmentMigrationBindings(client: PoolClient, definit
       fromDefinition:{id:before?.id,catalogId:before?.catalog_id,sha256:before?.definition_sha256},
       toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},
       from:{resources:oldResources.rows,formulas:oldFormulas.rows,parameters:oldParameters.rows},to:input};
-    const admitted=before?(admitRoofLowerLayersMigrationProofV1(admissionInput)??admitRoofMetalTrimMigrationProofV1(admissionInput)??admitRoofScreedMigrationProofV1(admissionInput)??admitRoofValleyMigrationProofV1(admissionInput)??admitRoofPreparationMigrationProofV1(admissionInput)):null;
+    const admitted=before?(admitRoofHangingGuttersMigrationProofV1(admissionInput)??admitRoofLowerLayersMigrationProofV1(admissionInput)??admitRoofMetalTrimMigrationProofV1(admissionInput)??admitRoofScreedMigrationProofV1(admissionInput)??admitRoofValleyMigrationProofV1(admissionInput)??admitRoofPreparationMigrationProofV1(admissionInput)):null;
     if(admitted)predecessorBindings={manualMigrationPredecessorV1:{definitionId:fromId,
       priceBindings:canonicalManualPriceMigrationBindings(admitted.normalizedTo),
       exclusionBindings:canonicalManualExclusionMigrationBindings(admitted.normalizedTo)}};
@@ -96,6 +97,10 @@ async function localManualAmendmentMigrationBindings(client: PoolClient, definit
   }
   if(definition?.source_metadata?.roofLowerLayersMigrationV1){
     const path=await localRoofLowerLayersMigrationV1(client,definition,input);
+    if(path)predecessorBindings={...predecessorBindings,manualMigrationPredecessorsV1:path.models.map(m=>({definitionId:m.definitionId,priceBindings:canonicalManualPriceMigrationBindings(m.model),exclusionBindings:canonicalManualExclusionMigrationBindings(m.model)}))};
+  }
+  if(definition?.source_metadata?.roofHangingGuttersMigrationV1){
+    const path=await localRoofGuttersMigrationV1(client,definition,input);
     if(path)predecessorBindings={...predecessorBindings,manualMigrationPredecessorsV1:path.models.map(m=>({definitionId:m.definitionId,priceBindings:canonicalManualPriceMigrationBindings(m.model),exclusionBindings:canonicalManualExclusionMigrationBindings(m.model)}))};
   }
   return {...predecessorBindings,manualPriceMigrationBindings: canonicalManualPriceMigrationBindings(input),
@@ -157,7 +162,7 @@ async function localRoofMetalTrimMigrationV1(client:PoolClient,definition:Record
 }
 /** Fixed 5→6→7→8→9→10 chain; no open-ended successor or selection-origin trust. */
 async function localRoofLowerLayersMigrationV1(client:PoolClient,definition:Record<string,any>,toModel:{resources:Record<string,unknown>[];formulas:Record<string,unknown>[];parameters:Record<string,unknown>[]}){
- const proof=definition.source_metadata?.roofLowerLayersMigrationV1;if(proof==null)return null;
+ const proof=definition.source_metadata?.roofLowerLayersMigrationV1;if(proof==null||definition.source_metadata?.roofHangingGuttersMigrationV1!=null)return null;
  const fail=()=>{throw Object.assign(new Error('Переход нижних слоёв кровли не подтверждён.'),{code:'DEFINITION_INTEGRITY_FAILED'});};
  if(typeof proof.fromDefinitionId!=='string'||!/^[0-9a-f-]{36}$/iu.test(proof.fromDefinitionId))return fail();
  const id=proof.fromDefinitionId;
@@ -168,6 +173,16 @@ async function localRoofLowerLayersMigrationV1(client:PoolClient,definition:Reco
  const previous=await localRoofMetalTrimMigrationV1(client,before,from);if(!lowerLayers||!previous)return fail();
  const receipt=buildRoofStageRestorationV4({lowerLayers,previous:previous.receipt});
  return {lowerLayers,previous,receipt,models:[{definitionId:lowerLayers.proof.fromDefinitionId,model:lowerLayers.normalizedTo},...previous.models.map(m=>({definitionId:m.definitionId,model:composeRoofLowerLayersMigrationModelV1(lowerLayers,m.model)}))]};
+}
+/** Fixed 5→6→7→8→9→10→11 binding path, never used for physical calculation. */
+async function localRoofGuttersMigrationV1(client:PoolClient,definition:Record<string,any>,toModel:{resources:Record<string,unknown>[];formulas:Record<string,unknown>[];parameters:Record<string,unknown>[]}){
+ const proof=definition.source_metadata?.roofHangingGuttersMigrationV1;if(proof==null)return null;
+ const fail=()=>{throw Object.assign(new Error('Переход подвесных желобов не подтверждён.'),{code:'DEFINITION_INTEGRITY_FAILED'});};
+ if(typeof proof.fromDefinitionId!=='string'||!/^[0-9a-f-]{36}$/iu.test(proof.fromDefinitionId))return fail();const id=proof.fromDefinitionId;
+ const [d,r,f,p]=await Promise.all([client.query('select * from public.estimate_definition_version where id=$1',[id]),client.query('select * from public.estimate_resource_spec where definition_version_id=$1',[id]),client.query('select * from public.estimate_formula_graph where definition_version_id=$1',[id]),client.query('select * from public.estimate_parameter_definition where definition_version_id=$1',[id])]);
+ const before=d.rows[0],from={resources:r.rows,formulas:f.rows,parameters:p.rows};if(!before)return fail();const identity=(x:Record<string,any>)=>({id:x.id,catalogId:x.catalog_id,sha256:x.definition_sha256});
+ const gutters=admitRoofHangingGuttersMigrationProofV1({proof,fromDefinition:identity(before),toDefinition:identity(definition),from,to:toModel}),previous=await localRoofLowerLayersMigrationV1(client,before,from);if(!gutters||!previous)return fail();
+ return {gutters,previous,receipt:buildRoofStageRestorationV5({gutters,previous:previous.receipt}),models:[{definitionId:gutters.proof.fromDefinitionId,model:gutters.normalizedTo},...previous.models.map(m=>({definitionId:m.definitionId,model:composeRoofGuttersMigrationModelV1(gutters,m.model)}))]};
 }
 import { mergeCanonicalEffectiveResourceQuantityProvenanceV1 } from "../../../src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1";
 import { stripCanonicalAutomaticPreliminaryInputsV1, canonicalAutomaticPreliminaryClassificationV1 } from '../../../src/lib/estimate/backendPlatform/canonicalPreliminaryParameterFormulaV1';
@@ -2363,10 +2378,13 @@ async function compileClaimedJob(
   const roofStageRestorationV3=roofMetalTrimMigration?.receipt??null;
   const roofLowerLayersMigration=await localRoofLowerLayersMigrationV1(client,definition,{resources:resourceRows,formulas,parameters:parameterDefinitions});
   let roofStageRestorationV4=roofLowerLayersMigration?.receipt??null;
+  const roofGuttersMigration=await localRoofGuttersMigrationV1(client,definition,{resources:resourceRows,formulas,parameters:parameterDefinitions});
+  let roofStageRestorationV5=roofGuttersMigration?.receipt??null;
   if(roofStageRestorationV1)roofPreparationMigrationV1=roofStageRestorationV1.originalPreparationProof;
   if(roofStageRestorationV2)roofPreparationMigrationV1=roofStageRestorationV2.originalStages.originalPreparationProof;
   if(roofStageRestorationV3)roofPreparationMigrationV1=roofStageRestorationV3.originalStages.originalStages.originalPreparationProof;
   if(roofStageRestorationV4)roofPreparationMigrationV1=roofStageRestorationV4.originalStages.originalStages.originalStages.originalPreparationProof;
+  if(roofStageRestorationV5)roofPreparationMigrationV1=roofStageRestorationV5.originalV4.originalStages.originalStages.originalStages.originalPreparationProof;
   let effectiveCompositionSelectionV1=parseCanonicalCompositionSelectionV1(Object.hasOwn(payload,'compositionSelectionV1')?payload.compositionSelectionV1
     :((parentRevision?.amendment_contract as JsonRecord|undefined)?.parameterSources as JsonRecord|undefined)?.compositionSelectionV1);
   if (parentRevision && parentRevision.release_id !== job.target_release_id) {
@@ -2389,7 +2407,34 @@ async function compileClaimedJob(
     const screedPredecessor=roofScreedMigration?.models.find(m=>m.definitionId===before?.id);
     const metalTrimPredecessor=roofMetalTrimMigration?.models.find(m=>m.definitionId===before?.id);
     const lowerLayersPredecessor=roofLowerLayersMigration?.models.find(m=>m.definitionId===before?.id);
-    const migrationTo=lowerLayersPredecessor?.model??metalTrimPredecessor?.model??screedPredecessor?.model??directFiveToSeven?.composed??valleyAdmitted?.normalizedTo??admitted?.normalizedTo??toModel;
+    const guttersPredecessor=roofGuttersMigration?.models.find(m=>m.definitionId===before?.id);
+    const migrationTo=guttersPredecessor?.model??lowerLayersPredecessor?.model??metalTrimPredecessor?.model??screedPredecessor?.model??directFiveToSeven?.composed??valleyAdmitted?.normalizedTo??admitted?.normalizedTo??toModel;
+    if(guttersPredecessor&&roofGuttersMigration){
+      const path=roofGuttersMigration,lower=path.previous,old=lower.previous,older=old.previous,first=older.previous;
+      const parentSelection=(parentAmendments.parameterSources as JsonRecord|undefined)?.compositionSelectionV1;
+      const crossedLower=lower.models.some(m=>m.definitionId===before?.id),crossedPrimer=first.preparation.proof.fromDefinitionId===before?.id;
+      const crossedValley=crossedPrimer||first.valley.proof.fromDefinitionId===before?.id,crossedScreed=crossedValley||older.screed.proof.fromDefinitionId===before?.id,crossedMetal=crossedScreed||old.metalTrim.proof.fromDefinitionId===before?.id;
+      if(Object.hasOwn(payload,'compositionSelectionV1'))assertRoofRetainedSemanticSelectionV1({parentSelection,requestedSelection:effectiveCompositionSelectionV1,semanticRowIds:[...path.gutters.semanticWaterRowIds,...(crossedLower?[lower.lowerLayers.semanticAssemblyRowId]:[]),...(crossedPrimer?[first.preparation.semanticPrimerRowId]:[]),...(crossedValley?[first.valley.semanticValleyRowId]:[]),...(crossedScreed?[older.screed.semanticScreedRowId]:[]),...(crossedMetal?old.metalTrim.semanticMetalTrimRowIds:[])]});
+      if(crossedPrimer)effectiveCompositionSelectionV1=migrateRoofPreparationSelectionV1({selection:effectiveCompositionSelectionV1,admitted:first.preparation});
+      if(crossedValley)effectiveCompositionSelectionV1=migrateRoofValleySelectionV1({selection:effectiveCompositionSelectionV1,admitted:first.valley});
+      if(crossedScreed)effectiveCompositionSelectionV1=migrateRoofScreedSelectionV1({selection:effectiveCompositionSelectionV1,admitted:older.screed});
+      if(crossedMetal)effectiveCompositionSelectionV1=migrateRoofMetalTrimSelectionV1({selection:effectiveCompositionSelectionV1,admitted:old.metalTrim});
+      let originalV4=lower.receipt;
+      if(crossedLower){
+        effectiveCompositionSelectionV1=migrateRoofLowerLayersSelectionV1({selection:effectiveCompositionSelectionV1,admitted:lower.lowerLayers});
+        const origin=createRoofLegacyAssemblySelectionOriginV1({receipt:lower.receipt,sourceRevisionId:String(parentRevision.id),sourceChecksumSha256:String(parentRevision.checksum_sha256),sourceDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},parentSelection,effectiveSelection:effectiveCompositionSelectionV1});
+        originalV4=buildRoofStageRestorationV4({lowerLayers:lower.lowerLayers,previous:lower.previous.receipt,origin});
+      }else{
+        const actual=readRoofStageRestorationV4((parentAmendments.parameterSources as JsonRecord|undefined)?.roofStageRestorationV4);
+        if(!actual||actual.catalogId!==job.catalog_id||actual.definitionId!==before.id||actual.definitionSha256!==before.definition_sha256)throw Object.assign(new Error('История нижних слоёв исходной сметы не подтверждена.'),{code:'DEFINITION_INTEGRITY_FAILED'});
+        originalV4=actual;
+      }
+      effectiveCompositionSelectionV1=migrateRoofHangingGuttersSelectionV1({selection:effectiveCompositionSelectionV1,admitted:path.gutters});
+      const initial=buildRoofStageRestorationV5({gutters:path.gutters,previous:originalV4});
+      const waterOrigin=createRoofLegacyWaterSelectionOriginV1({receipt:initial,sourceRevisionId:String(parentRevision.id),sourceChecksumSha256:String(parentRevision.checksum_sha256),sourceDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},parentSelection,effectiveSelection:effectiveCompositionSelectionV1});
+      const origins=consumeRoofStageOriginsV5({receipt:initial,parentSelection,effectiveSelection:effectiveCompositionSelectionV1});
+      roofStageRestorationV5=buildRoofStageRestorationV5({gutters:path.gutters,previous:originalV4,assemblyOrigin:origins.assemblyOrigin,waterOrigin});
+    }
     if(lowerLayersPredecessor&&roofLowerLayersMigration){
       const path=roofLowerLayersMigration,old=path.previous,older=old.previous,first=older.previous;
       const crossedPrimer=first.preparation.proof.fromDefinitionId===before?.id;
@@ -2460,6 +2505,13 @@ async function compileClaimedJob(
     if(!parentReceipt||parentReceipt.catalogId!==job.catalog_id||parentReceipt.definitionId!==definition.id||parentReceipt.definitionSha256!==definition.definition_sha256)throw Object.assign(new Error('История исключения нижних слоёв не подтверждена.'),{code:'DEFINITION_INTEGRITY_FAILED'});
     const origin=consumeRoofLegacyAssemblySelectionOriginV1({receipt:parentReceipt,parentSelection:((parentRevision.amendment_contract as JsonRecord|undefined)?.parameterSources as JsonRecord|undefined)?.compositionSelectionV1,effectiveSelection:effectiveCompositionSelectionV1});
     roofStageRestorationV4=buildRoofStageRestorationV4({lowerLayers:roofLowerLayersMigration.lowerLayers,previous:roofLowerLayersMigration.previous.receipt,origin});
+  }
+  if(roofGuttersMigration&&parentRevision&&parentRevision.definition_version_id===definition.id){
+    const sources=(parentRevision.amendment_contract as JsonRecord|undefined)?.parameterSources as JsonRecord|undefined;
+    const actual=readRoofStageRestorationV5(sources?.roofStageRestorationV5);
+    if(!actual||actual.catalogId!==job.catalog_id||actual.definitionId!==definition.id||actual.definitionSha256!==definition.definition_sha256)throw Object.assign(new Error('История исключений желобов не подтверждена.'),{code:'DEFINITION_INTEGRITY_FAILED'});
+    const origins=consumeRoofStageOriginsV5({receipt:actual,parentSelection:sources?.compositionSelectionV1,effectiveSelection:effectiveCompositionSelectionV1});
+    roofStageRestorationV5=buildRoofStageRestorationV5({gutters:roofGuttersMigration.gutters,previous:actual.originalV4,...origins});
   }
   const priceSnapshotIds = Array.isArray(payload.priceSnapshotIds)
     ? payload.priceSnapshotIds.filter(
@@ -2551,6 +2603,7 @@ async function compileClaimedJob(
     ...(roofStageRestorationV2?{roofStageRestorationV2}:{}),
     ...(roofStageRestorationV3?{roofStageRestorationV3}:{}),
     ...(roofStageRestorationV4?{roofStageRestorationV4}:{}),
+    ...(roofStageRestorationV5?{roofStageRestorationV5}:{}),
     ...(roofPrimerPrerequisiteV1?{roofPrimerPrerequisiteV1}:{}),
   };
   const commitPayload = buildCanonicalRevisionCommitPayload({
@@ -2575,6 +2628,7 @@ async function compileClaimedJob(
     roofStageRestorationV2,
     roofStageRestorationV3,
     roofStageRestorationV4,
+    roofStageRestorationV5,
     compositionSelectionV1:compiled.compositionSelectionV1,
   });
   await client.query(

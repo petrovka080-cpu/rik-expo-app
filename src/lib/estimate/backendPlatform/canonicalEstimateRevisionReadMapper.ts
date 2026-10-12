@@ -1,3 +1,4 @@
+import {readRoofStageRestorationV5} from './canonicalRoofHangingGuttersMigrationV1';
 import {
   ESTIMATE_PLATFORM_API_VERSION,
   type CanonicalEstimateRevisionRowPriceSource,
@@ -75,6 +76,9 @@ export function canonicalEstimateRevisionDetailFromStorage(
   const rawRestorationV4=record(record(row.amendment_contract).parameterSources).roofStageRestorationV4;
   const roofStageRestorationV4=readRoofStageRestorationV4(rawRestorationV4);
   if(rawRestorationV4!=null&&(!roofStageRestorationV4||roofStageRestorationV4.definitionId!==row.definition_version_id||roofStageRestorationV4.catalogId!==row.catalog_id))throw new CanonicalEstimateRevisionReadContractError('stored lower layer restoration receipt is invalid');
+  const rawRestorationV5=record(record(row.amendment_contract).parameterSources).roofStageRestorationV5;
+  const roofStageRestorationV5=readRoofStageRestorationV5(rawRestorationV5);
+  if(rawRestorationV5!=null&&(!roofStageRestorationV5||roofStageRestorationV5.definitionId!==row.definition_version_id||roofStageRestorationV5.catalogId!==row.catalog_id))throw new CanonicalEstimateRevisionReadContractError('stored gutter restoration receipt is invalid');
   if(rawPrerequisite!=null&&!prerequisite)throw new CanonicalEstimateRevisionReadContractError('stored preparation reference is invalid');
   return {
     apiVersion: ESTIMATE_PLATFORM_API_VERSION,
@@ -97,6 +101,7 @@ export function canonicalEstimateRevisionDetailFromStorage(
     ...(roofStageRestorationV2?{roofStageRestorationV2}:{}),
     ...(roofStageRestorationV3?{roofStageRestorationV3}:{}),
     ...(roofStageRestorationV4?{roofStageRestorationV4}:{}),
+    ...(roofStageRestorationV5?{roofStageRestorationV5}:{}),
     sourceRequestText: nullableText(row.source_request_text),
     sourceRequestHash: nullableText(row.source_request_hash),
     canonicalWorkTitleRu: nullableText(row.canonical_work_title_ru),

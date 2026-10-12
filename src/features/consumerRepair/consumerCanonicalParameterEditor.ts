@@ -1,3 +1,4 @@
+import {roofGuttersInactiveParameterIdsV1,ROOF_GUTTERS_QUESTION_PARAMETER_IDS_V1} from '../../lib/estimate/backendPlatform/canonicalRoofHangingGuttersMigrationV1';
 import {
   assertCanonicalEstimateParameterSessionSnapshotIdentity,
   type CanonicalEstimateParameterSessionRevision,
@@ -658,8 +659,8 @@ export function buildConsumerCanonicalParameterSession(input: {
     activeNeedParameterIds: new Set([
       ...activeNeedParameterIds,
     ]),
-    inactiveParameterIds:new Set((input.revision.excludedScopeParameterIdsV1??roofLowerLayersInactiveParameterIdsV1({receipt:input.revision.roofStageRestorationV4,definitionId:input.revision.definitionVersionId,catalogId:input.revision.catalogId,selection:input.revision.compositionSelectionV1}))
-      .filter(id=>ROOF_LOWER_LAYERS_QUESTION_PARAMETER_IDS_V1.includes(id))),
+    inactiveParameterIds:new Set((input.revision.excludedScopeParameterIdsV1??(input.revision.roofStageRestorationV5?roofGuttersInactiveParameterIdsV1({receipt:input.revision.roofStageRestorationV5,definitionId:input.revision.definitionVersionId,catalogId:input.revision.catalogId,selection:input.revision.compositionSelectionV1}):roofLowerLayersInactiveParameterIdsV1({receipt:input.revision.roofStageRestorationV4,definitionId:input.revision.definitionVersionId,catalogId:input.revision.catalogId,selection:input.revision.compositionSelectionV1})))
+      .filter(id=>ROOF_GUTTERS_QUESTION_PARAMETER_IDS_V1.includes(id))),
     additionalBlockingIds: unresolvedManualQuantityIds,
     orderedSpecificationParameterIds,
     schemaId: input.revision.parameterSchemaHash || `backend-schema:${input.catalog.catalogId}`,
