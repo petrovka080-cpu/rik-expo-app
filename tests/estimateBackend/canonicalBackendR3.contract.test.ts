@@ -58,13 +58,17 @@ describe("MASTER 11610 canonical backend R3 production contracts", () => {
   });
 
   it("builds PDF and procurement only from the exact immutable revision projection", () => {
+    const local=read('scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts');
     const worker = read(
       "supabase/functions/canonical-estimate-worker/index.ts",
     );
     const artifactContract = read(
       "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts",
     );
-    expect(worker).toContain("selectCanonicalArtifactRows(rowData ?? [])");
+    expect(worker).toMatch(/selectCanonicalArtifactRows\(\s*canonicalArtifactRowsWithPriceRecordsV1\(/u);
+    expect(worker).toContain("admin.from('estimate_revision_row_price')");
+    expect(worker).toContain(".eq('revision_id',job.parent_revision_id)");
+    expect(local).toContain('canonicalArtifactRowsWithPriceRecordsV1({revisionId,rows:artifactSourceRows,prices:artifactPriceRecords})');
     expect(worker).toContain("buildCanonicalProcurementProjection");
     expect(artifactContract).toContain("revisionId: String(revision.id)");
     expect(artifactContract).toContain(
