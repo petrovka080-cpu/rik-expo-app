@@ -656,7 +656,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
                   onPress={() => this.setState(state => ({ expandedOperationIds: { ...state.expandedOperationIds, [section.id]: !expanded },
                     visibleRowLimit: ANDROID_INITIAL_ROW_LIMIT }))} testID={`request-estimate-operation-toggle-${operation.operationId}`}>
                   <Text style={styles.operationTitle}>{`${expanded ? "▾" : "▸"} ${operation.operationTitleRu}`}</Text>
-                  <Text style={styles.operationSummary}>{operation.processRole === 'REFERENCE_ONLY'
+                  <Text style={styles.operationSummary}>{section.physicallyExcluded ? 'Исключена из сметы · ресурсы пересчитаны' : operation.processRole === 'REFERENCE_ONLY'
                     ? 'Справочные характеристики. Не оплачиваются и не закупаются.'
                     : operation.processRole === 'COST_SUMMARY' ? 'Сводные данные. Ресурсы учтены в соответствующих разделах.'
                     : resources.length ? `${resources.length - unresolved} рассчитано · ${unresolved} требуют уточнения`
@@ -679,7 +679,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
                     <Text style={styles.operationSummary}>{section.scopeRequirements.some(group=>group.sourceCheckRestoration?.operationKeys.length)
                       ? 'Восстановить проверку норм и связанный состав' : 'Восстановить проверку норм'}</Text>
                   </Pressable> : null}
-                {expanded && this.props.onCompositionRowsChange && section.scopeRequirements?.length
+                {expanded && !section.physicallyExcluded && this.props.onCompositionRowsChange && section.scopeRequirements?.length
                   && !section.scopeRequirements.some(group=>group.kinds?.includes('OBJECT_SCOPE'))
                   && section.scopeRequirements.some(group => group.statuses.some(status =>
                     ['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','LEGACY_SOURCE_REQUIRED','SCOPE_UNVERIFIED','USER_EXCLUDED'].includes(status)))

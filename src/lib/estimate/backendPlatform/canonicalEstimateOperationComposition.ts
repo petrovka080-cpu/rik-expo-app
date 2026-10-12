@@ -103,6 +103,8 @@ export function canonicalEstimateResourceOperationSections(
     const decisions = scopeDecisions.filter(decision => decision.groupId === group.groupId);
     const covering = decisions.flatMap(decision => decision.coveringRowIds);
     const coveredOwner = group.statuses.every(status => status === 'INCLUDED')
+      || (decisions.every(decision=>decision.kind==='INCLUDED')
+        && group.statuses.every(status=>['USER_EXCLUDED','REQUIRED_RESOURCE_EXCLUDED','OBJECT_FACT_REQUIRED'].includes(status)))
       ? covering.map(id => resourceOwner.get(id)).find(Boolean) : null;
     const operation: CanonicalEstimateOperationReference = coveredOwner ?? {
       contractVersion: 'canonical-operation-resource/v1', groupId: 'saved-scope-stages',
@@ -118,7 +120,7 @@ export function canonicalEstimateResourceOperationSections(
     const groupId = section.operation?.groupId ?? 'general';
     if (!groupOrder.has(groupId)) groupOrder.set(groupId, groupOrder.size);
   }
-  // These three source-owned companion stages declare the same roof sequence.
+  // These four source-owned companion stages declare the same roof sequence.
   // Storage order keeps old immutable row identities; presentation shows the
   // planned primer before torching. Other groups retain their existing slots:
   // ordinals from unrelated work groups are not a global construction sequence.
