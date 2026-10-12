@@ -193,6 +193,13 @@ function applyVisibleCanonicalRowDraft(
         ...item,
         quantity,
         unitPrice,
+        ...(Object.hasOwn(amendment, "unitPrice") ? {
+          priceStatus: unitPrice == null ? "PRICE_MISSING" as const : "USER_ENTERED_PRICE" as const,
+          priceSource: unitPrice == null ? "missing" as const : "user" as const,
+          priceSourceId: null,
+          priceSourceLabel: unitPrice == null ? null : "Цена введена пользователем",
+          priceEditedByConsumer: unitPrice != null,
+        } : {}),
         totalPrice: quantity != null && unitPrice != null
           ? roundMoney(quantity * unitPrice)
           : null,
@@ -2534,6 +2541,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           }
           return { ...item, quantity: saved.quantity, unitPrice: saved.unitPrice,
             totalPrice: saved.totalPrice,
+            priceStatus: saved.priceStatus, priceSource: saved.priceSource,
+            priceSourceId: saved.priceSourceId, priceSourceLabel: saved.priceSourceLabel,
+            priceEditedByConsumer: saved.priceEditedByConsumer,
             quantityEditedByConsumer: saved.quantityEditedByConsumer, sourceParameters };
         }) } : state.bundle,
         pendingCanonicalRowEditCount: 0,

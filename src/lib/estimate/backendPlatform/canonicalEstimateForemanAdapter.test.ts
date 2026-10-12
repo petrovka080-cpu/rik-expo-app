@@ -282,6 +282,28 @@ describe("canonical estimate consumer professional proof", () => {
     expect(proof?.normativeLabel).toContain("SELECTED_DRYWALL_SYSTEM_PASSPORT_R3");
     expect(proof?.normativeLabel).toContain("Технический лист: фактический расход материала.");
     expect(proof?.formulaLabel).toContain("Результат формулы: 10 кг");
+    const manualRow: CanonicalEstimateRevisionRowView = { ...row, priceSource: {
+      kind: "MANUAL", snapshotId: null, routeId: null, priceKey: null,
+      unitId: row.unitId, unitPrice: row.unitPrice, currencyCode: "KGS", snapshotCapturedAt: null,
+      routeSourceKind: "manual", resolutionTrace: { kind: "manual_override",
+        provenance: { kind: "manual", reason: "consumer_estimate_row_batch_edit" } },
+    } };
+    const manualPayload = adaptCanonicalRevisionToStructuredEstimate({ catalog, revision, rows: [manualRow] });
+    const manual = buildStructuredEstimateRequestDraft(manualPayload).items[0]!;
+    expect(manual).toMatchObject({ unitPrice: 125.5, quantity: 10, priceStatus: "USER_PRICE_OVERRIDE",
+      priceSource: "user", priceSourceId: null, priceSourceLabel: "Цена введена пользователем" });
+    expect(manualPayload.rows[0]?.priceTrace).toMatchObject({ is_manual_override: true,
+      confidence: "low", override_reason: "consumer_estimate_row_batch_edit" });
+    expect(manualPayload.rows[0]?.sourceParameters?.normativeTrace).toEqual(row.normativeTrace);
+    const forged = { ...manualRow, priceSource: { ...manualRow.priceSource!, kind: "AUTOMATIC_SNAPSHOT" as const,
+      snapshotId: "price-snapshot" } };
+    expect(adaptCanonicalRevisionToStructuredEstimate({ catalog, revision, rows: [forged] }).rows[0]?.priceTrace)
+      .toBeUndefined();
+    expect(adaptCanonicalRevisionToStructuredEstimate({ catalog, revision,
+      rows: [{ ...manualRow, unitPrice: null, amount: null }] }).rows[0]?.priceTrace).toBeUndefined();
+    const zero = buildStructuredEstimateRequestDraft(adaptCanonicalRevisionToStructuredEstimate({ catalog, revision,
+      rows: [{ ...manualRow, unitPrice: "0", amount: "0" }] })).items[0]!;
+    expect(zero).toMatchObject({ unitPrice: 0, priceStatus: "USER_PRICE_OVERRIDE", priceSource: "user" });
   });
 
   it("projects backend sections and AI surface from one immutable compilation", () => {

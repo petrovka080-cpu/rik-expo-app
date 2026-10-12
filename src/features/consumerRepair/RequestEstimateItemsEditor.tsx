@@ -536,6 +536,22 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
               : `${viewModel.rawItemCount} ${positionCountLabel(viewModel.rawItemCount)}`}
           </Text>
         </View>
+        {onApplyCanonicalRowEdits ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ disabled: canonicalRowEditsApplying || pendingCanonicalRowEditCount === 0 }}
+            disabled={canonicalRowEditsApplying || pendingCanonicalRowEditCount === 0}
+            onPress={() => { void onApplyCanonicalRowEdits(); }}
+            style={[styles.rowBatchApply, styles.rowBatchApplyTop,
+              canonicalRowEditsApplying || pendingCanonicalRowEditCount === 0 ? styles.rowBatchApplyDisabled : null]}
+            testID="request-estimate-row-batch-apply-top"
+          >
+            <Text numberOfLines={1} style={styles.rowBatchApplyText}>
+              {canonicalRowEditsApplying ? "Применяем…" : pendingCanonicalRowEditCount > 0
+                ? `Применить изменения (${pendingCanonicalRowEditCount})` : "Изменений нет"}
+            </Text>
+          </Pressable>
+        ) : null}
         {compositionIncomplete ? (
           <View style={styles.incompleteNotice} testID="request-estimate-incomplete-composition-notice">
             <Text style={styles.incompleteNoticeText}>
@@ -1002,6 +1018,9 @@ const styles = StyleSheet.create({
   },
   section: {
     gap: 2,
+  },
+  rowBatchApplyTop: {
+    height: 42,
   },
   operation: { gap: 6, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#CBD5E1" },
   operationGroupTitle: { fontSize: 17, fontWeight: "800", color: "#0F172A", marginBottom: 8 },

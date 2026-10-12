@@ -151,10 +151,14 @@ describe("canonical pending row quantity provenance", () => {
   it("returns a new price to an originally unpriced row without trapping a composition update or writing a revision", async () => {
     const editor = stagedEditor();
     await editor.mutable.changeItemUnitPrice("test-owned-row", "111.11");
+    expect(editor.current()).toMatchObject({ priceStatus: "USER_ENTERED_PRICE", priceSource: "user",
+      priceSourceId: null, priceSourceLabel: "Цена введена пользователем", priceEditedByConsumer: true });
     expect(editor.mutable.state.pendingCanonicalRowEditCount).toBe(1);
     await editor.mutable.changeItemUnitPrice("test-owned-row", "");
     expect(editor.mutable.state.pendingCanonicalRowEditCount).toBe(0);
     expect(editor.current().unitPrice).toBeNull();
+    expect(editor.current()).toMatchObject({ priceStatus: "PRICE_MISSING", priceSource: "missing",
+      priceSourceId: null, priceSourceLabel: null, priceEditedByConsumer: false });
     expect(await editor.mutable.applyPendingCanonicalRowEdits()).toBe(false);
     expect(editor.recalculate).not.toHaveBeenCalled();
   });
@@ -183,6 +187,8 @@ describe("canonical pending row quantity provenance", () => {
 
   it("requires explicit consent to discard new edits and restores saved values while retaining unrelated row data", async () => {
     const editor = stagedEditor({ quantity: 20, unitPrice: 10, totalPrice: 200, quantityEditedByConsumer: true,
+      priceStatus: "CATALOG_PRICE_VERIFIED", priceSource: "catalog_item", priceSourceId: "saved-price-id",
+      priceSourceLabel: "Saved offer", priceEditedByConsumer: false,
       sourceParameters: { canonicalBackendRevisionId: "test-parent", canonicalBackendReleaseId: "test-release",
         rowCode: "test:bedding", manualQuantityOverride: true, calculatedQuantityBeforeOverride: 14.25 } });
     const alert = jest.spyOn(Alert, "alert").mockImplementation(() => {});
@@ -199,6 +205,8 @@ describe("canonical pending row quantity provenance", () => {
         sourceParameters: { ...editor.current().sourceParameters, unrelatedPhoto: "retained" } };
       buttons[1].onPress!();
       expect(editor.current()).toMatchObject({ quantity: 20, unitPrice: 10, totalPrice: 200,
+        priceStatus: "CATALOG_PRICE_VERIFIED", priceSource: "catalog_item", priceSourceId: "saved-price-id",
+        priceSourceLabel: "Saved offer", priceEditedByConsumer: false,
         quantityEditedByConsumer: true, titleRu: "Уточнённое название", sourceParameters: {
           manualQuantityOverride: true, calculatedQuantityBeforeOverride: 14.25, unrelatedPhoto: "retained" } });
       expect(editor.mutable.state.pendingCanonicalRowEditCount).toBe(0);

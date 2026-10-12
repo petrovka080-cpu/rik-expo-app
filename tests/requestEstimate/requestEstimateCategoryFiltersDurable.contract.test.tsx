@@ -115,8 +115,10 @@ describe("durable request estimate category filters", () => {
     const model = { ...viewModel45(), rawItemCount: 4, calculatedItemCount: 0, preliminaryNeedCount: 3,
       sections: [{ id: "professional_crossing_casing" as const, title: operation.operationTitleRu, operation, items: [...resources, control] }] };
     const renderer = renderEditor(model);
-    expect(visibleRowCount(renderer)).toBe(0);
+    expect(visibleRowCount(renderer)).toBe(3);
     expect(renderer.root.findByProps({ testID: "request-estimate-operation-casing" })).toBeTruthy();
+    act(() => renderer.root.findByProps({ testID: "request-estimate-operation-toggle-casing" }).props.onPress());
+    expect(visibleRowCount(renderer)).toBe(0);
     act(() => renderer.root.findByProps({ testID: "request-estimate-operation-toggle-casing" }).props.onPress());
     expect(visibleRowCount(renderer)).toBe(3);
     expect(renderer.root.findAllByProps({ testID: `consumer-repair-item-${control.id}` })).toHaveLength(0);
@@ -124,28 +126,41 @@ describe("durable request estimate category filters", () => {
     expect(visibleRowCount(renderer)).toBe(4);
     act(() => renderer.unmount());
   });
-  it("keeps focused quantity rows in place when queued changes appear, with the notice and sole Apply below rows", () => {
+  it("keeps focused input stable with a permanent top Apply and shared busy state for both Apply controls", () => {
     const noop = jest.fn();
     const apply = jest.fn();
     const model = viewModel45();
-    const editor = (count: number) => <RequestEstimateItemsEditor viewModel={model}
+    const editor = (count: number, busy = false) => <RequestEstimateItemsEditor viewModel={model}
+      canonicalRowEditsApplying={busy}
       pendingCanonicalRowEditCount={count} onApplyCanonicalRowEdits={apply}
       onDecrease={noop} onIncrease={noop} onQuantityChange={noop} onUnitPriceChange={noop}
       onRemove={noop} onAddManual={noop} />;
     let renderer!: ReactTestRenderer;
     act(() => { renderer = TestRenderer.create(editor(0)); });
+    const top = renderer.root.findByProps({ testID: "request-estimate-row-batch-apply-top" });
+    expect(top.props.disabled).toBe(true);
     const input = renderer.root.findByProps({ testID: "consumer-repair-item-quantity-input-material-0" });
     act(() => { input.props.onFocus(); input.props.onChangeText("12.5"); });
     act(() => { renderer.update(editor(1)); });
     const retained = renderer.root.findByProps({ testID: "consumer-repair-item-quantity-input-material-0" });
     expect(retained).toBe(input);
     expect(retained.props.value).toBe("12.5");
-    const order = renderer.root.findAll(node => ["request-estimate-flat-row-list", "request-estimate-row-batch-bar"].includes(node.props.testID))
+    expect(renderer.root.findByProps({ testID: "request-estimate-row-batch-apply-top" })).toBe(top);
+    expect(top.props.disabled).toBe(false);
+    const order = renderer.root.findAll(node => ["request-estimate-row-batch-apply-top", "request-estimate-flat-row-list", "request-estimate-row-batch-bar"].includes(node.props.testID))
       .map(node => node.props.testID);
+    expect(order.indexOf("request-estimate-row-batch-apply-top")).toBeLessThan(order.indexOf("request-estimate-flat-row-list"));
     expect(order.indexOf("request-estimate-flat-row-list")).toBeLessThan(order.indexOf("request-estimate-row-batch-bar"));
     expect(renderer.root.findAllByProps({ testID: "request-estimate-row-batch-apply" })).toHaveLength(0);
-    act(() => renderer.root.findByProps({ testID: "request-estimate-row-batch-apply-bottom" }).props.onPress());
+    act(() => top.props.onPress());
     expect(apply).toHaveBeenCalledTimes(1);
+    act(() => renderer.root.findByProps({ testID: "request-estimate-row-batch-apply-bottom" }).props.onPress());
+    expect(apply).toHaveBeenCalledTimes(2);
+    act(() => renderer.update(editor(1, true)));
+    expect(top.props.disabled).toBe(true);
+    expect(renderer.root.findByProps({ testID: "request-estimate-row-batch-apply-bottom" }).props.disabled).toBe(true);
+    expect(renderer.root.findByProps({ testID: "consumer-repair-item-quantity-input-material-0" })).toBe(input);
+    expect(input.props.value).toBe("12.5");
     act(() => renderer.unmount());
   });
   it("classifies each current filtered row once and reuses that category to reveal a collapsed search match", () => {
