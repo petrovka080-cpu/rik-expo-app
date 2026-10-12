@@ -20,6 +20,7 @@ const scopeStatus=(row:any)=>row?.calculation_trace?.resourceGraph?.scopeRequire
 describe('source-bound planned preparation and narrow immutable migration',()=>{
  test.each([0,1])('admits only the exact additive transition for target %s and retains old completed quantities',async index=>{
   const i=fixture(index),admitted=admitRoofPreparationMigrationProofV1(i);expect(admitted).not.toBeNull();
+  expect(i.to.parameters.every(p=>p.truth_metadata.contract==='rik-expo-app.s27-67.integrated-planned-roof-priming.v1')).toBe(true);
   expect((await compile(i.to,field.conditionsYesRu)).rows).toEqual((await compile(i.from,field.conditionsYesRu)).rows);
   const planned=await compile(i.to,ROOF_PLANNED_PRIMER_CONDITIONS_V1);
   expect(planned.rows).toHaveLength(12);expect(planned.rows.filter(r=>r.included_in_estimate)).toHaveLength(11);
