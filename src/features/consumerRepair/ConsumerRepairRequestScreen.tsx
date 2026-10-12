@@ -2479,7 +2479,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         : state.bundle,
       pendingCanonicalRowEditCount: pendingCount,
       statusMessage: pendingCount > 0
-        ? `Изменения в ${pendingCount} поз. подготовлены. Введите остальные количества и цены, затем нажмите «Применить изменения».`
+        ? `Изменения в ${pendingCount} поз. подготовлены. Внесите остальные нужные правки, затем нажмите «Применить изменения».`
         : "",
       validationErrors: [],
     }));

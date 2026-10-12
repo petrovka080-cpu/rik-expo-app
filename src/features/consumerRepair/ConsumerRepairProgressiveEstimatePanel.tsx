@@ -643,6 +643,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
       <EstimateRevisionDiff
         diff={requestEstimatePublicRevisionDiff(this.props.revisionState,latestDiff)}
         parameters={canonicalParameterSession?.parameters}
+        scopeRowIds={viewModel.scopeRequirementGroups?.flatMap(group=>group.rowIds)}
       />
       <View style={styles.primaryActions} testID="request-estimate-progressive-actions">
         <Pressable

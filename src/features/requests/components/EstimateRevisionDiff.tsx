@@ -16,6 +16,7 @@ const rowStateLabel = (state: NonNullable<EstimateDraftRevisionDiff["changedRows
 export function EstimateRevisionDiff({
   diff,
   parameters,
+  scopeRowIds,
 }: {
   diff: EstimateDraftRevisionDiff | null;
   parameters?: readonly {
@@ -24,11 +25,15 @@ export function EstimateRevisionDiff({
     unit: string | null;
     valueType?: string;
   }[];
+  /** Verified semantic requirements from the current estimate presentation.
+   * They describe stages, and have no physical quantity or measurement unit. */
+  scopeRowIds?: readonly string[];
 }): React.ReactElement | null {
   if (!diff) return null;
   const parameterPresentation = new Map(
     (parameters ?? []).map((parameter) => [parameter.parameterId, parameter] as const),
   );
+  const scopeIds=new Set(scopeRowIds??[]);
   const visibleChanges = diff.changedParams.filter(param => {
     const presentation = parameterPresentation.get(param.key);
     if (parameters != null && !presentation) return false;
@@ -54,8 +59,10 @@ export function EstimateRevisionDiff({
       })}
       {diff.changedRows.slice(0, 6).map((row) => (
         <Text key={row.rowId} style={styles.line} testID={`estimate-revision-diff-row-${row.rowId}`}>
-          {row.beforeTitleRu ? `${row.beforeTitleRu} → ${row.titleRu}` : row.titleRu}: {row.beforeQuantity ?? (row.beforeState === "NEEDS_CLARIFICATION" ? "не рассчитано" : "нет")} {"->"} {row.afterQuantity ?? (row.afterState === "NEEDS_CLARIFICATION" ? "не рассчитано" : "нет")} {formatEstimateUnitLabel(row.unit)}
-          {row.beforeState && row.afterState ? ` (${rowStateLabel(row.beforeState)} → ${rowStateLabel(row.afterState)})` : ""}
+          {row.beforeTitleRu ? `${row.beforeTitleRu} → ${row.titleRu}` : row.titleRu}: {scopeIds.has(row.rowId)
+            ? row.beforeState==='ABSENT'?'этап добавлен в состав сметы':row.afterState==='ABSENT'?'этап убран из состава сметы':'состав этапа изменён'
+            : <>{row.beforeQuantity ?? (row.beforeState === "NEEDS_CLARIFICATION" ? "не рассчитано" : "нет")} {"->"} {row.afterQuantity ?? (row.afterState === "NEEDS_CLARIFICATION" ? "не рассчитано" : "нет")} {formatEstimateUnitLabel(row.unit)}
+              {row.beforeState && row.afterState ? ` (${rowStateLabel(row.beforeState)} → ${rowStateLabel(row.afterState)})` : ""}</>}
         </Text>
       ))}
       {diff.changedRows.filter((row) =>

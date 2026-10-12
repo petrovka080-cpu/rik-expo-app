@@ -142,14 +142,17 @@ export function ConsumerRepairRequestStickyActions({
   const approvalActionHint = approvalMissingPriceCount > 0
     ? `Без цены остаются позиции: ${approvalMissingPriceCount}. Их можно заполнить позже.`
     : undefined;
+  const allIncompleteStagesNeedApplication=approvalIncompleteStages.length>0&&approvalIncompleteStages.every(group=>group.statuses.every(status=>['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','LEGACY_SOURCE_REQUIRED'].includes(status)));
   const approvalBlockedLabel = contentWithdrawalReasonRu
     ? "Расчёт требует исправления"
     : approvalCommitBusy
     ? "Подтверждаем смету…"
-    : approvalUnresolvedRowCount > 0
-      ? 'Смета пока не готова к подтверждению'
-      : approvalBlockedByParameters
-        ? "Заполните параметры сметы"
+    : approvalBlockedByParameters
+      ? "Укажите необходимые данные объекта"
+      : approvalUnresolvedRowCount > 0
+        ? allIncompleteStagesNeedApplication
+          ? `Приложению нужно дополнить этапы: ${approvalIncompleteStages.length}`
+          : 'Смета пока не готова к подтверждению'
         : approvalPendingRowEditCount > 0
           ? `Сначала примените изменения: ${approvalPendingRowEditCount}`
         : "Сначала рассчитайте смету";
