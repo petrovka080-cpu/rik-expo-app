@@ -19,7 +19,7 @@ import {canonicalScopeRequirementDecisionV1,groupCanonicalScopeRequirementsV1,ca
 import {readRoofPrimerPrerequisiteDecisionV1,roofPrimerPhaseRuV1} from './canonicalRoofPrimerPrerequisiteV1';
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-67-conditional-valley-template36" as const;
+  "canonical-professional-pdf.r4-a13-s27-67-source-stage-order-template37" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
