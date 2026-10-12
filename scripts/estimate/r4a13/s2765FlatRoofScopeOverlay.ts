@@ -20,7 +20,11 @@ export function overlayS2765FlatRoofScope(parent:PurchaseGroupRepresentative,loc
     row.resource_graph={...row.resource_graph,scopeRequirementV1:scope};
     row.source_metadata={...row.source_metadata,scopeClassificationContract:pack.contract,numericNormClosed:false};
     const {row_sha256:_sha,...body}=row;row.row_sha256=hash(body);
-    result.bindings.push({row_id:row.row_id,locator_id:locators.roof,applicability:{contract:pack.contract,scopeClassificationOnly:true,numericQuantityAdmitted:false,completeTechnicalEstimateAccepted:false}});
+    const binding=result.bindings.find(b=>b.row_id===row.row_id);
+    if(!binding)throw Error('ROOF_SCOPE_PARENT_BINDING_MISSING:'+row.row_id);
+    binding.applicability={...binding.applicability,contract:pack.contract,scopeClassificationOnly:true,numericQuantityAdmitted:false,
+      completeTechnicalEstimateAccepted:false,previousLocatorId:binding.locator_id};
+    binding.locator_id=locators.roof;
     ownerDisposition.push({rowId:row.row_id,costOwnerId:row.cost_owner_id,formulaId:row.formula_id,scope});
   };
   const fact=(id:string,value:string)=>({kind:'equals',parameterId:id,value});
@@ -48,6 +52,7 @@ export function overlayS2765FlatRoofScope(parent:PurchaseGroupRepresentative,loc
   const guide=system.truth_metadata.guide as Record<string,unknown>;
   system.truth_metadata={...system.truth_metadata,guide:{...guide,guide_short_ru:'Выберите систему, предусмотренную проектом для наружной кровли по готовому минеральному основанию. Для двух наплавляемых слоёв Изопласт ЭПП-4 снизу и ЭКП-4.5 сверху нормы рассчитываются автоматически. Другие материалы и технологии требуют своего состава.'}};
   result.baseline.guide_provenance_ru[pack.systemParameterId]=(system.truth_metadata.guide as Record<string,unknown>).guide_short_ru;
+  result.baseline.normative_source_ids[pack.systemParameterId]=[...result.baseline.normative_source_ids[pack.systemParameterId],pack.contract+':roof'];
   for(const parameter of result.parameters)parameter.truth_metadata={...parameter.truth_metadata,contract:pack.contract,
     semantic_parameter_key:catalogId+':'+parameter.parameter_id};
   result.baseline.parameter_schema_sha256=hash(result.parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata})));

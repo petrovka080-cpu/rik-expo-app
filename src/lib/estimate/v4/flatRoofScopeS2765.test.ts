@@ -28,6 +28,7 @@ test('forward-only scope successor preserves all256 owner identities and formula
   for(const parent of fixture.reps){const saved=JSON.stringify(parent),r=overlay(parent,locators).representative;
     expect(JSON.stringify(parent)).toBe(saved);expect(r.formulas).toEqual(parent.formulas);
     expect(r.resources.map(row=>[row.id,row.row_id,row.cost_owner_id,row.formula_id,row.unit_id])).toEqual(parent.resources.map(row=>[row.id,row.row_id,row.cost_owner_id,row.formula_id,row.unit_id]));
+    expect(r.bindings).toHaveLength(parent.bindings.length);expect(new Set(r.bindings.map(b=>b.row_id)).size).toBe(r.bindings.length);
     expect(r.parameters.filter(p=>p.truth_metadata.visibility_role==='USER_INPUT').map(p=>p.parameter_id)).toEqual(['q',pack.systemParameterId,pack.conditionsParameterId,pack.areaParameterId]);
     expect(canonicalApprovedBaselineRuntimeParameters(r.baseline)).toEqual({});expect(canonicalPublisherQuantityScopeIsConsistent(r)).toBe(true);
     expect(r.passport.decision).toMatchObject({quantityScope:'PARTIAL',newNumericNormClosures:0,completeTechnicalEstimateAccepted:false});
