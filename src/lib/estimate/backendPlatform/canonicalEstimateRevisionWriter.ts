@@ -202,6 +202,7 @@ export function buildCanonicalRevisionCommitPayload(input: {
   roofPreparationMigrationV1?: import('./canonicalRoofPreparationMigrationV1').RoofPreparationMigrationProofV1|null;
   roofStageRestorationV1?: import('./canonicalRoofValleyMigrationV1').RoofStageRestorationV1|null;
   roofStageRestorationV2?: import('./canonicalRoofScreedMigrationV1').RoofStageRestorationV2|null;
+  roofStageRestorationV3?: import('./canonicalRoofMetalTrimMigrationV1').RoofStageRestorationV3|null;
 }): Record<string, unknown> {
   return {
     rowCount: input.rowCount,
@@ -224,6 +225,7 @@ export function buildCanonicalRevisionCommitPayload(input: {
       ...(input.roofPreparationMigrationV1==null?{}:{roofPreparationMigrationV1:input.roofPreparationMigrationV1}),
       ...(input.roofStageRestorationV1==null?{}:{roofStageRestorationV1:input.roofStageRestorationV1}),
       ...(input.roofStageRestorationV2==null?{}:{roofStageRestorationV2:input.roofStageRestorationV2}),
+      ...(input.roofStageRestorationV3==null?{}:{roofStageRestorationV3:input.roofStageRestorationV3}),
     },
   };
 }
