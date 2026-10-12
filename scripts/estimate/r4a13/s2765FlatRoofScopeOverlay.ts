@@ -48,6 +48,8 @@ export function overlayS2765FlatRoofScope(parent:PurchaseGroupRepresentative,loc
   const guide=system.truth_metadata.guide as Record<string,unknown>;
   system.truth_metadata={...system.truth_metadata,guide:{...guide,guide_short_ru:'Выберите систему, предусмотренную проектом для наружной кровли по готовому минеральному основанию. Для двух наплавляемых слоёв Изопласт ЭПП-4 снизу и ЭКП-4.5 сверху нормы рассчитываются автоматически. Другие материалы и технологии требуют своего состава.'}};
   result.baseline.guide_provenance_ru[pack.systemParameterId]=(system.truth_metadata.guide as Record<string,unknown>).guide_short_ru;
+  for(const parameter of result.parameters)parameter.truth_metadata={...parameter.truth_metadata,contract:pack.contract,
+    semantic_parameter_key:catalogId+':'+parameter.parameter_id};
   result.baseline.parameter_schema_sha256=hash(result.parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata})));
   result.passport.decision={...result.passport.decision,scopeClassificationContract:pack.contract,scopeClassification:ownerDisposition,
     newPhysicalNormConsumers:0,newNumericNormClosures:0,completeTechnicalEstimateAccepted:false,wholeRoofGroupComplete:false};
