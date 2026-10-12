@@ -19,7 +19,7 @@ import {canonicalScopeRequirementDecisionV1,groupCanonicalScopeRequirementsV1,ca
 import {readRoofPrimerPrerequisiteDecisionV1,roofPrimerPhaseRuV1} from './canonicalRoofPrimerPrerequisiteV1';
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-67-unified-covered-stage-template39" as const;
+  "canonical-professional-pdf.r4-a13-s27-67-explicit-stage-measures-template40" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -299,8 +299,18 @@ export function buildCanonicalProfessionalPdfProjection(input: {
   let rowNumber = 0;
   const renderedComposition = operationSections.map(section => {
     const reference = section.operation;
+    const stageParameterIds=[...new Set(section.resourceIds.flatMap(id=>{
+      const graph=objectValue(objectValue(rowsById.get(id)!.calculation_trace).resourceGraph);
+      const policy=objectValue(graph.derivedQuantityEditPolicyV1);
+      return policy.contractVersion==='canonical-derived-quantity-edit-policy/v1'&&policy.mode==='PARAMETERS_ONLY'&&Array.isArray(policy.parameterIds)?policy.parameterIds.filter((id):id is string=>typeof id==='string'):[];
+    }))];
+    const stageInputs=stageParameterIds.flatMap(id=>{
+      const title=nullableText(input.parameterTitlesRu?.[id]),value=parameters[id];
+      return title&&(typeof value==='number'||typeof value==='string')&&/^\d+(?:\.\d+)?$/u.test(String(value))
+        ?[`${escapeCanonicalArtifactHtml(title)}: ${canonicalArtifactQuantity(value)}`]:[];
+    });
     const heading = reference
-      ? `<tr class="operation"><td colspan="7"><strong>${multipleOperationGroups ? `${escapeCanonicalArtifactHtml(canonicalPublicEstimateWorkTitleRu(reference.groupTitleRu))} — ` : ''}${escapeCanonicalArtifactHtml(canonicalPublicEstimateWorkTitleRu(reference.operationTitleRu))}</strong>${reference.processRole === 'REFERENCE_ONLY' ? '<div>Справочные характеристики. Не оплачиваются и не закупаются.</div>' : reference.processRole === 'COST_SUMMARY' ? '<div>Сводные данные. Стоимость учтена в ресурсных строках.</div>' : ''}</td></tr>`
+      ? `<tr class="operation"><td colspan="7"><strong>${multipleOperationGroups ? `${escapeCanonicalArtifactHtml(canonicalPublicEstimateWorkTitleRu(reference.groupTitleRu))} — ` : ''}${escapeCanonicalArtifactHtml(canonicalPublicEstimateWorkTitleRu(reference.operationTitleRu))}</strong>${stageInputs.length?`<div>Исходные данные этапа: ${stageInputs.join('; ')}</div>`:''}${reference.processRole === 'REFERENCE_ONLY' ? '<div>Справочные характеристики. Не оплачиваются и не закупаются.</div>' : reference.processRole === 'COST_SUMMARY' ? '<div>Сводные данные. Стоимость учтена в ресурсных строках.</div>' : ''}</td></tr>`
       : hasOperations ? `<tr class="operation"><td colspan="7"><strong>Работы и ресурсы сметы</strong></td></tr>` : '';
     const ownRows = section.resourceIds.map(id => {
       const row = rowsById.get(id)!;

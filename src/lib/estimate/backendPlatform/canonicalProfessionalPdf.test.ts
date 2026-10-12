@@ -40,6 +40,16 @@ function revision(rowCount: number) {
     created_at: "2026-09-04T10:30:00.000Z",
   };
 }
+test('PDF shows each source-owned stage actual inputs without replacing a missing independent measure by primary q',()=>{
+ const source=rows(3).map((row,index)=>({...row,calculation_trace:{resourceGraph:{derivedQuantityEditPolicyV1:{contractVersion:'canonical-derived-quantity-edit-policy/v1',mode:'PARAMETERS_ONLY',parameterIds:[['q','roof_screed_area_m2','roof_valley_length_m'][index]!]},operationCompositionV1:{contractVersion:'canonical-operation-resource/v1',groupId:'control',groupTitleRu:'Контроль',operationId:'stage'+index,operationTitleRu:['Покрытие','Стяжка','Ендовы'][index],completionCriterionRu:'Контроль'}}}}));
+ const labels={q:'Площадь покрытия, м²',roof_screed_area_m2:'Площадь стяжки, м²',roof_valley_length_m:'Длина ендов, м'};
+ const r={...revision(3),input_parameters:{q:'40',roof_screed_area_m2:'20',roof_valley_length_m:'20'}};
+ const html=buildCanonicalProfessionalPdfProjection({revision:r,rows:source,workTitleRu:'Кровля',parameterTitlesRu:labels}).html;
+ expect(html).toContain('Исходные данные этапа: Площадь покрытия, м²: 40');expect(html).toContain('Исходные данные этапа: Площадь стяжки, м²: 20');expect(html).toContain('Исходные данные этапа: Длина ендов, м: 20');
+ expect(html).not.toContain('roof_screed_area_m2');
+ const missing=buildCanonicalProfessionalPdfProjection({revision:{...r,input_parameters:{...r.input_parameters,roof_screed_area_m2:null}},rows:source,workTitleRu:'Кровля',parameterTitlesRu:labels}).html;
+ expect(missing).not.toContain('Исходные данные этапа: Площадь стяжки');
+});
 
 test.each(['LEGACY_SOURCE_REQUIRED','OBJECT_FACT_REQUIRED','REQUIRED_RESOURCE_EXCLUDED','USER_EXCLUDED'])('fully priced rows retain the actual source/scope reason instead of asking for prices: %s',status=>{
   const source=rows(1),check={...rows(1)[0]!,row_id:'source-check',ordinal:2,quantity:status==='USER_EXCLUDED'?'0':null,unit_price:null,amount:null,included_in_estimate:false,included_in_procurement:false,ownership_status:'PRELIMINARY_NEED',calculation_trace:{resourceGraph:{scopeRequirementDecisionV1:{contractVersion:'canonical-scope-requirement-decision/v1',rowId:'source-check',groupId:'system',groupTitleRu:'Система кровли',titleRu:'Проверка системы',reasonRu:'Нормы требуют проверки',kind:'OBJECT_SCOPE',status,coveringRowIds:[],originalRowIds:[],missingObjectFactParameterIds:[],numericNormAccepted:false,separatePaymentAccepted:false}}}};
@@ -222,7 +232,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-67-unified-covered-stage-template39");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-67-explicit-stage-measures-template40");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,
