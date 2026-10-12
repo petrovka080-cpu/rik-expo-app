@@ -53,6 +53,7 @@ import {
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
 import { logger } from "../../lib/logger";
 import { canonicalPublicEstimateParameterTitleRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
+import {roofLowerLayersInactiveParameterIdsV1,ROOF_LOWER_LAYERS_QUESTION_PARAMETER_IDS_V1} from '../../lib/estimate/backendPlatform/canonicalRoofLowerLayersMigrationV1';
 import { createConsumerEstimateHydrationTrace } from "../../lib/consumerRequests/consumerEstimateHydrationTrace";
 import {
   assertConsumerCanonicalChildRevision,
@@ -448,6 +449,7 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
   parentParameters?: Record<string, unknown> | null;
   userInputSnapshot?: Record<string, unknown> | null;
   activeNeedParameterIds: ReadonlySet<string>;
+  inactiveParameterIds?: ReadonlySet<string>;
   orderedSpecificationParameterIds?: ReadonlySet<string>;
   additionalBlockingIds?: readonly string[];
   sourceByParameterId?: ReadonlyMap<string, CanonicalParameter["source"]>;
@@ -497,6 +499,7 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
     .filter((parameter) => parameter.value != null)
     .map((parameter) => [parameter.parameterId, parameter.value!] as const));
   const conditionState = (parameter: CanonicalParameter): boolean | null => {
+    if(input.inactiveParameterIds?.has(parameter.parameterId))return false;
     // A backend need is authoritative only inside its applicable branch. The
     // client parser maps an unsupported/newer expression to ALWAYS. For a
     // supported expression, an absent dependency is unknown while an explicit
@@ -654,6 +657,8 @@ export function buildConsumerCanonicalParameterSession(input: {
     activeNeedParameterIds: new Set([
       ...activeNeedParameterIds,
     ]),
+    inactiveParameterIds:new Set((input.revision.excludedScopeParameterIdsV1??roofLowerLayersInactiveParameterIdsV1({receipt:input.revision.roofStageRestorationV4,definitionId:input.revision.definitionVersionId,catalogId:input.revision.catalogId,selection:input.revision.compositionSelectionV1}))
+      .filter(id=>ROOF_LOWER_LAYERS_QUESTION_PARAMETER_IDS_V1.includes(id))),
     additionalBlockingIds: unresolvedManualQuantityIds,
     orderedSpecificationParameterIds,
     schemaId: input.revision.parameterSchemaHash || `backend-schema:${input.catalog.catalogId}`,

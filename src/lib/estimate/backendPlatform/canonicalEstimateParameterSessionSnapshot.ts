@@ -6,13 +6,16 @@ import {
   type CanonicalEstimateRevisionView,
 } from "./contracts";
 import { canonicalOrderedSpecificationParameterIds } from './canonicalOrderedSpecificationBindings';
+import {roofLowerLayersInactiveParameterIdsV1} from './canonicalRoofLowerLayersMigrationV1';
 
 export type CanonicalEstimateParameterSessionRevision = Pick<CanonicalEstimateRevisionView,
   "revisionId" | "parentRevisionId" | "releaseId" | "catalogId" | "definitionVersionId"
   | "definitionVersion" | "status" | "parameters" | "userInputSnapshot"
   | "acceptedBaselineSnapshot" | "assumptionSnapshot" | "parameterSchemaHash"
-  | "compilerVersion" | "checksumSha256" | "createdAt" | "contentWithdrawalReasonRu"
+  | "compilerVersion" | "checksumSha256" | "createdAt" | "contentWithdrawalReasonRu" | "compositionSelectionV1" | "roofStageRestorationV4"
 > & {
+  /** Verified finite companion exclusions, projected without the large receipt. */
+  excludedScopeParameterIdsV1?: string[];
   orderedSpecificationParameterIds?: string[];
   /** Present on the full-revision fallback only; compact transport projects IDs instead. */
   amendmentContract?: Pick<NonNullable<CanonicalEstimateRevisionView['amendmentContract']>, 'rowOverrides'>;
@@ -59,6 +62,7 @@ export function projectCanonicalEstimateParameterSessionSnapshot(input: {
   catalog: CanonicalEstimateCatalogItem;
 }): CanonicalEstimateParameterSessionSnapshot {
   const { revision, parent } = input;
+  const excludedScopeParameterIdsV1=roofLowerLayersInactiveParameterIdsV1({receipt:revision.roofStageRestorationV4,definitionId:revision.definitionVersionId,catalogId:revision.catalogId,selection:revision.compositionSelectionV1});
   const snapshot: CanonicalEstimateParameterSessionSnapshot = {
     apiVersion: ESTIMATE_PLATFORM_API_VERSION,
     definitionVersionId: input.definitionVersionId,
@@ -71,6 +75,7 @@ export function projectCanonicalEstimateParameterSessionSnapshot(input: {
       acceptedBaselineSnapshot: revision.acceptedBaselineSnapshot, assumptionSnapshot: revision.assumptionSnapshot,
       parameterSchemaHash: revision.parameterSchemaHash, compilerVersion: revision.compilerVersion,
       checksumSha256: revision.checksumSha256, createdAt: revision.createdAt,
+      ...(excludedScopeParameterIdsV1.length?{excludedScopeParameterIdsV1}:{}),
       orderedSpecificationParameterIds: canonicalOrderedSpecificationParameterIds(
         input.catalog.orderedSpecificationBindings, revision.amendmentContract?.rowOverrides, revision.parameters),
       ...(revision.contentWithdrawalReasonRu == null ? {} : { contentWithdrawalReasonRu: revision.contentWithdrawalReasonRu }),

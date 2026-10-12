@@ -80,6 +80,16 @@ export function roofStageExcludeTargetsV4(input:{receipt:unknown;definitionId:un
   for(const pair of ROOF_LOWER_LAYER_PAIRS_V1)if(input.rowIds.includes(pair.rowId))ops.add(pair.operationKey);
  return {rowIds:[...input.rowIds],operationKeys:[...ops]};
 }
+/** Only these admitted companion questions can become inactive through a
+ * saved exclusion. Main project/system checks and quantities stay unchanged. */
+export const ROOF_LOWER_LAYERS_QUESTION_PARAMETER_IDS_V1=[pack.vapor.systemParameterId,pack.vapor.measurementParameterId,pack.clay.systemParameterId,pack.clay.areaParameterIdForGeometry,pack.clay.thicknessParameterId,'roof_other_layers_scope'];
+export function roofLowerLayersInactiveParameterIdsV1(input:{receipt:unknown;definitionId:unknown;catalogId:unknown;selection:unknown}):string[]{
+ const r=readRoofStageRestorationV4(input.receipt);if(!r||r.definitionId!==input.definitionId||r.catalogId!==input.catalogId)return [];
+ const s=parseCanonicalCompositionSelectionV1(input.selection);if(!s)return [];
+ return [...(s.excludedOperationKeys.includes(ROOF_VAPOR_OPERATION_KEY_V1)?[pack.vapor.systemParameterId,pack.vapor.measurementParameterId]:[]),
+  ...(s.excludedOperationKeys.includes(ROOF_CLAY_OPERATION_KEY_V1)?[pack.clay.systemParameterId,pack.clay.areaParameterIdForGeometry,pack.clay.thicknessParameterId]:[]),
+  ...(s.excludedRowIds.includes(ROOF_ASSEMBLY_SEMANTIC_ROW_V1)?['roof_other_layers_scope']:[])];
+}
 export function roofStageRestoreTargetsV4(input:{receipt:unknown;definitionId:unknown;catalogId:unknown;rowIds:readonly string[];operationKeys:readonly string[]}){
  const r=readRoofStageRestorationV4(input.receipt);if(!r||r.definitionId!==input.definitionId||r.catalogId!==input.catalogId)return {rowIds:[...input.rowIds],operationKeys:[...input.operationKeys]};
  const rows=new Set(input.rowIds),ops=new Set(input.operationKeys);
