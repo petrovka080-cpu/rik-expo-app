@@ -217,6 +217,7 @@ export type CanonicalEstimateRevisionView = {
   roofStageRestorationV1?: import('./canonicalRoofValleyMigrationV1').RoofStageRestorationV1;
   roofStageRestorationV2?: import('./canonicalRoofScreedMigrationV1').RoofStageRestorationV2;
   roofStageRestorationV3?: import('./canonicalRoofMetalTrimMigrationV1').RoofStageRestorationV3;
+  roofStageRestorationV4?: import('./canonicalRoofLowerLayersMigrationV1').RoofStageRestorationV4;
   apiVersion: typeof ESTIMATE_PLATFORM_API_VERSION;
   revisionId: string;
   parentRevisionId: string | null;

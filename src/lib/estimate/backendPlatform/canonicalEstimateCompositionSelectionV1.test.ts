@@ -135,9 +135,16 @@ test('source guard follows actual operation ownership, including a primary PROCE
   expect(()=>plan(selection(['["scope","check"]']))).toThrow(expect.objectContaining({code:'COMPOSITION_SELECTION_INVALID'}));
   expect(()=>plan(selection([],['counter']))).toThrow(expect.objectContaining({code:'COMPOSITION_SELECTION_INVALID'}));
   expect(plan(selection(['["scope","reference"]'])).decision('counter').excluded).toBe(false);
+  expect(plan(selection(['["scope","reference"]'])).operationsExcludeRow('counter')).toBe(false);
   // A genuinely allocated shared check may retain an active owner; removing
   // every source-backed contribution must still fail closed.
   input.resourceDefinitions[0]!.resource_graph.scopeRequirementV1={contractVersion:'canonical-scope-requirement/v1',kind:'OBJECT_SCOPE'};
   expect(plan(selection(['["roof","field"]'])).decision('truck').excluded).toBe(false);
+  expect(plan(selection(['["roof","field"]'])).operationsExcludeRow('truck')).toBe(false);
   expect(()=>plan(selection(['["roof","field"]','["roof","primer"]']))).toThrow(expect.objectContaining({code:'COMPOSITION_SELECTION_INVALID'}));
+});
+test('operation exclusion remains observable with an independent saved row exclusion',()=>{
+ const input=fixture(),plan=planCanonicalCompositionSelectionV1({selection:selection(['["roof","field"]','["roof","primer"]'],['truck']),resources:input.resourceDefinitions,formulas:input.formulaDefinitions});
+ expect(plan.decision('truck').excludedBy).toBe('ROW');expect(plan.operationsExcludeRow('truck')).toBe(true);
+ expect(plan.selection?.excludedRowIds).toContain('truck');
 });

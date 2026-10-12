@@ -12,6 +12,7 @@ import {readRoofPreparationMigrationProofV1} from './canonicalRoofPreparationMig
 import {readRoofStageRestorationV1} from './canonicalRoofValleyMigrationV1';
 import {readRoofStageRestorationV2} from './canonicalRoofScreedMigrationV1';
 import {readRoofStageRestorationV3} from './canonicalRoofMetalTrimMigrationV1';
+import {readRoofStageRestorationV4} from './canonicalRoofLowerLayersMigrationV1';
 
 type StorageRecord = Record<string, unknown>;
 
@@ -71,6 +72,9 @@ export function canonicalEstimateRevisionDetailFromStorage(
   const rawRestorationV3=record(record(row.amendment_contract).parameterSources).roofStageRestorationV3;
   const roofStageRestorationV3=readRoofStageRestorationV3(rawRestorationV3);
   if(rawRestorationV3!=null&&(!roofStageRestorationV3||roofStageRestorationV3.definitionId!==row.definition_version_id||roofStageRestorationV3.catalogId!==row.catalog_id))throw new CanonicalEstimateRevisionReadContractError('stored metal trim stage restoration receipt is invalid');
+  const rawRestorationV4=record(record(row.amendment_contract).parameterSources).roofStageRestorationV4;
+  const roofStageRestorationV4=readRoofStageRestorationV4(rawRestorationV4);
+  if(rawRestorationV4!=null&&(!roofStageRestorationV4||roofStageRestorationV4.definitionId!==row.definition_version_id||roofStageRestorationV4.catalogId!==row.catalog_id))throw new CanonicalEstimateRevisionReadContractError('stored lower layer restoration receipt is invalid');
   if(rawPrerequisite!=null&&!prerequisite)throw new CanonicalEstimateRevisionReadContractError('stored preparation reference is invalid');
   return {
     apiVersion: ESTIMATE_PLATFORM_API_VERSION,
@@ -92,6 +96,7 @@ export function canonicalEstimateRevisionDetailFromStorage(
     ...(roofStageRestorationV1?{roofStageRestorationV1}:{}),
     ...(roofStageRestorationV2?{roofStageRestorationV2}:{}),
     ...(roofStageRestorationV3?{roofStageRestorationV3}:{}),
+    ...(roofStageRestorationV4?{roofStageRestorationV4}:{}),
     sourceRequestText: nullableText(row.source_request_text),
     sourceRequestHash: nullableText(row.source_request_hash),
     canonicalWorkTitleRu: nullableText(row.canonical_work_title_ru),

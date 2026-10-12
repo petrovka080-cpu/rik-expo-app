@@ -70,13 +70,19 @@ export function planCanonicalCompositionSelectionV1(input:{
     if(!owner||canonicalEstimateStableJson(owner.ast)!==canonicalEstimateStableJson(aggregateAst(parts.map(p=>p.formula.ast))))invalid('Вклады не воспроизводят исходную формулу общего ресурса.');
     allocations.set(r.row_id,{aggregation:a!.aggregation as 'SUM'|'MAX',parts});
   }
+  // Operation ownership is independent of a simultaneous row exclusion.
+  // Keep the existing primary/allocation rules, including reference-only rows.
+  const operationsExcludeRow=(rowId:string):boolean=>{
+    const keys=(referencesByRow.get(rowId)??[]).map(canonicalOperationSelectionKeyV1);
+    return allocations.has(rowId)?keys.length>0&&keys.every(key=>excludedOps.has(key)):keys.length>0&&excludedOps.has(keys[0]);
+  };
   const decision=(rowId:string):CanonicalCompositionSelectionDecisionV1=>{
-    const refs=referencesByRow.get(rowId)??[],keys=refs.map(canonicalOperationSelectionKeyV1),allocation=allocations.get(rowId);
+    const refs=referencesByRow.get(rowId)??[],keys=refs.map(canonicalOperationSelectionKeyV1);
     const excludedOperationKeys=keys.filter(key=>excludedOps.has(key)),activeOperationKeys=keys.filter(key=>!excludedOps.has(key));
-    const rowExcluded=excludedRows.has(rowId),operationsExcluded=allocation?activeOperationKeys.length===0:keys.length>0&&excludedOps.has(keys[0]);
+    const rowExcluded=excludedRows.has(rowId),operationsExcluded=operationsExcludeRow(rowId);
     return {contractVersion:'canonical-composition-selection-decision/v1',rowId,excluded:rowExcluded||operationsExcluded,
       excludedBy:rowExcluded?'ROW':operationsExcluded?'OPERATIONS':null,activeOperationKeys,excludedOperationKeys,
-      unallocatedReferenceExclusions:allocation?[]:excludedOperationKeys.filter(key=>key!==keys[0])};
+      unallocatedReferenceExclusions:allocations.has(rowId)?[]:excludedOperationKeys.filter(key=>key!==keys[0])};
   };
   const activeInputIds=(rowId:string,fallback:readonly string[]):string[]=>{
     if(decision(rowId).excluded)return [];
@@ -107,7 +113,7 @@ export function planCanonicalCompositionSelectionV1(input:{
     return {...original,compositionSelectionDecisionV1:d,originalOperationCompositionV1:original.operationCompositionV1,...(owner?{operationCompositionV1:{...owner,
       additionalOperations:refs.filter(ref=>ref.operationId!==owner.operationId&&d.activeOperationKeys.includes(canonicalOperationSelectionKeyV1(ref))).map(ref=>({operationId:ref.operationId,operationTitleRu:ref.operationTitleRu,completionCriterionRu:ref.completionCriterionRu,processOrdinal:ref.processOrdinal,processRole:ref.processRole}))}}:{})};
   };
-  return {selection,decision,activeInputIds,quantity,graph,partiallyAllocated};
+  return {selection,decision,operationsExcludeRow,activeInputIds,quantity,graph,partiallyAllocated};
 }
 
 export function assertCanonicalCompositionSelectionReleaseMigrationV1(input:{selection:unknown;

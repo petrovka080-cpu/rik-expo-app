@@ -43,6 +43,15 @@ export type CanonicalScopeRequirementV1 = {
   objectFactParameterId?: string;
   unknownObjectValues?: string[];
   legacyObjectValue?: string;
+  /** Project applicability can have no historical legacy state. Opt-in only;
+   * existing source-system checks still require their legacy value. */
+  objectFactMode?: 'PROJECT_APPLICABILITY_ONLY';
+  /** Only this opt-in project check can depend on selected planned operations.
+   * The main historical system/source check remains unconditional. */
+  projectOperationContextsV1?: {when:Json;resourceRowIds:string[]}[];
+  /** A conditional companion can be removed before choosing its project
+   * variant. This never relaxes the main system/applicability check. */
+  operationExclusionSatisfiesScopeV1?: true;
 };
 const kinds = new Set(['INCLUDED','NOT_APPLICABLE','PARTLY_INCLUDED','PROCESS','PROJECT_SCOPE','FINANCIAL_POLICY','OBJECT_SCOPE']);
 const statuses = new Set(['INCLUDED','NOT_APPLICABLE','COMPLETED','USER_EXCLUDED','REQUIRED_RESOURCE_EXCLUDED','PARTLY_INCLUDED','PROCESS_REQUIRED','PROJECT_SCOPE_OPEN',
@@ -85,6 +94,8 @@ export function resolveCanonicalScopeRequirementV1(input: {
   graph: Json; rowId: string; parameters: Readonly<Json>; resourceIds: ReadonlySet<string>;
   parameterIds: ReadonlySet<string>; knownQuantityRowIds: ReadonlySet<string>;
   excludedQuantityRowIds?: ReadonlySet<string>; excludedOperationResourceRowIds?: ReadonlySet<string>;
+  /** Opt-in companion checks also see exclusions of inactive definitions. */
+  excludedOperationDefinitionRowIds?: ReadonlySet<string>;
 }): CanonicalScopeRequirementDecisionV1 | null {
   const raw = input.graph.scopeRequirementV1;
   if (raw == null) return null;
@@ -118,14 +129,30 @@ export function resolveCanonicalScopeRequirementV1(input: {
   let status: CanonicalScopeRequirementStatusV1 = 'SCOPE_UNVERIFIED';
   if (scope.kind === 'OBJECT_SCOPE') {
     const id = scope.objectFactParameterId;
-    if (!id || !input.parameterIds.has(id) || !ids(scope.unknownObjectValues) || !text(scope.legacyObjectValue)) return fail();
+    const projectOnly=scope.objectFactMode==='PROJECT_APPLICABILITY_ONLY';
+    if (!id || !input.parameterIds.has(id) || !ids(scope.unknownObjectValues)
+      ||(scope.objectFactMode!=null&&!projectOnly)
+      ||(projectOnly?scope.legacyObjectValue!=null:!text(scope.legacyObjectValue))) return fail();
+    const contexts=scope.projectOperationContextsV1;
+    if(contexts!=null&&(!projectOnly||!Array.isArray(contexts)||contexts.length===0||contexts.length>8
+      ||contexts.some(c=>!record(c)||!record(c.when)||!ids(c.resourceRowIds)||c.resourceRowIds.length===0
+        ||c.resourceRowIds.some(rowId=>rowId===input.rowId||!input.resourceIds.has(rowId)))))return fail();
+    const operationExclusions=input.excludedOperationDefinitionRowIds??input.excludedOperationResourceRowIds;
+    const projectNeeded=contexts==null||contexts.some(c=>condition(c.when).value===true
+      &&!c.resourceRowIds.every(rowId=>operationExclusions?.has(rowId)));
     const value = input.parameters[id];
-    if (value == null || value === '' || scope.unknownObjectValues!.includes(String(value))) {
+    if(!projectNeeded){status='NOT_APPLICABLE';missing=[];}
+    else if (value == null || value === '' || scope.unknownObjectValues!.includes(String(value))) {
       status = 'OBJECT_FACT_REQUIRED'; missing = [id];
-    } else if (value === scope.legacyObjectValue) { status = 'LEGACY_SOURCE_REQUIRED'; missing = []; }
+    } else if (!projectOnly&&value === scope.legacyObjectValue) { status = 'LEGACY_SOURCE_REQUIRED'; missing = []; }
     else if (exact.value === true) { status = 'COMPLETED'; missing = []; }
-  } else if(scope.contextWhen&&context?.value!==true) {
+  } else if(scope.operationExclusionSatisfiesScopeV1!=null
+    &&(scope.operationExclusionSatisfiesScopeV1!==true||scope.kind!=='INCLUDED'||scope.coveringRowIds.length===0))return fail();
+  else if(scope.contextWhen&&context?.value!==true) {
     missing=context?.missingParameterIds??[];
+  } else if(scope.operationExclusionSatisfiesScopeV1===true
+    &&scope.coveringRowIds.every(id=>(input.excludedOperationDefinitionRowIds??input.excludedOperationResourceRowIds)?.has(id))) {
+    status='USER_EXCLUDED';missing=[];
   } else if(notApplicable?.value===true) {status='NOT_APPLICABLE';missing=[];
   } else if(scope.contextWhen&&completed?.value===true) {status='COMPLETED';missing=[];
   } else if(scope.objectFactParameterId&&(input.parameters[scope.objectFactParameterId]==null

@@ -1,0 +1,2574 @@
+{
+  "contract": "rik-expo-app.s27-67.roof-lower-layers-companion.v1",
+  "normId": "12-01-015-03+12-01-014-02",
+  "prefix": "roof:lower-layers:krer12-01503-01402",
+  "sources": [
+    {
+      "id": "KRER12_2016_ROOF_LOWER_LAYERS",
+      "kind": "roof",
+      "quantityAdmitted": true,
+      "titleRu": "КРЕР12: пароизоляция прокладочная и утепление керамзитом",
+      "authority": "Госстрой Кыргызской Республики",
+      "printedEdition": "КРЕР12-2015; утверждён приказом от28.03.2016 №2-нпа",
+      "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no12krovli_compressed-2526908358eebcf23.66556657.pdf",
+      "localArtifact": ".release-runtime/r568/s27-35/g6-roof-source-audit/krer12.pdf",
+      "reviewedAt": "2026-10-12T18:31:37.673Z",
+      "locators": "PDF25/table014-02; PDF26/table015-03; technical part§1.7"
+    },
+    {
+      "id": "krer_general_metal_roof_s2763",
+      "kind": "guidance",
+      "quantityAdmitted": false,
+      "titleRu": "КРЕР-2015, общие указания по применению",
+      "authority": "Госстрой Кыргызской Республики",
+      "printedEdition": "КРЕР-2015",
+      "sha256": "5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9",
+      "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/stroitelnyeispecialnyestroitelnyeraboty-7866900598a0aab89.90712367.pdf",
+      "localArtifact": ".release-runtime/r568/s27-48/g7-next-source-extracts/KRER_GENERAL_APPLICATION_GUIDANCE.pdf",
+      "reviewedAt": "2026-10-11T21:25:14.667327+00:00",
+      "locators": "§1.3–1.4;1.7;2.8–2.10;3.5;4.1–4.2; приложение3, высокогорье"
+    }
+  ],
+  "sourceAdmissionArtifact": "data/estimate-benchmarks/source-packs/roof-lower-layers-s27-67-source-admission.json",
+  "sourceAdmissionSha256": "bf1b3c461fee6a2527a49834f798f6d58c41fb6f3abfbbb6f4a560c91edcc718",
+  "parentSnapshot": "data/estimate-benchmarks/fixtures/roof-layers-metal9-parents-s27-67.json",
+  "parentSnapshotSha256": "4f07243066b6050850b0f385607e8120f64923db1df10f938f5b9def60d8cb20",
+  "scopeRu": "Две независимые планируемые операции в согласованном будущем пироге: пароизоляция015-03 и утепление014-02. Не вся кровля.",
+  "remainingScopeRu": [
+    "Пригодная и механически допустимая конструкция по проекту",
+    "Фактическая подготовка и готовность поверхности каждого этапа",
+    "Иные слои и узлы, приёмка и исполнение",
+    "Внешняя доставка, упаковки, реальные тарифы и аренда"
+  ],
+  "vapor": {
+    "sources": [
+      {
+        "id": "KRER12_2016_ROOF_LOWER_LAYERS",
+        "kind": "roof",
+        "quantityAdmitted": true,
+        "titleRu": "КРЕР12: пароизоляция прокладочная и утепление керамзитом",
+        "authority": "Госстрой Кыргызской Республики",
+        "printedEdition": "КРЕР12-2015; утверждён приказом от28.03.2016 №2-нпа",
+        "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+        "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no12krovli_compressed-2526908358eebcf23.66556657.pdf",
+        "localArtifact": ".release-runtime/r568/s27-35/g6-roof-source-audit/krer12.pdf",
+        "reviewedAt": "2026-10-12T18:31:37.673Z",
+        "locators": "PDF25/table014-02; PDF26/table015-03; technical part§1.7"
+      },
+      {
+        "id": "krer_general_metal_roof_s2763",
+        "kind": "guidance",
+        "quantityAdmitted": false,
+        "titleRu": "КРЕР-2015, общие указания по применению",
+        "authority": "Госстрой Кыргызской Республики",
+        "printedEdition": "КРЕР-2015",
+        "sha256": "5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9",
+        "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/stroitelnyeispecialnyestroitelnyeraboty-7866900598a0aab89.90712367.pdf",
+        "localArtifact": ".release-runtime/r568/s27-48/g7-next-source-extracts/KRER_GENERAL_APPLICATION_GUIDANCE.pdf",
+        "reviewedAt": "2026-10-11T21:25:14.667327+00:00",
+        "locators": "§1.3–1.4;1.7;2.8–2.10;3.5;4.1–4.2; приложение3, высокогорье"
+      }
+    ],
+    "conditionsParameterId": "roof_torch_conditions",
+    "areaParameterId": "roof_torch_area_scope",
+    "conditionsYesRu": "Проект согласовал предстоящие нижние слои, стяжку 15 мм М100 и верхнюю огрунтовку; каждый выбранный этап оплачивается только здесь; обычные условия до 15 м",
+    "areaYesRu": "Площадь покрытия по проектному обмеру, отдельные узлы не прибавлены",
+    "unknownChoiceRu": "Проектный слой ещё не известен",
+    "legacyChoiceRu": "Другой проектный слой",
+    "measurementConditional": true,
+    "remainingScopeRu": [
+      "Пригодная и механически допустимая конструкция по проекту",
+      "Фактическая подготовка и готовность поверхности каждого этапа",
+      "Иные слои и узлы, приёмка и исполнение",
+      "Внешняя доставка, упаковки, реальные тарифы и аренда"
+    ],
+    "conditionsRu": "Только согласованная будущая конструкция нового строительства в обычных условиях. Старое принятие верхнего основания не подтверждает планируемые ниже него слои.",
+    "sourceAdmissionArtifact": "data/estimate-benchmarks/source-packs/roof-lower-layers-s27-67-source-admission.json",
+    "sourceAdmissionSha256": "bf1b3c461fee6a2527a49834f798f6d58c41fb6f3abfbbb6f4a560c91edcc718",
+    "contract": "rik-expo-app.s27-67.roof-vapor01503-companion.v1",
+    "prefix": "roof:vapor:krer12-015-03",
+    "normId": "12-01-015-03",
+    "groupTitleRu": "Прокладочная пароизоляция одним слоем РКП-350б",
+    "operationTitleRu": "Устройство прокладочной пароизоляции с готовой горячей мастикой",
+    "completionCriterionRu": "Устроен и проверен выбранный проектный слой; расчёт не подтверждает выполнение.",
+    "operationProcessOrdinal": 1,
+    "systemParameterId": "roof_vapor_scope",
+    "systemChoiceTitleRu": "Пароизоляция по проекту",
+    "systemYesRu": "Предстоит один прокладочный слой РКП-350б с готовой горячей мастикой; работа оплачивается только здесь",
+    "notApplicableChoiceRu": "Пароизоляции в этом участке нет по проекту",
+    "completedChoiceRu": "Вся пароизоляция этого участка уже выполнена и принята",
+    "measurementParameterId": "roof_vapor_area_m2",
+    "measurementUnitId": "m2",
+    "measurementTitleRu": "Площадь проектной пароизоляции, м²",
+    "measurementGuideRu": "Измеренная проектная площадь изолируемой поверхности именно этого слоя. Площадь ковра автоматически не переносится.",
+    "quantityEditReasonRu": "Количество рассчитано приложением по норме015-03 и измеренной площади проектной пароизоляции. Изменяйте её площадь, не коэффициенты нормы.",
+    "scopeRu": "КРЕР12-01-015-03: один прокладочный слой РКП-350б и готовая горячая битумная кровельная мастика; не простое сухое раскатывание.",
+    "systemRu": "Проект назначает именно прокладочный слой РКП-350б и готовую горячую кровельную мастику на пригодном основании. Приготовление мастики019, сырой битум/керосин01501 и новая нижняя огрунтовка автоматически не добавляются. Другие мембраны/слои/технологии требуют другого расчёта.",
+    "measurementRu": "100м² изолируемой поверхности по проектному обмеру.",
+    "rates": [
+      {
+        "role": "workers",
+        "resourceCode": "000-1003-2",
+        "titleRu": "Рабочие-строители среднего разряда 3,2",
+        "sourceTitleRu": "Рабочие-строители среднего разряда 3,2",
+        "unitId": "man_hour",
+        "category": "labor",
+        "per100m2": "7.84",
+        "sourceRatePer100m2": "7.84",
+        "sourceUnit": "чел.-ч",
+        "exactUnitConversionFactor": "1",
+        "costTreatment": "OWN_COST",
+        "detailsRu": [
+          "Строка источника: 7.84 чел.-ч на100м² изолируемой поверхности.",
+          "Расход взят из выбранной колонки. Не добавляется запас, уплотнение или повторная оплата той же операции."
+        ]
+      },
+      {
+        "role": "included_machine_operators",
+        "resourceCode": null,
+        "titleRu": "Затраты труда машинистов",
+        "sourceTitleRu": "Затраты труда машинистов",
+        "unitId": "man_hour",
+        "category": "labor",
+        "per100m2": "0.13",
+        "sourceRatePer100m2": "0.13",
+        "sourceUnit": "чел.-ч",
+        "exactUnitConversionFactor": "1",
+        "costTreatment": "INFORMATIONAL_SCOPE",
+        "detailsRu": [
+          "Строка источника: 0.13 чел.-ч на100м² изолируемой поверхности.",
+          "Труд машинистов показан справочно, второй оплачиваемый вклад не создаётся."
+        ]
+      },
+      {
+        "role": "tower_crane_8t",
+        "resourceCode": "02-0005",
+        "titleRu": "Краны башенные 8 т",
+        "sourceTitleRu": "Краны башенные 8 т",
+        "unitId": "machine_hour",
+        "category": "equipment",
+        "per100m2": "0.08",
+        "sourceRatePer100m2": "0.08",
+        "sourceUnit": "маш.-ч",
+        "exactUnitConversionFactor": "1",
+        "costTreatment": "OWN_COST",
+        "detailsRu": [
+          "Строка источника: 0.08 маш.-ч на100м² изолируемой поверхности.",
+          "Расход взят из выбранной колонки. Не добавляется запас, уплотнение или повторная оплата той же операции."
+        ],
+        "machinePriceCoverageRequired": "FULL_OPERATED"
+      },
+      {
+        "role": "truck_crane_10t",
+        "resourceCode": "02-0075",
+        "titleRu": "Краны на автомобильном ходу 10 т",
+        "sourceTitleRu": "Краны на автомобильном ходу 10 т",
+        "unitId": "machine_hour",
+        "category": "equipment",
+        "per100m2": "0.05",
+        "sourceRatePer100m2": "0.05",
+        "sourceUnit": "маш.-ч",
+        "exactUnitConversionFactor": "1",
+        "costTreatment": "OWN_COST",
+        "detailsRu": [
+          "Строка источника: 0.05 маш.-ч на100м² изолируемой поверхности.",
+          "Расход взят из выбранной колонки. Не добавляется запас, уплотнение или повторная оплата той же операции."
+        ],
+        "machinePriceCoverageRequired": "FULL_OPERATED"
+      },
+      {
+        "role": "bitumen_kettle_400l",
+        "resourceCode": "12-0340",
+        "titleRu": "Котлы битумные передвижные 400 л",
+        "sourceTitleRu": "Котлы битумные передвижные 400 л",
+        "unitId": "machine_hour",
+        "category": "equipment",
+        "per100m2": "0.41",
+        "sourceRatePer100m2": "0.41",
+        "sourceUnit": "маш.-ч",
+        "exactUnitConversionFactor": "1",
+        "costTreatment": "OWN_COST",
+        "detailsRu": [
+          "Строка источника: 0.41 маш.-ч на100м² изолируемой поверхности.",
+          "Расход взят из выбранной колонки. Не добавляется запас, уплотнение или повторная оплата той же операции."
+        ],
+        "machinePriceCoverageRequired": "FULL_MACHINE_SOURCE_COST"
+      },
+      {
+        "role": "flatbed_truck_to_5t",
+        "resourceCode": "40-0001",
+        "titleRu": "Автомобили бортовые грузоподъёмностью до 5 т",
+        "sourceTitleRu": "Автомобили бортовые грузоподъёмностью до 5 т",
+        "unitId": "machine_hour",
+        "category": "equipment",
+        "per100m2": "0.08",
+        "sourceRatePer100m2": "0.08",
+        "sourceUnit": "маш.-ч",
+        "exactUnitConversionFactor": "1",
+        "costTreatment": "OWN_COST",
+        "detailsRu": [
+          "Строка источника: 0.08 маш.-ч на100м² изолируемой поверхности.",
+          "Расход взят из выбранной колонки. Не добавляется запас, уплотнение или повторная оплата той же операции."
+        ],
+        "machinePriceCoverageRequired": "FULL_DRIVER"
+      },
+      {
+        "role": "ready_hot_roof_mastic",
+        "resourceCode": "01-0202-0003",
+        "titleRu": "Мастика битумная кровельная горячая, готовая",
+        "sourceTitleRu": "Мастика битумная кровельная горячая, готовая",
+        "unitId": "t",
+        "category": "material",
+        "per100m2": "0.05",
+        "sourceRatePer100m2": "0.05",
+        "sourceUnit": "т",
+        "exactUnitConversionFactor": "1",
+        "costTreatment": "OWN_COST",
+        "detailsRu": [
+          "Строка источника: 0.05 т на100м² изолируемой поверхности.",
+          "Расход взят из выбранной колонки. Не добавляется запас, уплотнение или повторная оплата той же операции."
+        ]
+      },
+      {
+        "role": "roofing_felt_rkp350b",
+        "resourceCode": "01-7410-0004",
+        "titleRu": "Рубероид кровельный РКП-350б",
+        "sourceTitleRu": "Рубероид кровельный РКП-350б",
+        "unitId": "m2",
+        "category": "material",
+        "per100m2": "110",
+        "sourceRatePer100m2": "110",
+        "sourceUnit": "м²",
+        "exactUnitConversionFactor": "1",
+        "costTreatment": "OWN_COST",
+        "detailsRu": [
+          "Строка источника: 110 м² на100м² изолируемой поверхности.",
+          "Расход взят из выбранной колонки. Не добавляется запас, уплотнение или повторная оплата той же операции."
+        ]
+      }
+    ]
+  },
+  "clay": {
+    "sources": [
+      {
+        "id": "KRER12_2016_ROOF_LOWER_LAYERS",
+        "kind": "roof",
+        "quantityAdmitted": true,
+        "titleRu": "КРЕР12: пароизоляция прокладочная и утепление керамзитом",
+        "authority": "Госстрой Кыргызской Республики",
+        "printedEdition": "КРЕР12-2015; утверждён приказом от28.03.2016 №2-нпа",
+        "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+        "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no12krovli_compressed-2526908358eebcf23.66556657.pdf",
+        "localArtifact": ".release-runtime/r568/s27-35/g6-roof-source-audit/krer12.pdf",
+        "reviewedAt": "2026-10-12T18:31:37.673Z",
+        "locators": "PDF25/table014-02; PDF26/table015-03; technical part§1.7"
+      },
+      {
+        "id": "krer_general_metal_roof_s2763",
+        "kind": "guidance",
+        "quantityAdmitted": false,
+        "titleRu": "КРЕР-2015, общие указания по применению",
+        "authority": "Госстрой Кыргызской Республики",
+        "printedEdition": "КРЕР-2015",
+        "sha256": "5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9",
+        "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/stroitelnyeispecialnyestroitelnyeraboty-7866900598a0aab89.90712367.pdf",
+        "localArtifact": ".release-runtime/r568/s27-48/g7-next-source-extracts/KRER_GENERAL_APPLICATION_GUIDANCE.pdf",
+        "reviewedAt": "2026-10-11T21:25:14.667327+00:00",
+        "locators": "§1.3–1.4;1.7;2.8–2.10;3.5;4.1–4.2; приложение3, высокогорье"
+      }
+    ],
+    "conditionsParameterId": "roof_torch_conditions",
+    "areaParameterId": "roof_torch_area_scope",
+    "conditionsYesRu": "Проект согласовал предстоящие нижние слои, стяжку 15 мм М100 и верхнюю огрунтовку; каждый выбранный этап оплачивается только здесь; обычные условия до 15 м",
+    "areaYesRu": "Площадь покрытия по проектному обмеру, отдельные узлы не прибавлены",
+    "unknownChoiceRu": "Проектный слой ещё не известен",
+    "legacyChoiceRu": "Другой проектный слой",
+    "measurementConditional": true,
+    "remainingScopeRu": [
+      "Пригодная и механически допустимая конструкция по проекту",
+      "Фактическая подготовка и готовность поверхности каждого этапа",
+      "Иные слои и узлы, приёмка и исполнение",
+      "Внешняя доставка, упаковки, реальные тарифы и аренда"
+    ],
+    "conditionsRu": "Только согласованная будущая конструкция нового строительства в обычных условиях. Старое принятие верхнего основания не подтверждает планируемые ниже него слои.",
+    "sourceAdmissionArtifact": "data/estimate-benchmarks/source-packs/roof-lower-layers-s27-67-source-admission.json",
+    "sourceAdmissionSha256": "bf1b3c461fee6a2527a49834f798f6d58c41fb6f3abfbbb6f4a560c91edcc718",
+    "contract": "rik-expo-app.s27-67.roof-clay01402-companion.v1",
+    "prefix": "roof:clay-insulation:krer12-014-02",
+    "normId": "12-01-014-02",
+    "groupTitleRu": "Утепление кровли керамзитом с трамбованием",
+    "operationTitleRu": "Засыпка керамзитового утеплителя с трамбованием",
+    "completionCriterionRu": "Устроен и проверен выбранный проектный слой; расход не подтверждает его выполнение.",
+    "operationProcessOrdinal": 2,
+    "systemParameterId": "roof_clay_scope",
+    "systemChoiceTitleRu": "Утепление по проекту",
+    "systemYesRu": "Предстоит керамзитовый слой из гравия 10–20 мм марки 400 с трамбованием; работа оплачивается только здесь",
+    "notApplicableChoiceRu": "Утепления в этом участке нет по проекту",
+    "completedChoiceRu": "Всё утепление этого участка уже выполнено и принято",
+    "measurementParameterId": "roof_clay_installed_volume_m3",
+    "measurementUnitId": "m3",
+    "sourceBasisQuantity": "1",
+    "measurementTitleRu": "Проектный объём устроенного утепляющего слоя, м³",
+    "measurementGuideRu": "Объём устроенного слоя. В конечной смете приложение вычисляет его из площади и средней по этой площади проектной толщины; не использовать насыпной объём и повторное уплотнение.",
+    "quantityEditReasonRu": "Количество рассчитано по норме на1м³; объём приложение получает из площади и средней проектной толщины устроенного слоя.",
+    "scopeRu": "КРЕР12-01-014-02: засыпка с трамбованием керамзитового гравия фракции10–20мм марки400. Измеритель1м³ утеплителя.",
+    "systemRu": "Проект назначает именно эту керамзитовую засыпку с трамбованием и подтверждает её механическую и конструктивную пригодность в выбранном будущем пироге. Марка400 не превращается в автоматически известную плотность; нормы не проектируют конструкцию.",
+    "measurementRu": "V=A×D/1000, A — площадь этого слоя вм², D — средняя по площадиA проектная толщина устроенного слоя вмм. Не выводить D из расхода и не подставлятьq. Норма1.03 учитывается один раз.",
+    "areaParameterIdForGeometry": "roof_clay_area_m2",
+    "thicknessParameterId": "roof_clay_average_thickness_mm",
+    "rates": [
+      {
+        "role": "workers",
+        "resourceCode": "000-1002-0",
+        "titleRu": "Рабочие-строители среднего разряда 2,0",
+        "sourceTitleRu": "Рабочие-строители среднего разряда 2,0",
+        "unitId": "man_hour",
+        "category": "labor",
+        "perMeasure": "3.04",
+        "sourceRatePerMeasure": "3.04",
+        "sourceUnit": "чел.-ч",
+        "exactUnitConversionFactor": "1",
+        "costTreatment": "OWN_COST",
+        "detailsRu": [
+          "Строка источника: 3.04 чел.-ч на1м³ устроенного утепления.",
+          "Расход взят из выбранной колонки. Не добавляется запас, уплотнение или повторная оплата той же операции."
+        ]
+      },
+      {
+        "role": "included_machine_operators",
+        "resourceCode": null,
+        "titleRu": "Затраты труда машинистов",
+        "sourceTitleRu": "Затраты труда машинистов",
+        "unitId": "man_hour",
+        "category": "labor",
+        "perMeasure": "0.34",
+        "sourceRatePerMeasure": "0.34",
+        "sourceUnit": "чел.-ч",
+        "exactUnitConversionFactor": "1",
+        "costTreatment": "INFORMATIONAL_SCOPE",
+        "detailsRu": [
+          "Строка источника: 0.34 чел.-ч на1м³ устроенного утепления.",
+          "Труд машинистов показан справочно, второй оплачиваемый вклад не создаётся."
+        ]
+      },
+      {
+        "role": "tower_crane_8t",
+        "resourceCode": "02-0005",
+        "titleRu": "Краны башенные 8 т",
+        "sourceTitleRu": "Краны башенные 8 т",
+        "unitId": "machine_hour",
+        "category": "equipment",
+        "perMeasure": "0.12",
+        "sourceRatePerMeasure": "0.12",
+        "sourceUnit": "маш.-ч",
+        "exactUnitConversionFactor": "1",
+        "costTreatment": "OWN_COST",
+        "detailsRu": [
+          "Строка источника: 0.12 маш.-ч на1м³ устроенного утепления.",
+          "Расход взят из выбранной колонки. Не добавляется запас, уплотнение или повторная оплата той же операции."
+        ],
+        "machinePriceCoverageRequired": "FULL_OPERATED"
+      },
+      {
+        "role": "forklift_5t",
+        "resourceCode": "03-0020",
+        "titleRu": "Автопогрузчики 5 т",
+        "sourceTitleRu": "Автопогрузчики 5 т",
+        "unitId": "machine_hour",
+        "category": "equipment",
+        "perMeasure": "0.22",
+        "sourceRatePerMeasure": "0.22",
+        "sourceUnit": "маш.-ч",
+        "exactUnitConversionFactor": "1",
+        "costTreatment": "OWN_COST",
+        "detailsRu": [
+          "Строка источника: 0.22 маш.-ч на1м³ устроенного утепления.",
+          "Расход взят из выбранной колонки. Не добавляется запас, уплотнение или повторная оплата той же операции."
+        ],
+        "machinePriceCoverageRequired": "FULL_OPERATED"
+      },
+      {
+        "role": "clay_gravel_10_20_m400",
+        "resourceCode": "01-1604-0014",
+        "titleRu": "Гравий керамзитовый, фракция 10–20 мм, марка 400",
+        "sourceTitleRu": "Гравий керамзитовый, фракция 10–20 мм, марка 400",
+        "unitId": "m3",
+        "category": "material",
+        "perMeasure": "1.03",
+        "sourceRatePerMeasure": "1.03",
+        "sourceUnit": "м³",
+        "exactUnitConversionFactor": "1",
+        "costTreatment": "OWN_COST",
+        "detailsRu": [
+          "Строка источника: 1.03 м³ на1м³ устроенного утепления.",
+          "Расход взят из выбранной колонки. Не добавляется запас, уплотнение или повторная оплата той же операции."
+        ]
+      }
+    ]
+  },
+  "newPhysicalNormConsumers": 22,
+  "newWorkerConsumers": 4,
+  "newMachineConsumers": 12,
+  "newMaterialConsumers": 6,
+  "targets": [
+    {
+      "catalogId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room",
+      "predecessorDefinitionId": "73ee9a1e-eda0-5758-82ea-7304fb0dc989",
+      "predecessorVersion": 9,
+      "preservedOwners": [
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_materials_01",
+          "resourceSpecId": "7a443567-fe5c-5b8a-8e8e-7114b9c77292",
+          "costOwnerId": "r555-price:f828ac3abb2e6cbc0a74a0cd91e67d3fd8e89aac",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_materials_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_materials_01"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_materials_02",
+          "resourceSpecId": "5f3c4a78-66c2-504c-84c8-f68be1629957",
+          "costOwnerId": "r555-price:af926cb49e6c831d69a8b226819db674e9f369ee",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_materials_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_materials_02"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_materials_03",
+          "resourceSpecId": "2a02f4c5-bd7f-5eb9-8768-5e357d5530ce",
+          "costOwnerId": "r555-price:9b196e8e500589df45af1a147a518be44377d670",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_materials_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_materials_03"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_materials_04",
+          "resourceSpecId": "0f149a56-f94a-583b-86d4-4324ec5560f6",
+          "costOwnerId": "r555-price:5703ae4ee11ad54bae51c2953de45bcb98a71826",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_materials_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_materials_04"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_materials_05",
+          "resourceSpecId": "2bf217ab-d55b-5f69-8d24-df2d3c7c3cd1",
+          "costOwnerId": "r555-price:76bbb4be7d1986d94cdd7842e607855134e3324c",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_materials_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_materials_05"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_materials_06",
+          "resourceSpecId": "75335e35-56e5-5400-8d26-52ccfc123fc8",
+          "costOwnerId": "r555-price:b0f76e27755af45d0ceb4653b662f420869f0cf4",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_materials_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_materials_06"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_materials_37",
+          "resourceSpecId": "77e73609-ad2a-52ee-8e86-db33fda2ee8e",
+          "costOwnerId": "r555-price:bafd53dfc2296b5c854aa6d626a0c994d7aced3c",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_materials_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_materials_37"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_materials_38",
+          "resourceSpecId": "ff8cf647-0a90-5a27-8d87-f89be1f11a6a",
+          "costOwnerId": "r555-price:a36fe965f2205090a90629e2a7578324547b1242",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_materials_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_materials_38"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_materials_39",
+          "resourceSpecId": "44d33592-49c7-56ad-8ec0-fb89239bdb2d",
+          "costOwnerId": "r555-price:3b9a1f8cc62ff7a2d721804cf3075765a54b4914",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_materials_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_materials_39"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_components_07",
+          "resourceSpecId": "eda55f58-b784-5718-8d8e-ed48e8ce95d3",
+          "costOwnerId": "r555-price:84564a10330cf70450f89ec613ff9b44e798f179",
+          "unitId": "linear_m",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_components_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_components_07"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_components_08",
+          "resourceSpecId": "eca79be5-25b1-549f-84c3-bb9da4ce7dd0",
+          "costOwnerId": "r555-price:33580eaddd18ffae0604b9b751d475b454b1c54a",
+          "unitId": "linear_m",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_components_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_components_08"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_components_09",
+          "resourceSpecId": "296b3f17-5c3a-5414-8fdd-24f7cb87c341",
+          "costOwnerId": "r555-price:8725d044febaf84b9efda91d6eb5010daa38510f",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_components_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_components_09"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_components_10",
+          "resourceSpecId": "4ad432be-5f99-599f-8dfb-797ac34d5916",
+          "costOwnerId": "r555-price:bbd1b9d2ab5b4d691d1de78373dd503c22a72b56",
+          "unitId": "linear_m",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_components_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_components_10"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_components_40",
+          "resourceSpecId": "2dc2a1cb-ae08-5030-84d2-52e4934c2898",
+          "costOwnerId": "r555-price:a110461b8dd4bef6ece21f55274d779d89b626d8",
+          "unitId": "linear_m",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_components_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_components_40"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_components_41",
+          "resourceSpecId": "a1da3e35-f480-5d9a-887c-c2770d4921bb",
+          "costOwnerId": "r555-price:bd542efd886bc6c0ca90ce049f51ac8aea52b243",
+          "unitId": "linear_m",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_components_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_components_41"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_components_42",
+          "resourceSpecId": "84928413-b064-5d52-8540-fd95dd3b2077",
+          "costOwnerId": "r555-price:bda487233a2cea4a0dcd02462fcb6556a4da5b62",
+          "unitId": "linear_m",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_components_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_components_42"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_consumables_11",
+          "resourceSpecId": "b1d36424-2405-54ff-8d81-161995113ef9",
+          "costOwnerId": "r555-price:20bed4610dfe7cc5270260f05fe2325ee3f85d9a",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_consumables_11"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_consumables_12",
+          "resourceSpecId": "1a16725e-cec6-5740-8afa-d11178140222",
+          "costOwnerId": "r555-price:f2701622d094617f9eb1b9b6109c6c4f585ee29f",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_consumables_12"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_consumables_13",
+          "resourceSpecId": "9e495a25-c7b3-5d17-8ace-217a718b9a29",
+          "costOwnerId": "r555-price:eea540cce63daef84d281a26f48c282606c5c987",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_consumables_13"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_consumables_43",
+          "resourceSpecId": "9a00f924-d773-5c88-81da-a437a8100777",
+          "costOwnerId": "r555-price:b34603786e5f5356d86d568c232a2369fdc8d4e0",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_consumables_43"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_consumables_44",
+          "resourceSpecId": "33a17ce5-9b9a-5072-8c07-5f3a2d4ce03a",
+          "costOwnerId": "r555-price:493c6ab82c725d4d730bea8e0c132e92fda3f8d4",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_consumables_44"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_preparation_14",
+          "resourceSpecId": "f16c1ed6-67bd-510d-8ab1-2c1e5d5fdf65",
+          "costOwnerId": "r555-price:5c90c96e604fd91a45db8eb1be9e2baf79f9f71f",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_preparation_14"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_preparation_15",
+          "resourceSpecId": "30b820f7-74cf-54bc-886c-5c3a54db5b5a",
+          "costOwnerId": "r555-price:d514ca52845f08f45e9a50d578cba220378b8869",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_preparation_15"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_preparation_16",
+          "resourceSpecId": "cbe1cd7f-e59e-5904-8067-c1cd0f6b8833",
+          "costOwnerId": "r555-price:2a00c72206ee33350da242fec271898f5fefe764",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_preparation_16"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_preparation_17",
+          "resourceSpecId": "36921b68-dd59-50a4-8b1f-dff61bec3792",
+          "costOwnerId": "r555-price:be09d7b8b0e7ea92bb7ed02e7daf19862df79334",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_preparation_17"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_preparation_45",
+          "resourceSpecId": "8144e04d-857c-5db9-829d-d7e0119a2bf4",
+          "costOwnerId": "r555-price:5101b12bce33728002c990a2eea3d111738879e5",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_preparation_45"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_preparation_46",
+          "resourceSpecId": "a4ece752-fc02-59c1-8786-177cf7321732",
+          "costOwnerId": "r555-price:ee9a1474430a37eb2c85add03fac9d8d709b08ef",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_preparation_46"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_preparation_47",
+          "resourceSpecId": "f6843db1-cd0e-5b59-811f-1ef3cee0ff87",
+          "costOwnerId": "r555-price:21cbcfe8eb098a1427b46e05dddc436ded0528c6",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_preparation_47"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_labor_18",
+          "resourceSpecId": "71a8fb07-1a6c-5240-8ab6-8146c93792b9",
+          "costOwnerId": "r555-price:c41c0f51851772416fcc8a4002855e03e3577fb9",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_labor_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_labor_18"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_labor_19",
+          "resourceSpecId": "4c949510-17b1-565b-8c91-1c8966e6682c",
+          "costOwnerId": "r555-price:b159ba1bb8158a27bb304c28de42983bfd8ccdd5",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_labor_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_labor_19"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_labor_20",
+          "resourceSpecId": "05f00752-ee04-540c-8d67-d73f32d9acc1",
+          "costOwnerId": "r555-price:669b8767cb00a61acf856cd15f532d7f54dc8424",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_labor_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_labor_20"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_labor_21",
+          "resourceSpecId": "d3f346d1-7638-5389-8b38-fff04d28a415",
+          "costOwnerId": "r555-price:460da0ed379c0c6e2c0cfa420a21199bfc3e6906",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_labor_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_labor_21"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_labor_22",
+          "resourceSpecId": "1c583332-3299-5cd4-87cd-57765cb66910",
+          "costOwnerId": "r555-price:0921cd5515c4d8e0dc329d2f5893043c6de9afba",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_labor_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_labor_22"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_labor_23",
+          "resourceSpecId": "c7046654-8ba7-5e49-87ab-f1ee8fcf72c5",
+          "costOwnerId": "r555-price:04d547b6d6ce6a7d84ac7756e43d7e48040d6f0f",
+          "unitId": "linear_m",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_labor_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_labor_23"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_labor_24",
+          "resourceSpecId": "b4fbbe22-f708-5184-8ddc-853fd08c22dc",
+          "costOwnerId": "r555-price:6d2a6533bcb9d7bb5a0ad7071cc0098fda5bca67",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_labor_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_labor_24"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_labor_48",
+          "resourceSpecId": "64703524-c66f-5977-89f2-4f199242e88a",
+          "costOwnerId": "r555-price:6fe8b2f3c7419d48e53ddb6b732cc9d730c8d237",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_labor_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_labor_48"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_labor_49",
+          "resourceSpecId": "fde00083-14f8-54d8-87d6-020cac816621",
+          "costOwnerId": "r555-price:65bd7d281593c21516e4f475b8e664fd7f10dd76",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_labor_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_labor_49"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_labor_50",
+          "resourceSpecId": "bf5f81c5-3e50-5507-8434-7f6f2bba7261",
+          "costOwnerId": "r555-price:71461a6e601e48f501bddc45e85c4d6e39c3b5e2",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_labor_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_labor_50"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_equipment_25",
+          "resourceSpecId": "8cc83d6a-87f7-562c-8d31-c1f642febd5c",
+          "costOwnerId": "r555-price:c9553740c052261d9c92847e3fe70b78cfa37b6a",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_equipment_25"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_equipment_26",
+          "resourceSpecId": "5f2b438f-5339-584b-8f79-c91e8372f447",
+          "costOwnerId": "r555-price:d6f1fc25170c5f640773035a134a799b792d37c8",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_equipment_26"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_equipment_27",
+          "resourceSpecId": "649f2982-0777-5677-8034-19cc9f947722",
+          "costOwnerId": "r555-price:62bfaf0ba022bcda8d5648b75debb4749c12fdc1",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_equipment_27"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_equipment_51",
+          "resourceSpecId": "7aeb7167-08d5-5515-8c19-20322b9491da",
+          "costOwnerId": "r555-price:9a30f8543965fa8a7892b203a9805f84e6d7be6e",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_equipment_51"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_equipment_52",
+          "resourceSpecId": "7fdc399c-76aa-5037-8f60-5f1b86b8f88d",
+          "costOwnerId": "r555-price:c14cf3761e0dfee8c9572a7ce2d2ccef8a20be6b",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_equipment_52"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_logistics_28",
+          "resourceSpecId": "11413dd2-ef54-5eb9-87da-e16bd79305be",
+          "costOwnerId": "r555-price:3fa64b206f776dcb67c6ea687643de035c7911ec",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_logistics_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_logistics_28"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_logistics_29",
+          "resourceSpecId": "e78fe1de-2064-5a5d-8e71-749f18dbbead",
+          "costOwnerId": "r555-price:724fe3f3135c21622525022e7517461698e1202b",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_logistics_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_logistics_29"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_logistics_53",
+          "resourceSpecId": "33cedaba-23f1-5448-8456-690789f64c8f",
+          "costOwnerId": "r555-price:5d6400174748b87c144ef73c266629ba9f0719f3",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_logistics_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_logistics_53"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_logistics_54",
+          "resourceSpecId": "3d1517b7-d27f-52bb-845c-0f24606619e5",
+          "costOwnerId": "r555-price:487f5ce2c8096f6f66a0246b721829f9164dabac",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_logistics_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_logistics_54"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_waste_30",
+          "resourceSpecId": "343a7282-baf0-5ae3-8b70-bc02e7c39b1e",
+          "costOwnerId": "r555-price:ec17c8773e41954038f7935b1b78a9044d31b8c7",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_waste_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_waste_30"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_waste_31",
+          "resourceSpecId": "93370f98-3e54-5f37-8c3a-e05bd744da52",
+          "costOwnerId": "r555-price:2be0ba551fc52b297b7e5e4be40b441360759391",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_waste_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_waste_31"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_waste_55",
+          "resourceSpecId": "344641ee-47ef-5d3d-8936-245fd1def5fd",
+          "costOwnerId": "r555-price:8c7467cc952b63e417b507527c4d61f6f8d6f500",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_waste_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_waste_55"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_waste_56",
+          "resourceSpecId": "dd0e4543-916c-5030-8184-209c0bbcbe01",
+          "costOwnerId": "r555-price:462e6facfa7c2052c7630438e52df7f70f5043c5",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_waste_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_waste_56"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_quality_control_32",
+          "resourceSpecId": "56aab021-d642-552e-8fbf-28a622d22184",
+          "costOwnerId": "r555-price:a4f0a582db5e54ad522dcf19b249375209487a3d",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_quality_control_32"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_quality_control_33",
+          "resourceSpecId": "a2bf4ca4-86ee-5c94-862d-1688252f0892",
+          "costOwnerId": "r555-price:8f776db8e8e0bede4b54f9304851abd76195b8f1",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_quality_control_33"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_quality_control_34",
+          "resourceSpecId": "93cb94d0-9d32-58bb-8bfb-80e14161ba67",
+          "costOwnerId": "r555-price:e5e4d92e8e49386c19bf6704ec1b5c6d892a7474",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_quality_control_34"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_quality_control_57",
+          "resourceSpecId": "953cb972-4d03-55aa-8f28-f272466f333f",
+          "costOwnerId": "r555-price:8899f8b0016787ca9716aae5d6ed6d80fc8dd77f",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_quality_control_57"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_quality_control_58",
+          "resourceSpecId": "7c177023-aed4-5551-8b9a-b2f0313fd0c7",
+          "costOwnerId": "r555-price:f18191d72b6bdd9d20d4480df0809a9d691d5114",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_quality_control_58"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_quality_control_59",
+          "resourceSpecId": "321fc598-a8ac-5cbc-85bc-41e66a48cacf",
+          "costOwnerId": "r555-price:8d8acce11fb8cccb10b13f9b441ca2981233317d",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_quality_control_59"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_overhead_35",
+          "resourceSpecId": "de8a7c5f-cd40-5231-8129-97b5d6ace810",
+          "costOwnerId": "r555-price:10ed9a4c372ae0fd19de57ebd43484ef362fc55a",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_overhead_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_overhead_35"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_technical_room_tax_36",
+          "resourceSpecId": "9fba2ce4-0bd2-5c7d-8541-053e12209550",
+          "costOwnerId": "r555-price:67f07707706e1b47cf517759eb6c90e1b26b866e",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_technical_room_professional_expanded_v1_tax_quantity_formula_v1_roofing_interior_flat_roof_install_technical_room_tax_36"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:workers",
+          "resourceSpecId": "bede32d7-6059-5dbb-8710-43c853155879",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:workers",
+          "unitId": "man_hour",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:workers"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:included_machine_operators",
+          "resourceSpecId": "049ba4de-0a13-58b4-8196-48c2f3712b16",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:included_machine_operators",
+          "unitId": "man_hour",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:included_machine_operators"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:tower_crane_8t",
+          "resourceSpecId": "d4c5cbd6-f066-50f5-8ff6-af1ad0dfd332",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:tower_crane_8t",
+          "unitId": "machine_hour",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:tower_crane_8t"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:truck_crane_10t",
+          "resourceSpecId": "c2e3a26c-ec22-55b3-8424-60a5d6c65679",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:truck_crane_10t",
+          "unitId": "machine_hour",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:truck_crane_10t"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:gas_flame_burner",
+          "resourceSpecId": "e6757d2d-4c31-5dbe-8435-b1009fd915ea",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:gas_flame_burner",
+          "unitId": "machine_hour",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:gas_flame_burner"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:flatbed_truck_to_5t",
+          "resourceSpecId": "744aa68d-8b90-5321-809e-561acf291779",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:flatbed_truck_to_5t",
+          "unitId": "machine_hour",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:flatbed_truck_to_5t"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:propane_butane",
+          "resourceSpecId": "bdcbef8b-33b2-57d9-84cb-0a8389fcf24b",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:propane_butane",
+          "unitId": "kg",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:propane_butane"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:upper_isoplast_ekp_4_5",
+          "resourceSpecId": "28580df5-0a46-54a5-8c84-f7f4bc7aa0ef",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:upper_isoplast_ekp_4_5",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:upper_isoplast_ekp_4_5"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:lower_isoplast_epp_4",
+          "resourceSpecId": "b94a22bd-a154-5470-8e5d-15cf99cf51ce",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:lower_isoplast_epp_4",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:lower_isoplast_epp_4"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:materials_03",
+          "resourceSpecId": "0c9f11e3-2bfd-5906-8548-656e0d0b1b85",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:materials_03",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:materials_03"
+        },
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:workers",
+          "resourceSpecId": "c556428b-0d05-5669-8e75-d113669b35fa",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:metal-trim:krer12-010-01:workers",
+          "unitId": "man_hour",
+          "formulaId": "roof:metal-trim:krer12-010-01:formula:workers"
+        },
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:included_machine_operators",
+          "resourceSpecId": "feb17467-535a-53fa-8467-35c5b7e91148",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:metal-trim:krer12-010-01:included_machine_operators",
+          "unitId": "man_hour",
+          "formulaId": "roof:metal-trim:krer12-010-01:formula:included_machine_operators"
+        },
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:tower_crane_8t",
+          "resourceSpecId": "a170a940-3373-5d5b-8624-ae2b24493f02",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:metal-trim:krer12-010-01:tower_crane_8t",
+          "unitId": "machine_hour",
+          "formulaId": "roof:metal-trim:krer12-010-01:formula:tower_crane_8t"
+        },
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:flatbed_truck_to_5t",
+          "resourceSpecId": "5820f576-1a16-5494-8d65-b3e08d608466",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:metal-trim:krer12-010-01:flatbed_truck_to_5t",
+          "unitId": "machine_hour",
+          "formulaId": "roof:metal-trim:krer12-010-01:formula:flatbed_truck_to_5t"
+        },
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:roofing_nails_3x40",
+          "resourceSpecId": "46e07204-fd4b-59ea-8338-c1177e2ede1a",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:metal-trim:krer12-010-01:roofing_nails_3x40",
+          "unitId": "t",
+          "formulaId": "roof:metal-trim:krer12-010-01:formula:roofing_nails_3x40"
+        },
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:galvanized_rope_wire_3mm",
+          "resourceSpecId": "0808ecf3-fb49-5e3f-8f9c-669bd45cd68d",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:metal-trim:krer12-010-01:galvanized_rope_wire_3mm",
+          "unitId": "t",
+          "formulaId": "roof:metal-trim:krer12-010-01:formula:galvanized_rope_wire_3mm"
+        },
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:galvanized_sheet_0_7mm",
+          "resourceSpecId": "414e2caf-90ee-5b86-853f-c85afa814ba2",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:metal-trim:krer12-010-01:galvanized_sheet_0_7mm",
+          "unitId": "t",
+          "formulaId": "roof:metal-trim:krer12-010-01:formula:galvanized_sheet_0_7mm"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:materials_04",
+          "resourceSpecId": "4c935c85-c9e6-5e3f-8abd-2d5e297d814b",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:materials_04",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:materials_04"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:materials_05",
+          "resourceSpecId": "b4e3471f-20b1-5f48-8d23-8a6d0240ca8c",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:materials_05",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:materials_05"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:materials_06",
+          "resourceSpecId": "95e7609f-4912-5ea1-892c-b5be1ea02023",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:materials_06",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:materials_06"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:materials_37",
+          "resourceSpecId": "e12af0a7-4599-5d06-8b3c-b21567194b58",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:materials_37",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:materials_37"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:materials_38",
+          "resourceSpecId": "804679f4-5663-56f7-8825-72f7e9245abc",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:materials_38",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:materials_38"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:materials_39",
+          "resourceSpecId": "6f41c365-00db-5724-8acf-bbd5e3d36ccf",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:materials_39",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:materials_39"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:components_07",
+          "resourceSpecId": "b3319710-0b51-5087-8090-583b17837f3c",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:components_07",
+          "unitId": "linear_m",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:components_07"
+        },
+        {
+          "rowId": "roof:valley-torch-two:krer12-005-03:workers",
+          "resourceSpecId": "f0a5ad87-c8e8-5ca9-8e48-45916dafc331",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:valley-torch-two:krer12-005-03:workers",
+          "unitId": "man_hour",
+          "formulaId": "roof:valley-torch-two:krer12-005-03:formula:workers"
+        },
+        {
+          "rowId": "roof:valley-torch-two:krer12-005-03:tower_crane_8t",
+          "resourceSpecId": "7e1f8a2c-db16-56ba-86f2-aae5a7ed72d0",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:valley-torch-two:krer12-005-03:tower_crane_8t",
+          "unitId": "machine_hour",
+          "formulaId": "roof:valley-torch-two:krer12-005-03:formula:tower_crane_8t"
+        },
+        {
+          "rowId": "roof:valley-torch-two:krer12-005-03:truck_crane_10t",
+          "resourceSpecId": "50032177-703c-538d-81b7-d5fc7ba56065",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:valley-torch-two:krer12-005-03:truck_crane_10t",
+          "unitId": "machine_hour",
+          "formulaId": "roof:valley-torch-two:krer12-005-03:formula:truck_crane_10t"
+        },
+        {
+          "rowId": "roof:valley-torch-two:krer12-005-03:gas_flame_burner",
+          "resourceSpecId": "45cf9aec-7a11-5f0c-8995-03c7d4ca3c5f",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:valley-torch-two:krer12-005-03:gas_flame_burner",
+          "unitId": "machine_hour",
+          "formulaId": "roof:valley-torch-two:krer12-005-03:formula:gas_flame_burner"
+        },
+        {
+          "rowId": "roof:valley-torch-two:krer12-005-03:flatbed_truck_to_5t",
+          "resourceSpecId": "0f8b73ff-e118-58ca-824f-164f1e4b64f3",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:valley-torch-two:krer12-005-03:flatbed_truck_to_5t",
+          "unitId": "machine_hour",
+          "formulaId": "roof:valley-torch-two:krer12-005-03:formula:flatbed_truck_to_5t"
+        },
+        {
+          "rowId": "roof:valley-torch-two:krer12-005-03:propane_butane",
+          "resourceSpecId": "f4e43995-13c3-58be-8966-fc548fbe5824",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:valley-torch-two:krer12-005-03:propane_butane",
+          "unitId": "kg",
+          "formulaId": "roof:valley-torch-two:krer12-005-03:formula:propane_butane"
+        },
+        {
+          "rowId": "roof:valley-torch-two:krer12-005-03:lower_isoplast_epp_4",
+          "resourceSpecId": "41a602b4-67ad-590b-8b2b-e820e74f857a",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:valley-torch-two:krer12-005-03:lower_isoplast_epp_4",
+          "unitId": "m2",
+          "formulaId": "roof:valley-torch-two:krer12-005-03:formula:lower_isoplast_epp_4"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:components_08",
+          "resourceSpecId": "595b4f7a-4f1d-5f2a-8dd3-f303c63a4fdc",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:components_08",
+          "unitId": "linear_m",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:components_08"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:components_09",
+          "resourceSpecId": "968498cc-ed77-5092-80a2-887cde3ddb01",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:components_09",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:components_09"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:components_10",
+          "resourceSpecId": "00e3979a-bc78-594b-8474-f24d18f44252",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:components_10",
+          "unitId": "linear_m",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:components_10"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:components_40",
+          "resourceSpecId": "fef8e4cd-839d-5c5b-88d6-86733770ea82",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:components_40",
+          "unitId": "linear_m",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:components_40"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:components_41",
+          "resourceSpecId": "0a731573-d952-5da7-819d-ebcab1b9fd64",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:components_41",
+          "unitId": "linear_m",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:components_41"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:components_42",
+          "resourceSpecId": "374a5a2b-661a-5472-8f22-3c9673954a80",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:components_42",
+          "unitId": "linear_m",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:components_42"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:consumables_11",
+          "resourceSpecId": "d1b4a7c1-1a04-58e7-852e-aaffa16c2305",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:consumables_11",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:consumables_11"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:consumables_12",
+          "resourceSpecId": "d5abfd11-15f4-59a6-88a6-a2babf36f8b7",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:consumables_12",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:consumables_12"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:consumables_13",
+          "resourceSpecId": "415c1964-d389-58fa-89e9-86f8b2a768a1",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:consumables_13",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:consumables_13"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:consumables_43",
+          "resourceSpecId": "50d6fa47-c3d6-524b-8102-8b61782208cc",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:consumables_43",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:consumables_43"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:consumables_44",
+          "resourceSpecId": "e663091e-04cb-53b8-89a8-f8ccbbaf61fd",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:consumables_44",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:consumables_44"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:preparation_14",
+          "resourceSpecId": "86cb003b-5db8-5082-8e98-41ae65e84ae3",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:preparation_14",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:preparation_14"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:preparation_15",
+          "resourceSpecId": "c02c4724-123e-5930-8b7f-8744ae2b002e",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:preparation_15",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:preparation_15"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:preparation_16",
+          "resourceSpecId": "a62545be-4a8e-591a-8d96-e19f6d6f6f28",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:preparation_16",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:preparation_16"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:preparation_17",
+          "resourceSpecId": "30e98d14-374e-5a60-8794-37563611b73b",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:preparation_17",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:preparation_17"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:preparation_45",
+          "resourceSpecId": "14f7c35d-8689-5f7f-8f82-03f6aae8b844",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:preparation_45",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:preparation_45"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:preparation_46",
+          "resourceSpecId": "55c9378e-c99f-51c9-8470-cb7d201c7aa0",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:preparation_46",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:preparation_46"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:preparation_47",
+          "resourceSpecId": "7f00b7aa-df26-53c7-8cc6-54d62f408aab",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:preparation_47",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:preparation_47"
+        },
+        {
+          "rowId": "roof:cement-screed15:krer12-017-01:workers",
+          "resourceSpecId": "79b85f45-2aac-52a7-8b53-3debc02fcddb",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:cement-screed15:krer12-017-01:workers",
+          "unitId": "man_hour",
+          "formulaId": "roof:cement-screed15:krer12-017-01:formula:workers"
+        },
+        {
+          "rowId": "roof:cement-screed15:krer12-017-01:included_machine_operators",
+          "resourceSpecId": "6e86e558-48ce-5ca6-88b7-5b27dd92c774",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:cement-screed15:krer12-017-01:included_machine_operators",
+          "unitId": "man_hour",
+          "formulaId": "roof:cement-screed15:krer12-017-01:formula:included_machine_operators"
+        },
+        {
+          "rowId": "roof:cement-screed15:krer12-017-01:tower_crane_8t",
+          "resourceSpecId": "3b8be6e5-1551-5738-8bc7-d1d96a45a3e1",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:cement-screed15:krer12-017-01:tower_crane_8t",
+          "unitId": "machine_hour",
+          "formulaId": "roof:cement-screed15:krer12-017-01:formula:tower_crane_8t"
+        },
+        {
+          "rowId": "roof:cement-screed15:krer12-017-01:forklift_5t",
+          "resourceSpecId": "c30c758e-1c82-526b-866e-2347b18fe448",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:cement-screed15:krer12-017-01:forklift_5t",
+          "unitId": "machine_hour",
+          "formulaId": "roof:cement-screed15:krer12-017-01:formula:forklift_5t"
+        },
+        {
+          "rowId": "roof:cement-screed15:krer12-017-01:mortar_pump",
+          "resourceSpecId": "5a9599e3-1c3f-5fa7-8b35-87bca609685b",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:cement-screed15:krer12-017-01:mortar_pump",
+          "unitId": "machine_hour",
+          "formulaId": "roof:cement-screed15:krer12-017-01:formula:mortar_pump"
+        },
+        {
+          "rowId": "roof:cement-screed15:krer12-017-01:water",
+          "resourceSpecId": "b1ad1ebc-a783-5398-867d-443c884101d7",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:cement-screed15:krer12-017-01:water",
+          "unitId": "m3",
+          "formulaId": "roof:cement-screed15:krer12-017-01:formula:water"
+        },
+        {
+          "rowId": "roof:cement-screed15:krer12-017-01:roofing_felt",
+          "resourceSpecId": "f6746a7f-a06b-54c2-8c8e-c62fcb6a12ca",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:cement-screed15:krer12-017-01:roofing_felt",
+          "unitId": "m2",
+          "formulaId": "roof:cement-screed15:krer12-017-01:formula:roofing_felt"
+        },
+        {
+          "rowId": "roof:cement-screed15:krer12-017-01:ready_cement_mortar_m100",
+          "resourceSpecId": "fea54a9b-9704-5062-8e83-e76c1aaeef3c",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:cement-screed15:krer12-017-01:ready_cement_mortar_m100",
+          "unitId": "m3",
+          "formulaId": "roof:cement-screed15:krer12-017-01:formula:ready_cement_mortar_m100"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:labor_18",
+          "resourceSpecId": "89be1402-6541-58bf-8925-cab82967a5c6",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:labor_18",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:labor_18"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:labor_20",
+          "resourceSpecId": "c933eda1-293e-5396-8550-aa4afb74dcd0",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:labor_20",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:labor_20"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:labor_22",
+          "resourceSpecId": "47ed8c43-8231-5eaa-8610-ef69c64c7215",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:labor_22",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:labor_22"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:labor_23",
+          "resourceSpecId": "fcb9f4a9-8930-58ff-80bc-245b31f8c95c",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:labor_23",
+          "unitId": "linear_m",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:labor_23"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:labor_24",
+          "resourceSpecId": "622bf98b-8b0e-5b5c-8c2b-ed7b66aa3e08",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:labor_24",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:labor_24"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:labor_48",
+          "resourceSpecId": "ac851b9c-5e0d-5a55-80bb-2503e0c38373",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:labor_48",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:labor_48"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:labor_49",
+          "resourceSpecId": "9f061712-8b1d-500b-8d2d-1241e2d2a586",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:labor_49",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:labor_49"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:labor_50",
+          "resourceSpecId": "b8f8af31-0222-563e-886d-c181ef72f2ad",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:labor_50",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:labor_50"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:equipment_25",
+          "resourceSpecId": "7848b4b6-3619-5721-80b1-519ed7dfa159",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:equipment_25",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:equipment_25"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:equipment_26",
+          "resourceSpecId": "741bbf87-1f44-5cf2-804b-8a4edf009216",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:equipment_26",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:equipment_26"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:equipment_27",
+          "resourceSpecId": "943035f8-efad-508e-8a76-6e5b7fc1bbe4",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:equipment_27",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:equipment_27"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:equipment_51",
+          "resourceSpecId": "c32fdbe5-6140-5d33-8cf8-f2db77a0742f",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:equipment_51",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:equipment_51"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:equipment_52",
+          "resourceSpecId": "4ef87c64-d1bc-502a-8413-a9407783d2aa",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:equipment_52",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:equipment_52"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:logistics_28",
+          "resourceSpecId": "c180eceb-3af5-54a7-8209-ac3038b6cf3c",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:logistics_28",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:logistics_28"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:logistics_29",
+          "resourceSpecId": "6f30d26f-da4d-5ade-8068-9d2381affacb",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:logistics_29",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:logistics_29"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:logistics_53",
+          "resourceSpecId": "4f5f9fb6-0d01-5d04-8f86-83b41b21adc8",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:logistics_53",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:logistics_53"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:logistics_54",
+          "resourceSpecId": "64aa979b-a6d2-5098-805e-11dd73adc7ce",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:logistics_54",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:logistics_54"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:waste_30",
+          "resourceSpecId": "9d750c9d-7dfa-5ff8-8957-5b3d3b5b5005",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:waste_30",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:waste_30"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:waste_31",
+          "resourceSpecId": "4fad119b-30d5-55d0-8b59-8f5ca72a4aff",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:waste_31",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:waste_31"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:waste_55",
+          "resourceSpecId": "6ed35371-1f9b-5c69-8719-c3980fbcea79",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:waste_55",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:waste_55"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:waste_56",
+          "resourceSpecId": "68f20273-9a6c-5570-86bc-14e891b08a07",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:waste_56",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:waste_56"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:quality_control_32",
+          "resourceSpecId": "e82d9861-89e0-5ea2-8c4c-eba6b69e2df9",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:quality_control_32",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:quality_control_32"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:quality_control_33",
+          "resourceSpecId": "d70ee814-f2d1-5e50-8922-f594897a3acc",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:quality_control_33",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:quality_control_33"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:quality_control_34",
+          "resourceSpecId": "22a786a5-2666-5e39-8f9c-a34d0f3501c8",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:quality_control_34",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:quality_control_34"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:quality_control_57",
+          "resourceSpecId": "ba8fd3b0-6aa0-5367-8907-e4e7e872faca",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:quality_control_57",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:quality_control_57"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:quality_control_58",
+          "resourceSpecId": "c47b0ee5-cb2c-5ddf-8efd-b79597643ba9",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:quality_control_58",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:quality_control_58"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:quality_control_59",
+          "resourceSpecId": "fa30e96c-5e40-5982-8cda-d4d1497172c6",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:quality_control_59",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:quality_control_59"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:overhead_35",
+          "resourceSpecId": "04301dfe-43ed-5c5d-8e39-89a8125c35b1",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:overhead_35",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:overhead_35"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:tax_36",
+          "resourceSpecId": "3b80914b-9586-552f-8142-ea8f6a6463b6",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:tax_36",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:tax_36"
+        },
+        {
+          "rowId": "roof:prime-ready-emulsion:krer12-016-02:workers",
+          "resourceSpecId": "393719ec-c3aa-54cc-8aad-9049bc629b14",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:prime-ready-emulsion:krer12-016-02:workers",
+          "unitId": "man_hour",
+          "formulaId": "roof:prime-ready-emulsion:krer12-016-02:formula:workers"
+        },
+        {
+          "rowId": "roof:prime-ready-emulsion:krer12-016-02:flatbed_truck",
+          "resourceSpecId": "63d21955-11d2-5b78-8a96-58c317f47ee4",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:prime-ready-emulsion:krer12-016-02:flatbed_truck",
+          "unitId": "machine_hour",
+          "formulaId": "roof:prime-ready-emulsion:krer12-016-02:formula:flatbed_truck"
+        },
+        {
+          "rowId": "roof:prime-ready-emulsion:krer12-016-02:ready_bitumen_emulsion",
+          "resourceSpecId": "a4ac9e9f-956d-5ea9-8a24-9a4fbaf13b63",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:prime-ready-emulsion:krer12-016-02:ready_bitumen_emulsion",
+          "unitId": "kg",
+          "formulaId": "roof:prime-ready-emulsion:krer12-016-02:formula:ready_bitumen_emulsion"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:source-gap:primer",
+          "resourceSpecId": "30f3e471-6f9c-5fc8-8e96-e01d730cf672",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:source-gap:primer",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:source-gap:primer"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:source-gap:expansion_joints",
+          "resourceSpecId": "d9bbb42c-c5b1-59df-80ba-0d5d6ccd1914",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:source-gap:expansion_joints",
+          "unitId": "m",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:source-gap:expansion_joints"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:source-gap:roof_assembly",
+          "resourceSpecId": "c0960dcf-b97d-56d6-85e6-219effbbb793",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:source-gap:roof_assembly",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:source-gap:roof_assembly"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:source-gap:skylight_junctions",
+          "resourceSpecId": "1b94b29e-c571-5f6c-827d-03ec0b1e7d35",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:source-gap:skylight_junctions",
+          "unitId": "m",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:source-gap:skylight_junctions"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:scope_pending",
+          "resourceSpecId": "ded501d8-b294-565f-8575-b4769ad13e73",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:torch-two:krer12-002-09:remaining:scope_pending",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:scope_pending"
+        }
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone",
+      "predecessorDefinitionId": "4356c057-5fe5-5e57-83df-72f66a3b63dd",
+      "predecessorVersion": 9,
+      "preservedOwners": [
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_materials_01",
+          "resourceSpecId": "29b698a8-86cf-511c-865e-0c17dd5fe560",
+          "costOwnerId": "r555-price:f828ac3abb2e6cbc0a74a0cd91e67d3fd8e89aac",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_materials_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_materials_01"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_materials_02",
+          "resourceSpecId": "9fb1d7db-059e-5c52-85f5-3058ce404b93",
+          "costOwnerId": "r555-price:af926cb49e6c831d69a8b226819db674e9f369ee",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_materials_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_materials_02"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_materials_03",
+          "resourceSpecId": "4f558eca-d86b-578a-80cd-c217c771c588",
+          "costOwnerId": "r555-price:9b196e8e500589df45af1a147a518be44377d670",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_materials_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_materials_03"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_materials_04",
+          "resourceSpecId": "c7bf0a84-dc47-5437-8364-86896dd2402d",
+          "costOwnerId": "r555-price:5703ae4ee11ad54bae51c2953de45bcb98a71826",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_materials_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_materials_04"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_materials_05",
+          "resourceSpecId": "0be5c28f-6bcc-5046-8bed-3c9d9ca4a38b",
+          "costOwnerId": "r555-price:76bbb4be7d1986d94cdd7842e607855134e3324c",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_materials_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_materials_05"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_materials_06",
+          "resourceSpecId": "057f7a23-cb7e-5512-8f56-1e0cfcaa212b",
+          "costOwnerId": "r555-price:b0f76e27755af45d0ceb4653b662f420869f0cf4",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_materials_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_materials_06"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_materials_37",
+          "resourceSpecId": "617c8be4-3452-59aa-87ea-b16cafd14b93",
+          "costOwnerId": "r555-price:bafd53dfc2296b5c854aa6d626a0c994d7aced3c",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_materials_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_materials_37"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_materials_38",
+          "resourceSpecId": "2028fe40-d14b-5962-8e1d-63d235c4bbf2",
+          "costOwnerId": "r555-price:a36fe965f2205090a90629e2a7578324547b1242",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_materials_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_materials_38"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_materials_39",
+          "resourceSpecId": "aa1dc8bf-c9a0-5b6c-888c-13511b670d6e",
+          "costOwnerId": "r555-price:3b9a1f8cc62ff7a2d721804cf3075765a54b4914",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_materials_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_materials_39"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_components_07",
+          "resourceSpecId": "9e622276-868b-5650-83b3-40473b8c5335",
+          "costOwnerId": "r555-price:84564a10330cf70450f89ec613ff9b44e798f179",
+          "unitId": "linear_m",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_components_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_components_07"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_components_08",
+          "resourceSpecId": "9168a0b4-0194-5c89-8f53-92f17ee5c170",
+          "costOwnerId": "r555-price:33580eaddd18ffae0604b9b751d475b454b1c54a",
+          "unitId": "linear_m",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_components_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_components_08"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_components_09",
+          "resourceSpecId": "7fb0bba0-8e07-5509-8014-683f3a33c349",
+          "costOwnerId": "r555-price:8725d044febaf84b9efda91d6eb5010daa38510f",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_components_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_components_09"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_components_10",
+          "resourceSpecId": "4ae66b32-5769-5152-85d6-c22e2a462074",
+          "costOwnerId": "r555-price:bbd1b9d2ab5b4d691d1de78373dd503c22a72b56",
+          "unitId": "linear_m",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_components_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_components_10"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_components_40",
+          "resourceSpecId": "fb71d0fe-fd90-507b-8d3d-b02b116d469d",
+          "costOwnerId": "r555-price:a110461b8dd4bef6ece21f55274d779d89b626d8",
+          "unitId": "linear_m",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_components_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_components_40"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_components_41",
+          "resourceSpecId": "2f042e2b-8321-5618-8947-c841d0939a5c",
+          "costOwnerId": "r555-price:bd542efd886bc6c0ca90ce049f51ac8aea52b243",
+          "unitId": "linear_m",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_components_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_components_41"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_components_42",
+          "resourceSpecId": "b6221e26-0ef5-5060-8234-d993670f4add",
+          "costOwnerId": "r555-price:bda487233a2cea4a0dcd02462fcb6556a4da5b62",
+          "unitId": "linear_m",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_components_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_components_42"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_consumables_11",
+          "resourceSpecId": "54d9f316-c538-516a-8394-a2029fad00a8",
+          "costOwnerId": "r555-price:20bed4610dfe7cc5270260f05fe2325ee3f85d9a",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_consumables_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_consumables_11"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_consumables_12",
+          "resourceSpecId": "05c6935a-d3c4-56af-81e9-cb3fedd56abc",
+          "costOwnerId": "r555-price:f2701622d094617f9eb1b9b6109c6c4f585ee29f",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_consumables_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_consumables_12"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_consumables_13",
+          "resourceSpecId": "33348753-32b5-5213-8896-f61daa0c9a83",
+          "costOwnerId": "r555-price:eea540cce63daef84d281a26f48c282606c5c987",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_consumables_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_consumables_13"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_consumables_43",
+          "resourceSpecId": "a1deeb3c-2d46-5195-89a2-fac4634dbde5",
+          "costOwnerId": "r555-price:b34603786e5f5356d86d568c232a2369fdc8d4e0",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_consumables_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_consumables_43"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_consumables_44",
+          "resourceSpecId": "977dcf9a-43c3-575c-8b30-8308a6cae73a",
+          "costOwnerId": "r555-price:493c6ab82c725d4d730bea8e0c132e92fda3f8d4",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_consumables_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_consumables_44"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_preparation_14",
+          "resourceSpecId": "c34cb34a-22fb-577c-86be-9c199445b30d",
+          "costOwnerId": "r555-price:5c90c96e604fd91a45db8eb1be9e2baf79f9f71f",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_preparation_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_preparation_14"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_preparation_15",
+          "resourceSpecId": "6af89edf-7d4c-5188-82a9-13ea137a9bef",
+          "costOwnerId": "r555-price:d514ca52845f08f45e9a50d578cba220378b8869",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_preparation_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_preparation_15"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_preparation_16",
+          "resourceSpecId": "b380133f-902c-5c2b-814f-04fa0ff3fd0d",
+          "costOwnerId": "r555-price:2a00c72206ee33350da242fec271898f5fefe764",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_preparation_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_preparation_16"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_preparation_17",
+          "resourceSpecId": "1ca64e5f-76c3-53fe-80d5-221221cde90d",
+          "costOwnerId": "r555-price:be09d7b8b0e7ea92bb7ed02e7daf19862df79334",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_preparation_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_preparation_17"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_preparation_45",
+          "resourceSpecId": "735e47e6-5cc2-5e57-8559-1a6f270b3901",
+          "costOwnerId": "r555-price:5101b12bce33728002c990a2eea3d111738879e5",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_preparation_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_preparation_45"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_preparation_46",
+          "resourceSpecId": "ba1c4451-2638-5f9e-8c43-2e68ff4dcc06",
+          "costOwnerId": "r555-price:ee9a1474430a37eb2c85add03fac9d8d709b08ef",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_preparation_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_preparation_46"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_preparation_47",
+          "resourceSpecId": "77a2e0f6-8db8-5239-85bb-684c8655b148",
+          "costOwnerId": "r555-price:21cbcfe8eb098a1427b46e05dddc436ded0528c6",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_preparation_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_preparation_47"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_labor_18",
+          "resourceSpecId": "2d242782-82ab-5627-814f-41b7edbc7d86",
+          "costOwnerId": "r555-price:c41c0f51851772416fcc8a4002855e03e3577fb9",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_labor_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_labor_18"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_labor_19",
+          "resourceSpecId": "789d3049-4464-54e1-83b1-e3412593d2b5",
+          "costOwnerId": "r555-price:b159ba1bb8158a27bb304c28de42983bfd8ccdd5",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_labor_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_labor_19"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_labor_20",
+          "resourceSpecId": "2b5ad2b1-488a-57c1-8ce6-cef5d0b7f9fb",
+          "costOwnerId": "r555-price:669b8767cb00a61acf856cd15f532d7f54dc8424",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_labor_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_labor_20"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_labor_21",
+          "resourceSpecId": "41128201-d8a6-5c7d-8aaa-5274a355d749",
+          "costOwnerId": "r555-price:460da0ed379c0c6e2c0cfa420a21199bfc3e6906",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_labor_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_labor_21"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_labor_22",
+          "resourceSpecId": "0f08c9bc-d6bf-552e-8c65-5d51ef5844d2",
+          "costOwnerId": "r555-price:0921cd5515c4d8e0dc329d2f5893043c6de9afba",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_labor_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_labor_22"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_labor_23",
+          "resourceSpecId": "f163966d-15a1-55e2-89eb-4ae884844047",
+          "costOwnerId": "r555-price:04d547b6d6ce6a7d84ac7756e43d7e48040d6f0f",
+          "unitId": "linear_m",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_labor_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_labor_23"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_labor_24",
+          "resourceSpecId": "c3f716f6-d688-5b6c-8043-fbf1e64f39fe",
+          "costOwnerId": "r555-price:6d2a6533bcb9d7bb5a0ad7071cc0098fda5bca67",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_labor_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_labor_24"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_labor_48",
+          "resourceSpecId": "af8b89c3-7006-541c-8cd6-e66b8d699f7a",
+          "costOwnerId": "r555-price:6fe8b2f3c7419d48e53ddb6b732cc9d730c8d237",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_labor_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_labor_48"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_labor_49",
+          "resourceSpecId": "8d4bcfe6-8640-525d-8c05-2208ca8824a4",
+          "costOwnerId": "r555-price:65bd7d281593c21516e4f475b8e664fd7f10dd76",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_labor_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_labor_49"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_labor_50",
+          "resourceSpecId": "4a67b5d5-fb05-564e-8c18-23313794515f",
+          "costOwnerId": "r555-price:71461a6e601e48f501bddc45e85c4d6e39c3b5e2",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_labor_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_labor_50"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_equipment_25",
+          "resourceSpecId": "9f8936a5-c8fc-5b77-830f-e07a855d0bf9",
+          "costOwnerId": "r555-price:c9553740c052261d9c92847e3fe70b78cfa37b6a",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_equipment_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_equipment_25"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_equipment_26",
+          "resourceSpecId": "944fe426-bef3-560d-82ad-97c3fea0ba75",
+          "costOwnerId": "r555-price:d6f1fc25170c5f640773035a134a799b792d37c8",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_equipment_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_equipment_26"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_equipment_27",
+          "resourceSpecId": "26b9898b-2450-554a-8bf4-c1548481314f",
+          "costOwnerId": "r555-price:62bfaf0ba022bcda8d5648b75debb4749c12fdc1",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_equipment_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_equipment_27"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_equipment_51",
+          "resourceSpecId": "ce9b5544-4847-51aa-8a0b-5b1473648c17",
+          "costOwnerId": "r555-price:9a30f8543965fa8a7892b203a9805f84e6d7be6e",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_equipment_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_equipment_51"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_equipment_52",
+          "resourceSpecId": "1f6caada-9886-5d80-856a-7feeae7b1c93",
+          "costOwnerId": "r555-price:c14cf3761e0dfee8c9572a7ce2d2ccef8a20be6b",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_equipment_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_equipment_52"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_logistics_28",
+          "resourceSpecId": "01dc6220-182a-5603-83ef-e8531f8ce980",
+          "costOwnerId": "r555-price:3fa64b206f776dcb67c6ea687643de035c7911ec",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_logistics_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_logistics_28"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_logistics_29",
+          "resourceSpecId": "dd0ba6a1-0478-5674-8096-501610209398",
+          "costOwnerId": "r555-price:724fe3f3135c21622525022e7517461698e1202b",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_logistics_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_logistics_29"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_logistics_53",
+          "resourceSpecId": "c6989ff8-e381-519d-8025-6db9b176fd6d",
+          "costOwnerId": "r555-price:5d6400174748b87c144ef73c266629ba9f0719f3",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_logistics_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_logistics_53"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_logistics_54",
+          "resourceSpecId": "e69296c5-7f80-5e56-8053-bc9bf23582e2",
+          "costOwnerId": "r555-price:487f5ce2c8096f6f66a0246b721829f9164dabac",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_logistics_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_logistics_54"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_waste_30",
+          "resourceSpecId": "9984b14a-fd98-5e82-8eeb-a7e39edd097e",
+          "costOwnerId": "r555-price:ec17c8773e41954038f7935b1b78a9044d31b8c7",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_waste_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_waste_30"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_waste_31",
+          "resourceSpecId": "d0f357e6-3e14-5bba-8b3e-33a581a097db",
+          "costOwnerId": "r555-price:2be0ba551fc52b297b7e5e4be40b441360759391",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_waste_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_waste_31"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_waste_55",
+          "resourceSpecId": "72286410-c086-50a1-8e8d-14cb4a55bb0d",
+          "costOwnerId": "r555-price:8c7467cc952b63e417b507527c4d61f6f8d6f500",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_waste_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_waste_55"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_waste_56",
+          "resourceSpecId": "87f06df6-d63e-586c-81e0-3959dcc93863",
+          "costOwnerId": "r555-price:462e6facfa7c2052c7630438e52df7f70f5043c5",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_waste_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_waste_56"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_quality_control_32",
+          "resourceSpecId": "d760522f-1247-585e-8fa6-4836a57ed90e",
+          "costOwnerId": "r555-price:a4f0a582db5e54ad522dcf19b249375209487a3d",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_quality_control_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_quality_control_32"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_quality_control_33",
+          "resourceSpecId": "4424c020-d273-5724-844b-dd382d835feb",
+          "costOwnerId": "r555-price:8f776db8e8e0bede4b54f9304851abd76195b8f1",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_quality_control_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_quality_control_33"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_quality_control_34",
+          "resourceSpecId": "645eaf09-43e3-573f-8185-5abdfd16957f",
+          "costOwnerId": "r555-price:e5e4d92e8e49386c19bf6704ec1b5c6d892a7474",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_quality_control_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_quality_control_34"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_quality_control_57",
+          "resourceSpecId": "c03b174d-b4f4-5196-8a57-decd44232f8c",
+          "costOwnerId": "r555-price:8899f8b0016787ca9716aae5d6ed6d80fc8dd77f",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_quality_control_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_quality_control_57"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_quality_control_58",
+          "resourceSpecId": "e0ec8661-9730-5bd8-88d7-b6543f658d37",
+          "costOwnerId": "r555-price:f18191d72b6bdd9d20d4480df0809a9d691d5114",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_quality_control_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_quality_control_58"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_quality_control_59",
+          "resourceSpecId": "109f1bd6-0135-5514-8110-a3f867597516",
+          "costOwnerId": "r555-price:8d8acce11fb8cccb10b13f9b441ca2981233317d",
+          "unitId": "m2",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_quality_control_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_quality_control_59"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_overhead_35",
+          "resourceSpecId": "7b388559-2100-5984-893d-d7a1c5c3777f",
+          "costOwnerId": "r555-price:10ed9a4c372ae0fd19de57ebd43484ef362fc55a",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_overhead_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_overhead_35"
+        },
+        {
+          "rowId": "roofing_interior_flat_roof_install_wet_zone_tax_36",
+          "resourceSpecId": "3bd987c7-2751-5548-83e7-78ef48cee5d1",
+          "costOwnerId": "r555-price:67f07707706e1b47cf517759eb6c90e1b26b866e",
+          "unitId": "set",
+          "formulaId": "roofing_interior_flat_roof_install_wet_zone_professional_expanded_v1_tax_quantity_formula_v1_roofing_interior_flat_roof_install_wet_zone_tax_36"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:workers",
+          "resourceSpecId": "157667e4-a0aa-5ab7-8379-2d96ae4f1328",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:workers",
+          "unitId": "man_hour",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:workers"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:included_machine_operators",
+          "resourceSpecId": "7d4180c5-5858-5632-8cc2-ecaa9d8a1ff6",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:included_machine_operators",
+          "unitId": "man_hour",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:included_machine_operators"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:tower_crane_8t",
+          "resourceSpecId": "c809f751-d28c-56e5-806e-0a49c4326d88",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:tower_crane_8t",
+          "unitId": "machine_hour",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:tower_crane_8t"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:truck_crane_10t",
+          "resourceSpecId": "16e36485-fa40-5e34-820e-202421570d3a",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:truck_crane_10t",
+          "unitId": "machine_hour",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:truck_crane_10t"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:gas_flame_burner",
+          "resourceSpecId": "eb89af61-aacc-5aff-88a8-28a10e194776",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:gas_flame_burner",
+          "unitId": "machine_hour",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:gas_flame_burner"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:flatbed_truck_to_5t",
+          "resourceSpecId": "0f16f73a-9dd6-58ae-8287-ea6c15180e4e",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:flatbed_truck_to_5t",
+          "unitId": "machine_hour",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:flatbed_truck_to_5t"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:propane_butane",
+          "resourceSpecId": "efe8d42b-381e-54ec-848e-769e07e3987b",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:propane_butane",
+          "unitId": "kg",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:propane_butane"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:upper_isoplast_ekp_4_5",
+          "resourceSpecId": "6e600b89-043d-54bc-8412-b1e44e8e77ae",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:upper_isoplast_ekp_4_5",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:upper_isoplast_ekp_4_5"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:lower_isoplast_epp_4",
+          "resourceSpecId": "ad941165-2e44-5a2b-8ad8-65477f3bbe46",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:lower_isoplast_epp_4",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:lower_isoplast_epp_4"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:materials_03",
+          "resourceSpecId": "9b6684d1-a821-5024-82bf-bbc47f32c7f6",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:materials_03",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:materials_03"
+        },
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:workers",
+          "resourceSpecId": "51ea5489-c42b-5e2c-8487-5bdff2a5368f",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:metal-trim:krer12-010-01:workers",
+          "unitId": "man_hour",
+          "formulaId": "roof:metal-trim:krer12-010-01:formula:workers"
+        },
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:included_machine_operators",
+          "resourceSpecId": "be88d112-2da0-5b11-81b0-8f13fbd1313f",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:metal-trim:krer12-010-01:included_machine_operators",
+          "unitId": "man_hour",
+          "formulaId": "roof:metal-trim:krer12-010-01:formula:included_machine_operators"
+        },
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:tower_crane_8t",
+          "resourceSpecId": "5541f951-33fd-5d7f-8d7a-f9a1e3d5c751",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:metal-trim:krer12-010-01:tower_crane_8t",
+          "unitId": "machine_hour",
+          "formulaId": "roof:metal-trim:krer12-010-01:formula:tower_crane_8t"
+        },
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:flatbed_truck_to_5t",
+          "resourceSpecId": "59616ac8-6b34-578b-8bbb-ffc511ed24c3",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:metal-trim:krer12-010-01:flatbed_truck_to_5t",
+          "unitId": "machine_hour",
+          "formulaId": "roof:metal-trim:krer12-010-01:formula:flatbed_truck_to_5t"
+        },
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:roofing_nails_3x40",
+          "resourceSpecId": "c2f2c6e4-7f57-582f-8a0f-73ee317b09f3",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:metal-trim:krer12-010-01:roofing_nails_3x40",
+          "unitId": "t",
+          "formulaId": "roof:metal-trim:krer12-010-01:formula:roofing_nails_3x40"
+        },
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:galvanized_rope_wire_3mm",
+          "resourceSpecId": "4a09141b-4999-5ac4-8ca4-d7010d838504",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:metal-trim:krer12-010-01:galvanized_rope_wire_3mm",
+          "unitId": "t",
+          "formulaId": "roof:metal-trim:krer12-010-01:formula:galvanized_rope_wire_3mm"
+        },
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:galvanized_sheet_0_7mm",
+          "resourceSpecId": "c3fda27f-1827-55ef-8815-d622f2e7d494",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:metal-trim:krer12-010-01:galvanized_sheet_0_7mm",
+          "unitId": "t",
+          "formulaId": "roof:metal-trim:krer12-010-01:formula:galvanized_sheet_0_7mm"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:materials_04",
+          "resourceSpecId": "6eab5be6-a912-5743-8bee-94c02008cb82",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:materials_04",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:materials_04"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:materials_05",
+          "resourceSpecId": "f655a7d6-f5fa-510a-89ac-6f6c8c92c02e",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:materials_05",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:materials_05"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:materials_06",
+          "resourceSpecId": "660351f8-9189-54d6-8e7d-843862bb352d",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:materials_06",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:materials_06"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:materials_37",
+          "resourceSpecId": "773da7ef-eec7-567d-8db9-e917044842fc",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:materials_37",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:materials_37"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:materials_38",
+          "resourceSpecId": "edaeb2d1-1c82-5e34-8b2e-670417d570db",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:materials_38",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:materials_38"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:materials_39",
+          "resourceSpecId": "c40696e9-c09f-511b-8431-23b03d3bd1c0",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:materials_39",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:materials_39"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:components_07",
+          "resourceSpecId": "47227b69-8319-5fb0-8e97-356cd500458e",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:components_07",
+          "unitId": "linear_m",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:components_07"
+        },
+        {
+          "rowId": "roof:valley-torch-two:krer12-005-03:workers",
+          "resourceSpecId": "6992675e-1ffe-5a77-8a1a-222bde58320a",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:valley-torch-two:krer12-005-03:workers",
+          "unitId": "man_hour",
+          "formulaId": "roof:valley-torch-two:krer12-005-03:formula:workers"
+        },
+        {
+          "rowId": "roof:valley-torch-two:krer12-005-03:tower_crane_8t",
+          "resourceSpecId": "b2a5126a-dedf-5017-869a-79390221aac1",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:valley-torch-two:krer12-005-03:tower_crane_8t",
+          "unitId": "machine_hour",
+          "formulaId": "roof:valley-torch-two:krer12-005-03:formula:tower_crane_8t"
+        },
+        {
+          "rowId": "roof:valley-torch-two:krer12-005-03:truck_crane_10t",
+          "resourceSpecId": "dcd06d62-c05d-555a-8f99-d8047b2e8817",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:valley-torch-two:krer12-005-03:truck_crane_10t",
+          "unitId": "machine_hour",
+          "formulaId": "roof:valley-torch-two:krer12-005-03:formula:truck_crane_10t"
+        },
+        {
+          "rowId": "roof:valley-torch-two:krer12-005-03:gas_flame_burner",
+          "resourceSpecId": "38bb9142-c4af-54f1-8a1d-c8d624287afe",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:valley-torch-two:krer12-005-03:gas_flame_burner",
+          "unitId": "machine_hour",
+          "formulaId": "roof:valley-torch-two:krer12-005-03:formula:gas_flame_burner"
+        },
+        {
+          "rowId": "roof:valley-torch-two:krer12-005-03:flatbed_truck_to_5t",
+          "resourceSpecId": "57c951fa-cddd-5ed9-81dc-43063c3b3763",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:valley-torch-two:krer12-005-03:flatbed_truck_to_5t",
+          "unitId": "machine_hour",
+          "formulaId": "roof:valley-torch-two:krer12-005-03:formula:flatbed_truck_to_5t"
+        },
+        {
+          "rowId": "roof:valley-torch-two:krer12-005-03:propane_butane",
+          "resourceSpecId": "1b36a6d5-9643-518a-829e-31dacc343739",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:valley-torch-two:krer12-005-03:propane_butane",
+          "unitId": "kg",
+          "formulaId": "roof:valley-torch-two:krer12-005-03:formula:propane_butane"
+        },
+        {
+          "rowId": "roof:valley-torch-two:krer12-005-03:lower_isoplast_epp_4",
+          "resourceSpecId": "ce5e3c53-d47f-59e9-853c-067d4687a3b6",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:valley-torch-two:krer12-005-03:lower_isoplast_epp_4",
+          "unitId": "m2",
+          "formulaId": "roof:valley-torch-two:krer12-005-03:formula:lower_isoplast_epp_4"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:components_08",
+          "resourceSpecId": "3066d0ce-3b8c-5e1d-8e5a-7d21a902adec",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:components_08",
+          "unitId": "linear_m",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:components_08"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:components_09",
+          "resourceSpecId": "940039cd-f58a-55e5-8ec9-9312c90f11d4",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:components_09",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:components_09"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:components_10",
+          "resourceSpecId": "f7d1e1d1-66c2-51d7-8416-61fd5810dbd6",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:components_10",
+          "unitId": "linear_m",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:components_10"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:components_40",
+          "resourceSpecId": "64a34eab-c7fa-5735-8701-f3112587f278",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:components_40",
+          "unitId": "linear_m",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:components_40"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:components_41",
+          "resourceSpecId": "4878ea67-24d6-51e3-8293-0cadef6b7a6d",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:components_41",
+          "unitId": "linear_m",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:components_41"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:components_42",
+          "resourceSpecId": "9010c3d4-b444-590a-8161-11026a0ccb4d",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:components_42",
+          "unitId": "linear_m",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:components_42"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:consumables_11",
+          "resourceSpecId": "d03f7c92-a8ca-586e-8e9c-b3c1c9548694",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:consumables_11",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:consumables_11"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:consumables_12",
+          "resourceSpecId": "e80eb55b-4b54-5dce-864d-25a67eeb8bd7",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:consumables_12",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:consumables_12"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:consumables_13",
+          "resourceSpecId": "a97f6964-55da-533e-8703-ac223caacc66",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:consumables_13",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:consumables_13"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:consumables_43",
+          "resourceSpecId": "ddf66d31-2110-5087-8475-9532c52cef3d",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:consumables_43",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:consumables_43"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:consumables_44",
+          "resourceSpecId": "a0556b7c-7e06-510c-8658-0c100c58dac9",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:consumables_44",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:consumables_44"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:preparation_14",
+          "resourceSpecId": "6f05bb32-9eb6-57b6-8b06-16e35d1badbb",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:preparation_14",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:preparation_14"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:preparation_15",
+          "resourceSpecId": "497899f2-c2ad-5fd8-89bb-55d29304b624",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:preparation_15",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:preparation_15"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:preparation_16",
+          "resourceSpecId": "c33790d5-5fab-5a4d-8a2e-562de8514abf",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:preparation_16",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:preparation_16"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:preparation_17",
+          "resourceSpecId": "aa2937e4-2bba-5182-80d2-1c7aad0f8e10",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:preparation_17",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:preparation_17"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:preparation_45",
+          "resourceSpecId": "90fd0612-6654-5a45-8654-9d9bdb6fedf2",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:preparation_45",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:preparation_45"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:preparation_46",
+          "resourceSpecId": "04bd7f9b-285f-5ff2-86b0-30afa814b4ef",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:preparation_46",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:preparation_46"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:preparation_47",
+          "resourceSpecId": "1800587e-ce81-5173-80a6-50299eb8028e",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:preparation_47",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:preparation_47"
+        },
+        {
+          "rowId": "roof:cement-screed15:krer12-017-01:workers",
+          "resourceSpecId": "bf4968f8-a2e9-5c5e-86bf-159fb8d0b132",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:cement-screed15:krer12-017-01:workers",
+          "unitId": "man_hour",
+          "formulaId": "roof:cement-screed15:krer12-017-01:formula:workers"
+        },
+        {
+          "rowId": "roof:cement-screed15:krer12-017-01:included_machine_operators",
+          "resourceSpecId": "e8a50f28-06e9-5804-8e16-8a99cf109977",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:cement-screed15:krer12-017-01:included_machine_operators",
+          "unitId": "man_hour",
+          "formulaId": "roof:cement-screed15:krer12-017-01:formula:included_machine_operators"
+        },
+        {
+          "rowId": "roof:cement-screed15:krer12-017-01:tower_crane_8t",
+          "resourceSpecId": "65d05bd0-96b6-5728-8c87-956f3dc6a510",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:cement-screed15:krer12-017-01:tower_crane_8t",
+          "unitId": "machine_hour",
+          "formulaId": "roof:cement-screed15:krer12-017-01:formula:tower_crane_8t"
+        },
+        {
+          "rowId": "roof:cement-screed15:krer12-017-01:forklift_5t",
+          "resourceSpecId": "f1511e52-b0ab-56ef-80fd-145b3ade6679",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:cement-screed15:krer12-017-01:forklift_5t",
+          "unitId": "machine_hour",
+          "formulaId": "roof:cement-screed15:krer12-017-01:formula:forklift_5t"
+        },
+        {
+          "rowId": "roof:cement-screed15:krer12-017-01:mortar_pump",
+          "resourceSpecId": "234d741b-f5f6-572f-86e1-8c42f998a15f",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:cement-screed15:krer12-017-01:mortar_pump",
+          "unitId": "machine_hour",
+          "formulaId": "roof:cement-screed15:krer12-017-01:formula:mortar_pump"
+        },
+        {
+          "rowId": "roof:cement-screed15:krer12-017-01:water",
+          "resourceSpecId": "a4b9dafb-b0b5-5b23-88ae-5e214eb4f7ee",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:cement-screed15:krer12-017-01:water",
+          "unitId": "m3",
+          "formulaId": "roof:cement-screed15:krer12-017-01:formula:water"
+        },
+        {
+          "rowId": "roof:cement-screed15:krer12-017-01:roofing_felt",
+          "resourceSpecId": "a710cfd1-1011-530a-8ce1-1c03ab39b6f0",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:cement-screed15:krer12-017-01:roofing_felt",
+          "unitId": "m2",
+          "formulaId": "roof:cement-screed15:krer12-017-01:formula:roofing_felt"
+        },
+        {
+          "rowId": "roof:cement-screed15:krer12-017-01:ready_cement_mortar_m100",
+          "resourceSpecId": "6cf23fdd-8d69-5147-839d-a17127821756",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:cement-screed15:krer12-017-01:ready_cement_mortar_m100",
+          "unitId": "m3",
+          "formulaId": "roof:cement-screed15:krer12-017-01:formula:ready_cement_mortar_m100"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:labor_18",
+          "resourceSpecId": "4d20d8c6-bbe8-5df5-8c71-cfb3df6b0951",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:labor_18",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:labor_18"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:labor_20",
+          "resourceSpecId": "48f88c59-5931-5676-8457-87715353a414",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:labor_20",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:labor_20"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:labor_22",
+          "resourceSpecId": "e48363fc-eaea-5fe1-8917-003aa36e8211",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:labor_22",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:labor_22"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:labor_23",
+          "resourceSpecId": "5e2e2dbd-ec5b-5409-861f-2357afb539b4",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:labor_23",
+          "unitId": "linear_m",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:labor_23"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:labor_24",
+          "resourceSpecId": "14c52496-5c76-57e0-801f-830c6ec31eb6",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:labor_24",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:labor_24"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:labor_48",
+          "resourceSpecId": "f07d15ab-07cf-5480-8fc2-d44f54299186",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:labor_48",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:labor_48"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:labor_49",
+          "resourceSpecId": "3f61257b-6625-5ccf-8310-85cf051772c6",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:labor_49",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:labor_49"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:labor_50",
+          "resourceSpecId": "f3c13f34-2941-57bf-8d3b-83c7580d3282",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:labor_50",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:labor_50"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:equipment_25",
+          "resourceSpecId": "1fa0e589-f44e-5659-86cb-fcf9b546ca29",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:equipment_25",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:equipment_25"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:equipment_26",
+          "resourceSpecId": "b65103d8-acd1-54a3-8e48-2db7339e9651",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:equipment_26",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:equipment_26"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:equipment_27",
+          "resourceSpecId": "1398aaac-f4d0-5bea-841e-ce8893472580",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:equipment_27",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:equipment_27"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:equipment_51",
+          "resourceSpecId": "87dc46de-1501-5a63-8106-24e820cb00ad",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:equipment_51",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:equipment_51"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:equipment_52",
+          "resourceSpecId": "95b94b42-f90c-59ad-8146-699e83fcb9ce",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:equipment_52",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:equipment_52"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:logistics_28",
+          "resourceSpecId": "3f77e57f-ac68-5901-84e5-0860e590219b",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:logistics_28",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:logistics_28"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:logistics_29",
+          "resourceSpecId": "ef151508-083e-5763-809d-046918d6addf",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:logistics_29",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:logistics_29"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:logistics_53",
+          "resourceSpecId": "085eaae9-a831-56dd-8168-808bdb8b7a23",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:logistics_53",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:logistics_53"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:logistics_54",
+          "resourceSpecId": "7b1cd802-6dbe-522d-8650-750ac4130e20",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:logistics_54",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:logistics_54"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:waste_30",
+          "resourceSpecId": "a4b90461-5c3f-5c66-864e-b597b2655047",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:waste_30",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:waste_30"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:waste_31",
+          "resourceSpecId": "7d25671d-65c7-58a4-8b4b-0472808d8600",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:waste_31",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:waste_31"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:waste_55",
+          "resourceSpecId": "11a81c86-cfa2-5720-8c01-646d470bcf40",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:waste_55",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:waste_55"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:waste_56",
+          "resourceSpecId": "1aa6623a-5c59-5f6a-8bc5-cbb1bc790583",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:waste_56",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:waste_56"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:quality_control_32",
+          "resourceSpecId": "6e4637e3-0e46-55ff-855a-d5cc3cc8f634",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:quality_control_32",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:quality_control_32"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:quality_control_33",
+          "resourceSpecId": "80ed8ae5-37e0-596c-8fb4-50506962c32c",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:quality_control_33",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:quality_control_33"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:quality_control_34",
+          "resourceSpecId": "3cbf1497-e162-5724-8e9f-567c83ab68bd",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:quality_control_34",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:quality_control_34"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:quality_control_57",
+          "resourceSpecId": "59b5a926-117d-5fce-8cde-1c84a2ab4437",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:quality_control_57",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:quality_control_57"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:quality_control_58",
+          "resourceSpecId": "5f669c3a-f6cf-562d-8dce-448c1a5760a8",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:quality_control_58",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:quality_control_58"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:quality_control_59",
+          "resourceSpecId": "f2d512e8-b384-52d7-8b21-5aa960f247bc",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:quality_control_59",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:quality_control_59"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:overhead_35",
+          "resourceSpecId": "a6663230-7338-59cf-8ff3-82abb5aeb30a",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:overhead_35",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:overhead_35"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:tax_36",
+          "resourceSpecId": "24b84edc-2e1d-5017-87f2-a6050cf8c00c",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:tax_36",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:tax_36"
+        },
+        {
+          "rowId": "roof:prime-ready-emulsion:krer12-016-02:workers",
+          "resourceSpecId": "0aed965c-bd1a-5e17-8574-373eb093dd08",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:prime-ready-emulsion:krer12-016-02:workers",
+          "unitId": "man_hour",
+          "formulaId": "roof:prime-ready-emulsion:krer12-016-02:formula:workers"
+        },
+        {
+          "rowId": "roof:prime-ready-emulsion:krer12-016-02:flatbed_truck",
+          "resourceSpecId": "152cfcd8-64c1-5572-875c-c9271f517f37",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:prime-ready-emulsion:krer12-016-02:flatbed_truck",
+          "unitId": "machine_hour",
+          "formulaId": "roof:prime-ready-emulsion:krer12-016-02:formula:flatbed_truck"
+        },
+        {
+          "rowId": "roof:prime-ready-emulsion:krer12-016-02:ready_bitumen_emulsion",
+          "resourceSpecId": "2a24fc5e-135c-50bc-8b77-50272317a6e1",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:prime-ready-emulsion:krer12-016-02:ready_bitumen_emulsion",
+          "unitId": "kg",
+          "formulaId": "roof:prime-ready-emulsion:krer12-016-02:formula:ready_bitumen_emulsion"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:source-gap:primer",
+          "resourceSpecId": "5e4a551c-5103-5565-8223-e029d38efb5b",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:source-gap:primer",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:source-gap:primer"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:source-gap:expansion_joints",
+          "resourceSpecId": "a0520e34-d168-5b93-83ed-205c64fbe699",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:source-gap:expansion_joints",
+          "unitId": "m",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:source-gap:expansion_joints"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:source-gap:roof_assembly",
+          "resourceSpecId": "8c287a25-a424-56ad-880e-8db6ece2110e",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:source-gap:roof_assembly",
+          "unitId": "m2",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:source-gap:roof_assembly"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:source-gap:skylight_junctions",
+          "resourceSpecId": "2ebf6ab0-bb93-5b48-8160-ceb4f4f04a24",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:source-gap:skylight_junctions",
+          "unitId": "m",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:source-gap:skylight_junctions"
+        },
+        {
+          "rowId": "roof:torch-two:krer12-002-09:remaining:scope_pending",
+          "resourceSpecId": "b6978348-2dcb-5a43-87c2-909c716d3bcd",
+          "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone:roof:torch-two:krer12-002-09:remaining:scope_pending",
+          "unitId": "set",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:remaining:scope_pending"
+        }
+      ]
+    }
+  ],
+  "designAdmissionArtifact": "data/estimate-benchmarks/source-packs/roof-lower-layers-s27-67-review.json",
+  "designAdmissionSha256": "12f5c8a8891df34e0ec4fe77cdd950857947b07d61a1c2fd108e537511d75245"
+}

@@ -944,6 +944,7 @@ export async function compileCanonicalEstimateCore(
 
   const unresolvedEffectiveOutputs = new Map<string, string[]>();
   const scopeResourceIds = new Set(input.resourceDefinitions.map(r=>r.row_id));
+  const scopeExcludedOperationDefinitionIds=new Set(input.resourceDefinitions.filter(r=>compositionPlan.operationsExcludeRow(r.row_id)).map(r=>r.row_id));
   const missingAutomaticSources = canonicalMissingAutomaticParameterSourcesV1(input.parameterDefinitions, parameters);
   const originalMissingIds = (ids: readonly string[]): string[] => missingAutomaticSources([...new Set(ids.flatMap(id =>
     effectiveQuantityPlan.owners.has(id) ? unresolvedEffectiveOutputs.get(id) ?? [] : [id],
@@ -1020,6 +1021,7 @@ export async function compileCanonicalEstimateCore(
     const scopeRequirementDecision = effectiveResourceGraph.scopeRequirementV1 == null ? null : resolveCanonicalScopeRequirementV1({ graph: effectiveResourceGraph,
       rowId: resource.row_id, parameters, parameterIds: definitionParameterIds,
       resourceIds: scopeResourceIds,
+      excludedOperationDefinitionRowIds:scopeExcludedOperationDefinitionIds,
       excludedQuantityRowIds: new Set(rows.filter(r=>(r.calculation_trace as JsonRecord)?.physicalScopeExcludedV1 != null).map(r=>r.row_id)),
       excludedOperationResourceRowIds: new Set(rows.filter(r=>compositionPlan.decision(r.row_id).excludedBy==='OPERATIONS').map(r=>r.row_id)),
       knownQuantityRowIds: new Set(rows.filter(r => r.quantity != null
