@@ -1276,7 +1276,8 @@ export function buildRequestEstimateViewModel(
   // technology/completeness ledger even though their cost is owned by another
   // row or they are an informational/control output and must not be summed.
   const scopeDecisions = bundle.items.flatMap(item => {
-    const d = canonicalScopeRequirementDecisionV1(item.sourceParameters?.canonicalScopeRequirementDecisionV1);
+    const d = canonicalScopeRequirementDecisionV1(item.sourceParameters?.canonicalScopeRequirementDecisionV1,
+      item.sourceParameters?.canonicalCompositionSelectionDecisionV1);
     return d?.rowId === String(item.sourceParameters?.rowCode ?? '') ? [d] : [];
   });
   const scopeRequirementGroups = groupCanonicalScopeRequirementsV1(scopeDecisions);

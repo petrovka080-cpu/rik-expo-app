@@ -31,6 +31,7 @@ import {
   requestEstimateResolvedWorkTitle,
   type RequestEstimateViewModel,
 } from "./requestEstimateViewModel";
+import type {CanonicalScopeRequirementGroupV1} from '../../lib/estimate/backendPlatform/canonicalScopeRequirementV1';
 
 type HeaderMarketButtonProps = {
   onPress: () => void;
@@ -82,6 +83,7 @@ type StickyActionsProps = {
   approvalBlockedByParameters?: boolean;
   contentWithdrawalReasonRu?: string | null;
   approvalUnresolvedRowCount?: number;
+  approvalIncompleteStages?: readonly CanonicalScopeRequirementGroupV1[];
   approvalMissingPriceCount?: number;
   approvalPendingRowEditCount?: number;
   approvalBlockedBeyondPendingEdits?: boolean;
@@ -110,6 +112,7 @@ export function ConsumerRepairRequestStickyActions({
   approvalBlockedByParameters = false,
   contentWithdrawalReasonRu,
   approvalUnresolvedRowCount = 0,
+  approvalIncompleteStages = [],
   approvalMissingPriceCount = 0,
   approvalPendingRowEditCount = 0,
   approvalBlockedBeyondPendingEdits,
@@ -144,12 +147,22 @@ export function ConsumerRepairRequestStickyActions({
     : approvalCommitBusy
     ? "Подтверждаем смету…"
     : approvalUnresolvedRowCount > 0
-      ? `Состав сметы ещё не завершён (${approvalUnresolvedRowCount})`
+      ? 'Смета пока не готова к подтверждению'
       : approvalBlockedByParameters
         ? "Заполните параметры сметы"
         : approvalPendingRowEditCount > 0
           ? `Сначала примените изменения: ${approvalPendingRowEditCount}`
         : "Сначала рассчитайте смету";
+  const firstIncompleteStage=approvalIncompleteStages[0];
+  const incompleteReason=firstIncompleteStage?.sourceCheckRestoration
+    ? 'Проверка норм была исключена в прежней версии. Нажмите «Восстановить проверку норм» в этом этапе; приложение затем проверит выбранный состав.'
+    : firstIncompleteStage?.statuses.includes('LEGACY_SOURCE_REQUIRED')
+    ? 'Нормы прежнего состава ещё не подтверждены приложением. Это незавершённый расчёт, а не незаполненный параметр. Профессиональные коэффициенты вводить не нужно.'
+    : firstIncompleteStage?.statuses.includes('OBJECT_FACT_REQUIRED')
+      ? 'Нужно указать неизвестные данные объекта в исходных данных расчёта.'
+      : firstIncompleteStage?.statuses.includes('REQUIRED_RESOURCE_EXCLUDED')
+        ? 'Для этого этапа исключён необходимый ресурс. Восстановите его в составе сметы или измените выбранный состав.'
+        : 'Приложению нужно дополнить нормы и ресурсы незавершённых этапов. Их количества не нужно вводить вручную.';
   React.useEffect(() => {
     if (!canDeleteDraft) setDeleteConfirmationVisible(false);
   }, [canDeleteDraft]);
@@ -160,6 +173,15 @@ export function ConsumerRepairRequestStickyActions({
       testID="consumer-repair-bottom-actions"
     >
       <Text style={styles.bottomActionsTitle}>Действия со сметой</Text>
+      {!finalized && approvalUnresolvedRowCount>0 ? <View style={styles.approvalBlockedNotice}
+        accessibilityRole="alert" testID="consumer-repair-approval-block-reason">
+        <Text style={styles.approvalBlockedNoticeTitle}>{firstIncompleteStage
+          ? approvalIncompleteStages.length===1 ? `Не завершён этап «${firstIncompleteStage.titleRu}»`
+            : `Не завершены ${approvalIncompleteStages.length} этапов. Первый: «${firstIncompleteStage.titleRu}»`
+          : 'В смете есть позиции с неизвестными исходными данными'}</Text>
+        <Text style={styles.approvalBlockedNoticeText}>{firstIncompleteStage ? incompleteReason
+          : 'В составе сметы показано, какие данные ещё нужны для расчёта.'}</Text>
+      </View> : null}
       {hasBundle && (hasSnapshot || finalized) ? (
         <Pressable
           accessibilityLabel="PDF"
@@ -218,13 +240,13 @@ export function ConsumerRepairRequestStickyActions({
             styles.bottomActionButton,
             styles.bottomActionPrimary,
             approvalDisabled
-              ? styles.bottomActionDisabled
+              ? styles.bottomActionBlocked
               : null,
           ]}
           testID="consumer-repair-approve"
         >
-          <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-          <Text style={styles.bottomActionPrimaryText}>
+          <Ionicons name={approvalDisabled ? 'alert-circle-outline' : 'checkmark'} size={20} color={approvalDisabled ? '#9A3412' : '#FFFFFF'} />
+          <Text style={[styles.bottomActionPrimaryText,approvalDisabled ? styles.bottomActionBlockedText : null]}>
             {contentWithdrawalReasonRu ? approvalBlockedLabel : canApplyAndApprove
               ? approvalCommitBusy ? "Применяем и подтверждаем…" : "Применить и подтвердить"
               : approvalDisabled ? approvalBlockedLabel : approvalActionLabel}

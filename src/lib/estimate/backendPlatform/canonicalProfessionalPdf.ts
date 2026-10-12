@@ -19,7 +19,7 @@ import {canonicalScopeRequirementDecisionV1,groupCanonicalScopeRequirementsV1,ca
 import {readRoofPrimerPrerequisiteDecisionV1,roofPrimerPhaseRuV1} from './canonicalRoofPrimerPrerequisiteV1';
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-66-integrated-stages-template32" as const;
+  "canonical-professional-pdf.r4-a13-s27-67-clear-blockers-template33" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -364,7 +364,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     ? "Все строки имеют подтверждённую цену."
     : `<strong>${pricedRows.length === 0 ? "Стоимость не рассчитана. Цены не заполнены." : "Стоимость рассчитана частично."}</strong> Строк без подтверждённой цены: ${missingPriceRowCount}. ${quantitativeNeeds.length > 0
       ? `Потребностей с неуточнённым количеством или условием: ${quantitativeNeeds.length}. Полный итог не рассчитан.`
-      : projectScopeGroupCount>0 ? `Состав ${projectScopeGroupCount} этапов ещё не завершён приложением; причины указаны внутри сметы. Полный итог не рассчитан.`
+      : projectScopeGroupCount>0 ? `${projectScopeGroupCount===1?'Состав одного этапа':`Состав ${projectScopeGroupCount} этапов`} ещё не завершён приложением; причины указаны внутри сметы. Полный итог не рассчитан.`
       : "Полный итог: требуется уточнение цен."}`;
   const pricedSummary = pricedRows.length === 0
     ? "Стоимость не рассчитана"

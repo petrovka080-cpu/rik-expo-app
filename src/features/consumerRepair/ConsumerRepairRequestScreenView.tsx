@@ -28,6 +28,7 @@ import type { ConsumerRepairRequestScreenState } from "./requestEstimateScreenAc
 import { consumerRepairEstimateApprovalParameterErrors, consumerRepairExactAsphaltApprovalErrors } from "../../lib/consumerRequests/consumerRequestValidationService";
 import { consumerRepairCanonicalBackendBinding } from "./consumerRepairBackendOwnership";
 import { canonicalEstimateRevisionIdFromRoute } from "../../lib/navigation/canonicalEstimateRevisionDeepLink";
+import {consumerEstimateOpenScopeGroups} from '../../lib/consumerRequests/consumerEstimateReadiness';
 import {
   consumerRepairCanonicalEstimateBlocksApproval,
   consumerRepairCanonicalUnpricedPayableRowCount,
@@ -115,7 +116,7 @@ type ConsumerRepairRequestScreenViewProps = {
   onApplyParamBatch: (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => void;
   onParameterDraftInteraction?: () => void;
   primerPrerequisiteNode?:React.ReactNode;
-  onCompositionRowsChange?: (rowIds: readonly string[], excluded: boolean, operationKey?: string) => void;
+  onCompositionRowsChange?: (rowIds: readonly string[], excluded: boolean, operationKeys?: string | readonly string[]) => void;
   onOpenPdf: (requestDraftId?: string) => void;
   onOpenDraft: (requestDraftId: string) => void;
   onToggleHistorySnapshot: (requestDraftId: string) => void;
@@ -369,6 +370,7 @@ export function ConsumerRepairRequestScreenView({
           contentWithdrawalReasonRu={renderModel.bundle?.canonicalParameterSession?.contentWithdrawalReasonRu
             || renderModel.bundle?.structuredEstimatePayload?.canonicalBackend?.contentWithdrawalReasonRu}
           approvalUnresolvedRowCount={approvalUnresolvedRowCount}
+          approvalIncompleteStages={consumerEstimateOpenScopeGroups(renderModel.bundle)}
           approvalMissingPriceCount={approvalMissingPriceCount}
           approvalPendingRowEditCount={state.pendingCanonicalRowEditCount ?? 0}
           approvalCommitBusy={state.approvalCommitBusy || state.canonicalEstimateMutationBusy}

@@ -397,8 +397,8 @@ export function canonicalEstimatePreliminaryNeedsFromAmendmentContract(
       quantity: need.quantity == null ? null : String(need.quantity),
       unitPrice: need.unit_price == null ? null : String(need.unit_price),
       needState: state,
-      ...(canonicalScopeRequirementDecisionV1(graph?.scopeRequirementDecisionV1) ? {
-        scopeRequirementDecision: canonicalScopeRequirementDecisionV1(graph?.scopeRequirementDecisionV1)!,
+      ...(canonicalScopeRequirementDecisionV1(graph?.scopeRequirementDecisionV1,graph?.compositionSelectionDecisionV1) ? {
+        scopeRequirementDecision: canonicalScopeRequirementDecisionV1(graph?.scopeRequirementDecisionV1,graph?.compositionSelectionDecisionV1)!,
       } : {}),
       missingParameterIds: Array.isArray(need.missing_parameter_ids)
         ? need.missing_parameter_ids.filter((value): value is string => typeof value === "string" && value.length > 0)

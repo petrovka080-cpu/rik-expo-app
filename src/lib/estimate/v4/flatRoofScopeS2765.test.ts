@@ -136,3 +136,28 @@ test('priced selected remainder never becomes full original technology after use
 test('unrelated PVC and high-load targets cannot acquire this field classification',()=>{
   for(const suffix of ['standard','small_area','large_area','high_load'])expect(()=>overlay({...fixture.reps[0]!,definition:{...fixture.reps[0]!.definition,catalog_id:'canonical-work:base:roofing_interior_flat_roof_install_'+suffix}},locators)).toThrow('ROOF_SCOPE_EXACT_PARENT_DRIFT');
 });
+test('source/applicability check cannot be excluded to approve the priced legacy composition',async()=>{
+  const r=overlay(fixture.reps[0]!,locators).representative,inputs={q:'100',[pack.systemParameterId]:pack.legacyChoiceRu},checkId=prefix+':remaining:scope_pending';
+  const before=JSON.stringify(r);
+  await expect(compile(r,inputs,{compositionSelectionV1:{contractVersion:'canonical-estimate-composition-selection/v1',excludedOperationKeys:[],excludedRowIds:[checkId]},
+    rowOverrides:Object.fromEntries(r.resources.slice(0,58).map(row=>[row.row_id,{unitPrice:'420',provenance:{kind:'manual'}}]))})).rejects.toMatchObject({code:'COMPOSITION_SELECTION_INVALID'});
+  expect(JSON.stringify(r)).toBe(before);
+});
+test('an older excluded source check remains blocking in reopened UI and PDF without rewriting saved evidence',async()=>{
+  const r=overlay(fixture.reps[0]!,locators).representative,result=await compile(r,{q:'100',[pack.systemParameterId]:pack.legacyChoiceRu});
+  const oldNeed=JSON.parse(JSON.stringify(result.preliminaryNeeds.find(n=>n.row_id===prefix+':remaining:scope_pending')));
+  oldNeed.calculation_trace.resourceGraph.scopeRequirementDecisionV1.status='USER_EXCLUDED';
+  oldNeed.calculation_trace.resourceGraph.compositionSelectionDecisionV1={contractVersion:'canonical-composition-selection-decision/v1',rowId:oldNeed.row_id,excluded:true,excludedBy:'OPERATIONS',activeOperationKeys:[],excludedOperationKeys:['["roof","system"]','["roof","reference"]'],unallocatedReferenceExclusions:['["roof","reference"]']};
+  const before=JSON.stringify(oldNeed),guard=scope(oldNeed);expect(guard.status).toBe('SCOPE_UNVERIFIED');
+  const reopened={...foundationDraftWithManualCatalogItem(),items:[{id:'CHECK',quantity:0,sourceParameters:{rowCode:oldNeed.row_id,includedInEstimate:false,canonicalPreliminaryNeed:true,canonicalScopeRequirementDecisionV1:oldNeed.calculation_trace.resourceGraph.scopeRequirementDecisionV1}}]} as unknown as Parameters<typeof consumerEstimateOpenScopeGroups>[0];
+  expect(consumerEstimateOpenScopeGroups(reopened)).toHaveLength(1);
+  const stored={id:'CONTROL',release_id:'CONTROL',catalog_id:String(r.definition.catalog_id),checksum_sha256:'a'.repeat(64),row_count:result.rows.length,totals:result.totals,input_parameters:result.parameters,amendment_contract:{parameterSources:{preliminaryNeeds:[oldNeed]}}};
+  const compact=projectCanonicalEstimatePreliminaryNeedTransport(stored),savedDecision=compact.preliminaryNeeds[0]!.scopeRequirementDecision!;
+  expect(savedDecision.status).toBe('SCOPE_UNVERIFIED');
+  expect(savedDecision.restoreExcludedSourceCheck).toEqual({operationKeys:['["roof","system"]']});
+  expect(groupCanonicalScopeRequirementsV1([decision(JSON.parse(JSON.stringify(savedDecision)))!])[0]!.sourceCheckRestoration)
+    .toEqual({rowIds:[oldNeed.row_id],operationKeys:['["roof","system"]']});
+  const pdf=buildCanonicalProfessionalPdfProjection({revision:stored,rows:result.rows as CanonicalArtifactRow[],preliminaryNeeds:canonicalArtifactPreliminaryNeeds(stored),workTitleRu:'CONTROL'});
+  expect(pdf.html).toContain('Состав одного этапа ещё не завершён приложением');expect(pdf.html).not.toContain('<strong>Статус:</strong> Полная');
+  expect(JSON.stringify(oldNeed)).toBe(before);
+});

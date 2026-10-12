@@ -5,6 +5,9 @@ import { ConsumerRepairProgressiveEstimatePanel } from "../../src/features/consu
 import { ConsumerRepairRequestStickyActions } from "../../src/features/consumerRepair/ConsumerRepairRequestChrome";
 import { RequestEstimateItemsEditor } from "../../src/features/consumerRepair/RequestEstimateItemsEditor";
 import { ConsumerRepairRequestScreenController } from "../../src/features/consumerRepair/ConsumerRepairRequestScreen";
+import {buildRequestEstimateViewModel} from '../../src/features/consumerRepair/requestEstimateViewModel';
+import {foundationDraftWithManualCatalogItem} from './requestEstimateBoqCatalogTestHelpers';
+import {canonicalScopeRequirementDecisionV1,groupCanonicalScopeRequirementsV1} from '../../src/lib/estimate/backendPlatform/canonicalScopeRequirementV1';
 import {
   consumerRepairCanonicalEstimateBlocksApproval,
   consumerRepairCanonicalMissingParameterCount,
@@ -25,6 +28,18 @@ function visibleText(renderer: ReactTestRenderer): string {
 }
 
 describe("incomplete canonical estimate readiness", () => {
+  it('offers only restoration for a historical excluded source check even when its numeric row is hidden',()=>{
+    const original=foundationDraftWithManualCatalogItem(),base=buildRequestEstimateViewModel(original)!;
+    const source={contractVersion:'canonical-scope-requirement-decision/v1',rowId:'check',groupId:'system',groupTitleRu:'Система кровли',titleRu:'Проверка системы',reasonRu:'CONTROL',kind:'OBJECT_SCOPE',status:'USER_EXCLUDED',coveringRowIds:[],originalRowIds:[],missingObjectFactParameterIds:[],numericNormAccepted:false,separatePaymentAccepted:false};
+    const decision=canonicalScopeRequirementDecisionV1(source,{contractVersion:'canonical-composition-selection-decision/v1',rowId:'check',excluded:true,excludedBy:'OPERATIONS',activeOperationKeys:[],excludedOperationKeys:['["roof","system"]'],unallocatedReferenceExclusions:[]})!;
+    const change=jest.fn(),operation={contractVersion:'canonical-operation-resource/v1' as const,groupId:'roof',groupTitleRu:'Кровля',operationId:'system',operationTitleRu:'Система кровли',completionCriterionRu:'Система проверена'};
+    const viewModel={...base,sections:[{id:'professional_system' as const,title:'Система кровли',items:[],operation,scopeRequirements:groupCanonicalScopeRequirementsV1([decision])}]};
+    let renderer!:ReactTestRenderer;act(()=>{renderer=TestRenderer.create(<RequestEstimateItemsEditor viewModel={viewModel} onCompositionRowsChange={change} onDecrease={noop} onIncrease={noop} onQuantityChange={noop} onUnitPriceChange={noop} onRemove={noop} onAddManual={noop}/>);});
+    expect(visibleText(renderer)).toContain('Восстановить проверку норм и связанный состав');
+    expect(visibleText(renderer)).not.toContain('Исключить подработу');
+    act(()=>renderer.root.findByProps({testID:'request-estimate-restore-source-check-system'}).props.onPress());
+    expect(change).toHaveBeenCalledWith(['check'],false,['["roof","system"]']);
+  });
   it("keeps external withdrawal blocking even after a local parameter preview", () => {
     const session = { status: "READY", contentWithdrawalReasonRu: "Несовместимый паспорт",
       blockingMissingParameterIds: [], contractMissingParameterIds: [], invalidParameterIds: [], parameters: [] } as never;
@@ -210,7 +225,7 @@ describe("incomplete canonical estimate readiness", () => {
 
     const approval = renderer.root.findByProps({ testID: "consumer-repair-approve" });
     expect(approval.props.disabled).toBe(true);
-    expect(approval.props.accessibilityLabel).toBe("Нельзя подтвердить: уточните позиции (24)");
+    expect(approval.props.accessibilityLabel).toBe("Смета пока не готова к подтверждению");
   });
 
   it("highlights the exact unresolved row and offers one batch apply after several edits", () => {
@@ -325,7 +340,7 @@ describe("incomplete canonical estimate readiness", () => {
   });
 
   it.each([
-    { approvalUnresolvedRowCount: 26, approvalBlockedBeyondPendingEdits: true, label: "Нельзя подтвердить: уточните позиции (26)" },
+    { approvalUnresolvedRowCount: 26, approvalBlockedBeyondPendingEdits: true, label: "Смета пока не готова к подтверждению" },
     { approvalUnresolvedRowCount: 0, approvalBlockedBeyondPendingEdits: undefined, label: "Сначала примените изменения: 1" },
     { approvalUnresolvedRowCount: 0, approvalBlockedBeyondPendingEdits: true, label: "Сначала примените изменения: 1" },
   ])("pending price does not enable confirmation of an incomplete or unverified composition: $label", ({label,...blocking}) => {

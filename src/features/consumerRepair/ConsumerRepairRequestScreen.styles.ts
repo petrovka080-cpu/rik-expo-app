@@ -199,6 +199,14 @@ export const consumerRepairRequestScreenStyles = StyleSheet.create({
   bottomActionDisabled: {
     opacity: 0.55,
   },
+  bottomActionBlocked: {
+    backgroundColor: '#FFF7ED',
+    borderColor: '#FDBA74',
+  },
+  bottomActionBlockedText: {color:'#9A3412'},
+  approvalBlockedNotice: {backgroundColor:'#FFF7ED',borderColor:'#FDBA74',borderWidth:1,borderRadius:10,padding:12,gap:5},
+  approvalBlockedNoticeTitle: {color:'#9A3412',fontWeight:'700',fontSize:14},
+  approvalBlockedNoticeText: {color:'#7C2D12',fontSize:13,lineHeight:19},
   bottomActionPrimaryText: {
     flexShrink: 1,
     minWidth: 0,

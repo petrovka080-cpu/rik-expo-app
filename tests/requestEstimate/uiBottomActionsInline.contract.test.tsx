@@ -38,6 +38,26 @@ function renderedTestIdCount(
 }
 
 describe("request estimate inline bottom actions", () => {
+  it('explains the legacy source block even when prices and parameters are complete',()=>{
+    const noop=jest.fn();let renderer!:TestRenderer.ReactTestRenderer;
+    act(()=>{renderer=TestRenderer.create(<ConsumerRepairRequestStickyActions approved={false} sent={false} hasBundle hasSnapshot
+      approvalBlockedByEstimate approvalUnresolvedRowCount={1} approvalMissingPriceCount={0} approvalBlockedByParameters={false}
+      approvalIncompleteStages={[{groupId:'system_selection',titleRu:'Система кровли',rowIds:['source-check'],statuses:['LEGACY_SOURCE_REQUIRED'],detailsRu:[],kinds:['OBJECT_SCOPE']}]}
+      onOpenPdf={noop} onMakePdf={noop} onCreateNew={noop} onDeleteDraft={noop} onApproveDraft={noop} onPrepareDraft={noop}/>);});
+    const text=visibleText(renderer.toJSON()),button=renderer.root.findByProps({testID:'consumer-repair-approve'});
+    expect(button.props.disabled).toBe(true);expect(text).toContain('Не завершён этап «Система кровли»');
+    expect(text).toContain('а не незаполненный параметр');expect(text).toContain('Смета пока не готова к подтверждению');
+    expect(button.findByType('MockIonicon' as never).props.name).toBe('alert-circle-outline');
+    expect(noop).not.toHaveBeenCalled();act(()=>renderer.unmount());
+  });
+  it('distinguishes a missing object fact from application-owned norm completion',()=>{
+    const noop=jest.fn();let renderer!:TestRenderer.ReactTestRenderer;
+    act(()=>{renderer=TestRenderer.create(<ConsumerRepairRequestStickyActions approved={false} sent={false} hasBundle hasSnapshot approvalBlockedByEstimate approvalUnresolvedRowCount={1}
+      approvalIncompleteStages={[{groupId:'system_selection',titleRu:'Система кровли',rowIds:['source-check'],statuses:['OBJECT_FACT_REQUIRED'],detailsRu:[],kinds:['OBJECT_SCOPE']}]}
+      onOpenPdf={noop} onMakePdf={noop} onCreateNew={noop} onDeleteDraft={noop} onApproveDraft={noop} onPrepareDraft={noop}/>);});
+    expect(visibleText(renderer.toJSON())).toContain('Нужно указать неизвестные данные объекта');
+    expect(visibleText(renderer.toJSON())).not.toContain('Профессиональные коэффициенты');act(()=>renderer.unmount());
+  });
   it("renders exactly one inline owner with stable actions and no sticky bar", () => {
     const onMakePdf = jest.fn();
     const onApproveDraft = jest.fn();

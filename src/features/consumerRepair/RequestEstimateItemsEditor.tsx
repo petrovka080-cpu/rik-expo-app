@@ -51,7 +51,7 @@ function positionCountLabel(count: number): string {
 
 type Props = {
   primerPrerequisiteNode?: React.ReactNode;
-  onCompositionRowsChange?: (rowIds: readonly string[], excluded: boolean, operationKey?: string) => void;
+  onCompositionRowsChange?: (rowIds: readonly string[], excluded: boolean, operationKeys?: string | readonly string[]) => void;
   viewModel: RequestEstimateViewModel;
   incompleteParameterCount?: number | null;
   incompleteResolutionLabel?: string;
@@ -666,11 +666,21 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
                 {expanded && section.scopeRequirements?.length ? <RequestEstimateStageRequirements groups={section.scopeRequirements} /> : null}
                 {section.physicallyExcluded ? <Text style={styles.operationSummary}>Подработа исключена пользователем из состава.</Text> : null}
                 {this.props.onCompositionRowsChange && (section.physicallyExcluded || resources.length>0)
+                  && (section.physicallyExcluded || !section.scopeRequirements?.some(group=>group.kinds?.includes('OBJECT_SCOPE')))
                   ? <Pressable accessibilityRole="button" onPress={() => this.props.onCompositionRowsChange?.([], !section.physicallyExcluded,
                     JSON.stringify([operation.groupId,operation.operationId]))}>
                     <Text style={styles.operationSummary}>{section.physicallyExcluded?'Восстановить подработу':'Исключить подработу и пересчитать ресурсы'}</Text>
                   </Pressable> : null}
+                {expanded && this.props.onCompositionRowsChange && section.scopeRequirements?.some(group=>group.sourceCheckRestoration)
+                  ? <Pressable accessibilityRole="button" testID={`request-estimate-restore-source-check-${operation.operationId}`}
+                      onPress={()=>this.props.onCompositionRowsChange?.(
+                        section.scopeRequirements!.flatMap(group=>group.sourceCheckRestoration?.rowIds??[]),false,
+                        section.scopeRequirements!.flatMap(group=>group.sourceCheckRestoration?.operationKeys??[]))}>
+                    <Text style={styles.operationSummary}>{section.scopeRequirements.some(group=>group.sourceCheckRestoration?.operationKeys.length)
+                      ? 'Восстановить проверку норм и связанный состав' : 'Восстановить проверку норм'}</Text>
+                  </Pressable> : null}
                 {expanded && this.props.onCompositionRowsChange && section.scopeRequirements?.length
+                  && !section.scopeRequirements.some(group=>group.kinds?.includes('OBJECT_SCOPE'))
                   && section.scopeRequirements.some(group => group.statuses.some(status =>
                     ['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','LEGACY_SOURCE_REQUIRED','SCOPE_UNVERIFIED','USER_EXCLUDED'].includes(status)))
                   ? <Pressable accessibilityRole="button" onPress={() => this.props.onCompositionRowsChange?.(

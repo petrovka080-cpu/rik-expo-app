@@ -1,5 +1,5 @@
 import React from "react";
-import { Keyboard, TextInput } from "react-native";
+import { Keyboard, Text, TextInput } from "react-native";
 import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
 
 import {
@@ -28,6 +28,20 @@ jest.mock("@expo/vector-icons", () => ({
 }));
 
 describe("InlineParamEditor R3 parameter guide", () => {
+  it('highlights only the published system-choice dependency for the saved100m2 legacy case',()=>{
+    const fixture=require('../../../data/estimate-benchmarks/fixtures/roof-legacy-source-choice-ui-s27-67.json') as {catalog:CanonicalEstimateCatalogItem};
+    const checkId='roof:torch-two:krer12-002-09:remaining:scope_pending';
+    const revision={revisionId:'CONTROL_LEGACY100',parentRevisionId:null,status:'ready',releaseId:fixture.catalog.releaseId,catalogId:fixture.catalog.catalogId,parameters:{q:'100',roof_torch_system:'Прежний общий состав — количественные нормы требуют проверки'},userInputSnapshot:{q:'100',roof_torch_system:'Прежний общий состав — количественные нормы требуют проверки'},checksumSha256:'a'.repeat(64),compilerVersion:'CONTROL',createdAt:'2026-10-12T00:00:00Z'} as CanonicalEstimateParameterSessionRevision;
+    const session=buildConsumerCanonicalParameterSession({catalog:fixture.catalog,revision,draftId:'CONTROL'});
+    expect(session.status).toBe('COMPLETE');expect(session.invalidParameterIds).toEqual([]);
+    const viewModel={sourceGates:[],scopeRequirementGroups:[{groupId:'system_selection',titleRu:'Система кровли',rowIds:[checkId],statuses:['LEGACY_SOURCE_REQUIRED'],detailsRu:[],kinds:['OBJECT_SCOPE']}]} as unknown as NonNullable<React.ComponentProps<typeof ParameterDisclosurePanel>['viewModel']>;
+    let renderer!:ReactTestRenderer;act(()=>{renderer=TestRenderer.create(<ParameterDisclosurePanel viewModel={viewModel} revision={null} latestDiff={null} paramEditorEnabled canonicalParameterSession={session}/>);});
+    expect(renderer.root.findAllByType(Text).filter(node=>node.props.testID==='editable-param-source-review-roof_torch_system')).toHaveLength(1);
+    expect(renderer.root.findAllByProps({testID:'editable-param-source-review-q'})).toHaveLength(0);
+    expect(JSON.stringify(renderer.toJSON())).toContain('Данные введены. Нормы выбранного состава ещё не подтверждены приложением.');
+    expect(JSON.stringify(renderer.toJSON())).not.toContain('Все обязательные параметры заполнены');
+    expect(String(session.parameters.find(p=>p.parameterId==='q')?.value)).toBe('100');act(()=>renderer.unmount());
+  });
   it('keeps the published facade facts available in one pending batch and after saving all eight', () => {
     const session = buildConsumerCanonicalParameterSession({ catalog: facadeFirstEntry.catalog,
       revision: facadeFirstEntry.revision, draftId: 'CONTROL_FIRST_ENTRY' });

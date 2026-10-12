@@ -2956,7 +2956,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private handleParameterDraftInteraction = () => {
     if (this.state.statusMessage != null) this.setState({ statusMessage: null });
   };
-  private changeCompositionRows = async (rowIds: readonly string[], excluded: boolean, operationKey?: string): Promise<void> => {
+  private changeCompositionRows = async (rowIds: readonly string[], excluded: boolean, operationKeys?: string | readonly string[]): Promise<void> => {
     const current=this.state.bundle, binding=consumerRepairCanonicalBackendBinding(current);
     if(!current || !binding || this.canonicalRowMutationInFlight() || this.approvalCommitInFlight || this.state.pdfOpenBusy) return;
     if(Object.keys(this.pendingCanonicalRowOverrides).length>0) {
@@ -2976,7 +2976,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       const previous=saved.compositionSelectionV1;
       const ids=new Set(previous?.excludedRowIds ?? []);
       const operations=new Set(previous?.excludedOperationKeys ?? []);
-      if(operationKey) excluded ? operations.add(operationKey) : operations.delete(operationKey);
+      const changedOperations=typeof operationKeys==='string'?[operationKeys]:operationKeys??[];
+      changedOperations.forEach(key=>excluded ? operations.add(key) : operations.delete(key));
       rowIds.forEach(id => excluded ? ids.add(id) : ids.delete(id));
       const selection={contractVersion:'canonical-estimate-composition-selection/v1' as const,
         excludedOperationKeys:[...operations].sort(),excludedRowIds:[...ids].sort()};

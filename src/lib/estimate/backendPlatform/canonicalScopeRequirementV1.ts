@@ -1,4 +1,5 @@
 import { resolveInclusionGraph } from './inclusionGraph';
+import { canonicalCompositionSelectionDecisionV1 } from './canonicalEstimateCompositionSelectionV1';
 
 type Json = Record<string, unknown>;
 export type CanonicalScopeRequirementKindV1 = 'INCLUDED' | 'NOT_APPLICABLE' | 'PARTLY_INCLUDED'
@@ -20,6 +21,8 @@ export type CanonicalScopeRequirementDecisionV1 = {
   missingObjectFactParameterIds: string[];
   numericNormAccepted: false;
   separatePaymentAccepted: false;
+  /** Read-only recovery metadata for historical invalid exclusions. */
+  restoreExcludedSourceCheck?: { operationKeys: string[] };
 };
 export type CanonicalScopeRequirementV1 = {
   contractVersion: 'canonical-scope-requirement/v1';
@@ -47,14 +50,29 @@ const ids = (value: unknown): value is string[] => Array.isArray(value) && value
 
 /** Saved semantic evidence is shared by compact transport, Web and PDF. A
  * quantity gap without this exact contract retains its existing authority. */
-export function canonicalScopeRequirementDecisionV1(value: unknown): CanonicalScopeRequirementDecisionV1 | null {
+export function canonicalScopeRequirementDecisionV1(value: unknown, compositionDecision?: unknown): CanonicalScopeRequirementDecisionV1 | null {
   const d = record(value);
-  return d?.contractVersion === 'canonical-scope-requirement-decision/v1'
+  const valid=d?.contractVersion === 'canonical-scope-requirement-decision/v1'
     && [d.rowId,d.groupId,d.groupTitleRu,d.titleRu,d.reasonRu].every(text)
     && kinds.has(String(d.kind)) && statuses.has(String(d.status))
     && ids(d.coveringRowIds) && ids(d.originalRowIds) && ids(d.missingObjectFactParameterIds)
     && d.numericNormAccepted === false && d.separatePaymentAccepted === false
-    ? d as CanonicalScopeRequirementDecisionV1 : null;
+    ;
+  if(!valid)return null;
+  // Older saved revisions could exclude the source/applicability check as an
+  // informational row. Read them without treating that as verified scope.
+  if(d!.kind==='OBJECT_SCOPE' && d!.status==='USER_EXCLUDED') {
+    const selection=canonicalCompositionSelectionDecisionV1(compositionDecision);
+    const operationKeys=selection && selection.rowId===d!.rowId && selection.excluded
+      ? selection.excludedOperationKeys.filter(key=>!selection.unallocatedReferenceExclusions.includes(key)) : [];
+    return {...d,status:'SCOPE_UNVERIFIED',
+      reasonRu:'Проверка системы и применимости норм была исключена в прежней версии. Восстановите проверку; приложение затем определит готовность выбранного состава.',
+      restoreExcludedSourceCheck:{operationKeys}} as CanonicalScopeRequirementDecisionV1;
+  }
+  const restoration=record(d!.restoreExcludedSourceCheck);
+  if(d!.restoreExcludedSourceCheck!=null && (d!.kind!=='OBJECT_SCOPE' || d!.status!=='SCOPE_UNVERIFIED'
+    || !restoration || !ids(restoration.operationKeys)))return null;
+  return d as CanonicalScopeRequirementDecisionV1;
 }
 
 /** Classifies an existing informational obligation; it never supplies a
@@ -125,11 +143,19 @@ export function canonicalScopeRequirementStatusRuV1(status: CanonicalScopeRequir
 
 export type CanonicalScopeRequirementGroupV1 = {
   groupId: string; titleRu: string; rowIds: string[]; statuses: CanonicalScopeRequirementStatusV1[]; detailsRu: string[];
+  kinds?: CanonicalScopeRequirementKindV1[];
+  sourceCheckRestoration?: { rowIds: string[]; operationKeys: string[] };
 };
 export function groupCanonicalScopeRequirementsV1(decisions: readonly CanonicalScopeRequirementDecisionV1[]): CanonicalScopeRequirementGroupV1[] {
   const groups = new Map<string,CanonicalScopeRequirementGroupV1>();
   for (const d of decisions) {
-    const group = groups.get(d.groupId) ?? {groupId:d.groupId,titleRu:d.groupTitleRu,rowIds:[],statuses:[],detailsRu:[]};
+    const group = groups.get(d.groupId) ?? {groupId:d.groupId,titleRu:d.groupTitleRu,rowIds:[],statuses:[],detailsRu:[],kinds:[]};
+    if(!group.kinds!.includes(d.kind))group.kinds!.push(d.kind);
+    if(d.restoreExcludedSourceCheck) {
+      const restoration=group.sourceCheckRestoration??={rowIds:[],operationKeys:[]};
+      if(!restoration.rowIds.includes(d.rowId))restoration.rowIds.push(d.rowId);
+      for(const key of d.restoreExcludedSourceCheck.operationKeys)if(!restoration.operationKeys.includes(key))restoration.operationKeys.push(key);
+    }
     group.rowIds.push(d.rowId);
     if (!group.statuses.includes(d.status)) group.statuses.push(d.status);
     if (!group.detailsRu.includes(d.reasonRu)) group.detailsRu.push(d.reasonRu);

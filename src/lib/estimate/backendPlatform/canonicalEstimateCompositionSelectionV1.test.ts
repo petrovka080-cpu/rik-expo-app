@@ -1,5 +1,5 @@
 import {compileCanonicalEstimateCore, type CanonicalEstimateCompileCoreInput} from './canonicalEstimateCompileCore';
-import {canonicalOperationSelectionKeyV1, parseCanonicalCompositionSelectionV1, assertCanonicalCompositionSelectionReleaseMigrationV1} from './canonicalEstimateCompositionSelectionV1';
+import {canonicalOperationSelectionKeyV1, parseCanonicalCompositionSelectionV1, assertCanonicalCompositionSelectionReleaseMigrationV1,planCanonicalCompositionSelectionV1} from './canonicalEstimateCompositionSelectionV1';
 import {buildAutomaticConstructionOwnerR1} from '../v4/automaticConstructionOwnerR1';
 import {compileFormulaGraph} from './formulaGraph';
 import {estimateDeterministicHash} from '../estimateDeterministicHash';
@@ -125,4 +125,19 @@ test('command semantic identity distinguishes omitted, cleared and different exc
     .not.toEqual(canonicalUserCommandSemanticPayloadV1({compositionSelectionV1:selection([],['two'])}));
   expect(canonicalUserCommandSemanticPayloadV1({compositionSelectionV1:selection([],['two','one'])}))
     .toEqual(canonicalUserCommandSemanticPayloadV1({compositionSelectionV1:selection([],['one','two'])}));
+});
+
+test('source guard follows actual operation ownership, including a primary PROCESS with a REFERENCE_ONLY companion',()=>{
+  const input=fixture(),resource=input.resourceDefinitions[1]!;
+  resource.resource_graph.scopeRequirementV1={contractVersion:'canonical-scope-requirement/v1',kind:'OBJECT_SCOPE'};
+  resource.resource_graph.operationCompositionV1={contractVersion:'canonical-operation-resource/v1',groupId:'scope',groupTitleRu:'Scope',operationId:'check',operationTitleRu:'Check',completionCriterionRu:'Verified',processRole:'PROCESS',additionalOperations:[{operationId:'reference',operationTitleRu:'Reference',completionCriterionRu:'Reference only',processRole:'REFERENCE_ONLY'}]};
+  const plan=(selected:ReturnType<typeof selection>)=>planCanonicalCompositionSelectionV1({selection:selected,resources:input.resourceDefinitions,formulas:input.formulaDefinitions});
+  expect(()=>plan(selection(['["scope","check"]']))).toThrow(expect.objectContaining({code:'COMPOSITION_SELECTION_INVALID'}));
+  expect(()=>plan(selection([],['counter']))).toThrow(expect.objectContaining({code:'COMPOSITION_SELECTION_INVALID'}));
+  expect(plan(selection(['["scope","reference"]'])).decision('counter').excluded).toBe(false);
+  // A genuinely allocated shared check may retain an active owner; removing
+  // every source-backed contribution must still fail closed.
+  input.resourceDefinitions[0]!.resource_graph.scopeRequirementV1={contractVersion:'canonical-scope-requirement/v1',kind:'OBJECT_SCOPE'};
+  expect(plan(selection(['["roof","field"]'])).decision('truck').excluded).toBe(false);
+  expect(()=>plan(selection(['["roof","field"]','["roof","primer"]']))).toThrow(expect.objectContaining({code:'COMPOSITION_SELECTION_INVALID'}));
 });

@@ -84,6 +84,9 @@ export function planCanonicalCompositionSelectionV1(input:{
   };
   for(const resource of input.resources) {
     const decisionForRow=decision(resource.row_id),references=referencesByRow.get(resource.row_id)??[];
+    const scope=record(resource.resource_graph.scopeRequirementV1);
+    if(scope?.contractVersion==='canonical-scope-requirement/v1' && scope.kind==='OBJECT_SCOPE' && decisionForRow.excluded)
+      invalid('Проверку системы и применимости норм нельзя исключить как подработу. Приложение должно завершить её для выбранного состава.');
     if(!excludedRows.has(resource.row_id) && !allocations.has(resource.row_id)
       && references.filter(reference=>reference.processRole!=='REFERENCE_ONLY'&&reference.processRole!=='COST_SUMMARY').length>1
       && decisionForRow.excludedOperationKeys.length>0) {

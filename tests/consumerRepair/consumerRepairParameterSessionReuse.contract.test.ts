@@ -43,7 +43,7 @@ function controller(load: jest.Mock, cached: CanonicalParameterSession | null, r
     actionContext: () => { revisionId: string };
     refineCanonicalParameters: () => Promise<void>;
     loadCanonicalParameterSessionForBundle: (value: ConsumerRepairDraftBundle) => Promise<CanonicalParameterSession | null>;
-    changeCompositionRows: (ids: readonly string[], excluded: boolean, operationKey?: string) => Promise<void>;
+    changeCompositionRows: (ids: readonly string[], excluded: boolean, operationKeys?: string | readonly string[]) => Promise<void>;
     refreshHistory: jest.Mock;
   };
   action.state = { ...action.state, bundle: bundle(), canonicalBackendParameterSession: cached, statusMessage: "unchanged" };
@@ -155,6 +155,15 @@ describe("composition restoration after durable cold reopen", () => {
     const action=controller(jest.fn(),null,recalculate);action.state={...action.state,bundle:coldBundle()};
     await action.changeCompositionRows(['worker'],false,selection.excludedOperationKeys[0]);
     expect(recalculate).toHaveBeenCalledWith(expect.objectContaining({compositionSelectionV1:{...selection,excludedOperationKeys:[],excludedRowIds:['other-resource']}}));
+  });
+  it('restores a historical source check and its owning operations atomically, preserving unrelated exclusions and manual evidence',async()=>{
+    const historical={...saved,compositionSelectionV1:{...selection,excludedOperationKeys:['["roof","source-one"]','["roof","source-two"]','["roof","primer"]'].sort(),excludedRowIds:['check','other-resource']},amendmentContract:{rowOverrides:{'other-resource':{unitPrice:'420',titleRu:'Saved manual title'}}}};
+    const before=JSON.stringify(historical);readRevision.mockResolvedValue(historical as never);
+    const recalculate=jest.fn(async()=>({bundle:bundle(undefined,'revision-child'),session:session(undefined,'revision-child')}));
+    const action=controller(jest.fn(),null,recalculate);action.state={...action.state,bundle:coldBundle()};
+    await action.changeCompositionRows(['check'],false,['["roof","source-one"]','["roof","source-two"]']);
+    expect(recalculate).toHaveBeenCalledWith(expect.objectContaining({revisionId:'revision-current',patches:[],compositionSelectionV1:{...selection,excludedRowIds:['other-resource']}}));
+    expect(JSON.stringify(historical)).toBe(before);expect(action.state.bundle?.items[0]?.sourceParameters?.canonicalBackendRevisionId).toBe('revision-child');
   });
   it('does not assume an empty selection when the saved revision cannot be read',async()=>{
     readRevision.mockRejectedValue(new Error('CONTROL_READ_FAILED'));
