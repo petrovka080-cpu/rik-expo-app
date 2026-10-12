@@ -41,6 +41,17 @@ function revision(rowCount: number) {
   };
 }
 
+test.each(['LEGACY_SOURCE_REQUIRED','OBJECT_FACT_REQUIRED','REQUIRED_RESOURCE_EXCLUDED','USER_EXCLUDED'])('fully priced rows retain the actual source/scope reason instead of asking for prices: %s',status=>{
+  const source=rows(1),check={...rows(1)[0]!,row_id:'source-check',ordinal:2,quantity:status==='USER_EXCLUDED'?'0':null,unit_price:null,amount:null,included_in_estimate:false,included_in_procurement:false,ownership_status:'PRELIMINARY_NEED',calculation_trace:{resourceGraph:{scopeRequirementDecisionV1:{contractVersion:'canonical-scope-requirement-decision/v1',rowId:'source-check',groupId:'system',groupTitleRu:'Система кровли',titleRu:'Проверка системы',reasonRu:'Нормы требуют проверки',kind:'OBJECT_SCOPE',status,coveringRowIds:[],originalRowIds:[],missingObjectFactParameterIds:[],numericNormAccepted:false,separatePaymentAccepted:false}}}};
+  const numeric=status==='USER_EXCLUDED';
+  const projection=buildCanonicalProfessionalPdfProjection({revision:revision(numeric?2:1),rows:numeric?[...source,check]:source,preliminaryNeeds:numeric?[]:[check],workTitleRu:'CONTROL'});
+  expect(projection.missingPriceRowCount).toBe(0);expect(projection.grandTotalStatus).toBe('PARTIAL_NEEDS_PRICE');
+  expect(projection.html).toContain('Состав одного этапа ещё не завершён приложением');
+  expect(projection.html).toContain('<strong>полный итог не рассчитан</strong>');
+  expect(projection.html).not.toContain('Полный итог: требуется уточнение цен.');
+  expect(projection.html).not.toContain('<strong>требуется уточнение цен</strong>');
+});
+
 test('unresolved resource specifications print with their own context while quantity and cost remain unknown',()=>{
   const sourceTitle='Ручной инструмент штукатурки — обеспечение требует проверки';
   const need={...rows(1)[0]!,title_ru:sourceTitle,quantity:null,unit_price:null,amount:null,included_in_estimate:false,included_in_procurement:false,
@@ -211,7 +222,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-67-clear-blockers-template33");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-67-clear-blockers-template34");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,

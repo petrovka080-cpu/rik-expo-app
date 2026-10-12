@@ -19,7 +19,7 @@ import {canonicalScopeRequirementDecisionV1,groupCanonicalScopeRequirementsV1,ca
 import {readRoofPrimerPrerequisiteDecisionV1,roofPrimerPhaseRuV1} from './canonicalRoofPrimerPrerequisiteV1';
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-67-clear-blockers-template33" as const;
+  "canonical-professional-pdf.r4-a13-s27-67-clear-blockers-template34" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -261,7 +261,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
   const scopeGroups=groupCanonicalScopeRequirementsV1(scopeDecisions);
   const hasUserExclusions=scopeDecisions.some(decision=>decision.status==='USER_EXCLUDED')
     || rows.some(row=>objectValue(row.calculation_trace).physicalScopeExcludedV1 != null);
-  const projectScopeGroupCount=scopeGroups.filter(g=>g.statuses.some(s=>['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','SCOPE_UNVERIFIED'].includes(s))).length;
+  const openScopeGroupCount=scopeGroups.filter(g=>g.statuses.some(s=>['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','SCOPE_UNVERIFIED','LEGACY_SOURCE_REQUIRED','OBJECT_FACT_REQUIRED','REQUIRED_RESOURCE_EXCLUDED'].includes(s))).length;
   const compositionRows = [...rows.filter(row=>!scopeRowIds.has(String(row.row_id))), ...quantitativeNeeds].sort(
     (left, right) => Number(left.ordinal) - Number(right.ordinal),
   );
@@ -321,7 +321,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
   const pricedRows = payableRows.filter((row) => row.unit_price != null && row.amount != null);
   const missingPriceRowCount = payableRows.length - pricedRows.length;
   const grandTotalStatus: CanonicalProfessionalPdfGrandTotalStatus = missingPriceRowCount === 0 && quantitativeNeeds.length === 0
-    && !scopeGroups.some(group=>group.statuses.some(status=>['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','SCOPE_UNVERIFIED','LEGACY_SOURCE_REQUIRED','OBJECT_FACT_REQUIRED','REQUIRED_RESOURCE_EXCLUDED'].includes(status)))
+    && openScopeGroupCount===0
     ? "COMPLETE"
     : "PARTIAL_NEEDS_PRICE";
   const documentStatusRu = hasUserExclusions ? 'Состав с исключениями пользователя' : grandTotalStatus === "COMPLETE" && technologyChecks.length === 0
@@ -357,14 +357,14 @@ export function buildCanonicalProfessionalPdfProjection(input: {
   }).join("");
   const grandTotal = grandTotalStatus === "COMPLETE"
     ? `<strong>${canonicalArtifactMoney(pricedSubtotal, currencyCode)}</strong>`
-    : preliminaryNeeds.length > 0
+    : quantitativeNeeds.length > 0 || openScopeGroupCount > 0
       ? "<strong>полный итог не рассчитан</strong>"
       : "<strong>требуется уточнение цен</strong>";
   const priceNotice = grandTotalStatus === "COMPLETE"
     ? "Все строки имеют подтверждённую цену."
     : `<strong>${pricedRows.length === 0 ? "Стоимость не рассчитана. Цены не заполнены." : "Стоимость рассчитана частично."}</strong> Строк без подтверждённой цены: ${missingPriceRowCount}. ${quantitativeNeeds.length > 0
       ? `Потребностей с неуточнённым количеством или условием: ${quantitativeNeeds.length}. Полный итог не рассчитан.`
-      : projectScopeGroupCount>0 ? `${projectScopeGroupCount===1?'Состав одного этапа':`Состав ${projectScopeGroupCount} этапов`} ещё не завершён приложением; причины указаны внутри сметы. Полный итог не рассчитан.`
+      : openScopeGroupCount>0 ? `${openScopeGroupCount===1?'Состав одного этапа':`Состав ${openScopeGroupCount} этапов`} ещё не завершён приложением; причины указаны внутри сметы. Полный итог не рассчитан.`
       : "Полный итог: требуется уточнение цен."}`;
   const pricedSummary = pricedRows.length === 0
     ? "Стоимость не рассчитана"
