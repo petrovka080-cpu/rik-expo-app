@@ -15,9 +15,10 @@ import { canonicalEstimateResourceOperationSections } from "./canonicalEstimateO
 import { canonicalArtifactPurchaseRequirement } from "./canonicalPersistedPurchaseBalance";
 import { canonicalPublicEstimateWorkTitleRu, canonicalPublicEstimateRequestTextRu } from './canonicalPublicEstimateLanguageRu';
 import { resolveCanonicalEstimateExplicitRowCategory } from './canonicalEstimateRowCategory';
+import {canonicalScopeRequirementDecisionV1,groupCanonicalScopeRequirementsV1,canonicalScopeRequirementStatusRuV1} from './canonicalScopeRequirementV1';
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-63-need-specifications-template28" as const;
+  "canonical-professional-pdf.r4-a13-s27-65-scope-requirements-template29" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -244,7 +245,15 @@ export function buildCanonicalProfessionalPdfProjection(input: {
       code: "ARTIFACT_ROW_PARITY_FAILED",
     });
   }
-  const compositionRows = [...rows, ...preliminaryNeeds].sort(
+  const scopeDecisions = preliminaryNeeds.flatMap(row=>{
+    const d=canonicalScopeRequirementDecisionV1(objectValue(objectValue(row.calculation_trace).resourceGraph).scopeRequirementDecisionV1);
+    return d && d.rowId===row.row_id?[d]:[];
+  });
+  const scopeRowIds=new Set(scopeDecisions.map(d=>d.rowId));
+  const quantitativeNeeds=preliminaryNeeds.filter(row=>!scopeRowIds.has(String(row.row_id)));
+  const scopeGroups=groupCanonicalScopeRequirementsV1(scopeDecisions);
+  const scopeAppendix=scopeGroups.length?`<section><h2>Состав и этапы</h2><div class="notice">Нормы и зависимые количества рассчитывает приложение. Включённые расходы и выполненная подготовка повторно не начисляются. Отдельные работы по проекту и их стоимость ещё требуют подтверждения.</div><table><thead><tr><th style="width:28%">Этап или требование</th><th style="width:27%">Статус</th><th>Основание и граница</th></tr></thead><tbody>${scopeGroups.map(g=>`<tr><td>${escapeCanonicalArtifactHtml(g.titleRu)}</td><td>${escapeCanonicalArtifactHtml(g.statuses.map(canonicalScopeRequirementStatusRuV1).join('; '))}</td><td>${escapeCanonicalArtifactHtml(g.detailsRu.join(' '))}</td></tr>`).join('')}</tbody></table></section>`:'';
+  const compositionRows = [...rows, ...quantitativeNeeds].sort(
     (left, right) => Number(left.ordinal) - Number(right.ordinal),
   );
   const compositionRowIds = compositionRows.map((row) => String(row.row_id));
@@ -360,12 +369,13 @@ export function buildCanonicalProfessionalPdfProjection(input: {
       ${nullableText(revision.source_request_text) ? `<div><strong>Исходный запрос:</strong> ${escapeCanonicalArtifactHtml(canonicalPublicEstimateRequestTextRu(String(revision.source_request_text)))}</div>` : ""}
       <div class="meta-grid"><div><strong>Номер:</strong> ${escapeCanonicalArtifactHtml(documentNumber)}</div><div><strong>Статус:</strong> ${documentStatusRu}</div><div><strong>Сформировано:</strong> ${escapeCanonicalArtifactHtml(generatedDate)}</div><div><strong>Валюта:</strong> ${escapeCanonicalArtifactHtml(currencyLabel)}</div><div><strong>Объект:</strong> ${escapeCanonicalArtifactHtml(workTitleRu)}</div><div><strong>${workMeasure ? "Объём работы" : "Первичная мера"}:</strong> ${escapeCanonicalArtifactHtml(`${primaryValue} ${primaryUnit}`)}</div><div><strong>Версия:</strong> ${escapeCanonicalArtifactHtml(String(Number.isFinite(revisionNumber) ? revisionNumber : 1))}</div></div>
     </header>
-    <div class="summary"><div><strong>Позиций состава</strong><br>${compositionRows.length}</div><div><strong>Количество известно</strong><br>${rows.length}; требуют уточнения ${preliminaryNeeds.length}</div><div><strong>${pricedSummary}</strong></div></div>
+    <div class="summary"><div><strong>Позиций расчёта</strong><br>${compositionRows.length}</div><div><strong>Количество известно</strong><br>${rows.length}; требуют уточнения ${quantitativeNeeds.length}${scopeGroups.length?`; состав и этапы: ${scopeGroups.length} групп`:''}</div><div><strong>${pricedSummary}</strong></div></div>
     <div class="notice">${priceNotice}</div>
     ${technologyChecks.map(check => `<div class="notice"><strong>Технология требует уточнения.</strong> ${escapeCanonicalArtifactHtml(check.messageRu)} Закупочная ведомость пока не готова.</div>`).join("")}
     <table class="client"><thead><tr><th>№</th><th>Наименование</th><th>Категория</th><th>Ед.</th><th>Количество</th><th>Цена за единицу</th><th>Сумма</th></tr></thead><tbody>${renderedComposition}</tbody></table>
     <table class="totals"><tbody>${totalRows}<tr><th>Неполные цены</th><td>${missingPriceRowCount}</td></tr><tr class="grand"><th>Итого</th><td>${grandTotal}</td></tr></tbody></table>
     <div class="notice"><strong>Примечание.</strong> Документ отображает сохранённые позиции, объёмы и цены. Отсутствующая цена не подменяется нулём.</div>
+    ${scopeAppendix}
     ${questionAppendix}
     <section class="approval-block"><div class="organization">Организация: __________________________________________</div>
     <div class="signatures"><div class="signature"><strong>Составил</strong><div>ФИО / должность</div><div>Дата / подпись</div></div><div class="signature"><strong>Проверил</strong><div>ФИО / должность</div><div>Дата / подпись</div></div><div class="signature"><strong>Утвердил</strong><div>ФИО / должность</div><div>Дата / подпись</div></div></div></section>

@@ -285,6 +285,7 @@ export function buildStructuredEstimateRequestDraft(
             canonicalBackendCatalogId: payload.canonicalBackend?.catalogId,
             canonicalBackendOwnershipStatus: "PRELIMINARY_NEED",
             canonicalPreliminaryNeed: true,
+            ...(need.scopeRequirementDecision ? {canonicalScopeRequirementDecisionV1:need.scopeRequirementDecision} : {}),
             ...((need.derivedQuantityEditPolicy ?? need.calculationTrace?.derivedQuantityEditPolicy) == null ? {} : {
               canonicalDerivedQuantityEditPolicyV1: need.derivedQuantityEditPolicy ?? need.calculationTrace?.derivedQuantityEditPolicy,
             }),

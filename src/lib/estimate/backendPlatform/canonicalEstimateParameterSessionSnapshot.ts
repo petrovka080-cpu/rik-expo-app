@@ -17,7 +17,7 @@ export type CanonicalEstimateParameterSessionRevision = Pick<CanonicalEstimateRe
   /** Present on the full-revision fallback only; compact transport projects IDs instead. */
   amendmentContract?: Pick<NonNullable<CanonicalEstimateRevisionView['amendmentContract']>, 'rowOverrides'>;
   preliminaryNeeds?: Pick<CanonicalEstimatePreliminaryNeedView,
-    "rowId" | "selected" | "missingParameterIds" | "quantity" | "needState" | "orderedSpecificationParameterIds">[];
+    "rowId" | "selected" | "missingParameterIds" | "quantity" | "needState" | "orderedSpecificationParameterIds" | "scopeRequirementDecision">[];
 };
 
 export type CanonicalEstimateParameterSessionParent = Pick<CanonicalEstimateRevisionView,
@@ -77,6 +77,7 @@ export function projectCanonicalEstimateParameterSessionSnapshot(input: {
       preliminaryNeeds: revision.preliminaryNeeds?.map((need) => ({
         rowId: need.rowId, selected: need.selected, missingParameterIds: need.missingParameterIds,
         quantity: need.quantity, needState: need.needState,
+        ...(need.scopeRequirementDecision ? {scopeRequirementDecision:need.scopeRequirementDecision} : {}),
         ...(need.orderedSpecificationParameterIds?.length ? { orderedSpecificationParameterIds: need.orderedSpecificationParameterIds } : {}),
       })),
     },

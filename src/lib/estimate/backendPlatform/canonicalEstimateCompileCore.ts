@@ -6,6 +6,7 @@ import {
   type FormulaParameterValue,
 } from "./formulaGraph";
 import { inclusionGraphEvidenceParameterIds, resolveInclusionGraph } from "./inclusionGraph";
+import { resolveCanonicalScopeRequirementV1 } from './canonicalScopeRequirementV1';
 import { bindCanonicalPublicResourceSavedTitleV1 } from './canonicalPublicResourcePresentationV1';
 import {
   canonicalNumericRelationDependencies,
@@ -935,6 +936,7 @@ export async function compileCanonicalEstimateCore(
   };
 
   const unresolvedEffectiveOutputs = new Map<string, string[]>();
+  const scopeResourceIds = new Set(input.resourceDefinitions.map(r=>r.row_id));
   const missingAutomaticSources = canonicalMissingAutomaticParameterSourcesV1(input.parameterDefinitions, parameters);
   const originalMissingIds = (ids: readonly string[]): string[] => missingAutomaticSources([...new Set(ids.flatMap(id =>
     effectiveQuantityPlan.owners.has(id) ? unresolvedEffectiveOutputs.get(id) ?? [] : [id],
@@ -1002,8 +1004,13 @@ export async function compileCanonicalEstimateCore(
     const missingCommercialScopeParameterIds = commercialScopeParameterId != null
       && (parameters[commercialScopeParameterId] == null || parameters[commercialScopeParameterId] === '')
       ? [commercialScopeParameterId] : [];
-    const effectiveResourceGraph = canonicalCommercialCoveredResourceGraphV1(resource.resource_graph, commercialOwner, resource.row_id,
+    let effectiveResourceGraph = canonicalCommercialCoveredResourceGraphV1(resource.resource_graph, commercialOwner, resource.row_id,
       commercialRate);
+    const scopeRequirementDecision = effectiveResourceGraph.scopeRequirementV1 == null ? null : resolveCanonicalScopeRequirementV1({ graph: effectiveResourceGraph,
+      rowId: resource.row_id, parameters, parameterIds: definitionParameterIds,
+      resourceIds: scopeResourceIds,
+      knownQuantityRowIds: new Set(rows.filter(r => r.quantity != null).map(r => r.row_id)) });
+    if (scopeRequirementDecision) effectiveResourceGraph = {...effectiveResourceGraph,scopeRequirementDecisionV1:scopeRequirementDecision};
     const costInclusion = resolveCanonicalResourceCostInclusion(
       commercialOwner ? { ...resource, resource_graph: effectiveResourceGraph } : resource, override,
     );
@@ -1147,7 +1154,7 @@ export async function compileCanonicalEstimateCore(
       || missingRequiredConsumerParameterIds.length > 0
       || missingNumericRelationParameterIds.length > 0
       || missingCommercialScopeParameterIds.length > 0) {
-      const needState = missingNumericRelationParameterIds.length > 0
+      let needState = missingNumericRelationParameterIds.length > 0
         || missingCommercialScopeParameterIds.length > 0
         || (inclusion.value == null && !inclusionOnlyWaitsForFormulaInputs)
         ? "CONDITION_REQUIRED" as const
@@ -1155,7 +1162,7 @@ export async function compileCanonicalEstimateCore(
           || (missingPhysicalNormParameterIds.length > 0 && manualQuantity == null)
           ? "QUANTITY_REQUIRED" as const
           : "CONDITION_REQUIRED" as const;
-      const missingParameterIds = originalMissingIds([
+      let missingParameterIds = originalMissingIds([
         ...(needState === "CONDITION_REQUIRED" ? inclusion.missingParameterIds : []),
         ...(missingFormulaBlocksQuantity ? missingFormulaParameterIds : []),
         ...(manualQuantity == null || effectiveOutput != null ? missingPhysicalNormParameterIds : []),
@@ -1164,6 +1171,10 @@ export async function compileCanonicalEstimateCore(
         ...missingNumericRelationParameterIds,
         ...missingCommercialScopeParameterIds,
       ]);
+      if (scopeRequirementDecision) {
+        needState = 'CONDITION_REQUIRED';
+        missingParameterIds = scopeRequirementDecision.missingObjectFactParameterIds;
+      }
       if (effectiveOutput) unresolvedEffectiveOutputs.set(effectiveOutput.parameterId, missingParameterIds);
       // Required physical facts remain selected even when their payment is covered.
       const selected = includedInEstimate || commercialOwner != null;

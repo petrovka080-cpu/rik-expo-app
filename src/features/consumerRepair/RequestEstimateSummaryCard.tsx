@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import type { RequestEstimateViewModel } from "./requestEstimateViewModel";
+import {RequestEstimateScopeRequirements} from './RequestEstimateScopeRequirements';
 
 type Props = {
   viewModel: RequestEstimateViewModel;
@@ -90,6 +91,7 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
               ? "Для части материалов и работ пока нет расчёта. Их должен проверить специалист; они не включены в общую стоимость."
               : "Это черновик сметы. Проверьте материалы, работы и цены перед заказом."}
         </Text>
+        <RequestEstimateScopeRequirements groups={viewModel.scopeRequirementGroups??[]} />
       </View>
     );
   }

@@ -1,4 +1,5 @@
 import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
+import { canonicalScopeRequirementDecisionV1 } from './canonicalScopeRequirementV1';
 import type { CanonicalOrderedSpecificationBinding } from './canonicalOrderedSpecificationBindings';
 import { parseCanonicalPublicResourcePresentationV1 } from './canonicalPublicResourcePresentationV1';
 import type { AdmissionDecision } from "./estimateAdmissionR3";
@@ -289,6 +290,7 @@ export type CanonicalCommercialRateCoverageView = {
 };
 
 export type CanonicalEstimatePreliminaryNeedView = {
+  scopeRequirementDecision?: import('./canonicalScopeRequirementV1').CanonicalScopeRequirementDecisionV1;
   /** Exact specification questions for a positive explicit order, independent of installed consumption. */
   orderedSpecificationParameterIds?: string[];
   purchaseRequirement?: Record<string, unknown>;
@@ -389,6 +391,9 @@ export function canonicalEstimatePreliminaryNeedsFromAmendmentContract(
       quantity: need.quantity == null ? null : String(need.quantity),
       unitPrice: need.unit_price == null ? null : String(need.unit_price),
       needState: state,
+      ...(canonicalScopeRequirementDecisionV1(graph?.scopeRequirementDecisionV1) ? {
+        scopeRequirementDecision: canonicalScopeRequirementDecisionV1(graph?.scopeRequirementDecisionV1)!,
+      } : {}),
       missingParameterIds: Array.isArray(need.missing_parameter_ids)
         ? need.missing_parameter_ids.filter((value): value is string => typeof value === "string" && value.length > 0)
         : [],

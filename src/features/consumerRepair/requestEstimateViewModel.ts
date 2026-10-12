@@ -2,6 +2,7 @@ import { canonicalEstimateOperationReference, canonicalEstimateResourceOperation
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
 import { consumerCanonicalApplicationScopeRequirementNotice, consumerCanonicalMissingRequirements, consumerCanonicalParameterTitle, type CanonicalParameterRequirementTables } from "../../lib/consumerRequests/consumerCanonicalParameterRequirements";
 import { canonicalPurchaseShortageMessageV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
+import {canonicalScopeRequirementDecisionV1,groupCanonicalScopeRequirementsV1,type CanonicalScopeRequirementGroupV1} from '../../lib/estimate/backendPlatform/canonicalScopeRequirementV1';
 import { formatEstimateQuantityRu } from "../../lib/estimatePresentation/formatEstimateQuantityRu";
 import { compareFormulaGraphDecimals, isFormulaGraphExactDecimal } from "../../lib/estimate/backendPlatform/formulaGraph";
 import type {
@@ -114,6 +115,7 @@ export type RequestEstimateSourceGate = {
 };
 
 export type RequestEstimateViewModel = {
+  scopeRequirementGroups?: CanonicalScopeRequirementGroupV1[];
   workProcessGroups?: CanonicalEstimateWorkProcessGroup[];
   parameterRequirementTables?: CanonicalParameterRequirementTables | null;
   title: string;
@@ -1271,7 +1273,14 @@ export function buildRequestEstimateViewModel(
   // restored. Structural non-payable rows remain visible: they are part of the
   // technology/completeness ledger even though their cost is owned by another
   // row or they are an informational/control output and must not be summed.
-  const visibleEstimateItems = bundle.items.filter(isConsumerEstimateCompositionVisibleItem);
+  const scopeDecisions = bundle.items.flatMap(item => {
+    const d = canonicalScopeRequirementDecisionV1(item.sourceParameters?.canonicalScopeRequirementDecisionV1);
+    return d?.rowId === String(item.sourceParameters?.rowCode ?? '') ? [d] : [];
+  });
+  const scopeRequirementGroups = groupCanonicalScopeRequirementsV1(scopeDecisions);
+  const scopeRows = new Set(scopeDecisions.map(d=>d.rowId));
+  const visibleEstimateItems = bundle.items.filter(item=>isConsumerEstimateCompositionVisibleItem(item)
+    && !scopeRows.has(String(item.sourceParameters?.rowCode ?? '')));
   const viewBundle = visibleEstimateItems.length === bundle.items.length
     ? bundle
     : { ...bundle, items: visibleEstimateItems };
@@ -1286,7 +1295,7 @@ export function buildRequestEstimateViewModel(
   ).length;
   const sourceGates = buildRequestEstimateSourceGates(viewBundle.items, bundle.canonicalParameterRequirementTables);
   const sourceGateIds = new Set(sourceGates.map(gate => gate.parameterId));
-  const missingRequirements = viewBundle.items.flatMap(item => consumerCanonicalMissingRequirements(item,
+  const missingRequirements = bundle.items.flatMap(item => consumerCanonicalMissingRequirements(item,
     bundle.canonicalParameterRequirementTables));
   const consumerQuestionCount = missingRequirements.length ? new Set(missingRequirements.flatMap(requirement => {
       const id = String(requirement.parameterId ?? '').trim();
@@ -1461,6 +1470,7 @@ export function buildRequestEstimateViewModel(
     calculatedItemCount,
     preliminaryNeedCount,
     sourceGates,
+    scopeRequirementGroups,
     consumerQuestionCount,
     preliminaryProcurementNeedCount,
     parameterRequirementTables: bundle.canonicalParameterRequirementTables,
