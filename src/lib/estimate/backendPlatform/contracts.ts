@@ -1,5 +1,6 @@
 import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
 import { canonicalScopeRequirementDecisionV1 } from './canonicalScopeRequirementV1';
+import {parseCanonicalCompositionSelectionV1} from './canonicalEstimateCompositionSelectionV1';
 import type { CanonicalOrderedSpecificationBinding } from './canonicalOrderedSpecificationBindings';
 import { parseCanonicalPublicResourcePresentationV1 } from './canonicalPublicResourcePresentationV1';
 import type { AdmissionDecision } from "./estimateAdmissionR3";
@@ -59,7 +60,10 @@ export function canonicalEstimateEffectivePriceSnapshotIds(input: {
 }
 
 export type CanonicalEstimateRecalculateRequest = CanonicalEstimateCreateRequest & {
+  compositionSelectionV1?: import('./canonicalEstimateCompositionSelectionV1').CanonicalEstimateCompositionSelectionV1 | null;
   parentRevisionId: string;
+  /** Non-cost reference to an existing preparation instance; null clears it. */
+  roofPrimerPrerequisiteV1?: import('./canonicalRoofPrimerPrerequisiteV1').RoofPrimerPrerequisiteCommandV1|null;
   derivedQuantityClearV1?: CanonicalFusionDerivedQuantityClearConsentS2758;
   releaseMigration?: {
     contractVersion: "canonical_revision_release_migration.r2";
@@ -208,6 +212,7 @@ export type CanonicalEstimateJobView = {
 };
 
 export type CanonicalEstimateRevisionView = {
+  compositionSelectionV1?: import('./canonicalEstimateCompositionSelectionV1').CanonicalEstimateCompositionSelectionV1;
   apiVersion: typeof ESTIMATE_PLATFORM_API_VERSION;
   revisionId: string;
   parentRevisionId: string | null;
@@ -221,6 +226,7 @@ export type CanonicalEstimateRevisionView = {
   /** Immutable price evidence selected for this compile; empty means no compatible source existed. */
   priceSnapshotIds?: string[];
   parameters: Record<string, unknown>;
+  roofPrimerPrerequisiteV1?: import('./canonicalRoofPrimerPrerequisiteV1').RoofPrimerPrerequisiteDecisionV1|null;
   /** Immutable R6 request identity. Null only for revisions created before R6. */
   sourceRequestText?: string | null;
   sourceRequestHash?: string | null;
@@ -895,6 +901,7 @@ function assertManualProvenance(value: unknown, field: string): void {
 }
 
 function validateRowAmendments(request: Partial<CanonicalEstimateRecalculateRequest>): void {
+  if(Object.hasOwn(request,'compositionSelectionV1')) parseCanonicalCompositionSelectionV1(request.compositionSelectionV1);
   if (request.derivedQuantityClearV1 != null && !canonicalFusionDerivedQuantityClearConsentS2758(request.derivedQuantityClearV1)) {
     throw new CanonicalEstimateApiError("derivedQuantityClearV1 consent is invalid", { code: "INVALID_ARGUMENT", httpStatus: 400 });
   }

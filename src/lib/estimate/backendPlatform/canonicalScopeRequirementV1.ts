@@ -3,7 +3,7 @@ import { resolveInclusionGraph } from './inclusionGraph';
 type Json = Record<string, unknown>;
 export type CanonicalScopeRequirementKindV1 = 'INCLUDED' | 'NOT_APPLICABLE' | 'PARTLY_INCLUDED'
   | 'PROCESS' | 'PROJECT_SCOPE' | 'FINANCIAL_POLICY' | 'OBJECT_SCOPE';
-export type CanonicalScopeRequirementStatusV1 = 'INCLUDED' | 'NOT_APPLICABLE' | 'COMPLETED'
+export type CanonicalScopeRequirementStatusV1 = 'INCLUDED' | 'NOT_APPLICABLE' | 'COMPLETED' | 'USER_EXCLUDED' | 'REQUIRED_RESOURCE_EXCLUDED'
   | 'PARTLY_INCLUDED' | 'PROCESS_REQUIRED' | 'PROJECT_SCOPE_OPEN' | 'FINANCIAL_POLICY'
   | 'OBJECT_FACT_REQUIRED' | 'LEGACY_SOURCE_REQUIRED' | 'SCOPE_UNVERIFIED';
 export type CanonicalScopeRequirementDecisionV1 = {
@@ -38,7 +38,7 @@ export type CanonicalScopeRequirementV1 = {
   legacyObjectValue?: string;
 };
 const kinds = new Set(['INCLUDED','NOT_APPLICABLE','PARTLY_INCLUDED','PROCESS','PROJECT_SCOPE','FINANCIAL_POLICY','OBJECT_SCOPE']);
-const statuses = new Set(['INCLUDED','NOT_APPLICABLE','COMPLETED','PARTLY_INCLUDED','PROCESS_REQUIRED','PROJECT_SCOPE_OPEN',
+const statuses = new Set(['INCLUDED','NOT_APPLICABLE','COMPLETED','USER_EXCLUDED','REQUIRED_RESOURCE_EXCLUDED','PARTLY_INCLUDED','PROCESS_REQUIRED','PROJECT_SCOPE_OPEN',
   'FINANCIAL_POLICY','OBJECT_FACT_REQUIRED','LEGACY_SOURCE_REQUIRED','SCOPE_UNVERIFIED']);
 const record = (value: unknown): Json | null => value != null && typeof value === 'object' && !Array.isArray(value) ? value as Json : null;
 const text = (value: unknown): value is string => typeof value === 'string' && value.trim().length > 0 && value.length <= 4000;
@@ -62,6 +62,7 @@ export function canonicalScopeRequirementDecisionV1(value: unknown): CanonicalSc
 export function resolveCanonicalScopeRequirementV1(input: {
   graph: Json; rowId: string; parameters: Readonly<Json>; resourceIds: ReadonlySet<string>;
   parameterIds: ReadonlySet<string>; knownQuantityRowIds: ReadonlySet<string>;
+  excludedQuantityRowIds?: ReadonlySet<string>; excludedOperationResourceRowIds?: ReadonlySet<string>;
 }): CanonicalScopeRequirementDecisionV1 | null {
   const raw = input.graph.scopeRequirementV1;
   if (raw == null) return null;
@@ -102,6 +103,10 @@ export function resolveCanonicalScopeRequirementV1(input: {
       : scope.kind === 'PROCESS' ? 'PROCESS_REQUIRED'
       : scope.kind === 'FINANCIAL_POLICY' ? 'FINANCIAL_POLICY' : 'PROJECT_SCOPE_OPEN';
     if (scope.satisfiedWhen && condition(scope.satisfiedWhen).value === true) status = 'COMPLETED';
+    if(['INCLUDED','PARTLY_INCLUDED'].includes(scope.kind) && scope.coveringRowIds.length>0) {
+      if(scope.coveringRowIds.every(id=>input.excludedOperationResourceRowIds?.has(id))) status='USER_EXCLUDED';
+      else if(scope.coveringRowIds.some(id=>input.excludedQuantityRowIds?.has(id))) status='REQUIRED_RESOURCE_EXCLUDED';
+    }
   }
   return { contractVersion:'canonical-scope-requirement-decision/v1',rowId:input.rowId,
     groupId:scope.groupId,groupTitleRu:scope.groupTitleRu,titleRu:scope.titleRu,reasonRu:scope.reasonRu,
@@ -111,7 +116,8 @@ export function resolveCanonicalScopeRequirementV1(input: {
 
 export function canonicalScopeRequirementStatusRuV1(status: CanonicalScopeRequirementStatusV1): string {
   return ({INCLUDED:'Уже учтено в норме покрытия',NOT_APPLICABLE:'Не относится к выбранному полю кровли',
-    COMPLETED:'Подтверждено исходными данными',PARTLY_INCLUDED:'Часть учтена; отдельный остаток зависит от проекта',
+    COMPLETED:'Подтверждено исходными данными',USER_EXCLUDED:'Исключено пользователем из этой сметы',PARTLY_INCLUDED:'Часть учтена; отдельный остаток зависит от проекта',
+    REQUIRED_RESOURCE_EXCLUDED:'Для выполнения этапа нужен исключённый ресурс: восстановите его или измените состав',
     PROCESS_REQUIRED:'Требование к выполнению работ',PROJECT_SCOPE_OPEN:'Отдельный состав зависит от проекта',
     FINANCIAL_POLICY:'Учитывается по сметным и налоговым правилам',OBJECT_FACT_REQUIRED:'Нужно выбрать систему кровли',
     LEGACY_SOURCE_REQUIRED:'Нормы прежнего состава ещё не подтверждены',SCOPE_UNVERIFIED:'Применимость ещё не подтверждена'})[status];

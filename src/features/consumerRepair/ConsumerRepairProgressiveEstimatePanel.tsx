@@ -103,6 +103,8 @@ type ParameterHandlers = {
 };
 
 type Props = ItemEditorHandlers & ParameterHandlers & {
+  primerPrerequisiteNode?:React.ReactNode;
+  onCompositionRowsChange?: (rowIds: readonly string[], excluded: boolean, operationKey?: string) => void;
   viewModel: RequestEstimateViewModel;
   revisionState: EstimateDraftRevisionState | null;
   currentRevision: EstimateDraftRevision | null;
@@ -764,6 +766,8 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
 
       {positionsOpen ? (
         <EstimatePositionsPanel
+          primerPrerequisiteNode={this.props.primerPrerequisiteNode}
+          onCompositionRowsChange={this.props.onCompositionRowsChange}
           viewModel={viewModel}
           incompleteParameterCount={count ?? null}
           incompleteResolutionLabel={editableMissingCount > 0
@@ -2177,6 +2181,8 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
 }
 
 function EstimatePositionsPanel({
+  primerPrerequisiteNode,
+  onCompositionRowsChange,
   viewModel,
   incompleteParameterCount,
   incompleteResolutionLabel,
@@ -2204,6 +2210,8 @@ function EstimatePositionsPanel({
   onOpenCatalog,
   onSelectCatalogItem,
 }: ItemEditorHandlers & {
+  primerPrerequisiteNode?: React.ReactNode;
+  onCompositionRowsChange?: (rowIds: readonly string[], excluded: boolean, operationKey?: string) => void;
   viewModel: RequestEstimateViewModel;
   incompleteParameterCount: number | null;
   incompleteResolutionLabel: string;
@@ -2228,6 +2236,8 @@ function EstimatePositionsPanel({
         showMaterialControl={false}
       />
       <RequestEstimateItemsEditor
+        primerPrerequisiteNode={primerPrerequisiteNode}
+        onCompositionRowsChange={onCompositionRowsChange}
         viewModel={viewModel}
         incompleteParameterCount={incompleteParameterCount}
         incompleteResolutionLabel={incompleteResolutionLabel}

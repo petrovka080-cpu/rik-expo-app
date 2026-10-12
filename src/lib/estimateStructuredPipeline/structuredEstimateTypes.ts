@@ -178,6 +178,8 @@ export type StructuredEstimatePayload = {
     formulaGraphVersion?: string | null;
     parameterSchemaHash?: string | null;
     parameters: Record<string, unknown>;
+    roofPrimerPrerequisiteV1?: import('../estimate/backendPlatform/canonicalRoofPrimerPrerequisiteV1').RoofPrimerPrerequisiteDecisionV1|null;
+    compositionSelectionV1?: import('../estimate/backendPlatform/canonicalEstimateCompositionSelectionV1').CanonicalEstimateCompositionSelectionV1;
     parameterRequirements?: StructuredEstimateParameterRequirement[];
     parameterRequirementsStorage?: "shared_draft_table_v1";
     preliminaryNeeds?: import("../estimate/backendPlatform/contracts").CanonicalEstimatePreliminaryNeedView[];

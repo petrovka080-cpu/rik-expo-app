@@ -31,6 +31,8 @@ import {
 } from "./consumerRepairRowMetadata";
 
 type Props = {
+  primerPrerequisiteNode?:React.ReactNode;
+  onCompositionRowsChange?: (rowIds: readonly string[], excluded: boolean, operationKey?: string) => void;
   bundle: ConsumerRepairDraftBundle | null;
   aiAnswerRu: string | null;
   hasSelectedApprovedHistory?: boolean;
@@ -85,6 +87,8 @@ export function buildConsumerRepairOfferedScopeOptions(
 }
 
 export function ConsumerRepairDraftPanel({
+  primerPrerequisiteNode,
+  onCompositionRowsChange,
   bundle,
   hasSelectedApprovedHistory,
   showPdfAction,
@@ -346,6 +350,8 @@ export function ConsumerRepairDraftPanel({
           </View>
         ) : null}
         <ConsumerRepairProgressiveEstimatePanel
+          primerPrerequisiteNode={primerPrerequisiteNode}
+          onCompositionRowsChange={onCompositionRowsChange}
           viewModel={viewModel}
           revisionState={revisionState}
           currentRevision={currentRevision}

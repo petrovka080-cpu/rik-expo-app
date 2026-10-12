@@ -613,6 +613,11 @@ export function getCanonicalEstimateRevision(revisionId: string, signal?: AbortS
   });
 }
 
+export function listCanonicalRoofPrimerPrerequisiteCandidatesV1(revisionId:string,signal?:AbortSignal|null){
+  return invoke<{apiVersion:string;revisionId:string;items:import('./canonicalRoofPrimerPrerequisiteV1').RoofPrimerPrerequisiteCandidateV1[]}>(
+    `revisions/${encodeURIComponent(revisionId)}/primer-prerequisite-candidates`,{signal,requestClass:'ui_scope_load'});
+}
+
 export function getCanonicalFusionQuantityClearPreviewS2758(revisionId: string, signal?: AbortSignal | null) {
   return invoke<{ apiVersion: string; preview: CanonicalFusionQuantityClearPreviewS2758 | null }>(
     `revisions/${encodeURIComponent(revisionId)}/fusion-quantity-clear-preview`, { signal, requestClass: 'ui_scope_load' });

@@ -2,7 +2,6 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import type { RequestEstimateViewModel } from "./requestEstimateViewModel";
-import {RequestEstimateScopeRequirements} from './RequestEstimateScopeRequirements';
 
 type Props = {
   viewModel: RequestEstimateViewModel;
@@ -28,7 +27,7 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
     const parameterLabel = sourceGateCount > 0
       ? `Данные объекта: ${consumerInputCount ?? missingParameterCount ?? 'уточнить'}; требуют подтверждённого источника: ${sourceGateCount}`
       : missingParameterCount === 0
-        ? "Обязательные параметры заполнены"
+        ? "Данные для рассчитанных этапов заполнены"
       : typeof missingParameterCount === "number"
       ? `Нужно уточнить: ${missingParameterCount} ${pluralizeRu(missingParameterCount, "параметр", "параметра", "параметров")}`
       : "Для точности нужно уточнить параметры";
@@ -91,7 +90,13 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
               ? "Для части материалов и работ пока нет расчёта. Их должен проверить специалист; они не включены в общую стоимость."
               : "Это черновик сметы. Проверьте материалы, работы и цены перед заказом."}
         </Text>
-        <RequestEstimateScopeRequirements groups={viewModel.scopeRequirementGroups??[]} />
+        {viewModel.scopeRequirementGroups?.some(group => group.statuses.some(status =>
+          ['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','SCOPE_UNVERIFIED','LEGACY_SOURCE_REQUIRED'].includes(status)))
+          ? <Text style={styles.legal} testID="request-estimate-composition-incomplete">
+            Состав всей работы ещё не рассчитан. Незавершённые подработы показаны внутри сметы; нормы и ресурсы должно дополнить приложение.
+          </Text> : null}
+        {viewModel.scopeRequirementGroups?.some(group=>group.statuses.includes('USER_EXCLUDED'))
+          ? <Text style={styles.legal}>Состав изменён пользователем. Подтверждение оставшихся позиций не означает полноту исходной технологии.</Text> : null}
       </View>
     );
   }

@@ -17,6 +17,7 @@ import {buildRequestEstimateViewModel} from '../../../features/consumerRepair/re
 import {buildCanonicalProfessionalPdfProjection} from '../backendPlatform/canonicalProfessionalPdf';
 import {canonicalArtifactPreliminaryNeeds,type CanonicalArtifactRow} from '../backendPlatform/canonicalEstimateArtifactContract';
 import {foundationDraftWithManualCatalogItem} from '../../../../tests/requestEstimate/requestEstimateBoqCatalogTestHelpers';
+import {consumerEstimateUnresolvedQuantityItems,consumerEstimateOpenScopeGroups} from '../../consumerRequests/consumerEstimateReadiness';
 const fixture=require('../../../../data/estimate-benchmarks/fixtures/flat-roof-scope-parents-s27-65.json') as {sourceSnapshotSha256:string;reps:PurchaseGroupRepresentative[]};
 const facts={q:'37.5',[pack.systemParameterId]:pack.systemYesRu,[pack.conditionsParameterId]:pack.conditionsYesRu,[pack.areaParameterId]:pack.areaYesRu};
 const locators={roof:'CONTROL_ROOF',guidance:'CONTROL_GUIDANCE'},prefix=pack.prefix;
@@ -83,15 +84,45 @@ test('compact transport, parameter session, reopened draft and PDF preserve the 
   const draft=buildStructuredEstimateRequestDraft(payload),reopened=JSON.parse(JSON.stringify({...foundationDraftWithManualCatalogItem(),...draft,structuredEstimatePayload:payload}));
   const view=buildRequestEstimateViewModel(reopened)!;expect(view.sourceGates).toHaveLength(0);expect(view.preliminaryNeedCount).toBe(0);expect(view.calculatedItemCount).toBe(9);
   expect(view.scopeRequirementGroups).toEqual(groupCanonicalScopeRequirementsV1(result.preliminaryNeeds.map(scope)));
+  expect(consumerEstimateUnresolvedQuantityItems(reopened)).toEqual([]);
+  expect(consumerEstimateOpenScopeGroups(reopened)).toHaveLength(17);
+  expect(view.sections.some(section=>section.scopeRequirements?.some(group=>group.groupId==='primer'))).toBe(true);
+  expect(view.sections.some(section=>section.operation?.operationTitleRu==='Примыкания и герметизация')).toBe(true);
   const pdf=buildCanonicalProfessionalPdfProjection({revision:stored,rows:result.rows as CanonicalArtifactRow[],preliminaryNeeds:canonicalArtifactPreliminaryNeeds(stored),expectedProjectedRowCount:result.rows.length,workTitleRu:catalog.titleRu});
-  expect(pdf.html).toContain('Состав и этапы');expect(pdf.html).toContain('Уже учтено в норме покрытия');expect(pdf.html).toContain('Отдельный состав зависит от проекта');expect(pdf.html).not.toContain('Количество нужно уточнить');expect(pdf.grandTotalStatus).toBe('PARTIAL_NEEDS_PRICE');
+  expect(pdf.html).not.toContain('<h2>Состав и этапы</h2>');expect(pdf.html).toContain('Уже учтено в норме покрытия');expect(pdf.html).toContain('Отдельный состав зависит от проекта');expect(pdf.html).not.toContain('Количество нужно уточнить');expect(pdf.grandTotalStatus).toBe('PARTIAL_NEEDS_PRICE');
   expect(pdf.html).not.toContain('Потребностей с неуточнённым количеством или условием: 59');
-  expect(pdf.html).toContain('Отдельных групп работ по проекту: 17');
+  expect(pdf.html).toContain('Состав 17 этапов ещё не завершён приложением');
+  const boq=pdf.html.slice(pdf.html.indexOf('<table class="client">'),pdf.html.indexOf('<table class="totals">'));
+  expect(boq).toContain('Примыкания и герметизация');expect(boq).toContain('Подтверждено исходными данными');
 });
 test('invalid coverage references cannot turn an unknown obligation into included scope',async()=>{
   const r=overlay(fixture.reps[0]!,locators).representative,row=r.resources.find(n=>n.row_id===prefix+':remaining:materials_37')!;
   (row.resource_graph.scopeRequirementV1 as {coveringRowIds:string[]}).coveringRowIds=['missing-owner'];
   await expect(compile(r,facts)).rejects.toMatchObject({code:'DEFINITION_INTEGRITY_FAILED'});
+});
+
+test('real40m2 control excludes a physical resource separately from cost and restores the accepted current norm',async()=>{
+  const r=overlay(fixture.reps[0]!,locators).representative,inputs={...facts,q:'40'},rowId=prefix+':lower_isoplast_epp_4';
+  const selected={contractVersion:'canonical-estimate-composition-selection/v1' as const,excludedOperationKeys:[],excludedRowIds:[rowId]};
+  const result=await compile(r,inputs,{compositionSelectionV1:selected});
+  expect(result.rows.find(row=>row.row_id===rowId)).toMatchObject({quantity:'0',included_in_estimate:false,included_in_procurement:false});
+  expect(scope(result.preliminaryNeeds.find(need=>need.row_id===prefix+':remaining:materials_37')!).status).toBe('REQUIRED_RESOURCE_EXCLUDED');
+  const restored=await compile(r,inputs,{compositionSelectionV1:{...selected,excludedRowIds:[]}});
+  expect(restored.rows.find(row=>row.row_id===rowId)?.quantity).toBe('46.4');
+  expect(restored.rows.find(row=>row.row_id===prefix+':workers')?.quantity).toBe('5.744');
+});
+
+test('priced selected remainder never becomes full original technology after user exclusions',async()=>{
+  const r=overlay(fixture.reps[0]!,locators).representative,base=await compile(r,{...facts,q:'40'});
+  const excludedRowIds=base.preliminaryNeeds.filter(need=>['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','SCOPE_UNVERIFIED'].includes(scope(need).status)).map(need=>need.row_id);
+  const result=await compile(r,{...facts,q:'40'},{compositionSelectionV1:{contractVersion:'canonical-estimate-composition-selection/v1',excludedOperationKeys:[],excludedRowIds},
+    rowOverrides:Object.fromEntries(base.rows.filter(row=>row.included_in_estimate).map(row=>[row.row_id,{unitPrice:'1',provenance:{kind:'manual'}}]))});
+  const stored={id:'TEST',input_parameters:result.parameters,row_count:result.rows.length,totals:result.totals,amendment_contract:{parameterSources:{preliminaryNeeds:result.preliminaryNeeds}}};
+  const pdf=buildCanonicalProfessionalPdfProjection({revision:stored,rows:result.rows as CanonicalArtifactRow[],preliminaryNeeds:canonicalArtifactPreliminaryNeeds(stored),workTitleRu:'CONTROL'});
+  expect(pdf.html).toContain('<strong>Статус:</strong> Состав с исключениями пользователя');
+  expect(pdf.html).not.toContain('<strong>Статус:</strong> Полная');
+  expect(pdf.html).toContain('полнота исходной технологии этим документом не подтверждена');
+  expect(r.passport.decision.completeTechnicalEstimateAccepted).toBe(false);
 });
 test('unrelated PVC and high-load targets cannot acquire this field classification',()=>{
   for(const suffix of ['standard','small_area','large_area','high_load'])expect(()=>overlay({...fixture.reps[0]!,definition:{...fixture.reps[0]!.definition,catalog_id:'canonical-work:base:roofing_interior_flat_roof_install_'+suffix}},locators)).toThrow('ROOF_SCOPE_EXACT_PARENT_DRIFT');

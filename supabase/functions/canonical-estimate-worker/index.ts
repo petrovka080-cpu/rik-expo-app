@@ -1,6 +1,7 @@
 /* eslint-disable import/no-unresolved */
 // @ts-nocheck
 
+import {parseCanonicalCompositionSelectionV1,assertCanonicalCompositionSelectionReleaseMigrationV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1.ts';
 import { createClient } from "npm:@supabase/supabase-js@2";
 import {
   evaluateFormulaGraph,
@@ -65,6 +66,7 @@ type ClaimedJob = {
     currencyCode?: string;
     priceSnapshotIds?: string[];
     rowOverrides?: Record<string, Record<string, unknown>>;
+    compositionSelectionV1?: import('../../../src/lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1.ts').CanonicalEstimateCompositionSelectionV1 | null;
     customRows?: Record<string, unknown>[];
     releaseAdmission?: boolean;
     requestIdentity?: Record<string, unknown>;
@@ -322,6 +324,9 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
       admin.from("estimate_parameter_definition").select("*").eq("definition_version_id", parentRevision.definition_version_id),
     ]);
     if (oldResources.error || oldFormulas.error || oldParameters.error) throw Object.assign(new Error("parent price binding load failed"), {code: "DEFINITION_LOAD_FAILED"});
+    assertCanonicalCompositionSelectionReleaseMigrationV1({selection:parentRevision.amendment_contract?.parameterSources?.compositionSelectionV1,
+      from:{resources:oldResources.data ?? [],formulas:oldFormulas.data ?? [],parameters:oldParameters.data ?? []},
+      to:{resources:resourceResult.data ?? [],formulas:formulaResult.data ?? [],parameters:parameterResult.data ?? []}});
     assertCanonicalStoredManualPriceReleaseMigration({
       parentOverrides: parentRevision.amendment_contract?.rowOverrides ?? {}, parentCustomRows: parentRevision.amendment_contract?.customRows ?? [],
       requestedOverrides: job.input_payload?.rowOverrides ?? {}, requestedCustomRows: job.input_payload?.customRows ?? [],
@@ -334,6 +339,8 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
   const prices = await loadPriceItems(admin, definition.id, snapshotIds);
   confirmedParameters = { ...baselineParameters, ...stripCanonicalAutomaticPreliminaryInputsV1(parameterResult.data ?? [], confirmedParameters, effectiveUserParameters) };
   const compiled = await compileCanonicalEstimateCore({
+    compositionSelectionV1:parseCanonicalCompositionSelectionV1(Object.hasOwn(job.input_payload ?? {},'compositionSelectionV1') ? job.input_payload?.compositionSelectionV1
+      : parentRevision?.amendment_contract?.parameterSources?.compositionSelectionV1),
     operation: job.operation as "compile" | "recalculate",
     compilerVersion: WORKER_VERSION,
     catalogId: job.catalog_id,
@@ -402,6 +409,7 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
     derivedParameters: compiled.derivedParameters,
     identityContract,
     preliminaryNeeds: compiled.preliminaryNeeds,
+    compositionSelectionV1:compiled.compositionSelectionV1,
   });
   const { data: revisionId, error: commitError } = await admin.rpc(CANONICAL_ESTIMATE_REVISION_COMMIT_FUNCTION, {
     p_job_id: job.id,

@@ -1,6 +1,7 @@
 /* eslint-disable import/no-unresolved */
 // @ts-nocheck
 
+import {parseCanonicalCompositionSelectionV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1.ts';
 import { createClient } from "npm:@supabase/supabase-js@2";
 import {
   CanonicalEstimateApiError,
@@ -451,6 +452,7 @@ async function createCompileJob(request: Request, requester: ReturnType<typeof c
       } : {}),
       ...(operation === "recalculate" ? {
         rowOverrides: body.rowOverrides ?? {},
+        ...(Object.hasOwn(body,'compositionSelectionV1')?{compositionSelectionV1:parseCanonicalCompositionSelectionV1(body.compositionSelectionV1)}:{}),
         customRows: body.customRows ?? [],
         ...(body.releaseMigration == null ? {} : { releaseMigration: body.releaseMigration }),
       } : {}),

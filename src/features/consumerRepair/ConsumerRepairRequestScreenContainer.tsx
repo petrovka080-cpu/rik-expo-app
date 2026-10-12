@@ -1056,7 +1056,8 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
             loadConsumerCanonicalParameterSession({ revisionId, draftId: requestDraftId })}
           onLoadCanonicalNamingEvidence={(revisionId, requestDraftId) => loadConsumerRepairCanonicalNamingEvidence({
             revisionId, requestDraftId, consumerUserId: resolvedConsumerUserId, workspaceGenerationRef})}
-          onRecalculateCanonicalEstimate={async ({ revisionId, requestDraftId, problemText, patches, rowOverrides }) => {
+          onRecalculateCanonicalEstimate={async (command) => {
+            const {revisionId,requestDraftId,problemText,patches,rowOverrides}=command;
             const source = captureRecalculationSource(requestDraftId, revisionId);
             return await recalculateAndPersistConsumerCanonicalEstimate({
               revisionId,
@@ -1064,6 +1065,8 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
               problemText,
               patches,
               rowOverrides,
+              ...(Object.hasOwn(command,'roofPrimerPrerequisiteV1')?{roofPrimerPrerequisiteV1:command.roofPrimerPrerequisiteV1}:{}),
+              ...(Object.hasOwn(command,'compositionSelectionV1')?{compositionSelectionV1:command.compositionSelectionV1}:{}),
               confirmReleaseMigration: releaseMigrationConfirmation.confirmReleaseMigration,
               assertMutationSource: source.assertMutationSource,
               persist: (mapping, nextProblemText, targetDraftId) =>

@@ -1,5 +1,7 @@
 import { createHash } from 'node:crypto';
 import { canonicalEstimateStableJson } from './canonicalEstimateDeterminism';
+import {parseCanonicalCompositionSelectionV1} from './canonicalEstimateCompositionSelectionV1';
+import {parseRoofPrimerPrerequisiteCommandV1} from './canonicalRoofPrimerPrerequisiteV1';
 
 type Json = Record<string, any>;
 type QueryClient = { query(text: string, values?: any[]): Promise<{ rows: Json[] }> };
@@ -19,6 +21,8 @@ export function canonicalUserCommandSemanticPayloadV1(payload: Json): Json {
   return { parameters: payload.parameters ?? {}, currencyCode: payload.currencyCode,
     priceSnapshotIds: payload.priceSnapshotIds ?? [], requestIdentity: payload.requestIdentity ?? null,
     rowOverrides: payload.rowOverrides ?? {}, customRows: payload.customRows ?? [], releaseMigration: payload.releaseMigration ?? null,
+    ...(Object.hasOwn(payload,'compositionSelectionV1')?{compositionSelectionV1:parseCanonicalCompositionSelectionV1(payload.compositionSelectionV1)}:{}),
+    ...(Object.hasOwn(payload,'roofPrimerPrerequisiteV1')?{roofPrimerPrerequisiteV1:payload.roofPrimerPrerequisiteV1===null?null:parseRoofPrimerPrerequisiteCommandV1(payload.roofPrimerPrerequisiteV1)}:{}),
     ...(payload.derivedQuantityClearV1 == null ? {} : { derivedQuantityClearV1: payload.derivedQuantityClearV1 }) };
 }
 function digest(identity: CanonicalUserCommandReplayIdentity, payload = identity.payload): string {

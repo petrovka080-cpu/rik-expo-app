@@ -100,6 +100,8 @@ import {
   consumerRepairRowIncludedInProcurement,
 } from "./consumerRepairRowMetadata";
 import type { CanonicalParameterSession } from "../../lib/estimate/canonicalParameters";
+import {RequestEstimatePrimerPrerequisite} from './RequestEstimatePrimerPrerequisite';
+import {readRoofPrimerPrerequisiteDecisionV1,ROOF_PRIMER_LINK_CATALOGS_V1,type RoofPrimerPrerequisiteCommandV1} from '../../lib/estimate/backendPlatform/canonicalRoofPrimerPrerequisiteV1';
 import {
   consumerRepairCanonicalEstimateBlocksApproval,
   consumerRepairCanonicalMissingParameterCount,
@@ -265,6 +267,8 @@ export type ConsumerRepairRequestScreenControllerProps = ConsumerRepairRequestSc
     problemText: string;
     patches: ConsumerRepairDraftRevisionParamBatchPatch[];
     rowOverrides?: Record<string, CanonicalEstimateRowOverride>;
+    roofPrimerPrerequisiteV1?:RoofPrimerPrerequisiteCommandV1|null;
+    compositionSelectionV1?: import('../../lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1').CanonicalEstimateCompositionSelectionV1|null;
   }) => Promise<{ session: CanonicalParameterSession; bundle: ConsumerRepairDraftBundle; recovered?: boolean; quantityPolicyTransition?: boolean }>;
   onSelectCanonicalCatalogItem: (input: {
     context: ConsumerEstimateActionContext;
@@ -2595,6 +2599,29 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       this.setState({ canonicalEstimateMutationBusy: this.canonicalRowMutationInFlight() });
     }
   };
+  private saveRoofPrimerPrerequisite = async (command:RoofPrimerPrerequisiteCommandV1|null):Promise<void> => {
+    const current=this.state.bundle,binding=consumerRepairCanonicalBackendBinding(current);
+    if(!current||!binding)throw Error('Откройте сохранённую смету покрытия.');
+    if(this.canonicalRowMutationInFlight()||this.approvalCommitInFlight||this.state.pdfOpenBusy)throw Error('Дождитесь завершения текущего сохранения.');
+    if(Object.keys(this.pendingCanonicalRowOverrides).length>0)throw Error('Сначала примените или отмените новые правки строк. Они сохранены на экране.');
+    const source={...binding,draftId:current.draft.id},key=binding.revisionId+'\u0000primer-link';
+    this.canonicalRowAmendmentInFlightKey=key;
+    this.setState({canonicalEstimateMutationBusy:true,statusMessage:'Проверяем и сохраняем связь с огрунтовкой…'});
+    try{
+      const result=await this.props.onRecalculateCanonicalEstimate({revisionId:binding.revisionId,requestDraftId:current.draft.id,
+        problemText:current.draft.problemText||current.draft.title||'Смета',patches:[],roofPrimerPrerequisiteV1:command});
+      if(!consumerRepairCanonicalMutationSourceMatchesBundle(source,this.state.bundle))throw Error('Открыта другая версия сметы. Сохранённая связь останется в исходной смете.');
+      await new Promise<void>(resolve=>this.setState({bundle:result.bundle,canonicalBackendParameterSession:result.session,
+        selectedHistoryId:null,statusMessage:command?'Связь с огрунтовкой сохранена. Стоимость подготовки учитывается в её собственной смете.':'Связь убрана. Обе сметы и их история сохранены.',validationErrors:[]},resolve));
+      this.refreshHistory(result.bundle);
+    }catch(error){
+      if(consumerRepairCanonicalMutationSourceMatchesBundle(source,this.state.bundle))this.setState({statusMessage:error instanceof Error?error.message:'Связь огрунтовки не сохранена.'});
+      throw error;
+    }finally{
+      if(this.canonicalRowAmendmentInFlightKey===key)this.canonicalRowAmendmentInFlightKey=null;
+      this.setState({canonicalEstimateMutationBusy:this.canonicalRowMutationInFlight()});
+    }
+  };
   private applyAndApproveDraft = async (): Promise<void> => {
     if ((this.state.pendingCanonicalRowEditCount ?? 0) > 0) {
       const applied = await this.applyPendingCanonicalRowEdits();
@@ -2929,6 +2956,38 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private handleParameterDraftInteraction = () => {
     if (this.state.statusMessage != null) this.setState({ statusMessage: null });
   };
+  private changeCompositionRows = async (rowIds: readonly string[], excluded: boolean, operationKey?: string): Promise<void> => {
+    const current=this.state.bundle, binding=consumerRepairCanonicalBackendBinding(current);
+    if(!current || !binding || this.canonicalRowMutationInFlight() || this.approvalCommitInFlight || this.state.pdfOpenBusy) return;
+    if(Object.keys(this.pendingCanonicalRowOverrides).length>0) {
+      this.setState({statusMessage:'Сначала примените или отмените правки строк. Они сохранены на экране.'}); return;
+    }
+    const previous=current.structuredEstimatePayload?.canonicalBackend?.compositionSelectionV1;
+    const ids=new Set(previous?.excludedRowIds ?? []);
+    const operations=new Set(previous?.excludedOperationKeys ?? []);
+    if(operationKey) excluded ? operations.add(operationKey) : operations.delete(operationKey);
+    rowIds.forEach(id => excluded ? ids.add(id) : ids.delete(id));
+    const selection={contractVersion:'canonical-estimate-composition-selection/v1' as const,
+      excludedOperationKeys:[...operations].sort(),excludedRowIds:[...ids].sort()};
+    if(JSON.stringify(selection.excludedRowIds)===JSON.stringify(previous?.excludedRowIds ?? [])
+      && JSON.stringify(selection.excludedOperationKeys)===JSON.stringify(previous?.excludedOperationKeys ?? [])) return;
+    const source={...binding,draftId:current.draft.id},key=binding.revisionId+'\u0000composition';
+    this.canonicalRowAmendmentInFlightKey=key;
+    this.setState({canonicalEstimateMutationBusy:true,statusMessage:excluded?'Исключаем из состава и пересчитываем зависимости…':'Восстанавливаем состав по текущему объёму…'});
+    try {
+      const result=await this.props.onRecalculateCanonicalEstimate({revisionId:binding.revisionId,requestDraftId:current.draft.id,
+        problemText:current.draft.problemText||current.draft.title||'Смета',patches:[],compositionSelectionV1:selection});
+      if(!consumerRepairCanonicalMutationSourceMatchesBundle(source,this.state.bundle)) return;
+      await new Promise<void>(resolve=>this.setState({bundle:result.bundle,canonicalBackendParameterSession:result.session,
+        selectedHistoryId:null,statusMessage:excluded?'Состав сохранён. Исключённое можно восстановить.':'Состав восстановлен и пересчитан по текущему объёму.',validationErrors:[]},resolve));
+      this.refreshHistory(result.bundle);
+    } catch(error) {
+      if(consumerRepairCanonicalMutationSourceMatchesBundle(source,this.state.bundle)) this.setState({statusMessage:error instanceof Error?error.message:'Изменение состава не сохранено.'});
+    } finally {
+      if(this.canonicalRowAmendmentInFlightKey===key)this.canonicalRowAmendmentInFlightKey=null;
+      this.setState({canonicalEstimateMutationBusy:this.canonicalRowMutationInFlight()});
+    }
+  };
 
   private refineCanonicalParameters = async () => {
     const current = this.state.bundle;
@@ -3046,6 +3105,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     if (consumerRepairCanonicalBackendBinding(current)) {
       if (!removedItem) return;
       this.setState({ lastRemovedItem: removedItem });
+      const physicalRowId=consumerRepairRowCode(removedItem);
+      if(physicalRowId) {
+        void this.changeCompositionRows([physicalRowId],true); return;
+      }
       void this.applyCanonicalRowAmendment(
         itemId,
         { includedInEstimate: false, includedInProcurement: false },
@@ -3071,6 +3134,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         return;
       }
       this.setState({ lastRemovedItem: null });
+      if(currentItem.sourceParameters?.canonicalPhysicalScopeExcludedV1 && rowCode) {
+        void this.changeCompositionRows([rowCode],false); return;
+      }
       void this.applyCanonicalRowAmendment(
         currentItem.id,
         {
@@ -3513,7 +3579,17 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         onCancelParamEdit={this.cancelParamEdit}
         onApplyParamPatch={this.applyParamPatch}
         onApplyParamBatch={this.applyParamBatch}
+        onCompositionRowsChange={this.changeCompositionRows}
         onParameterDraftInteraction={this.handleParameterDraftInteraction}
+        primerPrerequisiteNode={binding&&state.bundle&&!state.selectedHistoryId
+          &&state.bundle.structuredEstimatePayload?.canonicalBackend?.revisionId===binding.revisionId
+          &&ROOF_PRIMER_LINK_CATALOGS_V1.some(id=>id===state.bundle!.structuredEstimatePayload?.canonicalBackend?.catalogId)
+          &&state.bundle.structuredEstimatePayload?.canonicalBackend?.parameters.roof_torch_system==='Наружная кровля: ЭПП-4 снизу, ЭКП-4.5 сверху, два наплавляемых слоя'
+          ?<RequestEstimatePrimerPrerequisite key={binding.revisionId} revisionId={binding.revisionId}
+            stored={readRoofPrimerPrerequisiteDecisionV1(state.bundle.structuredEstimatePayload.canonicalBackend.roofPrimerPrerequisiteV1)}
+            fieldReady={state.bundle.structuredEstimatePayload.canonicalBackend.parameters.roof_torch_conditions==='Основание принято и огрунтовано; высота до 15 м; обычные условия нового строительства'}
+            disabled={state.canonicalEstimateMutationBusy===true||state.pdfOpenBusy===true||(state.pendingCanonicalRowEditCount??0)>0}
+            onSave={this.saveRoofPrimerPrerequisite}/>:null}
         onOpenPdf={this.openPdf}
         onOpenDraft={this.openDraftFromHistory} onToggleHistorySnapshot={this.toggleHistorySnapshot}
         onEditHistoryDraft={this.editHistoryDraft}

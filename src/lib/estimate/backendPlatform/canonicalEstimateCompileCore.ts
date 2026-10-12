@@ -1,3 +1,4 @@
+import { planCanonicalCompositionSelectionV1, type CanonicalEstimateCompositionSelectionV1 } from './canonicalEstimateCompositionSelectionV1';
 import {
   compareFormulaGraphDecimals,
   evaluateFormulaGraph,
@@ -210,6 +211,7 @@ export type CanonicalEstimateCompileCoreInput = {
   priceSnapshotIds?: string[];
   priceItems?: CanonicalEstimatePriceItem[];
   rowOverrides?: Record<string, Record<string, unknown>>;
+  compositionSelectionV1?: CanonicalEstimateCompositionSelectionV1 | null;
   customRows?: Record<string, unknown>[];
   maximumResourceRows: number;
   maximumCustomRows?: number;
@@ -217,6 +219,7 @@ export type CanonicalEstimateCompileCoreInput = {
 };
 
 export type CanonicalEstimateCompileCoreResult = {
+  compositionSelectionV1?: CanonicalEstimateCompositionSelectionV1;
   parameters: Record<string, unknown>;
   /** Exact lookup outputs added by the common compiler, excluding explicit/default values. */
   derivedParameters: Record<string, unknown>;
@@ -232,6 +235,7 @@ export type CanonicalEstimateCompileCoreResult = {
   };
   priceSnapshotIds: string[];
   revisionProjection: {
+    compositionSelectionV1?: CanonicalEstimateCompositionSelectionV1;
     catalogId: string;
     parameters: Record<string, unknown>;
     priceSnapshotIds: string[];
@@ -840,6 +844,9 @@ export async function compileCanonicalEstimateCore(
   const effectiveQuantityPlan = planCanonicalEffectiveResourceQuantitiesV1(
     input.parameterDefinitions, input.resourceDefinitions, input.formulaDefinitions,
   );
+  const compositionPlan = planCanonicalCompositionSelectionV1({selection: input.compositionSelectionV1,
+    customRowIds:(input.customRows ?? []).map(row=>`manual:${String(row?.clientRowId ?? '')}`),
+    resources: input.resourceDefinitions, formulas: input.formulaDefinitions});
   const initiallyValidatedParameters = validateCanonicalEstimateParameters(
     input.parameterDefinitions,
     effectiveQuantityPlan.stripIncoming(input.submittedParameters),
@@ -977,7 +984,9 @@ export async function compileCanonicalEstimateCore(
       parameters,
       definitionParameterIds,
     );
-    const missingFormulaParameterIds = formula.input_parameter_ids.filter((parameterId) => {
+    const compositionDecision = compositionPlan.decision(resource.row_id);
+    const activeFormulaInputIds = compositionPlan.activeInputIds(resource.row_id, formula.input_parameter_ids);
+    const missingFormulaParameterIds = activeFormulaInputIds.filter((parameterId) => {
       const value = formulaParameters[parameterId];
       return value === undefined || value === null || value === "";
     });
@@ -991,6 +1000,8 @@ export async function compileCanonicalEstimateCore(
     const inclusionResolvedByManualQuantity = effectiveOutput == null && formulaOutputBounds == null && manualQuantity != null
       && inclusionOnlyWaitsForFormulaInputs && !inclusion.missingParameterIds.some(id => effectiveQuantityPlan.owners.has(id));
     assertCanonicalDerivedQuantityAmendmentV1(derivedQuantityEditPolicy, manualQuantity);
+    if(manualQuantity != null && compositionPlan.partiallyAllocated(resource.row_id))
+      throw compilerError('Сохранённое ручное количество общего ресурса нельзя распределить между изменёнными подработами. Ручные данные сохранены в исходной смете.', 'COMPOSITION_MANUAL_QUANTITY_REVIEW_REQUIRED');
     if (inclusion.value === false) continue;
     if (manualQuantity != null && originalMissingIds(missingFormulaParameterIds).some(id =>
       parameterDefinitionsById.get(id)?.truth_metadata?.value_source_role === 'UNRESOLVED_APPLICATION_NORM')) {
@@ -1004,12 +1015,15 @@ export async function compileCanonicalEstimateCore(
     const missingCommercialScopeParameterIds = commercialScopeParameterId != null
       && (parameters[commercialScopeParameterId] == null || parameters[commercialScopeParameterId] === '')
       ? [commercialScopeParameterId] : [];
-    let effectiveResourceGraph = canonicalCommercialCoveredResourceGraphV1(resource.resource_graph, commercialOwner, resource.row_id,
+    let effectiveResourceGraph = canonicalCommercialCoveredResourceGraphV1(compositionPlan.graph(resource.row_id, resource.resource_graph), commercialOwner, resource.row_id,
       commercialRate);
     const scopeRequirementDecision = effectiveResourceGraph.scopeRequirementV1 == null ? null : resolveCanonicalScopeRequirementV1({ graph: effectiveResourceGraph,
       rowId: resource.row_id, parameters, parameterIds: definitionParameterIds,
       resourceIds: scopeResourceIds,
-      knownQuantityRowIds: new Set(rows.filter(r => r.quantity != null).map(r => r.row_id)) });
+      excludedQuantityRowIds: new Set(rows.filter(r=>(r.calculation_trace as JsonRecord)?.physicalScopeExcludedV1 != null).map(r=>r.row_id)),
+      excludedOperationResourceRowIds: new Set(rows.filter(r=>compositionPlan.decision(r.row_id).excludedBy==='OPERATIONS').map(r=>r.row_id)),
+      knownQuantityRowIds: new Set(rows.filter(r => r.quantity != null
+        && !(r.calculation_trace as JsonRecord)?.physicalScopeExcludedV1).map(r => r.row_id)) });
     if (scopeRequirementDecision) effectiveResourceGraph = {...effectiveResourceGraph,scopeRequirementDecisionV1:scopeRequirementDecision};
     const costInclusion = resolveCanonicalResourceCostInclusion(
       commercialOwner ? { ...resource, resource_graph: effectiveResourceGraph } : resource, override,
@@ -1017,6 +1031,37 @@ export async function compileCanonicalEstimateCore(
     const { inclusionDecision } = costInclusion;
     let { includedInEstimate } = costInclusion;
     let { includedInProcurement } = costInclusion;
+
+    if (compositionDecision.excluded) {
+      if(scopeRequirementDecision) effectiveResourceGraph={...effectiveResourceGraph,
+        scopeRequirementDecisionV1:{...scopeRequirementDecision,status:'USER_EXCLUDED',missingObjectFactParameterIds:[]}};
+      if (commercialOwner || commercialRate) throw compilerError('Исключение физического ресурса требует пересчёта состава комплексной расценки.', 'COMPOSITION_COMMERCIAL_SCOPE_CONFLICT');
+      const priceKey = resource.cost_owner_id || resource.row_id;
+      const price = prices.get(`${priceKey}:${resource.unit_id}`);
+      if (price && price.currency_code !== input.currencyCode) throw compilerError('mixed currency snapshot', 'PRICE_CURRENCY_MISMATCH');
+      const unitPrice = override != null && Object.hasOwn(override, 'unitPrice')
+        ? nonNegativeNumericText(override.unitPrice, `${resource.row_id}.unitPrice`, true) : price ? String(price.unit_price) : null;
+      const rowWithoutHash = {row_id:resource.row_id,ordinal:resource.ordinal,resource_spec_id:resource.id,
+        section:resource.section,category:resource.category,
+        title_ru:override?.titleRu == null ? resource.title_ru : boundedText(override.titleRu,`${resource.row_id}.titleRu`,2000),
+        unit_id:resource.unit_id,quantity:'0',unit_price:unitPrice,amount:unitPrice==null?null:'0',currency_code:unitPrice==null?null:input.currencyCode,
+        procurement_eligible:resource.procurement_eligible,included_in_estimate:false,included_in_procurement:false,ownership_status:'OWNED_EXCLUDED',
+        calculation_trace:{compilerVersion:input.compilerVersion,formulaId:resource.formula_id,formulaAstSha256:formula.ast_sha256,
+          inputParameterIds:formula.input_parameter_ids,resourceGraph:effectiveResourceGraph,
+          physicalScopeExcludedV1:{reason:'USER_EXCLUDED',previousManualQuantity:manualQuantity},
+          ...(provenance?{manualAmendment:provenance}:{}),...(override?.titleRu==null?{}:{manualTitleOverride:true}),
+          ...(effectiveOutput?{effectiveQuantityOutput:{...effectiveOutput,sourceRowId:resource.row_id,acceptedQuantity:'0',basis:'USER_EXCLUDED'}}:{})},
+        normative_trace:resource.source_metadata?.normativeTrace ?? [],legacy_row_payload:null,
+        price_snapshot_id:override != null && Object.hasOwn(override,'unitPrice') ? null : price?.snapshot_id ?? null,
+        price_route_id:price?.estimate_price_snapshot?.route_id ?? null,
+        price_resolution_trace:{kind:override != null && Object.hasOwn(override,'unitPrice')?'manual_override':'snapshot',resolved:unitPrice!=null}};
+      rows.push({...rowWithoutHash,row_sha256:await input.hashJson(rowWithoutHash)} as CanonicalEstimateCompiledRow);
+      rowIds.add(resource.row_id);
+      if (effectiveOutput) {
+        parameters[effectiveOutput.parameterId]='0';formulaParameters[effectiveOutput.parameterId]='0';derivedParameters[effectiveOutput.parameterId]='0';
+      }
+      continue;
+    }
 
     const physicalBinding = resource.resource_graph?.professionalPhysicalNormBindingV1;
     const physicalBindingRecord = physicalBinding != null
@@ -1126,7 +1171,7 @@ export async function compileCanonicalEstimateCore(
       parameters,
     );
     const formulaQuantity = missingFormulaParameterIds.length === 0
-      ? evaluateFormulaGraph(formula.ast, formulaParameters)
+      ? compositionPlan.quantity(resource.row_id, formulaParameters, () => evaluateFormulaGraph(formula.ast, formulaParameters))
       : null;
     assertCanonicalCommercialCoveredQuantityV1(commercialOwner, manualQuantity, formulaQuantity);
     const formulaOutputBoundsTrace = formulaOutputBounds != null && inclusion.value === true && formulaQuantity != null
@@ -1446,13 +1491,15 @@ export async function compileCanonicalEstimateCore(
     const overrideProvenance = override == null ? null : manualProvenance(override.provenance, rowId);
     const provenance = overrideProvenance ?? customProvenance;
     overrides.delete(rowId);
-    const quantity = override != null && Object.prototype.hasOwnProperty.call(override, "quantity")
+    const submittedCustomQuantity = override != null && Object.prototype.hasOwnProperty.call(override, "quantity")
       ? nonNegativeNumericText(override.quantity, `${rowId}.quantity`, true)
       : nonNegativeNumericText(custom.quantity, `customRows.${index}.quantity`, true);
+    const physicallyExcluded=compositionPlan.decision(rowId).excluded;
+    const quantity=physicallyExcluded ? '0' : submittedCustomQuantity;
     const unitPrice = override != null && Object.prototype.hasOwnProperty.call(override, "unitPrice")
       ? nonNegativeNumericText(override.unitPrice, `${rowId}.unitPrice`, true)
       : nonNegativeNumericText(custom.unitPrice, `customRows.${index}.unitPrice`, true);
-    const includedInEstimate = override?.includedInEstimate ?? custom.includedInEstimate;
+    const includedInEstimate = physicallyExcluded ? false : override?.includedInEstimate ?? custom.includedInEstimate;
     const includedInProcurement = includedInEstimate
       && (override?.includedInProcurement ?? custom.includedInProcurement);
     if (typeof includedInEstimate !== "boolean" || typeof includedInProcurement !== "boolean"
@@ -1526,6 +1573,8 @@ export async function compileCanonicalEstimateCore(
         semanticOwner: `manual:${clientRowId}`,
         physicalRowType: String(custom.category ?? "manual"),
         manualAmendment: provenance,
+        ...(physicallyExcluded ? {physicalScopeExcludedV1:{reason:'USER_EXCLUDED',previousManualQuantity:submittedCustomQuantity},
+          resourceGraph:compositionPlan.graph(rowId,{costTreatment:'OWN_COST'})} : {}),
       },
       normative_trace: [],
       legacy_row_payload: { kind: "manual_server_owned_v1", clientRowId, provenance },
@@ -1562,6 +1611,7 @@ export async function compileCanonicalEstimateCore(
   // branch/quantity evaluation above treated it as unknown, never false/zero.
   Object.assign(parameters, explicitUnknownValues);
   return {
+    ...(compositionPlan.selection ? {compositionSelectionV1: compositionPlan.selection} : {}),
     parameters,
     derivedParameters,
     rows,
@@ -1569,6 +1619,7 @@ export async function compileCanonicalEstimateCore(
     totals,
     priceSnapshotIds,
     revisionProjection: {
+      ...(compositionPlan.selection ? {compositionSelectionV1: compositionPlan.selection} : {}),
       catalogId: input.catalogId,
       parameters,
       priceSnapshotIds,

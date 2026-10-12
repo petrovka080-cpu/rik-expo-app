@@ -9,6 +9,7 @@ import type {
 } from "./consumerRequestTypes";
 import {
   consumerEstimateUnresolvedQuantityItems,
+  consumerEstimateOpenScopeGroups,
 } from "./consumerEstimateReadiness";
 
 function hasUsefulDescription(bundle: ConsumerRepairDraftBundle): boolean {
@@ -194,6 +195,12 @@ export function validateConsumerRepairRequestForApprove(
   errors.push(...consumerRepairExactAsphaltApprovalErrors(bundle));
 
   const unresolvedQuantityItems = consumerEstimateUnresolvedQuantityItems(bundle);
+  const openScopeGroups = consumerEstimateOpenScopeGroups(bundle);
+  if (openScopeGroups.length > 0) errors.push({
+    code: 'ESTIMATE_COMPOSITION_INCOMPLETE',
+    messageRu: `Состав сметы ещё не завершён: ${openScopeGroups.map(group => group.titleRu).join('; ')}. Приложение должно подобрать применимые нормы и ресурсы; неизвестные факты объекта указаны у соответствующих этапов.`,
+    field: 'items.composition',
+  });
   if (unresolvedQuantityItems.length > 0) {
     errors.push({
       code: "ESTIMATE_QUANTITY_REQUIRED",

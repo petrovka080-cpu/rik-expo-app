@@ -1,4 +1,7 @@
+import {parseCanonicalCompositionSelectionV1,assertCanonicalCompositionSelectionReleaseMigrationV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1';
 import { projectCanonicalEstimateParameterSessionSnapshot } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSessionSnapshot";
+import {admitRoofPrimerPrerequisiteServerV1,listRoofPrimerPrerequisiteCandidatesServerV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofPrimerPrerequisiteServerV1';
+import {parseRoofPrimerPrerequisiteCommandV1,ROOF_PRIMER_LINK_CATALOGS_V1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofPrimerPrerequisiteV1';
 import { canonicalOrderedSpecificationBindings, type CanonicalOrderedSpecificationBinding } from '../../../src/lib/estimate/backendPlatform/canonicalOrderedSpecificationBindings';
 import {
   createHash,
@@ -1502,6 +1505,16 @@ async function createJob(
   }
   const parentRevisionId =
     operation === "recalculate" ? String(body.parentRevisionId ?? "") : null;
+  const primerLinkSupplied=Object.hasOwn(body,'roofPrimerPrerequisiteV1');
+  const compositionSelectionSupplied=Object.hasOwn(body,'compositionSelectionV1');
+  if(compositionSelectionSupplied) {
+    if(operation!=='recalculate') throw Object.assign(new Error('Composition changes require recalculation.'),{code:'INVALID_ARGUMENT',httpStatus:400});
+    body.compositionSelectionV1=parseCanonicalCompositionSelectionV1(body.compositionSelectionV1);
+  }
+  if(primerLinkSupplied){
+    if(operation!=='recalculate'||!ROOF_PRIMER_LINK_CATALOGS_V1.some(id=>id===catalogId))throw Object.assign(new Error('Preparation reference is unavailable for this operation.'),{code:'INVALID_ARGUMENT',httpStatus:400});
+    if(body.roofPrimerPrerequisiteV1!==null)parseRoofPrimerPrerequisiteCommandV1(body.roofPrimerPrerequisiteV1);
+  }
   const quantityClearRequested = Object.hasOwn(body, 'derivedQuantityClearV1');
   if (quantityClearRequested && (operation !== 'recalculate' || body.derivedQuantityClearV1 == null)) {
     throw Object.assign(new Error('Quantity clear is only available for an acknowledged recalculation.'), { code: 'INVALID_ARGUMENT', httpStatus: 400 });
@@ -1571,6 +1584,8 @@ async function createJob(
       const inputPayload = {
         ...(body.commandIntentV1 == null ? {} : { commandIntentV1: body.commandIntentV1 }),
         parameters: quantityClear ? quantityClear.admission.parameters : parameters,
+        ...(primerLinkSupplied?{roofPrimerPrerequisiteV1:body.roofPrimerPrerequisiteV1}:{}),
+        ...(compositionSelectionSupplied?{compositionSelectionV1:body.compositionSelectionV1}:{}),
         currencyCode,
         priceSnapshotIds,
         ...(operation === "compile"
@@ -2222,14 +2237,17 @@ async function compileClaimedJob(
     targetReleaseId: String(job.target_release_id),
   }) : null;
   if (quantityClear && definition.id !== quantityClear.targetDefinitionId) throw Object.assign(new Error('Fusion clear target definition changed.'), { code: 'FUSION_QUANTITY_CLEAR_REVIEW_REQUIRED' });
-  if (parentRevision && parentRevision.release_id !== job.target_release_id && !quantityClear) {
+  if (parentRevision && parentRevision.release_id !== job.target_release_id) {
     const parentAmendments = (parentRevision.amendment_contract ?? {}) as JsonRecord;
     const [parentResources, parentFormulas, parentParameters] = await Promise.all([
       client.query("select * from public.estimate_resource_spec where definition_version_id=$1", [parentRevision.definition_version_id]),
       client.query("select * from public.estimate_formula_graph where definition_version_id=$1", [parentRevision.definition_version_id]),
       client.query("select * from public.estimate_parameter_definition where definition_version_id=$1", [parentRevision.definition_version_id]),
     ]);
-    assertCanonicalStoredManualPriceReleaseMigration({
+    assertCanonicalCompositionSelectionReleaseMigrationV1({selection:(parentAmendments.parameterSources as JsonRecord|undefined)?.compositionSelectionV1,
+      from:{resources:parentResources.rows,formulas:parentFormulas.rows,parameters:parentParameters.rows},
+      to:{resources:resourceRows,formulas,parameters:parameterDefinitions}});
+    if(!quantityClear) assertCanonicalStoredManualPriceReleaseMigration({
       parentOverrides: parentAmendments.rowOverrides ?? {},
       parentCustomRows: parentAmendments.customRows ?? [],
       requestedOverrides: payload.rowOverrides ?? {}, requestedCustomRows: payload.customRows ?? [],
@@ -2257,6 +2275,8 @@ async function compileClaimedJob(
       ).rows;
   confirmedParameters = { ...baselineParameters, ...stripCanonicalAutomaticPreliminaryInputsV1(parameterDefinitions, confirmedParameters, effectiveUserParameters) };
   const compiled = await compileCanonicalEstimateCore({
+    compositionSelectionV1:parseCanonicalCompositionSelectionV1(Object.hasOwn(payload,'compositionSelectionV1') ? payload.compositionSelectionV1
+      : ((parentRevision?.amendment_contract as JsonRecord | undefined)?.parameterSources as JsonRecord | undefined)?.compositionSelectionV1),
     operation: String(job.operation) as "compile" | "recalculate",
     compilerVersion: COMPILER_VERSION,
     catalogId: String(job.catalog_id),
@@ -2285,6 +2305,12 @@ async function compileClaimedJob(
     hashJson: sha256,
   });
   const { parameters, rows, totals } = compiled;
+  const roofPrimerPrerequisiteV1=parentRevision?await admitRoofPrimerPrerequisiteServerV1(client,{
+    ownerUserId:String(job.owner_user_id),organizationId:job.organization_id==null?null:String(job.organization_id),
+    fieldRevisionId:String(job.parent_revision_id),fieldCatalogId:String(job.catalog_id),fieldParameters:parameters,
+    supplied:Object.hasOwn(payload,'roofPrimerPrerequisiteV1'),command:payload.roofPrimerPrerequisiteV1,
+    parentAmendmentContract:parentRevision.amendment_contract,
+  }):null;
   effectiveUserParameters = mergeCanonicalEffectiveResourceQuantityProvenanceV1({
     parameterDefinitions, resourceDefinitions: resources, formulaDefinitions: formulas,
     userParameters: effectiveUserParameters, derivedParameters: compiled.derivedParameters,
@@ -2318,6 +2344,7 @@ async function compileClaimedJob(
   const revisionProjection = {
     ...compiled.revisionProjection,
     identity: identityContract,
+    ...(roofPrimerPrerequisiteV1?{roofPrimerPrerequisiteV1}:{}),
   };
   const commitPayload = buildCanonicalRevisionCommitPayload({
     rowCount: rows.length,
@@ -2335,6 +2362,8 @@ async function compileClaimedJob(
     derivedParameters: compiled.derivedParameters,
     identityContract,
     preliminaryNeeds: compiled.preliminaryNeeds,
+    roofPrimerPrerequisiteV1,
+    compositionSelectionV1:compiled.compositionSelectionV1,
   });
   await client.query(
     `select public.${CANONICAL_ESTIMATE_REVISION_COMMIT_FUNCTION}($1,$2,$3::jsonb,$4::jsonb)`,
@@ -5027,6 +5056,13 @@ async function route(
           ? String(page[page.length - 1].revision_number)
           : null,
     });
+  }
+  if(request.method==='GET'&&path.length===3&&path[0]==='revisions'&&path[2]==='primer-prerequisite-candidates'){
+    const databaseUrl=await modelDatabaseUrlForRevision(path[1]);
+    const items=await withDatabaseClient(databaseUrl,client=>listRoofPrimerPrerequisiteCandidatesServerV1(client,{
+      fieldRevisionId:path[1],ownerUserId:currentOwnerId(),organizationId:currentTenantId(),
+    }));
+    return send(response,200,{apiVersion:API_VERSION,revisionId:path[1],items});
   }
   if (
     request.method === "GET" &&

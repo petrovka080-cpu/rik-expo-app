@@ -144,7 +144,7 @@ export function ConsumerRepairRequestStickyActions({
     : approvalCommitBusy
     ? "Подтверждаем смету…"
     : approvalUnresolvedRowCount > 0
-      ? `Нельзя подтвердить: уточните позиции (${approvalUnresolvedRowCount})`
+      ? `Состав сметы ещё не завершён (${approvalUnresolvedRowCount})`
       : approvalBlockedByParameters
         ? "Заполните параметры сметы"
         : approvalPendingRowEditCount > 0
@@ -396,6 +396,8 @@ type ContentProps = {
   onApplyParamPatch: (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => void;
   onApplyParamBatch: (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => void;
   onParameterDraftInteraction?: () => void;
+  primerPrerequisiteNode?:React.ReactNode;
+  onCompositionRowsChange?: (rowIds: readonly string[], excluded: boolean, operationKey?: string) => void;
   onOpenPdf: (requestDraftId?: string) => void;
   onOpenDraft: (requestDraftId: string) => void;
   onToggleHistorySnapshot: (requestDraftId: string) => void;
@@ -476,6 +478,8 @@ export function ConsumerRepairRequestContent({
   onApplyParamPatch,
   onApplyParamBatch,
   onParameterDraftInteraction,
+  primerPrerequisiteNode,
+  onCompositionRowsChange,
   onOpenPdf,
   onOpenDraft,
   onToggleHistorySnapshot,
@@ -510,6 +514,8 @@ export function ConsumerRepairRequestContent({
     : null;
   const draftPanel = (
     <ConsumerRepairDraftPanel
+      primerPrerequisiteNode={primerPrerequisiteNode}
+      onCompositionRowsChange={onCompositionRowsChange}
       key={`draft-panel:${bundle?.draft.id ?? "empty"}`}
       bundle={bundle}
       aiAnswerRu={aiAnswerRu}

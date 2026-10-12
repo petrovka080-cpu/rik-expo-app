@@ -1,3 +1,5 @@
+import { groupCanonicalScopeRequirementsV1, type CanonicalScopeRequirementDecisionV1,
+  type CanonicalScopeRequirementGroupV1 } from './canonicalScopeRequirementV1';
 export type CanonicalEstimateOperationReference = {
   contractVersion: "canonical-operation-resource/v1";
   groupId: string;
@@ -54,12 +56,15 @@ export type CanonicalEstimateResourceOperationSection = {
   operation: CanonicalEstimateOperationReference | null;
   resourceIds: string[];
   sharedResources: { rowId: string; titleRu: string; ownerOperationTitleRu: string }[];
+  scopeRequirements?: CanonicalScopeRequirementGroupV1[];
+  physicallyExcluded?: boolean;
 };
 
 /** UI and documents use only the immutable revision's declared relationships.
  * Related operations get a reference to the primary owner, never a second row. */
 export function canonicalEstimateResourceOperationSections(
-  resources: readonly { rowId: string; operation: unknown; titleRu: string }[],
+  resources: readonly { rowId: string; operation: unknown; titleRu: string; sourceOperation?: unknown; excludedOperationKeys?: readonly string[] }[],
+  scopeDecisions: readonly CanonicalScopeRequirementDecisionV1[] = [],
 ): CanonicalEstimateResourceOperationSection[] {
   const sections = new Map<string, CanonicalEstimateResourceOperationSection>();
   const keyOf = (reference: CanonicalEstimateOperationReference | null) => reference
@@ -84,6 +89,29 @@ export function canonicalEstimateResourceOperationSections(
           ownerOperationTitleRu: primary.operationTitleRu });
       }
     }
+    for(const reference of canonicalEstimateOperationReferences(resource.sourceOperation)) {
+      if(resource.excludedOperationKeys?.includes(keyOf(reference))) obtain(reference).physicallyExcluded=true;
+    }
+  }
+  // Saved obligations live beside their resources in the BOQ. They do not
+  // become quantity rows or new cost owners. Completed preparation remains
+  // visible at its own stage, with no repeated execution charge.
+  const resourceOwner = new Map(resources.map(resource => [resource.rowId,
+    canonicalEstimateOperationReference(resource.operation)]));
+  for (const group of groupCanonicalScopeRequirementsV1(scopeDecisions)) {
+    if (group.statuses.every(status => status === 'NOT_APPLICABLE')) continue;
+    const decisions = scopeDecisions.filter(decision => decision.groupId === group.groupId);
+    const covering = decisions.flatMap(decision => decision.coveringRowIds);
+    const coveredOwner = group.statuses.every(status => status === 'INCLUDED')
+      ? covering.map(id => resourceOwner.get(id)).find(Boolean) : null;
+    const operation: CanonicalEstimateOperationReference = coveredOwner ?? {
+      contractVersion: 'canonical-operation-resource/v1', groupId: 'saved-scope-stages',
+      groupTitleRu: 'Подработы и ресурсы выбранной работы', operationId: group.groupId,
+      operationTitleRu: group.titleRu, completionCriterionRu: group.detailsRu.join(' '),
+      processRole: group.statuses.every(status => status === 'FINANCIAL_POLICY') ? 'COST_SUMMARY' : 'PROCESS',
+    };
+    const section = obtain(operation);
+    section.scopeRequirements = [...(section.scopeRequirements ?? []), group];
   }
   const groupOrder = new Map<string, number>();
   for (const section of sections.values()) {

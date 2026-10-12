@@ -73,6 +73,8 @@ export type RequestEstimateSectionViewModel = {
   items: ConsumerRepairRequestItem[];
   operation?: CanonicalEstimateOperationReference | null;
   sharedResources?: { rowId: string; titleRu: string; ownerOperationTitleRu: string }[];
+  scopeRequirements?: CanonicalScopeRequirementGroupV1[];
+  physicallyExcluded?: boolean;
 };
 
 export type RequestEstimatePreviewRow = {
@@ -1355,10 +1357,14 @@ export function buildRequestEstimateViewModel(
       const operation = canonicalEstimateOperationReference(section.items[0]?.sourceParameters?.canonicalOperationComposition);
       return operation == null ? section : { ...section, title: canonicalPublicEstimateWorkTitleRu(operation.operationTitleRu), operation };
     }));
+  const rowPresentationIds = new Map(viewBundle.items.map(item => [String(item.sourceParameters?.rowCode ?? ''), item.id]));
   const operationSections = canonicalEstimateResourceOperationSections(viewBundle.items.map(item => ({
     rowId: item.id, operation: item.sourceParameters?.canonicalOperationComposition,
+    sourceOperation: item.sourceParameters?.canonicalSourceOperationComposition,
+    excludedOperationKeys: (item.sourceParameters?.canonicalCompositionSelectionDecisionV1 as {excludedOperationKeys?: string[]} | undefined)?.excludedOperationKeys,
     titleRu: publicItemTitle(item, canonicalTitleItems.has(item)),
-  })));
+  })), scopeDecisions.map(decision => ({...decision,
+    coveringRowIds: decision.coveringRowIds.map(id => rowPresentationIds.get(id) ?? id)})));
   const publicItemsById = new Map(baseSections.flatMap(section => section.items).map(item => [item.id, item]));
   const sections: RequestEstimateSectionViewModel[] = operationSections.some(section => section.operation != null)
     ? operationSections.flatMap(section => section.operation == null
@@ -1370,6 +1376,8 @@ export function buildRequestEstimateViewModel(
         items: section.resourceIds.flatMap(id => publicItemsById.has(id) ? [publicItemsById.get(id)!] : []),
         sharedResources: section.sharedResources.map(shared => ({ ...shared,
           ownerOperationTitleRu: canonicalPublicEstimateWorkTitleRu(shared.ownerOperationTitleRu) })),
+        scopeRequirements: section.scopeRequirements,
+        physicallyExcluded: section.physicallyExcluded,
       }]) : baseSections;
   const sourceLabels = uniqueSourceLabels(viewBundle);
   const professionalPreview = Boolean(bundle.structuredEstimatePayload) || hasExpandedComplexCalculator || hasAsphaltProfessionalSections || viewBundle.items.length > 20;

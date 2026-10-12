@@ -16,9 +16,10 @@ import { canonicalArtifactPurchaseRequirement } from "./canonicalPersistedPurcha
 import { canonicalPublicEstimateWorkTitleRu, canonicalPublicEstimateRequestTextRu } from './canonicalPublicEstimateLanguageRu';
 import { resolveCanonicalEstimateExplicitRowCategory } from './canonicalEstimateRowCategory';
 import {canonicalScopeRequirementDecisionV1,groupCanonicalScopeRequirementsV1,canonicalScopeRequirementStatusRuV1} from './canonicalScopeRequirementV1';
+import {readRoofPrimerPrerequisiteDecisionV1,roofPrimerPhaseRuV1} from './canonicalRoofPrimerPrerequisiteV1';
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-65-scope-counts-template30" as const;
+  "canonical-professional-pdf.r4-a13-s27-66-integrated-stages-template32" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -150,6 +151,10 @@ function includedCostOwnerTitle(row: CanonicalArtifactRow, rowsById: ReadonlyMap
 function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, parameters: Record<string, unknown>): string {
   const category = canonicalProfessionalPdfCategory(row);
   const includedInEstimate = row.included_in_estimate === true;
+  const physicalExcluded = objectValue(row.calculation_trace).physicalScopeExcludedV1 != null;
+  const scopeLabel = physicalExcluded ? 'Исключено пользователем из состава. Можно восстановить.'
+    : !includedInEstimate && objectValue(objectValue(row.calculation_trace).resourceGraph).costTreatment === 'OWN_COST'
+      ? 'Физическая потребность сохранена; стоимость в этой смете исключена.' : null;
   const rental = canonicalArtifactRentalBasis(row, parameters);
   const quantityLabel = (value: unknown, unit = row.unit_id) => `${canonicalArtifactQuantity(value)} ${canonicalArtifactUnit({ unit_id: unit })}`;
   // Detailed stock, reserve and remainder balances belong to procurement;
@@ -167,7 +172,7 @@ function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, para
     : canonicalArtifactMoney(row.amount, row.currency_code);
   return `<tr>
     <td class="number">${displayOrdinal}</td>
-    <td class="name"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row, parameters))}</strong>${rentalText ? `<span>${escapeCanonicalArtifactHtml(rentalText)}</span>` : ""}</td>
+    <td class="name"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row, parameters))}</strong>${rentalText ? `<span>${escapeCanonicalArtifactHtml(rentalText)}</span>` : ""}${scopeLabel ? `<span>${escapeCanonicalArtifactHtml(scopeLabel)}</span>` : ''}</td>
     <td>${escapeCanonicalArtifactHtml(CATEGORY_TITLES[category])}</td>
     <td class="unit">${escapeCanonicalArtifactHtml(canonicalArtifactUnit(row))}</td>
     <td class="numeric">${escapeCanonicalArtifactHtml(canonicalArtifactQuantity(row.quantity))}</td>
@@ -233,6 +238,10 @@ export function buildCanonicalProfessionalPdfProjection(input: {
   parameterTitlesRu?: Readonly<Record<string, string>>;
 }): CanonicalProfessionalPdfProjection {
   const { revision, rows } = input;
+  const rawPrimer=objectValue(objectValue(revision.amendment_contract).parameterSources).roofPrimerPrerequisiteV1;
+  const primer=readRoofPrimerPrerequisiteDecisionV1(rawPrimer);
+  if(rawPrimer!=null&&!primer)throw Object.assign(new Error('professional PDF preparation reference invalid'),{code:'ARTIFACT_PREPARATION_REFERENCE_INVALID'});
+  const primerAppendix=primer?`<section class="question-appendix"><h2>Связанная огрунтовка основания</h2><div class="notice"><strong>${escapeCanonicalArtifactHtml(roofPrimerPhaseRuV1(primer.phase))} · ${escapeCanonicalArtifactHtml(primer.sectionLabelRu)}</strong><br>Сохранённая смета: ${escapeCanonicalArtifactHtml(primer.sourceDisplayTitleRu)}, версия ${primer.sourceRevisionNumber}.<br>Стоимость подготовки учитывается в связанной смете; платные строки здесь повторно не добавляются.<br>Нормативная площадь огрунтовки: ${canonicalArtifactQuantity(primer.sourceNormAreaM2)} м²; площадь покрытия: ${primer.consumerNormAreaM2==null?'ещё не подтверждена':canonicalArtifactQuantity(primer.consumerNormAreaM2)+' м²'}. Обмеры ведутся отдельно; эта ссылка не распределяет количества и не формирует заказ.${primer.phase!=='completed_accepted'?'<br>План подготовки не подтверждает фактическую готовность основания.':''}</div></section>`:'';
   const preliminaryNeeds = input.preliminaryNeeds ?? [];
   const revisionTotals = objectValue(revision.totals);
   const expectedProjectedRowCount = Number(
@@ -245,16 +254,17 @@ export function buildCanonicalProfessionalPdfProjection(input: {
       code: "ARTIFACT_ROW_PARITY_FAILED",
     });
   }
-  const scopeDecisions = preliminaryNeeds.flatMap(row=>{
+  const scopeDecisions = [...rows,...preliminaryNeeds].flatMap(row=>{
     const d=canonicalScopeRequirementDecisionV1(objectValue(objectValue(row.calculation_trace).resourceGraph).scopeRequirementDecisionV1);
     return d && d.rowId===row.row_id?[d]:[];
   });
   const scopeRowIds=new Set(scopeDecisions.map(d=>d.rowId));
   const quantitativeNeeds=preliminaryNeeds.filter(row=>!scopeRowIds.has(String(row.row_id)));
   const scopeGroups=groupCanonicalScopeRequirementsV1(scopeDecisions);
+  const hasUserExclusions=scopeDecisions.some(decision=>decision.status==='USER_EXCLUDED')
+    || rows.some(row=>objectValue(row.calculation_trace).physicalScopeExcludedV1 != null);
   const projectScopeGroupCount=scopeGroups.filter(g=>g.statuses.some(s=>['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','SCOPE_UNVERIFIED'].includes(s))).length;
-  const scopeAppendix=scopeGroups.length?`<section><h2>Состав и этапы</h2><div class="notice">Нормы и зависимые количества рассчитывает приложение. Включённые расходы и выполненная подготовка повторно не начисляются. Отдельные работы по проекту и их стоимость ещё требуют подтверждения.</div><table><thead><tr><th style="width:28%">Этап или требование</th><th style="width:27%">Статус</th><th>Основание и граница</th></tr></thead><tbody>${scopeGroups.map(g=>`<tr><td>${escapeCanonicalArtifactHtml(g.titleRu)}</td><td>${escapeCanonicalArtifactHtml(g.statuses.map(canonicalScopeRequirementStatusRuV1).join('; '))}</td><td>${escapeCanonicalArtifactHtml(g.detailsRu.join(' '))}</td></tr>`).join('')}</tbody></table></section>`:'';
-  const compositionRows = [...rows, ...quantitativeNeeds].sort(
+  const compositionRows = [...rows.filter(row=>!scopeRowIds.has(String(row.row_id))), ...quantitativeNeeds].sort(
     (left, right) => Number(left.ordinal) - Number(right.ordinal),
   );
   const compositionRowIds = compositionRows.map((row) => String(row.row_id));
@@ -276,7 +286,9 @@ export function buildCanonicalProfessionalPdfProjection(input: {
   const operationSections = canonicalEstimateResourceOperationSections(compositionRows.map(row => ({
     rowId: String(row.row_id), titleRu: canonicalArtifactVisibleRowTitle(row, parameters),
     operation: objectValue(objectValue(row.calculation_trace).resourceGraph).operationCompositionV1,
-  })));
+    sourceOperation: objectValue(objectValue(row.calculation_trace).resourceGraph).originalOperationCompositionV1,
+    excludedOperationKeys: objectValue(objectValue(objectValue(row.calculation_trace).resourceGraph).compositionSelectionDecisionV1).excludedOperationKeys as string[] | undefined,
+  })), scopeDecisions);
   const hasOperations = operationSections.some(section => section.operation != null);
   const multipleOperationGroups = new Set(operationSections.flatMap(section => section.operation ? [section.operation.groupId] : [])).size > 1;
   const questionNumbers = hasOperations ? new Map<string, number>() : undefined;
@@ -299,7 +311,9 @@ export function buildCanonicalProfessionalPdfProjection(input: {
         : renderClientRow(row, ++rowNumber, parameters);
     }).join('');
     const shared = section.sharedResources.map(resource => `<tr class="shared-resource"><td colspan="7">${escapeCanonicalArtifactHtml(resource.titleRu)} — общий ресурс, учтён в разделе «${escapeCanonicalArtifactHtml(canonicalPublicEstimateWorkTitleRu(resource.ownerOperationTitleRu))}».</td></tr>`).join('');
-    return heading + ownRows + shared;
+    const scopeNotes=(section.scopeRequirements ?? []).map(group => `<tr class="scope-note"><td colspan="7"><strong>${escapeCanonicalArtifactHtml(group.statuses.map(canonicalScopeRequirementStatusRuV1).join('; '))}</strong><br>${escapeCanonicalArtifactHtml(group.detailsRu.join(' '))}${group.statuses.some(status=>['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','LEGACY_SOURCE_REQUIRED','SCOPE_UNVERIFIED'].includes(status))?'<br>Расчёт этого этапа ещё не завершён приложением. Не включён в стоимость и закупку.':''}</td></tr>`).join('');
+    return heading + (section.physicallyExcluded?'<tr><td colspan="7">Подработа исключена пользователем из состава. Можно восстановить.</td></tr>':'')
+      + ownRows + shared + scopeNotes + (primerAppendix && section.scopeRequirements?.some(group=>group.groupId==='primer')?`<tr><td colspan="7">${primerAppendix}</td></tr>`:'');
   }).join('');
   const questionAppendix = questionNumbers?.size
     ? `<section class="question-appendix"><h2>Исходные сведения для уточнения состава</h2><div class="notice">Сведения связаны с позициями по номерам. Применимость и количество пока не подтверждены; неизвестные значения не заменены нулями.</div><table><tbody>${[...questionNumbers].map(([id, number]) => `<tr><td style="width:8%">${number}</td><td>${escapeCanonicalArtifactHtml(String(input.parameterTitlesRu?.[id]))}</td></tr>`).join("")}</tbody></table></section>` : "";
@@ -308,10 +322,11 @@ export function buildCanonicalProfessionalPdfProjection(input: {
   const nonPayableRowCount = rows.length - payableRows.length;
   const pricedRows = payableRows.filter((row) => row.unit_price != null && row.amount != null);
   const missingPriceRowCount = payableRows.length - pricedRows.length;
-  const grandTotalStatus: CanonicalProfessionalPdfGrandTotalStatus = missingPriceRowCount === 0 && preliminaryNeeds.length === 0
+  const grandTotalStatus: CanonicalProfessionalPdfGrandTotalStatus = missingPriceRowCount === 0 && quantitativeNeeds.length === 0
+    && !scopeGroups.some(group=>group.statuses.some(status=>['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','SCOPE_UNVERIFIED','LEGACY_SOURCE_REQUIRED','OBJECT_FACT_REQUIRED','REQUIRED_RESOURCE_EXCLUDED'].includes(status)))
     ? "COMPLETE"
     : "PARTIAL_NEEDS_PRICE";
-  const documentStatusRu = grandTotalStatus === "COMPLETE" && technologyChecks.length === 0
+  const documentStatusRu = hasUserExclusions ? 'Состав с исключениями пользователя' : grandTotalStatus === "COMPLETE" && technologyChecks.length === 0
     ? "Полная"
     : "Предварительная";
   const categoryTotals = Object.fromEntries(
@@ -351,7 +366,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     ? "Все строки имеют подтверждённую цену."
     : `<strong>${pricedRows.length === 0 ? "Стоимость не рассчитана. Цены не заполнены." : "Стоимость рассчитана частично."}</strong> Строк без подтверждённой цены: ${missingPriceRowCount}. ${quantitativeNeeds.length > 0
       ? `Потребностей с неуточнённым количеством или условием: ${quantitativeNeeds.length}. Полный итог не рассчитан.`
-      : scopeGroups.length>0 ? `Отдельных групп работ по проекту: ${projectScopeGroupCount}; подробности — в разделе «Состав и этапы». Полный итог не рассчитан.`
+      : projectScopeGroupCount>0 ? `Состав ${projectScopeGroupCount} этапов ещё не завершён приложением; причины указаны внутри сметы. Полный итог не рассчитан.`
       : "Полный итог: требуется уточнение цен."}`;
   const pricedSummary = pricedRows.length === 0
     ? "Стоимость не рассчитана"
@@ -373,11 +388,12 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     </header>
     <div class="summary"><div><strong>Позиций расчёта</strong><br>${compositionRows.length}</div><div><strong>Количество известно</strong><br>${rows.length}; требуют уточнения ${quantitativeNeeds.length}${scopeGroups.length?`; групп состава и этапов: ${scopeGroups.length}`:''}</div><div><strong>${pricedSummary}</strong></div></div>
     <div class="notice">${priceNotice}</div>
+    ${hasUserExclusions?'<div class="notice">Состав изменён пользователем. Стоимость относится к оставшимся позициям; полнота исходной технологии этим документом не подтверждена.</div>':''}
     ${technologyChecks.map(check => `<div class="notice"><strong>Технология требует уточнения.</strong> ${escapeCanonicalArtifactHtml(check.messageRu)} Закупочная ведомость пока не готова.</div>`).join("")}
     <table class="client"><thead><tr><th>№</th><th>Наименование</th><th>Категория</th><th>Ед.</th><th>Количество</th><th>Цена за единицу</th><th>Сумма</th></tr></thead><tbody>${renderedComposition}</tbody></table>
     <table class="totals"><tbody>${totalRows}<tr><th>Неполные цены</th><td>${missingPriceRowCount}</td></tr><tr class="grand"><th>Итого</th><td>${grandTotal}</td></tr></tbody></table>
     <div class="notice"><strong>Примечание.</strong> Документ отображает сохранённые позиции, объёмы и цены. Отсутствующая цена не подменяется нулём.</div>
-    ${scopeAppendix}
+    ${scopeGroups.some(group=>group.groupId==='primer')?'':primerAppendix}
     ${questionAppendix}
     <section class="approval-block"><div class="organization">Организация: __________________________________________</div>
     <div class="signatures"><div class="signature"><strong>Составил</strong><div>ФИО / должность</div><div>Дата / подпись</div></div><div class="signature"><strong>Проверил</strong><div>ФИО / должность</div><div>Дата / подпись</div></div><div class="signature"><strong>Утвердил</strong><div>ФИО / должность</div><div>Дата / подпись</div></div></div></section>

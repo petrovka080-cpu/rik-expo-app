@@ -6,6 +6,8 @@ import {
 } from "./contracts";
 import type { AdmissionDecision } from "./estimateAdmissionR3";
 import { projectCanonicalEstimatePreliminaryNeedTransport } from "./canonicalEstimatePreliminaryNeedTransport";
+import {readRoofPrimerPrerequisiteDecisionV1} from './canonicalRoofPrimerPrerequisiteV1';
+import {parseCanonicalCompositionSelectionV1} from './canonicalEstimateCompositionSelectionV1';
 
 type StorageRecord = Record<string, unknown>;
 
@@ -52,6 +54,10 @@ export function canonicalEstimateRevisionDetailFromStorage(
   } = {},
 ): CanonicalEstimateRevisionView {
   const needTransport = projectCanonicalEstimatePreliminaryNeedTransport(row);
+  const rawPrerequisite=record(record(row.amendment_contract).parameterSources).roofPrimerPrerequisiteV1;
+  const prerequisite=readRoofPrimerPrerequisiteDecisionV1(rawPrerequisite);
+  const compositionSelectionV1=parseCanonicalCompositionSelectionV1(record(record(row.amendment_contract).parameterSources).compositionSelectionV1);
+  if(rawPrerequisite!=null&&!prerequisite)throw new CanonicalEstimateRevisionReadContractError('stored preparation reference is invalid');
   return {
     apiVersion: ESTIMATE_PLATFORM_API_VERSION,
     revisionId: String(row.id ?? ""),
@@ -66,6 +72,8 @@ export function canonicalEstimateRevisionDetailFromStorage(
     currencyCode: String(row.currency_code ?? ""),
     priceSnapshotIds: requiredPriceSnapshotIds(row),
     parameters: record(row.input_parameters),
+    ...(prerequisite?{roofPrimerPrerequisiteV1:prerequisite}:{}),
+    ...(compositionSelectionV1?{compositionSelectionV1}:{}),
     sourceRequestText: nullableText(row.source_request_text),
     sourceRequestHash: nullableText(row.source_request_hash),
     canonicalWorkTitleRu: nullableText(row.canonical_work_title_ru),

@@ -808,10 +808,12 @@ export async function recalculateConsumerCanonicalEstimate(input: {
   problemText: string;
   patches: ConsumerRepairDraftRevisionParamBatchPatch[];
   rowOverrides?: Record<string, CanonicalEstimateRowOverride>;
+  roofPrimerPrerequisiteV1?: import('../../lib/estimate/backendPlatform/canonicalRoofPrimerPrerequisiteV1').RoofPrimerPrerequisiteCommandV1|null;
+  compositionSelectionV1?: import('../../lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1').CanonicalEstimateCompositionSelectionV1|null;
 } & ConsumerCanonicalRecalculationConsent): Promise<{ mapping: ForemanAiEstimateDraftMapping; session: CanonicalParameterSession; recovered?: boolean; quantityPolicyTransition?: boolean }> {
   const revision = await getCanonicalEstimateRevision(input.revisionId);
   const { catalog, releaseMigration, recoveredRevision, quantityClearPreview } = await resolveConsumerCanonicalRecalculationCatalog({ ...input, revision,
-    allowQuantityClearTransition: true, hasNewRowAmendments: Object.keys(input.rowOverrides ?? {}).length > 0, parameterPatchKeys: input.patches.map(patch => patch.paramKey) });
+    allowQuantityClearTransition: true, hasNewRowAmendments: Object.keys(input.rowOverrides ?? {}).length > 0||Object.hasOwn(input,'roofPrimerPrerequisiteV1')||Object.hasOwn(input,'compositionSelectionV1'), parameterPatchKeys: input.patches.map(patch => patch.paramKey) });
   const rawInputs: Record<string, unknown> = consumerCanonicalInheritedRecalculationInputs(revision, catalog);
   if (!quantityClearPreview) for (const patch of input.patches) rawInputs[patch.paramKey] = patch.rawValue;
   const validation = validateCanonicalEstimateParameterInputs({ schema: catalog.parameterSchema, rawInputs });
@@ -864,6 +866,8 @@ export async function recalculateConsumerCanonicalEstimate(input: {
         customRows,
         releaseMigration,
         derivedQuantityClearV1,
+        ...(Object.hasOwn(input,'roofPrimerPrerequisiteV1')?{roofPrimerPrerequisiteV1:input.roofPrimerPrerequisiteV1}:{}),
+        ...(Object.hasOwn(input,'compositionSelectionV1')?{compositionSelectionV1:input.compositionSelectionV1}:{}),
       }),
       catalogId: revision.catalogId,
       parentRevisionId: revision.revisionId,
@@ -875,9 +879,22 @@ export async function recalculateConsumerCanonicalEstimate(input: {
       customRows,
       ...(releaseMigration ? { releaseMigration } : {}),
       ...(derivedQuantityClearV1 ? { derivedQuantityClearV1, priceSnapshotIds: revision.priceSnapshotIds } : {}),
+      ...(Object.hasOwn(input,'roofPrimerPrerequisiteV1')?{roofPrimerPrerequisiteV1:input.roofPrimerPrerequisiteV1}:{}),
+      ...(Object.hasOwn(input,'compositionSelectionV1')?{compositionSelectionV1:input.compositionSelectionV1}:{}),
     },
   });
   assertConsumerCanonicalChildRevision({ parent: revision, catalog, child: result.revision });
+  if(Object.hasOwn(input,'compositionSelectionV1')) {
+    const expected=parseCanonicalCompositionSelectionV1(input.compositionSelectionV1), actual=result.revision.compositionSelectionV1;
+    if(expected === null ? actual != null : JSON.stringify(expected) !== JSON.stringify(actual))
+      throw new CanonicalEstimateApiError('Backend не подтвердил сохранение исключений состава.',{code:'COMPOSITION_SELECTION_RESULT_MISMATCH',httpStatus:409});
+  }
+  if(Object.hasOwn(input,'roofPrimerPrerequisiteV1')){
+    const expected=input.roofPrimerPrerequisiteV1,actual=result.revision.roofPrimerPrerequisiteV1;
+    if(expected===null?actual!=null:!expected||!actual||actual.sourceRevisionId!==expected.sourceRevisionId
+      ||actual.sourceChecksumSha256!==expected.sourceChecksumSha256||actual.phase!==expected.phase||actual.sectionLabelRu!==expected.sectionLabelRu.trim())
+      throw new CanonicalEstimateApiError('Backend не подтвердил сохранение связи с огрунтовкой.',{code:'ROOF_PRIMER_LINK_RESULT_MISMATCH',httpStatus:409});
+  }
   if (result.revision.status !== "ready" || result.rows.length !== result.revision.rowCount) {
     throw new CanonicalEstimateApiError("Изменения не сохранены: не подтверждён полный состав новой версии.", { code: "REVISION_ROW_PARITY_MISMATCH", httpStatus: 409 });
   }
@@ -925,6 +942,8 @@ export async function recalculateAndPersistConsumerCanonicalEstimate(input: {
   problemText: string;
   patches: ConsumerRepairDraftRevisionParamBatchPatch[];
   rowOverrides?: Record<string, CanonicalEstimateRowOverride>;
+  roofPrimerPrerequisiteV1?: import('../../lib/estimate/backendPlatform/canonicalRoofPrimerPrerequisiteV1').RoofPrimerPrerequisiteCommandV1|null;
+  compositionSelectionV1?: import('../../lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1').CanonicalEstimateCompositionSelectionV1|null;
   persist: (
     mapping: ForemanAiEstimateDraftMapping,
     problemText: string,
@@ -939,6 +958,8 @@ export async function recalculateAndPersistConsumerCanonicalEstimate(input: {
     problemText: input.problemText,
     patches: input.patches,
     rowOverrides: input.rowOverrides,
+    ...(Object.hasOwn(input,'roofPrimerPrerequisiteV1')?{roofPrimerPrerequisiteV1:input.roofPrimerPrerequisiteV1}:{}),
+    ...(Object.hasOwn(input,'compositionSelectionV1')?{compositionSelectionV1:input.compositionSelectionV1}:{}),
     confirmReleaseMigration: input.confirmReleaseMigration,
     assertMutationSource: input.assertMutationSource,
   });
@@ -1177,3 +1198,4 @@ export async function recalculateConsumerCanonicalCatalogAddition(input: {
   }
   return { mapping, rowId };
 }
+import {parseCanonicalCompositionSelectionV1} from '../../lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1';

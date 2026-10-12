@@ -13,6 +13,8 @@ export type CanonicalEstimateRecalculateCommandIdentity = {
   customRows: CanonicalEstimateCustomRow[];
   releaseMigration?: CanonicalEstimateRecalculateRequest["releaseMigration"];
   derivedQuantityClearV1?: CanonicalEstimateRecalculateRequest['derivedQuantityClearV1'];
+  roofPrimerPrerequisiteV1?: CanonicalEstimateRecalculateRequest['roofPrimerPrerequisiteV1'];
+  compositionSelectionV1?: CanonicalEstimateRecalculateRequest['compositionSelectionV1'];
 };
 
 export function canonicalEstimateRecalculateIdempotencyKey(
@@ -25,6 +27,8 @@ export function canonicalEstimateRecalculateIdempotencyKey(
     customRows: input.customRows,
     ...(input.releaseMigration ? { releaseMigration: input.releaseMigration } : {}),
     ...(input.derivedQuantityClearV1 ? { derivedQuantityClearV1: input.derivedQuantityClearV1 } : {}),
+    ...(Object.hasOwn(input,'roofPrimerPrerequisiteV1') ? {roofPrimerPrerequisiteV1:input.roofPrimerPrerequisiteV1} : {}),
+    ...(Object.hasOwn(input,'compositionSelectionV1') ? {compositionSelectionV1:parseCanonicalCompositionSelectionV1(input.compositionSelectionV1)} : {}),
   })}`;
 }
 
@@ -50,3 +54,4 @@ export function canonicalEstimateCandidateAdmissionIdempotencyKey(input: {
 
   return `${clientPrefix}${suffix}`;
 }
+import {parseCanonicalCompositionSelectionV1} from './canonicalEstimateCompositionSelectionV1';

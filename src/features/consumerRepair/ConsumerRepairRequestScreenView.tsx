@@ -114,6 +114,8 @@ type ConsumerRepairRequestScreenViewProps = {
   onApplyParamPatch: (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => void;
   onApplyParamBatch: (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => void;
   onParameterDraftInteraction?: () => void;
+  primerPrerequisiteNode?:React.ReactNode;
+  onCompositionRowsChange?: (rowIds: readonly string[], excluded: boolean, operationKey?: string) => void;
   onOpenPdf: (requestDraftId?: string) => void;
   onOpenDraft: (requestDraftId: string) => void;
   onToggleHistorySnapshot: (requestDraftId: string) => void;
@@ -172,6 +174,8 @@ export function ConsumerRepairRequestScreenView({
   onApplyParamPatch,
   onApplyParamBatch,
   onParameterDraftInteraction,
+  primerPrerequisiteNode,
+  onCompositionRowsChange,
   onOpenPdf,
   onOpenDraft,
   onToggleHistorySnapshot,
@@ -337,6 +341,8 @@ export function ConsumerRepairRequestScreenView({
           onApplyParamPatch={onApplyParamPatch}
           onApplyParamBatch={onApplyParamBatch}
           onParameterDraftInteraction={onParameterDraftInteraction}
+          primerPrerequisiteNode={primerPrerequisiteNode}
+          onCompositionRowsChange={onCompositionRowsChange}
           onOpenPdf={onOpenPdf}
           onOpenDraft={onOpenDraft}
           onToggleHistorySnapshot={onToggleHistorySnapshot}

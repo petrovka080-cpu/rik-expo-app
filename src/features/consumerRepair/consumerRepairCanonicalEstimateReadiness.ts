@@ -5,6 +5,7 @@ import { consumerRepairCanonicalBackendBinding } from "./consumerRepairBackendOw
 import {
   consumerEstimateUnpricedPayableItems,
   consumerEstimateUnresolvedQuantityItems,
+  consumerEstimateOpenScopeGroups,
 } from "../../lib/consumerRequests/consumerEstimateReadiness";
 
 export { consumerRepairPendingCanonicalParameterCollection } from "../../lib/consumerRequests/consumerCanonicalParameterCollection";
@@ -82,7 +83,7 @@ export function consumerRepairCanonicalEstimateBlocksApproval(
 export function consumerRepairCanonicalUnresolvedRowCount(
   bundle: ConsumerRepairDraftBundle | null | undefined,
 ): number {
-  return consumerEstimateUnresolvedQuantityItems(bundle).length;
+  return consumerEstimateUnresolvedQuantityItems(bundle).length + consumerEstimateOpenScopeGroups(bundle).length;
 }
 
 export function consumerRepairCanonicalUnpricedPayableRowCount(

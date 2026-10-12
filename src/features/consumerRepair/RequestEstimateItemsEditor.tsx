@@ -7,6 +7,7 @@ import { searchCanonicalEstimateResources } from "../../lib/estimate/backendPlat
 import type { CanonicalEstimateResourceSearchItem } from "../../lib/estimate/backendPlatform/contracts";
 import { registerTimeout, type TimerRegistryHandle } from "../../lib/lifecycle/timerRegistry";
 import { ConsumerRepairItemRow } from "./ConsumerRepairItemRow";
+import {RequestEstimateStageRequirements} from './RequestEstimateStageRequirements';
 import { measureConsumerRepairQuantityRenderWork, type ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
 import type {
   RequestEstimateSectionViewModel,
@@ -49,6 +50,8 @@ function positionCountLabel(count: number): string {
 }
 
 type Props = {
+  primerPrerequisiteNode?: React.ReactNode;
+  onCompositionRowsChange?: (rowIds: readonly string[], excluded: boolean, operationKey?: string) => void;
   viewModel: RequestEstimateViewModel;
   incompleteParameterCount?: number | null;
   incompleteResolutionLabel?: string;
@@ -461,7 +464,9 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
           : section.items).filter((item) =>
             !this.state.showOnlyUnresolved || consumerRepairRowIsCanonicalPreliminaryNeed(item)),
       };
-    }).filter((section) => section.items.length > 0 || (!normalizedQuery && !this.state.showOnlyUnresolved && section.sharedResources?.length));
+    }).filter((section) => section.items.length > 0 || (!normalizedQuery && (section.physicallyExcluded || section.sharedResources?.length
+      || section.scopeRequirements?.some(group => !this.state.showOnlyUnresolved || group.statuses.some(status =>
+        ['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','LEGACY_SOURCE_REQUIRED','SCOPE_UNVERIFIED','OBJECT_FACT_REQUIRED'].includes(status))))));
     const filteredEntries = measureConsumerRepairQuantityRenderWork("CATEGORY_FILTERS", () => filteredSections.flatMap((section) => section.items.map((item) => ({
       item,
       categoryFilterId: requestEstimateCategoryFilterForItem(item, section.id),
@@ -477,8 +482,8 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
     const operationBySectionId = new Map(filteredSections.filter(section => section.operation != null).map(section => [section.id, section]));
     const multipleOperationGroups = new Set(viewModel.sections.flatMap(section => section.operation ? [section.operation.groupId] : [])).size > 1;
     const operationExpanded = (section: RequestEstimateSectionViewModel): boolean => Boolean(normalizedQuery || this.state.showOnlyUnresolved
-      || (this.state.expandedOperationIds[section.id] ?? section.items.some(item => consumerRepairRowIsCanonicalPreliminaryNeed(item)
-        || !consumerRepairRowIsTechnicalDetail(item))));
+      || (this.state.expandedOperationIds[section.id] ?? (Boolean(section.scopeRequirements?.length)
+        || section.items.some(item => consumerRepairRowIsCanonicalPreliminaryNeed(item) || !consumerRepairRowIsTechnicalDetail(item)))));
     const sectionIdByItemId = new Map(filteredSections.flatMap(section => section.items.map(item => [item.id, section.id] as const)));
     const visibleItems = filteredEntries
       .filter((entry) => !this.state.collapsedCategoryIds[entry.categoryFilterId])
@@ -501,6 +506,11 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
       })));
     const renderItem = (item: RequestEstimateSectionViewModel["items"][number], index: number) => (
       <View focusable key={`${item.id}-${index}`} testID={`request-estimate-item-anchor-${item.id}`}>
+        {item.sourceParameters?.canonicalPhysicalScopeExcludedV1 && this.props.onCompositionRowsChange
+          ? <Pressable accessibilityRole="button" onPress={() => this.props.onCompositionRowsChange?.([String(item.sourceParameters?.rowCode)],false,
+            (item.sourceParameters?.canonicalCompositionSelectionDecisionV1 as {excludedOperationKeys?:string[]} | undefined)?.excludedOperationKeys?.[0])}>
+            <Text style={styles.operationSummary}>Исключено из состава · Восстановить ресурс</Text>
+          </Pressable> : null}
         <ConsumerRepairItemRow item={item} parameterRequirementTables={viewModel.parameterRequirementTables} onDecrease={onDecrease} onIncrease={onIncrease} onQuantityChange={onQuantityChange}
           numericEditResetKey={canonicalRowEditorResetKeys?.[item.id] ?? 0}
           onUnitPriceChange={onUnitPriceChange} onSpecificationChange={onSpecificationChange} onOptionalChange={onOptionalChange}
@@ -649,9 +659,27 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
                   <Text style={styles.operationSummary}>{operation.processRole === 'REFERENCE_ONLY'
                     ? 'Справочные характеристики. Не оплачиваются и не закупаются.'
                     : operation.processRole === 'COST_SUMMARY' ? 'Сводные данные. Ресурсы учтены в соответствующих разделах.'
-                    : `${resources.length - unresolved} рассчитано · ${unresolved} требуют уточнения`}</Text>
+                    : resources.length ? `${resources.length - unresolved} рассчитано · ${unresolved} требуют уточнения`
+                      : 'Состав и готовность этапа'}</Text>
                 </Pressable>
                 {section.items.filter(item => renderedItemIds.has(item.id)).map(renderItem)}
+                {expanded && section.scopeRequirements?.length ? <RequestEstimateStageRequirements groups={section.scopeRequirements} /> : null}
+                {section.physicallyExcluded ? <Text style={styles.operationSummary}>Подработа исключена пользователем из состава.</Text> : null}
+                {this.props.onCompositionRowsChange && (section.physicallyExcluded || resources.length>0)
+                  ? <Pressable accessibilityRole="button" onPress={() => this.props.onCompositionRowsChange?.([], !section.physicallyExcluded,
+                    JSON.stringify([operation.groupId,operation.operationId]))}>
+                    <Text style={styles.operationSummary}>{section.physicallyExcluded?'Восстановить подработу':'Исключить подработу и пересчитать ресурсы'}</Text>
+                  </Pressable> : null}
+                {expanded && this.props.onCompositionRowsChange && section.scopeRequirements?.length
+                  && section.scopeRequirements.some(group => group.statuses.some(status =>
+                    ['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','LEGACY_SOURCE_REQUIRED','SCOPE_UNVERIFIED','USER_EXCLUDED'].includes(status)))
+                  ? <Pressable accessibilityRole="button" onPress={() => this.props.onCompositionRowsChange?.(
+                      section.scopeRequirements!.flatMap(group => group.rowIds),
+                      !section.scopeRequirements!.every(group => group.statuses.every(status => status === 'USER_EXCLUDED')))}>
+                    <Text style={styles.operationSummary}>{section.scopeRequirements.every(group => group.statuses.every(status => status === 'USER_EXCLUDED'))
+                      ? 'Восстановить подработу' : 'Исключить подработу из этой сметы'}</Text>
+                  </Pressable> : null}
+                {expanded && section.scopeRequirements?.some(group => group.groupId === 'primer') ? this.props.primerPrerequisiteNode : null}
                 {expanded ? section.sharedResources?.map(shared => (
                   <Text key={shared.rowId} style={styles.operationSummary} testID={`request-estimate-shared-resource-${shared.rowId}`}>
                     {`${shared.titleRu} — общий ресурс, учтён в разделе «${shared.ownerOperationTitleRu}».`}
