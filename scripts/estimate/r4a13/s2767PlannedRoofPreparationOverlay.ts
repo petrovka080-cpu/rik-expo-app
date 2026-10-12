@@ -43,8 +43,12 @@ export function overlayPlannedRoofPreparation(parent:PurchaseGroupRepresentative
  for(const row of result.resources){const {row_sha256:_old,...body}=row;row.row_sha256=hash(body);}
  const consumers=buildMasterParameterCalculationConsumers(result);
  for(const p of result.parameters){const id=p.parameter_id;p.truth_metadata={...p.truth_metadata,contract,formula_consumers:consumers.formulaConsumers[id],resource_branch_consumers:consumers.resourceConsumers[id]};result.baseline.formula_consumer_ids[id]=consumers.formulaConsumers[id];result.baseline.resource_consumer_row_ids[id]=consumers.resourceConsumers[id];}
+ for(const id of ['q',field.systemParameterId,field.conditionsParameterId,field.areaParameterId])
+  result.baseline.normative_source_ids[id]=[...new Set([...(result.baseline.normative_source_ids[id]??[]),contract+':roof'])];
+ result.baseline.guide_provenance_ru[field.conditionsParameterId]=ROOF_PLANNED_PRIMER_GUIDE_V1;
  result.baseline.parameter_schema_sha256=hash(result.parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata})));
  result.passport.decision={...result.passport.decision,plannedPreparationContract:contract,quantityScope:'PARTIAL',newNumericNormClosures:3,completeTechnicalEstimateAccepted:false,wholeRoofGroupComplete:false};
+ result.passport.included_scope_ru=[...result.passport.included_scope_ru,'Планируемая огрунтовка КРЕР 016-02 включена в эту смету только при подтверждённой совместимости и всей той же площади. Уже выполненная подготовка не начисляется повторно.'];
  result.definition.passport={...result.definition.passport,plannedPreparationContract:contract,rowCount:result.resources.length,fullTechnicalEstimateAccepted:false};
  return {representative:result,addedRowIds:addedRows.map(row=>row.row_id),changedFormulaIds:[],addedParameterIds:[],candidatePublished:false};
 }
