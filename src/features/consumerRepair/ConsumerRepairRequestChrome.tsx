@@ -140,7 +140,7 @@ export function ConsumerRepairRequestStickyActions({
   const approvalDisabled = Boolean(contentWithdrawalReasonRu) || approvalCommitBusy || deleteCommitBusy
     || (approvalPendingRowEditCount > 0 ? !canApplyAndApprove : approvalBlockedByEstimate);
   const approvalActionHint = approvalMissingPriceCount > 0
-    ? `Без цены остаются позиции: ${approvalMissingPriceCount}. Их можно заполнить позже.`
+    ? `Цена или состав цены ещё не подтверждены в ${approvalMissingPriceCount} поз. Их можно уточнить позже.`
     : undefined;
   const allIncompleteStagesNeedApplication=approvalIncompleteStages.length>0&&approvalIncompleteStages.every(group=>group.statuses.every(status=>['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','LEGACY_SOURCE_REQUIRED'].includes(status)));
   const approvalBlockedLabel = contentWithdrawalReasonRu
@@ -401,6 +401,7 @@ type ContentProps = {
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
   onUnitPriceChange: (itemId: string, value: string) => void;
+  onConfirmMachineHourPrice?: (itemId:string)=>void;
   pendingCanonicalRowEditCount?: number;
   canonicalRowEditsApplying?: boolean;
   onApplyCanonicalRowEdits?: () => boolean | void | Promise<boolean | void>;
@@ -483,6 +484,8 @@ export function ConsumerRepairRequestContent({
   onIncrease,
   onQuantityChange,
   onUnitPriceChange,
+
+  onConfirmMachineHourPrice,
   pendingCanonicalRowEditCount,
   canonicalRowEditsApplying,
   onApplyCanonicalRowEdits,
@@ -553,7 +556,7 @@ export function ConsumerRepairRequestContent({
       onDecrease={onDecrease}
       onIncrease={onIncrease}
       onQuantityChange={onQuantityChange}
-      onUnitPriceChange={onUnitPriceChange}
+      onUnitPriceChange={onUnitPriceChange} onConfirmMachineHourPrice={onConfirmMachineHourPrice}
       pendingCanonicalRowEditCount={pendingCanonicalRowEditCount}
       canonicalRowEditsApplying={canonicalRowEditsApplying}
       onApplyCanonicalRowEdits={onApplyCanonicalRowEdits}

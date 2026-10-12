@@ -1014,6 +1014,7 @@ export async function recalculateConsumerCanonicalCatalogSelection(input: {
     [input.rowId]: {
       ...(revision.amendmentContract.rowOverrides[input.rowId] ?? {}),
       ...(unitPrice == null ? {} : { unitPrice }),
+      ...(Object.hasOwn(revision.amendmentContract.rowOverrides[input.rowId]??{},'machineHourPriceCoverageV1')?{machineHourPriceCoverageV1:null}:{}),
       provenance: {
         kind: "manual" as const,
         reason: `market_catalog:${input.catalogItem.catalogItemId}:${input.catalogItem.sourceId}`.slice(0, 500),

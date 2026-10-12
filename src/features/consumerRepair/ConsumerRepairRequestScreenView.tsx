@@ -97,6 +97,7 @@ type ConsumerRepairRequestScreenViewProps = {
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
   onUnitPriceChange: (itemId: string, value: string) => void;
+  onConfirmMachineHourPrice?: (itemId:string)=>void;
   onApplyCanonicalRowEdits: () => boolean | void | Promise<boolean | void>;
   onCancelCanonicalRowEdits?: () => void;
   canonicalRowEditorResetKeys?: Readonly<Record<string, number>>;
@@ -157,6 +158,7 @@ export function ConsumerRepairRequestScreenView({
   onIncrease,
   onQuantityChange,
   onUnitPriceChange,
+  onConfirmMachineHourPrice,
   onApplyCanonicalRowEdits,
   onCancelCanonicalRowEdits,
   canonicalRowEditorResetKeys,
@@ -321,7 +323,7 @@ export function ConsumerRepairRequestScreenView({
           onDecrease={onDecrease}
           onIncrease={onIncrease}
           onQuantityChange={onQuantityChange}
-          onUnitPriceChange={onUnitPriceChange}
+          onUnitPriceChange={onUnitPriceChange} onConfirmMachineHourPrice={onConfirmMachineHourPrice}
           pendingCanonicalRowEditCount={state.pendingCanonicalRowEditCount ?? 0}
           canonicalRowEditsApplying={state.canonicalEstimateMutationBusy === true}
           onApplyCanonicalRowEdits={onApplyCanonicalRowEdits}

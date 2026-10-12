@@ -68,6 +68,7 @@ type ItemEditorHandlers = {
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
   onUnitPriceChange: (itemId: string, value: string) => void;
+  onConfirmMachineHourPrice?: (itemId:string)=>void;
   pendingCanonicalRowEditCount?: number;
   canonicalRowEditsApplying?: boolean;
   onApplyCanonicalRowEdits?: () => boolean | void | Promise<boolean | void>;
@@ -595,6 +596,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
       onIncrease,
       onQuantityChange,
       onUnitPriceChange,
+      onConfirmMachineHourPrice,
       pendingCanonicalRowEditCount,
       canonicalRowEditsApplying,
       onApplyCanonicalRowEdits,
@@ -780,7 +782,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
           onDecrease={onDecrease}
           onIncrease={onIncrease}
           onQuantityChange={onQuantityChange}
-          onUnitPriceChange={onUnitPriceChange}
+          onUnitPriceChange={onUnitPriceChange} onConfirmMachineHourPrice={onConfirmMachineHourPrice}
           pendingCanonicalRowEditCount={pendingCanonicalRowEditCount}
           canonicalRowEditsApplying={canonicalRowEditsApplying}
           onApplyCanonicalRowEdits={onApplyCanonicalRowEdits}
@@ -2210,6 +2212,7 @@ function EstimatePositionsPanel({
   onIncrease,
   onQuantityChange,
   onUnitPriceChange,
+  onConfirmMachineHourPrice,
   pendingCanonicalRowEditCount,
   canonicalRowEditsApplying,
   onApplyCanonicalRowEdits,
@@ -2265,7 +2268,7 @@ function EstimatePositionsPanel({
         onDecrease={onDecrease}
         onIncrease={onIncrease}
         onQuantityChange={onQuantityChange}
-        onUnitPriceChange={onUnitPriceChange}
+        onUnitPriceChange={onUnitPriceChange} onConfirmMachineHourPrice={onConfirmMachineHourPrice}
         pendingCanonicalRowEditCount={pendingCanonicalRowEditCount}
         canonicalRowEditsApplying={canonicalRowEditsApplying}
         onApplyCanonicalRowEdits={onApplyCanonicalRowEdits}

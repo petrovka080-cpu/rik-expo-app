@@ -1,5 +1,6 @@
 import { canonicalEstimateOperationReference, canonicalEstimateResourceOperationSections, canonicalEstimateWorkProcess, type CanonicalEstimateOperationReference, type CanonicalEstimateWorkProcessGroup } from "../../lib/estimate/backendPlatform/canonicalEstimateOperationComposition";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
+import {consumerMachineHourPriceNeedsConfirmation} from '../../lib/consumerRequests/consumerMachineHourPriceCoverage';
 import { consumerCanonicalApplicationScopeRequirementNotice, consumerCanonicalMissingRequirements, consumerCanonicalParameterTitle, type CanonicalParameterRequirementTables } from "../../lib/consumerRequests/consumerCanonicalParameterRequirements";
 import { canonicalPurchaseShortageMessageV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
 import {canonicalScopeRequirementDecisionV1,groupCanonicalScopeRequirementsV1,type CanonicalScopeRequirementGroupV1} from '../../lib/estimate/backendPlatform/canonicalScopeRequirementV1';
@@ -1091,7 +1092,8 @@ function expertReviewPublicLabel(value: string): string {
   return "\u043d\u0443\u0436\u043d\u0430 \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430";
 }
 
-function fullTotalPublicLabel(fullTotalStatus: string, missingPrices: number): string {
+function fullTotalPublicLabel(fullTotalStatus: string, missingPrices: number,unconfirmedMachinePrices=0): string {
+  if(unconfirmedMachinePrices>0)return `Итог предварительный: не подтверждён состав цены эксплуатации в ${unconfirmedMachinePrices} поз.${missingPrices>0?` Ещё ${missingPrices} поз. без цены.`:''}`;
   if (missingPrices > 0) return "\u0418\u0442\u043e\u0433: \u043d\u0435 \u0444\u0438\u043d\u0430\u043b\u044c\u043d\u044b\u0439, \u043f\u043e\u043b\u043d\u044b\u0439 \u0438\u0442\u043e\u0433 \u043d\u0435 \u0440\u0430\u0441\u0441\u0447\u0438\u0442\u0430\u043d, \u0435\u0441\u0442\u044c \u043d\u0435\u0437\u0430\u043f\u043e\u043b\u043d\u0435\u043d\u043d\u044b\u0435 \u0446\u0435\u043d\u044b";
   if (fullTotalStatus === "FINAL_TOTAL_ALLOWED") return "\u0418\u0442\u043e\u0433: \u0444\u0438\u043d\u0430\u043b\u044c\u043d\u044b\u0439";
   return "\u0418\u0442\u043e\u0433: \u043f\u0440\u0435\u0434\u0432\u0430\u0440\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0439, \u043d\u0443\u0436\u043d\u0430 \u044d\u043a\u0441\u043f\u0435\u0440\u0442\u043d\u0430\u044f \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430";
@@ -1319,6 +1321,7 @@ export function buildRequestEstimateViewModel(
   );
   const priced = payableItems.filter((item) => item.totalPrice != null);
   const missingPrices = payableItems.filter((item) => item.unitPrice == null || item.totalPrice == null).length;
+  const unconfirmedMachinePrices=payableItems.filter(consumerMachineHourPriceNeedsConfirmation).length;
   const total = priced.reduce((sum, item) => sum + (item.totalPrice ?? 0), 0);
   const summaryTotal = durableSummary?.totalPrice ?? null;
   const currency = priced[0]?.currency ?? durableSummary?.currency ?? "KGS";
@@ -1433,7 +1436,7 @@ export function buildRequestEstimateViewModel(
       ? formatEstimateMoney(summaryTotal, currency)
       : priced.length === 0
       ? "Стоимость не рассчитана"
-      : canonicalBlocking || missingPrices > 0 || preliminaryNeedCount > 0
+      : canonicalBlocking || missingPrices > 0 || unconfirmedMachinePrices > 0 || preliminaryNeedCount > 0
         ? `Стоимость рассчитана частично: ${formatEstimateMoney(total, currency)}`
       : priced.length > 0
         ? formatEstimateMoney(total, currency)
@@ -1455,7 +1458,7 @@ export function buildRequestEstimateViewModel(
       : `\u0423\u0440\u043e\u0432\u0435\u043d\u044c \u0441\u043c\u0435\u0442\u044b: ${estimateLevelPublicLabel(productionTrust.estimate_level)}`,
     sourceQualityLabel: `\u041a\u0430\u0447\u0435\u0441\u0442\u0432\u043e \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a\u0430: ${sourceQualityPublicLabel(productionTrust.source_quality)}`,
     expertReviewStatusLabel: `\u042d\u043a\u0441\u043f\u0435\u0440\u0442\u043d\u0430\u044f \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430: ${expertReviewPublicLabel(productionTrust.expert_review_status)}`,
-    fullTotalStatusLabel: fullTotalPublicLabel(productionTrust.full_total_status, missingPrices),
+    fullTotalStatusLabel: fullTotalPublicLabel(productionTrust.full_total_status, missingPrices,unconfirmedMachinePrices),
     pilotBadgeLabel: pilotMode.badgeLabelRu,
     pilotDisclosureLabel: pilotMode.disclosureRu,
     visibleLines: measure("VISIBLE_LINES", () => sections

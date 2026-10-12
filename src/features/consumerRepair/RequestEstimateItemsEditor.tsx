@@ -65,6 +65,7 @@ type Props = {
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
   onUnitPriceChange: (itemId: string, value: string) => void;
+  onConfirmMachineHourPrice?: (itemId:string)=>void;
   onSpecificationChange?: (itemId: string, value: string) => void;
   onOptionalChange?: (itemId: string, optional: boolean) => void;
   onRemove: (itemId: string) => void;
@@ -441,6 +442,8 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
       onIncrease,
       onQuantityChange,
       onUnitPriceChange,
+
+      onConfirmMachineHourPrice,
       onSpecificationChange,
       onOptionalChange,
       onRemove,
@@ -513,7 +516,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
           </Pressable> : null}
         <ConsumerRepairItemRow item={item} parameterRequirementTables={viewModel.parameterRequirementTables} onDecrease={onDecrease} onIncrease={onIncrease} onQuantityChange={onQuantityChange}
           numericEditResetKey={canonicalRowEditorResetKeys?.[item.id] ?? 0}
-          onUnitPriceChange={onUnitPriceChange} onSpecificationChange={onSpecificationChange} onOptionalChange={onOptionalChange}
+          onUnitPriceChange={onUnitPriceChange} onConfirmMachineHourPrice={onConfirmMachineHourPrice} onSpecificationChange={onSpecificationChange} onOptionalChange={onOptionalChange}
           onRemove={onRemove} onOpenCatalog={onOpenCatalog} onOpenPhoto={onOpenPhoto} showPhotoButton={showPhotoButtons === true}
           photoThumbnailUri={this.props.rowPhotoThumbnails?.[item.id] ?? null}
           hasPhotoAttachment={this.props.rowPhotoAttachmentItemIds?.has(item.id) === true} />

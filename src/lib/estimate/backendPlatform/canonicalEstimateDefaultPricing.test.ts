@@ -69,9 +69,9 @@ describe("canonical estimate automatic compatible price selection", () => {
     expect(migration).not.toContain("release.status in ('draft'");
     expect(ingress).toMatch(/requester\.rpc\(\s*"estimate_resolve_default_price_snapshot_ids_v1"/u);
     expect(ingress).toContain("compatibleDefaults: compatibleDefaultPriceSnapshotIds");
-    expect(worker).toContain('admin.rpc("estimate_resolve_compile_price_items_v2"');
+    expect(worker).toContain('admin.rpc("estimate_resolve_compile_price_items_v3"');
     expect(worker).not.toContain('.limit(20_000)');
-    expect(local).toContain("public.estimate_resolve_compile_price_items_v2($2::uuid,$1::uuid[])");
+    expect(local).toContain("public.estimate_resolve_compile_price_items_v3($2::uuid,$1::uuid[])");
     expect(scopedMigration).toContain("snapshot.captured_at<=now()");
     expect(scopedMigration).toContain("resource.definition_version_id=p_definition_version_id");
     expect(scopedMigration).not.toContain("resource.category");

@@ -3,6 +3,7 @@ import type {
   ConsumerRepairRequestItem,
 } from "./consumerRequestTypes";
 import { canonicalScopeRequirementDecisionV1, groupCanonicalScopeRequirementsV1 } from '../estimate/backendPlatform/canonicalScopeRequirementV1';
+import {consumerMachineHourPriceNeedsConfirmation} from './consumerMachineHourPriceCoverage';
 
 const NON_PAYABLE_COST_TREATMENTS = new Set([
   "INCLUDED_IN_RESOURCE_ROWS",
@@ -82,6 +83,6 @@ export function consumerEstimateUnpricedPayableItems(
   return bundle.items.filter((item) =>
     item.sourceParameters?.canonicalPreliminaryNeed !== true
       && isConsumerEstimatePayableItem(item)
-      && (item.unitPrice == null || item.totalPrice == null)
+      && (item.unitPrice == null || item.totalPrice == null || consumerMachineHourPriceNeedsConfirmation(item))
   );
 }

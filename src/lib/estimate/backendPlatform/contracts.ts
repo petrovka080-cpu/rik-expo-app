@@ -6,6 +6,7 @@ import { parseCanonicalPublicResourcePresentationV1 } from './canonicalPublicRes
 import type { AdmissionDecision } from "./estimateAdmissionR3";
 import { canonicalDerivedQuantityEditPolicyV1, type CanonicalDerivedQuantityEditPolicyV1 } from './canonicalDerivedQuantityEditPolicyV1';
 import { canonicalFusionDerivedQuantityClearConsentS2758, type CanonicalFusionDerivedQuantityClearConsentS2758 } from './canonicalFusionDerivedQuantityClearAdmissionS2758';
+import {parseCanonicalMachineHourPriceCoverageV1,type CanonicalMachineHourPriceCoverageV1} from './canonicalMachineHourPriceCoverageV1';
 
 export const ESTIMATE_PLATFORM_API_VERSION = "2026-08-14.r2" as const;
 
@@ -85,6 +86,7 @@ export type CanonicalEstimateRowOverride = {
   /** Null is an explicit return of a manual custom row to its unresolved quantity state. */
   quantity?: string | number | null;
   unitPrice?: string | number | null;
+  machineHourPriceCoverageV1?:CanonicalMachineHourPriceCoverageV1|null;
   includedInEstimate?: boolean;
   includedInProcurement?: boolean;
   provenance: CanonicalEstimateManualProvenance;
@@ -942,7 +944,7 @@ function validateRowAmendments(request: Partial<CanonicalEstimateRecalculateRequ
         throw new CanonicalEstimateApiError("row override identity is invalid", { code: "INVALID_ARGUMENT", httpStatus: 400 });
       }
       const override = raw as CanonicalEstimateRowOverride;
-      const allowed = new Set(["titleRu", "quantity", "unitPrice", "includedInEstimate", "includedInProcurement", "provenance"]);
+      const allowed = new Set(["titleRu", "quantity", "unitPrice", "machineHourPriceCoverageV1", "includedInEstimate", "includedInProcurement", "provenance"]);
       if (Object.keys(override).some((key) => !allowed.has(key))) {
         throw new CanonicalEstimateApiError(`rowOverrides.${rowId} contains an unsupported field`, { code: "INVALID_ARGUMENT", httpStatus: 400 });
       }
@@ -955,6 +957,8 @@ function validateRowAmendments(request: Partial<CanonicalEstimateRecalculateRequ
       if (override.unitPrice != null && !isNonNegativeNumber(override.unitPrice)) {
         throw new CanonicalEstimateApiError(`rowOverrides.${rowId}.unitPrice is invalid`, { code: "INVALID_ARGUMENT", httpStatus: 400 });
       }
+      if(override.machineHourPriceCoverageV1!=null&&!parseCanonicalMachineHourPriceCoverageV1(override.machineHourPriceCoverageV1))
+        throw new CanonicalEstimateApiError(`rowOverrides.${rowId}.machineHourPriceCoverageV1 is invalid`,{code:'INVALID_ARGUMENT',httpStatus:400});
       if (override.includedInEstimate != null && typeof override.includedInEstimate !== "boolean") {
         throw new CanonicalEstimateApiError(`rowOverrides.${rowId}.includedInEstimate is invalid`, { code: "INVALID_ARGUMENT", httpStatus: 400 });
       }

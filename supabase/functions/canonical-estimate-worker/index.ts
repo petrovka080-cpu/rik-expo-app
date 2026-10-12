@@ -2,6 +2,7 @@
 // @ts-nocheck
 
 import {parseCanonicalCompositionSelectionV1,assertCanonicalCompositionSelectionReleaseMigrationV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1.ts';
+import {canonicalArtifactRowsWithPriceRecordsV1} from '../../../src/lib/estimate/backendPlatform/canonicalArtifactRowPricesV1.ts';
 import { createClient } from "npm:@supabase/supabase-js@2";
 import {
   evaluateFormulaGraph,
@@ -189,7 +190,7 @@ async function loadPriceItems(
 ) {
   const prices = new Map<string, Record<string, unknown>>();
   if (snapshotIds.length === 0) return prices;
-  const { data, error } = await admin.rpc("estimate_resolve_compile_price_items_v2", {
+  const { data, error } = await admin.rpc("estimate_resolve_compile_price_items_v3", {
     p_definition_version_id: definitionVersionId,
     p_snapshot_ids: snapshotIds,
   });
@@ -607,19 +608,21 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
   if (!job.parent_revision_id || !["pdf", "professional_pdf", "procurement"].includes(job.operation)) {
     throw Object.assign(new Error("invalid artifact job"), { code: "ARTIFACT_JOB_INVALID" });
   }
-  const [{ data: revision, error: revisionError }, { data: rowData, error: rowsError }] = await Promise.all([
+  const [{ data: revision, error: revisionError }, { data: rowData, error: rowsError },{data:priceData,error:pricesError}] = await Promise.all([
     admin.from("estimate_revision")
       .select("id,release_id,definition_version_id,catalog_id,organization_id,owner_user_id,revision_number,input_parameters,user_input_snapshot,amendment_contract,currency_code,totals,row_count,checksum_sha256,compiler_version,migration_source,source_request_text,source_request_hash,canonical_work_title_ru,display_title_ru,primary_measure_parameter_id,primary_measure_value,primary_measure_unit_id,created_at")
       .eq("id", job.parent_revision_id).single(),
     admin.from("estimate_revision_row")
-      .select("row_id,ordinal,section,category,title_ru,unit_id,quantity,unit_price,amount,currency_code,procurement_eligible,included_in_estimate,included_in_procurement,ownership_status,calculation_trace,normative_trace,legacy_row_payload,row_sha256")
+      .select("revision_id,row_id,ordinal,section,category,title_ru,unit_id,quantity,unit_price,amount,currency_code,procurement_eligible,included_in_estimate,included_in_procurement,ownership_status,calculation_trace,normative_trace,legacy_row_payload,row_sha256")
       .eq("revision_id", job.parent_revision_id).order("ordinal").limit(5_001),
+    admin.from('estimate_revision_row_price').select('revision_id,row_id,price_snapshot_id,resolution_trace')
+      .eq('revision_id',job.parent_revision_id).limit(5_001),
   ]);
-  if (revisionError || rowsError || !revision || (rowData?.length ?? 0) > 5_000
+  if (revisionError || rowsError || pricesError || !revision || (priceData?.length??0)>5_000 || (rowData?.length ?? 0) > 5_000
     || rowData?.length !== revision.row_count) {
     throw Object.assign(new Error("artifact source revision load failed"), { code: "ARTIFACT_SOURCE_INVALID" });
   }
-  const selection = selectCanonicalArtifactRows(rowData ?? []);
+  const selection = selectCanonicalArtifactRows(canonicalArtifactRowsWithPriceRecordsV1({revisionId:job.parent_revision_id,rows:rowData??[],prices:priceData??[]}));
   const rows = job.operation === "professional_pdf"
     ? selection.professionalPdfRows
     : selection.estimateRows;

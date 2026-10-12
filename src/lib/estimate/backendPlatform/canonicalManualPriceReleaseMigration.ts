@@ -1,5 +1,7 @@
 import {canonicalEstimateStableJson} from './canonicalEstimateDeterminism';
 import {canonicalEstimateSha256HexText} from './canonicalEstimateSha256';
+import {parseCanonicalMachineHourPriceCoverageV1,canonicalMachineHourPriceRequirementV1} from './canonicalMachineHourPriceCoverageV1';
+import {compareFormulaGraphDecimals} from './formulaGraph';
 
 type Row=Record<string,unknown>;
 const object=(v:unknown):Row=>v&&typeof v==='object'&&!Array.isArray(v)?v as Row:{};
@@ -49,6 +51,7 @@ export function canonicalManualExclusionMigrationBindings(input:{resources:reado
 export function canonicalStoredManualPricesCanMigrate(input:{
  rowOverrides:unknown;customRows:unknown;fromBindings:unknown;toBindings:unknown;
  fromExclusionBindings?:unknown;toExclusionBindings?:unknown;
+ currency?:unknown;
 }):boolean{
  const overrides=object(input.rowOverrides),from=object(input.fromBindings),to=object(input.toBindings);
  const fromExclusions=object(input.fromExclusionBindings),toExclusions=object(input.toExclusionBindings);
@@ -57,7 +60,12 @@ export function canonicalStoredManualPricesCanMigrate(input:{
   const override=object(value),provenance=object(override.provenance),price=override.unitPrice;
   const hasPrice=Object.hasOwn(override,'unitPrice');
   const hasExclusion=Object.hasOwn(override,'includedInEstimate')||Object.hasOwn(override,'includedInProcurement');
-  return (hasPrice||hasExclusion)&&Object.keys(override).every(key=>['unitPrice','provenance','includedInEstimate','includedInProcurement'].includes(key))
+  const evidence=parseCanonicalMachineHourPriceCoverageV1(override.machineHourPriceCoverageV1);
+  const evidenceValid=override.machineHourPriceCoverageV1==null||evidence!=null&&hasPrice&&price!=null
+    &&/^\d+(?:\.\d+)?$/.test(String(price))&&compareFormulaGraphDecimals(evidence.unitPrice,String(price))===0
+    &&evidence.currencyCode===input.currency&&evidence.resourceCode===canonicalMachineHourPriceRequirementV1(id,'machine_hour')?.resourceCode
+    &&evidence.source.kind==='MANUAL'&&evidence.source.rowId===id&&evidence.source.priceProvenanceReason===(provenance.reason??null);
+  return evidenceValid&&(hasPrice||hasExclusion)&&Object.keys(override).every(key=>['unitPrice','machineHourPriceCoverageV1','provenance','includedInEstimate','includedInProcurement'].includes(key))
    &&provenance.kind==='manual'
    &&(!hasPrice||((price===null||((typeof price==='string'||typeof price==='number')&&String(price).trim()!==''&&Number.isFinite(Number(price))&&Number(price)>=0))
     &&typeof from[id]==='string'&&/^[a-f0-9]{64}$/u.test(from[id] as string)&&from[id]===to[id]))
@@ -75,6 +83,6 @@ export function assertCanonicalStoredManualPriceReleaseMigration(input:{
   ||canonicalEstimateStableJson(input.parentOverrides??{})!==canonicalEstimateStableJson(input.requestedOverrides??{})
   ||canonicalEstimateStableJson(input.parentCustomRows??[])!==canonicalEstimateStableJson(input.requestedCustomRows??[])
   ||!canonicalStoredManualPricesCanMigrate({rowOverrides:input.parentOverrides,customRows:input.parentCustomRows??[],fromBindings:input.fromBindings,toBindings:input.toBindings,
-   fromExclusionBindings:input.fromExclusionBindings,toExclusionBindings:input.toExclusionBindings}))
+   fromExclusionBindings:input.fromExclusionBindings,toExclusionBindings:input.toExclusionBindings,currency:input.parentCurrency}))
   throw Object.assign(new Error('Переход остановлен: совместимость сохранённых ручных цен или строк не подтверждена. Исходная смета и введённые значения сохранены.'),{code:'RELEASE_MIGRATION_ROW_BINDING_REVIEW_REQUIRED'});
 }

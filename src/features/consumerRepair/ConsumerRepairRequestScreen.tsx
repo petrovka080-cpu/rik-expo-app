@@ -1,5 +1,7 @@
 import {roofStageRestoreTargetsV5,roofStageExcludeTargetsV5} from '../../lib/estimate/backendPlatform/canonicalRoofHangingGuttersMigrationV1';
 import React from "react";
+import {canonicalManualMachineHourPriceCoverageV1} from '../../lib/estimate/backendPlatform/canonicalMachineHourPriceCoverageV1';
+import {consumerMachineHourPriceDecision} from '../../lib/consumerRequests/consumerMachineHourPriceCoverage';
 import {roofPreparationRestoreTargetsV1} from '../../lib/estimate/backendPlatform/canonicalRoofPreparationMigrationV1';
 import {roofStageRestoreTargetsV1} from '../../lib/estimate/backendPlatform/canonicalRoofValleyMigrationV1';
 import {roofStageRestoreTargetsV2} from '../../lib/estimate/backendPlatform/canonicalRoofScreedMigrationV1';
@@ -169,7 +171,7 @@ function applyVisibleQuantityDraft(
 function applyVisibleCanonicalRowDraft(
   bundle: ConsumerRepairDraftBundle,
   itemId: string,
-  amendment: Pick<CanonicalEstimateRowOverride, "quantity" | "unitPrice">,
+  amendment: Pick<CanonicalEstimateRowOverride, "quantity" | "unitPrice" | "machineHourPriceCoverageV1">,
 ): ConsumerRepairDraftBundle {
   return {
     ...bundle,
@@ -204,6 +206,10 @@ function applyVisibleCanonicalRowDraft(
             },
           }
           : {}),
+        ...(Object.hasOwn(amendment,'machineHourPriceCoverageV1')?{sourceParameters:{...item.sourceParameters,
+          ...(quantityChanged?{manualQuantityOverride:manualQuantity,calculatedQuantityBeforeOverride:calculatedQuantity}:{}),
+          canonicalMachineHourPriceCoverageV1:{evidence:amendment.machineHourPriceCoverageV1},canonicalPriceSourceKind:'MANUAL',canonicalPriceSnapshotId:null,
+          canonicalPriceResolutionTrace:{kind:'manual_override',provenance:{kind:'manual',reason:'consumer_estimate_row_batch_edit'}}}}:{}),
       };
     }),
   };
@@ -2427,7 +2433,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     revisionId: string;
     itemId: string;
     rowId: string;
-    amendment: Pick<CanonicalEstimateRowOverride, "quantity" | "unitPrice">;
+    amendment: Pick<CanonicalEstimateRowOverride, "quantity" | "unitPrice" | "machineHourPriceCoverageV1">;
   }): void => {
     if (this.canonicalRowMutationInFlight() || this.approvalCommitInFlight) {
       this.reportCanonicalRowMutationInFlight();
@@ -2522,7 +2528,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           const saved = pending[rowId] ? baselines[rowId]?.item : null;
           if (!saved) return item;
           const sourceParameters = { ...item.sourceParameters };
-          for (const key of ["manualQuantityOverride", "calculatedQuantityBeforeOverride"]) {
+          for (const key of ["manualQuantityOverride", "calculatedQuantityBeforeOverride", "canonicalMachineHourPriceCoverageV1", "canonicalPriceSourceKind", "canonicalPriceSnapshotId", "canonicalPriceResolutionTrace"]) {
             if (Object.prototype.hasOwnProperty.call(saved.sourceParameters ?? {}, key)) sourceParameters[key] = saved.sourceParameters![key];
             else delete sourceParameters[key];
           }
@@ -2707,7 +2713,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         revisionId: binding.revisionId,
         itemId,
         rowId,
-        amendment: { unitPrice },
+        amendment: { unitPrice, ...(consumerMachineHourPriceDecision(item)?{machineHourPriceCoverageV1:null}:{}) },
       });
       return;
     }
@@ -2717,6 +2723,13 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       unitPrice: parseEditableEstimateNumberInput(value),
     });
     this.updateCurrentBundle(bundle);
+  };
+  private confirmMachineHourPrice = (itemId:string):void => {
+    const current=this.state.bundle,binding=consumerRepairCanonicalBackendBinding(current);
+    const item=current?.items.find(candidate=>candidate.id===itemId),rowId=consumerRepairRowCode(item);
+    if(!current||!binding||!item||item.unitPrice==null||!consumerMachineHourPriceDecision(item))return;
+    this.stageCanonicalRowEdit({current,revisionId:binding.revisionId,itemId,rowId,
+      amendment:{unitPrice:item.unitPrice,machineHourPriceCoverageV1:canonicalManualMachineHourPriceCoverageV1({rowId,unitPrice:String(item.unitPrice),currencyCode:item.currency??'KGS'})}});
   };
   private applyCanonicalRowAmendment = async (
     itemId: string,
@@ -3593,7 +3606,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         onOpenProcurement={this.openProcurement}
         onRefineCanonicalParameters={this.refineCanonicalParameters}
         onDecrease={this.decreaseItem} onIncrease={this.increaseItem}
-        onQuantityChange={this.changeItemQuantity} onUnitPriceChange={this.changeItemUnitPrice}
+        onQuantityChange={this.changeItemQuantity} onUnitPriceChange={this.changeItemUnitPrice} onConfirmMachineHourPrice={this.confirmMachineHourPrice}
         onApplyCanonicalRowEdits={this.applyPendingCanonicalRowEdits}
         onCancelCanonicalRowEdits={this.cancelPendingCanonicalRowEdits}
         canonicalRowEditorResetKeys={this.canonicalRowEditorResetKeys}

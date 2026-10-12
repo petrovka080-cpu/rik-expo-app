@@ -45,6 +45,7 @@ type Props = {
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
   onUnitPriceChange: (itemId: string, value: string) => void;
+  onConfirmMachineHourPrice?: (itemId:string)=>void;
   pendingCanonicalRowEditCount?: number;
   canonicalRowEditsApplying?: boolean;
   onApplyCanonicalRowEdits?: () => boolean | void | Promise<boolean | void>;
@@ -100,6 +101,7 @@ export function ConsumerRepairDraftPanel({
   onIncrease,
   onQuantityChange,
   onUnitPriceChange,
+  onConfirmMachineHourPrice,
   pendingCanonicalRowEditCount,
   canonicalRowEditsApplying,
   onApplyCanonicalRowEdits,
@@ -370,6 +372,7 @@ export function ConsumerRepairDraftPanel({
           onIncrease={onIncrease}
           onQuantityChange={onQuantityChange}
           onUnitPriceChange={onUnitPriceChange}
+          onConfirmMachineHourPrice={onConfirmMachineHourPrice}
           pendingCanonicalRowEditCount={pendingCanonicalRowEditCount}
           canonicalRowEditsApplying={canonicalRowEditsApplying}
           onApplyCanonicalRowEdits={onApplyCanonicalRowEdits}

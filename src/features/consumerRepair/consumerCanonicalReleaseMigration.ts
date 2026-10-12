@@ -169,6 +169,7 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
   const predecessorBindings=catalog.manualMigrationPredecessorV1?.definitionId===input.revision.definitionVersionId
     ?catalog.manualMigrationPredecessorV1:catalog.manualMigrationPredecessorsV1?.find(p=>p.definitionId===input.revision.definitionVersionId);
   if (!quantityClearPreview && !canonicalStoredManualPricesCanMigrate({rowOverrides:input.revision.amendmentContract.rowOverrides,
+      currency:input.revision.currencyCode,
       customRows:input.revision.amendmentContract.customRows,fromBindings:parentCatalog.manualPriceMigrationBindings,toBindings:predecessorBindings?.priceBindings??catalog.manualPriceMigrationBindings,
       fromExclusionBindings:parentCatalog.manualExclusionMigrationBindings,toExclusionBindings:predecessorBindings?.exclusionBindings??catalog.manualExclusionMigrationBindings})) {
     throw new CanonicalEstimateApiError("Переход остановлен: совместимость уже сохранённых ручных количеств, цен и строк ещё не подтверждена. Исходная смета сохранена. Нужна проверка переноса этих правок; отмена новых правок в редакторе не заменяет её.", {

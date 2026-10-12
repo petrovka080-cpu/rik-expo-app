@@ -17,9 +17,10 @@ import { canonicalPublicEstimateWorkTitleRu, canonicalPublicEstimateRequestTextR
 import { resolveCanonicalEstimateExplicitRowCategory } from './canonicalEstimateRowCategory';
 import {canonicalScopeRequirementDecisionV1,groupCanonicalScopeRequirementsV1,canonicalScopeRequirementStatusRuV1} from './canonicalScopeRequirementV1';
 import {readRoofPrimerPrerequisiteDecisionV1,roofPrimerPhaseRuV1} from './canonicalRoofPrimerPrerequisiteV1';
+import {canonicalMachineHourPriceNeedsConfirmationV1} from './canonicalMachineHourPriceCoverageV1';
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-67-explicit-stage-measures-template40" as const;
+  "canonical-professional-pdf.r4-a13-s27-67-machine-price-coverage-template41" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -148,7 +149,7 @@ function includedCostOwnerTitle(row: CanonicalArtifactRow, rowsById: ReadonlyMap
   }
 }
 
-function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, parameters: Record<string, unknown>): string {
+function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, parameters: Record<string, unknown>,catalogId:string): string {
   const category = canonicalProfessionalPdfCategory(row);
   const includedInEstimate = row.included_in_estimate === true;
   const physicalExcluded = objectValue(row.calculation_trace).physicalScopeExcludedV1 != null;
@@ -160,6 +161,7 @@ function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, para
   // Detailed stock, reserve and remainder balances belong to procurement;
   // the estimate keeps its saved quantity and exact resource name.
   const rentalText = rental ? `Аренда: ${canonicalArtifactQuantity(rental.physicalQuantity)} шт. на ${canonicalArtifactQuantity(rental.durationDays)} сут.; расчёт оплаты ${quantityLabel(rental.billingQuantity)}.` : null;
+  const machinePriceNotice=includedInEstimate&&canonicalMachineHourPriceNeedsConfirmationV1(row,catalogId)?'Состав цены эксплуатации не подтверждён; сумма предварительная.':null;
   const unitPrice = !includedInEstimate
     ? "Не применяется"
     : row.unit_price == null
@@ -172,7 +174,7 @@ function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, para
     : canonicalArtifactMoney(row.amount, row.currency_code);
   return `<tr>
     <td class="number">${displayOrdinal}</td>
-    <td class="name"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row, parameters))}</strong>${rentalText ? `<span>${escapeCanonicalArtifactHtml(rentalText)}</span>` : ""}${scopeLabel ? `<span>${escapeCanonicalArtifactHtml(scopeLabel)}</span>` : ''}</td>
+    <td class="name"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row, parameters))}</strong>${rentalText ? `<span>${escapeCanonicalArtifactHtml(rentalText)}</span>` : ""}${scopeLabel ? `<span>${escapeCanonicalArtifactHtml(scopeLabel)}</span>` : ''}${machinePriceNotice?`<span>${machinePriceNotice}</span>`:''}</td>
     <td>${escapeCanonicalArtifactHtml(CATEGORY_TITLES[category])}</td>
     <td class="unit">${escapeCanonicalArtifactHtml(canonicalArtifactUnit(row))}</td>
     <td class="numeric">${escapeCanonicalArtifactHtml(canonicalArtifactQuantity(row.quantity))}</td>
@@ -316,7 +318,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
       const row = rowsById.get(id)!;
       return preliminaryRowIds.has(id)
         ? renderPreliminaryNeedRow(row, ++rowNumber, input.parameterTitlesRu ?? {}, questionNumbers, rowsById)
-        : renderClientRow(row, ++rowNumber, parameters);
+        : renderClientRow(row, ++rowNumber, parameters,String(revision.catalog_id));
     }).join('');
     const shared = section.sharedResources.map(resource => `<tr class="shared-resource"><td colspan="7">${escapeCanonicalArtifactHtml(resource.titleRu)} — общий ресурс, учтён в разделе «${escapeCanonicalArtifactHtml(canonicalPublicEstimateWorkTitleRu(resource.ownerOperationTitleRu))}».</td></tr>`).join('');
     const scopeNotes=(section.scopeRequirements ?? []).map(group => `<tr class="scope-note"><td colspan="7"><strong>${escapeCanonicalArtifactHtml(group.statuses.map(canonicalScopeRequirementStatusRuV1).join('; '))}</strong><br>${escapeCanonicalArtifactHtml(group.detailsRu.join(' '))}${group.statuses.some(status=>['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','LEGACY_SOURCE_REQUIRED','SCOPE_UNVERIFIED'].includes(status))?'<br>Расчёт этого этапа ещё не завершён приложением. Не включён в стоимость и закупку.':''}</td></tr>`).join('');
@@ -330,8 +332,9 @@ export function buildCanonicalProfessionalPdfProjection(input: {
   const nonPayableRowCount = rows.length - payableRows.length;
   const pricedRows = payableRows.filter((row) => row.unit_price != null && row.amount != null);
   const missingPriceRowCount = payableRows.length - pricedRows.length;
+  const unconfirmedMachinePriceCount=payableRows.filter(row=>canonicalMachineHourPriceNeedsConfirmationV1(row,String(revision.catalog_id))).length;
   const grandTotalStatus: CanonicalProfessionalPdfGrandTotalStatus = missingPriceRowCount === 0 && quantitativeNeeds.length === 0
-    && openScopeGroupCount===0
+    && openScopeGroupCount===0&&unconfirmedMachinePriceCount===0
     ? "COMPLETE"
     : "PARTIAL_NEEDS_PRICE";
   const documentStatusRu = hasUserExclusions ? 'Состав с исключениями пользователя' : grandTotalStatus === "COMPLETE" && technologyChecks.length === 0
@@ -372,7 +375,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
       : "<strong>требуется уточнение цен</strong>";
   const priceNotice = grandTotalStatus === "COMPLETE"
     ? "Все строки имеют подтверждённую цену."
-    : `<strong>${pricedRows.length === 0 ? "Стоимость не рассчитана. Цены не заполнены." : "Стоимость рассчитана частично."}</strong> Строк без подтверждённой цены: ${missingPriceRowCount}. ${quantitativeNeeds.length > 0
+    : `<strong>${pricedRows.length === 0 ? "Стоимость не рассчитана. Цены не заполнены." : "Стоимость рассчитана частично."}</strong> Строк без подтверждённой цены: ${missingPriceRowCount}. ${unconfirmedMachinePriceCount>0?`В ${unconfirmedMachinePriceCount} поз. введена цена, но не подтверждён её эксплуатационный состав. Эти суммы предварительные. `:''}${quantitativeNeeds.length > 0
       ? `Потребностей с неуточнённым количеством или условием: ${quantitativeNeeds.length}. Полный итог не рассчитан.`
       : openScopeGroupCount>0 ? `${openScopeGroupCount===1?'Состав одного этапа':`Состав ${openScopeGroupCount} этапов`} ещё не завершён приложением; причины указаны внутри сметы. Полный итог не рассчитан.`
       : "Полный итог: требуется уточнение цен."}`;

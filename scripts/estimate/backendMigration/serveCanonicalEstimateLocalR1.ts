@@ -1,4 +1,5 @@
 import {admitRoofHangingGuttersMigrationProofV1,migrateRoofHangingGuttersSelectionV1,buildRoofStageRestorationV5,readRoofStageRestorationV5,createRoofLegacyWaterSelectionOriginV1,consumeRoofStageOriginsV5,composeRoofGuttersMigrationModelV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofHangingGuttersMigrationV1';
+import {canonicalArtifactRowsWithPriceRecordsV1} from '../../../src/lib/estimate/backendPlatform/canonicalArtifactRowPricesV1';
 import {admitRoofPreparationMigrationProofV1,migrateRoofPreparationSelectionV1,readRoofPreparationMigrationProofV1,assertRoofRetainedSemanticSelectionV1,type RoofPreparationMigrationProofV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofPreparationMigrationV1';
 import {admitRoofValleyMigrationProofV1,migrateRoofValleySelectionV1,buildRoofStageRestorationV1,composeRoofFiveToSevenMigrationV1,type RoofStageRestorationV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofValleyMigrationV1';
 import {admitRoofLowerLayersMigrationProofV1,migrateRoofLowerLayersSelectionV1,buildRoofStageRestorationV4,readRoofStageRestorationV4,createRoofLegacyAssemblySelectionOriginV1,consumeRoofLegacyAssemblySelectionOriginV1,composeRoofLowerLayersMigrationModelV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofLowerLayersMigrationV1';
@@ -2522,9 +2523,9 @@ async function compileClaimedJob(
     ? []
     : (
         await client.query(
-          `select snapshot_id::text,price_key,unit_id,unit_price::text,currency_code,cost_scope_id,
+          `select snapshot_id::text,price_key,unit_id,unit_price::text,currency_code,cost_scope_id,machine_hour_price_coverage_v1,
              jsonb_build_object('route_id',route_id::text) estimate_price_snapshot
-           from public.estimate_resolve_compile_price_items_v2($2::uuid,$1::uuid[])`,
+           from public.estimate_resolve_compile_price_items_v3($2::uuid,$1::uuid[])`,
           [priceSnapshotIds, definition.id],
         )
       ).rows;
@@ -3319,12 +3320,14 @@ async function buildArtifactClaimedJob(
       revisionId,
     ])
   ).rows[0];
-  const allRows = (
+  const artifactSourceRows = (
     await client.query(
       "select * from public.estimate_revision_row where revision_id=$1 order by ordinal",
       [revisionId],
     )
   ).rows;
+  const artifactPriceRecords=(await client.query('select revision_id::text,row_id,price_snapshot_id::text,resolution_trace from public.estimate_revision_row_price where revision_id=$1',[revisionId])).rows;
+  const allRows=canonicalArtifactRowsWithPriceRecordsV1({revisionId,rows:artifactSourceRows,prices:artifactPriceRecords});
   if (!revision || allRows.length !== revision.row_count)
     throw Object.assign(new Error("artifact source invalid"), {
       code: "ARTIFACT_SOURCE_INVALID",

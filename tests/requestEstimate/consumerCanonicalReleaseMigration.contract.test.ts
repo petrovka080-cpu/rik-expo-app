@@ -14,6 +14,7 @@ import {
 import { getCanonicalEstimateCatalogItem, getCanonicalEstimateRevision, getCanonicalEstimateRevisionHistory, getAllCanonicalEstimateRevisionRows, recalculateCanonicalEstimateAndLoad } from "../../src/lib/estimate/backendPlatform/canonicalEstimateClient";
 import { canonicalEstimateRecalculateIdempotencyKey } from "../../src/lib/estimate/backendPlatform/canonicalEstimateCommandIdentity";
 import type { CanonicalEstimateCatalogItem, CanonicalEstimateRevisionView } from "../../src/lib/estimate/backendPlatform/contracts";
+import {canonicalManualMachineHourPriceCoverageV1} from '../../src/lib/estimate/backendPlatform/canonicalMachineHourPriceCoverageV1';
 
 jest.mock("../../src/lib/estimate/backendPlatform/canonicalEstimateClient", () => ({
   getCanonicalEstimateCatalogItem: jest.fn(), getCanonicalEstimateRevision: jest.fn(),
@@ -69,6 +70,27 @@ it.each([true,false])('uses a bounded predecessor binding only for the exact sav
 });
 
 describe("consumer exact release migration", () => {
+  it('carries valid unchanged machine price composition with the immutable parent currency',async()=>{
+    const rowId='roof:torch-two:krer12-002-09:tower_crane_8t';
+    const confirmation=canonicalManualMachineHourPriceCoverageV1({rowId,unitPrice:'1000',currencyCode:'KGS'});
+    const rowOverrides={[rowId]:{unitPrice:'1000',machineHourPriceCoverageV1:confirmation,provenance:{kind:'manual' as const,reason:'consumer_estimate_row_batch_edit'}}};
+    const priced={...revision,amendmentContract:{...revision.amendmentContract,rowOverrides}};
+    getCatalog.mockImplementation(async(_id,_signal,releaseId)=>({...releaseId?oldCatalog:target,manualPriceMigrationBindings:{[rowId]:'b'.repeat(64)}}));
+    await expect(resolveConsumerCanonicalRecalculationCatalog({revision:priced,confirmReleaseMigration:async()=>true})).resolves.toBeTruthy();
+  });
+  it('a different offer with the same amount clears prior manual machine composition before recalculation',async()=>{
+    const rowId='roof:torch-two:krer12-002-09:tower_crane_8t';
+    const confirmation=canonicalManualMachineHourPriceCoverageV1({rowId,unitPrice:'1000',currencyCode:'KGS'});
+    const priced={...revision,amendmentContract:{...revision.amendmentContract,rowOverrides:{[rowId]:{unitPrice:'1000',machineHourPriceCoverageV1:confirmation,
+      provenance:{kind:'manual' as const,reason:'consumer_estimate_row_batch_edit'}}}}};
+    getCatalog.mockResolvedValue(oldCatalog);jest.mocked(getCanonicalEstimateRevision).mockResolvedValue(priced);
+    jest.mocked(getAllCanonicalEstimateRevisionRows).mockResolvedValue([{rowId,unitId:'machine_hour'}] as never);
+    jest.mocked(recalculateCanonicalEstimateAndLoad).mockRejectedValue(new Error('backend reached'));
+    await expect(recalculateConsumerCanonicalCatalogSelection({revisionId:priced.revisionId,problemText:priced.sourceRequestText!,rowId,
+      catalogItem:{...picker,catalogItemId:'different-bare-rent',unit:'machine_hour',unitPrice:1000}})).rejects.toThrow('backend reached');
+    expect(jest.mocked(recalculateCanonicalEstimateAndLoad).mock.calls[0][0].request.rowOverrides?.[rowId]).toMatchObject({unitPrice:1000,machineHourPriceCoverageV1:null,
+      provenance:{reason:'market_catalog:different-bare-rent:market'}});
+  });
   it("explains that new row input remains unsaved and requires an explicit cancellation before migration", async () => {
     await expect(resolveConsumerCanonicalRecalculationCatalog({ revision, hasNewRowAmendments: true }))
       .rejects.toMatchObject({ code: "RELEASE_MIGRATION_ROW_BINDING_REVIEW_REQUIRED",

@@ -1,4 +1,5 @@
 import { planCanonicalCompositionSelectionV1, type CanonicalEstimateCompositionSelectionV1 } from './canonicalEstimateCompositionSelectionV1';
+import {assertCanonicalMachineHourDefinitionV1,parseCanonicalMachineHourPriceCoverageV1,resolveCanonicalMachineHourPriceCoverageV1,canonicalMachineHourPriceNeedsConfirmationV1} from './canonicalMachineHourPriceCoverageV1';
 import {
   compareFormulaGraphDecimals,
   evaluateFormulaGraph,
@@ -82,6 +83,7 @@ export type CanonicalEstimatePriceItem = {
   snapshot_id: string;
   /** Required for an automatic price of an explicitly covered commercial package. */
   cost_scope_id?: string | null;
+  machine_hour_price_coverage_v1?:unknown;
   estimate_price_snapshot?: { route_id?: string | null } | null;
 };
 
@@ -231,6 +233,7 @@ export type CanonicalEstimateCompileCoreResult = {
     excludedRowCount: number;
     pricedRowCount: number;
     unpricedRowCount: number;
+    unconfirmedMachinePriceRowCount?:number;
     currencyCode: string;
   };
   priceSnapshotIds: string[];
@@ -964,8 +967,11 @@ export async function compileCanonicalEstimateCore(
       throw compilerError(`invalid row override ${resource.row_id}`, "ROW_AMENDMENT_INVALID");
     }
     if (override != null) assertOnlyKeys(override, [
-      "titleRu", "quantity", "unitPrice", "includedInEstimate", "includedInProcurement", "provenance",
+      "titleRu", "quantity", "unitPrice", "machineHourPriceCoverageV1", "includedInEstimate", "includedInProcurement", "provenance",
     ], `row override ${resource.row_id}`);
+    const machinePriceRequirement=assertCanonicalMachineHourDefinitionV1({catalogId:input.catalogId,rowId:resource.row_id,unitId:resource.unit_id,sourceMetadata:resource.source_metadata});
+    if(override?.machineHourPriceCoverageV1!=null&&(!machinePriceRequirement||!parseCanonicalMachineHourPriceCoverageV1(override.machineHourPriceCoverageV1)))
+      throw compilerError(`machine-hour price evidence invalid ${resource.row_id}`,'ROW_AMENDMENT_INVALID');
     const provenance = override == null ? null : manualProvenance(override.provenance, resource.row_id);
     const effectiveOutput = effectiveQuantityPlan.outputs.get(resource.row_id);
     const excludeKnownZero = resource.resource_graph?.excludeKnownZeroQuantityV1;
@@ -1043,6 +1049,9 @@ export async function compileCanonicalEstimateCore(
       if (price && price.currency_code !== input.currencyCode) throw compilerError('mixed currency snapshot', 'PRICE_CURRENCY_MISMATCH');
       const unitPrice = override != null && Object.hasOwn(override, 'unitPrice')
         ? nonNegativeNumericText(override.unitPrice, `${resource.row_id}.unitPrice`, true) : price ? String(price.unit_price) : null;
+      const excludedMachinePrice=machinePriceRequirement==null?null:resolveCanonicalMachineHourPriceCoverageV1({catalogId:input.catalogId,rowId:resource.row_id,unitId:resource.unit_id,currencyCode:input.currencyCode,unitPrice,
+        evidence:override!=null&&Object.hasOwn(override,'unitPrice')?override.machineHourPriceCoverageV1:price?.machine_hour_price_coverage_v1,
+        manual:override!=null&&Object.hasOwn(override,'unitPrice'),manualProvenanceReason:provenance?.reason,snapshotId:price?.snapshot_id,priceKey});
       const rowWithoutHash = {row_id:resource.row_id,ordinal:resource.ordinal,resource_spec_id:resource.id,
         section:resource.section,category:resource.category,
         title_ru:override?.titleRu == null ? resource.title_ru : boundedText(override.titleRu,`${resource.row_id}.titleRu`,2000),
@@ -1050,6 +1059,7 @@ export async function compileCanonicalEstimateCore(
         procurement_eligible:resource.procurement_eligible,included_in_estimate:false,included_in_procurement:false,ownership_status:'OWNED_EXCLUDED',
         calculation_trace:{compilerVersion:input.compilerVersion,formulaId:resource.formula_id,formulaAstSha256:formula.ast_sha256,
           inputParameterIds:formula.input_parameter_ids,resourceGraph:effectiveResourceGraph,
+          ...(excludedMachinePrice==null?{}:{machineHourPriceCoverageV1:excludedMachinePrice}),
           ...(derivedQuantityEditPolicy == null ? {} : { derivedQuantityEditPolicy }),
           physicalScopeExcludedV1:{reason:'USER_EXCLUDED',previousManualQuantity:manualQuantity},
           ...(provenance?{manualAmendment:provenance}:{}),...(override?.titleRu==null?{}:{manualTitleOverride:true}),
@@ -1057,7 +1067,7 @@ export async function compileCanonicalEstimateCore(
         normative_trace:resource.source_metadata?.normativeTrace ?? [],legacy_row_payload:null,
         price_snapshot_id:override != null && Object.hasOwn(override,'unitPrice') ? null : price?.snapshot_id ?? null,
         price_route_id:price?.estimate_price_snapshot?.route_id ?? null,
-        price_resolution_trace:{kind:override != null && Object.hasOwn(override,'unitPrice')?'manual_override':'snapshot',resolved:unitPrice!=null}};
+        price_resolution_trace:{kind:override != null && Object.hasOwn(override,'unitPrice')?'manual_override':'snapshot',...(provenance?{provenance}:{}),priceKey,resolved:unitPrice!=null}};
       rows.push({...rowWithoutHash,row_sha256:await input.hashJson(rowWithoutHash)} as CanonicalEstimateCompiledRow);
       rowIds.add(resource.row_id);
       if (effectiveOutput) {
@@ -1381,12 +1391,18 @@ export async function compileCanonicalEstimateCore(
     }
     const amount = multiply(quantity, unitPrice);
     addToTotal(amount, includedInEstimate);
+    const manualMachinePrice=override!=null&&Object.hasOwn(override,'unitPrice');
+    const machineHourPriceCoverageV1=machinePriceRequirement==null?null:resolveCanonicalMachineHourPriceCoverageV1({
+      catalogId:input.catalogId,rowId:resource.row_id,unitId:resource.unit_id,currencyCode:input.currencyCode,unitPrice,
+      evidence:manualMachinePrice?override?.machineHourPriceCoverageV1:price?.machine_hour_price_coverage_v1,
+      manual:manualMachinePrice,manualProvenanceReason:provenance?.reason,snapshotId:price?.snapshot_id,priceKey});
     const calculationTrace = {
       compilerVersion: input.compilerVersion,
       formulaId: resource.formula_id,
       formulaAstSha256: formula.ast_sha256,
       inputParameterIds: formula.input_parameter_ids,
       resourceGraph: resourceGraphForRevision(effectiveResourceGraph, parameters, resource.row_id),
+      ...(machineHourPriceCoverageV1==null?{}:{machineHourPriceCoverageV1}),
       ...(derivedQuantityEditPolicy == null ? {} : { derivedQuantityEditPolicy }),
       ...(inclusionDecision == null ? {} : { inclusionDecision }),
       ...(knownZeroExcluded ? { knownZeroExclusionV1: { calculatedQuantity: formulaQuantity, orderedQuantity: quantity } } : {}),
@@ -1607,6 +1623,8 @@ export async function compileCanonicalEstimateCore(
     excludedRowCount: rows.filter((row) => !row.included_in_estimate).length,
     pricedRowCount: rows.filter((row) => row.included_in_estimate && row.unit_price != null).length,
     unpricedRowCount: rows.filter((row) => row.included_in_estimate && row.unit_price == null).length,
+    ...(rows.some(row=>row.included_in_estimate&&canonicalMachineHourPriceNeedsConfirmationV1(row,input.catalogId))?{
+      unconfirmedMachinePriceRowCount:rows.filter(row=>row.included_in_estimate&&canonicalMachineHourPriceNeedsConfirmationV1(row,input.catalogId)).length}:{}),
     currencyCode: input.currencyCode,
   };
   const priceSnapshotIds = input.priceSnapshotIds ?? [];
