@@ -85,6 +85,8 @@ test('compact transport, parameter session, reopened draft and PDF preserve the 
   expect(view.scopeRequirementGroups).toEqual(groupCanonicalScopeRequirementsV1(result.preliminaryNeeds.map(scope)));
   const pdf=buildCanonicalProfessionalPdfProjection({revision:stored,rows:result.rows as CanonicalArtifactRow[],preliminaryNeeds:canonicalArtifactPreliminaryNeeds(stored),expectedProjectedRowCount:result.rows.length,workTitleRu:catalog.titleRu});
   expect(pdf.html).toContain('Состав и этапы');expect(pdf.html).toContain('Уже учтено в норме покрытия');expect(pdf.html).toContain('Отдельный состав зависит от проекта');expect(pdf.html).not.toContain('Количество нужно уточнить');expect(pdf.grandTotalStatus).toBe('PARTIAL_NEEDS_PRICE');
+  expect(pdf.html).not.toContain('Потребностей с неуточнённым количеством или условием: 59');
+  expect(pdf.html).toContain('Отдельных групп работ по проекту: 17');
 });
 test('invalid coverage references cannot turn an unknown obligation into included scope',async()=>{
   const r=overlay(fixture.reps[0]!,locators).representative,row=r.resources.find(n=>n.row_id===prefix+':remaining:materials_37')!;

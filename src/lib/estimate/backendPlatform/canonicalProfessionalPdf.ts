@@ -18,7 +18,7 @@ import { resolveCanonicalEstimateExplicitRowCategory } from './canonicalEstimate
 import {canonicalScopeRequirementDecisionV1,groupCanonicalScopeRequirementsV1,canonicalScopeRequirementStatusRuV1} from './canonicalScopeRequirementV1';
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-65-scope-requirements-template29" as const;
+  "canonical-professional-pdf.r4-a13-s27-65-scope-counts-template30" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -252,6 +252,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
   const scopeRowIds=new Set(scopeDecisions.map(d=>d.rowId));
   const quantitativeNeeds=preliminaryNeeds.filter(row=>!scopeRowIds.has(String(row.row_id)));
   const scopeGroups=groupCanonicalScopeRequirementsV1(scopeDecisions);
+  const projectScopeGroupCount=scopeGroups.filter(g=>g.statuses.some(s=>['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','SCOPE_UNVERIFIED'].includes(s))).length;
   const scopeAppendix=scopeGroups.length?`<section><h2>Состав и этапы</h2><div class="notice">Нормы и зависимые количества рассчитывает приложение. Включённые расходы и выполненная подготовка повторно не начисляются. Отдельные работы по проекту и их стоимость ещё требуют подтверждения.</div><table><thead><tr><th style="width:28%">Этап или требование</th><th style="width:27%">Статус</th><th>Основание и граница</th></tr></thead><tbody>${scopeGroups.map(g=>`<tr><td>${escapeCanonicalArtifactHtml(g.titleRu)}</td><td>${escapeCanonicalArtifactHtml(g.statuses.map(canonicalScopeRequirementStatusRuV1).join('; '))}</td><td>${escapeCanonicalArtifactHtml(g.detailsRu.join(' '))}</td></tr>`).join('')}</tbody></table></section>`:'';
   const compositionRows = [...rows, ...quantitativeNeeds].sort(
     (left, right) => Number(left.ordinal) - Number(right.ordinal),
@@ -348,8 +349,9 @@ export function buildCanonicalProfessionalPdfProjection(input: {
       : "<strong>требуется уточнение цен</strong>";
   const priceNotice = grandTotalStatus === "COMPLETE"
     ? "Все строки имеют подтверждённую цену."
-    : `<strong>${pricedRows.length === 0 ? "Стоимость не рассчитана. Цены не заполнены." : "Стоимость рассчитана частично."}</strong> Строк без подтверждённой цены: ${missingPriceRowCount}. ${preliminaryNeeds.length > 0
-      ? `Потребностей с неуточнённым количеством или условием: ${preliminaryNeeds.length}. Полный итог не рассчитан.`
+    : `<strong>${pricedRows.length === 0 ? "Стоимость не рассчитана. Цены не заполнены." : "Стоимость рассчитана частично."}</strong> Строк без подтверждённой цены: ${missingPriceRowCount}. ${quantitativeNeeds.length > 0
+      ? `Потребностей с неуточнённым количеством или условием: ${quantitativeNeeds.length}. Полный итог не рассчитан.`
+      : scopeGroups.length>0 ? `Отдельных групп работ по проекту: ${projectScopeGroupCount}; подробности — в разделе «Состав и этапы». Полный итог не рассчитан.`
       : "Полный итог: требуется уточнение цен."}`;
   const pricedSummary = pricedRows.length === 0
     ? "Стоимость не рассчитана"
@@ -369,7 +371,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
       ${nullableText(revision.source_request_text) ? `<div><strong>Исходный запрос:</strong> ${escapeCanonicalArtifactHtml(canonicalPublicEstimateRequestTextRu(String(revision.source_request_text)))}</div>` : ""}
       <div class="meta-grid"><div><strong>Номер:</strong> ${escapeCanonicalArtifactHtml(documentNumber)}</div><div><strong>Статус:</strong> ${documentStatusRu}</div><div><strong>Сформировано:</strong> ${escapeCanonicalArtifactHtml(generatedDate)}</div><div><strong>Валюта:</strong> ${escapeCanonicalArtifactHtml(currencyLabel)}</div><div><strong>Объект:</strong> ${escapeCanonicalArtifactHtml(workTitleRu)}</div><div><strong>${workMeasure ? "Объём работы" : "Первичная мера"}:</strong> ${escapeCanonicalArtifactHtml(`${primaryValue} ${primaryUnit}`)}</div><div><strong>Версия:</strong> ${escapeCanonicalArtifactHtml(String(Number.isFinite(revisionNumber) ? revisionNumber : 1))}</div></div>
     </header>
-    <div class="summary"><div><strong>Позиций расчёта</strong><br>${compositionRows.length}</div><div><strong>Количество известно</strong><br>${rows.length}; требуют уточнения ${quantitativeNeeds.length}${scopeGroups.length?`; состав и этапы: ${scopeGroups.length} групп`:''}</div><div><strong>${pricedSummary}</strong></div></div>
+    <div class="summary"><div><strong>Позиций расчёта</strong><br>${compositionRows.length}</div><div><strong>Количество известно</strong><br>${rows.length}; требуют уточнения ${quantitativeNeeds.length}${scopeGroups.length?`; групп состава и этапов: ${scopeGroups.length}`:''}</div><div><strong>${pricedSummary}</strong></div></div>
     <div class="notice">${priceNotice}</div>
     ${technologyChecks.map(check => `<div class="notice"><strong>Технология требует уточнения.</strong> ${escapeCanonicalArtifactHtml(check.messageRu)} Закупочная ведомость пока не готова.</div>`).join("")}
     <table class="client"><thead><tr><th>№</th><th>Наименование</th><th>Категория</th><th>Ед.</th><th>Количество</th><th>Цена за единицу</th><th>Сумма</th></tr></thead><tbody>${renderedComposition}</tbody></table>

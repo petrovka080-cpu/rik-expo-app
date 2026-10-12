@@ -9,7 +9,7 @@ export class RequestEstimateScopeRequirements extends React.PureComponent<{group
     if (!groups.length) return null;
     const project=groups.filter(g=>g.statuses.some(s=>['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','SCOPE_UNVERIFIED'].includes(s))).length;
     return <View style={{gap:8,paddingVertical:10}} testID="request-estimate-scope-requirements">
-      <Text style={{fontWeight:'700',color:'#334155'}}>Состав и этапы: {groups.length} групп требований</Text>
+      <Text style={{fontWeight:'700',color:'#334155'}}>Состав и этапы · групп требований: {groups.length}</Text>
       <Text style={{color:'#475569'}}>Отдельные работы по проекту: {project}. Включённые расходы и выполненная подготовка повторно не начисляются. Нормы и зависимые количества рассчитывает приложение.</Text>
       <Pressable accessibilityRole="button" onPress={()=>this.setState(s=>({open:!s.open}))} testID="request-estimate-scope-requirements-toggle">
         <Text style={{color:'#176b45',fontWeight:'700'}}>{this.state.open?'Скрыть состав и этапы':'Показать состав и этапы'}</Text>
