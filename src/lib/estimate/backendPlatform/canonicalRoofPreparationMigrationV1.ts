@@ -155,3 +155,11 @@ export function roofPreparationRestoreTargetsV1(input:{proof:unknown;definitionI
   ||(!input.rowIds.includes(rowId)&&!input.operationKeys.includes(operationKey)))return {rowIds:[...input.rowIds],operationKeys:[...input.operationKeys]};
  return {rowIds:[...new Set([...input.rowIds,rowId])],operationKeys:[...new Set([...input.operationKeys,operationKey])]};
 }
+/** A historical exclusion may be retained during an explicit restoration of
+ * another stage. A newly excluded semantic row first needs the version change.
+ * Numeric ownership transfer is still admitted by the exact physical proof. */
+export function assertRoofRetainedSemanticSelectionV1(input:{parentSelection:unknown;requestedSelection:unknown;semanticRowIds:readonly string[]}):void{
+ const parent=parseCanonicalCompositionSelectionV1(input.parentSelection),requested=parseCanonicalCompositionSelectionV1(input.requestedSelection);
+ if(requested?.excludedRowIds.some(id=>input.semanticRowIds.includes(id)&&!parent?.excludedRowIds.includes(id)))
+  throw Object.assign(new Error('Сначала сохраните переход состава через исходные данные. Новое исключение этапа затем можно применить к его рассчитанным ресурсам; исходная смета сохранена.'),{code:'COMPOSITION_SELECTION_MIGRATION_REVIEW_REQUIRED',httpStatus:409});
+}

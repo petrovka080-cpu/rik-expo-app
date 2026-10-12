@@ -1717,7 +1717,9 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     const sourceReview=(this.props.viewModel?.scopeRequirementGroups ?? []).find(group=>
       (group.statuses.includes('LEGACY_SOURCE_REQUIRED') || group.statuses.includes('OBJECT_FACT_REQUIRED')
         || group.kinds?.includes('OBJECT_SCOPE') && group.statuses.includes('SCOPE_UNVERIFIED'))
-      && group.rowIds.some(id=>canonicalParameter?.affectsRows.includes(id)));
+      && (group.statuses.includes('OBJECT_FACT_REQUIRED')&&group.missingObjectFactParameterIds?.length
+        ? group.missingObjectFactParameterIds.includes(card.key)
+        : group.rowIds.some(id=>canonicalParameter?.affectsRows.includes(id))));
 
     return (
       <View key={card.key} style={[styles.parameterRow, card.missing || sourceReview ? styles.requiredParameterRow : null]} testID={`editable-param-chip-${card.key}`}>
@@ -1725,7 +1727,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
           {sourceReview.sourceCheckRestoration
             ? `Восстановите проверку норм в этапе «${sourceReview.titleRu}». Значение поля сохранено; восстановление само по себе не подтверждает нормы.`
             : sourceReview.statuses.includes('OBJECT_FACT_REQUIRED')
-            ? 'Укажите систему из проекта: вариант «ещё не проверены» не определяет технологию работ.'
+            ? `Нужно указать «${label}» для этапа «${sourceReview.titleRu}». Нормы и зависимые количества получает приложение.`
             : 'Нормы выбранного состава ещё не подтверждены приложением. Поле заполнено; вводить профессиональные коэффициенты не требуется.'}
         </Text> : null}
         {card.missing ? <Text style={styles.requiredParameterHint}>
@@ -1933,7 +1935,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
                   || group.kinds?.includes('OBJECT_SCOPE') && group.statuses.includes('SCOPE_UNVERIFIED'))
                 ? 'Данные введены. Нормы выбранного состава ещё не подтверждены приложением.'
               : this.props.viewModel?.scopeRequirementGroups?.some(group=>group.statuses.includes('OBJECT_FACT_REQUIRED'))
-                ? 'Укажите систему работ из проекта в выделенном поле.'
+                ? 'Укажите недостающие данные объекта в выделенных полях.'
               : sourceGateCount > 0
                 ? 'Данные объекта заполнены. Приложению не хватает технических данных для завершения расчёта.'
                 : "Все обязательные параметры заполнены"}

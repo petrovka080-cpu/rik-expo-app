@@ -54,6 +54,20 @@ beforeEach(() => {
   jest.mocked(getAllCanonicalEstimateRevisionRows).mockResolvedValue([{ rowId: "membrane", unitId: "m2" }] as never);
 });
 
+it.each([true,false])('uses a bounded predecessor binding only for the exact saved definition (%s)',async exact=>{
+ const oldId='55555555-5555-4555-8555-555555555555',otherId='66666666-6666-4666-8666-666666666666';
+ const priced={...revision,definitionVersionId:oldId,amendmentContract:{...revision.amendmentContract,rowOverrides:{membrane:{unitPrice:75,provenance:{kind:'manual' as const}}}}};
+ getCatalog.mockImplementation(async(_id,_signal,releaseId)=>releaseId?{...oldCatalog,manualPriceMigrationBindings:{membrane:'b'.repeat(64)}}:
+  {...target,manualPriceMigrationBindings:{membrane:'c'.repeat(64)},manualMigrationPredecessorsV1:[
+   {definitionId:otherId,priceBindings:{membrane:'d'.repeat(64)},exclusionBindings:{}},
+   {definitionId:exact?oldId:'77777777-7777-4777-8777-777777777777',priceBindings:{membrane:'b'.repeat(64)},exclusionBindings:{}},
+  ]});
+ const confirm=jest.fn().mockResolvedValue(true);
+ if(exact)await expect(resolveConsumerCanonicalRecalculationCatalog({revision:priced,confirmReleaseMigration:confirm})).resolves.toBeTruthy();
+ else await expect(resolveConsumerCanonicalRecalculationCatalog({revision:priced,confirmReleaseMigration:confirm})).rejects.toMatchObject({code:'RELEASE_MIGRATION_ROW_BINDING_REVIEW_REQUIRED'});
+ expect(confirm).toHaveBeenCalledTimes(exact?1:0);
+});
+
 describe("consumer exact release migration", () => {
   it("explains that new row input remains unsaved and requires an explicit cancellation before migration", async () => {
     await expect(resolveConsumerCanonicalRecalculationCatalog({ revision, hasNewRowAmendments: true }))

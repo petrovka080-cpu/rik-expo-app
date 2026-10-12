@@ -167,7 +167,7 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
     });
   }
   const predecessorBindings=catalog.manualMigrationPredecessorV1?.definitionId===input.revision.definitionVersionId
-    ?catalog.manualMigrationPredecessorV1:undefined;
+    ?catalog.manualMigrationPredecessorV1:catalog.manualMigrationPredecessorsV1?.find(p=>p.definitionId===input.revision.definitionVersionId);
   if (!quantityClearPreview && !canonicalStoredManualPricesCanMigrate({rowOverrides:input.revision.amendmentContract.rowOverrides,
       customRows:input.revision.amendmentContract.customRows,fromBindings:parentCatalog.manualPriceMigrationBindings,toBindings:predecessorBindings?.priceBindings??catalog.manualPriceMigrationBindings,
       fromExclusionBindings:parentCatalog.manualExclusionMigrationBindings,toExclusionBindings:predecessorBindings?.exclusionBindings??catalog.manualExclusionMigrationBindings})) {

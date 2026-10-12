@@ -281,6 +281,7 @@ export function validateCanonicalEstimateParameters(
         return fail(`invalid integer ${id}`);
       }
       if (constraints.min != null && numeric < Number(constraints.min)) return fail(`parameter below minimum ${id}`);
+      if (constraints.exclusiveMin != null && numeric <= finiteNumber(constraints.exclusiveMin, `${id}.exclusiveMin`)) return fail(`parameter must exceed minimum ${id}`);
       if (constraints.max != null && numeric > Number(constraints.max)) return fail(`parameter above maximum ${id}`);
       if (constraints.multipleOf != null) {
         const multipleOf = finiteNumber(constraints.multipleOf, `${id}.multipleOf`);

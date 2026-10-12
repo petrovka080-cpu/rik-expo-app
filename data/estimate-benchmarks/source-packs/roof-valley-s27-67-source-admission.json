@@ -1,0 +1,93 @@
+{
+  "schema": "s2766-roof-valley-005-03-source-admission/v1",
+  "reviewedAt": "2026-10-12T07:34:40.441Z",
+  "primarySourceSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+  "locator": "КРЕР12, PDF14–15, таблица12-01-005, колонка005-03; техническая часть §1.3",
+  "reviewer": {
+    "agent": "/root/flat_roof_next_scope_review",
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoningEffort": "xhigh",
+    "reason": "Новая существенная неопределённость ресурса РМ350 и расхождение счётчика машинистов; пакет связанных источниковых вопросов"
+  },
+  "sourceReadVisuallyBySol": true,
+  "measurementUnit": "m",
+  "normBasis": "100m",
+  "applicability": "Два дополнительных наплавляемых слоя Изопласт ЭПП-4 в ендовах; измеренная самостоятельная длина, совместимое наружное поле по002-09",
+  "admittedPaidRates": [
+    [
+      "workers",
+      "000-1003-8",
+      "man_hour",
+      "17.90"
+    ],
+    [
+      "tower_crane_8t",
+      "02-0005",
+      "machine_hour",
+      "0.24"
+    ],
+    [
+      "truck_crane_10t",
+      "02-0075",
+      "machine_hour",
+      "0.10"
+    ],
+    [
+      "gas_flame_burner",
+      "15-0060",
+      "machine_hour",
+      "6.60"
+    ],
+    [
+      "flatbed_truck_to_5t",
+      "40-0001",
+      "machine_hour",
+      "0.15"
+    ],
+    [
+      "propane_butane",
+      "01-0910-0002",
+      "kg",
+      "11.8"
+    ],
+    [
+      "lower_isoplast_epp_4",
+      "01-7406-0062",
+      "m2",
+      "345"
+    ]
+  ],
+  "sourceAnomaly": {
+    "printedOperatorHoursPer100m": "0.54",
+    "craneHoursSumPer100m": "0.34",
+    "printedOperatorCost": "55.83",
+    "printedOperatorHourlyPrice": "164.21",
+    "numericRosterAdmitted": false,
+    "separatePaymentAdmitted": false,
+    "correctedCounterAdmitted": false,
+    "neighborLoaderAdmitted": false,
+    "policy": "Печатное0.54 сохранить только как предупреждение источника; не добавлять в рабочий расчёт или кадровый план. Платные строки допускаются независимо."
+  },
+  "boundaries": [
+    "345 уже относится к двум дополнительным слоям; повторно не умножать на2",
+    "Не добавлять общий запас",
+    "Не выводить длину/ширину/нахлёст из площади40м²",
+    "Не вычитать ендовы из площади основного поля",
+    "Не добавлять повторную огрунтовку или оплату машиниста/водителя"
+  ],
+  "heldBranches": [
+    {
+      "norm": "004-04",
+      "reason": "РМ350 не заменяется автоматически на ЭПП4; нужны проектные узел/высота/фартук и подтверждённое основание замены материала"
+    },
+    {
+      "norm": "006-02",
+      "reason": "РМ350345м² невозможно разделить на сухой и наплавляемый слои без источника; это конструктивный деформационный шов, не обычный шов стяжки"
+    }
+  ],
+  "fullRoofAccepted": false,
+  "all503RoofTypesAccepted": false,
+  "productionAccessed": false,
+  "databaseMutationPerformed": false,
+  "parentSnapshotSha256": "860fe3d40a9374ba584ae24cd273f7cf7a5542b35c86120ffdc1000e3d3487ca"
+}

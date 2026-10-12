@@ -4,6 +4,15 @@ import {
   type CanonicalParameterDefinitionRecord,
 } from "./parameterConstraints";
 
+test('an applicable measured length must be positive; inactive measured facts are retained',()=>{
+ const length:CanonicalParameterDefinitionRecord={parameter_id:'roof_valley_length_m',value_type:'decimal',required:false,default_value:null,
+  constraints_json:{min:0,exclusiveMin:0,requiredWhen:{kind:'equals',parameterId:'valley_scope',value:'planned'}}};
+ const scope:CanonicalParameterDefinitionRecord={parameter_id:'valley_scope',value_type:'enum',required:false,default_value:null,constraints_json:{values:['planned','none']}};
+ for(const value of [0,'0',-1])expect(()=>validateCanonicalEstimateParameters([scope,length],{valley_scope:'planned',roof_valley_length_m:value})).toThrow();
+ expect(validateCanonicalEstimateParameters([scope,length],{valley_scope:'planned',roof_valley_length_m:'20'})).toEqual({valley_scope:'planned',roof_valley_length_m:'20'});
+ expect(validateCanonicalEstimateParameters([scope,length],{valley_scope:'none',roof_valley_length_m:'20'})).toEqual({valley_scope:'none',roof_valley_length_m:'20'});
+});
+
 describe('unresolved application norms remain unknown at the common server boundary', () => {
   const definition: CanonicalParameterDefinitionRecord = { parameter_id: 'pending_norm', value_type: 'decimal',
     required: false, default_value: null, constraints_json: { min: 0 }, truth_metadata: {

@@ -36,6 +36,10 @@ export type CanonicalScopeRequirementV1 = {
   coveringRowIds: string[];
   originalRowIds: string[];
   satisfiedWhen?: Json;
+  /** Alternative object states are meaningful only inside this source context. */
+  contextWhen?: Json;
+  notApplicableWhen?: Json;
+  requiredFactParameterIds?: string[];
   objectFactParameterId?: string;
   unknownObjectValues?: string[];
   legacyObjectValue?: string;
@@ -94,7 +98,11 @@ export function resolveCanonicalScopeRequirementV1(input: {
     || input.graph.costTreatment !== 'INFORMATIONAL_SCOPE'
     || s.coveringRowIds.some(id => !input.resourceIds.has(id) || id === input.rowId)
     || s.originalRowIds.some(id => !input.resourceIds.has(id) || id === input.rowId)
-    || !record(s.exactScopeWhen) || (s.satisfiedWhen != null && !record(s.satisfiedWhen))) return fail();
+    || !record(s.exactScopeWhen) || (s.satisfiedWhen != null && !record(s.satisfiedWhen))
+    || (s.contextWhen!=null&&!record(s.contextWhen)) || (s.notApplicableWhen!=null&&!record(s.notApplicableWhen))
+    || (s.notApplicableWhen!=null&&s.contextWhen==null)
+    || (s.requiredFactParameterIds!=null&&(!ids(s.requiredFactParameterIds)||s.requiredFactParameterIds.some(id=>!input.parameterIds.has(id))))
+    || (s.kind!=='OBJECT_SCOPE'&&s.objectFactParameterId!=null&&(!text(s.objectFactParameterId)||!input.parameterIds.has(s.objectFactParameterId)||!ids(s.unknownObjectValues)))) return fail();
   const scope = s as unknown as CanonicalScopeRequirementV1;
   const condition = (ast: Json) => {
     const probe = resolveInclusionGraph(ast, {});
@@ -102,6 +110,10 @@ export function resolveCanonicalScopeRequirementV1(input: {
     return resolveInclusionGraph(ast, input.parameters);
   };
   const exact = condition(scope.exactScopeWhen);
+  const context=scope.contextWhen?condition(scope.contextWhen):null;
+  const notApplicable=scope.notApplicableWhen?condition(scope.notApplicableWhen):null;
+  const completed=scope.satisfiedWhen?condition(scope.satisfiedWhen):null;
+  if(context?.value===true&&[exact,notApplicable,completed].filter(condition=>condition?.value===true).length>1)return fail();
   let missing: string[] = exact.missingParameterIds;
   let status: CanonicalScopeRequirementStatusV1 = 'SCOPE_UNVERIFIED';
   if (scope.kind === 'OBJECT_SCOPE') {
@@ -112,6 +124,13 @@ export function resolveCanonicalScopeRequirementV1(input: {
       status = 'OBJECT_FACT_REQUIRED'; missing = [id];
     } else if (value === scope.legacyObjectValue) { status = 'LEGACY_SOURCE_REQUIRED'; missing = []; }
     else if (exact.value === true) { status = 'COMPLETED'; missing = []; }
+  } else if(scope.contextWhen&&context?.value!==true) {
+    missing=context?.missingParameterIds??[];
+  } else if(notApplicable?.value===true) {status='NOT_APPLICABLE';missing=[];
+  } else if(scope.contextWhen&&completed?.value===true) {status='COMPLETED';missing=[];
+  } else if(scope.objectFactParameterId&&(input.parameters[scope.objectFactParameterId]==null
+    ||input.parameters[scope.objectFactParameterId]===''||scope.unknownObjectValues?.includes(String(input.parameters[scope.objectFactParameterId])))) {
+    status='OBJECT_FACT_REQUIRED';missing=[scope.objectFactParameterId];
   } else if (exact.value === true) {
     missing = [];
     const covered = scope.coveringRowIds.length > 0 && scope.coveringRowIds.every(id => input.knownQuantityRowIds.has(id));
@@ -125,6 +144,8 @@ export function resolveCanonicalScopeRequirementV1(input: {
       if(scope.coveringRowIds.every(id=>input.excludedOperationResourceRowIds?.has(id))) status='USER_EXCLUDED';
       else if(scope.coveringRowIds.some(id=>input.excludedQuantityRowIds?.has(id))) status='REQUIRED_RESOURCE_EXCLUDED';
     }
+    const missingFacts=(scope.requiredFactParameterIds??[]).filter(id=>input.parameters[id]==null||input.parameters[id]==='');
+    if(missingFacts.length&&!['USER_EXCLUDED','COMPLETED','NOT_APPLICABLE'].includes(status)){status='OBJECT_FACT_REQUIRED';missing=missingFacts;}
   }
   return { contractVersion:'canonical-scope-requirement-decision/v1',rowId:input.rowId,
     groupId:scope.groupId,groupTitleRu:scope.groupTitleRu,titleRu:scope.titleRu,reasonRu:scope.reasonRu,
@@ -137,13 +158,14 @@ export function canonicalScopeRequirementStatusRuV1(status: CanonicalScopeRequir
     COMPLETED:'Подтверждено исходными данными',USER_EXCLUDED:'Исключено пользователем из этой сметы',PARTLY_INCLUDED:'Часть учтена; отдельный остаток зависит от проекта',
     REQUIRED_RESOURCE_EXCLUDED:'Для выполнения этапа нужен исключённый ресурс: восстановите его или измените состав',
     PROCESS_REQUIRED:'Требование к выполнению работ',PROJECT_SCOPE_OPEN:'Отдельный состав зависит от проекта',
-    FINANCIAL_POLICY:'Учитывается по сметным и налоговым правилам',OBJECT_FACT_REQUIRED:'Нужно выбрать систему кровли',
+    FINANCIAL_POLICY:'Учитывается по сметным и налоговым правилам',OBJECT_FACT_REQUIRED:'Нужны исходные данные участка',
     LEGACY_SOURCE_REQUIRED:'Нормы прежнего состава ещё не подтверждены',SCOPE_UNVERIFIED:'Применимость ещё не подтверждена'})[status];
 }
 
 export type CanonicalScopeRequirementGroupV1 = {
   groupId: string; titleRu: string; rowIds: string[]; statuses: CanonicalScopeRequirementStatusV1[]; detailsRu: string[];
   kinds?: CanonicalScopeRequirementKindV1[];
+  missingObjectFactParameterIds?: string[];
   sourceCheckRestoration?: { rowIds: string[]; operationKeys: string[] };
 };
 export function groupCanonicalScopeRequirementsV1(decisions: readonly CanonicalScopeRequirementDecisionV1[]): CanonicalScopeRequirementGroupV1[] {
@@ -151,6 +173,9 @@ export function groupCanonicalScopeRequirementsV1(decisions: readonly CanonicalS
   for (const d of decisions) {
     const group = groups.get(d.groupId) ?? {groupId:d.groupId,titleRu:d.groupTitleRu,rowIds:[],statuses:[],detailsRu:[],kinds:[]};
     if(!group.kinds!.includes(d.kind))group.kinds!.push(d.kind);
+    if(d.status==='OBJECT_FACT_REQUIRED'&&d.missingObjectFactParameterIds.length){
+      group.missingObjectFactParameterIds=[...new Set([...(group.missingObjectFactParameterIds??[]),...d.missingObjectFactParameterIds])];
+    }
     if(d.restoreExcludedSourceCheck) {
       const restoration=group.sourceCheckRestoration??={rowIds:[],operationKeys:[]};
       if(!restoration.rowIds.includes(d.rowId))restoration.rowIds.push(d.rowId);
