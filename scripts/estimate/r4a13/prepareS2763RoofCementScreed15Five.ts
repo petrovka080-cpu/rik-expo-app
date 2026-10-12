@@ -118,7 +118,7 @@ async function main() {
           locator:'Общие указания PDF3 п1.7; PDF9 п4.2; условия PDF2,7–8,15',reviewedAt:pack.sources.find(s=>s.kind==='guidance')!.reviewedAt}]};
       await client.query('insert into public.estimate_normative_source(id,source_key,title_ru,authority,official_url,artifact_sha256,metadata) values($1,$2,$3,$4,$5,$6,$7::jsonb) on conflict(source_key) do nothing',
         [sourceId,sourceKey,artifact.titleRu,artifact.authority,artifact.officialUrl,artifact.sha256,JSON.stringify({contract:CONTRACT,activationAllowed:false,
-          sourceRole:artifact.quantityAdmitted?'CONDITIONAL_KRER_READY_BITUMEN_EMULSION_PRIMER_NORM':'KRER_APPLICATION_GUIDANCE',sourceId:artifact.id})]);
+          sourceRole:artifact.quantityAdmitted?'CONDITIONAL_KRER_CEMENT_SCREED15_017_01_NORM':'KRER_APPLICATION_GUIDANCE',sourceId:artifact.id})]);
       const actual=(await client.query('select id::text,artifact_sha256 from public.estimate_normative_source where source_key=$1',[sourceKey])).rows[0];
       invariant(actual?.id===sourceId&&actual.artifact_sha256===artifact.sha256,'PRIMARY_SOURCE_IDENTITY_DRIFT');
       await client.query('insert into public.estimate_normative_locator(id,source_id,locator_key,locator,excerpt_sha256) values($1,$2,$3,$4::jsonb,$5) on conflict(source_id,locator_key) do nothing',
@@ -149,7 +149,7 @@ async function main() {
         resourceId: row => uuid(`${fingerprint}:resource:${catalogId}:${row.row_id}`), resourceSemanticOwner: row => String(row.semantic_owner),
         resourceSha256: row => hash({ contract: CONTRACT, catalogId, row }),
         baseline: { id: baselineId, key: `${CONTRACT}:${fingerprint.slice(0, 16)}:${catalogId}`, sourceDefinitionVersionId: parent.definition.id,
-          validationScenarioRefs: [...(parent.baseline.validation_scenario_refs ?? []), { scenario: "S2763_READY_BITUMEN_EMULSION_PRIMER_FIVE_EXACT_NORMS_NO_OPERATOR_OR_RESIDUAL_DUPLICATE", acceptanceEvidenceSha256: evidenceSha256,
+          validationScenarioRefs: [...(parent.baseline.validation_scenario_refs ?? []), { scenario: "S2763_CEMENT_SCREED15_017_01_FIVE_EXACT_NORMS_INFO_NOT_PAYABLE_RESIDUALS_OPEN", acceptanceEvidenceSha256: evidenceSha256,
             primarySourceArtifactSha256: pack.sources.map(source=>source.sha256), quantityQuality: "CONDITIONAL_KRER_ROOF_MATERIAL_LABOUR_MACHINE_NORMS_FULL_COMPOSITION_PARTIAL", completeTechnicalEstimateAccepted: false }],
           acceptanceEvidenceSha256: evidenceSha256, acceptedReleaseId: releaseId, supersedesBaselineId: parent.baseline.id },
         passport: { physicalResultRu: String(r.passport.physical_result_ru), excludedScopeRu: r.passport.excluded_scope_ru,
