@@ -243,10 +243,8 @@ export function buildCanonicalProfessionalPdfProjection(input: {
   if(rawPrimer!=null&&!primer)throw Object.assign(new Error('professional PDF preparation reference invalid'),{code:'ARTIFACT_PREPARATION_REFERENCE_INVALID'});
   const primerAppendix=primer?`<section class="question-appendix"><h2>Связанная огрунтовка основания</h2><div class="notice"><strong>${escapeCanonicalArtifactHtml(roofPrimerPhaseRuV1(primer.phase))} · ${escapeCanonicalArtifactHtml(primer.sectionLabelRu)}</strong><br>Сохранённая смета: ${escapeCanonicalArtifactHtml(primer.sourceDisplayTitleRu)}, версия ${primer.sourceRevisionNumber}.<br>Стоимость подготовки учитывается в связанной смете; платные строки здесь повторно не добавляются.<br>Нормативная площадь огрунтовки: ${canonicalArtifactQuantity(primer.sourceNormAreaM2)} м²; площадь покрытия: ${primer.consumerNormAreaM2==null?'ещё не подтверждена':canonicalArtifactQuantity(primer.consumerNormAreaM2)+' м²'}. Обмеры ведутся отдельно; эта ссылка не распределяет количества и не формирует заказ.${primer.phase!=='completed_accepted'?'<br>План подготовки не подтверждает фактическую готовность основания.':''}</div></section>`:'';
   const preliminaryNeeds = input.preliminaryNeeds ?? [];
-  const revisionTotals = objectValue(revision.totals);
   const expectedProjectedRowCount = Number(
     input.expectedProjectedRowCount
-      ?? revisionTotals.includedRowCount
       ?? revision.row_count,
   );
   if (rows.length !== expectedProjectedRowCount) {
