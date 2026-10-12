@@ -4,7 +4,8 @@ import {
   ROOF_PRIMER_SOURCE_CATALOGS_V1,ROOF_PRIMER_LINK_CATALOGS_V1,ROOF_PRIMER_PREFIX_V1,
   type RoofPrimerPrerequisiteDecisionV1,type RoofPrimerPrerequisiteCandidateV1,
 } from './canonicalRoofPrimerPrerequisiteV1';
-import {assertRoofPlannedPreparationOwnerContextV1,ROOF_PLANNED_PRIMER_CONDITIONS_V1} from './canonicalRoofPlannedPreparationV1';
+import {assertRoofPlannedPreparationOwnerContextV1} from './canonicalRoofPlannedPreparationV1';
+import {roofConditionIncludesPlannedPrimerV1} from './canonicalRoofForecastConditionV1';
 type Json=Record<string,unknown>;
 type Reader={query:(text:string,values?:unknown[])=>Promise<{rows:Json[]}>};
 type Principal={ownerUserId:string;organizationId:string|null};
@@ -45,7 +46,7 @@ export async function admitRoofPrimerPrerequisiteServerV1(client:Reader,input:Pr
   const inheritedValue=record(record(input.parentAmendmentContract).parameterSources).roofPrimerPrerequisiteV1;
   assertRoofPlannedPreparationOwnerContextV1({parameters:input.fieldParameters,inheritedExternalOwner:inheritedValue,
     suppliedExternalOwner:input.supplied?input.command:undefined});
-  if(input.fieldParameters.roof_torch_conditions===ROOF_PLANNED_PRIMER_CONDITIONS_V1) {
+  if(roofConditionIncludesPlannedPrimerV1(input.fieldParameters.roof_torch_conditions)) {
     // A cleared link does not establish cancellation of external work/payment.
     // Check the complete authorized instance ancestry; a truncated/cyclic chain
     // also fails closed rather than claiming that no external owner exists.

@@ -1,5 +1,6 @@
 import {admitRoofPreparationMigrationProofV1,migrateRoofPreparationSelectionV1,readRoofPreparationMigrationProofV1,assertRoofRetainedSemanticSelectionV1,type RoofPreparationMigrationProofV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofPreparationMigrationV1';
 import {admitRoofValleyMigrationProofV1,migrateRoofValleySelectionV1,buildRoofStageRestorationV1,composeRoofFiveToSevenMigrationV1,type RoofStageRestorationV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofValleyMigrationV1';
+import {admitRoofScreedMigrationProofV1,migrateRoofScreedSelectionV1,buildRoofStageRestorationV2,composeRoofScreedMigrationModelV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofScreedMigrationV1';
 import {parseCanonicalCompositionSelectionV1,assertCanonicalCompositionSelectionReleaseMigrationV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1';
 import { projectCanonicalEstimateParameterSessionSnapshot } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSessionSnapshot";
 import {admitRoofPrimerPrerequisiteServerV1,listRoofPrimerPrerequisiteCandidatesServerV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofPrimerPrerequisiteServerV1';
@@ -56,7 +57,7 @@ async function localManualAmendmentMigrationBindings(client: PoolClient, definit
   const input = {resources: resources.rows, formulas: formulas.rows, parameters: parameters.rows};
   let predecessorBindings:Record<string,unknown>={};
   const definition=(await client.query('select * from public.estimate_definition_version where id=$1',[definitionId])).rows[0];
-  const proof=definition?.source_metadata?.roofValleyMigrationV1??definition?.source_metadata?.roofPreparationMigrationV1;
+  const proof=definition?.source_metadata?.roofScreedMigrationV1??definition?.source_metadata?.roofValleyMigrationV1??definition?.source_metadata?.roofPreparationMigrationV1;
   if(proof?.fromDefinitionId&&/^[0-9a-f-]{36}$/iu.test(String(proof.fromDefinitionId))) {
     const fromId=String(proof.fromDefinitionId);
     const [oldDef,oldResources,oldFormulas,oldParameters]=await Promise.all([
@@ -70,7 +71,7 @@ async function localManualAmendmentMigrationBindings(client: PoolClient, definit
       fromDefinition:{id:before?.id,catalogId:before?.catalog_id,sha256:before?.definition_sha256},
       toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},
       from:{resources:oldResources.rows,formulas:oldFormulas.rows,parameters:oldParameters.rows},to:input};
-    const admitted=before?(admitRoofValleyMigrationProofV1(admissionInput)??admitRoofPreparationMigrationProofV1(admissionInput)):null;
+    const admitted=before?(admitRoofScreedMigrationProofV1(admissionInput)??admitRoofValleyMigrationProofV1(admissionInput)??admitRoofPreparationMigrationProofV1(admissionInput)):null;
     if(admitted)predecessorBindings={manualMigrationPredecessorV1:{definitionId:fromId,
       priceBindings:canonicalManualPriceMigrationBindings(admitted.normalizedTo),
       exclusionBindings:canonicalManualExclusionMigrationBindings(admitted.normalizedTo)}};
@@ -82,6 +83,11 @@ async function localManualAmendmentMigrationBindings(client: PoolClient, definit
       {definitionId:path.preparation.proof.fromDefinitionId,priceBindings:canonicalManualPriceMigrationBindings(path.composed),exclusionBindings:canonicalManualExclusionMigrationBindings(path.composed)},
     ]};
   }
+  if(definition?.source_metadata?.roofScreedMigrationV1){
+    const path=await localRoofScreedMigrationV1(client,definition,input);
+    if(path)predecessorBindings={...predecessorBindings,manualMigrationPredecessorsV1:path.models.map(m=>({definitionId:m.definitionId,
+      priceBindings:canonicalManualPriceMigrationBindings(m.model),exclusionBindings:canonicalManualExclusionMigrationBindings(m.model)}))};
+  }
   return {...predecessorBindings,manualPriceMigrationBindings: canonicalManualPriceMigrationBindings(input),
     orderedSpecificationBindings: canonicalOrderedSpecificationBindings(resources.rows),
     manualExclusionMigrationBindings: canonicalManualExclusionMigrationBindings(input)};
@@ -90,7 +96,7 @@ async function localManualAmendmentMigrationBindings(client: PoolClient, definit
 async function localRoofStageMigrationV1(client:PoolClient,definition:Record<string,any>,toModel:{resources:Record<string,unknown>[];formulas:Record<string,unknown>[];parameters:Record<string,unknown>[]}):Promise<{
  receipt:RoofStageRestorationV1;valley:NonNullable<ReturnType<typeof admitRoofValleyMigrationProofV1>>;preparation:NonNullable<ReturnType<typeof admitRoofPreparationMigrationProofV1>>;composed:ReturnType<typeof composeRoofFiveToSevenMigrationV1>;
 }|null>{
- const proof=definition.source_metadata?.roofValleyMigrationV1;if(proof==null)return null;
+ const proof=definition.source_metadata?.roofValleyMigrationV1;if(proof==null||definition.source_metadata?.roofScreedMigrationV1!=null)return null;
  const fail=()=>{throw Object.assign(new Error('Связь восстановлений состава не подтверждена.'),{code:'DEFINITION_INTEGRITY_FAILED'});};
  const load=async(id:unknown)=>{
   if(typeof id!=='string'||!/^[0-9a-f-]{36}$/iu.test(id))return fail();
@@ -106,6 +112,24 @@ async function localRoofStageMigrationV1(client:PoolClient,definition:Record<str
  const original=await load(originalProof.fromDefinitionId);
  const preparation=admitRoofPreparationMigrationProofV1({proof:originalProof,fromDefinition:identity(original.definition),toDefinition:identity(previous.definition),from:original.model,to:previous.model});
  if(!preparation)return fail();return {receipt:buildRoofStageRestorationV1({valley,preparation}),valley,preparation,composed:composeRoofFiveToSevenMigrationV1({valley,preparation})};
+}
+/** Fixed 5→6→7→8 chain, reread from immutable SQL, never open-ended ancestry. */
+async function localRoofScreedMigrationV1(client:PoolClient,definition:Record<string,any>,toModel:{resources:Record<string,unknown>[];formulas:Record<string,unknown>[];parameters:Record<string,unknown>[]}){
+ const proof=definition.source_metadata?.roofScreedMigrationV1;if(proof==null)return null;
+ const fail=()=>{throw Object.assign(new Error('Переход подготовки основания не подтверждён.'),{code:'DEFINITION_INTEGRITY_FAILED'});};
+ if(typeof proof.fromDefinitionId!=='string'||!/^[0-9a-f-]{36}$/iu.test(proof.fromDefinitionId))return fail();
+ const id=proof.fromDefinitionId;
+ const [d,r,f,p]=await Promise.all([client.query('select * from public.estimate_definition_version where id=$1',[id]),
+  client.query('select * from public.estimate_resource_spec where definition_version_id=$1',[id]),client.query('select * from public.estimate_formula_graph where definition_version_id=$1',[id]),
+  client.query('select * from public.estimate_parameter_definition where definition_version_id=$1',[id])]);
+ const before=d.rows[0],from={resources:r.rows,formulas:f.rows,parameters:p.rows};if(!before)return fail();
+ const identity=(x:Record<string,any>)=>({id:x.id,catalogId:x.catalog_id,sha256:x.definition_sha256});
+ const screed=admitRoofScreedMigrationProofV1({proof,fromDefinition:identity(before),toDefinition:identity(definition),from,to:toModel});
+ const previous=await localRoofStageMigrationV1(client,before,from);if(!screed||!previous)return fail();
+ const receipt=buildRoofStageRestorationV2({screed,previous});
+ return {screed,previous,receipt,models:[{definitionId:screed.proof.fromDefinitionId,model:screed.normalizedTo},
+  {definitionId:previous.valley.proof.fromDefinitionId,model:composeRoofScreedMigrationModelV1(screed,previous.valley.normalizedTo)},
+  {definitionId:previous.preparation.proof.fromDefinitionId,model:composeRoofScreedMigrationModelV1(screed,previous.composed)}]};
 }
 import { mergeCanonicalEffectiveResourceQuantityProvenanceV1 } from "../../../src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1";
 import { stripCanonicalAutomaticPreliminaryInputsV1, canonicalAutomaticPreliminaryClassificationV1 } from '../../../src/lib/estimate/backendPlatform/canonicalPreliminaryParameterFormulaV1';
@@ -2295,7 +2319,10 @@ async function compileClaimedJob(
     &&inheritedRoofMigration.catalogId===job.catalog_id?inheritedRoofMigration:null;
   const roofStageMigration=await localRoofStageMigrationV1(client,definition,{resources:resourceRows,formulas,parameters:parameterDefinitions});
   const roofStageRestorationV1=roofStageMigration?.receipt??null;
+  const roofScreedMigration=await localRoofScreedMigrationV1(client,definition,{resources:resourceRows,formulas,parameters:parameterDefinitions});
+  const roofStageRestorationV2=roofScreedMigration?.receipt??null;
   if(roofStageRestorationV1)roofPreparationMigrationV1=roofStageRestorationV1.originalPreparationProof;
+  if(roofStageRestorationV2)roofPreparationMigrationV1=roofStageRestorationV2.originalStages.originalPreparationProof;
   let effectiveCompositionSelectionV1=parseCanonicalCompositionSelectionV1(Object.hasOwn(payload,'compositionSelectionV1')?payload.compositionSelectionV1
     :((parentRevision?.amendment_contract as JsonRecord|undefined)?.parameterSources as JsonRecord|undefined)?.compositionSelectionV1);
   if (parentRevision && parentRevision.release_id !== job.target_release_id) {
@@ -2315,7 +2342,18 @@ async function compileClaimedJob(
       fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},
       toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},from:fromModel,to:toModel}):null;
     const directFiveToSeven=roofStageMigration?.preparation.proof.fromDefinitionId===before?.id?roofStageMigration:null;
-    const migrationTo=directFiveToSeven?.composed??valleyAdmitted?.normalizedTo??admitted?.normalizedTo??toModel;
+    const screedPredecessor=roofScreedMigration?.models.find(m=>m.definitionId===before?.id);
+    const migrationTo=screedPredecessor?.model??directFiveToSeven?.composed??valleyAdmitted?.normalizedTo??admitted?.normalizedTo??toModel;
+    if(screedPredecessor&&roofScreedMigration){
+      const path=roofScreedMigration;
+      const crossedPrimer=path.previous.preparation.proof.fromDefinitionId===before?.id;
+      const crossedValley=crossedPrimer||path.previous.valley.proof.fromDefinitionId===before?.id;
+      if(Object.hasOwn(payload,'compositionSelectionV1'))assertRoofRetainedSemanticSelectionV1({parentSelection:(parentAmendments.parameterSources as JsonRecord|undefined)?.compositionSelectionV1,requestedSelection:effectiveCompositionSelectionV1,
+        semanticRowIds:[path.screed.semanticScreedRowId,...(crossedPrimer?[path.previous.preparation.semanticPrimerRowId]:[]),...(crossedValley?[path.previous.valley.semanticValleyRowId]:[])]});
+      if(crossedPrimer)effectiveCompositionSelectionV1=migrateRoofPreparationSelectionV1({selection:effectiveCompositionSelectionV1,admitted:path.previous.preparation});
+      if(crossedValley)effectiveCompositionSelectionV1=migrateRoofValleySelectionV1({selection:effectiveCompositionSelectionV1,admitted:path.previous.valley});
+      effectiveCompositionSelectionV1=migrateRoofScreedSelectionV1({selection:effectiveCompositionSelectionV1,admitted:path.screed});
+    }
     if(admitted) {
       roofPreparationMigrationV1=admitted.proof;
       if(Object.hasOwn(payload,'compositionSelectionV1'))assertRoofRetainedSemanticSelectionV1({parentSelection:(parentAmendments.parameterSources as JsonRecord|undefined)?.compositionSelectionV1,requestedSelection:effectiveCompositionSelectionV1,semanticRowIds:[admitted.semanticPrimerRowId]});
@@ -2431,6 +2469,7 @@ async function compileClaimedJob(
     identity: identityContract,
     ...(roofPreparationMigrationV1?{roofPreparationMigrationV1}:{}),
     ...(roofStageRestorationV1?{roofStageRestorationV1}:{}),
+    ...(roofStageRestorationV2?{roofStageRestorationV2}:{}),
     ...(roofPrimerPrerequisiteV1?{roofPrimerPrerequisiteV1}:{}),
   };
   const commitPayload = buildCanonicalRevisionCommitPayload({
@@ -2452,6 +2491,7 @@ async function compileClaimedJob(
     roofPrimerPrerequisiteV1,
     roofPreparationMigrationV1,
     roofStageRestorationV1,
+    roofStageRestorationV2,
     compositionSelectionV1:compiled.compositionSelectionV1,
   });
   await client.query(

@@ -28,3 +28,8 @@ test('uses the actual published field30/primer10 and admitted valley25 metadata,
  expect(sections.map(s=>s.operation?.groupId)).toEqual([primer,valley,field]);
  expect(sections.flatMap(s=>s.resourceIds).sort()).toEqual(resources.map(r=>r.rowId).sort());expect(JSON.stringify(resources)).toBe(snapshot);
 });
+test('puts independently measured planned screed5 before primer10, valley25 and field30',()=>{
+ const screed='roof:cement-screed15:krer12-017-01';
+ const sections=canonicalEstimateResourceOperationSections([resource(field,30),resource(valley,25),resource(primer,10),resource(screed,5)]);
+ expect(sections.map(s=>s.operation?.groupId)).toEqual([screed,primer,valley,field]);
+});

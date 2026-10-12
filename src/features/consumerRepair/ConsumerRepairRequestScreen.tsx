@@ -1,6 +1,7 @@
 import React from "react";
 import {roofPreparationRestoreTargetsV1} from '../../lib/estimate/backendPlatform/canonicalRoofPreparationMigrationV1';
 import {roofStageRestoreTargetsV1} from '../../lib/estimate/backendPlatform/canonicalRoofValleyMigrationV1';
+import {roofStageRestoreTargetsV2} from '../../lib/estimate/backendPlatform/canonicalRoofScreedMigrationV1';
 import { enrichCanonicalPreliminaryNamingEvidence, missingCanonicalPreliminaryNamingEvidence,
   type CanonicalPreliminaryNamingEvidence } from '../../lib/consumerRequests/consumerCanonicalBackendRevisionProjection';
 import { canonicalPurchaseShortageMessageV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
@@ -2981,8 +2982,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       const preparationTargets=excluded?{rowIds,operationKeys:requestedOperations}:roofPreparationRestoreTargetsV1({
         proof:saved.roofPreparationMigrationV1,definitionId:saved.definitionVersionId,catalogId:saved.catalogId,
         rowIds,operationKeys:requestedOperations});
-      const targets=excluded?preparationTargets:roofStageRestoreTargetsV1({receipt:saved.roofStageRestorationV1,
+      const previousTargets=excluded?preparationTargets:roofStageRestoreTargetsV1({receipt:saved.roofStageRestorationV1,
         definitionId:saved.definitionVersionId,catalogId:saved.catalogId,...preparationTargets});
+      const targets=excluded?previousTargets:roofStageRestoreTargetsV2({receipt:saved.roofStageRestorationV2,
+        definitionId:saved.definitionVersionId,catalogId:saved.catalogId,...previousTargets});
       const changedOperations=targets.operationKeys;
       changedOperations.forEach(key=>excluded ? operations.add(key) : operations.delete(key));
       targets.rowIds.forEach(id => excluded ? ids.add(id) : ids.delete(id));

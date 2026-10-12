@@ -8,7 +8,7 @@ export type SourcePinnedRoofNormPackR1={contract:string;prefix:string;normId:str
  groupTitleRu:string;operationTitleRu:string;completionCriterionRu:string;systemParameterId:string;conditionsParameterId:string;areaParameterId:string;
  systemYesRu:string;conditionsYesRu:string;areaYesRu:string;unknownChoiceRu:string;legacyChoiceRu:string;rates:SourcePinnedRoofNormRateR1[];
  measurementTitleRu?:string;measurementGuideRu?:string;systemChoiceTitleRu?:string;measurementChoiceTitleRu?:string;operationProcessOrdinal?:number;
- measurementParameterId?:string;measurementUnitId?:'linear_m';measurementConditional?:boolean;
+ measurementParameterId?:string;measurementUnitId?:'linear_m'|'m2';measurementConditional?:boolean;
  notApplicableChoiceRu?:string;completedChoiceRu?:string};
 
 /** Builds only source quantities. Project selection, actual area and source
@@ -26,10 +26,10 @@ export function sourcePinnedRoofNormOwnerR1(pack:SourcePinnedRoofNormPackR1):Aut
  for(const key of ['measurementTitleRu','measurementGuideRu','systemChoiceTitleRu','measurementChoiceTitleRu']as const){const value=pack[key];if(value!=null&&(typeof value!=='string'||!value.trim()))throw Error('ROOF_PARAMETER_CAPTION_INVALID:'+key);}
  if(pack.operationProcessOrdinal!=null&&(!Number.isInteger(pack.operationProcessOrdinal)||pack.operationProcessOrdinal<0||pack.operationProcessOrdinal>1000))throw Error('ROOF_OPERATION_ORDINAL_INVALID');
  const guards=sourcePinnedRoofNormGuardsR1(pack);
- const lengthMeasure=pack.measurementParameterId!=null,measureId=pack.measurementParameterId??'q',measureUnit=pack.measurementUnitId??'m2';
- if(lengthMeasure&&(!/^[a-z][a-z0-9_]*$/u.test(measureId)||['q',pack.systemParameterId,pack.conditionsParameterId,pack.areaParameterId].includes(measureId)||measureUnit!=='linear_m'
+ const customMeasure=pack.measurementParameterId!=null,measureId=pack.measurementParameterId??'q',measureUnit=pack.measurementUnitId??'m2',lengthMeasure=customMeasure&&measureUnit==='linear_m';
+ if(customMeasure&&(!/^[a-z][a-z0-9_]*$/u.test(measureId)||['q',pack.systemParameterId,pack.conditionsParameterId,pack.areaParameterId].includes(measureId)||!['linear_m','m2'].includes(measureUnit)
    ||!pack.measurementTitleRu?.trim()||!pack.measurementGuideRu?.trim())
-  ||!lengthMeasure&&(pack.measurementUnitId!=null||pack.measurementConditional===true))throw Error('ROOF_MEASUREMENT_IDENTITY_INVALID');
+  ||!customMeasure&&(pack.measurementUnitId!=null||pack.measurementConditional===true))throw Error('ROOF_MEASUREMENT_IDENTITY_INVALID');
  const rateValue=(rate:SourcePinnedRoofNormRateR1)=>lengthMeasure?rate.per100Measure:rate.per100m2;
  const sourceRateValue=(rate:SourcePinnedRoofNormRateR1)=>lengthMeasure?rate.sourceRatePer100Measure:rate.sourceRatePer100m2;
  for(const rate of pack.rates)if(!/^\d+(?:\.\d+)?$/u.test(String(rateValue(rate)))||Number(rateValue(rate))<=0
@@ -58,11 +58,12 @@ export function sourcePinnedRoofNormOwnerR1(pack:SourcePinnedRoofNormPackR1):Aut
  const resources=original.resources.map(row=>{const rate=pack.rates.find(r=>row.row_id===pack.prefix+':'+r.role)!;const{row_sha256:_sha,...body}=row;
   const result={...body,source_metadata:{...row.source_metadata,sourceRole:'PINNED_CONDITIONAL_KRER_ROOF_NORM',sourceNormQuantityAccepted:rate.costTreatment==='OWN_COST',
    ...(lengthMeasure?{normativeRatePer100Measure:rate.per100Measure,normativeResourceCode:rate.resourceCode,sourceNormRatePer100Measure:rate.sourceRatePer100Measure,normativeMeasureParameterId:measureId,normativeMeasureUnitId:measureUnit}
-    :{normativeRatePer100M2:rate.per100m2,normativeResourceCode:rate.resourceCode,sourceNormRatePer100M2:rate.sourceRatePer100m2}),sourceNormUnit:rate.sourceUnit,exactUnitConversionFactor:rate.exactUnitConversionFactor,
+    :{normativeRatePer100M2:rate.per100m2,normativeResourceCode:rate.resourceCode,sourceNormRatePer100M2:rate.sourceRatePer100m2,
+      ...(customMeasure?{normativeMeasureParameterId:measureId,normativeMeasureUnitId:measureUnit}:{})}),sourceNormUnit:rate.sourceUnit,exactUnitConversionFactor:rate.exactUnitConversionFactor,
    sourceHistoricalPrintedPriceNotAdmitted:true,physicalNormNotActualRentalOrPurchase:true,full_technical_acceptance:false,machinePriceCoverageRequired:rate.machinePriceCoverageRequired??null,
    normativeTrace:pack.sources.map(s=>({sourceId:s.id,normId:pack.contract+':'+s.kind,sourceDocument:s.titleRu,sourceLocator:s.locators,sourceSnapshotHash:s.sha256}))},
    resource_graph:{...row.resource_graph,derivedQuantityEditPolicyV1:{contractVersion:'canonical-derived-quantity-edit-policy/v1',mode:'PARAMETERS_ONLY',unitId:row.unit_id,parameterIds:[measureId],
-    reasonRu:lengthMeasure?'Количество рассчитано по подтверждённой норме и измеренной длине ендов. Изменяйте длину в исходных данных; коэффициент нормы приложение получает из источника.':'Количество рассчитано по подтверждённой норме и измеренной площади покрытия. Изменяйте площадь в исходных данных; коэффициент нормы приложение получает из источника.'},
+    reasonRu:lengthMeasure?'Количество рассчитано по подтверждённой норме и измеренной длине ендов. Изменяйте длину в исходных данных; коэффициент нормы приложение получает из источника.':customMeasure?'Количество рассчитано по подтверждённой норме и измеренной площади именно стяжки. Изменяйте эту площадь в исходных данных; коэффициент нормы приложение получает из источника.':'Количество рассчитано по подтверждённой норме и измеренной площади покрытия. Изменяйте площадь в исходных данных; коэффициент нормы приложение получает из источника.'},
     operationCompositionV1:{contractVersion:'canonical-operation-resource/v1',groupId:pack.prefix,groupTitleRu:pack.groupTitleRu,operationId:pack.prefix+':installation',operationTitleRu:pack.operationTitleRu,processOrdinal:pack.operationProcessOrdinal??20,completionCriterionRu:pack.completionCriterionRu},
     publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',nameRu:row.title_ru,sourceTitleRu:row.title_ru,detailsRu:[pack.scopeRu,...rate.detailsRu,
      'Склад, упаковка и цена не изменяют известную физическую норму. Заказ и фактическая аренда проверяются отдельно; неизвестные данные не подменяются нулём.']}}};

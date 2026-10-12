@@ -1,3 +1,4 @@
+import {roofConditionIncludesPlannedPrimerV1} from './canonicalRoofForecastConditionV1';
 /** The narrow whole-area planning branch; no extra public norm input. */
 export const ROOF_PLANNED_PRIMER_CONDITIONS_V1 =
   'Принятое минеральное основание; совместимая готовая эмульсия на всю площадь; огрунтовка оплачивается только здесь; обычные условия до 15 м';
@@ -11,7 +12,7 @@ export function assertRoofPlannedPreparationOwnerContextV1(input: {
   inheritedExternalOwner: unknown;
   suppliedExternalOwner?: unknown;
 }): void {
-  if (input.parameters.roof_torch_conditions !== ROOF_PLANNED_PRIMER_CONDITIONS_V1) return;
+  if (!roofConditionIncludesPlannedPrimerV1(input.parameters.roof_torch_conditions)) return;
   if (input.inheritedExternalOwner != null || input.suppliedExternalOwner != null) {
     throw Object.assign(new Error(
       'Огрунтовка этой сметы конфликтует с сохранённой подготовкой того же участка. Уточните её исполнителя и фактическое состояние. Выполненную подготовку повторно не начисляйте. Удаление ссылки не подтверждает отмену внешней работы или оплаты; исходная смета сохранена.',

@@ -6,6 +6,7 @@ import {canonicalEstimateRecalculateIdempotencyKey} from './canonicalEstimateCom
 import {canonicalEstimateRevisionDetailFromStorage} from './canonicalEstimateRevisionReadMapper';
 import {buildCanonicalProfessionalPdfProjection} from './canonicalProfessionalPdf';
 import {ROOF_PLANNED_PRIMER_CONDITIONS_V1} from './canonicalRoofPlannedPreparationV1';
+import {ROOF_FORECAST_SCREED_PRIMER_CONDITIONS_V1} from './canonicalRoofForecastConditionV1';
 
 const uuid=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const sha=(n:string)=>n.repeat(64),sourceSha=sha('a');
@@ -105,8 +106,8 @@ describe('server authorization and inherited prerequisite evidence',()=>{
     const f=fixture(),db=reader(f);expect(await admitRoofPrimerPrerequisiteServerV1(db,{...principal,fieldRevisionId:uuid(1),fieldCatalogId:f.fieldCatalogId,fieldParameters:{...f.fieldParameters,roof_torch_conditions:ROOF_PLANNED_PRIMER_CONDITIONS_V1},supplied:false,command:undefined,parentAmendmentContract:{}})).toBeNull();expect(db.calls).toHaveLength(1);
     expect(db.calls[0]!.values).toEqual([uuid(1),principal.ownerUserId,principal.organizationId]);
   });
-  it('keeps a historical external owner unresolved after clearing the link in an earlier revision',async()=>{
-    const f=fixture(),base={...principal,fieldRevisionId:uuid(1),fieldCatalogId:f.fieldCatalogId,fieldParameters:{...f.fieldParameters,roof_torch_conditions:ROOF_PLANNED_PRIMER_CONDITIONS_V1},supplied:false,command:undefined,parentAmendmentContract:{}};
+  it.each([ROOF_PLANNED_PRIMER_CONDITIONS_V1,ROOF_FORECAST_SCREED_PRIMER_CONDITIONS_V1])('keeps a historical external owner unresolved after clearing the link in an earlier revision: %s',async condition=>{
+    const f=fixture(),base={...principal,fieldRevisionId:uuid(1),fieldCatalogId:f.fieldCatalogId,fieldParameters:{...f.fieldParameters,roof_torch_conditions:condition},supplied:false,command:undefined,parentAmendmentContract:{}};
     await expect(admitRoofPrimerPrerequisiteServerV1({query:async()=>({rows:[{external_owner_seen:true,complete_instance:true}]})},base)).rejects.toMatchObject({code:'ROOF_PRIMER_OWNER_CONFLICT'});
     await expect(admitRoofPrimerPrerequisiteServerV1({query:async()=>({rows:[{external_owner_seen:false,complete_instance:false}]})},base)).rejects.toMatchObject({code:'ROOF_PRIMER_INSTANCE_IDENTITY_MISMATCH'});
   });
