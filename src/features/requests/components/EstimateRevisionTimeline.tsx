@@ -18,6 +18,10 @@ export function estimateRevisionArtifactsStatusRu(revision: Revision, procuremen
       const pdfStatus = !hasPdf ? 'PDF ещё не создан' : pdfCurrent ? 'PDF актуален' : 'PDF относится к предыдущей версии';
       return `${pdfStatus}; закупочные потребности есть, состав заказа требует подтверждения`;
     }
+    if (revision.boq.rows.some(row => row.rowType === "material")) {
+      const pdfStatus = !hasPdf ? "PDF ещё не создан" : pdfCurrent ? "PDF актуален" : "PDF относится к предыдущей версии — его нужно пересоздать";
+      return `${pdfStatus}; материалы учтены, отдельный заказ ещё не сформирован`;
+    }
     if (!hasPdf) return "PDF ещё не создан; закупка для этой операции не требуется";
     if (pdfCurrent) return "PDF актуален; закупка для этой операции не требуется";
     return "PDF относится к предыдущей версии — его нужно пересоздать; закупка не требуется";

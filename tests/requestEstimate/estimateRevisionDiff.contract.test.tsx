@@ -119,6 +119,15 @@ describe("estimate revision diff UI", () => {
     })).toBe("PDF и пакет закупки актуальны");
   });
 
+  it("does not call calculated materials unnecessary when no procurement owner has been admitted", () => {
+    const base=createEstimateDraftRevision({estimateDraftId:'source-materials-without-order',rawInput:'Контроль кровли',createdAt:'2026-10-12T00:00:00.000Z'});
+    const revision={...base,boq:{...base.boq,rows:[{rowType:'material',quantity:43.5,includedInProcurement:false} as (typeof base.boq.rows)[number]]}};
+    const before=JSON.stringify(revision);
+    expect(estimateRevisionArtifactsStatusRu(revision)).toBe('PDF ещё не создан; материалы учтены, отдельный заказ ещё не сформирован');
+    expect(estimateRevisionArtifactsStatusRu({...revision,artifacts:{...base.artifacts,pdfArtifactId:'pdf-current',pdfValidForRevisionId:revision.revisionId}})).toBe('PDF актуален; материалы учтены, отдельный заказ ещё не сформирован');
+    expect(JSON.stringify(revision)).toBe(before);
+  });
+
   it("keeps the immutable backend ordinal in audit metadata without exposing it as UI noise", () => {
     const revision = {
       ...createEstimateDraftRevision({

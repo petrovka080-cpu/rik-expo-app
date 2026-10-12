@@ -8,6 +8,15 @@ import {
 import { resourceDefinitions as roofResources } from '../../src/lib/estimate/v4/roofWindowOperationResourcesS2750';
 
 describe("request estimate view model", () => {
+  it('keeps known source materials visible when procurement has not been admitted', () => {
+    const source=foundationDraftWithManualCatalogItem();
+    const item={...source.items[0]!,itemType:'material' as const,quantity:43.5,unitPrice:null,totalPrice:null,
+      sourceParameters:{includedInEstimate:true,includedInProcurement:false,procurementEligible:false}};
+    const bundle={...source,items:[item]},before=JSON.stringify(bundle),vm=buildRequestEstimateViewModel(bundle)!;
+    expect(vm.procurementApplicabilityLabel).toBe('Материалы учтены в составе; отдельный заказ ещё не сформирован.');
+    expect(vm.calculatedItemCount).toBe(1);expect(vm.preliminaryProcurementNeedCount).toBe(0);
+    expect(JSON.stringify(bundle)).toBe(before);
+  });
   it('retains procurement applicability for a material need with a saved quantity and separates object questions from source gaps', () => {
     const source=foundationDraftWithManualCatalogItem();
     const item={...source.items[0]!,titleRu:'Основание окна',quantity:15,sourceParameters:{

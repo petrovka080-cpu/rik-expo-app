@@ -1466,7 +1466,9 @@ export function buildRequestEstimateViewModel(
     parameterRequirementTables: bundle.canonicalParameterRequirementTables,
     procurementApplicabilityLabel: hasProcurementItems
       ? null
-      : "Материалы и закупка: для выбранной операции не предусмотрены.",
+      : viewBundle.items.some(item => item.itemType === "material")
+        ? "Материалы учтены в составе; отдельный заказ ещё не сформирован."
+        : "Материалы и закупка: для выбранной операции не предусмотрены.",
     manualCatalogItems: viewBundle.items
       .filter((item) => item.source === "catalog_item" && item.catalogItemId)
       .map((item) => ({
