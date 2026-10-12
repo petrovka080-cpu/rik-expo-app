@@ -28,10 +28,10 @@ export function overlayS2767RoofLowerLayersCompanion(parent:PurchaseGroupReprese
  result.baseline.parameter_schema_sha256=hash(result.parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata})));
  const pendingIds=new Set(result.parameters.filter(p=>p.truth_metadata.value_source_role==='UNRESOLVED_APPLICATION_NORM').map(p=>p.parameter_id));
  const requiredPendingIds=new Set(result.parameters.filter(p=>p.required===true&&pendingIds.has(p.parameter_id)).map(p=>p.parameter_id));
- const unresolvedResourceRowIds=result.resources.filter(r=>result.formulas.some(f=>f.formula_id===r.formula_id&&f.input_parameter_ids.some(id=>pendingIds.has(id)))
+ const unresolvedResourceRowIds=result.resources.filter(r=>result.formulas.some(f=>f.formula_id===r.formula_id&&f.input_parameter_ids.some((id:string)=>pendingIds.has(id)))
   ||Array.isArray(r.resource_graph.inputParameterIds)&&r.resource_graph.inputParameterIds.some((id:string)=>requiredPendingIds.has(id))).map(r=>r.row_id);
  result.passport.decision={...result.passport.decision,unresolvedResourceRowIds,roofLowerLayersCompanionContract:pack.contract,quantityScope:'PARTIAL',newNumericNormClosures:11,completeTechnicalEstimateAccepted:false,wholeRoofGroupComplete:false};
- result.passport.capability_matrix=result.passport.capability_matrix.map(c=>c.capability==='FULL_APPLICABLE_SCOPE'?{...c,unresolvedResourceRowIds}:c);
+ result.passport.capability_matrix=result.passport.capability_matrix.map((c:Record<string,unknown>)=>c.capability==='FULL_APPLICABLE_SCOPE'?{...c,unresolvedResourceRowIds}:c);
  result.passport.included_scope_ru=[...result.passport.included_scope_ru,pack.scopeRu];result.definition.passport={...result.definition.passport,roofLowerLayersCompanionContract:pack.contract,rowCount:result.resources.length,fullTechnicalEstimateAccepted:false};
  return {representative:result,addedRowIds:addedRows.map(r=>r.row_id),addedParameterIds:addedParameters.map(p=>p.parameter_id),changedScopeRowIds:[ROOF_ASSEMBLY_SEMANTIC_ROW_V1],changedFormulaIds:[],candidatePublished:false};
 }
