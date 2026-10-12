@@ -122,14 +122,18 @@ export function canonicalEstimateResourceOperationSections(
   // Storage order keeps old immutable row identities; presentation shows the
   // planned primer before torching. Other groups retain their existing slots:
   // ordinals from unrelated work groups are not a global construction sequence.
-  const roofSequence=new Map<string,number>([
-    ['roof:prime-ready-emulsion:krer12-016-02',10],
-    ['roof:torch-two:krer12-002-09',20],
-    ['roof:valley-torch-two:krer12-005-03',25],
-  ]);
-  const roofGroups=[...groupOrder.keys()].filter(id=>roofSequence.has(id)
-    &&[...sections.values()].filter(s=>s.operation?.groupId===id).every(s=>
-      s.operation?.operationId===id+':installation'&&s.operation.processOrdinal===roofSequence.get(id)));
+  const roofIds=new Set(['roof:prime-ready-emulsion:krer12-016-02','roof:torch-two:krer12-002-09','roof:valley-torch-two:krer12-005-03']);
+  const roofSequence=new Map<string,number>();
+  for(const id of groupOrder.keys())if(roofIds.has(id)){
+    const operations=[...sections.values()].filter(s=>s.operation?.groupId===id).map(s=>s.operation!).concat(
+      resources.flatMap(resource=>[...canonicalEstimateOperationReferences(resource.operation),
+        ...canonicalEstimateOperationReferences(resource.sourceOperation)]).filter(operation=>operation.groupId===id));
+    if(operations.every(operation=>operation.operationId===id+':installation'
+      &&typeof operation.processOrdinal==='number'&&Number.isFinite(operation.processOrdinal)&&operation.processOrdinal>=0)
+      &&new Set(operations.map(operation=>operation.processOrdinal)).size===1)
+      roofSequence.set(id,operations[0]!.processOrdinal!);
+  }
+  const roofGroups=[...roofSequence.keys()];
   if(roofGroups.includes('roof:torch-two:krer12-002-09')){
     const slots=roofGroups.map(id=>groupOrder.get(id)!).sort((a,b)=>a-b);
     roofGroups.sort((a,b)=>roofSequence.get(a)!-roofSequence.get(b)!);
