@@ -1,4 +1,5 @@
 import React from "react";
+import {roofPreparationRestoreTargetsV1} from '../../lib/estimate/backendPlatform/canonicalRoofPreparationMigrationV1';
 import { enrichCanonicalPreliminaryNamingEvidence, missingCanonicalPreliminaryNamingEvidence,
   type CanonicalPreliminaryNamingEvidence } from '../../lib/consumerRequests/consumerCanonicalBackendRevisionProjection';
 import { canonicalPurchaseShortageMessageV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
@@ -2968,17 +2969,20 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     try {
       // Durable storage deliberately drops the large structured payload. Its
       // absence after a cold open does not mean that every resource is active.
-      const cached=current.structuredEstimatePayload?.canonicalBackend;
-      const saved=cached?.revisionId===binding.revisionId ? cached : await getCanonicalEstimateRevision(binding.revisionId);
+      const saved=await getCanonicalEstimateRevision(binding.revisionId);
       if(!consumerRepairCanonicalMutationSourceMatchesBundle(source,this.state.bundle)) return;
       if(saved.revisionId!==binding.revisionId || saved.releaseId!==binding.releaseId)
         throw new CanonicalEstimateApiError('Не удалось проверить сохранённые исключения этой версии сметы.',{code:'COMPOSITION_SELECTION_RESULT_MISMATCH',httpStatus:409});
       const previous=saved.compositionSelectionV1;
       const ids=new Set(previous?.excludedRowIds ?? []);
       const operations=new Set(previous?.excludedOperationKeys ?? []);
-      const changedOperations=typeof operationKeys==='string'?[operationKeys]:operationKeys??[];
+      const requestedOperations=typeof operationKeys==='string'?[operationKeys]:operationKeys??[];
+      const targets=excluded?{rowIds,operationKeys:requestedOperations}:roofPreparationRestoreTargetsV1({
+        proof:saved.roofPreparationMigrationV1,definitionId:saved.definitionVersionId,catalogId:saved.catalogId,
+        rowIds,operationKeys:requestedOperations});
+      const changedOperations=targets.operationKeys;
       changedOperations.forEach(key=>excluded ? operations.add(key) : operations.delete(key));
-      rowIds.forEach(id => excluded ? ids.add(id) : ids.delete(id));
+      targets.rowIds.forEach(id => excluded ? ids.add(id) : ids.delete(id));
       const selection={contractVersion:'canonical-estimate-composition-selection/v1' as const,
         excludedOperationKeys:[...operations].sort(),excludedRowIds:[...ids].sort()};
       if(JSON.stringify(selection.excludedRowIds)===JSON.stringify(previous?.excludedRowIds ?? [])

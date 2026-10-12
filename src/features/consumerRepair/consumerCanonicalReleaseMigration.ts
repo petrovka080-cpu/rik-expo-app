@@ -166,9 +166,11 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
       code: "RELEASE_MIGRATION_ROW_BINDING_REVIEW_REQUIRED", httpStatus: 409,
     });
   }
+  const predecessorBindings=catalog.manualMigrationPredecessorV1?.definitionId===input.revision.definitionVersionId
+    ?catalog.manualMigrationPredecessorV1:undefined;
   if (!quantityClearPreview && !canonicalStoredManualPricesCanMigrate({rowOverrides:input.revision.amendmentContract.rowOverrides,
-      customRows:input.revision.amendmentContract.customRows,fromBindings:parentCatalog.manualPriceMigrationBindings,toBindings:catalog.manualPriceMigrationBindings,
-      fromExclusionBindings:parentCatalog.manualExclusionMigrationBindings,toExclusionBindings:catalog.manualExclusionMigrationBindings})) {
+      customRows:input.revision.amendmentContract.customRows,fromBindings:parentCatalog.manualPriceMigrationBindings,toBindings:predecessorBindings?.priceBindings??catalog.manualPriceMigrationBindings,
+      fromExclusionBindings:parentCatalog.manualExclusionMigrationBindings,toExclusionBindings:predecessorBindings?.exclusionBindings??catalog.manualExclusionMigrationBindings})) {
     throw new CanonicalEstimateApiError("Переход остановлен: совместимость уже сохранённых ручных количеств, цен и строк ещё не подтверждена. Исходная смета сохранена. Нужна проверка переноса этих правок; отмена новых правок в редакторе не заменяет её.", {
       code: "RELEASE_MIGRATION_ROW_BINDING_REVIEW_REQUIRED", httpStatus: 409,
     });

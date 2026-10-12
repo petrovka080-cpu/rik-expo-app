@@ -199,6 +199,7 @@ export function buildCanonicalRevisionCommitPayload(input: {
   preliminaryNeeds?: Record<string, unknown>[];
   compositionSelectionV1?: import('./canonicalEstimateCompositionSelectionV1').CanonicalEstimateCompositionSelectionV1;
   roofPrimerPrerequisiteV1?: import('./canonicalRoofPrimerPrerequisiteV1').RoofPrimerPrerequisiteDecisionV1|null;
+  roofPreparationMigrationV1?: import('./canonicalRoofPreparationMigrationV1').RoofPreparationMigrationProofV1|null;
 }): Record<string, unknown> {
   return {
     rowCount: input.rowCount,
@@ -218,6 +219,7 @@ export function buildCanonicalRevisionCommitPayload(input: {
       preliminaryNeeds: input.preliminaryNeeds ?? [],
       ...(input.compositionSelectionV1 ? {compositionSelectionV1:input.compositionSelectionV1} : {}),
       ...(input.roofPrimerPrerequisiteV1==null?{}:{roofPrimerPrerequisiteV1:input.roofPrimerPrerequisiteV1}),
+      ...(input.roofPreparationMigrationV1==null?{}:{roofPreparationMigrationV1:input.roofPreparationMigrationV1}),
     },
   };
 }

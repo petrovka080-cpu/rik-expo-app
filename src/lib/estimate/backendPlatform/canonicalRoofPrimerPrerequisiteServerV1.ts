@@ -4,6 +4,7 @@ import {
   ROOF_PRIMER_SOURCE_CATALOGS_V1,ROOF_PRIMER_LINK_CATALOGS_V1,ROOF_PRIMER_PREFIX_V1,
   type RoofPrimerPrerequisiteDecisionV1,type RoofPrimerPrerequisiteCandidateV1,
 } from './canonicalRoofPrimerPrerequisiteV1';
+import {assertRoofPlannedPreparationOwnerContextV1,ROOF_PLANNED_PRIMER_CONDITIONS_V1} from './canonicalRoofPlannedPreparationV1';
 type Json=Record<string,unknown>;
 type Reader={query:(text:string,values?:unknown[])=>Promise<{rows:Json[]}>};
 type Principal={ownerUserId:string;organizationId:string|null};
@@ -42,6 +43,25 @@ export async function admitRoofPrimerPrerequisiteServerV1(client:Reader,input:Pr
   supplied:boolean;command:unknown;parentAmendmentContract:unknown;
 }):Promise<RoofPrimerPrerequisiteDecisionV1|null> {
   const inheritedValue=record(record(input.parentAmendmentContract).parameterSources).roofPrimerPrerequisiteV1;
+  assertRoofPlannedPreparationOwnerContextV1({parameters:input.fieldParameters,inheritedExternalOwner:inheritedValue,
+    suppliedExternalOwner:input.supplied?input.command:undefined});
+  if(input.fieldParameters.roof_torch_conditions===ROOF_PLANNED_PRIMER_CONDITIONS_V1) {
+    // A cleared link does not establish cancellation of external work/payment.
+    // Check the complete authorized instance ancestry; a truncated/cyclic chain
+    // also fails closed rather than claiming that no external owner exists.
+    const history=(await client.query(`with recursive owner_history as (
+      select id,parent_revision_id,amendment_contract,array[id] seen,0 depth from public.estimate_revision
+        where id=$1 and (owner_user_id=$2 or organization_id=$3)
+      union all select r.id,r.parent_revision_id,r.amendment_contract,h.seen||r.id,h.depth+1
+        from owner_history h join public.estimate_revision r on r.id=h.parent_revision_id
+        where h.depth<128 and not r.id=any(h.seen) and (r.owner_user_id=$2 or r.organization_id=$3)
+    ) select bool_or(amendment_contract#>'{parameterSources,roofPrimerPrerequisiteV1}' is not null
+      and amendment_contract#>'{parameterSources,roofPrimerPrerequisiteV1}'<>'null'::jsonb) external_owner_seen,
+      bool_or(parent_revision_id is null) complete_instance from owner_history`,
+    [input.fieldRevisionId,input.ownerUserId,input.organizationId])).rows[0];
+    if(history?.complete_instance!==true)roofPrimerPrerequisiteErrorV1('История исполнителя подготовки не подтверждена. Исходная смета сохранена.','ROOF_PRIMER_INSTANCE_IDENTITY_MISMATCH');
+    assertRoofPlannedPreparationOwnerContextV1({parameters:input.fieldParameters,inheritedExternalOwner:history.external_owner_seen===true?{historicalExternalOwner:true}:null});
+  }
   if(!input.supplied&&inheritedValue==null)return null;
   if(!ROOF_PRIMER_LINK_CATALOGS_V1.some(id=>id===input.fieldCatalogId))roofPrimerPrerequisiteErrorV1('Связь огрунтовки не применима к выбранной технологии.');
   if(input.supplied&&input.command===null)return null;

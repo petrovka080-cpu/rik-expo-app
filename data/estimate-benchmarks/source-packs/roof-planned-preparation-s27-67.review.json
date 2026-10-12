@@ -1,0 +1,32 @@
+{
+  "contract": "s2767-planned-roof-preparation-targeted-design-review/v1",
+  "reviewer": "GPT-6 Astra xhigh",
+  "reviewScope": "Only previously unclosed source compatibility, external cost owner history, and immutable exclusion migration",
+  "decision": "NO_REMAINING_SUBSTANTIAL_COMMENTS_IN_THIS_SCOPE",
+  "staticReview": true,
+  "reviewerTestsRun": false,
+  "sourceQuantityAdmissionReused": true,
+  "commentsClosed": [
+    "Explicit same whole norm area and compatible ready emulsion",
+    "Completed preparation never adds the three payer rows",
+    "Strict exact source-bound additive migration proof; default guard unchanged",
+    "Earlier cleared external link stays unresolved in full authorized ancestry",
+    "Atomic restore of migrated semantic ROW and primer OP with other exclusions preserved"
+  ],
+  "implementationHashes": [
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalRoofPreparationMigrationV1.ts",
+      "sha256": "43301a33886380128fa0a35bea30b5a343f1837ef838d496d0dc59f087b1f558"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalRoofPrimerPrerequisiteServerV1.ts",
+      "sha256": "7946ecd7fd35c0583a2e245b5682db0ea9ba9e8ad4585ce9495b8f0cbdc6751b"
+    },
+    {
+      "path": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
+      "sha256": "3915a034b74c34e5052055b1faf377c962f2c70288000f740ba01d8b302e4ec6"
+    }
+  ],
+  "completeRoofEstimateAccepted": false,
+  "androidAccepted": false
+}

@@ -1,3 +1,4 @@
+import {admitRoofPreparationMigrationProofV1,migrateRoofPreparationSelectionV1,readRoofPreparationMigrationProofV1,type RoofPreparationMigrationProofV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofPreparationMigrationV1';
 import {parseCanonicalCompositionSelectionV1,assertCanonicalCompositionSelectionReleaseMigrationV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1';
 import { projectCanonicalEstimateParameterSessionSnapshot } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSessionSnapshot";
 import {admitRoofPrimerPrerequisiteServerV1,listRoofPrimerPrerequisiteCandidatesServerV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofPrimerPrerequisiteServerV1';
@@ -43,6 +44,7 @@ import { canonicalFusionQuantityClearRevisionNumberConflictS2758 } from '../../.
 async function localManualAmendmentMigrationBindings(client: PoolClient, definitionId: string): Promise<{
   manualPriceMigrationBindings: Record<string, string>; manualExclusionMigrationBindings: Record<string, string>;
   orderedSpecificationBindings: CanonicalOrderedSpecificationBinding[];
+  manualMigrationPredecessorV1?:{definitionId:string;priceBindings:Record<string,string>;exclusionBindings:Record<string,string>};
 }> {
   const [resources, formulas, parameters] = await Promise.all([
     client.query("select * from public.estimate_resource_spec where definition_version_id=$1", [definitionId]),
@@ -50,7 +52,27 @@ async function localManualAmendmentMigrationBindings(client: PoolClient, definit
     client.query("select * from public.estimate_parameter_definition where definition_version_id=$1", [definitionId]),
   ]);
   const input = {resources: resources.rows, formulas: formulas.rows, parameters: parameters.rows};
-  return {manualPriceMigrationBindings: canonicalManualPriceMigrationBindings(input),
+  let predecessorBindings:Record<string,unknown>={};
+  const definition=(await client.query('select * from public.estimate_definition_version where id=$1',[definitionId])).rows[0];
+  const proof=definition?.source_metadata?.roofPreparationMigrationV1;
+  if(proof?.fromDefinitionId&&/^[0-9a-f-]{36}$/iu.test(String(proof.fromDefinitionId))) {
+    const fromId=String(proof.fromDefinitionId);
+    const [oldDef,oldResources,oldFormulas,oldParameters]=await Promise.all([
+      client.query('select * from public.estimate_definition_version where id=$1',[fromId]),
+      client.query('select * from public.estimate_resource_spec where definition_version_id=$1',[fromId]),
+      client.query('select * from public.estimate_formula_graph where definition_version_id=$1',[fromId]),
+      client.query('select * from public.estimate_parameter_definition where definition_version_id=$1',[fromId]),
+    ]);
+    const before=oldDef.rows[0];
+    const admitted=before?admitRoofPreparationMigrationProofV1({proof,
+      fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},
+      toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},
+      from:{resources:oldResources.rows,formulas:oldFormulas.rows,parameters:oldParameters.rows},to:input}):null;
+    if(admitted)predecessorBindings={manualMigrationPredecessorV1:{definitionId:fromId,
+      priceBindings:canonicalManualPriceMigrationBindings(admitted.normalizedTo),
+      exclusionBindings:canonicalManualExclusionMigrationBindings(admitted.normalizedTo)}};
+  }
+  return {...predecessorBindings,manualPriceMigrationBindings: canonicalManualPriceMigrationBindings(input),
     orderedSpecificationBindings: canonicalOrderedSpecificationBindings(resources.rows),
     manualExclusionMigrationBindings: canonicalManualExclusionMigrationBindings(input)};
 }
@@ -2103,7 +2125,7 @@ async function compileClaimedJob(
     await client.query(
       `
     select effective.id,effective.cumulative_manifest,effective.approved_template_baseline_id,
-      resolved.definition_version,resolved.passport,identity.title_ru,identity.domain,
+      resolved.definition_version,resolved.passport,resolved.catalog_id,resolved.definition_sha256,resolved.source_metadata,identity.title_ru,identity.domain,
       coalesce(baseline.input_values,'{}'::jsonb) baseline_input_values,
       coalesce(baseline.input_classification,'{}'::jsonb) baseline_input_classification
     from public.estimate_definition_release release
@@ -2237,6 +2259,11 @@ async function compileClaimedJob(
     targetReleaseId: String(job.target_release_id),
   }) : null;
   if (quantityClear && definition.id !== quantityClear.targetDefinitionId) throw Object.assign(new Error('Fusion clear target definition changed.'), { code: 'FUSION_QUANTITY_CLEAR_REVIEW_REQUIRED' });
+  const inheritedRoofMigration=readRoofPreparationMigrationProofV1(((parentRevision?.amendment_contract as JsonRecord|undefined)?.parameterSources as JsonRecord|undefined)?.roofPreparationMigrationV1);
+  let roofPreparationMigrationV1:RoofPreparationMigrationProofV1|null=inheritedRoofMigration!=null&&inheritedRoofMigration.toDefinitionId===definition.id
+    &&inheritedRoofMigration.catalogId===job.catalog_id?inheritedRoofMigration:null;
+  let effectiveCompositionSelectionV1=parseCanonicalCompositionSelectionV1(Object.hasOwn(payload,'compositionSelectionV1')?payload.compositionSelectionV1
+    :((parentRevision?.amendment_contract as JsonRecord|undefined)?.parameterSources as JsonRecord|undefined)?.compositionSelectionV1);
   if (parentRevision && parentRevision.release_id !== job.target_release_id) {
     const parentAmendments = (parentRevision.amendment_contract ?? {}) as JsonRecord;
     const [parentResources, parentFormulas, parentParameters] = await Promise.all([
@@ -2244,18 +2271,31 @@ async function compileClaimedJob(
       client.query("select * from public.estimate_formula_graph where definition_version_id=$1", [parentRevision.definition_version_id]),
       client.query("select * from public.estimate_parameter_definition where definition_version_id=$1", [parentRevision.definition_version_id]),
     ]);
+    const fromModel={resources:parentResources.rows,formulas:parentFormulas.rows,parameters:parentParameters.rows};
+    const toModel={resources:resourceRows,formulas,parameters:parameterDefinitions};
+    const before=(await client.query('select * from public.estimate_definition_version where id=$1',[parentRevision.definition_version_id])).rows[0];
+    const admitted=before?admitRoofPreparationMigrationProofV1({proof:definition.source_metadata?.roofPreparationMigrationV1,
+      fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},
+      toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},from:fromModel,to:toModel}):null;
+    const migrationTo=admitted?.normalizedTo??toModel;
+    if(admitted) {
+      roofPreparationMigrationV1=admitted.proof;
+      if(Object.hasOwn(payload,'compositionSelectionV1')&&effectiveCompositionSelectionV1?.excludedRowIds.includes(admitted.semanticPrimerRowId))
+        throw Object.assign(new Error('Сначала сохраните переход состава через исходные данные. Исключение огрунтовки будет перенесено на её ресурсы; исходная смета сохранена.'),{code:'COMPOSITION_SELECTION_MIGRATION_REVIEW_REQUIRED',httpStatus:409});
+      effectiveCompositionSelectionV1=migrateRoofPreparationSelectionV1({selection:effectiveCompositionSelectionV1,admitted});
+    }
     assertCanonicalCompositionSelectionReleaseMigrationV1({selection:(parentAmendments.parameterSources as JsonRecord|undefined)?.compositionSelectionV1,
       from:{resources:parentResources.rows,formulas:parentFormulas.rows,parameters:parentParameters.rows},
-      to:{resources:resourceRows,formulas,parameters:parameterDefinitions}});
+      to:migrationTo});
     if(!quantityClear) assertCanonicalStoredManualPriceReleaseMigration({
       parentOverrides: parentAmendments.rowOverrides ?? {},
       parentCustomRows: parentAmendments.customRows ?? [],
       requestedOverrides: payload.rowOverrides ?? {}, requestedCustomRows: payload.customRows ?? [],
       parentCurrency: parentRevision.currency_code, requestedCurrency: currencyCode,
       fromBindings: canonicalManualPriceMigrationBindings({resources: parentResources.rows, formulas: parentFormulas.rows, parameters: parentParameters.rows}),
-      toBindings: canonicalManualPriceMigrationBindings({resources: resourceRows, formulas, parameters: parameterDefinitions}),
+      toBindings: canonicalManualPriceMigrationBindings(migrationTo),
       fromExclusionBindings: canonicalManualExclusionMigrationBindings({resources: parentResources.rows, formulas: parentFormulas.rows, parameters: parentParameters.rows}),
-      toExclusionBindings: canonicalManualExclusionMigrationBindings({resources: resourceRows, formulas, parameters: parameterDefinitions}),
+      toExclusionBindings: canonicalManualExclusionMigrationBindings(migrationTo),
     });
   }
   const priceSnapshotIds = Array.isArray(payload.priceSnapshotIds)
@@ -2275,8 +2315,7 @@ async function compileClaimedJob(
       ).rows;
   confirmedParameters = { ...baselineParameters, ...stripCanonicalAutomaticPreliminaryInputsV1(parameterDefinitions, confirmedParameters, effectiveUserParameters) };
   const compiled = await compileCanonicalEstimateCore({
-    compositionSelectionV1:parseCanonicalCompositionSelectionV1(Object.hasOwn(payload,'compositionSelectionV1') ? payload.compositionSelectionV1
-      : ((parentRevision?.amendment_contract as JsonRecord | undefined)?.parameterSources as JsonRecord | undefined)?.compositionSelectionV1),
+    compositionSelectionV1:effectiveCompositionSelectionV1,
     operation: String(job.operation) as "compile" | "recalculate",
     compilerVersion: COMPILER_VERSION,
     catalogId: String(job.catalog_id),
@@ -2344,6 +2383,7 @@ async function compileClaimedJob(
   const revisionProjection = {
     ...compiled.revisionProjection,
     identity: identityContract,
+    ...(roofPreparationMigrationV1?{roofPreparationMigrationV1}:{}),
     ...(roofPrimerPrerequisiteV1?{roofPrimerPrerequisiteV1}:{}),
   };
   const commitPayload = buildCanonicalRevisionCommitPayload({
@@ -2363,6 +2403,7 @@ async function compileClaimedJob(
     identityContract,
     preliminaryNeeds: compiled.preliminaryNeeds,
     roofPrimerPrerequisiteV1,
+    roofPreparationMigrationV1,
     compositionSelectionV1:compiled.compositionSelectionV1,
   });
   await client.query(

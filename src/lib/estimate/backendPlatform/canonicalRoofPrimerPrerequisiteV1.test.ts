@@ -5,6 +5,7 @@ import {buildCanonicalRevisionCommitPayload} from './canonicalEstimateRevisionWr
 import {canonicalEstimateRecalculateIdempotencyKey} from './canonicalEstimateCommandIdentity';
 import {canonicalEstimateRevisionDetailFromStorage} from './canonicalEstimateRevisionReadMapper';
 import {buildCanonicalProfessionalPdfProjection} from './canonicalProfessionalPdf';
+import {ROOF_PLANNED_PRIMER_CONDITIONS_V1} from './canonicalRoofPlannedPreparationV1';
 
 const uuid=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const sha=(n:string)=>n.repeat(64),sourceSha=sha('a');
@@ -18,6 +19,12 @@ function fixture(){return {
 };}
 
 describe('immutable roof primer dependency and single cost ownership',()=>{
+  it('accepts the actual catalog-qualified cost identities of the published generic source owner',()=>{
+    const f=fixture();f.sourceRows.forEach(row=>{row.cost_owner_id=f.source.catalog_id+':'+row.row_id;});
+    const d=resolveRoofPrimerPrerequisiteV1(f);expect(d.ownerRows.map(row=>row.costOwnerId)).toEqual(f.sourceRows.map(row=>row.cost_owner_id));
+    expect(readRoofPrimerPrerequisiteDecisionV1(d)).toEqual(d);
+    for(const invalid of ['', '\u0000owner', 'x'.repeat(2001)]){const broken=fixture();broken.sourceRows[0].cost_owner_id=invalid;expect(()=>resolveRoofPrimerPrerequisiteV1(broken)).toThrow();}
+  });
   it('links all five existing generic primer operations to either exact torch type without copying costs or equating areas',()=>{
     for(const fieldCatalogId of ROOF_PRIMER_LINK_CATALOGS_V1)for(const catalog_id of ROOF_PRIMER_SOURCE_CATALOGS_V1){
       const f=fixture();f.fieldCatalogId=fieldCatalogId;f.source.catalog_id=catalog_id;const before=JSON.stringify(f),d=resolveRoofPrimerPrerequisiteV1(f);
@@ -71,6 +78,7 @@ describe('server authorization and inherited prerequisite evidence',()=>{
   function reader(f=fixture()){
     const calls:{sql:string;values:unknown[]|undefined}[]=[];
     return {calls,query:async(sql:string,values?:unknown[])=>{calls.push({sql,values});
+      if(sql.includes('with recursive owner_history'))return {rows:[{external_owner_seen:false,complete_instance:true}]};
       if(sql.includes('with recursive chain'))return {rows:[{id:values?.[0]===uuid(1)?f.fieldInstanceId:f.sourceInstanceId}]};
       if(sql.includes('join public.estimate_resource_spec'))return {rows:f.sourceRows};
       if(sql.includes('limit 40'))return {rows:[f.source]};
@@ -85,6 +93,22 @@ describe('server authorization and inherited prerequisite evidence',()=>{
     const f=fixture(),db=reader(f),d=resolveRoofPrimerPrerequisiteV1(f),base={...principal,fieldRevisionId:uuid(1),fieldCatalogId:f.fieldCatalogId,fieldParameters:f.fieldParameters,parentAmendmentContract:{parameterSources:{roofPrimerPrerequisiteV1:d}}};
     expect(await admitRoofPrimerPrerequisiteServerV1(db,{...base,supplied:false,command:undefined})).toEqual(d);
     db.calls.length=0;expect(await admitRoofPrimerPrerequisiteServerV1(db,{...base,supplied:true,command:null})).toBeNull();expect(db.calls).toHaveLength(0);
+  });
+  it.each(['planned','completed_accepted','applied_readiness_unknown','partly_completed','unknown'])('blocks an internal whole-area plan alongside inherited external phase %s, including a same-request link clear',async phase=>{
+    const f=fixture();f.command.phase=phase;const inherited=resolveRoofPrimerPrerequisiteV1(f),before=JSON.stringify(inherited),db=reader(f);
+    const base={...principal,fieldRevisionId:uuid(1),fieldCatalogId:f.fieldCatalogId,fieldParameters:{...f.fieldParameters,roof_torch_conditions:ROOF_PLANNED_PRIMER_CONDITIONS_V1},parentAmendmentContract:{parameterSources:{roofPrimerPrerequisiteV1:inherited}}};
+    for(const change of [{supplied:false,command:undefined},{supplied:true,command:null},{supplied:true,command:f.command}])
+      await expect(admitRoofPrimerPrerequisiteServerV1(db,{...base,...change})).rejects.toMatchObject({code:'ROOF_PRIMER_OWNER_CONFLICT'});
+    expect(db.calls).toHaveLength(0);expect(JSON.stringify(inherited)).toBe(before);
+  });
+  it('allows the whole-area internal plan when there is no existing or newly supplied external owner',async()=>{
+    const f=fixture(),db=reader(f);expect(await admitRoofPrimerPrerequisiteServerV1(db,{...principal,fieldRevisionId:uuid(1),fieldCatalogId:f.fieldCatalogId,fieldParameters:{...f.fieldParameters,roof_torch_conditions:ROOF_PLANNED_PRIMER_CONDITIONS_V1},supplied:false,command:undefined,parentAmendmentContract:{}})).toBeNull();expect(db.calls).toHaveLength(1);
+    expect(db.calls[0]!.values).toEqual([uuid(1),principal.ownerUserId,principal.organizationId]);
+  });
+  it('keeps a historical external owner unresolved after clearing the link in an earlier revision',async()=>{
+    const f=fixture(),base={...principal,fieldRevisionId:uuid(1),fieldCatalogId:f.fieldCatalogId,fieldParameters:{...f.fieldParameters,roof_torch_conditions:ROOF_PLANNED_PRIMER_CONDITIONS_V1},supplied:false,command:undefined,parentAmendmentContract:{}};
+    await expect(admitRoofPrimerPrerequisiteServerV1({query:async()=>({rows:[{external_owner_seen:true,complete_instance:true}]})},base)).rejects.toMatchObject({code:'ROOF_PRIMER_OWNER_CONFLICT'});
+    await expect(admitRoofPrimerPrerequisiteServerV1({query:async()=>({rows:[{external_owner_seen:false,complete_instance:false}]})},base)).rejects.toMatchObject({code:'ROOF_PRIMER_INSTANCE_IDENTITY_MISMATCH'});
   });
   it('returns bounded authorized suggestions without auto-selecting a source or establishing object compatibility',async()=>{
     const db=reader(),items=await listRoofPrimerPrerequisiteCandidatesServerV1(db,{...principal,fieldRevisionId:uuid(1)});

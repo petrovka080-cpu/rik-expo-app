@@ -213,6 +213,7 @@ export type CanonicalEstimateJobView = {
 
 export type CanonicalEstimateRevisionView = {
   compositionSelectionV1?: import('./canonicalEstimateCompositionSelectionV1').CanonicalEstimateCompositionSelectionV1;
+  roofPreparationMigrationV1?: import('./canonicalRoofPreparationMigrationV1').RoofPreparationMigrationProofV1;
   apiVersion: typeof ESTIMATE_PLATFORM_API_VERSION;
   revisionId: string;
   parentRevisionId: string | null;
@@ -753,6 +754,8 @@ export type CanonicalEstimateCatalogItem = {
   manualPriceMigrationBindings?: Record<string,string>;
   /** Exact resource/application evidence for retaining stored manual exclusions. */
   manualExclusionMigrationBindings?: Record<string,string>;
+  /** Server-admitted equivalence for one exact predecessor, never a general bypass. */
+  manualMigrationPredecessorV1?: {definitionId:string;priceBindings:Record<string,string>;exclusionBindings:Record<string,string>};
   /** Exact specification questions belonging to opted-in manual order rows. */
   orderedSpecificationBindings?: CanonicalOrderedSpecificationBinding[];
   contentAdmission?: AdmissionDecision;

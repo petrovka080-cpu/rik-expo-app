@@ -8,6 +8,7 @@ import type { AdmissionDecision } from "./estimateAdmissionR3";
 import { projectCanonicalEstimatePreliminaryNeedTransport } from "./canonicalEstimatePreliminaryNeedTransport";
 import {readRoofPrimerPrerequisiteDecisionV1} from './canonicalRoofPrimerPrerequisiteV1';
 import {parseCanonicalCompositionSelectionV1} from './canonicalEstimateCompositionSelectionV1';
+import {readRoofPreparationMigrationProofV1} from './canonicalRoofPreparationMigrationV1';
 
 type StorageRecord = Record<string, unknown>;
 
@@ -57,6 +58,7 @@ export function canonicalEstimateRevisionDetailFromStorage(
   const rawPrerequisite=record(record(row.amendment_contract).parameterSources).roofPrimerPrerequisiteV1;
   const prerequisite=readRoofPrimerPrerequisiteDecisionV1(rawPrerequisite);
   const compositionSelectionV1=parseCanonicalCompositionSelectionV1(record(record(row.amendment_contract).parameterSources).compositionSelectionV1);
+  const roofPreparationMigrationV1=readRoofPreparationMigrationProofV1(record(record(row.amendment_contract).parameterSources).roofPreparationMigrationV1);
   if(rawPrerequisite!=null&&!prerequisite)throw new CanonicalEstimateRevisionReadContractError('stored preparation reference is invalid');
   return {
     apiVersion: ESTIMATE_PLATFORM_API_VERSION,
@@ -74,6 +76,7 @@ export function canonicalEstimateRevisionDetailFromStorage(
     parameters: record(row.input_parameters),
     ...(prerequisite?{roofPrimerPrerequisiteV1:prerequisite}:{}),
     ...(compositionSelectionV1?{compositionSelectionV1}:{}),
+    ...(roofPreparationMigrationV1?{roofPreparationMigrationV1}:{}),
     sourceRequestText: nullableText(row.source_request_text),
     sourceRequestHash: nullableText(row.source_request_hash),
     canonicalWorkTitleRu: nullableText(row.canonical_work_title_ru),

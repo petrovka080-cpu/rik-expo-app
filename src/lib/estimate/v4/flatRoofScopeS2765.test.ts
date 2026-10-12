@@ -90,7 +90,7 @@ test('compact transport, parameter session, reopened draft and PDF preserve the 
   expect(view.sections.some(section=>section.scopeRequirements?.some(group=>group.groupId==='primer'))).toBe(true);
   expect(view.sections.some(section=>section.operation?.operationTitleRu==='Примыкания и герметизация')).toBe(true);
   const pdf=buildCanonicalProfessionalPdfProjection({revision:stored,rows:result.rows as CanonicalArtifactRow[],preliminaryNeeds:canonicalArtifactPreliminaryNeeds(stored),expectedProjectedRowCount:result.rows.length,workTitleRu:catalog.titleRu});
-  expect(pdf.html).not.toContain('<h2>Состав и этапы</h2>');expect(pdf.html).toContain('Уже учтено в норме покрытия');expect(pdf.html).toContain('Отдельный состав зависит от проекта');expect(pdf.html).not.toContain('Количество нужно уточнить');expect(pdf.grandTotalStatus).toBe('PARTIAL_NEEDS_PRICE');
+  expect(pdf.html).not.toContain('<h2>Состав и этапы</h2>');expect(pdf.html).toContain('Учтено рассчитанными ресурсами в этой смете');expect(pdf.html).toContain('Отдельный состав зависит от проекта');expect(pdf.html).not.toContain('Количество нужно уточнить');expect(pdf.grandTotalStatus).toBe('PARTIAL_NEEDS_PRICE');
   expect(pdf.html).not.toContain('Потребностей с неуточнённым количеством или условием: 59');
   expect(pdf.html).toContain('Состав 17 этапов ещё не завершён приложением');
   const boq=pdf.html.slice(pdf.html.indexOf('<table class="client">'),pdf.html.indexOf('<table class="totals">'));

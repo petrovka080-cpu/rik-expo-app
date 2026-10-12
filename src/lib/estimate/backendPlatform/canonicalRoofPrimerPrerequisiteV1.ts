@@ -32,6 +32,9 @@ const SHA=/^[0-9a-f]{64}$/u;
 const phases=new Set(['completed_accepted','planned','applied_readiness_unknown','partly_completed','unknown']);
 const commandKeys=new Set(['contractVersion','sourceRevisionId','sourceChecksumSha256','phase','sectionLabelRu','sameSectionAndCompatibilityConfirmed']);
 const record=(v:unknown):Record<string,unknown>=>v!=null&&typeof v==='object'&&!Array.isArray(v)?v as Record<string,unknown>:{};
+// Definition-owned cost identities also use catalog-qualified textual keys.
+// They are checked against authorized source rows, never accepted from a link.
+const costOwnerId=(v:unknown):v is string=>typeof v==='string'&&v.length>0&&v.length<=2000&&!/[\u0000-\u001f\u007f]/u.test(v);
 export function roofPrimerPrerequisiteErrorV1(message:string,code='ROOF_PRIMER_LINK_INVALID'):never {
   throw Object.assign(new Error(message),{code,httpStatus:409});
 }
@@ -58,7 +61,7 @@ export function readRoofPrimerPrerequisiteDecisionV1(value:unknown):RoofPrimerPr
       ||typeof d.sourceNormAreaM2!=='string'||!/^\d+(?:\.\d+)?$/u.test(d.sourceNormAreaM2)
       ||!(d.consumerNormAreaM2===null||typeof d.consumerNormAreaM2==='string'&&/^\d+(?:\.\d+)?$/u.test(d.consumerNormAreaM2))
       ||!Array.isArray(d.ownerRows)||d.ownerRows.length!==3
-      ||d.ownerRows.some(r=>{const v=record(r),expected=expectedOwners.find(([role])=>v.rowId===ROOF_PRIMER_PREFIX_V1+':'+role);return !expected||v.unitId!==expected[1]||!UUID.test(String(v.costOwnerId))||!SHA.test(String(v.rowSha256))||typeof v.quantity!=='string'||!/^\d+(?:\.\d+)?$/u.test(v.quantity);})
+      ||d.ownerRows.some(r=>{const v=record(r),expected=expectedOwners.find(([role])=>v.rowId===ROOF_PRIMER_PREFIX_V1+':'+role);return !expected||v.unitId!==expected[1]||!costOwnerId(v.costOwnerId)||!SHA.test(String(v.rowSha256))||typeof v.quantity!=='string'||!/^\d+(?:\.\d+)?$/u.test(v.quantity);})
       ||new Set(d.ownerRows.map(r=>record(r).rowId)).size!==3
       ||new Set(d.ownerRows.map(r=>record(r).costOwnerId)).size!==3
       ||d.referencedCostOnly!==true||d.addsPaidRows!==false||d.setsActualReadiness!==false
@@ -96,7 +99,7 @@ export function resolveRoofPrimerPrerequisiteV1(input:{
     const graph=record(r?.resource_graph),trace=record(r?.calculation_trace),sourceMetadata=record(r?.source_metadata);
     const expected=evaluateFormulaGraph(compileFormulaGraph(`q/100*${rate}`).ast,{q:area});
     if(!r||r.unit_id!==unitId||!/^\d+(?:\.\d+)?$/u.test(String(r.quantity))||canonicalRoundDecimal(String(r.quantity),9)!==expected||r.included_in_estimate!==true
-      ||!UUID.test(String(r.cost_owner_id))||!SHA.test(String(r.row_sha256))
+      ||!costOwnerId(r.cost_owner_id)||!SHA.test(String(r.row_sha256))
       ||graph.costTreatment!=='OWN_COST'||sourceMetadata.sourceNormQuantityAccepted!==true
       ||!Array.isArray(sourceMetadata.normativeTrace)||!sourceMetadata.normativeTrace.some(e=>record(e).sourceSnapshotHash==='114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8')
       ||trace.manualQuantityOverride===true)roofPrimerPrerequisiteErrorV1('Ресурсы огрунтовки не подтвердили принятую норму и единственных владельцев затрат.');
