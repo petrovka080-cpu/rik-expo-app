@@ -6,7 +6,8 @@ export type SourcePinnedRoofNormRateR1={role:string;resourceCode:string|null;tit
  sourceRatePer100m2:string;sourceUnit:string;exactUnitConversionFactor:string;costTreatment:'OWN_COST'|'INFORMATIONAL_SCOPE';detailsRu:string[];machinePriceCoverageRequired?:string};
 export type SourcePinnedRoofNormPackR1={contract:string;prefix:string;normId:string;sources:SourcePinnedRoofNormSourceR1[];scopeRu:string;systemRu:string;conditionsRu:string;measurementRu:string;remainingScopeRu:string[];
  groupTitleRu:string;operationTitleRu:string;completionCriterionRu:string;systemParameterId:string;conditionsParameterId:string;areaParameterId:string;
- systemYesRu:string;conditionsYesRu:string;areaYesRu:string;unknownChoiceRu:string;legacyChoiceRu:string;rates:SourcePinnedRoofNormRateR1[]};
+ systemYesRu:string;conditionsYesRu:string;areaYesRu:string;unknownChoiceRu:string;legacyChoiceRu:string;rates:SourcePinnedRoofNormRateR1[];
+ measurementTitleRu?:string;measurementGuideRu?:string;systemChoiceTitleRu?:string;measurementChoiceTitleRu?:string;operationProcessOrdinal?:number};
 
 /** Builds only source quantities. Project selection, actual area and source
  * applicability stay explicit; procurement and prices do not supply norms. */
@@ -20,18 +21,20 @@ export function sourcePinnedRoofNormGuardsR1(pack:SourcePinnedRoofNormPackR1){
 export function sourcePinnedRoofNormOwnerR1(pack:SourcePinnedRoofNormPackR1):AutomaticOwnerDefinition{
  const source=pack.sources.find(s=>s.kind==='roof');if(!source)throw Error('ROOF_PRIMARY_SOURCE_REQUIRED');
  if(pack.rates.length===0||new Set(pack.rates.map(r=>r.role)).size!==pack.rates.length)throw Error('ROOF_RATE_ROLE_IDENTITY_INVALID');
+ for(const key of ['measurementTitleRu','measurementGuideRu','systemChoiceTitleRu','measurementChoiceTitleRu']as const){const value=pack[key];if(value!=null&&(typeof value!=='string'||!value.trim()))throw Error('ROOF_PARAMETER_CAPTION_INVALID:'+key);}
+ if(pack.operationProcessOrdinal!=null&&(!Number.isInteger(pack.operationProcessOrdinal)||pack.operationProcessOrdinal<0||pack.operationProcessOrdinal>1000))throw Error('ROOF_OPERATION_ORDINAL_INVALID');
  const guards=sourcePinnedRoofNormGuardsR1(pack);
  const rows:AutomaticRowSpec[]=pack.rates.map(rate=>({rowId:pack.prefix+':'+rate.role,formulaId:pack.prefix+':formula:'+rate.role,
   title:rate.titleRu,unitId:rate.unitId,category:rate.category,section:pack.groupTitleRu,expression:'q/100*'+rate.per100m2,
   inclusion:guards.admitted,procurement:false,costTreatment:rate.costTreatment}));
  const original=buildAutomaticConstructionOwnerR1({contract:pack.contract,semanticOwner:pack.prefix,sourceId:source.id,normId:pack.contract+':roof',
   sourceMetadata:{source_title:source.titleRu,source_document_version:source.printedEdition,definition_hash:source.sha256,artifact_sha256:source.sha256,exact_locator:source.locators},applicabilityRu:pack.scopeRu,
-  ordinary:[{id:'q',title:'Площадь покрытия скатов по обмеру, м²',valueType:'decimal',unitId:'m2',kind:'ordinary',min:0},
-   {id:pack.systemParameterId,title:'Какое покрытие и основание предусмотрены',valueType:'enum',unitId:null,kind:'ordinary',values:[pack.systemYesRu,pack.unknownChoiceRu,pack.legacyChoiceRu]}],profile:[],
+  ordinary:[{id:'q',title:pack.measurementTitleRu??'Площадь покрытия скатов по обмеру, м²',valueType:'decimal',unitId:'m2',kind:'ordinary',min:0},
+   {id:pack.systemParameterId,title:pack.systemChoiceTitleRu??'Какое покрытие и основание предусмотрены',valueType:'enum',unitId:null,kind:'ordinary',values:[pack.systemYesRu,pack.unknownChoiceRu,pack.legacyChoiceRu]}],profile:[],
   conditional:[{id:pack.conditionsParameterId,title:'Подходит ли участок под условия расчёта',valueType:'enum',unitId:null,kind:'conditional',values:[pack.conditionsYesRu,'Условия ещё не проверены','Нужен другой расчёт'],requiredWhen:guards.selected},
-   {id:pack.areaParameterId,title:'Как проверена площадь покрытия',valueType:'enum',unitId:null,kind:'conditional',values:[pack.areaYesRu,'Площадь ещё нужно проверить'],requiredWhen:guards.selected}],
+   {id:pack.areaParameterId,title:pack.measurementChoiceTitleRu??'Как проверена площадь покрытия',valueType:'enum',unitId:null,kind:'conditional',values:[pack.areaYesRu,'Площадь ещё нужно проверить'],requiredWhen:guards.selected}],
   rows,deferMissingProjectFactsToRows:true,excludedUnownedAssumptions:pack.remainingScopeRu});
- const guides:Record<string,string>={q:'Введите измеренную площадь покрытия скатов по правилам обмера. Прежний шаблон100м² не является данными объекта.',
+ const guides:Record<string,string>={q:pack.measurementGuideRu??'Введите измеренную площадь покрытия скатов по правилам обмера. Прежний шаблон100м² не является данными объекта.',
   [pack.systemParameterId]:pack.systemRu,[pack.conditionsParameterId]:pack.conditionsRu,[pack.areaParameterId]:pack.measurementRu};
  const parameters=original.parameters.map(p=>({...p,default_value:null,truth_metadata:{...p.truth_metadata,visibility_role:'USER_INPUT',value_source_role:p.parameter_id==='q'?'USER_MEASURED':'PROJECT_SPECIFIC_INPUT',source_confirmation_required:false,
   provenance:{consumer_input_role_v1:'OBJECT_FACT',historicalTemplateValueNotMeasurement:true},
@@ -45,7 +48,7 @@ export function sourcePinnedRoofNormOwnerR1(pack:SourcePinnedRoofNormPackR1):Aut
    normativeTrace:pack.sources.map(s=>({sourceId:s.id,normId:pack.contract+':'+s.kind,sourceDocument:s.titleRu,sourceLocator:s.locators,sourceSnapshotHash:s.sha256}))},
    resource_graph:{...row.resource_graph,derivedQuantityEditPolicyV1:{contractVersion:'canonical-derived-quantity-edit-policy/v1',mode:'PARAMETERS_ONLY',unitId:row.unit_id,parameterIds:['q'],
     reasonRu:'Количество рассчитано по подтверждённой норме и измеренной площади покрытия. Изменяйте площадь в исходных данных; коэффициент нормы приложение получает из источника.'},
-    operationCompositionV1:{contractVersion:'canonical-operation-resource/v1',groupId:pack.prefix,groupTitleRu:pack.groupTitleRu,operationId:pack.prefix+':installation',operationTitleRu:pack.operationTitleRu,processOrdinal:20,completionCriterionRu:pack.completionCriterionRu},
+    operationCompositionV1:{contractVersion:'canonical-operation-resource/v1',groupId:pack.prefix,groupTitleRu:pack.groupTitleRu,operationId:pack.prefix+':installation',operationTitleRu:pack.operationTitleRu,processOrdinal:pack.operationProcessOrdinal??20,completionCriterionRu:pack.completionCriterionRu},
     publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',nameRu:row.title_ru,sourceTitleRu:row.title_ru,detailsRu:[pack.scopeRu,...rate.detailsRu,
      'Склад, упаковка и цена не изменяют известную физическую норму. Заказ и фактическая аренда проверяются отдельно; неизвестные данные не подменяются нулём.']}}};
   return{...result,row_sha256:estimateDeterministicHash(result)};});
