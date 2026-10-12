@@ -17,6 +17,7 @@ import {canonicalEstimateSha256HexText} from './canonicalEstimateSha256';
 import {canonicalEstimateStableJson} from './canonicalEstimateDeterminism';
 import {parseCanonicalCompositionSelectionV1} from './canonicalEstimateCompositionSelectionV1';
 import {canonicalManualPriceMigrationBindings,canonicalManualExclusionMigrationBindings} from './canonicalManualPriceReleaseMigration';
+import {canonicalPublisherQuantityScopeIsConsistent} from '../../../../scripts/estimate/r4a13/canonicalDefinitionPublisherR1';
 const hash=(v:unknown)=>canonicalEstimateSha256HexText(canonicalEstimateStableJson(v));
 const identity=(r:any)=>({id:r.definition.id,catalogId:r.definition.catalog_id,sha256:r.definition.definition_sha256});
 const selection=(rows:string[]=[],ops:string[]=[])=>({contractVersion:'canonical-estimate-composition-selection/v1' as const,excludedRowIds:rows,excludedOperationKeys:ops});
@@ -32,7 +33,7 @@ function previous(index=0){const from5=five.reps[index] as any,from6=six.reps[in
  const metalTrim=admitRoofMetalTrimMigrationProofV1({proof:from9.definition.source_metadata.roofMetalTrimMigrationV1,fromDefinition:identity(from8),toDefinition:identity(from9),from:from8,to:from9})!;
  expect(preparation&&valley&&screed&&metalTrim).toBeTruthy();const v2=buildRoofStageRestorationV2({screed,previous:{preparation,valley}});return {receipt:buildRoofStageRestorationV3({metalTrim,previous:v2}),metalTrim};}
 test.each([0,1])('two types %s: separate lower layers, installed volume computed by app, all five previous stages unchanged',async index=>{
- const i=fixture(index),a=admitRoofLowerLayersMigrationProofV1(i)!;expect(a).not.toBeNull();const r=await compile(i);expect(r.rows).toHaveLength(47);expect(r.rows.filter(row=>row.included_in_estimate)).toHaveLength(42);
+ const i=fixture(index),a=admitRoofLowerLayersMigrationProofV1(i)!;expect(a).not.toBeNull();expect(canonicalPublisherQuantityScopeIsConsistent(i.to)).toBe(true);const r=await compile(i);expect(r.rows).toHaveLength(47);expect(r.rows.filter(row=>row.included_in_estimate)).toHaveLength(42);
  for(const [role,q]of [['workers','0.784'],['included_machine_operators','0.013'],['tower_crane_8t','0.008'],['truck_crane_10t','0.005'],['bitumen_kettle_400l','0.041'],['flatbed_truck_to_5t','0.008'],['ready_hot_roof_mastic','0.005'],['roofing_felt_rkp350b','11']])expect(r.rows.find(row=>row.row_id===pack.vapor.prefix+':'+role)?.quantity).toBe(q);
  for(const [role,q]of [['workers','3.04'],['included_machine_operators','0.34'],['tower_crane_8t','0.12'],['forklift_5t','0.22'],['clay_gravel_10_20_m400','1.03']])expect(r.rows.find(row=>row.row_id===pack.clay.prefix+':'+role)?.quantity).toBe(q);
  expect(i.to.parameters.some(p=>p.parameter_id===pack.clay.measurementParameterId)).toBe(false);
