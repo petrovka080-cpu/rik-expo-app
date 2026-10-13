@@ -5,6 +5,26 @@ import type {
 } from "../../lib/estimate/canonicalParameters/canonicalParameterCore";
 import { resolveCanonicalParameterVisibility } from "../../lib/estimate/canonicalParameters/canonicalParameterCore";
 
+/** Requiredness follows the selected branch both after hydration and while
+ * editing. Keep the condition so a later choice can activate it again. */
+export function resolveConsumerCanonicalConditionalRequirement(
+  parameter: CanonicalParameter,
+  values: ReadonlyMap<string, CanonicalParameterValue>,
+): CanonicalParameter {
+  if (!parameter.requiredCondition || parameter.requiredLevel === "CONTRACT_REQUIRED") return parameter;
+  const required = resolveCanonicalParameterVisibility(parameter.requiredCondition, values);
+  const requiredLevel = required == null ? "CONDITIONAL" as const
+    : required ? "BLOCKING_REQUIRED" as const : "OPTIONAL" as const;
+  if (parameter.value != null) return { ...parameter, requiredLevel };
+  return {
+    ...parameter,
+    requiredLevel,
+    state: required === false ? "NOT_APPLICABLE" : "BLOCKING_REQUIRED",
+    valid: required === false,
+    validationIssues: required === false ? [] : ["VALUE_REQUIRED"],
+  };
+}
+
 function validationIssues(input: {
   parameter: CanonicalParameter;
   value: CanonicalParameterValue | null;
@@ -121,20 +141,7 @@ export function buildConsumerRepairCanonicalSessionPreview(input: {
   const parameters = updatedParameters.filter(parameter => {
     const visible = resolveCanonicalParameterVisibility(parameter.visibilityCondition, values);
     return backendBlocking.has(parameter.parameterId) ? visible !== false : visible === true;
-  }).map((parameter): CanonicalParameter => {
-    if (parameter.requiredLevel !== "CONDITIONAL" || !parameter.requiredCondition) return parameter;
-    const required = resolveCanonicalParameterVisibility(parameter.requiredCondition, values);
-    if (required == null) return parameter;
-    const requiredLevel = required ? "BLOCKING_REQUIRED" as const : "OPTIONAL" as const;
-    if (parameter.value != null) return { ...parameter, requiredLevel };
-    return {
-      ...parameter,
-      requiredLevel,
-      state: required ? "BLOCKING_REQUIRED" : "NOT_APPLICABLE",
-      valid: !required,
-      validationIssues: required ? ["VALUE_REQUIRED"] : [],
-    };
-  });
+  }).map(parameter => resolveConsumerCanonicalConditionalRequirement(parameter, values));
   const visibleIds = new Set(parameters.map(p => p.parameterId));
   const knownIds = new Set(allParameters.map(p => p.parameterId));
 

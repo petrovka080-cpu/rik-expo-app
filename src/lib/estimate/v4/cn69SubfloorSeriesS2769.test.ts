@@ -8,6 +8,7 @@ import type {PurchaseGroupRepresentative} from '../../../../scripts/estimate/r4a
 import {compileCanonicalEstimateCore} from '../backendPlatform/canonicalEstimateCompileCore';
 import {estimateDeterministicHash as hash} from '../estimateDeterministicHash';
 import {buildConsumerCanonicalParameterSession} from '../../../features/consumerRepair/consumerCanonicalParameterEditor';
+import {buildConsumerRepairCanonicalSessionPreview} from '../../../features/consumerRepair/consumerRepairCanonicalSessionPreview';
 const {floor_area_m2:q,...rest}=cn69ExplicitControlS2754();
 const facts={...rest,q,subfloor_technology_choice:pack.exactChoiceRu};
 const value=(r:Awaited<ReturnType<typeof compileCn69SubfloorS2769>>,id:string)=>r.rows.find(row=>row.row_id===prefix+':'+id)?.quantity;
@@ -58,6 +59,32 @@ describe('four existing subfloor types reuse the admitted CN69 dry-floor owner',
   const legacy=session(r,{q:35.5,subfloor_technology_choice:pack.legacyChoiceRu});
   expect(legacy.parameters.map(p=>p.parameterId).sort()).toEqual(['q','subfloor_technology_choice']);
   const exact=session(r,facts);expect(exact.parameters.some(p=>p.parameterId.startsWith('open_qty_')||p.parameterId.startsWith('cn69_inherited_open_'))).toBe(false);
+ });
+ test('all four saved forms require only the selected CT17 supplier multiple, while the22 norm gaps remain unresolved',async()=>{
+  for(const frozen of parents.reps){
+   const r=overlayS2769Cn69SubfloorFour(frozen as unknown as PurchaseGroupRepresentative,{manufacturer:'CONTROL_CN69',krer:'CONTROL_CT17'}).representative;
+   for(const size of [1,2,5,10]){
+    const input={...facts,ct17_container:size+' л',ct17_5l_supplier_multiple:undefined,['ct17_'+size+'l_supplier_multiple']:1};
+    const saved=session(r,input);
+    expect(saved.status).toBe('COMPLETE');expect(saved.contractMissingParameterIds).toEqual([]);expect(saved.blockingMissingParameterIds).toEqual([]);
+    const missing=session(r,{...input,['ct17_'+size+'l_supplier_multiple']:undefined});
+    expect(missing.blockingMissingParameterIds).toEqual(['ct17_'+size+'l_supplier_multiple']);
+    expect((await compile(r,input)).preliminaryNeeds).toHaveLength(22);
+   }
+  }
+ });
+ test('pending supplier choices can reactivate a condition after it became optional, and clearing a choice remains incomplete',()=>{
+  const r=overlayS2769Cn69SubfloorFour(parents.reps[0] as unknown as PurchaseGroupRepresentative,{manufacturer:'CONTROL_CN69',krer:'CONTROL_CT17'}).representative;
+  const saved=session(r,facts);
+  const two=buildConsumerRepairCanonicalSessionPreview({session:saved,draftValues:{ct17_container:'2 л'}})!;
+  expect(two.blockingMissingParameterIds).toEqual(['ct17_2l_supplier_multiple']);
+  const ten=buildConsumerRepairCanonicalSessionPreview({session:two,draftValues:{ct17_container:'10 л'}})!;
+  expect(ten.blockingMissingParameterIds).toEqual(['ct17_10l_supplier_multiple']);
+  const back=buildConsumerRepairCanonicalSessionPreview({session:ten,draftValues:{ct17_container:'5 л'}})!;
+  expect(back.status).toBe('COMPLETE');expect(back.blockingMissingParameterIds).toEqual([]);expect(back.contractMissingParameterIds).toEqual([]);
+  const unknown=buildConsumerRepairCanonicalSessionPreview({session:back,draftValues:{ct17_container:''}})!;
+  expect(unknown.status).not.toBe('COMPLETE');
+  expect(unknown.contractMissingParameterIds).toEqual(expect.arrayContaining(['ct17_1l_supplier_multiple','ct17_2l_supplier_multiple','ct17_10l_supplier_multiple']));
  });
  test('different frozen parent identity is rejected before constructing a successor',()=>{
   const changed=structuredClone(parents.reps[0]) as unknown as PurchaseGroupRepresentative;changed.definition.definition_sha256='changed';expect(()=>overlayS2769Cn69SubfloorFour(changed,{manufacturer:'CONTROL_CN69',krer:'CONTROL_CT17'})).toThrow('CN69_FOUR_EXACT_PARENT_DRIFT');

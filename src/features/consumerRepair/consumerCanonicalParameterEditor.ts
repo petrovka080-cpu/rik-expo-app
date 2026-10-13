@@ -42,6 +42,7 @@ import {
   type CanonicalParameterValue,
 } from "../../lib/estimate/canonicalParameters/canonicalParameterCore";
 import { resolveInclusionGraph } from "../../lib/estimate/backendPlatform/inclusionGraph";
+import { resolveConsumerCanonicalConditionalRequirement } from "./consumerRepairCanonicalSessionPreview";
 import { canonicalOrderedSpecificationParameterIds } from '../../lib/estimate/backendPlatform/canonicalOrderedSpecificationBindings';
 import { canonicalParameterAffectsEstimateCalculation } from "../../lib/estimate/canonicalParameters/canonicalParameterCalculationRelevance";
 import { estimateDeterministicHash } from "../../lib/estimate/estimateDeterministicHash";
@@ -547,7 +548,9 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
       ? state !== false
       : state === true;
   });
-  const visibleParameters = rawVisibleParameters.map((parameter): CanonicalParameter =>
+  const visibleParameters = rawVisibleParameters
+    .map(parameter => resolveConsumerCanonicalConditionalRequirement(parameter, values))
+    .map((parameter): CanonicalParameter =>
     parameter.value == null && activeQuestionIds.has(parameter.parameterId)
       ? {
         ...parameter,
