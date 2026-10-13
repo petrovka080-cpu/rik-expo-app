@@ -2,6 +2,7 @@ import {createHash} from 'node:crypto';
 import {stringifyCanonicalEstimateJson} from '../../../src/lib/estimate/estimateDeterministicHash';
 import {buildMasterParameterCalculationConsumers} from '../../../src/lib/estimate/backendPlatform/canonicalDefinitionParameterConsumersR1';
 import {cn69SubfloorDefinitionS2769,cn69SubfloorBindingS2769 as pack,cn69SubfloorExactS2769 as exact,cn69SubfloorLegacyS2769 as legacy,cn69SubfloorPrefixS2769 as prefix} from '../../../src/lib/estimate/v4/cn69SubfloorSeriesS2769';
+import {cn69DryFloorPackS2754 as source} from '../../../src/lib/estimate/v4/cn69DryFloorS2754';
 import type {PurchaseGroupRepresentative} from './s2732PurchaseGroupOverlay';
 const hash=(v:unknown)=>createHash('sha256').update(stringifyCanonicalEstimateJson(v)).digest('hex');
 export function overlayS2769Cn69SubfloorFour(parent:PurchaseGroupRepresentative,locators:{manufacturer:string;krer:string}){
@@ -30,7 +31,7 @@ export function overlayS2769Cn69SubfloorFour(parent:PurchaseGroupRepresentative,
  });result.resources.push(...newRows);
  for(const r of newRows)if(r.source_metadata.sourceNormQuantityAccepted===true)result.bindings.push({row_id:r.row_id,locator_id:r.row_id.startsWith(prefix+':ct17-')?locators.krer:locators.manufacturer,applicability:{contract:pack.contract,exactBranch:exact,scopeRu:pack.scopeRu,fullTechnicalAcceptance:false}});
  result.baseline.input_values={q:100,subfloor_technology_choice:pack.legacyChoiceRu};result.baseline.input_classification={q:'VALIDATION_FIXTURE',subfloor_technology_choice:'VALIDATION_FIXTURE'};
- result.baseline.normative_source_ids={q:[],subfloor_technology_choice:[]};result.baseline.provenance={...result.baseline.provenance,cohortContract:pack.contract,historicalQValueIsFixtureOnly:true,noAutomaticTechnologySelection:true};
+ result.baseline.normative_source_ids={q:[source.contract+':manufacturer'],ct17_rate_l_m2:[source.contract+':krer'],cn69_water_l_per_25kg:[source.contract+':manufacturer'],subfloor_technology_choice:[]};result.baseline.provenance={...result.baseline.provenance,cohortContract:pack.contract,historicalQValueIsFixtureOnly:true,noAutomaticTechnologySelection:true};
  const consumers=buildMasterParameterCalculationConsumers(result);
  for(const p of result.parameters){const id=p.parameter_id;p.truth_metadata={...p.truth_metadata,contract:pack.contract,semantic_parameter_key:catalogId+':'+id,formula_consumers:consumers.formulaConsumers[id],resource_branch_consumers:consumers.resourceConsumers[id]};
   result.baseline.formula_consumer_ids[id]=consumers.formulaConsumers[id];result.baseline.resource_consumer_row_ids[id]=consumers.resourceConsumers[id];result.baseline.uom_by_parameter[id]=p.unit_id;result.baseline.normative_source_ids[id]??=[];result.baseline.guide_provenance_ru[id]=p.truth_metadata.guide?.guide_short_ru??p.title_ru;
