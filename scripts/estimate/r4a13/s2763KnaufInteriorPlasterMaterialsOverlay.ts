@@ -175,10 +175,10 @@ export function bindKnaufTechnicalPlanningDefaultsS2769(r:PurchaseGroupRepresent
   for(const p of r.parameters)if(Object.hasOwn(defaults,p.parameter_id)){
     const id=p.parameter_id;p.truth_metadata={...p.truth_metadata,provenance:{...p.truth_metadata.provenance,
       baselineOwner:'approved-template-baseline:r54',sourceCatalogId:r.definition.catalog_id,sourceReleaseId:context.releaseId,
-      sourceDefinitionVersionId:context.definitionId,sourceParameterSchemaId:schemaSha256,approvedTemplateBaselineId:context.baselineId,
+      sourceDefinitionVersionId:r.definition.id,sourceParameterSchemaId:schemaSha256,approvedTemplateBaselineId:context.baselineId,
       acceptanceEvidenceSha256:context.evidenceSha256,
       approvedTemplateBinding:{baselineId:context.baselineId,catalogId:r.definition.catalog_id,parameterId:id,value:p.default_value,
-        inputClassification:'ASSUMPTION',definitionVersionId:context.definitionId,parameterSchemaSha256:schemaSha256,
+        inputClassification:'ASSUMPTION',definitionVersionId:r.definition.id,targetDefinitionVersionId:context.definitionId,parameterSchemaSha256:schemaSha256,
         formulaConsumerIds:r.baseline.formula_consumer_ids[id],resourceConsumerRowIds:r.baseline.resource_consumer_row_ids[id],
         normativeSourceIds:r.baseline.normative_source_ids[id]??[],acceptanceEvidenceSha256:context.evidenceSha256}}};
   }

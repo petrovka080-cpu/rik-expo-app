@@ -690,8 +690,7 @@ export async function publishCanonicalDefinitionDraft(
     "default_value", "constraints_json", "truth_metadata", "approved_template_baseline_id",
   ], plan.parameters.map((parameter) => [
     parameter.definition_version_id, parameter.parameter_id, parameter.ordinal, parameter.value_type,
-    parameter.unit_id, parameter.title_ru, parameter.required, parameter.default_value == null ? null
-      : jsonb(parameter.default_value, "STOP_CANONICAL_PUBLISHER_WRITE_PARAMETER_DEFAULT"),
+    parameter.unit_id, parameter.title_ru, parameter.required, null,
     jsonb(parameter.constraints_json, "STOP_CANONICAL_PUBLISHER_WRITE_PARAMETER_CONSTRAINTS", "object"),
     jsonb(parameter.truth_metadata, "STOP_CANONICAL_PUBLISHER_WRITE_PARAMETER_TRUTH", "object"),
     null,
@@ -743,10 +742,15 @@ export async function publishCanonicalDefinitionDraft(
     plan.baseline.acceptance_evidence_sha256, plan.baseline.accepted_release_id,
     plan.baseline.supersedes_baseline_id, plan.baseline.contract_version,
   ]);
-  await client.query(`update public.estimate_parameter_definition
-    set approved_template_baseline_id=$2 where definition_version_id=$1`, [
+  // R54 validates defaults against the already persisted baseline. Keep this
+  // forward draft in one transaction and bind values only after its insertion.
+  await client.query(`update public.estimate_parameter_definition p
+    set approved_template_baseline_id=$2,default_value=x.value
+    from jsonb_to_recordset($3::jsonb) x(parameter_id text,value jsonb)
+    where p.definition_version_id=$1 and p.parameter_id=x.parameter_id`, [
     plan.definition.id,
     plan.baseline.id,
+    jsonb(plan.parameters.map(p=>({parameter_id:p.parameter_id,value:p.default_value})), "STOP_CANONICAL_PUBLISHER_WRITE_PARAMETER_DEFAULTS", "array"),
   ]);
   await client.query(`insert into public.estimate_content_passport_r3(
       definition_version_id,release_id,catalog_id,contract_version,identity_mode,redirect_catalog_id,

@@ -10,7 +10,8 @@ import {knaufInteriorPlasterConditionalCompositionPackS2763 as scopePack} from '
 import {compileCanonicalEstimateCore} from '../backendPlatform/canonicalEstimateCompileCore';
 import {estimateDeterministicHash} from '../estimateDeterministicHash';
 import type {PurchaseGroupRepresentative} from '../../../../scripts/estimate/r4a13/s2732PurchaseGroupOverlay';
-const compile=(r:PurchaseGroupRepresentative,parameters:Record<string,unknown>)=>compileCanonicalEstimateCore({operation:'recalculate',catalogId:r.definition.catalog_id,compilerVersion:binding.contract,parameterDefinitions:r.parameters,formulaDefinitions:r.formulas,resourceDefinitions:r.resources,submittedParameters:parameters,confirmedParameters:{},rowOverrides:{},priceItems:[],currencyCode:'KGS',maximumResourceRows:150,hashJson:async v=>estimateDeterministicHash(v)});
+type Input=Parameters<typeof compileCanonicalEstimateCore>[0];
+const compile=(r:PurchaseGroupRepresentative,parameters:Record<string,unknown>)=>compileCanonicalEstimateCore({operation:'recalculate',catalogId:r.definition.catalog_id,compilerVersion:binding.contract,parameterDefinitions:r.parameters as unknown as Input['parameterDefinitions'],formulaDefinitions:r.formulas as unknown as Input['formulaDefinitions'],resourceDefinitions:r.resources as unknown as Input['resourceDefinitions'],submittedParameters:parameters,confirmedParameters:{},rowOverrides:{},priceItems:[],currencyCode:'KGS',maximumResourceRows:150,hashJson:async v=>estimateDeterministicHash(v)});
 const build=(i=0)=>{
  const materials=overlay(fixture.reps[i] as unknown as PurchaseGroupRepresentative,{rotband:'ACCEPTED_ROTBAND_SOURCE',betogrund:'ACCEPTED_BETOGRUND_SOURCE',mp75:'ACCEPTED_MP75_SOURCE'}).representative;
  const labour=labourOverlay(materials,{wall:'ACCEPTED_WALL_SOURCE',ceiling:'ACCEPTED_CEILING_SOURCE',guidance:'ACCEPTED_KRER_GUIDANCE'}).representative;
