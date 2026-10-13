@@ -155,6 +155,10 @@ async function main() {
       const target=(SCOPE_ONLY?scopePolicy.targets:binding.targets).find(t=>t.catalogId===catalogId)!;
       invariant(parent.definition.id===target.predecessorDefinitionId&&Number(parent.definition.definition_version)===(SCOPE_ONLY?5:binding.targets.find(t=>t.catalogId===catalogId)!.predecessorVersion),'EXACT_PARENT_IDENTITY');
       const overlay=SCOPE_ONLY?{representative:buildRoofStandaloneWorkScopeSuccessorV1(parent),addedRowIds:[],addedParameterIds:[]}:overlayStandalone(parent,locators),r=overlay.representative;
+      if(SCOPE_ONLY){
+        for(const parameter of r.parameters)parameter.truth_metadata={...parameter.truth_metadata,contract:CONTRACT};
+        r.baseline.parameter_schema_sha256=hash(r.parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata})));
+      }
       const definitionId = uuid(`${fingerprint}:definition:${catalogId}`), baselineId = uuid(`${fingerprint}:baseline:${catalogId}`);
       const definitionSha256 = hash({ contract: CONTRACT, predecessorHash: parent.definition.definition_sha256,
         parameters: r.parameters, formulas: r.formulas, resources: r.resources });
