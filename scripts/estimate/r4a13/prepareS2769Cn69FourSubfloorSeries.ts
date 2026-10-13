@@ -238,7 +238,7 @@ async function main() {
       parentSearchReleaseId: predecessorSearchReleaseId, releaseKey, head, tree, fingerprint, targetCount: catalogIds.length });
     for(const target of pack.titleFixTargets){
       const updated=await client.query(`update public.estimate_search_document set canonical_name_ru=$3,normalized_canonical_name=lower($3),
-        normalized_search_terms=normalized_search_terms||' '||lower($3),normalized_search_blob=normalized_search_blob||' '||lower($3),
+        normalized_search_terms=array_append(normalized_search_terms,lower($3)),normalized_search_blob=normalized_search_blob||' '||lower($3),
         source_provenance=source_provenance||jsonb_build_object('displayLabelRepair',true,'numericalOwnerChangeCount',0),
         document_sha256=encode(extensions.digest(convert_to(document_sha256||':'||$3,'UTF8'),'sha256'),'hex')
         where search_release_id=$1 and catalog_id=$2`,[searchReleaseId,target.catalogId,target.titleRu]);
