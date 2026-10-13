@@ -42,7 +42,7 @@ export function buildCn87SubfloorSuccessorS2769(parent:PurchaseGroupRepresentati
   if(typeof f.expression_source!=='string')throw Error('CN87_ADMITTED_EXPRESSION_REQUIRED');
   const graph=compileFormulaGraph(f.expression_source);return{...f,ast:graph.ast,input_parameter_ids:graph.inputParameterIds,ast_sha256:hash(graph.ast)};
  });
- const additions:PurchaseGroupRepresentative['resources']=shared.resources.map(r=>{const{row_sha256:_sha,...body}=r,content={...body,row_type:r.category,inclusion_ast:{kind:'and',operands:[exact,r.inclusion_ast]},
+ const additions:PurchaseGroupRepresentative['resources']=shared.resources.map(r=>{const{row_sha256:_sha,...body}=r,content={...body,row_type:r.category==='work'?'other':r.category,inclusion_ast:{kind:'and',operands:[exact,r.inclusion_ast]},
    source_metadata:{...r.source_metadata,cohortContract:binding.contract,predecessorReferenceCatalogId:source.catalogId,full_technical_acceptance:false},
    resource_graph:{...r.resource_graph,fullTechnicalAcceptance:false}};return{...content,row_sha256:hash(content)};});
  for(const need of inherited.inheritedNeeds){

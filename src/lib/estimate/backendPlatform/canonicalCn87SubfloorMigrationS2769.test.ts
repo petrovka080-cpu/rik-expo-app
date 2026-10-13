@@ -22,6 +22,7 @@ test.each([0,1,2,3])('admits the publisher projection after generated SQL identi
   bindingApplicability:b=>b.applicability,expectedNormativeBindingCount:r.bindings.length});
  expect(admit({...i,to:plan,proof:proof({...i,to:plan})})).not.toBeNull();
  expect(plan.parameters.every(p=>p.truth_metadata.contract===plan.contract)).toBe(true);
+ expect(plan.resources.every(r=>['material','labor','equipment','service','waste','other'].includes(String(r.row_type)))).toBe(true);
  expect(plan.baseline.parameter_schema_sha256).toMatch(/^[0-9a-f]{64}$/u);
  expect(plan.baseline.parameter_schema_sha256).toBe(createHash('sha256').update(stringifyCanonicalEstimateJson(plan.parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata})))).digest('hex'));
 });
