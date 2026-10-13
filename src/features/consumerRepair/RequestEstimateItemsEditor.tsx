@@ -677,7 +677,6 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
                 {expanded && section.scopeRequirements?.length ? <RequestEstimateStageRequirements groups={section.scopeRequirements} /> : null}
                 {section.physicallyExcluded ? <Text style={styles.operationSummary}>Подработа исключена пользователем из состава.</Text> : null}
                 {this.props.onCompositionRowsChange && (section.physicallyExcluded || resources.length>0)
-                  && (section.physicallyExcluded || !section.scopeRequirements?.some(group=>group.kinds?.includes('OBJECT_SCOPE')))
                   ? <Pressable accessibilityRole="button" onPress={() => this.props.onCompositionRowsChange?.([], !section.physicallyExcluded,
                     JSON.stringify([operation.groupId,operation.operationId]))}>
                     <Text style={styles.operationSummary}>{section.physicallyExcluded?'Восстановить подработу':'Исключить подработу и пересчитать ресурсы'}</Text>

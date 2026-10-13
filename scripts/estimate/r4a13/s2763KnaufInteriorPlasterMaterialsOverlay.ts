@@ -6,6 +6,7 @@ import {knaufInteriorPlasterPackS2763 as pack,knaufInteriorPlasterMaterialDefini
   knaufInteriorPlasterPrefixS2763 as prefix,knaufInteriorPlasterLegacyS2763 as legacy,
   knaufInteriorPlasterChoiceIdS2763 as choiceId} from '../../../src/lib/estimate/v4/knaufInteriorPlasterMaterialsS2763';
 import type {PurchaseGroupRepresentative} from './s2732PurchaseGroupOverlay';
+import technicalBinding from '../../../data/estimate-benchmarks/source-packs/knauf-technical-two-bindings-s27-69.json';
 const hash=(v:unknown)=>createHash('sha256').update(stringifyCanonicalEstimateJson(v)).digest('hex');
 
 // A forward whole-technology branch must account for every old obligation.
@@ -45,11 +46,12 @@ const pendingCondition=(id:string,exact:{kind:'equals';parameterId:string;value:
 export const S2763_KNAUF_INTERIOR_PLASTER_TARGETS=Object.fromEntries(pack.targets.map(t=>[t.catalogId,t.preservedOwners.map(x=>x.rowId)]));
 
 export function overlayS2763KnaufInteriorPlasterMaterials(parent:PurchaseGroupRepresentative,locators:{betogrund:string;rotband:string;mp75:string}){
-  const catalogId=String(parent.definition.catalog_id),target=pack.targets.find(t=>t.catalogId===catalogId);
+  const catalogId=String(parent.definition.catalog_id),technicalTarget=technicalBinding.targets.find(t=>t.catalogId===catalogId),target=pack.targets.find(t=>t.catalogId===catalogId)??technicalTarget;
   if(!target||parent.definition.id!==target.predecessorDefinitionId||parent.definition.definition_version!==target.predecessorVersion
     ||parent.resources.length!==target.parentResourceCount)throw Error('KNAUF_MATERIAL_EXACT_PARENT_DRIFT');
   for(const old of target.preservedOwners){const row=parent.resources.find(x=>x.row_id===old.rowId);
     if(!row||row.id!==old.resourceSpecId||row.cost_owner_id!==old.costOwnerId||row.unit_id!==old.unitId||row.formula_id!==old.formulaId)throw Error('KNAUF_MATERIAL_PARENT_OWNER_DRIFT:'+old.rowId);}
+  if(technicalTarget&&parent.definition.definition_sha256!==technicalTarget.parentSha256)throw Error('KNAUF_TECHNICAL_TWO_PARENT_SHA_DRIFT');
   const result=structuredClone(parent),shared=knaufInteriorPlasterMaterialDefinitionS2763(target.primerOnly);
   const exact={kind:'equals' as const,parameterId:choiceId,value:target.primerOnly?pack.mechanizedChoiceRu:pack.manualChoiceRu};
   const dispositions:Record<string,unknown>[]=[];
@@ -117,6 +119,15 @@ export function overlayS2763KnaufInteriorPlasterMaterials(parent:PurchaseGroupRe
   result.baseline.input_classification=target.primerOnly?{...result.baseline.input_classification,[choiceId]:'VALIDATION_FIXTURE'}:{q:'VALIDATION_FIXTURE',[choiceId]:'VALIDATION_FIXTURE'};
   result.baseline.normative_source_ids=target.primerOnly?{...parent.baseline.normative_source_ids,betogrund_actual_area_m2:[pack.contract+':betogrund']}
     :{q:[pack.contract+':rotband'],betogrund_actual_area_m2:[pack.contract+':betogrund']};
+  if(technicalTarget){
+    for(const p of result.parameters){const value=(technicalBinding.planningDefaults as Record<string,unknown>)[p.parameter_id];
+      if(value!==undefined){p.default_value=null;p.truth_metadata={...p.truth_metadata,provenance:{...p.truth_metadata.provenance,
+        consumer_input_role_v1:p.parameter_id===choiceId?'OBJECT_FACT':'ADVANCED_OPTION',
+        initial_planning_default_v1:{value,reasonRu:technicalBinding.planningDefaultsReasonRu,objectAbsenceAsserted:false}}};}}
+    result.definition.source_metadata={...result.definition.source_metadata,technicalMaterialBindingContract:technicalBinding.contract};
+    result.definition.passport={...result.definition.passport,initialPlanningDefaultsV1:{values:technicalBinding.planningDefaults,
+      reasonRu:technicalBinding.planningDefaultsReasonRu,objectAbsenceAsserted:false}};
+  }
   const consumers=buildMasterParameterCalculationConsumers(result);
   for(const p of result.parameters){const id=p.parameter_id;p.truth_metadata={...p.truth_metadata,contract:pack.contract,semantic_parameter_key:catalogId+':'+id,formula_consumers:consumers.formulaConsumers[id],resource_branch_consumers:consumers.resourceConsumers[id]};
     result.baseline.formula_consumer_ids[id]=consumers.formulaConsumers[id];result.baseline.resource_consumer_row_ids[id]=consumers.resourceConsumers[id];result.baseline.uom_by_parameter[id]=p.unit_id;
@@ -144,4 +155,36 @@ export function overlayS2763KnaufInteriorPlasterMaterials(parent:PurchaseGroupRe
   result.passport.included_scope_ru=[scopeSummary,pack.scopeRu];result.passport.excluded_scope_ru=pack.exclusionsRu;
   return{representative:result,ownerDisposition:dispositions,legacyRowIds:dispositions.map(x=>String(x.legacyRowId)),addedRowIds:newResources.map(r=>r.row_id),
     addedParameterIds:result.parameters.filter(p=>!parent.parameters.some(old=>old.parameter_id===p.parameter_id)).map(p=>p.parameter_id),newMaterialNormClosureCount:target.primerOnly?1:2};
+}
+
+/** Bind editable planning settings to the new accepted baseline, never to a
+ * historical parent or a validation area. The schema digest excludes its own
+ * provenance binding to avoid a circular hash. Publisher preflight remains required. */
+export function bindKnaufTechnicalPlanningDefaultsS2769(r:PurchaseGroupRepresentative,context:{definitionId:string;baselineId:string;releaseId:string;evidenceSha256:string}){
+  if(!technicalBinding.targets.some(t=>t.catalogId===r.definition.catalog_id))throw Error('KNAUF_TECHNICAL_DEFAULT_SCOPE_DRIFT');
+  const defaults=technicalBinding.planningDefaults as Record<string,unknown>;
+  r.baseline.input_values={};r.baseline.input_classification={};
+  for(const p of r.parameters)if(Object.hasOwn(defaults,p.parameter_id)){
+    p.default_value=defaults[p.parameter_id];p.approved_template_baseline_id=context.baselineId;
+    r.baseline.input_values[p.parameter_id]=p.default_value;r.baseline.input_classification[p.parameter_id]='ASSUMPTION';
+    p.truth_metadata={...p.truth_metadata,value_source_role:'VISIBLE_BASELINE_ASSUMPTION',hidden_default_forbidden:false,
+      baseline_assumption_id:context.baselineId+':'+p.parameter_id};
+  }
+  const schemaSha256=knaufTechnicalParameterSchemaSha256S2769(r.parameters);
+  r.baseline.parameter_schema_sha256=schemaSha256;
+  for(const p of r.parameters)if(Object.hasOwn(defaults,p.parameter_id)){
+    const id=p.parameter_id;p.truth_metadata={...p.truth_metadata,provenance:{...p.truth_metadata.provenance,
+      baselineOwner:'approved-template-baseline:r54',sourceCatalogId:r.definition.catalog_id,sourceReleaseId:context.releaseId,
+      sourceDefinitionVersionId:context.definitionId,sourceParameterSchemaId:schemaSha256,approvedTemplateBaselineId:context.baselineId,
+      acceptanceEvidenceSha256:context.evidenceSha256,
+      approvedTemplateBinding:{baselineId:context.baselineId,catalogId:r.definition.catalog_id,parameterId:id,value:p.default_value,
+        inputClassification:'ASSUMPTION',definitionVersionId:context.definitionId,parameterSchemaSha256:schemaSha256,
+        formulaConsumerIds:r.baseline.formula_consumer_ids[id],resourceConsumerRowIds:r.baseline.resource_consumer_row_ids[id],
+        normativeSourceIds:r.baseline.normative_source_ids[id]??[],acceptanceEvidenceSha256:context.evidenceSha256}}};
+  }
+}
+export function knaufTechnicalParameterSchemaSha256S2769(parameters:PurchaseGroupRepresentative['parameters']){
+  return hash(parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,required:p.required,
+    constraints:p.constraints_json,defaultValue:p.default_value,valueSourceRole:p.truth_metadata.value_source_role,
+    formulaConsumers:p.truth_metadata.formula_consumers,resourceConsumers:p.truth_metadata.resource_branch_consumers})));
 }

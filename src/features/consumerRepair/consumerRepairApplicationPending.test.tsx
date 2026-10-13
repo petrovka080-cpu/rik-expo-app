@@ -3,6 +3,7 @@ import TestRenderer, {act, type ReactTestRenderer} from 'react-test-renderer';
 import {ConsumerRepairItemRow} from './ConsumerRepairItemRow';
 import {ConsumerRepairRequestStickyActions} from './ConsumerRepairRequestChrome';
 import {RequestEstimateSummaryCard} from './RequestEstimateSummaryCard';
+import {RequestEstimateItemsEditor} from './RequestEstimateItemsEditor';
 import {consumerRepairCanonicalMissingObjectParameterCount,consumerRepairCanonicalEstimateBlocksApproval} from './consumerRepairCanonicalEstimateReadiness';
 import type {CanonicalParameterSession} from '../../lib/estimate/canonicalParameters';
 
@@ -49,8 +50,19 @@ test('source gaps are absent from the customer question count without admitting 
 
 test('the summary describes unfinished calculation rather than assigning source checks to the customer',()=>{
  const vm={title:'Стяжка25мм',summary:'',visibleLines:[],preliminaryNeedCount:59,calculatedItemCount:8,
- consumerQuestionCount:0,sourceGates:[{parameterId:'fastener_norm'}]} as unknown as React.ComponentProps<typeof RequestEstimateSummaryCard>['viewModel'];
+ consumerQuestionCount:0,sourceGates:[{parameterId:'fastener_norm'}],trustLevelLabel:'Готовность: нужны уточнения'} as unknown as React.ComponentProps<typeof RequestEstimateSummaryCard>['viewModel'];
  const r=render(<RequestEstimateSummaryCard viewModel={vm} missingParameterCount={0}/>),text=JSON.stringify(r.toJSON());
  expect(text).toContain('Данные объекта заполнены');expect(text).not.toContain('требуют подтверждённого источника');
- expect(text).not.toContain('требующих уточнения');expect(text).toContain('Пока не рассчитано: 59');act(()=>r.unmount());
+ expect(text).not.toContain('требующих уточнения');expect(text).not.toContain('Готовность: нужны уточнения');expect(text).toContain('Пока не рассчитано: 59');act(()=>r.unmount());
+});
+
+test('a paid operation with a base fact can be excluded as an operation; its factual check is not removed as a row',()=>{
+ const operation={contractVersion:'canonical-operation-resource/v1',groupId:'screed',operationId:'screed:installation',groupTitleRu:'Стяжка',operationTitleRu:'Стяжка25мм',completionCriterionRu:'Устроена стяжка'};
+ const resource={...item,id:'paid-mortar',quantity:0.51,isOptional:false,sourceParameters:{rowCode:'paid-mortar',canonicalOperationComposition:operation}};
+ const scope={groupId:'screed',rowIds:['base-check'],kinds:['OBJECT_SCOPE'],statuses:['EXACT_SCOPE'],titlesRu:['Основание'],sourceCheckRestoration:null};
+ const vm={sections:[{id:'professional_screed',title:'Стяжка',items:[resource],operation,scopeRequirements:[scope]}],rawItemCount:1,calculatedItemCount:1,preliminaryNeedCount:0} as unknown as React.ComponentProps<typeof RequestEstimateItemsEditor>['viewModel'];
+ const onChange=jest.fn();const r=render(<RequestEstimateItemsEditor viewModel={vm} onCompositionRowsChange={onChange} onDecrease={noop} onIncrease={noop} onQuantityChange={noop} onUnitPriceChange={noop} onSpecificationChange={noop} onOptionalChange={noop} onRemove={noop} onOpenCatalog={noop} onOpenPhoto={noop} showPhotoButtons={false}/>);
+ const button=r.root.findAll(n=>typeof n.type==='string'&&n.props.accessibilityRole==='button'&&n.findAll(child=>typeof child.type==='string'&&child.props.children==='Исключить подработу и пересчитать ресурсы').length>0);
+ expect(button).toHaveLength(1);let handler=button[0];while(handler&&typeof handler.props.onPress!=='function')handler=handler.parent!;
+ expect(typeof handler.props.onPress).toBe('function');act(()=>handler.props.onPress());expect(onChange).toHaveBeenCalledWith([],true,JSON.stringify(['screed','screed:installation']));act(()=>r.unmount());
 });

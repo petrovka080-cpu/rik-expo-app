@@ -15,7 +15,7 @@ export const knaufPlasterBaseAdmittedGuardS2763:AutomaticInclusionCondition={kin
 
 /** The project supplies applicability and an actual measure; all rates and
  * included operations belong to the pinned source. Materials remain separate. */
-export function knaufInteriorPlasterBaseLabourDefinitionS2763(surface:'WALL'|'CEILING'):AutomaticOwnerDefinition {
+export function knaufInteriorPlasterBaseLabourDefinitionS2763(surface:'WALL'|'CEILING',applicationScoped=false):AutomaticOwnerDefinition {
   const prefix=knaufPlasterLabourPrefixS2763,ceiling=surface==='CEILING',source=pack.sources[ceiling?1:0],guidance=pack.sources[2],rate=pack.rates.find(x=>x.surface===surface)!;
   const areaRule=ceiling?pack.measurementRules.ceiling.ruleRu:pack.measurementRules.wall.ruleRu;
   const specs=[
@@ -25,8 +25,10 @@ export function knaufInteriorPlasterBaseLabourDefinitionS2763(surface:'WALL'|'CE
     ['mixer','Передвижной растворосмеситель 65 л — нормативная эксплуатация с обслуживанием','machine_hour','equipment',rate.per100M2.mortarMixer65lMachineHours,'OWN_COST'],
     ['operators','Машинисты и обслуживающие работники — часы учтены в стоимости эксплуатации машин','man_hour','labor',rate.per100M2.machineOperatorsPersonHours,'INFORMATIONAL_SCOPE'],
   ] as const;
+  const admittedGuard:AutomaticInclusionCondition=applicationScoped?{kind:'and',operands:[knaufPlasterManualMaterialGuardS2763,
+    eq('krer15_manual_conditions',knaufPlasterNormConditionsYesS2763)]}:knaufPlasterBaseAdmittedGuardS2763;
   const rows:AutomaticRowSpec[]=specs.map(([id,title,unitId,category,scalar,costTreatment])=>({rowId:prefix+':'+id,formulaId:prefix+':formula:'+id,title,unitId,category,
-    section:'Базовая ручная штукатурка по подтверждённой норме',expression:'q/100*'+scalar,inclusion:knaufPlasterBaseAdmittedGuardS2763,procurement:false,costTreatment}));
+    section:'Базовая ручная штукатурка по подтверждённой норме',expression:'q/100*'+scalar,inclusion:admittedGuard,procurement:false,costTreatment}));
   const def=buildAutomaticConstructionOwnerR1({contract:pack.contract,semanticOwner:prefix,sourceId:source.id,normId:pack.contract+':'+source.kind,
     sourceMetadata:{source_title:source.titleRu,source_document_version:source.printedEdition,artifact_sha256:source.sha256,definition_hash:source.sha256,exact_locator:'КРЕР15 PDF137–138; '+rate.normId},
     applicabilityRu:pack.scopeRu,ordinary:[],profile:[],conditional:[
@@ -41,7 +43,7 @@ export function knaufInteriorPlasterBaseLabourDefinitionS2763(surface:'WALL'|'CE
   };
   const sourceRefs=[{sourceId:source.id,titleRu:source.titleRu,sha256:source.sha256,locator:'КРЕР15 PDF8,13–14,137–138'},
     {sourceId:guidance.id,titleRu:guidance.titleRu,sha256:guidance.sha256,locator:'Общие указания PDF2–3,6–9,15; п1.3–1.4,1.7,2.8–2.9,3.1–3.5,4.1–4.2; приложение3'}];
-  const parameters=def.parameters.map(p=>{const primary=p.parameter_id==='krer15_manual_area_scope'?source:guidance;
+  const parameters=def.parameters.filter(p=>!applicationScoped||p.parameter_id==='krer15_manual_conditions').map(p=>{const primary=p.parameter_id==='krer15_manual_area_scope'?source:guidance;
     const locator=p.parameter_id==='krer15_manual_area_scope'?'КРЕР15 PDF13–14, п2.5,2.10–2.14':'Общие указания PDF2–3,6–9,15; п1.3–1.4,1.7,2.8–2.9,3.1–3.5,4.1–4.2; приложение3';
     return({...p,default_value:null,truth_metadata:{...p.truth_metadata,visibility_role:'USER_INPUT',value_source_role:'PROJECT_SPECIFIC_INPUT',source_confirmation_required:false,
     visible_when:knaufPlasterManualMaterialGuardS2763,provenance:{...p.truth_metadata.provenance as object,consumer_input_role_v1:'OBJECT_FACT',supporting_source_refs:sourceRefs},

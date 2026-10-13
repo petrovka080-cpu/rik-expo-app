@@ -9,16 +9,22 @@ import { createCanonicalDefinitionClonePlan,
   type CanonicalPublisherJson as Json } from "./canonicalDefinitionPublisherR1";
 import { cloneCanonicalPreparedSearchR1 } from "./canonicalPreparedSearchCloneR1";
 import { type PurchaseGroupRepresentative } from "./s2732PurchaseGroupOverlay";
-import {overlayS2763KnaufInteriorPlasterMaterials,S2763_KNAUF_INTERIOR_PLASTER_TARGETS} from './s2763KnaufInteriorPlasterMaterialsOverlay';
+import {overlayS2763KnaufInteriorPlasterMaterials,S2763_KNAUF_INTERIOR_PLASTER_TARGETS,bindKnaufTechnicalPlanningDefaultsS2769,knaufTechnicalParameterSchemaSha256S2769} from './s2763KnaufInteriorPlasterMaterialsOverlay';
 import {knaufInteriorPlasterPackS2763 as pack} from '../../../src/lib/estimate/v4/knaufInteriorPlasterMaterialsS2763';
-const CONTRACT=pack.contract;
+import technicalBinding from '../../../data/estimate-benchmarks/source-packs/knauf-technical-two-bindings-s27-69.json';
+import {overlayS2763KnaufInteriorPlasterBaseLabour} from './s2763KnaufInteriorPlasterBaseLabourOverlay';
+import {overlayS2763KnaufInteriorPlasterConditionalComposition} from './s2763KnaufInteriorPlasterConditionalCompositionOverlay';
+import {knaufInteriorPlasterBaseLabourPackS2763 as labourPack} from '../../../src/lib/estimate/v4/knaufInteriorPlasterBaseLabourS2763';
+import {knaufInteriorPlasterConditionalCompositionPackS2763 as scopePack} from '../../../src/lib/estimate/v4/knaufInteriorPlasterConditionalCompositionS2763';
+const TECHNICAL_TWO=process.argv.includes('--technical-two');
+const CONTRACT=TECHNICAL_TWO?technicalBinding.contract:pack.contract;
 
 const ROOT = "C:/dev/rik-expo-app-r4a5-dc4f0ce7";
 const BRANCH = "codex/r4-a5-clean-08b18902";
 const MASTER = "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (100).md";
 const CURRENT = "data/estimate-benchmarks/r568-local-developer-canonical-release.json";
-const SNAPSHOT=".release-runtime/r568/s27-63/interior-plaster-materials/parent-snapshot.json";
-const OUTPUT=".release-runtime/r568/s27-63/interior-plaster-materials/publication";
+const SNAPSHOT=TECHNICAL_TWO?"data/estimate-benchmarks/fixtures/knauf-technical-two-parents-s27-69.json":".release-runtime/r568/s27-63/interior-plaster-materials/parent-snapshot.json";
+const OUTPUT=TECHNICAL_TWO?".release-runtime/r568/s27-69/knauf-technical-two/publication":".release-runtime/r568/s27-63/interior-plaster-materials/publication";
 const SOURCES = [
   "scripts/estimate/r4a13/prepareS2763KnaufInteriorPlasterMaterialsSixSeries.ts",
   "scripts/estimate/r4a13/s2763KnaufInteriorPlasterMaterialsOverlay.ts",
@@ -37,6 +43,13 @@ const SOURCES = [
   "src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics.ts",
   "src/features/consumerRepair/consumerCanonicalParameterEditor.ts", "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.tsx",
 ];
+if(TECHNICAL_TWO)SOURCES.push("data/estimate-benchmarks/source-packs/knauf-technical-two-bindings-s27-69.json","data/estimate-benchmarks/fixtures/knauf-technical-two-parents-s27-69.json","src/lib/estimate/v4/knaufTechnicalTwoBindingsS2769.test.ts");
+if(TECHNICAL_TWO)SOURCES.push('scripts/estimate/r4a13/s2763KnaufInteriorPlasterBaseLabourOverlay.ts',
+ 'scripts/estimate/r4a13/s2763KnaufInteriorPlasterConditionalCompositionOverlay.ts',
+ 'src/lib/estimate/v4/knaufInteriorPlasterBaseLabourS2763.ts','src/lib/estimate/v4/knaufInteriorPlasterConditionalCompositionS2763.ts',
+ 'data/estimate-benchmarks/source-packs/knauf-interior-plaster-base-labour-six-s27-63.json',
+ 'data/estimate-benchmarks/source-packs/knauf-interior-plaster-conditional-composition-five-s27-63.json',
+ ...labourPack.sources.map(x=>x.localArtifact),scopePack.source.localArtifact);
 const APPLY = process.argv.includes("--apply");
 const hash = (value: unknown) => createHash("sha256").update(typeof value === "string" || Buffer.isBuffer(value) ? value : stringifyCanonicalEstimateJson(value)).digest("hex");
 function invariant(value: unknown, code: string): asserts value { if (!value) throw new Error(`S2763_KNAUF_INTERIOR_PLASTER_MATERIALS_SIX:${code}`); }
@@ -72,10 +85,10 @@ async function main() {
   const head = git("rev-parse", "HEAD"), tree = git("rev-parse", "HEAD^{tree}");
   const masterSha256 = hash(readFileSync(MASTER));
   const sourceHashes = SOURCES.map(path => ({ path, sha256: hash(readFileSync(path)) }));
-  const catalogIds = Object.keys(S2763_KNAUF_INTERIOR_PLASTER_TARGETS).sort();
-  invariant(catalogIds.length === 6, "FINITE_SCOPE_DRIFT");
-  for(const s of pack.sources)invariant(hash(readFileSync(s.localArtifact))===s.sha256,'PRIMARY_SOURCE_ARTIFACT_DRIFT');
-  invariant(hash(readFileSync(SNAPSHOT))===pack.parentSnapshotSha256,'EXACT_PARENT_SNAPSHOT_DRIFT');
+  const catalogIds = (TECHNICAL_TWO?technicalBinding.targets.map(t=>t.catalogId):Object.keys(S2763_KNAUF_INTERIOR_PLASTER_TARGETS)).sort();
+  invariant(catalogIds.length === (TECHNICAL_TWO?2:6), "FINITE_SCOPE_DRIFT");
+  for(const s of [...pack.sources,...(TECHNICAL_TWO?[...labourPack.sources,scopePack.source]:[])])invariant(hash(readFileSync(s.localArtifact))===s.sha256,'PRIMARY_SOURCE_ARTIFACT_DRIFT');
+  invariant(hash(readFileSync(SNAPSHOT))===(TECHNICAL_TWO?technicalBinding.parentSnapshotSha256:pack.parentSnapshotSha256),'EXACT_PARENT_SNAPSHOT_DRIFT');
   if (APPLY) {
     const gatePath = process.argv.find(a => a.startsWith("--gate-receipt="))?.slice("--gate-receipt=".length);
     invariant(gatePath && existsSync(gatePath), "CURRENT_GATE_RECEIPT_REQUIRED");
@@ -104,8 +117,8 @@ async function main() {
     const locators={} as {betogrund:string;rotband:string;mp75:string};
     for(const [index,artifact] of pack.sources.entries()){
       const kind=(['betogrund','rotband','mp75'] as const)[index]!;
-      const sourceKey=CONTRACT+':'+kind,sourceId=uuid(sourceKey+':'+artifact.sha256),locatorId=uuid(sourceKey+':locator:'+artifact.sha256),locatorKey=CONTRACT+':'+kind;
-      const locatorPayload={contract:CONTRACT,kind,facts:artifact,scopeRu:pack.scopeRu,exclusionsRu:pack.exclusionsRu,
+      const sourceKey=pack.contract+':'+kind,sourceId=uuid(sourceKey+':'+artifact.sha256),locatorId=uuid(sourceKey+':locator:'+artifact.sha256),locatorKey=pack.contract+':'+kind;
+      const locatorPayload={contract:pack.contract,kind,facts:artifact,scopeRu:pack.scopeRu,exclusionsRu:pack.exclusionsRu,
         quantityAdmitted:artifact.quantityAdmitted,completeEstimateAccepted:false};
       await client.query('insert into public.estimate_normative_source(id,source_key,title_ru,authority,official_url,artifact_sha256,metadata) values($1,$2,$3,$4,$5,$6,$7::jsonb) on conflict(source_key) do nothing',
         [sourceId,sourceKey,artifact.titleRu,'КНАУФ',artifact.officialUrl,artifact.sha256,JSON.stringify({contract:CONTRACT,activationAllowed:false,
@@ -118,22 +131,72 @@ async function main() {
       invariant(actualLocator?.id===locatorId&&hash(actualLocator.locator)===hash(locatorPayload)&&actualLocator.excerpt_sha256===hash(locatorPayload),'PRIMARY_LOCATOR_DRIFT');
       locators[kind]=locatorId;
     }
+    let labourLocators={} as {wall:string;ceiling:string;guidance:string};let scopeLocators:Record<string,string>={};
+    if(TECHNICAL_TWO){
+
+    for(const [index,artifact] of labourPack.sources.entries()){
+      const kind=(['wall','ceiling','guidance'] as const)[index]!;
+      const sourceKey=labourPack.contract+':'+kind,sourceId=uuid(sourceKey+':'+artifact.sha256),locatorId=uuid(sourceKey+':locator:'+artifact.sha256),locatorKey=labourPack.contract+':'+kind;
+      const locatorPayload={contract:labourPack.contract,kind,facts:artifact,scopeRu:labourPack.scopeRu,exclusionsRu:labourPack.exclusionsRu,
+        quantityAdmitted:artifact.quantityAdmitted,completeEstimateAccepted:false,
+        supportingSources:artifact.kind==='guidance'?[]:[{sourceId:labourPack.sources[2].id,sha256:labourPack.sources[2].sha256,titleRu:labourPack.sources[2].titleRu,officialUrl:labourPack.sources[2].officialUrl,
+          locator:'Общие указания PDF3 п1.7; PDF9 п4.2; условия PDF2,7–8,15',reviewedAt:labourPack.sources[2].reviewedAt}]};
+      await client.query('insert into public.estimate_normative_source(id,source_key,title_ru,authority,official_url,artifact_sha256,metadata) values($1,$2,$3,$4,$5,$6,$7::jsonb) on conflict(source_key) do nothing',
+        [sourceId,sourceKey,artifact.titleRu,artifact.authority,artifact.officialUrl,artifact.sha256,JSON.stringify({contract:labourPack.contract,activationAllowed:false,
+          sourceRole:artifact.quantityAdmitted?'CONDITIONAL_KRER_MANUAL_BASE_NORM':'KRER_APPLICATION_GUIDANCE',sourceId:artifact.id})]);
+      const actual=(await client.query('select id::text,artifact_sha256 from public.estimate_normative_source where source_key=$1',[sourceKey])).rows[0];
+      invariant(actual?.id===sourceId&&actual.artifact_sha256===artifact.sha256,'PRIMARY_SOURCE_IDENTITY_DRIFT');
+      await client.query('insert into public.estimate_normative_locator(id,source_id,locator_key,locator,excerpt_sha256) values($1,$2,$3,$4::jsonb,$5) on conflict(source_id,locator_key) do nothing',
+        [locatorId,sourceId,locatorKey,JSON.stringify(locatorPayload),hash(locatorPayload)]);
+      const actualLocator=(await client.query('select id::text,locator,excerpt_sha256 from public.estimate_normative_locator where source_id=$1 and locator_key=$2',[sourceId,locatorKey])).rows[0];
+      invariant(actualLocator?.id===locatorId&&hash(actualLocator.locator)===hash(locatorPayload)&&actualLocator.excerpt_sha256===hash(locatorPayload),'PRIMARY_LOCATOR_DRIFT');
+      labourLocators[kind]=locatorId;
+    }
+
+
+    for(const fact of scopePack.facts){
+      const artifact=scopePack.source,sourceKey=scopePack.contract+':'+fact.key,sourceId=uuid(sourceKey+':'+artifact.sha256),locatorId=uuid(sourceKey+':locator:'+artifact.sha256);
+      const locatorPayload={contract:scopePack.contract,kind:fact.key,facts:fact,source:artifact,scopeRu:scopePack.scopeRu,exclusionsRu:scopePack.exclusionsRu,
+        quantityAdmitted:false,scopeNonApplicabilityOnly:true,completeEstimateAccepted:false};
+      await client.query('insert into public.estimate_normative_source(id,source_key,title_ru,authority,official_url,artifact_sha256,metadata) values($1,$2,$3,$4,$5,$6,$7::jsonb) on conflict(source_key) do nothing',
+        [sourceId,sourceKey,artifact.titleRu,artifact.authority,artifact.officialUrl,artifact.sha256,JSON.stringify({contract:scopePack.contract,activationAllowed:false,sourceRole:'MANUFACTURER_SCOPE_APPLICABILITY_ONLY',sourceId:artifact.id})]);
+      const actual=(await client.query('select id::text,artifact_sha256 from public.estimate_normative_source where source_key=$1',[sourceKey])).rows[0];
+      invariant(actual?.id===sourceId&&actual.artifact_sha256===artifact.sha256,'PRIMARY_SOURCE_IDENTITY_DRIFT');
+      await client.query('insert into public.estimate_normative_locator(id,source_id,locator_key,locator,excerpt_sha256) values($1,$2,$3,$4::jsonb,$5) on conflict(source_id,locator_key) do nothing',
+        [locatorId,sourceId,sourceKey,JSON.stringify(locatorPayload),hash(locatorPayload)]);
+      const actualLocator=(await client.query('select id::text,locator,excerpt_sha256 from public.estimate_normative_locator where source_id=$1 and locator_key=$2',[sourceId,sourceKey])).rows[0];
+      invariant(actualLocator?.id===locatorId&&hash(actualLocator.locator)===hash(locatorPayload)&&actualLocator.excerpt_sha256===hash(locatorPayload),'PRIMARY_LOCATOR_DRIFT');
+      scopeLocators[fact.key]=locatorId;
+    }
+
+    }
     const plans = [], transitions: Json[] = [];
     for (const catalogId of catalogIds) {
       const manifest = (await client.query("select * from public.estimate_cumulative_manifest_entry where release_id=$1 and catalog_id=$2", [predecessorReleaseId, catalogId])).rows[0];
       invariant(manifest, `TARGET_MISSING:${catalogId}`);
       const parent = await load(client, manifest.definition_version_id, manifest.approved_template_baseline_id);
-      const frozenParent = frozen.reps.find((r: Json) => r.catalogId === catalogId);
+      const frozenParent = frozen.reps.find((r: Json) => (r.catalogId??r.definition.catalog_id) === catalogId);
       invariant(frozenParent && hash(parent) === hash(Object.fromEntries(Object.keys(parent).map(key => [key, frozenParent[key]]))), `PARENT_SNAPSHOT_DRIFT:${catalogId}`);
-      const overlay=overlayS2763KnaufInteriorPlasterMaterials(parent,locators),r=overlay.representative;
+      const overlay=overlayS2763KnaufInteriorPlasterMaterials(parent,locators);
+      let r=overlay.representative;
+      if(TECHNICAL_TWO){
+        const labour=overlayS2763KnaufInteriorPlasterBaseLabour(r,labourLocators);
+        const scope=overlayS2763KnaufInteriorPlasterConditionalComposition(labour.representative,scopeLocators);r=scope.representative;
+        overlay.addedRowIds.push(...labour.addedRowIds);overlay.addedParameterIds.push(...labour.addedParameterIds,...scope.addedParameterIds);
+        overlay.ownerDisposition.push(...labour.ownerDisposition,...scope.ownerDisposition);
+      }
+      if(TECHNICAL_TWO){for(const p of r.parameters)p.truth_metadata={...p.truth_metadata,contract:CONTRACT};
+        r.baseline.parameter_schema_sha256=hash(r.parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata})));}
       const definitionId = uuid(`${fingerprint}:definition:${catalogId}`), baselineId = uuid(`${fingerprint}:baseline:${catalogId}`);
-      const definitionSha256 = hash({ contract: CONTRACT, predecessorHash: parent.definition.definition_sha256,
-        parameters: r.parameters, formulas: r.formulas, resources: r.resources });
-      const evidenceSha256 = hash({ contract: CONTRACT, catalogId, fingerprint, definitionSha256, predecessorEvidence: parent.baseline.acceptance_evidence_sha256 });
+      const evidenceSha256 = hash({contract:CONTRACT,catalogId,fingerprint,definitionId,baselineId,
+        parameters:r.parameters,formulas:r.formulas,resources:r.resources,predecessorEvidence:parent.baseline.acceptance_evidence_sha256});
+      if(TECHNICAL_TWO)bindKnaufTechnicalPlanningDefaultsS2769(r,{definitionId,baselineId,releaseId,evidenceSha256});
+      const definitionSha256=hash({contract:CONTRACT,predecessorHash:parent.definition.definition_sha256,
+        parameters:r.parameters,formulas:r.formulas,resources:r.resources});
       const plan = createCanonicalDefinitionClonePlan({ contract: CONTRACT,
         definition: { id: definitionId, releaseId, catalogId, definitionVersion: Number(parent.definition.definition_version) + 1,
           passport: { ...r.definition.passport, materialSeriesContract: pack.contract }, applicability: r.definition.applicability,
-          definitionSha256, sourceMetadata: { ...parent.definition.source_metadata, contract: CONTRACT, predecessorDefinitionId: parent.definition.id,
+          definitionSha256, sourceMetadata: { ...r.definition.source_metadata, contract: CONTRACT, predecessorDefinitionId: parent.definition.id,
             materialSeriesContract: pack.contract, sourceHashes, activationAllowed: false, productionEligible: false } },
         representative: r,
         parameterTruthMetadata: p => p.truth_metadata,
@@ -141,14 +204,15 @@ async function main() {
         resourceSha256: row => hash({ contract: CONTRACT, catalogId, row }),
         baseline: { id: baselineId, key: `${CONTRACT}:${fingerprint.slice(0, 16)}:${catalogId}`, sourceDefinitionVersionId: parent.definition.id,
           validationScenarioRefs: [...(parent.baseline.validation_scenario_refs ?? []), { scenario: "S2763_KNAUF_INTERIOR_PLASTER_INDEPENDENT_AREAS_SKU_LEGACY_NO_DUPLICATE_PRICE", acceptanceEvidenceSha256: evidenceSha256,
-            primarySourceArtifactSha256: pack.sources.map(source=>source.sha256), quantityQuality: "APPROXIMATE_MANUFACTURER_MATERIAL_RATE_ONLY_LABOUR_REMAINS_UNCONFIRMED", completeTechnicalEstimateAccepted: false }],
+            primarySourceArtifactSha256: [...pack.sources,...(TECHNICAL_TWO?[...labourPack.sources,scopePack.source]:[])].map(source=>source.sha256), quantityQuality: TECHNICAL_TWO?"MANUFACTURER_MATERIALS_AND_CONDITIONAL_KRER_LABOUR_OPERATED_MACHINE_HOURS":"APPROXIMATE_MANUFACTURER_MATERIAL_RATE_ONLY_LABOUR_REMAINS_UNCONFIRMED", completeTechnicalEstimateAccepted: false }],
           acceptanceEvidenceSha256: evidenceSha256, acceptedReleaseId: releaseId, supersedesBaselineId: parent.baseline.id },
         passport: { physicalResultRu: String(parent.passport.physical_result_ru), excludedScopeRu: r.passport.excluded_scope_ru,
           decision: { ...r.passport.decision, waveContract: CONTRACT, predecessorWaveContract: parent.passport.decision.waveContract,
             materialSeriesContract: pack.contract, activationAllowed: false, productionEligible: false },
           payloadSha256: hash({ predecessor: parent.passport.payload_sha256, definitionSha256, evidenceSha256 }), sourceHead: head, sourceTree: tree },
         bindingApplicability: b => ({ ...b.applicability, clonedByContract: CONTRACT }), expectedNormativeBindingCount: r.bindings.length });
-      invariant(hash(plan.parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata})))===plan.baseline.parameter_schema_sha256,'FINAL_PARAMETER_SCHEMA_DIGEST_DRIFT');
+      if(TECHNICAL_TWO)for(const p of plan.parameters)p.default_value=r.parameters.find(x=>x.parameter_id===p.parameter_id)!.default_value;
+      invariant((TECHNICAL_TWO?knaufTechnicalParameterSchemaSha256S2769(plan.parameters):hash(plan.parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata}))))===plan.baseline.parameter_schema_sha256,'FINAL_PARAMETER_SCHEMA_DIGEST_DRIFT');
       invariant(plan.passport.decision.sourceRateApproximate === true && plan.passport.decision.completeTechnicalEstimateAccepted === false
         && plan.passport.decision.legacyQuantityNormsUnaccepted === true, "LIMITED_MATERIAL_SCOPE_FLAGS_LOST");
       plans.push(plan);
@@ -156,7 +220,7 @@ async function main() {
         predecessorBaselineId: parent.baseline.id, successorBaselineId: baselineId, ownerRowIds: overlay.addedRowIds.filter(rowId=>r.resources.find(row=>row.row_id===rowId)?.procurement_eligible===true), legacyRowIds: overlay.legacyRowIds, addedRowIds: overlay.addedRowIds,
         addedParameterIds: overlay.addedParameterIds, changedFormulaIds: [],
         physicalNormOwnerRowIds:overlay.addedRowIds.filter(rowId=>r.resources.find(row=>row.row_id===rowId)?.source_metadata.sourceNormQuantityAccepted===true),
-        ownerDisposition:overlay.ownerDisposition,physicalNormClosureCount:overlay.newMaterialNormClosureCount,labourHourNormClosureCount:0,
+        ownerDisposition:overlay.ownerDisposition,physicalNormClosureCount:overlay.newMaterialNormClosureCount+(TECHNICAL_TWO?4:0),labourHourNormClosureCount:TECHNICAL_TWO?1:0,machineHourNormClosureCount:TECHNICAL_TWO?3:0,
         parameterDelta: r.parameters.length - parent.parameters.length, formulaDelta: r.formulas.length - parent.formulas.length,
         resourceDelta: r.resources.length - parent.resources.length, quantityScope: r.passport.decision.quantityScope, completeTechnicalEstimateAccepted: false });
     }
@@ -206,7 +270,7 @@ async function main() {
         atomic(`${OUTPUT}/acceptance.json`, { ...recovered, recoveredCommittedPublication: true, recoveryVerifiedAt: new Date().toISOString() });
         atomic(CURRENT, { ...current, definitionReleaseId: releaseId, searchReleaseId, definitionReleaseStatus: "prepared", searchReleaseStatus: "draft",
           definitionSnapshotSha256: manifest.snapshot, manifestHashChainSha256: manifest.snapshot, searchHashChainSha256: search.snapshot_sha256,
-          owner: "S27_63_KNAUF_INTERIOR_PLASTER_MATERIALS_SIX", productionAccessed: false, fakeGreenClaimed: false });
+          owner: TECHNICAL_TWO?"S27_69_KNAUF_TECHNICAL_TWO":"S27_63_KNAUF_INTERIOR_PLASTER_MATERIALS_SIX", productionAccessed: false, fakeGreenClaimed: false });
       }
       process.stdout.write(JSON.stringify({ status: "COMMITTED_SERIES_VERIFIED_NO_DATABASE_REAPPLY", successor: recovered.successor,
         adoptedPointer: APPLY, databaseMutationPerformed: false }) + "\n");
@@ -256,7 +320,7 @@ async function main() {
       predecessor: { releaseId: predecessorReleaseId, searchReleaseId: predecessorSearchReleaseId }, successor: { releaseId, searchReleaseId, releaseKey },
       sourceHead: head, sourceTree: tree, sourceHashes, masterSha256, fingerprint, transitions, preflight, persisted,
       audit: { manifest, search, unrelatedManifestChanges: unrelated }, mutationPerformed: APPLY, productionAccessed: false,
-      newPhysicalNormConsumerCount:6,newPhysicalNormClosureCount:11,newLabourHourNormClosureCount:0,oldResourceOwnersPreserved:303,newCompleteTechnicalTypeCount:0,
+      newPhysicalNormConsumerCount:catalogIds.length,newPhysicalNormClosureCount:transitions.reduce((n,t)=>n+Number(t.physicalNormClosureCount),0),newLabourHourNormClosureCount:TECHNICAL_TWO?catalogIds.length:0,newMachineHourNormClosureCount:TECHNICAL_TWO?catalogIds.length*3:0,oldResourceOwnersPreserved:transitions.reduce((n,t)=>n+(t.legacyRowIds as string[]).length,0),newCompleteTechnicalTypeCount:0,
       activationPerformed: false, uiAccepted: false, engineeringAccepted: false, fullGateAccepted: false };
     await client.query(`update public.estimate_definition_release set source_manifest_sha256=$2,status='prepared',sealed_at=clock_timestamp(),
       metadata=metadata||$3::jsonb where id=$1 and status='draft'`, [releaseId, manifest.snapshot,
@@ -266,7 +330,7 @@ async function main() {
     atomic(`${OUTPUT}/${APPLY ? "acceptance" : "dry-run"}.json`, receipt);
     if (APPLY) atomic(CURRENT, { ...current, definitionReleaseId: releaseId, searchReleaseId, definitionReleaseStatus: "prepared", searchReleaseStatus: "draft",
       definitionSnapshotSha256: manifest.snapshot, manifestHashChainSha256: manifest.snapshot, searchHashChainSha256: search.snapshot_sha256,
-      owner: "S27_63_KNAUF_INTERIOR_PLASTER_MATERIALS_SIX", productionAccessed: false, fakeGreenClaimed: false });
+      owner: TECHNICAL_TWO?"S27_69_KNAUF_TECHNICAL_TWO":"S27_63_KNAUF_INTERIOR_PLASTER_MATERIALS_SIX", productionAccessed: false, fakeGreenClaimed: false });
     else invariant(Number((await client.query("select count(*)::int count from public.estimate_definition_release where id=$1", [releaseId])).rows[0].count) === 0, "DRY_RUN_RESIDUE");
     process.stdout.write(JSON.stringify({ status: receipt.status, successor: receipt.successor, targets: catalogIds.length,
       newPhysicalNormConsumers:receipt.newPhysicalNormConsumerCount,newPhysicalNormClosures:receipt.newPhysicalNormClosureCount,

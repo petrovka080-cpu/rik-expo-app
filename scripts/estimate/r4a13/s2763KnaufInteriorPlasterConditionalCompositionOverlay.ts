@@ -3,11 +3,14 @@ import {stringifyCanonicalEstimateJson} from '../../../src/lib/estimate/estimate
 import {buildMasterParameterCalculationConsumers} from '../../../src/lib/estimate/backendPlatform/canonicalDefinitionParameterConsumersR1';
 import {knaufInteriorPlasterConditionalCompositionPackS2763 as pack,knaufPlasterRetainedScopeNeedGuardS2763,knaufPlasterScopeParameterS2763} from '../../../src/lib/estimate/v4/knaufInteriorPlasterConditionalCompositionS2763';
 import type {PurchaseGroupRepresentative} from './s2732PurchaseGroupOverlay';
+import technicalBinding from '../../../data/estimate-benchmarks/source-packs/knauf-technical-two-bindings-s27-69.json';
 const hash=(v:unknown)=>createHash('sha256').update(stringifyCanonicalEstimateJson(v)).digest('hex');
 export const S2763_KNAUF_INTERIOR_PLASTER_SCOPE_TARGETS=Object.fromEntries(pack.targets.map(t=>[t.catalogId,t.preservedOwners.map(x=>x.rowId)]));
 
 export function overlayS2763KnaufInteriorPlasterConditionalComposition(parent:PurchaseGroupRepresentative,locators:Record<string,string>) {
-  const catalogId=String(parent.definition.catalog_id),target=pack.targets.find(t=>t.catalogId===catalogId);
+  const catalogId=String(parent.definition.catalog_id),technical=technicalBinding.targets.find(t=>t.catalogId===catalogId);
+  const target=pack.targets.find(t=>t.catalogId===catalogId)??(technical&&parent.definition.source_metadata.technicalMaterialBindingContract===technicalBinding.contract
+    ?{...technical,parentResourceCount:113}:undefined);
   if(!target||parent.definition.id!==target.predecessorDefinitionId||parent.definition.definition_version!==target.predecessorVersion||parent.resources.length!==target.parentResourceCount)throw Error('KNAUF_SCOPE_EXACT_PARENT_DRIFT');
   for(const old of target.preservedOwners){const row=parent.resources.find(x=>x.row_id===old.rowId);if(!row||row.id!==old.resourceSpecId||row.cost_owner_id!==old.costOwnerId||row.unit_id!==old.unitId||row.formula_id!==old.formulaId)throw Error('KNAUF_SCOPE_PARENT_OWNER_DRIFT:'+old.rowId);}
   const result=structuredClone(parent),addedParameterIds:string[]=[],ownerDisposition:Record<string,unknown>[]=[];

@@ -67,7 +67,9 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
           Цены: {viewModel.priceStatusLabel}
         </Text>
         <Text style={styles.meta} testID="request-estimate-trust-level">
-          {viewModel.trustLevelLabel}
+          {sourceGateCount > 0 && consumerInputCount === 0 && viewModel.preliminaryNeedCount
+            ? 'Готовность: приложение ещё не завершило расчёт'
+            : viewModel.trustLevelLabel}
         </Text>
         <Text style={styles.meta} testID="request-estimate-commercial-level">
           {viewModel.commercialEstimateLevelLabel}
