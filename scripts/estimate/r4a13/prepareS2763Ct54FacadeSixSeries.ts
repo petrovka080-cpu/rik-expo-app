@@ -131,7 +131,7 @@ async function main() {
       const technicalTarget=TECHNICAL_TWO?technicalBinding.targets.find(t=>t.catalogId===catalogId):undefined;
       const plan = createCanonicalDefinitionClonePlan({ contract: CONTRACT,
         definition: { id: definitionId, releaseId, catalogId, definitionVersion: Number(parent.definition.definition_version) + 1,
-          passport: { ...parent.definition.passport, ...(technicalTarget?{titleRu:technicalTarget.titleRu,workDescription:{...parent.definition.passport.workDescription,titleRu:technicalTarget.titleRu,scopeSummary:pack.scopeRu}}:{}),materialSeriesContract: pack.contract },
+          passport: { ...parent.definition.passport, ...(technicalTarget?{canonicalRuName:technicalTarget.titleRu,titleRu:technicalTarget.titleRu,workDescription:{...parent.definition.passport.workDescription,titleRu:technicalTarget.titleRu,scopeSummary:pack.scopeRu}}:{}),materialSeriesContract: pack.contract },
           applicability: {...parent.definition.applicability,...(technicalTarget?{ct54ExactScopeRu:pack.scopeRu,externalFacadeOnlyForExactBranch:true,interiorSurfaceNotAccepted:true}: {})},
           definitionSha256, sourceMetadata: { ...parent.definition.source_metadata, contract: CONTRACT, predecessorDefinitionId: parent.definition.id,
             materialSeriesContract: pack.contract, sourceHashes, activationAllowed: false, productionEligible: false } },

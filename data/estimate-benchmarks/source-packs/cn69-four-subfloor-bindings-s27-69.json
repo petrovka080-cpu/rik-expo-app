@@ -1,0 +1,3030 @@
+{
+  "contract": "rik-expo-app.s27-69.cn69-four-subfloor-bindings.v1",
+  "referenceCatalogId": "canonical-work:master:cn69_global_25kg_manual_dry_indoor_cement_floor_2_10mm_standard",
+  "titleRu": "Выравнивающий слой CN69 по готовому сухому цементному основанию",
+  "exactChoiceRu": "Ручное выравнивание CN69 global25кг,2–10мм, CT17: сухое помещение, средние нагрузки, без подогрева",
+  "legacyChoiceRu": "Сохранённый предварительный состав основания под покрытие",
+  "scopeRu": "Ручное выравнивание готовой впитывающей цементной стяжки в сухом помещении, средние нагрузки, без подогрева. Только CN69global25кг слоем2–10мм и неразбавленный CT17global03.24. Основание принято отдельно; поступление влаги предотвращено. Нет автоматического допуска любого последующего покрытия.",
+  "exclusionsRu": [
+    "Поступление влаги, наружные работы и мокрые зоны",
+    "Тёплый пол и другой режим влажности основания",
+    "Слой вне2–10мм, высокая нагрузка и автоматически назначенный прочностной класс C25 или C35",
+    "Региональная CN69 с иной фасовкой/расходом",
+    "Гидроизоляция и ремонт уже принятого основания",
+    "Автоматические наличие, резерв, расходCT17, число проходов, средняя дозировка воды и дополнительный процент отходов",
+    "Готовое финишное покрытие, ламинат, плинтусы и клей для него"
+  ],
+  "predecessorReleaseId": "fbb8d444-7e71-538e-8cfe-5155dfd8d0a1",
+  "predecessorSearchReleaseId": "57865513-0ddb-5fb1-8f6f-2e0518e8ac8e",
+  "targets": [
+    {
+      "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+      "predecessorDefinitionId": "1fa73b8c-84ab-50d9-b485-586e8c92d611",
+      "predecessorVersion": 3,
+      "parentSha256": "643eb2ca75740bd89a1d5a4e00cf314aabeadf3059bf68067bd2b1a54ccafd80"
+    },
+    {
+      "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+      "predecessorDefinitionId": "02cadeaa-5661-5ce0-8895-f43d8ebdb9da",
+      "predecessorVersion": 3,
+      "parentSha256": "0a9d093c300a909f93f831b1182b5a50f2400be7f623875aaa744e1fb5fa7a4d"
+    },
+    {
+      "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+      "predecessorDefinitionId": "86b4a04f-7b06-5695-8e3f-6e23524a20e7",
+      "predecessorVersion": 3,
+      "parentSha256": "6879a556f205462a87cac68b5c6c5b4b3789025189f4aab0b83d7b8ba559d73f"
+    },
+    {
+      "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+      "predecessorDefinitionId": "bf19d21b-7432-5390-a237-d2bf3da77956",
+      "predecessorVersion": 3,
+      "parentSha256": "93818457711ddf3d4180ab8c016715e8b20848311041d288fd3ac4c951ca39d9"
+    }
+  ],
+  "oldDispositionMap": [
+    {
+      "suffix": "materials_01",
+      "disposition": "OUTSIDE_EXACT_LEVELING_SCOPE",
+      "reusedOwnerRows": [],
+      "ruleRu": "Это состав отдельного финишного настила: покрытие, подложка, плинтусы, замки, резка и их отходы. Выбран только выравнивающий слой CN69 по принятому основанию; финишное покрытие не включено. Исторический владелец сохранён в прежней ветви.",
+      "titleRu": "напольное покрытие для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_materials_01",
+          "resourceSpecId": "ec73f0f8-04c5-1c03-880a-790ec7b97f40",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_large_area_materials_01",
+          "costOwnerId": "r555-price:5ad674a5537b1bf13baada481f674f774008beba",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_materials_01",
+          "resourceSpecId": "a1c08037-b515-06a2-594e-63406c6727af",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_small_area_materials_01",
+          "costOwnerId": "r555-price:5ad674a5537b1bf13baada481f674f774008beba",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_materials_01",
+          "resourceSpecId": "aa1ef36d-61c2-769d-be7b-bdb00f01f0f2",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_standard_materials_01",
+          "costOwnerId": "r555-price:5ad674a5537b1bf13baada481f674f774008beba",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_materials_01",
+          "resourceSpecId": "003abe92-948f-a8e0-2519-00a2116ab24f",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_materials_01",
+          "costOwnerId": "r555-price:5ad674a5537b1bf13baada481f674f774008beba",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "materials_02",
+      "disposition": "OUTSIDE_EXACT_LEVELING_SCOPE",
+      "reusedOwnerRows": [],
+      "ruleRu": "Это состав отдельного финишного настила: покрытие, подложка, плинтусы, замки, резка и их отходы. Выбран только выравнивающий слой CN69 по принятому основанию; финишное покрытие не включено. Исторический владелец сохранён в прежней ветви.",
+      "titleRu": "подложка для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_materials_02",
+          "resourceSpecId": "e47d396b-53f0-ebf7-b489-ffff1a49e7c4",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_large_area_materials_02",
+          "costOwnerId": "r555-price:d8f47df5b7dc0c8deeef42d544e5d810db40a50c",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_materials_02",
+          "resourceSpecId": "3d05c558-5297-1834-e6e7-74b3fb9c8c6d",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_small_area_materials_02",
+          "costOwnerId": "r555-price:d8f47df5b7dc0c8deeef42d544e5d810db40a50c",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_materials_02",
+          "resourceSpecId": "e82bf535-aa7a-b5d1-2384-d2c3bfd95293",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_standard_materials_02",
+          "costOwnerId": "r555-price:d8f47df5b7dc0c8deeef42d544e5d810db40a50c",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_materials_02",
+          "resourceSpecId": "e4256259-825f-51a3-2a5c-8f311d88abad",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_materials_02",
+          "costOwnerId": "r555-price:d8f47df5b7dc0c8deeef42d544e5d810db40a50c",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "materials_03",
+      "disposition": "REPLACED_BY_ACCEPTED_PHYSICAL_OWNER",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:ct17-consumed",
+        "floor:cn69-global-25kg:ct17-1l-order",
+        "floor:cn69-global-25kg:ct17-2l-order",
+        "floor:cn69-global-25kg:ct17-5l-order",
+        "floor:cn69-global-25kg:ct17-10l-order"
+      ],
+      "ruleRu": "CT17 рассчитывается по принятому первичному источнику и фактическим расходу/проходам. Шаблонные0,1л/м² не переносились; оплачивается одна выбранная фасовка.",
+      "titleRu": "грунтовка основания для основания под покрытие",
+      "legacyUnit": "l",
+      "legacyExpression": "round_to(q * 0.1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_materials_03",
+          "resourceSpecId": "a0bab893-bba5-a041-f033-8314dbe9ecf0",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_large_area_materials_03",
+          "costOwnerId": "r555-price:fb86fca96bf044a03897cf935f9f7763d1402b20",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_materials_03",
+          "resourceSpecId": "5cfd0b77-761b-e814-952b-15c309f30fc2",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_small_area_materials_03",
+          "costOwnerId": "r555-price:fb86fca96bf044a03897cf935f9f7763d1402b20",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_materials_03",
+          "resourceSpecId": "7e8e9eb9-a9a5-abc6-c968-0811103d72bc",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_standard_materials_03",
+          "costOwnerId": "r555-price:fb86fca96bf044a03897cf935f9f7763d1402b20",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_materials_03",
+          "resourceSpecId": "db98c1f9-a90c-8822-9682-4823b904ab1e",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_materials_03",
+          "costOwnerId": "r555-price:fb86fca96bf044a03897cf935f9f7763d1402b20",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "materials_04",
+      "disposition": "OUTSIDE_EXACT_LEVELING_SCOPE",
+      "reusedOwnerRows": [],
+      "ruleRu": "Это состав отдельного финишного настила: покрытие, подложка, плинтусы, замки, резка и их отходы. Выбран только выравнивающий слой CN69 по принятому основанию; финишное покрытие не включено. Исторический владелец сохранён в прежней ветви.",
+      "titleRu": "профили перехода для основания под покрытие",
+      "legacyUnit": "linear_m",
+      "legacyExpression": "round_to(q * 1.1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_materials_04",
+          "resourceSpecId": "c80667b9-a4e1-f81c-33c4-2cf794bf2fed",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_large_area_materials_04",
+          "costOwnerId": "r555-price:1484d8dde74b89f26f53d33faab24e07b8db14de",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_materials_04",
+          "resourceSpecId": "7fe926fe-2395-940e-5306-3886adcef96c",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_small_area_materials_04",
+          "costOwnerId": "r555-price:1484d8dde74b89f26f53d33faab24e07b8db14de",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_materials_04",
+          "resourceSpecId": "f6158068-4cca-1877-b9bf-7356088b09ac",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_standard_materials_04",
+          "costOwnerId": "r555-price:1484d8dde74b89f26f53d33faab24e07b8db14de",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_materials_04",
+          "resourceSpecId": "0e0f68bd-73da-2799-0ffd-3b2e78131722",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_materials_04",
+          "costOwnerId": "r555-price:1484d8dde74b89f26f53d33faab24e07b8db14de",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "materials_05",
+      "disposition": "OUTSIDE_EXACT_LEVELING_SCOPE",
+      "reusedOwnerRows": [],
+      "ruleRu": "Это состав отдельного финишного настила: покрытие, подложка, плинтусы, замки, резка и их отходы. Выбран только выравнивающий слой CN69 по принятому основанию; финишное покрытие не включено. Исторический владелец сохранён в прежней ветви.",
+      "titleRu": "клей или лента для основания под покрытие",
+      "legacyUnit": "kg",
+      "legacyExpression": "round_to(q * 1.8 * 1.05, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_materials_05",
+          "resourceSpecId": "ce601fdd-cb86-4e2d-a6b4-c64f7cb458d3",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_large_area_materials_05",
+          "costOwnerId": "r555-price:2143b4ac436cc1905964b7e6fbb635e883b93f73",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_materials_05",
+          "resourceSpecId": "8e8bebcb-5762-0890-6d2f-2e806b1f9111",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_small_area_materials_05",
+          "costOwnerId": "r555-price:2143b4ac436cc1905964b7e6fbb635e883b93f73",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_materials_05",
+          "resourceSpecId": "e01ab019-8a25-b235-0cc0-87ed786e48d4",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_standard_materials_05",
+          "costOwnerId": "r555-price:2143b4ac436cc1905964b7e6fbb635e883b93f73",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_materials_05",
+          "resourceSpecId": "318c6c32-543b-c988-8108-b42f77fa0efd",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_materials_05",
+          "costOwnerId": "r555-price:2143b4ac436cc1905964b7e6fbb635e883b93f73",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "materials_06",
+      "disposition": "RETAINED_OPEN_IN_SHARED_SOURCE_NEED",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:protection"
+      ],
+      "ruleRu": "В текущем слое применимы защита зоны и свежей массы; состав/количество и граница обеспечения не опубликованы. Потребность protection остаётся открытой с перечислением этих старых обязательств, без шаблонного количества.",
+      "titleRu": "защитный слой для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_materials_06",
+          "resourceSpecId": "e28c3093-cab7-95f1-4391-2722d9c4c97f",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_large_area_materials_06",
+          "costOwnerId": "r555-price:b3fec90a0553277b0d55ac9655e01dd85b934153",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_materials_06",
+          "resourceSpecId": "773351ca-4f0c-d26d-cbfd-6c67dfb14a89",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_small_area_materials_06",
+          "costOwnerId": "r555-price:b3fec90a0553277b0d55ac9655e01dd85b934153",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_materials_06",
+          "resourceSpecId": "8de23f53-6c1a-6b4d-b8ab-3dbec46c6320",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_standard_materials_06",
+          "costOwnerId": "r555-price:b3fec90a0553277b0d55ac9655e01dd85b934153",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_materials_06",
+          "resourceSpecId": "9ece8954-3c28-a2b7-1eec-4ec4d19d5418",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_materials_06",
+          "costOwnerId": "r555-price:b3fec90a0553277b0d55ac9655e01dd85b934153",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "materials_37",
+      "disposition": "REPLACED_BY_ACCEPTED_PURCHASE_BALANCE",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:cn69-order"
+      ],
+      "ruleRu": "Фактический пригодный остаток, резерв и кратность25кг учитывает общий владелец заказа CN69; дополнительный шаблонный процент/м² не назначается.",
+      "titleRu": "технологический запас основного материала для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_materials_37",
+          "resourceSpecId": "15563e12-661d-4360-66c8-9e90f9d00c0a",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_large_area_materials_37",
+          "costOwnerId": "r555-price:655ca98d183954f25c52925e962697ebb0606468",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_materials_37",
+          "resourceSpecId": "44e93380-433b-07e6-92d3-72230d756f79",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_small_area_materials_37",
+          "costOwnerId": "r555-price:655ca98d183954f25c52925e962697ebb0606468",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_materials_37",
+          "resourceSpecId": "f07777fb-4756-00dc-0ffb-cd3e7ca69d2d",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_standard_materials_37",
+          "costOwnerId": "r555-price:655ca98d183954f25c52925e962697ebb0606468",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_materials_37",
+          "resourceSpecId": "a2e7173c-b3a1-ba64-b795-05885a3769eb",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_materials_37",
+          "costOwnerId": "r555-price:655ca98d183954f25c52925e962697ebb0606468",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "materials_38",
+      "disposition": "RETAINED_OPEN_IN_SHARED_SOURCE_NEED",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:protection"
+      ],
+      "ruleRu": "В текущем слое применимы защита зоны и свежей массы; состав/количество и граница обеспечения не опубликованы. Потребность protection остаётся открытой с перечислением этих старых обязательств, без шаблонного количества.",
+      "titleRu": "защитное покрытие зоны работ для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_materials_38",
+          "resourceSpecId": "b06d7983-782a-bd27-03c1-1945b05b9e77",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_large_area_materials_38",
+          "costOwnerId": "r555-price:1b6bc06ce8167b94dd08e8ec13b0033ffafca226",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_materials_38",
+          "resourceSpecId": "b13234a7-6112-f45f-6266-04e0b0b5523f",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_small_area_materials_38",
+          "costOwnerId": "r555-price:1b6bc06ce8167b94dd08e8ec13b0033ffafca226",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_materials_38",
+          "resourceSpecId": "39448a14-e693-8304-9d8e-621ab4eaee28",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_standard_materials_38",
+          "costOwnerId": "r555-price:1b6bc06ce8167b94dd08e8ec13b0033ffafca226",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_materials_38",
+          "resourceSpecId": "972f99a6-e16c-4d25-c45e-f38c9fb0b37a",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_materials_38",
+          "costOwnerId": "r555-price:1b6bc06ce8167b94dd08e8ec13b0033ffafca226",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "materials_39",
+      "disposition": "RETAINED_OPEN_INHERITED_OBLIGATION",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:inherited-materials_39"
+      ],
+      "ruleRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится.",
+      "titleRu": "маркировочные материалы для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_materials_39",
+          "resourceSpecId": "43a83220-b98d-202e-6a79-042616d6169f",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_large_area_materials_39",
+          "costOwnerId": "r555-price:7e3cee9b30391951540000e55ed6fad6fb25f089",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_materials_39",
+          "resourceSpecId": "29bdefb0-4cbf-3986-91b4-c01aace865a5",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_small_area_materials_39",
+          "costOwnerId": "r555-price:7e3cee9b30391951540000e55ed6fad6fb25f089",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_materials_39",
+          "resourceSpecId": "d8e4cde4-af94-fa45-28f4-1dcdbb5a87f0",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_standard_materials_39",
+          "costOwnerId": "r555-price:7e3cee9b30391951540000e55ed6fad6fb25f089",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_materials_39",
+          "resourceSpecId": "8857485f-563a-ff5b-88f2-31e99fd648c8",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_materials_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_materials_39",
+          "costOwnerId": "r555-price:7e3cee9b30391951540000e55ed6fad6fb25f089",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "components_07",
+      "disposition": "OUTSIDE_EXACT_LEVELING_SCOPE",
+      "reusedOwnerRows": [],
+      "ruleRu": "Это состав отдельного финишного настила: покрытие, подложка, плинтусы, замки, резка и их отходы. Выбран только выравнивающий слой CN69 по принятому основанию; финишное покрытие не включено. Исторический владелец сохранён в прежней ветви.",
+      "titleRu": "уголки плинтуса для основания под покрытие",
+      "legacyUnit": "piece",
+      "legacyExpression": "max(1, ceil(q / 40))",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_components_07",
+          "resourceSpecId": "4bb430d2-3639-3629-00e5-556cca6e099f",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_large_area_components_07",
+          "costOwnerId": "r555-price:7039d0debf30e2c80b9371914b379b36d49d4f7b",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_components_07",
+          "resourceSpecId": "370679da-2728-decd-842d-41331ea6b422",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_small_area_components_07",
+          "costOwnerId": "r555-price:7039d0debf30e2c80b9371914b379b36d49d4f7b",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_components_07",
+          "resourceSpecId": "1b187dba-5811-d5d9-825d-232a2dc42ead",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_standard_components_07",
+          "costOwnerId": "r555-price:7039d0debf30e2c80b9371914b379b36d49d4f7b",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_components_07",
+          "resourceSpecId": "5d19e127-2354-d891-22d6-9a30131efd9b",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_components_07",
+          "costOwnerId": "r555-price:7039d0debf30e2c80b9371914b379b36d49d4f7b",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "components_08",
+      "disposition": "OUTSIDE_EXACT_LEVELING_SCOPE",
+      "reusedOwnerRows": [],
+      "ruleRu": "Это состав отдельного финишного настила: покрытие, подложка, плинтусы, замки, резка и их отходы. Выбран только выравнивающий слой CN69 по принятому основанию; финишное покрытие не включено. Исторический владелец сохранён в прежней ветви.",
+      "titleRu": "соединители для основания под покрытие",
+      "legacyUnit": "piece",
+      "legacyExpression": "max(1, ceil(q / 40))",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_components_08",
+          "resourceSpecId": "d3239e5c-004e-7bfa-2873-e56aa1f82292",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_large_area_components_08",
+          "costOwnerId": "r555-price:68698f6dab76df4759c305b7cd813506df62cabf",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_components_08",
+          "resourceSpecId": "d539fb11-39b7-eaf5-1bac-633165f58c89",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_small_area_components_08",
+          "costOwnerId": "r555-price:68698f6dab76df4759c305b7cd813506df62cabf",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_components_08",
+          "resourceSpecId": "124c8f7e-cffc-87ec-ac05-1087b3b6f662",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_standard_components_08",
+          "costOwnerId": "r555-price:68698f6dab76df4759c305b7cd813506df62cabf",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_components_08",
+          "resourceSpecId": "dd3b1e4c-7fae-e768-a331-73a2764df5b6",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_components_08",
+          "costOwnerId": "r555-price:68698f6dab76df4759c305b7cd813506df62cabf",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "components_09",
+      "disposition": "OUTSIDE_EXACT_LEVELING_SCOPE",
+      "reusedOwnerRows": [],
+      "ruleRu": "Это состав отдельного финишного настила: покрытие, подложка, плинтусы, замки, резка и их отходы. Выбран только выравнивающий слой CN69 по принятому основанию; финишное покрытие не включено. Исторический владелец сохранён в прежней ветви.",
+      "titleRu": "заглушки для основания под покрытие",
+      "legacyUnit": "piece",
+      "legacyExpression": "max(1, ceil(q / 40))",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_components_09",
+          "resourceSpecId": "1bd6e1ac-1dd5-9e0c-78d2-693f5d1bb64b",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_large_area_components_09",
+          "costOwnerId": "r555-price:9f70ac9d73c5b56d2837c5f6be65ca45370409e0",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_components_09",
+          "resourceSpecId": "b1f6506b-fad5-43e2-1bee-a9a883fc398a",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_small_area_components_09",
+          "costOwnerId": "r555-price:9f70ac9d73c5b56d2837c5f6be65ca45370409e0",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_components_09",
+          "resourceSpecId": "5210a81e-86ac-4087-38be-66b768fc9cbe",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_standard_components_09",
+          "costOwnerId": "r555-price:9f70ac9d73c5b56d2837c5f6be65ca45370409e0",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_components_09",
+          "resourceSpecId": "0225b6cf-ed43-00d9-9ed0-dbd04f3e6f91",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_components_09",
+          "costOwnerId": "r555-price:9f70ac9d73c5b56d2837c5f6be65ca45370409e0",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "components_10",
+      "disposition": "OUTSIDE_EXACT_LEVELING_SCOPE",
+      "reusedOwnerRows": [],
+      "ruleRu": "Это состав отдельного финишного настила: покрытие, подложка, плинтусы, замки, резка и их отходы. Выбран только выравнивающий слой CN69 по принятому основанию; финишное покрытие не включено. Исторический владелец сохранён в прежней ветви.",
+      "titleRu": "крепеж для основания под покрытие",
+      "legacyUnit": "piece",
+      "legacyExpression": "max(1, ceil(q / 40))",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_components_10",
+          "resourceSpecId": "ecc6e3f9-be54-2247-f248-2c6b9781d0ed",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_large_area_components_10",
+          "costOwnerId": "r555-price:b2f2f3569dce5c53333ad442adf03cc8e156e4a6",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_components_10",
+          "resourceSpecId": "2fb7609c-e401-56a6-e510-09a7e20535de",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_small_area_components_10",
+          "costOwnerId": "r555-price:b2f2f3569dce5c53333ad442adf03cc8e156e4a6",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_components_10",
+          "resourceSpecId": "594ff4f3-07b1-6e96-c4c9-ea5f65e17622",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_standard_components_10",
+          "costOwnerId": "r555-price:b2f2f3569dce5c53333ad442adf03cc8e156e4a6",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_components_10",
+          "resourceSpecId": "b965a692-01d3-5b48-3d4a-e4de0e055c51",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_components_10",
+          "costOwnerId": "r555-price:b2f2f3569dce5c53333ad442adf03cc8e156e4a6",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "components_40",
+      "disposition": "RETAINED_OPEN_INHERITED_OBLIGATION",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:inherited-components_40"
+      ],
+      "ruleRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится.",
+      "titleRu": "комплект узлов примыкания для основания под покрытие",
+      "legacyUnit": "piece",
+      "legacyExpression": "max(1, ceil(q / 40))",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_components_40",
+          "resourceSpecId": "20b78856-7926-2822-67f0-310443bb9ade",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_large_area_components_40",
+          "costOwnerId": "r555-price:9ff7d2a288f291a610065f02426f12e3fcadcaf7",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_components_40",
+          "resourceSpecId": "2d1d92a3-2b1d-90b8-9d1d-df3e87a5f87b",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_small_area_components_40",
+          "costOwnerId": "r555-price:9ff7d2a288f291a610065f02426f12e3fcadcaf7",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_components_40",
+          "resourceSpecId": "0a0c8fd3-eee2-9598-da6e-898906dbc721",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_standard_components_40",
+          "costOwnerId": "r555-price:9ff7d2a288f291a610065f02426f12e3fcadcaf7",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_components_40",
+          "resourceSpecId": "f5c37090-ca41-9986-7320-228d24d4c12d",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_components_40",
+          "costOwnerId": "r555-price:9ff7d2a288f291a610065f02426f12e3fcadcaf7",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "components_41",
+      "disposition": "READY_BASE_ALREADY_ACCEPTED",
+      "reusedOwnerRows": [],
+      "ruleRu": "Очистка, ремонт и закладные принятого основания выполнены до выбранного слоя: готовая прочная сухая очищенная цементная стяжка без трещин и цементного молочка. Эта готовность — явный существенный факт, без него CN69 не рассчитывается. Повторная оплата подготовки не назначена.",
+      "titleRu": "ремонтные вставки и доборные элементы для основания под покрытие",
+      "legacyUnit": "piece",
+      "legacyExpression": "max(1, ceil(q / 40))",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_components_41",
+          "resourceSpecId": "3d4ea9b3-2898-aeac-f8ab-65c889c0167a",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_large_area_components_41",
+          "costOwnerId": "r555-price:6b3271fd26544dea8e6af66e161fedd43221ed13",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_components_41",
+          "resourceSpecId": "2d409d3b-af6d-9b11-ced5-97132c98edd7",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_small_area_components_41",
+          "costOwnerId": "r555-price:6b3271fd26544dea8e6af66e161fedd43221ed13",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_components_41",
+          "resourceSpecId": "40844b0c-710c-7b1f-8c9f-5626447ba41b",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_standard_components_41",
+          "costOwnerId": "r555-price:6b3271fd26544dea8e6af66e161fedd43221ed13",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_components_41",
+          "resourceSpecId": "3e0294f1-bd91-1672-6e11-b0b8c427e381",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_components_41",
+          "costOwnerId": "r555-price:6b3271fd26544dea8e6af66e161fedd43221ed13",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "components_42",
+      "disposition": "READY_BASE_ALREADY_ACCEPTED",
+      "reusedOwnerRows": [],
+      "ruleRu": "Очистка, ремонт и закладные принятого основания выполнены до выбранного слоя: готовая прочная сухая очищенная цементная стяжка без трещин и цементного молочка. Эта готовность — явный существенный факт, без него CN69 не рассчитывается. Повторная оплата подготовки не назначена.",
+      "titleRu": "закладные элементы по месту для основания под покрытие",
+      "legacyUnit": "piece",
+      "legacyExpression": "max(1, ceil(q / 40))",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_components_42",
+          "resourceSpecId": "33ded9aa-52b2-7c4f-2616-08ced81a8368",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_large_area_components_42",
+          "costOwnerId": "r555-price:1d9b01e2270a7ba77ba0702eb6d8663adfa199b1",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_components_42",
+          "resourceSpecId": "747dcdfd-2f08-120d-357f-1b567f97d375",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_small_area_components_42",
+          "costOwnerId": "r555-price:1d9b01e2270a7ba77ba0702eb6d8663adfa199b1",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_components_42",
+          "resourceSpecId": "863509f3-288b-8b7c-4f12-935f4c657d29",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_standard_components_42",
+          "costOwnerId": "r555-price:1d9b01e2270a7ba77ba0702eb6d8663adfa199b1",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_components_42",
+          "resourceSpecId": "24640504-3ab3-6f7d-e7bc-33140596c687",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_components_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_components_42",
+          "costOwnerId": "r555-price:1d9b01e2270a7ba77ba0702eb6d8663adfa199b1",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "consumables_11",
+      "disposition": "OUTSIDE_EXACT_LEVELING_SCOPE",
+      "reusedOwnerRows": [],
+      "ruleRu": "Это состав отдельного финишного настила: покрытие, подложка, плинтусы, замки, резка и их отходы. Выбран только выравнивающий слой CN69 по принятому основанию; финишное покрытие не включено. Исторический владелец сохранён в прежней ветви.",
+      "titleRu": "клинья для основания под покрытие",
+      "legacyUnit": "set",
+      "legacyExpression": "max(1, ceil(q / 80))",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_consumables_11",
+          "resourceSpecId": "bd54bcb1-2cde-7c0c-5c22-67b15e028a2e",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_consumables_quantity_formula_v1_flooring_interior_subfloor_install_large_area_consumables_11",
+          "costOwnerId": "r555-price:ab00251d4ce6efbf5e51fdd9bf757eef009293cf",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_consumables_11",
+          "resourceSpecId": "dae52a9f-69ab-b179-4684-06b0c6b2ab04",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_consumables_quantity_formula_v1_flooring_interior_subfloor_install_small_area_consumables_11",
+          "costOwnerId": "r555-price:ab00251d4ce6efbf5e51fdd9bf757eef009293cf",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_consumables_11",
+          "resourceSpecId": "cb0d12ad-17f6-0076-ecf9-887e7b2d843b",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_consumables_quantity_formula_v1_flooring_interior_subfloor_install_standard_consumables_11",
+          "costOwnerId": "r555-price:ab00251d4ce6efbf5e51fdd9bf757eef009293cf",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_consumables_11",
+          "resourceSpecId": "d5fab793-4334-7ee2-ce72-682bee428904",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_consumables_11",
+          "costOwnerId": "r555-price:ab00251d4ce6efbf5e51fdd9bf757eef009293cf",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "consumables_12",
+      "disposition": "OUTSIDE_EXACT_LEVELING_SCOPE",
+      "reusedOwnerRows": [],
+      "ruleRu": "Это состав отдельного финишного настила: покрытие, подложка, плинтусы, замки, резка и их отходы. Выбран только выравнивающий слой CN69 по принятому основанию; финишное покрытие не включено. Исторический владелец сохранён в прежней ветви.",
+      "titleRu": "режущие лезвия для основания под покрытие",
+      "legacyUnit": "set",
+      "legacyExpression": "max(1, ceil(q / 80))",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_consumables_12",
+          "resourceSpecId": "327cbe4e-aa38-e879-a305-364019d3bbcd",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_consumables_quantity_formula_v1_flooring_interior_subfloor_install_large_area_consumables_12",
+          "costOwnerId": "r555-price:e0f860e30150f80c8a09080e72109778aea62a5a",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_consumables_12",
+          "resourceSpecId": "cbedda58-65a9-eaf3-8504-a72b92461ce6",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_consumables_quantity_formula_v1_flooring_interior_subfloor_install_small_area_consumables_12",
+          "costOwnerId": "r555-price:e0f860e30150f80c8a09080e72109778aea62a5a",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_consumables_12",
+          "resourceSpecId": "ef307739-565f-eef3-7f57-bf9c058e6a70",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_consumables_quantity_formula_v1_flooring_interior_subfloor_install_standard_consumables_12",
+          "costOwnerId": "r555-price:e0f860e30150f80c8a09080e72109778aea62a5a",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_consumables_12",
+          "resourceSpecId": "b63b5885-b852-6568-30b4-4a173e8e5637",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_consumables_12",
+          "costOwnerId": "r555-price:e0f860e30150f80c8a09080e72109778aea62a5a",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "consumables_13",
+      "disposition": "RETAINED_OPEN_INHERITED_OBLIGATION",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:inherited-consumables_13"
+      ],
+      "ruleRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится.",
+      "titleRu": "герметик примыканий для основания под покрытие",
+      "legacyUnit": "set",
+      "legacyExpression": "max(1, ceil(q / 80))",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_consumables_13",
+          "resourceSpecId": "c9cdac45-3f81-e2c0-1c5e-b7808f214e03",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_consumables_quantity_formula_v1_flooring_interior_subfloor_install_large_area_consumables_13",
+          "costOwnerId": "r555-price:3e8dc07312f87e103b1147b03f82504d3966ca60",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_consumables_13",
+          "resourceSpecId": "741b8e86-622a-9677-7539-d82e7b3cd70a",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_consumables_quantity_formula_v1_flooring_interior_subfloor_install_small_area_consumables_13",
+          "costOwnerId": "r555-price:3e8dc07312f87e103b1147b03f82504d3966ca60",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_consumables_13",
+          "resourceSpecId": "41884f9d-0d89-ffa6-35fc-f91f33eade82",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_consumables_quantity_formula_v1_flooring_interior_subfloor_install_standard_consumables_13",
+          "costOwnerId": "r555-price:3e8dc07312f87e103b1147b03f82504d3966ca60",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_consumables_13",
+          "resourceSpecId": "56a7ceec-ac88-f0bb-c36b-4696cd3824bd",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_consumables_13",
+          "costOwnerId": "r555-price:3e8dc07312f87e103b1147b03f82504d3966ca60",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "consumables_43",
+      "disposition": "RETAINED_OPEN_INHERITED_OBLIGATION",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:inherited-consumables_43"
+      ],
+      "ruleRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится.",
+      "titleRu": "расходные материалы для инструмента для основания под покрытие",
+      "legacyUnit": "set",
+      "legacyExpression": "max(1, ceil(q / 80))",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_consumables_43",
+          "resourceSpecId": "54fbe323-128e-0ef0-6a84-92c4775f159e",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_consumables_quantity_formula_v1_flooring_interior_subfloor_install_large_area_consumables_43",
+          "costOwnerId": "r555-price:a1f26cdb9fc3b3638303f7c9d23ac9849a955ac3",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_consumables_43",
+          "resourceSpecId": "f7f47903-25e0-4229-9276-f5fafb3901a6",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_consumables_quantity_formula_v1_flooring_interior_subfloor_install_small_area_consumables_43",
+          "costOwnerId": "r555-price:a1f26cdb9fc3b3638303f7c9d23ac9849a955ac3",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_consumables_43",
+          "resourceSpecId": "0512eb07-6dc9-d178-c39c-cefdd08671f9",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_consumables_quantity_formula_v1_flooring_interior_subfloor_install_standard_consumables_43",
+          "costOwnerId": "r555-price:a1f26cdb9fc3b3638303f7c9d23ac9849a955ac3",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_consumables_43",
+          "resourceSpecId": "063295d9-1413-4708-418e-22a7ef7dea0f",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_consumables_43",
+          "costOwnerId": "r555-price:a1f26cdb9fc3b3638303f7c9d23ac9849a955ac3",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "consumables_44",
+      "disposition": "RETAINED_OPEN_IN_SHARED_SOURCE_NEED",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:protection"
+      ],
+      "ruleRu": "В текущем слое применимы защита зоны и свежей массы; состав/количество и граница обеспечения не опубликованы. Потребность protection остаётся открытой с перечислением этих старых обязательств, без шаблонного количества.",
+      "titleRu": "средства защиты готовых поверхностей для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "max(1, ceil(q / 80))",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_consumables_44",
+          "resourceSpecId": "160f52f6-0347-712e-34b8-61407a2a7688",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_consumables_quantity_formula_v1_flooring_interior_subfloor_install_large_area_consumables_44",
+          "costOwnerId": "r555-price:1e2ea1c0ef21ec03f766f627bb04f932cd5b3b43",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_consumables_44",
+          "resourceSpecId": "88e15aa5-0f02-9b35-de20-2fea6362e9d3",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_consumables_quantity_formula_v1_flooring_interior_subfloor_install_small_area_consumables_44",
+          "costOwnerId": "r555-price:1e2ea1c0ef21ec03f766f627bb04f932cd5b3b43",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_consumables_44",
+          "resourceSpecId": "95331471-fffc-563b-7e07-707a3581844d",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_consumables_quantity_formula_v1_flooring_interior_subfloor_install_standard_consumables_44",
+          "costOwnerId": "r555-price:1e2ea1c0ef21ec03f766f627bb04f932cd5b3b43",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_consumables_44",
+          "resourceSpecId": "86291d0b-4442-d087-5227-fbfa810336e6",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_consumables_44",
+          "costOwnerId": "r555-price:1e2ea1c0ef21ec03f766f627bb04f932cd5b3b43",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "preparation_14",
+      "disposition": "RETAINED_OPEN_INHERITED_OBLIGATION",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:inherited-preparation_14"
+      ],
+      "ruleRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится.",
+      "titleRu": "проверка перепадов для основания под покрытие",
+      "legacyUnit": "set",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_preparation_14",
+          "resourceSpecId": "a27ab8af-f85a-4e05-b269-5f9ba33d74fc",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_large_area_preparation_14",
+          "costOwnerId": "r555-price:5bfaf6012105086015b25bd8d71d1d13dc8beeaa",
+          "category": "work",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_preparation_14",
+          "resourceSpecId": "413205d7-0153-c0b6-ba67-89ba50964af8",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_small_area_preparation_14",
+          "costOwnerId": "r555-price:5bfaf6012105086015b25bd8d71d1d13dc8beeaa",
+          "category": "work",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_preparation_14",
+          "resourceSpecId": "1811423f-ddf7-189b-f1e7-4e5df8b879b5",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_standard_preparation_14",
+          "costOwnerId": "r555-price:5bfaf6012105086015b25bd8d71d1d13dc8beeaa",
+          "category": "work",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_preparation_14",
+          "resourceSpecId": "0e6279ea-df13-263f-532e-cf0dae3f4de8",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_preparation_14",
+          "costOwnerId": "r555-price:5bfaf6012105086015b25bd8d71d1d13dc8beeaa",
+          "category": "work",
+          "rowType": "labor"
+        }
+      ]
+    },
+    {
+      "suffix": "preparation_15",
+      "disposition": "READY_BASE_ALREADY_ACCEPTED",
+      "reusedOwnerRows": [],
+      "ruleRu": "Очистка, ремонт и закладные принятого основания выполнены до выбранного слоя: готовая прочная сухая очищенная цементная стяжка без трещин и цементного молочка. Эта готовность — явный существенный факт, без него CN69 не рассчитывается. Повторная оплата подготовки не назначена.",
+      "titleRu": "очистка основания для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_preparation_15",
+          "resourceSpecId": "23c10ef8-8ef4-a7a9-5d1b-bf0867453231",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_large_area_preparation_15",
+          "costOwnerId": "r555-price:2aa0ff7ff54db9a12b15131f4444485b8ff648f2",
+          "category": "work",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_preparation_15",
+          "resourceSpecId": "d02ea92e-4674-0297-b34b-f1d267fe48a4",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_small_area_preparation_15",
+          "costOwnerId": "r555-price:2aa0ff7ff54db9a12b15131f4444485b8ff648f2",
+          "category": "work",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_preparation_15",
+          "resourceSpecId": "5ea29ca9-1d6a-aef2-5c3e-3465da236e6e",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_standard_preparation_15",
+          "costOwnerId": "r555-price:2aa0ff7ff54db9a12b15131f4444485b8ff648f2",
+          "category": "work",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_preparation_15",
+          "resourceSpecId": "feb46fa2-f6b5-4b74-be78-e78d2e0c835d",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_preparation_15",
+          "costOwnerId": "r555-price:2aa0ff7ff54db9a12b15131f4444485b8ff648f2",
+          "category": "work",
+          "rowType": "labor"
+        }
+      ]
+    },
+    {
+      "suffix": "preparation_16",
+      "disposition": "READY_BASE_ALREADY_ACCEPTED",
+      "reusedOwnerRows": [],
+      "ruleRu": "Очистка, ремонт и закладные принятого основания выполнены до выбранного слоя: готовая прочная сухая очищенная цементная стяжка без трещин и цементного молочка. Эта готовность — явный существенный факт, без него CN69 не рассчитывается. Повторная оплата подготовки не назначена.",
+      "titleRu": "локальный ремонт для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_preparation_16",
+          "resourceSpecId": "f9eab7ed-1dad-10b1-0feb-47c7fea2ccef",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_large_area_preparation_16",
+          "costOwnerId": "r555-price:f2479d328fb7c865f8d9952a740e57d05cfaa164",
+          "category": "work",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_preparation_16",
+          "resourceSpecId": "ca1d6f2e-10ce-0be0-e13a-ddbcdd997ef3",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_small_area_preparation_16",
+          "costOwnerId": "r555-price:f2479d328fb7c865f8d9952a740e57d05cfaa164",
+          "category": "work",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_preparation_16",
+          "resourceSpecId": "9b2346a8-dc7a-271f-b02d-f006b682019d",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_standard_preparation_16",
+          "costOwnerId": "r555-price:f2479d328fb7c865f8d9952a740e57d05cfaa164",
+          "category": "work",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_preparation_16",
+          "resourceSpecId": "03cb793f-4dc1-ec0c-ae0b-6e7c5a2bef09",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_preparation_16",
+          "costOwnerId": "r555-price:f2479d328fb7c865f8d9952a740e57d05cfaa164",
+          "category": "work",
+          "rowType": "labor"
+        }
+      ]
+    },
+    {
+      "suffix": "preparation_17",
+      "disposition": "OUTSIDE_EXACT_LEVELING_SCOPE",
+      "reusedOwnerRows": [],
+      "ruleRu": "Это состав отдельного финишного настила: покрытие, подложка, плинтусы, замки, резка и их отходы. Выбран только выравнивающий слой CN69 по принятому основанию; финишное покрытие не включено. Исторический владелец сохранён в прежней ветви.",
+      "titleRu": "разметка раскладки для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_preparation_17",
+          "resourceSpecId": "d6b80855-6a6b-087c-f1b0-49e6975d6163",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_large_area_preparation_17",
+          "costOwnerId": "r555-price:3732c85088b47f1828ae5961b6a8f6106ffb0db4",
+          "category": "work",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_preparation_17",
+          "resourceSpecId": "7abb757a-5f0c-771d-db35-0c73631cab7b",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_small_area_preparation_17",
+          "costOwnerId": "r555-price:3732c85088b47f1828ae5961b6a8f6106ffb0db4",
+          "category": "work",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_preparation_17",
+          "resourceSpecId": "b6dd9052-6120-2b7f-b4bf-2fe35fdf43b6",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_standard_preparation_17",
+          "costOwnerId": "r555-price:3732c85088b47f1828ae5961b6a8f6106ffb0db4",
+          "category": "work",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_preparation_17",
+          "resourceSpecId": "a021dd5b-b873-919e-a0ae-8d6d7e0875e7",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_preparation_17",
+          "costOwnerId": "r555-price:3732c85088b47f1828ae5961b6a8f6106ffb0db4",
+          "category": "work",
+          "rowType": "labor"
+        }
+      ]
+    },
+    {
+      "suffix": "preparation_45",
+      "disposition": "RETAINED_OPEN_INHERITED_OBLIGATION",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:inherited-preparation_45"
+      ],
+      "ruleRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится.",
+      "titleRu": "входной замер и фотофиксация для основания под покрытие",
+      "legacyUnit": "set",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_preparation_45",
+          "resourceSpecId": "66c5a0fc-6337-6648-b2a3-4936c609e36f",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_large_area_preparation_45",
+          "costOwnerId": "r555-price:9a90345299e9da3f579dbf1c2f78b3433ac2d304",
+          "category": "work",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_preparation_45",
+          "resourceSpecId": "2716b185-5f20-8e83-952d-fc4185683d17",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_small_area_preparation_45",
+          "costOwnerId": "r555-price:9a90345299e9da3f579dbf1c2f78b3433ac2d304",
+          "category": "work",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_preparation_45",
+          "resourceSpecId": "fba465ac-3cdf-48e4-a114-5f60c1cc9552",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_standard_preparation_45",
+          "costOwnerId": "r555-price:9a90345299e9da3f579dbf1c2f78b3433ac2d304",
+          "category": "work",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_preparation_45",
+          "resourceSpecId": "faf45a4b-31f0-5c6b-c0a4-db266afa8c0d",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_preparation_45",
+          "costOwnerId": "r555-price:9a90345299e9da3f579dbf1c2f78b3433ac2d304",
+          "category": "work",
+          "rowType": "labor"
+        }
+      ]
+    },
+    {
+      "suffix": "preparation_46",
+      "disposition": "RETAINED_OPEN_INHERITED_OBLIGATION",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:inherited-preparation_46"
+      ],
+      "ruleRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится.",
+      "titleRu": "план производства работ для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_preparation_46",
+          "resourceSpecId": "3b2e68d7-040a-03e1-66de-aa482d0dc329",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_large_area_preparation_46",
+          "costOwnerId": "r555-price:371b999da74fe90a401fc6619cb865665627858f",
+          "category": "work",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_preparation_46",
+          "resourceSpecId": "a492bfc7-c2ca-afc0-b134-1f1b86705ee8",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_small_area_preparation_46",
+          "costOwnerId": "r555-price:371b999da74fe90a401fc6619cb865665627858f",
+          "category": "work",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_preparation_46",
+          "resourceSpecId": "788c5ef9-40e5-2e51-2ba6-f6e7e8077cc8",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_standard_preparation_46",
+          "costOwnerId": "r555-price:371b999da74fe90a401fc6619cb865665627858f",
+          "category": "work",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_preparation_46",
+          "resourceSpecId": "c7611ebd-6733-5584-8cee-61617506d911",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_preparation_46",
+          "costOwnerId": "r555-price:371b999da74fe90a401fc6619cb865665627858f",
+          "category": "work",
+          "rowType": "labor"
+        }
+      ]
+    },
+    {
+      "suffix": "preparation_47",
+      "disposition": "RETAINED_OPEN_IN_SHARED_SOURCE_NEED",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:protection"
+      ],
+      "ruleRu": "В текущем слое применимы защита зоны и свежей массы; состав/количество и граница обеспечения не опубликованы. Потребность protection остаётся открытой с перечислением этих старых обязательств, без шаблонного количества.",
+      "titleRu": "организация временной зоны для основания под покрытие",
+      "legacyUnit": "set",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_preparation_47",
+          "resourceSpecId": "0925bd78-8db8-ce2f-32fa-d0f46a5d9c9e",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_large_area_preparation_47",
+          "costOwnerId": "r555-price:86e3b2f7058594ea9fa7c4aed2332b4b5993b7af",
+          "category": "work",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_preparation_47",
+          "resourceSpecId": "0f972af2-0a9d-f046-f598-76c899d3e437",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_small_area_preparation_47",
+          "costOwnerId": "r555-price:86e3b2f7058594ea9fa7c4aed2332b4b5993b7af",
+          "category": "work",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_preparation_47",
+          "resourceSpecId": "c2f39a45-992c-89f5-1bde-1af24ca9d12b",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_standard_preparation_47",
+          "costOwnerId": "r555-price:86e3b2f7058594ea9fa7c4aed2332b4b5993b7af",
+          "category": "work",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_preparation_47",
+          "resourceSpecId": "33b23a4e-faa8-ff43-b74f-760b7a67958b",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_preparation_47",
+          "costOwnerId": "r555-price:86e3b2f7058594ea9fa7c4aed2332b4b5993b7af",
+          "category": "work",
+          "rowType": "labor"
+        }
+      ]
+    },
+    {
+      "suffix": "labor_18",
+      "disposition": "OUTSIDE_EXACT_LEVELING_SCOPE",
+      "reusedOwnerRows": [],
+      "ruleRu": "Это состав отдельного финишного настила: покрытие, подложка, плинтусы, замки, резка и их отходы. Выбран только выравнивающий слой CN69 по принятому основанию; финишное покрытие не включено. Исторический владелец сохранён в прежней ветви.",
+      "titleRu": "укладка подложки для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_labor_18",
+          "resourceSpecId": "cc40fb9e-4504-2808-38d3-a0162a318156",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_large_area_labor_18",
+          "costOwnerId": "r555-price:426bec7a39ba6a4f99924da8868ff5a07e58848a",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_labor_18",
+          "resourceSpecId": "791a8c74-bf5e-e8b6-d215-b62309fa34e2",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_small_area_labor_18",
+          "costOwnerId": "r555-price:426bec7a39ba6a4f99924da8868ff5a07e58848a",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_labor_18",
+          "resourceSpecId": "75eb4748-7804-baf2-7b73-5622d10cb142",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_standard_labor_18",
+          "costOwnerId": "r555-price:426bec7a39ba6a4f99924da8868ff5a07e58848a",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_labor_18",
+          "resourceSpecId": "69df7c5e-adb2-3127-e111-35378a953cea",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_labor_18",
+          "costOwnerId": "r555-price:426bec7a39ba6a4f99924da8868ff5a07e58848a",
+          "category": "labor",
+          "rowType": "labor"
+        }
+      ]
+    },
+    {
+      "suffix": "labor_19",
+      "disposition": "RETAINED_OPEN_IN_SHARED_SOURCE_NEED",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:labor"
+      ],
+      "ruleRu": "Труд по грунтованию, затворению, распределению и деаэрации CN69 остаётся открытым. Шаблонная оплачиваемая площадь не считается нормой часов и не даёт вторую цену нового труда.",
+      "titleRu": "монтаж покрытия для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_labor_19",
+          "resourceSpecId": "6f5c0a68-3600-aeb5-3bfb-b3092055613b",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_large_area_labor_19",
+          "costOwnerId": "r555-price:778e9b2b2409bb36fdaffc904ae2c9c286e25108",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_labor_19",
+          "resourceSpecId": "56cc8c0a-c540-b5ce-d5d3-14c01be1002e",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_small_area_labor_19",
+          "costOwnerId": "r555-price:778e9b2b2409bb36fdaffc904ae2c9c286e25108",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_labor_19",
+          "resourceSpecId": "bdf2d46c-6f76-8e81-aa3e-ce0b61fecee6",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_standard_labor_19",
+          "costOwnerId": "r555-price:778e9b2b2409bb36fdaffc904ae2c9c286e25108",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_labor_19",
+          "resourceSpecId": "2df0df1f-58b1-eb8b-1fab-1efb9db76d60",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_labor_19",
+          "costOwnerId": "r555-price:778e9b2b2409bb36fdaffc904ae2c9c286e25108",
+          "category": "labor",
+          "rowType": "labor"
+        }
+      ]
+    },
+    {
+      "suffix": "labor_20",
+      "disposition": "OUTSIDE_EXACT_LEVELING_SCOPE",
+      "reusedOwnerRows": [],
+      "ruleRu": "Это состав отдельного финишного настила: покрытие, подложка, плинтусы, замки, резка и их отходы. Выбран только выравнивающий слой CN69 по принятому основанию; финишное покрытие не включено. Исторический владелец сохранён в прежней ветви.",
+      "titleRu": "подрезка у стен для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_labor_20",
+          "resourceSpecId": "e2eafa8c-45da-9950-15f1-98f546b18898",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_large_area_labor_20",
+          "costOwnerId": "r555-price:0176e6dc555009c7a97d830c5aa90db95d8c2032",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_labor_20",
+          "resourceSpecId": "16fa6572-dab1-c163-3cc0-a9d22339950a",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_small_area_labor_20",
+          "costOwnerId": "r555-price:0176e6dc555009c7a97d830c5aa90db95d8c2032",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_labor_20",
+          "resourceSpecId": "14074779-157c-7184-5dc3-659e4f243c7e",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_standard_labor_20",
+          "costOwnerId": "r555-price:0176e6dc555009c7a97d830c5aa90db95d8c2032",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_labor_20",
+          "resourceSpecId": "80ab7a78-30ab-1fa0-2b28-482f7772f5c2",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_labor_20",
+          "costOwnerId": "r555-price:0176e6dc555009c7a97d830c5aa90db95d8c2032",
+          "category": "labor",
+          "rowType": "labor"
+        }
+      ]
+    },
+    {
+      "suffix": "labor_21",
+      "disposition": "OUTSIDE_EXACT_LEVELING_SCOPE",
+      "reusedOwnerRows": [],
+      "ruleRu": "Это состав отдельного финишного настила: покрытие, подложка, плинтусы, замки, резка и их отходы. Выбран только выравнивающий слой CN69 по принятому основанию; финишное покрытие не включено. Исторический владелец сохранён в прежней ветви.",
+      "titleRu": "обход проемов для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_labor_21",
+          "resourceSpecId": "2918da25-93c0-702a-1406-35800e09e270",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_large_area_labor_21",
+          "costOwnerId": "r555-price:2409ca2aa8397b2aad71506c21d9454ba8c3462f",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_labor_21",
+          "resourceSpecId": "a1281cc9-e0f3-c369-ad20-3b6a51d0e6b1",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_small_area_labor_21",
+          "costOwnerId": "r555-price:2409ca2aa8397b2aad71506c21d9454ba8c3462f",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_labor_21",
+          "resourceSpecId": "ebc65577-1020-2087-7347-290b105211a9",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_standard_labor_21",
+          "costOwnerId": "r555-price:2409ca2aa8397b2aad71506c21d9454ba8c3462f",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_labor_21",
+          "resourceSpecId": "c4da8ebb-9fee-1b86-b3b6-c3b9c79890bd",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_labor_21",
+          "costOwnerId": "r555-price:2409ca2aa8397b2aad71506c21d9454ba8c3462f",
+          "category": "labor",
+          "rowType": "labor"
+        }
+      ]
+    },
+    {
+      "suffix": "labor_22",
+      "disposition": "OUTSIDE_EXACT_LEVELING_SCOPE",
+      "reusedOwnerRows": [],
+      "ruleRu": "Это состав отдельного финишного настила: покрытие, подложка, плинтусы, замки, резка и их отходы. Выбран только выравнивающий слой CN69 по принятому основанию; финишное покрытие не включено. Исторический владелец сохранён в прежней ветви.",
+      "titleRu": "монтаж переходов для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_labor_22",
+          "resourceSpecId": "f18a74cb-4e87-beee-6bd2-f9668465e31a",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_large_area_labor_22",
+          "costOwnerId": "r555-price:41e3877e112c222596f87e211a1fcaee6700d6d8",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_labor_22",
+          "resourceSpecId": "32cb8569-958f-3827-5df1-c190948b9d3a",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_small_area_labor_22",
+          "costOwnerId": "r555-price:41e3877e112c222596f87e211a1fcaee6700d6d8",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_labor_22",
+          "resourceSpecId": "f0a1b267-7f6f-4511-dc21-8a861a98a25d",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_standard_labor_22",
+          "costOwnerId": "r555-price:41e3877e112c222596f87e211a1fcaee6700d6d8",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_labor_22",
+          "resourceSpecId": "e54f3735-1401-2222-f28c-fd698a4d0288",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_labor_22",
+          "costOwnerId": "r555-price:41e3877e112c222596f87e211a1fcaee6700d6d8",
+          "category": "labor",
+          "rowType": "labor"
+        }
+      ]
+    },
+    {
+      "suffix": "labor_23",
+      "disposition": "OUTSIDE_EXACT_LEVELING_SCOPE",
+      "reusedOwnerRows": [],
+      "ruleRu": "Это состав отдельного финишного настила: покрытие, подложка, плинтусы, замки, резка и их отходы. Выбран только выравнивающий слой CN69 по принятому основанию; финишное покрытие не включено. Исторический владелец сохранён в прежней ветви.",
+      "titleRu": "монтаж плинтуса для основания под покрытие",
+      "legacyUnit": "linear_m",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_labor_23",
+          "resourceSpecId": "73f18d1c-8d30-e8c8-6453-50305bbc0d12",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_large_area_labor_23",
+          "costOwnerId": "r555-price:acf14c8d38938ee39556e20ce084cd07a13e6bf3",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_labor_23",
+          "resourceSpecId": "83b60cf0-a588-6060-ce6a-320bc07e5dd6",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_small_area_labor_23",
+          "costOwnerId": "r555-price:acf14c8d38938ee39556e20ce084cd07a13e6bf3",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_labor_23",
+          "resourceSpecId": "e4d150a6-2f4e-f2ea-0970-2d611b5e58a6",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_standard_labor_23",
+          "costOwnerId": "r555-price:acf14c8d38938ee39556e20ce084cd07a13e6bf3",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_labor_23",
+          "resourceSpecId": "7de837ff-669a-3ec2-36e9-35fa1132df65",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_labor_23",
+          "costOwnerId": "r555-price:acf14c8d38938ee39556e20ce084cd07a13e6bf3",
+          "category": "labor",
+          "rowType": "labor"
+        }
+      ]
+    },
+    {
+      "suffix": "labor_24",
+      "disposition": "RETAINED_OPEN_IN_SHARED_SOURCE_NEED",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:logistics-cleanup"
+      ],
+      "ruleRu": "Сохраняются доставка, разгрузка, подача, обратная логистика тары, сортировка/уборка и сдача участка. Их состав, количества и единый владелец оплаты явно остаются открытыми в logistics-cleanup; рейсы, масса отходов и упаковка не выводятся из площади.",
+      "titleRu": "уборка после настила для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_labor_24",
+          "resourceSpecId": "6116f648-0e58-90bc-01b4-1bd7f88f95b6",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_large_area_labor_24",
+          "costOwnerId": "r555-price:768c936a7e15021bd95caa710c1d10b888314bc9",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_labor_24",
+          "resourceSpecId": "12800d54-2391-d763-8272-86876fbfb4b5",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_small_area_labor_24",
+          "costOwnerId": "r555-price:768c936a7e15021bd95caa710c1d10b888314bc9",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_labor_24",
+          "resourceSpecId": "dfd6d153-a8db-d6f0-e14f-58db885e718d",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_standard_labor_24",
+          "costOwnerId": "r555-price:768c936a7e15021bd95caa710c1d10b888314bc9",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_labor_24",
+          "resourceSpecId": "7894cda2-ea4a-5cfa-cce1-fb62cb8ecfc3",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_labor_24",
+          "costOwnerId": "r555-price:768c936a7e15021bd95caa710c1d10b888314bc9",
+          "category": "labor",
+          "rowType": "labor"
+        }
+      ]
+    },
+    {
+      "suffix": "labor_48",
+      "disposition": "RETAINED_OPEN_IN_SHARED_SOURCE_NEED",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:moisture-acceptance"
+      ],
+      "ruleRu": "Сохраняются приёмка основания/слоя, технологическая выдержка и фактический контроль. Нужны границы оплаты, состав и число контрольных операций; ожидание высыхания не переведено в автоматически оплачиваемые часы.",
+      "titleRu": "приемка основания перед началом для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_labor_48",
+          "resourceSpecId": "99c08331-f282-0063-2330-a35a1a784d1a",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_large_area_labor_48",
+          "costOwnerId": "r555-price:1b36976f26a70be9f2ece1d04ba552791179c687",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_labor_48",
+          "resourceSpecId": "81b23ed0-a464-4091-dc44-fb9101dca29f",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_small_area_labor_48",
+          "costOwnerId": "r555-price:1b36976f26a70be9f2ece1d04ba552791179c687",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_labor_48",
+          "resourceSpecId": "106068b0-cce2-dabb-29d2-d263478d396e",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_standard_labor_48",
+          "costOwnerId": "r555-price:1b36976f26a70be9f2ece1d04ba552791179c687",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_labor_48",
+          "resourceSpecId": "3fce7845-7463-654e-9235-f6039dbf26cc",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_labor_48",
+          "costOwnerId": "r555-price:1b36976f26a70be9f2ece1d04ba552791179c687",
+          "category": "labor",
+          "rowType": "labor"
+        }
+      ]
+    },
+    {
+      "suffix": "labor_49",
+      "disposition": "RETAINED_OPEN_IN_SHARED_SOURCE_NEED",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:moisture-acceptance"
+      ],
+      "ruleRu": "Сохраняются приёмка основания/слоя, технологическая выдержка и фактический контроль. Нужны границы оплаты, состав и число контрольных операций; ожидание высыхания не переведено в автоматически оплачиваемые часы.",
+      "titleRu": "технологическая выдержка и контроль операций для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_labor_49",
+          "resourceSpecId": "19798158-b818-1fc8-3967-15197475532d",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_large_area_labor_49",
+          "costOwnerId": "r555-price:99cce6e1a34107ebcc49416cf8ac5f313dc806ac",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_labor_49",
+          "resourceSpecId": "30f5d125-80d9-15c6-2aff-3003c56f0792",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_small_area_labor_49",
+          "costOwnerId": "r555-price:99cce6e1a34107ebcc49416cf8ac5f313dc806ac",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_labor_49",
+          "resourceSpecId": "28ec6378-3169-845d-c2c8-231485ef0830",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_standard_labor_49",
+          "costOwnerId": "r555-price:99cce6e1a34107ebcc49416cf8ac5f313dc806ac",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_labor_49",
+          "resourceSpecId": "af1c012c-5d70-8a21-c53b-344aa0c455ba",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_labor_49",
+          "costOwnerId": "r555-price:99cce6e1a34107ebcc49416cf8ac5f313dc806ac",
+          "category": "labor",
+          "rowType": "labor"
+        }
+      ]
+    },
+    {
+      "suffix": "labor_50",
+      "disposition": "RETAINED_OPEN_IN_SHARED_SOURCE_NEED",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:logistics-cleanup"
+      ],
+      "ruleRu": "Сохраняются доставка, разгрузка, подача, обратная логистика тары, сортировка/уборка и сдача участка. Их состав, количества и единый владелец оплаты явно остаются открытыми в logistics-cleanup; рейсы, масса отходов и упаковка не выводятся из площади.",
+      "titleRu": "финишная сдача участка для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_labor_50",
+          "resourceSpecId": "b9f5302b-4bd9-1f92-32d7-d8b1c7e4528c",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_large_area_labor_50",
+          "costOwnerId": "r555-price:7ca41c0995c8cd5237d37427af2741a8a1cccd36",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_labor_50",
+          "resourceSpecId": "248b687a-3d8e-7275-e785-161621c3eb87",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_small_area_labor_50",
+          "costOwnerId": "r555-price:7ca41c0995c8cd5237d37427af2741a8a1cccd36",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_labor_50",
+          "resourceSpecId": "e5d0af46-3f74-c13f-9fe2-883530869410",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_standard_labor_50",
+          "costOwnerId": "r555-price:7ca41c0995c8cd5237d37427af2741a8a1cccd36",
+          "category": "labor",
+          "rowType": "labor"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_labor_50",
+          "resourceSpecId": "1b1bb687-35f9-436b-bdbb-c57fc2be668b",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_labor_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_labor_50",
+          "costOwnerId": "r555-price:7ca41c0995c8cd5237d37427af2741a8a1cccd36",
+          "category": "labor",
+          "rowType": "labor"
+        }
+      ]
+    },
+    {
+      "suffix": "equipment_25",
+      "disposition": "OUTSIDE_EXACT_LEVELING_SCOPE",
+      "reusedOwnerRows": [],
+      "ruleRu": "Это состав отдельного финишного настила: покрытие, подложка, плинтусы, замки, резка и их отходы. Выбран только выравнивающий слой CN69 по принятому основанию; финишное покрытие не включено. Исторический владелец сохранён в прежней ветви.",
+      "titleRu": "инструмент для резки для основания под покрытие",
+      "legacyUnit": "set",
+      "legacyExpression": "max(1, ceil(q / 120))",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_equipment_25",
+          "resourceSpecId": "9e43bfc5-7a65-f5b2-9d9e-a085aee6f700",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_equipment_quantity_formula_v1_flooring_interior_subfloor_install_large_area_equipment_25",
+          "costOwnerId": "r555-price:1f120e65037ab1834db4578732209cbc6b3249b5",
+          "category": "equipment",
+          "rowType": "equipment"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_equipment_25",
+          "resourceSpecId": "4c51cd13-67fb-3970-e10d-04e4cbffadde",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_equipment_quantity_formula_v1_flooring_interior_subfloor_install_small_area_equipment_25",
+          "costOwnerId": "r555-price:1f120e65037ab1834db4578732209cbc6b3249b5",
+          "category": "equipment",
+          "rowType": "equipment"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_equipment_25",
+          "resourceSpecId": "5633f6d0-4055-ad99-b330-38769a480622",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_equipment_quantity_formula_v1_flooring_interior_subfloor_install_standard_equipment_25",
+          "costOwnerId": "r555-price:1f120e65037ab1834db4578732209cbc6b3249b5",
+          "category": "equipment",
+          "rowType": "equipment"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_equipment_25",
+          "resourceSpecId": "ebb4f60e-6614-d2a9-0be5-fcfb89fe4434",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_equipment_25",
+          "costOwnerId": "r555-price:1f120e65037ab1834db4578732209cbc6b3249b5",
+          "category": "equipment",
+          "rowType": "equipment"
+        }
+      ]
+    },
+    {
+      "suffix": "equipment_26",
+      "disposition": "RETAINED_OPEN_INHERITED_OBLIGATION",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:inherited-equipment_26"
+      ],
+      "ruleRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится.",
+      "titleRu": "лазерный уровень для основания под покрытие",
+      "legacyUnit": "set",
+      "legacyExpression": "max(1, ceil(q / 120))",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_equipment_26",
+          "resourceSpecId": "2ce478f5-00a9-4e4f-8441-8397e8d2531f",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_equipment_quantity_formula_v1_flooring_interior_subfloor_install_large_area_equipment_26",
+          "costOwnerId": "r555-price:dfc2fe27afe044f8f9eaa7d6b203ddd24705d4fe",
+          "category": "equipment",
+          "rowType": "equipment"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_equipment_26",
+          "resourceSpecId": "8cdd6fe8-7572-f042-52cb-d9d1a582deca",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_equipment_quantity_formula_v1_flooring_interior_subfloor_install_small_area_equipment_26",
+          "costOwnerId": "r555-price:dfc2fe27afe044f8f9eaa7d6b203ddd24705d4fe",
+          "category": "equipment",
+          "rowType": "equipment"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_equipment_26",
+          "resourceSpecId": "65b6ac06-4243-0c4d-fb44-e2d2fc013b98",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_equipment_quantity_formula_v1_flooring_interior_subfloor_install_standard_equipment_26",
+          "costOwnerId": "r555-price:dfc2fe27afe044f8f9eaa7d6b203ddd24705d4fe",
+          "category": "equipment",
+          "rowType": "equipment"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_equipment_26",
+          "resourceSpecId": "7575b1a4-cad5-f443-783c-bcb3116e7433",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_equipment_26",
+          "costOwnerId": "r555-price:dfc2fe27afe044f8f9eaa7d6b203ddd24705d4fe",
+          "category": "equipment",
+          "rowType": "equipment"
+        }
+      ]
+    },
+    {
+      "suffix": "equipment_27",
+      "disposition": "RETAINED_OPEN_INHERITED_OBLIGATION",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:inherited-equipment_27"
+      ],
+      "ruleRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится.",
+      "titleRu": "пылесос для основания под покрытие",
+      "legacyUnit": "set",
+      "legacyExpression": "max(1, ceil(q / 120))",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_equipment_27",
+          "resourceSpecId": "479e5306-08f2-3877-9b80-f5125d53c84f",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_equipment_quantity_formula_v1_flooring_interior_subfloor_install_large_area_equipment_27",
+          "costOwnerId": "r555-price:a526d55138839d51d5c4313d264a27923c71e50c",
+          "category": "equipment",
+          "rowType": "equipment"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_equipment_27",
+          "resourceSpecId": "838d79f0-f211-08ad-a3e8-cc4993929a71",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_equipment_quantity_formula_v1_flooring_interior_subfloor_install_small_area_equipment_27",
+          "costOwnerId": "r555-price:a526d55138839d51d5c4313d264a27923c71e50c",
+          "category": "equipment",
+          "rowType": "equipment"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_equipment_27",
+          "resourceSpecId": "7167c684-2e00-c2da-fe8f-759f2cf5195a",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_equipment_quantity_formula_v1_flooring_interior_subfloor_install_standard_equipment_27",
+          "costOwnerId": "r555-price:a526d55138839d51d5c4313d264a27923c71e50c",
+          "category": "equipment",
+          "rowType": "equipment"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_equipment_27",
+          "resourceSpecId": "f52d99c8-de71-f3d6-0ac3-77ead0b91865",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_equipment_27",
+          "costOwnerId": "r555-price:a526d55138839d51d5c4313d264a27923c71e50c",
+          "category": "equipment",
+          "rowType": "equipment"
+        }
+      ]
+    },
+    {
+      "suffix": "equipment_51",
+      "disposition": "RETAINED_OPEN_INHERITED_OBLIGATION",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:inherited-equipment_51"
+      ],
+      "ruleRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится.",
+      "titleRu": "измерительный комплект для основания под покрытие",
+      "legacyUnit": "set",
+      "legacyExpression": "max(1, ceil(q / 120))",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_equipment_51",
+          "resourceSpecId": "8d34c24c-6276-c7aa-7aad-793da5767680",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_equipment_quantity_formula_v1_flooring_interior_subfloor_install_large_area_equipment_51",
+          "costOwnerId": "r555-price:31a6811773382c85d4d51f64f24cc3c4946d85b0",
+          "category": "equipment",
+          "rowType": "equipment"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_equipment_51",
+          "resourceSpecId": "adaab7ee-ae27-f056-3a00-84e6c4730417",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_equipment_quantity_formula_v1_flooring_interior_subfloor_install_small_area_equipment_51",
+          "costOwnerId": "r555-price:31a6811773382c85d4d51f64f24cc3c4946d85b0",
+          "category": "equipment",
+          "rowType": "equipment"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_equipment_51",
+          "resourceSpecId": "a1b2f6f1-af82-4b76-326d-abfe3f4c50df",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_equipment_quantity_formula_v1_flooring_interior_subfloor_install_standard_equipment_51",
+          "costOwnerId": "r555-price:31a6811773382c85d4d51f64f24cc3c4946d85b0",
+          "category": "equipment",
+          "rowType": "equipment"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_equipment_51",
+          "resourceSpecId": "da1c19ef-4f96-6c99-de85-d9997aa8d350",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_equipment_51",
+          "costOwnerId": "r555-price:31a6811773382c85d4d51f64f24cc3c4946d85b0",
+          "category": "equipment",
+          "rowType": "equipment"
+        }
+      ]
+    },
+    {
+      "suffix": "equipment_52",
+      "disposition": "RETAINED_OPEN_IN_SHARED_SOURCE_NEED",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:mixer",
+        "floor:cn69-global-25kg:spreader",
+        "floor:cn69-global-25kg:spiked-roller",
+        "floor:cn69-global-25kg:primer-tools"
+      ],
+      "ruleRu": "Миксер, распределяющий инструмент, игольчатый валик и инструмент CT17 раскрыты принятым источником отдельно. Общий шаблонный комплект не дублирует эти владельцы; количество и обеспечение остаются открытыми.",
+      "titleRu": "комплект малой механизации для основания под покрытие",
+      "legacyUnit": "set",
+      "legacyExpression": "max(1, ceil(q / 120))",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_equipment_52",
+          "resourceSpecId": "d407df44-1515-75da-3975-d8443f88d583",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_equipment_quantity_formula_v1_flooring_interior_subfloor_install_large_area_equipment_52",
+          "costOwnerId": "r555-price:248c316f74e5254ce2cd52dfb913480b903fe4df",
+          "category": "equipment",
+          "rowType": "equipment"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_equipment_52",
+          "resourceSpecId": "e34c2608-35a2-6eba-b775-945985ae225c",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_equipment_quantity_formula_v1_flooring_interior_subfloor_install_small_area_equipment_52",
+          "costOwnerId": "r555-price:248c316f74e5254ce2cd52dfb913480b903fe4df",
+          "category": "equipment",
+          "rowType": "equipment"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_equipment_52",
+          "resourceSpecId": "cce35935-79d6-29c3-13b1-09e25fd25bd1",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_equipment_quantity_formula_v1_flooring_interior_subfloor_install_standard_equipment_52",
+          "costOwnerId": "r555-price:248c316f74e5254ce2cd52dfb913480b903fe4df",
+          "category": "equipment",
+          "rowType": "equipment"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_equipment_52",
+          "resourceSpecId": "5fa31651-117d-faaa-fd62-9b91af7dacce",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_equipment_52",
+          "costOwnerId": "r555-price:248c316f74e5254ce2cd52dfb913480b903fe4df",
+          "category": "equipment",
+          "rowType": "equipment"
+        }
+      ]
+    },
+    {
+      "suffix": "logistics_28",
+      "disposition": "RETAINED_OPEN_IN_SHARED_SOURCE_NEED",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:logistics-cleanup"
+      ],
+      "ruleRu": "Сохраняются доставка, разгрузка, подача, обратная логистика тары, сортировка/уборка и сдача участка. Их состав, количества и единый владелец оплаты явно остаются открытыми в logistics-cleanup; рейсы, масса отходов и упаковка не выводятся из площади.",
+      "titleRu": "доставка покрытия для основания под покрытие",
+      "legacyUnit": "set",
+      "legacyExpression": "max(1, ceil(q / 200))",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_logistics_28",
+          "resourceSpecId": "1f4f17a0-87de-ea84-f7d5-5ffb27e5ae6a",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_logistics_quantity_formula_v1_flooring_interior_subfloor_install_large_area_logistics_28",
+          "costOwnerId": "r555-price:05416f4ab907cbe03a394684abcf74e406c44caf",
+          "category": "transport",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_logistics_28",
+          "resourceSpecId": "7472e76e-24ed-af17-c3f5-eefac370bc52",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_logistics_quantity_formula_v1_flooring_interior_subfloor_install_small_area_logistics_28",
+          "costOwnerId": "r555-price:05416f4ab907cbe03a394684abcf74e406c44caf",
+          "category": "transport",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_logistics_28",
+          "resourceSpecId": "ec9be393-258e-73fb-cdfa-6ccef7d5dd2c",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_logistics_quantity_formula_v1_flooring_interior_subfloor_install_standard_logistics_28",
+          "costOwnerId": "r555-price:05416f4ab907cbe03a394684abcf74e406c44caf",
+          "category": "transport",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_logistics_28",
+          "resourceSpecId": "ecba074f-4d64-b2d6-f0a2-c061aea70b69",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_logistics_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_logistics_28",
+          "costOwnerId": "r555-price:05416f4ab907cbe03a394684abcf74e406c44caf",
+          "category": "transport",
+          "rowType": "service"
+        }
+      ]
+    },
+    {
+      "suffix": "logistics_29",
+      "disposition": "RETAINED_OPEN_IN_SHARED_SOURCE_NEED",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:logistics-cleanup"
+      ],
+      "ruleRu": "Сохраняются доставка, разгрузка, подача, обратная логистика тары, сортировка/уборка и сдача участка. Их состав, количества и единый владелец оплаты явно остаются открытыми в logistics-cleanup; рейсы, масса отходов и упаковка не выводятся из площади.",
+      "titleRu": "подъем материалов для основания под покрытие",
+      "legacyUnit": "set",
+      "legacyExpression": "max(1, ceil(q / 200))",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_logistics_29",
+          "resourceSpecId": "a2288de1-c142-1b68-f26d-d671dcd3978f",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_logistics_quantity_formula_v1_flooring_interior_subfloor_install_large_area_logistics_29",
+          "costOwnerId": "r555-price:8553858f9f42568f8ba9c876eba671e6c88f5ff2",
+          "category": "transport",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_logistics_29",
+          "resourceSpecId": "572bddf2-7804-512d-13cd-031fa22650be",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_logistics_quantity_formula_v1_flooring_interior_subfloor_install_small_area_logistics_29",
+          "costOwnerId": "r555-price:8553858f9f42568f8ba9c876eba671e6c88f5ff2",
+          "category": "transport",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_logistics_29",
+          "resourceSpecId": "79d64a77-df5d-3df3-f08f-b7560563a427",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_logistics_quantity_formula_v1_flooring_interior_subfloor_install_standard_logistics_29",
+          "costOwnerId": "r555-price:8553858f9f42568f8ba9c876eba671e6c88f5ff2",
+          "category": "transport",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_logistics_29",
+          "resourceSpecId": "19355003-0cd2-7cd7-86f1-a27eabaa26d1",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_logistics_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_logistics_29",
+          "costOwnerId": "r555-price:8553858f9f42568f8ba9c876eba671e6c88f5ff2",
+          "category": "transport",
+          "rowType": "service"
+        }
+      ]
+    },
+    {
+      "suffix": "logistics_53",
+      "disposition": "RETAINED_OPEN_IN_SHARED_SOURCE_NEED",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:logistics-cleanup"
+      ],
+      "ruleRu": "Сохраняются доставка, разгрузка, подача, обратная логистика тары, сортировка/уборка и сдача участка. Их состав, количества и единый владелец оплаты явно остаются открытыми в logistics-cleanup; рейсы, масса отходов и упаковка не выводятся из площади.",
+      "titleRu": "комплектация и внутриплощадочная подача для основания под покрытие",
+      "legacyUnit": "set",
+      "legacyExpression": "max(1, ceil(q / 200))",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_logistics_53",
+          "resourceSpecId": "54aa87a9-f16e-b140-e5d6-3f68de6efc44",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_logistics_quantity_formula_v1_flooring_interior_subfloor_install_large_area_logistics_53",
+          "costOwnerId": "r555-price:d84539454ad1aec1787df5b5524ea799bac9631a",
+          "category": "transport",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_logistics_53",
+          "resourceSpecId": "df44066d-1136-a324-647b-df95316f7960",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_logistics_quantity_formula_v1_flooring_interior_subfloor_install_small_area_logistics_53",
+          "costOwnerId": "r555-price:d84539454ad1aec1787df5b5524ea799bac9631a",
+          "category": "transport",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_logistics_53",
+          "resourceSpecId": "57ff700e-1eb1-f1b9-a947-8cea8937703a",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_logistics_quantity_formula_v1_flooring_interior_subfloor_install_standard_logistics_53",
+          "costOwnerId": "r555-price:d84539454ad1aec1787df5b5524ea799bac9631a",
+          "category": "transport",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_logistics_53",
+          "resourceSpecId": "1f5bd40c-6ecc-c282-9158-be69339fc794",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_logistics_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_logistics_53",
+          "costOwnerId": "r555-price:d84539454ad1aec1787df5b5524ea799bac9631a",
+          "category": "transport",
+          "rowType": "service"
+        }
+      ]
+    },
+    {
+      "suffix": "logistics_54",
+      "disposition": "RETAINED_OPEN_IN_SHARED_SOURCE_NEED",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:logistics-cleanup"
+      ],
+      "ruleRu": "Сохраняются доставка, разгрузка, подача, обратная логистика тары, сортировка/уборка и сдача участка. Их состав, количества и единый владелец оплаты явно остаются открытыми в logistics-cleanup; рейсы, масса отходов и упаковка не выводятся из площади.",
+      "titleRu": "обратная логистика тары для основания под покрытие",
+      "legacyUnit": "set",
+      "legacyExpression": "max(1, ceil(q / 200))",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_logistics_54",
+          "resourceSpecId": "d580d0bb-9ec0-2afd-fefe-74f1e1c4ac5a",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_logistics_quantity_formula_v1_flooring_interior_subfloor_install_large_area_logistics_54",
+          "costOwnerId": "r555-price:c4621eb13ac8dd56cd3d83c8911fc32eeb47b0a9",
+          "category": "transport",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_logistics_54",
+          "resourceSpecId": "77cffa8a-3be8-aed7-f07b-acf20e97cfe8",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_logistics_quantity_formula_v1_flooring_interior_subfloor_install_small_area_logistics_54",
+          "costOwnerId": "r555-price:c4621eb13ac8dd56cd3d83c8911fc32eeb47b0a9",
+          "category": "transport",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_logistics_54",
+          "resourceSpecId": "434cd835-0d5a-83f7-01e6-1093ca92bf49",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_logistics_quantity_formula_v1_flooring_interior_subfloor_install_standard_logistics_54",
+          "costOwnerId": "r555-price:c4621eb13ac8dd56cd3d83c8911fc32eeb47b0a9",
+          "category": "transport",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_logistics_54",
+          "resourceSpecId": "a2303e64-d2ee-9042-4f49-745b3d834da3",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_logistics_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_logistics_54",
+          "costOwnerId": "r555-price:c4621eb13ac8dd56cd3d83c8911fc32eeb47b0a9",
+          "category": "transport",
+          "rowType": "service"
+        }
+      ]
+    },
+    {
+      "suffix": "waste_30",
+      "disposition": "OUTSIDE_EXACT_LEVELING_SCOPE",
+      "reusedOwnerRows": [],
+      "ruleRu": "Это состав отдельного финишного настила: покрытие, подложка, плинтусы, замки, резка и их отходы. Выбран только выравнивающий слой CN69 по принятому основанию; финишное покрытие не включено. Исторический владелец сохранён в прежней ветви.",
+      "titleRu": "запас на подрезку для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "round_to(q * 0.03, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_waste_30",
+          "resourceSpecId": "b9f97535-e161-31dc-9f41-d2c0d0a7c9d1",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_waste_quantity_formula_v1_flooring_interior_subfloor_install_large_area_waste_30",
+          "costOwnerId": "r555-price:afc96902a951398e4dff3949245dc88fd25b3a09",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_waste_30",
+          "resourceSpecId": "9f4f0d1c-cd0a-e51c-a809-03e3ee239e61",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_waste_quantity_formula_v1_flooring_interior_subfloor_install_small_area_waste_30",
+          "costOwnerId": "r555-price:afc96902a951398e4dff3949245dc88fd25b3a09",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_waste_30",
+          "resourceSpecId": "ec990c1b-9ff2-bb8b-8cd5-e7e2fb2b1abb",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_waste_quantity_formula_v1_flooring_interior_subfloor_install_standard_waste_30",
+          "costOwnerId": "r555-price:afc96902a951398e4dff3949245dc88fd25b3a09",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_waste_30",
+          "resourceSpecId": "f6f3ba22-ec7f-5e11-d9f9-1cece2013857",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_waste_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_waste_30",
+          "costOwnerId": "r555-price:afc96902a951398e4dff3949245dc88fd25b3a09",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "waste_31",
+      "disposition": "RETAINED_OPEN_IN_SHARED_SOURCE_NEED",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:logistics-cleanup"
+      ],
+      "ruleRu": "Сохраняются доставка, разгрузка, подача, обратная логистика тары, сортировка/уборка и сдача участка. Их состав, количества и единый владелец оплаты явно остаются открытыми в logistics-cleanup; рейсы, масса отходов и упаковка не выводятся из площади.",
+      "titleRu": "вывоз упаковки для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "round_to(q * 0.03, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_waste_31",
+          "resourceSpecId": "72fc1ec9-5d12-8f94-a599-65130bb6823f",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_waste_quantity_formula_v1_flooring_interior_subfloor_install_large_area_waste_31",
+          "costOwnerId": "r555-price:31507e7616ddf2a277c2ee286ab0d1ef8461d239",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_waste_31",
+          "resourceSpecId": "303cd443-0409-6fa4-906d-05ed68c1e51d",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_waste_quantity_formula_v1_flooring_interior_subfloor_install_small_area_waste_31",
+          "costOwnerId": "r555-price:31507e7616ddf2a277c2ee286ab0d1ef8461d239",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_waste_31",
+          "resourceSpecId": "e3a4b9b6-6510-6e5c-1a48-59e060266540",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_waste_quantity_formula_v1_flooring_interior_subfloor_install_standard_waste_31",
+          "costOwnerId": "r555-price:31507e7616ddf2a277c2ee286ab0d1ef8461d239",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_waste_31",
+          "resourceSpecId": "6a05d4b7-9ff6-3d6f-753b-e8b3738325d2",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_waste_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_waste_31",
+          "costOwnerId": "r555-price:31507e7616ddf2a277c2ee286ab0d1ef8461d239",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "waste_55",
+      "disposition": "RETAINED_OPEN_IN_SHARED_SOURCE_NEED",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:logistics-cleanup"
+      ],
+      "ruleRu": "Сохраняются доставка, разгрузка, подача, обратная логистика тары, сортировка/уборка и сдача участка. Их состав, количества и единый владелец оплаты явно остаются открытыми в logistics-cleanup; рейсы, масса отходов и упаковка не выводятся из площади.",
+      "titleRu": "сортировка и упаковка отходов для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "round_to(q * 0.03, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_waste_55",
+          "resourceSpecId": "8f19c9ee-af9b-6eb2-64ac-903e19375cca",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_waste_quantity_formula_v1_flooring_interior_subfloor_install_large_area_waste_55",
+          "costOwnerId": "r555-price:0ff0de688caf6e162bf2452e70d43f1ae8fd8811",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_waste_55",
+          "resourceSpecId": "457e7082-581f-1ff9-6818-60f681fce8aa",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_waste_quantity_formula_v1_flooring_interior_subfloor_install_small_area_waste_55",
+          "costOwnerId": "r555-price:0ff0de688caf6e162bf2452e70d43f1ae8fd8811",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_waste_55",
+          "resourceSpecId": "3e5283d0-a090-ba40-4aaf-16ea5b2375af",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_waste_quantity_formula_v1_flooring_interior_subfloor_install_standard_waste_55",
+          "costOwnerId": "r555-price:0ff0de688caf6e162bf2452e70d43f1ae8fd8811",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_waste_55",
+          "resourceSpecId": "92ecb791-64c5-dbc5-4145-f0babc00848a",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_waste_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_waste_55",
+          "costOwnerId": "r555-price:0ff0de688caf6e162bf2452e70d43f1ae8fd8811",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "waste_56",
+      "disposition": "RETAINED_OPEN_IN_SHARED_SOURCE_NEED",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:logistics-cleanup"
+      ],
+      "ruleRu": "Сохраняются доставка, разгрузка, подача, обратная логистика тары, сортировка/уборка и сдача участка. Их состав, количества и единый владелец оплаты явно остаются открытыми в logistics-cleanup; рейсы, масса отходов и упаковка не выводятся из площади.",
+      "titleRu": "уборка рабочей зоны для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "round_to(q * 0.03, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_waste_56",
+          "resourceSpecId": "363409eb-3735-f36c-143e-19e657373a8b",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_waste_quantity_formula_v1_flooring_interior_subfloor_install_large_area_waste_56",
+          "costOwnerId": "r555-price:a65dcdac5d09f26e726c35a20a653f5eb9417f40",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_waste_56",
+          "resourceSpecId": "bbcf268e-46a7-d546-406e-ff4680c80db4",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_waste_quantity_formula_v1_flooring_interior_subfloor_install_small_area_waste_56",
+          "costOwnerId": "r555-price:a65dcdac5d09f26e726c35a20a653f5eb9417f40",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_waste_56",
+          "resourceSpecId": "ba3be98d-b91c-8526-37ba-504877be28d7",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_waste_quantity_formula_v1_flooring_interior_subfloor_install_standard_waste_56",
+          "costOwnerId": "r555-price:a65dcdac5d09f26e726c35a20a653f5eb9417f40",
+          "category": "material",
+          "rowType": "material"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_waste_56",
+          "resourceSpecId": "3241502a-e5a6-ae4d-4ba2-1d11f67999ea",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_waste_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_waste_56",
+          "costOwnerId": "r555-price:a65dcdac5d09f26e726c35a20a653f5eb9417f40",
+          "category": "material",
+          "rowType": "material"
+        }
+      ]
+    },
+    {
+      "suffix": "quality_control_32",
+      "disposition": "OUTSIDE_EXACT_LEVELING_SCOPE",
+      "reusedOwnerRows": [],
+      "ruleRu": "Это состав отдельного финишного настила: покрытие, подложка, плинтусы, замки, резка и их отходы. Выбран только выравнивающий слой CN69 по принятому основанию; финишное покрытие не включено. Исторический владелец сохранён в прежней ветви.",
+      "titleRu": "проверка зазоров для основания под покрытие",
+      "legacyUnit": "set",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_quality_control_32",
+          "resourceSpecId": "93172f63-22e8-ad2d-7595-62a2439ed897",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_quality_control_quantity_formula_v1_flooring_interior_subfloor_install_large_area_quality_control_32",
+          "costOwnerId": "r555-price:32e8921d97342f1e151cae35a91b5f856ecd40ec",
+          "category": "service",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_quality_control_32",
+          "resourceSpecId": "05c9e715-e0ac-4a29-60e2-1aa856a03f63",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_quality_control_quantity_formula_v1_flooring_interior_subfloor_install_small_area_quality_control_32",
+          "costOwnerId": "r555-price:32e8921d97342f1e151cae35a91b5f856ecd40ec",
+          "category": "service",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_quality_control_32",
+          "resourceSpecId": "4592a99e-63ec-31d9-fa23-70ebe309fd39",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_quality_control_quantity_formula_v1_flooring_interior_subfloor_install_standard_quality_control_32",
+          "costOwnerId": "r555-price:32e8921d97342f1e151cae35a91b5f856ecd40ec",
+          "category": "service",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_quality_control_32",
+          "resourceSpecId": "2731efe9-64f7-a364-5992-2ca3c9530c85",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_quality_control_32",
+          "costOwnerId": "r555-price:32e8921d97342f1e151cae35a91b5f856ecd40ec",
+          "category": "service",
+          "rowType": "service"
+        }
+      ]
+    },
+    {
+      "suffix": "quality_control_33",
+      "disposition": "OUTSIDE_EXACT_LEVELING_SCOPE",
+      "reusedOwnerRows": [],
+      "ruleRu": "Это состав отдельного финишного настила: покрытие, подложка, плинтусы, замки, резка и их отходы. Выбран только выравнивающий слой CN69 по принятому основанию; финишное покрытие не включено. Исторический владелец сохранён в прежней ветви.",
+      "titleRu": "проверка замков для основания под покрытие",
+      "legacyUnit": "set",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_quality_control_33",
+          "resourceSpecId": "b0bd7b9d-f336-bbe6-5e9c-60310af4f9d3",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_quality_control_quantity_formula_v1_flooring_interior_subfloor_install_large_area_quality_control_33",
+          "costOwnerId": "r555-price:842cd399d44a4a0970c4d7e7aead4318e1bd4186",
+          "category": "service",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_quality_control_33",
+          "resourceSpecId": "27fcdf70-5dcc-4e10-39bf-272a1748ba1e",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_quality_control_quantity_formula_v1_flooring_interior_subfloor_install_small_area_quality_control_33",
+          "costOwnerId": "r555-price:842cd399d44a4a0970c4d7e7aead4318e1bd4186",
+          "category": "service",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_quality_control_33",
+          "resourceSpecId": "6ba0db55-eef7-1fbf-c440-6dcd1de2a483",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_quality_control_quantity_formula_v1_flooring_interior_subfloor_install_standard_quality_control_33",
+          "costOwnerId": "r555-price:842cd399d44a4a0970c4d7e7aead4318e1bd4186",
+          "category": "service",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_quality_control_33",
+          "resourceSpecId": "f46b677b-4286-2630-254d-16f7178f3b6d",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_quality_control_33",
+          "costOwnerId": "r555-price:842cd399d44a4a0970c4d7e7aead4318e1bd4186",
+          "category": "service",
+          "rowType": "service"
+        }
+      ]
+    },
+    {
+      "suffix": "quality_control_34",
+      "disposition": "RETAINED_OPEN_IN_SHARED_SOURCE_NEED",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:moisture-acceptance"
+      ],
+      "ruleRu": "Сохраняются приёмка основания/слоя, технологическая выдержка и фактический контроль. Нужны границы оплаты, состав и число контрольных операций; ожидание высыхания не переведено в автоматически оплачиваемые часы.",
+      "titleRu": "финишная приемка для основания под покрытие",
+      "legacyUnit": "set",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_quality_control_34",
+          "resourceSpecId": "beb5ca51-db96-f217-1888-5fafd7f49f82",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_quality_control_quantity_formula_v1_flooring_interior_subfloor_install_large_area_quality_control_34",
+          "costOwnerId": "r555-price:e60598121c981f41ec910cc905eeb805a642f9ac",
+          "category": "service",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_quality_control_34",
+          "resourceSpecId": "d563e3b7-c1d8-4dbf-97bb-6d716c54b397",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_quality_control_quantity_formula_v1_flooring_interior_subfloor_install_small_area_quality_control_34",
+          "costOwnerId": "r555-price:e60598121c981f41ec910cc905eeb805a642f9ac",
+          "category": "service",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_quality_control_34",
+          "resourceSpecId": "aa481aba-b4f6-e291-0488-bf0d92a41c8a",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_quality_control_quantity_formula_v1_flooring_interior_subfloor_install_standard_quality_control_34",
+          "costOwnerId": "r555-price:e60598121c981f41ec910cc905eeb805a642f9ac",
+          "category": "service",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_quality_control_34",
+          "resourceSpecId": "443e83dd-95d2-29e2-b966-f17b82f5c7d7",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_quality_control_34",
+          "costOwnerId": "r555-price:e60598121c981f41ec910cc905eeb805a642f9ac",
+          "category": "service",
+          "rowType": "service"
+        }
+      ]
+    },
+    {
+      "suffix": "quality_control_57",
+      "disposition": "RETAINED_OPEN_INHERITED_OBLIGATION",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:inherited-quality_control_57"
+      ],
+      "ruleRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится.",
+      "titleRu": "проверка исполнительной документации для основания под покрытие",
+      "legacyUnit": "set",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_quality_control_57",
+          "resourceSpecId": "9759428a-52ec-3091-0f5a-4a8de0d79e5e",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_quality_control_quantity_formula_v1_flooring_interior_subfloor_install_large_area_quality_control_57",
+          "costOwnerId": "r555-price:9a8e2326909c4c91e5f2f627c82b2a337f782de4",
+          "category": "service",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_quality_control_57",
+          "resourceSpecId": "6174a730-0663-165c-b52c-2ef3b15f5f8b",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_quality_control_quantity_formula_v1_flooring_interior_subfloor_install_small_area_quality_control_57",
+          "costOwnerId": "r555-price:9a8e2326909c4c91e5f2f627c82b2a337f782de4",
+          "category": "service",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_quality_control_57",
+          "resourceSpecId": "9d08a07d-40cd-dbc8-5146-7fd2fb04ed57",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_quality_control_quantity_formula_v1_flooring_interior_subfloor_install_standard_quality_control_57",
+          "costOwnerId": "r555-price:9a8e2326909c4c91e5f2f627c82b2a337f782de4",
+          "category": "service",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_quality_control_57",
+          "resourceSpecId": "f3027b5b-599b-79a4-791f-3b3b5d2798fc",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_quality_control_57",
+          "costOwnerId": "r555-price:9a8e2326909c4c91e5f2f627c82b2a337f782de4",
+          "category": "service",
+          "rowType": "service"
+        }
+      ]
+    },
+    {
+      "suffix": "quality_control_58",
+      "disposition": "RETAINED_OPEN_IN_SHARED_SOURCE_NEED",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:logistics-cleanup"
+      ],
+      "ruleRu": "Сохраняются доставка, разгрузка, подача, обратная логистика тары, сортировка/уборка и сдача участка. Их состав, количества и единый владелец оплаты явно остаются открытыми в logistics-cleanup; рейсы, масса отходов и упаковка не выводятся из площади.",
+      "titleRu": "контроль комплектности материалов для основания под покрытие",
+      "legacyUnit": "set",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_quality_control_58",
+          "resourceSpecId": "d07409ed-8058-415c-216e-2bd3f9021655",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_quality_control_quantity_formula_v1_flooring_interior_subfloor_install_large_area_quality_control_58",
+          "costOwnerId": "r555-price:2a89eb850ac10f045841efa83c4663d3e5e81bd9",
+          "category": "service",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_quality_control_58",
+          "resourceSpecId": "e680c8aa-df63-f9fd-b46e-cb503f302139",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_quality_control_quantity_formula_v1_flooring_interior_subfloor_install_small_area_quality_control_58",
+          "costOwnerId": "r555-price:2a89eb850ac10f045841efa83c4663d3e5e81bd9",
+          "category": "service",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_quality_control_58",
+          "resourceSpecId": "afd8b2e8-1098-3139-3381-e6abee898953",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_quality_control_quantity_formula_v1_flooring_interior_subfloor_install_standard_quality_control_58",
+          "costOwnerId": "r555-price:2a89eb850ac10f045841efa83c4663d3e5e81bd9",
+          "category": "service",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_quality_control_58",
+          "resourceSpecId": "80d19a09-942f-c0c4-3e73-f94c7705c1b5",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_quality_control_58",
+          "costOwnerId": "r555-price:2a89eb850ac10f045841efa83c4663d3e5e81bd9",
+          "category": "service",
+          "rowType": "service"
+        }
+      ]
+    },
+    {
+      "suffix": "quality_control_59",
+      "disposition": "RETAINED_OPEN_IN_SHARED_SOURCE_NEED",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:moisture-acceptance"
+      ],
+      "ruleRu": "Сохраняются приёмка основания/слоя, технологическая выдержка и фактический контроль. Нужны границы оплаты, состав и число контрольных операций; ожидание высыхания не переведено в автоматически оплачиваемые часы.",
+      "titleRu": "итоговый чек-лист приемки для основания под покрытие",
+      "legacyUnit": "m2",
+      "legacyExpression": "round_to(q * 1, 4)",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_quality_control_59",
+          "resourceSpecId": "fea3edad-68ec-2643-fee0-9a8b7be2ce86",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_quality_control_quantity_formula_v1_flooring_interior_subfloor_install_large_area_quality_control_59",
+          "costOwnerId": "r555-price:45b4aee8ca9a2a552d49baa89410aa1a818cec7b",
+          "category": "service",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_quality_control_59",
+          "resourceSpecId": "e45a87af-ea24-f0d3-f396-bf9e7e3a5d6e",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_quality_control_quantity_formula_v1_flooring_interior_subfloor_install_small_area_quality_control_59",
+          "costOwnerId": "r555-price:45b4aee8ca9a2a552d49baa89410aa1a818cec7b",
+          "category": "service",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_quality_control_59",
+          "resourceSpecId": "965d520b-f633-c664-b5a9-94d64f46a472",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_quality_control_quantity_formula_v1_flooring_interior_subfloor_install_standard_quality_control_59",
+          "costOwnerId": "r555-price:45b4aee8ca9a2a552d49baa89410aa1a818cec7b",
+          "category": "service",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_quality_control_59",
+          "resourceSpecId": "9e3e1f82-f8c5-a084-a22f-54743f702819",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_quality_control_59",
+          "costOwnerId": "r555-price:45b4aee8ca9a2a552d49baa89410aa1a818cec7b",
+          "category": "service",
+          "rowType": "service"
+        }
+      ]
+    },
+    {
+      "suffix": "overhead_35",
+      "disposition": "RETAINED_OPEN_INHERITED_OBLIGATION",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:inherited-overhead_35"
+      ],
+      "ruleRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится.",
+      "titleRu": "сметное сопровождение и проверка объема для основания под покрытие",
+      "legacyUnit": "set",
+      "legacyExpression": "1",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_overhead_35",
+          "resourceSpecId": "9ac42f62-bb7c-6fae-2258-9e38f4e3d62c",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_overhead_quantity_formula_v1_flooring_interior_subfloor_install_large_area_overhead_35",
+          "costOwnerId": "r555-price:fc285983393295c111cb813fab35d9583d24b121",
+          "category": "service",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_overhead_35",
+          "resourceSpecId": "156dbc5e-5d87-a19d-895f-407705ce4a54",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_overhead_quantity_formula_v1_flooring_interior_subfloor_install_small_area_overhead_35",
+          "costOwnerId": "r555-price:fc285983393295c111cb813fab35d9583d24b121",
+          "category": "service",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_overhead_35",
+          "resourceSpecId": "01c27c86-f082-aef0-64d6-63fef1f2c42d",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_overhead_quantity_formula_v1_flooring_interior_subfloor_install_standard_overhead_35",
+          "costOwnerId": "r555-price:fc285983393295c111cb813fab35d9583d24b121",
+          "category": "service",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_overhead_35",
+          "resourceSpecId": "e37080b5-6e20-ef31-c688-0713e3911219",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_overhead_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_overhead_35",
+          "costOwnerId": "r555-price:fc285983393295c111cb813fab35d9583d24b121",
+          "category": "service",
+          "rowType": "service"
+        }
+      ]
+    },
+    {
+      "suffix": "tax_36",
+      "disposition": "RETAINED_OPEN_INHERITED_OBLIGATION",
+      "reusedOwnerRows": [
+        "floor:cn69-global-25kg:inherited-tax_36"
+      ],
+      "ruleRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится.",
+      "titleRu": "налоговая строка по региональному правилу для основания под покрытие",
+      "legacyUnit": "set",
+      "legacyExpression": "1",
+      "actualLegacyRows": [
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+          "rowId": "flooring_interior_subfloor_install_large_area_tax_36",
+          "resourceSpecId": "cc0a77e4-31a2-8e0c-1c99-c8b6a0d443ed",
+          "formulaId": "flooring_interior_subfloor_install_large_area_professional_expanded_v1_tax_quantity_formula_v1_flooring_interior_subfloor_install_large_area_tax_36",
+          "costOwnerId": "r555-price:6c5a8e4be04f3bd0574ebbff1550947e3695306b",
+          "category": "service",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+          "rowId": "flooring_interior_subfloor_install_small_area_tax_36",
+          "resourceSpecId": "5e115e84-33ad-18d7-f908-768056a92922",
+          "formulaId": "flooring_interior_subfloor_install_small_area_professional_expanded_v1_tax_quantity_formula_v1_flooring_interior_subfloor_install_small_area_tax_36",
+          "costOwnerId": "r555-price:6c5a8e4be04f3bd0574ebbff1550947e3695306b",
+          "category": "service",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+          "rowId": "flooring_interior_subfloor_install_standard_tax_36",
+          "resourceSpecId": "be8366a8-c25c-b395-c51b-082f06d8bf16",
+          "formulaId": "flooring_interior_subfloor_install_standard_professional_expanded_v1_tax_quantity_formula_v1_flooring_interior_subfloor_install_standard_tax_36",
+          "costOwnerId": "r555-price:6c5a8e4be04f3bd0574ebbff1550947e3695306b",
+          "category": "service",
+          "rowType": "service"
+        },
+        {
+          "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+          "rowId": "flooring_interior_subfloor_install_technical_room_tax_36",
+          "resourceSpecId": "1fd7f8cb-010b-c14f-1b98-d2ffd1cfea92",
+          "formulaId": "flooring_interior_subfloor_install_technical_room_professional_expanded_v1_tax_quantity_formula_v1_flooring_interior_subfloor_install_technical_room_tax_36",
+          "costOwnerId": "r555-price:6c5a8e4be04f3bd0574ebbff1550947e3695306b",
+          "category": "service",
+          "rowType": "service"
+        }
+      ]
+    }
+  ],
+  "inheritedNeeds": [
+    {
+      "suffix": "materials_39",
+      "titleRu": "Разметочные материалы для контроля выравнивающего слоя",
+      "category": "material",
+      "unitId": "m2",
+      "reasonRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится."
+    },
+    {
+      "suffix": "components_40",
+      "titleRu": "Примыкания и применимые узлы выравнивающего слоя",
+      "category": "material",
+      "unitId": "piece",
+      "reasonRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится."
+    },
+    {
+      "suffix": "consumables_13",
+      "titleRu": "Применимые материалы для герметизации примыканий",
+      "category": "material",
+      "unitId": "set",
+      "reasonRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится."
+    },
+    {
+      "suffix": "consumables_43",
+      "titleRu": "Расходные материалы для инструмента CN69",
+      "category": "material",
+      "unitId": "set",
+      "reasonRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится."
+    },
+    {
+      "suffix": "preparation_14",
+      "titleRu": "Обмер перепадов и контроль заданной толщины",
+      "category": "work",
+      "unitId": "set",
+      "reasonRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится."
+    },
+    {
+      "suffix": "preparation_45",
+      "titleRu": "Входной обмер и применимая фотофиксация",
+      "category": "work",
+      "unitId": "set",
+      "reasonRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится."
+    },
+    {
+      "suffix": "preparation_46",
+      "titleRu": "Применимый план производства выравнивающего слоя",
+      "category": "work",
+      "unitId": "m2",
+      "reasonRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится."
+    },
+    {
+      "suffix": "equipment_26",
+      "titleRu": "Средства геометрического контроля слоя CN69",
+      "category": "equipment",
+      "unitId": "set",
+      "reasonRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится."
+    },
+    {
+      "suffix": "equipment_27",
+      "titleRu": "Оборудование для применимой уборки рабочей зоны",
+      "category": "equipment",
+      "unitId": "set",
+      "reasonRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится."
+    },
+    {
+      "suffix": "equipment_51",
+      "titleRu": "Измерительный комплект для контроля основания и слоя",
+      "category": "equipment",
+      "unitId": "set",
+      "reasonRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится."
+    },
+    {
+      "suffix": "quality_control_57",
+      "titleRu": "Применимая исполнительная документация",
+      "category": "service",
+      "unitId": "set",
+      "reasonRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится."
+    },
+    {
+      "suffix": "overhead_35",
+      "titleRu": "Сметное сопровождение и проверка объёма",
+      "category": "service",
+      "unitId": "set",
+      "reasonRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится."
+    },
+    {
+      "suffix": "tax_36",
+      "titleRu": "Применимое региональное правило налоговой строки",
+      "category": "service",
+      "unitId": "set",
+      "reasonRu": "Применимость, состав, количество и граница оплаты не разрешены TDS CN69. Старое обязательство сохранено отдельной открытой потребностью; шаблонная формула не переносится."
+    }
+  ],
+  "sourcePack": "data/estimate-benchmarks/source-packs/cn69-dry-floor-s27-54.json",
+  "sourceArtifacts": {
+    "cn69": {
+      "officialUrl": "https://datasheets.tdx.henkel.com/CERESIT-CN-69-en_GL.pdf",
+      "localArtifact": ".release-runtime/r568/s27-54/cn69-dry-floor/CN-69.pdf",
+      "sha256": "5c91e910c56e620d2c1f0d3637082373cc23aa52281d7bb9cdd7e9a490e5aac5",
+      "edition": "C_CN69_TDS_1_0420",
+      "locatorRu": "Стр.1: готовое основание, влага и ручное нанесение; стр.2: мешок25кг,1,3кг/м²/мм, вода5,5–6л/25кг,40мин, строгие климатические условия и коллизияC25/C35"
+    },
+    "ct17": {
+      "officialUrl": "https://datasheets.tdx.henkel.com/CERESIT-CT-17-en_GL.pdf",
+      "localArtifact": ".release-runtime/r568/s27-35/wet-zone-sources/CT-17.pdf",
+      "sha256": "7e3f72f83a9b75a5f90bd44dbac1c88a30da15e0a8d4e0b6e9f9af677fff2847",
+      "edition": "CT17 Profi03.24",
+      "locatorRu": "Стр.1–2: впитывающие полы перед заливкой, полное высыхание, повтор при сохраняющейся впитываемости;0,1–0,5л/м²; фасовки1/2/5/10л"
+    }
+  },
+  "acceptedPhysicalProfileId": "manufacturer-profile:ceresit-cn69:global-25kg:C_CN69_TDS_1_0420:v1",
+  "newPhysicalNormClosuresPerTarget": 3,
+  "fullTechnicalAcceptance": false,
+  "acceptedNewCompleteTypes": 0,
+  "parentSnapshotSha256": "f1963f1206daa2759482212235a40a981a812a3ec07dbb82f2586593915e38a5",
+  "titleFixTargets": [
+    {
+      "catalogId": "canonical-work:base:facade_interior_facade_paint_apply_technical_room",
+      "predecessorDefinitionId": "7da9bef5-8cba-588d-853f-62ea33b49ffd",
+      "predecessorVersion": 4,
+      "parentSha256": "c3855828f4f75c94ddf5e9ed9c64d1a685ebf7506f6a4a9ed467a36e16e8bb16",
+      "titleRu": "Окраска наружного фасада технического помещения",
+      "numericalChangeCount": 0
+    },
+    {
+      "catalogId": "canonical-work:base:facade_interior_facade_paint_install_technical_room",
+      "predecessorDefinitionId": "60d48c00-5189-5821-8b62-17f7813f6fc2",
+      "predecessorVersion": 4,
+      "parentSha256": "fbfb765a1a56dc9329fcd715ad7cb1084c54e5934b8a594d823a99adcd0d6547",
+      "titleRu": "Устройство окраски наружного фасада технического помещения",
+      "numericalChangeCount": 0
+    }
+  ]
+}
