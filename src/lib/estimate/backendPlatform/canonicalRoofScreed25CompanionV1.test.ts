@@ -17,7 +17,7 @@ function scopeDecision(trace:unknown):CanonicalScopeRequirementDecisionV1|undefi
 }
 function fixture(index: number) {
   const parent = snapshot.representatives[index] as unknown as PurchaseGroupRepresentative;
-  const overlay = overlayS2767RoofScreed25Companion(parent, 'candidate-source-locator');
+  const overlay = overlayS2767RoofScreed25Companion(parent, {roof:'candidate-source-locator',design:'candidate-design-source-locator'});
   const model = overlay.representative;
   const parameters = { q: '40', [field.systemParameterId]: field.systemYesRu,
     [field.areaParameterId]: field.areaYesRu, roof_torch_conditions: ROOF_FORECAST_SCREED25_LOWER_CONDITIONS_V1,
@@ -35,6 +35,9 @@ test.each([0,1])('exact cohort%s keeps history, all old formula ASTs and a singl
   expect(f.overlay.addedRowIds).toHaveLength(10);expect(f.overlay.addedParameterIds).toHaveLength(4);
   for(const parameter of f.model.parameters)expect(parameter.truth_metadata).toMatchObject({contract:pack.contract,
     semantic_parameter_key:`${f.input.catalogId}:${parameter.parameter_id}`});
+  expect(f.model.bindings.find(b=>b.row_id==='roof:cement-screed15:krer12-017-01:direct-base-check')).toMatchObject({locator_id:'candidate-design-source-locator',applicability:{numericQuantityAdmitted:false}});
+  for(const rowId of f.overlay.addedRowIds.filter(id=>id.startsWith(pack.prefix+':')))
+    expect(f.model.bindings.find(b=>b.row_id===rowId)?.locator_id).toBe('candidate-source-locator');
   expect(hash(snapshot.representatives[index])).toBe(before);
   for (const old of f.parent.formulas) expect(f.model.formulas.find(formula => formula.formula_id === old.formula_id)?.ast).toEqual(old.ast);
   for (const old of f.parent.resources) expect(f.model.resources.find(row => row.row_id === old.row_id))

@@ -168,7 +168,7 @@ async function main() {
       invariant(frozenParent && hash(parent) === hash(Object.fromEntries(Object.keys(parent).map(key => [key, frozenParent[key]]))), `PARENT_SNAPSHOT_DRIFT:${catalogId}`);
       const target=pack.targets.find(t=>t.catalogId===catalogId)!;
       invariant(parent.definition.id===target.predecessorDefinitionId&&Number(parent.definition.definition_version)===target.predecessorVersion,'EXACT_PARENT_IDENTITY');
-      const overlay=overlayS2767RoofScreed25Companion(parent,locators.roof),r=overlay.representative;
+      const overlay=overlayS2767RoofScreed25Companion(parent,locators),r=overlay.representative;
       const definitionId = uuid(`${fingerprint}:definition:${catalogId}`), baselineId = uuid(`${fingerprint}:baseline:${catalogId}`);
       const definitionSha256 = hash({ contract: CONTRACT, predecessorHash: parent.definition.definition_sha256,
         parameters: r.parameters, formulas: r.formulas, resources: r.resources });

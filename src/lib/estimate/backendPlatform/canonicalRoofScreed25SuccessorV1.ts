@@ -19,7 +19,7 @@ const parents = {
   'canonical-work:base:roofing_interior_flat_roof_install_technical_room': '66084d87-deac-5f5c-88c2-f15085f69757',
   'canonical-work:base:roofing_interior_flat_roof_install_wet_zone': '01da80c5-169e-552a-8479-9da5a16b3ded',
 };
-export function buildRoofScreed25SuccessorV1(parent: PurchaseGroupRepresentative, locatorId: string) {
+export function buildRoofScreed25SuccessorV1(parent: PurchaseGroupRepresentative, locatorId: string|{roof:string;design:string}) {
   const catalogId = String(parent.definition.catalog_id);
   if (parents[catalogId as keyof typeof parents] !== parent.definition.id || parent.definition.definition_version !== 11
     || parent.resources.length !== 178 || parent.parameters.length !== 78) throw new Error('ROOF_SCREED25_EXACT_PARENT_REQUIRED');
@@ -97,8 +97,9 @@ export function buildRoofScreed25SuccessorV1(parent: PurchaseGroupRepresentative
     coveringRowIds: [], originalRowIds: [], sourceEvidence: [ROOF_SCREED_DIRECT_BASE_SOURCE_V1] });
   added.push(scope25 as typeof added[number], base15 as typeof added[number]);
   result.resources.push(...added as typeof result.resources);
-  for (const row of added) result.bindings.push({ row_id: row.row_id, locator_id: locatorId,
-    applicability: { contract: pack.contract, normId: pack.normId, numericQuantityAdmitted: row.resource_graph.costTreatment === 'OWN_COST',
+  for (const row of added) result.bindings.push({ row_id: row.row_id,
+    locator_id:typeof locatorId==='string'?locatorId:row.row_id===`${screed15.prefix}:direct-base-check`?locatorId.design:locatorId.roof,
+    applicability: { contract: pack.contract, normId:row.row_id===`${screed15.prefix}:direct-base-check`?'SP_KR_31_102_2024_3_28_3_29':pack.normId, numericQuantityAdmitted: row.resource_graph.costTreatment === 'OWN_COST',
       completeTechnicalEstimateAccepted: false } });
   const consumers = buildMasterParameterCalculationConsumers(result);
   for (const p of result.parameters) {
