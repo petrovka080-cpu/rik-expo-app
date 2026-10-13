@@ -26,3 +26,17 @@ test('an unused or wholly excluded planned operation does not reopen the upper-b
  expect(resolveCanonicalScopeRequirementV1({...input,excludedOperationResourceRowIds:new Set(['lower-material'])})).toMatchObject({status:'NOT_APPLICABLE'});
  const old=structuredClone(g);delete old.scopeRequirementV1.objectFactMode;old.scopeRequirementV1.legacyObjectValue='legacy';expect(()=>resolveCanonicalScopeRequirementV1({...input,graph:old})).toThrow('scope requirement identity invalid');
 });
+test('conditional project applicability identifies its unknown fact and ignores only the excluded operation',()=>{
+ const g=structuredClone(graph) as any;g.scopeRequirementV1.projectOperationContextsV1=[{when:{kind:'equals',parameterId:'lower',value:'planned'},resourceRowIds:['lower-material'],
+   applicabilityWhen:{kind:'equals',parameterId:'base',value:'supported'},requiredFactParameterIds:['base'],unknownFactValues:{base:['unknown']}}];
+ const input={graph:g,rowId:'chain',parameters:{condition:newPlan,lower:'planned',base:'unknown'},parameterIds:new Set(['condition','lower','base']),resourceIds:new Set(['chain','lower-material']),knownQuantityRowIds:new Set<string>()};
+ expect(resolveCanonicalScopeRequirementV1(input)).toMatchObject({status:'OBJECT_FACT_REQUIRED',missingObjectFactParameterIds:['base']});
+ expect(resolveCanonicalScopeRequirementV1({...input,parameters:{...input.parameters,base:'unsupported'}})).toMatchObject({status:'SCOPE_UNVERIFIED',missingObjectFactParameterIds:[]});
+ expect(resolveCanonicalScopeRequirementV1({...input,parameters:{...input.parameters,base:'supported'}})).toMatchObject({status:'COMPLETED'});
+ expect(resolveCanonicalScopeRequirementV1({...input,excludedOperationDefinitionRowIds:new Set(['lower-material'])})).toMatchObject({status:'NOT_APPLICABLE'});
+ for(const key of ['badRequiredFact','unknownWithoutRequirement']){
+   const bad=structuredClone(g);if(key==='badRequiredFact')bad.scopeRequirementV1.projectOperationContextsV1[0].requiredFactParameterIds=['absent'];
+   else bad.scopeRequirementV1.projectOperationContextsV1[0].unknownFactValues={absent:['unknown']};
+   expect(()=>resolveCanonicalScopeRequirementV1({...input,graph:bad})).toThrow('scope requirement identity invalid');
+ }
+});

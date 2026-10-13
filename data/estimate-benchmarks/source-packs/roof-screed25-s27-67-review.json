@@ -1,0 +1,194 @@
+{
+  "contract": "rik-expo-app.s27-67.roof-screed25-companion.v1:design-review",
+  "primarySourceReview": {
+    "schema": "s2767-screed25-primary-source-review/v1",
+    "reviewer": "Existing GPT-6 Astra xhigh agent, one grouped NEW source/design risk",
+    "ordinaryUiPackageReviewedByAstra": false,
+    "sources": [
+      {
+        "path": "spkr31-102-2024-approved-roofs.pdf",
+        "sha256": "6291b9410ac2a272b3439f65dcf8a45de327ad1b8c22e9606f76ae57aedd58d7",
+        "visuallyReadPhysicalPages": [
+          91,
+          105,
+          106,
+          118,
+          140,
+          141
+        ]
+      },
+      {
+        "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/.release-runtime/r568/s27-35/g6-roof-source-audit/krer12.pdf",
+        "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+        "visuallyReadPhysicalPages": [
+          4,
+          5,
+          6,
+          27,
+          28
+        ]
+      }
+    ],
+    "formula": "017-01 + (25 - 15) * 017-02; 017-02 is per ONE mm, not five",
+    "basisM2": "100",
+    "rates25": [
+      {
+        "role": "construction_workers",
+        "unit": "hour",
+        "base": "27.22",
+        "deltaPerMm": "1",
+        "total": "37.22",
+        "at20m2": "7.444"
+      },
+      {
+        "role": "included_machine_operators",
+        "unit": "hour",
+        "base": "1.94",
+        "deltaPerMm": "0.03",
+        "total": "2.24",
+        "at20m2": "0.448",
+        "informationalOnly": true
+      },
+      {
+        "role": "tower_crane_8t",
+        "unit": "machine_hour",
+        "base": "0.68",
+        "deltaPerMm": "0.01",
+        "total": "0.78",
+        "at20m2": "0.156"
+      },
+      {
+        "role": "forklift_5t",
+        "unit": "machine_hour",
+        "base": "1.26",
+        "deltaPerMm": "0.02",
+        "total": "1.46",
+        "at20m2": "0.292"
+      },
+      {
+        "role": "mortar_pump",
+        "unit": "machine_hour",
+        "base": "2.36",
+        "deltaPerMm": "0",
+        "total": "2.36",
+        "at20m2": "0.472"
+      },
+      {
+        "role": "water",
+        "unit": "m3",
+        "base": "3.85",
+        "deltaPerMm": "0",
+        "total": "3.85",
+        "at20m2": "0.77"
+      },
+      {
+        "role": "rkp350b_felt",
+        "unit": "m2",
+        "base": "4.4",
+        "deltaPerMm": "0",
+        "total": "4.4",
+        "at20m2": "0.88"
+      },
+      {
+        "role": "ready_cement_mortar_m100",
+        "unit": "m3",
+        "base": "1.53",
+        "deltaPerMm": "0.102",
+        "total": "2.55",
+        "at20m2": "0.51"
+      }
+    ],
+    "openBoundaries": [
+      "Actual direct substrate and placement; independent areas do not prove overlap",
+      "SP3.29 M100 with cone slump<=30mm; grade alone does not establish rigidity or compatibility with pump10-0007",
+      "Top of loose-fill insulation: compacted smaller fraction OR separate felt below screed; lower vapor barrier and4.4m2/100 in01701 do not establish this",
+      "Greater-than100mm local insulation depth and project reinforcement; average100mm does not prove local maximum",
+      "Dry work and mean daily temperature>=5C are execution restrictions, not completed work",
+      "SP3.31-32 screed contraction joints remain distinct from00602 structural deformation joint"
+    ],
+    "openFinding": "P1: forecast15mm enum cannot alone establish compatibility directly over loose-fill insulation",
+    "held00404And00602RemainHeld": true,
+    "newScreed25NormsRuntimeAdmitted": false,
+    "databaseMutationPerformed": false,
+    "fullRoofAccepted": false,
+    "nextPackage": "Address direct-base applicability fact, then fixed25mm machine screed with source-derived10 increments; preserve historical15mm values/prices"
+  },
+  "targetedImplementationClosureReview": {
+    "contractVersion": "s2767-screed25-closing-review/v1",
+    "reviewedAtUtc": "2026-10-13T00:47:54.380Z",
+    "reviewMode": "STATIC_READ_ONLY",
+    "canonicalRoot": "C:/dev/rik-expo-app-r4a5-dc4f0ce7",
+    "scope": "Closure of previous1P1+4P2 and new optional projectOperationContextsV1 applicability contract only.",
+    "closed": [
+      {
+        "id": "P1_NEW_FORECAST_BYPASSES_PRIMER_OWNER_FENCES",
+        "status": "CLOSED",
+        "evidence": "canonicalRoofForecastConditionV1.ts:8-15 owns exact25 enum and recognizer. Both existing immediate/recursive owner fences use that recognizer; no cyclic import."
+      },
+      {
+        "id": "P2_25_BRANCH_RETAINS_15_SCOPE_DEPENDENCY",
+        "status": "CLOSED",
+        "evidence": "canonicalRoofScreed25SuccessorV1.ts:41-47 preserves old exactScopeWhen and makes old labor_18 NOT_APPLICABLE only for25; own25 scope retains A25."
+      },
+      {
+        "id": "P2_IMMEDIATE_11_TO_12_ORIGIN_DELTA_NOT_CONSUMED",
+        "status": "CLOSED",
+        "evidence": "serveCanonicalEstimateLocalR1.ts:2457-2461 consumes actual parentV5 selection delta before buildingV6, passes outer origins and keeps originalV5 immutable. Same-version consumer remains bound to outer effective state."
+      },
+      {
+        "id": "P2_EXCLUDED_STAGE_FACTS_HIDDEN_BUT_CHAIN_STILL_REQUIRES_THEM",
+        "status": "CLOSED",
+        "evidence": "canonicalRoofScreedDirectBaseV1.ts:54-57 puts base fact in15-only context; Successor50-51 does not expand this context onto25. Successor75-79 activates25 context from profile even with missing facts. canonicalScopeRequirementV1.ts:145-160 evaluates applicability only for non-wholly-operation-excluded active contexts. Cost-only exclusion does not satisfy physical exclusion."
+      },
+      {
+        "id": "P2_PLANNED25_ZERO_AREA_ACCEPTED",
+        "status": "CLOSED",
+        "evidence": "canonicalRoofScreed25CompanionV1.ts:40-42 sets A25 exclusiveMin:0. Norm coefficients and ownership unchanged."
+      }
+    ],
+    "unclosed": [
+      {
+        "id": "P2_ACTUAL_UNKNOWN_ENUM_VALUES_NOT_CLASSIFIED_AS_OBJECT_FACT_REQUIRED",
+        "priority": "P2",
+        "locations": [
+          "src/lib/estimate/backendPlatform/canonicalRoofScreed25SuccessorV1.ts:79",
+          "src/lib/estimate/backendPlatform/canonicalRoofScreed25SuccessorV1.ts:85",
+          "src/lib/estimate/v4/sourcePinnedRoofNormOwnerR1.ts:51-52",
+          "src/lib/estimate/backendPlatform/canonicalScopeRequirementV1.ts:150-156"
+        ],
+        "actualSchemaChoices": {
+          "roof_screed25_technology": "Условия ещё не проверены",
+          "roof_screed25_direct_base": "Площадь ещё нужно проверить"
+        },
+        "configuredUnknownValue": "Технология, основание или толщина ещё не проверены",
+        "consequenceRu": "Выбор реального доступного UNKNOWN даёт SCOPE_UNVERIFIED с пустыми missingObjectFactParameterIds вместо адресного OBJECT_FACT_REQUIRED. Ложного допуска количества или оплаты нет; остаётся дефект классификации неизвестного объектного факта.",
+        "requiredChangeRu": "Согласовать context.unknownFactValues и25scope.unknownObjectValues с фактическими enum values, либо создавать эти enum и metadata из одного владельца. «Нужен другой расчёт» оставить неподходящей технологией, не UNKNOWN. Проверки удаления параметра недостаточны: нужен существующий вариант UNKNOWN."
+      }
+    ],
+    "commonContract": {
+      "status": "NO_ADDITIONAL_P1_FOUND_WITHIN_REVIEW_SCOPE",
+      "notes": [
+        "New fields opt into PROJECT_APPLICABILITY_ONLY; historical OBJECT_SCOPE still requires legacyObjectValue.",
+        "Context requiredFactParameterIds are definition-bound; unknownFactValues keys must belong to those IDs.",
+        "Missing facts from an active context are carried in ordinary typed scope decision and readback.",
+        "Physical operation exclusion disables only the associated context applicability; it does not set actual readiness.",
+        "V6 retains immutable nested proof and applies final selection delta; no new15/25 restore coupling was introduced."
+      ]
+    },
+    "verdict": "PREVIOUS_FIVE_FINDINGS_CLOSED; ONE_P2_UNKNOWN_ENUM_CLASSIFICATION_REMAINS",
+    "reviewerExecutedTests": false,
+    "reviewerAccessedDatabase": false,
+    "reviewerModifiedProduct": false
+  },
+  "ordinaryUiReviewedByAstra": false,
+  "solResolutionOfRemainingEnumP2": {
+    "status": "CLOSED_BY_CODE_AND_FOCUSED_REGRESSION",
+    "technologyUnknown": "Способ подачи раствора ещё не проверен",
+    "baseUnknown": "Непосредственное основание ещё не проверено",
+    "actualEnumAndUnknownMetadataAligned": true,
+    "otherCalculationIsNotUnknown": true,
+    "proof": "canonicalRoofScreed25CompanionV1.test.ts selectable unknown for both actual fields"
+  },
+  "runtimeAdmitted": false,
+  "fullRoofAccepted": false
+}

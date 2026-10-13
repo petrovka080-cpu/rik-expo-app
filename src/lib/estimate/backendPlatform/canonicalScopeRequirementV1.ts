@@ -48,7 +48,7 @@ export type CanonicalScopeRequirementV1 = {
   objectFactMode?: 'PROJECT_APPLICABILITY_ONLY';
   /** Only this opt-in project check can depend on selected planned operations.
    * The main historical system/source check remains unconditional. */
-  projectOperationContextsV1?: {when:Json;resourceRowIds:string[]}[];
+  projectOperationContextsV1?: {when:Json;resourceRowIds:string[];applicabilityWhen?:Json;requiredFactParameterIds?:string[];unknownFactValues?:Record<string,string[]>}[];
   /** A conditional companion can be removed before choosing its project
    * variant. This never relaxes the main system/applicability check. */
   operationExclusionSatisfiesScopeV1?: true;
@@ -136,12 +136,24 @@ export function resolveCanonicalScopeRequirementV1(input: {
     const contexts=scope.projectOperationContextsV1;
     if(contexts!=null&&(!projectOnly||!Array.isArray(contexts)||contexts.length===0||contexts.length>8
       ||contexts.some(c=>!record(c)||!record(c.when)||!ids(c.resourceRowIds)||c.resourceRowIds.length===0
-        ||c.resourceRowIds.some(rowId=>rowId===input.rowId||!input.resourceIds.has(rowId)))))return fail();
+        ||c.resourceRowIds.some(rowId=>rowId===input.rowId||!input.resourceIds.has(rowId))
+        ||(c.applicabilityWhen!=null&&!record(c.applicabilityWhen))
+        ||(c.requiredFactParameterIds!=null&&(!record(c.applicabilityWhen)||!ids(c.requiredFactParameterIds)
+          ||c.requiredFactParameterIds.some(id=>!input.parameterIds.has(id))))
+        ||(c.unknownFactValues!=null&&(!record(c.unknownFactValues)||Object.entries(c.unknownFactValues)
+          .some(([id,values])=>!c.requiredFactParameterIds?.includes(id)||!ids(values)))))))return fail();
     const operationExclusions=input.excludedOperationDefinitionRowIds??input.excludedOperationResourceRowIds;
     const projectNeeded=contexts==null||contexts.some(c=>condition(c.when).value===true
       &&!c.resourceRowIds.every(rowId=>operationExclusions?.has(rowId)));
     const value = input.parameters[id];
+    const activeContexts=contexts?.filter(c=>condition(c.when).value===true&&!c.resourceRowIds.every(rowId=>operationExclusions?.has(rowId)))??[];
+    const applicability=activeContexts.flatMap(c=>c.applicabilityWhen?[{context:c,condition:condition(c.applicabilityWhen)}]:[]);
+    const missingApplicability=[...new Set(applicability.flatMap(a=>[...a.condition.missingParameterIds,
+      ...(a.context.requiredFactParameterIds??[]).filter(id=>input.parameters[id]==null||input.parameters[id]===''
+        ||a.context.unknownFactValues?.[id]?.includes(String(input.parameters[id])))]))];
     if(!projectNeeded){status='NOT_APPLICABLE';missing=[];}
+    else if(missingApplicability.length){status='OBJECT_FACT_REQUIRED';missing=missingApplicability;}
+    else if(applicability.some(a=>a.condition.value!==true)){status='SCOPE_UNVERIFIED';missing=[];}
     else if (value == null || value === '' || scope.unknownObjectValues!.includes(String(value))) {
       status = 'OBJECT_FACT_REQUIRED'; missing = [id];
     } else if (!projectOnly&&value === scope.legacyObjectValue) { status = 'LEGACY_SOURCE_REQUIRED'; missing = []; }

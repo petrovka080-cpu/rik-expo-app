@@ -22,6 +22,7 @@ add('roof:torch-two:krer12-002-09',{tower_crane_8t:'02-0005',truck_crane_10t:'02
 add('roof:prime-ready-emulsion:krer12-016-02',{flatbed_truck:'40-0001'});
 add('roof:valley-torch-two:krer12-005-03',{tower_crane_8t:'02-0005',truck_crane_10t:'02-0075',gas_flame_burner:'15-0060',flatbed_truck_to_5t:'40-0001'});
 add('roof:cement-screed15:krer12-017-01',{tower_crane_8t:'02-0005',forklift_5t:'03-0020',mortar_pump:'10-0007'});
+add('roof:cement-screed25:krer12-017-01-plus-10x02',{tower_crane_8t:'02-0005',forklift_5t:'03-0020',mortar_pump:'10-0007'});
 add('roof:metal-trim:krer12-010-01',{tower_crane_8t:'02-0005',flatbed_truck_to_5t:'40-0001'});
 add('roof:vapor:krer12-015-03',{tower_crane_8t:'02-0005',truck_crane_10t:'02-0075',bitumen_kettle_400l:'12-0340',flatbed_truck_to_5t:'40-0001'});
 add('roof:clay-insulation:krer12-014-02',{tower_crane_8t:'02-0005',forklift_5t:'03-0020'});

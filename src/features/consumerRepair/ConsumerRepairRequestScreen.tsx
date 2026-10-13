@@ -1,3 +1,4 @@
+import {roofStageRestoreTargetsV6,roofStageExcludeTargetsV6} from '../../lib/estimate/backendPlatform/canonicalRoofScreed25MigrationV1';
 import {roofStageRestoreTargetsV5,roofStageExcludeTargetsV5} from '../../lib/estimate/backendPlatform/canonicalRoofHangingGuttersMigrationV1';
 import React from "react";
 import {canonicalManualMachineHourPriceCoverageV1} from '../../lib/estimate/backendPlatform/canonicalMachineHourPriceCoverageV1';
@@ -3014,7 +3015,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         definitionId:saved.definitionVersionId,catalogId:saved.catalogId,...previousTargets});
       const metalTargets=excluded?screedTargets:roofStageRestoreTargetsV3({receipt:saved.roofStageRestorationV3,
         definitionId:saved.definitionVersionId,catalogId:saved.catalogId,...screedTargets});
-      const targets=saved.roofStageRestorationV5?(excluded?roofStageExcludeTargetsV5:roofStageRestoreTargetsV5)({receipt:saved.roofStageRestorationV5,definitionId:saved.definitionVersionId,catalogId:saved.catalogId,rowIds,operationKeys:requestedOperations}):excluded?roofStageExcludeTargetsV4({receipt:saved.roofStageRestorationV4,
+      const targets=saved.roofStageRestorationV6?(excluded?roofStageExcludeTargetsV6:roofStageRestoreTargetsV6)({receipt:saved.roofStageRestorationV6,definitionId:saved.definitionVersionId,catalogId:saved.catalogId,rowIds,operationKeys:requestedOperations}):saved.roofStageRestorationV5?(excluded?roofStageExcludeTargetsV5:roofStageRestoreTargetsV5)({receipt:saved.roofStageRestorationV5,definitionId:saved.definitionVersionId,catalogId:saved.catalogId,rowIds,operationKeys:requestedOperations}):excluded?roofStageExcludeTargetsV4({receipt:saved.roofStageRestorationV4,
         definitionId:saved.definitionVersionId,catalogId:saved.catalogId,rowIds,operationKeys:requestedOperations}):!saved.roofStageRestorationV4?metalTargets:roofStageRestoreTargetsV4({receipt:saved.roofStageRestorationV4,
         definitionId:saved.definitionVersionId,catalogId:saved.catalogId,rowIds,operationKeys:requestedOperations});
       const changedOperations=targets.operationKeys;

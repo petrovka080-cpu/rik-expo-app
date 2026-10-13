@@ -1,3 +1,4 @@
+import {readRoofStageRestorationV6} from './canonicalRoofScreed25MigrationV1';
 import {readRoofStageRestorationV5} from './canonicalRoofHangingGuttersMigrationV1';
 import {
   ESTIMATE_PLATFORM_API_VERSION,
@@ -79,6 +80,9 @@ export function canonicalEstimateRevisionDetailFromStorage(
   const rawRestorationV5=record(record(row.amendment_contract).parameterSources).roofStageRestorationV5;
   const roofStageRestorationV5=readRoofStageRestorationV5(rawRestorationV5);
   if(rawRestorationV5!=null&&(!roofStageRestorationV5||roofStageRestorationV5.definitionId!==row.definition_version_id||roofStageRestorationV5.catalogId!==row.catalog_id))throw new CanonicalEstimateRevisionReadContractError('stored gutter restoration receipt is invalid');
+  const rawRestorationV6=record(record(row.amendment_contract).parameterSources).roofStageRestorationV6;
+  const roofStageRestorationV6=readRoofStageRestorationV6(rawRestorationV6);
+  if(rawRestorationV6!=null&&(!roofStageRestorationV6||roofStageRestorationV6.definitionId!==row.definition_version_id||roofStageRestorationV6.catalogId!==row.catalog_id))throw new CanonicalEstimateRevisionReadContractError('stored screed25 restoration receipt is invalid');
   if(rawPrerequisite!=null&&!prerequisite)throw new CanonicalEstimateRevisionReadContractError('stored preparation reference is invalid');
   return {
     apiVersion: ESTIMATE_PLATFORM_API_VERSION,
@@ -102,6 +106,7 @@ export function canonicalEstimateRevisionDetailFromStorage(
     ...(roofStageRestorationV3?{roofStageRestorationV3}:{}),
     ...(roofStageRestorationV4?{roofStageRestorationV4}:{}),
     ...(roofStageRestorationV5?{roofStageRestorationV5}:{}),
+    ...(roofStageRestorationV6?{roofStageRestorationV6}:{}),
     sourceRequestText: nullableText(row.source_request_text),
     sourceRequestHash: nullableText(row.source_request_hash),
     canonicalWorkTitleRu: nullableText(row.canonical_work_title_ru),

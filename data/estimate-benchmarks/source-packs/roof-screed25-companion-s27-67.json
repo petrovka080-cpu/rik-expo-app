@@ -1,0 +1,616 @@
+{
+  "contract": "rik-expo-app.s27-67.roof-screed25-companion.v1",
+  "prefix": "roof:cement-screed25:krer12-017-01-plus-10x02",
+  "normId": "12-01-017-01+10*12-01-017-02",
+  "sources": [
+    {
+      "id": "KRER12_2016_ROOF_CEMENT_SCREED25",
+      "kind": "roof",
+      "quantityAdmitted": true,
+      "titleRu": "КРЕР12: цементно-песчаная стяжка25мм,01701+10×01702",
+      "authority": "Госстрой Кыргызской Республики",
+      "printedEdition": "КРЕР12-2015; утверждён приказом от28.03.2016 №2-нпа",
+      "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no12krovli_compressed-2526908358eebcf23.66556657.pdf",
+      "localArtifact": ".release-runtime/r568/s27-35/g6-roof-source-audit/krer12.pdf",
+      "reviewedAt": "2026-10-13T06:45:00.000Z",
+      "locators": "КРЕР12 PDF27:01702 на каждый1мм; PDF28: столбцы01 и02;25мм=15мм+10×1мм"
+    },
+    {
+      "kind": "design",
+      "id": "SP_KR_31_102_2024_SCREED_DIRECT_BASE",
+      "titleRu": "СП КР31-102:2024 Кровли",
+      "printedEdition": "Приказ212 от17.07.2024; введён03.08.2024",
+      "sha256": "6291b9410ac2a272b3439f65dcf8a45de327ad1b8c22e9606f76ae57aedd58d7",
+      "officialUrl": "https://minstroy.gov.kg/index.php/ru/state_program/download-pdf/obedinennyjprikaz212-344669a2a1f003a51.46520320.pdf",
+      "localArtifact": ".release-runtime/r568/s27-67/roof-screed25-companion/sources/spkr31-102-2024-approved-roofs.pdf",
+      "quantityAdmitted": false,
+      "reviewedAt": "2026-10-13T00:10:39.538Z",
+      "locators": "§3.28–3.32 физ105–106/печатные21–22;§4.1–4.6 физ117–118;рис2–3 физ140–141",
+      "authority": "Госстрой Кыргызской Республики"
+    },
+    {
+      "id": "krer_general_metal_roof_s2763",
+      "kind": "guidance",
+      "quantityAdmitted": false,
+      "titleRu": "КРЕР-2015, общие указания по применению",
+      "authority": "Госстрой Кыргызской Республики",
+      "printedEdition": "КРЕР-2015",
+      "sha256": "5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9",
+      "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/stroitelnyeispecialnyestroitelnyeraboty-7866900598a0aab89.90712367.pdf",
+      "localArtifact": ".release-runtime/r568/s27-48/g7-next-source-extracts/KRER_GENERAL_APPLICATION_GUIDANCE.pdf",
+      "reviewedAt": "2026-10-11T21:25:14.667327+00:00",
+      "locators": "§1.3–1.4;1.7;2.8–2.10;3.5;4.1–4.2; приложение3, высокогорье"
+    }
+  ],
+  "groupTitleRu": "Цементно-песчаная стяжка кровли 25 мм",
+  "operationTitleRu": "Машинная стяжка 25 мм из готового раствора М100",
+  "completionCriterionRu": "Устроена выбранная стяжка. Выдерживание, высыхание, прочность, влажность и проектная приемка подтверждаются отдельно; расход воды и часы труда их завершение не доказывают.",
+  "scopeRu": "Предстоящая машинная стяжка ровно25мм на самостоятельно измеренном однородном участке. Количества01701+10×01702; основание и технология подтверждаются отдельно.",
+  "systemRu": "Выбран именно25мм участок. М100 обозначает прочность и не устанавливает жёсткость. Количества нормативны; готовность, устройство и приёмка не подтверждаются расчётом.",
+  "conditionsRu": "СП3.29: осадка конуса до30мм и подтверждённая совместимость машинной подачи. Работа в сухую погоду при среднесуточной температуре>=5°C. Эти условия исполнения не объявляются выполненными при составлении сметы.",
+  "measurementRu": "Самостоятельная площадь однородного участка стяжки25мм,100м² нормативной базы. Нижние слои и смешанные основания считаются отдельно.",
+  "systemParameterId": "roof_screed25_scope",
+  "conditionsParameterId": "roof_screed25_technology",
+  "areaParameterId": "roof_screed25_direct_base",
+  "systemYesRu": "Проектом предусмотрена стяжка 25 мм на этом участке",
+  "conditionsYesRu": "Проектная спецификация М100 с осадкой конуса до30мм совместима с принятой машинной подачей; обычные условия до15м",
+  "areaYesRu": "Непосредственно под стяжкой засыпной утеплитель; проект предусматривает пригодную подготовку его верха, выполнение проверяется отдельно",
+  "unknownChoiceRu": "Технология, основание или толщина ещё не проверены",
+  "legacyChoiceRu": "Прежний общий состав — количественные нормы требуют проверки",
+  "remainingScopeRu": [
+    "Actual direct substrate and placement; independent areas do not prove overlap",
+    "SP3.29 M100 with cone slump<=30mm; grade alone does not establish rigidity or compatibility with pump10-0007",
+    "Top of loose-fill insulation: compacted smaller fraction OR separate felt below screed; lower vapor barrier and4.4m2/100 in01701 do not establish this",
+    "Greater-than100mm local insulation depth and project reinforcement; average100mm does not prove local maximum",
+    "Dry work and mean daily temperature>=5C are execution restrictions, not completed work",
+    "SP3.31-32 screed contraction joints remain distinct from00602 structural deformation joint"
+  ],
+  "rates": [
+    {
+      "role": "workers",
+      "resourceCode": "000-1003-1",
+      "titleRu": "Рабочие-строители среднего разряда 3,1",
+      "sourceTitleRu": "Рабочие-строители среднего разряда 3,1",
+      "unitId": "man_hour",
+      "category": "labor",
+      "per100m2": "37.22",
+      "sourceRatePer100m2": "37.22",
+      "sourceUnit": "чел.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "На100м²: 27.22+10×1=37.22. Добавка01702 относится к1мм."
+      ],
+      "compositeRate": {
+        "baseNorm": "12-01-017-01",
+        "baseRate": "27.22",
+        "deltaNorm": "12-01-017-02",
+        "deltaRatePerMm": "1",
+        "thicknessDifferenceMm": "10",
+        "basisM2": "100"
+      }
+    },
+    {
+      "role": "included_machine_operators",
+      "resourceCode": null,
+      "titleRu": "Затраты труда машинистов",
+      "sourceTitleRu": "Затраты труда машинистов",
+      "unitId": "man_hour",
+      "category": "labor",
+      "per100m2": "2.24",
+      "sourceRatePer100m2": "2.24",
+      "sourceUnit": "чел.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "detailsRu": [
+        "На100м²: 1.94+10×0.03=2.24. Добавка01702 относится к1мм."
+      ],
+      "compositeRate": {
+        "baseNorm": "12-01-017-01",
+        "baseRate": "1.94",
+        "deltaNorm": "12-01-017-02",
+        "deltaRatePerMm": "0.03",
+        "thicknessDifferenceMm": "10",
+        "basisM2": "100"
+      }
+    },
+    {
+      "role": "tower_crane_8t",
+      "resourceCode": "02-0005",
+      "titleRu": "Краны башенные при работе на других видах строительства (кроме монтажа технологического оборудования) 8 т",
+      "sourceTitleRu": "Краны башенные при работе на других видах строительства (кроме монтажа технологического оборудования) 8 т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "0.78",
+      "sourceRatePer100m2": "0.78",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "На100м²: 0.68+10×0.01=0.78. Добавка01702 относится к1мм.",
+        "Требуется состав цены эксплуатации: FULL_OPERATED_MACHINE_HOUR."
+      ],
+      "machinePriceCoverageRequired": "FULL_OPERATED_MACHINE_HOUR",
+      "compositeRate": {
+        "baseNorm": "12-01-017-01",
+        "baseRate": "0.68",
+        "deltaNorm": "12-01-017-02",
+        "deltaRatePerMm": "0.01",
+        "thicknessDifferenceMm": "10",
+        "basisM2": "100"
+      }
+    },
+    {
+      "role": "forklift_5t",
+      "resourceCode": "03-0020",
+      "titleRu": "Автопогрузчики 5 т",
+      "sourceTitleRu": "Автопогрузчики 5 т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "1.46",
+      "sourceRatePer100m2": "1.46",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "На100м²: 1.26+10×0.02=1.46. Добавка01702 относится к1мм.",
+        "Требуется состав цены эксплуатации: FULL_OPERATED_MACHINE_HOUR."
+      ],
+      "machinePriceCoverageRequired": "FULL_OPERATED_MACHINE_HOUR",
+      "compositeRate": {
+        "baseNorm": "12-01-017-01",
+        "baseRate": "1.26",
+        "deltaNorm": "12-01-017-02",
+        "deltaRatePerMm": "0.02",
+        "thicknessDifferenceMm": "10",
+        "basisM2": "100"
+      }
+    },
+    {
+      "role": "mortar_pump",
+      "resourceCode": "10-0007",
+      "titleRu": "Агрегаты электронасосные с регулированием подачи вручную для строительных растворов, подача до 2 м³/ч, напор 150 м",
+      "sourceTitleRu": "Агрегаты электронасосные с регулированием подачи вручную для строительных растворов, подача до 2 м³/ч, напор 150 м",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "2.36",
+      "sourceRatePer100m2": "2.36",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "На100м²: 2.36+10×0=2.36. Добавка01702 относится к1мм.",
+        "Требуется состав цены эксплуатации: EQUIPMENT_OPERATION_NO_ADDITIONAL_OPERATOR_NORM_ADMITTED."
+      ],
+      "machinePriceCoverageRequired": "EQUIPMENT_OPERATION_NO_ADDITIONAL_OPERATOR_NORM_ADMITTED",
+      "compositeRate": {
+        "baseNorm": "12-01-017-01",
+        "baseRate": "2.36",
+        "deltaNorm": "12-01-017-02",
+        "deltaRatePerMm": "0",
+        "thicknessDifferenceMm": "10",
+        "basisM2": "100"
+      }
+    },
+    {
+      "role": "water",
+      "resourceCode": "01-0601-0001",
+      "titleRu": "Вода",
+      "sourceTitleRu": "Вода",
+      "unitId": "m3",
+      "category": "material",
+      "per100m2": "3.85",
+      "sourceRatePer100m2": "3.85",
+      "sourceUnit": "м³",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "На100м²: 3.85+10×0=3.85. Добавка01702 относится к1мм."
+      ],
+      "compositeRate": {
+        "baseNorm": "12-01-017-01",
+        "baseRate": "3.85",
+        "deltaNorm": "12-01-017-02",
+        "deltaRatePerMm": "0",
+        "thicknessDifferenceMm": "10",
+        "basisM2": "100"
+      }
+    },
+    {
+      "role": "roofing_felt",
+      "resourceCode": "01-7410-0004",
+      "titleRu": "Рубероид РКП-350б",
+      "sourceTitleRu": "Рубероид кровельный с крупнозернистой посыпкой с пылевидной посыпкой РКП-350б",
+      "unitId": "m2",
+      "category": "material",
+      "per100m2": "4.4",
+      "sourceRatePer100m2": "4.4",
+      "sourceUnit": "м²",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "На100м²: 4.4+10×0=4.4. Добавка01702 относится к1мм."
+      ],
+      "compositeRate": {
+        "baseNorm": "12-01-017-01",
+        "baseRate": "4.4",
+        "deltaNorm": "12-01-017-02",
+        "deltaRatePerMm": "0",
+        "thicknessDifferenceMm": "10",
+        "basisM2": "100"
+      }
+    },
+    {
+      "role": "ready_cement_mortar_m100",
+      "resourceCode": "03-0406-0004",
+      "titleRu": "Раствор готовый кладочный цементный, марка 100",
+      "sourceTitleRu": "Раствор готовый кладочный цементный, марка 100",
+      "unitId": "m3",
+      "category": "material",
+      "per100m2": "2.55",
+      "sourceRatePer100m2": "2.55",
+      "sourceUnit": "м³",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "На100м²: 1.53+10×0.102=2.55. Добавка01702 относится к1мм."
+      ],
+      "compositeRate": {
+        "baseNorm": "12-01-017-01",
+        "baseRate": "1.53",
+        "deltaNorm": "12-01-017-02",
+        "deltaRatePerMm": "0.102",
+        "thicknessDifferenceMm": "10",
+        "basisM2": "100"
+      }
+    }
+  ],
+  "targets": [
+    {
+      "catalogId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room",
+      "predecessorDefinitionId": "66084d87-deac-5f5c-88c2-f15085f69757",
+      "predecessorDefinitionSha256": "9f30845eb191d29deefaaa06a0b612bfc8b92b4d021ac098d52aa76e77198957",
+      "predecessorVersion": 11
+    },
+    {
+      "catalogId": "canonical-work:base:roofing_interior_flat_roof_install_wet_zone",
+      "predecessorDefinitionId": "01da80c5-169e-552a-8479-9da5a16b3ded",
+      "predecessorDefinitionSha256": "68fbdd8b646bc9f3c3026b00429605c6623637992f03a6ccc8f2a0f8a4c3a479",
+      "predecessorVersion": 11
+    }
+  ],
+  "legacyDisposition": {
+    "materials_01": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Кровельное покрытие не является цементно-песчаной стяжкой. Таблица 017-01 не определяет весь ковер, его площадь закупки, материал и цену; готовое покрытие не объявляется устроенным."
+    },
+    "materials_02": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Подкровельный слой шире отдельного табличного расхода 4,4 м² рубероида на 100 м² стяжки. Назначение этого рубероида, вся изоляция, полосы и швы из таблицы не выводятся; весь старый слой не заменяется."
+    },
+    "materials_03": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Обрешетка не нормирована цементно-песчаной стяжкой. Ее применимость и самостоятельный проектный объем остаются открытыми; готовое основание не означает автоматически оплаченную обрешетку."
+    },
+    "materials_04": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Доборные элементы и их старая единица m² не подтверждены таблицей стяжки. Нужны отдельные детали и обмер, без переноса расхода рубероида или раствора."
+    },
+    "materials_05": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Крепеж иной части кровли не нормирован 017-01. Отсутствие строки крепежа не означает, что он обеспечен или не требуется по проекту."
+    },
+    "materials_06": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Водоотводные элементы не заменяются выравнивающей стяжкой. Их состав, уклоны, длины и площадь не выводятся из q этой стяжки."
+    },
+    "materials_37": {
+      "disposition": "NORM_CONSUMPTION_FIXED_NO_EXTRA_FACTOR_REMAINDER_OPEN",
+      "includedNormRoles": [
+        "water",
+        "roofing_felt",
+        "ready_cement_mortar_m100"
+      ],
+      "reasonRu": "Исходные расходы воды, рубероида и готового раствора фиксированы; дополнительный запас к ним не обоснован. Старый материальный запас относится лишь к отдельно проверяемому остатку. Его прежний false-предикат в LEGACY не включать заново.",
+      "residualTitleRu": "Проверить отдельный проектный запас других материалов; к расходам 017-01 запас не добавлен"
+    },
+    "materials_38": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Защитное покрытие рабочей зоны требует отдельного определения. Расход воды или рубероида в 017-01 не доказывает состав, количество и наличие такой защиты."
+    },
+    "materials_39": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Маркировочные материалы не имеют отдельного табличного расхода. Не превращать площадь стяжки в m² маркировки; фактическое обеспечение остается открытым."
+    },
+    "components_07": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Коньковые элементы относятся к иной детали кровли. Таблица стяжки не подтверждает их применимость, длину и стоимость."
+    },
+    "components_08": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Ендовые элементы и их узлы требуют проекта. Из площади плоской стяжки их длина не выводится."
+    },
+    "components_09": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Карнизные планки не включены в доказанный ресурсный состав стяжки. Прежнее число комплектов сохраняется только исторически, без признания нормой 017-01."
+    },
+    "components_10": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Узлы примыкания кровельной системы не закрываются расходом 4,4 м² рубероида. Источник не дает для этого ресурса назначения, длины полос или проектных деталей."
+    },
+    "components_40": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Комплект узлов примыкания остается самостоятельной проверяемой потребностью. Не считать весь комплект выполненным новой стяжкой и не складывать его повторно с тем же узлом из components_10."
+    },
+    "components_41": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Ремонтные вставки и доборы не входят в доказанную подготовку уже готового основания. Необходимость ремонта и отдельный объем требуют обследования и проекта."
+    },
+    "components_42": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Закладные элементы не определены нормой стяжки. Сохраняется проектная проверка без перевода старых погонных метров в объем раствора."
+    },
+    "consumables_11": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Антисептик связан с отдельно проверяемым материалом/основанием. Его расход и совместимость не следуют из цементно-песчаной стяжки или готового раствора М100."
+    },
+    "consumables_12": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Диски и биты не нормированы выбранной колонкой. Инструмент и расходники не становятся обеспеченными из-за отсутствия отдельных строк таблицы; старый ceil(q/80) не принимается как новая норма."
+    },
+    "consumables_13": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Средства защиты для высоты остаются реальной проверяемой потребностью. Условие до 15 м и старая единица m² не доказывают число комплектов, наличие или достаточность СИЗ."
+    },
+    "consumables_43": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Расходники инструмента требуют отдельного состава. Не начислять их универсальным комплектом и не дублировать позиции, уже входящие в подтвержденную полную машинную ставку."
+    },
+    "consumables_44": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Защита готовых поверхностей и соседних участков не определяется табличной водой или рубероидом. Ее применимость и обеспечение остаются открытыми."
+    },
+    "preparation_14": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Проектный обмер стяжки нужен для q, но само заполнение q не выполняет обмер кровли и не определяет отдельную платную услугу. Обычные измерительные действия внутри уже оплаченной операции повторно не тарифицировать."
+    },
+    "preparation_15": {
+      "disposition": "NORM_READY_BASE_PREPARATION_PART_ONLY_PROJECT_EXTRAS_OPEN",
+      "includedNormRoles": [
+        "workers"
+      ],
+      "reasonRu": "Обычная подготовка готового основания той же стяжки входит в состав 017-01 и труд 27,22 чел.-ч; повторная оплата этой части запрещена. Несущая способность, влажность, особое обследование и исправление дефектов не считаются подтвержденными таблицей.",
+      "residualTitleRu": "Дополнительная проверка и дефекты основания — объем сверх обычной подготовки стяжки не определен"
+    },
+    "preparation_16": {
+      "disposition": "NORM_READY_BASE_PREPARATION_PART_ONLY_PROJECT_EXTRAS_OPEN",
+      "includedNormRoles": [
+        "workers"
+      ],
+      "reasonRu": "Обычные вспомогательные действия и разметку для той же принятой операции не оплачивать второй раз поверх труда 017-01. Проектирование уклонов, отдельная разуклонка и разметка других слоев не подтверждены этой нормой.",
+      "residualTitleRu": "Отдельная геометрия и разуклонка кровли — сверх обычных действий выбранной стяжки"
+    },
+    "preparation_17": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Организация безопасности остается обязанностью производства работ. Таблица не доказывает выполненные мероприятия, доступ и комплект защиты; обычные действия той же операции нельзя оплачивать повторно."
+    },
+    "preparation_45": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Входной замер и фотофиксация не происходят автоматически при выборе технологии. Отдельная услуга/документация требует определения без дублирования уже учтенного обмера."
+    },
+    "preparation_46": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Проект и план производства работ требуются для применимости, но не создаются расчетом 017-01. Их состав и стоимость не выводятся из площади стяжки."
+    },
+    "preparation_47": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Организация временной рабочей зоны не доказана таблицей. Сохраняется проверка обеспечения и отдельного состава сверх обычных вспомогательных действий уже оплаченной операции."
+    },
+    "labor_18": {
+      "disposition": "SOURCE_SCREED_PART_ONLY_OTHER_BASE_WORK_OPEN",
+      "includedNormRoles": [
+        "workers"
+      ],
+      "reasonRu": "Устройство выбранной стяжки и подготовка готового основания покрываются одним трудом 27,22 чел.-ч/100 м². Общий старый «монтаж основания» шире этой операции: несущая основа, ремонт, утепление и разуклонка не закрываются. За ту же стяжку второй труд в m² не начислять.",
+      "residualTitleRu": "Другие работы основания — сверх выбранной стяжки и ее обычной подготовки"
+    },
+    "labor_19": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Монтаж всего подкровельного слоя не доказан отдельным расходом рубероида в стяжке. Обычные действия с табличными ресурсами самой стяжки уже в ее труде; отдельный слой, огрунтовка и ковер требуют своих источников."
+    },
+    "labor_20": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Монтаж обрешетки не является устройством цементно-песчаной стяжки. Применимость и самостоятельный объем этой работы не определены 017-01."
+    },
+    "labor_21": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Монтаж конечного кровельного покрытия — следующий самостоятельный этап. Ни раствор, ни рубероид из 017-01 не закрывают всю работу по ковру."
+    },
+    "labor_22": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Монтаж доборов и деталей кровли не нормирован выбранной стяжкой. Нужны отдельные узлы и обмер без переноса вспомогательного состава 017-05."
+    },
+    "labor_23": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Монтаж водостока не следует из выравнивающей стяжки. Его длина, детали, проектные уклоны и труд остаются отдельной потребностью."
+    },
+    "labor_24": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Герметизация примыканий всей системы не доказана 017-01. Не выдумывать назначение табличного рубероида как полный состав швов, герметиков или примыканий."
+    },
+    "labor_48": {
+      "disposition": "NORM_READY_BASE_PREPARATION_PART_ONLY_PROJECT_EXTRAS_OPEN",
+      "includedNormRoles": [
+        "workers"
+      ],
+      "reasonRu": "Обычная подготовка/проверка готового основания внутри той же операции уже учтена трудом стяжки. Реальная приемка основания, ее факт и особые испытания не подтверждены расчетом; остаток открыт без второй автоматической оплаты.",
+      "residualTitleRu": "Фактическая приемка и специальные проверки основания — без повторной оплаты обычной подготовки"
+    },
+    "labor_49": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Выдерживание, уход, влажность, прочность и контроль зависят от проекта и условий. 27,22 чел.-ч не равны календарному времени твердения; 3,85 м³ воды не задают график ухода. Рутинный труд той же операции повторно не начислять."
+    },
+    "labor_50": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Финишная сдача требует фактического результата и проверок. Количества раствора/воды и заполненные цены не являются доказательством приемки или готовности к грунтованию."
+    },
+    "equipment_25": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Леса и страховка остаются проверяемой потребностью доступа. Кран, погрузчик и насос не заменяют средства безопасной работы; высота до 15 м не доказывает их наличие."
+    },
+    "equipment_26": {
+      "disposition": "NORM_BASE_OPERATION_PART_ONLY_PROJECT_EXTRAS_OPEN",
+      "includedNormRoles": [
+        "tower_crane_8t",
+        "forklift_5t"
+      ],
+      "reasonRu": "Предусмотренный нормой подъем/перемещение той же операции уже отражен в машинных ресурсах; его нельзя повторно оплатить старым универсальным set подъемника. Иные подъемы, доступ или обоснованная другая технология остаются открытыми.",
+      "residualTitleRu": "Особый подъем и доступ сверх машинных операций принятой стяжки"
+    },
+    "equipment_27": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Электроинструмент не считается автоматически обеспеченным тремя табличными машинами. Его состав и применимость проверяются отдельно, без повторной оплаты уже включенного оборудования."
+    },
+    "equipment_51": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Измерительный комплект не становится наличным из-за указанного q. Комплектность, обеспечение и возможный отдельный расход не нормированы этой колонкой."
+    },
+    "equipment_52": {
+      "disposition": "NORM_BASE_OPERATION_PART_ONLY_PROJECT_EXTRAS_OPEN",
+      "includedNormRoles": [
+        "mortar_pump"
+      ],
+      "reasonRu": "Насос 2,36 маш.-ч/100 м² уже оплачивается выбранной машинной нормой. Нельзя начислить тот же насос еще раз комплектом малой механизации; иное оборудование и проектные дополнительные операции остаются открытыми.",
+      "residualTitleRu": "Другая малая механизация — сверх уже учтенного растворонасоса"
+    },
+    "logistics_28": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Доставка готового раствора и других материалов не доказана как полный маршрут таблицей крана/погрузчика/насоса. Нужны отдельные расстояния и условия поставки; автомобильные часы соседних колонок не переносить, доставку в цене не оплачивать повторно."
+    },
+    "logistics_29": {
+      "disposition": "NORM_BASE_OPERATION_PART_ONLY_PROJECT_EXTRAS_OPEN",
+      "includedNormRoles": [
+        "workers",
+        "tower_crane_8t",
+        "forklift_5t",
+        "mortar_pump"
+      ],
+      "reasonRu": "Обычный подъем и подача для той же стяжки в пределах принятой машинной технологии не оплачиваются вторым старым set поверх ее труда/машин. Особые перемещения и другие работы не закрыты; состав машины не заменять по сходному названию.",
+      "residualTitleRu": "Дополнительный подъем — только сверх уже учтенной операции стяжки"
+    },
+    "logistics_53": {
+      "disposition": "NORM_BASE_OPERATION_PART_ONLY_PROJECT_EXTRAS_OPEN",
+      "includedNormRoles": [
+        "workers",
+        "tower_crane_8t",
+        "forklift_5t",
+        "mortar_pump"
+      ],
+      "reasonRu": "Учтенные нормой перемещения и подачу тех же ресурсов не дублировать отдельной логистической строкой. Полная комплектация, перемещения других материалов и особые условия не доказаны; положительное количество остатка не выводится.",
+      "residualTitleRu": "Отдельная комплектация и подача сверх нормальной операции стяжки"
+    },
+    "logistics_54": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Возврат тары, упаковка и обратный маршрут не определены объемом готового раствора. Не начислять транспортный комплект без условий поставки."
+    },
+    "waste_30": {
+      "disposition": "NORM_CONSUMPTION_FIXED_NO_EXTRA_FACTOR_REMAINDER_OPEN",
+      "includedNormRoles": [
+        "roofing_felt",
+        "ready_cement_mortar_m100"
+      ],
+      "reasonRu": "Старые 3% запаса покрытия не прибавляются к 4,4 м² рубероида или 1,53 м³ раствора. Норматив не заменять геометрическими 1,50 м³ и не увеличивать вторым запасом; запас другого покрытия требует отдельного обоснования.",
+      "residualTitleRu": "Запас другого кровельного покрытия — без добавки к табличным расходам стяжки"
+    },
+    "waste_31": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Демонтаж/вывоз старого слоя не входит в подготовку уже готового основания. Прежние 3% от q не доказывают объем отходов, массу или транспорт; отдельная работа остается открытой."
+    },
+    "waste_55": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Сортировка и упаковка отходов требуют фактического вида и объема. Табличные материалы не определяют процент отходов или число мешков; обычные действия одной операции не тарифицировать дважды."
+    },
+    "waste_56": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Объем отдельной уборки и старая материальная единица m² не подтверждены 017-01. Сохранить проверку фактической потребности; обычную уборочную часть уже оплаченной операции не добавлять вторым трудом."
+    },
+    "quality_control_32": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Контроль нахлестов относится к проектным слоям/деталям. Из расхода 4,4 м² рубероида не следуют схема раскладки, нахлесты и факт их проверки."
+    },
+    "quality_control_33": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Проверка крепежа других слоев не выполнена расчетом стяжки и не нормирована выбранной колонкой. Применимость проверки остается отдельной."
+    },
+    "quality_control_34": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Проверка водоотвода не закрывается тем, что стяжка названа выравнивающей. Проектный уклон, примыкания к воронкам и результат проверки требуют самостоятельного подтверждения."
+    },
+    "quality_control_57": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Исполнительная документация и акты не создаются формулой или ценами. Потребность и выполненное документирование остаются отдельными проверяемыми фактами."
+    },
+    "quality_control_58": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Комплектность фактически поставленных материалов и соответствие М100 не доказаны нормативным объемом. Проверка качества поставки не подменяется выбранным enum."
+    },
+    "quality_control_59": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Итоговый чек-лист приемки не закрывается расчетом ресурса. Ровность, толщина, прочность, влажность и готовность к следующему слою требуют фактической проверки по проекту."
+    },
+    "overhead_35": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Сметное сопровождение и проверка объема не получают новую физическую норму из 017-01. Не добавлять универсальную единицу или процент к уже принятым ресурсам; состав услуги проверяется отдельно."
+    },
+    "tax_36": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Выбранная ресурсная колонка не устанавливает налоговое правило и текущую ставку. Старая единица сохраняется в истории, без создания универсального налога по площади стяжки."
+    }
+  },
+  "oracle": [
+    {
+      "measuredNormAreaM2": "37.5",
+      "quantities": {
+        "workers": "10.2075",
+        "included_machine_operators": "0.7275",
+        "tower_crane_8t": "0.255",
+        "forklift_5t": "0.4725",
+        "mortar_pump": "0.885",
+        "water": "1.44375",
+        "roofing_felt": "1.65",
+        "ready_cement_mortar_m100": "0.57375"
+      }
+    }
+  ],
+  "newPhysicalNormConsumers": 14,
+  "newWorkerConsumers": 2,
+  "newMachineConsumers": 6,
+  "newMaterialConsumers": 6,
+  "newOperatorInformationalConsumers": 2,
+  "newFullTechnicalTypes": 0,
+  "sourceRateTableArtifact": ".release-runtime/r568/s27-63/roof-cement-screed15-five/source-admission.json",
+  "sourceRateTableSha256": "228fd0249636a641f043ecdd1f9ae5f2a082e6b78a378ccae759fd4fd5f3b761",
+  "measurementTitleRu": "Площадь участка стяжки 25 мм, м²",
+  "measurementGuideRu": "Отдельно измеренная площадь именно этого участка. Площадь кровли, утеплителя и15мм стяжки не подставляются. Приложение получает10 добавок по источнику.",
+  "systemChoiceTitleRu": "Планируемый участок стяжки25мм",
+  "measurementChoiceTitleRu": "Что находится под стяжкой25мм и как подготовлен верх засыпки?",
+  "operationProcessOrdinal": 5,
+  "parentSnapshot": "data/estimate-benchmarks/fixtures/roof-screed25-gutters11-parents-s27-67.json",
+  "measurementParameterId": "roof_planned_screed25_area_m2",
+  "measurementUnitId": "m2",
+  "measurementConditional": true,
+  "quantityEditReasonRu": "Расход рассчитан по01701+10×01702 и площади участка25мм. Изменяйте площадь участка; нормативные добавки рассчитывает приложение.",
+  "candidateOnly": true,
+  "runtimeAdmitted": false,
+  "fullRoofAccepted": false,
+  "old15mmPackUnchanged": true,
+  "parentSnapshotSha256": "255f27e8ab7c2a3cb081986dc4ed68815b199ff85cc30b21429ab1e319b2e53b",
+  "designAdmissionArtifact": "data/estimate-benchmarks/source-packs/roof-screed25-s27-67-review.json",
+  "designAdmissionSha256": "b2448ebb2769bda5bc00125a750ad161383d160a036e50e20819b88f275e8189",
+  "numericRateValidationComplete": true,
+  "definitionOverlayValidationComplete": false,
+  "migrationProofComplete": false,
+  "sourceAdmissionArtifact": "data/estimate-benchmarks/source-packs/roof-screed25-s27-67-source-admission.json",
+  "sourceAdmissionSha256": "6ca400b88fcf212c6311d21b3b27f28a1c7065534e22aa3484227dd0dd1fe598"
+}
