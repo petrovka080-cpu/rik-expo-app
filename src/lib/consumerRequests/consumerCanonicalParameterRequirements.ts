@@ -54,7 +54,7 @@ export function consumerCanonicalMissingRequirements(
   const source = item.sourceParameters ?? {};
   if (Array.isArray(source.missingParameterRequirements)) {
     return source.missingParameterRequirements.filter((value): value is Record<string, unknown> =>
-      value != null && typeof value === "object" && !Array.isArray(value));
+      value != null && typeof value === "object" && !Array.isArray(value) && value.optionalScopeChoice!==true);
   }
   const reference = source.canonicalParameterRequirementReference as Partial<CanonicalParameterRequirementTable> | undefined;
   const revisionId = String(source.canonicalBackendRevisionId ?? "");
@@ -70,6 +70,7 @@ export function consumerCanonicalMissingRequirements(
   return (Array.isArray(source.missingParameterIds) ? source.missingParameterIds : []).flatMap((id) => {
     if (typeof id !== "string") return [];
     const requirement = validTable ? table?.requirementsById?.[id] : undefined;
+    if(requirement?.parameterId===id && requirement.optionalScopeChoice===true) return [];
     // A missing table must not make a source-managed quantity editable or erase its question.
     return [requirement?.parameterId === id && requirement.sourceConfirmationRequired === sourceManagedIds.has(id) ? requirement : {
       parameterId: id, titleRu: id, sourceConfirmationRequired: sourceManagedIds.has(id),

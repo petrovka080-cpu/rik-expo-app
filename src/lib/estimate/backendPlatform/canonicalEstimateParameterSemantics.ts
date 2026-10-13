@@ -3,8 +3,20 @@ import { hasHumanReadableAiEstimateParameterPassport, isAiEstimateTechnicalHidde
 import { waterMaterialVariantLabelRuR542 } from "./russianTechnologyTitleR542";
 import { evaluateInclusionGraph } from "./inclusionGraph";
 import { canonicalPublicEstimateChoiceLabelRu } from './canonicalPublicEstimateLanguageRu';
+import knaufOptionalScope from '../../../../data/estimate-benchmarks/source-packs/knauf-interior-plaster-conditional-composition-five-s27-63.json';
 
 type ParameterSchema = CanonicalEstimateCatalogItem["parameterSchema"][number];
+
+/** Authored optional selectors can exclude a pending scope after an explicit
+ * fact. Their applicability condition does not require every selector upfront.
+ * Missing answers still retain the unresolved needs and block full acceptance. */
+export function canonicalEstimateParameterIsOptionalScopeChoice(schema:ParameterSchema):boolean{
+  return schema.required===false && schema.valueSourceRole==='PROJECT_SPECIFIC_INPUT'
+    && schema.provenance?.consumer_input_role_v1==='ADVANCED_OPTION'
+    && schema.guide?.guideVersion===knaufOptionalScope.contract && schema.guide.sourceSnapshotHash===knaufOptionalScope.source.sha256
+    && knaufOptionalScope.facts.some(f=>f.parameterId===schema.parameterId)
+    && schema.formulaConsumers?.length===0 && (schema.resourceBranchConsumers?.length??0)>0;
+}
 
 /** The immutable passport owns the short form; labels never assign ownership. */
 export function canonicalEstimateConsumerInputRole(schema: Pick<ParameterSchema, "provenance">):
@@ -446,6 +458,7 @@ export function isCanonicalEstimateParameterRequiredForValues(
   values: Readonly<Record<string, unknown>>,
 ): boolean {
   if (schema.required) return true;
+  if (canonicalEstimateParameterIsOptionalScopeChoice(schema)) return false;
   const raw = schema.requiredWhen ?? schema.constraints.requiredWhen;
   if (raw && typeof raw === "object" && !Array.isArray(raw)) {
     const condition = raw as Record<string, unknown>;

@@ -69,6 +69,7 @@ import {
 import {
   canonicalEstimateBlockingParameterIssues,
   canonicalEstimateConsumerInputRole,
+  canonicalEstimateParameterIsOptionalScopeChoice,
   canonicalEstimateParameterChoiceLabelRu,
   isCanonicalEstimateConsumerSuppliedParameter,
   isCanonicalEstimateSourceManagedParameter,
@@ -378,7 +379,8 @@ function buildParameter(input: {
   });
   const normative = input.schema.normativeLinks?.[0];
   const guide = input.schema.guide;
-  const conditional = input.schema.requiredWhen != null || input.schema.constraints.requiredWhen != null;
+  const conditional = !canonicalEstimateParameterIsOptionalScopeChoice(input.schema)
+    && (input.schema.requiredWhen != null || input.schema.constraints.requiredWhen != null);
   const requiredLevel = input.schema.required
     ? "CONTRACT_REQUIRED" as const
     : conditional
@@ -515,8 +517,10 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
     return resolveCanonicalParameterVisibility(parameter.visibilityCondition, values);
   };
   const parameterById = new Map(allParameters.map(parameter => [parameter.parameterId, parameter]));
+  const optionalScopeChoiceIds=new Set(input.catalog.parameterSchema.filter(canonicalEstimateParameterIsOptionalScopeChoice).map(p=>p.parameterId));
   const activeQuestionIds = new Set<string>();
   const visitQuestion = (id: string, path: ReadonlySet<string>): void => {
+    if(optionalScopeChoiceIds.has(id)) return;
     const parameter = parameterById.get(id);
     if (!parameter || conditionState(parameter) === false) return;
     const selectors = canonicalParameterVisibilityMissingParameterIds(parameter.visibilityCondition, values);

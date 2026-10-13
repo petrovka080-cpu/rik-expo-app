@@ -95,6 +95,7 @@ export type StructuredEstimateParameterRequirement = {
   valueSourceRole?: import("../estimate/backendPlatform/contracts").CanonicalEstimateParameterValueSourceRole;
   sourceConfirmationRequired: boolean;
   guideShortRu: string | null;
+  optionalScopeChoice?: boolean;
 };
 
 export type StructuredEstimatePayload = {

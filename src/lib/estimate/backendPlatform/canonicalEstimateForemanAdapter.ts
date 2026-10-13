@@ -21,6 +21,7 @@ import { normalizeCanonicalEstimateRowCategory } from "./canonicalEstimateRowCat
 import {
   isCanonicalEstimateParameterRequiredForValues,
   isCanonicalEstimateSourceManagedParameter,
+  canonicalEstimateParameterIsOptionalScopeChoice,
 } from "./canonicalEstimateParameterSemantics";
 import { projectCanonicalEstimatePhysicalNormApplicabilityV1 } from "./canonicalEstimatePhysicalNormProjection";
 import { canonicalPublicResourcePresentationV1 } from './canonicalPublicResourcePresentationV1';
@@ -420,6 +421,7 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
           isCanonicalEstimateSourceManagedParameter(parameter)
           && isCanonicalEstimateParameterRequiredForValues(parameter, input.revision.parameters),
         guideShortRu: parameter.guide?.guideShortRu?.trim() || null,
+        ...(canonicalEstimateParameterIsOptionalScopeChoice(parameter)?{optionalScopeChoice:true}:{}),
       })),
       preliminaryNeeds: input.revision.preliminaryNeeds ?? [],
     },

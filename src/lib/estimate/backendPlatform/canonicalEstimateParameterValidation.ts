@@ -4,6 +4,7 @@ import type {
   CanonicalEstimateParameterInputValue,
 } from "./contracts";
 import { evaluateInclusionGraph } from "./inclusionGraph";
+import {canonicalEstimateParameterIsOptionalScopeChoice} from './canonicalEstimateParameterSemantics';
 import { NUMERIC_PARAMETER_RELATIONS, type NumericParameterRelation } from "./numericParameterRelations";
 
 type ParameterSchema = CanonicalEstimateCatalogItem["parameterSchema"][number];
@@ -246,7 +247,7 @@ export function validateCanonicalEstimateParameterInputs(input: {
       }
     }
     const requiredWhen = conditionMatches(definition.constraints.requiredWhen, parameters);
-    if (requiredWhen?.matches && !isPresent(value)) issues.push({ code: "REQUIRED_WHEN", parameterId: definition.parameterId, relatedParameterId: requiredWhen.parameterId });
+    if (requiredWhen?.matches && !isPresent(value) && !canonicalEstimateParameterIsOptionalScopeChoice(definition)) issues.push({ code: "REQUIRED_WHEN", parameterId: definition.parameterId, relatedParameterId: requiredWhen.parameterId });
     const forbiddenWhen = conditionMatches(definition.constraints.forbiddenWhen, parameters);
     if (forbiddenWhen?.matches && isPresent(value)) issues.push({ code: "FORBIDDEN_WHEN", parameterId: definition.parameterId, relatedParameterId: forbiddenWhen.parameterId });
   }

@@ -10,6 +10,10 @@ import {knaufInteriorPlasterConditionalCompositionPackS2763 as scopePack} from '
 import {compileCanonicalEstimateCore} from '../backendPlatform/canonicalEstimateCompileCore';
 import {estimateDeterministicHash} from '../estimateDeterministicHash';
 import type {PurchaseGroupRepresentative} from '../../../../scripts/estimate/r4a13/s2732PurchaseGroupOverlay';
+import {canonicalEstimateParameterIsOptionalScopeChoice,isCanonicalEstimateParameterRequiredForValues} from '../backendPlatform/canonicalEstimateParameterSemantics';
+import {validateCanonicalEstimateParameterInputs} from '../backendPlatform/canonicalEstimateParameterValidation';
+import {buildConsumerCanonicalPrecompileParameterSession} from '../../../features/consumerRepair/consumerCanonicalParameterEditor';
+import type {CanonicalEstimateCatalogItem} from '../backendPlatform/contracts';
 type Input=Parameters<typeof compileCanonicalEstimateCore>[0];
 const compile=(r:PurchaseGroupRepresentative,parameters:Record<string,unknown>)=>compileCanonicalEstimateCore({operation:'recalculate',catalogId:r.definition.catalog_id,compilerVersion:binding.contract,parameterDefinitions:r.parameters as unknown as Input['parameterDefinitions'],formulaDefinitions:r.formulas as unknown as Input['formulaDefinitions'],resourceDefinitions:r.resources as unknown as Input['resourceDefinitions'],submittedParameters:parameters,confirmedParameters:{},rowOverrides:{},priceItems:[],currencyCode:'KGS',maximumResourceRows:150,hashJson:async v=>estimateDeterministicHash(v)});
 const build=(i=0)=>{
@@ -78,4 +82,25 @@ test('a changed baseline binding is rejected, while explicit procurement edits o
  await expect(compile(r,{q:'20',betogrund_primer_state:pack.primerCompleteRu})).rejects.toThrow('invalid approved template baseline binding');
  const edited=await compile(build(),{q:'20',betogrund_primer_state:pack.primerCompleteRu,rotband_bag_multiple:4});
  expect(role(edited,'rotband-30kg-order')?.quantity).toBe('240');expect(role(edited,'rotband-consumed')?.quantity).toBe('170');
+});
+
+test('optional source scope selectors stay editable without four upfront questions or false absence',async()=>{
+ const r=build(),values={interior_plaster_material_system:pack.manualChoiceRu};
+ const root={parameterId:'interior_plaster_material_system',ordinal:0,valueType:'enum',unitId:null,titleRu:'Технология',required:true,defaultValue:null,
+  constraints:{values:[pack.manualChoiceRu]},visibilityRole:'USER_INPUT',valueSourceRole:'PROJECT_SPECIFIC_INPUT',formulaConsumers:[],resourceBranchConsumers:['plaster:knauf-materials:rotband-consumed'],
+  provenance:{consumer_input_role_v1:'OBJECT_FACT'},guide:{guideKind:'PROJECT_DEFINED',guideShortRu:pack.scopeRu,guideValidationPolicy:'MANDATORY_BLOCK',sourceRole:'PROJECT_DOCUMENTATION',guideVersion:scopePack.contract,sourceSnapshotHash:scopePack.source.sha256,applicability:pack.scopeRu,verifiedAt:scopePack.source.reviewedAt}};
+ const schemas=scopePack.facts.map((f,i)=>{const p=r.parameters.find(p=>p.parameter_id===f.parameterId)!;return{...root,parameterId:p.parameter_id,ordinal:i+1,titleRu:p.title_ru,required:p.required,constraints:p.constraints_json,formulaConsumers:p.truth_metadata.formula_consumers,resourceBranchConsumers:p.truth_metadata.resource_branch_consumers,provenance:p.truth_metadata.provenance,visibleWhen:p.truth_metadata.visible_when};}) as CanonicalEstimateCatalogItem['parameterSchema'];
+ expect(schemas.every(canonicalEstimateParameterIsOptionalScopeChoice)).toBe(true);
+ expect(schemas.every(p=>!isCanonicalEstimateParameterRequiredForValues(p,values))).toBe(true);
+ expect(validateCanonicalEstimateParameterInputs({schema:schemas,rawInputs:values}).issues).toEqual([]);
+ const catalog={catalogId:r.definition.catalog_id,releaseId:'test-release',parameterSchema:[root,...schemas],professionalMetadata:{},applicability:{},titleRu:'Штукатурка',namespace:'global',domain:'plaster_paint',workKey:'technical',definitionVersion:4} as CanonicalEstimateCatalogItem;
+ const session=buildConsumerCanonicalPrecompileParameterSession({catalog,draftId:'test-optional-scope',parameters:values,missingParameterIds:scopePack.facts.map(f=>f.parameterId)});
+ const options=session.parameters.filter(p=>p.parameterId.startsWith('knauf_scope_'));expect(options).toHaveLength(4);
+ expect(options.every(p=>p.requiredLevel==='OPTIONAL')).toBe(true);
+ expect(session.parameters.some(p=>p.requiredLevel==='BLOCKING_REQUIRED'&&p.value==null)).toBe(false);
+ const result=await compile(r,{q:'20',betogrund_primer_state:pack.primerCompleteRu,krer15_manual_conditions:conditions});
+ expect(result.preliminaryNeeds.some(n=>n.row_id==='plaster:knauf-materials:open-mesh')).toBe(true);
+ expect(result.preliminaryNeeds.some(n=>n.row_id==='plaster:knauf-materials:open-corner')).toBe(true);
+ expect(canonicalEstimateParameterIsOptionalScopeChoice({...schemas[0],required:true})).toBe(false);
+ expect(canonicalEstimateParameterIsOptionalScopeChoice({...schemas[0],formulaConsumers:['actual-quantity']})).toBe(false);
 });
