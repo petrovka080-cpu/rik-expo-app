@@ -131,7 +131,7 @@ function rows(
 describe("R4-A6 canonical professional PDF", () => {
   it("keeps selected waste boundaries and service contents in resource names without copying explanatory notes", () => {
     const mode = 'Материалы остаются на объекте; внешний вывоз не нужен';
-    const service = 'Согласованная тара <контроль>'; 
+    const service = 'Согласованная тара <контроль>';
     const source = rows(2);
     source[0] = {...source[0]!, row_id:'f09:stone_tile_floor_demolition:waste-plan',
       title_ru:`Обращение со снятой каменной шашкой — ${mode}`, quantity:'35.5', unit_id:'m2',
