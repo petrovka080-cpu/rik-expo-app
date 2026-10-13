@@ -495,7 +495,7 @@ describe("incomplete canonical estimate readiness", () => {
 
     const approval = renderer.root.findByProps({ testID: "consumer-repair-approve" });
     expect(approval.props.disabled).toBe(true);
-    expect(approval.props.accessibilityLabel).toBe("Заполните параметры сметы");
+    expect(approval.props.accessibilityLabel).toBe("Укажите необходимые данные объекта");
   });
 
   it("does not ask for parameters or allow pending edits to approve a withdrawn calculation", () => {
@@ -543,7 +543,7 @@ describe("incomplete canonical estimate readiness", () => {
     expect(approval.props.disabled).toBe(false);
     expect(approval.props.accessibilityLabel).toBe("Подтвердить смету");
     expect(approval.props.accessibilityHint).toBe(
-      "Без цены остаются позиции: 7. Их можно заполнить позже.",
+      "Цена или состав цены ещё не подтверждены в 7 поз. Их можно уточнить позже.",
     );
   });
 });
