@@ -690,7 +690,8 @@ export async function publishCanonicalDefinitionDraft(
     "default_value", "constraints_json", "truth_metadata", "approved_template_baseline_id",
   ], plan.parameters.map((parameter) => [
     parameter.definition_version_id, parameter.parameter_id, parameter.ordinal, parameter.value_type,
-    parameter.unit_id, parameter.title_ru, parameter.required, parameter.default_value,
+    parameter.unit_id, parameter.title_ru, parameter.required, parameter.default_value == null ? null
+      : jsonb(parameter.default_value, "STOP_CANONICAL_PUBLISHER_WRITE_PARAMETER_DEFAULT"),
     jsonb(parameter.constraints_json, "STOP_CANONICAL_PUBLISHER_WRITE_PARAMETER_CONSTRAINTS", "object"),
     jsonb(parameter.truth_metadata, "STOP_CANONICAL_PUBLISHER_WRITE_PARAMETER_TRUTH", "object"),
     null,
