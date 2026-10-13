@@ -24,11 +24,11 @@ export function overlayS2769AsphaltFloorWasteFour(parent:PurchaseGroupRepresenta
  r.passport.included_scope_ru=[...parent.passport.included_scope_ru,
   'Дополнительное обращение со снятыми материалами — только по подтверждённому способу и полной спецификации услуги.'];
  r.passport.excluded_scope_ru=parent.passport.excluded_scope_ru.filter((scope:string)=>scope!=='внеобъектовый вывоз и размещение отходов');
- r.passport.decision={...r.passport.decision,independentCompletenessMap:map,quantityScope:'PARTIAL',technicalScopeStatus:'OBJECT_SCOPE_REQUIRES_CONFIRMATION',
-  unresolvedResourceRowIds:[pendingId],positiveObjectScopeResolutionS2769:resolution,completeTechnicalEstimateAccepted:false,
+ r.passport.decision={...r.passport.decision,independentCompletenessMap:map,quantityScope:'FULL',technicalScopeStatus:'OBJECT_SCOPE_REQUIRES_CONFIRMATION',
+  objectFactBoundaryRowIds:[pendingId],positiveObjectScopeResolutionS2769:resolution,completeTechnicalEstimateAccepted:false,
   unknownWasteHandlingStillPartial:true,unresolvedNumericalSourceGaps:0,newPhysicalNorms:0};
  r.passport.capability_matrix=parent.passport.capability_matrix.map((capability:Record<string,unknown>)=>({...capability,
-  ...(capability.capability==='FULL_APPLICABLE_SCOPE'?{status:'NEEDS_OBJECT_FACT',unresolvedResourceRowIds:[pendingId],conditionalScopeResolutionS2769:resolution}:{}),
+  ...(capability.capability==='FULL_APPLICABLE_SCOPE'?{status:'GREEN',objectFactBoundaryRowIds:[pendingId],conditionalScopeResolutionS2769:resolution}:{}),
  }));
  return{representative:r,legacyRowIds:parent.resources.map(row=>row.row_id),addedRowIds:added.map(row=>row.row_id),
   addedParameterIds:r.parameters.filter(p=>!parent.parameters.some(old=>old.parameter_id===p.parameter_id)).map(p=>p.parameter_id),changedFormulaIds:[],

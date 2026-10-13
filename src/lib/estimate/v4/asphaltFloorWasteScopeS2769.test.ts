@@ -4,6 +4,7 @@ import type {PurchaseGroupRepresentative} from '../../../../scripts/estimate/r4a
 import {compileCanonicalEstimateCore} from '../backendPlatform/canonicalEstimateCompileCore';
 import {buildCanonicalProfessionalPdfProjection} from '../backendPlatform/canonicalProfessionalPdf';
 import {overlayS2769AsphaltFloorWasteFour} from '../../../../scripts/estimate/r4a13/s2769AsphaltFloorWasteFourOverlay';
+import {canonicalPublisherQuantityScopeIsConsistent} from '../../../../scripts/estimate/r4a13/canonicalDefinitionPublisherR1';
 const reps=parents.reps as unknown as PurchaseGroupRepresentative[],prefix='f09:asphalt_floor_covering_demolition:';
 const facts={floor_covering_area_m2:'35.5',asphalt_floor_work_scope_confirmed:p.confirmedWorkScopeValue};
 const service={asphalt_floor_waste_mass_t:'1.25',asphalt_floor_haul_distance_km:'12',asphalt_floor_waste_service_coverage:p.coverageValue,
@@ -70,5 +71,6 @@ test('outside haul is conditionally resolved by actual scope, never excluded mer
   expect(external.resolution).toEqual({kind:'ROW',rowId:prefix+'waste-service'});expect(external.conditionalScopeResolutionS2769.unknownRemainsOpen).toBe(true);
   expect(representative.passport.excluded_scope_ru).not.toContain('внеобъектовый вывоз и размещение отходов');
   expect(representative.passport.decision.unresolvedNumericalSourceGaps).toBe(0);
+  expect(canonicalPublisherQuantityScopeIsConsistent(representative)).toBe(true);
  }
 });
