@@ -73,7 +73,7 @@ test('ordinary PDF keeps essential specifications without explanatory paragraphs
   expect(projection.html).toContain('<strong>Штукатурный инструмент по этапам:</strong> Для ручной гипсовой штукатурки');
   expect(projection.html).not.toContain('На потолок раствор наносится соколом.');
   expect(projection.html).not.toContain('Покупка комплекта на каждый участок');
-  expect(projection.html).not.toContain('<script>');expect(projection.html).toContain('Количество нужно уточнить');
+  expect(projection.html).not.toContain('<script>');expect(projection.html).toContain('Не рассчитано');
   expect(projection).toMatchObject({rowCount:1,pricedRowCount:0,preliminaryNeedCount:1,grandTotalStatus:'PARTIAL_NEEDS_PRICE'});expect(JSON.stringify(need)).toBe(snapshot);
   for(const trace of [{...need.calculation_trace,manualTitleOverride:true},{resourceGraph:{publicResourcePresentationV1:{...need.calculation_trace.resourceGraph.publicResourcePresentationV1,sourceTitleRu:'Другое изделие'}}}]){
     const suppressed=buildCanonicalProfessionalPdfProjection({revision:revision(0),rows:[],preliminaryNeeds:[{...need,calculation_trace:trace}],workTitleRu:'Штукатурка'});
@@ -233,7 +233,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-68-compact-rows-template42");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-69-compact-pending-rows-template43");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,
@@ -385,12 +385,12 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(projection.preliminaryNeedCount).toBe(1);
     expect(projection.grandTotalStatus).toBe("PARTIAL_NEEDS_PRICE");
     expect(projection.html).toContain("Совместимая грунтовка");
-    expect(projection.html).toContain("Количество нужно уточнить");
-    expect(projection.html).toContain("В сумму и закупку позиция не включена");
+    expect(projection.html).toContain("Не рассчитано");
+    expect(projection.html).toContain("Нерассчитанные позиции не включены в стоимость и закупку");
     expect(projection.html).not.toContain(">0 kg<");
     expect(projection.html).toContain("ДЕМО / VALIDATION_FIXTURE: подтверждение проекта отсутствует &lt;script&gt;");
     expect(projection.html).toContain("ДЕМО / VALIDATION_FIXTURE — испытательный документ.");
-    expect(projection.html).toContain("Фактический полный расход совместимой грунтовки на квадратный метр");
+    expect(projection.html).not.toContain("Фактический полный расход совместимой грунтовки на квадратный метр");
     expect(projection.html).not.toContain("primer_consumption_kg_m2");
     expect(projection.html).not.toContain("<script>");
   });
@@ -447,7 +447,7 @@ describe("R4-A6 canonical professional PDF", () => {
     })).toThrow("row count differs");
   });
 
-  it("prints every operation resource with one shared question list and retains an entered preliminary value", () => {
+  it("prints every operation resource once and retains an entered preliminary value without repeated notes", () => {
     const operation = { contractVersion: "canonical-operation-resource/v1", groupId: "crossing", groupTitleRu: "Переход",
       operationId: "casing", operationTitleRu: "Сборка футляра", completionCriterionRu: "Стыки выполнены и проверены." };
     const needs = ["Электроды", "Монтажный механизм"].map((title, index) => ({ ...rows(1)[0]!,
@@ -462,9 +462,11 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(projection.preliminaryNeedCount).toBe(2);
     expect(projection.html).toContain("Электроды");
     expect(projection.html).toContain("Монтажный механизм");
-    expect(projection.html).toContain("Введено 2; требуется подтверждение исходных сведений");
-    expect(projection.html).toContain("исходные сведения № 1, 2");
-    expect(projection.html.match(/Подтверждённая норма/gu)).toHaveLength(2);
+    expect(projection.html).toContain("2 (условия не подтверждены)");
+    expect(projection.html).not.toContain("Предварительная потребность из определения");
+    expect(projection.html).not.toContain("исходные сведения №");
+    expect(projection.html).not.toContain("Исходные сведения для уточнения состава");
+    expect(projection.html).not.toContain("Подтверждённая норма");
     expect(projection.html).not.toContain('Для завершения:');
     expect(projection.html).not.toContain('Стыки выполнены и проверены.');
     expect(projection.html).not.toContain("source-one");
