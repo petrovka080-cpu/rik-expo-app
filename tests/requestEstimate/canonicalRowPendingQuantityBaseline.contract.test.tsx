@@ -61,6 +61,8 @@ function expectMode(item: ConsumerRepairRequestItem, expected: string) {
       onDecrease={jest.fn()} onIncrease={jest.fn()} onQuantityChange={jest.fn()}
       onUnitPriceChange={jest.fn()} onRemove={jest.fn()} />);
   });
+  expect(renderer.root.findAllByProps({ testID: `consumer-repair-item-quantity-mode-${item.id}` })).toHaveLength(0);
+  act(() => renderer.root.findByProps({ testID: `consumer-repair-item-professional-proof-${item.id}` }).props.onPress());
   expect(renderer.root.findByProps({ testID: `consumer-repair-item-quantity-mode-${item.id}` }).props.children).toBe(expected);
   expect(renderer.root.findByProps({ testID: `consumer-repair-item-quantity-input-${item.id}` }).props.value).toBe(String(item.quantity ?? ""));
   act(() => renderer.unmount());
@@ -350,6 +352,9 @@ describe("canonical pending row quantity provenance", () => {
       act(() => { renderer.root.findByProps({ testID: "consumer-repair-item-plus-test-owned-row" }).props.onPress(); });
       expect(editor.current().quantity).toBe(15.25);
       expect(renderer.root.findByProps({ testID: "consumer-repair-item-quantity-input-test-owned-row" }).props.value).toBe("15.25");
+      if (renderer.root.findAllByProps({ testID: "consumer-repair-item-quantity-mode-test-owned-row" }).length === 0) {
+        act(() => renderer.root.findByProps({ testID: "consumer-repair-item-professional-proof-test-owned-row" }).props.onPress());
+      }
       expect(renderer.root.findByProps({ testID: "consumer-repair-item-quantity-mode-test-owned-row" }).props.children).toBe("Введено вручную. По формуле: 14.25 м³.");
       expect(frame).not.toHaveBeenCalled();
       expect(editor.recalculate).not.toHaveBeenCalled();
@@ -361,6 +366,9 @@ describe("canonical pending row quantity provenance", () => {
       expect(committed).toHaveBeenCalledTimes(2);
       act(() => { renderer.root.findByProps({ testID: "consumer-repair-item-restore-calculated-test-owned-row" }).props.onPress(); });
       expect(editor.current().quantity).toBe(14.25);
+      if (renderer.root.findAllByProps({ testID: "consumer-repair-item-quantity-mode-test-owned-row" }).length === 0) {
+        act(() => renderer.root.findByProps({ testID: "consumer-repair-item-professional-proof-test-owned-row" }).props.onPress());
+      }
       expect(renderer.root.findByProps({ testID: "consumer-repair-item-quantity-mode-test-owned-row" }).props.children).toBe("Рассчитано автоматически: 14.25 м³. Поле можно изменить.");
       expect(editor.recalculate).not.toHaveBeenCalled();
       expect(committed).toHaveBeenCalledTimes(3);

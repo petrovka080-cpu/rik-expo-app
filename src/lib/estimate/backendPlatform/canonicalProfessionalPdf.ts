@@ -15,12 +15,12 @@ import { canonicalEstimateResourceOperationSections } from "./canonicalEstimateO
 import { canonicalArtifactPurchaseRequirement } from "./canonicalPersistedPurchaseBalance";
 import { canonicalPublicEstimateWorkTitleRu, canonicalPublicEstimateRequestTextRu } from './canonicalPublicEstimateLanguageRu';
 import { resolveCanonicalEstimateExplicitRowCategory } from './canonicalEstimateRowCategory';
-import {canonicalScopeRequirementDecisionV1,groupCanonicalScopeRequirementsV1,canonicalScopeRequirementStatusRuV1} from './canonicalScopeRequirementV1';
+import {canonicalScopeRequirementDecisionV1,groupCanonicalScopeRequirementsV1} from './canonicalScopeRequirementV1';
 import {readRoofPrimerPrerequisiteDecisionV1,roofPrimerPhaseRuV1} from './canonicalRoofPrimerPrerequisiteV1';
 import {canonicalMachineHourPriceNeedsConfirmationV1} from './canonicalMachineHourPriceCoverageV1';
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-67-machine-price-coverage-template41" as const;
+  "canonical-professional-pdf.r4-a13-s27-68-compact-rows-template42" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -208,11 +208,11 @@ function renderPreliminaryNeedRow(row: CanonicalArtifactRow, displayOrdinal: num
     : null;
   const presentation = canonicalArtifactPublicResourcePresentationV1(row);
   const specifications = presentation
-    ? [...new Set([presentation.specificationRu, ...presentation.detailsRu]
+    ? [...new Set([presentation.specificationRu]
       .filter((detail): detail is string => typeof detail === "string" && detail.trim().length > 0))]
     : [];
-  // Each authored paragraph keeps its resource context and can move to the next
-  // page independently. A long tool profile must not force one oversized row.
+  // Keep the essential specification in the ordinary document. Explanations
+  // remain in the saved evidence and the on-demand calculation disclosure.
   const specificationRows = specifications.map(detail => `<tr class="preliminary-need-specification"><td></td><td colspan="6"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row))}:</strong> ${escapeCanonicalArtifactHtml(detail)}</td></tr>`).join("");
   return `<tr class="preliminary-need">
     <td class="number">${displayOrdinal}</td>
@@ -321,7 +321,12 @@ export function buildCanonicalProfessionalPdfProjection(input: {
         : renderClientRow(row, ++rowNumber, parameters,String(revision.catalog_id));
     }).join('');
     const shared = section.sharedResources.map(resource => `<tr class="shared-resource"><td colspan="7">${escapeCanonicalArtifactHtml(resource.titleRu)} — общий ресурс, учтён в разделе «${escapeCanonicalArtifactHtml(canonicalPublicEstimateWorkTitleRu(resource.ownerOperationTitleRu))}».</td></tr>`).join('');
-    const scopeNotes=(section.scopeRequirements ?? []).map(group => `<tr class="scope-note"><td colspan="7"><strong>${escapeCanonicalArtifactHtml(group.statuses.map(canonicalScopeRequirementStatusRuV1).join('; '))}</strong><br>${escapeCanonicalArtifactHtml(group.detailsRu.join(' '))}${group.statuses.some(status=>['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','LEGACY_SOURCE_REQUIRED','SCOPE_UNVERIFIED'].includes(status))?'<br>Расчёт этого этапа ещё не завершён приложением. Не включён в стоимость и закупку.':''}</td></tr>`).join('');
+    const scopeNotes=(section.scopeRequirements ?? []).flatMap(group => {
+      const objectFactsMissing=group.statuses.includes('OBJECT_FACT_REQUIRED');
+      const calculationIncomplete=group.statuses.some(status=>['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','LEGACY_SOURCE_REQUIRED','SCOPE_UNVERIFIED'].includes(status));
+      if(!objectFactsMissing&&!calculationIncomplete)return [];
+      return ['<tr class="scope-note"><td colspan="7">'+(objectFactsMissing?'Нужны исходные данные участка.':'Расчёт этого этапа ещё не завершён приложением. Не включён в стоимость и закупку.')+'</td></tr>'];
+    }).join('');
     return heading + (section.physicallyExcluded?'<tr><td colspan="7">Подработа исключена пользователем из состава. Можно восстановить.</td></tr>':'')
       + ownRows + shared + scopeNotes + (primerAppendix && section.scopeRequirements?.some(group=>group.groupId==='primer')?`<tr><td colspan="7">${primerAppendix}</td></tr>`:'');
   }).join('');

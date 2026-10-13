@@ -301,22 +301,6 @@ function ConsumerRepairItemRowComponent({
             {purchaseRequirement ? <Text style={styles.calculatedQuantityHint} testID={`consumer-repair-item-known-consumption-${item.id}`}>
               {purchaseRequirement.labelRu}: {formatEstimateQuantityRu(purchaseRequirement.quantity)} {formatEstimateUnitLabel(purchaseRequirement.unitId)}. Точный заказ ещё не подтверждён.
             </Text> : null}
-            {calculatedQuantity != null || manualQuantityOverride || (derivedQuantityEditReason != null && item.quantity != null) ? (
-              <Text
-                style={manualQuantityOverride ? styles.manualQuantityHint : styles.calculatedQuantityHint}
-                testID={`consumer-repair-item-quantity-mode-${item.id}`}
-              >
-                {derivedQuantityEditReason
-                  ? derivedQuantityEditReason
-                  : sourceManagedNeed
-                  ? "Сохранённое количество ожидает подтверждения технического источника."
-                  : manualQuantityOverride
-                  ? calculatedQuantity != null
-                    ? `Введено вручную. По формуле: ${calculatedQuantity} ${unitLabel}.`
-                    : "Введено вручную. Расчётное количество пока неизвестно."
-                  : `Рассчитано автоматически: ${calculatedQuantity} ${unitLabel}. Поле можно изменить.`}
-              </Text>
-            ) : null}
             {manualQuantityOverride ? (
               <Pressable
                 accessibilityRole="button"
@@ -414,7 +398,7 @@ function ConsumerRepairItemRowComponent({
             {`${"\u0412\u044b\u0431\u0440\u0430\u043d \u0442\u043e\u0432\u0430\u0440"}: ${item.selectedProductBinding.visibleName}${item.selectedProductBinding.packageLabel ? `, ${item.selectedProductBinding.packageLabel}` : ""}`}
           </Text>
         ) : null}
-        {professionalEvidence || publicResourcePresentation ? (
+        {professionalEvidence || publicResourcePresentation || calculatedQuantity != null || manualQuantityOverride || derivedQuantityEditReason != null ? (
           <View style={styles.traceWrap}>
             <Pressable
               accessibilityLabel="Объяснение формулы, нормы и цены"
@@ -438,6 +422,22 @@ function ConsumerRepairItemRowComponent({
                 style={styles.traceBox}
                 testID={`consumer-repair-item-professional-proof-detail-${item.id}`}
               >
+                {calculatedQuantity != null || manualQuantityOverride || (derivedQuantityEditReason != null && item.quantity != null) ? (
+                  <Text
+                    style={manualQuantityOverride ? styles.manualQuantityHint : styles.calculatedQuantityHint}
+                    testID={`consumer-repair-item-quantity-mode-${item.id}`}
+                  >
+                    {derivedQuantityEditReason
+                      ? derivedQuantityEditReason
+                      : sourceManagedNeed
+                      ? "Сохранённое количество ожидает подтверждения технического источника."
+                      : manualQuantityOverride
+                      ? calculatedQuantity != null
+                        ? `Введено вручную. По формуле: ${calculatedQuantity} ${unitLabel}.`
+                        : "Введено вручную. Расчётное количество пока неизвестно."
+                      : `Рассчитано автоматически: ${calculatedQuantity} ${unitLabel}. Поле можно изменить.`}
+                  </Text>
+                ) : null}
                 {publicResourcePresentation?.detailsRu.map((detail, index) => <Text key={index} style={styles.traceLine}>{detail}</Text>)}
                 {professionalEvidence ? <Text style={styles.traceLine}>{professionalEvidence.formulaLabel}</Text> : null}
                 {professionalEvidence?.parameterLabel ? (

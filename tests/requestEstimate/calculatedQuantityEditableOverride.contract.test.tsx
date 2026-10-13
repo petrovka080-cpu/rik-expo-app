@@ -78,6 +78,9 @@ describe("calculated estimate quantity editable override", () => {
     expect(renderer.root.findByProps({
       testID: "consumer-repair-item-quantity-input-row-calculated",
     }).props.value).toBe("14.25");
+    if (renderer.root.findAllByProps({ testID: "consumer-repair-item-quantity-mode-row-calculated" }).length === 0) {
+      act(() => renderer.root.findByProps({ testID: "consumer-repair-item-professional-proof-row-calculated" }).props.onPress());
+    }
     expect(renderer.root.findByProps({
       testID: "consumer-repair-item-quantity-mode-row-calculated",
     }).props.children).toBe("Рассчитано автоматически: 14.25 м³. Поле можно изменить.");
@@ -114,6 +117,9 @@ describe("calculated estimate quantity editable override", () => {
       renderer = TestRenderer.create(row({ item: manualItem, onQuantityChange }));
     });
 
+    if (renderer.root.findAllByProps({ testID: "consumer-repair-item-quantity-mode-row-calculated" }).length === 0) {
+      act(() => renderer.root.findByProps({ testID: "consumer-repair-item-professional-proof-row-calculated" }).props.onPress());
+    }
     expect(renderer.root.findByProps({
       testID: "consumer-repair-item-quantity-mode-row-calculated",
     }).props.children).toBe("Введено вручную. По формуле: 14.25 м³.");
