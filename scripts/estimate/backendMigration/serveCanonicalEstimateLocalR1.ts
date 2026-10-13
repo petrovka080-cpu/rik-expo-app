@@ -1,5 +1,6 @@
 import {admitRoofScreed25StandaloneMigrationProofV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofScreed25StandaloneMigrationV1';
 import {admitStoneCubesWasteMigrationProofS2769} from '../../../src/lib/estimate/backendPlatform/canonicalStoneCubesWasteMigrationS2769';
+import {admitAsphaltFloorWasteMigrationProofS2769} from '../../../src/lib/estimate/backendPlatform/canonicalAsphaltFloorWasteMigrationS2769';
 import {assertStoneCubesWasteSelectionS2769} from '../../../src/lib/estimate/v4/stoneCubesWasteScopeS2769';
 import {admitCn87SubfloorMigrationProofS2769} from '../../../src/lib/estimate/backendPlatform/canonicalCn87SubfloorMigrationS2769';
 import {admitRoofStandaloneWorkScopeMigrationProofV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofStandaloneWorkScopeV1';
@@ -92,6 +93,17 @@ async function localManualAmendmentMigrationBindings(client: PoolClient, definit
   const input = {resources: resources.rows, formulas: formulas.rows, parameters: parameters.rows};
   let predecessorBindings:Record<string,unknown>={};
   const definition=(await client.query('select * from public.estimate_definition_version where id=$1',[definitionId])).rows[0];
+  const asphaltProof=definition?.source_metadata?.asphaltFloorWasteMigrationS2769;
+  if(asphaltProof?.fromDefinitionId&&/^[0-9a-f-]{36}$/iu.test(String(asphaltProof.fromDefinitionId))){
+    const fromId=String(asphaltProof.fromDefinitionId),[oldDef,oldResources,oldFormulas,oldParameters]=await Promise.all([
+      client.query('select * from public.estimate_definition_version where id=$1',[fromId]),client.query('select * from public.estimate_resource_spec where definition_version_id=$1',[fromId]),
+      client.query('select * from public.estimate_formula_graph where definition_version_id=$1',[fromId]),client.query('select * from public.estimate_parameter_definition where definition_version_id=$1',[fromId])]);
+    const before=oldDef.rows[0],admitted=before?admitAsphaltFloorWasteMigrationProofS2769({proof:asphaltProof,
+      fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},
+      from:{resources:oldResources.rows,formulas:oldFormulas.rows,parameters:oldParameters.rows},to:input}):null;
+    if(admitted)predecessorBindings={manualMigrationPredecessorV1:{definitionId:fromId,priceBindings:canonicalManualPriceMigrationBindings(admitted.normalizedTo),
+      exclusionBindings:canonicalManualExclusionMigrationBindings(admitted.normalizedTo),operationBindings:canonicalCompositionOperationMigrationBindingsV1(admitted.normalizedTo),compositionSelectionIdsPreservedV1:true}};
+  }
   const stoneProof=definition?.source_metadata?.stoneCubesWasteMigrationS2769;
   if(stoneProof?.fromDefinitionId&&/^[0-9a-f-]{36}$/iu.test(String(stoneProof.fromDefinitionId))){
     const fromId=String(stoneProof.fromDefinitionId),[oldDef,oldResources,oldFormulas,oldParameters]=await Promise.all([
@@ -2474,6 +2486,8 @@ async function compileClaimedJob(
     const fromModel={resources:parentResources.rows,formulas:parentFormulas.rows,parameters:parentParameters.rows};
     const toModel={resources:resourceRows,formulas,parameters:parameterDefinitions};
     const before=(await client.query('select * from public.estimate_definition_version where id=$1',[parentRevision.definition_version_id])).rows[0];
+    const asphaltAdmitted=before?admitAsphaltFloorWasteMigrationProofS2769({proof:definition.source_metadata?.asphaltFloorWasteMigrationS2769,
+      fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},from:fromModel,to:toModel}):null;
     const stoneAdmitted=before?admitStoneCubesWasteMigrationProofS2769({proof:definition.source_metadata?.stoneCubesWasteMigrationS2769,
       fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},from:fromModel,to:toModel}):null;
     const cn87Admitted=before?admitCn87SubfloorMigrationProofS2769({proof:definition.source_metadata?.cn87SubfloorMigrationS2769,
@@ -2495,7 +2509,7 @@ async function compileClaimedJob(
       toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},from:fromModel,to:toModel}):null;
     const standaloneScopePath=await localRoofStandaloneWorkScopeMigrationV1(client,definition,toModel);
     const standaloneScopePredecessor=standaloneScopePath?.find(m=>m.definitionId===before?.id);
-    const migrationTo=stoneAdmitted?.normalizedTo??cn87Admitted?.normalizedTo??standaloneScopePredecessor?.model??standaloneScreedAdmitted?.normalizedTo??screed25Predecessor?.model??guttersPredecessor?.model??lowerLayersPredecessor?.model??metalTrimPredecessor?.model??screedPredecessor?.model??directFiveToSeven?.composed??valleyAdmitted?.normalizedTo??admitted?.normalizedTo??toModel;
+    const migrationTo=asphaltAdmitted?.normalizedTo??stoneAdmitted?.normalizedTo??cn87Admitted?.normalizedTo??standaloneScopePredecessor?.model??standaloneScreedAdmitted?.normalizedTo??screed25Predecessor?.model??guttersPredecessor?.model??lowerLayersPredecessor?.model??metalTrimPredecessor?.model??screedPredecessor?.model??directFiveToSeven?.composed??valleyAdmitted?.normalizedTo??admitted?.normalizedTo??toModel;
     // Validate a newly requested exclusion against the admitted predecessor
     // before any operation-key expansion, as well as the stored parent below.
     if(Object.hasOwn(payload,'compositionSelectionV1'))assertCanonicalCompositionSelectionReleaseMigrationV1({selection:effectiveCompositionSelectionV1,from:fromModel,to:migrationTo});

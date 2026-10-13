@@ -1,0 +1,58 @@
+{
+  "contract": "rik-expo-app.s27-69.asphalt-floor-waste-scope-four.v1",
+  "sourcePack": "data/estimate-benchmarks/source-packs/floor-demolition-series-s27-52.json",
+  "sourcePackSha256": "5bb4443b3ba1c5b254779696191c36c55555d8bc55131e00cea03589d9076713",
+  "source": {
+    "officialUrl": "https://minstroy.gov.kg/ru/kyzmat/459/show",
+    "localArtifact": ".release-runtime/r568/s27-3/f09-next-current-lineage/official-snapshots/krer_46_2015.pdf",
+    "sha256": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+    "edition": "КРЕР46-2015; введён с01.01.2016",
+    "printedPages": [
+      5,
+      57,
+      58
+    ],
+    "table": "46-04-010",
+    "basisM2": 100,
+    "exactColumn": "46-04-010-01"
+  },
+  "parentSnapshot": "data/estimate-benchmarks/fixtures/asphalt-floor-four-v4-parents-s27-69.json",
+  "parentSnapshotSha256": "9b59ac231939117b3fd337a83d77085753e733bc1fb6a1a65081c58249e24b10",
+  "scopeRu": "Только подтверждённое асфальтовое или асфальтобетонное покрытие пола, КРЕР46-04-010-01, четыре существующих типа. Пять прежних владельцев и все опубликованные физические нормы сохранены. Внешний вывоз не исключается только из-за отсутствия в норме; способ обращения устанавливается фактом объекта.",
+  "confirmedWorkScopeValue": "Асфальтовое или асфальтобетонное покрытие пола; снимается только покрытие, без основания и новой конструкции пола; уборка, сортировка, перемещения до 130 м суммарно и до 50 м от объекта, спуск через окно в лотках соответствуют условиям объекта",
+  "retainModeValue": "Материалы остаются на объекте; затаривание, дополнительный спуск и обработка вне КРЕР не нужны; внешний вывоз не нужен",
+  "onSiteExtraModeValue": "Нужно дополнительное обращение с отходами на объекте; внешнего вывоза нет",
+  "contractorModeValue": "Нужен внешний вывоз; требуемые затаривание, дополнительный спуск и перевозка входят в согласованную услугу",
+  "coverageValue": "Услуга включает требуемые тару, затаривание, отдельный спуск, погрузку вне КРЕР, перевозку, топливо, труд и приём отходов",
+  "targets": [
+    {
+      "catalogId": "canonical-work:base:demolition_interior_flooring_dismantle_large_area",
+      "predecessorDefinitionId": "09c7f4f1-a425-52b5-ab2a-e80dd075459c",
+      "parentSha256": "2326f4efae50b649b308f2f3f356d2851a50e02aa9241ece1e9ca1b5caf4b563",
+      "predecessorVersion": 4
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_flooring_dismantle_small_area",
+      "predecessorDefinitionId": "2ae7d686-5273-567b-a494-f4d98f4fef7b",
+      "parentSha256": "6c880098212b2bf72c5d44b1631b74c4834e66fa271c7b2b794290df6d8259f6",
+      "predecessorVersion": 4
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_flooring_dismantle_standard",
+      "predecessorDefinitionId": "a328361d-5d71-5cfa-a826-550d5acd9320",
+      "parentSha256": "7b5ec4a3a403b04891fb5fe4dd0dfe421300d9910585925862e206f9d9288e15",
+      "predecessorVersion": 4
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_flooring_dismantle_wet_zone",
+      "predecessorDefinitionId": "f182f996-3958-5742-855d-38e28e1063b7",
+      "parentSha256": "71225fae626869c7f38a0aaf4b90c851c88051264aacead81637ba4c78405521",
+      "predecessorVersion": 4
+    }
+  ],
+  "oldPhysicalRatesUnchanged": true,
+  "newPhysicalNorms": 0,
+  "unknownWasteHandlingNotAutomaticallyNotApplicable": true,
+  "massBagsTripsNeverDerivedFromArea": true,
+  "productionAccepted": false
+}

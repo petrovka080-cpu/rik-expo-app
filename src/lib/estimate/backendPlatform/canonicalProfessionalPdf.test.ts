@@ -153,7 +153,7 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(pdf).toMatchObject({rowCount:2,pricedRowCount:0,missingPriceRowCount:1,grandTotalStatus:'PARTIAL_NEEDS_PRICE'});
     expect(pdf.html).toContain('<td class="numeric">1,25</td>');
     expect(JSON.stringify({source,saved})).toBe(before);
-    source[1] = {...source[1]!,title_ru:'Согласованное ручное название',calculation_trace:{...source[1]!.calculation_trace,manualTitleOverride:true}};
+    source[1] = {...source[1]!,title_ru:'Согласованное ручное название',calculation_trace:{...(source[1]!.calculation_trace as Record<string, unknown>),manualTitleOverride:true}};
     const manual = buildCanonicalProfessionalPdfProjection({revision:saved,rows:source,workTitleRu:'Разборка каменной шашки'});
     expect(manual.html).toContain('<strong>Согласованное ручное название</strong>');
     expect(manual.html).not.toContain('Согласованная тара &lt;контроль&gt;');
