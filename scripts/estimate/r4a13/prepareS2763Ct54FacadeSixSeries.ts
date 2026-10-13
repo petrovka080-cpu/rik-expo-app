@@ -11,14 +11,16 @@ import { cloneCanonicalPreparedSearchR1 } from "./canonicalPreparedSearchCloneR1
 import { type PurchaseGroupRepresentative } from "./s2732PurchaseGroupOverlay";
 import {overlayS2763Ct54FacadeSix,S2763_CT54_FACADE_SIX_TARGETS} from './s2763Ct54FacadeSixOverlay';
 import {ct54ReadyFacadePackS2763 as pack} from '../../../src/lib/estimate/v4/ct54ReadyFacadeSeriesS2763';
-const CONTRACT=pack.contract;
+import technicalBinding from '../../../data/estimate-benchmarks/source-packs/ct54-technical-two-bindings-s27-69.json';
+const TECHNICAL_TWO=process.argv.includes('--technical-two');
+const CONTRACT=TECHNICAL_TWO?technicalBinding.contract:pack.contract;
 
 const ROOT = "C:/dev/rik-expo-app-r4a5-dc4f0ce7";
 const BRANCH = "codex/r4-a5-clean-08b18902";
 const MASTER = "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (100).md";
 const CURRENT = "data/estimate-benchmarks/r568-local-developer-canonical-release.json";
-const SNAPSHOT=".release-runtime/r568/s27-63/ct54-facade-six-parent-snapshot.json";
-const OUTPUT=".release-runtime/r568/s27-63/ct54-ready-facade-six";
+const SNAPSHOT=TECHNICAL_TWO?"data/estimate-benchmarks/fixtures/ct54-technical-two-parents-s27-69.json":".release-runtime/r568/s27-63/ct54-facade-six-parent-snapshot.json";
+const OUTPUT=TECHNICAL_TWO?".release-runtime/r568/s27-69/ct54-technical-two/publication":".release-runtime/r568/s27-63/ct54-ready-facade-six";
 const SOURCES = ["scripts/estimate/r4a13/prepareS2763Ct54FacadeSixSeries.ts", "scripts/estimate/r4a13/s2763Ct54FacadeSixOverlay.ts",
   "src/lib/estimate/v4/ct54ReadyFacadeSeriesS2763.ts", "src/lib/estimate/v4/ct54ReadyFacadeSeriesS2763.test.ts",
   "data/estimate-benchmarks/source-packs/ct54-ready-facade-six-s27-63.json", pack.source.localArtifact,pack.krer.localArtifact,pack.krer.guidance.localArtifact,
@@ -34,6 +36,7 @@ const SOURCES = ["scripts/estimate/r4a13/prepareS2763Ct54FacadeSixSeries.ts", "s
   "src/features/consumerRepair/consumerCanonicalParameterEditor.ts",
   "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.tsx",
   "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.r3.test.tsx"];
+SOURCES.push('data/estimate-benchmarks/source-packs/ct54-technical-two-bindings-s27-69.json','data/estimate-benchmarks/fixtures/ct54-technical-two-parents-s27-69.json');
 const APPLY = process.argv.includes("--apply");
 const hash = (value: unknown) => createHash("sha256").update(typeof value === "string" || Buffer.isBuffer(value) ? value : stringifyCanonicalEstimateJson(value)).digest("hex");
 function invariant(value: unknown, code: string): asserts value { if (!value) throw new Error(`S2763_CT54_FACADE_SIX_SERIES:${code}`); }
@@ -69,10 +72,10 @@ async function main() {
   const head = git("rev-parse", "HEAD"), tree = git("rev-parse", "HEAD^{tree}");
   const masterSha256 = hash(readFileSync(MASTER));
   const sourceHashes = SOURCES.map(path => ({ path, sha256: hash(readFileSync(path)) }));
-  const catalogIds = Object.keys(S2763_CT54_FACADE_SIX_TARGETS).sort();
-  invariant(catalogIds.length === 6, "FINITE_SCOPE_DRIFT");
+  const catalogIds = (TECHNICAL_TWO?technicalBinding.targets.map(t=>t.catalogId):Object.keys(S2763_CT54_FACADE_SIX_TARGETS)).sort();
+  invariant(catalogIds.length === (TECHNICAL_TWO?2:6), "FINITE_SCOPE_DRIFT");
   for(const s of [pack.source,pack.krer,pack.krer.guidance])invariant(hash(readFileSync(s.localArtifact))===s.sha256,'PRIMARY_SOURCE_ARTIFACT_DRIFT');
-  invariant(hash(readFileSync(SNAPSHOT))===pack.parentSnapshotSha256,'EXACT_PARENT_SNAPSHOT_DRIFT');
+  invariant(hash(readFileSync(SNAPSHOT))===(TECHNICAL_TWO?technicalBinding.parentSnapshotSha256:pack.parentSnapshotSha256),'EXACT_PARENT_SNAPSHOT_DRIFT');
   if (APPLY) {
     const gatePath = process.argv.find(a => a.startsWith("--gate-receipt="))?.slice("--gate-receipt=".length);
     invariant(gatePath && existsSync(gatePath), "CURRENT_GATE_RECEIPT_REQUIRED");
@@ -125,9 +128,11 @@ async function main() {
       const definitionSha256 = hash({ contract: CONTRACT, predecessorHash: parent.definition.definition_sha256,
         parameters: r.parameters, formulas: r.formulas, resources: r.resources });
       const evidenceSha256 = hash({ contract: CONTRACT, catalogId, fingerprint, definitionSha256, predecessorEvidence: parent.baseline.acceptance_evidence_sha256 });
+      const technicalTarget=TECHNICAL_TWO?technicalBinding.targets.find(t=>t.catalogId===catalogId):undefined;
       const plan = createCanonicalDefinitionClonePlan({ contract: CONTRACT,
         definition: { id: definitionId, releaseId, catalogId, definitionVersion: Number(parent.definition.definition_version) + 1,
-          passport: { ...parent.definition.passport, materialSeriesContract: pack.contract }, applicability: parent.definition.applicability,
+          passport: { ...parent.definition.passport, ...(technicalTarget?{titleRu:technicalTarget.titleRu,workDescription:{...parent.definition.passport.workDescription,titleRu:technicalTarget.titleRu,scopeSummary:pack.scopeRu}}:{}),materialSeriesContract: pack.contract },
+          applicability: {...parent.definition.applicability,...(technicalTarget?{ct54ExactScopeRu:pack.scopeRu,externalFacadeOnlyForExactBranch:true,interiorSurfaceNotAccepted:true}: {})},
           definitionSha256, sourceMetadata: { ...parent.definition.source_metadata, contract: CONTRACT, predecessorDefinitionId: parent.definition.id,
             materialSeriesContract: pack.contract, sourceHashes, activationAllowed: false, productionEligible: false } },
         representative: r,
@@ -250,7 +255,7 @@ async function main() {
       predecessor: { releaseId: predecessorReleaseId, searchReleaseId: predecessorSearchReleaseId }, successor: { releaseId, searchReleaseId, releaseKey },
       sourceHead: head, sourceTree: tree, sourceHashes, masterSha256, fingerprint, transitions, preflight, persisted,
       audit: { manifest, search, unrelatedManifestChanges: unrelated }, mutationPerformed: APPLY, productionAccessed: false,
-      newPhysicalNormConsumerCount:6,newPhysicalNormClosureCount:18,inheritedNeedsPerType:9,activeUnresolvedDefinitionsWithOneTool:20,newCompleteTechnicalTypeCount:0,
+      newPhysicalNormConsumerCount:catalogIds.length,newPhysicalNormClosureCount:catalogIds.length*3,inheritedNeedsPerType:9,activeUnresolvedDefinitionsWithOneTool:20,newCompleteTechnicalTypeCount:0,
       activationPerformed: false, uiAccepted: false, engineeringAccepted: false, fullGateAccepted: false };
     await client.query(`update public.estimate_definition_release set source_manifest_sha256=$2,status='prepared',sealed_at=clock_timestamp(),
       metadata=metadata||$3::jsonb where id=$1 and status='draft'`, [releaseId, manifest.snapshot,
@@ -260,7 +265,7 @@ async function main() {
     atomic(`${OUTPUT}/${APPLY ? "acceptance" : "dry-run"}.json`, receipt);
     if (APPLY) atomic(CURRENT, { ...current, definitionReleaseId: releaseId, searchReleaseId, definitionReleaseStatus: "prepared", searchReleaseStatus: "draft",
       definitionSnapshotSha256: manifest.snapshot, manifestHashChainSha256: manifest.snapshot, searchHashChainSha256: search.snapshot_sha256,
-      owner: "S27_63_CT54_READY_FACADE_SIX", productionAccessed: false, fakeGreenClaimed: false });
+      owner: TECHNICAL_TWO?"S27_69_CT54_EXTERIOR_TECHNICAL_TWO":"S27_63_CT54_READY_FACADE_SIX", productionAccessed: false, fakeGreenClaimed: false });
     else invariant(Number((await client.query("select count(*)::int count from public.estimate_definition_release where id=$1", [releaseId])).rows[0].count) === 0, "DRY_RUN_RESIDUE");
     process.stdout.write(JSON.stringify({ status: receipt.status, successor: receipt.successor, targets: catalogIds.length,
       newPhysicalNormConsumers:receipt.newPhysicalNormConsumerCount,newPhysicalNormClosures:receipt.newPhysicalNormClosureCount,

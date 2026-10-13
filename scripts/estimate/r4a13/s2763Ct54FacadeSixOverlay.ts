@@ -3,14 +3,20 @@ import {stringifyCanonicalEstimateJson} from '../../../src/lib/estimate/estimate
 import {buildMasterParameterCalculationConsumers} from '../../../src/lib/estimate/backendPlatform/canonicalDefinitionParameterConsumersR1';
 import {ct54ReadyFacadeDefinitionS2763,ct54ReadyFacadePackS2763 as pack,ct54ReadyFacadeExactS2763 as exact,ct54ReadyFacadeLegacyS2763 as legacy,ct54ReadyFacadePrefixS2763 as prefix} from '../../../src/lib/estimate/v4/ct54ReadyFacadeSeriesS2763';
 import type {PurchaseGroupRepresentative} from './s2732PurchaseGroupOverlay';
+import technicalBinding from '../../../data/estimate-benchmarks/source-packs/ct54-technical-two-bindings-s27-69.json';
 const hash=(v:unknown)=>createHash('sha256').update(stringifyCanonicalEstimateJson(v)).digest('hex');
 export const S2763_CT54_FACADE_SIX_TARGETS=Object.fromEntries(pack.targets.map(t=>[t.catalogId,pack.oldDispositionMap.flatMap(d=>d.actualLegacyRows.filter(r=>r.catalogId===t.catalogId).map(r=>r.rowId))]));
 export function overlayS2763Ct54FacadeSix(parent:PurchaseGroupRepresentative,locators:{manufacturer:string;krer:string}){
- const catalogId=String(parent.definition.catalog_id),target=pack.targets.find(t=>t.catalogId===catalogId);
+ const catalogId=String(parent.definition.catalog_id),technical=technicalBinding.targets.find(t=>t.catalogId===catalogId),target=pack.targets.find(t=>t.catalogId===catalogId)??technical;
  if(!target||parent.definition.id!==target.predecessorDefinitionId||parent.definition.definition_version!==target.predecessorVersion||parent.resources.length!==59||parent.formulas.length!==59||parent.parameters.length!==1)throw Error('CT54_SIX_EXACT_PARENT_DRIFT');
+ if(technical&&parent.definition.definition_sha256!==technical.parentSha256)throw Error('CT54_TECHNICAL_PARENT_HASH_DRIFT');
+ const lineageFor=(d:typeof pack.oldDispositionMap[number])=>{
+  const lineage=technical?technical.preservedOwners.find(r=>r.rowId.endsWith('_'+d.suffix)):d.actualLegacyRows.find(r=>r.catalogId===catalogId);
+  if(!lineage)throw Error('CT54_MISSING_HISTORICAL_OWNER:'+d.suffix);return lineage;
+ };
  const result=structuredClone(parent),shared=ct54ReadyFacadeDefinitionS2763();
  const dispositions=pack.oldDispositionMap.map(d=>{
-  const lineage=d.actualLegacyRows.find(r=>r.catalogId===catalogId)!,row=result.resources.find(r=>r.row_id===lineage.rowId),formula=result.formulas.find(f=>f.formula_id===lineage.formulaId);
+  const lineage=lineageFor(d),row=result.resources.find(r=>r.row_id===lineage.rowId),formula=result.formulas.find(f=>f.formula_id===lineage.formulaId);
   if(!row||row.id!==lineage.resourceSpecId||row.cost_owner_id!==lineage.costOwnerId||row.unit_id!==d.legacyUnit||!formula||formula.expression_source!==d.legacyExpression)throw Error('CT54_SIX_LEGACY_DISPOSITION_DRIFT:'+d.suffix);
   row.inclusion_ast={kind:'and',operands:[row.inclusion_ast,legacy]};
   row.source_metadata={...row.source_metadata,forwardAlternativeDisposition:{contract:pack.contract,suffix:d.suffix,disposition:d.disposition,ruleRu:d.ruleRu,reusedOwnerRows:d.reusedOwnerRows,notRemovedFromHistoricalDefinitions:true,legacyQuantityNotAcceptedAsCt54Norm:true}};
@@ -28,8 +34,8 @@ export function overlayS2763Ct54FacadeSix(parent:PurchaseGroupRepresentative,loc
  let rowOrdinal=Math.max(...result.resources.map(r=>Number(r.ordinal)))+1;
  const newRows=shared.resources.map(r=>{
   if(result.resources.some(old=>old.row_id===r.row_id))throw Error('CT54_SIX_OWNER_COLLISION');
-  const inherited=pack.inheritedNeeds.find(g=>r.row_id===prefix+':inherited-'+g.suffix),lineage=inherited?.legacyOwners.find(o=>o.catalogId===catalogId);
-  const related=pack.oldDispositionMap.filter(d=>d.reusedOwnerRows.includes(r.row_id)).map(d=>({titleRu:d.titleRu,unitId:d.legacyUnit,legacyExpression:d.legacyExpression,disposition:d.disposition,ruleRu:d.ruleRu,...d.actualLegacyRows.find(o=>o.catalogId===catalogId)!}));
+  const inherited=pack.inheritedNeeds.find(g=>r.row_id===prefix+':inherited-'+g.suffix),lineage=inherited?lineageFor(pack.oldDispositionMap.find(d=>d.suffix===inherited.suffix)!):undefined;
+  const related=pack.oldDispositionMap.filter(d=>d.reusedOwnerRows.includes(r.row_id)).map(d=>({titleRu:d.titleRu,unitId:d.legacyUnit,legacyExpression:d.legacyExpression,disposition:d.disposition,ruleRu:d.ruleRu,...lineageFor(d)}));
   const publicPresentation=r.resource_graph.publicResourcePresentationV1 as Record<string,unknown>|undefined;
   const residualDetails=r.source_metadata?.sourceNormQuantityAccepted===false?related.map(d=>'Осталось подтвердить: '+d.titleRu+'. Требуются состав, обоснованное количество и граница оплаты этой подработы; исходное шаблонное количество не перенесено.'):[];
   const {row_sha256:_sha,...body}=r,final={...body,ordinal:rowOrdinal++,row_type:r.category,semantic_owner:catalogId+':'+r.row_id,

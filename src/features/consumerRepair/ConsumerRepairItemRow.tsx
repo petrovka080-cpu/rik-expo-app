@@ -234,12 +234,6 @@ function ConsumerRepairItemRowComponent({
             ) : null}
           </View>
         )}
-        {publicResourcePresentation?.brandAndModelRu ? (
-          <Text style={styles.traceLine} testID={`consumer-repair-item-brand-${item.id}`}>{publicResourcePresentation.brandAndModelRu}</Text>
-        ) : null}
-        {publicResourcePresentation?.specificationRu ? (
-          <Text style={styles.traceLine} testID={`consumer-repair-item-selected-specification-${item.id}`}>{publicResourcePresentation.specificationRu}</Text>
-        ) : null}
         <View style={styles.fields}>
           <View style={styles.field}>
             <Text style={styles.label}>Количество</Text>
@@ -441,6 +435,12 @@ function ConsumerRepairItemRowComponent({
                         : "Введено вручную. Расчётное количество пока неизвестно."
                       : `Рассчитано автоматически: ${calculatedQuantity} ${unitLabel}. Поле можно изменить.`}
                   </Text>
+                ) : null}
+                {publicResourcePresentation?.brandAndModelRu ? (
+                  <Text style={styles.traceLine} testID={`consumer-repair-item-brand-${item.id}`}>{publicResourcePresentation.brandAndModelRu}</Text>
+                ) : null}
+                {publicResourcePresentation?.specificationRu ? (
+                  <Text style={styles.traceLine} testID={`consumer-repair-item-selected-specification-${item.id}`}>{publicResourcePresentation.specificationRu}</Text>
                 ) : null}
                 {publicResourcePresentation?.detailsRu.map((detail, index) => <Text key={index} style={styles.traceLine}>{detail}</Text>)}
                 {professionalEvidence ? <Text style={styles.traceLine}>{professionalEvidence.formulaLabel}</Text> : null}
