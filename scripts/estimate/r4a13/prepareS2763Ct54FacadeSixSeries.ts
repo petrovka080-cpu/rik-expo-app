@@ -103,8 +103,8 @@ async function main() {
     invariant(parentSearch?.status === "draft" && parentSearch.metadata.definitionReleaseId === predecessorReleaseId, "SEARCH_PARENT_LINK");
     const locators={} as {manufacturer:string;krer:string};
     for(const [kind,artifact] of [['manufacturer',pack.source],['krer',pack.krer]] as const){
-      const sourceKey=CONTRACT+':'+kind,sourceId=uuid(sourceKey+':'+artifact.sha256),locatorId=uuid(sourceKey+':locator:'+artifact.sha256),locatorKey=CONTRACT+':'+kind;
-      const locatorPayload={contract:CONTRACT,kind,facts:artifact,scopeRu:pack.scopeRu,exclusionsRu:pack.exclusionsRu,completeEstimateAccepted:false};
+      const sourceKey=pack.contract+':'+kind,sourceId=uuid(sourceKey+':'+artifact.sha256),locatorId=uuid(sourceKey+':locator:'+artifact.sha256),locatorKey=pack.contract+':'+kind;
+      const locatorPayload={contract:pack.contract,kind,facts:artifact,scopeRu:pack.scopeRu,exclusionsRu:pack.exclusionsRu,completeEstimateAccepted:false};
       const title=kind==='manufacturer'?'Ceresit CT54 Silicate Aero, C_CT54_TDS_1_0819':'КРЕР15-2015, 15-04-013-02, готовый простой фасад с лесов';
       const official=kind==='manufacturer'?pack.source.officialUrl:pack.krer.officialPdf;
       await client.query('insert into public.estimate_normative_source(id,source_key,title_ru,authority,official_url,artifact_sha256,metadata) values($1,$2,$3,$4,$5,$6,$7::jsonb) on conflict(source_key) do nothing',
