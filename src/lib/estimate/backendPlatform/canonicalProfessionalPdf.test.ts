@@ -129,6 +129,35 @@ function rows(
 }
 
 describe("R4-A6 canonical professional PDF", () => {
+  it("keeps selected waste boundaries and service contents in resource names without copying explanatory notes", () => {
+    const mode = 'Материалы остаются на объекте; внешний вывоз не нужен';
+    const service = 'Согласованная тара <контроль>'; 
+    const source = rows(2);
+    source[0] = {...source[0]!, row_id:'f09:stone_tile_floor_demolition:waste-plan',
+      title_ru:`Обращение со снятой каменной шашкой — ${mode}`, quantity:'35.5', unit_id:'m2',
+      unit_price:null, amount:null, included_in_estimate:false, included_in_procurement:false,
+      calculation_trace:{resourceGraph:{costTreatment:'INFORMATIONAL_SCOPE', titleSpecificationMode:'APPEND',
+        titleSpecificationParameterIds:['waste_mode'], titleSpecificationSeparator:' — ',
+        publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',nameRu:'Принятая схема обращения',
+          detailsRu:['Постоянное пояснение должно оставаться в объяснении расчёта']}}}};
+    source[1] = {...source[1]!,row_id:'waste-service',category:'service',title_ru:`Дополнительная услуга — ${service}`,
+      quantity:'1.25',unit_id:'t',unit_price:null,amount:null,
+      calculation_trace:{resourceGraph:{costTreatment:'OWN_COST',titleSpecificationMode:'APPEND',
+        titleSpecificationParameterIds:['service_contents'],titleSpecificationSeparator:' — '}}};
+    const saved = {...revision(2),input_parameters:{waste_mode:mode,service_contents:service}},before=JSON.stringify({source,saved});
+    const pdf = buildCanonicalProfessionalPdfProjection({revision:saved,rows:source,workTitleRu:'Разборка каменной шашки'});
+    expect(pdf.html).toContain('Материалы остаются на объекте; внешний вывоз не нужен');
+    expect(pdf.html).toContain('Дополнительная услуга — Согласованная тара &lt;контроль&gt;');
+    expect(pdf.html).not.toContain('Постоянное пояснение');
+    expect(pdf.html).not.toContain('<контроль>');
+    expect(pdf).toMatchObject({rowCount:2,pricedRowCount:0,missingPriceRowCount:1,grandTotalStatus:'PARTIAL_NEEDS_PRICE'});
+    expect(pdf.html).toContain('<td class="numeric">1,25</td>');
+    expect(JSON.stringify({source,saved})).toBe(before);
+    source[1] = {...source[1]!,title_ru:'Согласованное ручное название',calculation_trace:{...source[1]!.calculation_trace,manualTitleOverride:true}};
+    const manual = buildCanonicalProfessionalPdfProjection({revision:saved,rows:source,workTitleRu:'Разборка каменной шашки'});
+    expect(manual.html).toContain('<strong>Согласованное ручное название</strong>');
+    expect(manual.html).not.toContain('Согласованная тара &lt;контроль&gt;');
+  });
   it("prints compact resource cells without the Silenzio application bullet lists while preserving estimate and buyer data", () => {
     const source=rows(1);
     source[0]={...source[0]!,title_ru:'Упаковка EGGER Silenzio Duo 1222949, 10 м²',unit_id:'pcs',quantity:'4',unit_price:'2500',amount:'10000',
@@ -236,7 +265,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-69-visible-quantity-template46");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-69-selected-scope-template47");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,

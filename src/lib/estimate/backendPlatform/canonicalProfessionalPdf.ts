@@ -7,6 +7,7 @@ import {
   canonicalArtifactWorkMeasure,
   canonicalArtifactTechnologyChecks,
   canonicalArtifactPublicResourcePresentationV1,
+  canonicalArtifactSpecificationParts,
   escapeCanonicalArtifactHtml,
   type CanonicalArtifactRevision,
   type CanonicalArtifactRow,
@@ -20,7 +21,7 @@ import {readRoofPrimerPrerequisiteDecisionV1,roofPrimerPhaseRuV1} from './canoni
 import {canonicalMachineHourPriceNeedsConfirmationV1} from './canonicalMachineHourPriceCoverageV1';
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-69-visible-quantity-template46" as const;
+  "canonical-professional-pdf.r4-a13-s27-69-selected-scope-template47" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -149,6 +150,19 @@ function includedCostOwnerTitle(row: CanonicalArtifactRow, rowsById: ReadonlyMap
   }
 }
 
+function selectedResourceTitle(row: CanonicalArtifactRow, parameters: Record<string, unknown>): string {
+  const title = canonicalArtifactVisibleRowTitle(row, parameters);
+  const trace = objectValue(row.calculation_trace), graph = objectValue(trace.resourceGraph);
+  if (trace.manualTitleOverride === true || graph.titleSpecificationMode !== "APPEND") return title;
+  // These are saved project selections that define the resource or service.
+  // Keep them in its name without restoring permanent explanatory paragraphs.
+  const selected = canonicalArtifactSpecificationParts(row, parameters)
+    .filter(part => part.parameterId !== "resource_presentation_v1")
+    .flatMap(part => part.parts)
+    .filter(part => !title.includes(part));
+  return selected.length ? `${title} — ${[...new Set(selected)].join('; ')}` : title;
+}
+
 function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, parameters: Record<string, unknown>,catalogId:string): string {
   const category = canonicalProfessionalPdfCategory(row);
   const includedInEstimate = row.included_in_estimate === true;
@@ -174,7 +188,7 @@ function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, para
     : canonicalArtifactMoney(row.amount, row.currency_code);
   return `<tr>
     <td class="number">${displayOrdinal}</td>
-    <td class="name"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row, parameters))}</strong>${rentalText ? `<span>${escapeCanonicalArtifactHtml(rentalText)}</span>` : ""}${scopeLabel ? `<span>${escapeCanonicalArtifactHtml(scopeLabel)}</span>` : ''}${machinePriceNotice?`<span>${machinePriceNotice}</span>`:''}</td>
+    <td class="name"><strong>${escapeCanonicalArtifactHtml(selectedResourceTitle(row, parameters))}</strong>${rentalText ? `<span>${escapeCanonicalArtifactHtml(rentalText)}</span>` : ""}${scopeLabel ? `<span>${escapeCanonicalArtifactHtml(scopeLabel)}</span>` : ''}${machinePriceNotice?`<span>${machinePriceNotice}</span>`:''}</td>
     <td>${escapeCanonicalArtifactHtml(CATEGORY_TITLES[category])}</td>
     <td class="unit">${escapeCanonicalArtifactHtml(canonicalArtifactUnit(row))}</td>
     <td class="numeric">${escapeCanonicalArtifactHtml(canonicalArtifactQuantity(row.quantity))}</td>
