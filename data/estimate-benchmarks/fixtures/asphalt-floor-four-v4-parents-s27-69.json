@@ -4081,5 +4081,26 @@
         "created_at": "2026-09-24T01:39:53.710Z"
       }
     }
-  ]
+  ],
+  "current": {
+    "schemaVersion": "r568-local-developer-canonical-release.v1",
+    "status": "ACTIVE_LOCAL_DEVELOPER_CANONICAL_RELEASE",
+    "definitionReleaseId": "b785decb-d446-534c-88e0-a340ea493861",
+    "searchReleaseId": "12892412-070c-506b-8f5c-21c9fcd0069b",
+    "definitionReleaseStatus": "prepared",
+    "searchReleaseStatus": "draft",
+    "definitionSnapshotSha256": "341a369909340b2eb8de3ac6c5164db4dad4baca8359cd5d03577c49c20430e3",
+    "manifestHashChainSha256": "341a369909340b2eb8de3ac6c5164db4dad4baca8359cd5d03577c49c20430e3",
+    "searchHashChainSha256": "108bd6c1b3f05b1be243420a81d62c0eaf05d6ad03f9f7ee8c7f60f7c549bf63",
+    "identities": 11610,
+    "visibleCanonicalDefinitions": 10322,
+    "aliasesRedirects": 1288,
+    "currentRuntimeDefinitions": 10457,
+    "runtimeAdditionalAdmissions": 9,
+    "currentInventoryRowsIncludingAliases": 11619,
+    "denominatorNote": "11610 is the immutable historical source-identity reconciliation (10322 canonical owners plus 1288 redirects); the current cumulative runtime also preserves 9 separately identified inherited admissions.",
+    "owner": "S27_69_STONE_CUBES_WASTE_FOUR",
+    "productionAccessed": false,
+    "fakeGreenClaimed": false
+  }
 }
