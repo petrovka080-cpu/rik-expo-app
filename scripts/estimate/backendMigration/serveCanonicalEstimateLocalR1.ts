@@ -1,4 +1,5 @@
 import {admitRoofScreed25StandaloneMigrationProofV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofScreed25StandaloneMigrationV1';
+import {admitCn87SubfloorMigrationProofS2769} from '../../../src/lib/estimate/backendPlatform/canonicalCn87SubfloorMigrationS2769';
 import {admitRoofStandaloneWorkScopeMigrationProofV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofStandaloneWorkScopeV1';
 import {admitRoofScreed25MigrationProofV1,buildRoofStageRestorationV6,readRoofStageRestorationV6,consumeRoofStageOriginsV6,composeRoofScreed25MigrationModelV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofScreed25MigrationV1';
 import {admitRoofHangingGuttersMigrationProofV1,migrateRoofHangingGuttersSelectionV1,buildRoofStageRestorationV5,readRoofStageRestorationV5,createRoofLegacyWaterSelectionOriginV1,consumeRoofStageOriginsV5,composeRoofGuttersMigrationModelV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofHangingGuttersMigrationV1';
@@ -89,6 +90,17 @@ async function localManualAmendmentMigrationBindings(client: PoolClient, definit
   const input = {resources: resources.rows, formulas: formulas.rows, parameters: parameters.rows};
   let predecessorBindings:Record<string,unknown>={};
   const definition=(await client.query('select * from public.estimate_definition_version where id=$1',[definitionId])).rows[0];
+  const cn87Proof=definition?.source_metadata?.cn87SubfloorMigrationS2769;
+  if(cn87Proof?.fromDefinitionId&&/^[0-9a-f-]{36}$/iu.test(String(cn87Proof.fromDefinitionId))){
+    const fromId=String(cn87Proof.fromDefinitionId),[oldDef,oldResources,oldFormulas,oldParameters]=await Promise.all([
+      client.query('select * from public.estimate_definition_version where id=$1',[fromId]),client.query('select * from public.estimate_resource_spec where definition_version_id=$1',[fromId]),
+      client.query('select * from public.estimate_formula_graph where definition_version_id=$1',[fromId]),client.query('select * from public.estimate_parameter_definition where definition_version_id=$1',[fromId])]);
+    const before=oldDef.rows[0],admitted=before?admitCn87SubfloorMigrationProofS2769({proof:cn87Proof,
+      fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},
+      from:{resources:oldResources.rows,formulas:oldFormulas.rows,parameters:oldParameters.rows},to:input}):null;
+    if(admitted)predecessorBindings={manualMigrationPredecessorV1:{definitionId:fromId,priceBindings:canonicalManualPriceMigrationBindings(admitted.normalizedTo),
+      exclusionBindings:canonicalManualExclusionMigrationBindings(admitted.normalizedTo),operationBindings:canonicalCompositionOperationMigrationBindingsV1(admitted.normalizedTo),compositionSelectionIdsPreservedV1:true}};
+  }
   const proof=definition?.source_metadata?.roofStandaloneWorkScopeMigrationV1??definition?.source_metadata?.roofScreed25StandaloneMigrationV1??definition?.source_metadata?.roofScreed25MigrationV1??definition?.source_metadata?.roofHangingGuttersMigrationV1??definition?.source_metadata?.roofLowerLayersMigrationV1??definition?.source_metadata?.roofMetalTrimMigrationV1??definition?.source_metadata?.roofScreedMigrationV1??definition?.source_metadata?.roofValleyMigrationV1??definition?.source_metadata?.roofPreparationMigrationV1;
   if(proof?.fromDefinitionId&&/^[0-9a-f-]{36}$/iu.test(String(proof.fromDefinitionId))) {
     const fromId=String(proof.fromDefinitionId);
@@ -2449,6 +2461,8 @@ async function compileClaimedJob(
     const fromModel={resources:parentResources.rows,formulas:parentFormulas.rows,parameters:parentParameters.rows};
     const toModel={resources:resourceRows,formulas,parameters:parameterDefinitions};
     const before=(await client.query('select * from public.estimate_definition_version where id=$1',[parentRevision.definition_version_id])).rows[0];
+    const cn87Admitted=before?admitCn87SubfloorMigrationProofS2769({proof:definition.source_metadata?.cn87SubfloorMigrationS2769,
+      fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},from:fromModel,to:toModel}):null;
     const admitted=before?admitRoofPreparationMigrationProofV1({proof:definition.source_metadata?.roofPreparationMigrationV1,
       fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},
       toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},from:fromModel,to:toModel}):null;
@@ -2466,7 +2480,7 @@ async function compileClaimedJob(
       toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},from:fromModel,to:toModel}):null;
     const standaloneScopePath=await localRoofStandaloneWorkScopeMigrationV1(client,definition,toModel);
     const standaloneScopePredecessor=standaloneScopePath?.find(m=>m.definitionId===before?.id);
-    const migrationTo=standaloneScopePredecessor?.model??standaloneScreedAdmitted?.normalizedTo??screed25Predecessor?.model??guttersPredecessor?.model??lowerLayersPredecessor?.model??metalTrimPredecessor?.model??screedPredecessor?.model??directFiveToSeven?.composed??valleyAdmitted?.normalizedTo??admitted?.normalizedTo??toModel;
+    const migrationTo=cn87Admitted?.normalizedTo??standaloneScopePredecessor?.model??standaloneScreedAdmitted?.normalizedTo??screed25Predecessor?.model??guttersPredecessor?.model??lowerLayersPredecessor?.model??metalTrimPredecessor?.model??screedPredecessor?.model??directFiveToSeven?.composed??valleyAdmitted?.normalizedTo??admitted?.normalizedTo??toModel;
     // Validate a newly requested exclusion against the admitted predecessor
     // before any operation-key expansion, as well as the stored parent below.
     if(Object.hasOwn(payload,'compositionSelectionV1'))assertCanonicalCompositionSelectionReleaseMigrationV1({selection:effectiveCompositionSelectionV1,from:fromModel,to:migrationTo});

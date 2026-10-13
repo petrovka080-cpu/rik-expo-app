@@ -60,6 +60,9 @@ test.each(['LEGACY_SOURCE_REQUIRED','OBJECT_FACT_REQUIRED','REQUIRED_RESOURCE_EX
   expect(projection.html).toContain('<strong>полный итог не рассчитан</strong>');
   expect(projection.html).not.toContain('Полный итог: требуется уточнение цен.');
   expect(projection.html).not.toContain('<strong>требуется уточнение цен</strong>');
+  expect(projection.html).toContain('<strong>Позиций расчёта</strong><br>1');
+  expect(projection.html).toContain('<strong>Количество известно</strong><br>1; ещё не рассчитано 0');
+  expect(source).toHaveLength(1);
 });
 
 test('ordinary PDF keeps essential specifications without explanatory paragraphs while quantity and cost remain unknown',()=>{
@@ -233,7 +236,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-69-application-pending-template45");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-69-visible-quantity-template46");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,

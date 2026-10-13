@@ -1,0 +1,47 @@
+{
+  "contract": "rik-expo-app.s27-69.cn87-four-subfloor-bindings.v1",
+  "sourcePack": "data/estimate-benchmarks/source-packs/cn87-separation-screed-s27-54.json",
+  "sourceArtifactSha256": "2854f21ba39e232c4de774a4bffc77345f44a9ea2b09fbcc15328608a7fe3b5a",
+  "parentSnapshotSha256": "402c691b3f8d7e2798fd90dc7a6909a3c74b5b374adeab8fc49be3bcc080383c",
+  "exactChoiceRu": "Ручная стяжка CN87 50 мм на готовом разделительном слое, без подогрева",
+  "scopeRu": "Только Ceresit CN87 слоем 50 мм на уже принятом сплошном разделительном слое; без тёплого пола и связанного контактного слоя. Затворение дрелью-миксером, ручное уплотнение кельмой, принятая схема швов. Для больших объёмов изготовитель рекомендует механизацию; её нормы в этот ручной вариант не переносятся.",
+  "targets": [
+    {
+      "catalogId": "canonical-work:base:flooring_interior_subfloor_install_large_area",
+      "predecessorDefinitionId": "9e679171-015f-519e-87dc-5f91977b548e",
+      "predecessorVersion": 4,
+      "parentSha256": "a3831fe3496b04479abef4984ba797ba8cd1ae169403b2f9412c7012aed98cbb"
+    },
+    {
+      "catalogId": "canonical-work:base:flooring_interior_subfloor_install_small_area",
+      "predecessorDefinitionId": "c3cd7512-5cbe-5b27-8fcc-260ce89657e0",
+      "predecessorVersion": 4,
+      "parentSha256": "2a07ec5429ac004e6879a74e3d41547533d5e9e8567af9e46d1fbcd0a16a8a8c"
+    },
+    {
+      "catalogId": "canonical-work:base:flooring_interior_subfloor_install_standard",
+      "predecessorDefinitionId": "122b7397-253e-5bf2-8c8f-1ac58a48c528",
+      "predecessorVersion": 4,
+      "parentSha256": "3d9be3644a487be2b15a687d32e840279eb18d0d58fe4a7b687671fdd9b4edc6"
+    },
+    {
+      "catalogId": "canonical-work:base:flooring_interior_subfloor_install_technical_room",
+      "predecessorDefinitionId": "a07008bd-b460-5ea9-86da-2332634a900e",
+      "predecessorVersion": 4,
+      "parentSha256": "fde7be01c95722a62feb3e4e51ea31a2e21cb7f55b6fb731f4281c17e4586905"
+    }
+  ],
+  "knownConsumptionOwners": [
+    "cn87:separation-50mm:cn87-consumed",
+    "cn87:separation-50mm:water-consumed"
+  ],
+  "inheritedResourceOwnersPreserved": 388,
+  "sourceNeedsPerTarget": 8,
+  "inheritedNeedsPerTarget": 13,
+  "fullTechnicalAcceptance": false,
+  "newCompleteTypes": 0,
+  "noAutomaticStockReserveDosageOrWaste": true,
+  "noCn69MixingOrPrimerInCn87Branch": true,
+  "status": "FINITE_ADDITIVE_CONSUMER_CANDIDATE",
+  "expectedNewPhysicalNormApplications": 8
+}
