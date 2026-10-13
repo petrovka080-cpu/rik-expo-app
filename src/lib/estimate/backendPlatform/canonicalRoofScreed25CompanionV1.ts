@@ -17,11 +17,8 @@ const rates = { workers: ['1', '37.22'], included_machine_operators: ['0.03', '2
   tower_crane_8t: ['0.01', '0.78'], forklift_5t: ['0.02', '1.46'], mortar_pump: ['0', '2.36'],
   water: ['0', '3.85'], roofing_felt: ['0', '4.4'], ready_cement_mortar_m100: ['0.102', '2.55'] } as const;
 
-export function roofScreed25OwnerV1(catalogId: string) {
-  if (!['canonical-work:base:roofing_interior_flat_roof_install_technical_room',
-    'canonical-work:base:roofing_interior_flat_roof_install_wet_zone'].includes(catalogId)) {
-    throw new Error('ROOF_SCREED25_CATALOG_REQUIRED');
-  }
+/** One accepted rate definition is reused by finite application bindings. */
+export function assertRoofScreed25AcceptedRatesV1() {
   if (pack.rates.length !== 8 || pack.sources[0]?.sha256 !== base.sources[0]?.sha256) {
     throw new Error('ROOF_SCREED25_SOURCE_IDENTITY_INVALID');
   }
@@ -36,6 +33,14 @@ export function roofScreed25OwnerV1(catalogId: string) {
       throw new Error('ROOF_SCREED25_COMPOSITE_RATE_INVALID');
     }
   }
+}
+
+export function roofScreed25OwnerV1(catalogId: string) {
+  if (!['canonical-work:base:roofing_interior_flat_roof_install_technical_room',
+    'canonical-work:base:roofing_interior_flat_roof_install_wet_zone'].includes(catalogId)) {
+    throw new Error('ROOF_SCREED25_CATALOG_REQUIRED');
+  }
+  assertRoofScreed25AcceptedRatesV1();
   const owner = sourcePinnedRoofNormOwnerR1(effectivePack as SourcePinnedRoofNormPackR1);
   const profile = { kind: 'equals', parameterId: 'roof_torch_conditions', value: ROOF_FORECAST_SCREED25_LOWER_CONDITIONS_V1 };
   return { ...owner,

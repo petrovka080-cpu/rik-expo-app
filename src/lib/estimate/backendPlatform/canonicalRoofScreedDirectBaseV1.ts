@@ -1,4 +1,5 @@
 import screed from '../../../../data/estimate-benchmarks/source-packs/roof-screed15-companion-s27-67.json';
+import standalone from '../../../../data/estimate-benchmarks/source-packs/roof-screed25-five-bindings-s27-69.json';
 import { ROOF_LOWER_CHAIN_SCOPE_ROW_V1 } from './canonicalRoofLowerLayersCompanionV1';
 import { canonicalEstimateStableJson } from './canonicalEstimateDeterminism';
 import { ROOF_FORECAST_LOWER_LAYERS_CONDITIONS_V1 } from './canonicalRoofForecastConditionV1';
@@ -17,8 +18,12 @@ const baseAccepted = () => ({ kind: 'equals', parameterId: ROOF_SCREED15_DIRECT_
   value: ROOF_SCREED15_SUPPORTED_BASE_V1 });
 
 /** Used only by a new definition overlay. Historical snapshots are immutable. */
-export function roofScreed15DirectBaseParameterV1(exemplar: Json, requested15When: Json, catalogId: string): Json {
-  if (exemplar.parameter_id !== screed.measurementParameterId || !requested15When || !catalogId) {
+export function roofScreed15DirectBaseParameterV1(exemplar: Json, requested15When: Json, catalogId: string, binding?: 'STANDALONE_OWN_Q'): Json {
+  const admittedMeasurement = binding === 'STANDALONE_OWN_Q'
+    ? standalone.targets.some(t => t.catalogId === catalogId) && exemplar.parameter_id === 'q'
+      && exemplar.value_type === 'decimal' && exemplar.unit_id === 'm2'
+    : exemplar.parameter_id === screed.measurementParameterId;
+  if (!admittedMeasurement || !requested15When || !catalogId) {
     throw new Error('ROOF_SCREED_DIRECT_BASE_PARENT_REQUIRED');
   }
   return { ...structuredClone(exemplar), parameter_id: ROOF_SCREED15_DIRECT_BASE_PARAMETER_V1,

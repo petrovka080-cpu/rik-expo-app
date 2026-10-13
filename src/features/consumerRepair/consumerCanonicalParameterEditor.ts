@@ -1,3 +1,4 @@
+import {roofScreed25StandaloneInactiveParameterIdsV1,ROOF_SCREED25_STANDALONE_QUESTION_IDS_V1} from '../../lib/estimate/backendPlatform/canonicalRoofScreed25StandaloneV1';
 import {roofScreed25InactiveParameterIdsV1,ROOF_SCREED25_QUESTION_PARAMETER_IDS_V1} from '../../lib/estimate/backendPlatform/canonicalRoofScreed25MigrationV1';
 import {roofGuttersInactiveParameterIdsV1,ROOF_GUTTERS_QUESTION_PARAMETER_IDS_V1} from '../../lib/estimate/backendPlatform/canonicalRoofHangingGuttersMigrationV1';
 import {
@@ -660,8 +661,9 @@ export function buildConsumerCanonicalParameterSession(input: {
     activeNeedParameterIds: new Set([
       ...activeNeedParameterIds,
     ]),
-    inactiveParameterIds:new Set((input.revision.excludedScopeParameterIdsV1??(input.revision.roofStageRestorationV6?roofScreed25InactiveParameterIdsV1({receipt:input.revision.roofStageRestorationV6,definitionId:input.revision.definitionVersionId,catalogId:input.revision.catalogId,selection:input.revision.compositionSelectionV1}):input.revision.roofStageRestorationV5?roofGuttersInactiveParameterIdsV1({receipt:input.revision.roofStageRestorationV5,definitionId:input.revision.definitionVersionId,catalogId:input.revision.catalogId,selection:input.revision.compositionSelectionV1}):roofLowerLayersInactiveParameterIdsV1({receipt:input.revision.roofStageRestorationV4,definitionId:input.revision.definitionVersionId,catalogId:input.revision.catalogId,selection:input.revision.compositionSelectionV1})))
-      .filter(id=>ROOF_GUTTERS_QUESTION_PARAMETER_IDS_V1.includes(id)||ROOF_SCREED25_QUESTION_PARAMETER_IDS_V1.includes(id))),
+    inactiveParameterIds:new Set([...roofScreed25StandaloneInactiveParameterIdsV1({catalogId:input.catalog.catalogId,
+      definitionVersion:input.catalog.definitionVersion,metadata:input.catalog.professionalMetadata,selection:input.revision.compositionSelectionV1}),...(input.revision.excludedScopeParameterIdsV1??(input.revision.roofStageRestorationV6?roofScreed25InactiveParameterIdsV1({receipt:input.revision.roofStageRestorationV6,definitionId:input.revision.definitionVersionId,catalogId:input.revision.catalogId,selection:input.revision.compositionSelectionV1}):input.revision.roofStageRestorationV5?roofGuttersInactiveParameterIdsV1({receipt:input.revision.roofStageRestorationV5,definitionId:input.revision.definitionVersionId,catalogId:input.revision.catalogId,selection:input.revision.compositionSelectionV1}):roofLowerLayersInactiveParameterIdsV1({receipt:input.revision.roofStageRestorationV4,definitionId:input.revision.definitionVersionId,catalogId:input.revision.catalogId,selection:input.revision.compositionSelectionV1})))
+      .filter(id=>ROOF_GUTTERS_QUESTION_PARAMETER_IDS_V1.includes(id)||ROOF_SCREED25_QUESTION_PARAMETER_IDS_V1.includes(id)||ROOF_SCREED25_STANDALONE_QUESTION_IDS_V1.includes(id))]),
     additionalBlockingIds: unresolvedManualQuantityIds,
     orderedSpecificationParameterIds,
     schemaId: input.revision.parameterSchemaHash || `backend-schema:${input.catalog.catalogId}`,

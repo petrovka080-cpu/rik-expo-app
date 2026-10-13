@@ -1,3 +1,4 @@
+import {roofScreed25StandaloneInactiveParameterIdsV1} from './canonicalRoofScreed25StandaloneV1';
 import {roofScreed25InactiveParameterIdsV1} from './canonicalRoofScreed25MigrationV1';
 import {roofGuttersInactiveParameterIdsV1} from './canonicalRoofHangingGuttersMigrationV1';
 import {
@@ -64,7 +65,10 @@ export function projectCanonicalEstimateParameterSessionSnapshot(input: {
   catalog: CanonicalEstimateCatalogItem;
 }): CanonicalEstimateParameterSessionSnapshot {
   const { revision, parent } = input;
-  const excludedScopeParameterIdsV1=revision.roofStageRestorationV6?roofScreed25InactiveParameterIdsV1({receipt:revision.roofStageRestorationV6,definitionId:revision.definitionVersionId,catalogId:revision.catalogId,selection:revision.compositionSelectionV1}):revision.roofStageRestorationV5?roofGuttersInactiveParameterIdsV1({receipt:revision.roofStageRestorationV5,definitionId:revision.definitionVersionId,catalogId:revision.catalogId,selection:revision.compositionSelectionV1}):roofLowerLayersInactiveParameterIdsV1({receipt:revision.roofStageRestorationV4,definitionId:revision.definitionVersionId,catalogId:revision.catalogId,selection:revision.compositionSelectionV1});
+  const standaloneInactive=roofScreed25StandaloneInactiveParameterIdsV1({catalogId:input.catalog.catalogId,
+    definitionVersion:input.catalog.definitionVersion,metadata:input.catalog.professionalMetadata,selection:revision.compositionSelectionV1});
+  const companionInactive=revision.roofStageRestorationV6?roofScreed25InactiveParameterIdsV1({receipt:revision.roofStageRestorationV6,definitionId:revision.definitionVersionId,catalogId:revision.catalogId,selection:revision.compositionSelectionV1}):revision.roofStageRestorationV5?roofGuttersInactiveParameterIdsV1({receipt:revision.roofStageRestorationV5,definitionId:revision.definitionVersionId,catalogId:revision.catalogId,selection:revision.compositionSelectionV1}):roofLowerLayersInactiveParameterIdsV1({receipt:revision.roofStageRestorationV4,definitionId:revision.definitionVersionId,catalogId:revision.catalogId,selection:revision.compositionSelectionV1});
+  const excludedScopeParameterIdsV1=[...new Set([...standaloneInactive,...companionInactive])];
   const snapshot: CanonicalEstimateParameterSessionSnapshot = {
     apiVersion: ESTIMATE_PLATFORM_API_VERSION,
     definitionVersionId: input.definitionVersionId,

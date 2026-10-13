@@ -1,0 +1,83 @@
+{
+  "contract": "rik-expo-app.s27-69.roof-screed25-five.v1",
+  "subworkContract": "rik-expo-app.s27-67.roof-screed25-companion.v1",
+  "subworkVersion": 1,
+  "acceptedSourcePack": "data/estimate-benchmarks/source-packs/roof-screed25-companion-s27-67.json",
+  "sourceSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+  "directBaseSourceSha256": "6291b9410ac2a272b3439f65dcf8a45de327ad1b8c22e9606f76ae57aedd58d7",
+  "parentSnapshotSha256": "021856c54720574c28d070d096684f5bc2015171739d50bb033b4b70e2b0ab95",
+  "ownMeasurement": {
+    "parameterId": "q",
+    "unitId": "m2",
+    "sectionMeaning": "OWN_STANDALONE_ROOF_SCREED_SECTION",
+    "inheritAnotherEstimateDimensions": false
+  },
+  "targets": [
+    {
+      "catalogId": "canonical-work:base:roofing_interior_flat_roof_align_large_area",
+      "predecessorDefinitionId": "34bf8db9-f5f6-5e7a-8766-ba25ea564302",
+      "predecessorVersion": 4,
+      "predecessorDefinitionSha256": "1ac1da30c55fdd61e27e9e78220c1617f147dbfff2e05a45470fc483f10b2726",
+      "resourceCount": 127,
+      "parameterCount": 64
+    },
+    {
+      "catalogId": "canonical-work:base:roofing_interior_flat_roof_align_small_area",
+      "predecessorDefinitionId": "0fa2a02f-6820-51f9-8e38-d87770ea601f",
+      "predecessorVersion": 4,
+      "predecessorDefinitionSha256": "478177e06afc1f0cec8db777eeb33bba38f891487397f6402ce4222bcf5ed592",
+      "resourceCount": 127,
+      "parameterCount": 64
+    },
+    {
+      "catalogId": "canonical-work:base:roofing_interior_flat_roof_align_standard",
+      "predecessorDefinitionId": "66a3cf35-8162-5fbd-8a86-6ecc954fab65",
+      "predecessorVersion": 4,
+      "predecessorDefinitionSha256": "4515f27937e26d22f55f34811220a6648ef1970edf978f94c8da8816b4d6d520",
+      "resourceCount": 127,
+      "parameterCount": 64
+    },
+    {
+      "catalogId": "canonical-work:base:roofing_interior_flat_roof_align_technical_room",
+      "predecessorDefinitionId": "59d92087-7bda-5e0e-8832-ef31a0efbeb4",
+      "predecessorVersion": 4,
+      "predecessorDefinitionSha256": "136cb576bc772e0e1857690553eec73d725c47e117f389d1843ff54e16d1536f",
+      "resourceCount": 127,
+      "parameterCount": 64
+    },
+    {
+      "catalogId": "canonical-work:base:roofing_interior_flat_roof_align_wet_zone",
+      "predecessorDefinitionId": "ff14c8e8-f24c-55f1-8a16-2b6f967a18b6",
+      "predecessorVersion": 4,
+      "predecessorDefinitionSha256": "6650c661e562d2ddc11813df575bb808588c4bff85c1e050b342dfebff25c7fa",
+      "resourceCount": 127,
+      "parameterCount": 64
+    }
+  ],
+  "systemYesRu": "Цементно-песчаная стяжка 25 мм, готовый раствор М100 по подготовленному засыпному утеплителю",
+  "compatibility": {
+    "roofScreedOnly": true,
+    "floorNormsAdmitted": false,
+    "baseAndMachineFeedMustBeConfirmed": true,
+    "sourceRatesNotCopied": true
+  },
+  "checks": {
+    "required": [
+      "EXACT_PARENT",
+      "UNITS",
+      "EXCLUSIVE_15_25",
+      "OWN_Q",
+      "SOURCE_BINDING",
+      "OLD_PRICE_AND_EXCLUSION",
+      "INACTIVE_QUESTIONS",
+      "PUBLISH_ROLLBACK",
+      "ONE_CORE_SAVE_PDF"
+    ],
+    "fullTypeAcceptance": false
+  },
+  "delivery": {
+    "definitionVersion": 5,
+    "scope": "LOCAL_DEVELOPER_ONLY",
+    "productionAllowed": false
+  }
+}
