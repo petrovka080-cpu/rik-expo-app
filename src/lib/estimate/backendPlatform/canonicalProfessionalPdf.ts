@@ -21,7 +21,7 @@ import {readRoofPrimerPrerequisiteDecisionV1,roofPrimerPhaseRuV1} from './canoni
 import {canonicalMachineHourPriceNeedsConfirmationV1} from './canonicalMachineHourPriceCoverageV1';
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-69-selected-scope-template47" as const;
+  "canonical-professional-pdf.r4-a13-s27-69-selected-scope-template48" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -156,7 +156,7 @@ function selectedResourceTitle(row: CanonicalArtifactRow, parameters: Record<str
   if (trace.manualTitleOverride === true || graph.titleSpecificationMode !== "APPEND") return title;
   // These are saved project selections that define the resource or service.
   // Keep them in its name without restoring permanent explanatory paragraphs.
-  const selected = canonicalArtifactSpecificationParts(row, parameters)
+  const selected = canonicalArtifactSpecificationParts(row, parameters, { splitSelectedValues: false })
     .filter(part => part.parameterId !== "resource_presentation_v1")
     .flatMap(part => part.parts)
     .filter(part => !title.includes(part));

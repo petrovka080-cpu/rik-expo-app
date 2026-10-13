@@ -55,6 +55,11 @@ export function canonicalPublicEstimateRowNameRu(input: {
   rowId?: string | null; titleRu: string; sourceTitleRu?: string; manualTitleOverride?: boolean;
 }): string {
   if (input.manualTitleOverride) return input.titleRu;
+  if (input.rowId?.startsWith('f09:asphalt_floor_covering_demolition:')) {
+    return canonicalPublicEstimateTextRu(input.titleRu
+      .replace('со снятой асфальтовым', 'со снятым асфальтовым')
+      .replace('приём снятой асфальтового', 'приём снятого асфальтового'));
+  }
   const authored = publicBindings.bindings.find(binding => binding.rowId === input.rowId
     && binding.sourceTitleRu === (input.sourceTitleRu ?? input.titleRu));
   if (authored) return authored.nameRu;

@@ -135,7 +135,7 @@ export function canonicalArtifactRentalBasis(row: CanonicalArtifactRow, paramete
     stageCount: graph.projectStageCountParameterId ? parameters[String(graph.projectStageCountParameterId)] ?? null : null };
 }
 
-export function canonicalArtifactSpecificationParts(row: CanonicalArtifactRow, parameters: Record<string, unknown>) {
+export function canonicalArtifactSpecificationParts(row: CanonicalArtifactRow, parameters: Record<string, unknown>, options?: { splitSelectedValues?: boolean }) {
   const graph = objectValue(objectValue(row.calculation_trace).resourceGraph);
   const ids = Array.isArray(graph.titleSpecificationParameterIds) ? graph.titleSpecificationParameterIds
     : graph.titleSpecificationParameterId ? [graph.titleSpecificationParameterId] : [];
@@ -147,7 +147,8 @@ export function canonicalArtifactSpecificationParts(row: CanonicalArtifactRow, p
       && rawLabel.trim().length > 0 && rawLabel.length <= 100 && /[А-Яа-яЁё]/u.test(rawLabel)
       ? rawLabel.trim() : null;
     return [{ parameterId: id, value: String(parameters[id]),
-      parts: String(parameters[id]).split(/\s*;\s*/u).filter(Boolean).map(part => canonicalPublicEstimateChoiceLabelRu(label ? `${label}: ${part}` : part)) }];
+      parts: (options?.splitSelectedValues === false ? [String(parameters[id])] : String(parameters[id]).split(/\s*;\s*/u))
+        .filter(Boolean).map(part => canonicalPublicEstimateChoiceLabelRu(label ? `${label}: ${part}` : part)) }];
   });
   const selectedParts = selected.flatMap(spec => spec.parts);
   const selectedSpecification = selectedParts.join(", ");

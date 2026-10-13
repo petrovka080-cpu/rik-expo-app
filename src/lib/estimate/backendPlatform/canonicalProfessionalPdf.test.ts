@@ -158,6 +158,26 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(manual.html).toContain('<strong>Согласованное ручное название</strong>');
     expect(manual.html).not.toContain('Согласованная тара &lt;контроль&gt;');
   });
+  it("prints each labelled semicolon service selection once without changing the saved title or facts", () => {
+    const contents = 'Спуск вне КРЕР; труд, тара и погрузка включены';
+    const reference = 'КП-001: полная услуга для подтверждённой массы';
+    const source = rows(1);
+    source[0] = {...source[0]!,row_id:'f09:asphalt_floor_covering_demolition:waste-onsite-service',category:'service',unit_id:'t',quantity:'1.25',
+      title_ru:`Дополнительное обращение со снятой асфальтовым покрытием пола — Состав спуска и погрузки: ${contents}, Спецификация услуги: ${reference}`,
+      calculation_trace:{resourceGraph:{titleSpecificationMode:'APPEND',titleSpecificationParameterIds:['contents','reference'],
+        titleSpecificationParameterLabelsRu:{contents:'Состав спуска и погрузки',reference:'Спецификация услуги'},titleSpecificationSeparator:' — '}}};
+    const saved = {...revision(1),input_parameters:{contents,reference}};
+    const before = JSON.stringify({source,saved});
+    const pdf = buildCanonicalProfessionalPdfProjection({revision:saved,rows:source,workTitleRu:'Разборка асфальтового покрытия'});
+    expect(pdf.html).toContain('со снятым асфальтовым покрытием пола');
+    for (const selected of [contents,reference]) expect(pdf.html.split(selected).length-1).toBe(1);
+    expect(pdf.html.split('Состав спуска и погрузки:').length-1).toBe(1);
+    expect(pdf.html).toContain('<td class="numeric">1,25</td>');
+    expect(JSON.stringify({source,saved})).toBe(before);
+    source[0] = {...source[0]!,title_ru:'Ручное название со снятой асфальтовым покрытием',calculation_trace:{manualTitleOverride:true}};
+    expect(buildCanonicalProfessionalPdfProjection({revision:saved,rows:source,workTitleRu:'Разборка асфальтового покрытия'}).html)
+      .toContain('<strong>Ручное название со снятой асфальтовым покрытием</strong>');
+  });
   it("prints compact resource cells without the Silenzio application bullet lists while preserving estimate and buyer data", () => {
     const source=rows(1);
     source[0]={...source[0]!,title_ru:'Упаковка EGGER Silenzio Duo 1222949, 10 м²',unit_id:'pcs',quantity:'4',unit_price:'2500',amount:'10000',
@@ -265,7 +285,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-69-selected-scope-template47");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-69-selected-scope-template48");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,

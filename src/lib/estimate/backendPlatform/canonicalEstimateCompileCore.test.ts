@@ -910,6 +910,25 @@ describe("canonicalEstimateCompileCore", () => {
     input.submittedParameters.package_length = 24;
     expect((await compileCanonicalEstimateCore(input)).rows[0]!.title_ru).toContain(" — 24, 5, 2");
   });
+  it("preserves a multi-field service specification above 500 characters and keeps its finite aggregate bound", async () => {
+    const input = baseInput();
+    const ids = ['transport', 'packaging', 'receiver', 'service_reference'];
+    for (const id of ids) {
+      input.parameterDefinitions.push({ parameter_id:id, value_type:'text', required:true, default_value:null, constraints_json:{maxLength:500} });
+      input.submittedParameters[id] = `${id}: ${'я'.repeat(180)}`;
+    }
+    input.resourceDefinitions[0]!.resource_graph = {titleSpecificationParameterIds:ids,titleSpecificationMode:'APPEND'};
+    const result = await compileCanonicalEstimateCore(input);
+    const specification = ids.map(id=>input.submittedParameters[id]).join(', ');
+    expect(specification.length).toBeGreaterThan(500);
+    expect(result.rows[0]!.title_ru).toBe(`Листовой материал — ${specification}`);
+    expect(result.rows[0]!.quantity).toBe('11');
+    for (const id of ids) expect(result.parameters[id]).toBe(input.submittedParameters[id]);
+    for (const id of ids) input.submittedParameters[id] = 'я'.repeat(500);
+    await expect(compileCanonicalEstimateCore(input)).rejects.toMatchObject({code:'ROW_AMENDMENT_INVALID'});
+    input.submittedParameters.transport = 'я'.repeat(501);
+    await expect(compileCanonicalEstimateCore(input)).rejects.toMatchObject({code:'PARAMETER_VALIDATION_FAILED'});
+  });
   it("rejects boolean title values instead of coercing arbitrary non-string values", async () => {
     const input = baseInput();
     input.parameterDefinitions.push({ parameter_id: "boolean_title", value_type: "boolean", required: true, default_value: null, constraints_json: {} });

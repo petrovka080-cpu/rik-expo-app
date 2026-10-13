@@ -87,6 +87,15 @@ describe("canonical estimate artifact contract", () => {
     expect(JSON.stringify(row)).toBe(before);
     expect(canonicalArtifactVisibleRowTitle({ ...row, title_ru: "Фактический продукт — CUSTOM_MODEL_127" })).toBe("Фактический продукт — CUSTOM_MODEL_127");
   });
+  it("corrects only published asphalt grammar while preserving manual names and selected facts", () => {
+    const row = {...rows[0]!,row_id:'f09:asphalt_floor_covering_demolition:waste-plan',
+      title_ru:'Обращение со снятой асфальтовым или асфальтобетонным покрытием пола — Материалы остаются на объекте'};
+    const before = JSON.stringify(row);
+    expect(canonicalArtifactVisibleRowTitle(row)).toBe('Обращение со снятым асфальтовым или асфальтобетонным покрытием пола — Материалы остаются на объекте');
+    expect(JSON.stringify(row)).toBe(before);
+    expect(canonicalArtifactVisibleRowTitle({...row,calculation_trace:{manualTitleOverride:true}})).toBe(row.title_ru);
+    expect(canonicalArtifactVisibleRowTitle({...row,row_id:'other-work'})).toBe(row.title_ru);
+  });
   it("keeps material kits within an equipment operation as materials without changing procurement data", () => {
     const kit = { ...rows[0], section: "Оборудование армирования", title_ru: "Полный комплект оснастки станка", unit_id: "set", quantity: "3" };
     expect(canonicalArtifactSection(kit)).toBe("Материалы");

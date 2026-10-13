@@ -1196,8 +1196,9 @@ export async function compileCanonicalEstimateCore(
         || resource.resource_graph?.purchaseBalanceV1 != null || resource.resource_graph?.manualTransportQuantityPolicyV1 != null);
 
     const joinedTitleSpecification = normalizedTitleSpecificationValues.join(", ");
+    // Several individually validated project facts can exceed one field's 500-character limit.
     const boundedTitleSpecification = joinedTitleSpecification
-      ? boundedText(joinedTitleSpecification, `${resource.row_id}.titleSpecification`, 500)
+      ? boundedText(joinedTitleSpecification, `${resource.row_id}.titleSpecification`, 2_000)
       : null;
     const canonicalTitleRu = boundedTitleSpecification == null
       ? resource.title_ru
