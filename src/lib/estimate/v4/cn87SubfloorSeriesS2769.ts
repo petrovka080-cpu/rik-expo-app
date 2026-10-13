@@ -74,6 +74,7 @@ export function buildCn87SubfloorSuccessorS2769(parent:PurchaseGroupRepresentati
    result.baseline.formula_consumer_ids[id]=consumers.formulaConsumers[id];result.baseline.resource_consumer_row_ids[id]=consumers.resourceConsumers[id];
    result.baseline.uom_by_parameter[id]=p.unit_id;result.baseline.normative_source_ids[id]??=[];result.baseline.guide_provenance_ru[id]=p.truth_metadata.guide?.guide_short_ru??p.title_ru;
  }
+ for(const id of ['q','cn87_subfloor_mix_water_l_per_25kg'])result.baseline.normative_source_ids[id]=[...new Set([...result.baseline.normative_source_ids[id],source.contract+':manufacturer'])];
  result.baseline.parameter_schema_sha256=canonicalEstimateSha256HexText(stringifyCanonicalEstimateJson(result.parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata}))));
  result.passport.decision={...result.passport.decision,cn87SeriesContract:binding.contract,completeTechnicalEstimateAccepted:false,wholeFloorGroupComplete:false,
   additionalCn87PhysicalNormClosures:2,cn87OpenSourceNeeds:8,cn87InheritedNeeds:13};

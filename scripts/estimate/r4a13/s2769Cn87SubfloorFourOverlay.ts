@@ -9,8 +9,10 @@ export function overlayS2769Cn87SubfloorFour(parent:PurchaseGroupRepresentative,
  r.passport.decision={...r.passport.decision,quantityScope:'PARTIAL',priceState:'PARTIAL_NEEDS_PRICE',technicalScopeStatus:'NEEDS_SOURCE',
   materialSourceScopeOnly:true,legacyPreliminarySourcesRemainUnaccepted:true,unresolvedResourceRowIds:[...new Set([...oldOpen,...cn87Open])],
   cn87UnresolvedResourceRowIds:cn87Open,cn87ActiveUnresolvedDefinitions:21,completeTechnicalEstimateAccepted:false,wholeFloorGroupComplete:false};
- r.passport.capability_matrix=[...(parent.passport.capability_matrix??[]),{capability:'CN87_PHYSICAL_CONSUMPTION',status:'GREEN',scope:'EXACT_50MM_READY_SEPARATION_MANUAL_ONLY'},
-  {capability:'CN87_FULL_APPLICABLE_SCOPE',status:'NEEDS_SOURCE',unresolvedResourceRowIds:cn87Open}];
+ r.passport.capability_matrix=parent.passport.capability_matrix.map((capability:Record<string,unknown>)=>({...capability,
+  ...(capability.capability==='FORMULAS_AND_PHYSICAL_PARITY'?{additionalScope:'EXACT_CN87_50MM_READY_SEPARATION_MANUAL_ONLY'}:{}),
+  ...(capability.capability==='FULL_APPLICABLE_SCOPE'?{status:'NEEDS_SOURCE',unresolvedResourceRowIds:r.passport.decision.unresolvedResourceRowIds,cn87UnresolvedResourceRowIds:cn87Open}:{}),
+ }));
  return{representative:r,legacyRowIds:parent.resources.map(row=>row.row_id),addedRowIds:added.map(row=>row.row_id),
   addedParameterIds:r.parameters.filter(p=>!parent.parameters.some(old=>old.parameter_id===p.parameter_id)).map(p=>p.parameter_id),changedFormulaIds:[],
   newPayableOwnerRowId:'cn87:separation-50mm:cn87-order',physicalNormOwnerRowIds:binding.knownConsumptionOwners,
