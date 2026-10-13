@@ -115,7 +115,7 @@ async function main() {
       const manifest = (await client.query("select * from public.estimate_cumulative_manifest_entry where release_id=$1 and catalog_id=$2", [predecessorReleaseId, catalogId])).rows[0];
       invariant(manifest, `TARGET_MISSING:${catalogId}`);
       const parent = await load(client, manifest.definition_version_id, manifest.approved_template_baseline_id);
-      const frozenParent = [...frozen.reps,...frozen.titleReps].find((r: Json) => r.target.catalogId === catalogId);
+      const frozenParent = [...frozen.reps,...frozen.titleReps].find((r: Json) => r.definition.catalog_id === catalogId);
       invariant(frozenParent && hash(parent) === hash(Object.fromEntries(Object.keys(parent).map(key => [key, frozenParent[key]]))), `PARENT_SNAPSHOT_DRIFT:${catalogId}`);
       const titleTarget=pack.titleFixTargets.find(t=>t.catalogId===catalogId);
       const overlay=titleTarget?overlayS2769Ct54DisplayTitle(parent,titleTarget,CONTRACT):overlayS2769Cn69SubfloorFour(parent,locators),r=overlay.representative;

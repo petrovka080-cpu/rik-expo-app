@@ -21,10 +21,10 @@ export function overlayS2769Cn69SubfloorFour(parent:PurchaseGroupRepresentative,
  const newRows=shared.resources.map(r=>{if(result.resources.some(old=>old.row_id===r.row_id))throw Error('CN69_OWNER_COLLISION');
   const related=pack.oldDispositionMap.filter(d=>d.reusedOwnerRows.includes(r.row_id)).map(d=>({...lineageFor(d),titleRu:d.titleRu,unitId:d.legacyUnit,legacyExpression:d.legacyExpression,disposition:d.disposition,ruleRu:d.ruleRu}));
   const presentation=r.resource_graph.publicResourcePresentationV1 as Record<string,unknown>|undefined;
-  const extraDetails=r.source_metadata.sourceNormQuantityAccepted===false?related.map(d=>'Сохранённое обязательство: '+d.titleRu+'. '+d.ruleRu):[];
+  const extraDetails=r.source_metadata?.sourceNormQuantityAccepted===false?related.map(d=>'Сохранённое обязательство: '+d.titleRu+'. '+d.ruleRu):[];
   const{row_sha256:_sha,...body}=r,content={...body,ordinal:ordinal++,row_type:r.category,semantic_owner:catalogId+':'+r.row_id,
    resource_graph:{...r.resource_graph,...(presentation?{publicResourcePresentationV1:{...presentation,detailsRu:[...(presentation.detailsRu as string[]??[]),...extraDetails]}}:{})},
-   source_metadata:{...r.source_metadata,forwardLegacyObligationLineage:related,full_technical_acceptance:false}};
+   source_metadata:{...r.source_metadata,forwardLegacyObligationLineage:related,full_technical_acceptance:false} as Record<string,unknown>};
   return{...content,row_sha256:hash(content)};
  });result.resources.push(...newRows);
  for(const r of newRows)if(r.source_metadata.sourceNormQuantityAccepted===true)result.bindings.push({row_id:r.row_id,locator_id:r.row_id.startsWith(prefix+':ct17-')?locators.krer:locators.manufacturer,applicability:{contract:pack.contract,exactBranch:exact,scopeRu:pack.scopeRu,fullTechnicalAcceptance:false}});
