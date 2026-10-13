@@ -103,7 +103,8 @@ export function buildRoofScreed25SuccessorV1(parent: PurchaseGroupRepresentative
   const consumers = buildMasterParameterCalculationConsumers(result);
   for (const p of result.parameters) {
     const id = p.parameter_id;
-    p.truth_metadata = { ...p.truth_metadata, formula_consumers: consumers.formulaConsumers[id], resource_branch_consumers: consumers.resourceConsumers[id] };
+    p.truth_metadata = { ...p.truth_metadata, contract:pack.contract, semantic_parameter_key:`${catalogId}:${id}`,
+      formula_consumers: consumers.formulaConsumers[id], resource_branch_consumers: consumers.resourceConsumers[id] };
     result.baseline.formula_consumer_ids[id] = consumers.formulaConsumers[id];
     result.baseline.resource_consumer_row_ids[id] = consumers.resourceConsumers[id];
     result.baseline.uom_by_parameter[id] = p.unit_id;

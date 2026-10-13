@@ -33,6 +33,8 @@ test.each([0,1])('exact cohort%s keeps history, all old formula ASTs and a singl
   const before = hash(snapshot.representatives[index]), f = fixture(index);
   expect(f.model.resources).toHaveLength(188);expect(f.model.parameters).toHaveLength(82);
   expect(f.overlay.addedRowIds).toHaveLength(10);expect(f.overlay.addedParameterIds).toHaveLength(4);
+  for(const parameter of f.model.parameters)expect(parameter.truth_metadata).toMatchObject({contract:pack.contract,
+    semantic_parameter_key:`${f.input.catalogId}:${parameter.parameter_id}`});
   expect(hash(snapshot.representatives[index])).toBe(before);
   for (const old of f.parent.formulas) expect(f.model.formulas.find(formula => formula.formula_id === old.formula_id)?.ast).toEqual(old.ast);
   for (const old of f.parent.resources) expect(f.model.resources.find(row => row.row_id === old.row_id))
