@@ -1,0 +1,58 @@
+{
+  "contract": "rik-expo-app.s27-69.stone-cubes-waste-scope-four.v1",
+  "sourcePack": "data/estimate-benchmarks/source-packs/floor-demolition-series-s27-52.json",
+  "sourcePackSha256": "5bb4443b3ba1c5b254779696191c36c55555d8bc55131e00cea03589d9076713",
+  "source": {
+    "officialUrl": "https://minstroy.gov.kg/ru/kyzmat/459/show",
+    "localArtifact": ".release-runtime/r568/s27-3/f09-next-current-lineage/official-snapshots/krer_46_2015.pdf",
+    "sha256": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+    "edition": "КРЕР46-2015; введён с01.01.2016",
+    "printedPages": [
+      5,
+      57,
+      58
+    ],
+    "table": "46-04-010",
+    "basisM2": 100
+  },
+  "parentSnapshot": "data/estimate-benchmarks/fixtures/stone-cubes-four-v5-parents-s27-69.json",
+  "parentSnapshotSha256": "607d06bfd8d9e60125673f0e63b6497beb273a996d8d4ec028abe56af2937e2e",
+  "scopeRu": "Только подтверждённое покрытие из каменной шашки, КРЕР46-04-010-05; четыре существующих типа. Прежний нормативный труд и владельцы цен сохраняются. Дополнительное обращение с отходами применяется только по подтверждённым фактам и полной спецификации услуги.",
+  "legacyModeValue": "Сохранить прежние отдельные потребности до подтверждения схемы обращения с отходами",
+  "confirmedWorkScopeValue": "Каменная шашка; снимается только покрытие, без основания и новой конструкции пола; уборка, сортировка, перемещения до 130 м суммарно и до 50 м от объекта, спуск через окно в лотках соответствуют условиям объекта",
+  "retainModeValue": "Материалы остаются на объекте; затаривание, дополнительный спуск и обработка вне КРЕР не нужны; внешний вывоз не нужен",
+  "onSiteExtraModeValue": "Нужно дополнительное обращение с отходами на объекте; внешнего вывоза нет",
+  "contractorModeValue": "Нужен внешний вывоз; требуемые затаривание, дополнительный спуск и перевозка входят в согласованную услугу",
+  "coverageValue": "Услуга включает требуемые тару, затаривание, отдельный спуск, погрузку вне КРЕР, перевозку, топливо, труд и приём отходов",
+  "targets": [
+    {
+      "catalogId": "canonical-work:base:demolition_interior_flooring_remove_large_area",
+      "predecessorDefinitionId": "b043c690-7714-55a9-85ae-c6eea527079c",
+      "parentSha256": "0bae731e4e14dec069285a12df3ae4438f6d0550bba343f99da74a6c57bd6ef1",
+      "predecessorVersion": 5
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_flooring_remove_small_area",
+      "predecessorDefinitionId": "ba444e86-82f1-5783-9c90-ed1102fb972e",
+      "parentSha256": "1a9982d6b5227de0a05c86fabf3fec2fccb566aaa4a66bc9c42d908a768cd080",
+      "predecessorVersion": 5
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_flooring_remove_standard",
+      "predecessorDefinitionId": "84725fae-a1ec-5ec9-9780-409f8f52a261",
+      "parentSha256": "a46058a64be0cc3361e4de860f33fb7799c397f31830364b7a3d974457cf0a75",
+      "predecessorVersion": 5
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_flooring_remove_wet_zone",
+      "predecessorDefinitionId": "985403f7-27a9-58b7-96ce-3e7e48a4213d",
+      "parentSha256": "8dd67fbcbd31ac16ba0429b283c88da2721984044eea2915336d94369772d090",
+      "predecessorVersion": 5
+    }
+  ],
+  "oldPhysicalRateUnchanged": true,
+  "newPhysicalNorms": 0,
+  "sourceGapsNotAutomaticallyNotApplicable": true,
+  "massBagsTripsNeverDerivedFromArea": true,
+  "productionAccepted": false
+}
