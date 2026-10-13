@@ -1,4 +1,4 @@
-import {roofScreed25StandaloneInactiveParameterIdsV1,ROOF_SCREED25_STANDALONE_QUESTION_IDS_V1} from '../../lib/estimate/backendPlatform/canonicalRoofScreed25StandaloneV1';
+import {roofScreed25StandaloneInactiveParameterIdsV1,ROOF_SCREED25_STANDALONE_QUESTION_IDS_V1,isRoofScreed25StandaloneCatalogV1,roofScreed25StandaloneGuideTextV1} from '../../lib/estimate/backendPlatform/canonicalRoofScreed25StandaloneV1';
 import {roofScreed25InactiveParameterIdsV1,ROOF_SCREED25_QUESTION_PARAMETER_IDS_V1} from '../../lib/estimate/backendPlatform/canonicalRoofScreed25MigrationV1';
 import {roofGuttersInactiveParameterIdsV1,ROOF_GUTTERS_QUESTION_PARAMETER_IDS_V1} from '../../lib/estimate/backendPlatform/canonicalRoofHangingGuttersMigrationV1';
 import {
@@ -471,7 +471,10 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
         && (schema.visibilityRole === "USER_INPUT"
           || isCanonicalEstimateUserEditableParameter(schema))))
     .map((schema) => buildParameter({
-      schema,
+      schema: schema.guide && isRoofScreed25StandaloneCatalogV1({catalogId:input.catalog.catalogId,
+        definitionVersion:input.catalog.definitionVersion,metadata:input.catalog.professionalMetadata})
+        && roofScreed25StandaloneGuideTextV1(schema.parameterId)
+        ? {...schema,guide:{...schema.guide,guideShortRu:roofScreed25StandaloneGuideTextV1(schema.parameterId)!}} : schema,
       parameters: input.parameters,
       referenceParameters: input.referenceParameters,
       parentParameters: input.parentParameters,

@@ -133,10 +133,19 @@ export function roofScreed25StandaloneSuccessorModelV1(from:{resources:readonly 
 
 /** Immutable catalog identity and exact application marker bound the projection.
  * A row-only/price exclusion cannot make the applicability question disappear. */
-export function roofScreed25StandaloneInactiveParameterIdsV1(input:{catalogId:unknown;definitionVersion:unknown;metadata:unknown;selection:unknown}) {
+export function isRoofScreed25StandaloneCatalogV1(input:{catalogId:unknown;definitionVersion:unknown;metadata:unknown}) {
   const meta=input.metadata as Json|null;
-  if(!binding.targets.some(t => t.catalogId === input.catalogId) || input.definitionVersion !== 5
-    || meta?.roofScreed25StandaloneBindingV1 !== ROOF_SCREED25_STANDALONE_BINDING_SHA_V1) return [];
+  return binding.targets.some(t => t.catalogId === input.catalogId) && input.definitionVersion === 5
+    && meta?.roofScreed25StandaloneBindingV1 === ROOF_SCREED25_STANDALONE_BINDING_SHA_V1;
+}
+/** Presentation of the accepted application binding; source snapshots stay immutable. */
+export function roofScreed25StandaloneGuideTextV1(parameterId:string):string|null {
+  if(parameterId===screed15.systemParameterId) return 'Выберите проектный вариант для этого участка кровли: 15 мм по отдельному пригодному плитному или монолитному основанию либо 25 мм непосредственно по подготовленному засыпному утеплителю. Основание и подачу проверяют отдельно. Приложение получает нормы и добавки; другая толщина или технология требует подходящего расчёта.';
+  if(parameterId===accepted.areaParameterId) return 'Укажите, что находится непосредственно под стяжкой этого участка. Для 25 мм проект должен предусматривать засыпной утеплитель и пригодную подготовку его верха. Исключение оплаты утепления не меняет основание. Смешанные участки разделяют; готовность выполнения проверяют отдельно.';
+  return null;
+}
+export function roofScreed25StandaloneInactiveParameterIdsV1(input:{catalogId:unknown;definitionVersion:unknown;metadata:unknown;selection:unknown}) {
+  if(!isRoofScreed25StandaloneCatalogV1(input))return [];
   const selection=parseCanonicalCompositionSelectionV1(input.selection);
   const excluded=(prefix:string) => selection?.excludedOperationKeys.includes(operationKey(prefix));
   return [...(excluded(accepted.prefix) ? [accepted.conditionsParameterId,accepted.areaParameterId] : []),
