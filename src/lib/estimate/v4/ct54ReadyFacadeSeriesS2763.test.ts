@@ -22,6 +22,7 @@ describe('six existing ready CT54 facade consumers use the same admitted operati
  test('two exterior technical consumers preserve every real parent owner and use the pinned net/gross operation',async()=>{
   for(const frozen of technicalParents.reps){
    const before=frozen as unknown as PurchaseGroupRepresentative,r=overlayS2763Ct54FacadeSix(before,{manufacturer:'CONTROL_TDS',krer:'CONTROL_KRER'}).representative;
+   expect(r.parameters.every(p=>p.truth_metadata.contract==='rik-expo-app.s27-69.ct54-exterior-technical-two-bindings.v1')).toBe(true);
    expect(r.resources.slice(0,59).map(x=>[x.row_id,x.cost_owner_id,x.unit_id,x.formula_id])).toEqual(before.resources.map(x=>[x.row_id,x.cost_owner_id,x.unit_id,x.formula_id]));
    expect(r.formulas.slice(0,59)).toEqual(before.formulas);
    const compile=(parameters:Record<string,unknown>)=>compileCanonicalEstimateCore({operation:'recalculate',catalogId:String(before.definition.catalog_id),compilerVersion:pack.contract,parameterDefinitions:r.parameters as never,formulaDefinitions:r.formulas as never,resourceDefinitions:r.resources as never,submittedParameters:parameters,confirmedParameters:{},rowOverrides:{},priceItems:[],currencyCode:'KGS',maximumResourceRows:94,hashJson:async v=>estimateDeterministicHash(v)});

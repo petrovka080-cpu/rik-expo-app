@@ -53,7 +53,7 @@ export function overlayS2763Ct54FacadeSix(parent:PurchaseGroupRepresentative,loc
  result.baseline.provenance={...result.baseline.provenance,cohortContract:pack.contract,historicalQValueIsFixtureOnly:true,noAutomaticTechnologySelection:true};
  const consumers=buildMasterParameterCalculationConsumers(result);
  for(const p of result.parameters){const id=p.parameter_id;
-  p.truth_metadata={...p.truth_metadata,contract:pack.contract,semantic_parameter_key:`${catalogId}:${id}`,formula_consumers:consumers.formulaConsumers[id],resource_branch_consumers:consumers.resourceConsumers[id]};
+  p.truth_metadata={...p.truth_metadata,contract:technical?technicalBinding.contract:pack.contract,semantic_parameter_key:`${catalogId}:${id}`,formula_consumers:consumers.formulaConsumers[id],resource_branch_consumers:consumers.resourceConsumers[id]};
   result.baseline.formula_consumer_ids[id]=consumers.formulaConsumers[id];result.baseline.resource_consumer_row_ids[id]=consumers.resourceConsumers[id];result.baseline.uom_by_parameter[id]=p.unit_id;
   result.baseline.normative_source_ids[id]??=[];result.baseline.guide_provenance_ru[id]=p.truth_metadata.guide?.guide_short_ru??p.title_ru;
  }
