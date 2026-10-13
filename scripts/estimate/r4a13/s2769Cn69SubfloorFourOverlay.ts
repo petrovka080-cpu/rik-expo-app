@@ -19,10 +19,11 @@ export function overlayS2769Cn69SubfloorFour(parent:PurchaseGroupRepresentative,
  result.parameters=shared.parameters.map(p=>({...p}));result.formulas.push(...shared.formulas.map(f=>({...f,ast_sha256:hash(f.ast)})));
  let ordinal=Math.max(...result.resources.map(r=>Number(r.ordinal)))+1;
  const newRows=shared.resources.map(r=>{if(result.resources.some(old=>old.row_id===r.row_id))throw Error('CN69_OWNER_COLLISION');
+  const inherited=pack.inheritedNeeds.find(g=>r.row_id===prefix+':inherited-'+g.suffix),historical=inherited?parent.resources.find(old=>old.row_id===lineageFor(pack.oldDispositionMap.find(d=>d.suffix===inherited.suffix)!).rowId):undefined;
   const related=pack.oldDispositionMap.filter(d=>d.reusedOwnerRows.includes(r.row_id)).map(d=>({...lineageFor(d),titleRu:d.titleRu,unitId:d.legacyUnit,legacyExpression:d.legacyExpression,disposition:d.disposition,ruleRu:d.ruleRu}));
   const presentation=r.resource_graph.publicResourcePresentationV1 as Record<string,unknown>|undefined;
   const extraDetails=r.source_metadata?.sourceNormQuantityAccepted===false?related.map(d=>'Сохранённое обязательство: '+d.titleRu+'. '+d.ruleRu):[];
-  const{row_sha256:_sha,...body}=r,content={...body,ordinal:ordinal++,row_type:r.category,semantic_owner:catalogId+':'+r.row_id,
+  const{row_sha256:_sha,...body}=r,content={...body,ordinal:ordinal++,row_type:historical?.row_type??r.category,category:historical?.category??r.category,semantic_owner:catalogId+':'+r.row_id,
    resource_graph:{...r.resource_graph,...(presentation?{publicResourcePresentationV1:{...presentation,detailsRu:[...(presentation.detailsRu as string[]??[]),...extraDetails]}}:{})},
    source_metadata:{...r.source_metadata,forwardLegacyObligationLineage:related,full_technical_acceptance:false} as Record<string,unknown>};
   return{...content,row_sha256:hash(content)};
