@@ -96,7 +96,7 @@ it('standalone25 exclusion hides its facts after compact transport and full-revi
     expect(session.parameters.filter(p=>fields.includes(p.parameterId))).toEqual([]);
     expect(session.blockingMissingParameterIds.filter(id=>fields.includes(id))).toEqual([]);
   }
-  const restored=buildConsumerCanonicalParameterSession({catalog:roofCatalog,revision:{...selectedRevision,compositionSelectionV1:null},parent:null,draftId:'draft'});
+  const restored=buildConsumerCanonicalParameterSession({catalog:roofCatalog,revision:{...selectedRevision,compositionSelectionV1:undefined},parent:null,draftId:'draft'});
   expect(restored.blockingMissingParameterIds).toEqual(expect.arrayContaining(fields));
   expect(restored.blockingMissingParameterIds).not.toContain('q');
 });
