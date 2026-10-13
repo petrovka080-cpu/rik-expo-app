@@ -18,7 +18,6 @@ export const ROOF_SCREED25_STANDALONE_BINDING_SHA_V1 = hash(binding);
 export const ROOF_SCREED25_STANDALONE_QUESTION_IDS_V1 = [accepted.conditionsParameterId, accepted.areaParameterId,
   ROOF_SCREED15_DIRECT_BASE_PARAMETER_V1, screed15.conditionsParameterId, screed15.areaParameterId];
 const ids15 = screed15.rates.map(r => `${screed15.prefix}:${r.role}`);
-const ids25 = accepted.rates.map(r => `${accepted.prefix}:${r.role}`);
 const selected15 = {kind:'equals',parameterId:screed15.systemParameterId,value:screed15.systemYesRu};
 const selected25 = {kind:'equals',parameterId:screed15.systemParameterId,value:binding.systemYesRu};
 const selected = {kind:'or',operands:[selected15,selected25]};
@@ -30,10 +29,10 @@ export function roofScreed25StandaloneOwnerV1(catalogId:string) {
   if (!binding.targets.some(t => t.catalogId === catalogId)) throw Error('ROOF_SCREED_STANDALONE_CATALOG_REQUIRED');
   assertRoofScreed25AcceptedRatesV1();
   const {measurementParameterId:_id,measurementUnitId:_unit,measurementConditional:_conditional,...source} = accepted;
-  const pack: SourcePinnedRoofNormPackR1 = {...source,systemParameterId:screed15.systemParameterId,
+  const pack = {...source,systemParameterId:screed15.systemParameterId,
     systemYesRu:binding.systemYesRu,measurementTitleRu:'Площадь участка выравнивающей стяжки кровли, м²',
     measurementGuideRu:'Площадь именно этого участка стяжки уже задана в основной работе. Для 25 мм приложение использует её один раз; толщину и нормы вручную вводить не требуется.',
-    quantityEditReasonRu:'Изменяйте площадь участка стяжки в исходных данных. Приложение получает нормы выбранного варианта 15 или 25 мм из проверенного источника.'};
+    quantityEditReasonRu:'Изменяйте площадь участка стяжки в исходных данных. Приложение получает нормы выбранного варианта 15 или 25 мм из проверенного источника.'} as SourcePinnedRoofNormPackR1;
   const owner = sourcePinnedRoofNormOwnerR1(pack);
   return {...owner, admitted:sourcePinnedRoofNormGuardsR1(pack).admitted,
     parameters:owner.parameters.filter(p => !['q',screed15.systemParameterId].includes(p.parameter_id)).map(p => ({...p,

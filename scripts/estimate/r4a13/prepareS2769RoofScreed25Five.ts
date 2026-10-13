@@ -29,6 +29,7 @@ const SOURCES = [
   "src/lib/estimate/backendPlatform/canonicalRoofScreed25StandaloneV1.ts",
   "src/lib/estimate/backendPlatform/canonicalRoofScreed25StandaloneMigrationV1.ts",
   "src/lib/estimate/backendPlatform/canonicalRoofScreed25StandaloneV1.test.ts",
+  "tests/aiEstimateV4/canonicalEstimateParameterSessionSnapshot.contract.test.ts",
   "data/estimate-benchmarks/source-packs/roof-screed25-five-bindings-s27-69.json",
   "data/estimate-benchmarks/source-packs/roof-screed25-five-reuse-review-s27-69.json",
   "data/estimate-benchmarks/fixtures/roof-screed25-five-parents-s27-69.json",

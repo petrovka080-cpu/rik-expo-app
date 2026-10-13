@@ -9,6 +9,8 @@ import {
 } from "../../src/lib/estimate/backendPlatform/contracts";
 import { buildConsumerCanonicalParameterSession } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
 import { consumerRepairCanonicalEstimateBlocksApproval, consumerRepairCanonicalMissingParameterCount } from "../../src/features/consumerRepair/consumerRepairCanonicalEstimateReadiness";
+import {ROOF_SCREED25_STANDALONE_BINDING_V1 as binding,ROOF_SCREED25_STANDALONE_BINDING_SHA_V1 as bindingSha} from '../../src/lib/estimate/backendPlatform/canonicalRoofScreed25StandaloneV1';
+import {ROOF_SCREED25_PACK_V1 as screed25} from '../../src/lib/estimate/backendPlatform/canonicalRoofScreed25CompanionV1';
 
 const catalog: CanonicalEstimateCatalogItem = {
   catalogId: "catalog", releaseId: "release", namespace: "global", domain: "test", workKey: "test",
@@ -67,4 +69,34 @@ describe("parameter session transport projection", () => {
     expect(() => projectCanonicalEstimateParameterSessionSnapshot(makeInput()))
       .toThrow(expect.objectContaining({ code: "PARAMETER_SESSION_IDENTITY_MISMATCH" }));
   });
+});
+
+it('standalone25 exclusion hides its facts after compact transport and full-revision preview; restore requires only the missing facts',()=>{
+  const catalogId=binding.targets[0]!.catalogId,operationKey=JSON.stringify([screed25.prefix,`${screed25.prefix}:installation`]);
+  const fields=[screed25.conditionsParameterId,screed25.areaParameterId];
+  const roofCatalog:CanonicalEstimateCatalogItem={...catalog,catalogId,domain:'roofing',definitionVersion:5,
+    professionalMetadata:{roofScreed25StandaloneBindingV1:bindingSha},parameterSchema:[
+      {...catalog.parameterSchema[0]!,parameterId:'q',unitId:'m2',titleRu:'Площадь своего участка стяжки'},
+      ...fields.map((parameterId,ordinal)=>({...catalog.parameterSchema[0]!,parameterId,ordinal:ordinal+1,valueType:'enum' as const,unitId:null,
+        titleRu:parameterId===screed25.conditionsParameterId?'Проектный способ подачи раствора':'Непосредственное основание участка',
+        requiredWhen:{kind:'equals',parameterId:'roof_screed_system',value:binding.systemYesRu},
+        constraints:{values:[parameterId===screed25.conditionsParameterId?screed25.conditionsYesRu:screed25.areaYesRu],
+          requiredWhen:{kind:'equals',parameterId:'roof_screed_system',value:binding.systemYesRu}}})),
+      {...catalog.parameterSchema[0]!,parameterId:'roof_screed_system',valueType:'enum',unitId:null,titleRu:'Вариант стяжки',
+        constraints:{values:[binding.systemYesRu]}}]};
+  const selectedRevision:CanonicalEstimateRevisionView={...child,catalogId,parentRevisionId:null,definitionVersion:5,
+    parameters:{q:'20',roof_screed_system:binding.systemYesRu},userInputSnapshot:{q:'20',roof_screed_system:binding.systemYesRu},
+    compositionSelectionV1:{contractVersion:'canonical-estimate-composition-selection/v1',excludedOperationKeys:[operationKey],excludedRowIds:[]},
+    preliminaryNeeds:fields.map((id,index)=>({rowId:`need${index}`,selected:true,missingParameterIds:[id],quantity:null,needState:'CONDITION_REQUIRED'} as any))};
+  const snapshot=projectCanonicalEstimateParameterSessionSnapshot({requestedRevisionId:'child',definitionVersionId:'definition',
+    revision:selectedRevision,parent:null,catalog:roofCatalog});
+  expect(snapshot.revision.excludedScopeParameterIdsV1).toEqual(fields);
+  for(const revision of [snapshot.revision,selectedRevision]){
+    const session=buildConsumerCanonicalParameterSession({catalog:roofCatalog,revision,parent:null,draftId:'draft'});
+    expect(session.parameters.filter(p=>fields.includes(p.parameterId))).toEqual([]);
+    expect(session.blockingMissingParameterIds.filter(id=>fields.includes(id))).toEqual([]);
+  }
+  const restored=buildConsumerCanonicalParameterSession({catalog:roofCatalog,revision:{...selectedRevision,compositionSelectionV1:null},parent:null,draftId:'draft'});
+  expect(restored.blockingMissingParameterIds).toEqual(expect.arrayContaining(fields));
+  expect(restored.blockingMissingParameterIds).not.toContain('q');
 });
