@@ -2,7 +2,8 @@ import binding from '../../../../data/estimate-benchmarks/source-packs/cn87-four
 import {cn87SeparationDefinitionS2754,cn87SeparationSourcePackS2754 as source,cn87SeparationPrefixS2754 as prefix} from './cn87SeparationScreedS2754';
 import {cn69SubfloorBindingS2769 as inherited,cn69SubfloorPrefixS2769 as oldPrefix} from './cn69SubfloorSeriesS2769';
 import {compileFormulaGraph} from '../backendPlatform/formulaGraph';
-import {estimateDeterministicHash as hash} from '../estimateDeterministicHash';
+import {estimateDeterministicHash as hash,stringifyCanonicalEstimateJson} from '../estimateDeterministicHash';
+import {canonicalEstimateSha256HexText} from '../backendPlatform/canonicalEstimateSha256';
 import {compileAutomaticConstructionOwnerR1,type AutomaticOwnerDefinition} from './automaticConstructionOwnerR1';
 import type {PurchaseGroupRepresentative} from '../../../../scripts/estimate/r4a13/s2732PurchaseGroupOverlay';
 import {buildMasterParameterCalculationConsumers} from '../backendPlatform/canonicalDefinitionParameterConsumersR1';
@@ -73,7 +74,7 @@ export function buildCn87SubfloorSuccessorS2769(parent:PurchaseGroupRepresentati
    result.baseline.formula_consumer_ids[id]=consumers.formulaConsumers[id];result.baseline.resource_consumer_row_ids[id]=consumers.resourceConsumers[id];
    result.baseline.uom_by_parameter[id]=p.unit_id;result.baseline.normative_source_ids[id]??=[];result.baseline.guide_provenance_ru[id]=p.truth_metadata.guide?.guide_short_ru??p.title_ru;
  }
- result.baseline.parameter_schema_sha256=hash(result.parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata})));
+ result.baseline.parameter_schema_sha256=canonicalEstimateSha256HexText(stringifyCanonicalEstimateJson(result.parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata}))));
  result.passport.decision={...result.passport.decision,cn87SeriesContract:binding.contract,completeTechnicalEstimateAccepted:false,wholeFloorGroupComplete:false,
   additionalCn87PhysicalNormClosures:2,cn87OpenSourceNeeds:8,cn87InheritedNeeds:13};
  return result;

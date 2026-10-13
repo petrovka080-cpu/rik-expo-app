@@ -7,6 +7,8 @@ import type {PurchaseGroupRepresentative} from '../../../../scripts/estimate/r4a
 import {createCanonicalDefinitionClonePlan} from '../../../../scripts/estimate/r4a13/canonicalDefinitionPublisherR1';
 import {overlayS2769Cn87SubfloorFour} from '../../../../scripts/estimate/r4a13/s2769Cn87SubfloorFourOverlay';
 import {estimateDeterministicHash as hash} from '../estimateDeterministicHash';
+import {stringifyCanonicalEstimateJson} from '../estimateDeterministicHash';
+import {createHash} from 'node:crypto';
 function input(index=0){const from=parents.reps[index] as unknown as PurchaseGroupRepresentative,to=buildCn87SubfloorSuccessorS2769(from);return{from,to,
  fromDefinition:{id:String(from.definition.id),catalogId:String(from.definition.catalog_id),sha256:String(from.definition.definition_sha256)},
  toDefinition:{id:'55555555-5555-4555-8555-555555555555',catalogId:String(from.definition.catalog_id),sha256:'a'.repeat(64)}};}
@@ -19,6 +21,8 @@ test.each([0,1,2,3])('admits the publisher projection after generated SQL identi
   passport:{physicalResultRu:String(i.from.passport.physical_result_ru),excludedScopeRu:i.from.passport.excluded_scope_ru,decision:r.passport.decision,payloadSha256:'c'.repeat(64),sourceHead:'d'.repeat(40),sourceTree:'e'.repeat(40)},
   bindingApplicability:b=>b.applicability,expectedNormativeBindingCount:r.bindings.length});
  expect(admit({...i,to:plan,proof:proof({...i,to:plan})})).not.toBeNull();
+ expect(plan.baseline.parameter_schema_sha256).toMatch(/^[0-9a-f]{64}$/u);
+ expect(plan.baseline.parameter_schema_sha256).toBe(createHash('sha256').update(stringifyCanonicalEstimateJson(plan.parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata})))).digest('hex'));
 });
 test.each([0,1,2,3])('preserves exact old prices and complete operation exclusions after additive parameters: %s',index=>{
  const i=input(index),admitted=admit({...i,proof:proof(i)});expect(admitted).not.toBeNull();
