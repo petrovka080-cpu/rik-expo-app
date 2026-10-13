@@ -2,6 +2,7 @@ import snapshot from '../../../../data/estimate-benchmarks/fixtures/stone-cubes-
 import {buildStoneCubesWasteSuccessorS2769,compileStoneCubesWasteS2769,assertStoneCubesWasteSelectionS2769,stoneCubesWasteBindingS2769 as binding,
  stoneCubesWasteModeIdS2769 as mode} from './stoneCubesWasteScopeS2769';
 import {compileCanonicalEstimateCore} from '../backendPlatform/canonicalEstimateCompileCore';
+import {canonicalEstimateOperationReferences} from '../backendPlatform/canonicalEstimateOperationComposition';
 import type {PurchaseGroupRepresentative} from '../../../../scripts/estimate/r4a13/s2732PurchaseGroupOverlay';
 const reps=snapshot.reps as unknown as PurchaseGroupRepresentative[],prefix='f09:stone_tile_floor_demolition:';
 const facts=(index:number)=>({...reps[index]!.baseline.input_values,stone_cubes_work_scope_confirmed:binding.confirmedWorkScopeValue});
@@ -79,4 +80,20 @@ test('a full service cannot silently reinstate a previously excluded waste task'
   {contractVersion:'canonical-estimate-composition-selection/v1',excludedRowIds:[],excludedOperationKeys:[]})).not.toThrow();
  expect(()=>assertStoneCubesWasteSelectionS2769({[mode]:binding.onSiteExtraModeValue},
   {contractVersion:'canonical-estimate-composition-selection/v1',excludedRowIds:[prefix+'offsite-haul',prefix+'disposal'],excludedOperationKeys:[]})).not.toThrow();
+});
+test.each(['includedInEstimate','includedInProcurement'])('a carried manual %s=false cannot silently enter a bundled service',field=>{
+ const overrides={[prefix+'packaging']:{[field]:false,unitPrice:'7',provenance:{kind:'manual',reason:'Сохранённое участие позиции'}}},before=JSON.stringify(overrides);
+ let error;try{assertStoneCubesWasteSelectionS2769({[mode]:binding.contractorModeValue},null,overrides);}catch(caught){error=caught;}
+ expect(error).toMatchObject({code:'COMPOSITION_SERVICE_SCOPE_CONFLICT',httpStatus:409});
+ expect(JSON.stringify(overrides)).toBe(before);
+ expect(()=>assertStoneCubesWasteSelectionS2769({[mode]:binding.legacyModeValue},null,overrides)).not.toThrow();
+ expect(()=>assertStoneCubesWasteSelectionS2769({[mode]:binding.contractorModeValue},null,
+  {[prefix+'packaging']:{[field]:true,unitPrice:'7',provenance:overrides[prefix+'packaging']!.provenance}})).not.toThrow();
+ expect(()=>assertStoneCubesWasteSelectionS2769({[mode]:binding.onSiteExtraModeValue},null,
+  {[prefix+'offsite-haul']:{[field]:false,unitPrice:'7'}})).not.toThrow();
+});
+test('all three new operations use the canonical composition contract',()=>{
+ const model=buildStoneCubesWasteSuccessorS2769(reps[0]!),rows=model.resources.filter(r=>r.row_id===prefix+'waste-plan'||r.row_id===prefix+'waste-service'||r.row_id===prefix+'waste-onsite-service');
+ expect(rows).toHaveLength(3);
+ for(const row of rows)expect(canonicalEstimateOperationReferences(row.resource_graph.operationCompositionV1)).toHaveLength(1);
 });

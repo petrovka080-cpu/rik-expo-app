@@ -19,15 +19,16 @@ const modernScope={kind:'and',operands:[modern,{kind:'equals',parameterId:workSc
  {kind:'greater_than',parameterId:'floor_covering_area_m2',value:0}]};
 const record=(value:unknown):Record<string,unknown>=>value&&typeof value==='object'&&!Array.isArray(value)?value as Record<string,unknown>:{};
 const sha=(value:unknown)=>canonicalEstimateSha256HexText(stringifyCanonicalEstimateJson(value));
-/** A bundled service cannot silently reinstate a task explicitly excluded from
- * the predecessor. Restore that scope in the ordinary composition editor first. */
-export function assertStoneCubesWasteSelectionS2769(parameters:Record<string,unknown>,selectionInput:unknown):void{
+/** A bundled service cannot silently reinstate a task excluded through either
+ * composition selection or the predecessor's manual participation flags. */
+export function assertStoneCubesWasteSelectionS2769(parameters:Record<string,unknown>,selectionInput:unknown,rowOverridesInput:unknown={}):void{
  if(![pack.onSiteExtraModeValue,pack.contractorModeValue].includes(String(parameters[mode])))return;
- const selection=parseCanonicalCompositionSelectionV1(selectionInput);if(!selection)return;
+ const selection=parseCanonicalCompositionSelectionV1(selectionInput),overrides=record(rowOverridesInput);
  const gaps=parameters[mode]===pack.onSiteExtraModeValue?['packaging','other-descent']:['packaging','other-descent','offsite-haul','disposal'];
- if(gaps.some(key=>selection.excludedRowIds.includes(prefix+':'+key)
-  ||selection.excludedOperationKeys.includes(JSON.stringify(['stone-cubes-waste-plan',key]))))
-  throw Object.assign(new Error('В сохранённой смете исключена часть обращения с отходами. Перед выбором полной услуги восстановите эти подработы в составе сметы либо сохраните прежний режим.'),
+ if(gaps.some(key=>selection?.excludedRowIds.includes(prefix+':'+key)
+  ||selection?.excludedOperationKeys.includes(JSON.stringify(['stone-cubes-waste-plan',key]))
+  ||record(overrides[prefix+':'+key]).includedInEstimate===false||record(overrides[prefix+':'+key]).includedInProcurement===false))
+  throw Object.assign(new Error('В сохранённой смете отключена часть обращения с отходами. Перед выбором полной услуги восстановите участие этих позиций или подработ в смете либо сохраните прежний режим.'),
    {code:'COMPOSITION_SERVICE_SCOPE_CONFLICT',httpStatus:409});
 }
 const shared:AutomaticOwnerDefinition=floorDemolitionDefinitionS2752(2);
@@ -108,7 +109,8 @@ export function buildStoneCubesWasteSuccessorS2769(parent:PurchaseGroupRepresent
    resource_graph:{...next.resource_graph,formulaId,semanticOwnerId:String(parent.definition.catalog_id)+':'+rowId,
     inputParameterIds:[...new Set([workScope,...(next.resource_graph.inputParameterIds as string[]).filter(id=>id!=='stone_cubes_source_scope_confirmed')])],
     operationCompositionV1:{contractVersion:'canonical-operation-resource/v1',groupId:'stone-cubes-waste-plan',groupTitleRu:'Дополнительное обращение с отходами',
-     operationId:'stone-cubes-waste-plan:'+key,operationTitleRu:'Согласованная полная услуга',processOrdinal:30},
+     operationId:'stone-cubes-waste-plan:'+key,operationTitleRu:'Согласованная полная услуга',processOrdinal:30,
+     completionCriterionRu:'Подтверждены состав полной услуги, масса и спецификация; включённые в КРЕР действия повторно не оплачиваются.'},
     publicResourcePresentationV1:{...record(next.resource_graph.publicResourcePresentationV1),nameRu:'Дополнительное обращение со снятой каменной шашкой',
      sourceTitleRu:'Полная согласованная услуга по принятой спецификации',detailsRu:[
       'Количество — подтверждённая масса в тоннах; цена за тонну относится ко всему указанному составу услуги.',
@@ -132,7 +134,8 @@ export function buildStoneCubesWasteSuccessorS2769(parent:PurchaseGroupRepresent
    publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',nameRu:'Принятая схема обращения со снятой каменной шашкой',
     sourceTitleRu:'Подтверждённый факт объекта',detailsRu:['Площадь показывает границу разборки; она не является массой отходов, количеством тары или рейсов.']},
    operationCompositionV1:{contractVersion:'canonical-operation-resource/v1',groupId:'stone-cubes-waste-plan',groupTitleRu:'Дополнительное обращение с отходами',
-    operationId:'stone-cubes-waste-plan:accepted-scope',operationTitleRu:'Принятая схема обращения',processOrdinal:20}},
+    operationId:'stone-cubes-waste-plan:accepted-scope',operationTitleRu:'Принятая схема обращения',processOrdinal:20,
+    completionCriterionRu:'Подтверждены способ обращения и границы демонтажа; площадь не подменяет массу, тару или рейсы.'}},
   source_metadata:{truth_contract_version:'R3',synthetic:false,sourceRole:'OBJECT_CONFIRMED_WASTE_BOUNDARY',normativeTrace:[],
    source_artifact_sha256:pack.source.sha256,wasteScopeContract:pack.contract}};
  result.resources.push({...plan,row_sha256:estimateDeterministicHash(plan)});

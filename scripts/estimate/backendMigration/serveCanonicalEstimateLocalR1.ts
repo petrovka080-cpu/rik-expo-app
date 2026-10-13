@@ -2634,7 +2634,7 @@ async function compileClaimedJob(
       ).rows;
   confirmedParameters = { ...baselineParameters, ...stripCanonicalAutomaticPreliminaryInputsV1(parameterDefinitions, confirmedParameters, effectiveUserParameters) };
   if(definition.source_metadata?.stoneCubesWasteMigrationS2769)
-    assertStoneCubesWasteSelectionS2769({...confirmedParameters,...submittedParameters},effectiveCompositionSelectionV1);
+    assertStoneCubesWasteSelectionS2769({...confirmedParameters,...submittedParameters},effectiveCompositionSelectionV1,payload.rowOverrides??{});
   const compiled = await compileCanonicalEstimateCore({
     compositionSelectionV1:effectiveCompositionSelectionV1,
     operation: String(job.operation) as "compile" | "recalculate",
