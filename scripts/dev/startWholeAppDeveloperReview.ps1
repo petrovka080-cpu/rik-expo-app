@@ -424,7 +424,10 @@ while ((Get-Date) -lt $deadline) {
     Start-Sleep -Milliseconds 250
   }
 }
-if (-not $ready -or -not (Test-WebBundleReady -Port $Port -TimeoutSec 180)) {
+# The cold, single-worker graph can exceed three minutes on the review host.
+# Keep a finite startup deadline and still require the complete bundle before
+# warming Android or publishing the shared runtime identity.
+if (-not $ready -or -not (Test-WebBundleReady -Port $Port -TimeoutSec 360)) {
   if (-not $Metro.HasExited) { Stop-Process -Id $Metro.Id -Force -ErrorAction SilentlyContinue }
   Fail-Review "WHOLE_APP_METRO_START_RED" "проверьте metro stdout/stderr в $RuntimeRoot"
 }
