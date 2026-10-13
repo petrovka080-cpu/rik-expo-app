@@ -1,5 +1,5 @@
 import parents from '../../../../data/estimate-benchmarks/fixtures/cn87-four-subfloor-v4-parents-s27-69.json';
-import {buildCn87SubfloorSuccessorS2769} from '../v4/cn87SubfloorSeriesS2769';
+import {buildCn87SubfloorSuccessorS2769,cn87SubfloorBindingS2769 as binding} from '../v4/cn87SubfloorSeriesS2769';
 import {buildCn87SubfloorMigrationProofS2769 as proof,admitCn87SubfloorMigrationProofS2769 as admit} from './canonicalCn87SubfloorMigrationS2769';
 import {canonicalManualPriceMigrationBindings as prices,canonicalManualExclusionMigrationBindings as exclusions,canonicalStoredManualPricesCanMigrate} from './canonicalManualPriceReleaseMigration';
 import {canonicalCompositionOperationMigrationBindingsV1 as operations,canonicalCompositionSelectionCanMigrateWithBindingsV1 as selected} from './canonicalEstimateCompositionSelectionV1';
@@ -14,13 +14,14 @@ function input(index=0){const from=parents.reps[index] as unknown as PurchaseGro
  toDefinition:{id:'55555555-5555-4555-8555-555555555555',catalogId:String(from.definition.catalog_id),sha256:'a'.repeat(64)}};}
 test.each([0,1,2,3])('admits the publisher projection after generated SQL identities: %s',index=>{
  const i=input(index),r=overlayS2769Cn87SubfloorFour(i.from,'11111111-1111-4111-8111-111111111111').representative;
- const plan=createCanonicalDefinitionClonePlan({contract:'CONTROL_CN87',definition:{id:i.toDefinition.id,releaseId:'22222222-2222-4222-8222-222222222222',catalogId:i.toDefinition.catalogId,
+ const plan=createCanonicalDefinitionClonePlan({contract:binding.contract,definition:{id:i.toDefinition.id,releaseId:'22222222-2222-4222-8222-222222222222',catalogId:i.toDefinition.catalogId,
   definitionVersion:5,passport:i.from.definition.passport,applicability:i.from.definition.applicability,definitionSha256:i.toDefinition.sha256,sourceMetadata:i.from.definition.source_metadata},
   representative:r,parameterTruthMetadata:p=>p.truth_metadata,resourceId:row=>'33333333-3333-4333-8333-'+hash(row.row_id).slice(0,12),resourceSemanticOwner:row=>String(row.semantic_owner),resourceSha256:row=>hash(row),
   baseline:{id:'44444444-4444-4444-8444-444444444444',key:'CONTROL_CN87',sourceDefinitionVersionId:i.fromDefinition.id,validationScenarioRefs:[],acceptanceEvidenceSha256:'b'.repeat(64),acceptedReleaseId:'22222222-2222-4222-8222-222222222222',supersedesBaselineId:String(i.from.baseline.id)},
   passport:{physicalResultRu:String(i.from.passport.physical_result_ru),excludedScopeRu:i.from.passport.excluded_scope_ru,decision:r.passport.decision,payloadSha256:'c'.repeat(64),sourceHead:'d'.repeat(40),sourceTree:'e'.repeat(40)},
   bindingApplicability:b=>b.applicability,expectedNormativeBindingCount:r.bindings.length});
  expect(admit({...i,to:plan,proof:proof({...i,to:plan})})).not.toBeNull();
+ expect(plan.parameters.every(p=>p.truth_metadata.contract===plan.contract)).toBe(true);
  expect(plan.baseline.parameter_schema_sha256).toMatch(/^[0-9a-f]{64}$/u);
  expect(plan.baseline.parameter_schema_sha256).toBe(createHash('sha256').update(stringifyCanonicalEstimateJson(plan.parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata})))).digest('hex'));
 });

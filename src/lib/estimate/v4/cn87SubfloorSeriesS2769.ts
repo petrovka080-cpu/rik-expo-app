@@ -69,7 +69,7 @@ export function buildCn87SubfloorSuccessorS2769(parent:PurchaseGroupRepresentati
  result.resources.push(...additions.map(r=>({...r,ordinal:ordinal++,semantic_owner:String(parent.definition.catalog_id)+':'+r.row_id})));
  result.parameters=result.parameters.map((p,ordinal)=>({...p,ordinal}));
  const consumers=buildMasterParameterCalculationConsumers(result);
- for(const p of result.parameters){const id=p.parameter_id;p.truth_metadata={...p.truth_metadata,semantic_parameter_key:String(parent.definition.catalog_id)+':'+id,
+ for(const p of result.parameters){const id=p.parameter_id;p.truth_metadata={...p.truth_metadata,contract:binding.contract,semantic_parameter_key:String(parent.definition.catalog_id)+':'+id,
    formula_consumers:consumers.formulaConsumers[id],resource_branch_consumers:consumers.resourceConsumers[id]};
    result.baseline.formula_consumer_ids[id]=consumers.formulaConsumers[id];result.baseline.resource_consumer_row_ids[id]=consumers.resourceConsumers[id];
    result.baseline.uom_by_parameter[id]=p.unit_id;result.baseline.normative_source_ids[id]??=[];result.baseline.guide_provenance_ru[id]=p.truth_metadata.guide?.guide_short_ru??p.title_ru;
