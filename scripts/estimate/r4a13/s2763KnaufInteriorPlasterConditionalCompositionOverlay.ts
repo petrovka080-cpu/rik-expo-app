@@ -35,6 +35,22 @@ export function overlayS2763KnaufInteriorPlasterConditionalComposition(parent:Pu
     ownerDisposition.push({rowId:row.row_id,costOwnerId:row.cost_owner_id,quantityFormulaId:row.formula_id,nonApplicabilityParameterId:fact.parameterId,
       notApplicableOnly:fact.notApplicableValueRu,missingAndPositiveNeedPreserved:true,numericNormClosed:false});
   }
+  if(technical){
+    const residualTitles:Record<string,string>={
+      'main-labour':'Дополнительная отделка вне базовой штукатурки',
+      preparation:'Подготовка бетона вне нормативного обеспыливания',
+      logistics:'Доставка и подача сверх нормативной эксплуатации механизмов',
+    };
+    for(const row of result.resources.filter(r=>r.source_metadata.sourceRole==='UNRESOLVED_APPLICATION_NORM')){
+      const original=String(row.title_ru),key=String(row.row_id).split(':open-')[1];
+      const title=residualTitles[key]??original.split(' — ')[0];
+      row.title_ru=title;row.source_metadata={...row.source_metadata,fullUnresolvedScopeTitleRu:original};
+      const presentation=row.resource_graph.publicResourcePresentationV1;
+      if(presentation)row.resource_graph={...row.resource_graph,publicResourcePresentationV1:{...presentation,
+        nameRu:title,sourceTitleRu:original,detailsRu:[original,...(presentation.detailsRu??[])]}};
+      const {row_sha256:_sha,...body}=row;row.row_sha256=hash(body);
+    }
+  }
   const consumers=buildMasterParameterCalculationConsumers(result);
   for(const p of result.parameters){const id=p.parameter_id;
     p.truth_metadata={...p.truth_metadata,contract:pack.contract,semantic_parameter_key:catalogId+':'+id,formula_consumers:consumers.formulaConsumers[id],resource_branch_consumers:consumers.resourceConsumers[id]};
