@@ -8,7 +8,7 @@ import {admitRoofValleyMigrationProofV1,migrateRoofValleySelectionV1,buildRoofSt
 import {admitRoofLowerLayersMigrationProofV1,migrateRoofLowerLayersSelectionV1,buildRoofStageRestorationV4,readRoofStageRestorationV4,createRoofLegacyAssemblySelectionOriginV1,consumeRoofLegacyAssemblySelectionOriginV1,composeRoofLowerLayersMigrationModelV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofLowerLayersMigrationV1';
 import {admitRoofMetalTrimMigrationProofV1,migrateRoofMetalTrimSelectionV1,buildRoofStageRestorationV3,composeRoofMetalTrimMigrationModelV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofMetalTrimMigrationV1';
 import {admitRoofScreedMigrationProofV1,migrateRoofScreedSelectionV1,buildRoofStageRestorationV2,composeRoofScreedMigrationModelV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofScreedMigrationV1';
-import {parseCanonicalCompositionSelectionV1,assertCanonicalCompositionSelectionReleaseMigrationV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1';
+import {parseCanonicalCompositionSelectionV1,assertCanonicalCompositionSelectionReleaseMigrationV1,canonicalCompositionOperationMigrationBindingsV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1';
 import { projectCanonicalEstimateParameterSessionSnapshot } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSessionSnapshot";
 import {admitRoofPrimerPrerequisiteServerV1,listRoofPrimerPrerequisiteCandidatesServerV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofPrimerPrerequisiteServerV1';
 import {parseRoofPrimerPrerequisiteCommandV1,ROOF_PRIMER_LINK_CATALOGS_V1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofPrimerPrerequisiteV1';
@@ -76,9 +76,10 @@ async function localRoofStandaloneWorkScopeMigrationV1(client:PoolClient,definit
 
 async function localManualAmendmentMigrationBindings(client: PoolClient, definitionId: string): Promise<{
   manualPriceMigrationBindings: Record<string, string>; manualExclusionMigrationBindings: Record<string, string>;
+  compositionOperationMigrationBindingsV1: Record<string,string>;
   orderedSpecificationBindings: CanonicalOrderedSpecificationBinding[];
-  manualMigrationPredecessorV1?:{definitionId:string;priceBindings:Record<string,string>;exclusionBindings:Record<string,string>};
-  manualMigrationPredecessorsV1?:{definitionId:string;priceBindings:Record<string,string>;exclusionBindings:Record<string,string>}[];
+  manualMigrationPredecessorV1?:{definitionId:string;priceBindings:Record<string,string>;exclusionBindings:Record<string,string>;operationBindings:Record<string,string>;compositionSelectionIdsPreservedV1?:true};
+  manualMigrationPredecessorsV1?:{definitionId:string;priceBindings:Record<string,string>;exclusionBindings:Record<string,string>;operationBindings:Record<string,string>;compositionSelectionIdsPreservedV1?:true}[];
 }> {
   const [resources, formulas, parameters] = await Promise.all([
     client.query("select * from public.estimate_resource_spec where definition_version_id=$1", [definitionId]),
@@ -104,45 +105,47 @@ async function localManualAmendmentMigrationBindings(client: PoolClient, definit
       from:{resources:oldResources.rows,formulas:oldFormulas.rows,parameters:oldParameters.rows},to:input};
     const admitted=before?(admitRoofStandaloneWorkScopeMigrationProofV1(admissionInput)??admitRoofScreed25StandaloneMigrationProofV1(admissionInput)??admitRoofScreed25MigrationProofV1(admissionInput)??admitRoofHangingGuttersMigrationProofV1(admissionInput)??admitRoofLowerLayersMigrationProofV1(admissionInput)??admitRoofMetalTrimMigrationProofV1(admissionInput)??admitRoofScreedMigrationProofV1(admissionInput)??admitRoofValleyMigrationProofV1(admissionInput)??admitRoofPreparationMigrationProofV1(admissionInput)):null;
     if(admitted)predecessorBindings={manualMigrationPredecessorV1:{definitionId:fromId,
+      ...(admitted.proof.contractVersion==='canonical-roof-standalone-work-scope-migration/v1'?{compositionSelectionIdsPreservedV1:true as const}:{}),
       priceBindings:canonicalManualPriceMigrationBindings(admitted.normalizedTo),
-      exclusionBindings:canonicalManualExclusionMigrationBindings(admitted.normalizedTo)}};
+      exclusionBindings:canonicalManualExclusionMigrationBindings(admitted.normalizedTo),operationBindings:canonicalCompositionOperationMigrationBindingsV1(admitted.normalizedTo)}};
   }
   if(definition?.source_metadata?.roofStandaloneWorkScopeMigrationV1){
     const path=await localRoofStandaloneWorkScopeMigrationV1(client,definition,input);
     if(path)predecessorBindings={...predecessorBindings,manualMigrationPredecessorsV1:path.map(m=>({definitionId:m.definitionId,
-      priceBindings:canonicalManualPriceMigrationBindings(m.model),exclusionBindings:canonicalManualExclusionMigrationBindings(m.model)}))};
+      ...(m.definitionId===definition.source_metadata.roofStandaloneWorkScopeMigrationV1.fromDefinitionId?{compositionSelectionIdsPreservedV1:true as const}:{}),
+      priceBindings:canonicalManualPriceMigrationBindings(m.model),exclusionBindings:canonicalManualExclusionMigrationBindings(m.model),operationBindings:canonicalCompositionOperationMigrationBindingsV1(m.model)}))};
   }
   if(definition?.source_metadata?.roofValleyMigrationV1){
     const path=await localRoofStageMigrationV1(client,definition,input);
     if(path)predecessorBindings={...predecessorBindings,manualMigrationPredecessorsV1:[
-      {definitionId:path.valley.proof.fromDefinitionId,priceBindings:canonicalManualPriceMigrationBindings(path.valley.normalizedTo),exclusionBindings:canonicalManualExclusionMigrationBindings(path.valley.normalizedTo)},
-      {definitionId:path.preparation.proof.fromDefinitionId,priceBindings:canonicalManualPriceMigrationBindings(path.composed),exclusionBindings:canonicalManualExclusionMigrationBindings(path.composed)},
+      {definitionId:path.valley.proof.fromDefinitionId,priceBindings:canonicalManualPriceMigrationBindings(path.valley.normalizedTo),exclusionBindings:canonicalManualExclusionMigrationBindings(path.valley.normalizedTo),operationBindings:canonicalCompositionOperationMigrationBindingsV1(path.valley.normalizedTo)},
+      {definitionId:path.preparation.proof.fromDefinitionId,priceBindings:canonicalManualPriceMigrationBindings(path.composed),exclusionBindings:canonicalManualExclusionMigrationBindings(path.composed),operationBindings:canonicalCompositionOperationMigrationBindingsV1(path.composed)},
     ]};
   }
   if(definition?.source_metadata?.roofScreedMigrationV1){
     const path=await localRoofScreedMigrationV1(client,definition,input);
     if(path)predecessorBindings={...predecessorBindings,manualMigrationPredecessorsV1:path.models.map(m=>({definitionId:m.definitionId,
-      priceBindings:canonicalManualPriceMigrationBindings(m.model),exclusionBindings:canonicalManualExclusionMigrationBindings(m.model)}))};
+      priceBindings:canonicalManualPriceMigrationBindings(m.model),exclusionBindings:canonicalManualExclusionMigrationBindings(m.model),operationBindings:canonicalCompositionOperationMigrationBindingsV1(m.model)}))};
   }
   if(definition?.source_metadata?.roofMetalTrimMigrationV1){
     const path=await localRoofMetalTrimMigrationV1(client,definition,input);
-    if(path)predecessorBindings={...predecessorBindings,manualMigrationPredecessorsV1:path.models.map(m=>({definitionId:m.definitionId,priceBindings:canonicalManualPriceMigrationBindings(m.model),exclusionBindings:canonicalManualExclusionMigrationBindings(m.model)}))};
+    if(path)predecessorBindings={...predecessorBindings,manualMigrationPredecessorsV1:path.models.map(m=>({definitionId:m.definitionId,priceBindings:canonicalManualPriceMigrationBindings(m.model),exclusionBindings:canonicalManualExclusionMigrationBindings(m.model),operationBindings:canonicalCompositionOperationMigrationBindingsV1(m.model)}))};
   }
   if(definition?.source_metadata?.roofLowerLayersMigrationV1){
     const path=await localRoofLowerLayersMigrationV1(client,definition,input);
-    if(path)predecessorBindings={...predecessorBindings,manualMigrationPredecessorsV1:path.models.map(m=>({definitionId:m.definitionId,priceBindings:canonicalManualPriceMigrationBindings(m.model),exclusionBindings:canonicalManualExclusionMigrationBindings(m.model)}))};
+    if(path)predecessorBindings={...predecessorBindings,manualMigrationPredecessorsV1:path.models.map(m=>({definitionId:m.definitionId,priceBindings:canonicalManualPriceMigrationBindings(m.model),exclusionBindings:canonicalManualExclusionMigrationBindings(m.model),operationBindings:canonicalCompositionOperationMigrationBindingsV1(m.model)}))};
   }
   if(definition?.source_metadata?.roofHangingGuttersMigrationV1&&!definition?.source_metadata?.roofScreed25MigrationV1){
     const path=await localRoofGuttersMigrationV1(client,definition,input);
-    if(path)predecessorBindings={...predecessorBindings,manualMigrationPredecessorsV1:path.models.map(m=>({definitionId:m.definitionId,priceBindings:canonicalManualPriceMigrationBindings(m.model),exclusionBindings:canonicalManualExclusionMigrationBindings(m.model)}))};
+    if(path)predecessorBindings={...predecessorBindings,manualMigrationPredecessorsV1:path.models.map(m=>({definitionId:m.definitionId,priceBindings:canonicalManualPriceMigrationBindings(m.model),exclusionBindings:canonicalManualExclusionMigrationBindings(m.model),operationBindings:canonicalCompositionOperationMigrationBindingsV1(m.model)}))};
   }
   if(definition?.source_metadata?.roofScreed25MigrationV1){
     const path=await localRoofScreed25MigrationV1(client,definition,input);
-    if(path)predecessorBindings={...predecessorBindings,manualMigrationPredecessorsV1:path.models.map(m=>({definitionId:m.definitionId,priceBindings:canonicalManualPriceMigrationBindings(m.model),exclusionBindings:canonicalManualExclusionMigrationBindings(m.model)}))};
+    if(path)predecessorBindings={...predecessorBindings,manualMigrationPredecessorsV1:path.models.map(m=>({definitionId:m.definitionId,priceBindings:canonicalManualPriceMigrationBindings(m.model),exclusionBindings:canonicalManualExclusionMigrationBindings(m.model),operationBindings:canonicalCompositionOperationMigrationBindingsV1(m.model)}))};
   }
   return {...predecessorBindings,manualPriceMigrationBindings: canonicalManualPriceMigrationBindings(input),
     orderedSpecificationBindings: canonicalOrderedSpecificationBindings(resources.rows),
-    manualExclusionMigrationBindings: canonicalManualExclusionMigrationBindings(input)};
+    manualExclusionMigrationBindings: canonicalManualExclusionMigrationBindings(input),compositionOperationMigrationBindingsV1:canonicalCompositionOperationMigrationBindingsV1(input)};
 }
 /** Exactly two admitted immutable transitions, with no open-ended successor trust. */
 async function localRoofStageMigrationV1(client:PoolClient,definition:Record<string,any>,toModel:{resources:Record<string,unknown>[];formulas:Record<string,unknown>[];parameters:Record<string,unknown>[]}):Promise<{
@@ -2464,6 +2467,9 @@ async function compileClaimedJob(
     const standaloneScopePath=await localRoofStandaloneWorkScopeMigrationV1(client,definition,toModel);
     const standaloneScopePredecessor=standaloneScopePath?.find(m=>m.definitionId===before?.id);
     const migrationTo=standaloneScopePredecessor?.model??standaloneScreedAdmitted?.normalizedTo??screed25Predecessor?.model??guttersPredecessor?.model??lowerLayersPredecessor?.model??metalTrimPredecessor?.model??screedPredecessor?.model??directFiveToSeven?.composed??valleyAdmitted?.normalizedTo??admitted?.normalizedTo??toModel;
+    // Validate a newly requested exclusion against the admitted predecessor
+    // before any operation-key expansion, as well as the stored parent below.
+    if(Object.hasOwn(payload,'compositionSelectionV1'))assertCanonicalCompositionSelectionReleaseMigrationV1({selection:effectiveCompositionSelectionV1,from:fromModel,to:migrationTo});
     if(guttersPredecessor&&roofGuttersMigration){
       const path=roofGuttersMigration,lower=path.previous,old=lower.previous,older=old.previous,first=older.previous;
       const parentSelection=(parentAmendments.parameterSources as JsonRecord|undefined)?.compositionSelectionV1;

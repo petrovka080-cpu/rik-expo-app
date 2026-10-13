@@ -8,6 +8,7 @@ import {
 } from "../../src/features/consumerRepair/consumerCanonicalReleaseMigration";
 import {
   recalculateAndPersistConsumerCanonicalEstimate,
+  recalculateConsumerCanonicalEstimate,
   recalculateConsumerCanonicalCatalogAddition,
   recalculateConsumerCanonicalCatalogSelection,
 } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
@@ -53,6 +54,43 @@ beforeEach(() => {
   jest.mocked(getCanonicalEstimateRevision).mockResolvedValue(revision);
   jest.mocked(getCanonicalEstimateRevisionHistory).mockResolvedValue({ apiVersion: "canonical-estimate-r1" as never, revisions: [], nextCursor: null });
   jest.mocked(getAllCanonicalEstimateRevisionRows).mockResolvedValue([{ rowId: "membrane", unitId: "m2" }] as never);
+});
+
+describe('a new composition-only command on an admitted predecessor',()=>{
+ const key='["roof","field"]',selection={contractVersion:'canonical-estimate-composition-selection/v1' as const,excludedOperationKeys:[key],excludedRowIds:[]};
+ function catalogs(change=false){getCatalog.mockImplementation(async(_id,_signal,releaseId)=>({...releaseId?oldCatalog:target,
+   manualExclusionMigrationBindings:{membrane:'b'.repeat(64)},compositionOperationMigrationBindingsV1:{[key]:(change&&!releaseId?'c':'d').repeat(64)}}));}
+ it('sends the requested command after consent instead of recovering an unrelated existing migration child',async()=>{
+  catalogs();jest.mocked(getCanonicalEstimateRevisionHistory).mockResolvedValue({revisions:[{...revision,parentRevisionId:revision.revisionId,revisionId:'55555555-5555-4555-8555-555555555555',releaseId:targetRelease}],nextCursor:null} as never);
+  jest.mocked(recalculateCanonicalEstimateAndLoad).mockRejectedValue(new Error('backend reached'));
+  const before=JSON.stringify(revision),confirm=jest.fn().mockResolvedValue(true);
+  await expect(recalculateConsumerCanonicalEstimate({revisionId:revision.revisionId,draftId:'draft',problemText:revision.sourceRequestText!,patches:[],compositionSelectionV1:selection,confirmReleaseMigration:confirm})).rejects.toThrow('backend reached');
+  expect(confirm).toHaveBeenCalledTimes(1);expect(getCanonicalEstimateRevisionHistory).not.toHaveBeenCalled();
+  expect(jest.mocked(recalculateCanonicalEstimateAndLoad).mock.calls[0][0].request).toMatchObject({parentRevisionId:revision.revisionId,releaseMigration:migration,compositionSelectionV1:selection});
+  expect(JSON.stringify(revision)).toBe(before);
+ });
+ it.each([true,false])('keeps changed operation proof and simultaneous new prices blocked (%s)',async changed=>{
+  catalogs(changed);const confirm=jest.fn().mockResolvedValue(true);
+  await expect(recalculateConsumerCanonicalEstimate({revisionId:revision.revisionId,draftId:'draft',problemText:revision.sourceRequestText!,patches:[],compositionSelectionV1:selection,
+    ...(!changed?{rowOverrides:{membrane:{unitPrice:'12',provenance:{kind:'manual' as const}}}}:{}),confirmReleaseMigration:confirm})).rejects.toMatchObject({code:'RELEASE_MIGRATION_ROW_BINDING_REVIEW_REQUIRED'});
+  expect(confirm).not.toHaveBeenCalled();expect(recalculateCanonicalEstimateAndLoad).not.toHaveBeenCalled();
+ });
+ it('does not restore a previously excluded operation without proof of its complete membership',async()=>{
+  catalogs(true);jest.mocked(getCanonicalEstimateRevision).mockResolvedValue({...revision,compositionSelectionV1:selection});
+  await expect(recalculateConsumerCanonicalEstimate({revisionId:revision.revisionId,draftId:'draft',problemText:revision.sourceRequestText!,patches:[],compositionSelectionV1:{...selection,excludedOperationKeys:[]},confirmReleaseMigration:async()=>true})).rejects.toMatchObject({code:'RELEASE_MIGRATION_ROW_BINDING_REVIEW_REQUIRED'});
+  expect(recalculateCanonicalEstimateAndLoad).not.toHaveBeenCalled();
+ });
+ it.each([true,false])('requires admitted preservation of selection IDs for normalized predecessor evidence (%s)',async preserves=>{
+  const id='55555555-5555-4555-8555-555555555555',parent={...revision,definitionVersionId:id};
+  jest.mocked(getCanonicalEstimateRevision).mockResolvedValue(parent);
+  getCatalog.mockImplementation(async(_id,_signal,releaseId)=>releaseId?{...oldCatalog,manualExclusionMigrationBindings:{membrane:'b'.repeat(64)},compositionOperationMigrationBindingsV1:{[key]:'d'.repeat(64)}}:
+    {...target,manualExclusionMigrationBindings:{membrane:'c'.repeat(64)},compositionOperationMigrationBindingsV1:{[key]:'c'.repeat(64)},manualMigrationPredecessorV1:{definitionId:id,priceBindings:{},exclusionBindings:{membrane:'b'.repeat(64)},operationBindings:{[key]:'d'.repeat(64)},...(preserves?{compositionSelectionIdsPreservedV1:true as const}:{})}});
+  const confirm=jest.fn().mockResolvedValue(true);jest.mocked(recalculateCanonicalEstimateAndLoad).mockRejectedValue(new Error('backend reached'));
+  const action=recalculateConsumerCanonicalEstimate({revisionId:parent.revisionId,draftId:'draft',problemText:parent.sourceRequestText!,patches:[],compositionSelectionV1:selection,confirmReleaseMigration:confirm});
+  if(preserves)await expect(action).rejects.toThrow('backend reached');
+  else await expect(action).rejects.toMatchObject({code:'RELEASE_MIGRATION_ROW_BINDING_REVIEW_REQUIRED'});
+  expect(confirm).toHaveBeenCalledTimes(preserves?1:0);expect(recalculateCanonicalEstimateAndLoad).toHaveBeenCalledTimes(preserves?1:0);
+ });
 });
 
 it.each([true,false])('uses a bounded predecessor binding only for the exact saved definition (%s)',async exact=>{

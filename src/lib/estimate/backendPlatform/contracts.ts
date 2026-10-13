@@ -762,10 +762,12 @@ export type CanonicalEstimateCatalogItem = {
   manualPriceMigrationBindings?: Record<string,string>;
   /** Exact resource/application evidence for retaining stored manual exclusions. */
   manualExclusionMigrationBindings?: Record<string,string>;
+  /** Complete operation membership and resource/application evidence. */
+  compositionOperationMigrationBindingsV1?: Record<string,string>;
   /** Server-admitted equivalence for one exact predecessor, never a general bypass. */
-  manualMigrationPredecessorV1?: {definitionId:string;priceBindings:Record<string,string>;exclusionBindings:Record<string,string>};
+  manualMigrationPredecessorV1?: {definitionId:string;priceBindings:Record<string,string>;exclusionBindings:Record<string,string>;operationBindings?:Record<string,string>;compositionSelectionIdsPreservedV1?:true};
   /** At most two exact server-proven predecessors for the admitted 5→6→7 chain. */
-  manualMigrationPredecessorsV1?: {definitionId:string;priceBindings:Record<string,string>;exclusionBindings:Record<string,string>}[];
+  manualMigrationPredecessorsV1?: {definitionId:string;priceBindings:Record<string,string>;exclusionBindings:Record<string,string>;operationBindings?:Record<string,string>;compositionSelectionIdsPreservedV1?:true}[];
   /** Exact specification questions belonging to opted-in manual order rows. */
   orderedSpecificationBindings?: CanonicalOrderedSpecificationBinding[];
   contentAdmission?: AdmissionDecision;

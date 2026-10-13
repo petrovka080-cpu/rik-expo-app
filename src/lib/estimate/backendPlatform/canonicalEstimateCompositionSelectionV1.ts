@@ -3,6 +3,7 @@ import {canonicalEstimateStableJson} from './canonicalEstimateDeterminism';
 import {evaluateFormulaGraph,type FormulaAst,type FormulaParameterValue} from './formulaGraph';
 import type {CanonicalEstimateResourceDefinition,CanonicalEstimateFormulaDefinition} from './canonicalEstimateCompileCore';
 import {canonicalManualExclusionMigrationBindings} from './canonicalManualPriceReleaseMigration';
+import {canonicalEstimateSha256HexText} from './canonicalEstimateSha256';
 
 export type CanonicalEstimateCompositionSelectionV1={
   contractVersion:'canonical-estimate-composition-selection/v1';
@@ -133,4 +134,29 @@ export function assertCanonicalCompositionSelectionReleaseMigrationV1(input:{sel
       ||oldMembers.some(member=>!matching(member.rowId));
   })) throw Object.assign(new Error('Переход остановлен: применимость сохранённых исключений к новому составу ещё не подтверждена. Исходная смета и ручные данные сохранены.'),
     {code:'COMPOSITION_SELECTION_MIGRATION_REVIEW_REQUIRED',httpStatus:409});
+}
+
+/** Same evidence as the server migration check, projected without resource
+ * payloads. A complete operation includes every primary/shared/reference member. */
+export function canonicalCompositionOperationMigrationBindingsV1(input:{
+  resources:readonly Record<string,unknown>[];formulas:readonly Record<string,unknown>[];parameters:readonly Record<string,unknown>[];
+}):Record<string,string> {
+  const rows=canonicalManualExclusionMigrationBindings(input),members=new Map<string,{rowId:string;member:CanonicalEstimateOperationReference;binding:string}[]>();
+  for(const resource of input.resources)for(const member of canonicalEstimateOperationReferences(record(resource.resource_graph)?.operationCompositionV1)){
+    const key=canonicalOperationSelectionKeyV1(member),rowId=String(resource.row_id);
+    const list=members.get(key)??[];list.push({rowId,member,binding:rows[rowId]??''});members.set(key,list);
+  }
+  return Object.fromEntries([...members].flatMap(([key,list])=>list.some(m=>!m.binding)?[]:
+    [[key,canonicalEstimateSha256HexText(canonicalEstimateStableJson(list.sort((a,b)=>a.rowId.localeCompare(b.rowId,'en'))))]]));
+}
+
+export function canonicalCompositionSelectionCanMigrateWithBindingsV1(input:{
+  selection:unknown;fromRows?:Record<string,string>;toRows?:Record<string,string>;fromOperations?:Record<string,string>;toOperations?:Record<string,string>;
+}):boolean {
+  const selection=parseCanonicalCompositionSelectionV1(input.selection);if(!selection)return false;
+  if(!input.fromRows||!input.toRows||!input.fromOperations||!input.toOperations)return false;
+  const matches=(id:string,from:Record<string,string>|undefined,to:Record<string,string>|undefined)=>
+    /^[0-9a-f]{64}$/u.test(from?.[id]??'')&&from?.[id]===to?.[id];
+  return selection.excludedRowIds.every(id=>matches(id,input.fromRows,input.toRows))
+    &&selection.excludedOperationKeys.every(key=>matches(key,input.fromOperations,input.toOperations));
 }

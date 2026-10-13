@@ -833,7 +833,9 @@ export async function recalculateConsumerCanonicalEstimate(input: {
 } & ConsumerCanonicalRecalculationConsent): Promise<{ mapping: ForemanAiEstimateDraftMapping; session: CanonicalParameterSession; recovered?: boolean; quantityPolicyTransition?: boolean }> {
   const revision = await getCanonicalEstimateRevision(input.revisionId);
   const { catalog, releaseMigration, recoveredRevision, quantityClearPreview } = await resolveConsumerCanonicalRecalculationCatalog({ ...input, revision,
-    allowQuantityClearTransition: true, hasNewRowAmendments: Object.keys(input.rowOverrides ?? {}).length > 0||Object.hasOwn(input,'roofPrimerPrerequisiteV1')||Object.hasOwn(input,'compositionSelectionV1'), parameterPatchKeys: input.patches.map(patch => patch.paramKey) });
+    allowQuantityClearTransition: true, hasNewRowAmendments: Object.keys(input.rowOverrides ?? {}).length > 0||Object.hasOwn(input,'roofPrimerPrerequisiteV1')||Object.hasOwn(input,'compositionSelectionV1'), parameterPatchKeys: input.patches.map(patch => patch.paramKey),
+    ...(Object.hasOwn(input,'compositionSelectionV1')&&input.patches.length===0&&Object.keys(input.rowOverrides??{}).length===0&&!Object.hasOwn(input,'roofPrimerPrerequisiteV1')
+      ?{compositionOnlySelectionV1:input.compositionSelectionV1}:{}), });
   const rawInputs: Record<string, unknown> = consumerCanonicalInheritedRecalculationInputs(revision, catalog);
   if (!quantityClearPreview) for (const patch of input.patches) rawInputs[patch.paramKey] = patch.rawValue;
   const validation = validateCanonicalEstimateParameterInputs({ schema: catalog.parameterSchema, rawInputs });

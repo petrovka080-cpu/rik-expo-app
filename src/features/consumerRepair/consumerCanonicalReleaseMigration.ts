@@ -1,6 +1,7 @@
 import { getCanonicalEstimateCatalogItem, getCanonicalEstimateRevisionHistory, getCanonicalFusionQuantityClearPreviewS2758 } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
 import { canonicalEstimateStableJson as stable } from '../../lib/estimate/backendPlatform/canonicalEstimateDeterminism';
 import {canonicalStoredManualPricesCanMigrate} from '../../lib/estimate/backendPlatform/canonicalManualPriceReleaseMigration';
+import {canonicalCompositionSelectionCanMigrateWithBindingsV1,type CanonicalEstimateCompositionSelectionV1} from '../../lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1';
 import {
   CanonicalEstimateApiError,
   type CanonicalEstimateCatalogItem,
@@ -115,6 +116,8 @@ async function existingMigrationChild(parent: CanonicalEstimateRevisionView, cat
 export async function resolveConsumerCanonicalRecalculationCatalog(input: {
   revision: CanonicalEstimateRevisionView;
   hasNewRowAmendments?: boolean;
+  /** Supplied only for a composition-only command with no new row/price inputs. */
+  compositionOnlySelectionV1?: CanonicalEstimateCompositionSelectionV1|null;
   parameterPatchKeys?: readonly string[];
   allowQuantityClearTransition?: boolean;
 } & ConsumerCanonicalRecalculationConsent): Promise<{
@@ -161,13 +164,19 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
     }
     quantityClearPreview = preview;
   }
-  if (!quantityClearPreview && input.hasNewRowAmendments) {
+  const predecessorBindings=catalog.manualMigrationPredecessorV1?.definitionId===input.revision.definitionVersionId
+    ?catalog.manualMigrationPredecessorV1:catalog.manualMigrationPredecessorsV1?.find(p=>p.definitionId===input.revision.definitionVersionId);
+  const compositionEvidence={fromRows:parentCatalog.manualExclusionMigrationBindings,toRows:predecessorBindings?.exclusionBindings??catalog.manualExclusionMigrationBindings,
+    fromOperations:parentCatalog.compositionOperationMigrationBindingsV1,toOperations:predecessorBindings?.operationBindings??catalog.compositionOperationMigrationBindingsV1};
+  const compositionOnlyMigration=input.compositionOnlySelectionV1!=null
+    &&(!predecessorBindings||predecessorBindings.compositionSelectionIdsPreservedV1===true)
+    &&canonicalCompositionSelectionCanMigrateWithBindingsV1({...compositionEvidence,selection:input.compositionOnlySelectionV1})
+    &&(input.revision.compositionSelectionV1==null||canonicalCompositionSelectionCanMigrateWithBindingsV1({...compositionEvidence,selection:input.revision.compositionSelectionV1}));
+  if (!quantityClearPreview && input.hasNewRowAmendments && !compositionOnlyMigration) {
     throw new CanonicalEstimateApiError("Новое изменение строки не сохранено. Сначала отдельно обновите состав через параметры, затем повторите изменение. Если в редакторе есть несохранённые количества или цены, отмените их кнопкой «Отменить новые правки строк» перед обновлением; они не переносятся автоматически.", {
       code: "RELEASE_MIGRATION_ROW_BINDING_REVIEW_REQUIRED", httpStatus: 409,
     });
   }
-  const predecessorBindings=catalog.manualMigrationPredecessorV1?.definitionId===input.revision.definitionVersionId
-    ?catalog.manualMigrationPredecessorV1:catalog.manualMigrationPredecessorsV1?.find(p=>p.definitionId===input.revision.definitionVersionId);
   if (!quantityClearPreview && !canonicalStoredManualPricesCanMigrate({rowOverrides:input.revision.amendmentContract.rowOverrides,
       currency:input.revision.currencyCode,
       customRows:input.revision.amendmentContract.customRows,fromBindings:parentCatalog.manualPriceMigrationBindings,toBindings:predecessorBindings?.priceBindings??catalog.manualPriceMigrationBindings,
@@ -203,7 +212,9 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
       });
     }
   }
-  const recoveredRevision = await existingMigrationChild(input.revision, catalog);
+  // An existing migration child cannot satisfy a different new composition
+  // command. Its own semantic idempotency key handles safe retries server-side.
+  const recoveredRevision = compositionOnlyMigration ? undefined : await existingMigrationChild(input.revision, catalog);
   if (quantityClearPreview && recoveredRevision) {
     const merged = JSON.parse(stable(input.revision.amendmentContract.rowOverrides));
     for (const row of quantityClearPreview.rows) merged[row.rowId].quantity = null;

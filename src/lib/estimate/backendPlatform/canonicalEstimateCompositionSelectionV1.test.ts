@@ -1,5 +1,6 @@
 import {compileCanonicalEstimateCore, type CanonicalEstimateCompileCoreInput} from './canonicalEstimateCompileCore';
-import {canonicalOperationSelectionKeyV1, parseCanonicalCompositionSelectionV1, assertCanonicalCompositionSelectionReleaseMigrationV1,planCanonicalCompositionSelectionV1} from './canonicalEstimateCompositionSelectionV1';
+import {canonicalOperationSelectionKeyV1, parseCanonicalCompositionSelectionV1, assertCanonicalCompositionSelectionReleaseMigrationV1,planCanonicalCompositionSelectionV1,canonicalCompositionOperationMigrationBindingsV1 as operationBindings,canonicalCompositionSelectionCanMigrateWithBindingsV1 as canMigrate} from './canonicalEstimateCompositionSelectionV1';
+import {canonicalManualExclusionMigrationBindings as rowBindings} from './canonicalManualPriceReleaseMigration';
 import {buildAutomaticConstructionOwnerR1} from '../v4/automaticConstructionOwnerR1';
 import {compileFormulaGraph} from './formulaGraph';
 import {estimateDeterministicHash} from '../estimateDeterministicHash';
@@ -125,6 +126,21 @@ test('command semantic identity distinguishes omitted, cleared and different exc
     .not.toEqual(canonicalUserCommandSemanticPayloadV1({compositionSelectionV1:selection([],['two'])}));
   expect(canonicalUserCommandSemanticPayloadV1({compositionSelectionV1:selection([],['two','one'])}))
     .toEqual(canonicalUserCommandSemanticPayloadV1({compositionSelectionV1:selection([],['one','two'])}));
+});
+
+test('projected operation proof covers every shared/reference member, unit and source; missing evidence stays blocked',()=>{
+  const input=fixture(),from={resources:input.resourceDefinitions,formulas:input.formulaDefinitions,parameters:input.parameterDefinitions};
+  const accepted=(to:typeof from,selected=selection(['["roof","primer"]']))=>canMigrate({selection:selected,
+    fromRows:rowBindings(from),toRows:rowBindings(to),fromOperations:operationBindings(from),toOperations:operationBindings(to)});
+  expect(accepted(structuredClone(from))).toBe(true);
+  for(const change of [(to:typeof from)=>to.resources[0]!.unit_id='kg',
+    (to:typeof from)=>to.resources[0]!.source_metadata={...to.resources[0]!.source_metadata,changedPrimarySource:true},
+    (to:typeof from)=>to.resources[0]!.resource_graph.operationCompositionV1={...(to.resources[0]!.resource_graph.operationCompositionV1 as Record<string,unknown>),additionalOperations:[]}]){
+    const to=structuredClone(from);change(to);expect(accepted(to)).toBe(false);
+  }
+  expect(accepted(from,selection(['["roof","missing"]']))).toBe(false);
+  expect(accepted(from,selection([],['missing']))).toBe(false);
+  expect(canMigrate({selection:selection()})).toBe(false);
 });
 
 test('source guard follows actual operation ownership, including a primary PROCESS with a REFERENCE_ONLY companion',()=>{

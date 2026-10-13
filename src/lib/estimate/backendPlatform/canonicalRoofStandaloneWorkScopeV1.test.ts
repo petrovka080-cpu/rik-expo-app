@@ -8,13 +8,24 @@ import {buildRoofStandaloneWorkScopeSuccessorV1 as build,buildRoofStandaloneWork
 import {admitRoofScreed25StandaloneMigrationProofV1 as admitOriginal} from './canonicalRoofScreed25StandaloneMigrationV1';
 import {isRoofScreed25StandaloneCatalogV1} from './canonicalRoofScreed25StandaloneV1';
 import {canonicalManualPriceMigrationBindings as prices,canonicalManualExclusionMigrationBindings as exclusions,assertCanonicalStoredManualPriceReleaseMigration} from './canonicalManualPriceReleaseMigration';
-import {assertCanonicalCompositionSelectionReleaseMigrationV1} from './canonicalEstimateCompositionSelectionV1';
+import {assertCanonicalCompositionSelectionReleaseMigrationV1,canonicalCompositionOperationMigrationBindingsV1 as operations,canonicalCompositionSelectionCanMigrateWithBindingsV1 as canMigrate,canonicalOperationSelectionKeyV1} from './canonicalEstimateCompositionSelectionV1';
+import {canonicalEstimateOperationReferences} from './canonicalEstimateOperationComposition';
 import {compileCanonicalEstimateCore} from './canonicalEstimateCompileCore';
 import {estimateDeterministicHash} from '../estimateDeterministicHash';
 const identity=(r:any)=>({id:r.definition.id,catalogId:r.definition.catalog_id,sha256:r.definition.definition_sha256});
 const facts={q:'20',[screed15.systemParameterId]:binding.systemYesRu,[pack.conditionsParameterId]:pack.conditionsYesRu,[pack.areaParameterId]:pack.areaYesRu};
 const compile=(r:any,p:any=facts)=>compileCanonicalEstimateCore({operation:'recalculate',catalogId:r.definition.catalog_id,compilerVersion:policy.contract,parameterDefinitions:r.parameters,formulaDefinitions:r.formulas,resourceDefinitions:r.resources,submittedParameters:p,confirmedParameters:{},rowOverrides:{},priceItems:[],currencyCode:'KGS',maximumResourceRows:137,hashJson:async v=>estimateDeterministicHash(v)});
 const input=(index=0)=>{const from=fixture.reps[index],to=build(from);const i={from,to,fromDefinition:identity(from),toDefinition:{id:'00000000-0000-5000-8000-000000000006',catalogId:from.definition.catalog_id,sha256:'a'.repeat(64)}};return {...i,proof:proof(i)};};
+
+test('new operation commands on each of the five admitted predecessors have the same complete semantic binding',()=>{
+  for(let index=0;index<fixture.reps.length;index++){
+    const i=input(index),a=admit(i)!;
+    const keys=[...new Set(i.from.resources.flatMap(r=>canonicalEstimateOperationReferences(r.resource_graph.operationCompositionV1).map(canonicalOperationSelectionKeyV1)))];
+    expect(keys.length).toBeGreaterThan(0);expect(operations(a.normalizedTo)).toEqual(operations(i.from));
+    for(const key of keys)expect(canMigrate({selection:{contractVersion:'canonical-estimate-composition-selection/v1',excludedOperationKeys:[key],excludedRowIds:[]},
+      fromRows:exclusions(i.from),toRows:exclusions(a.normalizedTo),fromOperations:operations(i.from),toOperations:operations(a.normalizedTo)})).toBe(true);
+  }
+});
 
 test.each(fixture.reps.map((r,i)=>[r.definition.catalog_id,i]))('exact standalone scope preserves quantities and historical owners: %s',async(_id,index)=>{
  const i=input(index),before=JSON.stringify(i.from),old=await compile(i.from),next=await compile(i.to);
