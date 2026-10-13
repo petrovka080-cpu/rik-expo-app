@@ -105,7 +105,7 @@ export function buildRoofScreed25StandaloneSuccessorV1(parent:Representative,loc
       ownMeasureParameterId:'q',numericQuantityAdmitted:row.resource_graph.costTreatment === 'OWN_COST',completeTechnicalEstimateAccepted:false}});
   const consumers=buildMasterParameterCalculationConsumers(result);
   for(const p of result.parameters){const id=p.parameter_id;
-    p.truth_metadata={...p.truth_metadata,formula_consumers:consumers.formulaConsumers[id],resource_branch_consumers:consumers.resourceConsumers[id]};
+    p.truth_metadata={...p.truth_metadata,contract:binding.contract,formula_consumers:consumers.formulaConsumers[id],resource_branch_consumers:consumers.resourceConsumers[id]};
     result.baseline.formula_consumer_ids[id]=consumers.formulaConsumers[id];result.baseline.resource_consumer_row_ids[id]=consumers.resourceConsumers[id];
     result.baseline.uom_by_parameter[id]=p.unit_id;
     if(addedParameters.some(a => a.parameter_id === id)){result.baseline.normative_source_ids[id]=[accepted.contract+(id === ROOF_SCREED15_DIRECT_BASE_PARAMETER_V1 ? ':design' : ':roof')];
