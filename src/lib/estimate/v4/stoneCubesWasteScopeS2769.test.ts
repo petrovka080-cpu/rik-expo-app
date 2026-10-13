@@ -77,4 +77,6 @@ test('a full service cannot silently reinstate a previously excluded waste task'
  }
  expect(()=>assertStoneCubesWasteSelectionS2769({[mode]:binding.contractorModeValue},
   {contractVersion:'canonical-estimate-composition-selection/v1',excludedRowIds:[],excludedOperationKeys:[]})).not.toThrow();
+ expect(()=>assertStoneCubesWasteSelectionS2769({[mode]:binding.onSiteExtraModeValue},
+  {contractVersion:'canonical-estimate-composition-selection/v1',excludedRowIds:[prefix+'offsite-haul',prefix+'disposal'],excludedOperationKeys:[]})).not.toThrow();
 });

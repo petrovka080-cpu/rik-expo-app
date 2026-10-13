@@ -24,11 +24,11 @@ const sha=(value:unknown)=>canonicalEstimateSha256HexText(stringifyCanonicalEsti
 export function assertStoneCubesWasteSelectionS2769(parameters:Record<string,unknown>,selectionInput:unknown):void{
  if(![pack.onSiteExtraModeValue,pack.contractorModeValue].includes(String(parameters[mode])))return;
  const selection=parseCanonicalCompositionSelectionV1(selectionInput);if(!selection)return;
- const gaps=['packaging','other-descent','offsite-haul','disposal'];
+ const gaps=parameters[mode]===pack.onSiteExtraModeValue?['packaging','other-descent']:['packaging','other-descent','offsite-haul','disposal'];
  if(gaps.some(key=>selection.excludedRowIds.includes(prefix+':'+key)
   ||selection.excludedOperationKeys.includes(JSON.stringify(['stone-cubes-waste-plan',key]))))
   throw Object.assign(new Error('В сохранённой смете исключена часть обращения с отходами. Перед выбором полной услуги восстановите эти подработы в составе сметы либо сохраните прежний режим.'),
-   {code:'COMPOSITION_SERVICE_SCOPE_CONFLICT'});
+   {code:'COMPOSITION_SERVICE_SCOPE_CONFLICT',httpStatus:409});
 }
 const shared:AutomaticOwnerDefinition=floorDemolitionDefinitionS2752(2);
 const serviceIds=new Set(['floor-demolition:end-grain:waste-service','floor-demolition:end-grain:waste-onsite-service']);
