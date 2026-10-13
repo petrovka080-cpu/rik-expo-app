@@ -74,11 +74,13 @@ export function buildStoneCubesWasteSuccessorS2769(parent:PurchaseGroupRepresent
  }
  result.parameters.push({parameter_id:workScope,ordinal:result.parameters.length,value_type:'enum',unit_id:null,title_ru:'Материал покрытия и границы демонтажа',
   required:false,default_value:null,constraints_json:{values:[pack.confirmedWorkScopeValue],requiredWhen:modern},
-  truth_metadata:{contract:pack.contract,semantic_parameter_key:String(parent.definition.catalog_id)+':'+workScope,visibility_role:'USER_INPUT',
+  truth_metadata:{...structuredClone(parent.parameters.find(p=>p.parameter_id==='stone_cubes_source_scope_confirmed')!.truth_metadata),
+   contract:pack.contract,semantic_parameter_key:String(parent.definition.catalog_id)+':'+workScope,visibility_role:'USER_INPUT',
    value_source_role:'USER_OR_APPROVED_EXISTING_CONDITION_SURVEY',visible_when:modern,source_confirmation_required:false,
    provenance:{consumer_input_role_v1:'OBJECT_FACT'},hidden_default_forbidden:true,synthetic:false,
-   guide:{guide_kind:'ENUM_DECISION_RULE',guide_short_ru:'Подтвердите материал и фактические границы работ. Нормативный труд приложение рассчитывает само.',
-    source_document:pack.contract,source_locator:'КРЕР46-2015, техническая часть1.1, стр.5; колонка46-04-010-05, стр.57–58',
+   guide:{...record(parent.parameters.find(p=>p.parameter_id==='stone_cubes_source_scope_confirmed')!.truth_metadata.guide),
+    guide_kind:'ENUM_DECISION_RULE',guide_version:pack.contract,guide_short_ru:'Подтвердите материал и фактические границы работ. Нормативный труд приложение рассчитывает само.',
+    source_document:'kg_krer_46_2015_reconstruction_official',source_locator:'КРЕР46-2015, техническая часть1.1, стр.5; колонка46-04-010-05, стр.57–58',
     source_snapshot_hash:pack.source.sha256,applicability:pack.scopeRu}}});
  for(const row of result.resources){
   const gap=row.source_metadata.sourceRole==='UNRESOLVED_SEPARATE_WASTE_SCOPE';
@@ -121,7 +123,7 @@ export function buildStoneCubesWasteSuccessorS2769(parent:PurchaseGroupRepresent
  const planId=prefix+':waste-plan',planFormulaId=prefix+':formula:waste-plan',planGraph=compileFormulaGraph('floor_covering_area_m2');
  result.formulas.push({formula_id:planFormulaId,expression_source:'floor_covering_area_m2',output_unit_id:'m2',ast:planGraph.ast,
   input_parameter_ids:planGraph.inputParameterIds,ast_sha256:sha(planGraph.ast)});
- const plan={row_id:planId,ordinal:ordinal++,section:'Принятая схема обращения со снятыми материалами',category:'construction_work',row_type:'construction_work',
+ const plan={row_id:planId,ordinal:ordinal++,section:'Принятая схема обращения со снятыми материалами',category:'construction_work',row_type:'other',
   title_ru:'Обращение со снятой каменной шашкой — площадь разборки, без второй цены',unit_id:'m2',formula_id:planFormulaId,
   cost_owner_id:planId,semantic_owner:String(parent.definition.catalog_id)+':'+planId,procurement_eligible:false,
   inclusion_ast:modernScope,
@@ -138,7 +140,8 @@ export function buildStoneCubesWasteSuccessorS2769(parent:PurchaseGroupRepresent
  result.parameters.sort((a,b)=>{const ai=order.indexOf(a.parameter_id),bi=order.indexOf(b.parameter_id);return (ai<0?100+Number(a.ordinal):ai)-(bi<0?100+Number(b.ordinal):bi);});
  result.parameters=result.parameters.map((p,ordinal)=>({...p,ordinal}));
  const consumers=buildMasterParameterCalculationConsumers(result);
- for(const p of result.parameters){const id=p.parameter_id;p.truth_metadata={...p.truth_metadata,formula_consumers:consumers.formulaConsumers[id],resource_branch_consumers:consumers.resourceConsumers[id]};
+ for(const p of result.parameters){const id=p.parameter_id;p.truth_metadata={...p.truth_metadata,contract:pack.contract,
+  semantic_parameter_key:String(parent.definition.catalog_id)+':'+id,formula_consumers:consumers.formulaConsumers[id],resource_branch_consumers:consumers.resourceConsumers[id]};
   result.baseline.formula_consumer_ids[id]=consumers.formulaConsumers[id];result.baseline.resource_consumer_row_ids[id]=consumers.resourceConsumers[id];
   result.baseline.uom_by_parameter[id]=p.unit_id;result.baseline.normative_source_ids[id]??=[];
   result.baseline.guide_provenance_ru[id]=p.truth_metadata.guide?.guide_short_ru??p.title_ru;
