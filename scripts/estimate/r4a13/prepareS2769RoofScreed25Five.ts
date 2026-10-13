@@ -9,7 +9,7 @@ import { createCanonicalDefinitionClonePlan,
   type CanonicalPublisherJson as Json } from "./canonicalDefinitionPublisherR1";
 import { cloneCanonicalPreparedSearchR1 } from "./canonicalPreparedSearchCloneR1";
 import { type PurchaseGroupRepresentative } from "./s2732PurchaseGroupOverlay";
-import {buildRoofScreed25StandaloneSuccessorV1 as overlay,
+import {buildRoofScreed25StandaloneSuccessorV1 as overlayStandalone,
   ROOF_SCREED25_STANDALONE_BINDING_SHA_V1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofScreed25StandaloneV1';
 import binding from '../../../data/estimate-benchmarks/source-packs/roof-screed25-five-bindings-s27-69.json';
 import pack from '../../../data/estimate-benchmarks/source-packs/roof-screed25-companion-s27-67.json';
@@ -146,7 +146,7 @@ async function main() {
       invariant(frozenParent && hash(parent) === hash(Object.fromEntries(Object.keys(parent).map(key => [key, frozenParent[key]]))), `PARENT_SNAPSHOT_DRIFT:${catalogId}`);
       const target=binding.targets.find(t=>t.catalogId===catalogId)!;
       invariant(parent.definition.id===target.predecessorDefinitionId&&Number(parent.definition.definition_version)===target.predecessorVersion,'EXACT_PARENT_IDENTITY');
-      const overlay=overlay(parent,locators),r=overlay.representative;
+      const overlay=overlayStandalone(parent,locators),r=overlay.representative;
       const definitionId = uuid(`${fingerprint}:definition:${catalogId}`), baselineId = uuid(`${fingerprint}:baseline:${catalogId}`);
       const definitionSha256 = hash({ contract: CONTRACT, predecessorHash: parent.definition.definition_sha256,
         parameters: r.parameters, formulas: r.formulas, resources: r.resources });
