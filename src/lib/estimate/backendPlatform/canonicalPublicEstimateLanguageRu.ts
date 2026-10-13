@@ -13,6 +13,12 @@ export function canonicalPublicEstimateTextRu(value: string): string {
   return edited === value ? value : cleanEditedPublicTextRu(edited);
 }
 
+/** The calculation status is shown separately from a resource's name. */
+export function canonicalPublicEstimatePendingRowTitleRu(value: string): string {
+  const title = value.replace(/^Требует проверки в проекте\s*[—–-]\s*/iu, '').trim();
+  return title === value ? value : title.charAt(0).toLocaleUpperCase('ru-RU') + title.slice(1);
+}
+
 export function canonicalPublicEstimateRequestTextRu(value: string): string {
   const edited = value.replace(/Кровельные(?:\s+световые)?\s+фонари\s+VELUX\s+CFP\s+100100\s*(?:[—–]\s*предварительный состав)?/giu,
     'Окна в крыше');

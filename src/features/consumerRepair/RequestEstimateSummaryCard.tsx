@@ -25,7 +25,8 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
       ? Math.max(0, missingParameterCount - sourceGateCount)
       : null);
     const parameterLabel = sourceGateCount > 0
-      ? `Данные объекта: ${consumerInputCount ?? missingParameterCount ?? 'уточнить'}; требуют подтверждённого источника: ${sourceGateCount}`
+      ? (consumerInputCount === 0 ? 'Данные объекта заполнены'
+        : `Нужно указать данные объекта: ${consumerInputCount ?? missingParameterCount ?? 'неизвестны'}`)
       : missingParameterCount === 0
         ? "Данные для рассчитанных этапов заполнены"
       : typeof missingParameterCount === "number"
@@ -57,7 +58,7 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
           </Text>
         ) : null}
         {viewModel.preliminaryNeedCount ? <Text style={styles.meta}>
-          Количество может быть сохранено, пока материал или условие ещё не подтверждены. Такие позиции также входят в число требующих уточнения.
+          Нерассчитанные позиции не входят в стоимость и закупку. Уже введённые данные сохранены.
         </Text> : null}
         <Text style={styles.total}>
           Стоимость: {viewModel.totalLabel}
@@ -81,13 +82,13 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
         </Text>
         <Text style={styles.legal} testID="request-estimate-readiness-notice">
           {sourceGateCount > 0 && (consumerInputCount ?? 0) > 0
-            ? `Нужно заполнить данные объекта (${consumerInputCount}) и подтвердить технические источники (${sourceGateCount}). Выбор модели не закрывает отсутствующие нормы. Эти потребности пока не включены в итог.`
+            ? `Нужно указать недостающие данные объекта (${consumerInputCount}). Приложение также ещё не рассчитало часть состава.`
             : typeof missingParameterCount === "number" && missingParameterCount > 0
             ? sourceGateCount > 0 && consumerInputCount === 0
-              ? "Неполный расчёт: технические нормы должен подтвердить каталог или специалист. Эти позиции не входят в стоимость и закупку до появления источника."
+              ? "Приложение ещё не завершило расчёт состава. Нормы и коэффициенты вводить не требуется."
               : `Неполный расчёт: нужны ещё ${missingParameterCount} ${pluralizeRu(missingParameterCount, "параметр", "параметра", "параметров")}. Подтверждение договорной версии пока недоступно.`
             : (viewModel.preliminaryNeedCount ?? 0) > 0
-              ? "Для части материалов и работ пока нет расчёта. Их должен проверить специалист; они не включены в общую стоимость."
+              ? "Приложение ещё не рассчитало часть состава. Эти позиции не включены в общую стоимость."
               : "Это черновик сметы. Проверьте материалы, работы и цены перед заказом."}
         </Text>
         {viewModel.scopeRequirementGroups?.some(group => group.statuses.some(status =>

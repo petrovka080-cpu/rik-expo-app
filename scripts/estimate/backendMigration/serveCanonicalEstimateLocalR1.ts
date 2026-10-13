@@ -1,4 +1,5 @@
 import {admitRoofScreed25StandaloneMigrationProofV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofScreed25StandaloneMigrationV1';
+import {admitRoofStandaloneWorkScopeMigrationProofV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofStandaloneWorkScopeV1';
 import {admitRoofScreed25MigrationProofV1,buildRoofStageRestorationV6,readRoofStageRestorationV6,consumeRoofStageOriginsV6,composeRoofScreed25MigrationModelV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofScreed25MigrationV1';
 import {admitRoofHangingGuttersMigrationProofV1,migrateRoofHangingGuttersSelectionV1,buildRoofStageRestorationV5,readRoofStageRestorationV5,createRoofLegacyWaterSelectionOriginV1,consumeRoofStageOriginsV5,composeRoofGuttersMigrationModelV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofHangingGuttersMigrationV1';
 import {canonicalArtifactRowsWithPriceRecordsV1} from '../../../src/lib/estimate/backendPlatform/canonicalArtifactRowPricesV1';
@@ -49,6 +50,30 @@ import { admitCanonicalFusionDerivedQuantityClearServerS2758, previewCanonicalFu
 import { assertCanonicalFusionSourceTransactionS2758, type CanonicalFusionSourceTransactionIdentityS2758 } from './canonicalFusionPublishedSourceReaderS2758';
 import { canonicalFusionQuantityClearRevisionNumberConflictS2758 } from '../../../src/lib/estimate/backendPlatform/canonicalFusionDerivedQuantityClearAdmissionS2758';
 
+async function localRoofStandaloneWorkScopeMigrationV1(client:PoolClient,definition:JsonRecord,to:{resources:JsonRecord[];formulas:JsonRecord[];parameters:JsonRecord[]}){
+  const proof=(definition.source_metadata as JsonRecord|undefined)?.roofStandaloneWorkScopeMigrationV1 as JsonRecord|undefined;
+  if(!proof)return null;
+  const load=async(id:string)=>{const [d,r,f,p]=await Promise.all([
+    client.query('select * from public.estimate_definition_version where id=$1',[id]),
+    client.query('select * from public.estimate_resource_spec where definition_version_id=$1',[id]),
+    client.query('select * from public.estimate_formula_graph where definition_version_id=$1',[id]),
+    client.query('select * from public.estimate_parameter_definition where definition_version_id=$1',[id])]);
+    return {definition:d.rows[0],model:{resources:r.rows,formulas:f.rows,parameters:p.rows}};};
+  if(typeof proof.fromDefinitionId!=='string')return null;
+  const parent=await load(proof.fromDefinitionId);if(parent.definition?.definition_version!==5||definition.definition_version!==6)return null;
+  const identity=(d:JsonRecord)=>({id:String(d.id),catalogId:String(d.catalog_id),sha256:String(d.definition_sha256)});
+  const scope=admitRoofStandaloneWorkScopeMigrationProofV1({proof,fromDefinition:identity(parent.definition),toDefinition:identity(definition),from:parent.model,to});
+  if(!scope)return null;
+  const models=[{definitionId:parent.definition.id,model:scope.normalizedTo}];
+  const originalProof=parent.definition.source_metadata?.roofScreed25StandaloneMigrationV1;
+  if(originalProof){const old=await load(originalProof.fromDefinitionId);
+    const admitted=old.definition?admitRoofScreed25StandaloneMigrationProofV1({proof:originalProof,fromDefinition:identity(old.definition),toDefinition:identity(parent.definition),from:old.model,to:parent.model}):null;
+    if(!admitted)return null;
+    models.push({definitionId:old.definition.id,model:admitted.normalizedTo});
+  }
+  return models;
+}
+
 async function localManualAmendmentMigrationBindings(client: PoolClient, definitionId: string): Promise<{
   manualPriceMigrationBindings: Record<string, string>; manualExclusionMigrationBindings: Record<string, string>;
   orderedSpecificationBindings: CanonicalOrderedSpecificationBinding[];
@@ -63,7 +88,7 @@ async function localManualAmendmentMigrationBindings(client: PoolClient, definit
   const input = {resources: resources.rows, formulas: formulas.rows, parameters: parameters.rows};
   let predecessorBindings:Record<string,unknown>={};
   const definition=(await client.query('select * from public.estimate_definition_version where id=$1',[definitionId])).rows[0];
-  const proof=definition?.source_metadata?.roofScreed25StandaloneMigrationV1??definition?.source_metadata?.roofScreed25MigrationV1??definition?.source_metadata?.roofHangingGuttersMigrationV1??definition?.source_metadata?.roofLowerLayersMigrationV1??definition?.source_metadata?.roofMetalTrimMigrationV1??definition?.source_metadata?.roofScreedMigrationV1??definition?.source_metadata?.roofValleyMigrationV1??definition?.source_metadata?.roofPreparationMigrationV1;
+  const proof=definition?.source_metadata?.roofStandaloneWorkScopeMigrationV1??definition?.source_metadata?.roofScreed25StandaloneMigrationV1??definition?.source_metadata?.roofScreed25MigrationV1??definition?.source_metadata?.roofHangingGuttersMigrationV1??definition?.source_metadata?.roofLowerLayersMigrationV1??definition?.source_metadata?.roofMetalTrimMigrationV1??definition?.source_metadata?.roofScreedMigrationV1??definition?.source_metadata?.roofValleyMigrationV1??definition?.source_metadata?.roofPreparationMigrationV1;
   if(proof?.fromDefinitionId&&/^[0-9a-f-]{36}$/iu.test(String(proof.fromDefinitionId))) {
     const fromId=String(proof.fromDefinitionId);
     const [oldDef,oldResources,oldFormulas,oldParameters]=await Promise.all([
@@ -77,10 +102,15 @@ async function localManualAmendmentMigrationBindings(client: PoolClient, definit
       fromDefinition:{id:before?.id,catalogId:before?.catalog_id,sha256:before?.definition_sha256},
       toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},
       from:{resources:oldResources.rows,formulas:oldFormulas.rows,parameters:oldParameters.rows},to:input};
-    const admitted=before?(admitRoofScreed25StandaloneMigrationProofV1(admissionInput)??admitRoofScreed25MigrationProofV1(admissionInput)??admitRoofHangingGuttersMigrationProofV1(admissionInput)??admitRoofLowerLayersMigrationProofV1(admissionInput)??admitRoofMetalTrimMigrationProofV1(admissionInput)??admitRoofScreedMigrationProofV1(admissionInput)??admitRoofValleyMigrationProofV1(admissionInput)??admitRoofPreparationMigrationProofV1(admissionInput)):null;
+    const admitted=before?(admitRoofStandaloneWorkScopeMigrationProofV1(admissionInput)??admitRoofScreed25StandaloneMigrationProofV1(admissionInput)??admitRoofScreed25MigrationProofV1(admissionInput)??admitRoofHangingGuttersMigrationProofV1(admissionInput)??admitRoofLowerLayersMigrationProofV1(admissionInput)??admitRoofMetalTrimMigrationProofV1(admissionInput)??admitRoofScreedMigrationProofV1(admissionInput)??admitRoofValleyMigrationProofV1(admissionInput)??admitRoofPreparationMigrationProofV1(admissionInput)):null;
     if(admitted)predecessorBindings={manualMigrationPredecessorV1:{definitionId:fromId,
       priceBindings:canonicalManualPriceMigrationBindings(admitted.normalizedTo),
       exclusionBindings:canonicalManualExclusionMigrationBindings(admitted.normalizedTo)}};
+  }
+  if(definition?.source_metadata?.roofStandaloneWorkScopeMigrationV1){
+    const path=await localRoofStandaloneWorkScopeMigrationV1(client,definition,input);
+    if(path)predecessorBindings={...predecessorBindings,manualMigrationPredecessorsV1:path.map(m=>({definitionId:m.definitionId,
+      priceBindings:canonicalManualPriceMigrationBindings(m.model),exclusionBindings:canonicalManualExclusionMigrationBindings(m.model)}))};
   }
   if(definition?.source_metadata?.roofValleyMigrationV1){
     const path=await localRoofStageMigrationV1(client,definition,input);
@@ -2431,7 +2461,9 @@ async function compileClaimedJob(
     const standaloneScreedAdmitted=before?admitRoofScreed25StandaloneMigrationProofV1({proof:definition.source_metadata?.roofScreed25StandaloneMigrationV1,
       fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},
       toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},from:fromModel,to:toModel}):null;
-    const migrationTo=standaloneScreedAdmitted?.normalizedTo??screed25Predecessor?.model??guttersPredecessor?.model??lowerLayersPredecessor?.model??metalTrimPredecessor?.model??screedPredecessor?.model??directFiveToSeven?.composed??valleyAdmitted?.normalizedTo??admitted?.normalizedTo??toModel;
+    const standaloneScopePath=await localRoofStandaloneWorkScopeMigrationV1(client,definition,toModel);
+    const standaloneScopePredecessor=standaloneScopePath?.find(m=>m.definitionId===before?.id);
+    const migrationTo=standaloneScopePredecessor?.model??standaloneScreedAdmitted?.normalizedTo??screed25Predecessor?.model??guttersPredecessor?.model??lowerLayersPredecessor?.model??metalTrimPredecessor?.model??screedPredecessor?.model??directFiveToSeven?.composed??valleyAdmitted?.normalizedTo??admitted?.normalizedTo??toModel;
     if(guttersPredecessor&&roofGuttersMigration){
       const path=roofGuttersMigration,lower=path.previous,old=lower.previous,older=old.previous,first=older.previous;
       const parentSelection=(parentAmendments.parameterSources as JsonRecord|undefined)?.compositionSelectionV1;

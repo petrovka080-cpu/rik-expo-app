@@ -91,6 +91,18 @@ export function consumerRepairRowIsCanonicalPreliminaryNeed(
   return metadata(item).canonicalPreliminaryNeed === true;
 }
 
+/** A catalogue gap is never a request for the customer to supply a norm.
+ * Mixed requirements still retain their real object-fact question. */
+export function consumerRepairRowApplicationCalculationPending(
+  item: ConsumerRepairRowMetadataCarrier,
+  tables?: CanonicalParameterRequirementTables | null,
+): boolean {
+  const requirements = consumerCanonicalMissingRequirements(item, tables);
+  return consumerRepairRowIsCanonicalPreliminaryNeed(item) && requirements.length > 0
+    && requirements.every(requirement => !consumerCanonicalApplicationScopeRequirementNotice(requirement)
+      && (requirement.valueSourceRole === 'UNRESOLVED_APPLICATION_NORM' || requirement.sourceConfirmationRequired === true));
+}
+
 export function consumerRepairRowMissingRequirementLabels(
   item: ConsumerRepairRowMetadataCarrier | null | undefined,
   tables?: CanonicalParameterRequirementTables | null,
@@ -125,7 +137,7 @@ export function consumerRepairRowRequirementNotice(
   const messages = [
     item.quantity != null ? `Количество ${item.quantity} сохранено, но позиция ещё не подтверждена.` : null,
     inputs.length ? `Заполните в исходных данных: ${inputs.join(", ")}.` : null,
-    sources.length ? `Для расчёта нужен подтверждённый источник: ${sources.join(", ")}.` : null,
+    sources.length ? 'Приложение пока не рассчитало эту позицию. Вводить нормы и коэффициенты не требуется.' : null,
     ...scopes,
   ].filter(Boolean);
   if (inputs.length || sources.length || scopes.length) return messages.join(" ");
@@ -186,7 +198,7 @@ export function consumerRepairRowSourceManagedQuantityReason(
   if (requirements.length > 0 && requirements.every(requirement => consumerCanonicalApplicationScopeRequirementNotice(requirement))) {
     return 'Количество определит расчёт после проверки необходимости грунтования и оставшейся площади.';
   }
-  return 'Количество определит расчёт после подтверждения технического источника.';
+  return 'Количество рассчитывает приложение; вводить норму вручную не требуется.';
 }
 
 export function consumerRepairRowCostTreatment(

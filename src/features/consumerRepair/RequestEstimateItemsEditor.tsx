@@ -532,7 +532,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
           </Text>
           <Text style={styles.rowCount} testID="request-estimate-items-total-count">
             {viewModel.preliminaryNeedCount
-              ? `${viewModel.calculatedItemCount ?? 0} рассчитано · ${viewModel.preliminaryNeedCount} уточнить`
+              ? `${viewModel.calculatedItemCount ?? 0} рассчитано · ${viewModel.preliminaryNeedCount} пока не рассчитано`
               : `${viewModel.rawItemCount} ${positionCountLabel(viewModel.rawItemCount)}`}
           </Text>
         </View>
@@ -558,14 +558,6 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
               Для {viewModel.preliminaryNeedCount ?? 0} позиций пока нет полного расчёта. Они не включены в общую стоимость и список к покупке. Указанные вами количества сохранены.
             </Text>
             {unresolvedItems.length > 0 ? (
-              <View style={styles.blockingRowsList} testID="request-estimate-unresolved-row-list">
-                <Text style={styles.blockingRowsTitle}>Пока не рассчитаны:</Text>
-                {unresolvedItems.slice(0, 5).map((item) => (
-                  <Text key={item.id} style={styles.blockingRowText}>• {item.titleRu}</Text>
-                ))}
-              </View>
-            ) : null}
-            {unresolvedItems.length > 0 ? (
               <Pressable
                 accessibilityRole="button"
                 accessibilityState={{ selected: this.state.showOnlyUnresolved }}
@@ -579,7 +571,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
                 <Text style={styles.unresolvedFilterActionText}>
                   {this.state.showOnlyUnresolved
                     ? "Показать все позиции"
-                    : `Показать только требующие уточнения (${unresolvedItems.length})`}
+                    : `Показать нерассчитанные позиции (${unresolvedItems.length})`}
                 </Text>
               </Pressable>
             ) : null}
@@ -678,7 +670,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
                   <Text style={styles.operationSummary}>{section.physicallyExcluded ? 'Исключена из сметы · ресурсы пересчитаны' : operation.processRole === 'REFERENCE_ONLY'
                     ? 'Справочные характеристики. Не оплачиваются и не закупаются.'
                     : operation.processRole === 'COST_SUMMARY' ? 'Сводные данные. Ресурсы учтены в соответствующих разделах.'
-                    : resources.length ? `${resources.length - unresolved} рассчитано · ${unresolved} требуют уточнения`
+                    : resources.length ? `${resources.length - unresolved} рассчитано · ${unresolved} пока не рассчитано`
                       : 'Состав и готовность этапа'}</Text>
                 </Pressable>
                 {section.items.filter(item => renderedItemIds.has(item.id)).map(renderItem)}

@@ -14,6 +14,7 @@ import { formatEstimateMoney } from "../../lib/ai/globalEstimate/formatEstimateM
 import { canonicalPurchaseShortageMessageV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
 import { canonicalArtifactPurchaseRequirement } from "../../lib/estimate/backendPlatform/canonicalPersistedPurchaseBalance";
 import { formatEstimateQuantityRu } from "../../lib/estimatePresentation/formatEstimateQuantityRu";
+import { canonicalPublicEstimatePendingRowTitleRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import type { ConsumerRepairRequestItem } from "../../lib/consumerRequests/consumerRequestTypes";
 import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
@@ -32,6 +33,7 @@ import {
   consumerRepairRowIsCanonicalPreliminaryNeed,
   consumerRepairRowIsNonPayable,
   consumerRepairRowRequirementNotice,
+  consumerRepairRowApplicationCalculationPending,
   consumerRepairRowSourceManagedQuantityReason,
   consumerRepairRowPublicResourcePresentation,
 } from "./consumerRepairRowMetadata";
@@ -119,6 +121,7 @@ function ConsumerRepairItemRowComponent({
   const manualQuantityOverride = consumerRepairRowHasManualQuantity(item);
   const calculatedQuantity = consumerRepairRowCalculatedQuantity(item);
   const preliminaryNeed = consumerRepairRowIsCanonicalPreliminaryNeed(item);
+  const applicationPending = consumerRepairRowApplicationCalculationPending(item, parameterRequirementTables);
   const purchaseRequirement = canonicalArtifactPurchaseRequirement({ row_id: item.sourceParameters?.rowCode ?? item.id, unit_id: item.unit,
     calculation_trace: { purchaseRequirementV1: item.sourceParameters?.canonicalPurchaseRequirement } });
   const purchaseShortage = canonicalPurchaseShortageMessageV1([{ rowId: item.id, titleRu: item.titleRu,
@@ -168,7 +171,7 @@ function ConsumerRepairItemRowComponent({
   }, parameterRequirementTables), [item, needEvidence.evidence, parameterRequirementTables]);
   return (
     <View
-      style={[styles.row, preliminaryNeed ? styles.unresolvedRow : null]}
+      style={[styles.row, preliminaryNeed && !applicationPending ? styles.unresolvedRow : null]}
       testID={`consumer-repair-item-${item.id}`}
       nativeID={canonicalRowNativeId}
     >
@@ -179,7 +182,7 @@ function ConsumerRepairItemRowComponent({
             <Text style={styles.unresolvedNoticeText}>{purchaseShortage}</Text>
           </View>
         ) : null}
-        {preliminaryNeed ? (
+        {preliminaryNeed && !applicationPending ? (
           <View
             accessibilityLiveRegion="polite"
             style={styles.unresolvedNotice}
@@ -217,7 +220,7 @@ function ConsumerRepairItemRowComponent({
           </View>
         ) : (
           <View style={styles.titleRow}>
-            <Text style={styles.title} testID={`consumer-repair-item-title-${item.id}`}>{item.titleRu}</Text>
+            <Text style={styles.title} testID={`consumer-repair-item-title-${item.id}`}>{applicationPending ? canonicalPublicEstimatePendingRowTitleRu(item.titleRu) : item.titleRu}</Text>
             {onSpecificationChange ? (
               <Pressable
                 accessibilityLabel={`Изменить название позиции ${item.titleRu}`}
@@ -240,7 +243,8 @@ function ConsumerRepairItemRowComponent({
         <View style={styles.fields}>
           <View style={styles.field}>
             <Text style={styles.label}>Количество</Text>
-            <View style={styles.quantityLine}>
+            {applicationPending && item.quantity == null ? <Text style={styles.unit}
+              testID={`consumer-repair-item-application-pending-${item.id}`}>Не рассчитано · {unitLabel}</Text> : <View style={styles.quantityLine}>
               <Pressable
                 testID={`consumer-repair-item-minus-${item.id}`}
                 disabled={sourceManagedNeed}
@@ -292,8 +296,8 @@ function ConsumerRepairItemRowComponent({
               >
                 {unitLabel}
               </Text>
-            </View>
-            {sourceManagedNeed && item.quantity == null && !purchaseRequirement ? (
+            </View>}
+            {sourceManagedNeed && !applicationPending && item.quantity == null && !purchaseRequirement ? (
               <Text style={styles.inlineSourceHint} testID={`consumer-repair-item-source-gated-quantity-${item.id}`}>
                 {consumerRepairRowSourceManagedQuantityReason(item, parameterRequirementTables)}
               </Text>
@@ -345,7 +349,7 @@ function ConsumerRepairItemRowComponent({
           <View style={styles.field}>
             <Text style={styles.label}>Сумма</Text>
             <Text style={styles.total} testID={`consumer-repair-item-total-${item.id}`}>
-              {nonPayableRow
+              {applicationPending ? '—' : nonPayableRow
                 ? totalLabel === "—" ? "Не суммируется" : `${totalLabel} · справочно`
                 : totalLabel}
             </Text>
@@ -379,7 +383,7 @@ function ConsumerRepairItemRowComponent({
           <Text style={[styles.optionalToggleText, itemOptional && styles.optionalToggleTextActive]}>
             {itemOptional ? "Опциональная позиция" : "Включена в расчёт"}
           </Text>
-        </Pressable> : (
+        </Pressable> : applicationPending ? null : (
           <Text style={styles.nonPayableNotice} testID={`consumer-repair-item-cost-treatment-${item.id}`}>
             {consumerRepairRowCostCoverageLabel(item) ?? (consumerRepairRowCostTreatment(item) === "INCLUDED_IN_RESOURCE_ROWS"
                 ? "Не суммируется повторно: стоимость включена в отдельные строки материалов, работ и механизмов этой сметы."

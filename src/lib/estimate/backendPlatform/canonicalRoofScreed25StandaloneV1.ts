@@ -1,4 +1,5 @@
 import binding from '../../../../data/estimate-benchmarks/source-packs/roof-screed25-five-bindings-s27-69.json';
+import {ROOF_STANDALONE_WORK_SCOPE_SHA_V1} from './canonicalRoofStandaloneWorkScopeV1';
 import screed15 from '../../../../data/estimate-benchmarks/source-packs/roof-cement-screed15-five-s27-63.json';
 import { sourcePinnedRoofNormOwnerR1, sourcePinnedRoofNormGuardsR1, type SourcePinnedRoofNormPackR1 } from '../v4/sourcePinnedRoofNormOwnerR1';
 import { ROOF_SCREED25_PACK_V1 as accepted, assertRoofScreed25AcceptedRatesV1,
@@ -135,7 +136,8 @@ export function roofScreed25StandaloneSuccessorModelV1(from:{resources:readonly 
  * A row-only/price exclusion cannot make the applicability question disappear. */
 export function isRoofScreed25StandaloneCatalogV1(input:{catalogId:unknown;definitionVersion:unknown;metadata:unknown}) {
   const meta=input.metadata as Json|null;
-  return binding.targets.some(t => t.catalogId === input.catalogId) && input.definitionVersion === 5
+  return binding.targets.some(t => t.catalogId === input.catalogId)
+    && (input.definitionVersion === 5 || input.definitionVersion === 6 && meta?.roofStandaloneWorkScopeV1===ROOF_STANDALONE_WORK_SCOPE_SHA_V1)
     && meta?.roofScreed25StandaloneBindingV1 === ROOF_SCREED25_STANDALONE_BINDING_SHA_V1;
 }
 /** Presentation of the accepted application binding; source snapshots stay immutable. */

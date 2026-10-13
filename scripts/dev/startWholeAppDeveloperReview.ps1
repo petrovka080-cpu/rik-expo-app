@@ -10,6 +10,17 @@ param(
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
+$ReviewClock = [Diagnostics.Stopwatch]::StartNew()
+$ReviewStages = [Collections.Generic.List[object]]::new()
+$ReviewPreviousStageMs = 0L
+function Record-ReviewStage([string]$StageName) {
+  $elapsed = $ReviewClock.ElapsedMilliseconds
+  $duration = $elapsed - $script:ReviewPreviousStageMs
+  $ReviewStages.Add(@{ stage = $StageName; duration_ms = $duration; elapsed_ms = $elapsed; utc = (Get-Date).ToUniversalTime().ToString("o") })
+  $script:ReviewPreviousStageMs = $elapsed
+  Write-Host "stage=$StageName duration_ms=$duration elapsed_ms=$elapsed"
+}
+
 function Fail-Review([string]$Code, [string]$Recovery) {
   Write-Error "WHOLE_APP_DEVELOPER_REVIEW_RED: $Code`nВосстановление: $Recovery"
   exit 1
@@ -56,13 +67,16 @@ function Get-Sha256([string]$Value) {
 
 function Test-WebBundleReady([int]$Port, [int]$TimeoutSec) {
   try {
+    Record-ReviewStage "metro_start_and_status"
     $route = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:$Port/office/foreman" -TimeoutSec 15
+    Record-ReviewStage "web_route"
     if ($route.StatusCode -ne 200) { return $false }
     $match = [regex]::Match([string]$route.Content, '<script[^>]+src="([^"]*index\.bundle[^"]*)"')
     if (-not $match.Success) { return $false }
     $bundlePath = [System.Net.WebUtility]::HtmlDecode($match.Groups[1].Value)
     $bundleUri = [Uri]::new([Uri]"http://127.0.0.1:$Port/office/foreman", $bundlePath).AbsoluteUri
     $bundle = Invoke-WebRequest -UseBasicParsing -Uri $bundleUri -TimeoutSec $TimeoutSec
+    Record-ReviewStage "web_bundle"
     return $bundle.StatusCode -eq 200 -and [int64]$bundle.RawContentLength -gt 1000
   }
   catch {
@@ -214,6 +228,7 @@ if (-not $localProviderClassOk) {
 }
 
 $Node = (Get-Command node -ErrorAction Stop).Source
+Record-ReviewStage "providers_and_database_preflight"
 $TsxCli = Join-Path $Root "node_modules\tsx\dist\cli.mjs"
 $IdentityRaw = & $Node $TsxCli (Join-Path $Root "scripts\dev\printLocalDeveloperBuildIdentity.ts") 2>$null
 if ($LASTEXITCODE -ne 0 -or -not $IdentityRaw) {
@@ -223,6 +238,7 @@ $Identity = $IdentityRaw | ConvertFrom-Json
 $BuildCommit = (& git -C $Root rev-parse HEAD).Trim()
 $BuildBranch = (& git -C $Root branch --show-current).Trim()
 $ReleaseManifest = Get-Content -LiteralPath (Join-Path $Root "data\estimate-benchmarks\r568-local-developer-canonical-release.json") -Raw | ConvertFrom-Json
+Record-ReviewStage "source_identity"
 
 $RuntimeRoot = if ($Port -eq 8081) {
   Join-Path $Root ".release-runtime\r568\runtime\whole-app-developer-current"
@@ -268,6 +284,7 @@ $RuntimeIdentityOk = $RuntimeIdentity.schemaVersion -eq "rik-expo-app.local-runt
 if (-not $RuntimeIdentityOk) {
   Fail-Review "CANONICAL_ESTIMATE_RUNTIME_IDENTITY_RED" "перезапустите единый backend 8765 из $Root с release из канонического manifest"
 }
+Record-ReviewStage "backend_ensure_and_identity"
 
 $ProviderFingerprint = (Get-Sha256 $WholeAppUrl).Substring(0, 12)
 $PublicKeyFingerprint = (Get-Sha256 $WholeAppKey).Substring(0, 12)
@@ -321,6 +338,7 @@ foreach ($pidValue in @($listeners | Select-Object -ExpandProperty OwningProcess
 }
 
 $ExpoCli = Join-Path $Root "node_modules\expo\bin\cli"
+Record-ReviewStage "owned_metro_stop"
 New-Item -ItemType Directory -Path $RuntimeRoot -Force | Out-Null
 $FullTypecheckExitCode = $null
 if ($VerifyFullTypecheck) {
@@ -378,6 +396,7 @@ if ($VerifyFullTypecheck) {
   Write-Host "full_typecheck_exit=$FullTypecheckExitCode"
 }
 $MetroStdout = Join-Path $RuntimeRoot "metro.stdout.log"
+Record-ReviewStage "optional_typecheck"
 $MetroStderr = Join-Path $RuntimeRoot "metro.stderr.log"
 New-Item -ItemType Directory -Path $RuntimeRoot -Force | Out-Null
 $Metro = Start-Process -FilePath $Node -ArgumentList @(
@@ -422,10 +441,13 @@ $WholeAppWarmup = Start-Process -FilePath $Node -ArgumentList @(
 if ($WholeAppWarmup.ExitCode -ne 0) {
   Fail-Review "WHOLE_APP_ANDROID_PDF_START_RED" "проверьте web-android-pdf-readiness.error.log в $RuntimeRoot; текущий контур сохранён"
 }
+Record-ReviewStage "android_bundle_and_pdf_assets"
 
 @{
   schema_version = "rik-expo-app.whole-app-developer-runtime.v1"
   generated_utc = (Get-Date).ToUniversalTime().ToString("o")
+  launch_duration_ms = $ReviewClock.ElapsedMilliseconds
+  launch_stages = $ReviewStages.ToArray()
   canonical_root = $Root
   git_root = [System.IO.Path]::GetFullPath($GitRoot)
   runtime_profile = "whole_app_staging_plus_local_estimate"

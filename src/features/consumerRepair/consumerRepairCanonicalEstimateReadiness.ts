@@ -33,6 +33,19 @@ export function consumerRepairCanonicalMissingParameterCount(
   ]).size;
 }
 
+/** Display only: source-owned gaps still block full acceptance, but they are
+ * not customer questions. Callers supply IDs from the exact revision table. */
+export function consumerRepairCanonicalMissingObjectParameterCount(
+  session: CanonicalParameterSession | null | undefined,
+  sourceOwnedParameterIds: readonly string[],
+): number {
+  if (!session) return 0;
+  const ids = consumerRepairCanonicalCalculationRequirementIds(session);
+  const sourceOwned = new Set(sourceOwnedParameterIds);
+  return new Set([...ids.blockingMissingParameterIds, ...ids.contractMissingParameterIds,
+    ...ids.invalidParameterIds].filter(id => !sourceOwned.has(id))).size;
+}
+
 export function consumerRepairCanonicalCalculationRequirementIds(
   session: CanonicalParameterSession,
 ): {

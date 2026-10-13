@@ -16,14 +16,17 @@ import pack from '../../../data/estimate-benchmarks/source-packs/roof-screed25-c
 
 import {buildRoofScreed25StandaloneMigrationProofV1,admitRoofScreed25StandaloneMigrationProofV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofScreed25StandaloneMigrationV1';
 
-const CONTRACT=binding.contract;
+import scopePolicy from '../../../data/estimate-benchmarks/source-packs/roof-standalone-work-scope-s27-69.json';
+import {buildRoofStandaloneWorkScopeSuccessorV1,buildRoofStandaloneWorkScopeMigrationProofV1,admitRoofStandaloneWorkScopeMigrationProofV1,ROOF_STANDALONE_WORK_SCOPE_SHA_V1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofStandaloneWorkScopeV1';
+const SCOPE_ONLY=process.argv.includes('--scope-only');
+const CONTRACT=SCOPE_ONLY?scopePolicy.contract:binding.contract;
 
 const ROOT = "C:/dev/rik-expo-app-r4a5-dc4f0ce7";
 const BRANCH = "codex/r4-a5-clean-08b18902";
 const MASTER = "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (100).md";
 const CURRENT = "data/estimate-benchmarks/r568-local-developer-canonical-release.json";
-const SNAPSHOT=".release-runtime/r568/s27-69/roof-screed25-five/parent-snapshot.json";
-const OUTPUT=".release-runtime/r568/s27-69/roof-screed25-five/publication";
+const SNAPSHOT=SCOPE_ONLY?"data/estimate-benchmarks/fixtures/roof-standalone-scope-parents-s27-69.json":".release-runtime/r568/s27-69/roof-screed25-five/parent-snapshot.json";
+const OUTPUT=SCOPE_ONLY?".release-runtime/r568/s27-69/roof-standalone-scope/publication":".release-runtime/r568/s27-69/roof-screed25-five/publication";
 const SOURCES = [
   "scripts/estimate/r4a13/prepareS2769RoofScreed25Five.ts",
   "src/lib/estimate/backendPlatform/canonicalRoofScreed25StandaloneV1.ts",
@@ -54,7 +57,11 @@ const SOURCES = [
   "src/lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1.ts",
   "src/lib/estimate/backendPlatform/formulaGraph.ts",
   "src/lib/estimate/backendPlatform/inclusionGraph.ts"
-].concat(pack.sources.map(s=>s.localArtifact));
+].concat(pack.sources.map(s=>s.localArtifact),SCOPE_ONLY?[
+ "src/lib/estimate/backendPlatform/canonicalRoofStandaloneWorkScopeV1.ts",
+ "src/lib/estimate/backendPlatform/canonicalRoofStandaloneWorkScopeV1.test.ts",
+ "data/estimate-benchmarks/source-packs/roof-standalone-work-scope-s27-69.json",
+ "data/estimate-benchmarks/fixtures/roof-standalone-scope-parents-s27-69.json"]:[]);
 const APPLY = process.argv.includes("--apply");
 const hash = (value: unknown) => createHash("sha256").update(typeof value === "string" || Buffer.isBuffer(value) ? value : stringifyCanonicalEstimateJson(value)).digest("hex");
 function invariant(value: unknown, code: string): asserts value { if (!value) throw new Error(`S2769_ROOF_SCREED25_FIVE:${code}`); }
@@ -93,7 +100,7 @@ async function main() {
   const catalogIds = binding.targets.map(t=>t.catalogId).sort();
   invariant(catalogIds.length === 5, "FINITE_SCOPE_DRIFT");
   for(const s of pack.sources)invariant(hash(readFileSync(s.localArtifact))===s.sha256,'PRIMARY_SOURCE_ARTIFACT_DRIFT');
-  invariant(hash(readFileSync(SNAPSHOT))===binding.parentSnapshotSha256,'EXACT_PARENT_SNAPSHOT_DRIFT');
+  invariant(hash(readFileSync(SNAPSHOT))===(SCOPE_ONLY?scopePolicy.parentSnapshotSha256:binding.parentSnapshotSha256),'EXACT_PARENT_SNAPSHOT_DRIFT');
   invariant(hash(readFileSync(pack.sourceAdmissionArtifact))===pack.sourceAdmissionSha256,'INDEPENDENT_SOURCE_ADMISSION_DRIFT');
 
   invariant(hash(readFileSync(pack.designAdmissionArtifact))===pack.designAdmissionSha256,'TARGETED_DESIGN_ADMISSION_DRIFT');
@@ -145,9 +152,9 @@ async function main() {
       const parent = await load(client, manifest.definition_version_id, manifest.approved_template_baseline_id);
       const frozenParent = frozen.reps.find((r: Json) => r.definition.catalog_id === catalogId);
       invariant(frozenParent && hash(parent) === hash(Object.fromEntries(Object.keys(parent).map(key => [key, frozenParent[key]]))), `PARENT_SNAPSHOT_DRIFT:${catalogId}`);
-      const target=binding.targets.find(t=>t.catalogId===catalogId)!;
-      invariant(parent.definition.id===target.predecessorDefinitionId&&Number(parent.definition.definition_version)===target.predecessorVersion,'EXACT_PARENT_IDENTITY');
-      const overlay=overlayStandalone(parent,locators),r=overlay.representative;
+      const target=(SCOPE_ONLY?scopePolicy.targets:binding.targets).find(t=>t.catalogId===catalogId)!;
+      invariant(parent.definition.id===target.predecessorDefinitionId&&Number(parent.definition.definition_version)===(SCOPE_ONLY?5:binding.targets.find(t=>t.catalogId===catalogId)!.predecessorVersion),'EXACT_PARENT_IDENTITY');
+      const overlay=SCOPE_ONLY?{representative:buildRoofStandaloneWorkScopeSuccessorV1(parent),addedRowIds:[],addedParameterIds:[]}:overlayStandalone(parent,locators),r=overlay.representative;
       const definitionId = uuid(`${fingerprint}:definition:${catalogId}`), baselineId = uuid(`${fingerprint}:baseline:${catalogId}`);
       const definitionSha256 = hash({ contract: CONTRACT, predecessorHash: parent.definition.definition_sha256,
         parameters: r.parameters, formulas: r.formulas, resources: r.resources });
@@ -155,8 +162,8 @@ async function main() {
       const plan = createCanonicalDefinitionClonePlan({ contract: CONTRACT,
         definition: { id: definitionId, releaseId, catalogId, definitionVersion: Number(parent.definition.definition_version) + 1,
           passport: { ...r.definition.passport, roofScreed25StandaloneContract: CONTRACT }, applicability: r.definition.applicability,
-          definitionSha256, sourceMetadata: { ...parent.definition.source_metadata, contract: CONTRACT, predecessorDefinitionId: parent.definition.id,
-            roofScreed25StandaloneContract: CONTRACT, sourceHashes, roofScreed25StandaloneBindingV1:ROOF_SCREED25_STANDALONE_BINDING_SHA_V1, activationAllowed: false, productionEligible: false } },
+          definitionSha256, sourceMetadata: { ...r.definition.source_metadata, contract: CONTRACT, predecessorDefinitionId: parent.definition.id,
+            roofScreed25StandaloneContract: binding.contract, sourceHashes, roofScreed25StandaloneBindingV1:ROOF_SCREED25_STANDALONE_BINDING_SHA_V1, activationAllowed: false, productionEligible: false } },
         representative: r,
         parameterTruthMetadata: p => p.truth_metadata,
         resourceId: row => uuid(`${fingerprint}:resource:${catalogId}:${row.row_id}`), resourceSemanticOwner: row => String(row.semantic_owner),
@@ -170,13 +177,14 @@ async function main() {
             roofScreed25StandaloneContract: CONTRACT, activationAllowed: false, productionEligible: false },
           payloadSha256: hash({ predecessor: parent.passport.payload_sha256, definitionSha256, evidenceSha256 }), sourceHead: head, sourceTree: tree },
         bindingApplicability: b => ({ ...b.applicability, clonedByContract: CONTRACT }), expectedNormativeBindingCount: r.bindings.length });
-      const migrationProof=buildRoofScreed25StandaloneMigrationProofV1({from:parent,to:plan,
+      const migrationProof=(SCOPE_ONLY?buildRoofStandaloneWorkScopeMigrationProofV1:buildRoofScreed25StandaloneMigrationProofV1)({from:parent,to:plan,
         fromDefinition:{id:parent.definition.id,catalogId,sha256:parent.definition.definition_sha256},
         toDefinition:{id:definitionId,catalogId,sha256:definitionSha256}});
-      invariant(admitRoofScreed25StandaloneMigrationProofV1({proof:migrationProof,from:parent,to:plan,
+      invariant((SCOPE_ONLY?admitRoofStandaloneWorkScopeMigrationProofV1:admitRoofScreed25StandaloneMigrationProofV1)({proof:migrationProof,from:parent,to:plan,
         fromDefinition:{id:parent.definition.id,catalogId,sha256:parent.definition.definition_sha256},
         toDefinition:{id:definitionId,catalogId,sha256:definitionSha256}}),'EXACT_PHYSICAL_MIGRATION_PROOF');
-      plan.definition.source_metadata={...plan.definition.source_metadata,roofScreed25StandaloneMigrationV1:migrationProof};
+      plan.definition.source_metadata={...plan.definition.source_metadata,[SCOPE_ONLY?'roofStandaloneWorkScopeMigrationV1':'roofScreed25StandaloneMigrationV1']:migrationProof};
+      if(SCOPE_ONLY)invariant(plan.definition.source_metadata.roofStandaloneWorkScopeV1===ROOF_STANDALONE_WORK_SCOPE_SHA_V1,'SCOPE_MARKER_LOST');
       invariant(hash(plan.parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata})))===plan.baseline.parameter_schema_sha256,'FINAL_PARAMETER_SCHEMA_DIGEST_DRIFT');
       invariant(plan.passport.decision.completeTechnicalEstimateAccepted === false && plan.passport.decision.preliminaryCompositionOnly === true
         && plan.passport.decision.legacyQuantityNormsUnaccepted === true, "LIMITED_MATERIAL_SCOPE_FLAGS_LOST");
@@ -185,7 +193,7 @@ async function main() {
         predecessorBaselineId: parent.baseline.id, successorBaselineId: baselineId, ownerRowIds: overlay.addedRowIds.filter(rowId=>r.resources.find(row=>row.row_id===rowId)?.resource_graph.costTreatment==='OWN_COST'), legacyRowIds: parent.resources.map(row=>row.row_id), addedRowIds: overlay.addedRowIds,
         addedParameterIds: overlay.addedParameterIds, changedFormulaIds: [],
         physicalNormOwnerRowIds:overlay.addedRowIds.filter(rowId=>r.resources.find(row=>row.row_id===rowId)?.source_metadata.sourceNormQuantityAccepted===true),
-        ownerDisposition:[],physicalNormClosureCount:7,labourHourNormClosureCount:1,machineHourNormClosureCount:3,materialNormClosureCount:3,
+        ownerDisposition:[],outsideRequestedWorkCount:SCOPE_ONLY?16:0,physicalNormClosureCount:SCOPE_ONLY?0:7,labourHourNormClosureCount:SCOPE_ONLY?0:1,machineHourNormClosureCount:SCOPE_ONLY?0:3,materialNormClosureCount:SCOPE_ONLY?0:3,
         parameterDelta: r.parameters.length - parent.parameters.length, formulaDelta: r.formulas.length - parent.formulas.length,
         resourceDelta: r.resources.length - parent.resources.length, quantityScope: r.passport.decision.quantityScope, completeTechnicalEstimateAccepted: false });
     }
@@ -235,7 +243,7 @@ async function main() {
         atomic(`${OUTPUT}/acceptance.json`, { ...recovered, recoveredCommittedPublication: true, recoveryVerifiedAt: new Date().toISOString() });
         atomic(CURRENT, { ...current, definitionReleaseId: releaseId, searchReleaseId, definitionReleaseStatus: "prepared", searchReleaseStatus: "draft",
           definitionSnapshotSha256: manifest.snapshot, manifestHashChainSha256: manifest.snapshot, searchHashChainSha256: search.snapshot_sha256,
-          owner: "S27_69_ROOF_SCREED25_FIVE", productionAccessed: false, fakeGreenClaimed: false });
+          owner: SCOPE_ONLY?"S27_69_ROOF_STANDALONE_SCOPE":"S27_69_ROOF_SCREED25_FIVE", productionAccessed: false, fakeGreenClaimed: false });
       }
       process.stdout.write(JSON.stringify({ status: "COMMITTED_SERIES_VERIFIED_NO_DATABASE_REAPPLY", successor: recovered.successor,
         adoptedPointer: APPLY, databaseMutationPerformed: false }) + "\n");
@@ -283,12 +291,13 @@ async function main() {
     invariant(manifest.identities === Number(parentRelease.definition_count), "MANIFEST_IDENTITY_LOSS");
     const sum=(key:string)=>transitions.reduce((total,t)=>total+Number(t[key]??0),0);
     const accounting={newPhysicalNormConsumerCount:transitions.filter(t=>Number(t.physicalNormClosureCount)>0).length,newPhysicalNormClosureCount:sum('physicalNormClosureCount'),newLabourHourNormClosureCount:sum('labourHourNormClosureCount'),newMachineHourNormClosureCount:sum('machineHourNormClosureCount'),newMaterialNormClosureCount:sum('materialNormClosureCount'),oldResourceOwnersPreserved:transitions.reduce((total,t)=>total+(t.legacyRowIds as string[]).length,0),newCompleteTechnicalTypeCount:transitions.filter(t=>t.completeTechnicalEstimateAccepted===true).length};
-    invariant(accounting.newPhysicalNormConsumerCount===5&&accounting.newPhysicalNormClosureCount===35&&accounting.newLabourHourNormClosureCount===5&&accounting.newMachineHourNormClosureCount===15&&accounting.newMaterialNormClosureCount===15&&accounting.oldResourceOwnersPreserved===635&&accounting.newCompleteTechnicalTypeCount===0,'PUBLICATION_ACCOUNTING_DRIFT');
+    invariant(SCOPE_ONLY?(accounting.newPhysicalNormClosureCount===0&&accounting.oldResourceOwnersPreserved===685&&accounting.newCompleteTechnicalTypeCount===0&&sum('outsideRequestedWorkCount')===80):
+      (accounting.newPhysicalNormConsumerCount===5&&accounting.newPhysicalNormClosureCount===35&&accounting.newLabourHourNormClosureCount===5&&accounting.newMachineHourNormClosureCount===15&&accounting.newMaterialNormClosureCount===15&&accounting.oldResourceOwnersPreserved===635&&accounting.newCompleteTechnicalTypeCount===0),'PUBLICATION_ACCOUNTING_DRIFT');
     const receipt = { contract: CONTRACT, status: APPLY ? "GREEN_GROUP_PREPARED_NOT_ACTIVE" : "DRY_RUN_GROUP_VALIDATED", capturedAt: new Date().toISOString(),
       predecessor: { releaseId: predecessorReleaseId, searchReleaseId: predecessorSearchReleaseId }, successor: { releaseId, searchReleaseId, releaseKey },
       sourceHead: head, sourceTree: tree, sourceHashes, masterSha256, fingerprint, transitions, preflight, persisted,
       audit: { manifest, search, unrelatedManifestChanges: unrelated, compatibleOwnerCatalogIds:compatible, reusedSourceLocators:locators }, mutationPerformed: APPLY, productionAccessed: false,
-      ...accounting,
+      ...accounting, outsideRequestedWorkCount:sum('outsideRequestedWorkCount'),
       activationPerformed: false, uiAccepted: false, engineeringAccepted: false, fullGateAccepted: false };
     await client.query(`update public.estimate_definition_release set source_manifest_sha256=$2,status='prepared',sealed_at=clock_timestamp(),
       metadata=metadata||$3::jsonb where id=$1 and status='draft'`, [releaseId, manifest.snapshot,

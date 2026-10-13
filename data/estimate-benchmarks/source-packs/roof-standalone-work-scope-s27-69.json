@@ -1,0 +1,85 @@
+{
+  "contract": "rik-expo-app.s27-69.roof-standalone-work-scope.v1",
+  "sourceSubworkContract": "rik-expo-app.s27-67.roof-screed25-companion.v1",
+  "workScope": "OWN_STANDALONE_ROOF_SCREED_SECTION",
+  "predecessorVersion": 5,
+  "successorVersion": 6,
+  "outsideRequestedWorkSuffixes": [
+    "materials_01",
+    "materials_03",
+    "materials_04",
+    "materials_05",
+    "materials_06",
+    "components_07",
+    "components_08",
+    "components_09",
+    "components_10",
+    "components_40",
+    "labor_20",
+    "labor_21",
+    "labor_22",
+    "labor_23",
+    "labor_24",
+    "quality_control_33"
+  ],
+  "scopeReasonRu": "Эта позиция относится к другим работам кровли и не входит в заказ самостоятельной выравнивающей стяжки. Это не утверждение об отсутствии такой работы на объекте.",
+  "keptScreedRequirementsRu": [
+    "Подготовка верха засыпного утеплителя",
+    "Температурно-усадочные швы и полосы",
+    "Армирование по проектному решению",
+    "Инструмент и защита",
+    "Внешняя доставка",
+    "Выдерживание, контроль и приёмка"
+  ],
+  "scopeGuard": "ONLY_FIVE_ADMITTED_ALIGN_IDENTITIES_AND_SELECTED_15_OR_25_VARIANT",
+  "ratesChanged": false,
+  "objectAbsenceAsserted": false,
+  "legacyModeChanged": false,
+  "newFullTechnicalTypes": 0,
+  "fullControlRoofGroupsClosed": 0,
+  "review": {
+    "model": "gpt-6-astra",
+    "reasoningEffort": "max",
+    "task": "standalone_scope_applicability",
+    "verdict": "BOUNDED_NEW_DEFINITION_SCOPE_ADMISSIBLE",
+    "closedBindingMigrationReviewRepeated": false
+  },
+  "sourceEvidence": [
+    {
+      "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "locator": "КРЕР12, таблица017, PDF27: подготовка готового основания и устройство выравнивающей стяжки"
+    },
+    {
+      "sha256": "6291b9410ac2a272b3439f65dcf8a45de327ad1b8c22e9606f76ae57aedd58d7",
+      "locator": "СП КР31-102:2024, физ105–106, §3.29–3.32: собственные требования стяжки остаются отдельными"
+    }
+  ],
+  "parentSnapshotSha256": "9c7c7a35083df3fbc7a8f42171eb61673a489d9df83d5a6ea0d5e832e96825fd",
+  "targets": [
+    {
+      "catalogId": "canonical-work:base:roofing_interior_flat_roof_align_large_area",
+      "predecessorDefinitionId": "30b8c3aa-8a59-55c6-855a-c4589fa3c1d6",
+      "predecessorDefinitionSha256": "c2d62d6c6ff893e04030c5859fecc34c853e2258700a94fc8ccbe0f0bf3833b5"
+    },
+    {
+      "catalogId": "canonical-work:base:roofing_interior_flat_roof_align_small_area",
+      "predecessorDefinitionId": "3a921489-772d-5de2-8461-e66e72c5b012",
+      "predecessorDefinitionSha256": "df17c723040942cdfda849fb03183973902fb1384b63a5d767f95154f9eeec79"
+    },
+    {
+      "catalogId": "canonical-work:base:roofing_interior_flat_roof_align_standard",
+      "predecessorDefinitionId": "0ac44ddf-b562-52f5-80a7-803d65439505",
+      "predecessorDefinitionSha256": "e2c49e6538bde6d6ea3fa2b82afbbc9facdaa5248fd0b1227c79bcb0c6eea185"
+    },
+    {
+      "catalogId": "canonical-work:base:roofing_interior_flat_roof_align_technical_room",
+      "predecessorDefinitionId": "c4405dc4-765f-55f4-8cd2-2985192872ba",
+      "predecessorDefinitionSha256": "914d992486113836c98acb92e901d87e8f24407cf3d63f5be1b63d499727e11d"
+    },
+    {
+      "catalogId": "canonical-work:base:roofing_interior_flat_roof_align_wet_zone",
+      "predecessorDefinitionId": "a0831628-0027-578d-8ca4-15523c811b47",
+      "predecessorDefinitionSha256": "db808bc52e074387c153f2cb583280d8317bab28dd49e1729e044e4c144ca7e5"
+    }
+  ]
+}

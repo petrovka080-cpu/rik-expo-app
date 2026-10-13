@@ -297,7 +297,7 @@ describe("incomplete canonical estimate readiness", () => {
       );
     });
 
-    expect(renderer.root.findByProps({ testID: "request-estimate-unresolved-row-list" })).toBeTruthy();
+    expect(renderer.root.findAllByProps({ testID: "request-estimate-unresolved-row-list" })).toHaveLength(0);
     expect(renderer.root.findByProps({ testID: "consumer-repair-item-unresolved-notice-lifting-row" })).toBeTruthy();
     expect(visibleText(renderer)).toContain("Обозначение подъёмного оборудования");
     expect(visibleText(renderer)).toContain("Количество 240 сохранено");

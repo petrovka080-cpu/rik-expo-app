@@ -29,8 +29,10 @@ import { consumerRepairEstimateApprovalParameterErrors, consumerRepairExactAspha
 import { consumerRepairCanonicalBackendBinding } from "./consumerRepairBackendOwnership";
 import { canonicalEstimateRevisionIdFromRoute } from "../../lib/navigation/canonicalEstimateRevisionDeepLink";
 import {consumerEstimateOpenScopeGroups} from '../../lib/consumerRequests/consumerEstimateReadiness';
+import {buildRequestEstimateSourceGates} from './requestEstimateViewModel';
 import {
   consumerRepairCanonicalEstimateBlocksApproval,
+  consumerRepairCanonicalMissingObjectParameterCount,
   consumerRepairCanonicalUnpricedPayableRowCount,
   consumerRepairCanonicalUnresolvedRowCount,
   consumerRepairPendingCanonicalParameterCollection,
@@ -223,6 +225,10 @@ export function ConsumerRepairRequestScreenView({
   const approvalUnresolvedRowCount = consumerRepairCanonicalUnresolvedRowCount(
     renderModel.bundle,
   );
+  const approvalMissingObjectParameterCount = renderModel.bundle?.canonicalParameterSession
+    ? consumerRepairCanonicalMissingObjectParameterCount(renderModel.bundle.canonicalParameterSession,
+      buildRequestEstimateSourceGates(renderModel.bundle.items, renderModel.bundle.canonicalParameterRequirementTables).map(gate => gate.parameterId))
+    : null;
   const approvalMissingPriceCount = consumerRepairCanonicalUnpricedPayableRowCount(
     renderModel.bundle,
   );
@@ -369,6 +375,7 @@ export function ConsumerRepairRequestScreenView({
           approvalBlockedByEstimate={approvalBlockedByEstimate}
           approvalBlockedBeyondPendingEdits={approvalBlockedBeyondPendingEdits}
           approvalBlockedByParameters={approvalBlockedByParameters}
+          approvalMissingObjectParameterCount={approvalMissingObjectParameterCount}
           contentWithdrawalReasonRu={renderModel.bundle?.canonicalParameterSession?.contentWithdrawalReasonRu
             || renderModel.bundle?.structuredEstimatePayload?.canonicalBackend?.contentWithdrawalReasonRu}
           approvalUnresolvedRowCount={approvalUnresolvedRowCount}

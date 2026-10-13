@@ -46,7 +46,7 @@ import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerT
 import { buildConsumerRepairCanonicalSessionPreview } from "./consumerRepairCanonicalSessionPreview";
 import {
   consumerRepairCanonicalCalculationRequirementIds,
-  consumerRepairCanonicalMissingParameterCount,
+  consumerRepairCanonicalMissingObjectParameterCount,
 } from "./consumerRepairCanonicalEstimateReadiness";
 import type { ConsumerRepairParamEditState } from "./requestEstimateScreenActions";
 import { RequestEstimateItemsEditor } from "./RequestEstimateItemsEditor";
@@ -626,7 +626,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
     const { parametersOpen, positionsOpen, procurementOpen } = this.state;
     const procurementRows = buildCanonicalProcurementPreviewRows(currentRevision, viewModel.sections.flatMap(section => section.items));
     const editableMissingCount = canonicalParameterSession
-      ? consumerRepairCanonicalMissingParameterCount(canonicalParameterSession)
+      ? consumerRepairCanonicalMissingObjectParameterCount(canonicalParameterSession, (viewModel.sourceGates ?? []).map(gate => gate.parameterId))
       : 0;
     const sourceGateCount = viewModel.sourceGates?.length ?? 0;
     const count: number | undefined = canonicalParameterSession
@@ -662,7 +662,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
                 ? 'Данные расчёта'
                 : count != null && count > 0
                 ? `Уточнить параметры (${count})`
-                : "Уточнить параметры"}
+                : "Изменить параметры"}
           </Text>
         </Pressable>
         <Pressable
@@ -778,7 +778,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
             : sourceGateCount > 0
               ? `Показать отсутствующие нормы (${sourceGateCount})`
               : "Открыть обязательные данные"}
-          onResolveIncomplete={this.openIncompleteRequirements}
+          onResolveIncomplete={editableMissingCount > 0 ? this.openIncompleteRequirements : undefined}
           onDecrease={onDecrease}
           onIncrease={onIncrease}
           onQuantityChange={onQuantityChange}
@@ -2237,7 +2237,7 @@ function EstimatePositionsPanel({
   viewModel: RequestEstimateViewModel;
   incompleteParameterCount: number | null;
   incompleteResolutionLabel: string;
-  onResolveIncomplete: () => void;
+  onResolveIncomplete?: () => void;
 }): React.ReactElement {
   return (
     <View

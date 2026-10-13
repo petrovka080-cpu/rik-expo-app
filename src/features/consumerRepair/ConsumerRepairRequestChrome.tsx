@@ -81,6 +81,7 @@ type StickyActionsProps = {
   parameterCollectionRequired?: boolean;
   approvalBlockedByEstimate?: boolean;
   approvalBlockedByParameters?: boolean;
+  approvalMissingObjectParameterCount?: number | null;
   contentWithdrawalReasonRu?: string | null;
   approvalUnresolvedRowCount?: number;
   approvalIncompleteStages?: readonly CanonicalScopeRequirementGroupV1[];
@@ -110,6 +111,7 @@ export function ConsumerRepairRequestStickyActions({
   parameterCollectionRequired = false,
   approvalBlockedByEstimate = false,
   approvalBlockedByParameters = false,
+  approvalMissingObjectParameterCount = null,
   contentWithdrawalReasonRu,
   approvalUnresolvedRowCount = 0,
   approvalIncompleteStages = [],
@@ -147,12 +149,12 @@ export function ConsumerRepairRequestStickyActions({
     ? "Расчёт требует исправления"
     : approvalCommitBusy
     ? "Подтверждаем смету…"
-    : approvalBlockedByParameters
+    : approvalBlockedByParameters && approvalMissingObjectParameterCount !== 0
       ? "Укажите необходимые данные объекта"
       : approvalUnresolvedRowCount > 0
         ? allIncompleteStagesNeedApplication
           ? `Приложению нужно дополнить этапы: ${approvalIncompleteStages.length}`
-          : 'Смета пока не готова к подтверждению'
+          : approvalMissingObjectParameterCount === 0 ? 'Приложение ещё не рассчитало весь состав' : 'Смета пока не готова к подтверждению'
         : approvalPendingRowEditCount > 0
           ? `Сначала примените изменения: ${approvalPendingRowEditCount}`
         : "Сначала рассчитайте смету";
@@ -181,9 +183,9 @@ export function ConsumerRepairRequestStickyActions({
         <Text style={styles.approvalBlockedNoticeTitle}>{firstIncompleteStage
           ? approvalIncompleteStages.length===1 ? `Не завершён этап «${firstIncompleteStage.titleRu}»`
             : `Не завершены ${approvalIncompleteStages.length} этапов. Первый: «${firstIncompleteStage.titleRu}»`
-          : 'В смете есть позиции с неизвестными исходными данными'}</Text>
+          : approvalMissingObjectParameterCount === 0 ? 'Приложение ещё не рассчитало весь состав' : 'В смете есть позиции с неизвестными исходными данными'}</Text>
         <Text style={styles.approvalBlockedNoticeText}>{firstIncompleteStage ? incompleteReason
-          : 'В составе сметы показано, какие данные ещё нужны для расчёта.'}</Text>
+          : approvalMissingObjectParameterCount === 0 ? 'Нормы и коэффициенты вводить не требуется. Нерассчитанные позиции пока не входят в стоимость.' : 'В составе сметы показано, какие данные ещё нужны для расчёта.'}</Text>
       </View> : null}
       {hasBundle && (hasSnapshot || finalized) ? (
         <Pressable

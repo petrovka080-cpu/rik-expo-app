@@ -16,7 +16,7 @@ const publicItem=(item:{id:string;quantity:null;sourceParameters:Record<string,u
 test('application norms do not direct the customer to an inaccessible input', () => {
   const item={quantity:null,sourceParameters:{missingParameterRequirements:[norm]}};
   const before=JSON.stringify(item),notice=consumerRepairRowRequirementNotice(item);
-  expect(notice).toContain('Для расчёта нужен подтверждённый источник: Норма труда монтажа.');
+  expect(notice).toContain('Приложение пока не рассчитало эту позицию.');
   expect(notice).not.toContain('Заполните');expect(JSON.stringify(item)).toBe(before);
 });
 
@@ -36,9 +36,9 @@ test('unknown primer scope asks for a fact through the exact revision without ad
   expect(buildRequestEstimateSourceGates([publicItem(item)],tables)).toEqual([]);
   for(const unavailable of [undefined,{r2:{...tables.r2!,parameterSchemaHash:'other'}},
     {r2:{...tables.r2!,requirementsById:{[id]:{...requirement,guideShortRu:null}}}}]) {
-    expect(consumerRepairRowRequirementNotice(item,unavailable)).toContain('подтверждённый источник');
+    expect(consumerRepairRowRequirementNotice(item,unavailable)).toContain('Приложение пока не рассчитало');
     expect(consumerRepairRowHasSourceManagedQuantity(item,unavailable)).toBe(true);
-    expect(consumerRepairRowSourceManagedQuantityReason(item,unavailable)).toContain('технического источника');
+    expect(consumerRepairRowSourceManagedQuantityReason(item,unavailable)).toContain('вводить норму вручную не требуется');
     expect(buildRequestEstimateSourceGates([publicItem(item)],unavailable)).toHaveLength(1);
   }
   expect(JSON.stringify(item)).toBe(before);
@@ -68,7 +68,7 @@ test('readiness counts unpaid physical and included needs without demanding a se
 test('a different unresolved application norm retains its source gate even with an authored guide', () => {
   const item={id:'unknown-labour',quantity:null,sourceParameters:{canonicalPreliminaryNeed:true,
     missingParameterRequirements:[{...norm,guideShortRu:'Подтверждённая норма труда пока не найдена.'}]}};
-  expect(consumerRepairRowRequirementNotice(item)).toContain('подтверждённый источник');
+  expect(consumerRepairRowRequirementNotice(item)).toContain('Приложение пока не рассчитало');
   expect(buildRequestEstimateSourceGates([publicItem(item)])).toHaveLength(1);
   expect(consumerRepairRowHasSourceManagedQuantity(item)).toBe(true);
 });
@@ -77,7 +77,7 @@ test('mixed source and object requirements remain distinct and keep a known zero
   const notice=consumerRepairRowRequirementNotice({quantity:0,sourceParameters:{missingParameterRequirements:[norm,stock,norm]}});
   expect(notice).toContain('Количество 0 сохранено');
   expect(notice).toContain('Заполните в исходных данных: Доступно на объекте.');
-  expect(notice.match(/Норма труда монтажа/g)).toHaveLength(1);
+  expect(notice.match(/Приложение/g)).toHaveLength(1);
 });
 
 test('ordinary object facts retain the input instruction', () => {
@@ -90,7 +90,7 @@ test('the compact table resolves only the exact saved revision and preserves sou
   const tables:CanonicalParameterRequirementTables={r1:{...reference,requirementsById:{labor:norm}}};
   const item={quantity:10,sourceParameters:{canonicalParameterRequirementReference:reference,canonicalBackendRevisionId:'r1',
     canonicalBackendReleaseId:'release',missingParameterIds:['labor'],sourceManagedMissingParameterIds:['labor']}};
-  expect(consumerRepairRowRequirementNotice(item,tables)).toContain('источник: Норма труда монтажа.');
-  expect(consumerRepairRowRequirementNotice(item,{r1:{...tables.r1!,revisionId:'foreign'}})).toContain('источник: labor.');
+  expect(consumerRepairRowRequirementNotice(item,tables)).toContain('Приложение пока не рассчитало');
+  expect(consumerRepairRowRequirementNotice(item,{r1:{...tables.r1!,revisionId:'foreign'}})).toContain('Приложение пока не рассчитало');
   expect(consumerRepairRowRequirementNotice(item)).not.toContain('Заполните');
 });
