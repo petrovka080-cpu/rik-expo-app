@@ -24,8 +24,10 @@ export function overlayS2770Ct54RectangularProtection(parent:PurchaseGroupRepres
   }
   for(const p of shared.parameters){
     if(result.parameters.some(old=>old.parameter_id===p.parameter_id))throw Error('CT54_PROTECTION_PARAMETER_COLLISION');
-    result.parameters.push({...p,ordinal:result.parameters.length,truth_metadata:{...p.truth_metadata,semantic_parameter_key:target.catalogId+':'+p.parameter_id,
-      visible_when:p.parameter_id===ct54ProtectionChoiceIdS2770?ct54ReadyFacadeExactS2763:{kind:'and',operands:[ct54ReadyFacadeExactS2763,p.truth_metadata.visible_when]}}});
+    const visibility=p.truth_metadata.visibility_role==='INTERNAL_ONLY'?{}:{
+      visible_when:p.parameter_id===ct54ProtectionChoiceIdS2770?ct54ReadyFacadeExactS2763:{kind:'and',operands:[ct54ReadyFacadeExactS2763,p.truth_metadata.visible_when]},
+    };
+    result.parameters.push({...p,ordinal:result.parameters.length,truth_metadata:{...p.truth_metadata,semantic_parameter_key:target.catalogId+':'+p.parameter_id,...visibility}});
   }
   for(const f of shared.formulas){
     if(result.formulas.some(old=>old.formula_id===f.formula_id))throw Error('CT54_PROTECTION_FORMULA_COLLISION');

@@ -17,6 +17,23 @@ describe('CT54 source-specific rectangular protection',()=>{
     expect(pack.targets.every(t=>/^[0-9a-f]{64}$/.test(t.parentInputSha256))).toBe(true);
     expect(pack.fullTechnicalEstimateAccepted).toBe(false);
   });
+  test('preserves compiler ownership and internal visibility of both effective order outputs',()=>{
+    const internal=ct54RectangularProtectionDefinitionS2770().parameters.filter(p=>p.truth_metadata.visibility_role==='INTERNAL_ONLY');
+    expect(internal).toHaveLength(2);
+    for(const p of internal){
+      expect(p.truth_metadata.value_source_role).toBe('COMPILER_DERIVED_RESOURCE_QUANTITY');
+      expect(p.truth_metadata.effective_resource_quantity_v1).toBeDefined();
+      expect(p.truth_metadata.visible_when).toBeUndefined();
+    }
+  });
+  test('ignores forged incoming effective quantities and derives the order from the actual balance',async()=>{
+    const definition=ct54RectangularProtectionDefinitionS2770();
+    const output=definition.parameters.find(p=>p.truth_metadata.visibility_role==='INTERNAL_ONLY'&&p.parameter_id.endsWith('_film_order'))!;
+    expect(output).toBeDefined();
+    const r=await compile({...facts,[output.parameter_id]:'999'});
+    expect(quantity(r,'film-order')).toBe('1');
+    expect(r.derivedParameters[output.parameter_id]).toBe('1');
+  });
   test('derives film and three extra tape edges from actual cut envelopes without a second top tape or paid labour',async()=>{
     const r=await compile(facts);
     expect(quantity(r,'covered-area')).toBe('7.2');expect(quantity(r,'film-strip-area')).toBe('8.64');

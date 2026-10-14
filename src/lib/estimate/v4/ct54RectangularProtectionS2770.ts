@@ -62,7 +62,7 @@ export function ct54RectangularProtectionDefinitionS2770() {
     sourceMetadata:{source_title:pack.titleRu,source_document_version:'tesa2026 +4369 25/02/25',definition_hash:pack.sources.tesa2026.sha256,artifact_sha256:pack.sources.tesa2026.sha256,exact_locator:pack.sources.tesa2026.locator},
     applicabilityRu:pack.scopeRu,ordinary:[],profile:[],conditional,rows,deferMissingProjectFactsToRows:true,excludedUnownedAssumptions:pack.excludedRu});
   return {...built,
-    parameters:built.parameters.map(p=>({...p,truth_metadata:{...p.truth_metadata,source_confirmation_required:false,value_source_role:'PROJECT_SPECIFIC_INPUT',
+    parameters:built.parameters.map(p=>p.truth_metadata.visibility_role==='INTERNAL_ONLY'?p:({...p,truth_metadata:{...p.truth_metadata,source_confirmation_required:false,value_source_role:'PROJECT_SPECIFIC_INPUT',
       visible_when:p.parameter_id===ct54ProtectionChoiceIdS2770?{kind:'literal',value:true}:ct54ProtectionChoiceS2770,
       provenance:{...(p.truth_metadata.provenance&&typeof p.truth_metadata.provenance==='object'?p.truth_metadata.provenance:{}),consumer_input_role_v1:p.parameter_id.includes('_stock')||p.parameter_id.includes('_reserve')||p.parameter_id.includes('_supplier_multiple')?'ADVANCED_OPTION':[n,w,h].includes(p.parameter_id)?'OBJECT_GEOMETRY':'OBJECT_FACT'}}})),
     resources:built.resources.map(r=>{
