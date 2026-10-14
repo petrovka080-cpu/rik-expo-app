@@ -78,6 +78,10 @@ export function buildCt126SixDryWallSuccessorS2769(parent:PurchaseGroupRepresent
   result.baseline.uom_by_parameter[id]=p.unit_id;result.baseline.normative_source_ids[id]??=[];
   result.baseline.guide_provenance_ru[id]=p.truth_metadata.guide?.guide_short_ru??p.title_ru;
  }
+ for(const id of ['q','ct126_wall_layer_thickness_mm','ct126_wall_selected_ct126_bag'])
+  result.baseline.normative_source_ids[id]=[...new Set([...result.baseline.normative_source_ids[id],binding.contract+':manufacturer'])];
+ result.baseline.parameter_schema_sha256=canonicalEstimateSha256HexText(stringifyCanonicalEstimateJson(result.parameters.map(p=>({
+  parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata}))));
  result.passport.included_scope_ru=[...parent.passport.included_scope_ru,binding.scopeRu];
  result.passport.decision={...parent.passport.decision,ct126SixDryWallContract:binding.contract,completeTechnicalEstimateAccepted:false,
   historicalOwnersPreserved:59,selectedCt126SourceGaps:11,newPhysicalNormApplications:3,sourceScopeOnly:true};
