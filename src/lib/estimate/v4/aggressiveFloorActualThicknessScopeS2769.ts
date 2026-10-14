@@ -154,7 +154,8 @@ export function buildAggressiveFloorActualThicknessSuccessorS2769(parent:Purchas
   p.truth_metadata={...p.truth_metadata,contract:pack.contract,semantic_parameter_key:String(parent.definition.catalog_id)+':'+id,
    formula_consumers:consumers.formulaConsumers[id],resource_branch_consumers:consumers.resourceConsumers[id]};
   result.baseline.formula_consumer_ids[id]=consumers.formulaConsumers[id];result.baseline.resource_consumer_row_ids[id]=consumers.resourceConsumers[id];
-  result.baseline.uom_by_parameter[id]=p.unit_id;result.baseline.normative_source_ids[id]=[pack.contract+':krer46'];
+  result.baseline.uom_by_parameter[id]=p.unit_id;
+  result.baseline.normative_source_ids[id]=[...new Set(Object.values(parent.baseline.normative_source_ids).flat())];
   result.baseline.guide_provenance_ru[id]=p.truth_metadata.guide?.guide_short_ru??p.title_ru;
  }
  result.baseline.parameter_schema_sha256=sha(result.parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata})));
