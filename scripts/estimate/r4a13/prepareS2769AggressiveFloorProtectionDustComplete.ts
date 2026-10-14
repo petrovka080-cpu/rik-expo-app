@@ -142,7 +142,7 @@ async function main() {
       invariant(admitAggressiveFloorProtectionDustMigrationProofS2769({proof:migrationProof,fromDefinition:{id:String(parent.definition.id),catalogId,sha256:String(parent.definition.definition_sha256)},
         toDefinition:{id:definitionId,catalogId,sha256:definitionSha256},from:parent,to:plan})!=null,'FINAL_PLAN_MIGRATION_NOT_ADMITTED');
       invariant(hash(plan.parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata})))===plan.baseline.parameter_schema_sha256,'FINAL_PARAMETER_SCHEMA_DIGEST_DRIFT');
-      invariant(plan.passport.decision.aggressiveFloorActualThicknessContract === pack.contract && plan.passport.decision.completeTechnicalEstimateAccepted === false
+      invariant(plan.passport.decision.aggressiveFloorProtectionDustContract === pack.contract && plan.passport.decision.completeTechnicalEstimateAccepted === false
         && plan.passport.decision.quantityScope === "PARTIAL" && plan.passport.decision.newPhysicalNormSources === 1, "POSITIVE_SCOPE_FLAGS_LOST");
       plans.push(plan);
       transitions.push({ catalogId, predecessorDefinitionId: parent.definition.id, successorDefinitionId: definitionId,
