@@ -89,7 +89,7 @@ export function buildAggressiveFloorActualThicknessSuccessorS2769(parent:Purchas
  }
  result.formulas.push(...extras.formulas);
  for(const r of extras.resources){const gap=pack.sourceNeeds.find(g=>r.row_id===prefix+':'+g.id)!;
-  const content={...r,ordinal:result.resources.length,row_type:'work',semantic_owner:String(parent.definition.catalog_id)+':'+r.row_id,
+  const content={...r,ordinal:result.resources.length,row_type:'other',semantic_owner:String(parent.definition.catalog_id)+':'+r.row_id,
    source_metadata:{...r.source_metadata,normativeTrace:[],sourceRole:'UNRESOLVED_APPLICATION_NORM',
    requirementSourceSha256:pack.source.sha256,requirementLocator:gap.id==='adjacent-protection'?'КРЕР46 п.1.20, стр7':'КРЕР46 п.1.27, стр7',unresolvedReasonRu:gap.reasonRu}};
   result.resources.push({...content,row_sha256:estimateDeterministicHash(content)});
