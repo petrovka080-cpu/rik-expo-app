@@ -1,6 +1,7 @@
 import { consumerCanonicalApplicationScopeRequirementNotice, consumerCanonicalMissingRequirements, type CanonicalParameterRequirementTables } from "../../lib/consumerRequests/consumerCanonicalParameterRequirements";
 import type { CanonicalPublicResourcePresentationV1 } from '../../lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1';
 import { canonicalDerivedQuantityEditPolicyV1 } from '../../lib/estimate/backendPlatform/canonicalDerivedQuantityEditPolicyV1';
+import { canonicalPublicEstimateParameterTitleRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
 
 type ConsumerRepairRowMetadataCarrier = {
   id?: string;
@@ -111,7 +112,7 @@ export function consumerRepairRowMissingRequirementLabels(
   return [...new Set(requirements.flatMap((requirement) => {
     if (!requirement || typeof requirement !== "object" || Array.isArray(requirement)) return [];
     const source = requirement as Record<string, unknown>;
-    const label = text(source.titleRu || source.labelRu || source.parameterTitleRu || source.parameterId);
+    const label = canonicalPublicEstimateParameterTitleRu(text(source.parameterId),text(source.titleRu || source.labelRu || source.parameterTitleRu || source.parameterId));
     return label ? [label] : [];
   }))];
 }
@@ -127,7 +128,7 @@ export function consumerRepairRowRequirementNotice(
   for (const requirement of consumerCanonicalMissingRequirements(item, tables)) {
     const scope = consumerCanonicalApplicationScopeRequirementNotice(requirement);
     if (scope) { if (!scopes.includes(scope)) scopes.push(scope); continue; }
-    const label = text(requirement.titleRu || requirement.labelRu || requirement.parameterTitleRu || requirement.parameterId);
+    const label = canonicalPublicEstimateParameterTitleRu(text(requirement.parameterId),text(requirement.titleRu || requirement.labelRu || requirement.parameterTitleRu || requirement.parameterId));
     if (!label) continue;
     const sourceManaged = requirement.valueSourceRole === "UNRESOLVED_APPLICATION_NORM"
       || requirement.sourceConfirmationRequired === true;

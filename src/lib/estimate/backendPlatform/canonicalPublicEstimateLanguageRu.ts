@@ -1,4 +1,5 @@
 import publicBindings from '../../../../data/estimate-benchmarks/source-packs/public-estimate-language-s27-50.json';
+import aggressiveFloorFacts from '../../../../data/estimate-benchmarks/source-packs/aggressive-floor-actual-thickness-four-s27-69.json';
 
 /** Public wording only. Saved product/source identities and calculation inputs
  * remain unchanged. Brand recommendations are not enabled. */
@@ -27,6 +28,9 @@ export function canonicalPublicEstimateRequestTextRu(value: string): string {
 }
 
 export function canonicalPublicEstimateChoiceLabelRu(value: string): string {
+  if (value === aggressiveFloorFacts.workScopeValue) {
+    return 'Цементное или бетонное покрытие из кислото- или жароупорного бетона в агрессивной среде. Разборка отдельных мест пневмомеханизмами, спуск через окно в лотках, перемещение до 130 м, в том числе до 50 м от объекта.';
+  }
   const edited = value.replace('VELUX CFP Q 73FQV 100100 + ISD 100100 0010',
     'Неоткрывающееся окно с прозрачным куполом, проём 100 × 100 см');
   const result = canonicalPublicEstimateTextRu(edited);
@@ -34,6 +38,12 @@ export function canonicalPublicEstimateChoiceLabelRu(value: string): string {
 }
 
 export function canonicalPublicEstimateParameterTitleRu(parameterId: string, titleRu: string): string {
+  // Area is a separate object measurement. The legacy rate's base thickness
+  // does not describe the observed thickness entered in another field.
+  if (parameterId === 'floor_covering_area_m2'
+    && /^Площадь цементного или бетонного покрытия пола толщиной 25 мм(?:\s|$)/u.test(titleRu)) {
+    return titleRu.replace(' толщиной 25 мм', '');
+  }
   if (parameterId === 'lantern_model') return 'Исполнение окна';
   if (parameterId === 'lantern_count') return 'Количество одинаковых окон';
   return canonicalPublicEstimateTextRu(titleRu)
