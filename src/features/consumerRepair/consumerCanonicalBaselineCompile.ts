@@ -434,6 +434,10 @@ const DERIVED_QUANTITY_PARAMETER = /(?:^quantity_|^unit_price_|(?:^|_)(?:compact
 const DIRECT_USER_QUANTITY_SOURCE = new Set([
   "USER_MEASURED",
   "USER_OR_PROJECT_MEASURED",
+  // Existing-condition measurements can be supplied by the user as well as
+  // an approved survey. Keep explicit current-request quantities owned by
+  // the user; the visibility, unit and derived-quantity guards still apply.
+  "USER_OR_APPROVED_EXISTING_CONDITION_SURVEY",
   "USER_DECLARED",
   "USER_INPUT",
   "PROJECT_SPECIFIC_INPUT",
