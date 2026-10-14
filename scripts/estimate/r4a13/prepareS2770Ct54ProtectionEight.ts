@@ -107,7 +107,9 @@ async function main() {
     const locators:Record<string,string>={};
     for(const [kind,artifact] of Object.entries(pack.sources)){
       const sourceKey=pack.contract+':'+kind,sourceId=uuid(sourceKey+':'+artifact.sha256),locatorId=uuid(sourceKey+':locator:'+artifact.sha256),locatorKey=pack.contract+':'+kind;
-      const locatorPayload={contract:pack.contract,kind,facts:artifact,scopeRu:pack.scopeRu,geometryModel:pack.geometryModel,exclusionsRu:pack.excludedRu,manufacturerConsumptionRateNotClaimed:true,completeEstimateAccepted:false};
+      const locatorPayload={contract:pack.contract,kind,facts:artifact,
+        ...(kind==='tesa2026'?{supportingPrimarySources:pack.sources}:{}),
+        scopeRu:pack.scopeRu,geometryModel:pack.geometryModel,exclusionsRu:pack.excludedRu,manufacturerConsumptionRateNotClaimed:true,completeEstimateAccepted:false};
       const title=kind==='ct54'?'Ceresit CT54 C_CT54_TDS_1_0819: защита прилегающих элементов':kind==='tesa2026'?'tesa2026 стр23/24:4363/4369, размеры и ограничения':'tesa4369 25/02/25: двухнедельный срок снятия и пригодность для объекта';
       const official=artifact.url;
       await client.query('insert into public.estimate_normative_source(id,source_key,title_ru,authority,official_url,artifact_sha256,metadata) values($1,$2,$3,$4,$5,$6,$7::jsonb) on conflict(source_key) do nothing',
@@ -136,8 +138,11 @@ async function main() {
       }
       r.baseline.parameter_schema_sha256 = hash(r.parameters.map(p => ({ parameterId:p.parameter_id, unitId:p.unit_id,
         valueType:p.value_type, constraints:p.constraints_json, truth:p.truth_metadata })));
-      for(const rowId of overlay.addedRowIds)for(const kind of ['ct54','tesa4369'])r.bindings.push({row_id:rowId,locator_id:locators[kind],
-        applicability:{contract:CONTRACT,sourceKind:kind,scopeRu:pack.scopeRu,geometryModel:pack.geometryModel,fullTechnicalAcceptance:false}});
+      // The canonical publisher owns one normative binding per resource. Its
+      // composite locator retains all three registered primary-source facts.
+      for (const binding of r.bindings) if (overlay.addedRowIds.includes(binding.row_id)) {
+        binding.applicability = { ...binding.applicability, primarySourceLocatorIds: { ...locators } };
+      }
       const definitionId = uuid(`${fingerprint}:definition:${catalogId}`), baselineId = uuid(`${fingerprint}:baseline:${catalogId}`);
       const definitionSha256 = hash({ contract: CONTRACT, predecessorHash: parent.definition.definition_sha256,
         parameters: r.parameters, formulas: r.formulas, resources: r.resources });
