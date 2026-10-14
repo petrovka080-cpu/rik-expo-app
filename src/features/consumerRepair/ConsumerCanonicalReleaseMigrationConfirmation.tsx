@@ -25,7 +25,9 @@ export function ConsumerCanonicalReleaseMigrationConfirmation({
               ? `Сервер уже сохранил новую смету${prompt.recoveredMeasureRu ? `: ${prompt.recoveredMeasureRu}` : ""}. Откройте её перед следующей правкой. Новые введённые значения останутся в редакторе; они ещё не применены. Исходная версия останется в истории.`
               : clear
                 ? 'Расход скамей и креплений теперь задаётся объёмом работы: N скамей и 4N креплений. Выберите возврат всех перечисленных количеств к расчёту. Ручные цены, заказ и остальные правки сохранятся. Исходная версия останется в истории. Новые значения параметров останутся в редакторе для следующего применения.'
-                : "При пересчёте будут использованы актуальные нормы и состав работы. Проверьте количества, материалы и цены в новой смете. Исходная версия останется в истории."}
+                : prompt.preserveFloorPreparationComposition
+                  ? "Каталог обновится с сохранением прежнего состава подготовки. Новые ограждения и обеспыливание автоматически не добавятся. Это выбор состава, а не подтверждение выполненных работ. Исходная версия останется в истории."
+                  : "При пересчёте будут использованы актуальные нормы и состав работы. Проверьте количества, материалы и цены в новой смете. Исходная версия останется в истории."}
           </Text>
           {clear ? <ScrollView style={styles.clearRows}>
             {clear.rows.map(row => <Pressable key={row.rowId} accessibilityRole="checkbox"
@@ -41,7 +43,7 @@ export function ConsumerCanonicalReleaseMigrationConfirmation({
           </Text>
           <Pressable accessibilityRole="button" accessibilityState={{ disabled: !canConfirm }} disabled={!canConfirm} onPress={onConfirm}
             style={[styles.confirm, !canConfirm && styles.disabled]} testID="consumer-estimate-release-migration-confirm">
-            <Text style={styles.confirmText}>{prompt.recoveredRevisionId ? "Открыть сохранённый пересчёт" : clear ? 'Вернуть выбранные количества к расчёту' : "Пересчитать по актуальной версии"}</Text>
+            <Text style={styles.confirmText}>{prompt.recoveredRevisionId ? "Открыть сохранённый пересчёт" : clear ? 'Вернуть выбранные количества к расчёту' : prompt.preserveFloorPreparationComposition ? 'Обновить каталог и сохранить прежний состав' : "Пересчитать по актуальной версии"}</Text>
           </Pressable>
           <Pressable accessibilityRole="button" onPress={onCancel} style={styles.cancel} testID="consumer-estimate-release-migration-cancel">
             <Text style={styles.cancelText}>Оставить исходную смету</Text>

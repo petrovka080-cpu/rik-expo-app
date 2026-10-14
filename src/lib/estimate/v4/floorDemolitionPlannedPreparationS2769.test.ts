@@ -1,6 +1,6 @@
 import pack from '../../../../data/estimate-benchmarks/source-packs/floor-demolition-planned-preparation-thirteen-s27-69.json';
 import {buildFloorDemolitionPlannedPreparationS2769 as build,compileFloorDemolitionPlannedPreparationS2769 as compile} from './floorDemolitionPlannedPreparationS2769';
-import {floorPreparationFreshDefaultsS2769 as defaults,floorPreparationRuntimeDefaultsS2769 as runtime,floorPreparationEditingParametersS2769 as editing} from '../backendPlatform/canonicalFloorPreparationIntentS2769';
+import {floorPreparationFreshDefaultsS2769 as defaults,assertFloorPreparationRecalculationChoiceS2769 as choice,floorPreparationEditingParametersS2769 as editing} from '../backendPlatform/canonicalFloorPreparationIntentS2769';
 import {compileAutomaticConstructionOwnerR1,type AutomaticOwnerDefinition as Definition} from './automaticConstructionOwnerR1';
 import {canonicalApprovedBaselineRuntimeParameters as baseline} from '../backendPlatform/canonicalEstimateApprovedBaseline';
 import type {PurchaseGroupRepresentative as Model} from '../../../../scripts/estimate/r4a13/s2732PurchaseGroupOverlay';
@@ -38,10 +38,11 @@ test.each(frozen.models)('planned preparation completes quantities and preserves
 
 test.each(frozen.models)('old absence keeps exact historical quantities; no planned facts inferred: $definition.catalog_id',async parent=>{
  const input=facts(parent,false),next=build(parent),old=await oldCompile(parent,input);
- const safe=runtime({catalogId:String(parent.definition.catalog_id),baseline:baseline(next.baseline),parentParameters:input});
- const r=await compile(parent,input,safe);
- expect(safe[pack.modeId]).toBe(pack.legacyMode);
- expect(safe).not.toHaveProperty(pack.stages[0]!.id);expect(safe).not.toHaveProperty(pack.stages[1]!.id);
+ const approved=baseline(next.baseline),submitted={...input,[pack.modeId]:pack.legacyMode};
+ choice({catalogId:String(parent.definition.catalog_id),parentParameters:input,submittedParameters:submitted});
+ const r=await compile(parent,submitted,approved);
+ expect(approved[pack.modeId]).toBe(pack.plannedMode);
+ for(const stage of pack.stages)expect(approved[stage.id]).toBe(stage.planned);
  expect(r.rows.map(row=>[row.row_id,row.quantity,row.included_in_estimate,row.included_in_procurement])).toEqual(old.rows.map(row=>[row.row_id,row.quantity,row.included_in_estimate,row.included_in_procurement]));
  expect(r.preliminaryNeeds).toEqual(old.preliminaryNeeds);
  expect(editing(String(parent.definition.catalog_id),input)[pack.modeId]).toBe(pack.legacyMode);
@@ -75,11 +76,15 @@ test.each(['provided','covered','notRequired'] as const)('stage states remain di
  expect(r.preliminaryNeeds.filter(n=>scopeStatus(n)==='COMPLETED')).toHaveLength(2);
  expect(pack.stages.every(s=>r.parameters[s.id]===s[choice])).toBe(true);
 });
-test('fresh defaults are visible assumptions, old editing and runtime policies agree, unrelated work unchanged',()=>{
+test('fresh approved baseline remains intact; old absence requires explicit composition, not generic migration acknowledgment',()=>{
  const p=frozen.models[0]!,b=baseline(build(p).baseline);
  for(const [id,v] of Object.entries(defaults)){expect(b[id]).toBe(v);expect(build(p).baseline.input_classification[id]).toBe('ASSUMPTION');}
- expect(runtime({catalogId:String(p.definition.catalog_id),baseline:b,parentParameters:null})).toEqual(b);
- expect(runtime({catalogId:String(p.definition.catalog_id),baseline:b,parentParameters:{},submittedParameters:{[pack.modeId]:pack.plannedMode}})).toEqual(b);
- expect(runtime({catalogId:'other',baseline:b,parentParameters:{}})).toEqual(b);
+ const catalogId=String(p.definition.catalog_id);
+ expect(()=>choice({catalogId,parentParameters:{},submittedParameters:{}})).toThrow('Выберите состав');
+ for(const mode of [pack.plannedMode,pack.legacyMode]){
+  expect(()=>choice({catalogId,parentParameters:{},submittedParameters:{[pack.modeId]:mode}})).not.toThrow();
+  expect(()=>choice({catalogId,parentParameters:{[pack.modeId]:mode},submittedParameters:{floor_covering_area_m2:35.6}})).not.toThrow();
+ }
+ expect(()=>choice({catalogId:'other',parentParameters:{},submittedParameters:{}})).not.toThrow();
  const values={area:12};expect(editing('other',values)).toBe(values);
 });

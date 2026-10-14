@@ -835,11 +835,11 @@ export async function recalculateConsumerCanonicalEstimate(input: {
   compositionSelectionV1?: import('../../lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1').CanonicalEstimateCompositionSelectionV1|null;
 } & ConsumerCanonicalRecalculationConsent): Promise<{ mapping: ForemanAiEstimateDraftMapping; session: CanonicalParameterSession; recovered?: boolean; quantityPolicyTransition?: boolean }> {
   const revision = await getCanonicalEstimateRevision(input.revisionId);
-  const { catalog, releaseMigration, recoveredRevision, quantityClearPreview } = await resolveConsumerCanonicalRecalculationCatalog({ ...input, revision,
+  const { catalog, releaseMigration, recoveredRevision, quantityClearPreview, confirmedCompositionParameters } = await resolveConsumerCanonicalRecalculationCatalog({ ...input, revision,
     allowQuantityClearTransition: true, hasNewRowAmendments: Object.keys(input.rowOverrides ?? {}).length > 0||Object.hasOwn(input,'roofPrimerPrerequisiteV1')||Object.hasOwn(input,'compositionSelectionV1'), parameterPatchKeys: input.patches.map(patch => patch.paramKey),
     ...(Object.hasOwn(input,'compositionSelectionV1')&&input.patches.length===0&&Object.keys(input.rowOverrides??{}).length===0&&!Object.hasOwn(input,'roofPrimerPrerequisiteV1')
       ?{compositionOnlySelectionV1:input.compositionSelectionV1}:{}), });
-  const rawInputs: Record<string, unknown> = consumerCanonicalInheritedRecalculationInputs(revision, catalog);
+  const rawInputs: Record<string, unknown> = {...consumerCanonicalInheritedRecalculationInputs(revision, catalog),...confirmedCompositionParameters};
   if (!quantityClearPreview) for (const patch of input.patches) rawInputs[patch.paramKey] = patch.rawValue;
   const validation = validateCanonicalEstimateParameterInputs({ schema: catalog.parameterSchema, rawInputs });
   const blockingIssues = parameterIssuesBlockingConsumerCanonicalRecalculation({
@@ -1001,7 +1001,7 @@ export async function recalculateConsumerCanonicalCatalogSelection(input: {
   catalogItem: CatalogItemPickerItem;
 } & ConsumerCanonicalRecalculationConsent): Promise<ForemanAiEstimateDraftMapping> {
   const revision = await getCanonicalEstimateRevision(input.revisionId);
-  const [{ catalog, releaseMigration }, rows] = await Promise.all([
+  const [{ catalog, releaseMigration, confirmedCompositionParameters }, rows] = await Promise.all([
     resolveConsumerCanonicalRecalculationCatalog({ ...input, revision, hasNewRowAmendments: true }),
     getAllCanonicalEstimateRevisionRows({ revisionId: revision.revisionId }),
   ]);
@@ -1041,7 +1041,7 @@ export async function recalculateConsumerCanonicalCatalogSelection(input: {
   };
   const parameterValidation = validateCanonicalEstimateParameterInputs({
     schema: catalog.parameterSchema,
-    rawInputs: consumerCanonicalInheritedRecalculationInputs(revision, catalog),
+    rawInputs: {...consumerCanonicalInheritedRecalculationInputs(revision, catalog),...confirmedCompositionParameters},
   });
   if (blockingCanonicalParameterIssues(catalog, parameterValidation.issues).length > 0) {
     throw new CanonicalEstimateApiError("Товар не выбран: параметры родительской версии не прошли проверку.", {
@@ -1069,7 +1069,7 @@ export async function recalculateConsumerCanonicalCatalogSelection(input: {
         catalog,
         problemText: input.problemText,
       }),
-      parameters: (releaseMigration ? consumerCanonicalExplicitMigrationParameters(catalog, parameterValidation.parameters, consumerCanonicalInheritedRecalculationInputs(revision, catalog)) : consumerCanonicalExplicitAutomaticParameters(catalog, parameterValidation.parameters, consumerCanonicalInheritedRecalculationInputs(revision, catalog))) as Record<string, CanonicalEstimateParameterInputValue>,
+      parameters: (releaseMigration ? consumerCanonicalExplicitMigrationParameters(catalog, parameterValidation.parameters, {...consumerCanonicalInheritedRecalculationInputs(revision, catalog),...confirmedCompositionParameters}) : consumerCanonicalExplicitAutomaticParameters(catalog, parameterValidation.parameters, consumerCanonicalInheritedRecalculationInputs(revision, catalog))) as Record<string, CanonicalEstimateParameterInputValue>,
       currencyCode: revision.currencyCode,
       rowOverrides,
       customRows: revision.amendmentContract.customRows,
@@ -1111,7 +1111,7 @@ export async function recalculateConsumerCanonicalCatalogAddition(input: {
   catalogItem: CatalogItemPickerItem;
 } & ConsumerCanonicalRecalculationConsent): Promise<{ mapping: ForemanAiEstimateDraftMapping; rowId: string }> {
   const revision = await getCanonicalEstimateRevision(input.revisionId);
-  const { catalog, releaseMigration } = await resolveConsumerCanonicalRecalculationCatalog({ ...input, revision, hasNewRowAmendments: true });
+  const { catalog, releaseMigration, confirmedCompositionParameters } = await resolveConsumerCanonicalRecalculationCatalog({ ...input, revision, hasNewRowAmendments: true });
   const titleRu = input.catalogItem.name.trim();
   const unitId = input.catalogItem.unit.trim();
   if (!titleRu || !unitId) {
@@ -1131,7 +1131,7 @@ export async function recalculateConsumerCanonicalCatalogAddition(input: {
   }
   const parameterValidation = validateCanonicalEstimateParameterInputs({
     schema: catalog.parameterSchema,
-    rawInputs: consumerCanonicalInheritedRecalculationInputs(revision, catalog),
+    rawInputs: {...consumerCanonicalInheritedRecalculationInputs(revision, catalog),...confirmedCompositionParameters},
   });
   if (blockingCanonicalParameterIssues(catalog, parameterValidation.issues).length > 0) {
     throw new CanonicalEstimateApiError(
@@ -1174,7 +1174,7 @@ export async function recalculateConsumerCanonicalCatalogAddition(input: {
       parentRevisionId: revision.revisionId,
       organizationId: revision.organizationId ?? null,
       ...requestIdentityForRecalculation({ revision, catalog, problemText: input.problemText }),
-      parameters: (releaseMigration ? consumerCanonicalExplicitMigrationParameters(catalog, parameterValidation.parameters, consumerCanonicalInheritedRecalculationInputs(revision, catalog)) : consumerCanonicalExplicitAutomaticParameters(catalog, parameterValidation.parameters, consumerCanonicalInheritedRecalculationInputs(revision, catalog))) as Record<string, CanonicalEstimateParameterInputValue>,
+      parameters: (releaseMigration ? consumerCanonicalExplicitMigrationParameters(catalog, parameterValidation.parameters, {...consumerCanonicalInheritedRecalculationInputs(revision, catalog),...confirmedCompositionParameters}) : consumerCanonicalExplicitAutomaticParameters(catalog, parameterValidation.parameters, consumerCanonicalInheritedRecalculationInputs(revision, catalog))) as Record<string, CanonicalEstimateParameterInputValue>,
       currencyCode: revision.currencyCode,
       rowOverrides: revision.amendmentContract.rowOverrides,
       customRows: [...revision.amendmentContract.customRows, customRow],

@@ -7,17 +7,13 @@ export const floorPreparationFreshDefaultsS2769:Record<string,string>={
  [pack.barrierMethodId]:pack.barrierValue,[pack.dustMethodId]:pack.dustValue,
 };
 export function isFloorPreparationConsumerS2769(catalogId:string){return pack.targets.some(t=>t.catalogId===catalogId);}
-/** Absence in an old estimate is migration intent, never a construction fact.
- * A subsequent explicit composition choice can opt into the new planned work. */
-export function floorPreparationRuntimeDefaultsS2769(input:{catalogId:string;baseline:Json;parentParameters:Json|null;submittedParameters?:Json}):Json{
- if(!isFloorPreparationConsumerS2769(input.catalogId)||input.parentParameters==null)return {...input.baseline};
- if(input.submittedParameters?.[pack.modeId]===pack.plannedMode)return {...input.baseline};
- const mode=input.parentParameters[pack.modeId];
- if(mode===pack.plannedMode)return {...input.baseline};
- const r={...input.baseline};
- for(const id of Object.keys(floorPreparationFreshDefaultsS2769))delete r[id];
- r[pack.modeId]=mode??pack.legacyMode;
- return r;
+/** Approved defaults retain their origin. Old composition is a user choice,
+ * never a replacement baseline or a physical fact inferred from old absence. */
+export function assertFloorPreparationRecalculationChoiceS2769(input:{catalogId:string;parentParameters:Json;submittedParameters:Json}):void{
+ if(!isFloorPreparationConsumerS2769(input.catalogId)||Object.hasOwn(input.parentParameters,pack.modeId))return;
+ if(input.submittedParameters[pack.modeId]===pack.legacyMode||input.submittedParameters[pack.modeId]===pack.plannedMode)return;
+ throw Object.assign(new Error('Выберите состав подготовки при обновлении: сохранить прежний состав или включить подготовку по этой смете. Исходная смета сохранена.'),
+  {code:'FLOOR_PREPARATION_COMPOSITION_CHOICE_REQUIRED',httpStatus:409});
 }
 /** Display the same conservative transition as the server for a saved revision
  * that predates the new intent parameter. No physical input is invented. */

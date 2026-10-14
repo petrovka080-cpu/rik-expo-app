@@ -1,5 +1,5 @@
 import {admitFloorDemolitionPlannedPreparationMigrationProofS2769} from '../../../src/lib/estimate/backendPlatform/canonicalFloorDemolitionPlannedPreparationMigrationS2769';
-import {floorPreparationRuntimeDefaultsS2769,assertFloorPreparationIntentS2769,floorPreparationFreshDefaultsS2769} from '../../../src/lib/estimate/backendPlatform/canonicalFloorPreparationIntentS2769';
+import {assertFloorPreparationRecalculationChoiceS2769,assertFloorPreparationIntentS2769,isFloorPreparationConsumerS2769} from '../../../src/lib/estimate/backendPlatform/canonicalFloorPreparationIntentS2769';
 import {admitRoofScreed25StandaloneMigrationProofV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofScreed25StandaloneMigrationV1';
 import {admitStoneCubesWasteMigrationProofS2769} from '../../../src/lib/estimate/backendPlatform/canonicalStoneCubesWasteMigrationS2769';
 import {admitAsphaltFloorWasteMigrationProofS2769} from '../../../src/lib/estimate/backendPlatform/canonicalAsphaltFloorWasteMigrationS2769';
@@ -1825,6 +1825,15 @@ async function createJob(
           : null;
       const commandTargetReleaseId = compilationAdmission.decision.releaseId;
       if (!commandTargetReleaseId) throw Object.assign(new Error('Command target release is not admitted.'), { code: 'DEFINITION_CONTENT_NOT_ADMITTED' });
+      if(operation==='recalculate'&&isFloorPreparationConsumerS2769(catalogId)){
+        const target=(await client.query(`select source_metadata from public.estimate_definition_version where id=coalesce(
+          (select definition_version_id from public.estimate_cumulative_manifest_entry where catalog_id=$1 and release_id=$2 and baseline_ready and scenario_ready),
+          (select id from public.estimate_definition_version where catalog_id=$1 and release_id=$2))`,[catalogId,commandTargetReleaseId])).rows[0];
+        if(target?.source_metadata?.floorPlannedPreparationContract){
+          const parent=(await client.query('select input_parameters from public.estimate_revision where id=$1',[parentRevisionId])).rows[0];
+          assertFloorPreparationRecalculationChoiceS2769({catalogId,parentParameters:parent.input_parameters??{},submittedParameters:parameters as JsonRecord});
+        }
+      }
       const commandOrganizationId = TARGET_RELEASE_ID && compilationAdmission.targetReleaseStatus === 'prepared'
         ? currentTenantId() : organizationId;
       const quantityClear = quantityClearRequested ? await admitCanonicalFusionDerivedQuantityClearServerS2758(client, {
@@ -2423,7 +2432,7 @@ async function compileClaimedJob(
     input_values: definition.baseline_input_values,
     input_classification: definition.baseline_input_classification,
   };
-  let baselineParameters = canonicalApprovedBaselineRuntimeParameters(baselineRecord) as JsonRecord;
+  const baselineParameters = canonicalApprovedBaselineRuntimeParameters(baselineRecord) as JsonRecord;
   const submittedParameters = (payload.parameters ?? {}) as JsonRecord;
   let confirmedParameters: JsonRecord = { ...baselineParameters };
   let inheritedUserParameters: JsonRecord = {};
@@ -2458,14 +2467,7 @@ async function compileClaimedJob(
     parentRevision = parent;
   }
   if(definition.source_metadata?.floorPlannedPreparationContract && parentRevision){
-    const parentInputs=(parentRevision.input_parameters??{}) as JsonRecord;
-    const parentSources=((parentRevision.amendment_contract as JsonRecord|undefined)?.parameterSources??{}) as JsonRecord;
-    baselineParameters=floorPreparationRuntimeDefaultsS2769({catalogId:String(job.catalog_id),baseline:baselineParameters,parentParameters:parentInputs,submittedParameters});
-    // New visible defaults cannot become old project facts during a save.
-    const inherited=parentRevision.release_id===job.target_release_id?canonicalInheritedConfirmedParameters(parentInputs,
-      (parentSources.derivedParameters??{}) as JsonRecord):{};
-    for(const id of Object.keys(floorPreparationFreshDefaultsS2769))delete confirmedParameters[id];
-    confirmedParameters={...confirmedParameters,...baselineParameters,...inherited};
+    assertFloorPreparationRecalculationChoiceS2769({catalogId:String(job.catalog_id),parentParameters:(parentRevision.input_parameters??{}) as JsonRecord,submittedParameters});
   }
   let effectiveUserParameters = {
     ...inheritedUserParameters,

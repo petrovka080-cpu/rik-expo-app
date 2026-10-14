@@ -1,6 +1,7 @@
 import { getCanonicalEstimateCatalogItem, getCanonicalEstimateRevisionHistory, getCanonicalFusionQuantityClearPreviewS2758 } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
 import { canonicalEstimateStableJson as stable } from '../../lib/estimate/backendPlatform/canonicalEstimateDeterminism';
 import {canonicalStoredManualPricesCanMigrate} from '../../lib/estimate/backendPlatform/canonicalManualPriceReleaseMigration';
+import {floorPreparationIntentBindingS2769 as floorPreparation,isFloorPreparationConsumerS2769} from '../../lib/estimate/backendPlatform/canonicalFloorPreparationIntentS2769';
 import {canonicalCompositionSelectionCanMigrateWithBindingsV1,type CanonicalEstimateCompositionSelectionV1} from '../../lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1';
 import {
   CanonicalEstimateApiError,
@@ -26,6 +27,7 @@ export type ConsumerCanonicalReleaseMigrationPrompt = {
   recoveredRevisionId?: string;
   recoveredMeasureRu?: string;
   quantityClearPreview?: CanonicalFusionQuantityClearPreviewS2758;
+  preserveFloorPreparationComposition?: boolean;
 };
 
 export type ConsumerCanonicalRecalculationConsent = {
@@ -125,6 +127,7 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
   releaseMigration: CanonicalEstimateRecalculateRequest["releaseMigration"];
   recoveredRevision?: CanonicalEstimateRevisionView;
   quantityClearPreview?: CanonicalFusionQuantityClearPreviewS2758;
+  confirmedCompositionParameters?: Record<string,unknown>;
 }> {
   input.assertMutationSource?.();
   const catalog = await getCanonicalEstimateCatalogItem(input.revision.catalogId);
@@ -191,9 +194,15 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
     });
   }
   const transferable = consumerCanonicalMigrationUserParameters(parentCatalog, input.revision.userInputSnapshot);
+  const floorPreparationTransition=isFloorPreparationConsumerS2769(catalog.catalogId)
+    &&catalog.parameterSchema.some(schema=>schema.parameterId===floorPreparation.modeId)
+    &&!Object.hasOwn(input.revision.parameters,floorPreparation.modeId);
   for (const parameterId of new Set([...Object.keys(transferable), ...(quantityClearPreview ? [] : input.parameterPatchKeys ?? [])])) {
     const source = parentCatalog.parameterSchema.find(schema => schema.parameterId === parameterId);
     const destination = catalog.parameterSchema.find(schema => schema.parameterId === parameterId);
+    // This finite new composition choice has no predecessor physical field.
+    // It is validated by the target schema and never transfers a source rate.
+    if(floorPreparationTransition&&parameterId===floorPreparation.modeId&&destination)continue;
     // Tightening a numeric fact to an integer keeps its meaning and unit.
     // The target's shared validator still rejects fractions after consent;
     // this guard never converts or rounds an inherited or edited value.
@@ -239,6 +248,7 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
     toReleaseId: catalog.releaseId,
     fromDefinitionVersion: parentCatalog.definitionVersion,
     toDefinitionVersion: catalog.definitionVersion,
+    ...(floorPreparationTransition&&!input.parameterPatchKeys?.includes(floorPreparation.modeId)?{preserveFloorPreparationComposition:true}:{}),
     ...(quantityClearPreview ? { quantityClearPreview } : {}),
     ...(recoveredRevision ? {
       recoveredRevisionId: recoveredRevision.revisionId,
@@ -269,6 +279,8 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
     },
     ...(recoveredRevision ? { recoveredRevision } : {}),
     ...(quantityClearPreview ? { quantityClearPreview } : {}),
+    ...(floorPreparationTransition&&!input.parameterPatchKeys?.includes(floorPreparation.modeId)
+      ?{confirmedCompositionParameters:{[floorPreparation.modeId]:floorPreparation.legacyMode}}:{}),
   };
 }
 
