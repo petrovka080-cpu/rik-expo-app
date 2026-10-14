@@ -21,7 +21,7 @@ export function overlayS2769AggressiveFloorActualThicknessFour(parent:PurchaseGr
   unresolvedResourceRowIds:binding.sourceNeeds.map(g=>'f09:aggressive_environment_cement_or_concrete_floor_25mm_demolition:'+g.id),
   completeTechnicalEstimateAccepted:false};
  r.passport.capability_matrix=r.passport.capability_matrix.map((c:Record<string,unknown>)=>({...c,
-  ...(c.capability==='FULL_APPLICABLE_SCOPE'?{status:'NEEDS_SOURCE',unresolvedResourceRowIds:r.passport.decision.unresolvedResourceRowIds}:{})}));
+  ...(c.capability==='FULL_APPLICABLE_SCOPE'?{status:'NEEDS_SOURCE',preliminaryCompositionOnly:true,unresolvedResourceRowIds:r.passport.decision.unresolvedResourceRowIds}:{})}));
  return{representative:r,legacyRowIds:parent.resources.map(row=>row.row_id),addedRowIds:added.map(row=>row.row_id),
   addedParameterIds:r.parameters.filter(p=>!parent.parameters.some(old=>old.parameter_id===p.parameter_id)).map(p=>p.parameter_id),
   changedFormulaIds:r.formulas.filter(f=>parent.formulas.some(old=>old.formula_id===f.formula_id&&old.expression_source!==f.expression_source)).map(f=>f.formula_id),

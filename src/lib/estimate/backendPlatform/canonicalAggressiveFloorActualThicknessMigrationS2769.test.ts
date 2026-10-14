@@ -2,7 +2,7 @@ import {buildAggressiveFloorActualThicknessSuccessorS2769,aggressiveFloorActualT
 import {buildAggressiveFloorActualThicknessMigrationProofS2769 as proof,admitAggressiveFloorActualThicknessMigrationProofS2769 as admit} from './canonicalAggressiveFloorActualThicknessMigrationS2769';
 import {canonicalManualPriceMigrationBindings as prices,canonicalManualExclusionMigrationBindings as exclusions,canonicalStoredManualPricesCanMigrate} from './canonicalManualPriceReleaseMigration';
 import {canonicalCompositionOperationMigrationBindingsV1 as operations,canonicalCompositionSelectionCanMigrateWithBindingsV1 as selected} from './canonicalEstimateCompositionSelectionV1';
-import {createCanonicalDefinitionClonePlan} from '../../../../scripts/estimate/r4a13/canonicalDefinitionPublisherR1';
+import {createCanonicalDefinitionClonePlan,canonicalPublisherQuantityScopeIsConsistent} from '../../../../scripts/estimate/r4a13/canonicalDefinitionPublisherR1';
 import {overlayS2769AggressiveFloorActualThicknessFour} from '../../../../scripts/estimate/r4a13/s2769AggressiveFloorActualThicknessFourOverlay';
 import type {PurchaseGroupRepresentative} from '../../../../scripts/estimate/r4a13/s2732PurchaseGroupOverlay';
 import {estimateDeterministicHash as hash} from '../estimateDeterministicHash';
@@ -29,6 +29,7 @@ test.each([0,1,2,3])('admits the full four-type publisher model with generated S
  expect(plan.parameters).toHaveLength(19);expect(plan.resources).toHaveLength(10);
  expect(plan.passport.decision.unresolvedResourceRowIds).toHaveLength(2);
  expect(plan.parameters.every(p=>p.truth_metadata.contract===binding.contract)).toBe(true);
+ expect(canonicalPublisherQuantityScopeIsConsistent(plan)).toBe(true);
 });
 test.each([0,1,2,3])('keeps historical prices, exclusions and operation bindings restorable: %s',index=>{
  const i=input(index),admitted=admit({...i,proof:proof(i)});expect(admitted).not.toBeNull();
