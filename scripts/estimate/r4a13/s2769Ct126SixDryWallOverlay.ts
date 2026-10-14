@@ -13,9 +13,9 @@ export function overlayS2769Ct126SixDryWall(parent:PurchaseGroupRepresentative,l
  const oldOpen=(parent.passport.decision.unresolvedResourceRowIds??[]) as string[],ct126Open=unresolved.map(row=>row.row_id);
  r.passport.decision={...r.passport.decision,quantityScope:'PARTIAL',priceState:'PARTIAL_NEEDS_PRICE',technicalScopeStatus:'NEEDS_SOURCE',preliminaryCompositionOnly:true,
   unresolvedResourceRowIds:ct126Open,legacyUnresolvedResourceRowIds:oldOpen,ct126UnresolvedResourceRowIds:ct126Open,
-  materialSourceScopeOnly:true,legacyPreliminarySourcesRemainUnaccepted:true,
+  materialSourceScopeOnly:true,legacyPreliminarySourcesRemainUnaccepted:true,legacyCapabilityMatrix:parent.passport.capability_matrix,
   completeTechnicalEstimateAccepted:false,legacyScopeChangeNotCountedAsNormFilling:true};
- r.passport.capability_matrix=parent.passport.capability_matrix.map((capability:Record<string,unknown>)=>({...capability,
+ r.passport.capability_matrix=accepted.representative.passport.capability_matrix.map((capability:Record<string,unknown>)=>({...capability,
   ...(capability.capability==='FORMULAS_AND_PHYSICAL_PARITY'?{additionalScope:'CT126_READY_CT7_DRY_CEMENT_LIME_WALL_2_10MM'}:{}),
   ...(capability.capability==='FULL_APPLICABLE_SCOPE'?{status:'NEEDS_SOURCE',preliminaryCompositionOnly:true,unresolvedResourceRowIds:r.passport.decision.unresolvedResourceRowIds}:{}),
  }));
