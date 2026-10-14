@@ -1,0 +1,160 @@
+{
+  "contract": "rik-expo-app.s27-69.ct126-six-dry-wall-reuse.v1",
+  "predecessorReleaseId": "289e481c-ff8d-50da-8201-31c8b36a0f38",
+  "predecessorSearchReleaseId": "d388a8f5-a8db-512e-85f1-c313aee931b2",
+  "parentSnapshot": "data/estimate-benchmarks/fixtures/ct126-six-wall-v3-parents-s27-69.json",
+  "parentSnapshotSha256": "e36f143cc50f625abb7e3db26b9ebb881e293fb8328fcdb201a67253ef1ef119",
+  "acceptedProfileSnapshot": "data/estimate-benchmarks/fixtures/ct126-ready-wall-v2-s27-69.json",
+  "acceptedProfileSnapshotSha256": "42d5c7cf690abc1ff66230aa60c745ebfdd4b6b94e0ef07a18220c81f2ff3e52",
+  "sourcePack": "data/estimate-benchmarks/source-packs/ct126-dry-wall-s27-54.json",
+  "sourcePackSha256": "ba508d46b8e3e5146d541e929d6d5ef85a4228caf745e770af15caa39111edca",
+  "source": {
+    "officialUrl": "https://dm.henkel-dam.com/is/content/henkel/ceresit-ct126",
+    "localArtifact": ".release-runtime/r568/s27-54/ct126-dry-wall/CT-126.pdf",
+    "sha256": "2596b11461aabf10c458aeb9f7b2149b6b05b3428a731a8096c79d2f6e3c772a",
+    "edition": "C_CT126_TDS_1_0321",
+    "locatorRu": "Стр.1: сухое помещение, основание, CT7, слой2–10мм, нанесение; стр.2:1,2кг/м²/мм, вода1,8л/5кг и около7л/20кг, мешки5/20кг, шлифование и грунтование"
+  },
+  "acceptedReferenceCatalogId": "canonical-work:master:ct126_manual_dry_interior_ct7_ready_cement_lime_wall_2_10mm_standard",
+  "acceptedReferenceDefinitionId": "228589c3-108a-5499-bd4d-82c586e1427f",
+  "exactChoiceRu": "CT126 SUPER START: ручное выравнивание сухой внутренней стены 2–10 мм по принятой цементно-известковой штукатурке с выполненным CT7",
+  "scopeRu": "Ручное нанесение одного слоя CT126 2–10мм на готовую сухую прочную цементно-известковую штукатурку старше28суток, влажность не выше4%, уже подготовленную Ceresit CT7. Внутренняя стена сухого помещения без постоянной высокой влажности. Одна выбранная фасовка5или20кг; весь мешок затворяется чистой прохладной водой по собственному рецепту. План целых последовательных замесов подтверждается отдельно от заказа. После полного высыхания обязательны шлифование, обеспыливание и грунтование всей поверхности; конкретный последующий грунт и его расход требуют совместимой системы.",
+  "excludedWetZone": true,
+  "sourceNeeds": [
+    {
+      "id": "labor",
+      "operation": "application",
+      "category": "labor",
+      "nameRu": "Труд по затворению, нанесению, разглаживанию, шлифованию и заключительному грунтованию CT126",
+      "unitId": "man_hour",
+      "reasonRu": "Один открытый владелец труда перечисленных этапов; обеспыливание раскрыто у услуги уборки без повторной оплаты. Технология опубликована, часы не опубликованы. Выдержка3–5мин и жизнеспособность40–60мин не нормы труда."
+    },
+    {
+      "id": "mixer",
+      "operation": "mixing",
+      "category": "equipment",
+      "nameRu": "Электрическая дрель с насадкой-миксером для CT126",
+      "unitId": "machine_hour",
+      "reasonRu": "Тип инструмента опубликован; модель, часы и обеспечение исполнителем требуют источника."
+    },
+    {
+      "id": "stainless-float",
+      "operation": "application",
+      "category": "equipment",
+      "nameRu": "Широкий полутерок из нержавеющей стали для CT126",
+      "unitId": "item",
+      "reasonRu": "Материал и назначение названы; ширина, количество и обеспечение исполнителем не установлены."
+    },
+    {
+      "id": "sandpaper-mesh",
+      "operation": "sanding",
+      "category": "material",
+      "nameRu": "Шлифовальная бумага или сетка для высохшей CT126 — одно выбранное исполнение",
+      "unitId": "m2",
+      "reasonRu": "Источник допускает бумагу или сетку; зернистость, количество и износ не опубликованы. Альтернативы вместе не закупаются."
+    },
+    {
+      "id": "sanding-tool",
+      "operation": "sanding",
+      "category": "equipment",
+      "nameRu": "Шлифовальная машина типа «жираф» для высохшей CT126",
+      "unitId": "machine_hour",
+      "reasonRu": "Тип инструмента указан; модель и часы не опубликованы. Ручная замена требует отдельного подтверждения."
+    },
+    {
+      "id": "post-primer",
+      "operation": "post-priming",
+      "category": "material",
+      "nameRu": "Грунтовка всей высохшей и обеспыленной CT126 — изделие и расход требуют совместимой системы",
+      "unitId": "l",
+      "reasonRu": "После шлифования TDS требует грунтование всей поверхности, но не называет изделие или расход. CT7 подготовки основания сюда автоматически не переносится."
+    },
+    {
+      "id": "post-primer-tools",
+      "operation": "post-priming",
+      "category": "equipment",
+      "nameRu": "Инструмент нанесения выбранной грунтовки поверх CT126",
+      "unitId": "item",
+      "reasonRu": "Определяется паспортом подтверждённой грунтовки; исполнение и количество пока не установлены."
+    },
+    {
+      "id": "water-cleaning",
+      "operation": "completion",
+      "category": "material",
+      "nameRu": "Чистая вода очистки инструмента после CT126",
+      "unitId": "l",
+      "reasonRu": "Расход очистки не опубликован; рецепты затворения не определяют уборку."
+    },
+    {
+      "id": "acceptance",
+      "operation": "acceptance",
+      "category": "service",
+      "nameRu": "Контроль толщины, высыхания и качества поверхности CT126",
+      "unitId": "item",
+      "reasonRu": "Около24ч для5мм при20°C/RH60% — ориентир, не универсальный срок. Число проверок и состав приёмки требуют проекта."
+    },
+    {
+      "id": "access-protection",
+      "operation": "protection",
+      "category": "service",
+      "nameRu": "Доступ к высоте стены, защита глаз, кожи и зоны шлифования CT126",
+      "unitId": "item",
+      "reasonRu": "Нужны фактические высота и условия пылевых работ; СИЗ и доступ учитываются у одного владельца цены."
+    },
+    {
+      "id": "logistics-cleanup",
+      "operation": "completion",
+      "category": "service",
+      "nameRu": "Доставка CT126, разгрузка, обеспыливание, уборка и передача упаковки/остатков",
+      "unitId": "item",
+      "reasonRu": "Границы услуги, масса и вывоз по факту; без второй оплаты включённого инструмента и работ."
+    }
+  ],
+  "physicalNormOwnerRowIds": [
+    "putty:ct126-dry-wall:net-mixture",
+    "putty:ct126-dry-wall:5kg-mix-water-consumed",
+    "putty:ct126-dry-wall:20kg-mix-water-consumed"
+  ],
+  "quantityScope": "PARTIAL",
+  "completeTechnicalEstimateAccepted": false,
+  "newOfficialNorms": 0,
+  "newPhysicalNormApplications": 18,
+  "targets": [
+    {
+      "catalogId": "canonical-work:base:plaster_paint_interior_wall_putty_level_large_area",
+      "predecessorDefinitionId": "46e2b70f-e470-5f5d-8667-792f51d326d7",
+      "parentSha256": "814df179ab37fcc8db3b7319c22ad0bde37f0b74323345586338b3d4ab7a033e",
+      "parentVersion": 3
+    },
+    {
+      "catalogId": "canonical-work:base:plaster_paint_interior_wall_putty_level_small_area",
+      "predecessorDefinitionId": "299baf92-fc9b-5f87-af57-31a03b406736",
+      "parentSha256": "80a1a96a567196b743a3af7ed2017728baa29388db2c3553b8540120fa18dae3",
+      "parentVersion": 3
+    },
+    {
+      "catalogId": "canonical-work:base:plaster_paint_interior_wall_putty_level_standard",
+      "predecessorDefinitionId": "1072b44e-c2d3-54e0-b33d-5dd76a0fae6b",
+      "parentSha256": "14708a136f83954c8044062e4a5a0cf893ccc2eb1e4af80df3be35502d23f87c",
+      "parentVersion": 3
+    },
+    {
+      "catalogId": "canonical-work:base:plaster_paint_interior_wall_putty_level_technical_room",
+      "predecessorDefinitionId": "acfe0a8f-8bb5-5bf9-bb77-25053808370b",
+      "parentSha256": "56a5c1d6f26bd1e7081b8b9529a80785db426564930235ca2bfabe48af2af5a3",
+      "parentVersion": 3
+    },
+    {
+      "catalogId": "canonical-work:base:plaster_paint_interior_wall_putty_level_repair",
+      "predecessorDefinitionId": "8dda04a7-6954-58c6-9ef8-0ae7ba53fb86",
+      "parentSha256": "930f15841701159bd24b10bb18d0f67bb89961b4f1acd4f4f2613d2d480f9f56",
+      "parentVersion": 3
+    },
+    {
+      "catalogId": "canonical-work:base:plaster_paint_interior_wall_putty_level_high_load",
+      "predecessorDefinitionId": "6b1c9c98-f497-5ab6-9798-c889c3d4f003",
+      "parentSha256": "b12c703eaab61355875a6bed4a9d86d619a8f10fa4a6f7a5444126ab8beccd9e",
+      "parentVersion": 3
+    }
+  ]
+}
