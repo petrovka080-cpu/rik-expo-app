@@ -1,5 +1,6 @@
 import publicBindings from '../../../../data/estimate-benchmarks/source-packs/public-estimate-language-s27-50.json';
 import aggressiveFloorFacts from '../../../../data/estimate-benchmarks/source-packs/aggressive-floor-actual-thickness-four-s27-69.json';
+import concreteBaseFacts from '../../../../data/estimate-benchmarks/source-packs/concrete-floor-base-demolition-s27-54.json';
 
 /** Public wording only. Saved product/source identities and calculation inputs
  * remain unchanged. Brand recommendations are not enabled. */
@@ -28,6 +29,11 @@ export function canonicalPublicEstimateRequestTextRu(value: string): string {
 }
 
 export function canonicalPublicEstimateChoiceLabelRu(value: string): string {
+  if(value===concreteBaseFacts.conditionsValue){
+    return 'Разбираются отдельные участки бетонного основания пневматическим инструментом. Объём измерен; спуск через окно в лотках и перемещение до 130 м, в том числе до 50 м от объекта.';
+  }
+  const concreteBase=concreteBaseFacts.types.find(type=>type.materialRu===value);
+  if(concreteBase)return concreteBase.materialRu.replace(/ по46-04-009-0[12]$/u,'');
   if (value === aggressiveFloorFacts.workScopeValue) {
     return 'Цементное или бетонное покрытие из кислото- или жароупорного бетона в агрессивной среде. Разборка отдельных мест пневмомеханизмами, спуск через окно в лотках, перемещение до 130 м, в том числе до 50 м от объекта.';
   }

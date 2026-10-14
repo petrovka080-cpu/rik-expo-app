@@ -1,4 +1,5 @@
 import {admitFloorDemolitionPlannedPreparationMigrationProofS2769} from '../../../src/lib/estimate/backendPlatform/canonicalFloorDemolitionPlannedPreparationMigrationS2769';
+import {admitConcreteBasePlannedPreparationMigrationProofS2769} from '../../../src/lib/estimate/backendPlatform/canonicalConcreteBasePlannedPreparationMigrationS2769';
 import {assertFloorPreparationRecalculationChoiceS2769,assertFloorPreparationIntentS2769,isFloorPreparationConsumerS2769} from '../../../src/lib/estimate/backendPlatform/canonicalFloorPreparationIntentS2769';
 import {admitRoofScreed25StandaloneMigrationProofV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofScreed25StandaloneMigrationV1';
 import {admitStoneCubesWasteMigrationProofS2769} from '../../../src/lib/estimate/backendPlatform/canonicalStoneCubesWasteMigrationS2769';
@@ -164,12 +165,13 @@ async function localManualAmendmentMigrationBindings(client: PoolClient, definit
     if(admitted)predecessorBindings={manualMigrationPredecessorV1:{definitionId:fromId,priceBindings:canonicalManualPriceMigrationBindings(admitted.normalizedTo),
       exclusionBindings:canonicalManualExclusionMigrationBindings(admitted.normalizedTo),operationBindings:canonicalCompositionOperationMigrationBindingsV1(admitted.normalizedTo),compositionSelectionIdsPreservedV1:true}};
   }
-  const floorPlannedProof=definition?.source_metadata?.floorDemolitionPlannedPreparationMigrationS2769;
+  const floorPlannedProof=definition?.source_metadata?.concreteBasePlannedPreparationMigrationS2769??definition?.source_metadata?.floorDemolitionPlannedPreparationMigrationS2769;
   if(floorPlannedProof?.fromDefinitionId&&/^[0-9a-f-]{36}$/iu.test(String(floorPlannedProof.fromDefinitionId))){
     const fromId=String(floorPlannedProof.fromDefinitionId),[oldDef,oldResources,oldFormulas,oldParameters]=await Promise.all([
       client.query('select * from public.estimate_definition_version where id=$1',[fromId]),client.query('select * from public.estimate_resource_spec where definition_version_id=$1',[fromId]),
       client.query('select * from public.estimate_formula_graph where definition_version_id=$1',[fromId]),client.query('select * from public.estimate_parameter_definition where definition_version_id=$1',[fromId])]);
-    const before=oldDef.rows[0],admitted=before?admitFloorDemolitionPlannedPreparationMigrationProofS2769({proof:floorPlannedProof,
+    const admitFloorProof=definition?.source_metadata?.concreteBasePlannedPreparationMigrationS2769?admitConcreteBasePlannedPreparationMigrationProofS2769:admitFloorDemolitionPlannedPreparationMigrationProofS2769;
+    const before=oldDef.rows[0],admitted=before?admitFloorProof({proof:floorPlannedProof,
       fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},
       from:{resources:oldResources.rows,formulas:oldFormulas.rows,parameters:oldParameters.rows},to:input}):null;
     if(admitted)predecessorBindings={manualMigrationPredecessorV1:{definitionId:fromId,priceBindings:canonicalManualPriceMigrationBindings(admitted.normalizedTo),
@@ -2559,7 +2561,8 @@ async function compileClaimedJob(
       fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},from:fromModel,to:toModel}):null;
     const aggressiveCompleteAdmitted=before?admitAggressiveFloorProtectionDustMigrationProofS2769({proof:definition.source_metadata?.aggressiveFloorProtectionDustMigrationS2769,
       fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},from:fromModel,to:toModel}):null;
-    const floorPlannedAdmitted=before?admitFloorDemolitionPlannedPreparationMigrationProofS2769({proof:definition.source_metadata?.floorDemolitionPlannedPreparationMigrationS2769,
+    const admitFloorProof=definition.source_metadata?.concreteBasePlannedPreparationMigrationS2769?admitConcreteBasePlannedPreparationMigrationProofS2769:admitFloorDemolitionPlannedPreparationMigrationProofS2769;
+    const floorPlannedAdmitted=before?admitFloorProof({proof:definition.source_metadata?.concreteBasePlannedPreparationMigrationS2769??definition.source_metadata?.floorDemolitionPlannedPreparationMigrationS2769,
       fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},from:fromModel,to:toModel}):null;
     const admitted=before?admitRoofPreparationMigrationProofV1({proof:definition.source_metadata?.roofPreparationMigrationV1,
       fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},

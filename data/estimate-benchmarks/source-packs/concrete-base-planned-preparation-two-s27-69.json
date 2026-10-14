@@ -1,0 +1,134 @@
+{
+  "contract": "rik-expo-app.s27-69.concrete-base-planned-preparation-two.v1",
+  "parentSnapshot": "data/estimate-benchmarks/fixtures/concrete-base-two-parents-s27-69.json",
+  "parentSnapshotSha256": "d794cbc4abf1e5c68250f060f6592b49615ba55547edc6916a16e8ecc8b9e699",
+  "acceptedBarrierFixture": "data/estimate-benchmarks/fixtures/aggressive-floor-four-v4-parents-and-barrier-s27-69.json",
+  "acceptedBarrierFixtureSha256": "1b5a4225c9cbf96f78aee950e4eb4e595a97b20ae61b49f5861c0d9e00146890",
+  "barrierReference": {
+    "catalogId": "canonical-work:master:temporary_vertical_protective_barrier_board_frame_standard",
+    "definitionId": "58440645-124d-5cc1-a360-eb87a7979525",
+    "definitionSha256": "f4935b4df78e6ffd0d284e330bb9e46a4a59374795f5feba4fad4de42708d64f",
+    "source": {
+      "officialUrl": "https://minstroy.gov.kg/ru/kyzmat/459/show",
+      "localArtifact": ".release-runtime/r568/s27-3/f09-next-current-lineage/official-snapshots/krer_46_2015.pdf",
+      "sha256": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+      "edition": "КРЕР46-2015, введён с01.01.2016",
+      "printedAndPdfPages": [
+        5,
+        62,
+        63
+      ],
+      "table": "46-05-001",
+      "columns": [
+        "46-05-001-03"
+      ],
+      "basisM2": 100
+    },
+    "norm": "46-05-001-03",
+    "basisM2": 100,
+    "locatorRu": "КРЕР46, стр62 состав и измеритель, стр63 колонка03; устройство и разборка вертикального деревянного ограждения с одним слоем толя"
+  },
+  "dustSource": {
+    "sourceId": "kg_krer_13_2015_corrosion_official",
+    "officialUrl": "https://minstroy.gov.kg/ru/kyzmat/429/show",
+    "downloadUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no13zasitastroitelnyhkonstrukcijioborudovaniaotkorrozii_compressed-1366908360a6e7f78.57138504.pdf",
+    "localArtifact": ".release-runtime/r568/s27-69/aggressive-floor-full-sources/krer13-official-2015.pdf",
+    "sha256": "1b817ee6c8103d57132d40db40427ba4cafb937704e778b0708028b1e11a7a36",
+    "edition": "КРЕР13-2015",
+    "norm": "13-06-004-01",
+    "basisM2": 1,
+    "locatorRu": "Печатная/PDFстр61: измеритель м², труд000-1003-0=0,1чел.-ч/м²; пылесос33-0620=0,10маш.-ч/м². КРЕР46 п1.27 стр7 отсылает к сборнику13.",
+    "workers": {
+      "resourceCode": "000-1003-0",
+      "grade": "3,0",
+      "hoursPerM2": 0.1
+    },
+    "vacuum": {
+      "resourceCode": "33-0620",
+      "titleRu": "Пылесос промышленный",
+      "hoursPerM2": 0.1
+    },
+    "inspectedPages": [
+      5,
+      6,
+      7,
+      61
+    ],
+    "oldBasePricesNotUsed": true,
+    "filtersOrWaterNotInvented": true,
+    "qualityControlIncluded": true
+  },
+  "scopeRu": "Разборка только принятого бетонного основания на гравии или кирпичном щебне по46-04-009-01/-02, в отдельных местах ручными пневматическими механизмами. Объём бетона в м³ подтверждается обследованием. Для выбранной здесь подготовки отдельно измеряются вся поверхность обеспыливания в м² и вертикальное ограждение в м²: эти площади не выводятся из м³. Полная конструкция ограждения включает установку и последующую разборку. Обеспыливание промышленным пылесосом и контроль качества по13-06-004-01; обычные условия с электроснабжением, освещением и вентиляцией. Сыпучая подушка, железобетонная плита, другой способ разборки, иная конструкция защиты или метод обеспыливания не получают эти нормы. Включённые машинист компрессора, уборка/перемещения и сортировка не оплачиваются повторно. Отдельные работы с отходами по фактическим массе, маршруту и услуге.",
+  "modeId": "floor_demolition_preparation_composition",
+  "plannedMode": "Состав подготовки выбран для этой сметы; этапы и владельцы стоимости указаны ниже",
+  "legacyMode": "Сохранить прежний состав подготовки; новые этапы автоматически не добавлять",
+  "oldWoodConditions": "Обычные условия реконструкции; снимается только указанное покрытие; подготовка обеспечена; включённые перемещения соответствуют КРЕР",
+  "plannedWoodConditions": "Обычные условия реконструкции; снимается только указанное покрытие; подготовка определяется выбранным составом этой сметы; включены уборка и перемещения до 130 м, в том числе до 50 м от объекта, спуск через окно в лотках",
+  "conditionsId": "floor_demolition_preparation_working_conditions",
+  "conditionsValue": "Работа выполняется с уровня пола в обычных условиях; к началу этапа имеются электроснабжение, освещение и вентиляция; специальные временные системы не требуются",
+  "barrierAreaId": "floor_demolition_protection_vertical_area_m2",
+  "barrierMethodId": "floor_demolition_protection_method",
+  "dustMethodId": "floor_demolition_dedusting_method",
+  "barrierValue": "Вертикальное ограждение: деревянный каркас, доски и один слой толя; устройство и последующая разборка",
+  "otherBarrierValue": "Другая конструкция защиты: нужен отдельный расчёт приложения",
+  "dustValue": "Обеспыливание всей площади после демонтажа промышленным пылесосом",
+  "otherDustValue": "Другой способ обеспыливания: нужен отдельный расчёт приложения",
+  "stages": [
+    {
+      "key": "protection",
+      "id": "floor_demolition_protection_stage",
+      "evidenceId": "floor_demolition_protection_basis",
+      "titleRu": "Защита прилегающих частей",
+      "planned": "Выполнить установку и последующую разборку защиты в этой смете",
+      "provided": "Установка и разборка защиты для этого участка уже полностью выполнены и приняты; повторная оплата не нужна",
+      "covered": "Защита учтена другой сметой или подработой; указан отдельный владелец стоимости",
+      "notRequired": "По условиям участка защита прилегающих частей не требуется"
+    },
+    {
+      "key": "dedusting",
+      "id": "floor_demolition_dedusting_stage",
+      "evidenceId": "floor_demolition_dedusting_basis",
+      "titleRu": "Обеспыливание после демонтажа",
+      "planned": "Выполнить обеспыливание после демонтажа в этой смете",
+      "provided": "Обеспыливание этого этапа уже выполнено и принято; повторная оплата не нужна",
+      "covered": "Обеспыливание этого этапа учтено другой сметой или подработой; указан отдельный владелец стоимости",
+      "notRequired": "По условиям участка обеспыливание этого этапа не требуется"
+    }
+  ],
+  "targets": [
+    {
+      "catalogId": "canonical-work:master:demolition_concrete_floor_base_gravel_460400901_standard",
+      "predecessorDefinitionId": "492a6b3a-a441-56e6-b11b-41bfd8acafd7",
+      "parentSha256": "08433635bfc814641b3be07682e89e6371c33e718c05cd696c193ac48989442f",
+      "predecessorVersion": 1,
+      "parameterCount": 16,
+      "resourceCount": 14,
+      "scopeParameterIds": [
+        "existing_covering_confirmed",
+        "object_conditions",
+        "base_volume_reference"
+      ]
+    },
+    {
+      "catalogId": "canonical-work:master:demolition_concrete_floor_base_brick_rubble_460400902_standard",
+      "predecessorDefinitionId": "043c18ee-9ef3-5058-b138-d1ebaa22b684",
+      "parentSha256": "da5fb092e54cab2b1cda7f1932c3de1fafbc5f932fecbc6479724337e64c180e",
+      "predecessorVersion": 1,
+      "parameterCount": 16,
+      "resourceCount": 14,
+      "scopeParameterIds": [
+        "existing_covering_confirmed",
+        "object_conditions",
+        "base_volume_reference"
+      ]
+    }
+  ],
+  "newPhysicalNormSources": 0,
+  "reusedNumericalNormApplications": 22,
+  "newDistinctCatalogTypes": 0,
+  "legacyAbsenceMeansKeepComposition": true,
+  "productionAccepted": false,
+  "predecessorReleaseId": "636e5b03-a21b-5c52-8342-0012ed523a88",
+  "predecessorSearchReleaseId": "971545d7-5e24-523f-8149-5c5ab3c80cb4",
+  "dustAreaId": "concrete_base_dedusting_area_m2"
+}
