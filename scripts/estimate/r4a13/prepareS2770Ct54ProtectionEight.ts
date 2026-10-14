@@ -127,6 +127,15 @@ async function main() {
       const frozenParent = frozen.parents.find((r: Json) => r.definition.catalog_id === catalogId);
       invariant(frozenParent && hash(parent) === hash(frozenParent), `PARENT_SNAPSHOT_DRIFT:${catalogId}`);
       const overlay=overlayS2770Ct54RectangularProtection(parent,locators.tesa2026),r=overlay.representative;
+      // A cloned parameter belongs to this publication contract. Retain the
+      // inherited contract separately; the frozen parent itself is untouched.
+      for (const parameter of r.parameters) {
+        parameter.truth_metadata = { ...parameter.truth_metadata,
+          ...(parameter.truth_metadata.contract !== CONTRACT ? { clonedFromContract: parameter.truth_metadata.contract } : {}),
+          contract: CONTRACT, semantic_parameter_key: `${catalogId}:${parameter.parameter_id}` };
+      }
+      r.baseline.parameter_schema_sha256 = hash(r.parameters.map(p => ({ parameterId:p.parameter_id, unitId:p.unit_id,
+        valueType:p.value_type, constraints:p.constraints_json, truth:p.truth_metadata })));
       for(const rowId of overlay.addedRowIds)for(const kind of ['ct54','tesa4369'])r.bindings.push({row_id:rowId,locator_id:locators[kind],
         applicability:{contract:CONTRACT,sourceKind:kind,scopeRu:pack.scopeRu,geometryModel:pack.geometryModel,fullTechnicalAcceptance:false}});
       const definitionId = uuid(`${fingerprint}:definition:${catalogId}`), baselineId = uuid(`${fingerprint}:baseline:${catalogId}`);
