@@ -6,10 +6,10 @@ export function overlayS2769Ct126SixDryWall(parent:PurchaseGroupRepresentative,l
  const unresolved=added.filter(row=>String(row.source_metadata.sourceRole).startsWith('UNRESOLVED_')
   ||row.source_metadata.sourceRole==='CANDIDATE_PRODUCT_WITH_UNRESOLVED_APPLICABILITY_AND_QUANTITY');
  if(added.length!==30||unresolved.length!==11)throw Error('CT126_THIRTY_ROWS_ELEVEN_SOURCE_GAPS_REQUIRED');
- r.bindings.push(...accepted.representative.bindings.map(b=>({...b,applicability:{...b.applicability,contract:binding.contract,
+ r.bindings.push(...accepted.representative.bindings.map(b=>({...b,
+  locator_id:locatorId&&binding.physicalNormOwnerRowIds.includes(b.row_id)?locatorId:b.locator_id,
+  applicability:{...b.applicability,contract:binding.contract,
   exactBranch:exact,scopeRu:binding.scopeRu,acceptedReferenceDefinitionId:binding.acceptedReferenceDefinitionId,completeTechnicalAcceptance:false}})));
- if(locatorId)for(const rowId of binding.physicalNormOwnerRowIds)r.bindings.push({row_id:rowId,locator_id:locatorId,
-  applicability:{contract:binding.contract,exactBranch:exact,scopeRu:binding.scopeRu,fullTechnicalAcceptance:false}});
  const oldOpen=(parent.passport.decision.unresolvedResourceRowIds??[]) as string[],ct126Open=unresolved.map(row=>row.row_id);
  r.passport.decision={...r.passport.decision,quantityScope:'PARTIAL',priceState:'PARTIAL_NEEDS_PRICE',technicalScopeStatus:'NEEDS_SOURCE',
   unresolvedResourceRowIds:[...new Set([...oldOpen,...ct126Open])],ct126UnresolvedResourceRowIds:ct126Open,
