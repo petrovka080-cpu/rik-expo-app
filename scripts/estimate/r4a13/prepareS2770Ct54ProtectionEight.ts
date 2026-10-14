@@ -135,6 +135,9 @@ async function main() {
         parameter.truth_metadata = { ...parameter.truth_metadata,
           ...(parameter.truth_metadata.contract !== CONTRACT ? { clonedFromContract: parameter.truth_metadata.contract } : {}),
           contract: CONTRACT, semantic_parameter_key: `${catalogId}:${parameter.parameter_id}` };
+        if (!parent.parameters.some(old => old.parameter_id === parameter.parameter_id)) {
+          r.baseline.normative_source_ids[parameter.parameter_id] = [CONTRACT + ':tesa2026'];
+        }
       }
       r.baseline.parameter_schema_sha256 = hash(r.parameters.map(p => ({ parameterId:p.parameter_id, unitId:p.unit_id,
         valueType:p.value_type, constraints:p.constraints_json, truth:p.truth_metadata })));
