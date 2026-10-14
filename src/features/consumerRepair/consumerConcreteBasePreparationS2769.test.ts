@@ -1,7 +1,7 @@
 import type {CanonicalEstimateCatalogItem} from '../../lib/estimate/backendPlatform/contracts';
 import type {CanonicalEstimateParameterSessionRevision} from '../../lib/estimate/backendPlatform/canonicalEstimateParameterSessionSnapshot';
 import {buildCanonicalBaselinePlan} from './consumerCanonicalBaselineCompile';
-import {canonicalPublicEstimateChoiceLabelRu as label} from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
+import {canonicalPublicEstimateChoiceLabelRu as label,canonicalPublicEstimateParameterTitleRu as title} from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
 import {canonicalApprovedBaselineRuntimeDefaultValue as defaultValue} from '../../lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline';
 import {buildConsumerCanonicalParameterSession as saved,buildConsumerCanonicalPrecompileParameterSession as fresh} from './consumerCanonicalParameterEditor';
 import {buildConcreteBasePlannedPreparationS2769 as build} from '../../lib/estimate/v4/concreteBasePlannedPreparationS2769';
@@ -12,6 +12,7 @@ const parents=require('../../../data/estimate-benchmarks/fixtures/concrete-base-
 test.each(parents.models)('public labels ask physical facts and preserve stored source choices: $definition.catalog_id',parent=>{
  const p=build(parent),material=p.parameters.find(p=>p.parameter_id==='existing_covering_confirmed')!,conditions=p.parameters.find(p=>p.parameter_id==='object_conditions')!;
  const materialValue=String(material.constraints_json.values[0]),conditionsValue=String(conditions.constraints_json.values[0]);
+ expect(title(material.parameter_id,material.title_ru)).toBe('Какое бетонное основание разбираем');
  expect(label(materialValue)).not.toMatch(/46-04|КРЕР/u);expect(label(conditionsValue)).toContain('пневматическим инструментом');
  expect(label(conditionsValue)).not.toMatch(/КРЕР|п\.1\.15|подтвердите/u);
  expect(material.constraints_json).toEqual(parent.parameters.find(p=>p.parameter_id===material.parameter_id)!.constraints_json);

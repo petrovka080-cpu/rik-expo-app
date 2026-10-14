@@ -44,6 +44,7 @@ export function canonicalPublicEstimateChoiceLabelRu(value: string): string {
 }
 
 export function canonicalPublicEstimateParameterTitleRu(parameterId: string, titleRu: string): string {
+  if(parameterId==='existing_covering_confirmed'&&titleRu==='На чём выполнено бетонное основание')return 'Какое бетонное основание разбираем';
   // Area is a separate object measurement. The legacy rate's base thickness
   // does not describe the observed thickness entered in another field.
   if (parameterId === 'floor_covering_area_m2'
