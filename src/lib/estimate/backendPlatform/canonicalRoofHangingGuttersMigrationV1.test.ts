@@ -1,9 +1,10 @@
-import ten from '../../../../data/estimate-benchmarks/fixtures/roof-gutters-layers10-parents-s27-67.json';
-import nine from '../../../../data/estimate-benchmarks/fixtures/roof-layers-metal9-parents-s27-67.json';
-import eight from '../../../../data/estimate-benchmarks/fixtures/roof-metal-screed8-parents-s27-67.json';
-import seven from '../../../../data/estimate-benchmarks/fixtures/roof-screed-valley7-parents-s27-67.json';
-import six from '../../../../data/estimate-benchmarks/fixtures/roof-valley-preparation6-parents-s27-67.json';
-import five from '../../../../data/estimate-benchmarks/fixtures/roof-planned-preparation-parents-s27-67.json';
+import {readFrozenDefinitionSnapshotV1} from './canonicalFrozenDefinitionSnapshotV1';
+const ten=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-gutters-layers10-parents-s27-67.json'),'reps');
+const nine=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-layers-metal9-parents-s27-67.json'),'reps');
+const eight=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-metal-screed8-parents-s27-67.json'),'reps');
+const seven=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-screed-valley7-parents-s27-67.json'),'reps');
+const six=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-valley-preparation6-parents-s27-67.json'),'reps');
+const five=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-planned-preparation-parents-s27-67.json'),'reps');
 import {overlayS2767RoofHangingGuttersCompanion} from '../../../../scripts/estimate/r4a13/s2767RoofHangingGuttersCompanionOverlay';
 import {ROOF_HANGING_GUTTERS_PACK_V1 as pack,ROOF_WATER_SEMANTIC_ROWS_V1 as waterRows,ROOF_GUTTER_OPERATION_KEY_V1 as gutterOp,ROOF_GUTTER_SCOPE_ROW_V1 as gutterScope,ROOF_OTHER_DRAINAGE_PARAMETER_V1 as otherId,ROOF_OTHER_DRAINAGE_NONE_V1 as otherNone} from './canonicalRoofHangingGuttersCompanionV1';
 import {admitRoofHangingGuttersMigrationProofV1,buildRoofHangingGuttersMigrationProofV1,migrateRoofHangingGuttersSelectionV1,buildRoofStageRestorationV5,readRoofStageRestorationV5,roofStageRestoreTargetsV5,roofStageExcludeTargetsV5,createRoofLegacyWaterSelectionOriginV1,consumeRoofStageOriginsV5,composeRoofGuttersMigrationModelV1,roofGuttersInactiveParameterIdsV1} from './canonicalRoofHangingGuttersMigrationV1';

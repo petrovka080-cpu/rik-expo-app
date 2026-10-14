@@ -1,5 +1,6 @@
-import fixture from '../../../../data/estimate-benchmarks/fixtures/roof-standalone-scope-parents-s27-69.json';
-import oldFixture from '../../../../data/estimate-benchmarks/fixtures/roof-screed25-five-parents-s27-69.json';
+import {readFrozenDefinitionSnapshotV1} from './canonicalFrozenDefinitionSnapshotV1';
+const fixture=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-standalone-scope-parents-s27-69.json'),'reps');
+const oldFixture=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-screed25-five-parents-s27-69.json'),'reps');
 import policy from '../../../../data/estimate-benchmarks/source-packs/roof-standalone-work-scope-s27-69.json';
 import binding from '../../../../data/estimate-benchmarks/source-packs/roof-screed25-five-bindings-s27-69.json';
 import pack from '../../../../data/estimate-benchmarks/source-packs/roof-screed25-companion-s27-67.json';

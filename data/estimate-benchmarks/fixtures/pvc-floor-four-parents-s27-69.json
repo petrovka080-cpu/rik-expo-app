@@ -1,0 +1,2741 @@
+{
+  "current": {
+    "schemaVersion": "r568-local-developer-canonical-release.v1",
+    "status": "ACTIVE_LOCAL_DEVELOPER_CANONICAL_RELEASE",
+    "definitionReleaseId": "6e70faa1-762f-53f1-8351-ecf115bf1097",
+    "searchReleaseId": "a0607508-d226-5dd4-8141-6db27dbbd179",
+    "definitionReleaseStatus": "prepared",
+    "searchReleaseStatus": "draft",
+    "definitionSnapshotSha256": "5353f63a68068197ac399d0679d575bfca8d8a77cdc49ad4969e1d7b4b0098e1",
+    "manifestHashChainSha256": "5353f63a68068197ac399d0679d575bfca8d8a77cdc49ad4969e1d7b4b0098e1",
+    "searchHashChainSha256": "61c46c38cb4dec493626a6a4d11aebcef213d76aecfc9d21e0042c5756eebace",
+    "identities": 11610,
+    "visibleCanonicalDefinitions": 10322,
+    "aliasesRedirects": 1288,
+    "currentRuntimeDefinitions": 10457,
+    "runtimeAdditionalAdmissions": 9,
+    "currentInventoryRowsIncludingAliases": 11619,
+    "denominatorNote": "11610 is the immutable historical source-identity reconciliation (10322 canonical owners plus 1288 redirects); the current cumulative runtime also preserves 9 separately identified inherited admissions.",
+    "owner": "S27_69_CONCRETE_BASE_PLANNED_PREPARATION_TWO",
+    "productionAccessed": false,
+    "fakeGreenClaimed": false
+  },
+  "models": [
+    {
+      "definition": {
+        "id": "c97f5fbe-f3ef-5498-882b-71331e004788",
+        "release_id": "e7ca2209-6c47-5fef-9173-c49de71e7d59",
+        "catalog_id": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_large_area",
+        "definition_version": 1,
+        "passport": {
+          "workKey": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_krer_46_04_011_14_large_area",
+          "catalogId": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_large_area",
+          "canonicalRuName": "Разборка покрытия пола из поливинилхлоридных листовых рулонных материалов в агрессивной среде — большая площадь",
+          "projectSourceId": "kg_krer_46_2015_reconstruction_official",
+          "physicalResultRu": "Подтверждённая площадь существующего покрытия пола из поливинилхлоридных листовых рулонных материалов в агрессивной среде (большая площадь) разобрана по КРЕР 46-04-011-14"
+        },
+        "applicability": {
+          "country": "KG",
+          "exactRate": "46-04-011-14",
+          "catalogVariant": "LARGE_AREA_CONFIRMED_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR",
+          "operationClass": "DISMANTLE_EXISTING_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_COVERING_IN_AGGRESSIVE_ENVIRONMENT",
+          "environmentClass": "AGGRESSIVE",
+          "geometryParameters": [
+            "floor_covering_area_m2"
+          ],
+          "officialArtifactSha256": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+          "officialUnitRateSource": "kg_krer_46_2015_reconstruction_official",
+          "existingCoveringMaterial": "POLYVINYL_CHLORIDE_SHEET_ROLL",
+          "machineResourcesIncluded": false,
+          "offsiteWasteHaulIncluded": false,
+          "primaryMeasureParameterId": "floor_covering_area_m2",
+          "classificationFactorClaimed": false
+        },
+        "definition_sha256": "976ece36ea4d654a8a5fb94b97fabceedbd91dbf829e899c2f69dfd1ac0013ac",
+        "source_metadata": {
+          "normId": "norm:kg:krer:46-04-011-14:2015",
+          "contract": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-large_area-append-successor.v1",
+          "sourceId": "kg_krer_46_2015_reconstruction_official",
+          "masterSha256": "1f683fef61d8b968c752163d6e361c45e5e6751e461c8be2b723761eac952f9a",
+          "activationAllowed": false,
+          "sourceFingerprint": "29c9a9422a4cf3d20cc57a439021b2d2355dd20924013e61015863fb070c6395",
+          "productionEligible": false,
+          "invalidSuppliedValuePolicy": "REJECT",
+          "knownWorkScopeFirstEstimate": true,
+          "missingProjectQuantityPolicy": "PRELIMINARY_NEED"
+        },
+        "created_at": "2026-09-24T05:21:49.992Z",
+        "content_status": "CANDIDATE_READY",
+        "content_gate_status": "GREEN"
+      },
+      "parameters": [
+        {
+          "definition_version_id": "c97f5fbe-f3ef-5498-882b-71331e004788",
+          "parameter_id": "floor_covering_area_m2",
+          "ordinal": 0,
+          "value_type": "decimal",
+          "unit_id": "m2",
+          "title_ru": "Площадь покрытия пола из поливинилхлоридных листовых рулонных материалов в агрессивной среде",
+          "required": true,
+          "default_value": null,
+          "constraints_json": {
+            "min": 0.000001
+          },
+          "truth_metadata": {
+            "guide": {
+              "guide_kind": "MEASUREMENT_RULE",
+              "source_role": "OFFICIAL_KG_UNIT_RATE_AND_EXISTING_CONDITION_SURVEY",
+              "verified_at": "2026-09-24T09:45:00+06:00",
+              "applicability": "Только таблица 46-04-011, колонка 14: покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде; другие покрытия и колонки не подменяются.",
+              "guide_version": "aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-r1",
+              "guide_short_ru": "Укажите чистую фактическую площадь снимаемого покрытия без автоматически добавленного запаса.",
+              "source_locator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60",
+              "source_document": "kg_krer_46_2015_reconstruction_official",
+              "source_snapshot_hash": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+              "guide_validation_policy": "DEFER_MISSING_APPLICABILITY_REJECT_WRONG_MATERIAL_BEDDING_ENVIRONMENT_OR_PROFILE"
+            },
+            "contract": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-large_area-append-successor.v1",
+            "synthetic": false,
+            "visibility_role": "USER_INPUT",
+            "formula_consumers": [
+              "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_area_v1",
+              "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1"
+            ],
+            "value_source_role": "USER_OR_APPROVED_EXISTING_CONDITION_SURVEY",
+            "input_origin_class": "KNOWN_WORK_SCOPE",
+            "semantic_parameter_key": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_large_area:floor_covering_area_m2",
+            "hidden_default_forbidden": true,
+            "resource_branch_consumers": [
+              "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+              "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+            ],
+            "source_confirmation_required": false,
+            "preliminary_compilation_allowed": true
+          },
+          "approved_template_baseline_id": "b07c7805-a222-5a76-99b7-540175984f11"
+        },
+        {
+          "definition_version_id": "c97f5fbe-f3ef-5498-882b-71331e004788",
+          "parameter_id": "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile",
+          "ordinal": 1,
+          "value_type": "enum",
+          "unit_id": null,
+          "title_ru": "Выбранная колонка КРЕР для существующего покрытия из поливинилхлоридных листовых рулонных материалов",
+          "required": true,
+          "default_value": null,
+          "constraints_json": {
+            "values": [
+              "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT"
+            ]
+          },
+          "truth_metadata": {
+            "guide": {
+              "guide_kind": "ENUM_DECISION_RULE",
+              "source_role": "OFFICIAL_KG_UNIT_RATE_AND_EXISTING_CONDITION_SURVEY",
+              "verified_at": "2026-09-24T09:45:00+06:00",
+              "applicability": "Только таблица 46-04-011, колонка 14: покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде; другие покрытия и колонки не подменяются.",
+              "guide_version": "aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-r1",
+              "guide_short_ru": "Подтвердите по обследованию покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде.",
+              "source_locator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60",
+              "source_document": "kg_krer_46_2015_reconstruction_official",
+              "source_snapshot_hash": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+              "guide_validation_policy": "DEFER_MISSING_APPLICABILITY_REJECT_WRONG_MATERIAL_BEDDING_ENVIRONMENT_OR_PROFILE"
+            },
+            "contract": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-large_area-append-successor.v1",
+            "synthetic": false,
+            "visibility_role": "USER_INPUT",
+            "formula_consumers": [],
+            "value_source_role": "USER_OR_APPROVED_EXISTING_CONDITION_SURVEY",
+            "input_origin_class": "EXISTING_CONDITION_AND_RATE_APPLICABILITY_CONFIRMATION",
+            "semantic_parameter_key": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_large_area:existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile",
+            "hidden_default_forbidden": true,
+            "resource_branch_consumers": [
+              "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+              "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+            ],
+            "source_confirmation_required": true,
+            "preliminary_compilation_allowed": true
+          },
+          "approved_template_baseline_id": "b07c7805-a222-5a76-99b7-540175984f11"
+        },
+        {
+          "definition_version_id": "c97f5fbe-f3ef-5498-882b-71331e004788",
+          "parameter_id": "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed",
+          "ordinal": 2,
+          "value_type": "boolean",
+          "unit_id": null,
+          "title_ru": "Подтверждено существующее покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде",
+          "required": true,
+          "default_value": null,
+          "constraints_json": {},
+          "truth_metadata": {
+            "guide": {
+              "guide_kind": "PROJECT_DEFINED",
+              "source_role": "OFFICIAL_KG_UNIT_RATE_AND_EXISTING_CONDITION_SURVEY",
+              "verified_at": "2026-09-24T09:45:00+06:00",
+              "applicability": "Только таблица 46-04-011, колонка 14: покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде; другие покрытия и колонки не подменяются.",
+              "guide_version": "aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-r1",
+              "guide_short_ru": "Подтвердите по обследованию покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде.",
+              "source_locator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60",
+              "source_document": "kg_krer_46_2015_reconstruction_official",
+              "source_snapshot_hash": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+              "guide_validation_policy": "DEFER_MISSING_APPLICABILITY_REJECT_WRONG_MATERIAL_BEDDING_ENVIRONMENT_OR_PROFILE"
+            },
+            "contract": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-large_area-append-successor.v1",
+            "synthetic": false,
+            "visibility_role": "USER_INPUT",
+            "formula_consumers": [],
+            "value_source_role": "USER_OR_APPROVED_EXISTING_CONDITION_SURVEY",
+            "input_origin_class": "EXISTING_CONDITION_AND_RATE_APPLICABILITY_CONFIRMATION",
+            "semantic_parameter_key": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_large_area:existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed",
+            "hidden_default_forbidden": true,
+            "resource_branch_consumers": [
+              "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+              "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+            ],
+            "source_confirmation_required": true,
+            "preliminary_compilation_allowed": true
+          },
+          "approved_template_baseline_id": "b07c7805-a222-5a76-99b7-540175984f11"
+        }
+      ],
+      "formulas": [
+        {
+          "definition_version_id": "c97f5fbe-f3ef-5498-882b-71331e004788",
+          "formula_id": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_area_v1",
+          "output_unit_id": "m2",
+          "expression_source": "floor_covering_area_m2",
+          "ast": {
+            "id": "floor_covering_area_m2",
+            "kind": "parameter"
+          },
+          "input_parameter_ids": [
+            "floor_covering_area_m2"
+          ],
+          "ast_sha256": "cb3122154b384f5ebc9a5edf41f7edbf12b5b1449fa03df463d3f960737fc01f"
+        },
+        {
+          "definition_version_id": "c97f5fbe-f3ef-5498-882b-71331e004788",
+          "formula_id": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1",
+          "output_unit_id": "man_hour",
+          "expression_source": "floor_covering_area_m2 * 33 / 100",
+          "ast": {
+            "kind": "binary",
+            "left": {
+              "kind": "binary",
+              "left": {
+                "id": "floor_covering_area_m2",
+                "kind": "parameter"
+              },
+              "right": {
+                "kind": "literal",
+                "value": "33"
+              },
+              "operator": "*"
+            },
+            "right": {
+              "kind": "literal",
+              "value": "100"
+            },
+            "operator": "/"
+          },
+          "input_parameter_ids": [
+            "floor_covering_area_m2"
+          ],
+          "ast_sha256": "887d81212f0130b87a62b4b2d946acd3922d4a68f3fbe572a2675d89ef2e9fc6"
+        }
+      ],
+      "resources": [
+        {
+          "id": "e848b239-2473-5ba3-ab21-43bf9dd24696",
+          "definition_version_id": "c97f5fbe-f3ef-5498-882b-71331e004788",
+          "row_id": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+          "ordinal": 0,
+          "section": "Состав работ",
+          "category": "construction_work",
+          "title_ru": "Разборка покрытия пола из поливинилхлоридных листовых рулонных материалов в агрессивной среде",
+          "row_type": "labor",
+          "unit_id": "m2",
+          "formula_id": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_area_v1",
+          "inclusion_ast": {
+            "kind": "and",
+            "operands": [
+              {
+                "kind": "equals",
+                "value": "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT",
+                "parameterId": "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile"
+              },
+              {
+                "kind": "equals",
+                "value": true,
+                "parameterId": "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed"
+              }
+            ]
+          },
+          "resource_graph": {
+            "payable": false,
+            "costOwner": "scope",
+            "formulaId": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_area_v1",
+            "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+            "noDoubleCount": true,
+            "normalizedUom": "m2",
+            "quantityBasis": "CONFIRMED_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AREA_TIMES_EXACT_KRER_RATE_PER_100_M2",
+            "semanticOwnerId": "demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor:f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+            "parentCostOwnerId": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor",
+            "scopeContextParameterIds": [
+              "floor_covering_area_m2",
+              "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile",
+              "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed"
+            ],
+            "primaryMeasureParameterId": "floor_covering_area_m2"
+          },
+          "semantic_owner": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_large_area:f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+          "cost_owner_id": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+          "procurement_eligible": false,
+          "source_metadata": {
+            "synthetic": false,
+            "sourceRole": "OFFICIAL_KG_RESOURCE_NORM",
+            "includedInRate": [
+              "разборка существующего покрытия из поливинилхлоридных листовых рулонных материалов",
+              "уборка, вертикальное перемещение и переноска отходов до 50 м внутри объекта"
+            ],
+            "normativeTrace": [
+              {
+                "normId": "norm:kg:krer:46-04-011-14:2015",
+                "norm_id": "norm:kg:krer:46-04-011-14:2015",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "source_id": "kg_krer_46_2015_reconstruction_official",
+                "normVersion": "КРЕР 46-2015; введён в действие с 1 января 2016 года",
+                "source_title": "КРЕР 46-2015 «Работы при реконструкции зданий и сооружений», таблица 46-04-011",
+                "exact_locator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60",
+                "source_definition_hash": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471"
+              }
+            ],
+            "krerResourceCode": "46-04-011-14",
+            "excludedAdjacentScope": [
+              "основание и новая конструкция пола",
+              "другие покрытия, подстилающие слои и обычная среда",
+              "внеобъектовый вывоз и размещение отходов",
+              "скрытый коэффициент площади, запас или цена"
+            ],
+            "normativeRatePer100M2": 100,
+            "truth_contract_version": "R3"
+          },
+          "row_sha256": "04195258e4572b3c15987f797115fcb7d6aae9effdfe18df8f608c978a4bc502",
+          "created_at": "2026-09-24T05:21:49.992Z"
+        },
+        {
+          "id": "26516df8-1ca4-51d0-b357-68e8168f5dcb",
+          "definition_version_id": "c97f5fbe-f3ef-5498-882b-71331e004788",
+          "row_id": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor",
+          "ordinal": 1,
+          "section": "Труд",
+          "category": "construction_work",
+          "title_ru": "Труд рабочих-строителей среднего разряда 2,0",
+          "row_type": "labor",
+          "unit_id": "man_hour",
+          "formula_id": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1",
+          "inclusion_ast": {
+            "kind": "and",
+            "operands": [
+              {
+                "kind": "equals",
+                "value": "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT",
+                "parameterId": "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile"
+              },
+              {
+                "kind": "equals",
+                "value": true,
+                "parameterId": "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed"
+              }
+            ]
+          },
+          "resource_graph": {
+            "payable": true,
+            "costOwner": "resource",
+            "formulaId": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1",
+            "costTreatment": "OWN_COST",
+            "noDoubleCount": true,
+            "normalizedUom": "man_hour",
+            "quantityBasis": "CONFIRMED_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AREA_TIMES_EXACT_KRER_RATE_PER_100_M2",
+            "semanticOwnerId": "demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor:f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor",
+            "scopeContextParameterIds": [
+              "floor_covering_area_m2",
+              "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile",
+              "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed"
+            ],
+            "primaryMeasureParameterId": "floor_covering_area_m2"
+          },
+          "semantic_owner": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_large_area:f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor",
+          "cost_owner_id": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor",
+          "procurement_eligible": false,
+          "source_metadata": {
+            "synthetic": false,
+            "sourceRole": "OFFICIAL_KG_RESOURCE_NORM",
+            "includedInRate": [
+              "разборка существующего покрытия из поливинилхлоридных листовых рулонных материалов",
+              "уборка, вертикальное перемещение и переноска отходов до 50 м внутри объекта"
+            ],
+            "normativeTrace": [
+              {
+                "normId": "norm:kg:krer:46-04-011-14:2015",
+                "norm_id": "norm:kg:krer:46-04-011-14:2015",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "source_id": "kg_krer_46_2015_reconstruction_official",
+                "normVersion": "КРЕР 46-2015; введён в действие с 1 января 2016 года",
+                "source_title": "КРЕР 46-2015 «Работы при реконструкции зданий и сооружений», таблица 46-04-011",
+                "exact_locator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60",
+                "source_definition_hash": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471"
+              }
+            ],
+            "krerResourceCode": "000-1002-0",
+            "excludedAdjacentScope": [
+              "основание и новая конструкция пола",
+              "другие покрытия, подстилающие слои и обычная среда",
+              "внеобъектовый вывоз и размещение отходов",
+              "скрытый коэффициент площади, запас или цена"
+            ],
+            "normativeRatePer100M2": 33,
+            "truth_contract_version": "R3"
+          },
+          "row_sha256": "cc53e231f9f7d08af3a24aeb69cdc712b4c1e248322ff798bf27070a7882fe8b",
+          "created_at": "2026-09-24T05:21:49.992Z"
+        }
+      ],
+      "bindings": [
+        {
+          "row_id": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor",
+          "locator_id": "fb270202-4dc0-5c78-ba28-3a1b1fcb9e7a",
+          "applicability": {
+            "norm_id": "norm:kg:krer:46-04-011-14:2015",
+            "source_id": "kg_krer_46_2015_reconstruction_official",
+            "exact_locator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60",
+            "quantity_basis": "CONFIRMED_AREA_TIMES_EXACT_KRER_46_04_011_14_RATE_PER_100_M2",
+            "catalog_variant": "LARGE_AREA_CONFIRMED_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR",
+            "operation_class": "DISMANTLE_EXISTING_FLOOR_COVERING",
+            "technology_class": "AGGRESSIVE_ENVIRONMENT_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_DEMOLITION",
+            "environment_class": "AGGRESSIVE",
+            "official_artifact_sha256": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+            "existing_covering_material": "POLYVINYL_CHLORIDE_SHEET_ROLL",
+            "machine_resources_included": false,
+            "offsite_waste_haul_included": false
+          }
+        }
+      ],
+      "baseline": {
+        "id": "b07c7805-a222-5a76-99b7-540175984f11",
+        "baseline_key": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-large_area-append-successor.v1:29c9a9422a4cf3d2:canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_large_area",
+        "catalog_id": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_large_area",
+        "definition_version_id": "c97f5fbe-f3ef-5498-882b-71331e004788",
+        "source_definition_version_id": "c97f5fbe-f3ef-5498-882b-71331e004788",
+        "parameter_schema_sha256": "debeb894ced841502052c579533f3a4d0c3631ad795d4746dc646b7042462ea4",
+        "input_values": {
+          "floor_covering_area_m2": 35.5,
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT",
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": true
+        },
+        "input_classification": {
+          "floor_covering_area_m2": "VALIDATION_FIXTURE",
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": "VALIDATION_FIXTURE",
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": "VALIDATION_FIXTURE"
+        },
+        "uom_by_parameter": {
+          "floor_covering_area_m2": "m2",
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": null,
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": null
+        },
+        "formula_consumer_ids": {
+          "floor_covering_area_m2": [
+            "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_area_v1",
+            "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1"
+          ],
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": [],
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": []
+        },
+        "resource_consumer_row_ids": {
+          "floor_covering_area_m2": [
+            "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+            "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+          ],
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": [
+            "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+            "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+          ],
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": [
+            "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+            "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+          ]
+        },
+        "normative_source_ids": {
+          "floor_covering_area_m2": [
+            "kg_krer_46_2015_reconstruction_official"
+          ],
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": [
+            "kg_krer_46_2015_reconstruction_official"
+          ],
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": [
+            "kg_krer_46_2015_reconstruction_official"
+          ]
+        },
+        "guide_provenance_ru": {
+          "floor_covering_area_m2": "Укажите чистую фактическую площадь снимаемого покрытия без автоматически добавленного запаса.",
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": "Подтвердите по обследованию покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде.",
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": "Подтвердите по обследованию покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде."
+        },
+        "proposal_source_refs": [
+          {
+            "contract": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-large_area-append-successor.v1",
+            "sourceId": "kg_krer_46_2015_reconstruction_official",
+            "sourceKind": "OFFICIAL_KG_UNIT_RATE",
+            "exactLocator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60"
+          }
+        ],
+        "validation_scenario_refs": [
+          {
+            "fixture": {
+              "floor_covering_area_m2": 35.5,
+              "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT",
+              "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": true
+            },
+            "scenario": "F09_AGGRESSIVE_ENVIRONMENT_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_DEMOLITION_KRER46_14_LARGE_AREA",
+            "shortInput": {
+              "floor_covering_area_m2": 100,
+              "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT",
+              "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": true
+            },
+            "coreAcceptance": {
+              "short": {
+                "rowCount": 2,
+                "quantities": [
+                  "100",
+                  "33"
+                ]
+              },
+              "status": "GREEN_S273_F09_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_DEMOLITION_KRER46_14_LARGE_AREA_CORE",
+              "catalogId": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_large_area",
+              "exactRate": "46-04-011-14",
+              "acceptance": {
+                "areaM2": "35.5",
+                "quantities": [
+                  "35.5",
+                  "11.715"
+                ]
+              },
+              "incomplete": {
+                "rowCount": 0,
+                "preliminaryNeedCount": 2
+              },
+              "variantKey": "large_area",
+              "serializedSha256": "85b763327d21781cfde80b5cd50f7897a138fedee27d8ed27d12118d406ffb98",
+              "machineResourcesIncluded": false,
+              "offsiteWasteHaulIncluded": false,
+              "classificationFactorClaimed": false,
+              "thicknessAdjustmentRateIncluded": false,
+              "salvageableTileOrBrickCleaningApplicable": false
+            },
+            "runtimeProfile": {},
+            "runtimeProfileSourceIds": {},
+            "acceptanceEvidenceSha256": "642520f9aa2e221da47a1697c29207a9af39f0e8ca017e7ff91cd888a1fbf55e",
+            "runtimeProfileClassification": {}
+          }
+        ],
+        "acceptance_evidence_sha256": "642520f9aa2e221da47a1697c29207a9af39f0e8ca017e7ff91cd888a1fbf55e",
+        "accepted_release_id": "e7ca2209-6c47-5fef-9173-c49de71e7d59",
+        "accepted_at": "2026-09-24T05:21:51.620Z",
+        "supersedes_baseline_id": null,
+        "contract_version": "APPROVED_TEMPLATE_BASELINE_R54_V1"
+      },
+      "passport": {
+        "definition_version_id": "c97f5fbe-f3ef-5498-882b-71331e004788",
+        "release_id": "e7ca2209-6c47-5fef-9173-c49de71e7d59",
+        "catalog_id": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_large_area",
+        "contract_version": "real-professional-estimates-r3.content-passport.v1",
+        "identity_mode": "WORK",
+        "redirect_catalog_id": null,
+        "physical_result_ru": "Подтверждённая площадь существующего покрытия пола из поливинилхлоридных листовых рулонных материалов в агрессивной среде (большая площадь) разобрана по КРЕР 46-04-011-14",
+        "included_scope_ru": [
+          "разборка существующего покрытия пола из поливинилхлоридных листовых рулонных материалов",
+          "труд рабочих среднего разряда 2,0 по норме 33,00 чел.-ч на 100 м²",
+          "уборка, вертикальное перемещение и переноска отходов до 50 м внутри объекта"
+        ],
+        "excluded_scope_ru": [
+          "очистка годных плиток или кирпича — неприменима к листовым рулонным материалам",
+          "труд машинистов и машины — отсутствуют в колонке 46-04-011-14",
+          "основание и новая конструкция пола",
+          "другие материалы покрытия и обычная среда",
+          "внеобъектовый вывоз и размещение отходов",
+          "скрытый коэффициент площади и неподтверждённые цены"
+        ],
+        "capability_matrix": [
+          {
+            "status": "GREEN",
+            "capability": "PARAMETERS"
+          },
+          {
+            "status": "GREEN",
+            "capability": "FORMULAS_AND_PHYSICAL_PARITY"
+          },
+          {
+            "status": "GREEN",
+            "capability": "FULL_APPLICABLE_SCOPE"
+          },
+          {
+            "status": "GREEN_UNKNOWN_IS_NULL",
+            "capability": "PRICE"
+          }
+        ],
+        "parameter_count": 3,
+        "formula_count": 2,
+        "resource_count": 2,
+        "decision": {
+          "status": "GREEN",
+          "allowed": true,
+          "contract": "real-professional-estimates-r3.content-passport.v1",
+          "priceState": "PARTIAL_NEEDS_PRICE",
+          "waveContract": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-large_area-append-successor.v1",
+          "quantityScope": "FULL",
+          "activationAllowed": false,
+          "productionEligible": false,
+          "independentCompletenessMap": {
+            "entries": [
+              {
+                "unitId": "m2",
+                "category": "construction_work",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "condition": "confirmed_krer_46_04_011_14_polyvinyl_chloride_sheet_roll_floor_in_aggressive_environment",
+                "formulaId": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_area_v1",
+                "resolution": {
+                  "kind": "INCLUDED_COMPONENT_ROW",
+                  "rowId": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+                  "parentRowId": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+                },
+                "operationId": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition",
+                "quantityRule": "CONFIRMED_AREA_MULTIPLIED_BY_EXACT_KRER_RATE_PER_100_M2",
+                "priceRelation": "INCLUDED_IN_PARENT",
+                "specification": "Разборка покрытия из поливинилхлоридных листовых рулонных материалов",
+                "detailPrinciple": "EXACT_OFFICIAL_RATE_COLUMN_WITHOUT_AREA_FACTOR",
+                "expectedResourceId": "required-resource:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition"
+              },
+              {
+                "unitId": "man_hour",
+                "category": "construction_work",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "condition": "confirmed_krer_46_04_011_14_polyvinyl_chloride_sheet_roll_floor_in_aggressive_environment",
+                "formulaId": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+                },
+                "operationId": "construction_labor_grade_2_0",
+                "quantityRule": "CONFIRMED_AREA_MULTIPLIED_BY_EXACT_KRER_RATE_PER_100_M2",
+                "priceRelation": "OWN_COST",
+                "specification": "33,00 чел.-ч на 100 м²",
+                "detailPrinciple": "EXACT_OFFICIAL_RATE_COLUMN_WITHOUT_AREA_FACTOR",
+                "expectedResourceId": "required-resource:construction_labor_grade_2_0"
+              },
+              {
+                "unitId": "man_hour",
+                "category": "construction_work",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "condition": "not_applicable_to_polyvinyl_chloride_sheet_roll_floor",
+                "resolution": {
+                  "kind": "NOT_APPLICABLE",
+                  "reasonRu": "Покрытие выполнено из поливинилхлоридных листовых рулонных материалов; годные плитки и кирпич отсутствуют."
+                },
+                "operationId": "clean_salvageable_brick_from_mortar",
+                "quantityRule": "NOT_APPLICABLE_TO_CONFIRMED_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR",
+                "priceRelation": "NOT_APPLICABLE",
+                "specification": "Очистка годного кирпича от раствора",
+                "detailPrinciple": "REVIEWED_EXCLUSION",
+                "expectedResourceId": "required-operation:clean-salvageable-brick"
+              },
+              {
+                "unitId": "man_hour",
+                "category": "construction_work",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "condition": "selected_krer_46_reconstruction_rate",
+                "formulaId": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1",
+                "resolution": {
+                  "kind": "INCLUDED_IN_PARENT",
+                  "parentRowId": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+                },
+                "operationId": "internal_debris_handling_within_object",
+                "quantityRule": "INCLUDED_IN_OFFICIAL_LABOR_RATE",
+                "priceRelation": "INCLUDED_IN_PARENT",
+                "specification": "Уборка, вертикальное перемещение и переноска до 50 м",
+                "detailPrinciple": "NO_SEPARATE_DUPLICATE_ROW",
+                "expectedResourceId": "required-operation:internal-debris-handling-within-object"
+              },
+              {
+                "unitId": "t_km",
+                "category": "service",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "condition": "not_in_krer_46_04_011_14",
+                "resolution": {
+                  "kind": "NOT_APPLICABLE",
+                  "reasonRu": "КРЕР 46, п. 1.1 прямо исключает вывоз строительного мусора."
+                },
+                "operationId": "offsite_waste_haul",
+                "quantityRule": "PROJECT_WASTE_PLAN_REQUIRED",
+                "priceRelation": "SEPARATE_IF_APPLICABLE",
+                "specification": "Внеобъектовый вывоз отходов",
+                "detailPrinciple": "EXCLUDED_FROM_RATE",
+                "expectedResourceId": "adjacent-operation:offsite-waste-haul"
+              }
+            ],
+            "contract": "rik-expo-app.s26-3.independent-completeness-map.v1",
+            "rateTable": "KRER_46_04_011_14",
+            "sourceKind": "NORMATIVE_OPERATION_MAP",
+            "evidenceSha256": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+            "evidenceReferences": [
+              "https://minstroy.gov.kg/ru/kyzmat/459/show",
+              "КРЕР 46-2015, PDF/печатные страницы 5, 58, 59 и 60"
+            ],
+            "generatedFromCurrentRows": false
+          }
+        },
+        "payload_sha256": "2591881a7d5d627f263011121cab92b5ddd4d96a4ea420d53befbae31e09afe7",
+        "source_head": "351ffac03a048169e2574df8be04d5ca1b571b95",
+        "source_tree": "308f5ce96f190fdfb46add8f57ea9824db483889",
+        "created_at": "2026-09-24T05:21:49.992Z"
+      }
+    },
+    {
+      "definition": {
+        "id": "755f3fdf-9545-55e7-ab33-3e6518e35484",
+        "release_id": "bdf1c963-dc17-5d9b-aae9-558ba3e0eab1",
+        "catalog_id": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_small_area",
+        "definition_version": 1,
+        "passport": {
+          "workKey": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_krer_46_04_011_14_small_area",
+          "catalogId": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_small_area",
+          "canonicalRuName": "Разборка покрытия пола из поливинилхлоридных листовых рулонных материалов в агрессивной среде — малая площадь",
+          "projectSourceId": "kg_krer_46_2015_reconstruction_official",
+          "physicalResultRu": "Подтверждённая площадь существующего покрытия пола из поливинилхлоридных листовых рулонных материалов в агрессивной среде (малая площадь) разобрана по КРЕР 46-04-011-14"
+        },
+        "applicability": {
+          "country": "KG",
+          "exactRate": "46-04-011-14",
+          "catalogVariant": "SMALL_AREA_CONFIRMED_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR",
+          "operationClass": "DISMANTLE_EXISTING_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_COVERING_IN_AGGRESSIVE_ENVIRONMENT",
+          "environmentClass": "AGGRESSIVE",
+          "geometryParameters": [
+            "floor_covering_area_m2"
+          ],
+          "officialArtifactSha256": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+          "officialUnitRateSource": "kg_krer_46_2015_reconstruction_official",
+          "existingCoveringMaterial": "POLYVINYL_CHLORIDE_SHEET_ROLL",
+          "machineResourcesIncluded": false,
+          "offsiteWasteHaulIncluded": false,
+          "primaryMeasureParameterId": "floor_covering_area_m2",
+          "classificationFactorClaimed": false
+        },
+        "definition_sha256": "442f57760077dfb4cc124c14a992b02acd02e2a1666d2ae8972e33c59de06d26",
+        "source_metadata": {
+          "normId": "norm:kg:krer:46-04-011-14:2015",
+          "contract": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-small_area-append-successor.v1",
+          "sourceId": "kg_krer_46_2015_reconstruction_official",
+          "masterSha256": "1f683fef61d8b968c752163d6e361c45e5e6751e461c8be2b723761eac952f9a",
+          "activationAllowed": false,
+          "sourceFingerprint": "5e1e9a9f213660223102671023dc6676421276e74c28827bee5ffea9e7cec5fc",
+          "productionEligible": false,
+          "invalidSuppliedValuePolicy": "REJECT",
+          "knownWorkScopeFirstEstimate": true,
+          "missingProjectQuantityPolicy": "PRELIMINARY_NEED"
+        },
+        "created_at": "2026-09-24T05:22:05.218Z",
+        "content_status": "CANDIDATE_READY",
+        "content_gate_status": "GREEN"
+      },
+      "parameters": [
+        {
+          "definition_version_id": "755f3fdf-9545-55e7-ab33-3e6518e35484",
+          "parameter_id": "floor_covering_area_m2",
+          "ordinal": 0,
+          "value_type": "decimal",
+          "unit_id": "m2",
+          "title_ru": "Площадь покрытия пола из поливинилхлоридных листовых рулонных материалов в агрессивной среде",
+          "required": true,
+          "default_value": null,
+          "constraints_json": {
+            "min": 0.000001
+          },
+          "truth_metadata": {
+            "guide": {
+              "guide_kind": "MEASUREMENT_RULE",
+              "source_role": "OFFICIAL_KG_UNIT_RATE_AND_EXISTING_CONDITION_SURVEY",
+              "verified_at": "2026-09-24T09:45:00+06:00",
+              "applicability": "Только таблица 46-04-011, колонка 14: покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде; другие покрытия и колонки не подменяются.",
+              "guide_version": "aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-r1",
+              "guide_short_ru": "Укажите чистую фактическую площадь снимаемого покрытия без автоматически добавленного запаса.",
+              "source_locator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60",
+              "source_document": "kg_krer_46_2015_reconstruction_official",
+              "source_snapshot_hash": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+              "guide_validation_policy": "DEFER_MISSING_APPLICABILITY_REJECT_WRONG_MATERIAL_BEDDING_ENVIRONMENT_OR_PROFILE"
+            },
+            "contract": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-small_area-append-successor.v1",
+            "synthetic": false,
+            "visibility_role": "USER_INPUT",
+            "formula_consumers": [
+              "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_area_v1",
+              "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1"
+            ],
+            "value_source_role": "USER_OR_APPROVED_EXISTING_CONDITION_SURVEY",
+            "input_origin_class": "KNOWN_WORK_SCOPE",
+            "semantic_parameter_key": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_small_area:floor_covering_area_m2",
+            "hidden_default_forbidden": true,
+            "resource_branch_consumers": [
+              "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+              "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+            ],
+            "source_confirmation_required": false,
+            "preliminary_compilation_allowed": true
+          },
+          "approved_template_baseline_id": "128339bc-156c-5ef8-80da-654c0ce25892"
+        },
+        {
+          "definition_version_id": "755f3fdf-9545-55e7-ab33-3e6518e35484",
+          "parameter_id": "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile",
+          "ordinal": 1,
+          "value_type": "enum",
+          "unit_id": null,
+          "title_ru": "Выбранная колонка КРЕР для существующего покрытия из поливинилхлоридных листовых рулонных материалов",
+          "required": true,
+          "default_value": null,
+          "constraints_json": {
+            "values": [
+              "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT"
+            ]
+          },
+          "truth_metadata": {
+            "guide": {
+              "guide_kind": "ENUM_DECISION_RULE",
+              "source_role": "OFFICIAL_KG_UNIT_RATE_AND_EXISTING_CONDITION_SURVEY",
+              "verified_at": "2026-09-24T09:45:00+06:00",
+              "applicability": "Только таблица 46-04-011, колонка 14: покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде; другие покрытия и колонки не подменяются.",
+              "guide_version": "aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-r1",
+              "guide_short_ru": "Подтвердите по обследованию покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде.",
+              "source_locator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60",
+              "source_document": "kg_krer_46_2015_reconstruction_official",
+              "source_snapshot_hash": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+              "guide_validation_policy": "DEFER_MISSING_APPLICABILITY_REJECT_WRONG_MATERIAL_BEDDING_ENVIRONMENT_OR_PROFILE"
+            },
+            "contract": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-small_area-append-successor.v1",
+            "synthetic": false,
+            "visibility_role": "USER_INPUT",
+            "formula_consumers": [],
+            "value_source_role": "USER_OR_APPROVED_EXISTING_CONDITION_SURVEY",
+            "input_origin_class": "EXISTING_CONDITION_AND_RATE_APPLICABILITY_CONFIRMATION",
+            "semantic_parameter_key": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_small_area:existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile",
+            "hidden_default_forbidden": true,
+            "resource_branch_consumers": [
+              "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+              "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+            ],
+            "source_confirmation_required": true,
+            "preliminary_compilation_allowed": true
+          },
+          "approved_template_baseline_id": "128339bc-156c-5ef8-80da-654c0ce25892"
+        },
+        {
+          "definition_version_id": "755f3fdf-9545-55e7-ab33-3e6518e35484",
+          "parameter_id": "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed",
+          "ordinal": 2,
+          "value_type": "boolean",
+          "unit_id": null,
+          "title_ru": "Подтверждено существующее покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде",
+          "required": true,
+          "default_value": null,
+          "constraints_json": {},
+          "truth_metadata": {
+            "guide": {
+              "guide_kind": "PROJECT_DEFINED",
+              "source_role": "OFFICIAL_KG_UNIT_RATE_AND_EXISTING_CONDITION_SURVEY",
+              "verified_at": "2026-09-24T09:45:00+06:00",
+              "applicability": "Только таблица 46-04-011, колонка 14: покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде; другие покрытия и колонки не подменяются.",
+              "guide_version": "aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-r1",
+              "guide_short_ru": "Подтвердите по обследованию покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде.",
+              "source_locator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60",
+              "source_document": "kg_krer_46_2015_reconstruction_official",
+              "source_snapshot_hash": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+              "guide_validation_policy": "DEFER_MISSING_APPLICABILITY_REJECT_WRONG_MATERIAL_BEDDING_ENVIRONMENT_OR_PROFILE"
+            },
+            "contract": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-small_area-append-successor.v1",
+            "synthetic": false,
+            "visibility_role": "USER_INPUT",
+            "formula_consumers": [],
+            "value_source_role": "USER_OR_APPROVED_EXISTING_CONDITION_SURVEY",
+            "input_origin_class": "EXISTING_CONDITION_AND_RATE_APPLICABILITY_CONFIRMATION",
+            "semantic_parameter_key": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_small_area:existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed",
+            "hidden_default_forbidden": true,
+            "resource_branch_consumers": [
+              "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+              "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+            ],
+            "source_confirmation_required": true,
+            "preliminary_compilation_allowed": true
+          },
+          "approved_template_baseline_id": "128339bc-156c-5ef8-80da-654c0ce25892"
+        }
+      ],
+      "formulas": [
+        {
+          "definition_version_id": "755f3fdf-9545-55e7-ab33-3e6518e35484",
+          "formula_id": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_area_v1",
+          "output_unit_id": "m2",
+          "expression_source": "floor_covering_area_m2",
+          "ast": {
+            "id": "floor_covering_area_m2",
+            "kind": "parameter"
+          },
+          "input_parameter_ids": [
+            "floor_covering_area_m2"
+          ],
+          "ast_sha256": "cb3122154b384f5ebc9a5edf41f7edbf12b5b1449fa03df463d3f960737fc01f"
+        },
+        {
+          "definition_version_id": "755f3fdf-9545-55e7-ab33-3e6518e35484",
+          "formula_id": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1",
+          "output_unit_id": "man_hour",
+          "expression_source": "floor_covering_area_m2 * 33 / 100",
+          "ast": {
+            "kind": "binary",
+            "left": {
+              "kind": "binary",
+              "left": {
+                "id": "floor_covering_area_m2",
+                "kind": "parameter"
+              },
+              "right": {
+                "kind": "literal",
+                "value": "33"
+              },
+              "operator": "*"
+            },
+            "right": {
+              "kind": "literal",
+              "value": "100"
+            },
+            "operator": "/"
+          },
+          "input_parameter_ids": [
+            "floor_covering_area_m2"
+          ],
+          "ast_sha256": "887d81212f0130b87a62b4b2d946acd3922d4a68f3fbe572a2675d89ef2e9fc6"
+        }
+      ],
+      "resources": [
+        {
+          "id": "61480fe2-d7b8-5f68-9d0c-2ac1900ca127",
+          "definition_version_id": "755f3fdf-9545-55e7-ab33-3e6518e35484",
+          "row_id": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+          "ordinal": 0,
+          "section": "Состав работ",
+          "category": "construction_work",
+          "title_ru": "Разборка покрытия пола из поливинилхлоридных листовых рулонных материалов в агрессивной среде",
+          "row_type": "labor",
+          "unit_id": "m2",
+          "formula_id": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_area_v1",
+          "inclusion_ast": {
+            "kind": "and",
+            "operands": [
+              {
+                "kind": "equals",
+                "value": "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT",
+                "parameterId": "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile"
+              },
+              {
+                "kind": "equals",
+                "value": true,
+                "parameterId": "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed"
+              }
+            ]
+          },
+          "resource_graph": {
+            "payable": false,
+            "costOwner": "scope",
+            "formulaId": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_area_v1",
+            "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+            "noDoubleCount": true,
+            "normalizedUom": "m2",
+            "quantityBasis": "CONFIRMED_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AREA_TIMES_EXACT_KRER_RATE_PER_100_M2",
+            "semanticOwnerId": "demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor:f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+            "parentCostOwnerId": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor",
+            "scopeContextParameterIds": [
+              "floor_covering_area_m2",
+              "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile",
+              "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed"
+            ],
+            "primaryMeasureParameterId": "floor_covering_area_m2"
+          },
+          "semantic_owner": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_small_area:f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+          "cost_owner_id": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+          "procurement_eligible": false,
+          "source_metadata": {
+            "synthetic": false,
+            "sourceRole": "OFFICIAL_KG_RESOURCE_NORM",
+            "includedInRate": [
+              "разборка существующего покрытия из поливинилхлоридных листовых рулонных материалов",
+              "уборка, вертикальное перемещение и переноска отходов до 50 м внутри объекта"
+            ],
+            "normativeTrace": [
+              {
+                "normId": "norm:kg:krer:46-04-011-14:2015",
+                "norm_id": "norm:kg:krer:46-04-011-14:2015",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "source_id": "kg_krer_46_2015_reconstruction_official",
+                "normVersion": "КРЕР 46-2015; введён в действие с 1 января 2016 года",
+                "source_title": "КРЕР 46-2015 «Работы при реконструкции зданий и сооружений», таблица 46-04-011",
+                "exact_locator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60",
+                "source_definition_hash": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471"
+              }
+            ],
+            "krerResourceCode": "46-04-011-14",
+            "excludedAdjacentScope": [
+              "основание и новая конструкция пола",
+              "другие покрытия, подстилающие слои и обычная среда",
+              "внеобъектовый вывоз и размещение отходов",
+              "скрытый коэффициент площади, запас или цена"
+            ],
+            "normativeRatePer100M2": 100,
+            "truth_contract_version": "R3"
+          },
+          "row_sha256": "efa834c0dc0550781b898beabecb8b942276ed896c81bf782e7b76fc7aa03a3f",
+          "created_at": "2026-09-24T05:22:05.218Z"
+        },
+        {
+          "id": "3b3df041-a7b9-5753-b3b1-d319d962cd46",
+          "definition_version_id": "755f3fdf-9545-55e7-ab33-3e6518e35484",
+          "row_id": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor",
+          "ordinal": 1,
+          "section": "Труд",
+          "category": "construction_work",
+          "title_ru": "Труд рабочих-строителей среднего разряда 2,0",
+          "row_type": "labor",
+          "unit_id": "man_hour",
+          "formula_id": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1",
+          "inclusion_ast": {
+            "kind": "and",
+            "operands": [
+              {
+                "kind": "equals",
+                "value": "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT",
+                "parameterId": "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile"
+              },
+              {
+                "kind": "equals",
+                "value": true,
+                "parameterId": "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed"
+              }
+            ]
+          },
+          "resource_graph": {
+            "payable": true,
+            "costOwner": "resource",
+            "formulaId": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1",
+            "costTreatment": "OWN_COST",
+            "noDoubleCount": true,
+            "normalizedUom": "man_hour",
+            "quantityBasis": "CONFIRMED_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AREA_TIMES_EXACT_KRER_RATE_PER_100_M2",
+            "semanticOwnerId": "demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor:f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor",
+            "scopeContextParameterIds": [
+              "floor_covering_area_m2",
+              "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile",
+              "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed"
+            ],
+            "primaryMeasureParameterId": "floor_covering_area_m2"
+          },
+          "semantic_owner": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_small_area:f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor",
+          "cost_owner_id": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor",
+          "procurement_eligible": false,
+          "source_metadata": {
+            "synthetic": false,
+            "sourceRole": "OFFICIAL_KG_RESOURCE_NORM",
+            "includedInRate": [
+              "разборка существующего покрытия из поливинилхлоридных листовых рулонных материалов",
+              "уборка, вертикальное перемещение и переноска отходов до 50 м внутри объекта"
+            ],
+            "normativeTrace": [
+              {
+                "normId": "norm:kg:krer:46-04-011-14:2015",
+                "norm_id": "norm:kg:krer:46-04-011-14:2015",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "source_id": "kg_krer_46_2015_reconstruction_official",
+                "normVersion": "КРЕР 46-2015; введён в действие с 1 января 2016 года",
+                "source_title": "КРЕР 46-2015 «Работы при реконструкции зданий и сооружений», таблица 46-04-011",
+                "exact_locator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60",
+                "source_definition_hash": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471"
+              }
+            ],
+            "krerResourceCode": "000-1002-0",
+            "excludedAdjacentScope": [
+              "основание и новая конструкция пола",
+              "другие покрытия, подстилающие слои и обычная среда",
+              "внеобъектовый вывоз и размещение отходов",
+              "скрытый коэффициент площади, запас или цена"
+            ],
+            "normativeRatePer100M2": 33,
+            "truth_contract_version": "R3"
+          },
+          "row_sha256": "456aa2bf34d7d90431a34ec10042b3826bf87f49e19a47ddd28ce34670438345",
+          "created_at": "2026-09-24T05:22:05.218Z"
+        }
+      ],
+      "bindings": [
+        {
+          "row_id": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor",
+          "locator_id": "59d23aec-1040-5307-a3b4-152d5e7cec40",
+          "applicability": {
+            "norm_id": "norm:kg:krer:46-04-011-14:2015",
+            "source_id": "kg_krer_46_2015_reconstruction_official",
+            "exact_locator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60",
+            "quantity_basis": "CONFIRMED_AREA_TIMES_EXACT_KRER_46_04_011_14_RATE_PER_100_M2",
+            "catalog_variant": "SMALL_AREA_CONFIRMED_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR",
+            "operation_class": "DISMANTLE_EXISTING_FLOOR_COVERING",
+            "technology_class": "AGGRESSIVE_ENVIRONMENT_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_DEMOLITION",
+            "environment_class": "AGGRESSIVE",
+            "official_artifact_sha256": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+            "existing_covering_material": "POLYVINYL_CHLORIDE_SHEET_ROLL",
+            "machine_resources_included": false,
+            "offsite_waste_haul_included": false
+          }
+        }
+      ],
+      "baseline": {
+        "id": "128339bc-156c-5ef8-80da-654c0ce25892",
+        "baseline_key": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-small_area-append-successor.v1:5e1e9a9f21366022:canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_small_area",
+        "catalog_id": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_small_area",
+        "definition_version_id": "755f3fdf-9545-55e7-ab33-3e6518e35484",
+        "source_definition_version_id": "755f3fdf-9545-55e7-ab33-3e6518e35484",
+        "parameter_schema_sha256": "debeb894ced841502052c579533f3a4d0c3631ad795d4746dc646b7042462ea4",
+        "input_values": {
+          "floor_covering_area_m2": 35.5,
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT",
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": true
+        },
+        "input_classification": {
+          "floor_covering_area_m2": "VALIDATION_FIXTURE",
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": "VALIDATION_FIXTURE",
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": "VALIDATION_FIXTURE"
+        },
+        "uom_by_parameter": {
+          "floor_covering_area_m2": "m2",
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": null,
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": null
+        },
+        "formula_consumer_ids": {
+          "floor_covering_area_m2": [
+            "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_area_v1",
+            "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1"
+          ],
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": [],
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": []
+        },
+        "resource_consumer_row_ids": {
+          "floor_covering_area_m2": [
+            "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+            "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+          ],
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": [
+            "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+            "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+          ],
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": [
+            "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+            "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+          ]
+        },
+        "normative_source_ids": {
+          "floor_covering_area_m2": [
+            "kg_krer_46_2015_reconstruction_official"
+          ],
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": [
+            "kg_krer_46_2015_reconstruction_official"
+          ],
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": [
+            "kg_krer_46_2015_reconstruction_official"
+          ]
+        },
+        "guide_provenance_ru": {
+          "floor_covering_area_m2": "Укажите чистую фактическую площадь снимаемого покрытия без автоматически добавленного запаса.",
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": "Подтвердите по обследованию покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде.",
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": "Подтвердите по обследованию покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде."
+        },
+        "proposal_source_refs": [
+          {
+            "contract": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-small_area-append-successor.v1",
+            "sourceId": "kg_krer_46_2015_reconstruction_official",
+            "sourceKind": "OFFICIAL_KG_UNIT_RATE",
+            "exactLocator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60"
+          }
+        ],
+        "validation_scenario_refs": [
+          {
+            "fixture": {
+              "floor_covering_area_m2": 35.5,
+              "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT",
+              "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": true
+            },
+            "scenario": "F09_AGGRESSIVE_ENVIRONMENT_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_DEMOLITION_KRER46_14_SMALL_AREA",
+            "shortInput": {
+              "floor_covering_area_m2": 100,
+              "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT",
+              "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": true
+            },
+            "coreAcceptance": {
+              "short": {
+                "rowCount": 2,
+                "quantities": [
+                  "100",
+                  "33"
+                ]
+              },
+              "status": "GREEN_S273_F09_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_DEMOLITION_KRER46_14_SMALL_AREA_CORE",
+              "catalogId": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_small_area",
+              "exactRate": "46-04-011-14",
+              "acceptance": {
+                "areaM2": "35.5",
+                "quantities": [
+                  "35.5",
+                  "11.715"
+                ]
+              },
+              "incomplete": {
+                "rowCount": 0,
+                "preliminaryNeedCount": 2
+              },
+              "variantKey": "small_area",
+              "serializedSha256": "f3f1ae4eabf76953d611fbcf56329cbe9a190dac1b939ff0e0f019626280c9e8",
+              "machineResourcesIncluded": false,
+              "offsiteWasteHaulIncluded": false,
+              "classificationFactorClaimed": false,
+              "thicknessAdjustmentRateIncluded": false,
+              "salvageableTileOrBrickCleaningApplicable": false
+            },
+            "runtimeProfile": {},
+            "runtimeProfileSourceIds": {},
+            "acceptanceEvidenceSha256": "efe7432328c748217657a378a6c874917e357f4f5f9d85ea5f8f5476696c1471",
+            "runtimeProfileClassification": {}
+          }
+        ],
+        "acceptance_evidence_sha256": "efe7432328c748217657a378a6c874917e357f4f5f9d85ea5f8f5476696c1471",
+        "accepted_release_id": "bdf1c963-dc17-5d9b-aae9-558ba3e0eab1",
+        "accepted_at": "2026-09-24T05:22:06.578Z",
+        "supersedes_baseline_id": null,
+        "contract_version": "APPROVED_TEMPLATE_BASELINE_R54_V1"
+      },
+      "passport": {
+        "definition_version_id": "755f3fdf-9545-55e7-ab33-3e6518e35484",
+        "release_id": "bdf1c963-dc17-5d9b-aae9-558ba3e0eab1",
+        "catalog_id": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_small_area",
+        "contract_version": "real-professional-estimates-r3.content-passport.v1",
+        "identity_mode": "WORK",
+        "redirect_catalog_id": null,
+        "physical_result_ru": "Подтверждённая площадь существующего покрытия пола из поливинилхлоридных листовых рулонных материалов в агрессивной среде (малая площадь) разобрана по КРЕР 46-04-011-14",
+        "included_scope_ru": [
+          "разборка существующего покрытия пола из поливинилхлоридных листовых рулонных материалов",
+          "труд рабочих среднего разряда 2,0 по норме 33,00 чел.-ч на 100 м²",
+          "уборка, вертикальное перемещение и переноска отходов до 50 м внутри объекта"
+        ],
+        "excluded_scope_ru": [
+          "очистка годных плиток или кирпича — неприменима к листовым рулонным материалам",
+          "труд машинистов и машины — отсутствуют в колонке 46-04-011-14",
+          "основание и новая конструкция пола",
+          "другие материалы покрытия и обычная среда",
+          "внеобъектовый вывоз и размещение отходов",
+          "скрытый коэффициент площади и неподтверждённые цены"
+        ],
+        "capability_matrix": [
+          {
+            "status": "GREEN",
+            "capability": "PARAMETERS"
+          },
+          {
+            "status": "GREEN",
+            "capability": "FORMULAS_AND_PHYSICAL_PARITY"
+          },
+          {
+            "status": "GREEN",
+            "capability": "FULL_APPLICABLE_SCOPE"
+          },
+          {
+            "status": "GREEN_UNKNOWN_IS_NULL",
+            "capability": "PRICE"
+          }
+        ],
+        "parameter_count": 3,
+        "formula_count": 2,
+        "resource_count": 2,
+        "decision": {
+          "status": "GREEN",
+          "allowed": true,
+          "contract": "real-professional-estimates-r3.content-passport.v1",
+          "priceState": "PARTIAL_NEEDS_PRICE",
+          "waveContract": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-small_area-append-successor.v1",
+          "quantityScope": "FULL",
+          "activationAllowed": false,
+          "productionEligible": false,
+          "independentCompletenessMap": {
+            "entries": [
+              {
+                "unitId": "m2",
+                "category": "construction_work",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "condition": "confirmed_krer_46_04_011_14_polyvinyl_chloride_sheet_roll_floor_in_aggressive_environment",
+                "formulaId": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_area_v1",
+                "resolution": {
+                  "kind": "INCLUDED_COMPONENT_ROW",
+                  "rowId": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+                  "parentRowId": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+                },
+                "operationId": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition",
+                "quantityRule": "CONFIRMED_AREA_MULTIPLIED_BY_EXACT_KRER_RATE_PER_100_M2",
+                "priceRelation": "INCLUDED_IN_PARENT",
+                "specification": "Разборка покрытия из поливинилхлоридных листовых рулонных материалов",
+                "detailPrinciple": "EXACT_OFFICIAL_RATE_COLUMN_WITHOUT_AREA_FACTOR",
+                "expectedResourceId": "required-resource:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition"
+              },
+              {
+                "unitId": "man_hour",
+                "category": "construction_work",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "condition": "confirmed_krer_46_04_011_14_polyvinyl_chloride_sheet_roll_floor_in_aggressive_environment",
+                "formulaId": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+                },
+                "operationId": "construction_labor_grade_2_0",
+                "quantityRule": "CONFIRMED_AREA_MULTIPLIED_BY_EXACT_KRER_RATE_PER_100_M2",
+                "priceRelation": "OWN_COST",
+                "specification": "33,00 чел.-ч на 100 м²",
+                "detailPrinciple": "EXACT_OFFICIAL_RATE_COLUMN_WITHOUT_AREA_FACTOR",
+                "expectedResourceId": "required-resource:construction_labor_grade_2_0"
+              },
+              {
+                "unitId": "man_hour",
+                "category": "construction_work",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "condition": "not_applicable_to_polyvinyl_chloride_sheet_roll_floor",
+                "resolution": {
+                  "kind": "NOT_APPLICABLE",
+                  "reasonRu": "Покрытие выполнено из поливинилхлоридных листовых рулонных материалов; годные плитки и кирпич отсутствуют."
+                },
+                "operationId": "clean_salvageable_brick_from_mortar",
+                "quantityRule": "NOT_APPLICABLE_TO_CONFIRMED_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR",
+                "priceRelation": "NOT_APPLICABLE",
+                "specification": "Очистка годного кирпича от раствора",
+                "detailPrinciple": "REVIEWED_EXCLUSION",
+                "expectedResourceId": "required-operation:clean-salvageable-brick"
+              },
+              {
+                "unitId": "man_hour",
+                "category": "construction_work",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "condition": "selected_krer_46_reconstruction_rate",
+                "formulaId": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1",
+                "resolution": {
+                  "kind": "INCLUDED_IN_PARENT",
+                  "parentRowId": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+                },
+                "operationId": "internal_debris_handling_within_object",
+                "quantityRule": "INCLUDED_IN_OFFICIAL_LABOR_RATE",
+                "priceRelation": "INCLUDED_IN_PARENT",
+                "specification": "Уборка, вертикальное перемещение и переноска до 50 м",
+                "detailPrinciple": "NO_SEPARATE_DUPLICATE_ROW",
+                "expectedResourceId": "required-operation:internal-debris-handling-within-object"
+              },
+              {
+                "unitId": "t_km",
+                "category": "service",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "condition": "not_in_krer_46_04_011_14",
+                "resolution": {
+                  "kind": "NOT_APPLICABLE",
+                  "reasonRu": "КРЕР 46, п. 1.1 прямо исключает вывоз строительного мусора."
+                },
+                "operationId": "offsite_waste_haul",
+                "quantityRule": "PROJECT_WASTE_PLAN_REQUIRED",
+                "priceRelation": "SEPARATE_IF_APPLICABLE",
+                "specification": "Внеобъектовый вывоз отходов",
+                "detailPrinciple": "EXCLUDED_FROM_RATE",
+                "expectedResourceId": "adjacent-operation:offsite-waste-haul"
+              }
+            ],
+            "contract": "rik-expo-app.s26-3.independent-completeness-map.v1",
+            "rateTable": "KRER_46_04_011_14",
+            "sourceKind": "NORMATIVE_OPERATION_MAP",
+            "evidenceSha256": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+            "evidenceReferences": [
+              "https://minstroy.gov.kg/ru/kyzmat/459/show",
+              "КРЕР 46-2015, PDF/печатные страницы 5, 58, 59 и 60"
+            ],
+            "generatedFromCurrentRows": false
+          }
+        },
+        "payload_sha256": "ec5e49171dd30f6415628fff6841f3dfef4dc286eea09d8f6e651b660c3432b9",
+        "source_head": "351ffac03a048169e2574df8be04d5ca1b571b95",
+        "source_tree": "308f5ce96f190fdfb46add8f57ea9824db483889",
+        "created_at": "2026-09-24T05:22:05.218Z"
+      }
+    },
+    {
+      "definition": {
+        "id": "d9e33369-48c5-5cb9-8def-cae4cd8c06c9",
+        "release_id": "7c285c94-0fff-575a-97af-535698d9890c",
+        "catalog_id": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_standard",
+        "definition_version": 1,
+        "passport": {
+          "workKey": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_krer_46_04_011_14_standard",
+          "catalogId": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_standard",
+          "canonicalRuName": "Разборка покрытия пола из поливинилхлоридных листовых рулонных материалов в агрессивной среде",
+          "projectSourceId": "kg_krer_46_2015_reconstruction_official",
+          "physicalResultRu": "Подтверждённая площадь существующего покрытия пола из поливинилхлоридных листовых рулонных материалов в агрессивной среде (стандартный вариант) разобрана по КРЕР 46-04-011-14"
+        },
+        "applicability": {
+          "country": "KG",
+          "exactRate": "46-04-011-14",
+          "catalogVariant": "STANDARD_CONFIRMED_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR",
+          "operationClass": "DISMANTLE_EXISTING_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_COVERING_IN_AGGRESSIVE_ENVIRONMENT",
+          "environmentClass": "AGGRESSIVE",
+          "geometryParameters": [
+            "floor_covering_area_m2"
+          ],
+          "officialArtifactSha256": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+          "officialUnitRateSource": "kg_krer_46_2015_reconstruction_official",
+          "existingCoveringMaterial": "POLYVINYL_CHLORIDE_SHEET_ROLL",
+          "machineResourcesIncluded": false,
+          "offsiteWasteHaulIncluded": false,
+          "primaryMeasureParameterId": "floor_covering_area_m2",
+          "classificationFactorClaimed": false
+        },
+        "definition_sha256": "a9ee8aa15bf33bff1cf48a4d836da7e2155a6977fb755dc34b9da45cbc9780ba",
+        "source_metadata": {
+          "normId": "norm:kg:krer:46-04-011-14:2015",
+          "contract": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-standard-append-successor.v1",
+          "sourceId": "kg_krer_46_2015_reconstruction_official",
+          "masterSha256": "1f683fef61d8b968c752163d6e361c45e5e6751e461c8be2b723761eac952f9a",
+          "activationAllowed": false,
+          "sourceFingerprint": "c529c67fa416334ef98c62fee4b064e0cf97784d9c76ba9c2c910e3b2ac20c48",
+          "productionEligible": false,
+          "invalidSuppliedValuePolicy": "REJECT",
+          "knownWorkScopeFirstEstimate": true,
+          "missingProjectQuantityPolicy": "PRELIMINARY_NEED"
+        },
+        "created_at": "2026-09-24T05:21:34.827Z",
+        "content_status": "CANDIDATE_READY",
+        "content_gate_status": "GREEN"
+      },
+      "parameters": [
+        {
+          "definition_version_id": "d9e33369-48c5-5cb9-8def-cae4cd8c06c9",
+          "parameter_id": "floor_covering_area_m2",
+          "ordinal": 0,
+          "value_type": "decimal",
+          "unit_id": "m2",
+          "title_ru": "Площадь покрытия пола из поливинилхлоридных листовых рулонных материалов в агрессивной среде",
+          "required": true,
+          "default_value": null,
+          "constraints_json": {
+            "min": 0.000001
+          },
+          "truth_metadata": {
+            "guide": {
+              "guide_kind": "MEASUREMENT_RULE",
+              "source_role": "OFFICIAL_KG_UNIT_RATE_AND_EXISTING_CONDITION_SURVEY",
+              "verified_at": "2026-09-24T09:45:00+06:00",
+              "applicability": "Только таблица 46-04-011, колонка 14: покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде; другие покрытия и колонки не подменяются.",
+              "guide_version": "aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-r1",
+              "guide_short_ru": "Укажите чистую фактическую площадь снимаемого покрытия без автоматически добавленного запаса.",
+              "source_locator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60",
+              "source_document": "kg_krer_46_2015_reconstruction_official",
+              "source_snapshot_hash": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+              "guide_validation_policy": "DEFER_MISSING_APPLICABILITY_REJECT_WRONG_MATERIAL_BEDDING_ENVIRONMENT_OR_PROFILE"
+            },
+            "contract": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-standard-append-successor.v1",
+            "synthetic": false,
+            "visibility_role": "USER_INPUT",
+            "formula_consumers": [
+              "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_area_v1",
+              "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1"
+            ],
+            "value_source_role": "USER_OR_APPROVED_EXISTING_CONDITION_SURVEY",
+            "input_origin_class": "KNOWN_WORK_SCOPE",
+            "semantic_parameter_key": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_standard:floor_covering_area_m2",
+            "hidden_default_forbidden": true,
+            "resource_branch_consumers": [
+              "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+              "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+            ],
+            "source_confirmation_required": false,
+            "preliminary_compilation_allowed": true
+          },
+          "approved_template_baseline_id": "e97c2dc1-8de2-5b4e-b9c2-4a7916f4721b"
+        },
+        {
+          "definition_version_id": "d9e33369-48c5-5cb9-8def-cae4cd8c06c9",
+          "parameter_id": "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile",
+          "ordinal": 1,
+          "value_type": "enum",
+          "unit_id": null,
+          "title_ru": "Выбранная колонка КРЕР для существующего покрытия из поливинилхлоридных листовых рулонных материалов",
+          "required": true,
+          "default_value": null,
+          "constraints_json": {
+            "values": [
+              "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT"
+            ]
+          },
+          "truth_metadata": {
+            "guide": {
+              "guide_kind": "ENUM_DECISION_RULE",
+              "source_role": "OFFICIAL_KG_UNIT_RATE_AND_EXISTING_CONDITION_SURVEY",
+              "verified_at": "2026-09-24T09:45:00+06:00",
+              "applicability": "Только таблица 46-04-011, колонка 14: покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде; другие покрытия и колонки не подменяются.",
+              "guide_version": "aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-r1",
+              "guide_short_ru": "Подтвердите по обследованию покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде.",
+              "source_locator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60",
+              "source_document": "kg_krer_46_2015_reconstruction_official",
+              "source_snapshot_hash": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+              "guide_validation_policy": "DEFER_MISSING_APPLICABILITY_REJECT_WRONG_MATERIAL_BEDDING_ENVIRONMENT_OR_PROFILE"
+            },
+            "contract": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-standard-append-successor.v1",
+            "synthetic": false,
+            "visibility_role": "USER_INPUT",
+            "formula_consumers": [],
+            "value_source_role": "USER_OR_APPROVED_EXISTING_CONDITION_SURVEY",
+            "input_origin_class": "EXISTING_CONDITION_AND_RATE_APPLICABILITY_CONFIRMATION",
+            "semantic_parameter_key": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_standard:existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile",
+            "hidden_default_forbidden": true,
+            "resource_branch_consumers": [
+              "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+              "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+            ],
+            "source_confirmation_required": true,
+            "preliminary_compilation_allowed": true
+          },
+          "approved_template_baseline_id": "e97c2dc1-8de2-5b4e-b9c2-4a7916f4721b"
+        },
+        {
+          "definition_version_id": "d9e33369-48c5-5cb9-8def-cae4cd8c06c9",
+          "parameter_id": "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed",
+          "ordinal": 2,
+          "value_type": "boolean",
+          "unit_id": null,
+          "title_ru": "Подтверждено существующее покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде",
+          "required": true,
+          "default_value": null,
+          "constraints_json": {},
+          "truth_metadata": {
+            "guide": {
+              "guide_kind": "PROJECT_DEFINED",
+              "source_role": "OFFICIAL_KG_UNIT_RATE_AND_EXISTING_CONDITION_SURVEY",
+              "verified_at": "2026-09-24T09:45:00+06:00",
+              "applicability": "Только таблица 46-04-011, колонка 14: покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде; другие покрытия и колонки не подменяются.",
+              "guide_version": "aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-r1",
+              "guide_short_ru": "Подтвердите по обследованию покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде.",
+              "source_locator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60",
+              "source_document": "kg_krer_46_2015_reconstruction_official",
+              "source_snapshot_hash": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+              "guide_validation_policy": "DEFER_MISSING_APPLICABILITY_REJECT_WRONG_MATERIAL_BEDDING_ENVIRONMENT_OR_PROFILE"
+            },
+            "contract": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-standard-append-successor.v1",
+            "synthetic": false,
+            "visibility_role": "USER_INPUT",
+            "formula_consumers": [],
+            "value_source_role": "USER_OR_APPROVED_EXISTING_CONDITION_SURVEY",
+            "input_origin_class": "EXISTING_CONDITION_AND_RATE_APPLICABILITY_CONFIRMATION",
+            "semantic_parameter_key": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_standard:existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed",
+            "hidden_default_forbidden": true,
+            "resource_branch_consumers": [
+              "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+              "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+            ],
+            "source_confirmation_required": true,
+            "preliminary_compilation_allowed": true
+          },
+          "approved_template_baseline_id": "e97c2dc1-8de2-5b4e-b9c2-4a7916f4721b"
+        }
+      ],
+      "formulas": [
+        {
+          "definition_version_id": "d9e33369-48c5-5cb9-8def-cae4cd8c06c9",
+          "formula_id": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_area_v1",
+          "output_unit_id": "m2",
+          "expression_source": "floor_covering_area_m2",
+          "ast": {
+            "id": "floor_covering_area_m2",
+            "kind": "parameter"
+          },
+          "input_parameter_ids": [
+            "floor_covering_area_m2"
+          ],
+          "ast_sha256": "cb3122154b384f5ebc9a5edf41f7edbf12b5b1449fa03df463d3f960737fc01f"
+        },
+        {
+          "definition_version_id": "d9e33369-48c5-5cb9-8def-cae4cd8c06c9",
+          "formula_id": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1",
+          "output_unit_id": "man_hour",
+          "expression_source": "floor_covering_area_m2 * 33 / 100",
+          "ast": {
+            "kind": "binary",
+            "left": {
+              "kind": "binary",
+              "left": {
+                "id": "floor_covering_area_m2",
+                "kind": "parameter"
+              },
+              "right": {
+                "kind": "literal",
+                "value": "33"
+              },
+              "operator": "*"
+            },
+            "right": {
+              "kind": "literal",
+              "value": "100"
+            },
+            "operator": "/"
+          },
+          "input_parameter_ids": [
+            "floor_covering_area_m2"
+          ],
+          "ast_sha256": "887d81212f0130b87a62b4b2d946acd3922d4a68f3fbe572a2675d89ef2e9fc6"
+        }
+      ],
+      "resources": [
+        {
+          "id": "dfa375fe-ff4a-50de-b778-2d8b51575560",
+          "definition_version_id": "d9e33369-48c5-5cb9-8def-cae4cd8c06c9",
+          "row_id": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+          "ordinal": 0,
+          "section": "Состав работ",
+          "category": "construction_work",
+          "title_ru": "Разборка покрытия пола из поливинилхлоридных листовых рулонных материалов в агрессивной среде",
+          "row_type": "labor",
+          "unit_id": "m2",
+          "formula_id": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_area_v1",
+          "inclusion_ast": {
+            "kind": "and",
+            "operands": [
+              {
+                "kind": "equals",
+                "value": "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT",
+                "parameterId": "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile"
+              },
+              {
+                "kind": "equals",
+                "value": true,
+                "parameterId": "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed"
+              }
+            ]
+          },
+          "resource_graph": {
+            "payable": false,
+            "costOwner": "scope",
+            "formulaId": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_area_v1",
+            "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+            "noDoubleCount": true,
+            "normalizedUom": "m2",
+            "quantityBasis": "CONFIRMED_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AREA_TIMES_EXACT_KRER_RATE_PER_100_M2",
+            "semanticOwnerId": "demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor:f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+            "parentCostOwnerId": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor",
+            "scopeContextParameterIds": [
+              "floor_covering_area_m2",
+              "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile",
+              "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed"
+            ],
+            "primaryMeasureParameterId": "floor_covering_area_m2"
+          },
+          "semantic_owner": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_standard:f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+          "cost_owner_id": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+          "procurement_eligible": false,
+          "source_metadata": {
+            "synthetic": false,
+            "sourceRole": "OFFICIAL_KG_RESOURCE_NORM",
+            "includedInRate": [
+              "разборка существующего покрытия из поливинилхлоридных листовых рулонных материалов",
+              "уборка, вертикальное перемещение и переноска отходов до 50 м внутри объекта"
+            ],
+            "normativeTrace": [
+              {
+                "normId": "norm:kg:krer:46-04-011-14:2015",
+                "norm_id": "norm:kg:krer:46-04-011-14:2015",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "source_id": "kg_krer_46_2015_reconstruction_official",
+                "normVersion": "КРЕР 46-2015; введён в действие с 1 января 2016 года",
+                "source_title": "КРЕР 46-2015 «Работы при реконструкции зданий и сооружений», таблица 46-04-011",
+                "exact_locator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60",
+                "source_definition_hash": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471"
+              }
+            ],
+            "krerResourceCode": "46-04-011-14",
+            "excludedAdjacentScope": [
+              "основание и новая конструкция пола",
+              "другие покрытия, подстилающие слои и обычная среда",
+              "внеобъектовый вывоз и размещение отходов",
+              "скрытый коэффициент площади, запас или цена"
+            ],
+            "normativeRatePer100M2": 100,
+            "truth_contract_version": "R3"
+          },
+          "row_sha256": "10b5ca40e981f652ec1a787e63e666e3d04f347d09d44fd897b96c87ab148c25",
+          "created_at": "2026-09-24T05:21:34.827Z"
+        },
+        {
+          "id": "5fd6e536-13b8-55f8-87df-300e3602ddf0",
+          "definition_version_id": "d9e33369-48c5-5cb9-8def-cae4cd8c06c9",
+          "row_id": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor",
+          "ordinal": 1,
+          "section": "Труд",
+          "category": "construction_work",
+          "title_ru": "Труд рабочих-строителей среднего разряда 2,0",
+          "row_type": "labor",
+          "unit_id": "man_hour",
+          "formula_id": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1",
+          "inclusion_ast": {
+            "kind": "and",
+            "operands": [
+              {
+                "kind": "equals",
+                "value": "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT",
+                "parameterId": "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile"
+              },
+              {
+                "kind": "equals",
+                "value": true,
+                "parameterId": "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed"
+              }
+            ]
+          },
+          "resource_graph": {
+            "payable": true,
+            "costOwner": "resource",
+            "formulaId": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1",
+            "costTreatment": "OWN_COST",
+            "noDoubleCount": true,
+            "normalizedUom": "man_hour",
+            "quantityBasis": "CONFIRMED_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AREA_TIMES_EXACT_KRER_RATE_PER_100_M2",
+            "semanticOwnerId": "demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor:f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor",
+            "scopeContextParameterIds": [
+              "floor_covering_area_m2",
+              "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile",
+              "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed"
+            ],
+            "primaryMeasureParameterId": "floor_covering_area_m2"
+          },
+          "semantic_owner": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_standard:f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor",
+          "cost_owner_id": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor",
+          "procurement_eligible": false,
+          "source_metadata": {
+            "synthetic": false,
+            "sourceRole": "OFFICIAL_KG_RESOURCE_NORM",
+            "includedInRate": [
+              "разборка существующего покрытия из поливинилхлоридных листовых рулонных материалов",
+              "уборка, вертикальное перемещение и переноска отходов до 50 м внутри объекта"
+            ],
+            "normativeTrace": [
+              {
+                "normId": "norm:kg:krer:46-04-011-14:2015",
+                "norm_id": "norm:kg:krer:46-04-011-14:2015",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "source_id": "kg_krer_46_2015_reconstruction_official",
+                "normVersion": "КРЕР 46-2015; введён в действие с 1 января 2016 года",
+                "source_title": "КРЕР 46-2015 «Работы при реконструкции зданий и сооружений», таблица 46-04-011",
+                "exact_locator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60",
+                "source_definition_hash": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471"
+              }
+            ],
+            "krerResourceCode": "000-1002-0",
+            "excludedAdjacentScope": [
+              "основание и новая конструкция пола",
+              "другие покрытия, подстилающие слои и обычная среда",
+              "внеобъектовый вывоз и размещение отходов",
+              "скрытый коэффициент площади, запас или цена"
+            ],
+            "normativeRatePer100M2": 33,
+            "truth_contract_version": "R3"
+          },
+          "row_sha256": "b4290e5f2f8f19fac4a9a93334990cd9352cb06a6e5ca05385fb0ae9313c9aed",
+          "created_at": "2026-09-24T05:21:34.827Z"
+        }
+      ],
+      "bindings": [
+        {
+          "row_id": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor",
+          "locator_id": "587e462e-724e-5f5c-bdfd-e07c1d3523fd",
+          "applicability": {
+            "norm_id": "norm:kg:krer:46-04-011-14:2015",
+            "source_id": "kg_krer_46_2015_reconstruction_official",
+            "exact_locator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60",
+            "quantity_basis": "CONFIRMED_AREA_TIMES_EXACT_KRER_46_04_011_14_RATE_PER_100_M2",
+            "catalog_variant": "STANDARD_CONFIRMED_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR",
+            "operation_class": "DISMANTLE_EXISTING_FLOOR_COVERING",
+            "technology_class": "AGGRESSIVE_ENVIRONMENT_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_DEMOLITION",
+            "environment_class": "AGGRESSIVE",
+            "official_artifact_sha256": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+            "existing_covering_material": "POLYVINYL_CHLORIDE_SHEET_ROLL",
+            "machine_resources_included": false,
+            "offsite_waste_haul_included": false
+          }
+        }
+      ],
+      "baseline": {
+        "id": "e97c2dc1-8de2-5b4e-b9c2-4a7916f4721b",
+        "baseline_key": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-standard-append-successor.v1:c529c67fa416334e:canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_standard",
+        "catalog_id": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_standard",
+        "definition_version_id": "d9e33369-48c5-5cb9-8def-cae4cd8c06c9",
+        "source_definition_version_id": "d9e33369-48c5-5cb9-8def-cae4cd8c06c9",
+        "parameter_schema_sha256": "debeb894ced841502052c579533f3a4d0c3631ad795d4746dc646b7042462ea4",
+        "input_values": {
+          "floor_covering_area_m2": 35.5,
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT",
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": true
+        },
+        "input_classification": {
+          "floor_covering_area_m2": "VALIDATION_FIXTURE",
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": "VALIDATION_FIXTURE",
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": "VALIDATION_FIXTURE"
+        },
+        "uom_by_parameter": {
+          "floor_covering_area_m2": "m2",
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": null,
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": null
+        },
+        "formula_consumer_ids": {
+          "floor_covering_area_m2": [
+            "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_area_v1",
+            "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1"
+          ],
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": [],
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": []
+        },
+        "resource_consumer_row_ids": {
+          "floor_covering_area_m2": [
+            "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+            "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+          ],
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": [
+            "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+            "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+          ],
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": [
+            "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+            "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+          ]
+        },
+        "normative_source_ids": {
+          "floor_covering_area_m2": [
+            "kg_krer_46_2015_reconstruction_official"
+          ],
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": [
+            "kg_krer_46_2015_reconstruction_official"
+          ],
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": [
+            "kg_krer_46_2015_reconstruction_official"
+          ]
+        },
+        "guide_provenance_ru": {
+          "floor_covering_area_m2": "Укажите чистую фактическую площадь снимаемого покрытия без автоматически добавленного запаса.",
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": "Подтвердите по обследованию покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде.",
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": "Подтвердите по обследованию покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде."
+        },
+        "proposal_source_refs": [
+          {
+            "contract": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-standard-append-successor.v1",
+            "sourceId": "kg_krer_46_2015_reconstruction_official",
+            "sourceKind": "OFFICIAL_KG_UNIT_RATE",
+            "exactLocator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60"
+          }
+        ],
+        "validation_scenario_refs": [
+          {
+            "fixture": {
+              "floor_covering_area_m2": 35.5,
+              "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT",
+              "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": true
+            },
+            "scenario": "F09_AGGRESSIVE_ENVIRONMENT_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_DEMOLITION_KRER46_14_STANDARD",
+            "shortInput": {
+              "floor_covering_area_m2": 100,
+              "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT",
+              "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": true
+            },
+            "coreAcceptance": {
+              "short": {
+                "rowCount": 2,
+                "quantities": [
+                  "100",
+                  "33"
+                ]
+              },
+              "status": "GREEN_S273_F09_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_DEMOLITION_KRER46_14_STANDARD_CORE",
+              "catalogId": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_standard",
+              "exactRate": "46-04-011-14",
+              "acceptance": {
+                "areaM2": "35.5",
+                "quantities": [
+                  "35.5",
+                  "11.715"
+                ]
+              },
+              "incomplete": {
+                "rowCount": 0,
+                "preliminaryNeedCount": 2
+              },
+              "variantKey": "standard",
+              "serializedSha256": "d0479d6fc7bea98a08342c56d65b5a31b45649c56308b3b568a9003934ed0090",
+              "machineResourcesIncluded": false,
+              "offsiteWasteHaulIncluded": false,
+              "classificationFactorClaimed": false,
+              "thicknessAdjustmentRateIncluded": false,
+              "salvageableTileOrBrickCleaningApplicable": false
+            },
+            "runtimeProfile": {},
+            "runtimeProfileSourceIds": {},
+            "acceptanceEvidenceSha256": "5401d10796a0bbfe310cc096d68c2ef142a9ffdfabf1a8f94bbe432a82623867",
+            "runtimeProfileClassification": {}
+          }
+        ],
+        "acceptance_evidence_sha256": "5401d10796a0bbfe310cc096d68c2ef142a9ffdfabf1a8f94bbe432a82623867",
+        "accepted_release_id": "7c285c94-0fff-575a-97af-535698d9890c",
+        "accepted_at": "2026-09-24T05:21:35.729Z",
+        "supersedes_baseline_id": null,
+        "contract_version": "APPROVED_TEMPLATE_BASELINE_R54_V1"
+      },
+      "passport": {
+        "definition_version_id": "d9e33369-48c5-5cb9-8def-cae4cd8c06c9",
+        "release_id": "7c285c94-0fff-575a-97af-535698d9890c",
+        "catalog_id": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_standard",
+        "contract_version": "real-professional-estimates-r3.content-passport.v1",
+        "identity_mode": "WORK",
+        "redirect_catalog_id": null,
+        "physical_result_ru": "Подтверждённая площадь существующего покрытия пола из поливинилхлоридных листовых рулонных материалов в агрессивной среде (стандартный вариант) разобрана по КРЕР 46-04-011-14",
+        "included_scope_ru": [
+          "разборка существующего покрытия пола из поливинилхлоридных листовых рулонных материалов",
+          "труд рабочих среднего разряда 2,0 по норме 33,00 чел.-ч на 100 м²",
+          "уборка, вертикальное перемещение и переноска отходов до 50 м внутри объекта"
+        ],
+        "excluded_scope_ru": [
+          "очистка годных плиток или кирпича — неприменима к листовым рулонным материалам",
+          "труд машинистов и машины — отсутствуют в колонке 46-04-011-14",
+          "основание и новая конструкция пола",
+          "другие материалы покрытия и обычная среда",
+          "внеобъектовый вывоз и размещение отходов",
+          "скрытый коэффициент площади и неподтверждённые цены"
+        ],
+        "capability_matrix": [
+          {
+            "status": "GREEN",
+            "capability": "PARAMETERS"
+          },
+          {
+            "status": "GREEN",
+            "capability": "FORMULAS_AND_PHYSICAL_PARITY"
+          },
+          {
+            "status": "GREEN",
+            "capability": "FULL_APPLICABLE_SCOPE"
+          },
+          {
+            "status": "GREEN_UNKNOWN_IS_NULL",
+            "capability": "PRICE"
+          }
+        ],
+        "parameter_count": 3,
+        "formula_count": 2,
+        "resource_count": 2,
+        "decision": {
+          "status": "GREEN",
+          "allowed": true,
+          "contract": "real-professional-estimates-r3.content-passport.v1",
+          "priceState": "PARTIAL_NEEDS_PRICE",
+          "waveContract": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-standard-append-successor.v1",
+          "quantityScope": "FULL",
+          "activationAllowed": false,
+          "productionEligible": false,
+          "independentCompletenessMap": {
+            "entries": [
+              {
+                "unitId": "m2",
+                "category": "construction_work",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "condition": "confirmed_krer_46_04_011_14_polyvinyl_chloride_sheet_roll_floor_in_aggressive_environment",
+                "formulaId": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_area_v1",
+                "resolution": {
+                  "kind": "INCLUDED_COMPONENT_ROW",
+                  "rowId": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+                  "parentRowId": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+                },
+                "operationId": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition",
+                "quantityRule": "CONFIRMED_AREA_MULTIPLIED_BY_EXACT_KRER_RATE_PER_100_M2",
+                "priceRelation": "INCLUDED_IN_PARENT",
+                "specification": "Разборка покрытия из поливинилхлоридных листовых рулонных материалов",
+                "detailPrinciple": "EXACT_OFFICIAL_RATE_COLUMN_WITHOUT_AREA_FACTOR",
+                "expectedResourceId": "required-resource:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition"
+              },
+              {
+                "unitId": "man_hour",
+                "category": "construction_work",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "condition": "confirmed_krer_46_04_011_14_polyvinyl_chloride_sheet_roll_floor_in_aggressive_environment",
+                "formulaId": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+                },
+                "operationId": "construction_labor_grade_2_0",
+                "quantityRule": "CONFIRMED_AREA_MULTIPLIED_BY_EXACT_KRER_RATE_PER_100_M2",
+                "priceRelation": "OWN_COST",
+                "specification": "33,00 чел.-ч на 100 м²",
+                "detailPrinciple": "EXACT_OFFICIAL_RATE_COLUMN_WITHOUT_AREA_FACTOR",
+                "expectedResourceId": "required-resource:construction_labor_grade_2_0"
+              },
+              {
+                "unitId": "man_hour",
+                "category": "construction_work",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "condition": "not_applicable_to_polyvinyl_chloride_sheet_roll_floor",
+                "resolution": {
+                  "kind": "NOT_APPLICABLE",
+                  "reasonRu": "Покрытие выполнено из поливинилхлоридных листовых рулонных материалов; годные плитки и кирпич отсутствуют."
+                },
+                "operationId": "clean_salvageable_brick_from_mortar",
+                "quantityRule": "NOT_APPLICABLE_TO_CONFIRMED_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR",
+                "priceRelation": "NOT_APPLICABLE",
+                "specification": "Очистка годного кирпича от раствора",
+                "detailPrinciple": "REVIEWED_EXCLUSION",
+                "expectedResourceId": "required-operation:clean-salvageable-brick"
+              },
+              {
+                "unitId": "man_hour",
+                "category": "construction_work",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "condition": "selected_krer_46_reconstruction_rate",
+                "formulaId": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1",
+                "resolution": {
+                  "kind": "INCLUDED_IN_PARENT",
+                  "parentRowId": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+                },
+                "operationId": "internal_debris_handling_within_object",
+                "quantityRule": "INCLUDED_IN_OFFICIAL_LABOR_RATE",
+                "priceRelation": "INCLUDED_IN_PARENT",
+                "specification": "Уборка, вертикальное перемещение и переноска до 50 м",
+                "detailPrinciple": "NO_SEPARATE_DUPLICATE_ROW",
+                "expectedResourceId": "required-operation:internal-debris-handling-within-object"
+              },
+              {
+                "unitId": "t_km",
+                "category": "service",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "condition": "not_in_krer_46_04_011_14",
+                "resolution": {
+                  "kind": "NOT_APPLICABLE",
+                  "reasonRu": "КРЕР 46, п. 1.1 прямо исключает вывоз строительного мусора."
+                },
+                "operationId": "offsite_waste_haul",
+                "quantityRule": "PROJECT_WASTE_PLAN_REQUIRED",
+                "priceRelation": "SEPARATE_IF_APPLICABLE",
+                "specification": "Внеобъектовый вывоз отходов",
+                "detailPrinciple": "EXCLUDED_FROM_RATE",
+                "expectedResourceId": "adjacent-operation:offsite-waste-haul"
+              }
+            ],
+            "contract": "rik-expo-app.s26-3.independent-completeness-map.v1",
+            "rateTable": "KRER_46_04_011_14",
+            "sourceKind": "NORMATIVE_OPERATION_MAP",
+            "evidenceSha256": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+            "evidenceReferences": [
+              "https://minstroy.gov.kg/ru/kyzmat/459/show",
+              "КРЕР 46-2015, PDF/печатные страницы 5, 58, 59 и 60"
+            ],
+            "generatedFromCurrentRows": false
+          }
+        },
+        "payload_sha256": "f151f670ea378fdd7af22bacacd91a79bbc78861614b445397855571f3c6abd2",
+        "source_head": "351ffac03a048169e2574df8be04d5ca1b571b95",
+        "source_tree": "308f5ce96f190fdfb46add8f57ea9824db483889",
+        "created_at": "2026-09-24T05:21:34.827Z"
+      }
+    },
+    {
+      "definition": {
+        "id": "5aed2979-42e2-59b7-a05d-4ea5d1bd8d15",
+        "release_id": "f1fe413f-7ec2-5d49-b5e8-d5199c88919c",
+        "catalog_id": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_wet_zone",
+        "definition_version": 1,
+        "passport": {
+          "workKey": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_krer_46_04_011_14_wet_zone",
+          "catalogId": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_wet_zone",
+          "canonicalRuName": "Разборка покрытия пола из поливинилхлоридных листовых рулонных материалов в агрессивной среде — влажная зона",
+          "projectSourceId": "kg_krer_46_2015_reconstruction_official",
+          "physicalResultRu": "Подтверждённая площадь существующего покрытия пола из поливинилхлоридных листовых рулонных материалов в агрессивной среде (влажная зона) разобрана по КРЕР 46-04-011-14"
+        },
+        "applicability": {
+          "country": "KG",
+          "exactRate": "46-04-011-14",
+          "catalogVariant": "WET_ZONE_CONFIRMED_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR",
+          "operationClass": "DISMANTLE_EXISTING_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_COVERING_IN_AGGRESSIVE_ENVIRONMENT",
+          "environmentClass": "AGGRESSIVE",
+          "geometryParameters": [
+            "floor_covering_area_m2"
+          ],
+          "officialArtifactSha256": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+          "officialUnitRateSource": "kg_krer_46_2015_reconstruction_official",
+          "existingCoveringMaterial": "POLYVINYL_CHLORIDE_SHEET_ROLL",
+          "machineResourcesIncluded": false,
+          "offsiteWasteHaulIncluded": false,
+          "primaryMeasureParameterId": "floor_covering_area_m2",
+          "classificationFactorClaimed": false
+        },
+        "definition_sha256": "6d14889e52338c0ce506bb0ba8ad62979b9af5643f4dcf440fc91645204ee942",
+        "source_metadata": {
+          "normId": "norm:kg:krer:46-04-011-14:2015",
+          "contract": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-wet_zone-append-successor.v1",
+          "sourceId": "kg_krer_46_2015_reconstruction_official",
+          "masterSha256": "1f683fef61d8b968c752163d6e361c45e5e6751e461c8be2b723761eac952f9a",
+          "activationAllowed": false,
+          "sourceFingerprint": "232bc7b2c16e06631fc0b8d4a15c08d3c89e6e5aa666fc5ad6007ff66bdd9a11",
+          "productionEligible": false,
+          "invalidSuppliedValuePolicy": "REJECT",
+          "knownWorkScopeFirstEstimate": true,
+          "missingProjectQuantityPolicy": "PRELIMINARY_NEED"
+        },
+        "created_at": "2026-09-24T05:22:22.554Z",
+        "content_status": "CANDIDATE_READY",
+        "content_gate_status": "GREEN"
+      },
+      "parameters": [
+        {
+          "definition_version_id": "5aed2979-42e2-59b7-a05d-4ea5d1bd8d15",
+          "parameter_id": "floor_covering_area_m2",
+          "ordinal": 0,
+          "value_type": "decimal",
+          "unit_id": "m2",
+          "title_ru": "Площадь покрытия пола из поливинилхлоридных листовых рулонных материалов в агрессивной среде",
+          "required": true,
+          "default_value": null,
+          "constraints_json": {
+            "min": 0.000001
+          },
+          "truth_metadata": {
+            "guide": {
+              "guide_kind": "MEASUREMENT_RULE",
+              "source_role": "OFFICIAL_KG_UNIT_RATE_AND_EXISTING_CONDITION_SURVEY",
+              "verified_at": "2026-09-24T09:45:00+06:00",
+              "applicability": "Только таблица 46-04-011, колонка 14: покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде; другие покрытия и колонки не подменяются.",
+              "guide_version": "aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-r1",
+              "guide_short_ru": "Укажите чистую фактическую площадь снимаемого покрытия без автоматически добавленного запаса.",
+              "source_locator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60",
+              "source_document": "kg_krer_46_2015_reconstruction_official",
+              "source_snapshot_hash": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+              "guide_validation_policy": "DEFER_MISSING_APPLICABILITY_REJECT_WRONG_MATERIAL_BEDDING_ENVIRONMENT_OR_PROFILE"
+            },
+            "contract": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-wet_zone-append-successor.v1",
+            "synthetic": false,
+            "visibility_role": "USER_INPUT",
+            "formula_consumers": [
+              "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_area_v1",
+              "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1"
+            ],
+            "value_source_role": "USER_OR_APPROVED_EXISTING_CONDITION_SURVEY",
+            "input_origin_class": "KNOWN_WORK_SCOPE",
+            "semantic_parameter_key": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_wet_zone:floor_covering_area_m2",
+            "hidden_default_forbidden": true,
+            "resource_branch_consumers": [
+              "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+              "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+            ],
+            "source_confirmation_required": false,
+            "preliminary_compilation_allowed": true
+          },
+          "approved_template_baseline_id": "9d0c810f-1801-5e8d-89c9-ef4ce7600d78"
+        },
+        {
+          "definition_version_id": "5aed2979-42e2-59b7-a05d-4ea5d1bd8d15",
+          "parameter_id": "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile",
+          "ordinal": 1,
+          "value_type": "enum",
+          "unit_id": null,
+          "title_ru": "Выбранная колонка КРЕР для существующего покрытия из поливинилхлоридных листовых рулонных материалов",
+          "required": true,
+          "default_value": null,
+          "constraints_json": {
+            "values": [
+              "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT"
+            ]
+          },
+          "truth_metadata": {
+            "guide": {
+              "guide_kind": "ENUM_DECISION_RULE",
+              "source_role": "OFFICIAL_KG_UNIT_RATE_AND_EXISTING_CONDITION_SURVEY",
+              "verified_at": "2026-09-24T09:45:00+06:00",
+              "applicability": "Только таблица 46-04-011, колонка 14: покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде; другие покрытия и колонки не подменяются.",
+              "guide_version": "aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-r1",
+              "guide_short_ru": "Подтвердите по обследованию покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде.",
+              "source_locator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60",
+              "source_document": "kg_krer_46_2015_reconstruction_official",
+              "source_snapshot_hash": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+              "guide_validation_policy": "DEFER_MISSING_APPLICABILITY_REJECT_WRONG_MATERIAL_BEDDING_ENVIRONMENT_OR_PROFILE"
+            },
+            "contract": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-wet_zone-append-successor.v1",
+            "synthetic": false,
+            "visibility_role": "USER_INPUT",
+            "formula_consumers": [],
+            "value_source_role": "USER_OR_APPROVED_EXISTING_CONDITION_SURVEY",
+            "input_origin_class": "EXISTING_CONDITION_AND_RATE_APPLICABILITY_CONFIRMATION",
+            "semantic_parameter_key": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_wet_zone:existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile",
+            "hidden_default_forbidden": true,
+            "resource_branch_consumers": [
+              "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+              "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+            ],
+            "source_confirmation_required": true,
+            "preliminary_compilation_allowed": true
+          },
+          "approved_template_baseline_id": "9d0c810f-1801-5e8d-89c9-ef4ce7600d78"
+        },
+        {
+          "definition_version_id": "5aed2979-42e2-59b7-a05d-4ea5d1bd8d15",
+          "parameter_id": "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed",
+          "ordinal": 2,
+          "value_type": "boolean",
+          "unit_id": null,
+          "title_ru": "Подтверждено существующее покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде",
+          "required": true,
+          "default_value": null,
+          "constraints_json": {},
+          "truth_metadata": {
+            "guide": {
+              "guide_kind": "PROJECT_DEFINED",
+              "source_role": "OFFICIAL_KG_UNIT_RATE_AND_EXISTING_CONDITION_SURVEY",
+              "verified_at": "2026-09-24T09:45:00+06:00",
+              "applicability": "Только таблица 46-04-011, колонка 14: покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде; другие покрытия и колонки не подменяются.",
+              "guide_version": "aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-r1",
+              "guide_short_ru": "Подтвердите по обследованию покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде.",
+              "source_locator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60",
+              "source_document": "kg_krer_46_2015_reconstruction_official",
+              "source_snapshot_hash": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+              "guide_validation_policy": "DEFER_MISSING_APPLICABILITY_REJECT_WRONG_MATERIAL_BEDDING_ENVIRONMENT_OR_PROFILE"
+            },
+            "contract": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-wet_zone-append-successor.v1",
+            "synthetic": false,
+            "visibility_role": "USER_INPUT",
+            "formula_consumers": [],
+            "value_source_role": "USER_OR_APPROVED_EXISTING_CONDITION_SURVEY",
+            "input_origin_class": "EXISTING_CONDITION_AND_RATE_APPLICABILITY_CONFIRMATION",
+            "semantic_parameter_key": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_wet_zone:existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed",
+            "hidden_default_forbidden": true,
+            "resource_branch_consumers": [
+              "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+              "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+            ],
+            "source_confirmation_required": true,
+            "preliminary_compilation_allowed": true
+          },
+          "approved_template_baseline_id": "9d0c810f-1801-5e8d-89c9-ef4ce7600d78"
+        }
+      ],
+      "formulas": [
+        {
+          "definition_version_id": "5aed2979-42e2-59b7-a05d-4ea5d1bd8d15",
+          "formula_id": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_area_v1",
+          "output_unit_id": "m2",
+          "expression_source": "floor_covering_area_m2",
+          "ast": {
+            "id": "floor_covering_area_m2",
+            "kind": "parameter"
+          },
+          "input_parameter_ids": [
+            "floor_covering_area_m2"
+          ],
+          "ast_sha256": "cb3122154b384f5ebc9a5edf41f7edbf12b5b1449fa03df463d3f960737fc01f"
+        },
+        {
+          "definition_version_id": "5aed2979-42e2-59b7-a05d-4ea5d1bd8d15",
+          "formula_id": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1",
+          "output_unit_id": "man_hour",
+          "expression_source": "floor_covering_area_m2 * 33 / 100",
+          "ast": {
+            "kind": "binary",
+            "left": {
+              "kind": "binary",
+              "left": {
+                "id": "floor_covering_area_m2",
+                "kind": "parameter"
+              },
+              "right": {
+                "kind": "literal",
+                "value": "33"
+              },
+              "operator": "*"
+            },
+            "right": {
+              "kind": "literal",
+              "value": "100"
+            },
+            "operator": "/"
+          },
+          "input_parameter_ids": [
+            "floor_covering_area_m2"
+          ],
+          "ast_sha256": "887d81212f0130b87a62b4b2d946acd3922d4a68f3fbe572a2675d89ef2e9fc6"
+        }
+      ],
+      "resources": [
+        {
+          "id": "ac501dcf-5142-5644-9ff2-1177cd1e99fa",
+          "definition_version_id": "5aed2979-42e2-59b7-a05d-4ea5d1bd8d15",
+          "row_id": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+          "ordinal": 0,
+          "section": "Состав работ",
+          "category": "construction_work",
+          "title_ru": "Разборка покрытия пола из поливинилхлоридных листовых рулонных материалов в агрессивной среде",
+          "row_type": "labor",
+          "unit_id": "m2",
+          "formula_id": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_area_v1",
+          "inclusion_ast": {
+            "kind": "and",
+            "operands": [
+              {
+                "kind": "equals",
+                "value": "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT",
+                "parameterId": "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile"
+              },
+              {
+                "kind": "equals",
+                "value": true,
+                "parameterId": "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed"
+              }
+            ]
+          },
+          "resource_graph": {
+            "payable": false,
+            "costOwner": "scope",
+            "formulaId": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_area_v1",
+            "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+            "noDoubleCount": true,
+            "normalizedUom": "m2",
+            "quantityBasis": "CONFIRMED_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AREA_TIMES_EXACT_KRER_RATE_PER_100_M2",
+            "semanticOwnerId": "demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor:f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+            "parentCostOwnerId": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor",
+            "scopeContextParameterIds": [
+              "floor_covering_area_m2",
+              "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile",
+              "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed"
+            ],
+            "primaryMeasureParameterId": "floor_covering_area_m2"
+          },
+          "semantic_owner": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_wet_zone:f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+          "cost_owner_id": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+          "procurement_eligible": false,
+          "source_metadata": {
+            "synthetic": false,
+            "sourceRole": "OFFICIAL_KG_RESOURCE_NORM",
+            "includedInRate": [
+              "разборка существующего покрытия из поливинилхлоридных листовых рулонных материалов",
+              "уборка, вертикальное перемещение и переноска отходов до 50 м внутри объекта"
+            ],
+            "normativeTrace": [
+              {
+                "normId": "norm:kg:krer:46-04-011-14:2015",
+                "norm_id": "norm:kg:krer:46-04-011-14:2015",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "source_id": "kg_krer_46_2015_reconstruction_official",
+                "normVersion": "КРЕР 46-2015; введён в действие с 1 января 2016 года",
+                "source_title": "КРЕР 46-2015 «Работы при реконструкции зданий и сооружений», таблица 46-04-011",
+                "exact_locator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60",
+                "source_definition_hash": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471"
+              }
+            ],
+            "krerResourceCode": "46-04-011-14",
+            "excludedAdjacentScope": [
+              "основание и новая конструкция пола",
+              "другие покрытия, подстилающие слои и обычная среда",
+              "внеобъектовый вывоз и размещение отходов",
+              "скрытый коэффициент площади, запас или цена"
+            ],
+            "normativeRatePer100M2": 100,
+            "truth_contract_version": "R3"
+          },
+          "row_sha256": "4b1e2a2b87fc9ae28cf5866276e216e59a33e0c49bf35ca6658c9f2dc36d9133",
+          "created_at": "2026-09-24T05:22:22.554Z"
+        },
+        {
+          "id": "25f5c400-400a-5ad2-9feb-2a1f902aa10e",
+          "definition_version_id": "5aed2979-42e2-59b7-a05d-4ea5d1bd8d15",
+          "row_id": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor",
+          "ordinal": 1,
+          "section": "Труд",
+          "category": "construction_work",
+          "title_ru": "Труд рабочих-строителей среднего разряда 2,0",
+          "row_type": "labor",
+          "unit_id": "man_hour",
+          "formula_id": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1",
+          "inclusion_ast": {
+            "kind": "and",
+            "operands": [
+              {
+                "kind": "equals",
+                "value": "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT",
+                "parameterId": "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile"
+              },
+              {
+                "kind": "equals",
+                "value": true,
+                "parameterId": "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed"
+              }
+            ]
+          },
+          "resource_graph": {
+            "payable": true,
+            "costOwner": "resource",
+            "formulaId": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1",
+            "costTreatment": "OWN_COST",
+            "noDoubleCount": true,
+            "normalizedUom": "man_hour",
+            "quantityBasis": "CONFIRMED_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AREA_TIMES_EXACT_KRER_RATE_PER_100_M2",
+            "semanticOwnerId": "demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor:f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor",
+            "scopeContextParameterIds": [
+              "floor_covering_area_m2",
+              "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile",
+              "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed"
+            ],
+            "primaryMeasureParameterId": "floor_covering_area_m2"
+          },
+          "semantic_owner": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_wet_zone:f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor",
+          "cost_owner_id": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor",
+          "procurement_eligible": false,
+          "source_metadata": {
+            "synthetic": false,
+            "sourceRole": "OFFICIAL_KG_RESOURCE_NORM",
+            "includedInRate": [
+              "разборка существующего покрытия из поливинилхлоридных листовых рулонных материалов",
+              "уборка, вертикальное перемещение и переноска отходов до 50 м внутри объекта"
+            ],
+            "normativeTrace": [
+              {
+                "normId": "norm:kg:krer:46-04-011-14:2015",
+                "norm_id": "norm:kg:krer:46-04-011-14:2015",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "source_id": "kg_krer_46_2015_reconstruction_official",
+                "normVersion": "КРЕР 46-2015; введён в действие с 1 января 2016 года",
+                "source_title": "КРЕР 46-2015 «Работы при реконструкции зданий и сооружений», таблица 46-04-011",
+                "exact_locator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60",
+                "source_definition_hash": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471"
+              }
+            ],
+            "krerResourceCode": "000-1002-0",
+            "excludedAdjacentScope": [
+              "основание и новая конструкция пола",
+              "другие покрытия, подстилающие слои и обычная среда",
+              "внеобъектовый вывоз и размещение отходов",
+              "скрытый коэффициент площади, запас или цена"
+            ],
+            "normativeRatePer100M2": 33,
+            "truth_contract_version": "R3"
+          },
+          "row_sha256": "2ef2a8d4af4cbbb0b40789856ea13445f5401b244790e1c525e18be078332e33",
+          "created_at": "2026-09-24T05:22:22.554Z"
+        }
+      ],
+      "bindings": [
+        {
+          "row_id": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor",
+          "locator_id": "51b21995-87f1-5a4e-827c-7c2c0f0949f5",
+          "applicability": {
+            "norm_id": "norm:kg:krer:46-04-011-14:2015",
+            "source_id": "kg_krer_46_2015_reconstruction_official",
+            "exact_locator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60",
+            "quantity_basis": "CONFIRMED_AREA_TIMES_EXACT_KRER_46_04_011_14_RATE_PER_100_M2",
+            "catalog_variant": "WET_ZONE_CONFIRMED_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR",
+            "operation_class": "DISMANTLE_EXISTING_FLOOR_COVERING",
+            "technology_class": "AGGRESSIVE_ENVIRONMENT_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_DEMOLITION",
+            "environment_class": "AGGRESSIVE",
+            "official_artifact_sha256": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+            "existing_covering_material": "POLYVINYL_CHLORIDE_SHEET_ROLL",
+            "machine_resources_included": false,
+            "offsite_waste_haul_included": false
+          }
+        }
+      ],
+      "baseline": {
+        "id": "9d0c810f-1801-5e8d-89c9-ef4ce7600d78",
+        "baseline_key": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-wet_zone-append-successor.v1:232bc7b2c16e0663:canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_wet_zone",
+        "catalog_id": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_wet_zone",
+        "definition_version_id": "5aed2979-42e2-59b7-a05d-4ea5d1bd8d15",
+        "source_definition_version_id": "5aed2979-42e2-59b7-a05d-4ea5d1bd8d15",
+        "parameter_schema_sha256": "debeb894ced841502052c579533f3a4d0c3631ad795d4746dc646b7042462ea4",
+        "input_values": {
+          "floor_covering_area_m2": 35.5,
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT",
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": true
+        },
+        "input_classification": {
+          "floor_covering_area_m2": "VALIDATION_FIXTURE",
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": "VALIDATION_FIXTURE",
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": "VALIDATION_FIXTURE"
+        },
+        "uom_by_parameter": {
+          "floor_covering_area_m2": "m2",
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": null,
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": null
+        },
+        "formula_consumer_ids": {
+          "floor_covering_area_m2": [
+            "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_area_v1",
+            "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1"
+          ],
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": [],
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": []
+        },
+        "resource_consumer_row_ids": {
+          "floor_covering_area_m2": [
+            "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+            "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+          ],
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": [
+            "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+            "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+          ],
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": [
+            "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+            "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+          ]
+        },
+        "normative_source_ids": {
+          "floor_covering_area_m2": [
+            "kg_krer_46_2015_reconstruction_official"
+          ],
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": [
+            "kg_krer_46_2015_reconstruction_official"
+          ],
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": [
+            "kg_krer_46_2015_reconstruction_official"
+          ]
+        },
+        "guide_provenance_ru": {
+          "floor_covering_area_m2": "Укажите чистую фактическую площадь снимаемого покрытия без автоматически добавленного запаса.",
+          "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": "Подтвердите по обследованию покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде.",
+          "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": "Подтвердите по обследованию покрытие из поливинилхлоридных листовых рулонных материалов в агрессивной среде."
+        },
+        "proposal_source_refs": [
+          {
+            "contract": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-wet_zone-append-successor.v1",
+            "sourceId": "kg_krer_46_2015_reconstruction_official",
+            "sourceKind": "OFFICIAL_KG_UNIT_RATE",
+            "exactLocator": "Техническая часть, п. 1.1, PDF/печатная стр. 5; таблица КРЕР 46-04-011, описание расценки 14 на PDF/печатных стр. 58–59, ресурсы колонки 46-04-011-14 на стр. 60"
+          }
+        ],
+        "validation_scenario_refs": [
+          {
+            "fixture": {
+              "floor_covering_area_m2": 35.5,
+              "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT",
+              "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": true
+            },
+            "scenario": "F09_AGGRESSIVE_ENVIRONMENT_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_DEMOLITION_KRER46_14_WET_ZONE",
+            "shortInput": {
+              "floor_covering_area_m2": 100,
+              "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile": "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT",
+              "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed": true
+            },
+            "coreAcceptance": {
+              "short": {
+                "rowCount": 2,
+                "quantities": [
+                  "100",
+                  "33"
+                ]
+              },
+              "status": "GREEN_S273_F09_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_DEMOLITION_KRER46_14_WET_ZONE_CORE",
+              "catalogId": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_wet_zone",
+              "exactRate": "46-04-011-14",
+              "acceptance": {
+                "areaM2": "35.5",
+                "quantities": [
+                  "35.5",
+                  "11.715"
+                ]
+              },
+              "incomplete": {
+                "rowCount": 0,
+                "preliminaryNeedCount": 2
+              },
+              "variantKey": "wet_zone",
+              "serializedSha256": "83f20936423c2e6136af1cba21f76b5b902e3b8f410a6c1fba929706457b8a31",
+              "machineResourcesIncluded": false,
+              "offsiteWasteHaulIncluded": false,
+              "classificationFactorClaimed": false,
+              "thicknessAdjustmentRateIncluded": false,
+              "salvageableTileOrBrickCleaningApplicable": false
+            },
+            "runtimeProfile": {},
+            "runtimeProfileSourceIds": {},
+            "acceptanceEvidenceSha256": "8772f756611d3541b04f18c533a0d083b6459fa841f3a92266561c0732589613",
+            "runtimeProfileClassification": {}
+          }
+        ],
+        "acceptance_evidence_sha256": "8772f756611d3541b04f18c533a0d083b6459fa841f3a92266561c0732589613",
+        "accepted_release_id": "f1fe413f-7ec2-5d49-b5e8-d5199c88919c",
+        "accepted_at": "2026-09-24T05:22:23.498Z",
+        "supersedes_baseline_id": null,
+        "contract_version": "APPROVED_TEMPLATE_BASELINE_R54_V1"
+      },
+      "passport": {
+        "definition_version_id": "5aed2979-42e2-59b7-a05d-4ea5d1bd8d15",
+        "release_id": "f1fe413f-7ec2-5d49-b5e8-d5199c88919c",
+        "catalog_id": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_wet_zone",
+        "contract_version": "real-professional-estimates-r3.content-passport.v1",
+        "identity_mode": "WORK",
+        "redirect_catalog_id": null,
+        "physical_result_ru": "Подтверждённая площадь существующего покрытия пола из поливинилхлоридных листовых рулонных материалов в агрессивной среде (влажная зона) разобрана по КРЕР 46-04-011-14",
+        "included_scope_ru": [
+          "разборка существующего покрытия пола из поливинилхлоридных листовых рулонных материалов",
+          "труд рабочих среднего разряда 2,0 по норме 33,00 чел.-ч на 100 м²",
+          "уборка, вертикальное перемещение и переноска отходов до 50 м внутри объекта"
+        ],
+        "excluded_scope_ru": [
+          "очистка годных плиток или кирпича — неприменима к листовым рулонным материалам",
+          "труд машинистов и машины — отсутствуют в колонке 46-04-011-14",
+          "основание и новая конструкция пола",
+          "другие материалы покрытия и обычная среда",
+          "внеобъектовый вывоз и размещение отходов",
+          "скрытый коэффициент площади и неподтверждённые цены"
+        ],
+        "capability_matrix": [
+          {
+            "status": "GREEN",
+            "capability": "PARAMETERS"
+          },
+          {
+            "status": "GREEN",
+            "capability": "FORMULAS_AND_PHYSICAL_PARITY"
+          },
+          {
+            "status": "GREEN",
+            "capability": "FULL_APPLICABLE_SCOPE"
+          },
+          {
+            "status": "GREEN_UNKNOWN_IS_NULL",
+            "capability": "PRICE"
+          }
+        ],
+        "parameter_count": 3,
+        "formula_count": 2,
+        "resource_count": 2,
+        "decision": {
+          "status": "GREEN",
+          "allowed": true,
+          "contract": "real-professional-estimates-r3.content-passport.v1",
+          "priceState": "PARTIAL_NEEDS_PRICE",
+          "waveContract": "rik-expo-app.s27-3.f09-aggressive-environment-polyvinyl-chloride-sheet-roll-floor-demolition-krer46-wet_zone-append-successor.v1",
+          "quantityScope": "FULL",
+          "activationAllowed": false,
+          "productionEligible": false,
+          "independentCompletenessMap": {
+            "entries": [
+              {
+                "unitId": "m2",
+                "category": "construction_work",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "condition": "confirmed_krer_46_04_011_14_polyvinyl_chloride_sheet_roll_floor_in_aggressive_environment",
+                "formulaId": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_area_v1",
+                "resolution": {
+                  "kind": "INCLUDED_COMPONENT_ROW",
+                  "rowId": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:operation",
+                  "parentRowId": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+                },
+                "operationId": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition",
+                "quantityRule": "CONFIRMED_AREA_MULTIPLIED_BY_EXACT_KRER_RATE_PER_100_M2",
+                "priceRelation": "INCLUDED_IN_PARENT",
+                "specification": "Разборка покрытия из поливинилхлоридных листовых рулонных материалов",
+                "detailPrinciple": "EXACT_OFFICIAL_RATE_COLUMN_WITHOUT_AREA_FACTOR",
+                "expectedResourceId": "required-resource:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition"
+              },
+              {
+                "unitId": "man_hour",
+                "category": "construction_work",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "condition": "confirmed_krer_46_04_011_14_polyvinyl_chloride_sheet_roll_floor_in_aggressive_environment",
+                "formulaId": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1",
+                "resolution": {
+                  "kind": "ROW",
+                  "rowId": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+                },
+                "operationId": "construction_labor_grade_2_0",
+                "quantityRule": "CONFIRMED_AREA_MULTIPLIED_BY_EXACT_KRER_RATE_PER_100_M2",
+                "priceRelation": "OWN_COST",
+                "specification": "33,00 чел.-ч на 100 м²",
+                "detailPrinciple": "EXACT_OFFICIAL_RATE_COLUMN_WITHOUT_AREA_FACTOR",
+                "expectedResourceId": "required-resource:construction_labor_grade_2_0"
+              },
+              {
+                "unitId": "man_hour",
+                "category": "construction_work",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "condition": "not_applicable_to_polyvinyl_chloride_sheet_roll_floor",
+                "resolution": {
+                  "kind": "NOT_APPLICABLE",
+                  "reasonRu": "Покрытие выполнено из поливинилхлоридных листовых рулонных материалов; годные плитки и кирпич отсутствуют."
+                },
+                "operationId": "clean_salvageable_brick_from_mortar",
+                "quantityRule": "NOT_APPLICABLE_TO_CONFIRMED_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR",
+                "priceRelation": "NOT_APPLICABLE",
+                "specification": "Очистка годного кирпича от раствора",
+                "detailPrinciple": "REVIEWED_EXCLUSION",
+                "expectedResourceId": "required-operation:clean-salvageable-brick"
+              },
+              {
+                "unitId": "man_hour",
+                "category": "construction_work",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "condition": "selected_krer_46_reconstruction_rate",
+                "formulaId": "aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition_labor_krer_46_04_011_14_v1",
+                "resolution": {
+                  "kind": "INCLUDED_IN_PARENT",
+                  "parentRowId": "f09:aggressive_environment_polyvinyl_chloride_sheet_roll_floor_demolition:labor"
+                },
+                "operationId": "internal_debris_handling_within_object",
+                "quantityRule": "INCLUDED_IN_OFFICIAL_LABOR_RATE",
+                "priceRelation": "INCLUDED_IN_PARENT",
+                "specification": "Уборка, вертикальное перемещение и переноска до 50 м",
+                "detailPrinciple": "NO_SEPARATE_DUPLICATE_ROW",
+                "expectedResourceId": "required-operation:internal-debris-handling-within-object"
+              },
+              {
+                "unitId": "t_km",
+                "category": "service",
+                "sourceId": "kg_krer_46_2015_reconstruction_official",
+                "condition": "not_in_krer_46_04_011_14",
+                "resolution": {
+                  "kind": "NOT_APPLICABLE",
+                  "reasonRu": "КРЕР 46, п. 1.1 прямо исключает вывоз строительного мусора."
+                },
+                "operationId": "offsite_waste_haul",
+                "quantityRule": "PROJECT_WASTE_PLAN_REQUIRED",
+                "priceRelation": "SEPARATE_IF_APPLICABLE",
+                "specification": "Внеобъектовый вывоз отходов",
+                "detailPrinciple": "EXCLUDED_FROM_RATE",
+                "expectedResourceId": "adjacent-operation:offsite-waste-haul"
+              }
+            ],
+            "contract": "rik-expo-app.s26-3.independent-completeness-map.v1",
+            "rateTable": "KRER_46_04_011_14",
+            "sourceKind": "NORMATIVE_OPERATION_MAP",
+            "evidenceSha256": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+            "evidenceReferences": [
+              "https://minstroy.gov.kg/ru/kyzmat/459/show",
+              "КРЕР 46-2015, PDF/печатные страницы 5, 58, 59 и 60"
+            ],
+            "generatedFromCurrentRows": false
+          }
+        },
+        "payload_sha256": "a83e418035615b09f850290ce7d328b191656a2a551bd9017791398f50cf00c1",
+        "source_head": "351ffac03a048169e2574df8be04d5ca1b571b95",
+        "source_tree": "308f5ce96f190fdfb46add8f57ea9824db483889",
+        "created_at": "2026-09-24T05:22:22.554Z"
+      }
+    }
+  ]
+}

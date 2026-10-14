@@ -1,0 +1,6 @@
+{
+ "extends":"./tsconfig.json",
+ "compilerOptions":{"incremental":true,"tsBuildInfoFile":".cache/typecheck/tests-a-f.tsbuildinfo"},
+ "include":["tests/a*/**/*.ts","tests/a*/**/*.tsx","tests/b*/**/*.ts","tests/b*/**/*.tsx","tests/c*/**/*.ts","tests/c*/**/*.tsx","tests/d*/**/*.ts","tests/d*/**/*.tsx","tests/e*/**/*.ts","tests/e*/**/*.tsx","tests/f*/**/*.ts","tests/f*/**/*.tsx"],
+ "exclude":[".release-runtime/**/*",".tmp/**/*","artifacts/**/*","diagnostics/**/*","diagnostics/archive/migrated/**/*","migrated/**/*","scripts/diagnostics/root-legacy/**/*","tmp/**/*","tests/ai/**/*","tests/api/**/*","tests/architecture/**/*","tests/e2e/**/*","tests/estimate*/**/*","tests/aiEstimateV4/**/*","tests/requestEstimate/**/*","tests/consumerRepair/**/*"]
+}

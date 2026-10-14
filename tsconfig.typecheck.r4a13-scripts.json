@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "incremental": true, "tsBuildInfoFile": ".cache/typecheck/r4a13-scripts.tsbuildinfo" },
+  "include": ["scripts/estimate/r4a13/**/*.ts", "scripts/estimate/r4a13/**/*.tsx"]
+}

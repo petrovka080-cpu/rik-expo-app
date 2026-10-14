@@ -40,6 +40,12 @@ function revision(rowCount: number) {
     created_at: "2026-09-04T10:30:00.000Z",
   };
 }
+test('excluded own-cost row retains its saved reference price without returning it to any total',()=>{
+ const source=rows(1);source[0]={...source[0]!,included_in_estimate:false,included_in_procurement:false,unit_price:'125',amount:'1464.38',currency_code:'KGS',
+  calculation_trace:{resourceGraph:{costTreatment:'OWN_COST'},manualAmendment:{kind:'manual'}}};
+ const before=JSON.stringify(source),projection=buildCanonicalProfessionalPdfProjection({revision:revision(1),rows:source,workTitleRu:'Контроль сохранённой цены'});
+ expect(projection.html).toContain('125,00 сом (справочно)');expect(projection.html).toContain('Не суммируется');expect(projection.pricedRowCount).toBe(0);expect(projection.categoryTotals.work).toBe(0);expect(JSON.stringify(source)).toBe(before);
+});
 test('PDF shows each source-owned stage actual inputs without replacing a missing independent measure by primary q',()=>{
  const source=rows(3).map((row,index)=>({...row,calculation_trace:{resourceGraph:{derivedQuantityEditPolicyV1:{contractVersion:'canonical-derived-quantity-edit-policy/v1',mode:'PARAMETERS_ONLY',parameterIds:[['q','roof_screed_area_m2','roof_valley_length_m'][index]!]},operationCompositionV1:{contractVersion:'canonical-operation-resource/v1',groupId:'control',groupTitleRu:'Контроль',operationId:'stage'+index,operationTitleRu:['Покрытие','Стяжка','Ендовы'][index],completionCriterionRu:'Контроль'}}}}));
  const labels={q:'Площадь покрытия, м²',roof_screed_area_m2:'Площадь стяжки, м²',roof_valley_length_m:'Длина ендов, м'};
@@ -62,6 +68,7 @@ test.each(['LEGACY_SOURCE_REQUIRED','OBJECT_FACT_REQUIRED','REQUIRED_RESOURCE_EX
   expect(projection.html).not.toContain('<strong>требуется уточнение цен</strong>');
   expect(projection.html).toContain('<strong>Позиций расчёта</strong><br>1');
   expect(projection.html).toContain('<strong>Количество известно</strong><br>1; ещё не рассчитано 0');
+  if(status==='REQUIRED_RESOURCE_EXCLUDED')expect(projection.html).toContain('Для выполнения этапа нужен исключённый ресурс: восстановите его или измените состав.');
   expect(source).toHaveLength(1);
 });
 
@@ -285,7 +292,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-69-selected-scope-template48");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-69-required-resource-template49");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,

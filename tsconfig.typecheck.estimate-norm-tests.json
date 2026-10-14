@@ -1,0 +1,5 @@
+{
+  "extends":"./tsconfig.json",
+  "compilerOptions":{"incremental":true,"tsBuildInfoFile":".cache/typecheck/estimate-norm-tests.tsbuildinfo"},
+  "include":["tests/estimateNorms/**/*.ts","tests/estimateNorms/**/*.tsx"]
+}

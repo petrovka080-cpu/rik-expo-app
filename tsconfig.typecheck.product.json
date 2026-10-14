@@ -7,8 +7,6 @@
   "include": [
     "app/**/*.ts",
     "app/**/*.tsx",
-    "src/**/*.ts",
-    "src/**/*.tsx",
     "supabase/**/*.ts",
     "supabase/**/*.tsx",
     "types/**/*.ts",
@@ -17,5 +15,19 @@
     "expo-env.d.ts",
     "App.tsx",
     "playwright.config.ts"
+  ],
+  "exclude": [
+    ".release-runtime/**/*",
+    ".tmp/**/*",
+    "artifacts/**/*",
+    "diagnostics/**/*",
+    "diagnostics/archive/migrated/**/*",
+    "migrated/**/*",
+    "scripts/diagnostics/root-legacy/**/*",
+    "tmp/**/*",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/*.spec.ts",
+    "src/**/*.spec.tsx"
   ]
 }

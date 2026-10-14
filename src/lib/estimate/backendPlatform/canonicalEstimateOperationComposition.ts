@@ -106,7 +106,18 @@ export function canonicalEstimateResourceOperationSections(
       || (decisions.every(decision=>decision.kind==='INCLUDED')
         && group.statuses.every(status=>['USER_EXCLUDED','REQUIRED_RESOURCE_EXCLUDED','OBJECT_FACT_REQUIRED'].includes(status)))
       ? covering.map(id => resourceOwner.get(id)).find(Boolean) : null;
-    const operation: CanonicalEstimateOperationReference = coveredOwner ?? {
+    // A source-declared group can have applicability and cost-coverage checks
+    // together. Attach them to its unambiguous existing owner, using stable
+    // IDs; do not emit a second empty stage merely because a check completed.
+    const declaredOwners=[...new Map(resources.flatMap(resource=>{
+      const owner=resourceOwner.get(resource.rowId);
+      return owner?.groupId===group.groupId?[[keyOf(owner),owner] as const]:[];
+    })).values()];
+    const coveringOwners=[...new Map(covering.flatMap(id=>{
+      const owner=resourceOwner.get(id);return owner?.groupId===group.groupId?[[keyOf(owner),owner] as const]:[];
+    })).values()];
+    const declaredOwner=coveringOwners.length===1?coveringOwners[0]:declaredOwners.length===1?declaredOwners[0]:null;
+    const operation: CanonicalEstimateOperationReference = coveredOwner ?? declaredOwner ?? {
       contractVersion: 'canonical-operation-resource/v1', groupId: 'saved-scope-stages',
       groupTitleRu: 'Подработы и ресурсы выбранной работы', operationId: group.groupId,
       operationTitleRu: group.titleRu, completionCriterionRu: group.detailsRu.join(' '),

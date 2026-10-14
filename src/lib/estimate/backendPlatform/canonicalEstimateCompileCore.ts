@@ -1028,6 +1028,10 @@ export async function compileCanonicalEstimateCore(
       rowId: resource.row_id, parameters, parameterIds: definitionParameterIds,
       resourceIds: scopeResourceIds,
       excludedOperationDefinitionRowIds:scopeExcludedOperationDefinitionIds,
+      excludedOwnCostRowIds:(effectiveResourceGraph.scopeRequirementV1 as JsonRecord)?.costExclusionBreaksScopeV1===true?new Set(rows.filter(r=>rawOverrides[r.row_id]?.includedInEstimate===false
+        && (r.calculation_trace as JsonRecord)?.resourceGraph
+        && canonicalEstimateResourceIncludedByDefault({resource_graph:(r.calculation_trace as JsonRecord).resourceGraph as JsonRecord,source_metadata:{}}))
+        .map(r=>r.row_id)):undefined,
       excludedQuantityRowIds: new Set(rows.filter(r=>(r.calculation_trace as JsonRecord)?.physicalScopeExcludedV1 != null).map(r=>r.row_id)),
       excludedOperationResourceRowIds: new Set(rows.filter(r=>compositionPlan.decision(r.row_id).excludedBy==='OPERATIONS').map(r=>r.row_id)),
       knownQuantityRowIds: new Set(rows.filter(r => r.quantity != null

@@ -1,8 +1,9 @@
-import nine from '../../../../data/estimate-benchmarks/fixtures/roof-layers-metal9-parents-s27-67.json';
-import eight from '../../../../data/estimate-benchmarks/fixtures/roof-metal-screed8-parents-s27-67.json';
-import seven from '../../../../data/estimate-benchmarks/fixtures/roof-screed-valley7-parents-s27-67.json';
-import six from '../../../../data/estimate-benchmarks/fixtures/roof-valley-preparation6-parents-s27-67.json';
-import five from '../../../../data/estimate-benchmarks/fixtures/roof-planned-preparation-parents-s27-67.json';
+import {readFrozenDefinitionSnapshotV1} from './canonicalFrozenDefinitionSnapshotV1';
+const nine=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-layers-metal9-parents-s27-67.json'),'reps');
+const eight=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-metal-screed8-parents-s27-67.json'),'reps');
+const seven=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-screed-valley7-parents-s27-67.json'),'reps');
+const six=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-valley-preparation6-parents-s27-67.json'),'reps');
+const five=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-planned-preparation-parents-s27-67.json'),'reps');
 import {overlayS2767RoofLowerLayersCompanion} from '../../../../scripts/estimate/r4a13/s2767RoofLowerLayersCompanionOverlay';
 import {ROOF_LOWER_LAYERS_PACK_V1 as pack,ROOF_ASSEMBLY_SEMANTIC_ROW_V1 as assembly,ROOF_VAPOR_OPERATION_KEY_V1 as vaporOp,ROOF_CLAY_OPERATION_KEY_V1 as clayOp,ROOF_VAPOR_SCOPE_ROW_V1 as vaporScope,ROOF_CLAY_SCOPE_ROW_V1 as clayScope,ROOF_LOWER_CHAIN_SCOPE_ROW_V1 as chainScope,ROOF_OTHER_LAYERS_PARAMETER_V1 as otherId,ROOF_OTHER_LAYERS_NONE_V1 as otherNone,roofClayGeometryAstV1} from './canonicalRoofLowerLayersCompanionV1';
 import {admitRoofLowerLayersMigrationProofV1,buildRoofLowerLayersMigrationProofV1,migrateRoofLowerLayersSelectionV1,buildRoofStageRestorationV4,readRoofStageRestorationV4,roofStageRestoreTargetsV4,roofStageExcludeTargetsV4,createRoofLegacyAssemblySelectionOriginV1,consumeRoofLegacyAssemblySelectionOriginV1,composeRoofLowerLayersMigrationModelV1} from './canonicalRoofLowerLayersMigrationV1';

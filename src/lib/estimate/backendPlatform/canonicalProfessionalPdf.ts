@@ -21,7 +21,7 @@ import {readRoofPrimerPrerequisiteDecisionV1,roofPrimerPhaseRuV1} from './canoni
 import {canonicalMachineHourPriceNeedsConfirmationV1} from './canonicalMachineHourPriceCoverageV1';
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-69-selected-scope-template48" as const;
+  "canonical-professional-pdf.r4-a13-s27-69-required-resource-template49" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -176,7 +176,9 @@ function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, para
   // the estimate keeps its saved quantity and exact resource name.
   const rentalText = rental ? `Аренда: ${canonicalArtifactQuantity(rental.physicalQuantity)} шт. на ${canonicalArtifactQuantity(rental.durationDays)} сут.; расчёт оплаты ${quantityLabel(rental.billingQuantity)}.` : null;
   const machinePriceNotice=includedInEstimate&&canonicalMachineHourPriceNeedsConfirmationV1(row,catalogId)?'Состав цены эксплуатации не подтверждён; сумма предварительная.':null;
-  const unitPrice = !includedInEstimate
+  const savedOwnPrice=!includedInEstimate&&row.unit_price!=null
+    &&objectValue(objectValue(row.calculation_trace).resourceGraph).costTreatment==='OWN_COST';
+  const unitPrice = savedOwnPrice?`${canonicalArtifactMoney(row.unit_price,row.currency_code)} (справочно)`:!includedInEstimate
     ? "Не применяется"
     : row.unit_price == null
     ? "Требуется цена"
@@ -321,9 +323,12 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     const shared = section.sharedResources.map(resource => `<tr class="shared-resource"><td colspan="7">${escapeCanonicalArtifactHtml(resource.titleRu)} — общий ресурс, учтён в разделе «${escapeCanonicalArtifactHtml(canonicalPublicEstimateWorkTitleRu(resource.ownerOperationTitleRu))}».</td></tr>`).join('');
     const scopeNotes=(section.scopeRequirements ?? []).flatMap(group => {
       const objectFactsMissing=group.statuses.includes('OBJECT_FACT_REQUIRED');
+      const requiredResourceExcluded=group.statuses.includes('REQUIRED_RESOURCE_EXCLUDED');
       const calculationIncomplete=group.statuses.some(status=>['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','LEGACY_SOURCE_REQUIRED','SCOPE_UNVERIFIED'].includes(status));
-      if(!objectFactsMissing&&!calculationIncomplete)return [];
-      return ['<tr class="scope-note"><td colspan="7">'+(objectFactsMissing?'Нужны исходные данные участка.':'Расчёт этого этапа ещё не завершён приложением. Не включён в стоимость и закупку.')+'</td></tr>'];
+      const messages=[...(objectFactsMissing?['Нужны исходные данные участка.']:[]),
+        ...(requiredResourceExcluded?['Для выполнения этапа нужен исключённый ресурс: восстановите его или измените состав.']:[]),
+        ...(!objectFactsMissing&&calculationIncomplete?['Расчёт этого этапа ещё не завершён приложением. Не включён в стоимость и закупку.']:[])];
+      return messages.map(message=>'<tr class="scope-note"><td colspan="7">'+message+'</td></tr>');
     }).join('');
     return heading + (section.physicallyExcluded?'<tr><td colspan="7">Подработа исключена пользователем из состава. Можно восстановить.</td></tr>':'')
       + ownRows + shared + scopeNotes + (primerAppendix && section.scopeRequirements?.some(group=>group.groupId==='primer')?`<tr><td colspan="7">${primerAppendix}</td></tr>`:'');

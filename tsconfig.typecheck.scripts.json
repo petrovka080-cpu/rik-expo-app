@@ -7,5 +7,10 @@
   "include": [
     "scripts/**/*.ts",
     "scripts/**/*.tsx"
+  ],
+  "exclude": [
+    ".release-runtime/**/*", ".tmp/**/*", "artifacts/**/*", "diagnostics/**/*",
+    "diagnostics/archive/migrated/**/*", "migrated/**/*", "scripts/diagnostics/root-legacy/**/*", "tmp/**/*",
+    "scripts/estimate/**/*"
   ]
 }

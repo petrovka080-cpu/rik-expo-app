@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": ".cache/typecheck/source-tests.tsbuildinfo"
+  },
+  "include": [
+    "src/**/*.test.ts", "src/**/*.test.tsx", "src/**/*.spec.ts", "src/**/*.spec.tsx"
+  ],
+  "exclude": [
+    ".release-runtime/**/*", ".tmp/**/*", "artifacts/**/*", "diagnostics/**/*",
+    "diagnostics/archive/migrated/**/*", "migrated/**/*", "scripts/diagnostics/root-legacy/**/*", "tmp/**/*",
+    "src/lib/estimate/**/*"
+  ]
+}

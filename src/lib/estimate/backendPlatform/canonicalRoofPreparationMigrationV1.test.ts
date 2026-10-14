@@ -1,4 +1,5 @@
-import parents from '../../../../data/estimate-benchmarks/fixtures/roof-planned-preparation-parents-s27-67.json';
+import {readFrozenDefinitionSnapshotV1} from './canonicalFrozenDefinitionSnapshotV1';
+const parents=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-planned-preparation-parents-s27-67.json'),'reps');
 import field from '../../../../data/estimate-benchmarks/source-packs/flat-roof-scope-s27-65.json';
 import primer from '../../../../data/estimate-benchmarks/source-packs/roof-prime-ready-emulsion-five-s27-63.json';
 import {overlayPlannedRoofPreparation} from '../../../../scripts/estimate/r4a13/s2767PlannedRoofPreparationOverlay';

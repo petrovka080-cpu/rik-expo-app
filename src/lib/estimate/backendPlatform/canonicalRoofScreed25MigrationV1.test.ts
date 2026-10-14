@@ -1,4 +1,5 @@
-import snapshot from '../../../../data/estimate-benchmarks/fixtures/roof-screed25-gutters11-parents-s27-67.json';
+import {readFrozenDefinitionSnapshotV1} from './canonicalFrozenDefinitionSnapshotV1';
+const snapshot=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-screed25-gutters11-parents-s27-67.json'),'representatives');
 import { buildRoofScreed25SuccessorV1 } from './canonicalRoofScreed25SuccessorV1';
 import { buildRoofScreed25MigrationProofV1,admitRoofScreed25MigrationProofV1,buildRoofStageRestorationV6,readRoofStageRestorationV6,roofStageRestoreTargetsV6,roofStageExcludeTargetsV6,consumeRoofStageOriginsV6,ROOF_SCREED25_SCOPE_ROW_V1,ROOF_SCREED25_OPERATION_KEY_V1,roofScreed25InactiveParameterIdsV1 } from './canonicalRoofScreed25MigrationV1';
 import { admitRoofHangingGuttersMigrationProofV1,buildRoofStageRestorationV5,readRoofStageRestorationV5,createRoofLegacyWaterSelectionOriginV1 } from './canonicalRoofHangingGuttersMigrationV1';
@@ -8,12 +9,12 @@ import { ROOF_SCREED25_PACK_V1 as pack } from './canonicalRoofScreed25CompanionV
 import { canonicalManualPriceMigrationBindings,canonicalManualExclusionMigrationBindings,canonicalStoredManualPricesCanMigrate } from './canonicalManualPriceReleaseMigration';
 import { canonicalEstimateSha256HexText } from './canonicalEstimateSha256';
 import { canonicalEstimateStableJson } from './canonicalEstimateDeterminism';
-import ten from '../../../../data/estimate-benchmarks/fixtures/roof-gutters-layers10-parents-s27-67.json';
-import nine from '../../../../data/estimate-benchmarks/fixtures/roof-layers-metal9-parents-s27-67.json';
-import eight from '../../../../data/estimate-benchmarks/fixtures/roof-metal-screed8-parents-s27-67.json';
-import seven from '../../../../data/estimate-benchmarks/fixtures/roof-screed-valley7-parents-s27-67.json';
-import six from '../../../../data/estimate-benchmarks/fixtures/roof-valley-preparation6-parents-s27-67.json';
-import five from '../../../../data/estimate-benchmarks/fixtures/roof-planned-preparation-parents-s27-67.json';
+const ten=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-gutters-layers10-parents-s27-67.json'),'reps');
+const nine=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-layers-metal9-parents-s27-67.json'),'reps');
+const eight=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-metal-screed8-parents-s27-67.json'),'reps');
+const seven=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-screed-valley7-parents-s27-67.json'),'reps');
+const six=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-valley-preparation6-parents-s27-67.json'),'reps');
+const five=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-planned-preparation-parents-s27-67.json'),'reps');
 import {admitRoofLowerLayersMigrationProofV1,buildRoofStageRestorationV4,createRoofLegacyAssemblySelectionOriginV1,migrateRoofLowerLayersSelectionV1} from './canonicalRoofLowerLayersMigrationV1';
 import {ROOF_ASSEMBLY_SEMANTIC_ROW_V1 as assembly,ROOF_VAPOR_OPERATION_KEY_V1 as vaporOp,ROOF_CLAY_OPERATION_KEY_V1 as clayOp,ROOF_VAPOR_SCOPE_ROW_V1 as vaporScope,ROOF_LOWER_LAYERS_PACK_V1 as layers} from './canonicalRoofLowerLayersCompanionV1';
 import {admitRoofMetalTrimMigrationProofV1,buildRoofStageRestorationV3} from './canonicalRoofMetalTrimMigrationV1';

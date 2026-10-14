@@ -1,7 +1,8 @@
-import eightParents from '../../../../data/estimate-benchmarks/fixtures/roof-metal-screed8-parents-s27-67.json';
-import sevenParents from '../../../../data/estimate-benchmarks/fixtures/roof-screed-valley7-parents-s27-67.json';
-import sixParents from '../../../../data/estimate-benchmarks/fixtures/roof-valley-preparation6-parents-s27-67.json';
-import fiveParents from '../../../../data/estimate-benchmarks/fixtures/roof-planned-preparation-parents-s27-67.json';
+import {readFrozenDefinitionSnapshotV1} from './canonicalFrozenDefinitionSnapshotV1';
+const eightParents=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-metal-screed8-parents-s27-67.json'),'reps');
+const sevenParents=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-screed-valley7-parents-s27-67.json'),'reps');
+const sixParents=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-valley-preparation6-parents-s27-67.json'),'reps');
+const fiveParents=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-planned-preparation-parents-s27-67.json'),'reps');
 import {overlayS2767RoofMetalTrimCompanion} from '../../../../scripts/estimate/r4a13/s2767RoofMetalTrimCompanionOverlay';
 import {ROOF_METAL_TRIM_PACK_V1 as pack,ROOF_METAL_TRIM_SEMANTIC_ROWS_V1 as ids,ROOF_METAL_TRIM_OPERATION_KEY_V1 as op} from './canonicalRoofMetalTrimCompanionV1';
 import {admitRoofMetalTrimMigrationProofV1,buildRoofMetalTrimMigrationProofV1,migrateRoofMetalTrimSelectionV1,buildRoofStageRestorationV3,readRoofStageRestorationV3,roofStageRestoreTargetsV3,composeRoofMetalTrimMigrationModelV1} from './canonicalRoofMetalTrimMigrationV1';

@@ -343,43 +343,65 @@ New-Item -ItemType Directory -Path $RuntimeRoot -Force | Out-Null
 $FullTypecheckExitCode = $null
 if ($VerifyFullTypecheck) {
   # The old owned Metro has stopped; its Web/Android graph no longer competes
-  # with the four complete compiler heaps. A failed check still restores Metro.
+  # with the required sequential compiler heaps. A failed check restores Metro.
+  $TypecheckRequiredFreeKiB = 5242880
   $TypecheckFreeKiB = [int64](Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory
   $TypecheckMemorySamples = @(@{ elapsed_ms = 0; free_kib = $TypecheckFreeKiB })
   # Windows may release a terminated Metro graph after the process exits.
   # Wait a bounded time for the SAME admission budget; do not lower it or
   # stop unrelated processes. No compiler runs while memory is insufficient.
   $TypecheckMemoryWait = [Diagnostics.Stopwatch]::StartNew()
-  while ($TypecheckFreeKiB -lt 3500000 -and $TypecheckMemoryWait.ElapsedMilliseconds -lt 20000) {
+  while ($TypecheckFreeKiB -lt $TypecheckRequiredFreeKiB -and $TypecheckMemoryWait.ElapsedMilliseconds -lt 20000) {
     Start-Sleep -Milliseconds 500
     $TypecheckFreeKiB = [int64](Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory
     $TypecheckMemorySamples += @{ elapsed_ms = $TypecheckMemoryWait.ElapsedMilliseconds; free_kib = $TypecheckFreeKiB }
   }
   $TypecheckMemoryWait.Stop()
-  $TypecheckAdmitted = $TypecheckFreeKiB -ge 3500000
+  # One bounded compiler tree plus OS/service headroom. Source tests run in
+  # their own required project; the runner proves combined roots are retained.
+  # Measured complete 15-project run: 1,981,513,728 bytes peak at 1792 MiB
+  # heap. Keep a 2 GiB process-tree allowance plus the same 3 GiB reserve.
+  $TypecheckHeapMiB = 1792
+  $TypecheckDiskFree = [long](Get-PSDrive -Name ([IO.Path]::GetPathRoot($Root).Substring(0,1))).Free
+  $TypecheckAdmitted = $TypecheckFreeKiB -ge $TypecheckRequiredFreeKiB -and $TypecheckDiskFree -ge 11274289152
   @{
     source_head = $BuildCommit
     captured_utc = (Get-Date).ToUniversalTime().ToString("o")
     actual_free_kib = $TypecheckFreeKiB
     memory_wait_ms = $TypecheckMemoryWait.ElapsedMilliseconds
     memory_samples = $TypecheckMemorySamples
-    required_free_kib = 3500000
-    heap_mib = 3072
+    required_free_kib = $TypecheckRequiredFreeKiB
+    heap_mib = $TypecheckHeapMiB
+    expected_process_tree_peak_bytes = 2147483648
+    physical_reserve_bytes = 3221225472
+    disk_free_bytes = $TypecheckDiskFree
+    expected_temporary_bytes = 536870912
+    disk_reserve_bytes = 10737418240
     executed = $TypecheckAdmitted
-    coverage = "all four unchanged full typecheck projects before Metro start"
+    coverage = "all required full typecheck projects; runner checks unchanged combined source roots"
   } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $RuntimeRoot "full-typecheck-admission.json") -Encoding UTF8
   if ($TypecheckAdmitted) {
     $PriorTypecheckNodeOptions = $env:NODE_OPTIONS
     try {
-      $env:NODE_OPTIONS = "--max-old-space-size=3072"
+      $env:NODE_OPTIONS = "--max-old-space-size=$TypecheckHeapMiB"
       # Windows PowerShell treats native stderr diagnostics as terminating
       # errors under Stop. Redirect in the child process, then read its real
       # exit code; successful compiler diagnostics must not kill the runner.
       $TypecheckProcess = Start-Process -FilePath $Node -ArgumentList @(
         (Join-Path $Root "scripts/typecheck/runTypecheckShards.mjs"), "--diagnostics"
-      ) -WorkingDirectory $Root -WindowStyle Hidden -Wait -PassThru `
+      ) -WorkingDirectory $Root -WindowStyle Hidden -PassThru `
         -RedirectStandardOutput (Join-Path $RuntimeRoot "full-typecheck.log") `
         -RedirectStandardError (Join-Path $RuntimeRoot "full-typecheck.diagnostics.log")
+      if (-not $TypecheckProcess.WaitForExit(300000)) {
+        # This handle was just created by this launcher. Guard the start time
+        # before terminating its owned compiler tree after the fixed deadline.
+        $stillOwned = Get-Process -Id $TypecheckProcess.Id -ErrorAction SilentlyContinue
+        if ($null -ne $stillOwned -and $stillOwned.StartTime -eq $TypecheckProcess.StartTime) {
+          & taskkill.exe /PID $TypecheckProcess.Id /T /F | Out-Null
+        }
+        throw "WHOLE_APP_FULL_TYPECHECK_TIMEOUT_300S"
+      }
+      $TypecheckProcess.Refresh()
       $FullTypecheckExitCode = $TypecheckProcess.ExitCode
     }
     catch {
@@ -391,7 +413,7 @@ if ($VerifyFullTypecheck) {
   }
   else {
     $FullTypecheckExitCode = 1
-    Write-Warning "Full typecheck admission rejected: freeKiB=$TypecheckFreeKiB requiredKiB=3500000; no compiler executed."
+    Write-Warning "Full typecheck admission rejected: freeKiB=$TypecheckFreeKiB requiredKiB=$TypecheckRequiredFreeKiB diskFreeBytes=$TypecheckDiskFree; no compiler executed."
   }
   Write-Host "full_typecheck_exit=$FullTypecheckExitCode"
 }

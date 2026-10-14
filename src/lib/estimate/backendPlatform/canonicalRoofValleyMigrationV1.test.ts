@@ -1,5 +1,6 @@
-import parents from '../../../../data/estimate-benchmarks/fixtures/roof-valley-preparation6-parents-s27-67.json';
-import originalParents from '../../../../data/estimate-benchmarks/fixtures/roof-planned-preparation-parents-s27-67.json';
+import {readFrozenDefinitionSnapshotV1} from './canonicalFrozenDefinitionSnapshotV1';
+const parents=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-valley-preparation6-parents-s27-67.json'),'reps');
+const originalParents=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-planned-preparation-parents-s27-67.json'),'reps');
 import {overlayS2767RoofValleyCompanion} from '../../../../scripts/estimate/r4a13/s2767RoofValleyCompanionOverlay';
 import {ROOF_VALLEY_PACK_V1 as pack,ROOF_VALLEY_SEMANTIC_ROW_V1} from './canonicalRoofValleyCompanionV1';
 import {admitRoofValleyMigrationProofV1,buildRoofValleyMigrationProofV1,migrateRoofValleySelectionV1,buildRoofStageRestorationV1,readRoofStageRestorationV1,roofStageRestoreTargetsV1,composeRoofFiveToSevenMigrationV1} from './canonicalRoofValleyMigrationV1';

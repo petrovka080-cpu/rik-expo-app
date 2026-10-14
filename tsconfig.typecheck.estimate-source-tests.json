@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "incremental": true, "tsBuildInfoFile": ".cache/typecheck/estimate-source-tests.tsbuildinfo" },
+  "include": [
+    "src/lib/estimate/**/*.test.ts", "src/lib/estimate/**/*.test.tsx", "src/lib/estimate/**/*.spec.ts", "src/lib/estimate/**/*.spec.tsx"
+  ]
+}

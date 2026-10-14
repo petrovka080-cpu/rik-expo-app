@@ -1,4 +1,5 @@
-import snapshot from '../../../../data/estimate-benchmarks/fixtures/roof-screed25-gutters11-parents-s27-67.json';
+import {readFrozenDefinitionSnapshotV1} from './canonicalFrozenDefinitionSnapshotV1';
+const snapshot=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-screed25-gutters11-parents-s27-67.json'),'representatives');
 import { overlayS2767RoofScreed25Companion } from '../../../../scripts/estimate/r4a13/s2767RoofScreed25CompanionOverlay';
 import { compileCanonicalEstimateCore, type CanonicalEstimateCompileCoreInput } from './canonicalEstimateCompileCore';
 import { canonicalEstimateStableJson } from './canonicalEstimateDeterminism';

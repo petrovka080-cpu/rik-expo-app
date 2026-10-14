@@ -1,6 +1,7 @@
-import parents from '../../../../data/estimate-benchmarks/fixtures/roof-screed-valley7-parents-s27-67.json';
-import sixParents from '../../../../data/estimate-benchmarks/fixtures/roof-valley-preparation6-parents-s27-67.json';
-import fiveParents from '../../../../data/estimate-benchmarks/fixtures/roof-planned-preparation-parents-s27-67.json';
+import {readFrozenDefinitionSnapshotV1} from './canonicalFrozenDefinitionSnapshotV1';
+const parents=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-screed-valley7-parents-s27-67.json'),'reps');
+const sixParents=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-valley-preparation6-parents-s27-67.json'),'reps');
+const fiveParents=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-planned-preparation-parents-s27-67.json'),'reps');
 import {overlayS2767RoofScreedCompanion} from '../../../../scripts/estimate/r4a13/s2767RoofScreedCompanionOverlay';
 import {ROOF_SCREED_PACK_V1 as pack,ROOF_SCREED_SEMANTIC_ROW_V1} from './canonicalRoofScreedCompanionV1';
 import {ROOF_FORECAST_SCREED_PRIMER_CONDITIONS_V1 as forecast} from './canonicalRoofForecastConditionV1';

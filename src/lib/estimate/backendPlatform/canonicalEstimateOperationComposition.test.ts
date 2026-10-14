@@ -1,10 +1,22 @@
-import { canonicalEstimateWorkProcess, canonicalEstimateOperationReferences } from './canonicalEstimateOperationComposition';
+import { canonicalEstimateWorkProcess, canonicalEstimateOperationReferences,canonicalEstimateResourceOperationSections } from './canonicalEstimateOperationComposition';
+import type {CanonicalScopeRequirementDecisionV1 as Scope} from './canonicalScopeRequirementV1';
 
 const operation = (groupId: string, operationId: string, title: string, ordinal?: number) => ({
   contractVersion: 'canonical-operation-resource/v1', groupId,
   groupTitleRu: groupId === 'partition' ? 'Монтаж перегородки' : 'Устройство трубопровода',
   operationId, operationTitleRu: title, completionCriterionRu: 'Проверить выполненный этап',
   ...(ordinal == null ? {} : { processOrdinal: ordinal, processRole: 'PROCESS' }),
+});
+const check=(status:Scope['status'],coveringRowIds:string[],kind:Scope['kind']='INCLUDED'):Scope=>({contractVersion:'canonical-scope-requirement-decision/v1',rowId:'check-'+status,groupId:'partition',groupTitleRu:'Монтаж перегородки',titleRu:'Проверка этапа',reasonRu:'Обоснование состава',kind,status,coveringRowIds,originalRowIds:[],missingObjectFactParameterIds:[],numericNormAccepted:false,separatePaymentAccepted:false});
+test('completed applicability and excluded mandatory coverage stay inside their one declared stage',()=>{
+ const resources=[{rowId:'labor',titleRu:'Труд',operation:operation('partition','frame','Монтаж каркаса',0)}];
+ const sections=canonicalEstimateResourceOperationSections(resources,[check('COMPLETED',[],'OBJECT_SCOPE'),check('REQUIRED_RESOURCE_EXCLUDED',['labor'])]);
+ expect(sections).toHaveLength(1);expect(sections[0]!.resourceIds).toEqual(['labor']);expect(sections[0]!.scopeRequirements?.[0]!.statuses).toEqual(['COMPLETED','REQUIRED_RESOURCE_EXCLUDED']);
+});
+test('an ambiguous same-group scope stays separate unless its covering resources identify one owner',()=>{
+ const resources=[{rowId:'frame',titleRu:'Каркас',operation:operation('partition','frame','Монтаж каркаса',0)},{rowId:'lining',titleRu:'Обшивка',operation:operation('partition','lining','Обшивка',1)}];
+ const unknown=canonicalEstimateResourceOperationSections(resources,[check('OBJECT_FACT_REQUIRED',[],'OBJECT_SCOPE')]);expect(unknown).toHaveLength(3);
+ const exact=canonicalEstimateResourceOperationSections(resources,[check('COMPLETED',[],'PROJECT_SCOPE'),check('INCLUDED',['lining'])]);expect(exact).toHaveLength(2);expect(exact.find(s=>s.resourceIds.includes('lining'))!.scopeRequirements).toHaveLength(1);
 });
 
 test('one process projection orders subworks and retains resource ownership for unrelated construction groups', () => {

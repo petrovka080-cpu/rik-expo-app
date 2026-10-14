@@ -1,5 +1,6 @@
+import {readFrozenDefinitionSnapshotV1} from './canonicalFrozenDefinitionSnapshotV1';
 import {canonicalEstimateResourceOperationSections} from './canonicalEstimateOperationComposition';
-import publishedParents from '../../../../data/estimate-benchmarks/fixtures/roof-valley-preparation6-parents-s27-67.json';
+const publishedParents=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-valley-preparation6-parents-s27-67.json'),'reps');
 import valleyPack from '../../../../data/estimate-benchmarks/source-packs/roof-valley-torch-two-companion-s27-67.json';
 import type {CanonicalScopeRequirementDecisionV1} from './canonicalScopeRequirementV1';
 const primer='roof:prime-ready-emulsion:krer12-016-02',field='roof:torch-two:krer12-002-09',valley='roof:valley-torch-two:krer12-005-03';

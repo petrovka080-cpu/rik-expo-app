@@ -1,5 +1,6 @@
+import {readFrozenDefinitionSnapshotV1} from './canonicalFrozenDefinitionSnapshotV1';
 import pack from '../../../../data/estimate-benchmarks/source-packs/roof-screed15-companion-s27-67.json';
-import parent from '../../../../data/estimate-benchmarks/fixtures/roof-screed25-gutters11-parents-s27-67.json';
+const parent=readFrozenDefinitionSnapshotV1(require('../../../../data/estimate-benchmarks/fixtures/roof-screed25-gutters11-parents-s27-67.json'),'representatives');
 import { sourcePinnedRoofNormOwnerR1, type SourcePinnedRoofNormPackR1 } from '../v4/sourcePinnedRoofNormOwnerR1';
 import { compileCanonicalEstimateCore, type CanonicalEstimateCompileCoreInput } from './canonicalEstimateCompileCore';
 import { canonicalEstimateStableJson } from './canonicalEstimateDeterminism';

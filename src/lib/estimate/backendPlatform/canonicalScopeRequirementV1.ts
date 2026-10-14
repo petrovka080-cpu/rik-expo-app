@@ -52,6 +52,9 @@ export type CanonicalScopeRequirementV1 = {
   /** A conditional companion can be removed before choosing its project
    * variant. This never relaxes the main system/applicability check. */
   operationExclusionSatisfiesScopeV1?: true;
+  /** Opt-in completeness of cost coverage. A saved financial-only refusal
+   * remains financial-only; it never becomes a physical composition command. */
+  costExclusionBreaksScopeV1?: true;
 };
 const kinds = new Set(['INCLUDED','NOT_APPLICABLE','PARTLY_INCLUDED','PROCESS','PROJECT_SCOPE','FINANCIAL_POLICY','OBJECT_SCOPE']);
 const statuses = new Set(['INCLUDED','NOT_APPLICABLE','COMPLETED','USER_EXCLUDED','REQUIRED_RESOURCE_EXCLUDED','PARTLY_INCLUDED','PROCESS_REQUIRED','PROJECT_SCOPE_OPEN',
@@ -96,6 +99,7 @@ export function resolveCanonicalScopeRequirementV1(input: {
   excludedQuantityRowIds?: ReadonlySet<string>; excludedOperationResourceRowIds?: ReadonlySet<string>;
   /** Opt-in companion checks also see exclusions of inactive definitions. */
   excludedOperationDefinitionRowIds?: ReadonlySet<string>;
+  excludedOwnCostRowIds?: ReadonlySet<string>;
 }): CanonicalScopeRequirementDecisionV1 | null {
   const raw = input.graph.scopeRequirementV1;
   if (raw == null) return null;
@@ -109,6 +113,8 @@ export function resolveCanonicalScopeRequirementV1(input: {
     || input.graph.costTreatment !== 'INFORMATIONAL_SCOPE'
     || s.coveringRowIds.some(id => !input.resourceIds.has(id) || id === input.rowId)
     || s.originalRowIds.some(id => !input.resourceIds.has(id) || id === input.rowId)
+    || (s.costExclusionBreaksScopeV1!=null&&(s.costExclusionBreaksScopeV1!==true
+      || !['INCLUDED','PARTLY_INCLUDED'].includes(String(s.kind)) || s.coveringRowIds.length===0))
     || !record(s.exactScopeWhen) || (s.satisfiedWhen != null && !record(s.satisfiedWhen))
     || (s.contextWhen!=null&&!record(s.contextWhen)) || (s.notApplicableWhen!=null&&!record(s.notApplicableWhen))
     || (s.notApplicableWhen!=null&&s.contextWhen==null)
@@ -181,7 +187,8 @@ export function resolveCanonicalScopeRequirementV1(input: {
     if (scope.satisfiedWhen && condition(scope.satisfiedWhen).value === true) status = 'COMPLETED';
     if(['INCLUDED','PARTLY_INCLUDED'].includes(scope.kind) && scope.coveringRowIds.length>0) {
       if(scope.coveringRowIds.every(id=>input.excludedOperationResourceRowIds?.has(id))) status='USER_EXCLUDED';
-      else if(scope.coveringRowIds.some(id=>input.excludedQuantityRowIds?.has(id))) status='REQUIRED_RESOURCE_EXCLUDED';
+      else if(scope.coveringRowIds.some(id=>input.excludedQuantityRowIds?.has(id)
+        ||(scope.costExclusionBreaksScopeV1===true&&input.excludedOwnCostRowIds?.has(id)))) status='REQUIRED_RESOURCE_EXCLUDED';
     }
     const missingFacts=(scope.requiredFactParameterIds??[]).filter(id=>input.parameters[id]==null||input.parameters[id]==='');
     if(missingFacts.length&&!['USER_EXCLUDED','COMPLETED','NOT_APPLICABLE'].includes(status)){status='OBJECT_FACT_REQUIRED';missing=missingFacts;}
