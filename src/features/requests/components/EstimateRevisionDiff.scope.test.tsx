@@ -17,3 +17,21 @@ test('absence of verified scope metadata preserves ordinary quantity comparison'
  let r!:renderer.ReactTestRenderer;act(()=>{r=renderer.create(<EstimateRevisionDiff diff={diff} />);});
  const stage=line(r,'estimate-revision-diff-row-gutter-stage');expect(stage).toContain('не рассчитано');expect(stage).toContain('м²');expect(stage).not.toContain('этап добавлен');act(()=>r.unmount());
 });
+
+test.each([
+ {before:null,after:true,label:'нет -> Да'},
+ {before:false,after:true,label:'Нет -> Да'},
+ {before:true,after:false,label:'Да -> Нет'},
+ {before:'false',after:'true',label:'Нет -> Да'},
+])('saved Boolean material fact is readable in revision history: $label',({before,after,label})=>{
+ const key='existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed';
+ const materialDiff:EstimateDraftRevisionDiff={...diff,changedParams:[{key,before,after}],changedRows:[],changedRowsCount:0};
+ let r!:renderer.ReactTestRenderer;
+ act(()=>{r=renderer.create(<EstimateRevisionDiff diff={materialDiff} parameters={[{
+  parameterId:key,label:'Снимается листовое или рулонное покрытие из ПВХ',unit:null,valueType:'boolean',
+ }]} />);});
+ const material=line(r,'estimate-revision-diff-param-'+key);
+ expect(material).toContain(label);
+ expect(material).not.toContain('Вариант по проектной документации');
+ act(()=>r.unmount());
+});

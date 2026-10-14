@@ -493,6 +493,9 @@ function canonicalEstimateSourceParameterChoiceLabelRu(
   fallback?: string,
 ): string {
   const normalized = String(value);
+  // Saved facts can arrive as Booleans or their transport strings.
+  if (normalized === "true") return "Да";
+  if (normalized === "false") return "Нет";
   if (["base_delivery_cost_mode", "base_extra_mobilization_cost_mode", "base_qa_cost_mode"].includes(parameterId)) {
     if (normalized === "SEPARATE") return "Оплачивается отдельно";
     if (normalized === "INCLUDED") return "Включено в подтверждённую стоимость";
