@@ -4,6 +4,7 @@ import {admitAsphaltFloorWasteMigrationProofS2769} from '../../../src/lib/estima
 import {assertStoneCubesWasteSelectionS2769} from '../../../src/lib/estimate/v4/stoneCubesWasteScopeS2769';
 import {admitCn87SubfloorMigrationProofS2769} from '../../../src/lib/estimate/backendPlatform/canonicalCn87SubfloorMigrationS2769';
 import {admitCt126SixDryWallMigrationProofS2769} from '../../../src/lib/estimate/backendPlatform/canonicalCt126SixDryWallMigrationS2769';
+import {admitAggressiveFloorActualThicknessMigrationProofS2769} from '../../../src/lib/estimate/backendPlatform/canonicalAggressiveFloorActualThicknessMigrationS2769';
 import {admitRoofStandaloneWorkScopeMigrationProofV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofStandaloneWorkScopeV1';
 import {admitRoofScreed25MigrationProofV1,buildRoofStageRestorationV6,readRoofStageRestorationV6,consumeRoofStageOriginsV6,composeRoofScreed25MigrationModelV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofScreed25MigrationV1';
 import {admitRoofHangingGuttersMigrationProofV1,migrateRoofHangingGuttersSelectionV1,buildRoofStageRestorationV5,readRoofStageRestorationV5,createRoofLegacyWaterSelectionOriginV1,consumeRoofStageOriginsV5,composeRoofGuttersMigrationModelV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofHangingGuttersMigrationV1';
@@ -133,6 +134,17 @@ async function localManualAmendmentMigrationBindings(client: PoolClient, definit
       client.query('select * from public.estimate_definition_version where id=$1',[fromId]),client.query('select * from public.estimate_resource_spec where definition_version_id=$1',[fromId]),
       client.query('select * from public.estimate_formula_graph where definition_version_id=$1',[fromId]),client.query('select * from public.estimate_parameter_definition where definition_version_id=$1',[fromId])]);
     const before=oldDef.rows[0],admitted=before?admitCt126SixDryWallMigrationProofS2769({proof:ct126Proof,
+      fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},
+      from:{resources:oldResources.rows,formulas:oldFormulas.rows,parameters:oldParameters.rows},to:input}):null;
+    if(admitted)predecessorBindings={manualMigrationPredecessorV1:{definitionId:fromId,priceBindings:canonicalManualPriceMigrationBindings(admitted.normalizedTo),
+      exclusionBindings:canonicalManualExclusionMigrationBindings(admitted.normalizedTo),operationBindings:canonicalCompositionOperationMigrationBindingsV1(admitted.normalizedTo),compositionSelectionIdsPreservedV1:true}};
+  }
+  const aggressiveProof=definition?.source_metadata?.aggressiveFloorActualThicknessMigrationS2769;
+  if(aggressiveProof?.fromDefinitionId&&/^[0-9a-f-]{36}$/iu.test(String(aggressiveProof.fromDefinitionId))){
+    const fromId=String(aggressiveProof.fromDefinitionId),[oldDef,oldResources,oldFormulas,oldParameters]=await Promise.all([
+      client.query('select * from public.estimate_definition_version where id=$1',[fromId]),client.query('select * from public.estimate_resource_spec where definition_version_id=$1',[fromId]),
+      client.query('select * from public.estimate_formula_graph where definition_version_id=$1',[fromId]),client.query('select * from public.estimate_parameter_definition where definition_version_id=$1',[fromId])]);
+    const before=oldDef.rows[0],admitted=before?admitAggressiveFloorActualThicknessMigrationProofS2769({proof:aggressiveProof,
       fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},
       from:{resources:oldResources.rows,formulas:oldFormulas.rows,parameters:oldParameters.rows},to:input}):null;
     if(admitted)predecessorBindings={manualMigrationPredecessorV1:{definitionId:fromId,priceBindings:canonicalManualPriceMigrationBindings(admitted.normalizedTo),
@@ -2506,6 +2518,8 @@ async function compileClaimedJob(
       fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},from:fromModel,to:toModel}):null;
     const ct126Admitted=before?admitCt126SixDryWallMigrationProofS2769({proof:definition.source_metadata?.ct126SixDryWallMigrationS2769,
       fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},from:fromModel,to:toModel}):null;
+    const aggressiveAdmitted=before?admitAggressiveFloorActualThicknessMigrationProofS2769({proof:definition.source_metadata?.aggressiveFloorActualThicknessMigrationS2769,
+      fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},from:fromModel,to:toModel}):null;
     const admitted=before?admitRoofPreparationMigrationProofV1({proof:definition.source_metadata?.roofPreparationMigrationV1,
       fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},
       toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},from:fromModel,to:toModel}):null;
@@ -2523,7 +2537,7 @@ async function compileClaimedJob(
       toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},from:fromModel,to:toModel}):null;
     const standaloneScopePath=await localRoofStandaloneWorkScopeMigrationV1(client,definition,toModel);
     const standaloneScopePredecessor=standaloneScopePath?.find(m=>m.definitionId===before?.id);
-    const migrationTo=asphaltAdmitted?.normalizedTo??stoneAdmitted?.normalizedTo??cn87Admitted?.normalizedTo??ct126Admitted?.normalizedTo??standaloneScopePredecessor?.model??standaloneScreedAdmitted?.normalizedTo??screed25Predecessor?.model??guttersPredecessor?.model??lowerLayersPredecessor?.model??metalTrimPredecessor?.model??screedPredecessor?.model??directFiveToSeven?.composed??valleyAdmitted?.normalizedTo??admitted?.normalizedTo??toModel;
+    const migrationTo=aggressiveAdmitted?.normalizedTo??asphaltAdmitted?.normalizedTo??stoneAdmitted?.normalizedTo??cn87Admitted?.normalizedTo??ct126Admitted?.normalizedTo??standaloneScopePredecessor?.model??standaloneScreedAdmitted?.normalizedTo??screed25Predecessor?.model??guttersPredecessor?.model??lowerLayersPredecessor?.model??metalTrimPredecessor?.model??screedPredecessor?.model??directFiveToSeven?.composed??valleyAdmitted?.normalizedTo??admitted?.normalizedTo??toModel;
     // Validate a newly requested exclusion against the admitted predecessor
     // before any operation-key expansion, as well as the stored parent below.
     if(Object.hasOwn(payload,'compositionSelectionV1'))assertCanonicalCompositionSelectionReleaseMigrationV1({selection:effectiveCompositionSelectionV1,from:fromModel,to:migrationTo});
