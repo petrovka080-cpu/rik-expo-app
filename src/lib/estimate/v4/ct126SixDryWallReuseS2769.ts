@@ -36,10 +36,12 @@ export function buildCt126SixDryWallSuccessorS2769(parent:PurchaseGroupRepresent
  result.parameters.find(p=>p.parameter_id==='q')!.default_value=null;
  shared.parameters=shared.parameters.map(declaration);shared.formulas=shared.formulas.map(declaration);shared.resources=shared.resources.map(declaration);
  if(shared.parameters.length!==32||shared.resources.length!==30||shared.formulas.length!==30)throw Error('CT126_ADMITTED_PROFILE_SHAPE_REQUIRED');
+ const scopeTruth=shared.parameters.find(p=>p.parameter_id==='ct126_wall_base_confirmed')!.truth_metadata;
  const choice={parameter_id:ct126SixDryWallChoiceS2769,ordinal:1,title_ru:'Материал и технология выравнивания стены',value_type:'enum',unit_id:null,
-  required:true,default_value:null,constraints_json:{values:[binding.exactChoiceRu]},truth_metadata:{contract:binding.contract,value_source_role:'PROJECT_SPECIFIC_INPUT',
+  required:true,default_value:null,constraints_json:{values:[binding.exactChoiceRu]},truth_metadata:{...scopeTruth,contract:binding.contract,value_source_role:'PROJECT_SPECIFIC_INPUT',
    semantic_parameter_key:String(parent.definition.catalog_id)+':'+ct126SixDryWallChoiceS2769,source_confirmation_required:false,
-   provenance:{consumer_input_role_v1:'OBJECT_FACT'},guide:{guide_short_ru:'Подтвердите фактический материал и технологию. Нормы расхода приложение берёт из принятого паспорта.'}}};
+   provenance:{...scopeTruth.provenance,consumer_input_role_v1:'OBJECT_FACT'},guide:{...scopeTruth.guide,guide_version:binding.contract,
+    guide_short_ru:'Подтвердите фактический материал и технологию. Нормы расхода приложение берёт из принятого паспорта.'}}};
  result.parameters.push(choice);
  for(const p of shared.parameters.filter(p=>p.parameter_id!=='q')) {
   const sourceGap=p.truth_metadata.value_source_role==='UNRESOLVED_APPLICATION_NORM';
