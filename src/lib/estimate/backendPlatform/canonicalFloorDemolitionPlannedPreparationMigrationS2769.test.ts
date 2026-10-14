@@ -17,7 +17,7 @@ test.each(Array.from({length:13},(_,i)=>i))('admits the full thirteen-type publi
  const i=input(index),r=overlayS2769FloorDemolitionPlannedPreparation(i.from,'77777777-7777-4777-8777-777777777777').representative;
  const plan=createCanonicalDefinitionClonePlan({contract:binding.contract,
   definition:{id:i.toDefinition.id,releaseId:'22222222-2222-4222-8222-222222222222',catalogId:i.toDefinition.catalogId,
-   definitionVersion:Number(i.from.definition.definition_version)+1,passport:i.from.definition.passport,applicability:i.from.definition.applicability,
+   definitionVersion:Number(i.from.definition.definition_version)+1,passport:i.from.definition.passport,applicability:r.definition.applicability,
    definitionSha256:i.toDefinition.sha256,sourceMetadata:i.from.definition.source_metadata},representative:r,
   parameterTruthMetadata:p=>p.truth_metadata,resourceId:row=>'33333333-3333-4333-8333-'+hash(row.row_id).slice(0,12),
   resourceSemanticOwner:row=>String(row.semantic_owner),resourceSha256:row=>hash(row),
@@ -28,6 +28,7 @@ test.each(Array.from({length:13},(_,i)=>i))('admits the full thirteen-type publi
   bindingApplicability:b=>b.applicability,expectedNormativeBindingCount:r.bindings.length});
  expect(admit({...i,to:plan,proof:proof({...i,to:plan})})).not.toBeNull();
  expect(plan.parameters).toHaveLength(i.from.parameters.length+11);expect(plan.resources).toHaveLength(i.from.resources.length+18);
+ expect(plan.definition.applicability.primaryMeasureParameterId).toBe('floor_covering_area_m2');
  expect(plan.passport.decision.unresolvedResourceRowIds).toHaveLength(4+(i.from.passport.decision.unresolvedResourceRowIds?.length??0));
  expect(plan.parameters.filter(p=>!i.from.parameters.some(old=>old.parameter_id===p.parameter_id)).every(p=>p.truth_metadata.contract===binding.contract)).toBe(true);
  expect(canonicalPublisherQuantityScopeIsConsistent(plan)).toBe(true);

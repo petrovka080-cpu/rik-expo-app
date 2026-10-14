@@ -1,5 +1,6 @@
 import type {CanonicalEstimateCatalogItem} from '../../lib/estimate/backendPlatform/contracts';
 import type {CanonicalEstimateParameterSessionRevision} from '../../lib/estimate/backendPlatform/canonicalEstimateParameterSessionSnapshot';
+import {buildCanonicalBaselinePlan} from './consumerCanonicalBaselineCompile';
 import {canonicalApprovedBaselineRuntimeDefaultValue as defaultValue} from '../../lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline';
 import {buildConsumerCanonicalParameterSession as saved,buildConsumerCanonicalPrecompileParameterSession as fresh} from './consumerCanonicalParameterEditor';
 import {buildFloorDemolitionPlannedPreparationS2769 as build} from '../../lib/estimate/v4/floorDemolitionPlannedPreparationS2769';
@@ -33,4 +34,10 @@ test.each(parents.models)('saved editor preserves legacy intent; fresh defaults 
  expect(c.parameterSchema.find(p=>p.parameterId===pack.modeId)?.defaultValue).toBe(pack.plannedMode);
  for(const stage of pack.stages){const choices=n.parameters.find(p=>p.parameterId===stage.id)?.allowedValues??[];
   expect(choices.map(v=>v.value)).toEqual([stage.planned,stage.provided,stage.covered,stage.notRequired]);}
+});
+test.each(parents.models)('an area stated once in the brief binds only the declared floor measure: $definition.catalog_id',parent=>{
+ const c=catalog(parent),plan=buildCanonicalBaselinePlan({catalog:c,prompt:'Разборка покрытия пола 35,5 м²'});
+ expect(plan.primaryMeasureParameterId).toBe('floor_covering_area_m2');
+ expect(plan.parameters.floor_covering_area_m2).toBe('35.5');
+ expect(plan.parameters[pack.barrierAreaId]).toBeUndefined();
 });

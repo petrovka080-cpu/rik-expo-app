@@ -128,7 +128,7 @@ async function main() {
         toDefinition:{id:definitionId,catalogId,sha256:definitionSha256},from:parent,to:r});
       const plan = createCanonicalDefinitionClonePlan({contract:CONTRACT,
         definition:{id:definitionId,releaseId,catalogId,definitionVersion:Number(parent.definition.definition_version)+1,passport:{...r.definition.passport,floorPlannedPreparationContract:pack.contract},
-          applicability:{...parent.definition.applicability,floorPlannedPreparationScopeRu:pack.scopeRu,oldNormativeLaborAndOwnersPreserved:true},definitionSha256,
+          applicability:{...r.definition.applicability,floorPlannedPreparationScopeRu:pack.scopeRu,oldNormativeLaborAndOwnersPreserved:true},definitionSha256,
           sourceMetadata:{...parent.definition.source_metadata,contract:CONTRACT,predecessorDefinitionId:parent.definition.id,floorPlannedPreparationContract:pack.contract,
             floorDemolitionPlannedPreparationMigrationS2769:migrationProof,sourceHashes,activationAllowed:false,productionEligible:false}},
         representative:r,parameterTruthMetadata:p=>p.truth_metadata,

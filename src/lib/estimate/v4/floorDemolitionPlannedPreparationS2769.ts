@@ -34,6 +34,7 @@ export function buildFloorDemolitionPlannedPreparationS2769(parent:Model):Model{
  if(b.definition.id!==pack.barrierReference.definitionId||b.definition.definition_sha256!==pack.barrierReference.definitionSha256||b.resources.length!==11)
   throw Error('PLANNED_FLOOR_ACCEPTED_BARRIER_DRIFT');
  const r=structuredClone(parent);
+ r.definition.applicability={...r.definition.applicability,primaryMeasureParameterId:'floor_covering_area_m2'};
  const protection=pack.stages[0]!,dust=pack.stages[1]!;
  const stagePlan=(s:typeof protection)=>and(planned,eq(s.id,s.planned));
  const nonPlan=(s:typeof protection)=>and(planned,or(...[s.provided,s.covered,s.notRequired].map(v=>eq(s.id,v))));
@@ -66,6 +67,7 @@ export function buildFloorDemolitionPlannedPreparationS2769(parent:Model):Model{
     ...(isDefault?{visibility_role:'USER_INPUT',value_source_role:'VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE',input_origin_class:'VISIBLE_PRELIMINARY_ENGINEERING_PROFILE',runtime_profile_value:true,preliminary_compilation_allowed:true}:{}),
     guide:{...(p.truth_metadata.guide as Record<string,unknown>),guide_short_ru:p.parameter_id===pack.modeId?'Новый план включён только для новой сметы. В сохранённой смете прежний состав удерживается до явного изменения.':
      p.parameter_id===pack.barrierAreaId?'Собственный обмер ограждения: длина × высота. Полная норма включает установку и последующую разборку. Частично установленная защита требует другого расчёта.':
+     p.parameter_id===protection.id?'Полная норма включает установку и разборку. Если защита уже установлена и нужна только разборка, выберите выполнение здесь и другой способ: приложение рассчитает остаток. Будущая работа в другой смете относится к другому владельцу стоимости, а не к уже выполненной.':
      pack.stages.some(s=>s.evidenceId===p.parameter_id)?'Укажите конкретный принятый этап, основание ненужности либо другую смету и владельца стоимости. План другой работы не означает, что этап уже выполнен.':
      'Видимый предварительный состав; измените по фактическим условиям участка. Это не подтверждение ранее выполненной работы.'}}});
  }
@@ -109,6 +111,8 @@ export function buildFloorDemolitionPlannedPreparationS2769(parent:Model):Model{
  for(const p of r.parameters){const id=p.parameter_id,added=!parent.parameters.some(old=>old.parameter_id===id);
   p.truth_metadata={...p.truth_metadata,contract:pack.contract,semantic_parameter_key:String(parent.definition.catalog_id)+':'+id,
    formula_consumers:consumers.formulaConsumers[id],resource_branch_consumers:consumers.resourceConsumers[id]};
+  if(id==='floor_covering_area_m2')p.truth_metadata={...p.truth_metadata,value_source_role:'USER_INPUT',source_confirmation_required:false,
+   provenance:{consumer_input_role_v1:'OBJECT_FACT'}};
   r.baseline.formula_consumer_ids[id]=consumers.formulaConsumers[id];r.baseline.resource_consumer_row_ids[id]=consumers.resourceConsumers[id];
   if(added){p.truth_metadata={...p.truth_metadata,contract:pack.contract,semantic_parameter_key:String(parent.definition.catalog_id)+':'+id,
    formula_consumers:consumers.formulaConsumers[id],resource_branch_consumers:consumers.resourceConsumers[id]};
