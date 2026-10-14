@@ -107,14 +107,15 @@ export function buildFloorDemolitionPlannedPreparationS2769(parent:Model):Model{
  const consumers=buildMasterParameterCalculationConsumers(r);
  r.baseline.input_values={...r.baseline.input_values,...defaults,[pack.barrierAreaId]:12,[pack.conditionsId]:pack.conditionsValue};
  for(const p of r.parameters){const id=p.parameter_id,added=!parent.parameters.some(old=>old.parameter_id===id);
-  p.truth_metadata={...p.truth_metadata,formula_consumers:consumers.formulaConsumers[id],resource_branch_consumers:consumers.resourceConsumers[id]};
+  p.truth_metadata={...p.truth_metadata,contract:pack.contract,semantic_parameter_key:String(parent.definition.catalog_id)+':'+id,
+   formula_consumers:consumers.formulaConsumers[id],resource_branch_consumers:consumers.resourceConsumers[id]};
   r.baseline.formula_consumer_ids[id]=consumers.formulaConsumers[id];r.baseline.resource_consumer_row_ids[id]=consumers.resourceConsumers[id];
   if(added){p.truth_metadata={...p.truth_metadata,contract:pack.contract,semantic_parameter_key:String(parent.definition.catalog_id)+':'+id,
    formula_consumers:consumers.formulaConsumers[id],resource_branch_consumers:consumers.resourceConsumers[id]};
    if(Object.hasOwn(r.baseline.input_values,id))r.baseline.input_classification[id]=Object.hasOwn(defaults,id)?'ASSUMPTION':'VALIDATION_FIXTURE';
    r.baseline.formula_consumer_ids[id]=consumers.formulaConsumers[id];r.baseline.resource_consumer_row_ids[id]=consumers.resourceConsumers[id];
    r.baseline.uom_by_parameter[id]=p.unit_id;r.baseline.guide_provenance_ru[id]=p.truth_metadata.guide?.guide_short_ru??p.title_ru;
-   r.baseline.normative_source_ids[id]=[pack.dustSource.sourceId];
+   r.baseline.normative_source_ids[id]=[...new Set([...Object.values(parent.baseline.normative_source_ids).flat(),...Object.values(b.baseline.normative_source_ids).flat(),pack.dustSource.sourceId])];
   }
  }
  r.baseline.parameter_schema_sha256=sha(r.parameters.map(p=>({parameterId:p.parameter_id,unitId:p.unit_id,valueType:p.value_type,constraints:p.constraints_json,truth:p.truth_metadata})));
