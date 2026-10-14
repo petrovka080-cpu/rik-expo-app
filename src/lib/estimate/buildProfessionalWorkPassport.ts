@@ -1,6 +1,5 @@
 import { estimate10000ReadinessManifest as baseManifestJson } from "./estimate10000ReadinessManifest";
-import expandedTemplatesJson from "../../../data/estimate-catalog/expanded-complex/templates.json";
-import expandedCoverageJson from "../../../data/estimate-catalog/expanded-complex/template-coverage.json";
+import { parseExpandedComplexTemplates, parseExpandedTemplateCoverage } from './catalogArtifactDataContract';
 import {
   calculateExpandedComplexEstimate,
   getExpandedComplexWorkFamily,
@@ -68,24 +67,9 @@ export type BaseWorkTemplateManifestRow = {
   aliases: string[];
 };
 
-type ExpandedCoverageRow = {
-  template_id: string;
-  work_family_id: string;
-  template_level: WorkEstimateLevel;
-  has_parameter_schema: boolean;
-  has_formula: boolean;
-  has_material_recipe: boolean;
-  has_labor_recipe: boolean;
-  has_equipment_recipe: boolean;
-  has_service_recipe: boolean;
-  has_norm_source: boolean;
-  has_price_policy: boolean;
-  has_pdf_policy: boolean;
-  has_buyer_handoff_policy: boolean;
-};
-
 const baseManifestTemplates = (baseManifestJson as { templates: BaseWorkTemplateManifestRow[] }).templates;
-const expandedTemplates = expandedTemplatesJson as ExpandedComplexTemplate[];
+const expandedTemplates = parseExpandedComplexTemplates(require("../../../data/estimate-catalog/expanded-complex/templates.json"));
+const expandedCoverageJson = parseExpandedTemplateCoverage(require("../../../data/estimate-catalog/expanded-complex/template-coverage.json"));
 const baseManifestTemplateById = new Map(
   baseManifestTemplates.map((template) => [template.template_id, template]),
 );
@@ -93,7 +77,7 @@ const expandedTemplateById = new Map(
   expandedTemplates.map((template) => [template.template_id, template]),
 );
 const expandedCoverageByTemplateId = new Map(
-  (expandedCoverageJson as { templates: ExpandedCoverageRow[] }).templates.map((row) => [row.template_id, row]),
+  expandedCoverageJson.templates.map((row) => [row.template_id, row]),
 );
 const PROFESSIONAL_WORK_PASSPORT_CACHE_LIMIT = 128;
 const professionalWorkPassportCache = new Map<string, ProfessionalWorkPassport>();

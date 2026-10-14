@@ -1,5 +1,6 @@
 import { estimate10000ReadinessManifest as baseManifestJson } from "../estimate10000ReadinessManifest";
-import expandedTemplatesJson from "../../../../data/estimate-catalog/expanded-complex/templates.json";
+import { parseExpandedComplexTemplates } from '../catalogArtifactDataContract';
+const expandedTemplatesJson = parseExpandedComplexTemplates(require("../../../../data/estimate-catalog/expanded-complex/templates.json"));
 
 import { estimateDeterministicHash } from "../estimateDeterministicHash";
 import { MULTI_DOMAIN_REFERENCE_PASSPORTS_V4 } from "./multiDomainReferencePassportsV4";

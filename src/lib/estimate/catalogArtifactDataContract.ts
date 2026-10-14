@@ -1,3 +1,6 @@
+import type { ExpandedComplexTemplate } from '../ai/expandedComplexWorks';
+import type { WorkEstimateLevel } from './workPassportContract';
+
 /** Validate real catalog data at its loading boundary. Literal JSON inference
  * for tens of thousands of repeated records consumes the compiler heap; these
  * contracts validate all persisted fields without declaration-module stubs,
@@ -30,6 +33,20 @@ export type EstimateReadinessManifest = {
 export type WorkCatalogArtifact = {
   schema: "work-catalog-10000-v1"; generated_at: string; work_catalog_items_count: number;
   items: (CatalogWorkIdentityRecord & { professional_name_ru: string })[];
+};
+export type ExpandedTemplateCoverageRow = {
+  template_id: string; work_family_id: string; template_level: WorkEstimateLevel;
+  readiness_status: string; blocking_reasons: string[];
+  has_parameter_schema: boolean; has_formula: boolean; has_material_recipe: boolean;
+  has_labor_recipe: boolean; has_equipment_recipe: boolean; has_service_recipe: boolean;
+  has_norm_source: boolean; has_price_policy: boolean; has_ui_renderer_policy: boolean;
+  has_pdf_policy: boolean; has_buyer_handoff_policy: boolean;
+};
+export type ExpandedTemplateCoverageArtifact = {
+  schema: 'expanded-complex-template-coverage-v1'; generated_at: string;
+  expanded_templates_count: number; all_templates_checked_for_expanded_complex_works: boolean;
+  template_without_family_count: number; not_ready_count: number;
+  templates: ExpandedTemplateCoverageRow[];
 };
 const identityFields = ["template_id", "work_key", "work_family_id", "calculator_family_id", "work_catalog_item_id",
   "parameter_schema_id", "norm_pack_id", "material_recipe_id", "labor_recipe_id", "service_recipe_id",
@@ -88,4 +105,40 @@ export function parseWorkCatalogArtifact(value: unknown): WorkCatalogArtifact {
   if (rows.length !== catalog.work_catalog_items_count) invalid("work-catalog.work_catalog_items_count");
   rows.forEach((row, index) => stringFields(row, [...identityFields, "professional_name_ru"], `work-catalog.items[${index}]`));
   return value as WorkCatalogArtifact;
+}
+
+const expandedLevels = ['ROM_CONCEPT', 'PRELIMINARY_BOQ', 'DETAILED_BOQ_FROM_DRAWINGS', 'TENDER_BOQ', 'AS_BUILT_ESTIMATE'];
+export function parseExpandedComplexTemplates(value: unknown): ExpandedComplexTemplate[] {
+  const rows = records(value, 'expanded-templates');
+  rows.forEach((row, index) => {
+    const locator = `expanded-templates[${index}]`;
+    stringFields(row, ['template_id', 'work_family_id', 'template_level'], locator);
+    if (![...expandedLevels, 'NEEDS_INPUT'].includes(row.template_level as string)) invalid(`${locator}.template_level`);
+    strings(row.requiredInputs, `${locator}.requiredInputs`);
+    strings(row.rowGroups, `${locator}.rowGroups`);
+    if ((row.rowGroups as string[]).some(group => !['material', 'work', 'equipment', 'service'].includes(group))) invalid(`${locator}.rowGroups`);
+    if (row.pdfPolicy !== 'GROUPED_WITH_ASSUMPTIONS_TRACE_AND_SOURCES') invalid(`${locator}.pdfPolicy`);
+    if (row.buyerHandoffPolicy !== 'MATERIAL_EQUIPMENT_DELIVERY_ONLY') invalid(`${locator}.buyerHandoffPolicy`);
+  });
+  return value as ExpandedComplexTemplate[];
+}
+
+export function parseExpandedTemplateCoverage(value: unknown): ExpandedTemplateCoverageArtifact {
+  const coverage = object(value, 'expanded-coverage');
+  if (coverage.schema !== 'expanded-complex-template-coverage-v1') invalid('expanded-coverage.schema');
+  stringFields(coverage, ['generated_at'], 'expanded-coverage');
+  countFields(coverage, ['expanded_templates_count', 'template_without_family_count', 'not_ready_count'], 'expanded-coverage');
+  if (typeof coverage.all_templates_checked_for_expanded_complex_works !== 'boolean') invalid('expanded-coverage.all_templates_checked_for_expanded_complex_works');
+  const rows = records(coverage.templates, 'expanded-coverage.templates');
+  if (rows.length !== coverage.expanded_templates_count) invalid('expanded-coverage.expanded_templates_count');
+  rows.forEach((row, index) => {
+    const locator = `expanded-coverage.templates[${index}]`;
+    stringFields(row, ['template_id', 'work_family_id', 'template_level', 'readiness_status'], locator);
+    if (![...expandedLevels, 'PROFESSIONAL_EXPANDED'].includes(row.template_level as string)) invalid(`${locator}.template_level`);
+    strings(row.blocking_reasons, `${locator}.blocking_reasons`);
+    for (const field of ['has_parameter_schema', 'has_formula', 'has_material_recipe', 'has_labor_recipe', 'has_equipment_recipe',
+      'has_service_recipe', 'has_norm_source', 'has_price_policy', 'has_ui_renderer_policy', 'has_pdf_policy', 'has_buyer_handoff_policy'])
+      if (typeof row[field] !== 'boolean') invalid(`${locator}.${field}`);
+  });
+  return value as ExpandedTemplateCoverageArtifact;
 }
