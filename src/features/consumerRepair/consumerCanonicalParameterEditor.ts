@@ -59,6 +59,7 @@ import { logger } from "../../lib/logger";
 import { canonicalPublicEstimateParameterTitleRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
 import {roofLowerLayersInactiveParameterIdsV1,ROOF_LOWER_LAYERS_QUESTION_PARAMETER_IDS_V1} from '../../lib/estimate/backendPlatform/canonicalRoofLowerLayersMigrationV1';
 import { createConsumerEstimateHydrationTrace } from "../../lib/consumerRequests/consumerEstimateHydrationTrace";
+import {floorPreparationEditingParametersS2769,floorPreparationIntentBindingS2769} from '../../lib/estimate/backendPlatform/canonicalFloorPreparationIntentS2769';
 import {
   assertConsumerCanonicalChildRevision,
   consumerCanonicalInheritedRecalculationInputs,
@@ -465,6 +466,8 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
   checksum: string;
   createdAt: string;
 }): CanonicalParameterSession {
+  if(!input.revisionId.startsWith('precompile:')&&input.catalog.parameterSchema.some(p=>p.parameterId===floorPreparationIntentBindingS2769.modeId))input={...input,
+    parameters:floorPreparationEditingParametersS2769(input.catalog.catalogId,input.parameters)};
   const allParameters = input.catalog.parameterSchema
     .filter((schema) => isConsumerMeaningfulCanonicalParameter(schema)
       || (input.parameters[schema.parameterId] != null

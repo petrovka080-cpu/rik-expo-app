@@ -1,0 +1,253 @@
+{
+  "contract": "rik-expo-app.s27-69.floor-demolition-planned-preparation-thirteen.v1",
+  "parentSnapshot": "data/estimate-benchmarks/fixtures/planned-floor-thirteen-parents-s27-69.json",
+  "parentSnapshotSha256": "0226af13066b86317ec192da837a37a50c1ba27b5d65bb657564c94fdb15fdfc",
+  "acceptedBarrierFixture": "data/estimate-benchmarks/fixtures/aggressive-floor-four-v4-parents-and-barrier-s27-69.json",
+  "acceptedBarrierFixtureSha256": "1b5a4225c9cbf96f78aee950e4eb4e595a97b20ae61b49f5861c0d9e00146890",
+  "barrierReference": {
+    "catalogId": "canonical-work:master:temporary_vertical_protective_barrier_board_frame_standard",
+    "definitionId": "58440645-124d-5cc1-a360-eb87a7979525",
+    "definitionSha256": "f4935b4df78e6ffd0d284e330bb9e46a4a59374795f5feba4fad4de42708d64f",
+    "source": {
+      "officialUrl": "https://minstroy.gov.kg/ru/kyzmat/459/show",
+      "localArtifact": ".release-runtime/r568/s27-3/f09-next-current-lineage/official-snapshots/krer_46_2015.pdf",
+      "sha256": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+      "edition": "КРЕР46-2015, введён с01.01.2016",
+      "printedAndPdfPages": [
+        5,
+        62,
+        63
+      ],
+      "table": "46-05-001",
+      "columns": [
+        "46-05-001-03"
+      ],
+      "basisM2": 100
+    },
+    "norm": "46-05-001-03",
+    "basisM2": 100,
+    "locatorRu": "КРЕР46, стр62 состав и измеритель, стр63 колонка03; устройство и разборка вертикального деревянного ограждения с одним слоем толя"
+  },
+  "dustSource": {
+    "sourceId": "kg_krer_13_2015_corrosion_official",
+    "officialUrl": "https://minstroy.gov.kg/ru/kyzmat/429/show",
+    "downloadUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no13zasitastroitelnyhkonstrukcijioborudovaniaotkorrozii_compressed-1366908360a6e7f78.57138504.pdf",
+    "localArtifact": ".release-runtime/r568/s27-69/aggressive-floor-full-sources/krer13-official-2015.pdf",
+    "sha256": "1b817ee6c8103d57132d40db40427ba4cafb937704e778b0708028b1e11a7a36",
+    "edition": "КРЕР13-2015",
+    "norm": "13-06-004-01",
+    "basisM2": 1,
+    "locatorRu": "Печатная/PDFстр61: измеритель м², труд000-1003-0=0,1чел.-ч/м²; пылесос33-0620=0,10маш.-ч/м². КРЕР46 п1.27 стр7 отсылает к сборнику13.",
+    "workers": {
+      "resourceCode": "000-1003-0",
+      "grade": "3,0",
+      "hoursPerM2": 0.1
+    },
+    "vacuum": {
+      "resourceCode": "33-0620",
+      "titleRu": "Пылесос промышленный",
+      "hoursPerM2": 0.1
+    },
+    "inspectedPages": [
+      5,
+      6,
+      7,
+      61
+    ],
+    "oldBasePricesNotUsed": true,
+    "filtersOrWaterNotInvented": true,
+    "qualityControlIncluded": true
+  },
+  "scopeRu": "КРЕР46-2015 п.1.20/1.27: отдельная планируемая защита прилегающих частей и обеспыливание для выбранного покрытия пола. Ограждение только принятой конструкции46-05-001-03 с установкой и последующей разборкой; самостоятельная измеренная вертикальная площадь. Обеспыливание всей принятой площади промышленным пылесосом13-06-004-01 с контролем качества. Обычные условия, существующие электроснабжение, освещение и вентиляция; специальные временные системы и высотные подмости отдельно.",
+  "modeId": "floor_demolition_preparation_composition",
+  "plannedMode": "Состав подготовки выбран для этой сметы; этапы и владельцы стоимости указаны ниже",
+  "legacyMode": "Сохранить прежний состав подготовки; новые этапы автоматически не добавлять",
+  "oldWoodConditions": "Обычные условия реконструкции; снимается только указанное покрытие; подготовка обеспечена; включённые перемещения соответствуют КРЕР",
+  "plannedWoodConditions": "Обычные условия реконструкции; снимается только указанное покрытие; подготовка определяется выбранным составом этой сметы; включены уборка и перемещения до 130 м, в том числе до 50 м от объекта, спуск через окно в лотках",
+  "conditionsId": "floor_demolition_preparation_working_conditions",
+  "conditionsValue": "Работа выполняется с уровня пола в обычных условиях; к началу этапа имеются электроснабжение, освещение и вентиляция; специальные временные системы не требуются",
+  "barrierAreaId": "floor_demolition_protection_vertical_area_m2",
+  "barrierMethodId": "floor_demolition_protection_method",
+  "dustMethodId": "floor_demolition_dedusting_method",
+  "barrierValue": "Вертикальное ограждение: деревянный каркас, доски и один слой толя; устройство и последующая разборка",
+  "otherBarrierValue": "Другая конструкция защиты: нужен отдельный расчёт приложения",
+  "dustValue": "Обеспыливание всей площади после демонтажа промышленным пылесосом",
+  "otherDustValue": "Другой способ обеспыливания: нужен отдельный расчёт приложения",
+  "stages": [
+    {
+      "key": "protection",
+      "id": "floor_demolition_protection_stage",
+      "evidenceId": "floor_demolition_protection_basis",
+      "titleRu": "Защита прилегающих частей",
+      "planned": "Выполнить установку и последующую разборку защиты в этой смете",
+      "provided": "Защита для этого участка уже полностью выполнена и принята; повторная оплата не нужна",
+      "covered": "Защита учтена другой сметой или подработой; указан отдельный владелец стоимости",
+      "notRequired": "По условиям участка защита прилегающих частей не требуется"
+    },
+    {
+      "key": "dedusting",
+      "id": "floor_demolition_dedusting_stage",
+      "evidenceId": "floor_demolition_dedusting_basis",
+      "titleRu": "Обеспыливание после демонтажа",
+      "planned": "Выполнить обеспыливание после демонтажа в этой смете",
+      "provided": "Обеспыливание этого этапа уже выполнено и принято; повторная оплата не нужна",
+      "covered": "Обеспыливание этого этапа учтено другой сметой или подработой; указан отдельный владелец стоимости",
+      "notRequired": "По условиям участка обеспыливание этого этапа не требуется"
+    }
+  ],
+  "targets": [
+    {
+      "catalogId": "canonical-work:base:demolition_interior_flooring_dismantle_large_area",
+      "predecessorDefinitionId": "772a832a-404e-57b4-855e-caad14a8e601",
+      "parentSha256": "933fa90c92add94ce48fbc4ee0f7bb37a64266e13efece93fc45634382851baf",
+      "predecessorVersion": 5,
+      "parameterCount": 13,
+      "resourceCount": 9,
+      "scopeParameterIds": [
+        "asphalt_floor_work_scope_confirmed"
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_flooring_dismantle_small_area",
+      "predecessorDefinitionId": "c5724524-15f8-56c0-8ee1-1028e2dac0c7",
+      "parentSha256": "6adde43cff00514ff8f4a160dd0005590b0cd9fb377c8663450bf4267e389c69",
+      "predecessorVersion": 5,
+      "parameterCount": 13,
+      "resourceCount": 9,
+      "scopeParameterIds": [
+        "asphalt_floor_work_scope_confirmed"
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_flooring_dismantle_standard",
+      "predecessorDefinitionId": "65cc9e93-1d7d-57e0-8362-a7120b6ec2d2",
+      "parentSha256": "7847d00f1d3ffb10650294a686d4cf7b18b9f998b426bb6c777bd66f7d5b521e",
+      "predecessorVersion": 5,
+      "parameterCount": 13,
+      "resourceCount": 9,
+      "scopeParameterIds": [
+        "asphalt_floor_work_scope_confirmed"
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_flooring_dismantle_wet_zone",
+      "predecessorDefinitionId": "d1b9fb2a-178e-56d8-8580-92e0b8a9d748",
+      "parentSha256": "384bd4eabc066711c37de645d48f996c03f5d521d2c35e382284c8e6faffaff4",
+      "predecessorVersion": 5,
+      "parameterCount": 13,
+      "resourceCount": 9,
+      "scopeParameterIds": [
+        "asphalt_floor_work_scope_confirmed"
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_flooring_remove_large_area",
+      "predecessorDefinitionId": "169659f7-ce78-590b-8fbf-8ce3b7744de3",
+      "parentSha256": "f8f82e13bed89ddfd6137f15e4cd01a37107d101b77faea76b5710d6deb918cb",
+      "predecessorVersion": 6,
+      "parameterCount": 18,
+      "resourceCount": 9,
+      "scopeParameterIds": [
+        "stone_cubes_work_scope_confirmed"
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_flooring_remove_small_area",
+      "predecessorDefinitionId": "431be68e-7b22-57b8-89a2-cd0d20e10a46",
+      "parentSha256": "3b4b98116008e8e552893d86ed75a33b433f3ff04897eed18982cc03c9a4a7a5",
+      "predecessorVersion": 6,
+      "parameterCount": 18,
+      "resourceCount": 9,
+      "scopeParameterIds": [
+        "stone_cubes_work_scope_confirmed"
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_flooring_remove_standard",
+      "predecessorDefinitionId": "51c0d09c-9b56-5b51-805a-5376a2afccad",
+      "parentSha256": "2b5d17b48248c32eaf743ff61532b46402fad602c83d2eb97401b602dbfe068a",
+      "predecessorVersion": 6,
+      "parameterCount": 18,
+      "resourceCount": 9,
+      "scopeParameterIds": [
+        "stone_cubes_work_scope_confirmed"
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_flooring_remove_wet_zone",
+      "predecessorDefinitionId": "123e5555-4b3c-5d64-86ea-5a159461db60",
+      "parentSha256": "c98b385f56be177838db87384954465709557b4726fd8f85d3e21a3cb469d01d",
+      "predecessorVersion": 6,
+      "parameterCount": 18,
+      "resourceCount": 9,
+      "scopeParameterIds": [
+        "stone_cubes_work_scope_confirmed"
+      ]
+    },
+    {
+      "catalogId": "canonical-work:master:demolition_board_floor_covering_standard",
+      "predecessorDefinitionId": "a5a34bf5-4007-5b27-8777-2e101f430285",
+      "parentSha256": "40ee7ed82cad42ca3224622d340075c2c8cfe4edb776e8a10bca793250d2d0e5",
+      "predecessorVersion": 1,
+      "parameterCount": 13,
+      "resourceCount": 10,
+      "scopeParameterIds": [
+        "existing_covering_confirmed",
+        "object_conditions"
+      ]
+    },
+    {
+      "catalogId": "canonical-work:master:demolition_end_grain_wood_block_floor_covering_standard",
+      "predecessorDefinitionId": "324b4a93-7623-5773-b976-875a5a963ef2",
+      "parentSha256": "1b1f7bf5b5b741980a267f7f36e66589db0ea86540902ac9be7d66b5e829e2d3",
+      "predecessorVersion": 1,
+      "parameterCount": 12,
+      "resourceCount": 6,
+      "scopeParameterIds": [
+        "existing_covering_confirmed",
+        "object_conditions"
+      ]
+    },
+    {
+      "catalogId": "canonical-work:master:demolition_metal_plate_1000mm_floor_covering_standard",
+      "predecessorDefinitionId": "ffe0b56e-9d8b-5a95-83aa-fd69755d7b1b",
+      "parentSha256": "332dda2e4c41daf1272e817e1b06bf35564f80ef58b687b42d46d751089830b0",
+      "predecessorVersion": 1,
+      "parameterCount": 13,
+      "resourceCount": 10,
+      "scopeParameterIds": [
+        "existing_covering_confirmed",
+        "object_conditions"
+      ]
+    },
+    {
+      "catalogId": "canonical-work:master:demolition_metal_plate_300mm_floor_covering_standard",
+      "predecessorDefinitionId": "5139fdf2-c061-523e-992c-e9fadfa3a3fc",
+      "parentSha256": "b3555193ff16b46d71201cec49817c2b21030560a5cf5e699eb4f41db4793d23",
+      "predecessorVersion": 1,
+      "parameterCount": 13,
+      "resourceCount": 10,
+      "scopeParameterIds": [
+        "existing_covering_confirmed",
+        "object_conditions"
+      ]
+    },
+    {
+      "catalogId": "canonical-work:master:demolition_parquet_floor_covering_standard",
+      "predecessorDefinitionId": "2d653dc3-9b1d-5a45-9b60-82284079d39c",
+      "parentSha256": "43d60260c8db741bbbb80d827be81b9f827d977b1d4cebf6328af7201346a41d",
+      "predecessorVersion": 1,
+      "parameterCount": 13,
+      "resourceCount": 10,
+      "scopeParameterIds": [
+        "existing_covering_confirmed",
+        "object_conditions"
+      ]
+    }
+  ],
+  "newPhysicalNormSources": 0,
+  "reusedNumericalNormApplications": 143,
+  "newDistinctCatalogTypes": 0,
+  "legacyAbsenceMeansKeepComposition": true,
+  "productionAccepted": false
+}
