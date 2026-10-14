@@ -30,6 +30,7 @@ test.each([0,1,2,3])('admits the full four-type publisher model with generated S
  expect(plan.passport.decision.unresolvedResourceRowIds).toHaveLength(2);
  expect(plan.parameters.every(p=>p.truth_metadata.contract===binding.contract)).toBe(true);
  expect(canonicalPublisherQuantityScopeIsConsistent(plan)).toBe(true);
+ expect(plan.formulas.every(f=>/^[a-f0-9]{64}$/u.test(f.ast_sha256))).toBe(true);
 });
 test.each([0,1,2,3])('keeps historical prices, exclusions and operation bindings restorable: %s',index=>{
  const i=input(index),admitted=admit({...i,proof:proof(i)});expect(admitted).not.toBeNull();
