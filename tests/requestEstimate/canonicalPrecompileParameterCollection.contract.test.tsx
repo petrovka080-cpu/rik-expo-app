@@ -273,12 +273,12 @@ describe("canonical precompile parameter collection", () => {
   });
 
   function historicalPdfAction() {
-    const bundle = populatedDraft();
+    const bundle = saveConsumerRepairBundle(hydrationFixture().bundle);
     const revisionId = String(bundle.items[0].sourceParameters?.canonicalBackendRevisionId);
     const releaseId = String(bundle.items[0].sourceParameters?.canonicalBackendReleaseId);
     const catalogId = String(bundle.items[0].sourceParameters?.canonicalBackendCatalogId);
     const revision = { revisionId, releaseId, catalogId, checksumSha256: "a".repeat(64), rowCount: bundle.items.length };
-    const artifact = { artifactId: "stored-historical-pdf", revisionId, releaseId, kind: "pdf", status: "ready",
+    const artifact = { artifactId: "stored-historical-pdf", revisionId, releaseId, kind: "pdf", status: "ready", byteSize: 1234,
       signedUrl: "https://example.invalid/stored-pdf", metadata: { sourceCatalogId: catalogId,
         sourceRowCount: revision.rowCount, sourceRevisionChecksumSha256: revision.checksumSha256,
         sourceOwnerUserId: bundle.draft.consumerUserId, documentProfile: "professional_v1",
@@ -287,14 +287,16 @@ describe("canonical precompile parameter collection", () => {
     const stored = jest.spyOn(canonicalClient, "getCanonicalEstimateArtifact").mockResolvedValue(artifact as never);
     const build = jest.spyOn(canonicalClient, "buildCanonicalEstimateArtifact");
     const catalog = jest.spyOn(canonicalClient, "getCanonicalEstimateCatalogItem").mockResolvedValue({ releaseId: "newer-release" } as never);
-    const preview = jest.spyOn(documentActions, "previewPdfDocument").mockResolvedValue(undefined);
+    const preview = jest.spyOn(documentActions, "prepareAndPreviewPdfDocument").mockResolvedValue({} as never);
     const controller = new ConsumerRepairRequestScreenController({ consumerUserId: bundle.draft.consumerUserId,
       onPrepareCanonicalEstimate: jest.fn(), onLoadCanonicalRevisionDraft: jest.fn(), onLoadCanonicalParameterSession: jest.fn(),
       onRecalculateCanonicalEstimate: jest.fn(), onSelectCanonicalCatalogItem: jest.fn(), onAddCanonicalCatalogItem: jest.fn(),
       onOpenPhotoForMaterialRecognition: jest.fn() });
     const action = controller as unknown as { state: typeof controller.state;
       setState: (patch: Partial<typeof controller.state>) => void;
-      completeHistoryPdfOpen: (draftId: string) => Promise<void> };
+      completeHistoryPdfOpen: (draftId: string) => Promise<void>;
+      completePdfOpen: () => Promise<void>;
+      actionContext: () => { revisionId: string; releaseId: string; definitionId: string; returnRoute: string } };
     action.state = { ...action.state, bundle: null, history: [bundle], problemText: "" };
     action.setState = patch => { action.state = { ...action.state, ...patch }; };
     return { action, bundle, revision, artifact, stored, build, catalog, preview };
@@ -307,7 +309,8 @@ describe("canonical precompile parameter collection", () => {
     expect(test.build).not.toHaveBeenCalled();expect(test.catalog).not.toHaveBeenCalled();
     expect(test.preview).toHaveBeenCalledTimes(1);expect(test.action.state.bundle).toBeNull();
     expect(test.action.state.problemText).toBe("");
-    expect(test.preview.mock.calls[0]?.[1]).toEqual(expect.objectContaining({ returnTo: "/request" }));
+    expect(test.preview.mock.calls[0]?.[0]).toEqual(expect.objectContaining({ returnTo: "/request",
+      descriptor: expect.objectContaining({ expectedByteSize: test.artifact.byteSize }) }));
   });
 
   it("returns from a history PDF to the independently active draft without replacing it", async () => {
@@ -315,7 +318,7 @@ describe("canonical precompile parameter collection", () => {
     const active = populatedDraft();
     test.action.state = { ...test.action.state, bundle: active, problemText: "Current independent request" };
     await test.action.completeHistoryPdfOpen(test.bundle.draft.id);
-    expect(test.preview.mock.calls[0]?.[1]).toEqual(expect.objectContaining({ returnTo: `/request?draftId=${encodeURIComponent(active.draft.id)}` }));
+    expect(test.preview.mock.calls[0]?.[0]).toEqual(expect.objectContaining({ returnTo: `/request?draftId=${encodeURIComponent(active.draft.id)}` }));
     expect(test.action.state.bundle).toBe(active);
     expect(test.action.state.problemText).toBe("Current independent request");
   });
@@ -329,6 +332,46 @@ describe("canonical precompile parameter collection", () => {
     await expect(test.action.completeHistoryPdfOpen(test.bundle.draft.id)).rejects.toThrow();
     expect(test.build).not.toHaveBeenCalled();expect(test.preview).not.toHaveBeenCalled();
     expect(test.action.state.bundle).toBeNull();expect(test.action.state.problemText).toBe("");
+  });
+
+  it("does not report a historical PDF opened when navigation succeeds but native handoff fails", async () => {
+    const test = historicalPdfAction();
+    const active = populatedDraft();
+    const original = JSON.stringify(active);
+    test.action.state = { ...test.action.state, bundle: active, statusMessage: "Before PDF" };
+    test.preview.mockRejectedValue(new Error("Native handoff PDF is empty."));
+    await expect(test.action.completeHistoryPdfOpen(test.bundle.draft.id)).rejects.toThrow("Native handoff PDF is empty");
+    expect(test.action.state.statusMessage).toBe("Before PDF");
+    expect(test.action.state.bundle).toBe(active);
+    expect(JSON.stringify(active)).toBe(original);
+    expect(test.build).not.toHaveBeenCalled();
+  });
+
+  it("waits for current PDF visibility, clears busy on failed handoff, and preserves saved quantities and prices", async () => {
+    const test = historicalPdfAction();
+    test.action.state = { ...test.action.state, bundle: test.bundle, pdfOpenBusy: true };
+    test.action.actionContext = () => ({ ...test.revision, definitionId: test.revision.catalogId,
+      returnRoute: `/request?draftId=${encodeURIComponent(test.bundle.draft.id)}` });
+    test.catalog.mockResolvedValue({ releaseId: test.revision.releaseId } as never);
+    test.build.mockResolvedValue(test.artifact as never);
+    const itemsBefore = JSON.stringify(test.bundle.items);
+    let rejectHandoff!: (reason: Error) => void;
+    test.preview.mockImplementation(() => new Promise<never>((_resolve, reject) => { rejectHandoff = reject; }));
+    const work = test.action.completePdfOpen();
+    for (let i = 0; i < 30; i += 1) await Promise.resolve();
+    expect(test.preview).toHaveBeenCalledTimes(1);
+    expect(test.action.state.pdfOpenBusy).toBe(true);
+    expect(test.action.state.statusMessage).not.toMatch(/PDF выбранной версии открыт|PDF (?:из истории )?передан/u);
+    expect(test.preview.mock.calls[0]?.[0]).toMatchObject({
+      returnTo: `/request?draftId=${encodeURIComponent(test.bundle.draft.id)}`,
+      descriptor: { expectedByteSize: test.artifact.byteSize,
+        contentIdentity: { revisionId: test.revision.revisionId } },
+    });
+    rejectHandoff(new Error("Native handoff PDF is empty."));
+    await work;
+    expect(test.action.state.pdfOpenBusy).toBe(false);
+    expect(test.action.state.statusMessage).not.toMatch(/PDF выбранной версии открыт|PDF (?:из истории )?передан/u);
+    expect(JSON.stringify(test.action.state.bundle?.items)).toBe(itemsBefore);
   });
 
   it("persists successor inputs in a populated draft without losing rows, prices, PDF or revision history after reload", () => {

@@ -2,6 +2,7 @@ import React from "react";
 import { BackHandler, Platform, useWindowDimensions } from "react-native";
 import { getSessionSafe } from "../src/lib/supabaseClient";
 import { parseEstimatePdfReturnRoute } from "../src/lib/pdf/androidPdfReturnRecovery";
+import { usePdfViewerExitCancellation } from "../src/lib/pdf/usePdfViewerExitCancellation";
 import { router, useFocusEffect, useLocalSearchParams, useNavigationContainerRef, type Href } from "expo-router";
 import { useRoute } from "@react-navigation/native";
 import {
@@ -315,6 +316,7 @@ function PdfViewerScreen() {
     retry: retryViewerOrchestrator,
     planRenderEventCommit,
   } = orchestrator;
+  const cancelPendingCallerOnExit = usePdfViewerExitCancellation(openToken, isMountedRef);
 
   const readinessModel = React.useMemo(
     () =>
@@ -1430,6 +1432,7 @@ function PdfViewerScreen() {
     }
     if (plan.kind === "ignore-stale") return;
     backDispatchedRef.current = true;
+    cancelPendingCallerOnExit();
     if (plan.kind === "preserve-caller") {
       router.back();
       return;
@@ -1442,7 +1445,7 @@ function PdfViewerScreen() {
       router as typeof router & { canGoBack?: () => boolean },
       FALLBACK_ROUTE,
     );
-  }, [navigationRef, params.callerRouteKey, viewerRouteKey, returnTo]);
+  }, [cancelPendingCallerOnExit, navigationRef, params.callerRouteKey, viewerRouteKey, returnTo]);
 
   const onRetry = React.useCallback(() => {
     const next = resolveSnapshot();

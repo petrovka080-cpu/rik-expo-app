@@ -6,7 +6,7 @@ describe("request estimate legacy PDF protection", () => {
     expect(screen).toContain("buildCanonicalEstimateArtifact");
     expect(screen).toContain("assertCanonicalEstimateArtifactIdentity");
     expect(screen).toContain("createPdfDocumentDescriptor");
-    expect(screen).toContain("previewPdfDocument");
+    expect(screen).toContain("prepareAndPreviewPdfDocument");
     expect(screen).not.toContain("ensureConsumerRepairRequestPdfAvailable");
     expect(readFile("src/lib/consumerRequests/consumerRequestLegacyPdfMigrationReader.ts"))
       .toContain("generateConsumerRepairRequestPdf");

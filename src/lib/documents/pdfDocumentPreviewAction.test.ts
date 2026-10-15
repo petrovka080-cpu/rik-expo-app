@@ -17,6 +17,7 @@ const mockRecordPdfPreviewOversizeBlocked = jest.fn();
 const mockRecordPdfActionBoundaryEvent = jest.fn();
 const mockGetDocumentSessionSnapshot = jest.fn();
 const mockResumeDocumentPreviewSession = jest.fn();
+const mockFailDocumentSession = jest.fn();
 
 jest.mock("./pdfDocumentSessions", () => ({
   createDocumentPreviewSession: (...args: unknown[]) => mockCreateDocumentPreviewSession(...args),
@@ -26,6 +27,7 @@ jest.mock("./pdfDocumentSessions", () => ({
     mockCreateInMemoryDocumentPreviewSession(...args),
   getDocumentSessionSnapshot: (...args: unknown[]) => mockGetDocumentSessionSnapshot(...args),
   resumeDocumentPreviewSession: (...args: unknown[]) => mockResumeDocumentPreviewSession(...args),
+  failDocumentSession: (...args: unknown[]) => mockFailDocumentSession(...args),
 }));
 
 jest.mock("../pdfRunner", () => ({
@@ -49,7 +51,7 @@ jest.mock("../pdf/pdfActionBoundary", () => ({
   recordPdfActionBoundaryEvent: (...args: unknown[]) => mockRecordPdfActionBoundaryEvent(...args),
 }));
 
-const { executePreviewPdfDocument, retryPdfDocumentViewerSession } = require("./pdfDocumentPreviewAction") as typeof import("./pdfDocumentPreviewAction");
+const { executePreviewPdfDocument, retryPdfDocumentViewerSession, failPendingPdfDocumentViewerSession } = require("./pdfDocumentPreviewAction") as typeof import("./pdfDocumentPreviewAction");
 import { resolvePdfViewerDirectSnapshot } from "../pdf/pdfViewerContract";
 
 const baseDocument: DocumentDescriptor = {
@@ -68,6 +70,19 @@ const baseDocument: DocumentDescriptor = {
 
 describe("pdfDocumentPreviewAction", () => {
   const originalPlatformOs = Platform.OS;
+
+  it("marks only the captured pending preparation failed without clearing its producer or overwriting an existing timeout", () => {
+    const session = { sessionId: "own", preparationToken: "token-own", preparationState: "pending", status: "preparing", errorMessage: "" };
+    mockGetDocumentSessionSnapshot.mockReturnValue({ session, asset: null });
+    mockFailDocumentSession.mockImplementation((_id: string, message: string) => { session.status = "error"; session.errorMessage = message; });
+    expect(failPendingPdfDocumentViewerSession("own", "token-other", "foreign")).toBe(false);
+    expect(mockFailDocumentSession).not.toHaveBeenCalled();
+    expect(failPendingPdfDocumentViewerSession("own", "token-own", "Preparation timeout")).toBe(true);
+    expect(session).toMatchObject({ status: "error", preparationState: "pending", errorMessage: "Preparation timeout" });
+    expect(failPendingPdfDocumentViewerSession("own", "token-own", "Later Back")).toBe(false);
+    expect(mockFailDocumentSession).toHaveBeenCalledTimes(1);
+    expect(session.errorMessage).toBe("Preparation timeout");
+  });
 
   it("keeps the mobile size guard before recovery of an existing failed asset", () => {
     mockGetDocumentSessionSnapshot.mockReturnValue({ session: { sessionId: "own" }, asset: { sizeBytes: 20_000_000 } });
@@ -103,6 +118,7 @@ describe("pdfDocumentPreviewAction", () => {
     mockCheckPdfMobilePreviewEligibility.mockReset();
     mockRecordPdfPreviewOversizeBlocked.mockReset();
     mockRecordPdfActionBoundaryEvent.mockReset();
+    mockFailDocumentSession.mockReset();
     mockCreatePdfDocumentViewerHref.mockImplementation((
       sessionId: string,
       openToken?: string,

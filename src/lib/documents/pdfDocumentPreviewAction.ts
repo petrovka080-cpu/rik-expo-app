@@ -88,6 +88,19 @@ export function failPreparingPdfDocumentViewerSession(
   else failDocumentSession(sessionId, message);
 }
 
+export function failPendingPdfDocumentViewerSession(
+  sessionId: string,
+  preparationToken: string,
+  message: string,
+): boolean {
+  const { session } = getDocumentSessionSnapshot(sessionId);
+  if (!session || session.preparationToken !== preparationToken || session.status === "error") return false;
+  // Keep preparation pending: a late valid asset remains available for explicit
+  // retry, while its completion cannot change this terminal viewer error.
+  failDocumentSession(sessionId, message);
+  return true;
+}
+
 // Retries the registered result or its still-running preparation; never generates a second PDF.
 export function retryPdfDocumentViewerSession(sessionId: string, directAsset?: DocumentAsset | null): "resume" | "recreate_required" | "blocked" {
   const snapshot = getDocumentSessionSnapshot(sessionId);

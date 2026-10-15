@@ -9,7 +9,7 @@ describe("entrypoint fix PDF renderer boundary", () => {
     expect(actions).toContain("artifact.releaseId !== message.canonicalEstimateReleaseId");
     expect(requestScreen).toContain("buildCanonicalEstimateArtifact");
     expect(requestScreen).toContain("assertCanonicalEstimateArtifactIdentity");
-    expect(requestScreen).toContain("previewPdfDocument");
+    expect(requestScreen).toContain("prepareAndPreviewPdfDocument");
     expect(actions).not.toMatch(/new jsPDF|pdf-lib|PDFDocument/);
   });
 });

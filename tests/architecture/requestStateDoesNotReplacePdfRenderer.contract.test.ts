@@ -12,6 +12,6 @@ describe("request state does not replace PDF renderer", () => {
     expect(source).not.toMatch(/new\s+PDFDocument|renderRequestEstimatePdf|replaceLegacyPdf/i);
     expect(source).toContain("buildCanonicalEstimateArtifact");
     expect(source).toContain("assertCanonicalEstimateArtifactIdentity");
-    expect(source).toContain("previewPdfDocument");
+    expect(source).toContain("prepareAndPreviewPdfDocument");
   });
 });

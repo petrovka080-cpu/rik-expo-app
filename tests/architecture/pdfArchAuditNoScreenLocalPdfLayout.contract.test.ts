@@ -9,7 +9,7 @@ describe("PDF architecture audit no screen-local PDF layout", () => {
     expect(aiActions).toContain("buildCanonicalEstimateArtifact");
     expect(requestScreen).toContain("buildCanonicalEstimateArtifact");
     expect(requestScreen).toContain("createPdfDocumentDescriptor");
-    expect(requestScreen).toContain("previewPdfDocument");
+    expect(requestScreen).toContain("prepareAndPreviewPdfDocument");
     expect(combined).not.toContain("renderTextPdfDocument");
     expect(combined).not.toContain("renderEstimatePdfDocument");
     expect(combined).not.toContain("buildEstimatePdfTextLines");

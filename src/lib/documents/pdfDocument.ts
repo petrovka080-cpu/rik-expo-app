@@ -34,6 +34,8 @@ export type DocumentDescriptor = {
   originModule: PdfOriginModule;
   createdAt?: string;
   entityId?: string;
+  /** Trusted artifact length, used to reject an interrupted native cache write. */
+  expectedByteSize?: number;
   contentIdentity?: {
     revisionId?: string;
     rendererVersion?: string;
@@ -56,6 +58,7 @@ type CreatePdfDocumentDescriptorArgs = {
   originModule: PdfOriginModule;
   createdAt?: string;
   entityId?: string | number | null;
+  expectedByteSize?: number;
   contentIdentity?: DocumentDescriptor["contentIdentity"];
 };
 
@@ -111,6 +114,10 @@ export function createPdfDocumentDescriptor(
 
   const title = String(args.title || "").trim() || DOC_LABELS[args.documentType];
   const createdAt = args.createdAt || new Date().toISOString();
+  if (args.expectedByteSize !== undefined &&
+      (!Number.isSafeInteger(args.expectedByteSize) || args.expectedByteSize <= 0)) {
+    throw new Error("PDF expected byte size must be a positive integer.");
+  }
   const fileName =
     normalizePdfFileName(
       args.fileName,
@@ -134,6 +141,7 @@ export function createPdfDocumentDescriptor(
     originModule: args.originModule,
     createdAt,
     entityId: args.entityId == null ? undefined : String(args.entityId),
+    expectedByteSize: args.expectedByteSize,
     contentIdentity: args.contentIdentity,
   };
 }

@@ -10,6 +10,6 @@ describe("consumer estimate no Office leak contract", () => {
     expect(screen).not.toContain("company");
     expect(screen).toContain("buildCanonicalEstimateArtifact");
     expect(screen).toContain("assertCanonicalEstimateArtifactIdentity");
-    expect(screen).toContain("previewPdfDocument");
+    expect(screen).toContain("prepareAndPreviewPdfDocument");
   });
 });

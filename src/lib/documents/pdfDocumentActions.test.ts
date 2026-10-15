@@ -1,10 +1,12 @@
 import { InteractionManager, Platform } from "react-native";
+import type { DocumentAsset } from "./pdfDocumentSessions";
 import {
   getPlatformObservabilityEvents,
   resetPlatformObservabilityEvents,
 } from "../observability/platformObservability";
 import {
   failPdfOpenVisible,
+  cancelPdfOpenVisible,
   markPdfOpenVisible,
   resetPdfOpenFlowStateForTests,
 } from "../pdf/pdfOpenFlow";
@@ -24,6 +26,7 @@ const mockCreateInMemoryDocumentPreviewSession = jest.fn();
 const mockCreatePreparingDocumentPreviewSession = jest.fn();
 const mockMaterializeDocumentPreviewSessionAsset = jest.fn();
 const mockFailDocumentSession = jest.fn();
+const mockGetDocumentSessionSnapshot = jest.fn();
 const mockCreatePdfDocumentViewerHref = jest.fn();
 const mockPushPdfDocumentViewerRouteSafely = jest.fn();
 
@@ -45,6 +48,7 @@ jest.mock("./pdfDocumentSessions", () => ({
   materializeDocumentPreviewSessionAsset: (...args: unknown[]) =>
     mockMaterializeDocumentPreviewSessionAsset(...args),
   failDocumentSession: (...args: unknown[]) => mockFailDocumentSession(...args),
+  getDocumentSessionSnapshot: (...args: unknown[]) => mockGetDocumentSessionSnapshot(...args),
   failDocumentPreparationSession: (sessionId: string, token: string, message: string) => mockFailDocumentSession(sessionId, message, token),
 }));
 
@@ -103,6 +107,8 @@ describe("pdfDocumentActions", () => {
     mockCreatePreparingDocumentPreviewSession.mockReset();
     mockMaterializeDocumentPreviewSessionAsset.mockReset();
     mockFailDocumentSession.mockReset();
+    mockGetDocumentSessionSnapshot.mockReset();
+    mockGetDocumentSessionSnapshot.mockReturnValue({ session: null, asset: null });
     mockCreatePdfDocumentViewerHref.mockReset();
     mockPushPdfDocumentViewerRouteSafely.mockReset();
     resetPlatformObservabilityEvents();
@@ -870,10 +876,60 @@ describe("pdfDocumentActions", () => {
     const token = new URL(href, "https://example.test").searchParams.get("openToken")!;
     expect(failPdfOpenVisible(token, new Error("Preparation timeout"))).toBe(true);
     await flushPromises();
-    prepare.resolve({ kind: "remote-url", uri: baseDocument.uri });
     await rejected;
+    prepare.resolve({ kind: "remote-url", uri: baseDocument.uri });
+    await flushPromises();
     expect(mockMaterializeDocumentPreviewSessionAsset).toHaveBeenCalledTimes(1);
     expect(markPdfOpenVisible(token, { sourceKind: "remote-url" })).toBe(false);
+  });
+
+  it.each([
+    ["prepare", "back"], ["cache", "back"],
+    ["prepare", "timeout-then-back"], ["cache", "timeout-then-back"],
+  ])("releases the caller during pending %s on %s before the producer completes", async (phase, exit) => {
+    Object.defineProperty(Platform, "OS", { configurable: true, value: "android" });
+    const prepare = createDeferred<{ kind: "remote-url"; uri: string }>();
+    const materialize = createDeferred<DocumentAsset>();
+    const cacheStarted = createDeferred<void>();
+    if (phase === "prepare") mockPreparePdfExecutionSource.mockReturnValueOnce(prepare.promise);
+    else {
+      mockPreparePdfExecutionSource.mockResolvedValueOnce({ kind: "remote-url", uri: baseDocument.uri });
+      mockMaterializeDocumentPreviewSessionAsset.mockImplementationOnce(() => {
+        cacheStarted.resolve(undefined);
+        return materialize.promise;
+      });
+    }
+    let busy = false;
+    const work = prepareAndPreviewPdfDocument({
+      busy: { show: () => { busy = true; }, hide: () => { busy = false; }, isBusy: () => busy },
+      supabase: {}, key: `pdf:exit:${phase}:${exit}`, descriptor: baseDocument,
+      getRemoteUrl: () => baseDocument.uri, router: { push: jest.fn() },
+    });
+    const refused = expect(work).rejects.toBeInstanceOf(Error);
+    await flushPromises();
+    if (phase === "cache") {
+      await cacheStarted.promise;
+      expect(mockMaterializeDocumentPreviewSessionAsset).toHaveBeenCalledTimes(1);
+    } else expect(mockMaterializeDocumentPreviewSessionAsset).not.toHaveBeenCalled();
+    expect(mockPreparePdfExecutionSource).toHaveBeenCalledTimes(1);
+    const href = String(mockPushPdfDocumentViewerRouteSafely.mock.calls[0]?.[1]);
+    const token = new URL(href, "https://example.test").searchParams.get("openToken")!;
+    expect(busy).toBe(true);
+    if (exit === "timeout-then-back") {
+      expect(failPdfOpenVisible(token, new Error("Preparation timeout"))).toBe(true);
+      expect(cancelPdfOpenVisible(token, "back")).toBe(false);
+    } else expect(cancelPdfOpenVisible(token, "back")).toBe(true);
+    await refused;
+    expect(busy).toBe(false);
+    prepare.resolve({ kind: "remote-url", uri: baseDocument.uri });
+    materialize.resolve({ ...baseDocument, assetId: "late-valid-asset", uri: "file:///cache/late-valid.pdf",
+      fileSource: { kind: "local-file", uri: "file:///cache/late-valid.pdf" }, sourceKind: "local-file",
+      createdAt: "2026-10-15T00:00:00Z", sizeBytes: 1024 });
+    await flushPromises();
+    expect(mockMaterializeDocumentPreviewSessionAsset).toHaveBeenCalledTimes(1);
+    expect(markPdfOpenVisible(token)).toBe(false);
+    expect(mockPushPdfDocumentViewerRouteSafely).toHaveBeenCalledTimes(1);
+    expect(mockOpenPdfPreview).not.toHaveBeenCalled();
   });
 
   it("allows a clean retry after retryable PDF access failure", async () => {

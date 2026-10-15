@@ -2,6 +2,9 @@
 const mockGetInfoAsync = jest.fn();
 const mockDownloadAsync = jest.fn();
 const mockCopyAsync = jest.fn();
+const mockMoveAsync = jest.fn();
+const mockDeleteAsync = jest.fn();
+const mockFiles = new Set<string>();
 const mockRecordPdfCrashBreadcrumb = jest.fn();
 
 jest.mock("react-native", () => ({
@@ -14,6 +17,9 @@ jest.mock("expo-file-system/legacy", () => ({
   getInfoAsync: (...args: unknown[]) => mockGetInfoAsync(...args),
   downloadAsync: (...args: unknown[]) => mockDownloadAsync(...args),
   copyAsync: (...args: unknown[]) => mockCopyAsync(...args),
+  moveAsync: (...args: unknown[]) => mockMoveAsync(...args),
+  deleteAsync: (...args: unknown[]) => mockDeleteAsync(...args),
+  readAsStringAsync: jest.fn(async () => Buffer.from("%PDF-1.7\n").toString("base64")),
 }));
 
 jest.mock("../fileSystemPaths", () => ({
@@ -57,12 +63,10 @@ describe("pdfDocumentSessions materialization", () => {
     documentType: "request", originModule: "reports", source: "generated",
   };
   function deferredDownload() {
-    let written = false;
     let finish!: () => void;
     let fail!: (error: Error) => void;
-    mockGetInfoAsync.mockImplementation(async () => ({ exists: written, size: 1234 }));
     mockDownloadAsync.mockImplementation((_uri: string, target: string) => new Promise((resolve, reject) => {
-      finish = () => { written = true; resolve({ uri: target }); };
+      finish = () => { mockFiles.add(target); resolve({ status: 200, uri: target }); };
       fail = reject;
     }));
     return { finish: () => finish(), fail: (error: Error) => fail(error) };
@@ -78,11 +82,23 @@ describe("pdfDocumentSessions materialization", () => {
     mockGetInfoAsync.mockReset();
     mockDownloadAsync.mockReset();
     mockCopyAsync.mockReset();
+    mockMoveAsync.mockReset();
+    mockDeleteAsync.mockReset();
+    mockFiles.clear();
     mockRecordPdfCrashBreadcrumb.mockReset();
-    mockCopyAsync.mockResolvedValue(undefined);
-    mockDownloadAsync.mockImplementation(async (_uri: string, target: string) => ({
-      uri: target,
-    }));
+    mockGetInfoAsync.mockImplementation(async (uri: string) => ({ exists: mockFiles.has(uri), size: 1234 }));
+    mockCopyAsync.mockImplementation(async ({ from, to }: { from: string; to: string }) => {
+      if (!mockFiles.has(from)) throw new Error("TEST_SOURCE_MISSING");
+      mockFiles.add(to);
+    });
+    mockMoveAsync.mockImplementation(async ({ from, to }: { from: string; to: string }) => {
+      if (!mockFiles.has(from)) throw new Error("TEST_TMP_MISSING");
+      mockFiles.add(to); mockFiles.delete(from);
+    });
+    mockDeleteAsync.mockImplementation(async (uri: string) => { mockFiles.delete(uri); });
+    mockDownloadAsync.mockImplementation(async (_uri: string, target: string) => {
+      mockFiles.add(target); return { status: 200, uri: target };
+    });
   });
 
   it("retains a late valid file after timeout without reopening until explicit retry", async () => {
@@ -187,12 +203,7 @@ describe("pdfDocumentSessions materialization", () => {
   });
 
   it("keeps materialization breadcrumbs off the awaited file critical path", async () => {
-    mockGetInfoAsync
-      .mockResolvedValueOnce({ exists: false })
-      .mockResolvedValueOnce({ exists: true, size: 1234 })
-      .mockResolvedValueOnce({ exists: true, size: 1234 })
-      .mockResolvedValueOnce({ exists: true, size: 1234 })
-      .mockResolvedValueOnce({ exists: true, size: 1234 });
+    mockFiles.add("file:///tmp/source.pdf");
 
     const asset = await materializePdfAsset({
       uri: "file:///tmp/source.pdf",
@@ -216,7 +227,7 @@ describe("pdfDocumentSessions materialization", () => {
       from: "file:///tmp/source.pdf",
       to: expect.stringContaining("file:///cache/pdf_instant_"),
     });
-    expect(mockCopyAsync).toHaveBeenCalledWith({
+    expect(mockMoveAsync).toHaveBeenCalledWith({
       from: expect.stringContaining(".tmp-"),
       to: expect.stringContaining("file:///cache/pdf_instant_"),
     });
@@ -238,9 +249,9 @@ describe("pdfDocumentSessions materialization", () => {
   });
 
   it("does not recopy PDFs that already have a ready instant-cache target", async () => {
-    mockGetInfoAsync
-      .mockResolvedValueOnce({ exists: true, size: 1234 })
-      .mockResolvedValueOnce({ exists: true, size: 1234 });
+    mockGetInfoAsync.mockImplementation(async (uri: string) => ({
+      exists: uri.includes("pdf_instant_") && !uri.includes(".tmp-"), size: 1234,
+    }));
     const sourceUri = "file:///cache/already-ready.pdf";
 
     const asset = await materializePdfAsset({
@@ -263,6 +274,7 @@ describe("pdfDocumentSessions materialization", () => {
     expect(asset.sourceKind).toBe("local-file");
     expect(asset.sizeBytes).toBe(1234);
     expect(mockCopyAsync).not.toHaveBeenCalled();
+    expect(mockMoveAsync).not.toHaveBeenCalled();
     expect(mockRecordPdfCrashBreadcrumb).toHaveBeenCalledWith(
       expect.objectContaining({
         marker: "viewer_materialize_success",
@@ -273,13 +285,8 @@ describe("pdfDocumentSessions materialization", () => {
   });
 
   it("still copies volatile print-cache PDFs into controlled cache", async () => {
-    mockGetInfoAsync
-      .mockResolvedValueOnce({ exists: false })
-      .mockResolvedValueOnce({ exists: true, size: 1234 })
-      .mockResolvedValueOnce({ exists: true, size: 1234 })
-      .mockResolvedValueOnce({ exists: true, size: 1234 })
-      .mockResolvedValueOnce({ exists: true, size: 1234 });
     const sourceUri = "file:///cache/Caches/Print/output.pdf";
+    mockFiles.add(sourceUri);
 
     const asset = await materializePdfAsset({
       uri: sourceUri,
@@ -303,7 +310,7 @@ describe("pdfDocumentSessions materialization", () => {
       from: sourceUri,
       to: expect.stringContaining("file:///cache/pdf_instant_"),
     });
-    expect(mockCopyAsync).toHaveBeenCalledWith({
+    expect(mockMoveAsync).toHaveBeenCalledWith({
       from: expect.stringContaining(".tmp-"),
       to: expect.stringContaining("file:///cache/pdf_instant_"),
     });

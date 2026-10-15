@@ -44,6 +44,7 @@ import {
   createPreparingPdfDocumentViewerSession,
   executePreviewPdfDocument,
   failPreparingPdfDocumentViewerSession,
+  failPendingPdfDocumentViewerSession,
   getPdfViewerSessionErrorMessage,
   materializePreparingPdfDocumentViewerSession,
 } from "./pdfDocumentPreviewAction";
@@ -68,6 +69,7 @@ const activePreviewFlowTimestamps = new Map<string, number>();
 const ACTIVE_FLOW_MAX_TTL_MS = 60_000;
 let pdfActionRunSeq = 0;
 const latestPreviewRunByKey = new Map<string, string>();
+
 
 export type { PdfViewerRouterLike } from "./pdfDocumentViewerEntry";
 
@@ -259,6 +261,7 @@ export async function prepareAndPreviewPdfDocument(
     });
 
     const execute = async () => {
+      assertCurrentRun("prepare");
       recordPdfOpenStage({
         context: baseContext,
         stage: "busy_shown",
@@ -280,6 +283,10 @@ export async function prepareAndPreviewPdfDocument(
       const earlyViewerSession = args.router
         ? createPreparingPdfDocumentViewerSession(args.descriptor)
         : null;
+      const capturedPreparation = earlyViewerSession ? {
+        sessionId: earlyViewerSession.session.sessionId,
+        token: earlyViewerSession.session.preparationToken ?? earlyViewerSession.session.assetId,
+      } : null;
 
       if (args.router && earlyViewerSession) {
         const {
@@ -313,60 +320,73 @@ export async function prepareAndPreviewPdfDocument(
         recordBoundary("pdf_viewer_entry_confirmed", "viewer_entry");
       }
 
-      let document: DocumentDescriptor;
-      try {
-        document = await preparePdfDocument({
-          ...args,
-          busy: undefined,
-        });
-        assertCurrentRun("prepare");
-        recordBoundary("pdf_access_resolved", "access", "success", undefined, {
-          sourceKind: document.fileSource.kind,
-        });
-        recordBoundary("pdf_document_prepare_completed", "prepare", "success", undefined, {
-          sourceKind: document.fileSource.kind,
-        });
-      } catch (error) {
-        const sessionErrorMessage = getPdfViewerSessionErrorMessage(
-          error,
-          "PDF document prepare failed",
-        );
-        const boundaryError = toPdfActionBoundaryError(
-          error,
-          "prepare",
-          "PDF document prepare failed",
-        );
-        recordPdfOpenStage({
-          context: baseContext,
-          stage: "document_prepare_fail",
-          result: "error",
-          sourceKind: args.descriptor.fileSource?.kind ?? "pdf:document",
-          error: boundaryError,
-          extra: {
-            source:
-              args.descriptor.uri ?? args.descriptor.fileSource?.uri ?? null,
-          },
-        });
-        recordBoundary("pdf_terminal_failure", "prepare", "error", boundaryError);
-        if (earlyViewerSession) {
-          failPreparingPdfDocumentViewerSession(
-            earlyViewerSession.session.sessionId,
-            sessionErrorMessage,
-            earlyViewerSession.session.preparationToken ?? earlyViewerSession.session.assetId,
-          );
-        }
-        throw boundaryError;
-      }
-
-      try {
-        assertCurrentRun("prepare");
-        if (earlyViewerSession) {
-          await materializePreparingPdfDocumentViewerSession({
-            sessionId: earlyViewerSession.session.sessionId,
-            doc: document,
-            preparationToken: earlyViewerSession.session.preparationToken ?? earlyViewerSession.session.assetId,
+      // This producer owns only its captured immutable descriptor and exact
+      // session/preparation token. Caller exit must not prevent a late valid
+      // file reaching cache, or permit that file to reopen a departed viewer.
+      const produceDocument = async (): Promise<DocumentDescriptor> => {
+        let document: DocumentDescriptor;
+        try {
+          document = await preparePdfDocument({
+            ...args,
+            busy: undefined,
           });
-        } else {
+          recordBoundary("pdf_access_resolved", "access", "success", undefined, {
+            sourceKind: document.fileSource.kind,
+          });
+          recordBoundary("pdf_document_prepare_completed", "prepare", "success", undefined, {
+            sourceKind: document.fileSource.kind,
+          });
+        } catch (error) {
+          const sessionErrorMessage = getPdfViewerSessionErrorMessage(
+            error,
+            "PDF document prepare failed",
+          );
+          const boundaryError = toPdfActionBoundaryError(
+            error,
+            "prepare",
+            "PDF document prepare failed",
+          );
+          recordPdfOpenStage({
+            context: baseContext,
+            stage: "document_prepare_fail",
+            result: "error",
+            sourceKind: args.descriptor.fileSource?.kind ?? "pdf:document",
+            error: boundaryError,
+            extra: {
+              source:
+                args.descriptor.uri ?? args.descriptor.fileSource?.uri ?? null,
+            },
+          });
+          recordBoundary("pdf_document_prepare_failed", "prepare", "error", boundaryError);
+          if (capturedPreparation) {
+            failPreparingPdfDocumentViewerSession(
+              capturedPreparation.sessionId,
+              sessionErrorMessage,
+              capturedPreparation.token,
+            );
+          }
+          throw boundaryError;
+        }
+        if (capturedPreparation) {
+          await materializePreparingPdfDocumentViewerSession({
+            sessionId: capturedPreparation.sessionId,
+            doc: document,
+            preparationToken: capturedPreparation.token,
+          });
+        }
+        return document;
+      };
+      let document: DocumentDescriptor | undefined;
+      try {
+        assertCurrentRun("prepare");
+        const producer = produceDocument();
+        const currentCallerDocument = producer.then(prepared => {
+          assertCurrentRun("prepare");
+          return prepared;
+        });
+        if (visibilityWait) [document] = await Promise.all([currentCallerDocument, visibilityWait.promise]);
+        else document = await currentCallerDocument;
+        if (!earlyViewerSession) {
           await previewPdfDocument(document, {
             router: args.router,
             returnTo: args.returnTo,
@@ -406,13 +426,21 @@ export async function prepareAndPreviewPdfDocument(
           "visibility",
           "PDF viewer readiness failed",
         );
+        if (capturedPreparation) {
+          failPendingPdfDocumentViewerSession(
+            capturedPreparation.sessionId,
+            capturedPreparation.token,
+            getPdfViewerSessionErrorMessage(error, "PDF viewing cancelled"),
+          );
+        }
+        const sourceKind = document?.fileSource.kind ?? args.descriptor.fileSource?.kind ?? "pdf:document";
         const failureSignalPlan = resolvePdfDocumentVisibilityFailureSignalPlan({
           visibilityToken: visibilityWait?.token,
         });
         const signalledFailure =
           failureSignalPlan.action === "signal_visibility_failure"
             ? failPdfOpenVisible(failureSignalPlan.token, boundaryError, {
-                sourceKind: document.fileSource.kind,
+                sourceKind,
               })
             : false;
         const failureRecordPlan = resolvePdfDocumentVisibilityFailureRecordPlan({
@@ -423,12 +451,12 @@ export async function prepareAndPreviewPdfDocument(
             context: baseContext,
             stage: "open_failed",
             result: "error",
-            sourceKind: document.fileSource.kind,
+            sourceKind,
             error: boundaryError,
           });
         }
         recordBoundary("pdf_terminal_failure", "visibility", "error", boundaryError, {
-          sourceKind: document.fileSource.kind,
+          sourceKind,
         });
         throw boundaryError;
       }

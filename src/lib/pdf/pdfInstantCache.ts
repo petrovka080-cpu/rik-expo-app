@@ -1,4 +1,5 @@
 import * as FileSystemModule from "expo-file-system/legacy";
+import { Platform } from "react-native";
 
 import type { DocumentDescriptor, PdfDocumentType, PdfOriginModule } from "../documents/pdfDocument";
 import { normalizePdfFileName } from "../documents/pdfDocument";
@@ -12,6 +13,7 @@ import {
 } from "../pdfFileContract";
 import { redactSensitiveRecord, redactSensitiveText } from "../security/redaction";
 import { recordPlatformObservability } from "../observability/platformObservability";
+import { assertValidLocalPdfFile } from "./pdfSourceValidation";
 
 type FileSystemCompatBoundary = typeof FileSystemModule & {
   deleteAsync?: (uri: string, options?: { idempotent?: boolean }) => Promise<void>;
@@ -117,6 +119,19 @@ async function safeDelete(uri: string) {
   }
 }
 
+async function validateCacheFile(uri: string, doc: DocumentDescriptor) {
+  const validated = await assertValidLocalPdfFile({
+    fileSystem: FileSystemCompat,
+    uri,
+    failureLabel: "PDF cache file",
+    mode: Platform.OS === "ios" ? "size-only" : "content-probe",
+  });
+  if (doc.expectedByteSize !== undefined && validated.sizeBytes !== doc.expectedByteSize) {
+    throw new Error("PDF cache file size does not match the artifact.");
+  }
+  return validated;
+}
+
 export function buildPdfInstantCacheKey(doc: Pick<DocumentDescriptor, "documentType" | "originModule" | "entityId" | "fileName" | "title" | "uri" | "fileSource" | "contentIdentity">) {
   const source = doc.fileSource ?? createPdfSource(doc.uri);
   const sourceFingerprint =
@@ -178,6 +193,22 @@ export async function getPdfInstantCacheStatus(doc: DocumentDescriptor): Promise
   try {
     const info = await FileSystemCompat.getInfoAsync(targetUri);
     if (info?.exists) {
+      let validated: Awaited<ReturnType<typeof validateCacheFile>>;
+      try {
+        validated = await validateCacheFile(targetUri, doc);
+      } catch {
+        recordPdfInstantCacheEvent({
+          doc,
+          event: "PDF_CACHE_LOOKUP_END",
+          result: "success",
+          durationMs: Math.max(0, Math.round(nowMs() - startedAt)),
+          cacheKey,
+          sourceKind: "local-file",
+          sizeBytes: getFileSize(info),
+          extra: { cacheStatus: "stale" },
+        });
+        return { status: "stale", cacheKey, targetUri };
+      }
       recordPdfInstantCacheEvent({
         doc,
         event: "PDF_CACHE_LOOKUP_END",
@@ -185,7 +216,7 @@ export async function getPdfInstantCacheStatus(doc: DocumentDescriptor): Promise
         durationMs: Math.max(0, Math.round(nowMs() - startedAt)),
         cacheKey,
         sourceKind: "local-file",
-        sizeBytes: getFileSize(info),
+        sizeBytes: validated.sizeBytes,
         extra: {
           cacheStatus: "ready",
         },
@@ -195,7 +226,7 @@ export async function getPdfInstantCacheStatus(doc: DocumentDescriptor): Promise
         cacheKey,
         targetUri,
         localUri: normalizeLocalFileUri(targetUri),
-        sizeBytes: getFileSize(info),
+        sizeBytes: validated.sizeBytes,
       };
     }
     recordPdfInstantCacheEvent({
@@ -310,13 +341,17 @@ async function materializeToCache(doc: DocumentDescriptor): Promise<PdfInstantCa
     });
 
     if (source.kind === "remote-url") {
-      await FileSystemCompat.downloadAsync(source.uri, tmpUri);
+      const downloaded = await FileSystemCompat.downloadAsync(source.uri, tmpUri);
+      if (!Number.isInteger(downloaded.status) || downloaded.status < 200 || downloaded.status >= 300) {
+        throw new Error(`PDF cache download failed (${downloaded.status}).`);
+      }
     } else {
       const sourceUri = normalizeLocalFileUri(source.uri);
       const sourceInfo = await FileSystemCompat.getInfoAsync(sourceUri);
       if (!sourceInfo?.exists) throw new Error("PDF source file is missing");
+      const validatedSource = await validateCacheFile(sourceUri, doc);
       if (sourceUri === targetUri) {
-        const sizeBytes = getFileSize(sourceInfo);
+        const sizeBytes = validatedSource.sizeBytes;
         return {
           status: "ready",
           cacheKey,
@@ -328,14 +363,23 @@ async function materializeToCache(doc: DocumentDescriptor): Promise<PdfInstantCa
       await FileSystemCompat.copyAsync({ from: sourceUri, to: tmpUri });
     }
 
-    const tmpInfo = await FileSystemCompat.getInfoAsync(tmpUri);
-    if (!tmpInfo?.exists) throw new Error("PDF cache tmp file is missing after materialization");
-
-    await FileSystemCompat.copyAsync({ from: tmpUri, to: targetUri });
-    const finalInfo = await FileSystemCompat.getInfoAsync(targetUri);
-    if (!finalInfo?.exists) throw new Error("PDF cache target file is missing after atomic write");
-
-    const sizeBytes = getFileSize(finalInfo);
+    await validateCacheFile(tmpUri, doc);
+    // Retain a valid target if another caller already published it. Only our
+    // invalid cache entry may be removed; the original document is untouched.
+    const targetInfo = await FileSystemCompat.getInfoAsync(targetUri);
+    if (targetInfo.exists) {
+      let validTarget: Awaited<ReturnType<typeof validateCacheFile>> | null = null;
+      try { validTarget = await validateCacheFile(targetUri, doc); } catch { /* stale cache */ }
+      if (validTarget) {
+        return { status: "ready", cacheKey, localUri: normalizeLocalFileUri(targetUri),
+          sizeBytes: validTarget.sizeBytes, sourceKind: "local-file" };
+      }
+      await FileSystemCompat.deleteAsync(targetUri, { idempotent: true });
+    }
+    // Same-directory rename publishes the fully validated file, never a
+    // partially copied final path. A failed move must remain a failed open.
+    await FileSystemCompat.moveAsync({ from: tmpUri, to: targetUri });
+    const { sizeBytes } = await validateCacheFile(targetUri, doc);
     recordPdfInstantCacheEvent({
       doc,
       event: "PDF_DOWNLOAD_END",
@@ -384,7 +428,9 @@ export async function ensurePdfInstantCacheAsset(
         cacheStatus: "fetching",
       },
     });
-    return await existing;
+    const materialized = await existing;
+    const validated = await validateCacheFile(materialized.localUri, doc);
+    return { ...materialized, sizeBytes: validated.sizeBytes };
   }
 
   const task = materializeToCache(doc).finally(() => {

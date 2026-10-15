@@ -67,7 +67,8 @@ import {
   type CanonicalEstimateRowOverride,
 } from "../../lib/estimate/backendPlatform/contracts";
 import { createPdfDocumentDescriptor } from "../../lib/documents/pdfDocument";
-import { previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
+import { prepareAndPreviewPdfDocument } from "../../lib/documents/pdfDocumentActions";
+import { supabase } from "../../lib/supabaseClient";
 import { canonicalWorkSearchQueryFromPrompt } from "../../lib/estimate/backendPlatform/canonicalEstimateSearchInput";
 import { canonicalLanternIntent } from '../../lib/estimate/backendPlatform/canonicalLanternIntent';
 import { canonicalPublicEstimateWorkTitleRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
@@ -2162,8 +2163,11 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           "Профессиональный PDF готов для текущей версии сметы.",
         );
         stage = "viewer_open";
-        await previewPdfDocument(createPdfDocumentDescriptor({
+        await prepareAndPreviewPdfDocument({
+          supabase,
+          descriptor: createPdfDocumentDescriptor({
           uri: artifact.signedUrl,
+          expectedByteSize: artifact.byteSize ?? undefined,
           title: canonicalPublicEstimateWorkTitleRu(revision.displayTitleRu || current.draft.title || current.draft.selectedWorkTitleRu || "Смета"),
           documentType: "request",
           source: "generated",
@@ -2175,7 +2179,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
             displayTitle: canonicalPublicEstimateWorkTitleRu(revision.displayTitleRu || current.draft.title || ""),
             documentStatus: String(artifact.metadata?.grandTotalStatus ?? revision.status ?? ""),
           },
-        }), {
+        }),
           router,
           // The action context owns the exact local return identity. Reusing it
           // prevents PDF back from replacing unsaved state with a new canonical
@@ -2183,7 +2187,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           returnTo: context.returnRoute,
           callerRouteKey: this.props.pdfCallerRouteKey,
         });
-        this.setState({ statusMessage: "Профессиональный PDF выбранной версии открыт." });
+        this.setState({ statusMessage: Platform.OS === "web"
+          ? "Профессиональный PDF выбранной версии открыт."
+          : "Профессиональный PDF передан приложению для просмотра." });
         return;
       }
     } catch (error) {
@@ -2270,8 +2276,11 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         expectedRowCount: revision.rowCount,
       });
       if (!artifact.signedUrl) throw new Error("CANONICAL_PDF_SIGNED_URL_MISSING");
-      await previewPdfDocument(createPdfDocumentDescriptor({
+      await prepareAndPreviewPdfDocument({
+        supabase,
+        descriptor: createPdfDocumentDescriptor({
         uri: artifact.signedUrl,
+        expectedByteSize: artifact.byteSize ?? undefined,
         title: canonicalPublicEstimateWorkTitleRu(revision.displayTitleRu || requestedBundle?.draft.title || requestedBundle?.draft.selectedWorkTitleRu || historyRecord?.title || "Смета"),
         documentType: "request",
         source: "generated",
@@ -2283,7 +2292,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           displayTitle: canonicalPublicEstimateWorkTitleRu(revision.displayTitleRu || requestedBundle?.draft.title || historyRecord?.title || ""),
           documentStatus: String(artifact.metadata?.grandTotalStatus ?? revision.status ?? ""),
         },
-      }), {
+      }),
         router,
         // A history PDF must return to the current workspace, not attempt to
         // restore the archived estimate as an active draft on reload.
@@ -2292,7 +2301,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           : "/request",
         callerRouteKey: this.props.pdfCallerRouteKey,
       });
-      this.setState({ statusMessage: "Профессиональный PDF выбранной версии открыт из истории." });
+      this.setState({ statusMessage: Platform.OS === "web"
+        ? "Профессиональный PDF выбранной версии открыт из истории."
+        : "Профессиональный PDF из истории передан приложению для просмотра." });
       return;
     }
     if (requestedBundle) {

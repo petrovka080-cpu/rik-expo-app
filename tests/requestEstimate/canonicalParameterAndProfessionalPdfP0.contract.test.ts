@@ -743,7 +743,9 @@ describe("P0 canonical parameter editor and professional PDF", () => {
 
     expect(pdfFlow).toContain('kind: "pdf"');
     expect(pdfFlow).toContain('documentProfile: "professional_v1"');
-    expect(pdfFlow).toContain("previewPdfDocument(createPdfDocumentDescriptor");
+    expect(pdfFlow).toContain("prepareAndPreviewPdfDocument({");
+    expect(pdfFlow).toContain("descriptor: createPdfDocumentDescriptor({");
+    expect(pdfFlow).toContain("expectedByteSize: artifact.byteSize");
     expect(pdfFlow).not.toContain("Linking.openURL(artifact.signedUrl)");
     expect(screen).toContain("context?.definitionId ?? revision.catalogId");
     expect(screen).toContain("historyRecord?.title");

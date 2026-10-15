@@ -393,3 +393,9 @@ export function resetPdfOpenFlowStateForTests() {
   pendingVisibility.clear();
   tokenSeq = 0;
 }
+
+export function cancelPdfOpenVisible(token: string | null | undefined, reason: string): boolean {
+  const error = new Error("Открытие PDF отменено.");
+  error.name = "PdfOpenCancelledError";
+  return failPdfOpenVisible(token, error, { extra: { exitReason: reason } });
+}
