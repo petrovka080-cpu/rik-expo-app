@@ -1,0 +1,75 @@
+{
+  "package": "@react-navigation/elements",
+  "version": "2.9.5",
+  "resolved": "https://registry.npmmirror.com/@react-navigation/elements/-/elements-2.9.5.tgz",
+  "integrity": "sha512-iHZU8rRN1014Upz73AqNVXDvSMZDh5/ktQ1CMe21rdgnOY79RWtHHBp9qOS3VtqlUVYGkuX5GEw5mDt4tKdl0g==",
+  "reason": "The upstream plain files duplicate 4x while @1x exists. Android requires one scale-1 input. These are unchanged upstream native bytes, with @1x renamed to plain; Web/iOS keep upstream inputs.",
+  "files": [
+    {
+      "source": "node_modules/@react-navigation/elements/lib/module/assets/clear-icon@1x.png",
+      "destination": "clear-icon.png",
+      "scale": 1,
+      "bytes": 220,
+      "sha256": "d03a5cd7a66ef10c5147916f9d5878b2d0a0a5ad46f405a31cd9967efaa55afd"
+    },
+    {
+      "source": "node_modules/@react-navigation/elements/lib/module/assets/clear-icon@2x.png",
+      "destination": "clear-icon@2x.png",
+      "scale": 2,
+      "bytes": 334,
+      "sha256": "ab5613d2ce70fa67c5926e831353664945199fc195fa6fe76c5fe3cec452e31a"
+    },
+    {
+      "source": "node_modules/@react-navigation/elements/lib/module/assets/clear-icon@3x.png",
+      "destination": "clear-icon@3x.png",
+      "scale": 3,
+      "bytes": 502,
+      "sha256": "c4e54e6a0a7de636aa153378fbc62ea4a41695bfedf807f90df7b18ffd733f67"
+    },
+    {
+      "source": "node_modules/@react-navigation/elements/lib/module/assets/clear-icon@4x.png",
+      "destination": "clear-icon@4x.png",
+      "scale": 4,
+      "bytes": 645,
+      "sha256": "c86bb485eee687e06c500fc4234f51a6784b4530c2ae11d0c76481110bce3105"
+    },
+    {
+      "source": "node_modules/@react-navigation/elements/lib/module/assets/close-icon@1x.png",
+      "destination": "close-icon.png",
+      "scale": 1,
+      "bytes": 141,
+      "sha256": "b1bc1810ca23e2c38cd76971c43591d726161061240d8b792b05757196ddb528"
+    },
+    {
+      "source": "node_modules/@react-navigation/elements/lib/module/assets/close-icon@2x.png",
+      "destination": "close-icon@2x.png",
+      "scale": 2,
+      "bytes": 201,
+      "sha256": "cbdf9213e55f65c48d076acd8423b7c9aee4f1b81101ff6c95a38c4cd8a86461"
+    },
+    {
+      "source": "node_modules/@react-navigation/elements/lib/module/assets/close-icon@3x.png",
+      "destination": "close-icon@3x.png",
+      "scale": 3,
+      "bytes": 266,
+      "sha256": "d05c9d30d79f45a78e5585a2e7ec67c6a06a883dd9137e1d5059e8c87b33ce76"
+    },
+    {
+      "source": "node_modules/@react-navigation/elements/lib/module/assets/close-icon@4x.png",
+      "destination": "close-icon@4x.png",
+      "scale": 4,
+      "bytes": 332,
+      "sha256": "2325c53a73e54c438cbbc60dffdd8b513d471ba42e2f56713ef404b95e0ca1fc"
+    }
+  ],
+  "upstreamDefaultEquals4x": [
+    {
+      "name": "clear-icon",
+      "sha256": "c86bb485eee687e06c500fc4234f51a6784b4530c2ae11d0c76481110bce3105"
+    },
+    {
+      "name": "close-icon",
+      "sha256": "2325c53a73e54c438cbbc60dffdd8b513d471ba42e2f56713ef404b95e0ca1fc"
+    }
+  ]
+}

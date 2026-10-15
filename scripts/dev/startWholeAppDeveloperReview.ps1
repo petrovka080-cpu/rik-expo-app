@@ -1,5 +1,6 @@
 param(
   [switch]$PreflightOnly,
+  [switch]$PrepareBuildOnly,
   [switch]$UseStandaloneLocalEstimateDatabase,
   [switch]$VerifyFullTypecheck,
   [string]$MasterPath = "",
@@ -8,6 +9,9 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+if ($PrepareBuildOnly -and ($PreflightOnly -or $VerifyFullTypecheck)) {
+  throw "WHOLE_APP_BUILD_PREPARATION_SWITCH_CONFLICT"
+}
 Set-StrictMode -Version Latest
 
 $ReviewClock = [Diagnostics.Stopwatch]::StartNew()
@@ -340,6 +344,27 @@ foreach ($pidValue in @($listeners | Select-Object -ExpandProperty OwningProcess
 $ExpoCli = Join-Path $Root "node_modules\expo\bin\cli"
 Record-ReviewStage "owned_metro_stop"
 New-Item -ItemType Directory -Path $RuntimeRoot -Force | Out-Null
+if ($PrepareBuildOnly) {
+  @{
+    schemaVersion = "rik-expo-app.embedded-build-preparation.v1"
+    status = "EMBEDDED_BUILD_ENVIRONMENT_PREPARED"
+    generatedUtc = (Get-Date).ToUniversalTime().ToString("o")
+    sourceHead = $BuildCommit
+    sourceTree = [string]$Identity.sourceTreeHash
+    jsBundleFingerprint = [string]$Identity.jsBundleFingerprint
+    masterSha256 = [string]$BackendManager.master_sha256
+    definitionReleaseId = [string]$BackendManager.definition_release_id
+    searchReleaseId = [string]$BackendManager.search_release_id
+    capabilityId = [string]$BackendManager.capability_id
+    buildTime = $env:EXPO_PUBLIC_BUILD_TIME
+    authenticatedRuntimeManifestVerified = $false
+    webReady = $false
+    androidReady = $false
+    stages = @($ReviewStages)
+  } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $RuntimeRoot "embedded-build-preparation.json") -Encoding utf8
+  Write-Host "mode=embedded_build_prepared"
+  exit 0
+}
 $FullTypecheckExitCode = $null
 if ($VerifyFullTypecheck) {
   # The old owned Metro has stopped; its Web/Android graph no longer competes

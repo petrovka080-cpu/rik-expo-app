@@ -40,6 +40,7 @@ export const PRODUCT_SOURCE_PATTERNS = [
   "babel.config.ts",
   "metro.config.js",
   "metro.config.ts",
+  "scripts/dev/metroNavigationAndroidAssets.cjs",
   "migrations",
   "supabase/migrations",
 ] as const;
@@ -64,6 +65,7 @@ export const JS_BUNDLE_PATTERNS = [
   "babel.config.ts",
   "metro.config.js",
   "metro.config.ts",
+  "scripts/dev/metroNavigationAndroidAssets.cjs",
 ] as const;
 
 export const PROOF_HARNESS_PATTERNS = [
