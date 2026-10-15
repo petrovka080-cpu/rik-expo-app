@@ -44,7 +44,7 @@ describe("whole-app developer review runtime", () => {
     );
     expect(launcher).toContain("LOCAL_DEVELOPER_BACKEND_AUTH_PUBLIC_KEY");
     expect(launcher).toContain(
-      '$env:EXPO_PUBLIC_CANONICAL_ESTIMATE_FUNCTION_URL = "http://127.0.0.1:8765"',
+      '$env:EXPO_PUBLIC_CANONICAL_ESTIMATE_FUNCTION_URL = Resolve-WholeAppCanonicalFunctionUrl -Target $EmbeddedBuildTarget',
     );
     expect(launcher).toContain('$env:EXPO_PUBLIC_BFF_READONLY_STAGING_ENABLED = "false"');
     expect(launcher).toContain("whole-app-developer-current");

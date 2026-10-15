@@ -1,6 +1,8 @@
 param(
   [switch]$PreflightOnly,
   [switch]$PrepareBuildOnly,
+  [ValidateSet("Host", "AndroidEmulator")]
+  [string]$EmbeddedBuildTarget = "Host",
   [switch]$UseStandaloneLocalEstimateDatabase,
   [switch]$VerifyFullTypecheck,
   [string]$MasterPath = "",
@@ -11,6 +13,9 @@ param(
 $ErrorActionPreference = "Stop"
 if ($PrepareBuildOnly -and ($PreflightOnly -or $VerifyFullTypecheck)) {
   throw "WHOLE_APP_BUILD_PREPARATION_SWITCH_CONFLICT"
+}
+if ($EmbeddedBuildTarget -eq "AndroidEmulator" -and -not $PrepareBuildOnly) {
+  throw "WHOLE_APP_ANDROID_EMBEDDED_TARGET_REQUIRES_BUILD_PREPARATION"
 }
 Set-StrictMode -Version Latest
 
@@ -28,6 +33,16 @@ function Record-ReviewStage([string]$StageName) {
 function Fail-Review([string]$Code, [string]$Recovery) {
   Write-Error "WHOLE_APP_DEVELOPER_REVIEW_RED: $Code`nВосстановление: $Recovery"
   exit 1
+}
+
+function Resolve-WholeAppCanonicalFunctionUrl(
+  [ValidateSet("Host", "AndroidEmulator")][string]$Target
+) {
+  # The embedded Android variant uses the emulator's host-loopback alias,
+  # already admitted by its narrow network_security_config. Web uses host
+  # loopback directly; no Android network permission is broadened here.
+  if ($Target -eq "AndroidEmulator") { return "http://10.0.2.2:8765" }
+  return "http://127.0.0.1:8765"
 }
 
 function Get-ConfiguredValue([string]$Name) {
@@ -306,7 +321,7 @@ $env:EXPO_PUBLIC_APP_ENV = "staging"
 $env:EXPO_PUBLIC_RELEASE_LABEL = "STAGING_WHOLE_APP_WITH_LOCAL_ESTIMATE"
 $env:EXPO_PUBLIC_SUPABASE_URL = $WholeAppUrl
 $env:EXPO_PUBLIC_SUPABASE_ANON_KEY = $WholeAppKey
-$env:EXPO_PUBLIC_CANONICAL_ESTIMATE_FUNCTION_URL = "http://127.0.0.1:8765"
+$env:EXPO_PUBLIC_CANONICAL_ESTIMATE_FUNCTION_URL = Resolve-WholeAppCanonicalFunctionUrl -Target $EmbeddedBuildTarget
 $env:EXPO_PUBLIC_CANONICAL_ESTIMATE_ALLOW_INSECURE_LOOPBACK = "true"
 $env:EXPO_PUBLIC_RELEASE_SOURCE_TREE_HASH = [string]$Identity.sourceTreeHash
 $env:EXPO_PUBLIC_RELEASE_PRODUCT_SOURCE_HASH = [string]$Identity.productSourceHash
@@ -348,6 +363,9 @@ if ($PrepareBuildOnly) {
   @{
     schemaVersion = "rik-expo-app.embedded-build-preparation.v1"
     status = "EMBEDDED_BUILD_ENVIRONMENT_PREPARED"
+    buildTarget = $EmbeddedBuildTarget
+    canonicalEstimateFunctionUrl = $env:EXPO_PUBLIC_CANONICAL_ESTIMATE_FUNCTION_URL
+    backendControlUrl = "http://127.0.0.1:8765"
     generatedUtc = (Get-Date).ToUniversalTime().ToString("o")
     sourceHead = $BuildCommit
     sourceTree = [string]$Identity.sourceTreeHash
