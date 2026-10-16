@@ -7,6 +7,7 @@ const equals=(parameterId:string,value:string):AutomaticInclusionCondition=>({ki
 const and=(...operands:AutomaticInclusionCondition[]):AutomaticInclusionCondition=>({kind:'and',operands});
 export type ExplicitProjectMaterialPositionR1 = Readonly<{key:string;titleRu:string;unitId:string}>;
 export type ExplicitProjectIncludedOwnerR1 = Readonly<{condition:AutomaticInclusionCondition;ownerRowId:string;titleRu:string}>;
+export type ExplicitProjectMaterialItemsOptionsR1 = Readonly<{separateSupplyAllowed?:boolean}>;
 
 /** Remove only the aggregate kit payment selector. Existing operation and
  * selected equipment-owner conditions remain the accepted shared predicates. */
@@ -22,7 +23,10 @@ export function requireExplicitMaterialOperationR1(condition:AutomaticInclusionC
  const result=withoutAggregateKitPayment(condition);if(!result)throw Error('FOUNDATION_ITEM_OPERATION_CONDITION_REQUIRED');return result;
 }
 export function buildExplicitProjectMaterialItemsR1(catalogId:string,key:string,active:AutomaticInclusionCondition,included:readonly ExplicitProjectIncludedOwnerR1[],
- sourceParameters:readonly Parameter[],positions:readonly ExplicitProjectMaterialPositionR1[],sourceGuideSha256:string) {
+ sourceParameters:readonly Parameter[],positions:readonly ExplicitProjectMaterialPositionR1[],sourceGuideSha256:string,options:ExplicitProjectMaterialItemsOptionsR1={}) {
+ const separateSupplyAllowed=options.separateSupplyAllowed!==false;
+ const effectiveOwners=[...included,...(separateSupplyAllowed?[null]:[])];
+ if(!effectiveOwners.length)throw Error('FOUNDATION_ITEM_INCLUDED_ONLY_OWNER_REQUIRED');
  const conditional:AutomaticParameterSpec[]=[];const rows:AutomaticRowSpec[]=[];
  const includedOwnerPaymentGuards=new Map<string,Json>();
  const referenced=new Set<string>();
@@ -44,20 +48,22 @@ export function buildExplicitProjectMaterialItemsR1(catalogId:string,key:string,
   }))});
   const parameter=(id:string,title:string,valueType:AutomaticParameterSpec['valueType'],unitId:string|null,condition:AutomaticInclusionCondition,extra:Partial<AutomaticParameterSpec>={}):AutomaticParameterSpec=>({id,title,valueType,unitId,kind:'conditional',requiredWhen:condition,...extra});
   conditional.push(parameter(choice,item.titleRu+': применимость по утверждённому методу','enum',null,active,{values:['NOT_REQUIRED_BY_APPROVED_PROJECT','REQUIRED_BY_APPROVED_PROJECT']}),
-   parameter(payment,item.titleRu+': собственный подтверждённый режим оплаты этой позиции','enum',null,applicable,{values:[...includedModes,separateMode]}),
+   parameter(payment,item.titleRu+': собственный подтверждённый режим оплаты этой позиции','enum',null,applicable,{values:[...includedModes,...(separateSupplyAllowed?[separateMode]:[])]}),
    parameter(name,item.titleRu+': полное проектное наименование, подтверждённые типоразмер/марка/совместимость','text',null,applicable),
    parameter(quantity,item.titleRu+': фактическое количество этой позиции по ведомости',item.unitId==='piece'?'integer':'decimal',item.unitId,applicable,{min:item.unitId==='piece'?1:0.001}),
-   parameter(scope,item.titleRu+': подтверждённый источник и граница оплаты именно этой позиции; без повторно учтённых изделий, энергии и оператора','text',null,applicable),
+   parameter(scope,item.titleRu+': подтверждённый источник и граница оплаты именно этой позиции; без повторно учтённых изделий, энергии и оператора','text',null,applicable));
+  if(separateSupplyAllowed)conditional.push(
    parameter(stock,item.titleRu+': фактически имеющееся количество, неизвестное не равно нулю',item.unitId==='piece'?'integer':'decimal',item.unitId,payable,{min:0}),
    parameter(reserve,item.titleRu+': подтверждённый резерв',item.unitId==='piece'?'integer':'decimal',item.unitId,payable,{min:0}),
    parameter(quantum,item.titleRu+': подтверждённая кратность заказа поставщика',item.unitId==='piece'?'integer':'decimal',item.unitId,payable,{min:item.unitId==='piece'?1:0.001}));
-  for(const [index,boundary] of [...included.map((v,i)=>({...v,own:false,condition:and(v.condition,equals(payment,includedModes[i]!))})),{condition:equals(payment,separateMode),ownerRowId:null,own:true}].entries()){
-   const rowId='material:concrete:foundation-item-'+key+'-'+item.key+'-'+(boundary.own?'separate':'included-'+index);
-   const balance=boundary.own?effectivePurchaseBalanceExpressionsR1({ownerRowId:rowId,orderUnitId:item.unitId,consumed:quantity,stock,reserve,quantum}):null;
+  for(const [index,owner] of effectiveOwners.entries()){
+   const own=owner===null,condition=owner?and(owner.condition,equals(payment,includedModes[index]!)):equals(payment,separateMode);
+   const rowId='material:concrete:foundation-item-'+key+'-'+item.key+'-'+(own?'separate':'included-'+index);
+   const balance=own?effectivePurchaseBalanceExpressionsR1({ownerRowId:rowId,orderUnitId:item.unitId,consumed:quantity,stock,reserve,quantum}):null;
    const orderExpression=`ceil(max(0,${quantity}+${reserve}-${stock})/${quantum})*${quantum}`;
-   rows.push({rowId,formulaId:'foundation_item_'+key+'_'+item.key+'_'+index+'_actual_v1',expression:boundary.own?orderExpression:quantity,section:item.titleRu,category:'material',title:item.titleRu,
-    unitId:item.unitId,procurement:boundary.own,costTreatment:boundary.own?'OWN_COST':'INCLUDED_IN_RESOURCE_ROWS',inclusion:and(applicable,boundary.condition),
-    inputParameterIds:[name,quantity,payment,scope,...(boundary.own?[stock,reserve,quantum]:[])],titleParameterIds:[name],
+   rows.push({rowId,formulaId:'foundation_item_'+key+'_'+item.key+'_'+index+'_actual_v1',expression:own?orderExpression:quantity,section:item.titleRu,category:'material',title:item.titleRu,
+    unitId:item.unitId,procurement:own,costTreatment:own?'OWN_COST':'INCLUDED_IN_RESOURCE_ROWS',inclusion:and(applicable,condition),
+    inputParameterIds:[name,quantity,payment,scope,...(own?[stock,reserve,quantum]:[])],titleParameterIds:[name],
     ...(balance?{purchaseBalance:balance.owner.purchaseBalance,effectiveQuantityOutput:balance.owner.effectiveQuantityOutput}:{})});
   }
  }
@@ -75,8 +81,8 @@ export function buildExplicitProjectMaterialItemsR1(catalogId:string,key:string,
    ?{kind:'or',operands:[constraints.forbiddenWhen,forbiddenWhen]}:forbiddenWhen}};
  });
  return {...addition,parameters:guardedParameters,resources:addition.resources.map((r,i)=>{
-  const branchIndex=i%(included.length+1),position=positions[Math.floor(i/(included.length+1))]!;
-  const actualOwner=branchIndex<included.length?included[branchIndex]!.ownerRowId:null;
+  const branchIndex=i%effectiveOwners.length,position=positions[Math.floor(i/effectiveOwners.length)]!;
+  const actualOwner=effectiveOwners[branchIndex]?.ownerRowId??null;
   return {...r,resource_graph:{...r.resource_graph,...(actualOwner?{includedInResourceOwnerRowId:actualOwner}:{}),materialPositionIsExplicit:true,
    individualMaterialPaymentV1:{paymentParameterId:'foundation_item_'+key+'_'+position.key+'_payment_mode',priceScopeParameterId:'foundation_item_'+key+'_'+position.key+'_price_scope_reference',aggregateSelectorInherited:false,confirmedIncludedOwnerRowIds:included.map(owner=>owner.ownerRowId)}},
    source_metadata:{...r.source_metadata,automaticGenericPriceInheritanceAllowed:false,projectTakeoffNotNorm:true,universal_consumption_claimed:false,universal_productivity_claimed:false}};})};
