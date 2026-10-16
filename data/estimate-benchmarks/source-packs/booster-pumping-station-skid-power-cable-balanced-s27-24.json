@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "rik-expo-app.s27-24.booster-pumping-station-skid-power-cable-source-pack.v1",
+  "catalogId": "canonical-work:expanded:booster_pumping_station",
+  "scope": "Installation of one factory-assembled variable-speed potable-water booster skid BPS-SKID-Q90-H45-2D1S inside an existing prepared pump room, with three 30 kW vertical multistage pumps in a two-duty plus one-standby arrangement, 6 m DN200 suction manifold, 8 m DN150 discharge manifold, two 1000 l pressure vessels and 160 m internal power cable. Skid accessories, anchors and grout, electrical-controls, testing, disinfection, labor, equipment and logistics are project-owned.",
+  "sourceAuthority": "Approved potable-water pressure-booster hydraulic calculation, factory skid data sheet and GA, pump-room coordination drawings, mechanical and electrical schedules, controls narrative, commissioning and disinfection program, suppliers and approving project engineer",
+  "ordinaryFixture": {
+    "skidCount": 1,
+    "skidDesignation": "BPS-SKID-Q90-H45-2D1S",
+    "skidType": "FACTORY_ASSEMBLED_VARIABLE_SPEED_BOOSTER_SKID",
+    "duty": "POTABLE_WATER_PRESSURE_BOOSTING_EXISTING_ROOM",
+    "designFlowM3H": 90,
+    "designHeadM": 45,
+    "pumpInstalledPiece": 3,
+    "pumpDesignation": "VM-45M3H-45M-30KW",
+    "dutyPumpCount": 2,
+    "standbyPumpCount": 1,
+    "motorPowerKw": 30,
+    "suctionManifoldInstalledM": 6,
+    "suctionManifoldDesignation": "SS304-DN200-PN16",
+    "dischargeManifoldInstalledM": 8,
+    "dischargeManifoldDesignation": "SS304-DN150-PN16",
+    "pressureVesselInstalledPiece": 2,
+    "pressureVesselDesignation": "VESSEL-1000L-PN10",
+    "powerCableInstalledM": 160,
+    "powerCableDesignation": "N2XH-4X70-0.6/1KV"
+  },
+  "procurementBalance": {
+    "installedPowerCableM": 160,
+    "retainedSpareM": 15,
+    "supplierDrumLengthM": 100,
+    "totalNeedM": 175,
+    "drumCount": 2,
+    "orderedM": 200,
+    "remainderAfterInstallationM": 40,
+    "surplusBeyondRetainedSpareM": 25
+  },
+  "approvedProjectQuantities": {
+    "isolationValvePiece": 8,
+    "checkValvePiece": 3,
+    "flexibleConnectorPiece": 6,
+    "instrumentSet": 1,
+    "anchorSet": 1,
+    "nonshrinkGroutM3": 0.45,
+    "mccVfdSet": 1,
+    "plcGatewaySet": 1,
+    "cableTerminationSet": 3,
+    "earthingSet": 1,
+    "cableTrayM": 42,
+    "acousticEnclosureSet": 1,
+    "drainageTraySet": 1,
+    "consumablesSet": 1,
+    "pressureTest": 1,
+    "functionalCommissioningTest": 1,
+    "electricalTest": 1,
+    "disinfectionCycle": 1,
+    "asBuiltDocument": 1,
+    "laborH": {
+      "rigging": 64,
+      "mechanical": 144,
+      "electrical": 112,
+      "controls": 72,
+      "qaDocumentation": 56
+    },
+    "equipmentH": {
+      "lifting": 24,
+      "testEquipment": 20
+    },
+    "logisticsTrip": {
+      "delivery": 6,
+      "wasteRemoval": 2
+    }
+  },
+  "conditionalBranches": {
+    "roomVentilationUpgrade": "NOT_REQUIRED unless the approved heat-gain and room-ventilation calculation requires it",
+    "floorStrengthening": "NOT_REQUIRED unless the approved structural verification requires it",
+    "standbyGenerator": "NOT_REQUIRED unless the approved electrical reliability category requires it"
+  },
+  "exclusions": [
+    "freestanding pumping-station building, excavation, foundation structure and external utility works",
+    "sewer wet-well station, fire pump station and process-water pumping equipment",
+    "count-derived valves, connectors, grout, instruments, labor, equipment or logistics",
+    "unapproved room alterations, electrical supply, equipment or prices"
+  ]
+}

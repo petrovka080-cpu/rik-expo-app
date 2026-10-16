@@ -1,3 +1,4 @@
+import { assertCanonicalPurchaseSupplyReadyV1, parseCanonicalExactPurchaseQuantityV1 } from "../estimate/backendPlatform/canonicalPurchaseSupplyReadinessV1";
 import { auditConsumerRepairRequestEvent } from "./consumerRequestAuditTrail";
 import { assertConsumerRepairDraftActionAllowed } from "./consumerRequestDraftStateMachine";
 import { bindConsumerRepairEstimateRevisionRequest } from "./consumerRequestEditableEstimateSnapshot";
@@ -67,6 +68,18 @@ export function canonicalConsumerRepairMarketplaceProjection(
   bundle: ConsumerRepairDraftBundle,
   artifact: ConsumerMarketplaceCanonicalArtifact,
 ): { canonicalCatalogId: string; title: string; items: Json[] } {
+  // Inspect the complete composition before the legacy positive-row projection.
+  // A saved warning is not removed by false procurement flags or need filtering.
+  assertCanonicalPurchaseSupplyReadyV1(bundle.items.map(item => ({rowId:item.sourceParameters?.rowCode ?? item.id,
+    titleRu:item.titleRu,unitId:item.unit,calculationTrace:{purchaseSupplyBlocksV1:item.sourceParameters?.canonicalPurchaseSupplyBlocksV1}})));
+  if (bundle.items.some(item => parseCanonicalExactPurchaseQuantityV1(item.sourceParameters?.canonicalExactPurchaseQuantityV1) != null)) {
+    // The current staging RPC only accepts JSON numeric qty and has no trusted
+    // canonical revision store. Do not round a new exact contract into it or
+    // pretend a client-supplied hash proves remote immutable supply readiness.
+    throw Object.assign(new Error("Отправка недоступна: канал закупки ещё не поддерживает точное сохранённое количество. Количество и цена не изменены."), {
+      code:"PROCUREMENT_EXACT_QUANTITY_TRANSPORT_UNSUPPORTED",httpStatus:409,
+    });
+  }
   const estimateItems = bundle.items.filter((item) =>
     item.sourceParameters?.canonicalPreliminaryNeed !== true
   );

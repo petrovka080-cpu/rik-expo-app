@@ -115,7 +115,7 @@ test('saved G6 rows keep source identity and carry brand-free Russian display na
   expect(pdf.html).not.toContain('ТЕХНОНИКОЛЬ');
   expect(fieldRow.title_ru).toContain('LOGICROOF');
   expect(pdf.html).toContain('<strong>Очиститель для ПВХ-мембран</strong>');
-  expect(pdf.html).toContain('Количество нужно уточнить');
+  expect(pdf.html).toMatch(/<tr class="preliminary-need">[\s\S]*?<strong>Очиститель для ПВХ-мембран<\/strong>[\s\S]*?<td class="numeric">Не рассчитано<\/td>/u);
   const procurement = buildCanonicalProcurementProjection({ revision: stored,
     procurementRows: sourceRows.filter(r => r.included_in_procurement), sourceRows });
   expect(procurement.rows.find(r => r.rowId === 'pvc-roof:material:field')).toMatchObject({ titleRu: source.nameRu, quantity: '157.5' });

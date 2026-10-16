@@ -1,5 +1,6 @@
+import { buildCanonicalProcurementPreviewRows } from './canonicalProcurementPreviewRows';
+export { buildCanonicalProcurementPreviewRows, type CanonicalProcurementPreviewRow } from './canonicalProcurementPreviewRows';
 import { Ionicons } from "@expo/vector-icons";
-import { canonicalPublicEstimateRowNameRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
 import React from "react";
 import {
   Keyboard,
@@ -35,11 +36,7 @@ import type {
   EstimateDraftRevisionDiff,
   EstimateDraftRevisionState,
 } from "../../lib/estimate/estimateDraftRevisionContract";
-import { canonicalMaterialQuantityBasisFromRow } from "../../lib/estimate/backendPlatform/canonicalMaterialQuantityProjection";
-import { canonicalArtifactPurchaseBalance, canonicalArtifactPurchaseRequirement } from "../../lib/estimate/backendPlatform/canonicalPersistedPurchaseBalance";
 import { formatEstimateQuantityRu } from "../../lib/estimatePresentation/formatEstimateQuantityRu";
-import { publicBoqDisplayNameRu } from "../../lib/estimate/publicBoqNaming";
-import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
@@ -142,74 +139,6 @@ function shouldOpenPositionsByDefault(props: Props): boolean {
   return props.canonicalParameterSession?.status !== "BLOCKING_REQUIRED";
 }
 
-export type CanonicalProcurementPreviewRow = {
-  rowId: string;
-  titleRu: string;
-  quantity: number | string | null;
-  preliminary?: boolean;
-  unit: string;
-  unitPrice: number | null;
-  currency: string;
-  quantityDetails: string[];
-};
-
-export function buildCanonicalProcurementPreviewRows(
-  revision: EstimateDraftRevision | null,
-  items: readonly ConsumerRepairRequestItem[] = [],
-): CanonicalProcurementPreviewRow[] {
-  if (!revision) return [];
-  const rows: CanonicalProcurementPreviewRow[] = revision.boq.rows
-    .filter((row) => row.includedInProcurement)
-    .map((row) => {
-      const balance = canonicalArtifactPurchaseBalance({
-        row_id: row.rowId, unit_id: row.unit,
-        calculation_trace: { purchaseBalance: row.sourceParameters?.canonicalPurchaseBalance },
-      });
-      const quantityBasis = balance ? null : row.materialQuantity ?? canonicalMaterialQuantityBasisFromRow(row);
-      const unit = formatEstimateUnitLabel(balance?.unitId ?? quantityBasis?.procurementUnit ?? row.unitLabel ?? row.unit);
-      const orderScope = balance?.balanceScope === "new_order_vs_required_consumption";
-      const quantityDetails = balance ? [
-        `${orderScope ? balance.requirementBasis === "selected_supply_order" ? "Исходная потребность к заказу" : "Плановая потребность" : "Расход"}: ${formatEstimateQuantityRu(balance.netQuantity)} ${unit}`,
-        ...(!orderScope ? [
-          `В наличии: ${formatEstimateQuantityRu(balance.stock)} ${unit}`,
-          `Сохраняемый резерв: ${formatEstimateQuantityRu(balance.reserve)} ${unit}`,
-          `Остаток после расхода: ${formatEstimateQuantityRu(balance.remaining)} ${unit}`,
-        ] : []),
-        ...(balance.quantum ? [`Шаг поставки: ${formatEstimateQuantityRu(balance.quantum)} ${unit}`] : []),
-      ] : quantityBasis ? [
-        `Расход с учётом потерь: ${formatEstimateQuantityRu(quantityBasis.grossQuantity)} ${formatEstimateUnitLabel(quantityBasis.unit)}`,
-        `Шаг поставки: ${formatEstimateQuantityRu(quantityBasis.procurementPackageSize)} ${unit}`,
-      ] : [];
-      return {
-        rowId: row.rowId,
-        titleRu: canonicalPublicEstimateRowNameRu({ rowId: row.rowId,
-          titleRu: publicBoqDisplayNameRu({ sourceNameRu: row.titleRu, rowType: row.rowType }),
-          manualTitleOverride: row.sourceParameters?.canonicalManualTitleOverride === true }),
-        quantity: balance?.effectiveOrder ?? quantityBasis?.procurementQuantity ?? row.quantity,
-        unit,
-        unitPrice: row.unitPrice ?? null,
-        currency: row.currency,
-        quantityDetails,
-      };
-    });
-  const includedIds = new Set(rows.map(row => row.rowId));
-  for (const item of items) {
-    const source = item.sourceParameters;
-    if (source?.canonicalPreliminaryNeed !== true || source.includedInProcurement !== true
-      || source.canonicalBackendRevisionId !== revision.revisionId) continue;
-    const rowId = String(source.rowCode ?? item.id);
-    if (includedIds.has(rowId)) continue;
-    const requirement = canonicalArtifactPurchaseRequirement({ row_id: rowId, unit_id: item.unit,
-      calculation_trace: { purchaseRequirementV1: source.canonicalPurchaseRequirement } });
-    rows.push({ rowId, titleRu: canonicalPublicEstimateRowNameRu({ rowId, titleRu: item.titleRu,
-      manualTitleOverride: source.canonicalManualTitleOverride === true }), quantity: item.quantity ?? null, preliminary: true,
-      unit: formatEstimateUnitLabel(item.unit), unitPrice: item.unitPrice ?? null, currency: item.currency,
-      quantityDetails: requirement ? [`${requirement.labelRu}: ${formatEstimateQuantityRu(requirement.quantity)} ${formatEstimateUnitLabel(requirement.unitId)}`] : [],
-    });
-    includedIds.add(rowId);
-  }
-  return rows;
-}
 
 function pluralizeRu(count: number, one: string, few: string, many: string): string {
   const value = Math.abs(count);

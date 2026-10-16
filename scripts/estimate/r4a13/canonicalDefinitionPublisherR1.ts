@@ -85,12 +85,22 @@ export function canonicalPublisherEffectivePriceKey(
     || String(resource.row_id ?? "").trim();
 }
 
+/** A declared target policy is typed; absence alone keeps the legacy default. */
+function automaticGenericPriceInheritanceAllowed(resource: CanonicalPublisherJson): boolean {
+  const metadata = resource.source_metadata;
+  if (!isObject(metadata) || !Object.hasOwn(metadata, "automaticGenericPriceInheritanceAllowed")) return true;
+  invariant(typeof metadata.automaticGenericPriceInheritanceAllowed === "boolean",
+    "STOP_CANONICAL_PUBLISHER_PRICE_INHERITANCE_POLICY_TYPE");
+  return metadata.automaticGenericPriceInheritanceAllowed;
+}
+
 export function canonicalPublisherPriceBindingIsCompatible(input: Readonly<{
   sourceResource: CanonicalPublisherJson;
   targetResource: CanonicalPublisherJson;
   sourceBindingPriceKey: unknown;
 }>): boolean {
-  return String(input.sourceResource.unit_id ?? "").trim() !== ""
+  return automaticGenericPriceInheritanceAllowed(input.targetResource)
+    && String(input.sourceResource.unit_id ?? "").trim() !== ""
     && String(input.sourceResource.unit_id ?? "").trim()
       === String(input.targetResource.unit_id ?? "").trim()
     && canonicalPublisherEffectivePriceKey(
@@ -453,6 +463,7 @@ export async function preflightCanonicalDefinitionPublishPlans(
   plans: readonly CanonicalDefinitionPublishPlan[],
 ) {
   invariant(plans.length > 0, "STOP_CANONICAL_PUBLISHER_EMPTY_PLAN");
+  for (const plan of plans) automaticPriceInheritanceExcludedResourceIds(plan);
   const schema = await preflightCanonicalDefinitionPublisherSchema(client);
   const auditedPlans: CanonicalPublisherJson[] = [];
   for (const plan of plans) {
@@ -640,10 +651,44 @@ function canonicalPlanPayloadSha256(plan: CanonicalDefinitionPublishPlan): strin
   return sha256(canonicalPlanPayload(plan));
 }
 
+/** Explicit target policy only: neither a title nor a source-side flag opts out.
+ * Validate before the first write, and never mutate an existing route or plan. */
+function automaticPriceInheritanceExcludedResourceIds(
+  plan: CanonicalDefinitionPublishPlan,
+): string[] {
+  const excluded = plan.resources.filter((resource) => !automaticGenericPriceInheritanceAllowed(resource));
+  if (excluded.length === 0) return [];
+
+  const idCounts = new Map<string, number>();
+  for (const resource of plan.resources) {
+    if (typeof resource.id === "string") {
+      const id = resource.id.toLowerCase();
+      idCounts.set(id, (idCounts.get(id) ?? 0) + 1);
+    }
+  }
+  return excluded.map((resource) => {
+    invariant(typeof resource.id === "string"
+      && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/u.test(resource.id),
+    "STOP_CANONICAL_PUBLISHER_PRICE_INHERITANCE_EXCLUDED_RESOURCE_ID");
+    invariant(resource.definition_version_id === plan.definition.id,
+      "STOP_CANONICAL_PUBLISHER_PRICE_INHERITANCE_TARGET_DEFINITION");
+    const id = resource.id.toLowerCase();
+    invariant(idCounts.get(id) === 1,
+      "STOP_CANONICAL_PUBLISHER_PRICE_INHERITANCE_DUPLICATE_RESOURCE_ID");
+    return id;
+  }).sort(compareUtf8C);
+}
+
 async function inheritCompatiblePriceRouteBindings(
   client: Client,
   plan: CanonicalDefinitionPublishPlan,
+  excludedResourceIds: readonly string[],
 ): Promise<number> {
+  // The empty branch emits the historical SQL bytes and exactly two values.
+  const targetResourceFilter = excludedResourceIds.length === 0 ? ""
+    : "\n      and target.id <> all($3::uuid[])";
+  const values: unknown[] = [plan.baseline.source_definition_version_id, plan.definition.id];
+  if (excludedResourceIds.length > 0) values.push(excludedResourceIds);
   const inherited = await client.query(`insert into public.estimate_resource_price_route_binding(
       resource_spec_id,route_id,price_key,priority)
     select distinct on (target.id,source_binding.route_id)
@@ -656,15 +701,12 @@ async function inheritCompatiblePriceRouteBindings(
       on source_binding.resource_spec_id=source.id
     join public.estimate_price_route route
       on route.id=source_binding.route_id and route.active
-    where target.definition_version_id=$2
+    where target.definition_version_id=$2${targetResourceFilter}
       and coalesce(nullif(trim(source.cost_owner_id),''),source_binding.price_key)
         =coalesce(nullif(trim(target.cost_owner_id),''),target.row_id)
     order by target.id,source_binding.route_id,source_binding.priority,source.id
     on conflict(resource_spec_id,route_id) do nothing
-    returning resource_spec_id`, [
-    plan.baseline.source_definition_version_id,
-    plan.definition.id,
-  ]);
+    returning resource_spec_id`, values);
   return inherited.rowCount ?? 0;
 }
 
@@ -672,6 +714,7 @@ export async function publishCanonicalDefinitionDraft(
   client: Client,
   plan: CanonicalDefinitionPublishPlan,
 ) {
+  const excludedPriceInheritanceResourceIds = automaticPriceInheritanceExcludedResourceIds(plan);
   await client.query(`insert into public.estimate_definition_version(
       id,release_id,catalog_id,definition_version,passport,applicability,definition_sha256,
       source_metadata,content_status,content_gate_status)
@@ -719,6 +762,7 @@ export async function publishCanonicalDefinitionDraft(
   const inheritedCompatiblePriceBindingCount = await inheritCompatiblePriceRouteBindings(
     client,
     plan,
+    excludedPriceInheritanceResourceIds,
   );
   await client.query(`insert into public.estimate_approved_template_baseline(
       id,baseline_key,catalog_id,definition_version_id,source_definition_version_id,parameter_schema_sha256,

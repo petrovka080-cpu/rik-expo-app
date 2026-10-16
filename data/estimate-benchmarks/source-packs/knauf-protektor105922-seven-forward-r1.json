@@ -1,0 +1,473 @@
+{
+  "schemaVersion": "knauf-protektor105922-forward-source-pack/v2",
+  "contract": "rik-expo-app.knauf-protektor-1007z-105922-forward-seven.v2",
+  "status": "WORK_UNBOUND_SOURCE_CANDIDATE_NOT_EXECUTED",
+  "selectedPacketUnchanged": "EUROFLEX",
+  "quantityBasis": "SOURCE_PRODUCT_GEOMETRY_PLUS_EXPLICIT_PROJECT_FACTS",
+  "sourceIdCandidate": "rik-expo-app.knauf-protektor-1007z-105922-forward-seven.v2:product",
+  "normIdCandidate": "rik-expo-app.knauf-protektor-1007z-105922-forward-seven.v2:bounded-geometry",
+  "productionRegistry": {
+    "sourceId": null,
+    "locatorId": null,
+    "excerptSha256": null,
+    "sourceKeyCollisionChecked": false,
+    "bindingWritePlan": null
+  },
+  "sources": [
+    {
+      "sourceArtifactId": "protektor-1007z-202608011635",
+      "officialUrl": "https://www2.protektor.de/wp-content/uploads/product/de_DE/1007z-de-de-202608011635_6a6e044d0c4e5.pdf",
+      "localArtifact": "C:/Users/User/Documents/Codex/2026-10-15/files-pasted-by-the-user-c/work/astra-next-need-primary/Protektor-1007Z-2026-08-01.pdf",
+      "sha256": "408cd72f6bb8fd47898facf0b163250d37cec31b6a971309e8f0d4719665acf8",
+      "bytes": 111531,
+      "edition": "01.08.2026 | 16:35",
+      "exactLocator": "PDF 1: description, mortar compatibility, Putzdicke, Verzinkung, Schenkellänge; Anbruch Kennzeichnung; order row 105922. PDF 2: edition validity and application/installation/storage instructions.",
+      "facts": {
+        "article": "1007Z",
+        "orderSku": "105922",
+        "nominalLengthMm": 3000,
+        "profileMaterial": "Galvanized steel Z350",
+        "legLengthMm": 34,
+        "plasterMinimumMm": 10,
+        "compatibleMortar": "Interior gypsum and gypsum-containing plaster",
+        "barsPerBundle": 25,
+        "manufacturerSupply": "Full packaging units only",
+        "bundlesPerPalletInformational": 81
+      },
+      "doesNotProve": [
+        "Site corner geometry or required piece count",
+        "Installation hours, fixing count or mounting-mortar mass",
+        "Consumption per m2 or an automatic waste allowance",
+        "Jointly named KNAUF + Protektor system approval",
+        "Retail loose-bar sale, price, delivery cost or additional supplier multiples"
+      ],
+      "sourceRole": "PRIMARY_PRODUCT_DIMENSIONS_AND_PACKAGING"
+    },
+    {
+      "sourceArtifactId": "protektor-1007z-dop-20260925",
+      "officialUrl": "https://www2.protektor.de/wp-content/uploads/product/de_DE/p-putz-1007z-15901-de-de_6ab64cc7d4c1e.pdf",
+      "localArtifact": "C:/Users/User/Documents/Codex/2026-10-15/files-pasted-by-the-user-c/work/astra-next-need-primary/Protektor-1007Z-DoP-2026-09-25.pdf",
+      "sha256": "8478e941bffe14e67aeeff5735fd20808ebb6b7657f7826fe92c9f63aaf7ffb2",
+      "bytes": 49883,
+      "edition": "P_1007Z_15901; signed 25.09.2026",
+      "exactLocator": "PDF 1: product identification, 1007Z and EN13658-1 internal plaster profiles.",
+      "facts": {
+        "product": "1007Z",
+        "identification": "Product/packaging/document labels",
+        "declaredIntendedFamily": "Metal profiles for interior plaster"
+      },
+      "doesNotProve": [
+        "A quantity norm",
+        "SKU equivalence",
+        "Named mixed-brand system approval"
+      ],
+      "sourceRole": "CORROBORATING_SCOPE_NOT_QUANTITY_NORM"
+    },
+    {
+      "sourceArtifactId": "knauf-rotband-information-sheet-072025",
+      "officialUrl": "https://www.knauf.ru/upload/iblock/bd3/2uoz7mmn70a8fuauoou7jqkk488pf708/01-IL-KNAUF_Rotband-_02_09_2025_-v03-Preview.pdf",
+      "localArtifact": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/.release-runtime/r568/s27-63/interior-plaster-conditional-composition/KNAUF-Rotband-information-sheet.pdf",
+      "sha256": "7d5f2b7883b765ba0e88b528f487472e1eb61fad2a5b602641fee6ad438a72b4",
+      "bytes": 1681308,
+      "edition": "07/2025; official filename 02_09_2025",
+      "exactLocator": "PDF 2: Подготовка поверхности; Грунтование; Установка маячковых профилей; Установка защитных угловых профилей.",
+      "facts": {
+        "base": "Clean, strong, dry internal concrete; concrete residual moisture no more than 3%",
+        "primer": "Betogrund on dense smooth low-absorbent concrete; allow drying",
+        "profileMounting": "Rotband or Perlfix mortar portions, spacing 30cm; align and press the corner profile",
+        "thicknessScope": "The selected current branch is manual Rotband at exactly 10mm"
+      },
+      "doesNotProve": [
+        "1007Z by name",
+        "Profile consumption from wall area",
+        "Mortar mass from the 30cm mounting interval",
+        "Any new labour-hour rate or fixing allowance",
+        "A full total mixing/cleaning-water quantity"
+      ],
+      "sourceRole": "CORROBORATING_SCOPE_NOT_QUANTITY_NORM"
+    },
+    {
+      "sourceArtifactId": "knauf-betogrund-information-sheet-052026",
+      "officialUrl": "https://www.knauf.ru/upload/iblock/fd6/zm61hso7g8alejgjsnu6k8hkd0bemltp/41-IL-KNAUF_Betogrund-_23_06_2026_-v04-Preview.pdf",
+      "localArtifact": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/.release-runtime/r568/s27-63/interior-plaster-materials/KNAUF-Betogrund-information-sheet-05-2026.pdf",
+      "sha256": "4c15b575f388cd56916471fa51514f109ec564c0f85cc4878f1f19b9536dd3be",
+      "bytes": 584479,
+      "edition": "05/2026",
+      "exactLocator": "PDF 1: Область применения. PDF 2: Подготовка поверхности; Порядок работы; Время высыхания.",
+      "facts": {
+        "application": "Internal dense smooth low/non-absorbing substrates including concrete before gypsum plasters and gypsum mounting adhesives",
+        "preparation": "Dry, clean, unfrozen base; remove laitance, release agents, loose material and dust",
+        "drying": "Following operation only after drying, not earlier than 12h; temperature/humidity affect drying"
+      },
+      "doesNotProve": [
+        "A profile mounting rate",
+        "That profile installation labour is paid by the material owner",
+        "Permission to replace Betogrund with another brand"
+      ],
+      "sourceRole": "CORROBORATING_SCOPE_NOT_QUANTITY_NORM"
+    },
+    {
+      "sourceArtifactId": "protektor-moisture-scope-20261015",
+      "officialUrl": "https://www2.protektor.de/de/sortiment/profile-fuer-feuchtraeume/",
+      "localArtifact": "C:/Users/User/Documents/Codex/2026-10-15/files-pasted-by-the-user-c/work/astra-next-need-primary/Protektor-moisture-scope-2026-10-15.html",
+      "sha256": "ff69b7616eb95a542bc657c3573301124ecaefe29dba463ab9e8c95d8610ebbe",
+      "bytes": 239189,
+      "edition": "Undated live guidance retrieved 2026-10-15",
+      "exactLocator": "Section Immer die beste Lösung für Feuchträume; bullet on galvanized steel profiles in wet rooms and bullet on pasty top coats.",
+      "facts": {
+        "wetRooms": "Galvanized profiles only if removed after completion of the base plaster",
+        "pastyTopcoats": "Manufacturer prefers white-coated aluminium or stainless profiles"
+      },
+      "doesNotProve": [],
+      "sourceRole": "CORROBORATING_SCOPE_NOT_QUANTITY_NORM"
+    }
+  ],
+  "currentParentGate": {
+    "schemaVersion": "knauf-protektor-public-seven-parent-gate/v2",
+    "snapshotSha256": "fc98317e8ec89b6137d81425ec1114202cb467672bc55ad2942025f42ff96f2e",
+    "bindingSha256": "f4a7ce763c90967a6abade4713d80f3457198f0ecba2033844abe9746a7fcddc",
+    "definitionReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+    "searchReleaseId": "eba472d0-0b86-52f3-9aad-0b7f5fa17658",
+    "currentPointerAtCaptureSha256": "a907d599035fad234da8c76658a9b619de77fbd8739925eca955246a22708f1a",
+    "targets": [
+      {
+        "catalogId": "canonical-work:base:plaster_paint_interior_ceiling_plaster_apply_large_area",
+        "definitionId": "a62d6e5e-d98c-5e19-8163-5fc5777123d7",
+        "baselineId": "f372ae6a-76ca-5067-8bfd-205c3741239e",
+        "version": 8,
+        "definitionSha256": "08db33be9fb426584f81213c637c3c447e2dd99bc8e41d0ca55b8fe010d40d8f",
+        "parentInputSha256": "90b121d3f2848013774deba7e4157f7a75da6f370ac2b42febe2c27bd1619804",
+        "manifestSha256": "9131eb68f33ec0969f6170a4fe37347b2817307493ed125a32bf777f44979ec6",
+        "searchDocumentSha256": "48b700220cc8937562b444f33500dde23db46a146813e09ec2ea63f69165f7c4",
+        "payloadSha256": "90c8103e78f52424f7ca475e1ad9ddec15c8ea7655254a305022a14f79761341",
+        "manifestEntrySha256": "d5d1183fc27afcecb3a2cba7f3a912d245b97bd5cad202a81134b542cb9324ca",
+        "corner": {
+          "rowId": "plaster:knauf-materials:open-corner",
+          "resourceSpecId": "e98add0e-0c46-574e-89da-26b1f18dba4f",
+          "rowSha256": "3e1902fe0e57abc97894ec4cc3a981012530c6bb7fb945d48843e0d8333fa78a",
+          "formulaId": "plaster:knauf-materials:formula:open-corner",
+          "resourcePayloadSha256": "2b4d2acd85e5a2052b1823102b8da02eeff9bc817005a13f96bf14c4491955df",
+          "formulaPayloadSha256": "8e3d73bbf402d9846ab92ab547626f1b64f2ae60a9817bae901adc459b1b014e"
+        },
+        "shape": {
+          "parameters": 48,
+          "resources": 113,
+          "formulas": 113,
+          "bindings": 29
+        }
+      },
+      {
+        "catalogId": "canonical-work:base:plaster_paint_interior_ceiling_plaster_apply_small_area",
+        "definitionId": "db792f17-c051-5a2e-8a2f-41aa68883f65",
+        "baselineId": "ca2dbd4d-2ed4-5f17-843b-d7bb36189ba4",
+        "version": 8,
+        "definitionSha256": "d4426ebdc7452a819554e8d38feca51a70ee868ede662ff2c0b5bd3591d04334",
+        "parentInputSha256": "0e6c6d73af6799c43e9e74b292486de9db0baeb43d6bce613a924395e65c3309",
+        "manifestSha256": "42c58a0fa878e4ef2eb60694a1f75910ffbd504c5021db6d47c94becf16e401a",
+        "searchDocumentSha256": "a477ca4c0b1badef087c6bbb89dc45671dd01b0897acf59ba1dcd19b3caf9094",
+        "payloadSha256": "d0123b6047551b159bb6d5354d2e692c64156ab12c6786b895ff78a372eed14e",
+        "manifestEntrySha256": "70f50b9281d16f1d213f3e29c313917d0e2be41dc020e9c54720dc3d6652a58e",
+        "corner": {
+          "rowId": "plaster:knauf-materials:open-corner",
+          "resourceSpecId": "eebd14c4-482f-563a-8dd0-7a44f92ea7ea",
+          "rowSha256": "042d7c515905bc7ffa99685d3d3d3e9a3947efb242ab2873a74c8e4ccdc19e5a",
+          "formulaId": "plaster:knauf-materials:formula:open-corner",
+          "resourcePayloadSha256": "241a02ac281b427108ecf9024fcf91e25c31221a637387748edf1983e06bed68",
+          "formulaPayloadSha256": "428ec3aba252e2000b2e363ee9c87cc56b26e520242c4da28136435d03a6a875"
+        },
+        "shape": {
+          "parameters": 48,
+          "resources": 113,
+          "formulas": 113,
+          "bindings": 29
+        }
+      },
+      {
+        "catalogId": "canonical-work:base:plaster_paint_interior_ceiling_plaster_apply_standard",
+        "definitionId": "477112c3-eb2f-5faf-8088-9ae48e453cee",
+        "baselineId": "029b4138-0526-5314-8cdf-2e440450673d",
+        "version": 8,
+        "definitionSha256": "e8d85d61f5a395fef72cdd646a7c551491168bc8424a2346604c56902b9820d6",
+        "parentInputSha256": "1eef35f4d9235c37df6c98dfe0706ed3567f81d3faf232eb7ea56e75f94a5daf",
+        "manifestSha256": "d181f109ffa2ce3422ba0b01b99fb979019f0247e9a7d8eafdd9e0d51787afb5",
+        "searchDocumentSha256": "39b9e1b4c298ad2f85a7a2ff6f143f9d99ea9f91ed216cbb366d00bc562fca65",
+        "payloadSha256": "9c5fa399cf125ea1ffabd60fc6721c2d1f7030b57d0a09c6c831e216ee84d909",
+        "manifestEntrySha256": "19a5f0fa782eae472078f3d63fa0495347a1cc14afe6f57ecd2b96ff13fd82e9",
+        "corner": {
+          "rowId": "plaster:knauf-materials:open-corner",
+          "resourceSpecId": "7692fb24-978c-5c4a-8320-108d28062e35",
+          "rowSha256": "6149856ee7b3e1e42b0f9a744e70f5431a4c3ba2184e72786634b135ec045a51",
+          "formulaId": "plaster:knauf-materials:formula:open-corner",
+          "resourcePayloadSha256": "2e0291dbd06ae908b575df91ac64e7c8b6fa86e46dda9113466b9442be2d152f",
+          "formulaPayloadSha256": "bdf1f25867a320547793dad5a466b4216c488b20df24b1596ede7a4ce562e94f"
+        },
+        "shape": {
+          "parameters": 48,
+          "resources": 113,
+          "formulas": 113,
+          "bindings": 29
+        }
+      },
+      {
+        "catalogId": "canonical-work:base:plaster_paint_interior_wall_plaster_apply_large_area",
+        "definitionId": "9f8ee0ba-c807-592c-8335-2caba873fa0a",
+        "baselineId": "0cc4b371-ec56-575c-8c4a-737b1ee6bb51",
+        "version": 8,
+        "definitionSha256": "4aae14487b63748dbec9086f41bfd40c273100973ad61a532e5ed67bddc6a713",
+        "parentInputSha256": "67bba21ada703b9df3033f3c35f05c2cab38bffd397f5baf425da2a9b69fc18c",
+        "manifestSha256": "7d37028fb87939cb603559d607fd0c2e4cfbed478a9691b87110b3a01a03a63b",
+        "searchDocumentSha256": "598d1308cab5c0751ba8228d67e2a2f192644110f1749a768639e9b2a05061a8",
+        "payloadSha256": "7106f1e6026f4bfd5966d474ee1d7bc27bfd8b28b4372f15e7d7a5c60c5cb123",
+        "manifestEntrySha256": "63916a6bde8934609c46671d49f30af46040e2d43f7813161b6d7d081ddd1628",
+        "corner": {
+          "rowId": "plaster:knauf-materials:open-corner",
+          "resourceSpecId": "53e3c404-a28c-5b20-846d-fafacefa8b6a",
+          "rowSha256": "08dcd550472ab53cd135ad13f9b168632685df72bf3cbaa56fa775cde9e3a64c",
+          "formulaId": "plaster:knauf-materials:formula:open-corner",
+          "resourcePayloadSha256": "e337723c8be73aeed42c969e1ece3408cda544c9ac2d4838f83f8f48ee1c7408",
+          "formulaPayloadSha256": "d4beae909f3f4456956ead1ef6234e1be798673cd8ade1b907fad74b714054d5"
+        },
+        "shape": {
+          "parameters": 48,
+          "resources": 113,
+          "formulas": 113,
+          "bindings": 29
+        }
+      },
+      {
+        "catalogId": "canonical-work:base:plaster_paint_interior_wall_plaster_apply_small_area",
+        "definitionId": "52e209dc-c995-5c11-8d29-7c040a7318f4",
+        "baselineId": "5ba37fec-8084-5c32-8956-876c477042d1",
+        "version": 8,
+        "definitionSha256": "ad319f12470586037468373260c39fb9543de90c4d3aade0ae2998344981f86f",
+        "parentInputSha256": "04e0485bd83681ea9238a4bf9fe99dc95c229efe3a6c7b931c3f87f89eaf4702",
+        "manifestSha256": "e30ef71e8419215906dfab4ce3f71b4026a188e47a8fd4c96df9a2db3a2412d2",
+        "searchDocumentSha256": "3226ce794196168c4738126e320f9ae8726d2cb21449dad4545ed0cc78478699",
+        "payloadSha256": "995bc24267f19fc305f131b64edfc15407ee6dab104c9909e445f4d3503f87c6",
+        "manifestEntrySha256": "f5597ef981d444147dd229109dde1252eb0e4b4d58ff6a6845c3683475b996ec",
+        "corner": {
+          "rowId": "plaster:knauf-materials:open-corner",
+          "resourceSpecId": "d45fef1a-3660-5e8d-8914-8503d1eeb76f",
+          "rowSha256": "3d24831e400cc621c5cf76ec4b418a1a28e483866aa7c11c70e9d5f63db82b4b",
+          "formulaId": "plaster:knauf-materials:formula:open-corner",
+          "resourcePayloadSha256": "a6ca58758432d06996be59d11d6701e22e0008b78268b87b106ec61e50c13324",
+          "formulaPayloadSha256": "2703870038a46855f0e1ec5ff2dcee2a8392e82e5859f587e4e9638dd1b408fc"
+        },
+        "shape": {
+          "parameters": 48,
+          "resources": 113,
+          "formulas": 113,
+          "bindings": 29
+        }
+      },
+      {
+        "catalogId": "canonical-work:base:plaster_paint_interior_wall_plaster_apply_technical_room",
+        "definitionId": "4e3f0fe1-382e-5d4a-8c14-ab7104106677",
+        "baselineId": "677f9686-4339-5a63-8d33-a6caec3579cc",
+        "version": 5,
+        "definitionSha256": "c1363dfbfbcd9eaeaa4b630426cb5f8258aea9ade3bd50031e05d599a388260f",
+        "parentInputSha256": "f4bc83ce3f494cf43cb053376f775a94ac7211631b65dddcf448e9094df61075",
+        "manifestSha256": "43e1932e8a02940f9c71307ae7e5279ffea39f9aff1d6dd818bb685f5275550d",
+        "searchDocumentSha256": "ab55b66ec2ed1fc012909afc4200c8bbc8ea4ba2cd0b259dd3c276f59af06e19",
+        "payloadSha256": "651dd5ce006296dbd1421fd5a990d0474c85037bc34f6c005b40b64233b7bf96",
+        "manifestEntrySha256": "83869af24757b27676573129f3bdf2c1a0de1c8e2b9e24e336fed27ab9b34717",
+        "corner": {
+          "rowId": "plaster:knauf-materials:open-corner",
+          "resourceSpecId": "7437d4a5-f7e6-5eb6-8e6b-ff22ca825311",
+          "rowSha256": "f72353a18fc0aa27ecf513f470e3c7a98129ba9ce5236085c0ae222bb21bca87",
+          "formulaId": "plaster:knauf-materials:formula:open-corner",
+          "resourcePayloadSha256": "0a7a4a85ac906b9a7b2343c14e00bafaf16d632ac345f5f662894e79e64e8198",
+          "formulaPayloadSha256": "ebbe7c9d6eb6ff5a6dbc4456884b0027c87f222f62a3a1315ed5d136189f7636"
+        },
+        "shape": {
+          "parameters": 46,
+          "resources": 113,
+          "formulas": 113,
+          "bindings": 29
+        }
+      },
+      {
+        "catalogId": "canonical-work:base:plaster_paint_interior_ceiling_plaster_apply_technical_room",
+        "definitionId": "d1966104-7204-5f40-8461-02e2b3d1b10f",
+        "baselineId": "c292f01c-5f63-5107-8ecc-f9b481121280",
+        "version": 5,
+        "definitionSha256": "fa9a5b0efd7f0eaefd626f9b0baca69ce7ddc85adacfeabb4c6ea6248739cd34",
+        "parentInputSha256": "3c7a7bad335012d3230c658dc7272399dedfbeff00c907d393e0993a2aacc051",
+        "manifestSha256": "4d71db479dc0bd49548fad0e2e2d44ac704934aa44db9642201fea46e8761a06",
+        "searchDocumentSha256": "5acbd1062f4f008d1ca0bb2d239cabba21569d849d4543f09cb93dfbbc50a47e",
+        "payloadSha256": "aee33ece009c0029b7b7570d0ed32d171a1fb4d77e56bdab7e488cdadcb7dcbf",
+        "manifestEntrySha256": "874844b78cb8d9458b9b3b1c1b4697707490e6f87b4da1e7b1cc710d81b49412",
+        "corner": {
+          "rowId": "plaster:knauf-materials:open-corner",
+          "resourceSpecId": "1759c67d-1746-5b39-8ff0-9d87b4860ff3",
+          "rowSha256": "72b95ea537a69146c25df69e8a00b691488e79f97684abb523be3e20314a6cf3",
+          "formulaId": "plaster:knauf-materials:formula:open-corner",
+          "resourcePayloadSha256": "4bc0bca99f62fada50e6585cab4ea176573fcbfc813605ee8991a70d271f9e0d",
+          "formulaPayloadSha256": "313afe368de2441c7aaaa2dcbd8d293218c368be8b60396e0dacdf7382b2d7f6"
+        },
+        "shape": {
+          "parameters": 46,
+          "resources": 113,
+          "formulas": 113,
+          "bindings": 29
+        }
+      }
+    ]
+  },
+  "targetCatalogIds": [
+    "canonical-work:base:plaster_paint_interior_ceiling_plaster_apply_large_area",
+    "canonical-work:base:plaster_paint_interior_ceiling_plaster_apply_small_area",
+    "canonical-work:base:plaster_paint_interior_ceiling_plaster_apply_standard",
+    "canonical-work:base:plaster_paint_interior_wall_plaster_apply_large_area",
+    "canonical-work:base:plaster_paint_interior_wall_plaster_apply_small_area",
+    "canonical-work:base:plaster_paint_interior_wall_plaster_apply_technical_room",
+    "canonical-work:base:plaster_paint_interior_ceiling_plaster_apply_technical_room"
+  ],
+  "excludedCatalogId": "canonical-work:base:plaster_paint_interior_wall_plaster_apply_standard",
+  "parentFixtureSha256": "a740bced7a4872a223cac9bbc9c7e4a9341d96d68fff10590aa6161bbfd9fa0f",
+  "ownerRowId": "plaster:knauf-materials:open-corner",
+  "ownerFormulaId": "plaster:knauf-materials:formula:open-corner",
+  "prefix": "plaster:knauf-materials:open-corner:105922",
+  "borrowedParameterIds": [
+    "q",
+    "interior_plaster_material_system",
+    "knauf_scope_external_corner_scope"
+  ],
+  "choiceRu": {
+    "manual": "Ротбанд вручную, 10 мм по бетону",
+    "legacy": "Исходная технология по проекту",
+    "hasCorners": "Есть",
+    "noCorners": "В этом участке нет внешних углов",
+    "unknown": "Пока неизвестно",
+    "product": "Protektor 1007Z, артикул 105922, 3 м",
+    "otherProduct": "Другое исполнение",
+    "exposure": "Сухое помещение, минеральная гипсовая отделка",
+    "otherExposure": "Другие условия",
+    "cutFit": "Да, углы прямые, одинаковые и без стыков; раскрой проверен",
+    "otherCutFit": "Нет, нужен другой раскрой или стыки"
+  },
+  "scopeRu": "Только выбранный ручной Ротбанд ровно 10 мм по внутреннему бетону, сухое помещение и минеральная гипсовая отделка. Профиль Protektor 1007Z, артикул 105922, длина 3 м; одинаковые прямые непрерывные углы длиннее 1,5 м и не длиннее 3 м. Пригодность каждого целого профиля подтверждается отдельно; стыки и допуски реза не предполагаются.",
+  "sourceDimensions": {
+    "barMm": 3000,
+    "minimumPlasterMm": 10,
+    "barsPerBundle": 25,
+    "metresPerBundle": 75
+  },
+  "publicOwnerNameRu": "Угловой профиль для штукатурки",
+  "publicOwnerDetailsRu": [
+    "Расчёт этого варианта применим только к подтверждённому Protektor 1007Z, артикул 105922, длина 3 м, для внутренней гипсовой штукатурки от 10 мм.",
+    "Одна пачка содержит 25 профилей, или 75 м. Кратность поставки указывается в таких пачках.",
+    "Цена задаётся за метр выбранного профиля. Цена прежнего общего профиля не переносится без подтверждения артикула, единицы, валюты, налогов и доставки.",
+    "Неизвестные исполнение, условия, число и длина углов сохраняют потребность; ручной заказ не подтверждает эти факты.",
+    "Отделка плоских углов в прежнем базовом труде и остальные владельцы работ сохраняются. Отдельные часы, монтажный раствор и крепёж этим расчётом не определяются."
+  ],
+  "informationRows": [
+    {
+      "suffix": "installed-length",
+      "titleRu": "Длина профиля на углах",
+      "unitId": "m",
+      "detailRu": "Суммарная измеренная длина одинаковых непрерывных углов. Не расход по площади."
+    },
+    {
+      "suffix": "allocated-bars",
+      "titleRu": "Целые профили длиной 3 м для установки",
+      "unitId": "pcs",
+      "detailRu": "Один целый профиль на каждый подтверждённый угол длиннее 1,5 м. Пригодность раскроя проверена; стыки не предполагаются."
+    },
+    {
+      "suffix": "cut-remainder",
+      "titleRu": "Остатки после раскроя профилей",
+      "unitId": "m",
+      "detailRu": "Геометрическая разница между длиной целых профилей и установленной длиной. Это не автоматически пригодный запас и не автоматически отходы к вывозу."
+    },
+    {
+      "suffix": "ordered-bars",
+      "titleRu": "Заказ в пересчёте на профили по 3 м",
+      "unitId": "pcs",
+      "detailRu": "Пересчёт подтверждённого заказа в метрах. При неподтверждённой кратности ручного заказа физическое число целых профилей не выводится."
+    },
+    {
+      "suffix": "manufacturer-bundles",
+      "titleRu": "Заказ в пачках по 25 профилей",
+      "unitId": "pcs",
+      "detailRu": "Одна заводская пачка — 25 профилей по 3 м. Кратность поставщика не меняет размер пачки."
+    },
+    {
+      "suffix": "remaining",
+      "titleRu": "Остаток целых профилей после работ, в метрах",
+      "unitId": "m",
+      "detailRu": "Учитываются подтверждённые целые профили в наличии и пригодный заказ за вычетом выделенных целых профилей. Остатки раскроя сюда не добавляются."
+    },
+    {
+      "suffix": "free-after-reserve",
+      "titleRu": "Свободный остаток сверх резерва, в метрах",
+      "unitId": "m",
+      "detailRu": "Пригодный остаток после работ за вычетом сохраняемых целых профилей."
+    },
+    {
+      "suffix": "consumption-shortage",
+      "titleRu": "Не хватает профиля для установки",
+      "unitId": "m",
+      "detailRu": "Непокрытая потребность в целых профилях. При ненулевом дефиците закупка не готова."
+    },
+    {
+      "suffix": "reserve-deficit",
+      "titleRu": "Не покрыт сохраняемый резерв профиля",
+      "unitId": "m",
+      "detailRu": "Непокрытый резерв целых профилей после работ. При ненулевом дефиците закупка не готова."
+    }
+  ],
+  "manualPolicy": {
+    "policy": "retain-raw-and-block-quantum",
+    "ownerRowId": "plaster:knauf-materials:open-corner",
+    "unitId": "m",
+    "automaticQuantitiesRemainStrict": true,
+    "rawManualQuantityPreserved": true,
+    "invalidSupplyDoesNotPublishPhysicalDerivedOrder": true,
+    "savedRevisionMigration": null,
+    "genericPriceAndStockAutomaticTransferAllowed": false,
+    "priceCompatibilityGate": null,
+    "requiresExplicitPriceCompatibility": [
+      "exact SKU 105922",
+      "metre unit",
+      "currency",
+      "tax basis",
+      "delivery basis"
+    ],
+    "commonSourceOnlyIntegratedTestsAndTypesAccepted": false
+  },
+  "installationCoverage": {
+    "baseOwnerRowIds": [
+      "plaster:krer15-manual-base:workers",
+      "plaster:krer15-manual-base:loader",
+      "plaster:krer15-manual-base:lift",
+      "plaster:krer15-manual-base:mixer",
+      "plaster:krer15-manual-base:operators"
+    ],
+    "retainedResidualRowIds": [
+      "plaster:knauf-materials:open-main-labour",
+      "plaster:knauf-materials:open-preparation"
+    ],
+    "observedIncludedScopeRu": "Приготовление раствора, ручное нанесение с затиркой и отделка плоских внутренних и наружных углов в принятом условном базовом владельце КРЕР.",
+    "specificProfileMountingOverlapProven": false,
+    "mountingMortarAdditionalToExistingMixProven": false,
+    "newLabourOrMortarRows": 0,
+    "newLabourHours": 0,
+    "gateRu": "Сохранить существующие владельцы и включённые работы. До публикации отдельно установить пересечение именно установки профиля и монтажного раствора с принятым составом; отсутствие отдельной нормы не создаёт дублирующую строку."
+  },
+  "excludedUnownedAssumptions": [
+    "Нет метров профиля на м², скрытого отхода, припуска реза или стыков.",
+    "Нет автоматических S=0, R=0, M=1 или выбора SKU.",
+    "Ручной заказ не превращает дробные метры в пригодные целые профили.",
+    "Не переносить старую общую цену и склад без совместимости артикула и условий.",
+    "Не добавлять дублирующие часы, раствор или крепёж и не уменьшать прежний труд.",
+    "Не пересчитывать сохранённые ревизии; source/locator и транзакционные проверки ещё отсутствуют."
+  ],
+  "newQuantityNorms": 0,
+  "sourceNeedsClosed": 0,
+  "newCompleteTechnicalTypes": 0,
+  "publicationReady": false,
+  "runtimeInput": {},
+  "runtimeClassification": {},
+  "generatedFromCurrentRows": false
+}

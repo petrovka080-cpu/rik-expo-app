@@ -1,3 +1,5 @@
+import { assertCanonicalPurchaseSupplyReadyV1, canonicalPurchaseSupplyBlocksV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseSupplyReadinessV1";
+import { canonicalExactPurchaseEditingV1, canonicalExactPurchaseInputV1, normalizeCanonicalExactPurchaseEditV1, previewCanonicalExactPurchaseEditV1, stepCanonicalExactPurchaseV1 } from "./canonicalExactPurchaseEditingV1";
 import {roofStageRestoreTargetsV6,roofStageExcludeTargetsV6} from '../../lib/estimate/backendPlatform/canonicalRoofScreed25MigrationV1';
 import {roofStageRestoreTargetsV5,roofStageExcludeTargetsV5} from '../../lib/estimate/backendPlatform/canonicalRoofHangingGuttersMigrationV1';
 import React from "react";
@@ -185,8 +187,12 @@ function applyVisibleCanonicalRowDraft(
       // new formula baseline. This annotates the unsaved preview, not the norm.
       const calculatedQuantity = consumerRepairRowCalculatedQuantity(item);
       const manualQuantity = amendment.quantity != null;
+      const exact = canonicalExactPurchaseEditingV1(item);
+      const exactPreview = exact && quantityChanged ? previewCanonicalExactPurchaseEditV1(exact, amendment.quantity == null ? null : String(amendment.quantity)) : exact;
+      const exactMetadata = exactPreview ? {canonicalExactPurchaseQuantityV1: exactPreview} : {};
+      // The numeric item projection is display-only; exact metadata and request strings remain authoritative.
       const quantity = quantityChanged
-        ? manualQuantity ? Number(amendment.quantity) : calculatedQuantity
+        ? exactPreview ? exactPreview.quantityText == null ? null : Number(exactPreview.quantityText) : manualQuantity ? Number(amendment.quantity) : calculatedQuantity
         : item.quantity;
       const unitPrice = Object.prototype.hasOwnProperty.call(amendment, "unitPrice")
         ? amendment.unitPrice == null ? null : Number(amendment.unitPrice)
@@ -202,7 +208,8 @@ function applyVisibleCanonicalRowDraft(
           priceSourceLabel: unitPrice == null ? null : "Цена введена пользователем",
           priceEditedByConsumer: unitPrice != null,
         } : {}),
-        totalPrice: quantity != null && unitPrice != null
+        totalPrice: canonicalPurchaseSupplyBlocksV1(item.sourceParameters?.canonicalPurchaseSupplyBlocksV1).length === 0
+          && quantity != null && unitPrice != null
           ? roundMoney(quantity * unitPrice)
           : null,
         ...(quantityChanged
@@ -212,11 +219,12 @@ function applyVisibleCanonicalRowDraft(
               ...item.sourceParameters,
               manualQuantityOverride: manualQuantity,
               calculatedQuantityBeforeOverride: calculatedQuantity,
+              ...exactMetadata,
             },
           }
           : {}),
         ...(Object.hasOwn(amendment,'machineHourPriceCoverageV1')?{sourceParameters:{...item.sourceParameters,
-          ...(quantityChanged?{manualQuantityOverride:manualQuantity,calculatedQuantityBeforeOverride:calculatedQuantity}:{}),
+          ...(quantityChanged?{manualQuantityOverride:manualQuantity,calculatedQuantityBeforeOverride:calculatedQuantity,...exactMetadata}:{}),
           canonicalMachineHourPriceCoverageV1:{evidence:amendment.machineHourPriceCoverageV1},canonicalPriceSourceKind:'MANUAL',canonicalPriceSnapshotId:null,
           canonicalPriceResolutionTrace:{kind:'manual_override',provenance:{kind:'manual',reason:'consumer_estimate_row_batch_edit'}}}}:{}),
       };
@@ -436,7 +444,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private canonicalParameterBatchInFlight = false;
   private pendingCanonicalRowOverrides: Record<string, CanonicalEstimateRowOverride> = {};
   private pendingCanonicalRowQuantityBaselines: Record<string, {
-    manual: boolean; quantity: number | null; unitPrice: number | null; item: ConsumerRepairRequestItem;
+    manual: boolean; quantity: number | null; exactQuantityText: string | null; exactPolicy: boolean; unitPrice: number | null; item: ConsumerRepairRequestItem;
   }> = {};
   private pendingCanonicalRowBaseRevisionId: string | null = null;
   private canonicalRowEditorResetKeys: Record<string, number> = {};
@@ -2429,7 +2437,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const item = current.items.find((candidate) => candidate.id === itemId);
     if (!item) return;
     if (consumerRepairCanonicalBackendBinding(current)) {
-      void this.changeItemQuantity(itemId, String(Math.max(0, (item.quantity ?? 0) - 1)));
+      const exact = canonicalExactPurchaseInputV1(item);
+      const next = exact == null ? String(Math.max(0, (item.quantity ?? 0) - 1)) : stepCanonicalExactPurchaseV1(exact, -1);
+      if (next != null) void this.changeItemQuantity(itemId, next);
       return;
     }
     const bundle = applyVisibleQuantityDraft(current, itemId, Math.max(0, (item.quantity ?? 0) - 1));
@@ -2441,7 +2451,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const item = current.items.find((candidate) => candidate.id === itemId);
     if (!item) return;
     if (consumerRepairCanonicalBackendBinding(current)) {
-      void this.changeItemQuantity(itemId, String((item.quantity ?? 0) + 1));
+      const exact = canonicalExactPurchaseInputV1(item);
+      const next = exact == null ? String((item.quantity ?? 0) + 1) : stepCanonicalExactPurchaseV1(exact, 1);
+      if (next != null) void this.changeItemQuantity(itemId, next);
       return;
     }
     const bundle = applyVisibleQuantityDraft(current, itemId, (item.quantity ?? 0) + 1);
@@ -2471,6 +2483,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     // including a price-only change. Later visible previews are not baselines.
     const baseline = this.pendingCanonicalRowQuantityBaselines[input.rowId] ?? {
       manual: consumerRepairRowHasManualQuantity(originalItem), quantity: originalItem.quantity ?? null,
+      exactPolicy: canonicalExactPurchaseEditingV1(originalItem) != null, exactQuantityText: canonicalExactPurchaseInputV1(originalItem),
       unitPrice: originalItem.unitPrice ?? null, item: originalItem,
     };
     this.pendingCanonicalRowQuantityBaselines[input.rowId] = baseline;
@@ -2482,7 +2495,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     };
     if (Object.prototype.hasOwnProperty.call(pending, "quantity") && (
       (pending.quantity == null && !baseline.manual)
-      || (pending.quantity != null && baseline.manual && baseline.quantity != null && Number(pending.quantity) === baseline.quantity)
+      || (pending.quantity != null && baseline.manual && (baseline.exactPolicy
+        ? String(pending.quantity) === baseline.exactQuantityText
+        : baseline.quantity != null && Number(pending.quantity) === baseline.quantity))
     )) delete pending.quantity;
     // An originally unpriced row is unchanged after clearing a new price.
     // Numeric equality alone does not prove the original price mode.
@@ -2522,7 +2537,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       const item = current.items.find(candidate => consumerRepairRowCode(candidate) === rowId);
       if (!saved || !item) return null;
       const values = [
-        Object.prototype.hasOwnProperty.call(fields, "quantity") ? `количество ${item.quantity ?? "не задано"} → ${saved.quantity ?? "не задано"}` : null,
+        Object.prototype.hasOwnProperty.call(fields, "quantity") ? `количество ${canonicalExactPurchaseInputV1(item) ?? item.quantity ?? "не задано"} → ${canonicalExactPurchaseInputV1(saved) ?? saved.quantity ?? "не задано"}` : null,
         Object.prototype.hasOwnProperty.call(fields, "unitPrice") ? `цена ${item.unitPrice ?? "не задана"} → ${saved.unitPrice ?? "не задана"}` : null,
       ].filter(Boolean).join("; ");
       return `${saved.titleRu}: ${values}`;
@@ -2547,7 +2562,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           const saved = pending[rowId] ? baselines[rowId]?.item : null;
           if (!saved) return item;
           const sourceParameters = { ...item.sourceParameters };
-          for (const key of ["manualQuantityOverride", "calculatedQuantityBeforeOverride", "canonicalMachineHourPriceCoverageV1", "canonicalPriceSourceKind", "canonicalPriceSnapshotId", "canonicalPriceResolutionTrace"]) {
+          for (const key of ["manualQuantityOverride", "calculatedQuantityBeforeOverride", "canonicalExactPurchaseQuantityV1", "canonicalPurchaseSupplyBlocksV1", "canonicalMachineHourPriceCoverageV1", "canonicalPriceSourceKind", "canonicalPriceSnapshotId", "canonicalPriceResolutionTrace"]) {
             if (Object.prototype.hasOwnProperty.call(saved.sourceParameters ?? {}, key)) sourceParameters[key] = saved.sourceParameters![key];
             else delete sourceParameters[key];
           }
@@ -2672,18 +2687,22 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private changeItemQuantity = async (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => {
     const current = this.state.bundle;
     if (!current) return;
-    const quantity = parseEditableEstimateNumberInput(value);
+    let quantity: string | number | null = parseEditableEstimateNumberInput(value);
     const binding = consumerRepairCanonicalBackendBinding(current);
     if (binding) {
       const item = current.items.find((candidate) => candidate.id === itemId);
       const rowId = consumerRepairRowCode(item);
+      if (canonicalExactPurchaseEditingV1(item)) {
+        try { quantity = normalizeCanonicalExactPurchaseEditV1(value); }
+        catch { this.setState({statusMessage:"Количество не сохранено: введите точное неотрицательное десятичное число без округления."}); return; }
+      }
       const quantityCleared = value.trim().length === 0;
       const mayReturnToPreliminary = Boolean(
         rowId?.startsWith("manual:") || consumerRepairRowHasManualQuantity(item),
       );
       if (!item || !rowId
         || (quantity == null && !(quantityCleared && mayReturnToPreliminary))
-        || (quantity != null && quantity < 0)) {
+        || (typeof quantity === "number" && quantity < 0)) {
         this.setState({ statusMessage: "Количество не сохранено: укажите неотрицательное число для точной строки сметы." });
         return;
       }
@@ -2696,16 +2715,17 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       });
       return;
     }
-    const bundle = applyVisibleQuantityDraft(current, itemId, quantity ?? 0);
+    const legacyQuantity = parseEditableEstimateNumberInput(value);
+    const bundle = applyVisibleQuantityDraft(current, itemId, legacyQuantity ?? 0);
     const operation = meta ?? {
       operationId: createConsumerRepairQuantityEditOperationId({
         itemId,
         source: "direct_input",
-        nextQuantity: quantity ?? 0,
+        nextQuantity: legacyQuantity ?? 0,
       }),
       source: "direct_input" as const,
       previousQuantity: current.items.find((item) => item.id === itemId)?.quantity ?? null,
-      nextQuantity: quantity ?? 0,
+      nextQuantity: legacyQuantity ?? 0,
     };
     recordConsumerRepairQuantityEditStage({
       ...operation,
@@ -3102,6 +3122,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           );
         }
         const rows = await getAllCanonicalEstimateRevisionRows({ revisionId: context.revisionId });
+        assertCanonicalPurchaseSupplyReadyV1([...rows, ...(revision.preliminaryNeeds ?? []).map(need => ({...need,
+          calculationTrace:{...need.calculationTrace,purchaseSupplyBlocksV1:need.purchaseSupplyBlocks ?? need.calculationTrace?.purchaseSupplyBlocksV1}}))]);
         const shortage = canonicalPurchaseShortageMessageV1(rows);
         if (shortage) throw new ConsumerEstimateActionContextError(shortage);
         // Ensure the current renderer even for a restored ready artifact. The

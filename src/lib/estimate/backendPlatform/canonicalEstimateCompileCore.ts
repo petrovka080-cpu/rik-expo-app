@@ -1,3 +1,4 @@
+import { buildCanonicalExactPurchaseQuantityV1, buildCanonicalPurchaseSupplyIndexV1, mergeCanonicalPurchaseSupplyBlocksV1, type CanonicalPurchaseSupplyIndexV1 } from "./canonicalPurchaseSupplyReadinessV1";
 import { planCanonicalCompositionSelectionV1, type CanonicalEstimateCompositionSelectionV1 } from './canonicalEstimateCompositionSelectionV1';
 import {assertCanonicalMachineHourDefinitionV1,parseCanonicalMachineHourPriceCoverageV1,resolveCanonicalMachineHourPriceCoverageV1,canonicalMachineHourPriceNeedsConfirmationV1} from './canonicalMachineHourPriceCoverageV1';
 import {
@@ -27,7 +28,7 @@ import {
   resolveCanonicalEstimatePhysicalNormApplicabilityV1,
 } from "./canonicalEstimatePhysicalNormProjection";
 import { planCanonicalEffectiveResourceQuantitiesV1 } from "./canonicalEffectiveResourceQuantityV1";
-import { resolveCanonicalPurchaseBalanceV1, resolveCanonicalKnownPurchaseRequirementV1, validateCanonicalManualTransportQuantityV1, validateCanonicalPurchaseOrderQuantityV1 } from "./canonicalPurchaseBalanceV1";
+import { resolveCanonicalManualPurchaseSupplyBlockV1, type CanonicalManualPurchaseSupplyBlockV1, resolveCanonicalPurchaseBalanceV1, resolveCanonicalKnownPurchaseRequirementV1, validateCanonicalManualTransportQuantityV1, validateCanonicalPurchaseOrderQuantityV1 } from "./canonicalPurchaseBalanceV1";
 import { resolveCanonicalPreliminaryParameterFormulasV1, canonicalMissingAutomaticParameterSourcesV1, PRELIMINARY_SOURCE_FORMULA } from './canonicalPreliminaryParameterFormulaV1';
 import {
   planCanonicalCommercialCostCoverageV1, canonicalCommercialCoveredResourceGraphV1,
@@ -191,7 +192,7 @@ export type CanonicalEstimateCompiledPreliminaryNeed = Record<string, unknown> &
   unit_id: string;
   quantity: string | null;
   unit_price: string | null;
-  need_state: "QUANTITY_REQUIRED" | "CONDITION_REQUIRED";
+  need_state: "QUANTITY_REQUIRED" | "CONDITION_REQUIRED" | "SUPPLY_CONFIRMATION_REQUIRED";
   missing_parameter_ids: string[];
   selected: boolean;
   procurement_eligible: boolean;
@@ -221,6 +222,7 @@ export type CanonicalEstimateCompileCoreInput = {
 };
 
 export type CanonicalEstimateCompileCoreResult = {
+  purchaseSupplyIndexV1?: CanonicalPurchaseSupplyIndexV1;
   compositionSelectionV1?: CanonicalEstimateCompositionSelectionV1;
   parameters: Record<string, unknown>;
   /** Exact lookup outputs added by the common compiler, excluding explicit/default values. */
@@ -238,6 +240,7 @@ export type CanonicalEstimateCompileCoreResult = {
   };
   priceSnapshotIds: string[];
   revisionProjection: {
+    purchaseSupplyIndexV1?: CanonicalPurchaseSupplyIndexV1;
     compositionSelectionV1?: CanonicalEstimateCompositionSelectionV1;
     catalogId: string;
     parameters: Record<string, unknown>;
@@ -946,6 +949,7 @@ export async function compileCanonicalEstimateCore(
   };
 
   const unresolvedEffectiveOutputs = new Map<string, string[]>();
+  const blockedSupplyByRow = new Map<string, CanonicalManualPurchaseSupplyBlockV1[]>();
   const scopeResourceIds = new Set(input.resourceDefinitions.map(r=>r.row_id));
   const scopeExcludedOperationDefinitionIds=new Set(input.resourceDefinitions.filter(r=>compositionPlan.operationsExcludeRow(r.row_id)).map(r=>r.row_id));
   const missingAutomaticSources = canonicalMissingAutomaticParameterSourcesV1(input.parameterDefinitions, parameters);
@@ -953,6 +957,8 @@ export async function compileCanonicalEstimateCore(
     effectiveQuantityPlan.owners.has(id) ? unresolvedEffectiveOutputs.get(id) ?? [] : [id],
   ))]);
   for (const resource of effectiveQuantityPlan.ordered) {
+    const inheritedSupplyBlocks = mergeCanonicalPurchaseSupplyBlocksV1((effectiveQuantityPlan.dependencies.get(resource.row_id) ?? [])
+      .flatMap(ownerRowId => blockedSupplyByRow.get(ownerRowId) ?? []));
     const formula = formulas.get(resource.formula_id);
     if (!formula) throw compilerError("formula graph reference missing", "DEFINITION_INTEGRITY_FAILED");
     const formulaOutputBounds = parseCanonicalFormulaOutputBoundsV1(
@@ -1035,7 +1041,8 @@ export async function compileCanonicalEstimateCore(
       excludedQuantityRowIds: new Set(rows.filter(r=>(r.calculation_trace as JsonRecord)?.physicalScopeExcludedV1 != null).map(r=>r.row_id)),
       excludedOperationResourceRowIds: new Set(rows.filter(r=>compositionPlan.decision(r.row_id).excludedBy==='OPERATIONS').map(r=>r.row_id)),
       knownQuantityRowIds: new Set(rows.filter(r => r.quantity != null
-        && !(r.calculation_trace as JsonRecord)?.physicalScopeExcludedV1).map(r => r.row_id)) });
+        && !(r.calculation_trace as JsonRecord)?.physicalScopeExcludedV1
+        && !(r.calculation_trace as JsonRecord)?.purchaseSupplyBlocksV1).map(r => r.row_id)) });
     if (scopeRequirementDecision) effectiveResourceGraph = {...effectiveResourceGraph,scopeRequirementDecisionV1:scopeRequirementDecision};
     const costInclusion = resolveCanonicalResourceCostInclusion(
       commercialOwner ? { ...resource, resource_graph: effectiveResourceGraph } : resource, override,
@@ -1066,6 +1073,11 @@ export async function compileCanonicalEstimateCore(
           ...(excludedMachinePrice==null?{}:{machineHourPriceCoverageV1:excludedMachinePrice}),
           ...(derivedQuantityEditPolicy == null ? {} : { derivedQuantityEditPolicy }),
           physicalScopeExcludedV1:{reason:'USER_EXCLUDED',previousManualQuantity:manualQuantity},
+          ...(buildCanonicalExactPurchaseQuantityV1(effectiveResourceGraph, "0", manualQuantity, null) == null ? {} : {
+            exactPurchaseQuantityV1: buildCanonicalExactPurchaseQuantityV1(effectiveResourceGraph, "0", manualQuantity, null),
+            manualPurchaseSupplyAssessmentV1: {version:"canonical-manual-supply-assessment/v1",manualQuantityPresent:manualQuantity!=null,blocked:false,physicalExcluded:true},
+            ...(manualQuantity == null ? {} : { manualQuantityOverride: true }),
+          }),
           ...(provenance?{manualAmendment:provenance}:{}),...(override?.titleRu==null?{}:{manualTitleOverride:true}),
           ...(effectiveOutput?{effectiveQuantityOutput:{...effectiveOutput,sourceRowId:resource.row_id,acceptedQuantity:'0',basis:'USER_EXCLUDED'}}:{})},
         normative_trace:resource.source_metadata?.normativeTrace ?? [],legacy_row_payload:null,
@@ -1079,6 +1091,11 @@ export async function compileCanonicalEstimateCore(
       }
       continue;
     }
+
+    const ownSupplyBlock = resolveCanonicalManualPurchaseSupplyBlockV1(resource.resource_graph?.purchaseBalanceV1,
+      resource.row_id, resource.unit_id, manualQuantity, provenance, formulaParameters, definitionParameterIds);
+    const supplyBlocks = mergeCanonicalPurchaseSupplyBlocksV1([...inheritedSupplyBlocks, ...(ownSupplyBlock ? [ownSupplyBlock] : [])]);
+    if (supplyBlocks.length) blockedSupplyByRow.set(resource.row_id, supplyBlocks);
 
     const physicalBinding = resource.resource_graph?.professionalPhysicalNormBindingV1;
     const physicalBindingRecord = physicalBinding != null
@@ -1187,7 +1204,7 @@ export async function compileCanonicalEstimateCore(
       ],
       parameters,
     );
-    const formulaQuantity = missingFormulaParameterIds.length === 0
+    const formulaQuantity = inheritedSupplyBlocks.length === 0 && missingFormulaParameterIds.length === 0
       ? compositionPlan.quantity(resource.row_id, formulaParameters, () => evaluateFormulaGraph(formula.ast, formulaParameters))
       : null;
     assertCanonicalCommercialCoveredQuantityV1(commercialOwner, manualQuantity, formulaQuantity);
@@ -1216,8 +1233,8 @@ export async function compileCanonicalEstimateCore(
       || missingRequiredTitleSpecificationParameterIds.length > 0
       || missingRequiredConsumerParameterIds.length > 0
       || missingNumericRelationParameterIds.length > 0
-      || missingCommercialScopeParameterIds.length > 0) {
-      let needState = missingNumericRelationParameterIds.length > 0
+      || missingCommercialScopeParameterIds.length > 0 || inheritedSupplyBlocks.length > 0) {
+      let needState: CanonicalEstimateCompiledPreliminaryNeed["need_state"] = missingNumericRelationParameterIds.length > 0
         || missingCommercialScopeParameterIds.length > 0
         || (inclusion.value == null && !inclusionOnlyWaitsForFormulaInputs)
         ? "CONDITION_REQUIRED" as const
@@ -1238,14 +1255,16 @@ export async function compileCanonicalEstimateCore(
         needState = 'CONDITION_REQUIRED';
         missingParameterIds = scopeRequirementDecision.missingObjectFactParameterIds;
       }
+      if (supplyBlocks.length && missingParameterIds.length === 0) needState = "SUPPLY_CONFIRMATION_REQUIRED";
       if (effectiveOutput) unresolvedEffectiveOutputs.set(effectiveOutput.parameterId, missingParameterIds);
       // Required physical facts remain selected even when their payment is covered.
       const selected = includedInEstimate || commercialOwner != null;
       const unitPrice = override != null && Object.prototype.hasOwnProperty.call(override, "unitPrice")
         ? nonNegativeNumericText(override.unitPrice, `${resource.row_id}.unitPrice`, true)
         : null;
-      const knownQuantity = manualQuantity ?? formulaQuantity;
-      if (manualQuantity != null) {
+      const knownQuantity = ownSupplyBlock ? manualQuantity : inheritedSupplyBlocks.length ? null : manualQuantity ?? formulaQuantity;
+      const exactPurchaseQuantity = buildCanonicalExactPurchaseQuantityV1(resource.resource_graph, knownQuantity, manualQuantity, formulaQuantity);
+      if (manualQuantity != null && ownSupplyBlock == null) {
         validateCanonicalPurchaseOrderQuantityV1(resource.resource_graph?.purchaseBalanceV1,
           resource.row_id, resource.unit_id, manualQuantity, formulaParameters, definitionParameterIds);
       }
@@ -1272,6 +1291,7 @@ export async function compileCanonicalEstimateCore(
         unit_id: resource.unit_id,
         quantity: knownQuantity,
         unit_price: unitPrice,
+        ...(supplyBlocks.length ? { currency_code: unitPrice == null ? null : input.currencyCode } : {}),
         need_state: needState,
         missing_parameter_ids: missingParameterIds,
         selected,
@@ -1290,6 +1310,9 @@ export async function compileCanonicalEstimateCore(
             missingParameterIds: missingTitleSpecificationParameterIds,
           } }),
           preliminaryNeed: true,
+          ...(supplyBlocks.length ? { purchaseSupplyBlocksV1: supplyBlocks } : {}),
+          ...(exactPurchaseQuantity ? { exactPurchaseQuantityV1: exactPurchaseQuantity,
+            manualPurchaseSupplyAssessmentV1:{version:"canonical-manual-supply-assessment/v1",manualQuantityPresent:manualQuantity!=null,blocked:ownSupplyBlock!=null,physicalExcluded:false} } : {}),
           ...(purchaseRequirement == null ? {} : { purchaseRequirementV1: purchaseRequirement }),
           ...(override?.titleRu == null ? {} : { manualTitleOverride: true }),
           needState,
@@ -1329,9 +1352,11 @@ export async function compileCanonicalEstimateCore(
     const quantity = override?.quantity == null
       ? calculatedQuantity
       : nonNegativeNumericText(override.quantity, `${resource.row_id}.quantity`)!;
-    const purchaseBalance = resolveCanonicalPurchaseBalanceV1(resource.resource_graph?.purchaseBalanceV1,
+    const exactPurchaseQuantity = buildCanonicalExactPurchaseQuantityV1(resource.resource_graph, quantity, manualQuantity, formulaQuantity);
+    const purchaseBalance = ownSupplyBlock ? null : resolveCanonicalPurchaseBalanceV1(resource.resource_graph?.purchaseBalanceV1,
       resource.row_id, resource.unit_id, quantity, formulaParameters, definitionParameterIds);
-    if (purchaseBalance && !purchaseBalance.procurementReady) includedInProcurement = false;
+    if (supplyBlocks.length) includedInEstimate = false;
+    if (supplyBlocks.length || purchaseBalance && !purchaseBalance.procurementReady) includedInProcurement = false;
     const transportQuantity = validateCanonicalManualTransportQuantityV1(resource.resource_graph?.manualTransportQuantityPolicyV1,
       resource.row_id, resource.unit_id, manualQuantity, formulaQuantity!);
     let physicalNormQuantityParity: JsonRecord | null = null;
@@ -1385,7 +1410,7 @@ export async function compileCanonicalEstimateCore(
       : snapshotUnitPrice;
     // Retain the canonical physical row and its trace, but require no price or purchase
     // for a proved zero. A manual spare order or a shortage must remain visible.
-    const knownZeroExcluded = excludeKnownZero === true && formulaQuantity != null
+    const knownZeroExcluded = supplyBlocks.length === 0 && excludeKnownZero === true && formulaQuantity != null
       && compareFormulaGraphDecimals(formulaQuantity, '0') === 0
       && compareFormulaGraphDecimals(quantity, '0') === 0
       && (purchaseBalance == null || (compareFormulaGraphDecimals(purchaseBalance.consumed, '0') === 0
@@ -1394,7 +1419,7 @@ export async function compileCanonicalEstimateCore(
       includedInEstimate = false;
       includedInProcurement = false;
     }
-    const amount = multiply(quantity, unitPrice);
+    const amount = supplyBlocks.length ? null : multiply(quantity, unitPrice);
     addToTotal(amount, includedInEstimate);
     const manualMachinePrice=override!=null&&Object.hasOwn(override,'unitPrice');
     const machineHourPriceCoverageV1=machinePriceRequirement==null?null:resolveCanonicalMachineHourPriceCoverageV1({
@@ -1412,8 +1437,11 @@ export async function compileCanonicalEstimateCore(
       ...(inclusionDecision == null ? {} : { inclusionDecision }),
       ...(knownZeroExcluded ? { knownZeroExclusionV1: { calculatedQuantity: formulaQuantity, orderedQuantity: quantity } } : {}),
       ...(purchaseBalance == null ? {} : { purchaseBalance }),
+      ...(supplyBlocks.length ? { purchaseSupplyBlocksV1: supplyBlocks } : {}),
+      ...(exactPurchaseQuantity ? { exactPurchaseQuantityV1: exactPurchaseQuantity,
+        manualPurchaseSupplyAssessmentV1:{version:"canonical-manual-supply-assessment/v1",manualQuantityPresent:manualQuantity!=null,blocked:ownSupplyBlock!=null,physicalExcluded:false} } : {}),
       ...(transportQuantity == null ? {} : { transportQuantity }),
-      ...(effectiveOutput == null ? {} : { effectiveQuantityOutput: {
+      ...(effectiveOutput == null || supplyBlocks.length ? {} : { effectiveQuantityOutput: {
         ...effectiveOutput, sourceRowId: resource.row_id, acceptedQuantity: quantity,
         basis: manualQuantity == null ? "formula" : "manual_override",
       } }),
@@ -1462,7 +1490,8 @@ export async function compileCanonicalEstimateCore(
       procurement_eligible: resource.procurement_eligible,
       included_in_estimate: includedInEstimate,
       included_in_procurement: includedInProcurement,
-      ...(purchaseBalance == null ? {} : { procurement_readiness: purchaseBalance.procurementReady ? "READY" : "SHORTAGE" }),
+      ...(supplyBlocks.length ? { procurement_readiness: "SUPPLY_CONFIRMATION_REQUIRED" }
+        : purchaseBalance == null ? {} : { procurement_readiness: purchaseBalance.procurementReady ? "READY" : "SHORTAGE" }),
       ownership_status: includedInEstimate ? "OWNED" : "OWNED_EXCLUDED",
       calculation_trace: calculationTrace,
       normative_trace: normativeTrace,
@@ -1480,7 +1509,7 @@ export async function compileCanonicalEstimateCore(
       row_sha256: await input.hashJson(rowWithoutHash),
     } as CanonicalEstimateCompiledRow;
     rows.push(row);
-    if (effectiveOutput) {
+    if (effectiveOutput && supplyBlocks.length === 0) {
       parameters[effectiveOutput.parameterId] = quantity;
       formulaParameters[effectiveOutput.parameterId] = quantity;
       derivedParameters[effectiveOutput.parameterId] = quantity;
@@ -1622,6 +1651,7 @@ export async function compileCanonicalEstimateCore(
   assertCanonicalCommercialCostOwnersV1(commercialCoverage, parameters, rows, preliminaryNeeds);
   rows.sort((left, right) => left.ordinal - right.ordinal);
   preliminaryNeeds.sort((left, right) => left.ordinal - right.ordinal);
+  const purchaseSupplyIndexV1 = buildCanonicalPurchaseSupplyIndexV1([...rows, ...preliminaryNeeds], rawOverrides);
   const totals = {
     amount: totalAmount,
     includedRowCount: rows.filter((row) => row.included_in_estimate).length,
@@ -1637,6 +1667,7 @@ export async function compileCanonicalEstimateCore(
   // branch/quantity evaluation above treated it as unknown, never false/zero.
   Object.assign(parameters, explicitUnknownValues);
   return {
+    ...(purchaseSupplyIndexV1 ? { purchaseSupplyIndexV1 } : {}),
     ...(compositionPlan.selection ? {compositionSelectionV1: compositionPlan.selection} : {}),
     parameters,
     derivedParameters,
@@ -1645,6 +1676,7 @@ export async function compileCanonicalEstimateCore(
     totals,
     priceSnapshotIds,
     revisionProjection: {
+      ...(purchaseSupplyIndexV1 ? { purchaseSupplyIndexV1 } : {}),
       ...(compositionPlan.selection ? {compositionSelectionV1: compositionPlan.selection} : {}),
       catalogId: input.catalogId,
       parameters,

@@ -2,7 +2,7 @@
  * Relaxed descriptions rank complete term coverage before an incidental name prefix.
  * Literal PHRASE/ANY/ALL ordering and canonical identity resolution are preserved.
  */
-export const CANONICAL_CATALOG_RANKING_ALGORITHM = 'relaxed-coverage-s2748-v1';
+export const CANONICAL_CATALOG_RANKING_ALGORITHM = 'exact-id-coverage-s2775-v1';
 
 export const CANONICAL_CATALOG_LITERAL_SEARCH_SQL = `
 with tokens as materialized(
@@ -32,7 +32,8 @@ with tokens as materialized(
             and target.catalog_id=source.canonical_target_catalog_id
             and target.adjudication_class='EFFECTIVE_WORK' and target.selectable)
     end
-    and position(token.q in source.normalized_search_blob)>0
+    and (source.normalized_catalog_id=token.q
+      or position(token.q in source.normalized_search_blob)>0)
   group by source.catalog_id,source.canonical_target_catalog_id
 ), accepted as materialized(
   select hit.*,

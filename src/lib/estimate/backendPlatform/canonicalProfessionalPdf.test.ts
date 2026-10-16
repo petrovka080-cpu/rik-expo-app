@@ -18,6 +18,8 @@ test("versioned professional PDF jobs reject an obsolete worker and retain legac
     .toThrow(expect.objectContaining({ code: "ARTIFACT_RENDERER_VERSION_MISMATCH" }));
   expect(() => assertCanonicalProfessionalPdfJobRendererVersion({ rendererVersion: "canonical-professional-pdf.r4-a13-s27-37-work-process" }))
     .toThrow(expect.objectContaining({ code: "ARTIFACT_RENDERER_VERSION_MISMATCH" }));
+  expect(() => assertCanonicalProfessionalPdfJobRendererVersion({ rendererVersion: "canonical-professional-pdf.r4-a13-s27-75-manual-supply-confirmation-template51" }))
+    .toThrow(expect.objectContaining({ code: "ARTIFACT_RENDERER_VERSION_MISMATCH" }));
   for (const invalid of [null, [], { rendererVersion: null }]) {
     expect(() => assertCanonicalProfessionalPdfJobRendererVersion(invalid))
       .toThrow(expect.objectContaining({ code: "ARTIFACT_RENDERER_VERSION_MISMATCH" }));
@@ -101,6 +103,31 @@ test('ordinary PDF omits even the largest explanatory resource profile without c
 });
 
 const categories = ["material", "labor", "equipment", "service", "transport"];
+
+test('keeps work before its own resources without moving resources into another subwork', () => {
+  const source = rows(5);
+  const titles = ['MATERIAL_A', 'LABOR_B', 'LABOR_A', 'SERVICE_A', 'MATERIAL_B'];
+  const kinds = ['material', 'labor', 'work', 'service', 'material'];
+  for (let index = 0; index < source.length; index++) {
+    const operationId = index === 1 || index === 4 ? 'b' : 'a';
+    source[index] = {...source[index]!, title_ru: titles[index]!, category: kinds[index]!,
+      calculation_trace: {resourceGraph: {operationCompositionV1: {
+        contractVersion: 'canonical-operation-resource/v1', groupId: 'foundation', groupTitleRu: 'Фундамент',
+        operationId, operationTitleRu: operationId === 'a' ? 'Подработа А' : 'Подработа Б',
+        completionCriterionRu: 'По проекту', processOrdinal: operationId === 'a' ? 10 : 20,
+      }}}};
+  }
+  const snapshot = JSON.stringify(source);
+  const projection = buildCanonicalProfessionalPdfProjection({revision: revision(5), rows: source, workTitleRu: 'Фундамент'});
+  const ordered = ['Подработа А</strong>', 'LABOR_A', 'MATERIAL_A', 'SERVICE_A', 'Подработа Б</strong>', 'LABOR_B', 'MATERIAL_B'];
+  for (let index = 1; index < ordered.length; index++) {
+    expect(projection.html.indexOf(ordered[index - 1]!)).toBeLessThan(projection.html.indexOf(ordered[index]!));
+  }
+  for (const title of titles) expect(projection.html.match(new RegExp(title, 'g'))).toHaveLength(1);
+  expect(projection.rowCount).toBe(5);
+  expect(projection.pricedRowCount).toBe(5);
+  expect(JSON.stringify(source)).toBe(snapshot);
+});
 
 function rows(
   count: number,
@@ -292,7 +319,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-69-required-resource-template49");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-75-subwork-resources-template52");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,

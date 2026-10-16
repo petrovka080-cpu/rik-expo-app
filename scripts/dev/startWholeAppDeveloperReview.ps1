@@ -84,7 +84,8 @@ function Get-Sha256([string]$Value) {
   }
 }
 
-function Test-WebBundleReady([int]$Port, [int]$TimeoutSec) {
+function Test-WebBundleReady([int]$Port, [int]$TimeoutSec, [ref]$CompletedBundle = $null) {
+  if ($null -ne $CompletedBundle) { $CompletedBundle.Value = $null }
   try {
     Record-ReviewStage "metro_start_and_status"
     $route = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:$Port/office/foreman" -TimeoutSec 15
@@ -94,13 +95,150 @@ function Test-WebBundleReady([int]$Port, [int]$TimeoutSec) {
     if (-not $match.Success) { return $false }
     $bundlePath = [System.Net.WebUtility]::HtmlDecode($match.Groups[1].Value)
     $bundleUri = [Uri]::new([Uri]"http://127.0.0.1:$Port/office/foreman", $bundlePath).AbsoluteUri
-    $bundle = Invoke-WebRequest -UseBasicParsing -Uri $bundleUri -TimeoutSec $TimeoutSec
+    # One deadline covers headers and the entire body. ResponseHeadersRead alone
+    # would leave body reads outside HttpClient.Timeout. Keep only one 64 KiB
+    # buffer and require EOF; never retain or decode the JavaScript response.
+    $cancellation = [System.Threading.CancellationTokenSource]::new([TimeSpan]::FromSeconds($TimeoutSec))
+    try {
+      $client = [System.Net.Http.HttpClient]::new()
+      try {
+        $client.Timeout = [System.Threading.Timeout]::InfiniteTimeSpan
+        $bundle = $client.GetAsync($bundleUri, [System.Net.Http.HttpCompletionOption]::ResponseHeadersRead, $cancellation.Token).GetAwaiter().GetResult()
+        try {
+          if ($bundle.StatusCode -ne [System.Net.HttpStatusCode]::OK) { return $false }
+          $body = $bundle.Content.ReadAsStreamAsync($cancellation.Token).GetAwaiter().GetResult()
+          try {
+            $buffer = [byte[]]::new(64 * 1024)
+            $bundleBytes = 0L
+            while ($true) {
+              $cancellation.Token.ThrowIfCancellationRequested()
+              $bytesRead = $body.ReadAsync($buffer, 0, $buffer.Length, $cancellation.Token).GetAwaiter().GetResult()
+              if ($bytesRead -eq 0) { break }
+              $bundleBytes += [int64]$bytesRead
+            }
+            $cancellation.Token.ThrowIfCancellationRequested()
+            $declaredLength = $bundle.Content.Headers.ContentLength
+            if ($null -ne $declaredLength -and $bundleBytes -ne $declaredLength) {
+              throw "WHOLE_APP_WEB_BUNDLE_TRUNCATED"
+            }
+            if ($null -ne $CompletedBundle -and $bundleBytes -gt 1000) {
+              # Capture this completed GET, not a later parse of the HTML route.
+              # The installed Metro emits one 16-hex revision ID on a full 200.
+              $revisionIds = @($bundle.Headers.GetValues("X-Metro-Delta-ID"))
+              if ($revisionIds.Count -ne 1 -or $revisionIds[0] -cnotmatch '^[0-9a-f]{16}$' `
+                -or $bundleUri.Length -gt 8192 `
+                -or $bundle.RequestMessage.RequestUri.AbsoluteUri -cne $bundleUri) {
+                throw "WHOLE_APP_COMPLETED_WEB_BUNDLE_IDENTITY_RED"
+              }
+              $completedWebBundle = @{
+                uri = $bundleUri
+                revision_id = [string]$revisionIds[0]
+                bytes = $bundleBytes
+              }
+            }
+          }
+          finally { $body.Dispose() }
+        }
+        finally { $bundle.Dispose() }
+      }
+      finally { $client.Dispose() }
+    }
+    finally { $cancellation.Dispose() }
     Record-ReviewStage "web_bundle"
-    return $bundle.StatusCode -eq 200 -and [int64]$bundle.RawContentLength -gt 1000
+    if ($null -ne $CompletedBundle -and $bundleBytes -gt 1000) {
+      $CompletedBundle.Value = $completedWebBundle
+    }
+    return $bundleBytes -gt 1000
   }
   catch {
     return $false
   }
+}
+
+function Test-WholeAppMetroLifetime(
+  [System.Diagnostics.Process]$MetroProcess, [long]$StartedUtcTicks, [int]$Port
+) {
+  try {
+    $MetroProcess.Refresh()
+    if ($MetroProcess.HasExited -or $MetroProcess.StartTime.ToUniversalTime().Ticks -ne $StartedUtcTicks) { return $false }
+    $current = Get-Process -Id $MetroProcess.Id -ErrorAction Stop
+    if ($current.StartTime.ToUniversalTime().Ticks -ne $StartedUtcTicks) { return $false }
+    $listeners = @(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction Stop |
+      Select-Object -ExpandProperty OwningProcess -Unique)
+    return $listeners.Count -eq 1 -and $listeners[0] -eq $MetroProcess.Id
+  }
+  catch { return $false }
+}
+
+function Remove-WholeAppPreClientWebGraph(
+  [object]$CompletedBundle, [System.Diagnostics.Process]$MetroProcess,
+  [long]$StartedUtcTicks, [int]$Port
+) {
+  try {
+    # This one-shot startup operation must precede this task's clients/READY.
+    # A 204 alone cannot prove deletion: Metro also returns it for absent graphs.
+    # Bind it to the full earlier GET, its revision, and the same owned listener.
+    if ($null -eq $CompletedBundle -or $CompletedBundle.bytes -le 1000 `
+      -or $CompletedBundle.revision_id -cnotmatch '^[0-9a-f]{16}$' `
+      -or $CompletedBundle.metro_pid -ne $MetroProcess.Id `
+      -or $CompletedBundle.metro_started_utc_ticks -ne $StartedUtcTicks `
+      -or -not (Test-WholeAppMetroLifetime -MetroProcess $MetroProcess -StartedUtcTicks $StartedUtcTicks -Port $Port)) { return $false }
+    $exactUri = [string]$CompletedBundle.uri
+    if ($exactUri.Length -gt 8192) { return $false }
+    $uri = [Uri]$exactUri
+    if (-not $uri.IsAbsoluteUri -or $uri.Scheme -cne 'http' -or $uri.Host -cne '127.0.0.1' `
+      -or $uri.Port -ne $Port -or $uri.UserInfo -or $uri.Fragment `
+      -or -not $uri.AbsolutePath.EndsWith('.bundle', [StringComparison]::Ordinal) `
+      -or $uri.AbsoluteUri -cne $exactUri) { return $false }
+    $platformValues = @()
+    foreach ($pair in $uri.Query.TrimStart('?').Split('&')) {
+      $parts = $pair.Split('=', 2)
+      if ([Uri]::UnescapeDataString($parts[0].Replace('+', ' ')) -ceq 'platform') {
+        if ($parts.Length -ne 2) { return $false }
+        $platformValues += [Uri]::UnescapeDataString($parts[1].Replace('+', ' '))
+      }
+    }
+    if ($platformValues.Count -ne 1 -or $platformValues[0] -cne 'web') { return $false }
+    $cancellation = [System.Threading.CancellationTokenSource]::new([TimeSpan]::FromSeconds(15))
+    try {
+      $handler = [System.Net.Http.HttpClientHandler]::new()
+      try {
+        $handler.AllowAutoRedirect = $false
+        $handler.UseProxy = $false
+        $client = [System.Net.Http.HttpClient]::new($handler, $false)
+        try {
+          $client.Timeout = [System.Threading.Timeout]::InfiniteTimeSpan
+          $request = [System.Net.Http.HttpRequestMessage]::new([System.Net.Http.HttpMethod]::Delete, $exactUri)
+          try {
+            $response = $client.SendAsync($request, [System.Net.Http.HttpCompletionOption]::ResponseHeadersRead, $cancellation.Token).GetAwaiter().GetResult()
+            try {
+              if ($response.StatusCode -ne [System.Net.HttpStatusCode]::NoContent `
+                -or $response.RequestMessage.RequestUri.AbsoluteUri -cne $exactUri) { return $false }
+              # HttpClient exposes an empty 204 body even when malformed framing
+              # advertises bytes. Reject that framing explicitly before EOF.
+              $declaredDeleteLength = $response.Content.Headers.ContentLength
+              if (($null -ne $declaredDeleteLength -and $declaredDeleteLength -ne 0) `
+                -or $response.Headers.TransferEncoding.Count -ne 0) { return $false }
+              $body = $response.Content.ReadAsStreamAsync($cancellation.Token).GetAwaiter().GetResult()
+              try {
+                $oneByte = [byte[]]::new(1)
+                if ($body.ReadAsync($oneByte, 0, 1, $cancellation.Token).GetAwaiter().GetResult() -ne 0) { return $false }
+                $cancellation.Token.ThrowIfCancellationRequested()
+              }
+              finally { $body.Dispose() }
+            }
+            finally { $response.Dispose() }
+          }
+          finally { $request.Dispose() }
+        }
+        finally { $client.Dispose() }
+      }
+      finally { $handler.Dispose() }
+    }
+    finally { $cancellation.Dispose() }
+    return Test-WholeAppMetroLifetime -MetroProcess $MetroProcess -StartedUtcTicks $StartedUtcTicks -Port $Port
+  }
+  catch { return $false }
 }
 
 $ExpectedCanonicalRoot = [System.IO.Path]::GetFullPath("C:\dev\rik-expo-app-r4a5-dc4f0ce7")
@@ -467,6 +605,7 @@ New-Item -ItemType Directory -Path $RuntimeRoot -Force | Out-Null
 $Metro = Start-Process -FilePath $Node -ArgumentList @(
   $ExpoCli, "start", "--dev-client", "--host", "localhost", "--port", "$Port", "--clear", "--max-workers", "1"
 ) -WorkingDirectory $Root -WindowStyle Hidden -RedirectStandardOutput $MetroStdout -RedirectStandardError $MetroStderr -PassThru
+$MetroStartedUtcTicks = $Metro.StartTime.ToUniversalTime().Ticks
 
 $deadline = (Get-Date).AddSeconds(90)
 $ready = $false
@@ -492,10 +631,24 @@ while ((Get-Date) -lt $deadline) {
 # The cold, single-worker graph can exceed three minutes on the review host.
 # Keep a finite startup deadline and still require the complete bundle before
 # warming Android or publishing the shared runtime identity.
-if (-not $ready -or -not (Test-WebBundleReady -Port $Port -TimeoutSec 360)) {
+$InitialWebBundle = $null
+if (-not $ready `
+  -or -not (Test-WholeAppMetroLifetime -MetroProcess $Metro -StartedUtcTicks $MetroStartedUtcTicks -Port $Port) `
+  -or -not (Test-WebBundleReady -Port $Port -TimeoutSec 360 -CompletedBundle ([ref]$InitialWebBundle)) `
+  -or -not (Test-WholeAppMetroLifetime -MetroProcess $Metro -StartedUtcTicks $MetroStartedUtcTicks -Port $Port)) {
   if (-not $Metro.HasExited) { Stop-Process -Id $Metro.Id -Force -ErrorAction SilentlyContinue }
   Fail-Review "WHOLE_APP_METRO_START_RED" "проверьте metro stdout/stderr в $RuntimeRoot"
 }
+
+$InitialWebBundle.metro_pid = $Metro.Id
+$InitialWebBundle.metro_started_utc_ticks = $MetroStartedUtcTicks
+# Limit cold-transform overlap before this task opens any clients. This is a
+# transient-memory hypothesis; the final Web and Android graphs must coexist.
+if (-not (Remove-WholeAppPreClientWebGraph -CompletedBundle $InitialWebBundle `
+  -MetroProcess $Metro -StartedUtcTicks $MetroStartedUtcTicks -Port $Port)) {
+  Fail-Review "WHOLE_APP_PRECLIENT_WEB_GRAPH_RELEASE_RED" "проверьте exact Web GET/revision и owned Metro lifetime; запуск завершён без READY"
+}
+Record-ReviewStage "preclient_web_graph_release"
 
 # Web readiness alone leaves the first Android graph compiling while the user
 # opens a PDF. That cold build can delay even static renderer files past the
@@ -511,11 +664,39 @@ if ($WholeAppWarmup.ExitCode -ne 0) {
 }
 Record-ReviewStage "android_bundle_and_pdf_assets"
 
+# Reconstruct Web once from the existing transform cache before any READY.
+# The distinct Android platform graph is retained; never evict either graph
+# after this barrier or introduce a retry/eviction loop for client requests.
+$FinalWebBundle = $null
+if (-not (Test-WholeAppMetroLifetime -MetroProcess $Metro -StartedUtcTicks $MetroStartedUtcTicks -Port $Port) `
+  -or -not (Test-WebBundleReady -Port $Port -TimeoutSec 360 -CompletedBundle ([ref]$FinalWebBundle)) `
+  -or -not (Test-WholeAppMetroLifetime -MetroProcess $Metro -StartedUtcTicks $MetroStartedUtcTicks -Port $Port) `
+  -or $FinalWebBundle.uri -cne $InitialWebBundle.uri `
+  -or $FinalWebBundle.revision_id -ceq $InitialWebBundle.revision_id) {
+  Fail-Review "WHOLE_APP_FINAL_WEB_GRAPH_REBUILD_RED" "проверьте полный Web rebuild после Android/PDF в прежнем Metro; READY не опубликован"
+}
+Record-ReviewStage "web_graph_rebuilt_after_android_pdf"
+
 @{
   schema_version = "rik-expo-app.whole-app-developer-runtime.v1"
   generated_utc = (Get-Date).ToUniversalTime().ToString("o")
   launch_duration_ms = $ReviewClock.ElapsedMilliseconds
   launch_stages = $ReviewStages.ToArray()
+  preclient_graph_schedule = @{
+    schema_version = "rik-expo-app.whole-app-preclient-graph-schedule.v1"
+    metro_pid = $Metro.Id
+    metro_started_utc_ticks = $MetroStartedUtcTicks
+    web_bundle_uri_sha256 = Get-Sha256 $InitialWebBundle.uri
+    initial_web_revision_id = $InitialWebBundle.revision_id
+    initial_web_bytes = $InitialWebBundle.bytes
+    exact_web_delete_status = 204
+    final_web_revision_id = $FinalWebBundle.revision_id
+    final_web_bytes = $FinalWebBundle.bytes
+    same_exact_web_uri = $true
+    same_owned_metro_lifetime = $true
+    android_graph_delete_requested = $false
+    whole_os_client_absence_verified = $false
+  }
   canonical_root = $Root
   git_root = [System.IO.Path]::GetFullPath($GitRoot)
   runtime_profile = "whole_app_staging_plus_local_estimate"

@@ -1,3 +1,4 @@
+import { canonicalParameterMigrationBindingCompatibleV1 } from "../../lib/estimate/backendPlatform/canonicalParameterMigrationBindingV1";
 import { getCanonicalEstimateCatalogItem, getCanonicalEstimateRevisionHistory, getCanonicalFusionQuantityClearPreviewS2758 } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
 import { canonicalEstimateStableJson as stable } from '../../lib/estimate/backendPlatform/canonicalEstimateDeterminism';
 import {canonicalStoredManualPricesCanMigrate} from '../../lib/estimate/backendPlatform/canonicalManualPriceReleaseMigration';
@@ -197,7 +198,7 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
   const floorPreparationTransition=isFloorPreparationConsumerS2769(catalog.catalogId)
     &&catalog.parameterSchema.some(schema=>schema.parameterId===floorPreparation.modeId)
     &&!Object.hasOwn(input.revision.parameters,floorPreparation.modeId);
-  for (const parameterId of new Set([...Object.keys(transferable), ...(quantityClearPreview ? [] : input.parameterPatchKeys ?? [])])) {
+  for (const parameterId of new Set([...(input.revision.primaryMeasureParameterId ? [input.revision.primaryMeasureParameterId] : []), ...Object.keys(transferable), ...(quantityClearPreview ? [] : input.parameterPatchKeys ?? [])])) {
     const source = parentCatalog.parameterSchema.find(schema => schema.parameterId === parameterId);
     const destination = catalog.parameterSchema.find(schema => schema.parameterId === parameterId);
     // This finite new composition choice has no predecessor physical field.
@@ -206,10 +207,7 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
     // Tightening a numeric fact to an integer keeps its meaning and unit.
     // The target's shared validator still rejects fractions after consent;
     // this guard never converts or rounds an inherited or edited value.
-    const compatibleValueType = source && destination && (source.valueType === destination.valueType
-      || (source.valueType === "decimal" && destination.valueType === "integer"));
-    if (!source || !destination || source.unitId !== destination.unitId || !compatibleValueType
-      || (source.semanticParameterKey ?? source.parameterId) !== (destination.semanticParameterKey ?? destination.parameterId)) {
+    if (!source || !destination || !canonicalParameterMigrationBindingCompatibleV1(source, destination)) {
       throw new CanonicalEstimateApiError(`Переход остановлен: изменились единица или назначение поля «${source?.titleRu ?? parameterId}». Исходные данные нужно проверить; смета сохранена.`, {
         code: "RELEASE_MIGRATION_PARAMETER_BINDING_REVIEW_REQUIRED", httpStatus: 409,
       });

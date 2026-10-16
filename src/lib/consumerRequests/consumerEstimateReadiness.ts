@@ -1,3 +1,4 @@
+import { canonicalPurchaseSupplyBlocksV1 } from "../estimate/backendPlatform/canonicalPurchaseSupplyReadinessV1";
 import type {
   ConsumerRepairDraftBundle,
   ConsumerRepairRequestItem,
@@ -22,7 +23,8 @@ export function isConsumerEstimateCompositionVisibleItem(
 ): boolean {
   const source = item.sourceParameters;
   const includedInEstimate = source?.includedInEstimate ?? item.includedInEstimate;
-  return source?.canonicalPhysicalScopeExcludedV1 != null
+  return canonicalPurchaseSupplyBlocksV1(source?.canonicalPurchaseSupplyBlocksV1).length > 0
+    || source?.canonicalPhysicalScopeExcludedV1 != null
     || (item.quantity != null && typeof source?.canonicalBackendRevisionId === 'string')
     || includedInEstimate !== false
     || source?.canonicalPreliminaryNeed === true
@@ -34,7 +36,8 @@ export function isConsumerEstimateCompositionVisibleItem(
 export function isConsumerEstimateIncludedItem(
   item: ConsumerRepairRequestItem,
 ): boolean {
-  return item.sourceParameters?.includedInEstimate !== false;
+  return canonicalPurchaseSupplyBlocksV1(item.sourceParameters?.canonicalPurchaseSupplyBlocksV1).length === 0
+    && item.sourceParameters?.includedInEstimate !== false;
 }
 
 export function isConsumerEstimatePayableItem(
@@ -52,7 +55,8 @@ export function consumerEstimateUnresolvedQuantityItems(
 ): ConsumerRepairRequestItem[] {
   if (!bundle) return [];
   return bundle.items.filter((item) =>
-    consumerEstimateScopeDecision(item) == null
+    canonicalPurchaseSupplyBlocksV1(item.sourceParameters?.canonicalPurchaseSupplyBlocksV1).length > 0
+    || consumerEstimateScopeDecision(item) == null
     &&
     (isConsumerEstimateIncludedItem(item)
       || NON_PAYABLE_COST_TREATMENTS.has(String(item.sourceParameters?.canonicalCostTreatment ?? '')))

@@ -1,3 +1,5 @@
+import { canonicalParameterMigrationBindingCompatibleV1 } from "../../../src/lib/estimate/backendPlatform/canonicalParameterMigrationBindingV1";
+import { assertCanonicalPurchaseSupplyRevisionV1, assertCanonicalPurchaseSupplyReadyV1 } from "../../../src/lib/estimate/backendPlatform/canonicalPurchaseSupplyReadinessV1";
 import {admitPvcFloorCompleteFourMigrationProofS2769} from '../../../src/lib/estimate/backendPlatform/canonicalPvcFloorCompleteFourMigrationS2769';
 import {admitFloorDemolitionPlannedPreparationMigrationProofS2769} from '../../../src/lib/estimate/backendPlatform/canonicalFloorDemolitionPlannedPreparationMigrationS2769';
 import {admitConcreteBasePlannedPreparationMigrationProofS2769} from '../../../src/lib/estimate/backendPlatform/canonicalConcreteBasePlannedPreparationMigrationS2769';
@@ -2144,6 +2146,20 @@ async function createArtifactJob(
   const result = await withDatabaseClient(modelDatabaseUrl, async (client) => {
     await client.query("begin");
     try {
+      // The same saved state is checked before cache lookup/job creation. The
+      // worker repeats the guard; a UI flag cannot authorize procurement.
+      const supplyRevision = (await client.query(
+        "select * from public.estimate_revision where id=$1 and (owner_user_id=$2 or organization_id=$3) for update",
+        [revisionId, currentOwnerId(), currentTenantId()],
+      )).rows[0];
+      if (!supplyRevision) throw Object.assign(new Error("revision not found"), {code:"NOT_FOUND",httpStatus:404});
+      const supplySourceRows = (await client.query(
+        "select * from public.estimate_revision_row where revision_id=$1 order by ordinal", [revisionId],
+      )).rows;
+      if (supplySourceRows.length !== supplyRevision.row_count) throw Object.assign(new Error("artifact source invalid"), {code:"ARTIFACT_SOURCE_INVALID"});
+      const supplyRows = [...supplySourceRows, ...canonicalArtifactPreliminaryNeeds(supplyRevision)];
+      assertCanonicalPurchaseSupplyRevisionV1(supplyRows, supplyRevision.amendment_contract);
+      if (kind === "procurement") assertCanonicalPurchaseSupplyReadyV1(supplyRows);
       const candidateCapabilityId =
         contentAdmission.decision.mode === "isolated_candidate_test"
           ? await resolveCandidateCapabilityId(client)
@@ -2549,6 +2565,23 @@ async function compileClaimedJob(
     ]);
     const fromModel={resources:parentResources.rows,formulas:parentFormulas.rows,parameters:parentParameters.rows};
     const toModel={resources:resourceRows,formulas,parameters:parameterDefinitions};
+    const primaryId = String(parentRevision.primary_measure_parameter_id ?? '').trim();
+    if (primaryId) {
+      const primaryBinding = (row: JsonRecord | undefined) => row == null ? undefined : ({
+        parameterId: String(row.parameter_id ?? ''),
+        valueType: String(row.value_type ?? ''),
+        unitId: row.unit_id == null ? null : String(row.unit_id),
+        semanticParameterKey: typeof (row.truth_metadata as JsonRecord | undefined)?.semantic_parameter_key === 'string'
+          ? String((row.truth_metadata as JsonRecord).semantic_parameter_key) : undefined,
+      });
+      const fromPrimary = parentParameters.rows.find((row: JsonRecord) => row.parameter_id === primaryId);
+      const toPrimary = parameterDefinitions.find(row => row.parameter_id === primaryId);
+      if (!canonicalParameterMigrationBindingCompatibleV1(primaryBinding(fromPrimary), primaryBinding(toPrimary))) {
+        throw Object.assign(new Error('Переход остановлен: изменились единица или назначение основного объёма. Исходная смета сохранена; требуются исходные данные новой модели.'), {
+          code: 'RELEASE_MIGRATION_PARAMETER_BINDING_REVIEW_REQUIRED', httpStatus: 409,
+        });
+      }
+    }
     const before=(await client.query('select * from public.estimate_definition_version where id=$1',[parentRevision.definition_version_id])).rows[0];
     const asphaltAdmitted=before?admitAsphaltFloorWasteMigrationProofS2769({proof:definition.source_metadata?.asphaltFloorWasteMigrationS2769,
       fromDefinition:{id:before.id,catalogId:before.catalog_id,sha256:before.definition_sha256},toDefinition:{id:definition.id,catalogId:definition.catalog_id,sha256:definition.definition_sha256},from:fromModel,to:toModel}):null;
@@ -2817,6 +2850,7 @@ async function compileClaimedJob(
     derivedParameters: compiled.derivedParameters,
     identityContract,
     preliminaryNeeds: compiled.preliminaryNeeds,
+    purchaseSupplyIndexV1: compiled.purchaseSupplyIndexV1,
     roofPrimerPrerequisiteV1,
     roofPreparationMigrationV1,
     roofStageRestorationV1,
@@ -3527,6 +3561,8 @@ async function buildArtifactClaimedJob(
     throw Object.assign(new Error("artifact source invalid"), {
       code: "ARTIFACT_SOURCE_INVALID",
     });
+  assertCanonicalPurchaseSupplyRevisionV1([...allRows, ...canonicalArtifactPreliminaryNeeds(revision)], revision.amendment_contract);
+  if (job.operation === "procurement") assertCanonicalPurchaseSupplyReadyV1([...allRows, ...canonicalArtifactPreliminaryNeeds(revision)]);
   const selection = selectCanonicalArtifactRows(allRows);
   const estimateRows = selection.estimateRows;
   const rows = job.operation === "procurement"
@@ -5584,7 +5620,7 @@ async function route(
       async (client) =>
         (
           await client.query(
-            "select id,release_id::text,catalog_id,definition_version_id::text from public.estimate_revision where id=$1 and (owner_user_id=$2 or organization_id=$3)",
+            "select id,release_id::text,catalog_id,definition_version_id::text,amendment_contract from public.estimate_revision where id=$1 and (owner_user_id=$2 or organization_id=$3)",
             [path[1], currentOwnerId(), currentTenantId()],
           )
         ).rows[0] as JsonRecord | undefined,
@@ -5652,6 +5688,7 @@ async function route(
           snapshot_captured_at: row._price_snapshot_captured_at,
           route_source_kind: row._price_route_source_kind,
         },
+        revision.amendment_contract,
       )),
       nextCursor:
         rows.length > limit

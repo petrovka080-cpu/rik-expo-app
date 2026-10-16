@@ -1,0 +1,843 @@
+// WORK only. Full observed parent hashes never authorize row retirement.
+export const CONCRETE_FOUNDATION_SUBWORK_REUSE_TARGETS = Object.freeze([
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_anchor_high_load",
+    "templateId": "concrete_foundation_interior_slab_foundation_anchor_high_load_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_slab_foundation_anchor_high_load_professional_expanded_v1",
+    "family": "slab_foundation",
+    "operation": "anchor",
+    "contextKey": "high_load",
+    "titleRu": "монтаж закладных для плитного фундамента для высокой нагрузки",
+    "observedParent": {
+      "definitionId": "304b53ce-dbf8-5b1a-b6d7-9bbb0c08363c",
+      "version": 3,
+      "definitionSha256": "14f763bb57e8a8b87a53a19dc00b8da98aaef85d35c0a57caf985312e6b5d0b1",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "a1ad6091-ea2c-52d6-91fe-4b4beb9ea9c1",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "415cc694bb69545941f3c6e539850e26b2742a0b29c7c836751bd0146c1f6e92"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "M3_TO_PIECE_KG_NO_AUTOMATIC_CONVERSION"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_anchor_large_area",
+    "templateId": "concrete_foundation_interior_slab_foundation_anchor_large_area_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_slab_foundation_anchor_large_area_professional_expanded_v1",
+    "family": "slab_foundation",
+    "operation": "anchor",
+    "contextKey": "large_area",
+    "titleRu": "монтаж закладных для плитного фундамента на большой площади",
+    "observedParent": {
+      "definitionId": "cb60791e-90a5-5895-bfbf-d8332f602399",
+      "version": 3,
+      "definitionSha256": "381cabdd78b0344989513ed0a07d6ea6c4158f7bc136d44ae00aaa86d43e6419",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "535dcaf7-2b56-501f-a312-4bd7b1fb1bd2",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "9b08060c0f9d23aa7116e1690157d06d50d1d037eff0f7dcd8ef7da1b658b157"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "M3_TO_PIECE_KG_NO_AUTOMATIC_CONVERSION"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_anchor_small_area",
+    "templateId": "concrete_foundation_interior_slab_foundation_anchor_small_area_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_slab_foundation_anchor_small_area_professional_expanded_v1",
+    "family": "slab_foundation",
+    "operation": "anchor",
+    "contextKey": "small_area",
+    "titleRu": "монтаж закладных для плитного фундамента на малой площади",
+    "observedParent": {
+      "definitionId": "ec8dc66b-95b7-5416-866c-420987a6728b",
+      "version": 3,
+      "definitionSha256": "bebd9bb2e78f6c94846d07d3f6385c3b9bb14cfc323b7099b5fd317248dce0f2",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "e3136750-9008-5f55-9d37-58e504c3649a",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "d1312078ce2fa594bb3c334e323b2ac8e121c1e5415fef313c984783d47efcb2"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "M3_TO_PIECE_KG_NO_AUTOMATIC_CONVERSION"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_anchor_standard",
+    "templateId": "concrete_foundation_interior_slab_foundation_anchor_standard_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_slab_foundation_anchor_standard_professional_expanded_v1",
+    "family": "slab_foundation",
+    "operation": "anchor",
+    "contextKey": "standard",
+    "titleRu": "монтаж закладных для плитного фундамента в стандартной зоне",
+    "observedParent": {
+      "definitionId": "4ac05843-24c1-55f2-982b-db819fe2ee21",
+      "version": 3,
+      "definitionSha256": "56a307efe14d1ffcc523caac88170c9d4e40d8d87cbe94688d4e70582860aac1",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "5dbce9e2-8aa4-5056-b584-1ff13741c479",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "f059a49ac01091ef019edd31433833c293571ca07d5918334f725aafa5d82e51"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "M3_TO_PIECE_KG_NO_AUTOMATIC_CONVERSION"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_anchor_technical_room",
+    "templateId": "concrete_foundation_interior_slab_foundation_anchor_technical_room_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_slab_foundation_anchor_technical_room_professional_expanded_v1",
+    "family": "slab_foundation",
+    "operation": "anchor",
+    "contextKey": "technical_room",
+    "titleRu": "монтаж закладных для плитного фундамента в техническом помещении",
+    "observedParent": {
+      "definitionId": "956fbe34-ca60-54e9-a79a-100a85c7941e",
+      "version": 3,
+      "definitionSha256": "c8b4ed9535fef784e25521e66052b0cd3a188c8b63f9f9df6627febcdfc3e5fd",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "79467daa-6a3b-5485-bd22-01230034f1ff",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "b11a65a1e82c01ec880cb1f7c74c52540741f53ad22c328859864c015193b3bf"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "M3_TO_PIECE_KG_NO_AUTOMATIC_CONVERSION"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_anchor_wet_zone",
+    "templateId": "concrete_foundation_interior_slab_foundation_anchor_wet_zone_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_slab_foundation_anchor_wet_zone_professional_expanded_v1",
+    "family": "slab_foundation",
+    "operation": "anchor",
+    "contextKey": "wet_zone",
+    "titleRu": "монтаж закладных для плитного фундамента во влажной зоне",
+    "observedParent": {
+      "definitionId": "54c66003-1c41-5881-9596-d6f871ef89d9",
+      "version": 3,
+      "definitionSha256": "f862bf34f00e48228563bebdbc3ed8765881fb16fa225fab4abf6148c8bea8e3",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "114c41ea-c1b1-50c7-aa03-25b065a1867e",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "a592bc459fd0f95d5081dfb80a31fb64663273b06ccb6fb05209b5dcbc1c7892"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "M3_TO_PIECE_KG_NO_AUTOMATIC_CONVERSION"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_level_high_load",
+    "templateId": "concrete_foundation_interior_slab_foundation_level_high_load_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_slab_foundation_level_high_load_professional_expanded_v1",
+    "family": "slab_foundation",
+    "operation": "level",
+    "contextKey": "high_load",
+    "titleRu": "выравнивание плитного фундамента для высокой нагрузки",
+    "observedParent": {
+      "definitionId": "6e1668aa-8a39-592e-bc74-dc95029fb85a",
+      "version": 3,
+      "definitionSha256": "b771da4ee59a352af6ced2a0af0ad6e6ff3c2ebeeb778968d60187e175d74cd1",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "51f605dc-8fba-519e-b32c-096e60a367b9",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "b74704f98c1ebb167c526f511886c984a34254db84142f1bccc73f4b575b6184"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "LEVELING_AREA_ELEVATION_SLOPE_AND_FINISHING_OWNER_NOT_KNOWN"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_level_large_area",
+    "templateId": "concrete_foundation_interior_slab_foundation_level_large_area_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_slab_foundation_level_large_area_professional_expanded_v1",
+    "family": "slab_foundation",
+    "operation": "level",
+    "contextKey": "large_area",
+    "titleRu": "выравнивание плитного фундамента на большой площади",
+    "observedParent": {
+      "definitionId": "898c6ff5-545d-577f-8f9b-59746990dd27",
+      "version": 3,
+      "definitionSha256": "3e4fec8bc47461d9f1adfd699396b55524538eb5d4e78adb171b71cc9e009bb7",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "e1e7caf3-318f-5168-807f-782a775b1845",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "22816b9879b0be2333b44feea5b1ffa0d4a3cb79500b0a4446c04773367bdd8d"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "LEVELING_AREA_ELEVATION_SLOPE_AND_FINISHING_OWNER_NOT_KNOWN"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_level_repair",
+    "templateId": "concrete_foundation_interior_slab_foundation_level_repair_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_slab_foundation_level_repair_professional_expanded_v1",
+    "family": "slab_foundation",
+    "operation": "level",
+    "contextKey": "repair",
+    "titleRu": "выравнивание плитного фундамента с локальным ремонтом основания",
+    "observedParent": {
+      "definitionId": "2f4a3c12-beee-5e6f-a697-7b3f4418928e",
+      "version": 3,
+      "definitionSha256": "dc65f163a2ec59fc50d3cbbfcb5012fabe55d2b5bf59ecd46025dc6acbe28e56",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "e0641c44-30bd-5c94-bcfd-bcbe2d01dea3",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "1d4b9eaeca6533cd650b85a32e91cc97438d922dfbea7ba9a508d4ec8658e9c3"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "LEVELING_AREA_ELEVATION_SLOPE_AND_FINISHING_OWNER_NOT_KNOWN"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_level_small_area",
+    "templateId": "concrete_foundation_interior_slab_foundation_level_small_area_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_slab_foundation_level_small_area_professional_expanded_v1",
+    "family": "slab_foundation",
+    "operation": "level",
+    "contextKey": "small_area",
+    "titleRu": "выравнивание плитного фундамента на малой площади",
+    "observedParent": {
+      "definitionId": "f5488e78-efc1-55ce-b932-f0f0c22f2e85",
+      "version": 3,
+      "definitionSha256": "e1a5abe98f311b1c96f6dbe2c4885f11b1db39b174aa6a72adf8a10501eec48b",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "55b008b3-ea4b-5764-b314-67b653056257",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "8d4375fcf241f51cec031e5d2a7198a49f28477404324163cdd3381badfe854c"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "LEVELING_AREA_ELEVATION_SLOPE_AND_FINISHING_OWNER_NOT_KNOWN"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_level_standard",
+    "templateId": "concrete_foundation_interior_slab_foundation_level_standard_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_slab_foundation_level_standard_professional_expanded_v1",
+    "family": "slab_foundation",
+    "operation": "level",
+    "contextKey": "standard",
+    "titleRu": "выравнивание плитного фундамента в стандартной зоне",
+    "observedParent": {
+      "definitionId": "e2096b3e-fba0-562f-abb3-673561e6bf6d",
+      "version": 3,
+      "definitionSha256": "9efd0e949dffc7901181f1cf5e856738f3e5c68a7f42c11efa176f53389da73c",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "15238605-3783-5d40-b012-fe90aa9a908c",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "29737d7b10c7a409d8a4ea822e9b2fdc81b1dc26771b074ccdbfb60ea77bd0b0"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "LEVELING_AREA_ELEVATION_SLOPE_AND_FINISHING_OWNER_NOT_KNOWN"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_level_technical_room",
+    "templateId": "concrete_foundation_interior_slab_foundation_level_technical_room_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_slab_foundation_level_technical_room_professional_expanded_v1",
+    "family": "slab_foundation",
+    "operation": "level",
+    "contextKey": "technical_room",
+    "titleRu": "выравнивание плитного фундамента в техническом помещении",
+    "observedParent": {
+      "definitionId": "04ee6162-4d19-5e54-8976-9d0aceef71b9",
+      "version": 3,
+      "definitionSha256": "0c3184783ea1ca10a7bff724f6e8349bfa794956ac52b58c814fe536053d5a58",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "964593dd-ed6f-5b91-863b-eca1b8c03af6",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "65cae5ffb309eb79d3f7f88734be51ce83c9079ccd52193a8477c0a3f1af937d"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "LEVELING_AREA_ELEVATION_SLOPE_AND_FINISHING_OWNER_NOT_KNOWN"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_level_wet_zone",
+    "templateId": "concrete_foundation_interior_slab_foundation_level_wet_zone_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_slab_foundation_level_wet_zone_professional_expanded_v1",
+    "family": "slab_foundation",
+    "operation": "level",
+    "contextKey": "wet_zone",
+    "titleRu": "выравнивание плитного фундамента во влажной зоне",
+    "observedParent": {
+      "definitionId": "083da2a7-976d-5f73-9453-aabedc4479a5",
+      "version": 3,
+      "definitionSha256": "89ead931a2cab5f96ecc2589964c16a45c9196dc6085e10e55f4218b982a1dda",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "e9303408-8374-5a39-b458-a3dc703327f6",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "17eb333728b8a94043c83cc3e823103f1c5d575e19e2c7163fb2d8da83e5f973"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "LEVELING_AREA_ELEVATION_SLOPE_AND_FINISHING_OWNER_NOT_KNOWN"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_repair_high_load",
+    "templateId": "concrete_foundation_interior_slab_foundation_repair_high_load_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_slab_foundation_repair_high_load_professional_expanded_v1",
+    "family": "slab_foundation",
+    "operation": "repair",
+    "contextKey": "high_load",
+    "titleRu": "ремонт плитного фундамента для высокой нагрузки",
+    "observedParent": {
+      "definitionId": "683a3898-4721-5735-b094-46e20b4a57e3",
+      "version": 3,
+      "definitionSha256": "405bc3e7b45de1d9105c060c7fffc4f1be56981f36898e0a05ce14ddbacade5d",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "0308c1a0-05b5-5992-834b-8de9eba4c6ea",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "5f5e961d3cc96c11ed0c7211476c77c62a4725a46b9c3592763ddd44e6db8681"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "REPAIR_AREA_VOLUME_DESIGN_AND_MATERIAL_SCHEDULE_NOT_KNOWN"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_repair_large_area",
+    "templateId": "concrete_foundation_interior_slab_foundation_repair_large_area_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_slab_foundation_repair_large_area_professional_expanded_v1",
+    "family": "slab_foundation",
+    "operation": "repair",
+    "contextKey": "large_area",
+    "titleRu": "ремонт плитного фундамента на большой площади",
+    "observedParent": {
+      "definitionId": "c4d9495d-59b7-5900-a8d6-f636f91815c3",
+      "version": 3,
+      "definitionSha256": "d3cc87424c305edf6629e847c8fe310069d0a9d6a84aac9acde6e0730c60930d",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "04e2e592-e049-5ac3-8d86-3787c6a0c844",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "ed325d1da273ea04f6d27e75a1dc7557e519359df17577891e1dac4cc611683f"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "REPAIR_AREA_VOLUME_DESIGN_AND_MATERIAL_SCHEDULE_NOT_KNOWN"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_repair_repair",
+    "templateId": "concrete_foundation_interior_slab_foundation_repair_repair_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_slab_foundation_repair_repair_professional_expanded_v1",
+    "family": "slab_foundation",
+    "operation": "repair",
+    "contextKey": "repair",
+    "titleRu": "ремонт плитного фундамента с локальным ремонтом основания",
+    "observedParent": {
+      "definitionId": "14b82cfc-7812-5f6e-b548-c0e3edf65b99",
+      "version": 3,
+      "definitionSha256": "d9eb9fcb45727a389c49baf9c5d912b2c4d2e66ffbea24901e36449b43e4a0fc",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "4b1ab05b-9526-55c0-bcd5-98851c5133cd",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "ae87debe45f69adc8f6fe0287bdf109193634750b22c932936f7e4af4512bdef"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "REPAIR_AREA_VOLUME_DESIGN_AND_MATERIAL_SCHEDULE_NOT_KNOWN"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_repair_small_area",
+    "templateId": "concrete_foundation_interior_slab_foundation_repair_small_area_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_slab_foundation_repair_small_area_professional_expanded_v1",
+    "family": "slab_foundation",
+    "operation": "repair",
+    "contextKey": "small_area",
+    "titleRu": "ремонт плитного фундамента на малой площади",
+    "observedParent": {
+      "definitionId": "5cc4e970-012b-5d84-a7c0-23c7cee25316",
+      "version": 3,
+      "definitionSha256": "0d9728291a8e1470b5c081dca727f811f7223b1aedcfaa1678cf91814e67ff43",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "2b8116ca-cf36-5a35-961a-aaee05e38706",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "5318a3180e73bbdb7d170a96c133acb5f46a94c258ced2e8b71cae442fc957fe"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "REPAIR_AREA_VOLUME_DESIGN_AND_MATERIAL_SCHEDULE_NOT_KNOWN"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_repair_standard",
+    "templateId": "concrete_foundation_interior_slab_foundation_repair_standard_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_slab_foundation_repair_standard_professional_expanded_v1",
+    "family": "slab_foundation",
+    "operation": "repair",
+    "contextKey": "standard",
+    "titleRu": "ремонт плитного фундамента в стандартной зоне",
+    "observedParent": {
+      "definitionId": "39895b7b-4deb-52d8-b696-f59d2792a5b2",
+      "version": 3,
+      "definitionSha256": "1db5431d649d397df1646dec906be045a6e79baca5652dffbe21771624c926f7",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "ddd5c4ed-5730-533a-b492-f44d19647b0c",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "02c49951182864d0417ba331fa31abb8823e946470a54f710c2af54f159086d3"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "REPAIR_AREA_VOLUME_DESIGN_AND_MATERIAL_SCHEDULE_NOT_KNOWN"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_repair_technical_room",
+    "templateId": "concrete_foundation_interior_slab_foundation_repair_technical_room_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_slab_foundation_repair_technical_room_professional_expanded_v1",
+    "family": "slab_foundation",
+    "operation": "repair",
+    "contextKey": "technical_room",
+    "titleRu": "ремонт плитного фундамента в техническом помещении",
+    "observedParent": {
+      "definitionId": "71cd6a6b-5fd8-5c82-bf63-601281152760",
+      "version": 3,
+      "definitionSha256": "c6f2f319782e184e116a9520ed11006b2186e1a2f4188a399addb715b63a931d",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "6caa6209-80b9-5767-a66d-176ac54e235c",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "d5df44943631b39290ab5d2a540600e2f9d7584080626a72670656098b0ccd13"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "REPAIR_AREA_VOLUME_DESIGN_AND_MATERIAL_SCHEDULE_NOT_KNOWN"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_repair_wet_zone",
+    "templateId": "concrete_foundation_interior_slab_foundation_repair_wet_zone_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_slab_foundation_repair_wet_zone_professional_expanded_v1",
+    "family": "slab_foundation",
+    "operation": "repair",
+    "contextKey": "wet_zone",
+    "titleRu": "ремонт плитного фундамента во влажной зоне",
+    "observedParent": {
+      "definitionId": "12f41ac1-c290-543a-9a66-cac4c388dd61",
+      "version": 3,
+      "definitionSha256": "aab6903f286ee9e958a4ca6991fc84bad2aacf623c102b9a87097e1c5022220e",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "dbca3f38-a1e0-5993-a3db-2a9b0704d824",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "2f47037e8c040da7365ffa70e1a8332f385fa3719cd7a94672f762472c18c147"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "REPAIR_AREA_VOLUME_DESIGN_AND_MATERIAL_SCHEDULE_NOT_KNOWN"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_anchor_high_load",
+    "templateId": "concrete_foundation_interior_strip_foundation_anchor_high_load_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_strip_foundation_anchor_high_load_professional_expanded_v1",
+    "family": "strip_foundation",
+    "operation": "anchor",
+    "contextKey": "high_load",
+    "titleRu": "монтаж закладных для ленточного фундамента для высокой нагрузки",
+    "observedParent": {
+      "definitionId": "726a885e-bf3f-506f-9796-49af62a7c7ea",
+      "version": 3,
+      "definitionSha256": "ed1ccd5e07d0668813e12671cdb3ba56e573e032711a4b276aad17993eb2779e",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "585bcee8-8d9e-5eba-b0e0-a1c08e5d50c7",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "06f75f105b695ec86b5a01c6ad02e9290195704a19bd5e51a00a58fa94f5f235"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "M3_TO_PIECE_KG_NO_AUTOMATIC_CONVERSION"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_anchor_large_area",
+    "templateId": "concrete_foundation_interior_strip_foundation_anchor_large_area_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_strip_foundation_anchor_large_area_professional_expanded_v1",
+    "family": "strip_foundation",
+    "operation": "anchor",
+    "contextKey": "large_area",
+    "titleRu": "монтаж закладных для ленточного фундамента на большой площади",
+    "observedParent": {
+      "definitionId": "3fc9e294-0a0e-579d-8703-dbe580815aef",
+      "version": 3,
+      "definitionSha256": "12926519824ed9411379ff1e347fa32cf4d2e11c641772809f0d8549df0f380b",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "a4ab5a5b-3c95-5e17-8dac-6c1628f5345e",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "9da7c43453ba0cf8d361b4c2c6ffe26c6edfcc9c00acdb57a17d85df969ec262"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "M3_TO_PIECE_KG_NO_AUTOMATIC_CONVERSION"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_anchor_small_area",
+    "templateId": "concrete_foundation_interior_strip_foundation_anchor_small_area_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_strip_foundation_anchor_small_area_professional_expanded_v1",
+    "family": "strip_foundation",
+    "operation": "anchor",
+    "contextKey": "small_area",
+    "titleRu": "монтаж закладных для ленточного фундамента на малой площади",
+    "observedParent": {
+      "definitionId": "45c2b551-6cb8-5e67-8293-afc129b78908",
+      "version": 3,
+      "definitionSha256": "f814daace87524590916cec649333fee87cb8a8961759425ac17dbd93df3acef",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "39b8c013-4c68-5dbf-9697-00d100cc039c",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "32acdc13e5633f313b722823827b47814ef7f5562daf6708ac39a3027c603b45"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "M3_TO_PIECE_KG_NO_AUTOMATIC_CONVERSION"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_anchor_standard",
+    "templateId": "concrete_foundation_interior_strip_foundation_anchor_standard_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_strip_foundation_anchor_standard_professional_expanded_v1",
+    "family": "strip_foundation",
+    "operation": "anchor",
+    "contextKey": "standard",
+    "titleRu": "монтаж закладных для ленточного фундамента в стандартной зоне",
+    "observedParent": {
+      "definitionId": "0e707b23-ca2b-5d92-bb18-292ccb96eba0",
+      "version": 3,
+      "definitionSha256": "616fa41773a6216fd1a46d267c5005a3ed628d669e399b147ce96f42499f43c4",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "7b8d1b7e-ac0a-5ca4-8d2b-56bab2f6011c",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "f8618cb75c5c2b18f07892438377b0faa1b065aff00282b38010932b87e44797"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "M3_TO_PIECE_KG_NO_AUTOMATIC_CONVERSION"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_anchor_technical_room",
+    "templateId": "concrete_foundation_interior_strip_foundation_anchor_technical_room_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_strip_foundation_anchor_technical_room_professional_expanded_v1",
+    "family": "strip_foundation",
+    "operation": "anchor",
+    "contextKey": "technical_room",
+    "titleRu": "монтаж закладных для ленточного фундамента в техническом помещении",
+    "observedParent": {
+      "definitionId": "cd8c3340-6cbf-5cfe-9ecc-727bbdd465fc",
+      "version": 3,
+      "definitionSha256": "b5117b67163c2ffaa884172b18ac6961adb9aabe5aed69280a4fab777559ceda",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "c955bbe2-d2e3-5902-a140-1f276fd7f1de",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "4d6203754cfedf26e31048af1f5b20bacd8e757d9f81b6a8bc725a916594df65"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "M3_TO_PIECE_KG_NO_AUTOMATIC_CONVERSION"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_anchor_wet_zone",
+    "templateId": "concrete_foundation_interior_strip_foundation_anchor_wet_zone_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_strip_foundation_anchor_wet_zone_professional_expanded_v1",
+    "family": "strip_foundation",
+    "operation": "anchor",
+    "contextKey": "wet_zone",
+    "titleRu": "монтаж закладных для ленточного фундамента во влажной зоне",
+    "observedParent": {
+      "definitionId": "2d78191c-fa78-51ee-a3f5-8b84b1a56480",
+      "version": 3,
+      "definitionSha256": "17e3a06f631a0cdb822d9bd7c3ab0d06136e6d3f4427db42b8ee2b2518bca856",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "c61d9115-6c6d-5612-932c-0a08d64a0109",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "94b70c5acaae63577bfe494a21a12f97cc79c9666ba4933b8cc1fb0b49a9af0e"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "M3_TO_PIECE_KG_NO_AUTOMATIC_CONVERSION"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_repair_high_load",
+    "templateId": "concrete_foundation_interior_strip_foundation_repair_high_load_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_strip_foundation_repair_high_load_professional_expanded_v1",
+    "family": "strip_foundation",
+    "operation": "repair",
+    "contextKey": "high_load",
+    "titleRu": "ремонт ленточного фундамента для высокой нагрузки",
+    "observedParent": {
+      "definitionId": "c9411b04-cd0e-5733-b288-b87886c5ce54",
+      "version": 3,
+      "definitionSha256": "29ba20d9fd829776795b5ff0141a4bdd2e4dff6fc91cd8a983d9fc4f5e8aed81",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "ba7b4098-7c87-5073-910e-af33e6cf8943",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "cbf319a1b50c597fb160ccd7b7e6a40239c298feeb6505fe60876c996ddf097d"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "REPAIR_AREA_VOLUME_DESIGN_AND_MATERIAL_SCHEDULE_NOT_KNOWN"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_repair_large_area",
+    "templateId": "concrete_foundation_interior_strip_foundation_repair_large_area_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_strip_foundation_repair_large_area_professional_expanded_v1",
+    "family": "strip_foundation",
+    "operation": "repair",
+    "contextKey": "large_area",
+    "titleRu": "ремонт ленточного фундамента на большой площади",
+    "observedParent": {
+      "definitionId": "4c9ece08-f55d-5b49-b3bd-39c299d628f6",
+      "version": 3,
+      "definitionSha256": "494711f4ac21a79b89bb9e00e27131d29ef4c7b2d3834fbe0eec5c76cae436ab",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "177fb252-fca7-5e76-a17f-ac1073609a83",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "50a761a096afb9916ef3bae891ebf7bec17f86d2674191fddc2a6eb8cf6e2d0f"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "REPAIR_AREA_VOLUME_DESIGN_AND_MATERIAL_SCHEDULE_NOT_KNOWN"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_repair_repair",
+    "templateId": "concrete_foundation_interior_strip_foundation_repair_repair_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_strip_foundation_repair_repair_professional_expanded_v1",
+    "family": "strip_foundation",
+    "operation": "repair",
+    "contextKey": "repair",
+    "titleRu": "ремонт ленточного фундамента с локальным ремонтом основания",
+    "observedParent": {
+      "definitionId": "daa3fac5-b8c5-5342-a72b-80797fcec2d8",
+      "version": 3,
+      "definitionSha256": "eb402fa9ed02dab12a91896871592ede009b805628e628e85c88ba82c6ae2c8f",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "8a752391-f7d3-5423-a3af-c2b4e1e16129",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "8f65f71c7ae8a4a9870619b54669aba7bed71557f93a9eec0320b5761f92f13f"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "REPAIR_AREA_VOLUME_DESIGN_AND_MATERIAL_SCHEDULE_NOT_KNOWN"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_repair_small_area",
+    "templateId": "concrete_foundation_interior_strip_foundation_repair_small_area_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_strip_foundation_repair_small_area_professional_expanded_v1",
+    "family": "strip_foundation",
+    "operation": "repair",
+    "contextKey": "small_area",
+    "titleRu": "ремонт ленточного фундамента на малой площади",
+    "observedParent": {
+      "definitionId": "50a77b5a-12a8-5a14-90a3-5ebc776bbe0c",
+      "version": 3,
+      "definitionSha256": "b7b9db1e56017fe061f8eb2a264abe520b31ac122ec354cb80ffac3b5170977b",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "00b8d044-bc2b-5ca1-9873-5f9346f7da7e",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "c3c1ff06dfaff3a6d2d5989519b94232ab2cc9dcbd2b6eeaa7a09938c40d99e4"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "REPAIR_AREA_VOLUME_DESIGN_AND_MATERIAL_SCHEDULE_NOT_KNOWN"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_repair_standard",
+    "templateId": "concrete_foundation_interior_strip_foundation_repair_standard_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_strip_foundation_repair_standard_professional_expanded_v1",
+    "family": "strip_foundation",
+    "operation": "repair",
+    "contextKey": "standard",
+    "titleRu": "ремонт ленточного фундамента в стандартной зоне",
+    "observedParent": {
+      "definitionId": "df9f1428-03ae-5ada-ba4b-9234aab19784",
+      "version": 3,
+      "definitionSha256": "f92af82f63c2f50a43ed9c34304e80dd22a64ef4be7e7deb3dd3f2e95ebf3818",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "6c5993dc-310d-5f5e-bb95-2a32ba2d71d0",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "cb315055b5553e27b97415cbcf354cc7add4ca1a57ce556ece1b39b9fa734dd5"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "REPAIR_AREA_VOLUME_DESIGN_AND_MATERIAL_SCHEDULE_NOT_KNOWN"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_repair_technical_room",
+    "templateId": "concrete_foundation_interior_strip_foundation_repair_technical_room_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_strip_foundation_repair_technical_room_professional_expanded_v1",
+    "family": "strip_foundation",
+    "operation": "repair",
+    "contextKey": "technical_room",
+    "titleRu": "ремонт ленточного фундамента в техническом помещении",
+    "observedParent": {
+      "definitionId": "fa35dfac-9854-5f36-a528-70c3ab380bfd",
+      "version": 3,
+      "definitionSha256": "112e01b820860cfda74377be28989bc136afd4e877bcaf1efcf5a8d2235b9a58",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "6bf70d37-f23b-516c-be17-24f3dbfefe99",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "1bc1c6247b0dacd91b1f627dc6cd15ab198bed474cf711c53d05be22f870fc99"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "REPAIR_AREA_VOLUME_DESIGN_AND_MATERIAL_SCHEDULE_NOT_KNOWN"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_repair_wet_zone",
+    "templateId": "concrete_foundation_interior_strip_foundation_repair_wet_zone_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_strip_foundation_repair_wet_zone_professional_expanded_v1",
+    "family": "strip_foundation",
+    "operation": "repair",
+    "contextKey": "wet_zone",
+    "titleRu": "ремонт ленточного фундамента во влажной зоне",
+    "observedParent": {
+      "definitionId": "d5b13781-dd1b-5309-8105-cb924a0b9d9e",
+      "version": 3,
+      "definitionSha256": "787784a719d98c43b3562e0380d9e26693a793c15895ef6d2c963f69129fe143",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "6fb42c75-cabe-53d1-a300-84c924609a3f",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "b2d1f79b692671a029317bbaa5b7cf95a630a2ff7f3020acfda94b03a8279489"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "REPAIR_AREA_VOLUME_DESIGN_AND_MATERIAL_SCHEDULE_NOT_KNOWN"
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_vibrate_repair",
+    "templateId": "concrete_foundation_interior_strip_foundation_vibrate_repair_professional_expanded_v1",
+    "workCatalogItemId": "work_catalog_concrete_concrete_foundation_interior_strip_foundation_vibrate_repair_professional_expanded_v1",
+    "family": "strip_foundation",
+    "operation": "vibrate",
+    "contextKey": "repair",
+    "titleRu": "вибрирование ленточного фундамента с локальным ремонтом основания",
+    "observedParent": {
+      "definitionId": "c2ce20ab-773f-52ef-8279-1a9f32dba37c",
+      "version": 3,
+      "definitionSha256": "fe08bb6d2ed1ca28d87a74b8bf5cd2ad58a020329ce3582b868dce37917dd513",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "approvedTemplateBaselineId": "ce731e37-5416-5180-980e-c24a45f7dac9",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194",
+      "completeModelSha256": "cbb8bbaf2337ed8e4f87318e6bf5971e74769c3e2ad997573e0b8ef5d0005fe2"
+    },
+    "directConnectionAllowed": false,
+    "admissibility": "NEW_ATOMIC_MODEL_REQUIRED_NOT_SAFE_DIRECT_MAPPING",
+    "operationGate": "FRESH_CAST_INTERNAL_VIBRATION_ONLY_NOT_HARDENED_REPAIR"
+  }
+] as const);
+export const CONCRETE_FOUNDATION_PRESERVED_CURRENT_TARGETS = Object.freeze([
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_vibrate_standard",
+    "family": "strip_foundation",
+    "operation": "vibrate",
+    "contextKey": "standard",
+    "observedParent": {
+      "definitionId": "3d0c82af-fe63-57aa-823b-6d9aa83bd162",
+      "version": 4,
+      "definitionSha256": "b174a7f9dc04b86f97d5f373109dd02ac32eff2174c7a1d7d735d5dd1f17b929",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "23395b92-375b-5a3c-8e58-e2d20546d4ea",
+      "approvedTemplateBaselineId": "351a1b46-6f5a-5061-898a-d08be25fd1b9",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194"
+    }
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_vibrate_high_load",
+    "family": "strip_foundation",
+    "operation": "vibrate",
+    "contextKey": "high_load",
+    "observedParent": {
+      "definitionId": "83f9797f-756d-555c-8ccb-07e5d89c06df",
+      "version": 4,
+      "definitionSha256": "0132e984ad1c0f507c384be7777364a8bcf87b8bc92e53d22879a3b9310abd3c",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "23395b92-375b-5a3c-8e58-e2d20546d4ea",
+      "approvedTemplateBaselineId": "fed251b4-634e-5bdf-8dad-eb7223148737",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194"
+    }
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_vibrate_large_area",
+    "family": "strip_foundation",
+    "operation": "vibrate",
+    "contextKey": "large_area",
+    "observedParent": {
+      "definitionId": "aa150670-57a9-56b7-80f8-2d065cb65868",
+      "version": 4,
+      "definitionSha256": "8935010005175a87c427e63b47e99c9e6602c480c1d255ff916ac6b093774247",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "23395b92-375b-5a3c-8e58-e2d20546d4ea",
+      "approvedTemplateBaselineId": "0080739f-809b-5ffd-810e-5dc5886699bf",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194"
+    }
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_vibrate_small_area",
+    "family": "strip_foundation",
+    "operation": "vibrate",
+    "contextKey": "small_area",
+    "observedParent": {
+      "definitionId": "3794fab1-88de-549a-83ff-ac19e98fc9b3",
+      "version": 4,
+      "definitionSha256": "419f939764b3df610a5726721c3109afeae7dfb232c56f0a5de4aaab1ebc02a2",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "23395b92-375b-5a3c-8e58-e2d20546d4ea",
+      "approvedTemplateBaselineId": "56620487-c166-5ac2-82ec-415a0018ec1d",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194"
+    }
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_vibrate_technical_room",
+    "family": "strip_foundation",
+    "operation": "vibrate",
+    "contextKey": "technical_room",
+    "observedParent": {
+      "definitionId": "37a72719-9a3f-50da-82b6-64da478de9aa",
+      "version": 4,
+      "definitionSha256": "1c1f8f9caa575984367940952f68d4dd7e573a5e3788eb696a4ec7188785a578",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "23395b92-375b-5a3c-8e58-e2d20546d4ea",
+      "approvedTemplateBaselineId": "b870508f-6b81-580f-8943-83c706866dbe",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194"
+    }
+  },
+  {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_vibrate_wet_zone",
+    "family": "strip_foundation",
+    "operation": "vibrate",
+    "contextKey": "wet_zone",
+    "observedParent": {
+      "definitionId": "70a85f5b-f90e-5d12-8c8b-99904239d33b",
+      "version": 4,
+      "definitionSha256": "12a4f1158c647f6aa7f3ccec3ffb002c81192565e2e21203f7bf6647be99c80b",
+      "selectedReleaseId": "1ddfbee5-fccd-5d72-a082-061aa5876ce1",
+      "definitionReleaseId": "23395b92-375b-5a3c-8e58-e2d20546d4ea",
+      "approvedTemplateBaselineId": "e18be43b-73f2-54c0-84bc-b902cbb640c1",
+      "snapshotSha256": "9f22f22b93045c1001c35e04da1bcacb2583536085015b884418f3baa1048194"
+    }
+  }
+] as const);

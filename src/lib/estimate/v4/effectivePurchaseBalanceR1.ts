@@ -7,9 +7,10 @@ export function effectiveResourceQuantityParameterId(rowId: string): string {
 /** Explicit descriptors describe a single compatible homogeneous supply.
  * Source-specific geometry/consumption expressions remain with their owner. */
 type BalanceExpressionSources = Readonly<{ ownerRowId: string; orderUnitId: string; consumed: string; stock: string; reserve: string }>;
-type SupplyQuantumInput = BalanceExpressionSources & Readonly<{ quantityMode?: "supply_quantum"; quantum: string }>;
+type SupplyQuantumInput = BalanceExpressionSources & Readonly<{ quantityMode?: "supply_quantum"; quantum: string;
+  manualQuantumViolationPolicy?: "retain-raw-and-block-quantum" }>;
 type DecimalOrderInput = BalanceExpressionSources & Readonly<{ quantityMode: "canonical_decimal";
-  balanceScope: "new_order_vs_required_consumption"; stock: "0"; reserve: "0"; quantum?: never }>;
+  balanceScope: "new_order_vs_required_consumption"; stock: "0"; reserve: "0"; quantum?: never; manualQuantumViolationPolicy?: never }>;
 type BalanceExpressions = { effective: string; remaining: string; free: string; consumptionShortage: string; reserveDeficit: string;
   owner: Pick<AutomaticRowSpec, "effectiveQuantityOutput" | "purchaseBalance"> };
 export function effectivePurchaseBalanceExpressionsR1(input: SupplyQuantumInput): BalanceExpressions & { packages: string };
@@ -30,7 +31,8 @@ export function effectivePurchaseBalanceExpressionsR1(input: SupplyQuantumInput 
           reserveExpression: input.reserve, quantityMode: input.quantityMode, balanceScope: input.balanceScope }
         : { unitId: input.orderUnitId, consumedExpression: input.consumed, stockExpression: input.stock,
           reserveExpression: input.reserve, orderQuantumExpression: input.quantum,
-          ...(input.quantityMode ? { quantityMode: input.quantityMode } : {}) },
+          ...(input.quantityMode ? { quantityMode: input.quantityMode } : {}),
+          ...(input.manualQuantumViolationPolicy ? { manualQuantumViolationPolicy: input.manualQuantumViolationPolicy } : {}) },
     } satisfies Pick<AutomaticRowSpec, "effectiveQuantityOutput" | "purchaseBalance">,
   };
 }

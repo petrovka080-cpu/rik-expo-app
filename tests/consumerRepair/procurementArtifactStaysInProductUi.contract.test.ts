@@ -22,6 +22,7 @@ describe("consumer estimate procurement presentation", () => {
       resolve(root, "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.tsx"),
       "utf8",
     );
+    const preview = readFileSync(resolve(root, "src/features/consumerRepair/canonicalProcurementPreviewRows.ts"), "utf8");
     const procurementFlow = screen.slice(
       screen.indexOf("private openProcurement"),
       screen.indexOf("private openParamEditor"),
@@ -38,11 +39,12 @@ describe("consumer estimate procurement presentation", () => {
     expect(screen).not.toContain('import { Linking,');
     expect(panel).toContain('testID="consumer-estimate-procurement-list"');
     expect(panel).toContain("buildCanonicalProcurementPreviewRows");
-    expect(panel).toContain("canonicalMaterialQuantityBasisFromRow");
-    expect(panel).toContain("quantityBasis?.procurementQuantity");
-    expect(panel).toContain("row.titleRu");
-    expect(panel).toContain("publicBoqDisplayNameRu");
-    expect(panel).toContain("formatEstimateUnitLabel");
+    expect(panel).toContain("from './canonicalProcurementPreviewRows'");
+    expect(preview).toContain("canonicalMaterialQuantityBasisFromRow");
+    expect(preview).toContain("quantityBasis?.procurementQuantity");
+    expect(preview).toContain("row.titleRu");
+    expect(preview).toContain("publicBoqDisplayNameRu");
+    expect(preview).toContain("formatEstimateUnitLabel");
   });
 
   it("uses one public naming and unit policy for BIA UI, PDF, and procurement", () => {

@@ -1,3 +1,4 @@
+import { canonicalPurchaseItemSupplyWarningV1, canonicalExactPurchaseEditingV1 } from "./canonicalExactPurchaseEditingV1";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -114,6 +115,8 @@ function ConsumerRepairItemRowComponent({
     () => consumerRepairCanonicalRowNativeId(item),
     [item],
   );
+  const supplyWarning = canonicalPurchaseItemSupplyWarningV1(item);
+  const exactQuantity = canonicalExactPurchaseEditingV1(item);
   const itemOptional = !consumerRepairRowIncludedInEstimate(item);
   const sourceManagedNeed = consumerRepairRowHasSourceManagedQuantity(item, parameterRequirementTables);
   const derivedQuantityEditReason = consumerRepairRowDerivedQuantityEditReason(item);
@@ -122,11 +125,11 @@ function ConsumerRepairItemRowComponent({
   const calculatedQuantity = consumerRepairRowCalculatedQuantity(item);
   const preliminaryNeed = consumerRepairRowIsCanonicalPreliminaryNeed(item);
   const applicationPending = consumerRepairRowApplicationCalculationPending(item, parameterRequirementTables);
-  const purchaseRequirement = canonicalArtifactPurchaseRequirement({ row_id: item.sourceParameters?.rowCode ?? item.id, unit_id: item.unit,
+  const purchaseRequirement = supplyWarning ? null : canonicalArtifactPurchaseRequirement({ row_id: item.sourceParameters?.rowCode ?? item.id, unit_id: item.unit,
     calculation_trace: { purchaseRequirementV1: item.sourceParameters?.canonicalPurchaseRequirement } });
-  const purchaseShortage = canonicalPurchaseShortageMessageV1([{ rowId: item.id, titleRu: item.titleRu,
+  const purchaseShortage = supplyWarning ?? canonicalPurchaseShortageMessageV1([{ rowId: item.id, titleRu: item.titleRu,
     calculationTrace: { purchaseBalance: item.sourceParameters?.canonicalPurchaseBalance } }]);
-  const requirementNotice = consumerRepairRowRequirementNotice(item, parameterRequirementTables);
+  const requirementNotice = supplyWarning ?? consumerRepairRowRequirementNotice(item, parameterRequirementTables);
   const publicResourcePresentation = React.useMemo(() => consumerRepairRowPublicResourcePresentation(item), [item]);
   const {
     quantityInputRef,
@@ -220,7 +223,7 @@ function ConsumerRepairItemRowComponent({
           </View>
         ) : (
           <View style={styles.titleRow}>
-            <Text style={styles.title} testID={`consumer-repair-item-title-${item.id}`}>{applicationPending ? canonicalPublicEstimatePendingRowTitleRu(item.titleRu) : item.titleRu}</Text>
+            <Text style={styles.title} testID={`consumer-repair-item-title-${item.id}`}>{applicationPending && item.sourceParameters?.canonicalManualTitleOverride !== true ? canonicalPublicEstimatePendingRowTitleRu(item.titleRu) : item.titleRu}</Text>
             {onSpecificationChange ? (
               <Pressable
                 accessibilityLabel={`Изменить название позиции ${item.titleRu}`}
@@ -319,7 +322,7 @@ function ConsumerRepairItemRowComponent({
           </View>
           {!nonPayableRow ? (
             <View style={styles.field}>
-              <Text style={styles.label}>Цена за единицу</Text>
+              <Text style={styles.label}>{supplyWarning ? "Сохранённая цена (справочно)" : "Цена за единицу"}</Text>
               <TextInput
                 value={priceText}
                 importantForAutofill="no"
@@ -339,11 +342,14 @@ function ConsumerRepairItemRowComponent({
                 accessibilityLabel={`Цена за единицу ${item.titleRu}`}
               />
             </View>
-          ) : null}
+          ) : supplyWarning && item.unitPrice != null ? <View style={styles.field}>
+            <Text style={styles.label}>Сохранённая цена (справочно)</Text>
+            <Text testID={`consumer-repair-item-saved-supply-price-${item.id}`}>{priceText} {item.currency}</Text>
+          </View> : null}
           <View style={styles.field}>
             <Text style={styles.label}>Сумма</Text>
             <Text style={styles.total} testID={`consumer-repair-item-total-${item.id}`}>
-              {applicationPending ? '—' : nonPayableRow
+              {supplyWarning ? "Не суммируется" : applicationPending ? '—' : nonPayableRow
                 ? totalLabel === "—" ? "Не суммируется" : `${totalLabel} · справочно`
                 : totalLabel}
             </Text>
@@ -366,7 +372,9 @@ function ConsumerRepairItemRowComponent({
             </Pressable>
           </>:null}
         </View>:null}
-        {!nonPayableRow ? <Pressable
+        {supplyWarning ? <Text style={styles.nonPayableNotice} testID={`consumer-repair-item-supply-state-${item.id}`}>
+          Строка не суммируется: условия поставки не подтверждены. Введённые количество и цена сохранены.
+        </Text> : !nonPayableRow ? <Pressable
           accessibilityRole="switch"
           accessibilityState={{ checked: itemOptional }}
           accessibilityLabel={`${"Не включать позицию в расчёт"} ${item.titleRu}`}
@@ -431,9 +439,9 @@ function ConsumerRepairItemRowComponent({
                       ? "Сохранённое количество ожидает подтверждения технического источника."
                       : manualQuantityOverride
                       ? calculatedQuantity != null
-                        ? `Введено вручную. По формуле: ${calculatedQuantity} ${unitLabel}.`
+                        ? `Введено вручную. По формуле: ${exactQuantity?.calculatedQuantityText ?? calculatedQuantity} ${unitLabel}.`
                         : "Введено вручную. Расчётное количество пока неизвестно."
-                      : `Рассчитано автоматически: ${calculatedQuantity} ${unitLabel}. Поле можно изменить.`}
+                      : `Рассчитано автоматически: ${exactQuantity?.calculatedQuantityText ?? calculatedQuantity} ${unitLabel}. Поле можно изменить.`}
                   </Text>
                 ) : null}
                 {publicResourcePresentation?.brandAndModelRu ? (

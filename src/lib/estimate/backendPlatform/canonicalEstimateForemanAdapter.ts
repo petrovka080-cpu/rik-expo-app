@@ -1,3 +1,4 @@
+import { canonicalPurchaseSupplyBlocksV1, parseCanonicalExactPurchaseQuantityV1 } from "./canonicalPurchaseSupplyReadinessV1";
 import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
 import { stableStructuredEstimateHash } from "../../estimateStructuredPipeline/buildStructuredEstimatePayload";
 import type {
@@ -149,6 +150,8 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
   const rows: StructuredEstimateRow[] = input.rows.map((row, index) => {
     const normalizedCategory = normalizeCanonicalEstimateRowCategory(row.section, row.category);
     const type = sectionType(row.section, row.category);
+    const exactQuantity = parseCanonicalExactPurchaseQuantityV1(row.calculationTrace.exactPurchaseQuantityV1);
+    const supplyBlocks = canonicalPurchaseSupplyBlocksV1(row.calculationTrace.purchaseSupplyBlocksV1);
     const quantity = finiteNumber(row.quantity) ?? 0;
     const unitPrice = finiteNumber(row.unitPrice);
     const total = finiteNumber(row.amount);
@@ -182,7 +185,7 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
       visibleName: row.titleRu,
       quantity,
       unit: row.unitId,
-      displayQuantity: row.quantity == null ? "—" : String(row.quantity),
+      displayQuantity: exactQuantity ? exactQuantity.manualQuantityText ?? exactQuantity.quantityText ?? "—" : row.quantity == null ? "—" : String(row.quantity),
       unitPrice,
       displayUnitPrice: unitPrice == null ? "Цена требует уточнения" : String(row.unitPrice),
       total,
@@ -232,6 +235,8 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
         ...(resourceGraph?.compositionSelectionDecisionV1 == null ? {} : {canonicalCompositionSelectionDecisionV1:resourceGraph.compositionSelectionDecisionV1}),
         ...(row.calculationTrace?.physicalScopeExcludedV1 == null ? {} : {canonicalPhysicalScopeExcludedV1:row.calculationTrace.physicalScopeExcludedV1}),
         canonicalPurchaseBalance: row.calculationTrace.purchaseBalance,
+        ...(supplyBlocks.length ? {canonicalPurchaseSupplyBlocksV1:supplyBlocks} : {}),
+        ...(exactQuantity ? {canonicalExactPurchaseQuantityV1:exactQuantity} : {}),
         canonicalMachineHourPriceCoverageV1:row.calculationTrace.machineHourPriceCoverageV1??null,
         canonicalPriceResolutionTrace:row.priceSource?.resolutionTrace??null,
         canonicalPriceSourceKind:row.priceSource?.kind??null,

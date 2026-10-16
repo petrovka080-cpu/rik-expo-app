@@ -15,11 +15,15 @@ export function createConsumerRepairRequestDraft(input: {
 }): ConsumerRepairRequestDraft {
   const now = new Date().toISOString();
   const selectedWork = input.selectedWork ?? input.aiDraft?.selectedWork ?? null;
+  const proposedTitle = input.aiDraft?.titleRu?.trim();
+  const title = proposedTitle && !/^(?:смета|черновик(?:\s+сметы)?)$/iu.test(proposedTitle)
+    ? proposedTitle
+    : selectedWork?.selectedWorkTitleRu?.trim() || proposedTitle || "Смета";
   return {
     id: id("consumer_draft"),
     consumerUserId: input.consumerUserId,
     orgId: null,
-    title: input.aiDraft?.titleRu ?? "Смета",
+    title,
     problemText: input.problemText ?? null,
     repairType: input.aiDraft?.repairType ?? input.repairType ?? "unknown",
     city: input.city ?? null,

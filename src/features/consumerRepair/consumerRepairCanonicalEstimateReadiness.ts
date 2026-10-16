@@ -1,5 +1,5 @@
 import type { CanonicalParameterSession } from "../../lib/estimate/canonicalParameters";
-import { canonicalParameterAffectsEstimateCalculation } from "../../lib/estimate/canonicalParameters";
+import { canonicalParameterAffectsEstimateCalculation } from "../../lib/estimate/canonicalParameters/canonicalParameterCalculationRelevance";
 import type { ConsumerRepairDraftBundle } from "../../lib/consumerRequests";
 import { consumerRepairCanonicalBackendBinding } from "./consumerRepairBackendOwnership";
 import {

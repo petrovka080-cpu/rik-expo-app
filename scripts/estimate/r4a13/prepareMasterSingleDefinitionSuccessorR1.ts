@@ -19,6 +19,13 @@ import {
   publishCanonicalDefinitionDraft,
   resolveCanonicalApprovedBaselineLeaf,
 } from "./canonicalDefinitionPublisherR1";
+import {
+  assertMasterSingleDefinitionAppendParentAnchorR1,
+  assertMasterSingleDefinitionAppendUnchangedR1,
+  assertMasterSingleDefinitionCompositeSourceR1,
+  lockMasterSingleDefinitionAppendPreconditionsR1,
+  readMasterSingleDefinitionAppendPreconditionsR1,
+} from "./masterSingleDefinitionAppendGuardsR1";
 import { CATALOG_INDEPENDENT_COMPLETENESS_MAP_CONTRACT } from "./catalogFirstEstimateMinimumInputAudit.shared";
 import { loadVerifiedProjectSourcePackageBinding } from "./projectSourcePackageBindingR1";
 import {
@@ -83,6 +90,8 @@ export type MasterSingleDefinitionSuccessorConfig = Readonly<{
   applicability: Json;
   binding: Readonly<{
     rowId: string;
+    /** Opt in to multiple resources backed by one composite source locator. */
+    additionalRowIds?: readonly string[];
     applicability: Json;
   }>;
   locator: Readonly<{
@@ -102,6 +111,8 @@ export type MasterSingleDefinitionSuccessorConfig = Readonly<{
     sourceProvenance: Json;
   }>;
   catalogAppend?: Readonly<{
+    /** An explicitly new physical profile may require this exact key to be absent. */
+    requireUniqueWorkKey?: true;
     identity: Readonly<{
       namespace: "global";
       domain: string;
@@ -156,6 +167,28 @@ export type MasterSingleDefinitionCountShape = Readonly<{
   formulas: number;
   resources: number;
 }>;
+
+/** Keep the legacy single-resource path intact. A composite source may instead
+ * declare each resource independently; count that declaration, not emitted rows. */
+export function resolveMasterSingleDefinitionBindingRowIds(
+  config: Pick<MasterSingleDefinitionSuccessorConfig, "binding" | "projectSourcePackagePath">,
+  resources: readonly Json[],
+  locatorIds: readonly string[],
+): readonly string[] {
+  if (config.binding.additionalRowIds == null) return [config.binding.rowId];
+  invariant(config.projectSourcePackagePath == null, "COMPOSITE_BINDING_PROJECT_PACKAGE_UNSUPPORTED");
+  invariant(locatorIds.length === 1, "COMPOSITE_BINDING_REQUIRES_ONE_LOCATOR");
+  invariant(Array.isArray(config.binding.additionalRowIds) && config.binding.additionalRowIds.length > 0,
+    "COMPOSITE_BINDING_ADDITIONAL_ROWS_REQUIRED");
+  const declared = [config.binding.rowId, ...config.binding.additionalRowIds];
+  invariant(declared.every(id => typeof id === "string" && id.trim().length > 0),
+    "COMPOSITE_BINDING_EMPTY_ROW_ID");
+  invariant(new Set(declared).size === declared.length, "COMPOSITE_BINDING_DUPLICATE_ROW_ID");
+  const ordinalById = new Map(resources.map((row, index) => [row.row_id,
+    typeof row.ordinal === "number" ? row.ordinal : index]));
+  invariant(declared.every(id => ordinalById.has(id)), "COMPOSITE_BINDING_UNKNOWN_ROW_ID");
+  return [...declared].sort((left, right) => ordinalById.get(left)! - ordinalById.get(right)!);
+}
 
 export function resolveMasterSingleDefinitionNextCounts(input: Readonly<{
   parent: MasterSingleDefinitionCountShape;
@@ -826,6 +859,9 @@ export async function runMasterSingleDefinitionSuccessorR1(
   const allowHashedDirtySource = process.env.R4A13_ALLOW_HASHED_DIRTY_SOURCE === "true";
   const sourcePathsForIdentity = [...new Set([
     ...config.sourcePaths,
+    ...(config.catalogAppend == null && config.binding.additionalRowIds == null ? [] : [
+      "scripts/estimate/r4a13/masterSingleDefinitionAppendGuardsR1.ts",
+    ]),
     "scripts/estimate/r4a13/projectSourcePackageBindingR1.ts",
     "scripts/estimate/r4a13/projectSourcePackagePreflightR1.ts",
   ])];
@@ -1127,52 +1163,24 @@ export async function runMasterSingleDefinitionSuccessorR1(
     const existingIdentity = (await client.query(`select catalog_id,namespace,domain,source_identity,
         work_key,title_ru,denominator_eligible,canonical_owner,retired_at
       from public.estimate_work_identity where catalog_id=$1`, [config.catalogId])).rows[0] as Json | undefined;
-    if (append != null) {
-      const sourceIdentityCollision = Number((await client.query(`select count(*)::int value
-        from public.estimate_work_identity where namespace=$1 and source_identity=$2 and catalog_id<>$3`, [
-        append.identity.namespace,
-        append.identity.sourceIdentity,
-        config.catalogId,
-      ])).rows[0].value);
-      invariant(sourceIdentityCollision === 0,
-        `${stop(config, "APPEND_SOURCE_IDENTITY_COLLISION")}:${append.identity.sourceIdentity}`);
-      const parentSearchTargetCount = Number((await client.query(`select count(*)::int value
-        from public.estimate_search_document where search_release_id=$1 and catalog_id=$2`, [
-        config.parentSearchReleaseId,
-        config.catalogId,
-      ])).rows[0].value);
-      invariant(parentSearchTargetCount === 0,
-        `${stop(config, "APPEND_PARENT_SEARCH_ALREADY_HAS_TARGET")}:${config.catalogId}`);
-      const placement = append.searchPlacement;
-      const parentGroup = (await client.query(`select group_id,group_name_ru,domain_id,system_id,
-          subsystem_id,assembly_id,work_family_id,breadcrumb
-        from public.estimate_search_group where search_release_id=$1 and group_id=$2`, [
-        config.parentSearchReleaseId,
-        placement.groupId,
-      ])).rows[0] as Json | undefined;
-      if (placement.groupMode === "create") {
-        invariant(parentGroup == null,
-          `${stop(config, "APPEND_SEARCH_GROUP_ALREADY_EXISTS")}:${placement.groupId}`);
-      } else {
-        invariant(parentGroup != null
-          && parentGroup.group_name_ru === placement.groupNameRu
-          && parentGroup.domain_id === placement.domainId
-          && parentGroup.system_id === placement.systemId
-          && parentGroup.subsystem_id === placement.subsystemId
-          && parentGroup.assembly_id === placement.assemblyId
-          && parentGroup.work_family_id === placement.workFamilyId
-          && JSON.stringify(parentGroup.breadcrumb) === JSON.stringify(placement.breadcrumb),
-        `${stop(config, "APPEND_SEARCH_GROUP_DRIFT")}:${JSON.stringify(parentGroup)}`);
-        const ordinalCollision = Number((await client.query(`select count(*)::int value
-          from public.estimate_search_group_membership
-          where search_release_id=$1 and group_id=$2 and ordinal=$3`, [
-          config.parentSearchReleaseId,
-          placement.groupId,
-          placement.membershipOrdinal,
-        ])).rows[0].value);
-        invariant(ordinalCollision === 0,
-          `${stop(config, "APPEND_SEARCH_ORDINAL_COLLISION")}:${placement.membershipOrdinal}`);
-      }
+    const compositeSourceGuardInput = config.binding.additionalRowIds == null ? null : {
+      config,
+      successorReleaseId: releaseId,
+      successorSearchReleaseId: searchReleaseId,
+      compositeSourceArtifactSha256: String(resolvedSourceMetadata.artifact_sha256 ?? ""),
+    };
+    const appendGuardInput = append == null ? null : {
+      config,
+      successorReleaseId: releaseId,
+      successorSearchReleaseId: searchReleaseId,
+      compositeSourceArtifactSha256: compositeSourceGuardInput?.compositeSourceArtifactSha256 ?? null,
+    };
+    const appendPreflight = appendGuardInput == null ? null
+      : await readMasterSingleDefinitionAppendPreconditionsR1(client, appendGuardInput);
+    if (appendGuardInput != null && appendPreflight != null) {
+      assertMasterSingleDefinitionAppendParentAnchorR1(
+        appendGuardInput, appendPreflight, parent!, parentSearch!,
+      );
     }
     const acceptanceEvidenceSha256 = sha256({
       contract: config.contract,
@@ -1224,6 +1232,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
       }],
       contract_version: BASELINE_CONTRACT,
     };
+    const normativeBindingRowIds = resolveMasterSingleDefinitionBindingRowIds(config, resourceRows, locatorIds);
     const plan = createCanonicalDefinitionClonePlan({
       contract: config.contract,
       definition: {
@@ -1257,11 +1266,11 @@ export async function runMasterSingleDefinitionSuccessorR1(
         parameters: parameterRows,
         formulas: formulaRows,
         resources: resourceRows,
-        bindings: locatorIds.map((locatorId) => ({
-          row_id: config.binding.rowId,
+        bindings: normativeBindingRowIds.flatMap(rowId => locatorIds.map((locatorId) => ({
+          row_id: rowId,
           locator_id: locatorId,
           applicability: config.binding.applicability,
-        })),
+        }))),
         baseline: baselineRepresentative,
         passport: {
           contract_version: CONTENT_PASSPORT_CONTRACT,
@@ -1328,7 +1337,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
         sourceTree: tree,
       },
       bindingApplicability: (binding) => ({ ...binding.applicability }),
-      expectedNormativeBindingCount: 1,
+      expectedNormativeBindingCount: normativeBindingRowIds.length,
     });
 
     const existing = (await client.query(
@@ -1372,9 +1381,27 @@ export async function runMasterSingleDefinitionSuccessorR1(
       await client.query("set local statement_timeout='600s'");
       await client.query("select pg_advisory_xact_lock(hashtextextended($1,0))", [config.contract]);
       try {
+        if (appendGuardInput != null && appendPreflight != null) {
+          await lockMasterSingleDefinitionAppendPreconditionsR1(client, appendGuardInput);
+          const underTransaction = await readMasterSingleDefinitionAppendPreconditionsR1(
+            client, appendGuardInput,
+          );
+          assertMasterSingleDefinitionAppendUnchangedR1(
+            appendGuardInput, appendPreflight, underTransaction,
+          );
+          const lockedCurrent = JSON.parse(readFileSync(config.currentReleasePath, "utf8")) as Json;
+          invariant(lockedCurrent.productionAccessed === false
+            && lockedCurrent.definitionReleaseId === config.parentReleaseId
+            && lockedCurrent.searchReleaseId === config.parentSearchReleaseId
+            && sha256(lockedCurrent) === sha256(current),
+          stop(config, "APPEND_POINTER_CHANGED_BEFORE_WRITE"));
+        }
         const sourceBefore = (await client.query(`select id::text,artifact_sha256
           from public.estimate_normative_source where source_key=$1`, [config.sourceId]))
           .rows[0] as Json | undefined;
+        if (compositeSourceGuardInput != null) {
+          assertMasterSingleDefinitionCompositeSourceR1(compositeSourceGuardInput, sourceBefore, "BEFORE");
+        }
         if (projectSourcePackage != null && sourceBefore?.artifact_sha256 != null) {
           invariant(String(sourceBefore.artifact_sha256).toLowerCase()
             === projectSourcePackage.packagePayloadSha256,
@@ -1421,6 +1448,9 @@ export async function runMasterSingleDefinitionSuccessorR1(
           [config.sourceId],
         )).rows[0] as Json;
         const actualSourceId = String(actualSource.id);
+        if (compositeSourceGuardInput != null) {
+          assertMasterSingleDefinitionCompositeSourceR1(compositeSourceGuardInput, actualSource, "AFTER");
+        }
         if (projectSourcePackage != null) {
           invariant(String(actualSource.artifact_sha256).toLowerCase()
             === projectSourcePackage.packagePayloadSha256,

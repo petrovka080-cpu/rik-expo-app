@@ -1,3 +1,4 @@
+import { canonicalPurchaseItemSupplyWarningV1, canonicalExactPurchaseEditingV1 } from "./canonicalExactPurchaseEditingV1";
 import { canonicalEstimateOperationReference, canonicalEstimateResourceOperationSections, canonicalEstimateWorkProcess, type CanonicalEstimateOperationReference, type CanonicalEstimateWorkProcessGroup } from "../../lib/estimate/backendPlatform/canonicalEstimateOperationComposition";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
 import {consumerMachineHourPriceNeedsConfirmation} from '../../lib/consumerRequests/consumerMachineHourPriceCoverage';
@@ -249,11 +250,16 @@ export function buildRequestEstimateProfessionalRowEvidence(
   item: ConsumerRepairRequestItem,
   parameterRequirementTables?: CanonicalParameterRequirementTables | null,
 ): RequestEstimateProfessionalRowEvidence | null {
+  const supplyWarning = canonicalPurchaseItemSupplyWarningV1(item);
+  if (supplyWarning) return {formulaLabel:supplyWarning, parameterLabel:null,
+    normativeLabel:"Нормативные основания остаются в сохранённой строке; условия поставки требуют подтверждения.",
+    priceLabel:item.unitPrice == null ? "Цена не задана." : `Сохранённая цена (справочно): ${formatEstimateMoney(item.unitPrice,item.currency)}.`};
   const projection = asRecord(item.sourceParameters?.smartEstimateProjectionV2);
   if (!projection) return null;
 
   const formula = sanitizeRequestEstimatePublicText(item.quantityFormula, "\u0440\u0430\u0441\u0447\u0451\u0442 \u043f\u043e \u043f\u0440\u043e\u0435\u043a\u0442\u043d\u044b\u043c \u043f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u0430\u043c");
-  const quantity = item.quantity == null
+  const exactQuantity = canonicalExactPurchaseEditingV1(item);
+  const quantity = exactQuantity ? `${exactQuantity.manualQuantityText ?? exactQuantity.quantityText ?? "не задано"} ${formatEstimateUnitLabel(String(item.unit ?? ""))}` : item.quantity == null
     ? "\u0442\u0440\u0435\u0431\u0443\u0435\u0442 \u0438\u0441\u0445\u043e\u0434\u043d\u044b\u0445 \u0434\u0430\u043d\u043d\u044b\u0445"
     : formatQuantityValue(item.quantity, item.unitLabel || item.unit);
   const rawCalculatedQuantity = item.sourceParameters?.calculatedQuantityBeforeOverride;
@@ -606,7 +612,7 @@ export function requestEstimatePublicRevisionDiff(
     const manual = knownOwner ? source!.canonicalManualTitleOverride === true : admission!.manualTitleOverride;
     if (manual) return sourceTitleRu;
     const descriptor = knownOwner ? source!.canonicalPublicResourcePresentationV1 : admission!.publicResourcePresentation;
-    const presentation = canonicalPublicResourcePresentationV1({ titleRu:sourceTitleRu, descriptor });
+    const presentation = canonicalPublicResourcePresentationV1({ rowId, titleRu:sourceTitleRu, descriptor });
     if (descriptor != null && !presentation) return sourceTitleRu;
     return canonicalPublicEstimateRowNameRu({rowId,sourceTitleRu,titleRu:presentation?.nameRu ?? sourceTitleRu});
   };
@@ -630,7 +636,8 @@ function sourcePublicItemTitle(item: ConsumerRepairRequestItem, canonicalTitleVe
   if (canonicalTitleVerified) {
     const descriptor = item.sourceParameters?.canonicalPublicResourcePresentationV1;
     const manualTitleOverride = item.sourceParameters?.canonicalManualTitleOverride === true;
-    const presentation = canonicalPublicResourcePresentationV1({ titleRu: item.titleRu, descriptor, manualTitleOverride });
+    const presentation = canonicalPublicResourcePresentationV1({ rowId: String(item.sourceParameters?.canonicalBackendRowId
+      ?? item.sourceParameters?.rowCode ?? ''), titleRu: item.titleRu, descriptor, manualTitleOverride });
     if (presentation) return presentation.nameRu;
     if (descriptor != null || manualTitleOverride) return item.titleRu;
     // Keep the immutable canonical title in the bundle, while applying the
@@ -939,6 +946,8 @@ function buildPreviewRow(section: RequestEstimateSectionViewModel, items: Consum
 }
 
 function previewCalculationLabel(item: ConsumerRepairRequestItem): string | null {
+  const supplyWarning = canonicalPurchaseItemSupplyWarningV1(item);
+  if (supplyWarning) return supplyWarning;
   const shortage = canonicalPurchaseShortageMessageV1([{ rowId: item.id, titleRu: item.titleRu,
     calculationTrace: { purchaseBalance: item.sourceParameters?.canonicalPurchaseBalance } }]);
   if (shortage) return shortage;
@@ -1350,7 +1359,8 @@ export function buildRequestEstimateViewModel(
           // Admission and public naming still run against the current bundle.
           // Preserve unchanged row props so editing one quantity does not
           // defeat the row's React.memo and rerender every neighbouring input.
-          const presentation = canonicalTitleItems.has(item) ? canonicalPublicResourcePresentationV1({ titleRu: item.titleRu,
+          const presentation = canonicalTitleItems.has(item) ? canonicalPublicResourcePresentationV1({ rowId: String(item.sourceParameters?.canonicalBackendRowId
+            ?? item.sourceParameters?.rowCode ?? ''), titleRu: item.titleRu,
             descriptor: item.sourceParameters?.canonicalPublicResourcePresentationV1,
             manualTitleOverride: item.sourceParameters?.canonicalManualTitleOverride === true }) : null;
           return itemWithPublicTitle(item, titleRu, presentation);

@@ -1,3 +1,4 @@
+import { assertCanonicalPurchaseSupplyRowV1 } from "./canonicalPurchaseSupplyReadinessV1";
 import {
   CanonicalEstimateApiError,
   canonicalEstimatePreliminaryNeedsFromAmendmentContract,
@@ -104,5 +105,6 @@ export async function canonicalPreliminaryNeedEvidenceFromStorage(
       code: "PRELIMINARY_NEED_EVIDENCE_INTEGRITY_FAILED", httpStatus: 409,
     });
   }
+  assertCanonicalPurchaseSupplyRowV1(rawNeed, revision.amendment_contract);
   return { reference: reference(revision, rowId, needSha256), rawNeed };
 }

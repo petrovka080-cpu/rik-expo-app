@@ -1,3 +1,4 @@
+import { assertCanonicalPurchaseSupplyRowV1, canonicalPurchaseSupplyBlocksV1, parseCanonicalExactPurchaseQuantityV1 } from "./canonicalPurchaseSupplyReadinessV1";
 import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
 import { canonicalScopeRequirementDecisionV1 } from './canonicalScopeRequirementV1';
 import {parseCanonicalCompositionSelectionV1} from './canonicalEstimateCompositionSelectionV1';
@@ -309,6 +310,10 @@ export type CanonicalEstimatePreliminaryNeedView = {
   /** Exact specification questions for a positive explicit order, independent of installed consumption. */
   orderedSpecificationParameterIds?: string[];
   purchaseRequirement?: Record<string, unknown>;
+  /** Present only for saved supply-block needs; no inferred currency. */
+  currencyCode?: string | null;
+  purchaseSupplyBlocks?: import("./canonicalPurchaseBalanceV1").CanonicalManualPurchaseSupplyBlockV1[];
+  exactPurchaseQuantity?: import("./canonicalPurchaseSupplyReadinessV1").CanonicalExactPurchaseQuantityV1;
   rowId: string;
   ordinal: number;
   section: string;
@@ -317,7 +322,7 @@ export type CanonicalEstimatePreliminaryNeedView = {
   unitId: string;
   quantity: string | null;
   unitPrice: string | null;
-  needState: "QUANTITY_REQUIRED" | "CONDITION_REQUIRED";
+  needState: "QUANTITY_REQUIRED" | "CONDITION_REQUIRED" | "SUPPLY_CONFIRMATION_REQUIRED";
   missingParameterIds: string[];
   selected: boolean;
   procurementEligible: boolean;
@@ -366,11 +371,17 @@ export function canonicalEstimatePreliminaryNeedsFromAmendmentContract(
   return rawNeeds.flatMap((raw): CanonicalEstimatePreliminaryNeedView[] => {
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) return [];
     const need = raw as Record<string, unknown>;
+    assertCanonicalPurchaseSupplyRowV1(need, amendmentContract);
+    const supplyBlocks = canonicalPurchaseSupplyBlocksV1((need.calculation_trace as Record<string, unknown> | undefined)?.purchaseSupplyBlocksV1);
+    const exactPurchaseQuantity = parseCanonicalExactPurchaseQuantityV1((need.calculation_trace as Record<string, unknown> | undefined)?.exactPurchaseQuantityV1);
     const state = String(need.need_state ?? "");
     const rowId = String(need.row_id ?? "").trim();
     const needSha256 = String(need.need_sha256 ?? "").trim();
     if (!rowId || !/^[0-9a-f]{64}$/u.test(needSha256)
-      || (state !== "QUANTITY_REQUIRED" && state !== "CONDITION_REQUIRED")) return [];
+      || (state !== "QUANTITY_REQUIRED" && state !== "CONDITION_REQUIRED" && state !== "SUPPLY_CONFIRMATION_REQUIRED")) {
+      if (supplyBlocks.length || exactPurchaseQuantity) throw Object.assign(new Error("Сохранённая потребность повреждена."), {code:"ARTIFACT_PURCHASE_SUPPLY_BLOCK_INVALID"});
+      return [];
+    }
     const graph = (need.calculation_trace as Record<string, unknown> | undefined)?.resourceGraph as Record<string, unknown> | undefined;
     const explicitPositiveOrder = need.selected !== false && Number(need.quantity) > 0
       && (need.calculation_trace as Record<string, unknown> | undefined)?.manualQuantityOverride === true
@@ -406,6 +417,9 @@ export function canonicalEstimatePreliminaryNeedsFromAmendmentContract(
       quantity: need.quantity == null ? null : String(need.quantity),
       unitPrice: need.unit_price == null ? null : String(need.unit_price),
       needState: state,
+      ...(supplyBlocks.length ? { currencyCode: need.currency_code == null ? null : String(need.currency_code) } : {}),
+      ...(supplyBlocks.length ? { purchaseSupplyBlocks: supplyBlocks } : {}),
+      ...(exactPurchaseQuantity ? { exactPurchaseQuantity } : {}),
       ...(canonicalScopeRequirementDecisionV1(graph?.scopeRequirementDecisionV1,graph?.compositionSelectionDecisionV1) ? {
         scopeRequirementDecision: canonicalScopeRequirementDecisionV1(graph?.scopeRequirementDecisionV1,graph?.compositionSelectionDecisionV1)!,
       } : {}),
@@ -458,6 +472,7 @@ export type CanonicalEstimateParameterValueSourceRole =
   | "VISIBLE_PRELIMINARY_SCENARIO"
   | "VISIBLE_BASELINE_ASSUMPTION"
   | "BACKEND_DERIVED"
+  | "COMPILER_DERIVED_RESOURCE_QUANTITY"
   | "PRICE_INPUT";
 
 export type CanonicalEstimateParameterVisibilityRole =

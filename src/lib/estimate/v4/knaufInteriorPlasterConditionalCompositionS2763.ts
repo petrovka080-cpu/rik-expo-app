@@ -3,6 +3,7 @@ import {knaufInteriorPlasterPackS2763 as material} from './knaufInteriorPlasterM
 export const knaufInteriorPlasterConditionalCompositionPackS2763=pack;
 export const knaufPlasterManualScopeGuardS2763={kind:'equals',parameterId:'interior_plaster_material_system',value:material.manualChoiceRu};
 
+
 /** A missing project fact remains undecided. Only the exact documented
  * non-applicability answer removes a physical need; it never supplies a norm. */
 export function knaufPlasterRetainedScopeNeedGuardS2763(fact:typeof pack.facts[number]) {

@@ -16,12 +16,13 @@ type SelectedOrderBasis = Readonly<{
   plannedConsumptionExpression: string;
 }>;
 export type CanonicalPurchaseBalanceV1 = PurchaseBalanceSources & (
-  | Readonly<{ quantityMode?: "supply_quantum"; orderQuantumExpression: string }> & (
+  | Readonly<{ quantityMode?: "supply_quantum"; orderQuantumExpression: string;
+    manualQuantumViolationPolicy?: "retain-raw-and-block-quantum" }> & (
     | Readonly<{ balanceScope?: never; requirementBasis?: never; plannedConsumptionExpression?: never }>
     | SelectedOrderBasis
   )
   | Readonly<{ quantityMode: "canonical_decimal"; balanceScope: "new_order_vs_required_consumption";
-    stockExpression: "0"; reserveExpression: "0"; orderQuantumExpression?: never }> & (
+    stockExpression: "0"; reserveExpression: "0"; orderQuantumExpression?: never; manualQuantumViolationPolicy?: never }> & (
       | Readonly<{ requirementBasis?: never; plannedConsumptionExpression?: never }>
       | SelectedOrderBasis
     )
@@ -42,6 +43,10 @@ function canonicalPurchaseBalancePlanV1(
   const quantityMode = policy.quantityMode === undefined ? "supply_quantum" : policy.quantityMode;
   if (quantityMode !== "supply_quantum" && quantityMode !== "canonical_decimal") fail("DEFINITION_INTEGRITY_FAILED", "purchase quantity mode invalid");
   const decimal = quantityMode === "canonical_decimal";
+  if (Object.hasOwn(policy, "manualQuantumViolationPolicy")
+    && (decimal || policy.manualQuantumViolationPolicy !== "retain-raw-and-block-quantum")) {
+    fail("DEFINITION_INTEGRITY_FAILED", "manual purchase quantum policy invalid");
+  }
   const scoped = policy.balanceScope === "new_order_vs_required_consumption";
   const selectedOrder = scoped && (policy.requirementBasis === "selected_order_including_contingency"
     || policy.requirementBasis === "selected_supply_order");
@@ -50,7 +55,7 @@ function canonicalPurchaseBalancePlanV1(
   }
   const fields = ["consumedExpression", "stockExpression", "reserveExpression", ...(decimal ? [] : ["orderQuantumExpression"]),
     ...(selectedOrder ? ["plannedConsumptionExpression"] : [])];
-  if (policy.unitId !== unitId || Object.keys(policy).some(key => !["unitId", "quantityMode", ...((decimal || scoped) ? ["balanceScope", "requirementBasis"] : []), ...fields].includes(key))
+  if (policy.unitId !== unitId || Object.keys(policy).some(key => !["unitId", "quantityMode", ...(!decimal ? ["manualQuantumViolationPolicy"] : []), ...((decimal || scoped) ? ["balanceScope", "requirementBasis"] : []), ...fields].includes(key))
     || (decimal && !scoped) || (scoped && (policy.stockExpression !== "0" || policy.reserveExpression !== "0"))
     || (!decimal && scoped && !selectedOrder)) {
     fail("DEFINITION_INTEGRITY_FAILED", "purchase balance unit/keys invalid");
@@ -68,6 +73,148 @@ function canonicalPurchaseBalancePlanV1(
     if (compiled.inputParameterIds.some(id => !declaredParameters.has(id))) fail("DEFINITION_INTEGRITY_FAILED", "purchase balance parameter undeclared");
   }
   return { fail, policy, quantityMode, decimal, scoped, selectedOrder, fields, cached };
+}
+
+export const CANONICAL_MANUAL_QUANTUM_RETENTION_POLICY_V1 = "retain-raw-and-block-quantum" as const;
+
+export type CanonicalManualPurchaseSupplyBlockV1 = Readonly<{
+  version: "canonical-manual-purchase-supply-block/v1";
+  policy: typeof CANONICAL_MANUAL_QUANTUM_RETENTION_POLICY_V1;
+  ownerRowId: string;
+  unitId: string;
+  rawManualQuantity: string;
+  manualProvenance: Readonly<{ kind: "manual"; reason?: string }>;
+  reasonCode: "ORDER_QUANTUM_VIOLATION" | "ORDER_QUANTUM_UNCONFIRMED";
+  quantum: string | null;
+  procurementReady: false;
+  physicalBalanceReady: false;
+  derivedQuantityPublishable: false;
+}>;
+
+/** The existing decimal domain, without Number conversion, rounding or trimming.
+ * The compile caller supplies its already normalized quantity text; the original
+ * request remains in the immutable amendment contract. */
+export function canonicalExactManualPurchaseQuantityV1(quantity: unknown): string {
+  if (typeof quantity !== "string" || !/^\+?\d+(?:\.\d+)?$/u.test(quantity)
+    || !isFormulaGraphExactDecimal(quantity) || compareFormulaGraphDecimals(quantity, "0") < 0) {
+    throw Object.assign(new Error("manual purchase quantity is outside the exact canonical decimal domain"), {
+      code: "ROW_AMENDMENT_INVALID",
+    });
+  }
+  return quantity;
+}
+
+function canonicalRetainedManualProvenanceV1(raw: unknown): { kind: "manual"; reason?: string } {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)
+    || (raw as Record<string, unknown>).kind !== "manual") {
+    throw Object.assign(new Error("manual purchase quantity requires validated row-override provenance"), {
+      code: "ROW_AMENDMENT_INVALID",
+    });
+  }
+  const reason = (raw as Record<string, unknown>).reason;
+  if (reason != null && (typeof reason !== "string" || reason.trim().length > 500)) {
+    throw Object.assign(new Error("manual purchase quantity provenance reason invalid"), { code: "ROW_AMENDMENT_INVALID" });
+  }
+  return { kind: "manual", ...(typeof reason === "string" ? { reason: reason.trim() } : {}) };
+}
+
+/** Inspect only an actual validated row override. A null result is NOT readiness:
+ * the caller must still run the ordinary balance/need path. Automatic quantities
+ * never enter this exception, and both existing strict functions remain strict.
+ * No consumption, stock, reserve, package count or price is invented here. */
+export function resolveCanonicalManualPurchaseSupplyBlockV1(
+  raw: unknown, rowId: string, unitId: string, manualQuantity: string | null,
+  manualProvenance: unknown, parameters: Record<string, FormulaParameterValue>,
+  declaredParameters: ReadonlySet<string>,
+): CanonicalManualPurchaseSupplyBlockV1 | null {
+  const plan = canonicalPurchaseBalancePlanV1(raw, rowId, unitId, declaredParameters);
+  if (!plan || plan.policy.manualQuantumViolationPolicy !== CANONICAL_MANUAL_QUANTUM_RETENTION_POLICY_V1
+    || manualQuantity == null) return null;
+  const rawManualQuantity = canonicalExactManualPurchaseQuantityV1(manualQuantity);
+  const provenance = canonicalRetainedManualProvenanceV1(manualProvenance);
+  // A retained order must not mask a known invalid physical/source input.
+  // Unknown expressions remain null; no missing norm or site fact is supplied.
+  const evaluated: Record<string, string | null> = Object.fromEntries(plan.fields.map((field, index) => {
+    const graph = plan.cached.graphs[index];
+    const value = graph.inputParameterIds.every(id => parameters[id] != null && parameters[id] !== "")
+      ? evaluateFormulaGraph(graph.ast, parameters) : null;
+    if (value != null && compareFormulaGraphDecimals(value, "0") < 0) {
+      plan.fail("DEFINITION_INTEGRITY_FAILED", "purchase balance source negative");
+    }
+    return [field, value];
+  }));
+  if (plan.selectedOrder && evaluated.plannedConsumptionExpression != null && evaluated.consumedExpression != null
+    && compareFormulaGraphDecimals(evaluated.plannedConsumptionExpression, evaluated.consumedExpression) > 0) {
+    plan.fail("DEFINITION_INTEGRITY_FAILED", "selected order requirement below planned consumption");
+  }
+  const quantum = evaluated.orderQuantumExpression;
+  if (quantum != null && compareFormulaGraphDecimals(quantum, "0") <= 0) {
+    plan.fail("DEFINITION_INTEGRITY_FAILED", "purchase quantum must be positive");
+  }
+  if (quantum != null && isFormulaGraphDecimalMultiple(rawManualQuantity, quantum)) return null;
+  return {
+    version: "canonical-manual-purchase-supply-block/v1",
+    policy: CANONICAL_MANUAL_QUANTUM_RETENTION_POLICY_V1,
+    ownerRowId: rowId, unitId, rawManualQuantity, manualProvenance: provenance,
+    reasonCode: quantum == null ? "ORDER_QUANTUM_UNCONFIRMED" : "ORDER_QUANTUM_VIOLATION",
+    quantum, procurementReady: false, physicalBalanceReady: false, derivedQuantityPublishable: false,
+  };
+}
+
+/** Validate saved evidence. Downstream references may carry the same block, but
+ * the owner reader must additionally bind ownerRowId, unit and exact quantity to
+ * the saved row/amendment. This parser is not an authorization or migration gate. */
+export function parseCanonicalManualPurchaseSupplyBlockV1(raw: unknown): CanonicalManualPurchaseSupplyBlockV1 | null {
+  if (raw == null) return null;
+  const fail = (): never => {
+    throw Object.assign(new Error("saved manual purchase supply block invalid"), {
+      code: "ARTIFACT_PURCHASE_SUPPLY_BLOCK_INVALID",
+    });
+  };
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return fail();
+  const saved = raw as Record<string, unknown>;
+  const keys = ["version", "policy", "ownerRowId", "unitId", "rawManualQuantity", "manualProvenance", "reasonCode",
+    "quantum", "procurementReady", "physicalBalanceReady", "derivedQuantityPublishable"];
+  if (Object.keys(saved).length !== keys.length || Object.keys(saved).some(key => !keys.includes(key))
+    || saved.version !== "canonical-manual-purchase-supply-block/v1"
+    || saved.policy !== CANONICAL_MANUAL_QUANTUM_RETENTION_POLICY_V1
+    || typeof saved.ownerRowId !== "string" || !saved.ownerRowId.trim()
+    || typeof saved.unitId !== "string" || !saved.unitId.trim()
+    || saved.procurementReady !== false || saved.physicalBalanceReady !== false || saved.derivedQuantityPublishable !== false) return fail();
+  let quantity: string;
+  let provenance: { kind: "manual"; reason?: string };
+  try {
+    quantity = canonicalExactManualPurchaseQuantityV1(saved.rawManualQuantity);
+    provenance = canonicalRetainedManualProvenanceV1(saved.manualProvenance);
+  } catch { return fail(); }
+  const rawProvenance = saved.manualProvenance as Record<string, unknown>;
+  if (Object.keys(rawProvenance).some(key => !["kind", "reason"].includes(key))
+    || (Object.hasOwn(rawProvenance, "reason") && rawProvenance.reason !== provenance.reason)) return fail();
+  if (saved.reasonCode === "ORDER_QUANTUM_UNCONFIRMED") {
+    if (saved.quantum !== null) return fail();
+  } else if (saved.reasonCode === "ORDER_QUANTUM_VIOLATION") {
+    if (typeof saved.quantum !== "string" || !isFormulaGraphExactDecimal(saved.quantum)
+      || compareFormulaGraphDecimals(saved.quantum, "0") <= 0
+      || isFormulaGraphDecimalMultiple(quantity, saved.quantum)) return fail();
+  } else return fail();
+  return {
+    version: "canonical-manual-purchase-supply-block/v1", policy: CANONICAL_MANUAL_QUANTUM_RETENTION_POLICY_V1,
+    ownerRowId: saved.ownerRowId, unitId: saved.unitId, rawManualQuantity: quantity, manualProvenance: provenance,
+    reasonCode: saved.reasonCode, quantum: saved.quantum as string | null,
+    procurementReady: false, physicalBalanceReady: false, derivedQuantityPublishable: false,
+  };
+}
+
+/** Use a public unit label from the existing unit registry and the saved/manual
+ * public title. This message never derives or rounds physical quantities. */
+export function canonicalManualPurchaseSupplyBlockMessageV1(
+  block: CanonicalManualPurchaseSupplyBlockV1, titleRu: string, unitLabelRu: string,
+): string {
+  const reason = block.reasonCode === "ORDER_QUANTUM_VIOLATION"
+    ? `количество не кратно подтверждённому шагу поставки ${block.quantum} ${unitLabelRu}`
+    : "шаг поставки не подтверждён";
+  return `${titleRu}: сохранено ручное количество ${block.rawManualQuantity} ${unitLabelRu}. Закупка не готова: ${reason}. `
+    + "Уточните количество или подтверждённые условия поставки. Сохранённое значение не изменено.";
 }
 
 function assertCanonicalPurchaseOrderQuantityV1(

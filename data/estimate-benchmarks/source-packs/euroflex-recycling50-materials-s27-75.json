@@ -1,0 +1,390 @@
+{
+  "contract": "rik-expo-app.s27-75.euroflex-recycling50-materials.v1",
+  "status": "SOURCE_AUTHORING_PARTIAL_PROFILE_NOT_PUBLISHED",
+  "sourceWorkKey": "rubber_playground_surface",
+  "sourceCaseId": "0741",
+  "catalogBinding": {
+    "decision": "EXPLICIT_NEW_PROFILE_APPEND",
+    "persisted": false,
+    "catalogId": "canonical-work:master:rubber_playground_surface_euroflex_recycling_50mm_rectangular",
+    "sourceIdentity": "manufacturer:euroflex:recycling-50mm:rectangular-t-joints",
+    "workKey": "rubber_playground_surface_euroflex_recycling_50mm_rectangular",
+    "groupMode": "create",
+    "groupId": "wg:master:playground_rubber_tile_surface",
+    "decisionReviewSha256": "9d7f9612d870f9eb65fef4dabe503972295890c4d6a08c2f43b218761758059d"
+  },
+  "semanticOwner": "euroflex:recycling-50mm",
+  "selectedResultRu": "Покрытие площадки резиновой плиткой EUROFLEX Recycling толщиной 50 мм",
+  "scopeRu": "Материалы для прямоугольного участка без внутренних препятствий: полные и заводские половинные плитки EUROFLEX Recycling толщиной 50 мм. Направление рядов фиксировано; каждый второй ряд начинается с половинной плитки. Готовое основание, зоны падения, фактическая подгонка, монтаж и приёмка проверяются отдельно.",
+  "quantityScope": "PARTIAL",
+  "fullTechnicalAcceptance": false,
+  "acceptedNewCompleteTypes": 0,
+  "productionEligible": false,
+  "activationAllowed": false,
+  "geometry": {
+    "inputUnitId": "mm",
+    "ordinaryInputParameterIds": [
+      "surface_length_along_rows_mm",
+      "surface_width_across_rows_mm"
+    ],
+    "wholeMillimetresRequired": true,
+    "rowModuleMm": 500,
+    "measuredAreaOutputUnitId": "m2",
+    "nominalModuleIsNotProofOfActualFit": true,
+    "nonModularLayoutNeedsCutPlan": true,
+    "siteCutHalvesMayNotReplaceFactoryHalfSupply": true
+  },
+  "products": [
+    {
+      "role": "full",
+      "nameRu": "Резиновая плитка EUROFLEX Recycling, 500 × 500 × 50 мм",
+      "manufacturer": "KRAIBURG Relastec",
+      "brand": "EUROFLEX",
+      "productFamily": "Recycling Impact Protection Slab",
+      "lengthMm": 500,
+      "widthMm": 500,
+      "thicknessMm": 50,
+      "nominalAreaM2": "0.25",
+      "unitId": "pcs",
+      "supplierSku": null,
+      "selectedColour": null,
+      "unitPrice": null
+    },
+    {
+      "role": "half",
+      "nameRu": "Половинная резиновая плитка EUROFLEX Recycling, 500 × 250 × 50 мм",
+      "manufacturer": "KRAIBURG Relastec",
+      "brand": "EUROFLEX",
+      "productFamily": "Recycling Impact Protection Slab",
+      "lengthMm": 500,
+      "widthMm": 250,
+      "thicknessMm": 50,
+      "nominalAreaM2": "0.125",
+      "unitId": "pcs",
+      "supplierSku": null,
+      "selectedColour": null,
+      "unitPrice": null
+    }
+  ],
+  "applicability": {
+    "productListedMaximumFreeFallHeightM": 1.5,
+    "requiredObjectFactIds": [
+      "equipment_max_free_fall_height_m",
+      "prepared_base_condition",
+      "fall_zone_condition"
+    ],
+    "preparedBaseValueRu": "Готовое основание принято для плит EUROFLEX Recycling 50 мм и условий площадки",
+    "fallZoneValueRu": "Границы покрытия проверены по фактическому оборудованию и зонам падения",
+    "manufacturerHeightIsNotInstalledPlaygroundCertification": true
+  },
+  "purchase": {
+    "onePayableOrderOwnerPerProductFormat": true,
+    "consumptionAndAreaInformationalOnly": true,
+    "stockReserveAndSupplyQuantumIndependentForEachFormat": true,
+    "unknownSupplyFactsHaveNoZeroOrOneDefault": true,
+    "manualQuantityTitlePriceRetained": true,
+    "unknownConsumptionOrApplicabilityBlocksReadiness": true,
+    "connectorPinsIncludedInProduct": true,
+    "separatePinPurchaseQuantityAccepted": false
+  },
+  "sources": [
+    {
+      "id": "euroflex-pds-9301-r05-2026-09",
+      "titleRu": "Паспорт ударопоглощающих плит EUROFLEX, № 9301, редакция R-05",
+      "edition": "September 2026",
+      "officialUrl": "https://www.kraiburg-relastec.com/pdfs/data-sheets/euroflex/en/data-sheet-euroflex-impact-protection-slab-32.pdf",
+      "currentWorkArtifact": "astra-landscaping-first-packet/EUROFLEX-9301-R05-2026-09.pdf",
+      "sha256": "5d5a503a1879d7f9ada9939a9c5287a866255311926b6ce9e4b1d4f4c13f28fb",
+      "locatorRu": "Стр. 2: толщина 50 мм, высота падения до 1,50 м, размеры 500 × 500 и 500 × 250 мм; стр. 3: смещение швов; стр. 4: соединительные штифты входят в изделие.",
+      "localArtifact": ".release-runtime/r568/s27-75/euroflex-materials/primary/EUROFLEX-9301-R05-2026-09.pdf"
+    },
+    {
+      "id": "euroflex-ii-9301-1-r11-2025-08",
+      "titleRu": "Инструкция по укладке ударопоглощающих плит EUROFLEX, № 9301.1, редакция R-11",
+      "edition": "August 2025",
+      "officialUrl": "https://www.kraiburg-relastec.com/pdfs/installation-instructions/euroflex/en/installation-instruction-euroflex-impact-protection-slab-32.pdf",
+      "currentWorkArtifact": "astra-landscaping-first-packet/EUROFLEX-9301-1-R11-2025-08.pdf",
+      "sha256": "756186d6bd37e6bccbd4d9b6faf31b0747baf121773023eb6a907306fa29f81a",
+      "locatorRu": "Стр. 3–5: пригодность основания; стр. 6–7: каждый второй ряд начинается с половинной плитки, направление Т-образных швов; стр. 10–12: примыкания и склеивание. Расход для краевых профилей на стр. 16 не является расходом клея на всю площадь.",
+      "localArtifact": ".release-runtime/r568/s27-75/euroflex-materials/primary/EUROFLEX-9301-1-R11-2025-08.pdf"
+    }
+  ],
+  "openNeeds": [
+    {
+      "key": "substrate",
+      "nameRu": "Подготовка и дренаж основания",
+      "unitId": "m2",
+      "category": "work",
+      "reasonRu": "Не определены необходимые слои, объёмы и трудозатраты основания."
+    },
+    {
+      "key": "edge-boundary",
+      "nameRu": "Борт, примыкания и переходы покрытия",
+      "unitId": "m",
+      "category": "work",
+      "reasonRu": "Нужны фактические границы, выбранные элементы и способ монтажа."
+    },
+    {
+      "key": "perimeter-glue",
+      "nameRu": "Клей для крайних рядов и примыканий",
+      "unitId": "kg",
+      "category": "material",
+      "reasonRu": "Не подтверждены выбранный клей, геометрия швов и применимый расход."
+    },
+    {
+      "key": "installation-labor",
+      "nameRu": "Укладка резиновой плитки EUROFLEX",
+      "unitId": "man_hour",
+      "category": "work",
+      "reasonRu": "Норма труда не следует из размеров плитки; количество остаётся неизвестным."
+    },
+    {
+      "key": "tools",
+      "nameRu": "Инструменты и расходные материалы для укладки",
+      "unitId": "item",
+      "category": "other",
+      "reasonRu": "Не подтверждены состав, количество, длительность и наличие оснащения."
+    },
+    {
+      "key": "delivery",
+      "nameRu": "Доставка и разгрузка резиновой плитки",
+      "unitId": "service",
+      "category": "service",
+      "reasonRu": "Количество плитки не задаёт число рейсов, грузоподъёмность и время разгрузки."
+    },
+    {
+      "key": "protection-cleanup",
+      "nameRu": "Защита участка и уборка после укладки",
+      "unitId": "service",
+      "category": "service",
+      "reasonRu": "Применимый состав и количества не подтверждены."
+    },
+    {
+      "key": "safety-acceptance",
+      "nameRu": "Проверка покрытия и зон падения оборудования",
+      "unitId": "service",
+      "category": "service",
+      "reasonRu": "Паспорт изделия не подтверждает безопасность и приёмку всей установленной площадки."
+    }
+  ],
+  "conditionalLayoutNeed": {
+    "key": "open-layout",
+    "nameRu": "Раскладка и резка для участка с подгонкой плит",
+    "unitId": "item",
+    "reasonRu": "Для немодульного участка нужны подтверждённая карта раскроя и измеренные потери."
+  },
+  "excludedUnprovenAssumptionsRu": [
+    "Другая толщина, плиты 1000 × 500 мм, EPDM и система Softsystem не входят в этот профиль.",
+    "Заводские половинные плитки не заменяются обрезками целых плит.",
+    "Дополнительный процент потерь, число упаковок, палет и рейсов по одной площади не назначены.",
+    "Наличие, резерв, кратность поставки, цвет, товар поставщика и цена требуют своих фактов.",
+    "Материальная раскладка не закрывает монтаж, основание, клей и приёмку."
+  ],
+  "referenceControl": {
+    "isObjectDefault": false,
+    "lengthAlongRowsMm": 6000,
+    "widthAcrossRowsMm": 4000,
+    "fullTileCount": 92,
+    "factoryHalfTileCount": 8,
+    "nominalCoveredAreaM2": "24",
+    "boundaryRu": "Только указанная прямоугольная раскладка с фиксированным направлением рядов."
+  },
+  "sourceId": "euroflex_recycling50_materials_s2775",
+  "normId": "euroflex_recycling50_geometry_balance_s2775",
+  "sourceTitleRu": "Размеры плит EUROFLEX Recycling 50 мм, условия укладки и расчёт по размерам участка",
+  "sourceManifestPath": ".release-runtime/r568/s27-75/euroflex-materials/primary/euroflex-two-primary-documents-manifest-v1.json",
+  "sourceManifestSha256": "0ab53a42ce69c7042bc1d9e981f24d3d00548b4a2ad58c1dfcea5c2c9e743285",
+  "normativeBindingRowIds": [
+    "euroflex:recycling-50mm:installed-area",
+    "euroflex:recycling-50mm:full-consumed",
+    "euroflex:recycling-50mm:full-order",
+    "euroflex:recycling-50mm:full-packages",
+    "euroflex:recycling-50mm:full-remaining",
+    "euroflex:recycling-50mm:full-free",
+    "euroflex:recycling-50mm:full-shortage",
+    "euroflex:recycling-50mm:full-reserve-deficit",
+    "euroflex:recycling-50mm:half-consumed",
+    "euroflex:recycling-50mm:half-order",
+    "euroflex:recycling-50mm:half-packages",
+    "euroflex:recycling-50mm:half-remaining",
+    "euroflex:recycling-50mm:half-free",
+    "euroflex:recycling-50mm:half-shortage",
+    "euroflex:recycling-50mm:half-reserve-deficit"
+  ],
+  "independentCompletenessMap": {
+    "contract": "rik-expo-app.s26-3.independent-completeness-map.v1",
+    "sourceKind": "PRODUCT_SYSTEM_TDS",
+    "generatedFromCurrentRows": false,
+    "evidenceSha256": "a92ec69df15124a963696b442931317681a9da97ae002100afd79e564300d694",
+    "obligationBasis": "Two documented factory product formats, included product connectors, and the installation/completion/cutting obligations enumerated from the preserved source pack. Resolution row/formula IDs below are links to the candidate, not the basis of the expected obligations.",
+    "entries": [
+      {
+        "operationId": "bounded-manufacturer-slab-layout",
+        "expectedResourceId": "factory-full-recycling-50mm-slabs",
+        "condition": "Exact Recycling 50 mm format, measured rectangular geometry and the admitted fixed row orientation; quantity/order readiness remains subject to actual project and supplier facts.",
+        "sourceId": "euroflex-pds-9301-r05-2026-09",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "euroflex:recycling-50mm:full-order"
+        },
+        "formulaId": "euroflex:recycling-50mm:formula:full-order",
+        "quantityBasis": "Manufacturer dimensions plus project geometry and existing effective-order balance; no universal consumption or labor norm."
+      },
+      {
+        "operationId": "bounded-manufacturer-slab-layout",
+        "expectedResourceId": "factory-half-recycling-50mm-slabs",
+        "condition": "Exact Recycling 50 mm format, measured rectangular geometry and the admitted fixed row orientation; quantity/order readiness remains subject to actual project and supplier facts.",
+        "sourceId": "euroflex-pds-9301-r05-2026-09",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "euroflex:recycling-50mm:half-order"
+        },
+        "formulaId": "euroflex:recycling-50mm:formula:half-order",
+        "quantityBasis": "Manufacturer dimensions plus project geometry and existing effective-order balance; no universal consumption or labor norm."
+      },
+      {
+        "operationId": "site-installation-and-completion",
+        "expectedResourceId": "substrate",
+        "condition": "Retain the applicable operation/material need; these manufacturer documents do not establish its quantity or a ready procurement state.",
+        "sourceId": "euroflex-ii-9301-1-r11-2025-08",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "euroflex:recycling-50mm:open-substrate"
+        },
+        "formulaId": "euroflex:recycling-50mm:formula:open-substrate",
+        "quantityAccepted": false
+      },
+      {
+        "operationId": "site-installation-and-completion",
+        "expectedResourceId": "edge-boundary",
+        "condition": "Retain the applicable operation/material need; these manufacturer documents do not establish its quantity or a ready procurement state.",
+        "sourceId": "euroflex-ii-9301-1-r11-2025-08",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "euroflex:recycling-50mm:open-edge-boundary"
+        },
+        "formulaId": "euroflex:recycling-50mm:formula:open-edge-boundary",
+        "quantityAccepted": false
+      },
+      {
+        "operationId": "site-installation-and-completion",
+        "expectedResourceId": "perimeter-glue",
+        "condition": "Retain the applicable operation/material need; these manufacturer documents do not establish its quantity or a ready procurement state.",
+        "sourceId": "euroflex-ii-9301-1-r11-2025-08",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "euroflex:recycling-50mm:open-perimeter-glue"
+        },
+        "formulaId": "euroflex:recycling-50mm:formula:open-perimeter-glue",
+        "quantityAccepted": false
+      },
+      {
+        "operationId": "site-installation-and-completion",
+        "expectedResourceId": "installation-labor",
+        "condition": "Retain the applicable operation/material need; these manufacturer documents do not establish its quantity or a ready procurement state.",
+        "sourceId": "euroflex-ii-9301-1-r11-2025-08",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "euroflex:recycling-50mm:open-installation-labor"
+        },
+        "formulaId": "euroflex:recycling-50mm:formula:open-installation-labor",
+        "quantityAccepted": false
+      },
+      {
+        "operationId": "site-installation-and-completion",
+        "expectedResourceId": "tools",
+        "condition": "Retain the applicable operation/material need; these manufacturer documents do not establish its quantity or a ready procurement state.",
+        "sourceId": "euroflex-ii-9301-1-r11-2025-08",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "euroflex:recycling-50mm:open-tools"
+        },
+        "formulaId": "euroflex:recycling-50mm:formula:open-tools",
+        "quantityAccepted": false
+      },
+      {
+        "operationId": "site-installation-and-completion",
+        "expectedResourceId": "delivery",
+        "condition": "Retain the applicable operation/material need; these manufacturer documents do not establish its quantity or a ready procurement state.",
+        "sourceId": "euroflex-ii-9301-1-r11-2025-08",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "euroflex:recycling-50mm:open-delivery"
+        },
+        "formulaId": "euroflex:recycling-50mm:formula:open-delivery",
+        "quantityAccepted": false
+      },
+      {
+        "operationId": "site-installation-and-completion",
+        "expectedResourceId": "protection-cleanup",
+        "condition": "Retain the applicable operation/material need; these manufacturer documents do not establish its quantity or a ready procurement state.",
+        "sourceId": "euroflex-ii-9301-1-r11-2025-08",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "euroflex:recycling-50mm:open-protection-cleanup"
+        },
+        "formulaId": "euroflex:recycling-50mm:formula:open-protection-cleanup",
+        "quantityAccepted": false
+      },
+      {
+        "operationId": "site-installation-and-completion",
+        "expectedResourceId": "safety-acceptance",
+        "condition": "Retain the applicable operation/material need; these manufacturer documents do not establish its quantity or a ready procurement state.",
+        "sourceId": "euroflex-ii-9301-1-r11-2025-08",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "euroflex:recycling-50mm:open-safety-acceptance"
+        },
+        "formulaId": "euroflex:recycling-50mm:formula:open-safety-acceptance",
+        "quantityAccepted": false
+      },
+      {
+        "operationId": "non-modular-layout",
+        "expectedResourceId": "verified-cut-and-fit-plan",
+        "condition": "Non-modular measured dimensions or actual fitting outside the nominal rectangular module require a justified cut plan; no assumed zero loss.",
+        "sourceId": "euroflex-ii-9301-1-r11-2025-08",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "euroflex:recycling-50mm:open-layout"
+        },
+        "formulaId": "euroflex:recycling-50mm:formula:open-layout",
+        "quantityAccepted": false
+      },
+      {
+        "operationId": "factory-slab-composition",
+        "expectedResourceId": "included-connectors-full-format",
+        "condition": "Connector pins included in the selected manufacturer product; no separate purchase quantity or second cost owner is established.",
+        "sourceId": "euroflex-pds-9301-r05-2026-09",
+        "resolution": {
+          "kind": "INCLUDED_IN_PARENT",
+          "parentRowId": "euroflex:recycling-50mm:full-order"
+        },
+        "formulaId": "euroflex:recycling-50mm:formula:full-order",
+        "separateQuantityAccepted": false
+      },
+      {
+        "operationId": "factory-slab-composition",
+        "expectedResourceId": "included-connectors-half-format",
+        "condition": "Connector pins included in the selected manufacturer product; no separate purchase quantity or second cost owner is established.",
+        "sourceId": "euroflex-pds-9301-r05-2026-09",
+        "resolution": {
+          "kind": "INCLUDED_IN_PARENT",
+          "parentRowId": "euroflex:recycling-50mm:half-order"
+        },
+        "formulaId": "euroflex:recycling-50mm:formula:half-order",
+        "separateQuantityAccepted": false
+      }
+    ]
+  },
+  "unresolvedApplicableResourceRowIds": [
+    "euroflex:recycling-50mm:open-layout",
+    "euroflex:recycling-50mm:open-substrate",
+    "euroflex:recycling-50mm:open-edge-boundary",
+    "euroflex:recycling-50mm:open-perimeter-glue",
+    "euroflex:recycling-50mm:open-installation-labor",
+    "euroflex:recycling-50mm:open-tools",
+    "euroflex:recycling-50mm:open-delivery",
+    "euroflex:recycling-50mm:open-protection-cleanup",
+    "euroflex:recycling-50mm:open-safety-acceptance"
+  ]
+}

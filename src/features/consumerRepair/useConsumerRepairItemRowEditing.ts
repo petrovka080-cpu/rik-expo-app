@@ -1,3 +1,4 @@
+import { canonicalExactPurchaseEditingV1, canonicalExactPurchaseInputV1, canonicalExactPurchaseEditMatchesV1, normalizeCanonicalExactPurchaseEditV1, stepCanonicalExactPurchaseV1 } from "./canonicalExactPurchaseEditingV1";
 import React from "react";
 import {
   TextInput,
@@ -136,7 +137,8 @@ export function useConsumerRepairItemRowEditing({
   // Deferred and retained handlers must obey the current source ownership.
   const quantityEditableRef = React.useRef(quantityEditable);
   quantityEditableRef.current = quantityEditable;
-  const itemQuantityText = formatInputNumber(item.quantity);
+  const exactQuantity = canonicalExactPurchaseEditingV1(item);
+  const itemQuantityText = canonicalExactPurchaseInputV1(item) ?? formatInputNumber(item.quantity);
   const itemPriceText = formatInputNumber(item.unitPrice);
   const itemSpecificationText = item.titleRu;
   const quantityInputRef = React.useRef<React.ElementRef<typeof TextInput> | null>(null);
@@ -213,13 +215,13 @@ export function useConsumerRepairItemRowEditing({
       const committedValue = quantityCommittedValueRef.current;
       if (
         committedValue != null
-        && !editableNumericTextMatchesConfirmedValue(committedValue, itemQuantityText)
+        && !(exactQuantity ? canonicalExactPurchaseEditMatchesV1(committedValue, itemQuantityText) : editableNumericTextMatchesConfirmedValue(committedValue, itemQuantityText))
       ) return;
       setQuantityText(itemQuantityText);
       quantityCommittedValueRef.current = null;
       setQuantitySelection({ start: itemQuantityText.length, end: itemQuantityText.length });
     }
-  }, [item.id, itemQuantityText]);
+  }, [item.id, itemQuantityText, exactQuantity]);
 
   React.useEffect(() => {
     if (!priceEditingRef.current) {
@@ -269,8 +271,15 @@ export function useConsumerRepairItemRowEditing({
     source: ConsumerRepairQuantityEditSource = "direct_input",
   ) => {
     if (!editingLifetimeActiveRef.current || numericEditResetKeyRef.current !== numericEditResetKey || !quantityEditableRef.current) return;
-    const previousQuantity = item.quantity ?? null;
-    const nextQuantity = parseInputNumber(nextValue, item.quantity ?? 0);
+    let exactNext: string | null = null;
+    if (exactQuantity) {
+      try { exactNext = normalizeCanonicalExactPurchaseEditV1(nextValue); }
+      catch { onQuantityChange(item.id, nextValue); return; }
+      nextValue = exactNext ?? "";
+    }
+    // Numeric telemetry is not an authority for exact source-approved edits.
+    const previousQuantity = exactQuantity ? null : item.quantity ?? null;
+    const nextQuantity = exactQuantity ? null : parseInputNumber(nextValue, item.quantity ?? 0);
     const operationId = createConsumerRepairQuantityEditOperationId({
       itemId: item.id,
       source,
@@ -289,7 +298,7 @@ export function useConsumerRepairItemRowEditing({
     });
     const baseRevisionId = consumerRepairRowCanonicalRevisionId(item);
     pendingQuantityActionRef.current = baseRevisionId && consumerRepairRowCode(item)
-      ? { meta, itemId: item.id, baseRevisionId, expectedQuantityText: formatInputNumber(nextQuantity), expectedManual: true }
+      ? { meta, itemId: item.id, baseRevisionId, expectedQuantityText: exactQuantity ? exactNext ?? exactQuantity.calculatedQuantityText ?? "" : formatInputNumber(nextQuantity), expectedManual: exactQuantity ? exactNext != null : true }
       : null;
     setQuantityText(nextValue);
     if (source === "direct_input") {
@@ -327,7 +336,7 @@ export function useConsumerRepairItemRowEditing({
       if (!editingLifetimeActiveRef.current || numericEditResetKeyRef.current !== numericEditResetKey || !quantityEditableRef.current) return;
       onQuantityChange(item.id, nextValue, meta);
     }, nativeVisible);
-  }, [item, onQuantityChange, numericEditResetKey]);
+  }, [item, onQuantityChange, numericEditResetKey, exactQuantity]);
 
   const beginQuantityEdit = React.useCallback(() => {
     if (!editingLifetimeActiveRef.current || numericEditResetKeyRef.current !== numericEditResetKey || !quantityEditableRef.current) return;
@@ -374,9 +383,14 @@ export function useConsumerRepairItemRowEditing({
     quantityEditingRef.current = false;
     setQuantityEditing(false);
     quantityCommittedValueRef.current = null;
+    if (exactQuantity) {
+      try { const next = stepCanonicalExactPurchaseV1(quantityText, delta); if (next != null) commitQuantityText(next, "stepper"); }
+      catch { onQuantityChange(item.id, quantityText); }
+      return;
+    }
     const baseQuantity = parseInputNumber(quantityText, item.quantity ?? 0);
     commitQuantityText(formatInputNumber(Math.max(0, baseQuantity + delta)), "stepper");
-  }, [commitQuantityText, item.quantity, quantityText, numericEditResetKey]);
+  }, [commitQuantityText, item, quantityText, numericEditResetKey, exactQuantity, onQuantityChange]);
 
   const restoreCalculatedQuantity = React.useCallback((calculatedQuantity: number) => {
     if (!editingLifetimeActiveRef.current || numericEditResetKeyRef.current !== numericEditResetKey) return;
@@ -388,11 +402,11 @@ export function useConsumerRepairItemRowEditing({
     }
     quantityEditingRef.current = false;
     setQuantityEditing(false);
-    const nextValue = formatInputNumber(calculatedQuantity);
+    const nextValue = exactQuantity ? exactQuantity.calculatedQuantityText ?? "" : formatInputNumber(calculatedQuantity);
     const baseRevisionId = consumerRepairRowCanonicalRevisionId(item);
     const meta: ConsumerRepairQuantityChangeMeta = {
-      operationId: createConsumerRepairQuantityEditOperationId({ itemId: item.id, source: "programmatic", nextQuantity: calculatedQuantity }),
-      source: "programmatic", previousQuantity: item.quantity ?? null, nextQuantity: calculatedQuantity,
+      operationId: createConsumerRepairQuantityEditOperationId({ itemId: item.id, source: "programmatic", nextQuantity: exactQuantity ? null : calculatedQuantity }),
+      source: "programmatic", previousQuantity: exactQuantity ? null : item.quantity ?? null, nextQuantity: exactQuantity ? null : calculatedQuantity,
     };
     const canonical = Boolean(baseRevisionId && consumerRepairRowCode(item));
     if (canonical && baseRevisionId) {
@@ -403,7 +417,7 @@ export function useConsumerRepairItemRowEditing({
     setQuantityText(nextValue);
     if (canonical) onQuantityChange(item.id, "", meta);
     else onQuantityChange(item.id, "");
-  }, [item, onQuantityChange, numericEditResetKey]);
+  }, [item, onQuantityChange, numericEditResetKey, exactQuantity]);
 
   const rememberQuantitySelection = React.useCallback((
     event: NativeSyntheticEvent<TextInputSelectionChangeEventData>,

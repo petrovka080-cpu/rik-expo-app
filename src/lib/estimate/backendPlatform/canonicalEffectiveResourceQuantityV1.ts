@@ -60,6 +60,8 @@ export function planCanonicalEffectiveResourceQuantitiesV1(
     if (definition.truth_metadata?.effective_resource_quantity_v1 != null && !owners.has(definition.parameter_id)) invalid(definition.parameter_id);
   }
   const dependencies = new Map<string, string[]>();
+  const retentionEnabled = resources.some(resource =>
+    (resource.resource_graph?.purchaseBalanceV1 as Record<string, unknown> | undefined)?.manualQuantumViolationPolicy === "retain-raw-and-block-quantum");
   // One compile owns this cache: shared requiredWhen nodes are parsed once,
   // while a changed definition in a later request is always inspected afresh.
   const conditionDependencies = new Map<object, string[]>();
@@ -70,12 +72,34 @@ export function planCanonicalEffectiveResourceQuantitiesV1(
       ...(Array.isArray(resource.resource_graph?.inputParameterIds) ? resource.resource_graph.inputParameterIds as string[] : []),
       ...(Array.isArray(resource.resource_graph?.titleSpecificationParameterIds) ? resource.resource_graph.titleSpecificationParameterIds as string[] : []),
     ]);
+    if (retentionEnabled && typeof resource.resource_graph?.titleSpecificationParameterId === "string") {
+      ids.add(resource.resource_graph.titleSpecificationParameterId);
+    }
+    if (retentionEnabled && resource.resource_graph?.purchaseBalanceV1 != null) {
+      const policy = resource.resource_graph.purchaseBalanceV1 as Record<string, unknown>;
+      for (const key of ["consumedExpression", "stockExpression", "reserveExpression", "orderQuantumExpression", "plannedConsumptionExpression"]) {
+        if (typeof policy[key] === "string") compileFormulaGraph(policy[key] as string).inputParameterIds.forEach(id => ids.add(id));
+      }
+    }
     // A transport fact's requiredWhen can read the effective order even when
     // that fact is not an arithmetic operand in this particular resource.
     for (const id of [...ids]) {
       const constraints = parameters.get(id)?.constraints_json;
       canonicalConditionParameterIds(constraints?.requiredWhen, conditionDependencies).forEach(dependency => ids.add(dependency));
       canonicalConditionParameterIds(constraints?.forbiddenWhen, conditionDependencies).forEach(dependency => ids.add(dependency));
+    }
+    if (retentionEnabled) {
+      const queue = [...ids], seen = new Set<string>();
+      for (let cursor = 0; cursor < queue.length; cursor += 1) {
+        const parameterId = queue[cursor];
+        if (seen.has(parameterId)) continue;
+        seen.add(parameterId);
+        const constraints = parameters.get(parameterId)?.constraints_json;
+        for (const dependency of [...canonicalConditionParameterIds(constraints?.requiredWhen, conditionDependencies),
+          ...canonicalConditionParameterIds(constraints?.forbiddenWhen, conditionDependencies)]) {
+          ids.add(dependency); if (!seen.has(dependency)) queue.push(dependency);
+        }
+      }
     }
     dependencies.set(resource.row_id, [...new Set([...ids].flatMap(id => owners.has(id) ? [owners.get(id)!] : []))]);
   }
@@ -94,7 +118,7 @@ export function planCanonicalEffectiveResourceQuantitiesV1(
   resources.forEach(resource => visit(resource.row_id));
   const stripIncoming = (values: Record<string, unknown>) => !values || typeof values !== "object" || Array.isArray(values)
     ? values : Object.fromEntries(Object.entries(values).filter(([id]) => !owners.has(id)));
-  return { outputs, owners, ordered, stripIncoming };
+  return { outputs, owners, ordered, stripIncoming, dependencies };
 }
 
 /** Persist only this compile's authoritative effective outputs. An inherited

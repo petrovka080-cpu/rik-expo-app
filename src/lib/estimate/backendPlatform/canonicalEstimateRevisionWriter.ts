@@ -197,6 +197,7 @@ export function buildCanonicalRevisionCommitPayload(input: {
   derivedParameters?: Record<string, unknown>;
   identityContract: Record<string, unknown>;
   preliminaryNeeds?: Record<string, unknown>[];
+  purchaseSupplyIndexV1?: import("./canonicalPurchaseSupplyReadinessV1").CanonicalPurchaseSupplyIndexV1;
   compositionSelectionV1?: import('./canonicalEstimateCompositionSelectionV1').CanonicalEstimateCompositionSelectionV1;
   roofPrimerPrerequisiteV1?: import('./canonicalRoofPrimerPrerequisiteV1').RoofPrimerPrerequisiteDecisionV1|null;
   roofPreparationMigrationV1?: import('./canonicalRoofPreparationMigrationV1').RoofPreparationMigrationProofV1|null;
@@ -223,6 +224,7 @@ export function buildCanonicalRevisionCommitPayload(input: {
       parentRevisionId: input.parentRevisionId,
       identityContract: input.identityContract,
       preliminaryNeeds: input.preliminaryNeeds ?? [],
+      ...(input.purchaseSupplyIndexV1 ? { purchaseSupplyIndexV1: input.purchaseSupplyIndexV1 } : {}),
       ...(input.compositionSelectionV1 ? {compositionSelectionV1:input.compositionSelectionV1} : {}),
       ...(input.roofPrimerPrerequisiteV1==null?{}:{roofPrimerPrerequisiteV1:input.roofPrimerPrerequisiteV1}),
       ...(input.roofPreparationMigrationV1==null?{}:{roofPreparationMigrationV1:input.roofPreparationMigrationV1}),

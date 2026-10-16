@@ -1,8 +1,10 @@
 import { canonicalMaterialQuantityBasisFromRow } from "./canonicalMaterialQuantityProjection";
 import { normalizePublicBoqNameRu } from "../publicBoqNaming";
 import { canonicalPublicResourceDisplayPresentationV1 as canonicalPublicResourcePresentationV1 } from './canonicalPublicResourcePresentationV1';
-import { canonicalPublicEstimateRowNameRu, canonicalPublicEstimateChoiceLabelRu, canonicalPublicEstimateWorkTitleRu } from './canonicalPublicEstimateLanguageRu';
+import { canonicalPublicEstimateRowNameRu, canonicalPublicEstimateRowDetailsRu, canonicalPublicEstimateChoiceLabelRu, canonicalPublicEstimateWorkTitleRu } from './canonicalPublicEstimateLanguageRu';
 import { assertCanonicalPurchaseReadinessV1 } from "./canonicalPurchaseBalanceV1";
+import { assertCanonicalPurchaseSupplyRowV1, parseCanonicalExactPurchaseQuantityV1 } from "./canonicalPurchaseSupplyReadinessV1";
+import { assertCanonicalPurchaseSupplyRevisionV1, assertCanonicalPurchaseSupplyReadyV1, canonicalPurchaseSupplyBlocksV1 } from "./canonicalPurchaseSupplyReadinessV1";
 import { formatEstimateUnitLabel } from "../../ai/globalEstimate/formatEstimateUnitLabel";
 import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
 import { canonicalEstimateSha256HexText } from "./canonicalEstimateSha256";
@@ -11,9 +13,9 @@ import { compareFormulaGraphDecimals, isFormulaGraphExactDecimal } from "./formu
 import { canonicalArtifactPurchaseBalance } from "./canonicalPersistedPurchaseBalance";
 export { canonicalArtifactPurchaseBalance } from "./canonicalPersistedPurchaseBalance";
 
-export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r10";
-export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r10-plain-public-names";
-export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:17";
+export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r11";
+export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r12-manual-supply-confirmation";
+export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:19";
 
 /** Keep caller idempotency within each renderer; do not collide with legacy jobs. */
 export function canonicalProcurementRequestKey(idempotencyKey: string): string {
@@ -102,7 +104,10 @@ export function canonicalArtifactPreliminaryNeeds(
   return needs.flatMap((value): CanonicalArtifactRow[] => {
     if (!value || typeof value !== "object" || Array.isArray(value)) return [];
     const need = value as Record<string, unknown>;
+    // Validate the raw immutable need before this presentation adapter clears flags/amount.
+    assertCanonicalPurchaseSupplyRowV1(need, revision.amendment_contract);
     if (!String(need.row_id ?? "").trim() || !String(need.need_sha256 ?? "").trim()) return [];
+    const supplyBlocked = canonicalPurchaseSupplyBlocksV1(objectValue(need.calculation_trace).purchaseSupplyBlocksV1).length > 0;
     return [{
       ...need,
       row_id: need.row_id,
@@ -113,7 +118,7 @@ export function canonicalArtifactPreliminaryNeeds(
       ownership_status: "PRELIMINARY_NEED",
       row_sha256: need.need_sha256,
       amount: null,
-      currency_code: null,
+      currency_code: supplyBlocked ? need.currency_code ?? null : null,
     }];
   });
 }
@@ -154,15 +159,18 @@ export function canonicalArtifactSpecificationParts(row: CanonicalArtifactRow, p
   const selectedSpecification = selectedParts.join(", ");
   const selectedValues = new Set(selected.map(spec => canonicalPublicEstimateChoiceLabelRu(spec.value).trim()));
   const presentation = canonicalArtifactPublicResourcePresentationV1(row);
-  const details = presentation ? [presentation.brandAndModelRu, presentation.specificationRu, ...presentation.detailsRu]
+  const namedDetails = canonicalPublicEstimateRowDetailsRu({ rowId: typeof row.row_id === 'string' ? row.row_id : null,
+    titleRu: typeof row.title_ru === 'string' ? row.title_ru : '',
+    manualTitleOverride: objectValue(row.calculation_trace).manualTitleOverride === true });
+  const details = [...new Set([...(presentation ? [presentation.brandAndModelRu, presentation.specificationRu, ...presentation.detailsRu] : []), ...namedDetails]
     .filter((part): part is string => typeof part === 'string' && !selectedParts.includes(part)
-      && part !== selectedSpecification && !selectedValues.has(part.trim())) : [];
-  return [...selected, ...(details.length ? [{ parameterId: 'resource_presentation_v1', value: details.join('; '), parts: [...new Set(details)] }] : [])];
+      && part !== selectedSpecification && !selectedValues.has(part.trim())))];
+  return [...selected, ...(details.length ? [{ parameterId: 'resource_presentation_v1', value: details.join('; '), parts: details }] : [])];
 }
 
 export function canonicalArtifactPublicResourcePresentationV1(row: Record<string, unknown>) {
   const trace = objectValue(row.calculation_trace), graph = objectValue(trace.resourceGraph);
-  return canonicalPublicResourcePresentationV1({ titleRu: String(row.title_ru ?? '').trim(),
+  return canonicalPublicResourcePresentationV1({ rowId: String(row.row_id ?? ''), titleRu: String(row.title_ru ?? '').trim(),
     descriptor: graph.publicResourcePresentationV1, manualTitleOverride: trace.manualTitleOverride === true });
 }
 
@@ -190,6 +198,7 @@ export function canonicalArtifactWorkMeasure(rows: readonly CanonicalArtifactRow
 function projectProcurementRow(row: CanonicalArtifactRow, parameters: Record<string, unknown>) {
   const calculationTrace = objectValue(row.calculation_trace);
   const purchaseBalance = canonicalArtifactPurchaseBalance(row);
+  const exactQuantity = parseCanonicalExactPurchaseQuantityV1(calculationTrace.exactPurchaseQuantityV1);
   const materialQuantity = purchaseBalance ? null : canonicalMaterialQuantityBasisFromRow({
     rowId: String(row.row_id),
     quantity: Number(row.quantity),
@@ -203,7 +212,7 @@ function projectProcurementRow(row: CanonicalArtifactRow, parameters: Record<str
   });
   const netQuantity = purchaseBalance?.netQuantity ?? materialQuantity?.netQuantity ?? row.quantity;
   const grossQuantity = purchaseBalance?.grossQuantity ?? materialQuantity?.grossQuantity ?? row.quantity;
-  const procurementQuantity = purchaseBalance?.procurementQuantity ?? materialQuantity?.procurementQuantity ?? row.quantity;
+  const procurementQuantity = exactQuantity ? exactQuantity.quantityText : purchaseBalance?.procurementQuantity ?? materialQuantity?.procurementQuantity ?? row.quantity;
   const operation = canonicalEstimateOperationReference(objectValue(calculationTrace.resourceGraph).operationCompositionV1);
   return {
     rowId: String(row.row_id),
@@ -242,6 +251,11 @@ export function buildCanonicalProcurementProjection(input: {
   procurementRows: CanonicalArtifactRow[];
   sourceRows?: CanonicalArtifactRow[];
 }) {
+  const supplyRows = [...(input.sourceRows ?? input.procurementRows), ...canonicalArtifactPreliminaryNeeds(input.revision)];
+  // Readiness applies to the complete saved composition, including needs that
+  // deliberately have no procurement flag. Validate before filtering/export.
+  assertCanonicalPurchaseSupplyRevisionV1(supplyRows, input.revision.amendment_contract);
+  assertCanonicalPurchaseSupplyReadyV1(supplyRows);
   assertCanonicalPurchaseReadinessV1(input.sourceRows ?? input.procurementRows);
   const parameters = objectValue(input.revision.input_parameters);
   const technologyChecks = canonicalArtifactTechnologyChecks(parameters);

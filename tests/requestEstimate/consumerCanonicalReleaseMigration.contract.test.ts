@@ -56,6 +56,26 @@ beforeEach(() => {
   jest.mocked(getAllCanonicalEstimateRevisionRows).mockResolvedValue([{ rowId: "membrane", unitId: "m2" }] as never);
 });
 
+describe('primary quantities omitted from the user snapshot', () => {
+  it.each(['removed', 'unit', 'meaning'] as const)('blocks an incompatible assumed primary before consent (%s)', async change => {
+    const before = {...oldCatalog, parameterSchema: [{...target.parameterSchema[0]!, parameterId: 'q',
+      unitId: 'm3', semanticParameterKey: 'foundation-volume', valueSourceRole: 'VISIBLE_BASELINE_ASSUMPTION' as const}]};
+    const after = {...target, parameterSchema: [{...before.parameterSchema[0]!,
+      ...(change === 'removed' ? {parameterId: 'repair_scope_volume_m3'} : {}),
+      ...(change === 'unit' ? {unitId: 'm2'} : {}),
+      ...(change === 'meaning' ? {semanticParameterKey: 'repair-surface'} : {}),
+    }]};
+    const parent = {...revision, primaryMeasureParameterId: 'q', parameters: {q: '100'}, userInputSnapshot: {}};
+    const snapshot = JSON.stringify(parent), confirm = jest.fn().mockResolvedValue(true);
+    getCatalog.mockImplementation(async (_id, _signal, releaseId) => releaseId ? before : after);
+    await expect(resolveConsumerCanonicalRecalculationCatalog({revision: parent, confirmReleaseMigration: confirm}))
+      .rejects.toMatchObject({code: 'RELEASE_MIGRATION_PARAMETER_BINDING_REVIEW_REQUIRED'});
+    expect(confirm).not.toHaveBeenCalled();
+    expect(recalculateCanonicalEstimateAndLoad).not.toHaveBeenCalled();
+    expect(JSON.stringify(parent)).toBe(snapshot);
+  });
+});
+
 describe('a new composition-only command on an admitted predecessor',()=>{
  const key='["roof","field"]',selection={contractVersion:'canonical-estimate-composition-selection/v1' as const,excludedOperationKeys:[key],excludedRowIds:[]};
  function catalogs(change=false){getCatalog.mockImplementation(async(_id,_signal,releaseId)=>({...releaseId?oldCatalog:target,

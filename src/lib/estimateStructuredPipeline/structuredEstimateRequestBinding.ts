@@ -257,7 +257,7 @@ export function buildStructuredEstimateRequestDraft(
           unit: need.unitId,
           unitLabel: formatEstimateUnitLabel(need.unitId),
           unitPrice: need.unitPrice == null ? null : Number(need.unitPrice),
-          currency: payload.canonicalBackend ? payload.totals.currency : "KGS",
+          currency: need.currencyCode ?? (payload.canonicalBackend ? payload.totals.currency : "KGS"),
           source: "reference_price_book" as const,
           category: normalizedCategory,
           sourceId: "canonical-definition-preliminary-need",
@@ -290,6 +290,8 @@ export function buildStructuredEstimateRequestDraft(
               canonicalDerivedQuantityEditPolicyV1: need.derivedQuantityEditPolicy ?? need.calculationTrace?.derivedQuantityEditPolicy,
             }),
             canonicalPurchaseRequirement: need.purchaseRequirement ?? need.calculationTrace?.purchaseRequirementV1,
+            ...((need.purchaseSupplyBlocks ?? need.calculationTrace?.purchaseSupplyBlocksV1) == null ? {} : {canonicalPurchaseSupplyBlocksV1:need.purchaseSupplyBlocks ?? need.calculationTrace?.purchaseSupplyBlocksV1}),
+            ...((need.exactPurchaseQuantity ?? need.calculationTrace?.exactPurchaseQuantityV1) == null ? {} : {canonicalExactPurchaseQuantityV1:need.exactPurchaseQuantity ?? need.calculationTrace?.exactPurchaseQuantityV1}),
             canonicalCostTreatment: need.costTreatment ?? (need.calculationTrace?.resourceGraph as Record<string, unknown> | undefined)?.costTreatment ?? null,
             canonicalIncludedCostOwnerTitleRu: typeof ownerId === 'string' ? paidOwnerTitles.get(ownerId) ?? null : null,
             canonicalCommercialCostCoverageDecisionV1: coverageDecision ?? null,
@@ -302,12 +304,12 @@ export function buildStructuredEstimateRequestDraft(
             canonicalParameterRequirementReference: requirementReference,
             sourceManagedMissingParameterIds: need.missingParameterIds.filter((parameterId) =>
               parameterRequirementById.get(parameterId)?.sourceConfirmationRequired === true),
-            includedInEstimate: need.selected,
+            includedInEstimate: (need.purchaseSupplyBlocks?.length ?? 0) > 0 ? false : need.selected,
             // A material does not stop being a procurement need merely because
             // its quantity or specification is still preliminary.  The final
             // Marketplace send remains gated by canonicalPreliminaryNeed, but
             // the draft procurement scope must stay visible to the user.
-            includedInProcurement: need.selected && need.procurementEligible
+            includedInProcurement: !(need.purchaseSupplyBlocks?.length) && need.selected && need.procurementEligible
               && need.commercialCostCoverageDecision == null
               && (need.calculationTrace?.resourceGraph as Record<string, unknown> | undefined)?.commercialCostCoverageDecisionV1 == null,
             procurementEligible: need.procurementEligible,
@@ -322,10 +324,11 @@ export function buildStructuredEstimateRequestDraft(
               preliminaryNeed: true,
             },
           },
-          priceStatus: "PRICE_MISSING" as const,
-          priceSource: "missing" as const,
+          priceStatus: need.purchaseSupplyBlocks?.length && need.unitPrice != null ? "USER_ENTERED_PRICE" as const : "PRICE_MISSING" as const,
+          priceSource: need.purchaseSupplyBlocks?.length && need.unitPrice != null ? "user" as const : "missing" as const,
           priceSourceId: null,
-          priceSourceLabel: "Цена применяется после уточнения количества и условий",
+          priceSourceLabel: need.purchaseSupplyBlocks?.length && need.unitPrice != null
+            ? "Сохранённая ручная цена (справочно)" : "Цена применяется после уточнения количества и условий",
           confidence: "medium" as const,
           addedBy: "ai" as const,
           catalogBindingStatus: itemType === "material" ? "no_catalog_match" as const : "not_material_row" as const,

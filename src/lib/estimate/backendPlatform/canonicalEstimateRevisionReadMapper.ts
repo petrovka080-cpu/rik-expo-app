@@ -1,3 +1,4 @@
+import { assertCanonicalPurchaseSupplyRowV1 } from "./canonicalPurchaseSupplyReadinessV1";
 import {readRoofStageRestorationV6} from './canonicalRoofScreed25MigrationV1';
 import {readRoofStageRestorationV5} from './canonicalRoofHangingGuttersMigrationV1';
 import {
@@ -164,7 +165,9 @@ export function canonicalEstimateRevisionRowFromStorage(
   row: StorageRecord,
   price: StorageRecord | null,
   sourceEvidence: StorageRecord | null = null,
+  amendmentContract: unknown = undefined,
 ): CanonicalEstimateRevisionRowView {
+  assertCanonicalPurchaseSupplyRowV1(row, amendmentContract);
   const trace = record(price?.resolution_trace);
   const priceSource: CanonicalEstimateRevisionRowPriceSource = {
     kind: priceSourceKind(row, price, trace),

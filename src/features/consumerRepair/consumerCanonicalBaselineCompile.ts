@@ -2358,6 +2358,18 @@ export function buildCanonicalBaselinePlan(input: {
       || userQuantityParameter.formulaConsumers.length > 0)
     ? userQuantityParameterId
     : null;
+  // The passport may identify a measure produced by the compiler (for example,
+  // area from two lengths). Select its identity without accepting a user value
+  // for that readonly output. Ordinary inputs retain the existing ingress rules.
+  const declaredConnectedCompilerDerivedMeasureId = declaredPrimaryMeasure
+    && (declaredPrimaryMeasure.valueType === "decimal" || declaredPrimaryMeasure.valueType === "integer")
+    && declaredPrimaryMeasure.visibilityRole === "INTERNAL_ONLY"
+    && declaredPrimaryMeasure.valueSourceRole === "COMPILER_DERIVED_RESOURCE_QUANTITY"
+    && typeof declaredPrimaryMeasure.unitId === "string" && declaredPrimaryMeasure.unitId.trim().length > 0
+    && Array.isArray(declaredPrimaryMeasure.formulaConsumers)
+    && declaredPrimaryMeasure.formulaConsumers.length > 0
+    && declaredPrimaryMeasure.formulaConsumers.every(id => typeof id === "string" && id.trim().length > 0)
+    ? declaredPrimaryMeasure.parameterId : undefined;
   const formulaConnectedPrimaryParameterId = input.catalog.parameterSchema
     .filter((parameter) => parameter.visibilityRole == null || parameter.visibilityRole === "USER_INPUT")
     .filter((parameter) => parameter.valueType === "decimal" || parameter.valueType === "integer")
@@ -2439,6 +2451,7 @@ export function buildCanonicalBaselinePlan(input: {
         : selectedJackingInput != null
           ? ROAD_CROSSING_SLEEVES_PRIMARY_MEASURE_PARAMETER_ID_R1
     : connectedUserQuantityParameterId
+    ?? declaredConnectedCompilerDerivedMeasureId
     ?? formulaConnectedPrimaryParameterId;
   const preferredPrimaryParameter = input.catalog.parameterSchema.find(
     (parameter) => parameter.parameterId === preferredPrimaryMeasureParameterId,
@@ -2471,6 +2484,19 @@ export function buildCanonicalBaselinePlan(input: {
     input.catalog.parameterSchema,
     validation.issues,
   );
+  if (primaryMeasureParameterId === declaredConnectedCompilerDerivedMeasureId) {
+    // A missing derived identity cannot be saved by the revision writer until
+    // its ordinary object measurements exist. Reuse their validation issues so
+    // the existing precompile editor collects them before the compile request.
+    for (const issue of validation.issues) {
+      const parameter = schemaById.get(issue.parameterId);
+      if (issue.code === "REQUIRED" && parameter?.required === true
+        && parameter.visibilityRole === "USER_INPUT" && parameter.valueSourceRole === "USER_INPUT"
+        && parameter.provenance?.consumer_input_role_v1 === "OBJECT_FACT"
+        && (parameter.valueType === "decimal" || parameter.valueType === "integer")
+        && !blockingIssues.includes(issue)) blockingIssues.push(issue);
+    }
+  }
   if (blockingIssues.length > 0) {
     const missing = blockingIssues
       .filter((issue) => issue.code === "REQUIRED" || issue.code === "REQUIRED_WHEN")

@@ -1,3 +1,4 @@
+import { parseCanonicalExactPurchaseQuantityV1 } from "./canonicalPurchaseSupplyReadinessV1";
 import {
   canonicalArtifactMoney,
   canonicalArtifactQuantity,
@@ -19,9 +20,10 @@ import { resolveCanonicalEstimateExplicitRowCategory } from './canonicalEstimate
 import {canonicalScopeRequirementDecisionV1,groupCanonicalScopeRequirementsV1} from './canonicalScopeRequirementV1';
 import {readRoofPrimerPrerequisiteDecisionV1,roofPrimerPhaseRuV1} from './canonicalRoofPrimerPrerequisiteV1';
 import {canonicalMachineHourPriceNeedsConfirmationV1} from './canonicalMachineHourPriceCoverageV1';
+import { assertCanonicalPurchaseSupplyRevisionV1, canonicalPurchaseSupplyWarningV1 } from "./canonicalPurchaseSupplyReadinessV1";
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-69-required-resource-template49" as const;
+  "canonical-professional-pdf.r4-a13-s27-75-subwork-resources-template52" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -165,12 +167,17 @@ function selectedResourceTitle(row: CanonicalArtifactRow, parameters: Record<str
 
 function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, parameters: Record<string, unknown>,catalogId:string): string {
   const category = canonicalProfessionalPdfCategory(row);
-  const includedInEstimate = row.included_in_estimate === true;
+  const supplyWarning = canonicalPurchaseSupplyWarningV1(row);
+  const exactQuantity = parseCanonicalExactPurchaseQuantityV1(objectValue(row.calculation_trace).exactPurchaseQuantityV1);
+  const savedQuantityLabel = exactQuantity ? exactQuantity.quantityText ?? "Не рассчитано" : canonicalArtifactQuantity(row.quantity);
+  const visibleQuantityLabel = supplyWarning && exactQuantity?.manualQuantityText != null
+    ? `${savedQuantityLabel} (введено вручную; заказ не подтверждён)` : savedQuantityLabel;
+  const includedInEstimate = row.included_in_estimate === true && supplyWarning == null;
   const physicalExcluded = objectValue(row.calculation_trace).physicalScopeExcludedV1 != null;
-  const scopeLabel = physicalExcluded ? 'Исключено пользователем из состава. Можно восстановить.'
+  const scopeLabel = supplyWarning ? null : physicalExcluded ? 'Исключено пользователем из состава. Можно восстановить.'
     : !includedInEstimate && objectValue(objectValue(row.calculation_trace).resourceGraph).costTreatment === 'OWN_COST'
       ? 'Физическая потребность сохранена; стоимость в этой смете исключена.' : null;
-  const rental = canonicalArtifactRentalBasis(row, parameters);
+  const rental = supplyWarning ? null : canonicalArtifactRentalBasis(row, parameters);
   const quantityLabel = (value: unknown, unit = row.unit_id) => `${canonicalArtifactQuantity(value)} ${canonicalArtifactUnit({ unit_id: unit })}`;
   // Detailed stock, reserve and remainder balances belong to procurement;
   // the estimate keeps its saved quantity and exact resource name.
@@ -188,12 +195,12 @@ function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, para
     : row.amount == null
     ? "—"
     : canonicalArtifactMoney(row.amount, row.currency_code);
-  return `<tr>
+  return `<tr${supplyWarning ? ' class="purchase-supply-block"' : ""}>
     <td class="number">${displayOrdinal}</td>
-    <td class="name"><strong>${escapeCanonicalArtifactHtml(selectedResourceTitle(row, parameters))}</strong>${rentalText ? `<span>${escapeCanonicalArtifactHtml(rentalText)}</span>` : ""}${scopeLabel ? `<span>${escapeCanonicalArtifactHtml(scopeLabel)}</span>` : ''}${machinePriceNotice?`<span>${machinePriceNotice}</span>`:''}</td>
+    <td class="name"><strong>${escapeCanonicalArtifactHtml(selectedResourceTitle(row, parameters))}</strong>${rentalText ? `<span>${escapeCanonicalArtifactHtml(rentalText)}</span>` : ""}${scopeLabel ? `<span>${escapeCanonicalArtifactHtml(scopeLabel)}</span>` : ''}${machinePriceNotice?`<span>${machinePriceNotice}</span>`:''}${supplyWarning ? `<span>${escapeCanonicalArtifactHtml(supplyWarning)}</span>` : ''}</td>
     <td>${escapeCanonicalArtifactHtml(CATEGORY_TITLES[category])}</td>
     <td class="unit">${escapeCanonicalArtifactHtml(canonicalArtifactUnit(row))}</td>
-    <td class="numeric">${escapeCanonicalArtifactHtml(canonicalArtifactQuantity(row.quantity))}</td>
+    <td class="numeric">${escapeCanonicalArtifactHtml(visibleQuantityLabel)}</td>
     <td class="money">${escapeCanonicalArtifactHtml(unitPrice)}</td>
     <td class="money">${escapeCanonicalArtifactHtml(amount)}</td>
   </tr>`;
@@ -201,15 +208,25 @@ function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, para
 
 function renderPreliminaryNeedRow(row: CanonicalArtifactRow, displayOrdinal: number, rowsById: ReadonlyMap<string, CanonicalArtifactRow> = new Map()): string {
   const trace = objectValue(row.calculation_trace);
+  const supplyWarning = canonicalPurchaseSupplyWarningV1(row);
+  const exactQuantity = parseCanonicalExactPurchaseQuantityV1(trace.exactPurchaseQuantityV1);
+  const savedQuantityLabel = exactQuantity ? exactQuantity.quantityText ?? "Не рассчитано" : canonicalArtifactQuantity(row.quantity);
   const quantityLabel = row.quantity == null ? "Не рассчитано"
-    : `${canonicalArtifactQuantity(row.quantity)} (условия не подтверждены)`;
+    : supplyWarning && trace.manualQuantityOverride === true
+      ? `${savedQuantityLabel} (введено вручную; заказ не подтверждён)`
+      : `${savedQuantityLabel} (условия не подтверждены)`;
+  const pendingTitle = supplyWarning && trace.manualTitleOverride === true
+    ? canonicalArtifactVisibleRowTitle(row)
+    : canonicalPublicEstimatePendingRowTitleRu(canonicalArtifactVisibleRowTitle(row));
+  const savedUnitPrice = supplyWarning && row.unit_price != null
+    ? `${canonicalArtifactMoney(row.unit_price, row.currency_code)} (справочно)` : "—";
   const graph = objectValue(trace.resourceGraph), decision = objectValue(graph.commercialCostCoverageDecisionV1);
   const rate = objectValue(graph.commercialCostCoverageOwnerDecisionV1);
   const ownerTitle = includedCostOwnerTitle(row, rowsById) ?? nullableText(decision.ownerTitleRu);
   const coverageText = [ownerTitle ? `Включено в стоимость «${ownerTitle}».` : null,
     decision.supplyParty === 'RATE_PROVIDER' ? 'Ресурс предоставляет исполнитель этой расценки.' : null,
     rate.active === true && nullableText(rate.scopeRu) ? `Состав расценки: ${String(rate.scopeRu)}` : null].filter(Boolean).join(' ');
-  const requirement = canonicalArtifactPurchaseRequirement(row);
+  const requirement = supplyWarning ? null : canonicalArtifactPurchaseRequirement(row);
   const requirementText = requirement
     ? `${requirement.labelRu}: ${canonicalArtifactQuantity(requirement.quantity)} ${canonicalArtifactUnit({ unit_id: requirement.unitId })}. Точный заказ ещё не подтверждён.`
     : null;
@@ -223,11 +240,11 @@ function renderPreliminaryNeedRow(row: CanonicalArtifactRow, displayOrdinal: num
   const specificationRows = specifications.map(detail => `<tr class="preliminary-need-specification"><td></td><td colspan="6"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row))}:</strong> ${escapeCanonicalArtifactHtml(detail)}</td></tr>`).join("");
   return `<tr class="preliminary-need">
     <td class="number">${displayOrdinal}</td>
-    <td class="name"><strong>${escapeCanonicalArtifactHtml(canonicalPublicEstimatePendingRowTitleRu(canonicalArtifactVisibleRowTitle(row)))}</strong>${requirementText ? `<span>${escapeCanonicalArtifactHtml(requirementText)}</span>` : ''}${coverageText ? `<span>${escapeCanonicalArtifactHtml(coverageText)}</span>` : ''}</td>
+    <td class="name"><strong>${escapeCanonicalArtifactHtml(pendingTitle)}</strong>${requirementText ? `<span>${escapeCanonicalArtifactHtml(requirementText)}</span>` : ''}${coverageText ? `<span>${escapeCanonicalArtifactHtml(coverageText)}</span>` : ''}${supplyWarning ? `<span>${escapeCanonicalArtifactHtml(supplyWarning)}</span>` : ''}</td>
     <td>${escapeCanonicalArtifactHtml(CATEGORY_TITLES[canonicalProfessionalPdfCategory(row)])}</td>
     <td class="unit">${escapeCanonicalArtifactHtml(canonicalArtifactUnit(row))}</td>
     <td class="numeric">${escapeCanonicalArtifactHtml(quantityLabel)}</td>
-    <td class="money">—</td>
+    <td class="money">${escapeCanonicalArtifactHtml(savedUnitPrice)}</td>
     <td class="money">—</td>
   </tr>${specificationRows}`;
 }
@@ -252,6 +269,8 @@ export function buildCanonicalProfessionalPdfProjection(input: {
   if(rawPrimer!=null&&!primer)throw Object.assign(new Error('professional PDF preparation reference invalid'),{code:'ARTIFACT_PREPARATION_REFERENCE_INVALID'});
   const primerAppendix=primer?`<section class="question-appendix"><h2>Связанная огрунтовка основания</h2><div class="notice"><strong>${escapeCanonicalArtifactHtml(roofPrimerPhaseRuV1(primer.phase))} · ${escapeCanonicalArtifactHtml(primer.sectionLabelRu)}</strong><br>Сохранённая смета: ${escapeCanonicalArtifactHtml(primer.sourceDisplayTitleRu)}, версия ${primer.sourceRevisionNumber}.<br>Стоимость подготовки учитывается в связанной смете; платные строки здесь повторно не добавляются.<br>Нормативная площадь огрунтовки: ${canonicalArtifactQuantity(primer.sourceNormAreaM2)} м²; площадь покрытия: ${primer.consumerNormAreaM2==null?'ещё не подтверждена':canonicalArtifactQuantity(primer.consumerNormAreaM2)+' м²'}. Обмеры ведутся отдельно; эта ссылка не распределяет количества и не формирует заказ.${primer.phase!=='completed_accepted'?'<br>План подготовки не подтверждает фактическую готовность основания.':''}</div></section>`:'';
   const preliminaryNeeds = input.preliminaryNeeds ?? [];
+  assertCanonicalPurchaseSupplyRevisionV1([...rows, ...preliminaryNeeds], revision.amendment_contract);
+  const supplyBlockedRows = [...rows, ...preliminaryNeeds].filter(row => canonicalPurchaseSupplyWarningV1(row) != null);
   const expectedProjectedRowCount = Number(
     input.expectedProjectedRowCount
       ?? revision.row_count,
@@ -314,7 +333,13 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     const heading = reference
       ? `<tr class="operation"><td colspan="7"><strong>${multipleOperationGroups ? `${escapeCanonicalArtifactHtml(canonicalPublicEstimateWorkTitleRu(reference.groupTitleRu))} — ` : ''}${escapeCanonicalArtifactHtml(canonicalPublicEstimateWorkTitleRu(reference.operationTitleRu))}</strong>${stageInputs.length?`<div>Исходные данные этапа: ${stageInputs.join('; ')}</div>`:''}${reference.processRole === 'REFERENCE_ONLY' ? '<div>Справочные характеристики. Не оплачиваются и не закупаются.</div>' : reference.processRole === 'COST_SUMMARY' ? '<div>Сводные данные. Стоимость учтена в ресурсных строках.</div>' : ''}</td></tr>`
       : hasOperations ? `<tr class="operation"><td colspan="7"><strong>Работы и ресурсы сметы</strong></td></tr>` : '';
-    const ownRows = section.resourceIds.map(id => {
+    // Keep each operation together: its work rows lead its own resources.
+    // Stored ordinals, cost ownership and shared-resource references stay intact.
+    const orderedResourceIds = reference ? [
+      ...section.resourceIds.filter(id => canonicalProfessionalPdfCategory(rowsById.get(id)!) === 'work'),
+      ...section.resourceIds.filter(id => canonicalProfessionalPdfCategory(rowsById.get(id)!) !== 'work'),
+    ] : section.resourceIds;
+    const ownRows = orderedResourceIds.map(id => {
       const row = rowsById.get(id)!;
       return preliminaryRowIds.has(id)
         ? renderPreliminaryNeedRow(row, ++rowNumber, rowsById)
@@ -334,13 +359,13 @@ export function buildCanonicalProfessionalPdfProjection(input: {
       + ownRows + shared + scopeNotes + (primerAppendix && section.scopeRequirements?.some(group=>group.groupId==='primer')?`<tr><td colspan="7">${primerAppendix}</td></tr>`:'');
   }).join('');
   const currencyCode = assertSingleCurrency(revision, rows);
-  const payableRows = rows.filter((row) => row.included_in_estimate === true);
+  const payableRows = rows.filter((row) => row.included_in_estimate === true && canonicalPurchaseSupplyWarningV1(row) == null);
   const nonPayableRowCount = rows.length - payableRows.length;
   const pricedRows = payableRows.filter((row) => row.unit_price != null && row.amount != null);
   const missingPriceRowCount = payableRows.length - pricedRows.length;
   const unconfirmedMachinePriceCount=payableRows.filter(row=>canonicalMachineHourPriceNeedsConfirmationV1(row,String(revision.catalog_id))).length;
   const grandTotalStatus: CanonicalProfessionalPdfGrandTotalStatus = missingPriceRowCount === 0 && quantitativeNeeds.length === 0
-    && openScopeGroupCount===0&&unconfirmedMachinePriceCount===0
+    && openScopeGroupCount===0&&unconfirmedMachinePriceCount===0&&supplyBlockedRows.length===0
     ? "COMPLETE"
     : "PARTIAL_NEEDS_PRICE";
   const documentStatusRu = hasUserExclusions ? 'Состав с исключениями пользователя' : grandTotalStatus === "COMPLETE" && technologyChecks.length === 0
@@ -376,7 +401,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
   }).join("");
   const grandTotal = grandTotalStatus === "COMPLETE"
     ? `<strong>${canonicalArtifactMoney(pricedSubtotal, currencyCode)}</strong>`
-    : quantitativeNeeds.length > 0 || openScopeGroupCount > 0
+    : quantitativeNeeds.length > 0 || openScopeGroupCount > 0 || supplyBlockedRows.length > 0
       ? "<strong>полный итог не рассчитан</strong>"
       : "<strong>требуется уточнение цен</strong>";
   const priceNotice = grandTotalStatus === "COMPLETE"
@@ -384,6 +409,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     : `<strong>${pricedRows.length === 0 ? "Стоимость не рассчитана. Цены не заполнены." : "Стоимость рассчитана частично."}</strong> Строк без подтверждённой цены: ${missingPriceRowCount}. ${unconfirmedMachinePriceCount>0?`В ${unconfirmedMachinePriceCount} поз. введена цена, но не подтверждён её эксплуатационный состав. Эти суммы предварительные. `:''}${quantitativeNeeds.length > 0
       ? `Ещё не рассчитано позиций: ${quantitativeNeeds.length}. Нерассчитанные позиции не включены в стоимость и закупку. Полный итог не рассчитан.`
       : openScopeGroupCount>0 ? `${openScopeGroupCount===1?'Состав одного этапа':`Состав ${openScopeGroupCount} этапов`} ещё не завершён приложением; причины указаны внутри сметы. Полный итог не рассчитан.`
+      : supplyBlockedRows.length > 0 ? "Условия поставки не подтверждены. Полный итог не рассчитан."
       : "Полный итог: требуется уточнение цен."}`;
   const pricedSummary = pricedRows.length === 0
     ? "Стоимость не рассчитана"
@@ -396,7 +422,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}.summary div{background:#eef7f2;border-radius:4px;padding:7px}.notice{margin:8px 0 12px;padding:8px;border:1px solid #d5dde6;border-radius:4px;color:#39485b;break-inside:avoid}
     table{width:100%;border-collapse:collapse;table-layout:fixed}thead{display:table-header-group}tfoot{display:table-footer-group}tr{break-inside:avoid;page-break-inside:avoid}td,th{border:1px solid #cbd4df;padding:4px;vertical-align:top;overflow-wrap:anywhere;word-break:normal;hyphens:none}th{background:#e7edf4;text-align:left}.client th:nth-child(1){width:5%}.client th:nth-child(2){width:34%}.client th:nth-child(3){width:12%}.client th:nth-child(4){width:8%}.client th:nth-child(5){width:11%}.client th:nth-child(6),.client th:nth-child(7){width:15%}.name span{display:block;color:#526174;font-size:8px;margin-top:2px}.number,.unit{text-align:center}.number{white-space:nowrap;overflow-wrap:normal;font-variant-numeric:tabular-nums}.numeric,.money{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
     .totals{width:62%;margin:12px 0 0 auto;break-inside:avoid;page-break-inside:avoid}.question-appendix{break-inside:avoid;page-break-inside:avoid}.totals th{width:55%}.totals td{text-align:right;font-variant-numeric:tabular-nums}.grand th,.grand td{background:#e5f2ea}
-    .name ul{padding-left:12px;margin:3px 0;font-size:8px;color:#526174}.operation{break-after:avoid;page-break-after:avoid}.operation td{background:#eef7f2}.operation span{display:block;color:#526174;margin-top:3px}.preliminary-need{break-inside:avoid;page-break-inside:avoid;break-after:auto;page-break-after:auto}.preliminary-need-detail{break-before:avoid;page-break-before:avoid}.preliminary-need td{background:#fff7ed}.preliminary-need .numeric{white-space:normal}.preliminary-need-detail td{color:#7c4a03;font-size:8px}.preliminary-need-specification td{color:#526174;font-size:8px}.signatures{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px;break-inside:avoid}.signature{border:1px solid #cbd4df;padding:7px;min-height:84px}.signature strong{display:block;margin-bottom:7px}.signature div{border-bottom:1px solid #758195;margin-top:13px;color:#526174}.approval-block{break-inside:avoid;page-break-inside:avoid}.organization{margin-top:12px;border-bottom:1px solid #758195;padding-bottom:3px;break-inside:avoid}
+    .name ul{padding-left:12px;margin:3px 0;font-size:8px;color:#526174}.operation{break-after:avoid;page-break-after:avoid}.operation td{background:#eef7f2}.operation span{display:block;color:#526174;margin-top:3px}.preliminary-need{break-inside:avoid;page-break-inside:avoid;break-after:auto;page-break-after:auto}.preliminary-need-detail{break-before:avoid;page-break-before:avoid}.preliminary-need td{background:#fff7ed}.preliminary-need .numeric{white-space:normal}.purchase-supply-block .numeric{white-space:normal;overflow-wrap:anywhere}.preliminary-need-detail td{color:#7c4a03;font-size:8px}.preliminary-need-specification td{color:#526174;font-size:8px}.signatures{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px;break-inside:avoid}.signature{border:1px solid #cbd4df;padding:7px;min-height:84px}.signature strong{display:block;margin-bottom:7px}.signature div{border-bottom:1px solid #758195;margin-top:13px;color:#526174}.approval-block{break-inside:avoid;page-break-inside:avoid}.organization{margin-top:12px;border-bottom:1px solid #758195;padding-bottom:3px;break-inside:avoid}
   </style></head><body>
     <header><h1>Профессиональная смета</h1><div class="subtitle">${escapeCanonicalArtifactHtml(workTitleRu || "Строительно-монтажные работы")}</div>
       ${explicitDemo ? '<div class="notice"><strong>ДЕМО / VALIDATION_FIXTURE — испытательный документ. Не является утверждённой проектной сметой.</strong></div>' : ""}
@@ -405,6 +431,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     </header>
     <div class="summary"><div><strong>Позиций расчёта</strong><br>${compositionRows.length}</div><div><strong>Количество известно</strong><br>${compositionRows.length-quantitativeNeeds.length}; ещё не рассчитано ${quantitativeNeeds.length}${scopeGroups.length?`; групп состава и этапов: ${scopeGroups.length}`:''}</div><div><strong>${pricedSummary}</strong></div></div>
     <div class="notice">${priceNotice}</div>
+    ${supplyBlockedRows.length > 0 ? '<div class="notice"><strong>Закупка пока не готова.</strong> Сохранённые ручные количества не исправлялись автоматически. Причины по условиям поставки указаны у позиций; зависимые количества и остатки не определены.</div>' : ''}
     ${hasUserExclusions?'<div class="notice">Состав изменён пользователем. Стоимость относится к оставшимся позициям; полнота исходной технологии этим документом не подтверждена.</div>':''}
     ${technologyChecks.map(check => `<div class="notice"><strong>Технология требует уточнения.</strong> ${escapeCanonicalArtifactHtml(check.messageRu)} Закупочная ведомость пока не готова.</div>`).join("")}
     <table class="client"><thead><tr><th>№</th><th>Наименование</th><th>Категория</th><th>Ед.</th><th>Количество</th><th>Цена за единицу</th><th>Сумма</th></tr></thead><tbody>${renderedComposition}</tbody></table>

@@ -9,19 +9,26 @@ const input = { route_length_m: 100, substrate_profile: 'Сухой бетон, 
   route_geometry_mode: 'Один прямой участок — подбор по отрезкам 4 м', route_end_connections: 'Два резьбовых подключения — каждое отдельно',
   route_start_thread_interface: 'Внутренняя резьба G 1/2″', route_finish_thread_interface: 'Наружная резьба G 3/4″' };
 
-test('a known whole-unit supply step rejects half a manual order even without a consumption norm', async () => {
+test('source-owned unknown consumption cannot be supplied by a manual order quantity', async () => {
   for (const rowId of ['water-ppr20:08:consumable:waste-bags', 'water-ppr20:02:consumable:cutter-wheels']) {
     await expect(compile(input, { rowOverrides: { [rowId]: { quantity: '0.5', unitPrice: '10', provenance: { kind: 'manual', reason: 'VALIDATION_FIXTURE' } } } }))
       .rejects.toMatchObject({ code: 'ROW_AMENDMENT_INVALID' });
     for (const quantity of ['0', '5']) {
-      const result = await compile(input, { rowOverrides: { [rowId]: { quantity, unitPrice: '10', provenance: { kind: 'manual', reason: 'VALIDATION_FIXTURE' } } } });
-      const need = result.preliminaryNeeds.find(r => r.row_id === rowId)!;
-      expect(need).toMatchObject({ quantity, need_state: 'QUANTITY_REQUIRED' });
-      expect(need.calculation_trace).toMatchObject({ manualQuantityOverride: true });
-      expect(need.calculation_trace).not.toHaveProperty('purchaseRequirementV1');
-      expect(need.calculation_trace).not.toHaveProperty('purchaseBalance');
+      await expect(compile(input, { rowOverrides: { [rowId]: { quantity, unitPrice: '10', provenance: { kind: 'manual', reason: 'VALIDATION_FIXTURE' } } } }))
+        .rejects.toMatchObject({ code: 'ROW_AMENDMENT_INVALID', message: expect.stringContaining('source-owned norm quantity cannot be replaced') });
     }
   }
+});
+
+test('an unknown project count still permits whole orders and rejects half a piece', () => {
+  const policy = { quantityMode: 'supply_quantum', orderQuantumExpression: '1',
+    unitId: 'pcs', consumedExpression: 'missing_project_count', stockExpression: '0', reserveExpression: '0' };
+  const declared = new Set(['missing_project_count']);
+  for (const quantity of ['0', '5']) {
+    expect(() => validateCanonicalPurchaseOrderQuantityV1(policy, 'PROJECT_ORDER', 'pcs', quantity, {}, declared)).not.toThrow();
+  }
+  expect(() => validateCanonicalPurchaseOrderQuantityV1(policy, 'PROJECT_ORDER', 'pcs', '0.5', {}, declared))
+    .toThrow('purchase quantity violates declared whole supply quantum');
 });
 
 test('legal mass and volume fractions do not acquire a whole-piece restriction', () => {

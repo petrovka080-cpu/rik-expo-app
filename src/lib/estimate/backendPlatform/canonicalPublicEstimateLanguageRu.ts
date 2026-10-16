@@ -10,6 +10,10 @@ function cleanEditedPublicTextRu(value: string): string {
 
 export function canonicalPublicEstimateTextRu(value: string): string {
   const edited = value.replace(/для\s+LOGICROOF/giu, 'для выбранной кровельной мембраны')
+    .replaceAll('Утверждённая новая atomic граница и судьба прежних 59 строк без переписывания истории',
+      'Подтверждённый состав и границы подработы')
+    .replaceAll('Подтверждённая отдельная физическая граница этой atomic работы: без уже оплаченного объёма укладки или полной конструкции',
+      'Отдельный объём подработы без повторного учёта ранее оплаченных работ')
     .replace(/\bLeister\s+Variant\s+V\b/giu, '')
     .replace(/\b(?:VELUX|VALTEC|fischer|LOGICROOF|Leister)\b/giu, '');
   return edited === value ? value : cleanEditedPublicTextRu(edited);
@@ -81,4 +85,14 @@ export function canonicalPublicEstimateRowNameRu(input: {
     && binding.sourceTitleRu === (input.sourceTitleRu ?? input.titleRu));
   if (authored) return authored.nameRu;
   return canonicalPublicEstimateTextRu(input.titleRu);
+}
+
+/** Details of the same exact authored name; no quantity or source admission. */
+export function canonicalPublicEstimateRowDetailsRu(input: {
+  rowId?: string | null; titleRu: string; manualTitleOverride?: boolean;
+}): readonly string[] {
+  if (input.manualTitleOverride) return [];
+  const authored = publicBindings.bindings.find(binding => binding.rowId === input.rowId
+    && binding.sourceTitleRu === input.titleRu);
+  return authored?.detailsRu ?? [];
 }
