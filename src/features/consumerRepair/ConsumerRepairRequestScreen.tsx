@@ -84,6 +84,7 @@ import {
 import { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequestScreenRenderModel";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
 import { ConsumerRepairRequestScreenView } from "./ConsumerRepairRequestScreenView";
+import { loadConsumerCanonicalProcurementArtifact } from "./consumerCanonicalArtifactHydration";
 import {
   refreshLoadedApprovedHistoryPage,
   addConsumerRepairCustomNoteItem, addConsumerRepairPhotoMaterialPlaceholder, applyConsumerRepairCatalogItemSelection,
@@ -3126,19 +3127,11 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           calculationTrace:{...need.calculationTrace,purchaseSupplyBlocksV1:need.purchaseSupplyBlocks ?? need.calculationTrace?.purchaseSupplyBlocksV1}}))]);
         const shortage = canonicalPurchaseShortageMessageV1(rows);
         if (shortage) throw new ConsumerEstimateActionContextError(shortage);
-        // Ensure the current renderer even for a restored ready artifact. The
-        // server reuses a matching ready version without queuing another job.
-        const artifact = await buildCanonicalEstimateArtifact({
-          revisionId: context.revisionId,
-          kind: "procurement",
-          idempotencyKey: `consumer-procurement-${context.revisionId}`,
-        });
-        assertCanonicalEstimateArtifactIdentity({
-          artifact,
+        const currentCatalog = await getCanonicalEstimateCatalogItem(revision.catalogId);
+        const artifact = await loadConsumerCanonicalProcurementArtifact({
           revision,
-          expectedKind: "procurement",
+          currentCatalogReleaseId: currentCatalog.releaseId,
           expectedCatalogId: context.definitionId ?? revision.catalogId,
-          expectedRowCount: revision.rowCount,
         });
         const artifactBoundBundle = bindConsumerRepairCanonicalArtifactReady({
           requestDraftId: current.draft.id,
@@ -3164,7 +3157,11 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       else {
         this.setState({
           statusMessage: error instanceof CanonicalEstimateApiError
-            ? error.message
+            ? error.code === "REVISION_CONTENT_QUARANTINED"
+              ? "Для этой старой версии сохранённый список закупки недоступен. Сформируйте исправленную смету для нового списка."
+              : error.code === "ARTIFACT_REVISION_IDENTITY_MISMATCH"
+                ? "Закупка не открыта: список не принадлежит выбранной версии сметы."
+                : error.message
             : "Список закупки выбранной версии сметы не удалось открыть.",
         });
       }

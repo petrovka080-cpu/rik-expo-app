@@ -1,10 +1,47 @@
 import {
+  assertCanonicalEstimateArtifactIdentity,
+  buildCanonicalEstimateArtifact,
   getCanonicalEstimateArtifact,
 } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
 import {
   CanonicalEstimateApiError,
   type CanonicalEstimateArtifactView,
+  type CanonicalEstimateRevisionView,
 } from "../../lib/estimate/backendPlatform/contracts";
+
+export async function loadConsumerCanonicalProcurementArtifact(input: {
+  revision: CanonicalEstimateRevisionView;
+  currentCatalogReleaseId: string;
+  expectedCatalogId?: string | null;
+}): Promise<CanonicalEstimateArtifactView> {
+  const { revision } = input;
+  let artifact: CanonicalEstimateArtifactView;
+  if (input.currentCatalogReleaseId !== revision.releaseId) {
+    // Historical releases permit immutable reads, not new artifact jobs.
+    try {
+      artifact = await getCanonicalEstimateArtifact({ revisionId: revision.revisionId, kind: "procurement" });
+    } catch (error) {
+      if (!(error instanceof CanonicalEstimateApiError) || error.code !== "NOT_FOUND") throw error;
+      throw new CanonicalEstimateApiError(
+        "Для этой старой версии сохранённый список закупки не найден. Сформируйте исправленную смету для нового списка.",
+        { code: "REVISION_CONTENT_QUARANTINED", httpStatus: 409 },
+      );
+    }
+  } else {
+    // Current releases still ensure the current renderer through the server.
+    artifact = await buildCanonicalEstimateArtifact({
+      revisionId: revision.revisionId,
+      kind: "procurement",
+      idempotencyKey: `consumer-procurement-${revision.revisionId}`,
+    });
+  }
+  assertCanonicalEstimateArtifactIdentity({
+    artifact, revision, expectedKind: "procurement",
+    expectedCatalogId: input.expectedCatalogId ?? revision.catalogId,
+    expectedRowCount: revision.rowCount,
+  });
+  return artifact;
+}
 
 export type ConsumerCanonicalReadyArtifactBinding = {
   artifactId: string;

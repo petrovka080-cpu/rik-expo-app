@@ -2,8 +2,16 @@ import {
   CanonicalEstimateApiError,
   ESTIMATE_PLATFORM_API_VERSION,
   type CanonicalEstimateArtifactView,
+  type CanonicalEstimateRevisionView,
 } from "../../lib/estimate/backendPlatform/contracts";
-import { canonicalReadyArtifactBindingFromView } from "./consumerCanonicalArtifactHydration";
+import { buildCanonicalEstimateArtifact, getCanonicalEstimateArtifact } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
+import { canonicalReadyArtifactBindingFromView, loadConsumerCanonicalProcurementArtifact } from "./consumerCanonicalArtifactHydration";
+
+jest.mock("../../lib/estimate/backendPlatform/canonicalEstimateClient", () => ({
+  ...jest.requireActual("../../lib/estimate/backendPlatform/canonicalEstimateClient"),
+  buildCanonicalEstimateArtifact: jest.fn(),
+  getCanonicalEstimateArtifact: jest.fn(),
+}));
 
 const REVISION_ID = "65d2a6f7-af26-40af-91c3-7a5d060d34eb";
 const RELEASE_ID = "97e1125d-24f3-513f-b203-d96fd54ecb83";
@@ -70,5 +78,60 @@ describe("canonical cold-reopen artifact hydration", () => {
       expectedRevisionId: REVISION_ID,
       expectedReleaseId: RELEASE_ID,
     })).toThrow(CanonicalEstimateApiError);
+  });
+});
+
+describe("procurement release admission", () => {
+  const revision = {
+    revisionId: REVISION_ID, releaseId: RELEASE_ID, catalogId: "ct54", rowCount: 0,
+    checksumSha256: "saved-revision-checksum",
+  } as CanonicalEstimateRevisionView;
+  const exactArtifact = () => ({
+    ...artifact("procurement"),
+    metadata: { sourceCatalogId: revision.catalogId, sourceRowCount: revision.rowCount,
+      sourceRevisionChecksumSha256: revision.checksumSha256 },
+  });
+  const read = jest.mocked(getCanonicalEstimateArtifact);
+  const build = jest.mocked(buildCanonicalEstimateArtifact);
+  beforeEach(() => jest.clearAllMocks());
+
+  test("opens the exact saved historical artifact without creating a job", async () => {
+    const saved = exactArtifact();
+    read.mockResolvedValueOnce(saved);
+    await expect(loadConsumerCanonicalProcurementArtifact({ revision, currentCatalogReleaseId: "new-release" })).resolves.toBe(saved);
+    expect(read).toHaveBeenCalledWith({ revisionId: REVISION_ID, kind: "procurement" });
+    expect(build).not.toHaveBeenCalled();
+  });
+
+  test("a missing historical artifact never falls back to creation", async () => {
+    read.mockRejectedValueOnce(new CanonicalEstimateApiError("missing", { code: "NOT_FOUND", httpStatus: 404 }));
+    await expect(loadConsumerCanonicalProcurementArtifact({ revision, currentCatalogReleaseId: "new-release" }))
+      .rejects.toMatchObject({ code: "REVISION_CONTENT_QUARANTINED" });
+    expect(build).not.toHaveBeenCalled();
+  });
+
+  test.each(["revisionId", "releaseId", "checksum"] as const)("rejects a historical artifact with another %s", async (field) => {
+    const saved = exactArtifact();
+    if (field === "checksum") saved.metadata.sourceRevisionChecksumSha256 = "other-checksum";
+    else saved[field] = "other-id";
+    read.mockResolvedValueOnce(saved);
+    await expect(loadConsumerCanonicalProcurementArtifact({ revision, currentCatalogReleaseId: "new-release" }))
+      .rejects.toMatchObject({ code: "ARTIFACT_REVISION_IDENTITY_MISMATCH" });
+    expect(build).not.toHaveBeenCalled();
+  });
+
+  test("current releases still ask the server for the current renderer", async () => {
+    const saved = exactArtifact();
+    build.mockResolvedValueOnce(saved);
+    await expect(loadConsumerCanonicalProcurementArtifact({ revision, currentCatalogReleaseId: RELEASE_ID })).resolves.toBe(saved);
+    expect(build).toHaveBeenCalledWith({ revisionId: REVISION_ID, kind: "procurement", idempotencyKey: `consumer-procurement-${REVISION_ID}` });
+    expect(read).not.toHaveBeenCalled();
+  });
+
+  test("transport failures stay failures without creating a replacement", async () => {
+    const unavailable = new Error("transport unavailable");
+    read.mockRejectedValueOnce(unavailable);
+    await expect(loadConsumerCanonicalProcurementArtifact({ revision, currentCatalogReleaseId: "new-release" })).rejects.toBe(unavailable);
+    expect(build).not.toHaveBeenCalled();
   });
 });
