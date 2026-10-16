@@ -22,6 +22,8 @@ export function assemblePileCapEmbeddedMaterialsSixForwardR1(input:Readonly<{
   const definitionSha256=hash({contract,catalogId,parameters,formulas,resources});
   const definitionId=uuid([input.sourceFingerprint,catalogId,'definition']),baselineId=uuid([input.sourceFingerprint,catalogId,'baseline']);
   const primary=parameters.find(p=>p.parameter_id===model.primaryMeasureParameterId)!;assert(primary);
+  const boundLocator=input.locators.find(l=>l.id===parent.bindings[0]?.locator_id);
+  const methodSource=input.sources.find(s=>s.id===boundLocator?.source_id);assert(methodSource&&boundLocator,'PILE_CAP_SIX_METHOD_SOURCE_CLOSURE_MISSING');
   const limitationRu='Для каждой применимой материальной позиции нужны собственные проектные количество, наименование, условия оплаты и поставки. Неизвестные данные не принимаются равными нулю.';
   const includedScopeRu=[...parent.passport.included_scope_ru,'Отдельные применимые материалы монтажа, подъёма, сварки и восстановления покрытия.',limitationRu];
   const excludedScopeRu=[...parent.passport.excluded_scope_ru,'Новые механические и химические анкеры после бетонирования; неподтверждённые нормы, цены и готовый заказ.'];
@@ -30,9 +32,9 @@ export function assemblePileCapEmbeddedMaterialsSixForwardR1(input:Readonly<{
   const baseline={contract_version:parent.baseline.contract_version,parameter_schema_sha256:hash(parameters),
    input_values:{[model.primaryMeasureParameterId]:1},input_classification:Object.fromEntries(parameters.map(p=>[p.parameter_id,'VALIDATION_FIXTURE'])),
    uom_by_parameter:Object.fromEntries(parameters.map(p=>[p.parameter_id,p.unit_id])),formula_consumer_ids:formulaConsumers,resource_consumer_row_ids:resourceConsumers,
-   normative_source_ids:Object.fromEntries(parameters.map(p=>[p.parameter_id,[]])),
+   normative_source_ids:Object.fromEntries(parameters.map(p=>[p.parameter_id,p.parameter_id==='approved_embedment_design_reference'?[methodSource.source_key]:[]])),
    guide_provenance_ru:Object.fromEntries(parameters.map(p=>[p.parameter_id,'Проектный факт или внутренний расчётный выход; тестовый пример не является нормативом и не подставляется автоматически.'])),
-   proposal_source_refs:parent.baseline.proposal_source_refs};
+   proposal_source_refs:[{sourceId:methodSource.source_key,locatorId:boundLocator.id,coverage:'METHOD_APPLICABILITY_ONLY',universalConsumptionClaimed:false,universalProductivityClaimed:false}]};
   const decision={contract:passportContract,waveContract:contract,status:'GREEN',allowed:true,quantityScope:'FULL',
    scopeMeaning:'EXISTING_PILE_CAP_OPERATION_WITH_EXPLICIT_SELECTED_PROJECT_MATERIALS',projectScheduleRequired:true,
    engineeringAccepted:false,completeProjectEstimateAccepted:false,supplierOrderConfirmed:false,priceState:'PARTIAL_NEEDS_PRICE',activationAllowed:false,productionEligible:false};
@@ -48,7 +50,7 @@ export function assemblePileCapEmbeddedMaterialsSixForwardR1(input:Readonly<{
     baseline,passport:{contract_version:passportContract,included_scope_ru:includedScopeRu,capability_matrix:[
      {capability:'PARAMETERS',status:'GREEN'},{capability:'FORMULAS_AND_PHYSICAL_PARITY',status:'GREEN'},
      {capability:'FULL_APPLICABLE_SCOPE',status:'GREEN',projectScheduleRequired:true,engineeringAccepted:false},{capability:'PRICE',status:'GREEN_UNKNOWN_IS_NULL'}]}},
-   parameterTruthMetadata:p=>({...p.truth_metadata,formula_consumers:formulaConsumers[p.parameter_id],resource_branch_consumers:resourceConsumers[p.parameter_id]}),
+   parameterTruthMetadata:p=>({...p.truth_metadata,contract,semantic_parameter_key:`${catalogId}:${p.parameter_id}`,formula_consumers:formulaConsumers[p.parameter_id],resource_branch_consumers:resourceConsumers[p.parameter_id]}),
    resourceId:r=>uuid([input.sourceFingerprint,catalogId,'resource',r.row_id]),resourceSemanticOwner:r=>`${catalogId}:${r.row_id}`,
    resourceSha256:r=>hash({contract,catalogId,resource:r}),
    baseline:{id:baselineId,key:`${contract}:${input.sourceFingerprint}:${catalogId}`,sourceDefinitionVersionId:parent.definition.id,supersedesBaselineId:parent.baseline.id,
