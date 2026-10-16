@@ -16,7 +16,7 @@ export function assemblePileCapEmbeddedMaterialsSixForwardR1(input:Readonly<{
  const models=input.parents.map(parent=>{
   const model=build(parent as any),catalogId=model.catalogId;
   assert.equal(parent.definition.definition_version,7);assert.equal(parent.resources.length,30);
-  const parameters=model.parameters.map((p,ordinal)=>({...p,ordinal})),formulas=model.formulas;
+  const parameters=model.parameters.map((p,ordinal)=>({...p,ordinal})),formulas=model.formulas.map(f=>({...f,ast_sha256:hash(f.ast)}));
   const resources:Json[]=model.resources.map(r=>({...r,row_type:r.category==='construction_work'?'labor':r.category==='delivery'?'service':r.category}));
   const {formulaConsumers,resourceConsumers}=consumers({parameters,formulas,resources});
   const definitionSha256=hash({contract,catalogId,parameters,formulas,resources});
