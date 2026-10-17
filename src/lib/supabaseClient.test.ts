@@ -1,3 +1,4 @@
+import { IDBFactory } from "fake-indexeddb";
 const asyncStorageMock = require("@react-native-async-storage/async-storage/jest/async-storage-mock");
 
 const mockCreateClient = jest.fn();
@@ -70,6 +71,7 @@ const restoreRuntimeGlobals = () => {
 
 const loadSupabaseModule = (options: {
   web: boolean;
+  indexedDb?: IDBFactory;
   supabaseEnvValid?: boolean;
   supabaseHost?: string;
   supabaseProjectRef?: string;
@@ -115,6 +117,7 @@ const loadSupabaseModule = (options: {
 
   if (options.web) {
     runtime.window = {
+      indexedDB: options.indexedDb,
       localStorage: {
         getItem: jest.fn((key: string) =>
           key === "rik.office.localDeveloperFullAccess"
@@ -208,7 +211,7 @@ describe("supabaseClient runtime contract", () => {
     jest.resetModules();
   });
 
-  it("uses localStorage and detectSessionInUrl on web", () => {
+  it("retains legacy storage without IndexedDB and detectSessionInUrl on web", () => {
     loadSupabaseModule({ web: true });
 
     const options = mockCreateClient.mock.calls[0]?.[2];
@@ -221,6 +224,21 @@ describe("supabaseClient runtime contract", () => {
     expect(options.auth.storage).toBe(runtime.window?.localStorage);
     expect(options.auth.detectSessionInUrl).toBe(true);
     expect(options.global.fetch).toEqual(expect.any(Function));
+  });
+
+  it("persists the provider session when the legacy Web storage quota is exhausted", async () => {
+    const { module } = loadSupabaseModule({ web:true,indexedDb:new IDBFactory() });
+    const runtime=globalThis as any;
+    runtime.window.localStorage.setItem.mockImplementation(()=>{throw new Error("QuotaExceededError");});
+    const storage=mockCreateClient.mock.calls[0]?.[2].auth.storage;
+    const key="sb-project-auth-token",value=JSON.stringify({access_token:"synthetic-session-token",refresh_token:"synthetic-refresh-token"});
+    await expect(Promise.resolve().then(()=>storage.setItem(key,value))).resolves.toBeUndefined();
+    await expect(storage.getItem(key)).resolves.toBe(value);
+    await expect(module.hasPersistedAuthSessionHint()).resolves.toEqual({hasStoredSession:true,degraded:false});
+    expect(runtime.window.localStorage.setItem).not.toHaveBeenCalled();
+    expect(runtime.window.localStorage.removeItem).toHaveBeenCalledWith(key);
+    expect(mockCreateClient).toHaveBeenCalledTimes(1);
+    expect(module.publicCatalogSupabase).toBe(module.supabase);
   });
 
   it("keeps real provider session persistence in local developer review mode", () => {

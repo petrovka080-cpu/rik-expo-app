@@ -24,6 +24,7 @@ import {
   fetchWithRequestTimeout,
 } from "./requestTimeoutPolicy";
 import { logger } from "./logger";
+import { createWebAuthStorage } from "./auth/webAuthStorage";
 import {
   createRpcRateLimitedSupabaseClient,
   type RateLimitedRpcClient,
@@ -491,7 +492,7 @@ function createUnavailableSupabaseClient(): SupabaseClient<Database> {
 }
 
 const authStorage = isWeb
-  ? window.localStorage
+  ? createWebAuthStorage(window.localStorage, window.indexedDB)
   : isNodeRuntime
     ? undefined
     : (AsyncStorage as SupabaseAuthStorage);
