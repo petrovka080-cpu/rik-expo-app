@@ -30,6 +30,8 @@ const separate = [
   ...controlAssembler({ ...shared, parents: input.controlContext.parents }).models,
 ];
 for (const model of result.models) {
+  assert.equal(model.plan.passport.decision.waveContract, model.plan.contract, 'PUBLISHER_DECISION_CONTRACT_MISMATCH');
+  assert(model.plan.parameters.every((p: Json) => p.truth_metadata.contract === model.plan.contract), 'PUBLISHER_PARAMETER_CONTRACT_MISMATCH');
   const old = separate.find(m => m.plan.definition.catalog_id === model.plan.definition.catalog_id);
   assert(old);
   assert.equal(hash(model), hash(old), 'COMBINED_PACKAGE_CHANGED_INDIVIDUAL_PLAN');

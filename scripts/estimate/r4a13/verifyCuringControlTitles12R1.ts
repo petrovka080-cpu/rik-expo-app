@@ -12,6 +12,7 @@ const parameterKeys=['parameter_id','ordinal','value_type','unit_id','title_ru',
 const formulaKeys=['formula_id','output_unit_id','expression_source','ast','input_parameter_ids','ast_sha256'];
 for(const model of result.models){
  const parent=context.parents.find((p:Json)=>p.definition.id===model.parentDefinitionId),plan=model.plan;assert(parent);assert.equal(plan.definition.definition_version,9);
+ assert.equal(plan.contract,'rik-expo-app.curing18-individual-materials.r1');assert.equal(plan.passport.decision.waveContract,plan.contract);assert.equal(plan.definition.source_metadata.contract,plan.contract);assert.equal(plan.definition.source_metadata.titleCorrectionContract,result.contract);assert(plan.parameters.every((p:Json)=>p.truth_metadata.contract===plan.contract));
  for(const row of plan.resources){const old=parent.resources.find((r:Json)=>r.row_id===row.row_id);assert(old);
   for(const k of resourceKeys)assert.deepEqual(row[k],k==='title_ru'&&row.row_id===model.changedRowId?model.newTitleRu:old[k],'RESOURCE_BUSINESS_FIELD_CHANGED:'+row.row_id+':'+k);
  }
@@ -32,9 +33,16 @@ for(const model of result.models)for(const mutation of ['missing','unit','type',
  let error:unknown;try{assemble({...options,parents});}catch(e){error=e;}
  assert.equal((error as {code?:string}|undefined)?.code,'RELEASE_MIGRATION_PARAMETER_BINDING_REVIEW_REQUIRED');rejected++;
 }
+let contractRejections=0;
+for(const model of result.models){
+ const parents=structuredClone(context.parents),parent=parents.find((p:Json)=>p.definition.id===model.parentDefinitionId);
+ parent.parameters[0].truth_metadata.contract='UNRELATED_AUTHORING_CONTRACT';
+ assert.throws(()=>assemble({...options,parents}),/CONTROL12_PUBLISHER_CONTRACT_REQUIRED/);contractRejections++;
+}
+assert.equal(contractRejections,12);
 assert.equal(hash(context),before);assert.equal(cases.length,12);assert.equal(rejected,48);
 assert(result.preservedCatalogIds.every(c=>c.includes('_slab_foundation_cure_')));
 const report={status:'PASS_TWELVE_CONTROL_TITLE_FORWARD_PLANS_PHYSICAL_PRICE_AND_MANUAL_HISTORY_UNCHANGED',cases,
- titleOnlyPlans:12,preservedSlabDefinitions:6,primaryBindingRejections:48,manualFieldReviewRejections:24,preservedParameters:1296,preservedFormulaAsts:552,preservedManualPriceBindings:552,
+ titleOnlyPlans:12,preservedSlabDefinitions:6,primaryBindingRejections:48,contractMetadataRejections:contractRejections,coherentPublisherContracts:12,manualFieldReviewRejections:24,preservedParameters:1296,preservedFormulaAsts:552,preservedManualPriceBindings:552,
  publicationPerformed:false,sourceCheckoutEdited:false,nativeAccepted:false,confirmedOrders:0};
 fs.writeFileSync(process.argv[3],JSON.stringify(report,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify({status:report.status,titleOnlyPlans:12,primaryBindingRejections:48}));

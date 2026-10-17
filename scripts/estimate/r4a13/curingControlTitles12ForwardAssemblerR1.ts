@@ -26,10 +26,15 @@ export function assembleCuringControlTitles12ForwardR1(input:Readonly<{parents:r
   const contract=curingControlTitles12ContractR1,definitionSha256=hash({contract,catalogId,parameters,formulas,resources});
   const definitionId=uuid([input.sourceFingerprint,contract,catalogId,'definition']),baselineId=uuid([input.sourceFingerprint,contract,catalogId,'baseline']);
   const decision={...parent.passport.decision,labelOnlyCorrection:true,engineeringAccepted:false,completeProjectEstimateAccepted:false,supplierOrderConfirmed:false,activationAllowed:false,productionEligible:false};
-  const plan=createCanonicalDefinitionClonePlan({contract,
+  // This delta changes a caption only. Keep the exact existing parameter and
+  // decision contract; the title correction has separate authoring provenance.
+  const publisherContract='rik-expo-app.curing18-individual-materials.r1';
+  assert(d.source_metadata.contract===publisherContract&&parent.passport.decision.waveContract===publisherContract
+   &&parameters.every((p:Json)=>p.truth_metadata?.contract===publisherContract),'CONTROL12_PUBLISHER_CONTRACT_REQUIRED');
+  const plan=createCanonicalDefinitionClonePlan({contract:publisherContract,
    definition:{id:definitionId,releaseId:input.releaseId,catalogId,definitionVersion:9,definitionSha256,
     applicability:structuredClone(d.applicability),passport:structuredClone(d.passport),
-    sourceMetadata:{...d.source_metadata,contract,sourceFingerprint:input.sourceFingerprint,masterSha256:input.masterSha256,sourceFreezeSha256:input.sourceFreezeSha256,
+    sourceMetadata:{...d.source_metadata,contract:publisherContract,titleCorrectionContract:contract,sourceFingerprint:input.sourceFingerprint,masterSha256:input.masterSha256,sourceFreezeSha256:input.sourceFreezeSha256,
      predecessorDefinitionId:d.id,predecessorBaselineLeafId:parent.baseline.id,titleOnlyCorrection:true,changedControlRowId:pin.controlRowId,physicalAndPriceBindingsUnchanged:true,activationAllowed:false,productionEligible:false}},
    representative:{parameters,formulas,resources,bindings:parent.bindings.map((b:Json)=>({row_id:b.row_id,locator_id:b.locator_id,applicability:b.applicability})),
     baseline:structuredClone(parent.baseline),passport:{contract_version:parent.passport.contract_version,included_scope_ru:structuredClone(parent.passport.included_scope_ru),capability_matrix:structuredClone(parent.passport.capability_matrix)}},
