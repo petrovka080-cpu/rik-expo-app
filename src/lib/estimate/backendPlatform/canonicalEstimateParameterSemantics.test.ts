@@ -489,6 +489,19 @@ describe("canonical professional norm ownership", () => {
     expect(isCanonicalEstimateConsumerSuppliedParameter(schema)).toBe(true);
   });
 
+  it("shows distinct Russian labels for the alternative slab haul tariffs", () => {
+    const alternatives = {
+      slab_main_concrete_transport_pricing_basis: ["PER_TRIP", "PER_M3_KM", "PER_MACHINE_HOUR"],
+      slab_soil_transport_pricing_basis: ["PER_TRIP", "PER_MACHINE_HOUR"],
+    };
+    for (const [parameterId, values] of Object.entries(alternatives)) {
+      const labels = values.map(value => canonicalEstimateParameterChoiceLabelRu(parameterId, value));
+      expect(new Set(labels).size).toBe(values.length);
+      expect(labels).toEqual(parameterId.includes("main_concrete")
+        ? ["За рейс", "За м³·км", "За машино-час"] : ["За рейс", "За машино-час"]);
+    }
+  });
+
   it("honours application ownership before the legacy numeric project-fact exception", () => {
     const schema = {
       parameterId: 'g6_waste_crew_hours', titleRu: 'Труд погрузки и водителя', valueType: 'decimal',

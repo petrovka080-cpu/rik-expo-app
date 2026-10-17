@@ -496,6 +496,11 @@ function canonicalEstimateSourceParameterChoiceLabelRu(
   // Saved facts can arrive as Booleans or their transport strings.
   if (normalized === "true") return "Да";
   if (normalized === "false") return "Нет";
+  if (["slab_main_concrete_transport_pricing_basis", "slab_soil_transport_pricing_basis"].includes(parameterId)) {
+    if (normalized === "PER_TRIP") return "За рейс";
+    if (normalized === "PER_M3_KM") return "За м³·км";
+    if (normalized === "PER_MACHINE_HOUR") return "За машино-час";
+  }
   if (["base_delivery_cost_mode", "base_extra_mobilization_cost_mode", "base_qa_cost_mode"].includes(parameterId)) {
     if (normalized === "SEPARATE") return "Оплачивается отдельно";
     if (normalized === "INCLUDED") return "Включено в подтверждённую стоимость";
