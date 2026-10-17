@@ -69,6 +69,20 @@ describe("LoginScreen submit handling", () => {
     jest.useRealTimers();
   });
 
+  it("preserves an unexpected provider failure message without blaming credentials or routing", async () => {
+    mockSignInSafe.mockResolvedValue({data:null,error:null,degraded:false,userMessage:"Не удалось войти."});
+    let renderer: TestRenderer.ReactTestRenderer;
+    await act(async()=>{renderer=TestRenderer.create(<LoginScreen />);});
+    const inputs=renderer!.root.findAllByType(TextInput);
+    act(()=>{inputs[0]?.props.onChangeText("owner@example.test");inputs[1]?.props.onChangeText("synthetic-password");});
+    await act(async()=>{await findSubmitButton(renderer!).props.onPress();});
+    const text=renderer!.root.findAllByType(Text).map(node=>String(node.props.children??"")).join(" ");
+    expect(text).toContain("Не удалось войти.");
+    expect(text).not.toContain("Проверьте почту и пароль");
+    expect(mockGetSessionSafe).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
   it("shows a controlled network message instead of the raw transport timeout", async () => {
     mockSignInSafe.mockResolvedValue({
       data: null,

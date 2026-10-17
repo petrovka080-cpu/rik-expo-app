@@ -172,7 +172,7 @@ function LoginScreen() {
       }
 
       if (!result.data?.session) {
-        setError(UI_COPY.noSession);
+        setError(result.userMessage ?? UI_COPY.noSession);
         return;
       }
 

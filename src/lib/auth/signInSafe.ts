@@ -1,6 +1,8 @@
 import type { AuthError } from "@supabase/supabase-js";
 
 import { recordPlatformObservability } from "../observability/platformObservability";
+import { logger } from "../logger";
+import { redactSensitiveText } from "../security/redaction";
 import {
   signInWithEmailPassword,
   type SignInWithEmailPasswordResult,
@@ -160,6 +162,13 @@ export async function signInSafe(params: {
       errorClass: error instanceof Error ? error.name : undefined,
       errorMessage: error instanceof Error ? error.message : String(error ?? ""),
     });
+
+    // The development console is observable without inspecting session storage
+    // or credentials. The normal production logger stays silent.
+    logger.warn(
+      "auth.login",
+      `Unexpected sign-in failure (${error instanceof Error ? error.name : "UnknownError"}): ${redactSensitiveText(error instanceof Error ? error.message : String(error ?? ""))}`,
+    );
 
     return {
       data: null,
