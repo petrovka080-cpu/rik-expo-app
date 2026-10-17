@@ -4,6 +4,7 @@ import {assembleLegacyEmbeddedEightForwardR1 as assemble} from './legacyEmbedded
 import {buildConcreteFoundationAtomicConstructionR1 as buildAtomic,foundationAtomicChoiceLabelRuR1 as label} from '../../../src/lib/estimate/v4/concreteFoundationAtomicConstructionR1';
 import {compileCanonicalEstimateCore as compile} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore';
 import {canonicalDefinitionPublicationStableValueR1 as stable} from '../../../src/lib/estimate/backendPlatform/canonicalDefinitionPublicationStableValueR1';
+import {canonicalParameterMigrationBindingCompatibleV1 as primaryCompatible} from '../../../src/lib/estimate/backendPlatform/canonicalParameterMigrationBindingV1';
 type Json=Record<string,any>;
 const hash=(v:unknown)=>createHash('sha256').update(JSON.stringify(stable(v))).digest('hex');
 export async function verifyLegacyEmbeddedEightR1(context:Json){
@@ -14,6 +15,7 @@ export async function verifyLegacyEmbeddedEightR1(context:Json){
   assert.deepEqual(model.formulas.map((f:Json)=>f.ast),source.formulas.map(f=>f.ast),'REUSED_CAST_IN_ARITHMETIC_CHANGED');
   assert(model.resources.every(r=>r.source_metadata?.automaticGenericPriceInheritanceAllowed===false));
   assert.equal(new Set(model.resources.map(r=>(r.resource_graph.operationCompositionV1 as Json).operationId)).size,5);
+  assert(!primaryCompatible({parameterId:'q',unitId:'m3',valueType:'decimal'},{parameterId:model.primaryMeasureParameterId,unitId:'piece',valueType:'decimal'}),'LEGACY_VOLUME_PRIMARY_MIGRATION_ACCEPTED');
   const input:Json={
    approved_embedment_design_reference:'TEST new cast-in design E8-A',embedded_item_schedule_reference:'TEST two specified items, total40kg',
    approved_placement_drawing_reference:'TEST target construction drawing E8-A',slab_location:'TEST target construction segment E8-A',
@@ -38,13 +40,19 @@ export async function verifyLegacyEmbeddedEightR1(context:Json){
    foundation_item_installation_fixing_payment_mode:label('SEPARATE_CONFIRMED_SUPPLY'),foundation_item_installation_fixing_designation:'TEST fixing E8-F2',
    foundation_item_installation_fixing_quantity:2,foundation_item_installation_fixing_price_scope_reference:'TEST separate physical fixing supply only',
    foundation_item_installation_fixing_stock:0,foundation_item_installation_fixing_reserve:1,foundation_item_installation_fixing_supplier_quantum:3});
-  const execute=(parameters:Json)=>compile({operation:'compile',compilerVersion:'legacy-embedded-eight-verification-r1',catalogId:model.catalogId,
+  const execute=(parameters:Json,rowOverrides?:Record<string,Record<string,unknown>>)=>compile({operation:rowOverrides?'recalculate':'compile',rowOverrides,compilerVersion:'legacy-embedded-eight-verification-r1',catalogId:model.catalogId,
    primaryMeasureParameterId:model.primaryMeasureParameterId,parameterDefinitions:model.parameters,formulaDefinitions:model.formulas,
    resourceDefinitions:model.resources,submittedParameters:parameters,confirmedParameters:{},currencyCode:'KGS',priceItems:[],maximumResourceRows:128,hashJson:async v=>hash(v)});
   const result=await execute(input),fixing=result.rows.find(r=>r.row_id==='material:concrete:foundation-item-installation-fixing-separate');
   assert(fixing,'TEST_EXPLICIT_FIXING_NOT_CALCULATED');assert.equal(String(fixing.quantity),'3');
   assert.equal(result.preliminaryNeeds.length,0,'TEST_SCHEDULE_STILL_HAS_OPEN_QUANTITY_NEEDS:'+JSON.stringify(result.preliminaryNeeds));
   assert(!result.rows.some(r=>r.included_in_estimate&&r.row_id.includes('-kit')),'RETIRED_KIT_PAID_TWICE');
+  const owner=model.resources.find(r=>r.row_id==='work:concrete:slab-embedded-items-fixing')!;
+  const includedInput={...input,foundation_item_installation_fixing_payment_mode:'Включено в подтверждённую ставку: '+owner.title_ru};
+  const included=await execute(includedInput),includedRow=included.rows.find(r=>r.row_id==='material:concrete:foundation-item-installation-fixing-included-0');
+  assert(includedRow&&!includedRow.included_in_estimate&&!includedRow.included_in_procurement,'INCLUDED_MATERIAL_PAID_OR_PURCHASED_TWICE');
+  let inactiveOwner:any;try{await execute({...includedInput,fixing_worker_h:0});}catch(error){inactiveOwner=error;}
+  assert.equal(inactiveOwner?.code,'PARAMETER_VALIDATION_FAILED','MATERIAL_INCLUDED_BEHIND_INACTIVE_OWNER');
   const unknown={...input};delete unknown.foundation_item_installation_fixing_stock;
   const missing=await execute(unknown);assert(missing.preliminaryNeeds.some(n=>n.row_id===fixing.row_id),'UNKNOWN_STOCK_TREATED_AS_ZERO');
   const inactive=await execute({...input,foundation_item_installation_fixing_applicability:label('NOT_REQUIRED_BY_APPROVED_PROJECT')});
@@ -58,6 +66,12 @@ export async function verifyLegacyEmbeddedEightR1(context:Json){
    const noMethod={...input};delete noMethod.embedded_local_repair_method;const needs=await execute(noMethod);
    assert(needs.preliminaryNeeds.length>0,'MISSING_REPAIR_CAST_IN_CONFIRMATION_WAS_ACCEPTED');
    assert(!needs.rows.some(r=>r.included_in_estimate&&!r.row_id.includes('-kit')),'MISSING_REPAIR_CONFIRMATION_DID_NOT_STOP_PAYABLE_ROWS');
+   const manualWorkId='work:concrete:slab-embedded-items-positioning';
+   const overridden=await execute(noMethod,{[manualWorkId]:{quantity:'35',unitPrice:'100',provenance:{kind:'manual',reason:'TEST_ONLY'}}});
+   assert(overridden.preliminaryNeeds.some(n=>n.row_id===manualWorkId),'MANUAL_QUANTITY_BYPASSED_REPAIR_CONFIRMATION');
+   assert(!overridden.rows.some(r=>r.row_id===manualWorkId&&r.included_in_estimate),'MANUAL_QUANTITY_PAID_WITHOUT_REPAIR_CONFIRMATION');
+   const noReference={...input};delete noReference.embedded_local_repair_scope_reference;
+   const missingReference=await execute(noReference);assert(missingReference.preliminaryNeeds.length>0&&!missingReference.rows.some(r=>r.included_in_estimate&&!r.row_id.includes('-kit')),'MISSING_REPAIR_SCOPE_REFERENCE_ACCEPTED');
    let rejected:any;try{await execute({...input,embedded_local_repair_method:'Отвергнуто: анкеровка после бетонирования'});}catch(error){rejected=error;}
    assert.equal(rejected?.code,'PARAMETER_VALIDATION_FAILED','REFUSED_REPAIR_CAST_IN_CONFIRMATION_WAS_ACCEPTED');
   }
@@ -72,7 +86,7 @@ export async function verifyLegacyEmbeddedEightR1(context:Json){
  assert.equal(prepared.models.length,8);assert.equal(hash(context),frozen,'CURRENT_PARENT_CONTEXT_MUTATED');
  for(const id of preserve)assert(context.parents.some((p:Json)=>p.definition.catalog_id===id));
  return {status:'PASS_LEGACY_EMBEDDED_EIGHT_CORE_AND_FORWARD_PLAN_VERIFICATION',cases,caseCount:8,
-  actualCoreCompilationScenarios:cases.reduce((n,c)=>n+(c.repairConfirmationVerified?7:5),0),
+  actualCoreCompilationScenarios:cases.reduce((n,c)=>n+(c.repairConfirmationVerified?11:7),0),
   preparedPlans:prepared.models.map(m=>({catalogId:m.plan.definition.catalog_id,version:m.plan.definition.definition_version,parameters:m.plan.parameters.length,formulas:m.plan.formulas.length,resources:m.plan.resources.length,bindings:m.plan.bindings.length})),
   preserved12CurrentParentsUnchanged:true,automaticHistoricalMigrationPerformed:false,completeRealProjectEstimatesAccepted:0,confirmedSupplierOrders:0};
 }

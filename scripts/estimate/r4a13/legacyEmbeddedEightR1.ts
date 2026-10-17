@@ -47,8 +47,10 @@ export function buildLegacyEmbeddedEightR1(parent:Json){
  // knowledge of publisher versions or the previous59 implementation rows.
  const decision=parameters.find(p=>p.parameter_id==='foundation_scope_forward_decision_reference');assert(decision);
  decision.title_ru='Подтверждённые границы монтажа закладных и отдельной оплаты смежных работ';
+ decision.truth_metadata={...decision.truth_metadata,guide:{...(decision.truth_metadata?.guide as Json|undefined),guide_short_ru:decision.title_ru}};
  const boundary=parameters.find(p=>p.parameter_id==='foundation_paid_owner_boundary');assert(boundary);
  boundary.title_ru='Подтверждённая отдельная физическая граница монтажа закладных без уже оплаченного объёма укладки или полной конструкции';
+ boundary.truth_metadata={...boundary.truth_metadata,guide:{...(boundary.truth_metadata?.guide as Json|undefined),guide_short_ru:boundary.title_ru}};
  if(target.contextKey==='repair'){
   const extra=buildAutomaticConstructionOwnerR1({contract:legacyEmbeddedEightContractR1,semanticOwner:catalogId,
    sourceId:'project_approved_foundation_geometry_method_and_scope',normId:'project-facts-no-universal-norm',
@@ -56,7 +58,7 @@ export function buildLegacyEmbeddedEightR1(parent:Json){
     definition_hash:'42123e5d9adcd174b32049da87bcfbe55b0b7f2cd5ef17a09e599b63f4dddb50',artifact_sha256:'42123e5d9adcd174b32049da87bcfbe55b0b7f2cd5ef17a09e599b63f4dddb50',exact_locator:'Проектный узел закладной в локально заменяемом бетоне и отдельная граница оплаты ремонтных работ'},
    applicabilityRu:target.titleRu,ordinary:[
     {id:'embedded_local_repair_method',title:'Подтверждённая технология закладной в зоне локального ремонта; анкеровка в готовом бетоне сюда не входит',valueType:'enum',unitId:null,kind:'ordinary',values:[repairMethod]},
-    {id:'embedded_local_repair_scope_reference',title:'Проектный узел закладной в локально заменяемом бетоне и подтверждение отдельной оплаты ремонта основания',valueType:'text',unitId:null,kind:'ordinary'}],
+    {id:'embedded_local_repair_scope_reference',title:'Проектный узел закладной в локально заменяемом бетоне; ремонт основания оплачивается отдельно; без сварки с существующей конструкцией и её усиления',valueType:'text',unitId:null,kind:'ordinary'}],
    profile:[],conditional:[],rows:[],deferMissingProjectFactsToRows:true,excludedUnownedAssumptions:['Automatic conversion of old q in m3 into embedded item count','Repair or post-installed anchors charged as cast-in installation']});
   parameters.push(...extra.parameters);
   for(const row of resources)row.resource_graph={...row.resource_graph,inputParameterIds:[...new Set([
@@ -75,7 +77,7 @@ export function buildLegacyEmbeddedEightR1(parent:Json){
  return {contract:legacyEmbeddedEightContractR1,catalogId,titleRu:target.titleRu,target,
   sourceProfileCatalogId:sourceProfile.catalogId,primaryMeasureParameterId:source.primaryMeasureParameterId,
   parameters,formulas,resources,subworks:adapt(source.subworks),
-  scopeRu:'Установка закладных деталей до бетонирования по утверждённой ведомости количества и массы. Бетонирование, арматура и опалубка конструкции, ремонт основания и последующие механические/химические анкеры оплачиваются отдельно, если предусмотрены проектом.',
+  scopeRu:'Установка закладных деталей до бетонирования по утверждённой ведомости количества и массы. Бетонирование, арматура и опалубка конструкции, ремонт основания и последующие механические/химические анкеры оплачиваются отдельно, если предусмотрены проектом. Сварка с существующей конструкцией и её усиление не входят в этот состав; содержание проектной процедуры сварки проверяется отдельно.',
   historicalParent:{definitionId:target.definitionId,version:target.version,definitionSha256:target.definitionSha256,baselineId:target.baselineId},
   historicalRowsNotAutomaticallyMigrated:target.legacyRows.map(r=>r.rowId),oldPrimaryQuantityAutomaticallyMapped:false,
   newRuntimeDefaults:0,engineeringAccepted:false,completeRealProjectEstimateAccepted:false,confirmedSupplierOrder:false};

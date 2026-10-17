@@ -62,7 +62,8 @@ export function assembleLegacyEmbeddedEightForwardR1(input:Readonly<{
    bindingApplicability:b=>b.applicability,expectedNormativeBindingCount:bindingRows.length});
   const oldBindings=priceBindings(parent as any),newBindings=priceBindings(plan);
   for(const row of parent.resources){assert(!plan.resources.some(r=>r.row_id===row.row_id));
-   for(const override of [{unitPrice:'100'},{quantity:'35'},{titleRu:'TEST legacy manual title'}])assert(!canMigrate({rowOverrides:{[row.row_id]:{...override,provenance:{kind:'manual'}}},customRows:[],fromBindings:oldBindings,toBindings:newBindings}),'LEGACY_EMBEDDED_EIGHT_UNREVIEWED_MANUAL_MIGRATION');}
+   for(const override of [{unitPrice:'100'},{quantity:'35'},{titleRu:'TEST legacy manual title'},{includedInEstimate:false,includedInProcurement:false}])assert(!canMigrate({rowOverrides:{[row.row_id]:{...override,provenance:{kind:'manual'}}},customRows:[],fromBindings:oldBindings,toBindings:newBindings}),'LEGACY_EMBEDDED_EIGHT_UNREVIEWED_MANUAL_MIGRATION');}
+  assert(!canMigrate({rowOverrides:{},customRows:[{rowId:'TEST custom legacy row'}],fromBindings:oldBindings,toBindings:newBindings}),'LEGACY_CUSTOM_ROW_AUTOMATICALLY_MIGRATED');
   assert(Object.values(plan.baseline.input_classification).every(v=>v==='VALIDATION_FIXTURE'));
   const visible=plan.parameters.filter(p=>p.truth_metadata?.visibility_role!=='INTERNAL_ONLY');
   return {plan,primaryMeasureParameterId:model.primaryMeasureParameterId,
