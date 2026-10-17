@@ -1,0 +1,204 @@
+{
+  "contract": "rik-expo-app.curing-control-title-parent-pins.r1",
+  "sourceContextSha256": "a4a3044a43cde26409552d17c5d8ef99f0a230e6bf5aeca845bf7db8eedbeff8",
+  "parents": [
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_cure_high_load",
+      "definitionId": "b286770f-b699-5387-856c-308e3e6b79cd",
+      "definitionVersion": 8,
+      "definitionSha256": "f3800e8cdacb0e2c3c6ed87669cfef8a54a69362acae0050d8c38e1f9b76b60b",
+      "controlRowId": "service:concrete:slab-curing-quality-control",
+      "controlRowSha256": "f6b3f6812d9825c4cff5415ea50be56f679e3a64d499afc46711a340dd17da77",
+      "oldTitleRu": "Контроль и запись выполнения ухода за бетонной плитой",
+      "newTitleRu": "Контроль и запись выполнения ухода за бетонной плитой",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_cure_large_area",
+      "definitionId": "9d5ab956-ca9a-51ea-898d-ef4985c5cc91",
+      "definitionVersion": 8,
+      "definitionSha256": "a090927fba0660c0e6750e194593f394ed0f1e86a49b46092638c5a50fde6e19",
+      "controlRowId": "service:concrete:slab-curing-quality-control",
+      "controlRowSha256": "aaf814bed29d32a987154f2a181dafc2463e954c992c9d534871377ab1753a81",
+      "oldTitleRu": "Контроль и запись выполнения ухода за бетонной плитой",
+      "newTitleRu": "Контроль и запись выполнения ухода за бетонной плитой",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_cure_small_area",
+      "definitionId": "68e3c669-df8f-5291-83e9-7fc42652d46b",
+      "definitionVersion": 8,
+      "definitionSha256": "c2731e01dda24476c294a7cead927bffb4dcf9a351c8486ff660688980c051e8",
+      "controlRowId": "service:concrete:slab-curing-quality-control",
+      "controlRowSha256": "f25fffba2b21a82fd32fbf26af5292e8395fcc470df5f6a56e6db9a0db1a0c49",
+      "oldTitleRu": "Контроль и запись выполнения ухода за бетонной плитой",
+      "newTitleRu": "Контроль и запись выполнения ухода за бетонной плитой",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_cure_standard",
+      "definitionId": "433aaf8a-c3ff-5d1d-878b-971ed03c5d58",
+      "definitionVersion": 8,
+      "definitionSha256": "e69b3e9e8b683a2e4a46e9f6759c60dbb2e60a8883ede109798020e2ce9c26c8",
+      "controlRowId": "service:concrete:slab-curing-quality-control",
+      "controlRowSha256": "ba00aa8719717ec4c4288391822e14b1cef4938b1ad5121e92cb3d2340a6c6e9",
+      "oldTitleRu": "Контроль и запись выполнения ухода за бетонной плитой",
+      "newTitleRu": "Контроль и запись выполнения ухода за бетонной плитой",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_cure_technical_room",
+      "definitionId": "738d1724-3d18-5772-875d-962453309185",
+      "definitionVersion": 8,
+      "definitionSha256": "531df1bd6e1229ba0f700a59878b46be0d93db1ccd6aaaed1cb80cd0fb81e26e",
+      "controlRowId": "service:concrete:slab-curing-quality-control",
+      "controlRowSha256": "af966b0341f31f02caa4a2d644e6cfac261c0303b112c6e3bb3fb33243e6b401",
+      "oldTitleRu": "Контроль и запись выполнения ухода за бетонной плитой",
+      "newTitleRu": "Контроль и запись выполнения ухода за бетонной плитой",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_cure_wet_zone",
+      "definitionId": "8736af06-ec10-5ccc-89a8-81ffe62c769d",
+      "definitionVersion": 8,
+      "definitionSha256": "4e5dfb96659744afcc239729d4233c8a9b09caa328e42c7262c5ffdf7e4378b1",
+      "controlRowId": "service:concrete:slab-curing-quality-control",
+      "controlRowSha256": "d78522c24449baf319706020635f2d0df87c74f6811fa86ee615a67583e5b15c",
+      "oldTitleRu": "Контроль и запись выполнения ухода за бетонной плитой",
+      "newTitleRu": "Контроль и запись выполнения ухода за бетонной плитой",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_cure_high_load",
+      "definitionId": "48378b9b-adee-5dca-8767-1d6b5280760d",
+      "definitionVersion": 8,
+      "definitionSha256": "99b174a6d62186c88606121506d3965d3b98c93d5200225ad0fd6cd6716c23c8",
+      "controlRowId": "service:concrete:slab-curing-quality-control",
+      "controlRowSha256": "de4bb202d147a3a0248c13f9910a0b7f07800850d21f24835d9487964cbacfe3",
+      "oldTitleRu": "Контроль и запись выполнения ухода за бетонной плитой",
+      "newTitleRu": "Контроль и запись выполнения ухода за бетонной лестницей",
+      "changeRequired": true
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_cure_large_area",
+      "definitionId": "ceb97030-9476-5a17-871e-4115acc3e125",
+      "definitionVersion": 8,
+      "definitionSha256": "9e2fa3d63dcf4f2018447f02159ae21b5c1f742941d45d6bd64344516a5d7dd9",
+      "controlRowId": "service:concrete:slab-curing-quality-control",
+      "controlRowSha256": "c19ab5b9e2087a170d48bdf07d3443b4b161432273e0e0146056053d1fdbad20",
+      "oldTitleRu": "Контроль и запись выполнения ухода за бетонной плитой",
+      "newTitleRu": "Контроль и запись выполнения ухода за бетонной лестницей",
+      "changeRequired": true
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_cure_small_area",
+      "definitionId": "1d095ef4-04c2-5c06-8011-9bb35606a787",
+      "definitionVersion": 8,
+      "definitionSha256": "fa4b81114dc5060b198b43fda2d3da2ea83f412e252766e1773adaa248d1cb69",
+      "controlRowId": "service:concrete:slab-curing-quality-control",
+      "controlRowSha256": "1c0f0b36555d8680f27b9fc8afb2a3113660cc6d168f32e4b51a07945cff7334",
+      "oldTitleRu": "Контроль и запись выполнения ухода за бетонной плитой",
+      "newTitleRu": "Контроль и запись выполнения ухода за бетонной лестницей",
+      "changeRequired": true
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_cure_standard",
+      "definitionId": "d1beba6b-f875-5d67-860e-fb5863d489e0",
+      "definitionVersion": 8,
+      "definitionSha256": "a44b5c338ede91021c46d46c16fd5d9eaa800c7eb3df9bf8ce848be5525a8ae7",
+      "controlRowId": "service:concrete:slab-curing-quality-control",
+      "controlRowSha256": "86b6884609b29f0b8b691226c12b11b844c232f1438acaf6f7d7a0f7ea631f4f",
+      "oldTitleRu": "Контроль и запись выполнения ухода за бетонной плитой",
+      "newTitleRu": "Контроль и запись выполнения ухода за бетонной лестницей",
+      "changeRequired": true
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_cure_technical_room",
+      "definitionId": "a6e37146-4d31-59a0-8042-021ef3cccf39",
+      "definitionVersion": 8,
+      "definitionSha256": "c3a092e09034f4cc07c00b1145e56ed0cdeaee8d50533bc1abed976f13e267bd",
+      "controlRowId": "service:concrete:slab-curing-quality-control",
+      "controlRowSha256": "2e88e02dd34140b36fe0d2ba66076da6a871f877c88dc9a82a24e05f8407e9fc",
+      "oldTitleRu": "Контроль и запись выполнения ухода за бетонной плитой",
+      "newTitleRu": "Контроль и запись выполнения ухода за бетонной лестницей",
+      "changeRequired": true
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_cure_wet_zone",
+      "definitionId": "5b86ef9b-a946-5175-842d-b26f7a710766",
+      "definitionVersion": 8,
+      "definitionSha256": "dbb7b66d405c404d8fc22f0b0ad8e15576239b75ef4c7aa1ff588236938a73ba",
+      "controlRowId": "service:concrete:slab-curing-quality-control",
+      "controlRowSha256": "fc47597e70702205e3f7ab79381acc9704358fb6b3b029248029682500b66c53",
+      "oldTitleRu": "Контроль и запись выполнения ухода за бетонной плитой",
+      "newTitleRu": "Контроль и запись выполнения ухода за бетонной лестницей",
+      "changeRequired": true
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_cure_high_load",
+      "definitionId": "f3aaceff-622a-5a4b-8b25-62f6072db9c0",
+      "definitionVersion": 8,
+      "definitionSha256": "b3c2489a24b05eeb489a0431c00bbb482a3e154ec8d8b4eb5b55da133f685bbf",
+      "controlRowId": "service:concrete:slab-curing-quality-control",
+      "controlRowSha256": "cd36d316c4c09f06b6fc2090f8e124c0102c3dbf547fbc87233f5b54c3ba773c",
+      "oldTitleRu": "Контроль и запись выполнения ухода за бетонной плитой",
+      "newTitleRu": "Контроль и запись выполнения ухода за бетоном ленточного фундамента",
+      "changeRequired": true
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_cure_large_area",
+      "definitionId": "6c88b774-b876-5c3a-85a8-8088f15e48ed",
+      "definitionVersion": 8,
+      "definitionSha256": "c5acbf7478da8d196d710989865042e2e083f793ae54397acf69b105491a5aa9",
+      "controlRowId": "service:concrete:slab-curing-quality-control",
+      "controlRowSha256": "d28fa3e293e9088e1f3b7bc264f4db808821f15173e33fa7abbd4ddf141ad6b9",
+      "oldTitleRu": "Контроль и запись выполнения ухода за бетонной плитой",
+      "newTitleRu": "Контроль и запись выполнения ухода за бетоном ленточного фундамента",
+      "changeRequired": true
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_cure_small_area",
+      "definitionId": "75231e04-52d8-5cf0-8f74-a5d72456d6e2",
+      "definitionVersion": 8,
+      "definitionSha256": "b307f7ffda4f6c11bd123857ce2a4f16b0dfbee3ac4e5e8e9dd80e52a552099e",
+      "controlRowId": "service:concrete:slab-curing-quality-control",
+      "controlRowSha256": "4b4ac154bdcca397fce8b1efe3a8c0e8187754e5a5c65d25eba4aeee029a76f9",
+      "oldTitleRu": "Контроль и запись выполнения ухода за бетонной плитой",
+      "newTitleRu": "Контроль и запись выполнения ухода за бетоном ленточного фундамента",
+      "changeRequired": true
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_cure_standard",
+      "definitionId": "3d1df8a0-84f8-53f7-8aa8-212e9cf561dd",
+      "definitionVersion": 8,
+      "definitionSha256": "3abfe3a3f76acbc9413470233e2afe31c934f26d40c6180cd1a370963cd01216",
+      "controlRowId": "service:concrete:slab-curing-quality-control",
+      "controlRowSha256": "ade290c4f89cdf2dee0785111de25f410ef8f7a680dba35a8bd991aff0c13c75",
+      "oldTitleRu": "Контроль и запись выполнения ухода за бетонной плитой",
+      "newTitleRu": "Контроль и запись выполнения ухода за бетоном ленточного фундамента",
+      "changeRequired": true
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_cure_technical_room",
+      "definitionId": "67bca605-993c-5ed8-8ce7-62fb40a0511f",
+      "definitionVersion": 8,
+      "definitionSha256": "eec0276a0bec00b2d0263a38cb8ce679927e6c7073c17664617cf5b06ffa463f",
+      "controlRowId": "service:concrete:slab-curing-quality-control",
+      "controlRowSha256": "b144321de253caf6e1d967fbac5adf82bc678aca27ec1a4aed28677f49b664b8",
+      "oldTitleRu": "Контроль и запись выполнения ухода за бетонной плитой",
+      "newTitleRu": "Контроль и запись выполнения ухода за бетоном ленточного фундамента",
+      "changeRequired": true
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_cure_wet_zone",
+      "definitionId": "4462675b-3637-53ab-8fff-62fee2ebe3e7",
+      "definitionVersion": 8,
+      "definitionSha256": "17060f40675d1037109fb76609f570c8f11a5066488470c715fd86775a154392",
+      "controlRowId": "service:concrete:slab-curing-quality-control",
+      "controlRowSha256": "802280b40315884a2b0b1a36a5ff0602c59176b803de1733114544ef616f5f41",
+      "oldTitleRu": "Контроль и запись выполнения ухода за бетонной плитой",
+      "newTitleRu": "Контроль и запись выполнения ухода за бетоном ленточного фундамента",
+      "changeRequired": true
+    }
+  ]
+}
