@@ -114,11 +114,65 @@ export async function verifyCuringMaterials36R1(parents:readonly Parent[]){
   const zeroSeparate=requiredItem(curingMaterials36TestInputR1(model,'MEMBRANE_CURING_COMPOUND',true),ownMode);zeroSeparate.antisol_usable_stock_l=100;
   const zs=await execute(zeroSeparate,'zero-Antisol-order-separate-item-still-purchased');assert.equal(zs.preliminaryNeeds.length,0);assert.equal(String(zs.rows.find(x=>x.row_id===separateRow)?.quantity),'3');
   const noStock={...exactInput};delete noStock.antisol_usable_stock_l;const ns=await execute(noStock,'unknown-Antisol-stock-remains-unknown');assert(ns.preliminaryNeeds.some(n=>n.row_id===exactOwner));
+
+  // Every selectable item must have a working explicit quantity and ownership
+  // branch; a complete factory list alone is not proof of those branches.
+  const positionInput=(group:Json,position:Json,mode:string,method='IMPERVIOUS_SHEET',exact=false,mainStock=0)=>{
+   const x:Json=curingMaterials36TestInputR1(model,method,exact),key='foundation_item_'+group.key+'_'+position.key;
+   const quantity=position.unitId==='piece'?2:position.unitId==='m'?2.5:3.25;
+   if(group.key==='curing_application')Object.assign(x,{application_equipment_required:true,
+    application_equipment_designation:'TEST actual pump for the individually selected compatible accessory',
+    application_equipment_machine_h:1,equipment_mobilization_pricing_mode:'INCLUDED_IN_EQUIPMENT_RATE'});
+   Object.assign(x,{[key+'_applicability']:label('REQUIRED_BY_APPROVED_PROJECT'),[key+'_payment_mode']:mode,
+    [key+'_designation']:'TEST actual compatible '+position.key,[key+'_quantity']:quantity,
+    [key+'_price_scope_reference']:'TEST actual item quote states this item and quantity, including a previous paid supply when main order is zero'});
+   if(mode===ownMode)Object.assign(x,{[key+'_stock']:position.unitId==='piece'?0:position.unitId==='m'?0.125:0.25,
+    [key+'_reserve']:position.unitId==='piece'?1:position.unitId==='m'?0.25:0.5,
+    [key+'_supplier_quantum']:position.unitId==='piece'?3:position.unitId==='m'?0.25:0.5});
+   if(exact){x.antisol_usable_stock_l=mainStock;x[quoteId]='TEST actual Antisol quote covers the individually selected item and previous paid supply when order is zero';}
+   return {input:x,key,quantity};
+  };
+  for(const group of model.groups)for(const position of group.positions){
+   const {input,key}=positionInput(group,position,ownMode),rowId='material:concrete:foundation-item-'+group.key+'-'+position.key+'-separate';
+   const rr=await execute(input,'all-items-separate-'+group.key+'-'+position.key);assert.equal(rr.preliminaryNeeds.length,0);
+   const row=rr.rows.find(r=>r.row_id===rowId);assert(row);assert.equal(row.unit_id,position.unitId);
+   const expected=position.unitId==='piece'?3:position.unitId==='m'?2.75:3.5;
+   assert.equal(Number(row.quantity),expected);assert.equal(row.unit_price,null);assert.equal(row.included_in_procurement,true);
+   Object.assign(cases[cases.length-1],{itemKey:key,unitId:row.unit_id,expectedPurchase:expected,actualPurchase:row.quantity});
+   const missing={...input};delete missing[key+'_stock'];
+   const unknown=await execute(missing,'all-items-unknown-stock-'+group.key+'-'+position.key);
+   assert(unknown.preliminaryNeeds.some(n=>n.row_id===rowId&&n.missing_parameter_ids.includes(key+'_stock')));
+  }
+  const equipment=model.groups.find((g:Json)=>g.key==='curing_application')!;
+  for(const position of equipment.positions){
+   const owner=parent.resources.find(r=>r.row_id==='equipment:concrete:curing-application')!;
+   const {input,quantity,key}=positionInput(equipment,position,'Включено в подтверждённую ставку: '+owner.title_ru);
+   const rr=await execute(input,'all-equipment-items-included-'+position.key);assert.equal(rr.preliminaryNeeds.length,0);
+   const row=rr.rows.find(r=>r.row_id==='material:concrete:foundation-item-curing_application-'+position.key+'-included-0');assert(row);
+   assert.equal(Number(row.quantity),quantity);assert.equal(row.unit_id,position.unitId);
+   assert.equal(row.included_in_estimate,false);assert.equal(row.included_in_procurement,false);
+   Object.assign(cases[cases.length-1],{itemKey:key,physicalQuantity:row.quantity,noSeparatePayment:true});
+  }
+  const material=model.groups.find((g:Json)=>g.key==='curing_material')!;
+  const owners=[['WET_COVERING','material:concrete:wet-curing-covering',false,0,0],
+   ['IMPERVIOUS_SHEET','material:concrete:impervious-curing-sheet',false,0,1],
+   ['MEMBRANE_CURING_COMPOUND','material:concrete:membrane-curing-compound',false,0,2],
+   ['MEMBRANE_CURING_COMPOUND',exactOwner,true,0,3],['MEMBRANE_CURING_COMPOUND',exactOwner,true,100,3]] as const;
+  for(const [method,ownerId,exact,stock,index] of owners)for(const position of material.positions){
+   const owner=parent.resources.find(r=>r.row_id===ownerId)!;
+   const {input,quantity,key}=positionInput(material,position,'Включено в подтверждённую ставку: '+owner.title_ru,method,exact,stock);
+   const rr=await execute(input,'all-material-items-included-'+method+'-'+index+'-stock'+stock+'-'+position.key);assert.equal(rr.preliminaryNeeds.length,0);
+   const row=rr.rows.find(r=>r.row_id==='material:concrete:foundation-item-curing_material-'+position.key+'-included-'+index);assert(row);
+   assert.equal(Number(row.quantity),quantity);assert.equal(row.unit_id,position.unitId);
+   assert.equal(row.included_in_estimate,false);assert.equal(row.included_in_procurement,false);
+   if(exact)assert.equal(Number(rr.rows.find(r=>r.row_id===exactOwner)!.quantity),stock===100?0:19);
+   Object.assign(cases[cases.length-1],{itemKey:key,physicalQuantity:row.quantity,mainStock:stock,noSeparatePayment:true});
+  }
   models.push({catalogId:model.catalogId,parentSha256:before,modelSha256:hash(model),parameters:model.parameters.length,formulas:model.formulas.length,resources:model.resources.length,retiredKits:7,changedPriceOwners:5,preservedResources:11,
    acceptanceInput:separate,explicitTestOnly:true,realProjectAccepted:false});
  }
- assert.equal(primaryGuardCases.length,288);
- return {primaryBindingRejections:primaryGuardCases.length,primaryGuardCases,status:'PASS_CURING36_PROJECT_ITEMS_OWNERS_ZERO_PURCHASE_AND_IMMUTABLE_FORMULAS',models,cases,coreScenarios:cases.length,calculatedTestTypes:36,realProjectEstimatesAccepted:0,confirmedSupplierOrders:0,publicationPerformed:false,verifierWritesProductSource:false,nativeAccepted:false};
+ assert.equal(primaryGuardCases.length,288);assert.equal(cases.length,1836);
+ return {baselineScenarios:648,selectedPositionScenarios:1188,allSevenPositionsCovered:true,primaryBindingRejections:primaryGuardCases.length,primaryGuardCases,status:'PASS_CURING36_PROJECT_ITEMS_OWNERS_ZERO_PURCHASE_AND_IMMUTABLE_FORMULAS',models,cases,coreScenarios:cases.length,calculatedTestTypes:36,realProjectEstimatesAccepted:0,confirmedSupplierOrders:0,publicationPerformed:false,verifierWritesProductSource:false,nativeAccepted:false};
 }
 async function main(){const context=JSON.parse(fs.readFileSync(process.argv[2],'utf8').replace(/^\uFEFF/u,''));
  assert.equal(context.status,'PASS_READ_ONLY_CURING36_PARENTS_AND_CURRENT18_SIX_PDFS_DURABILITY');
