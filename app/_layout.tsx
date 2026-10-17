@@ -172,9 +172,20 @@ function shouldWarmPdfViewerAfterStartup(input: {
   return true;
 }
 
-function shouldWarmOfficeRouteAfterStartup(pathname: string | null | undefined) {
+function shouldWarmOfficeRouteAfterStartup(
+  pathname: string | null | undefined,
+  platformOs: string,
+) {
   const normalizedPathname = normalizeWarmupPathname(pathname);
   if (normalizedPathname === "/office" || normalizedPathname.startsWith("/office/")) return false;
+  // Public Web entry points must not build an unrelated Office graph on load.
+  // The registered Office tab loads its screen when the user opens it.
+  if (platformOs === "web" && (
+    normalizedPathname === "/" || normalizedPathname === "/index" ||
+    isPublicRequestRoutePathname(normalizedPathname) ||
+    normalizedPathname === "/auth" || normalizedPathname.startsWith("/auth/") ||
+    normalizedPathname === "/sign-in" || normalizedPathname === "/pdf-viewer"
+  )) return false;
   return true;
 }
 
@@ -1116,7 +1127,7 @@ function RootLayout() {
 
   useEffect(() => {
     if (process.env.NODE_ENV === "test") return undefined;
-    if (!shouldWarmOfficeRouteAfterStartup(pathname)) return undefined;
+    if (!shouldWarmOfficeRouteAfterStartup(pathname, Platform.OS)) return undefined;
 
     let active = true;
     const warmOfficeRoute = () => {
