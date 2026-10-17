@@ -49,10 +49,10 @@ export function placementMaterials28TestInputR1(parent:Parent,model=build(parent
  }
  return input;
 }
-export async function verifyPlacementMaterials28R1(parents:readonly Parent[]){
- assert.equal(parents.length,28);const models:Json[]=[],cases:Json[]=[];
+export async function verifyPlacementMaterialModelsR1(parents:readonly Parent[],builder:typeof build,expectedCount:number){
+ assert.equal(parents.length,expectedCount);const models:Json[]=[],cases:Json[]=[];
  for(const parent of parents){
-  const before=hash(parent),model=build(parent);assert.equal(hash(parent),before);assert.equal(model.preservedParentRowIds.length,23);assert.equal(model.retiredAggregateRowIds.length,13);assert.equal(model.modifiedOwnerInputRows.length,5);
+  const before=hash(parent),model=builder(parent);assert.equal(hash(parent),before);assert.equal(model.preservedParentRowIds.length,23);assert.equal(model.retiredAggregateRowIds.length,13);assert.equal(model.modifiedOwnerInputRows.length,5);
   assert.equal(model.resources.length,82);assert.equal(model.formulas.length,82);assert.equal(model.parameters.length,287);
   for(const id of model.preservedParentRowIds)assert.deepEqual(model.resources.find(r=>r.row_id===id),parent.resources.find(r=>r.row_id===id),'UNCHANGED_PARENT_ROW_CHANGED:'+id);
   assert.deepEqual(model.formulas.slice(0,41),parent.formulas);
@@ -99,7 +99,8 @@ export async function verifyPlacementMaterials28R1(parents:readonly Parent[]){
   models.push({catalogId:model.catalogId,parentSha256:before,modelSha256:hash(model),parameters:287,formulas:82,resources:82,preservedResources:23,retiredAggregateRows:13,changedOwnerInputRows:model.modifiedOwnerInputRows});
  }
  assert.throws(()=>buildExplicitProjectMaterialItemsR1('TEST','empty',{kind:'greater_than',parameterId:'q',value:0},[],[],[],'0'.repeat(64),{separateSupplyAllowed:false}),/INCLUDED_ONLY_OWNER_REQUIRED/u);
- return {status:'PASS_28_CURRENT_PARENTS_BRANCH_OWNERS_PAYMENT_MIGRATION_AND_UNKNOWN_FACTS',models,cases,calculatedTypesWithExplicitTestFacts:28,realProjectEstimatesAccepted:0,publicationPerformed:false};
+ return {status:`PASS_${expectedCount}_CURRENT_PARENTS_BRANCH_OWNERS_PAYMENT_MIGRATION_AND_UNKNOWN_FACTS`,models,cases,calculatedTypesWithExplicitTestFacts:expectedCount,realProjectEstimatesAccepted:0,publicationPerformed:false};
 }
+export const verifyPlacementMaterials28R1=(parents:readonly Parent[])=>verifyPlacementMaterialModelsR1(parents,build,28);
 async function main(){const context=JSON.parse(fs.readFileSync(process.argv[2],'utf8').replace(/^\uFEFF/u,''));assert.equal(context.status,'PASS_READ_ONLY_PLACEMENT28_CURRENT_FULL_PARENTS');const result=await verifyPlacementMaterials28R1(context.parents);fs.writeFileSync(process.argv[3],JSON.stringify(result,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify({status:result.status,models:28}));}
 if(process.argv[1]?.endsWith('verifyPlacementMaterials28R1.ts'))void main().catch(error=>{console.error(error);process.exitCode=1;});
