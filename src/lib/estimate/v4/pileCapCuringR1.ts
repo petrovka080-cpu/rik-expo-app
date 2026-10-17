@@ -34,6 +34,7 @@ const ORIGINAL_PARAMETER_BY_ID = new Map(
 
 function pileCapText(value: string): string {
   return value
+    .replaceAll("бетоном пьедестала", "бетоном ростверка")
     .replaceAll("бетонного пьедестала", "ростверка")
     .replaceAll("бетонным пьедесталом", "ростверком")
     .replaceAll("бетонном пьедестале", "ростверке")
