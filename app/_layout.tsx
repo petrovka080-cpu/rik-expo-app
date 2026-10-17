@@ -178,14 +178,9 @@ function shouldWarmOfficeRouteAfterStartup(
 ) {
   const normalizedPathname = normalizeWarmupPathname(pathname);
   if (normalizedPathname === "/office" || normalizedPathname.startsWith("/office/")) return false;
-  // Public Web entry points must not build an unrelated Office graph on load.
-  // The registered Office tab loads its screen when the user opens it.
-  if (platformOs === "web" && (
-    normalizedPathname === "/" || normalizedPathname === "/index" ||
-    isPublicRequestRoutePathname(normalizedPathname) ||
-    normalizedPathname === "/auth" || normalizedPathname.startsWith("/auth/") ||
-    normalizedPathname === "/sign-in" || normalizedPathname === "/pdf-viewer"
-  )) return false;
+  // Web loads Office through its registered tab when requested. In particular,
+  // the default post-login profile must not start an unrelated Office graph.
+  if (platformOs === "web") return false;
   return true;
 }
 
@@ -1133,14 +1128,6 @@ function RootLayout() {
     const warmOfficeRoute = () => {
       if (active) void import("./(tabs)/office/index");
     };
-
-    if (Platform.OS === "web") {
-      const warmupTimeout = setTimeout(warmOfficeRoute, 0);
-      return () => {
-        active = false;
-        clearTimeout(warmupTimeout);
-      };
-    }
 
     const task = InteractionManager.runAfterInteractions(warmOfficeRoute);
 

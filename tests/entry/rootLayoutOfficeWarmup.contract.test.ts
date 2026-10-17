@@ -33,15 +33,13 @@ const publicPaths = [
 ];
 
 describe("RootLayout Office warmup startup contract", () => {
-  it("preloads the office route module after startup without running on office routes", () => {
+  it("retains native warmup and the registered Office route import", () => {
     const source = read("app/_layout.tsx");
 
     expect(source).toContain("shouldWarmOfficeRouteAfterStartup");
     expect(source).toContain('normalizedPathname === "/office"');
     expect(source).toContain('normalizedPathname.startsWith("/office/")');
     expect(source).toContain('void import("./(tabs)/office/index")');
-    expect(source).toContain('Platform.OS === "web"');
-    expect(source).toContain("setTimeout(warmOfficeRoute, 0)");
     expect(source).toContain("InteractionManager.runAfterInteractions");
     expect(source).toContain('process.env.NODE_ENV === "test"');
   });
@@ -61,8 +59,10 @@ describe("RootLayout Office warmup startup contract", () => {
     }
   });
 
-  it.each(["/market", "/chat", "/profile", "/requester", "/authentic"])("preserves other Web routes and exact route boundaries: %s", (pathname) => {
-    expect(shouldWarmOffice(pathname, "web")).toBe(true);
+  it.each(["/market", "/chat", "/profile", "/requester", "/authentic"])("loads Office only on demand after Web navigation to %s", (pathname) => {
+    expect(shouldWarmOffice(pathname, "web")).toBe(false);
+    expect(shouldWarmOffice(pathname, "android")).toBe(true);
+    expect(shouldWarmOffice(pathname, "ios")).toBe(true);
   });
 
   it("supplies the real platform to the startup policy", () => {
