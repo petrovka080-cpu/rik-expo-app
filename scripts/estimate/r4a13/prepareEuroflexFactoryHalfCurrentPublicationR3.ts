@@ -8,6 +8,7 @@ import type {PurchaseGroupRepresentative} from './s2732PurchaseGroupOverlay';
 
 type Json=Record<string,any>;
 const contract='rik-expo-app.euroflex-factory-half-current.r3';
+const publisherContract='rik-expo-app.selected-material-delivery-forward.r1';
 const hash=(v:unknown)=>createHash('sha256').update(canonicalEstimateStableJson(v)).digest('hex');
 const uuid=(v:unknown)=>{const a=hash(v).slice(0,32).split('');a[12]='5';a[16]='8';const s=a.join('');return `${s.slice(0,8)}-${s.slice(8,12)}-${s.slice(12,16)}-${s.slice(16,20)}-${s.slice(20)}`;};
 
@@ -20,6 +21,16 @@ export function prepareEuroflexFactoryHalfCurrentPublicationR3(parent:PurchaseGr
  const catalogId=parent.definition.catalog_id,definitionId=uuid([contract,input.releaseId,catalogId]),baselineId=uuid([definitionId,'baseline']);
  assert.equal(context.priceRouteBindings.length,0,'EXACT_CURRENT_PRICE_BINDING_SET');
  assert.equal(r.parameters.length,45);assert.equal(r.formulas.length,25);assert.equal(r.resources.length,25);assert.equal(r.bindings.length,16);
+ assert(parent.parameters.every(parameter=>parameter.truth_metadata?.contract===publisherContract));
+ const parentParameterIds=new Set(parent.parameters.map(parameter=>parameter.parameter_id));
+ const addedParameters=r.parameters.filter(parameter=>!parentParameterIds.has(parameter.parameter_id));
+ assert.equal(addedParameters.length,1);
+ // Keep the existing delivery publisher contract, including its server-derived trip provenance.
+ // The added layout fact carries its feature identity before either dependent digest is calculated.
+ addedParameters[0]!.truth_metadata={...addedParameters[0]!.truth_metadata,
+  contract:publisherContract,featureContract:contract};
+ r.baseline.parameter_schema_sha256=hash(r.parameters.map(parameter=>({parameterId:parameter.parameter_id,
+  unitId:parameter.unit_id,valueType:parameter.value_type,constraints:parameter.constraints_json,truth:parameter.truth_metadata})));
  const parentRowIds=new Map(parent.resources.map(row=>[String(row.id),String(row.row_id)]));
  const bindingRowId=(binding:Json)=>{
   const rowId=parentRowIds.get(String(binding.resource_spec_id));
@@ -30,11 +41,12 @@ export function prepareEuroflexFactoryHalfCurrentPublicationR3(parent:PurchaseGr
  const representative={...r,bindings:r.bindings.map(binding=>({...binding,row_id:bindingRowId(binding)}))};
  const definitionSha256=hash({contract,parentDefinitionSha256:parent.definition.definition_sha256,
   parameters:r.parameters,formulas:r.formulas,resources:r.resources});
- const decision:Json={...parent.passport.decision,status:'GREEN',allowed:true,waveContract:contract,
+ const decision:Json={...parent.passport.decision,status:'GREEN',allowed:true,waveContract:publisherContract,
   quantityScope:'PARTIAL',technicalScopeStatus:'NEEDS_SOURCE',completeTechnicalEstimateAccepted:false,
   activationAllowed:false,productionEligible:false,
-  factoryHalfCurrentR3:{...r.passport.decision.factoryHalfCurrentR3,governedDraftOnly:true,installationAcceptance:false}};
- const plan=createCanonicalDefinitionClonePlan({contract,
+  factoryHalfCurrentR3:{...r.passport.decision.factoryHalfCurrentR3,featureContract:contract,
+   governedDraftOnly:true,installationAcceptance:false}};
+ const plan=createCanonicalDefinitionClonePlan({contract:publisherContract,
   definition:{id:definitionId,releaseId:input.releaseId,catalogId,definitionVersion:3,
    passport:parent.definition.passport,applicability:r.definition.applicability,definitionSha256,
    sourceMetadata:{...parent.definition.source_metadata,contract,masterSha256:input.masterSha256,
