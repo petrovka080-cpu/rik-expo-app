@@ -2,3 +2,14 @@
 artifacts/pdf/**/*.pdf binary
 data/estimate-benchmarks/fixtures/fischer-duopower-535463-official-product-r1.html binary
 data/estimate-benchmarks/fixtures/iek-elecor-60x40-official-product-edition8-link-r1.html binary
+# Keep exact checked Doka evidence and source pins portable across checkout.
+data/estimate-benchmarks/fixtures/paving-cut70-group4-members-capture-r1.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/fixtures/stairs-doka-standard-full-retained-config-inputs-r3.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/fixtures/stairs-doka-standard-full-retention-closed-guard-r2.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/fixtures/stairs-doka-standard-full-retention-historical-context-r2.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/fixtures/stairs-doka-standard-full-retention-read-r2.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/fixtures/stairs-doka-standard-parent-elecor-apply-r1.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/fixtures/stairs-doka-standard-parent-elecor-link-r1.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/fixtures/stairs-doka-standard-parent-elecor-readback-r1.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/fixtures/stairs-doka-standard-root-variant-decision-r3.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+scripts/estimate/r4a13/prepareStairsDokaStandardFullRetainedMasterR2.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
