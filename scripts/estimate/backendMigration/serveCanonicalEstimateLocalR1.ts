@@ -6,6 +6,7 @@ import {admitPvcFloorCompleteFourMigrationProofS2769} from '../../../src/lib/est
 import {admitFloorDemolitionPlannedPreparationMigrationProofS2769} from '../../../src/lib/estimate/backendPlatform/canonicalFloorDemolitionPlannedPreparationMigrationS2769';
 import {admitConcreteBasePlannedPreparationMigrationProofS2769} from '../../../src/lib/estimate/backendPlatform/canonicalConcreteBasePlannedPreparationMigrationS2769';
 import {assertFloorPreparationRecalculationChoiceS2769,assertFloorPreparationIntentS2769,isFloorPreparationConsumerS2769} from '../../../src/lib/estimate/backendPlatform/canonicalFloorPreparationIntentS2769';
+import {assertCanonicalStairsSourceVariantSavedParentR1} from '../../../src/lib/estimate/backendPlatform/canonicalStairsSourceVariantSavedParentR1';
 import {admitRoofScreed25StandaloneMigrationProofV1} from '../../../src/lib/estimate/backendPlatform/canonicalRoofScreed25StandaloneMigrationV1';
 import {admitStoneCubesWasteMigrationProofS2769} from '../../../src/lib/estimate/backendPlatform/canonicalStoneCubesWasteMigrationS2769';
 import {admitAsphaltFloorWasteMigrationProofS2769} from '../../../src/lib/estimate/backendPlatform/canonicalAsphaltFloorWasteMigrationS2769';
@@ -1821,6 +1822,11 @@ async function createJob(
           });
         }
       }
+      assertCanonicalStairsSourceVariantSavedParentR1({
+        phase:'INTAKE',operation,catalogId,
+        parent:commandParent?{catalogId:String(commandParent.catalog_id),parameters:commandParent.input_parameters}:null,
+        submittedParameters:parameters,
+      });
       const compilationAdmission = await assertUserCompilationAdmission(
         client,
         catalogId,
@@ -2786,6 +2792,11 @@ async function compileClaimedJob(
   if(definition.source_metadata?.floorPlannedPreparationContract)assertFloorPreparationIntentS2769(String(job.catalog_id),{...confirmedParameters,...submittedParameters});
   if(definition.source_metadata?.stoneCubesWasteMigrationS2769)
     assertStoneCubesWasteSelectionS2769({...confirmedParameters,...submittedParameters},effectiveCompositionSelectionV1,payload.rowOverrides??{});
+  assertCanonicalStairsSourceVariantSavedParentR1({
+    phase:'WORKER',operation:String(job.operation),catalogId:String(job.catalog_id),
+    parent:parentRevision?{catalogId:String(parentRevision.catalog_id),parameters:parentRevision.input_parameters}:null,
+    submittedParameters,effectiveParameters:{...confirmedParameters,...submittedParameters},
+  });
   const compiled = await compileCanonicalEstimateCore({
     compositionSelectionV1:effectiveCompositionSelectionV1,
     operation: String(job.operation) as "compile" | "recalculate",

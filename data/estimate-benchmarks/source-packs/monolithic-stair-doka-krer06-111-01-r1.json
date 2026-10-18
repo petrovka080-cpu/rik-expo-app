@@ -1,0 +1,428 @@
+{
+  "contract": "gox-build.monolithic-stair-doka-krer06-111-01.r1",
+  "status": "WORK_QUANTITY_TEST_ONLY_UNCLASSIFIED_NOT_ADOPTABLE_NOT_PUBLISHABLE",
+  "catalogId": null,
+  "sourceId": "kg_krer06_01_111_01_straight_doka_stair_r1",
+  "normId": "KRER06-01-111-01",
+  "prefix": "monolithic-stair:doka:krer06-01-111-01",
+  "primaryMeasureParameterId": "net_stair_flight_concrete_volume_m3",
+  "primaryUnitId": "m3",
+  "titleRu": "Прямоугольный монолитный лестничный марш в инвентарной опалубке Doka поКРЕР06-01-111-01",
+  "scopeRu": "Только прямоугольный лестничный марш в инвентарной опалубке Doka/Dokaflex по06-01-111-01, измеренный проектный объём железобетона в деле вм³. Стандартная надземная отметка до15м включительно; без криволинейного профиля, иной системы опалубки, площадкиМодостр и дополнительных специальных коэффициентов.",
+  "source": {
+    "path": ".release-runtime/r568/s27-8/tmp-krer06-inspection/krer06.pdf",
+    "sha256": "45c065fb0e35586948fdb06cd21fe331358e2c454c25a4dc83d4a686bf9f3e4b",
+    "edition": "КРЕР06-2015 Бетонные и железобетонные конструкции монолитные; введён01.01.2016",
+    "officialPage": "https://minstroy.gov.kg/ru/kyzmat/422/show",
+    "officialUrl": "https://minstroy.gov.kg/ru/kyzmat/422/show",
+    "locatorRu": "PDF/печатные143–144,точная06-01-111-01; §1.1/1.2 PDF6, §1.35/1.36 PDF10, §1.43/1.44 PDF11."
+  },
+  "scopeFacts": [
+    {
+      "id": "flight_profile",
+      "titleRu": "Точный прямоугольный профиль марша",
+      "value": "RECTANGULAR_MONOLITHIC_FLIGHT_NOT_CURVED_OR_MODOSTR_LANDING"
+    },
+    {
+      "id": "formwork_system",
+      "titleRu": "Подтверждённая система инвентарной опалубки",
+      "value": "DOKA_DOKAFLEX_INVENTORY_AND_FACING_SOURCE111_01"
+    },
+    {
+      "id": "concrete_profile",
+      "titleRu": "Проектная смесь и исходная подача",
+      "value": "SOURCE_B15_40MM_PROJECT_CONFIRMED_CRANE_FEED_NO_ADDITIONAL_TRANSFER_IN_THIS_SCOPE"
+    },
+    {
+      "id": "source_conditions",
+      "titleRu": "Обычные надземные условия применения нормы",
+      "value": "ABOVE_GROUND_UP_TO15M_NO_SPECIAL_FACTORS"
+    }
+  ],
+  "requiredProjectReferences": [
+    "approved_structural_design_reference",
+    "approved_formwork_method_reference",
+    "approved_flight_volume_reference",
+    "supply_payment_scope_reference"
+  ],
+  "workElevationParameterId": "work_elevation_from_ground_m",
+  "wholeLaborRatePer100M3": "2412.60",
+  "operatorInformationRatePer100M3": "56.59",
+  "materials": [
+    {
+      "id": "water",
+      "parameterPrefix": "water",
+      "specificationId": "water_specification_reference",
+      "nameRu": "Вода",
+      "resourceCode": "01-0601-0001",
+      "sourceUnit": "m3",
+      "sourcePer100M3": "0.3066",
+      "normalizationFactor": "1",
+      "ratePer100M3": "0.3066",
+      "unitId": "m3",
+      "identityGuideRu": "Нужна точная проектная/поставочная позиция исходной нормы с совместимой единицей m3. Печатная норма не задаёт коммерческий артикул/упаковку и не заменяет подтверждение проекта."
+    },
+    {
+      "id": "nails",
+      "parameterPrefix": "nails",
+      "specificationId": "nails_specification_reference",
+      "nameRu": "Гвозди строительные",
+      "resourceCode": "01-1110-0002",
+      "sourceUnit": "t",
+      "sourcePer100M3": "0.016",
+      "normalizationFactor": "1000",
+      "ratePer100M3": "16.000",
+      "unitId": "kg",
+      "identityGuideRu": "Нужна точная проектная/поставочная позиция исходной нормы с совместимой единицей kg. Печатная норма не задаёт коммерческий артикул/упаковку и не заменяет подтверждение проекта."
+    },
+    {
+      "id": "release-oil",
+      "parameterPrefix": "release_oil",
+      "specificationId": "release_oil_specification_reference",
+      "nameRu": "Масла антраценовые",
+      "resourceCode": "01-4504-0001",
+      "sourceUnit": "t",
+      "sourcePer100M3": "0.173",
+      "normalizationFactor": "1000",
+      "ratePer100M3": "173.000",
+      "unitId": "kg",
+      "identityGuideRu": "Нужна точная проектная/поставочная позиция исходной нормы с совместимой единицей kg. Печатная норма не задаёт коммерческий артикул/упаковку и не заменяет подтверждение проекта."
+    },
+    {
+      "id": "electrodes",
+      "parameterPrefix": "electrodes",
+      "specificationId": "electrodes_specification_reference",
+      "nameRu": "Электроды4мм Э42",
+      "resourceCode": "01-5005-0024",
+      "sourceUnit": "t",
+      "sourcePer100M3": "0.013",
+      "normalizationFactor": "1000",
+      "ratePer100M3": "13.000",
+      "unitId": "kg",
+      "identityGuideRu": "Нужна точная проектная/поставочная позиция исходной нормы с совместимой единицей kg. Печатная норма не задаёт коммерческий артикул/упаковку и не заменяет подтверждение проекта."
+    },
+    {
+      "id": "facing",
+      "parameterPrefix": "facing",
+      "specificationId": "facing_specification_reference",
+      "nameRu": "Палуба опалубки Doka из бакелизированной фанеры",
+      "resourceCode": "01-6002-0001",
+      "sourceUnit": "m2",
+      "sourcePer100M3": "29.2",
+      "normalizationFactor": "1",
+      "ratePer100M3": "29.2",
+      "unitId": "m2",
+      "identityGuideRu": "Нужна точная проектная/поставочная позиция исходной нормы с совместимой единицей m2. Печатная норма не задаёт коммерческий артикул/упаковку и не заменяет подтверждение проекта."
+    },
+    {
+      "id": "timber-bars",
+      "parameterPrefix": "timber_bars",
+      "specificationId": "timber_bars_specification_reference",
+      "nameRu": "Брусья хвойные обрезные4–6.5м75–150мм40–75мм IIIсорт",
+      "resourceCode": "01-6302-0094",
+      "sourceUnit": "m3",
+      "sourcePer100M3": "0.82",
+      "normalizationFactor": "1",
+      "ratePer100M3": "0.82",
+      "unitId": "m3",
+      "identityGuideRu": "Нужна точная проектная/поставочная позиция исходной нормы с совместимой единицей m3. Печатная норма не задаёт коммерческий артикул/упаковку и не заменяет подтверждение проекта."
+    },
+    {
+      "id": "boards25",
+      "parameterPrefix": "boards25",
+      "specificationId": "boards25_specification_reference",
+      "nameRu": "Доски хвойные обрезные4–6.5м75–150мм25мм IIIсорт",
+      "resourceCode": "01-6305-0095",
+      "sourceUnit": "m3",
+      "sourcePer100M3": "0.26",
+      "normalizationFactor": "1",
+      "ratePer100M3": "0.26",
+      "unitId": "m3",
+      "identityGuideRu": "Нужна точная проектная/поставочная позиция исходной нормы с совместимой единицей m3. Печатная норма не задаёт коммерческий артикул/упаковку и не заменяет подтверждение проекта."
+    },
+    {
+      "id": "boards44",
+      "parameterPrefix": "boards44",
+      "specificationId": "boards44_specification_reference",
+      "nameRu": "Доски хвойные обрезные4–6.5м75–150мм44мм и более IIIсорт",
+      "resourceCode": "01-6305-0098",
+      "sourceUnit": "m3",
+      "sourcePer100M3": "1.02",
+      "normalizationFactor": "1",
+      "ratePer100M3": "1.02",
+      "unitId": "m3",
+      "identityGuideRu": "Нужна точная проектная/поставочная позиция исходной нормы с совместимой единицей m3. Печатная норма не задаёт коммерческий артикул/упаковку и не заменяет подтверждение проекта."
+    },
+    {
+      "id": "matting",
+      "parameterPrefix": "matting",
+      "specificationId": "matting_specification_reference",
+      "nameRu": "Рогожа",
+      "resourceCode": "01-7231-0001",
+      "sourceUnit": "m2",
+      "sourcePer100M3": "42.9",
+      "normalizationFactor": "1",
+      "ratePer100M3": "42.9",
+      "unitId": "m2",
+      "identityGuideRu": "Нужна точная проектная/поставочная позиция исходной нормы с совместимой единицей m2. Печатная норма не задаёт коммерческий артикул/упаковку и не заменяет подтверждение проекта."
+    },
+    {
+      "id": "concrete",
+      "parameterPrefix": "concrete",
+      "specificationId": "concrete_specification_reference",
+      "nameRu": "Бетон тяжёлый,заполнитель40мм,B15(М200)",
+      "resourceCode": "03-0206-0060",
+      "sourceUnit": "m3",
+      "sourcePer100M3": "101.5",
+      "normalizationFactor": "1",
+      "ratePer100M3": "101.5",
+      "unitId": "m3",
+      "identityGuideRu": "Нужна точная проектная/поставочная позиция исходной нормы с совместимой единицей m3. Печатная норма не задаёт коммерческий артикул/упаковку и не заменяет подтверждение проекта."
+    },
+    {
+      "id": "wire",
+      "parameterPrefix": "wire",
+      "specificationId": "wire_specification_reference",
+      "nameRu": "Проволока светлая1.1мм",
+      "resourceCode": "10-0105-0036",
+      "sourceUnit": "t",
+      "sourcePer100M3": "0.0236",
+      "normalizationFactor": "1000",
+      "ratePer100M3": "23.6000",
+      "unitId": "kg",
+      "identityGuideRu": "Нужна точная проектная/поставочная позиция исходной нормы с совместимой единицей kg. Печатная норма не задаёт коммерческий артикул/упаковку и не заменяет подтверждение проекта."
+    }
+  ],
+  "machines": [
+    {
+      "id": "tower-crane8t",
+      "nameRu": "Кран башенный8т",
+      "resourceCode": "02-0005",
+      "ratePer100M3": "51.7",
+      "parameterId": "tower_crane8t_fulfillment",
+      "ownValue": "OWN_SOURCE_OPERATION",
+      "hiredValue": "HIRED_SOURCE_OPERATION",
+      "operator": "OPERATOR"
+    },
+    {
+      "id": "truck-crane10t",
+      "nameRu": "Кран автомобильный10т",
+      "resourceCode": "02-0075",
+      "ratePer100M3": "2.35",
+      "parameterId": "truck_crane10t_fulfillment",
+      "ownValue": "OWN_SOURCE_OPERATION",
+      "hiredValue": "HIRED_SOURCE_OPERATION",
+      "operator": "OPERATOR"
+    },
+    {
+      "id": "forklift5t",
+      "nameRu": "Автопогрузчик5т",
+      "resourceCode": "03-0020",
+      "ratePer100M3": "2.54",
+      "parameterId": "forklift5t_fulfillment",
+      "ownValue": "OWN_SOURCE_OPERATION",
+      "hiredValue": "HIRED_SOURCE_OPERATION",
+      "operator": "OPERATOR"
+    },
+    {
+      "id": "arc-welder",
+      "nameRu": "Установка ручной дуговой сварки постоянного тока",
+      "resourceCode": "04-0444",
+      "ratePer100M3": "3.2",
+      "parameterId": "arc_welder_fulfillment",
+      "ownValue": "OWN_SOURCE_OPERATION",
+      "hiredValue": "HIRED_SOURCE_OPERATION",
+      "operator": "NO_ADDITIONAL_OPERATOR_NORM"
+    },
+    {
+      "id": "surface-vibrator",
+      "nameRu": "Вибратор поверхностный",
+      "resourceCode": "11-0183",
+      "ratePer100M3": "79",
+      "parameterId": "surface_vibrator_fulfillment",
+      "ownValue": "OWN_SOURCE_OPERATION",
+      "hiredValue": "HIRED_SOURCE_OPERATION",
+      "operator": "NO_ADDITIONAL_OPERATOR_NORM"
+    },
+    {
+      "id": "chain-saw",
+      "nameRu": "Пила цепная электрическая",
+      "resourceCode": "33-0503",
+      "ratePer100M3": "1.21",
+      "parameterId": "chain_saw_fulfillment",
+      "ownValue": "OWN_SOURCE_OPERATION",
+      "hiredValue": "HIRED_SOURCE_OPERATION",
+      "operator": "NO_ADDITIONAL_OPERATOR_NORM"
+    },
+    {
+      "id": "flatbed8t",
+      "nameRu": "Автомобиль бортовой до8т",
+      "resourceCode": "40-0002",
+      "ratePer100M3": "1.51",
+      "parameterId": "flatbed8t_fulfillment",
+      "ownValue": "OWN_SOURCE_OPERATION",
+      "hiredValue": "HIRED_SOURCE_OPERATION",
+      "operator": "DRIVER"
+    }
+  ],
+  "operations": [
+    {
+      "id": "included-formwork-install-strip",
+      "nameRu": "Устройство и разборка инвентарной опалубки: стойки, прогоны, опалубочные балки и вспомогательные детали"
+    },
+    {
+      "id": "included-facing-cut-fix",
+      "nameRu": "Раскрой и крепление щитов из бакелизированной фанеры"
+    },
+    {
+      "id": "included-reinforcement-install",
+      "nameRu": "Установка арматуры"
+    },
+    {
+      "id": "included-concrete-place",
+      "nameRu": "Укладка бетона"
+    },
+    {
+      "id": "included-curing",
+      "nameRu": "Уход за бетоном"
+    }
+  ],
+  "gaps": [
+    {
+      "id": "project-bbs-materials",
+      "nameRu": "Проектная арматура по классам/диаметрам и BBS",
+      "category": "material",
+      "reasonRu": "КЖ/BBS; §1.2/1.36; Выдать реальные поставляемые позиции и массы/количества. Reuse purchase balance; не брать197кг/м³ и не оплачивать повторный монтаж из rebar-cage.",
+      "ownerRu": "Проектировщик/снабженец",
+      "nextTaskRu": "Выдать реальные поставляемые позиции и массы/количества. Reuse purchase balance; не брать197кг/м³ и не оплачивать повторный монтаж из rebar-cage.",
+      "acceptanceRu": "Есть утверждённые применимость/единица/количество/источник и самостоятельная непересекающаяся оплата; ручное0/1 не заменяет проект/норму."
+    },
+    {
+      "id": "doka-metal-amortization",
+      "nameRu": "Амортизация металлических опор и вспомогательных элементов Doka",
+      "category": "equipment",
+      "reasonRu": "§1.35; проектная раскладка/технические обороты/коммерческая цена; Подтвердить площадь контакта, принятый измеритель цены и обороты; отделить владение/аренду и не купить целый комплект поверх амортизации.",
+      "ownerRu": "Технолог опалубки/сметчик",
+      "nextTaskRu": "Подтвердить площадь контакта, принятый измеритель цены и обороты; отделить владение/аренду и не купить целый комплект поверх амортизации.",
+      "acceptanceRu": "Есть утверждённые применимость/единица/количество/источник и самостоятельная непересекающаяся оплата; ручное0/1 не заменяет проект/норму."
+    },
+    {
+      "id": "doka-wood-amortization",
+      "nameRu": "Амортизация деревянных балок и инвентарных элементов Doka",
+      "category": "equipment",
+      "reasonRu": "§1.35; проектная раскладка/технические обороты/коммерческая цена; Подтвердить деревянную составляющую и обороты; не дублировать29.2м² расходной палубы и другую нормируемую древесину.",
+      "ownerRu": "Технолог опалубки/сметчик",
+      "nextTaskRu": "Подтвердить деревянную составляющую и обороты; не дублировать29.2м² расходной палубы и другую нормируемую древесину.",
+      "acceptanceRu": "Есть утверждённые применимость/единица/количество/источник и самостоятельная непересекающаяся оплата; ручное0/1 не заменяет проект/норму."
+    },
+    {
+      "id": "project-junctions-and-extra-rebar",
+      "nameRu": "Проектные закладные, опирания и дополнительные арматурные узлы",
+      "category": "work",
+      "reasonRu": "КЖ/ППР; применимые §§1.3/1.5/1.41; Установить конкретный доп.результат/единицу/количество/норму, сохраняя исходный цельный монтаж.",
+      "ownerRu": "Конструктор/сметчик",
+      "nextTaskRu": "Установить конкретный доп.результат/единицу/количество/норму, сохраняя исходный цельный монтаж.",
+      "acceptanceRu": "Есть утверждённые применимость/единица/количество/источник и самостоятельная непересекающаяся оплата; ручное0/1 не заменяет проект/норму."
+    },
+    {
+      "id": "additional-pump-mixer-transfer",
+      "nameRu": "Дополнительный насос/миксер/переноска поППР вне исходной подачи",
+      "category": "equipment",
+      "reasonRu": "§§1.39/1.40/1.43; ППР и machine schedule; Доказать применимость и exact amount/quote scope; не делить объём на паспортныймаксимум, не дублировать исходные краны/автомобиль.",
+      "ownerRu": "Технолог/механик",
+      "nextTaskRu": "Доказать применимость и exact amount/quote scope; не делить объём на паспортныймаксимум, не дублировать исходные краны/автомобиль.",
+      "acceptanceRu": "Есть утверждённые применимость/единица/количество/источник и самостоятельная непересекающаяся оплата; ручное0/1 не заменяет проект/норму."
+    },
+    {
+      "id": "extra-protection",
+      "nameRu": "Дополнительная защита/обеспечение ухода вне исходного состава",
+      "category": "service",
+      "reasonRu": "ППР/проектные условия и отдельная норма; Подтвердить метод, объём и отдельную оплату без второго исходного ухода/распалубки.",
+      "ownerRu": "Технолог/прораб",
+      "nextTaskRu": "Подтвердить метод, объём и отдельную оплату без второго исходного ухода/распалубки.",
+      "acceptanceRu": "Есть утверждённые применимость/единица/количество/источник и самостоятельная непересекающаяся оплата; ручное0/1 не заменяет проект/норму."
+    },
+    {
+      "id": "tools-ppe",
+      "nameRu": "Отдельно оплачиваемые оснастка, ручной инструмент и СИЗ",
+      "category": "equipment",
+      "reasonRu": "ППР/табель фактического обеспечения/коммерческие включения; Подтвердить имеющееся и повторно используемое обеспечение, реальный объём и отсутствие повторной оплаты.",
+      "ownerRu": "Исполнитель",
+      "nextTaskRu": "Подтвердить имеющееся и повторно используемое обеспечение, реальный объём и отсутствие повторной оплаты.",
+      "acceptanceRu": "Есть утверждённые применимость/единица/количество/источник и самостоятельная непересекающаяся оплата; ручное0/1 не заменяет проект/норму."
+    },
+    {
+      "id": "quality-acceptance",
+      "nameRu": "Самостоятельные испытания/приёмка и документы",
+      "category": "service",
+      "reasonRu": "Утверждённый план контроля/договор; Подтвердить применимость, измеримую единицу и объём отдельной услуги; не назначать документ1 или процент2412.6часов.",
+      "ownerRu": "Технадзор/прораб",
+      "nextTaskRu": "Подтвердить применимость, измеримую единицу и объём отдельной услуги; не назначать документ1 или процент2412.6часов.",
+      "acceptanceRu": "Есть утверждённые применимость/единица/количество/источник и самостоятельная непересекающаяся оплата; ручное0/1 не заменяет проект/норму."
+    },
+    {
+      "id": "external-logistics-waste",
+      "nameRu": "Внешняя доставка, тара, отходы и возвраты вне исходных перемещений",
+      "category": "service",
+      "reasonRu": "Маршрут/ведомость/акты и exact payment inclusion; Измерить дополнительный scope; проверить текущие/saved aggregate rows и preliminaryNeeds до отдельной оплаты; сохранить пригодные остатки/возвратную опалубку.",
+      "ownerRu": "Логист/исполнитель",
+      "nextTaskRu": "Измерить дополнительный scope; проверить текущие/saved aggregate rows и preliminaryNeeds до отдельной оплаты; сохранить пригодные остатки/возвратную опалубку.",
+      "acceptanceRu": "Есть утверждённые применимость/единица/количество/источник и самостоятельная непересекающаяся оплата; ручное0/1 не заменяет проект/норму."
+    }
+  ],
+  "projectReinforcement": {
+    "code": "03-0102-0001",
+    "tableAveragedReferenceTPer100M3": "19.7",
+    "appliedQuantityFromThisReference": false,
+    "sourceRules": [
+      "§1.2 PDF6",
+      "§1.36 PDF10"
+    ],
+    "required": "Actual approved BBS by class/diameter/product, without changing whole labor/machine schedule. No default197kg/m3 and no duplicate separately paid reinforcement installation.",
+    "reusableMechanism": "Existing confirmed BBS material schedules and effective purchase balances; existing full rebar-cage worker/machine rows cannot be attached wholesale."
+  },
+  "projectFormworkAmortization": {
+    "tableQuantity": "П",
+    "sourceRule": "§1.35 PDF10; applicable specific Doka/Dokaflex rule, not generic §1.17 factor1.2.",
+    "rows": [
+      {
+        "code": "01-6003-0021",
+        "titleRu": "Опалубка Doka, конструкция металлическая",
+        "sourceUnit": "компл.",
+        "quantityUnresolved": true
+      },
+      {
+        "code": "01-6003-0043",
+        "titleRu": "Опалубка переставная, амортизация",
+        "sourceUnit": "компл.",
+        "quantityUnresolved": true
+      }
+    ],
+    "formulaTranscriptionAscii": "A = Pk * (Cmetal / Nmetal + Cwood / Nwood)",
+    "neededFacts": [
+      "Measured project concrete-contact areaPk,m2",
+      "Metal/supporting element price per accepted measure and technical/normative turnover",
+      "Wooden beam price per accepted measure and technical/normative turnover",
+      "Actual ownership/rental commercial inclusion with no second whole-kit purchase"
+    ],
+    "restriction": "29.2m2 facing consumption is a separate source row; do not equate it to project contact area or full kit count. No guessed one kit or rental day."
+  },
+  "excludedRu": [
+    "Криволинейные марши111-02, площадкиМодостр119-01, иная опалубка или произвольные специальные коэффициенты.",
+    "Автоматические197кг/м³ арматуры; проектная BBS не заменяется табличным усреднением.",
+    "Один комплект П опалубки/день аренды без проекта; generic§1.17×1.2 не применяется вместоDoka§1.35.",
+    "Плановые3м³/маш.-ч или0.8м³/ч старого vibrationprofile, foundationdeepvibrator0.266ч/м³ и NRMCA8% не переносятся.",
+    "Вторая оплата установки/распалубки, армирования, бетонирования или ухода поверх2412.60ч.",
+    "Вторая зарплата56.59ч или отдельный назначенный машинист сварки/поверхностного вибратора/пилы.",
+    "Дополнительные насос/миксер/переноска, отделка/ограждения, внешний вывоз без конкретногоППР/source/payment scope.",
+    "Исторические цены2015сом как текущие коммерческие ставки."
+  ],
+  "fullTechnicalAcceptance": false,
+  "newAcceptedCompleteTypes": 0,
+  "paymentAdmission": {
+    "catalogId": null,
+    "exactMachineOwnerMapAdmitted": false,
+    "publisherOrRuntimeAdoptionAllowed": false,
+    "reason": "Current source/identity dedup and exact14catalog-scoped machine quote rows are not admitted; this is a pure quantity candidate only."
+  }
+}

@@ -1,0 +1,409 @@
+{
+  "contract": "rik-expo-app.authoring.monolithic-stair111.full-cycle.v1",
+  "status": "WORK_CONTROLLED_EXISTING_STANDARD_VARIANT_FULL_CYCLE_PARTIAL_NOT_RUN",
+  "sourceCandidate": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-monolith-stairs-a/monolithic-stair111-source-candidate-v1.json",
+    "sha256": "587c79606a8ef12848476e2a67aef3a1a830a7dc754dafa61f3b0d2b611659e6",
+    "bytes": 15314
+  },
+  "inventory": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-monolith-stairs-a/monolithic-stair111-bounded-readiness-v1.json",
+    "sha256": "f5bd1d707c781fbc88a4035898dc9485fbd8a8fb7522d97062314a767c25fef1",
+    "bytes": 8647
+  },
+  "fullCycle": [
+    {
+      "phase": 1,
+      "nameRu": "Проект, обмер, применимость и доступ",
+      "covered": "Один прямоугольный марш Doka, объём железобетона в деле. Стандартная надземная отметка до15м включительно; специальные условия не выбраны.",
+      "facts": [
+        "Проектный объём именно марша, геометрия, отметка и граница с площадками",
+        "КЖ/ППР Doka/Dokaflex, состояние основания/опор и безопасный доступ"
+      ],
+      "paidOwner": "Основной measured m3; обследование/проектирование отдельно только по отдельному заданию.",
+      "gap": "При иной геометрии, форме/опалубке, высоте или специальных коэффициентах — отдельный source intake, не автоматическая корректировка."
+    },
+    {
+      "phase": 2,
+      "nameRu": "Опалубка, палуба, крепёж и поддерживание",
+      "covered": "Установка/разборка инвентарных стоек, прогонов и балок; раскрой/крепление фанеры входят в цельный труд. Печатный расход палубы29.2м²/100м³ и древесины/гвоздей/масла сохранён отдельно.",
+      "facts": [
+        "Проектная площадь контакта Pk, раскладка и безопасная поддерживающая система",
+        "Условия владения/аренды и обороты компонентов; различение потребляемой фанеры и возвращаемого комплекта"
+      ],
+      "paidOwner": "Один whole-labor. Материалы — отдельные consumption/order balances. Две П позиции амортизации не получают1комплект/день и не дублируют покупку всего комплекта.",
+      "gap": "Нужен source-compatible §1.35 расчёт амортизации по проектным данным либо отдельный подтверждённый rental scope; приложению нельзя приписать неизвестную площадь/оборот."
+    },
+    {
+      "phase": 3,
+      "nameRu": "Арматура и узлы армирования",
+      "covered": "Установка арматуры включена в2412.60ч. §1.2/1.36 требует фактический проектный состав, не усреднённые19.7т.",
+      "facts": [
+        "Утверждённая BBS по классам/диаметрам, количествам/массе и отдельным поставляемым позициям",
+        "Сварка/вязка/муфты, закладные и сейсмические/жёсткие каркасы по проекту"
+      ],
+      "paidOwner": "Материальные BBS owners можно принять только отдельно по доказанным позициям; труд/станки отдельного полного rebar-cage профиля не переносятся поверх whole-labor.",
+      "gap": "Materials-only BBS adapter и отдельные применимые доп.операции §§1.3/1.5/1.41 после источника; никаких kg/m3 или обязательных двух диаметров из чужой модели."
+    },
+    {
+      "phase": 4,
+      "nameRu": "Бетон и материальное обеспечение",
+      "covered": "Печатный расход тяжёлого бетона101.5м³/100м³, заполнитель40мм,B15 в выбранной узкой ветви. Вода, расходная древесина, рогожа, проволока и электроды исходного состава.",
+      "facts": [
+        "Проектная совместимая спецификация B15/40мм, поставщик/партия",
+        "Пригодное наличие, резерв, реальные единицы и кратность каждого из11фиксированных материалов"
+      ],
+      "paidOwner": "По одному order owner на точную позицию; consumed строки без второй цены. Исторические2015сом не текущие цены.",
+      "gap": "Иная проектная смесь/изделие требует подтверждения §1.4 и отдельной спецификации; нельзя суммировать101.5 с автоматическим8% NRMCА reserve."
+    },
+    {
+      "phase": 5,
+      "nameRu": "Подача, механизация и монтаж",
+      "covered": "Семь исходных машин: башенный8т, автокран10т, погрузчик5т, ручная дуговая сварка, поверхностный вибратор, цепная электропила, бортовой8т. Подача по§1.43 непосредственно в опалубку.",
+      "facts": [
+        "Фактическое own/hired обеспечение каждого механизма и exact quote scope",
+        "ППР при необходимости дополнительного миксера/насоса или переноски"
+      ],
+      "paidOwner": "Один выбранный quote owner на физическую машину; агрегат56.59ч информационный, без второй зарплаты. Whole worker уже обслуживает сварку/вибратор/пилу — новый машинист им не назначается.",
+      "gap": "Root exact14row/catalog price map ещё не admitted; для трёх механизмов без отдельной нормы оператора требуется явная непересекающаяся граница. Дополнительные насос/миксер только §§1.39/1.40 поППР, не из паспортной производительности."
+    },
+    {
+      "phase": 6,
+      "nameRu": "Цельная конструкция и примыкания",
+      "covered": "Установка арматуры, укладка/уплотнение бетона, конструктивный монтаж входят в одну норму2412.60ч/100м³. Процентная структура стоимости §1.44 не превращается в отдельные часы.",
+      "facts": [
+        "Узлы опирания/примыкания к площадкам, рабочие швы и проектные закладные",
+        "Граница с отдельным покрытием ступеней, ограждениями и иной отделкой"
+      ],
+      "paidOwner": "Whole-labor; отдельные owners только за подтверждённый дополнительный физический результат вне исходной нормы.",
+      "gap": "ПлощадкиМодостр119, криволинейный марш111-02, ограждения/отделка не автоматически включаются и не масштабируются по объёму."
+    },
+    {
+      "phase": 7,
+      "nameRu": "Уход, распалубка и защита",
+      "covered": "Уход и разборка опалубки уже в исходном составе; рогожа42.9м²/100м³ и вода относятся к нему, не к новому произвольному циклу.",
+      "facts": [
+        "Условия выдерживания, безопасная распалубка и дополнительные требованияППР",
+        "Реальная необходимость дополнительной защиты/электропрогрева вне выбранной обычной ветви"
+      ],
+      "paidOwner": "Whole-labor + единственные source material orders; no second curing or stripping labor.",
+      "gap": "Доп.защита/нагрев только с собственным источником применимости/объёма и сверкой включений; календарный срок не равен труду."
+    },
+    {
+      "phase": 8,
+      "nameRu": "Инструмент, контроль, услуги, логистика и отходы",
+      "covered": "Включённые разгрузка/складские перемещения/леса по§1.1 не дублируются. Самостоятельные QA/документы, СИЗ и внешний вывоз не получают угаданных единиц/количеств.",
+      "facts": [
+        "План контроля и договорная граница самостоятельных услуг",
+        "Табель инструмента/СИЗ, пригодные возвратные элементы и остатки",
+        "Фактический внешний маршрут/объём отходов/условия выгрузки и сверка агрегатных услуг"
+      ],
+      "paidOwner": "Ни одного item=1 без источника. Неясный aggregate scope требует reconciliation, с сохранением saved row/need/exclusions.",
+      "gap": "Получить реальные ведомости/план/акты и отдельную оплату; не выводить рейсы из машино-часов или отходы из нормативного коэффициента."
+    }
+  ],
+  "openNeeds": [
+    {
+      "id": "project-bbs-materials",
+      "category": "material",
+      "nameRu": "Проектная арматура по классам/диаметрам и BBS",
+      "sourceRequired": "КЖ/BBS; §1.2/1.36",
+      "ownerRu": "Проектировщик/снабженец",
+      "nextTaskRu": "Выдать реальные поставляемые позиции и массы/количества. Reuse purchase balance; не брать197кг/м³ и не оплачивать повторный монтаж из rebar-cage.",
+      "unitId": null,
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "doka-metal-amortization",
+      "category": "equipment",
+      "nameRu": "Амортизация металлических опор и вспомогательных элементов Doka",
+      "sourceRequired": "§1.35; проектная раскладка/технические обороты/коммерческая цена",
+      "ownerRu": "Технолог опалубки/сметчик",
+      "nextTaskRu": "Подтвердить площадь контакта, принятый измеритель цены и обороты; отделить владение/аренду и не купить целый комплект поверх амортизации.",
+      "unitId": null,
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "doka-wood-amortization",
+      "category": "equipment",
+      "nameRu": "Амортизация деревянных балок и инвентарных элементов Doka",
+      "sourceRequired": "§1.35; проектная раскладка/технические обороты/коммерческая цена",
+      "ownerRu": "Технолог опалубки/сметчик",
+      "nextTaskRu": "Подтвердить деревянную составляющую и обороты; не дублировать29.2м² расходной палубы и другую нормируемую древесину.",
+      "unitId": null,
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "project-junctions-and-extra-rebar",
+      "category": "work",
+      "nameRu": "Проектные закладные, опирания и дополнительные арматурные узлы",
+      "sourceRequired": "КЖ/ППР; применимые §§1.3/1.5/1.41",
+      "ownerRu": "Конструктор/сметчик",
+      "nextTaskRu": "Установить конкретный доп.результат/единицу/количество/норму, сохраняя исходный цельный монтаж.",
+      "unitId": null,
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "additional-pump-mixer-transfer",
+      "category": "equipment",
+      "nameRu": "Дополнительный насос/миксер/переноска поППР вне исходной подачи",
+      "sourceRequired": "§§1.39/1.40/1.43; ППР и machine schedule",
+      "ownerRu": "Технолог/механик",
+      "nextTaskRu": "Доказать применимость и exact amount/quote scope; не делить объём на паспортныймаксимум, не дублировать исходные краны/автомобиль.",
+      "unitId": null,
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "extra-protection",
+      "category": "service",
+      "nameRu": "Дополнительная защита/обеспечение ухода вне исходного состава",
+      "sourceRequired": "ППР/проектные условия и отдельная норма",
+      "ownerRu": "Технолог/прораб",
+      "nextTaskRu": "Подтвердить метод, объём и отдельную оплату без второго исходного ухода/распалубки.",
+      "unitId": null,
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "tools-ppe",
+      "category": "equipment",
+      "nameRu": "Отдельно оплачиваемые оснастка, ручной инструмент и СИЗ",
+      "sourceRequired": "ППР/табель фактического обеспечения/коммерческие включения",
+      "ownerRu": "Исполнитель",
+      "nextTaskRu": "Подтвердить имеющееся и повторно используемое обеспечение, реальный объём и отсутствие повторной оплаты.",
+      "unitId": null,
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "quality-acceptance",
+      "category": "service",
+      "nameRu": "Самостоятельные испытания/приёмка и документы",
+      "sourceRequired": "Утверждённый план контроля/договор",
+      "ownerRu": "Технадзор/прораб",
+      "nextTaskRu": "Подтвердить применимость, измеримую единицу и объём отдельной услуги; не назначать документ1 или процент2412.6часов.",
+      "unitId": null,
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "external-logistics-waste",
+      "category": "service",
+      "nameRu": "Внешняя доставка, тара, отходы и возвраты вне исходных перемещений",
+      "sourceRequired": "Маршрут/ведомость/акты и exact payment inclusion",
+      "ownerRu": "Логист/исполнитель",
+      "nextTaskRu": "Измерить дополнительный scope; проверить текущие/saved aggregate rows и preliminaryNeeds до отдельной оплаты; сохранить пригодные остатки/возвратную опалубку.",
+      "unitId": null,
+      "quantity": null,
+      "price": null
+    }
+  ],
+  "scopeLimit": "Not a design or full technical completion. Already included methods are not repriced, old identities/rows/manual data are not changed.",
+  "fullTechnicalAcceptance": false,
+  "actualTestsRun": false,
+  "actualCurrentRead": false,
+  "targetCatalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_form_standard",
+  "newCatalogIds": 0,
+  "sourceCycleScope": "Explicit standard existing work, new estimates only after ROOT guard; source111 alternate to prior project method.",
+  "priorFullCycleDossierPin": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-monolith-stairs-a/monolithic-stair111-full-cycle-dossier-v1.json",
+    "sha256": "4c35a3bb28ff917cecc534d11eed1332c23ced0d19d28b69fa602ee709c4ba97",
+    "bytes": 17102
+  },
+  "existing95MapPin": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-monolith-stairs-a/controlled-standard-variant-v1/candidate/data/estimate-benchmarks/source-packs/stairs-doka-standard-source-variant-dispositions-r1.json",
+    "sha256": "21ec8ccae61ae75d36dcd52835289424979e7a43bf16d55b52c8b783af9232c4",
+    "bytes": 221743
+  },
+  "retentionDeclarationPin": {
+    "destination": "data/estimate-benchmarks/fixtures/stairs-doka-standard-retention-declaration-r1.json",
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-monolith-stairs-a/controlled-standard-variant-v1/candidate/data/estimate-benchmarks/fixtures/stairs-doka-standard-retention-declaration-r1.json",
+    "sha256": "5202df2cd313f9e74ba8100166fca2fc439fb828947763a75b0d199677ff89a1",
+    "bytes": 218224
+  },
+  "jointCurrentSourceContexts": {
+    "wholePayload": {
+      "definitionReleaseId": "edab86f3-c3c5-5187-943b-415f23a5653e",
+      "searchReleaseId": "43f02a25-c82d-576c-9009-a0d38fde6c64",
+      "sourceHead": "513dc2fa8d75b773d057c19b0c4c00c11dba148f",
+      "recordedReleaseSourceCommit": "2e491e35520e9c06d0c278007e60599f0fcef7d9"
+    },
+    "retention": {
+      "definitionReleaseId": "edab86f3-c3c5-5187-943b-415f23a5653e",
+      "searchReleaseId": "43f02a25-c82d-576c-9009-a0d38fde6c64",
+      "sourceHead": "19b3b1856468d9889de48cec24d81fff17afafb8",
+      "recordedReleaseSourceCommit": "2e491e35520e9c06d0c278007e60599f0fcef7d9"
+    }
+  },
+  "exactOldScopeDispositionCounts": {
+    "MUTUALLY_EXCLUSIVE_WITH_SOURCE111": 28,
+    "OUTSIDE_SELECTED_ORDINARY_SOURCE111_PROFILE": 3,
+    "RETAIN_NONPAYABLE_PROJECT_CONTROL": 6,
+    "UNRESOLVED_SEPARATE_SCOPE_VISIBLE_NEED": 58
+  },
+  "sourceMachinePaymentDevelopmentNeed": {
+    "status": "REQUIRES_IMPLEMENTATION_AND_EXACT_PAYMENT_SCOPE_NOT_AN_UNKNOWN_PHYSICAL_NORM",
+    "physicalQuantitiesKnown": true,
+    "machines": 7,
+    "paidQuoteOwners": 0,
+    "owner": "ROOT shared machine-price contract after exact source/operator scope review",
+    "source": "KRER06-01-111-01 printed7machine norms andoperatorinfo; no independentoperator forwelder/vibrator/saw",
+    "nextTaskRu": "После первого partialварианта принять ровно14own/hiredowner IDs с доказанным составом эксплуатации. Доставку, рабочего и электричество не объявлять отдельными включениями без источника/договора. Сейчас7машин остаются справочными, цена неизвестна; никакой чужой roof/road/floor fallback.",
+    "normativeQuantityGuessed": false
+  },
+  "unresolvedExistingScopeGroups": [
+    {
+      "id": "additional-feed-machine",
+      "titleRu": "Дополнительная подача бетонной смеси",
+      "reasonRu": "§1.39/1.40 допускают дополнительную подачу по ППР, но её самостоятельный состав/количество/оплата для выбранного111 не подтверждены. Старые проектные машино-часы не являются новой нормой.",
+      "owner": "Профильный проектировщик/сметчик + ROOT implementation",
+      "nextStepRu": "Установить отдельный физический результат, применимость и exact cost inclusion вне исходной111; только затем разрешить scope в существующем ядре. Ручное0/1 и переименование owner не являются доказательством.",
+      "rowIds": [
+        "equipment:concrete:pump"
+      ]
+    },
+    {
+      "id": "external-quality-and-documents",
+      "titleRu": "Внешний контроль и отдельные документы",
+      "reasonRu": "Самостоятельная внешняя услуга/документ может отличаться от обычного контроля выполнения. Нужны конкретное задание, единица, количество и отдельная платёжная граница; source111 её не задаёт.",
+      "owner": "Профильный проектировщик/сметчик + ROOT implementation",
+      "nextStepRu": "Установить отдельный физический результат, применимость и exact cost inclusion вне исходной111; только затем разрешить scope в существующем ядре. Ручное0/1 и переименование owner не являются доказательством.",
+      "rowIds": [
+        "service:concrete:acceptance-control",
+        "service:reinforcement:inspection",
+        "service:reinforcement:mill-certificates",
+        "service:formwork:stairs-inspection",
+        "service:concrete:stairs-curing-quality-control"
+      ]
+    },
+    {
+      "id": "junction-and-waterstop",
+      "titleRu": "Особые узлы и гидрошпонка",
+      "reasonRu": "Проектный водонепроницаемый узел/комплект и его отдельные монтаж/инструмент/доставка не доказаны целой111. Нужен узел КЖ/ППР и сверка включений; прошлые S27-33 данные сохраняются.",
+      "owner": "Профильный проектировщик/сметчик + ROOT implementation",
+      "nextStepRu": "Установить отдельный физический результат, применимость и exact cost inclusion вне исходной111; только затем разрешить scope в существующем ядре. Ручное0/1 и переименование owner не являются доказательством.",
+      "rowIds": [
+        "material:concrete:construction-joint-waterstop",
+        "work:concrete:construction-joint-waterstop-install",
+        "material:concrete:construction-joint-included-kit",
+        "material:concrete:construction-joint-separate-kit",
+        "equipment:concrete:construction-joint-included-tools",
+        "equipment:concrete:construction-joint-separate-tools",
+        "delivery:concrete:construction-joint-supply"
+      ]
+    },
+    {
+      "id": "external-logistics-and-return",
+      "titleRu": "Внешняя доставка, вывоз и возврат",
+      "reasonRu": "§1.1 включает площадочные перемещения, а внешний рейс/плечо/возврат аренды требует собственной границы. Нельзя переиспользовать старое количество заказа/эффективный выход после отключения прежнего владельца или вывести рейсы из часов.",
+      "owner": "Профильный проектировщик/сметчик + ROOT implementation",
+      "nextStepRu": "Установить отдельный физический результат, применимость и exact cost inclusion вне исходной111; только затем разрешить scope в существующем ядре. Ручное0/1 и переименование owner не являются доказательством.",
+      "rowIds": [
+        "delivery:concrete:ready-mix",
+        "delivery:reinforcement:steel",
+        "delivery:formwork:stairs-outbound",
+        "delivery:formwork:stairs-return",
+        "concrete-stairs-vibration:06:delivery:mobilization",
+        "concrete-stairs-vibration:06:delivery:wash-water",
+        "delivery:concrete:curing-equipment-mobilization",
+        "delivery:reinforcement:equipment-and-kits"
+      ]
+    },
+    {
+      "id": "project-rebar-fabrication-components",
+      "titleRu": "Подготовка арматуры и дополнительные компоненты",
+      "reasonRu": "§1.2/1.36 требует проектный состав арматуры. Подготовка вне включённой установки, дополнительные фиксаторы/муфты и станки требуют отдельного КЖ/ППР/оплаты; ни19.7т, ни прежние часы не становятся source111 нормой.",
+      "owner": "Профильный проектировщик/сметчик + ROOT implementation",
+      "nextStepRu": "Установить отдельный физический результат, применимость и exact cost inclusion вне исходной111; только затем разрешить scope в существующем ядре. Ручное0/1 и переименование owner не являются доказательством.",
+      "rowIds": [
+        "material:reinforcement:spacer-chairs",
+        "material:reinforcement:mechanical-couplers",
+        "work:reinforcement:site-cut",
+        "work:reinforcement:site-bend",
+        "equipment:reinforcement:cutting-machine",
+        "equipment:reinforcement:bending-machine",
+        "material:reinforcement:cutting-equipment-included-kit",
+        "material:reinforcement:cutting-equipment-separate-kit",
+        "material:reinforcement:bending-equipment-included-kit",
+        "material:reinforcement:bending-equipment-separate-kit",
+        "material:reinforcement:lifting-equipment-included-kit",
+        "material:reinforcement:lifting-equipment-separate-kit"
+      ]
+    },
+    {
+      "id": "extra-formwork-components",
+      "titleRu": "Дополнительные компоненты опалубки",
+      "reasonRu": "В111 есть расходная палуба/древесина/масло/крепёж и проектная амортизация§1.35. Не доказано, что эта дополнительная проектная позиция находится вне них; агрегатный материал/литры нельзя переносить в новые kg/m2 owners.",
+      "owner": "Профильный проектировщик/сметчик + ROOT implementation",
+      "nextStepRu": "Установить отдельный физический результат, применимость и exact cost inclusion вне исходной111; только затем разрешить scope в существующем ядре. Ручное0/1 и переименование owner не являются доказательством.",
+      "rowIds": [
+        "material:formwork:stairs-risers-edges",
+        "material:formwork:stairs-consumables"
+      ]
+    },
+    {
+      "id": "equipment-tools-energy-cleaning",
+      "titleRu": "Оснастка, электроэнергия и очистка оборудования",
+      "reasonRu": "Дополнительные оснастка, резервное оборудование, электроэнергия, очистка и вода могут перекрывать эксплуатацию машин/целый труд/исходные материалы. Нужны реальная ведомость и exact quote inclusion; отдельное количество/плата не выводятся из111.",
+      "owner": "Профильный проектировщик/сметчик + ROOT implementation",
+      "nextStepRu": "Установить отдельный физический результат, применимость и exact cost inclusion вне исходной111; только затем разрешить scope в существующем ядре. Ручное0/1 и переименование owner не являются доказательством.",
+      "rowIds": [
+        "concrete-stairs-vibration:02:operation:equipment-check",
+        "concrete-stairs-vibration:02:equipment:electrical-protection",
+        "concrete-stairs-vibration:02:equipment:extension-cable",
+        "concrete-stairs-vibration:03:equipment:backup-vibrator",
+        "concrete-stairs-vibration:03:material:electricity",
+        "concrete-stairs-vibration:04:operation:cleaning",
+        "concrete-stairs-vibration:04:labor:cleaning",
+        "concrete-stairs-vibration:04:consumable:cleaning-water",
+        "concrete-stairs-vibration:04:consumable:brush",
+        "concrete-stairs-vibration:04:consumable:wipes",
+        "concrete-stairs-vibration:04:equipment:wash-water-container"
+      ]
+    },
+    {
+      "id": "additional-curing-system",
+      "titleRu": "Дополнительный способ ухода за бетоном",
+      "reasonRu": "Уход, вода и рогожа включены в111. Иной метод, Antisol или техника нанесения требуют доказанного дополнительного физического scope и исключения перекрытия. Все семь поздних Antisol строк/формул/metadata сохраняются, но их нельзя автоматически включать поверх нормы.",
+      "owner": "Профильный проектировщик/сметчик + ROOT implementation",
+      "nextStepRu": "Установить отдельный физический результат, применимость и exact cost inclusion вне исходной111; только затем разрешить scope в существующем ядре. Ручное0/1 и переименование owner не являются доказательством.",
+      "rowIds": [
+        "material:concrete:impervious-curing-sheet",
+        "material:concrete:membrane-curing-compound",
+        "equipment:concrete:curing-application",
+        "concrete-curing-antisol250w-us:consumed",
+        "material:concrete:membrane-curing-compound:antisol250w-us",
+        "concrete-curing-antisol250w-us:packages",
+        "concrete-curing-antisol250w-us:remaining",
+        "concrete-curing-antisol250w-us:free",
+        "concrete-curing-antisol250w-us:shortage",
+        "concrete-curing-antisol250w-us:reserve-deficit"
+      ]
+    },
+    {
+      "id": "additional-surface-finishing",
+      "titleRu": "Дополнительная обработка поверхности",
+      "reasonRu": "Проектная дополнительная обработка поверхности/оснастка не доказана вне обычной исходной операции. Нужны вид результата и отдельная граница, а не перенос прежней производительности.",
+      "owner": "Профильный проектировщик/сметчик + ROOT implementation",
+      "nextStepRu": "Установить отдельный физический результат, применимость и exact cost inclusion вне исходной111; только затем разрешить scope в существующем ядре. Ручное0/1 и переименование owner не являются доказательством.",
+      "rowIds": [
+        "labor:concrete:stairs-primary-surface-finishing",
+        "equipment:concrete:stairs-finishing-hand-tools"
+      ]
+    }
+  ],
+  "runtimePartialScopeRows": 67,
+  "savedTransitionPolicy": {
+    "newEstimatesOnly": true,
+    "savedChildVariantSwitchCurrentlyNotAdmitted": true,
+    "sameVariantManualEditsFollowExistingCore": true,
+    "noOldRateTransferToNewOwner": true,
+    "originalRevisionAlwaysUsable": true
+  },
+  "technicalReferenceOnlyProposal": "Earlier existing-seven reference-only proposal is historical and is not the active implementation. Current target is one controlled existing standard variant; other six unchanged."
+}

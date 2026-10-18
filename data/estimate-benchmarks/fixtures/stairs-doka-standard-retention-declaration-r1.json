@@ -1,0 +1,3224 @@
+{
+  "contract": "gox-build.stair111.exact-retained-parent-source-closure.v1",
+  "status": "WORK_RETENTION_DECLARATION_FROM_ACTUAL_V5_FOR_ROOT_COMMON_OPTIN_NOT_ADOPTED",
+  "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_form_standard",
+  "parentDefinitionVersionId": "f4d62d59-abe5-584a-8ab0-073ce5a713ea",
+  "parentDefinitionSha256": "dced81ba161e260554f046b4e8dea2d4c9f764981fe5aa7174fc6d3711e968a2",
+  "expectedParentShape": [
+    188,
+    92,
+    95
+  ],
+  "wholePayloadCapturedContext": {
+    "definitionReleaseId": "edab86f3-c3c5-5187-943b-415f23a5653e",
+    "searchReleaseId": "43f02a25-c82d-576c-9009-a0d38fde6c64",
+    "sourceHead": "513dc2fa8d75b773d057c19b0c4c00c11dba148f",
+    "recordedReleaseSourceCommit": "2e491e35520e9c06d0c278007e60599f0fcef7d9"
+  },
+  "retentionCapturedContext": {
+    "definitionReleaseId": "edab86f3-c3c5-5187-943b-415f23a5653e",
+    "searchReleaseId": "43f02a25-c82d-576c-9009-a0d38fde6c64",
+    "sourceHead": "19b3b1856468d9889de48cec24d81fff17afafb8",
+    "recordedReleaseSourceCommit": "2e491e35520e9c06d0c278007e60599f0fcef7d9"
+  },
+  "historicalContextsMustNotBeRewrittenOrAutoRebased": true,
+  "actualResultPin": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/stair-standard-bindings-baseline-actual-v5/standard-bindings-baseline-actual-v5.json",
+    "sha256": "dd48ba1d52633e7d4bb23c93c3f99db04a9590ce05093c4d38717715ca114dbb",
+    "bytes": 184685
+  },
+  "candidateFixturePin": {
+    "destination": "data/estimate-benchmarks/fixtures/stairs-doka-standard-retention-current-v5-r1.json",
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-monolith-stairs-a/controlled-standard-variant-v1/candidate/data/estimate-benchmarks/fixtures/stairs-doka-standard-retention-current-v5-r1.json",
+    "sha256": "dd48ba1d52633e7d4bb23c93c3f99db04a9590ce05093c4d38717715ca114dbb",
+    "bytes": 184685
+  },
+  "actualRootContextPin": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/stair-standard-bindings-baseline-actual-v5/root-current-reader-context-v5.json",
+    "sha256": "d100d13d91d48e9caa85c065d2e97ed0e19f1209b25397e7e6054f46c839e823",
+    "bytes": 1793
+  },
+  "closedOwnedGuardReceiptPin": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/stair-standard-bindings-baseline-actual-v5/standard-bindings-baseline-owned-read-v5-receipt.json",
+    "sha256": "f03ffd56d07cd1ee823aedf3486889c18c2459cc187062efc1f89b6f96069fad",
+    "bytes": 892615
+  },
+  "rawSetPins": {
+    "exactCurrentStandardEightBindings": {
+      "rowCount": 8,
+      "sha256": "3d7ebf3b96a5769c2e1166349c63ad7fed6b5ede7ab082aebd0e820da3bf2977"
+    },
+    "exactBoundLocatorSourceHeaders": {
+      "rowCount": 2,
+      "sha256": "954e1d6e5c417e716a5823dfef8079842fdab5a31f99d5cca5adceb98ea1f6d7"
+    },
+    "exactCurrentManifestApprovedBaseline": {
+      "rowCount": 1,
+      "sha256": "64e4c8f449693d581281db187f1044efb0137f4b849f8151f9f60f449cd1df69"
+    }
+  },
+  "retainedBindings": [
+    {
+      "definition_version_id": "f4d62d59-abe5-584a-8ab0-073ce5a713ea",
+      "resource_spec_id": "49d25a10-970f-569f-8a3a-4ff2add8d38d",
+      "row_id": "material:concrete:ready-mix",
+      "unit_id": "m3",
+      "row_sha256": "b63e0c08a7b3195ea4f9a013f90bdcadb257714c36f16d96a54ba360c88d8218",
+      "locator_id": "d80752a1-e683-5c59-a7a1-6f7868f91dac",
+      "applicability": {
+        "norm_id": "STAIRS-COMPLETE-STANDARD-S27-23-COMPOSED-R1",
+        "source_id": "stairs_complete_installation_standard_s27_23",
+        "exact_locator": "Concrete volume and selected contingency use the accepted NRMCA CIP 31 route; reinforcement retains the approved bar-schedule route; stairs formwork uses RICS NRM 2 measured contact area plus direct project schedules without automatic system selection. | Public preview pp. 1-2: consolidation removes entrapped air; contents identify vibration, internal vibrators, procedure and quality control. The public preview does not provide universal productivity. | IRFU45/230/5 technical-data row: 0.88 kW, 45 mm head, 5 m hose, 15 m cable, 12,000 1/min, IP67, 220-240 V. | All productivity, labor, rental, cleaning, quality-control and logistics values are visible inputs and must be replaced by the approved method statement, equipment schedule and supplier quote. | Public preview pp. 1-4: Scope, Products and Execution; the project specification selects and customizes the external-curing method, materials, initial/final curing and termination requirements.",
+        "quantity_basis": "SHARED_GEOMETRY_PLUS_APPROVED_PROJECT_SCHEDULES_AND_VISIBLE_REPLACEABLE_OPERATION_PROFILES",
+        "clonedByContract": "rik-expo-app.s27-63.concrete-curing-antisol-material-series.v1.consumer-facts-r2",
+        "technology_class": "COMPLETE_MONOLITHIC_CONCRETE_STAIRS_STANDARD",
+        "assumption_policy": "VISIBLE_REPLACEABLE_OPERATION_PROFILES_AND_DIRECT_PROJECT_SCHEDULES"
+      }
+    },
+    {
+      "definition_version_id": "f4d62d59-abe5-584a-8ab0-073ce5a713ea",
+      "resource_spec_id": "b98a7957-8f2c-5036-88bf-15d583e52a16",
+      "row_id": "concrete-curing-antisol250w-us:consumed",
+      "unit_id": "l",
+      "row_sha256": "f167e28eee706d62afd0453ad6b9efd2087146d2831879fabad655b86f8484fd",
+      "locator_id": "669859cb-0a68-58e3-8563-46d46eda8b66",
+      "applicability": {
+        "scopeRu": "Только фактически выбранный Sika Antisol-250 W исполнения США по указанному паспорту, свежий бетон и вся измеренная однородная поверхность после обработки щёткой. На этом этапе только участки без последующих приклеиваемых покрытий, гидроизоляции и контакта с питьевой водой; готовность поверхности и условия нанесения подтверждаются отдельно. Известная приблизительная потребность не зависит от наличия, резерва и цены.",
+        "contract": "rik-expo-app.s27-63.concrete-curing-antisol-material-series.v1",
+        "sourcePages": [
+          1,
+          2
+        ],
+        "quantityQuality": "APPROXIMATE",
+        "clonedByContract": "rik-expo-app.s27-63.concrete-curing-antisol-material-series.v1.consumer-facts-r2",
+        "fullTechnicalAcceptance": false
+      }
+    },
+    {
+      "definition_version_id": "f4d62d59-abe5-584a-8ab0-073ce5a713ea",
+      "resource_spec_id": "b966bae9-e8b7-5203-8312-d26970ae9fb0",
+      "row_id": "material:concrete:membrane-curing-compound:antisol250w-us",
+      "unit_id": "l",
+      "row_sha256": "2d963adf0db192b61c80002cde65e4fe0d666e2d55554c4da19d105aab9dee3d",
+      "locator_id": "669859cb-0a68-58e3-8563-46d46eda8b66",
+      "applicability": {
+        "scopeRu": "Только фактически выбранный Sika Antisol-250 W исполнения США по указанному паспорту, свежий бетон и вся измеренная однородная поверхность после обработки щёткой. На этом этапе только участки без последующих приклеиваемых покрытий, гидроизоляции и контакта с питьевой водой; готовность поверхности и условия нанесения подтверждаются отдельно. Известная приблизительная потребность не зависит от наличия, резерва и цены.",
+        "contract": "rik-expo-app.s27-63.concrete-curing-antisol-material-series.v1",
+        "sourcePages": [
+          1,
+          2
+        ],
+        "quantityQuality": "APPROXIMATE",
+        "clonedByContract": "rik-expo-app.s27-63.concrete-curing-antisol-material-series.v1.consumer-facts-r2",
+        "fullTechnicalAcceptance": false
+      }
+    },
+    {
+      "definition_version_id": "f4d62d59-abe5-584a-8ab0-073ce5a713ea",
+      "resource_spec_id": "6d5fe1a8-e153-57b1-8338-c0946a36baec",
+      "row_id": "concrete-curing-antisol250w-us:packages",
+      "unit_id": "pcs",
+      "row_sha256": "a2f46114099e4194dbb55f623344df77d164a4196b610eba5210785b7c15dd83",
+      "locator_id": "669859cb-0a68-58e3-8563-46d46eda8b66",
+      "applicability": {
+        "scopeRu": "Только фактически выбранный Sika Antisol-250 W исполнения США по указанному паспорту, свежий бетон и вся измеренная однородная поверхность после обработки щёткой. На этом этапе только участки без последующих приклеиваемых покрытий, гидроизоляции и контакта с питьевой водой; готовность поверхности и условия нанесения подтверждаются отдельно. Известная приблизительная потребность не зависит от наличия, резерва и цены.",
+        "contract": "rik-expo-app.s27-63.concrete-curing-antisol-material-series.v1",
+        "sourcePages": [
+          1,
+          2
+        ],
+        "quantityQuality": "APPROXIMATE",
+        "clonedByContract": "rik-expo-app.s27-63.concrete-curing-antisol-material-series.v1.consumer-facts-r2",
+        "fullTechnicalAcceptance": false
+      }
+    },
+    {
+      "definition_version_id": "f4d62d59-abe5-584a-8ab0-073ce5a713ea",
+      "resource_spec_id": "dbdddbe3-2a25-58da-86c3-bf4e9515ffe3",
+      "row_id": "concrete-curing-antisol250w-us:remaining",
+      "unit_id": "l",
+      "row_sha256": "659e9a427ee25753e9767a65371ff700b5d49ff45a786e059284a760aad307b2",
+      "locator_id": "669859cb-0a68-58e3-8563-46d46eda8b66",
+      "applicability": {
+        "scopeRu": "Только фактически выбранный Sika Antisol-250 W исполнения США по указанному паспорту, свежий бетон и вся измеренная однородная поверхность после обработки щёткой. На этом этапе только участки без последующих приклеиваемых покрытий, гидроизоляции и контакта с питьевой водой; готовность поверхности и условия нанесения подтверждаются отдельно. Известная приблизительная потребность не зависит от наличия, резерва и цены.",
+        "contract": "rik-expo-app.s27-63.concrete-curing-antisol-material-series.v1",
+        "sourcePages": [
+          1,
+          2
+        ],
+        "quantityQuality": "APPROXIMATE",
+        "clonedByContract": "rik-expo-app.s27-63.concrete-curing-antisol-material-series.v1.consumer-facts-r2",
+        "fullTechnicalAcceptance": false
+      }
+    },
+    {
+      "definition_version_id": "f4d62d59-abe5-584a-8ab0-073ce5a713ea",
+      "resource_spec_id": "1b717a87-e213-56ec-8265-5363f9bf80f3",
+      "row_id": "concrete-curing-antisol250w-us:free",
+      "unit_id": "l",
+      "row_sha256": "062fadbefeda74bff6a017213a4d498c44eab2c5d66fca2524a3030f64640dec",
+      "locator_id": "669859cb-0a68-58e3-8563-46d46eda8b66",
+      "applicability": {
+        "scopeRu": "Только фактически выбранный Sika Antisol-250 W исполнения США по указанному паспорту, свежий бетон и вся измеренная однородная поверхность после обработки щёткой. На этом этапе только участки без последующих приклеиваемых покрытий, гидроизоляции и контакта с питьевой водой; готовность поверхности и условия нанесения подтверждаются отдельно. Известная приблизительная потребность не зависит от наличия, резерва и цены.",
+        "contract": "rik-expo-app.s27-63.concrete-curing-antisol-material-series.v1",
+        "sourcePages": [
+          1,
+          2
+        ],
+        "quantityQuality": "APPROXIMATE",
+        "clonedByContract": "rik-expo-app.s27-63.concrete-curing-antisol-material-series.v1.consumer-facts-r2",
+        "fullTechnicalAcceptance": false
+      }
+    },
+    {
+      "definition_version_id": "f4d62d59-abe5-584a-8ab0-073ce5a713ea",
+      "resource_spec_id": "22cc0b23-75f5-55de-88b4-0b1d09cf5fd8",
+      "row_id": "concrete-curing-antisol250w-us:shortage",
+      "unit_id": "l",
+      "row_sha256": "569d78ce4c1876022eaf55d82f28e5c530b69c82f522799550eaac57db821906",
+      "locator_id": "669859cb-0a68-58e3-8563-46d46eda8b66",
+      "applicability": {
+        "scopeRu": "Только фактически выбранный Sika Antisol-250 W исполнения США по указанному паспорту, свежий бетон и вся измеренная однородная поверхность после обработки щёткой. На этом этапе только участки без последующих приклеиваемых покрытий, гидроизоляции и контакта с питьевой водой; готовность поверхности и условия нанесения подтверждаются отдельно. Известная приблизительная потребность не зависит от наличия, резерва и цены.",
+        "contract": "rik-expo-app.s27-63.concrete-curing-antisol-material-series.v1",
+        "sourcePages": [
+          1,
+          2
+        ],
+        "quantityQuality": "APPROXIMATE",
+        "clonedByContract": "rik-expo-app.s27-63.concrete-curing-antisol-material-series.v1.consumer-facts-r2",
+        "fullTechnicalAcceptance": false
+      }
+    },
+    {
+      "definition_version_id": "f4d62d59-abe5-584a-8ab0-073ce5a713ea",
+      "resource_spec_id": "47c5b75c-a2fa-5adc-8532-ab1c56383dc7",
+      "row_id": "concrete-curing-antisol250w-us:reserve-deficit",
+      "unit_id": "l",
+      "row_sha256": "a31f5e69cd26a9b5bce2ac100b396ef82dcf36d881a4d27b34cc96b0f86bb43d",
+      "locator_id": "669859cb-0a68-58e3-8563-46d46eda8b66",
+      "applicability": {
+        "scopeRu": "Только фактически выбранный Sika Antisol-250 W исполнения США по указанному паспорту, свежий бетон и вся измеренная однородная поверхность после обработки щёткой. На этом этапе только участки без последующих приклеиваемых покрытий, гидроизоляции и контакта с питьевой водой; готовность поверхности и условия нанесения подтверждаются отдельно. Известная приблизительная потребность не зависит от наличия, резерва и цены.",
+        "contract": "rik-expo-app.s27-63.concrete-curing-antisol-material-series.v1",
+        "sourcePages": [
+          1,
+          2
+        ],
+        "quantityQuality": "APPROXIMATE",
+        "clonedByContract": "rik-expo-app.s27-63.concrete-curing-antisol-material-series.v1.consumer-facts-r2",
+        "fullTechnicalAcceptance": false
+      }
+    }
+  ],
+  "retainedLocatorAndSourceHeaders": [
+    {
+      "locator_id": "669859cb-0a68-58e3-8563-46d46eda8b66",
+      "source_id": "15ddf10c-ebe4-51d3-84c3-29ced3d9b3c8",
+      "locator_key": "sika-antisol250w-us-202006-v0103-nominal-broom-coverage-package",
+      "locator": {
+        "facts": {
+          "sha256": "b2f03cae00c6edf37228a1836104b5beba33a56dbb19b559caa8cc435a8b14b3",
+          "edition": "June 2020, Version 01.03",
+          "titleRu": "Sika Antisol-250 W: паспорт производителя США",
+          "packageL": 19,
+          "locatorRu": "Стр. 1: приблизительный расход 4,9 м²/л только для бетона с отделкой щёткой; упаковка 19 л; срок/хранение и запрет замороженного материала. Стр. 2: свежий бетон, окно нанесения, равномерная плёнка без разбавления, температура выше 7 °C и отсутствие ожидаемого снижения до 7 °C в следующие 12 ч, отсутствие конденсата.",
+          "officialUrl": "https://usa.sika.com/dam/dms/us01/3/sika_antisol_-250w.pdf",
+          "localArtifact": ".release-runtime/r568/s27-63/sources/sika-antisol-250w-us-2020-06-v01-03.pdf",
+          "coverageM2PerL": 4.9,
+          "quantityQuality": "APPROXIMATE_MANUFACTURER_NOMINAL",
+          "temperatureForecastHours": 12,
+          "minimumExclusiveTemperatureC": 7
+        },
+        "approximate": true,
+        "sourcePages": [
+          1,
+          2,
+          3
+        ],
+        "exclusionsRu": [
+          "Гладкие, смешанные, старые и ранее обработанные поверхности не получают норму 4,9 м²/л.",
+          "Не переносить площадь плёнки или объём бетона в обрабатываемую площадь.",
+          "Не задавать автоматически длительность ухода, число слоёв, потери, трудозатраты, расход воды, оснастку или аренду.",
+          "Старая цена другого состава не является ценой Antisol; новый альтернативный материал имеет свой ценовой owner.",
+          "Первичный паспорт не доказывает наличие комплекта или его включение в цену.",
+          "Полные работы ухода и бетонирования этим материальным правилом не приняты."
+        ],
+        "applicationScopeRu": "Только фактически выбранный Sika Antisol-250 W исполнения США по указанному паспорту, свежий бетон и вся измеренная однородная поверхность после обработки щёткой. На этом этапе только участки без последующих приклеиваемых покрытий, гидроизоляции и контакта с питьевой водой; готовность поверхности и условия нанесения подтверждаются отдельно. Известная приблизительная потребность не зависит от наличия, резерва и цены.",
+        "primaryArtifactSha256": "b2f03cae00c6edf37228a1836104b5beba33a56dbb19b559caa8cc435a8b14b3",
+        "completeEstimateAccepted": false
+      },
+      "excerpt_sha256": "41479c65d08ca7ea6864a38f04839bc2cc17dc70c0d79b71181b588cd49779a2",
+      "source_key": "manufacturer_sika_antisol250w_us_202006_v0103",
+      "title_ru": "Sika Antisol-250 W: паспорт производителя США",
+      "authority": "Sika United States",
+      "official_url": "https://usa.sika.com/dam/dms/us01/3/sika_antisol_-250w.pdf",
+      "artifact_sha256": "b2f03cae00c6edf37228a1836104b5beba33a56dbb19b559caa8cc435a8b14b3",
+      "effective_from": null,
+      "metadata": {
+        "contract": "rik-expo-app.s27-63.concrete-curing-antisol-material-series.v1",
+        "sourceKind": "APPROXIMATE_MANUFACTURER_NOMINAL",
+        "useRestriction": "Только фактически выбранный Sika Antisol-250 W исполнения США по указанному паспорту, свежий бетон и вся измеренная однородная поверхность после обработки щёткой. На этом этапе только участки без последующих приклеиваемых покрытий, гидроизоляции и контакта с питьевой водой; готовность поверхности и условия нанесения подтверждаются отдельно. Известная приблизительная потребность не зависит от наличия, резерва и цены.",
+        "activationAllowed": false,
+        "universalConsumptionClaimed": false,
+        "universalProductivityClaimed": false
+      }
+    },
+    {
+      "locator_id": "d80752a1-e683-5c59-a7a1-6f7868f91dac",
+      "source_id": "2eda01a5-ff93-5e49-b411-e0fa510e03b4",
+      "locator_key": "stairs-complete-installation-standard-s27-23",
+      "locator": {
+        "kind": "COMPLEX_WORK_COMPOSITION",
+        "stageCount": 6,
+        "vibrationSourcePackSha256": "248c48012ed587514fa90d6ca7ef4eae59604aed3b8fcc04a09e4a4cbdbf57ac",
+        "independentCompletenessMap": true,
+        "firstEstimateBeforeClarification": true,
+        "legacyVibrationDoubleCountRemoved": true
+      },
+      "excerpt_sha256": "f42739cd4bc6c231573c7423ca276efbe14c5b95c9f63448ba4b59463a5c57da",
+      "source_key": "stairs_complete_installation_standard_s27_23",
+      "title_ru": "Полная монолитная лестница: композиция укладки, армирования, опалубки, виброуплотнения, первичной отделки и внешнего ухода",
+      "authority": "NRMCA; ACI; RICS; Wacker Neuson; утверждённые проектные ведомости",
+      "official_url": "https://www.nrmca.org/wp-content/uploads/2021/01/31pr.pdf",
+      "artifact_sha256": "0a59cb6af856eba6728d4c5721a7e6a1d3c9b915dac812b7aa44b1f982632ee3",
+      "effective_from": "2026-10-01",
+      "metadata": {
+        "contract": "rik-expo-app.s27-23.stairs-complete-installation-standard-successor.v1",
+        "sourceKind": "COMPOSED_COMPLEX_WORK_TECHNOLOGY_AND_PROJECT_SCHEDULES",
+        "useRestriction": "COMPLEX_STANDARD_STAIRS_ONLY; PROJECT_SCHEDULES_REMAIN_EDITABLE; NO_HIDDEN_UNIVERSAL_PRODUCTIVITY",
+        "activationAllowed": false,
+        "universalConsumptionClaimed": false,
+        "universalProductivityClaimed": false
+      }
+    }
+  ],
+  "retainedBaseline": {
+    "id": "2e9f5528-f67f-5e00-883a-bffc1b13c586",
+    "baseline_key": "rik-expo-app.s27-63.concrete-curing-antisol-material-series.v1.consumer-facts-r2:10535a460a87e048:canonical-work:base:concrete_foundation_interior_stairs_concrete_form_standard",
+    "catalog_id": "canonical-work:base:concrete_foundation_interior_stairs_concrete_form_standard",
+    "definition_version_id": "f4d62d59-abe5-584a-8ab0-073ce5a713ea",
+    "source_definition_version_id": "5687d787-4b49-52e1-8f3f-5f5da71b3538",
+    "parameter_schema_sha256": "bb4667545a2f2f07a5278db78359eff9f6c6aad2f0723784a5e685b7f2d45f40",
+    "input_values": {
+      "finishing_method": "AS_CAST_HAND_TROWEL",
+      "placement_mobility": "P4",
+      "placement_winter_mode": false,
+      "antisol_material_choice": "Другой состав по действующей проектной смете",
+      "placement_concrete_class": "B25",
+      "placement_pump_machine_h": 3,
+      "placement_watertightness": "W6",
+      "stairs_concrete_volume_m3": 10,
+      "placement_frost_resistance": "F150",
+      "placement_placement_method": "pump",
+      "vibration_rental_shift_hour": 8,
+      "placement_placement_location": "Бетонная лестница; стандартная зона; захватка STAIR-POUR-STANDARD",
+      "placement_placement_worker_h": 42,
+      "placement_product_profile_id": "method-profile:nrmca-cip31:ready-mix-order:v1",
+      "formwork_form_release_agent_l": 8,
+      "formwork_formwork_supply_mode": "RENTAL_RETURNABLE",
+      "placement_mixture_designation": "B25 W6 F150 P4",
+      "finishing_quality_record_count": 1,
+      "reinforcement_fabrication_mode": "READY_CAGES",
+      "vibration_cleaning_brush_count": 1,
+      "vibration_quality_record_count": 1,
+      "external_curing_curing_water_m3": 2,
+      "external_curing_curing_worker_h": 12,
+      "placement_delivery_pricing_mode": "SEPARATE",
+      "reinforcement_lifting_machine_h": 0,
+      "vibration_active_vibrator_count": 1,
+      "vibration_backup_vibrator_count": 1,
+      "formwork_formwork_consumables_kg": 24,
+      "formwork_formwork_facing_area_m2": 78,
+      "placement_crane_bucket_machine_h": 0,
+      "placement_winter_heating_cable_m": 0,
+      "reinforcement_product_profile_id": "project-profile:approved-reinforcement-bar-schedule:fhwa-rics:v1",
+      "finishing_exposed_surface_area_m2": 48,
+      "placement_construction_joint_mode": "NONE",
+      "placement_winter_heating_worker_h": 0,
+      "reinforcement_nominal_diameter_mm": 15.875,
+      "vibration_mobilization_trip_count": 2,
+      "formwork_formwork_framing_length_m": 128,
+      "reinforcement_bar_size_designation": "No. 5",
+      "reinforcement_binding_wire_mass_kg": 16,
+      "external_curing_curing_duration_day": 7,
+      "formwork_formwork_assembly_worker_h": 72,
+      "formwork_formwork_return_trip_count": 1,
+      "formwork_lifting_equipment_required": false,
+      "formwork_temporary_shoring_required": true,
+      "reinforcement_delivery_pricing_mode": "SEPARATE",
+      "reinforcement_installation_worker_h": 41,
+      "reinforcement_site_bending_worker_h": 0,
+      "reinforcement_site_cutting_worker_h": 0,
+      "vibration_extension_cable_set_count": 1,
+      "vibration_vibrator_head_diameter_mm": 45,
+      "vibration_vibrator_nominal_power_kw": 0.88,
+      "external_curing_wet_covering_area_m2": 52,
+      "formwork_formwork_alignment_worker_h": 20,
+      "formwork_formwork_stripping_worker_h": 36,
+      "formwork_formwork_system_designation": "PROJECT-STAIR-FORMWORK-STANDARD-REV-A",
+      "formwork_stairs_geometry_description": "Монолитная лестница STAIR-STANDARD; марши, ступени и площадки по проектной геометрии",
+      "reinforcement_bar_standard_and_grade": "ASTM A615 Grade 60",
+      "reinforcement_cage_assembly_worker_h": 0,
+      "reinforcement_cover_control_worker_h": 6,
+      "vibration_wash_water_container_count": 1,
+      "formwork_formwork_delivery_trip_count": 1,
+      "formwork_riser_and_edge_form_length_m": 54,
+      "placement_producer_order_confirmation": "RMC-STAIR-POUR-STANDARD-CONFIRMED",
+      "reinforcement_rebar_bending_machine_h": 0,
+      "reinforcement_rebar_cutting_machine_h": 0,
+      "vibration_cleaning_wipe_package_count": 1,
+      "vibration_selected_vibrator_reference": "Wacker Neuson IRFU45/230/5 preliminary selection",
+      "vibration_vibrator_vibrations_per_min": 12000,
+      "external_curing_quality_plan_reference": "QP-STAIRS-CURE-STANDARD-REV-A",
+      "finishing_tool_set_coverage_m2_per_set": 50,
+      "formwork_formwork_rental_duration_days": 21,
+      "formwork_temporary_shoring_designation": "STAIR-SHORE-STANDARD-REV-A",
+      "placement_estimator_approval_reference": "EST-STAIR-POUR-STANDARD-REV-A",
+      "placement_selected_contingency_percent": 6,
+      "reinforcement_spacer_chair_designation": "ST-SPACER-50",
+      "placement_concrete_delivery_distance_km": 23,
+      "placement_heating_transformer_machine_h": 0,
+      "vibration_approved_consolidation_method": "INTERNAL_VIBRATION",
+      "placement_quality_control_document_count": 1,
+      "reinforcement_bar_count_and_cut_length_m": "PROJECT_BBS:BBS-ST-STANDARD-REV-A; 1200 kg aggregate approved mass across all bar marks",
+      "reinforcement_binding_wire_specification": "Проволока вязальная отожжённая по проектной ведомости",
+      "vibration_wash_water_disposal_trip_count": 1,
+      "formwork_temporary_shoring_quantity_piece": 42,
+      "reinforcement_spacer_chair_quantity_piece": 184,
+      "vibration_electrical_protection_set_count": 1,
+      "formwork_measured_formwork_contact_area_m2": 72,
+      "reinforcement_estimator_approval_reference": "EST-ST-STANDARD-REBAR-REV-A",
+      "reinforcement_lifting_equipment_applicable": false,
+      "formwork_formwork_inspection_document_count": 2,
+      "placement_plan_volume_calculation_reference": "STAIR-POUR-STANDARD-VOLUME-REV-A",
+      "reinforcement_lifting_equipment_designation": "NOT_APPLICABLE:MANUAL_HANDLING_CONFIRMED_BY_METHOD_STATEMENT",
+      "finishing_labor_productivity_m2_per_man_hour": 2,
+      "formwork_approved_formwork_drawing_reference": "FW-STAIR-STANDARD-REV-A",
+      "reinforcement_bar_bending_schedule_reference": "BBS-ST-STANDARD-REV-A",
+      "reinforcement_mechanical_coupler_designation": "NOT_APPLICABLE:PROJECT_BBS_HAS_NO_MECHANICAL_COUPLERS",
+      "reinforcement_mechanical_couplers_applicable": false,
+      "reinforcement_mill_certificate_package_count": 1,
+      "reinforcement_unloading_and_storage_worker_h": 7,
+      "vibration_cleaning_labor_h_per_used_vibrator": 0.25,
+      "vibration_labor_productivity_m3_per_man_hour": 0.8,
+      "external_curing_curing_water_source_reference": "WATER-STAIRS-CURE-STANDARD-REV-A",
+      "placement_contingency_selection_justification": "Резерв подтверждён сметчиком для захватки STAIR-POUR-STANDARD",
+      "reinforcement_selected_standard_mass_kg_per_m": 1.552,
+      "vibration_cleaning_water_m3_per_used_vibrator": 0.025,
+      "external_curing_application_equipment_required": false,
+      "external_curing_exposed_curing_surface_area_m2": 48,
+      "external_curing_quality_control_document_count": 1,
+      "placement_delivery_schedule_and_truck_capacity": "График STAIR-POUR-STANDARD; автобетоносмесители до 8 м³",
+      "external_curing_approved_external_curing_method": "WET_COVERING",
+      "reinforcement_mechanical_coupler_quantity_piece": 0,
+      "reinforcement_reinforcement_delivery_distance_km": 17,
+      "reinforcement_reinforcement_inspection_service_h": 3,
+      "reinforcement_shape_straight_bent_curved_or_link": "BENT:PROJECT-BBS",
+      "external_curing_curing_method_statement_reference": "MS-STAIRS-CURE-STANDARD-REV-A",
+      "external_curing_wet_covering_material_designation": "COVER-STAIRS-CURE-STANDARD-REV-A",
+      "reinforcement_fabrication_allowance_if_documented": "NONE:INCLUDED_IN_APPROVED_SCHEDULE",
+      "vibration_machine_productivity_m3_per_machine_hour": 3,
+      "reinforcement_supplier_bundle_or_length_constraints": "NONE:NO_AUTOMATIC_BUNDLE_ROUNDING",
+      "placement_mix_design_or_project_specification_reference": "STAIR-POUR-STANDARD-MIX-B25-REV-A",
+      "reinforcement_approved_reinforcement_schedule_weight_kg": 1200,
+      "reinforcement_structural_drawing_and_revision_reference": "STR-ST-STANDARD-REV-A",
+      "reinforcement_laps_hooks_chairs_connectors_and_accessories_scope": "PROJECT_SCOPE:all BBS laps and hooks; chairs and couplers scheduled separately"
+    },
+    "input_classification": {
+      "finishing_method": "ASSUMPTION",
+      "placement_mobility": "VALIDATION_FIXTURE",
+      "placement_winter_mode": "VALIDATION_FIXTURE",
+      "antisol_material_choice": "VALIDATION_FIXTURE",
+      "placement_concrete_class": "VALIDATION_FIXTURE",
+      "placement_pump_machine_h": "VALIDATION_FIXTURE",
+      "placement_watertightness": "VALIDATION_FIXTURE",
+      "stairs_concrete_volume_m3": "VALIDATION_FIXTURE",
+      "formwork_lifting_machine_h": "VALIDATION_FIXTURE",
+      "placement_frost_resistance": "VALIDATION_FIXTURE",
+      "placement_placement_method": "VALIDATION_FIXTURE",
+      "vibration_rental_shift_hour": "ASSUMPTION",
+      "placement_placement_location": "VALIDATION_FIXTURE",
+      "placement_placement_worker_h": "VALIDATION_FIXTURE",
+      "placement_product_profile_id": "VALIDATION_FIXTURE",
+      "formwork_form_release_agent_l": "VALIDATION_FIXTURE",
+      "formwork_formwork_supply_mode": "VALIDATION_FIXTURE",
+      "placement_mixture_designation": "VALIDATION_FIXTURE",
+      "finishing_quality_record_count": "ASSUMPTION",
+      "reinforcement_fabrication_mode": "VALIDATION_FIXTURE",
+      "vibration_cleaning_brush_count": "ASSUMPTION",
+      "vibration_quality_record_count": "ASSUMPTION",
+      "external_curing_curing_water_m3": "VALIDATION_FIXTURE",
+      "external_curing_curing_worker_h": "VALIDATION_FIXTURE",
+      "placement_delivery_pricing_mode": "VALIDATION_FIXTURE",
+      "reinforcement_lifting_machine_h": "VALIDATION_FIXTURE",
+      "vibration_active_vibrator_count": "ASSUMPTION",
+      "vibration_backup_vibrator_count": "ASSUMPTION",
+      "formwork_formwork_consumables_kg": "VALIDATION_FIXTURE",
+      "formwork_formwork_facing_area_m2": "VALIDATION_FIXTURE",
+      "placement_crane_bucket_machine_h": "VALIDATION_FIXTURE",
+      "placement_winter_heating_cable_m": "VALIDATION_FIXTURE",
+      "reinforcement_product_profile_id": "VALIDATION_FIXTURE",
+      "finishing_exposed_surface_area_m2": "VALIDATION_FIXTURE",
+      "placement_construction_joint_mode": "VALIDATION_FIXTURE",
+      "placement_winter_heating_worker_h": "VALIDATION_FIXTURE",
+      "reinforcement_nominal_diameter_mm": "VALIDATION_FIXTURE",
+      "vibration_mobilization_trip_count": "ASSUMPTION",
+      "formwork_formwork_framing_length_m": "VALIDATION_FIXTURE",
+      "reinforcement_bar_size_designation": "VALIDATION_FIXTURE",
+      "reinforcement_binding_wire_mass_kg": "VALIDATION_FIXTURE",
+      "external_curing_curing_duration_day": "VALIDATION_FIXTURE",
+      "formwork_formwork_assembly_worker_h": "VALIDATION_FIXTURE",
+      "formwork_formwork_return_trip_count": "VALIDATION_FIXTURE",
+      "formwork_lifting_equipment_required": "VALIDATION_FIXTURE",
+      "formwork_temporary_shoring_required": "VALIDATION_FIXTURE",
+      "reinforcement_delivery_pricing_mode": "VALIDATION_FIXTURE",
+      "reinforcement_installation_worker_h": "VALIDATION_FIXTURE",
+      "reinforcement_site_bending_worker_h": "VALIDATION_FIXTURE",
+      "reinforcement_site_cutting_worker_h": "VALIDATION_FIXTURE",
+      "vibration_extension_cable_set_count": "ASSUMPTION",
+      "vibration_vibrator_head_diameter_mm": "NORMATIVE",
+      "vibration_vibrator_nominal_power_kw": "NORMATIVE",
+      "external_curing_wet_covering_area_m2": "VALIDATION_FIXTURE",
+      "formwork_formwork_alignment_worker_h": "VALIDATION_FIXTURE",
+      "formwork_formwork_stripping_worker_h": "VALIDATION_FIXTURE",
+      "formwork_formwork_system_designation": "VALIDATION_FIXTURE",
+      "formwork_stairs_geometry_description": "VALIDATION_FIXTURE",
+      "reinforcement_bar_standard_and_grade": "VALIDATION_FIXTURE",
+      "reinforcement_cage_assembly_worker_h": "VALIDATION_FIXTURE",
+      "reinforcement_cover_control_worker_h": "VALIDATION_FIXTURE",
+      "vibration_wash_water_container_count": "ASSUMPTION",
+      "formwork_formwork_delivery_trip_count": "VALIDATION_FIXTURE",
+      "formwork_riser_and_edge_form_length_m": "VALIDATION_FIXTURE",
+      "placement_producer_order_confirmation": "VALIDATION_FIXTURE",
+      "reinforcement_rebar_bending_machine_h": "VALIDATION_FIXTURE",
+      "reinforcement_rebar_cutting_machine_h": "VALIDATION_FIXTURE",
+      "vibration_cleaning_wipe_package_count": "ASSUMPTION",
+      "vibration_selected_vibrator_reference": "NORMATIVE",
+      "vibration_vibrator_vibrations_per_min": "NORMATIVE",
+      "external_curing_quality_plan_reference": "VALIDATION_FIXTURE",
+      "finishing_tool_set_coverage_m2_per_set": "ASSUMPTION",
+      "formwork_formwork_rental_duration_days": "VALIDATION_FIXTURE",
+      "formwork_lifting_equipment_designation": "VALIDATION_FIXTURE",
+      "formwork_temporary_shoring_designation": "VALIDATION_FIXTURE",
+      "placement_estimator_approval_reference": "VALIDATION_FIXTURE",
+      "placement_selected_contingency_percent": "VALIDATION_FIXTURE",
+      "reinforcement_spacer_chair_designation": "VALIDATION_FIXTURE",
+      "placement_concrete_delivery_distance_km": "VALIDATION_FIXTURE",
+      "placement_heating_transformer_machine_h": "VALIDATION_FIXTURE",
+      "vibration_approved_consolidation_method": "NORMATIVE",
+      "external_curing_impervious_sheet_area_m2": "VALIDATION_FIXTURE",
+      "placement_quality_control_document_count": "VALIDATION_FIXTURE",
+      "reinforcement_bar_count_and_cut_length_m": "VALIDATION_FIXTURE",
+      "reinforcement_binding_wire_specification": "VALIDATION_FIXTURE",
+      "vibration_wash_water_disposal_trip_count": "ASSUMPTION",
+      "formwork_temporary_shoring_quantity_piece": "VALIDATION_FIXTURE",
+      "reinforcement_spacer_chair_quantity_piece": "VALIDATION_FIXTURE",
+      "vibration_electrical_protection_set_count": "ASSUMPTION",
+      "external_curing_curing_compound_quantity_l": "VALIDATION_FIXTURE",
+      "formwork_measured_formwork_contact_area_m2": "VALIDATION_FIXTURE",
+      "reinforcement_estimator_approval_reference": "VALIDATION_FIXTURE",
+      "reinforcement_lifting_equipment_applicable": "VALIDATION_FIXTURE",
+      "formwork_formwork_inspection_document_count": "VALIDATION_FIXTURE",
+      "placement_plan_volume_calculation_reference": "VALIDATION_FIXTURE",
+      "reinforcement_lifting_equipment_designation": "VALIDATION_FIXTURE",
+      "external_curing_impervious_sheet_designation": "VALIDATION_FIXTURE",
+      "external_curing_mobilization_scope_reference": "VALIDATION_FIXTURE",
+      "finishing_labor_productivity_m2_per_man_hour": "ASSUMPTION",
+      "formwork_approved_formwork_drawing_reference": "VALIDATION_FIXTURE",
+      "reinforcement_bar_bending_schedule_reference": "VALIDATION_FIXTURE",
+      "reinforcement_mechanical_coupler_designation": "VALIDATION_FIXTURE",
+      "reinforcement_mechanical_couplers_applicable": "VALIDATION_FIXTURE",
+      "reinforcement_mill_certificate_package_count": "VALIDATION_FIXTURE",
+      "reinforcement_unloading_and_storage_worker_h": "VALIDATION_FIXTURE",
+      "vibration_cleaning_labor_h_per_used_vibrator": "ASSUMPTION",
+      "vibration_labor_productivity_m3_per_man_hour": "ASSUMPTION",
+      "external_curing_curing_water_source_reference": "VALIDATION_FIXTURE",
+      "placement_contingency_selection_justification": "VALIDATION_FIXTURE",
+      "reinforcement_selected_standard_mass_kg_per_m": "VALIDATION_FIXTURE",
+      "vibration_cleaning_water_m3_per_used_vibrator": "ASSUMPTION",
+      "external_curing_application_equipment_required": "VALIDATION_FIXTURE",
+      "external_curing_exposed_curing_surface_area_m2": "VALIDATION_FIXTURE",
+      "external_curing_quality_control_document_count": "VALIDATION_FIXTURE",
+      "placement_delivery_schedule_and_truck_capacity": "VALIDATION_FIXTURE",
+      "external_curing_application_equipment_machine_h": "VALIDATION_FIXTURE",
+      "external_curing_approved_external_curing_method": "VALIDATION_FIXTURE",
+      "placement_construction_joint_waterstop_length_m": "VALIDATION_FIXTURE",
+      "reinforcement_mechanical_coupler_quantity_piece": "VALIDATION_FIXTURE",
+      "reinforcement_reinforcement_delivery_distance_km": "VALIDATION_FIXTURE",
+      "reinforcement_reinforcement_inspection_service_h": "VALIDATION_FIXTURE",
+      "reinforcement_shape_straight_bent_curved_or_link": "VALIDATION_FIXTURE",
+      "external_curing_application_equipment_designation": "VALIDATION_FIXTURE",
+      "external_curing_curing_method_statement_reference": "VALIDATION_FIXTURE",
+      "external_curing_equipment_mobilization_trip_count": "VALIDATION_FIXTURE",
+      "external_curing_wet_covering_material_designation": "VALIDATION_FIXTURE",
+      "reinforcement_fabrication_allowance_if_documented": "VALIDATION_FIXTURE",
+      "placement_construction_joint_installation_worker_h": "VALIDATION_FIXTURE",
+      "vibration_machine_productivity_m3_per_machine_hour": "ASSUMPTION",
+      "external_curing_curing_compound_product_designation": "VALIDATION_FIXTURE",
+      "external_curing_equipment_mobilization_pricing_mode": "VALIDATION_FIXTURE",
+      "reinforcement_supplier_bundle_or_length_constraints": "VALIDATION_FIXTURE",
+      "placement_construction_joint_waterstop_specification": "VALIDATION_FIXTURE",
+      "placement_mix_design_or_project_specification_reference": "VALIDATION_FIXTURE",
+      "reinforcement_approved_reinforcement_schedule_weight_kg": "VALIDATION_FIXTURE",
+      "reinforcement_structural_drawing_and_revision_reference": "VALIDATION_FIXTURE",
+      "reinforcement_laps_hooks_chairs_connectors_and_accessories_scope": "VALIDATION_FIXTURE"
+    },
+    "uom_by_parameter": {
+      "finishing_method": null,
+      "placement_mobility": null,
+      "antisol_surface_ready": null,
+      "placement_winter_mode": null,
+      "antisol_usable_stock_l": "l",
+      "antisol_material_choice": null,
+      "placement_concrete_class": null,
+      "placement_pump_machine_h": "machine_hour",
+      "placement_watertightness": null,
+      "stairs_concrete_volume_m3": "m3",
+      "antisol_retained_reserve_l": "l",
+      "formwork_lifting_machine_h": "machine_hour",
+      "placement_frost_resistance": null,
+      "placement_placement_method": null,
+      "vibration_rental_shift_hour": "hour",
+      "placement_placement_location": null,
+      "placement_placement_worker_h": "man_hour",
+      "placement_product_profile_id": null,
+      "formwork_form_release_agent_l": "l",
+      "formwork_formwork_supply_mode": null,
+      "placement_mixture_designation": null,
+      "antisol_subsequent_surface_use": null,
+      "finishing_quality_record_count": "document",
+      "reinforcement_fabrication_mode": null,
+      "vibration_cleaning_brush_count": "item",
+      "vibration_quality_record_count": "document",
+      "external_curing_curing_water_m3": "m3",
+      "external_curing_curing_worker_h": "man_hour",
+      "placement_delivery_pricing_mode": null,
+      "reinforcement_lifting_machine_h": "machine_hour",
+      "vibration_active_vibrator_count": "item",
+      "vibration_backup_vibrator_count": "item",
+      "formwork_formwork_consumables_kg": "kg",
+      "formwork_formwork_facing_area_m2": "m2",
+      "placement_crane_bucket_machine_h": "machine_hour",
+      "placement_winter_heating_cable_m": "m",
+      "reinforcement_product_profile_id": null,
+      "antisol_minimum_temperature_12h_c": "degC",
+      "finishing_exposed_surface_area_m2": "m2",
+      "placement_construction_joint_mode": null,
+      "placement_winter_heating_worker_h": "man_hour",
+      "reinforcement_nominal_diameter_mm": "mm",
+      "vibration_mobilization_trip_count": "trip",
+      "formwork_formwork_framing_length_m": "m",
+      "reinforcement_bar_size_designation": null,
+      "reinforcement_binding_wire_mass_kg": "kg",
+      "external_curing_curing_duration_day": "day",
+      "formwork_formwork_assembly_worker_h": "man_hour",
+      "formwork_formwork_return_trip_count": "trip",
+      "formwork_lifting_equipment_required": null,
+      "formwork_temporary_shoring_required": null,
+      "reinforcement_delivery_pricing_mode": null,
+      "reinforcement_installation_worker_h": "man_hour",
+      "reinforcement_site_bending_worker_h": "man_hour",
+      "reinforcement_site_cutting_worker_h": "man_hour",
+      "vibration_extension_cable_set_count": "item",
+      "vibration_vibrator_head_diameter_mm": "mm",
+      "vibration_vibrator_nominal_power_kw": "kw",
+      "external_curing_wet_covering_area_m2": "m2",
+      "formwork_formwork_alignment_worker_h": "man_hour",
+      "formwork_formwork_stripping_worker_h": "man_hour",
+      "formwork_formwork_system_designation": null,
+      "formwork_stairs_geometry_description": null,
+      "reinforcement_bar_standard_and_grade": null,
+      "reinforcement_cage_assembly_worker_h": "man_hour",
+      "reinforcement_cover_control_worker_h": "man_hour",
+      "vibration_wash_water_container_count": "item",
+      "formwork_formwork_delivery_trip_count": "trip",
+      "formwork_riser_and_edge_form_length_m": "m",
+      "placement_producer_order_confirmation": null,
+      "reinforcement_equipment_delivery_mode": null,
+      "reinforcement_rebar_bending_machine_h": "machine_hour",
+      "reinforcement_rebar_cutting_machine_h": "machine_hour",
+      "vibration_cleaning_wipe_package_count": "item",
+      "vibration_selected_vibrator_reference": null,
+      "vibration_vibrator_vibrations_per_min": "item_per_min",
+      "construction_joint_equipment_machine_h": "machine_hour",
+      "external_curing_quality_plan_reference": null,
+      "finishing_tool_set_coverage_m2_per_set": "m2_per_item",
+      "formwork_formwork_rental_duration_days": "day",
+      "formwork_lifting_equipment_designation": null,
+      "formwork_temporary_shoring_designation": null,
+      "placement_estimator_approval_reference": null,
+      "placement_selected_contingency_percent": "percent",
+      "reinforcement_spacer_chair_designation": null,
+      "construction_joint_supply_delivery_mode": null,
+      "placement_concrete_delivery_distance_km": "km",
+      "placement_heating_transformer_machine_h": "machine_hour",
+      "vibration_approved_consolidation_method": null,
+      "construction_joint_accessories_set_count": "set",
+      "external_curing_impervious_sheet_area_m2": "m2",
+      "placement_quality_control_document_count": "document",
+      "reinforcement_bar_count_and_cut_length_m": null,
+      "reinforcement_binding_wire_specification": null,
+      "vibration_wash_water_disposal_trip_count": "trip",
+      "construction_joint_equipment_pricing_mode": null,
+      "formwork_temporary_shoring_quantity_piece": "piece",
+      "reinforcement_spacer_chair_quantity_piece": "piece",
+      "vibration_electrical_protection_set_count": "item",
+      "construction_joint_equipment_specification": null,
+      "external_curing_curing_compound_quantity_l": "l",
+      "formwork_measured_formwork_contact_area_m2": "m2",
+      "reinforcement_equipment_delivery_reference": null,
+      "reinforcement_estimator_approval_reference": null,
+      "reinforcement_lifting_equipment_applicable": null,
+      "construction_joint_accessories_pricing_mode": null,
+      "formwork_formwork_inspection_document_count": "document",
+      "placement_plan_volume_calculation_reference": null,
+      "reinforcement_bending_accessories_set_count": "set",
+      "reinforcement_bending_price_scope_reference": null,
+      "reinforcement_cutting_accessories_set_count": "set",
+      "reinforcement_cutting_price_scope_reference": null,
+      "reinforcement_equipment_delivery_trip_count": "trip",
+      "reinforcement_lifting_accessories_set_count": "set",
+      "reinforcement_lifting_equipment_designation": null,
+      "reinforcement_lifting_price_scope_reference": null,
+      "construction_joint_accessories_specification": null,
+      "construction_joint_quality_program_reference": null,
+      "construction_joint_supply_delivery_reference": null,
+      "external_curing_impervious_sheet_designation": null,
+      "external_curing_mobilization_scope_reference": null,
+      "finishing_labor_productivity_m2_per_man_hour": "m2_per_man_hour",
+      "formwork_approved_formwork_drawing_reference": null,
+      "reinforcement_bar_bending_schedule_reference": null,
+      "reinforcement_mechanical_coupler_designation": null,
+      "reinforcement_mechanical_couplers_applicable": null,
+      "reinforcement_mill_certificate_package_count": "document",
+      "reinforcement_unloading_and_storage_worker_h": "man_hour",
+      "vibration_cleaning_labor_h_per_used_vibrator": "man_hour",
+      "vibration_labor_productivity_m3_per_man_hour": "m3_per_man_hour",
+      "construction_joint_method_statement_reference": null,
+      "construction_joint_supply_delivery_trip_count": "trip",
+      "external_curing_curing_water_source_reference": null,
+      "placement_contingency_selection_justification": null,
+      "reinforcement_bending_equipment_specification": null,
+      "reinforcement_cutting_equipment_specification": null,
+      "reinforcement_selected_standard_mass_kg_per_m": "kg_per_m",
+      "vibration_cleaning_water_m3_per_used_vibrator": "m3",
+      "external_curing_application_equipment_required": null,
+      "external_curing_exposed_curing_surface_area_m2": "m2",
+      "external_curing_quality_control_document_count": "document",
+      "placement_delivery_schedule_and_truck_capacity": null,
+      "reinforcement_bending_accessories_pricing_mode": null,
+      "reinforcement_cutting_accessories_pricing_mode": null,
+      "reinforcement_lifting_accessories_pricing_mode": null,
+      "external_curing_application_equipment_machine_h": "machine_hour",
+      "external_curing_approved_external_curing_method": null,
+      "placement_construction_joint_waterstop_length_m": "m",
+      "reinforcement_bending_accessories_specification": null,
+      "reinforcement_cutting_accessories_specification": null,
+      "reinforcement_lifting_accessories_specification": null,
+      "reinforcement_mechanical_coupler_quantity_piece": "piece",
+      "reinforcement_reinforcement_delivery_distance_km": "km",
+      "reinforcement_reinforcement_inspection_service_h": "service_hour",
+      "reinforcement_shape_straight_bent_curved_or_link": null,
+      "external_curing_application_equipment_designation": null,
+      "external_curing_curing_method_statement_reference": null,
+      "external_curing_equipment_mobilization_trip_count": "trip",
+      "external_curing_wet_covering_material_designation": null,
+      "reinforcement_fabrication_allowance_if_documented": null,
+      "placement_construction_joint_installation_worker_h": "man_hour",
+      "vibration_machine_productivity_m3_per_machine_hour": "m3_per_machine_hour",
+      "external_curing_curing_compound_product_designation": null,
+      "external_curing_equipment_mobilization_pricing_mode": null,
+      "reinforcement_supplier_bundle_or_length_constraints": null,
+      "placement_construction_joint_waterstop_specification": null,
+      "effective_resource_quantity_material_concrete_ready_mix": "m3",
+      "placement_mix_design_or_project_specification_reference": null,
+      "reinforcement_approved_reinforcement_schedule_weight_kg": "kg",
+      "reinforcement_structural_drawing_and_revision_reference": null,
+      "effective_resource_quantity_material_concrete_curing_water": "m3",
+      "effective_resource_quantity_material_reinforcement_binding_wire": "kg",
+      "effective_resource_quantity_material_formwork_stairs_consumables": "kg",
+      "effective_resource_quantity_material_reinforcement_spacer_chairs": "piece",
+      "reinforcement_laps_hooks_chairs_connectors_and_accessories_scope": null,
+      "effective_resource_quantity_material_concrete_wet_curing_covering": "m2",
+      "effective_resource_quantity_material_formwork_stairs_risers_edges": "m",
+      "effective_resource_quantity_material_concrete_winter_heating_cable": "m",
+      "effective_resource_quantity_material_formwork_stairs_release_agent": "l",
+      "effective_resource_quantity_material_concrete_impervious_curing_sheet": "m2",
+      "effective_resource_quantity_material_concrete_membrane_curing_compound": "l",
+      "effective_resource_quantity_material_reinforcement_mechanical_couplers": "piece",
+      "effective_resource_quantity_concrete_stairs_vibration_04_consumable_brush": "item",
+      "effective_resource_quantity_concrete_stairs_vibration_04_consumable_wipes": "item",
+      "effective_resource_quantity_material_concrete_construction_joint_waterstop": "m",
+      "effective_resource_quantity_material_reinforcement_steel_approved_schedule": "kg",
+      "effective_resource_quantity_concrete_stairs_vibration_04_consumable_cleaning_water": "m3",
+      "effective_resource_quantity_material_concrete_membrane_curing_compound_antisol250w_us": "l"
+    },
+    "formula_consumer_ids": {
+      "finishing_method": [],
+      "placement_mobility": [],
+      "antisol_surface_ready": [],
+      "placement_winter_mode": [],
+      "antisol_usable_stock_l": [
+        "concrete-curing-antisol250w-us:formula:order",
+        "concrete-curing-antisol250w-us:formula:remaining",
+        "concrete-curing-antisol250w-us:formula:free",
+        "concrete-curing-antisol250w-us:formula:shortage",
+        "concrete-curing-antisol250w-us:formula:reserve-deficit"
+      ],
+      "antisol_material_choice": [],
+      "placement_concrete_class": [],
+      "placement_pump_machine_h": [
+        "pump_machine_time_v1"
+      ],
+      "placement_watertightness": [],
+      "stairs_concrete_volume_m3": [
+        "concrete_order_quantity_v1",
+        "slab_curing_scope_volume_v1",
+        "stairs_concrete_vibration_electricity_s2723",
+        "stairs_concrete_vibration_labor_hours_s2723",
+        "stairs_concrete_vibration_machine_hours_s2723",
+        "stairs_concrete_vibration_rental_shifts_s2723",
+        "stairs_concrete_vibration_volume_s2723"
+      ],
+      "antisol_retained_reserve_l": [
+        "concrete-curing-antisol250w-us:formula:order",
+        "concrete-curing-antisol250w-us:formula:free",
+        "concrete-curing-antisol250w-us:formula:reserve-deficit"
+      ],
+      "formwork_lifting_machine_h": [
+        "stairs_formwork_lifting_v1"
+      ],
+      "placement_frost_resistance": [],
+      "placement_placement_method": [],
+      "vibration_rental_shift_hour": [
+        "stairs_concrete_vibration_rental_shifts_s2723"
+      ],
+      "placement_placement_location": [],
+      "placement_placement_worker_h": [
+        "placement_labor_v1"
+      ],
+      "placement_product_profile_id": [],
+      "formwork_form_release_agent_l": [
+        "stairs_formwork_release_agent_v1"
+      ],
+      "formwork_formwork_supply_mode": [],
+      "placement_mixture_designation": [],
+      "antisol_subsequent_surface_use": [],
+      "finishing_quality_record_count": [
+        "stairs_complete_finishing_quality_records_s2723"
+      ],
+      "reinforcement_fabrication_mode": [],
+      "vibration_cleaning_brush_count": [
+        "stairs_concrete_vibration_cleaning_brush_s2723"
+      ],
+      "vibration_quality_record_count": [
+        "stairs_concrete_vibration_quality_records_s2723"
+      ],
+      "external_curing_curing_water_m3": [
+        "slab_curing_water_v1"
+      ],
+      "external_curing_curing_worker_h": [
+        "slab_curing_labor_v1"
+      ],
+      "placement_delivery_pricing_mode": [],
+      "reinforcement_lifting_machine_h": [
+        "lifting_machine_time_v1"
+      ],
+      "vibration_active_vibrator_count": [
+        "stairs_concrete_vibration_active_vibrators_s2723",
+        "stairs_concrete_vibration_cleaning_labor_s2723",
+        "stairs_concrete_vibration_cleaning_water_s2723",
+        "stairs_concrete_vibration_electricity_s2723"
+      ],
+      "vibration_backup_vibrator_count": [
+        "stairs_concrete_vibration_backup_vibrators_s2723"
+      ],
+      "formwork_formwork_consumables_kg": [
+        "stairs_formwork_consumables_v1"
+      ],
+      "formwork_formwork_facing_area_m2": [
+        "stairs_formwork_facing_v1"
+      ],
+      "placement_crane_bucket_machine_h": [
+        "crane_bucket_machine_time_v1"
+      ],
+      "placement_winter_heating_cable_m": [
+        "winter_heating_cable_v1"
+      ],
+      "reinforcement_product_profile_id": [],
+      "antisol_minimum_temperature_12h_c": [],
+      "finishing_exposed_surface_area_m2": [
+        "stairs_complete_finishing_area_s2723",
+        "stairs_complete_finishing_labor_s2723",
+        "stairs_complete_finishing_tool_sets_s2723"
+      ],
+      "placement_construction_joint_mode": [],
+      "placement_winter_heating_worker_h": [
+        "winter_heating_labor_v1"
+      ],
+      "reinforcement_nominal_diameter_mm": [],
+      "vibration_mobilization_trip_count": [
+        "stairs_concrete_vibration_mobilization_s2723"
+      ],
+      "formwork_formwork_framing_length_m": [
+        "stairs_formwork_framing_v1"
+      ],
+      "reinforcement_bar_size_designation": [],
+      "reinforcement_binding_wire_mass_kg": [
+        "binding_wire_quantity_v1"
+      ],
+      "external_curing_curing_duration_day": [],
+      "formwork_formwork_assembly_worker_h": [
+        "stairs_formwork_assembly_labor_v1"
+      ],
+      "formwork_formwork_return_trip_count": [
+        "stairs_formwork_return_v1"
+      ],
+      "formwork_lifting_equipment_required": [],
+      "formwork_temporary_shoring_required": [],
+      "reinforcement_delivery_pricing_mode": [],
+      "reinforcement_installation_worker_h": [
+        "installation_labor_v1"
+      ],
+      "reinforcement_site_bending_worker_h": [
+        "site_bending_labor_v1"
+      ],
+      "reinforcement_site_cutting_worker_h": [
+        "site_cutting_labor_v1"
+      ],
+      "vibration_extension_cable_set_count": [
+        "stairs_concrete_vibration_extension_cable_s2723"
+      ],
+      "vibration_vibrator_head_diameter_mm": [],
+      "vibration_vibrator_nominal_power_kw": [
+        "stairs_concrete_vibration_electricity_s2723"
+      ],
+      "external_curing_wet_covering_area_m2": [
+        "slab_curing_wet_covering_v1"
+      ],
+      "formwork_formwork_alignment_worker_h": [
+        "stairs_formwork_alignment_labor_v1"
+      ],
+      "formwork_formwork_stripping_worker_h": [
+        "stairs_formwork_stripping_labor_v1"
+      ],
+      "formwork_formwork_system_designation": [],
+      "formwork_stairs_geometry_description": [],
+      "reinforcement_bar_standard_and_grade": [],
+      "reinforcement_cage_assembly_worker_h": [
+        "cage_assembly_labor_v1"
+      ],
+      "reinforcement_cover_control_worker_h": [
+        "cover_control_labor_v1"
+      ],
+      "vibration_wash_water_container_count": [
+        "stairs_concrete_vibration_wash_container_s2723"
+      ],
+      "formwork_formwork_delivery_trip_count": [
+        "stairs_formwork_delivery_v1"
+      ],
+      "formwork_riser_and_edge_form_length_m": [
+        "stairs_formwork_riser_edges_v1"
+      ],
+      "placement_producer_order_confirmation": [],
+      "reinforcement_equipment_delivery_mode": [],
+      "reinforcement_rebar_bending_machine_h": [
+        "rebar_bending_machine_time_v1"
+      ],
+      "reinforcement_rebar_cutting_machine_h": [
+        "rebar_cutting_machine_time_v1"
+      ],
+      "vibration_cleaning_wipe_package_count": [
+        "stairs_concrete_vibration_cleaning_wipes_s2723"
+      ],
+      "vibration_selected_vibrator_reference": [],
+      "vibration_vibrator_vibrations_per_min": [],
+      "construction_joint_equipment_machine_h": [
+        "construction_joint_included_tools_v1",
+        "construction_joint_separate_tools_v1"
+      ],
+      "external_curing_quality_plan_reference": [],
+      "finishing_tool_set_coverage_m2_per_set": [
+        "stairs_complete_finishing_tool_sets_s2723"
+      ],
+      "formwork_formwork_rental_duration_days": [],
+      "formwork_lifting_equipment_designation": [],
+      "formwork_temporary_shoring_designation": [],
+      "placement_estimator_approval_reference": [],
+      "placement_selected_contingency_percent": [
+        "concrete_order_quantity_v1"
+      ],
+      "reinforcement_spacer_chair_designation": [],
+      "construction_joint_supply_delivery_mode": [],
+      "placement_concrete_delivery_distance_km": [
+        "concrete_delivery_v1"
+      ],
+      "placement_heating_transformer_machine_h": [
+        "heating_transformer_time_v1"
+      ],
+      "vibration_approved_consolidation_method": [],
+      "construction_joint_accessories_set_count": [
+        "construction_joint_included_kit_v1",
+        "construction_joint_separate_kit_v1"
+      ],
+      "external_curing_impervious_sheet_area_m2": [
+        "slab_curing_impervious_sheet_v1"
+      ],
+      "placement_quality_control_document_count": [
+        "quality_control_documents_v1"
+      ],
+      "reinforcement_bar_count_and_cut_length_m": [],
+      "reinforcement_binding_wire_specification": [],
+      "vibration_wash_water_disposal_trip_count": [
+        "stairs_concrete_vibration_wash_water_disposal_s2723"
+      ],
+      "construction_joint_equipment_pricing_mode": [],
+      "formwork_temporary_shoring_quantity_piece": [
+        "stairs_formwork_shoring_v1"
+      ],
+      "reinforcement_spacer_chair_quantity_piece": [
+        "spacer_chair_quantity_v1"
+      ],
+      "vibration_electrical_protection_set_count": [
+        "stairs_concrete_vibration_electrical_protection_s2723"
+      ],
+      "construction_joint_equipment_specification": [],
+      "external_curing_curing_compound_quantity_l": [
+        "slab_curing_compound_v1"
+      ],
+      "formwork_measured_formwork_contact_area_m2": [
+        "stairs_formwork_measured_area_v1"
+      ],
+      "reinforcement_equipment_delivery_reference": [],
+      "reinforcement_estimator_approval_reference": [],
+      "reinforcement_lifting_equipment_applicable": [],
+      "construction_joint_accessories_pricing_mode": [],
+      "formwork_formwork_inspection_document_count": [
+        "stairs_formwork_inspection_v1"
+      ],
+      "placement_plan_volume_calculation_reference": [],
+      "reinforcement_bending_accessories_set_count": [
+        "reinforcement_bending_equipment_included_kit_v1",
+        "reinforcement_bending_equipment_separate_kit_v1"
+      ],
+      "reinforcement_bending_price_scope_reference": [],
+      "reinforcement_cutting_accessories_set_count": [
+        "reinforcement_cutting_equipment_included_kit_v1",
+        "reinforcement_cutting_equipment_separate_kit_v1"
+      ],
+      "reinforcement_cutting_price_scope_reference": [],
+      "reinforcement_equipment_delivery_trip_count": [
+        "reinforcement_equipment_confirmed_delivery_v1"
+      ],
+      "reinforcement_lifting_accessories_set_count": [
+        "reinforcement_lifting_equipment_included_kit_v1",
+        "reinforcement_lifting_equipment_separate_kit_v1"
+      ],
+      "reinforcement_lifting_equipment_designation": [],
+      "reinforcement_lifting_price_scope_reference": [],
+      "construction_joint_accessories_specification": [],
+      "construction_joint_quality_program_reference": [],
+      "construction_joint_supply_delivery_reference": [],
+      "external_curing_impervious_sheet_designation": [],
+      "external_curing_mobilization_scope_reference": [],
+      "finishing_labor_productivity_m2_per_man_hour": [
+        "stairs_complete_finishing_labor_s2723"
+      ],
+      "formwork_approved_formwork_drawing_reference": [],
+      "reinforcement_bar_bending_schedule_reference": [],
+      "reinforcement_mechanical_coupler_designation": [],
+      "reinforcement_mechanical_couplers_applicable": [],
+      "reinforcement_mill_certificate_package_count": [
+        "mill_certificate_package_v1"
+      ],
+      "reinforcement_unloading_and_storage_worker_h": [
+        "unloading_and_storage_labor_v1"
+      ],
+      "vibration_cleaning_labor_h_per_used_vibrator": [
+        "stairs_concrete_vibration_cleaning_labor_s2723"
+      ],
+      "vibration_labor_productivity_m3_per_man_hour": [
+        "stairs_concrete_vibration_labor_hours_s2723"
+      ],
+      "construction_joint_method_statement_reference": [],
+      "construction_joint_supply_delivery_trip_count": [
+        "construction_joint_supply_delivery_v1"
+      ],
+      "external_curing_curing_water_source_reference": [],
+      "placement_contingency_selection_justification": [],
+      "reinforcement_bending_equipment_specification": [],
+      "reinforcement_cutting_equipment_specification": [],
+      "reinforcement_selected_standard_mass_kg_per_m": [],
+      "vibration_cleaning_water_m3_per_used_vibrator": [
+        "stairs_concrete_vibration_cleaning_water_s2723"
+      ],
+      "external_curing_application_equipment_required": [],
+      "external_curing_exposed_curing_surface_area_m2": [
+        "concrete-curing-antisol250w-us:formula:consumed",
+        "concrete-curing-antisol250w-us:formula:order",
+        "concrete-curing-antisol250w-us:formula:remaining",
+        "concrete-curing-antisol250w-us:formula:free",
+        "concrete-curing-antisol250w-us:formula:shortage",
+        "concrete-curing-antisol250w-us:formula:reserve-deficit"
+      ],
+      "external_curing_quality_control_document_count": [
+        "slab_curing_quality_documents_v1"
+      ],
+      "placement_delivery_schedule_and_truck_capacity": [],
+      "reinforcement_bending_accessories_pricing_mode": [],
+      "reinforcement_cutting_accessories_pricing_mode": [],
+      "reinforcement_lifting_accessories_pricing_mode": [],
+      "external_curing_application_equipment_machine_h": [
+        "slab_curing_application_equipment_v1"
+      ],
+      "external_curing_approved_external_curing_method": [],
+      "placement_construction_joint_waterstop_length_m": [
+        "construction_joint_waterstop_quantity_v1"
+      ],
+      "reinforcement_bending_accessories_specification": [],
+      "reinforcement_cutting_accessories_specification": [],
+      "reinforcement_lifting_accessories_specification": [],
+      "reinforcement_mechanical_coupler_quantity_piece": [
+        "mechanical_coupler_quantity_v1"
+      ],
+      "reinforcement_reinforcement_delivery_distance_km": [
+        "reinforcement_delivery_v1"
+      ],
+      "reinforcement_reinforcement_inspection_service_h": [
+        "reinforcement_inspection_service_v1"
+      ],
+      "reinforcement_shape_straight_bent_curved_or_link": [],
+      "external_curing_application_equipment_designation": [],
+      "external_curing_curing_method_statement_reference": [],
+      "external_curing_equipment_mobilization_trip_count": [
+        "slab_curing_equipment_mobilization_v1"
+      ],
+      "external_curing_wet_covering_material_designation": [],
+      "reinforcement_fabrication_allowance_if_documented": [],
+      "placement_construction_joint_installation_worker_h": [
+        "construction_joint_waterstop_labor_v1"
+      ],
+      "vibration_machine_productivity_m3_per_machine_hour": [
+        "stairs_concrete_vibration_electricity_s2723",
+        "stairs_concrete_vibration_machine_hours_s2723",
+        "stairs_concrete_vibration_rental_shifts_s2723"
+      ],
+      "external_curing_curing_compound_product_designation": [],
+      "external_curing_equipment_mobilization_pricing_mode": [],
+      "reinforcement_supplier_bundle_or_length_constraints": [],
+      "placement_construction_joint_waterstop_specification": [],
+      "effective_resource_quantity_material_concrete_ready_mix": [
+        "concrete_delivery_v1"
+      ],
+      "placement_mix_design_or_project_specification_reference": [],
+      "reinforcement_approved_reinforcement_schedule_weight_kg": [
+        "approved_rebar_schedule_weight_v1"
+      ],
+      "reinforcement_structural_drawing_and_revision_reference": [],
+      "effective_resource_quantity_material_concrete_curing_water": [],
+      "effective_resource_quantity_material_reinforcement_binding_wire": [],
+      "effective_resource_quantity_material_formwork_stairs_consumables": [],
+      "effective_resource_quantity_material_reinforcement_spacer_chairs": [],
+      "reinforcement_laps_hooks_chairs_connectors_and_accessories_scope": [],
+      "effective_resource_quantity_material_concrete_wet_curing_covering": [],
+      "effective_resource_quantity_material_formwork_stairs_risers_edges": [],
+      "effective_resource_quantity_material_concrete_winter_heating_cable": [],
+      "effective_resource_quantity_material_formwork_stairs_release_agent": [],
+      "effective_resource_quantity_material_concrete_impervious_curing_sheet": [],
+      "effective_resource_quantity_material_concrete_membrane_curing_compound": [],
+      "effective_resource_quantity_material_reinforcement_mechanical_couplers": [],
+      "effective_resource_quantity_concrete_stairs_vibration_04_consumable_brush": [],
+      "effective_resource_quantity_concrete_stairs_vibration_04_consumable_wipes": [],
+      "effective_resource_quantity_material_concrete_construction_joint_waterstop": [],
+      "effective_resource_quantity_material_reinforcement_steel_approved_schedule": [
+        "reinforcement_delivery_v1"
+      ],
+      "effective_resource_quantity_concrete_stairs_vibration_04_consumable_cleaning_water": [],
+      "effective_resource_quantity_material_concrete_membrane_curing_compound_antisol250w_us": [
+        "concrete-curing-antisol250w-us:formula:packages",
+        "concrete-curing-antisol250w-us:formula:remaining",
+        "concrete-curing-antisol250w-us:formula:free",
+        "concrete-curing-antisol250w-us:formula:shortage",
+        "concrete-curing-antisol250w-us:formula:reserve-deficit"
+      ]
+    },
+    "resource_consumer_row_ids": {
+      "finishing_method": [
+        "work:concrete:stairs-primary-surface-finishing",
+        "service:concrete:stairs-finishing-boundary"
+      ],
+      "placement_mobility": [
+        "material:concrete:ready-mix"
+      ],
+      "antisol_surface_ready": [
+        "concrete-curing-antisol250w-us:consumed",
+        "material:concrete:membrane-curing-compound:antisol250w-us",
+        "concrete-curing-antisol250w-us:packages",
+        "concrete-curing-antisol250w-us:remaining",
+        "concrete-curing-antisol250w-us:free",
+        "concrete-curing-antisol250w-us:shortage",
+        "concrete-curing-antisol250w-us:reserve-deficit"
+      ],
+      "placement_winter_mode": [
+        "material:concrete:ready-mix",
+        "material:concrete:winter-heating-cable",
+        "work:concrete:winter-heating",
+        "equipment:concrete:heating-transformer"
+      ],
+      "antisol_usable_stock_l": [
+        "material:concrete:membrane-curing-compound:antisol250w-us",
+        "concrete-curing-antisol250w-us:remaining",
+        "concrete-curing-antisol250w-us:free",
+        "concrete-curing-antisol250w-us:shortage",
+        "concrete-curing-antisol250w-us:reserve-deficit"
+      ],
+      "antisol_material_choice": [
+        "material:concrete:membrane-curing-compound",
+        "concrete-curing-antisol250w-us:consumed",
+        "material:concrete:membrane-curing-compound:antisol250w-us",
+        "concrete-curing-antisol250w-us:packages",
+        "concrete-curing-antisol250w-us:remaining",
+        "concrete-curing-antisol250w-us:free",
+        "concrete-curing-antisol250w-us:shortage",
+        "concrete-curing-antisol250w-us:reserve-deficit"
+      ],
+      "placement_concrete_class": [
+        "material:concrete:ready-mix"
+      ],
+      "placement_pump_machine_h": [
+        "material:concrete:ready-mix",
+        "equipment:concrete:pump"
+      ],
+      "placement_watertightness": [
+        "material:concrete:ready-mix"
+      ],
+      "stairs_concrete_volume_m3": [
+        "material:concrete:ready-mix",
+        "concrete-stairs-vibration:01:control:scope-volume",
+        "concrete-stairs-vibration:01:control:method-applicability",
+        "concrete-stairs-vibration:01:control:equipment-suitability",
+        "concrete-stairs-vibration:02:operation:equipment-check",
+        "concrete-stairs-vibration:02:equipment:electrical-protection",
+        "concrete-stairs-vibration:02:equipment:extension-cable",
+        "concrete-stairs-vibration:03:operation:internal-vibration",
+        "concrete-stairs-vibration:03:labor:vibration-crew",
+        "concrete-stairs-vibration:03:equipment:active-vibrator",
+        "concrete-stairs-vibration:03:equipment:rental-shifts",
+        "concrete-stairs-vibration:03:equipment:backup-vibrator",
+        "concrete-stairs-vibration:03:material:electricity",
+        "concrete-stairs-vibration:04:operation:cleaning",
+        "concrete-stairs-vibration:04:labor:cleaning",
+        "concrete-stairs-vibration:04:consumable:cleaning-water",
+        "concrete-stairs-vibration:04:consumable:brush",
+        "concrete-stairs-vibration:04:consumable:wipes",
+        "concrete-stairs-vibration:04:equipment:wash-water-container",
+        "concrete-stairs-vibration:05:control:quality-record",
+        "concrete-stairs-vibration:05:control:no-concrete-double-count",
+        "concrete-stairs-vibration:06:delivery:mobilization",
+        "concrete-stairs-vibration:06:delivery:wash-water",
+        "work:concrete:stairs-external-curing"
+      ],
+      "antisol_retained_reserve_l": [
+        "material:concrete:membrane-curing-compound:antisol250w-us",
+        "concrete-curing-antisol250w-us:free",
+        "concrete-curing-antisol250w-us:reserve-deficit"
+      ],
+      "formwork_lifting_machine_h": [
+        "equipment:formwork:stairs-lifting"
+      ],
+      "placement_frost_resistance": [
+        "material:concrete:ready-mix"
+      ],
+      "placement_placement_method": [
+        "material:concrete:ready-mix",
+        "equipment:concrete:pump",
+        "equipment:concrete:crane-bucket"
+      ],
+      "vibration_rental_shift_hour": [
+        "concrete-stairs-vibration:03:equipment:rental-shifts"
+      ],
+      "placement_placement_location": [
+        "material:concrete:ready-mix",
+        "concrete-stairs-vibration:01:control:scope-volume",
+        "concrete-stairs-vibration:01:control:method-applicability",
+        "concrete-stairs-vibration:01:control:equipment-suitability",
+        "concrete-stairs-vibration:02:operation:equipment-check",
+        "concrete-stairs-vibration:02:equipment:electrical-protection",
+        "concrete-stairs-vibration:02:equipment:extension-cable",
+        "concrete-stairs-vibration:03:operation:internal-vibration",
+        "concrete-stairs-vibration:03:labor:vibration-crew",
+        "concrete-stairs-vibration:03:equipment:active-vibrator",
+        "concrete-stairs-vibration:03:equipment:rental-shifts",
+        "concrete-stairs-vibration:03:equipment:backup-vibrator",
+        "concrete-stairs-vibration:03:material:electricity",
+        "concrete-stairs-vibration:04:operation:cleaning",
+        "concrete-stairs-vibration:04:labor:cleaning",
+        "concrete-stairs-vibration:04:consumable:cleaning-water",
+        "concrete-stairs-vibration:04:consumable:brush",
+        "concrete-stairs-vibration:04:consumable:wipes",
+        "concrete-stairs-vibration:04:equipment:wash-water-container",
+        "concrete-stairs-vibration:05:control:quality-record",
+        "concrete-stairs-vibration:05:control:no-concrete-double-count",
+        "concrete-stairs-vibration:06:delivery:mobilization",
+        "concrete-stairs-vibration:06:delivery:wash-water",
+        "work:concrete:stairs-external-curing"
+      ],
+      "placement_placement_worker_h": [
+        "material:concrete:ready-mix",
+        "work:concrete:place"
+      ],
+      "placement_product_profile_id": [
+        "material:concrete:ready-mix"
+      ],
+      "formwork_form_release_agent_l": [
+        "material:formwork:stairs-release-agent"
+      ],
+      "formwork_formwork_supply_mode": [
+        "equipment:formwork:stairs-facing",
+        "delivery:formwork:stairs-return"
+      ],
+      "placement_mixture_designation": [
+        "material:concrete:ready-mix"
+      ],
+      "antisol_subsequent_surface_use": [
+        "concrete-curing-antisol250w-us:consumed",
+        "material:concrete:membrane-curing-compound:antisol250w-us",
+        "concrete-curing-antisol250w-us:packages",
+        "concrete-curing-antisol250w-us:remaining",
+        "concrete-curing-antisol250w-us:free",
+        "concrete-curing-antisol250w-us:shortage",
+        "concrete-curing-antisol250w-us:reserve-deficit"
+      ],
+      "finishing_quality_record_count": [
+        "service:concrete:stairs-finishing-quality-record"
+      ],
+      "reinforcement_fabrication_mode": [
+        "material:reinforcement:steel-approved-schedule",
+        "work:reinforcement:site-cut",
+        "work:reinforcement:site-bend",
+        "work:reinforcement:cage-assembly",
+        "equipment:reinforcement:cutting-machine",
+        "equipment:reinforcement:bending-machine",
+        "material:reinforcement:cutting-equipment-included-kit",
+        "material:reinforcement:cutting-equipment-separate-kit",
+        "material:reinforcement:bending-equipment-included-kit",
+        "material:reinforcement:bending-equipment-separate-kit",
+        "material:reinforcement:lifting-equipment-included-kit",
+        "material:reinforcement:lifting-equipment-separate-kit",
+        "delivery:reinforcement:equipment-and-kits"
+      ],
+      "vibration_cleaning_brush_count": [
+        "concrete-stairs-vibration:04:consumable:brush"
+      ],
+      "vibration_quality_record_count": [
+        "concrete-stairs-vibration:05:control:quality-record"
+      ],
+      "external_curing_curing_water_m3": [
+        "material:concrete:curing-water"
+      ],
+      "external_curing_curing_worker_h": [
+        "work:concrete:stairs-external-curing"
+      ],
+      "placement_delivery_pricing_mode": [
+        "material:concrete:ready-mix",
+        "delivery:concrete:ready-mix"
+      ],
+      "reinforcement_lifting_machine_h": [
+        "material:reinforcement:steel-approved-schedule",
+        "equipment:reinforcement:lifting",
+        "material:reinforcement:cutting-equipment-included-kit",
+        "material:reinforcement:cutting-equipment-separate-kit",
+        "material:reinforcement:bending-equipment-included-kit",
+        "material:reinforcement:bending-equipment-separate-kit",
+        "material:reinforcement:lifting-equipment-included-kit",
+        "material:reinforcement:lifting-equipment-separate-kit",
+        "delivery:reinforcement:equipment-and-kits"
+      ],
+      "vibration_active_vibrator_count": [
+        "concrete-stairs-vibration:02:operation:equipment-check",
+        "concrete-stairs-vibration:03:material:electricity",
+        "concrete-stairs-vibration:04:labor:cleaning",
+        "concrete-stairs-vibration:04:consumable:cleaning-water"
+      ],
+      "vibration_backup_vibrator_count": [
+        "concrete-stairs-vibration:03:equipment:backup-vibrator"
+      ],
+      "formwork_formwork_consumables_kg": [
+        "material:formwork:stairs-consumables"
+      ],
+      "formwork_formwork_facing_area_m2": [
+        "equipment:formwork:stairs-facing"
+      ],
+      "placement_crane_bucket_machine_h": [
+        "material:concrete:ready-mix",
+        "equipment:concrete:crane-bucket"
+      ],
+      "placement_winter_heating_cable_m": [
+        "material:concrete:ready-mix",
+        "material:concrete:winter-heating-cable"
+      ],
+      "reinforcement_product_profile_id": [
+        "material:reinforcement:steel-approved-schedule"
+      ],
+      "antisol_minimum_temperature_12h_c": [
+        "concrete-curing-antisol250w-us:consumed",
+        "material:concrete:membrane-curing-compound:antisol250w-us",
+        "concrete-curing-antisol250w-us:packages",
+        "concrete-curing-antisol250w-us:remaining",
+        "concrete-curing-antisol250w-us:free",
+        "concrete-curing-antisol250w-us:shortage",
+        "concrete-curing-antisol250w-us:reserve-deficit"
+      ],
+      "finishing_exposed_surface_area_m2": [
+        "work:concrete:stairs-primary-surface-finishing",
+        "labor:concrete:stairs-primary-surface-finishing",
+        "equipment:concrete:stairs-finishing-hand-tools"
+      ],
+      "placement_construction_joint_mode": [
+        "material:concrete:ready-mix",
+        "material:concrete:construction-joint-waterstop",
+        "work:concrete:construction-joint-waterstop-install",
+        "material:concrete:construction-joint-included-kit",
+        "material:concrete:construction-joint-separate-kit",
+        "equipment:concrete:construction-joint-included-tools",
+        "equipment:concrete:construction-joint-separate-tools",
+        "delivery:concrete:construction-joint-supply"
+      ],
+      "placement_winter_heating_worker_h": [
+        "material:concrete:ready-mix",
+        "work:concrete:winter-heating"
+      ],
+      "reinforcement_nominal_diameter_mm": [
+        "material:reinforcement:steel-approved-schedule"
+      ],
+      "vibration_mobilization_trip_count": [
+        "concrete-stairs-vibration:06:delivery:mobilization"
+      ],
+      "formwork_formwork_framing_length_m": [
+        "equipment:formwork:stairs-framing"
+      ],
+      "reinforcement_bar_size_designation": [
+        "material:reinforcement:steel-approved-schedule"
+      ],
+      "reinforcement_binding_wire_mass_kg": [
+        "material:reinforcement:steel-approved-schedule",
+        "material:reinforcement:binding-wire"
+      ],
+      "external_curing_curing_duration_day": [
+        "work:concrete:stairs-external-curing",
+        "service:concrete:stairs-curing-quality-control"
+      ],
+      "formwork_formwork_assembly_worker_h": [
+        "labor:formwork:stairs-assembly"
+      ],
+      "formwork_formwork_return_trip_count": [
+        "delivery:formwork:stairs-return"
+      ],
+      "formwork_lifting_equipment_required": [
+        "equipment:formwork:stairs-lifting"
+      ],
+      "formwork_temporary_shoring_required": [
+        "equipment:formwork:stairs-temporary-shoring"
+      ],
+      "reinforcement_delivery_pricing_mode": [
+        "material:reinforcement:steel-approved-schedule",
+        "delivery:reinforcement:steel"
+      ],
+      "reinforcement_installation_worker_h": [
+        "material:reinforcement:steel-approved-schedule",
+        "work:reinforcement:install-fix"
+      ],
+      "reinforcement_site_bending_worker_h": [
+        "material:reinforcement:steel-approved-schedule",
+        "work:reinforcement:site-bend"
+      ],
+      "reinforcement_site_cutting_worker_h": [
+        "material:reinforcement:steel-approved-schedule",
+        "work:reinforcement:site-cut"
+      ],
+      "vibration_extension_cable_set_count": [
+        "concrete-stairs-vibration:02:equipment:extension-cable"
+      ],
+      "vibration_vibrator_head_diameter_mm": [
+        "concrete-stairs-vibration:01:control:scope-volume",
+        "concrete-stairs-vibration:01:control:method-applicability",
+        "concrete-stairs-vibration:01:control:equipment-suitability",
+        "concrete-stairs-vibration:02:operation:equipment-check",
+        "concrete-stairs-vibration:02:equipment:electrical-protection",
+        "concrete-stairs-vibration:02:equipment:extension-cable",
+        "concrete-stairs-vibration:03:operation:internal-vibration",
+        "concrete-stairs-vibration:03:labor:vibration-crew",
+        "concrete-stairs-vibration:03:equipment:active-vibrator",
+        "concrete-stairs-vibration:03:equipment:rental-shifts",
+        "concrete-stairs-vibration:03:equipment:backup-vibrator",
+        "concrete-stairs-vibration:03:material:electricity",
+        "concrete-stairs-vibration:04:operation:cleaning",
+        "concrete-stairs-vibration:04:labor:cleaning",
+        "concrete-stairs-vibration:04:consumable:cleaning-water",
+        "concrete-stairs-vibration:04:consumable:brush",
+        "concrete-stairs-vibration:04:consumable:wipes",
+        "concrete-stairs-vibration:04:equipment:wash-water-container",
+        "concrete-stairs-vibration:05:control:quality-record",
+        "concrete-stairs-vibration:05:control:no-concrete-double-count",
+        "concrete-stairs-vibration:06:delivery:mobilization",
+        "concrete-stairs-vibration:06:delivery:wash-water"
+      ],
+      "vibration_vibrator_nominal_power_kw": [
+        "concrete-stairs-vibration:03:material:electricity"
+      ],
+      "external_curing_wet_covering_area_m2": [
+        "material:concrete:wet-curing-covering"
+      ],
+      "formwork_formwork_alignment_worker_h": [
+        "labor:formwork:stairs-alignment"
+      ],
+      "formwork_formwork_stripping_worker_h": [
+        "labor:formwork:stairs-stripping"
+      ],
+      "formwork_formwork_system_designation": [
+        "work:formwork:stairs-measured-contact-area",
+        "equipment:formwork:stairs-framing"
+      ],
+      "formwork_stairs_geometry_description": [
+        "work:formwork:stairs-measured-contact-area"
+      ],
+      "reinforcement_bar_standard_and_grade": [
+        "material:reinforcement:steel-approved-schedule"
+      ],
+      "reinforcement_cage_assembly_worker_h": [
+        "material:reinforcement:steel-approved-schedule",
+        "work:reinforcement:cage-assembly"
+      ],
+      "reinforcement_cover_control_worker_h": [
+        "material:reinforcement:steel-approved-schedule",
+        "work:reinforcement:cover-control"
+      ],
+      "vibration_wash_water_container_count": [
+        "concrete-stairs-vibration:04:equipment:wash-water-container"
+      ],
+      "formwork_formwork_delivery_trip_count": [
+        "delivery:formwork:stairs-outbound"
+      ],
+      "formwork_riser_and_edge_form_length_m": [
+        "material:formwork:stairs-risers-edges"
+      ],
+      "placement_producer_order_confirmation": [
+        "material:concrete:ready-mix"
+      ],
+      "reinforcement_equipment_delivery_mode": [
+        "equipment:reinforcement:cutting-machine",
+        "equipment:reinforcement:bending-machine",
+        "equipment:reinforcement:lifting",
+        "delivery:reinforcement:equipment-and-kits"
+      ],
+      "reinforcement_rebar_bending_machine_h": [
+        "material:reinforcement:steel-approved-schedule",
+        "equipment:reinforcement:bending-machine",
+        "material:reinforcement:cutting-equipment-included-kit",
+        "material:reinforcement:cutting-equipment-separate-kit",
+        "material:reinforcement:bending-equipment-included-kit",
+        "material:reinforcement:bending-equipment-separate-kit",
+        "material:reinforcement:lifting-equipment-included-kit",
+        "material:reinforcement:lifting-equipment-separate-kit",
+        "delivery:reinforcement:equipment-and-kits"
+      ],
+      "reinforcement_rebar_cutting_machine_h": [
+        "material:reinforcement:steel-approved-schedule",
+        "equipment:reinforcement:cutting-machine",
+        "material:reinforcement:cutting-equipment-included-kit",
+        "material:reinforcement:cutting-equipment-separate-kit",
+        "material:reinforcement:bending-equipment-included-kit",
+        "material:reinforcement:bending-equipment-separate-kit",
+        "material:reinforcement:lifting-equipment-included-kit",
+        "material:reinforcement:lifting-equipment-separate-kit",
+        "delivery:reinforcement:equipment-and-kits"
+      ],
+      "vibration_cleaning_wipe_package_count": [
+        "concrete-stairs-vibration:04:consumable:wipes"
+      ],
+      "vibration_selected_vibrator_reference": [
+        "concrete-stairs-vibration:01:control:scope-volume",
+        "concrete-stairs-vibration:01:control:method-applicability",
+        "concrete-stairs-vibration:01:control:equipment-suitability",
+        "concrete-stairs-vibration:02:operation:equipment-check",
+        "concrete-stairs-vibration:02:equipment:electrical-protection",
+        "concrete-stairs-vibration:02:equipment:extension-cable",
+        "concrete-stairs-vibration:03:operation:internal-vibration",
+        "concrete-stairs-vibration:03:labor:vibration-crew",
+        "concrete-stairs-vibration:03:equipment:active-vibrator",
+        "concrete-stairs-vibration:03:equipment:rental-shifts",
+        "concrete-stairs-vibration:03:equipment:backup-vibrator",
+        "concrete-stairs-vibration:03:material:electricity",
+        "concrete-stairs-vibration:04:operation:cleaning",
+        "concrete-stairs-vibration:04:labor:cleaning",
+        "concrete-stairs-vibration:04:consumable:cleaning-water",
+        "concrete-stairs-vibration:04:consumable:brush",
+        "concrete-stairs-vibration:04:consumable:wipes",
+        "concrete-stairs-vibration:04:equipment:wash-water-container",
+        "concrete-stairs-vibration:05:control:quality-record",
+        "concrete-stairs-vibration:05:control:no-concrete-double-count",
+        "concrete-stairs-vibration:06:delivery:mobilization",
+        "concrete-stairs-vibration:06:delivery:wash-water"
+      ],
+      "vibration_vibrator_vibrations_per_min": [
+        "concrete-stairs-vibration:01:control:scope-volume",
+        "concrete-stairs-vibration:01:control:method-applicability",
+        "concrete-stairs-vibration:01:control:equipment-suitability",
+        "concrete-stairs-vibration:02:operation:equipment-check",
+        "concrete-stairs-vibration:02:equipment:electrical-protection",
+        "concrete-stairs-vibration:02:equipment:extension-cable",
+        "concrete-stairs-vibration:03:operation:internal-vibration",
+        "concrete-stairs-vibration:03:labor:vibration-crew",
+        "concrete-stairs-vibration:03:equipment:active-vibrator",
+        "concrete-stairs-vibration:03:equipment:rental-shifts",
+        "concrete-stairs-vibration:03:equipment:backup-vibrator",
+        "concrete-stairs-vibration:03:material:electricity",
+        "concrete-stairs-vibration:04:operation:cleaning",
+        "concrete-stairs-vibration:04:labor:cleaning",
+        "concrete-stairs-vibration:04:consumable:cleaning-water",
+        "concrete-stairs-vibration:04:consumable:brush",
+        "concrete-stairs-vibration:04:consumable:wipes",
+        "concrete-stairs-vibration:04:equipment:wash-water-container",
+        "concrete-stairs-vibration:05:control:quality-record",
+        "concrete-stairs-vibration:05:control:no-concrete-double-count",
+        "concrete-stairs-vibration:06:delivery:mobilization",
+        "concrete-stairs-vibration:06:delivery:wash-water"
+      ],
+      "construction_joint_equipment_machine_h": [
+        "equipment:concrete:construction-joint-included-tools",
+        "equipment:concrete:construction-joint-separate-tools"
+      ],
+      "external_curing_quality_plan_reference": [
+        "service:concrete:stairs-curing-quality-control"
+      ],
+      "finishing_tool_set_coverage_m2_per_set": [
+        "equipment:concrete:stairs-finishing-hand-tools"
+      ],
+      "formwork_formwork_rental_duration_days": [
+        "equipment:formwork:stairs-temporary-shoring"
+      ],
+      "formwork_lifting_equipment_designation": [
+        "equipment:formwork:stairs-lifting"
+      ],
+      "formwork_temporary_shoring_designation": [
+        "equipment:formwork:stairs-temporary-shoring"
+      ],
+      "placement_estimator_approval_reference": [
+        "material:concrete:ready-mix"
+      ],
+      "placement_selected_contingency_percent": [
+        "material:concrete:ready-mix"
+      ],
+      "reinforcement_spacer_chair_designation": [
+        "material:reinforcement:steel-approved-schedule",
+        "material:reinforcement:spacer-chairs"
+      ],
+      "construction_joint_supply_delivery_mode": [
+        "material:concrete:construction-joint-waterstop",
+        "delivery:concrete:construction-joint-supply"
+      ],
+      "placement_concrete_delivery_distance_km": [
+        "material:concrete:ready-mix",
+        "delivery:concrete:ready-mix"
+      ],
+      "placement_heating_transformer_machine_h": [
+        "material:concrete:ready-mix",
+        "equipment:concrete:heating-transformer"
+      ],
+      "vibration_approved_consolidation_method": [
+        "concrete-stairs-vibration:01:control:scope-volume",
+        "concrete-stairs-vibration:01:control:method-applicability",
+        "concrete-stairs-vibration:01:control:equipment-suitability",
+        "concrete-stairs-vibration:02:operation:equipment-check",
+        "concrete-stairs-vibration:02:equipment:electrical-protection",
+        "concrete-stairs-vibration:02:equipment:extension-cable",
+        "concrete-stairs-vibration:03:operation:internal-vibration",
+        "concrete-stairs-vibration:03:labor:vibration-crew",
+        "concrete-stairs-vibration:03:equipment:active-vibrator",
+        "concrete-stairs-vibration:03:equipment:rental-shifts",
+        "concrete-stairs-vibration:03:equipment:backup-vibrator",
+        "concrete-stairs-vibration:03:material:electricity",
+        "concrete-stairs-vibration:04:operation:cleaning",
+        "concrete-stairs-vibration:04:labor:cleaning",
+        "concrete-stairs-vibration:04:consumable:cleaning-water",
+        "concrete-stairs-vibration:04:consumable:brush",
+        "concrete-stairs-vibration:04:consumable:wipes",
+        "concrete-stairs-vibration:04:equipment:wash-water-container",
+        "concrete-stairs-vibration:05:control:quality-record",
+        "concrete-stairs-vibration:05:control:no-concrete-double-count",
+        "concrete-stairs-vibration:06:delivery:mobilization",
+        "concrete-stairs-vibration:06:delivery:wash-water"
+      ],
+      "construction_joint_accessories_set_count": [
+        "material:concrete:construction-joint-included-kit",
+        "material:concrete:construction-joint-separate-kit"
+      ],
+      "external_curing_impervious_sheet_area_m2": [
+        "material:concrete:impervious-curing-sheet"
+      ],
+      "placement_quality_control_document_count": [
+        "material:concrete:ready-mix",
+        "service:concrete:acceptance-control"
+      ],
+      "reinforcement_bar_count_and_cut_length_m": [
+        "material:reinforcement:steel-approved-schedule"
+      ],
+      "reinforcement_binding_wire_specification": [
+        "material:reinforcement:steel-approved-schedule",
+        "material:reinforcement:binding-wire"
+      ],
+      "vibration_wash_water_disposal_trip_count": [
+        "concrete-stairs-vibration:06:delivery:wash-water"
+      ],
+      "construction_joint_equipment_pricing_mode": [
+        "equipment:concrete:construction-joint-included-tools",
+        "equipment:concrete:construction-joint-separate-tools"
+      ],
+      "formwork_temporary_shoring_quantity_piece": [
+        "equipment:formwork:stairs-temporary-shoring"
+      ],
+      "reinforcement_spacer_chair_quantity_piece": [
+        "material:reinforcement:steel-approved-schedule",
+        "material:reinforcement:spacer-chairs"
+      ],
+      "vibration_electrical_protection_set_count": [
+        "concrete-stairs-vibration:02:equipment:electrical-protection"
+      ],
+      "construction_joint_equipment_specification": [
+        "equipment:concrete:construction-joint-included-tools",
+        "equipment:concrete:construction-joint-separate-tools"
+      ],
+      "external_curing_curing_compound_quantity_l": [
+        "material:concrete:membrane-curing-compound"
+      ],
+      "formwork_measured_formwork_contact_area_m2": [
+        "work:formwork:stairs-measured-contact-area"
+      ],
+      "reinforcement_equipment_delivery_reference": [
+        "equipment:reinforcement:cutting-machine",
+        "equipment:reinforcement:bending-machine",
+        "equipment:reinforcement:lifting",
+        "delivery:reinforcement:equipment-and-kits"
+      ],
+      "reinforcement_estimator_approval_reference": [
+        "material:reinforcement:steel-approved-schedule"
+      ],
+      "reinforcement_lifting_equipment_applicable": [
+        "material:reinforcement:steel-approved-schedule",
+        "equipment:reinforcement:lifting",
+        "material:reinforcement:cutting-equipment-included-kit",
+        "material:reinforcement:cutting-equipment-separate-kit",
+        "material:reinforcement:bending-equipment-included-kit",
+        "material:reinforcement:bending-equipment-separate-kit",
+        "material:reinforcement:lifting-equipment-included-kit",
+        "material:reinforcement:lifting-equipment-separate-kit",
+        "delivery:reinforcement:equipment-and-kits"
+      ],
+      "construction_joint_accessories_pricing_mode": [
+        "material:concrete:construction-joint-included-kit",
+        "material:concrete:construction-joint-separate-kit"
+      ],
+      "formwork_formwork_inspection_document_count": [
+        "service:formwork:stairs-inspection"
+      ],
+      "placement_plan_volume_calculation_reference": [
+        "material:concrete:ready-mix"
+      ],
+      "reinforcement_bending_accessories_set_count": [
+        "material:reinforcement:bending-equipment-included-kit",
+        "material:reinforcement:bending-equipment-separate-kit"
+      ],
+      "reinforcement_bending_price_scope_reference": [
+        "equipment:reinforcement:bending-machine",
+        "material:reinforcement:bending-equipment-included-kit",
+        "material:reinforcement:bending-equipment-separate-kit"
+      ],
+      "reinforcement_cutting_accessories_set_count": [
+        "material:reinforcement:cutting-equipment-included-kit",
+        "material:reinforcement:cutting-equipment-separate-kit"
+      ],
+      "reinforcement_cutting_price_scope_reference": [
+        "equipment:reinforcement:cutting-machine",
+        "material:reinforcement:cutting-equipment-included-kit",
+        "material:reinforcement:cutting-equipment-separate-kit"
+      ],
+      "reinforcement_equipment_delivery_trip_count": [
+        "delivery:reinforcement:equipment-and-kits"
+      ],
+      "reinforcement_lifting_accessories_set_count": [
+        "material:reinforcement:lifting-equipment-included-kit",
+        "material:reinforcement:lifting-equipment-separate-kit"
+      ],
+      "reinforcement_lifting_equipment_designation": [
+        "material:reinforcement:steel-approved-schedule",
+        "equipment:reinforcement:lifting",
+        "material:reinforcement:cutting-equipment-included-kit",
+        "material:reinforcement:cutting-equipment-separate-kit",
+        "material:reinforcement:bending-equipment-included-kit",
+        "material:reinforcement:bending-equipment-separate-kit",
+        "material:reinforcement:lifting-equipment-included-kit",
+        "material:reinforcement:lifting-equipment-separate-kit",
+        "delivery:reinforcement:equipment-and-kits"
+      ],
+      "reinforcement_lifting_price_scope_reference": [
+        "equipment:reinforcement:lifting",
+        "material:reinforcement:lifting-equipment-included-kit",
+        "material:reinforcement:lifting-equipment-separate-kit"
+      ],
+      "construction_joint_accessories_specification": [
+        "material:concrete:construction-joint-included-kit",
+        "material:concrete:construction-joint-separate-kit"
+      ],
+      "construction_joint_quality_program_reference": [
+        "work:concrete:construction-joint-waterstop-install"
+      ],
+      "construction_joint_supply_delivery_reference": [
+        "material:concrete:construction-joint-waterstop",
+        "delivery:concrete:construction-joint-supply"
+      ],
+      "external_curing_impervious_sheet_designation": [
+        "material:concrete:impervious-curing-sheet"
+      ],
+      "external_curing_mobilization_scope_reference": [
+        "delivery:concrete:curing-equipment-mobilization"
+      ],
+      "finishing_labor_productivity_m2_per_man_hour": [
+        "labor:concrete:stairs-primary-surface-finishing"
+      ],
+      "formwork_approved_formwork_drawing_reference": [
+        "work:formwork:stairs-measured-contact-area",
+        "service:formwork:stairs-inspection"
+      ],
+      "reinforcement_bar_bending_schedule_reference": [
+        "material:reinforcement:steel-approved-schedule"
+      ],
+      "reinforcement_mechanical_coupler_designation": [
+        "material:reinforcement:steel-approved-schedule",
+        "material:reinforcement:mechanical-couplers"
+      ],
+      "reinforcement_mechanical_couplers_applicable": [
+        "material:reinforcement:steel-approved-schedule",
+        "material:reinforcement:mechanical-couplers"
+      ],
+      "reinforcement_mill_certificate_package_count": [
+        "material:reinforcement:steel-approved-schedule",
+        "service:reinforcement:mill-certificates"
+      ],
+      "reinforcement_unloading_and_storage_worker_h": [
+        "material:reinforcement:steel-approved-schedule",
+        "work:reinforcement:unload-store"
+      ],
+      "vibration_cleaning_labor_h_per_used_vibrator": [
+        "concrete-stairs-vibration:04:labor:cleaning"
+      ],
+      "vibration_labor_productivity_m3_per_man_hour": [
+        "concrete-stairs-vibration:03:labor:vibration-crew"
+      ],
+      "construction_joint_method_statement_reference": [
+        "work:concrete:construction-joint-waterstop-install"
+      ],
+      "construction_joint_supply_delivery_trip_count": [
+        "delivery:concrete:construction-joint-supply"
+      ],
+      "external_curing_curing_water_source_reference": [
+        "material:concrete:curing-water"
+      ],
+      "placement_contingency_selection_justification": [
+        "material:concrete:ready-mix"
+      ],
+      "reinforcement_bending_equipment_specification": [
+        "equipment:reinforcement:bending-machine",
+        "material:reinforcement:bending-equipment-included-kit",
+        "material:reinforcement:bending-equipment-separate-kit"
+      ],
+      "reinforcement_cutting_equipment_specification": [
+        "equipment:reinforcement:cutting-machine",
+        "material:reinforcement:cutting-equipment-included-kit",
+        "material:reinforcement:cutting-equipment-separate-kit"
+      ],
+      "reinforcement_selected_standard_mass_kg_per_m": [
+        "material:reinforcement:steel-approved-schedule"
+      ],
+      "vibration_cleaning_water_m3_per_used_vibrator": [
+        "concrete-stairs-vibration:04:consumable:cleaning-water"
+      ],
+      "external_curing_application_equipment_required": [
+        "equipment:concrete:curing-application",
+        "delivery:concrete:curing-equipment-mobilization"
+      ],
+      "external_curing_exposed_curing_surface_area_m2": [
+        "work:concrete:stairs-external-curing",
+        "concrete-curing-antisol250w-us:consumed",
+        "material:concrete:membrane-curing-compound:antisol250w-us",
+        "concrete-curing-antisol250w-us:packages",
+        "concrete-curing-antisol250w-us:remaining",
+        "concrete-curing-antisol250w-us:free",
+        "concrete-curing-antisol250w-us:shortage",
+        "concrete-curing-antisol250w-us:reserve-deficit"
+      ],
+      "external_curing_quality_control_document_count": [
+        "service:concrete:stairs-curing-quality-control"
+      ],
+      "placement_delivery_schedule_and_truck_capacity": [
+        "material:concrete:ready-mix"
+      ],
+      "reinforcement_bending_accessories_pricing_mode": [
+        "equipment:reinforcement:bending-machine",
+        "material:reinforcement:bending-equipment-included-kit",
+        "material:reinforcement:bending-equipment-separate-kit"
+      ],
+      "reinforcement_cutting_accessories_pricing_mode": [
+        "equipment:reinforcement:cutting-machine",
+        "material:reinforcement:cutting-equipment-included-kit",
+        "material:reinforcement:cutting-equipment-separate-kit"
+      ],
+      "reinforcement_lifting_accessories_pricing_mode": [
+        "equipment:reinforcement:lifting",
+        "material:reinforcement:lifting-equipment-included-kit",
+        "material:reinforcement:lifting-equipment-separate-kit"
+      ],
+      "external_curing_application_equipment_machine_h": [
+        "equipment:concrete:curing-application"
+      ],
+      "external_curing_approved_external_curing_method": [
+        "work:concrete:stairs-external-curing",
+        "material:concrete:curing-water",
+        "material:concrete:wet-curing-covering",
+        "material:concrete:impervious-curing-sheet",
+        "material:concrete:membrane-curing-compound",
+        "concrete-curing-antisol250w-us:consumed",
+        "material:concrete:membrane-curing-compound:antisol250w-us",
+        "concrete-curing-antisol250w-us:packages",
+        "concrete-curing-antisol250w-us:remaining",
+        "concrete-curing-antisol250w-us:free",
+        "concrete-curing-antisol250w-us:shortage",
+        "concrete-curing-antisol250w-us:reserve-deficit"
+      ],
+      "placement_construction_joint_waterstop_length_m": [
+        "material:concrete:ready-mix",
+        "material:concrete:construction-joint-waterstop"
+      ],
+      "reinforcement_bending_accessories_specification": [
+        "material:reinforcement:bending-equipment-included-kit",
+        "material:reinforcement:bending-equipment-separate-kit"
+      ],
+      "reinforcement_cutting_accessories_specification": [
+        "material:reinforcement:cutting-equipment-included-kit",
+        "material:reinforcement:cutting-equipment-separate-kit"
+      ],
+      "reinforcement_lifting_accessories_specification": [
+        "material:reinforcement:lifting-equipment-included-kit",
+        "material:reinforcement:lifting-equipment-separate-kit"
+      ],
+      "reinforcement_mechanical_coupler_quantity_piece": [
+        "material:reinforcement:steel-approved-schedule",
+        "material:reinforcement:mechanical-couplers"
+      ],
+      "reinforcement_reinforcement_delivery_distance_km": [
+        "material:reinforcement:steel-approved-schedule",
+        "delivery:reinforcement:steel"
+      ],
+      "reinforcement_reinforcement_inspection_service_h": [
+        "material:reinforcement:steel-approved-schedule",
+        "service:reinforcement:inspection"
+      ],
+      "reinforcement_shape_straight_bent_curved_or_link": [
+        "material:reinforcement:steel-approved-schedule"
+      ],
+      "external_curing_application_equipment_designation": [
+        "equipment:concrete:curing-application"
+      ],
+      "external_curing_curing_method_statement_reference": [
+        "work:concrete:stairs-external-curing"
+      ],
+      "external_curing_equipment_mobilization_trip_count": [
+        "delivery:concrete:curing-equipment-mobilization"
+      ],
+      "external_curing_wet_covering_material_designation": [
+        "material:concrete:wet-curing-covering"
+      ],
+      "reinforcement_fabrication_allowance_if_documented": [
+        "material:reinforcement:steel-approved-schedule"
+      ],
+      "placement_construction_joint_installation_worker_h": [
+        "material:concrete:ready-mix",
+        "work:concrete:construction-joint-waterstop-install"
+      ],
+      "vibration_machine_productivity_m3_per_machine_hour": [
+        "concrete-stairs-vibration:03:equipment:active-vibrator",
+        "concrete-stairs-vibration:03:equipment:rental-shifts",
+        "concrete-stairs-vibration:03:material:electricity"
+      ],
+      "external_curing_curing_compound_product_designation": [
+        "material:concrete:membrane-curing-compound"
+      ],
+      "external_curing_equipment_mobilization_pricing_mode": [
+        "delivery:concrete:curing-equipment-mobilization"
+      ],
+      "reinforcement_supplier_bundle_or_length_constraints": [
+        "material:reinforcement:steel-approved-schedule"
+      ],
+      "placement_construction_joint_waterstop_specification": [
+        "material:concrete:ready-mix",
+        "material:concrete:construction-joint-waterstop"
+      ],
+      "effective_resource_quantity_material_concrete_ready_mix": [
+        "material:concrete:ready-mix",
+        "delivery:concrete:ready-mix"
+      ],
+      "placement_mix_design_or_project_specification_reference": [
+        "material:concrete:ready-mix",
+        "concrete-stairs-vibration:01:control:scope-volume",
+        "concrete-stairs-vibration:01:control:method-applicability",
+        "concrete-stairs-vibration:01:control:equipment-suitability",
+        "concrete-stairs-vibration:02:operation:equipment-check",
+        "concrete-stairs-vibration:02:equipment:electrical-protection",
+        "concrete-stairs-vibration:02:equipment:extension-cable",
+        "concrete-stairs-vibration:03:operation:internal-vibration",
+        "concrete-stairs-vibration:03:labor:vibration-crew",
+        "concrete-stairs-vibration:03:equipment:active-vibrator",
+        "concrete-stairs-vibration:03:equipment:rental-shifts",
+        "concrete-stairs-vibration:03:equipment:backup-vibrator",
+        "concrete-stairs-vibration:03:material:electricity",
+        "concrete-stairs-vibration:04:operation:cleaning",
+        "concrete-stairs-vibration:04:labor:cleaning",
+        "concrete-stairs-vibration:04:consumable:cleaning-water",
+        "concrete-stairs-vibration:04:consumable:brush",
+        "concrete-stairs-vibration:04:consumable:wipes",
+        "concrete-stairs-vibration:04:equipment:wash-water-container",
+        "concrete-stairs-vibration:05:control:quality-record",
+        "concrete-stairs-vibration:05:control:no-concrete-double-count",
+        "concrete-stairs-vibration:06:delivery:mobilization",
+        "concrete-stairs-vibration:06:delivery:wash-water",
+        "work:concrete:stairs-external-curing"
+      ],
+      "reinforcement_approved_reinforcement_schedule_weight_kg": [
+        "material:reinforcement:steel-approved-schedule"
+      ],
+      "reinforcement_structural_drawing_and_revision_reference": [
+        "material:reinforcement:steel-approved-schedule"
+      ],
+      "effective_resource_quantity_material_concrete_curing_water": [
+        "material:concrete:curing-water"
+      ],
+      "effective_resource_quantity_material_reinforcement_binding_wire": [
+        "material:reinforcement:binding-wire"
+      ],
+      "effective_resource_quantity_material_formwork_stairs_consumables": [
+        "material:formwork:stairs-consumables"
+      ],
+      "effective_resource_quantity_material_reinforcement_spacer_chairs": [
+        "material:reinforcement:spacer-chairs"
+      ],
+      "reinforcement_laps_hooks_chairs_connectors_and_accessories_scope": [
+        "material:reinforcement:steel-approved-schedule"
+      ],
+      "effective_resource_quantity_material_concrete_wet_curing_covering": [
+        "material:concrete:wet-curing-covering"
+      ],
+      "effective_resource_quantity_material_formwork_stairs_risers_edges": [
+        "material:formwork:stairs-risers-edges"
+      ],
+      "effective_resource_quantity_material_concrete_winter_heating_cable": [
+        "material:concrete:winter-heating-cable"
+      ],
+      "effective_resource_quantity_material_formwork_stairs_release_agent": [
+        "material:formwork:stairs-release-agent"
+      ],
+      "effective_resource_quantity_material_concrete_impervious_curing_sheet": [
+        "material:concrete:impervious-curing-sheet"
+      ],
+      "effective_resource_quantity_material_concrete_membrane_curing_compound": [
+        "material:concrete:membrane-curing-compound"
+      ],
+      "effective_resource_quantity_material_reinforcement_mechanical_couplers": [
+        "material:reinforcement:mechanical-couplers"
+      ],
+      "effective_resource_quantity_concrete_stairs_vibration_04_consumable_brush": [
+        "concrete-stairs-vibration:04:consumable:brush"
+      ],
+      "effective_resource_quantity_concrete_stairs_vibration_04_consumable_wipes": [
+        "concrete-stairs-vibration:04:consumable:wipes"
+      ],
+      "effective_resource_quantity_material_concrete_construction_joint_waterstop": [
+        "material:concrete:construction-joint-waterstop"
+      ],
+      "effective_resource_quantity_material_reinforcement_steel_approved_schedule": [
+        "material:reinforcement:steel-approved-schedule",
+        "delivery:reinforcement:steel"
+      ],
+      "effective_resource_quantity_concrete_stairs_vibration_04_consumable_cleaning_water": [
+        "concrete-stairs-vibration:04:consumable:cleaning-water"
+      ],
+      "effective_resource_quantity_material_concrete_membrane_curing_compound_antisol250w_us": [
+        "material:concrete:membrane-curing-compound:antisol250w-us",
+        "concrete-curing-antisol250w-us:packages",
+        "concrete-curing-antisol250w-us:remaining",
+        "concrete-curing-antisol250w-us:free",
+        "concrete-curing-antisol250w-us:shortage",
+        "concrete-curing-antisol250w-us:reserve-deficit"
+      ]
+    },
+    "normative_source_ids": {
+      "finishing_method": [
+        "stairs_complete_installation_standard_s27_23"
+      ],
+      "placement_mobility": [],
+      "antisol_surface_ready": [],
+      "placement_winter_mode": [],
+      "antisol_usable_stock_l": [],
+      "antisol_material_choice": [
+        "manufacturer_sika_antisol250w_us_202006_v0103"
+      ],
+      "placement_concrete_class": [],
+      "placement_pump_machine_h": [],
+      "placement_watertightness": [],
+      "stairs_concrete_volume_m3": [],
+      "antisol_retained_reserve_l": [],
+      "formwork_lifting_machine_h": [],
+      "placement_frost_resistance": [],
+      "placement_placement_method": [],
+      "vibration_rental_shift_hour": [
+        "stairs_complete_installation_standard_s27_23"
+      ],
+      "placement_placement_location": [],
+      "placement_placement_worker_h": [],
+      "placement_product_profile_id": [],
+      "formwork_form_release_agent_l": [],
+      "formwork_formwork_supply_mode": [],
+      "placement_mixture_designation": [],
+      "antisol_subsequent_surface_use": [],
+      "finishing_quality_record_count": [
+        "stairs_complete_installation_standard_s27_23"
+      ],
+      "reinforcement_fabrication_mode": [],
+      "vibration_cleaning_brush_count": [
+        "stairs_complete_installation_standard_s27_23"
+      ],
+      "vibration_quality_record_count": [
+        "stairs_complete_installation_standard_s27_23"
+      ],
+      "external_curing_curing_water_m3": [],
+      "external_curing_curing_worker_h": [],
+      "placement_delivery_pricing_mode": [],
+      "reinforcement_lifting_machine_h": [],
+      "vibration_active_vibrator_count": [
+        "stairs_complete_installation_standard_s27_23"
+      ],
+      "vibration_backup_vibrator_count": [
+        "stairs_complete_installation_standard_s27_23"
+      ],
+      "formwork_formwork_consumables_kg": [],
+      "formwork_formwork_facing_area_m2": [],
+      "placement_crane_bucket_machine_h": [],
+      "placement_winter_heating_cable_m": [],
+      "reinforcement_product_profile_id": [],
+      "antisol_minimum_temperature_12h_c": [],
+      "finishing_exposed_surface_area_m2": [],
+      "placement_construction_joint_mode": [],
+      "placement_winter_heating_worker_h": [],
+      "reinforcement_nominal_diameter_mm": [],
+      "vibration_mobilization_trip_count": [
+        "stairs_complete_installation_standard_s27_23"
+      ],
+      "formwork_formwork_framing_length_m": [],
+      "reinforcement_bar_size_designation": [],
+      "reinforcement_binding_wire_mass_kg": [],
+      "external_curing_curing_duration_day": [],
+      "formwork_formwork_assembly_worker_h": [],
+      "formwork_formwork_return_trip_count": [],
+      "formwork_lifting_equipment_required": [],
+      "formwork_temporary_shoring_required": [],
+      "reinforcement_delivery_pricing_mode": [],
+      "reinforcement_installation_worker_h": [],
+      "reinforcement_site_bending_worker_h": [],
+      "reinforcement_site_cutting_worker_h": [],
+      "vibration_extension_cable_set_count": [
+        "stairs_complete_installation_standard_s27_23"
+      ],
+      "vibration_vibrator_head_diameter_mm": [
+        "stairs_complete_installation_standard_s27_23"
+      ],
+      "vibration_vibrator_nominal_power_kw": [
+        "stairs_complete_installation_standard_s27_23"
+      ],
+      "external_curing_wet_covering_area_m2": [],
+      "formwork_formwork_alignment_worker_h": [],
+      "formwork_formwork_stripping_worker_h": [],
+      "formwork_formwork_system_designation": [],
+      "formwork_stairs_geometry_description": [],
+      "reinforcement_bar_standard_and_grade": [],
+      "reinforcement_cage_assembly_worker_h": [],
+      "reinforcement_cover_control_worker_h": [],
+      "vibration_wash_water_container_count": [
+        "stairs_complete_installation_standard_s27_23"
+      ],
+      "formwork_formwork_delivery_trip_count": [],
+      "formwork_riser_and_edge_form_length_m": [],
+      "placement_producer_order_confirmation": [],
+      "reinforcement_equipment_delivery_mode": [],
+      "reinforcement_rebar_bending_machine_h": [],
+      "reinforcement_rebar_cutting_machine_h": [],
+      "vibration_cleaning_wipe_package_count": [
+        "stairs_complete_installation_standard_s27_23"
+      ],
+      "vibration_selected_vibrator_reference": [
+        "stairs_complete_installation_standard_s27_23"
+      ],
+      "vibration_vibrator_vibrations_per_min": [
+        "stairs_complete_installation_standard_s27_23"
+      ],
+      "construction_joint_equipment_machine_h": [],
+      "external_curing_quality_plan_reference": [],
+      "finishing_tool_set_coverage_m2_per_set": [
+        "stairs_complete_installation_standard_s27_23"
+      ],
+      "formwork_formwork_rental_duration_days": [],
+      "formwork_lifting_equipment_designation": [],
+      "formwork_temporary_shoring_designation": [],
+      "placement_estimator_approval_reference": [],
+      "placement_selected_contingency_percent": [],
+      "reinforcement_spacer_chair_designation": [],
+      "construction_joint_supply_delivery_mode": [],
+      "placement_concrete_delivery_distance_km": [],
+      "placement_heating_transformer_machine_h": [],
+      "vibration_approved_consolidation_method": [
+        "stairs_complete_installation_standard_s27_23"
+      ],
+      "construction_joint_accessories_set_count": [],
+      "external_curing_impervious_sheet_area_m2": [],
+      "placement_quality_control_document_count": [],
+      "reinforcement_bar_count_and_cut_length_m": [],
+      "reinforcement_binding_wire_specification": [],
+      "vibration_wash_water_disposal_trip_count": [
+        "stairs_complete_installation_standard_s27_23"
+      ],
+      "construction_joint_equipment_pricing_mode": [],
+      "formwork_temporary_shoring_quantity_piece": [],
+      "reinforcement_spacer_chair_quantity_piece": [],
+      "vibration_electrical_protection_set_count": [
+        "stairs_complete_installation_standard_s27_23"
+      ],
+      "construction_joint_equipment_specification": [],
+      "external_curing_curing_compound_quantity_l": [],
+      "formwork_measured_formwork_contact_area_m2": [],
+      "reinforcement_equipment_delivery_reference": [],
+      "reinforcement_estimator_approval_reference": [],
+      "reinforcement_lifting_equipment_applicable": [],
+      "construction_joint_accessories_pricing_mode": [],
+      "formwork_formwork_inspection_document_count": [],
+      "placement_plan_volume_calculation_reference": [],
+      "reinforcement_bending_accessories_set_count": [],
+      "reinforcement_bending_price_scope_reference": [],
+      "reinforcement_cutting_accessories_set_count": [],
+      "reinforcement_cutting_price_scope_reference": [],
+      "reinforcement_equipment_delivery_trip_count": [],
+      "reinforcement_lifting_accessories_set_count": [],
+      "reinforcement_lifting_equipment_designation": [],
+      "reinforcement_lifting_price_scope_reference": [],
+      "construction_joint_accessories_specification": [],
+      "construction_joint_quality_program_reference": [],
+      "construction_joint_supply_delivery_reference": [],
+      "external_curing_impervious_sheet_designation": [],
+      "external_curing_mobilization_scope_reference": [],
+      "finishing_labor_productivity_m2_per_man_hour": [
+        "stairs_complete_installation_standard_s27_23"
+      ],
+      "formwork_approved_formwork_drawing_reference": [],
+      "reinforcement_bar_bending_schedule_reference": [],
+      "reinforcement_mechanical_coupler_designation": [],
+      "reinforcement_mechanical_couplers_applicable": [],
+      "reinforcement_mill_certificate_package_count": [],
+      "reinforcement_unloading_and_storage_worker_h": [],
+      "vibration_cleaning_labor_h_per_used_vibrator": [
+        "stairs_complete_installation_standard_s27_23"
+      ],
+      "vibration_labor_productivity_m3_per_man_hour": [
+        "stairs_complete_installation_standard_s27_23"
+      ],
+      "construction_joint_method_statement_reference": [],
+      "construction_joint_supply_delivery_trip_count": [],
+      "external_curing_curing_water_source_reference": [],
+      "placement_contingency_selection_justification": [],
+      "reinforcement_bending_equipment_specification": [],
+      "reinforcement_cutting_equipment_specification": [],
+      "reinforcement_selected_standard_mass_kg_per_m": [],
+      "vibration_cleaning_water_m3_per_used_vibrator": [
+        "stairs_complete_installation_standard_s27_23"
+      ],
+      "external_curing_application_equipment_required": [],
+      "external_curing_exposed_curing_surface_area_m2": [],
+      "external_curing_quality_control_document_count": [],
+      "placement_delivery_schedule_and_truck_capacity": [],
+      "reinforcement_bending_accessories_pricing_mode": [],
+      "reinforcement_cutting_accessories_pricing_mode": [],
+      "reinforcement_lifting_accessories_pricing_mode": [],
+      "external_curing_application_equipment_machine_h": [],
+      "external_curing_approved_external_curing_method": [],
+      "placement_construction_joint_waterstop_length_m": [],
+      "reinforcement_bending_accessories_specification": [],
+      "reinforcement_cutting_accessories_specification": [],
+      "reinforcement_lifting_accessories_specification": [],
+      "reinforcement_mechanical_coupler_quantity_piece": [],
+      "reinforcement_reinforcement_delivery_distance_km": [],
+      "reinforcement_reinforcement_inspection_service_h": [],
+      "reinforcement_shape_straight_bent_curved_or_link": [],
+      "external_curing_application_equipment_designation": [],
+      "external_curing_curing_method_statement_reference": [],
+      "external_curing_equipment_mobilization_trip_count": [],
+      "external_curing_wet_covering_material_designation": [],
+      "reinforcement_fabrication_allowance_if_documented": [],
+      "placement_construction_joint_installation_worker_h": [],
+      "vibration_machine_productivity_m3_per_machine_hour": [
+        "stairs_complete_installation_standard_s27_23"
+      ],
+      "external_curing_curing_compound_product_designation": [],
+      "external_curing_equipment_mobilization_pricing_mode": [],
+      "reinforcement_supplier_bundle_or_length_constraints": [],
+      "placement_construction_joint_waterstop_specification": [],
+      "effective_resource_quantity_material_concrete_ready_mix": [],
+      "placement_mix_design_or_project_specification_reference": [],
+      "reinforcement_approved_reinforcement_schedule_weight_kg": [],
+      "reinforcement_structural_drawing_and_revision_reference": [],
+      "effective_resource_quantity_material_concrete_curing_water": [],
+      "effective_resource_quantity_material_reinforcement_binding_wire": [],
+      "effective_resource_quantity_material_formwork_stairs_consumables": [],
+      "effective_resource_quantity_material_reinforcement_spacer_chairs": [],
+      "reinforcement_laps_hooks_chairs_connectors_and_accessories_scope": [],
+      "effective_resource_quantity_material_concrete_wet_curing_covering": [],
+      "effective_resource_quantity_material_formwork_stairs_risers_edges": [],
+      "effective_resource_quantity_material_concrete_winter_heating_cable": [],
+      "effective_resource_quantity_material_formwork_stairs_release_agent": [],
+      "effective_resource_quantity_material_concrete_impervious_curing_sheet": [],
+      "effective_resource_quantity_material_concrete_membrane_curing_compound": [],
+      "effective_resource_quantity_material_reinforcement_mechanical_couplers": [],
+      "effective_resource_quantity_concrete_stairs_vibration_04_consumable_brush": [],
+      "effective_resource_quantity_concrete_stairs_vibration_04_consumable_wipes": [],
+      "effective_resource_quantity_material_concrete_construction_joint_waterstop": [],
+      "effective_resource_quantity_material_reinforcement_steel_approved_schedule": [],
+      "effective_resource_quantity_concrete_stairs_vibration_04_consumable_cleaning_water": [],
+      "effective_resource_quantity_material_concrete_membrane_curing_compound_antisol250w_us": []
+    },
+    "guide_provenance_ru": {
+      "finishing_method": "Видимое плановое допущение; замените значением ППР или ведомости исполнителя.",
+      "placement_mobility": "Подвижность бетонной смеси: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "antisol_surface_ready": "Горизонталь: свободная вода сошла, поверхность не повреждается при проходе. Вертикаль: наносить сразу после снятия опалубки. Конденсат исключён до высыхания; подготовка и защита смежных участков остаются самостоятельными потребностями. Условия пока неизвестны — оставьте пустым.",
+      "placement_winter_mode": "Зимнее бетонирование: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "antisol_usable_stock_l": "Только пригодный материал точно выбранного исполнения: исходная невскрытая тара, срок не более 12 месяцев и сухое хранение при 60–80 °F по паспорту. Когда-либо замороженный материал использовать нельзя. Негодный или непроверенный запас не вычитайте из закупки. Если пригодное наличие неизвестно, оставьте пустым: потребность всё равно рассчитывается.",
+      "antisol_material_choice": "Выбирайте Antisol только для фактически предусмотренного продукта исполнения США по паспорту June 2020 Version 01.03. Вся введённая обрабатываемая площадь должна быть свежим бетоном с однородной отделкой щёткой, без гладких, смешанных или ранее обработанных участков. Для другого исполнения или поверхности сохраняется проектная ветвь. Норму расхода и упаковку приложение получает само.",
+      "placement_concrete_class": "Класс бетона: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "placement_pump_machine_h": "Работа автобетононасоса: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "placement_watertightness": "Марка бетона по водонепроницаемости: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "stairs_concrete_volume_m3": "Укажите подтверждённый объём бетона маршей и площадок в м³; приложение не выводит его из одного числа ступеней.",
+      "antisol_retained_reserve_l": "Пригодный запас, который нужно оставить после работ, в литрах. Это условие заказа, а не добавочная норма расхода. Ноль вводите только если сохраняемый запас действительно не нужен.",
+      "formwork_lifting_machine_h": "Машино-время подъёмного оборудования: укажите прямое значение из проекта, ведомости комплекта или предложения поставщика.",
+      "placement_frost_resistance": "Марка бетона по морозостойкости: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "placement_placement_method": "Способ подачи бетона: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "vibration_rental_shift_hour": "Заменить условиями поставщика.",
+      "placement_placement_location": "Участок укладки бетона: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "placement_placement_worker_h": "Трудозатраты на укладку и уплотнение: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "placement_product_profile_id": "Правило заказа товарного бетона: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "formwork_form_release_agent_l": "Разделительный состав по проектной ведомости: укажите прямое значение из проекта, ведомости комплекта или предложения поставщика.",
+      "formwork_formwork_supply_mode": "Способ обеспечения комплектом опалубки: укажите прямое значение из проекта, ведомости комплекта или предложения поставщика.",
+      "placement_mixture_designation": "Обозначение бетонной смеси: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "antisol_subsequent_surface_use": "Данная ветвь пока покрывает поверхности без приклеиваемой отделки, гидроизоляции и питьевого контакта. Если они предусмотрены либо неизвестны, нужны отдельные подтверждения совместимости; не выбирайте это условие автоматически.",
+      "finishing_quality_record_count": "Видимое плановое допущение; замените значением ППР или ведомости исполнителя.",
+      "reinforcement_fabrication_mode": "Способ изготовления арматурных каркасов: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "vibration_cleaning_brush_count": "Видимое количество расходной оснастки.",
+      "vibration_quality_record_count": "Видимый комплект записей по захватке.",
+      "external_curing_curing_water_m3": "Вода для утверждённого способа ухода: укажите значение из утверждённой проектной спецификации, технологической карты, ведомости ресурсов или коммерческого предложения.",
+      "external_curing_curing_worker_h": "Трудозатраты на уход за бетонной плитой: укажите значение из утверждённой проектной спецификации, технологической карты, ведомости ресурсов или коммерческого предложения.",
+      "placement_delivery_pricing_mode": "Учёт доставки бетонной смеси: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_lifting_machine_h": "Работа подъёмного оборудования: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "vibration_active_vibrator_count": "Видимое оснащение захватки.",
+      "vibration_backup_vibrator_count": "Видимый резерв; уточнить по непрерывности бетонирования.",
+      "formwork_formwork_consumables_kg": "Крепёж и расходные материалы по ведомости: укажите прямое значение из проекта, ведомости комплекта или предложения поставщика.",
+      "formwork_formwork_facing_area_m2": "Площадь щитов или палубы по проектной ведомости: укажите прямое значение из проекта, ведомости комплекта или предложения поставщика.",
+      "placement_crane_bucket_machine_h": "Работа крана с бадьёй: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "placement_winter_heating_cable_m": "Прогревочный кабель: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_product_profile_id": "Правило определения массы арматуры: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "antisol_minimum_temperature_12h_c": "Наименьшая подтверждённая температура поверхности и воздуха при нанесении и в следующие 12 часов. При 7 °C и ниже этот состав наносить нельзя. Это фактическое условие объекта, расходную норму вводить не нужно.",
+      "finishing_exposed_surface_area_m2": "Укажите открытую площадь проступей, площадок и иных поверхностей по геометрии проекта.",
+      "placement_construction_joint_mode": "Рабочий шов бетонирования: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "placement_winter_heating_worker_h": "Трудозатраты на электропрогрев: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_nominal_diameter_mm": "Номинальный диаметр стержня: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "vibration_mobilization_trip_count": "Заменить маршрутом и предложением поставщика.",
+      "formwork_formwork_framing_length_m": "Длина несущих ригелей и брусьев по ведомости: укажите прямое значение из проекта, ведомости комплекта или предложения поставщика.",
+      "reinforcement_bar_size_designation": "Обозначение размера стержня: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_binding_wire_mass_kg": "Масса вязальной проволоки: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "external_curing_curing_duration_day": "Продолжительность ухода по проектной спецификации: укажите значение из утверждённой проектной спецификации, технологической карты, ведомости ресурсов или коммерческого предложения.",
+      "formwork_formwork_assembly_worker_h": "Трудозатраты на сборку опалубки: укажите прямое значение из проекта, ведомости комплекта или предложения поставщика.",
+      "formwork_formwork_return_trip_count": "Количество рейсов возврата арендной опалубки: укажите прямое значение из проекта, ведомости комплекта или предложения поставщика.",
+      "formwork_lifting_equipment_required": "Требуется подъёмное оборудование для опалубки: укажите прямое значение из проекта, ведомости комплекта или предложения поставщика.",
+      "formwork_temporary_shoring_required": "Требуется временное поддерживание или стойки: укажите прямое значение из проекта, ведомости комплекта или предложения поставщика.",
+      "reinforcement_delivery_pricing_mode": "Учёт доставки арматуры: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_installation_worker_h": "Трудозатраты на установку и вязку каркасов: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_site_bending_worker_h": "Трудозатраты на гибку стержней: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_site_cutting_worker_h": "Трудозатраты на резку стержней: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "vibration_extension_cable_set_count": "Уточнить по расстоянию до точки питания.",
+      "vibration_vibrator_head_diameter_mm": "Официальная карточка IRFU45: 45 мм.",
+      "vibration_vibrator_nominal_power_kw": "Официальная карточка IRFU45: 0,88 кВт.",
+      "external_curing_wet_covering_area_m2": "Количество влажного покрытия по проектной ведомости: укажите значение из утверждённой проектной спецификации, технологической карты, ведомости ресурсов или коммерческого предложения.",
+      "formwork_formwork_alignment_worker_h": "Трудозатраты на выверку и закрепление: укажите прямое значение из проекта, ведомости комплекта или предложения поставщика.",
+      "formwork_formwork_stripping_worker_h": "Трудозатраты на распалубку: укажите прямое значение из проекта, ведомости комплекта или предложения поставщика.",
+      "formwork_formwork_system_designation": "Проектное обозначение системы опалубки лестницы: укажите прямое значение из проекта, ведомости комплекта или предложения поставщика.",
+      "formwork_stairs_geometry_description": "Геометрия марша, ступеней и площадок: укажите прямое значение из проекта, ведомости комплекта или предложения поставщика.",
+      "reinforcement_bar_standard_and_grade": "Стандарт и класс арматуры: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_cage_assembly_worker_h": "Трудозатраты на сборку каркасов: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_cover_control_worker_h": "Трудозатраты на контроль защитного слоя и геометрии: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "vibration_wash_water_container_count": "Уточнить по экологическому ППР.",
+      "formwork_formwork_delivery_trip_count": "Количество рейсов доставки опалубки: укажите прямое значение из проекта, ведомости комплекта или предложения поставщика.",
+      "formwork_riser_and_edge_form_length_m": "Длина форм ступеней, подступенков и кромок: укажите прямое значение из проекта, ведомости комплекта или предложения поставщика.",
+      "placement_producer_order_confirmation": "Подтверждение заказа производителем: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_equipment_delivery_mode": "Оборудование армирования и комплекты: перевозка/возврат включены в выбранные ставки или отдельные подтверждённые рейсы: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "reinforcement_rebar_bending_machine_h": "Работа станка гибки арматуры: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_rebar_cutting_machine_h": "Работа станка резки арматуры: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "vibration_cleaning_wipe_package_count": "Видимое количество для очистки оборудования.",
+      "vibration_selected_vibrator_reference": "Подтвердить модель по ППР и армированию.",
+      "vibration_vibrator_vibrations_per_min": "Официальная карточка IRFU45: 12 000 1/мин.",
+      "construction_joint_equipment_machine_h": "Фактическое машинное время монтажа по проектной ведомости: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "external_curing_quality_plan_reference": "План контроля качества ухода за бетоном: укажите значение из утверждённой проектной спецификации, технологической карты, ведомости ресурсов или коммерческого предложения.",
+      "finishing_tool_set_coverage_m2_per_set": "Видимое плановое допущение; замените значением ППР или ведомости исполнителя.",
+      "formwork_formwork_rental_duration_days": "Проектный срок аренды комплекта: укажите прямое значение из проекта, ведомости комплекта или предложения поставщика.",
+      "formwork_lifting_equipment_designation": "Подъёмное оборудование по ППР: укажите прямое значение из проекта, ведомости комплекта или предложения поставщика.",
+      "formwork_temporary_shoring_designation": "Стойки и поддерживающая система по проекту: укажите прямое значение из проекта, ведомости комплекта или предложения поставщика.",
+      "placement_estimator_approval_reference": "Согласование расчёта сметчиком: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "placement_selected_contingency_percent": "Обоснованный резерв заказа бетона: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_spacer_chair_designation": "Обозначение фиксаторов защитного слоя: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "construction_joint_supply_delivery_mode": "Перевозка гидрошпонки и полного комплекта включена в поставку или подтверждена отдельно: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "placement_concrete_delivery_distance_km": "Расстояние доставки бетонной смеси: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "placement_heating_transformer_machine_h": "Работа трансформатора прогрева: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "vibration_approved_consolidation_method": "Профиль применим к глубинному вибрированию.",
+      "construction_joint_accessories_set_count": "Фактическое число одинаковых полных комплектов гидрошпонки: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "external_curing_impervious_sheet_area_m2": "Количество влагонепроницаемого листового материала: укажите значение из утверждённой проектной спецификации, технологической карты, ведомости ресурсов или коммерческого предложения.",
+      "placement_quality_control_document_count": "Комплект приёмочного контроля и журнала бетонирования: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_bar_count_and_cut_length_m": "Число стержней и длины резки: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_binding_wire_specification": "Спецификация вязальной проволоки: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "vibration_wash_water_disposal_trip_count": "Уточнить допустимый способ обращения.",
+      "construction_joint_equipment_pricing_mode": "Оборудование монтажа: проектом не требуется, включено в монтажный труд или оплачивается отдельно: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "formwork_temporary_shoring_quantity_piece": "Количество стоек и элементов поддерживания: укажите прямое значение из проекта, ведомости комплекта или предложения поставщика.",
+      "reinforcement_spacer_chair_quantity_piece": "Количество фиксаторов защитного слоя: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "vibration_electrical_protection_set_count": "Уточнить по временной электросети.",
+      "construction_joint_equipment_specification": "Подтверждённое оборудование по выбранному способу монтажа и соединения гидрошпонки: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "external_curing_curing_compound_quantity_l": "Количество мембранного состава по проектной ведомости: укажите значение из утверждённой проектной спецификации, технологической карты, ведомости ресурсов или коммерческого предложения.",
+      "formwork_measured_formwork_contact_area_m2": "Измерьте фактическую площадь контакта опалубки с бетоном по проектной геометрии лестницы; коэффициент м²/м³ не применяется.",
+      "reinforcement_equipment_delivery_reference": "Подтверждённая перевозка/возврат оборудования армирования: водитель, маршрут, состав груза, владельцы оплаты; отдельно от доставки стали: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "reinforcement_estimator_approval_reference": "Согласование ведомости сметчиком: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_lifting_equipment_applicable": "Подъёмное оборудование применяется: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "construction_joint_accessories_pricing_mode": "Комплект гидрошпонки включён в цену материала или поставляется отдельно: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "formwork_formwork_inspection_document_count": "Количество комплектов контроля опалубки: укажите прямое значение из проекта, ведомости комплекта или предложения поставщика.",
+      "placement_plan_volume_calculation_reference": "Расчёт проектного объёма: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_bending_accessories_set_count": "Станок гибки арматуры: фактическое целое число одинаковых полных комплектов: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "reinforcement_bending_price_scope_reference": "Станок гибки арматуры: подтверждённая ставка включает энергию работы; оператор в существующем труде, комплект и перевозка по указанным условиям без двойной оплаты: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "reinforcement_cutting_accessories_set_count": "Станок резки арматуры: фактическое целое число одинаковых полных комплектов: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "reinforcement_cutting_price_scope_reference": "Станок резки арматуры: подтверждённая ставка включает энергию работы; оператор в существующем труде, комплект и перевозка по указанным условиям без двойной оплаты: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "reinforcement_equipment_delivery_trip_count": "Фактическое число отдельно подтверждённых рейсов оборудования армирования и его комплектов: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "reinforcement_lifting_accessories_set_count": "Подъёмное оборудование армирования: фактическое целое число одинаковых полных комплектов: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "reinforcement_lifting_equipment_designation": "Обозначение подъёмного оборудования: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_lifting_price_scope_reference": "Подъёмное оборудование армирования: подтверждённая ставка включает энергию работы; оператор в существующем труде, комплект и перевозка по указанным условиям без двойной оплаты: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "construction_joint_accessories_specification": "Состав одного полного комплекта: совместимые крепления, соединения и расходники, количество каждого по проекту: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "construction_joint_quality_program_reference": "План и запись контроля рабочего шва в действующей программе приёмки бетонирования: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "construction_joint_supply_delivery_reference": "Подтверждённая перевозка гидрошпонки и комплекта: состав, маршрут и границы включения в цену: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "external_curing_impervious_sheet_designation": "Влагонепроницаемый листовой материал по проектной спецификации: укажите значение из утверждённой проектной спецификации, технологической карты, ведомости ресурсов или коммерческого предложения.",
+      "external_curing_mobilization_scope_reference": "Маршрут и граница мобилизации оборудования для ухода: укажите значение из утверждённой проектной спецификации, технологической карты, ведомости ресурсов или коммерческого предложения.",
+      "finishing_labor_productivity_m2_per_man_hour": "Видимое плановое допущение; замените значением ППР или ведомости исполнителя.",
+      "formwork_approved_formwork_drawing_reference": "Ссылка на проект опалубки лестницы: укажите прямое значение из проекта, ведомости комплекта или предложения поставщика.",
+      "reinforcement_bar_bending_schedule_reference": "Утверждённая ведомость стержней: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_mechanical_coupler_designation": "Обозначение механических муфт: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_mechanical_couplers_applicable": "Механические муфты применяются: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_mill_certificate_package_count": "Комплект сертификатов на арматурную сталь: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_unloading_and_storage_worker_h": "Трудозатраты на разгрузку и складирование: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "vibration_cleaning_labor_h_per_used_vibrator": "Видимое допущение ППР; не равно времени работы вибратора.",
+      "vibration_labor_productivity_m3_per_man_hour": "Видимое допущение ППР; заменить утверждённой нормой проекта.",
+      "construction_joint_method_statement_reference": "Проектный способ монтажа, крепления и соединения гидрошпонки: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "construction_joint_supply_delivery_trip_count": "Фактическое число отдельных рейсов гидрошпонки и комплекта: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "external_curing_curing_water_source_reference": "Источник и требуемое качество воды для ухода: укажите значение из утверждённой проектной спецификации, технологической карты, ведомости ресурсов или коммерческого предложения.",
+      "placement_contingency_selection_justification": "Обоснование резерва бетона: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_bending_equipment_specification": "Станок гибки арматуры: конкретная спецификация и совместимость с утверждённой ведомостью стержней: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "reinforcement_cutting_equipment_specification": "Станок резки арматуры: конкретная спецификация и совместимость с утверждённой ведомостью стержней: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "reinforcement_selected_standard_mass_kg_per_m": "Масса погонного метра по выбранной таблице: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "vibration_cleaning_water_m3_per_used_vibrator": "Видимое допущение на одну очистку; не умножается на машино-часы.",
+      "external_curing_application_equipment_required": "Требуется отдельное оборудование для нанесения или подачи: укажите значение из утверждённой проектной спецификации, технологической карты, ведомости ресурсов или коммерческого предложения.",
+      "external_curing_exposed_curing_surface_area_m2": "Открытая площадь поверхности бетонной плиты для ухода: укажите значение из утверждённой проектной спецификации, технологической карты, ведомости ресурсов или коммерческого предложения.",
+      "external_curing_quality_control_document_count": "Комплект записей контроля ухода за бетоном: укажите значение из утверждённой проектной спецификации, технологической карты, ведомости ресурсов или коммерческого предложения.",
+      "placement_delivery_schedule_and_truck_capacity": "График поставки и вместимость миксеров: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_bending_accessories_pricing_mode": "Станок гибки арматуры: полный комплект инструмента и расходников включён в ставку оборудования или поставляется отдельно: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "reinforcement_cutting_accessories_pricing_mode": "Станок резки арматуры: полный комплект инструмента и расходников включён в ставку оборудования или поставляется отдельно: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "reinforcement_lifting_accessories_pricing_mode": "Подъёмное оборудование армирования: полный комплект инструмента и расходников включён в ставку оборудования или поставляется отдельно: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "external_curing_application_equipment_machine_h": "Машино-время оборудования для ухода: укажите значение из утверждённой проектной спецификации, технологической карты, ведомости ресурсов или коммерческого предложения.",
+      "external_curing_approved_external_curing_method": "Утверждённый способ внешнего ухода за бетоном: укажите значение из утверждённой проектной спецификации, технологической карты, ведомости ресурсов или коммерческого предложения.",
+      "placement_construction_joint_waterstop_length_m": "Длина гидрошпонки рабочего шва: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_bending_accessories_specification": "Станок гибки арматуры: полный совместимый инструмент/оснастка/расходники и фактическое количество каждого изделия в одном комплекте: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "reinforcement_cutting_accessories_specification": "Станок резки арматуры: полный совместимый инструмент/оснастка/расходники и фактическое количество каждого изделия в одном комплекте: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "reinforcement_lifting_accessories_specification": "Подъёмное оборудование армирования: полный совместимый инструмент/оснастка/расходники и фактическое количество каждого изделия в одном комплекте: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "reinforcement_mechanical_coupler_quantity_piece": "Количество механических муфт: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_reinforcement_delivery_distance_km": "Расстояние доставки арматуры: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_reinforcement_inspection_service_h": "Инженерный контроль армирования: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_shape_straight_bent_curved_or_link": "Форма стержня: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "external_curing_application_equipment_designation": "Оборудование по утверждённой ведомости: укажите значение из утверждённой проектной спецификации, технологической карты, ведомости ресурсов или коммерческого предложения.",
+      "external_curing_curing_method_statement_reference": "Утверждённая технологическая карта ухода за бетоном: укажите значение из утверждённой проектной спецификации, технологической карты, ведомости ресурсов или коммерческого предложения.",
+      "external_curing_equipment_mobilization_trip_count": "Рейсы доставки и возврата оборудования для ухода: укажите значение из утверждённой проектной спецификации, технологической карты, ведомости ресурсов или коммерческого предложения.",
+      "external_curing_wet_covering_material_designation": "Материал влажного покрытия по проектной спецификации: укажите значение из утверждённой проектной спецификации, технологической карты, ведомости ресурсов или коммерческого предложения.",
+      "reinforcement_fabrication_allowance_if_documented": "Документированный запас изготовления: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "placement_construction_joint_installation_worker_h": "Трудозатраты на монтаж гидрошпонки рабочего шва: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "vibration_machine_productivity_m3_per_machine_hour": "Видимое допущение ППР; заменить утверждённым графиком.",
+      "external_curing_curing_compound_product_designation": "Мембранный состав для ухода по проектной спецификации: укажите значение из утверждённой проектной спецификации, технологической карты, ведомости ресурсов или коммерческого предложения.",
+      "external_curing_equipment_mobilization_pricing_mode": "Учёт доставки и возврата оборудования для ухода: укажите значение из утверждённой проектной спецификации, технологической карты, ведомости ресурсов или коммерческого предложения.",
+      "reinforcement_supplier_bundle_or_length_constraints": "Ограничения поставщика по длинам и пакетам: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "placement_construction_joint_waterstop_specification": "Гидрошпонка рабочего шва по проекту: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "effective_resource_quantity_material_concrete_ready_mix": "Принятое количество: Товарный бетон: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "placement_mix_design_or_project_specification_reference": "Спецификация бетонной смеси: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_approved_reinforcement_schedule_weight_kg": "Масса по утверждённой ведомости стержней: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "reinforcement_structural_drawing_and_revision_reference": "Конструктивный чертёж и ревизия: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "effective_resource_quantity_material_concrete_curing_water": "Принятое количество: Вода для ухода за бетоном по проектной спецификации: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "effective_resource_quantity_material_reinforcement_binding_wire": "Принятое количество: Проволока вязальная отожжённая: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "effective_resource_quantity_material_formwork_stairs_consumables": "Принятое количество: Крепёж и расходные материалы опалубки лестницы: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "effective_resource_quantity_material_reinforcement_spacer_chairs": "Принятое количество: Фиксаторы защитного слоя и опорные элементы: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "reinforcement_laps_hooks_chairs_connectors_and_accessories_scope": "Состав нахлёстов, крюков, фиксаторов и соединителей: укажите подтверждённое проектом или производственной ведомостью значение.",
+      "effective_resource_quantity_material_concrete_wet_curing_covering": "Принятое количество: Влажное покрытие для ухода за бетоном по проектной спецификации: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "effective_resource_quantity_material_formwork_stairs_risers_edges": "Принятое количество: Формы ступеней, подступенков и кромок: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "effective_resource_quantity_material_concrete_winter_heating_cable": "Принятое количество: Прогревочный кабель для зимнего бетонирования: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "effective_resource_quantity_material_formwork_stairs_release_agent": "Принятое количество: Разделительный состав для опалубки лестницы: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "effective_resource_quantity_material_concrete_impervious_curing_sheet": "Принятое количество: Влагонепроницаемый листовой материал для ухода за бетоном: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "effective_resource_quantity_material_concrete_membrane_curing_compound": "Принятое количество: Мембранный состав для ухода за бетоном по проектной спецификации: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "effective_resource_quantity_material_reinforcement_mechanical_couplers": "Принятое количество: Механические соединительные муфты арматуры: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "effective_resource_quantity_concrete_stairs_vibration_04_consumable_brush": "Принятое количество: Щётка для очистки вибробулавы и шланга: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "effective_resource_quantity_concrete_stairs_vibration_04_consumable_wipes": "Принятое количество: Упаковка ветоши или салфеток для оборудования: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "effective_resource_quantity_material_concrete_construction_joint_waterstop": "Принятое количество: Гидрошпонка рабочего шва бетонирования: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "effective_resource_quantity_material_reinforcement_steel_approved_schedule": "Принятое количество: Арматурная сталь по утверждённой ведомости стержней: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "effective_resource_quantity_concrete_stairs_vibration_04_consumable_cleaning_water": "Принятое количество: Вода для контролируемой очистки оборудования: укажите подтверждённое значение из проекта, спецификации или технологической карты.",
+      "effective_resource_quantity_material_concrete_membrane_curing_compound_antisol250w_us": "Принятое количество: Состав для ухода за свежим бетоном Sika Antisol-250 W, готовый к применению, канистра 19 л: укажите подтверждённое значение из проекта, спецификации или технологической карты."
+    },
+    "proposal_source_refs": [
+      {
+        "contract": "rik-expo-app.s27-23.stairs-complete-installation-standard-successor.v1",
+        "sourceId": "stairs_complete_installation_standard_s27_23",
+        "sourceKind": "COMPOSED_COMPLEX_WORK_TECHNOLOGY_AND_PROJECT_SCHEDULES",
+        "exactLocator": "Concrete volume and selected contingency use the accepted NRMCA CIP 31 route; reinforcement retains the approved bar-schedule route; stairs formwork uses RICS NRM 2 measured contact area plus direct project schedules without automatic system selection. | Public preview pp. 1-2: consolidation removes entrapped air; contents identify vibration, internal vibrators, procedure and quality control. The public preview does not provide universal productivity. | IRFU45/230/5 technical-data row: 0.88 kW, 45 mm head, 5 m hose, 15 m cable, 12,000 1/min, IP67, 220-240 V. | All productivity, labor, rental, cleaning, quality-control and logistics values are visible inputs and must be replaced by the approved method statement, equipment schedule and supplier quote. | Public preview pp. 1-4: Scope, Products and Execution; the project specification selects and customizes the external-curing method, materials, initial/final curing and termination requirements."
+      }
+    ],
+    "validation_scenario_refs": [
+      {
+        "fixture": {
+          "finishing_method": "AS_CAST_HAND_TROWEL",
+          "placement_mobility": "P4",
+          "placement_winter_mode": false,
+          "placement_concrete_class": "B25",
+          "placement_pump_machine_h": 3,
+          "placement_watertightness": "W6",
+          "stairs_concrete_volume_m3": 10,
+          "placement_frost_resistance": "F150",
+          "placement_placement_method": "pump",
+          "vibration_rental_shift_hour": 8,
+          "placement_placement_location": "Бетонная лестница; стандартная зона; захватка STAIR-POUR-STANDARD",
+          "placement_placement_worker_h": 42,
+          "placement_product_profile_id": "method-profile:nrmca-cip31:ready-mix-order:v1",
+          "formwork_form_release_agent_l": 8,
+          "formwork_formwork_supply_mode": "RENTAL_RETURNABLE",
+          "placement_mixture_designation": "B25 W6 F150 P4",
+          "finishing_quality_record_count": 1,
+          "reinforcement_fabrication_mode": "READY_CAGES",
+          "vibration_cleaning_brush_count": 1,
+          "vibration_quality_record_count": 1,
+          "external_curing_curing_water_m3": 2,
+          "external_curing_curing_worker_h": 12,
+          "placement_delivery_pricing_mode": "SEPARATE",
+          "reinforcement_lifting_machine_h": 0,
+          "vibration_active_vibrator_count": 1,
+          "vibration_backup_vibrator_count": 1,
+          "formwork_formwork_consumables_kg": 24,
+          "formwork_formwork_facing_area_m2": 78,
+          "placement_crane_bucket_machine_h": 0,
+          "placement_winter_heating_cable_m": 0,
+          "reinforcement_product_profile_id": "project-profile:approved-reinforcement-bar-schedule:fhwa-rics:v1",
+          "finishing_exposed_surface_area_m2": 48,
+          "placement_construction_joint_mode": "NONE",
+          "placement_winter_heating_worker_h": 0,
+          "reinforcement_nominal_diameter_mm": 15.875,
+          "vibration_mobilization_trip_count": 2,
+          "formwork_formwork_framing_length_m": 128,
+          "reinforcement_bar_size_designation": "No. 5",
+          "reinforcement_binding_wire_mass_kg": 16,
+          "external_curing_curing_duration_day": 7,
+          "formwork_formwork_assembly_worker_h": 72,
+          "formwork_formwork_return_trip_count": 1,
+          "formwork_lifting_equipment_required": false,
+          "formwork_temporary_shoring_required": true,
+          "reinforcement_delivery_pricing_mode": "SEPARATE",
+          "reinforcement_installation_worker_h": 41,
+          "reinforcement_site_bending_worker_h": 0,
+          "reinforcement_site_cutting_worker_h": 0,
+          "vibration_extension_cable_set_count": 1,
+          "vibration_vibrator_head_diameter_mm": 45,
+          "vibration_vibrator_nominal_power_kw": 0.88,
+          "external_curing_wet_covering_area_m2": 52,
+          "formwork_formwork_alignment_worker_h": 20,
+          "formwork_formwork_stripping_worker_h": 36,
+          "formwork_formwork_system_designation": "PROJECT-STAIR-FORMWORK-STANDARD-REV-A",
+          "formwork_stairs_geometry_description": "Монолитная лестница STAIR-STANDARD; марши, ступени и площадки по проектной геометрии",
+          "reinforcement_bar_standard_and_grade": "ASTM A615 Grade 60",
+          "reinforcement_cage_assembly_worker_h": 0,
+          "reinforcement_cover_control_worker_h": 6,
+          "vibration_wash_water_container_count": 1,
+          "formwork_formwork_delivery_trip_count": 1,
+          "formwork_riser_and_edge_form_length_m": 54,
+          "placement_producer_order_confirmation": "RMC-STAIR-POUR-STANDARD-CONFIRMED",
+          "reinforcement_rebar_bending_machine_h": 0,
+          "reinforcement_rebar_cutting_machine_h": 0,
+          "vibration_cleaning_wipe_package_count": 1,
+          "vibration_selected_vibrator_reference": "Wacker Neuson IRFU45/230/5 preliminary selection",
+          "vibration_vibrator_vibrations_per_min": 12000,
+          "external_curing_quality_plan_reference": "QP-STAIRS-CURE-STANDARD-REV-A",
+          "finishing_tool_set_coverage_m2_per_set": 50,
+          "formwork_formwork_rental_duration_days": 21,
+          "formwork_temporary_shoring_designation": "STAIR-SHORE-STANDARD-REV-A",
+          "placement_estimator_approval_reference": "EST-STAIR-POUR-STANDARD-REV-A",
+          "placement_selected_contingency_percent": 6,
+          "reinforcement_spacer_chair_designation": "ST-SPACER-50",
+          "placement_concrete_delivery_distance_km": 23,
+          "placement_heating_transformer_machine_h": 0,
+          "vibration_approved_consolidation_method": "INTERNAL_VIBRATION",
+          "placement_quality_control_document_count": 1,
+          "reinforcement_bar_count_and_cut_length_m": "PROJECT_BBS:BBS-ST-STANDARD-REV-A; 1200 kg aggregate approved mass across all bar marks",
+          "reinforcement_binding_wire_specification": "Проволока вязальная отожжённая по проектной ведомости",
+          "vibration_wash_water_disposal_trip_count": 1,
+          "formwork_temporary_shoring_quantity_piece": 42,
+          "reinforcement_spacer_chair_quantity_piece": 184,
+          "vibration_electrical_protection_set_count": 1,
+          "formwork_measured_formwork_contact_area_m2": 72,
+          "reinforcement_estimator_approval_reference": "EST-ST-STANDARD-REBAR-REV-A",
+          "reinforcement_lifting_equipment_applicable": false,
+          "formwork_formwork_inspection_document_count": 2,
+          "placement_plan_volume_calculation_reference": "STAIR-POUR-STANDARD-VOLUME-REV-A",
+          "reinforcement_lifting_equipment_designation": "NOT_APPLICABLE:MANUAL_HANDLING_CONFIRMED_BY_METHOD_STATEMENT",
+          "finishing_labor_productivity_m2_per_man_hour": 2,
+          "formwork_approved_formwork_drawing_reference": "FW-STAIR-STANDARD-REV-A",
+          "reinforcement_bar_bending_schedule_reference": "BBS-ST-STANDARD-REV-A",
+          "reinforcement_mechanical_coupler_designation": "NOT_APPLICABLE:PROJECT_BBS_HAS_NO_MECHANICAL_COUPLERS",
+          "reinforcement_mechanical_couplers_applicable": false,
+          "reinforcement_mill_certificate_package_count": 1,
+          "reinforcement_unloading_and_storage_worker_h": 7,
+          "vibration_cleaning_labor_h_per_used_vibrator": 0.25,
+          "vibration_labor_productivity_m3_per_man_hour": 0.8,
+          "external_curing_curing_water_source_reference": "WATER-STAIRS-CURE-STANDARD-REV-A",
+          "placement_contingency_selection_justification": "Резерв подтверждён сметчиком для захватки STAIR-POUR-STANDARD",
+          "reinforcement_selected_standard_mass_kg_per_m": 1.552,
+          "vibration_cleaning_water_m3_per_used_vibrator": 0.025,
+          "external_curing_application_equipment_required": false,
+          "external_curing_exposed_curing_surface_area_m2": 48,
+          "external_curing_quality_control_document_count": 1,
+          "placement_delivery_schedule_and_truck_capacity": "График STAIR-POUR-STANDARD; автобетоносмесители до 8 м³",
+          "external_curing_approved_external_curing_method": "WET_COVERING",
+          "reinforcement_mechanical_coupler_quantity_piece": 0,
+          "reinforcement_reinforcement_delivery_distance_km": 17,
+          "reinforcement_reinforcement_inspection_service_h": 3,
+          "reinforcement_shape_straight_bent_curved_or_link": "BENT:PROJECT-BBS",
+          "external_curing_curing_method_statement_reference": "MS-STAIRS-CURE-STANDARD-REV-A",
+          "external_curing_wet_covering_material_designation": "COVER-STAIRS-CURE-STANDARD-REV-A",
+          "reinforcement_fabrication_allowance_if_documented": "NONE:INCLUDED_IN_APPROVED_SCHEDULE",
+          "vibration_machine_productivity_m3_per_machine_hour": 3,
+          "reinforcement_supplier_bundle_or_length_constraints": "NONE:NO_AUTOMATIC_BUNDLE_ROUNDING",
+          "placement_mix_design_or_project_specification_reference": "STAIR-POUR-STANDARD-MIX-B25-REV-A",
+          "reinforcement_approved_reinforcement_schedule_weight_kg": 1200,
+          "reinforcement_structural_drawing_and_revision_reference": "STR-ST-STANDARD-REV-A",
+          "reinforcement_laps_hooks_chairs_connectors_and_accessories_scope": "PROJECT_SCOPE:all BBS laps and hooks; chairs and couplers scheduled separately"
+        },
+        "scenario": "S27_23_STAIRS_COMPLETE_STANDARD_10_M3",
+        "shortInput": {
+          "stairs_concrete_volume_m3": 10
+        },
+        "coreAcceptance": {
+          "status": "GREEN_S27_23_STAIRS_COMPLETE_STANDARD_CORE",
+          "assertions": {
+            "completeComposition": true,
+            "noContextQuestionLeak": true,
+            "independentMapComplete": true,
+            "unknownPricesRemainNull": true,
+            "legacyDoubleCountRemoved": true,
+            "volumeAndAreaRecalculate": true,
+            "completeProcurementSubset": true,
+            "oneTimeCleaningNotRepeated": true,
+            "dependentStagesRemainVisible": true,
+            "publisherCompletenessMapValid": true,
+            "firstEstimateAppearsImmediately": true,
+            "independentProcurementAppearsImmediately": true
+          },
+          "firstEstimate": {
+            "rowCount": 24,
+            "procurementRowCount": 11,
+            "preliminaryNeedCount": 52,
+            "distinctMissingParameterCount": 64
+          },
+          "completeEstimate": {
+            "visibleRowCount": 58,
+            "procurementRowCount": 34,
+            "preliminaryNeedCount": 0,
+            "includedEstimateRowCount": 48
+          },
+          "serializedSha256": "e091be5dca50c6f50bbab9c42c295f4a2cfef2e63c5edacb46a305d799d7fe17"
+        },
+        "runtimeProfile": {
+          "finishing_method": "AS_CAST_HAND_TROWEL",
+          "vibration_rental_shift_hour": 8,
+          "finishing_quality_record_count": 1,
+          "vibration_cleaning_brush_count": 1,
+          "vibration_quality_record_count": 1,
+          "vibration_active_vibrator_count": 1,
+          "vibration_backup_vibrator_count": 1,
+          "vibration_mobilization_trip_count": 2,
+          "vibration_extension_cable_set_count": 1,
+          "vibration_vibrator_head_diameter_mm": 45,
+          "vibration_vibrator_nominal_power_kw": 0.88,
+          "vibration_wash_water_container_count": 1,
+          "vibration_cleaning_wipe_package_count": 1,
+          "vibration_selected_vibrator_reference": "Wacker Neuson IRFU45/230/5 preliminary selection",
+          "vibration_vibrator_vibrations_per_min": 12000,
+          "finishing_tool_set_coverage_m2_per_set": 50,
+          "vibration_approved_consolidation_method": "INTERNAL_VIBRATION",
+          "vibration_wash_water_disposal_trip_count": 1,
+          "vibration_electrical_protection_set_count": 1,
+          "finishing_labor_productivity_m2_per_man_hour": 2,
+          "vibration_cleaning_labor_h_per_used_vibrator": 0.25,
+          "vibration_labor_productivity_m3_per_man_hour": 0.8,
+          "vibration_cleaning_water_m3_per_used_vibrator": 0.025,
+          "vibration_machine_productivity_m3_per_machine_hour": 3
+        },
+        "runtimeProfileSourceIds": {
+          "finishing_method": [
+            "stairs_complete_installation_standard_s27_23"
+          ],
+          "vibration_rental_shift_hour": [
+            "stairs_complete_installation_standard_s27_23"
+          ],
+          "finishing_quality_record_count": [
+            "stairs_complete_installation_standard_s27_23"
+          ],
+          "vibration_cleaning_brush_count": [
+            "stairs_complete_installation_standard_s27_23"
+          ],
+          "vibration_quality_record_count": [
+            "stairs_complete_installation_standard_s27_23"
+          ],
+          "vibration_active_vibrator_count": [
+            "stairs_complete_installation_standard_s27_23"
+          ],
+          "vibration_backup_vibrator_count": [
+            "stairs_complete_installation_standard_s27_23"
+          ],
+          "vibration_mobilization_trip_count": [
+            "stairs_complete_installation_standard_s27_23"
+          ],
+          "vibration_extension_cable_set_count": [
+            "stairs_complete_installation_standard_s27_23"
+          ],
+          "vibration_vibrator_head_diameter_mm": [
+            "stairs_complete_installation_standard_s27_23"
+          ],
+          "vibration_vibrator_nominal_power_kw": [
+            "stairs_complete_installation_standard_s27_23"
+          ],
+          "vibration_wash_water_container_count": [
+            "stairs_complete_installation_standard_s27_23"
+          ],
+          "vibration_cleaning_wipe_package_count": [
+            "stairs_complete_installation_standard_s27_23"
+          ],
+          "vibration_selected_vibrator_reference": [
+            "stairs_complete_installation_standard_s27_23"
+          ],
+          "vibration_vibrator_vibrations_per_min": [
+            "stairs_complete_installation_standard_s27_23"
+          ],
+          "finishing_tool_set_coverage_m2_per_set": [
+            "stairs_complete_installation_standard_s27_23"
+          ],
+          "vibration_approved_consolidation_method": [
+            "stairs_complete_installation_standard_s27_23"
+          ],
+          "vibration_wash_water_disposal_trip_count": [
+            "stairs_complete_installation_standard_s27_23"
+          ],
+          "vibration_electrical_protection_set_count": [
+            "stairs_complete_installation_standard_s27_23"
+          ],
+          "finishing_labor_productivity_m2_per_man_hour": [
+            "stairs_complete_installation_standard_s27_23"
+          ],
+          "vibration_cleaning_labor_h_per_used_vibrator": [
+            "stairs_complete_installation_standard_s27_23"
+          ],
+          "vibration_labor_productivity_m3_per_man_hour": [
+            "stairs_complete_installation_standard_s27_23"
+          ],
+          "vibration_cleaning_water_m3_per_used_vibrator": [
+            "stairs_complete_installation_standard_s27_23"
+          ],
+          "vibration_machine_productivity_m3_per_machine_hour": [
+            "stairs_complete_installation_standard_s27_23"
+          ]
+        },
+        "acceptanceEvidenceSha256": "cd1e7dfdfa8cf32ab715b1d03f10f203d42d400c072946ee81c0af5ee0367785",
+        "runtimeProfileClassification": {
+          "finishing_method": "ASSUMPTION",
+          "vibration_rental_shift_hour": "ASSUMPTION",
+          "finishing_quality_record_count": "ASSUMPTION",
+          "vibration_cleaning_brush_count": "ASSUMPTION",
+          "vibration_quality_record_count": "ASSUMPTION",
+          "vibration_active_vibrator_count": "ASSUMPTION",
+          "vibration_backup_vibrator_count": "ASSUMPTION",
+          "vibration_mobilization_trip_count": "ASSUMPTION",
+          "vibration_extension_cable_set_count": "ASSUMPTION",
+          "vibration_vibrator_head_diameter_mm": "NORMATIVE",
+          "vibration_vibrator_nominal_power_kw": "NORMATIVE",
+          "vibration_wash_water_container_count": "ASSUMPTION",
+          "vibration_cleaning_wipe_package_count": "ASSUMPTION",
+          "vibration_selected_vibrator_reference": "NORMATIVE",
+          "vibration_vibrator_vibrations_per_min": "NORMATIVE",
+          "finishing_tool_set_coverage_m2_per_set": "ASSUMPTION",
+          "vibration_approved_consolidation_method": "NORMATIVE",
+          "vibration_wash_water_disposal_trip_count": "ASSUMPTION",
+          "vibration_electrical_protection_set_count": "ASSUMPTION",
+          "finishing_labor_productivity_m2_per_man_hour": "ASSUMPTION",
+          "vibration_cleaning_labor_h_per_used_vibrator": "ASSUMPTION",
+          "vibration_labor_productivity_m3_per_man_hour": "ASSUMPTION",
+          "vibration_cleaning_water_m3_per_used_vibrator": "ASSUMPTION",
+          "vibration_machine_productivity_m3_per_machine_hour": "ASSUMPTION"
+        }
+      },
+      {
+        "scenario": "S2733_FORMWORK_MATERIAL_PURCHASE",
+        "acceptanceEvidenceSha256": "57665a7e0810f3b75d5afac6118f76abd1f206e634aedaea3727275d8147f722"
+      },
+      {
+        "scenario": "S2733_CONSTRUCTION_JOINT_COMPLETION",
+        "acceptanceEvidenceSha256": "d892c52f4f515592eeae4e481b262513d974395b609a02521da9b6c6a3a06bd9"
+      },
+      {
+        "scenario": "S2733_REINFORCEMENT_EQUIPMENT_COMPLETION",
+        "acceptanceEvidenceSha256": "14fe2c3885dcdb74e853a26d3fd76da037bcfaaece5777aadc883e223f5288d7"
+      },
+      {
+        "scenario": "S2763_CONCRETE_CURING_APPROXIMATE_LITRES_AND_ALTERNATE_PRODUCT_PRICE_ISOLATION",
+        "quantityQuality": "APPROXIMATE",
+        "acceptanceEvidenceSha256": "d24de75a63f30a29ea79886543f15669d2103c38d4b95f4d94266446db878969",
+        "primarySourceArtifactSha256": "b2f03cae00c6edf37228a1836104b5beba33a56dbb19b559caa8cc435a8b14b3",
+        "completeTechnicalEstimateAccepted": false
+      },
+      {
+        "scenario": "S2763_CURING_NEW_OBJECT_WITHOUT_PROJECT_FIXTURES_AND_SHORT_FORM",
+        "quantityQuality": "APPROXIMATE",
+        "acceptanceEvidenceSha256": "01ca65a20d35785135949b9fbca49cabf45db66ec32815557c125d6db4994738",
+        "primarySourceArtifactSha256": "b2f03cae00c6edf37228a1836104b5beba33a56dbb19b559caa8cc435a8b14b3",
+        "completeTechnicalEstimateAccepted": false
+      }
+    ],
+    "acceptance_evidence_sha256": "01ca65a20d35785135949b9fbca49cabf45db66ec32815557c125d6db4994738",
+    "accepted_release_id": "636a3456-f2f8-5934-85b4-9234c7b23da0",
+    "accepted_at": "2026-10-11T17:23:06.796106+05:00",
+    "supersedes_baseline_id": "f983404a-7058-537c-8330-9c31c5bfb5d0",
+    "contract_version": "APPROVED_TEMPLATE_BASELINE_R54_V1"
+  },
+  "retainedNormativeSourceIdsByParameterId": {
+    "finishing_method": [
+      "stairs_complete_installation_standard_s27_23"
+    ],
+    "placement_mobility": [],
+    "antisol_surface_ready": [],
+    "placement_winter_mode": [],
+    "antisol_usable_stock_l": [],
+    "antisol_material_choice": [
+      "manufacturer_sika_antisol250w_us_202006_v0103"
+    ],
+    "placement_concrete_class": [],
+    "placement_pump_machine_h": [],
+    "placement_watertightness": [],
+    "stairs_concrete_volume_m3": [],
+    "antisol_retained_reserve_l": [],
+    "formwork_lifting_machine_h": [],
+    "placement_frost_resistance": [],
+    "placement_placement_method": [],
+    "vibration_rental_shift_hour": [
+      "stairs_complete_installation_standard_s27_23"
+    ],
+    "placement_placement_location": [],
+    "placement_placement_worker_h": [],
+    "placement_product_profile_id": [],
+    "formwork_form_release_agent_l": [],
+    "formwork_formwork_supply_mode": [],
+    "placement_mixture_designation": [],
+    "antisol_subsequent_surface_use": [],
+    "finishing_quality_record_count": [
+      "stairs_complete_installation_standard_s27_23"
+    ],
+    "reinforcement_fabrication_mode": [],
+    "vibration_cleaning_brush_count": [
+      "stairs_complete_installation_standard_s27_23"
+    ],
+    "vibration_quality_record_count": [
+      "stairs_complete_installation_standard_s27_23"
+    ],
+    "external_curing_curing_water_m3": [],
+    "external_curing_curing_worker_h": [],
+    "placement_delivery_pricing_mode": [],
+    "reinforcement_lifting_machine_h": [],
+    "vibration_active_vibrator_count": [
+      "stairs_complete_installation_standard_s27_23"
+    ],
+    "vibration_backup_vibrator_count": [
+      "stairs_complete_installation_standard_s27_23"
+    ],
+    "formwork_formwork_consumables_kg": [],
+    "formwork_formwork_facing_area_m2": [],
+    "placement_crane_bucket_machine_h": [],
+    "placement_winter_heating_cable_m": [],
+    "reinforcement_product_profile_id": [],
+    "antisol_minimum_temperature_12h_c": [],
+    "finishing_exposed_surface_area_m2": [],
+    "placement_construction_joint_mode": [],
+    "placement_winter_heating_worker_h": [],
+    "reinforcement_nominal_diameter_mm": [],
+    "vibration_mobilization_trip_count": [
+      "stairs_complete_installation_standard_s27_23"
+    ],
+    "formwork_formwork_framing_length_m": [],
+    "reinforcement_bar_size_designation": [],
+    "reinforcement_binding_wire_mass_kg": [],
+    "external_curing_curing_duration_day": [],
+    "formwork_formwork_assembly_worker_h": [],
+    "formwork_formwork_return_trip_count": [],
+    "formwork_lifting_equipment_required": [],
+    "formwork_temporary_shoring_required": [],
+    "reinforcement_delivery_pricing_mode": [],
+    "reinforcement_installation_worker_h": [],
+    "reinforcement_site_bending_worker_h": [],
+    "reinforcement_site_cutting_worker_h": [],
+    "vibration_extension_cable_set_count": [
+      "stairs_complete_installation_standard_s27_23"
+    ],
+    "vibration_vibrator_head_diameter_mm": [
+      "stairs_complete_installation_standard_s27_23"
+    ],
+    "vibration_vibrator_nominal_power_kw": [
+      "stairs_complete_installation_standard_s27_23"
+    ],
+    "external_curing_wet_covering_area_m2": [],
+    "formwork_formwork_alignment_worker_h": [],
+    "formwork_formwork_stripping_worker_h": [],
+    "formwork_formwork_system_designation": [],
+    "formwork_stairs_geometry_description": [],
+    "reinforcement_bar_standard_and_grade": [],
+    "reinforcement_cage_assembly_worker_h": [],
+    "reinforcement_cover_control_worker_h": [],
+    "vibration_wash_water_container_count": [
+      "stairs_complete_installation_standard_s27_23"
+    ],
+    "formwork_formwork_delivery_trip_count": [],
+    "formwork_riser_and_edge_form_length_m": [],
+    "placement_producer_order_confirmation": [],
+    "reinforcement_equipment_delivery_mode": [],
+    "reinforcement_rebar_bending_machine_h": [],
+    "reinforcement_rebar_cutting_machine_h": [],
+    "vibration_cleaning_wipe_package_count": [
+      "stairs_complete_installation_standard_s27_23"
+    ],
+    "vibration_selected_vibrator_reference": [
+      "stairs_complete_installation_standard_s27_23"
+    ],
+    "vibration_vibrator_vibrations_per_min": [
+      "stairs_complete_installation_standard_s27_23"
+    ],
+    "construction_joint_equipment_machine_h": [],
+    "external_curing_quality_plan_reference": [],
+    "finishing_tool_set_coverage_m2_per_set": [
+      "stairs_complete_installation_standard_s27_23"
+    ],
+    "formwork_formwork_rental_duration_days": [],
+    "formwork_lifting_equipment_designation": [],
+    "formwork_temporary_shoring_designation": [],
+    "placement_estimator_approval_reference": [],
+    "placement_selected_contingency_percent": [],
+    "reinforcement_spacer_chair_designation": [],
+    "construction_joint_supply_delivery_mode": [],
+    "placement_concrete_delivery_distance_km": [],
+    "placement_heating_transformer_machine_h": [],
+    "vibration_approved_consolidation_method": [
+      "stairs_complete_installation_standard_s27_23"
+    ],
+    "construction_joint_accessories_set_count": [],
+    "external_curing_impervious_sheet_area_m2": [],
+    "placement_quality_control_document_count": [],
+    "reinforcement_bar_count_and_cut_length_m": [],
+    "reinforcement_binding_wire_specification": [],
+    "vibration_wash_water_disposal_trip_count": [
+      "stairs_complete_installation_standard_s27_23"
+    ],
+    "construction_joint_equipment_pricing_mode": [],
+    "formwork_temporary_shoring_quantity_piece": [],
+    "reinforcement_spacer_chair_quantity_piece": [],
+    "vibration_electrical_protection_set_count": [
+      "stairs_complete_installation_standard_s27_23"
+    ],
+    "construction_joint_equipment_specification": [],
+    "external_curing_curing_compound_quantity_l": [],
+    "formwork_measured_formwork_contact_area_m2": [],
+    "reinforcement_equipment_delivery_reference": [],
+    "reinforcement_estimator_approval_reference": [],
+    "reinforcement_lifting_equipment_applicable": [],
+    "construction_joint_accessories_pricing_mode": [],
+    "formwork_formwork_inspection_document_count": [],
+    "placement_plan_volume_calculation_reference": [],
+    "reinforcement_bending_accessories_set_count": [],
+    "reinforcement_bending_price_scope_reference": [],
+    "reinforcement_cutting_accessories_set_count": [],
+    "reinforcement_cutting_price_scope_reference": [],
+    "reinforcement_equipment_delivery_trip_count": [],
+    "reinforcement_lifting_accessories_set_count": [],
+    "reinforcement_lifting_equipment_designation": [],
+    "reinforcement_lifting_price_scope_reference": [],
+    "construction_joint_accessories_specification": [],
+    "construction_joint_quality_program_reference": [],
+    "construction_joint_supply_delivery_reference": [],
+    "external_curing_impervious_sheet_designation": [],
+    "external_curing_mobilization_scope_reference": [],
+    "finishing_labor_productivity_m2_per_man_hour": [
+      "stairs_complete_installation_standard_s27_23"
+    ],
+    "formwork_approved_formwork_drawing_reference": [],
+    "reinforcement_bar_bending_schedule_reference": [],
+    "reinforcement_mechanical_coupler_designation": [],
+    "reinforcement_mechanical_couplers_applicable": [],
+    "reinforcement_mill_certificate_package_count": [],
+    "reinforcement_unloading_and_storage_worker_h": [],
+    "vibration_cleaning_labor_h_per_used_vibrator": [
+      "stairs_complete_installation_standard_s27_23"
+    ],
+    "vibration_labor_productivity_m3_per_man_hour": [
+      "stairs_complete_installation_standard_s27_23"
+    ],
+    "construction_joint_method_statement_reference": [],
+    "construction_joint_supply_delivery_trip_count": [],
+    "external_curing_curing_water_source_reference": [],
+    "placement_contingency_selection_justification": [],
+    "reinforcement_bending_equipment_specification": [],
+    "reinforcement_cutting_equipment_specification": [],
+    "reinforcement_selected_standard_mass_kg_per_m": [],
+    "vibration_cleaning_water_m3_per_used_vibrator": [
+      "stairs_complete_installation_standard_s27_23"
+    ],
+    "external_curing_application_equipment_required": [],
+    "external_curing_exposed_curing_surface_area_m2": [],
+    "external_curing_quality_control_document_count": [],
+    "placement_delivery_schedule_and_truck_capacity": [],
+    "reinforcement_bending_accessories_pricing_mode": [],
+    "reinforcement_cutting_accessories_pricing_mode": [],
+    "reinforcement_lifting_accessories_pricing_mode": [],
+    "external_curing_application_equipment_machine_h": [],
+    "external_curing_approved_external_curing_method": [],
+    "placement_construction_joint_waterstop_length_m": [],
+    "reinforcement_bending_accessories_specification": [],
+    "reinforcement_cutting_accessories_specification": [],
+    "reinforcement_lifting_accessories_specification": [],
+    "reinforcement_mechanical_coupler_quantity_piece": [],
+    "reinforcement_reinforcement_delivery_distance_km": [],
+    "reinforcement_reinforcement_inspection_service_h": [],
+    "reinforcement_shape_straight_bent_curved_or_link": [],
+    "external_curing_application_equipment_designation": [],
+    "external_curing_curing_method_statement_reference": [],
+    "external_curing_equipment_mobilization_trip_count": [],
+    "external_curing_wet_covering_material_designation": [],
+    "reinforcement_fabrication_allowance_if_documented": [],
+    "placement_construction_joint_installation_worker_h": [],
+    "vibration_machine_productivity_m3_per_machine_hour": [
+      "stairs_complete_installation_standard_s27_23"
+    ],
+    "external_curing_curing_compound_product_designation": [],
+    "external_curing_equipment_mobilization_pricing_mode": [],
+    "reinforcement_supplier_bundle_or_length_constraints": [],
+    "placement_construction_joint_waterstop_specification": [],
+    "effective_resource_quantity_material_concrete_ready_mix": [],
+    "placement_mix_design_or_project_specification_reference": [],
+    "reinforcement_approved_reinforcement_schedule_weight_kg": [],
+    "reinforcement_structural_drawing_and_revision_reference": [],
+    "effective_resource_quantity_material_concrete_curing_water": [],
+    "effective_resource_quantity_material_reinforcement_binding_wire": [],
+    "effective_resource_quantity_material_formwork_stairs_consumables": [],
+    "effective_resource_quantity_material_reinforcement_spacer_chairs": [],
+    "reinforcement_laps_hooks_chairs_connectors_and_accessories_scope": [],
+    "effective_resource_quantity_material_concrete_wet_curing_covering": [],
+    "effective_resource_quantity_material_formwork_stairs_risers_edges": [],
+    "effective_resource_quantity_material_concrete_winter_heating_cable": [],
+    "effective_resource_quantity_material_formwork_stairs_release_agent": [],
+    "effective_resource_quantity_material_concrete_impervious_curing_sheet": [],
+    "effective_resource_quantity_material_concrete_membrane_curing_compound": [],
+    "effective_resource_quantity_material_reinforcement_mechanical_couplers": [],
+    "effective_resource_quantity_concrete_stairs_vibration_04_consumable_brush": [],
+    "effective_resource_quantity_concrete_stairs_vibration_04_consumable_wipes": [],
+    "effective_resource_quantity_material_concrete_construction_joint_waterstop": [],
+    "effective_resource_quantity_material_reinforcement_steel_approved_schedule": [],
+    "effective_resource_quantity_concrete_stairs_vibration_04_consumable_cleaning_water": [],
+    "effective_resource_quantity_material_concrete_membrane_curing_compound_antisol250w_us": []
+  },
+  "retainedDefinitionSourceMetadata": {
+    "normId": "STAIRS-COMPLETE-STANDARD-S27-23-COMPOSED-R1",
+    "contract": "rik-expo-app.s27-63.concrete-curing-antisol-material-series.v1.consumer-facts-r2",
+    "sourceId": "stairs_complete_installation_standard_s27_23",
+    "masterSha256": "e1c70828ba30bb4dae395c2766f8ff7e13467ec51592198f4722a64edf8126ca",
+    "sourceHashes": [
+      {
+        "path": "scripts/estimate/r4a13/prepareS2763ConcreteCuringAntisolSeries.ts",
+        "sha256": "f517f35e08ca50ebba5ca1061c1767816206f3a22823734f66c80911b6c05843"
+      },
+      {
+        "path": "scripts/estimate/r4a13/s2763ConcreteCuringAntisolOverlay.ts",
+        "sha256": "b5baed9d8150b0f51fb5a5a7b4e134a3c273b7a3d522bad49bdbd0ccb22f623a"
+      },
+      {
+        "path": "src/lib/estimate/v4/concreteCuringAntisolMaterialS2763.ts",
+        "sha256": "1f8f9370e930182d20cc6a9e13380cbe2d50e6dd0dc84271e8e291f2b8c439a7"
+      },
+      {
+        "path": "src/lib/estimate/v4/concreteCuringAntisolMaterialS2763.test.ts",
+        "sha256": "fc2bcb2d1ffdd5ec771c712e3274e292752557151a53904ec9efad0e25f638ee"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/sika-antisol250w-us-curing-series-s27-63.json",
+        "sha256": "419d08abe5715450fd7c675e79aca529ebbac5c75b6cef0b027e27a9ed5290cb"
+      },
+      {
+        "path": ".release-runtime/r568/s27-63/sources/sika-antisol-250w-us-2020-06-v01-03.pdf",
+        "sha256": "b2f03cae00c6edf37228a1836104b5beba33a56dbb19b559caa8cc435a8b14b3"
+      },
+      {
+        "path": "scripts/estimate/r4a13/canonicalPreparedSearchCloneR1.ts",
+        "sha256": "e16ac6f05dfb9e487f1795ee1d0b6a4f870793c6bb7af5118257f70719d14845"
+      },
+      {
+        "path": "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+        "sha256": "a23389daaf34b447d4b3953a53595f6a9f04a5ea87c0c0429955b0e79323420e"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+        "sha256": "da5249972704645fde96f78bc8c96d7969edda1a3dd6ba32af65b6bd4e2806a0"
+      },
+      {
+        "path": "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
+        "sha256": "b5647461019cb577e395982c2bcf8c1ab3977538f9c473e928ae25c52cd5ed44"
+      },
+      {
+        "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+        "sha256": "d4c2192d1d5c4ef0285668b3c1aeb2994c2b57c3e8b9d8d6a776ee4c3e10d7ae"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalDefinitionParameterConsumersR1.ts",
+        "sha256": "1078cf8b1fb9841c40ae22ad16a1e6b737a71d9c1ff8d8d75e70c754c93a15aa"
+      },
+      {
+        "path": "src/lib/consumerRequests/consumerCanonicalParameterRequirements.ts",
+        "sha256": "a9e6b7e1c8387079a7568f5a3e58cd2d58886c32e3502555f9f80ab601e3b292"
+      },
+      {
+        "path": "src/features/consumerRepair/requestEstimateViewModel.ts",
+        "sha256": "467b8f7c39742114230b4d261de9310557e924c08a8f85028bc0c395e6a3080d"
+      },
+      {
+        "path": "src/features/consumerRepair/ConsumerRepairItemRow.tsx",
+        "sha256": "cb38a573f7d515e1956af7132c079875ff3cbd4d31e82ec6ff3cd51de0c5397a"
+      },
+      {
+        "path": "src/features/consumerRepair/requestEstimateViewModel.r4.test.ts",
+        "sha256": "5704cd699b2891c3fe53a8a3e1d48d0bafc9c21c72610dfdf9707910c72acd02"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu.ts",
+        "sha256": "d8ff4279480fafe8e0ea12326cb381eb08bcea5e9da63d9a84eb601daddde0ba"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics.ts",
+        "sha256": "c87fb1c572a6411f935f2b736a9103165005fc29aef52b1f14d1d3f95ca2cde7"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics.test.ts",
+        "sha256": "ef53c871ff4826d67d96ae8b284dcb0c56ccdbdb91267fc7e3b60c299520b1cd"
+      },
+      {
+        "path": "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.tsx",
+        "sha256": "c5be27c003184ae5f7133c1208d84acf9fbc44bdd44097c05150fb43aa930d7b"
+      },
+      {
+        "path": "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.r3.test.tsx",
+        "sha256": "1fec4514f782bf95856ceb82bfca374cabad17bfd7f46a748eab84fa93002eda"
+      }
+    ],
+    "activationAllowed": false,
+    "sourceFingerprint": "9d039e7046466273c80d754c80f849d0a1a39a69f1c1b87a091394b8107fb977",
+    "productionEligible": false,
+    "materialSeriesContract": "rik-expo-app.s27-63.concrete-curing-antisol-material-series.v1",
+    "predecessorDefinitionId": "5687d787-4b49-52e1-8f3f-5f5da71b3538",
+    "invalidSuppliedValuePolicy": "REJECT",
+    "consumerFactsRepairContract": "rik-expo-app.s27-63.concrete-curing-antisol-material-series.v1.consumer-facts-r2",
+    "knownWorkScopeFirstEstimate": true,
+    "missingProjectQuantityPolicy": "PRELIMINARY_NEED",
+    "formworkMaterialPurchaseContract": "rik-expo-app.s27-33.formwork-material-purchase.v1",
+    "constructionJointCompletionContract": "rik-expo-app.s27-33.construction-joint-completion.v1",
+    "reinforcementEquipmentCompletionContract": "rik-expo-app.s27-33.reinforcement-equipment-completion.v1"
+  },
+  "provenanceFieldsThatMustNotDisappear": [
+    "materialSeriesContract",
+    "consumerFactsRepairContract",
+    "formworkMaterialPurchaseContract",
+    "constructionJointCompletionContract",
+    "reinforcementEquipmentCompletionContract"
+  ],
+  "newBindingIds": [
+    "whole-labor",
+    "operator-information",
+    "tower-crane8t-consumed",
+    "truck-crane10t-consumed",
+    "forklift5t-consumed",
+    "arc-welder-consumed",
+    "surface-vibrator-consumed",
+    "chain-saw-consumed",
+    "flatbed8t-consumed",
+    "water-consumed",
+    "nails-consumed",
+    "release-oil-consumed",
+    "electrodes-consumed",
+    "facing-consumed",
+    "timber-bars-consumed",
+    "boards25-consumed",
+    "boards44-consumed",
+    "matting-consumed",
+    "concrete-consumed",
+    "wire-consumed"
+  ],
+  "newBindingCount": 20,
+  "expectedFinalBindingCount": 28,
+  "newBindingPrefix": "monolithic-stair:doka:krer06-01-111-01",
+  "bindingOwnershipRules": [
+    "retain exact8 rowId→locatorId→applicability; remap only resource_spec_id to successor row using same rowId",
+    "normal preflight and existing locked reread must compare complete target definition/bindings/source headers/baseline source map",
+    "new20 physical source bindings use only new resource row IDs; no old95attribution to111",
+    "old and new declared binding row IDs must be disjoint and unique",
+    "existing2 source headers remain immutable; new111 exactsource preimage stays absent before insert even with sameartifact competitor"
+  ],
+  "baselineSourceClosureRules": [
+    "old188 normative_source_ids values retained exactly",
+    "new derived/source/project facts attach111 source; no old planning input_values promoted to runtime defaults",
+    "application-owned unresolved source/scope fields have no invented normative source/value",
+    "preserve approved baseline lineage/source_definition_version_id/supersedes as captured; do not reconstruct ancestry from titles"
+  ],
+  "publisherIntegrationOwner": "ROOT, existing MasterSingleDefinition optional retainParentBindings + shared clone plan; no custom writer",
+  "sourceMetadataClosureRule": "Keep late predecessor provenance exact or in exact immutable parent-origin closure; new active contract/source/variant fields must not erase old stage/source origins.",
+  "sourceKeysExactly": [
+    "manufacturer_sika_antisol250w_us_202006_v0103",
+    "stairs_complete_installation_standard_s27_23"
+  ],
+  "automaticGenericPriceInheritanceForNewRows": false,
+  "oldPriceRoutesNotReadOrGuessed": true,
+  "publicationAllowed": false,
+  "pending": [
+    "ROOT common retainParentBindings typeddescriptor andnormal/locked validators",
+    "ROOT exact95classification/admission pin",
+    "ROOT existing-command saved-child sourcevariant-switch guard andnegativecases",
+    "actual successor parent proof if radiator published first"
+  ]
+}
