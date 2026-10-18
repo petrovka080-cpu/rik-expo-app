@@ -1,5 +1,6 @@
 import { canonicalParameterMigrationBindingCompatibleV1 } from "../../lib/estimate/backendPlatform/canonicalParameterMigrationBindingV1";
-import { getCanonicalEstimateCatalogItem, getCanonicalEstimateRevisionHistory, getCanonicalFusionQuantityClearPreviewS2758 } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
+import { getCanonicalEstimateCatalogItem, getCanonicalEstimateRevision, getCanonicalEstimateRevisionHistory, getCanonicalFusionQuantityClearPreviewS2758 } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
+import {canonicalSameImmutableCalculationV1,canonicalSavedApprovedTemplateBaselineIdV1} from '../../lib/estimate/backendPlatform/canonicalImmutableCalculationContinuityV1';
 import { canonicalEstimateStableJson as stable } from '../../lib/estimate/backendPlatform/canonicalEstimateDeterminism';
 import {canonicalStoredManualPricesCanMigrate} from '../../lib/estimate/backendPlatform/canonicalManualPriceReleaseMigration';
 import {floorPreparationIntentBindingS2769 as floorPreparation,isFloorPreparationConsumerS2769} from '../../lib/estimate/backendPlatform/canonicalFloorPreparationIntentS2769';
@@ -96,15 +97,31 @@ export function consumerCanonicalExplicitAutomaticParameters(
   return Object.fromEntries(Object.entries(validated).filter(([id]) => !automatic.has(id) || Object.prototype.hasOwnProperty.call(supplied, id)));
 }
 
-async function existingMigrationChild(parent: CanonicalEstimateRevisionView, catalog: CanonicalEstimateCatalogItem) {
+async function existingMigrationChild(parent: CanonicalEstimateRevisionView, catalog: CanonicalEstimateCatalogItem, sameImmutableCalculation=false) {
   let cursor: string | null = null;
   for (let pageIndex = 0; pageIndex < 20; pageIndex += 1) {
     const page = await getCanonicalEstimateRevisionHistory({ catalogId: parent.catalogId, cursor, limit: 100 });
-    const child = page.revisions.find(candidate => candidate.parentRevisionId === parent.revisionId
+    const candidates = page.revisions.filter(candidate => candidate.parentRevisionId === parent.revisionId
       && candidate.catalogId === parent.catalogId && candidate.releaseId === catalog.releaseId
       && (candidate.organizationId ?? null) === (parent.organizationId ?? null)
       && candidate.status === "ready");
-    if (child) return child;
+    for(const candidate of candidates){
+      if(!sameImmutableCalculation)return candidate;
+      const child=await getCanonicalEstimateRevision(candidate.revisionId);
+      if(child.revisionId===candidate.revisionId&&child.parentRevisionId===parent.revisionId
+        &&child.catalogId===parent.catalogId&&child.releaseId===catalog.releaseId&&child.status==='ready'
+        &&(child.organizationId??null)===(parent.organizationId??null)
+        &&child.definitionVersionId===catalog.immutableCalculationIdentityV1?.definitionVersionId
+        &&canonicalSavedApprovedTemplateBaselineIdV1(child.amendmentContract)===catalog.immutableCalculationIdentityV1?.approvedTemplateBaselineId
+        &&stable(child.amendmentContract.rowOverrides)===stable(parent.amendmentContract.rowOverrides)
+        &&stable(child.amendmentContract.customRows)===stable(parent.amendmentContract.customRows)
+        &&stable(child.userInputSnapshot)===stable(parent.userInputSnapshot)
+        &&stable(child.compositionSelectionV1??null)===stable(parent.compositionSelectionV1??null)
+        &&stable(child.priceSnapshotIds)===stable(parent.priceSnapshotIds)&&child.currencyCode===parent.currencyCode
+        &&child.sourceRequestText===parent.sourceRequestText&&child.sourceRequestHash===parent.sourceRequestHash
+        &&child.primaryMeasureParameterId===parent.primaryMeasureParameterId
+        &&child.primaryMeasureValue===parent.primaryMeasureValue&&child.primaryMeasureUnitId===parent.primaryMeasureUnitId)return child;
+    }
     if (!page.nextCursor) return null;
     if (page.nextCursor === cursor) break;
     cursor = page.nextCursor;
@@ -129,6 +146,7 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
   recoveredRevision?: CanonicalEstimateRevisionView;
   quantityClearPreview?: CanonicalFusionQuantityClearPreviewS2758;
   confirmedCompositionParameters?: Record<string,unknown>;
+  immutableCalculationContinuity?:true;
 }> {
   input.assertMutationSource?.();
   const catalog = await getCanonicalEstimateCatalogItem(input.revision.catalogId);
@@ -149,6 +167,14 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
     throw new CanonicalEstimateApiError("Пересчёт остановлен: не подтверждена исходная версия работы.", {
       code: "REVISION_RELEASE_MISMATCH", httpStatus: 409,
     });
+  }
+  const sameImmutableCalculation=canonicalSameImmutableCalculationV1({fromIdentity:parentCatalog.immutableCalculationIdentityV1,
+    toIdentity:catalog.immutableCalculationIdentityV1,savedCatalogId:input.revision.catalogId,
+    savedDefinitionVersionId:input.revision.definitionVersionId,
+    savedApprovedTemplateBaselineId:canonicalSavedApprovedTemplateBaselineIdV1(input.revision.amendmentContract)});
+  if(sameImmutableCalculation&&(input.hasNewRowAmendments||input.parameterPatchKeys?.length)){
+    throw new CanonicalEstimateApiError('Сначала продолжите сохранённую смету без новых правок. Введённые изменения сохранены в редакторе.',{
+      code:'IMMUTABLE_CALCULATION_BRIDGE_INPUTS_CHANGED',httpStatus:409});
   }
   let quantityClearPreview: CanonicalFusionQuantityClearPreviewS2758 | undefined;
   const physicalIds = ['bench-consumed', 'fixing-included', 'fixing-consumed-separate'].map(key => 'fusion-bench-prepared-concrete:' + key);
@@ -181,7 +207,7 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
       code: "RELEASE_MIGRATION_ROW_BINDING_REVIEW_REQUIRED", httpStatus: 409,
     });
   }
-  if (!quantityClearPreview && !canonicalStoredManualPricesCanMigrate({rowOverrides:input.revision.amendmentContract.rowOverrides,
+  if (!quantityClearPreview && !sameImmutableCalculation && !canonicalStoredManualPricesCanMigrate({rowOverrides:input.revision.amendmentContract.rowOverrides,
       currency:input.revision.currencyCode,
       customRows:input.revision.amendmentContract.customRows,fromBindings:parentCatalog.manualPriceMigrationBindings,toBindings:predecessorBindings?.priceBindings??catalog.manualPriceMigrationBindings,
       fromExclusionBindings:parentCatalog.manualExclusionMigrationBindings,toExclusionBindings:predecessorBindings?.exclusionBindings??catalog.manualExclusionMigrationBindings})) {
@@ -221,7 +247,7 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
   }
   // An existing migration child cannot satisfy a different new composition
   // command. Its own semantic idempotency key handles safe retries server-side.
-  const recoveredRevision = compositionOnlyMigration ? undefined : await existingMigrationChild(input.revision, catalog);
+  const recoveredRevision = compositionOnlyMigration ? undefined : await existingMigrationChild(input.revision, catalog,sameImmutableCalculation);
   if (quantityClearPreview && recoveredRevision) {
     const merged = JSON.parse(stable(input.revision.amendmentContract.rowOverrides));
     for (const row of quantityClearPreview.rows) merged[row.rowId].quantity = null;
@@ -261,7 +287,8 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
   input.assertMutationSource?.();
   const currentCatalog = await getCanonicalEstimateCatalogItem(input.revision.catalogId);
   if (currentCatalog.catalogId !== catalog.catalogId || currentCatalog.releaseId !== catalog.releaseId
-    || currentCatalog.workKey !== catalog.workKey || currentCatalog.definitionVersion !== catalog.definitionVersion) {
+    || currentCatalog.workKey !== catalog.workKey || currentCatalog.definitionVersion !== catalog.definitionVersion
+    ||sameImmutableCalculation&&stable(currentCatalog.immutableCalculationIdentityV1)!==stable(catalog.immutableCalculationIdentityV1)) {
     throw new CanonicalEstimateApiError("Версия расчёта обновилась. Повторите применение и проверьте новую версию.", {
       code: "RELEASE_MIGRATION_TARGET_CHANGED", httpStatus: 409,
     });
@@ -276,6 +303,7 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
       toReleaseId: currentCatalog.releaseId,
     },
     ...(recoveredRevision ? { recoveredRevision } : {}),
+    ...(sameImmutableCalculation?{immutableCalculationContinuity:true as const}:{}),
     ...(quantityClearPreview ? { quantityClearPreview } : {}),
     ...(floorPreparationTransition&&!input.parameterPatchKeys?.includes(floorPreparation.modeId)
       ?{confirmedCompositionParameters:{[floorPreparation.modeId]:floorPreparation.legacyMode}}:{}),

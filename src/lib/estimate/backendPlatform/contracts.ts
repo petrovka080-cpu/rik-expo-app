@@ -9,6 +9,7 @@ import type { AdmissionDecision } from "./estimateAdmissionR3";
 import { canonicalDerivedQuantityEditPolicyV1, type CanonicalDerivedQuantityEditPolicyV1 } from './canonicalDerivedQuantityEditPolicyV1';
 import { canonicalFusionDerivedQuantityClearConsentS2758, type CanonicalFusionDerivedQuantityClearConsentS2758 } from './canonicalFusionDerivedQuantityClearAdmissionS2758';
 import {parseCanonicalMachineHourPriceCoverageV1,type CanonicalMachineHourPriceCoverageV1} from './canonicalMachineHourPriceCoverageV1';
+import type {CanonicalImmutableCalculationIdentityV1} from './canonicalImmutableCalculationContinuityV1';
 
 export const ESTIMATE_PLATFORM_API_VERSION = "2026-08-14.r2" as const;
 
@@ -776,6 +777,8 @@ export type CanonicalEstimateCatalogItem = {
   definitionVersion: number;
   applicability: Record<string, unknown>;
   professionalMetadata: Record<string, unknown>;
+  /** Server-resolved immutable model identity; omission retains strict legacy migration. */
+  immutableCalculationIdentityV1?: CanonicalImmutableCalculationIdentityV1;
   /** Read-only source hashes; a matching price owner never authorizes new row edits. */
   manualPriceMigrationBindings?: Record<string,string>;
   /** Exact resource/application evidence for retaining stored manual exclusions. */

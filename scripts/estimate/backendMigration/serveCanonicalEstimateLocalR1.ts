@@ -61,6 +61,7 @@ import {
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
 import { canonicalEstimateStableJson } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism";
 import { canonicalManualPriceMigrationBindings, canonicalManualExclusionMigrationBindings, assertCanonicalStoredManualPriceReleaseMigration } from "../../../src/lib/estimate/backendPlatform/canonicalManualPriceReleaseMigration";
+import {readCanonicalSameImmutableCalculationR1,assertCanonicalImmutableCalculationSavedInputsR1} from './canonicalImmutableCalculationContinuityR1';
 import { admitCanonicalFusionDerivedQuantityClearServerS2758, previewCanonicalFusionDerivedQuantityClearServerS2758 } from './canonicalFusionDerivedQuantityClearServerS2758';
 import { assertCanonicalFusionSourceTransactionS2758, type CanonicalFusionSourceTransactionIdentityS2758 } from './canonicalFusionPublishedSourceReaderS2758';
 import { canonicalFusionQuantityClearRevisionNumberConflictS2758 } from '../../../src/lib/estimate/backendPlatform/canonicalFusionDerivedQuantityClearAdmissionS2758';
@@ -1799,11 +1800,10 @@ async function createJob(
   const result = await withDatabaseClient(modelDatabaseUrl, async (client) => {
     await client.query(quantityClearRequested||selectedDeliveryRequested ? 'begin isolation level repeatable read' : 'begin');
     try {
+      let commandParent:JsonRecord|null=null;
       if (operation === "recalculate") {
-        const parentInPrincipalScope = Boolean(
-          (
-            await client.query(
-              `select 1 from public.estimate_revision
+        commandParent=(await client.query(
+              `select * from public.estimate_revision
                where id=$1 and catalog_id=$2
                  and (owner_user_id=$3 or organization_id=$4)`,
               [
@@ -1813,9 +1813,8 @@ async function createJob(
                 currentTenantId(),
               ],
             )
-          ).rowCount,
-        );
-        if (!parentInPrincipalScope) {
+          ).rows[0]??null;
+        if (!commandParent) {
           throw Object.assign(new Error("parent revision not found"), {
             code: "NOT_FOUND",
             httpStatus: 404,
@@ -1850,11 +1849,15 @@ async function createJob(
         phase: 'INTAKE', request: body, ownerUserId: currentOwnerId(),
         organizationId: commandOrganizationId, targetReleaseId: commandTargetReleaseId,
       }) : null;
+      const immutableContinuity=commandParent&&!quantityClear&&!selectedDeliveryRequested
+        ?await readCanonicalSameImmutableCalculationR1(client,commandParent,commandTargetReleaseId):null;
+      const continuitySnapshots=immutableContinuity
+        ?assertCanonicalImmutableCalculationSavedInputsR1(commandParent!,body):null;
       const requestedPriceSnapshotIds = Array.isArray(body.priceSnapshotIds)
         ? body.priceSnapshotIds.filter((value): value is string =>
             typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(value))
         : [];
-      const compatibleDefaultPriceSnapshotIds = quantityClear || requestedPriceSnapshotIds.length > 0
+      const compatibleDefaultPriceSnapshotIds = immutableContinuity || quantityClear || requestedPriceSnapshotIds.length > 0
         ? []
         : await resolveDefaultPriceSnapshotIds(
             client,
@@ -1862,7 +1865,7 @@ async function createJob(
             catalogId,
             currencyCode,
           );
-      const priceSnapshotIds = selectedDeliveryRequested ? requestedPriceSnapshotIds : quantityClear ? quantityClear.admission.priceSnapshotIds : canonicalEstimateEffectivePriceSnapshotIds({
+      const priceSnapshotIds = continuitySnapshots!==null ? [...continuitySnapshots] : selectedDeliveryRequested ? requestedPriceSnapshotIds : quantityClear ? quantityClear.admission.priceSnapshotIds : canonicalEstimateEffectivePriceSnapshotIds({
         requested: requestedPriceSnapshotIds,
         compatibleDefaults: compatibleDefaultPriceSnapshotIds,
       });
@@ -2471,6 +2474,7 @@ async function compileClaimedJob(
   let confirmedParameters: JsonRecord = { ...baselineParameters };
   let inheritedUserParameters: JsonRecord = {};
   let parentRevision: JsonRecord | null = null;
+  let sameImmutableCalculation=false;
   if (job.operation === "recalculate") {
     const parent = (
       await client.query(
@@ -2487,7 +2491,13 @@ async function compileClaimedJob(
         { code: "PARENT_REVISION_INVALID" },
       );
     }
-    if (parent.release_id === job.target_release_id) {
+    const continuity=selectedDeliveryRequested||quantityClearRequested?null
+      :await readCanonicalSameImmutableCalculationR1(client,parent,String(job.target_release_id));
+    sameImmutableCalculation=continuity!==null&&continuity.definitionVersionId===definition.id
+      &&continuity.approvedTemplateBaselineId===definition.approved_template_baseline_id
+      &&continuity.definitionSha256===definition.definition_sha256;
+    if(sameImmutableCalculation)assertCanonicalImmutableCalculationSavedInputsR1(parent,payload);
+    if (parent.release_id === job.target_release_id || sameImmutableCalculation) {
       confirmedParameters = {
         ...baselineParameters,
         ...canonicalInheritedConfirmedParameters(
@@ -2719,7 +2729,7 @@ async function compileClaimedJob(
     assertCanonicalCompositionSelectionReleaseMigrationV1({selection:(parentAmendments.parameterSources as JsonRecord|undefined)?.compositionSelectionV1,
       from:{resources:parentResources.rows,formulas:parentFormulas.rows,parameters:parentParameters.rows},
       to:migrationTo});
-    if(!quantityClear) assertCanonicalStoredManualPriceReleaseMigration({
+    if(!quantityClear&&!sameImmutableCalculation) assertCanonicalStoredManualPriceReleaseMigration({
       parentOverrides: parentAmendments.rowOverrides ?? {},
       parentCustomRows: parentAmendments.customRows ?? [],
       requestedOverrides: payload.rowOverrides ?? {}, requestedCustomRows: payload.customRows ?? [],
@@ -4349,6 +4359,8 @@ async function localParameterSessionSnapshot(revisionId: string) {
         definitionVersion: definition.definition_version,
         applicability: definition.applicability,
         professionalMetadata: definition.source_metadata,
+        ...(baseline?{immutableCalculationIdentityV1:{catalogId:identity.catalog_id,definitionVersionId:definition.id,
+          definitionSha256:definition.definition_sha256,approvedTemplateBaselineId:baseline.id}}:{}),
         ...await localManualAmendmentMigrationBindings(client, String(definition.id)),
         parameterSchema: localParameterSessionSchema(
           String(identity.catalog_id),
@@ -6076,6 +6088,8 @@ async function route(
         definitionVersion: definition.definition_version,
         applicability: definition.applicability,
         professionalMetadata: definition.source_metadata,
+        ...(baseline?{immutableCalculationIdentityV1:{catalogId:identity.catalog_id,definitionVersionId:definition.id,
+          definitionSha256:definition.definition_sha256,approvedTemplateBaselineId:baseline.id}}:{}),
         ...await localManualAmendmentMigrationBindings(client, String(definition.id)),
         contentAdmission,
         parameterSchema: parameters.map((parameter) => {

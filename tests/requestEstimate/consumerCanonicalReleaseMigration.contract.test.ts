@@ -56,6 +56,45 @@ beforeEach(() => {
   jest.mocked(getAllCanonicalEstimateRevisionRows).mockResolvedValue([{ rowId: "membrane", unitId: "m2" }] as never);
 });
 
+describe('continuity across releases with one immutable calculation and approved baseline',()=>{
+ const definitionId='c7a94a94-d3fa-5754-9aab-d9f63c953d1b',baselineId='22f25d3d-2e26-5c57-9832-e4668af7afb7';
+ const identity={catalogId:revision.catalogId,definitionVersionId:definitionId,definitionSha256:'a'.repeat(64),approvedTemplateBaselineId:baselineId};
+ const stored=()=>({...revision,definitionVersionId:definitionId,priceSnapshotIds:[],sourceRequestHash:'b'.repeat(64),
+  amendmentContract:{rowOverrides:{material:{quantity:'77',unitPrice:'77',titleRu:'Мой материал',provenance:{kind:'manual'}}},
+   customRows:[{rowId:'my-line',titleRu:'Моя строка',quantity:'2',unitPrice:'9',unitId:'pcs'}],parameterSources:{approvedTemplateBaselineId:baselineId}}}) as unknown as CanonicalEstimateRevisionView;
+ const catalogs=()=>getCatalog.mockImplementation(async(_id,_signal,releaseId)=>({...releaseId?oldCatalog:target,definitionVersion:1,immutableCalculationIdentityV1:identity}));
+ it('retains stored quantities, titles, prices and custom rows with the existing release confirmation',async()=>{
+  catalogs();const p=stored(),before=JSON.stringify(p),confirm=jest.fn().mockResolvedValue(true);
+  const result=await resolveConsumerCanonicalRecalculationCatalog({revision:p,confirmReleaseMigration:confirm});
+  expect(result.immutableCalculationContinuity).toBe(true);expect(result.releaseMigration).toEqual(migration);expect(confirm).toHaveBeenCalledTimes(1);expect(JSON.stringify(p)).toBe(before);
+ });
+ it('sends an input-preserving bridge and the exact empty snapshot list to the ordinary owner API',async()=>{
+  catalogs();const p=stored();jest.mocked(getCanonicalEstimateRevision).mockResolvedValue(p);
+  jest.mocked(recalculateCanonicalEstimateAndLoad).mockRejectedValue(new Error('backend reached'));
+  await expect(recalculateConsumerCanonicalEstimate({revisionId:p.revisionId,draftId:'draft',problemText:'Смета',patches:[],confirmReleaseMigration:async()=>true})).rejects.toThrow('backend reached');
+  expect(jest.mocked(recalculateCanonicalEstimateAndLoad).mock.calls[0][0].request).toMatchObject({parameters:{},priceSnapshotIds:[],
+    rowOverrides:p.amendmentContract.rowOverrides,customRows:p.amendmentContract.customRows,releaseMigration:migration});
+ });
+ it('preserves pending edits and refuses to mix them into the first bridge',async()=>{
+  catalogs();const p=stored(),before=JSON.stringify(p),confirm=jest.fn().mockResolvedValue(true);
+  await expect(resolveConsumerCanonicalRecalculationCatalog({revision:p,parameterPatchKeys:['area_m2'],confirmReleaseMigration:confirm})).rejects.toMatchObject({code:'IMMUTABLE_CALCULATION_BRIDGE_INPUTS_CHANGED'});
+  expect(confirm).not.toHaveBeenCalled();expect(JSON.stringify(p)).toBe(before);
+ });
+ it('keeps changed baseline identities on the existing strict manual-migration path',async()=>{
+  getCatalog.mockImplementation(async(_id,_signal,releaseId)=>({...releaseId?oldCatalog:target,
+   immutableCalculationIdentityV1:{...identity,...(!releaseId?{approvedTemplateBaselineId:'11111111-1111-4111-8111-111111111111'}:{})}}));
+  await expect(resolveConsumerCanonicalRecalculationCatalog({revision:stored(),confirmReleaseMigration:async()=>true})).rejects.toMatchObject({code:'RELEASE_MIGRATION_ROW_BINDING_REVIEW_REQUIRED'});
+ });
+ it('recovers only a complete matching child rather than the first child of the same release',async()=>{
+  catalogs();const p=stored(),child={...p,revisionId:'55555555-5555-4555-8555-555555555555',parentRevisionId:p.revisionId,releaseId:targetRelease};
+  jest.mocked(getCanonicalEstimateRevisionHistory).mockResolvedValue({revisions:[child],nextCursor:null} as never);
+  jest.mocked(getCanonicalEstimateRevision).mockResolvedValue({...child,priceSnapshotIds:['11111111-1111-4111-8111-111111111111']});
+  expect((await resolveConsumerCanonicalRecalculationCatalog({revision:p,confirmReleaseMigration:async()=>true})).recoveredRevision).toBeUndefined();
+  jest.mocked(getCanonicalEstimateRevision).mockResolvedValue(child);
+  expect((await resolveConsumerCanonicalRecalculationCatalog({revision:p,confirmReleaseMigration:async()=>true})).recoveredRevision?.revisionId).toBe(child.revisionId);
+ });
+});
+
 describe('primary quantities omitted from the user snapshot', () => {
   it.each(['removed', 'unit', 'meaning'] as const)('blocks an incompatible assumed primary before consent (%s)', async change => {
     const before = {...oldCatalog, parameterSchema: [{...target.parameterSchema[0]!, parameterId: 'q',

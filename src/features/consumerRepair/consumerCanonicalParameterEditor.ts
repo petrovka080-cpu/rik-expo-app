@@ -837,7 +837,7 @@ export async function recalculateConsumerCanonicalEstimate(input: {
   compositionSelectionV1?: import('../../lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1').CanonicalEstimateCompositionSelectionV1|null;
 } & ConsumerCanonicalRecalculationConsent): Promise<{ mapping: ForemanAiEstimateDraftMapping; session: CanonicalParameterSession; recovered?: boolean; quantityPolicyTransition?: boolean }> {
   const revision = await getCanonicalEstimateRevision(input.revisionId);
-  const { catalog, releaseMigration, recoveredRevision, quantityClearPreview, confirmedCompositionParameters } = await resolveConsumerCanonicalRecalculationCatalog({ ...input, revision,
+  const { catalog, releaseMigration, recoveredRevision, quantityClearPreview, confirmedCompositionParameters,immutableCalculationContinuity } = await resolveConsumerCanonicalRecalculationCatalog({ ...input, revision,
     allowQuantityClearTransition: true, hasNewRowAmendments: Object.keys(input.rowOverrides ?? {}).length > 0||Object.hasOwn(input,'roofPrimerPrerequisiteV1')||Object.hasOwn(input,'compositionSelectionV1')||Object.hasOwn(input,'selectedMaterialDeliveryRequestV1'), parameterPatchKeys: input.patches.map(patch => patch.paramKey),
     ...(Object.hasOwn(input,'compositionSelectionV1')&&input.patches.length===0&&Object.keys(input.rowOverrides??{}).length===0&&!Object.hasOwn(input,'roofPrimerPrerequisiteV1')&&!Object.hasOwn(input,'selectedMaterialDeliveryRequestV1')
       ?{compositionOnlySelectionV1:input.compositionSelectionV1}:{}), });
@@ -865,7 +865,7 @@ export async function recalculateConsumerCanonicalEstimate(input: {
     : consumerCanonicalExplicitAutomaticParameters(catalog, validation.parameters, rawInputs)) as Record<string, CanonicalEstimateParameterInputValue>;
   if(input.patches.some(patch=>patch.paramKey==='selected_delivery_admitted_trip_count'))
     throw new CanonicalEstimateApiError('Число рейсов рассчитывает сервер по подтверждённой партии.',{code:'DERIVED_QUANTITY_PARAMETERS_ONLY',httpStatus:400});
-  const parameters={...parametersWithInheritedTechnicalValues};
+  const parameters:Record<string,CanonicalEstimateParameterInputValue>=immutableCalculationContinuity?{}:{...parametersWithInheritedTechnicalValues};
   delete parameters.selected_delivery_admitted_trip_count;
   const selectedMaterialDeliveryV1=canonicalSelectedDeliveryClientRequestR1({revisionId:revision.revisionId,
     context:revision.selectedMaterialDeliveryContext,savedParameters:revision.parameters,parameters,
@@ -913,6 +913,7 @@ export async function recalculateConsumerCanonicalEstimate(input: {
       rowOverrides,
       customRows,
       ...(releaseMigration ? { releaseMigration } : {}),
+      ...(immutableCalculationContinuity?{priceSnapshotIds:revision.priceSnapshotIds}:{}),
       ...(selectedMaterialDeliveryV1?{selectedMaterialDeliveryV1,priceSnapshotIds:revision.priceSnapshotIds}:{}),
       ...(derivedQuantityClearV1 ? { derivedQuantityClearV1, priceSnapshotIds: revision.priceSnapshotIds } : {}),
       ...(Object.hasOwn(input,'roofPrimerPrerequisiteV1')?{roofPrimerPrerequisiteV1:input.roofPrimerPrerequisiteV1}:{}),
