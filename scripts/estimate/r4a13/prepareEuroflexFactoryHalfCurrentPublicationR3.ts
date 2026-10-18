@@ -20,6 +20,14 @@ export function prepareEuroflexFactoryHalfCurrentPublicationR3(parent:PurchaseGr
  const catalogId=parent.definition.catalog_id,definitionId=uuid([contract,input.releaseId,catalogId]),baselineId=uuid([definitionId,'baseline']);
  assert.equal(context.priceRouteBindings.length,0,'EXACT_CURRENT_PRICE_BINDING_SET');
  assert.equal(r.parameters.length,45);assert.equal(r.formulas.length,25);assert.equal(r.resources.length,25);assert.equal(r.bindings.length,16);
+ const parentRowIds=new Map(parent.resources.map(row=>[String(row.id),String(row.row_id)]));
+ const bindingRowId=(binding:Json)=>{
+  const rowId=parentRowIds.get(String(binding.resource_spec_id));
+  assert(rowId,'EXACT_PARENT_BINDING_RESOURCE_REQUIRED');
+  assert(binding.row_id===undefined||binding.row_id===rowId,'BINDING_ROW_IDENTITY_DRIFT');
+  return rowId;
+ };
+ const representative={...r,bindings:r.bindings.map(binding=>({...binding,row_id:bindingRowId(binding)}))};
  const definitionSha256=hash({contract,parentDefinitionSha256:parent.definition.definition_sha256,
   parameters:r.parameters,formulas:r.formulas,resources:r.resources});
  const decision:Json={...parent.passport.decision,status:'GREEN',allowed:true,waveContract:contract,
@@ -32,7 +40,7 @@ export function prepareEuroflexFactoryHalfCurrentPublicationR3(parent:PurchaseGr
    sourceMetadata:{...parent.definition.source_metadata,contract,masterSha256:input.masterSha256,
     predecessorDefinitionId:parent.definition.id,sourcePreimageSha256:prepared.sourcePreimageSha256,
     preservedDelivery:true,activationAllowed:false,productionEligible:false}},
-  representative:r,parameterTruthMetadata:p=>({...p.truth_metadata}),
+  representative,parameterTruthMetadata:p=>({...p.truth_metadata}),
   resourceId:row=>uuid([definitionId,row.row_id]),resourceSemanticOwner:row=>String(row.semantic_owner??`${catalogId}:${row.row_id}`),
   resourceSha256:row=>hash(row),
   baseline:{id:baselineId,key:`${contract}:${definitionId}`,sourceDefinitionVersionId:parent.definition.id,
@@ -44,7 +52,12 @@ export function prepareEuroflexFactoryHalfCurrentPublicationR3(parent:PurchaseGr
    decision,payloadSha256:hash({definitionSha256,decision}),sourceHead:input.sourceHead,sourceTree:input.sourceTree},
   bindingApplicability:b=>b.applicability,expectedNormativeBindingCount:16});
  assert(canonicalPublisherQuantityScopeIsConsistent(plan),'UNCHANGED_UNRESOLVED_SCOPE_REQUIRED');
- assert.deepEqual(plan.bindings.map(b=>[b.locator_id,b.applicability]),parent.bindings.map(b=>[b.locator_id,b.applicability]));
+ const rowIds=new Map(plan.resources.map(row=>[row.id,row.row_id]));
+ const orderedBindings=(bindings:Json[])=>bindings.sort((a,b)=>String(a.row_id).localeCompare(String(b.row_id))
+  ||String(a.locator_id).localeCompare(String(b.locator_id)));
+ assert.deepEqual(orderedBindings(plan.bindings.map(b=>({row_id:rowIds.get(String(b.resource_spec_id)),
+  locator_id:b.locator_id,applicability:b.applicability}))),
+  orderedBindings(parent.bindings.map(b=>({row_id:bindingRowId(b),locator_id:b.locator_id,applicability:b.applicability}))));
  return {plan,sourcePreimageSha256:prepared.sourcePreimageSha256,
   sameRowManualFieldBindings:prepared.sameRowManualFieldBindings,
   manualPriceMigrationBindings:prepared.manualPriceMigrationBindings,
