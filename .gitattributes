@@ -1,2 +1,4 @@
 ﻿* text=auto eol=lf
 artifacts/pdf/**/*.pdf binary
+data/estimate-benchmarks/fixtures/fischer-duopower-535463-official-product-r1.html binary
+data/estimate-benchmarks/fixtures/iek-elecor-60x40-official-product-edition8-link-r1.html binary

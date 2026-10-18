@@ -1,0 +1,161 @@
+{
+  "contract": "rik-expo-app.elecor-project-mechanical-fixings-completion.r1",
+  "status": "WORK_SOURCE_AND_PROJECT_BOUND_QUANTITY_CANDIDATE_NOT_RUN_NOT_ADOPTED",
+  "catalogId": "canonical-work:master:electrical_elecor_60x40_white_single_straight_route_materials",
+  "primaryParameterId": "elecor_route_m",
+  "primaryUnitId": "m",
+  "sourceId": "iek_elecor_ckk10_001_1_edition8_project_mechanical_fixings",
+  "officialPassport": {
+    "path": "data/estimate-benchmarks/fixtures/iek-elecor-ckk10-001-1-edition8-official-r1.pdf",
+    "sha256": "9b7dd702dd3ef94f74f17d96aa8baf296eb198732f1a58261ee7b100529f3d24",
+    "bytes": 3157983,
+    "url": "https://cdn-01.iek.ru/media/original/9b7dd702dd3ef94f74f17d96aa8baf296eb198732f1a58261ee7b100529f3d24.pdf",
+    "edition": "CKK10.001.1 edition8",
+    "locatorRu": "PDF1: Правила монтажа и эксплуатации; PDF3 table2:60×40 length2m; PDF4 table3:9sections/18m"
+  },
+  "method": "Механическое крепление к бетонной стене: комплект535463 по принятому ППР",
+  "layoutAcceptance": "Ведомость точек крепления этого прямого участка проверена и принята в ППР",
+  "skuUnitAcceptance": "Одна штука — полный комплект535463: дюбельDuoPower6×30 и винтPanhead4,5×40",
+  "priceScope": "Цена только комплектного крепежа; труд, инструмент, доступ и доставка отдельно",
+  "manufacturerFacts": {
+    "locationsDeterminedByPpr": true,
+    "maxRecommendedInterPointSpacingM": 1,
+    "spacingIsRecommendationNotConsumptionNorm": true,
+    "allowedMethods": [
+      "mechanical fasteners",
+      "adhesive",
+      "double-sided adhesive tape"
+    ],
+    "labourHoursPublished": false,
+    "specificFastenerSkuPublished": false,
+    "fastenersPerMetrePublished": false,
+    "mountingAndOperatingAirTemperatureC": {
+      "minimum": 5,
+      "maximum": 60
+    }
+  },
+  "scopeRu": "Только existing ELECOR60×40: один новый прямой участок на стене из пригодного бетона, ППР явно принимает узел с одним complete fischer535463 на точку, без дополнительных неучтённых компонентов. ППР задаёт точки и подтверждает нагрузку, отверстие/головку и толщину крепимого элемента ≤6мм. Это не системная сертификация сочетания IEK+fischer.",
+  "projectFactsRequired": [
+    "elecor_fixing_method",
+    "elecor_fixing_schedule_acceptance",
+    "elecor_fixing_ppr_reference",
+    "elecor_fixing_schedule_route_m",
+    "elecor_fixing_ppr_point_count",
+    "elecor_fixing_max_interpoint_m",
+    "elecor_fixing_product_sku",
+    "elecor_fixing_complete_unit_acceptance",
+    "elecor_fixing_price_scope",
+    "elecor_fixing_stock_pcs",
+    "elecor_fixing_reserve_pcs",
+    "elecor_fixing_project_node_acceptance",
+    "elecor_fixing_attachment_thickness_m",
+    "elecor_fixing_supplier_box_multiple",
+    "elecor_fixing_installation_environment_acceptance"
+  ],
+  "remainingOpenNeeds": [
+    "installation-labour",
+    "end-node-components",
+    "tools",
+    "access-protection",
+    "acceptance",
+    "delivery-handling",
+    "cleanup-disposal"
+  ],
+  "noClosureClaims": [
+    "manufacturer labour norm",
+    "all fixing methods",
+    "adhesive quantity",
+    "electrical solution acceptance",
+    "complete work",
+    "new catalog type"
+  ],
+  "publicationAllowed": false,
+  "actualCurrentParentRequired": true,
+  "newCatalogOrGroupProposed": false,
+  "fullTechnicalAcceptance": false,
+  "acceptedNewCompleteTypes": 0,
+  "basePins": [
+    {
+      "path": "data/estimate-benchmarks/source-packs/elecor-60x40-single-route-materials-r1.json",
+      "sha256": "e3dc50af4ef1f47a6866587403e5ae2b13f6ab10e4f18968b6136687174f9657"
+    },
+    {
+      "path": "src/lib/estimate/v4/elecorSingleRouteMaterialR1.ts",
+      "sha256": "2006e830eb5c5b00b40091e2d68dfd8be89d3146980178a0b0fbd816ac7e12db"
+    },
+    {
+      "path": "src/lib/estimate/v4/elecorSingleRouteMaterialR1.test.ts",
+      "sha256": "d1afac7a7be31fc6f8da18e1712dd9f99b50ccb33d8296e6efd9bf6829454661"
+    },
+    {
+      "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+      "sha256": "d4c2192d1d5c4ef0285668b3c1aeb2994c2b57c3e8b9d8d6a776ee4c3e10d7ae"
+    },
+    {
+      "path": "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
+      "sha256": "021602e3309f07ab67db0dbd369b731535319509380b5297077a9fb3244d1bb7"
+    }
+  ],
+  "fixedProduct": {
+    "manufacturer": "fischer",
+    "article": "535463",
+    "gtin": "4048962239928",
+    "productName": "DuoPower6×30 with Panhead4.5×40",
+    "supplyBoxCompleteFixings": 50,
+    "boxContents": {
+      "dowels6x30": 50,
+      "panheadScrews4_5x40": 50
+    },
+    "ownerUnit": "pcs",
+    "ownerUnitMeaning": "onecompleteanchor+screw assembly; priceperassembly, notperbox",
+    "source": {
+      "url": "https://www.fischer.de/de-de/produkte/standardbefestigungen/kunststoffduebel/duopower/duopower-mit-schraube-2-komponenten-universalduebel-mit-schraube/535463-duopower-6-x-30-s-ph",
+      "finalUrl": "https://www.fischer.de/de-de/produkte/standardbefestigungen/kunststoffduebel/duopower/duopower-mit-schraube-2-komponenten-universalduebel-mit-schraube/535463-duopower-6-x-30-s-ph",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "path": "data/estimate-benchmarks/fixtures/fischer-duopower-535463-official-product-r1.html",
+      "sha256": "25dbca1b88027f5854263f6341b8800921abba0a05080b2dbc373225cfb7c3bf",
+      "bytes": 256936,
+      "capturedAt": "2026-10-18T15:37:31.321674+00:00"
+    },
+    "technicalFactsMm": {
+      "boreDiameter": 6,
+      "maxFixtureThickness": 6,
+      "anchorLength": 30,
+      "minHoleDepth": 45,
+      "screwDiameter": 4.5,
+      "screwLength": 40,
+      "minScrewInDepth": 34
+    },
+    "projectScopeNotProvedByProductCard": true
+  },
+  "projectNodeAcceptance": "Узел535463 на бетонной стене принят в ППР: нагрузка, отверстие, головка и полный состав проверены",
+  "materialQuantitySource": "ExactacceptedPPRpointcount, oneconfirmed535463completeassembly perpoint; manufacturer doesnot supplypoints/metre.",
+  "sourceAwareBindingDecisionPending": true,
+  "existingNeedRowId": "electrical:elecor-60x40-single-route:open-fixings",
+  "legacyUnresolvedQuantityParameterId": "elecor_open_qty_fixings",
+  "priceOwnerRowId": "electrical:elecor-60x40-single-route:fixings-535463-order",
+  "projectQuantityParameterId": "elecor_fixing_ppr_point_count",
+  "unresolvedMethod": "Способ и узел крепления ещё не подтверждены",
+  "needToPaidTransition": {
+    "oldNeedAndApplicationParameterPreserved": true,
+    "paidOwnerIdentityIsNew": true,
+    "automaticLegacyUnknownNormPriceOrQuantityTransferAllowed": false,
+    "actualCurrentSavedStateAndRootMigrationDecisionRequired": true
+  },
+  "installationEnvironmentAcceptance": "Условия монтажа проверены: стена, температура +5…+60°C, без агрессивных жидкостей",
+  "sourceEditionReconciliation": {
+    "oldCatalogueLowerTemperatureNotReused": true,
+    "newManualEdition8ControlsOnlyNewMechanicalBranch": true,
+    "oldPublishedInputsNotSilentlyRewritten": true,
+    "ip40NotClaimedWithoutWholeClosedAccessorySystem": true
+  },
+  "publicOwnerSourceTitleRu": "fischer 535463 DuoPower 6×30 с винтом Panhead 4,5×40 — заказ; цена за один комплект дюбель+винт",
+  "publicOwnerNameRu": "Крепёж fischer DuoPower 6 × 30 с винтом Panhead 4,5 × 40, 535463: коробка 50 комплектов; цена за комплект",
+  "publicOwnerSpecificationRu": "50 комплектов в заводской коробке: 50 дюбелей DuoPower 6×30 и 50 винтов Panhead 4,5×40. Строка измеряется в комплектных парах, цена за одну пару, не за коробку.",
+  "exactElecorProductPage": {
+    "path": "data/estimate-benchmarks/fixtures/iek-elecor-60x40-official-product-edition8-link-r1.html",
+    "sha256": "f63a1cc6befe3c72c10231841be3bd4c79b30e27621b43a6db539800b6270323",
+    "role": "OfficialexactCKK10-060-040-1-K01-018 pagepoints toCKK10.001.1edition8PDF hash9b7d; notmountingrate"
+  }
+}

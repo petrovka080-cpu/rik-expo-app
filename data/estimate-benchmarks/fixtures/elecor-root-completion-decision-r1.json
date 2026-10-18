@@ -1,0 +1,37 @@
+{
+  "status": "ROOT_REVIEWED_ELECOR_PPR_FIXINGS_COMPLETION_R1",
+  "catalogId": "canonical-work:master:electrical_elecor_60x40_white_single_straight_route_materials",
+  "proposal": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-elecor-installation-completion-r1/current-source-bound-successor-r2/elecor-actual-current-classification-and-successor-proposal-r2.json",
+    "sha256": "e8f44f76c77c870cb17b7b64577fa2ab93b43dd76edbd6b316c20a16b804e800"
+  },
+  "currentRead": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/elecor-current-preimage-actual-v1/elecor-exact-current-preimage-actual-v1.json",
+    "sha256": "5104941defb379f6e31c287b2577dd0e3401a26fe42f3f595fa99f9b96c8f332"
+  },
+  "executionContext": {
+    "definitionReleaseId": "60f8d40d-3c34-5ab6-850b-3a332c9f56b8",
+    "searchReleaseId": "e71616a3-54b5-57b4-aa90-3a86bcb3e119",
+    "sourceHead": "1e0f4b4f46610ea7916c5740bff966e96442f79f",
+    "recordedReleaseSourceCommit": "19b3b1856468d9889de48cec24d81fff17afafb8"
+  },
+  "master": {
+    "sha256": "dfbb757a1562962636259c1c4cffd9127d15882b00cdd49baa8fcd4831bcacf2"
+  },
+  "published": false,
+  "fullTechnicalAcceptance": false,
+  "newCompleteTypes": 0,
+  "automaticLegacyUnknownNormPriceOrQuantityTransferAllowed": false,
+  "rootReview": {
+    "status": "DESIGN_SCOPE_REVIEWED_CHECKS_AND_PUBLICATION_PENDING",
+    "integratorSourceHead": "b63eba214eb0ad0ea43ac43b0ddc4ebfbe88c90a",
+    "decisions": [
+      "Improve the existing ELECOR material profile; no new identity or complete-estimate count.",
+      "Manufacturer method and exact complete fischer535463 SKU support a separate project-scheduled branch. Recommendation <=1m does not supply point count; PPR/node/stock/pack facts required.",
+      "One pcs is one complete dowel+screw pair,50 pairs per box; raw manual order77 retained but procurement blocked by quantum. No installation labour/machine norm admitted.",
+      "Old18 source-aware bindings and old baseline sources retained; old unknown-norm need/parameter remain application-owned and cannot supply new owner quantity or price.",
+      "Static8 needs across methods, active7 only for accepted mechanical branch. No automatic migration of old saved revisions; existing strict changed-definition gate remains.",
+      "Accept source and test adoption only. Shared locked retention/registry preflight, actual tests/types, saved API/documents and final client remain pending."
+    ]
+  }
+}
