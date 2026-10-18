@@ -1,0 +1,97 @@
+{
+  "contract": "road-upper-gravel02-append-scope-absence-proof/v1",
+  "capturedSourceHead": "b56e311d5a34094d19cd2a38b8cecbb386aef304",
+  "pair": {
+    "definitionReleaseId": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+    "searchReleaseId": "756fad32-723d-553c-8215-1e6271c05ec7"
+  },
+  "proposedAppend": {
+    "workKey": "road_upper_crushed_stone_150mm_m1200_two_layer_krer27_04_005_02",
+    "catalogId": "canonical-work:master:road_upper_crushed_stone_150mm_m1200_two_layer_krer27_04_005_02",
+    "groupId": "road_upper_base_krer27_04_005_02",
+    "sourceKey": "kg_krer27_04_005_02_upper_gravel150_r1",
+    "locatorKey": "KRER27-04-005-02-P48-UPPER-LAYER-150MM-M1200"
+  },
+  "sourcePreimageSha256": "5953cafb42913dfd345ae0a30cdc633463b21fe4c79b985030c99f0f1c5d5f9e",
+  "readerReceiptSha256": "2bcb52202ce7d0c8be385543cbcc18c5b7b4a1a97a523c39fcf14ae641a5159d",
+  "rootGuardReceiptSha256": "5e5bf4a6cc7ae348b468063664666721ba4c7a2bcd90a297cc16abf9eb51a8bd",
+  "completeReadSet": true,
+  "transactionRolledBack": true,
+  "connectionClosed": true,
+  "noOwnedProcessStillRunning": true,
+  "absenceSets": {
+    "proposedAppendIdentityCollisions": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "proposedAppendCurrentMembership": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "proposedAppendCurrentSearch": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "proposedAppendGroupCollision": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "proposedAppendSourceKeyCollision": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "proposedAppendLocatorCollision": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "rejectedExistingConsumers": [
+    {
+      "catalogId": "canonical-work:base:earthworks_interior_gravel_base_prepare_standard",
+      "definitionId": "629ab325-2e12-521c-aa9a-4169ecff0813",
+      "definitionVersion": 4,
+      "definitionSha256": "324f859a522a92835e642dc5f3e1c1b0d4021415b1aeda309452070259bb29c5"
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_gravel_base_install_standard",
+      "definitionId": "75cdeea9-b056-53a6-b815-cac97b1cd8a1",
+      "definitionVersion": 3,
+      "definitionSha256": "8818190d875289b382060460b48b465cadca67c77a1da63c28137f2f0cca5bfe"
+    },
+    {
+      "catalogId": "canonical-work:master:road_platform_crushed_stone_150mm_hot_asphalt_50mm",
+      "definitionId": "146d048c-7d67-50ff-bbe7-f9f93b30cf81",
+      "definitionVersion": 2,
+      "definitionSha256": "bd59238fdf6fdc24bf099aa32a9e51829feb45fa14766d86d202fda306ee6665"
+    }
+  ],
+  "genericOldRowsPriceAndSavedNeverImported": {
+    "targetResources": {
+      "rowCount": 59,
+      "rawRowsSha256": "7beae0b45e923dfe036b04f24d86e3c790b32b29343a7e9e2bc624eb16bd0cc4"
+    },
+    "targetFormulas": {
+      "rowCount": 59,
+      "rawRowsSha256": "aa4d75e73487a1dda230124f571dc8ddd4150b55ec1243a0915f1f5063c2993a"
+    },
+    "targetPriceBindings": {
+      "rowCount": 59,
+      "rawRowsSha256": "c14c2c3b9a18aebd40cd002b087d541e966caae0805bf9f90aac306e3b33bc49"
+    },
+    "targetSavedRevisions": {
+      "rowCount": 1,
+      "rawRowsSha256": "3aecf0c92ba34b82154ef60df3160ac08c38138c75ce4f920ef318da2d6558a7"
+    },
+    "targetSavedRows": {
+      "rowCount": 59,
+      "rawRowsSha256": "7680d18bbf5cdb72de1dc1cd9fa935f54e3b6517e42aea58d5bd7ccc3a597052"
+    },
+    "targetSavedPrices": {
+      "rowCount": 59,
+      "rawRowsSha256": "e0bb89de6b6489d2ff1b07e3042bbf16990f8f190c6cea103fdf15d7c2703a62"
+    }
+  },
+  "scopeDecision": "SOURCE_SPECIFIC_ROAD_UPPER02_APPEND; existinggeneric59m2profile doesnotprove road02; interiorproject-volume andsingle01+asphalt scopes excluded",
+  "noHistoricPriceOrManualMigration": true,
+  "identityAllocated": false
+}

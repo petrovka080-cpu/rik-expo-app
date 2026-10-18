@@ -28,10 +28,22 @@ add('roof:metal-trim:krer12-010-01',{tower_crane_8t:'02-0005',flatbed_truck_to_5
 add('roof:vapor:krer12-015-03',{tower_crane_8t:'02-0005',truck_crane_10t:'02-0075',bitumen_kettle_400l:'12-0340',flatbed_truck_to_5t:'40-0001'});
 add('roof:clay-insulation:krer12-014-02',{tower_crane_8t:'02-0005',forklift_5t:'03-0020'});
 add('roof:hanging-gutters:krer12-009-02',{tower_crane_8t:'02-0005',truck_crane_10t:'02-0075',flatbed_truck_to_5t:'40-0001'});
+// Exact source-backed road upper-layer owners; the existing v1 price contract is unchanged.
+const roadUpperCatalog='canonical-work:master:road_upper_crushed_stone_150mm_m1200_two_layer_krer27_04_005_02';
+const roadUpperOwners:Record<string,Requirement>={
+  'road-upper-base:krer27-04-005-02:equipment:loader':{resourceCode:'03-0020',operator:'OPERATOR'},
+  'road-upper-base:krer27-04-005-02:equipment:grader':{resourceCode:'12-0023',operator:'OPERATOR'},
+  'road-upper-base:krer27-04-005-02:equipment:roller8t':{resourceCode:'12-0272',operator:'OPERATOR'},
+  'road-upper-base:krer27-04-005-02:equipment:roller13t':{resourceCode:'12-0273',operator:'OPERATOR'},
+  'road-upper-base:krer27-04-005-02:equipment:waterBowser':{resourceCode:'12-0400',operator:'DRIVER'},
+  'road-upper-base:krer27-04-005-02:equipment:spreader':{resourceCode:'12-0540',operator:'OPERATOR'},
+};
+Object.assign(owners,roadUpperOwners);
 const aliases=new Set(['FULL_OPERATED_MACHINE_HOUR','FULL_OPERATED_VEHICLE_HOUR_DRIVER_INCLUDED_NOT_IN_INFO','FULL_OPERATED','FULL_DRIVER','FULL_MACHINE_SOURCE_COST','EQUIPMENT_OPERATION_NO_ADDITIONAL_OPERATOR_NORM_ADMITTED']);
 const admittedCatalogs=new Set(['canonical-work:base:roofing_interior_flat_roof_install_technical_room','canonical-work:base:roofing_interior_flat_roof_install_wet_zone']);
 const admittedOwner=(catalogId:string,rowId:string)=>admittedCatalogs.has(catalogId)
-  ||standalone.targets.some(t=>t.catalogId===catalogId)&&rowId.startsWith('roof:cement-screed25:krer12-017-01-plus-10x02:');
+  ||standalone.targets.some(t=>t.catalogId===catalogId)&&rowId.startsWith('roof:cement-screed25:krer12-017-01-plus-10x02:')
+  ||catalogId===roadUpperCatalog&&Object.prototype.hasOwnProperty.call(roadUpperOwners,rowId);
 const record=(value:unknown):Record<string,unknown>=>value!=null&&typeof value==='object'&&!Array.isArray(value)?value as Record<string,unknown>:{};
 const decimal=(value:unknown)=>typeof value==='string'&&/^\d+(?:\.\d+)?$/.test(value)&&value.length<=80;
 export function canonicalMachineHourPriceRequirementV1(rowId:string,unitId:string):Requirement|null{

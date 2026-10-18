@@ -1,0 +1,373 @@
+{
+  "contract": "rik-expo-app.euroflex-factory-half-current-delivery.r3",
+  "status": "WORK_CURRENT_V2_TO_V3_UNBOUND_NOT_PUBLISHED",
+  "catalogId": "canonical-work:master:rubber_playground_surface_euroflex_recycling_50mm_rectangular",
+  "workKey": "rubber_playground_surface_euroflex_recycling_50mm_rectangular",
+  "proposedNextDefinitionVersion": 3,
+  "newCatalogIdentityAllocated": false,
+  "acceptedNewCompleteTypes": 0,
+  "newPhysicalNorms": 0,
+  "quantityBasis": "MANUFACTURER_FACTORY_FORMATS_PLUS_INDEPENDENT_NOMINAL_PROJECT_LAYOUT",
+  "quantityScope": "PARTIAL",
+  "sourceId": "euroflex_recycling50_factory_half_current_delivery_r3",
+  "normId": "euroflex_recycling50_nominal_factory_format_geometry_r3",
+  "sources": [
+    {
+      "id": "euroflex-pds-9301-r05-2026-09",
+      "titleRu": "Паспорт ударопоглощающих плит EUROFLEX, № 9301, редакция R-05",
+      "edition": "September 2026",
+      "officialUrl": "https://www.kraiburg-relastec.com/pdfs/data-sheets/euroflex/en/data-sheet-euroflex-impact-protection-slab-32.pdf",
+      "currentWorkArtifact": "astra-landscaping-first-packet/EUROFLEX-9301-R05-2026-09.pdf",
+      "sha256": "5d5a503a1879d7f9ada9939a9c5287a866255311926b6ce9e4b1d4f4c13f28fb",
+      "locatorRu": "Стр. 2: толщина 50 мм, высота падения до 1,50 м, размеры 500 × 500 и 500 × 250 мм; стр. 3: смещение швов; стр. 4: соединительные штифты входят в изделие.",
+      "localArtifact": ".release-runtime/r568/s27-75/euroflex-materials/primary/EUROFLEX-9301-R05-2026-09.pdf"
+    },
+    {
+      "id": "euroflex-ii-9301-1-r11-2025-08",
+      "titleRu": "Инструкция по укладке ударопоглощающих плит EUROFLEX, № 9301.1, редакция R-11",
+      "edition": "August 2025",
+      "officialUrl": "https://www.kraiburg-relastec.com/pdfs/installation-instructions/euroflex/en/installation-instruction-euroflex-impact-protection-slab-32.pdf",
+      "currentWorkArtifact": "astra-landscaping-first-packet/EUROFLEX-9301-1-R11-2025-08.pdf",
+      "sha256": "756186d6bd37e6bccbd4d9b6faf31b0747baf121773023eb6a907306fa29f81a",
+      "locatorRu": "Стр. 3–5: пригодность основания; стр. 6–7: каждый второй ряд начинается с половинной плитки, направление Т-образных швов; стр. 10–12: примыкания и склеивание. Расход для краевых профилей на стр. 16 не является расходом клея на всю площадь.",
+      "localArtifact": ".release-runtime/r568/s27-75/euroflex-materials/primary/EUROFLEX-9301-1-R11-2025-08.pdf"
+    }
+  ],
+  "sourceInference": {
+    "kind": "EXPLICIT_GEOMETRIC_INFERENCE_NOT_MANUFACTURER_RATE",
+    "basis": "500x500 and500x250 factory formats; each alternate row starts with a half slab; fixed T-joint direction; terminal factory half can close a nominal length of250 modulo500.",
+    "actualNoCutFitClaimed": false,
+    "manufacturingTolerancePercent": 0.8,
+    "sourceToleranceLocator": "Installation9301.1-R11,page6",
+    "sourceDrawingLocator": "Installation9301.1-R11,page7,Correct T-joints",
+    "pinsAlreadyIncludedInProduct": true
+  },
+  "layout": {
+    "alongRowModuleMm": 250,
+    "acrossRowModuleMm": 500,
+    "rowOrientationIsUserSelectedAndFixed": true,
+    "ordinaryGeometryWholeMmRequired": true,
+    "noInternalObstacles": true,
+    "noAutomaticRotation": true,
+    "siteCutHalvesMayReplaceFactoryHalfSupply": false,
+    "unknownActualFitRemainsUnknown": true,
+    "confirmationParameterId": "factory_half_end_layout_confirmed",
+    "confirmationTitleRu": "План раскладки с заводской половинной плиткой на конце ряда проверен",
+    "confirmationValueRu": "План раскладки проверен: заводские полные и половинные плитки, фиксированное направление рядов, фактические примыкания и допуски учтены",
+    "confirmationOnlyForLength250Modulo500": true,
+    "applicabilityRu": "Номинальный шаг вдоль рядов 250 мм, поперёк 500 мм; прямоугольник без внутренних препятствий; фактический план концов рядов, заводская половинная поставка и допуски проверены. Это не отсутствие резки и не приёмка площадки."
+  },
+  "formulaReview": {
+    "full": "(width/500)*floor(length/500)-(1-(length/250-2*floor(length/500)))*floor((width/500)/2)",
+    "half": "(length/250-2*floor(length/500))*(width/500)+(1-(length/250-2*floor(length/500)))*2*floor((width/500)/2)",
+    "domain": "Only along250/across500 integer nominal grid; not a cutting optimizer.",
+    "legacy500ModuleConservation": "For even length/250, exactly the original area/.25-floor(rows/2),2floor(rows/2).",
+    "halfModuleConservation": "For odd length/250 each row contains floor(length/500) full slabs and one factory half."
+  },
+  "paidOwners": [
+    {
+      "rowId": "euroflex:recycling-50mm:full-order",
+      "product": "EUROFLEX Recycling500x500x50mm",
+      "unitId": "pcs",
+      "costTreatment": "OWN_COST",
+      "procurement": true
+    },
+    {
+      "rowId": "euroflex:recycling-50mm:half-order",
+      "product": "EUROFLEX Recycling500x250x50mm factory half",
+      "unitId": "pcs",
+      "costTreatment": "OWN_COST",
+      "procurement": true
+    }
+  ],
+  "purchaseContract": {
+    "sameExistingMechanism": "effectivePurchaseBalanceExpressionsR1",
+    "stockReserveQuantumSeparateByFormat": true,
+    "noDefaultStockReserveQuantumOrPrice": true,
+    "noExtraWastePercent": true,
+    "quantumIsSupplierFactNotNorm": true,
+    "manualQtyTitlePriceExclusionsPreserved": true,
+    "includedConnectorPinsNotPurchasedTwice": true
+  },
+  "compatiblePriceRoutes": {
+    "historicalCompatiblePriceBindingCount": 0,
+    "currentCompatibleRoutesReadback": "PASS_COMPLETE_CURRENT_V2_READ_ONLY_SNAPSHOT_ZERO_PRICE_BINDINGS",
+    "automaticGenericPriceInheritanceAllowed": false,
+    "manualPriceBindings": {
+      "euroflex:recycling-50mm:full-order": "euroflex:recycling-50mm:full-order",
+      "euroflex:recycling-50mm:half-order": "euroflex:recycling-50mm:half-order"
+    },
+    "crossFormatBindingsAllowed": false,
+    "conditions": [
+      "same factory product format",
+      "same50mm thickness",
+      "samepcs unit",
+      "same supplier specification/currency/cost scope",
+      "same paid owner; consumption remains informational"
+    ]
+  },
+  "unresolvedInstallationNeeds": [
+    {
+      "key": "substrate",
+      "nameRu": "Подготовка и дренаж основания",
+      "unitId": "m2",
+      "category": "work",
+      "reasonRu": "Не определены необходимые слои, объёмы и трудозатраты основания."
+    },
+    {
+      "key": "edge-boundary",
+      "nameRu": "Борт, примыкания и переходы покрытия",
+      "unitId": "m",
+      "category": "work",
+      "reasonRu": "Нужны фактические границы, выбранные элементы и способ монтажа."
+    },
+    {
+      "key": "perimeter-glue",
+      "nameRu": "Клей для крайних рядов и примыканий",
+      "unitId": "kg",
+      "category": "material",
+      "reasonRu": "Не подтверждены выбранный клей, геометрия швов и применимый расход."
+    },
+    {
+      "key": "installation-labor",
+      "nameRu": "Укладка резиновой плитки EUROFLEX",
+      "unitId": "man_hour",
+      "category": "work",
+      "reasonRu": "Норма труда не следует из размеров плитки; количество остаётся неизвестным."
+    },
+    {
+      "key": "tools",
+      "nameRu": "Инструменты и расходные материалы для укладки",
+      "unitId": "item",
+      "category": "other",
+      "reasonRu": "Не подтверждены состав, количество, длительность и наличие оснащения."
+    },
+    {
+      "key": "delivery",
+      "nameRu": "Доставка и разгрузка резиновой плитки",
+      "unitId": "service",
+      "category": "service",
+      "reasonRu": "Количество плитки не задаёт число рейсов, грузоподъёмность и время разгрузки."
+    },
+    {
+      "key": "protection-cleanup",
+      "nameRu": "Защита участка и уборка после укладки",
+      "unitId": "service",
+      "category": "service",
+      "reasonRu": "Применимый состав и количества не подтверждены."
+    },
+    {
+      "key": "safety-acceptance",
+      "nameRu": "Проверка покрытия и зон падения оборудования",
+      "unitId": "service",
+      "category": "service",
+      "reasonRu": "Паспорт изделия не подтверждает безопасность и приёмку всей установленной площадки."
+    }
+  ],
+  "unresolvedConditionalLayoutNeed": {
+    "key": "open-layout",
+    "nameRu": "Раскладка и резка для участка с подгонкой плит",
+    "unitId": "item",
+    "reasonRu": "Для немодульного участка нужны подтверждённая карта раскроя и измеренные потери."
+  },
+  "fullTechnicalAcceptance": false,
+  "productionEligible": false,
+  "activationAllowed": false,
+  "boundaryExclusions": [
+    {
+      "catalogId": "canonical-work:master:paving_tile_prepared_base_40_pieces_m2_no_cut_standard",
+      "reason": "KRER27-07-005-01:40pcs/m2 and1.02m2 norm; not the rubber factory format or pcs supply owner."
+    },
+    {
+      "catalogId": "canonical-work:master:paving_tile_prepared_base_55_pieces_m2_no_cut_standard",
+      "reason": "KRER27-07-005-02:55pcs/m2 and1.02m2 norm; no rubber manufacturer transfer."
+    },
+    {
+      "catalogId": "canonical-work:master:paving_tile_prepared_base_90_pieces_m2_no_cut_standard",
+      "reason": "KRER27-07-005-03:90pcs/m2 and1.02m2 norm; no rubber manufacturer transfer."
+    },
+    {
+      "catalogId": "canonical-work:base:tile_stone_interior_porcelain_tile_lay_standard",
+      "reason": "Porcelain adhesive/grout/cut-layout quantities need their own approved system; not interchangeable with EUROFLEX."
+    },
+    {
+      "catalogId": null,
+      "reason": "EPDM,Softsystem,1000x500,other thicknesses,irregular polygons,internal obstacles,across-row250mm and cutting plans excluded."
+    }
+  ],
+  "fallbackDecision": "No source gap for this bounded nominal factory-format subwork after reading PDS2-4 and installation3-7. Eight installation/completion gaps remain; no unsupported labor/glue/base norm is adopted. Broader completion must use a separate source-backed floor/engineering group.",
+  "expectedParentReleasePair": {
+    "definitionReleaseId": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+    "searchReleaseId": "756fad32-723d-553c-8215-1e6271c05ec7"
+  },
+  "expectedCurrent": {
+    "definitionId": "8094686a-d912-5016-870c-81e6c81deb07",
+    "definitionVersion": 2,
+    "definitionSha256": "089acfa923678ba09cc865093d2eef46ff54ee9de2090b46304ebc997b812e03",
+    "baselineId": "f3e80349-feeb-5a72-804c-9684ef07b97e",
+    "parentStableSha256": "1c94c15d9e035eef77795acdf6eb191a12b91e2bad2cce3c40562be8e176ff7f",
+    "parameterIds": [
+      "surface_length_along_rows_mm",
+      "surface_width_across_rows_mm",
+      "equipment_max_free_fall_height_m",
+      "prepared_base_condition",
+      "fall_zone_condition",
+      "full_usable_stock_pcs",
+      "full_reserve_pcs",
+      "full_supply_quantum_pcs",
+      "full_supply_specification",
+      "half_usable_stock_pcs",
+      "half_reserve_pcs",
+      "half_supply_quantum_pcs",
+      "half_supply_specification",
+      "unresolved_layout_quantity",
+      "unresolved_substrate",
+      "unresolved_edge_boundary",
+      "unresolved_perimeter_glue",
+      "unresolved_installation_labor",
+      "unresolved_tools",
+      "unresolved_delivery",
+      "unresolved_protection_cleanup",
+      "unresolved_safety_acceptance",
+      "effective_resource_quantity_euroflex_recycling_50mm_installed_area",
+      "effective_resource_quantity_euroflex_recycling_50mm_full_consumed",
+      "effective_resource_quantity_euroflex_recycling_50mm_full_order",
+      "effective_resource_quantity_euroflex_recycling_50mm_half_consumed",
+      "effective_resource_quantity_euroflex_recycling_50mm_half_order",
+      "selected_delivery_selection",
+      "selected_delivery_product_profile_id",
+      "selected_delivery_cargo_weight_kg",
+      "selected_delivery_cargo_volume_m3",
+      "selected_delivery_selected_vehicle_model_and_derivative",
+      "selected_delivery_selected_verified_usable_payload_kg",
+      "selected_delivery_selected_verified_usable_loadspace_m3",
+      "selected_delivery_selected_verified_kerb_mass_kg",
+      "selected_delivery_driver_crew_options_and_accessories_weight_kg",
+      "selected_delivery_payload_margin_for_error_kg",
+      "selected_delivery_axle_load_limits_confirmed",
+      "selected_delivery_load_securing_and_compatibility_confirmed",
+      "selected_delivery_route_and_access_confirmed",
+      "selected_delivery_supplier_billing_scope",
+      "selected_delivery_document_reference",
+      "selected_delivery_consignment_id",
+      "selected_delivery_admitted_trip_count"
+    ],
+    "formulaIds": [
+      "delivery:selected-material:ford-transit-v363:quantity",
+      "euroflex:recycling-50mm:formula:full-consumed",
+      "euroflex:recycling-50mm:formula:full-free",
+      "euroflex:recycling-50mm:formula:full-order",
+      "euroflex:recycling-50mm:formula:full-packages",
+      "euroflex:recycling-50mm:formula:full-remaining",
+      "euroflex:recycling-50mm:formula:full-reserve-deficit",
+      "euroflex:recycling-50mm:formula:full-shortage",
+      "euroflex:recycling-50mm:formula:half-consumed",
+      "euroflex:recycling-50mm:formula:half-free",
+      "euroflex:recycling-50mm:formula:half-order",
+      "euroflex:recycling-50mm:formula:half-packages",
+      "euroflex:recycling-50mm:formula:half-remaining",
+      "euroflex:recycling-50mm:formula:half-reserve-deficit",
+      "euroflex:recycling-50mm:formula:half-shortage",
+      "euroflex:recycling-50mm:formula:installed-area",
+      "euroflex:recycling-50mm:formula:open-delivery",
+      "euroflex:recycling-50mm:formula:open-edge-boundary",
+      "euroflex:recycling-50mm:formula:open-installation-labor",
+      "euroflex:recycling-50mm:formula:open-layout",
+      "euroflex:recycling-50mm:formula:open-perimeter-glue",
+      "euroflex:recycling-50mm:formula:open-protection-cleanup",
+      "euroflex:recycling-50mm:formula:open-safety-acceptance",
+      "euroflex:recycling-50mm:formula:open-substrate",
+      "euroflex:recycling-50mm:formula:open-tools"
+    ],
+    "rowIds": [
+      "euroflex:recycling-50mm:installed-area",
+      "euroflex:recycling-50mm:full-consumed",
+      "euroflex:recycling-50mm:full-order",
+      "euroflex:recycling-50mm:full-packages",
+      "euroflex:recycling-50mm:full-remaining",
+      "euroflex:recycling-50mm:full-free",
+      "euroflex:recycling-50mm:full-shortage",
+      "euroflex:recycling-50mm:full-reserve-deficit",
+      "euroflex:recycling-50mm:half-consumed",
+      "euroflex:recycling-50mm:half-order",
+      "euroflex:recycling-50mm:half-packages",
+      "euroflex:recycling-50mm:half-remaining",
+      "euroflex:recycling-50mm:half-free",
+      "euroflex:recycling-50mm:half-shortage",
+      "euroflex:recycling-50mm:half-reserve-deficit",
+      "euroflex:recycling-50mm:open-layout",
+      "euroflex:recycling-50mm:open-substrate",
+      "euroflex:recycling-50mm:open-edge-boundary",
+      "euroflex:recycling-50mm:open-perimeter-glue",
+      "euroflex:recycling-50mm:open-installation-labor",
+      "euroflex:recycling-50mm:open-tools",
+      "euroflex:recycling-50mm:open-delivery",
+      "euroflex:recycling-50mm:open-protection-cleanup",
+      "euroflex:recycling-50mm:open-safety-acceptance",
+      "delivery:selected-material:ford-transit-v363"
+    ]
+  },
+  "sourcePreimage": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-landscape-b/euroflex-current-membership-probe-v3-preimage.json",
+    "sha256": "8636b367316c8166033f733a7751906fa4b41e5db0a3b341d4cdb315e722d200",
+    "status": "COMPLETE_READ_ONLY_SNAPSHOT_CURRENT_V2; old-v1-expectation drift preserved, not reclassified as old-contract PASS",
+    "transactionRolledBack": true,
+    "connectionClosed": true
+  },
+  "primaryMeasureParameterId": "effective_resource_quantity_euroflex_recycling_50mm_installed_area",
+  "expectedPriceRouteBindingsStableSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "calculatedOrderOwners": [
+    {
+      "rowId": "euroflex:recycling-50mm:full-order",
+      "unitId": "pcs",
+      "formulaId": "euroflex:recycling-50mm:formula:full-order"
+    },
+    {
+      "rowId": "euroflex:recycling-50mm:half-order",
+      "unitId": "pcs",
+      "formulaId": "euroflex:recycling-50mm:formula:half-order"
+    }
+  ],
+  "preservedUnresolvedMaterialOwners": [
+    {
+      "rowId": "euroflex:recycling-50mm:open-perimeter-glue",
+      "unitId": "kg",
+      "formulaId": "euroflex:recycling-50mm:formula:open-perimeter-glue",
+      "sourceNormQuantityAccepted": false
+    }
+  ],
+  "preservedDeliveryParameterIds": [
+    "selected_delivery_selection",
+    "selected_delivery_product_profile_id",
+    "selected_delivery_cargo_weight_kg",
+    "selected_delivery_cargo_volume_m3",
+    "selected_delivery_selected_vehicle_model_and_derivative",
+    "selected_delivery_selected_verified_usable_payload_kg",
+    "selected_delivery_selected_verified_usable_loadspace_m3",
+    "selected_delivery_selected_verified_kerb_mass_kg",
+    "selected_delivery_driver_crew_options_and_accessories_weight_kg",
+    "selected_delivery_payload_margin_for_error_kg",
+    "selected_delivery_axle_load_limits_confirmed",
+    "selected_delivery_load_securing_and_compatibility_confirmed",
+    "selected_delivery_route_and_access_confirmed",
+    "selected_delivery_supplier_billing_scope",
+    "selected_delivery_document_reference",
+    "selected_delivery_consignment_id",
+    "selected_delivery_admitted_trip_count"
+  ],
+  "preservedDeliveryRowId": "delivery:selected-material:ford-transit-v363",
+  "preservedDeliveryFormulaId": "delivery:selected-material:ford-transit-v363:quantity",
+  "preservedParentCounts": {
+    "parameters": 44,
+    "formulas": 25,
+    "resources": 25,
+    "normativeBindings": 16
+  },
+  "proposedCounts": {
+    "parameters": 45,
+    "formulas": 25,
+    "resources": 25,
+    "normativeBindings": 16
+  },
+  "preservedDeliveryPolicy": "All17 current delivery params, delivery trip row/formula and normative binding remain byte-equivalent. Existing server admission still required. No payload, consignment, billing price or old logistics need invented."
+}

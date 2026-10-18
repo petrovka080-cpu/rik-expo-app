@@ -1,0 +1,315 @@
+{
+  "contract": "rik-expo-app.next-wave.elecor-60x40-single-route-materials.r1",
+  "status": "WORK_PROPOSAL_NOT_PUBLISHED_CURRENT_DUPLICATE_CHECK_PENDING",
+  "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+  "normId": "iek_elecor_60x40_project_geometry_pack_balance_r1",
+  "rowPrefix": "electrical:elecor-60x40-single-route",
+  "titleRu": "Материалы IEK ELECOR 60×40 для одного нового прямого участка — частичный состав",
+  "sourceEdition": "IEK: сохранённый официальный каталог пластиковых кабеленесущих систем и официальная карточка КМС; издание в PDF не заявлено",
+  "catalogueSha256": "cd936577d94a7ab3a877a5548055bebd91dc7738a4476835e188ab1b2f5eb59a",
+  "catalogueLocatorRu": "PDF9/печатная7 — открытая прокладка в жилых/офисных помещениях; PDF10/печатная8 — ELECOR белый 60×40 CKK10-060-040-1-K01-018, упаковка18м; PDF12/печатная10 — секции2м и совместимый КМС CKMP10D-S-060-040-K01.",
+  "scopeRu": "Новый открытый участок ELECOR 60×40 в сухом жилом или офисном помещении; условия среды и кабельное заполнение приняты проектом. Один прямой непрерывный участок из новых секций 2 м; один КМС 60×40 на каждый внутренний стык; без использования обрезков и неполных упаковок. Только геометрия двух материалов и закупка целых заводских упаковок, полный монтаж не принят.",
+  "exactScopeRu": "Новый открытый участок ELECOR 60×40 в сухом жилом или офисном помещении; условия среды и кабельное заполнение приняты проектом",
+  "exactLayoutRu": "Один прямой непрерывный участок из новых секций 2 м; один КМС 60×40 на каждый внутренний стык; без использования обрезков и неполных упаковок",
+  "product": {
+    "channelSku": "CKK10-060-040-1-K01-018",
+    "channelWidthMm": 60,
+    "channelHeightMm": 40,
+    "channelSectionLengthM": 2,
+    "channelTransportPackM": 18,
+    "channelSectionsPerPackage": 9,
+    "kmsSku": "CKMP10D-S-060-040-K01",
+    "kmsPiecesPerSet": 4,
+    "colourRu": "белый"
+  },
+  "proposedIdentity": {
+    "persisted": false,
+    "decision": "PROPOSED_DISTINCT_PHYSICAL_PROFILE_APPEND_REQUIRES_ACTUAL_DEDUPLICATION_AND_CLASSIFICATION",
+    "catalogId": "canonical-work:master:electrical_elecor_60x40_white_single_straight_route_materials",
+    "workKey": "electrical_elecor_60x40_white_single_straight_route_materials",
+    "sourceIdentity": "manufacturer:iek:elecor:CKK10-060-040-1-K01-018:single-straight-route:CKMP10D-S-060-040-K01"
+  },
+  "sourceEvidence": [
+    {
+      "path": ".release-runtime/r568/s27-23/q4-electrical-cable-channel-official-sources/IEK_PLASTIC_CABLE_SYSTEMS.pdf",
+      "sha256": "cd936577d94a7ab3a877a5548055bebd91dc7738a4476835e188ab1b2f5eb59a",
+      "officialUrl": "https://www.iek.ru/upload/iblock/e16/txvbl1aqwvzyemqxfotnfmzg3xmwil7u/Plastikovye-kabelenesushchie-sistemy.pdf",
+      "locatorRu": "PDF9/печатная7, PDF10/печатная8, PDF12/печатная10. Сечение60×40, exact channel/KMS SKU, длина2м, упаковка18м; пригодность влажной зоны/IP/нагрузки не выведена."
+    },
+    {
+      "path": ".release-runtime/r568/s27-23/q4-electrical-cable-channel-official-sources/IEK_ELECOR_ACCESSORIES_40X25.html",
+      "sha256": "998f9eab3587108b12daf2b0063b102b4172af9136d85737fe611aa998e5e663",
+      "officialUrl": "https://www.iek.ru/products/catalog/sistemy_dlya_prokladki_kabelya/kabel_kanaly_plastikovye/kabel_kanaly_elecor/aksessuary_dlya_magistralnykh_kabel_kanalov_belye/soediniteli_kms_belye/elecor_soedinitel_na_styk_kms_60x40_belyy_4sht_kompl_iek",
+      "locatorRu": "__NEXT_DATA__ $.props.pageProps.apiListing.products[10]: article CKMP10D-S-060-040-K01; name60x40(4шт/компл); ETIMIEK_F000480=4шт. Имя cached-файла40X25 не определяет извлечённый артикул."
+    }
+  ],
+  "geometryBasis": "Существующие две геометрические формулы ELECOR; исходная профессиональная норма расхода/труда не заявляется. Число внутренних КМС — принятая карта конкретного участка с одним КМС на стык, а не автоматическая норма на метр/точку.",
+  "primary": {
+    "parameterId": "elecor_route_m",
+    "unitId": "m",
+    "role": "Измеренная длина одного участка; не q/point и не количество электроточек"
+  },
+  "costOwnerPolicy": {
+    "owners": [
+      "electrical:elecor-60x40-single-route:channel-order",
+      "electrical:elecor-60x40-single-route:kms-order"
+    ],
+    "unitId": "item",
+    "priceBasis": "Цена отдельно за заводскую упаковку18м канала и комплект4КМС; без наследования generic63 price routes.",
+    "stock": "Только пригодные целые заводские упаковки exact SKU. Неполные упаковки, старые секции и обрезки не учитываются этим вариантом.",
+    "manualPreservation": "Новый профиль не меняет6 прежних определений/rows/needs/price/manual/exclusions. Ручной заказ нового owner проходит существующую проверку кратности/обеспечения; остаток использует effective quantity, геометрия от цены/заказа не зависит.",
+    "overlap": "Не объединять этот material-only профиль с уже оплачиваемой поставкой тех же материалов без предметного reconciliation. Две цены на одно изделие/снабжение не допускаются."
+  },
+  "excludedRu": [
+    "Пять старых point-consumers не превращаются в метры; generic q не имеет доказанной роли участков.",
+    "Действующий40×25 CKK10-040-025-1-K01 остаётся прежним: это иной артикул/сечение/упаковка24м. Уменьшение числа строк не создаёт новый профиль40×25.",
+    "Влажная зона, улица, промышленная/особая среда, high_load, особые IP/пожарные/электрические требования без собственного проектного допуска исключены.",
+    "Повороты, ветвления, несколько трасс, существующие куски/неполные упаковки и альтернативные схемы соединений исключены из этой геометрии.",
+    "Не перенесены5%резерв,0,5м крепёж,4м/ч, производительность дрели/резки, мешки/рейсы из старого planning profile.",
+    "Никакие размеры/фасовки не доказывают труд, крепёж, доставку, разгрузку, уборку или полную электрическую безопасность."
+  ],
+  "sourceNeeds": [
+    {
+      "id": "installation-labour",
+      "titleRu": "Труд монтажа кабель-канала по принятому основанию",
+      "unitId": "man_hour",
+      "category": "labor",
+      "missingRu": "Не установлены применимые трудозатраты с учётом основания, высоты, резки и технологии крепления."
+    },
+    {
+      "id": "fixings",
+      "titleRu": "Крепёж и узлы крепления к фактическому основанию",
+      "unitId": "pcs",
+      "category": "material",
+      "missingRu": "Не выбран узел, тип/размер крепежа, шаг и концевые расстояния. 0,5 м из старого профиля не норма этого участка."
+    },
+    {
+      "id": "end-node-components",
+      "titleRu": "Концевые, переходные и прочие узловые элементы",
+      "unitId": "pcs",
+      "category": "material",
+      "missingRu": "КМС закрывает только принятые внутренние прямые стыки; фактические концы и примыкания требуют проектного узла, артикула и количества."
+    },
+    {
+      "id": "tools",
+      "titleRu": "Инструмент и оснастка для резки и монтажа",
+      "unitId": "service",
+      "category": "equipment",
+      "missingRu": "Не доказаны состав, обеспечение и оплачиваемое время инструмента/оснастки. Производительность старого профиля не перенесена."
+    },
+    {
+      "id": "access-protection",
+      "titleRu": "Доступ, защита зоны и средства безопасности",
+      "unitId": "service",
+      "category": "service",
+      "missingRu": "Не установлены фактические высота/доступ, защита и самостоятельная граница оплаты обеспечения."
+    },
+    {
+      "id": "acceptance",
+      "titleRu": "Проверка монтажа и приёмка электротехнического решения",
+      "unitId": "service",
+      "category": "service",
+      "missingRu": "Не установлены применимые программа, объём и оплачиваемая граница проверки. Кабельное заполнение и условия проекта должны быть приняты до выбора профиля."
+    },
+    {
+      "id": "delivery-handling",
+      "titleRu": "Доставка, разгрузка и перемещение материалов",
+      "unitId": "service",
+      "category": "logistics",
+      "missingRu": "Нет принятой логистической схемы, массы/рейсов/времени и границ оплачиваемого обеспечения. Количество упаковок не норма рейсов."
+    },
+    {
+      "id": "cleanup-disposal",
+      "titleRu": "Уборка и обращение с отходами",
+      "unitId": "service",
+      "category": "service",
+      "missingRu": "Нет применимого количества и границы уборки/отходов. Концевой отрезок не приравнивается к отходу и не создаёт мешки/рейсы."
+    }
+  ],
+  "normativeBindingRowIds": [
+    "electrical:elecor-60x40-single-route:route-net",
+    "electrical:elecor-60x40-single-route:installed-sections",
+    "electrical:elecor-60x40-single-route:tail-length",
+    "electrical:elecor-60x40-single-route:internal-joints",
+    "electrical:elecor-60x40-single-route:channel-opened",
+    "electrical:elecor-60x40-single-route:channel-order",
+    "electrical:elecor-60x40-single-route:channel-unopened",
+    "electrical:elecor-60x40-single-route:channel-free",
+    "electrical:elecor-60x40-single-route:channel-pieces-in-opened",
+    "electrical:elecor-60x40-single-route:channel-consumption-shortage",
+    "electrical:elecor-60x40-single-route:channel-reserve-deficit",
+    "electrical:elecor-60x40-single-route:kms-opened",
+    "electrical:elecor-60x40-single-route:kms-order",
+    "electrical:elecor-60x40-single-route:kms-unopened",
+    "electrical:elecor-60x40-single-route:kms-free",
+    "electrical:elecor-60x40-single-route:kms-pieces-in-opened",
+    "electrical:elecor-60x40-single-route:kms-consumption-shortage",
+    "electrical:elecor-60x40-single-route:kms-reserve-deficit"
+  ],
+  "independentCompletenessMap": {
+    "contract": "rik-expo-app.s26-3.independent-completeness-map.v1",
+    "sourceKind": "PRODUCT_SYSTEM_TDS",
+    "generatedFromCurrentRows": false,
+    "evidenceSha256": "cd936577d94a7ab3a877a5548055bebd91dc7738a4476835e188ab1b2f5eb59a",
+    "evidenceReferences": [
+      ".release-runtime/r568/s27-23/q4-electrical-cable-channel-official-sources/IEK_PLASTIC_CABLE_SYSTEMS.pdf PDF9/10/12",
+      ".release-runtime/r568/s27-23/q4-electrical-cable-channel-official-sources/IEK_ELECOR_ACCESSORIES_40X25.html exact KMS60x40"
+    ],
+    "entries": [
+      {
+        "expectedResourceId": "channel",
+        "operationId": "material-plan",
+        "category": "material",
+        "specification": "CKK10-060-040-1-K01-018",
+        "condition": "EXACT_CONFIRMED_SINGLE_STRAIGHT_NEW_ROUTE",
+        "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+        "unitId": "item",
+        "quantityRule": "PROJECT_SECTION_JOINT_GEOMETRY_PLUS_EXACT_FACTORY_PACK_BALANCE",
+        "formulaId": "electrical:elecor-60x40-single-route:formula:channel-order",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:channel-order"
+        }
+      },
+      {
+        "expectedResourceId": "kms",
+        "operationId": "material-plan",
+        "category": "material",
+        "specification": "CKMP10D-S-060-040-K01",
+        "condition": "EXACT_CONFIRMED_SINGLE_STRAIGHT_NEW_ROUTE",
+        "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+        "unitId": "item",
+        "quantityRule": "PROJECT_SECTION_JOINT_GEOMETRY_PLUS_EXACT_FACTORY_PACK_BALANCE",
+        "formulaId": "electrical:elecor-60x40-single-route:formula:kms-order",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:kms-order"
+        }
+      },
+      {
+        "expectedResourceId": "installation-labour",
+        "operationId": "completion",
+        "category": "labor",
+        "specification": "Труд монтажа кабель-канала по принятому основанию",
+        "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+        "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+        "unitId": "man_hour",
+        "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+        "formulaId": "electrical:elecor-60x40-single-route:formula:open-installation-labour",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:open-installation-labour"
+        }
+      },
+      {
+        "expectedResourceId": "fixings",
+        "operationId": "completion",
+        "category": "material",
+        "specification": "Крепёж и узлы крепления к фактическому основанию",
+        "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+        "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+        "unitId": "pcs",
+        "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+        "formulaId": "electrical:elecor-60x40-single-route:formula:open-fixings",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:open-fixings"
+        }
+      },
+      {
+        "expectedResourceId": "end-node-components",
+        "operationId": "completion",
+        "category": "material",
+        "specification": "Концевые, переходные и прочие узловые элементы",
+        "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+        "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+        "unitId": "pcs",
+        "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+        "formulaId": "electrical:elecor-60x40-single-route:formula:open-end-node-components",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:open-end-node-components"
+        }
+      },
+      {
+        "expectedResourceId": "tools",
+        "operationId": "completion",
+        "category": "equipment",
+        "specification": "Инструмент и оснастка для резки и монтажа",
+        "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+        "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+        "unitId": "service",
+        "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+        "formulaId": "electrical:elecor-60x40-single-route:formula:open-tools",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:open-tools"
+        }
+      },
+      {
+        "expectedResourceId": "access-protection",
+        "operationId": "completion",
+        "category": "service",
+        "specification": "Доступ, защита зоны и средства безопасности",
+        "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+        "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+        "unitId": "service",
+        "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+        "formulaId": "electrical:elecor-60x40-single-route:formula:open-access-protection",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:open-access-protection"
+        }
+      },
+      {
+        "expectedResourceId": "acceptance",
+        "operationId": "completion",
+        "category": "service",
+        "specification": "Проверка монтажа и приёмка электротехнического решения",
+        "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+        "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+        "unitId": "service",
+        "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+        "formulaId": "electrical:elecor-60x40-single-route:formula:open-acceptance",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:open-acceptance"
+        }
+      },
+      {
+        "expectedResourceId": "delivery-handling",
+        "operationId": "completion",
+        "category": "logistics",
+        "specification": "Доставка, разгрузка и перемещение материалов",
+        "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+        "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+        "unitId": "service",
+        "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+        "formulaId": "electrical:elecor-60x40-single-route:formula:open-delivery-handling",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:open-delivery-handling"
+        }
+      },
+      {
+        "expectedResourceId": "cleanup-disposal",
+        "operationId": "completion",
+        "category": "service",
+        "specification": "Уборка и обращение с отходами",
+        "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+        "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+        "unitId": "service",
+        "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+        "formulaId": "electrical:elecor-60x40-single-route:formula:open-cleanup-disposal",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:open-cleanup-disposal"
+        }
+      }
+    ]
+  },
+  "fullTechnicalAcceptance": false,
+  "acceptedNewCompleteTypes": 0,
+  "newCompleteTypesClaimed": 0,
+  "publicationReady": false
+}

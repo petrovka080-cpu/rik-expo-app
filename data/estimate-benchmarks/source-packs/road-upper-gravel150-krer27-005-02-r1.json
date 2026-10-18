@@ -1,0 +1,222 @@
+{
+  "contract": "rik-expo-app.road-upper-gravel150-krer27-005-02.r1",
+  "status": "WORK_AUTHORED_NOT_PUBLISHED",
+  "sourceId": "kg_krer27_04_005_02_upper_gravel150_r1",
+  "normId": "KRER27-04-005-02",
+  "prefix": "road-upper-base:krer27-04-005-02",
+  "primaryMeasureParameterId": "area_m2",
+  "primaryUnitId": "m2",
+  "titleRu": "Верхний слой двухслойного щебёночного дорожного основания, 150 мм, М1200 — КРЕР27-04-005-02",
+  "source": {
+    "path": ".release-runtime/r4a13-6/s19-first-estimate/primary-source-review/kg-krer27-roadworks-2015.pdf",
+    "sha256": "cd3d6735d1bbdda5957945b7682f032785c76624b54a435edfe5d2ef5e107161",
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no27avtomobilnyedorogi_compressed-43769083f584ff787.06841542.pdf",
+    "edition": "КРЕР27-2015",
+    "physicalAndPrintedPage": 48,
+    "table": "27-04-005",
+    "column": "27-04-005-02",
+    "basis": "1000m2 of this upper15cm layer",
+    "scope": "Устройство оснований толщиной15см из щебня фракции40–70мм при укатке каменных материалов с пределом прочности на сжатие свыше98,1МПа; двухслойных верхнего слоя. Это один верхний слой, не оба слоя вместе.",
+    "operations": [
+      "Россыпь и разравнивание щебня",
+      "Укатка и поливка водой",
+      "Профилирование и планировка щебня"
+    ]
+  },
+  "resources": [
+    {
+      "id": "worker",
+      "resourceCode": "000-1002-5",
+      "titleRu": "Рабочие-строители, средний разряд2,5",
+      "unitId": "man_hour",
+      "rate": "36.96",
+      "costTreatment": "OWN_COST"
+    },
+    {
+      "id": "operators",
+      "resourceCode": null,
+      "titleRu": "Затраты труда машинистов — справочный компонент ставок механизмов",
+      "unitId": "man_hour",
+      "rate": "52.72",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "costOwner": "six selected equipment rate owners; no second operator payment"
+    },
+    {
+      "id": "loader",
+      "resourceCode": "03-0020",
+      "titleRu": "Автопогрузчик5т",
+      "unitId": "machine_hour",
+      "rate": "7.96",
+      "costTreatment": "OWN_COST"
+    },
+    {
+      "id": "grader",
+      "resourceCode": "12-0023",
+      "titleRu": "Автогрейдер среднего типа99кВт(135л.с.)",
+      "unitId": "machine_hour",
+      "rate": "1.82",
+      "costTreatment": "OWN_COST"
+    },
+    {
+      "id": "roller8t",
+      "resourceCode": "12-0272",
+      "titleRu": "Каток дорожный самоходный гладкий8т",
+      "unitId": "machine_hour",
+      "rate": "12.08",
+      "costTreatment": "OWN_COST"
+    },
+    {
+      "id": "roller13t",
+      "resourceCode": "12-0273",
+      "titleRu": "Каток дорожный самоходный гладкий13т",
+      "unitId": "machine_hour",
+      "rate": "27.25",
+      "costTreatment": "OWN_COST"
+    },
+    {
+      "id": "waterBowser",
+      "resourceCode": "12-0400",
+      "titleRu": "Машина поливомоечная6000л",
+      "unitId": "machine_hour",
+      "rate": "2.96",
+      "costTreatment": "OWN_COST"
+    },
+    {
+      "id": "spreader",
+      "resourceCode": "12-0540",
+      "titleRu": "Распределитель каменной мелочи",
+      "unitId": "machine_hour",
+      "rate": "0.65",
+      "costTreatment": "OWN_COST"
+    },
+    {
+      "id": "water",
+      "resourceCode": "01-0601-0001",
+      "titleRu": "Вода",
+      "unitId": "m3",
+      "rate": "30",
+      "costTreatment": "OWN_COST"
+    },
+    {
+      "id": "chokeStone",
+      "resourceCode": "01-9208-0017",
+      "titleRu": "Щебень из природного камня, фракция5–20мм, марка1200",
+      "unitId": "m3",
+      "rate": "15",
+      "costTreatment": "OWN_COST"
+    },
+    {
+      "id": "coarseStone",
+      "resourceCode": "01-9208-0033",
+      "titleRu": "Щебень из природного камня, фракция40–70мм, марка1200",
+      "unitId": "m3",
+      "rate": "189",
+      "costTreatment": "OWN_COST"
+    }
+  ],
+  "projectConditionsValueRu": "Проектом выбран именно верхний слой двухслойного дорожного основания толщиной150мм: щебень40–70мм и5–20мм марки1200, прочность выше98,1МПа; условия нормы применимы; технологическая карта и доступ допускают автогрейдер, погрузчик5т и гладкие катки8т/13т",
+  "acceptedLowerLayerValueRu": "Нижний слой принят по проекту и готов к устройству этого верхнего150мм слоя; устройство нижнего слоя и земляные работы учтены отдельно",
+  "machineFulfillmentValues": [
+    "Собственные механизмы; машино-час включает эксплуатацию, обслуживание и предусмотренного машиниста; отдельно нормированные материалы не включены",
+    "Аренда; машино-час включает эксплуатацию, обслуживание и предусмотренного машиниста; отдельно нормированные материалы не включены"
+  ],
+  "materialFactIds": {
+    "coarseStone": "coarse_stone",
+    "chokeStone": "choke_stone",
+    "water": "water"
+  },
+  "unresolvedNeeds": [
+    {
+      "id": "external-delivery",
+      "titleRu": "Внешняя доставка двух фракций щебня и воды за пределами включённых перемещений",
+      "unitId": "item"
+    },
+    {
+      "id": "extra-mobilization",
+      "titleRu": "Фактическая дополнительная мобилизация нормативных машин",
+      "unitId": "item"
+    },
+    {
+      "id": "quality-control",
+      "titleRu": "Проектный объём контроля и приёмки верхнего слоя",
+      "unitId": "item"
+    },
+    {
+      "id": "protection-tools",
+      "titleRu": "Применимые ограждения, ручной инструмент и СИЗ, их обеспечение и граница оплаты",
+      "unitId": "item"
+    },
+    {
+      "id": "cleanup-waste",
+      "titleRu": "Упаковка, остатки и отходы за пределами включённой планировки слоя",
+      "unitId": "item"
+    }
+  ],
+  "excluded": [
+    "Внутренняя подушка здания или малая недоступная каткам площадка",
+    "Однослойное основание01, нижний слой03 или изменение толщины04",
+    "Автоматическое создание нижнего слоя, выемки, геотекстиля, дренажа, бортов или асфальта",
+    "Бульдозер07-0015 из колонки01; в02прочерк",
+    "Перенос старых базовых цен или общего машинного труда52.72 в отдельную оплату",
+    "Дополнительный коэффициент рыхлой поставки, процентотходов и неизвестные склад/резерв/кратность/цены как0"
+  ],
+  "newCompleteTypesAccepted": 0,
+  "fullTechnicalAcceptance": false,
+  "runtimeAccepted": false,
+  "machineCoverageAdmissionRequired": {
+    "mechanism": "canonicalMachineHourPriceCoverageV1",
+    "resourceRows": [
+      {
+        "rowId": "road-upper-base:krer27-04-005-02:equipment:loader",
+        "resourceCode": "03-0020",
+        "operator": "OPERATOR"
+      },
+      {
+        "rowId": "road-upper-base:krer27-04-005-02:equipment:grader",
+        "resourceCode": "12-0023",
+        "operator": "OPERATOR"
+      },
+      {
+        "rowId": "road-upper-base:krer27-04-005-02:equipment:roller8t",
+        "resourceCode": "12-0272",
+        "operator": "OPERATOR"
+      },
+      {
+        "rowId": "road-upper-base:krer27-04-005-02:equipment:roller13t",
+        "resourceCode": "12-0273",
+        "operator": "OPERATOR"
+      },
+      {
+        "rowId": "road-upper-base:krer27-04-005-02:equipment:waterBowser",
+        "resourceCode": "12-0400",
+        "operator": "DRIVER"
+      },
+      {
+        "rowId": "road-upper-base:krer27-04-005-02:equipment:spreader",
+        "resourceCode": "12-0540",
+        "operator": "OPERATOR"
+      }
+    ],
+    "existingB56SupportsTheseOwners": false,
+    "gate": "Root must explicitly admit exact newcatalog+sixowner/resourceCode pairs in existing mechanism; preparation never asserts automatic support or borrows roofing rowIDs.",
+    "plannedRootSharedMapping": {
+      "canonicalDestination": "src/lib/estimate/backendPlatform/canonicalMachineHourPriceCoverageV1.ts",
+      "stagedPath": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-landscape-b/next-paving-consumer/root-coverage/after/src/lib/estimate/backendPlatform/canonicalMachineHourPriceCoverageV1.ts",
+      "stagedSha256": "42dfbd873a159dc7e58735851da0466cf485ea1a0eb9957ede003bbee511dd31",
+      "canonicalPreimageSha256": "81c144a6829df40b5f1a0ae6b2c021df3e1645171308bb3d8bf3b31bd8dc4570"
+    }
+  },
+  "expectedAppend": {
+    "workKey": "road_upper_crushed_stone_150mm_m1200_two_layer_krer27_04_005_02",
+    "catalogId": "canonical-work:master:road_upper_crushed_stone_150mm_m1200_two_layer_krer27_04_005_02",
+    "groupId": "road_upper_base_krer27_04_005_02",
+    "sourceKey": "kg_krer27_04_005_02_upper_gravel150_r1",
+    "locatorKey": "KRER27-04-005-02-P48-UPPER-LAYER-150MM-M1200"
+  },
+  "parentPair": {
+    "definitionReleaseId": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+    "searchReleaseId": "756fad32-723d-553c-8215-1e6271c05ec7"
+  },
+  "expectedAbsenceProofStableSha256": "f407468088d03b1a7c67bed6fd9912138f7961f06bc617e5f0992577b2b85424",
+  "sourcePreimageSha256": "5953cafb42913dfd345ae0a30cdc633463b21fe4c79b985030c99f0f1c5d5f9e"
+}
