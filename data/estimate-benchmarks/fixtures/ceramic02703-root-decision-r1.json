@@ -1,0 +1,109 @@
+{
+  "status": "ROOT_REVIEWED_SOURCE_SPECIFIC_PARTIAL_CERAMIC02703_APPEND_R3",
+  "decision": "ADMIT_SOURCE_SPECIFIC_PARTIAL_APPEND",
+  "proposalSha256": "2222f83406d71259fe3efda03b9b7ee210d4f34400d007b7672dbe2931c28b39",
+  "proposal": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-finishing-ceramic-a/formal-classification-v3/ceramic02703-formal-classification-proposal-v3.json",
+    "sha256": "2222f83406d71259fe3efda03b9b7ee210d4f34400d007b7672dbe2931c28b39"
+  },
+  "executionContext": {
+    "definitionReleaseId": "aca4fa71-60c2-57db-83c8-5c8be93175a7",
+    "searchReleaseId": "0c4a0ed7-a579-57ae-9104-4e088dd09963",
+    "sourceHead": "d5bdb3e7722a020b0e4f81770847a7fcd6b01a12",
+    "recordedReleaseSourceCommit": "9bab72d75ed0b0aff9323d8cab5644563fbfa6b6"
+  },
+  "published": false,
+  "at": "2026-10-18T14:13:31.317389+00:00",
+  "identity": {
+    "catalogId": "canonical-work:master:ceramic_floor_unglazed_single_colour_cement_m150_krer11_01_027_03",
+    "workKey": "ceramic_floor_unglazed_single_colour_cement_m150_krer11_01_027_03",
+    "sourceIdentityId": "master-work:ceramic_floor_unglazed_single_colour_cement_m150_krer11_01_027_03",
+    "sourceId": "kg_krer11_01_027_03_ceramic_floor_cement_mortar_r1",
+    "groupId": "wg:master:ceramic_floor_cement_mortar_m150",
+    "groupNameRu": "Керамические полы на готовом цементном растворе М150",
+    "groupMode": "create",
+    "membershipOrdinal": 0,
+    "domainId": "tile_stone",
+    "systemId": "tile_stone",
+    "primaryParameterId": "net_ceramic_floor_area_m2",
+    "primaryUnitId": "m2",
+    "titleRu": "Пол из гладкой неглазурованной одноцветной керамической плитки на готовом цементном растворе М150"
+  },
+  "catalogId": "canonical-work:master:ceramic_floor_unglazed_single_colour_cement_m150_krer11_01_027_03",
+  "sourceId": "kg_krer11_01_027_03_ceramic_floor_cement_mortar_r1",
+  "searchPlacement": {
+    "groupMode": "create",
+    "groupId": "wg:master:ceramic_floor_cement_mortar_m150",
+    "groupNameRu": "Керамические полы на готовом цементном растворе М150",
+    "domainId": "tile_stone",
+    "systemId": "tile_stone",
+    "subsystemId": "wg:master:ceramic_floor_cement_mortar_m150",
+    "assemblyId": "wg:master:ceramic_floor_cement_mortar_m150",
+    "workFamilyId": "wg:master:ceramic_floor_cement_mortar_m150",
+    "membershipOrdinal": 0
+  },
+  "actualReadPins": [
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-post-masonry-reads-v1/tile5-actual-current-result-v1.json",
+      "sha256": "b8c54af382b67a1871e3c7835fcd22b5034bd116f6d6a7b6ea3c04a986345a4f",
+      "bytes": 396884
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-post-masonry-reads-v2/tile-supplement6-actual-current-result-v2.json",
+      "sha256": "6e6f16a6ff89b31cfa028d6c87d148dfd671d9cf2270643934f3a0c702234812",
+      "bytes": 4630827
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-post-masonry-reads-v3/tile-six-floor-lay4-actual-current-result-v3.json",
+      "sha256": "bf15a38b85c9c2eae2c2f233d58fd6de37d09ca15bec551a6db35118c00180c6",
+      "bytes": 1719619
+    }
+  ],
+  "rootVerifiedRawHeaderHashes": 184,
+  "rootVerifiedCompositionDecisions": 17,
+  "rootVerifiedResourceAndFormulaWitnesses": 70,
+  "existing184Unchanged": true,
+  "sourceNormRatesChanged": false,
+  "globalAbsenceProved": false,
+  "newGroupAbsenceCaptured": false,
+  "mandatoryCreatePreflightAndLockedNullGroupCheck": true,
+  "capturedSourcePreimage": {
+    "sourceKey": "kg_krer11_01_027_03_ceramic_floor_cement_mortar_r1",
+    "expected": null,
+    "guard": "Existing optional capturedSourcePreimage, checked normal preflight and locked reread; even identical-artifact appearance must refuse."
+  },
+  "machineMappingProposal": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-finishing-ceramic-a/formal-classification-v3/ceramic02703-six-machine-price-mapping-PROPOSAL-v1.json",
+    "sha256": "f41cac79284ff4fcc64afbc452162b7e8bc8a5ee1db149d1991f9ce272fd4276"
+  },
+  "sixMachineMappingsApprovedForRootMerge": true,
+  "machinePriceScope": "FULL_SOURCE_OPERATION_WITH_EXPLICIT_COVERAGE_EVIDENCE",
+  "aggregateOperator2_66InformationalOnly": true,
+  "extraTruckDriver0_28HoursAllowed": false,
+  "wholeWorker119_78Unsplit": true,
+  "rootVisuallyReviewedOfficialPages": [
+    33,
+    34
+  ],
+  "sixOpenNeeds": [
+    "skirting",
+    "deformation-junctions",
+    "hand-tools-ppe",
+    "extra-protection-control",
+    "acceptance-testing",
+    "additional-logistics-waste"
+  ],
+  "fullTechnicalAcceptance": false,
+  "newCompleteTypesAccepted": 0,
+  "old49PreparedTestsClaimedPass": false,
+  "actualCanonicalChecksRequired": true,
+  "parentRebindAutomaticAllowed": false,
+  "sourcePriceBindingTransferAllowed": false,
+  "requiredBeforeActualPublication": [
+    "Rootcanonicaladoption and exact six-row machineV1 map",
+    "ActualfocusedJest+types+pureconfig",
+    "Existinggovernedpublishernormalpreflight+lockedreread: exactsource null, newidentity absent, newgroup null/ordinal0",
+    "Exactparentproof if current parent changes; no rewrite historicalquerycontext",
+    "Rootonly dry/apply/independentreadback; preserveallpriorpayloads/history"
+  ]
+}

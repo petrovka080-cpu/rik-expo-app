@@ -1,0 +1,374 @@
+{
+  "contract": "rik-expo-app.internal-steel-hydrotest-krer16-005-01.source-bound-append.r2",
+  "sourceId": "kg_krer16_internal_pipelines_2015_steel_hydrotest_005_01",
+  "normId": "16-07-005-01",
+  "prefix": "hydrotest:internal-steel:dn50:krer16-005-01",
+  "titleRu": "Гидроиспытание внутреннего стального водопровода DN≤50 — КРЕР16-07-005-01",
+  "scopeRu": "Только внутренний стальной водопровод здания, номинальный проход до50мм включительно; проектная длина всех труб с фасонными частями, арматурой и П-образными компенсаторами по §2.5. Не полимеры, наружная магистраль, газ или канализация.",
+  "verifiedAt": "2026-10-18T00:00:00+06:00",
+  "authoringBaseHead": "4bddeadf24d23ded2708a285733a6abdcf028d4f",
+  "catalogBinding": null,
+  "registeredCurrentConsumerDecisionPending": true,
+  "publicationAllowed": false,
+  "fullTechnicalAcceptance": false,
+  "workOnlyTestCatalogId": "work-only:internal-steel-hydrotest:dn50:krer16-005-01",
+  "primaryMeasureParameterId": "tested_steel_pipe_length_m",
+  "source": {
+    "path": ".release-runtime/r568/s27-23/q5-valtec-ppr-official-sources/KG_KRER_16_INTERNAL_PIPELINES.pdf",
+    "sha256": "4fb2b609cf72486f9ef5f110cd606f6632fba3302cd3d52015f41dac24cbd17b",
+    "bytes": 2692853,
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no16truboprovodyvnutrennie_compressed-154690837388a4dd7.26767770.pdf",
+    "edition": "КРЕР16-2015; утверждение28.03.2016 №2-нпа",
+    "locatorRu": "§1.0/1.3/1.5, §2.5, стр.8 исключение16-07-005 из коэффициентов высоты; стр.76–77, только16-07-005-01; измеритель100м",
+    "sourceQuantityDenominatorM": "100",
+    "sourceBasePricesUsed": false
+  },
+  "guidance": {
+    "path": ".release-runtime/r568/s27-48/g7-next-source-extracts/KRER_GENERAL_APPLICATION_GUIDANCE.pdf",
+    "sha256": "5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9",
+    "locatorRu": "Общие указания, §1.7 стр.2–3; §1.11 стр.4; §2.10 стр.6 только раздел40",
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/stroitelnyeispecialnyestroitelnyeraboty-7866900598a0aab89.90712367.pdf"
+  },
+  "scopeFacts": [
+    {
+      "id": "pipe_material_scope",
+      "titleRu": "Материал испытываемого участка",
+      "value": "STEEL"
+    },
+    {
+      "id": "system_location_scope",
+      "titleRu": "Назначение и расположение участка",
+      "value": "INTERNAL_BUILDING_WATER_SUPPLY"
+    },
+    {
+      "id": "diameter_measurement_basis",
+      "titleRu": "Основание диаметра",
+      "value": "NOMINAL_BORE_NOT_POLYMER_OUTSIDE_DIAMETER"
+    },
+    {
+      "id": "tested_length_basis",
+      "titleRu": "Правило обмера стального трубопровода",
+      "value": "PROJECT_STEEL_TOTAL_WITH_FITTINGS_VALVES_U_COMPENSATORS"
+    },
+    {
+      "id": "single_paid_test_owner",
+      "titleRu": "Исключение повторной оплаты испытания",
+      "value": "SINGLE_TEST_OWNER_RECONCILED"
+    },
+    {
+      "id": "defect_repair_boundary",
+      "titleRu": "Граница устранения дефектов",
+      "value": "INCLUDED_TEST_DEFECT_HANDLING_MAJOR_REPAIR_SEPARATE"
+    }
+  ],
+  "projectReferenceFacts": [
+    {
+      "id": "test_boundary_reference",
+      "titleRu": "Схема и границы испытательного участка с обмером и сверкой прежней оплаты"
+    },
+    {
+      "id": "test_program_reference",
+      "titleRu": "Утверждённая программа испытания и её редакция"
+    },
+    {
+      "id": "test_acceptance_reference",
+      "titleRu": "Критерии и протокол приёмки по программе испытания"
+    },
+    {
+      "id": "plant_compatibility_reference",
+      "titleRu": "Совместимость фактической установки и испытательного оборудования с программой"
+    },
+    {
+      "id": "water_supply_discharge_reference",
+      "titleRu": "Фактические водоснабжение и разрешённый отвод испытательной воды"
+    },
+    {
+      "id": "isolation_access_reference",
+      "titleRu": "Изоляция участка, безопасный доступ и защита потребителей"
+    }
+  ],
+  "projectNumericFacts": [
+    {
+      "id": "nominal_bore_mm",
+      "titleRu": "Фактический номинальный проход стальной трубы",
+      "unitId": "mm",
+      "min": 1e-09,
+      "max": 50,
+      "basis": "§1.3 и колонка01; не наружный диаметр полимерной трубы"
+    },
+    {
+      "id": "working_pressure_mpa",
+      "titleRu": "Рабочее давление выбранного внутреннего водопровода",
+      "unitId": "MPa",
+      "min": 1e-09,
+      "max": 1.6,
+      "basis": "Граница выбранного внутреннего водопровода по §1.0; не формула назначения испытательного давления"
+    },
+    {
+      "id": "test_pressure_mpa",
+      "titleRu": "Испытательное давление из утверждённой программы",
+      "unitId": "MPa",
+      "min": 0.1,
+      "max": 10,
+      "basis": "0.1–10 только диапазон указанной установки04-0440, не назначенное нормой давление. Нужна отдельная программа и пригодность трубопровода."
+    },
+    {
+      "id": "test_hold_h",
+      "titleRu": "Выдержка по утверждённой программе, часы",
+      "unitId": "h",
+      "min": 1e-09,
+      "basis": "Проектный факт; таблица005 не задаёт численное время выдержки"
+    }
+  ],
+  "labor": {
+    "id": "whole-worker",
+    "sourceCode": "000-1005-3",
+    "grade": "5.3",
+    "unitId": "man_hour",
+    "ratePer100M": "5.01"
+  },
+  "machine": {
+    "id": "hydraulic-plant-consumed",
+    "sourceCode": "04-0440",
+    "titleRu": "Установка для гидравлических испытаний трубопроводов",
+    "unitId": "machine_hour",
+    "ratePer100M": "1.5",
+    "physicalQuantityAccepted": true,
+    "paidPriceOwnerAdmitted": false,
+    "machineCoverageAdmissionPending": true,
+    "machinePriceScopeStatus": "MACHINE_PRICE_SCOPE_PENDING",
+    "operatorRole": null,
+    "operationScope": null,
+    "machinePriceCoverageRequired": null,
+    "noAdditionalOperatorNormAdmitted": false,
+    "publicPriceBoundaryRu": "Нормативная работа установки учтена количественно. Цена её эксплуатации и состав обслуживающего персонала для04-0440 ещё не допущены; 5,01ч труда рабочих нельзя включать второй раз. Минимальная смена, выезд и доставка не делятся на нормативные машино-часы."
+  },
+  "materials": [
+    {
+      "id": "water",
+      "nameRu": "Вода",
+      "sourceCode": "01-0601-0001",
+      "sourceUnitId": "m3",
+      "ratePer100M": "1",
+      "orderUnitId": "m3",
+      "sourceToOrderMultiplier": "1",
+      "parameterPrefix": "hydro_water",
+      "identityGuideRu": "Вода для испытания по утверждённой программе и условиям площадки; поставщик или совместимый запас подтверждается отдельно."
+    },
+    {
+      "id": "paint",
+      "nameRu": "Масляная краска МА-0115: мумия или сурик железный",
+      "sourceCode": "01-3808-0001",
+      "sourceUnitId": "t",
+      "ratePer100M": "0.00005",
+      "orderUnitId": "kg",
+      "sourceToOrderMultiplier": "1000",
+      "parameterPrefix": "hydro_paint",
+      "identityGuideRu": "Именно указанная масляная краска МА-0115; не универсальная краска и не замена герметика. Исходные тонны переводятся в кг точно ×1000."
+    },
+    {
+      "id": "linseed-oil",
+      "nameRu": "Комбинированная олифа К-3",
+      "sourceCode": "01-7104-0005",
+      "sourceUnitId": "t",
+      "ratePer100M": "0.00002",
+      "orderUnitId": "kg",
+      "sourceToOrderMultiplier": "1000",
+      "parameterPrefix": "hydro_linseed_oil",
+      "identityGuideRu": "Именно комбинированная олифа К-3; тонна источника и кг заказа различаются только точным коэффициентом1000."
+    },
+    {
+      "id": "linen",
+      "nameRu": "Очес льняной",
+      "sourceCode": "01-7223-0001",
+      "sourceUnitId": "kg",
+      "ratePer100M": "0.02",
+      "orderUnitId": "kg",
+      "sourceToOrderMultiplier": "1",
+      "parameterPrefix": "hydro_linen",
+      "identityGuideRu": "Очес льняной исходной строки; не подмена ФУМ-лентой, полимерной нитью или объёмом неизвестного комплекта."
+    }
+  ],
+  "operations": [
+    {
+      "id": "included-step1",
+      "nameRu": "Наружный осмотр трубопровода",
+      "paidOwnerId": "whole-worker"
+    },
+    {
+      "id": "included-step2",
+      "nameRu": "Присоединение водопровода и установки для гидравлического испытания",
+      "paidOwnerId": "whole-worker"
+    },
+    {
+      "id": "included-step3",
+      "nameRu": "Установка заглушек и манометра",
+      "paidOwnerId": "whole-worker"
+    },
+    {
+      "id": "included-step4",
+      "nameRu": "Наполнение системы водой до заданного давления",
+      "paidOwnerId": "whole-worker"
+    },
+    {
+      "id": "included-step5",
+      "nameRu": "Осмотр трубопровода и устранение дефектов",
+      "paidOwnerId": "whole-worker"
+    },
+    {
+      "id": "included-step6",
+      "nameRu": "Окончательная проверка и сдача системы",
+      "paidOwnerId": "whole-worker"
+    },
+    {
+      "id": "included-step7",
+      "nameRu": "Спуск воды из системы",
+      "paidOwnerId": "whole-worker"
+    },
+    {
+      "id": "included-step8",
+      "nameRu": "Снятие заглушек, манометра и отсоединение установки",
+      "paidOwnerId": "whole-worker"
+    }
+  ],
+  "gaps": [
+    {
+      "id": "accepted-test-boundary",
+      "titleRu": "Подтвердить по схеме отдельный внутренний стальной участок водоснабжения, границы, DN≤50, проектную длину всех труб с фасонными частями/арматурой, отсутствие дубля уже оплаченной опрессовки.",
+      "sourceOrFactRu": "КРЕР16§1.0/1.3/2.5 плюс утверждённая схема испытательного участка и ведомость ранее оплаченных работ",
+      "missingFactOwnerRu": "ПроектировщикВК/ответственный за испытания",
+      "acceptanceRu": "Идентификатор схемы, material=STEEL, nominal_bore_mm≤50 и подтверждённый measured_length_m; q:point/m2 не пересчитывается.",
+      "unitId": null,
+      "separatePaymentOrQuantityInvented": false,
+      "userQuantityCannotClose": true
+    },
+    {
+      "id": "approved-test-program",
+      "titleRu": "Задать испытательное давление, выдержку, критерий приёмки, пригодность существующего участка и порядок устранения выявленных дефектов. Не брать0,1/10МПа из названия установки и не переноситьVALTEC1,5×/6бар.",
+      "sourceOrFactRu": "Утверждённая программа испытания и проект; таблица005 задаёт ресурсы, не эти численные значения",
+      "missingFactOwnerRu": "Проектировщик/технический надзор/испытательная бригада",
+      "acceptanceRu": "Точная revision программы, pressure/hold/acceptance facts; отдельный капитальный ремонт дефектов не скрыт в цене5,01ч.",
+      "unitId": null,
+      "separatePaymentOrQuantityInvented": false,
+      "userQuantityCannotClose": true
+    },
+    {
+      "id": "machine-price-and-worker-boundary",
+      "titleRu": "Для04-0440 подтвердить комплект установки, манометр/шланги/заглушки и цену её работы, границу5,01ч отдельного труда; прочитать источник оплаты перед exactcatalog manual/snapshot admission.",
+      "sourceOrFactRu": "Стр76 содержит только5,01ч рабочих и1,5маш.-ч; отдельной нормы машиниста не напечатано. Требуются текущий паспорт комплекта/условия аренды и применимые общие указания по цене работы машины.",
+      "missingFactOwnerRu": "Root owner общегоmachine-hour helper + механик/поставщик установки",
+      "acceptanceRu": "Один exact row/code/catalog gate, действующий V1 contract только после evidence review; scalar/all-in crew/minimum shift/callout без границы остаются UNCONFIRMED. Не добавлять произвольного машиниста.",
+      "unitId": null,
+      "separatePaymentOrQuantityInvented": false,
+      "userQuantityCannotClose": true
+    },
+    {
+      "id": "water-supply-discharge",
+      "titleRu": "Указать доступный источник воды, качество для испытания и разрешённый отвод после спуска; подтвердить фактически оплачиваемые объёмы/сборы вне включённого труда.",
+      "sourceOrFactRu": "01-0601-0001=1м³/100м и операции04/07; проектная схема водоснабжения/слива и условия площадки",
+      "missingFactOwnerRu": "Руководитель участка/эксплуатант сети/получатель стока",
+      "acceptanceRu": "Явная вода клиента или платный материальный owner; отдельная плата за приём/вывоз только по документу и без повторной оплаты спуска из5,01ч.",
+      "unitId": null,
+      "separatePaymentOrQuantityInvented": false,
+      "userQuantityCannotClose": true
+    },
+    {
+      "id": "access-isolation-safety",
+      "titleRu": "Подтвердить отключение участка, границы безопасной зоны, готовый доступ и исключение потребителей из испытательного давления; оценить специальные подмости/допуск отдельно при применимости.",
+      "sourceOrFactRu": "ППР/наряд/план изоляции; КРЕР16§1.12/1.13 и стр8 не дают автоматического коэффициента для005",
+      "missingFactOwnerRu": "Ответственный за безопасные работы/эксплуатант",
+      "acceptanceRu": "Документированные условия; не применять коэффициенты высоты соседних таблиц и не включать внешние сети/газ/канализацию.",
+      "unitId": null,
+      "separatePaymentOrQuantityInvented": false,
+      "userQuantityCannotClose": true
+    },
+    {
+      "id": "external-logistics-material-balance",
+      "titleRu": "Подтвердить мобилизацию/возврат установки, поставку четырёх материалов, пригодное наличие/резерв/кратности и остатки; отдельные фиксированные доплаты не прятать в маш.-ч.",
+      "sourceOrFactRu": "Фактическая заявка на комплект и условия поставки; в005 нет норм рейсов, отходов или минимальной смены",
+      "missingFactOwnerRu": "Снабженец/механик/руководитель участка",
+      "acceptanceRu": "Один владелец каждой дополнительной услуги по отдельному факту; без выдуманного1рейса или пропорционирования минимальной смены; материальные заказы имеют явные балансы.",
+      "unitId": null,
+      "separatePaymentOrQuantityInvented": false,
+      "userQuantityCannotClose": true
+    }
+  ],
+  "materialBalanceControls": [
+    "packages",
+    "remaining",
+    "free",
+    "shortage",
+    "reserve-deficit"
+  ],
+  "excludedRu": [
+    "PP-R/Hep2O/HDPE по сходству названия; наружные магистрали, газ, канализация, DN свыше50 без другой колонки.",
+    "Назначение давления и выдержки из диапазона оборудования либо правил VALTEC; pipe capacity вместо нормативной воды.",
+    "Дополнительные8 разделённых норм труда, произвольный машинист и автоматический NO_ADDITIONAL_OPERATOR_NORM.",
+    "Повторная оплата уже включённого испытания, спуска воды, снятия заглушек или манометра.",
+    "Неподтверждённые количества комплектов, манометров, шлангов, заглушек, рейсов, отходов или коэффициента высоты.",
+    "Исторические базовые цены как текущие; пропорционирование минимальной смены, выезда или доставки в маш.-ч."
+  ],
+  "expectedDefinitionRows": 44,
+  "expectedBaselineCalculatedRows": 30,
+  "expectedBaselineOpenNeeds": 6,
+  "expectedSourcePhysicalRows": 6,
+  "expectedMaterialPaidOrderOwners": 4,
+  "expectedIncludedOperations": 8,
+  "runtimeAcceptance": "NOT_RUN_WORK_ONLY_QUANTITY_CANDIDATE",
+  "originQuantityContract": "rik-expo-app.internal-steel-hydrotest-krer16-005-01.quantity-candidate.r1",
+  "originSourceId": "KG_KRER16_INTERNAL_PIPELINES_2015_STEEL_HYDROTEST_005_01",
+  "capturedCurrentContext": {
+    "definitionReleaseId": "aca4fa71-60c2-57db-83c8-5c8be93175a7",
+    "searchReleaseId": "0c4a0ed7-a579-57ae-9104-4e088dd09963",
+    "sourceHead": "d5bdb3e7722a020b0e4f81770847a7fcd6b01a12",
+    "recordedReleaseSourceCommit": "9bab72d75ed0b0aff9323d8cab5644563fbfa6b6"
+  },
+  "proposedIdentity": {
+    "catalogId": "canonical-work:master:internal_steel_water_hydraulic_test_dn50_krer16_07_005_01",
+    "workKey": "internal_steel_water_hydraulic_test_dn50_krer16_07_005_01",
+    "namespace": "global",
+    "domain": "plumbing",
+    "sourceIdentity": "master-work:internal_steel_water_hydraulic_test_dn50_krer16_07_005_01",
+    "persisted": false,
+    "rootDecisionRequired": true
+  },
+  "capturedSourcePreimage": {
+    "sourceKey": "kg_krer16_internal_pipelines_2015_steel_hydrotest_005_01",
+    "expected": null
+  },
+  "proposedSearchPlacement": {
+    "groupMode": "create",
+    "groupId": "wg:master:internal_steel_water_hydraulic_test_krer16_07_005_01",
+    "groupNameRu": "Гидроиспытание внутреннего стального водопровода DN≤50 — КРЕР16-07-005-01",
+    "domainId": "plumbing",
+    "systemId": "plumbing",
+    "subsystemId": "wg:master:internal_steel_water_hydraulic_test_krer16_07_005_01",
+    "assemblyId": "wg:master:internal_steel_water_hydraulic_test_krer16_07_005_01",
+    "workFamilyId": "wg:master:internal_steel_water_hydraulic_test_krer16_07_005_01",
+    "breadcrumb": [
+      "Гидроиспытание внутреннего стального водопровода DN≤50 — КРЕР16-07-005-01"
+    ],
+    "membershipOrdinal": 0,
+    "operationKind": "TESTING",
+    "constructionState": "EXISTING_OR_NEW"
+  },
+  "newGroupAbsenceCaptured": false,
+  "newGroupRequiresStandardCreatePreflightAndLockedReread": true,
+  "sourceMachinePricePublicationAllowed": false,
+  "partialQuantityDesignOnly": true,
+  "rootClassificationProposalSha256": "dbb0c999d65bd9f915c55ebca1c7ac3c6f2657957dde51d70fb5e1d3dd5472de",
+  "currentScopeEvidence": {
+    "currentRead": {
+      "path": "data/estimate-benchmarks/fixtures/hydrotest-steel005-current27-17-r2.json",
+      "sha256": "3337f77c9874672d5dc242b8e1aa7c52ba99d2b9de4b5fc1fca5609e26645505"
+    },
+    "targetedRead": {
+      "path": "data/estimate-benchmarks/fixtures/hydrotest-steel005-targeted-source-placement-r2.json",
+      "sha256": "695a353993354a4161667f63948dbe8b9676998dee416693aafcfdd92581c735"
+    },
+    "proposal": {
+      "path": "data/estimate-benchmarks/fixtures/hydrotest-steel005-root-classification-proposal-r2.json",
+      "sha256": "dbb0c999d65bd9f915c55ebca1c7ac3c6f2657957dde51d70fb5e1d3dd5472de"
+    }
+  }
+}

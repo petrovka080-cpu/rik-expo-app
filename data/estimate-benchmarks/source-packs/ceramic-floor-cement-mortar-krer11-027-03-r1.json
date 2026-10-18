@@ -1,0 +1,306 @@
+{
+  "contract": "gox-build.ceramic-floor-cement-mortar-krer11-027-03.r1",
+  "status": "ROOT_CLASSIFIED_SOURCE_SPECIFIC_PARTIAL_CANDIDATE_NOT_RUN_NOT_ADOPTED",
+  "catalogId": "canonical-work:master:ceramic_floor_unglazed_single_colour_cement_m150_krer11_01_027_03",
+  "sourceId": "kg_krer11_01_027_03_ceramic_floor_cement_mortar_r1",
+  "normId": "KRER11-01-027-03",
+  "prefix": "ceramic-floor:cement-mortar:krer11-01-027-03",
+  "primaryMeasureParameterId": "net_ceramic_floor_area_m2",
+  "primaryUnitId": "m2",
+  "titleRu": "Пол из гладкой неглазурованной одноцветной керамической плитки на готовом цементном растворе М150",
+  "scopeRu": "Одна точная операцияКРЕР11-01-027-03: покрытие пола из гладких неглазурованных одноцветных керамических плиток с красителем квадратной/прямоугольной формы на готовом цементном кладочном раствореМ150. Подготовка, подбор/сортировка, прослойка, цементная заделка швов, уход, очистка/промывка учтены цельным составом. Плинтусы исключены§1.8. Площадь по§2.2.",
+  "source": {
+    "path": ".release-runtime/r568/s27-69/cn69-krer11-labor-candidate/KRER-11-official.pdf",
+    "sha256": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223",
+    "edition": "КРЕР11-2015, Полы; введён01.01.2016",
+    "officialUrl": "https://www.gosstroy.gov.kg/ru/state_program/download-pdf/no11poly_compressed-73969083537959524.32310342.pdf",
+    "officialPage": "https://www.gosstroy.gov.kg/ru/kyzmat/427/show",
+    "locatorRu": "PDF/печатные33–34: состав норм01–03, измеритель100м² и точная колонка03; PDF35 завершает таблицу03. PDF6§1.8 исключает плинтусы, §2.2 задаёт площадь."
+  },
+  "scopeFacts": [
+    {
+      "id": "ceramic_floor_profile",
+      "titleRu": "Подтверждённое исполнение керамического пола",
+      "value": "FLOOR_SMOOTH_UNGLAZED_SINGLE_COLOUR_WITH_COLOURANT_SQUARE_OR_RECTANGULAR"
+    },
+    {
+      "id": "cement_mortar_system",
+      "titleRu": "Фактическая технология прослойки и цементных швов",
+      "value": "READY_CEMENT_MASONRY_MORTAR_M150_COLUMN03_NOT_ADHESIVE"
+    },
+    {
+      "id": "base_scope_confirmed",
+      "titleRu": "Готовность основания для исходного состава подготовки",
+      "value": "APPROVED_BASE_FOR_SOURCE_PREPARATION_NO_UNPRICED_REPAIR_OR_NEW_LAYER"
+    },
+    {
+      "id": "net_area_rule",
+      "titleRu": "Правило чистой площади покрытия",
+      "value": "KRER11_2_2_INTERNAL_FINISHED_FACES_WITH_NICHES_AND_DOOR_OPENINGS_EXCLUDING_OCCUPIED_PROJECTIONS"
+    }
+  ],
+  "requiredProjectReferences": [
+    "approved_floor_specification_reference",
+    "approved_base_acceptance_reference",
+    "approved_tile_mortar_method_reference"
+  ],
+  "resources": [
+    {
+      "id": "whole-labor",
+      "resourceCode": "000-1003-2",
+      "titleRu": "Рабочие-строители среднего разряда3,2 — вся исходная операция",
+      "unitId": "man_hour",
+      "ratePer100M2": "119.78",
+      "payment": "ONE_WHOLE_LABOUR_OWNER_NO_STAGE_SPLIT"
+    },
+    {
+      "id": "operator-information",
+      "resourceCode": null,
+      "titleRu": "Затраты труда машинистов — исходное справочное значение",
+      "unitId": "man_hour",
+      "ratePer100M2": "2.66",
+      "payment": "INFORMATIONAL_ONLY_NO_ADDITIONAL_WAGE"
+    },
+    {
+      "id": "forklift5t",
+      "resourceCode": "03-0020",
+      "titleRu": "Автопогрузчики5т",
+      "unitId": "machine_hour",
+      "ratePer100M2": "0.36",
+      "payment": "ONE_SELECTED_OWN_OR_HIRED_FULL_SOURCE_OPERATION_QUOTE"
+    },
+    {
+      "id": "hoist500kg45m",
+      "resourceCode": "03-0327",
+      "titleRu": "Подъёмники грузоподъёмностью до500кг, одномачтовые, высота подъёма45м",
+      "unitId": "machine_hour",
+      "ratePer100M2": "2.30",
+      "payment": "ONE_SELECTED_OWN_OR_HIRED_FULL_SOURCE_OPERATION_QUOTE"
+    },
+    {
+      "id": "truck5t",
+      "resourceCode": "40-0001",
+      "titleRu": "Автомобили бортовые грузоподъёмностью до5т",
+      "unitId": "machine_hour",
+      "ratePer100M2": "0.28",
+      "payment": "ONE_SELECTED_OWN_OR_HIRED_FULL_SOURCE_OPERATION_QUOTE_NOT_TRIP"
+    },
+    {
+      "id": "water",
+      "resourceCode": "01-0601-0001",
+      "titleRu": "Вода для всей исходной операции без выдуманного распределения по этапам",
+      "unitId": "m3",
+      "ratePer100M2": "3.85",
+      "payment": "ONE_MATERIAL_PURCHASE_OWNER"
+    },
+    {
+      "id": "ceramic-tile",
+      "resourceCode": "01-3207-0011",
+      "titleRu": "Плитки керамические для полов гладкие неглазурованные одноцветные с красителем, квадратные и прямоугольные",
+      "unitId": "m2",
+      "ratePer100M2": "102",
+      "payment": "ONE_MATERIAL_PURCHASE_OWNER"
+    },
+    {
+      "id": "sawdust",
+      "resourceCode": "01-7222-0001",
+      "titleRu": "Опилки древесные",
+      "unitId": "m3",
+      "ratePer100M2": "3.06",
+      "payment": "ONE_MATERIAL_PURCHASE_OWNER"
+    },
+    {
+      "id": "ready-mortar-m150",
+      "resourceCode": "03-0406-0005",
+      "titleRu": "Раствор готовый кладочный цементный, марка150",
+      "unitId": "m3",
+      "ratePer100M2": "1.30",
+      "payment": "ONE_MATERIAL_PURCHASE_OWNER_COVERS_SOURCE_BEDDING_AND_JOINT_SCOPE_NOT_SECOND_GROUT"
+    }
+  ],
+  "materials": [
+    {
+      "id": "water",
+      "nameRu": "Вода для всей исходной операции без выдуманного распределения по этапам",
+      "unitId": "m3",
+      "sourceCode": "01-0601-0001",
+      "ratePer100M2": "3.85",
+      "specificationId": "water_specification_reference",
+      "identityGuideRu": "Нужны реальные спецификация/единица/пригодность; только точная исходная позиция Вода для всей исходной операции без выдуманного распределения по этапам. Норма не устанавливает артикул поставщика.",
+      "parameterPrefix": "water"
+    },
+    {
+      "id": "ceramic-tile",
+      "nameRu": "Плитки керамические для полов гладкие неглазурованные одноцветные с красителем, квадратные и прямоугольные",
+      "unitId": "m2",
+      "sourceCode": "01-3207-0011",
+      "ratePer100M2": "102",
+      "specificationId": "ceramic_tile_specification_reference",
+      "identityGuideRu": "Нужны реальные спецификация/единица/пригодность; только точная исходная позиция Плитки керамические для полов гладкие неглазурованные одноцветные с красителем, квадратные и прямоугольные. Норма не устанавливает артикул поставщика.",
+      "parameterPrefix": "ceramic_tile"
+    },
+    {
+      "id": "sawdust",
+      "nameRu": "Опилки древесные",
+      "unitId": "m3",
+      "sourceCode": "01-7222-0001",
+      "ratePer100M2": "3.06",
+      "specificationId": "sawdust_specification_reference",
+      "identityGuideRu": "Нужны реальные спецификация/единица/пригодность; только точная исходная позиция Опилки древесные. Норма не устанавливает артикул поставщика.",
+      "parameterPrefix": "sawdust"
+    },
+    {
+      "id": "ready-mortar-m150",
+      "nameRu": "Раствор готовый кладочный цементный, марка150",
+      "unitId": "m3",
+      "sourceCode": "03-0406-0005",
+      "ratePer100M2": "1.30",
+      "specificationId": "ready_mortar_m150_specification_reference",
+      "identityGuideRu": "Нужны реальные спецификация/единица/пригодность; только точная исходная позиция Раствор готовый кладочный цементный, марка150. Норма не устанавливает артикул поставщика.",
+      "parameterPrefix": "ready_mortar_m150"
+    }
+  ],
+  "machines": [
+    {
+      "id": "forklift5t",
+      "nameRu": "Автопогрузчики5т",
+      "resourceCode": "03-0020",
+      "ratePer100M2": "0.36",
+      "parameterId": "forklift5t_fulfillment",
+      "ownValue": "OWN_SOURCE_OPERATION",
+      "hiredValue": "HIRED_SOURCE_OPERATION",
+      "operator": "OPERATOR"
+    },
+    {
+      "id": "hoist500kg45m",
+      "nameRu": "Подъёмники грузоподъёмностью до500кг, одномачтовые, высота подъёма45м",
+      "resourceCode": "03-0327",
+      "ratePer100M2": "2.30",
+      "parameterId": "hoist500kg45m_fulfillment",
+      "ownValue": "OWN_SOURCE_OPERATION",
+      "hiredValue": "HIRED_SOURCE_OPERATION",
+      "operator": "OPERATOR"
+    },
+    {
+      "id": "truck5t",
+      "nameRu": "Автомобили бортовые грузоподъёмностью до5т",
+      "resourceCode": "40-0001",
+      "ratePer100M2": "0.28",
+      "parameterId": "truck5t_fulfillment",
+      "ownValue": "OWN_SOURCE_OPERATION",
+      "hiredValue": "HIRED_SOURCE_OPERATION",
+      "operator": "DRIVER"
+    }
+  ],
+  "operations": [
+    {
+      "id": "included-base-preparation",
+      "nameRu": "Подготовка основания, включённая в цельную исходную операцию"
+    },
+    {
+      "id": "included-tiles-bedding-joints",
+      "nameRu": "Подбор/сортировка плитки, настилка, прослойка и цементная заделка швов"
+    },
+    {
+      "id": "included-curing",
+      "nameRu": "Уход за покрытием, включённый в исходную операцию"
+    },
+    {
+      "id": "included-cleaning-washing",
+      "nameRu": "Очистка и промывка покрытия, включённые в исходную операцию"
+    }
+  ],
+  "gaps": [
+    {
+      "id": "skirting",
+      "category": "work",
+      "nameRu": "Применимые плинтусы по отдельной ведомости и норме",
+      "reasonRu": "§1.8 исключает устройство плинтусов. Нужны применимость, длина/высота, исполнение и точная отдельная норма, без вывода периметра из площади.",
+      "ownerRu": "Проектировщик/сметчик",
+      "nextTaskRu": "Получить проектную ведомость применимых плинтусов с длиной, высотой, материалом и отдельной официальной нормой.",
+      "acceptanceRu": "Есть применимость, обмер, единица, источник количества и отдельная граница оплаты; §1.8 сохраняется."
+    },
+    {
+      "id": "deformation-junctions",
+      "category": "work",
+      "nameRu": "Применимые деформационные сопряжения, пороги и узлы",
+      "reasonRu": "Нужны проектные узлы и измеренная геометрия/изделия. Обычная цементная заделка межплиточных швов уже включена, второй CE40/силикон не назначены.",
+      "ownerRu": "Проектировщик/технолог",
+      "nextTaskRu": "Получить проектные узлы деформационных швов, порогов и сопряжений с измеренной геометрией и конкретными изделиями.",
+      "acceptanceRu": "Отдельный scope не повторяет цементную заделку межплиточных швов; есть источник единицы и количества."
+    },
+    {
+      "id": "hand-tools-ppe",
+      "category": "equipment",
+      "nameRu": "Оснастка, ручной инструмент и СИЗ вне подтверждённого включённого обеспечения",
+      "reasonRu": "Норма не задаёт покупку новых инструментов/СИЗ. Табель, фактическое обеспечение и отдельная оплата должны быть подтверждены.",
+      "ownerRu": "Исполнитель",
+      "nextTaskRu": "Получить табель имеющегося/повторно используемого инструмента и СИЗ, ППР и коммерческую границу отдельно оплачиваемого обеспечения.",
+      "acceptanceRu": "Покупка и объём подтверждены фактическим обеспечением и включениями цены, а не одной площадью пола."
+    },
+    {
+      "id": "extra-protection-control",
+      "category": "service",
+      "nameRu": "Дополнительные ресурсы защиты вне исходного ухода, если требуются",
+      "reasonRu": "Уход и исходные вода/опилки уже учтены. Дополнительный scope определяется ППР, а не сроком твердения или ручным0/1.",
+      "ownerRu": "Технолог/прораб",
+      "nextTaskRu": "Получить ППР и ведомость дополнительной защиты вне исходного ухода, воды и опилок, с применимостью и объёмом.",
+      "acceptanceRu": "Дополнительная оплачиваемая защита не дублирует исходный уход; календарный срок не заменяет трудовую норму."
+    },
+    {
+      "id": "acceptance-testing",
+      "category": "service",
+      "nameRu": "Применимый отдельный контроль и испытания по плану приёмки",
+      "reasonRu": "Нужны проектные контрольные требования и граница отдельной услуги. Из119.78ч не выделяется вымышленная доля контроля.",
+      "ownerRu": "Технадзор/прораб",
+      "nextTaskRu": "Получить утверждённый план приёмки/испытаний и договорную границу самостоятельной контрольной услуги.",
+      "acceptanceRu": "Есть применимость, измеримая единица и объём/источник; из119.78ч не выделена произвольная доля."
+    },
+    {
+      "id": "additional-logistics-waste",
+      "category": "service",
+      "nameRu": "Дополнительный внешний маршрут, тара и отходы вне включённого перемещения и очистки",
+      "reasonRu": "Источник уже содержит три машины и очистку/промывку. Нужны фактические услуги/количества и exact scope без повторной оплаты. Неясная агрегатная граница требует reconciliation.",
+      "ownerRu": "Логист/исполнитель",
+      "nextTaskRu": "Получить маршрут/акты/задание, измеренный объём внешней услуги, тары/отходов и сверку оплаты с тремя исходными машинами и очисткой.",
+      "acceptanceRu": "Exact scope исключает повторную оплату; неоднозначная агрегатная услуга остаётся на согласовании, без автоматического исключения владельца."
+    }
+  ],
+  "excludedRu": [
+    "Other table columns01/02/04/05/06, other colour/glaze/format scopes not proven by this column",
+    "CM11/CT17/CE40 quantities or whole labour combined with119.78",
+    "Porcelain600×600 or arbitrary modern tile products treated as equivalent",
+    "ReadyM150 mortar replaced by dry glue450kg from05/06 or by a new second cement grout owner",
+    "Automatic skirting/deformation joint/perimeter length from floor area",
+    "Separate charging of preparation, tile sorting, cement joint filling, curing or washing already inside whole labour",
+    "Historical2015 som prices used as current prices",
+    "Automatic additional delivery/unload/cleanup payment without exact scope reconciliation"
+  ],
+  "fullTechnicalAcceptance": false,
+  "newAcceptedCompleteTypes": 0,
+  "paymentAdmission": {
+    "catalogId": "canonical-work:master:ceramic_floor_unglazed_single_colour_cement_m150_krer11_01_027_03",
+    "exactMachineOwnerMapRequired": true,
+    "exactMachineOwnerMapApprovedForRootMerge": true,
+    "actualCanonicalGatePerformedByAuthor": false,
+    "publisherOrRuntimeAdoptionRequiresRootChecks": true,
+    "reason": "Six exact catalog/row operated-machine owners must pass the existing helper and explicit coverage checks. This WORK candidate has not run tests or publication."
+  },
+  "proposedIdentity": {
+    "catalogId": "canonical-work:master:ceramic_floor_unglazed_single_colour_cement_m150_krer11_01_027_03",
+    "workKey": "ceramic_floor_unglazed_single_colour_cement_m150_krer11_01_027_03",
+    "sourceIdentityId": "master-work:ceramic_floor_unglazed_single_colour_cement_m150_krer11_01_027_03",
+    "sourceId": "kg_krer11_01_027_03_ceramic_floor_cement_mortar_r1",
+    "groupId": "wg:master:ceramic_floor_cement_mortar_m150",
+    "groupNameRu": "Керамические полы на готовом цементном растворе М150",
+    "groupMode": "create",
+    "membershipOrdinal": 0,
+    "domainId": "tile_stone",
+    "systemId": "tile_stone",
+    "primaryParameterId": "net_ceramic_floor_area_m2",
+    "primaryUnitId": "m2",
+    "titleRu": "Пол из гладкой неглазурованной одноцветной керамической плитки на готовом цементном растворе М150",
+    "persisted": false,
+    "rootDecisionSha256": "f59b3d474f0a70ab877e7a7c6e5777f7c5b1bca5ac22b6f5dfd53f90dc091814"
+  }
+}

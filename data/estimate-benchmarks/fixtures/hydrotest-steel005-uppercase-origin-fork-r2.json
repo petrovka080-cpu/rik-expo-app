@@ -1,0 +1,107 @@
+{
+  "status": "ADDRESSED_WORK_FORK_NO_FROZEN_SOURCE_EDIT_NOT_RUN",
+  "originHandoff": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-water-hydrotest-r1/quantity-candidate-v1/hydrotest-quantity-candidate-handoff-v1.json",
+    "sha256": "452b1287094fcd8a3a96e781662e911fe81d74e72b3b2e7ee0b7b8e903b30d54",
+    "bytes": 6508
+  },
+  "originCandidatePins": [
+    {
+      "destination": "data/estimate-benchmarks/source-packs/hydrotest-internal-steel-dn50-krer16-005-01-r1.json",
+      "stagedPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-18\\files-pasted-by-the-user-andro\\work\\next-water-hydrotest-r1\\quantity-candidate-v1\\after\\data\\estimate-benchmarks\\source-packs\\hydrotest-internal-steel-dn50-krer16-005-01-r1.json",
+      "sha256": "e90af4e3c5c24f191399409e4d79f46de29fbe743130b1767e54cae91231183e"
+    },
+    {
+      "destination": "src/lib/estimate/v4/hydrotestInternalSteelDn50Krer16R1.ts",
+      "stagedPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-18\\files-pasted-by-the-user-andro\\work\\next-water-hydrotest-r1\\quantity-candidate-v1\\after\\src\\lib\\estimate\\v4\\hydrotestInternalSteelDn50Krer16R1.ts",
+      "sha256": "685c6add400850fec4653cdd0bdcfa846cfaaa7b8c6da733e38de35bb9622430"
+    },
+    {
+      "destination": "src/lib/estimate/v4/hydrotestInternalSteelDn50Krer16R1.test.ts",
+      "stagedPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-18\\files-pasted-by-the-user-andro\\work\\next-water-hydrotest-r1\\quantity-candidate-v1\\after\\src\\lib\\estimate\\v4\\hydrotestInternalSteelDn50Krer16R1.test.ts",
+      "sha256": "9434b31e63e6d1ec2624f25168770e5b67ee3adf574d84b25f7781fa40cdf003"
+    }
+  ],
+  "rootProposal": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-water-hydrotest-r1/source-bound-append-candidate-r2/hydrotest-root-classification-proposal-r2.json",
+    "sha256": "dbb0c999d65bd9f915c55ebca1c7ac3c6f2657957dde51d70fb5e1d3dd5472de",
+    "bytes": 5821
+  },
+  "sourceEmissionBefore": "KG_KRER16_INTERNAL_PIPELINES_2015_STEEL_HYDROTEST_005_01",
+  "sourceEmissionAfter": "kg_krer16_internal_pipelines_2015_steel_hydrotest_005_01",
+  "sourceMachinePricePublicationAllowed": false,
+  "sourcePreimageExpected": null,
+  "sourcePreimageCapturedBy": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-post-masonry-reads-v3/water-targeted4-actual-current-result-v3.json",
+    "sha256": "695a353993354a4161667f63948dbe8b9676998dee416693aafcfdd92581c735",
+    "bytes": 11332
+  },
+  "changedPackKeys": [
+    "contract",
+    "sourceId",
+    "titleRu",
+    "originQuantityContract",
+    "originSourceId",
+    "capturedCurrentContext",
+    "proposedIdentity",
+    "capturedSourcePreimage",
+    "proposedSearchPlacement",
+    "newGroupAbsenceCaptured",
+    "newGroupRequiresStandardCreatePreflightAndLockedReread",
+    "sourceMachinePricePublicationAllowed",
+    "partialQuantityDesignOnly",
+    "rootClassificationProposalSha256",
+    "currentScopeEvidence"
+  ],
+  "physicalFragmentsByteEquivalentAsParsed": [
+    "labor",
+    "machine",
+    "materials",
+    "operations",
+    "gaps",
+    "primaryMeasureParameterId"
+  ],
+  "moduleByteExactWithFrozenQuantityCandidate": true,
+  "formulaExpressionsAndRowIdsChanged": false,
+  "normRatesOrUnitsChanged": false,
+  "testCaseCountUnchanged": 58,
+  "testAssertionAddition": "Existing sourcepin test now checks lower-case sourceId, exact uppercase origin, pricepublicationfalse and uncapturednewgroupabsence; noassertionremoved.",
+  "proposedNewGroup": {
+    "groupMode": "create",
+    "groupId": "wg:master:internal_steel_water_hydraulic_test_krer16_07_005_01",
+    "groupNameRu": "Гидроиспытание внутреннего стального водопровода DN≤50 — КРЕР16-07-005-01",
+    "domainId": "plumbing",
+    "systemId": "plumbing",
+    "subsystemId": "wg:master:internal_steel_water_hydraulic_test_krer16_07_005_01",
+    "assemblyId": "wg:master:internal_steel_water_hydraulic_test_krer16_07_005_01",
+    "workFamilyId": "wg:master:internal_steel_water_hydraulic_test_krer16_07_005_01",
+    "breadcrumb": [
+      "Гидроиспытание внутреннего стального водопровода DN≤50 — КРЕР16-07-005-01"
+    ],
+    "membershipOrdinal": 0,
+    "operationKind": "TESTING",
+    "constructionState": "EXISTING_OR_NEW"
+  },
+  "newGroupAbsenceClaimed": false,
+  "legacyGroupJoinedRenamedOrMutated": false,
+  "existing17PricesSavedOrResourceDataInherited": false,
+  "authorCanonicalOrDbMutation": false,
+  "authorNodeTestsHeavyLaunch": false,
+  "newStagedThreePins": [
+    {
+      "destination": "data/estimate-benchmarks/source-packs/hydrotest-internal-steel-dn50-krer16-005-01-r1.json",
+      "stagedPath": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-water-hydrotest-r1/source-bound-append-candidate-r2/after/data/estimate-benchmarks/source-packs/hydrotest-internal-steel-dn50-krer16-005-01-r1.json",
+      "sha256": "fefa545bd90c18f8d9f5f593f13a39cfa8e05608bd29d68994cbe62e05b0d635"
+    },
+    {
+      "destination": "src/lib/estimate/v4/hydrotestInternalSteelDn50Krer16R1.ts",
+      "stagedPath": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-water-hydrotest-r1/source-bound-append-candidate-r2/after/src/lib/estimate/v4/hydrotestInternalSteelDn50Krer16R1.ts",
+      "sha256": "685c6add400850fec4653cdd0bdcfa846cfaaa7b8c6da733e38de35bb9622430"
+    },
+    {
+      "destination": "src/lib/estimate/v4/hydrotestInternalSteelDn50Krer16R1.test.ts",
+      "stagedPath": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-water-hydrotest-r1/source-bound-append-candidate-r2/after/src/lib/estimate/v4/hydrotestInternalSteelDn50Krer16R1.test.ts",
+      "sha256": "089fd84f06669455a4919bae750b9db9a0dfc475d061bf5c81d9c0ec5adecb0e"
+    }
+  ]
+}

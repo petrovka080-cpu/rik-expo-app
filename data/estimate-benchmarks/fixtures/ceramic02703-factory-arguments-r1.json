@@ -1,0 +1,45 @@
+{
+  "status": "AUTHORING_ROOT_CLASSIFIED_PARTIAL_NOT_RUN_NOT_ADOPTED",
+  "evidence": {
+    "initialRead": {
+      "path": "data/estimate-benchmarks/fixtures/ceramic02703-initial-read-r1.json",
+      "sha256": "b8c54af382b67a1871e3c7835fcd22b5034bd116f6d6a7b6ea3c04a986345a4f"
+    },
+    "initialClosedGuard": {
+      "path": ".release-runtime/r568/next-wave/ceramic02703/current-guards/initial-r1.json",
+      "sha256": "9ef51cb50880bfda97effc6d119317bc1ca7b85590bef719c35b9fac6ef2a300"
+    },
+    "supplementRead": {
+      "path": "data/estimate-benchmarks/fixtures/ceramic02703-supplement-read-r1.json",
+      "sha256": "6e6f16a6ff89b31cfa028d6c87d148dfd671d9cf2270643934f3a0c702234812"
+    },
+    "supplementClosedGuard": {
+      "path": ".release-runtime/r568/next-wave/ceramic02703/current-guards/supplement-r1.json",
+      "sha256": "92eca895879f22673a57166d9425d801b4fd37d65386270a542edecf7c1dfaf9"
+    },
+    "sixFloorLayRead": {
+      "path": "data/estimate-benchmarks/fixtures/ceramic02703-six-floor-lay-read-r1.json",
+      "sha256": "bf15a38b85c9c2eae2c2f233d58fd6de37d09ca15bec551a6db35118c00180c6"
+    },
+    "sixFloorLayClosedGuard": {
+      "path": ".release-runtime/r568/next-wave/ceramic02703/current-guards/six-floor-lay-r1.json",
+      "sha256": "9a305456e9770a90c50623ab88199c816da33b71c343ccdf73c3f72ec7d65e5c"
+    },
+    "classificationProposal": {
+      "path": "data/estimate-benchmarks/fixtures/ceramic02703-classification-proposal-r1.json",
+      "sha256": "2222f83406d71259fe3efda03b9b7ee210d4f34400d007b7672dbe2931c28b39"
+    },
+    "classificationDecision": {
+      "path": "data/estimate-benchmarks/fixtures/ceramic02703-root-decision-r1.json",
+      "sha256": "f59b3d474f0a70ab877e7a7c6e5777f7c5b1bca5ac22b6f5dfd53f90dc091814"
+    },
+    "cycleDossier": {
+      "path": "data/estimate-benchmarks/fixtures/ceramic02703-full-cycle-r1.json",
+      "sha256": "1696e6f6d24319bce41ff06a6eaa28b1118fb87daa1b335ca2a79d8f9c103fed"
+    },
+    "rootReaderContext": {
+      "path": "data/estimate-benchmarks/fixtures/ceramic02703-root-reader-context-r1.json",
+      "sha256": "c856e403e312efaf23821649d48979bb828a077dfe68aea7faa4c17f3e37dc0b"
+    }
+  }
+}

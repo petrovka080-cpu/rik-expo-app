@@ -1,0 +1,71 @@
+{
+  "status": "ROOT_REVIEWED_PARTIAL_STEEL_HYDROTEST_APPEND_R2",
+  "proposalSha256": "dbb0c999d65bd9f915c55ebca1c7ac3c6f2657957dde51d70fb5e1d3dd5472de",
+  "executionContext": {
+    "definitionReleaseId": "aca4fa71-60c2-57db-83c8-5c8be93175a7",
+    "searchReleaseId": "0c4a0ed7-a579-57ae-9104-4e088dd09963",
+    "sourceHead": "d5bdb3e7722a020b0e4f81770847a7fcd6b01a12",
+    "recordedReleaseSourceCommit": "9bab72d75ed0b0aff9323d8cab5644563fbfa6b6"
+  },
+  "published": false,
+  "at": "2026-10-18T14:10:48.405586+00:00",
+  "proposal": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-water-hydrotest-r1/source-bound-append-candidate-r2/hydrotest-root-classification-proposal-r2.json",
+    "sha256": "dbb0c999d65bd9f915c55ebca1c7ac3c6f2657957dde51d70fb5e1d3dd5472de"
+  },
+  "catalogId": "canonical-work:master:internal_steel_water_hydraulic_test_dn50_krer16_07_005_01",
+  "sourceId": "kg_krer16_internal_pipelines_2015_steel_hydrotest_005_01",
+  "searchPlacement": {
+    "groupMode": "create",
+    "groupId": "wg:master:internal_steel_water_hydraulic_test_krer16_07_005_01",
+    "groupNameRu": "Гидроиспытание внутреннего стального водопровода DN≤50 — КРЕР16-07-005-01",
+    "domainId": "plumbing",
+    "systemId": "plumbing",
+    "subsystemId": "wg:master:internal_steel_water_hydraulic_test_krer16_07_005_01",
+    "assemblyId": "wg:master:internal_steel_water_hydraulic_test_krer16_07_005_01",
+    "workFamilyId": "wg:master:internal_steel_water_hydraulic_test_krer16_07_005_01",
+    "breadcrumb": [
+      "Гидроиспытание внутреннего стального водопровода DN≤50 — КРЕР16-07-005-01"
+    ],
+    "membershipOrdinal": 0,
+    "operationKind": "TESTING",
+    "constructionState": "EXISTING_OR_NEW"
+  },
+  "rootVerifiedRawPassportProjectionHashes": 17,
+  "rootVerifiedAll8TargetedAbsenceCountsZero": true,
+  "globalAbsenceProved": false,
+  "newGroupAbsenceCaptured": false,
+  "mandatoryStandardCreatePreflightAndLockedReread": true,
+  "legacyFivePointGroupUnchanged": true,
+  "rootVisuallyReviewedOfficialTablePages": [
+    76,
+    77
+  ],
+  "physicalFactsPer100M": {
+    "workerManHours": "5.01",
+    "machine04_0440Hours": "1.5",
+    "waterM3": "1",
+    "paintT": "0.00005",
+    "linseedOilT": "0.00002",
+    "linenKg": "0.02"
+  },
+  "partialQuantityLocalPublicationDesignAllowed": true,
+  "sourceMachinePricePublicationAllowed": false,
+  "machineCostTreatment": "INFORMATIONAL_SCOPE",
+  "machinePriceStatus": "MACHINE_PRICE_SCOPE_PENDING",
+  "machinePaidOwnerAllowed": false,
+  "operatorRoleAdmitted": null,
+  "extraOperatorHoursAllowed": false,
+  "openApplicationNeeds": 6,
+  "manual0or1CannotCloseNeed": true,
+  "expectedBindingRows": 18,
+  "sourcePriceBindings": 0,
+  "fullTechnicalAcceptance": false,
+  "newCompleteTypesAccepted": 0,
+  "requiredBeforeActualPublication": [
+    "Rootcanonicaladoption and relevant actualJest/types/pureconfig PASS",
+    "Exactcurrentparentsourcefreeze",
+    "Existinggovernedpublisherdry/preflight+lockedreread withcapturedsource null andCREATEnullgroup",
+    "Rootonlyapply thenindependentreadback; no repricing/rebindingoldconsumers"
+  ]
+}
