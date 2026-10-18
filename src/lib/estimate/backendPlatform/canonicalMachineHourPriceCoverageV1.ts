@@ -48,9 +48,20 @@ const floorSandOwners:Record<string,Requirement>={
  [floorRammerRow]:{resourceCode:'33-0741',operator:'NO_ADDITIONAL_OPERATOR_NORM',operationScope:floorRammerScope},
 };
 Object.assign(owners,floorSandOwners);
+// Exact root-classified 1GP identity; adopted only by the root integration wave.
+const graniteKerb1gpCatalog='canonical-work:master:granite_kerb_1gp_install_cement_concrete_pavement_standard';
+const graniteKerb1gpOwners:Record<string,Requirement>={
+ 'granite-kerb:1gp-cement-pavement:crane-own':{resourceCode:'02-0075',operator:'OPERATOR',operationScope:'FULL_SOURCE_OPERATION'},
+ 'granite-kerb:1gp-cement-pavement:crane-hired':{resourceCode:'02-0075',operator:'OPERATOR',operationScope:'FULL_SOURCE_OPERATION'},
+ 'granite-kerb:1gp-cement-pavement:truck-own':{resourceCode:'40-0001',operator:'DRIVER',operationScope:'FULL_SOURCE_OPERATION'},
+ 'granite-kerb:1gp-cement-pavement:truck-hired':{resourceCode:'40-0001',operator:'DRIVER',operationScope:'FULL_SOURCE_OPERATION'},
+};
+Object.assign(owners,graniteKerb1gpOwners);
 const aliases=new Set(['FULL_OPERATED_MACHINE_HOUR','FULL_OPERATED_VEHICLE_HOUR_DRIVER_INCLUDED_NOT_IN_INFO','FULL_OPERATED','FULL_DRIVER','FULL_MACHINE_SOURCE_COST','EQUIPMENT_OPERATION_NO_ADDITIONAL_OPERATOR_NORM_ADMITTED']);
 const admittedCatalogs=new Set(['canonical-work:base:roofing_interior_flat_roof_install_technical_room','canonical-work:base:roofing_interior_flat_roof_install_wet_zone']);
-const admittedOwner=(catalogId:string,rowId:string)=>Object.prototype.hasOwnProperty.call(floorSandOwners,rowId)
+const admittedOwner=(catalogId:string,rowId:string)=>Object.prototype.hasOwnProperty.call(graniteKerb1gpOwners,rowId)
+  ?catalogId===graniteKerb1gpCatalog
+  :Object.prototype.hasOwnProperty.call(floorSandOwners,rowId)
   ?catalogId===floorSandCatalog
   :Object.prototype.hasOwnProperty.call(roadUpperOwners,rowId)
     ?catalogId===roadUpperCatalog

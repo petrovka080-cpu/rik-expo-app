@@ -1,0 +1,329 @@
+{
+  "contract": "gox-build.granite-kerb-1gp-cement-krer27-010-03.r1",
+  "sourceId": "KRER27_2015_GRANITE_KERB_1GP_CEMENT_270201003",
+  "titleRu": "Установка гранитного бортового камня 1ГП при цементобетонном покрытии",
+  "normId": "27-02-010-03",
+  "verifiedAt": "2026-10-18",
+  "source": {
+    "path": ".release-runtime/r4a13-6/s19-first-estimate/primary-source-review/kg-krer27-roadworks-2015.pdf",
+    "sha256": "cd3d6735d1bbdda5957945b7682f032785c76624b54a435edfe5d2ef5e107161",
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no27avtomobilnyedorogi_compressed-43769083f584ff787.06841542.pdf",
+    "edition": "КРЕР27-2015",
+    "locatorRu": "PDF и печатная стр.27, таблица27-02-010, нижний блок гранитных бортов, колонка27-02-010-03; состав работ01–03. Измеритель100м бортового камня."
+  },
+  "guidance": {
+    "path": ".release-runtime/r568/s27-48/g7-next-source-extracts/KRER_GENERAL_APPLICATION_GUIDANCE.pdf",
+    "sha256": "5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9",
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/stroitelnyeispecialnyestroitelnyeraboty-7866900598a0aab89.90712367.pdf",
+    "locatorRu": "Общие указания1.7 и2.10: машинисты/водители включены в цену работы машин; общие указания3.5 и приложение3: условия строительства; КРЕР27 техническая часть1.11 и3.1: границы включённых перемещений и исключение движения по другой половине дороги"
+  },
+  "sourceAdmission": {
+    "exactCellImagePath": ".release-runtime/r568/s27-54/next-landscape-expansion-review/page27-highres.png",
+    "exactCellImageSha256": "8d760ad6ca0646ba5c91ae84109a1773ede1287d2337ccc34d60db7135a17527",
+    "review": "VISUAL_COLUMN03_REVIEW_NOT_COLUMN04_RATE_TRANSFER",
+    "currentMembershipReadPerformed": false,
+    "newTypeAccepted": false
+  },
+  "scopeRu": "Гранитный бортовой камень1ГП при цементобетонном покрытии; другие покрытия исключены. Новое строительство в нормальных условиях при положительной температуре, высота местности ниже1500м, без движения по другой половине дороги. Линия установки и выемка подготовлены по проекту, земляные работы учтены отдельно.",
+  "includedTransportRu": "Перемещения в пределах исходной операции: рабочее место10м, внутренние перемещения1км, инертные материалы50м; дополнительная внешняя доставка/разгрузка требует отдельной непересекающейся границы.",
+  "scopeFacts": [
+    {
+      "id": "covering_kind",
+      "value": "Цементобетонное покрытие"
+    },
+    {
+      "id": "prepared_installation_line",
+      "value": "Линия установки и подготовленная выемка соответствуют проекту; земляные работы учтены отдельно"
+    },
+    {
+      "id": "construction_scope_conditions",
+      "value": "Новое строительство; нормальные неосложнённые условия при положительной температуре; местность ниже 1500 м; движение по другой половине проезжей части отсутствует"
+    },
+    {
+      "id": "granite_product_scope",
+      "value": "Гранитный бортовой камень марки 1ГП; исполнение соответствует проекту"
+    }
+  ],
+  "labor": {
+    "ratePer100M": "109",
+    "grade": "2.7",
+    "sourceCode": "000-1002-7"
+  },
+  "operatorAggregateRatePer100M": "0.68",
+  "machines": [
+    {
+      "id": "crane",
+      "ratePer100M": "0.68",
+      "sourceCode": "02-0075",
+      "nameRu": "Кран на автомобильном ходу при работе на других видах строительства, грузоподъёмность10т",
+      "parameterId": "crane_fulfillment",
+      "parameterTitle": "Собственный автомобильный кран10т или аренда с машинистом",
+      "ownValue": "Собственный автомобильный кран10т; машинист включён в стоимость машины",
+      "hiredValue": "Аренда автомобильного крана10т; машинист включён в ставку машины",
+      "operatorCostOwnership": "OPERATOR_INCLUDED_IN_MACHINE_PRICE_NO_SECOND_OWNER"
+    },
+    {
+      "id": "truck",
+      "ratePer100M": "0.04",
+      "sourceCode": "40-0001",
+      "nameRu": "Автомобиль бортовой грузоподъёмностью до5т",
+      "parameterId": "truck_fulfillment",
+      "parameterTitle": "Собственный бортовой автомобиль до5т или аренда с водителем",
+      "ownValue": "Собственный бортовой автомобиль до5т; водитель включён в стоимость эксплуатации",
+      "hiredValue": "Аренда бортового автомобиля до5т; водитель включён в ставку машины",
+      "operatorCostOwnership": "DRIVER_INCLUDED_IN_MACHINE_PRICE_NO_SECOND_OWNER"
+    }
+  ],
+  "materials": [
+    {
+      "id": "nails",
+      "nameRu": "Гвозди строительные",
+      "sourceCode": "01-1110-0002",
+      "sourceUnitId": "t",
+      "orderUnitId": "kg",
+      "ratePer100M": "0.001",
+      "specificationId": "formwork_nails_specification",
+      "specificationTitle": "Строительные гвозди: фактические диаметр и длина по узлу опалубки",
+      "identityGuideRu": "Фактическая марка/размер и поставка строительных гвоздей по узлу опалубки; исходная масса0,001т на100м переводится в кг строго×1000."
+    },
+    {
+      "id": "timber",
+      "nameRu": "Брусья хвойных пород необрезные, длина4–6,5м, все ширины, толщина100/125мм, IV сорт",
+      "sourceCode": "01-0301-0012",
+      "sourceUnitId": "m3",
+      "orderUnitId": "m3",
+      "ratePer100M": "0.17",
+      "specificationId": "formwork_timber_specification",
+      "specificationTitle": "Брусья хвойные необрезные IV сорта: фактическое сечение и длина4–6,5м",
+      "identityGuideRu": "Фактическое сечение, длина4–6,5м и отдельная поставка в м³. Толщина100/125мм и IV сорт — источник; перевод объёма в штуки без размеров не выполняется."
+    },
+    {
+      "id": "concrete",
+      "nameRu": "Бетон тяжёлый готовый классаВ15 (М200)",
+      "sourceCode": "06-0206-0009",
+      "sourceUnitId": "m3",
+      "orderUnitId": "m3",
+      "ratePer100M": "3.9",
+      "specificationId": "concrete_mix_specification",
+      "specificationTitle": "БетонВ15 (М200): подвижность, морозостойкость и водонепроницаемость по проекту",
+      "identityGuideRu": "Фактическая поставка готового тяжёлого бетонаВ15 (М200) в м³ и требуемые проектом подвижность, морозостойкость, водонепроницаемость; без придуманных коэффициентов."
+    },
+    {
+      "id": "mortar",
+      "nameRu": "Раствор готовый кладочный цементно-известковый марки100",
+      "sourceCode": null,
+      "sourceUnitId": "m3",
+      "orderUnitId": "m3",
+      "ratePer100M": "0.06",
+      "specificationId": "mortar_supply_specification",
+      "specificationTitle": "Готовый кладочный цементно-известковый растворМ100: фактическая поставка в м³",
+      "identityGuideRu": "Готовый кладочный цементно-известковый растворМ100 в м³, фактическая спецификация и отдельная поставка; не цементный раствор и не рецепт сухой смеси. Префикс кода на скане не подтверждён; точная строка/страница/колонка сохранены."
+    },
+    {
+      "id": "stone",
+      "nameRu": "Камень бортовой гранитный из горных пород, марка1ГП",
+      "sourceCode": "15-0202-0002",
+      "sourceUnitId": "m",
+      "orderUnitId": "m",
+      "ratePer100M": "100",
+      "specificationId": "kerb_stone_specification",
+      "specificationTitle": "Гранитный борт1ГП: фактические размеры, исполнение и поверхность по проекту",
+      "identityGuideRu": "Фактический гранитный борт марки1ГП по проекту: размеры, исполнение, поверхность и поставка в погонных метрах; без придуманного артикула/цвета/размеров и перевода в штуки."
+    }
+  ],
+  "operations": [
+    {
+      "id": "foundation-formwork-operation",
+      "nameRu": "Устройство и уплотнение бетонного основания; установка и снятие опалубки — в общем труде109ч на100м"
+    },
+    {
+      "id": "installation-joints-operation",
+      "nameRu": "Установка и подтёска гранитных бортов; заполнение и расшивка швов — в общем труде109ч на100м"
+    },
+    {
+      "id": "granite-cleaning-operation",
+      "nameRu": "Очистка гранитных бортов — включена в общий труд109ч на100м"
+    }
+  ],
+  "gaps": [
+    {
+      "id": "concrete-curing",
+      "nameRu": "Уход за бетоном основания",
+      "category": "work",
+      "missingFactOwner": "Технолог/проектировщик бетона",
+      "taskRu": "Подтвердить применимый режим ухода за основаниемВ15, площадь/срок, средство/воду и границу включения в труд/поставку; п.1.7 про дорожное покрытие не переносить на основание борта.",
+      "acceptanceRu": "Применимый официальный норматив/утверждённый ППР и паспорт выбранного средства; точная единица, расход и оплачиваемый владелец.",
+      "quantityAccepted": false,
+      "paidOwnerAccepted": false,
+      "sourceIntake": "Точное применимое первичное основание и факты объекта, отдельные от исходной колонки27-02-010-03"
+    },
+    {
+      "id": "work-area-protection",
+      "nameRu": "Защита зоны работ и организация движения вне границ исходной операции",
+      "category": "service",
+      "missingFactOwner": "Проектировщик организации движения/подрядчик",
+      "taskRu": "Дать схему ограждения и организации зоны на нормальном новом участке; работа с движением на другой половине исключена и не получает коэффициент автоматически.",
+      "acceptanceRu": "Утверждённая схема, длина/срок/повторное использование, применимый источник и письменное включение/исключение цены.",
+      "quantityAccepted": false,
+      "paidOwnerAccepted": false,
+      "sourceIntake": "Точное применимое первичное основание и факты объекта, отдельные от исходной колонки27-02-010-03"
+    },
+    {
+      "id": "quality-control",
+      "nameRu": "Геодезические проверки и приёмка сверх включённой установки",
+      "category": "service",
+      "missingFactOwner": "Геодезист/служба качества заказчика",
+      "taskRu": "Установить дополнительные проверки сверх включённой установки, приёмочные допуски, частоту и сторону оплаты; не выводить число проверок из100м.",
+      "acceptanceRu": "Применимые нормы/проектная программа контроля и акт границ; измеримое количество и один владелец цены.",
+      "quantityAccepted": false,
+      "paidOwnerAccepted": false,
+      "sourceIntake": "Точное применимое первичное основание и факты объекта, отдельные от исходной колонки27-02-010-03"
+    },
+    {
+      "id": "cleanup-waste",
+      "nameRu": "Сбор, погрузка и вывоз отходов площадки и опалубки сверх включённой очистки гранитных бортов",
+      "category": "service",
+      "missingFactOwner": "Подрядчик/оператор отходов",
+      "taskRu": "Очистка гранитных бортов уже входит в109ч; отдельно определить отходы опалубки/площадки, тару, сбор/погрузку/передачу и внешний вывоз.",
+      "acceptanceRu": "Фактическая ведомость отходов/маршрут/тара, применимые нормы и непересекающаяся договорная цена; массу из длины не назначать.",
+      "quantityAccepted": false,
+      "paidOwnerAccepted": false,
+      "sourceIntake": "Точное применимое первичное основание и факты объекта, отдельные от исходной колонки27-02-010-03"
+    },
+    {
+      "id": "additional-delivery",
+      "nameRu": "Дополнительная внешняя доставка и разгрузка вне включённых перемещений",
+      "category": "service",
+      "missingFactOwner": "Поставщик/логист/сметчик",
+      "taskRu": "Отделить внешние партии бетона/раствора/камня от включённых10м/1км/50м и табличного автомобиля0.04маш.-ч; проверить разгрузку, холостой ход и фактическую границу заказа.",
+      "acceptanceRu": "Документ маршрута/партии/грузоподъёмности/выгрузки и цены с exact-row reconciliation; рейсы не выводятся из0.04ч.",
+      "quantityAccepted": false,
+      "paidOwnerAccepted": false,
+      "sourceIntake": "Точное применимое первичное основание и факты объекта, отдельные от исходной колонки27-02-010-03"
+    },
+    {
+      "id": "tools-ppe",
+      "nameRu": "Фактический инструмент, СИЗ и ненормированные расходники очистки",
+      "category": "work",
+      "missingFactOwner": "Производитель работ/служба охраны труда",
+      "taskRu": "Подтвердить инструмент иСИЗ, принадлежность исполнителю, оборот и ненормированные расходники очистки; новый комплект на100м не покупать автоматически.",
+      "acceptanceRu": "Применимый ППР/паспорт/договор обеспечения, единицы и срок использования; отсутствие отдельной цены либо точный самостоятельный owner.",
+      "quantityAccepted": false,
+      "paidOwnerAccepted": false,
+      "sourceIntake": "Точное применимое первичное основание и факты объекта, отдельные от исходной колонки27-02-010-03"
+    }
+  ],
+  "excludedRu": [
+    "Другие покрытия и колонка27-02-010-04",
+    "Бетонные борты и колонки27-02-010-01/02",
+    "Иные марки гранитного борта, включая3ГП",
+    "Неподтверждённые земляные работы, осложнённые условия и коэффициенты",
+    "Повторная оплата машинистов/водителя и очистки гранитных бортов",
+    "Исторические цены2015г как текущие цены поставки",
+    "Придуманные артикулы, размеры, комплекты инструмента и нормы дополнительных потребностей"
+  ],
+  "acceptedCompleteTypes": 0,
+  "fullTechnicalAcceptance": false,
+  "proposedIdentity": {
+    "catalogId": "canonical-work:master:granite_kerb_1gp_install_cement_concrete_pavement_standard",
+    "workKey": "granite_kerb_1gp_install_cement_concrete_pavement_standard",
+    "persisted": false,
+    "status": "PROPOSAL_ONLY_PENDING_ROOT_CURRENT_DEDUP_AND_CLASSIFICATION"
+  },
+  "rawNormResources": [
+    {
+      "id": "whole-labor",
+      "code": "000-1002-7",
+      "unitId": "man_hour",
+      "per100M": "109",
+      "cost": "OWN_COST"
+    },
+    {
+      "id": "machine-operators-included",
+      "code": null,
+      "unitId": "man_hour",
+      "per100M": "0.68",
+      "cost": "INFORMATIONAL_SCOPE"
+    },
+    {
+      "id": "crane-consumed",
+      "code": "02-0075",
+      "unitId": "machine_hour",
+      "per100M": "0.68",
+      "cost": "INFORMATIONAL_SCOPE"
+    },
+    {
+      "id": "truck-consumed",
+      "code": "40-0001",
+      "unitId": "machine_hour",
+      "per100M": "0.04",
+      "cost": "INFORMATIONAL_SCOPE"
+    },
+    {
+      "id": "nails-consumed",
+      "code": "01-1110-0002",
+      "unitId": "t",
+      "per100M": "0.001",
+      "cost": "INFORMATIONAL_SCOPE"
+    },
+    {
+      "id": "timber-consumed",
+      "code": "01-0301-0012",
+      "unitId": "m3",
+      "per100M": "0.17",
+      "cost": "INFORMATIONAL_SCOPE"
+    },
+    {
+      "id": "concrete-consumed",
+      "code": "06-0206-0009",
+      "unitId": "m3",
+      "per100M": "3.9",
+      "cost": "INFORMATIONAL_SCOPE"
+    },
+    {
+      "id": "mortar-consumed",
+      "code": null,
+      "unitId": "m3",
+      "per100M": "0.06",
+      "cost": "INFORMATIONAL_SCOPE"
+    },
+    {
+      "id": "stone-consumed",
+      "code": "15-0202-0002",
+      "unitId": "m",
+      "per100M": "100",
+      "cost": "INFORMATIONAL_SCOPE"
+    }
+  ],
+  "paymentAdmission": {
+    "state": "PENDING_EXACT_CURRENT_CATALOG_DEDUP_AND_FOUR_MACHINE_OWNER_ADMISSION",
+    "machineCoverageContract": "canonical-machine-hour-price-coverage/v1",
+    "operationScope": "FULL_SOURCE_OPERATION",
+    "owners": [
+      {
+        "suffix": "crane-own",
+        "resourceCode": "02-0075",
+        "operator": "OPERATOR"
+      },
+      {
+        "suffix": "crane-hired",
+        "resourceCode": "02-0075",
+        "operator": "OPERATOR"
+      },
+      {
+        "suffix": "truck-own",
+        "resourceCode": "40-0001",
+        "operator": "DRIVER"
+      },
+      {
+        "suffix": "truck-hired",
+        "resourceCode": "40-0001",
+        "operator": "DRIVER"
+      }
+    ],
+    "priorityExactRowGateBeforeLegacyRoofFallbackRequired": true,
+    "operatorAggregateAdditionalPaymentForbidden": true,
+    "pricesInherited": false,
+    "publisherOrRuntimeAdoptionAllowed": false
+  }
+}

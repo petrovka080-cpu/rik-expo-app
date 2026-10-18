@@ -1,0 +1,391 @@
+{
+  "status": "SOURCE_AND_WORK_ADAPTER_PREPARED_NOT_RUN_NOT_ADOPTED",
+  "sourceHeadAtPreparation": "24f33000a7a75188035707fe3852b34f92ce18c5",
+  "packetSlots": [
+    "P31_ready",
+    "this_landscape_candidate"
+  ],
+  "thirdPacketCreated": false,
+  "choice": "Only granite1GP/cement-concrete KRER27-02-010-03; new/improvement decision pending current bounded read, not inferred from missing source filename.",
+  "candidateComparison": [
+    {
+      "scope": "Concrete01/02",
+      "status": "EXISTING_DO_NOT_REPACKAGE",
+      "catalogIds": [
+        "canonical-work:master:concrete_kerb_install_cement_concrete_pavement_standard",
+        "canonical-work:master:concrete_kerb_install_other_pavement_standard"
+      ],
+      "difference": "Concrete rather than granite;76.08manh, cement mortar; not source03."
+    },
+    {
+      "scope": "Granite1GP other04",
+      "status": "EXISTING_REUSE_MECHANISM_NOT_NEW",
+      "catalogId": "canonical-work:master:granite_kerb_1gp_install_other_pavement_standard",
+      "difference": "Other pavement,5.9m3 concrete/100m; source03 explicitly excluded by old source pack."
+    },
+    {
+      "scope": "Granite1GP cement03",
+      "status": "SELECTED_PENDING_CURRENT_DEDUP",
+      "difference": "Cement-concrete pavement,3.9m3 concrete/100m; independent exact official column."
+    }
+  ],
+  "dedupBoundary": "Code/source-pack search is not current DB absence. Generic curb install/lay/compact baseline titles are not proof of same physical profile. Read current scoped identities/membership/definition/normative resources before identity/classification.",
+  "proposedIdentity": {
+    "catalogId": "canonical-work:master:granite_kerb_1gp_install_cement_concrete_pavement_standard",
+    "workKey": "granite_kerb_1gp_install_cement_concrete_pavement_standard",
+    "persisted": false,
+    "status": "PROPOSAL_ONLY_PENDING_ROOT_CURRENT_DEDUP_AND_CLASSIFICATION"
+  },
+  "ordinaryMeasure": {
+    "parameterId": "kerb_length_m",
+    "unitId": "m",
+    "basisM": 100,
+    "noPointOrAreaConversion": true
+  },
+  "exactResources": [
+    {
+      "id": "whole-labor",
+      "code": "000-1002-7",
+      "unitId": "man_hour",
+      "per100M": "109",
+      "cost": "OWN_COST"
+    },
+    {
+      "id": "machine-operators-included",
+      "code": null,
+      "unitId": "man_hour",
+      "per100M": "0.68",
+      "cost": "INFORMATIONAL_SCOPE"
+    },
+    {
+      "id": "crane-consumed",
+      "code": "02-0075",
+      "unitId": "machine_hour",
+      "per100M": "0.68",
+      "cost": "INFORMATIONAL_SCOPE"
+    },
+    {
+      "id": "truck-consumed",
+      "code": "40-0001",
+      "unitId": "machine_hour",
+      "per100M": "0.04",
+      "cost": "INFORMATIONAL_SCOPE"
+    },
+    {
+      "id": "nails-consumed",
+      "code": "01-1110-0002",
+      "unitId": "t",
+      "per100M": "0.001",
+      "cost": "INFORMATIONAL_SCOPE"
+    },
+    {
+      "id": "timber-consumed",
+      "code": "01-0301-0012",
+      "unitId": "m3",
+      "per100M": "0.17",
+      "cost": "INFORMATIONAL_SCOPE"
+    },
+    {
+      "id": "concrete-consumed",
+      "code": "06-0206-0009",
+      "unitId": "m3",
+      "per100M": "3.9",
+      "cost": "INFORMATIONAL_SCOPE"
+    },
+    {
+      "id": "mortar-consumed",
+      "code": null,
+      "unitId": "m3",
+      "per100M": "0.06",
+      "cost": "INFORMATIONAL_SCOPE"
+    },
+    {
+      "id": "stone-consumed",
+      "code": "15-0202-0002",
+      "unitId": "m",
+      "per100M": "100",
+      "cost": "INFORMATIONAL_SCOPE"
+    }
+  ],
+  "primaryEvidence": [
+    {
+      "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/.release-runtime/r4a13-6/s19-first-estimate/primary-source-review/kg-krer27-roadworks-2015.pdf",
+      "bytes": 2516131,
+      "sha256": "cd3d6735d1bbdda5957945b7682f032785c76624b54a435edfe5d2ef5e107161"
+    },
+    {
+      "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/.release-runtime/r568/s27-48/g7-next-source-extracts/KRER_GENERAL_APPLICATION_GUIDANCE.pdf",
+      "bytes": 664968,
+      "sha256": "5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9"
+    },
+    {
+      "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/.release-runtime/r568/s27-54/next-landscape-expansion-review/page27-highres.png",
+      "bytes": 70969,
+      "sha256": "8d760ad6ca0646ba5c91ae84109a1773ede1287d2337ccc34d60db7135a17527"
+    }
+  ],
+  "sourceRead": "Existing official cached2.5MiB PDF and pre-existing page27 image visually reviewed; no web/source replacement. Mortar code prefix remains unconfirmed/null; named row/page/column retained.",
+  "fullCycle": [
+    {
+      "id": "PREPARATION",
+      "boundaryRu": "Подготовленная проектная линия/выемка — обязательный факт; земляные работы и демонтаж исключены.",
+      "knownRowSuffixes": [],
+      "openNeedIds": [
+        "work-area-protection"
+      ]
+    },
+    {
+      "id": "BASE_AND_FORMWORK",
+      "boundaryRu": "Уплотнённое бетонное основание и установка/снятие опалубки в общем109ч; бетон3.9м3, брусья0.17м3, гвозди0.001т на100м.",
+      "knownRowSuffixes": [
+        "whole-labor",
+        "concrete",
+        "timber",
+        "nails",
+        "foundation-formwork-operation"
+      ],
+      "openNeedIds": [
+        "concrete-curing"
+      ]
+    },
+    {
+      "id": "MATERIALS_AND_HANDLING",
+      "boundaryRu": "Пять отдельных поставок; совместимое наличие/резерв/реальная кратность. Кран0.68 и автомобиль0.04маш.-ч — операции, не рейсы.",
+      "knownRowSuffixes": [
+        "crane",
+        "truck",
+        "nails",
+        "timber",
+        "concrete",
+        "mortar",
+        "stone"
+      ],
+      "openNeedIds": [
+        "additional-delivery"
+      ]
+    },
+    {
+      "id": "INSTALLATION_AND_JOINTS",
+      "boundaryRu": "Гранит1ГП100п.м и цементно-известковыйМ1000.06м3 на100м; установка/подтёска/швы входят в общий труд.",
+      "knownRowSuffixes": [
+        "whole-labor",
+        "stone",
+        "mortar",
+        "installation-joints-operation"
+      ],
+      "openNeedIds": []
+    },
+    {
+      "id": "LABOUR_AND_PAYMENT",
+      "boundaryRu": "Один труд109ч. Совокупные0.68ч машинистов информационные; кран/автомобиль оплачиваются только выбранным own/hired owner с оператором/водителем внутри полной ставки.",
+      "knownRowSuffixes": [
+        "whole-labor",
+        "machine-operators-included"
+      ],
+      "openNeedIds": []
+    },
+    {
+      "id": "TOOLS_AND_PROTECTION",
+      "boundaryRu": "Не назначать новый инструмент/СИЗ на100м без применимого основания и фактов обеспечения.",
+      "knownRowSuffixes": [],
+      "openNeedIds": [
+        "tools-ppe",
+        "work-area-protection"
+      ]
+    },
+    {
+      "id": "VERIFICATION_AND_ACCEPTANCE",
+      "boundaryRu": "Не придумывать частоту/часы испытаний и дополнительной геодезии; контроль сверх включённой установки остаётся открытым.",
+      "knownRowSuffixes": [],
+      "openNeedIds": [
+        "quality-control"
+      ]
+    },
+    {
+      "id": "SERVICES_AND_CLOSEOUT",
+      "boundaryRu": "Очистка гранита уже в109ч; отходы площадки/опалубки и внешние поставки требуют иных границ, не второго владельца включённых операций.",
+      "knownRowSuffixes": [
+        "granite-cleaning-operation"
+      ],
+      "openNeedIds": [
+        "cleanup-waste",
+        "additional-delivery"
+      ]
+    }
+  ],
+  "openNeeds": [
+    {
+      "id": "concrete-curing",
+      "nameRu": "Уход за бетоном основания",
+      "category": "work",
+      "missingFactOwner": "Технолог/проектировщик бетона",
+      "taskRu": "Подтвердить применимый режим ухода за основаниемВ15, площадь/срок, средство/воду и границу включения в труд/поставку; п.1.7 про дорожное покрытие не переносить на основание борта.",
+      "acceptanceRu": "Применимый официальный норматив/утверждённый ППР и паспорт выбранного средства; точная единица, расход и оплачиваемый владелец.",
+      "quantityAccepted": false,
+      "paidOwnerAccepted": false,
+      "sourceIntake": "Точное применимое первичное основание и факты объекта, отдельные от исходной колонки27-02-010-03"
+    },
+    {
+      "id": "work-area-protection",
+      "nameRu": "Защита зоны работ и организация движения вне границ исходной операции",
+      "category": "service",
+      "missingFactOwner": "Проектировщик организации движения/подрядчик",
+      "taskRu": "Дать схему ограждения и организации зоны на нормальном новом участке; работа с движением на другой половине исключена и не получает коэффициент автоматически.",
+      "acceptanceRu": "Утверждённая схема, длина/срок/повторное использование, применимый источник и письменное включение/исключение цены.",
+      "quantityAccepted": false,
+      "paidOwnerAccepted": false,
+      "sourceIntake": "Точное применимое первичное основание и факты объекта, отдельные от исходной колонки27-02-010-03"
+    },
+    {
+      "id": "quality-control",
+      "nameRu": "Геодезические проверки и приёмка сверх включённой установки",
+      "category": "service",
+      "missingFactOwner": "Геодезист/служба качества заказчика",
+      "taskRu": "Установить дополнительные проверки сверх включённой установки, приёмочные допуски, частоту и сторону оплаты; не выводить число проверок из100м.",
+      "acceptanceRu": "Применимые нормы/проектная программа контроля и акт границ; измеримое количество и один владелец цены.",
+      "quantityAccepted": false,
+      "paidOwnerAccepted": false,
+      "sourceIntake": "Точное применимое первичное основание и факты объекта, отдельные от исходной колонки27-02-010-03"
+    },
+    {
+      "id": "cleanup-waste",
+      "nameRu": "Сбор, погрузка и вывоз отходов площадки и опалубки сверх включённой очистки гранитных бортов",
+      "category": "service",
+      "missingFactOwner": "Подрядчик/оператор отходов",
+      "taskRu": "Очистка гранитных бортов уже входит в109ч; отдельно определить отходы опалубки/площадки, тару, сбор/погрузку/передачу и внешний вывоз.",
+      "acceptanceRu": "Фактическая ведомость отходов/маршрут/тара, применимые нормы и непересекающаяся договорная цена; массу из длины не назначать.",
+      "quantityAccepted": false,
+      "paidOwnerAccepted": false,
+      "sourceIntake": "Точное применимое первичное основание и факты объекта, отдельные от исходной колонки27-02-010-03"
+    },
+    {
+      "id": "additional-delivery",
+      "nameRu": "Дополнительная внешняя доставка и разгрузка вне включённых перемещений",
+      "category": "service",
+      "missingFactOwner": "Поставщик/логист/сметчик",
+      "taskRu": "Отделить внешние партии бетона/раствора/камня от включённых10м/1км/50м и табличного автомобиля0.04маш.-ч; проверить разгрузку, холостой ход и фактическую границу заказа.",
+      "acceptanceRu": "Документ маршрута/партии/грузоподъёмности/выгрузки и цены с exact-row reconciliation; рейсы не выводятся из0.04ч.",
+      "quantityAccepted": false,
+      "paidOwnerAccepted": false,
+      "sourceIntake": "Точное применимое первичное основание и факты объекта, отдельные от исходной колонки27-02-010-03"
+    },
+    {
+      "id": "tools-ppe",
+      "nameRu": "Фактический инструмент, СИЗ и ненормированные расходники очистки",
+      "category": "work",
+      "missingFactOwner": "Производитель работ/служба охраны труда",
+      "taskRu": "Подтвердить инструмент иСИЗ, принадлежность исполнителю, оборот и ненормированные расходники очистки; новый комплект на100м не покупать автоматически.",
+      "acceptanceRu": "Применимый ППР/паспорт/договор обеспечения, единицы и срок использования; отсутствие отдельной цены либо точный самостоятельный owner.",
+      "quantityAccepted": false,
+      "paidOwnerAccepted": false,
+      "sourceIntake": "Точное применимое первичное основание и факты объекта, отдельные от исходной колонки27-02-010-03"
+    }
+  ],
+  "payment": {
+    "state": "PENDING_EXACT_CURRENT_CATALOG_DEDUP_AND_FOUR_MACHINE_OWNER_ADMISSION",
+    "machineCoverageContract": "canonical-machine-hour-price-coverage/v1",
+    "operationScope": "FULL_SOURCE_OPERATION",
+    "owners": [
+      {
+        "suffix": "crane-own",
+        "resourceCode": "02-0075",
+        "operator": "OPERATOR"
+      },
+      {
+        "suffix": "crane-hired",
+        "resourceCode": "02-0075",
+        "operator": "OPERATOR"
+      },
+      {
+        "suffix": "truck-own",
+        "resourceCode": "40-0001",
+        "operator": "DRIVER"
+      },
+      {
+        "suffix": "truck-hired",
+        "resourceCode": "40-0001",
+        "operator": "DRIVER"
+      }
+    ],
+    "priorityExactRowGateBeforeLegacyRoofFallbackRequired": true,
+    "operatorAggregateAdditionalPaymentForbidden": true,
+    "pricesInherited": false,
+    "publisherOrRuntimeAdoptionAllowed": false
+  },
+  "manualPreservation": "Do not edit existing revisions or reinterpret their saved quantities/prices/titles/exclusions. Current target, if found, needs exact full preimage and manual/artifact fences before any successor. New candidate reuses existing stock/purchase mechanism; external delivery never consumes old aggregate cleanup row.",
+  "reuse": {
+    "builder": "buildAutomaticConstructionOwnerR1",
+    "purchase": "effectivePurchaseBalanceExpressionsR1",
+    "normalization": "source t nails→kg exactly1000; m3 and m remain own units",
+    "sharedCoreUnchanged": true,
+    "oldGranite04Unchanged": true
+  },
+  "preparedFiles": [
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-engineering-a/next-kerb27-03-r1/candidate/data/estimate-benchmarks/source-packs/granite-kerb-1gp-cement-krer27-010-03-r1.json",
+      "bytes": 20821,
+      "sha256": "41b05fcb5f8b57f3563c76e0b33602dc39f068ef9898ba3b24e78d77e99c3b8d"
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-engineering-a/next-kerb27-03-r1/candidate/src/lib/estimate/v4/graniteKerbCementKrer27Column03R1.ts",
+      "bytes": 17224,
+      "sha256": "03b9d89f2fb84962e18836e71f6a3e547a4091b8c7bbbadb2ace08b9bf1d7ce7"
+    }
+  ],
+  "sourceAndMechanismPins": [
+    {
+      "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/.release-runtime/r4a13-6/s19-first-estimate/primary-source-review/kg-krer27-roadworks-2015.pdf",
+      "bytes": 2516131,
+      "sha256": "cd3d6735d1bbdda5957945b7682f032785c76624b54a435edfe5d2ef5e107161"
+    },
+    {
+      "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/.release-runtime/r568/s27-48/g7-next-source-extracts/KRER_GENERAL_APPLICATION_GUIDANCE.pdf",
+      "bytes": 664968,
+      "sha256": "5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9"
+    },
+    {
+      "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/.release-runtime/r568/s27-54/next-landscape-expansion-review/page27-highres.png",
+      "bytes": 70969,
+      "sha256": "8d760ad6ca0646ba5c91ae84109a1773ede1287d2337ccc34d60db7135a17527"
+    },
+    {
+      "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/data/estimate-benchmarks/source-packs/granite-kerb-1gp-other-pavement-s27-58.json",
+      "bytes": 12958,
+      "sha256": "dcdfe0b01260f28e09263edd2a2c83c6a8f2b6c3c368ade2d281360381af6ae3"
+    },
+    {
+      "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/data/estimate-benchmarks/source-packs/concrete-kerb-installation-s27-54.json",
+      "bytes": 11171,
+      "sha256": "95ed2026fd68ed979c513b3a727e67d4499837d342832ea09cf5f27e19a6830c"
+    },
+    {
+      "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/src/lib/estimate/v4/graniteKerbOtherS2758.ts",
+      "bytes": 16570,
+      "sha256": "d1703379723a74927757ff10e513c0e742c2d27bedbcc4a1a66f9b7471a9b15b"
+    },
+    {
+      "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+      "bytes": 18358,
+      "sha256": "d4c2192d1d5c4ef0285668b3c1aeb2994c2b57c3e8b9d8d6a776ee4c3e10d7ae"
+    },
+    {
+      "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
+      "bytes": 6309,
+      "sha256": "021602e3309f07ab67db0dbd369b731535319509380b5297077a9fb3244d1bb7"
+    },
+    {
+      "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/src/lib/estimate/backendPlatform/canonicalMachineHourPriceCoverageV1.ts",
+      "bytes": 12441,
+      "sha256": "81d2663db71a94100cbc11cdf153bd5f09da631305d28029d1fd9a9b5b2de556"
+    }
+  ],
+  "blockers": [
+    "Root bounded current-membership/dedup/classification and exact target/new-ID decision",
+    "Exact four machine-payment-owner admission under existing v1 contract, priority gate before legacy roof fallback; no historical price inheritance",
+    "Six explicit source/object intakes; source column is not full technical acceptance"
+  ],
+  "noDBOrNodeOrHeavyRun": true,
+  "currentParentRebased": false,
+  "newTypeCountAccepted": 0,
+  "fullTechnicalAcceptance": false
+}
