@@ -15,13 +15,14 @@ export type MasterRetainedParentCaptureR1 = Readonly<{
   definition: Json; baseline: Json; parameters: readonly Json[]; formulas: readonly Json[]; resources: readonly Json[];
   bindings: readonly Json[]; normativeSources: readonly Json[]; normativeLocators: readonly Json[];
 }>;
+export type MasterExplicitParameterSourcesR1 = Readonly<Record<string, Readonly<{
+  kind: "KNOWN" | "DERIVED" | "UNRESOLVED"; sourceIds: readonly string[];
+}>>>;
 export type MasterRetainParentBindingsR1 = Readonly<{
   capturedParent: MasterRetainedParentCaptureR1;
   capturedParentSha256: string;
   /** Exact keys: ONLY newly declared parameter IDs, including unresolved []. */
-  newParameterSources: Readonly<Record<string, Readonly<{
-    kind: "KNOWN" | "DERIVED" | "UNRESOLVED"; sourceIds: readonly string[];
-  }>>>;
+  newParameterSources: MasterExplicitParameterSourcesR1;
   /** Explicit successor-only text correction; captured AST, inputs and old rows stay immutable. */
   formulaExpressionRepairs?: Readonly<Record<string, Readonly<{
     capturedExpressionSource: string; correctedExpressionSource: string;
@@ -371,17 +372,30 @@ export function assertMasterRetainedParentComputationR1(
     }
   }
 }
+type ExplicitSourceAssemblyInput = Readonly<{
+  /** Existing retained caller uses its historical STOP_*_RETAIN_ prefix. */
+  errorPrefix: string;
+  parameters: readonly Json[];
+  newParameterSources: unknown;
+  sourceClosure: readonly string[];
+  oldResourceRowIds: readonly string[];
+  next: Computation;
+}>;
+function sourceRequire(value: unknown, input: ExplicitSourceAssemblyInput, suffix: string): asserts value {
+  if (!value) throw new Error(input.errorPrefix + suffix);
+}
 /** Empty [] is an output marker, never a fictitious external normative source.
  * It is admitted only for a real, reciprocal compiler control on a NEW row. */
-function assertMasterNewEmptyDerivedControlR1(
-  input: MasterRetainedBindingGuardInputR1, parameter: Json, next: Computation,
+function assertEmptyDerivedSourceControl(
+  input: ExplicitSourceAssemblyInput, parameter: Json,
 ): void {
-  const opt = required(input), c = opt.capturedParent;
-  const spec = opt.newParameterSources[parameter.parameter_id];
+  const sources = input.newParameterSources as Json;
+  const spec = sources[parameter.parameter_id];
   const meta = parameter.truth_metadata?.effective_resource_quantity_v1;
-  const oldRows = new Set(c.resources.map(r => r.row_id));
+  const oldRows = new Set(input.oldResourceRowIds);
+  const next = input.next;
   const owner = next.resources.find(r => r.row_id === meta?.sourceRowId);
-  requireThat(spec?.kind === "DERIVED" && Array.isArray(spec.sourceIds) && spec.sourceIds.length === 0
+  sourceRequire(spec?.kind === "DERIVED" && Array.isArray(spec.sourceIds) && spec.sourceIds.length === 0
     && parameter.truth_metadata?.value_source_role === "COMPILER_DERIVED_RESOURCE_QUANTITY"
     && parameter.truth_metadata?.visibility_role === "INTERNAL_ONLY"
     && object(meta) && exactKeys(meta, ["sourceRowId", "unitId"])
@@ -390,18 +404,55 @@ function assertMasterNewEmptyDerivedControlR1(
     && meta.unitId === parameter.unit_id && owner.unit_id === parameter.unit_id,
     input, "EMPTY_DERIVED_CONTROL_INVALID");
   try {
-    // Reuse the SAME canonical definition-integrity validator; no arithmetic or
-    // quantity engine is implemented here. It checks reciprocal output, unit,
-    // required/default/type/visibility, formula unit and duplicate ownership.
+    // SAME canonical definition-integrity validator; no arithmetic/quantity engine.
     const controls = planCanonicalEffectiveResourceQuantitiesV1(
       next.parameters as unknown as Parameters<typeof planCanonicalEffectiveResourceQuantitiesV1>[0],
       next.resources as unknown as Parameters<typeof planCanonicalEffectiveResourceQuantitiesV1>[1],
       next.formulas as unknown as Parameters<typeof planCanonicalEffectiveResourceQuantitiesV1>[2]);
-    requireThat(controls.outputs.get(meta.sourceRowId)?.parameterId === parameter.parameter_id,
+    sourceRequire(controls.outputs.get(meta.sourceRowId)?.parameterId === parameter.parameter_id,
       input, "EMPTY_DERIVED_CONTROL_INVALID");
   } catch {
-    fail(input, "EMPTY_DERIVED_CONTROL_INVALID");
+    throw new Error(input.errorPrefix + "EMPTY_DERIVED_CONTROL_INVALID");
   }
+}
+/** One pure map validator/assembler shared by retained replacement and explicit
+ * append. It returns only new arrays; captured historical arrays stay untouched. */
+export function assembleMasterExplicitParameterSourcesR1(input: ExplicitSourceAssemblyInput): Json {
+  const sources = input.newParameterSources;
+  sourceRequire(object(sources), input, "NEW_PARAMETER_SOURCE_MAP_REQUIRED");
+  sourceRequire(exactKeys(sources, input.parameters.map(p => p.parameter_id)),
+    input, "NEW_PARAMETER_SOURCE_EXACT_KEYS");
+  const result: Json = {};
+  for (const p of input.parameters) {
+    const spec = sources[p.parameter_id];
+    sourceRequire(object(spec) && ["KNOWN", "DERIVED", "UNRESOLVED"].includes(spec.kind)
+      && Array.isArray(spec.sourceIds) && spec.sourceIds.every(s => typeof s === "string"
+        && input.sourceClosure.includes(s)) && new Set(spec.sourceIds).size === spec.sourceIds.length,
+      input, "NEW_PARAMETER_SOURCE_VALUE");
+    const role = p.truth_metadata?.value_source_role;
+    sourceRequire(typeof role === "string" && role.length > 0, input, "NEW_PARAMETER_TRUTH_ROLE_REQUIRED");
+    const unresolved = role === "UNRESOLVED_APPLICATION_NORM";
+    sourceRequire((spec.kind === "UNRESOLVED") === unresolved, input, "NEW_UNRESOLVED_KIND_MISMATCH");
+    if (unresolved) sourceRequire(spec.sourceIds.length === 0, input, "NEW_UNRESOLVED_SOURCE_FORBIDDEN");
+    else {
+      sourceRequire((spec.kind === "DERIVED") === role.includes("DERIVED"), input, "NEW_DERIVED_KIND_MISMATCH");
+      if (spec.sourceIds.length === 0) {
+        sourceRequire(spec.kind === "DERIVED", input, "NEW_KNOWN_SOURCE_REQUIRED");
+        assertEmptyDerivedSourceControl(input, p);
+      }
+    }
+    result[p.parameter_id] = [...spec.sourceIds];
+  }
+  return result;
+}
+/** Keep the retained plan guard's existing call site and error prefix. */
+function assertMasterNewEmptyDerivedControlR1(
+  input: MasterRetainedBindingGuardInputR1, parameter: Json, next: Computation,
+): void {
+  const opt = required(input);
+  assertEmptyDerivedSourceControl({errorPrefix: `STOP_${input.config.stopCode}_RETAIN_`, parameters: [parameter],
+    newParameterSources: opt.newParameterSources, sourceClosure: [],
+    oldResourceRowIds: opt.capturedParent.resources.map(r => r.row_id), next}, parameter);
 }
 
 /** Pure representative assembly. Existing clone publisher remains the ONLY writer. */
@@ -434,32 +485,13 @@ export function prepareMasterRetainedBindingRepresentativeR1(
     && new Set(nextParamIds).size === nextParamIds.length
     && [...oldParamIds].every(id => nextParamIds.includes(id)), input, "OLD_PARAMETER_REMOVED_OR_NEXT_DUPLICATE");
   const newParameters = next.parameters.filter(p => !oldParamIds.has(p.parameter_id));
-  requireThat(exactKeys(opt.newParameterSources, newParameters.map(p => p.parameter_id)),
-    input, "NEW_PARAMETER_SOURCE_EXACT_KEYS");
   const sourceClosure = setOf([...c.normativeSources.map(s => s.source_key), input.newSource.source_key]);
   // Historical old unresolved slots may have old source arrays: preserve them EXACTLY.
   // Only newly introduced unresolved slots are required to have []. Do not rewrite history.
-  const normativeSourceIds = normalized(c.baseline.normative_source_ids);
-  for (const p of newParameters) {
-    const spec = opt.newParameterSources[p.parameter_id];
-    requireThat(object(spec) && ["KNOWN", "DERIVED", "UNRESOLVED"].includes(spec.kind)
-      && Array.isArray(spec.sourceIds) && spec.sourceIds.every(s => typeof s === "string"
-        && sourceClosure.includes(s)) && new Set(spec.sourceIds).size === spec.sourceIds.length,
-      input, "NEW_PARAMETER_SOURCE_VALUE");
-    const role = p.truth_metadata?.value_source_role;
-    requireThat(typeof role === "string" && role.length > 0, input, "NEW_PARAMETER_TRUTH_ROLE_REQUIRED");
-    const unresolved = role === "UNRESOLVED_APPLICATION_NORM";
-    requireThat((spec.kind === "UNRESOLVED") === unresolved, input, "NEW_UNRESOLVED_KIND_MISMATCH");
-    if (unresolved) requireThat(spec.sourceIds.length === 0, input, "NEW_UNRESOLVED_SOURCE_FORBIDDEN");
-    else {
-      requireThat((spec.kind === "DERIVED") === role.includes("DERIVED"), input, "NEW_DERIVED_KIND_MISMATCH");
-      if (spec.sourceIds.length === 0) {
-        requireThat(spec.kind === "DERIVED", input, "NEW_KNOWN_SOURCE_REQUIRED");
-        assertMasterNewEmptyDerivedControlR1(input, p, next);
-      }
-    }
-    normativeSourceIds[p.parameter_id] = [...spec.sourceIds];
-  }
+  const normativeSourceIds = {...normalized(c.baseline.normative_source_ids),
+    ...assembleMasterExplicitParameterSourcesR1({errorPrefix: `STOP_${input.config.stopCode}_RETAIN_`,
+      parameters: newParameters, newParameterSources: opt.newParameterSources, sourceClosure,
+      oldResourceRowIds: c.resources.map(r => r.row_id), next})};
   const oldMetadata = c.definition.source_metadata;
   requireThat(object(oldMetadata) && object(next.successorProvenance)
     && !Object.prototype.hasOwnProperty.call(oldMetadata, "retainedParentBindingSuccessorV1"),

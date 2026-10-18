@@ -28,6 +28,8 @@ import {
   lockMasterRetainedBindingPreconditionsR1,
   assertMasterRetainedBindingPreflightUnchangedR1,
   type MasterRetainParentBindingsR1,
+  assembleMasterExplicitParameterSourcesR1,
+  type MasterExplicitParameterSourcesR1,
 } from "./masterSingleDefinitionRetainParentBindingsR1";
 import {
   assertMasterSingleDefinitionAppendParentAnchorR1,
@@ -125,6 +127,10 @@ export type MasterSingleDefinitionSuccessorConfig = Readonly<{
     sourceProvenance: Json;
   }>;
   catalogAppend?: Readonly<{
+    /** Opt-in exact arrays for ALL append parameters; emitted source key only.
+     * UNRESOLVED maps to []; DERIVED[] requires a real reciprocal new control.
+     * Omission preserves historical baseline/hash assembly without defaults. */
+    explicitParameterSources?: MasterExplicitParameterSourcesR1;
     /** An explicitly new physical profile may require this exact key to be absent. */
     requireUniqueWorkKey?: true;
     /** Opt-in captured absence for this exact emitted source key. Checked at
@@ -198,6 +204,19 @@ export type MasterSingleDefinitionSuccessorConfig = Readonly<{
   owner: string;
   receiptFileStem: string;
 }>;
+
+/** Pure optional append path; retained replacement uses the SAME map assembler.
+ * No source discovery, fake runtime profile or alternate publisher is added. */
+export function resolveMasterAppendExplicitParameterSourcesR1(
+  config: Pick<MasterSingleDefinitionSuccessorConfig, "stopCode" | "sourceId" | "catalogAppend">,
+  next: Readonly<{parameters: readonly Json[]; formulas: readonly Json[]; resources: readonly Json[]}>,
+): Json | null {
+  const append = config.catalogAppend;
+  if (append == null || !Object.prototype.hasOwnProperty.call(append, "explicitParameterSources")) return null;
+  return assembleMasterExplicitParameterSourcesR1({errorPrefix: `STOP_${config.stopCode}_APPEND_`,
+    parameters: next.parameters, newParameterSources: append.explicitParameterSources,
+    sourceClosure: [config.sourceId], oldResourceRowIds: [], next});
+}
 
 export type MasterSingleDefinitionCountShape = Readonly<{
   definitions: number;
@@ -981,6 +1000,9 @@ export async function runMasterSingleDefinitionSuccessorR1(
       ? resource.row_type
       : resourceRowType(resource.category),
   }));
+  const explicitAppendParameterSources = resolveMasterAppendExplicitParameterSourcesR1(config, {
+    parameters: parameterRows, formulas: formulaRows, resources: resourceRows,
+  });
   const parameterSchemaSha256 = sha256(parameterRows);
   const definitionSchemaSha256 = sha256({ formulaRows, resourceRows });
   const targetDefinitionSha256 = sha256({
@@ -1291,7 +1313,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
       ])),
       formula_consumer_ids: formulaConsumers,
       resource_consumer_row_ids: resourceConsumers,
-      normative_source_ids: Object.fromEntries(parameterRows.map((parameter) => [
+      normative_source_ids: explicitAppendParameterSources ?? Object.fromEntries(parameterRows.map((parameter) => [
         parameter.parameter_id,
         Object.keys(runtimeProfileInput).length === 0
           ? [config.sourceId]

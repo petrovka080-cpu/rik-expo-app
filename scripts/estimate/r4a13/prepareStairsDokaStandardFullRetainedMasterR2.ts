@@ -16,7 +16,7 @@ import {estimateDeterministicHash} from '../../../src/lib/estimate/estimateDeter
 type Json=Record<string,any>;
 type Pin=Readonly<{path:string;sha256:string}>;
 type EvidencePaths=Readonly<{inputPath?:string;fullReadPath?:string;closedGuardPath?:string;historicalReadContextPath?:string}>;
-const INPUT={"path": "data/estimate-benchmarks/fixtures/stairs-doka-standard-full-retained-config-inputs-r4.json", "sha256": "be0a9e2de7b46fb3c75d697e1d98ccc8a9e02e3beea785898650f6640f35a47e", "bytes": 8793};
+const INPUT={"path": "data/estimate-benchmarks/fixtures/stairs-doka-standard-full-retained-config-inputs-r5.json", "sha256": "38d7bd27aa06f95613b7f83562f1f0ada3c35e535f1d2e4573bf6432e92fb9b1", "bytes": 9014};
 const sha=(value:string|Uint8Array)=>createHash('sha256').update(value).digest('hex');
 const exact=(p:Pin):Json=>{const b=readFileSync(resolve(p.path));assert.equal(sha(b),p.sha256,'DOKA_R2_EXACT_PIN:'+p.path);return JSON.parse(b.toString('utf8'));};
 const clone=<T>(value:T):T=>JSON.parse(JSON.stringify(value));

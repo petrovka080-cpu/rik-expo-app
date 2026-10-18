@@ -5,6 +5,7 @@ data/estimate-benchmarks/fixtures/iek-elecor-60x40-official-product-edition8-lin
 # Keep exact checked Doka evidence and source pins portable across checkout.
 data/estimate-benchmarks/fixtures/paving-cut70-group4-members-capture-r1.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 data/estimate-benchmarks/fixtures/stairs-doka-standard-full-retained-config-inputs-r3.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/estimate-benchmarks/fixtures/stairs-doka-standard-full-retained-config-inputs-r5.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 data/estimate-benchmarks/fixtures/stairs-doka-standard-full-retention-closed-guard-r2.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 data/estimate-benchmarks/fixtures/stairs-doka-standard-full-retention-historical-context-r2.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 data/estimate-benchmarks/fixtures/stairs-doka-standard-full-retention-read-r2.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
