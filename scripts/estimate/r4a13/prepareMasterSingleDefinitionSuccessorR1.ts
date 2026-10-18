@@ -19,6 +19,7 @@ import {
   publishCanonicalDefinitionDraft,
   resolveCanonicalApprovedBaselineLeaf,
   auditPersistedCanonicalDefinition,
+  assertCanonicalPublisherParameterOrdinalsUniqueR1,
 } from "./canonicalDefinitionPublisherR1";
 import {
   masterRetainParentBindingsOptInR1,
@@ -958,6 +959,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
   for (const path of sourcePathsForIdentity) {
     invariant(existsSync(resolve(path)), `${stop(config, "SOURCE_MISSING")}:${path}`);
   }
+  assertCanonicalPublisherParameterOrdinalsUniqueR1(config.parameterDefinitions);
   const formulaConsistencyErrors = validateMasterFormulaGraphConsistency(
     config.formulaDefinitions,
   );

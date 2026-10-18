@@ -196,7 +196,22 @@ function assertSha256(value: unknown, code: string): asserts value is string {
   invariant(typeof value === "string" && /^[0-9a-f]{64}$/u.test(value), code);
 }
 
+/** Match the persisted per-definition ordinal key before any parameter insert. */
+export function assertCanonicalPublisherParameterOrdinalsUniqueR1(
+  parameters: readonly CanonicalPublisherJson[],
+): void {
+  const ordinals = new Set<number>();
+  for (const parameter of parameters) {
+    invariant(typeof parameter.ordinal === "number" && Number.isSafeInteger(parameter.ordinal),
+      `STOP_CANONICAL_PUBLISHER_PARAMETER_ORDINAL_INVALID:${String(parameter.parameter_id)}`);
+    invariant(!ordinals.has(parameter.ordinal),
+      `STOP_CANONICAL_PUBLISHER_DUPLICATE_PARAMETER_ORDINAL:${parameter.ordinal}`);
+    ordinals.add(parameter.ordinal);
+  }
+}
+
 export function createCanonicalDefinitionClonePlan(input: CanonicalDefinitionClonePlanInput) {
+  assertCanonicalPublisherParameterOrdinalsUniqueR1(input.representative.parameters);
   const resourceIds = new Map<string, string>();
   const resourceOrdinals = new Map(input.representative.resources.map(resource => [String(resource.row_id), Number(resource.ordinal)]));
   const resources = input.representative.resources.map((resource) => {

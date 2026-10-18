@@ -39,7 +39,8 @@ export function pavingCut70ConditionalConsumerDefinitionR1():AutomaticOwnerDefin
   applicabilityRu:'Открытые дополнительные потребности для заявленной операции резки; применение, единица, количество и оплата пока не установлены.',
   ordinary:[{id:primary,title:'Фактическая длина реза',valueType:'decimal',unitId:'m',kind:'ordinary',min:0}],
   profile:[],conditional,rows,deferMissingProjectFactsToRows:true,excludedUnownedAssumptions:pack.excludedRu});
- const parameters=[...base.parameters,...gaps.parameters.filter(p=>p.parameter_id!==primary).map(p=>({...p,
+ const parameters=[...base.parameters,...gaps.parameters.filter(p=>p.parameter_id!==primary).map((p,index)=>({...p,
+  ordinal:base.parameters.length+index,
   truth_metadata:unresolvedApplicationNormTruthR1(p.truth_metadata,
    'Применимость, единица, исходная величина и отдельная оплата не подтверждены. Ручное0/1 и проектная ссылка не заменяют недостающую норму или договорную границу.')}))];
  const sourceRows=base.resources.map(r=>{
