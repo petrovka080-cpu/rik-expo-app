@@ -493,6 +493,15 @@ function canonicalEstimateSourceParameterChoiceLabelRu(
   fallback?: string,
 ): string {
   const normalized = String(value);
+  if(parameterId==='selected_delivery_selection'){
+    if(normalized==='NOT_SELECTED')return 'Не добавлять отдельную доставку';
+    if(normalized==='SEPARATE_CONFIRMED')return 'Отдельная доставка по документу партии';
+  }
+  if(parameterId==='selected_delivery_product_profile_id'&&normalized==='manufacturer-profile:ford-transit-v363:500-l4-h3:selected-derivative:v1')
+    return 'Ford Transit V363 500 L4 H3 — характеристики машины требуют подтверждения';
+  if(parameterId==='selected_delivery_selected_vehicle_model_and_derivative'&&normalized==='FORD_TRANSIT_V363_500_L4_H3')
+    return 'Ford Transit V363 500 L4 H3';
+
   // Saved facts can arrive as Booleans or their transport strings.
   if (normalized === "true") return "Да";
   if (normalized === "false") return "Нет";

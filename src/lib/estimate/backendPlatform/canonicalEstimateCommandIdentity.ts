@@ -1,3 +1,4 @@
+import {canonicalEstimateStableJson} from './canonicalEstimateDeterminism';
 import { estimateDeterministicHash } from "../estimateDeterministicHash";
 import type {
   CanonicalEstimateCustomRow,
@@ -7,6 +8,7 @@ import type {
 } from "./contracts";
 
 export type CanonicalEstimateRecalculateCommandIdentity = {
+  selectedMaterialDeliveryV1?: CanonicalEstimateRecalculateRequest['selectedMaterialDeliveryV1'];
   parentRevisionId: string;
   parameters: Record<string, CanonicalEstimateParameterInputValue>;
   rowOverrides: Record<string, CanonicalEstimateRowOverride>;
@@ -21,6 +23,7 @@ export function canonicalEstimateRecalculateIdempotencyKey(
   input: CanonicalEstimateRecalculateCommandIdentity,
 ): string {
   return `canonical-recalculate-${estimateDeterministicHash({
+    ...(Object.hasOwn(input,'selectedMaterialDeliveryV1')?{selectedMaterialDeliveryV1:input.selectedMaterialDeliveryV1,selectedDeliveryExactParameters:canonicalEstimateStableJson(input.parameters)}:{}),
     parentRevisionId: input.parentRevisionId,
     parameters: input.parameters,
     rowOverrides: input.rowOverrides,

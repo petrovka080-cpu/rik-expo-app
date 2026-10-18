@@ -20,6 +20,8 @@ test("versioned professional PDF jobs reject an obsolete worker and retain legac
     .toThrow(expect.objectContaining({ code: "ARTIFACT_RENDERER_VERSION_MISMATCH" }));
   expect(() => assertCanonicalProfessionalPdfJobRendererVersion({ rendererVersion: "canonical-professional-pdf.r4-a13-s27-75-manual-supply-confirmation-template51" }))
     .toThrow(expect.objectContaining({ code: "ARTIFACT_RENDERER_VERSION_MISMATCH" }));
+  expect(() => assertCanonicalProfessionalPdfJobRendererVersion({ rendererVersion: "canonical-professional-pdf.r4-a13-s27-75-subwork-resources-template52" }))
+    .toThrow(expect.objectContaining({ code: "ARTIFACT_RENDERER_VERSION_MISMATCH" }));
   for (const invalid of [null, [], { rendererVersion: null }]) {
     expect(() => assertCanonicalProfessionalPdfJobRendererVersion(invalid))
       .toThrow(expect.objectContaining({ code: "ARTIFACT_RENDERER_VERSION_MISMATCH" }));
@@ -47,6 +49,26 @@ test('excluded own-cost row retains its saved reference price without returning 
   calculation_trace:{resourceGraph:{costTreatment:'OWN_COST'},manualAmendment:{kind:'manual'}}};
  const before=JSON.stringify(source),projection=buildCanonicalProfessionalPdfProjection({revision:revision(1),rows:source,workTitleRu:'Контроль сохранённой цены'});
  expect(projection.html).toContain('125,00 сом (справочно)');expect(projection.html).toContain('Не суммируется');expect(projection.pricedRowCount).toBe(0);expect(projection.categoryTotals.work).toBe(0);expect(JSON.stringify(source)).toBe(before);
+});
+
+test('explicit stage presentation uses declared shipment facts without exposing a backend output',()=>{
+ const source=rows(1),operation={contractVersion:'canonical-operation-resource/v1',groupId:'delivery',groupTitleRu:'Доставка',operationId:'transport',operationTitleRu:'Перевозка партии',completionCriterionRu:'По документу'};
+ source[0]!.calculation_trace={resourceGraph:{inputParameterIds:['cargo_kg'],operationCompositionV1:operation,
+  stageInputPresentationV1:{contractVersion:'canonical-stage-input-presentation/v1',parameterIds:['cargo_kg']},
+  derivedQuantityEditPolicyV1:{contractVersion:'canonical-derived-quantity-edit-policy/v1',mode:'PARAMETERS_ONLY',parameterIds:['server_count']}}};
+ const before=JSON.stringify(source),html=buildCanonicalProfessionalPdfProjection({revision:{...revision(1),input_parameters:{cargo_kg:5000,server_count:3}},rows:source,
+  workTitleRu:'Перевозка',parameterTitlesRu:{cargo_kg:'Масса партии, кг',server_count:'Служебное число рейсов'}}).html;
+ expect(html).toContain('Исходные данные этапа: Масса партии, кг: 5');expect(html).not.toContain('Служебное число рейсов');expect(JSON.stringify(source)).toBe(before);
+});
+
+test.each([['undeclared'],['cargo_kg','cargo_kg'],[]])('invalid stage presentation %j cannot fall back to displaying a backend count',(...ids)=>{
+ const source=rows(1);source[0]!.calculation_trace={resourceGraph:{inputParameterIds:['cargo_kg'],
+  operationCompositionV1:{contractVersion:'canonical-operation-resource/v1',groupId:'delivery',groupTitleRu:'Доставка',operationId:'transport',operationTitleRu:'Перевозка партии',completionCriterionRu:'По документу'},
+  stageInputPresentationV1:{contractVersion:'canonical-stage-input-presentation/v1',parameterIds:ids},
+  derivedQuantityEditPolicyV1:{contractVersion:'canonical-derived-quantity-edit-policy/v1',mode:'PARAMETERS_ONLY',parameterIds:['server_count']}}};
+ const html=buildCanonicalProfessionalPdfProjection({revision:{...revision(1),input_parameters:{cargo_kg:5000,server_count:3,undeclared:99}},rows:source,
+  workTitleRu:'Перевозка',parameterTitlesRu:{cargo_kg:'Масса партии, кг',server_count:'Служебное число рейсов',undeclared:'Посторонний параметр'}}).html;
+ expect(html).not.toContain('Исходные данные этапа:');expect(html).not.toContain('Служебное число рейсов');expect(html).not.toContain('Посторонний параметр');
 });
 test('PDF shows each source-owned stage actual inputs without replacing a missing independent measure by primary q',()=>{
  const source=rows(3).map((row,index)=>({...row,calculation_trace:{resourceGraph:{derivedQuantityEditPolicyV1:{contractVersion:'canonical-derived-quantity-edit-policy/v1',mode:'PARAMETERS_ONLY',parameterIds:[['q','roof_screed_area_m2','roof_valley_length_m'][index]!]},operationCompositionV1:{contractVersion:'canonical-operation-resource/v1',groupId:'control',groupTitleRu:'Контроль',operationId:'stage'+index,operationTitleRu:['Покрытие','Стяжка','Ендовы'][index],completionCriterionRu:'Контроль'}}}}));
@@ -319,7 +341,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-75-subwork-resources-template52");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-80-selected-delivery-facts-template53");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,

@@ -1,3 +1,5 @@
+import {prepareCanonicalSelectedMaterialDeliveryServerR1,assertCanonicalSelectedDeliveryNotDroppedR1,canonicalSelectedDeliveryPreviewR1,isSelectedMaterialDeliveryCatalogR1} from './canonicalSelectedMaterialDeliveryServerR1';
+import {finalizeCanonicalSelectedDeliveryReceiptR1,selectedMaterialDeliveryRowOverridesR1} from './canonicalSelectedMaterialDeliveryAdmissionR1';
 import { canonicalParameterMigrationBindingCompatibleV1 } from "../../../src/lib/estimate/backendPlatform/canonicalParameterMigrationBindingV1";
 import { assertCanonicalPurchaseSupplyRevisionV1, assertCanonicalPurchaseSupplyReadyV1 } from "../../../src/lib/estimate/backendPlatform/canonicalPurchaseSupplyReadinessV1";
 import {admitPvcFloorCompleteFourMigrationProofS2769} from '../../../src/lib/estimate/backendPlatform/canonicalPvcFloorCompleteFourMigrationS2769';
@@ -1786,13 +1788,16 @@ async function createJob(
     if(operation!=='recalculate'||!ROOF_PRIMER_LINK_CATALOGS_V1.some(id=>id===catalogId))throw Object.assign(new Error('Preparation reference is unavailable for this operation.'),{code:'INVALID_ARGUMENT',httpStatus:400});
     if(body.roofPrimerPrerequisiteV1!==null)parseRoofPrimerPrerequisiteCommandV1(body.roofPrimerPrerequisiteV1);
   }
+  const selectedDeliveryRequested = Object.hasOwn(body, 'selectedMaterialDeliveryV1');
+  if(selectedDeliveryRequested && operation!=='recalculate')throw Object.assign(new Error('Delivery is available only for a saved revision.'),{code:'INVALID_ARGUMENT',httpStatus:400});
   const quantityClearRequested = Object.hasOwn(body, 'derivedQuantityClearV1');
+  if(selectedDeliveryRequested&&quantityClearRequested)throw Object.assign(new Error('Incompatible amendment commands.'),{code:'INVALID_ARGUMENT',httpStatus:400});
   if (quantityClearRequested && (operation !== 'recalculate' || body.derivedQuantityClearV1 == null)) {
     throw Object.assign(new Error('Quantity clear is only available for an acknowledged recalculation.'), { code: 'INVALID_ARGUMENT', httpStatus: 400 });
   }
   const modelDatabaseUrl = await modelDatabaseUrlForCatalog(catalogId);
   const result = await withDatabaseClient(modelDatabaseUrl, async (client) => {
-    await client.query(quantityClearRequested ? 'begin isolation level repeatable read' : 'begin');
+    await client.query(quantityClearRequested||selectedDeliveryRequested ? 'begin isolation level repeatable read' : 'begin');
     try {
       if (operation === "recalculate") {
         const parentInPrincipalScope = Boolean(
@@ -1857,11 +1862,16 @@ async function createJob(
             catalogId,
             currencyCode,
           );
-      const priceSnapshotIds = quantityClear ? quantityClear.admission.priceSnapshotIds : canonicalEstimateEffectivePriceSnapshotIds({
+      const priceSnapshotIds = selectedDeliveryRequested ? requestedPriceSnapshotIds : quantityClear ? quantityClear.admission.priceSnapshotIds : canonicalEstimateEffectivePriceSnapshotIds({
         requested: requestedPriceSnapshotIds,
         compatibleDefaults: compatibleDefaultPriceSnapshotIds,
       });
+      await assertCanonicalSelectedDeliveryNotDroppedR1(client,{operation,parentRevisionId:parentRevisionId??'',catalogId,ownerUserId:currentOwnerId(),organizationId:commandOrganizationId,payload:body});
+      const selectedDelivery = selectedDeliveryRequested ? await prepareCanonicalSelectedMaterialDeliveryServerR1(client,{
+        phase:'INTAKE',operation,payload:body,parentRevisionId:parentRevisionId!,catalogId,ownerUserId:currentOwnerId(),organizationId:commandOrganizationId,
+        targetReleaseId:commandTargetReleaseId,priceSnapshotIds}) : null;
       const inputPayload = {
+        ...(selectedDelivery?{selectedMaterialDeliveryV1:selectedDelivery.request}:{}),
         ...(body.commandIntentV1 == null ? {} : { commandIntentV1: body.commandIntentV1 }),
         parameters: quantityClear ? quantityClear.admission.parameters : parameters,
         ...(primerLinkSupplied?{roofPrimerPrerequisiteV1:body.roofPrimerPrerequisiteV1}:{}),
@@ -1883,7 +1893,7 @@ async function createJob(
                     },
                   }
                 : {}),
-              rowOverrides: quantityClear ? quantityClear.admission.rowOverrides : body.rowOverrides ?? {},
+              rowOverrides: selectedDelivery ? selectedMaterialDeliveryRowOverridesR1(selectedDelivery.admission,body.rowOverrides??{}) : quantityClear ? quantityClear.admission.rowOverrides : body.rowOverrides ?? {},
               customRows: quantityClear ? quantityClear.admission.customRows : body.customRows ?? [],
               ...(quantityClear ? { derivedQuantityClearV1: quantityClear.admission.consent } : {}),
               ...(body.releaseMigration == null
@@ -1920,6 +1930,7 @@ async function createJob(
         clientIdempotencyKey: idempotencyKey, persistenceIdempotencyKey, payload: inputPayload,
       });
       if (replay) {
+        if(selectedDelivery)await assertCanonicalFusionSourceTransactionS2758(client,selectedDelivery.transactionIdentity);
         if (quantityClear) await assertCanonicalFusionSourceTransactionS2758(client, quantityClear.transactionIdentity);
         await client.query('commit');
         return replay;
@@ -1999,13 +2010,14 @@ async function createJob(
         );
       }
       if (quantityClear) await assertCanonicalFusionSourceTransactionS2758(client, quantityClear.transactionIdentity);
+      if(selectedDelivery)await assertCanonicalFusionSourceTransactionS2758(client,selectedDelivery.transactionIdentity);
       await client.query("commit");
       return created.rows[0];
     } catch (error) {
       await client.query("rollback");
-      if (quantityClearRequested && ['40001', '40P01', '55P03'].includes(String((error as { code?: unknown })?.code))) {
+      if ((quantityClearRequested||selectedDeliveryRequested) && ['40001', '40P01', '55P03'].includes(String((error as { code?: unknown })?.code))) {
         throw Object.assign(new Error('Переход выполнялся одновременно с другой записью. Проверьте сохранённый результат и повторите при необходимости.'),
-          { code: 'FUSION_QUANTITY_CLEAR_RETRY_REQUIRED', httpStatus: 409, retryable: true });
+          { code: selectedDeliveryRequested?'SELECTED_DELIVERY_RETRY_REQUIRED':'FUSION_QUANTITY_CLEAR_RETRY_REQUIRED', httpStatus: 409, retryable: true });
       }
       throw error;
     }
@@ -2280,8 +2292,10 @@ async function drainJobs(connectionString = DATABASE_URL): Promise<void> {
           if (claimed.rows.length === 0) break;
           for (const job of claimed.rows) {
             const quantityClearJob = Object.hasOwn(job.input_payload ?? {}, 'derivedQuantityClearV1');
+            const selectedDeliveryJob=Object.hasOwn(job.input_payload??{},'selectedMaterialDeliveryV1');
+            const transactionJob=quantityClearJob||selectedDeliveryJob;
             try {
-              if (quantityClearJob) await client.query('begin isolation level repeatable read');
+              if (transactionJob) await client.query('begin isolation level repeatable read');
               if (quantityClearJob && job.operation !== 'recalculate') throw Object.assign(new Error('Fusion clear job operation is invalid.'), { code: 'FUSION_QUANTITY_CLEAR_REVIEW_REQUIRED' });
               if (job.operation === "legacy_revision_migration")
                 await migrateLegacyClaimedJob(
@@ -2301,14 +2315,14 @@ async function drainJobs(connectionString = DATABASE_URL): Promise<void> {
                 );
               else {
                 const transactionIdentity = await compileClaimedJob(client, workerId, job as JsonRecord);
-                if (quantityClearJob) {
-                  if (!transactionIdentity) throw Object.assign(new Error('Fusion clear transaction evidence is missing.'), { code: 'FUSION_QUANTITY_CLEAR_REVIEW_REQUIRED' });
+                if (transactionJob) {
+                  if (!transactionIdentity) throw Object.assign(new Error('Revision transaction evidence is missing.'), { code: selectedDeliveryJob?'SELECTED_DELIVERY_RECONCILIATION_REQUIRED':'FUSION_QUANTITY_CLEAR_REVIEW_REQUIRED' });
                   await assertCanonicalFusionSourceTransactionS2758(client, transactionIdentity);
                   await client.query('commit');
                 }
               }
             } catch (error) {
-              if (quantityClearJob) await client.query('rollback');
+              if (transactionJob) await client.query('rollback');
               const code =
                 typeof error === "object" && error && "code" in error
                   ? String((error as { code: unknown }).code)
@@ -2334,7 +2348,7 @@ async function drainJobs(connectionString = DATABASE_URL): Promise<void> {
                 );
               }
               const retryable =
-                (quantityClearJob && canonicalFusionQuantityClearRevisionNumberConflictS2758(error)) ||
+                (transactionJob && canonicalFusionQuantityClearRevisionNumberConflictS2758(error)) ||
                 (code === "40001" && !expectedOptimisticLoser) ||
                 ["40P01", "55P03"].includes(code) ||
                 code.endsWith("_LOAD_FAILED") ||
@@ -2445,6 +2459,7 @@ async function compileClaimedJob(
     )
   ).rows;
   const payload = (job.input_payload ?? {}) as JsonRecord;
+  const selectedDeliveryRequested=Object.hasOwn(payload,'selectedMaterialDeliveryV1');
   const quantityClearRequested = Object.hasOwn(payload, 'derivedQuantityClearV1');
   if (quantityClearRequested && job.operation !== 'recalculate') throw Object.assign(new Error('Fusion clear job operation is invalid.'), { code: 'FUSION_QUANTITY_CLEAR_REVIEW_REQUIRED' });
   const baselineRecord = {
@@ -2752,7 +2767,12 @@ async function compileClaimedJob(
           [priceSnapshotIds, definition.id],
         )
       ).rows;
-  confirmedParameters = { ...baselineParameters, ...stripCanonicalAutomaticPreliminaryInputsV1(parameterDefinitions, confirmedParameters, effectiveUserParameters) };
+  await assertCanonicalSelectedDeliveryNotDroppedR1(client,{operation:String(job.operation),parentRevisionId:String(job.parent_revision_id??''),catalogId:String(job.catalog_id),ownerUserId:String(job.owner_user_id),organizationId:job.organization_id==null?null:String(job.organization_id),payload});
+  const selectedDelivery=selectedDeliveryRequested?await prepareCanonicalSelectedMaterialDeliveryServerR1(client,{
+    phase:'WORKER',operation:String(job.operation),payload,parentRevisionId:String(job.parent_revision_id),catalogId:String(job.catalog_id),
+    ownerUserId:String(job.owner_user_id),organizationId:job.organization_id==null?null:String(job.organization_id),targetReleaseId:String(job.target_release_id),priceSnapshotIds}):null;
+  confirmedParameters = { ...baselineParameters, ...stripCanonicalAutomaticPreliminaryInputsV1(parameterDefinitions, confirmedParameters, effectiveUserParameters),
+    ...(selectedDelivery?.admission.confirmedParameters??{}) };
   if(definition.source_metadata?.floorPlannedPreparationContract)assertFloorPreparationIntentS2769(String(job.catalog_id),{...confirmedParameters,...submittedParameters});
   if(definition.source_metadata?.stoneCubesWasteMigrationS2769)
     assertStoneCubesWasteSelectionS2769({...confirmedParameters,...submittedParameters},effectiveCompositionSelectionV1,payload.rowOverrides??{});
@@ -2822,8 +2842,10 @@ async function compileClaimedJob(
     hashText: (value) =>
       createHash("sha256").update(value, "utf8").digest("hex"),
   });
+  const selectedMaterialDeliveryV1=selectedDelivery?finalizeCanonicalSelectedDeliveryReceiptR1(selectedDelivery.admission,rows):undefined;
   const revisionProjection = {
     ...compiled.revisionProjection,
+    ...(selectedMaterialDeliveryV1?{selectedMaterialDeliveryV1}:{}),
     identity: identityContract,
     ...(roofPreparationMigrationV1?{roofPreparationMigrationV1}:{}),
     ...(roofStageRestorationV1?{roofStageRestorationV1}:{}),
@@ -2835,6 +2857,7 @@ async function compileClaimedJob(
     ...(roofPrimerPrerequisiteV1?{roofPrimerPrerequisiteV1}:{}),
   };
   const commitPayload = buildCanonicalRevisionCommitPayload({
+    ...(selectedMaterialDeliveryV1?{selectedMaterialDeliveryV1}:{}),
     rowCount: rows.length,
     currencyCode,
     totals,
@@ -2865,8 +2888,9 @@ async function compileClaimedJob(
     `select public.${CANONICAL_ESTIMATE_REVISION_COMMIT_FUNCTION}($1,$2,$3::jsonb,$4::jsonb)`,
     [job.id, workerId, JSON.stringify(commitPayload), JSON.stringify(rows)],
   );
+  if(selectedDelivery)await assertCanonicalFusionSourceTransactionS2758(client,selectedDelivery.transactionIdentity);
   if (quantityClear) await assertCanonicalFusionSourceTransactionS2758(client, quantityClear.transactionIdentity);
-  return quantityClear?.transactionIdentity ?? null;
+  return selectedDelivery?.transactionIdentity ?? quantityClear?.transactionIdentity ?? null;
 }
 
 function numericValue(value: unknown, nullable = false): string | null {
@@ -5587,11 +5611,23 @@ async function route(
       revision,
       "revision_read",
     );
-    return send(response, 200, localRevisionView(revision, {
+    const selectedMaterialDeliveryContext=isSelectedMaterialDeliveryCatalogR1(String(revision.catalog_id))?await withDatabaseClient(await modelDatabaseUrlForRevision(path[1]),async client=>{
+      await client.query('begin isolation level repeatable read read only');
+      try{
+        const context=await canonicalSelectedDeliveryPreviewR1(client,{parentRevisionId:String(revision.id),catalogId:String(revision.catalog_id),
+          ownerUserId:currentOwnerId(),organizationId:currentTenantId(),targetReleaseId:TARGET_RELEASE_ID||String(revision.release_id),
+          parentScope:{ownerUserId:String(revision.owner_user_id),organizationId:revision.organization_id===null?null:String(revision.organization_id)}});
+        await client.query('rollback');return context;
+      }catch(error){await client.query('rollback');
+        if((error as {code?:unknown}).code==='SELECTED_DELIVERY_SAVED_CONTEXT_REVIEW_REQUIRED')return null;
+        throw error;
+      }
+    }):null;
+    return send(response, 200, {...localRevisionView(revision, {
       contentAdmission: contentAdmission.decision,
       legacyWarningRu:
         "Старая версия создана прежней моделью расчёта; для нового расчёта сформируйте исправленную версию.",
-    }));
+    }),...(selectedMaterialDeliveryContext?{selectedMaterialDeliveryContext}:{})});
   }
   if (request.method === "GET" && path.length === 5 && path[0] === "revisions"
     && path[2] === "preliminary-needs" && path[4] === "evidence") {

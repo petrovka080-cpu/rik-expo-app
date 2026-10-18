@@ -1,3 +1,4 @@
+import {parseCanonicalSelectedMaterialDeliveryRequestR1} from './canonicalSelectedMaterialDeliveryContractR1';
 import { assertCanonicalPurchaseSupplyRowV1, canonicalPurchaseSupplyBlocksV1, parseCanonicalExactPurchaseQuantityV1 } from "./canonicalPurchaseSupplyReadinessV1";
 import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
 import { canonicalScopeRequirementDecisionV1 } from './canonicalScopeRequirementV1';
@@ -62,6 +63,7 @@ export function canonicalEstimateEffectivePriceSnapshotIds(input: {
 }
 
 export type CanonicalEstimateRecalculateRequest = CanonicalEstimateCreateRequest & {
+  selectedMaterialDeliveryV1?: import('./canonicalSelectedMaterialDeliveryContractR1').CanonicalSelectedMaterialDeliveryRequestR1;
   compositionSelectionV1?: import('./canonicalEstimateCompositionSelectionV1').CanonicalEstimateCompositionSelectionV1 | null;
   parentRevisionId: string;
   /** Non-cost reference to an existing preparation instance; null clears it. */
@@ -215,6 +217,7 @@ export type CanonicalEstimateJobView = {
 };
 
 export type CanonicalEstimateRevisionView = {
+  selectedMaterialDeliveryContext?: import('./canonicalSelectedMaterialDeliveryContractR1').CanonicalSelectedMaterialDeliveryContextR1|null;
   compositionSelectionV1?: import('./canonicalEstimateCompositionSelectionV1').CanonicalEstimateCompositionSelectionV1;
   roofPreparationMigrationV1?: import('./canonicalRoofPreparationMigrationV1').RoofPreparationMigrationProofV1;
   roofStageRestorationV1?: import('./canonicalRoofValleyMigrationV1').RoofStageRestorationV1;
@@ -931,6 +934,7 @@ function assertManualProvenance(value: unknown, field: string): void {
 }
 
 function validateRowAmendments(request: Partial<CanonicalEstimateRecalculateRequest>): void {
+  if(Object.hasOwn(request,'selectedMaterialDeliveryV1')) parseCanonicalSelectedMaterialDeliveryRequestR1(request.selectedMaterialDeliveryV1);
   if(Object.hasOwn(request,'compositionSelectionV1')) parseCanonicalCompositionSelectionV1(request.compositionSelectionV1);
   if (request.derivedQuantityClearV1 != null && !canonicalFusionDerivedQuantityClearConsentS2758(request.derivedQuantityClearV1)) {
     throw new CanonicalEstimateApiError("derivedQuantityClearV1 consent is invalid", { code: "INVALID_ARGUMENT", httpStatus: 400 });

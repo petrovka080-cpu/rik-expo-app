@@ -23,7 +23,7 @@ import {canonicalMachineHourPriceNeedsConfirmationV1} from './canonicalMachineHo
 import { assertCanonicalPurchaseSupplyRevisionV1, canonicalPurchaseSupplyWarningV1 } from "./canonicalPurchaseSupplyReadinessV1";
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-75-subwork-resources-template52" as const;
+  "canonical-professional-pdf.r4-a13-s27-80-selected-delivery-facts-template53" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -322,6 +322,14 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     const reference = section.operation;
     const stageParameterIds=[...new Set(section.resourceIds.flatMap(id=>{
       const graph=objectValue(objectValue(rowsById.get(id)!.calculation_trace).resourceGraph);
+      // Presentation can name the saved project facts behind a server-derived
+      // output. It does not change the formula or its strict edit policy.
+      if(Object.hasOwn(graph,'stageInputPresentationV1')){
+        const presentation=objectValue(graph.stageInputPresentationV1),ids=presentation.parameterIds;
+        const declared=Array.isArray(graph.inputParameterIds)?graph.inputParameterIds:[];
+        return presentation.contractVersion==='canonical-stage-input-presentation/v1'&&Array.isArray(ids)&&ids.length>0&&ids.length<=64
+          &&new Set(ids).size===ids.length&&ids.every((id:unknown)=>typeof id==='string'&&id.trim()===id&&declared.includes(id))?ids as string[]:[];
+      }
       const policy=objectValue(graph.derivedQuantityEditPolicyV1);
       return policy.contractVersion==='canonical-derived-quantity-edit-policy/v1'&&policy.mode==='PARAMETERS_ONLY'&&Array.isArray(policy.parameterIds)?policy.parameterIds.filter((id):id is string=>typeof id==='string'):[];
     }))];

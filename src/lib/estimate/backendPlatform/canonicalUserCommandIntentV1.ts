@@ -18,7 +18,8 @@ export function canonicalUserCommandSemanticPayloadV1(payload: Json): Json {
   // Admission RPCs add releaseAdmission/cumulativeManifest/run metadata. The
   // typed command fields below, plus the separately bound release/principal,
   // define the business operation independently of those dispatch envelopes.
-  return { parameters: payload.parameters ?? {}, currencyCode: payload.currencyCode,
+  return { ...(Object.hasOwn(payload,'selectedMaterialDeliveryV1')?{selectedMaterialDeliveryV1:payload.selectedMaterialDeliveryV1}:{}),
+    parameters: payload.parameters ?? {}, currencyCode: payload.currencyCode,
     priceSnapshotIds: payload.priceSnapshotIds ?? [], requestIdentity: payload.requestIdentity ?? null,
     rowOverrides: payload.rowOverrides ?? {}, customRows: payload.customRows ?? [], releaseMigration: payload.releaseMigration ?? null,
     ...(Object.hasOwn(payload,'compositionSelectionV1')?{compositionSelectionV1:parseCanonicalCompositionSelectionV1(payload.compositionSelectionV1)}:{}),

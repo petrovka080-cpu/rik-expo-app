@@ -184,6 +184,7 @@ export function canonicalInheritedConfirmedParameters(
 }
 
 export function buildCanonicalRevisionCommitPayload(input: {
+  selectedMaterialDeliveryV1?: Record<string, unknown>;
   rowCount: number;
   currencyCode: string;
   totals: Record<string, unknown>;
@@ -217,6 +218,7 @@ export function buildCanonicalRevisionCommitPayload(input: {
     migrationSource: null,
     resolvedParameters: input.parameters,
     parameterSources: {
+      ...(input.selectedMaterialDeliveryV1?{selectedMaterialDeliveryV1:input.selectedMaterialDeliveryV1}:{}),
       approvedTemplateBaselineId: input.approvedTemplateBaselineId,
       baselineAssumptions: input.baselineAssumptions,
       userParameters: input.effectiveUserParameters,

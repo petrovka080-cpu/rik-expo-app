@@ -1,0 +1,60 @@
+{
+  "contract": "selected-material-delivery-reuse/r1",
+  "status": "WORK_ONLY_NOT_INTEGRATED_NOT_TESTED",
+  "groups": [
+    {
+      "key": "knauf",
+      "catalogIds": [
+        "canonical-work:base:plaster_paint_interior_ceiling_plaster_apply_large_area",
+        "canonical-work:base:plaster_paint_interior_ceiling_plaster_apply_small_area",
+        "canonical-work:base:plaster_paint_interior_ceiling_plaster_apply_standard",
+        "canonical-work:base:plaster_paint_interior_wall_plaster_apply_large_area",
+        "canonical-work:base:plaster_paint_interior_wall_plaster_apply_small_area",
+        "canonical-work:base:plaster_paint_interior_wall_plaster_apply_technical_room",
+        "canonical-work:base:plaster_paint_interior_ceiling_plaster_apply_technical_room"
+      ]
+    },
+    {
+      "key": "tesa",
+      "catalogIds": [
+        "canonical-work:base:facade_interior_facade_paint_apply_large_area",
+        "canonical-work:base:facade_interior_facade_paint_apply_small_area",
+        "canonical-work:base:facade_interior_facade_paint_apply_standard",
+        "canonical-work:base:facade_interior_facade_paint_apply_technical_room",
+        "canonical-work:base:facade_interior_facade_paint_install_large_area",
+        "canonical-work:base:facade_interior_facade_paint_install_small_area",
+        "canonical-work:base:facade_interior_facade_paint_install_standard",
+        "canonical-work:base:facade_interior_facade_paint_install_technical_room"
+      ]
+    },
+    {
+      "key": "euroflex",
+      "catalogIds": [
+        "canonical-work:master:rubber_playground_surface_euroflex_recycling_50mm_rectangular"
+      ]
+    }
+  ],
+  "catalogIds": [
+    "canonical-work:base:plaster_paint_interior_ceiling_plaster_apply_large_area",
+    "canonical-work:base:plaster_paint_interior_ceiling_plaster_apply_small_area",
+    "canonical-work:base:plaster_paint_interior_ceiling_plaster_apply_standard",
+    "canonical-work:base:plaster_paint_interior_wall_plaster_apply_large_area",
+    "canonical-work:base:plaster_paint_interior_wall_plaster_apply_small_area",
+    "canonical-work:base:plaster_paint_interior_wall_plaster_apply_technical_room",
+    "canonical-work:base:plaster_paint_interior_ceiling_plaster_apply_technical_room",
+    "canonical-work:base:facade_interior_facade_paint_apply_large_area",
+    "canonical-work:base:facade_interior_facade_paint_apply_small_area",
+    "canonical-work:base:facade_interior_facade_paint_apply_standard",
+    "canonical-work:base:facade_interior_facade_paint_apply_technical_room",
+    "canonical-work:base:facade_interior_facade_paint_install_large_area",
+    "canonical-work:base:facade_interior_facade_paint_install_small_area",
+    "canonical-work:base:facade_interior_facade_paint_install_standard",
+    "canonical-work:base:facade_interior_facade_paint_install_technical_room",
+    "canonical-work:master:rubber_playground_surface_euroflex_recycling_50mm_rectangular"
+  ],
+  "existingNormOwner": "resolveFordTransitV363DeliveryPhysicalNormV1",
+  "newNorms": 0,
+  "confirmedShipmentRequired": true,
+  "unloadingLaborIncluded": false,
+  "publicationReady": false
+}

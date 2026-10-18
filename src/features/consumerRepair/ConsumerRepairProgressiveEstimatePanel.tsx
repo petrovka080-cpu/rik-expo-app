@@ -1,3 +1,6 @@
+import {CanonicalSelectedDeliveryDocumentPanel} from './CanonicalSelectedDeliveryDocumentPanel';
+import type {SelectedDeliveryDocumentSourceR1} from '../../lib/estimate/backendPlatform/canonicalSelectedDeliveryDocumentR1';
+import type {CanonicalSelectedMaterialDeliveryRequestR1 as DeliveryConfirmation} from '../../lib/estimate/backendPlatform/canonicalSelectedMaterialDeliveryContractR1';
 import { buildCanonicalProcurementPreviewRows } from './canonicalProcurementPreviewRows';
 export { buildCanonicalProcurementPreviewRows, type CanonicalProcurementPreviewRow } from './canonicalProcurementPreviewRows';
 import { Ionicons } from "@expo/vector-icons";
@@ -55,7 +58,7 @@ import { EstimateRevisionDiff } from "../requests/components/EstimateRevisionDif
 import { pickFileAny } from "../../lib/filePick";
 import { logger } from "../../lib/logger";
 import { safeJsonParseValue } from "../../lib/format";
-import { getCanonicalEstimateCatalogItem, getCanonicalEstimateRevision } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
+import { getCanonicalEstimateCatalogItem, getCanonicalEstimateRevision, getAllCanonicalEstimateRevisionRows } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
 import { jubileeParameterGroups, jubileeParameterWording } from './consumerJubileeParameterPresentation';
 
 const LEGACY_ASPHALT_WORK_ID = "asphalt_concrete_pavement";
@@ -97,6 +100,7 @@ type ParameterHandlers = {
   onApplyParamPatch?: (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => void;
   onApplyParamBatch?: (
     patches: ConsumerRepairDraftRevisionParamBatchPatch[],
+    deliveryConfirmation?: DeliveryConfirmation,
   ) => ConsumerRepairParameterApplyResult | Promise<ConsumerRepairParameterApplyResult>;
 };
 
@@ -751,6 +755,7 @@ type ParameterDisclosurePanelProps = {
   onCancelParamEdit?: () => void;
   onApplyParamBatch?: (
     patches: ConsumerRepairDraftRevisionParamBatchPatch[],
+    deliveryConfirmation?: DeliveryConfirmation,
   ) => ConsumerRepairParameterApplyResult | Promise<ConsumerRepairParameterApplyResult>;
 };
 
@@ -783,6 +788,9 @@ type ParameterCardProjection = {
 };
 
 type ParameterDisclosurePanelState = {
+  deliveryConfirmation: DeliveryConfirmation|undefined;
+  deliveryConfirmationPending: boolean;
+  deliveryDocumentReset: number;
   compositionRefresh: { revisionId: string; catalogId: string; sourceReleaseId: string; targetReleaseId: string } | null;
   showAllMissing: boolean;
   sourceDetailsOpen: boolean;
@@ -1094,6 +1102,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
   } | null = null;
 
   state: ParameterDisclosurePanelState = {
+    deliveryConfirmation: undefined,deliveryConfirmationPending:false,deliveryDocumentReset:0,
     compositionRefresh: null,
     showAllMissing: false,
     sourceDetailsOpen: false,
@@ -1136,7 +1145,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
         && this.state.draftRevisionId !== (this.props.revision?.revisionId ?? null));
     const canonicalSessionChanged =
       prevProps.canonicalParameterSession !== this.props.canonicalParameterSession;
-    const hasUnsavedUserInput = this.dirtyKeys().length > 0;
+    const hasUnsavedUserInput = this.dirtyKeys().length > 0 || this.state.deliveryConfirmation != null || this.state.deliveryConfirmationPending;
     if (revisionChanged) {
       if (!hasUnsavedUserInput) {
         this.syncDraftFromProps();
@@ -1316,6 +1325,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     this.submittedDirtyKeys = null;
     this.submittedParentRevisionId = null;
     this.setState({
+      deliveryConfirmation:undefined,deliveryConfirmationPending:false,
       draftValues: { ...baselineValues, ...preservedValues },
       baselineValues,
       baselinePlacements: Object.fromEntries(cards.map(card => [card.key, { missing: card.missing, source: card.source }])),
@@ -1384,6 +1394,9 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       derivedCount = Array.isArray(parsed) ? parsed.length : null;
     }
     this.setState((state) => ({
+      deliveryConfirmation:paramKey==='selected_delivery_selection'&&rawValue!=='SEPARATE_CONFIRMED'?undefined:state.deliveryConfirmation,
+      deliveryConfirmationPending:paramKey==='selected_delivery_selection'&&rawValue!=='SEPARATE_CONFIRMED'?false:state.deliveryConfirmationPending,
+      deliveryDocumentReset:paramKey==='selected_delivery_selection'&&rawValue!=='SEPARATE_CONFIRMED'?state.deliveryDocumentReset+1:state.deliveryDocumentReset,
       draftValues: {
         ...state.draftValues,
         [paramKey]: rawValue,
@@ -1419,6 +1432,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     this.submittedDirtyKeys = null;
     this.submittedParentRevisionId = null;
     this.setState({
+      deliveryConfirmation:undefined,deliveryConfirmationPending:false,deliveryDocumentReset:this.state.deliveryDocumentReset+1,
       draftValues: { ...this.state.baselineValues },
       validationErrors: {},
       explicitlyConfirmedMissingValues: {},
@@ -1426,6 +1440,15 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     });
   };
 
+  private loadDeliveryDocumentSource = async (revisionId:string):Promise<SelectedDeliveryDocumentSourceR1> => {
+    const [revision,rows]=await Promise.all([getCanonicalEstimateRevision(revisionId),getAllCanonicalEstimateRevisionRows({revisionId})]);
+    return {revision,rows};
+  };
+  private deliveryDocumentChanged = (deliveryConfirmation:DeliveryConfirmation|undefined,deliveryConfirmationPending:boolean):void => {
+    if(this.compositionRefreshDisposed)return;
+    if(this.state.deliveryConfirmation===deliveryConfirmation&&this.state.deliveryConfirmationPending===deliveryConfirmationPending)return;
+    this.setState({deliveryConfirmation,deliveryConfirmationPending});
+  };
   private applyDraftChanges = (): void => {
     if (this.props.canonicalParameterReadinessPending) return;
     const cardsByKey = new Map(this.buildCards().map((card) => [card.key, card]));
@@ -1479,7 +1502,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       this.setState({ validationErrors });
       return;
     }
-    if (patches.length === 0) return;
+    if (this.state.deliveryConfirmationPending || patches.length === 0 && !this.state.deliveryConfirmation) return;
     // Submit every non-empty edited value atomically even when other required
     // parameters are still missing. The canonical service is the single owner
     // of cross-field/oneOf validation and persists partial progress. Blocking
@@ -1513,7 +1536,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     };
     this.setState({ applyState: "pending" });
     try {
-      const result = apply?.(patches);
+      const result = this.state.deliveryConfirmation ? apply?.(patches,this.state.deliveryConfirmation) : apply?.(patches);
       if (result && typeof (result as Promise<ConsumerRepairParameterApplyResult>).then === "function") {
         void (result as Promise<ConsumerRepairParameterApplyResult>).then(
           complete,
@@ -1830,7 +1853,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
         ...nonCriticalMissingCards.slice(0, Math.max(0, 5 - criticalMissingCards.length)),
       ];
     const hiddenMissingCount = Math.max(0, mainMissingCards.length - visibleMissingCards.length);
-    const dirtyCount = this.dirtyKeys().length;
+    const dirtyCount = this.dirtyKeys().length+(this.state.deliveryConfirmation?1:0);
     const applyPending = this.state.applyState === "pending";
     const clarification = this.props.revision?.professionalClarification;
     const calculationRequirementIds = canonicalSession
@@ -1910,15 +1933,26 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
           ))}
         </View>
       ) : null}
+      {canonicalSession?.parameters.some(parameter=>parameter.parameterId==='selected_delivery_selection')
+        &&this.state.draftValues.selected_delivery_selection==='SEPARATE_CONFIRMED'&&this.props.revision ? (
+        <CanonicalSelectedDeliveryDocumentPanel key={canonicalSession.revisionId+':'+this.state.deliveryDocumentReset}
+          revisionId={canonicalSession.revisionId} documentReference={this.state.draftValues.selected_delivery_document_reference??''}
+          consignmentId={this.state.draftValues.selected_delivery_consignment_id??''} disabled={applyPending}
+          loadSource={this.loadDeliveryDocumentSource} onChange={this.deliveryDocumentChanged}/>
+      ):null}
       {dirtyCount > 0 ? (
         <View style={styles.batchBar} testID="editable-param-batch-bar">
-          <Text style={styles.batchBarText} testID="editable-param-batch-dirty-count">
-            Изменено параметров: {dirtyCount}
-          </Text>
+          {this.state.deliveryConfirmation ? (
+            <Text style={styles.batchBarText} testID="editable-param-batch-dirty-count">Параметры и состав партии готовы к сохранению.</Text>
+          ) : (
+            <Text style={styles.batchBarText} testID="editable-param-batch-dirty-count">
+              Изменено параметров: {dirtyCount}
+            </Text>
+          )}
           <View style={styles.batchActions}>
             <Pressable
               accessibilityRole="button"
-              disabled={applyPending}
+              disabled={applyPending||this.state.deliveryConfirmationPending}
               onPress={this.applyDraftChanges}
               style={[
                 styles.inlineParamButton,

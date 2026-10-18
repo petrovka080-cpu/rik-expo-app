@@ -422,7 +422,7 @@ type ContentProps = {
   onSaveParamEdit: (rawValue: string) => void;
   onCancelParamEdit: () => void;
   onApplyParamPatch: (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => void;
-  onApplyParamBatch: (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => void;
+  onApplyParamBatch: (patches: ConsumerRepairDraftRevisionParamBatchPatch[],deliveryConfirmation?: import('../../lib/estimate/backendPlatform/canonicalSelectedMaterialDeliveryContractR1').CanonicalSelectedMaterialDeliveryRequestR1) => void;
   onParameterDraftInteraction?: () => void;
   primerPrerequisiteNode?:React.ReactNode;
   onCompositionRowsChange?: (rowIds: readonly string[], excluded: boolean, operationKey?: string) => void;

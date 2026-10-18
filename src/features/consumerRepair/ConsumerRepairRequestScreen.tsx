@@ -297,6 +297,7 @@ export type ConsumerRepairRequestScreenControllerProps = ConsumerRepairRequestSc
     problemText: string;
     patches: ConsumerRepairDraftRevisionParamBatchPatch[];
     rowOverrides?: Record<string, CanonicalEstimateRowOverride>;
+    selectedMaterialDeliveryRequestV1?: import('../../lib/estimate/backendPlatform/canonicalSelectedMaterialDeliveryContractR1').CanonicalSelectedMaterialDeliveryRequestR1|null;
     roofPrimerPrerequisiteV1?:RoofPrimerPrerequisiteCommandV1|null;
     compositionSelectionV1?: import('../../lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1').CanonicalEstimateCompositionSelectionV1|null;
   }) => Promise<{ session: CanonicalParameterSession; bundle: ConsumerRepairDraftBundle; recovered?: boolean; quantityPolicyTransition?: boolean }>;
@@ -2873,7 +2874,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     if (!current) return;
     await this.applyParamBatch([{ operation, paramKey, rawValue }]);
   };
-  private applyParamBatch = async (patches: ConsumerRepairDraftRevisionParamBatchPatch[]): Promise<ConsumerRepairParameterApplyResult> => {
+  private applyParamBatch = async (patches: ConsumerRepairDraftRevisionParamBatchPatch[],deliveryConfirmation?: import('../../lib/estimate/backendPlatform/canonicalSelectedMaterialDeliveryContractR1').CanonicalSelectedMaterialDeliveryRequestR1): Promise<ConsumerRepairParameterApplyResult> => {
     const current = this.state.bundle;
     if (!current) return;
     if ((this.state.pendingCanonicalRowEditCount ?? 0) > 0) {
@@ -2882,6 +2883,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     }
     const binding = consumerRepairCanonicalBackendBinding(current);
     const pendingCollection = consumerRepairPendingCanonicalParameterCollection(current);
+    if(deliveryConfirmation&&(!binding||pendingCollection)){this.setState({statusMessage:'Доставка подтверждается только для сохранённой версии сметы.'});return false;}
     if (!binding || pendingCollection) {
       const collection = pendingCollection ?? current.canonicalParameterSession;
       const catalogId = collection?.workPassportId?.trim();
@@ -2987,6 +2989,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         requestDraftId: current.draft.id,
         problemText: current.draft.problemText || current.draft.title || "Смета",
         patches,
+        ...(deliveryConfirmation?{selectedMaterialDeliveryRequestV1:deliveryConfirmation}:{}),
       });
       if (!consumerRepairCanonicalMutationSourceMatchesBundle(mutationSource, this.state.bundle)) return false;
       this.setState({

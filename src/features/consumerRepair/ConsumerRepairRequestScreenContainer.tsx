@@ -1065,6 +1065,7 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
               problemText,
               patches,
               rowOverrides,
+              ...(Object.hasOwn(command,'selectedMaterialDeliveryRequestV1')?{selectedMaterialDeliveryRequestV1:command.selectedMaterialDeliveryRequestV1}:{}),
               ...(Object.hasOwn(command,'roofPrimerPrerequisiteV1')?{roofPrimerPrerequisiteV1:command.roofPrimerPrerequisiteV1}:{}),
               ...(Object.hasOwn(command,'compositionSelectionV1')?{compositionSelectionV1:command.compositionSelectionV1}:{}),
               confirmReleaseMigration: releaseMigrationConfirmation.confirmReleaseMigration,
