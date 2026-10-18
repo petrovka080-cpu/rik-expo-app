@@ -1,0 +1,580 @@
+{
+  "contract": "manual-trench05701-exact-historical-evidence-anchors/r1",
+  "role": "PROJECTED_EXPECTATIONS_FROM_ACCEPTED_ACTUAL_READS_NOT_A_NEW_CAPTURE",
+  "queryHead": "87a0a3d8472217c6d22c220c9abfda09402dab95",
+  "queryContext": {
+    "sourceHead": "87a0a3d8472217c6d22c220c9abfda09402dab95",
+    "recordedReleaseSourceCommit": "4476eb99d878323e411d6a8351dab1cb7623f7e0",
+    "definitionReleaseId": "a6a6b3be-16c2-5328-96fc-78199642064a",
+    "searchReleaseId": "1a4e87b5-db76-562b-9480-571ea353b542"
+  },
+  "readPins": {
+    "headers": {
+      "sha256": "d777ff23a2d0fb2fd86d017ca5098d0e1c79cdfe6b7280c2bbb9a4254b6e7616",
+      "bytes": 23229
+    },
+    "bodies": {
+      "sha256": "7341a49fef8f6dbeb0a77d977205566bc3acab2055d894290c074ab1677c0ef5",
+      "bytes": 2156110
+    },
+    "group": {
+      "sha256": "4c131d2e1a5b21696494b03d3348c6d9f0a25b62a7b93ee633bfe143496816e7",
+      "bytes": 17807
+    }
+  },
+  "readStatus": {
+    "headers": "PASS_BOUNDED_MANUAL_TRENCH05701_HEADERS_SOURCE_LOCATORS_ONLY",
+    "bodies": "PASS_EXACT_TRENCH05701_EIGHT_PASSPORTS_SEVEN_COMPOSITIONS",
+    "group": "PASS_EXACT_TRENCH05701_BASE_GROUP_SIX_MEMBER_CAPTURE"
+  },
+  "setPins": {
+    "headers": {
+      "currentCheapIdentitySearchHeaders": {
+        "rowCount": 8,
+        "sha256": "be91d68bf51e07fa4eaa6b8e05eaa6bebad592924963ab6cb5e7add3ba214880"
+      },
+      "candidateBoundSourceLocatorHeaders": {
+        "rowCount": 1,
+        "sha256": "6f18db5c8d8575026f307293f38023ed2c8967fbe1145535aa014aebcb7a77c9"
+      },
+      "exactProposedSourcePreimageCurrentConsumers": {
+        "rowCount": 1,
+        "sha256": "a65182ffbaca0b33e2f9b8d9f2e19aab65ee93fedf3f721144b17e26e3625bb0"
+      }
+    },
+    "bodies": {
+      "exactEightCurrentAnchorsAndBody7Budget": {
+        "rowCount": 8,
+        "sha256": "90d1988a7e640a65c1a709fc765e90670e4a28aac63903adf5fab96e831b88ff"
+      },
+      "exactEightFullDefinitionPreimages": {
+        "rowCount": 8,
+        "sha256": "88d60e6dcd5082fdcc2b185e5e4d47ddd55a20a117552164a6b243acdeed0fa0"
+      },
+      "exactSevenFullApprovedBaselines": {
+        "rowCount": 7,
+        "sha256": "c542df5e6b499d2d7492bbc541f84201915df5ecc33cd7b23d1725cfdd75e051"
+      },
+      "exactSevenFullParameters": {
+        "rowCount": 12,
+        "sha256": "c2b42c8a6ce903278fe232c0687aa8d9eb3c8a15a66eb9e37d063013150d032d"
+      },
+      "exactSevenFullFormulas": {
+        "rowCount": 399,
+        "sha256": "900ef7d282e9e39810431ac31c5f4719b04af1f8ac412c7197e6b09d8a8c8260"
+      },
+      "exactSevenFullResources": {
+        "rowCount": 399,
+        "sha256": "a71b0285a0eeefe82a4aee0a632021fbfe35a9aaf16a0e84533e9dfadbc33995"
+      },
+      "exactEightOwnedContentPassports": {
+        "rowCount": 8,
+        "sha256": "5cd5f0c7d98b165de3f9886de0d6280e00db1ab3ad486b8f908077fce67694b2"
+      }
+    },
+    "group": {
+      "exactSingleGroupMetadata": {
+        "rowCount": 1,
+        "sha256": "b10f167d92038a1374eaf208eb28064954b6b0757fd6ccc036560fb56246dc5d"
+      },
+      "exactSingleGroupCurrentAnchors": {
+        "rowCount": 6,
+        "sha256": "70644d2749d52cbc225b2ab6b0395800da4040f5170bff4bf0b8e28b0012749e"
+      }
+    }
+  },
+  "existing8": [
+    {
+      "catalog_id": "canonical-work:base:earthworks_interior_trench_excavate_high_load",
+      "definition_version_id": "38d45040-30ea-52ed-829e-b209a32373e6",
+      "approved_template_baseline_id": "5b7714c9-289c-54e8-aef5-4057458d2b23",
+      "definition_sha256": "f1164aaabbd0b40edaaca03d20765950e7bc633861464d9712f2481e155be865",
+      "source_identity": "base-work:earthworks_interior_trench_excavate_high_load",
+      "work_key": "earthworks_interior_trench_excavate_high_load"
+    },
+    {
+      "catalog_id": "canonical-work:base:earthworks_interior_trench_excavate_large_area",
+      "definition_version_id": "a8e869ce-95b9-51ce-9a4c-1c3cb8b0f886",
+      "approved_template_baseline_id": "2772c344-df52-5059-99cc-b5d895b50ede",
+      "definition_sha256": "1fd7b82a4963f860167742f340c7a9131d6832bfe8c4db9f2d43fc64413706ff",
+      "source_identity": "base-work:earthworks_interior_trench_excavate_large_area",
+      "work_key": "earthworks_interior_trench_excavate_large_area"
+    },
+    {
+      "catalog_id": "canonical-work:base:earthworks_interior_trench_excavate_small_area",
+      "definition_version_id": "f646d10b-2ae4-5306-9e78-260b2e98ecfb",
+      "approved_template_baseline_id": "60767f77-2fab-54e2-9205-f8d0c695f095",
+      "definition_sha256": "c6940146291ab9844461e502492461f1ab628e88dcfefd1be1fbeaf6f92aa9b1",
+      "source_identity": "base-work:earthworks_interior_trench_excavate_small_area",
+      "work_key": "earthworks_interior_trench_excavate_small_area"
+    },
+    {
+      "catalog_id": "canonical-work:base:earthworks_interior_trench_excavate_standard",
+      "definition_version_id": "087e19f4-2b07-5e9b-92c1-a900ac128dde",
+      "approved_template_baseline_id": "89cd5cdf-6185-5a90-8794-09c0e025d5f5",
+      "definition_sha256": "475ccfa9c24d96619a99c5a93fc63b706b66a97d31aceaed526c222e113c5727",
+      "source_identity": "base-work:earthworks_interior_trench_excavate_standard",
+      "work_key": "earthworks_interior_trench_excavate_standard"
+    },
+    {
+      "catalog_id": "canonical-work:base:earthworks_interior_trench_excavate_technical_room",
+      "definition_version_id": "098bf697-79fb-5372-9550-407bd0811a5e",
+      "approved_template_baseline_id": "89bd0e72-22ff-542a-a35c-d91a68c8f60c",
+      "definition_sha256": "03d3f937b2fe77261aa4a72693f9bc87b75da8d00ef1d041472daa821a860697",
+      "source_identity": "base-work:earthworks_interior_trench_excavate_technical_room",
+      "work_key": "earthworks_interior_trench_excavate_technical_room"
+    },
+    {
+      "catalog_id": "canonical-work:base:earthworks_interior_trench_excavate_wet_zone",
+      "definition_version_id": "c4164a42-c5ba-55b5-b826-5a35b7a1692e",
+      "approved_template_baseline_id": "ef526a8c-c188-5822-a6f9-1b477480b61c",
+      "definition_sha256": "20abc9ea0dcd44c6bb0ab3338010be717594589d257eb4d21188ae16bc8bdbe4",
+      "source_identity": "base-work:earthworks_interior_trench_excavate_wet_zone",
+      "work_key": "earthworks_interior_trench_excavate_wet_zone"
+    },
+    {
+      "catalog_id": "canonical-work:expanded:multi_utility_trench",
+      "definition_version_id": "b585fb3c-6a32-5a4e-8af9-a23adc2a72dd",
+      "approved_template_baseline_id": "0b87e3c2-9431-52d1-a5e1-c1c696fb1179",
+      "definition_sha256": "1579d029e2b824fe00e45a2a731fae934df5c2e12bb8df416dc9f5cf4d952f77",
+      "source_identity": "expanded-template:multi_utility_trench_preliminary_boq_expanded_complex_v1",
+      "work_key": "multi_utility_trench"
+    },
+    {
+      "catalog_id": "canonical-work:expanded:utility_trench",
+      "definition_version_id": "050ceeae-c4d9-5920-b32a-24270b706aae",
+      "approved_template_baseline_id": "9d7ac667-ac4b-584f-ac1f-06a0d899b2f5",
+      "definition_sha256": "3e158fa04d637d3919737c911319f7ecbb9c3d77a115e839ddb8c04524269566",
+      "source_identity": "expanded-template:utility_trench_preliminary_boq_expanded_complex_v1",
+      "work_key": "utility_trench"
+    }
+  ],
+  "capturedJoinGroupMembers": {
+    "groupId": "wg:base:earthworks_interior_trench_excavate",
+    "members": [
+      {
+        "catalogId": "canonical-work:base:earthworks_interior_trench_excavate_high_load",
+        "ordinal": 0,
+        "definitionVersionId": "38d45040-30ea-52ed-829e-b209a32373e6",
+        "approvedTemplateBaselineId": "5b7714c9-289c-54e8-aef5-4057458d2b23",
+        "definitionSha256": "f1164aaabbd0b40edaaca03d20765950e7bc633861464d9712f2481e155be865",
+        "sourceIdentity": "base-work:earthworks_interior_trench_excavate_high_load",
+        "workKey": "earthworks_interior_trench_excavate_high_load",
+        "searchGroupId": "wg:base:earthworks_interior_trench_excavate"
+      },
+      {
+        "catalogId": "canonical-work:base:earthworks_interior_trench_excavate_large_area",
+        "ordinal": 1,
+        "definitionVersionId": "a8e869ce-95b9-51ce-9a4c-1c3cb8b0f886",
+        "approvedTemplateBaselineId": "2772c344-df52-5059-99cc-b5d895b50ede",
+        "definitionSha256": "1fd7b82a4963f860167742f340c7a9131d6832bfe8c4db9f2d43fc64413706ff",
+        "sourceIdentity": "base-work:earthworks_interior_trench_excavate_large_area",
+        "workKey": "earthworks_interior_trench_excavate_large_area",
+        "searchGroupId": "wg:base:earthworks_interior_trench_excavate"
+      },
+      {
+        "catalogId": "canonical-work:base:earthworks_interior_trench_excavate_small_area",
+        "ordinal": 2,
+        "definitionVersionId": "f646d10b-2ae4-5306-9e78-260b2e98ecfb",
+        "approvedTemplateBaselineId": "60767f77-2fab-54e2-9205-f8d0c695f095",
+        "definitionSha256": "c6940146291ab9844461e502492461f1ab628e88dcfefd1be1fbeaf6f92aa9b1",
+        "sourceIdentity": "base-work:earthworks_interior_trench_excavate_small_area",
+        "workKey": "earthworks_interior_trench_excavate_small_area",
+        "searchGroupId": "wg:base:earthworks_interior_trench_excavate"
+      },
+      {
+        "catalogId": "canonical-work:base:earthworks_interior_trench_excavate_standard",
+        "ordinal": 3,
+        "definitionVersionId": "087e19f4-2b07-5e9b-92c1-a900ac128dde",
+        "approvedTemplateBaselineId": "89cd5cdf-6185-5a90-8794-09c0e025d5f5",
+        "definitionSha256": "475ccfa9c24d96619a99c5a93fc63b706b66a97d31aceaed526c222e113c5727",
+        "sourceIdentity": "base-work:earthworks_interior_trench_excavate_standard",
+        "workKey": "earthworks_interior_trench_excavate_standard",
+        "searchGroupId": "wg:base:earthworks_interior_trench_excavate"
+      },
+      {
+        "catalogId": "canonical-work:base:earthworks_interior_trench_excavate_technical_room",
+        "ordinal": 4,
+        "definitionVersionId": "098bf697-79fb-5372-9550-407bd0811a5e",
+        "approvedTemplateBaselineId": "89bd0e72-22ff-542a-a35c-d91a68c8f60c",
+        "definitionSha256": "03d3f937b2fe77261aa4a72693f9bc87b75da8d00ef1d041472daa821a860697",
+        "sourceIdentity": "base-work:earthworks_interior_trench_excavate_technical_room",
+        "workKey": "earthworks_interior_trench_excavate_technical_room",
+        "searchGroupId": "wg:base:earthworks_interior_trench_excavate"
+      },
+      {
+        "catalogId": "canonical-work:base:earthworks_interior_trench_excavate_wet_zone",
+        "ordinal": 5,
+        "definitionVersionId": "c4164a42-c5ba-55b5-b826-5a35b7a1692e",
+        "approvedTemplateBaselineId": "ef526a8c-c188-5822-a6f9-1b477480b61c",
+        "definitionSha256": "20abc9ea0dcd44c6bb0ab3338010be717594589d257eb4d21188ae16bc8bdbe4",
+        "sourceIdentity": "base-work:earthworks_interior_trench_excavate_wet_zone",
+        "workKey": "earthworks_interior_trench_excavate_wet_zone",
+        "searchGroupId": "wg:base:earthworks_interior_trench_excavate"
+      }
+    ]
+  },
+  "actualGroupMemberCount": 6,
+  "nextTailOrdinal": 6,
+  "sourcePreimage": {
+    "source_key": "kg_krer01_02_057_01_manual_sloped_trench_g1_r1",
+    "exact_source_count": 0,
+    "source_preimage": null,
+    "current_consumer_count": 0,
+    "current_consumer_headers": []
+  },
+  "roadParent": {
+    "pair": {
+      "definitionReleaseId": "a6a6b3be-16c2-5328-96fc-78199642064a",
+      "searchReleaseId": "1a4e87b5-db76-562b-9480-571ea353b542"
+    },
+    "recordedReleaseSourceCommit": "4476eb99d878323e411d6a8351dab1cb7623f7e0",
+    "recordedReleaseSourceTree": "baa5599a34f660b795e1ae82ae55b550211bfc42",
+    "apply": {
+      "sha256": "27b4cc59c71a328423a75eed05eb8523835910bd48b543e53d9c874e54d0ae19"
+    },
+    "readback": {
+      "sha256": "389999a7e0336cca40418baf867ebc1989eca8727087e753925f220daa53f138"
+    },
+    "localAcceptance": {
+      "sha256": "b3315845018505c3f1a5cb6292254562fd08e452a7fca4ebc668f2b36153261e"
+    },
+    "payload": {
+      "sha256": "cb1b97c6b2e5619bd199ac603e41bde2a1531b295eff23750c1a6d52e1604094",
+      "bytes": 389992
+    },
+    "successor": {
+      "releaseId": "a6a6b3be-16c2-5328-96fc-78199642064a",
+      "searchReleaseId": "1a4e87b5-db76-562b-9480-571ea353b542",
+      "releaseKey": "gox-build.road-marking01601-continuous100-pf133-actual-line-km-append/r1:a14b6c3cea875abd7ae9",
+      "definitionId": "b37dbce0-1bf2-5a78-8f36-3a4bdde08ee0",
+      "baselineId": "6bf6262c-0e7b-5f1b-950d-6bba0d1dd151",
+      "definitionVersion": 1,
+      "shape": [
+        17,
+        16,
+        16
+      ],
+      "nextCounts": {
+        "definitions": 10469,
+        "parameters": 94672,
+        "formulas": 581322,
+        "resources": 581755
+      }
+    }
+  },
+  "sourceArtifact": {
+    "sha256": "91c4f4db762840481de41f57b6771b5ae0adf0dada240dc1f03655e9d71eab6b",
+    "bytes": 4009381
+  },
+  "pureRegressionVectorsRole": "Projection of accepted actualfields for pure negativecases only; does not replace byte-pinned rawproof admission.",
+  "groupCaptureForPureRegression": {
+    "contract": "manual-trench05701-exact-base-group-capture/r3",
+    "status": "PASS_EXACT_TRENCH05701_BASE_GROUP_SIX_MEMBER_CAPTURE",
+    "executionContext": {
+      "sourceHead": "87a0a3d8472217c6d22c220c9abfda09402dab95",
+      "recordedReleaseSourceCommit": "4476eb99d878323e411d6a8351dab1cb7623f7e0",
+      "definitionReleaseId": "a6a6b3be-16c2-5328-96fc-78199642064a",
+      "searchReleaseId": "1a4e87b5-db76-562b-9480-571ea353b542"
+    },
+    "sourceHeadAtPreparation": "87a0a3d8472217c6d22c220c9abfda09402dab95",
+    "actualQueryHead": "87a0a3d8472217c6d22c220c9abfda09402dab95",
+    "sets": {
+      "exactSingleGroupMetadata": {
+        "rowCount": 1,
+        "rawRows": [
+          "{\"search_release_id\":\"1a4e87b5-db76-562b-9480-571ea353b542\",\"group_id\":\"wg:base:earthworks_interior_trench_excavate\",\"group_name_ru\":\"разработка траншеи для высокой нагрузки\",\"domain_id\":\"earthworks\",\"system_id\":\"earthworks\",\"subsystem_id\":\"wg:base:earthworks_interior_trench_excavate\",\"assembly_id\":\"wg:base:earthworks_interior_trench_excavate\",\"work_family_id\":\"wg:base:earthworks_interior_trench_excavate\",\"breadcrumb\":[\"разработка траншеи для высокой нагрузки\"],\"member_count\":6,\"member_set_sha256\":\"d098b3a447f8cfc5f2bbf3501d3946307ef386eb3c074e9d3b60cf8cce37cd3c\",\"oracle_disposition\":{\"contract\": \"rik-expo-app-r555.full-cumulative-successor-db.v1\", \"disposition\": \"EXACT_PHYSICAL_WORK_GROUP\", \"memberCatalogIdsSha256\": \"d098b3a447f8cfc5f2bbf3501d3946307ef386eb3c074e9d3b60cf8cce37cd3c\"},\"actual_member_count\":6}"
+        ],
+        "sha256": "b10f167d92038a1374eaf208eb28064954b6b0757fd6ccc036560fb56246dc5d"
+      },
+      "exactSingleGroupCurrentAnchors": {
+        "rowCount": 6,
+        "rawRows": [
+          "{\"catalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_high_load\",\"ordinal\":0,\"searchReleaseId\":\"1a4e87b5-db76-562b-9480-571ea353b542\",\"membershipGroupId\":\"wg:base:earthworks_interior_trench_excavate\",\"manifestReleaseId\":\"a6a6b3be-16c2-5328-96fc-78199642064a\",\"definitionVersionId\":\"38d45040-30ea-52ed-829e-b209a32373e6\",\"approvedTemplateBaselineId\":\"5b7714c9-289c-54e8-aef5-4057458d2b23\",\"definitionSha256\":\"f1164aaabbd0b40edaaca03d20765950e7bc633861464d9712f2481e155be865\",\"actualDefinitionId\":\"38d45040-30ea-52ed-829e-b209a32373e6\",\"definitionCatalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_high_load\",\"actualDefinitionSha256\":\"f1164aaabbd0b40edaaca03d20765950e7bc633861464d9712f2481e155be865\",\"actualBaselineId\":\"5b7714c9-289c-54e8-aef5-4057458d2b23\",\"baselineCatalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_high_load\",\"baselineDefinitionVersionId\":\"38d45040-30ea-52ed-829e-b209a32373e6\",\"identityCatalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_high_load\",\"sourceIdentity\":\"base-work:earthworks_interior_trench_excavate_high_load\",\"workKey\":\"earthworks_interior_trench_excavate_high_load\",\"identityRetiredAt\":null,\"searchCatalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_high_load\",\"searchGroupId\":\"wg:base:earthworks_interior_trench_excavate\",\"searchDefinitionReleaseId\":\"a6a6b3be-16c2-5328-96fc-78199642064a\",\"searchDefinitionVersionId\":\"38d45040-30ea-52ed-829e-b209a32373e6\"}",
+          "{\"catalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_large_area\",\"ordinal\":1,\"searchReleaseId\":\"1a4e87b5-db76-562b-9480-571ea353b542\",\"membershipGroupId\":\"wg:base:earthworks_interior_trench_excavate\",\"manifestReleaseId\":\"a6a6b3be-16c2-5328-96fc-78199642064a\",\"definitionVersionId\":\"a8e869ce-95b9-51ce-9a4c-1c3cb8b0f886\",\"approvedTemplateBaselineId\":\"2772c344-df52-5059-99cc-b5d895b50ede\",\"definitionSha256\":\"1fd7b82a4963f860167742f340c7a9131d6832bfe8c4db9f2d43fc64413706ff\",\"actualDefinitionId\":\"a8e869ce-95b9-51ce-9a4c-1c3cb8b0f886\",\"definitionCatalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_large_area\",\"actualDefinitionSha256\":\"1fd7b82a4963f860167742f340c7a9131d6832bfe8c4db9f2d43fc64413706ff\",\"actualBaselineId\":\"2772c344-df52-5059-99cc-b5d895b50ede\",\"baselineCatalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_large_area\",\"baselineDefinitionVersionId\":\"a8e869ce-95b9-51ce-9a4c-1c3cb8b0f886\",\"identityCatalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_large_area\",\"sourceIdentity\":\"base-work:earthworks_interior_trench_excavate_large_area\",\"workKey\":\"earthworks_interior_trench_excavate_large_area\",\"identityRetiredAt\":null,\"searchCatalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_large_area\",\"searchGroupId\":\"wg:base:earthworks_interior_trench_excavate\",\"searchDefinitionReleaseId\":\"a6a6b3be-16c2-5328-96fc-78199642064a\",\"searchDefinitionVersionId\":\"a8e869ce-95b9-51ce-9a4c-1c3cb8b0f886\"}",
+          "{\"catalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_small_area\",\"ordinal\":2,\"searchReleaseId\":\"1a4e87b5-db76-562b-9480-571ea353b542\",\"membershipGroupId\":\"wg:base:earthworks_interior_trench_excavate\",\"manifestReleaseId\":\"a6a6b3be-16c2-5328-96fc-78199642064a\",\"definitionVersionId\":\"f646d10b-2ae4-5306-9e78-260b2e98ecfb\",\"approvedTemplateBaselineId\":\"60767f77-2fab-54e2-9205-f8d0c695f095\",\"definitionSha256\":\"c6940146291ab9844461e502492461f1ab628e88dcfefd1be1fbeaf6f92aa9b1\",\"actualDefinitionId\":\"f646d10b-2ae4-5306-9e78-260b2e98ecfb\",\"definitionCatalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_small_area\",\"actualDefinitionSha256\":\"c6940146291ab9844461e502492461f1ab628e88dcfefd1be1fbeaf6f92aa9b1\",\"actualBaselineId\":\"60767f77-2fab-54e2-9205-f8d0c695f095\",\"baselineCatalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_small_area\",\"baselineDefinitionVersionId\":\"f646d10b-2ae4-5306-9e78-260b2e98ecfb\",\"identityCatalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_small_area\",\"sourceIdentity\":\"base-work:earthworks_interior_trench_excavate_small_area\",\"workKey\":\"earthworks_interior_trench_excavate_small_area\",\"identityRetiredAt\":null,\"searchCatalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_small_area\",\"searchGroupId\":\"wg:base:earthworks_interior_trench_excavate\",\"searchDefinitionReleaseId\":\"a6a6b3be-16c2-5328-96fc-78199642064a\",\"searchDefinitionVersionId\":\"f646d10b-2ae4-5306-9e78-260b2e98ecfb\"}",
+          "{\"catalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_standard\",\"ordinal\":3,\"searchReleaseId\":\"1a4e87b5-db76-562b-9480-571ea353b542\",\"membershipGroupId\":\"wg:base:earthworks_interior_trench_excavate\",\"manifestReleaseId\":\"a6a6b3be-16c2-5328-96fc-78199642064a\",\"definitionVersionId\":\"087e19f4-2b07-5e9b-92c1-a900ac128dde\",\"approvedTemplateBaselineId\":\"89cd5cdf-6185-5a90-8794-09c0e025d5f5\",\"definitionSha256\":\"475ccfa9c24d96619a99c5a93fc63b706b66a97d31aceaed526c222e113c5727\",\"actualDefinitionId\":\"087e19f4-2b07-5e9b-92c1-a900ac128dde\",\"definitionCatalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_standard\",\"actualDefinitionSha256\":\"475ccfa9c24d96619a99c5a93fc63b706b66a97d31aceaed526c222e113c5727\",\"actualBaselineId\":\"89cd5cdf-6185-5a90-8794-09c0e025d5f5\",\"baselineCatalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_standard\",\"baselineDefinitionVersionId\":\"087e19f4-2b07-5e9b-92c1-a900ac128dde\",\"identityCatalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_standard\",\"sourceIdentity\":\"base-work:earthworks_interior_trench_excavate_standard\",\"workKey\":\"earthworks_interior_trench_excavate_standard\",\"identityRetiredAt\":null,\"searchCatalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_standard\",\"searchGroupId\":\"wg:base:earthworks_interior_trench_excavate\",\"searchDefinitionReleaseId\":\"a6a6b3be-16c2-5328-96fc-78199642064a\",\"searchDefinitionVersionId\":\"087e19f4-2b07-5e9b-92c1-a900ac128dde\"}",
+          "{\"catalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_technical_room\",\"ordinal\":4,\"searchReleaseId\":\"1a4e87b5-db76-562b-9480-571ea353b542\",\"membershipGroupId\":\"wg:base:earthworks_interior_trench_excavate\",\"manifestReleaseId\":\"a6a6b3be-16c2-5328-96fc-78199642064a\",\"definitionVersionId\":\"098bf697-79fb-5372-9550-407bd0811a5e\",\"approvedTemplateBaselineId\":\"89bd0e72-22ff-542a-a35c-d91a68c8f60c\",\"definitionSha256\":\"03d3f937b2fe77261aa4a72693f9bc87b75da8d00ef1d041472daa821a860697\",\"actualDefinitionId\":\"098bf697-79fb-5372-9550-407bd0811a5e\",\"definitionCatalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_technical_room\",\"actualDefinitionSha256\":\"03d3f937b2fe77261aa4a72693f9bc87b75da8d00ef1d041472daa821a860697\",\"actualBaselineId\":\"89bd0e72-22ff-542a-a35c-d91a68c8f60c\",\"baselineCatalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_technical_room\",\"baselineDefinitionVersionId\":\"098bf697-79fb-5372-9550-407bd0811a5e\",\"identityCatalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_technical_room\",\"sourceIdentity\":\"base-work:earthworks_interior_trench_excavate_technical_room\",\"workKey\":\"earthworks_interior_trench_excavate_technical_room\",\"identityRetiredAt\":null,\"searchCatalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_technical_room\",\"searchGroupId\":\"wg:base:earthworks_interior_trench_excavate\",\"searchDefinitionReleaseId\":\"a6a6b3be-16c2-5328-96fc-78199642064a\",\"searchDefinitionVersionId\":\"098bf697-79fb-5372-9550-407bd0811a5e\"}",
+          "{\"catalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_wet_zone\",\"ordinal\":5,\"searchReleaseId\":\"1a4e87b5-db76-562b-9480-571ea353b542\",\"membershipGroupId\":\"wg:base:earthworks_interior_trench_excavate\",\"manifestReleaseId\":\"a6a6b3be-16c2-5328-96fc-78199642064a\",\"definitionVersionId\":\"c4164a42-c5ba-55b5-b826-5a35b7a1692e\",\"approvedTemplateBaselineId\":\"ef526a8c-c188-5822-a6f9-1b477480b61c\",\"definitionSha256\":\"20abc9ea0dcd44c6bb0ab3338010be717594589d257eb4d21188ae16bc8bdbe4\",\"actualDefinitionId\":\"c4164a42-c5ba-55b5-b826-5a35b7a1692e\",\"definitionCatalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_wet_zone\",\"actualDefinitionSha256\":\"20abc9ea0dcd44c6bb0ab3338010be717594589d257eb4d21188ae16bc8bdbe4\",\"actualBaselineId\":\"ef526a8c-c188-5822-a6f9-1b477480b61c\",\"baselineCatalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_wet_zone\",\"baselineDefinitionVersionId\":\"c4164a42-c5ba-55b5-b826-5a35b7a1692e\",\"identityCatalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_wet_zone\",\"sourceIdentity\":\"base-work:earthworks_interior_trench_excavate_wet_zone\",\"workKey\":\"earthworks_interior_trench_excavate_wet_zone\",\"identityRetiredAt\":null,\"searchCatalogId\":\"canonical-work:base:earthworks_interior_trench_excavate_wet_zone\",\"searchGroupId\":\"wg:base:earthworks_interior_trench_excavate\",\"searchDefinitionReleaseId\":\"a6a6b3be-16c2-5328-96fc-78199642064a\",\"searchDefinitionVersionId\":\"c4164a42-c5ba-55b5-b826-5a35b7a1692e\"}"
+        ],
+        "sha256": "70644d2749d52cbc225b2ab6b0395800da4040f5170bff4bf0b8e28b0012749e"
+      }
+    },
+    "metrics": {
+      "rawBytes": 9781,
+      "exactSingleGroupMetadataObservedRows": 1,
+      "exactSingleGroupCurrentAnchorsObservedRows": 6
+    },
+    "globalResourceJsonRead": false,
+    "globalAbsenceProved": false,
+    "newIdentityAccepted": false,
+    "appJobs": false,
+    "databaseWrites": false,
+    "deepScope": "Onlyexactwg:base:earthworks_interior_trench_excavate metadata/count and orderedcurrentmembership anchors. No acceptedheader/sourceabsence/body repeat. Metadata count1..32 before member transfer; LEFTJOIN exposes missing anchors; compare all exact6 businessanchors fromacceptedread, duplicate/tail checks. No wholecatalog/othergroup/price/saved/API/appjob reads.",
+    "caps": {
+      "groupMetadataRows": 1,
+      "members": 32,
+      "rowBytes": 524288,
+      "totalRawBytes": 3145728
+    },
+    "rootExecutionProofSha256": "b16b0c5f537333fd01fe606269f9aaaf9682401ec38496437ad945fda6e35e62",
+    "session": {
+      "db": "rik_r4_runtime_b5_v2",
+      "address": "127.0.0.1",
+      "port": 55432,
+      "pid": 18728,
+      "snapshot": "537294:537294:",
+      "read_only": "on",
+      "isolation": "repeatable read"
+    },
+    "headers": {
+      "definition": {
+        "id": "a6a6b3be-16c2-5328-96fc-78199642064a",
+        "status": "prepared",
+        "source_commit": "4476eb99d878323e411d6a8351dab1cb7623f7e0",
+        "source_tree": "baa5599a34f660b795e1ae82ae55b550211bfc42",
+        "source_manifest_sha256": "d589eccbf85ca1cec3ce04a570aa230984926df1bcc4fe3c3feadd34b7fdfe4b",
+        "activated_at": null
+      },
+      "search": {
+        "id": "1a4e87b5-db76-562b-9480-571ea353b542",
+        "status": "draft",
+        "source_commit": "4476eb99d878323e411d6a8351dab1cb7623f7e0",
+        "source_tree": "baa5599a34f660b795e1ae82ae55b550211bfc42",
+        "snapshot_sha256": "4c7d8adb642b5cbb608629b326b6da157b64fda576f27f9912f846dda3187cf6",
+        "activated_at": null,
+        "sealed_at": null,
+        "definition_release_id": "a6a6b3be-16c2-5328-96fc-78199642064a"
+      }
+    },
+    "groupCountDiagnosis": {
+      "metadataCount": 6,
+      "actualCount": 6,
+      "expectedCount": 6,
+      "memberCap": 32
+    },
+    "capturedJoinGroupMembers": {
+      "groupId": "wg:base:earthworks_interior_trench_excavate",
+      "members": [
+        {
+          "catalogId": "canonical-work:base:earthworks_interior_trench_excavate_high_load",
+          "ordinal": 0,
+          "definitionVersionId": "38d45040-30ea-52ed-829e-b209a32373e6",
+          "approvedTemplateBaselineId": "5b7714c9-289c-54e8-aef5-4057458d2b23",
+          "definitionSha256": "f1164aaabbd0b40edaaca03d20765950e7bc633861464d9712f2481e155be865",
+          "sourceIdentity": "base-work:earthworks_interior_trench_excavate_high_load",
+          "workKey": "earthworks_interior_trench_excavate_high_load",
+          "searchGroupId": "wg:base:earthworks_interior_trench_excavate"
+        },
+        {
+          "catalogId": "canonical-work:base:earthworks_interior_trench_excavate_large_area",
+          "ordinal": 1,
+          "definitionVersionId": "a8e869ce-95b9-51ce-9a4c-1c3cb8b0f886",
+          "approvedTemplateBaselineId": "2772c344-df52-5059-99cc-b5d895b50ede",
+          "definitionSha256": "1fd7b82a4963f860167742f340c7a9131d6832bfe8c4db9f2d43fc64413706ff",
+          "sourceIdentity": "base-work:earthworks_interior_trench_excavate_large_area",
+          "workKey": "earthworks_interior_trench_excavate_large_area",
+          "searchGroupId": "wg:base:earthworks_interior_trench_excavate"
+        },
+        {
+          "catalogId": "canonical-work:base:earthworks_interior_trench_excavate_small_area",
+          "ordinal": 2,
+          "definitionVersionId": "f646d10b-2ae4-5306-9e78-260b2e98ecfb",
+          "approvedTemplateBaselineId": "60767f77-2fab-54e2-9205-f8d0c695f095",
+          "definitionSha256": "c6940146291ab9844461e502492461f1ab628e88dcfefd1be1fbeaf6f92aa9b1",
+          "sourceIdentity": "base-work:earthworks_interior_trench_excavate_small_area",
+          "workKey": "earthworks_interior_trench_excavate_small_area",
+          "searchGroupId": "wg:base:earthworks_interior_trench_excavate"
+        },
+        {
+          "catalogId": "canonical-work:base:earthworks_interior_trench_excavate_standard",
+          "ordinal": 3,
+          "definitionVersionId": "087e19f4-2b07-5e9b-92c1-a900ac128dde",
+          "approvedTemplateBaselineId": "89cd5cdf-6185-5a90-8794-09c0e025d5f5",
+          "definitionSha256": "475ccfa9c24d96619a99c5a93fc63b706b66a97d31aceaed526c222e113c5727",
+          "sourceIdentity": "base-work:earthworks_interior_trench_excavate_standard",
+          "workKey": "earthworks_interior_trench_excavate_standard",
+          "searchGroupId": "wg:base:earthworks_interior_trench_excavate"
+        },
+        {
+          "catalogId": "canonical-work:base:earthworks_interior_trench_excavate_technical_room",
+          "ordinal": 4,
+          "definitionVersionId": "098bf697-79fb-5372-9550-407bd0811a5e",
+          "approvedTemplateBaselineId": "89bd0e72-22ff-542a-a35c-d91a68c8f60c",
+          "definitionSha256": "03d3f937b2fe77261aa4a72693f9bc87b75da8d00ef1d041472daa821a860697",
+          "sourceIdentity": "base-work:earthworks_interior_trench_excavate_technical_room",
+          "workKey": "earthworks_interior_trench_excavate_technical_room",
+          "searchGroupId": "wg:base:earthworks_interior_trench_excavate"
+        },
+        {
+          "catalogId": "canonical-work:base:earthworks_interior_trench_excavate_wet_zone",
+          "ordinal": 5,
+          "definitionVersionId": "c4164a42-c5ba-55b5-b826-5a35b7a1692e",
+          "approvedTemplateBaselineId": "ef526a8c-c188-5822-a6f9-1b477480b61c",
+          "definitionSha256": "20abc9ea0dcd44c6bb0ab3338010be717594589d257eb4d21188ae16bc8bdbe4",
+          "sourceIdentity": "base-work:earthworks_interior_trench_excavate_wet_zone",
+          "workKey": "earthworks_interior_trench_excavate_wet_zone",
+          "searchGroupId": "wg:base:earthworks_interior_trench_excavate"
+        }
+      ]
+    },
+    "actualGroupMemberCount": 6,
+    "nextTailOrdinal": 6,
+    "normalAndLockedRereadRequired": true,
+    "captureScopeContract": "master-bounded-join-group-capture/r1",
+    "captureShaMustBePinnedExternally": "ROOT exactresultfile SHA; materialize captureScope.memberCount6/maxMembers32/captureSha256. Historical contextual release_id and entry_sha256 are not unchanged-business claims.",
+    "error": null,
+    "transactionRolledBack": true,
+    "connectionClosed": true,
+    "completeReadSet": true,
+    "inputSha256": "392591133a52cf50cd3edf9e468bf8dfedbeedb5b27dd8bcb2d1064cb6be5b3f",
+    "rootObservedClientElapsedMs": 426,
+    "allTransactionsRolledBack": true,
+    "allConnectionsClosed": true
+  },
+  "parentProofsForPureRegression": {
+    "apply": {
+      "status": "GREEN_ROAD_MARKING01601_ACTUAL_KM_R1_PREPARED_NOT_ACTIVE",
+      "mutationPerformed": true,
+      "idempotent": false,
+      "predecessor": {
+        "releaseId": "8b09255d-82a5-501b-9b60-e70587ff5579",
+        "searchReleaseId": "c8331c4b-dad5-5402-8c8e-2474df83d4ff",
+        "catalogId": "canonical-work:master:road_marking_continuous_100mm_pf133_darkgrey_actual_line_km_krer27_09_016_01",
+        "definitionId": null,
+        "shape": null,
+        "targetAbsentForAppend": true
+      },
+      "successor": {
+        "releaseId": "a6a6b3be-16c2-5328-96fc-78199642064a",
+        "searchReleaseId": "1a4e87b5-db76-562b-9480-571ea353b542",
+        "releaseKey": "gox-build.road-marking01601-continuous100-pf133-actual-line-km-append/r1:a14b6c3cea875abd7ae9",
+        "definitionId": "b37dbce0-1bf2-5a78-8f36-3a4bdde08ee0",
+        "baselineId": "6bf6262c-0e7b-5f1b-950d-6bba0d1dd151",
+        "definitionVersion": 1,
+        "shape": [
+          17,
+          16,
+          16
+        ],
+        "nextCounts": {
+          "definitions": 10469,
+          "parameters": 94672,
+          "formulas": 581322,
+          "resources": 581755
+        }
+      },
+      "source": {
+        "head": "4476eb99d878323e411d6a8351dab1cb7623f7e0",
+        "tree": "baa5599a34f660b795e1ae82ae55b550211bfc42",
+        "hashedDirtySourceAccepted": false
+      },
+      "audit": {
+        "unrelatedManifestChanges": 0
+      }
+    },
+    "readback": {
+      "contract": "root-road-independent-append-readback/r1",
+      "status": "PASS_ROOT_ROAD_APPLY_EIGHT_PAYLOAD_SAVED20_AND10468_R1",
+      "phase": "apply",
+      "actualReceiptSuccessor": {
+        "releaseId": "a6a6b3be-16c2-5328-96fc-78199642064a",
+        "searchReleaseId": "1a4e87b5-db76-562b-9480-571ea353b542",
+        "releaseKey": "gox-build.road-marking01601-continuous100-pf133-actual-line-km-append/r1:a14b6c3cea875abd7ae9",
+        "definitionId": "b37dbce0-1bf2-5a78-8f36-3a4bdde08ee0",
+        "baselineId": "6bf6262c-0e7b-5f1b-950d-6bba0d1dd151",
+        "definitionVersion": 1,
+        "shape": [
+          17,
+          16,
+          16
+        ],
+        "nextCounts": {
+          "definitions": 10469,
+          "parameters": 94672,
+          "formulas": 581322,
+          "resources": 581755
+        }
+      },
+      "sourceHead": "4476eb99d878323e411d6a8351dab1cb7623f7e0",
+      "actualPublicationContext": {
+        "sourceHead": "4476eb99d878323e411d6a8351dab1cb7623f7e0",
+        "sourceTree": "baa5599a34f660b795e1ae82ae55b550211bfc42",
+        "definitionReleaseId": "a6a6b3be-16c2-5328-96fc-78199642064a",
+        "searchReleaseId": "1a4e87b5-db76-562b-9480-571ea353b542",
+        "definitionSnapshotSha256": "d589eccbf85ca1cec3ce04a570aa230984926df1bcc4fe3c3feadd34b7fdfe4b",
+        "searchSnapshotSha256": "4c7d8adb642b5cbb608629b326b6da157b64fda576f27f9912f846dda3187cf6"
+      },
+      "completeReadSet": true,
+      "error": null,
+      "databaseWrites": false,
+      "appJobs": false,
+      "allConnectionsClosed": true,
+      "allTransactionsRolledBack": true,
+      "commonSnapshotClaim": false,
+      "newState": {
+        "definitionId": "b37dbce0-1bf2-5a78-8f36-3a4bdde08ee0",
+        "baselineId": "6bf6262c-0e7b-5f1b-950d-6bba0d1dd151",
+        "shape": [
+          17,
+          16,
+          16
+        ],
+        "bindings": 6,
+        "priceBindings": 0,
+        "staticNeeds": 10
+      },
+      "payloadResultPin": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/road-independent-apply-actual-r1/road-independent-apply-payload-r1.json",
+        "sha256": "cb1b97c6b2e5619bd199ac603e41bde2a1531b295eff23750c1a6d52e1604094",
+        "bytes": 389992
+      },
+      "preservation": {
+        "unrelatedManifestMappings": {
+          "parent_count": 10468,
+          "successor_count": 10469,
+          "parent_target_count": 0,
+          "successor_target_count": 1,
+          "unrelated_count": 10468,
+          "unrelated_changed": 0
+        }
+      }
+    },
+    "acceptance": {
+      "schemaVersion": "road-marking01601-local-publication-acceptance/v1",
+      "status": "PASS_ROAD_MARKING01601_LOCAL_PUBLICATION_INDEPENDENT_PAYLOAD_SAVED20_AND10468_PRESERVED",
+      "successor": {
+        "releaseId": "a6a6b3be-16c2-5328-96fc-78199642064a",
+        "searchReleaseId": "1a4e87b5-db76-562b-9480-571ea353b542",
+        "releaseKey": "gox-build.road-marking01601-continuous100-pf133-actual-line-km-append/r1:a14b6c3cea875abd7ae9",
+        "definitionId": "b37dbce0-1bf2-5a78-8f36-3a4bdde08ee0",
+        "baselineId": "6bf6262c-0e7b-5f1b-950d-6bba0d1dd151",
+        "definitionVersion": 1,
+        "shape": [
+          17,
+          16,
+          16
+        ],
+        "nextCounts": {
+          "definitions": 10469,
+          "parameters": 94672,
+          "formulas": 581322,
+          "resources": 581755
+        }
+      },
+      "allOwnedProcessesClosed": true,
+      "productionAccessed": false,
+      "activationPerformed": false,
+      "publication": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/road-marking01601-governed-apply-v1/road-marking01601-actual-apply-result-v1.json",
+        "sha256": "27b4cc59c71a328423a75eed05eb8523835910bd48b543e53d9c874e54d0ae19",
+        "bytes": 36367
+      },
+      "independentReadback": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/road-independent-apply-actual-r1/road-independent-apply-result-r1.json",
+        "sha256": "389999a7e0336cca40418baf867ebc1989eca8727087e753925f220daa53f138",
+        "bytes": 7123
+      }
+    }
+  }
+}

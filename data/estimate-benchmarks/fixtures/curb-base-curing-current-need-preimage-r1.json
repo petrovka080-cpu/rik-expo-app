@@ -1,0 +1,80 @@
+{
+  "status": "EXACT_ACCEPTED_PROCUREMENT_NEED_EXCERPT_NOT_FRESH_DB_READ",
+  "sourceProcurementPin": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/outputs/curb-masonry-curb03-procurement.json",
+    "sha256": "f223853af8f809560a9ec89f61420999e47f6e3a1bd66dc8b5b69c3894beca61",
+    "bytes": 69699
+  },
+  "jsonPointer": "/amendmentContract/parameterSources/preliminaryNeeds/0",
+  "revisionId": "b8d650bd-34b1-402c-a2ec-cc33b6d9dbe6",
+  "revisionChecksumSha256": "89b16ef65a7577de2d914096e07f7eefa26d72200ec45b4d2abb3d069dd9bf2b",
+  "catalogId": "canonical-work:master:granite_kerb_1gp_install_cement_concrete_pavement_standard",
+  "rawNeed": {
+    "calculation_trace": {
+      "compilerVersion": "canonical-estimate-local-runtime.r6",
+      "formulaAstSha256": "dbd55a4e6c3c83233448544177cdbbc79fba91742525a44d614c64ade03031e0",
+      "formulaId": "granite-kerb:1gp-cement-pavement:formula:concrete-curing",
+      "inputParameterIds": [
+        "open_scope_qty_concrete_curing"
+      ],
+      "missingParameterIds": [
+        "open_scope_qty_concrete_curing"
+      ],
+      "needState": "QUANTITY_REQUIRED",
+      "preliminaryNeed": true,
+      "resourceGraph": {
+        "costOwner": "resource",
+        "costTreatment": "OWN_COST",
+        "formulaId": "granite-kerb:1gp-cement-pavement:formula:concrete-curing",
+        "inputParameterIds": [
+          "covering_kind",
+          "prepared_installation_line",
+          "construction_scope_conditions",
+          "granite_product_scope"
+        ],
+        "normalizedUom": "",
+        "operationCompositionV1": {
+          "completionCriterionRu": "Подтверждены применимость, единица, количество и граница отдельной цены.",
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "granite-kerb:1gp-cement-pavement",
+          "groupTitleRu": "Установка гранитного бортового камня 1ГП при цементобетонном покрытии",
+          "operationId": "granite-kerb:1gp-cement-pavement:operation:concrete-curing",
+          "operationTitleRu": "Уход за бетоном основания",
+          "processOrdinal": 40
+        },
+        "publicResourcePresentationV1": {
+          "brandAndModelRu": null,
+          "contractVersion": "canonical-public-resource-presentation/v1",
+          "detailsRu": [
+            "Открытая потребность: источник количества, единицы и отдельной цены отсутствует."
+          ],
+          "nameRu": "Уход за бетоном основания",
+          "sourceTitleRu": "Уход за бетоном основания",
+          "specificationRu": null
+        },
+        "scopeContextParameterIds": [
+          "kerb_length_m"
+        ],
+        "semanticOwnerId": "granite-kerb:1gp-cement-pavement:granite-kerb:1gp-cement-pavement:concrete-curing"
+      }
+    },
+    "category": "work",
+    "formula_id": "granite-kerb:1gp-cement-pavement:formula:concrete-curing",
+    "missing_parameter_ids": [
+      "open_scope_qty_concrete_curing"
+    ],
+    "need_sha256": "b25ec8c518c199ed6281f12256bee461535a1ae5515d68949733fc993a0e99a4",
+    "need_state": "QUANTITY_REQUIRED",
+    "normative_trace": [],
+    "ordinal": 21,
+    "procurement_eligible": false,
+    "quantity": null,
+    "resource_spec_id": "7c271ff4-6a30-5b0e-85ca-86589fca7ac1",
+    "row_id": "granite-kerb:1gp-cement-pavement:concrete-curing",
+    "section": "Установка гранитного бортового камня 1ГП при цементобетонном покрытии",
+    "selected": true,
+    "title_ru": "Уход за бетоном основания",
+    "unit_id": "",
+    "unit_price": null
+  }
+}

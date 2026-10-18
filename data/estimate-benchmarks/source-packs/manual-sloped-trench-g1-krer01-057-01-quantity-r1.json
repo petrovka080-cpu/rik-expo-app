@@ -1,0 +1,217 @@
+{
+  "contract": "manual-sloped-trench-g1-krer01-057-01-quantity/r1",
+  "catalogId": null,
+  "identityAdmitted": false,
+  "actualCurrentClassification": null,
+  "titleRu": "Ручная разработка траншеи с откосами, глубина до 2 м, грунт группы 1",
+  "scopeRu": "Отдельно измеренный проектный объём грунта в естественном состоянии: ручная разработка траншеи глубиной до 2 м включительно без креплений, с проектными откосами; однородный сухой немёрзлый грунт группы 1, не разрыхлённый ранее. Этот узкий профиль не определяет устойчивость откосов и не заменяет проект.",
+  "normId": "KRER01-02-057-01",
+  "sourceKeyProposal": "kg_krer01_02_057_01_manual_sloped_trench_g1_r1",
+  "source": {
+    "titleRu": "КРЕР-2015. Сборник 01. Земляные работы",
+    "edition": "КРЕР-2015, утверждён приказом от 28.03.2016 № 2-нпа, введён с 01.01.2016; применимость к объекту требует проверки",
+    "officialPublicationUrl": "https://minstroy.gov.kg/ru/kyzmat/416/show",
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no1zemlanyeraboty_a4_compressed-938690319b2ec3751.62616019.pdf",
+    "localArtifact": "work/next-earthworks-manual-trench-a/primary-intake-r1/KRER01-2015-official.pdf",
+    "sha256": "91c4f4db762840481de41f57b6771b5ae0adf0dada240dc1f03655e9d71eab6b",
+    "bytes": 4009381,
+    "locatorRu": "PDF 309 / печатная 308: таблица 01-02-057, состав 01–03, измеритель 100 м³, колонка 01; PDF 12–13 / печатные 11–12: пп. 1.1, 1.2, 1.5; PDF 18–19 / печатные 17–18: пп. 1.55–1.57; PDF 21 / печатная 20: пп. 2.1, 2.5–2.6.",
+    "visualPages": [
+      309,
+      12,
+      13,
+      18,
+      19,
+      21
+    ],
+    "sourceTextLayer": "MOSTLY_JBIG2_SCAN_VISUAL_REVIEW",
+    "foreignNormSubstitution": false
+  },
+  "primaryMeasure": {
+    "parameterId": "actual_manual_trench_bank_volume_m3",
+    "unitId": "m3",
+    "kind": "ACTUAL_PROJECT_BANK_VOLUME",
+    "noGeometryAssumption": true,
+    "printedDenominator": "100 m3",
+    "labourRule": "actual_manual_trench_bank_volume_m3*118/100"
+  },
+  "rows": [
+    {
+      "suffix": "whole-manual-excavation-labor",
+      "resourceCode": "000-1002-0",
+      "printedNameRu": "Рабочие-строители среднего разряда 2,0",
+      "titleRu": "Ручная разработка траншеи с зачисткой и откидкой грунта от бровки",
+      "category": "labor",
+      "unitId": "man_hour",
+      "ratePer100BankM3": "118",
+      "costTreatment": "OWN_COST",
+      "procurement": false
+    }
+  ],
+  "includedOperations": [
+    {
+      "id": "dig-and-throw-to-edge",
+      "printedRu": "Разработка грунта с выбрасыванием на бровку."
+    },
+    {
+      "id": "bottom-and-wall-cleaning",
+      "printedRu": "Зачистка дна и поверхности стенок."
+    },
+    {
+      "id": "throw-back-from-edge",
+      "printedRu": "Откидка грунта от бровки."
+    }
+  ],
+  "openNeeds": [
+    {
+      "id": "project-norm-applicability",
+      "titleRu": "Применимость нормы и подтверждение проектного решения",
+      "category": "service",
+      "missingFact": "Не подтверждены действующая для объекта нормативная редакция и проектное решение по группе грунта и условиям разработки.",
+      "nextTask": "Сверить официальную редакцию и изменения, утвердить соответствие проекту и геотехническому заключению без назначения коэффициентов по умолчанию.",
+      "owner": "Проектировщик и сметчик"
+    },
+    {
+      "id": "underground-utilities-and-site-safety",
+      "titleRu": "Подземные сети, допуски и безопасность работ",
+      "category": "service",
+      "missingFact": "Не установлены действующие коммуникации, допуски, ограждения и конкретные меры безопасности на участке.",
+      "nextTask": "Получить согласованную схему коммуникаций и проект производства работ; определить отдельно оплачиваемые меры и их величины.",
+      "owner": "Заказчик, владелец сетей и производитель работ"
+    },
+    {
+      "id": "site-preparation",
+      "titleRu": "Подготовка участка перед разработкой траншеи",
+      "category": "labor",
+      "missingFact": "Не определены расчистка, снятие покрытий или растительного слоя и другие работы до начала разработки грунта.",
+      "nextTask": "По обследованию и проекту определить необходимые подготовительные работы, их объёмы, источники и отдельные границы оплаты.",
+      "owner": "Проектировщик и производитель работ"
+    },
+    {
+      "id": "setting-out-and-survey",
+      "titleRu": "Разбивка траншеи и геодезический контроль",
+      "category": "service",
+      "missingFact": "Нет отдельного количества и подтверждённой границы оплаты разбивки и инструментального контроля объёма и откосов.",
+      "nextTask": "Сопоставить ведомость объёма и проект откосов с геодезическим заданием; подтвердить нужные измерения и отдельную стоимость.",
+      "owner": "Геодезист и технический надзор"
+    },
+    {
+      "id": "temporary-water-management",
+      "titleRu": "Временный отвод воды и защита сухой выемки",
+      "category": "service",
+      "missingFact": "Не установлены требуемые меры отвода поверхностной воды и защиты выемки; водоотлив не включён в эту колонку.",
+      "nextTask": "По проекту и фактическим условиям подтвердить необходимость, объём и отдельный источник временных мер. При мокром грунте данный профиль не применять.",
+      "owner": "Проектировщик и производитель работ"
+    },
+    {
+      "id": "tools-and-consumables",
+      "titleRu": "Ручной инструмент, расходники и оснащение",
+      "category": "equipment",
+      "missingFact": "Таблица не задаёт комплект, время использования, расходники и отдельную границу оплаты ручного инструмента и оснащения.",
+      "nextTask": "Получить проект производства работ и перечень оснащения; проверить, что уже покрыто ставкой труда, и определить только отдельные обоснованные ресурсы.",
+      "owner": "Производитель работ и сметчик"
+    },
+    {
+      "id": "spoil-balance-and-haul",
+      "titleRu": "Использование, погрузка и вывоз вынутого грунта",
+      "category": "transport",
+      "missingFact": "Не заданы пригодность и распределение грунта, рыхлый объём, погрузка, рейсы, маршрут и приёмка на месте назначения.",
+      "nextTask": "Составить подтверждённый баланс грунта и маршрут; отдельно установить переход между объёмом в естественном состоянии и перевозимым объёмом. Не считать откидку от бровки вывозом.",
+      "owner": "Проектировщик, перевозчик и принимающая организация"
+    },
+    {
+      "id": "follow-on-work-and-reinstatement",
+      "titleRu": "Последующие работы и восстановление участка",
+      "category": "labor",
+      "missingFact": "Не определены последующее устройство конструкций или сетей, обратная засыпка, уплотнение и восстановление участка.",
+      "nextTask": "Определить проектный состав следующих работ и их самостоятельные объёмы; не начислять их в норме ручной разработки.",
+      "owner": "Проектировщик и производитель работ"
+    },
+    {
+      "id": "acceptance-and-final-cleanup",
+      "titleRu": "Приёмка выемки и завершающая уборка",
+      "category": "service",
+      "missingFact": "Нет подтверждённого объёма контроля, исполнительной документации и уборки сверх включённой зачистки дна и стенок.",
+      "nextTask": "Определить критерии приёмки отметок и откосов, документы и отдельную уборку; исключить повторную оплату зачистки из основной нормы.",
+      "owner": "Технический надзор и производитель работ"
+    }
+  ],
+  "excludedRu": [
+    "Другие группы грунта, мокрый или мёрзлый грунт и ранее разрыхлённый грунт; коэффициенты и соседние колонки не подставляются.",
+    "Смешанное послойное залегание, глубина больше 2 м, крепления и иная геометрия требуют отдельного решения и источника.",
+    "Автоматический объём из длины и ширины дна без проекта откосов.",
+    "Механизированная разработка, погрузка, вывоз, разрыхление, водоотлив, сети, обратная засыпка и восстановление участка.",
+    "Повторная оплата выброса на бровку, зачистки дна и стенок или откидки от бровки поверх целой нормы труда.",
+    "Плановые ставки, оплата по цене издания 2015 года, универсальный инструмент, плотность, коэффициент разрыхления и рейсы."
+  ],
+  "machinePriceMappings": [],
+  "purchaseOrderOwners": [],
+  "fullTechnicalAcceptance": false,
+  "publicationAllowed": false,
+  "historicalProjectFixturesReusedAsNorm": false,
+  "fullCycle": [
+    {
+      "stage": "PREPARATION",
+      "status": "REQUIRES_PROJECT_AND_SOURCE",
+      "needIds": [
+        "project-norm-applicability",
+        "underground-utilities-and-site-safety",
+        "site-preparation",
+        "setting-out-and-survey"
+      ]
+    },
+    {
+      "stage": "MAIN_MATERIALS_AND_COMPONENTS",
+      "status": "NONE_LISTED_IN_EXACT_COLUMN_NOT_GENERAL_NONAPPLICABILITY",
+      "needIds": [
+        "follow-on-work-and-reinstatement"
+      ]
+    },
+    {
+      "stage": "CONSUMABLES",
+      "status": "REQUIRES_SOURCE_AND_PAYMENT_SCOPE",
+      "needIds": [
+        "tools-and-consumables"
+      ]
+    },
+    {
+      "stage": "MAIN_AND_ASSOCIATED_WORK",
+      "status": "THREE_PRINTED_OPERATIONS_INCLUDED_IN_WHOLE_LABOUR",
+      "ownerSuffix": "whole-manual-excavation-labor",
+      "includedOperationIds": [
+        "dig-and-throw-to-edge",
+        "bottom-and-wall-cleaning",
+        "throw-back-from-edge"
+      ]
+    },
+    {
+      "stage": "LABOUR",
+      "status": "EXACT_SOURCE_RATE_SINGLE_OWNER",
+      "rate": "118",
+      "unit": "man_hour/100m3"
+    },
+    {
+      "stage": "MACHINES_AND_TOOLS",
+      "status": "NO_MACHINE_ROW_IN_EXACT_COLUMN_TOOLS_SCOPE_UNRESOLVED",
+      "needIds": [
+        "tools-and-consumables",
+        "temporary-water-management"
+      ]
+    },
+    {
+      "stage": "LOGISTICS_AND_SERVICES",
+      "status": "REQUIRES_ACTUAL_BALANCE_ROUTE_AND_PAYMENT_SCOPE",
+      "needIds": [
+        "spoil-balance-and-haul"
+      ]
+    },
+    {
+      "stage": "TESTING_COMPLETION_CLEANUP",
+      "status": "REQUIRES_ACCEPTANCE_AND_NONOVERLAPPING_CLEANUP",
+      "needIds": [
+        "acceptance-and-final-cleanup",
+        "follow-on-work-and-reinstatement"
+      ]
+    }
+  ]
+}

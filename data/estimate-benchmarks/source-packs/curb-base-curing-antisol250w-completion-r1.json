@@ -1,0 +1,135 @@
+{
+  "contract": "gox-build.curb-base-curing-antisol250w-material-completion/r1",
+  "status": "WORK_ONLY_SOURCE_BOUND_MATERIAL_QUANTITY_DESIGN_NOT_RUN",
+  "catalogId": "canonical-work:master:granite_kerb_1gp_install_cement_concrete_pavement_standard",
+  "parentDefinitionId": "a1aa5fb1-45be-5ab0-8e1a-8bbd91029bd8",
+  "parentDefinitionVersion": 1,
+  "parentBaselineId": "8031fefe-132a-58c5-aff7-f1e190b4cf80",
+  "parentShape": [
+    50,
+    27,
+    27
+  ],
+  "oldBindings": 21,
+  "oldPriceBindings": 0,
+  "completionNeedRowId": "granite-kerb:1gp-cement-pavement:concrete-curing",
+  "completionNeedRawSha256": "b25ec8c518c199ed6281f12256bee461535a1ae5515d68949733fc993a0e99a4",
+  "completionNeedParameter": "open_scope_qty_concrete_curing",
+  "completionNeedRemainsOpen": true,
+  "selectionParameter": "curb_base_curing_material_option",
+  "selectedOption": "ANTISOL_250W_US_EXPOSED_B15_BROOM_MATERIAL_ONLY",
+  "otherOption": "OTHER_OR_UNCONFIRMED_CURING_METHOD",
+  "materialSourceId": "manufacturer_sika_antisol250w_us_202006_v0103",
+  "materialNormId": "manufacturer:sika-antisol250w:us:202006:v0103:approx-broom-finish-coverage",
+  "reusedSourcePack": "data/estimate-benchmarks/source-packs/sika-antisol250w-us-curing-series-s27-63.json",
+  "reusedConsumer": "src/lib/estimate/v4/concreteCuringAntisolMaterialS2763.ts",
+  "reusedBalance": "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
+  "source": {
+    "officialUrl": "https://usa.sika.com/dam/dms/us01/3/sika_antisol_-250w.pdf",
+    "path": ".release-runtime/r568/s27-63/sources/sika-antisol-250w-us-2020-06-v01-03.pdf",
+    "sha256": "b2f03cae00c6edf37228a1836104b5beba33a56dbb19b559caa8cc435a8b14b3",
+    "edition": "June2020 Version01.03 US",
+    "pages": [
+      1,
+      2
+    ],
+    "nominalCoverageM2PerL": "4.9",
+    "packageL": "19",
+    "quantityQuality": "APPROXIMATE_MANUFACTURER_NOMINAL"
+  },
+  "compatibility": {
+    "supportedMaterial": "Fresh ordinary concrete; the published03 foundation material is heavyconcreteB15(M200),3.9m3/100m. PDS allows freshly placed concrete/exterior hardscapes.",
+    "selectedFaceOnly": "Actually exposed uncovered horizontal B15face with homogeneous broomfinish, separately measured in m2. Never stone, mortarjoint, buried/coveredface, formwork, allbasefootprint, kerblength or concretevolume.",
+    "broomFinishIsObjectFactNotAssumed": true,
+    "wholeCurbLaborUnchanged": "109man_hour/100m, includingbase/formwork, install/joints andgranitecleaning. Table03 does not establish separate Antisol application productivity; this packet adds no labour.",
+    "curingMaterialNotAutomaticallyIncludedOrExtra": "A separate exactmaterial supply/payment document must show the product is not already included in concrete/curingquote; otherwise neworderowner remainsunresolved/refuses incompatibleincluded value.",
+    "noCurrentProjectApprovalClaimed": true,
+    "noGenericExposedFaceClaim": "The table supplies B15volume only, no exposed or broomfinished area. Standard foundation may be fully covered by kerb/mortar/pavement. No such face is asserted for an actual customer object; selectedbranch requires separate measured/project-confirmed face that remains exposed without future bonding/coating."
+  },
+  "physicalFacts": [
+    {
+      "id": "curb_curing_surface_scope",
+      "titleRu": "Фактически открытая поверхность бетонного основания борта",
+      "value": "FRESH_UNCOVERED_HORIZONTAL_B15_FACE_ONLY",
+      "guideRu": "Только свежеуложенный тяжёлый бетон В15 основания; не гранит, не раствор швов, не закрытая/подземная грань и не поверхность опалубки."
+    },
+    {
+      "id": "curb_curing_surface_finish",
+      "titleRu": "Однородная фактическая отделка обрабатываемой поверхности",
+      "value": "HOMOGENEOUS_BROOM_FINISH",
+      "guideRu": "Паспортный приблизительный расход 4,9 м²/л относится только к однородной отделке щёткой. Гладкая, смешанная или ранее обработанная поверхность не допускается."
+    },
+    {
+      "id": "curb_curing_future_interface",
+      "titleRu": "Открытость грани после завершения узла борта",
+      "value": "REMAINS_EXPOSED_NO_STONE_MORTAR_PAVEMENT_BONDING_COATING",
+      "guideRu": "По проектному узлу грань остаётся открытой: не закрывается камнем, раствором, дорожным покрытием, приклеиваемой отделкой или гидроизоляцией. Текущая временная открытость не доказывает допустимость: будущий контакт/адгезия либо неизвестный узел исключают эту ветвь."
+    },
+    {
+      "id": "curb_curing_measured_surface_reference",
+      "titleRu": "Ведомость измеренных открытых граней бетона под уход",
+      "guideRu": "Измерить всю фактически обрабатываемую выбранную поверхность отдельно в м²; не выводить её из 100 м борта, 3,9 м³ бетона или закупленного камня."
+    },
+    {
+      "id": "curb_curing_method_reference",
+      "titleRu": "Применимый ППР ухода за открытым основанием",
+      "guideRu": "Подтверждает конкретный продукт/редакцию, выбранную грань/отделку и окно нанесения; вода сошла, бетон не повреждается, конденсата нет. Не задаёт выдуманную производительность."
+    },
+    {
+      "id": "curb_curing_adjacent_protection_reference",
+      "titleRu": "Защита гранита, швов и смежных поверхностей при нанесении",
+      "guideRu": "Паспорт требует защиты от распыла. Зафиксировать границы/способ; продукт не наносится на гранит или раствор швов. Труд, СИЗ и расходники этим документом не нормируются."
+    }
+  ],
+  "supplyFacts": [
+    {
+      "id": "curb_curing_material_payment_scope",
+      "titleRu": "Отдельная поставка только материала Antisol",
+      "value": "SEPARATE_EXACT_MATERIAL_NOT_IN_CONCRETE_OR_CURING_QUOTE",
+      "guideRu": "Только отдельный материал. Если он уже включён в бетон/уход/комплект, эта новая оплачиваемая ветвь не применяется; нельзя платить дважды."
+    },
+    {
+      "id": "curb_curing_material_payment_reference",
+      "titleRu": "Документ точной отдельной поставки материала",
+      "guideRu": "Подтвердить Antisol-250W исполнения США по PDS June 2020 v01.03, канистру 19 л и отдельную границу оплаты; цена/поставка не берётся из старой неизвестной нормы ухода."
+    },
+    {
+      "id": "curb_curing_stock_compatibility_reference",
+      "titleRu": "Пригодность положительного остатка точного Antisol",
+      "stockPositiveOnly": true,
+      "guideRu": "При положительном наличии подтвердить точное исполнение/единицу/срок/исходную тару/хранение 60–80 °F, материал не замораживался. Непроверенный остаток не вычитается."
+    }
+  ],
+  "materialRows": {
+    "consumed": "concrete-curing-antisol250w-us:consumed",
+    "owner": "material:concrete:membrane-curing-compound:antisol250w-us",
+    "packages": "concrete-curing-antisol250w-us:packages",
+    "remaining": "concrete-curing-antisol250w-us:remaining",
+    "free": "concrete-curing-antisol250w-us:free",
+    "shortage": "concrete-curing-antisol250w-us:shortage",
+    "reserveDeficit": "concrete-curing-antisol250w-us:reserve-deficit"
+  },
+  "bindingProposal": {
+    "retainOld21Exact": true,
+    "newBoundRows": [
+      "concrete-curing-antisol250w-us:consumed",
+      "material:concrete:membrane-curing-compound:antisol250w-us"
+    ],
+    "newControlRowsUnbound": 5,
+    "oldNeedStillUnbound": true,
+    "newSourcesForOldParameters": false,
+    "formalRootDecisionAndActualParentCapturePending": true
+  },
+  "noNewLabourOrMachineHours": true,
+  "noPriceAssigned": true,
+  "noDefaults": true,
+  "noSourceRateQuestion": true,
+  "noAreaFromLengthOrVolume": true,
+  "publicationAllowed": false,
+  "fullTechnicalAcceptance": false,
+  "newCompleteTypesAccepted": 0,
+  "acceptedNeedFixture": {
+    "path": "data/estimate-benchmarks/fixtures/curb-base-curing-current-need-preimage-r1.json",
+    "sha256": "ebf2784455db93d897960bc1e6de1eba9e8e782d0039a9529b262d5a2e5d20ba"
+  }
+}

@@ -48,6 +48,8 @@ import {
   type S279ProjectSourcePackageRole,
 } from "./projectSourcePackagePreflightR1";
 
+import { stringifyCanonicalEstimateJson } from "../../../src/lib/estimate/estimateDeterministicHash";
+
 type Json = Record<string, any>;
 
 export type MasterSingleDefinitionSuccessorConfig = Readonly<{
@@ -110,6 +112,8 @@ export type MasterSingleDefinitionSuccessorConfig = Readonly<{
     applicabilityByRowId?: Readonly<Record<string, Json>>;
     /** Replace one definition while preserving its exact source-aware bindings. */
     retainParentBindings?: MasterRetainParentBindingsR1;
+    /** Exact existing registry rows, reused without rewriting their owner metadata. */
+    reuseExistingNormativeRegistry?: MasterExistingNormativeRegistryReuseR1;
   }>;
   locator: Readonly<{
     key: string;
@@ -226,6 +230,110 @@ export function resolveMasterAppendExplicitParameterSourcesR1(
     sourceClosure: [config.sourceId], oldResourceRowIds: [], next});
 }
 
+export type MasterExistingNormativeRegistryReuseR1 = Readonly<{
+  contract: "master-existing-normative-registry-reuse/r1";
+  /** Preserve the original publisher's excerpt hash algorithm explicitly. */
+  locatorExcerptHashKind: "SOURCE_LOCATOR_TEXT_SHA256" | "CANONICAL_ESTIMATE_LOCATOR_JSON_SHA256_R1";
+  /** Exact current row, including the unconverted PostgreSQL created_at text. */
+  source: Readonly<Json>;
+  /** Complete current locator rows. No locator creation or partial reuse. */
+  locators: readonly Readonly<Json>[];
+}>;
+export type MasterResolvedExistingRegistryReuseR1 = Readonly<{
+  errorPrefix: string;
+  declaration: MasterExistingNormativeRegistryReuseR1;
+  managedSource: Json;
+  locators: readonly Json[];
+}>;
+/** Historical S2763 stored the canonical locator JSON hash as its excerpt.
+ * Resolve this before the source envelope so provenance and persistence agree.
+ * Omitted reuse preserves the original Master text-excerpt hash byte for byte. */
+export function resolveMasterSingleDefinitionLocatorExcerptSha256R1(
+  config: Pick<MasterSingleDefinitionSuccessorConfig, "stopCode" | "binding" | "locator" | "sourceMetadata">,
+): string {
+  if (!Object.hasOwn(config.binding, "reuseExistingNormativeRegistry"))
+    return sha256(config.sourceMetadata.exact_locator);
+  const kind = config.binding.reuseExistingNormativeRegistry?.locatorExcerptHashKind;
+  if (kind === "SOURCE_LOCATOR_TEXT_SHA256") return sha256(config.sourceMetadata.exact_locator);
+  if (kind === "CANONICAL_ESTIMATE_LOCATOR_JSON_SHA256_R1")
+    return createHash("sha256").update(stringifyCanonicalEstimateJson(config.locator.payload)).digest("hex");
+  throw new Error(`STOP_${config.stopCode}_EXISTING_REGISTRY_EXCERPT_HASH_KIND_REQUIRED`);
+}
+/** Reuse is explicit, replace-only and new to the retained parent. The existing
+ * retention guard still validates the full parent, reference closure and locks.
+ * Omission preserves the historical source/locator identity construction. */
+export function resolveMasterExistingNormativeRegistryReuseR1(input: Readonly<{
+  config: Readonly<{stopCode: string; catalogAppend?: unknown; projectSourcePackagePath?: unknown;
+    binding: Readonly<{retainParentBindings?: unknown;
+      reuseExistingNormativeRegistry?: MasterExistingNormativeRegistryReuseR1}>}>;
+  newSource: Json; newLocators: readonly Json[];
+}>): MasterResolvedExistingRegistryReuseR1 | null {
+  if (!Object.hasOwn(input.config.binding, "reuseExistingNormativeRegistry")) return null;
+  const prefix = `STOP_${input.config.stopCode}_EXISTING_REGISTRY_`;
+  const requireThat = (value: unknown, code: string): void => {if (!value) throw new Error(prefix + code);};
+  const object = (x: unknown): x is Json => x != null && typeof x === "object" && !Array.isArray(x);
+  const same = (a: unknown, b: unknown) => JSON.stringify(stable(a)) === JSON.stringify(stable(b));
+  const keys = (x: Json, expected: readonly string[]) => same(Object.keys(x).sort(), [...expected].sort());
+  const uuid = (x: unknown) => typeof x === "string"
+    && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/u.test(x);
+  requireThat(input.config.catalogAppend == null && input.config.projectSourcePackagePath == null
+    && Object.hasOwn(input.config.binding, "retainParentBindings")
+    && object(input.config.binding.retainParentBindings), "RETAINED_REPLACEMENT_ONLY");
+  const value = input.config.binding.reuseExistingNormativeRegistry;
+  requireThat(object(value) && keys(value!, ["contract", "source", "locators", "locatorExcerptHashKind"])
+    && value!.contract === "master-existing-normative-registry-reuse/r1"
+    && ["SOURCE_LOCATOR_TEXT_SHA256", "CANONICAL_ESTIMATE_LOCATOR_JSON_SHA256_R1"]
+      .includes(value!.locatorExcerptHashKind), "EXACT_DECLARATION_REQUIRED");
+  const source = value!.source;
+  requireThat(object(source) && keys(source, ["id", "source_key", "title_ru", "authority", "official_url",
+    "artifact_sha256", "effective_from", "effective_to", "metadata", "created_at"])
+    && uuid(source.id) && object(source.metadata)
+    && typeof source.metadata.contract === "string" && source.metadata.contract.trim().length > 0
+    && typeof source.created_at === "string"
+    && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/u.test(source.created_at),
+  "COMPLETE_SOURCE_WITH_RAW_TIMESTAMP_REQUIRED");
+  const {created_at: _createdAt, ...managedSource} = source;
+  // The original registry contract belongs to its first publisher. Consumer
+  // provenance stays in this definition's source envelope; no metadata rewrite.
+  requireThat(same(managedSource, {...input.newSource, id: source.id,
+    metadata: {...input.newSource.metadata, contract: source.metadata.contract}}), "SOURCE_FACTS_OR_METADATA_DRIFT");
+  requireThat(Array.isArray(value!.locators) && value!.locators.length > 0
+    && value!.locators.length === input.newLocators.length && value!.locators.length <= 32,
+  "COMPLETE_LOCATOR_SET_REQUIRED");
+  const declared = value!.locators;
+  requireThat(declared.every(l => object(l) && keys(l, ["id", "source_id", "locator_key", "locator", "excerpt_sha256"])
+    && uuid(l.id) && l.source_id === source.id && typeof l.locator_key === "string"
+    && l.locator_key.length > 0 && object(l.locator) && typeof l.excerpt_sha256 === "string"
+    && /^[a-f0-9]{64}$/u.test(l.excerpt_sha256))
+    && new Set(declared.map(l => l.id)).size === declared.length
+    && new Set(declared.map(l => l.locator_key)).size === declared.length, "LOCATOR_IDENTITIES_OR_SHAPE");
+  const ordered = input.newLocators.map(candidate => {
+    if (value!.locatorExcerptHashKind === "CANONICAL_ESTIMATE_LOCATOR_JSON_SHA256_R1")
+      requireThat(candidate.excerpt_sha256 === createHash("sha256")
+        .update(stringifyCanonicalEstimateJson(candidate.locator)).digest("hex"), "LOCATOR_EXCERPT_POLICY_DRIFT");
+    const row = declared.find(l => l.locator_key === candidate.locator_key);
+    requireThat(row != null && same(row, {...candidate, id: row!.id, source_id: source.id}),
+      "LOCATOR_FACTS_OR_EXCERPT_DRIFT");
+    return row!;
+  });
+  return {errorPrefix: prefix, declaration: value!, managedSource, locators: ordered};
+}
+/** The same full registry must exist at normal preflight, locked reread and
+ * registered-state verification. An absent or partly matching row is refused. */
+export function assertMasterExistingNormativeRegistrySnapshotR1(
+  reuse: MasterResolvedExistingRegistryReuseR1 | null,
+  actual: Readonly<{newSources: readonly Json[]; newLocators: readonly Json[]}> | null,
+): void {
+  if (reuse == null) return;
+  const encoded = (x: unknown) => JSON.stringify(stable(x));
+  if (actual == null || encoded(actual.newSources) !== encoded([reuse.declaration.source]))
+    throw new Error(reuse.errorPrefix + "FULL_EXISTING_SOURCE_REQUIRED");
+  const rows = (x: readonly Json[]) => [...x].sort((a, b) => String(a.id).localeCompare(String(b.id)));
+  if (encoded(rows(actual.newLocators)) !== encoded(rows(reuse.locators)))
+    throw new Error(reuse.errorPrefix + "FULL_EXISTING_LOCATORS_REQUIRED");
+}
+
+
 export type MasterSingleDefinitionCountShape = Readonly<{
   definitions: number;
   parameters: number;
@@ -335,6 +443,46 @@ const CONTENT_PASSPORT_CONTRACT = "real-professional-estimates-r3.content-passpo
 const BASELINE_CONTRACT = "APPROVED_TEMPLATE_BASELINE_R54_V1";
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
+
+/** Append-only local pointer counters. Legacy pointers without this bundle keep their bytes.
+ * This prospective patch must be validated before any publication DML, never after commit. */
+export function resolveMasterRuntimeAdmissionMetadataR1(
+  current: Readonly<Record<string, unknown>>,
+  parentDefinitionCount: number,
+  nextDefinitionCount: number,
+): Readonly<Record<string, unknown>> {
+  const integer = (value: unknown, minimum: number, code: string): number => {
+    invariant(typeof value === "number" && Number.isSafeInteger(value) && value >= minimum, code);
+    return value;
+  };
+  integer(parentDefinitionCount, 1, "MASTER_POINTER_ADMISSION_PARENT_COUNT");
+  integer(nextDefinitionCount, 1, "MASTER_POINTER_ADMISSION_NEXT_COUNT");
+  const delta = nextDefinitionCount - parentDefinitionCount;
+  invariant(delta === 0 || delta === 1, "MASTER_POINTER_ADMISSION_SINGLE_DEFINITION_DELTA");
+  if (delta === 0) return {};
+  const fields = ["runtimeAdditionalAdmissions", "currentInventoryRowsIncludingAliases", "denominatorNote"];
+  const present = fields.filter(key => Object.prototype.hasOwnProperty.call(current, key)).length;
+  if (present === 0) return {};
+  invariant(present === fields.length, "MASTER_POINTER_ADMISSION_PARTIAL_METADATA");
+  invariant(current.currentRuntimeDefinitions === parentDefinitionCount,
+    "MASTER_POINTER_ADMISSION_PARENT_RUNTIME_COUNT");
+  const identities = integer(current.identities, 1, "MASTER_POINTER_ADMISSION_HISTORICAL_IDENTITIES");
+  const visible = integer(current.visibleCanonicalDefinitions, 0, "MASTER_POINTER_ADMISSION_HISTORICAL_VISIBLE");
+  const aliases = integer(current.aliasesRedirects, 0, "MASTER_POINTER_ADMISSION_HISTORICAL_ALIASES");
+  invariant(visible + aliases === identities, "MASTER_POINTER_ADMISSION_HISTORICAL_BASIS");
+  const admissions = integer(current.runtimeAdditionalAdmissions, 0, "MASTER_POINTER_ADMISSION_COUNTER");
+  const inventory = integer(current.currentInventoryRowsIncludingAliases, 1, "MASTER_POINTER_ADMISSION_INVENTORY");
+  invariant(identities + admissions === inventory, "MASTER_POINTER_ADMISSION_INVENTORY_BASIS");
+  const note = (count: number) => `${identities} is the immutable historical source-identity reconciliation (${visible} canonical owners plus ${aliases} redirects); the current cumulative runtime also preserves ${count} separately identified inherited admissions.`;
+  invariant(current.denominatorNote === note(admissions), "MASTER_POINTER_ADMISSION_NOTE");
+  integer(admissions + 1, 1, "MASTER_POINTER_ADMISSION_COUNTER_OVERFLOW");
+  integer(inventory + 1, 1, "MASTER_POINTER_ADMISSION_INVENTORY_OVERFLOW");
+  return {
+    runtimeAdditionalAdmissions: admissions + 1,
+    currentInventoryRowsIncludingAliases: inventory + 1,
+    denominatorNote: note(admissions + 1),
+  };
+}
 
 function invariant(value: unknown, code: string): asserts value {
   if (!value) throw new Error(code);
@@ -951,6 +1099,8 @@ export async function runMasterSingleDefinitionSuccessorR1(
     ]),
     ...(Object.hasOwn(config.binding,"retainParentBindings")
       ?["scripts/estimate/r4a13/masterSingleDefinitionRetainParentBindingsR1.ts"]:[]),
+    ...(Object.hasOwn(config.binding,"reuseExistingNormativeRegistry")
+      ?["src/lib/estimate/estimateDeterministicHash.ts"]:[]),
     "scripts/estimate/r4a13/projectSourcePackageBindingR1.ts",
     "scripts/estimate/r4a13/projectSourcePackagePreflightR1.ts",
   ])];
@@ -1059,7 +1209,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
     ? [{
       key: config.locator.key,
       payload: config.locator.payload,
-      excerptSha256: sha256(config.sourceMetadata.exact_locator),
+      excerptSha256: resolveMasterSingleDefinitionLocatorExcerptSha256R1(config),
     }]
     : projectSourcePackage.verifiedLocators.map((locator, index) => ({
       key: `${config.locator.key}:package:${projectSourcePackage.packagePayloadSha256}`
@@ -1160,8 +1310,8 @@ export async function runMasterSingleDefinitionSuccessorR1(
   const searchReleaseId = uuid(`${config.contract}:${fingerprint}:search-release`);
   const definitionId = uuid(`${config.contract}:${fingerprint}:definition`);
   const baselineId = uuid(`${config.contract}:${fingerprint}:baseline`);
-  const sourceId = uuid(`${config.contract}:${config.sourceId}:source`);
-  const locatorIds = resolvedLocators.map((locator) => projectSourcePackage == null
+  const generatedSourceId = uuid(`${config.contract}:${config.sourceId}:source`);
+  const generatedLocatorIds = resolvedLocators.map((locator) => projectSourcePackage == null
     ? uuid(`${config.contract}:${config.sourceId}:${locator.key}:locator`)
     : uuid(`${config.sourceId}:${locator.key}:normative-locator`));
   const registrySourceMetadata={
@@ -1176,12 +1326,17 @@ export async function runMasterSingleDefinitionSuccessorR1(
       projectMetadata:projectSourcePackage.projectMetadata,
     }}),
   };
-  const retentionCandidate={config,newSource:{id:sourceId,source_key:config.sourceId,
+  const generatedRetentionCandidate={config,newSource:{id:generatedSourceId,source_key:config.sourceId,
     title_ru:resolvedSourceMetadata.source_title,authority:resolvedSourceMetadata.source_authority,
     official_url:resolvedSourceMetadata.official_url??null,artifact_sha256:resolvedSourceMetadata.artifact_sha256??null,
     effective_from:resolvedSourceMetadata.effective_from??null,effective_to:null,metadata:registrySourceMetadata},
-    newLocators:resolvedLocators.map((locator,index)=>({id:locatorIds[index]!,source_id:sourceId,
+    newLocators:resolvedLocators.map((locator,index)=>({id:generatedLocatorIds[index]!,source_id:generatedSourceId,
       locator_key:locator.key,locator:locator.payload,excerpt_sha256:locator.excerptSha256}))};
+  const existingRegistryReuse=resolveMasterExistingNormativeRegistryReuseR1(generatedRetentionCandidate);
+  const retentionCandidate=existingRegistryReuse==null?generatedRetentionCandidate:{config,
+    newSource:existingRegistryReuse.managedSource,newLocators:existingRegistryReuse.locators};
+  const sourceId=String(retentionCandidate.newSource.id);
+  const locatorIds=retentionCandidate.newLocators.map(locator=>String(locator.id));
   const retentionInput=masterRetainParentBindingsOptInR1(retentionCandidate)==null?null:retentionCandidate;
   const releaseKey = `${config.contract}:${fingerprint.slice(0, 20)}`;
   const current = JSON.parse(readFileSync(config.currentReleasePath, "utf8")) as Json;
@@ -1199,6 +1354,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
   });
   await client.connect();
   let receipt: Json;
+  let runtimeAdmissionMetadata: Readonly<Record<string, unknown>> = {};
   try {
     const parent = (await client.query(
       "select * from public.estimate_definition_release where id=$1",
@@ -1292,6 +1448,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
       : await readMasterSingleDefinitionAppendPreconditionsR1(client, appendGuardInput);
     const retentionPreflight=retentionInput==null?null
       :await readMasterRetainedBindingPreconditionsR1(client,retentionInput);
+    assertMasterExistingNormativeRegistrySnapshotR1(existingRegistryReuse,retentionPreflight);
     if (appendGuardInput != null && appendPreflight != null) {
       assertMasterSingleDefinitionAppendParentAnchorR1(
         appendGuardInput, appendPreflight, parent!, parentSearch!,
@@ -1503,6 +1660,9 @@ export async function runMasterSingleDefinitionSuccessorR1(
         audit: await auditState(client, config, releaseId, searchReleaseId, definitionId),
       };
     } else {
+      runtimeAdmissionMetadata = resolveMasterRuntimeAdmissionMetadataR1(
+        current, Number(parent.definition_count), nextCounts.definitions,
+      );
       await client.query(retentionInput?"begin isolation level read committed":"begin");
       await client.query("set local lock_timeout='5s'");
       await client.query("set local statement_timeout='600s'");
@@ -1513,6 +1673,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
           await lockMasterRetainedBindingPreconditionsR1(client,retentionInput);
           lockedRetention=await readMasterRetainedBindingPreconditionsR1(client,retentionInput);
           assertMasterRetainedBindingPreflightUnchangedR1(retentionInput,retentionPreflight,lockedRetention);
+          assertMasterExistingNormativeRegistrySnapshotR1(existingRegistryReuse,lockedRetention);
           const lockedPointer=JSON.parse(readFileSync(config.currentReleasePath,"utf8")) as Json;
           invariant(lockedPointer.productionAccessed===false&&lockedPointer.definitionReleaseId===config.parentReleaseId
             &&lockedPointer.searchReleaseId===config.parentSearchReleaseId&&sha256(lockedPointer)===sha256(current),
@@ -1605,6 +1766,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
         }
         if(retentionInput){
           const registered=await readMasterRetainedBindingPreconditionsR1(client,retentionInput);
+          assertMasterExistingNormativeRegistrySnapshotR1(existingRegistryReuse,registered);
           invariant(registered.newSources.length===1&&registered.newLocators.length===retentionInput.newLocators.length,
             stop(config,"RETAIN_COMPLETE_REGISTRY_REQUIRED"));
         }
@@ -1890,6 +2052,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
     atomicJson(resolve(config.outputRoot, `01_${config.receiptFileStem}_${head}.json`), sealed);
     atomicJson(config.currentReleasePath, {
       ...current,
+      ...runtimeAdmissionMetadata,
       definitionReleaseId: releaseId,
       searchReleaseId,
       definitionReleaseStatus: "prepared",

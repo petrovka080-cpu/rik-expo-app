@@ -14,3 +14,5 @@ data/estimate-benchmarks/fixtures/stairs-doka-standard-parent-elecor-link-r1.jso
 data/estimate-benchmarks/fixtures/stairs-doka-standard-parent-elecor-readback-r1.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 data/estimate-benchmarks/fixtures/stairs-doka-standard-root-variant-decision-r3.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 scripts/estimate/r4a13/prepareStairsDokaStandardFullRetainedMasterR2.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+# Preserve the exact current curb capture guard across Git checkout.
+data/estimate-benchmarks/fixtures/curb03-curing-full-current-capture-guard-r1.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
