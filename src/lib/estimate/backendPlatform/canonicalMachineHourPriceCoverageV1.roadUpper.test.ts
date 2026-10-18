@@ -13,6 +13,20 @@ const input=(rowId=prefix+'loader')=>({catalogId,rowId,unitId:'machine_hour',cur
   manual:true,manualProvenanceReason:'consumer_estimate_row_batch_edit',evidence:undefined as unknown});
 const quote=(rowId=prefix+'loader')=>canonicalManualMachineHourPriceCoverageV1({rowId,unitPrice:'77',currencyCode:'KGS'});
 
+describe('road owners cannot inherit the legacy roof catalog admission',()=>{
+  it.each(owners)('rejects foreign roof definition, manual and snapshot scope for %s',(role,resourceCode)=>{
+    const rowId=prefix+role,snapshotId='55555555-5555-5555-8555-555555555555',priceKey='qa-road-exact-owner';
+    for(const foreignCatalog of ['canonical-work:base:roofing_interior_flat_roof_install_technical_room',
+      'canonical-work:base:roofing_interior_flat_roof_install_wet_zone']){
+      expect(assertCanonicalMachineHourDefinitionV1({catalogId:foreignCatalog,rowId,unitId:'machine_hour',
+        sourceMetadata:{normativeResourceCode:resourceCode,machinePriceCoverageRequired:'FULL_OPERATED_MACHINE_HOUR'}})).toBeNull();
+      expect(resolveCanonicalMachineHourPriceCoverageV1({...input(rowId),catalogId:foreignCatalog,evidence:quote(rowId)})).toBeNull();
+      expect(resolveCanonicalMachineHourPriceCoverageV1({...input(rowId),catalogId:foreignCatalog,manual:false,snapshotId,priceKey,
+        evidence:{...quote(rowId),source:{kind:'SNAPSHOT',snapshotId,priceKey}}})).toBeNull();
+    }
+  });
+});
+
 describe('exact road upper-layer machine-hour price coverage through existing v1 contract',()=>{
   it.each(owners)('requires an explicit operated quote for %s / %s',(role,resourceCode)=>{
     const rowId=prefix+role;
